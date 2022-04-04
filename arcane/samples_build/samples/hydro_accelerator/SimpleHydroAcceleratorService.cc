@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -48,7 +48,7 @@
 
 #include "arcane/accelerator/Reduce.h"
 #include "arcane/accelerator/Runner.h"
-#include "arcane/accelerator/Views.h"
+#include "arcane/accelerator/VariableViews.h"
 #include "arcane/accelerator/RunCommandEnumerate.h"
 
 /*---------------------------------------------------------------------------*/
@@ -134,21 +134,20 @@ class SimpleHydroAcceleratorService
 
  public:
 
-  void hydroBuild();
-  void hydroStartInit();
-  void hydroInit();
-  void hydroContinueInit() {}
-  void hydroExit();
+  void hydroBuild() override;
+  void hydroStartInit() override;
+  void hydroInit() override;
+  void hydroExit() override;
 
-  void computeForces();
-  void computeVelocity();
-  void computeViscosityWork();
-  void applyBoundaryCondition();
-  void moveNodes();
-  void computeGeometricValues();
-  void updateDensity();
-  void applyEquationOfState();
-  void computeDeltaT();
+  void computeForces() override;
+  void computeVelocity() override;
+  void computeViscosityWork() override;
+  void applyBoundaryCondition() override;
+  void moveNodes() override;
+  void computeGeometricValues() override;
+  void updateDensity() override;
+  void applyEquationOfState() override;
+  void computeDeltaT() override;
 
   void setModule(SimpleHydro::SimpleHydroModuleBase* module) override
   {
@@ -160,7 +159,7 @@ class SimpleHydroAcceleratorService
   void computeGeometricValues2();
 
   void cellScalarPseudoViscosity();
-  ARCCORE_HOST_DEVICE inline void computeCQs(Real3 node_coord[8],Real3 face_coord[6],Span<Real3> cqs);
+  ARCCORE_HOST_DEVICE static inline void computeCQs(Real3 node_coord[8],Real3 face_coord[6],Span<Real3> cqs);
 
  private:
   VariableCellInt64 m_cell_unique_id; //!< Unique ID associé à la maille
@@ -390,9 +389,6 @@ hydroStartInit()
 void SimpleHydroAcceleratorService::
 computeForces()
 {
-  // Remise à zéro du vecteur des forces.
-  m_force.fill(Real3::null());
-
   // Calcul pour chaque noeud de chaque maille la contribution
   // des forces de pression et de la pseudo-viscosite si necessaire
   if (m_module->getViscosity()==TypesSimpleHydro::ViscosityCellScalar){
@@ -802,7 +798,7 @@ computeDeltaT()
  *
  * La méthode utilisée est celle du découpage en quatre triangles.
  */
-inline void SimpleHydroAcceleratorService::
+ARCCORE_HOST_DEVICE inline void SimpleHydroAcceleratorService::
 computeCQs(Real3 node_coord[8],Real3 face_coord[6],Span<Real3> cqs)
 {
   const Real3 c0 = face_coord[0];

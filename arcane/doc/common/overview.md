@@ -212,7 +212,7 @@ avec:
 - **nom_iterateur** le nom de l'itérateur
 - **nom_groupe** le nom du groupe sur lequel on itère.
 
-Par exemple, pour itérér sur toutes les mailles, avec **i** le nom de l'itérateur:
+Par exemple, pour itérer sur toutes les mailles, avec **i** le nom de l'itérateur:
 
 ~~~~~~~~~~~~~~~~{.cpp}
 ENUMERATE_CELL(i,allCells())

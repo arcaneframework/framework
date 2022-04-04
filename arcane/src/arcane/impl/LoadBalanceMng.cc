@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -81,10 +81,10 @@ template <typename DataType> class ProxyItemVariable
 : public IProxyItemVariable
 {
  public:
-  ProxyItemVariable<DataType>(IVariable* var, Integer pos=0)
+  ProxyItemVariable(IVariable* var, Integer pos=0)
   : m_var(var), m_pos(pos){
   }
-  ~ProxyItemVariable<DataType>() {}
+  ~ProxyItemVariable() {}
 
   Real operator[](ItemEnumerator i) const {
     return static_cast<Real>(m_var[i]);

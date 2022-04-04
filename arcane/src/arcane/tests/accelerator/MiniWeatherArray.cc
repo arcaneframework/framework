@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -45,8 +45,9 @@
 #include "arcane/BasicService.h"
 #include "arcane/ServiceFactory.h"
 #include "arcane/tests/MiniWeatherTypes.h"
+#include "arcane/utils/NumArray.h"
 
-#include "arcane/accelerator/NumArray.h"
+#include "arcane/accelerator/core/IAcceleratorMng.h"
 #include "arcane/accelerator/Accelerator.h"
 #include "arcane/accelerator/RunCommandLoop.h"
 
@@ -109,13 +110,30 @@ dmin(double a, double b)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class MiniWeatherArray
+class MiniWeatherArrayBase
 : public TraceAccessor
 {
  public:
+  MiniWeatherArrayBase(ITraceMng* tm) : TraceAccessor(tm){}
+  virtual ~MiniWeatherArrayBase() = default;
+ public:
+  virtual int doOneIteration() =0;
+  virtual void doExit(RealArrayView reduced_values) = 0;
+};
 
-  MiniWeatherArray(const AcceleratorRuntimeInitialisationInfo& acc_info,
-                   ITraceMng* tm,int nb_cell_x,int nb_cell_z,double final_time);
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename LayoutType>
+class MiniWeatherArray
+: public MiniWeatherArrayBase
+{
+  using NumArray3Type = NumArray<double,3,LayoutType>;
+
+ public:
+
+  MiniWeatherArray(IAcceleratorMng* am,ITraceMng* tm,int nb_cell_x,int nb_cell_z,
+                   double final_time,eMemoryRessource memory);
   
  public:
   
@@ -125,19 +143,19 @@ class MiniWeatherArray
  public:
 
   void init();
-  ARCCORE_HOST_DEVICE void injection(double x, double z, double &r, double &u,
-                                     double &w, double &t, double &hr, double &ht);
-  ARCCORE_HOST_DEVICE void hydro_const_theta(double z, double &r, double &t);
-  void output(NumArray<double,3>& state, double etime);
-  void perform_timestep(NumArray<double,3>& state, NumArray<double,3>& state_tmp,
-                        NumArray<double,3>& flux, NumArray<double,3>& tend, double dt);
-  void semi_discrete_step(NumArray<double,3>& nstate_init, NumArray<double,3>& nstate_forcing,
-                          NumArray<double,3>& nstate_out, double dt, int dir,
-                          NumArray<double,3>& flux, NumArray<double,3>& tend);
-  void compute_tendencies_x(NumArray<double,3>& nstate, NumArray<double,3>& flux, NumArray<double,3>& tend);
-  void compute_tendencies_z(NumArray<double,3>& nstate, NumArray<double,3>& flux, NumArray<double,3>& tend);
-  void set_halo_values_x(NumArray<double,3>& nstate);
-  void set_halo_values_z(NumArray<double,3>& nstate);
+  static ARCCORE_HOST_DEVICE void injection(double x, double z, double &r, double &u,
+                                            double &w, double &t, double &hr, double &ht);
+  static ARCCORE_HOST_DEVICE void hydro_const_theta(double z, double &r, double &t);
+  void output(NumArray3Type& state, double etime);
+  void perform_timestep(NumArray3Type& state, NumArray3Type& state_tmp,
+                        NumArray3Type& flux, NumArray3Type& tend, double dt);
+  void semi_discrete_step(NumArray3Type& nstate_init, NumArray3Type& nstate_forcing,
+                          NumArray3Type& nstate_out, double dt, int dir,
+                          NumArray3Type& flux, NumArray3Type& tend);
+  void compute_tendencies_x(NumArray3Type& nstate, NumArray3Type& flux, NumArray3Type& tend);
+  void compute_tendencies_z(NumArray3Type& nstate, NumArray3Type& flux, NumArray3Type& tend);
+  void set_halo_values_x(NumArray3Type& nstate);
+  void set_halo_values_z(NumArray3Type& nstate);
 
  private:
 
@@ -180,30 +198,41 @@ class MiniWeatherArray
   double etime;          //Elapsed model time
   double output_counter; //Helps determine when it's time to do output
   // Runtime variable arrays
-  NumArray<double,3> nstate;     // Fluid state.             Dimensions: (1-hs:nx+hs,1-hs:nz+hs,NUM_VARS)
-  NumArray<double,3> nstate_tmp; // Fluid state.             Dimensions: (1-hs:nx+hs,1-hs:nz+hs,NUM_VARS)
-  NumArray<double,3> nflux; // Cell interface fluxes.   Dimensions: (nx+1,nz+1,NUM_VARS)
-  NumArray<double,3> ntend; // Fluid state tendencies.  Dimensions: (nx,nz,NUM_VARS)
+  NumArray3Type nstate;     // Fluid state.             Dimensions: (1-hs:nx+hs,1-hs:nz+hs,NUM_VARS)
+  NumArray3Type nstate_tmp; // Fluid state.             Dimensions: (1-hs:nx+hs,1-hs:nz+hs,NUM_VARS)
+  NumArray3Type nflux; // Cell interface fluxes.   Dimensions: (nx+1,nz+1,NUM_VARS)
+  NumArray3Type ntend; // Fluid state tendencies.  Dimensions: (nx,nz,NUM_VARS)
   int num_out = 0;   // The number of outputs performed so far
   int direction_switch = 1;
-  ax::Runner m_runner;
+  ax::Runner* m_runner = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MiniWeatherArray::
-MiniWeatherArray(const AcceleratorRuntimeInitialisationInfo& acc_info,
-                 ITraceMng* tm,int nb_cell_x,int nb_cell_z,double final_time)
-: TraceAccessor(tm)
+template<typename LayoutType>
+MiniWeatherArray<LayoutType>::
+MiniWeatherArray(IAcceleratorMng* am,ITraceMng* tm,int nb_cell_x,int nb_cell_z,
+                 double final_time,eMemoryRessource memory)
+: MiniWeatherArrayBase(tm)
+, hy_dens_cell(memory)
+, hy_dens_theta_cell(memory)
+, hy_dens_int(memory)
+, hy_dens_theta_int(memory)
+, nstate(memory)
+, nstate_tmp(memory)
+, nflux(memory)
+, ntend(memory)
+, m_runner(am->defaultRunner())
 {
-  m_const.nx_glob = nb_cell_x;     //Number of total cells in the x-dirction
-  m_const.nz_glob = nb_cell_z;     //Number of total cells in the z-dirction
+  m_const.nx_glob = nb_cell_x; // Number of total cells in the x-direction
+  m_const.nz_glob = nb_cell_z; // Number of total cells in the z-direction
   m_const.dx = xlen / m_const.nx_glob;
   m_const.dz = zlen / m_const.nz_glob;
 
   info() << "Using 'MiniWeather' with accelerator";
-  initializeRunner(m_runner,tm,acc_info);
+  auto layout_info = LayoutType::layoutInfo();
+  info() << "NumArrayLayout = " << layout_info[0] << " " << layout_info[1] << " " << layout_info[2];
 
   m_const.sim_time = final_time;   //How many seconds to run the simulation
   m_const.output_freq = 100; //How frequently to output data to file (in seconds)
@@ -220,7 +249,8 @@ MiniWeatherArray(const AcceleratorRuntimeInitialisationInfo& acc_info,
 // THE MAIN PROGRAM STARTS HERE
 ///////////////////////////////////////////////////////////////////////////////////////
 
-int MiniWeatherArray::
+template<typename LayoutType>
+int MiniWeatherArray<LayoutType>::
 doOneIteration()
 {
   ///////////////////////////////////////////////////////////////////////////////////////
@@ -279,9 +309,10 @@ doOneIteration()
 // q*     = q[n] + dt/3 * rhs(q[n])
 // q**    = q[n] + dt/2 * rhs(q*  )
 // q[n+1] = q[n] + dt/1 * rhs(q** )
-void MiniWeatherArray::
-perform_timestep(NumArray<double,3>& state, NumArray<double,3>& state_tmp,
-                 NumArray<double,3>& flux, NumArray<double,3>& tend, double dt)
+template<typename LayoutType>
+void MiniWeatherArray<LayoutType>::
+perform_timestep(NumArray3Type& state, NumArray3Type& state_tmp,
+                 NumArray3Type& flux, NumArray3Type& tend, double dt)
 {
   if (direction_switch==1){
     //x-direction first
@@ -318,9 +349,10 @@ perform_timestep(NumArray<double,3>& state, NumArray<double,3>& state_tmp,
 //Perform a single semi-discretized step in time with the form:
 //state_out = state_init + dt * rhs(state_forcing)
 //Meaning the step starts from state_init, computes the rhs using state_forcing, and stores the result in state_out
-void MiniWeatherArray::
-semi_discrete_step(NumArray<double,3>& nstate_init, NumArray<double,3>& nstate_forcing, NumArray<double,3>& nstate_out,
-                   double dt, int dir, NumArray<double,3>& flux, NumArray<double,3>& tend)
+template<typename LayoutType>
+void MiniWeatherArray<LayoutType>::
+semi_discrete_step(NumArray3Type& nstate_init, NumArray3Type& nstate_forcing, NumArray3Type& nstate_out,
+                   double dt, int dir, NumArray3Type& flux, NumArray3Type& tend)
 {
   if (dir == DIR_X) {
     // Set the halo values  in the x-direction
@@ -356,8 +388,9 @@ semi_discrete_step(NumArray<double,3>& nstate_init, NumArray<double,3>& nstate_f
 
 //First, compute the flux vector at each cell interface in the x-direction (including hyperviscosity)
 //Then, compute the tendencies using those fluxes
-void MiniWeatherArray::
-compute_tendencies_x(NumArray<double,3>& nstate, NumArray<double,3>& flux, NumArray<double,3>& tend)
+template<typename LayoutType>
+void MiniWeatherArray<LayoutType>::
+compute_tendencies_x(NumArray3Type& nstate, NumArray3Type& flux, NumArray3Type& tend)
 {
   auto queue = makeQueue(m_runner);
   auto command = makeCommand(queue);
@@ -409,7 +442,7 @@ compute_tendencies_x(NumArray<double,3>& nstate, NumArray<double,3>& flux, NumAr
   command << RUNCOMMAND_LOOPN(iter,3,NUM_VARS,nz,nx)
   {
     auto [ll, k, i] = iter();
-    out_tend(ll,k,i) = -(in_flux(ll,k,i+1) - in_flux(iter)) / dx;
+    out_tend(iter) = -(in_flux(ll,k,i+1) - in_flux(iter)) / dx;
   };
 }
 
@@ -420,8 +453,9 @@ compute_tendencies_x(NumArray<double,3>& nstate, NumArray<double,3>& flux, NumAr
 
 //First, compute the flux vector at each cell interface in the z-direction (including hyperviscosity)
 //Then, compute the tendencies using those fluxes
-void MiniWeatherArray::
-compute_tendencies_z(NumArray<double,3>& nstate, NumArray<double,3>& flux, NumArray<double,3>& tend)
+template<typename LayoutType>
+void MiniWeatherArray<LayoutType>::
+compute_tendencies_z(NumArray3Type& nstate, NumArray3Type& flux, NumArray3Type& tend)
 {
   auto queue = makeQueue(m_runner);
   auto command = makeCommand(queue);
@@ -486,8 +520,9 @@ compute_tendencies_z(NumArray<double,3>& nstate, NumArray<double,3>& flux, NumAr
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MiniWeatherArray::
-set_halo_values_x(NumArray<double,3>& nstate)
+template<typename LayoutType>
+void MiniWeatherArray<LayoutType>::
+set_halo_values_x(NumArray3Type& nstate)
 {
   auto queue = makeQueue(m_runner);
   auto command = makeCommand(queue);
@@ -528,8 +563,9 @@ set_halo_values_x(NumArray<double,3>& nstate)
 
 //Set this task's halo values in the z-direction.
 //decomposition in the vertical direction.
-void MiniWeatherArray::
-set_halo_values_z(NumArray<double,3>& nstate)
+template<typename LayoutType>
+void MiniWeatherArray<LayoutType>::
+set_halo_values_z(NumArray3Type& nstate)
 {
   auto queue = makeQueue(m_runner);
   auto command = makeCommand(queue);
@@ -560,11 +596,10 @@ set_halo_values_z(NumArray<double,3>& nstate)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MiniWeatherArray::
+template<typename LayoutType>
+void MiniWeatherArray<LayoutType>::
 init()
 {
-  int  k, kk;
-
   m_const.nranks = 1;
   m_const.myrank = 0;
 
@@ -598,10 +633,13 @@ init()
   const auto k_beg = this->k_beg();
 
   // Allocate the model data
+  Int32 size0 = NUM_VARS * (nz + 2 * hs) * (nx + 2 * hs);
+  info() << "Allocate memory for NumArray nx=" << nx << " nz=" << nz << " hs=" << hs << " size0=" << size0;
   nstate.resize(NUM_VARS,(nz + 2 * hs),(nx + 2 * hs));
   nstate_tmp.resize(NUM_VARS,(nz + 2 * hs),(nx + 2 * hs));
   nflux.resize(NUM_VARS,nz+1,nx+1); 
   ntend.resize(NUM_VARS,nz,nx);
+
   hy_dens_cell.resize(nz + 2 * hs);
   hy_dens_theta_cell.resize(nz + 2 * hs);
   hy_dens_int.resize(nz + 1);
@@ -635,55 +673,60 @@ init()
   };
 
   auto queue = makeQueue(m_runner);
-  auto command = makeCommand(queue);
 
-  auto in_out_state = ax::viewInOut(command,nstate);
-  auto out_state_tmp = ax::viewOut(command,nstate_tmp);
-
-  //////////////////////////////////////////////////////////////////////////
-  // Initialize the cell-averaged fluid state via Gauss-Legendre quadrature
-  //////////////////////////////////////////////////////////////////////////
-
-  command << RUNCOMMAND_LOOP(iter,ArrayBounds<2>(nz+2*hs,nx+2*hs))
   {
-    auto [k,i] = iter();
-    double r, u, w, t, hr, ht;
-    for (int ll = 0; ll < NUM_VARS; ll++)
-      in_out_state(ll,k,i) = 0.0;
+    auto command = makeCommand(queue);
 
-    // Use Gauss-Legendre quadrature to initialize a hydrostatic balance + temperature perturbation
-    for (int kk = 0; kk < nqpoints; kk++) {
-      for (int ii = 0; ii < nqpoints; ii++) {
-        // Compute the x,z location within the global domain based on cell and quadrature index
-        double x = ((double)(i_beg + i - hs) + 0.5) * dx + (qpoints[ii] - 0.5) * dx;
-        double z = ((double)(k_beg + k - hs) + 0.5) * dz + (qpoints[kk] - 0.5) * dz;
+    auto in_out_state = viewInOut(command,nstate);
+    auto out_state_tmp = viewOut(command,nstate_tmp);
 
-        // Set the fluid state based on the user's specification (default is injection in this example)
-        injection(x, z, r, u, w, t, hr, ht);
+    //////////////////////////////////////////////////////////////////////////
+    // Initialize the cell-averaged fluid state via Gauss-Legendre quadrature
+    //////////////////////////////////////////////////////////////////////////
 
-        // Store into the fluid state array
-        in_out_state(ID_DENS,k,i) += + r * qweights[ii] * qweights[kk];
-        in_out_state(ID_UMOM,k,i) += + (r + hr) * u * qweights[ii] * qweights[kk];
-        in_out_state(ID_WMOM,k,i) += + (r + hr) * w * qweights[ii] * qweights[kk];
-        in_out_state(ID_RHOT,k,i) += + ((r + hr) * (t + ht) - hr * ht) * qweights[ii] * qweights[kk];
+    command << RUNCOMMAND_LOOP(iter,ArrayBounds<2>(nz+2*hs,nx+2*hs))
+    {
+      auto [k,i] = iter();
+      double r, u, w, t, hr, ht;
+      for (int ll = 0; ll < NUM_VARS; ll++)
+        in_out_state(ll,k,i) = 0.0;
+
+      // Use Gauss-Legendre quadrature to initialize a hydrostatic balance + temperature perturbation
+      for (int kk = 0; kk < nqpoints; kk++) {
+        for (int ii = 0; ii < nqpoints; ii++) {
+          // Compute the x,z location within the global domain based on cell and quadrature index
+          double x = ((double)(i_beg + i - hs) + 0.5) * dx + (qpoints[ii] - 0.5) * dx;
+          double z = ((double)(k_beg + k - hs) + 0.5) * dz + (qpoints[kk] - 0.5) * dz;
+
+          // Set the fluid state based on the user's specification (default is injection in this example)
+          injection(x, z, r, u, w, t, hr, ht);
+
+          // Store into the fluid state array
+          in_out_state(ID_DENS,k,i) += + r * qweights[ii] * qweights[kk];
+          in_out_state(ID_UMOM,k,i) += + (r + hr) * u * qweights[ii] * qweights[kk];
+          in_out_state(ID_WMOM,k,i) += + (r + hr) * w * qweights[ii] * qweights[kk];
+          in_out_state(ID_RHOT,k,i) += + ((r + hr) * (t + ht) - hr * ht) * qweights[ii] * qweights[kk];
+        }
       }
-    }
 
-    for (int ll = 0; ll < NUM_VARS; ll++)
-      out_state_tmp(ll,k,i) = in_out_state(ll,k,i);
-  };
-  info() << "End init part 1\n";
+      for (int ll = 0; ll < NUM_VARS; ll++)
+        out_state_tmp(ll,k,i) = in_out_state(ll,k,i);
+    };
+    info() << "End init part 1\n";
+  }
 
   // Compute the hydrostatic background state over vertical cell averages
   {
-    double r, u, w, t, hr, ht;
-    auto out_hy_dens_cell = hy_dens_cell.span();
-    auto out_hy_dens_theta_cell = hy_dens_theta_cell.span();
-    for (k = 0; k < nz + 2 * hs; k++){
+    auto command = makeCommand(queue);
+    auto out_hy_dens_cell = viewOut(command,hy_dens_cell);
+    auto out_hy_dens_theta_cell = viewOut(command,hy_dens_theta_cell);
+    command << RUNCOMMAND_LOOP1(iter,(nz + 2 * hs)){
+      auto [k] = iter();
+      double r, u, w, t, hr, ht;
       double dens_cell = 0.0;
       double dens_theta_cell = 0.0;
-      for (kk = 0; kk < nqpoints; kk++){
-        double z = (k_beg + k - hs + 0.5) * dz;
+      for (int kk = 0; kk < nqpoints; kk++){
+        double z = (k_beg + (double)k - hs + 0.5) * dz;
 
         // Set the fluid state based on the user's specification (default is injection in this example)
         injection(0.0, z, r, u, w, t, hr, ht);
@@ -693,17 +736,19 @@ init()
       }
       out_hy_dens_cell(k) = dens_cell;
       out_hy_dens_theta_cell(k) = dens_theta_cell;
-    }
+    };
   }
 
   {
-    double r, u, w, t, hr, ht;
-    auto out_hy_dens_int = hy_dens_int.span();
-    auto out_hy_dens_theta_int = hy_dens_theta_int.span();
-    auto out_hy_pressure_int = hy_pressure_int.span();
-    // Compute the hydrostatic background state at vertical cell interfaces
-    for (k = 0; k < nz + 1; k++) {
-      double z = (k_beg + k) * dz;
+    auto command = makeCommand(queue);
+    auto out_hy_dens_int = viewOut(command,hy_dens_int);
+    auto out_hy_dens_theta_int = viewOut(command,hy_dens_theta_int);
+    auto out_hy_pressure_int = viewOut(command,hy_pressure_int);
+    command << RUNCOMMAND_LOOP1(iter,(nz + 1)){
+      auto [k] = iter();
+      double r, u, w, t, hr, ht;
+      // Compute the hydrostatic background state at vertical cell interfaces
+      double z = (k_beg + (double)k) * dz;
 
       //Set the fluid state based on the user's specification (default is injection in this example)
       injection(0.0, z, r, u, w, t, hr, ht);
@@ -711,7 +756,7 @@ init()
       out_hy_dens_int(k) = hr;
       out_hy_dens_theta_int(k) = hr * ht;
       out_hy_pressure_int(k) = C0 * pow((hr * ht), gamm);
-    }
+    };
   }
 }
 
@@ -722,7 +767,8 @@ init()
 // x and z are input coordinates at which to sample
 // r,u,w,t are output density, u-wind, w-wind, and potential temperature at that location
 // hr and ht are output background hydrostatic density and potential temperature at that location
-void MiniWeatherArray::
+template<typename LayoutType>
+ARCCORE_HOST_DEVICE void MiniWeatherArray<LayoutType>::
 injection(double x, double z, double &r, double &u, double &w, double &t, double &hr, double &ht)
 {
   ARCANE_UNUSED(x);
@@ -739,7 +785,8 @@ injection(double x, double z, double &r, double &u, double &w, double &t, double
 //Establish hydrstatic balance using constant potential temperature (thermally neutral atmosphere)
 //z is the input coordinate
 //r and t are the output background hydrostatic density and potential temperature
-void MiniWeatherArray::
+template<typename LayoutType>
+ARCCORE_HOST_DEVICE void MiniWeatherArray<LayoutType>::
 hydro_const_theta(double z, double &r, double &t)
 {
   const double theta0 = 300.0; //Background potential temperature
@@ -758,8 +805,9 @@ hydro_const_theta(double z, double &r, double &t)
 //Output the fluid state (state) to a NetCDF file at a given elapsed model time (etime)
 //The file I/O uses netcdf, the only external library required for this mini-app.
 //If it's too cumbersome, you can comment the I/O out, but you'll miss out on some potentially cool graphics
-void MiniWeatherArray::
-output(NumArray<double,3>& state, double etime)
+template<typename LayoutType>
+void MiniWeatherArray<LayoutType>::
+output(NumArray3Type& state, double etime)
 {
   ARCANE_UNUSED(state);
   ARCANE_UNUSED(etime);
@@ -768,13 +816,19 @@ output(NumArray<double,3>& state, double etime)
 
 // Affiche la somme sur les mailles des variables.
 // Cela est utile pour la validation
-void MiniWeatherArray::
+template<typename LayoutType>
+void MiniWeatherArray<LayoutType>::
 doExit(RealArrayView reduced_values)
 {
   int k, i, ll;
   double sum_v[NUM_VARS];
 
-  auto ns = nstate.constSpan();
+  // Comme le calcul se fait toujours sur l'hôte, il faut copier la valeur
+  // de 'nstate' qui peut être sur le device.
+  NumArray3Type host_nstate(eMemoryRessource::Host);
+  host_nstate.copy(nstate);
+
+  auto ns = host_nstate.constSpan();
 
   for (ll = 0; ll < NUM_VARS; ll++)
     sum_v[ll] = 0.0;
@@ -795,7 +849,8 @@ doExit(RealArrayView reduced_values)
 using namespace ArcaneTest::MiniWeather;
 
 class MiniWeatherArrayService
-: public BasicService, public IMiniWeatherService
+: public BasicService
+, public IMiniWeatherService
 {
  public:
   explicit MiniWeatherArrayService(const ServiceBuildInfo& sbi)
@@ -805,11 +860,14 @@ class MiniWeatherArrayService
     delete m_p;
   }
  public:
-  void init(Int32 nb_x,Int32 nb_z,Real final_time) override
+  void init(IAcceleratorMng* am,Int32 nb_x,Int32 nb_z,Real final_time,
+            eMemoryRessource r, bool use_left_layout) override
   {
-    IApplication* app = subDomain()->application();
-    const auto& acc_info = app->acceleratorRuntimeInitialisationInfo();
-    m_p = new MiniWeatherArray(acc_info,traceMng(),nb_x,nb_z,final_time);
+    info() << "UseLeftLayout?=" << use_left_layout;
+    if (use_left_layout)
+      m_p = new MiniWeatherArray<LeftLayout<3>>(am,traceMng(),nb_x,nb_z,final_time,r);
+    else
+      m_p = new MiniWeatherArray<RightLayout<3>>(am,traceMng(),nb_x,nb_z,final_time,r);
   }
   bool loop() override
   {
@@ -820,7 +878,7 @@ class MiniWeatherArrayService
     m_p->doExit(reduced_values);
   }
  private:
-  MiniWeatherArray* m_p;
+  MiniWeatherArrayBase* m_p;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -156,7 +156,7 @@ hmin(Cell item) const
 template <int typeID> void ItemRefinement::
 refineOneCell(Cell item, MeshRefinement& mesh_refinement)
 {
-  ItemTypeMng* itm = ItemTypeMng::singleton();
+  ItemTypeMng* itm = m_mesh->itemTypeMng();
   const Int32 nb_hChildren = itm->nbHChildrenByItemType(item.type());
   const Int32 nb_nodes = item.nbNode();
   ARCANE_ASSERT((item.internal()->flags() & ItemInternal::II_Refine), ("Item is not flagged for refinement"));
@@ -319,7 +319,7 @@ computeHChildren(Cell item, MeshRefinement& mesh_refinement)
   NodesSet nodes_set;
   Integer nb_cnodes_max_total = 0;
 
-  ItemTypeMng* itm = ItemTypeMng::singleton();
+  ItemTypeMng* itm = m_mesh->itemTypeMng();
   for (Integer c = 0; c < nb_hChildren; c++){
     const Integer c_type_id = rp.hChildrenTypeId(c);
     ItemTypeInfo* c_type = itm->typeFromId(c_type_id);

@@ -1,19 +1,19 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PropertiesUnitTest.cc                                       (C) 2000-2013 */
+/* PropertiesUnitTest.cc                                       (C) 2000-2021 */
 /*                                                                           */
 /* Service de test des propriétés.                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/ScopedPtr.h"
+#include "arcane/utils/MD5HashAlgorithm.h"
 
 #include "arcane/BasicUnitTest.h"
 #include "arcane/FactoryService.h"
@@ -42,16 +42,15 @@ using namespace Arcane;
 class PropertiesUnitTest
 : public BasicUnitTest
 {
-
  public:
 
-  PropertiesUnitTest(const ServiceBuildInfo& cb);
+  explicit PropertiesUnitTest(const ServiceBuildInfo& cb);
   ~PropertiesUnitTest();
 
  public:
 
-  virtual void initializeTest() {}
-  virtual void executeTest();
+  void initializeTest() override {}
+  void executeTest() override;
 
  private:
 
@@ -61,13 +60,14 @@ class PropertiesUnitTest
     Integer s1 = v1.size();
     Integer s2 = v2.size();
     if (s1!=s2)
-      throw FatalErrorException(A_FUNCINFO,"Bad size");
+      ARCANE_FATAL("Bad size");
     for( Integer i=0; i<s1; ++i )
       if (v1[i]!=v2[i])
-        throw FatalErrorException(A_FUNCINFO,"Bad value");
+        ARCANE_FATAL("Bad value");
   }
 
   void _executeTest(Properties& p,Properties& p2);
+  String _getHash(Span<const Byte> bytes);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -121,10 +121,23 @@ executeTest()
   }
   {
     info() << "TEST: PROPERTY_MNG: PREPARE_FOR_DUMP";
+    // Vérifie que deux sauvegardes donnent le même hash
+    // et fait de même après une relecture.
     UniqueArray<Byte> saved_bytes;
     pm->writeTo(saved_bytes);
+    String hash1 = _getHash(saved_bytes);
+    UniqueArray<Byte> saved_bytes2;
+    pm->writeTo(saved_bytes2);
+    String hash2 = _getHash(saved_bytes2);
+    if (hash1!=hash2)
+      ARCANE_FATAL("Bad hash for properties hash1={0} hash2={1}",hash1,hash2);
     info() << "TEST: PROPERTY_MNG: READ_FROM_DUMP";
     pm->readFrom(saved_bytes);
+    UniqueArray<Byte> saved_bytes3;
+    pm->writeTo(saved_bytes3);
+    String hash3 = _getHash(saved_bytes3);
+    if (hash1!=hash3)
+      ARCANE_FATAL("Bad hash for properties hash1={0} hash3={1}",hash1,hash3);
   }
 
   {
@@ -137,6 +150,20 @@ executeTest()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+String PropertiesUnitTest::
+_getHash(Span<const Byte> bytes)
+{
+  MD5HashAlgorithm hash_algo;
+  UniqueArray<Byte> output_hash;
+  hash_algo.computeHash64(bytes,output_hash);
+  String hash_string = Convert::toHexaString(output_hash);
+  info() << "PROPERTY_HASH n=" << bytes.size() << " =" << hash_string;
+  return hash_string;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 #define DO_TEST(CppDataType,DataType,Value)     \
   {\
   info() << "Testing property " #DataType;\
@@ -144,10 +171,10 @@ executeTest()
     CppDataType xget;                               \
     p.set##DataType(#DataType,x);                      \
     if (p.get##DataType(#DataType)!=x)                         \
-      throw FatalErrorException(A_FUNCINFO,"Bad value");  \
+      ARCANE_FATAL("Bad value"); \
     p.get(#DataType,xget);                         \
     if (xget!=x)                         \
-      throw FatalErrorException(A_FUNCINFO,"Bad value 2");  \
+      ARCANE_FATAL("Bad value 2");  \
   }
 
 #define DO_TEST_ARRAY(DataType,Value)\
@@ -167,7 +194,7 @@ executeTest()
   {\
   info() << "Comparing property " #DataType;\
   if (p.get##DataType(#DataType)!=p2.get##DataType(#DataType))          \
-    throw FatalErrorException(A_FUNCINFO,"Bad compare for type " #DataType); \
+    ARCANE_FATAL("Bad compare for type " #DataType); \
   }
 
 #define DO_COMPARE_ARRAY(DataType)\

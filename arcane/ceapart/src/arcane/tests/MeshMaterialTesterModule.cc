@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialTesterModule.cc                                 (C) 2000-2019 */
+/* MeshMaterialTesterModule.cc                                 (C) 2000-2022 */
 /*                                                                           */
 /* Module de test du gestionnaire des matériaux.                             */
 /*---------------------------------------------------------------------------*/
@@ -53,6 +53,7 @@
 #include "arcane/materials/MeshMaterialIndirectModifier.h"
 #include "arcane/materials/MeshMaterialVariableSynchronizerList.h"
 #include "arcane/materials/ComponentSimd.h"
+#include "arcane/materials/MeshMaterialInfo.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 #include "arcane/tests/MeshMaterialTester_axl.h"
@@ -67,7 +68,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_BEGIN_NAMESPACE
+namespace ArcaneTest
+{
 
 using namespace Arcane;
 using namespace Arcane::Materials;
@@ -96,8 +98,7 @@ class MeshMaterialTesterModule
 {
  public:
 
-
-  MeshMaterialTesterModule(const ModuleBuildInfo& mbi);
+  explicit MeshMaterialTesterModule(const ModuleBuildInfo& mbi);
   ~MeshMaterialTesterModule();
 
  public:
@@ -106,10 +107,10 @@ class MeshMaterialTesterModule
 
  public:
   
-  virtual void buildInit();
-  virtual void compute();
-  virtual void startInit();
-  virtual void continueInit();
+  void buildInit() override;
+  void compute() override;
+  void startInit() override;
+  void continueInit() override;
 
  private:
 
@@ -121,6 +122,8 @@ class MeshMaterialTesterModule
   MaterialVariableCellReal m_mat_nodump_real;
   VariableCellInt32 m_present_material;
   MaterialVariableCellInt32 m_mat_int32;
+  //! Variable pour tester la bonne prise en compte de setUsed(false)
+  MaterialVariableCellReal m_mat_not_used_real;
   VariableScalarInt64 m_nb_starting_cell; //<! Nombre de mailles au démarrage
   IMeshMaterial* m_mat1;
   IMeshMaterial* m_mat2;
@@ -193,6 +196,7 @@ MeshMaterialTesterModule(const ModuleBuildInfo& mbi)
 , m_mat_nodump_real(VariableBuildInfo(this,"NoDumpReal",IVariable::PNoDump))
 , m_present_material(VariableBuildInfo(this,"PresentMaterial"))
 , m_mat_int32(VariableBuildInfo(this,"PresentMaterial"))
+, m_mat_not_used_real(VariableBuildInfo(this,"NotUsedRealVariable"))
 , m_nb_starting_cell(VariableBuildInfo(this,"NbStartingCell"))
 , m_mat1(nullptr)
 , m_mat2(nullptr)
@@ -280,13 +284,12 @@ buildInit()
     mm->recreateFromDump();
   }
   else{
-
-
+    UniqueArray<MeshMaterialInfo*> materials_info;
     // Lit les infos des matériaux du JDD et les enregistre dans le gestionnaire
     for( Integer i=0,n=options()->material().size(); i<n; ++i ){
       String mat_name = options()->material[i].name;
       info() << "Found material name=" << mat_name;
-      mm->registerMaterialInfo(mat_name);
+      materials_info.add(mm->registerMaterialInfo(mat_name));
     }
 
     MeshBlockBuildInfo mbbi("BLOCK1",allCells());
@@ -343,6 +346,13 @@ buildInit()
     }
 
     mm->endCreate(subDomain()->isContinue());
+
+    info() << "List of materials:";
+    for( MeshMaterialInfo* m : materials_info ){
+      info() << "MAT=" << m->name();
+      for( String s : m->environmentsName() )
+        info() << " In ENV=" << s;
+    }
   }
 
   // Récupère deux matériaux de deux milieux différents pour test.
@@ -382,6 +392,8 @@ applyGeneric(const ContainerType& container,MaterialVariableCellReal& var,Real v
 void MeshMaterialTesterModule::
 startInit()
 {
+  m_mat_not_used_real.globalVariable().setUsed(false);
+
   info() << "MESH_MATERIAL_TESTER :: startInit()";
   m_material_mng->forceRecompute();
 
@@ -504,18 +516,24 @@ startInit()
   m_mat_density.fill(0.0);
   m_mat_nodump_real.fill(0.0);
 
+  constexpr IMeshMaterial* null_mat = nullptr;
+  constexpr IMeshEnvironment* null_env = nullptr;
   // Itération sur tous les milieux puis tous les matériaux
   // et toutes les mailles de ce matériau
   ENUMERATE_ENV(ienv,m_material_mng){
     IMeshEnvironment* env = *ienv;
+    info() << "ENV name=" << env->name();
     vc.areEqual(env->isEnvironment(),true,"IsEnvEnvOK");
     vc.areEqual(env->isMaterial(),false,"IsEnvMatOK");
-    info() << "ENV name=" << env->name();
+    vc.areEqual(env->asEnvironment(),env,"ToEnvEnvOK");
+    vc.areEqual(env->asMaterial(),null_mat,"ToEnvMatOK");
     ENUMERATE_MAT(imat,env){
       Materials::IMeshMaterial* mat = *imat;
+      info() << "MAT name=" << mat->name();
       vc.areEqual(mat->isEnvironment(),false,"IsMatEnvOK");
       vc.areEqual(mat->isMaterial(),true,"IsMatMatOK");
-      info() << "MAT name=" << mat->name();
+      vc.areEqual(mat->asEnvironment(),null_env,"ToMatEnvOK");
+      vc.areEqual(mat->asMaterial(),mat,"ToMatMatOK");
       ENUMERATE_MATCELL(icell,mat){
         MatCell mmcell = *icell;
         //info() << "Cell name=" << mmcell._varIndex();
@@ -1450,6 +1468,10 @@ compute()
     _setOrCheckSpectralValues(m_check_spectral_values_iteration,true);
     m_check_spectral_values_iteration = 0;
   }
+
+  // Active la variable une itération sur deux pour tester l'activation et désactivation
+  // au cours du temps.
+  m_mat_not_used_real.globalVariable().setUsed((m_global_iteration()%2)==0);
 
   _dumpAverageValues();
   _doDependencies();
@@ -2573,7 +2595,7 @@ ARCANE_REGISTER_MODULE_MESHMATERIALTESTER(MeshMaterialTesterModule);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_END_NAMESPACE
+} // End namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

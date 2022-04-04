@@ -1,0 +1,473 @@
+name: Build/Tests CUDA-11.6 GCC-11
+
+on:
+  push:
+    branches: [ main, dev/cea ]
+  pull_request:
+    branches: [ main, dev/cea ]
+  # A executer que lorsque l'on demande.
+  workflow_dispatch:
+
+env:
+
+  # Arcane
+  ARCANE_BUILD_DIR: '/__w/framework/framework/arcane_build'
+  ARCANE_INSTALL_DIR: '/__w/framework/framework/arcane_install'
+  ARCANE_SOURCE_DIR: '/__w/framework/framework/arcane'
+
+  # Arccon
+  ARCCON_BUILD_DIR: '/__w/framework/framework/arccon_build'
+  ARCCON_INSTALL_DIR: '/__w/framework/framework/arccon_install'
+  ARCCON_SOURCE_DIR: '/__w/framework/framework/arccon'
+
+  # Arccore
+  ARCCORE_BUILD_DIR: '/__w/framework/framework/arccore_build'
+  ARCCORE_INSTALL_DIR: '/__w/framework/framework/arccore_install'
+  ARCCORE_SOURCE_DIR: '/__w/framework/framework/arccore'
+
+  # Dependencies
+  DEPENDENCIES_BUILD_DIR: '/__w/framework/framework/dependencies_build'
+  DEPENDENCIES_INSTALL_DIR: '/__w/framework/framework/dependencies_install'
+  DEPENDENCIES_SOURCE_DIR: '/__w/framework/framework/dependencies'
+
+  # Axlstar
+  AXLSTAR_BUILD_DIR: '/__w/framework/framework/axlstar_build'
+  AXLSTAR_INSTALL_DIR: '/__w/framework/framework/axlstar_install'
+  AXLSTAR_SOURCE_DIR: '/__w/framework/framework/axlstar'
+
+  # ccache
+  CC_KEY_PREFIX: 'cuda-11.6_gcc-11'
+  CCACHE_COMPRESS: true
+  CCACHE_COMPRESSLEVEL: 6
+  CCACHE_DIR: '/__w/framework/framework/ccache'
+  CCACHE_MAXSIZE: 5G
+
+  # CMake
+  CM_BUILD_OPTS: "-j2"
+  CM_BUILD_TYPE: Release
+  CM_CCACHE_OPTS: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
+  CM_COMPILER: '-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++'
+  CM_COMPILER_NVCC: '-DARCANE_ACCELERATOR_MODE=CUDANVCC -DCMAKE_CUDA_COMPILER=`which nvcc`'
+
+  # CTest
+  CT_OPTS: "--timeout 300 --output-on-failure"
+
+  # MPI
+  OMPI_ALLOW_RUN_AS_ROOT: 1
+  OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: 1
+
+jobs:
+  arccon-install:
+    name: arccon-install
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    container:
+      image: ghcr.io/arcaneframework/ubuntu-2004_gcc-11:latest
+    strategy:
+      fail-fast: false
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          path: ${{ env.ARCCON_SOURCE_DIR }}
+
+      - name: Configure
+        shell: bash
+        run: cmake -S ${{ env.ARCCON_SOURCE_DIR }}/arccon -B ${{ env.ARCCON_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ARCCON_INSTALL_DIR }} 
+
+      - name: Build
+        shell: bash
+        run: cmake --build ${{ env.ARCCON_BUILD_DIR }} ${{ env.CM_BUILD_OPTS }}
+
+      - name: Install
+        shell: bash
+        run: cmake --install ${{ env.ARCCON_BUILD_DIR }}
+
+      - name: Tar install artifact
+        shell: bash
+        run: tar -cf arccon-install-artifact.tar ${{ env.ARCCON_INSTALL_DIR }}
+
+      - name: Upload install artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: arccon-install-artifact
+          path: arccon-install-artifact.tar
+          retention-days: 1
+
+  arccore-install:
+    name: arccore-install
+    needs:
+      - arccon-install
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    container:
+      image: ghcr.io/arcaneframework/ubuntu-2004_gcc-11:latest
+    strategy:
+      fail-fast: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          path: ${{ env.ARCCORE_SOURCE_DIR }}
+
+      - name: Download arccon install artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: arccon-install-artifact
+
+      - name: Untar arccon install artifact
+        shell: bash
+        run: tar -xf arccon-install-artifact.tar -C /
+
+      - name: Get date
+        id: get-date
+        shell: bash
+        run: echo "::set-output name=date::$(/bin/date -u '+%Y%m%d%H%M%S')"
+
+      - name: Get cache for ccache tool
+        uses: actions/cache@v2
+        with:
+          path: ${{env.CCACHE_DIR}}
+          key: ${{ env.CC_KEY_PREFIX }}-arccore-${{ env.CM_BUILD_TYPE }}-${{ steps.get-date.outputs.date }}-${{ github.run_number }}
+          restore-keys: ${{ env.CC_KEY_PREFIX }}-arccore-${{ env.CM_BUILD_TYPE }}-
+
+      - name: Configure
+        shell: bash
+        run: cmake -S ${{ env.ARCCORE_SOURCE_DIR }}/arccore -B ${{ env.ARCCORE_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ARCCORE_INSTALL_DIR }} -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DBUILD_SHARED_LIBS=ON ${{ env.CM_CCACHE_OPTS }} ${{ env.CM_COMPILER }}
+
+      - name: Build
+        shell: bash
+        run: cmake --build ${{ env.ARCCORE_BUILD_DIR }} ${{ env.CM_BUILD_OPTS }}
+
+      - name: Install
+        shell: bash
+        run: cmake --install ${{ env.ARCCORE_BUILD_DIR }}
+
+      - name: Tar build artifact
+        shell: bash
+        run: tar -cf arccore-build-artifact.tar ${{ env.ARCCORE_BUILD_DIR }}
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: arccore-build-artifact
+          path: arccore-build-artifact.tar
+          retention-days: 1
+
+      - name: Tar install artifact
+        shell: bash
+        run: tar -cf arccore-install-artifact.tar ${{ env.ARCCORE_INSTALL_DIR }}
+
+      - name: Upload install artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: arccore-install-artifact
+          path: arccore-install-artifact.tar
+          retention-days: 1
+
+  dependencies-install:
+    name: dependencies-install
+    needs:
+      - arccon-install
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    container:
+      image: ghcr.io/arcaneframework/ubuntu-2004_gcc-11:latest
+    strategy:
+      fail-fast: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          repository: arcaneframework/dependencies
+          path: ${{ env.DEPENDENCIES_SOURCE_DIR }}
+          ref: main
+
+      - name: Download arccon install artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: arccon-install-artifact
+
+      - name: Untar arccon install artifact
+        shell: bash
+        run: tar -xf arccon-install-artifact.tar -C /
+
+      - name: Configure
+        shell: bash
+        run: cmake -S ${{ env.DEPENDENCIES_SOURCE_DIR }} -B ${{ env.DEPENDENCIES_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.DEPENDENCIES_INSTALL_DIR }} -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon ${{ env.CM_COMPILER }}
+
+      - name: Build
+        shell: bash
+        run: cmake --build ${{ env.DEPENDENCIES_BUILD_DIR }} ${{ env.CM_BUILD_OPTS }}
+
+      - name: Install
+        shell: bash
+        run: cmake --install ${{ env.DEPENDENCIES_BUILD_DIR }}
+
+      - name: Tar install ariftact
+        shell: bash
+        run: tar -cf dependencies-install-artifact.tar ${{ env.DEPENDENCIES_INSTALL_DIR }}
+
+      - name: Upload install artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: dependencies-install-artifact
+          path: dependencies-install-artifact.tar
+          retention-days: 1
+
+  axlstar-install:
+    name: axlstar-install
+    needs:
+      - arccon-install
+      - dependencies-install
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    container:
+      image: ghcr.io/arcaneframework/ubuntu-2004_gcc-11:latest
+    strategy:
+      fail-fast: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          path: ${{ env.AXLSTAR_SOURCE_DIR }}
+
+      - name: Download arccon install artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: arccon-install-artifact
+
+      - name: Untar arccon install artifact
+        shell: bash
+        run: tar -xf arccon-install-artifact.tar -C /
+
+      - name: Download dependencies install artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: dependencies-install-artifact
+
+      - name: Untar dependencies install artifact
+        shell: bash
+        run: tar -xf dependencies-install-artifact.tar -C /
+
+      - name: Configure
+        shell: bash
+        run: cmake -S ${{ env.AXLSTAR_SOURCE_DIR }}/axlstar -B ${{ env.AXLSTAR_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.AXLSTAR_INSTALL_DIR }} -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DArcDependencies_DIR=${{ env.DEPENDENCIES_INSTALL_DIR }}/share/cmake/ArcDependencies
+
+      - name: Build
+        shell: bash
+        run: cmake --build ${{ env.AXLSTAR_BUILD_DIR }} ${{ env.CM_BUILD_OPTS }}
+
+      - name: Install
+        shell: bash
+        run: cmake --install ${{ env.AXLSTAR_BUILD_DIR }}
+
+      - name: Tar install artifact
+        shell: bash
+        run: tar -cf axlstar-install-artifact.tar ${{ env.AXLSTAR_INSTALL_DIR }}
+
+      - name: Upload install artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: axlstar-install-artifact
+          path: axlstar-install-artifact.tar
+          retention-days: 1
+
+  arcane-install:
+    name: arcane-install
+    needs:
+      - arccon-install
+      - arccore-install
+      - dependencies-install
+      - axlstar-install
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    container:
+      image: ghcr.io/arcaneframework/ubuntu-2004_cuda-116_gcc-11:latest
+    strategy:
+      fail-fast: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          path: ${{ env.ARCANE_SOURCE_DIR }}
+
+      - name: Download arccon install artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: arccon-install-artifact
+
+      - name: Untar arccon install artifact
+        shell: bash
+        run: tar -xf arccon-install-artifact.tar -C /
+
+      - name: Download arccore install artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: arccore-install-artifact
+
+      - name: Untar arccore install artifact
+        shell: bash
+        run: tar -xf arccore-install-artifact.tar -C /
+
+      - name: Download dependencies install artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: dependencies-install-artifact
+
+      - name: Untar dependencies install artifact
+        shell: bash
+        run: tar -xf dependencies-install-artifact.tar -C /
+
+      - name: Download axlstar install artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: axlstar-install-artifact
+
+      - name: Untar axlstar install artifact
+        shell: bash
+        run: tar -xf axlstar-install-artifact.tar -C /
+
+      - name: Get date
+        id: get-date
+        shell: bash
+        run: echo "::set-output name=date::$(/bin/date -u '+%Y%m%d%H%M%S')"
+
+      - name: Get cache for ccache tool
+        uses: actions/cache@v2
+        with:
+          path: ${{env.CCACHE_DIR}}
+          key: ${{ env.CC_KEY_PREFIX }}-arcane-${{ env.CM_BUILD_TYPE }}-${{ steps.get-date.outputs.date }}-${{ github.run_number }}
+          restore-keys: ${{ env.CC_KEY_PREFIX }}-arcane-${{ env.CM_BUILD_TYPE }}-
+
+      - name: Configure
+        shell: bash
+        run: cmake -S ${{ env.ARCANE_SOURCE_DIR }}/arcane -B ${{ env.ARCANE_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ARCANE_INSTALL_DIR }} -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DArccore_DIR=${{ env.ARCCORE_INSTALL_DIR }}/lib/cmake/Arccore -DAxlstar_DIR=${{ env.AXLSTAR_INSTALL_DIR }}/share/cmake/Axlstar -DArcDependencies_DIR=${{ env.DEPENDENCIES_INSTALL_DIR }}/share/cmake/ArcDependencies -DBUILD_SHARED_LIBS=ON -DARCANE_DEFAULT_PARTITIONER=Metis -DARCANE_WANT_TOTALVIEW=ON -DARCANE_WANT_LIBXML2=ON -DARCANE_WANT_LEGACY_CONNECTIVITY=OFF -DARCANE_WANT_CHECK=OFF -DARCANE_WANT_ARCCON_EXPORT_TARGET=OFF -DCMAKE_DISABLE_FIND_PACKAGE_Papi=ON ${{ env.CM_CCACHE_OPTS }} ${{ env.CM_COMPILER_NVCC }} ${{ env.CM_COMPILER }}
+
+      - name: Build
+        shell: bash
+        run: cmake --build ${{ env.ARCANE_BUILD_DIR }} ${{ env.CM_BUILD_OPTS }}
+
+      - name: Install
+        shell: bash
+        run: cmake --install ${{ env.ARCANE_BUILD_DIR }}
+
+      - name: Tar build artifact
+        shell: bash
+        run: tar -cf arcane-build-artifact.tar ${{ env.ARCANE_BUILD_DIR }}
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: arcane-build-artifact
+          path: arcane-build-artifact.tar
+          retention-days: 1
+
+      - name: Tar install artifact
+        shell: bash
+        run: tar -cf arcane-install-artifact.tar ${{ env.ARCANE_INSTALL_DIR }}
+
+      - name: Upload install artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: arcane-install-artifact
+          path: arcane-install-artifact.tar
+          retention-days: 1
+
+
+  # arccore-test:
+  #   name: arccore-test
+  #   needs:
+  #     - arccore-install
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 30
+  #   container:
+  #     image: ghcr.io/arcaneframework/ubuntu-2004_gcc-11:latest
+  #   strategy:
+  #     fail-fast: false
+
+  #   steps:
+  #     - name: Download arccore build artifact
+  #       uses: actions/download-artifact@v2
+  #       with:
+  #         name: arccore-build-artifact
+
+  #     - name: Untar arccore build artifact
+  #       shell: bash
+  #       run: tar -xf arccore-build-artifact.tar -C /
+
+  #     - name: Test
+  #       shell: bash
+  #       run: ctest --test-dir ${{ env.ARCCORE_BUILD_DIR }} ${{ env.CT_OPTS }}
+
+  #     - name: Upload test artifact
+  #       uses: actions/upload-artifact@v2
+  #       if: failure()
+  #       with:
+  #         name: arccore-test-artifact
+  #         path: ${{ env.ARCCORE_BUILD_DIR }}/Testing
+  #         retention-days: 1
+
+  # arcane-test:
+  #   name: arcane-test
+  #   needs:
+  #     - arccore-install
+  #     - dependencies-install
+  #     - axlstar-install
+  #     - arcane-install
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 180
+  #   container:
+  #     image: ghcr.io/arcaneframework/ubuntu-2004_cuda-116_gcc-11:latest
+  #   strategy:
+  #     fail-fast: false
+
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #       with:
+  #         path: ${{ env.ARCANE_SOURCE_DIR }}
+
+  #     - name: Download arcane build artifact
+  #       uses: actions/download-artifact@v2
+  #       with:
+  #         name: arcane-build-artifact
+
+  #     - name: Untar arcane build artifact
+  #       shell: bash
+  #       run: tar -xf arcane-build-artifact.tar -C /
+
+  #     - name: Download arccore install artifact
+  #       uses: actions/download-artifact@v2
+  #       with:
+  #         name: arccore-install-artifact
+
+  #     - name: Untar arccore install artifact
+  #       shell: bash
+  #       run: tar -xf arccore-install-artifact.tar -C /
+
+  #     - name: Download axlstar install artifact
+  #       uses: actions/download-artifact@v2
+  #       with:
+  #         name: axlstar-install-artifact
+
+  #     - name: Untar axlstar install artifact
+  #       shell: bash
+  #       run: tar -xf axlstar-install-artifact.tar -C /
+
+  #     - name: Test
+  #       shell: bash
+  #       run: ctest --test-dir ${{ env.ARCANE_BUILD_DIR }} ${{ env.CT_OPTS }} -E '^hydro5_4proc_3sd_4proc$'
+
+  #     - name: Upload test artifact
+  #       uses: actions/upload-artifact@v2
+  #       if: failure()
+  #       with:
+  #         name: arcane-test-artifact
+  #         path: ${{ env.ARCANE_BUILD_DIR }}/Testing
+  #         retention-days: 1

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -166,7 +166,8 @@ createElement(const dom::Node& parent,const String& name,const String& value)
 String domutils::
 attrValue(const dom::Node& node,const String& attr_name)
 {
-  // TODO: UTILISER DIRECTEMENT LES METHODES DU DOM QUE SONT GETATTRIBUTE
+  // TODO: Utiliser directement les méthodes du DOM que sont getAttribute()
+  // mais il faut pour cela gérer les namespace.
   String str;
   if (node._null())
     return str;
@@ -177,6 +178,17 @@ attrValue(const dom::Node& node,const String& attr_name)
   if (n._null())
     return str;
   str = n.nodeValue();
+
+#if 0
+  // A activer lorsque l'implémentation via getAttribute() sera effective.
+  {
+    dom::Element element{node};
+    String str2 = element.getAttribute(attr_name);
+    if (str2!=str)
+      ARCANE_FATAL("Bad new value for attribute '{0}' new={1} current={2}",attr_name,str2,str);
+  }
+#endif
+
   return str;
 }
 

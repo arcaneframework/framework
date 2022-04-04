@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -162,7 +162,7 @@ class CaseMng
   bool isTreatWarningAsError() const override { return m_treat_warning_as_error; }
 
   void setAllowUnkownRootElelement(bool v) override { m_allow_unknown_root_element = v; }
-  bool isAllowUnkownRootElelement() const { return m_allow_unknown_root_element; }
+  bool isAllowUnkownRootElelement() const override { return m_allow_unknown_root_element; }
 
   IObservable* observable(eCaseMngEventType type) override
   {
@@ -330,7 +330,7 @@ _checkTranslateDocument()
     CaseDocumentLangTranslator translator(traceMng());
     String convert_string = translator.translate(this,tr_lang);
     {
-      ofstream ofile("convert_info.txt");
+      std::ofstream ofile("convert_info.txt");
       convert_string.writeBytes(ofile);
     }
   }

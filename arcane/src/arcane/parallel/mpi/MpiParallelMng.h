@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiParallelMng.h                                            (C) 2000-2020 */
+/* MpiParallelMng.h                                            (C) 2000-2021 */
 /*                                                                           */
 /* Implémentation des messages avec MPI.                                     */
 /*---------------------------------------------------------------------------*/
@@ -168,6 +168,7 @@ class ARCANE_MPI_EXPORT MpiParallelMng
   IParallelReplication* replication() const override;
   void setReplication(IParallelReplication* v) override;
   Ref<Parallel::IRequestList> createRequestListRef() override;
+  Ref<IParallelMngUtilsFactory> _internalUtilsFactory() const override;
 
  private:
   
@@ -191,6 +192,8 @@ class ARCANE_MPI_EXPORT MpiParallelMng
   MpiLock* m_mpi_lock;
   IParallelNonBlockingCollective* m_non_blocking_collective;
   MpiSerializeDispatcher* m_mpi_serialize_dispatcher = nullptr;
+  Ref<IParallelMngUtilsFactory> m_utils_factory;
+  bool m_use_serialize_list_v2 = false;
 
  private:
 

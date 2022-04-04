@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -123,16 +123,16 @@ private:
 
 class VoronoiFile
 {
-public:
+ public:
   static const int BUFSIZE = 10000;
-public:
-  VoronoiFile(istream* stream) : m_stream(stream) {}
+ public:
+  VoronoiFile(std::istream* stream) : m_stream(stream) {}
   const char* getNextLine();
   Real getReal();
   Integer getInteger();
   bool isEnd(){ (*m_stream) >> ws; return m_stream->eof(); }
-private:
-  istream* m_stream;
+ private:
+  std::istream* m_stream;
   char m_buf[BUFSIZE];
 };
 
@@ -255,7 +255,7 @@ _readMesh(IPrimaryMesh* mesh,const String& file_name,const String& dir_name,
 {
   ARCANE_UNUSED(dir_name);
 
-  ifstream ifile(file_name.localstr());
+  std::ifstream ifile(file_name.localstr());
   if (!ifile){
     error() << "Unable to read file '" << file_name << "'";
     return true;
@@ -288,7 +288,7 @@ _readNodesHybridGrid(IMesh* mesh,VoronoiFile& voronoi_file,Array<Real3>& node_co
 
   const char* func_name = "VoronoiMeshIOService::_readNodesHybridGrid()";
   const char* buf = voronoi_file.getNextLine();
-  istringstream iline(buf);
+  std::istringstream iline(buf);
   std::string points_str;
   std::string data_type_str;
   Integer nb_node = 0;
@@ -332,7 +332,7 @@ _readCellsHybridGrid(IMesh* mesh,VoronoiFile& voronoi_file,
 
   const char* func_name = "VoronoiMeshIOService::_readCellsHybridGrid()";
   const char* buf = voronoi_file.getNextLine();
-  istringstream iline(buf);
+  std::istringstream iline(buf);
   std::string cells_str;
   Integer nb_cell = 0;
   Integer nb_cell_node = 0;
@@ -343,7 +343,7 @@ _readCellsHybridGrid(IMesh* mesh,VoronoiFile& voronoi_file,
     throw IOException(func_name,String::format("Invalid dimensions: nb_cell={0} nb_cell_node={1}",nb_cell,nb_cell_node));
   }
 
-  ItemTypeMng * item_type_mng = ItemTypeMng::singleton();
+  ItemTypeMng * item_type_mng = mesh->itemTypeMng();
 
   mesh_dimension = 3; // will be set to two if for all types, nb_edges == nb_faces
   bool is_mesh_2d = true;

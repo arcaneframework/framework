@@ -10,5 +10,5 @@ export STDENV_CODE_NAME=Arcane
 ${BUILD_PATH}/bin/arcane_test_driver launch -arcane_opt arcane_internal
 /bin/rm ${AXL_OUTPATH}/final_axl/*.axl
 /bin/rm ${AXL_OUTPATH}/dox/*.dox
-${BUILD_PATH}/bin/axldoc --generate-final -a ${BUILD_PATH}/share/arcane_internal.xml -o ${AXL_OUTPATH}/final_axl ${AXL_OUTPATH}
+${BUILD_PATH}/bin/axldoc --generate-final -a ${BUILD_PATH}/lib/arcane_internal.xml -o ${AXL_OUTPATH}/final_axl ${AXL_OUTPATH}
 ${BUILD_PATH}/bin/axldoc -u User -a ${AXL_OUTPATH}/final_axl/final_internal.xml -o ${AXL_OUTPATH}/dox ${AXL_OUTPATH}/final_axl/*.axl

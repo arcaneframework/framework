@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshModifier.h                                             (C) 2000-2016 */
+/* IMeshModifier.h                                             (C) 2000-2022 */
 /*                                                                           */
 /* Interface de modification du maillage.                                    */
 /*---------------------------------------------------------------------------*/
@@ -20,7 +20,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -28,8 +29,6 @@ ARCANE_BEGIN_NAMESPACE
 class IMesh;
 class IExtraGhostCellsBuilder;
 class IExtraGhostParticlesBuilder;
-
-//! AMR
 class IAMRTransportFunctor;
 
 /*---------------------------------------------------------------------------*/
@@ -243,20 +242,17 @@ class IMeshModifier
                                           Array<Int64>& ghost_cell_to_coarsen,
                                           bool remove_old_ghost) =0;
 
-  /*!
-   * \brief ajout du algorithme d'ajout de mailles fantômes "extraordinaires"
-   *
-   * Cette opération est collective.
-   */
+  //! ajout du algorithme d'ajout de mailles fantômes "extraordinaires".
   virtual void addExtraGhostCellsBuilder(IExtraGhostCellsBuilder* builder) =0;
 
-  /*!
-   * \brief ajout du algorithme d'ajout de particules fantômes "extraordinaires"
-   *
-   * Cette opération est collective.
-   */
+  //! Supprime l'association à l'instance \a builder.
+  virtual void removeExtraGhostCellsBuilder(IExtraGhostCellsBuilder* builder) =0;
+
+  //! Ajout du algorithme d'ajout de particules fantômes "extraordinaires"
   virtual void addExtraGhostParticlesBuilder(IExtraGhostParticlesBuilder* builder) =0;
 
+  //! Supprime l'association à l'instance \a builder.
+  virtual void removeExtraGhostParticlesBuilder(IExtraGhostParticlesBuilder* builder) =0;
   
  public:
 
@@ -267,7 +263,7 @@ class IMeshModifier
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

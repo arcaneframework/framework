@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -21,6 +21,7 @@
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/Array.h"
+#include "arcane/utils/internal/MemoryRessourceMng.h"
 
 #include <chrono>
 
@@ -89,6 +90,8 @@ namespace platform
   IProcessorAffinityService* global_processor_affinity_service = nullptr;
   IMemoryAllocator* global_accelerator_host_memory_allocator = nullptr;
   IDynamicLibraryLoader* global_dynamic_library_loader = nullptr;
+  MemoryRessourceMng global_default_data_memory_ressource_mng;
+  IMemoryRessourceMng* global_data_memory_ressource_mng = nullptr;
   bool global_has_color_console = false;
 }
 
@@ -212,16 +215,36 @@ setAcceleratorHostMemoryAllocator(IMemoryAllocator* a)
   return old;
 }
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ARCANE_UTILS_EXPORT IMemoryAllocator* platform::
 getDefaultDataAllocator()
 {
-  IMemoryAllocator* a = platform::getAcceleratorHostMemoryAllocator();
+  return getDataMemoryRessourceMng()->getAllocator(eMemoryRessource::UnifiedMemory);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ARCANE_UTILS_EXPORT IMemoryRessourceMng* platform::
+setDataMemoryRessourceMng(IMemoryRessourceMng* mng)
+{
+  ARCANE_CHECK_POINTER(mng);
+  IMemoryRessourceMng* old = global_data_memory_ressource_mng;
+  global_data_memory_ressource_mng = mng;
+  return old;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ARCANE_UTILS_EXPORT IMemoryRessourceMng* platform::
+getDataMemoryRessourceMng()
+{
+  IMemoryRessourceMng* a = global_data_memory_ressource_mng;
   if (!a)
-    a = AlignedMemoryAllocator::Simd();
+    return &global_default_data_memory_ressource_mng;
   return a;
 }
 
@@ -420,6 +443,28 @@ getLoadedSharedLibraryFullPath(const String& dll_name)
 //#error "platform::getSymbolFullPath() not implemented for this platform"
 #endif
   return full_path;
+}
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace
+{
+void (*global_garbage_collector_delegate)() = nullptr;
+}
+
+extern "C" ARCANE_UTILS_EXPORT void
+_ArcaneSetCallGarbageCollectorDelegate(void(*f)())
+{
+  global_garbage_collector_delegate = f;
+}
+
+extern "C++" void platform::
+callDotNETGarbageCollector()
+{
+  if (global_garbage_collector_delegate)
+    (*global_garbage_collector_delegate)();
 }
 
 /*---------------------------------------------------------------------------*/

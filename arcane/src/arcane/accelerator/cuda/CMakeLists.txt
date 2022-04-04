@@ -5,7 +5,7 @@
 set(ARCANE_SOURCES
   CudaAccelerator.cc
   CudaAccelerator.h
-  CudaReduceImpl.h
+#  CudaReduceImpl.h
   )
 
 arcane_find_package(CUDAToolkit REQUIRED)
@@ -18,6 +18,8 @@ target_compile_options(arcane_cuda_compile_flags INTERFACE
   "$<$<COMPILE_LANGUAGE:CUDA>:--extended-lambda>"
   "$<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>"
   "$<$<COMPILE_LANGUAGE:CUDA>:-std=c++17>"
+  "$<$<COMPILE_LANGUAGE:CUDA>:-lineinfo>"
+  "$<$<COMPILE_LANGUAGE:CUDA>:-g>"
   "$<$<COMPILE_LANGUAGE:CUDA>:-Werror>"
   "$<$<COMPILE_LANGUAGE:CUDA>:cross-execution-space-call>"
   )
@@ -43,7 +45,7 @@ target_link_libraries(arcane_accelerator_cuda PUBLIC
 # de cette bibliothèque
 add_library(arcane_accelerator_cuda_impl STATIC
   Reduce.cu
-  CudaReduceImpl.h
+#  CudaReduceImpl.h
   )
 set_target_properties(arcane_accelerator_cuda_impl PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 set_target_properties(arcane_accelerator_cuda_impl PROPERTIES LINKER_LANGUAGE CUDA)

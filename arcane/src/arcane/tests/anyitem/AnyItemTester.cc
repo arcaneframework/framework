@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -198,10 +198,10 @@ _test1()
   value = 0;
   {
     Arcane::Timer::Sentry t(&m_timer);
-    ENUMERATE_ITEM(iitem, allFaces()) {
+    ENUMERATE_FACE(iitem, allFaces()) {
       value += m_face_variable[iitem];
     }
-    ENUMERATE_ITEM(iitem, allCells()) {
+    ENUMERATE_CELL(iitem, allCells()) {
       value += m_cell_variable[iitem];
     }
   }

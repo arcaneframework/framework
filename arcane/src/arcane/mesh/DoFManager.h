@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -40,10 +40,10 @@ class DoFManager
 
  public:
 
-  mesh::DoFFamily & family(const Arcane::String& family_name)
+  mesh::DoFFamily & family(const Arcane::String& family_name,bool register_modifier_if_created=false)
   {
     bool create_if_needed = true;
-    Arcane::IItemFamily* item_family = m_mesh->findItemFamily(Arcane::IK_DoF,family_name,create_if_needed);
+    Arcane::IItemFamily* item_family = m_mesh->findItemFamily(Arcane::IK_DoF,family_name,create_if_needed,register_modifier_if_created);
     mesh::DoFFamily* dof_family = static_cast<mesh::DoFFamily*>(item_family);
     return *dof_family;
   }

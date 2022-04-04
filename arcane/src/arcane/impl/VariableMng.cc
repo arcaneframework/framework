@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -193,8 +193,8 @@ class VariableMng
   void addVariable(IVariable* var) override;
   void removeVariableRef(VariableRef*) override;
   void removeVariable(IVariable* var) override;
-  void dumpList(ostream&,IModule*) override;
-  void dumpList(ostream&) override;
+  void dumpList(std::ostream&,IModule*) override;
+  void dumpList(std::ostream&) override;
   void initializeVariables(bool) override;
   String generateTemporaryVariableName() override;
   void variables(VariableRefCollection,IModule*) override;
@@ -215,7 +215,7 @@ class VariableMng
   IVariable* findMeshVariable(IMesh* mesh,const String& name) override;
   IVariable* findVariableFullyQualified(const String& name) override;
 
-  void dumpStats(ostream& ostr,bool is_verbose) override;
+  void dumpStats(std::ostream& ostr,bool is_verbose) override;
   void dumpStatsJSON(JSONWriter& writer) override;
   IVariableUtilities* utilities() const override { return m_utilities; }
 
@@ -288,7 +288,7 @@ class VariableMng
  private:
 
   //! Ecrit la valeur de la variable \a v sur le flot \a o
-  void _dumpVariable(const VariableRef& v,ostream& o);
+  void _dumpVariable(const VariableRef& v,std::ostream& o);
   void _writeVariables(IDataWriter* writer,const VariableCollection& vars,bool use_hash);
 
   const char* _msgClassName() const { return "Variable"; }
@@ -760,7 +760,7 @@ generateTemporaryVariableName()
 /*---------------------------------------------------------------------------*/
 
 void VariableMng::
-dumpList(ostream& o,IModule* c)
+dumpList(std::ostream& o,IModule* c)
 {
   o << "  ** VariableMng::Variable list\n";
   for( auto i : m_full_name_variable_map ){
@@ -776,7 +776,7 @@ dumpList(ostream& o,IModule* c)
 /*---------------------------------------------------------------------------*/
 
 void VariableMng::
-dumpList(ostream& o)
+dumpList(std::ostream& o)
 {
   o << "  ** VariableMng::Variable list\n";
   for( auto i : m_full_name_variable_map ){
@@ -797,7 +797,7 @@ dumpList(ostream& o)
 /*---------------------------------------------------------------------------*/
 
 void VariableMng::
-_dumpVariable(const VariableRef& var,ostream& o)
+_dumpVariable(const VariableRef& var,std::ostream& o)
 {
   o << "  ** Variable: " << &var << " : ";
   o.width(15);
@@ -1568,9 +1568,9 @@ _checkHashFunction(const VariableMetaDataList& vmd_list)
               << " ref=" << reference_hash
               << " current=" << hash_str;
       Ref<ISerializedData> sdata(data->createSerializedDataRef(false));
-      Span<const Byte> buf(sdata->bytes());
+      Span<const Byte> buf(sdata->constBytes());
       String fname = listing_dir.file(String::format("dump-{0}-sid_{1}",var->fullName(),sid));
-      ofstream ofile(fname.localstr());
+      std::ofstream ofile(fname.localstr());
       ofile.write(reinterpret_cast<const char*>(buf.data()),buf.size());
     }
   }
@@ -1758,7 +1758,7 @@ class VariableSizeSorter
 };
 
 void VariableMng::
-dumpStats(ostream& ostr,bool is_verbose)
+dumpStats(std::ostream& ostr,bool is_verbose)
 {
   ostr.precision(20);
   ostr << "\nMemory statistics for variables:\n";
@@ -1841,8 +1841,6 @@ dumpStats(ostream& ostr,bool is_verbose)
     case IK_Edge:
     case IK_Face:
     case IK_Cell:
-    case IK_DualNode:
-    case IK_Link:
     case IK_DoF:
       mem_used[ik] += mem;
       ++nb_var[ik];

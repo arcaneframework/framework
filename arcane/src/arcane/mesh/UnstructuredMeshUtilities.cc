@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -43,10 +43,14 @@
 #include "arcane/IMeshChecker.h"
 
 #include "arcane/mesh/UnstructuredMeshUtilities.h"
+#include "arcane/IItemFamilyNetwork.h"
+#include "arcane/ConnectivityItemVector.h"
 #include "arcane/mesh/NewItemOwnerBuilder.h"
 #include "arcane/mesh/ParticleFamily.h"
+#include "arcane/mesh/GraphDoFs.h"
 #include "arcane/mesh/BasicItemPairGroupComputeFunctor.h"
 #include "arcane/mesh/MeshNodeMerger.h"
+#include "arcane/mesh/ConnectivityNewWithDependenciesTypes.h"
 
 #include <algorithm>
 
@@ -166,6 +170,88 @@ changeOwnersFromCells()
     ENUMERATE_PARTICLE(i_particle,family->allItems()){
       Particle particle = *i_particle ;
       particles_owner[particle] = cells_owner[particle->cell()] ;
+    }
+  }
+
+  // GraphOnDoF
+  if(m_mesh->itemFamilyNetwork())
+  {
+    // Dof with Mesh Item connectivity
+    for( IItemFamily* family : m_mesh->itemFamilies() )
+    {
+      if (family->itemKind()!=IK_DoF || family->name()==mesh::GraphDoFs::linkFamilyName())
+        continue;
+      VariableItemInt32& dofs_new_owner(family->itemsNewOwner());
+      std::array<Arcane::eItemKind,5> dualitem_kinds = {IK_Cell,IK_Face,IK_Edge,IK_Node,IK_Particle} ;
+      for(auto dualitem_kind : dualitem_kinds)
+      {
+        IItemFamily* dualitem_family = dualitem_kind==IK_Particle? m_mesh->findItemFamily(dualitem_kind,mesh::ParticleFamily::defaultFamilyName(), false):
+                                                                   m_mesh->itemFamily(dualitem_kind) ;
+        if(dualitem_family)
+        {
+
+          VariableItemInt32& dualitems_new_owner(dualitem_family->itemsNewOwner());
+          auto connectivity_name = mesh::connectivityName(family,dualitem_family) ;
+          bool is_dof2dual = true ;
+          auto connectivity = m_mesh->itemFamilyNetwork()->getConnectivity(family,dualitem_family,connectivity_name) ;
+          if(!connectivity)
+          {
+            connectivity = m_mesh->itemFamilyNetwork()->getConnectivity(dualitem_family,family,connectivity_name) ;
+            is_dof2dual = false ;
+          }
+
+          if(connectivity)
+          {
+            ConnectivityItemVector accessor(connectivity);
+            if(is_dof2dual)
+            {
+              ENUMERATE_ITEM(item, family->allItems().own())
+              {
+                auto connected_items = accessor.connectedItems(ItemLocalId(item)) ;
+                if(connected_items.size()>0)
+                {
+                  dofs_new_owner[*item] = dualitems_new_owner[connected_items[0]] ;
+                }
+              }
+            }
+            else
+            {
+              ENUMERATE_ITEM(item, dualitem_family->allItems())
+              {
+                ENUMERATE_ITEM(connected_item,accessor.connectedItems(ItemLocalId(item)))
+                {
+                  dofs_new_owner[*connected_item] = dualitems_new_owner[*item] ;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    // Dof with DoF connectivity
+    IItemFamily* links_family = m_mesh->findItemFamily(IK_DoF, mesh::GraphDoFs::linkFamilyName(), false);
+    if(links_family)
+    {
+      VariableItemInt32& links_new_owner(links_family->itemsNewOwner());
+      IItemFamily* dualnodes_family = m_mesh->findItemFamily(IK_DoF, mesh::GraphDoFs::dualNodeFamilyName(), false);
+      if(dualnodes_family)
+      {
+        VariableItemInt32& dualnodes_new_owner(dualnodes_family->itemsNewOwner());
+        auto connectivity_name = mesh::connectivityName(links_family,dualnodes_family) ;
+        auto connectivity = m_mesh->itemFamilyNetwork()->getConnectivity(links_family,dualnodes_family,connectivity_name) ;
+        if(connectivity)
+        {
+          ConnectivityItemVector accessor(connectivity);
+          ENUMERATE_ITEM(item, links_family->allItems().own())
+          {
+            auto connected_items = accessor.connectedItems(ItemLocalId(item)) ;
+            if(connected_items.size()>0)
+            {
+              links_new_owner[*item] = dualnodes_new_owner[connected_items[0]] ;
+            }
+          }
+        }
+      }
     }
   }
 }
@@ -651,13 +737,14 @@ writeToFile(const String& file_name,const String& service_name)
 /*---------------------------------------------------------------------------*/
 
 void UnstructuredMeshUtilities::
-partitionAndExchangeMeshWithReplication(IMeshPartitioner* partitioner,bool initial_partition)
+partitionAndExchangeMeshWithReplication(IMeshPartitionerBase* partitioner,
+                                        bool initial_partition)
 {
-  IMesh* mesh = partitioner->mesh();
+  IPrimaryMesh* primary_mesh = partitioner->primaryMesh();
+  IMesh* mesh = primary_mesh;
   if (mesh!=this->m_mesh)
     throw ArgumentException(A_FUNCINFO,"partitioner->mesh() != this->m_mesh");
 
-  IPrimaryMesh* primary_mesh = mesh->toPrimaryMesh();
   IParallelMng* pm = mesh->parallelMng();
   ITimeStats* ts = pm->timeStats();
   IParallelReplication* pr = pm->replication();

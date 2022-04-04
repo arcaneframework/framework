@@ -1,4 +1,4 @@
-// WARNING: This file is generated. Do not edit.
+﻿// WARNING: This file is generated. Do not edit.
 
 
 
@@ -22,6 +22,16 @@ class SimdTestBinarySub
   }
 
   static SimdRealType apply(Real a,SimdRealType b)
+  {
+    return (a - b);
+  }
+};
+
+template<typename RealNType>
+class SimdTestBinaryRealNSub
+{
+ public:
+  static RealNType apply(RealNType a,RealNType b)
   {
     return (a - b);
   }
@@ -53,6 +63,16 @@ class SimdTestBinaryAdd
   }
 };
 
+template<typename RealNType>
+class SimdTestBinaryRealNAdd
+{
+ public:
+  static RealNType apply(RealNType a,RealNType b)
+  {
+    return (a + b);
+  }
+};
+
 
 template<typename SimdRealType>
 class SimdTestBinaryMul
@@ -74,6 +94,16 @@ class SimdTestBinaryMul
   }
 
   static SimdRealType apply(Real a,SimdRealType b)
+  {
+    return (a * b);
+  }
+};
+
+template<typename RealNType>
+class SimdTestBinaryRealNMul
+{
+ public:
+  static RealNType apply(RealNType a,RealNType b)
   {
     return (a * b);
   }
@@ -105,6 +135,16 @@ class SimdTestBinaryDiv
   }
 };
 
+template<typename RealNType>
+class SimdTestBinaryRealNDiv
+{
+ public:
+  static RealNType apply(RealNType a,RealNType b)
+  {
+    return (a / b);
+  }
+};
+
 
 template<typename SimdRealType>
 class SimdTestBinaryMin
@@ -131,6 +171,16 @@ class SimdTestBinaryMin
   }
 };
 
+template<typename RealNType>
+class SimdTestBinaryRealNMin
+{
+ public:
+  static RealNType apply(RealNType a,RealNType b)
+  {
+    return (math::min(a,b));
+  }
+};
+
 
 template<typename SimdRealType>
 class SimdTestBinaryMax
@@ -152,6 +202,16 @@ class SimdTestBinaryMax
   }
 
   static SimdRealType apply(Real a,SimdRealType b)
+  {
+    return (math::max(a,b));
+  }
+};
+
+template<typename RealNType>
+class SimdTestBinaryRealNMax
+{
+ public:
+  static RealNType apply(RealNType a,RealNType b)
   {
     return (math::max(a,b));
   }

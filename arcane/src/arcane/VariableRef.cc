@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableRef.cc                                              (C) 2000-2016 */
+/* VariableRef.cc                                              (C) 2000-2022 */
 /*                                                                           */
 /* Référence à une variable.                                                 */
 /*---------------------------------------------------------------------------*/
@@ -30,7 +30,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -380,11 +381,6 @@ referenceProperty() const
 void VariableRef::
 updateFromInternal()
 {
-#ifdef ARCANE_TRACE
-  m_has_trace = _variable()->property() & IVariable::PHasTrace;
-  if (m_has_trace)
-    cout << "** UPDATE FROM INTERNAL " << name() << ' ' << m_has_trace << '\n';
-#endif
 }
 
 /*---------------------------------------------------------------------------*/
@@ -662,7 +658,7 @@ _RemoveVariableChangedDelegate(VariableRef::UpdateNotifyFunctorList* functor_lis
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

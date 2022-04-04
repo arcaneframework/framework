@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
+#include "arcane/mesh/NodeFamily.h"
 
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/PlatformUtils.h"
@@ -23,8 +23,6 @@
 #include "arcane/IMesh.h"
 #include "arcane/MeshUtils.h"
 
-#include "arcane/mesh/NodeFamily.h"
-
 #include "arcane/Connectivity.h"
 #include "arcane/ConnectivityItemVector.h"
 #include "arcane/mesh/IncrementalItemConnectivity.h"
@@ -33,11 +31,13 @@
 #include "arcane/mesh/AbstractItemFamilyTopologyModifier.h"
 #include "arcane/mesh/NewWithLegacyConnectivity.h"
 
+#include "arcane/mesh/FaceFamily.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -102,23 +102,25 @@ build()
 {
   ItemFamily::build();
 
-  ItemTypeMng* itm = ItemTypeMng::singleton();
+  ItemTypeMng* itm = m_mesh->itemTypeMng();
   m_node_type = itm->typeFromId(IT_Vertex);
   if (m_parent_family)
     m_nodes_coords = nullptr;
   else
     m_nodes_coords = new VariableNodeReal3(VariableBuildInfo(mesh(),"NodeCoord"));
 
-  if (m_mesh->itemFamilyNetwork()) // temporary to fill legacy, even with family dependencies
+  m_face_family = ARCANE_CHECK_POINTER(dynamic_cast<FaceFamily*>(mesh()->faceFamily()));
+
+  if (m_mesh->useMeshItemFamilyDependencies()) // temporary to fill legacy, even with family dependencies
   {
     m_edge_connectivity = dynamic_cast<NewWithLegacyConnectivityType<NodeFamily,EdgeFamily>::type*>(m_mesh->itemFamilyNetwork()->getConnectivity(this,mesh()->edgeFamily(),connectivityName(this,mesh()->edgeFamily())));
-    m_face_connectivity = dynamic_cast<NewWithLegacyConnectivityType<NodeFamily,FaceFamily>::type*>(m_mesh->itemFamilyNetwork()->getConnectivity(this,mesh()->faceFamily(),connectivityName(this,mesh()->faceFamily())));
+    m_face_connectivity = dynamic_cast<NewWithLegacyConnectivityType<NodeFamily,FaceFamily>::type*>(m_mesh->itemFamilyNetwork()->getConnectivity(this,m_face_family,connectivityName(this,mesh()->faceFamily())));
     m_cell_connectivity = dynamic_cast<NewWithLegacyConnectivityType<NodeFamily,CellFamily>::type*>(m_mesh->itemFamilyNetwork()->getConnectivity(this,mesh()->cellFamily(),connectivityName(this,mesh()->cellFamily())));
   }
   else
   {
     m_edge_connectivity = new EdgeConnectivity(this,mesh()->edgeFamily(),"NodeEdge");
-    m_face_connectivity = new FaceConnectivity(this,mesh()->faceFamily(),"NodeFace");
+    m_face_connectivity = new FaceConnectivity(this,m_face_family,"NodeFace");
     m_cell_connectivity = new CellConnectivity(this,mesh()->cellFamily(),"NodeCell");
   }
 
@@ -135,7 +137,7 @@ build()
 void NodeFamily::
 preAllocate(Integer nb_item)
 {
-  Integer base_mem = m_edge_prealloc+m_face_prealloc+m_cell_prealloc+ItemSharedInfo::COMMON_BASE_MEMORY;
+  Integer base_mem = ItemSharedInfo::COMMON_BASE_MEMORY;
   Integer mem = base_mem * (nb_item+1);
   info() << "Nodefamily: reserve=" << mem;
   _reserveInfosMemory(mem);
@@ -402,13 +404,6 @@ sortInternalReferences()
   // la reproductibilité.
   ItemCompare2 ic_cell;
   ic_cell.m_items = mesh()->cellFamily()->itemsInternal();
-  if (m_cell_connectivity->legacyConnectivity()){
-    ENUMERATE_ITEM(iitem,allItems()){
-      ItemInternal* it = (*iitem).internal();
-      Int32* ptr = it->_cellsPtr();
-      std::sort(ptr,ptr+it->nbCell(),ic_cell);
-    }
-  }
   auto new_connectivity = m_cell_connectivity->trueCustomConnectivity();
   if (new_connectivity){
     ENUMERATE_ITEM(iitem,allItems()){
@@ -422,8 +417,20 @@ sortInternalReferences()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+void NodeFamily::
+notifyItemsUniqueIdChanged()
+{
+  ItemFamily::notifyItemsUniqueIdChanged();
+  // Si les uniqueId() des noeuds changent, cela peut avoir une influence sur
+  // l'orientation des faces. Il faut donc renuméroter ces dernières
+  if (m_face_family)
+    m_face_family->reorientFacesIfNeeded();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

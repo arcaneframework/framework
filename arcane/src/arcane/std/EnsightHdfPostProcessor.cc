@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -398,7 +398,7 @@ void EnsightHdfDataWriter::
 endWrite()
 {
   info() << "ENSIGHT HDF END WRITE";
-  ofstream ofile("a_hdf5");
+  std::ofstream ofile("a_hdf5");
   ofile << "SPECIAL HDF5 CASEFILE\n";
   ofile.width(10);
   Integer nb_time = m_times.size();
@@ -518,7 +518,7 @@ _saveVariableOnGroup(IVariable* var,IData* data,const ItemGroup& group,
   if (sdata->baseDataType()!=DT_Real)
     ARCANE_FATAL("Bad datatype (only DT_Real is allowed)");
 
-  Span<const Byte> sbuffer = sdata->bytes();
+  Span<const Byte> sbuffer = sdata->constBytes();
   const Real* ptr = reinterpret_cast<const Real*>(sbuffer.data());
   Span<const Real> true_values(ptr,sdata->nbBaseElement());
   RealUniqueArray values;

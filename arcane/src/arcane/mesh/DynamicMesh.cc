@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMesh.cc                                              (C) 2000-2020 */
+/* DynamicMesh.cc                                              (C) 2000-2021 */
 /*                                                                           */
 /* Classe de gestion d'un maillage non structuré évolutif.                   */
 /*---------------------------------------------------------------------------*/
@@ -62,6 +62,7 @@
 #include "arcane/mesh/DynamicMeshIncrementalBuilder.h"
 #include "arcane/mesh/DynamicMeshChecker.h"
 #include "arcane/mesh/GhostLayerMng.h"
+#include "arcane/mesh/MeshUniqueIdMng.h"
 #include "arcane/mesh/ItemGroupDynamicMeshObserver.h"
 #include "arcane/mesh/ParticleFamily.h"
 #include "arcane/mesh/MeshExchange.h"
@@ -179,11 +180,12 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh, bo
 , m_tied_interface_need_prepare_dump(true)
 , m_partition_constraint_mng(nullptr)
 , m_ghost_layer_mng(new GhostLayerMng(m_parallel_mng->traceMng()))
+, m_mesh_unique_id_mng(new MeshUniqueIdMng(m_parallel_mng->traceMng()))
 , m_mesh_exchange_mng(new MeshExchangeMng(this))
 , m_mesh_compact_mng(new MeshCompactMng(this))
-, m_connectivity_policy(InternalConnectivityPolicy::Legacy)
+, m_connectivity_policy(InternalConnectivityPolicy::NewOnly)
 , m_mesh_part_info(makeMeshPartInfoFromParallelMng(m_parallel_mng))
-, m_item_family_network(nullptr)
+, m_item_type_mng(ItemTypeMng::_singleton())
 {
   m_node_family = new NodeFamily(this,"Node");
   m_edge_family = new EdgeFamily(this,"Edge");
@@ -199,44 +201,56 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh, bo
   m_properties->setBool("compact",true);
   m_properties->setBool("dump",true);
   m_properties->setBool("display-stats",true);
+  m_properties->setInt32("mesh-version",1);
 
-#ifndef NO_USER_WARNING
-#warning "(HP) Placement ?"
-#endif /* NO_USER_WARNING */
   m_item_internal_list.mesh = this;
 
   info() << "Is AMR Activated? = " << m_is_amr_activated;
-//  if(m_is_amr_activated)
-//    m_mesh_refinement = new MeshRefinement(this);
 
-  _setConnectivityPolicy();
+  _printConnectivityPolicy();
 
   // Adding the family dependencies if asked
   if (_connectivityPolicy() == InternalConnectivityPolicy::NewWithDependenciesAndLegacy && !is_submesh && !m_is_amr_activated) {
+    m_use_mesh_item_family_dependencies = true ;
+    m_item_family_network = new ItemFamilyNetwork(traceMng());
+    _addDependency(m_cell_family,m_node_family);
+    _addDependency(m_cell_family,m_face_family);
+    _addDependency(m_cell_family,m_edge_family);
+    _addDependency(m_face_family,m_node_family);
+    _addDependency(m_edge_family,m_node_family);
+    _addRelation(m_face_family,m_edge_family);// Not seen as a dependency in DynamicMesh : for example not possible to use replaceConnectedItem for Face to Edge...
+    _addRelation(m_face_family,m_face_family);
+    _addRelation(m_face_family,m_cell_family);
+    _addRelation(m_edge_family,m_cell_family);
+    _addRelation(m_edge_family,m_face_family);
+    _addRelation(m_node_family,m_cell_family);
+    _addRelation(m_node_family,m_face_family);
+    _addRelation(m_node_family,m_edge_family);
+    // The relation concerning edge family are only added when the dimension is known since they change with dimension
+    // cf. 3D Cell <-> Faces <-> Edges <-> Nodes
+    //     2D Cell <-> Faces <-> Nodes
+    //             <-> Edges <-> Nodes
+    //     1D No edge...
+    m_family_modifiers.add(m_cell_family);
+    m_family_modifiers.add(m_face_family);
+    m_family_modifiers.add(m_node_family);
+    m_family_modifiers.add(m_edge_family);
+  }
+
+  {
+    String s = platform::getEnvironmentVariable("ARCANE_GRAPH_CONNECTIVITY_POLICY");
+    if (s=="1"){
       m_item_family_network = new ItemFamilyNetwork(traceMng());
-      _addDependency(m_cell_family,m_node_family);
-      _addDependency(m_cell_family,m_face_family);
-      _addDependency(m_cell_family,m_edge_family);
-      _addDependency(m_face_family,m_node_family);
-      _addDependency(m_edge_family,m_node_family);
-      _addRelation(m_face_family,m_edge_family);// Not seen as a dependency in DynamicMesh : for example not possible to use replaceConnectedItem for Face to Edge...
-      _addRelation(m_face_family,m_face_family);
-      _addRelation(m_face_family,m_cell_family);
-      _addRelation(m_edge_family,m_cell_family);
-      _addRelation(m_edge_family,m_face_family);
-      _addRelation(m_node_family,m_cell_family);
-      _addRelation(m_node_family,m_face_family);
-      _addRelation(m_node_family,m_edge_family);
-      // The relation concerning edge family are only added when the dimension is known since they change with dimension
-      // cf. 3D Cell <-> Faces <-> Edges <-> Nodes
-      //     2D Cell <-> Faces <-> Nodes
-      //             <-> Edges <-> Nodes
-      //     1D No edge...
+      info()<<"Graph connectivity is activated";
       m_family_modifiers.add(m_cell_family);
       m_family_modifiers.add(m_face_family);
       m_family_modifiers.add(m_node_family);
       m_family_modifiers.add(m_edge_family);
+    }
   }
+
+  m_extra_ghost_cells_builder = new ExtraGhostCellsBuilder(this);
+  m_extra_ghost_particles_builder = new ExtraGhostParticlesBuilder(this);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -245,10 +259,18 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh, bo
 DynamicMesh::
 ~DynamicMesh()
 {
+  // Il serait peut-être préférable de lancer une exception mais dans un
+  // destructeur ce n'est pas forcément conseillé
+  if (m_extra_ghost_cells_builder->hasBuilder())
+    info() << "WARNING: pending ExtraGhostCellsBuilder reference";
+  if (m_extra_ghost_particles_builder->hasBuilder())
+    info() << "WARNING: pending ExtraGhostParticlesBuilder reference";
+
   delete m_mesh_compact_mng;
   delete m_mesh_exchange_mng;
   delete m_extra_ghost_cells_builder;
   delete m_extra_ghost_particles_builder;
+  delete m_mesh_unique_id_mng;
   delete m_ghost_layer_mng;
   delete m_tied_interface_mng;
   delete m_partition_constraint_mng;
@@ -630,6 +652,27 @@ initializeVariables(const XmlNode& init_node)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// NOTE: a priori cette méthode ne fonctionne s'il existe des variables
+// partielles car les groupes sur lesquelles elles reposent vont être détruit
+// (A vérifier)
+
+void DynamicMesh::
+deallocate()
+{
+  if (!m_is_allocated)
+    ARCANE_FATAL("mesh is not allocated");
+
+  clearItems();
+  destroyGroups();
+  m_mesh_builder->resetAfterDeallocate();
+
+  m_is_allocated = false;
+  m_mesh_dimension = (-1);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void DynamicMesh::
 allocateCells(Integer mesh_nb_cell,Int64ConstArrayView cells_infos,bool one_alloc)
 {
@@ -658,6 +701,8 @@ void DynamicMesh::
 endAllocate()
 {
   Trace::Setter mci(traceMng(),_className());
+  if (m_is_allocated)
+    ARCANE_FATAL("endAllocate() has already been called");
   _checkDimension();    // HP: add control if endAllocate is called
   _checkConnectivity(); // without any cell allocation
 
@@ -736,7 +781,7 @@ _allocateCells(Integer mesh_nb_cell,
   _checkDimension();
   _checkConnectivity();
   Int32 rank = meshRank();
-  if (m_item_family_network)
+  if (m_use_mesh_item_family_dependencies)
     m_mesh_builder->addCells3(mesh_nb_cell,cells_infos,rank,cells,allow_build_face);
   else
     m_mesh_builder->addCells(mesh_nb_cell,cells_infos,rank,cells,allow_build_face);
@@ -781,7 +826,9 @@ _addCells(ISerializer* buffer,Int32Array* cells_local_id)
   Trace::Setter mci(traceMng(),_className());
   _checkDimension();
   _checkConnectivity();
-  if (!itemFamilyNetwork() || !IItemFamilyNetwork::plug_serializer) {
+  if (!itemFamilyNetwork() ||
+      !(itemFamilyNetwork() && itemFamilyNetwork()->isActivated()) ||
+      !IItemFamilyNetwork::plug_serializer) {
     buffer->setMode(ISerializer::ModeGet);
     ScopedPtrT<IItemFamilySerializer> cell_serializer(m_cell_family->policyMng()->createSerializer());
     cell_serializer->deserializeItems(buffer,cells_local_id);
@@ -800,7 +847,9 @@ serializeCells(ISerializer* buffer,Int32ConstArrayView cells_local_id)
   Trace::Setter mci(traceMng(),_className());
   _checkDimension();
   _checkConnectivity();
-  if (!itemFamilyNetwork() || !IItemFamilyNetwork::plug_serializer) {
+  if ( !itemFamilyNetwork() ||
+       !(itemFamilyNetwork() && itemFamilyNetwork()->isActivated()) ||
+       !IItemFamilyNetwork::plug_serializer) {
     ScopedPtrT<IItemFamilySerializer> cell_serializer(m_cell_family->policyMng()->createSerializer());
     buffer->setMode(ISerializer::ModeReserve);
     cell_serializer->serializeItems(buffer,cells_local_id);
@@ -820,7 +869,8 @@ void DynamicMesh::
 _serializeItems(ISerializer* buffer,Int32ConstArrayView item_local_ids, IItemFamily* item_family)
 {
   // 1-Get item lids for family and downard dependencies.
-  // Rk downard relations are not taken here => automatically added in addItems(ItemData) : this will change. Todo add relations when addItems has been updated
+  // Rk downard relations are not taken here => automatically added in addItems(ItemData) :
+  // this will change. Todo add relations when addItems has been updated
   using FamilyLidMap = std::map<String, Int32UniqueArray>;
   FamilyLidMap serialized_items;
   serialized_items[item_family->name()] = item_local_ids;
@@ -914,7 +964,7 @@ addFaces(Integer nb_face,Int64ConstArrayView face_infos,Int32ArrayView faces)
   _checkDimension();
   _checkConnectivity();
   Int32 rank = meshRank();
-  if (m_item_family_network)
+  if (m_use_mesh_item_family_dependencies)
     m_mesh_builder->addFaces3(nb_face,face_infos,rank,faces);
   else
     m_mesh_builder->addFaces(nb_face,face_infos,rank,faces);
@@ -929,7 +979,7 @@ addEdges(Integer nb_edge,Int64ConstArrayView edge_infos,Int32ArrayView edges)
   _checkDimension();
   _checkConnectivity();
   Int32 rank = meshRank();
-  if (m_item_family_network)
+  if (m_use_mesh_item_family_dependencies)
     m_mesh_builder->addEdges3(nb_edge,edge_infos,rank,edges);
   else
     m_mesh_builder->addEdges(nb_edge,edge_infos,rank,edges);
@@ -944,7 +994,7 @@ addNodes(Int64ConstArrayView nodes_uid,Int32ArrayView nodes)
   _checkDimension();
   _checkConnectivity();
   Int32 rank = meshRank();
-  if (m_item_family_network)
+  if (m_use_mesh_item_family_dependencies)
     m_mesh_builder->addNodes2(nodes_uid,rank,nodes);
   else
     m_mesh_builder->addNodes(nodes_uid,rank,nodes);
@@ -970,12 +1020,13 @@ removeCells(Int32ConstArrayView cells_local_id,bool update_graph)
 {
   ARCANE_UNUSED(update_graph);
   Trace::Setter mci(traceMng(),_className());
-  if (m_item_family_network)
+  if (m_use_mesh_item_family_dependencies)
     removeItems(m_cell_family,cells_local_id);
   else
     m_cell_family->removeItems(cells_local_id);  
 }
 
+/*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void DynamicMesh::
@@ -983,8 +1034,10 @@ removeItems(IItemFamily* item_family, Int32ConstArrayView cells_local_id)
 {
   ARCANE_UNUSED(item_family);
   ARCANE_ASSERT((itemFamilyNetwork()),("Cannot call DynamicMesh::removeItems if no ItemFamilyNetwork available"))
+
   if (cells_local_id.empty())
     return;
+
   // Create item info (to remove items)
   ItemDataList item_data_list;
   ItemData& cell_data = item_data_list.itemData(Integer(m_cell_family->itemKind()),
@@ -992,11 +1045,13 @@ removeItems(IItemFamily* item_family, Int32ConstArrayView cells_local_id)
                                                 m_cell_family,(IItemFamilyModifier*)(m_cell_family),m_parallel_mng->commRank());
   Integer i(0);
   for (auto local_id : cells_local_id) {
-    cell_data.itemInfos()[i++] = (Int64)local_id; // TODO Find a better place in ItemData to put removed item lids (with Int32...) .
+    // TODO Find a better place in ItemData to put removed item lids (with Int32...) .
+    cell_data.itemInfos()[i++] = (Int64)local_id;
   }
   itemFamilyNetwork()->schedule([&item_data_list](IItemFamily* family){
-      family->removeItems2(item_data_list); // send the whole ItemDataList since removed items are to be added for child families
-    },
+                                  // send the whole ItemDataList since removed items are to be added for child families
+                                  family->removeItems2(item_data_list);
+                                },
     IItemFamilyNetwork::TopologicalOrder); // item destruction done from root to leaves
 }
 
@@ -1007,7 +1062,7 @@ void DynamicMesh::
 detachCells(Int32ConstArrayView cells_local_id)
 {
   Trace::Setter mci(traceMng(),_className());
-  if (m_item_family_network)
+  if (m_use_mesh_item_family_dependencies)
     m_cell_family->detachCells2(cells_local_id);
   else {
     ItemInternalList cells = m_cell_family->itemsInternal();
@@ -1023,7 +1078,7 @@ void DynamicMesh::
 removeDetachedCells(Int32ConstArrayView cells_local_id)
 {
   Trace::Setter mci(traceMng(),_className());
-  if (m_item_family_network)
+  if (m_use_mesh_item_family_dependencies)
     removeItems(m_cell_family,cells_local_id);
   else {
     ItemInternalList cells = m_cell_family->itemsInternal();
@@ -1128,19 +1183,6 @@ unRegisterCallBack(IAMRTransportFunctor* f)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//void DynamicMesh::
-//readAmrActivator(const XmlNode& mesh_node)
-//{
-//  m_is_amr_activated = mesh_node.attr("amr").valueAsBoolean();
-//  info() << "Is AMR Activated? = " << m_is_amr_activated;
-//  if(m_is_amr_activated)
-//    m_mesh_refinement = new MeshRefinement(this);
-//}
-
-// OFF AMR
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 void DynamicMesh::
 _allocateCells2(DynamicMeshIncrementalBuilder* mib)
 {
@@ -1156,38 +1198,6 @@ _allocateCells2(DynamicMeshIncrementalBuilder* mib)
   info() << ostr.str();
 #endif
 }
-
-
-// /*---------------------------------------------------------------------------*/
-// /*---------------------------------------------------------------------------*/
-
-// void DynamicMesh::
-// addDualNodes(Integer graph_nb_dual_node,
-//              Int64ConstArrayView dual_nodes_infos)
-// {
-//   Trace::Setter mci(traceMng(),_className());
-//   _checkDimension();
-//   m_mesh_builder->addDualNodes(graph_nb_dual_node,
-//                                dual_nodes_infos,
-//                                m_mesh_rank);
-  
-//   m_update_sync_info = true;
-// }
-
-// /*---------------------------------------------------------------------------*/
-// /*---------------------------------------------------------------------------*/
-
-// void DynamicMesh::
-// addLinks(Integer nb_link,Int64ConstArrayView links_infos)
-// {
-//   Trace::Setter mci(traceMng(),_className());
-//   _checkDimension();
-//   m_mesh_builder->addLinks(nb_link,
-//                            links_infos,
-//                            m_mesh_rank);
-
-//   m_update_sync_info = true;
-// }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1218,7 +1228,7 @@ _writeMesh(const String& base_name)
 /*---------------------------------------------------------------------------*/
 
 void DynamicMesh::
-_printMesh(ostream& ostr)
+_printMesh(std::ostream& ostr)
 {
   ostr << "----------- Mesh\n";
   ostr << " Nodes: " << nbNode() << '\n';
@@ -1259,9 +1269,11 @@ _saveProperties()
 void DynamicMesh::
 _loadProperties()
 {
-  info(4) << "DynamicMesh::_readProperties() name=" << name();
-
   auto p = m_properties;
+
+  info(4) << "DynamicMesh::_readProperties() name=" << name()
+          << " mesh-version=" << p->getInt32WithDefault("mesh-version",-1);
+
   {
     // Relit les infos sur le gestionnaire de mailles fantômes.
     Int32 x = 0;
@@ -1351,7 +1363,7 @@ _prepareForDump()
 IItemFamily* DynamicMesh::
 createItemFamily(eItemKind ik,const String& name)
 {
-  IItemFamily* xfamily = findItemFamily(ik,name,false);
+  IItemFamily* xfamily = findItemFamily(ik,name,false,false);
   if (xfamily)
     ARCANE_FATAL("Attempting to create a family that already exists '{0}'",name);
 
@@ -1386,8 +1398,6 @@ _createNewFamily(eItemKind kind, const String& name)
     case IK_DoF:
       return new DoFFamily(this,name);
     case IK_Unknown:
-    case IK_Link:
-    case IK_DualNode:
       ARCANE_FATAL("Attempting to create an ItemFamily with an unknown item kind.");
   }
   ARCANE_FATAL("Invalid ItemKind");
@@ -1413,8 +1423,6 @@ _createFamilyPolicyMng(ItemFamily* family)
       return createParticleFamilyPolicyMng(family);
     case IK_DoF:
       return createDoFFamilyPolicyMng(family);
-    case IK_Link:
-    case IK_DualNode:
     case IK_Unknown:
       ARCANE_FATAL("Attempting to create an ItemFamily with an unknown item kind.");
   }
@@ -1447,13 +1455,21 @@ _addFamily(ItemFamily* family)
 /*---------------------------------------------------------------------------*/
 
 IItemFamily* DynamicMesh::
-findItemFamily(eItemKind ik,const String& name,bool create_if_needed)
+findItemFamily(eItemKind ik,const String& name,bool create_if_needed,
+               bool register_modifier_if_created)
 {
   for( IItemFamily* family : m_item_families)
     if (family->name()==name && family->itemKind()==ik)
       return family;
-  if (create_if_needed)
-    return createItemFamily(ik,name);
+  if (create_if_needed){
+    IItemFamily* family = createItemFamily(ik,name);
+    if(register_modifier_if_created){
+      IItemFamilyModifier* modifier = dynamic_cast<IItemFamilyModifier*>(family) ;
+      if(modifier)
+        m_family_modifiers.add(modifier);
+    }
+    return family;
+  }
   return nullptr;
 }
 
@@ -1466,9 +1482,8 @@ findItemFamily(const String& name,bool throw_exception)
   for( IItemFamily* family : m_item_families )
     if (family->name()==name)
       return family;
-  if (throw_exception){
+  if (throw_exception)
     ARCANE_FATAL("No family with name '{0}' exist",name);
-  }
   return nullptr;
 }
 
@@ -1478,11 +1493,13 @@ findItemFamily(const String& name,bool throw_exception)
 IItemFamilyModifier* DynamicMesh::
 findItemFamilyModifier(eItemKind ik,const String& name)
 {
-  IItemFamily* family = findItemFamily(ik, name, false);
-  if (!family) return nullptr;
-  auto find_iterator = std::find_if(m_family_modifiers.begin(),m_family_modifiers.end(),[&family](IItemFamilyModifier* modifier){return modifier->family() == family;});
-  if (find_iterator == m_family_modifiers.end()) return nullptr;
-  else return *find_iterator;
+  IItemFamily* family = findItemFamily(ik, name, false,false);
+  if (!family)
+    return nullptr;
+  for ( IItemFamilyModifier* modifier : m_family_modifiers )
+    if (modifier->family() == family)
+      return modifier;
+  return nullptr;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1503,10 +1520,17 @@ _exchangeItems(bool do_compact)
     if (is_bad)
       nb_exchange = 1;
   }
-  info(4) << "DynamicMesh::_echangeItems() do_compact?=" << do_compact
-          << " nb_exchange=" << nb_exchange;
+  String exchange_version_str = platform::getEnvironmentVariable("ARCANE_MESH_EXCHANGE_VERSION");
+  Integer exchange_version = 1;
+  if (!exchange_version_str.null()){
+    builtInGetValue(exchange_version,exchange_version_str);
+  }
+
+  info() << "DynamicMesh::_echangeItems() do_compact?=" << do_compact
+         << " nb_exchange=" << nb_exchange << " version=" << exchange_version;
+
   if (nb_exchange>1){
-    _multipleExchangeItems(nb_exchange,do_compact);
+    _multipleExchangeItems(nb_exchange,exchange_version,do_compact);
   }
   else
     _exchangeItemsNew();
@@ -1534,17 +1558,25 @@ _exchangeItems(bool do_compact)
 /*!
  * \brief Echange les entités en plusieurs fois.
  *
- * Cela est utile pour les gros maillages avec de nombreuses variables
- * pour limiter la taille des messages envoyés.
- *
- * Le principe est de décomposer l'échange en \a nb_exchange.
- * Pour cela, on stocke la liste des mailles qui changent de sous-domaine.
- * On divise cette liste en \a nb_exchange parties et on effectue
- * l'echange par partie.
+ * Il existe deux versions pour ce mécanisme:
+ * 1. La version 1 qui est la version historique. Pour cet algorithme,
+ *    on découpe le nombre de mailles à envoyer en \a nb_exchange parties,
+ *    chaque partie ayant (nb_cell / nb_exchange) mailles. Cet algorithme
+ *    permet de limiter la taille des messages mais pas le nombre de messages
+ *    en vol.
+ * 2. La version 2 qui sépare la liste des mailles à envoyer en se basant sur
+ *    le rang de chaque partie. Cela est utile pour limiter le nombres de
+ *    messages envoyés simultanément mais ne diminuera pas la taille du message
+ *    envoyé à un rang donné. En partant du principe que les rangs consécutifs
+ *    sont sur le même noeud d'un calculateur, on sépare l'échange en
+ *    \a nb_exchange avec l'algorithme suivant:
+ *    - on note 'i' le i-ème échange (numéroté de 0 à (nb_exchange-1)),
+ *    - on ne traite pour l'échange 'i' que les mailles dont le nouveau
+ *      propriètaire modulo (nb_exchange) vaut 'i'.
  *
  * On optimise légèrement en ne faisant le compactage eventuel
  * qu'une seule fois.
- * TODO regarder s'il n'est pas possible de limiter d'autres operations.
+ *
  * TODO: optimiser encore mieux avec une fonction speciale
  * au lieu d'appeler _exchangeItems();
  * TODO: au lieu de diviser la liste des mailles en \a nb_exchange
@@ -1554,34 +1586,50 @@ _exchangeItems(bool do_compact)
  * comment.
  */
 void DynamicMesh::
-_multipleExchangeItems(Integer nb_exchange,bool do_compact)
+_multipleExchangeItems(Integer nb_exchange,Integer version,bool do_compact)
 {
-  info() << "** ** MULTIPLE EXCHANGE ITEM";
-  Int32UniqueArray cells_to_exchange_new_owner;
-  // Il faut stocker le uid car suite a un equilibrage les localId vont
-  // changer
-  Int64UniqueArray cells_to_exchange_uid;
+  if (version<1 || version>2)
+    ARCANE_FATAL("Invalid value '{0}' for version. Valid values are 1 or 2",version);
+
+  info() << "** ** MULTIPLE EXCHANGE ITEM version=" << version << " nb_exchange=" << nb_exchange;
+  UniqueArray<UniqueArray<Int32>> cells_to_exchange_new_owner(nb_exchange);
+  // Il faut stocker le uid car suite a un equilibrage les localId vont changer
+  UniqueArray<UniqueArray<Int64>> cells_to_exchange_uid(nb_exchange);
+
   IItemFamily* cell_family = cellFamily();
   VariableItemInt32& cells_new_owner = cell_family->itemsNewOwner();
-  {
-    ENUMERATE_CELL(icell,ownCells()){
-      Cell cell = *icell;
-      Int32 current_owner = cell.owner();
-      Int32 new_owner = cells_new_owner[icell];
-      if (current_owner!=new_owner){
-        cells_to_exchange_new_owner.add(new_owner);
-        cells_to_exchange_uid.add(static_cast<Int64>(cell.uniqueId()));
-        cells_new_owner[icell] = current_owner;
-      }
-    }
+
+  Integer nb_cell= ownCells().size();
+  ENUMERATE_CELL(icell,ownCells()){
+    Cell cell = *icell;
+    Int32 current_owner = cell.owner();
+    Int32 new_owner = cells_new_owner[icell];
+    if (current_owner==new_owner)
+      continue;
+    Integer phase = 0;
+    if (version==2)
+      phase = (new_owner % nb_exchange);
+    else if (version==1)
+      phase = icell.index() / nb_cell;
+    cells_to_exchange_new_owner[phase].add(new_owner);
+    cells_to_exchange_uid[phase].add(cell.uniqueId().asInt64());
   }
+
+  // Remet comme si la maille ne changeait pas de propriétaire pour
+  // éviter de l'envoyer.
+  ENUMERATE_CELL(icell,ownCells()){
+    Cell cell = *icell;
+    cells_new_owner[icell] = cell.owner();
+  }
+
   // A partir d'ici, le cells_new_owner est identique au cell.owner()
   // pour chaque maille.
   Int32UniqueArray uids_to_lids;
   for( Integer i=0; i<nb_exchange; ++i ){
-    Int32ConstArrayView new_owners = cells_to_exchange_new_owner.view().subViewInterval(i,nb_exchange);
-    Int64ConstArrayView new_uids = cells_to_exchange_uid.view().subViewInterval(i,nb_exchange);
+    Int32ConstArrayView new_owners = cells_to_exchange_new_owner[i];
+    Int64ConstArrayView new_uids = cells_to_exchange_uid[i];
     Integer nb_cell = new_uids.size();
+    info() << "MultipleExchange current_exchange=" << i << " nb_cell=" << nb_cell;
     uids_to_lids.resize(nb_cell);
     cell_family->itemsUniqueIdToLocalId(uids_to_lids,new_uids);
     ItemInternalList cells = cell_family->itemsInternal();
@@ -1593,13 +1641,13 @@ _multipleExchangeItems(Integer nb_exchange,bool do_compact)
     mesh()->utilities()->changeOwnersFromCells();
     _exchangeItemsNew();
   }
+
   if (do_compact){
     Timer::Action ts_action1(m_sub_domain,"CompactItems",true);
     bool do_sort = m_properties->getBool("sort");
     _compactItems(do_sort,true);
   }
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1762,7 +1810,7 @@ _exchangeItemsNew()
   // dans MeshExchange.
   // endUpdate() doit être appelé dans tous les cas pour s'assurer
   // que les variables et les groupes sont bien dimensionnées.
-  if (m_extra_ghost_cells_builder || m_extra_ghost_particles_builder)
+  if (m_extra_ghost_cells_builder->hasBuilder() || m_extra_ghost_particles_builder->hasBuilder())
     this->endUpdate(true,false);
   else
     this->endUpdate();
@@ -1772,30 +1820,18 @@ _exchangeItemsNew()
 /*---------------------------------------------------------------------------*/
 
 void DynamicMesh::
-_checkCreateExtraGhostCellsBuilder()
-{
-  if (!m_extra_ghost_cells_builder)
-    m_extra_ghost_cells_builder = new ExtraGhostCellsBuilder(this);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void DynamicMesh::
-_checkCreateExtraGhostParticlesBuilder()
-{
-  if (!m_extra_ghost_particles_builder)
-    m_extra_ghost_particles_builder = new ExtraGhostParticlesBuilder(this);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void DynamicMesh::
 addExtraGhostCellsBuilder(IExtraGhostCellsBuilder* builder)
 {
-  _checkCreateExtraGhostCellsBuilder();
   m_extra_ghost_cells_builder->addExtraGhostCellsBuilder(builder);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMesh::
+removeExtraGhostCellsBuilder(IExtraGhostCellsBuilder* builder)
+{
+  m_extra_ghost_cells_builder->removeExtraGhostCellsBuilder(builder);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1804,8 +1840,16 @@ addExtraGhostCellsBuilder(IExtraGhostCellsBuilder* builder)
 void DynamicMesh::
 addExtraGhostParticlesBuilder(IExtraGhostParticlesBuilder* builder)
 {
-  _checkCreateExtraGhostParticlesBuilder();
   m_extra_ghost_particles_builder->addExtraGhostParticlesBuilder(builder);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMesh::
+removeExtraGhostParticlesBuilder(IExtraGhostParticlesBuilder* builder)
+{
+  m_extra_ghost_particles_builder->removeExtraGhostParticlesBuilder(builder);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1814,7 +1858,6 @@ addExtraGhostParticlesBuilder(IExtraGhostParticlesBuilder* builder)
 void DynamicMesh::
 _computeExtraGhostCells()
 {
-  _checkCreateExtraGhostCellsBuilder();
   m_extra_ghost_cells_builder->computeExtraGhostCells();
 }
 
@@ -1824,7 +1867,6 @@ _computeExtraGhostCells()
 void DynamicMesh::
 _computeExtraGhostParticles()
 {
-  _checkCreateExtraGhostParticlesBuilder();
   m_extra_ghost_particles_builder->computeExtraGhostParticles();
 }
 
@@ -1986,7 +2028,8 @@ _removeGhostChildItems2(Array<Int64>& cells_to_coarsen)
 /*---------------------------------------------------------------------------*/
 //! AMR
 void DynamicMesh::
-updateGhostLayerFromParent(Array<Int64>& ghost_cell_to_refine_uid,Array<Int64>& ghost_cell_to_coarsen_uid, bool remove_old_ghost)
+updateGhostLayerFromParent(Array<Int64>& ghost_cell_to_refine_uid,
+                           Array<Int64>& ghost_cell_to_coarsen_uid, bool remove_old_ghost)
 {
   Trace::Setter mci(traceMng(),_className());
   CHECKPERF( m_perf_counter.start(PerfCounter::UPGHOSTLAYER1) ) ;
@@ -1995,10 +2038,9 @@ updateGhostLayerFromParent(Array<Int64>& ghost_cell_to_refine_uid,Array<Int64>& 
   
   //Integer current_iteration = subDomain()->commonVariables().globalIteration();
   if (!m_is_dynamic)
-    throw FatalErrorException("DynamicMesh::exchangeItems(): property isDynamic() has to be 'true'");
+    ARCANE_FATAL("Property isDynamic() has to be 'true'");
  
-  if(remove_old_ghost)
-  {
+  if(remove_old_ghost){
     _removeGhostChildItems2(ghost_cell_to_coarsen_uid) ;
   }
 
@@ -2346,12 +2388,16 @@ void DynamicMesh::
 _synchronizeVariables()
 {
   // On ne synchronise que les variables sur les items du maillage courant
-  // - Les items de graphe ne sont pas traités ici (était déjà retiré de la version précédente du code)
+  // - Les items de graphe ne sont pas traités ici (était déjà retiré de
+  //   la version précédente du code)
   // - Les particules et ceux sans genre (Unknown) ne pas sujet à synchronisation
-  // La synchronisation est ici factorisée par collection de variables de même synchroniser (même pour les synchronisers sur groupes != famille)
-  // Pour préserver un ordre consistent de synchronisation une structure auxiliaire OrderedSyncList est utilisée.
+  // La synchronisation est ici factorisée par collection de variables de même
+  // synchroniser (même pour les synchronisers sur groupes != famille)
+  // Pour préserver un ordre consistent de synchronisation une structure
+  // auxiliaire OrderedSyncList est utilisée.
   
-  typedef UniqueArray<IVariableSynchronizer*> OrderedSyncList; // Peut on le faire avec une structure plus compacte ?
+ // Peut on le faire avec une structure plus compacte ?
+  typedef UniqueArray<IVariableSynchronizer*> OrderedSyncList;
   typedef std::map<IVariableSynchronizer*, VariableCollection> SyncList;
   OrderedSyncList ordered_sync_list;
   SyncList sync_list;
@@ -2364,8 +2410,6 @@ _synchronizeVariables()
     case IK_Edge:
     case IK_Face:
     case IK_Cell: 
-    case IK_Link:
-    case IK_DualNode:
     case IK_DoF:{
       IVariableSynchronizer * synchronizer = 0;
       if (var->isPartial())
@@ -2554,7 +2598,7 @@ _readFromDump()
   {
     Integer nb_item_family = m_item_families_name.size();
     for( Integer i=0; i<nb_item_family; ++i ){
-      findItemFamily((eItemKind)m_item_families_kind[i],m_item_families_name[i],true);
+      findItemFamily((eItemKind)m_item_families_kind[i],m_item_families_name[i],true,false);
     }
   }
 
@@ -2638,7 +2682,7 @@ void DynamicMesh::
 _setDimension(Integer dim)
 {
   if (m_is_allocated)
-    fatal() << "DynamicMesh::setDimension(): mesh is already allocated";
+    ARCANE_FATAL("DynamicMesh::setDimension(): mesh is already allocated");
   info() << "Mesh name=" << name() << " set dimension = " << dim;
   m_mesh_dimension = dim;
 }
@@ -2650,8 +2694,8 @@ void DynamicMesh::
 _checkDimension() const
 {
   if (m_mesh_dimension()<0)
-    fatal() << "DynamicMesh::_checkDimension(): dimension not set."
-            << "setDimension() must be called before allocating cells";
+    ARCANE_FATAL("DynamicMesh::_checkDimension(): dimension not set."
+                 "setDimension() must be called before allocating cells");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2675,10 +2719,9 @@ _checkConnectivity()
 void DynamicMesh::
 _checkAMR() const
 {
-
   if (!m_is_amr_activated)
-    fatal() << "DynamicMesh::_checkAMR(): amr activator not set.\t"
-            << "amr='true' must be set in the .arc file";
+    ARCANE_FATAL("DynamicMesh::_checkAMR(): amr activator not set.\t"
+                 "amr='true' must be set in the .arc file");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2702,9 +2745,9 @@ void DynamicMesh::
 _writeCells(const String& filename)
 {
   CellGroup cells(m_cell_family->allItems());
-  ofstream ofile(filename.localstr());
+  std::ofstream ofile(filename.localstr());
   ENUMERATE_CELL(icell,cells){
-    const Cell& cell = *icell;
+    Cell cell = *icell;
     ofile << "CELL: uid=" << cell.uniqueId() << " isown="
           << cell.isOwn() << " owner=" << cell.owner() << '\n';
   }
@@ -2768,42 +2811,42 @@ _setOwnersFromCells()
   // Détermine les nouveaux propriétaires des noeuds
   {
     ENUMERATE_NODE(i_node,ownNodes()){
-      const Node& node = *i_node;
+      Node node = *i_node;
       nodes_owner[node] = m_new_item_owner_builder->ownerOfItem(node);
     }
     nodes_owner.synchronize();
   }
 
   ENUMERATE_NODE(i_node,allNodes()){
-    const Node& node = *i_node;
+    Node node = *i_node;
     node.internal()->setOwner(nodes_owner[node],sid);
   }
 
   // Détermine les nouveaux propriétaires des arêtes
   {
     ENUMERATE_EDGE(i_edge,ownEdges()){
-      const Edge& edge = *i_edge;
+      Edge edge = *i_edge;
       edges_owner[edge] = m_new_item_owner_builder->ownerOfItem(edge);
     }
     edges_owner.synchronize();
   }
 
   ENUMERATE_EDGE(i_edge,allEdges()){
-    const Edge& edge = *i_edge;
+    Edge edge = *i_edge;
     edge.internal()->setOwner(edges_owner[edge],sid);
   }
 
   // Détermine les nouveaux propriétaires des faces
   {
     ENUMERATE_FACE(i_face,ownFaces()){
-      const Face& face = *i_face;
+      Face face = *i_face;
       faces_owner[face] = m_new_item_owner_builder->ownerOfItem(face);
     }
     faces_owner.synchronize();
   }
 
   ENUMERATE_FACE(i_face,allFaces()){
-    const Face& face = *i_face;
+    Face face = *i_face;
     face.internal()->setOwner(faces_owner[face],sid);
   }
 
@@ -2913,16 +2956,16 @@ defineParentForBuild(IMesh * mesh, ItemGroup group)
 {
   Trace::Setter mci(traceMng(),_className());
   if (!mesh)
-    fatal() << "Cannot set NULL parent mesh to mesh " << name();
+    ARCANE_FATAL("Cannot set NULL parent mesh to mesh '{0}'",name());
 
   if (mesh != group.mesh())
-    fatal() << "Cannot set inconsistant mesh/group parents to mesh " << name();
+    ARCANE_FATAL("Cannot set inconsistant mesh/group parents to mesh '{0}'",name());
 
   if (m_parent_mesh) {
     if (m_parent_mesh != mesh)
-      fatal() << "Mesh " << name() << " already has parent mesh " << m_parent_mesh->name();
+      ARCANE_FATAL("Mesh '{0}' already has parent mesh '{1}'",name(),m_parent_mesh->name());
     if (m_parent_group != group.internal())
-      fatal() << "Mesh " << name() << " already has parent group " << m_parent_group->name();
+      ARCANE_FATAL("Mesh '{0}' already has parent group '{1}'",name(),m_parent_group->name());
   }
 
   m_parent_mesh = mesh;
@@ -2931,10 +2974,12 @@ defineParentForBuild(IMesh * mesh, ItemGroup group)
   Integer dimension_shift = 0;
   if (group.itemKind() == IK_Face) {
     dimension_shift = 1;
-  } else if (group.itemKind() == IK_Cell) {
+  }
+  else if (group.itemKind() == IK_Cell) {
     dimension_shift = 0;
-  } else {
-    fatal() << "Only SubMesh on FaceGroup or CellGoup is allowed";
+  }
+  else {
+    ARCANE_FATAL("Only SubMesh on FaceGroup or CellGoup is allowed");
   }
 
   _setDimension(mesh->dimension()-dimension_shift);
@@ -2988,7 +3033,7 @@ addChildMesh(IMesh * sub_mesh)
 {
   DynamicMesh * dynamic_child_mesh = dynamic_cast<DynamicMesh*>(sub_mesh);
   if (!dynamic_child_mesh)
-    throw FatalErrorException(A_FUNCINFO,"Cannot associate sub mesh from a different concrete type");
+    ARCANE_FATAL("Cannot associate sub mesh from a different concrete type");
   for(Integer i=0;i<m_child_meshes.size();++i)
     if (m_child_meshes[i] == dynamic_child_mesh)
       return;
@@ -3128,56 +3173,9 @@ mergeMeshes(ConstArrayView<IMesh*> meshes)
 /*---------------------------------------------------------------------------*/
 
 void DynamicMesh::
-_setConnectivityPolicy()
+_printConnectivityPolicy()
 {
-  // Par défaut si on utilise les nouvelles connectivités pour accéder au
-  // nombre d'éléments alors on utilise la politique 'NewOnly' car c'est la
-  // seule valeur valide pour ce mode pour l'instant.
-#if ARCANE_ITEM_CONNECTIVITY_SIZE_MODE == ARCANE_ITEM_CONNECTIVITY_SIZE_MODE_NEW
-  m_connectivity_policy = InternalConnectivityPolicy::NewOnly;
-#endif
-  // Récupère la politique de connectivité utilisée.
-  {
-    String s = platform::getEnvironmentVariable("ARCANE_CONNECTIVITY_POLICY");
-    if (s=="0")
-      m_connectivity_policy = InternalConnectivityPolicy::Legacy;
-    else if (s=="1")
-      m_connectivity_policy = InternalConnectivityPolicy::LegacyAndAllocAccessor;
-    else if (s=="2")
-      m_connectivity_policy = InternalConnectivityPolicy::LegacyAndNew;
-    else if (s=="3")
-      m_connectivity_policy = InternalConnectivityPolicy::NewAndLegacy;
-    else if (s=="4")
-      m_connectivity_policy = InternalConnectivityPolicy::NewWithDependenciesAndLegacy;
-    else if (s=="5")
-      m_connectivity_policy = InternalConnectivityPolicy::NewOnly;
-    else if (!s.empty())
-      ARCANE_FATAL("Invalid value for environment variable ARCANE_CONNECTIVITY_POLICY");
-  }
-
-  if (m_connectivity_policy == InternalConnectivityPolicy::LegacyAndAllocAccessor)
-    ARCANE_FATAL("connectivity policy 'LegacyAndAllocAccessor' is no longer supported");
-  if (m_connectivity_policy == InternalConnectivityPolicy::LegacyAndNew)
-    ARCANE_FATAL("connectivity policy 'LegacyAndNew' is no longer supported");
-
-  // Teste les politiques autorisées en fonction de la configuration
-  // de Arcane.
-#ifdef ARCANE_USE_LEGACY_ITEMINTERNAL_CONNECTIVITY
-  info() << "Using legacy connectivity accessor in ItemInternal";
-  if (m_connectivity_policy==InternalConnectivityPolicy::NewAndLegacy ||
-      m_connectivity_policy==InternalConnectivityPolicy::NewWithDependenciesAndLegacy){
-    info() << "WARNING: forcing LegacyAndNew connectivity policy because"
-           << " Arcane is configured with legacy connectivity";
-    m_connectivity_policy = InternalConnectivityPolicy::LegacyAndNew;
-  }
-#else
   info() << "Using new connectivity accessor in ItemInternal";
-  if (m_connectivity_policy==InternalConnectivityPolicy::Legacy){
-    info() << "WARNING: forcing NewAndLegacy connectivity policy because"
-           << " Arcane is configured without legacy connectivity";
-    m_connectivity_policy = InternalConnectivityPolicy::NewAndLegacy;
-  }
-#endif
 
   info() << "Connectivity policy=" << (int)m_connectivity_policy
          << " connectivity_size_policy=" << ARCANE_ITEM_CONNECTIVITY_SIZE_MODE
@@ -3185,21 +3183,9 @@ _setConnectivityPolicy()
          << " sizeof(ItemInternalConnectivityList)=" << sizeof(ItemInternalConnectivityList)
          << " sizeof(ItemSharedInfo)=" << sizeof(ItemSharedInfo);
 
-#if ARCANE_ITEM_CONNECTIVITY_SIZE_MODE == ARCANE_ITEM_CONNECTIVITY_SIZE_MODE_LEGACY
-  if (m_connectivity_policy == InternalConnectivityPolicy::NewOnly)
-    ARCANE_FATAL("connectivity policy '{0}' is not available when macro"
-                 " ARCANE_ITEM_CONNECTIVITY_SIZE_MODE == ARCANE_ITEM_CONNECTIVITY_SIZE_MODE_LEGACY",
-                 (int)m_connectivity_policy);
-#elif ARCANE_ITEM_CONNECTIVITY_SIZE_MODE == ARCANE_ITEM_CONNECTIVITY_SIZE_MODE_NEW
   if (m_connectivity_policy != InternalConnectivityPolicy::NewOnly)
-    ARCANE_FATAL("connectivity policy '{0}' is not available when macro"
-                 " ARCANE_ITEM_CONNECTIVITY_SIZE_MODE == ARCANE_ITEM_CONNECTIVITY_SIZE_MODE_NEW",
-                 (int)m_connectivity_policy);
-#elif ARCANE_ITEM_CONNECTIVITY_SIZE_MODE == ARCANE_ITEM_CONNECTIVITY_SIZE_MODE_DYNAMIC
-  ;
-#else
-#error "Invalid configuration for ARCANE_ITEM_CONNECTIVITY_SIZE_MODE"
-#endif
+    ARCANE_FATAL("Invalid value '{0}' for InternalConnectivityPolicy. Only '{1}' is allowed",
+                 (int)m_connectivity_policy,(int)InternalConnectivityPolicy::NewOnly);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -3259,7 +3245,7 @@ class ARCANE_MESH_EXPORT DynamicMeshFactory
 : public DynamicMeshFactoryBase
 {
  public:
-  DynamicMeshFactory(const ServiceBuildInfo& sbi)
+  explicit DynamicMeshFactory(const ServiceBuildInfo& sbi)
   : DynamicMeshFactoryBase(sbi,false) {}
 };
 
@@ -3270,7 +3256,7 @@ class ARCANE_MESH_EXPORT DynamicAMRMeshFactory
 : public DynamicMeshFactoryBase
 {
  public:
-  DynamicAMRMeshFactory(const ServiceBuildInfo& sbi)
+  explicit DynamicAMRMeshFactory(const ServiceBuildInfo& sbi)
   : DynamicMeshFactoryBase(sbi,true) {}
 };
 

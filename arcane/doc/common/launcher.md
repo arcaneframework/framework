@@ -107,6 +107,10 @@ initialisé dans tous les cas. Il est possible de modifier ce
 comportement en spécifiant explicitement le service de parallélisme
 souhaité (TODO faire doc).
 
+\warning Il faut faire attention à bien utiliser l'exécutable
+`mpiexec` qui correspond à la version de MPI avec laquelle %Arcane a
+été compilé sinon on va lancer *N* fois l'exécution séquentielle.
+
 Exécution du code
 -----------------
 
@@ -163,7 +167,7 @@ Les options disponibles sont:
 
 <tr>
 <td>S</td>
-<td>ARCANE_NB_THREAD (obsolète)</td>
+<td>ARCANE_NB_THREAD (Cette variable d'environnement est obsolète)</td>
 <td>Int32</td>
 <td></td>
 <td>Nombre de sous-domaines en mémoire partagée</td>
@@ -171,7 +175,7 @@ Les options disponibles sont:
 
 <tr>
 <td>R</td>
-<td>ARCANE_NB_REPLICATION (obsolète)</td>
+<td>ARCANE_NB_REPLICATION (Cette variable d'environnement est obsolète)</td>
 <td>Int32</td>
 <td>1</td>
 <td>Nombre de sous-domaines répliqués</td>
@@ -179,7 +183,7 @@ Les options disponibles sont:
 
 <tr>
 <td>P</td>
-<td>ARCANE_NB_SUB_DOMAIN (obsolète)</td>
+<td>ARCANE_NB_SUB_DOMAIN (Cette variable d'environnement est obsolète)</td>
 <td>Int32</td>
 <td></td>
 <td>Nombre de processus à utiliser pour les sous-domaines. Cette
@@ -187,6 +191,17 @@ valeur est normalement calculée automatiquement en fonction des
 paramètres MPI. Elle n'est utile que si on souhaite utiliser moins de
 processus pour le partitionnement de domaine que ceux alloués pour le
 calcul.
+</td>
+</tr>
+
+<tr>
+<td>MaxIteration</td>
+<td></td>
+<td>Int32</td>
+<td></td>
+<td>Nombre maximum d'itérations à effectuer pour l'exécution. Si le
+nombre d'itération spécifié par cette variable est atteint, le calcul
+s'arrête.
 </td>
 </tr>
 
@@ -253,6 +268,22 @@ fichier du jeu données.
 </td>
 </tr>
 
+<tr>
+<td>ThreadBindingStrategy</td>
+<td>ARCANE_THREAD_BINDING_STRATEGY</td>
+<td>String</td>
+<td></td>
+<td>Stratégie de punaisage des threads. Cela fonctionne uniquement si
+%Arcane est compilé avec la bibliothèque 'hwloc'. Par défaut aucun
+binding n'est effectué. Le seul mode disponible est 'Simple' qui
+alloue les threads suivant un mécanisme round-robin.
+
+NOTE: ce mécanisme de punaisage est en cours de développement et il
+est possible qu'il ne fonctionne pas de manière optimale dans tous les
+cas
+</td>
+</tr>
+
 </table>
 
 Choix du gestionnaire d'échange de message
@@ -270,7 +301,7 @@ choisi lors du lancement du calcul.  %Arcane fournit les gestionnaires suivants:
 En général, %Arcane choisit
 automatiquement le gestionnaire en fonction des paramètres utilisés
 pour lancer le calcul mais il est possible de spécifier explicitement
-le gestionnaire à utiliser en positionnant la variable d'environnement
+le gestionnaire à utiliser en positionnant la variable d'environnement (obsolète)
 `ARCANE_PARALLEL_SERVICE` ou en spécifiant l'option
 `MessagePassingService` dans la ligne de commande avec une des valeurs
 ci-dessus (sans le suffixe `ParallelSuperMng`, donc par exemple `Mpi`,

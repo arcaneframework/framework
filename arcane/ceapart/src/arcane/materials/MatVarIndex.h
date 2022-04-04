@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -85,7 +85,8 @@ class ARCANE_MATERIALS_EXPORT MatVarIndex
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MATERIALS_EXPORT ostream& operator<<(ostream& o,const MatVarIndex& mvi);
+ARCANE_MATERIALS_EXPORT std::ostream&
+operator<<(std::ostream& o,const MatVarIndex& mvi);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -140,8 +141,8 @@ class PureMatVarIndex
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MATERIALS_EXPORT ostream&
-operator<<(ostream& o,const ComponentItemLocalId& mvi);
+ARCANE_MATERIALS_EXPORT std::ostream&
+operator<<(std::ostream& o,const ComponentItemLocalId& mvi);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryInfo.cc                                               (C) 2000-2015 */
+/* MemoryInfo.cc                                               (C) 2000-2021 */
 /*                                                                           */
 /* Collecteur d'informations sur l'usage mémoire.                            */
 /*---------------------------------------------------------------------------*/
@@ -80,9 +80,11 @@
 // puis faire un dlopen sur la libc et appeler dans notre
 // bibliothèque les routinies d'allocation de la libc.
 
-#if defined(ARCANE_OS_LINUX)
-#define ARCANE_CHECK_MEMORY_USE_MALLOC_HOOK
-#endif
+// Cette macro ARCANE_CHECK_MEMORY_USE_MALLOC_HOOK est maintenant définie
+// lors de la configuration
+// #if defined(ARCANE_OS_LINUX)
+//   #define ARCANE_CHECK_MEMORY_USE_MALLOC_HOOK
+// #endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -94,7 +96,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -690,7 +693,7 @@ arcaneGlobalMemoryInfo()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

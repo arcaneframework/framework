@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* UtilsTypes.h                                                (C) 2000-2020 */
+/* UtilsTypes.h                                                (C) 2000-2021 */
 /*                                                                           */
 /* Définition des types généraux des classes utilitaires de Arcane.          */
 /*---------------------------------------------------------------------------*/
@@ -172,6 +172,37 @@ class JSONValueList;
 class CommandLineArguments;
 class ApplicationInfo;
 class VersionInfo;
+
+class IObservable;
+class IObserver;
+class Observable;
+class Observer;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+enum class eMemoryRessource;
+template<int RankValue> class DefaultLayout;
+class IMemoryRessourceMng;
+template<typename DataType,int RankValue,typename LayoutType = DefaultLayout<RankValue> >
+class MDSpanBase;
+template<class DataType,int RankValue,typename LayoutType = DefaultLayout<RankValue> >
+class MDSpan;
+template<typename DataType,int RankValue,typename LayoutType = DefaultLayout<RankValue> >
+class NumArrayBase;
+template<class DataType,int RankValue,typename LayoutType = DefaultLayout<RankValue> >
+class NumArray;
+template<int RankValue> class ArrayBounds;
+template<int RankValue> class ArrayBoundsIndexBase;
+template<int RankValue> class ArrayBoundsIndex;
+template<int RankValue> class ArrayExtentsBase;
+template<int RankValue> class ArrayExtents;
+template<int RankValue> class ArrayStridesBase;
+template<int RankValue,typename LayoutType> class ArrayExtentsWithOffset;
+class LoopRange;
+template<int RankValue> class SimpleLoopRanges;
+template<int RankValue> class ComplexLoopRanges;
+template<int RankValue> class IMDRangeFunctor;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

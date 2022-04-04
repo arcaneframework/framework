@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -434,16 +434,6 @@ typedef SimdItemT<Cell> SimdCell;
  * \brief Vecteur SIMD de \a Particle.
  */
 typedef SimdItemT<Particle> SimdParticle;
-/*!
- * \ingroup ArcaneSimd
- * Vecteur SIMD de \a DualNode.
- */
-typedef SimdItemT<DualNode> SimdDualNode;
-/*!
- * \ingroup ArcaneSimd
- * \brief Vecteur SIMD de \a Link.
- */
-typedef SimdItemT<Link> SimdLink;
 #else
 /*!
  * \ingroup ArcaneSimd
@@ -488,17 +478,6 @@ typedef SimdItemT<Cell> SimdCell;
  */
 #define ENUMERATE_SIMD_PARTICLE(name,group) ENUMERATE_SIMD_GENERIC(::Arcane::Particle,name,group)
 
-/*!
- * \ingroup ArcaneSimd
- * \brief Enumérateur SIMD sur un groupe ou liste de DualNode.
- */
-#define ENUMERATE_SIMD_DUALNODE(name,group) ENUMERATE_SIMD_GENERIC(::Arcane::DualNode,name,group)
-
-/*!
- * \ingroup ArcaneSimd
- * \brief Enumérateur SIMD sur un groupe ou liste de Link.
- */
-#define ENUMERATE_SIMD_LINK(name,group) ENUMERATE_SIMD_GENERIC(::Arcane::Link,name,group)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

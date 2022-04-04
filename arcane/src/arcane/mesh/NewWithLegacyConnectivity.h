@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -53,14 +53,19 @@ public:
 
 public:
   NewWithLegacyConnectivity(ItemFamily* source_family, IItemFamily* target_family, const String& name)
-  : ItemConnectivitySelectorT<LegacyType,CustomType>(source_family,target_family,name){
+  : ItemConnectivitySelectorT<LegacyType,CustomType>(source_family,target_family,name)
+  {
     //build selector
     Base::template build<SourceFamily,TargetFamily>(); // Create adapted custom connectivity
   }
 
   typedef ItemConnectivitySelectorT<LegacyType,CustomType> Base;
 
-    const String& name() const override {return Base::trueCustomConnectivity()->name();}
+  const String& name() const override {return Base::trueCustomConnectivity()->name();}
+
+  bool isEmpty() const {
+    return false ;
+  }
 
   //! Liste des familles (sourceFamily() + targetFamily())
   ConstArrayView<IItemFamily*> families() const override {return Base::trueCustomConnectivity()->families();}
@@ -112,7 +117,7 @@ public:
   void setPreAllocatedSize(Integer value) override {Base::setPreAllocatedSize(value);}
 
   //! Sort sur le flot \a out des statistiques sur l'utilisation et la mémoire utilisée
-  void dumpStats(ostream& out) const override {Base::trueCustomConnectivity()->dumpStats(out);}
+  void dumpStats(std::ostream& out) const override {Base::trueCustomConnectivity()->dumpStats(out);}
 
   //! Nombre d'entité connectées à l'entité source de numéro local \a lid
   Integer nbConnectedItem(ItemLocalId lid) const override {return Base::trueCustomConnectivity()->nbConnectedItem(lid);}
@@ -135,8 +140,7 @@ template <class SourceFamily, class TargetFamily>
 class ARCANE_MESH_EXPORT NewWithLegacyConnectivityType
 {
 public:
-  typedef typename LegacyConnectivity<SourceFamily,TargetFamily>::type LegacyType;
-  typedef NewWithLegacyConnectivity<SourceFamily,TargetFamily,CompactIncrementalItemConnectivityT<typename LegacyConnectivityTraitsT<TargetFamily>::type>> type;
+  typedef NewWithLegacyConnectivity<SourceFamily,TargetFamily,typename LegacyConnectivityTraitsT<TargetFamily>::type> type;
 };
 
 

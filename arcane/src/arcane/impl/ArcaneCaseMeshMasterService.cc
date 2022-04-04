@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -85,9 +85,8 @@ class ArcaneCaseMeshMasterService
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE(ArcaneCaseMeshMasterService,
-                        ServiceProperty("ArcaneCaseMeshMasterService",ST_CaseOption),
-                        ARCANE_SERVICE_INTERFACE(ICaseMeshMasterService));
+ARCANE_REGISTER_SERVICE_ARCANECASEMESHMASTERSERVICE(ArcaneCaseMeshMasterService,
+                                                    ArcaneCaseMeshMasterService);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

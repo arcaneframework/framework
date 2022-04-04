@@ -1,0 +1,25 @@
+set( ARCANE_SOURCES
+  AcceleratorCoreGlobal.h
+  AcceleratorCore.cc
+  AcceleratorRuntimeInitialisationInfo.cc
+  AcceleratorRuntimeInitialisationInfo.h
+  IAcceleratorMng.h
+  AcceleratorMng.cc
+  IReduceMemoryImpl.h
+  IRunQueueEventImpl.h
+  IRunQueueRuntime.h
+  IRunQueueStream.h
+  Memory.h
+  Runner.h
+  Runner.cc
+  RunCommand.h
+  RunCommand.cc
+  RunQueue.h
+  RunQueue.cc
+  RunQueueBuildInfo.h
+  RunQueueEvent.h
+  RunQueueEvent.cc
+  RunQueueImpl.h
+  RunQueueImpl.cc
+  RunQueueRuntime.cc
+)

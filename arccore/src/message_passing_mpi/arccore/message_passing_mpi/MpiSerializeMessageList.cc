@@ -1,23 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2020 IFPEN-CEA
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiSerializeMessageList.cc                                  (C) 2000-2020 */
+/* MpiSerializeMessageList.cc                                  (C) 2000-2022 */
 /*                                                                           */
 /* Gestion des messages de sérialisationd via MPI.                           */
 /*---------------------------------------------------------------------------*/
@@ -143,7 +131,7 @@ processPendingMessages()
   // de comparaison ne soit pas cohérent. De plus, il n'est normalement
   // plus nécessaire de faire ce tri car tout est non bloquant.
   //std::stable_sort(std::begin(m_messages_to_process),std::end(m_messages_to_process),_SortMessages());
-  bool print_sorted = false;
+  const bool print_sorted = false;
   if (print_sorted)
     for( Integer i=0, is=m_messages_to_process.size(); i<is; ++i ){
       ISerializeMessage* pmsg = m_messages_to_process[i];
@@ -167,7 +155,7 @@ processPendingMessages()
       // de legacySendSerializer() mais avant de fair cela il faut envoyer
       // les deux messages potentiels en même temps pour des raisons de
       // performance (voir MpiSerializeDispatcher::sendSerializer())
-      bool do_old = false;
+      const bool do_old = false;
       if (do_old){
         if (is_one_message_strategy)
           ARCCORE_THROW(NotSupportedException,"OneMessage strategy with legacy send serializer");

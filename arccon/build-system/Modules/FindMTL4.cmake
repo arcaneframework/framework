@@ -1,3 +1,4 @@
+include(${CMAKE_CURRENT_LIST_DIR}/../commands/commands.cmake)
 arccon_return_if_package_found(MTL4)
 
 find_path(MTL4_INCLUDE_DIRS boost/numeric/mtl/mtl.hpp)

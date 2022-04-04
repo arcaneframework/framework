@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IExtraGhostParticlesBuilder.h                                   (C) 2000-2011 */
+/* IExtraGhostParticlesBuilder.h                               (C) 2000-2022 */
 /*                                                                           */
-/* Interface d'un constructeur de mailles fant?mes "extraordinaires"         */
+/* Interface d'un constructeur de mailles fantômes "extraordinaires"         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IEXTRAGHOSTPARTICLESBUILDER_H
 #define ARCANE_IEXTRAGHOSTPARTICLESBUILDER_H
@@ -19,31 +19,33 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Interface d'un constructeur de mailles fant?mes "extraordinaires"  
+ * \brief Interface d'un constructeur de mailles fantômes "extraordinaires".
  *
- * Une maille fant?me "extraordinaire" est une maille fant?me ajout?e aux
- * mailles fant?mes d?finies par la connectivit? du maillage. En particulier,
- * le calcul des mailles fant?mes extraordinaires est effectu? ? chaque mise
- * ? jour du maillage ou ?quilibrage de charge.
+ * Une maille fantôtme "extraordinaire" est une maille fantôme ajoutée aux
+ * mailles fantôtmes définies par la connectivité du maillage. En particulier,
+ * le calcul des mailles fantômes extraordinaires est effectué à chaque mise
+ * à jour du maillage ou équilibrage de charge.
  *
- * NB : rend obsol?te le param?tre remove_old_ghost de la m?thode endUpdate de IMesh
+ * \note rend obsolète le paramètre \a remove_old_ghost de la méthode IMesh::endUpdate().
  *
  */
 class IExtraGhostParticlesBuilder
 {
-public:
+ public:
   
-  virtual ~IExtraGhostParticlesBuilder() {} //!< Lib?re les ressources.
+  virtual ~IExtraGhostParticlesBuilder() {} //!< Libère les ressources.
   
-public:
+ public:
 
   /*!
-   * \brief Calcul des mailles "extraordinaires" ? envoyer
+   * \brief Calcul des mailles "extraordinaires" à envoyer.
+   *
    * Effectue le calcul des mailles "extraordinaires" suivant
    * un algorithme de construction  
    */
@@ -51,16 +53,17 @@ public:
 
   /*!
    * \brief Indices locaux des mailles "extraordinaires" pour envoi
-   * R?cup?re le tableau des mailles "extraordinaires" ? destination
-   * du sous-domaine \a sid
+   *
+   * Récupère le tableau des mailles "extraordinaires" à destination
+   * du sous-domaine \a rank
    */
-  virtual IntegerConstArrayView extraParticlesToSend(String const& family_name,Integer sid) const =0;
+  virtual Int32ConstArrayView extraParticlesToSend(const String& family_name,Int32 rank) const =0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

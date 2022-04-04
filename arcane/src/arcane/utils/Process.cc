@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -89,7 +89,7 @@ execute(ProcessExecArgs& args)
     command_args[nb_arg+1] = nullptr;
 
     const char *const newenviron[] = { NULL };
-    ::execve(cmd_name, (char* const*)command_args.unguardedBasePointer(), (char* const*)newenviron);
+    ::execve(cmd_name, (char* const*)command_args.data(), (char* const*)newenviron);
     // L'appel à execve() ne retourne pas.
 
   }
@@ -97,7 +97,10 @@ execute(ProcessExecArgs& args)
     ::close(pipefd_out[1]);
     ::close(pipefd_in[0]);
     // Ecrit sur le pipe d'entrée les octets de \a input_bytes
-    ::write(pipefd_in[1],input_bytes.unguardedBasePointer(),input_bytes.size());
+    Int64 nb_wanted_write = input_bytes.size();
+    Int64 nb_written = ::write(pipefd_in[1],input_bytes.data(),nb_wanted_write);
+    if (nb_written!=nb_wanted_write)
+      std::cerr << "Error writing to pipe\n";
     ::close(pipefd_in[1]);
     const int BUF_SIZE=4096;
     Byte buf[BUF_SIZE];

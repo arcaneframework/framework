@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -1229,7 +1229,7 @@ CaseOptionMultiSimpleT(const CaseOptionBuildInfo& cob,
 template<typename T> CaseOptionMultiSimpleT<T>::
 ~CaseOptionMultiSimpleT()
 {
-  T* avalue = this->_ptr();
+  const T* avalue = m_view.data();
   delete[] avalue;
 }
 
@@ -1265,10 +1265,11 @@ _search(bool is_phase1)
   if (asize==0)
     return;
 
-  T* old_value = this->_ptr();
+  const Type* old_value = m_view.data();
   delete[] old_value;
   using Type = typename CaseOptionTraitsT<T>::ContainerType;
-  T* ptr_value = new Type[asize];
+  Type* ptr_value = new Type[asize];
+  m_view = ArrayViewType(asize,ptr_value);
   this->_setArray(ptr_value,asize);
 
   //cerr << "** MULTI SEARCH " << size << endl;

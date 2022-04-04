@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -267,6 +267,7 @@ class ARCANE_CORE_EXPORT IVariable
 
  public:
  
+  ARCANE_DEPRECATED_REASON("Y2021: This method is a noop")
   virtual void setTraceInfo(Integer id,eTraceType tt)=0;
 
  public:
@@ -706,6 +707,7 @@ class ARCANE_CORE_EXPORT IVariable
 
  public:
 
+  ARCANE_DEPRECATED_REASON("Y2021: This method is a noop")
   virtual IMemoryAccessTrace* memoryAccessTrace() const =0;
 
   /*!

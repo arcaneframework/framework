@@ -5,12 +5,16 @@ Les variables d'environnement suivantes permettent de modifier le
 comportement à l'exécution:
 
 - **ARCANE_PARALLEL_SERVICE** :
-  Nom du service utilisé pour gérer le parallélisme. Cette variable
+  **obsolète** Nom du service utilisé pour gérer le parallélisme. Cette variable
   doit être positionnée si on souhaite un modèle d'exécution
-  parallèle. Les valeurs possibles sont: `Mpi` ou `Sequential`. Le mode
+  parallèle spécifique. Les valeurs possibles sont: `Mpi` ou `Sequential`. Le mode
   `Mpi` provoque l'appel à MPI_Init() et il faut donc que le programme
   soit lancé par le lanceur mpi de la plateforme (par exemple `mpiexec`,
-  `mpirun`, `prun` ...
+  `mpirun`, `prun`, ...).
+  Cette variable ne doit plus être utilisée car %Arcane détecte
+  automatiquement le lancement avec MPI. Si on souhaite surchargé le
+  service de parallélisme, il faut le spécifier dans les arguments de
+  la ligne de commande (voir \ref arcanedoc_launcher)
 
 - **ARCANE_CHECK** :
   Si définie, ajoute des tests de vérification de la validité des
@@ -126,6 +130,5 @@ Les autres variables suivantes sont utilisées mais à usage interne à %Arcane:
 - ARCANE_FORCE_PREPARE_DUMP
 - ARCANE_SERIALIZE_USE_DERIVED_TYPE
 - ARCANE_TRACE_MPI
-- ARCANE_NB_THREAD
 - ARCANE_PARALLEL_CHECK_SYNC
 - ARCANE_TRACE_FUNCTION

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -537,24 +537,7 @@ generateMesh(IPrimaryMesh* mesh)
   }
 
   mesh->setDimension(m_mesh_dimension);
-  mesh->allocateCells(mesh_nb_cell,cells_infos,false);
-
-  {
-    // Remplit la variable contenant le propriétaire des noeuds
-    UniqueArray<Int32> nodes_local_id(nodes_unique_id.size());
-    IItemFamily* family = mesh->itemFamily(IK_Node);
-    family->itemsUniqueIdToLocalId(nodes_local_id,nodes_unique_id);
-    ItemInternalList nodes_internal(family->itemsInternal());
-    for( Integer i=0; i<nb_node_local_id; ++i ){
-      const Node& node = nodes_internal[nodes_local_id[i]];
-      Int64 unique_id = nodes_unique_id[i];
-      Integer owner = nodes_infos.lookupValue(unique_id).m_owner;
-      node.internal()->setOwner(owner,my_part);
-      //info() << "Set owner " << ItemPrinter(node) << " owner=" << owner;
-    }
-  }
-
-  mesh->endAllocate();
+  mesh->allocateCells(mesh_nb_cell,cells_infos,true);
   
   VariableNodeReal3& nodes_coord_var(mesh->nodesCoordinates());
   {

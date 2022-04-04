@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CudaAccelerator.h                                           (C) 2000-2020 */
+/* CudaAccelerator.h                                           (C) 2000-2022 */
 /*                                                                           */
 /* Backend 'CUDA' pour les accélérateurs.                                    */
 /*---------------------------------------------------------------------------*/
@@ -51,6 +51,18 @@ arcaneCheckCudaErrors(const TraceInfo& ti,cudaError_t e);
 
 extern "C++" ARCANE_CUDA_EXPORT Arccore::IMemoryAllocator*
 getCudaMemoryAllocator();
+
+//! Allocateur spécifique sur le device
+extern "C++" ARCANE_CUDA_EXPORT Arccore::IMemoryAllocator*
+getCudaDeviceMemoryAllocator();
+
+//! Allocateur spécifique utilisant le mémoire unifiée
+extern "C++" ARCANE_CUDA_EXPORT Arccore::IMemoryAllocator*
+getCudaUnifiedMemoryAllocator();
+
+//! Allocateur spécifique utilisant la mémoire punaisée
+extern "C++" ARCANE_CUDA_EXPORT Arccore::IMemoryAllocator*
+getCudaHostPinnedMemoryAllocator();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -370,10 +370,10 @@ class ARCANE_MATERIALS_EXPORT IMeshMaterialMng
   virtual IMeshMaterialVariable* checkVariable(IVariable* global_var) =0;
 
   //! Ecrit les infos des matériaux et milieux sur le flot \a o
-  virtual void dumpInfos(ostream& o) =0;
+  virtual void dumpInfos(std::ostream& o) =0;
 
   //! Ecrit les infos de la maille \a cell sur le flot \a o
-  virtual void dumpCellInfos(Cell cell,ostream& o) =0;
+  virtual void dumpCellInfos(Cell cell,std::ostream& o) =0;
 
   //! Vérifie la validité des structures internes
   virtual void checkValid() =0;

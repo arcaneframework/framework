@@ -79,9 +79,9 @@ Test affichage liste.
 	    Lance tous les tests
 	  </description>
 	</enumvalue>
-	<enumvalue  genvalue="TypesParallelTester::TestParallelMng" name="ParallelMng">
+	<enumvalue  genvalue="TypesParallelTester::TestNone" name="None">
 	  <description>
-	    Teste les services de IParallelMng
+	    Ne fait aucun test additionnel
 	  </description>
 	</enumvalue>
 	<enumvalue  genvalue="TypesParallelTester::TestLoadBalance" name="LoadBalance">

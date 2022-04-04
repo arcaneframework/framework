@@ -9,7 +9,6 @@ set( ARCANE_SOURCES    AbstractCaseDocumentVisitor.cc
    AbstractService.h
    AbstractItemOperationByBasicType.cc
    AbstractItemOperationByBasicType.h
-   AcceleratorRuntimeInitialisationInfo.cc
    AcceleratorRuntimeInitialisationInfo.h
    ArcaneTypes.cc
    ArcaneTypes.h
@@ -58,7 +57,10 @@ set( ARCANE_SOURCES    AbstractCaseDocumentVisitor.cc
    Concurrency.h
    Connectivity.cc
    Connectivity.h
+   ICartesianMeshGenerationInfo.h
    core/internal/IDataInternal.h
+   core/internal/CartesianMeshGenerationInfo.h
+   core/internal/CartesianMeshGenerationInfo.cc
    Data.cc
    DataTypeDispatchingDataVisitor.cc
    DataTypeDispatchingDataVisitor.h
@@ -125,9 +127,7 @@ set( ARCANE_SOURCES    AbstractCaseDocumentVisitor.cc
    ModuleFactory.cc
    ModuleFactory.h
    NullXmlDocumentHolder.cc
-   Observable.cc
    Observable.h
-   Observer.cc
    Observer.h
    ObserverPool.cc
    ObserverPool.h
@@ -169,6 +169,8 @@ set( ARCANE_SOURCES    AbstractCaseDocumentVisitor.cc
    StandardCaseFunction.h
    ParallelMngDispatcher.cc
    ParallelMngDispatcher.h
+   ParallelMngUtils.h
+   ParallelMngUtils.cc
    ParallelNonBlockingCollectiveDispatcher.cc
    ParallelNonBlockingCollectiveDispatcher.h
    ParallelSuperMngDispatcher.cc
@@ -213,6 +215,7 @@ set( ARCANE_SOURCES    AbstractCaseDocumentVisitor.cc
    MeshUtils.h
    MeshVariableRef.cc
    MeshVariableRef.h
+   ParallelExchangerOptions.h
    PrivateVariableScalarTpl.cc
    PrivateVariableArrayTpl.cc
    MeshVariableTpl.cc
@@ -269,6 +272,10 @@ set( ARCANE_SOURCES    AbstractCaseDocumentVisitor.cc
    datatype/DataTracer.h
    datatype/DataTypes.cc
    datatype/DataTypes.h
+   datatype/RealArrayVariant.cc
+   datatype/RealArrayVariant.h
+   datatype/RealArray2Variant.cc
+   datatype/RealArray2Variant.h
    datatype/ScalarVariant.cc
    datatype/ScalarVariant.h
    datatype/SmallVariant.cc
@@ -451,7 +458,10 @@ set( ARCANE_SOURCES    AbstractCaseDocumentVisitor.cc
    IDeflateService.h
    IServiceMng.h
    IMeshBuilder.h
+   IGridMeshPartitioner.h
    IMeshChecker.h
+   IMeshPartitionerBase.h
+   IMeshUniqueIdMng.h
    IModuleMng.h
    IGetVariablesValuesParallelOperation.h
    IGhostLayerMng.h
@@ -540,6 +550,7 @@ set( ARCANE_SOURCES    AbstractCaseDocumentVisitor.cc
    IModule.h
    IParallelNonBlockingCollective.h
    IParallelMng.h
+   IParallelMngUtilsFactory.h
    IParallelReplication.h
    IParallelTopology.h
    IParallelSort.h
@@ -648,8 +659,8 @@ set( ARCANE_SOURCES    AbstractCaseDocumentVisitor.cc
    TiedNode.h
    TiedFace.h
    IMesh.h
-   IGraph.h
-   IGraphModifier.h
+   IGraph2.h
+   IGraphModifier2.h
    IPrimaryMesh.h
    IMeshSubMeshTransition.h
    SharedVariable.h

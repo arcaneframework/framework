@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml version="1.0"?>
 <cas codename="ArcaneTest" xml:lang="fr" codeversion="1.0">
  <arcane>
   <titre>Test Maillage Custom 1</titre>
@@ -6,11 +6,11 @@
   <boucle-en-temps>CustomMeshTestLoop</boucle-en-temps>
  </arcane>
 
- <maillages>
- <maillage name="PolyhedralMesh">
-  <fichier>example_polyhedral_cell.xmf</fichier>
- </maillage>
- </maillages>
+ <meshes>
+   <mesh name="PolyhedralMesh">
+     <filename>example_polyhedral_cell.xmf</filename>
+   </mesh>
+ </meshess>
 
 <!-- <module-test-unitaire>-->
 <!--  <test name="MeshUnitTest">-->

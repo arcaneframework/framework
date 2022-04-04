@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GetVariablesValuesParallelOperation.h                       (C) 2000-2014 */
+/* GetVariablesValuesParallelOperation.h                       (C) 2000-2021 */
 /*                                                                           */
 /* Opérations pour accéder aux valeurs de variables d'un autre sous-domaine. */
 /*---------------------------------------------------------------------------*/
@@ -16,10 +16,13 @@
 
 #include "arcane/IGetVariablesValuesParallelOperation.h"
 
+#include "arcane/utils/Array.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -76,7 +79,7 @@ class ARCANE_IMPL_EXPORT GetVariablesValuesParallelOperation
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

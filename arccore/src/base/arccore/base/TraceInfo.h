@@ -1,23 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2020 IFPEN-CEA
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TraceInfo.h                                                 (C) 2000-2018 */
+/* TraceInfo.h                                                 (C) 2000-2022 */
 /*                                                                           */
 /* Informations de trace.                                                    */
 /*---------------------------------------------------------------------------*/
@@ -45,7 +33,7 @@ class TraceInfo
 {
  public:
   TraceInfo()
-  : m_file("(None)"), m_name("(None)"), m_line(-1) {}
+  : m_file("(None)"), m_name("(None)"), m_line(-1), m_print_signature(true) {}
   TraceInfo(const char* afile,const char* func_name,int aline)
   : m_file(afile), m_name(func_name), m_line(aline), m_print_signature(true) {}
   TraceInfo(const char* afile,const char* func_name,int aline,bool print_signature)

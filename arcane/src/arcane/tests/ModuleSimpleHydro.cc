@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -54,6 +54,8 @@
 #include "arcane/hyoda/Hyoda.h"
 #include "arcane/ItemLoop.h"
 #include "arcane/ITimeHistoryMng.h"
+
+#include "arcane/MeshUtils.h"
 
 // Force la vectorisation avec GCC.
 #ifdef __GNUC__
@@ -288,6 +290,7 @@ hydroStartInit()
   }
 #endif
 
+  mesh_utils::shrinkMeshGroups(mesh());
   allCells().internal()->checkLocalIdsAreContigous();
   allNodes().internal()->checkLocalIdsAreContigous();
 
@@ -496,7 +499,7 @@ computeVelocity()
 void ModuleSimpleHydro::
 computeViscosityWork()
 {
-  Parallel::Foreach(allCells(),this,&ModuleSimpleHydro::_computeViscosityWork);
+  arcaneParallelForeach(allCells(),this,&ModuleSimpleHydro::_computeViscosityWork);
 }
 
 void ModuleSimpleHydro::
@@ -601,7 +604,7 @@ updateDensity()
 void ModuleSimpleHydro::
 applyEquationOfState()
 {
-  Parallel::Foreach(allCells(),this,&ModuleSimpleHydro::_applyEquationOfState);
+  arcaneParallelForeach(allCells(),this,&ModuleSimpleHydro::_applyEquationOfState);
 }
 
 void ModuleSimpleHydro::
@@ -807,7 +810,7 @@ computeCQs(Real3 node_coord[8],Real3 face_coord[6],const Cell& cell)
 void ModuleSimpleHydro::
 computeGeometricValues()
 {
-  Parallel::Foreach(allCells(),this,&ModuleSimpleHydro::_computeGeometricValues);
+  arcaneParallelForeach(allCells(),this,&ModuleSimpleHydro::_computeGeometricValues);
 }
 
 /*---------------------------------------------------------------------------*/

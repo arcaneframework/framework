@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -324,8 +324,6 @@ bool SimpleMeshGenerator::
 generateMesh()
 {
   IPrimaryMesh* mesh = m_mesh;
-  IParallelMng* pm = mesh->parallelMng();
-  Int32 sub_domain_id = pm->commRank();
 
   info() << "Using simple mesh generator";
 
@@ -383,26 +381,11 @@ generateMesh()
   UniqueArray<Int64> cells_infos(m_cells_infos.size());
   for(Integer i=0;i<m_cells_infos.size();++i)
     cells_infos[i] = m_cells_infos[i];
-  mesh->allocateCells(m_current_nb_cell,cells_infos,false);
+  mesh->allocateCells(m_current_nb_cell,cells_infos,true);
 
   UniqueArray<Int64> nodes_unique_id(m_nodes_unique_id.size());
   for(Integer i=0;i<m_nodes_unique_id.size();++i)
     nodes_unique_id[i] = m_nodes_unique_id[i];
-
-  {
-    // Remplit la variable contenant le propriétaire des noeuds
-    UniqueArray<Int32> nodes_local_id(nodes_unique_id.size());
-    IItemFamily* family = mesh->itemFamily(IK_Node);
-    family->itemsUniqueIdToLocalId(nodes_local_id,nodes_unique_id);
-    ItemInternalList nodes_internal(family->itemsInternal());
-    Integer nb_node_local_id = nodes_local_id.size();
-    for( Integer i=0; i<nb_node_local_id; ++i ){
-      const Node& node = nodes_internal[nodes_local_id[i]];
-      node.internal()->setOwner(sub_domain_id,sub_domain_id);
-    }
-  }
-
-  mesh->endAllocate();
   
   VariableNodeReal3& nodes_coord_var(mesh->nodesCoordinates());
   {

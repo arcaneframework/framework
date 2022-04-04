@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -82,6 +82,7 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcher
                           ArrayView<bool> indexes, bool is_non_blocking) override;
     IMessagePassingMng* commSplit(bool keep) override;
     void barrier() override;
+    Request nonBlockingBarrier() override;
     MessageId probe(const PointToPointMessageInfo& message) override;
     Ref<Parallel::IRequestList> createRequestListRef() override;
     MP::IProfiler* profiler() const override { return nullptr; }

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -61,11 +61,15 @@ class SerializedData
   ByteConstArrayView buffer() const override { return m_const_buffer.constSmallView(); }
   ByteArrayView buffer() override { return m_buffer.smallView(); }
   Span<const Byte> bytes() const override { return m_const_buffer; }
+  Span<const Byte> constBytes() const override { return m_const_buffer; }
   Span<Byte> bytes() override { return m_buffer; }
   void setBuffer(ByteArrayView buffer) override;
   void setBuffer(ByteConstArrayView buffer) override;
-  void setBytes(Span<Byte> bytes) override;
-  void setBytes(Span<const Byte> bytes) override;
+  void setBytes(Span<Byte> bytes) override { setWritableBytes(bytes); }
+  void setBytes(Span<const Byte> bytes) override { setConstBytes(bytes); }
+  Span<Byte> writableBytes() override { return m_buffer; }
+  void setWritableBytes(Span<Byte> bytes) override;
+  void setConstBytes(Span<const Byte> bytes) override;
   void allocateMemory(Int64 size) override;
 
  public:
@@ -174,19 +178,20 @@ setBuffer(ByteConstArrayView buffer)
 /*---------------------------------------------------------------------------*/
 
 void SerializedData::
-setBytes(Span<Byte> buffer)
+setWritableBytes(Span<Byte> buffer)
 {
   m_buffer = buffer;
   m_const_buffer = buffer;
   m_stored_buffer.clear();
   m_memory_size = buffer.size();
+
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void SerializedData::
-setBytes(Span<const Byte> buffer)
+setConstBytes(Span<const Byte> buffer)
 {
   m_const_buffer = buffer;
   m_buffer = Span<Byte>();

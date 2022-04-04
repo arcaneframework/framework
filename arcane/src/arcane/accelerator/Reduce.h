@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Reduce.h                                                    (C) 2000-2020 */
+/* Reduce.h                                                    (C) 2000-2021 */
 /*                                                                           */
 /* Gestion des réductions pour les accélérateurs.                            */
 /*---------------------------------------------------------------------------*/
@@ -14,12 +14,17 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/IReduceMemoryImpl.h"
+#include "arcane/accelerator/core/IReduceMemoryImpl.h"
+#include "arcane/accelerator/AcceleratorGlobal.h"
 
 #include <limits.h>
 #include <float.h>
 #include <atomic>
 #include <iostream>
+
+#if defined(__HIP__)
+#include <hip/hip_runtime.h>
+#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -52,9 +57,9 @@ template<>
 class ReduceIdentity<int>
 {
  public:
-  ARCCORE_HOST_DEVICE static constexpr double sumValue() { return 0; }
-  ARCCORE_HOST_DEVICE static constexpr double minValue() { return INT_MAX; }
-  ARCCORE_HOST_DEVICE static constexpr double maxValue() { return -INT_MAX; }
+  ARCCORE_HOST_DEVICE static constexpr int sumValue() { return 0; }
+  ARCCORE_HOST_DEVICE static constexpr int minValue() { return INT_MAX; }
+  ARCCORE_HOST_DEVICE static constexpr int maxValue() { return -INT_MAX; }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -328,15 +333,18 @@ class ReducerMin
 // changer l'implémentation sans tout recompiler) mais cela ne semble pas
 // bien fonctionner pour l'instant.
 
-#define ARCANE_INLINE_CUDA_IMPL
+#define ARCANE_INLINE_REDUCE_IMPL
 
-#ifdef ARCANE_INLINE_CUDA_IMPL
+#ifdef ARCANE_INLINE_REDUCE_IMPL
 
-#if defined(__CUDACC__)
-#  ifndef ARCANE_INLINE_CUDA
-#    define ARCANE_INLINE_CUDA inline
+#  ifndef ARCANE_INLINE_REDUCE
+#    define ARCANE_INLINE_REDUCE inline
 #  endif
-#  include "arcane/accelerator/cuda/CudaReduceImpl.h"
+
+#if defined(__CUDACC__) || defined(__HIP__)
+#  include "arcane/accelerator/CommonCudaHipReduceImpl.h"
+#else
+
 #endif
 
 #endif

@@ -1,19 +1,7 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2020 IFPEN-CEA
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
@@ -132,11 +120,19 @@ typedef ARCCORE_TYPE_INT64 Int64;
    le device.
 */
 
-#if defined(__CUDA_ARCH__)
+#if defined(__CUDA_ARCH__) || defined(__HIP_DEVICE_COMPILE__)
 #define ARCCORE_DEVICE_CODE
+#if defined(__CUDA_ARCH__)
+#define ARCCORE_DEVICE_TARGET_CUDA
+#if defined(__HIPSYCL__)
+// Nécessaire pour assert() par exemple dans arccoreCheckAt()
+// TODO: regarder si cela est aussi nécessaire pour AMD HIP.
+#include <cassert>
+#endif
+#endif
 #endif
 
-#if defined(__CUDACC__)
+#if defined(__CUDACC__) || defined(__HIP__)
 #define ARCCORE_HOST_DEVICE __host__ __device__
 #define ARCCORE_DEVICE __device__
 #endif
@@ -308,6 +304,11 @@ struct FalseType {};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+// Macros de compatibilités avec les différents standards du C++.
+// Maintenant (en 2021) tous les compilateurs avec lesquels Arccore compile
+// ont le support du C++17 donc la plupart de ces macros ne sont plus utiles.
+// On les garde uniquement pour compatibilité avec le code existant.
+
 // La macro ARCCORE_NORETURN utilise l'attribut [[noreturn]] du C++11 pour
 // indiquer qu'une fonction ne retourne pas.
 #define ARCCORE_NORETURN [[noreturn]]
@@ -315,53 +316,11 @@ struct FalseType {};
 //! Macro permettant de spécifier le mot-clé 'constexpr' du C++11
 #define ARCCORE_CONSTEXPR constexpr
 
-// Le C++11 définit un mot clé 'noexcept' pour indiquer qu'une méthode ne
-// renvoie pas d'exceptions. Malheureusement, comme le support du C++11
-// est fait de manière partielle par les compilateurs, cela ne marche pas
-// pour tous. En particulier, icc 13, 14 et 15 ne supportent pas cela, ni
-// Visual Studio 2013 et antérieurs.
-#define ARCCORE_NOEXCEPT noexcept(true)
+// Macro pour indiquer qu'on ne lance pas d'exceptions.
+#define ARCCORE_NOEXCEPT noexcept
+
+// Macros pour indiquer qu'on lance pas d'exceptions.
 #define ARCCORE_NOEXCEPT_FALSE noexcept(false)
-
-// Support pour le compilateur CUDA.
-// TODO: vérifier si les versions récentes supportent cela.
-#ifdef ARCCORE_NOEXCEPT_FOR_NVCC
-#  undef ARCCORE_NOEXCEPT
-#  define ARCCORE_NOEXCEPT throw() // throw jusqu'à ce que nvcc le supporte
-#  undef ARCCORE_NOEXCEPT_FALSE
-#  undef ARCCORE_NORETURN
-#endif
-
-// Support avec le compilateur Intel
-#if __INTEL_COMPILER && (__INTEL_COMPILER<1600)
-#  undef ARCCORE_NOEXCEPT
-#  undef ARCCORE_NOEXCEPT_FALSE
-#  define ARCCORE_NOEXCEPT throw()
-#endif
-
-// Visual Studio 2013 (_MSC_VER=1800) ne supporte pas noexcept
-// mais Visual Studio 2015 (_MSC_VER=1900) Si. De même, Visual
-// Studio 2013 ne supporte pas le mot clé 'constexpr'.
-#if _MSC_VER && (_MSC_VER<=1800) 
-#  undef ARCCORE_NOEXCEPT
-#  undef ARCCORE_NOEXCEPT_FALSE
-#  define ARCCORE_NOEXCEPT throw()
-#  undef ARCCORE_NORETURN
-#  undef ARCCORE_CONSTEXPR
-#  define ARCCORE_CONSTEXPR
-#endif
-
-#if (__GNUC__==4 && __GNUC_MINOR__<=9)
-#  undef ARCCORE_NORETURN
-#endif
-
-#ifndef ARCCORE_NOEXCEPT_FALSE
-#  define ARCCORE_NOEXCEPT_FALSE
-#endif
-
-#ifndef ARCCORE_NORETURN
-#  define ARCCORE_NORETURN
-#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -389,7 +348,7 @@ struct FalseType {};
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifdef ARCCORE_CHECK
+#if defined(ARCCORE_CHECK) || defined(ARCCORE_DEBUG)
 #  ifndef ARCCORE_DEBUG_ASSERT
 #    define ARCCORE_DEBUG_ASSERT
 #  endif
@@ -506,18 +465,26 @@ arccoreRangeError ARCCORE_NORETURN (Int64 i,Int64 max_size);
 /*!
  * \brief Vérifie un éventuel débordement de tableau.
  */
-static inline ARCCORE_HOST_DEVICE void
+inline ARCCORE_HOST_DEVICE void
 arccoreCheckAt(Int64 i,Int64 max_size)
 {
 #ifndef ARCCORE_DEVICE_CODE
   if (i<0 || i>=max_size)
     arccoreRangeError(i,max_size);
 #else
+  // Code pour le device.
+  // assert() est disponible pour CUDA.
+  // TODO: regarder si une fonction similaire existe pour HIP
+#ifdef ARCCORE_DEVICE_TARGET_CUDA
   assert(i>=0 && i<max_size);
+#else
+  ARCCORE_UNUSED(i);
+  ARCCORE_UNUSED(max_size);
+#endif
 #endif
 }
 
-#ifdef ARCCORE_CHECK
+#if defined(ARCCORE_CHECK) || defined(ARCCORE_DEBUG)
 #define ARCCORE_CHECK_AT(a,b) ::Arccore::arccoreCheckAt((a),(b))
 #else
 #define ARCCORE_CHECK_AT(a,b)

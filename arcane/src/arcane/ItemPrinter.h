@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -60,12 +60,6 @@ class ARCANE_CORE_EXPORT ItemPrinter
     {}
   ItemPrinter(const Cell& item)
   : m_item(item.internal()), m_item_kind(IK_Cell), m_has_item_kind(true)
-    {}
-  ItemPrinter(const DualNode& item)
-  : m_item(item.internal()), m_item_kind(IK_DualNode), m_has_item_kind(true)
-    {}
-  ItemPrinter(const Link& item)
-  : m_item(item.internal()), m_item_kind(IK_Link), m_has_item_kind(true)
     {}
   ItemPrinter(const Particle& item)
   : m_item(item.internal()), m_item_kind(IK_Particle), m_has_item_kind(true)

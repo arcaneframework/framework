@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -86,12 +86,12 @@ void EdgeFamily::
 build()
 {
   ItemFamily::build();
-  ItemTypeMng* itm = ItemTypeMng::singleton();
+  ItemTypeMng* itm = m_mesh->itemTypeMng();
   m_edge_type = itm->typeFromId(IT_Line2);
 
   m_node_family = ARCANE_CHECK_POINTER(dynamic_cast<NodeFamily*>(m_mesh->nodeFamily()));
 
-  if (m_mesh->itemFamilyNetwork()) // temporary to fill legacy, even with family dependencies
+  if (m_mesh->useMeshItemFamilyDependencies()) // temporary to fill legacy, even with family dependencies
   {
     m_node_connectivity = dynamic_cast<NewWithLegacyConnectivityType<EdgeFamily,NodeFamily>::type*>(m_mesh->itemFamilyNetwork()->getConnectivity(this,mesh()->nodeFamily(),connectivityName(this,mesh()->nodeFamily())));
     m_face_connectivity = dynamic_cast<NewWithLegacyConnectivityType<EdgeFamily,FaceFamily>::type*>(m_mesh->itemFamilyNetwork()->getConnectivity(this,mesh()->faceFamily(),connectivityName(this,mesh()->faceFamily())));
@@ -118,7 +118,7 @@ inline void EdgeFamily::
 _createOne(ItemInternal* item,Int64 uid)
 {
   m_item_internal_list->edges = _itemsInternal();
-  _allocateInfos(item,uid,m_edge_type,0,0,0,0,m_face_prealloc,m_cell_prealloc);
+  _allocateInfos(item,uid,m_edge_type);
   auto nc = m_node_connectivity->trueCustomConnectivity();
   if (nc)
     nc->addConnectedItems(ItemLocalId(item),2);
@@ -200,7 +200,7 @@ void EdgeFamily::
 preAllocate(Integer nb_item)
 {
   Integer mem = 0;
-  Integer base_mem = m_node_prealloc + m_face_prealloc + m_cell_prealloc + ItemSharedInfo::COMMON_BASE_MEMORY;
+  Integer base_mem = ItemSharedInfo::COMMON_BASE_MEMORY;
   if (m_has_edge) { // On n'alloue rien du tout si on n'a pas d'arête
     mem = base_mem * (nb_item+1);
   }

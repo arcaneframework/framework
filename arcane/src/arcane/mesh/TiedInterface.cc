@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -58,7 +58,7 @@ class TiedInterfaceBuilderInfos
  public:
   void printInfos()
   {
-    ostream& o = cout;
+    std::ostream& o = cout;
     o << " MasterFacesUid=" << m_master_faces_uid.size()
       << " SlaveNodesUid=" << m_slave_nodes_uid.size()
       << " SlaveFacesUid=" << m_slave_faces_uid.size()
@@ -371,7 +371,7 @@ class TiedInterfaceBuilder
   void _gatherFaces(ConstArrayView<ItemUniqueId> faces_to_send,
                     TiedInterfaceFaceMap& face_map);
   void _gatherAllNodesInfo();
-  void _printFaces(ostream& o,TiedInterfaceFaceMap& face_map);
+  void _printFaces(std::ostream& o,TiedInterfaceFaceMap& face_map);
   void _computeProjectionInfos(TiedInterfaceBuilderInfos& infos,bool is_structured);
   void _addFaceToList(const Face& face,TiedInterfaceFaceMap& face_map);
   void _detectStructuration(const TiedInterfaceMasterFace& master_face,
@@ -1214,7 +1214,7 @@ _detectStructurationRecursive(Array<ItemUniqueId>& slave_faces,
 /*---------------------------------------------------------------------------*/
 
 void TiedInterfaceBuilder::
-_printFaces(ostream& o,TiedInterfaceFaceMap& face_map)
+_printFaces(std::ostream& o,TiedInterfaceFaceMap& face_map)
 {
   // Utilise une map pour trier les faces suivant leur uniqueId() afin
   // que l'affichage soit toujours le meme.

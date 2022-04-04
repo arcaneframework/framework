@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -93,7 +93,10 @@ namespace Arcane.ExecDrivers.Common
       Assembly a = Assembly.GetExecutingAssembly();
       string path = a.Location;
 
-      string config_path = path + ".config.json";
+      // Regarde si la version 'install' existe et si c'est le cas prend ce fichier de configuration
+      string config_path = path + ".install.config.json";
+      if (!File.Exists(config_path))
+        config_path = path + ".config.json";
       var settings =_ReadConfigJSON(config_path);
       m_settings = settings;
 

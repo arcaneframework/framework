@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -55,23 +55,22 @@ class ParticleUnitTest
 {
  public:
 
-  ParticleUnitTest(const ServiceBuildInfo& cb);
+  explicit ParticleUnitTest(const ServiceBuildInfo& cb);
   ~ParticleUnitTest();
 
  public:
   
-  virtual void initializeTest();
-  virtual void executeTest();
+  void initializeTest() override;
+  void executeTest() override;
 
+  void computeExtraParticlesToSend() override;
 
-  void computeExtraParticlesToSend() ;
-
-  IntegerConstArrayView extraParticlesToSend(const String& family_name,Int32 sid) const
+  Int32ConstArrayView extraParticlesToSend(const String& family_name,Int32 sid) const override
   {
-    if(family_name=="ArcaneParticlesWithGhost")
-      return m_extra_ghost_particles_to_send[sid] ;
+    if (family_name=="ArcaneParticlesWithGhost")
+      return m_extra_ghost_particles_to_send[sid];
     else
-      return IntegerConstArrayView() ;
+      return Int32ConstArrayView();
   } ;
 
 
@@ -137,7 +136,7 @@ initializeTest()
   IParticleExchanger* pe = options()->particleExchanger();
   pe->initialize(m_particle_family);
 
-  mesh()->modifier()->addExtraGhostParticlesBuilder((IExtraGhostParticlesBuilder*)this) ;
+  mesh()->modifier()->addExtraGhostParticlesBuilder(this);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -167,6 +166,8 @@ executeTest()
   for( Integer i=0; i<max_iteration; ++i){
     _doTest2(i,true);
   }
+
+  mesh()->modifier()->removeExtraGhostParticlesBuilder(this);
 }
 
 /*---------------------------------------------------------------------------*/

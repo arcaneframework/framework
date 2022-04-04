@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -33,6 +33,11 @@ namespace Arcane
 class IParallelMng;
 class IParallelMngContainer;
 class IParallelMngContainerFactory;
+class IGetVariablesValuesParallelOperation;
+class ITransferValuesParallelOperation;
+class IParallelExchanger;
+class IVariableSynchronizer;
+class IParallelTopology;
 }
 
 ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::IParallelMng)

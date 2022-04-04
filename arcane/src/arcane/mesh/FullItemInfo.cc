@@ -1,22 +1,23 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* FullItemInfo.h                                              (C) 2000-2020 */
+/* FullItemInfo.h                                              (C) 2000-2021 */
 /*                                                                           */
 /* Information de sérialisation d'une maille.                                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#include "arcane/mesh/FullItemInfo.h"
 
 #include "arcane/ISerializer.h"
 #include "arcane/ItemInternal.h"
 #include "arcane/ItemInternalEnumerator.h"
 
 #include "arcane/mesh/DynamicMesh.h"
-#include "arcane/mesh/FullItemInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -58,7 +59,7 @@ FullCellInfo(Int64ConstArrayView cells_infos,Integer cell_index,
 /*---------------------------------------------------------------------------*/
 
 void FullCellInfo::
-print(ostream& o) const
+print(std::ostream& o) const
 {
   o << "Cell uid=" << uniqueId()
     << " nb_node=" << nbNode()
@@ -267,19 +268,6 @@ _setInternalInfos()
   }
   if(m_with_flags)
     m_memory_used += 1;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-  
-void FullLinkInfo::
-print(ostream& o) const
-{
-  o << "Link uid=" << uniqueId()
-    << " nb_node=" << nbDualNode()
-    << ' ';
-  for( Integer z=0, zs=nbDualNode(); z<zs; ++z )
-    o << " N" << z << "=" << dualNodeUniqueId(z);
 }
 
 /*---------------------------------------------------------------------------*/

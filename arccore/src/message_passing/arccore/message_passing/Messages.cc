@@ -1,23 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2020 IFPEN-CEA
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Messages.cc                                                 (C) 2000-2020 */
+/* Messages.cc                                                 (C) 2000-2022 */
 /*                                                                           */
 /* Identifiant d'un message point à point.                                   */
 /*---------------------------------------------------------------------------*/
@@ -29,6 +17,11 @@
 #include "arccore/message_passing/IControlDispatcher.h"
 #include "arccore/message_passing/MessageId.h"
 
+/*!
+ * \file Messages.h
+ *
+ * \brief Liste des fonctions d'échange de message.
+ */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -137,6 +130,16 @@ mpBarrier(IMessagePassingMng* pm)
 {
   auto d = pm->dispatchers()->controlDispatcher();
   d->barrier();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Request
+mpNonBlockingBarrier(IMessagePassingMng* pm)
+{
+  auto d = pm->dispatchers()->controlDispatcher();
+  return d->nonBlockingBarrier();
 }
 
 /*---------------------------------------------------------------------------*/

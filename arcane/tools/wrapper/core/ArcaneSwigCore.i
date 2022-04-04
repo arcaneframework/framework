@@ -58,6 +58,7 @@ namespace Arcane
 #define ARCCORE_DEPRECATED_2019(a)
 #define ARCCORE_DEPRECATED_2020(a)
 #define ARCCORE_DEPRECATED_2021(a)
+#define ARCANE_DEPRECATED_REASON(a)
 #define ARCANE_NOEXCEPT
 
 #define ARCANE_EXPR_EXPORT
@@ -67,6 +68,7 @@ namespace Arcane
 #define ARCANE_DEPRECATED
 #define ARCANE_DATATYPE_EXPORT
 #define ARCANE_IMPL_EXPORT
+#define ARCANE_ACCELERATOR_CORE_EXPORT
 
 %ignore operator();
 %ignore operator[];
@@ -221,6 +223,9 @@ namespace Arcane
 %rename("_finalize", fullname=1) "Arcane::IArcaneMain::finalize";
 %rename("_finalize", fullname=1) "Arcane::ArcaneMain::finalize";
 
+// Renomme cette méthode car il y a une classe de même nom
+%rename("_acceleratorRuntimeInitialisationInfo", fullname=1) "Arcane::ArcaneMain::acceleratorRuntimeInitialisationInfo";
+
 // Supprime le wrapping des méthodes qui sont obsolètes dans Arcane
 %rename("$ignore", fullname=1, regextarget=1) "Arcane::ServiceBuilder<.*>::createInstance";
 %rename("$ignore", fullname=1) "Arcane::ApplicationInfo::m_argc";
@@ -307,6 +312,26 @@ ARCANE_SWIG_OVERRIDE_GETCPTR(Arcane::ItemGroupT<Arcane::Node>,Arcane)
 ARCANE_SWIG_OVERRIDE_GETCPTR(Arcane::ItemGroupT<Arcane::Edge>,Arcane)
 ARCANE_SWIG_OVERRIDE_GETCPTR(Arcane::ItemGroupT<Arcane::Face>,Arcane)
 ARCANE_SWIG_OVERRIDE_GETCPTR(Arcane::ItemGroupT<Arcane::Cell>,Arcane)
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+// Fonctions pour enregistrer un delegate qui permet d'appeler depuis le C++
+// les routines C# qui gèrent le GarbageCollector.
+%typemap(cscode) Arcane::ArcaneMain
+%{
+  internal delegate void _GarbageCollectorDelegate();
+  [DllImport("$dllimport")]
+  static internal extern IntPtr _ArcaneWrapperCoreSetCallGarbageCollectorDelegate(_GarbageCollectorDelegate d);
+%}
+%{
+  extern "C" ARCANE_UTILS_EXPORT void
+  _ArcaneSetCallGarbageCollectorDelegate(void (*func)());
+  extern "C" ARCANE_EXPORT void
+  _ArcaneWrapperCoreSetCallGarbageCollectorDelegate(void (*func)())
+  {
+    _ArcaneSetCallGarbageCollectorDelegate(func);
+  }
+%}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -410,12 +435,13 @@ class IEntryPoint
 %include arcane/ItemGroupImpl.h
 %include arcane/expr/IExpressionImpl.h
 %include arcane/SharedReference.h
-%include arcane/IObserver.h
-%include arcane/Observer.h
-%include arcane/IObservable.h
+%include arcane/utils/IObserver.h
+%include arcane/utils/Observer.h
+%include arcane/utils/IObservable.h
 %include arcane/IMainFactory.h
 %include arcane/ApplicationBuildInfo.h
 %include arcane/DotNetRuntimeInitialisationInfo.h
+%include arcane/accelerator/core/AcceleratorRuntimeInitialisationInfo.h
 
 namespace Arcane
 {

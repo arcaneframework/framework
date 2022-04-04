@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -312,6 +312,9 @@ class ItemMaterialVariableBase
   //! Variables pour les différents matériaux.
   UniqueArray<PrivatePartType*> m_vars;
   UniqueArray<ContainerViewType> m_views;
+
+ private:
+  bool _isValidAndUsedAndGlobalUsed(PrivatePartType* partial_var);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -371,8 +374,8 @@ class ItemMaterialVariableScalar
 
   ARCANE_MATERIALS_EXPORT void synchronize() override;
   ARCANE_MATERIALS_EXPORT void synchronize(MeshMaterialVariableSynchronizerList& sync_list) override;
-  ARCANE_MATERIALS_EXPORT void dumpValues(ostream& ostr) override;
-  ARCANE_MATERIALS_EXPORT void dumpValues(ostream& ostr,AllEnvCellVectorView view) override;
+  ARCANE_MATERIALS_EXPORT void dumpValues(std::ostream& ostr) override;
+  ARCANE_MATERIALS_EXPORT void dumpValues(std::ostream& ostr,AllEnvCellVectorView view) override;
   ARCANE_MATERIALS_EXPORT void serialize(ISerializer* sbuffer,Int32ConstArrayView ids) override;
 
  public:
@@ -511,8 +514,8 @@ class ItemMaterialVariableArray
 
   ARCANE_MATERIALS_EXPORT void synchronize() override;
   ARCANE_MATERIALS_EXPORT void synchronize(MeshMaterialVariableSynchronizerList& sync_list) override;
-  ARCANE_MATERIALS_EXPORT void dumpValues(ostream& ostr) override;
-  ARCANE_MATERIALS_EXPORT void dumpValues(ostream& ostr,AllEnvCellVectorView view) override;
+  ARCANE_MATERIALS_EXPORT void dumpValues(std::ostream& ostr) override;
+  ARCANE_MATERIALS_EXPORT void dumpValues(std::ostream& ostr,AllEnvCellVectorView view) override;
   ARCANE_MATERIALS_EXPORT void serialize(ISerializer* sbuffer,Int32ConstArrayView ids) override;
   ARCANE_MATERIALS_EXPORT Int32 dataTypeSize() const override;
 

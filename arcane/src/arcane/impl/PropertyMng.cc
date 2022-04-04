@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -61,7 +61,7 @@ class PropertyMng
   void serialize(ISerializer* serializer) override;
   void writeTo(ByteArray& bytes) override;
   void readFrom(Span<const Byte> bytes) override;
-  void print(ostream& o) const override;
+  void print(std::ostream& o) const override;
   IObservable* writeObservable() override { return &m_write_observable; }
   IObservable* readObservable() override { return &m_read_observable; }
 
@@ -257,7 +257,7 @@ readFrom(Span<const Byte> bytes)
  * \brief Affiche les propriétés et leurs valeurs sur le flot \a o.
  */
 void PropertyMng::
-print(ostream& o) const
+print(std::ostream& o) const
 {
   for (auto v : m_properties_map) {
     const Properties& p = v.second;

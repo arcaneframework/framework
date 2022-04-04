@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelMngDispatcher.cc                                    (C) 2000-2020 */
+/* ParallelMngDispatcher.cc                                    (C) 2000-2022 */
 /*                                                                           */
 /* Redirection de la gestion des messages suivant le type des arguments.     */
 /*---------------------------------------------------------------------------*/
@@ -26,6 +26,7 @@
 #include "arcane/IParallelDispatch.h"
 #include "arcane/Timer.h"
 #include "arcane/ITimeStats.h"
+#include "arcane/IParallelNonBlockingCollective.h"
 
 #include "arccore/message_passing/Dispatchers.h"
 #include "arccore/message_passing/MessagePassingMng.h"
@@ -123,6 +124,12 @@ void ParallelMngDispatcher::DefaultControlDispatcher::
 barrier()
 {
   m_parallel_mng->barrier();
+}
+
+Request ParallelMngDispatcher::DefaultControlDispatcher::
+nonBlockingBarrier()
+{
+  return m_parallel_mng->nonBlockingCollective()->barrier();
 }
 
 MessageId ParallelMngDispatcher::DefaultControlDispatcher::

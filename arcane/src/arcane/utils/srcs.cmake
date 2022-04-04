@@ -22,10 +22,14 @@ set(ARCANE_SOURCES
   CommandLineArguments.cc
   Convert.cc
   Convert.h
+  ConcurrencyUtils.cc
+  ConcurrencyUtils.h
   CStringUtils.cc
   CStringUtils.h
   DataVector1D.cc
   DataVector1D.h
+  DependencyInjection.h
+  DependencyInjection.cc
   Enumerator.cc
   Enumerator.h
   ExternalRef.h
@@ -40,6 +44,7 @@ set(ARCANE_SOURCES
   IDataCompressor.h
   IOException.cc
   IOException.h
+  IMemoryRessourceMng.h
   JSONPropertyReader.h
   JSONReader.cc
   JSONReader.h
@@ -57,16 +62,24 @@ set(ARCANE_SOURCES
   Misc.cc
   MD5HashAlgorithm.cc
   MD5HashAlgorithm.h
+  MDSpan.cc
+  MDSpan.h
   Math.cc
   Math.h
   MemoryAccessInfo.cc
   MemoryAccessInfo.h
   MemoryInfo.cc
   MemoryInfo.h
+  MemoryRessource.h
+  MemoryRessourceMng.cc
   Numeric.cc
   Numeric.h
   NumArray.h
   NumArray.cc
+  Observable.cc
+  Observer.cc
+  Observable.h
+  Observer.h
   OStringStream.cc
   OStringStream.h
   ParallelFatalErrorException.cc
@@ -106,6 +119,11 @@ set(ARCANE_SOURCES
   VersionInfo.h
   ApplicationInfo.h
   ArcaneGlobal.h
+  ArrayBoundsIndex.h
+  ArrayExtents.h
+  ArrayBounds.h
+  ArrayLayout.h
+  LoopRanges.h
   ArithmeticException.h
   Array.h
   Atomic.h
@@ -193,6 +211,8 @@ set(ARCANE_SOURCES
   IFunctorWithArgument.h
   IHashAlgorithm.h
   IAllocator.h
+  IObserver.h
+  IObservable.h
   Iterator.h
   IMemoryAllocator.h
   IRangeFunctor.h
@@ -271,4 +291,6 @@ set(ARCANE_SOURCES
   GraphBaseT.h
   DirectedGraphT.h
   DirectedAcyclicGraphT.h
+  internal/MemoryRessourceMng.h
+  internal/IMemoryRessourceMngInternal.h
   )

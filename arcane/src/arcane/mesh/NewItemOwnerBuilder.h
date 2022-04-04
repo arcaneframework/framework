@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -110,35 +110,6 @@ inline Cell NewItemOwnerBuilder::connectedCellOfItem<Particle>(const Particle& p
   return particle.cell();
 }
 
-// Pour les noeuds duaux, la maille connectée est la maille connectée de l'item dual
-template<>
-inline Cell NewItemOwnerBuilder::connectedCellOfItem<DualNode>(const DualNode& dual_node) const
-{
-  const Item& dual_item = dual_node.dualItem();
-  switch(dual_item.kind()) {
-  case IK_Cell : return dual_item.toCell();
-  case IK_Face : return connectedCellOfItem(dual_item.toFace());
-  case IK_Node : return connectedCellOfItem(dual_item.toNode());
-  case IK_Edge : return connectedCellOfItem(dual_item.toEdge());
-  case IK_Particle : return connectedCellOfItem(dual_item.toParticle());
-  default :
-    throw FatalErrorException("Dual item kind not managed in MeshExchange");
-  }
-}
-
-// Pour les liaison, la maille connectée est celle du premier noeud dual
-template<>
-inline Cell NewItemOwnerBuilder::connectedCellOfItem<Link>(const Link& link) const
-{
-  return connectedCellOfItem<DualNode>(link.dualNode(0));
-}
-
-// Optimisation, le noeud dual a son owner à jour
-template<>
-inline Integer NewItemOwnerBuilder::ownerOfItem(const Link& link) const
-{
-  return link.dualNode(0).owner();
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneGlobal.h                                              (C) 2000-2020 */
+/* ArcaneGlobal.h                                              (C) 2000-2021 */
 /*                                                                           */
 /* Déclarations générales de Arcane.                                         */
 /*---------------------------------------------------------------------------*/
@@ -42,6 +42,7 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 #if defined(ARCANE_HAS_CUDA) && defined(__CUDACC__)
 /*!
  * \brief Macro pour indiquer qu'on compile %Arcane avec le support
@@ -49,19 +50,18 @@
  */
 #define ARCANE_COMPILING_CUDA
 #endif
+#if defined(ARCANE_HAS_HIP) && defined(__HIP__)
+/*!
+ * \brief Macro pour indiquer qu'on compile %Arcane avec le support
+ * de HIP et qu'on utilise le compilateur HIP.
+ */
+#define ARCANE_COMPILING_HIP
+#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 // TODO: supprimer l'inclusion de <iosfwd> et les using.
-// Pour l'instant ne les supprime que si on compile arcane_utils.
-#ifndef ARCANE_NO_USING_FOR_STREAM
-#  if defined(ARCANE_COMPONENT_arcane_utils)
-#    define ARCANE_NO_USING_FOR_STREAM
-#  endif
-#  if defined(ARCANE_COMPONENT_arcane_core)
-#    define ARCANE_NO_USING_FOR_STREAM
-#  endif
-#endif
+// Pour l'instant (2022), on supprime ces inclusions uniquement pour Arcane.
 
 #ifndef ARCANE_NO_USING_FOR_STREAM
 #include <iosfwd>
@@ -181,7 +181,8 @@ typedef ARCANE_TYPE_INT64 Int64;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -320,6 +321,9 @@ arcaneMathError(long double arg_value,const char* func_name)
 {
 #ifndef ARCCORE_DEVICE_CODE
   _internalArcaneMathError(arg_value,func_name);
+#else
+  ARCANE_UNUSED(arg_value);
+  ARCANE_UNUSED(func_name);
 #endif
 }
 
@@ -337,6 +341,10 @@ arcaneMathError(long double arg_value1,long double arg_value2,const char* func_n
 {
 #ifndef ARCCORE_DEVICE_CODE
   _internalArcaneMathError(arg_value1,arg_value2,func_name);
+#else
+  ARCANE_UNUSED(arg_value1);
+  ARCANE_UNUSED(arg_value2);
+  ARCANE_UNUSED(func_name);
 #endif
 }
 
@@ -543,6 +551,8 @@ extern "C++" ARCANE_UTILS_EXPORT bool _checkDebug(size_t);
 #define ARCCORE_DEPRECATED_2021(reason) [[deprecated(reason)]]
 #endif
 
+#define ARCANE_DEPRECATED_REASON(reason) [[deprecated(reason)]]
+
 // Définir cette macro si on souhaite supprimer de la compilation les
 // méthodes et types obsolètes.
 #define ARCANE_NO_DEPRECATED
@@ -619,7 +629,7 @@ extern "C++" ARCANE_UTILS_EXPORT bool _checkDebug(size_t);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifdef ARCANE_CHECK
+#if defined(ARCANE_CHECK) || defined(ARCANE_DEBUG)
 #ifndef ARCANE_DEBUG_ASSERT
 #define ARCANE_DEBUG_ASSERT
 #endif
@@ -635,7 +645,7 @@ extern "C++" ARCANE_UTILS_EXPORT bool _checkDebug(size_t);
  * de type FatalErrorException.
  */
 extern "C++" ARCANE_UTILS_EXPORT void
-arcaneNullPointerError ARCANE_NORETURN ();
+arcaneNullPointerError [[noreturn]] ();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -651,7 +661,7 @@ arcaneNullPointerError ARCANE_NORETURN ();
  * via la macro ARCANE_CHECK_POINTER.
  */
 extern "C++" ARCANE_UTILS_EXPORT void
-arcaneThrowNullPointerError ARCANE_NORETURN (const char* ptr_name,const char* text);
+arcaneThrowNullPointerError [[noreturn]] (const char* ptr_name,const char* text);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -831,7 +841,7 @@ arcaneThrowIfNull(T* ptr,const char* ptr_name,const char* text)
  * \param max_size nombre d'éléments du tableau
  */
 extern "C++" ARCANE_UTILS_EXPORT void
-arcaneRangeError ARCANE_NORETURN (Int64 i,Int64 max_size);
+arcaneRangeError [[noreturn]] (Int64 i,Int64 max_size);
 
 /*!
  * \brief Vérifie un éventuel débordement de tableau.
@@ -842,10 +852,13 @@ arcaneCheckAt(Int64 i,Int64 max_size)
 #ifndef ARCCORE_DEVICE_CODE
   if (i<0 || i>=max_size)
     arcaneRangeError(i,max_size);
+#else
+  ARCANE_UNUSED(i);
+  ARCANE_UNUSED(max_size);
 #endif
 }
 
-#ifdef ARCANE_CHECK
+#if defined(ARCANE_CHECK) || defined(ARCANE_DEBUG)
 #define ARCANE_CHECK_AT(a,b) ::Arcane::arcaneCheckAt((a),(b))
 #else
 #define ARCANE_CHECK_AT(a,b)
@@ -854,7 +867,7 @@ arcaneCheckAt(Int64 i,Int64 max_size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

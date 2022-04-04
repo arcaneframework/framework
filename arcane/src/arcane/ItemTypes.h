@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -35,8 +35,6 @@ class Node;
 class Cell;
 class Edge;
 class Face;
-class DualNode;
-class Link;
 
 class Particle;
 
@@ -48,7 +46,6 @@ class ItemInternal;
 
 class IMesh;
 class IPrimaryMesh;
-class IGraph;
 class IItemFamily;
 
 class ItemLocalId;
@@ -56,10 +53,9 @@ class NodeLocalId;
 class CellLocalId;
 class EdgeLocalId;
 class FaceLocalId;
-class DualNodeLocalId;
-class LinkLocalId;
 class ParticleLocalId;
 class IndexedItemConnectivityViewBase;
+class IndexedItemConnectivityAccessor;
 
 class ItemGroup;
 template<typename T> class ItemGroupT;
@@ -137,16 +133,6 @@ typedef ItemGroupT<Cell> CellGroup;
 typedef ItemGroupT<Particle> ParticleGroup;
 /*!
  * \ingroup Mesh
- * \brief Groupe de noeud de graph.
- */
-typedef ItemGroupT<DualNode> DualNodeGroup;
-/*!
- * \ingroup Mesh
- * \brief Groupe de liens.
- */
-typedef ItemGroupT<Link> LinkGroup;
-/*!
- * \ingroup Mesh
  * \brief Groupe de Degre de Liberte.
  */
 typedef ItemGroupT<DoF> DoFGroup;
@@ -208,17 +194,6 @@ typedef ItemEnumeratorT<Cell> CellEnumerator;
  */
 typedef ItemEnumeratorT<Particle> ParticleEnumerator;
 
-/*!
- * \ingroup Mesh
- * \brief Enumérateurs sur des noeuds dual.
- */
-typedef ItemEnumeratorT<DualNode> DualNodeEnumerator;
-
-/*!
- * \ingroup Mesh
- * \brief Enumérateurs sur des liens.
- */
-typedef ItemEnumeratorT<Link> LinkEnumerator;
 
 /*!
  * \ingroup Mesh
@@ -245,16 +220,6 @@ typedef ItemVectorViewT<Cell> CellVectorView;
  * \brief Vue sur un vecteur de particules.
  */
 typedef ItemVectorViewT<Particle> ParticleVectorView;
-/*!
- * \ingroup Mesh
- * \brief Vue sur un vecteur de noeuds dual.
- */
-typedef ItemVectorViewT<DualNode> DualNodeVectorView;
-/*!
- * \ingroup Mesh
- * \brief Vue sur un vecteur de liens.
- */
-typedef ItemVectorViewT<Link> LinkVectorView;
 
 /*!
  * \ingroup Mesh
@@ -272,10 +237,6 @@ typedef Collection<FaceGroup> FaceGroupCollection;
 typedef Collection<CellGroup> CellGroupCollection;
 /*! \brief Collection de groupes de particules. */
 typedef Collection<ParticleGroup> ParticleGroupCollection;
-/*! \brief Collection de groupes de noeuds duals. */
-typedef Collection<DualNodeGroup> DualNodeGroupCollection;
-/*! \brief Collection de groupes de liens. */
-typedef Collection<LinkGroup> LinkGroupCollection;
 /*! \brief Collection de groupes de degre de liberte. */
 typedef Collection<DoFGroup> DoFGroupCollection;
 
@@ -290,10 +251,6 @@ typedef List<FaceGroup> FaceGroupList;
 typedef List<CellGroup> CellGroupList;
 /*! \brief Tableau de groupes de particules. */
 typedef List<ParticleGroup> ParticleGroupList;
-/*! \brief Tableau de groupes de noeuds dual. */
-typedef List<DualNodeGroup> DualNodeGroupList;
-/*! \brief Tableau de groupes de liens. */
-typedef List<LinkGroup> LinkGroupList;
 /*! \brief Tableau de groupes de degre de liberte. */
 typedef List<DoFGroup> DoFGroupList;
 
@@ -318,8 +275,7 @@ class IItemOperationByBasicType;
  * Cette énumération sert à faire la transition entre les connectivités
  * historiques et la nouvelle implémentation.
  *
- * Si la macro ARCANE_USE_LEGACY_CONNECTIVITY est définie, seules les
- * valeurs Legacy et LegacyAndAllocAccessor sont valides.
+ * Actuellement, seule la valeur InternalConnectivityPolicy::NewOnly est utilisée
  */
 enum class InternalConnectivityPolicy
 {
@@ -329,6 +285,7 @@ enum class InternalConnectivityPolicy
    * Ce mode est identique au mode d'avant l'incorporation des nouvelles
    * connectivités. Son empreinte mémoire est la plus faible de tous les modes
    * disponibles.
+   * \warning Ce mode n'est plus opérationnel.
    */
   Legacy,
   /*!
@@ -346,12 +303,14 @@ enum class InternalConnectivityPolicy
   /*!
    * \brief Alloue les anciennes et les nouvelles connectivités
    * et utilise les nouvelles via les nouveaux accesseurs dans ItemInternal.
+   * \warning Ce mode n'est plus opérationnel.
    */
   NewAndLegacy,
   /*!
    * \brief Alloue les anciennes et les nouvelles connectivités
    * utilise les nouvelles via les nouveaux accesseurs dans ItemInternal
    * et s'appuie sur un graphe de dépendances des familles (Familles,Connectivités).
+   * \warning Ce mode n'est plus opérationnel.
    */
   NewWithDependenciesAndLegacy,
   /*!
@@ -370,14 +329,14 @@ class ARCANE_CORE_EXPORT InternalConnectivityInfo
 {
  public:
   //! Vrai si les anciennes connectivités sont actives
-  static bool hasLegacyConnectivity(InternalConnectivityPolicy p);
+  static constexpr bool hasLegacyConnectivity(InternalConnectivityPolicy) { return false; }
   //! Vrai si les nouvelles connectivités sont actives
-  static bool hasNewConnectivity(InternalConnectivityPolicy p);
+  static constexpr bool hasNewConnectivity(InternalConnectivityPolicy) { return true; }
   /*!
    * \brief Indique si on utilise les nouvelles connectivités pour accéder
    * aux entités dans ItemInternal.
    */
-  static bool useNewConnectivityAccessor(InternalConnectivityPolicy p);
+  static constexpr bool useNewConnectivityAccessor(InternalConnectivityPolicy) { return true; }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -408,16 +367,6 @@ typedef ItemVectorT<Cell> CellVector;
  * \brief Vecteur de particules.
  */
 typedef ItemVectorT<Particle> ParticleVector;
-/*!
- * \ingroup Mesh
- * \brief Vecteur de noeud de graph.
- */
-typedef ItemVectorT<DualNode> DualNodeVector;
-/*!
- * \ingroup Mesh
- * \brief Vecteur de liens.
- */
-typedef ItemVectorT<Link> LinkVector;
 /*!
  * \ingroup Mesh
  * \brief Vecteur de degres de liberte.
@@ -585,62 +534,6 @@ class ItemTraitsT<Particle>
   static const char* defaultFamilyName() { return 0; }
 };
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \internal
- * \brief Caractéristiques des entités du maillage de type \c DualNode
- */
-template<>
-class ItemTraitsT<DualNode>
-{
- public:
-
-  //! Type de cette classe
-  typedef ItemTraitsT<DualNode> ItemTraitsType;
-  //! Type de l'entité de maillage
-  typedef DualNode ItemType;
-  //! Type du groupe de l'entité
-  typedef DualNodeGroup ItemGroupType;
-  //! Type du localId()
-  typedef DualNodeLocalId LocalIdType;
-
- public:
-
-  //! Genre de l'entité
-  static eItemKind kind() { return IK_DualNode; }
-
-  //! Nom de la famille par défaut associée
-  static const char* defaultFamilyName() { return "DualNode"; }
-};
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \internal
- * \brief Caractéristiques des entités du maillage de type \c Link
- */
-template<>
-class ItemTraitsT<Link>
-{
- public:
-
-  //! Type de cette classe
-  typedef ItemTraitsT<Link> ItemTraitsType;
-  //! Type de l'entité de maillage
-  typedef Link ItemType;
-  //! Type du groupe de l'entité
-  typedef LinkGroup ItemGroupType;
-  //! Type du localId()
-  typedef LinkLocalId LocalIdType;
-
- public:
-
-  //! Genre de l'entité
-  static eItemKind kind() { return IK_Link; }
-
-  //! Nom de la famille par défaut associée
-  static const char* defaultFamilyName() { return "Link"; }
-};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

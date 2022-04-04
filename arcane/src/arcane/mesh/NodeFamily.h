@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NodeFamily.h                                                (C) 2000-2017 */
+/* NodeFamily.h                                                (C) 2000-2021 */
 /*                                                                           */
 /* Famille de noeuds.                                                        */
 /*---------------------------------------------------------------------------*/
@@ -17,12 +17,13 @@
 #include "arcane/mesh/ItemFamily.h"
 #include "arcane/IItemFamilyModifier.h"
 #include "arcane/mesh/MeshInfos.h"
+#include "arcane/mesh/ItemInternalConnectivityIndex.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -37,9 +38,9 @@ class ARCANE_MESH_EXPORT NodeFamily
   class ItemCompare3;
   class TopologyModifier;
 
-  typedef ItemConnectivitySelectorT<EdgeCompactIncrementalItemConnectivity,IncrementalItemConnectivity> EdgeConnectivity;
-  typedef ItemConnectivitySelectorT<FaceCompactIncrementalItemConnectivity,IncrementalItemConnectivity> FaceConnectivity;
-  typedef ItemConnectivitySelectorT<CellCompactIncrementalItemConnectivity,IncrementalItemConnectivity> CellConnectivity;
+  typedef ItemConnectivitySelectorT<EdgeInternalConnectivityIndex,IncrementalItemConnectivity> EdgeConnectivity;
+  typedef ItemConnectivitySelectorT<FaceInternalConnectivityIndex,IncrementalItemConnectivity> FaceConnectivity;
+  typedef ItemConnectivitySelectorT<CellInternalConnectivityIndex,IncrementalItemConnectivity> CellConnectivity;
 
  public:
 
@@ -81,7 +82,7 @@ class ARCANE_MESH_EXPORT NodeFamily
   {
     ItemInternal* item = _allocOne(uid);
     m_item_internal_list->nodes = _itemsInternal();
-    _allocateInfos(item,uid,m_node_type,0,0,0,m_edge_prealloc,m_face_prealloc,m_cell_prealloc);
+    _allocateInfos(item,uid,m_node_type);
     return item;
   }
 
@@ -100,7 +101,7 @@ class ARCANE_MESH_EXPORT NodeFamily
     ItemInternal* item = _findOrAllocOne(uid,is_alloc);
     if (is_alloc){
       m_item_internal_list->nodes = _itemsInternal();
-      _allocateInfos(item,uid,m_node_type,0,0,0,m_edge_prealloc,m_face_prealloc,m_cell_prealloc);
+      _allocateInfos(item,uid,m_node_type);
     }
     return item;
   }
@@ -137,27 +138,28 @@ class ARCANE_MESH_EXPORT NodeFamily
 
   void sortInternalReferences();
 
+  void notifyItemsUniqueIdChanged() override;
+
  private:
   
-  ItemTypeInfo* m_node_type; //!< Instance contenant le type des noeuds
+  ItemTypeInfo* m_node_type = nullptr; //!< Instance contenant le type des noeuds
   Integer m_edge_prealloc;
   Integer m_face_prealloc;
   Integer m_cell_prealloc;
   Integer m_mesh_connectivity;
   bool m_no_face_connectivity;
-  VariableNodeReal3* m_nodes_coords;
-  EdgeConnectivity* m_edge_connectivity;
-  FaceConnectivity* m_face_connectivity;
-  CellConnectivity* m_cell_connectivity;
-
+  VariableNodeReal3* m_nodes_coords = nullptr;
+  EdgeConnectivity* m_edge_connectivity = nullptr;
+  FaceConnectivity* m_face_connectivity = nullptr;
+  CellConnectivity* m_cell_connectivity = nullptr;
+  FaceFamily* m_face_family = nullptr;
   inline void _removeNode(ItemInternal* node);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

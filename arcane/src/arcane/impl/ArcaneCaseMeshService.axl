@@ -18,7 +18,6 @@
         optional = "true"
         >
       <userclass>User</userclass>
-      <name lang='fr'>generateur</name>
       <description>
         Service de création/lecture de maillage
 
@@ -31,7 +30,6 @@
             optional = "true"
             >
       <userclass>User</userclass>
-      <name lang="fr">fichier</name>
       <description>
         Nom du fichier de maillage. S'il n'est pas définit il faut
         qu'un générateur de maillage soit spécifié.
@@ -43,7 +41,6 @@
             default = "DefaultPartitioner"
             >
       <userclass>User</userclass>
-      <name lang='fr'>partitionneur</name>
       <description>
         Nom du service de partitionnement à utiliser pour le découpage initial.
 
@@ -67,7 +64,7 @@
 
     <simple name="ghost-layer-builder-version"
             type="int32"
-            default = "2"
+            default = "3"
             >
       <description>
         Version du gestionnaire de mailles fantôme à utiliser.
@@ -83,7 +80,6 @@
         optional = "true"
         >
       <userclass>User</userclass>
-      <name lang='fr'>lecteur-specifique</name>
       <description>
         Service spécifique de lecture de maillage.
 
@@ -95,7 +91,6 @@
 
     <!-- Options pour initialiser les variables avec certaines valeurs -->
     <complex type="Init" name="initialization">
-      <name lang='fr'>initialisation</name>
       <userclass>User</userclass>
       <description>
 	Informations d'initialisation.

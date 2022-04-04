@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GhostLayerBuilder.h                                         (C) 2000-2014 */
+/* GhostLayerBuilder.h                                         (C) 2000-2021 */
 /*                                                                           */
 /* Construction des couches fantômes.                                        */
 /*---------------------------------------------------------------------------*/
@@ -21,21 +21,13 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
+namespace Arcane
+{
 class SerializeBuffer;
+}
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_MESH_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
+namespace Arcane::mesh
+{
 class DynamicMesh;
 
 /*---------------------------------------------------------------------------*/
@@ -77,7 +69,7 @@ class GhostLayerBuilder
   
   void _addOneGhostLayerV2();
   void _exchangeData(IParallelExchanger* exchanger,BoundaryInfosMap& boundary_infos_to_send);
-  void _printItem(ItemInternal* ii,ostream& o);
+  void _printItem(ItemInternal* ii,std::ostream& o);
   void _exchangeCells(HashTableMapT<Int32,SharedArray<Int32>>& cells_to_send,bool with_flags);
 };
 
@@ -109,8 +101,7 @@ class NodeUidToSubDomain
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

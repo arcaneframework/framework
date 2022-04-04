@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -36,6 +36,8 @@ namespace Arcane
     static public bool IsVerbose { get { return m_verbose_level>=1; } }
     static public bool IsVerboseLevel2 { get { return m_verbose_level>=2; } }
     static public bool HasDotNetWrapper { get { return ArcaneMain_INTERNAL.HasDotNetWrapper(); } }
+    // Met le callback dans un champ statique pour ne pas qu'il soit collecté par le GC.
+    static ArcaneMain_INTERNAL._GarbageCollectorDelegate m_garbage_collector_callback;
 
     static ArcaneMain()
     {
@@ -62,6 +64,8 @@ namespace Arcane
       Debug.Write("NOTE: Using .NET version={0}", Environment.Version);
       _PrintStructuresSize();
       ArcaneMain_INTERNAL.SetHasGarbageCollector();
+      m_garbage_collector_callback = CallGarbageCollector;
+      ArcaneMain_INTERNAL._ArcaneWrapperCoreSetCallGarbageCollectorDelegate(m_garbage_collector_callback);
       ArcaneMain_INTERNAL.SetHasDotNETRuntime();
       ArcaneMain_INTERNAL.ArcaneInitialize();
       _LoadInternalModulesAndServices();
@@ -74,6 +78,15 @@ namespace Arcane
         m_args.Add(s);
       }
       Initialize();
+    }
+
+    static public void CallGarbageCollector()
+    {
+      Debug.Write("Calling garbage collector");
+      for( int i=0; i<3; ++i ){
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+      }
     }
 
     static internal void RegisterModule(string name, VersionInfo version, Type module_type)
@@ -279,9 +292,7 @@ namespace Arcane
     static public void Cleanup()
     {
       m_created_module_factories.Clear();
-      GC.Collect();
-      GC.WaitForPendingFinalizers();
-      GC.Collect();
+      CallGarbageCollector();
     }
 
     /*!

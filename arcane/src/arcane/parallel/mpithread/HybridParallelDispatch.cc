@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiParallelDispatch.cc                                      (C) 2000-2020 */
+/* MpiParallelDispatch.cc                                      (C) 2000-2022 */
 /*                                                                           */
 /* Gestionnaire de parallélisme utilisant les threads et MPI.                */
 /*---------------------------------------------------------------------------*/
@@ -354,12 +354,15 @@ allGather(Span<const Type> send_buf,Span<Type> recv_buf)
 /*---------------------------------------------------------------------------*/
 
 template<class Type> void HybridParallelDispatch<Type>::
-gather(Span<const Type> send_buf,Span<Type> recv_buf,Int32 rank)
+gather(Span<const Type> send_buf,Span<Type> recv_buf,Int32 root_rank)
 {
-  ARCANE_UNUSED(send_buf);
-  ARCANE_UNUSED(recv_buf);
-  ARCANE_UNUSED(rank);
-  throw NotImplementedException(A_FUNCINFO);
+  UniqueArray<Type> tmp_buf;
+  if (m_global_rank==root_rank)
+    allGather(send_buf,recv_buf);
+  else{
+    tmp_buf.resize(send_buf.size() * m_global_nb_rank);
+    allGather(send_buf,tmp_buf);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -400,12 +403,13 @@ allGatherVariable(Span<const Type> send_buf,Array<Type>& recv_buf)
 /*---------------------------------------------------------------------------*/
 
 template<class Type> void HybridParallelDispatch<Type>::
-gatherVariable(Span<const Type> send_buf,Array<Type>& recv_buf,Int32 rank)
+gatherVariable(Span<const Type> send_buf,Array<Type>& recv_buf,Int32 root_rank)
 {
-  ARCANE_UNUSED(send_buf);
-  ARCANE_UNUSED(recv_buf);
-  ARCANE_UNUSED(rank);
-  throw NotImplementedException(A_FUNCINFO);
+  UniqueArray<Type> tmp_buf;
+  if (m_global_rank==root_rank)
+    allGatherVariable(send_buf,recv_buf);
+  else
+    allGatherVariable(send_buf,tmp_buf);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -825,6 +829,80 @@ allReduce(eReduceType op,Span<Type> send_buf)
   }
 
   _collectiveBarrier();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class Type> Request HybridParallelDispatch<Type>::
+nonBlockingAllReduce(eReduceType op,Span<const Type> send_buf,Span<Type> recv_buf)
+{
+  ARCANE_UNUSED(op);
+  ARCANE_UNUSED(send_buf);
+  ARCANE_UNUSED(recv_buf);
+  throw NotImplementedException(A_FUNCINFO);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+template<class Type> Request HybridParallelDispatch<Type>::
+nonBlockingAllGather(Span<const Type> send_buf, Span<Type> recv_buf)
+{
+  ARCANE_UNUSED(send_buf);
+  ARCANE_UNUSED(recv_buf);
+  throw NotImplementedException(A_FUNCINFO);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class Type> Request HybridParallelDispatch<Type>::
+nonBlockingBroadcast(Span<Type> send_buf, Int32 rank)
+{
+  ARCANE_UNUSED(send_buf);
+  ARCANE_UNUSED(rank);
+  throw NotImplementedException(A_FUNCINFO);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class Type> Request HybridParallelDispatch<Type>::
+nonBlockingGather(Span<const Type> send_buf, Span<Type> recv_buf, Int32 rank)
+{
+  ARCANE_UNUSED(send_buf);
+  ARCANE_UNUSED(recv_buf);
+  ARCANE_UNUSED(rank);
+  throw NotImplementedException(A_FUNCINFO);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class Type> Request HybridParallelDispatch<Type>::
+nonBlockingAllToAll(Span<const Type> send_buf, Span<Type> recv_buf, Int32 count)
+{
+  ARCANE_UNUSED(send_buf);
+  ARCANE_UNUSED(recv_buf);
+  ARCANE_UNUSED(count);
+  throw NotImplementedException(A_FUNCINFO);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class Type> Request HybridParallelDispatch<Type>::
+nonBlockingAllToAllVariable(Span<const Type> send_buf, ConstArrayView<Int32> send_count,
+                            ConstArrayView<Int32> send_index, Span<Type> recv_buf,
+                            ConstArrayView<Int32> recv_count, ConstArrayView<Int32> recv_index)
+{
+  ARCANE_UNUSED(send_buf);
+  ARCANE_UNUSED(recv_buf);
+  ARCANE_UNUSED(send_count);
+  ARCANE_UNUSED(recv_count);
+  ARCANE_UNUSED(send_index);
+  ARCANE_UNUSED(recv_index);
+  throw NotImplementedException(A_FUNCINFO);
 }
 
 /*---------------------------------------------------------------------------*/

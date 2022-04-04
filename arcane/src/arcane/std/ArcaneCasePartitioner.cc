@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -526,11 +526,11 @@ _partitionMesh(Int32 nb_part)
       //ATTENTION potentiel debordement si pattern est trop long.
       //Verifier aussi qu'il y a un %d. A terme, utiliser String::format()
       char buf[4096];
-      if (pattern.len()>128){
+      if (pattern.length()>128){
         pfatal() << "Pattern too long (max=128)";
       }
       sprintf(buf,pattern.localstr(),i);
-      filename = String(buf,true);
+      filename = String(StringView(buf));
     }
     mesh_writer->writeMeshToFile(new_mesh,filename);
 

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -163,36 +163,36 @@ class ARCANE_CORE_EXPORT Variable
 
  public:
   
-  virtual IObservable* writeObservable() override;
-  virtual IObservable* readObservable() override;
-  virtual IObservable* onSizeChangedObservable() override;
+  IObservable* writeObservable() override;
+  IObservable* readObservable() override;
+  IObservable* onSizeChangedObservable() override;
 
  public:
 
-  virtual void addTag(const String& tagname,const String& tagvalue) override;
-  virtual void removeTag(const String& tagname) override;
-  virtual bool hasTag(const String& tagname) override;
-  virtual String tagValue(const String& tagname) override;
+  void addTag(const String& tagname,const String& tagvalue) override;
+  void removeTag(const String& tagname) override;
+  bool hasTag(const String& tagname) override;
+  String tagValue(const String& tagname) override;
 
  public:
 
-  virtual void update() override;
-  virtual void setUpToDate() override;
-  virtual Int64 modifiedTime() override;
-  virtual void addDepend(IVariable* var,eDependType dt) override;
-  virtual void addDepend(IVariable* var,eDependType dt,const TraceInfo& tinfo) override;
-  virtual void removeDepend(IVariable* var) override;
-  virtual void setComputeFunction(IVariableComputeFunction* v) override;
-  virtual IVariableComputeFunction* computeFunction() override;
-  virtual void dependInfos(Array<VariableDependInfo>& infos) override;
+  void update() override;
+  void setUpToDate() override;
+  Int64 modifiedTime() override;
+  void addDepend(IVariable* var,eDependType dt) override;
+  void addDepend(IVariable* var,eDependType dt,const TraceInfo& tinfo) override;
+  void removeDepend(IVariable* var) override;
+  void setComputeFunction(IVariableComputeFunction* v) override;
+  IVariableComputeFunction* computeFunction() override;
+  void dependInfos(Array<VariableDependInfo>& infos) override;
 
-  virtual void update(Real wanted_time) override;
+  void update(Real wanted_time) override;
 
-  virtual void changeGroupIds(Int32ConstArrayView old_to_new_ids) override;
+  void changeGroupIds(Int32ConstArrayView old_to_new_ids) override;
 
  public:
   
-  virtual IMemoryAccessTrace* memoryAccessTrace() const override;
+  IMemoryAccessTrace* memoryAccessTrace() const override { return nullptr; }
 
  protected:
 
@@ -207,8 +207,6 @@ class ARCANE_CORE_EXPORT Variable
 
   //! Indique si les données de la variable sont valides
   void _setValidData(bool valid_data);
-
-  bool _wantAccessInfo();
 
  protected:
 

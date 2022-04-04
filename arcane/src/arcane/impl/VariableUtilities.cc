@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -56,7 +56,7 @@ VariableUtilities::
 /*---------------------------------------------------------------------------*/
 
 void VariableUtilities::
-dumpAllVariableDependencies(ostream& ostr,bool is_recursive)
+dumpAllVariableDependencies(std::ostream& ostr,bool is_recursive)
 {
   VariableCollection used_variables = m_variable_mng->usedVariables();
   for( VariableCollection::Enumerator ivar(used_variables); ++ivar; ){
@@ -69,7 +69,7 @@ dumpAllVariableDependencies(ostream& ostr,bool is_recursive)
 /*---------------------------------------------------------------------------*/
 
 void VariableUtilities::
-dumpDependencies(IVariable* var,ostream& ostr,bool is_recursive)
+dumpDependencies(IVariable* var,std::ostream& ostr,bool is_recursive)
 {
   // Ensemble des variables déjà traitées pour éviter les récursions infinies
   _dumpDependencies(var,ostr,is_recursive);
@@ -79,7 +79,7 @@ dumpDependencies(IVariable* var,ostream& ostr,bool is_recursive)
 /*---------------------------------------------------------------------------*/
 
 void VariableUtilities::
-_dumpDependencies(IVariable* var,ostream& ostr,bool is_recursive)
+_dumpDependencies(IVariable* var,std::ostream& ostr,bool is_recursive)
 {
   std::set<IVariable*> done_vars;
   done_vars.insert(var);
@@ -108,7 +108,7 @@ _dumpDependencies(IVariable* var,ostream& ostr,bool is_recursive)
 /*---------------------------------------------------------------------------*/
 
 void VariableUtilities::
-_dumpDependencies(VariableDependInfo& vdi,ostream& ostr,bool is_recursive,
+_dumpDependencies(VariableDependInfo& vdi,std::ostream& ostr,bool is_recursive,
                   std::set<IVariable*>& done_vars,Integer indent_level)
 {
   IVariable* var = vdi.variable();

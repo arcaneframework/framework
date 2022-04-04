@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ConnectivitySynchronizer.h                                  (C) 2000-2015 */
+/* ItemConnectivitySynchronizer.h                              (C) 2000-2021 */
 /*                                                                           */
 /* Synchronization des connectivités.                                        */
 /*---------------------------------------------------------------------------*/
@@ -13,8 +13,6 @@
 #define ARCANE_DOF_CONNECTIVITYSYNCHRONIZER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/ISubDomain.h"
 
 #include "arcane/IItemConnectivity.h"
 #include "arcane/IItemConnectivitySynchronizer.h"
@@ -25,7 +23,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -44,14 +43,7 @@ class ARCANE_MESH_EXPORT ItemConnectivitySynchronizer
 
   /** Constructeur de la classe */
   ItemConnectivitySynchronizer(IItemConnectivity* connectivity,
-                           IItemConnectivityGhostPolicy* ghost_policy)
-    : m_connectivity(connectivity)
-    , m_ghost_policy(ghost_policy)
-    , m_subdomain(m_connectivity->targetFamily()->subDomain())
-    , m_added_ghost(m_subdomain->parallelMng()->commSize()){}
-
-  /** Destructeur de la classe */
-  virtual ~ItemConnectivitySynchronizer() {}
+                               IItemConnectivityGhostPolicy* ghost_policy);
 
  public:
 
@@ -79,14 +71,15 @@ class ARCANE_MESH_EXPORT ItemConnectivitySynchronizer
   void serializeGhostItems(ISerializer* buffer,Int32ConstArrayView ghost_item_lids);
   void addExtraGhostItems (ISerializer* buffer);
   void updateSynchronizationInfo(){ m_connectivity->targetFamily()->computeSynchronizeInfos(); }
-  ISubDomain* subDomain() { return m_connectivity->targetFamily()->mesh()->subDomain(); }
+  [[deprecated("Y2021: Do not use this method. Try to get 'ISubDomain' from another way")]]
+  ISubDomain* subDomain();
   IItemFamily* itemFamily() { return m_connectivity->targetFamily(); }
 
  private:
 
   IItemConnectivity* m_connectivity;
   IItemConnectivityGhostPolicy* m_ghost_policy;
-  ISubDomain* m_subdomain;
+  IParallelMng* m_parallel_mng;
   SharedArray<Int32SharedArray> m_data_to_send;
   SharedArray<std::set<Int64> > m_added_ghost;
 
@@ -100,7 +93,7 @@ class ARCANE_MESH_EXPORT ItemConnectivitySynchronizer
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

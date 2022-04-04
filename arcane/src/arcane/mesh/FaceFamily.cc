@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -27,7 +27,8 @@
 #include "arcane/mesh/AbstractItemFamilyTopologyModifier.h"
 #include "arcane/mesh/ConnectivityNewWithDependenciesTypes.h"
 #include "arcane/mesh/NewWithLegacyConnectivity.h"
-#include "arcane/ISubDomain.h"
+#include "arcane/mesh/FaceReorienter.h"
+
 #include "arcane/IMesh.h"
 #include "arcane/ITiedInterface.h"
 #include "arcane/TiedFace.h"
@@ -114,7 +115,7 @@ build()
   m_node_family = ARCANE_CHECK_POINTER(dynamic_cast<NodeFamily*>(m_mesh->nodeFamily()));
   m_edge_family = ARCANE_CHECK_POINTER(dynamic_cast<EdgeFamily*>(m_mesh->edgeFamily()));
 
-  if (m_mesh->itemFamilyNetwork()) // temporary to fill legacy, even with family dependencies
+  if (m_mesh->useMeshItemFamilyDependencies()) // temporary to fill legacy, even with family dependencies
   {
     m_node_connectivity = dynamic_cast<NewWithLegacyConnectivityType<FaceFamily,NodeFamily>::type*>(m_mesh->itemFamilyNetwork()->getConnectivity(this,mesh()->nodeFamily(),connectivityName(this,mesh()->nodeFamily())));
     m_edge_connectivity = dynamic_cast<NewWithLegacyConnectivityType<FaceFamily,EdgeFamily>::type*>(m_mesh->itemFamilyNetwork()->getConnectivity(this,mesh()->edgeFamily(),connectivityName(this,mesh()->edgeFamily())));
@@ -144,7 +145,7 @@ inline void FaceFamily::
 _createOne(ItemInternal* item,Int64 uid,ItemTypeInfo* type)
 {
   m_item_internal_list->faces = _itemsInternal();
-  _allocateInfos(item,uid,type,0,0,0,m_edge_prealloc,0,m_cell_prealloc);
+  _allocateInfos(item,uid,type);
   auto nc = m_node_connectivity->trueCustomConnectivity();
   if (nc)
     nc->addConnectedItems(ItemLocalId(item),type->nbLocalNode());
@@ -226,7 +227,7 @@ findOrAllocOne(Int64 uid,ItemTypeInfo* type,bool& is_alloc)
 void FaceFamily::
 preAllocate(Integer nb_item)
 {
-  Integer base_mem = m_node_prealloc + m_edge_prealloc + m_cell_prealloc + ItemSharedInfo::COMMON_BASE_MEMORY;
+  Integer base_mem = ItemSharedInfo::COMMON_BASE_MEMORY;
   Integer mem = base_mem * (nb_item+1);
   info() << "Facefamily: reserve=" << mem;
   _reserveInfosMemory(mem);
@@ -359,7 +360,7 @@ addBackCellToFace(ItemInternal* face,ItemInternal* new_cell)
   if (nb_cell>=2)
     ARCANE_FATAL("face '{0}' already has two cells",FullItemPrinter(face));
 
-  _updateSharedInfoAdded(face,0,0,1);
+  _updateSharedInfoAdded(face);
 
   // Si on a déjà une maille, il s'agit de la front cell.
   Int32 front_cell_lid = (nb_cell==1) ? face->cellLocalId(0) : NULL_ITEM_LOCAL_ID;
@@ -392,12 +393,11 @@ addFrontCellToFace(ItemInternal* face,ItemInternal* new_cell)
   if (nb_cell>=2)
     ARCANE_FATAL("face '{0}' already has two cells",FullItemPrinter(face));
 
-  _updateSharedInfoAdded(face,0,0,1);
+  _updateSharedInfoAdded(face);
 
   // Si on a déjà une maille, il s'agit de la back cell.
   Int32 back_cell_lid = (nb_cell==1) ? face->cellLocalId(0) : NULL_ITEM_LOCAL_ID;
   setBackAndFrontCells(face,back_cell_lid,new_cell->localId());
-
 }
 
 //! AMR
@@ -829,7 +829,7 @@ removeCellFromFace(ItemInternal* face,ItemLocalId cell_to_remove_lid)
           // Reste la back cell
           setBackAndFrontCells(face,cell0,null_cell_lid);
         }
-        _updateSharedInfoRemoved(face2,0,0,1,0,0);
+        _updateSharedInfoRemoved7(face2);
       }
     }
   }
@@ -852,7 +852,7 @@ removeCellFromFace(ItemInternal* face,ItemLocalId cell_to_remove_lid)
     setBackAndFrontCells(face,null_cell_lid,null_cell_lid);
   }
 
-  _updateSharedInfoRemoved(face,0,0,nb_cell-nb_cell_after);
+  _updateSharedInfoRemoved4(face);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -977,6 +977,20 @@ setConnectivity(const Integer c)
           << m_node_prealloc << " by node, "
           << m_edge_prealloc << " by edge, "
           << m_cell_prealloc << " by cell.";
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void FaceFamily::
+reorientFacesIfNeeded()
+{
+  // Réoriente les faces si nécessaire. Cela est le cas par exemple si on
+  // a changé la numérotation des uniqueId() des noeuds.
+  mesh::FaceReorienter face_reorienter(mesh());
+  ENUMERATE_ (Face, iface, allItems()) {
+    face_reorienter.checkAndChangeOrientationAMR(*iface);
+  }
 }
 
 /*---------------------------------------------------------------------------*/

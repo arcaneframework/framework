@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -90,6 +90,8 @@ class ArrayDataT
   ConstArrayView<DataType> view() const override { return m_value; }
   ArrayView<DataType> view() override { return m_value; }
   void resize(Integer new_size) override { m_value.resize(new_size); }
+  IData* clone() override { return _cloneTrue(); }
+  IData* cloneEmpty() override { return _cloneTrueEmpty(); };
   Ref<IData> cloneRef() override { return makeRef(cloneTrue()); }
   Ref<IData> cloneEmptyRef() override { return makeRef(cloneTrueEmpty()); }
   DataStorageTypeInfo storageTypeInfo() const override;
@@ -275,7 +277,7 @@ createSerializedDataRef(bool use_basic_type) const
   extents.add(nb_element);
   auto sd = arcaneCreateSerializedDataRef(data_type,base_values.size(),1,nb_element,
                                           nb_base_element,false,extents);
-  sd->setBytes(base_values);
+  sd->setConstBytes(base_values);
   return sd;
 }
 
@@ -301,7 +303,7 @@ allocateBufferForSerializedData(ISerializedData* sdata)
 
   Byte* byte_data = reinterpret_cast<Byte*>(m_value.data());
   Span<Byte> buffer(byte_data,sdata->memorySize());
-  sdata->setBytes(buffer);
+  sdata->setWritableBytes(buffer);
 }
 
 /*---------------------------------------------------------------------------*/

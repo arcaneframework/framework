@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -42,6 +42,8 @@
 #include "arcane/Properties.h"
 #include "arcane/MeshPartInfo.h"
 #include "arcane/IMeshBuilder.h"
+#include "arcane/IMeshUniqueIdMng.h"
+#include "arcane/ICartesianMeshGenerationInfo.h"
 
 #include "arcane/std/Cartesian2DMeshGenerator_axl.h"
 #include "arcane/std/Cartesian3DMeshGenerator_axl.h"
@@ -101,7 +103,7 @@ readOptionsFromXml(XmlNode cartesian_node)
   // On récupère aussi les nombres de mailles des blocs + true pour throw_exception
   // On récupère aussi les progressions géométriques
   // On met les progressions à 1.0 par défaut
-  for (XmlNode& lx_node : lx_node_list.range()) {
+  for (XmlNode& lx_node : lx_node_list) {
     m_bloc_lx.add(lx_node.valueAsReal(true));
     m_bloc_nx.add(lx_node.attr("nx", true).valueAsInteger(true));
     Real px = lx_node.attr("prx").valueAsReal(true);
@@ -140,6 +142,15 @@ readOptionsFromXml(XmlNode cartesian_node)
   m_nsdx = nsd[0];
   m_nsdy = nsd[1];
   m_nsdz = (m_mesh_dimension == 3) ? nsd[2] : 0;
+
+  {
+    XmlNode version_node = cartesian_node.child("face-numbering-version");
+    if (!version_node.null()){
+      Int32 v = version_node.valueAsInteger(true);
+      if (v>=0)
+        m_face_numbering_version = v;
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -428,7 +439,7 @@ zDelta(int iBloc)
 // * X scanning
 // ******************************************************************************
 void CartesianMeshGenerator::
-xScan(const Integer all_nb_cell_x,
+xScan(const Int64 all_nb_cell_x,
       IntegerArray& sd_x_ibl,
       IntegerArray& sd_x_obl,
       Int64Array& sd_x_nbl,
@@ -490,8 +501,8 @@ yScan(const Integer all_nb_cell_y,
       Int64Array& sd_y_nbl,
       Int64Array& sd_y_node_offset,
       Int64Array& sd_y_cell_offset,
-      Integer all_nb_node_x,
-      Integer all_nb_cell_x)
+      Int64 all_nb_node_x,
+      Int64 all_nb_cell_x)
 {
   sd_y_ibl.add(0);
   sd_y_obl.add(0);
@@ -515,9 +526,9 @@ yScan(const Integer all_nb_cell_y,
       info(4) << "\t[2;33m[CartesianMeshGenerator::generateMesh] Scan hit y sub domain boundary: @ node " << nsd << "[0m";
       sd_y_ibl.add(ibl);
       sd_y_obl.add(obl);
-      sd_y_nbl.add(CheckedConvert::toInteger(nbl * all_nb_node_x));
-      sd_y_node_offset.add(CheckedConvert::toInteger(nsd * all_nb_node_x));
-      sd_y_cell_offset.add(CheckedConvert::toInteger(nsd * all_nb_cell_x));
+      sd_y_nbl.add(nbl * all_nb_node_x);
+      sd_y_node_offset.add(nsd * all_nb_node_x);
+      sd_y_cell_offset.add(nsd * all_nb_cell_x);
       isd += m_build_info.m_nsdx;
     }
     obl += 1;
@@ -536,8 +547,8 @@ zScan(const Int64 all_nb_cell_z,
       Int64Array& sd_z_nbl,
       Int64Array& sd_z_node_offset,
       Int64Array& sd_z_cell_offset,
-      Integer all_nb_node_xy,
-      Integer all_nb_cell_xy)
+      Int64 all_nb_node_xy,
+      Int64 all_nb_cell_xy)
 {
   if (m_mesh_dimension != 3)
     return;
@@ -561,9 +572,9 @@ zScan(const Int64 all_nb_cell_z,
       nsd += ownZNbCell(isd);
       sd_z_ibl.add(ibl);
       sd_z_obl.add(obl);
-      sd_z_nbl.add(CheckedConvert::toInteger(nbl * all_nb_node_xy));
-      sd_z_node_offset.add(CheckedConvert::toInteger(nsd * all_nb_node_xy));
-      sd_z_cell_offset.add(CheckedConvert::toInteger(nsd * all_nb_cell_xy));
+      sd_z_nbl.add(nbl * all_nb_node_xy);
+      sd_z_node_offset.add(nsd * all_nb_node_xy);
+      sd_z_cell_offset.add(nsd * all_nb_cell_xy);
       isd += m_build_info.m_nsdx * m_build_info.m_nsdy;
     }
     obl += 1;
@@ -579,6 +590,11 @@ generateMesh()
 {
   Trace::Setter mci(traceMng(),"CartesianMeshGenerator");
   IPrimaryMesh* mesh = m_mesh;
+
+  m_generation_info = ICartesianMeshGenerationInfo::getReference(mesh,true);
+
+  info() << " decomposing the subdomains:" << m_build_info.m_nsdx << "x"
+         << m_build_info.m_nsdy << "x" << m_build_info.m_nsdz;
   info() << "sub domain offset @ " << sdXOffset() << "x" << sdYOffset() << "x" << sdZOffset();
   // All Cells Setup
   Integer all_nb_cell_x = m_nx;
@@ -587,15 +603,12 @@ generateMesh()
   // Positionne des propriétés sur le maillage pour qu'il puisse connaître
   // le nombre de mailles dans chaque direction ainsi que l'offset du sous-domaine.
   // Cela est utilisé notammement par CartesianMesh.
-  Properties* mesh_properties = mesh->properties();
-  mesh_properties->setInt64("GlobalNbCellX", all_nb_cell_x);
-  mesh_properties->setInt64("GlobalNbCellY", all_nb_cell_y);
-  mesh_properties->setInt64("GlobalNbCellZ", all_nb_cell_z);
-  mesh_properties->setInt32("SubDomainOffsetX", sdXOffset());
-  mesh_properties->setInt32("SubDomainOffsetY", sdYOffset());
-  mesh_properties->setInt32("SubDomainOffsetZ", sdZOffset());
+  //Properties* mesh_properties = mesh->properties();
+  m_generation_info->setGlobalNbCells(all_nb_cell_x,all_nb_cell_y,all_nb_cell_z);
+  m_generation_info->setSubDomainOffsets(sdXOffset(),sdYOffset(),sdZOffset());
+  m_generation_info->setNbSubDomains(m_build_info.m_nsdx,m_build_info.m_nsdy,m_build_info.m_nsdz);
 
-  Integer all_nb_cell_xy = CheckedConvert::multiply(all_nb_cell_x, all_nb_cell_y);
+  Int64 all_nb_cell_xy = ((Int64)all_nb_cell_x) * ((Int64)all_nb_cell_y);
   Int64 all_nb_cell_xyz = ((Int64)all_nb_cell_xy) * ((Int64)all_nb_cell_z);
   info() << " all cells: " << all_nb_cell_x << "x" << all_nb_cell_y << "y"
          << all_nb_cell_z << "=" << all_nb_cell_xyz;
@@ -604,9 +617,7 @@ generateMesh()
   Int32 own_nb_cell_x = ownXNbCell();
   Int32 own_nb_cell_y = ownYNbCell();
   Int32 own_nb_cell_z = ownZNbCell();
-  mesh_properties->setInt32("OwnNbCellX", own_nb_cell_x);
-  mesh_properties->setInt32("OwnNbCellY", own_nb_cell_y);
-  mesh_properties->setInt32("OwnNbCellZ", own_nb_cell_z);
+  m_generation_info->setOwnNbCells(own_nb_cell_x,own_nb_cell_y,own_nb_cell_z);
   Integer own_nb_cell_xy = CheckedConvert::multiply(own_nb_cell_x, own_nb_cell_y);
   Integer own_nb_cell_xyz = CheckedConvert::multiply(own_nb_cell_xy, own_nb_cell_z);
   info() << " own cells: " << own_nb_cell_x << "x" << own_nb_cell_y << "y"
@@ -615,7 +626,7 @@ generateMesh()
   // All Nodes Setup
   Integer all_nb_node_x = all_nb_cell_x + 1;
   Integer all_nb_node_y = all_nb_cell_y + 1;
-  Integer all_nb_node_xy = CheckedConvert::multiply(all_nb_node_x, all_nb_node_y);
+  Int64 all_nb_node_xy = ((Int64)all_nb_node_x) * ((Int64)all_nb_node_y);
 
   // Own Nodes Setup
   Integer own_nb_node_x = own_nb_cell_x + 1;
@@ -673,9 +684,7 @@ generateMesh()
       cell_offset_z = sd_z_cell_offset[sdZOffset()] / all_nb_cell_xy;
     }
     info() << "OwnCellOffset info X=" << cell_offset_x << " Y=" << cell_offset_y << " Z=" << cell_offset_z;
-    mesh_properties->setInt64("OwnCellOffsetX", cell_offset_x);
-    mesh_properties->setInt64("OwnCellOffsetY", cell_offset_y);
-    mesh_properties->setInt64("OwnCellOffsetZ", cell_offset_z);
+    m_generation_info->setOwnCellOffsets(cell_offset_x,cell_offset_y,cell_offset_z);
   }
   // IBL, NBL
   info() << " sd_x_ibl=" << sd_x_ibl;
@@ -822,6 +831,7 @@ generateMesh()
   }
   Integer cells_infos_index = 0;
   info() << "cell_unique_id_offset=" << cell_unique_id_offset;
+  m_generation_info->setFirstOwnCellUniqueId(cell_unique_id_offset);
   if (m_mesh_dimension == 3) {
     for (Integer z = 0; z < own_nb_cell_z; ++z) {
       for (Integer y = 0; y < own_nb_cell_y; ++y) {
@@ -858,6 +868,7 @@ generateMesh()
     for (Integer y = 0; y < own_nb_cell_y; ++y) {
       for (Integer x = 0; x < own_nb_cell_x; ++x) {
         Int64 cell_unique_id = cell_unique_id_offset + x + y * all_nb_cell_x;
+        //info() << "X=" << x << " y=" << y << " UID=" << cell_unique_id;
         /*debug() << "[2;33m[CartesianMeshGenerator::generateMesh] cell @ "
           <<x<<"x"<<y<<":"<<", uid=" << cell_unique_id<< "[0m";*/
         cells_infos[cells_infos_index] = IT_Quad4;
@@ -880,23 +891,11 @@ generateMesh()
   }
 
   mesh->setDimension(m_mesh_dimension);
-  mesh->allocateCells(own_nb_cell_xyz, cells_infos, false);
+  info() << "FaceNumberingVersion = " << m_build_info.m_face_numbering_version;
+  if (m_build_info.m_face_numbering_version>=0)
+    mesh->meshUniqueIdMng()->setFaceBuilderVersion(m_build_info.m_face_numbering_version);
 
-  {
-    info() << " Fills the variable containing the owner node";
-    UniqueArray<Int32> nodes_local_id(nodes_unique_id.size());
-    IItemFamily* family = mesh->nodeFamily();
-    family->itemsUniqueIdToLocalId(nodes_local_id, nodes_unique_id);
-    ItemInternalList nodes_internal(family->itemsInternal());
-    for (Integer i = 0; i < node_local_id; ++i) {
-      const Node& node = nodes_internal[nodes_local_id[i]];
-      Int64 unique_id = nodes_unique_id[i];
-      Integer owner = nodes_infos.lookupValue(unique_id).m_owner;
-      node.internal()->setOwner(owner, m_my_mesh_part);
-    }
-  }
-
-  mesh->endAllocate();
+  mesh->allocateCells(own_nb_cell_xyz, cells_infos, true);
 
   VariableNodeReal3& nodes_coord_var(mesh->nodesCoordinates());
   {
@@ -960,6 +959,7 @@ class Cartesian2DMeshGenerator
     Real2 origin = options()->origin;
     m_build_info.m_origine.x = origin.x;
     m_build_info.m_origine.y = origin.y;
+    m_build_info.m_face_numbering_version = options()->faceNumberingVersion();
 
     for( auto& o : options()->x() ){
       m_build_info.m_bloc_lx.add(o->length);
@@ -1051,6 +1051,7 @@ class Cartesian3DMeshGenerator
     m_build_info.m_origine.y = origin.y;
     m_build_info.m_origine.z = origin.z;
     m_build_info.m_is_generate_sod_groups = options()->generateSodGroups();
+    m_build_info.m_face_numbering_version = options()->faceNumberingVersion();
 
     for( auto& o : options()->x() ){
       m_build_info.m_bloc_lx.add(o->length);
@@ -1070,6 +1071,7 @@ class Cartesian3DMeshGenerator
       m_build_info.m_bloc_pz.add(o->progression);
     }
   }
+
   void allocateMeshItems(IPrimaryMesh* pm) override
   {
     info() << "Cartesian3DMeshGenerator: allocateMeshItems()";
@@ -1077,6 +1079,7 @@ class Cartesian3DMeshGenerator
     g.setBuildInfo(m_build_info);
     g.generateMesh();
   }
+
   CartesianMeshGeneratorBuildInfo m_build_info;
 };
 

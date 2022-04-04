@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -43,7 +43,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -2172,15 +2173,17 @@ void SplitSDMeshPartitioner::UnpackEquil(void* TabTMP, int TailleTMP, MPI_Comm c
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-  
-ARCANE_REGISTER_SUB_DOMAIN_FACTORY(SplitSDMeshPartitioner,IMeshPartitioner,SplitSD);
+ARCANE_REGISTER_SERVICE(SplitSDMeshPartitioner,
+                        ServiceProperty("SplitSD",ST_SubDomain),
+                        ARCANE_SERVICE_INTERFACE(IMeshPartitioner),
+                        ARCANE_SERVICE_INTERFACE(IMeshPartitionerBase));
 
 ARCANE_REGISTER_SERVICE_SPLITSDMESHPARTITIONER(SplitSD,SplitSDMeshPartitioner);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

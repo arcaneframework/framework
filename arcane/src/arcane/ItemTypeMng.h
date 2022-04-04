@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemTypeMng.h                                               (C) 2000-2018 */
+/* ItemTypeMng.h                                               (C) 2000-2021 */
 /*                                                                           */
 /* Gestionnaire des types d'entité du maillage.                              */
 /*---------------------------------------------------------------------------*/
@@ -23,7 +23,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
+namespace mesh
+{
+// TEMPORAIRE: pour que cette classe ait accès au singleton.
+class DynamicMesh;
+}
+class ArcaneMain;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -54,6 +61,11 @@ class MultiBufferT;
  */
 class ARCANE_CORE_EXPORT ItemTypeMng
 {
+  // Ces classes sont ici temporairement tant que le singleton est accessible.
+  friend class mesh::DynamicMesh;
+  friend class Application;
+  friend class ArcaneMain;
+  friend class Item;
  protected:
 
   //! Constructeur vide (non initialisé)
@@ -65,33 +77,57 @@ class ARCANE_CORE_EXPORT ItemTypeMng
   //! Constructeur effectif
   void build(IParallelSuperMng * parallel_mng, ITraceMng * trace);
 
- public:
+ private:
+  /*! \brief Instance singleton du type
+   *
+   * Le singleton est créé lors du premier appel à cette fonction.
+   * Il reste valide tant que destroySingleton() n'a pas été appelé
+   *
+   * \todo: a supprimer dès que plus personne ne fera d'accès à singleton()
+   */
+  static ItemTypeMng* _singleton();
 
+  /*!
+   * \brief Détruit le singleton
+   *
+   * Le singleton peut ensuite être reconstruit par appel à destroySingleton()
+   */
+  static void _destroySingleton();
+
+  static String _legacyTypeName(Integer t);
+
+ public:
   /*! \brief Instance singleton du type
    *
    * Le singleton est créé lors du premier appel à cette fonction.
    * Il reste valide tant que destroySingleton() n'a pas été appelé
    */
-  static ItemTypeMng* singleton();
+  ARCCORE_DEPRECATED_2021("Use IMesh::itemTypeMng() to get an instance of ItemTypeMng")
+  static ItemTypeMng* singleton() { return _singleton(); }
 
-  /*! \brief Détruit le singleton
+  /*!
+   * \brief Détruit le singleton
    *
    * Le singleton peut ensuite être reconstruit par appel à singleton()
    */
-  static void destroySingleton();
+  ARCCORE_DEPRECATED_2021("Do not use this method")
+  static void destroySingleton() { _destroySingleton(); }
 
  public:
   //! Liste des types disponibles
   ConstArrayView<ItemTypeInfo*> types() const;
 
- //! Type correspondant au numéro \a id
+  //! Type correspondant au numéro \a id
   ItemTypeInfo* typeFromId(Integer id) const;
 
-   //! Affiche les infos sur les types disponibles sur le flot \a ostr
+  //! Nom du type correspondant au numéro \a id
+  String typeName(Integer id) const;
+
+  //! Affiche les infos sur les types disponibles sur le flot \a ostr
   void printTypes(std::ostream& ostr);
 
   //! nombre de types disponibles
-  static Integer nbBasicItemType() ;
+  static Integer nbBasicItemType();
 
   //! nombre de types intégrés (hors types additionnels)
   static Integer nbBuiltInItemType();
@@ -141,10 +177,9 @@ class ARCANE_CORE_EXPORT ItemTypeMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #endif
-

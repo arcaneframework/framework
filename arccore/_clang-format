@@ -2,19 +2,19 @@ Language:        Cpp
 # BasedOnStyle:  WebKit
 AccessModifierOffset: -1
 AlignAfterOpenBracket: true
-AlignConsecutiveAssignments: false
-AlignEscapedNewlinesLeft: false
+AlignConsecutiveAssignments: None
+AlignEscapedNewlines: DontAlign
 AlignOperands:   false
 AlignTrailingComments: false
 AllowAllParametersOfDeclarationOnNextLine: false
-AllowShortBlocksOnASingleLine: false
+AllowShortBlocksOnASingleLine: Never
 AllowShortCaseLabelsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: Inline
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
 AlwaysBreakAfterDefinitionReturnType: None
 AlwaysBreakBeforeMultilineStrings: false
-AlwaysBreakTemplateDeclarations: false
+AlwaysBreakTemplateDeclarations: No
 BinPackArguments: true
 BinPackParameters: true
 BreakBeforeBinaryOperators: None
@@ -22,7 +22,7 @@ BreakBeforeBinaryOperators: None
 BreakBeforeBraces: Custom
 BraceWrapping:
   AfterClass: true
-  AfterControlStatement: false
+  AfterControlStatement: Never
   AfterEnum: true
   AfterFunction: true
   AfterNamespace: true
@@ -45,10 +45,10 @@ Cpp11BracedListStyle: false
 DerivePointerAlignment: false
 PointerAlignment: Left
 DisableFormat:   false
+EmptyLineBeforeAccessModifier: LogicalBlock
+EmptyLineAfterAccessModifier: Always
 ExperimentalAutoDetectBinPacking: false
 FixNamespaceComments: true
-ForEachMacros:   [ foreach, Q_FOREACH, BOOST_FOREACH, ENUMERATE_CELL,
-                 ENUMERATE_ITEM, ENUMERATE_NODE, ENUMERATE_FACE, ENUMERATE_PARTICLE, ENUMERATE_EDGE, ENUMERATE_DUALNODE, ENUMERATE_LINK ]
 IndentCaseLabels: false
 IndentWidth:     2
 # IndentWrappedFunctionNames: true
@@ -82,6 +82,6 @@ SpacesInCStyleCastParentheses: false
 SpacesInParentheses: false
 SpacesInSquareBrackets: false
 Standard:        c++17
-SortIncludes: false
+SortIncludes: Never
 TabWidth:        2
 UseTab:          Never

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -89,23 +89,20 @@ class SimpleHydroSimdService
  public:
 
 
-  void hydroBuild();
-  void hydroStartInit();
-  void hydroInit();
-  void hydroContinueInit() {}
-  void hydroExit();
+  void hydroBuild() override;
+  void hydroStartInit() override;
+  void hydroInit() override;
+  void hydroExit() override;
 
-  void computeForces();
-  void computePressureForce(){}
-  void computePseudoViscosity(){}
-  void computeVelocity();
-  void computeViscosityWork();
-  void applyBoundaryCondition();
-  void moveNodes();
-  void computeGeometricValues();
-  void updateDensity();
-  void applyEquationOfState();
-  void computeDeltaT();
+  void computeForces() override;
+  void computeVelocity() override;
+  void computeViscosityWork() override;
+  void applyBoundaryCondition() override;
+  void moveNodes() override;
+  void computeGeometricValues() override;
+  void updateDensity() override;
+  void applyEquationOfState() override;
+  void computeDeltaT() override;
 
   void setModule(SimpleHydro::SimpleHydroModuleBase* module) override
   {
@@ -244,7 +241,7 @@ hydroStartInit()
     auto in_adiabatic_cst = viewIn(m_adiabatic_cst);
     VariableCellRealInView in_density = viewIn(m_density);
     ENUMERATE_CELL(icell,allCells()){
-      CellLocalId cid = *icell;
+      CellLocalId cid { icell.asItemLocalId() };
       Real pressure = in_pressure[cid];
       Real adiabatic_cst = in_adiabatic_cst[cid];
       Real density = in_density[cid];
@@ -415,7 +412,7 @@ computeVelocity()
 void SimpleHydroSimdService::
 computeViscosityWork()
 {
-  Parallel::Foreach(allCells(),[this](CellVectorView cells){
+  arcaneParallelForeach(allCells(),[this](CellVectorView cells){
 
       auto in_cell_viscosity_force = viewIn(m_cell_viscosity_force);
       auto out_viscosity_work = viewOut(m_viscosity_work);
@@ -535,7 +532,7 @@ applyEquationOfState()
   auto out_pressure = viewOut(m_pressure);
 
   // Calcul de l'énergie interne
-  Parallel::Foreach(allCells(),[&](CellVectorView cells){
+  arcaneParallelForeach(allCells(),[&](CellVectorView cells){
       ENUMERATE_SIMD_CELL(icell,cells){
         SimdCell vi = *icell;
         SimdReal adiabatic_cst = in_adiabatic_cst[vi];
@@ -712,7 +709,7 @@ void SimpleHydroSimdService::
 computeGeometricValues()
 {
   auto out_caracteristic_length = viewOut(m_caracteristic_length);
-  Parallel::Foreach(allCells(),[&](CellVectorView cells){
+  arcaneParallelForeach(allCells(),[&](CellVectorView cells){
       // Copie locale des coordonnées des sommets d'une maille
       SimdReal3 coord[8];
       // Coordonnées des centres des faces

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -42,7 +42,8 @@ class FamilyState
 {
  public:
   FamilyState() : m_state(-1)    {}
-  virtual ~FamilyState(){}
+  FamilyState(const FamilyState&) = default;
+  virtual ~FamilyState() = default;
 
  public:
   //! Concatenation of all the family changes during the simulation
@@ -67,7 +68,8 @@ class ConnectivityStateData
 {
 public:
   ConnectivityStateData() : m_last_family_state(-1), m_last_added_item_index(-1), m_last_removed_item_index(-1) {}
-  virtual ~ConnectivityStateData(){}
+  ConnectivityStateData(const ConnectivityStateData&) = default;
+  virtual ~ConnectivityStateData() = default;
 
 public :
   Integer m_last_family_state;
@@ -77,11 +79,12 @@ public :
 
 class ConnectivityState
 {
-public:
+ public:
   ConnectivityState(){}
-  virtual ~ConnectivityState(){}
+  ConnectivityState(const ConnectivityState&) = default;
+  virtual ~ConnectivityState() = default;
 
-public :
+ public :
   ConnectivityStateData m_state_with_source_family;
   ConnectivityStateData m_state_with_target_family;
 };

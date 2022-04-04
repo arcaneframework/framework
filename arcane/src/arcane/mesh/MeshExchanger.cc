@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshExchanger.cc                                            (C) 2000-2016 */
+/* MeshExchanger.cc                                            (C) 2000-2021 */
 /*                                                                           */
 /* Gestion d'un échange de maillage entre sous-domaines.                     */
 /*---------------------------------------------------------------------------*/
@@ -14,6 +14,7 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/ValueConvert.h"
 
 #include "arcane/IParallelMng.h"
 #include "arcane/Timer.h"
@@ -29,11 +30,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-ARCANE_MESH_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -45,6 +43,20 @@ MeshExchanger(DynamicMesh* mesh,ITimeStats* stats)
 , m_time_stats(stats)
 , m_phase(ePhase::Init)
 {
+  // Temporairement utilise une variable d'environnement pour spécifier le
+  // nombre maximum de messages en vol ou si on souhaite utiliser les collectives
+  String max_pending_str = platform::getEnvironmentVariable("ARCANE_MESH_EXCHANGE_MAX_PENDING_MESSAGE");
+  if (!max_pending_str.null()){
+    Int32 max_pending = 0;
+    if (!builtInGetValue(max_pending,max_pending_str))
+      m_exchanger_option.setMaxPendingMessage(max_pending);
+  }
+
+  String use_collective_str = platform::getEnvironmentVariable("ARCANE_MESH_EXCHANGE_USE_COLLECTIVE");
+  if (use_collective_str=="1" || use_collective_str=="TRUE")
+    m_exchanger_option.setExchangeMode(ParallelExchangerOptions::EM_Collective);
+
+  m_exchanger_option.setVerbosityLevel(1);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -66,7 +78,8 @@ MeshExchanger::
 void MeshExchanger::
 build()
 {
-  if (!m_mesh->itemFamilyNetwork() || !IItemFamilyNetwork::plug_serializer) { // handle family order by hand
+  if ( !m_mesh->itemFamilyNetwork() || !IItemFamilyNetwork::plug_serializer )
+  { // handle family order by hand
     // Liste ordonnée des familles triée spécifiquement pour garantir un certain ordre
     // dans les échanges. Pour l'instant l'ordre est déterminé comme suit:
     // - d'abord Cell, puis Face, Edge et Node
@@ -78,7 +91,8 @@ build()
     sorted_families.add(m_mesh->faceFamily());
     sorted_families.add(m_mesh->edgeFamily());
     sorted_families.add(m_mesh->nodeFamily());
-    for( IItemFamily* family : families ){
+    for( IItemFamily* family : families )
+    {
       IParticleFamily* particle_family = family->toParticleFamily();
       if (particle_family)
         sorted_families.add(family);
@@ -91,13 +105,58 @@ build()
     // Création de chaque échangeur associé à une famille.
     std::map<IItemFamily*,IItemFamilyExchanger*> family_exchanger_map;
     for( IItemFamily* family : sorted_families ){
-      IItemFamilyExchanger* exchanger = family->policyMng()->createExchanger();
-      m_family_exchangers.add(exchanger);
-      m_family_exchanger_map.insert(std::make_pair(family,exchanger));
+      _addItemFamilyExchanger(family);
     }
   }
-  else {
-    _buildWithItemFamilyNetwork();
+  else
+  {
+    if(m_mesh->useMeshItemFamilyDependencies())
+    {
+      _buildWithItemFamilyNetwork();
+    }
+    else
+    {
+      std::set<String> family_set ;
+      UniqueArray<IItemFamily*> sorted_families;
+      IItemFamilyCollection families(m_mesh->itemFamilies());
+      sorted_families.reserve(families.count());
+      sorted_families.add(m_mesh->cellFamily());
+      family_set.insert(m_mesh->cellFamily()->name()) ;
+      sorted_families.add(m_mesh->faceFamily());
+      family_set.insert(m_mesh->faceFamily()->name()) ;
+      sorted_families.add(m_mesh->edgeFamily());
+      family_set.insert(m_mesh->edgeFamily()->name()) ;
+      sorted_families.add(m_mesh->nodeFamily());
+      family_set.insert(m_mesh->nodeFamily()->name()) ;
+      for( IItemFamily* family : families )
+      {
+        IParticleFamily* particle_family = family->toParticleFamily();
+        if (particle_family)
+        {
+          sorted_families.add(family);
+          family_set.insert(family->name()) ;
+        }
+      }
+
+      for( auto family : m_mesh->itemFamilyNetwork()->getFamilies(IItemFamilyNetwork::InverseTopologicalOrder) )
+      {
+        auto value = family_set.insert(family->name()) ;
+        if(value.second)
+        {
+          sorted_families.add(family) ;
+        }
+      }
+
+      // Liste des instances gérant les échanges d'une famille.
+      // ATTENTION: il faut garantir la libération des pointeurs associés.
+      //m_family_exchangers.reserve(families.count());
+
+      // Création de chaque échangeur associé à une famille.
+      std::map<IItemFamily*,IItemFamilyExchanger*> family_exchanger_map;
+      for( IItemFamily* family : sorted_families ){
+        _addItemFamilyExchanger(family);
+      }
+    }
   }
   m_phase = ePhase::ComputeInfos;
 }
@@ -128,6 +187,7 @@ _addItemFamilyExchanger(IItemFamily* family)
   IItemFamilyExchanger* exchanger = family->policyMng()->createExchanger();
   m_family_exchangers.add(exchanger);
   m_family_exchanger_map.insert(std::make_pair(family,exchanger));
+  exchanger->setParallelExchangerOption(m_exchanger_option);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -229,7 +289,9 @@ processExchange()
 {
   _checkPhase(ePhase::ProcessExchange);
 
-  info() << "ExchangeItems date=" << platform::getCurrentDateTime();
+  info() << "ExchangeItems date=" << platform::getCurrentDateTime()
+         << " MemUsed=" << platform::getMemoryUsed();
+
   Timer::Action ts_action1(m_time_stats,"MessagesExchange",true);
   for( IItemFamilyExchanger* e : m_family_exchangers ){
     // NOTE: Pour pouvoir envoyer tous les messages en même temps et les réceptions
@@ -291,7 +353,8 @@ allocateReceivedItems()
     }
     // Build item relations (only dependencies are build in readAndAllocItems)
     // only for families registered in the graph
-    if (m_mesh->itemFamilyNetwork()) {
+    if (m_mesh->itemFamilyNetwork() && m_mesh->itemFamilyNetwork()->isActivated())
+    {
       auto family_set = m_mesh->itemFamilyNetwork()->getFamilies();
       for (auto family : family_set) {
         m_family_exchanger_map[family]->readAndAllocItemRelations();
@@ -402,8 +465,7 @@ _setNextPhase(ePhase next_phase)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

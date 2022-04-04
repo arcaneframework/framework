@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -61,7 +61,7 @@ LimaCutInfosReader(IParallelMng* parallel_mng)
 static Integer
 _readList(Int64ArrayView& int_list,const char* buf)
 {
-  istringstream istr(buf);
+  std::istringstream istr(buf);
   Integer index = 0;
   while (!istr.eof()){
     Int64 v = 0;

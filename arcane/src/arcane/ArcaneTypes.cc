@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -41,8 +41,6 @@ itemKindName(eItemKind kind)
   case IK_Node: return "Node";
   case IK_Face: return "Face";
   case IK_Edge: return "Edge";
-  case IK_DualNode: return "DualNode";
-  case IK_Link: return "Link";
   case IK_Particle: return "Particle";
   case IK_DoF: return "DoF";
   case IK_Unknown: return "None";
@@ -96,11 +94,8 @@ operator>> (std::istream& istr,eItemKind& item_kind)
   else if (buf=="Particle"){
     item_kind = IK_Particle;
   }
-  else if (buf=="DualNode"){
-    item_kind = IK_DualNode;
-  }
-  else if (buf=="Link"){
-    item_kind = IK_Link;
+  else if (buf=="DoF"){
+    item_kind = IK_DoF;
   }
   else if (buf=="None"){
     item_kind = IK_Unknown;

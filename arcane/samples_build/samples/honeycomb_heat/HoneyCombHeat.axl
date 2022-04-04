@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<module name="HoneyCombHeat" version="1.0">
+  <description>Descripteur du module HoneyCombHeat</description>
+  <entry-points>
+    <entry-point method-name="compute" name="Compute" where="compute-loop" property="none" />
+    <entry-point method-name="startInit" name="StartInit" where="start-init" property="none" />
+  </entry-points>
+  <variables>
+    <variable field-name="cell_temperature" name="CellTemperature" data-type="real" item-kind="cell" dim="0" dump="true" />
+    <variable field-name="node_temperature" name="NodeTemperature" data-type="real" item-kind="node" dim="0" dump="true" />
+  </variables>
+</module>

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -83,13 +83,10 @@ class LibUnwindStackTraceService
   {
     m_application = sbi.application();
   }
-  virtual ~LibUnwindStackTraceService()
-  {
-  }
 
  public:
 
-  virtual void build()
+  void build() override
   {
     if (!platform::getEnvironmentVariable("ARCANE_GDB_STACK").null())
       m_want_gdb_info = true;
@@ -231,8 +228,8 @@ _getGDBStack()
   if (file_length==0)
     return String();
 
-  ifstream ifile;
-  ifile.open(filename,ios::binary);
+  std::ifstream ifile;
+  ifile.open(filename,std::ios::binary);
   ByteUniqueArray bytes(arcaneCheckArraySize(file_length));
   ifile.read((char*)bytes.data(),file_length);
   return String(bytes);

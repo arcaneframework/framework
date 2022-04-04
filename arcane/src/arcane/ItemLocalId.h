@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemLocalId.h                                               (C) 2000-2020 */
+/* ItemLocalId.h                                               (C) 2000-2021 */
 /*                                                                           */
 /* Index local sur une entité du maillage.                                   */
 /*---------------------------------------------------------------------------*/
@@ -31,16 +31,16 @@ namespace Arcane
 class ARCANE_CORE_EXPORT ItemLocalId
 {
  public:
-  ARCCORE_HOST_DEVICE ItemLocalId() : m_local_id(NULL_ITEM_LOCAL_ID){}
-  ARCCORE_HOST_DEVICE explicit ItemLocalId(Int32 id) : m_local_id(id){}
+  constexpr ARCCORE_HOST_DEVICE ItemLocalId() : m_local_id(NULL_ITEM_LOCAL_ID){}
+  constexpr ARCCORE_HOST_DEVICE explicit ItemLocalId(Int32 id) : m_local_id(id){}
   // La définition de ce constructeur est dans ItemInternal.h
   inline explicit ItemLocalId(ItemInternal* item);
   inline ItemLocalId(Item item);
-  ARCCORE_HOST_DEVICE operator Int32() const { return m_local_id; }
-  ARCCORE_HOST_DEVICE Int32 asInt32() const { return m_local_id; }
-  ARCCORE_HOST_DEVICE Int32 asInteger() const { return m_local_id; }
+  constexpr ARCCORE_HOST_DEVICE operator Int32() const { return m_local_id; }
+  constexpr ARCCORE_HOST_DEVICE Int32 asInt32() const { return m_local_id; }
+  constexpr ARCCORE_HOST_DEVICE Int32 asInteger() const { return m_local_id; }
  public:
-  ARCCORE_HOST_DEVICE Int32 localId() const { return m_local_id; }
+  constexpr ARCCORE_HOST_DEVICE Int32 localId() const { return m_local_id; }
  private:
   Int32 m_local_id;
 };
@@ -55,7 +55,7 @@ class ARCANE_CORE_EXPORT NodeLocalId
 : public ItemLocalId
 {
  public:
-  ARCCORE_HOST_DEVICE explicit NodeLocalId(Int32 id) : ItemLocalId(id){}
+  constexpr ARCCORE_HOST_DEVICE explicit NodeLocalId(Int32 id) : ItemLocalId(id){}
   inline NodeLocalId(Node node);
 };
 
@@ -69,7 +69,7 @@ class ARCANE_CORE_EXPORT EdgeLocalId
 : public ItemLocalId
 {
  public:
-  ARCCORE_HOST_DEVICE explicit EdgeLocalId(Int32 id) : ItemLocalId(id){}
+  constexpr ARCCORE_HOST_DEVICE explicit EdgeLocalId(Int32 id) : ItemLocalId(id){}
   inline EdgeLocalId(Edge edge);
 };
 
@@ -83,7 +83,7 @@ class ARCANE_CORE_EXPORT FaceLocalId
 : public ItemLocalId
 {
  public:
-  ARCCORE_HOST_DEVICE explicit FaceLocalId(Int32 id) : ItemLocalId(id){}
+  constexpr ARCCORE_HOST_DEVICE explicit FaceLocalId(Int32 id) : ItemLocalId(id){}
   inline FaceLocalId(Face item);
 };
 
@@ -97,7 +97,7 @@ class ARCANE_CORE_EXPORT CellLocalId
 : public ItemLocalId
 {
  public:
-  ARCCORE_HOST_DEVICE explicit CellLocalId(Int32 id) : ItemLocalId(id){}
+  constexpr ARCCORE_HOST_DEVICE explicit CellLocalId(Int32 id) : ItemLocalId(id){}
   inline CellLocalId(Cell item);
 };
 
@@ -111,36 +111,8 @@ class ARCANE_CORE_EXPORT ParticleLocalId
 : public ItemLocalId
 {
  public:
-  ARCCORE_HOST_DEVICE explicit ParticleLocalId(Int32 id) : ItemLocalId(id){}
+  constexpr ARCCORE_HOST_DEVICE explicit ParticleLocalId(Int32 id) : ItemLocalId(id){}
   inline ParticleLocalId(Particle item);
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \ingroup Mesh
- * \brief Index d'un DualNode dans une variable.
- */
-class ARCANE_CORE_EXPORT DualNodeLocalId
-: public ItemLocalId
-{
- public:
-  explicit DualNodeLocalId(Int32 id) : ItemLocalId(id){}
-  inline DualNodeLocalId(DualNode item);
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \ingroup Mesh
- * \brief Index d'un Link dans une variable.
- */
-class ARCANE_CORE_EXPORT LinkLocalId
-: public ItemLocalId
-{
- public:
-  explicit LinkLocalId(Int32 id) : ItemLocalId(id){}
-  inline LinkLocalId(Link item);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -157,20 +129,20 @@ class ItemLocalIdView
   using iterator = typename SpanType::iterator;
   using const_iterator = typename SpanType::const_iterator;
  public:
-  ARCCORE_HOST_DEVICE ItemLocalIdView(SpanType ids) : m_ids(ids){}
-  ARCCORE_HOST_DEVICE ItemLocalIdView(const LocalIdType* ids,Int32 s) : m_ids(ids,s){}
+  constexpr ARCCORE_HOST_DEVICE ItemLocalIdView(SpanType ids) : m_ids(ids){}
+  constexpr ARCCORE_HOST_DEVICE ItemLocalIdView(const LocalIdType* ids,Int32 s) : m_ids(ids,s){}
   ItemLocalIdView() = default;
-  ARCCORE_HOST_DEVICE operator SpanType() const { return m_ids; }
+  constexpr ARCCORE_HOST_DEVICE operator SpanType() const { return m_ids; }
  public:
-  ARCCORE_HOST_DEVICE SpanType ids() const { return m_ids; }
-  ARCCORE_HOST_DEVICE LocalIdType operator[](Int32 i) const { return m_ids[i]; }
-  ARCCORE_HOST_DEVICE Int32 size() const { return m_ids.size(); }
-  ARCCORE_HOST_DEVICE iterator begin() { return m_ids.begin(); }
-  ARCCORE_HOST_DEVICE iterator end() { return m_ids.end(); }
-  ARCCORE_HOST_DEVICE const_iterator begin() const { return m_ids.begin(); }
-  ARCCORE_HOST_DEVICE const_iterator end() const { return m_ids.end(); }
+  constexpr ARCCORE_HOST_DEVICE SpanType ids() const { return m_ids; }
+  constexpr ARCCORE_HOST_DEVICE LocalIdType operator[](Int32 i) const { return m_ids[i]; }
+  constexpr ARCCORE_HOST_DEVICE Int32 size() const { return m_ids.size(); }
+  constexpr ARCCORE_HOST_DEVICE iterator begin() { return m_ids.begin(); }
+  constexpr ARCCORE_HOST_DEVICE iterator end() { return m_ids.end(); }
+  constexpr ARCCORE_HOST_DEVICE const_iterator begin() const { return m_ids.begin(); }
+  constexpr ARCCORE_HOST_DEVICE const_iterator end() const { return m_ids.end(); }
  public:
-  ARCCORE_HOST_DEVICE const LocalIdType* data() const { return m_ids.data(); }
+  constexpr ARCCORE_HOST_DEVICE const LocalIdType* data() const { return m_ids.data(); }
  private:
   SpanType m_ids;
 };

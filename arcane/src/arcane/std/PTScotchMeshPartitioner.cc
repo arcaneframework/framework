@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -82,8 +82,8 @@ class PTScotchMeshPartitioner
 
  public:
 
-  void partitionMesh(bool initial_partition);
-  void partitionMesh(bool initial_partition,Int32 nb_part);
+  void partitionMesh(bool initial_partition) override;
+  void partitionMesh(bool initial_partition,Int32 nb_part) override;
 
  private:
 
@@ -463,11 +463,18 @@ partitionMesh(bool initial_partition,Int32 nb_part)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SUB_DOMAIN_FACTORY(PTScotchMeshPartitioner,IMeshPartitioner,PTScotch);
+ARCANE_REGISTER_SERVICE(PTScotchMeshPartitioner,
+                        ServiceProperty("PTScotch",ST_SubDomain),
+                        ARCANE_SERVICE_INTERFACE(IMeshPartitioner),
+                        ARCANE_SERVICE_INTERFACE(IMeshPartitionerBase));
+
 ARCANE_REGISTER_SERVICE_PTSCOTCHMESHPARTITIONER(PTScotch,PTScotchMeshPartitioner);
 
 #if ARCANE_DEFAULT_PARTITIONER == PTSCOTCH_DEFAULT_PARTITIONER
-ARCANE_REGISTER_SUB_DOMAIN_FACTORY(PTScotchMeshPartitioner,IMeshPartitioner,DefaultPartitioner);
+ARCANE_REGISTER_SERVICE(PTScotchMeshPartitioner,
+                        ServiceProperty("DefaultPartitioner",ST_SubDomain),
+                        ARCANE_SERVICE_INTERFACE(IMeshPartitioner),
+                        ARCANE_SERVICE_INTERFACE(IMeshPartitionerBase));
 ARCANE_REGISTER_SERVICE_PTSCOTCHMESHPARTITIONER(DefaultPartitioner,PTScotchMeshPartitioner);
 #endif
 

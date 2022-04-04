@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -18,7 +18,7 @@
 #include "arcane/IMeshBuilder.h"
 #include "arcane/IPrimaryMesh.h"
 #include "arcane/IItemFamily.h"
-#include "arcane/IMeshPartitioner.h"
+#include "arcane/IMeshPartitionerBase.h"
 #include "arcane/IVariableMng.h"
 #include "arcane/IMeshModifier.h"
 #include "arcane/IMeshUtilities.h"
@@ -131,12 +131,15 @@ createMesh(const String& default_name)
   ARCANE_CHECK_POINTER(m_mesh_builder);
 
   m_mesh_builder->fillMeshBuildInfo(build_info);
+  // Le générateur peut forcer l'utilisation du partitionnement
+  if (build_info.isNeedPartitioning())
+    m_partitioner_name = options()->partitioner();
+
   // Positionne avec des valeurs par défaut les champs non remplit.
   if (build_info.factoryName().empty())
     build_info.addFactoryName("ArcaneDynamicMeshFactory");
   if (build_info.parallelMngRef().isNull())
     build_info.addParallelMng(makeRef(sd->parallelMng()));
-    
   IPrimaryMesh* pm = sd->meshMng()->meshFactoryMng()->createMesh(build_info);
   m_mesh = pm;
 }
@@ -261,8 +264,10 @@ void ArcaneCaseMeshService::
 _doInitialPartition2(const String& partitioner_name)
 {
   info() << "Doing initial partitioning service=" << partitioner_name;
-
-  ServiceBuilder<IMeshPartitioner> sbuilder(m_sub_domain);
+  // NOTE: Ce service n'utilise que les partionneurs qui implémentent
+  // IMeshPartitionerBase et pas ceux (historiques) qui n'implémentent que
+  // IMeshPartitioner.
+  ServiceBuilder<IMeshPartitionerBase> sbuilder(m_sub_domain);
   auto mesh_partitioner = sbuilder.createReference(partitioner_name,m_mesh);
 
   IMesh* mesh = m_mesh;
@@ -353,9 +358,8 @@ _setGhostLayerInfos()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE(ArcaneCaseMeshService,
-                        ServiceProperty("ArcaneCaseMeshService",ST_CaseOption),
-                        ARCANE_SERVICE_INTERFACE(ICaseMeshService));
+ARCANE_REGISTER_SERVICE_ARCANECASEMESHSERVICE(ArcaneCaseMeshService,
+                                              ArcaneCaseMeshService);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

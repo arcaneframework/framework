@@ -99,6 +99,29 @@ macro(ARCANE_ADD_TEST_PARALLEL test_name case_file nb_proc)
   endif()
 endmacro()
 
+# Ajoute un test parallele
+macro(arcane_add_test_sequential_task test_name case_file nb_task)
+  # Si nb_task vaut 0, on utilise tous les CPU du noeud.
+  if(ARCANE_HAS_TASKS)
+    if(VERBOSE)
+      message(STATUS "    Add Test Task OPT=${test_name} ${case_file}")
+    endif()
+    set(_TEST_NAME ${test_name}_task${nb_task})
+    if (${nb_task} STREQUAL 0)
+      set(_TEST_NAME ${test_name}_taskmax)
+    endif()
+    arcane_get_case_path(${case_file})
+    arcane_add_test_direct(NAME ${_TEST_NAME}
+      COMMAND ${ARCANE_TEST_LAUNCH_COMMAND} -K ${nb_task} ${ARGN} ${full_case_file}
+      WORKING_DIRECTORY ${ARCANE_TEST_WORKDIR})
+    if (${nb_task} STREQUAL 0)
+      set_tests_properties(${_TEST_NAME} PROPERTIES RUN_SERIAL TRUE)
+    else()
+      set_tests_properties(${_TEST_NAME} PROPERTIES PROCESSORS ${nb_task})
+    endif()
+  endif()
+endmacro()
+
 # Ajoute un test parallele avec les threads
 macro(ARCANE_ADD_TEST_PARALLEL_THREAD test_name case_file nb_proc)
   if(NOT ARCANE_USE_MPC)
@@ -229,7 +252,9 @@ function(arcane_add_csharp_test_direct)
     arcane_add_test_direct(NAME ${ARGS_TEST_NAME}_coreclr
       COMMAND ${ARGS_LAUNCH_COMMAND} -Z --dotnet-runtime=coreclr ${_ALL_ARGS}
       WORKING_DIRECTORY ${ARGS_WORKING_DIRECTORY})
+  endif()
 
+  if (TARGET arcane_dotnet_coreclr)
     # Test avec coreclr embedded
     arcane_add_test_direct(NAME ${ARGS_TEST_NAME}_coreclr_embedded
       COMMAND ${ARGS_LAUNCH_COMMAND} -We,ARCANE_USE_DOTNET_WRAPPER,1 --dotnet-runtime=coreclr ${_ALL_ARGS}
@@ -273,6 +298,46 @@ macro(arcane_add_csharp_test_parallel test_name case_file nb_proc)
     ASSEMBLY ${ARCANE_TEST_DOTNET_ASSEMBLY}
     ARGS -n ${nb_proc} ${ARGN}
     )
+endmacro()
+
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+
+set(ARCANE_ACCELERATOR_RUNTIME_NAME)
+if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP" )
+  set(ARCANE_ACCELERATOR_RUNTIME_NAME hip)
+endif()
+if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDANVCC" )
+  set(ARCANE_ACCELERATOR_RUNTIME_NAME cuda)
+endif()
+
+# ----------------------------------------------------------------------------
+# Ajoute un test séquentiel pour accélerateur si disponible
+macro(arcane_add_accelerator_test_sequential test_name case_file)
+  if (ARCANE_ACCELERATOR_RUNTIME_NAME)
+    message(STATUS "ADD ACCELERATOR test name=${test_name}")
+    arcane_add_test_sequential(${test_name}_${ARCANE_ACCELERATOR_RUNTIME_NAME} ${case_file}
+      "-A,AcceleratorRuntime=${ARCANE_ACCELERATOR_RUNTIME_NAME}" ${ARGN}
+      )
+  endif()
+endmacro()
+
+# Ajoute un test parallèle MPI pour accélerateur si disponible
+macro(arcane_add_accelerator_test_parallel test_name case_file nb_proc)
+  if (ARCANE_ACCELERATOR_RUNTIME_NAME)
+    arcane_add_test_parallel(${test_name}_${ARCANE_ACCELERATOR_RUNTIME_NAME} ${case_file} ${nb_proc}
+      "-A,AcceleratorRuntime=${ARCANE_ACCELERATOR_RUNTIME_NAME}" ${ARGN}
+      )
+  endif()
+endmacro()
+
+# Ajoute un test parallèle 'sharedmemory' pour accélerateur si disponible
+macro(arcane_add_accelerator_test_parallel_thread test_name case_file nb_proc)
+  if (ARCANE_ACCELERATOR_RUNTIME_NAME)
+    arcane_add_test_parallel_thread(${test_name}_${ARCANE_ACCELERATOR_RUNTIME_NAME} ${case_file} ${nb_proc}
+      "-A,AcceleratorRuntime=${ARCANE_ACCELERATOR_RUNTIME_NAME}" ${ARGN}
+      )
+  endif()
 endmacro()
 
 # ----------------------------------------------------------------------------

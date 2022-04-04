@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -94,8 +94,8 @@ class CaseDocument
   void addWarning(const CaseOptionError& case_error) override;
   bool hasError() const override;
   bool hasWarnings() const override;
-  void printErrors(ostream& o) override;
-  void printWarnings(ostream& o) override;
+  void printErrors(std::ostream& o) override;
+  void printWarnings(std::ostream& o) override;
   void clearErrorsAndWarnings() override;
 
  public:
@@ -137,7 +137,7 @@ class CaseDocument
   
   XmlNode _forceCreateChild(XmlNode& parent,const String& us);
   void _assignLanguage(const String& langname);
-  void _printErrorsOrWarnings(ostream& o,ConstArrayView<CaseOptionError> errors);
+  void _printErrorsOrWarnings(std::ostream& o,ConstArrayView<CaseOptionError> errors);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -357,7 +357,7 @@ hasWarnings() const
 /*---------------------------------------------------------------------------*/
 
 void CaseDocument::
-printErrors(ostream& o)
+printErrors(std::ostream& o)
 {
   _printErrorsOrWarnings(o,m_errors);
 }
@@ -366,7 +366,7 @@ printErrors(ostream& o)
 /*---------------------------------------------------------------------------*/
 
 void CaseDocument::
-printWarnings(ostream& o)
+printWarnings(std::ostream& o)
 {
   _printErrorsOrWarnings(o,m_warnings);
 }
@@ -385,7 +385,7 @@ clearErrorsAndWarnings()
 /*---------------------------------------------------------------------------*/
 
 void CaseDocument::
-_printErrorsOrWarnings(ostream& o,ConstArrayView<CaseOptionError> errors)
+_printErrorsOrWarnings(std::ostream& o,ConstArrayView<CaseOptionError> errors)
 {
   for( const CaseOptionError& error : errors.range() ){
     if (arcaneIsCheck()){

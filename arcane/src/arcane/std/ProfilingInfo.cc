@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -38,7 +38,6 @@
 #endif
 
 #if defined(ARCANE_OS_LINUX)
-#define ARCANE_CHECK_MEMORY_USE_MALLOC_HOOK
 #include <execinfo.h>
 #include <dlfcn.h>
 #include <stdio.h>
@@ -51,7 +50,7 @@
 #define ARCANE_HAS_GLIBC_BACKTRACE
 #endif
 
-#ifdef ARCANE_CHECK_MEMORY_USE_MALLOC_HOOK
+#ifdef ARCANE_USE_MALLOC_HOOK
 #include <malloc.h>
 #endif
 
@@ -61,7 +60,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -337,7 +337,8 @@ class MonoFuncAddrGetter
 
 static std::atomic<Int32> global_in_malloc;
 
-#ifdef ARCANE_CHECK_MEMORY_USE_MALLOC_HOOK
+#ifdef ARCANE_USE_MALLOC_HOOK
+
 namespace{
 void*(*my_old_malloc_hook)(size_t,const void*);
 void(*my_old_free_hook)(void*,const void*);
@@ -872,7 +873,7 @@ printInfos(bool dump_file)
       sfile_name += process_id;
       sfile_name += ".xml";
       String file_name = sfile_name;
-      ofstream ofile(file_name.localstr());
+      std::ofstream ofile(file_name.localstr());
       ofile << "<?xml version='1.0'?>\n";
       ofile << "<addresses>\n";
       ProfInfos::AddrMap::const_iterator begin = global_infos->m_addr_map.begin();
@@ -948,7 +949,7 @@ printInfos(bool dump_file)
     std::sort(std::begin(sorted_stacks),std::end(sorted_stacks));
 
     String file_name = String("profiling.callstack") + platform::getProcessId();
-    ofstream ofile;
+    std::ofstream ofile;
     ofile.open(file_name.localstr());
 
     for( auto x : sorted_stacks.range() ){
@@ -1172,7 +1173,7 @@ dumpJSON(JSONWriter& writer)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

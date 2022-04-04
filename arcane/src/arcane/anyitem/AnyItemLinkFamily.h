@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -159,14 +159,14 @@ private:
    * \brief Enumérateur de liens
    */
   class Enumerator 
-    : public LinkIndex
+  : public LinkIndex
   {
   public:
     Enumerator(const Arcane::Array<LinkData>& sources, 
                const Arcane::Array<LinkData>& targets) 
-      : m_sources(sources), m_targets(targets) {}
+    : LinkIndex(), m_sources(sources), m_targets(targets) {}
     Enumerator(const Enumerator& e) 
-      : m_sources(e.m_sources), m_targets(e.m_targets) {}
+    : LinkIndex(), m_sources(e.m_sources), m_targets(e.m_targets) {}
     inline bool hasNext() const { return m_sources.size() != m_index; }
     inline void operator++() { m_index++; }
     //! Données du lien back

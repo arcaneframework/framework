@@ -1,20 +1,17 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* OneMeshItemAdder.cc                                         (C) 2000-2017 */
+/* OneMeshItemAdder.cc                                         (C) 2000-2022 */
 /*                                                                           */
 /* Ajout des entités une par une.                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/mesh/OneMeshItemAdder.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 #include "arcane/mesh/DynamicMesh.h"
 #include "arcane/mesh/DynamicMeshIncrementalBuilder.h"
@@ -28,16 +25,13 @@
 #include "arcane/utils/NotSupportedException.h"
 
 #include "arcane/mesh/ConnectivityNewWithDependenciesTypes.h"
+#include "arcane/mesh/GraphDoFs.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -92,7 +86,7 @@ OneMeshItemAdder(DynamicMeshIncrementalBuilder* mesh_builder)
 , m_node_family(m_mesh->trueNodeFamily())
 , m_face_family(m_mesh->trueFaceFamily())
 , m_edge_family(m_mesh->trueEdgeFamily())
-, m_item_type_mng(ItemTypeMng::singleton())
+, m_item_type_mng(m_mesh->itemTypeMng())
 , m_mesh_info(m_mesh->meshPartInfo().partRank())
 , m_next_face_uid(0)
 , m_next_edge_uid(0)
@@ -133,7 +127,7 @@ addOneFace(Int64 a_face_uid, Int64ConstArrayView a_node_list, Integer a_type)
     m_work_face_orig_nodes_uid[z] = a_node_list[z];
   mesh_utils::reorderNodesOfFace(m_work_face_orig_nodes_uid, m_work_face_sorted_nodes);
 
-  ItemTypeMng* itm = ItemTypeMng::singleton();
+  ItemTypeMng* itm = m_mesh->itemTypeMng();
   ItemInternal *face = m_face_family.allocOne(a_face_uid,itm->typeFromId(a_type));
 	face->setOwner(m_mesh_info.rank(), m_mesh_info.rank());
 
@@ -406,24 +400,42 @@ addOneItem2(IItemFamily* family,
     // get connected family
     eItemKind family_kind = static_cast<eItemKind>(connectivity_info[info_index++]); // another way ?
     Int32 nb_connected_item = CheckedConvert::toInt32(connectivity_info[info_index++]);
-    IItemFamily* connected_family = m_mesh->itemFamily(family_kind);
+    if (nb_connected_item == 0) continue;
+    IItemFamily* connected_family = nullptr ;
+    switch(family_kind)
+    {
+      case IK_Particle:
+        connected_family = m_mesh->findItemFamily(family_kind, ParticleFamily::defaultFamilyName(), false,false);
+        break ;
+      case IK_DoF:
+        if(family->name()==GraphDoFs::dualNodeFamilyName())
+          connected_family = m_mesh->findItemFamily(family_kind, GraphDoFs::linkFamilyName(), false,false);
+        else
+          connected_family = m_mesh->findItemFamily(family_kind, GraphDoFs::dualNodeFamilyName(), false,false);
+        break ;
+      default:
+        connected_family = m_mesh->itemFamily(family_kind);
+        break ;
+    }
     // get connectivities family -> connected_family and reverse
     String connectivity_name = mesh::connectivityName(family,connected_family);
     bool is_dependency = false;
     IIncrementalItemConnectivity* family_to_connected_family = m_mesh->itemFamilyNetwork()->getConnectivity(family,connected_family,connectivity_name,is_dependency);
     if (!family_to_connected_family)
       fatal() << "Cannot find connectivity " << connectivity_name;
-    bool is_relation = !is_dependency;
+    bool is_deep_connectivity = m_mesh->itemFamilyNetwork()->isDeep(family_to_connected_family) ;
+    bool is_relation = !(is_dependency && is_deep_connectivity);
     // Build connection
-    if (nb_connected_item == 0) continue;
     // get connected item lids
     Int32UniqueArray connected_item_lids(nb_connected_item);
     bool do_fatal = is_relation ? false : true; // for relations, connected items may not be present and will be skipped.
     connected_family->itemsUniqueIdToLocalId(connected_item_lids,connectivity_info.subView(info_index,nb_connected_item),do_fatal);
     // if connection is relation, connected item not necessarily present: remove absent (ie null) items
     Integer nb_connected_item_found = nb_connected_item;
-    if (is_relation) {
-      for (Integer index = 0; index < connected_item_lids.size(); ) {
+    if (is_relation)
+    {
+      for (Integer index = 0; index < connected_item_lids.size(); )
+      {
         if (connected_item_lids[index] == NULL_ITEM_LOCAL_ID) {
           connected_item_lids.remove(index);
           --nb_connected_item_found;
@@ -431,15 +443,23 @@ addOneItem2(IItemFamily* family,
         else ++index;
       }
     }
-    for (Integer connected_item_index = 0; connected_item_index < nb_connected_item_found; ++connected_item_index) {
-      if (family_to_connected_family) {
+    for (Integer connected_item_index = 0; connected_item_index < nb_connected_item_found; ++connected_item_index)
+    {
+      if (family_to_connected_family)
+      {
         // Only strategy : check and add
         auto connected_item_lid = ItemLocalId{connected_item_lids[connected_item_index]};
-        if (is_relation) {
+        if (is_relation)
+        {
           if (!family_to_connected_family->hasConnectedItem(ItemLocalId(item),connected_item_lid))
+          {
             family_to_connected_family->addConnectedItem(ItemLocalId(item),connected_item_lid);
+          }
         }
-        else family_to_connected_family->replaceConnectedItem(ItemLocalId(item),connected_item_index,connected_item_lid);
+        else
+        {
+          family_to_connected_family->replaceConnectedItem(ItemLocalId(item),connected_item_index,connected_item_lid);
+        }
       }
     }
     info_index+= nb_connected_item;
@@ -700,7 +720,7 @@ ItemInternal* OneMeshItemAdder::
 addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fatal_on_existing_item)
 {
   //bool is_check = arcaneIsCheck();
-  ItemTypeMng* itm = ItemTypeMng::singleton();
+  ItemTypeMng* itm = m_mesh->itemTypeMng();
   eItemKind kind = item.kind();
   ItemTypeInfo * type = itm->typeFromId(item.type());
   if (item.type() == IT_Line2 && submesh_kind == IK_Cell)
@@ -1023,12 +1043,19 @@ _isReorder(Integer i_face, const ItemTypeInfo::LocalFace& lf, const CellInfo& ce
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
+//! Remise à zéro des structures pour pouvoir faire à nouveau une allocation
+void OneMeshItemAdder::
+resetAfterDeallocate()
+{
+  m_next_face_uid = 0;
+  m_next_edge_uid = 0;
+  m_mesh_info.reset();
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

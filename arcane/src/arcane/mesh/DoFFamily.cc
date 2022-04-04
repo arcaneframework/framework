@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -42,15 +42,14 @@ DoFFamily(IMesh* mesh, const String& name)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-DoFFamily::
+void DoFFamily::
 build()
 {
   ItemFamily::build();
   m_sub_domain_id = subDomain()->subDomainId();
-  ItemTypeMng* itm = ItemTypeMng::singleton();
+  ItemTypeMng* itm = m_mesh->itemTypeMng();
   ItemTypeInfo* dof_type_info = itm->typeFromId(IT_NullType);
-  m_shared_info = _findSharedInfo(dof_type_info,0,0,1);
+  m_shared_info = _findSharedInfo(dof_type_info);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -227,6 +226,21 @@ _allocDoFGhost(const Int64 uid, const Int32 owner)
   return item_internal;
 }
 
+ItemInternal* DoFFamily::
+_findOrAllocDoF(const Int64 uid,[[maybe_unused]] bool is_alloc)
+{
+  bool need_alloc; // given by alloc
+  ItemInternal* item_internal = ItemFamily::_findOrAllocOne(uid,need_alloc);
+  if (!need_alloc) {
+    item_internal->setUniqueId(uid);
+  }
+  else {
+    _allocateInfos(item_internal,uid,m_shared_info);
+    // Un dof appartient de base au sous-domaine qui l'a créé (sauf ghost)
+    item_internal->setOwner(m_sub_domain_id,m_sub_domain_id);
+  }
+  return item_internal;
+}
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

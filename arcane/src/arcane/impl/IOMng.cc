@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -128,7 +128,7 @@ writeXmlFile(IXmlDocumentHolder* doc, const String& filename, const bool to_inde
 {
   if (!doc)
     return true;
-  ofstream ofile(filename.localstr());
+  std::ofstream ofile(filename.localstr());
 
   // Check if stream is OK
   if (!ofile.good())

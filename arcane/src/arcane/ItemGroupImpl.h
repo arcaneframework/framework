@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -171,7 +171,7 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
    */
   ItemGroupImpl* outerFaceGroup();
 
-//! AMR
+  //! AMR
   /*!
    *  \brief Groupe des mailles actives de ce groupe
    *
@@ -221,7 +221,7 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
   ItemGroupImpl* innerActiveFaceGroup();
 
   /*!
-   *  \brief Groupe des faces externes actives des éléments de ce groupe
+   * \brief Groupe des faces externes actives des éléments de ce groupe
    *
    * Ce groupe n'existe que pour un groupe de maille (itemKind()==IK_Cell).
    * Une face est externe active si elle n'est connectée qu'à une maille de ce groupe et est active.
@@ -257,15 +257,16 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
   //! Groupe parent
   ItemGroup parentGroup();
 
-  //! Recalcule les entités du groupe \a child fils de ce groupe
-  //void recomputeChild(ItemGroupImpl* child);
-
-  //! Invalide le groupe
-  /*! Opération très violente qui induit une invalidation de toutes les
-   *  dépendances autant des observers que des sous-groupes construits */
+  /*!
+   * \brief Invalide le groupe
+   *
+   * Opération très violente qui induit une invalidation de toutes les
+   * dépendances autant des observers que des sous-groupes construits.
+   */
   void invalidate(bool force_recompute);
 
-  /*! \brief  Ajoute les entités de numéros locaux \a items_local_id.
+  /*!
+   * \brief  Ajoute les entités de numéros locaux \a items_local_id.
    * \sa ItemGroup::addItems()
    */
   void addItems(Int32ConstArrayView items_local_id,bool check_if_present);
@@ -281,8 +282,8 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
  
   //! Supprime et ajoute les entités \a removed_local_id et \a added_local_id du groupe
   void removeAddItems(Int32ConstArrayView removed_local_id,
-		      Int32ConstArrayView added_local_id,
-		      bool check_if_present);
+                      Int32ConstArrayView added_local_id,
+                      bool check_if_present);
 
   /*!
    * \brief Supprime du groupe les entités dont le flag isSuppressed() est vrai
@@ -304,10 +305,12 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
   //! Liste des numéros locaux des entités de ce groupe.
   Int32ConstArrayView itemsLocalId() const;
 
-  //! Débute une transaction
-  /*! Une transaction permet d'accèder en écriture à des groupes protégés.
-   *  L'utilisation de ce mécanisme indique a Arcane que l'utilisateur 
-   *  a conscience qu'il modifie 'à ses risques' un groupe.
+  /*!
+   * \brief Débute une transaction.
+   *
+   * Une transaction permet d'accèder en écriture à des groupes protégés.
+   * L'utilisation de ce mécanisme indique a Arcane que l'utilisateur 
+   * a conscience qu'il modifie 'à ses risques' un groupe.
    */ 
   void beginTransaction();
 
@@ -347,20 +350,25 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
   //! Retourne le temps du groupe. Ce temps est incrémenté après chaque modification.
   Int64 timestamp() const;
 
-  //! Attache un observer
-  /*! \param ref référence de l'émetteur de l'observer
-   *  \param obs Observer
+  /*!
+   * \brief Attache un observer.
+   *
+   * \param ref référence de l'émetteur de l'observer
+   * \param obs Observer
    */
   void attachObserver(const void * ref, IItemGroupObserver * obs);
 
-  //! Détache un observer
-  /*! \param ref référence de l'émetteur de l'observer
+  /*!
+   * \brief Détache un observer.
+   *
+   * \param ref référence de l'émetteur de l'observer
    */
   void detachObserver(const void * ref);
 
-  //! Indique si le contenu de ce groupe est observé
-  /*! Ceci a pour effet d'embrayer des mécanismes
-   *  de modification incrémentaux.
+  /*!
+   * \brief Indique si le contenu de ce groupe est observé.
+   *
+   * Ceci a pour effet d'embrayer des mécanismes de modification incrémentaux.
    * 
    *  Un groupe peut n'être observé que pour sa structure 
    *  par des objets recalculés non incrémentalement.
@@ -373,7 +381,13 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
   //! Indique si le groupe est calculé
   bool hasComputeFunctor() const;
 
-  //! Détruit le groupe. Après cet appel, le groupe devient un groupe nul.
+  /*!
+   * \brief Détruit le groupe. Après cet appel, le groupe devient un groupe nul.
+   *
+   * \warning Cette méthode ne doit être appelé qu'avec une extrème précaution
+   * même dans le code bas niveau de Arcane. S'il reste des références sur ce groupe
+   * le comportement est indéfini.
+   */
   void destroy();
 
   //! Table des local ids vers une position pour toutes les entités du groupe
@@ -399,6 +413,22 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
    * Si c'est le cas, alors \a isContigousLocalIds() retournera \a vrai.
    */
   void checkLocalIdsAreContigous() const;
+
+  /*!
+   * \brief Limite au maximum la mémoire utilisée par le groupe.
+   *
+   * Si le groupe est un groupe calculé, il est invalidé et toute sa mémoire
+   * allouée est libérée.
+   *
+   * Si le groupe est un groupe créé par l'utilisateur (donc persistant),
+   * s'assure que la mémoire consommée est minimale. Normalement %Arcane alloue
+   * un peu plus d'éléments que nécessaire pour éviter de faire des réallocations
+   * trop souvent.
+   */
+  void shrinkMemory();
+
+  //! Nombre d'éléments alloués
+  Int64 capacity() const;
 
  public:
 

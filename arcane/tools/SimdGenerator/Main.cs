@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -16,7 +16,7 @@ namespace SimdGenerator
 
     public static void Main (string[] args)
     {
-      m_output_encoding = Encoding.GetEncoding ("iso-8859-1");
+      m_output_encoding = Encoding.GetEncoding ("utf-8");
 
       Console.WriteLine ("Hello World!");
       SimdClass[] all_simd = new SimdClass[] {
@@ -33,12 +33,12 @@ namespace SimdGenerator
         string out_file_name = "Simd" + st.SimdName + "Generated.h";
         //ATTENTION: chemin relatif sur le répertoire utils de Arcane. A modifier en cas de reorganisation
         // des sources
-        string out_path = Path.Combine ("../../../../src/arcane/utils");
+        string out_path = Path.Combine ("../../src/arcane/utils");
         _WriteGeneratedText (out_path, out_file_name, s);
       }
 
       var unit_test = new UnitTestSimd ();
-      _WriteGeneratedText ("../../../../src/arcane/tests", "SimdGeneratedUnitTest.h", unit_test.TransformText ());
+      _WriteGeneratedText ("../../src/arcane/tests", "SimdGeneratedUnitTest.h", unit_test.TransformText ());
     }
 
     static void _WriteGeneratedText (string base_path, string file_name, string content)

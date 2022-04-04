@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -156,6 +156,14 @@ class SharedMemoryParallelDispatch
   Request send(Span<const Type> send_buffer,const PointToPointMessageInfo& message) override;
   Request receive(Span<Type> recv_buffer,Int32 rank,bool is_blocked) override;
   Request receive(Span<Type> recv_buffer,const PointToPointMessageInfo& message) override;
+  Request nonBlockingAllReduce(eReduceType op,Span<const Type> send_buf,Span<Type> recv_buf) override;
+  Request nonBlockingAllGather(Span<const Type> send_buf, Span<Type> recv_buf) override;
+  Request nonBlockingBroadcast(Span<Type> send_buf, Int32 rank) override;
+  Request nonBlockingGather(Span<const Type> send_buf, Span<Type> recv_buf, Int32 rank) override;
+  Request nonBlockingAllToAll(Span<const Type> send_buf, Span<Type> recv_buf, Int32 count) override;
+  Request nonBlockingAllToAllVariable(Span<const Type> send_buf, ConstArrayView<Int32> send_count,
+                                      ConstArrayView<Int32> send_index, Span<Type> recv_buf,
+                                      ConstArrayView<Int32> recv_count, ConstArrayView<Int32> recv_index) override;
   //@}
 
   void broadcast(ArrayView<Type> send_buf,Integer sub_domain) override

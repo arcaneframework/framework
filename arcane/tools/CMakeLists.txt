@@ -33,6 +33,7 @@ if (ARCANE_DOTNET_RUNTIME STREQUAL coreclr)
     message(FATAL_ERROR "Version of 'dotnet' ${CORECLR_VERSION} is too old. Version 3.0+ is required")
   endif()
 endif()
+set(ARCANE_CORECLR_VERSION ${CORECLR_VERSION} CACHE STRING ".Net coreclr version" FORCE)
 
 # ----------------------------------------------------------------------------
 # Positionne les noms des exécutables et des arguments pour lancer le code
@@ -267,8 +268,9 @@ install(PROGRAMS
   DESTINATION bin)
 
 # A revoir pour Win32
+message(STATUS "TEST WHERE INSTALL: ${CMAKE_BINARY_DIR}/${ARCANE_DOTNET_PUBLISH_RELATIVE_DIR}_install/Arcane.ExecDrivers.dll.config.json")
 install(FILES ${CMAKE_BINARY_DIR}/${ARCANE_DOTNET_PUBLISH_RELATIVE_DIR}_install/Arcane.ExecDrivers.dll.config.json
-  DESTINATION ${ARCANE_DOTNET_PUBLISH_RELATIVE_DIR})
+  DESTINATION ${ARCANE_DOTNET_PUBLISH_RELATIVE_DIR} RENAME Arcane.ExecDrivers.dll.install.config.json)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------

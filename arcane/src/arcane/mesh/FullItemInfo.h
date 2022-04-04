@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* FullItemInfo.h                                              (C) 2000-2016 */
+/* FullItemInfo.h                                              (C) 2000-2021 */
 /*                                                                           */
 /* Information de sérialisation d'une maille.                                */
 /*---------------------------------------------------------------------------*/
@@ -23,25 +23,19 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
+namespace Arcane
+{
 class ItemInternal;
-class IMesh;
+}
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Infos pour créer une maille connaissant les uniqueId() et owner()
- * de tous ces noeuds et faces.
- *
+ * \brief Infos pour créer/sérialiser une maille connaissant
+ * les uniqueId() et owner() de toutes ces sous-entités (mailles, arêtes et faces).
  */
 class FullCellInfo
 {
@@ -97,9 +91,15 @@ class FullCellInfo
   Integer whichChildAmI () const { return CheckedConvert::toInteger(m_infos[m_first_hParent_cell + 2]); }
   Int32 flags() const { return CheckedConvert::toInt32(m_with_flags?m_infos[m_first_hParent_cell + 3]:0) ; }
 
+  friend inline std::ostream& operator<<(std::ostream& o,const FullCellInfo& i)
+  {
+    i.print(o);
+    return o;
+  }
+
  public:
   
-  void print(ostream& o) const;
+  void print(std::ostream& o) const;
 
  public:
 
@@ -143,143 +143,9 @@ class FullCellInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-inline ostream&
-operator<<(ostream& o,const FullCellInfo& i)
-{
-  i.print(o);
-  return o;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
- 
-/*!
- * \brief Infos pour créer une liaison connaissant les uniqueId() et owner()
- * de tous ces noeuds duaux
- *
- */
-class FullLinkInfo
-{
-public:
-  /*! \brief Référence les infos d'une liaison.
-   * Le tableau links_infos doit rester valide tant que l'instance existe.
-   */
-  FullLinkInfo(Int64ConstArrayView links_infos,Integer link_index,ItemTypeMng* itm)
-    : m_type_id(-1)
-    , m_nb_dual_node(0)
-    , m_memory_used(0)
-    , m_type(NULL)
-  {
-    m_type_id      = (Integer)links_infos[link_index    ];
-    m_nb_dual_node = (Integer)links_infos[link_index + 3];
-    ItemTypeInfo* it = itm->typeFromId(m_type_id);
-    m_type = it;
-    m_memory_used = 4 + m_nb_dual_node;
-    m_infos = Int64ConstArrayView(m_memory_used,&links_infos[link_index]);
-  }
-  
-public:
-  
-  ItemTypeInfo* typeInfo() const { return m_type; }
-  Integer typeId() const { return (Integer)m_infos[0]; }
-  Int64 uniqueId() const { return m_infos[1]; }
-  Integer owner() const { return (Integer)m_infos[2]; }
-  Integer nbDualNode() const { return m_nb_dual_node; }
-  Int64 dualNodeUniqueId(Integer index) const { return m_infos[4 + index]; }
-  Integer memoryUsed() const { return m_memory_used; }
-
-public:
-
-  void print(ostream& o) const;
-  
-public:
-  
-  Int64ConstArrayView m_infos;
-  Integer m_type_id;
-  Integer m_nb_dual_node;
-  Integer m_memory_used;
-  ItemTypeInfo* m_type;
-};
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-inline ostream&
-operator<<(ostream& o,const FullLinkInfo& i)
-{
-  i.print(o);
-  return o;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*!
- * \brief Infos pour créer un noeud dual connaissant les uniqueId() et owner()
- * de son dual.
- *
- */
-class FullDualNodeInfo
-{
-public:
-  /*! \brief Référence les infos d'un noeud dual.
-   * Le tableau dual_nodes_infos doit rester valide tant que l'instance existe.
-   */
-  FullDualNodeInfo(Int64ConstArrayView dual_nodes_infos,
-                   Integer dual_node_index,
-                   ItemTypeMng* itm)
-    : m_memory_used(4)
-    , m_type(0)
-  {
-    Integer item_type_id = (Integer)dual_nodes_infos[dual_node_index];
-    ItemTypeInfo* it = itm->typeFromId(item_type_id);
-    m_type = it;
-    m_infos = Int64ConstArrayView(m_memory_used,&dual_nodes_infos[dual_node_index]);
-  }
-  
-public:
-  
-  ItemTypeInfo* typeInfo() const { return m_type; }
-  Integer typeId() const { return (Integer)m_infos[0]; }
-  Int64 uniqueId() const { return m_infos[1]; }
-  Int64 dualItemUniqueId() const { return m_infos[2]; }
-  Integer owner() const { return (Integer)m_infos[3]; }
-  Integer memoryUsed() const { return m_memory_used; }
-
-public:
-
-  void print(ostream& o) const {
-    o<<"DualNode : uid="<<uniqueId()<<" dual item uid="<<dualItemUniqueId()<<" owner="<<owner();
-  }
-  
-public:
-  
-  Int64ConstArrayView m_infos;
-  Integer m_memory_used;
-  ItemTypeInfo* m_type;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-inline ostream&
-operator<<(ostream& o,const FullDualNodeInfo& i)
-{
-  i.print(o);
-  return o;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_MESH_END_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_END_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#endif /* ARCANE_MESH_FULLCELLINFO_H */
+#endif

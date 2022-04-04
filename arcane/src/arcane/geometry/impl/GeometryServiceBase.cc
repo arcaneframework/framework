@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -165,14 +165,14 @@ getReal3VariableProperty(ItemGroup group, IGeometryProperty::eProperty property)
 
 void 
 GeometryServiceBase::
-update(ItemGroup group, Integer property)
+update(ItemGroup group, [[maybe_unused]] Integer property)
 {
   update(group);
 }
 
 void 
 GeometryServiceBase::
-reset(ItemGroup group, Integer property)
+reset(ItemGroup group, [[maybe_unused]] Integer property)
 {
   reset(group);
 }
@@ -220,7 +220,7 @@ update()
                     // Is a scalar property
                     if (IGeometryProperty::isScalar(property)) 
                       {
-#ifdef __GNUG__
+#ifndef NO_USER_WARNING
 #warning "failed when ItemGroupMap storage only on allItems group"
 #endif
                         RealVariable & var = *all_group_property.storages[property].realVar;
@@ -379,7 +379,7 @@ GeometryServiceBase::_checkItemGroupUsage()
             traceMng()->warning() << "Geometric property " << IGeometryProperty::name(property) << " on group " << igroup->first->name() << " with Variable storage never used since last update";
 
           // Check non shared extern Variable storage
-          if (info.realVar || info.real3Var && (info.externStorage & IGeometryProperty::PVariable)) {
+          if (info.realVar || (info.real3Var && (info.externStorage & IGeometryProperty::PVariable))) {
             IVariable * check_variable = NULL;
             if (info.realVar) {
               check_variable = info.realVar->variable();

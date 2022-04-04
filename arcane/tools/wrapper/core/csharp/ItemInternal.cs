@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -217,7 +217,6 @@ namespace Arcane
     internal Integer m_type_id;
     internal Integer m_index;
     internal Integer m_nb_reference;
-    internal Int32 m_has_legacy_connectivity;
 
     //! Pour l'entité nulle
     private static ItemSharedInfo* null_item_shared_info = null;
@@ -234,10 +233,7 @@ namespace Arcane
       }
     }
 
-    bool hasLegacyConnectivity()
-    {
-      return m_has_legacy_connectivity == 0;
-    }
+    bool hasLegacyConnectivity() { return false; }
 
     public Integer NbNode
     {

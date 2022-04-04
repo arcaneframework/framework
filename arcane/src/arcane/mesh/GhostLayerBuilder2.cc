@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GhostLayerBuilder2.cc                                       (C) 2000-2017 */
+/* GhostLayerBuilder2.cc                                       (C) 2000-2021 */
 /*                                                                           */
 /* Construction des couches fantomes.                                        */
 /*---------------------------------------------------------------------------*/
@@ -30,6 +30,7 @@
 #include "arcane/IGhostLayerMng.h"
 #include "arcane/IItemFamilyPolicyMng.h"
 #include "arcane/IItemFamilySerializer.h"
+#include "arcane/ParallelMngUtils.h"
 
 #include "arcane/mesh/DynamicMesh.h"
 #include "arcane/mesh/DynamicMeshIncrementalBuilder.h"
@@ -40,15 +41,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_MESH_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -70,8 +64,8 @@ class GhostLayerBuilder2
  public:
 
   //! Construit une instance pour le maillage \a mesh
-  GhostLayerBuilder2(DynamicMeshIncrementalBuilder* mesh_builder,bool is_allocate);
-  virtual ~GhostLayerBuilder2();
+  GhostLayerBuilder2(DynamicMeshIncrementalBuilder* mesh_builder,bool is_allocate,Int32 version);
+  ~GhostLayerBuilder2();
 
  public:
 
@@ -84,27 +78,30 @@ class GhostLayerBuilder2
   IParallelMng* m_parallel_mng;
   bool m_is_verbose;
   bool m_is_allocate;
+  Int32 m_version;
 
  private:
   
-  void _printItem(ItemInternal* ii,ostream& o);
+  void _printItem(ItemInternal* ii,std::ostream& o);
   void _markBoundaryItems();
   void _sendAndReceiveCells(SubDomainItemMap& cells_to_send);
   void _sortBoundaryNodeList(Array<BoundaryNodeInfo>& boundary_node_list);
   void _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer);
+  void _markBoundaryNodes(ArrayView<Int32> node_layer);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 GhostLayerBuilder2::
-GhostLayerBuilder2(DynamicMeshIncrementalBuilder* mesh_builder,bool is_allocate)
+GhostLayerBuilder2(DynamicMeshIncrementalBuilder* mesh_builder,bool is_allocate,Int32 version)
 : TraceAccessor(mesh_builder->mesh()->traceMng())
 , m_mesh(mesh_builder->mesh())
 , m_mesh_builder(mesh_builder)
 , m_parallel_mng(m_mesh->parallelMng())
 , m_is_verbose(false)
 , m_is_allocate(is_allocate)
+, m_version(version)
 {
 }
 
@@ -120,7 +117,7 @@ GhostLayerBuilder2::
 /*---------------------------------------------------------------------------*/
 
 void GhostLayerBuilder2::
-_printItem(ItemInternal* ii,ostream& o)
+_printItem(ItemInternal* ii,std::ostream& o)
 {
   o << ItemPrinter(ii);
 }
@@ -242,11 +239,10 @@ addGhostLayers()
   if (!pm->isParallel())
     return;
   Integer nb_ghost_layer = m_mesh->ghostLayerMng()->nbGhostLayer();
-  info() << "** GHOST LAYER BUILDER V3 With sort (nb_ghost_layer=" << nb_ghost_layer << ")";
-  if (nb_ghost_layer==0) return;
-  Int32 my_rank = pm->commRank();
-  Int32 nb_rank = pm->commSize();
-  info() << " RANK="<< my_rank << " size=" << nb_rank;
+  info() << "** GHOST LAYER BUILDER V" << m_version << " with sort (nb_ghost_layer=" << nb_ghost_layer << ")";
+  if (nb_ghost_layer==0)
+    return;
+  const Int32 my_rank = pm->commRank();
 
   ItemInternalMap& cells_map = m_mesh->cellsMap();
   ItemInternalMap& nodes_map = m_mesh->nodesMap();
@@ -256,19 +252,45 @@ addGhostLayers()
 
   Integer boundary_nodes_uid_count = 0;
 
+  // Vérifie qu'il n'y a pas de mailles fantômes avec la version 3.
+  // Si c'est le cas, affiche un avertissement et indique de passer à la version 4.
+  if (m_version==3){
+    Integer nb_ghost = 0;
+    ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid,cells_map){
+      ItemInternal* cell = iid->value();
+      if (!cell->isOwn())
+        ++nb_ghost;
+    }
+    if (nb_ghost!=0)
+      warning() << "Invalid call to addGhostLayers() with version 3 because mesh "
+                << " already has '" << nb_ghost << "' ghost cells. The computed ghost cells"
+                << " may be wrong. Use version 4 of ghost layer builder if you want to handle this case";
+  }
+
   // Couche fantôme à laquelle appartient le noeud.
   UniqueArray<Integer> node_layer(m_mesh->nodeFamily()->maxLocalId(),-1);
+
   // Couche fantôme à laquelle appartient la maille. 
   UniqueArray<Integer> cell_layer(m_mesh->cellFamily()->maxLocalId(),-1);
 
-  // Parcours les noeuds et calcule le nombre de noeud frontières
-  // et marque la première couche
-  ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid,nodes_map){
-    ItemInternal* node = iid->value();
-    Int32 f = node->flags();
-    if (f & ItemInternal::II_Shared){
-      node_layer[node->localId()] = 1;
-      ++boundary_nodes_uid_count;
+  if (m_version>=4){
+    _markBoundaryNodes(node_layer);
+    ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid,nodes_map){
+      ItemInternal* node = iid->value();
+      if (node_layer[node->localId()]==1)
+        ++boundary_nodes_uid_count;
+    }
+  }
+  else{
+    // Parcours les noeuds et calcule le nombre de noeud frontières
+    // et marque la première couche
+    ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid,nodes_map){
+      ItemInternal* node = iid->value();
+      Int32 f = node->flags();
+      if (f & ItemInternal::II_Shared){
+        node_layer[node->localId()] = 1;
+        ++boundary_nodes_uid_count;
+      }
     }
   }
 
@@ -279,12 +301,15 @@ addGhostLayers()
     info() << "Processing layer " << current_layer;
     ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid,cells_map){
       Cell cell = iid->value();
+      // Ne traite pas les mailles qui ne m'appartiennent pas
+      if (m_version>=4 && cell.owner()!=my_rank)
+        continue;
       //Int64 cell_uid = cell->uniqueId();
       Int32 cell_lid = cell.localId();
       if (cell_layer[cell_lid]!=(-1))
         continue;
       bool is_current_layer = false;
-      for( Int32 inode_local_id : cell.nodes().localIds().range() ){
+      for( Int32 inode_local_id : cell.nodes().localIds() ){
         Integer layer = node_layer[inode_local_id];
         //info() << "NODE_LAYER lid=" << i_node->localId() << " layer=" << layer;
         if (layer==current_layer){
@@ -296,7 +321,7 @@ addGhostLayers()
         cell_layer[cell_lid] = current_layer;
         //info() << "Current layer celluid=" << cell_uid;
         // Si non marqué, initialise à la couche courante + 1.
-        for( Int32 inode_local_id : cell.nodes().localIds().range() ){
+        for( Int32 inode_local_id : cell.nodes().localIds() ){
           Integer layer = node_layer[inode_local_id];
           if (layer==(-1)){
             //info() << "Marque node uid=" << i_node->uniqueId();
@@ -313,11 +338,54 @@ addGhostLayers()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Détermine les noeuds frontières.
+ *
+ * Cet algorithme fonctionne même s'il y a déjà des mailles fantômes.
+ * Pour déterminer les noeuds frontières il faut déjà déterminer les
+ * faces frontières. Une face est frontière si elle est dans l'un des deux cas:
+ * - elle n'a qu'une maille connectée qui appartient à ce sous-domaine.
+ * - elle est connectée à deux mailles dont une exactement appartient à ce
+ *   domaine.
+ * Une fois les faces frontières trouvées, on considère que les noeuds frontières
+ * sont ceux qui appartiennent à une face frontière.
+ */
+void GhostLayerBuilder2::
+_markBoundaryNodes(ArrayView<Int32> node_layer)
+{
+  IParallelMng* pm = m_mesh->parallelMng();
+  const Int32 my_rank = pm->commRank();
+  ItemInternalMap& faces_map = m_mesh->facesMap();
+  // TODO: regarder s'il est correcte de modifier ItemInternal::II_SubDomainBoundary
+  const int shared_and_boundary_flags = ItemInternal::II_Shared | ItemInternal::II_SubDomainBoundary;
+  // Parcours les faces et marque les noeuds, arêtes et faces frontieres
+  ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid,faces_map){
+    ItemInternal* face_internal = iid->value();
+    Face face = iid->value();
+    Int32 nb_own = 0;
+    for( Integer i=0, n=face.nbCell(); i<n; ++i )
+      if (face.cell(i).owner()==my_rank)
+        ++nb_own;
+    if (nb_own==1){
+      face_internal->addFlags(shared_and_boundary_flags);
+      //++nb_sub_domain_boundary_face;
+      for( Item inode : face.nodes() ){
+        inode.internal()->addFlags(shared_and_boundary_flags);
+        node_layer[inode.localId()] = 1;
+      }
+      for( Item iedge : face.edges() )
+        iedge.internal()->addFlags(shared_and_boundary_flags);
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 void GhostLayerBuilder2::
 _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
 {
-  info() << "Processing layer " << current_layer;
+  info() << "Processing ghost layer " << current_layer;
 
   SharedArray<BoundaryNodeInfo> boundary_node_list;
   //boundary_node_list.reserve(boundary_nodes_uid_count);
@@ -335,6 +403,9 @@ _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
   // NOTE: pour la couche au dessus de 1, il ne faut envoyer qu'une seule valeur.
   ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid,cells_map){
     Cell cell = iid->value();
+    // Ne traite pas les mailles qui ne m'appartiennent pas
+    if (m_version>=4 && cell.owner()!=my_rank)
+      continue;
     Int64 cell_uid = cell->uniqueId();
     for( Node node : cell.nodes() ){
       Int32 node_lid = node.localId();
@@ -702,7 +773,9 @@ _sortBoundaryNodeList(Array<BoundaryNodeInfo>& boundary_node_list)
 void GhostLayerBuilder2::
 _sendAndReceiveCells(SubDomainItemMap& cells_to_send)
 {
-  ScopedPtrT<IParallelExchanger> exchanger(m_parallel_mng->createExchanger());
+  auto exchanger { ParallelMngUtils::createExchangerRef(m_parallel_mng) };
+
+  const bool is_verbose = m_is_verbose;
 
   // Envoie et réceptionne les mailles fantômes
   for( SubDomainItemMap::Enumerator i_map(cells_to_send); ++i_map; ){
@@ -715,7 +788,10 @@ _sendAndReceiveCells(SubDomainItemMap& cells_to_send)
     std::sort(std::begin(items),std::end(items));
     auto new_end = std::unique(std::begin(items),std::end(items));
     items.resize(CheckedConvert::toInteger(new_end-std::begin(items)));
-    info(4) << "CELLS TO SEND SD=" << sd << " NB=" << items.size();
+    if (is_verbose)
+      info(4) << "CELLS TO SEND SD=" << sd << " Items=" << items;
+    else
+      info(4) << "CELLS TO SEND SD=" << sd << " nb=" << items.size();
     exchanger->addSender(sd);
   }
   exchanger->initializeCommunicationsMessages();
@@ -780,17 +856,16 @@ _markBoundaryItems()
 /*---------------------------------------------------------------------------*/
 
 extern "C++" void
-_buildGhostLayerNewVersion(DynamicMesh* mesh,bool is_allocate)
+_buildGhostLayerNewVersion(DynamicMesh* mesh,bool is_allocate,Int32 version)
 {
-  GhostLayerBuilder2 glb(mesh->m_mesh_builder,is_allocate);
+  GhostLayerBuilder2 glb(mesh->m_mesh_builder,is_allocate,version);
   glb.addGhostLayers();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

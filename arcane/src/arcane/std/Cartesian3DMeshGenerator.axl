@@ -28,7 +28,17 @@
       <description>Vrai si on génère les groupes pour un cas test de sod (interne à Arcane)</description>
     </simple>
 
+    <simple name="face-numbering-version" type="integer" default="1">
+      <description>
+        Version de l'algorithme pour la numérotation des faces. La
+        version 1 correspond à la numérotation non structurée. La
+        version 4 correspond à la numérotation cartésienne.
+      </description>
+      <userclass>User</userclass>
+    </simple>
+
     <complex type="PartInfoX" name="x" minOccurs="1" maxOccurs="unbounded" >
+      <userclass>User</userclass>
       <simple name="n" type="integer" >
         <description>Nombre de mailles</description>
         <userclass>User</userclass>
@@ -44,6 +54,7 @@
     </complex>
 
     <complex type="PartInfoY" name="y" minOccurs="1" maxOccurs="unbounded" >
+      <userclass>User</userclass>
       <simple name="n" type="integer" >
         <description>Nombre de mailles</description>
         <userclass>User</userclass>
@@ -59,6 +70,7 @@
     </complex>
 
     <complex type="PartInfoZ" name="z" minOccurs="1" maxOccurs="unbounded" >
+      <userclass>User</userclass>
       <simple name="n" type="integer" >
         <description>Nombre de mailles</description>
         <userclass>User</userclass>

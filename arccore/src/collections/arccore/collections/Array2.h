@@ -64,12 +64,14 @@ class Array2
     IB_NoInit
   };
   //TODO: verifier qu'on n'affecte pas m_p->dim1_size ou
-  // m_p->dim2_size si m_p est TrueImpl::shared_null.
+  // m_md->dim2_size si m_p est TrueImpl::shared_null.
  private:
   typedef AbstractArray<DataType> Base;
   typedef typename Base::ConstReferenceType ConstReferenceType;
  protected:
-  using AbstractArray<DataType>::m_p;
+  using AbstractArray<DataType>::m_ptr;
+  using AbstractArray<DataType>::m_md;
+  using AbstractArray<DataType>::_setMP2;
   using AbstractArray<DataType>::_setMP;
   using AbstractArray<DataType>::_destroy;
   using AbstractArray<DataType>::_internalDeallocate;
@@ -89,17 +91,18 @@ class Array2
   {
     this->copy(rhs);
   }
- public:
+ protected:
   //! Créé un tableau vide avec un allocateur spécifique \a allocator
   explicit Array2(IMemoryAllocator* allocator)
-  : AbstractArray<DataType>(allocator,0) {}
+  : AbstractArray<DataType>() { this->_initFromAllocator(allocator,0); }
   /*!
    * \brief Créé un tableau de \a size1 * \a size2 éléments avec
    * un allocateur spécifique \a allocator.
    */
   Array2(IMemoryAllocator* allocator,Int64 size1,Int64 size2)
-  : AbstractArray<DataType>(allocator,size1*size2)
+  : AbstractArray<DataType>()
   {
+    this->_initFromAllocator(allocator,size1*size2);
     resize(size1,size2);
   }
   ~Array2() = default;
@@ -118,44 +121,44 @@ class Array2
   // TODO: retourner un Span.
   ArrayView<DataType> operator[](Int64 i)
   {
-    ARCCORE_CHECK_AT(i,m_p->dim1_size);
-    return ArrayView<DataType>(ARCCORE_CAST_SMALL_SIZE(m_p->dim2_size),m_p->ptr + (m_p->dim2_size*i));
+    ARCCORE_CHECK_AT(i,m_md->dim1_size);
+    return ArrayView<DataType>(ARCCORE_CAST_SMALL_SIZE(m_md->dim2_size),m_ptr + (m_md->dim2_size*i));
   }
   // TODO: retourner un Span
   ConstArrayView<DataType> operator[](Int64 i) const
   {
-    ARCCORE_CHECK_AT(i,m_p->dim1_size);
-    return ConstArrayView<DataType>(ARCCORE_CAST_SMALL_SIZE(m_p->dim2_size),m_p->ptr + (m_p->dim2_size*i));
+    ARCCORE_CHECK_AT(i,m_md->dim1_size);
+    return ConstArrayView<DataType>(ARCCORE_CAST_SMALL_SIZE(m_md->dim2_size),m_ptr + (m_md->dim2_size*i));
   }
   DataType item(Int64 i,Int64 j)
   {
-    ARCCORE_CHECK_AT(i,m_p->dim1_size);
-    ARCCORE_CHECK_AT(j,m_p->dim2_size);
-    return m_p->ptr[ (m_p->dim2_size*i) + j ];
+    ARCCORE_CHECK_AT(i,m_md->dim1_size);
+    ARCCORE_CHECK_AT(j,m_md->dim2_size);
+    return m_ptr[ (m_md->dim2_size*i) + j ];
   }
   void setItem(Int64 i,Int64 j,ConstReferenceType v)
   {
-    ARCCORE_CHECK_AT(i,m_p->dim1_size);
-    ARCCORE_CHECK_AT(j,m_p->dim2_size);
-    m_p->ptr[ (m_p->dim2_size*i) + j ] = v;
+    ARCCORE_CHECK_AT(i,m_md->dim1_size);
+    ARCCORE_CHECK_AT(j,m_md->dim2_size);
+    m_ptr[ (m_md->dim2_size*i) + j ] = v;
   }
   //! Elément d'indice \a i. Vérifie toujours les débordements
   ConstArrayView<DataType> at(Int64 i) const
   {
-    arccoreCheckAt(i,m_p->dim1_size);
+    arccoreCheckAt(i,m_md->dim1_size);
     return this->operator[](i);
   }
   //! Elément d'indice \a i. Vérifie toujours les débordements
   ArrayView<DataType> at(Int64 i)
   {
-    arccoreCheckAt(i,m_p->dim1_size);
+    arccoreCheckAt(i,m_md->dim1_size);
     return this->operator[](i);
   }
   DataType at(Int64 i,Int64 j)
   {
-    arccoreCheckAt(i,m_p->dim1_size);
-    arccoreCheckAt(j,m_p->dim1_size);
-    return m_p->ptr[ (m_p->dim2_size*i) + j ];
+    arccoreCheckAt(i,m_md->dim1_size);
+    arccoreCheckAt(j,m_md->dim1_size);
+    return m_ptr[ (m_md->dim2_size*i) + j ];
   }
   void fill(ConstReferenceType v)
   {
@@ -165,6 +168,7 @@ class Array2
   {
     this->resize(0,0);
   }
+  [[deprecated("Y2021: Use SharedArray2::clone() or UniqueArray2::clone()")]]
   Array2<DataType> clone()
   {
     return Array2<DataType>(this->constSpan());
@@ -180,8 +184,8 @@ class Array2
     }
     Span<const DataType> aview(rhs.data(),total);
     Base::_copyView(aview);
-    m_p->dim1_size = rhs.dim1Size();
-    m_p->dim2_size = rhs.dim2Size();
+    m_md->dim1_size = rhs.dim1Size();
+    m_md->dim2_size = rhs.dim2Size();
     _arccoreCheckSharedNull();
   }
   //! Capacité (nombre d'éléments alloués) du tableau
@@ -205,22 +209,22 @@ class Array2
   //! Vue du tableau sous forme de tableau 1D
   ArrayView<DataType> viewAsArray()
   {
-    return ArrayView<DataType>(ARCCORE_CAST_SMALL_SIZE(m_p->size),m_p->ptr);
+    return ArrayView<DataType>(ARCCORE_CAST_SMALL_SIZE(m_md->size),m_ptr);
   }
   //! Vue du tableau sous forme de tableau 1D
   ConstArrayView<DataType> viewAsArray() const
   {
-    return ConstArrayView<DataType>(ARCCORE_CAST_SMALL_SIZE(m_p->size),m_p->ptr);
+    return ConstArrayView<DataType>(ARCCORE_CAST_SMALL_SIZE(m_md->size),m_ptr);
   }
   //! Vue du tableau sous forme de tableau 1D
   Span<DataType> to1DSpan()
   {
-    return Span<DataType>(m_p->ptr,m_p->size);
+    return Span<DataType>(m_ptr,m_md->size);
   }
   //! Vue du tableau sous forme de tableau 1D
   Span<const DataType> to1DSpan() const
   {
-    return Span<const DataType>(m_p->ptr,m_p->size);
+    return Span<const DataType>(m_ptr,m_md->size);
   }
  public:
   operator Array2View<DataType>()
@@ -233,37 +237,37 @@ class Array2
   }
   operator Span2<const DataType>() const
   {
-    return Span2<const DataType>(m_p->ptr,m_p->dim1_size,m_p->dim2_size);
+    return Span2<const DataType>(m_ptr,m_md->dim1_size,m_md->dim2_size);
   }
   operator Span2<DataType>()
   {
-    return Span2<DataType>(m_p->ptr,m_p->dim1_size,m_p->dim2_size);
+    return Span2<DataType>(m_ptr,m_md->dim1_size,m_md->dim2_size);
   }
   Array2View<DataType> view()
   {
-    return Array2View<DataType>(m_p->ptr,ARCCORE_CAST_SMALL_SIZE(m_p->dim1_size),ARCCORE_CAST_SMALL_SIZE(m_p->dim2_size));
+    return Array2View<DataType>(m_ptr,ARCCORE_CAST_SMALL_SIZE(m_md->dim1_size),ARCCORE_CAST_SMALL_SIZE(m_md->dim2_size));
   }
   ConstArray2View<DataType> constView() const
   {
-    return ConstArray2View<DataType>(m_p->ptr,ARCCORE_CAST_SMALL_SIZE(m_p->dim1_size),ARCCORE_CAST_SMALL_SIZE(m_p->dim2_size));
+    return ConstArray2View<DataType>(m_ptr,ARCCORE_CAST_SMALL_SIZE(m_md->dim1_size),ARCCORE_CAST_SMALL_SIZE(m_md->dim2_size));
   }
   Span2<DataType> span()
   {
-    return Span2<DataType>(m_p->ptr,m_p->dim1_size,m_p->dim2_size);
+    return Span2<DataType>(m_ptr,m_md->dim1_size,m_md->dim2_size);
   }
   Span2<const DataType> constSpan() const
   {
-    return Span2<const DataType>(m_p->ptr,m_p->dim1_size,m_p->dim2_size);
+    return Span2<const DataType>(m_ptr,m_md->dim1_size,m_md->dim2_size);
   }
  public:
-  Integer dim2Size() const { return ARCCORE_CAST_SMALL_SIZE(m_p->dim2_size); }
-  Integer dim1Size() const { return ARCCORE_CAST_SMALL_SIZE(m_p->dim1_size); }
-  Int64 largeDim2Size() const { return m_p->dim2_size; }
-  Int64 largeDim1Size() const { return m_p->dim1_size; }
+  Integer dim2Size() const { return ARCCORE_CAST_SMALL_SIZE(m_md->dim2_size); }
+  Integer dim1Size() const { return ARCCORE_CAST_SMALL_SIZE(m_md->dim1_size); }
+  Int64 largeDim2Size() const { return m_md->dim2_size; }
+  Int64 largeDim1Size() const { return m_md->dim1_size; }
   void add(const DataType& value)
   {
-    Base::_addRange(value,m_p->dim2_size);
-    ++m_p->dim1_size;
+    Base::_addRange(value,m_md->dim2_size);
+    ++m_md->dim1_size;
     _arccoreCheckSharedNull();
   }
 
@@ -287,33 +291,33 @@ class Array2
   {
     _resize(new_size1,new_size2,IB_NoInit);
   }
-  Integer totalNbElement() const { return ARCCORE_CAST_SMALL_SIZE(m_p->dim1_size*m_p->dim2_size); }
-  Int64 largeTotalNbElement() const { return m_p->dim1_size*m_p->dim2_size; }
+  Integer totalNbElement() const { return ARCCORE_CAST_SMALL_SIZE(m_md->dim1_size*m_md->dim2_size); }
+  Int64 largeTotalNbElement() const { return m_md->dim1_size*m_md->dim2_size; }
  protected:
   //! Redimensionne uniquement la première dimension en laissant la deuxième à l'identique
   void _resize(Int64 new_size,InitBehaviour rb)
   {
-    Int64 old_size = m_p->dim1_size;
+    Int64 old_size = m_md->dim1_size;
     if (new_size==old_size)
       return;
-    _resize2(new_size,m_p->dim2_size,rb);
-    m_p->dim1_size = new_size;
+    _resize2(new_size,m_md->dim2_size,rb);
+    m_md->dim1_size = new_size;
     _arccoreCheckSharedNull();
   }
   //! Réalloue les deux dimensions
   void _resize(Int64 new_size1,Int64 new_size2,InitBehaviour rb)
   {
-    if (new_size2==m_p->dim2_size){
+    if (new_size2==m_md->dim2_size){
       _resize(new_size1,rb);
     }
     else if (totalNbElement()==0){
       _resizeFromEmpty(new_size1,new_size2,rb);
     }
-    else if (new_size2<m_p->dim2_size){
+    else if (new_size2<m_md->dim2_size){
       _resizeSameDim1ReduceDim2(new_size2,rb);
       _resize(new_size1,rb);
     }
-    else if (new_size2>m_p->dim2_size){
+    else if (new_size2>m_md->dim2_size){
       _resizeSameDim1IncreaseDim2(new_size2,rb);
       _resize(new_size1,rb);
     }
@@ -323,35 +327,35 @@ class Array2
   void _resizeFromEmpty(Int64 new_size1,Int64 new_size2,InitBehaviour rb)
   {
     _resize2(new_size1,new_size2,rb);
-    m_p->dim1_size = new_size1;
-    m_p->dim2_size = new_size2;
+    m_md->dim1_size = new_size1;
+    m_md->dim2_size = new_size2;
     _arccoreCheckSharedNull();
   }
   void _resizeSameDim1ReduceDim2(Int64 new_size2,InitBehaviour rb)
   {
-    ARCCORE_ASSERT((new_size2<m_p->dim2_size),("Bad Size"));
-    Int64 n = m_p->dim1_size;
-    Int64 n2 = m_p->dim2_size;
+    ARCCORE_ASSERT((new_size2<m_md->dim2_size),("Bad Size"));
+    Int64 n = m_md->dim1_size;
+    Int64 n2 = m_md->dim2_size;
     for( Int64 i=0; i<n; ++i ){
       for( Int64 j=0; j<new_size2; ++j )
-        m_p->ptr[(i*new_size2)+j] = m_p->ptr[(i*n2)+j];
+        m_ptr[(i*new_size2)+j] = m_ptr[(i*n2)+j];
     }
     _resize2(n,new_size2,rb);
-    m_p->dim2_size = new_size2;
+    m_md->dim2_size = new_size2;
     _arccoreCheckSharedNull();
   }
   void _resizeSameDim1IncreaseDim2(Int64 new_size2,InitBehaviour rb)
   {
-    ARCCORE_ASSERT((new_size2>m_p->dim2_size),("Bad Size"));
-    Int64 n = m_p->dim1_size;
-    Int64 n2 = m_p->dim2_size;
+    ARCCORE_ASSERT((new_size2>m_md->dim2_size),("Bad Size"));
+    Int64 n = m_md->dim1_size;
+    Int64 n2 = m_md->dim2_size;
     _resize2(n,new_size2,rb);
     // Recopie en partant de la fin pour éviter tout écrasement
     for( Int64 i=(n-1); i>=0; --i ){
       for( Int64 j=(n2-1); j>=0; --j )
-        m_p->ptr[(i*new_size2)+j] = m_p->ptr[(i*n2)+j];
+        m_ptr[(i*new_size2)+j] = m_ptr[(i*n2)+j];
     }
-    m_p->dim2_size = new_size2;
+    m_md->dim2_size = new_size2;
     _arccoreCheckSharedNull();
   }
   void _resize2(Int64 d1,Int64 d2,InitBehaviour rb)
@@ -380,8 +384,15 @@ class Array2
  private:
   void _arccoreCheckSharedNull()
   {
-    if (m_p==ArrayImplBase::shared_null)
-      ArrayImplBase::throwBadSharedNull();
+    if (!m_ptr)
+      ArrayMetaData::throwNullExpected();
+    if (!m_md->is_not_null)
+      ArrayMetaData::throwNotNullExpected();
+  }
+ protected:
+  void _copyMetaData(const Array2<DataType>& rhs)
+  {
+    AbstractArray<DataType>::_copyMetaData(rhs);
   }
 };
 
@@ -415,7 +426,8 @@ class SharedArray2
 {
  protected:
 
-  using Array2<T>::m_p;
+  using Array2<T>::m_ptr;
+  using Array2<T>::m_md;
 
  public:
 
@@ -480,17 +492,18 @@ class SharedArray2
  protected:
   void _initReference(const ThatClassType& rhs)
   {
-    this->_setMP(rhs.m_p);
+    this->_setMP(rhs.m_ptr);
+    this->_copyMetaData(rhs);
     _addReference(&rhs);
-    ++m_p->nb_ref;
+    ++m_md->nb_ref;
   }
   //! Mise à jour des références
   void _updateReferences() override final
   {
     for( ThatClassType* i = m_prev; i; i = i->m_prev )
-      i->_setMP(m_p);
+      i->_setMP2(m_ptr,m_md);
     for( ThatClassType* i = m_next; i; i = i->m_next )
-      i->_setMP(m_p);
+      i->_setMP2(m_ptr,m_md);
   }
   //! Mise à jour des références
   Integer _getNbRef() override final
@@ -501,6 +514,10 @@ class SharedArray2
     for( ThatClassType* i = m_next; i; i = i->m_next )
       ++nb_ref;
     return nb_ref;
+  }
+  bool _isUseOwnMetaData() const final
+  {
+    return false;
   }
   /*!
    * \brief Insère cette instance dans la liste chaînée.
@@ -529,7 +546,7 @@ class SharedArray2
   //! Détruit l'instance si plus personne ne la référence
   void _checkFreeMemory()
   {
-    if (m_p->nb_ref==0){
+    if (m_md->nb_ref==0){
       this->_destroy();
       this->_internalDeallocate();
     }
@@ -539,10 +556,10 @@ class SharedArray2
     if (&rhs!=this){
       _removeReference();
       _addReference(&rhs);
-      ++rhs.m_p->nb_ref;
-      --m_p->nb_ref;
+      ++rhs.m_md->nb_ref;
+      --m_md->nb_ref;
       _checkFreeMemory();
-      this->_setMP(rhs.m_p);
+      this->_setMP2(rhs.m_ptr,rhs.m_md);
     }
   }
  private:
@@ -649,6 +666,11 @@ class UniqueArray2
   void swap(UniqueArray2<T>& rhs) ARCCORE_NOEXCEPT
   {
     this->_swap(rhs);
+  }
+  //! Clone le tableau
+  UniqueArray2<T> clone()
+  {
+    return UniqueArray2<T>(this->constSpan());
   }
 };
 

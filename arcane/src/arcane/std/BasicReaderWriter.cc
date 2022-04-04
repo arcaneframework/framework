@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -481,7 +481,7 @@ readData(const String& var_full_name,IData* data)
 
   data->allocateBufferForSerializedData(sd.get());
 
-  void* ptr = sd->bytes().data();
+  void* ptr = sd->writableBytes().data();
 
   bool print_values = false;
   String key_name = var_full_name;
@@ -661,9 +661,9 @@ writeData(const String& var_full_name,const ISerializedData* sdata)
           << " is_multi=" << sdata->isMultiSize()
           << " dimensions_size=" << sdata->extents().size()
           << " memory_size=" << sdata->memorySize()
-          << " bytes_size=" << sdata->bytes().size();
+          << " bytes_size=" << sdata->constBytes().size();
 
-  const void* ptr = sdata->bytes().data();
+  const void* ptr = sdata->constBytes().data();
 
   // Si la variable est de type tableau à deux dimensions, sauve les
   // tailles de la deuxième dimension par élément.
@@ -1060,7 +1060,7 @@ setMetaData(const String& meta_data)
   else{
     Int32 my_rank = m_parallel_mng->commRank();
     String filename = _getMetaDataFileName(my_rank);
-    ofstream ofile(filename.localstr());
+    std::ofstream ofile(filename.localstr());
     meta_data.writeBytes(ofile);
   }
 }
@@ -1108,14 +1108,14 @@ endWrite()
       StringBuilder filename = m_path;
       filename += "/arcane_acr_db.json";
       String fn = filename.toString();
-      ofstream ofile(fn.localstr());
+      std::ofstream ofile(fn.localstr());
       ofile << jsw.getBuffer();
     }
     else{
       StringBuilder filename = m_path;
       filename += "/infos.txt";
       String fn = filename.toString();
-      ofstream ofile(fn.localstr());
+      std::ofstream ofile(fn.localstr());
       ofile << nb_part << '\n';
     }
   }
@@ -1253,7 +1253,7 @@ initialize()
     if (pm->isMasterIO()){
       Integer nb_part = 0;
       String filename = String::concat(m_path,"/infos.txt");
-      ifstream ifile(filename.localstr());
+      std::ifstream ifile(filename.localstr());
       ifile >> nb_part;
       info(4) << "** NB PART=" << nb_part;
       m_nb_written_part = nb_part;

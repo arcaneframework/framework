@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* InterfaceImpl.cc                                            (C) 2000-2020 */
+/* InterfaceImpl.cc                                            (C) 2000-2021 */
 /*                                                                           */
 /* pour les interfaces.                                                      */
 /*---------------------------------------------------------------------------*/
@@ -17,6 +17,7 @@
  */
 
 #include "arcane/utils/String.h"
+#include "arcane/utils/ArgumentException.h"
 
 #include "arcane/IArcaneMain.h"
 #include "arcane/IServiceInfo.h"
@@ -45,10 +46,13 @@
 #include "arcane/IMeshFactory.h"
 #include "arcane/IMeshFactoryMng.h"
 #include "arcane/IMeshMng.h"
+#include "arcane/IMeshPartitioner.h"
+#include "arcane/IGridMeshPartitioner.h"
 #include "arcane/IDirectExecution.h"
 #include "arcane/IDirectSubDomainExecuteFunctor.h"
 #include "arcane/ISerializer.h"
 #include "arcane/IDeflateService.h"
+#include "arcane/IPrimaryMesh.h"
 #include "arcane/ItemTypes.h"
 #include "arcane/IIncrementalItemConnectivity.h"
 #include "arcane/IItemConnectivityAccessor.h"
@@ -75,6 +79,7 @@
 #include "arcane/IVariableFilter.h"
 #include "arcane/IAsyncParticleExchanger.h"
 #include "arcane/IParticleExchanger.h"
+#include "arcane/IParallelExchanger.h"
 #include "arcane/ITimeHistoryCurveWriter.h"
 #include "arcane/IItemOperationByBasicType.h"
 #include "arcane/IVariableSynchronizer.h"
@@ -86,8 +91,11 @@
 #include "arcane/IStandardFunction.h"
 #include "arcane/IServiceAndModuleFactoryMng.h"
 #include "arcane/IGhostLayerMng.h"
+#include "arcane/IMeshUniqueIdMng.h"
 #include "arcane/VariableStatusChangedEventArgs.h"
 #include "arcane/MeshPartInfo.h"
+#include "arcane/IGraph2.h"
+#include "arcane/IGraphModifier2.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -146,6 +154,17 @@ void IDeflateService::
 decompress(Span<const Byte> compressed_values,Span<Byte> values)
 {
   return decompress(compressed_values.smallView(),values.smallView());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IPrimaryMesh* IMeshPartitioner::
+primaryMesh()
+{
+  IPrimaryMesh* primary_mesh = this->mesh()->toPrimaryMesh();
+  ARCANE_CHECK_POINTER(primary_mesh);
+  return primary_mesh;
 }
 
 /*---------------------------------------------------------------------------*/

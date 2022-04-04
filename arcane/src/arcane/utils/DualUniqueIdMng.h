@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -144,12 +144,12 @@ public:
   inline static Int64 uniqueIdOf(const ItemT_1& item_1, const Integer item_1_rank,
       const ItemT_2& item_2, const Integer item_2_rank);
 
-  inline static Integer rankOf(const DualNode& );
+  inline static Integer rankOf(const DoF& );
 
-  inline void info(const DualNode& node) const;
-  inline void info(const     Link& link) const;
+  inline void info(const DoF& node, const Item& dual_item) const;
+  inline void info(const DoF& link, const DoF& dual_node0, const DoF& dual_node1, const Item& dual_item0, const Item& dual_item1) const;
 
-  inline Int64 debugDualItemUniqueId(DualNode& node) const;
+  inline Int64 debugDualItemUniqueId(DoF& node) const;
 
 private:
 
@@ -159,8 +159,8 @@ private:
   template<Integer Nbit,typename Type>
   inline static bool _onlyFirstBitUsed(const Type id);
 
-  inline bool _checkDualNode(const DualNode& node) const;
-  inline bool _checkLink    (const Link& link    ) const;
+  inline bool _checkDualNode(const DoF& node, const Item& dual_item) const;
+  inline bool _checkLink    (const DoF& link, const Item& dual_item0, const Item& dual_item1) const;
 
   inline Int64 _extractFirstCode (const Int64 id) const;
   inline Int64 _extractSecondCode(const Int64 id) const;
@@ -335,7 +335,7 @@ uniqueIdOf(const ItemT_1& item_1, const Integer item_1_rank, const ItemT_2& item
 /*---------------------------------------------------------------------------*/
 inline  Integer
 DualUniqueIdMng::
-rankOf(const DualNode& node)
+rankOf(const DoF& node)
 {
   const Int64 id = node.uniqueId();
   return Integer(( ~( (Int64(1) << 25) - 1) & id ) >> 25);
@@ -436,16 +436,15 @@ _extractSecondId(const Int64 id) const
 
 inline bool
 DualUniqueIdMng::
-_checkDualNode(const DualNode& node) const
+_checkDualNode(const DoF& node, const Item& dual_item) const
 {
   const Int64 node_id = node.uniqueId();
 
   const Int64 code = _extractSecondCode(node_id);
   const Int64 id   = _extractFirstId(node_id);
 
-  const Item item = node.dualItem();
 
-  return _codeIsValid(item,code) && _idIsValid(item,id);
+  return _codeIsValid(dual_item,code) && _idIsValid(dual_item,id);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -453,10 +452,8 @@ _checkDualNode(const DualNode& node) const
 
 inline bool
 DualUniqueIdMng::
-_checkLink(const Link& link) const
+_checkLink(const DoF& link, const Item& item_1, const Item& item_2) const
 {
-  if(link.nbDualNode() > 2)
-    throw FatalErrorException("DualUniqueIdMng, link with more than 2 dual nodes");
 
   const Int64 link_id = link.uniqueId();
 
@@ -466,8 +463,6 @@ _checkLink(const Link& link) const
   const Int64 code_2 = _extractSecondCode(link_id);
   const Int64   id_2 = _extractSecondId(link_id);
 
-  const Item item_1 = link.dualNode(0).dualItem();
-  const Item item_2 = link.dualNode(1).dualItem();
 
   return _codeIsValid(item_1,code_1) && _idIsValid(item_1,id_1)
       && _codeIsValid(item_2,code_2) && _idIsValid(item_2,id_2);
@@ -478,15 +473,14 @@ _checkLink(const Link& link) const
 
 inline void
 DualUniqueIdMng::
-info(const DualNode& node) const
+info(const DoF& node, const Item& dual_item) const
 {
-  ARCANE_ASSERT((_checkDualNode(node) == true),("Error from dual node consistence. Do you use DualUniqueIdMng to generate unique id of graph item ?"));
+  ARCANE_ASSERT((_checkDualNode(node,dual_item) == true),("Error from dual node consistence. Do you use DualUniqueIdMng to generate unique id of graph item ?"));
 
-  const Item item = node.dualItem();
 
   info() << " -- Dual Node with unique id " << node.uniqueId()
-         << " of item of kind " << item.kind()
-         << " and unique id " << item.uniqueId();
+         << " of item of kind " << dual_item.kind()
+         << " and unique id " << dual_item.uniqueId();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -494,17 +488,17 @@ info(const DualNode& node) const
 
 inline void
 DualUniqueIdMng::
-info(const Link& link) const
+info(const DoF& link, const DoF& dual_node0, const DoF& dual_node1,const Item& dual_item0, const Item& dual_item1) const
 {
-  ARCANE_ASSERT((_checkLink(link) == true),("Error from link consistence. Do you use DualUniqueIdMng to generate unique id of graph item ?"));
+  ARCANE_ASSERT((_checkLink(link,dual_item0,dual_item1) == true),("Error from link consistence. Do you use DualUniqueIdMng to generate unique id of graph item ?"));
 
   info() << "- Link with unique id " << link.uniqueId() << " of :";
 
-  info(link.dualNode(0));
+  info(dual_node0,dual_item0);
 
   info() << " and :";
 
-  info(link.dualNode(1));
+  info(dual_node1,dual_item1);
 }
 
 /*---------------------------------------------------------------------------*/

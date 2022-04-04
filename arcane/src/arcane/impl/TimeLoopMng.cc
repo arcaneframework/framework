@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TimeLoopMng.cc                                              (C) 2000-2021 */
+/* TimeLoopMng.cc                                              (C) 2000-2022 */
 /*                                                                           */
 /* Gestionnaire de la boucle en temps.                                       */
 /*---------------------------------------------------------------------------*/
@@ -191,7 +191,7 @@ class TimeLoopMng
   void setVerificationActive(bool is_active) override { m_verification_active = is_active; }
   void doVerification(const String& name) override;
 
-  void registerActionMeshPartition(IMeshPartitioner* service) override;
+  void registerActionMeshPartition(IMeshPartitionerBase* service) override;
 
   void timeLoopsName(StringCollection & names) const override;
   void timeLoops(TimeLoopCollection & time_loops) const override;
@@ -305,6 +305,7 @@ class TimeLoopMng
   bool m_verification_active;
   //! Si vrai, effectue vérifications à chaque point d'entrée, sinon uniquement en fin d'itération.
   bool m_verification_at_entry_point;
+  bool m_verification_only_at_exit = false;
 
   IBackwardMng * m_backward_mng; //!< Gestionnaire du retour-arrière;
   bool m_my_own_backward_mng;
@@ -315,7 +316,7 @@ class TimeLoopMng
   ModuleFactoryMap m_lang_module_factory_map; //! Liste des fabriques des modules dans la langue du JDD.
 
   Ref<IVerifierService> m_verifier_service;
-  IMeshPartitioner* m_mesh_partitioner;
+  IMeshPartitionerBase* m_mesh_partitioner;
   long m_time_last_write_info_file;
   String m_message_class_name;
   Integer m_alarm_timer_value;
@@ -453,7 +454,14 @@ build()
     String s = platform::getEnvironmentVariable("STDENV_VERIF_ENTRYPOINT");
     if (!s.null()){
       m_verification_at_entry_point = true;
-      info() << "Checking each entry point";
+      info() << "Do verification at each entry point";
+    }
+  }
+  {
+    String s = platform::getEnvironmentVariable("STDENV_VERIF_ONLY_AT_EXIT");
+    if (s=="1" || s=="true" || s=="TRUE"){
+      m_verification_only_at_exit = true;
+      info() << "Do verification only at exit";
     }
   }
 
@@ -649,7 +657,7 @@ _execOneEntryPoint(IEntryPoint * ic, Integer index, bool do_verif)
   ic->executeEntryPoint();
   m_observables[eTimeLoopEventType::EndEntryPoint]->notifyAllObservers();
   m_current_entry_point_ptr = 0;
-  if (m_verification_at_entry_point)
+  if (m_verification_at_entry_point && !m_verification_only_at_exit)
     _checkVerif(ic->name(),index,do_verif);
 }
 
@@ -952,7 +960,7 @@ doOneIteration()
         break;
       }
     }
-    if (!m_verification_at_entry_point)
+    if (!m_verification_at_entry_point && !m_verification_only_at_exit)
       _checkVerif("_EndLoop",0,true);
   }
   m_observables[eTimeLoopEventType::EndIteration]->notifyAllObservers();
@@ -999,7 +1007,7 @@ _doMeshPartition()
 
   Timer timer(sd,"TimeLoopMng::partitionMesh",Timer::TimerReal);
   Timer::Action ts_action(sd,"MeshLoadBalance",true);
-  IMesh* mesh = m_mesh_partitioner->mesh();
+  IMesh* mesh = m_mesh_partitioner->primaryMesh();
   {
     Timer::Sentry sentry(&timer);
     mesh->utilities()->partitionAndExchangeMeshWithReplication(m_mesh_partitioner,false);
@@ -1593,8 +1601,8 @@ _dumpTimeInfos(JSONWriter& json_writer)
   else if (timer_type==Timer::TimerReal)
     info() << " Use the clock time (elapsed) for the statistics";
 
-  ostringstream o;
-  std::ios_base::fmtflags f = o.flags(ios::right);
+  std::ostringstream o;
+  std::ios_base::fmtflags f = o.flags(std::ios::right);
   Integer nb_cell = 0;
   IMesh * mesh = subDomain()->defaultMesh();
   if (mesh)
@@ -1803,7 +1811,7 @@ stopComputeLoop(bool is_final_time,bool has_error)
 /*---------------------------------------------------------------------------*/
 
 void TimeLoopMng::
-registerActionMeshPartition(IMeshPartitioner* mesh_partitioner)
+registerActionMeshPartition(IMeshPartitionerBase* mesh_partitioner)
 {
   if (!m_backward_mng)
     _createOwnDefaultBackwardMng();
@@ -1893,7 +1901,7 @@ doComputeLoop(Integer max_loop)
         Integer iteration = subDomain()->commonVariables().globalIteration();
         mem_info->setIteration(iteration);
 
-        ostringstream ostr;
+        std::ostringstream ostr;
         if (iteration>0)
           mem_info->printAllocatedMemory(ostr,iteration-1);
         if (iteration>1)
@@ -1918,6 +1926,10 @@ doComputeLoop(Integer max_loop)
     // message précédent
     platform::sleep(40);
     throw;
+  }
+  if (m_verification_only_at_exit){
+    info() << "Doing verification at exit";
+    doVerification("AtExit");
   }
   if (ps)
     ps->printInfos(true);

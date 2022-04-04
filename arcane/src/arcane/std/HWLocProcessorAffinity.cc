@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -176,7 +176,7 @@ cpuSetString()
   hwloc_get_cpubind(m_topology, new_cpuset, 0 | HWLOC_CPUBIND_THREAD);
   char result_s[1024];
   hwloc_bitmap_snprintf(result_s,sizeof(result_s)-1,new_cpuset);
-  String s(result_s,true);
+  String s{StringView(result_s)};
   //ostr() << "R=" << result_s << '\n';
   hwloc_bitmap_free(new_cpuset);
   return s;

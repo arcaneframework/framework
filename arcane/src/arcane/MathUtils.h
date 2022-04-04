@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -376,7 +376,7 @@ min(Real2 a,Real2 b)
   return Real2( math::min(a.x,b.x), math::min(a.y,b.y) );
 }
 /*!
- * \brief Retourne le minimum de deux Real2
+ * \brief Retourne le minimum de deux Real3
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline Real3
@@ -385,7 +385,7 @@ min(Real3 a,Real3 b)
   return Real3( math::min(a.x,b.x), math::min(a.y,b.y), math::min(a.z,b.z) );
 }
 /*!
- * \brief Retourne le minimum de deux Real2
+ * \brief Retourne le minimum de deux Real2x2
  * \ingroup GroupMathUtils
  */
 inline Real2x2
@@ -394,7 +394,7 @@ min(Real2x2 a,Real2x2 b)
   return Real2x2( math::min(a.x,b.x), math::min(a.y,b.y) );
 }
 /*!
- * \brief Retourne le minimum de deux Real2
+ * \brief Retourne le minimum de deux Real3x3
  * \ingroup GroupMathUtils
  */
 inline Real3x3
@@ -445,7 +445,7 @@ max(Real2 a,Real2 b)
   return Real2( math::max(a.x,b.x), math::max(a.y,b.y) );
 }
 /*!
- * \brief Retourne le maximum de deux Real2
+ * \brief Retourne le maximum de deux Real3
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline Real3
@@ -454,7 +454,7 @@ max(Real3 a,Real3 b)
   return Real3( math::max(a.x,b.x), math::max(a.y,b.y), math::max(a.z,b.z) );
 }
 /*!
- * \brief Retourne le maximum de deux Real2
+ * \brief Retourne le maximum de deux Real2x2
  * \ingroup GroupMathUtils
  */
 inline Real2x2
@@ -463,7 +463,7 @@ max(Real2x2 a,Real2x2 b)
   return Real2x2( math::max(a.x,b.x), math::max(a.y,b.y) );
 }
 /*!
- * \brief Retourne le maximum de deux Real2
+ * \brief Retourne le maximum de deux Real3x3
  * \ingroup GroupMathUtils
  */
 inline Real3x3

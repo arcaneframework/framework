@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -45,17 +45,16 @@ class ModuleMng
   ModuleMng(ISubDomain*);
   ~ModuleMng();
 
-  virtual void addModule(Ref<IModule>);
-  virtual void removeModule(Ref<IModule>);
-  virtual void dumpList(ostream&);
-  virtual ModuleCollection modules() const { return m_modules; }
-  virtual void removeAllModules();
-  virtual bool isModuleActive(const String& name);
-  virtual IModule* findModule(const String& name);
+  void addModule(Ref<IModule>) override;
+  void removeModule(Ref<IModule>) override;
+  void dumpList(std::ostream&) override;
+  ModuleCollection modules() const override { return m_modules; }
+  void removeAllModules() override;
+  bool isModuleActive(const String& name) override;
+  IModule* findModule(const String& name) override;
 
  private:
 
-  ISubDomain* m_sub_domain; //!< Gestionnaire de sous-domaine
   ModuleList m_modules; //!< Liste des modules
   std::map<String,Ref<IModule>> m_modules_map;
   IModule* _findModule(const String& name);
@@ -74,8 +73,7 @@ arcaneCreateModuleMng(ISubDomain* sd)
 /*---------------------------------------------------------------------------*/
 
 ModuleMng::
-ModuleMng(ISubDomain* sd)
-: m_sub_domain(sd)
+ModuleMng([[maybe_unused]] ISubDomain* sd)
 {
 }
 
@@ -131,7 +129,7 @@ removeModule(Ref<IModule> module)
 /*---------------------------------------------------------------------------*/
 
 void ModuleMng::
-dumpList(ostream& o)
+dumpList(std::ostream& o)
 {
   o << "** ModuleMng::dump_list: " << m_modules.count();
   o << '\n';

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -315,6 +315,7 @@ createEnvironment(const MeshEnvironmentBuildInfo& infos)
       mm->variableIndexer()->setWantedVariableName(mat_var_name);
     }
     me->addMaterial(mm);
+    mat_info->_addEnvironment(env_name);
   }
   // Si le milieu contient plusieurs matériaux, il faut lui allouer
   // des valeurs partielles. Sinon, ses valeurs partielles sont celles
@@ -745,7 +746,7 @@ removeVariable(IMeshMaterialVariable* var)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialMng::
-dumpInfos(ostream& o)
+dumpInfos(std::ostream& o)
 {
   Integer nb_mat = m_materials.size();
   Integer nb_env = m_environments.size();
@@ -788,7 +789,7 @@ dumpInfos(ostream& o)
 /*---------------------------------------------------------------------------*/
 // TODO: fusionner dumpInfos2() et dumpInfo().
 void MeshMaterialMng::
-dumpInfos2(ostream& o)
+dumpInfos2(std::ostream& o)
 {
   Integer nb_mat = m_materials.size();
   Integer nb_env = m_environments.size();
@@ -870,7 +871,7 @@ checkMaterialsInCells(Integer max_print)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialMng::
-dumpCellInfos(Cell cell,ostream& o)
+dumpCellInfos(Cell cell,std::ostream& o)
 {
   CellToAllEnvCellConverter all_env_cell_converter(this);
   AllEnvCell all_env_cell = all_env_cell_converter[cell];

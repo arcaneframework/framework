@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -34,6 +34,8 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 
 class IncrementalItemConnectivityContainer;
+class IndexedItemConnectivityAccessor ;
+
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -95,6 +97,7 @@ public:
                                   const String& aname);
   ~IncrementalItemConnectivityBase();
  public:
+
   void notifySourceFamilyLocalIdChanged(Int32ConstArrayView new_to_old_ids) override;
   void notifyTargetFamilyLocalIdChanged(Int32ConstArrayView old_to_new_ids) override;
   Integer nbConnectedItem(ItemLocalId lid) const final
@@ -107,6 +110,7 @@ public:
   }
 
   IndexedItemConnectivityViewBase connectivityView() const;
+  IndexedItemConnectivityAccessor connectivityAccessor() const ;
 
  public:
 
@@ -120,9 +124,9 @@ public:
   // TODO: voir si on garde cette méthode. A utiliser le moins possible.
   Int32ArrayView _connectedItemsLocalId(ItemLocalId lid)
   {
-    Int32 nb = m_connectivity_nb_item[lid];
-    Int32 index = m_connectivity_index[lid];
-    return Int32ArrayView(nb,&m_connectivity_list[index]);
+     Int32 nb = m_connectivity_nb_item[lid];
+     Int32 index = m_connectivity_index[lid];
+     return Int32ArrayView(nb,&m_connectivity_list[index]);
   }
 
  public:
@@ -142,12 +146,12 @@ public:
   ItemVectorView _connectedItems(ItemLocalId item,ConnectivityItemVector& con_items) const final;
 
  protected:
-
+  bool m_is_empty = true ;
   Int32ArrayView m_connectivity_nb_item;
   Int32ArrayView m_connectivity_index;
   Int32ArrayView m_connectivity_list;
-  IncrementalItemConnectivityContainer* m_p;
-  ItemInternalConnectivityList* m_item_connectivity_list;
+  IncrementalItemConnectivityContainer* m_p = nullptr;
+  ItemInternalConnectivityList* m_item_connectivity_list = nullptr;
   Integer m_item_connectivity_index;
 
  protected:
@@ -189,17 +193,17 @@ class ARCANE_MESH_EXPORT IncrementalItemConnectivity
   Integer preAllocatedSize() const override final { return m_pre_allocated_size; }
   void setPreAllocatedSize(Integer value) override final;
 
-  void dumpStats(ostream& out) const override;
+  void dumpStats(std::ostream& out) const override;
 
   void compactConnectivityList();
 
 
  private:
 
-  Int64 m_nb_add;
-  Int64 m_nb_remove;
-  Int64 m_nb_memcopy;
-  Integer m_pre_allocated_size;
+  Int64 m_nb_add     = 0;
+  Int64 m_nb_remove  = 0;
+  Int64 m_nb_memcopy = 0;
+  Integer m_pre_allocated_size = 0;
 
  private:
 
@@ -250,7 +254,7 @@ class ARCANE_MESH_EXPORT OneItemIncrementalItemConnectivity
 
  public:
 
-  void dumpStats(ostream& out) const override;
+  void dumpStats(std::ostream& out) const override;
 
   void compactConnectivityList();
 

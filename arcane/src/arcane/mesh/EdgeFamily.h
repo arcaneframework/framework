@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* EdgeFamily.h                                                (C) 2000-2017 */
+/* EdgeFamily.h                                                (C) 2000-2021 */
 /*                                                                           */
 /* Famille d'arêtes.                                                         */
 /*---------------------------------------------------------------------------*/
@@ -16,12 +16,13 @@
 
 #include "arcane/mesh/ItemFamily.h"
 #include "arcane/IItemFamilyModifier.h"
+#include "arcane/mesh/ItemInternalConnectivityIndex.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -33,9 +34,9 @@ class ARCANE_MESH_EXPORT EdgeFamily
 , public IItemFamilyModifier
 {
   class TopologyModifier;
-  typedef ItemConnectivitySelectorT<NodeCompactIncrementalItemConnectivity,IncrementalItemConnectivity> NodeConnectivity;
-  typedef ItemConnectivitySelectorT<FaceCompactIncrementalItemConnectivity,IncrementalItemConnectivity> FaceConnectivity;
-  typedef ItemConnectivitySelectorT<CellCompactIncrementalItemConnectivity,IncrementalItemConnectivity> CellConnectivity;
+  typedef ItemConnectivitySelectorT<NodeInternalConnectivityIndex,IncrementalItemConnectivity> NodeConnectivity;
+  typedef ItemConnectivitySelectorT<FaceInternalConnectivityIndex,IncrementalItemConnectivity> FaceConnectivity;
+  typedef ItemConnectivitySelectorT<CellInternalConnectivityIndex,IncrementalItemConnectivity> CellConnectivity;
 
  public:
 
@@ -105,11 +106,9 @@ class ARCANE_MESH_EXPORT EdgeFamily
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #endif  
-

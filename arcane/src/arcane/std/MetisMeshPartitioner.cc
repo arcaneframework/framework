@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MetisMeshPartitioner.cc                                     (C) 2000-2020 */
+/* MetisMeshPartitioner.cc                                     (C) 2000-2021 */
 /*                                                                           */
 /* Partitioneur de maillage utilisant la bibliothèque PARMetis.              */
 /*---------------------------------------------------------------------------*/
@@ -391,7 +391,7 @@ _partitionMesh(bool initial_partition,Int32 nb_part)
 
   const bool do_print_weight = false;
   if (do_print_weight){
-    ofstream dumpy;
+    std::ofstream dumpy;
     StringBuilder fname;
     Integer iteration = mesh->subDomain()->commonVariables().globalIteration();
     fname = "weigth-";
@@ -952,11 +952,18 @@ _writeGraph(ArrayView<idxtype> metis_vtkdist,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SUB_DOMAIN_FACTORY(MetisMeshPartitioner,IMeshPartitioner,Metis);
+ARCANE_REGISTER_SERVICE(MetisMeshPartitioner,
+                        ServiceProperty("Metis",ST_SubDomain),
+                        ARCANE_SERVICE_INTERFACE(IMeshPartitioner),
+                        ARCANE_SERVICE_INTERFACE(IMeshPartitionerBase));
+
 ARCANE_REGISTER_SERVICE_METISMESHPARTITIONER(Metis,MetisMeshPartitioner);
 
 #if ARCANE_DEFAULT_PARTITIONER == METIS_DEFAULT_PARTITIONER
-ARCANE_REGISTER_SUB_DOMAIN_FACTORY(MetisMeshPartitioner,IMeshPartitioner,DefaultPartitioner);
+ARCANE_REGISTER_SERVICE(MetisMeshPartitioner,
+                        ServiceProperty("DefaultPartitioner",ST_SubDomain),
+                        ARCANE_SERVICE_INTERFACE(IMeshPartitioner),
+                        ARCANE_SERVICE_INTERFACE(IMeshPartitionerBase));
 ARCANE_REGISTER_SERVICE_METISMESHPARTITIONER(DefaultPartitioner,MetisMeshPartitioner);
 #endif
 

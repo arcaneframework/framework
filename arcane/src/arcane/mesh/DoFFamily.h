@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -79,7 +79,9 @@ public:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCANE_MESH_EXPORT DoFFamily : public ItemFamily
+class ARCANE_MESH_EXPORT DoFFamily
+  : public ItemFamily
+  , public IItemFamilyModifier
 {
 
   /** Constructeur de la classe  */
@@ -93,6 +95,30 @@ public:
   virtual ~DoFFamily() {}
 
 public:
+  ItemInternal* allocOne(Int64 uid,ItemTypeInfo*, MeshInfos&) override
+  {
+    return _allocDoF(uid);
+  }
+
+  ItemInternal* allocOne(Int64 uid)
+  {
+    return _allocDoF(uid);
+  }
+
+  // IItemFamilyModifier interface
+  ItemInternal* findOrAllocOne(Int64 uid,ItemTypeInfo*,MeshInfos&, bool& is_alloc) override
+  {
+    auto dof = _findOrAllocDoF(uid,is_alloc);
+    return dof;
+  }
+
+  ItemInternal* findOrAllocOne(Int64 uid,bool& is_alloc)
+  {
+    return _findOrAllocDoF(uid,is_alloc);
+  }
+
+  // IItemFamilyModifier interface
+  IItemFamily* family() override {return this;}
 
   //! En entree les uids des dofs et on recupere leurs lids
   DoFVectorView addDoFs(Int64ConstArrayView dof_uids, Int32ArrayView dof_lids);
@@ -101,7 +127,7 @@ public:
   DoFVectorView addGhostDoFs(Int64ConstArrayView dof_uids, Int32ArrayView dof_lids, Int32ConstArrayView owners);
 
   //! Operation collective
-  void computeSynchronizeInfos();
+  void computeSynchronizeInfos() override;
 
   DoFGroup allDoFs() {return allItems();}
   DoFGroup ownDoFs() {return allItems().own();}
@@ -111,11 +137,11 @@ public:
 
 private:
 
-  void build(); //! Construction de l'item Family. C'est le DoFManager qui en a la responsabilite.
-  void addItems(Int64ConstArrayView unique_ids, Int32ArrayView items);
-  void addGhostItems(Int64ConstArrayView unique_ids, Int32ArrayView items, Int32ConstArrayView owners);
-  void removeItems(Int32ConstArrayView local_ids,bool keep_ghost =false) {internalRemoveItems(local_ids,keep_ghost);};
-  void internalRemoveItems(Int32ConstArrayView local_ids,bool keep_ghost=false);
+  void build() override; //! Construction de l'item Family. C'est le DoFManager qui en a la responsabilite.
+  void addItems(Int64ConstArrayView unique_ids, Int32ArrayView items) override;
+  void addGhostItems(Int64ConstArrayView unique_ids, Int32ArrayView items, Int32ConstArrayView owners) override;
+  void removeItems(Int32ConstArrayView local_ids,bool keep_ghost =false) override {internalRemoveItems(local_ids,keep_ghost);};
+  void internalRemoveItems(Int32ConstArrayView local_ids,bool keep_ghost=false) override;
 //  void compactItems(bool do_sort) {m_need_prepare_dump = false;} //! Surcharge ItemFamily::compactItems car pas de compactage pour l'instant dans les DoFs.
 
 
@@ -127,6 +153,7 @@ private:
   void preAllocate(Integer nb_item);
   ItemInternal* _allocDoF(const Int64 uid);
   ItemInternal* _allocDoFGhost(const Int64 uid, const Int32 owner);
+  ItemInternal* _findOrAllocDoF(const Int64 uid,bool is_alloc);
 
   ItemSharedInfo* m_shared_info;
 

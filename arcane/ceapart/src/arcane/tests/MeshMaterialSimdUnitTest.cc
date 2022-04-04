@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -56,6 +56,7 @@
 #  else
 #    ifdef __GNUC__
 // S'assure qu'on compile avec la vectorisation même en '-O2'
+// NOTE: à partir de GCC 12, le '-O2' implique aussi la vectorisation
 #      pragma GCC optimize ("-ftree-vectorize")
 #      define PRAGMA_IVDEP_VALUE "GCC ivdep"
 #    endif
@@ -689,7 +690,14 @@ _executeTest2(Integer nb_z)
 
   for( Integer z=0, iz=nb_z; z<iz; ++z ){
     PRAGMA_IVDEP
+    // Certaines versions du compilateur intel (au moins la version 20.0)
+    // donnent une erreur sur le 'pragma omp simd' car le test de la boucle
+    // est une fonction. Pour éviter une erreur de compilation on supprime
+    // ce pragma avec le compilateur intel. A noter que cela semble fonctionner
+    // avec les versions 2021+ de Intel (icpc, icpx et DPC++).
+#ifndef __INTEL_COMPILER
 #pragma omp simd
+#endif
     ENUMERATE_ENVCELL(i,m_env1){
       a[i] = b[i] + c[i] * d[i] + e[i];
     }

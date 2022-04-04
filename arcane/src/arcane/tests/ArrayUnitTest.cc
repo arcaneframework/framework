@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -98,8 +98,8 @@ class Wrapper
 
 template<typename DataType> Integer Wrapper<DataType>::nb_new = 0;
 
-template<class T> inline ostream&
-operator<<(ostream& o,const Wrapper<T>& v)
+template<class T> inline std::ostream&
+operator<<(std::ostream& o,const Wrapper<T>& v)
 {
   o << v.value();
   return o;
@@ -366,6 +366,7 @@ class UniqueArray2UnitTest
   {
     // Test std::move() via std::swap() (si use_own_swap==false)
     // ou UniqueArray2::swap() (si use_own_swap==true)
+    info() << "TestSwap use_own_swap=" << use_own_swap;
 
     // Normalement les pointeurs des 2 tableaux doivent juste être échangés.
     UniqueArray2<DataType> c1(7,5);
@@ -909,8 +910,9 @@ class MultiArray2UnitTest
           SharedMultiArray2<DataType> cloned_array(array.clone());
           _checkSame(array,cloned_array);
           // Modifie le clone et vérifie que l'original n'a pas changé.
-          cloned_array[2][3] = 0;
-          _check(array[2][3]!=0,"Bad value (test clone)");
+          DataType zero{0};
+          cloned_array[2][3] = zero;
+          _check(array[2][3]!=zero,"Bad value (test clone)");
         }
         array = SharedMultiArray2<DataType>();
         SharedMultiArray2<DataType> new_array;

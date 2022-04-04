@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -193,6 +193,8 @@ public:
   void _testNullItem();
   void _testCustomMeshTools();
   void _testAdditionnalConnectivity();
+  void _testShrinkGroups();
+  void _testDeallocateMesh();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -224,6 +226,7 @@ void MeshUnitTest::
 executeTest()
 {
   CountOperationByBasicType op(traceMng());
+  info() << "ItemTypeMng::singleton() = " << ItemTypeMng::singleton();
   info() << "Infos sur AllCells:";
   allCells().applyOperation(&op);
   info() << "Infos sur AllFaces:";
@@ -277,6 +280,9 @@ executeTest()
   _testAdditionalMeshes();
   _testCustomMeshTools();
   _testAdditionnalConnectivity();
+  _testShrinkGroups();
+  if (options()->testDeallocateMesh())
+    _testDeallocateMesh();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1160,7 +1166,7 @@ _testAdditionalMeshes()
 {
   // Test la lecture de maillages additionnels avec un IParallelMng
   // séquentiel même si on est en parallèle.
-  ConstArrayView<String> additional_meshes = options()->additionalMesh();
+  ConstArrayView<String> additional_meshes = options()->additionalMesh.view();
   Integer nb_mesh = additional_meshes.size();
   if (nb_mesh==0)
     return;
@@ -1221,6 +1227,40 @@ _testAdditionnalConnectivity()
       total_face_lid += face.localId();
   }
   info() << "TOTAL_NB_FACE = " << total_face_lid;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshUnitTest::
+_testShrinkGroups()
+{
+  info() << A_FUNCINFO;
+  mesh_utils::printMeshGroupsMemoryUsage(mesh(),1);
+  mesh_utils::shrinkMeshGroups(mesh());
+  mesh_utils::printMeshGroupsMemoryUsage(mesh(),1);
+  Int64 total = mesh_utils::printMeshGroupsMemoryUsage(mesh(),0);
+  info() << "TotalMemoryForGroups=" << total;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshUnitTest::
+_testDeallocateMesh()
+{
+  info() << A_FUNCINFO;
+  Integer nb_deallocate = 10;
+  IPrimaryMesh* pmesh = mesh()->toPrimaryMesh();
+  // TODO: Utiliser un service qui implémente IMeshBuilder au lieu de IMeshReader
+  ServiceBuilder<IMeshReader> sbu(subDomain());
+  String file_names[3] = { "tied_interface_1.vtk", "sphere_tied_1.vtk", "sphere_tied_2.vtk" };
+  for( Integer i=0; i<nb_deallocate; ++i ){
+    info() << "DEALLOCATE I=" << i;
+    pmesh->deallocate();
+    auto mesh_io(sbu.createReference("VtkLegacyMeshReader",SB_AllowNull));
+    mesh_io->readMeshFromFile(pmesh,XmlNode{},file_names[i%3],String(),true);
+  }
 }
 
 /*---------------------------------------------------------------------------*/

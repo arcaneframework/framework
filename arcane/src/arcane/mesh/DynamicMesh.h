@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMesh.h                                               (C) 2000-2020 */
+/* DynamicMesh.h                                               (C) 2000-2022 */
 /*                                                                           */
 /* Classe de gestion d'un maillage évolutif.                                 */
 /*---------------------------------------------------------------------------*/
@@ -23,8 +23,6 @@
 #include "arcane/IPrimaryMesh.h"
 #include "arcane/IItemFamily.h"
 #include "arcane/IItemFamilyModifier.h"
-#include "arcane/IGraph.h"
-#include "arcane/IGraphModifier.h"
 #include "arcane/ObserverPool.h"
 #include "arcane/MeshPartInfo.h"
 #include "arcane/IItemFamilyNetwork.h"
@@ -193,18 +191,10 @@ class ARCANE_MESH_EXPORT DynamicMesh
   //! Fusionne les maillages de \a meshes avec le maillage actuel.
   void mergeMeshes(ConstArrayView<IMesh*> meshes) override;
 
-  /*!
-   * \brief ajout du algorithme d'ajout de mailles fantômes "extraordinaires"
-   *
-   * Cette opération est collective.
-   */
   void addExtraGhostCellsBuilder(IExtraGhostCellsBuilder* builder) override;
-  /*!
-   * \brief ajout du algorithme d'ajout de particules fantômes "extraordinaires"
-   *
-   * Cette opération est collective.
-   */
+  void removeExtraGhostCellsBuilder(IExtraGhostCellsBuilder* builder) override;
   void addExtraGhostParticlesBuilder(IExtraGhostParticlesBuilder* builder) override;
+  void removeExtraGhostParticlesBuilder(IExtraGhostParticlesBuilder* builder) override;
   
   void serializeCells(ISerializer* buffer,Int32ConstArrayView cells_local_id) override;
   Int32 meshRank() { return m_mesh_part_info.partRank(); }
@@ -219,6 +209,7 @@ class ARCANE_MESH_EXPORT DynamicMesh
    
   void reloadMesh() override;
 
+  void deallocate() override;
   void allocateCells(Integer mesh_nb_cell,Int64ConstArrayView cells_info,bool one_alloc) override;
   void endAllocate() override;
 
@@ -261,6 +252,7 @@ class ARCANE_MESH_EXPORT DynamicMesh
   const IUserDataList* userDataList() const override { return m_mesh_handle.meshUserDataList(); }
 
   IGhostLayerMng* ghostLayerMng() const override { return m_ghost_layer_mng; }
+  IMeshUniqueIdMng* meshUniqueIdMng() const override { return m_mesh_unique_id_mng; }
   IMeshChecker* checker() const override;
   
 public:
@@ -414,9 +406,10 @@ public:
 
   IItemFamily* createItemFamily(eItemKind ik,const String& name) override;
 
-  IItemFamily* findItemFamily(eItemKind ik,const String& name,bool create_if_needed) override;
+  IItemFamily* findItemFamily(eItemKind ik,const String& name,bool create_if_needed,bool register_modifier_if_created) override;
   IItemFamily* findItemFamily(const String& name,bool throw_exception=true) override;
   IItemFamilyModifier* findItemFamilyModifier(eItemKind ik,const String& name) override;
+  void addItemFamilyModifier(IItemFamilyModifier*) ;
 
   IItemFamily* itemFamily(eItemKind ik) override
   {
@@ -487,12 +480,14 @@ public:
 
  public:
 
+  bool useMeshItemFamilyDependencies() const override  {return m_use_mesh_item_family_dependencies; }
   IItemFamilyNetwork* itemFamilyNetwork() override {return m_item_family_network;}
 
  public:
 
   IMeshMng* meshMng() const override { return m_mesh_mng; }
   IVariableMng* variableMng() const override { return m_variable_mng; }
+  ItemTypeMng* itemTypeMng() const override { return m_item_type_mng; }
 
  private:
 
@@ -532,6 +527,7 @@ public:
   
   MeshPartitionConstraintMng* m_partition_constraint_mng;
   IGhostLayerMng* m_ghost_layer_mng;
+  IMeshUniqueIdMng* m_mesh_unique_id_mng;
   IMeshExchangeMng* m_mesh_exchange_mng;
   IMeshCompactMng* m_mesh_compact_mng;
 
@@ -542,11 +538,13 @@ public:
   InternalConnectivityPolicy m_connectivity_policy;
   MeshPartInfo m_mesh_part_info;
 
-  IItemFamilyNetwork* m_item_family_network;
+  bool m_use_mesh_item_family_dependencies  = false ;
+  IItemFamilyNetwork* m_item_family_network = nullptr;
+  ItemTypeMng* m_item_type_mng = nullptr;
 
  private:
 
-  void _printMesh(ostream& ostr);
+  void _printMesh(std::ostream& ostr);
   void _allocateCells(Integer mesh_nb_cell,
                       Int64ConstArrayView cells_info,
                       Int32ArrayView cells = Int32ArrayView(),
@@ -591,7 +589,7 @@ public:
   void _applyTiedInterfaceStructuration(TiedInterface* tied_interface);
   void _deleteTiedInterfaces();
 
-  void _multipleExchangeItems(Integer nb_exchange,bool do_compact);
+  void _multipleExchangeItems(Integer nb_exchange,Integer version,bool do_compact);
   void _addCells(ISerializer* buffer,Int32Array* cells_local_id);
   void _setSubConnectivity();
   void _setDimension(Integer dim);
@@ -605,8 +603,6 @@ public:
   
   void _notifyEndUpdateForFamilies();
   ItemFamily* _createNewFamily(eItemKind kind, const String & name);
-  void _checkCreateExtraGhostCellsBuilder();
-  void _checkCreateExtraGhostParticlesBuilder();
 
   void _saveProperties();
   void _loadProperties();
@@ -617,7 +613,7 @@ public:
   void _applyCompactPolicy(const String& timer_name,
                            std::function<void(IItemFamilyCompactPolicy*)> functor);
   void _updateGroupsAfterRemove();
-  void _setConnectivityPolicy();
+  void _printConnectivityPolicy();
 
   // Add a dependency (downward adjacencies only) between two family: ie the source family
   // is built on the target family (ex a cell is build owns its nodes)

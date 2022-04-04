@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -169,8 +169,12 @@ _testDirCell()
   IMesh* mesh = m_mesh;
   Integer nb_dir = mesh->dimension();
   Integer nb_print = m_nb_print;
+  CellDirectionMng cdm2;
+  CellDirectionMng cdm3;
   for( Integer idir=0; idir<nb_dir; ++idir){
     CellDirectionMng cdm(m_cartesian_mesh->cellDirection(idir));
+    cdm2 = m_cartesian_mesh->cellDirection(idir);
+    cdm3 = cdm;
     eMeshDirection md = cdm.direction();
     Integer iprint = 0;
     info() << "DIRECTION=" << idir << " Cells=" << cdm.allCells().name();
@@ -182,6 +186,16 @@ _testDirCell()
       Cell next_cell = dir_cell.next();
       if (prev_cell.null() && next_cell.null())
         ARCANE_FATAL("Null previous and next cell");
+      DirCell dir_cell2(cdm2[icell]);
+      Cell prev_cell2 = dir_cell2.previous();
+      Cell next_cell2 = dir_cell2.next();
+      DirCell dir_cell3(cdm3[icell]);
+      Cell prev_cell3 = dir_cell3.previous();
+      Cell next_cell3 = dir_cell3.next();
+      _checkSameId(prev_cell,prev_cell2);
+      _checkSameId(next_cell,next_cell2);
+      _checkSameId(prev_cell,prev_cell3);
+      _checkSameId(next_cell,next_cell3);
       if (nb_print<0 || iprint<nb_print){
         ++iprint;
         if (!prev_cell.null() && !next_cell.null()){
@@ -229,16 +243,23 @@ _testDirFace(int idir)
   Integer nb_error = 0;
   Integer iprint = 0;
 
+  FaceDirectionMng fdm2;
   FaceDirectionMng fdm(m_cartesian_mesh->faceDirection(idir));
+  fdm2 = fdm;
   eMeshDirection md = fdm.direction();
   info() << "TEST_DIR_FACE for direction=" << idir << " -> " << (eMeshDirection)idir;
   _checkItemGroupIsSorted(fdm.allFaces());
   ENUMERATE_FACE(iface,fdm.allFaces()){
     Face face = *iface;
     DirFace dir_face(fdm[iface]);
+    DirFace dir_face2(fdm2[iface]);
     //Integer nb_node = cell.nbNode();
     Cell prev_cell = dir_face.previousCell();
     Cell next_cell = dir_face.nextCell();
+    Cell prev_cell2 = dir_face2.previousCell();
+    Cell next_cell2 = dir_face2.nextCell();
+    _checkSameId(prev_cell,prev_cell2);
+    _checkSameId(next_cell,next_cell2);
     _checkSameId(prev_cell,dir_face.previousCellId());
     _checkSameId(next_cell,dir_face.nextCellId());
     bool is_print = (nb_print<0 || iprint<nb_print);
@@ -300,8 +321,13 @@ _testDirNode()
   Integer nb_print = m_nb_print;
   Integer nb_error = 0;
   VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
+  // Pour tester l'opérateur 'operator='
+  NodeDirectionMng node_dm2;
+  NodeDirectionMng node_dm3;
   for( Integer idir=0; idir<nb_dir; ++idir){
     NodeDirectionMng node_dm(m_cartesian_mesh->nodeDirection(idir));
+    node_dm2 = m_cartesian_mesh->nodeDirection(idir);
+    node_dm3 = node_dm;
     eMeshDirection md = node_dm.direction();
     Integer iprint = 0;
     info() << "DIRECTION=" << idir;
@@ -311,8 +337,18 @@ _testDirNode()
       Node node = *inode;
       m_node_density[inode] += 1.0;
       DirNode dir_node(node_dm[inode]);
+      DirNode dir_node2(node_dm2[inode]);
+      DirNode dir_node3(node_dm3[inode]);
       Node prev_node = dir_node.previous();
       Node next_node = dir_node.next();
+      Node prev_node2 = dir_node2.previous();
+      Node next_node2 = dir_node2.next();
+      Node prev_node3 = dir_node3.previous();
+      Node next_node3 = dir_node3.next();
+      _checkSameId(prev_node,prev_node2);
+      _checkSameId(next_node,next_node2);
+      _checkSameId(prev_node,prev_node3);
+      _checkSameId(next_node,next_node3);
       _checkSameId(prev_node,dir_node.previousId());
       _checkSameId(next_node,dir_node.nextId());
       Real my_coord = nodes_coord[inode][idir];
@@ -785,7 +821,7 @@ _saveSVG()
   ICartesianMesh* cm = m_cartesian_mesh;
   IMesh* mesh = cm->mesh();
   info() << "Saving mesh to SVG format";
-  ofstream ofile("toto.svg");
+  std::ofstream ofile("toto.svg");
   SimpleSVGMeshExporter writer(ofile);
   writer.write(mesh->allCells());
 }

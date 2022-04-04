@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicService.h                                              (C) 2000-2017 */
+/* BasicService.h                                              (C) 2000-2021 */
 /*                                                                           */
 /* Classe de base d'un service lié à un sous-domaine.                        */
 /*---------------------------------------------------------------------------*/
@@ -21,7 +21,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -42,11 +43,11 @@ class ARCANE_CORE_EXPORT BasicService
 {
  protected:
 
-  BasicService(const ServiceBuildInfo&);
+  explicit BasicService(const ServiceBuildInfo&);
 
  public:
 	
-  virtual ~BasicService(); //!< Libère les ressources.
+  ~BasicService() override; //!< Libère les ressources.
 
  public:
 
@@ -55,14 +56,12 @@ class ARCANE_CORE_EXPORT BasicService
  private:
 
   ISubDomain* m_sub_domain;
-
- private:
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

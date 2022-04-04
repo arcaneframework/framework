@@ -4,48 +4,4 @@
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
-/*---------------------------------------------------------------------------*/
-/* IRunQueueRuntime.h                                          (C) 2000-2021 */
-/*                                                                           */
-/* Interface du runtime associé à une RunQueue.                              */
-/*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_IRUNQUEUERUNTIME_H
-#define ARCANE_ACCELERATOR_IRUNQUEUERUNTIME_H
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#include "arcane/accelerator/AcceleratorGlobal.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace Arcane::Accelerator
-{
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \internal
- * \brief Interface du runtime associé à une RunQueue.
- */
-class ARCANE_ACCELERATOR_EXPORT IRunQueueRuntime
-{
- public:
-  virtual ~IRunQueueRuntime() = default;
- public:
-  virtual void notifyBeginKernel() =0;
-  virtual void notifyEndKernel() =0;
-  virtual void barrier() =0;
-  virtual eExecutionPolicy executionPolicy() const =0;
-  virtual IRunQueueStream* createStream() =0;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // End namespace Arcane::Accelerator
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#endif  
+#include "arcane/accelerator/core/IRunQueueRuntime.h"

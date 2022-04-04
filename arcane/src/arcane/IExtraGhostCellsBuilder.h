@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IExtraGhostCellsBuilder.h                                   (C) 2000-2011 */
+/* IExtraGhostCellsBuilder.h                                   (C) 2000-2022 */
 /*                                                                           */
 /* Interface d'un constructeur de mailles fantômes "extraordinaires"         */
 /*---------------------------------------------------------------------------*/
@@ -19,7 +19,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -31,36 +32,37 @@ ARCANE_BEGIN_NAMESPACE
  * le calcul des mailles fantômes extraordinaires est effectué à chaque mise
  * à jour du maillage ou équilibrage de charge.
  *
- * NB : rend obsolète le paramètre remove_old_ghost de la méthode endUpdate de IMesh
- *
+ * \note Rend obsolète le paramètre \a remove_old_ghost de la méthode IMesh::endUpdate().
  */
 class IExtraGhostCellsBuilder
 {
-public:
+ public:
   
   virtual ~IExtraGhostCellsBuilder() {} //!< Libère les ressources.
   
-public:
+ public:
 
   /*!
-   * \brief Calcul des mailles "extraordinaires" à envoyer
+   * \brief Calcul des mailles "extraordinaires" à envoyer.
+   *
    * Effectue le calcul des mailles "extraordinaires" suivant
    * un algorithme de construction  
    */
   virtual void computeExtraCellsToSend() =0;
 
   /*!
-   * \brief Indices locaux des mailles "extraordinaires" pour envoi
+   * \brief Indices locaux des mailles "extraordinaires" pour envoi.
+   *
    * Récupère le tableau des mailles "extraordinaires" à destination
    * du sous-domaine \a sid
    */
-  virtual IntegerConstArrayView extraCellsToSend(Integer sid) const =0;
+  virtual Int32ConstArrayView extraCellsToSend(Int32 rank) const =0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

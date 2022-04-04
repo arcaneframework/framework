@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -42,6 +42,7 @@ class IVariableSynchronizer;
 class IParallelTopology;
 class IParallelReplication;
 class IParallelNonBlockingCollective;
+class IParallelMngUtilsFactory;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -69,6 +70,8 @@ class IParallelNonBlockingCollective;
 class ARCANE_CORE_EXPORT IParallelMng
 {
   ARCCORE_DECLARE_REFERENCE_COUNTED_INCLASS_METHODS();
+  // Classe pour accéder à _internalUtilsFactory()
+  friend class ParallelMngUtilsAccessor;
 
  public:
 
@@ -1102,7 +1105,7 @@ class ARCANE_CORE_EXPORT IParallelMng
    *
    * L'instance retournée doit être détruite par l'opérateur delete.
    */
-
+  [[deprecated("Y2021: Use Arcane::ParallelMngUtils;:createGetVariablesValuesOperationRef() instead")]]
   virtual IGetVariablesValuesParallelOperation* createGetVariablesValuesOperation() =0;
 
   /*!
@@ -1111,6 +1114,7 @@ class ARCANE_CORE_EXPORT IParallelMng
    *
    * L'instance retournée doit être détruite par l'opérateur delete.
    */
+  [[deprecated("Y2021: Use Arcane::ParallelMngUtils;:createTransferValuesOperationRef() instead")]]
   virtual ITransferValuesParallelOperation* createTransferValuesOperation() =0;
 
   /*!
@@ -1119,13 +1123,16 @@ class ARCANE_CORE_EXPORT IParallelMng
    *
    * L'instance retournée doit être détruite par l'opérateur delete.
    */
+  [[deprecated("Y2021: Use Arcane::ParallelMngUtils;:createExchangerRef() instead")]]
   virtual IParallelExchanger* createExchanger() =0;
+
   /*!
    * \brief Retourne une interface pour synchroniser des
    * variables sur le groupe de la famille \a family
    *
    * L'instance retournée doit être détruite par l'opérateur delete.
    */
+  [[deprecated("Y2021: Use Arcane::ParallelMngUtils;:createSynchronizerRef() instead")]]
   virtual IVariableSynchronizer* createSynchronizer(IItemFamily* family) =0;
  
   /*!
@@ -1134,6 +1141,7 @@ class ARCANE_CORE_EXPORT IParallelMng
    *
    * L'instance retournée doit être détruite par l'opérateur delete.
    */
+  [[deprecated("Y2021: Use Arcane::ParallelMngUtils;:createSynchronizerRef() instead")]]
   virtual IVariableSynchronizer* createSynchronizer(const ItemGroup& group) =0;
 
   /*!
@@ -1143,6 +1151,7 @@ class ARCANE_CORE_EXPORT IParallelMng
    *
    * L'instance retournée doit être détruite par l'opérateur delete.
    */
+  [[deprecated("Y2021: Use Arcane::ParallelMngUtils;:createTopologyRef() instead")]]
   virtual IParallelTopology* createTopology() =0;
 
   /*!
@@ -1202,8 +1211,15 @@ class ARCANE_CORE_EXPORT IParallelMng
 
   //! Gestionnaire de message de %Arccore associé
   virtual IMessagePassingMng* messagePassingMng() const =0;
-};
 
+ private:
+
+  /*!
+   * \internal
+   * \brief Fabrique des fonctions utilitaires.
+   */
+  virtual Ref<IParallelMngUtilsFactory> _internalUtilsFactory() const =0;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

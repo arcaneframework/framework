@@ -1,23 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2020 IFPEN-CEA
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TraceMng.cc                                                 (C) 2000-2019 */
+/* TraceMng.cc                                                 (C) 2000-2021 */
 /*                                                                           */
 /* Gestionnaire des traces.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -25,6 +13,7 @@
 
 #include "arccore/trace/ITraceMng.h"
 #include "arccore/trace/TraceClassConfig.h"
+#include "arccore/trace/StandaloneTraceMessage.h"
 
 #include "arccore/base/FatalErrorException.h"
 #include "arccore/base/NotSupportedException.h"
@@ -1123,14 +1112,10 @@ _writeDirect(const TraceMessage* msg,Span<const Byte> buf_array,
     {
       String s1(orig_message);
       FatalErrorException ex("TraceMng::endTrace()",s1);
-      if (id==Trace::Fatal)
-        throw ex;
-      if (id==Trace::ParallelFatal){
+      if (id==Trace::ParallelFatal)
         ex.setCollective(true);
-        throw ex;
-      }
+      throw ex;
     }
-    break;
   case Trace::Debug:
     _writeListing(buf_array,print_level,color,true);
     break;
@@ -1350,6 +1335,16 @@ removeListener(ITraceMessageListener* v)
   if (!m_listeners)
     return;
   m_listeners->erase(v);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ITraceMng::
+fatalMessage(const StandaloneTraceMessage& o)
+{
+  fatal() << o.value();
+  ARCCORE_FATAL("Should not reach this line");
 }
 
 /*---------------------------------------------------------------------------*/

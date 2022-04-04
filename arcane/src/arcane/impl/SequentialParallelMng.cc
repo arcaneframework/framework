@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SequentialParallelMng.cc                                    (C) 2000-2020 */
+/* SequentialParallelMng.cc                                    (C) 2000-2021 */
 /*                                                                           */
 /* Gestion du parallélisme dans le cas sequentiel.                           */
 /*---------------------------------------------------------------------------*/
@@ -51,8 +51,10 @@
 #include "arcane/impl/ParallelReplication.h"
 #include "arcane/impl/SequentialParallelSuperMng.h"
 #include "arcane/impl/SequentialParallelMng.h"
+#include "arcane/impl/ParallelMngUtilsFactoryBase.h"
 
 #include "arccore/message_passing/RequestListBase.h"
+#include "arccore/message_passing/SerializeMessageList.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -266,6 +268,47 @@ class SequentialParallelDispatchT
     ARCANE_UNUSED(op);
     ARCANE_UNUSED(send_buf);
   }
+  Request nonBlockingAllReduce(eReduceType op,Span<const Type> send_buf,Span<Type> recv_buf) override
+  {
+    ARCANE_UNUSED(op);
+    ARCANE_UNUSED(send_buf);
+    ARCANE_UNUSED(recv_buf);
+    return Request();
+  }
+  Request nonBlockingAllGather(Span<const Type> send_buf, Span<Type> recv_buf) override
+  {
+    recv_buf.copy(send_buf);
+    return Request();
+  }
+  Request nonBlockingBroadcast(Span<Type> send_buf, Int32 rank) override
+  {
+    ARCANE_UNUSED(send_buf);
+    ARCANE_UNUSED(rank);
+    return Request();
+  }
+  Request nonBlockingGather(Span<const Type> send_buf, Span<Type> recv_buf, Int32 rank) override
+  {
+    ARCANE_UNUSED(rank);
+    recv_buf.copy(send_buf);
+    return Request();
+  }
+  Request nonBlockingAllToAll(Span<const Type> send_buf, Span<Type> recv_buf, Int32 count) override
+  {
+    ARCANE_UNUSED(count);
+    recv_buf.copy(send_buf);
+    return Request();
+  }
+  Request nonBlockingAllToAllVariable(Span<const Type> send_buf, ConstArrayView<Int32> send_count,
+                                      ConstArrayView<Int32> send_index, Span<Type> recv_buf,
+                                      ConstArrayView<Int32> recv_count, ConstArrayView<Int32> recv_index) override
+  {
+    ARCANE_UNUSED(send_count);
+    ARCANE_UNUSED(recv_count);
+    ARCANE_UNUSED(send_index);
+    ARCANE_UNUSED(recv_index);
+    recv_buf.copy(send_buf);
+    return Request();
+  }
   Type scan(eReduceType op,Type v) override
   {
     ARCANE_UNUSED(op);
@@ -302,13 +345,31 @@ class SequentialParallelDispatchT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class SequentialParallelMngUtilsFactory
+: public ParallelMngUtilsFactoryBase
+{
+ public:
+  Ref<ITransferValuesParallelOperation> createTransferValuesOperation(IParallelMng*) override
+  {
+    throw NotImplementedException(A_FUNCINFO);
+  }
+  Ref<IVariableSynchronizer> createSynchronizer(IParallelMng* pm,IItemFamily* family) override
+  {
+    return makeRef(createNullVariableSynchronizer(pm,family->allItems()));
+  }
+  Ref<IVariableSynchronizer> createSynchronizer(IParallelMng* pm,const ItemGroup& group) override
+  {
+    return makeRef(createNullVariableSynchronizer(pm,group));
+  }
+};
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Gestionnaire du parallélisme en mode séquentiel.
  *
- En mode séquentiel, le parallélisme n'existe pas. Ce gestionnaire ne
- fait donc rien.
+ * En mode séquentiel, le parallélisme n'existe pas. Ce gestionnaire ne
+ * fait donc rien.
 */
 class SequentialParallelMng
 : public ParallelMngDispatcher
@@ -436,7 +497,7 @@ class SequentialParallelMng
 
   ISerializeMessageList* _createSerializeMessageList() override
   {
-    throw NotImplementedException(A_FUNCINFO);
+    return new Arccore::MessagePassing::internal::SerializeMessageList(messagePassingMng());
   }
   Real reduceRank(eReduceType rt,Real v,Int32* rank)
   {
@@ -489,6 +550,11 @@ class SequentialParallelMng
     return makeRef(r);
   }
 
+  Ref<IParallelMngUtilsFactory> _internalUtilsFactory() const override
+  {
+    return m_utils_factory;
+  }
+
   Parallel::IStat* stat() override
   {
     return m_stat;
@@ -537,6 +603,7 @@ class SequentialParallelMng
   Parallel::IStat* m_stat;
   IParallelReplication* m_replication;
   MP::Communicator m_communicator;
+  Ref<IParallelMngUtilsFactory> m_utils_factory;
 
  private:
 
@@ -576,6 +643,7 @@ SequentialParallelMng(const SequentialParallelMngBuildInfo& bi)
 , m_stat(nullptr)
 , m_replication(new ParallelReplication())
 , m_communicator(bi.communicator())
+, m_utils_factory(makeRef<IParallelMngUtilsFactory>(new SequentialParallelMngUtilsFactory()))
 {
   ARCANE_CHECK_PTR(m_trace);
   ARCANE_CHECK_PTR(m_thread_mng);

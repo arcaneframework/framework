@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -42,37 +42,6 @@ ARCANE_MESH_BEGIN_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Implémentation de la connectivité noeud->face.
- */
-class ParticleCellCompactIncrementalItemConnectivity
-: public CellCompactIncrementalItemConnectivity
-{
- public:
-  ParticleCellCompactIncrementalItemConnectivity(ItemFamily* source_family,
-                                                 IItemFamily* target_family,
-                                                 const String& aname)
-  : CellCompactIncrementalItemConnectivity(source_family,target_family,aname){}
- public:
-  void addConnectedItem(ItemLocalId item_lid,ItemLocalId new_lid) final
-  {
-    ItemInternal* item = m_true_source_family.itemInternal(item_lid);
-    // Il y a juste à positionner la maille car le ItemSharedInfo est
-    // correctement positionné à la création.
-    item->_setCell(0,new_lid);
-  }
-  void removeConnectedItem(ItemLocalId item_lid,ItemLocalId lid_to_remove) final
-  {
-    ARCANE_UNUSED(item_lid);
-    ARCANE_UNUSED(lid_to_remove);
-    // On ne doit jamais appeler cette méthode car on supprime jamais de
-    // mailles d'une particule.
-    throw NotSupportedException(A_FUNCINFO);
-  }
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 ParticleFamily::
 ParticleFamily(IMesh* mesh,const String& name)
@@ -100,7 +69,7 @@ void ParticleFamily::
 build()
 {
   ItemFamily::build();
-  ItemTypeMng* itm = ItemTypeMng::singleton();
+  ItemTypeMng* itm = m_mesh->itemTypeMng();
   m_particle_type_info = itm->typeFromId(IT_NullType);
   m_sub_domain_id = subDomain()->subDomainId();
 
@@ -486,7 +455,7 @@ hasUniqueIdMap() const
 void ParticleFamily::
 _setSharedInfo()
 {
-  m_particle_shared_info = _findSharedInfo(m_particle_type_info,0,0,1);
+  m_particle_shared_info = _findSharedInfo(m_particle_type_info);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemGroupImpl.cc                                            (C) 2000-2021 */
+/* ItemGroupImpl.cc                                            (C) 2000-2022 */
 /*                                                                           */
 /* Implémentation d'un groupe d'entités de maillage.                         */
 /*---------------------------------------------------------------------------*/
@@ -35,6 +35,7 @@
 #include "arcane/ItemGroupComputeFunctor.h"
 #include "arcane/IVariableSynchronizer.h"
 #include "arcane/MeshPartInfo.h"
+#include "arcane/ParallelMngUtils.h"
 #include "arcane/core/internal/IDataInternal.h"
 
 #include <algorithm>
@@ -141,6 +142,17 @@ class ItemGroupImplPrivate
     m_is_contigous = false;
   }
 
+  void setNeedRecompute()
+  {
+    // NOTE: normalement il ne faudrait mettre cette valeur à 'true' que pour
+    // les groupes recalculés (qui ont un parent ou pour lequel 'm_compute_functor' n'est
+    // pas nul). Cependant, cette méthode est aussi appelé sur le groupe de toutes les entités
+    // et peut-être d'autres groupes.
+    // Changer ce comportement risque d'impacter pas mal de code donc il faudrait bien vérifier
+    // que tout est OK avant de faire cette modification.
+    m_need_recompute = true;
+  }
+
  public:
 
   IMesh* m_mesh; //!< Gestionnare de groupe associé
@@ -189,17 +201,19 @@ class ItemGroupImplPrivate
   bool m_is_all_items = false; //!< Indique s'il s'agit du groupe de toutes les entités
 
   SharedPtrT<GroupIndexTable> m_group_index_table; //!< Table de hachage du local id des items vers leur position en enumeration
-  SharedPtrT<IVariableSynchronizer> m_synchronizer; //!< Synchronizer du groupe
+  Ref<IVariableSynchronizer> m_synchronizer; //!< Synchronizer du groupe
 
   // Anciennement dans DynamicMeshKindInfo
   Int32UniqueArray m_items_index_in_all_group; //! localids -> index (UNIQUEMENT ALLITEMS)
   
-  std::map<const void *, IItemGroupObserver *> m_observers; //!< Observers du groupe
+  std::map<const void*,IItemGroupObserver*> m_observers; //!< Observers du groupe
   bool m_observer_need_info = false; //!< Synthése de besoin de observers en informations de transition
   void notifyExtendObservers(const Int32ConstArrayView * info);
   void notifyReduceObservers(const Int32ConstArrayView * info);
   void notifyCompactObservers(const Int32ConstArrayView * info);
   void notifyInvalidateObservers();
+
+  void resetSubGroups();
 
  private:
   UniqueArray<Int32> m_local_buffer = UniqueArray<Int32>(platform::getDefaultDataAllocator());
@@ -291,6 +305,36 @@ _init()
     m_items_local_id = &m_variable_items_local_id->_internalTrueData()->_internalDeprecatedValue();
     updateTimestamp();
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemGroupImplPrivate::
+resetSubGroups()
+{
+  if (!m_is_all_items)
+    ARCANE_FATAL("Call to _resetSubGroups() is only valid for group of AllItems");
+
+  m_own_group = nullptr;
+  m_ghost_group = nullptr;
+  m_interface_group = nullptr;
+  m_node_group = nullptr;
+  m_edge_group = nullptr;
+  m_face_group = nullptr;
+  m_cell_group = nullptr;
+  m_inner_face_group = nullptr;
+  m_outer_face_group = nullptr;
+  m_active_cell_group = nullptr;
+  m_own_active_cell_group = nullptr;
+  m_active_face_group = nullptr;
+  m_own_active_face_group = nullptr;
+  m_inner_active_face_group = nullptr;
+  m_outer_active_face_group = nullptr;
+  m_level_cell_group.clear();
+  m_own_level_cell_group.clear();
+  m_children_by_type.clear();
+  m_sub_groups.clear();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -516,7 +560,7 @@ void ItemGroupImpl::
 beginTransaction()
 {
   if (m_p->m_transaction_mode)
-    throw FatalErrorException(A_FUNCINFO,"Transaction mode already started");
+    ARCANE_FATAL("Transaction mode already started");
   m_p->m_transaction_mode = true;
 }
 
@@ -527,7 +571,7 @@ void ItemGroupImpl::
 endTransaction()
 {
   if (!m_p->m_transaction_mode)
-    throw FatalErrorException(A_FUNCINFO,"Transaction mode not started");
+    ARCANE_FATAL("Transaction mode not started");
   m_p->m_transaction_mode = false;
   if (m_p->m_need_recompute) {
     m_p->m_need_recompute = false;
@@ -543,12 +587,11 @@ Int32Array& ItemGroupImpl::
 unguardedItemsLocalId(const bool self_invalidate)
 {
   ITraceMng* trace = m_p->m_mesh->traceMng();
-  trace->debug(Trace::Medium) << "ItemGroupImpl::unguardedItemsLocalId on group " << name() << " with self_invalidate=" << self_invalidate;
+  trace->debug(Trace::Medium) << "ItemGroupImpl::unguardedItemsLocalId on group " << name()
+                              << " with self_invalidate=" << self_invalidate;
 
   if (m_p->m_compute_functor && !m_p->m_transaction_mode)
-    throw FatalErrorException(A_FUNCINFO,"Direct access for computed group in only available during a transaction");
-//   if (!m_p->m_observers.empty() && m_p->m_observer_need_info)
-//     throw FatalErrorException(A_FUNCINFO,String::format("Direct access for observed group {0}",name()));
+    ARCANE_FATAL("Direct access for computed group in only available during a transaction");
 
   _forceInvalidate(self_invalidate);
   return m_p->mutableItemsLocalId();
@@ -1026,10 +1069,10 @@ void ItemGroupImpl::
 invalidate(bool force_recompute)
 {
 #ifdef ARCANE_DEBUG
-//   if (force_recompute){
-    ITraceMng* msg = m_p->m_mesh->traceMng();
-    msg->debug(Trace::High) << "ItemGroupImpl::invalidate(force=" << force_recompute << ")"
-                            << " name=" << name();
+  //   if (force_recompute){
+  ITraceMng* msg = m_p->m_mesh->traceMng();
+  msg->debug(Trace::High) << "ItemGroupImpl::invalidate(force=" << force_recompute << ")"
+                          << " name=" << name();
 //   }
 #endif
 #ifndef NO_USER_WARNING
@@ -1041,7 +1084,7 @@ invalidate(bool force_recompute)
 #endif
 
   m_p->updateTimestamp();
-  m_p->m_need_recompute = true;
+  m_p->setNeedRecompute();
   if (force_recompute)
     checkNeedUpdate();
   m_p->notifyInvalidateObservers();
@@ -1083,7 +1126,7 @@ addItems(Int32ConstArrayView items_local_id,bool check_if_present)
   ARCANE_ASSERT(( (!m_p->m_need_recompute && !isAllItems()) || (m_p->m_transaction_mode && isAllItems()) ),
 		("Operation on invalid group"));
   if (m_p->m_compute_functor && !m_p->m_transaction_mode)
-    throw FatalErrorException(A_FUNCINFO, String::format("Cannot add items on computed group ({0})", name()));
+    ARCANE_FATAL("Cannot add items on computed group ({0})", name());
   IMesh* amesh = mesh();
   if (!amesh)
     throw ArgumentException(A_FUNCINFO,"null group");
@@ -1317,7 +1360,7 @@ void ItemGroupImpl::
 setItems(Int32ConstArrayView items_local_id)
 {
   if (m_p->m_compute_functor && !m_p->m_transaction_mode)
-    throw FatalErrorException(A_FUNCINFO, String::format("Cannot set items on computed group ({0})", name()));
+    ARCANE_FATAL("Cannot set items on computed group ({0})", name());
   Int32Array& buf = m_p->mutableItemsLocalId();
   buf.resize(items_local_id.size());
   Int32ArrayView buf_view(buf);
@@ -1744,8 +1787,6 @@ attachObserver(const void * ref, IItemGroupObserver * obs)
   auto finder = m_p->m_observers.find(ref);
   auto end = m_p->m_observers.end();
   if (finder != end) {
-    // (HP) TODO: check non redondant observer attachement
-    // throw FatalErrorException(A_FUNCINFO,String::format("Observer already attached by reference ({0})",ref));
     delete finder->second;
     finder->second = obs;
     return;
@@ -1764,21 +1805,18 @@ attachObserver(const void * ref, IItemGroupObserver * obs)
 void ItemGroupImpl::
 detachObserver(const void * ref)
 {
-  std::map<const void *, IItemGroupObserver *>::iterator finder = m_p->m_observers.find(ref);
-  std::map<const void *, IItemGroupObserver *>::iterator end = m_p->m_observers.end();
+  auto finder = m_p->m_observers.find(ref);
+  auto end = m_p->m_observers.end();
 
-  if (finder == end) {
-    // (HP) TODO: check non redondant observer removal
-    // throw FatalErrorException(A_FUNCINFO,String::format("Cannot detach observer : reference ({0}) not registered as an attacher",ref));
+  if (finder == end)
     return;
-  }
 
   IItemGroupObserver * obs = finder->second;
   delete obs;
   m_p->m_observers.erase(finder);
   // Mise à jour du flag de demande d'info
   bool new_observer_need_info = false;
-  std::map<const void *, IItemGroupObserver *>::iterator i = m_p->m_observers.begin();
+  auto i = m_p->m_observers.begin();
   for( ; i != end ; ++i ) {
     IItemGroupObserver * obs = i->second;
     new_observer_need_info |= obs->needInfo();
@@ -1828,12 +1866,14 @@ hasComputeFunctor() const
 void ItemGroupImpl::
 _initChildrenByType()
 {
+  IItemFamily* family = m_p->m_item_family;
+  ItemTypeMng* type_mng = family->mesh()->itemTypeMng();
   Integer nb_basic_item_type= ItemTypeMng::nbBasicItemType(); //NB_BASIC_ITEM_TYPE
   m_p->m_children_by_type.resize(nb_basic_item_type);
   for( Integer i=0; i<nb_basic_item_type; ++i ){
     // String child_name(name()+i);
-    String child_name(Item::typeName(i));
-    ItemGroupImpl* igi = createSubGroup(child_name,m_p->m_item_family,
+    String child_name(type_mng->typeName(i));
+    ItemGroupImpl* igi = createSubGroup(child_name,family,
                                         new ItemGroupImplItemGroupComputeFunctor(this,&ItemGroupImpl::_computeChildrenByType));
     m_p->m_children_by_type[i] = igi;
   }
@@ -1913,7 +1953,7 @@ _executeCompact(const Int32ConstArrayView* info)
 void ItemGroupImpl::
 _executeInvalidate()
 {
-  m_p->m_need_recompute = true;
+  m_p->setNeedRecompute();
   m_p->notifyInvalidateObservers();
 }
 
@@ -1952,7 +1992,7 @@ _forceInvalidate(const bool self_invalidate)
   // (HP) TODO: Mettre un observer forceInvalidate pour prévenir tout le monde ?
   // avec forceInvalidate on doit invalider mais ne rien calculer
   if (self_invalidate) {
-    m_p->m_need_recompute = true;
+    m_p->setNeedRecompute();
     m_p->m_need_invalidate_on_recompute = true;
   }
 
@@ -1967,8 +2007,24 @@ _forceInvalidate(const bool self_invalidate)
 void ItemGroupImpl::
 destroy()
 {
-  delete m_p;
-  m_p = new ItemGroupImplPrivate();
+  // Détache les observateurs. Cela modifie \a m_observers donc il faut
+  // en faire une copie
+  {
+    std::vector<const void*> ptrs;
+    for( auto i : m_p->m_observers )
+      ptrs.push_back(i.first);
+    for( const void* i : ptrs )
+      detachObserver(i);
+  }
+
+  // Le groupe de toutes les entités est spécial. Il ne faut jamais le détruire
+  // vraiement.
+  if (m_p->m_is_all_items)
+    m_p->resetSubGroups();
+  else{
+    delete m_p;
+    m_p = new ItemGroupImplPrivate();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1992,10 +2048,10 @@ localIdToIndex()
 IVariableSynchronizer * ItemGroupImpl::
 synchronizer()
 { 
-  if(!m_p->m_synchronizer.isUsed()) {
+  if(!m_p->m_synchronizer.get()) {
     IParallelMng* pm = m_p->m_mesh->parallelMng();
     ItemGroup this_group(this);
-    m_p->m_synchronizer = SharedPtrT<IVariableSynchronizer>(pm->createSynchronizer(this_group));
+    m_p->m_synchronizer = ParallelMngUtils::createSynchronizerRef(pm,this_group);
     ITraceMng* trace =  m_p->m_mesh->traceMng();
     trace->debug(Trace::High) << "** CREATION OF SYNCHRONIZER OF GROUP : " << m_p->m_name;
     m_p->m_synchronizer->compute();
@@ -2009,7 +2065,7 @@ synchronizer()
 bool ItemGroupImpl::
 hasSynchronizer()
 {
-  return m_p->m_synchronizer.isUsed();
+  return m_p->m_synchronizer.get();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2091,6 +2147,34 @@ void ItemGroupImpl::
 checkLocalIdsAreContigous() const
 {
   m_p->checkIsContigous();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int64 ItemGroupImpl::
+capacity() const
+{
+  Int32Array& items_lid = m_p->mutableItemsLocalId();
+  return items_lid.capacity();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemGroupImpl::
+shrinkMemory()
+{
+  if (hasComputeFunctor()){
+    // Groupe calculé. On l'invalide et on supprime ses éléments
+    invalidate(false);
+    m_p->mutableItemsLocalId().clear();
+  }
+
+  if (m_p->variableItemsLocalid())
+    m_p->variableItemsLocalid()->variable()->shrinkMemory();
+  else
+    m_p->mutableItemsLocalId().shrink();
 }
 
 /*---------------------------------------------------------------------------*/

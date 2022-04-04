@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemConnectivitySelector.cc                                 (C) 2000-2017 */
+/* ItemConnectivitySelector.cc                                 (C) 2000-2021 */
 /*                                                                           */
 /* Sélection entre les connectivités historiques et à la demande.            */
 /*---------------------------------------------------------------------------*/
@@ -23,8 +23,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -39,7 +39,6 @@ ItemConnectivitySelector(ItemFamily* source_family,IItemFamily* target_family,
 , m_pre_allocated_size(0)
 , m_item_connectivity_index(connectivity_index)
 , m_item_connectivity_list(m_source_family->itemInternalConnectivityList())
-, m_use_custom_connectivity_accessor(false)
 , m_is_built(false)
 {
 }
@@ -50,22 +49,12 @@ ItemConnectivitySelector(ItemFamily* source_family,IItemFamily* target_family,
 void ItemConnectivitySelector::
 build()
 {
-  if (m_is_built) return;
-  InternalConnectivityPolicy policy = m_source_family->mesh()->_connectivityPolicy();
-  bool alloc_custom = (policy!=InternalConnectivityPolicy::Legacy);
+  if (m_is_built)
+    return;
 
-  m_use_custom_connectivity_accessor = (policy==InternalConnectivityPolicy::NewAndLegacy ||
-                                        policy==InternalConnectivityPolicy::NewWithDependenciesAndLegacy ||
-                                        policy==InternalConnectivityPolicy::NewOnly);
-
-  bool use_legacy_connectivity = (policy!=InternalConnectivityPolicy::NewOnly);
-  if (use_legacy_connectivity)
-    _createLegacyConnectivity(m_connectivity_name+"Compact");
-  if (alloc_custom){
-    _createCustomConnectivity(m_connectivity_name);
-    info() << "Family: " << m_source_family->fullName()
-           << " create new connectivity: " << m_connectivity_name;
-  }
+  _createCustomConnectivity(m_connectivity_name);
+  info() << "Family: " << m_source_family->fullName()
+         << " create new connectivity: " << m_connectivity_name;
 
   _buildCustomConnectivity();
   m_is_built = true;
@@ -88,8 +77,7 @@ setPreAllocatedSize(Integer size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

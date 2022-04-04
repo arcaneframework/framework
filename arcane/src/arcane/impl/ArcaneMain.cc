@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -74,6 +74,7 @@
 #include "arcane/impl/MainFactory.h"
 #include "arcane/impl/InternalInfosDumper.h"
 #include "arcane/impl/internal/ArcaneMainExecInfo.h"
+#include "arcane/impl/internal/ThreadBindingMng.h"
 
 #include <signal.h>
 #include <exception>
@@ -107,6 +108,7 @@ class ArcaneMainStaticInfo
   String m_dotnet_assembly;
   String m_arcane_lib_path;
   IDirectSubDomainExecuteFunctor* m_direct_exec_functor = nullptr;
+  std::atomic<Int32> m_nb_autodetect = 0;
 };
 }
 
@@ -262,7 +264,8 @@ class ArcaneMain::Impl
   ApplicationInfo m_app_info;
   ApplicationBuildInfo m_application_build_info;
   DotNetRuntimeInitialisationInfo m_dotnet_info;
-  AcceleratorRuntimeInitialisationInfo m_accelerator_info;  
+  AcceleratorRuntimeInitialisationInfo m_accelerator_info;
+  ThreadBindingMng m_thread_binding_mng;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -314,6 +317,36 @@ class ArcaneMainExecFunctor
  private:
   const ApplicationInfo& m_app_info;
   IArcaneMain* m_exec_main;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe pour gérer les appels aux mécanismes d'auto-détection des runtimes (MPI,Accélérateurs).
+ *
+ * Cette classe permet de garantir que les mécanismes d'auto-détection ne sont
+ * appelés qu'une fois. L'auto-détection se fait lors de l'appel à check().
+ */
+class ArcaneMainAutoDetectRuntimeHelper
+{
+ public:
+  Int32 check()
+  {
+    auto* x = _staticInfo();
+    if (x->m_nb_autodetect>0)
+      return m_return_value;
+
+    // TODO: rendre thread-safe
+    {
+      ArcaneMain::_checkAutoDetectMPI();
+
+      m_return_value = ArcaneMain::_checkAutoDetectAccelerator();
+      ++x->m_nb_autodetect;
+    }
+    return m_return_value;
+  }
+ public:
+  Int32 m_return_value = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -515,7 +548,7 @@ callFunctorWithCatchedException(IFunctor* functor,IArcaneMain* exec_main,
         *clean_abort = true;
         ret_val = 5;
         if (is_master && is_print){
-          ofstream ofile("fatal");
+          std::ofstream ofile("fatal");
           ofile << ret_val << '\n';
           ofile.flush();
           trace->error() << "ParallelFatalErrorException caught in ArcaneMain::callFunctor: " << ex << '\n';
@@ -548,7 +581,7 @@ callFunctorWithCatchedException(IFunctor* functor,IArcaneMain* exec_main,
         *clean_abort = true;
         ret_val = 5;
         if (is_master && is_print){
-          ofstream ofile("fatal");
+          std::ofstream ofile("fatal");
           ofile << ret_val << '\n';
           ofile.flush();
           trace->error() << "ParallelFatalErrorException caught in ArcaneMain::callFunctor: " << ex << '\n';
@@ -697,7 +730,7 @@ arcaneInitialize()
     dom::DOMImplementation::initialize();
     platform::platformInitialize();
     // Crée le singleton gestionnaire des types
-    ItemTypeMng::singleton();
+    ItemTypeMng::_singleton();
     initializeStringConverter();
     arcaneInitCheckMemory();
     // Initialise le singleton du groupe vide et garde une référence dessus.
@@ -735,7 +768,7 @@ arcaneFinalize()
     arcaneExitCheckMemory();
     platform::platformTerminate();
     dom::DOMImplementation::terminate();
-    ItemTypeMng::destroySingleton();
+    ItemTypeMng::_destroySingleton();
     arcaneEndProgram();
 #ifdef ARCANE_FLEXLM
     {
@@ -886,14 +919,23 @@ _internalRun(IDirectSubDomainExecuteFunctor* func)
   return run();
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+int ArcaneMain::
+_initRuntimes()
+{
+  ArcaneMainAutoDetectRuntimeHelper auto_detect_helper;
+  return auto_detect_helper.check();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 int ArcaneMain::
 run()
 {
-  int r = 0;
-
-  _checkAutoDetectMPI();
-
-  r = _checkAutoDetectAccelerator();
+  int r = _initRuntimes();
   if (r!=0)
     return r;
 
@@ -990,12 +1032,11 @@ _runDotNet()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+// Ne pas appeler directement mais passer par ArcaneMainAutoDetectHelper.
 void ArcaneMain::
 _checkAutoDetectMPI()
 {
   auto si = _staticInfo();
-  // TODO: vérifier que l'init n'a pas été faite.
 
   // Pour pouvoir automatiquement enregisrer MPI, il faut
   // appeler la méthode 'arcaneAutoDetectMessagePassingServiceMPI' qui se trouve
@@ -1030,24 +1071,25 @@ _checkAutoDetectMPI()
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Détecte et charge la gestion du runtime des accélérateurs.
+ *
+ * \note Ne pas appeler directement mais passer par ArcaneMainAutoDetectHelper.
  */
 int ArcaneMain::
 _checkAutoDetectAccelerator()
 {
-  // TODO: vérifier que l'init n'a pas été faite.
   auto si = _staticInfo();
   AcceleratorRuntimeInitialisationInfo& init_info = si->m_accelerator_init_info;
   if (!init_info.isUsingAcceleratorRuntime())
     return 0;
   String runtime_name = init_info.acceleratorRuntime();
-  std::cout << "RUNTIME=" << runtime_name << "\n";
+  //std::cout << "RUNTIME=" << runtime_name << "\n";
   if (runtime_name.empty())
     return 0;
 
   try{
     // Pour l'instant, seul le runtime 'cuda' est autorisé
-    if (runtime_name!="cuda")
-      ARCANE_FATAL("Invalid accelerator runtime '{0}'. Only 'cuda' is allowed",runtime_name);
+    if (runtime_name!="cuda" && runtime_name!="hip")
+      ARCANE_FATAL("Invalid accelerator runtime '{0}'. Only 'cuda' or 'hip' is allowed",runtime_name);
 
     // Pour pouvoir automatiquement enregisrer un runtime accélérateur de nom \a NAME,
     // il faut appeler la méthode 'arcaneRegisterAcceleratorRuntime${NAME}' qui se trouve
@@ -1141,6 +1183,8 @@ build()
 {
   _parseApplicationBuildInfoArgs();
   m_application = m_main_factory->createApplication(this);
+  m_p->m_thread_binding_mng.initialize(m_application->traceMng(),
+                                       m_p->m_application_build_info.threadBindingStrategy());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1231,7 +1275,7 @@ setErrorCode(int errcode)
     // dans ce cas n'importe quel PE peut le faire.
     if (ArcaneMain::m_is_master_io || errcode==4){
       String errname = "fatal_" + String::fromNumber(errcode);
-      ofstream ofile(errname.localstr());
+      std::ofstream ofile(errname.localstr());
       ofile.close();
     }
   }

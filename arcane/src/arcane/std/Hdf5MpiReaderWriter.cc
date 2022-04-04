@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -442,11 +442,11 @@ _writeVal(const String& var_group_name,const String& sub_group_name,
          << " is_multi=" << sdata->isMultiSize()
          << " dimensions_size=" << sdata->extents().size()
          << " memory_size=" << sdata->memorySize()
-         << " bytes_size=" << sdata->bytes().size();
+         << " bytes_size=" << sdata->constBytes().size();
 
   hid_t save_typeid = m_types.saveType(sdata->baseDataType());
   hid_t trueid = m_types.nativeType(sdata->baseDataType());
-  const void* ptr = sdata->bytes().data();
+  const void* ptr = sdata->constBytes().data();
   Int64 nb_base_element = sdata->nbBaseElement();
 
   OffsetMap::const_iterator offset_info = m_variables_offset.find(var_group_name);
@@ -878,7 +878,7 @@ _readVal(IVariable* v,IData* data)
 
     //dataset_id.read(trueid,ptr);
     //debug(Trace::High) << "Variable " << var_group_name << " readed (nb_element=" << nb_element << ").";
-    void* ptr = sd->bytes().data();
+    void* ptr = sd->writableBytes().data();
     info() << "READ Variable " << var_group_name << " ptr=" << ptr;;
     hid_t trueid = m_types.nativeType(sd->baseDataType());
     dataset_id.read(trueid,ptr);

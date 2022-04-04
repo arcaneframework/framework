@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CellFamilySerializer.cc                                     (C) 2000-2018 */
+/* CellFamilySerializer.cc                                     (C) 2000-2021 */
 /*                                                                           */
 /* Sérialisation/Désérialisation des familles de mailles.                    */
 /*---------------------------------------------------------------------------*/
@@ -24,8 +24,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -109,8 +109,8 @@ serializeItems(ISerializer* buf,Int32ConstArrayView cells_local_id)
 void CellFamilySerializer::
 deserializeItems(ISerializer* buf,Int32Array* cells_local_id)
 {
-  ItemTypeMng* itm = ItemTypeMng::singleton();
   IMesh* mesh = m_family->mesh();
+  ItemTypeMng* itm = mesh->itemTypeMng();
   Int32 my_rank = mesh->meshPartInfo().partRank();
   Int32 orig_rank = CheckedConvert::toInt32(buf->getInt64()); // Numéro du sous-domaine source
   Int64 nb_cell = buf->getInt64();
@@ -208,6 +208,8 @@ deserializeItems(ISerializer* buf,Int32Array* cells_local_id)
       }
     }
   }
+  info(4) << "EndDeserializeCells: nb_cell=" << nb_cell << " orig=" << orig_rank
+          << " nb_added=" << m_family->infos().addedItems().size();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -222,8 +224,7 @@ family() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

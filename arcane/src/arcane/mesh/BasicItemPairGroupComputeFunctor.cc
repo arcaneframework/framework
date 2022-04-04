@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicItemPairGroupComputeFunctor.cc                         (C) 2000-2016 */
+/* BasicItemPairGroupComputeFunctor.cc                         (C) 2000-2022 */
 /*                                                                           */
 /* Fonctions basiques de calcul des valeurs des ItemPairGroup.               */
 /*---------------------------------------------------------------------------*/
@@ -26,7 +26,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -147,7 +148,6 @@ _computeAdjency(ItemPairGroupImpl* array,
     }
     indexes.add(sub_items_local_id.largeSize());
   }
-  info() << " NB_ITEM=" << indexes.size() << " NB_ADJACENT=" << sub_items_local_id.size();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -197,7 +197,6 @@ _computeCellCellFaceAdjency(ItemPairGroupImpl* array)
     }
     indexes.add(sub_items_local_id.largeSize());
   }
-  info() << " NB CELL=" << indexes.size()-1 << " NB ADJACENT=" << sub_items_local_id.size(); 
 }
 
 /*---------------------------------------------------------------------------*/
@@ -244,7 +243,6 @@ _computeFaceCellNodeAdjency(ItemPairGroupImpl* array)
     }
     indexes.add(sub_items_local_id.largeSize());
   }
-  info() << " NB FACE=" << indexes.size() << " NB ADJACENT=" << sub_items_local_id.size(); 
 }
 
 /*---------------------------------------------------------------------------*/
@@ -289,7 +287,6 @@ _computeCellFaceFaceAdjency(ItemPairGroupImpl* array)
     }
     indexes.add(sub_items_local_id.largeSize());
   }
-  info() << " NB CELL=" << indexes.size()-1 << " NB ADJACENT=" << sub_items_local_id.size();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -379,8 +376,7 @@ _computeFaceFaceCellAdjency(ItemPairGroupImpl* array)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

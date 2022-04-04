@@ -1,19 +1,7 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2020 IFPEN-CEA
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
@@ -108,9 +96,17 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
                      Int32 proc,Int64 elem_size,MPI_Datatype data_type,
                      int mpi_tag,bool is_blocked);
   
+  //! Version non bloquante de send sans statistique temporelle
+  Request sendNonBlockingNoStat(const void* send_buffer,Int64 send_buffer_size,
+                                Int32 proc,MPI_Datatype data_type,int mpi_tag);
+
   Request directRecv(void* recv_buffer,Int64 recv_buffer_size,
-                     Int32 proc,Int64 elem_size,MPI_Datatype data_type,
+                     Int32 source_rank,Int64 elem_size,MPI_Datatype data_type,
                      int mpi_tag,bool is_blocked);
+
+  //! Version non bloquante de receive sans statistiques temporelles
+  Request receiveNonBlockingNoStat(void* recv_buffer,Int64 recv_buffer_size,
+                                   Int32 source_rank,MPI_Datatype data_type,int mpi_tag);
 
   Request directSendPack(const void* send_buffer,Int64 send_buffer_size,
                          Int32 proc,int mpi_tag,bool is_blocked);
@@ -126,6 +122,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
                          Int32 proc,int mpi_tag,bool is_blocking);
 
   void waitAllRequests(ArrayView<Request> requests);
+
 
  private:
   bool _waitAllRequestsMPI(ArrayView<Request> requests,ArrayView<bool> indexes,
@@ -185,6 +182,14 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
   //! Indique si on affiche des messages pour chaque appel MPI.
   void setTraceMPIMessage(bool v) { m_is_trace = v; }
   bool isTraceMPIMessage() const { return m_is_trace; }
+
+  /*!
+   * \brief Indique si on vérifie les requêtes.
+   *
+   * Cette valeur ne doit être modifiée s'il y a des requêtes en cours.
+   */
+  void setCheckRequest(bool v);
+  bool isCheckRequest() const;
 
  public:
 

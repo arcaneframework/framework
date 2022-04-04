@@ -1,17 +1,15 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GhostLayerBuilder.cc                                        (C) 2000-2017 */
+/* GhostLayerBuilder.cc                                        (C) 2000-2021 */
 /*                                                                           */
 /* Construction des couches fantomes.                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/Iterator.h"
 #include "arcane/utils/ArgumentException.h"
@@ -35,6 +33,7 @@
 #include "arcane/Timer.h"
 #include "arcane/IItemFamilyPolicyMng.h"
 #include "arcane/IItemFamilySerializer.h"
+#include "arcane/ParallelMngUtils.h"
 
 #include "arcane/mesh/DynamicMesh.h"
 #include "arcane/mesh/GhostLayerBuilder.h"
@@ -45,18 +44,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 extern "C++" void
-_buildGhostLayerNewVersion(DynamicMesh* mesh,bool is_allocate);
+_buildGhostLayerNewVersion(DynamicMesh* mesh,bool is_allocate,Int32 version);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -104,9 +99,9 @@ addGhostLayers(bool is_allocate)
     info() << "Use ghost layer builder version 2";
     _addOneGhostLayerV2();
   }
-  else if (version==3){
-    info() << "Use GhostLayerBuilder with sort (version 3)";
-    _buildGhostLayerNewVersion(m_mesh,is_allocate);
+  else if (version==3 || version==4){
+    info() << "Use GhostLayerBuilder with sort (version " << version << ")";
+    _buildGhostLayerNewVersion(m_mesh,is_allocate,version);
   }
   else
     throw NotSupportedException(A_FUNCINFO,"Bad version number for addGhostLayer");
@@ -120,7 +115,7 @@ addGhostLayers(bool is_allocate)
 /*---------------------------------------------------------------------------*/
 
 void GhostLayerBuilder::
-_printItem(ItemInternal* ii,ostream& o)
+_printItem(ItemInternal* ii,std::ostream& o)
 {
   o << ItemPrinter(ii);
 }
@@ -306,8 +301,7 @@ _addOneGhostLayerV2()
 
   info() << "Number of shared faces: " << nb_sub_domain_boundary_face;
 
-  // Positionne la liste des envoies
-  ScopedPtrT<IParallelExchanger> exchanger(pm->createExchanger());
+  auto exchanger { ParallelMngUtils::createExchangerRef(pm) };
 
   if (!platform::getEnvironmentVariable("ARCANE_COLLECTIVE_GHOST_LAYER").null())
     exchanger->setExchangeMode(IParallelExchanger::EM_Collective);
@@ -405,7 +399,7 @@ _addOneGhostLayerV2()
     }
   }
 
-  exchanger = pm->createExchanger();
+  exchanger = ParallelMngUtils::createExchangerRef(pm);
   _exchangeData(exchanger.get(),boundary_infos_to_send);
   debug() << "END OF EXCHANGE";
 
@@ -476,7 +470,7 @@ _exchangeCells(HashTableMapT<Int32,SharedArray<Int32>>& cells_to_send,bool with_
   //TODO: fusionner avec GhostLayerBuilder2::_exchangeCells().
   typedef HashTableMapT<Int32,SharedArray<Int32>> SubDomainItemMap;
   IParallelMng* pm = m_mesh->parallelMng();
-  ScopedPtrT<IParallelExchanger> exchanger(pm->createExchanger());
+  auto exchanger { ParallelMngUtils::createExchangerRef(pm) };
   for( SubDomainItemMap::Enumerator i_map(cells_to_send); ++i_map; ){
     Int32 sd = i_map.data()->key();
     // TODO: items peut contenir des doublons et donc il faudrait les supprimer
@@ -538,7 +532,7 @@ addGhostChildFromParent()
   }
 
   // Positionne la liste des envoies
-  ScopedPtrT<IParallelExchanger> exchanger(pm->createExchanger());
+  auto exchanger { ParallelMngUtils::createExchangerRef(pm) };
   _exchangeData(exchanger.get(),boundary_infos_to_send);
 
   traceMng()->flush();
@@ -637,7 +631,7 @@ addGhostChildFromParent2(Array<Int64>& ghost_cell_to_refine)
   }
 
   // Positionne la liste des envoies
-  ScopedPtrT<IParallelExchanger> exchanger(pm->createExchanger());
+  auto exchanger { ParallelMngUtils::createExchangerRef(pm) };
   _exchangeData(exchanger.get(),boundary_infos_to_send);
 
   traceMng()->flush();
@@ -725,8 +719,7 @@ NodeUidToSubDomain(Int64 max_uid,Int32 nb_rank)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

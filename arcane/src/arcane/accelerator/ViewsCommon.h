@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -101,22 +101,76 @@ class DataViewSetter
     *m_ptr = (*m_ptr) + v;
   }
  public:
-  // TODO: étendre ces concepts à Real3x3 et Real2x2
+
   template<typename X = DataType,typename = std::enable_if_t<DataTypeTraitsT<X>::HasComponentX()> >
-  ARCCORE_HOST_DEVICE void setX(Real value)
+  ARCCORE_HOST_DEVICE void setX(typename DataTypeTraitsT<X>::ComponentType value)
   {
     m_ptr->x = value;
   }
   template<typename X = DataType,typename = std::enable_if_t<DataTypeTraitsT<X>::HasComponentY()> >
-  ARCCORE_HOST_DEVICE void setY(Real value)
+  ARCCORE_HOST_DEVICE void setY(typename DataTypeTraitsT<X>::ComponentType value)
   {
     m_ptr->y = value;
   }
   template<typename X = DataType,typename = std::enable_if_t<DataTypeTraitsT<X>::HasComponentZ()> >
-  ARCCORE_HOST_DEVICE void setZ(Real value)
+  ARCCORE_HOST_DEVICE void setZ(typename DataTypeTraitsT<X>::ComponentType value)
   {
     m_ptr->z = value;
   }
+
+  template<typename X = DataType,typename = std::enable_if_t<DataTypeTraitsT<X>::HasComponentXX()> >
+  ARCCORE_HOST_DEVICE void setXX(Real value)
+  {
+    m_ptr->x.x = value;
+  }
+  template<typename X = DataType,typename = std::enable_if_t<DataTypeTraitsT<X>::HasComponentYX()> >
+  ARCCORE_HOST_DEVICE void setYX(Real value)
+  {
+    m_ptr->y.x = value;
+  }
+  template<typename X = DataType,typename = std::enable_if_t<DataTypeTraitsT<X>::HasComponentZX()> >
+  ARCCORE_HOST_DEVICE void setZX(Real value)
+  {
+    m_ptr->z.x = value;
+  }
+
+  template<typename X = DataType,typename = std::enable_if_t<DataTypeTraitsT<X>::HasComponentXY()> >
+  ARCCORE_HOST_DEVICE void setXY(Real value)
+  {
+    m_ptr->x.y = value;
+  }
+  template<typename X = DataType,typename = std::enable_if_t<DataTypeTraitsT<X>::HasComponentYY()> >
+  ARCCORE_HOST_DEVICE void setYY(Real value)
+  {
+    m_ptr->y.y = value;
+  }
+  template<typename X = DataType,typename = std::enable_if_t<DataTypeTraitsT<X>::HasComponentZY()> >
+  ARCCORE_HOST_DEVICE void setZY(Real value)
+  {
+    m_ptr->z.y = value;
+  }
+
+  template<typename X = DataType,typename = std::enable_if_t<DataTypeTraitsT<X>::HasComponentXZ()> >
+  ARCCORE_HOST_DEVICE void setXZ(Real value)
+  {
+    m_ptr->x.z = value;
+  }
+  template<typename X = DataType,typename = std::enable_if_t<DataTypeTraitsT<X>::HasComponentYZ()> >
+  ARCCORE_HOST_DEVICE void setYZ(Real value)
+  {
+    m_ptr->y.z = value;
+  }
+  template<typename X = DataType,typename = std::enable_if_t<DataTypeTraitsT<X>::HasComponentZZ()> >
+  ARCCORE_HOST_DEVICE void setZZ(Real value)
+  {
+    m_ptr->z.z = value;
+  }
+  template<typename X = DataType,typename = std::enable_if_t<DataTypeTraitsT<X>::HasSubscriptOperator()> >
+  ARCCORE_HOST_DEVICE DataViewSetter<typename DataTypeTraitsT<X>::SubscriptType> operator[](Int32 index)
+  {
+    return DataViewSetter<typename DataTypeTraitsT<X>::SubscriptType>(& m_ptr->operator[](index) );
+  }
+
  private:
   DataType* m_ptr;
 };
@@ -160,6 +214,12 @@ class DataViewGetterSetter
   static ARCCORE_HOST_DEVICE AccessorReturnType build(DataType* ptr)
   {
     return AccessorReturnType(ptr);
+  }
+
+  template<typename X = DataType,typename = std::enable_if_t<DataTypeTraitsT<X>::HasSubscriptOperator()> >
+  ARCCORE_HOST_DEVICE DataViewGetterSetter<typename DataTypeTraitsT<X>::SubscriptType> operator[](Int32 index)
+  {
+    return DataViewGetterSetter<typename DataTypeTraitsT<X>::SubscriptType>(& m_ptr->operator[](index) );
   }
 };
 

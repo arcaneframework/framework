@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -10,6 +10,8 @@
 /* Module pour la miniapplication MiniWeather.                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#include "arcane/utils/MemoryRessource.h"
 
 #include "arcane/BasicModule.h"
 #include "arcane/ModuleFactory.h"
@@ -126,8 +128,15 @@ void MiniWeatherModule::
 init()
 {
   info() << "Begin of init";
-  options()->implementation()->init(options()->nbCellX(),
-                                    options()->nbCellZ(),options()->finalTime());
+  eMemoryRessource memory = eMemoryRessource::UnifiedMemory;
+  if (options()->useDeviceMemory()){
+    info() << "Using device memory";
+    memory = eMemoryRessource::Device;
+  }
+  info() << "MemoryRessource: " << memory;
+
+  options()->implementation()->init(acceleratorMng(),options()->nbCellX(),
+                                    options()->nbCellZ(),options()->finalTime(),memory,options()->useLeftLayout());
 }
 
 void MiniWeatherModule::
@@ -170,8 +179,10 @@ exit()
       double sv = reduced_values[ll];
       Real diff = math::abs((rv-sv)/rv);
       info() << "var=" << ll << " SUM=" << sv << " diff=" << diff;
-      if (!math::isNearlyEqualWithEpsilon(sv,rv,1e-13)){
-        ARCANE_FATAL("Bad value ref={0} v={1} var={2}",rv, sv, ll, diff);
+      // Il faut utiliser un epsilon assez élevé car les différences peuvent
+      // être importantes entre X64, ARM ou les GPU.
+      if (!math::isNearlyEqualWithEpsilon(sv,rv,1e-12)){
+        ARCANE_FATAL("Bad value ref={0} v={1} var={2} diff={3}",rv, sv, ll, diff);
       }
     }
   }

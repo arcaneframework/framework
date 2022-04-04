@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -131,9 +131,11 @@ class ApplicationBuildInfo::Impl
   Property<Int32> m_minimal_verbosity_level;
   Property<bool> m_is_master_has_output_file;
   Property<String> m_output_directory;
+  Property<String> m_thread_binding_strategy;
   UniqueArray<NameValuePair> m_values;
   ApplicationInfo m_app_info;
   CaseDatasetSource m_case_dataset_source;
+  String m_default_message_passing_service;
 
  public:
   /*!
@@ -321,6 +323,11 @@ setDefaultValues()
     if (!str.null())
       m_p->m_case_dataset_source.setFileName(str);
   }
+  {
+    String str = m_p->getValue( { "ARCANE_THREAD_BINDING_STRATEGY" }, "ThreadBindingStrategy",
+                                String() );
+    m_p->checkSet(m_p->m_thread_binding_strategy,str);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -344,9 +351,16 @@ setDefaultServices()
   }
   {
     String def_name = (has_shm) ? "Thread" : "Sequential";
-    String str = m_p->getValue( { "ARCANE_PARALLEL_SERVICE" }, "MessagePassingService", def_name );
-    String service_name = str+"ParallelSuperMng";
-    m_p->checkSet(m_p->m_message_passing_service,service_name);
+    String default_service_name = def_name+"ParallelSuperMng";
+    // Positionne la valeur par défaut si ce n'est pas déjà fait.
+    if (m_p->m_default_message_passing_service.null())
+      m_p->m_default_message_passing_service = default_service_name;
+
+    String str = m_p->getValue( { "ARCANE_PARALLEL_SERVICE" }, "MessagePassingService", String() );
+    if (!str.null()){
+      String service_name = str+"ParallelSuperMng";
+      m_p->checkSet(m_p->m_message_passing_service,service_name);
+    }
   }
 }
 
@@ -578,6 +592,21 @@ setOutputDirectory(const String& v)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+String ApplicationBuildInfo::
+threadBindingStrategy() const
+{
+  return m_p->m_thread_binding_strategy;
+}
+
+void ApplicationBuildInfo::
+threadBindingStrategy(const String& v)
+{
+  m_p->m_thread_binding_strategy = v;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void ApplicationBuildInfo::
 addParameter(const String& name,const String& value)
 {
@@ -685,6 +714,24 @@ void ApplicationBuildInfo::
 addDynamicLibrary(const String& lib_name)
 {
   m_p->m_app_info.addDynamicLibrary(lib_name);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ApplicationBuildInfo::
+internalSetDefaultMessagePassingService(const String& name)
+{
+  m_p->m_default_message_passing_service = name;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+String ApplicationBuildInfo::
+internalDefaultMessagePassingService() const
+{
+  return m_p->m_default_message_passing_service;
 }
 
 /*---------------------------------------------------------------------------*/

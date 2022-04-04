@@ -1,21 +1,17 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ExtraGhostItemsManager.cc                                   (C) 2000-2015 */
+/* ExtraGhostItemsManager.cc                                   (C) 2000-2021 */
 /*                                                                           */
 /* Construction des items fantômes supplémentaires.                          */
 /*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include <set>
-
-#include "ExtraGhostItemsManager.h"
+#include "arcane/mesh/ExtraGhostItemsManager.h"
 
 #include "arcane/utils/UtilsTypes.h"
 #include "arcane/utils/String.h"
@@ -23,12 +19,14 @@
 #include "arcane/IParallelMng.h"
 #include "arcane/IParallelExchanger.h"
 #include "arcane/ISerializeMessage.h"
+#include "arcane/ParallelMngUtils.h"
+
+#include <set>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-Arcane::mesh::ExtraGhostItemsManager::
+void Arcane::mesh::ExtraGhostItemsManager::
 computeExtraGhostItems()
 {
   const Integer nb_builder = m_builders.size();
@@ -45,7 +43,7 @@ computeExtraGhostItems()
 
   IParallelMng* pm = m_extra_ghost_items_adder->subDomain()->parallelMng();
 
-  ScopedPtrT<IParallelExchanger> exchanger(pm->createExchanger());
+  auto exchanger { ParallelMngUtils::createExchangerRef(pm) };
 
   const Integer nsd = m_extra_ghost_items_adder->subDomain()->nbSubDomain();
 

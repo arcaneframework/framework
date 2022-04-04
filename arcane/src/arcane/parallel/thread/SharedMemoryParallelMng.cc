@@ -1,17 +1,20 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SharedMemoryParallelMng.cc                                  (C) 2000-2020 */
+/* SharedMemoryParallelMng.cc                                  (C) 2000-2021 */
 /*                                                                           */
 /* Implémentation des messages en mode mémoire partagé.                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/parallel/thread/SharedMemoryParallelMng.h"
+
 #include "arcane/utils/NotImplementedException.h"
+#include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/Real2.h"
@@ -21,10 +24,10 @@
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/Array.h"
+#include "arcane/utils/ITraceMng.h"
 
 #include "arcane/parallel/IStat.h"
 
-#include "arcane/parallel/thread/SharedMemoryParallelMng.h"
 #include "arcane/parallel/thread/SharedMemoryParallelDispatch.h"
 #include "arcane/parallel/thread/ISharedMemoryMessageQueue.h"
 
@@ -33,13 +36,9 @@
 #include "arcane/IIOMng.h"
 #include "arcane/ISerializeMessageList.h"
 
-#include "arcane/impl/GetVariablesValuesParallelOperation.h"
-#include "arcane/impl/TransferValuesParallelOperation.h"
-#include "arcane/impl/ParallelExchanger.h"
 #include "arcane/impl/TimerMng.h"
-#include "arcane/impl/VariableSynchronizer.h"
-#include "arcane/impl/ParallelTopology.h"
 #include "arcane/impl/ParallelReplication.h"
+#include "arcane/impl/ParallelMngUtilsFactoryBase.h"
 
 #include "arcane/IItemFamily.h"
 
@@ -116,6 +115,7 @@ SharedMemoryParallelMng(const SharedMemoryParallelMngBuildInfo& build_info)
 , m_sub_builder_factory(build_info.sub_builder_factory)
 , m_parent_container_ref(build_info.container)
 , m_mpi_communicator(build_info.communicator)
+, m_utils_factory(makeRef<IParallelMngUtilsFactory>(new ParallelMngUtilsFactoryBase()))
 {
   if (!m_world_parallel_mng)
     m_world_parallel_mng = this;
@@ -210,22 +210,22 @@ _castSerializer(ISerializer* serializer)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IGetVariablesValuesParallelOperation*  SharedMemoryParallelMng::
+IGetVariablesValuesParallelOperation* SharedMemoryParallelMng::
 createGetVariablesValuesOperation()
 {
-  return new GetVariablesValuesParallelOperation(this);
+  return m_utils_factory->createGetVariablesValuesOperation(this)._release();
 }
 
 ITransferValuesParallelOperation* SharedMemoryParallelMng::
 createTransferValuesOperation()
 {
-  return new TransferValuesParallelOperation(this);
+  return m_utils_factory->createTransferValuesOperation(this)._release();
 }
 
 IParallelExchanger* SharedMemoryParallelMng::
 createExchanger()
 {
-  return new ParallelExchanger(this);
+  return m_utils_factory->createExchanger(this)._release();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -403,12 +403,7 @@ receiveSerializer(ISerializer* values,const PointToPointMessageInfo& message) ->
 IVariableSynchronizer* SharedMemoryParallelMng::
 createSynchronizer(IItemFamily* family)
 {
-  typedef DataTypeDispatchingDataVisitor<IVariableSynchronizeDispatcher> DispatcherType;
-
-  VariableSynchronizeDispatcherBuildInfo bi(this,nullptr);
-  auto vd = new VariableSynchronizerDispatcher(this,DispatcherType::create<VariableSynchronizeDispatcher>(bi));
-  
-  return new VariableSynchronizer(this,family->allItems(),vd);
+  return m_utils_factory->createSynchronizer(this,family)._release();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -417,13 +412,7 @@ createSynchronizer(IItemFamily* family)
 IVariableSynchronizer* SharedMemoryParallelMng::
 createSynchronizer(const ItemGroup& group)
 {
-  typedef DataTypeDispatchingDataVisitor<IVariableSynchronizeDispatcher> DispatcherType;
-
-  SharedPtrT<GroupIndexTable> table = group.localIdToIndex();
-  VariableSynchronizeDispatcherBuildInfo bi(this,table.get());
-  auto vd = new VariableSynchronizerDispatcher(this,DispatcherType::create<VariableSynchronizeDispatcher>(bi));
-  
-  return new VariableSynchronizer(this,group,vd);
+  return m_utils_factory->createSynchronizer(this,group)._release();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -432,9 +421,7 @@ createSynchronizer(const ItemGroup& group)
 IParallelTopology* SharedMemoryParallelMng::
 createTopology()
 {
-  ParallelTopology* t = new ParallelTopology(this);
-  t->initialize();
-  return t;
+  return m_utils_factory->createTopology(this)._release();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -566,6 +553,15 @@ PointToPointMessageInfo SharedMemoryParallelMng::
 buildMessage(Int32 dest,Parallel::eBlockingType blocking_mode)
 {
   return buildMessage({MessageRank(dest),blocking_mode});
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<IParallelMngUtilsFactory> SharedMemoryParallelMng::
+_internalUtilsFactory() const
+{
+  return m_utils_factory;
 }
 
 /*---------------------------------------------------------------------------*/

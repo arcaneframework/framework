@@ -7,7 +7,7 @@
  </arcane>
 
  <maillage>
-  <fichier>sod3d-misc.msh</fichier>
+  <fichier internal-partition='true'>sod3d-misc.msh</fichier>
  </maillage>
 
  <module-test-unitaire>
@@ -17,6 +17,5 @@
    <ecriture-msh>false</ecriture-msh>
   </test>
  </module-test-unitaire>
-
 
 </cas>

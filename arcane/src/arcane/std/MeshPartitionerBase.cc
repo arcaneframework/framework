@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -668,7 +668,7 @@ _cellsProjectWeights(VariableCellArrayReal& cellWgtIn, Int32 nbWgt) const
     if(m_filter_lid_cells[icell->localId()]==eCellClassical)
       for ( int i = 0 ; i < nbWgt ; ++i)
       cellWgtOut[m_local_id_2_local_id_compacted[icell->localId()]*nbWgt+i]
-        = cellWgtIn[icell][i];
+      = static_cast<float>(cellWgtIn[icell][i]);
   }
   for( auto& ptr : m_cells_with_constraints.range() ){
     RealUniqueArray w(nbWgt);

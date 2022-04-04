@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -111,7 +111,7 @@ class TimeHistoryTestModule
     void writeCurve(const TimeHistoryCurveInfo& infos) override
     {
       info() << "MY_CURVE=" << infos.name();
-      if (infos.name().len()==6){
+      if (infos.name().length()==6){
         String new_name = String("New") + infos.name();
         info() << "ADD_NEW_CURVE: " << new_name;
         m_thm->addValue(new_name,1.0);

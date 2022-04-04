@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -80,37 +80,35 @@ public:
  
   ConstArrayType operator[](const Item& i) const
   {
-    ARCANE_ASSERT((i.kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
+    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND(i);
     ARCANE_ASSERT((m_table.isUsed()),("GroupIndexTable expired"));
     const GroupIndexTable& table = *m_table;
     return this->m_view[table[i.localId()]]; 
   }
   ArrayType operator[](const Item& i)
   { 
-    ARCANE_ASSERT((i.kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
+    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND(i);
     ARCANE_ASSERT((m_table.isUsed()),("GroupIndexTable expired"));
     const GroupIndexTable& table = *m_table;
     return this->m_view[table[i.localId()]]; 
   }
   ConstArrayType operator[](const ItemGroupRangeIterator& i) const
   {
-    ARCANE_ASSERT((i.kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
+    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND(i);
     return this->m_view[i.index()];
   }
   ArrayType operator[](const ItemGroupRangeIterator& i)
   {
-    ARCANE_ASSERT((i.kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
+    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND(i);
     return this->m_view[i.index()];
   }
   ConstArrayType operator[](const ItemEnumerator& i) const
   {
-    ARCANE_ASSERT((i->kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
     ARCANE_CHECK_ENUMERATOR(i,this->itemGroup());
     return this->m_view[i.index()];
   }
   ArrayType operator[](const ItemEnumerator& i)
   {
-    ARCANE_ASSERT((i->kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
     ARCANE_CHECK_ENUMERATOR(i,this->itemGroup());
     return this->m_view[i.index()];
   }
@@ -143,7 +141,7 @@ class MeshPartialVariableArrayRefT
   typedef ConstArrayView<DataType> ConstReturnReferenceType;
   typedef ArrayView<DataType> ReturnReferenceType;
 
-public:
+ public:
 
   typedef ItemPartialVariableArrayRefT<DataType> BaseClass;
 
@@ -154,7 +152,7 @@ public:
   typedef ArrayView<DataType> ArrayType;
   typedef ConstArrayView<DataType> ConstArrayType;
 
-public:
+ public:
 
   //! Construit une référence à la variable spécifiée dans \a vb
   ARCANE_CORE_EXPORT MeshPartialVariableArrayRefT(const VariableBuildInfo& vb);
@@ -163,7 +161,7 @@ public:
   //! Positionne la référence de l'instance à la variable \a rhs.
   ARCANE_CORE_EXPORT void refersTo(const MeshPartialVariableArrayRefT<ItemType,DataType>& rhs);
   
-public:
+ public:
    
   ConstArrayType operator[](const ItemType& i) const
   {

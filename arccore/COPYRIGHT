@@ -1,0 +1,25 @@
+Intellectual Property Notice
+------------------------------
+
+Arccore is licensed under the Apache License, Version 2.0 (LICENSE-APACHE
+or http://www.apache.org/licenses/LICENSE-2.0).
+
+Written by CEA/IFPEN and Contributors
+
+(C) Copyright 2000-2022 CEA/IFPEN. All rights reserved.
+(C) CEA: Commissariat à l'Énergie Atomique et aux Énergies Alternatives
+    (https://www.cea.fr)
+(C) IPFEN: IFP Énergies Nouvelles 
+    (https://www.ifpenergiesnouvelles.com)
+
+All content is the property of the respective authors or their employers.
+
+Copyrights and patents in the Arccore project are retained by contributors.
+No copyright assignment is required to contribute to Arccore.
+
+SPDX usage
+------------
+
+Individual files contain SPDX tags instead of the full license text.
+This enables machine processing of license information based on the SPDX
+License Identifiers that are available here: https://spdx.org/licenses/

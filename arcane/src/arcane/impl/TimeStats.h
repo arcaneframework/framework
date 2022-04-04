@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -128,7 +128,7 @@ class TimeStats
 
  public:
 
-  void dumpStats(ostream& ostr,bool is_verbose,Real nb,
+  void dumpStats(std::ostream& ostr,bool is_verbose,Real nb,
                  const String& name,bool use_elapsed_time) override;
   void dumpCurrentStats(const String& action) override;
 
@@ -159,7 +159,7 @@ class TimeStats
   Action* m_current_action = nullptr;
   std::stack<eTimePhase> m_phases_type;
   bool m_need_compute_elapsed_time = false;
-  ostringstream m_full_stats_str;
+  std::ostringstream m_full_stats_str;
   bool m_full_stats;
   String m_name;
   ITimeMetricCollector* m_metric_collector = nullptr;
@@ -170,8 +170,8 @@ class TimeStats
   PhaseValue _currentPhaseValue();
   void _checkGathering();
   void _computeCumulativeTimes();
-  void _dumpCumulativeTime(ostream& ostr,Action& action,eTimePhase tp,eTimeType tt);
-  void _dumpAllPhases(ostream& ostr,Action& action,eTimeType tt,int tc,Real nb);
+  void _dumpCumulativeTime(std::ostream& ostr,Action& action,eTimePhase tp,eTimeType tt);
+  void _dumpAllPhases(std::ostream& ostr,Action& action,eTimeType tt,int tc,Real nb);
 };
 
 /*---------------------------------------------------------------------------*/

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* FaceUniqueIdBuilder.cc                                      (C) 2000-2020 */
+/* FaceUniqueIdBuilder.cc                                      (C) 2000-2021 */
 /*                                                                           */
 /* Construction des indentifiants uniques des faces.                         */
 /*---------------------------------------------------------------------------*/
@@ -19,14 +19,16 @@
 
 #include "arcane/mesh/DynamicMesh.h"
 #include "arcane/mesh/OneMeshItemAdder.h"
-#include "arcane/mesh/FaceUniqueIdBuilder.h"
 #include "arcane/mesh/GhostLayerBuilder.h"
+#include "arcane/mesh/FaceUniqueIdBuilder.h"
 #include "arcane/mesh/ItemTools.h"
 
+#include "arcane/IMeshUniqueIdMng.h"
 #include "arcane/IParallelExchanger.h"
 #include "arcane/IParallelMng.h"
 #include "arcane/ISerializeMessage.h"
 #include "arcane/ISerializer.h"
+#include "arcane/ParallelMngUtils.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -39,6 +41,8 @@ namespace Arcane::mesh
 
 extern "C++" void
 _FaceUiDBuilderComputeNewVersion(DynamicMesh* mesh);
+extern "C++" void
+arcaneComputeCartesianFaceUniqueId(DynamicMesh* mesh);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -67,26 +71,32 @@ computeFacesUniqueIds()
 {
   IParallelMng* pm = m_mesh->parallelMng();
   Real begin_time = platform::getRealTime();
+  Integer face_version = m_mesh->meshUniqueIdMng()->faceBuilderVersion();
+  bool is_parallel = pm->isParallel();
+  info() << "Using version=" << face_version << " to compute faces unique ids"
+         << " mesh=" << m_mesh->name() << " is_parallel=" << is_parallel;
 
-  bool use_new_algo = false;
-  if (!platform::getEnvironmentVariable("ARCANE_NEW_MESHINIT2").null())
-    use_new_algo = true;
+  if (face_version>4 || face_version<0)
+    ARCANE_FATAL("Invalid value '{0}' for compute face unique ids versions: v>=0 && v<=4");
 
-  if (use_new_algo){
+  if (face_version==4)
+    arcaneComputeCartesianFaceUniqueId(m_mesh);
+  else if (face_version==3)
     _FaceUiDBuilderComputeNewVersion(m_mesh);
-  }
   else{
-    if (pm->isParallel()){
-      if (!platform::getEnvironmentVariable("ARCANE_NEW_MESHINIT").null()){
+    if (is_parallel){
+      if (face_version==2){
         //PAS ENCORE PAR DEFAUT
         info() << "Use new mesh init in FaceUniqueIdBuilder";
-        _computeFacesUniqueIdsParallel3();
+        _computeFacesUniqueIdsParallelV2();
       }
-      else
-        _computeFacesUniqueIdsParallel2(); // Vieille version
+      else{
+        // Version par défaut.
+        _computeFacesUniqueIdsParallelV1();
+      }
     }
     else{
-      if (!platform::getEnvironmentVariable("ARCANE_NO_FACE_RENUMBER").null()){
+      if (face_version==0){
         pwarning() << "No face renumbering";
         return;
       }
@@ -98,17 +108,44 @@ computeFacesUniqueIds()
   Real diff = (Real)(end_time - begin_time);
   info() << "TIME to compute face unique ids=" << diff;
 
+  _checkNoDuplicate();
+
   ItemInternalMap& faces_map = m_mesh->facesMap();
 
   // Il faut ranger à nouveau #m_faces_map car les uniqueId() des
   // faces ont été modifiés
   m_mesh->faceFamily()->notifyItemsUniqueIdChanged();
-  if (m_mesh_builder->isVerbose()){
+
+  bool is_verbose = m_mesh_builder->isVerbose();
+  if (is_verbose){
     info() << "NEW FACES_MAP after re-indexing";
     ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,faces_map){
       ItemInternal* face = nbid->value();
       info() << "Face uid=" << face->uniqueId() << " lid=" << face->localId();
     }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vérifie qu'on n'a pas deux fois le même uniqueId().
+ */
+void FaceUniqueIdBuilder::
+_checkNoDuplicate()
+{
+  info() << "Check no duplicate face uniqueId";
+  ItemInternalMap& faces_map = m_mesh->facesMap();
+  std::map<ItemUniqueId,ItemInternal*> checked_faces_map;
+  ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,faces_map){
+    ItemInternal* face = nbid->value();
+    ItemUniqueId uid = face->uniqueId();
+    auto p = checked_faces_map.find(uid);
+    if (p!=checked_faces_map.end()){
+      pwarning() << "Duplicate Face UniqueId=" << uid;
+      ARCANE_FATAL("Duplicate Face uniqueId={0}",uid);
+    }
+    checked_faces_map.insert(std::make_pair(uid,face));
   }
 }
 
@@ -168,7 +205,7 @@ class T_CellFaceInfo
   chaque face et ce pour équilibrer les coms.
 */  
 void FaceUniqueIdBuilder::
-_computeFacesUniqueIdsParallel2()
+_computeFacesUniqueIdsParallelV1()
 {
   IParallelMng* pm = m_mesh->parallelMng();
   Integer my_rank = pm->commRank();
@@ -216,7 +253,7 @@ _computeFacesUniqueIdsParallel2()
   // - son indice dans sa maille
   // Cette liste sera ensuite envoyée à tous les sous-domaines.
   {
-    ItemTypeMng* itm = ItemTypeMng::singleton();
+    ItemTypeMng* itm = m_mesh->itemTypeMng();
 
     UniqueArray<ItemInternal*> faces;
 
@@ -481,9 +518,18 @@ _computeFacesUniqueIdsParallel2()
     }
   }
 
-  for( Integer i=0, is=nb_local_face; i<is; ++i ){
-    if (faces_new_uid[i]==NULL_ITEM_UNIQUE_ID)
-      error() << "The face lid=" << i << " has not been re-indexed.";
+  // Vérifie que toutes les faces ont été réindéxées
+  {
+    Integer nb_error = 0;
+    for( Integer i=0, is=nb_local_face; i<is; ++i ){
+      if (faces_new_uid[i]==NULL_ITEM_UNIQUE_ID){
+        ++nb_error;
+        if (nb_error<10)
+          error() << "The face lid=" << i << " has not been re-indexed.";
+      }
+    }
+    if (nb_error!=0)
+      ARCANE_FATAL("Some ({0}) faces have not been reindexed",nb_error);
   }
 
   if (is_verbose){
@@ -534,7 +580,7 @@ _computeFacesUniqueIdsParallel2()
     info() << ostr.str();
     String file_name("faces_uid.");
     file_name = file_name + my_rank;    
-    ofstream ofile(file_name.localstr());
+    std::ofstream ofile(file_name.localstr());
     ofile << ostr.str();
   }
 }
@@ -626,7 +672,7 @@ class ItemInfoMultiList
   été mise en service et est maintenant remplacée par ...
 */ 
 void FaceUniqueIdBuilder::
-_computeFacesUniqueIdsParallel3()
+_computeFacesUniqueIdsParallelV2()
 {
   IParallelMng* pm = m_mesh->parallelMng();
   Integer my_rank = pm->commRank();
@@ -669,7 +715,7 @@ _computeFacesUniqueIdsParallel3()
   // - le propriétaire de sa maille
   // - son indice dans sa maille
   // Cette liste sera ensuite envoyée à tous les sous-domaines.
-  ItemTypeMng* itm = ItemTypeMng::singleton();
+  ItemTypeMng* itm = m_mesh->itemTypeMng();
 
   // Détermine le unique id max des noeuds
   Int64 my_max_node_uid = NULL_ITEM_UNIQUE_ID;
@@ -734,7 +780,7 @@ _computeFacesUniqueIdsParallel3()
   }
 
   // Positionne la liste des envoies
-  ScopedPtrT<IParallelExchanger> exchanger(pm->createExchanger());
+  Ref<IParallelExchanger> exchanger{ParallelMngUtils::createExchangerRef(pm)};
   _exchangeData(exchanger.get(),boundary_infos_to_send);
 
   {
@@ -823,7 +869,8 @@ _computeFacesUniqueIdsParallel3()
       my_max_face_node = math::max(node_nb_face,my_max_face_node);
     }
   }
-  exchanger = pm->createExchanger();
+  exchanger = ParallelMngUtils::createExchangerRef(pm);
+
   _exchangeData(exchanger.get(),boundary_infos_to_send);
   {
     Integer nb_receiver = exchanger->nbReceiver();

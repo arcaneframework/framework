@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -69,27 +69,27 @@ class ItemVectorViewConstIterator
   {
     return this->m_index - b.m_index;
   }
-  ThatClass operator-(difference_type v) const
+  friend ThatClass operator-(const ThatClass& a,difference_type v)
   {
-    Integer index = m_index - v;
-    return ThatClass(m_items,m_local_ids,index);
+    Integer index = a.m_index - v;
+    return ThatClass(a.m_items,a.m_local_ids,index);
   }
-  ThatClass operator+(difference_type v) const
+  friend ThatClass operator+(const ThatClass& a,difference_type v)
   {
-    Integer index = m_index + v;
-    return ThatClass(m_items,m_local_ids,index);
+    Integer index = a.m_index + v;
+    return ThatClass(a.m_items,a.m_local_ids,index);
   }
-  bool operator<(const ThatClass& rhs) const
+  friend bool operator<(const ThatClass& lhs,const ThatClass& rhs)
   {
-    return m_index<=rhs.m_index;
+    return lhs.m_index<=rhs.m_index;
   }
-  bool operator==(const ThatClass& rhs)
+  friend bool operator==(const ThatClass& lhs,const ThatClass& rhs)
   {
-    return m_items==rhs.m_items && m_local_ids==rhs.m_local_ids && m_index==rhs.m_index;
+    return lhs.m_items==rhs.m_items && lhs.m_local_ids==rhs.m_local_ids && lhs.m_index==rhs.m_index;
   }
-  bool operator!=(const ThatClass& rhs)
+  friend bool operator!=(const ThatClass& lhs,const ThatClass& rhs)
   {
-    return !(this->operator==(rhs));
+    return !(lhs==rhs);
   }
  protected:
   const ItemInternalPtr* m_items;

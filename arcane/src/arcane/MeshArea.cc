@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -96,8 +96,6 @@ Integer MeshArea::nbItem(eItemKind ik)
   case IK_Face: return nbFace();
   case IK_Cell: return nbCell();
   case IK_Particle:
-  case IK_DualNode:
-  case IK_Link:
   case IK_DoF:
   case IK_Unknown:
     break;
@@ -120,8 +118,6 @@ ItemGroup MeshArea::allItems(eItemKind ik)
   case IK_Face: return allFaces();
   case IK_Cell: return allCells();
   case IK_Particle:
-  case IK_Link:
-  case IK_DualNode:
   case IK_DoF:
   case IK_Unknown:
     break;
@@ -144,8 +140,6 @@ ItemGroup MeshArea::ownItems(eItemKind ik)
   case IK_Face: return ownFaces();
   case IK_Cell: return ownCells();
   case IK_Particle:
-  case IK_DualNode:
-  case IK_Link:
   case IK_DoF:
   case IK_Unknown:
     break;

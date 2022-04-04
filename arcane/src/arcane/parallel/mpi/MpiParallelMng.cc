@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -42,17 +42,16 @@
 #include "arcane/parallel/mpi/MpiSerializeMessage.h"
 #include "arcane/parallel/mpi/MpiParallelNonBlockingCollective.h"
 #include "arcane/parallel/mpi/MpiVariableSynchronizeDispatcher.h"
+#include "arcane/parallel/mpi/MpiDirectSendrecvVariableSynchronizeDispatcher.h"
+#include "arcane/parallel/mpi/MpiLegacyVariableSynchronizeDispatcher.h"
 #include "arcane/parallel/mpi/MpiDatatype.h"
 
 #include "arcane/SerializeMessage.h"
 
-#include "arcane/impl/GetVariablesValuesParallelOperation.h"
-#include "arcane/impl/TransferValuesParallelOperation.h"
-#include "arcane/impl/ParallelExchanger.h"
 #include "arcane/impl/VariableSynchronizer.h"
-#include "arcane/impl/ParallelTopology.h"
 #include "arcane/impl/ParallelReplication.h"
 #include "arcane/impl/SequentialParallelMng.h"
+#include "arcane/impl/ParallelMngUtilsFactoryBase.h"
 
 #include "arccore/message_passing_mpi/MpiMessagePassingMng.h"
 #include "arccore/message_passing_mpi/MpiRequestList.h"
@@ -108,6 +107,76 @@ MpiParallelMngBuildInfo(MPI_Comm comm)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class MpiParallelMngUtilsFactory
+: public ParallelMngUtilsFactoryBase
+{
+ public:
+  MpiParallelMngUtilsFactory()
+    : m_synchronizer_version(1)
+  {
+    if (platform::getEnvironmentVariable("ARCANE_SYNCHRONIZE_VERSION")=="2")
+      m_synchronizer_version = 2;
+    if (platform::getEnvironmentVariable("ARCANE_SYNCHRONIZE_VERSION")=="3")
+      m_synchronizer_version = 3;
+  }
+ public:
+  Ref<IVariableSynchronizer> createSynchronizer(IParallelMng* pm,IItemFamily* family) override
+  {
+    MpiParallelMng* mpi_pm = ARCANE_CHECK_POINTER(dynamic_cast<MpiParallelMng*>(pm));
+    typedef DataTypeDispatchingDataVisitor<IVariableSynchronizeDispatcher> DispatcherType;
+    VariableSynchronizerDispatcher* vd = nullptr;
+
+    if (m_synchronizer_version == 2){
+      pm->traceMng()->info() << "Using MpiSynchronizer V2";
+      MpiVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,nullptr);
+      vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiVariableSynchronizeDispatcher>(bi));
+    }
+    else if (m_synchronizer_version == 3){
+      pm->traceMng()->info() << "Using MpiSynchronizer V3";
+      MpiDirectSendrecvVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,nullptr);
+      vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiDirectSendrecvVariableSynchronizeDispatcher>(bi));
+    }
+    else{
+      MpiLegacyVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,nullptr);
+      vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiLegacyVariableSynchronizeDispatcher>(bi));
+    }
+
+    return makeRef<IVariableSynchronizer>(new VariableSynchronizer(pm,family->allItems(),vd));
+  }
+
+  Ref<IVariableSynchronizer> createSynchronizer(IParallelMng* pm,const ItemGroup& group) override
+  {
+    MpiParallelMng* mpi_pm = ARCANE_CHECK_POINTER(dynamic_cast<MpiParallelMng*>(pm));
+    typedef DataTypeDispatchingDataVisitor<IVariableSynchronizeDispatcher> DispatcherType;
+    SharedPtrT<GroupIndexTable> table = group.localIdToIndex();
+    VariableSynchronizerDispatcher* vd = nullptr;
+
+    if (m_synchronizer_version == 2){
+      pm->traceMng()->info() << "Using MpiSynchronizer V2";
+      MpiVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table.get());
+      vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiVariableSynchronizeDispatcher>(bi));
+    }
+    else if (m_synchronizer_version == 3 ){
+      pm->traceMng()->info() << "Using MpiSynchronizer V3";
+      MpiDirectSendrecvVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table.get());
+      vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiDirectSendrecvVariableSynchronizeDispatcher>(bi));
+    }
+    else{
+      MpiLegacyVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table.get());
+      vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiLegacyVariableSynchronizeDispatcher>(bi));
+    }
+    return makeRef<IVariableSynchronizer>(new VariableSynchronizer(pm,group,vd));
+  }
+ private:
+  Integer m_synchronizer_version = 1;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 MpiParallelMng::
 MpiParallelMng(const MpiParallelMngBuildInfo& bi)
 : ParallelMngDispatcher(ParallelMngDispatcherBuildInfo(bi.dispatchers(),bi.messagePassingMng()))
@@ -129,6 +198,7 @@ MpiParallelMng(const MpiParallelMngBuildInfo& bi)
 , m_is_communicator_owned(bi.is_mpi_comm_owned)
 , m_mpi_lock(bi.mpi_lock)
 , m_non_blocking_collective(nullptr)
+, m_utils_factory(makeRef<IParallelMngUtilsFactory>(new MpiParallelMngUtilsFactory()))
 {
   if (!m_world_parallel_mng){
     m_trace->debug()<<"[MpiParallelMng] No m_world_parallel_mng found, reverting to ourselves!";
@@ -259,6 +329,13 @@ build()
   m_non_blocking_collective->build();
   if (m_mpi_lock)
     m_trace->info() << "Using mpi with locks.";
+
+  // Pour l'instant (avril 2020) on laisse l'implémentation historique le
+  // temps de valider l'ancienne.
+  if (platform::getEnvironmentVariable("ARCANE_SYNCHRONIZE_LIST_VERSION")=="2"){
+    m_use_serialize_list_v2 = true;
+    m_trace->info() << "Using MPI SerializeList version 2";
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -306,30 +383,6 @@ _castSerializer(ISerializer* serializer)
     ARCANE_THROW(ArgumentException,"Can not cast 'ISerializer' to 'SerializeBuffer'");
   return sbuf;
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-IGetVariablesValuesParallelOperation* MpiParallelMng::
-createGetVariablesValuesOperation()
-{
-  return new GetVariablesValuesParallelOperation(this);
-}
-
-ITransferValuesParallelOperation* MpiParallelMng::
-createTransferValuesOperation()
-{
-  return new TransferValuesParallelOperation(this);
-}
-
-IParallelExchanger* MpiParallelMng::
-createExchanger()
-{
-  return new ParallelExchanger(this);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -541,12 +594,36 @@ _waitSomeRequests(ArrayView<Request> requests, bool is_non_blocking)
 ISerializeMessageList* MpiParallelMng::
 _createSerializeMessageList()
 {
-  // Pour l'instant (avril 2020) on laisse l'implémentation historique le
-  // temps de valider l'ancienne.
-  bool do_new = false;
-  if (do_new)
+  if (m_use_serialize_list_v2)
     return new MP::internal::SerializeMessageList(messagePassingMng());
   return new MpiSerializeMessageList(serializeDispatcher());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IGetVariablesValuesParallelOperation* MpiParallelMng::
+createGetVariablesValuesOperation()
+{
+  return m_utils_factory->createGetVariablesValuesOperation(this)._release();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ITransferValuesParallelOperation* MpiParallelMng::
+createTransferValuesOperation()
+{
+  return m_utils_factory->createTransferValuesOperation(this)._release();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IParallelExchanger* MpiParallelMng::
+createExchanger()
+{
+  return m_utils_factory->createExchanger(this)._release();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -555,10 +632,7 @@ _createSerializeMessageList()
 IVariableSynchronizer* MpiParallelMng::
 createSynchronizer(IItemFamily* family)
 {
-  typedef DataTypeDispatchingDataVisitor<IVariableSynchronizeDispatcher> DispatcherType;
-  MpiVariableSynchronizeDispatcherBuildInfo bi(this,nullptr);
-  auto vd = new VariableSynchronizerDispatcher(this,DispatcherType::create<MpiVariableSynchronizeDispatcher>(bi));
-  return new VariableSynchronizer(this,family->allItems(),vd);
+  return m_utils_factory->createSynchronizer(this,family)._release();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -567,11 +641,7 @@ createSynchronizer(IItemFamily* family)
 IVariableSynchronizer* MpiParallelMng::
 createSynchronizer(const ItemGroup& group)
 {
-  typedef DataTypeDispatchingDataVisitor<IVariableSynchronizeDispatcher> DispatcherType;
-  SharedPtrT<GroupIndexTable> table = group.localIdToIndex();
-  MpiVariableSynchronizeDispatcherBuildInfo bi(this,table.get());
-  auto vd = new VariableSynchronizerDispatcher(this,DispatcherType::create<MpiVariableSynchronizeDispatcher>(bi));
-  return new VariableSynchronizer(this,group,vd);
+  return m_utils_factory->createSynchronizer(this,group)._release();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -580,9 +650,7 @@ createSynchronizer(const ItemGroup& group)
 IParallelTopology* MpiParallelMng::
 createTopology()
 {
-  ParallelTopology* t = new ParallelTopology(this);
-  t->initialize();
-  return t;
+  return m_utils_factory->createTopology(this)._release();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -677,6 +745,15 @@ createRequestListRef()
 {
   IRequestList* x = new RequestList(this);
   return makeRef(x);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<IParallelMngUtilsFactory> MpiParallelMng::
+_internalUtilsFactory() const
+{
+  return m_utils_factory;
 }
 
 /*---------------------------------------------------------------------------*/

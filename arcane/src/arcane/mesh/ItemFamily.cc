@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -18,6 +18,7 @@
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/ArgumentException.h"
+#include "arcane/utils/CheckedConvert.h"
 
 #include "arcane/IParallelMng.h"
 #include "arcane/ISubDomain.h"
@@ -35,9 +36,11 @@
 #include "arcane/ItemInternalSortFunction.h"
 #include "arcane/Properties.h"
 #include "arcane/ItemFamilyCompactInfos.h"
+#include "arcane/IMeshMng.h"
 #include "arcane/IMeshCompacter.h"
 #include "arcane/IMeshCompactMng.h"
 #include "arcane/MeshPartInfo.h"
+#include "arcane/ParallelMngUtils.h"
 #include "arcane/core/internal/IDataInternal.h"
 
 #include "arcane/datatype/IDataOperation.h"
@@ -148,7 +151,6 @@ ItemFamily(IMesh* mesh,eItemKind ik,const String& name)
 , m_need_prepare_dump(true)
 , m_item_internal_list(mesh->meshItemInternalList())
 , m_item_shared_infos(new ItemSharedInfoList(this))
-, m_variable_synchronizer(nullptr)
 , m_current_variable_item_size(0)
 , m_item_sort_function(nullptr)
 , m_local_connectivity_info(nullptr)
@@ -166,8 +168,6 @@ ItemFamily(IMesh* mesh,eItemKind ik,const String& name)
 , m_item_need_prepare_dump(false)
 , m_nb_allocate_info(0)
 , m_topology_modifier(nullptr)
-, m_use_legacy_connectivity_policy(false)
-, m_has_legacy_connectivity(true)
 {
   m_item_connectivity_list.m_items = mesh->meshItemInternalList();
   m_infos.setItemFamily(this);
@@ -190,7 +190,6 @@ ItemFamily::
   delete m_local_connectivity_info;
   delete m_global_connectivity_info;
   delete m_item_sort_function;
-  delete m_variable_synchronizer;
   delete m_internal_variables;
   delete m_item_shared_infos;
 
@@ -227,15 +226,6 @@ build()
     m_topology_modifier = new AbstractItemFamilyTopologyModifier(this);
 
   m_full_name = m_mesh->name() + "_" + m_name;
-
-  InternalConnectivityPolicy icp = mesh()->_connectivityPolicy();
-  bool want_legacy_connectivity_policy = (icp==InternalConnectivityPolicy::LegacyAndAllocAccessor) ||
-                                         (icp==InternalConnectivityPolicy::LegacyAndNew);
-  if (want_legacy_connectivity_policy)
-    ARCANE_FATAL("Legacy internal connectivity is no longer supported for this family");
-
-  m_has_legacy_connectivity = (icp!=InternalConnectivityPolicy::NewOnly);
-  m_item_shared_infos->setHasLegacyConnectivity(m_has_legacy_connectivity);
 
   m_local_connectivity_info = new ItemConnectivityInfo();
   m_global_connectivity_info = new ItemConnectivityInfo();
@@ -287,7 +277,7 @@ build()
                           &ItemFamily::_notifyDataIndexChanged,
                           m_internal_variables->m_items_data.variable()->readObservable());
 
-  m_variable_synchronizer = pm->createSynchronizer(this);
+  m_variable_synchronizer = ParallelMngUtils::createSynchronizerRef(pm,this);
 
   m_item_sort_function = _defaultItemSortFunction();
 }
@@ -404,9 +394,6 @@ void ItemFamily::
 checkValidConnectivity()
 {
   _checkValidConnectivity();
-  for( ItemConnectivitySelector* ics : m_connectivity_selector_list ){
-    _checkSameConnectivity(ics->legacyConnectivity(),ics->customConnectivity());
-  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -755,16 +742,17 @@ createGroup(const String& name,const ItemGroup& parent,bool do_override)
 void ItemFamily::
 destroyGroups()
 {
+  _invalidateComputedGroups();
   ItemGroupList current_groups(m_item_groups.clone());
   m_item_groups.clear();
   for( ItemGroupList::Enumerator i(current_groups); ++i; ){
     ItemGroup group(*i);
-    if (group.isAllItems()){
+    if (group.isAllItems())
       m_item_groups.add(group);
-    }
     else
       group.internal()->destroy();
   }
+  allItems().internal()->destroy();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1077,8 +1065,9 @@ readFromDump()
 
   // Données de liaison de famille
   {
+    IMeshMng* mesh_mng = m_mesh->meshMng();
     if (!m_internal_variables->m_parent_mesh_name().null()) {
-      IMesh * parent_mesh = subDomain()->findMesh(m_internal_variables->m_parent_mesh_name());
+      IMesh* parent_mesh = mesh_mng->findMeshHandle(m_internal_variables->m_parent_mesh_name()).mesh();
       m_parent_family = parent_mesh->findItemFamily(m_internal_variables->m_parent_family_name(),true); // true=> fatal si non trouvé
     }
     m_parent_family_depth = m_internal_variables->m_parent_family_depth();
@@ -1086,7 +1075,7 @@ readFromDump()
                   ("Incompatible child mesh/family sizes"));
     Integer child_count = m_internal_variables->m_child_families_name.size();
     for(Integer i=0;i<child_count;++i) {
-      IMesh * child_mesh = subDomain()->findMesh(m_internal_variables->m_child_meshes_name[i]);
+      IMesh* child_mesh = mesh_mng->findMeshHandle(m_internal_variables->m_child_meshes_name[i]).mesh();
       IItemFamily * child_family = child_mesh->findItemFamily(m_internal_variables->m_child_families_name[i],true); // true=> fatal si non trouvé
       m_child_families.add(dynamic_cast<ItemFamily*>(child_family));
     }
@@ -1660,58 +1649,9 @@ _allocMany(Integer memory)
 /*---------------------------------------------------------------------------*/
 
 ItemSharedInfo* ItemFamily::
-_findSharedInfo(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,Integer nb_cell)
+_findSharedInfo(ItemTypeInfo* type)
 {
-  return _findSharedInfo(type,nb_edge,nb_face,nb_cell,nb_edge,nb_face,nb_cell);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ItemSharedInfo* ItemFamily::
-_findSharedInfo(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,Integer nb_cell,
-                Integer edge_allocated,Integer face_allocated,Integer cell_allocated)
-{
-  if (!m_has_legacy_connectivity){
-    nb_edge = nb_face = nb_cell = 0;
-    edge_allocated = face_allocated = cell_allocated = 0;
-  }
-  ItemSharedInfo* isi = m_item_shared_infos->findSharedInfo(type,nb_edge,nb_face,nb_cell,
-                                                            edge_allocated,face_allocated,cell_allocated);
-  isi->_setInfos(m_items_data->data());
-  return isi;
-}
-//! AMR
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ItemSharedInfo* ItemFamily::
-_findSharedInfo(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,Integer nb_cell,
-		        Integer nb_hParent, Integer nb_hChildren)
-{
-  return _findSharedInfo(type,nb_edge,nb_face,nb_cell,nb_hParent,nb_hChildren,
-                         nb_edge,nb_face,nb_cell,nb_hParent,nb_hChildren);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ItemSharedInfo* ItemFamily::
-_findSharedInfo(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,Integer nb_cell,
-                Integer nb_hParent, Integer nb_hChildren,
-                Integer edge_allocated,Integer face_allocated,Integer cell_allocated,
-                Integer hParent_allocated,Integer hChild_allocated)
-{
-  if (!m_has_legacy_connectivity){
-    nb_edge = nb_face = nb_cell = 0;
-    edge_allocated = face_allocated = cell_allocated = 0;
-    nb_hParent = nb_hChildren = 0;
-    hParent_allocated = hChild_allocated = 0;
-  }
-  auto x = m_item_shared_infos;
-  auto* isi = x->findSharedInfo(type,nb_edge,nb_face,nb_cell,nb_hParent,nb_hChildren,
-                                edge_allocated,face_allocated,cell_allocated,
-                                hParent_allocated, hChild_allocated);
+  ItemSharedInfo* isi = m_item_shared_infos->findSharedInfo(type);
   isi->_setInfos(m_items_data->data());
   return isi;
 }
@@ -1733,45 +1673,11 @@ _copyInfos(ItemInternal* item,ItemSharedInfo* old_isi,ItemSharedInfo* new_isi)
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-_updateSharedInfoAdded(ItemInternal* item,Integer nb_added_edge,Integer nb_added_face,
-                       Integer nb_added_cell)
+_updateSharedInfoAdded(ItemInternal* item)
 {
   ItemSharedInfo* old_isi = item->sharedInfo();
-  Integer nb_edge = old_isi->nbEdge();
-  Integer nb_face = old_isi->nbFace();
-  Integer nb_cell = old_isi->nbCell();
-  Integer edge_allocated = old_isi->edgeAllocated();
-  Integer face_allocated = old_isi->faceAllocated();
-  Integer cell_allocated = old_isi->cellAllocated();
-  Integer new_nb_edge = nb_edge + nb_added_edge;
-  Integer new_nb_face = nb_face + nb_added_face;
-  Integer new_nb_cell = nb_cell + nb_added_cell;
-  bool need_copy = false;
-  if (new_nb_edge>edge_allocated){
-    edge_allocated += edge_allocated / 2;
-    if (edge_allocated<new_nb_edge)
-      edge_allocated = new_nb_edge;
-    need_copy = true;
-  }
-  if (new_nb_face>face_allocated){
-    face_allocated += face_allocated / 2;
-    if (face_allocated<new_nb_face)
-      face_allocated = new_nb_face;
-    need_copy = true;
-  }
-  if (new_nb_cell>cell_allocated){
-    cell_allocated += cell_allocated / 2;
-    if (cell_allocated<new_nb_cell)
-      cell_allocated = new_nb_cell;
-    need_copy = true;
-  }
-
-  ItemSharedInfo* new_isi = _findSharedInfo(old_isi->m_item_type,new_nb_edge,new_nb_face,new_nb_cell,
-                                            edge_allocated,face_allocated,cell_allocated);
-  if (need_copy)
-    _copyInfos(item,old_isi,new_isi);
-  else
-    _setSharedInfosNoCopy(item,new_isi);
+  ItemSharedInfo* new_isi = _findSharedInfo(old_isi->m_item_type);
+  _setSharedInfosNoCopy(item,new_isi);
 
   m_need_prepare_dump = true;
   new_isi->addReference();
@@ -1782,28 +1688,13 @@ _updateSharedInfoAdded(ItemInternal* item,Integer nb_added_edge,Integer nb_added
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-_updateSharedInfoRemoved(ItemInternal* item,Integer nb_removed_edge,
-                         Integer nb_removed_face,Integer nb_removed_cell)
+_updateSharedInfoRemoved4(ItemInternal* item)
 {
+  // TODO: regarder pourquoi _updateSharedInfoRemoved7() n'a pas le même code.
   m_need_prepare_dump = true;
-  if (!m_has_legacy_connectivity){
-    nb_removed_edge = nb_removed_face = nb_removed_cell = 0;
-  }
+
   ItemSharedInfo* old_isi = item->sharedInfo();
-  Integer nb_edge = old_isi->nbEdge();
-  Integer nb_face = old_isi->nbFace();
-  Integer nb_cell = old_isi->nbCell();
-  Integer edge_allocated = old_isi->edgeAllocated();
-  Integer face_allocated = old_isi->faceAllocated();
-  Integer cell_allocated = old_isi->cellAllocated();
-  Integer new_nb_edge = nb_edge - nb_removed_edge;
-  ARCANE_ASSERT((new_nb_edge >= 0),("Inconsistence new edge number"));
-  Integer new_nb_face = nb_face - nb_removed_face;
-  ARCANE_ASSERT((new_nb_face >= 0),("Inconsistence new face number"));
-  Integer new_nb_cell = nb_cell - nb_removed_cell;
-  ARCANE_ASSERT((new_nb_cell >= 0),("Inconsistence new cell number"));
-  ItemSharedInfo* new_isi = _findSharedInfo(old_isi->m_item_type,new_nb_edge,new_nb_face,new_nb_cell,
-                                            edge_allocated,face_allocated,cell_allocated);
+  ItemSharedInfo* new_isi = _findSharedInfo(old_isi->m_item_type);
   _setSharedInfosNoCopy(item,new_isi);
 
   new_isi->addReference();
@@ -1812,116 +1703,13 @@ _updateSharedInfoRemoved(ItemInternal* item,Integer nb_removed_edge,
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! AMR
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-_updateSharedInfoAdded(ItemInternal* item,Integer nb_added_edge,Integer nb_added_face,
-                       Integer nb_added_cell,Integer nb_added_parent,Integer nb_added_children)
+_updateSharedInfoRemoved7(ItemInternal*)
 {
-  if (!m_has_legacy_connectivity){
-    nb_added_edge = nb_added_face = nb_added_cell = 0;
-    nb_added_parent = nb_added_children = 0;
-  }
-  ItemSharedInfo* old_isi = item->sharedInfo();
-  Integer nb_edge = old_isi->nbEdge();
-  Integer nb_face = old_isi->nbFace();
-  Integer nb_cell = old_isi->nbCell();
-  Integer nb_hParent = old_isi->nbHParent();
-  Integer nb_hChildren = old_isi->nbHChildren();
-  Integer edge_allocated = old_isi->edgeAllocated();
-  Integer face_allocated = old_isi->faceAllocated();
-  Integer cell_allocated = old_isi->cellAllocated();
-  Integer hParent_allocated = old_isi->hParentAllocated();
-  Integer hChild_allocated = old_isi->hChildAllocated();
-
-  Integer new_nb_edge = nb_edge + nb_added_edge;
-  Integer new_nb_face = nb_face + nb_added_face;
-  Integer new_nb_cell = nb_cell + nb_added_cell;
-  Integer new_nb_hParent = nb_hParent + nb_added_parent;
-  Integer new_nb_hChildren = nb_hChildren + nb_added_children;
-  bool need_copy = false;
-  if (new_nb_edge>edge_allocated){
-    edge_allocated += edge_allocated / 2;
-    if (edge_allocated<new_nb_edge)
-      edge_allocated = new_nb_edge;
-    need_copy = true;
-  }
-  if (new_nb_face>face_allocated){
-    face_allocated += face_allocated / 2;
-    if (face_allocated<new_nb_face)
-      face_allocated = new_nb_face;
-    need_copy = true;
-  }
-  if (new_nb_hParent>hParent_allocated){
-    hParent_allocated += hParent_allocated / 2;
-    if (hParent_allocated<new_nb_hParent)
-      hParent_allocated = new_nb_hParent;
-    need_copy = true;
-  }
-  if (new_nb_hChildren>hChild_allocated){
-    hChild_allocated += hChild_allocated / 2;
-    if (hChild_allocated<new_nb_hChildren)
-      hChild_allocated = new_nb_hChildren;
-    need_copy = true;
-  }
-  if (!m_has_legacy_connectivity)
-    need_copy = true;
-
-  ItemSharedInfo* new_isi = _findSharedInfo(old_isi->m_item_type,new_nb_edge,new_nb_face,new_nb_cell,
-                                            new_nb_hParent,new_nb_hChildren,
-                                            edge_allocated,face_allocated,cell_allocated,
-                                            hParent_allocated, hChild_allocated);
-  if (need_copy)
-    _copyInfos(item,old_isi,new_isi);
-  else
-    _setSharedInfosNoCopy(item,new_isi);
-
+  // TODO: regarder fusion possible avec les autres surcharges de _updateSharedInfo
   m_need_prepare_dump = true;
-  new_isi->addReference();
-  old_isi->removeReference();
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemFamily::
-_updateSharedInfoRemoved(ItemInternal* item,Integer nb_removed_edge,
-                         Integer nb_removed_face,Integer nb_removed_cell,
-                         Integer nb_removed_parent, Integer nb_removed_children)
-{
-  m_need_prepare_dump = true;
-  if (!m_has_legacy_connectivity)
-    return;
-  ItemSharedInfo* old_isi = item->sharedInfo();
-  Integer nb_edge = old_isi->nbEdge();
-  Integer nb_face = old_isi->nbFace();
-  Integer nb_cell = old_isi->nbCell();
-  Integer nb_hParent = old_isi->nbHParent();
-  Integer nb_hChildren = old_isi->nbHChildren();
-  Integer edge_allocated = old_isi->edgeAllocated();
-  Integer face_allocated = old_isi->faceAllocated();
-  Integer cell_allocated = old_isi->cellAllocated();
-  Integer hParent_allocated = old_isi->hParentAllocated();
-  Integer hChild_allocated = old_isi->hChildAllocated();
-  Integer new_nb_edge = nb_edge - nb_removed_edge;
-  Integer new_nb_face = nb_face - nb_removed_face;
-  Integer new_nb_cell = nb_cell - nb_removed_cell;
-  Integer new_nb_hParent = nb_hParent - nb_removed_parent;
-  Integer new_nb_hChildren = nb_hChildren - nb_removed_children;
-  ItemSharedInfo* new_isi = _findSharedInfo(old_isi->m_item_type,new_nb_edge,new_nb_face,new_nb_cell,
-                                            new_nb_hParent,new_nb_hChildren,
-                                            edge_allocated,face_allocated,cell_allocated,
-                                            hParent_allocated, hChild_allocated);
-  _setSharedInfosNoCopy(item,new_isi);
-
-  new_isi->addReference();
-  old_isi->removeReference();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1961,26 +1749,11 @@ _setUniqueId(Int32 lid,Int64 uid)
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-_allocateInfos(ItemInternal* item,Int64 uid,ItemTypeInfo* type,
-               Integer nb_edge,Integer nb_face,Integer nb_cell,
-               Integer edge_allocated,Integer face_allocated,Integer cell_allocated)
+_allocateInfos(ItemInternal* item,Int64 uid,ItemTypeInfo* type)
 {
-  ItemSharedInfo* isi = _findSharedInfo(type,nb_edge,nb_face,nb_cell,
-                                        edge_allocated,face_allocated,cell_allocated);
+  ItemSharedInfo* isi = _findSharedInfo(type);
   _allocateInfos(item,uid,isi);
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemFamily::
-_allocateInfos(ItemInternal* item,Int64 uid,ItemTypeInfo* type,
-               Integer nb_edge,Integer nb_face,Integer nb_cell)
-{
-  _allocateInfos(item,uid,type,nb_edge,nb_face,nb_cell,
-                 nb_edge,nb_face,nb_cell);
-}
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -2094,9 +1867,7 @@ findVariable(const String& var_name,bool throw_exception)
   vname += var_name;
   IVariable* var = vm->findVariableFullyQualified(vname.toString());
   if (!var && throw_exception){
-    throw FatalErrorException(A_FUNCINFO,
-                              String::format("No variable named '{0}' in family '{1}'",
-                                             var_name,name()));
+    ARCANE_FATAL("No variable named '{0}' in family '{1}'",var_name,name());
   }
   return var;
 }
@@ -2324,7 +2095,7 @@ usedVariables(VariableCollection collection)
 IVariableSynchronizer* ItemFamily::
 allItemsSynchronizer()
 {
-  return m_variable_synchronizer;
+  return m_variable_synchronizer.get();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2368,8 +2139,7 @@ addGhostItems(Int64ConstArrayView unique_ids, Int32ArrayView items, Int32ConstAr
   ARCANE_UNUSED(unique_ids);
   ARCANE_UNUSED(items);
   ARCANE_UNUSED(owners);
-  throw NotImplementedException(A_FUNCINFO,
-                                "this kind of family doesn't support this operation yet. Only DoF at present.");
+  ARCANE_THROW(NotImplementedException,"this kind of family doesn't support this operation yet. Only DoF at present.");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2402,17 +2172,18 @@ removeItems2(ItemDataList& item_data_list)
   }
   // 2-Propagates item removal to child families
   Int64ArrayView removed_item_lids = item_data.itemInfos().view(); // Todo change ItemData to store removed item lids in Int32
-  for (auto removed_item_lid : removed_item_lids) {
+  for (auto removed_item_lid_int64 : removed_item_lids) {
+    Int32 removed_item_lid = CheckedConvert::toInt32(removed_item_lid_int64);
     index = 0;
     for (auto child_connectivity : child_connectivities) {
       ConnectivityItemVector child_con_accessor(child_connectivity);
       ENUMERATE_ITEM(connected_item, child_con_accessor.connectedItems(ItemLocalId(removed_item_lid))) {
         if (!this->itemsInternal()[removed_item_lid]->isDetached()) {// test necessary when doing removeDetached (the relations are already deleted).
-            child_families_to_current_family[index]->removeConnectedItem(ItemLocalId(connected_item),ItemLocalId(removed_item_lid));
+          child_families_to_current_family[index]->removeConnectedItem(ItemLocalId(connected_item),ItemLocalId(removed_item_lid));
         }
         // Check if connected item is to remove
         if (! child_families_has_extra_parent_properties[index][connected_item] && child_families_to_current_family[index]->nbConnectedItem(ItemLocalId(connected_item)) == 0) {
-            item_data_list[child_connectivity->targetFamily()->itemKind()].itemInfos().add((Int64) connected_item.localId());
+          item_data_list[child_connectivity->targetFamily()->itemKind()].itemInfos().add((Int64) connected_item.localId());
         }
       }
       index++;
@@ -2420,7 +2191,8 @@ removeItems2(ItemDataList& item_data_list)
   }
   // => merge this loop with previous one ?
   // 3-1 Remove relations for child relations
-  for (auto removed_item_lid : removed_item_lids) {
+  for (auto removed_item_lid_int64 : removed_item_lids) {
+    Int32 removed_item_lid = CheckedConvert::toInt32(removed_item_lid_int64);
     for (auto child_relation : m_mesh->itemFamilyNetwork()->getChildRelations(this)) {
       ConnectivityItemVector connectivity_accessor(child_relation);
       ENUMERATE_ITEM(connected_item, connectivity_accessor.connectedItems(ItemLocalId(removed_item_lid))) {
@@ -2431,7 +2203,8 @@ removeItems2(ItemDataList& item_data_list)
   // 3-2 Remove relations for parent relations
   ItemScalarProperty<bool> is_removed_item;
   is_removed_item.resize(this,false);
-  for (auto removed_item_lid : removed_item_lids) {
+  for (auto removed_item_lid_int64 : removed_item_lids) {
+    Int32 removed_item_lid = CheckedConvert::toInt32(removed_item_lid_int64);
     is_removed_item[*(this->itemsInternal()[removed_item_lid])] = true;
   }
   for (auto parent_relation : m_mesh->itemFamilyNetwork()->getParentRelations(this)) {
@@ -2445,7 +2218,8 @@ removeItems2(ItemDataList& item_data_list)
     }
   }
   // 4-Remove items. Child items will be removed by an automatic call of removeItems2 on their family...
-  for (auto removed_item_lid : removed_item_lids) {
+  for (auto removed_item_lid_int64 : removed_item_lids) {
+    Int32 removed_item_lid = CheckedConvert::toInt32(removed_item_lid_int64);
     ItemInternal* removed_item = m_infos.itemInternal(removed_item_lid);
     if (removed_item->isDetached()) {
       m_infos.removeDetachedOne(removed_item);
@@ -2682,68 +2456,6 @@ addTargetConnectivity(IIncrementalItemConnectivity* c)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Vérifie que deux connectivités sont les mêmes.
- *
- * Cette méthode permet de vérifier que \a ref et \a c ont les mêmes
- * connectivités. Elle est utilisée notamment pour s'assurer
- * que les nouvelles connectivités à la demande ont bien les mêmes
- * valeurs que l'ancien mécanisme de connectivité.
- * \a ref est la connectivité dite de référence et \a c la connectivité
- * à vérifier.
- */
-void ItemFamily::
-_checkSameConnectivity(IIncrementalItemConnectivity* ref,
-                       IIncrementalItemConnectivity* c)
-{
-  if (!ref || !c)
-    return;
-  info() << "Checking same connectivity ref=" << ref->name()
-         << " compare=" << c->name();
-  // Vérifie deux choses:
-  // - que la connectivité \a c est la même que \a ref
-  // - que pour \a c et \a ref les accès via
-  // IItemIncrementalConnectivity::connectedItemLocalId() et
-  // ConnectivityItemVector::connectedItems() sont cohérents.
-  ItemInternalList items(_itemsInternal());
-  ConnectivityItemVector ref_con_vector(ref);
-  ConnectivityItemVector new_con_vector(c);
-  for( Integer i=0, n=items.size(); i<n; ++i ){
-    ItemInternal* item = items[i];
-    ItemLocalId lid(item->localId());
-    Integer nb_ref_sub_item = ref->nbConnectedItem(lid);
-    Integer nb_sub_item = c->nbConnectedItem(lid);
-    if (nb_ref_sub_item!=nb_sub_item)
-      ARCANE_FATAL("Connectivity '{0}' : bad number of connected items n={1} expected={2} item={3}",
-                   c->name(),nb_sub_item,nb_ref_sub_item,ItemPrinter(item));
-
-    ItemVectorView new_con_view = new_con_vector.connectedItems(lid);
-    ItemVectorView ref_con_view = ref_con_vector.connectedItems(lid);
-
-    // NOTE: Comme les entités dans les connectivités peuvent être nulles
-    // dans certains cas (par exemple particle->maille), il ne faut
-    // pas tester via l'opérateur operator[] de ItemVectorView mais
-    // via le tableau des localId().
-    for( Integer z=0; z<nb_ref_sub_item; ++z ){
-      Int32 new_lid1 = c->connectedItemLocalId(lid,z);
-      Int32 new_lid2 = new_con_view.localIds()[z];
-      Int32 ref_lid1 = ref->connectedItemLocalId(lid,z);
-      Int32 ref_lid2 = ref_con_view.localIds()[z];
-      if (new_lid1!=new_lid2)
-        ARCANE_FATAL("Incoherent connected items index={0} x1={1} x2={2} item={3}",
-                     z,new_lid1,new_lid2,ItemPrinter(item));
-      if (ref_lid1!=ref_lid2)
-        ARCANE_FATAL("Incoherent connected items for reference index={0} x1={1} x2={2} item={3}",
-                     z,ref_lid1,ref_lid2,ItemPrinter(item));
-      if (new_lid1!=ref_lid1)
-        ARCANE_FATAL("Bad sub item localId() index={0} lid={1} expected={2} item={3}",
-                     z,new_lid1,ref_lid1,ItemPrinter(item));
-    }
-  }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 void ItemFamily::
 _checkValidConnectivity()
@@ -2768,16 +2480,6 @@ _checkValidConnectivity()
   }
   for( auto  ics : m_connectivity_selector_list )
     ics->checkValidConnectivityList();
-  // Vérifie que les nouveaux accesseurs contiennent les mêmes valeurs
-  // que les anciens.
-  if (mesh()->_connectivityPolicy()!=InternalConnectivityPolicy::Legacy && m_has_legacy_connectivity){
-    ItemInternalList items(_itemsInternal());
-    ItemInternalConnectivityList* iicl = &m_item_connectivity_list;
-    for( Integer i=0, n=items.size(); i<n; ++i ){
-      ItemInternal* item = items[i];
-      item->_internalCheckValidConnectivityAccessor(iicl);
-    }
-  }
 }
 
 /*---------------------------------------------------------------------------*/

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2020 IFPEN-CEA
+// Copyright 2000-2021 IFPEN-CEA
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GlibThreadImplementation.cc                                 (C) 2000-2018 */
+/* GlibThreadImplementation.cc                                 (C) 2000-2021 */
 /*                                                                           */
 /* Implémentation des threads utilisant la glib.                             */
 /*---------------------------------------------------------------------------*/
@@ -154,7 +154,7 @@ initialize()
 ThreadImpl* GlibThreadImplementation::
 createThread(IFunctor* f)
 {
-  return reinterpret_cast<ThreadImpl*>(g_thread_create(&_GlibStartFunc,f,true,0));
+  return reinterpret_cast<ThreadImpl*>(g_thread_new(nullptr,&_GlibStartFunc,f));
 }
 
 void GlibThreadImplementation::

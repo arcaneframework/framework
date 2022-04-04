@@ -15,6 +15,7 @@ main(int argc,char* argv[])
     std::cout << "Usage: print_meshinfo meshfile\n";
     return 1;
   }
+  ArcaneLauncher::init(CommandLineArguments(&argc,&argv));
   String mesh_name = argv[argc-1];
   auto f = [=](DirectExecutionContext& ctx) -> int
   {

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -117,15 +117,13 @@ enum eItemKind
   IK_Edge     = 1, //!< Entité de maillage de genre arête
   IK_Face     = 2, //!< Entité de maillage de genre face
   IK_Cell     = 3, //!< Entité de maillage de genre maille
-  IK_DualNode = 4, //!< Entité de maillage de genre noeuds dual d'un graphe
-  IK_Link     = 5, //!< Entité de maillage de genre lien d'un graphe
-  IK_DoF      = 6, //!< Entité de maillage de genre degre de liberte
-  IK_Particle = 7, //!< Entité de maillage de genre particule
-  IK_Unknown  = 8  //!< Entité de maillage de genre inconnu ou non initialisé
+  IK_DoF      = 4, //!< Entité de maillage de genre degre de liberte
+  IK_Particle = 5, //!< Entité de maillage de genre particule
+  IK_Unknown  = 6  //!< Entité de maillage de genre inconnu ou non initialisé
 };
 
 //! Nombre de genre d'entités de maillage.
-static const Integer NB_ITEM_KIND = 7;
+static const Integer NB_ITEM_KIND = 6;
 
 //! Nom du genre d'entité.
 extern "C++" ARCANE_CORE_EXPORT const char*
@@ -344,6 +342,8 @@ class SharedItemVariableScalarRefT;
 class CollectionBase;
 class IItemFamily;
 class IMesh;
+class IMeshPartitioner;
+class IMeshPartitionerBase;
 class IModule;
 class IService;
 class IServiceFactoryInfo;
@@ -466,6 +466,21 @@ class VariableBuildInfo;
 class VariableFactoryRegisterer;
 class VariableInfo;
 typedef VariableRef* (*VariableFactoryVariableRefCreateFunc)(const VariableBuildInfo& vb);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Accelerator
+{
+class IAcceleratorMng;
+class Runner;
+class RunQueue;
+class AcceleratorRuntimeInitialisationInfo;
+}
+using Accelerator::IAcceleratorMng;
+using Accelerator::Runner;
+using Accelerator::RunQueue;
+using Accelerator::AcceleratorRuntimeInitialisationInfo;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

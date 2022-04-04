@@ -10,7 +10,7 @@
  </arcane>
 
  <maillage>
-  <meshgenerator><sod><x>10</x><y>1</y><z>1</z></sod></meshgenerator>
+  <meshgenerator><sod><x>20</x><y>4</y><z>4</z></sod></meshgenerator>
   <initialisation />
  </maillage>
 
@@ -41,8 +41,8 @@
    <partitionneur name="DefaultPartitioner"/>
    <periode>3</periode>
    <statistiques>true</statistiques>
-   <desequilibre-maximal>0.01</desequilibre-maximal>
-   <temps-cpu-minimal>0.01</temps-cpu-minimal>
+   <desequilibre-maximal>0</desequilibre-maximal>
+   <temps-cpu-minimal>0</temps-cpu-minimal>
  </arcane-equilibrage-charge>
 
 </cas>

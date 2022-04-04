@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -297,17 +297,6 @@ typedef MeshVariableScalarRefT<Particle,Real> VariableParticleReal;
 
 /*!
   \ingroup Variable
-  \brief Grandeur de noeuds dual de type r?eel
-*/
-typedef MeshVariableScalarRefT<DualNode,Real> VariableDualNodeReal;
-
-/*!
-  \ingroup Variable
-  \brief Grandeur de liaison de type reel
-*/
-typedef MeshVariableScalarRefT<Link,Real> VariableLinkReal;
-/*!
-  \ingroup Variable
   \brief Grandeur de DDL de type reel
 */
 typedef MeshVariableScalarRefT<DoF,Real> VariableDoFReal;
@@ -354,17 +343,6 @@ typedef MeshVariableScalarRefT<Particle,Real2> VariableParticleReal2;
 
 /*!
   \ingroup Variable
-  \brief Grandeur de noeuds dual de type coordonnees
-*/
-typedef MeshVariableScalarRefT<DualNode,Real2> VariableDualNodeReal2;
-
-/*!
-  \ingroup Variable
-  \brief Grandeur de liaison de type coordonnees
-*/
-typedef MeshVariableScalarRefT<Link,Real2> VariableLinkReal2;
-/*!
-  \ingroup Variable
   \brief Grandeur de DDL de type coordonnees
 */
 typedef MeshVariableScalarRefT<DoF,Real2> VariableDoFReal2;
@@ -404,17 +382,6 @@ typedef MeshVariableScalarRefT<Cell,Real3> VariableCellReal3;
 */
 typedef MeshVariableScalarRefT<Particle,Real3> VariableParticleReal3;
 
-/*!
-  \ingroup Variable
-  \brief Grandeur de noeuds dual de type coordonnees
-*/
-typedef MeshVariableScalarRefT<DualNode,Real3> VariableDualNodeReal3;
-
-/*!
-  \ingroup Variable
-  \brief Grandeur de liaison de type coordonnees
-*/
-typedef MeshVariableScalarRefT<Link,Real3> VariableLinkReal3;
 /*!
   \ingroup Variable
   \brief Grandeur de DDL de type coordonnees
@@ -458,17 +425,6 @@ typedef MeshVariableScalarRefT<Particle,Real2x2> VariableParticleReal2x2;
 
 /*!
   \ingroup Variable
-  \brief Grandeur de noeuds dual de type tenseur de reels
-*/
-typedef MeshVariableScalarRefT<DualNode,Real2x2> VariableDualNodeReal2x2;
-
-/*!
-  \ingroup Variable
-  \brief Grandeur de liaison de type tenseur de reels
-*/
-typedef MeshVariableScalarRefT<Link,Real2x2> VariableLinkReal2x2;
-/*!
-  \ingroup Variable
   \brief Grandeur de DDL de type tenseur de reels
 */
 typedef MeshVariableScalarRefT<DoF,Real2x2> VariableDoFReal2x2;
@@ -510,17 +466,6 @@ typedef MeshVariableScalarRefT<Particle,Real3x3> VariableParticleReal3x3;
 
 /*!
   \ingroup Variable
-  \brief Grandeur de noeuds dual de type tenseur de reels
-*/
-typedef MeshVariableScalarRefT<DualNode,Real3x3> VariableDualNodeReal3x3;
-
-/*!
-  \ingroup Variable
-  \brief Grandeur de liaison de type tenseur de reels
-*/
-typedef MeshVariableScalarRefT<Link,Real3x3> VariableLinkReal3x3;
-/*!
-  \ingroup Variable
   \brief Grandeur de DDL de type tenseur de reels
 */
 typedef MeshVariableScalarRefT<DoF,Real3x3> VariableDoFReal3x3;
@@ -560,17 +505,6 @@ typedef MeshVariableScalarRefT<Cell,Integer> VariableCellInteger;
 */
 typedef MeshVariableScalarRefT<Particle,Integer> VariableParticleInteger;
 
-/*!
-  \ingroup Variable
-  \brief Grandeur de noeuds dual de type entier
-*/
-typedef MeshVariableScalarRefT<DualNode,Integer> VariableDualNodeInteger;
-
-/*!
-  \ingroup Variable
-  \brief Grandeur de liaison de type entier
-*/
-typedef MeshVariableScalarRefT<Link,Integer> VariableLinkInteger;
 /*!
   \ingroup Variable
   \brief Grandeur de DDL de type entier
@@ -621,17 +555,6 @@ typedef MeshVariableScalarRefT<Particle,Int16> VariableParticleInt16;
 
 /*!
   \ingroup Variable
-  \brief Grandeur de noeuds dual de type entier 16 bits
-*/
-typedef MeshVariableScalarRefT<DualNode,Int16> VariableDualNodeInt16;
-
-/*!
-  \ingroup Variable
-  \brief Grandeur de liaison de type entier 16 bits
-*/
-typedef MeshVariableScalarRefT<Link,Int16> VariableLinkInt16;
-/*!
-  \ingroup Variable
   \brief Grandeur de DDL de type entier 16 bits
 */
 typedef MeshVariableScalarRefT<DoF,Int16> VariableDoFInt16;
@@ -669,17 +592,6 @@ typedef MeshVariableScalarRefT<Cell,Int32> VariableCellInt32;
 */
 typedef MeshVariableScalarRefT<Particle,Int32> VariableParticleInt32;
 
-/*!
-  \ingroup Variable
-  \brief Grandeur de noeuds dual de type entier 32 bits
-*/
-typedef MeshVariableScalarRefT<DualNode,Int32> VariableDualNodeInt32;
-
-/*!
-  \ingroup Variable
-  \brief Grandeur de liaison de type entier 32 bits
-*/
-typedef MeshVariableScalarRefT<Link,Int32> VariableLinkInt32;
 /*!
   \ingroup Variable
   \brief Grandeur de DDL de type entier 32 bits
@@ -724,17 +636,6 @@ typedef MeshVariableScalarRefT<Cell,Int64> VariableCellInt64;
 */
 typedef MeshVariableScalarRefT<Particle,Int64> VariableParticleInt64;
 
-/*!
-  \ingroup Variable
-  \brief Grandeur de noeuds dual de type entier 64 bits
-*/
-typedef MeshVariableScalarRefT<DualNode,Int64> VariableDualNodeInt64;
-
-/*!
-  \ingroup Variable
-  \brief Grandeur de liaison de type entier 64 bits
-*/
-typedef MeshVariableScalarRefT<Link,Int64> VariableLinkInt64;
 
 /*!
   \ingroup Variable
@@ -803,17 +704,6 @@ typedef MeshVariableScalarRefT<Cell,Byte> VariableCellByte;
 */
 typedef MeshVariableScalarRefT<Particle,Byte> VariableParticleByte;
 
-/*!
-  \ingroup Variable
-  \brief Grandeur de noeuds dual de type octet
-*/
-typedef MeshVariableScalarRefT<DualNode,Byte> VariableDualNodeByte;
-
-/*!
-  \ingroup Variable
-  \brief Grandeur de liaison de type octet
-*/
-typedef MeshVariableScalarRefT<Link,Byte> VariableLinkByte;
 
 /*!
   \ingroup Variable
@@ -852,17 +742,7 @@ typedef MeshVariableScalarRefT<Cell,Byte> VariableCellBool;
   \brief  Grandeur particulaire de type booléen
 */
 typedef MeshVariableScalarRefT<Particle,Byte> VariableParticleBool;
-/*!
-  \ingroup Variable
-  \brief Grandeur de noeuds dual de type booleen
-*/
-typedef MeshVariableScalarRefT<DualNode,Byte> VariableDualNodeBool;
 
-/*!
-  \ingroup Variable
-  \brief Grandeur de liaison de type booleen
-*/
-typedef MeshVariableScalarRefT<Link,Byte> VariableLinkBool;
 
 /*!
   \ingroup Variable
@@ -903,17 +783,6 @@ typedef MeshVariableArrayRefT<Cell,Real> VariableCellArrayReal;
 */
 typedef MeshVariableArrayRefT<Particle,Real> VariableParticleArrayReal;
 
-/*!
-  \ingroup Variable
-  \brief Grandeur de noeuds dual de type tableau de reel
-*/
-typedef MeshVariableArrayRefT<DualNode,Real> VariableDualNodeArrayReal;
-
-/*!
-  \ingroup Variable
-  \brief Grandeur de liaison de type tableau de reels
-*/
-typedef MeshVariableArrayRefT<Link,Real> VariableLinkArrayReal;
 
 /*!
   \ingroup Variable
@@ -953,17 +822,7 @@ typedef MeshVariableArrayRefT<Cell,Real2> VariableCellArrayReal2;
 */
 typedef MeshVariableArrayRefT<Particle,Real2> VariableParticleArrayReal2;
 
-/*!
-  \ingroup Variable
-  \brief Grandeur de noeuds dual de type tableau de coordonnees
-*/
-typedef MeshVariableArrayRefT<DualNode,Real2> VariableDualNodeArrayReal2;
 
-/*!
-  \ingroup Variable
-  \brief Grandeur de liaison de type tableau de coordonnees
-*/
-typedef MeshVariableArrayRefT<Link,Real2> VariableLinkArrayReal2;
 
 /*!
   \ingroup Variable
@@ -997,17 +856,6 @@ typedef MeshVariableArrayRefT<Cell,Real3> VariableCellArrayReal3;
 */
 typedef MeshVariableArrayRefT<Particle,Real3> VariableParticleArrayReal3;
 
-/*!
-  \ingroup Variable
-  \brief Grandeur de noeuds dual de type tableau de reel
-*/
-typedef MeshVariableArrayRefT<DualNode,Real3> VariableDualNodeArrayReal3;
-
-/*!
-  \ingroup Variable
-  \brief Grandeur de liaison de type tableau de reels
-*/
-typedef MeshVariableArrayRefT<Link,Real3> VariableLinkArrayReal3;
 
 /*!
   \ingroup Variable
@@ -1041,17 +889,6 @@ typedef MeshVariableArrayRefT<Cell,Real2x2> VariableCellArrayReal2x2;
 */
 typedef MeshVariableArrayRefT<Particle,Real2x2> VariableParticleArrayReal2x2;
 
-/*!
-  \ingroup Variable
-  \brief Grandeur de noeuds dual de type tableau de tenseur de reel
-*/
-typedef MeshVariableArrayRefT<DualNode,Real2x2> VariableDualNodeArrayReal2x2;
-
-/*!
-  \ingroup Variable
-  \brief Grandeur de liaison de type tableau de tenseur de reels
-*/
-typedef MeshVariableArrayRefT<Link,Real2x2> VariableLinkArrayReal2x2;
 
 /*!
   \ingroup Variable
@@ -1085,17 +922,6 @@ typedef MeshVariableArrayRefT<Cell,Real3x3> VariableCellArrayReal3x3;
 */
 typedef MeshVariableArrayRefT<Particle,Real3x3> VariableParticleArrayReal3x3;
 
-/*!
-  \ingroup Variable
-  \brief Grandeur de noeuds dual de type tableau de tenseur de reel
-*/
-typedef MeshVariableArrayRefT<DualNode,Real3x3> VariableDualNodeArrayReal3x3;
-
-/*!
-  \ingroup Variable
-  \brief Grandeur de liaison de type tableau de tenseur de reels
-*/
-typedef MeshVariableArrayRefT<Link,Real3x3> VariableLinkArrayReal3x3;
 
 /*!
   \ingroup Variable
@@ -1129,17 +955,6 @@ typedef MeshVariableArrayRefT<Cell,Integer> VariableCellArrayInteger;
 */
 typedef MeshVariableArrayRefT<Particle,Integer> VariableParticleArrayInteger;
 
-/*!
-  \ingroup Variable
-  \brief Grandeur de noeuds dual de type tableau d'entiers
-*/
-typedef MeshVariableArrayRefT<DualNode,Integer> VariableDualNodeArrayInteger;
-
-/*!
-  \ingroup Variable
-  \brief Grandeur de liaison de type tableau d'entiers
-*/
-typedef MeshVariableArrayRefT<Link,Integer> VariableLinkArrayInteger;
 
 /*!
   \ingroup Variable
@@ -1173,17 +988,6 @@ typedef MeshVariableArrayRefT<Cell,Int16> VariableCellArrayInt16;
 */
 typedef MeshVariableArrayRefT<Particle,Int16> VariableParticleArrayInt16;
 
-/*!
-  \ingroup Variable
-  \brief Grandeur de noeuds dual de type tableau d'entiers 16 bits
-*/
-typedef MeshVariableArrayRefT<DualNode,Int16> VariableDualNodeArrayInt16;
-
-/*!
-  \ingroup Variable
-  \brief Grandeur de liaison de type tableau d'entiers 16 bits
-*/
-typedef MeshVariableArrayRefT<Link,Int16> VariableLinkArrayInt16;
 
 /*!
   \ingroup Variable
@@ -1217,17 +1021,6 @@ typedef MeshVariableArrayRefT<Cell,Int32> VariableCellArrayInt32;
 */
 typedef MeshVariableArrayRefT<Particle,Int32> VariableParticleArrayInt32;
 
-/*!
-  \ingroup Variable
-  \brief Grandeur de noeuds dual de type tableau d'entiers 32 bits
-*/
-typedef MeshVariableArrayRefT<DualNode,Int32> VariableDualNodeArrayInt32;
-
-/*!
-  \ingroup Variable
-  \brief Grandeur de liaison de type tableau d'entiers 32 bits
-*/
-typedef MeshVariableArrayRefT<Link,Int32> VariableLinkArrayInt32;
 
 /*!
   \ingroup Variable
@@ -1261,17 +1054,6 @@ typedef MeshVariableArrayRefT<Cell,Int64> VariableCellArrayInt64;
 */
 typedef MeshVariableArrayRefT<Particle,Int64> VariableParticleArrayInt64;
 
-/*!
-  \ingroup Variable
-  \brief Grandeur de noeuds dual de type tableau d'entiers 64 bits
-*/
-typedef MeshVariableArrayRefT<DualNode,Int64> VariableDualNodeArrayInt64;
-
-/*!
-  \ingroup Variable
-  \brief Grandeur de liaison de type tableau d'entiers 64 bits
-*/
-typedef MeshVariableArrayRefT<Link,Int64> VariableLinkArrayInt64;
 
 /*!
   \ingroup Variable
@@ -1311,17 +1093,6 @@ typedef MeshVariableArrayRefT<Cell,Byte> VariableCellArrayByte;
 */
 typedef MeshVariableArrayRefT<Particle,Byte> VariableParticleArrayByte;
 
-/*!
-  \ingroup Variable
-  \brief Grandeur de noeuds dual de type tableau d'octets
-*/
-typedef MeshVariableArrayRefT<DualNode,Byte> VariableDualNodeArrayByte;
-
-/*!
-  \ingroup Variable
-  \brief Grandeur de liaison de type tableau d'octets
-*/
-typedef MeshVariableArrayRefT<Link,Byte> VariableLinkArrayByte;
 
 /*!
   \ingroup Variable
@@ -1355,17 +1126,6 @@ typedef MeshVariableArrayRefT<Cell,Byte> VariableCellArrayBool;
 */
 typedef MeshVariableArrayRefT<Particle,Byte> VariableParticleArrayBool;
 
-/*!
-  \ingroup Variable
-  \brief Grandeur de noeuds dual de type tableau de booleens
-*/
-typedef MeshVariableArrayRefT<DualNode,Byte> VariableDualNodeArrayBool;
-
-/*!
-  \ingroup Variable
-  \brief Grandeur de liaison de type tableau de booleens
-*/
-typedef MeshVariableArrayRefT<Link,Byte> VariableLinkArrayBool;
 
 /*!
   \ingroup Variable
@@ -1415,17 +1175,6 @@ typedef MeshPartialVariableScalarRefT<Cell,Real> PartialVariableCellReal;
 */
 typedef MeshPartialVariableScalarRefT<Particle,Real> PartialVariableParticleReal;
 
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de noeuds dual de type reel
-*/
-typedef MeshPartialVariableScalarRefT<DualNode,Real> PartialVariableDualNodeReal;
-
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de liaison de type reel
-*/
-typedef MeshPartialVariableScalarRefT<Link,Real> PartialVariableLinkReal;
 
 /*!
   \ingroup Variable partielle
@@ -1472,17 +1221,6 @@ typedef MeshPartialVariableScalarRefT<Cell,Real2> PartialVariableCellReal2;
 */
 typedef MeshPartialVariableScalarRefT<Particle,Real2> PartialVariableParticleReal2;
 
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de noeuds dual de type coordonnees
-*/
-typedef MeshPartialVariableScalarRefT<DualNode,Real2> PartialVariableDualNodeReal2;
-
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de liaison de type coordonnees
-*/
-typedef MeshPartialVariableScalarRefT<Link,Real2> PartialVariableLinkReal2;
 
 /*!
   \ingroup Variable partielle
@@ -1528,17 +1266,6 @@ typedef MeshPartialVariableScalarRefT<Cell,Real3> PartialVariableCellReal3;
 */
 typedef MeshPartialVariableScalarRefT<Particle,Real3> PartialVariableParticleReal3;
 
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de noeuds dual de type coordonnees
-*/
-typedef MeshPartialVariableScalarRefT<DualNode,Real3> PartialVariableDualNodeReal3;
-
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de liaison de type coordonnees
-*/
-typedef MeshPartialVariableScalarRefT<Link,Real3> PartialVariableLinkReal3;
 
 /*!
   \ingroup Variable partielle
@@ -1584,17 +1311,6 @@ typedef MeshPartialVariableScalarRefT<Cell,Real2x2> PartialVariableCellReal2x2;
 */
 typedef MeshPartialVariableScalarRefT<Particle,Real2x2> PartialVariableParticleReal2x2;
 
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de noeuds dual de type tenseur de reels
-*/
-typedef MeshPartialVariableScalarRefT<DualNode,Real2x2> PartialVariableDualNodeReal2x2;
-
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de liaison de type tenseur de reels
-*/
-typedef MeshPartialVariableScalarRefT<Link,Real2x2> PartialVariableLinkReal2x2;
 
 /*!
   \ingroup Variable partielle
@@ -1640,17 +1356,6 @@ typedef MeshPartialVariableScalarRefT<Cell,Real3x3> PartialVariableCellReal3x3;
 */
 typedef MeshPartialVariableScalarRefT<Particle,Real3x3> PartialVariableParticleReal3x3;
 
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de noeuds dual de type tenseur de reels
-*/
-typedef MeshPartialVariableScalarRefT<DualNode,Real3x3> PartialVariableDualNodeReal3x3;
-
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de liaison de type tenseur de reels
-*/
-typedef MeshPartialVariableScalarRefT<Link,Real3x3> PartialVariableLinkReal3x3;
 
 /*!
   \ingroup Variable partielle
@@ -1696,17 +1401,6 @@ typedef MeshPartialVariableScalarRefT<Cell,Integer> PartialVariableCellInteger;
 */
 typedef MeshPartialVariableScalarRefT<Particle,Integer> PartialVariableParticleInteger;
 
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de noeuds dual de type entier
-*/
-typedef MeshPartialVariableScalarRefT<DualNode,Integer> PartialVariableDualNodeInteger;
-
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de liaison de type entier
-*/
-typedef MeshPartialVariableScalarRefT<Link,Integer> PartialVariableLinkInteger;
 
 /*!
   \ingroup Variable partielle
@@ -1752,17 +1446,6 @@ typedef MeshPartialVariableScalarRefT<Cell,Int32> PartialVariableCellInt32;
 */
 typedef MeshPartialVariableScalarRefT<Particle,Int32> PartialVariableParticleInt32;
 
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de noeuds dual de type entier 32 bits
-*/
-typedef MeshPartialVariableScalarRefT<DualNode,Int32> PartialVariableDualNodeInt32;
-
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de liaison de type entier 32 bits
-*/
-typedef MeshPartialVariableScalarRefT<Link,Int32> PartialVariableLinkInt32;
 
 /*!
   \ingroup Variable partielle
@@ -1808,17 +1491,6 @@ typedef MeshPartialVariableScalarRefT<Cell,Int16> PartialVariableCellInt16;
 */
 typedef MeshPartialVariableScalarRefT<Particle,Int16> PartialVariableParticleInt16;
 
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de noeuds dual de type entier 16 bits
-*/
-typedef MeshPartialVariableScalarRefT<DualNode,Int16> PartialVariableDualNodeInt16;
-
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de liaison de type entier 16 bits
-*/
-typedef MeshPartialVariableScalarRefT<Link,Int16> PartialVariableLinkInt16;
 
 /*!
   \ingroup Variable partielle
@@ -1864,17 +1536,6 @@ typedef MeshPartialVariableScalarRefT<Cell,Int64> PartialVariableCellInt64;
 */
 typedef MeshPartialVariableScalarRefT<Particle,Int64> PartialVariableParticleInt64;
 
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de noeuds dual de type entier 64 bits
-*/
-typedef MeshPartialVariableScalarRefT<DualNode,Int64> PartialVariableDualNodeInt64;
-
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de liaison de type entier 64 bits
-*/
-typedef MeshPartialVariableScalarRefT<Link,Int64> PartialVariableLinkIn64;
 
 /*!
   \ingroup Variable partielle
@@ -1920,17 +1581,6 @@ typedef MeshPartialVariableScalarRefT<Cell,Byte> PartialVariableCellByte;
 */
 typedef MeshPartialVariableScalarRefT<Particle,Byte> PartialVariableParticleByte;
 
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de noeuds dual de type octet
-*/
-typedef MeshPartialVariableScalarRefT<DualNode,Byte> PartialVariableDualNodeByte;
-
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de liaison de type octet
-*/
-typedef MeshPartialVariableScalarRefT<Link,Byte> PartialVariableLinkByte;
 
 /*!
   \ingroup Variable partielle
@@ -1969,17 +1619,6 @@ typedef MeshPartialVariableScalarRefT<Cell,Byte> PartialVariableCellBool;
   \brief  Grandeur particulaire de type booléen
 */
 typedef MeshPartialVariableScalarRefT<Particle,Byte> PartialVariableParticleBool;
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de noeuds dual de type booleen
-*/
-typedef MeshPartialVariableScalarRefT<DualNode,Byte> PartialVariableDualNodeBool;
-
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de liaison de type booleen
-*/
-typedef MeshPartialVariableScalarRefT<Link,Byte> PartialVariableLinkBool;
 
 /*!
   \ingroup Variable partielle
@@ -2029,17 +1668,6 @@ typedef MeshPartialVariableArrayRefT<Cell,Real> PartialVariableCellArrayReal;
 */
 typedef MeshPartialVariableArrayRefT<Particle,Real> PartialVariableParticleArrayReal;
 
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de noeuds dual de type tableau de reels
-*/
-typedef MeshPartialVariableArrayRefT<DualNode,Real> PartialVariableDualNodeArrayReal;
-
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de liaison de type tableau de reels
-*/
-typedef MeshPartialVariableArrayRefT<Link,Real> PartialVariableLinkArrayReal;
 
 /*!
   \ingroup Variable partielle
@@ -2085,17 +1713,6 @@ typedef MeshPartialVariableArrayRefT<Cell,Real2> PartialVariableCellArrayReal2;
 */
 typedef MeshPartialVariableArrayRefT<Particle,Real2> PartialVariableParticleArrayReal2;
 
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de noeuds dual de type tableau de coordonnees
-*/
-typedef MeshPartialVariableArrayRefT<DualNode,Real2> PartialVariableDualNodeArrayReal2;
-
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de liaison de type tableau de coordonnees
-*/
-typedef MeshPartialVariableArrayRefT<Link,Real2> PartialVariableLinkArrayReal2;
 
 /*!
   \ingroup Variable partielle
@@ -2141,17 +1758,6 @@ typedef MeshPartialVariableArrayRefT<Cell,Real3> PartialVariableCellArrayReal3;
 */
 typedef MeshPartialVariableArrayRefT<Particle,Real3> PartialVariableParticleArrayReal3;
 
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de noeuds dual de type tableau de coordonnees
-*/
-typedef MeshPartialVariableArrayRefT<DualNode,Real3> PartialVariableDualNodeArrayReal3;
-
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de liaison de type tableau de coordonnees
-*/
-typedef MeshPartialVariableArrayRefT<Link,Real3> PartialVariableLinkArrayReal3;
 
 /*!
   \ingroup Variable partielle
@@ -2197,17 +1803,6 @@ typedef MeshPartialVariableArrayRefT<Cell,Real2x2> PartialVariableCellArrayReal2
 */
 typedef MeshPartialVariableArrayRefT<Particle,Real2x2> PartialVariableParticleArrayReal2x2;
 
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de noeuds dual de type tableau de tenseur de reels
-*/
-typedef MeshPartialVariableArrayRefT<DualNode,Real2x2> PartialVariableDualNodeArrayReal2x2;
-
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de liaison de type tableau de tenseur de reels
-*/
-typedef MeshPartialVariableArrayRefT<Link,Real2x2> PartialVariableLinkArrayReal2x2;
 
 /*!
   \ingroup Variable partielle
@@ -2253,17 +1848,6 @@ typedef MeshPartialVariableArrayRefT<Cell,Real3x3> PartialVariableCellArrayReal3
 */
 typedef MeshPartialVariableArrayRefT<Particle,Real3x3> PartialVariableParticleArrayReal3x3;
 
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de noeuds dual de type tableau de tenseur de reels
-*/
-typedef MeshPartialVariableArrayRefT<DualNode,Real3x3> PartialVariableDualNodeArrayReal3x3;
-
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de liaison de type tableau de tenseur de reels
-*/
-typedef MeshPartialVariableArrayRefT<Link,Real3x3> PartialVariableLinkArrayReal3x3;
 
 /*!
   \ingroup Variable partielle
@@ -2309,17 +1893,6 @@ typedef MeshPartialVariableArrayRefT<Cell,Integer> PartialVariableCellArrayInteg
 */
 typedef MeshPartialVariableArrayRefT<Particle,Integer> PartialVariableParticleArrayInteger;
 
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de noeuds dual de type tableau d'entiers
-*/
-typedef MeshPartialVariableArrayRefT<DualNode,Integer> PartialVariableDualNodeArrayInteger;
-
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de liaison de type tableau d'entiers
-*/
-typedef MeshPartialVariableArrayRefT<Link,Integer> PartialVariableLinkArrayInteger;
 
 /*!
   \ingroup Variable partielle
@@ -2365,17 +1938,6 @@ typedef MeshPartialVariableArrayRefT<Cell,Int16> PartialVariableCellArrayInt16;
 */
 typedef MeshPartialVariableArrayRefT<Particle,Int16> PartialVariableParticleArrayInt16;
 
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de noeuds dual de type tableau d'entiers 16 bits
-*/
-typedef MeshPartialVariableArrayRefT<DualNode,Int16> PartialVariableDualNodeArrayInt16;
-
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de liaison de type tableau d'entiers 16 bits
-*/
-typedef MeshPartialVariableArrayRefT<Link,Int16> PartialVariableLinkArrayInt16;
 
 /*!
   \ingroup Variable partielle
@@ -2421,17 +1983,6 @@ typedef MeshPartialVariableArrayRefT<Cell,Int32> PartialVariableCellArrayInt32;
 */
 typedef MeshPartialVariableArrayRefT<Particle,Int32> PartialVariableParticleArrayInt32;
 
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de noeuds dual de type tableau d'entiers 32 bits
-*/
-typedef MeshPartialVariableArrayRefT<DualNode,Int32> PartialVariableDualNodeArrayInt32;
-
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de liaison de type tableau d'entiers 32 bits
-*/
-typedef MeshPartialVariableArrayRefT<Link,Int32> PartialVariableLinkArrayInt32;
 
 /*!
   \ingroup Variable partielle
@@ -2477,17 +2028,6 @@ typedef MeshPartialVariableArrayRefT<Cell,Int64> PartialVariableCellArrayInt64;
 */
 typedef MeshPartialVariableArrayRefT<Particle,Int64> PartialVariableParticleArrayInt64;
 
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de noeuds dual de type tableau d'entiers 64 bits
-*/
-typedef MeshPartialVariableArrayRefT<DualNode,Int64> PartialVariableDualNodeArrayInt64;
-
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de liaison de type tableau d'entiers 64 bits
-*/
-typedef MeshPartialVariableArrayRefT<Link,Int64> PartialVariableLinkArrayInt64;
 
 /*!
   \ingroup Variable partielle
@@ -2533,17 +2073,6 @@ typedef MeshPartialVariableArrayRefT<Cell,Byte> PartialVariableCellArrayByte;
 */
 typedef MeshPartialVariableArrayRefT<Particle,Byte> PartialVariableParticleArrayByte;
 
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de noeuds dual de type tableau d'octets
-*/
-typedef MeshPartialVariableArrayRefT<DualNode,Byte> PartialVariableDualNodeArrayByte;
-
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de liaison de type tableau d'octets
-*/
-typedef MeshPartialVariableArrayRefT<Link,Byte> PartialVariableLinkArrayByte;
 
 /*!
   \ingroup Variable partielle
@@ -2582,17 +2111,6 @@ typedef MeshPartialVariableArrayRefT<Cell,Byte> PartialVariableCellArrayBool;
   \brief  Grandeur particulaire de type tableau de booléens
 */
 typedef MeshPartialVariableArrayRefT<Particle,Byte> PartialVariableParticleArrayBool;
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de noeuds dual de type tableau de booleens
-*/
-typedef MeshPartialVariableArrayRefT<DualNode,Byte> PartialVariableDualNodeArrayBool;
-
-/*!
-  \ingroup Variable partielle
-  \brief Grandeur de liaison de type tableau de booleens
-*/
-typedef MeshPartialVariableArrayRefT<Link,Byte> PartialVariableLinkArrayBool;
 
 /*!
   \ingroup Variable partielle
@@ -2638,17 +2156,6 @@ typedef SharedMeshVariableScalarRefT<Cell,Real> SharedVariableCellReal;
 */
 typedef SharedMeshVariableScalarRefT<Particle,Real> SharedVariableParticleReal;
 
-/*!
-  \ingroup SharedVariable
-  \brief Grandeur de noeuds dual de type r?eel
-*/
-typedef SharedMeshVariableScalarRefT<DualNode,Real> SharedVariableDualNodeReal;
-
-/*!
-  \ingroup SharedVariable
-  \brief Grandeur de liaison de type reel
-*/
-typedef SharedMeshVariableScalarRefT<Link,Real> SharedVariableLinkReal;
 
 /*!
   \ingroup SharedVariable
@@ -2695,17 +2202,6 @@ typedef SharedMeshVariableScalarRefT<Cell,Real2> SharedVariableCellReal2;
 */
 typedef SharedMeshVariableScalarRefT<Particle,Real2> SharedVariableParticleReal2;
 
-/*!
-  \ingroup SharedVariable
-  \brief Grandeur de noeuds dual de type coordonnees
-*/
-typedef SharedMeshVariableScalarRefT<DualNode,Real2> SharedVariableDualNodeReal2;
-
-/*!
-  \ingroup SharedVariable
-  \brief Grandeur de liaison de type coordonnees
-*/
-typedef SharedMeshVariableScalarRefT<Link,Real2> SharedVariableLinkReal2;
 
 /*!
   \ingroup SharedVariable
@@ -2751,17 +2247,6 @@ typedef SharedMeshVariableScalarRefT<Cell,Real3> SharedVariableCellReal3;
 */
 typedef SharedMeshVariableScalarRefT<Particle,Real3> SharedVariableParticleReal3;
 
-/*!
-  \ingroup SharedVariable
-  \brief Grandeur de noeuds dual de type coordonnees
-*/
-typedef SharedMeshVariableScalarRefT<DualNode,Real3> SharedVariableDualNodeReal3;
-
-/*!
-  \ingroup SharedVariable
-  \brief Grandeur de liaison de type coordonnees
-*/
-typedef SharedMeshVariableScalarRefT<Link,Real3> SharedVariableLinkReal3;
 
 /*!
   \ingroup SharedVariable
@@ -2809,18 +2294,6 @@ typedef SharedMeshVariableScalarRefT<Particle,Real2x2> SharedVariableParticleRea
 
 /*!
   \ingroup SharedVariable
-  \brief Grandeur de noeuds dual de type tenseur de reels
-*/
-typedef SharedMeshVariableScalarRefT<DualNode,Real2x2> SharedVariableDualNodeReal2x2;
-
-/*!
-  \ingroup SharedVariable
-  \brief Grandeur de liaison de type tenseur de reels
-*/
-typedef SharedMeshVariableScalarRefT<Link,Real2x2> SharedVariableLinkReal2x2;
-
-/*!
-  \ingroup SharedVariable
   \brief Grandeur de DDL de type tenseur de reels
 */
 typedef SharedMeshVariableScalarRefT<DoF,Real2x2> SharedVariableDoFReal2x2;
@@ -2863,17 +2336,6 @@ typedef SharedMeshVariableScalarRefT<Cell,Real3x3> SharedVariableCellReal3x3;
 */
 typedef SharedMeshVariableScalarRefT<Particle,Real3x3> SharedVariableParticleReal3x3;
 
-/*!
-  \ingroup SharedVariable
-  \brief Grandeur de noeuds dual de type tenseur de reels
-*/
-typedef SharedMeshVariableScalarRefT<DualNode,Real3x3> SharedVariableDualNodeReal3x3;
-
-/*!
-  \ingroup SharedVariable
-  \brief Grandeur de liaison de type tenseur de reels
-*/
-typedef SharedMeshVariableScalarRefT<Link,Real3x3> SharedVariableLinkReal3x3;
 
 /*!
   \ingroup SharedVariable
@@ -2919,17 +2381,6 @@ typedef SharedMeshVariableScalarRefT<Cell,Integer> SharedVariableCellInteger;
 */
 typedef SharedMeshVariableScalarRefT<Particle,Integer> SharedVariableParticleInteger;
 
-/*!
-  \ingroup SharedVariable
-  \brief Grandeur de noeuds dual de type entier
-*/
-typedef SharedMeshVariableScalarRefT<DualNode,Integer> SharedVariableDualNodeInteger;
-
-/*!
-  \ingroup SharedVariable
-  \brief Grandeur de liaison de type entier
-*/
-typedef SharedMeshVariableScalarRefT<Link,Integer> SharedVariableLinkInteger;
 
 /*!
   \ingroup SharedVariable
@@ -2975,17 +2426,6 @@ typedef SharedMeshVariableScalarRefT<Cell,Int32> SharedVariableCellInt32;
 */
 typedef SharedMeshVariableScalarRefT<Particle,Int32> SharedVariableParticleInt32;
 
-/*!
-  \ingroup SharedVariable
-  \brief Grandeur de noeuds dual de type entier 32 bits
-*/
-typedef SharedMeshVariableScalarRefT<DualNode,Int32> SharedVariableDualNodeInt32;
-
-/*!
-  \ingroup SharedVariable
-  \brief Grandeur de liaison de type entier 32 bits
-*/
-typedef SharedMeshVariableScalarRefT<Link,Int32> SharedVariableLinkInt32;
 
 /*!
   \ingroup SharedVariable
@@ -3031,17 +2471,6 @@ typedef SharedMeshVariableScalarRefT<Cell,Int16> SharedVariableCellInt16;
 */
 typedef SharedMeshVariableScalarRefT<Particle,Int16> SharedVariableParticleInt16;
 
-/*!
-  \ingroup SharedVariable
-  \brief Grandeur de noeuds dual de type entier 16 bits
-*/
-typedef SharedMeshVariableScalarRefT<DualNode,Int16> SharedVariableDualNodeInt16;
-
-/*!
-  \ingroup SharedVariable
-  \brief Grandeur de liaison de type entier 16 bits
-*/
-typedef SharedMeshVariableScalarRefT<Link,Int16> SharedVariableLinkInt16;
 
 /*!
   \ingroup SharedVariable
@@ -3087,17 +2516,6 @@ typedef SharedMeshVariableScalarRefT<Cell,Int64> SharedVariableCellInt64;
 */
 typedef SharedMeshVariableScalarRefT<Particle,Int64> SharedVariableParticleInt64;
 
-/*!
-  \ingroup SharedVariable
-  \brief Grandeur de noeuds dual de type entier 64 bits
-*/
-typedef SharedMeshVariableScalarRefT<DualNode,Int64> SharedVariableDualNodeInt64;
-
-/*!
-  \ingroup SharedVariable
-  \brief Grandeur de liaison de type entier 64 bits
-*/
-typedef SharedMeshVariableScalarRefT<Link,Int64> SharedVariableLinkInt64;
 
 /*!
   \ingroup SharedVariable
@@ -3173,17 +2591,6 @@ typedef SharedMeshVariableScalarRefT<Cell,Byte> SharedVariableCellByte;
 */
 typedef SharedMeshVariableScalarRefT<Particle,Byte> SharedVariableParticleByte;
 
-/*!
-  \ingroup SharedVariable
-  \brief Grandeur de noeuds dual de type octet
-*/
-typedef SharedMeshVariableScalarRefT<DualNode,Byte> SharedVariableDualNodeByte;
-
-/*!
-  \ingroup SharedVariable
-  \brief Grandeur de liaison de type octet
-*/
-typedef SharedMeshVariableScalarRefT<Link,Byte> SharedVariableLinkByte;
 
 /*!
   \ingroup SharedVariable
@@ -3222,17 +2629,6 @@ typedef SharedMeshVariableScalarRefT<Cell,Byte> SharedVariableCellBool;
   \brief  Grandeur particulaire de type booléen
 */
 typedef SharedMeshVariableScalarRefT<Particle,Byte> SharedVariableParticleBool;
-/*!
-  \ingroup SharedVariable
-  \brief Grandeur de noeuds dual de type booleen
-*/
-typedef SharedMeshVariableScalarRefT<DualNode,Byte> SharedVariableDualNodeBool;
-
-/*!
-  \ingroup SharedVariable
-  \brief Grandeur de liaison de type booleen
-*/
-typedef SharedMeshVariableScalarRefT<Link,Byte> SharedVariableLinkBool;
 
 /*!
   \ingroup SharedVariable

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshReaderMng.h                                             (C) 2000-2019 */
+/* MeshReaderMng.h                                             (C) 2000-2021 */
 /*                                                                           */
 /* Gestionnaire de lecteurs de maillage.                                     */
 /*---------------------------------------------------------------------------*/
@@ -60,6 +60,7 @@ class MeshReaderMng::Impl
   ISubDomain* m_sub_domain = nullptr;
   UniqueArray<Ref<IMeshReader>> m_mesh_readers;
   bool m_is_init = false;
+  bool m_is_use_unit = true;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -82,9 +83,20 @@ MeshReaderMng::
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// TODO: fusionner cette méthode avec cell de ISubDomain.
+
 IMesh* MeshReaderMng::
 readMesh(const String& mesh_name,const String& file_name)
+{
+  ISubDomain* sd = m_p->m_sub_domain;
+  IParallelMng* pm = sd->parallelMng()->sequentialParallelMng();
+  return readMesh(mesh_name,file_name,pm);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+// TODO: fusionner cette méthode avec cell de ISubDomain.
+IMesh* MeshReaderMng::
+readMesh(const String& mesh_name,const String& file_name,IParallelMng* parallel_mng)
 {
   m_p->checkInit();
   String extension;
@@ -100,11 +112,12 @@ readMesh(const String& mesh_name,const String& file_name)
   }
   // TODO: à terme, créer le maillage par le lecteur.
   ISubDomain* sd = m_p->m_sub_domain;
-  IParallelMng* pm = sd->parallelMng()->sequentialParallelMng();
+  IParallelMng* pm = parallel_mng;
   IPrimaryMesh* mesh = sd->mainFactory()->createMesh(sd,pm,mesh_name);
   mesh->properties()->setBool("dump", false);
 
-  String use_unit_xml = "<?xml version=\"1.0\"?><file use-unit='true' />";
+  String use_unit_str = (m_p->m_is_use_unit) ? "true" : "false";
+  String use_unit_xml = "<?xml version=\"1.0\"?><file use-unit='"+use_unit_str+"' />";
 
   ITraceMng* tm = sd->traceMng();
   ScopedPtrT<IXmlDocumentHolder> xml_doc(IXmlDocumentHolder::loadFromBuffer(use_unit_xml.bytes(), String(),tm));
@@ -112,15 +125,15 @@ readMesh(const String& mesh_name,const String& file_name)
 
   String dir_name;
   bool is_bad = true;
+  bool use_internal_partition = pm->isParallel();
   for( auto& reader_ref : m_p->readers() ){
     IMeshReader* reader = reader_ref.get();
     if (!reader->allowExtension(extension))
       continue;
 
     auto ret = reader->readMeshFromFile(mesh,mesh_xml_node,
-                                        file_name,
-                                        dir_name,
-                                        false);
+                                        file_name,dir_name,
+                                        use_internal_partition);
     if (ret==IMeshReader::RTOk){
       is_bad = false;
       break;
@@ -134,6 +147,24 @@ readMesh(const String& mesh_name,const String& file_name)
     ARCANE_FATAL("No mesh reader is available for mesh file '{0}'",file_name);
 
   return mesh;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshReaderMng::
+setUseMeshUnit(bool v)
+{
+  m_p->m_is_use_unit = v;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool MeshReaderMng::
+isUseMeshUnit() const
+{
+  return m_p->m_is_use_unit;
 }
 
 /*---------------------------------------------------------------------------*/

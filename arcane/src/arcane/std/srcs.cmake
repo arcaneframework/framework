@@ -16,6 +16,7 @@ set(ARCANE_SOURCES
   Hdf5VariableInfoBase.h
   Hdf5ReaderWriter.h
   Hdf5MpiReaderWriter.h
+  HoneyCombMeshGenerator.cc
   ArcaneCurveWriter.cc
   ArcaneLoadBalanceModule.cc
   DumpW.cc
@@ -70,6 +71,13 @@ set(ARCANE_SOURCES
   SodMeshGenerator.h
   SimpleMeshGenerator.h
   CartesianMeshGenerator.h
+
+  MshMeshReader.cc
+  MshMeshWriter.cc
+  internal/IosFile.cc
+  internal/IosFile.h
+  internal/IosGmsh.h
+
   internal/SodStandardGroupsBuilder.h
   internal/SodStandardGroupsBuilder.cc
   )
@@ -97,4 +105,6 @@ set(AXL_FILES
   Cartesian2DMeshGenerator
   Cartesian3DMeshGenerator
   Sod3DMeshGenerator
-  )
+  HoneyComb2DMeshGenerator
+  HoneyComb3DMeshGenerator
+ )

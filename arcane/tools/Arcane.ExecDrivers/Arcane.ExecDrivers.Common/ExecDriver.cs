@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -46,7 +46,7 @@ namespace Arcane.ExecDrivers.Common
       List<string> additional_args = new List<string>();
       Mono.Options.OptionSet opt_set = new Mono.Options.OptionSet();
       bool show_help = false;
-      NbTaskPerProcess = 1;
+      NbTaskPerProcess = -1;
       opt_set.Add("h|help|?", "ce message d'aide", (v) => show_help = v != null);
       opt_set.Add("n|nb-proc=", "nombre de processeurs", (int v) => NbProc = v);
       opt_set.Add("T|threads=", "nombre de sous-domaines geres par les threads par processus", (int v) => NbThreadPerProcess = v);
@@ -285,7 +285,7 @@ namespace Arcane.ExecDrivers.Common
       Console.WriteLine("EXEC: {0}", exe_name);
       if (!String.IsNullOrEmpty(m_properties.DirectExecMethod))
         _AddArcaneArg(arcane_args, "DirectExecutionMethod", m_properties.DirectExecMethod);
-      if (m_properties.NbTaskPerProcess != 1) {
+      if (m_properties.NbTaskPerProcess >= 0) {
         _AddArcaneArg(arcane_args, ARG_NB_TASK, m_properties.NbTaskPerProcess);
       }
       if (m_properties.NbSharedMemorySubDomain != 0) {

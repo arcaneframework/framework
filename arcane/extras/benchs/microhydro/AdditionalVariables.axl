@@ -1,0 +1,38 @@
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
+<!-- Description de la configuration du module 'AdditionalVariables' -->
+<module name="AdditionalVariables" version="1.0" namespace-name="MicroHydro">
+  <variables />
+
+  <entry-points>
+    <entry-point method-name="doInit" name="AV_Init" where="init" property="none" />
+    <entry-point method-name="doExit" name="AV_Exit" where="exit" property="none" />
+    <entry-point method-name="doOneIteration" name="AV_DoOneIteration" where="compute-loop" property="none" />
+  </entry-points>
+
+  <options>
+    <!-- - - - - - nb-additional-cell-variable - - - - -->
+    <simple
+      name = "nb-additional-cell-variable"
+      type = "integer"
+      default = "0"
+      >
+      <userclass>User</userclass>
+      <description>
+        Nombre de variables additionnelles aux mailles.
+      </description>
+    </simple>
+
+    <simple
+      name = "cell-array-variable-size"
+      type = "integer"
+      default = "0"
+      >
+      <userclass>User</userclass>
+      <description>
+        Nombre d'éléments pour les variables tableaux aux mailles
+      </description>
+    </simple>
+
+  </options>
+  
+</module>

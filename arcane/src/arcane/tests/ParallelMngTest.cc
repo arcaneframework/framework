@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -36,6 +36,7 @@
 #include "arcane/ISerializeMessageList.h"
 #include "arcane/IParallelTopology.h"
 #include "arcane/IParallelNonBlockingCollective.h"
+#include "arcane/ParallelMngUtils.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 
@@ -44,6 +45,7 @@
 #include "arccore/message_passing/Messages.h"
 
 #include <cstdint>
+#include <thread>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -110,6 +112,7 @@ class ParallelMngTest
   void _testBroadcastStringAndMemoryBuffer();
   void _testBroadcastStringAndMemoryBuffer2(const String& wanted_str);
   void _testProbeSerialize(Integer nb_value,bool use_one_message);
+  void _testProcessMessages(const ParallelExchangerOptions* exchange_options);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -198,6 +201,7 @@ _testBarrier()
     info() << "Testing NonBlockingBarrier";
     for( Integer i=0; i<nb_test; ++i ){
       requests.add(pnbc->barrier());
+      requests.add(mpNonBlockingBarrier(mpm));
     }
 
     pm->waitAllRequests(requests);
@@ -263,12 +267,15 @@ _testSendRecvNonBlockingSome(Integer nb_message,Integer message_size,
     Integer total_nb_done = 0;
     for( ;; ) {
       UniqueArray<Int32> ready;
-      info() << "BEGIN WAIT iter=" << iteration << " nb_request=" << requests->size()
-             << " wait_mode=" << wait_mode;
+      bool do_print = (iteration<50 || (iteration%100)==0);
+      if (do_print)
+        info() << "BEGIN WAIT iter=" << iteration << " nb_request=" << requests->size()
+               << " wait_mode=" << wait_mode;
       Int32 nb_done = requests->wait(wait_mode);
       total_nb_done += nb_done;
-      info() << "END WAIT iter=" << iteration << " nb_done=" << nb_done
-             << " total=" << total_nb_done;
+      if (do_print)
+        info() << "END WAIT iter=" << iteration << " nb_done=" << nb_done
+               << " total=" << total_nb_done;
 
       if (nb_done==0){ // Plus de requêtes à attendre
         // En mode WaitSome, on sort uniquement s'il n'y a plus de requêtes
@@ -282,8 +289,10 @@ _testSendRecvNonBlockingSome(Integer nb_message,Integer message_size,
           break;
       }
       ++iteration;
-      if (iteration>10000)
-        ARCANE_FATAL("Too many iteration");
+      // Fait une petit pause de 1ms pour éviter une boucle trop rapide.
+      std::this_thread::sleep_for(std::chrono::milliseconds(2));
+      if (iteration>25000)
+        ARCANE_FATAL("Too many iteration. probably a deadlock");
       // On récupère à partir du numéro de la requête le rang d'origine et
       // le numéro du message
       for( Integer iter_val : requests->doneRequestIndexes() ) {
@@ -908,12 +917,38 @@ _testReduce2()
 void ParallelMngTest::
 _testProcessMessages()
 {
+  info() << "Test: TestProcessMessage";
+  _testProcessMessages(nullptr);
+  {
+    ParallelExchangerOptions options;
+    info() << "Test: TestProcessMessage with collective";
+    options.setExchangeMode(ParallelExchangerOptions::EM_Collective);
+    _testProcessMessages(&options);
+  }
+ {
+    ParallelExchangerOptions options;
+    info() << "Test: TestProcessMessage with max pending";
+    options.setMaxPendingMessage(5);
+    _testProcessMessages(&options);
+  }
+
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ParallelMngTest::
+_testProcessMessages(const ParallelExchangerOptions* exchange_options)
+{
   IParallelMng* pm = m_parallel_mng;
   Int32 rank = pm->commRank();
   Int32 nb_rank = pm->commSize();
   ITraceMng* tm = pm->traceMng();
 
-  ScopedPtrT<IParallelExchanger> exchanger(pm->createExchanger());
+  auto exchanger { ParallelMngUtils::createExchangerRef(pm) };
+  exchanger->setVerbosityLevel(2);
+  exchanger->setName("TestProcessMessage");
+
   Int32 nb_send = nb_rank;
   for( Int32 i=0; i<nb_send; ++i ){
     exchanger->addSender(i);
@@ -937,7 +972,10 @@ _testProcessMessages()
     }
     s->put(msg);
   }
-  exchanger->processExchange();
+  if (exchange_options)
+    exchanger->processExchange(*exchange_options);
+  else
+    exchanger->processExchange();
   tm->info() << "END EXCHANGE";
   {
     Integer nb_receiver = exchanger->nbReceiver();
@@ -1059,7 +1097,7 @@ _testStandardCalls()
 void ParallelMngTest::
 _testTopology()
 {
-  ScopedPtrT<IParallelTopology> pt(m_parallel_mng->createTopology());
+  auto pt { ParallelMngUtils::createTopologyRef(m_parallel_mng) };
   ITraceMng* tm = m_parallel_mng->traceMng();
   
   Int32ConstArrayView master_machine_ranks = pt->masterMachineRanks();

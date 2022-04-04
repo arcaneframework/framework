@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PrivateVariableArray.h                                      (C) 2000-2020 */
+/* PrivateVariableArray.h                                      (C) 2000-2022 */
 /*                                                                           */
 /* Classe gérant une variable array sur une entité du maillage.              */
 /*---------------------------------------------------------------------------*/
@@ -38,9 +38,6 @@ class PrivateVariableArrayT
   
   typedef DataType& DataTypeReturnReference;
   typedef Array2VariableT<DataType> PrivatePartType;
-#ifdef ARCANE_PROXY
-  typedef typename DataTypeTraitsT<DataType>::ProxyType ProxyType;
-#endif
   
  protected:
   
@@ -75,20 +72,6 @@ class PrivateVariableArrayT
  protected:
   
   void _internalInit() { MeshVariableRef::_internalInit(m_private_part); }
-
-#ifdef ARCANE_TRACE
- private:
-  
-  typedef ArrayView<DataType> ArrayBase;
-  void _trace(Integer local_id) const 
-  {
-    if (m_has_trace){
-      IDataTracerT<DataType>* tracer = m_trace_infos[local_id];
-      if (tracer)
-        tracer->traceRead(ArrayBase::operator[](local_id));
-    }
-  }
-#endif
   
  protected:
 

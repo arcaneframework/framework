@@ -3,7 +3,11 @@ find_package(ArcaneSwig
   HINTS "${Arcane_DIR}"
   )
 if (NOT ArcaneSwig_FOUND)
-  message(STATUS "Can not find 'ArcaneSwig' for EOS C# sample. Disabling 'C#' samples")
+  message(STATUS "INFO: Disabling 'C#' samples because 'ArcaneSwig' package is not available. ")
+  return()
+endif()
+if (NOT ARCANE_CORECLR_VERSION STREQUAL "6.0")
+  message(STATUS "INFO: Disabling 'C#' samples because '.Net' version is not '6.0' (version=${ARCANE_CORECLR_VERSION})")
   return()
 endif()
 

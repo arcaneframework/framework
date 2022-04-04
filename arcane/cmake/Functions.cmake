@@ -216,10 +216,14 @@ function(arcane_add_library target)
   #message(STATUS "TARGET=${target} FILES=${_FILES}")
   add_library(${target} ${_FILES})
   target_compile_definitions(${target} PRIVATE ARCANE_COMPONENT_${target})
+  # A terme, supprimer l'ajout de '${CMAKE_INSTALL_PREFIX}/lib' car '$ORIGIN'
+  # doit suffire mais il faut être sur qu'il est disponible sur toutes
+  # les plateformes UNIX.
+  # La propriété BUILD_RPATH_USE_ORIGIN devrait pouvoir faire la même chose
   set_target_properties(${target}
     PROPERTIES
     INSTALL_RPATH_USE_LINK_PATH 1
-    INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib
+    INSTALL_RPATH "$ORIGIN;${CMAKE_INSTALL_PREFIX}/lib"
     )
   arcane_target_set_standard_path(${target})
   if (ARGS_AXL_FILES)
@@ -334,6 +338,9 @@ macro(arcane_register_library lib_name)
     target_link_libraries(arcane_full INTERFACE ${lib_name})
   endif()
   set(ARCANE_LIBRARIES ${lib_name} ${ARCANE_LIBRARIES} PARENT_SCOPE)
+  list(APPEND ARCANE_EXPORTED_TARGETS ${lib_name})
+  set(ARCANE_EXPORTED_TARGETS ${ARCANE_EXPORTED_TARGETS} CACHE STRING "List of exported targets" FORCE)
+  add_library(Arcane::${lib_name} ALIAS ${lib_name})
 endmacro()
 
 # ----------------------------------------------------------------------------

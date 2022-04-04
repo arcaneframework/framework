@@ -1,19 +1,7 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2020 IFPEN-CEA
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
@@ -100,6 +88,16 @@ class BasicSerializerNewImpl
 
  public:
 
+  //! Informations sur la taille allouée avec et sans padding.
+  struct SizeInfo
+  {
+   public:
+    Int64 m_original_size = 0;
+    Int64 m_padded_size = 0;
+  };
+
+ public:
+
   //! Tableau contenant les données sérialisées
   UniqueArray<Byte> m_buffer;
 
@@ -131,31 +129,40 @@ class BasicSerializerNewImpl
   void allocateBuffer(Int64 nb_real,Int64 nb_int16,Int64 nb_int32,
                       Int64 nb_int64,Int64 nb_byte) override
   {
-    Int64 total = getPaddingSize(NB_SIZE_ELEM,sizeof(Int64));
+    SizeInfo size_info = getPaddingSize(NB_SIZE_ELEM,sizeof(Int64));
+    Int64 total = size_info.m_padded_size;
 
     Int64 real_position = total;
-    Int64 padded_real_size = getPaddingSize(nb_real,sizeof(Real));
-    total += padded_real_size;
+    SizeInfo padded_real_size = getPaddingSize(nb_real,sizeof(Real));
+    total += padded_real_size.m_padded_size;
 
     Int64 int16_position = total;
-    Int64 padded_int16_size = getPaddingSize(nb_int16,sizeof(Int16));
-    total += padded_int16_size;
+    SizeInfo padded_int16_size = getPaddingSize(nb_int16,sizeof(Int16));
+    total += padded_int16_size.m_padded_size;
 
     Int64 int32_position = total;
-    Int64 padded_int32_size = getPaddingSize(nb_int32,sizeof(Int32));
-    total += padded_int32_size;
+    SizeInfo padded_int32_size = getPaddingSize(nb_int32,sizeof(Int32));
+    total += padded_int32_size.m_padded_size;
 
     Int64 int64_position = total;
-    Int64 padded_int64_size = getPaddingSize(nb_int64,sizeof(Int64));
-    total += padded_int64_size;
+    SizeInfo padded_int64_size = getPaddingSize(nb_int64,sizeof(Int64));
+    total += padded_int64_size.m_padded_size;
 
     Int64 byte_position = total;
-    Int64 padded_byte_size = getPaddingSize(nb_byte,sizeof(Byte));
-    total += padded_byte_size;
+    SizeInfo padded_byte_size = getPaddingSize(nb_byte,sizeof(Byte));
+    total += padded_byte_size.m_padded_size;
 
     _allocBuffer(total);
 
+    _fillPadding(0,size_info);
+    _fillPadding(real_position,padded_real_size);
+    _fillPadding(int16_position,padded_int16_size);
+    _fillPadding(int32_position,padded_int32_size);
+    _fillPadding(int64_position,padded_int64_size);
+    _fillPadding(byte_position,padded_byte_size);
+
     m_sizes_view = Int64ArrayView(NB_SIZE_ELEM,(Int64*)&m_buffer_view[0]);
+    m_sizes_view.fill(0);
 
     m_sizes_view[IDX_TAG] = SERIALIZE_TAG;
     m_sizes_view[IDX_VERSION] = 1;
@@ -279,7 +286,7 @@ class BasicSerializerNewImpl
 
  protected:
   
-  Int64 getPaddingSize(Int64 nb_elem,Int64 elem_size)
+  SizeInfo getPaddingSize(Int64 nb_elem,Int64 elem_size)
   {
     if (nb_elem<0)
       ARCCORE_FATAL("Bad number of element '{0}' (should be >=0)",nb_elem);
@@ -293,7 +300,29 @@ class BasicSerializerNewImpl
     if ( (new_size%ALIGN_SIZE)!=0 )
       ARCCORE_FATAL("Bad padding {0}",new_size);
     //std::cout << " nb_elem=" << nb_elem << " elem_size=" << elem_size << " s=" << s << " new_size=" << new_size << '\n';
-    return new_size;
+    return { s, new_size };
+  }
+
+  /*!
+   * \brief Remplit avec une valeur fixe les zones correspondantes au padding.
+   * Cela permet d'éviter d'avoir des valeurs non initialisées.
+   *
+   * Il faut avoir appeler _allocBuffer() avant
+   */
+  void _fillPadding(Int64 position,SizeInfo size_info)
+  {
+    Int64 begin = position + size_info.m_original_size;
+    Int64 end = position + size_info.m_padded_size;
+    _fillPadding(m_buffer_view.subspan(begin,end-begin));
+  }
+
+  void _fillPadding(Span<Byte> buf)
+  {
+    // Utilise une valeur non nulle pour repérer plus facilement
+    // les zones de padding si besoin.
+    constexpr Byte v = (Byte)(250);
+    for( Int64 i=0, s=buf.size(); i<s; ++i )
+      buf[i] = v;
   }
 
   void _checkAlignment()
@@ -346,6 +375,10 @@ class BasicSerializerNewImpl
     // La taille doit être un multiple de ALIGN_SIZE;
     Int64 new_size = (size + ALIGN_SIZE) - (size%ALIGN_SIZE);
     m_buffer_view = m_buffer.span().subspan(position,new_size);
+
+    // Initialise les valeurs de la zone tampon
+    auto padding_view = m_buffer.span().subspan(position+size,new_size-size);
+    _fillPadding(padding_view);
   }
 };
 

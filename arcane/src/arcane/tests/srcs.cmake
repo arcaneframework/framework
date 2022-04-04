@@ -51,6 +51,7 @@ set(ARCANE_SOURCES
   ExchangeItemsUnitTest.cc
   anyitem/AnyItemTester.cc
   dof/DoFTester.cc
+  graph/GraphUnitTest.cc
   inout/InOutTester.cc
   geometry/GeometryUnitTest.cc
   StdArrayMeshVariables.h
@@ -63,6 +64,7 @@ set(ARCANE_SOURCES
   accelerator/MiniWeatherOriginalSequential.cc
   accelerator/MiniWeatherArraySequential.cc
   CustomMeshTestModule.cc
+  TaskUnitTest.cc
   )
 
 set(AXL_FILES 
@@ -93,6 +95,7 @@ set(AXL_FILES
   ExchangeItemsUnitTest
   anyitem/AnyItemTester
   dof/DoFTester
+  graph/GraphUnitTest
   inout/InOutTester
   geometry/GeometryUnitTest
   CustomMeshTest

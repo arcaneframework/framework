@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemsExchangeInfo2.h                                        (C) 2000-2016 */
+/* ItemsExchangeInfo2.h                                        (C) 2000-2022 */
 /*                                                                           */
 /* Informations pour échanger des entités et leur caractéristiques.          */
 /*---------------------------------------------------------------------------*/
@@ -20,6 +20,7 @@
 #include "arcane/VariableCollection.h"
 #include "arcane/IItemFamilyExchanger.h"
 #include "arcane/IItemFamilySerializeStep.h"
+#include "arcane/ParallelExchangerOptions.h"
 
 #include "arcane/mesh/MeshGlobal.h"
 
@@ -28,24 +29,19 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
+namespace Arcane
+{
 class ItemInternal;
 class IParallelExchanger;
 class IItemFamilySerializer;
 class IItemFamilySerializeStep;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
+namespace Arcane::mesh
+{
 class ItemGroupsSerializer2;
 class TiedInterfaceExchanger;
 class ItemFamilyVariableSerializer;
@@ -146,6 +142,8 @@ class ARCANE_MESH_EXPORT ItemsExchangeInfo2
 
   IItemFamily* itemFamily() override { return m_item_family; }
 
+  void setParallelExchangerOption(const ParallelExchangerOptions& options) override;
+
  public:
 
   void addSerializeStep(IItemFamilySerializeStep* step);
@@ -168,7 +166,7 @@ class ARCANE_MESH_EXPORT ItemsExchangeInfo2
    */
   UniqueArray<IItemFamily*> m_families_to_exchange;
 
-  IParallelExchanger* m_exchanger;
+  Ref<IParallelExchanger> m_exchanger;
 
   /*!
    * \brief Liste des numéros locaux des entités reçues.
@@ -178,6 +176,10 @@ class ARCANE_MESH_EXPORT ItemsExchangeInfo2
   IItemFamilySerializer* m_family_serializer;
 
   UniqueArray<IItemFamilySerializeStep*> m_serialize_steps;
+
+  ParallelExchangerOptions m_exchanger_option;
+
+ private:
 
   inline void _addItemToSend(Int32 sub_domain_id,Item item);
   bool _computeExchangeInfos();
@@ -189,14 +191,7 @@ class ARCANE_MESH_EXPORT ItemsExchangeInfo2
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

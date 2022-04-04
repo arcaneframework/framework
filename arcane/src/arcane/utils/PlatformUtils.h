@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -225,6 +225,13 @@ setHasDotNETRuntime(bool v);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+//! Appelle le Garbage Collector de '.Net' s'il est disponible
+extern "C++" ARCANE_UTILS_EXPORT void
+callDotNETGarbageCollector();
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Allocateur spécifique pour les accélérateurs.
  *
@@ -243,6 +250,8 @@ getAcceleratorHostMemoryAllocator();
 extern "C++" ARCANE_UTILS_EXPORT IMemoryAllocator*
 setAcceleratorHostMemoryAllocator(IMemoryAllocator* a);
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Allocateur par défaut pour les données.
  *
@@ -257,6 +266,29 @@ setAcceleratorHostMemoryAllocator(IMemoryAllocator* a);
  */
 extern "C++" ARCANE_UTILS_EXPORT IMemoryAllocator*
 getDefaultDataAllocator();
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Positionne le gestionnaire de ressource mémoire pour les données.
+ *
+ * Le gestionnaire doit rester valide durant toute l'exécution du programme.
+ *
+ * Retourne l'ancien gestionnaire.
+ */
+extern "C++" ARCANE_UTILS_EXPORT IMemoryRessourceMng*
+setDataMemoryRessourceMng(IMemoryRessourceMng* mng);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Gestionnaire de ressource mémoire pour les données.
+ *
+ * Il est garanti que l'alignement est au moins celui retourné par
+ * AlignedMemoryAllocator::Simd().
+ */
+extern "C++" ARCANE_UTILS_EXPORT IMemoryRessourceMng*
+getDataMemoryRessourceMng();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

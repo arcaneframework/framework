@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemFamily.h                                                (C) 2000-2020 */
+/* ItemFamily.h                                                (C) 2000-2021 */
 /*                                                                           */
 /* Famille d'entités.                                                        */
 /*---------------------------------------------------------------------------*/
@@ -75,53 +75,6 @@ class ARCANE_MESH_EXPORT ItemFamily
 : public TraceAccessor
 , public IItemFamily
 {
- public:
-  /*!
-   * \brief Classe permettant d'accéder aux membres privés de ItemFamily
-   * nécessaires pour l'implémentation des connectivités compactes.
-   * Elle ne doit donc contenir que des méthodes nécessaires pour
-   * la classe CompactIncrementalItemConnectivity et ses dérivées.
-   */
-  class CompactConnectivityHelper
-  {
-   public:
-    CompactConnectivityHelper(ItemFamily* family) : m_family(family){}
-   public:
-    ItemInternal* itemInternal(ItemLocalId local_id)
-    {
-      return m_family->_itemInternal(local_id.localId());
-    }
-    ItemInternalList itemsInternal()
-    {
-      return m_family->_itemsInternal();
-    }
-    void updateSharedInfoAdded(ItemInternal* item,Integer nb_added_edge,
-                               Integer nb_added_face,Integer nb_added_cell)
-    {
-      m_family->_updateSharedInfoAdded(item,nb_added_edge,nb_added_face,nb_added_cell);
-    }
-    void updateSharedInfoRemoved(ItemInternal* item,Integer nb_removed_edge,
-                                 Integer nb_removed_face,Integer nb_removed_cell)
-    {
-      m_family->_updateSharedInfoRemoved(item,nb_removed_edge,nb_removed_face,nb_removed_cell);
-    }
-    void updateSharedInfoAdded(ItemInternal* item,Integer nb_added_edge,
-                               Integer nb_added_face,Integer nb_added_cell,
-                               Integer nb_added_hParent,Integer nb_added_hChildren)
-    {
-      m_family->_updateSharedInfoAdded(item,nb_added_edge,nb_added_face,nb_added_cell,
-                                       nb_added_hParent,nb_added_hChildren);
-    }
-    void updateSharedInfoRemoved(ItemInternal* item,Integer nb_removed_edge,Integer nb_removed_face,Integer nb_removed_cell,
-                                  Integer nb_removed_hParent,Integer nb_removed_hChildren)
-    {
-      m_family->_updateSharedInfoRemoved(item,nb_removed_edge,nb_removed_face,nb_removed_cell,
-                                         nb_removed_hParent,nb_removed_hChildren);
-    }
-    ItemFamily* family() { return m_family; }
-   private:
-    ItemFamily* m_family;
-  };
  private:
   class Variables;
   class AdjencyInfo
@@ -426,7 +379,7 @@ class ARCANE_MESH_EXPORT ItemFamily
   MeshItemInternalList* m_item_internal_list;
   ItemSharedInfoList* m_item_shared_infos;
   ObserverPool m_observers;
-  IVariableSynchronizer* m_variable_synchronizer;
+  Ref<IVariableSynchronizer> m_variable_synchronizer;
   Integer m_current_variable_item_size;
   IItemInternalSortFunction* m_item_sort_function;
   std::set<IVariable*> m_used_variables;
@@ -445,19 +398,12 @@ class ARCANE_MESH_EXPORT ItemFamily
  protected:
 
   void _checkNeedEndUpdate() const;
-  void _updateSharedInfoAdded(ItemInternal* item,Integer nb_added_edge,Integer nb_added_face,Integer nb_added_cell);
-  void _updateSharedInfoRemoved(ItemInternal* item,Integer nb_removed_edge,Integer nb_removed_face,Integer nb_removed_cell);
-//! AMR
-  void _updateSharedInfoAdded(ItemInternal* item,Integer nb_added_edge,Integer nb_added_face,Integer nb_added_cell,
-		  Integer nb_added_hParent,Integer nb_added_hChildren);
-  void _updateSharedInfoRemoved(ItemInternal* item,Integer nb_removed_edge,Integer nb_removed_face,Integer nb_removed_cell,
-		  Integer nb_removed_hParent,Integer nb_removed_hChildren);
+  void _updateSharedInfoAdded(ItemInternal* item);
+  void _updateSharedInfoRemoved4(ItemInternal* item);
+  void _updateSharedInfoRemoved7(ItemInternal* item);
 
   void _allocateInfos(ItemInternal* item,Int64 uid,ItemSharedInfo* isi);
-  void _allocateInfos(ItemInternal* item,Int64 uid,ItemTypeInfo* type,Integer nb_edge,Integer nb_face,Integer nb_cell);
-  void _allocateInfos(ItemInternal* item,Int64 uid,ItemTypeInfo* type,
-                      Integer nb_edge,Integer nb_face,Integer nb_cell,
-                      Integer edge_allocated,Integer face_allocated,Integer cell_allocated);
+  void _allocateInfos(ItemInternal* item,Int64 uid,ItemTypeInfo* type);
   void _endUpdate(bool need_check_remove);
   bool _partialEndUpdate();
   //void _partialEndUpdateGroup(const ItemGroup& group);
@@ -499,10 +445,7 @@ class ARCANE_MESH_EXPORT ItemFamily
   IItemFamilyTopologyModifier* m_topology_modifier;
   //! Accesseur pour les connectités via Item et ItemInternal
   ItemInternalConnectivityList m_item_connectivity_list;
-  //! \a true si on utilise les anciens mécanismes pour accéder aux connectivités
-  bool m_use_legacy_connectivity_policy;
-  ///! \a true si les anciennes connectivités sont créées
-  bool m_has_legacy_connectivity;
+
   UniqueArray<ItemConnectivitySelector*> m_connectivity_selector_list_by_item_kind;
 
  protected:
@@ -511,19 +454,7 @@ class ARCANE_MESH_EXPORT ItemFamily
   void _reserveInfosMemory(Integer memory);
   void _resizeInfos(Integer memory);
 
-  ItemSharedInfo* _findSharedInfo(ItemTypeInfo* type,Integer nb_edge,
-                                  Integer nb_face,Integer nb_cell);
-  ItemSharedInfo* _findSharedInfo(ItemTypeInfo* type,Integer nb_edge,
-                                  Integer nb_face,Integer nb_cell,
-                                  Integer edge_allocated,Integer face_allocated,
-                                  Integer cell_allocated);
-  //! AMR
-  ItemSharedInfo* _findSharedInfo(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,Integer nb_cell,
-                                      Integer nb_hParent, Integer nb_hChildren);
-  ItemSharedInfo* _findSharedInfo(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,Integer nb_cell,
-                                    Integer nb_hParent, Integer nb_hChildren,
-                                    Integer edge_allocated,Integer face_allocated,Integer cell_allocated,
-                                    Integer hParent_allocated, Integer hChild_allocated);
+  ItemSharedInfo* _findSharedInfo(ItemTypeInfo* type);
 
   Integer _allocMany(Integer memory);
   void _setSharedInfosPtr(Integer* ptr);
@@ -541,10 +472,7 @@ class ARCANE_MESH_EXPORT ItemFamily
   void _readGroups();
   void _invalidateComputedGroups();
   void _compactItems(bool do_sort);
-  void _checkSameConnectivity(IIncrementalItemConnectivity* ref,
-                              IIncrementalItemConnectivity* c);
   void _setTopologyModifier(IItemFamilyTopologyModifier* tm);
-  bool _hasLegacyConnectivity() const { return m_has_legacy_connectivity; }
 
  private:
   

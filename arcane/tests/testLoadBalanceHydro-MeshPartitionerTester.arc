@@ -10,7 +10,7 @@
 
  <mesh>
 
-  <meshgenerator><sod><x>100</x><y>10</y><z>10</z></sod></meshgenerator>
+  <meshgenerator><sod><x>50</x><y>4</y><z>4</z></sod></meshgenerator>
   <!-- <file internal-partition="true">sod.vtk</file> -->
 
  <initialisation>

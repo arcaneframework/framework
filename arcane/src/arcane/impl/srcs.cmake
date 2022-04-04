@@ -52,6 +52,8 @@ set( ARCANE_SOURCES
   NullVariableSynchronizer.cc
   ParallelExchanger.cc
   ParallelExchanger.h
+  ParallelMngUtilsFactoryBase.cc
+  ParallelMngUtilsFactoryBase.h
   ParallelReplication.cc
   ParallelReplication.h
   ParallelTopology.cc
@@ -68,6 +70,7 @@ set( ARCANE_SOURCES
   ServiceLoader.cc
   ServiceMng.cc
   ServiceAndModuleFactoryMng.cc
+  SimpleGridMeshPartitioner.cc
   Session.cc
   Session.h
   SubDomain.cc
@@ -88,6 +91,8 @@ set( ARCANE_SOURCES
   VariableUtilities.h
   VariableSynchronizer.cc
   VariableSynchronizer.h
+  VariableSynchronizerDispatcher.cc
+  VariableSynchronizerDispatcher.h
   NullPhysicalUnitSystemService.cc
   TraceMngPolicy.cc
   GlibDynamicLibraryLoader.cc
@@ -129,9 +134,12 @@ set( ARCANE_SOURCES
   internal/MeshFactoryMng.cc
   internal/MeshMng.h
   internal/MeshMng.cc
+  internal/ThreadBindingMng.h
+  internal/ThreadBindingMng.cc
   )
 
 set(AXL_FILES
   ArcaneCaseMeshMasterService
   ArcaneCaseMeshService
+  MeshPartitionerTesterService
 )

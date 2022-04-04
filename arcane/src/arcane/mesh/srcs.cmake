@@ -1,7 +1,7 @@
 set( ARCANE_SOURCES
   AbstractItemFamilyTopologyModifier.cc
   AbstractItemFamilyTopologyModifier.h
-  CompactIncrementalItemConnectivity.cc
+  CartesianFaceUniqueIdBuilder.cc
   CompactIncrementalItemConnectivity.h
   CommonItemGroupFilterer.h
   CommonItemGroupFilterer.cc
@@ -45,6 +45,7 @@ set( ARCANE_SOURCES
   ItemsExchangeInfo2.h
   ItemGroupDynamicMeshObserver.cc
   ItemGroupDynamicMeshObserver.h
+  ItemInternalConnectivityIndex.h
   BasicItemPairGroupComputeFunctor.cc
   BasicItemPairGroupComputeFunctor.h
   ItemFamily.cc
@@ -98,6 +99,8 @@ set( ARCANE_SOURCES
   MeshExchangeMng.h
   MeshNodeMerger.cc
   MeshNodeMerger.h
+  MeshUniqueIdMng.cc
+  MeshUniqueIdMng.h
   MeshVariables.cc
   MeshVariables.h
   MeshPartitionConstraintMng.cc
@@ -141,6 +144,7 @@ set( ARCANE_SOURCES
   DoFFamily.h
   GhostLayerFromConnectivityComputer.cc
   GhostLayerFromConnectivityComputer.h
+  IndexedItemConnectivityAccessor.h
   IncrementalItemConnectivity.cc
   IncrementalItemConnectivity.h
   ItemConnectivity.cc
@@ -229,6 +233,9 @@ set( ARCANE_SOURCES
   PolyhedralMesh.cc
   PolyhedralMesh.h
   PolyhedralMeshService.cc
+  GraphBuilder.h
+  GraphDoFs.h
+  GraphDoFs.cc
   )
 
 set(AXL_FILES 

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -46,6 +46,8 @@
 #include "arcane/SimdItem.h"
 
 #include "arcane/UnstructuredMeshConnectivity.h"
+
+#include "arcane/accelerator/core/IAcceleratorMng.h"
 
 #include "arcane/accelerator/Reduce.h"
 #include "arcane/accelerator/Accelerator.h"
@@ -136,21 +138,20 @@ class SimpleHydroAcceleratorService
 
  public:
 
-  void hydroBuild();
-  void hydroStartInit();
-  void hydroInit();
-  void hydroContinueInit() {}
-  void hydroExit();
+  void hydroBuild() override;
+  void hydroStartInit() override;
+  void hydroInit() override;
+  void hydroExit() override;
 
-  void computeForces();
-  void computeVelocity();
-  void computeViscosityWork();
-  void applyBoundaryCondition();
-  void moveNodes();
-  void computeGeometricValues();
-  void updateDensity();
-  void applyEquationOfState();
-  void computeDeltaT();
+  void computeForces() override;
+  void computeVelocity() override;
+  void computeViscosityWork() override;
+  void applyBoundaryCondition() override;
+  void moveNodes() override;
+  void computeGeometricValues() override;
+  void updateDensity() override;
+  void applyEquationOfState() override;
+  void computeDeltaT() override;
 
   void setModule(SimpleHydro::SimpleHydroModuleBase* module) override
   {
@@ -162,7 +163,7 @@ class SimpleHydroAcceleratorService
   void computeGeometricValues2();
 
   void cellScalarPseudoViscosity();
-  ARCCORE_HOST_DEVICE inline void computeCQs(Real3 node_coord[8],Real3 face_coord[6],Span<Real3> cqs);
+  static ARCCORE_HOST_DEVICE inline void computeCQs(Real3 node_coord[8],Real3 face_coord[6],Span<Real3> cqs);
 
  private:
   VariableCellInt64 m_cell_unique_id; //!< Unique ID associé à la maille
@@ -193,7 +194,8 @@ class SimpleHydroAcceleratorService
   //! Indice de chaque noeud dans la maille
   UniqueArray<Int16> m_node_index_in_cells;
 
-  ax::Runner m_runner;
+  ax::Runner* m_runner = nullptr;
+  ax::RunQueue* m_default_queue = nullptr;
 
   UnstructuredMeshConnectivityView m_connectivity_view;
   UniqueArray<BoundaryCondition> m_boundary_conditions;
@@ -238,10 +240,9 @@ SimpleHydroAcceleratorService(const ServiceBuildInfo& sbi)
 , m_old_dt_f(VariableBuildInfo(sbi.mesh(),"OldDTf"))
 , m_module(nullptr)
 , m_node_index_in_cells(platform::getAcceleratorHostMemoryAllocator())
+, m_runner(sbi.subDomain()->acceleratorMng()->defaultRunner())
+, m_default_queue(sbi.subDomain()->acceleratorMng()->defaultQueue())
 {
-  if (TaskFactory::isActive()){
-    info() << "USE CONCURRENCY!!!!!";
-  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -259,8 +260,6 @@ void SimpleHydroAcceleratorService::
 hydroBuild()
 {
   info() << "Using hydro with accelerator";
-  IApplication* app = subDomain()->application();
-  initializeRunner(m_runner,traceMng(),app->acceleratorRuntimeInitialisationInfo());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -297,8 +296,7 @@ hydroStartInit()
   // Vérifie que les valeurs initiales sont correctes
   {
     Integer nb_error = 0;
-    auto queue = makeQueue(m_runner);
-    auto command = makeCommand(queue);
+    auto command = makeCommand(m_default_queue);
     auto in_pressure = ax::viewIn(command,m_pressure);
     auto in_adiabatic_cst = ax::viewIn(command,m_adiabatic_cst);
     ax::VariableCellRealInView in_density = ax::viewIn(command,m_density);
@@ -345,8 +343,7 @@ hydroStartInit()
 
   {
     info() << "Initialize SoundSpeed and InternalEnergy";
-    auto queue = makeQueue(m_runner);
-    auto command = makeCommand(queue);
+    auto command = makeCommand(m_default_queue);
     // Initialise l'énergie et la vitesse du son
     auto in_pressure = ax::viewIn(command,m_pressure);
     auto in_density = ax::viewIn(command,m_density);
@@ -398,17 +395,13 @@ hydroStartInit()
 void SimpleHydroAcceleratorService::
 computeForces()
 {
-  // Remise à zéro du vecteur des forces.
-  m_force.fill(Real3::null());
-
   // Calcul pour chaque noeud de chaque maille la contribution
   // des forces de pression et de la pseudo-viscosite si necessaire
   if (m_module->getViscosity()==TypesSimpleHydro::ViscosityCellScalar){
     _computePressureAndCellPseudoViscosityForces();
   }
   else{
-    auto queue = makeQueue(m_runner);
-    auto command = makeCommand(queue);
+    auto command = makeCommand(m_default_queue);
     auto out_force = ax::viewOut(command,m_force);
     auto in_force = ax::viewIn(command,m_force);
 
@@ -438,8 +431,7 @@ _computePressureAndCellPseudoViscosityForces()
 
   // Calcul de la divergence de la vitesse et de la viscosité scalaire
   {
-    auto queue = makeQueue(m_runner);
-    auto command = makeCommand(queue);
+    auto command = makeCommand(m_default_queue);
     auto in_density = ax::viewIn(command,m_density);
     auto in_velocity = ax::viewIn(command,m_velocity);
     auto in_caracteristic_length = ax::viewIn(command,m_caracteristic_length);
@@ -475,8 +467,7 @@ _computePressureAndCellPseudoViscosityForces()
   }
 
   {
-    auto queue = makeQueue(m_runner);
-    auto command = makeCommand(queue);
+    auto command = makeCommand(m_default_queue);
     auto in_pressure = ax::viewIn(command,m_pressure);
     auto in_cell_viscosity_force = ax::viewIn(command,m_cell_viscosity_force);
     auto in_cell_cqs = ax::viewIn(command,m_cell_cqs);
@@ -510,8 +501,7 @@ computeVelocity()
 {
   m_force.synchronize();
 
-  auto queue = makeQueue(m_runner);
-  auto command = makeCommand(queue);
+  auto command = makeCommand(m_default_queue);
   auto in_node_mass = ax::viewIn(command,m_node_mass);
   auto in_force = ax::viewIn(command,m_force);
   auto in_out_velocity = ax::viewInOut(command,m_velocity);
@@ -535,8 +525,7 @@ computeVelocity()
 void SimpleHydroAcceleratorService::
 computeViscosityWork()
 {
-  auto queue = makeQueue(m_runner);
-  auto command = makeCommand(queue);
+  auto command = makeCommand(m_default_queue);
   auto in_cell_viscosity_force = ax::viewIn(command,m_cell_viscosity_force);
   auto in_velocity = ax::viewIn(command,m_velocity);
   auto out_viscosity_work = ax::viewOut(command,m_viscosity_work);
@@ -614,8 +603,7 @@ applyBoundaryCondition()
 void SimpleHydroAcceleratorService::
 moveNodes()
 {
-  auto queue = makeQueue(m_runner);
-  auto command = makeCommand(queue);
+  auto command = makeCommand(m_default_queue);
   Real deltat_f = m_delta_t_f();
   
   auto in_velocity = ax::viewIn(command,m_velocity);
@@ -637,8 +625,7 @@ moveNodes()
 void SimpleHydroAcceleratorService::
 updateDensity()
 {
-  auto queue = makeQueue(m_runner);
-  auto command = makeCommand(queue);
+  auto command = makeCommand(m_default_queue);
   ax::ReducerMax<double> density_ratio_maximum(command);
   density_ratio_maximum.setValue(0.0);
   auto in_cell_mass = ax::viewIn(command,m_cell_mass);
@@ -685,8 +672,7 @@ updateDensity()
 void SimpleHydroAcceleratorService::
 applyEquationOfState()
 {
-  auto queue = makeQueue(m_runner);
-  auto command = makeCommand(queue);
+  auto command = makeCommand(m_default_queue);
   const Real deltatf = m_delta_t_f();
   const bool add_viscosity_force = (m_module->getViscosity()!=TypesSimpleHydro::ViscosityNo);
   
@@ -741,8 +727,7 @@ computeDeltaT()
   Real minimum_aux = FloatInfo<Real>::maxValue();
 
   {
-    auto queue = makeQueue(m_runner);
-    auto command = makeCommand(queue);
+    auto command = makeCommand(m_default_queue);
     ax::ReducerMin<double> minimum_aux_reducer(command);
     auto in_sound_speed = ax::viewIn(command,m_sound_speed);
     auto in_caracteristic_length = ax::viewIn(command,m_caracteristic_length);
@@ -815,7 +800,7 @@ computeDeltaT()
  *
  * La méthode utilisée est celle du découpage en quatre triangles.
  */
-inline void SimpleHydroAcceleratorService::
+ARCCORE_HOST_DEVICE inline void SimpleHydroAcceleratorService::
 computeCQs(Real3 node_coord[8],Real3 face_coord[6],Span<Real3> cqs)
 {
   const Real3 c0 = face_coord[0];
@@ -894,8 +879,7 @@ computeCQs(Real3 node_coord[8],Real3 face_coord[6],Span<Real3> cqs)
 void SimpleHydroAcceleratorService::
 computeGeometricValues()
 {
-  auto queue = makeQueue(m_runner);
-  auto command = makeCommand(queue);
+  auto command = makeCommand(m_default_queue);
   auto in_node_coord = ax::viewIn(command,m_node_coord);
   auto in_out_cell_cqs = ax::viewInOut(command,m_cell_cqs);
   auto in_volume = ax::viewIn(command,m_volume);

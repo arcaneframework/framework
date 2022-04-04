@@ -1,25 +1,39 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ConnectivitySynchronizer.cc                                 (C) 2000-2015 */
+/* ItemConnectivitySynchronizer.cc                             (C) 2000-2021 */
 /*                                                                           */
 /* Synchronization des connectivités.                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/mesh/IItemConnectivityGhostPolicy.h"
 #include "arcane/mesh/ItemConnectivitySynchronizer.h"
+#include "arcane/mesh/IItemConnectivityGhostPolicy.h"
 
 #include <algorithm>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ItemConnectivitySynchronizer::
+ItemConnectivitySynchronizer(IItemConnectivity* connectivity,
+                             IItemConnectivityGhostPolicy* ghost_policy)
+: m_connectivity(connectivity)
+, m_ghost_policy(ghost_policy)
+, m_parallel_mng(m_connectivity->targetFamily()->mesh()->parallelMng())
+, m_added_ghost(m_parallel_mng->commSize())
+{
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -39,7 +53,8 @@ computeExtraItemsToSend()
   // Get, for each rank k, ToFamily item that have to be shared with rank k, the
   m_data_to_send.clear();
   Int32ConstArrayView ranks = m_ghost_policy->communicatingRanks();
-  m_data_to_send.resize(m_subdomain->parallelMng()->commSize());
+  m_data_to_send.resize(m_parallel_mng->commSize());
+  const Int32 my_rank = m_parallel_mng->commRank();
   for (Integer i = 0; i < ranks.size(); ++i){
     Integer rank = ranks[i];
     Int32Array& data_to_send = m_data_to_send[rank];
@@ -49,7 +64,7 @@ computeExtraItemsToSend()
     data_to_send.add(shared_items.size());
     data_to_send.addRange(shared_items);
     data_to_send.addRange(shared_items_connected_items);
-    data_to_send.addRange(m_subdomain->parallelMng()->commRank(),shared_items.size()); // shared item owner
+    data_to_send.addRange(my_rank,shared_items.size()); // shared item owner
   }
 }
 
@@ -174,7 +189,16 @@ _removeDuplicatedValues(Int64SharedArray& shared_item_uids, IntegerSharedArray& 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+ISubDomain* ItemConnectivitySynchronizer::
+subDomain()
+{
+  return m_connectivity->targetFamily()->mesh()->subDomain();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

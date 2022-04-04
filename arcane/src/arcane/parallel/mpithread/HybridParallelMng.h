@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -141,6 +141,7 @@ class HybridParallelMng
   ISerializeMessageList* _createSerializeMessageList() override;
   IParallelMng* _createSubParallelMng(Int32ConstArrayView kept_ranks) override;
   Ref<IParallelMng> createSubParallelMngRef(Int32ConstArrayView kept_ranks) override;
+  Ref<IParallelMngUtilsFactory> _internalUtilsFactory() const override;
 
  public:
 
@@ -172,6 +173,7 @@ class HybridParallelMng
   Array<HybridParallelMng*>* m_parallel_mng_list = nullptr;
   IParallelMngContainerFactory* m_sub_builder_factory = nullptr;
   Ref<IParallelMngContainer> m_parent_container_ref;
+  Ref<IParallelMngUtilsFactory> m_utils_factory;
 
  private:
 

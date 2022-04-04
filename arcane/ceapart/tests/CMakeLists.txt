@@ -59,7 +59,7 @@ if (PARMETIS_FOUND AND LIMA_FOUND)
 endif ()
 
 ARCANE_ADD_TEST(material1 testMaterial-1.arc "-m 10")
-ARCANE_ADD_TEST_SEQUENTIAL(material1_task4 testMaterial-1.arc "-K 4" "-m 10")
+arcane_add_test_sequential_task(material1 testMaterial-1.arc 4 "-m 10")
 
 # Les trois tests suivants doivent faire le même nombre d'itérations et avoir le
 # même nombre de mailles (pour test)
@@ -74,7 +74,7 @@ ARCANE_ADD_TEST_PARALLEL(material2_opt3_syncv6 testMaterial-2-opt3.arc 4 -m 13 -
 ARCANE_ADD_TEST_CHECKPOINT_SEQUENTIAL(material_checkpoint testMaterial-checkpoint.arc 3 3)
 ARCANE_ADD_TEST_CHECKPOINT_SEQUENTIAL(material_checkpoint_recreate testMaterial-checkpoint-recreate.arc 3 3)
 
-ARCANE_ADD_TEST_SEQUENTIAL(material2_task4 testMaterial-2task.arc "-K 4" "-m 1")
+arcane_add_test_sequential_task(material2 testMaterial-2task.arc 4 "-m 1")
 
 ARCANE_ADD_TEST(material_sync1 testMaterial-sync-1.arc)
 ARCANE_ADD_TEST_PARALLEL_THREAD(material_sync1 testMaterial-sync-1.arc 4)
@@ -104,6 +104,24 @@ ARCANE_ADD_TEST_SEQUENTIAL(adiadvection-1 testAdiAdvection-1.arc "-m 20")
 arcane_add_test(amr-cartesian2D-1 testAMRCartesianMesh2D-1.arc "-m 20")
 arcane_add_test(amr-checkpoint-cartesian2D-1 testAMRCartesianMesh2D-1.arc -c 3 -m 5)
 
+# Tests sur le renumérotation des faces en cartésien
+# L'idéal est d'avoir pas mal de sous-domaines pour être sur que le
+# nombre de sous-domaines dans chaque direction est différent.
+# Du coup on utilise le mode mémoire partagée au lieu de MPI pour
+# que les tests fonctionnent bien même si la machine n'a pas beaucoup
+# de coeurs.
+arcane_add_test_sequential(cartesian2d_face_renumbering testCartesianMesh2D-face-renumbering.arc "-m 10")
+arcane_add_test_parallel_thread(cartesian2d_face_renumbering testCartesianMesh2D-face-renumbering.arc 6 "-m 10")
+arcane_add_test_sequential(cartesian3d_face_renumbering testCartesianMesh3D-face-renumbering.arc "-m 10")
+arcane_add_test_parallel_thread(cartesian3d_face_renumbering testCartesianMesh3D-face-renumbering.arc 12 "-m 10")
+
+# Tests sur le partitionnement avec grille en cartésien
+arcane_add_test(cartesian_grid_partitioning testCartesianMesh-grid-partitioning.arc "-m 10")
+arcane_add_test_parallel(cartesian_grid_partitioning_6proc testCartesianMesh-grid-partitioning6.arc 6 "-m 10")
+arcane_add_test_parallel(cartesian_grid_partitioning_12proc testCartesianMesh-grid-partitioning12.arc 12 "-m 10")
+
+arcane_add_test_sequential(cartesian3d_grid_partitioning testCartesianMesh3D-grid-partitioning.arc "-m 10")
+arcane_add_test_parallel(cartesian3d_grid_partitioning_12proc testCartesianMesh3D-grid-partitioning.arc 12 "-m 10")
 
 #################################
 # CARTESIAN MESH GENERATOR TEST #
@@ -197,8 +215,12 @@ ARCANE_ADD_TEST_SEQUENTIAL(geometric1 testGeometric-1.arc)
 ###################
 if (TARGET arcanecea_test_cs)
   message(STATUS "Adding '.Net' tests")
-  ARCANE_ADD_TEST_SEQUENTIAL(material2_cs testMaterial-2-opt7-cs.arc -We,ARCANE_USE_DOTNET_WRAPPER,1 --dotnet-assembly=${ARCANE_TEST_DOTNET_ASSEMBLY} -m 4)
-  ARCANE_ADD_TEST_SEQUENTIAL(material2_cs_coreclr testMaterial-2-opt7-cs.arc -We,ARCANE_USE_DOTNET_WRAPPER,1 --dotnet-assembly=${ARCANE_TEST_DOTNET_ASSEMBLY} --dotnet-runtime=coreclr -m 4)
+  if (MONO_EXEC)
+    arcane_add_test_sequential(material2_cs testMaterial-2-opt7-cs.arc -We,ARCANE_USE_DOTNET_WRAPPER,1 --dotnet-assembly=${ARCANE_TEST_DOTNET_ASSEMBLY} -m 4)
+  endif()
+  if (TARGET arcane_dotnet_coreclr)
+    arcane_add_test_sequential(material2_cs_coreclr testMaterial-2-opt7-cs.arc -We,ARCANE_USE_DOTNET_WRAPPER,1 --dotnet-assembly=${ARCANE_TEST_DOTNET_ASSEMBLY} --dotnet-runtime=coreclr -m 4)
+  endif()
   arcane_add_csharp_test_sequential(material3_cs testMaterial-2-opt7-cs.arc -m 4)
 endif()
 

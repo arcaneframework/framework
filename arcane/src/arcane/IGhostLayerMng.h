@@ -1,13 +1,13 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IGhostLayerMng.h                                            (C) 2000-2013 */
+/* IGhostLayerMng.h                                            (C) 2000-2021 */
 /*                                                                           */
-/* Interface du gestionnaire de couche fantômes d'un maillage.               */
+/* Interface du gestionnaire de couches fantômes d'un maillage.              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_IGHOSTLAYERMNG_H
 #define ARCANE_IGHOSTLAYERMNG_H
@@ -19,7 +19,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -32,7 +33,7 @@ class IGhostLayerMng
  public:
 
   //! Libère les ressources
-  virtual ~IGhostLayerMng() {}
+  virtual ~IGhostLayerMng() =default;
 
  public:
 
@@ -44,9 +45,9 @@ class IGhostLayerMng
 
   /*!
    * \brief Positionne la version du constructeur de mailles fantômes.
-   * Pour l'instant (version 1.20), les valeurs possibles sont 1, 2 ou 3.
-   * La valeur par défaut est 2 et la valeur 1 est obsolète. La valeur
-   * 3 permet le support de plusieurs couches de mailles fantomes.
+   * Pour l'instant (version 3.3), les valeurs possibles sont 2, 3 ou 4.
+   * La valeur par défaut est 2. Les valeurs 3 et 4 permettent le support
+   * de plusieurs couches de mailles fantômes.
    */  
   virtual void setBuilderVersion(Integer n) =0;
 
@@ -57,7 +58,7 @@ class IGhostLayerMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

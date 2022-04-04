@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -22,6 +22,11 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+namespace Arcane::mesh
+{
+class ItemSharedInfoList;
+}
 
 namespace Arcane
 {
@@ -63,29 +68,25 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
  public:
 
   friend class ItemInternal;
+  friend class mesh::ItemSharedInfoList;
+
   static const Int32 NULL_INDEX = static_cast<Int32>(-1);
 
  public:
+
   //! Pour l'entité nulle
   static ItemSharedInfo nullItemSharedInfo;
+
  public:
+
   ItemSharedInfo();
+
+ private:
+
+  // Seule ItemSharedInfoList peut créer des instances de cette classe autre que
+  // l'instance nulle.
   ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
                  ItemInternalConnectivityList* connectivity,Int64ArrayView* unique_ids);
-  ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
-                 ItemInternalConnectivityList* connectivity,Int64ArrayView* unique_ids,
-                 Int32 nb_edge,Int32 nb_face,Int32 nb_cell);
-  ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
-                 ItemInternalConnectivityList* connectivity,Int64ArrayView* unique_ids,
-                 Int32 nb_edge,Int32 nb_face,Int32 nb_cell,
-                 Int32 edge_allocated,Int32 face_allocated,Int32 cell_allocated);
-  //! AMR
-  ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
-                 ItemInternalConnectivityList* connectivity,Int64ArrayView* unique_ids,
-                 Int32 nb_edge,Int32 nb_face,Int32 nb_cell,
-                 Int32 nb_parent,Int32 nb_children,
-                 Int32 edge_allocated,Int32 face_allocated,Int32 cell_allocated,
-                 Int32 parent_allocated,Int32 child_allocated);
 
   ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
                  ItemInternalConnectivityList* connectivity,Int64ArrayView* unique_ids,
@@ -98,7 +99,6 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   Int32 nbFace() const { return m_nb_face; }
   Int32 nbCell() const { return m_nb_cell; }
   Int32 nbParent() const { return m_nb_parent; }
-  //! AMR
   Int32 nbHParent() const { return m_nb_hParent; }
   Int32 nbHChildren() const {return m_nb_hChildren; }
 
@@ -115,7 +115,8 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
 
   Int32 neededMemory() const { return m_needed_memory; }
   Int32 minimumNeededMemory() const { return m_minimum_needed_memory; }
-  bool hasLegacyConnectivity() const { return m_has_legacy_connectivity!=0; }
+  ARCCORE_DEPRECATED_2021("This method always return 'false'")
+  constexpr bool hasLegacyConnectivity() const { return false; }
  public:
   void print(std::ostream& o) const;
  public:
@@ -234,9 +235,6 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   Int32 m_type_id = IT_NullType;
   Int32 m_index = NULL_INDEX;
   Int32 m_nb_reference = 0;
-  // Indique si les anciennes connectivités sont actives
-  // (utilise un Int32 pour être certain de la taille pour le C#)
-  Int32 m_has_legacy_connectivity = 1;
  public:
   Int32 index() const { return m_index; }
   void setIndex(Int32 aindex) { m_index = aindex; }
@@ -244,6 +242,7 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   void addReference(){ ++m_nb_reference; }
   void removeReference(){ --m_nb_reference; }
   void serializeWrite(Int32ArrayView buffer);
+  static Integer serializeWriteSize();
   static Integer serializeSize();
   static Integer serializeAMRSize();
   static Integer serializeNoAMRSize();

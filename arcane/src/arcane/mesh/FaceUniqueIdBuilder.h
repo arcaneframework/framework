@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* FaceUniqueIdBuilder.h                                       (C) 2000-2020 */
+/* FaceUniqueIdBuilder.h                                       (C) 2000-2021 */
 /*                                                                           */
 /* Construction des indentifiants uniques des faces.                         */
 /*---------------------------------------------------------------------------*/
@@ -63,10 +63,11 @@ class FaceUniqueIdBuilder
  private:
   
   void _computeFacesUniqueIdsSequential();
-  void _computeFacesUniqueIdsParallel2();
-  void _computeFacesUniqueIdsParallel3();
+  void _computeFacesUniqueIdsParallelV1();
+  void _computeFacesUniqueIdsParallelV2();
   void _computeFacesUniqueIdsFast();
   void _exchangeData(IParallelExchanger* exchanger,BoundaryInfosMap& boundary_infos_to_send);
+  void _checkNoDuplicate();
 };
 
 /*---------------------------------------------------------------------------*/

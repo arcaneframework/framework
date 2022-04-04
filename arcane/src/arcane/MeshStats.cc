@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -22,7 +22,6 @@
 #include "arcane/ItemGroup.h"
 #include "arcane/ItemEnumerator.h"
 #include "arcane/IMesh.h"
-#include "arcane/IGraph.h"
 #include "arcane/IItemFamily.h"
 #include "arcane/IParallelMng.h"
 #include "arcane/IVariable.h"
@@ -127,12 +126,6 @@ _statLabel<IMesh>(String name)
          << "    FOR " << m_mesh->name();
 }
   
-template<> void MeshStats::
-_statLabel<IGraph>(String name)
-{
-  info() << " -- GRAPH STATISTICS " << Trace::Width(8) << name 
-         << "    FOR GRAPH FROM " << m_mesh->name();
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -197,6 +190,8 @@ _dumpStats()
       return;
   }
 
+  ItemTypeMng* type_mng = m_mesh->itemTypeMng();
+
   // On produit maintenant l'affichage des stats
   const Integer nb_rank = m_parallel_mng->commSize();
   for( Integer istat=0; istat<nstat; ++istat){
@@ -250,7 +245,7 @@ _dumpStats()
     }
     info() << " ";
     for( Integer i=0, s=nb_type; i<s; ++i ) {
-      _printInfo(Item::typeName(i),nb_local_type[i],
+      _printInfo(type_mng->typeName(i),nb_local_type[i],
                  nb_local_min_type[i],min_rank_type[i],
                  nb_local_max_type[i],max_rank_type[i],
                  nb_global_type[i],nb_rank);

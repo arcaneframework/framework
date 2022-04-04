@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -77,16 +77,13 @@ Hdf5ReaderWriter::
 Hdf5ReaderWriter(ISubDomain* sd,const String& filename,
                  const String& sub_group_name,
                  Integer fileset_size, Integer currentIndex, Integer index_modulo,
-                 eOpenMode open_mode,bool do_verif)
+                 eOpenMode open_mode,[[maybe_unused]] bool do_verif)
 : TraceAccessor(sd->traceMng())
-, m_sub_domain(sd)
 , m_parallel_mng(sd->parallelMng())
-, m_use_parallel(false)
 , m_open_mode(open_mode)
 , m_filename(filename)
 , m_sub_group_name(sub_group_name)
 , m_is_initialized(false)
-, m_do_verif(do_verif)
 , m_io_timer(sd,"Hdf5Timer",Timer::TimerReal)
 , m_is_parallel(false)
 , m_my_rank(m_parallel_mng->commRank())
@@ -328,14 +325,14 @@ _writeVal(const String& var_group_name,
           << " is_multi=" << sdata->isMultiSize()
           << " dimensions_size=" << sdata->extents().size()
           << " memory_size=" << sdata->memorySize()
-          << " bytes_size=" << sdata->bytes().size();
+          << " bytes_size=" << sdata->constBytes().size();
 
   Integer nb_dimension = sdata->nbDimension();
   Int64ConstArrayView dimensions = sdata->extents();
 
   hid_t save_typeid = m_types.saveType(sdata->baseDataType());
   hid_t trueid = m_types.nativeType(sdata->baseDataType());
-  const void* ptr = sdata->bytes().data();
+  const void* ptr = sdata->constBytes().data();
   Int64 nb_base_element = sdata->nbBaseElement();
 
   HGroup var_base_group;
@@ -572,7 +569,7 @@ _readVal(IVariable* v,IData* data)
     dataset_id.open(group_id,"Values");
     if (dataset_id.isBad())
       ARCANE_THROW(ReaderWriterException,"Wrong dataset for variable '{0}'",var_group_name);
-    void* ptr = sd->bytes().data();
+    void* ptr = sd->writableBytes().data();
     info() << "READ Variable " << var_group_name << " ptr=" << ptr;;
     hid_t trueid = m_types.nativeType(sd->baseDataType());
     dataset_id.read(trueid,ptr);
@@ -779,9 +776,8 @@ class ArcaneHdf5CheckpointService2
   ArcaneHdf5CheckpointService2(const ServiceBuildInfo& sbi)
   : ArcaneHdf5ReaderWriterObject(sbi),
     m_write_index(0),
-    m_writer(0),
-    m_reader(0),
-    m_use_one_file(false),
+    m_writer(nullptr),
+    m_reader(nullptr),
     m_fileset_size(1),
     m_index_modulo(0){}
   
@@ -800,7 +796,6 @@ class ArcaneHdf5CheckpointService2
   Integer m_write_index;
   Hdf5ReaderWriter* m_writer;
   Hdf5ReaderWriter* m_reader;
-  bool m_use_one_file;
   Integer m_fileset_size;
   Integer m_index_modulo;
 

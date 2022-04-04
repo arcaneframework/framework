@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -71,32 +71,32 @@ class ItemVariableArrayRefT
 
   ConstArrayType operator[](const Item& i) const
   { 
-    ARCANE_ASSERT((i.kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
+    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND(i);
     return this->m_view[i.localId()]; 
   }
   ArrayType operator[](const Item& i)
   { 
-    ARCANE_ASSERT((i.kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
+    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND(i);
     return this->m_view[i.localId()]; 
   }
   ConstArrayType operator[](const ItemGroupRangeIterator& i) const
   {
-    ARCANE_ASSERT((i.kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
+    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND(i);
     return this->m_view[i.itemLocalId()];
   }
   ArrayType operator[](const ItemGroupRangeIterator& i)
   {
-    ARCANE_ASSERT((i.kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
+    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND(i);
     return this->m_view[i.itemLocalId()];
   }
   ConstArrayType operator[](const ItemEnumerator& i) const
   {
-   ARCANE_ASSERT((i->kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
-     return this->m_view[i.localId()];
+    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND((*i));
+    return this->m_view[i.localId()];
   }
   ArrayType operator[](const ItemEnumerator& i)
   {
-    ARCANE_ASSERT((i->kind() == this->itemGroup().itemKind()),("Item and group kind not same"));
+    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND((*i));
     return this->m_view[i.localId()];
   }
 
@@ -125,9 +125,9 @@ class ItemVariableArrayRefT
  */
 template<class ItemTypeT,class DataTypeT>
 class MeshVariableArrayRefT
-  : public ItemVariableArrayRefT<DataTypeT>
+: public ItemVariableArrayRefT<DataTypeT>
 {
-public:
+ public:
   
   typedef DataTypeT DataType;
   typedef ItemTypeT ItemType;
@@ -135,7 +135,7 @@ public:
   typedef ConstArrayView<DataType> ConstReturnReferenceType;
   typedef ArrayView<DataType> ReturnReferenceType;
 
-protected:
+ protected:
 
   typedef MeshVariableRef BaseClass;
 
@@ -147,6 +147,7 @@ protected:
   typedef Array2VariableT<DataType> PrivatePartType;
 
   typedef typename ItemTraitsT<ItemType>::ItemGroupType GroupType;
+  typedef typename ItemTypeT::LocalIdType ItemLocalIdType;
 
   typedef MeshVariableArrayRefT<ItemType,DataType> ThatClass;
 
@@ -180,6 +181,10 @@ protected:
   ConstArrayType operator[](const ItemEnumeratorT<ItemType>& i) const
   { return this->m_view[i.localId()]; }
   ArrayType operator[](const ItemEnumeratorT<ItemType>& i)
+  { return this->m_view[i.localId()]; }
+  ConstArrayType operator[](ItemLocalIdType i) const
+  { return this->m_view[i.localId()]; }
+  ArrayType operator[](ItemLocalIdType i)
   { return this->m_view[i.localId()]; }
 
  public:

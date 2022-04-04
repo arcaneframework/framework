@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -117,7 +117,7 @@ class ItemSharedInfoList::ItemNumElements
       return m_cell_allocated<b.m_cell_allocated;
     }
  public:
-  void print(ostream& o) const
+  void print(std::ostream& o) const
     {
       o << " Type=" << m_type
         << " Edge=" << m_nb_edge
@@ -143,7 +143,7 @@ bool ItemSharedInfoList::ItemNumElements::m_debug = false;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ostream& operator<<(ostream& o,const ItemSharedInfoList::ItemNumElements& v)
+std::ostream& operator<<(std::ostream& o,const ItemSharedInfoList::ItemNumElements& v)
 {
   v.print(o);
   return o;
@@ -171,7 +171,6 @@ ItemSharedInfoList::
 ItemSharedInfoList(ItemFamily* family)
 : TraceAccessor(family->traceMng())
 , m_family(family)
-, m_sub_domain(family->subDomain())
 , m_nb_item_shared_info(0)
 , m_item_kind(family->itemKind())
 , m_item_shared_infos_buffer(new MultiBufferT<ItemSharedInfo>(100))
@@ -208,15 +207,6 @@ ItemSharedInfoList::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ISubDomain* ItemSharedInfoList::
-subDomain()
-{
-  return m_sub_domain;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 void ItemSharedInfoList::
 prepareForDump()
 {
@@ -230,7 +220,7 @@ prepareForDump()
     return;
   m_list_changed = false;
   //Integer n = m_item_shared_infos.size();
-  Integer element_size = ItemSharedInfo::serializeSize();
+  Integer element_size = ItemSharedInfo::serializeWriteSize();
   m_variables->m_infos_values.resize(n,element_size);
   for( Integer i=0; i<n; ++i ){
     m_item_shared_infos[i]->serializeWrite(m_variables->m_infos_values[i]);
@@ -252,13 +242,11 @@ readFromDump()
   Integer n = m_variables->m_infos_values.dim1Size();
   info() << "ItemSharedInfoList: read: " << m_family->name() << " count=" << n;
 
-  bool is_amr = false;
   if (n>0){
     // Le nombre d'éléments sauvés dépend de la version de Arcane et du fait
     // qu'on utilise ou pas l'AMR.
     Integer stored_size = m_variables->m_infos_values[0].size();
     if (stored_size==ItemSharedInfo::serializeAMRSize()){
-      is_amr = true;
     }
     else if (stored_size!=element_size)
       ARCANE_FATAL("Incoherence of saved data (most probably due to a"
@@ -280,16 +268,13 @@ readFromDump()
   MeshItemInternalList* miil = m_family->mesh()->meshItemInternalList();
   ItemInternalConnectivityList* iicl = m_family->itemInternalConnectivityList();
 
-  ItemTypeMng* itm = ItemTypeMng::singleton();
+  ItemTypeMng* itm = m_family->mesh()->itemTypeMng();
   for( Integer i=0; i<n; ++i ){
     Int32ConstArrayView buffer(m_variables->m_infos_values[i]);
     // Le premier élément du tampon contient toujours le type de l'entité
     ItemTypeInfo* it = itm->typeFromId(buffer[0]);
     ItemSharedInfo* isi = m_item_shared_infos[i];
     *isi = ItemSharedInfo(m_family,it,miil,iicl,m_family->uniqueIds(),buffer);
-    //     if (i<20 && m_family->itemKind()==IK_Particle){
-    //       plog() << "READ ISI: i=" << i << " values=" << *isi;
-    //     }
 
     ItemNumElements ine(it->typeId(),isi->nbEdge(),isi->nbFace(),isi->nbCell(),
                         isi->nbHParent(),isi->nbHChildren(),
@@ -358,82 +343,19 @@ checkValid()
 /*---------------------------------------------------------------------------*/
 
 ItemSharedInfo* ItemSharedInfoList::
-findSharedInfo(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,Integer nb_cell,
-               Integer edge_allocated,Integer face_allocated,Integer cell_allocated)
+findSharedInfo(ItemTypeInfo* type)
 {
-  // Vérifie que le nombre d'entités vaut 0
-  if (!m_has_legacy_connectivity){
-    if (nb_edge!=0)
-      ARCANE_FATAL("Bad number of edges {0}",nb_edge);
-    if (nb_face!=0)
-      ARCANE_FATAL("Bad number of faces {0}",nb_face);
-    if (nb_cell!=0)
-      ARCANE_FATAL("Bad number of cells {0}",nb_cell);
-  }
-  ItemNumElements ine(type->typeId(),nb_edge,nb_face,nb_cell,
-                      edge_allocated,face_allocated,cell_allocated);
-  auto i = m_infos_map->find(ine);
-  if (i!=m_infos_map->end())
-    return i->second;
-  MeshItemInternalList* miil = m_family->mesh()->meshItemInternalList();
-  ItemInternalConnectivityList* iicl = m_family->itemInternalConnectivityList();
-  // Infos pas trouvé. On en construit une nouvelle
-  ItemSharedInfo* isi = allocOne();
-  Integer old_index = isi->index();
-  *isi = ItemSharedInfo(m_family,type,miil,iicl,m_family->uniqueIds(),nb_edge,nb_face,nb_cell,
-                        edge_allocated,face_allocated,cell_allocated);
-  isi->setIndex(old_index);
-  //isi->m_infos = m_items_infos.begin();
-  std::pair<ItemSharedInfoMap::iterator,bool> old = m_infos_map->insert(std::make_pair(ine,isi));
+  Integer nb_edge = 0;
+  Integer nb_face = 0;
+  Integer nb_cell = 0;
+  Integer nb_parent = 0;
+  Integer nb_children = 0;
+  Integer edge_allocated = 0;
+  Integer face_allocated = 0;
+  Integer cell_allocated = 0;
+  Integer parent_allocated = 0;
+  Integer child_allocated = 0;
 
-  //#ifdef ARCANE_CHECK
-  if (!old.second){
-    // Vérifie que l'instance ajoutée ne remplace pas une instance déjà présente,
-    // auquel il s'agit d'une erreur interne (opérateur de comparaison foireux)
-    dumpSharedInfos();
-    ItemNumElements::m_debug = true;
-    bool compare = m_infos_map->find(ine)!=m_infos_map->end();
-    fatal() << "INTERNE: ItemSharedInfoList::findSharedInfo() SharedInfo déjà présent\n"
-            << "\nWanted:"
-            << " type=" << type->typeId()
-            << " edge=" << nb_edge
-            << " face=" << nb_face
-            << " cell=" << nb_cell
-            << " edge_alloc=" << edge_allocated
-            << " face_alloc=" << face_allocated
-            << " cell_alloc=" << cell_allocated
-            << " compare=" << compare
-            << "\nNEW_INE=(" << ine << ")"
-            << "\nOLD_INE=(" << old.first->first << ")"
-            << "\nNEW_ISI=(" << *isi << ")"
-            << "\nOLD_ISI=(" << *old.first->second << ")";
-  }
-  //#endif
-  return isi;
-}
-//! AMR
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ItemSharedInfo* ItemSharedInfoList::
-findSharedInfo(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,Integer nb_cell,
-               Integer nb_parent,Integer nb_children,
-               Integer edge_allocated,Integer face_allocated,Integer cell_allocated,
-               Integer parent_allocated, Integer child_allocated)
-{
-  // Vérifie que le nombre d'entités vaut 0
-  if (!m_has_legacy_connectivity){
-    if (nb_edge!=0)
-      ARCANE_FATAL("Bad number of edges {0}",nb_edge);
-    if (nb_face!=0)
-      ARCANE_FATAL("Bad number of faces {0}",nb_face);
-    if (nb_cell!=0)
-      ARCANE_FATAL("Bad number of cells {0}",nb_cell);
-    if (nb_parent!=0)
-      ARCANE_FATAL("Bad number of parents {0}",nb_parent);
-    if (nb_children!=0)
-      ARCANE_FATAL("Bad number of childrens {0}",nb_children);
-  }
   ItemNumElements ine(type->typeId(),nb_edge,nb_face,nb_cell,
                       nb_parent,nb_children,
                       edge_allocated,face_allocated,cell_allocated,
@@ -446,10 +368,7 @@ findSharedInfo(ItemTypeInfo* type,Integer nb_edge,Integer nb_face,Integer nb_cel
   // Infos pas trouvé. On en construit une nouvelle
   ItemSharedInfo* isi = allocOne();
   Integer old_index = isi->index();
-  *isi = ItemSharedInfo(m_family,type,miil,iicl,m_family->uniqueIds(),nb_edge,nb_face,nb_cell,
-                        nb_parent,nb_children,
-                        edge_allocated,face_allocated,cell_allocated,
-                        parent_allocated,child_allocated);
+  *isi = ItemSharedInfo(m_family,type,miil,iicl,m_family->uniqueIds());
   isi->setIndex(old_index);
   //isi->m_infos = m_items_infos.begin();
   std::pair<ItemSharedInfoMap::iterator,bool> old = m_infos_map->insert(std::make_pair(ine,isi));

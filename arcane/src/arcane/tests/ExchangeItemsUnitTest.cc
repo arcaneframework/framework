@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -228,7 +228,7 @@ _computeGhostPPVariable()
     {
       const Integer rank = ranks[i];
       FaceVectorView ghost_items(mesh()->faceFamily()->itemsInternal(), face_synchronizer->sharedItems(i));
-      ENUMERATE_NODE(iface, ghost_items)
+      ENUMERATE_FACE(iface, ghost_items)
         {
           m_face_ghostpp[iface][rank] = 2; // ou bien mettre un identifiant du propriétaire
         }

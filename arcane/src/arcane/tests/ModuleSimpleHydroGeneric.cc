@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -71,25 +71,24 @@ class ModuleSimpleHydroGeneric
 
  public:
 
-  void hydroBuild();
+  void hydroBuild() override;
 
-  void hydroStartInit() { m_service->hydroStartInit(); }
-  void hydroInit() { m_service->hydroInit(); }
-  void hydroContinueInit() {}
-  void hydroExit();
+  void hydroStartInit() override { m_service->hydroStartInit(); }
+  void hydroInit() override { m_service->hydroInit(); }
+  void hydroContinueInit()  override{}
+  void hydroExit() override;
 
-  void computeForces() { m_service->computeForces(); }
-  void computePressureForce(){}
-  void computePseudoViscosity(){}
-  void computeVelocity() { m_service->computeVelocity(); }
-  void computeViscosityWork() { m_service->computeViscosityWork(); }
-  void applyBoundaryCondition() { m_service->applyBoundaryCondition(); }
-  void moveNodes(){ m_service->moveNodes(); }
-  void computeGeometricValues() { m_service->computeGeometricValues(); }
-  void updateDensity() { m_service->updateDensity(); }
-  void applyEquationOfState() { m_service->applyEquationOfState(); }
-  void computeDeltaT(){ m_service->computeDeltaT(); }
-  void doOneIteration();
+  void computeForces() override { m_service->computeForces(); }
+  void computePseudoViscosity() override{}
+  void computeVelocity() override { m_service->computeVelocity(); }
+  void computeViscosityWork() override { m_service->computeViscosityWork(); }
+  void applyBoundaryCondition() override { m_service->applyBoundaryCondition(); }
+  void moveNodes() override{ m_service->moveNodes(); }
+  void computeGeometricValues() override { m_service->computeGeometricValues(); }
+  void updateDensity() override { m_service->updateDensity(); }
+  void applyEquationOfState() override { m_service->applyEquationOfState(); }
+  void computeDeltaT() override{ m_service->computeDeltaT(); }
+  void doOneIteration() override;
 
  private:
 

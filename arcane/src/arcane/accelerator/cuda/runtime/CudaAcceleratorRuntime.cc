@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CudaAcceleratorRuntime.cc                                   (C) 2000-2021 */
+/* CudaAcceleratorRuntime.cc                                   (C) 2000-2022 */
 /*                                                                           */
 /* Runtime pour 'Cuda'.                                                      */
 /*---------------------------------------------------------------------------*/
@@ -18,11 +18,18 @@
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/NotImplementedException.h"
+#include "arcane/utils/IMemoryRessourceMng.h"
+#include "arcane/utils/internal/IMemoryRessourceMngInternal.h"
 
-#include "arcane/accelerator/AcceleratorGlobal.h"
-#include "arcane/accelerator/IRunQueueRuntime.h"
-#include "arcane/accelerator/IRunQueueStream.h"
-#include "arcane/accelerator/RunCommand.h"
+#include "arcane/accelerator/core/RunQueueBuildInfo.h"
+#include "arcane/accelerator/core/Memory.h"
+
+//#include "arcane/accelerator/AcceleratorGlobal.h"
+#include "arcane/accelerator/core/IRunQueueRuntime.h"
+#include "arcane/accelerator/core/IRunQueueStream.h"
+#include "arcane/accelerator/core/RunCommand.h"
+#include "arcane/accelerator/core/IRunQueueEventImpl.h"
 
 #include <iostream>
 
@@ -69,20 +76,29 @@ void checkDevices()
       << " " << dp.maxThreadsDim[2] << "\n";
     o << " maxGridSize = "<< dp.maxGridSize[0] << " " << dp.maxGridSize[1]
       << " " << dp.maxGridSize[2] << "\n";
-  }
+    int least_val = 0;
+    int greatest_val = 0;
+    ARCANE_CHECK_CUDA(cudaDeviceGetStreamPriorityRange(&least_val,&greatest_val));
+    o << " leastPriority = "<< least_val << " greatestPriority = " << greatest_val << "\n";
+ }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 class CudaRunQueueStream
-: public IRunQueueStream
+: public impl::IRunQueueStream
 {
  public:
-  CudaRunQueueStream(IRunQueueRuntime* runtime)
+  CudaRunQueueStream(impl::IRunQueueRuntime* runtime,const RunQueueBuildInfo& bi)
   : m_runtime(runtime)
   {
-    ARCANE_CHECK_CUDA(cudaStreamCreate(&m_cuda_stream));
+    if (bi.isDefault())
+      ARCANE_CHECK_CUDA(cudaStreamCreate(&m_cuda_stream));
+    else{
+      int priority = bi.priority();
+      ARCANE_CHECK_CUDA(cudaStreamCreateWithPriority(&m_cuda_stream,cudaStreamDefault,priority));
+    }
   }
   ~CudaRunQueueStream() noexcept(false) override
   {
@@ -111,17 +127,70 @@ class CudaRunQueueStream
   {
     ARCANE_CHECK_CUDA(cudaStreamSynchronize(m_cuda_stream));
   }
+  void copyMemory(const MemoryCopyArgs& args) override
+  {
+    auto r =cudaMemcpyAsync(args.destination().data(),args.source().data(),
+                            args.source().length(),cudaMemcpyDefault,m_cuda_stream);
+    ARCANE_CHECK_CUDA(r);
+    if (!args.isAsync())
+      barrier();
+  }
   void* _internalImpl() override { return &m_cuda_stream; }
+
+ public:
+
+  cudaStream_t trueStream() const { return m_cuda_stream; }
+
  private:
-  IRunQueueRuntime* m_runtime;
+
+  impl::IRunQueueRuntime* m_runtime;
   cudaStream_t m_cuda_stream;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class CudaRunQueueEvent
+: public impl::IRunQueueEventImpl
+{
+ public:
+  CudaRunQueueEvent()
+  {
+    ARCANE_CHECK_CUDA(cudaEventCreateWithFlags(&m_cuda_event, cudaEventDisableTiming));
+  }
+  ~CudaRunQueueEvent() noexcept(false) override
+  {
+    ARCANE_CHECK_CUDA(cudaEventDestroy(m_cuda_event));
+  }
+ public:
+  // Enregistre l'événement au sein d'une RunQueue
+  void recordQueue(impl::IRunQueueStream* stream) override
+  {
+    auto* rq = static_cast<CudaRunQueueStream*>(stream);
+    ARCANE_CHECK_CUDA(cudaEventRecord(m_cuda_event, rq->trueStream()));
+  }
+
+  void wait() override
+  {
+    ARCANE_CHECK_CUDA(cudaEventSynchronize(m_cuda_event));
+  }
+
+  void waitForEvent(impl::IRunQueueStream* stream) override
+  {
+    auto* rq = static_cast<CudaRunQueueStream*>(stream);
+    ARCANE_CHECK_CUDA(cudaStreamWaitEvent(rq->trueStream(), m_cuda_event, cudaEventWaitDefault));
+  }
+
+ private:
+
+  cudaEvent_t m_cuda_event;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 class CudaRunQueueRuntime
-: public IRunQueueRuntime
+: public impl::IRunQueueRuntime
 {
  public:
   ~CudaRunQueueRuntime() override = default;
@@ -146,13 +215,33 @@ class CudaRunQueueRuntime
   {
     return eExecutionPolicy::CUDA;
   }
-  IRunQueueStream* createStream() override
+  impl::IRunQueueStream* createStream(const RunQueueBuildInfo& bi) override
   {
-    return new CudaRunQueueStream(this);
+    return new CudaRunQueueStream(this,bi);
+  }
+  impl::IRunQueueEventImpl* createEventImpl() override
+  {
+    return new CudaRunQueueEvent();
   }
  private:
   Int64 m_nb_kernel_launched = 0;
   bool m_is_verbose = false;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class CudaMemoryCopier
+: public IMemoryCopier
+{
+  void copy(Span<const std::byte> from, [[maybe_unused]] eMemoryRessource from_mem,
+            Span<std::byte> to, [[maybe_unused]] eMemoryRessource to_mem) override
+  {
+    // 'cudaMemcpyDefault' sait automatiquement ce qu'il faut faire en tenant
+    // uniquement compte de la valeur des pointeurs. Il faudrait voir si
+    // utiliser \a from_mem et \a to_mem peut améliorer les performances.
+    ARCANE_CHECK_CUDA(cudaMemcpy(to.data(), from.data(), from.size(), cudaMemcpyDefault));
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -163,6 +252,7 @@ class CudaRunQueueRuntime
 namespace 
 {
 Arcane::Accelerator::Cuda::CudaRunQueueRuntime global_cuda_runtime;
+Arcane::Accelerator::Cuda::CudaMemoryCopier global_cuda_memory_copier;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -173,10 +263,16 @@ Arcane::Accelerator::Cuda::CudaRunQueueRuntime global_cuda_runtime;
 extern "C" ARCANE_EXPORT void
 arcaneRegisterAcceleratorRuntimecuda()
 {
+  using namespace Arcane;
   using namespace Arcane::Accelerator::Cuda;
-  Arcane::Accelerator::setUsingCUDARuntime(true);
-  Arcane::Accelerator::setCUDARunQueueRuntime(&global_cuda_runtime);
+  Arcane::Accelerator::impl::setUsingCUDARuntime(true);
+  Arcane::Accelerator::impl::setCUDARunQueueRuntime(&global_cuda_runtime);
   Arcane::platform::setAcceleratorHostMemoryAllocator(getCudaMemoryAllocator());
+  IMemoryRessourceMngInternal* mrm = platform::getDataMemoryRessourceMng()->_internal();
+  mrm->setAllocator(eMemoryRessource::UnifiedMemory,getCudaUnifiedMemoryAllocator());
+  mrm->setAllocator(eMemoryRessource::HostPinned,getCudaHostPinnedMemoryAllocator());
+  mrm->setAllocator(eMemoryRessource::Device,getCudaDeviceMemoryAllocator());
+  mrm->setCopier(&global_cuda_memory_copier);
   checkDevices();
 }
 

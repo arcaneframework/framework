@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -58,15 +58,21 @@ public:
     CT_CellToEdge = 1<<14,
     CT_CellToFace = 1<<15,
     // CT_CellToCell = 1<<16,
+    CT_DoFToNode     = 1<<17,
+    CT_DoFToEdge     = 1<<18,
+    CT_DoFToFace     = 1<<19,
+    CT_DoFToCell     = 1<<20,
+    CT_DoFToDoF      = 1<<21,
+    CT_DoFToParticle = 1<<22,
 
     // Existing kind
-    CT_HasNode    = 1<<20,
-    CT_HasEdge    = 1<<21,
-    CT_HasFace    = 1<<22,
-    CT_HasCell    = 1<<23,
+    CT_HasNode    = 1<<23,
+    CT_HasEdge    = 1<<24,
+    CT_HasFace    = 1<<25,
+    CT_HasCell    = 1<<26,
 
     // Frozen mark
-    CT_Frozen     = 1<<25,
+    CT_Frozen     = 1<<27,
 
     // Dimension mark
     CT_Dim1D      = 1<<28,
@@ -109,7 +115,9 @@ public:
 
     CT_EdgeConnectivity = CT_HasEdge
                         + CT_NodeToEdge + CT_FaceToEdge + CT_CellToEdge +
-                        + CT_EdgeToNode + CT_EdgeToFace + CT_EdgeToCell
+                        + CT_EdgeToNode + CT_EdgeToFace + CT_EdgeToCell,
+
+    CT_GraphConnectivity = CT_DoFToNode + CT_DoFToEdge + CT_DoFToFace + CT_DoFToCell + CT_DoFToDoF + CT_DoFToParticle
   };
 
                        

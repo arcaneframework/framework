@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelDataReader.cc                                       (C) 2000-2018 */
+/* ParallelDataReader.cc                                       (C) 2000-2021 */
 /*                                                                           */
 /* Lecteur de IData en parallèle.                                            */
 /*---------------------------------------------------------------------------*/
@@ -21,6 +21,7 @@
 #include "arcane/SerializeBuffer.h"
 #include "arcane/IData.h"
 #include "arcane/parallel/BitonicSortT.H"
+#include "arcane/ParallelMngUtils.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -193,7 +194,7 @@ sort()
   {
     UniqueArray< SharedArray<Int64> > uids_list(nb_rank);
     //Integer current_sender = 0;
-    ScopedPtrT<IParallelExchanger> exchanger(m_parallel_mng->createExchanger());
+    auto exchanger { ParallelMngUtils::createExchangerRef(m_parallel_mng) };
     for( Integer i=0; i<nb_wanted_uid; ++i ){
       Int64 uid = m_wanted_unique_ids[i];
       Int32 rank = -1;
@@ -302,7 +303,7 @@ sort()
 void ParallelDataReader::Impl::
 getSortedValues(IData* written_data,IData* data)
 {
-  ScopedPtrT<IParallelExchanger> exchanger(m_parallel_mng->createExchanger());
+  auto exchanger { ParallelMngUtils::createExchangerRef(m_parallel_mng) };
   Integer nb_send = m_data_to_send_ranks.size();
   for( Integer i=0; i<nb_send; ++i ){
     exchanger->addSender(m_data_to_send_ranks[i]);

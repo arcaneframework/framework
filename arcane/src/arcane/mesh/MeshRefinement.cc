@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -163,7 +163,7 @@ init()
     info() << "NODE_UID_INFO: MY_MAX_UID=" << max_node_uid << " GLOBAL=" << m_max_node_uid;
     m_next_node_uid = m_max_node_uid + 1 + m_mesh->parallelMng()->commRank();
   }
-  ItemTypeMng* itm = ItemTypeMng::singleton();
+  ItemTypeMng* itm = m_mesh->itemTypeMng();
 
   {
     Int64 max_cell_uid = 0;
@@ -217,14 +217,13 @@ init()
 }
 
 
-void
-MeshRefinement::
+void MeshRefinement::
 _updateMaxUid(ArrayView<ItemInternal*> cells)
 {
   // Recalcul le max uniqueId() des nodes/cells/faces.
   CHECKPERF( m_perf_counter.start(PerfCounter::INIT) )
   IParallelMng* pm = m_mesh->parallelMng();
-  ItemTypeMng* itm = ItemTypeMng::singleton();
+  ItemTypeMng* itm = m_mesh->itemTypeMng();
   {
 
     Int64 max_node_uid = m_max_node_uid;

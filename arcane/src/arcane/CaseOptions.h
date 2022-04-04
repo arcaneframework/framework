@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -60,14 +60,29 @@ template<typename Type>
 class CaseOptionTraitsT
 {
  public:
-  typedef Type ContainerType;
+  using ContainerType = Type;
+  using ReferenceType = Type&;
+  using ConstReferenceType = const Type&;
+  using ArrayViewType = ArrayView<Type>;
+  using ConstArrayViewType = ConstArrayView<Type>;
 };
 
-template<typename T>
-class CaseOptionTraitsT< Array<T> >
+/*!
+ * \brief Spécialisation pour les options 'Array'.
+ *
+ * Cela est nécessaire car on ne peut pas instancier la classe 'Array'. Pour
+ * ce type d'options, il est interdit de modifier les valeurs de l'option donc
+ * les vues sont forcément constantes.
+ */
+template<typename Type>
+class CaseOptionTraitsT< Array<Type> >
 {
  public:
-  typedef UniqueArray<T> ContainerType;
+  using ContainerType = UniqueArray<Type>;
+  using ReferenceType = const Array<Type>&;
+  using ConstReferenceType = const Array<Type>&;
+  using ArrayViewType = ConstArrayView<ContainerType>;
+  using ConstArrayViewType = ConstArrayView<ContainerType>;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -319,17 +334,32 @@ class ARCANE_CORE_EXPORT CaseOptionMultiSimple
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup CaseOption
- * \brief Option du jeu de données de type liste de types simples (réel, entier, booléen, ...)
+ * \brief Option du jeu de données de type liste de types simples (réel, entier, booléen, ...).
+ *
+ * \warning L'utilisation de la classe de base `ArrayView<T>` est obsolète et
+ * ne doit plus être utilisée. La méthode view() permet de récupérer une vue sur les
+ * valeurs de l'option.
  */
 #ifndef SWIG
 template<class T>
 class CaseOptionMultiSimpleT
 : public CaseOptionMultiSimple
+#ifdef ARCANE_HAS_PRIVATE_CASEOPTIONSMULTISIMPLE_BASE_CLASS
+, private ArrayView<T>
+#else
 , public ArrayView<T>
+#endif
 {
  public:
 
-  typedef typename CaseOptionTraitsT<T>::ContainerType Type; //!< Type de la valeur de l'option
+  //! Type de la valeur de l'option
+  using Type = typename CaseOptionTraitsT<T>::ContainerType;
+  using ReferenceType = typename CaseOptionTraitsT<T>::ReferenceType;
+  using ConstReferenceType = typename CaseOptionTraitsT<T>::ConstReferenceType;
+  //! Type de la vue sur les valeurs de l'option
+  using ArrayViewType = typename CaseOptionTraitsT<T>::ArrayViewType;
+  //! Type de la vue constante sur les valeurs de l'option
+  using ConstArrayViewType = typename CaseOptionTraitsT<T>::ConstArrayViewType;
 
  public:
 
@@ -339,14 +369,38 @@ class CaseOptionMultiSimpleT
 
  public:
 
+  ARCCORE_DEPRECATED_2021("Use view() instead")
   ArrayView<T> operator()()
   {
     return *this;
   }
+  ARCCORE_DEPRECATED_2021("Use view() instead")
   const ArrayView<T> operator()() const
   {
     return *this;
   }
+
+  //! Conversion vers la vue constante
+  ARCCORE_DEPRECATED_2021("Use view() instead")
+  operator ArrayView<T>() { ArrayView<T>* v = this; return *v; }
+
+  //! Conversion vers la vue constante
+  ARCCORE_DEPRECATED_2021("Use view() instead")
+  operator ConstArrayView<T>() const { const ArrayView<T>* v = this; return *v; }
+
+  //! Vue constante sur les éléments de l'option
+  ConstArrayViewType view() const
+  {
+    return m_view;
+  }
+  //! Vue sur les éléments de l'option
+  ArrayViewType view()
+  {
+    return m_view;
+  }
+
+  ConstReferenceType operator[](Integer i) const { return m_view[i]; }
+  ReferenceType operator[](Integer i) { return m_view[i]; }
 
  public:
 
@@ -354,7 +408,7 @@ class CaseOptionMultiSimpleT
   ICaseFunction* function() const override { return 0; }
   void updateFromFunction(Real,Integer) override {}
 
-  ConstArrayView<T> values() const { return (*this); }
+  ConstArrayView<T> values() const { const ArrayView<T>* v = this; return *v; }
   const T& value(Integer index) const { return this->operator[](index); }
   Integer size() const { return ArrayView<T>::size(); }
   ARCANE_CORE_EXPORT void visit(ICaseDocumentVisitor* visitor) const override;
@@ -365,6 +419,7 @@ class CaseOptionMultiSimpleT
   virtual bool _allowPhysicalUnit();
 
  private:
+  ArrayViewType m_view;
 };
 #endif
 

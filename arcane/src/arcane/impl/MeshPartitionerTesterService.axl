@@ -1,0 +1,25 @@
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
+<service name="MeshPartitionerTesterService" type="caseoption">
+  <userclass>User</userclass>
+  <description>
+    Service Arcane de test de l'équilibrage de charge
+  </description>
+
+  <interface name="Arcane::IMeshPartitionerBase" inherited="false" />
+  <interface name="Arcane::IMeshPartitioner" inherited="false" />
+
+  <options>
+
+    <simple name="sub-rank-divider" type="int32" default = "0">
+      <userclass>User</userclass>
+      <description>
+        Diviseur pour le nombre de rang pour la répartition. Si
+        strictement positif, chaque sous-domaine réparti ses mailles
+        sur un nombre de sous-domaines égal au nombre de rang divisé
+        par la valeur de cette option.
+      </description>
+    </simple>
+
+  </options>
+
+</service>

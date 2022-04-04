@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelTesterModule.cc                                     (C) 2000-2017 */
+/* ParallelTesterModule.cc                                     (C) 2000-2021 */
 /*                                                                           */
 /* Module de test du parallèlisme.                                           */
 /*---------------------------------------------------------------------------*/
@@ -47,6 +47,7 @@
 #include "arcane/IItemFamilyPolicyMng.h"
 #include "arcane/VariableSynchronizerEventArgs.h"
 #include "arcane/IVariableSynchronizer.h"
+#include "arcane/ParallelMngUtils.h"
 
 #include "arcane/SerializeBuffer.h"
 
@@ -69,7 +70,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_BEGIN_NAMESPACE
+namespace ArcaneTest
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -94,12 +96,18 @@ class ParticleFamilyTester
       m_family->mesh()->modifier()->addExtraGhostParticlesBuilder(this);
   }
  public:
-  IntegerConstArrayView extraParticlesToSend(const String& family_name,Int32 sid) const override
+  void unregisterBuilder()
+  {
+    if (m_family->toParticleFamily()->getEnableGhostItems())
+      m_family->mesh()->modifier()->removeExtraGhostParticlesBuilder(this);
+  }
+ public:
+  Int32ConstArrayView extraParticlesToSend(const String& family_name,Int32 sid) const override
   {
     if (family_name==m_family->name() && m_family->toParticleFamily()->getEnableGhostItems())
       return m_extra_ghost_particles_to_send[sid];
     else
-      return IntegerConstArrayView() ;
+      return Int32ConstArrayView() ;
   }
 
   void computeExtraParticlesToSend() override
@@ -259,6 +267,7 @@ class ParallelTesterModule
   void testLoop();
   void testInit();
   void testBuild();
+  void testExit();
 
   IItemFamilySerializeStep* createStep(IItemFamily* family) override
   {
@@ -282,6 +291,7 @@ class ParallelTesterModule
   VariableCellReal m_cell_real_values;
   VariableCellReal m_cells_nb_shared;
   VariableCellArrayReal m_cells_nb_shared_array;
+  VariableCellArrayReal m_empty_cells_array;
 
   VariableFaceReal m_face_real_values;
 
@@ -314,7 +324,7 @@ class ParallelTesterModule
   void _testLoadBalance();
   void _testGhostItemsReduceOperation();
   void _testTransferValues();
-  void _writeAccumulateInfos(ostream& ofile,eItemKind ik,const String& msg);
+  void _writeAccumulateInfos(std::ostream& ofile,eItemKind ik,const String& msg);
   void _doInit();
   void _checkEnd();
   void _testBitonicSort();
@@ -345,6 +355,7 @@ ParallelTesterModule(const ModuleBuildInfo& mb)
 , m_cell_real_values(VariableBuildInfo(this,"TestParallelCellRealValues"))
 , m_cells_nb_shared(VariableBuildInfo(this,"TestParallelCellsNbShared"))
 , m_cells_nb_shared_array(VariableBuildInfo(this,"TestParallelCellsNbSharedArray"))
+, m_empty_cells_array(VariableBuildInfo(this,"TestEmptyCellArray"))
 , m_face_real_values(VariableBuildInfo(this,"TestParallelFaceRealValues"))
 , m_accumulate_real(VariableBuildInfo(this,"TestParallelAccumulateReal"))
 , m_accumulate_real3(VariableBuildInfo(this,"TestParallelAccumulateReal3"))
@@ -362,6 +373,9 @@ ParallelTesterModule(const ModuleBuildInfo& mb)
                 IEntryPoint::WStartInit);
   addEntryPoint(this,"TP_testLoop",
                 &ParallelTesterModule::testLoop);
+  addEntryPoint(this,"TP_testExit",
+                &ParallelTesterModule::testExit,
+                IEntryPoint::WExit);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -389,6 +403,11 @@ staticInitialize(ISubDomain* sd)
       time_loop->setEntryPoints(String(ITimeLoop::WComputeLoop),clist);
     }
     {
+      List<TimeLoopEntryPointInfo> clist;
+      clist.add(TimeLoopEntryPointInfo("TestParallel.TP_testExit"));
+      time_loop->setEntryPoints(String(ITimeLoop::WExit),clist);
+    }
+    {
       StringList clist;
       clist.add("TestParallel");
       time_loop->setRequiredModulesName(clist);
@@ -403,7 +422,7 @@ staticInitialize(ISubDomain* sd)
 ParallelTesterModule::
 ~ParallelTesterModule()
 {
-  for( ParticleFamilyTester* p : m_particle_family_testers.range() )
+  for( ParticleFamilyTester* p : m_particle_family_testers )
     delete p;
 }
 
@@ -553,15 +572,13 @@ testLoop()
     _testDifferentValuesOnAllReplica();
   }
   Timer timer(subDomain(),"ParallelTesterModule::testLoop",Timer::TimerReal);
-  _testAccumulate();
-  _testGhostItemsReduceOperation();
-  //TODO: reactiver les tests suivants
-#if 1
-  _testBitonicSort();
   {
     Timer::Sentry sentry(&timer);
     switch(options()->testId){
     case TestAll:
+      _testAccumulate();
+      _testGhostItemsReduceOperation();
+      _testBitonicSort();
       _testLoadBalance();
       _testGetVariableValues();
       _testGhostItemsReduceOperation();
@@ -569,7 +586,7 @@ testLoop()
       _testPartialVariables();
       _testAccumulate();
       break;
-    case TestParallelMng:
+    case TestNone:
       break;
     case TestLoadBalance:
       _testLoadBalance();
@@ -586,11 +603,20 @@ testLoop()
     }
   }
   _testPartialVariables();
-#endif
   if (m_mesh_partitioner){
     info() << "Set mesh partitioner";
     subDomain()->timeLoopMng()->registerActionMeshPartition(m_mesh_partitioner);
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ParallelTesterModule::
+testExit()
+{
+  for( ParticleFamilyTester* p : m_particle_family_testers )
+    p->unregisterBuilder();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -617,6 +643,10 @@ _testSynchronize()
   m_array_faces.initialize();
   info() << "Initialize ArrayCell nb_cell=" << nbCell();
   m_array_cells.initialize();
+
+  // Teste la synchronisation avec une variable vide
+  m_empty_cells_array.synchronize();
+  m_empty_cells_array.synchronize();
 
   // Positionne les valeurs
   {
@@ -650,7 +680,7 @@ _testSynchronize()
     nb_error += m_array_faces.checkValues(current_iteration,mesh->allFaces());
     nb_error += m_array_cells.checkValues(current_iteration,mesh->allCells());
     if (nb_error!=0)
-      fatal() << "Error in synchronize test: n=" << nb_error;
+      ARCANE_FATAL("Error in synchronize test: n={0}",nb_error);
   }
 
   // Meme test en utilisant les vues
@@ -679,7 +709,7 @@ _testSynchronize()
       nb_error += m_cells.checkValues(iteration,mesh->allCells());
       info() << "NB ERROR_WITH_VIEW SEQ=" << nb_error;
       if (nb_error!=0)
-        fatal() << "Error in synchronize test: n=" << nb_error;
+        ARCANE_FATAL("Error in synchronize test: n={0}",nb_error);
     }
   }
 }
@@ -890,7 +920,7 @@ _testMultiSynchronize()
 /*---------------------------------------------------------------------------*/
 
 void ParallelTesterModule::
-_writeAccumulateInfos(ostream& ofile,eItemKind ik,const String& msg)
+_writeAccumulateInfos(std::ostream& ofile,eItemKind ik,const String& msg)
 {
   ARCANE_UNUSED(ik);
   //IMesh* mesh = subDomain()->defaultMesh();
@@ -971,7 +1001,7 @@ _testAccumulate()
   }
   
   if (need_write && !output_file_name.empty()){
-    ofstream ofile(output_file_name.localstr());
+    std::ofstream ofile(output_file_name.localstr());
     _writeAccumulateInfos(ofile,ik,"Send");
   }
 
@@ -983,7 +1013,7 @@ _testAccumulate()
   //pm->accumulate(ik,m_accumulate_ids,variables);
   cell_family->reduceFromGhostItems(m_accumulate_real.variable(),Parallel::ReduceSum);
   if (need_write && !output_file_name.empty()){
-    ofstream ofile(output_file_name.localstr(),ios::app);
+    std::ofstream ofile(output_file_name.localstr(),std::ios::app);
     _writeAccumulateInfos(ofile,ik,"Recv");
   }
 }
@@ -1068,9 +1098,10 @@ _testGetVariableValues()
   }
 
   RealUniqueArray output_values(nb_send_item);
-  IGetVariablesValuesParallelOperation* op = pm->createGetVariablesValuesOperation();
-  op->getVariableValues(var_values,items_wanted_id,output_values);
-  delete op;
+  {
+    auto op { ParallelMngUtils::createGetVariablesValuesOperationRef(pm) };
+    op->getVariableValues(var_values,items_wanted_id,output_values);
+  }
 
   // Maintenant, vérifie que la sortie est correcte
   {
@@ -1135,14 +1166,15 @@ _testTransferValues()
   SharedArray<Int64> recv_int64;
   SharedArray<Real> recv_real;
 
-  ITransferValuesParallelOperation* op = pm->createTransferValuesOperation();
-  op->setTransferRanks(send_ranks);
-  op->addArray(send_int32_1,recv_int32_1);
-  op->addArray(send_int32_2,recv_int32_2);
-  op->addArray(send_int64,recv_int64);
-  op->addArray(send_real,recv_real);
-  op->transferValues();
-  delete op;
+  {
+    auto op { ParallelMngUtils::createTransferValuesOperationRef(pm) };
+    op->setTransferRanks(send_ranks);
+    op->addArray(send_int32_1,recv_int32_1);
+    op->addArray(send_int32_2,recv_int32_2);
+    op->addArray(send_int64,recv_int64);
+    op->addArray(send_real,recv_real);
+    op->transferValues();
+  }
 
   Integer nb_error = 0;
   Integer recv_nb = recv_int32_1.size();
@@ -1246,7 +1278,7 @@ _testBitonicSort()
     UniqueArray< SharedArray<Int32> > indexes_list(pm->commSize());
     UniqueArray< SharedArray<Int32> > own_indexes_list(pm->commSize());
     //Int32UniqueArray rank_to_sends;
-    ScopedPtrT<IParallelExchanger> sd_exchange(pm->createExchanger());
+    auto sd_exchange { ParallelMngUtils::createExchangerRef(pm) };
     for( Integer i=0; i<nb_item; ++i ){
       Int32 index = key_indexes[i];
       Int32 rank = key_ranks[i];
@@ -1313,7 +1345,8 @@ _testBitonicSort()
 
   IData* data = temperature.variable()->data();
   {
-    ScopedPtrT<IParallelExchanger> sd_exchange(pm->createExchanger());
+    auto sd_exchange { ParallelMngUtils::createExchangerRef(pm) };
+
     for( Integer i=0, is=ranks_to_send.size(); i<is; ++i ){
       sd_exchange->addSender(ranks_to_send[i]);
     }
@@ -1358,7 +1391,7 @@ _testBitonicSort()
     ConstArrayView<Real> true_array = true_data->view();
     {
       String fname(String("dump-")+pm->commRank());
-      ofstream ofile(fname.localstr());
+      std::ofstream ofile(fname.localstr());
       for( Integer z=0, zs=nb_item_as_integer; z<zs; ++z )
         ofile << " VALUE Z=" << z << " v=" << true_array[z] << " key=" << keys[z] << '\n';
     }
@@ -1397,7 +1430,7 @@ _testPartialVariables()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_END_NAMESPACE
+} // End namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMeshIncrementalBuilder.h                             (C) 2000-2018 */
+/* DynamicMeshIncrementalBuilder.h                             (C) 2000-2021 */
 /*                                                                           */
 /* Construction d'un maillage de manière incrémentale.                       */
 /*---------------------------------------------------------------------------*/
@@ -32,17 +32,13 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
+namespace Arcane
+{
 class SerializeBuffer;
+}
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -137,7 +133,10 @@ class DynamicMeshIncrementalBuilder
   //! Définit la connectivité active pour le maillage associé
   /*! Ceci conditionne les connectivités à la charge de cette famille */
   void setConnectivity(Integer c);
- 
+
+  //! Remise à zéro des structures pour pouvoir faire à nouveau une allocation
+  void resetAfterDeallocate();
+
  public:
 
   void printInfos();
@@ -178,8 +177,14 @@ class DynamicMeshIncrementalBuilder
       , m_face_uid(NULL_ITEM_ID){}
 //      , m_next_node_set([](const NodeInFacePtr& a, const NodeInFacePtr& b){return (*a) < (*b);}){} // Does not work (gcc 4.7.2 pb ?). Need to define NodeInFacePtr class
 
-    bool operator<(const NodeInFace & nif) const {return m_uid < nif.m_uid;}
-    bool operator==(const NodeInFace& a) {return m_uid == a.m_uid;}
+    friend bool operator<(const NodeInFace& a,const NodeInFace & nif)
+    {
+      return a.m_uid < nif.m_uid;
+    }
+    friend bool operator==(const NodeInFace& a,const NodeInFace& b)
+    {
+      return a.m_uid == b.m_uid;
+    }
 
     Int64 faceUid() const {return m_face_uid;}
     void setFaceUid(Int64 face_uid) {m_face_uid = face_uid;}
@@ -253,34 +258,30 @@ class DynamicMeshIncrementalBuilder
  private:
   
   DynamicMesh* m_mesh; //!< Maillage associé
+  ItemTypeMng* m_item_type_mng = nullptr;
   
-  Integer m_connectivity; //!< Info de connectivité du maillage courant
-  bool m_has_edge;        //!< Info sur la présence d'arête (accèlere l'accès à la connectivité générale)
+  Integer m_connectivity = 0; //!< Info de connectivité du maillage courant
+  bool m_has_edge = false; //!< Info sur la présence d'arête (accèlere l'accès à la connectivité générale)
   
   //! AMR
   bool m_has_amr;
 
-  bool m_verbose; //!< Vrai si affiche messages
+  bool m_verbose = false; //!< Vrai si affiche messages
 
   //! Outils de construction du maillage
-  OneMeshItemAdder* m_one_mesh_item_adder;   //!< Outil pour ajouter un élément au maillage
-  GhostLayerBuilder* m_ghost_layer_builder;  //!< Outil pour construire les éléments fantômes
-  FaceUniqueIdBuilder* m_face_unique_id_builder;
-  EdgeUniqueIdBuilder* m_edge_unique_id_builder;
+  OneMeshItemAdder* m_one_mesh_item_adder = nullptr;   //!< Outil pour ajouter un élément au maillage
+  GhostLayerBuilder* m_ghost_layer_builder = nullptr;  //!< Outil pour construire les éléments fantômes
+  FaceUniqueIdBuilder* m_face_unique_id_builder = nullptr;
+  EdgeUniqueIdBuilder* m_edge_unique_id_builder = nullptr;
 
-  Int64 m_face_uid_pool; //!< Numéro du uniqueId() utilisé pour générer les faces
-  Int64 m_edge_uid_pool; //!< Numéro du uniqueId() utilisé pour générer les edges
+  Int64 m_face_uid_pool = 0; //!< Numéro du uniqueId() utilisé pour générer les faces
+  Int64 m_edge_uid_pool = 0; //!< Numéro du uniqueId() utilisé pour générer les edges
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

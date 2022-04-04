@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -113,10 +113,25 @@ class ARCANE_CORE_EXPORT ApplicationBuildInfo
   //! Retourne le nom du code.
   String codeName() const;
 
+  //! Stratégie pour punaiser les threads des tâches
+  String threadBindingStrategy() const;
+
+  //! Positionne la strategie pour punaiser les threads des tâches
+  void threadBindingStrategy(const String& v);
+
   //! Source du jeu de données
   CaseDatasetSource& caseDatasetSource();
   //! Source du jeu de données
   const CaseDatasetSource& caseDatasetSource() const;
+
+ public:
+
+  /*!
+   * \brief Nom du gestionnaire de message par défaut.
+   * Ne doit être modifié que par Arcane.
+   */
+  void internalSetDefaultMessagePassingService(const String& name);
+  String internalDefaultMessagePassingService() const;
 
  public:
 

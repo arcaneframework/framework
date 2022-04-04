@@ -18,6 +18,7 @@ xstr = """<?xml version="1.0"?>
 
   <meshes>
     <mesh>
+      <ghost-layer-builder-version>4</ghost-layer-builder-version>
       <generator name="Cartesian3D" >
         <nb-part-x>$nb_part_x</nb-part-x> 
         <nb-part-y>$nb_part_y</nb-part-y>
@@ -115,6 +116,7 @@ required_arguments.add_argument("-n","--nb-proc", dest="nb_proc", action="store"
 parser.add_argument("-s","--mesh-size", dest="mesh_size", action="store", help="size of mesh", type=int, default=10)
 parser.add_argument("-l","--load-balance", dest="do_load_balance", action="store_true", help="true if load balance is activated")
 parser.add_argument("-m","--max-iteration", dest="max_iteration", action="store", help="number of iteration to do", type=int, default=100)
+parser.add_argument("-p","--arcane-driver-path", dest="arcane_driver_path", action="store", help="arcane_test_driver path", type=str, default="./bin/arcane_test_driver")
 
 args = parser.parse_args()
 nb_proc = args.nb_proc
@@ -130,10 +132,19 @@ nb_part_x = 8
 nb_part_y = 4
 nb_part_z = (nb_proc // 32)
 # En dessous de 32 PE, on découpe de manière spécifique
-if nb_part_z==0:
-    nb_part_x = nb_proc
-    nb_part_y = 1
-    nb_part_z = 1
+if nb_proc==24:
+    nb_part_x, nb_part_y, nb_part_z = 4, 3, 2
+elif nb_proc==16:
+    nb_part_x, nb_part_y, nb_part_z = 4, 2, 2
+elif nb_proc==12:
+    nb_part_x, nb_part_y, nb_part_z = 3, 2, 2
+elif nb_proc==8:
+    nb_part_x, nb_part_y, nb_part_z = 2, 2, 2
+elif nb_proc==4:
+    nb_part_x, nb_part_y, nb_part_z = 2, 2, 1
+elif nb_part_z==0:
+    nb_part_x, nb_part_y, nb_part_z = nb_proc, 1, 1
+
 total_nb_part = nb_part_x * nb_part_y * nb_part_z
 
 # Nombre de mailles en (X,Y,Z)
@@ -156,7 +167,6 @@ case_file = open("test.arc",mode="w")
 case_file.write(z)
 case_file.close()
 
-arcane_driver_path = "./bin/arcane_test_driver"
-command = [ arcane_driver_path, "launch", "-n", str(nb_proc), "-m", str(args.max_iteration), "-We,ARCANE_NEW_MESHINIT,1", "test.arc" ]
+command = [ args.arcane_driver_path, "launch", "-n", str(nb_proc), "-m", str(args.max_iteration), "-We,ARCANE_NEW_MESHINIT,1", "test.arc" ]
 print(command)
 subprocess.run(command)

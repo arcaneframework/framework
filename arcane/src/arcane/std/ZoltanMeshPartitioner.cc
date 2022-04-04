@@ -1,17 +1,15 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ZoltanMeshPartitioner.cc                                    (C) 2000-2016 */
+/* ZoltanMeshPartitioner.cc                                    (C) 2000-2021 */
 /*                                                                           */
 /* Partitioneur de maillage utilisant la bibliotheque Zoltan.                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ArcanePrecomp.h"
@@ -61,7 +59,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -880,18 +879,24 @@ notifyEndPartition()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SUB_DOMAIN_FACTORY(ZoltanMeshPartitioner,IMeshPartitioner,Zoltan);
+ARCANE_REGISTER_SERVICE(ZoltanMeshPartitioner,
+                        ServiceProperty("Zoltan",ST_SubDomain),
+                        ARCANE_SERVICE_INTERFACE(IMeshPartitioner),
+                        ARCANE_SERVICE_INTERFACE(IMeshPartitionerBase));
 ARCANE_REGISTER_SERVICE_ZOLTANMESHPARTITIONER(Zoltan,ZoltanMeshPartitioner);
 
 #if ARCANE_DEFAULT_PARTITIONER == ZOLTAN_DEFAULT_PARTITIONER
-ARCANE_REGISTER_SUB_DOMAIN_FACTORY(ZoltanMeshPartitioner,IMeshPartitioner,DefaultPartitioner);
+ARCANE_REGISTER_SERVICE(ZoltanMeshPartitioner,
+                        ServiceProperty("DefaultPartitioner",ST_SubDomain),
+                        ARCANE_SERVICE_INTERFACE(IMeshPartitioner),
+                        ARCANE_SERVICE_INTERFACE(IMeshPartitionerBase));
 ARCANE_REGISTER_SERVICE_ZOLTANMESHPARTITIONER(DefaultPartitioner,ZoltanMeshPartitioner);
 #endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -43,6 +43,7 @@
 #include "arcane/VariableCollection.h"
 #include "arcane/ITiedInterface.h"
 #include "arcane/SharedVariable.h"
+#include "arcane/MeshVisitor.h"
 
 #include <algorithm>
 #include <map>
@@ -167,7 +168,7 @@ writeMeshItemInfo(ISubDomain* sd,Cell cell,bool depend_info)
   trace->pinfo() << "unique id:               " << Trace::Width(5) << cell.uniqueId();
   trace->pinfo() << "local id:                " << Trace::Width(5) << cell.localId();
   trace->pinfo() << "owner:                   " << Trace::Width(5) << cell.owner();
-  trace->pinfo() << "type:                    " << Trace::Width(5) << Item::typeName(cell.type());
+  trace->pinfo() << "type:                    " << Trace::Width(5) << cell.typeInfo()->typeName();
 
   trace->pinfo() << "number of nodes:         " << Trace::Width(5) << nb_node;
   for( Integer i=0; i<nb_node; ++i )
@@ -1544,6 +1545,48 @@ removeItemAndKeepOrder(Int32ArrayView items,Int32 local_id)
   }
   // TODO: Il faut activer cela mais pour l'instant cela fait planter un test.
   //ARCANE_FATAL("No entity with local_id={0} found in list {1}",local_id,items);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void mesh_utils::
+shrinkMeshGroups(IMesh* mesh)
+{
+  auto f= [&](ItemGroup& group)
+          {
+            group.internal()->shrinkMemory();
+          };
+  meshvisitor::visitGroups(mesh,f);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int64 mesh_utils::
+printMeshGroupsMemoryUsage(IMesh* mesh, Int32 print_level)
+{
+  ITraceMng* tm = mesh->traceMng();
+  Int64 total_capacity = 0;
+  Int64 total_computed_capacity = 0;
+  auto f = [&](ItemGroup& group) {
+    ItemGroupImpl* p = group.internal();
+    // Attention à bien prendre la taille du groupe via \a p
+    // car sinon pour un groupe calculé on le reconstruit.
+    Int64 c = p->capacity();
+    bool is_computed = p->hasComputeFunctor();
+    total_capacity += c;
+    if (is_computed)
+      total_computed_capacity += c;
+    if (print_level >= 1)
+      tm->info() << "GROUP Name=" << group.name() << " computed?=" << p->hasComputeFunctor()
+                 << " nb_ref=" << p->nbRef() << " size=" << p->size()
+                 << " capacity=" << c;
+  };
+  meshvisitor::visitGroups(mesh, f);
+  tm->info() << "MeshGroupsMemoryUsage: capacity = " << total_capacity
+             << " computed_capacity=" << total_computed_capacity;
+  return total_capacity * sizeof(Int32);
 }
 
 /*---------------------------------------------------------------------------*/

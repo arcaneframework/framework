@@ -120,7 +120,7 @@ Les sorties peuvent être effectués en fonction du nombre d'itérations
 	   <userclass>User</userclass>
 	   <description>
 	     Nombre d'itérations entre deux sorties. Si cette valeur vaut
-	     zéro, aucune sortie n'est effectuée.
+	     zéro, aucune sortie au cours des itérations n'est effectuée.
 	   </description>
     </simple>
 
@@ -162,6 +162,19 @@ Les sorties peuvent être effectués en fonction du nombre d'itérations
 	   </description>
     </simple>
 
+    <!-- - - - - - save-init - - - - -->
+    <simple name    = "save-final-time"
+	          type    = "bool"
+	          default = "true"
+	         >
+	   <name lang='fr'>sauvegarde-temps-final</name>
+	   <userclass>User</userclass>
+	   <description>
+	     Si vrai, effectue une sortie en fin d'exécution lorsque
+	     le temps final est atteint.
+	   </description>
+    </simple>
+
     <!-- - - - - - end-execution-output - - - - -->
     <simple name    = "end-execution-output"
 	         type    = "bool"
@@ -170,7 +183,10 @@ Les sorties peuvent être effectués en fonction du nombre d'itérations
 	   <name lang='fr'>sortie-fin-execution</name>
 	   <userclass>User</userclass>
 	   <description>
-	     Si vrai, effectue une sortie de dépouillement en fin d'exécution.
+	     Si vrai, effectue une sortie de dépouillement en fin
+	     d'exécution. La fin d'exécution n'est pas forcément identique au
+	     temps final en cas d'utilisations de protections/reprises
+	     ou si on spécifie un nombre maximum d'itérations lors de l'exécution.
 	   </description>
     </simple>
 

@@ -1,19 +1,7 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2020 IFPEN-CEA
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
@@ -62,11 +50,18 @@ class StandaloneMpiMessagePassingMng::Impl
 
   ~Impl()
   {
-    m_adapter->destroy();
-    delete m_stat;
-    if (m_clean_comm) {
-      MPI_Comm_free(&m_communicator);
+    try{
+      m_adapter->destroy();
     }
+    catch(const Exception& ex){
+      std::cerr << "ERROR: msg=" << ex << "\n";
+    }
+
+    delete m_dispatchers;
+    delete m_stat;
+
+    if (m_clean_comm)
+      MPI_Comm_free(&m_communicator);
   }
 
   MpiMessagePassingMng::BuildInfo buildInfo() const
@@ -75,6 +70,7 @@ class StandaloneMpiMessagePassingMng::Impl
   }
 
  public:
+
   ReferenceCounter<ITraceMng> m_trace_mng;
   IStat* m_stat = nullptr;
   Dispatchers* m_dispatchers = nullptr;

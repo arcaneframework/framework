@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -333,6 +333,9 @@ class DataTypeTraitsT<Real2>
   //! Type de donnée de base de ce type de donnée
   typedef Real BasicType;
 
+  //! Type de retour de operator[] pour ce type
+  using SubscriptType = Real;
+
   //! Nombre d'éléments du type de base
   static constexpr int nbBasicType() { return 2; }
 
@@ -356,8 +359,11 @@ class DataTypeTraitsT<Real2>
 
  public:
 
+  static constexpr bool HasSubscriptOperator() { return true; }
   static constexpr bool HasComponentX() { return true; }
   static constexpr bool HasComponentY() { return true; }
+
+  using ComponentType = Real;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -376,6 +382,9 @@ class DataTypeTraitsT<Real3>
 
   //! Type de donnée de base de ce type de donnée
   typedef Real BasicType;
+
+  //! Type de retour de operator[] pour ce type
+  using SubscriptType = Real;
 
   //! Nombre d'éléments du type de base
   static constexpr int nbBasicType() { return 3; }
@@ -398,9 +407,12 @@ class DataTypeTraitsT<Real3>
   //! Valeur par défaut.
   static ARCANE_CORE_EXPORT Type defaultValue();
 
+  static constexpr bool HasSubscriptOperator() { return true; }
   static constexpr bool HasComponentX() { return true; }
   static constexpr bool HasComponentY() { return true; }
   static constexpr bool HasComponentZ() { return true; }
+
+  using ComponentType = Real;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -419,6 +431,9 @@ class DataTypeTraitsT<Real2x2>
 
   //! Type de donnée de base de ce type de donnée
   typedef Real BasicType;
+
+  //! Type de retour de operator[] pour ce type
+  using SubscriptType = Real2;
 
   //! Nombre d'éléments du type de base
   static constexpr int nbBasicType() { return 4; }
@@ -440,6 +455,18 @@ class DataTypeTraitsT<Real2x2>
 
   //! Valeur par défaut.
   static ARCANE_CORE_EXPORT Type defaultValue();
+
+  static constexpr bool HasSubscriptOperator() { return true; }
+
+  static constexpr bool HasComponentXX() { return true; }
+  static constexpr bool HasComponentYX() { return true; }
+  static constexpr bool HasComponentXY() { return true; }
+  static constexpr bool HasComponentYY() { return true; }
+
+  static constexpr bool HasComponentX() { return true; }
+  static constexpr bool HasComponentY() { return true; }
+
+  using ComponentType = Real2;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -458,6 +485,9 @@ class DataTypeTraitsT<Real3x3>
 
   //! Type de donnée de base de ce type de donnée
   typedef Real BasicType;
+
+  //! Type de retour de operator[] pour ce type
+  using SubscriptType = Real3;
 
   //! Nombre d'éléments du type de base
   static constexpr int nbBasicType() { return 9; }
@@ -479,6 +509,24 @@ class DataTypeTraitsT<Real3x3>
 
   //! Valeur par défaut.
   static ARCANE_CORE_EXPORT Type defaultValue();
+
+  static constexpr bool HasSubscriptOperator() { return true; }
+
+  static constexpr bool HasComponentXX() { return true; }
+  static constexpr bool HasComponentYX() { return true; }
+  static constexpr bool HasComponentZX() { return true; }
+  static constexpr bool HasComponentXY() { return true; }
+  static constexpr bool HasComponentYY() { return true; }
+  static constexpr bool HasComponentZY() { return true; }
+  static constexpr bool HasComponentXZ() { return true; }
+  static constexpr bool HasComponentYZ() { return true; }
+  static constexpr bool HasComponentZZ() { return true; }
+
+  static constexpr bool HasComponentX() { return true; }
+  static constexpr bool HasComponentY() { return true; }
+  static constexpr bool HasComponentZ() { return true; }
+
+  using ComponentType = Real3;
 };
 
 /*---------------------------------------------------------------------------*/

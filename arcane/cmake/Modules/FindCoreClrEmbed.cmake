@@ -15,6 +15,11 @@ set(CORECLR_ARCH "linux-x64")
 if (WIN32)
   set(CORECLR_ARCH "win-x64")
 endif()
+if (UNIX)
+  if (CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+    set(CORECLR_ARCH "linux-arm64")
+  endif()
+endif()
 
 # ----------------------------------------------------------------------------
 # On recherche la bibliothèque 'nethost' qui se trouve dans le répertoire suivant:

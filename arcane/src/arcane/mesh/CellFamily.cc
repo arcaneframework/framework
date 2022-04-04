@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -114,7 +114,7 @@ build()
   m_face_family = ARCANE_CHECK_POINTER(dynamic_cast<FaceFamily*>(m_mesh->faceFamily()));
 
   IItemFamilyNetwork* network = m_mesh->itemFamilyNetwork();
-  if (network) { // temporary to fill legacy, even with family dependencies
+  if (m_mesh->useMeshItemFamilyDependencies()) { // temporary to fill legacy, even with family dependencies
     auto* nc = network->getConnectivity(this,m_node_family,connectivityName(this,m_node_family));
     using NodeNetwork = NewWithLegacyConnectivityType<CellFamily,NodeFamily>::type;
     m_node_connectivity = ARCANE_CHECK_POINTER(dynamic_cast<NodeNetwork*>(nc));
@@ -150,9 +150,7 @@ _createOne(ItemInternal* item,Int64 uid,ItemTypeInfo* type)
 {
   ItemLocalId item_lid(item);
   m_item_internal_list->cells = _itemsInternal();
-  _allocateInfos(item,uid,type,
-                 (m_edge_prealloc)?type->nbLocalEdge():0,
-                 type->nbLocalFace(),0);
+  _allocateInfos(item,uid,type);
   auto nc = m_node_connectivity->trueCustomConnectivity();
   if (nc)
     nc->addConnectedItems(item_lid,type->nbLocalNode());
@@ -218,7 +216,7 @@ findOrAllocOne(Int64 uid,ItemTypeInfo* type,bool& is_alloc)
 void CellFamily::
 preAllocate(Integer nb_item)
 {
-  Integer base_mem = m_node_prealloc + m_edge_prealloc + m_face_prealloc + ItemSharedInfo::COMMON_BASE_MEMORY;
+  Integer base_mem = ItemSharedInfo::COMMON_BASE_MEMORY;
   Integer mem = base_mem * (nb_item+1);
   info() << "Cellfamily: reserve=" << mem;
   _reserveInfosMemory(mem);
@@ -507,7 +505,7 @@ _addChildrenCellsToCell(ItemInternal* parent_cell,Int32ConstArrayView children_c
     ItemLocalId item_lid(parent_cell);
     c->addConnectedItems(item_lid,nb_children);
   }
-  _updateSharedInfoAdded(parent_cell,0,0,0,0,nb_children);
+  _updateSharedInfoAdded(parent_cell);
 
   auto x = _topologyModifier();
   for( Integer i=0; i<nb_children; ++i )
@@ -523,7 +521,6 @@ void CellFamily::
 _removeParentCellToCell(ItemInternal* cell)
 {
   m_hparent_connectivity->removeConnectedItems(ItemLocalId(cell));
-  //_updateSharedInfoRemoved(cell,0,0,0,1,0);
 }
 
 /*---------------------------------------------------------------------------*/

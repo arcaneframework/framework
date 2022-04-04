@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParticleFamily.h                                            (C) 2000-2018 */
+/* ParticleFamily.h                                            (C) 2000-2021 */
 /*                                                                           */
 /* Famille de particules.                                                    */
 /*---------------------------------------------------------------------------*/
@@ -20,15 +20,15 @@
 #include "arcane/IParticleFamily.h"
 
 #include "arcane/mesh/ItemFamily.h"
+#include "arcane/mesh/ItemInternalConnectivityIndex.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 class IncrementalItemConnectivity;
 class OneItemIncrementalItemConnectivity;
-class ParticleCellCompactIncrementalItemConnectivity;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -41,8 +41,7 @@ class ARCANE_MESH_EXPORT ParticleFamily
 {
  private:
 
-  typedef ItemConnectivitySelectorT<ParticleCellCompactIncrementalItemConnectivity,OneItemIncrementalItemConnectivity> CellConnectivity;
-  friend ParticleCellCompactIncrementalItemConnectivity;
+  typedef ItemConnectivitySelectorT<CellInternalConnectivityIndex,OneItemIncrementalItemConnectivity> CellConnectivity;
   typedef ItemFamily BaseClass;
 
  public:
@@ -147,8 +146,7 @@ class ARCANE_MESH_EXPORT ParticleFamily
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

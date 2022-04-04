@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshComponentPartData.cc                                    (C) 2000-2017 */
+/* MeshComponentPartData.cc                                    (C) 2000-2021 */
 /*                                                                           */
 /* Données d'une partie (pure ou partielle) d'un constituant.                */
 /*---------------------------------------------------------------------------*/
@@ -13,6 +13,7 @@
 
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/ValueChecker.h"
+#include "arcane/utils/PlatformUtils.h"
 
 #include "arcane/IItemFamily.h"
 #include "arcane/ItemPrinter.h"
@@ -26,14 +27,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -44,9 +39,13 @@ MeshComponentPartData(IMeshComponent* component)
 , m_component(component)
 , m_impure_var_idx(component->variableIndexer()->index()+1)
 {
+  // Utilise l'allocateur des données pour permettre d'accéder à ces valeurs
+  // sur les accélérateurs
+  IMemoryAllocator* allocator = platform::getDefaultDataAllocator();
   for( Integer i=0; i<2; ++i ){
-    m_value_indexes[i] = UniqueArray<Int32>(AlignedMemoryAllocator::Simd());
-  }
+    m_value_indexes[i] = UniqueArray<Int32>(allocator);
+    m_items_internal_indexes[i] = UniqueArray<Int32>(allocator);
+ }
 
 }
 
@@ -179,8 +178,7 @@ partView(eMatPart part) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

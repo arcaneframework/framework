@@ -1,0 +1,71 @@
+# Il faut que le tag soit de la forme 'arccore-v2.3.4'
+
+on:
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - 'arccore-v*'
+
+name: Create Release Arccore
+
+# TODO: Vérifier que le numéro de version du tag correspond
+# au fichier 'version' dans le composant correspondant
+# (par exemple si 'arccore-v2.3.2' alors le fichier 'framework/arccore/version'
+# doit valoir cela aussi)
+
+jobs:
+  build:
+    env:
+      COMPONENT_NAME: arccore
+      COMPONENT_NAME_UPPER: Arccore
+    name: Create Release Arccore
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+          path: framework
+
+      - name: Get the version
+        id: get_tag_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\/${COMPONENT_NAME}-v/}
+
+      - name: Export tag version
+        shell: 'bash'
+        run: |
+          export FRAMEWORK_TAG_VERSION=${{ steps.get_tag_version.outputs.VERSION }}
+          echo FRAMEWORK_TAG_VERSION = $FRAMEWORK_TAG_VERSION
+          echo "FRAMEWORK_TAG_VERSION=$FRAMEWORK_TAG_VERSION" >> $GITHUB_ENV
+
+      - name: Make ${{ env.COMPONENT_NAME }} tar
+        shell: 'bash'
+        run: |
+          echo Creating tar file for ${COMPONENT_NAME}
+          tar cfz ${COMPONENT_NAME}.tar.gz --transform "s,^${COMPONENT_NAME},${COMPONENT_NAME}-${FRAMEWORK_TAG_VERSION}," -C framework ${COMPONENT_NAME}
+          ls -lart .
+          tar tvf ${COMPONENT_NAME}.tar.gz
+
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: ${{ env.COMPONENT_NAME_UPPER }} Version ${{ env.FRAMEWORK_TAG_VERSION }}
+          body: |
+            Release ${{ env.FRAMEWORK_TAG_VERSION }}
+          draft: false
+          prerelease: true
+
+      - name: Upload asset 1 to GitHub release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./${{ env.COMPONENT_NAME }}.tar.gz
+          asset_name: ${{ env.COMPONENT_NAME }}-${{ env.FRAMEWORK_TAG_VERSION }}.src.tar.gz
+          asset_content_type: application/gzip

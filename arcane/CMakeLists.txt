@@ -1,5 +1,4 @@
-﻿# Il faut au minimun cmake 3.13.0 (pour target_link options)
-cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
+﻿cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
 
 message(STATUS "CMAKE_SOURCE_DIR=${CMAKE_SOURCE_DIR}")
 
@@ -22,14 +21,24 @@ if (NOT BUILD_SHARED_LIBS)
 endif()
 
 # ----------------------------------------------------------------------------
-# Indique que si une variable <PackageName>_ROOT est définie, considère
-# qu'il s'agit du chemin de base du package <PackageName>.
-if(POLICY CMP0074)
-  cmake_policy(SET CMP0074 NEW)
+
+# A partir de 3.19:
+# find_program() requires permission to execute but not to read.
+if(POLICY CMP0109)
+  cmake_policy(SET CMP0109 NEW)
 endif()
 
+# A partir de 3.19:
+# An imported target missing its location property fails during generation.
 if(POLICY CMP0111)
   cmake_policy(SET CMP0111 NEW)
+endif()
+
+# La version 3.21 est nécessaire sous windows pour:
+# - avoir la commande configure_file() avec l'argument SOURCE_PERMISSION
+# - avoir la variable TARGET_RUNTIME_DLLS pour connaitre les DLLs nécessaires à une cible.
+if(WIN32)
+  cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 endif()
 
 # ----------------------------------------------------------------------------
@@ -111,13 +120,36 @@ endif()
 # trouvés par 'Arccon'.
 option(ARCANE_WANT_ARCCON_EXPORT_TARGET "Export arccon targets in arcane." ON)
 if(ARCANE_WANT_ARCCON_EXPORT_TARGET)
-  set(ARCCON_EXPORT_TARGET ArcaneTargets)
+  if(NOT FRAMEWORK_NO_EXPORT_PACKAGES)
+    set(ARCCON_EXPORT_TARGET ArcaneTargets)
+  endif()
 endif()
+
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# Cherche 'Arccon'
 
 find_package(Arccon REQUIRED)
 list(APPEND CMAKE_MODULE_PATH ${ARCCON_MODULE_PATH})
 include(${ARCCON_CMAKE_COMMANDS})
 include(LoadBuildSystem)
+
+# ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+# Cherche 'ArcDependencies'
+
+find_package(ArcDependencies REQUIRED)
+set(ARCANE_ArcDependencies_NEEDED_VERSION "1.2.0")
+message(STATUS "ArcDependencies_VERSION = ${ArcDependencies_VERSION}")
+if (ArcDependencies_VERSION VERSION_LESS ARCANE_ArcDependencies_NEEDED_VERSION)
+  message(FATAL_ERROR "ArcDependencies version '${ArcDependencies_VERSION}' is too old."
+    " Version ${ARCANE_ArcDependencies_NEEDED_VERSION} required."
+    " If you are compiling all the framework, you need to run the following command"
+    " to update 'dependencies' directory:"
+    "\n   cd ${CMAKE_CURRENT_SOURCE_DIR}"
+    "\n   git submodule update"
+    )
+endif()
 
 # ----------------------------------------------------------------------------
 # Positionne les répertoires standards d'installation
@@ -130,7 +162,7 @@ set(ARCANE_CMAKE_CONFIG_DIR ${config_install_dir})
 
 # ----------------------------------------------------------------------------
 
-set(ARCANE_AXLSTAR_NEEDED_VERSION "1.0.1")
+set(ARCANE_AXLSTAR_NEEDED_VERSION "2.0.2")
 find_package(Axlstar REQUIRED)
 message(STATUS "Axlstar_DIR = ${Axlstar_DIR}")
 message(STATUS "Axlstar_VERSION = ${Axlstar_VERSION}")
@@ -276,7 +308,7 @@ if (ARCANE_WANT_CHECK)
   set(ARCCORE_CHECK TRUE)
 endif()
 
-set(ARCANE_ARCCORE_NEEDED_VERSION "2.0.3")
+set(ARCANE_ARCCORE_NEEDED_VERSION "2.0.8")
 find_package(Arccore ${ARCANE_ARCCORE_NEEDED_VERSION} REQUIRED)
 message(STATUS "Arccore_DIR = ${Arccore_DIR}")
 if (Arccore_VERSION VERSION_LESS ARCANE_ARCCORE_NEEDED_VERSION)
@@ -284,7 +316,7 @@ if (Arccore_VERSION VERSION_LESS ARCANE_ARCCORE_NEEDED_VERSION)
     " Version ${ARCANE_ARCCORE_NEEDED_VERSION} required")
 endif()
 
-# Si arccore a déjà installé, on prend le mode check de arccore
+# Si arccore a déjà été installé, on prend le mode check de arccore
 # pour garantir la cohérence avec Arcane.
 if (Arccore_DIR)
   # TODO: à terme, supprimer ces deux variables 'ARCANE_WANT_CHECK' et 'ARCANE_WANT_DEBUG'
@@ -406,9 +438,17 @@ endif()
 # il faudra la supprimer et n'utiliser que des cibles interfaces.
 set(ARCANE_LIBRARIES)
 
+# Liste des cibles exportées par Arcane.
+# Cette liste permet de faire automatiquement dans le fichier de configuration
+# un Alias entre les noms sans namespace et avec namespace
+# (par exemple 'arcane_utils' et 'Arcane::arcane_utils')
+set(ARCANE_EXPORTED_TARGETS)
+set(ARCANE_EXPORTED_TARGETS "" CACHE STRING "List of exported targets" FORCE)
+
 # ----------------------------------------------------------------------------
 # Ajoute à ARCANE_LIBRARIES les cibles issues de 'Arccore' pour qu'elles soient
 # dans le pkglist.xml
+# TODO: regarder si cela est toujours utile
 set(ARCCORE_ALLOWED_TARGETS base collections trace concurrency messagepassing messagepassingmpi)
 foreach(pkg ${ARCCORE_ALLOWED_TARGETS})
   if(TARGET Arccore::arccore_${pkg})
@@ -509,7 +549,7 @@ foreach(package ${ARCANE_OPTIONAL_PACKAGE_LIST})
   endif(_TMP_PKG STREQUAL "YES")
 endforeach()
 
-SET(ARCANE_PACKAGE_LIST ${ARCANE_PACKAGE_LIST} ${ARCANE_OPTIONAL_PACKAGE_LIST})
+set(ARCANE_PACKAGE_LIST ${ARCANE_PACKAGE_LIST} ${ARCANE_OPTIONAL_PACKAGE_LIST})
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -670,6 +710,10 @@ message(STATUS "ARCANE_EXTERNAL_LIBRARY_DIRS is ${ARCANE_EXTERNAL_LIBRARY_DIRS}"
 
 # ----------------------------------------------------------------------------
 
+# TODO: ajouter en INTERFACE 'ARCANE_NO_USING_FOR_STREAM' mi-2022 lorsque toutes
+# les branches de développement de Arcane auront été fusionnées
+# target_compile_definitions(arcane_build_compile_flags INTERFACE ARCANE_NO_USING_FOR_STREAM)
+
 if (UNIX)
   # Sur certaines plateformes (ex: centos7), il faut ajouter ces options
   # pour la compilation.
@@ -684,7 +728,9 @@ if (UNIX)
   target_compile_options(arcane_build_compile_flags INTERFACE -g)
 endif ()
 if (MSVC)
-  target_compile_options(arcane_build_compile_flags INTERFACE /Zi)
+  # '/Zi' permet de créér des fichiers '.pdb' mais n'est pas compatible avec 'ccache'.
+  # On utilise donc '/Z7' qui place les informations de debug dans les '.obj'.
+  target_compile_options(arcane_build_compile_flags INTERFACE /Z7)
   target_link_options(arcane_build_compile_flags INTERFACE /debug)
 endif()
 
@@ -704,8 +750,8 @@ if(CMAKE_COMPILER_IS_GNUCXX OR (CMAKE_CXX_COMPILER_ID STREQUAL Clang))
   endif()
 endif()
 
-# Sous windows, desactive les '#warning'
-if (WIN32)
+# Sous windows ou avec NVHPC, désactive les '#warning'
+if (WIN32 OR (CMAKE_CXX_COMPILER_ID STREQUAL NVHPC))
   target_compile_definitions(arcane_build_compile_flags INTERFACE NO_USER_WARNING)
 endif ()
 
@@ -715,6 +761,15 @@ endif ()
 # additionnels.
 
 set(ARCANE_OPTIONAL_LIBRARIES)
+
+# ----------------------------------------------------------------------------
+# Regarde si les 'hooks' mémoire de 'malloc.h' de la glibc sous linux
+# sont disponibles
+if (UNIX)
+  try_compile(ARCANE_HAS_MALLOC_HOOKS ${CMAKE_CURRENT_BINARY_DIR} ${Arcane_SOURCE_DIR}/cmake/test_glibc_malloc_hooks.cc)
+  message(STATUS "Check: malloc hooks are available? = ${ARCANE_HAS_MALLOC_HOOKS}")
+  set(ARCANE_HAS_MALLOC_HOOKS ${ARCANE_HAS_MALLOC_HOOKS} CACHE BOOL "Is glibc 'malloc hooks' are availables" FORCE)
+endif()
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -750,27 +805,53 @@ add_subdirectory(src/arcane/driver)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
-# Gestion du support CUDA.
-# Comme on va utiliser find_package(CUDAToolkit), il faut obligatoirement
-# la version 3.17+ de CMake.
+# Gestion du support des accélérateurs.
+# Les deux modes supportés sont 'CUDANVCC' et 'ROCMHIP'
 
-if (ARCANE_WANT_CUDA)
-  enable_language(CUDA)
-  cmake_minimum_required(VERSION 3.17 FATAL_ERROR)
-  # A partir de CMake 3.18, il faut spécifier une architecture GPU pour CUDA
-  if(POLICY CMP0104)
-    cmake_policy(SET CMP0104 NEW)
-    if (NOT CMAKE_CUDA_ARCHITECTURES)
-      set(CMAKE_CUDA_ARCHITECTURES 50 60 70 80)
-    endif()
+# Pour des raisons de compatibilité avec les configurations 2021, on
+# regarde d'abord si ARCANE_WANT_CUDA est défini
+if (ARCANE_WANT_CUDA AND NOT DEFINED ARCANE_ACCELERATOR_MODE)
+  set (ARCANE_ACCELERATOR_MODE "CUDANVCC")
+endif()
+
+if(DEFINED ARCANE_ACCELERATOR_MODE)
+  if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDANVCC" )
+    set (ARCANE_WANT_CUDA TRUE)
+  elseif (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP" )
+    set (ARCANE_WANT_HIP TRUE)
+    # TODO: vérifier qu'on utilise bien 'hipcc'
+  else()
+    message(FATAL_ERROR "Unsupported ARCANE_ACCELERATOR_MODE '${ARCANE_ACCELERATOR_MODE}'."
+      "Valid values are 'CUDANVCC' or 'ROCMHIP'")
   endif()
+  set (ARCANE_ACCELERATOR_MODE ${ARCANE_ACCELERATOR_MODE} CACHE STRING "Accelerator Mode" FORCE)
+  set (ARCANE_HAS_ACCELERATOR TRUE)
+endif()
 
+# ----------------------------------------------------------------------------
+
+if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP")
+  # Il faut au moins CMake 3.21 pour qu'il reconnaise langage HIP
+  cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
+  enable_language(HIP)
+  add_subdirectory(src/arcane/accelerator/hip)
+endif()
+if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDANVCC")
+  enable_language(CUDA)
+  # A partir de CMake 3.18, il faut spécifier une architecture GPU pour CUDA
+  if (NOT CMAKE_CUDA_ARCHITECTURES)
+    set(CMAKE_CUDA_ARCHITECTURES 50 60 70 80)
+  endif()
   add_subdirectory(src/arcane/accelerator/cuda)
 endif()
 
+add_subdirectory(src/arcane/accelerator/core)
 add_subdirectory(src/arcane/accelerator)
 
-if (ARCANE_WANT_CUDA)
+if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP" )
+  add_subdirectory(src/arcane/accelerator/hip/runtime)
+endif()
+if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDANVCC")
   add_subdirectory(src/arcane/accelerator/cuda/runtime)
 endif()
 
@@ -881,27 +962,10 @@ message(STATUS "RELEASE FLAGS TYPE ${CMAKE_CXX_FLAGS_RELEASE}")
 # ----------------------------------------------------------------------------
 # Configuration pour les connectivités.
 #
-# Il existe deux variables pour la configuration:
-# 1. ARCANE_WANT_LEGACY_CONNECTIVITY: si vrai, indique qu'on utilise uniquement
-#    les anciennes connectivités. A priori cela n'est plus utilisé
-# 2. ARCANE_ITEM_CONNECTIVITY_SIZE_MODE: indique le mode utilisé pour retourner
-#    le nombre d'éléments pour une connectivité (par exemple dans cell.nbNode()).
-#    Les trois valeurs possibles sont:
-#    1. 'Legacy' (le défaut): indique qu'on utilise ItemSharedInfo
-#    2. 'New': indique qu'on utilise le nombre d'élément géré par les nouvelles connectivités
-#    3. 'Dynamic': indique que le choix se fait lors de l'exécution. Cela
-#       implique que les méthodes retournant le nombre d'entités ne soit
-#       par inlinés. Pour des raisons de performance, cela ne doit être utilisé
-#       que pour les développements.
-#    Ces valeurs doivent être cohérentes avec cell définies dans 'arcane_core_config.h'
-if (NOT ARCANE_ITEM_CONNECTIVITY_SIZE_MODE)
-  set(ARCANE_ITEM_CONNECTIVITY_SIZE_MODE 2)
-endif()
-if (ARCANE_WANT_LEGACY_CONNECTIVITY AND ARCANE_ITEM_CONNECTIVITY_SIZE_MODE EQUAL 2)
-  message(FATAL_ERROR "Invalid configuration ARCANE_WANT_LEGACY_CONNECTIVITY with ARCANE_ITEM_CONNECTIVITY_SIZE_MODE==2")
-endif()
-set(ARCANE_ITEM_CONNECTIVITY_SIZE_MODE
-  ${ARCANE_ITEM_CONNECTIVITY_SIZE_MODE} CACHE STRING "Item connectivity size mode")
+# Il n'existe plus qu'un seul mode pour les connectivités:
+# ARCANE_ITEM_CONNECTIVITY_SIZE_MODE = 2
+# A terme il faudra supprimer cette variable
+set(ARCANE_ITEM_CONNECTIVITY_SIZE_MODE 2 CACHE STRING "Item connectivity size mode")
 
 # ----------------------------------------------------------------------------
 
@@ -947,6 +1011,7 @@ function(ARCANE_GEN_CORE_CONFIG_FILE filename)
   ARCANE_WRITE_ONE_CONFIG(ARCCORE_CHECK ARCANE_CHECK)
   ARCANE_WRITE_ONE_CONFIG(ARCCORE_DEBUG ARCANE_DEBUG)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_WANT_CUDA ARCANE_HAS_CUDA)
+  ARCANE_WRITE_ONE_CONFIG(ARCANE_WANT_HIP ARCANE_HAS_HIP)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_USE_CXX11 ARCANE_HAS_CXX11)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_USE_CXX14 ARCANE_HAS_CXX14)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_WANT_64BIT ARCANE_64BIT)
@@ -954,7 +1019,6 @@ function(ARCANE_GEN_CORE_CONFIG_FILE filename)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_WANT_AVX ARCANE_HAS_AVX)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_WANT_AVX512 ARCANE_HAS_AVX512)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_WANT_LIBXML2 ARCANE_USE_LIBXML2)
-  ARCANE_WRITE_ONE_CONFIG(ARCANE_WANT_LEGACY_CONNECTIVITY ARCANE_USE_LEGACY_CONNECTIVITY)
   ARCANE_WRITE_ONE_CONFIG_VALUE(ARCANE_ITEM_CONNECTIVITY_SIZE_MODE ARCANE_ITEM_CONNECTIVITY_SIZE_MODE)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_USE_MPC ARCANE_USE_MPC)
   ARCANE_WRITE_ONE_CONFIG(ARCANE_USE_HIDDEN_VISIBILITY ARCANE_USE_HIDDEN_VISIBILITY)
@@ -977,6 +1041,9 @@ function(ARCANE_GEN_PACKAGE_CONFIG_FILE filename)
   SET(_STR "// # File generated from configure. Do not edit\n")
   SET(_STR "${_STR}// # Packages list\n")
   foreach(package ${ARCANE_PACKAGE_LIST})
+    # S'assure que le package n'a pas de '-' dans le nom sinon cela
+    # génère une macro invalide
+    string(REPLACE "-" "_" package "${package}")
     # Si une cible 'arcane::${package} existe, alors le package est disponible.
     string(TOLOWER ${package} lower_pkg_name)
     string(TOUPPER ${package} upper_pkg_name)
@@ -997,9 +1064,11 @@ endfunction()
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-get_property(_CMAKE_PACKAGE_LIST GLOBAL PROPERTY PACKAGES_FOUND)
-message(STATUS "PackageList registered by CMake: ${_CMAKE_PACKAGE_LIST}")
-list(APPEND ARCANE_PACKAGE_LIST ${_CMAKE_PACKAGE_LIST})
+# Cette propriété est utilisée dans le fichier de configuration généré et il ne
+# faut pas la supprimer.
+get_property(ARCANE_CMAKE_PACKAGE_LIST GLOBAL PROPERTY PACKAGES_FOUND)
+message(STATUS "PackageList registered by CMake: ${ARCANE_CMAKE_PACKAGE_LIST}")
+list(APPEND ARCANE_PACKAGE_LIST ${_CMAKE_PACKAGE_LIST} ${ARCANE_CMAKE_PACKAGE_LIST})
 message(STATUS "ArcanePackageList: ${ARCANE_PACKAGE_LIST}")
 
 # ----------------------------------------------------------------------------
@@ -1123,7 +1192,7 @@ configure_file(cmake/ArcanePathHints.cmake.in ${generated_config_dir}/ArcanePath
 configure_file(cmake/ArcanePathHints-install.cmake.in ${generated_config_dir}/install/ArcanePathHints.cmake @ONLY)
 install(FILES ${generated_config_dir}/install/ArcanePathHints.cmake DESTINATION ${ARCANE_CMAKE_CONFIG_DIR})
 
-install(EXPORT ArcaneTargets DESTINATION ${ARCANE_CMAKE_CONFIG_DIR})
+install(EXPORT ArcaneTargets DESTINATION ${ARCANE_CMAKE_CONFIG_DIR} NAMESPACE "Arcane::")
 export(EXPORT ArcaneTargets FILE ${ARCANE_CMAKE_CONFIG_DIR}/ArcaneTargets.cmake)
 
 set(ARCANE_INSTALL_INCLUDE_DIR include)

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -37,7 +37,6 @@ class IMeshModifier;
 class IMeshMng;
 class Properties;
 class IMeshPartitionConstraintMng;
-class IGraph;
 class IExtraGhostCellsBuilder;
 class IUserData;
 class IUserDataList;
@@ -49,6 +48,8 @@ class IItemFamilyNetwork;
 class IItemFamilyModifier;
 class MeshHandle;
 class IVariableMng;
+class ItemTypeMng;
+class IMeshUniqueIdMng;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -124,12 +125,6 @@ class IMesh : public IMeshBase
   //! Gestionnaire de parallèlisme
   virtual IParallelMng* parallelMng() =0;
 
- public:
-
-  //! Graphe associé
-  ARCCORE_DEPRECATED_2020("Graph is no longer available. always return nullptr")
-  virtual IGraph* graph() { return nullptr; }
-  
  public:
 
   //! Descripteur de connectivité
@@ -211,8 +206,9 @@ class IMesh : public IMeshBase
    * \brief Retourne la famille de nom \a name.
    *
    * Si \a create_if_needed est vrai, la famille est créé si elle n'existait pas.
+   * Si \a register_modifier_if_created est vrai, le modifier de la famille est enregistré
    */
-  virtual IItemFamily* findItemFamily(eItemKind ik,const String& name,bool create_if_needed=false) =0;
+  virtual IItemFamily* findItemFamily(eItemKind ik,const String& name,bool create_if_needed=false,bool register_modifier_if_created=false) =0;
 
   /*!
    * \brief Retourne la famille de nom \a name.
@@ -371,11 +367,17 @@ class IMesh : public IMeshBase
   //! Gestionnare de couche fantômes associé
   virtual IGhostLayerMng* ghostLayerMng() const =0;
 
+  //! Gestionnare de la numérotation des identifiants uniques
+  virtual IMeshUniqueIdMng* meshUniqueIdMng() const =0;
+
   //! Interface du vérificateur.
   virtual IMeshChecker* checker() const =0;
 
   //! Informations sur les parties du maillage
   virtual const MeshPartInfo& meshPartInfo() const =0;
+
+  //! check if the network itemFamily dependencies is activated
+  virtual bool useMeshItemFamilyDependencies() const =0;
 
   //! Interface du réseau de familles (familles connectées)
   virtual IItemFamilyNetwork* itemFamilyNetwork() =0;
@@ -398,6 +400,9 @@ class IMesh : public IMeshBase
 
   //! Gestionnaire de variable associé
   virtual IVariableMng* variableMng() const =0;
+
+  //! Gestionnaire de types d'entités associé
+  virtual ItemTypeMng* itemTypeMng() const =0;
 };
 
 /*---------------------------------------------------------------------------*/

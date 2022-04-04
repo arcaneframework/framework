@@ -8,6 +8,17 @@
   </description>
 
  <options>
+   <simple name="unstructured-mesh-file" type="string" optional="true" >
+     <description>
+       Nom du fichier contenant un maillage non structuré pour
+       tester le partitionnement sur une grille
+     </description>
+   </simple>
+   <simple name="check-contiguous-face-unique-ids" type="bool" default="true" >
+     <description>
+       Indique si on vérifie que les uniqueId() des faces sont bien contigus.
+     </description>
+   </simple>
  </options>
 
  <entry-points>

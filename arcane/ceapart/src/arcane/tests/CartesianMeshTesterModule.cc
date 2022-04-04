@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -13,8 +13,10 @@
 
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/StringBuilder.h"
 
 #include "arcane/MeshUtils.h"
+#include "arcane/MathUtils.h"
 
 #include "arcane/ITimeLoopMng.h"
 #include "arcane/ITimeLoopService.h"
@@ -24,6 +26,7 @@
 #include "arcane/IItemFamily.h"
 #include "arcane/ItemPrinter.h"
 #include "arcane/IParallelMng.h"
+#include "arcane/IMeshWriter.h"
 
 #include "arcane/ICaseDocument.h"
 #include "arcane/IInitialPartitioner.h"
@@ -33,7 +36,10 @@
 #include "arcane/IMeshUtilities.h"
 #include "arcane/ServiceBuilder.h"
 #include "arcane/ServiceFactory.h"
-#include "arcane/std/MeshPartitionerBase.h"
+#include "arcane/IMeshPartitionerBase.h"
+#include "arcane/BasicService.h"
+#include "arcane/MeshReaderMng.h"
+#include "arcane/IGridMeshPartitioner.h"
 
 #include "arcane/cea/ICartesianMesh.h"
 #include "arcane/cea/CellDirectionMng.h"
@@ -44,6 +50,7 @@
 #include "arcane/tests/ArcaneTestGlobal.h"
 #include "arcane/tests/CartesianMeshTester_axl.h"
 #include "arcane/tests/CartesianMeshTestUtils.h"
+#include "arcane/tests/CartesianMeshV2TestUtils.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -87,6 +94,7 @@ class CartesianMeshTesterModule
   IInitialPartitioner* m_initial_partitioner;
   Integer m_nb_print;
   Ref<CartesianMeshTestUtils> m_utils;
+  Ref<CartesianMeshV2TestUtils> m_utils_v2;
 
  private:
 
@@ -94,19 +102,24 @@ class CartesianMeshTesterModule
   void _compute2();
   void _sample(ICartesianMesh* cartesian_mesh);
   void _testXmlInfos();
+  void _testGridPartitioning();
+  void _checkFaceUniqueIdsAreContiguous();
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 class CartesianMeshPartitionerService
-: public MeshPartitionerBase
+: public BasicService
+, public IMeshPartitionerBase
 {
  public:
-  CartesianMeshPartitionerService(const ServiceBuildInfo& sbi)
-  : MeshPartitionerBase(sbi){}
+  explicit CartesianMeshPartitionerService(const ServiceBuildInfo& sbi)
+  : BasicService(sbi){}
  public:
   void build() override {}
+  void notifyEndPartition() override {}
+  IPrimaryMesh* primaryMesh() override { return mesh()->toPrimaryMesh(); }
   void partitionMesh(bool initial_partition) override
   {
     if (!initial_partition)
@@ -131,12 +144,6 @@ class CartesianMeshPartitionerService
     cells_new_owner.synchronize();
     mesh->utilities()->changeOwnersFromCells();
   }
-  void partitionMesh(bool initial_partition,Int32 nb_part) override
-  {
-    ARCANE_UNUSED(initial_partition);
-    ARCANE_UNUSED(nb_part);
-    throw NotImplementedException(A_FUNCINFO);
-  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -144,7 +151,7 @@ class CartesianMeshPartitionerService
 
 ARCANE_REGISTER_SERVICE(CartesianMeshPartitionerService,
                         Arcane::ServiceProperty("CartesianMeshPartitionerTester",Arcane::ST_SubDomain),
-                        ARCANE_SERVICE_INTERFACE(IMeshPartitioner));
+                        ARCANE_SERVICE_INTERFACE(IMeshPartitionerBase));
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -170,7 +177,7 @@ class CartesianMeshInitialPartitioner
  private:
   void _doPartition(IMesh* mesh)
   {
-    ServiceBuilder<IMeshPartitioner> sbuilder(m_sub_domain);
+    ServiceBuilder<IMeshPartitionerBase> sbuilder(m_sub_domain);
     String service_name = "CartesianMeshPartitionerTester";
     auto mesh_partitioner(sbuilder.createReference(service_name,mesh));
 
@@ -347,6 +354,7 @@ init()
   m_cartesian_mesh->computeDirections();
 
   m_utils = makeRef(new CartesianMeshTestUtils(m_cartesian_mesh));
+  m_utils_v2 = makeRef(new CartesianMeshV2TestUtils(m_cartesian_mesh));
 
   // Initialise la densité.
   // On met une densité de 1.0 à l'intérieur
@@ -382,7 +390,10 @@ init()
   }
 
   m_utils->testAll();
+  m_utils_v2->testAll();
+  _checkFaceUniqueIdsAreContiguous();
   _testXmlInfos();
+  _testGridPartitioning();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -501,6 +512,28 @@ _sample(ICartesianMesh* cartesian_mesh)
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshTesterModule::
+_checkFaceUniqueIdsAreContiguous()
+{
+  if (!options()->checkContiguousFaceUniqueIds())
+    return;
+  info() << "Test " << A_FUNCINFO;
+  // Parcours les faces et vérifie que le uniqueId() de chaque face n'est
+  // pas supérieur au nombre total de face.
+  Int64 total_nb_face = allFaces().own().size();
+  total_nb_face = parallelMng()->reduce(Parallel::ReduceSum,total_nb_face);
+  info() << "TotalNbFace=" << total_nb_face;
+  ENUMERATE_(Face,iface,allFaces()){
+    Face face = *iface;
+    if (face.uniqueId()>=total_nb_face)
+      ARCANE_FATAL("FaceUniqueId is too big: uid={0} total_nb_face={1}",
+                   face.uniqueId(),total_nb_face);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshTesterModule::
 _testXmlInfos()
 {
   info() << "PRINT Xml infos for <cartesian> mesh generator";
@@ -530,6 +563,86 @@ _testXmlInfos()
     Integer nx_value = lx_node.attr("nx",true).valueAsInteger(true);
     Real px_value = lx_node.attr("prx").valueAsReal(true);
     info() << "V=" << lx_value << " nx=" << nx_value << " px=" << px_value;
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshTesterModule::
+_testGridPartitioning()
+{
+  if (!options()->unstructuredMeshFile.isPresent())
+    return;
+  // NOTE: On utilise explicitement le namespace Arcane
+  // pour que la documentation générée par doxygen génère les
+  // liens correctement.
+
+  //![SampleGridMeshPartitioner]
+  // file_name est le nom du fichier de maillage non structuré
+
+  Arcane::String file_name = options()->unstructuredMeshFile();
+  info() << "UnstructuredMeshFileName=" << file_name;
+
+  Arcane::ISubDomain* sd = subDomain();
+  Arcane::ICartesianMesh* cartesian_mesh = m_cartesian_mesh;
+  Arcane::IMesh* current_mesh = cartesian_mesh->mesh();
+  Arcane::IParallelMng* pm = current_mesh->parallelMng();
+
+  Arcane::MeshReaderMng reader_mng(sd);
+  Arcane::IMesh* new_mesh = reader_mng.readMesh("UnstructuredMesh2",file_name,pm);
+  info() << "MESH=" << new_mesh;
+
+  // Création du service de partitionnement
+  Arcane::ServiceBuilder<Arcane::IGridMeshPartitioner> sbuilder(sd);
+  auto partitioner_ref = sbuilder.createReference("SimpleGridMeshPartitioner",new_mesh);
+  Arcane::IGridMeshPartitioner* partitioner = partitioner_ref.get();
+
+  // Positionne les coordonnées de notre sous-domaine dans la grille
+  Int32 sd_x = cartesian_mesh->cellDirection(MD_DirX).subDomainOffset();
+  Int32 sd_y = cartesian_mesh->cellDirection(MD_DirY).subDomainOffset();
+  Int32 sd_z = cartesian_mesh->cellDirection(MD_DirZ).subDomainOffset();
+  partitioner->setPartIndex(sd_x,sd_y,sd_z);
+
+  // Positionne la bounding box de notre sous-domaine.
+  // Pour cela, parcours uniquement nos noeuds et prend les coordonnées min et max
+  Real max_value = FloatInfo<Real>::maxValue();
+  Real min_value = -max_value;
+  Arcane::Real3 min_box(max_value,max_value,max_value);
+  Arcane::Real3 max_box(min_value,min_value,min_value);
+  VariableNodeReal3& nodes_coord = current_mesh->nodesCoordinates();
+  ENUMERATE_(Cell,icell,current_mesh->ownCells()){
+    Cell cell{*icell};
+    for( Node node : cell.nodes() ){
+      Real3 coord = nodes_coord[node];
+      min_box = math::min(min_box,coord);
+      max_box = math::max(max_box,coord);
+    }
+  }
+  partitioner->setBoundingBox(min_box,max_box);
+
+  // Applique le partitionnement
+  partitioner->applyMeshPartitioning(new_mesh);
+  //![SampleGridMeshPartitioner]
+
+  // Maintenant, écrit le fichier du maillage non structuré et de notre partie
+  // cartésienne.
+  const bool is_debug = false;
+  if (is_debug){
+    ServiceBuilder<IMeshWriter> sbuilder2(sd);
+    auto mesh_writer = sbuilder2.createReference("VtkLegacyMeshWriter",SB_Collective);
+    {
+      StringBuilder fname = "cut_mesh_";
+      fname += pm->commRank();
+      fname += ".vtk";
+      mesh_writer->writeMeshToFile(new_mesh,fname);
+    }
+    {
+      StringBuilder fname = "my_mesh_";
+      fname += pm->commRank();
+      fname += ".vtk";
+      mesh_writer->writeMeshToFile(current_mesh,fname);
+    }
   }
 }
 

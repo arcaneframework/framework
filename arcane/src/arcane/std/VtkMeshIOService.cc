@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -192,7 +192,7 @@ class VtkFile
  public:
   static const int BUFSIZE = 10000;
  public:
-  VtkFile(istream* stream) : m_stream(stream) {}
+  VtkFile(std::istream* stream) : m_stream(stream) {}
   const char* getNextLine();
   Real getReal();
   Integer getInteger();
@@ -204,7 +204,7 @@ class VtkFile
 
   bool isEnd(){ (*m_stream) >> ws; return m_stream->eof(); }
  private:
-  istream* m_stream;
+  std::istream* m_stream;
   char m_buf[BUFSIZE];
 };
 
@@ -332,7 +332,7 @@ VtkMeshIOService::
 bool VtkMeshIOService::
 readMesh(IPrimaryMesh* mesh,const String& file_name,const String& dir_name,bool use_internal_partition)
 {
-  ifstream ifile(file_name.localstr());
+  std::ifstream ifile(file_name.localstr());
   if (!ifile){
     error() << "Unable to read file '" << file_name << "'";
     return true;
@@ -352,7 +352,7 @@ readMesh(IPrimaryMesh* mesh,const String& file_name,const String& dir_name,bool 
   // lit les données. Dans ce cas, inutile que les autres ouvre le fichier.
   {
     buf = vtk_file.getNextLine();
-    istringstream mesh_type_line(buf);
+    std::istringstream mesh_type_line(buf);
     std::string dataset_str;
     std::string mesh_type_str;
     mesh_type_line >> ws >> dataset_str >> ws >> mesh_type_str;
@@ -402,7 +402,7 @@ _readStructuredGrid(IPrimaryMesh* mesh,VtkFile& vtk_file,bool use_internal_parti
   Integer nb_node_z = 0;
   {
     buf = vtk_file.getNextLine();
-    istringstream iline(buf);
+    std::istringstream iline(buf);
     std::string dimension_str;
     iline >> ws >> dimension_str >> ws >> nb_node_x
           >> ws >> nb_node_y >> ws >> nb_node_z;
@@ -421,7 +421,7 @@ _readStructuredGrid(IPrimaryMesh* mesh,VtkFile& vtk_file,bool use_internal_parti
   // Lecture du nombre de points: POINTS nb float
   {
     buf = vtk_file.getNextLine();
-    istringstream iline(buf);
+    std::istringstream iline(buf);
     std::string points_str;
     std::string float_str;
     Integer nb_node_read = 0;
@@ -643,7 +643,7 @@ _readNodesUnstructuredGrid(IMesh* mesh,VtkFile& vtk_file,Array<Real3>& node_coor
 
   const char* func_name = "VtkMeshIOService::_readNodesUnstructuredGrid()";
   const char* buf = vtk_file.getNextLine();
-  istringstream iline(buf);
+  std::istringstream iline(buf);
   std::string points_str;
   std::string data_type_str;
   Integer nb_node = 0;
@@ -686,7 +686,7 @@ _readCellsUnstructuredGrid(IMesh* mesh,VtkFile& vtk_file,
 
   const char* func_name = "VtkMeshIOService::_readCellsUnstructuredGrid()";
   const char* buf = vtk_file.getNextLine();
-  istringstream iline(buf);
+  std::istringstream iline(buf);
   std::string cells_str;
   Integer nb_cell = 0;
   Integer nb_cell_node = 0;
@@ -719,7 +719,7 @@ _readCellsUnstructuredGrid(IMesh* mesh,VtkFile& vtk_file,
   // Lecture du type des mailles
   {
     buf = vtk_file.getNextLine();
-    istringstream iline(buf);
+    std::istringstream iline(buf);
     std::string cell_types_str;
     Integer nb_cell_type;
     iline >> ws >> cell_types_str >> ws >> nb_cell_type;
@@ -887,7 +887,7 @@ _readFacesMesh(IMesh* mesh,const String& file_name,const String& dir_name,
 {
   ARCANE_UNUSED(dir_name);
 
-  ifstream ifile(file_name.localstr());
+  std::ifstream ifile(file_name.localstr());
   if (!ifile){
     info() << "No face descriptor file found '" << file_name << "'";
     return;
@@ -907,7 +907,7 @@ _readFacesMesh(IMesh* mesh,const String& file_name,const String& dir_name,
   // lit les données. Dans ce cas, inutile que les autres ouvre le fichier.
   {
     buf = vtk_file.getNextLine();
-    istringstream mesh_type_line(buf);
+    std::istringstream mesh_type_line(buf);
     std::string dataset_str;
     std::string mesh_type_str;
     mesh_type_line >> ws >> dataset_str >> ws >> mesh_type_str;
@@ -988,7 +988,7 @@ _readData(IMesh* mesh,VtkFile& vtk_file,bool use_internal_partition,
     bool reading_cell = false;
     while ( !vtk_file.isEnd() && ((buf = vtk_file.getNextLine()) != 0)) {
       debug() << "Read line";
-      istringstream iline(buf);
+      std::istringstream iline(buf);
       std::string data_str;
       iline >> data_str;
       if (VtkFile::isEqualString(data_str,"CELL_DATA")){
@@ -1205,7 +1205,7 @@ class VtkLegacyMeshWriter
   virtual bool writeMeshToFile(IMesh* mesh,const String& file_name);
  private:
   void _writeMeshToFile(IMesh* mesh,const String& file_name,eItemKind cell_kind);
-  void _saveGroups(IItemFamily* family,ostream& ofile);
+  void _saveGroups(IItemFamily* family,std::ostream& ofile);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -1249,7 +1249,7 @@ writeMeshToFile(IMesh* mesh,const String& file_name)
 void VtkLegacyMeshWriter::
 _writeMeshToFile(IMesh* mesh,const String& file_name,eItemKind cell_kind)
 {
-  ofstream ofile(file_name.localstr());
+  std::ofstream ofile(file_name.localstr());
   ofile.precision(FloatInfo<Real>::maxDigit());
   if (!ofile)
     throw IOException("VtkMeshIOService::writeMeshToFile(): Unable to open file");
@@ -1340,7 +1340,7 @@ _writeMeshToFile(IMesh* mesh,const String& file_name,eItemKind cell_kind)
 /*---------------------------------------------------------------------------*/
 
 void VtkLegacyMeshWriter::
-_saveGroups(IItemFamily* family,ostream& ofile)
+_saveGroups(IItemFamily* family,std::ostream& ofile)
 {
   info() << "Saving groups for family name=" << family->name();
   UniqueArray<char> in_group_list(family->maxLocalId());

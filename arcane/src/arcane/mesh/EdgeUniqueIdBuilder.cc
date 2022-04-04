@@ -1,17 +1,15 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* EdgeUniqueIdBuilder.cc                                      (C) 2000-2011 */
+/* EdgeUniqueIdBuilder.cc                                      (C) 2000-2021 */
 /*                                                                           */
 /* Construction des indentifiants uniques des edges.                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ScopedPtr.h"
@@ -27,19 +25,13 @@
 #include "arcane/IParallelMng.h"
 #include "arcane/ISerializeMessage.h"
 #include "arcane/ISerializer.h"
+#include "arcane/ParallelMngUtils.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_MESH_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -277,7 +269,7 @@ _computeEdgesUniqueIdsParallel3()
   // - le propriétaire de sa maille
   // - son indice dans sa maille
   // Cette liste sera ensuite envoyée à tous les sous-domaines.
-  ItemTypeMng* itm = ItemTypeMng::singleton();
+  ItemTypeMng* itm = m_mesh->itemTypeMng();
 
   // Détermine le unique id max des noeuds
   Int64 my_max_node_uid = NULL_ITEM_UNIQUE_ID;
@@ -334,7 +326,7 @@ _computeEdgesUniqueIdsParallel3()
   }
 
   // Positionne la liste des envoies
-  ScopedPtrT<IParallelExchanger> exchanger(pm->createExchanger());
+  Ref<IParallelExchanger> exchanger{ParallelMngUtils::createExchangerRef(pm)};
   _exchangeData(exchanger.get(),boundary_infos_to_send);
 
   {
@@ -451,7 +443,8 @@ _computeEdgesUniqueIdsParallel3()
       my_max_edge_node = math::max(node_nb_edge,my_max_edge_node);
     }
   }
-  exchanger = pm->createExchanger();
+  exchanger = ParallelMngUtils::createExchangerRef(pm);
+
   _exchangeData(exchanger.get(),boundary_infos_to_send);
   {
     Integer nb_receiver = exchanger->nbReceiver();
@@ -615,8 +608,7 @@ _computeEdgesUniqueIdsSequential()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

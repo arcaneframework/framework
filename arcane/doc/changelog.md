@@ -5,7 +5,263 @@
 
 Cette page contient les nouveautés de chaque version de %Arcane.
 
-Arcane Version 3.0.4 (... 2021) {#arcanedoc_version304}
+Arcane Version 3.5.3 (?? mars 2022) {#arcanedoc_version350}
+======================================
+
+Nouveautés/Améliorations:
+
+- Ajoute possibilité d'utiliser des messages collectifs
+  (MPI_AllToAllv) au lieu de messages point à point lors de l´échange
+  des entités suite à un équilibrage de charge. Ce mécanisme est
+  temporairement accessible en spécifiant la variable d'environnement
+  `ARCANE_MESH_EXCHANGE_USE_COLLECTIVE` (#138,#154).
+- Dans la comparaison bit à bit, ajoute possibilité de ne faire la
+  comparaison qu'à la fin de l'exécution au lieu de le faire à chaque
+  pas de temps. Cela se fait en spécifiant la variable d'environnement
+  STDENV_VERIF_ONLY_AT_EXIT.
+- Ajoute générateur de maillages en nid d'abeille en 3D (#149).
+- Ajoute support pour spécifier la disposition des éléments (layout)
+  dans la classe Arcane::NumArray. Il existe actuellement deux
+  dispositions implémentées: LeftLayout et RightLayout (#151)
+- Ajoute méthode Arcane::Accelerator::RunQueue::copyMemory() pour faire des
+  copies mémoire asynchrones (#152).
+- Améliore le support ROCM/HIP. Le support des GPU AMD est maintenant
+  fonctionnellement équivalent à celui des GPU NVIDIA via Cuda (#158, #159).
+- Ajoute support pour la mémoire punaisée (Host Pinned Memory) pour
+  CUDA et ROCM (#147).
+- Ajoute classe 'Arcane::Accelerator::RunQueueEvent' pour supporter
+  les évènements sur les 'Arcane::Accelerator::RunQueue' et permettre
+  ainsi de synchroniser entre elle des files différentes (#161).
+
+Changements:
+
+- Supprime les macros plus utilisées ARCANE_PROXY et ARCANE_TRACE (#145)
+
+Corrections:
+
+- Corrige mauvaise détection de la version OneTBB 2021.5 suite à la
+  suppression du fichier 'tbb_thread.h' (#146)
+- Corrige certaines informations cartésiennes manquantes lorsqu'il n'y
+  a qu'une seule couche de maille en Y ou Z (#162).
+- Corrige implémentation manquante de 'Arccore::Span<T>::operator=='
+  lorsque le type `T` n'est pas constant (#163).
+- Supprime quelques messages listings trop nombreux.
+
+Interne:
+
+- Utilise au lieu de Arccore::UniqueArray2 une implémentation
+  spécifique pour le conteneur de Arcane::NumArray (#150).
+- Utilise des `Int32` au lieu de `Int64` pour indexer les éléments
+  dans Arcane::NumArray (#153)
+- Ajoute `constexpr` et `noexcept` à certaines classes de Arccore
+  (#156).
+
+Arcane Version 3.4.5 (10 février 2022) {#arcanedoc_version340}
+======================================
+
+Nouveautés/Améliorations:
+
+- Dans l'API accélérateur, support dans Arcane::NumArray pour allouer
+  directement la mémoire sur l'accélérateur. Auparavant seule la
+  mémoire unifiée était disponible. L'énumération
+  Arcane::eMemoryRessource et le type Arcane::IMemoryRessourceMng
+  permettent de gérer cela (#111, #113).
+- Amélioration mineures sur la documentation (#117) :
+  - ajout des chemins relatifs pour les fichiers d'en-tête.
+  - ajout des classes et type issus de %Arccore
+- Ajoute nouvelle méthode de calcul des uniqueId() des faces
+  dans le cas cartésien. Cette nouvelle méthode permet une
+  numérotation cartésienne des faces qui est cohérente avec celles des
+  noeuds et des mailles. Pour l'utiliser, il faut spécifier l'option
+  `<face-numbering-version>4</face-numbering-version>` dans le jeu de
+  données dans la balise du générateur de maillage (#104).
+- Ajoute option dans le post-processeur %Arcane pour supprimer la
+  sortie de dépouillement en fin de calcul.
+- Ajoute implémentation de Arcane::IParallelMng::gather() et
+  Arcane::IParallelMng::gatherVariable() pour le mode mémoire partagée et le
+  mode hybride
+- Ajoute dans Arcane::Materials::MeshMaterialInfo la liste des milieux
+  dans lequels le matériau est présent
+- Support de la compilation avec le compilation NVIDIA HPC SDK.
+- Support (partiel) pour désallouer le maillage
+  (Arcane::IPrimaryMesh::deallocate()) ce qui permet de le
+  réallouer à nouveau par la suite.
+- Ajoute générateur de maillage 2D en nid d'abeille.
+
+Changements:
+
+- Ajoute namespace '%Arcane::' aux cibles `CMake` fournit par
+%Arcane. Par exemple, la cible 'arcane_core' devient
+'Arcane::arcane_core'. Les anciens noms restent valides (#120).
+- Rend obsolète la conversion de Arcane::ItemEnumerator vers
+  Arcane::ItemEnumeratorT. Cela permet d'éviter d'indexer par erreur
+  une variable du maillage avec un énumérateur du mauvais type (par
+  exemple indexer une variable aux mailles avec un énumérateur aux noeuds).
+
+Corrections:
+
+- Corrige opérateur 'operator=' pour la classe
+  'Arcane::CellDirectionMng' (#109)
+- Corrige conversion inutile `Int64` vers
+  `Int32` dans la construction des maillages cartésiens ce qui
+  empêchait de dépasser 2^31 mailles (#98)
+- Corrige mauvais calcul des temps passés dans les
+  synchronisations. Seul le temps de la dernière attente était utilisé
+  au lieu du cumul (commit cf2cade961)
+- Corrige nom prise en compte de l'option 'MessagePassingService' en
+  ligne de commande (commit 15670db4)
+
+Interne:
+
+- Nettoyage de l'API Accélérateur
+
+Passage version 2.0.8.1 de %Arccore:
+
+- Improve doxygen documentation for types et classes in `message_passing` component.
+- Add functions in `message_passing` component to handle non blocking collectives (#116, #118)
+- Add some '#defines'  to compile with [hipSYCL](https://github.com/illuhad/hipSYCL).
+- Update '_clang-format' file for version 13 of LLVM/Clang.
+
+
+Arcane Version 3.3.0 (16 décembre 2021) {#arcanedoc_version330}
+======================================
+
+Nouveautés/Améliorations:
+
+- Ajoute possibilité de spécifier le nombre maximum de messages en vol
+  lors d'un équilibrage de charge. Pour l'instant cela se fait en
+  spécifiant la variable d'environnement
+  ARCANE_MESH_EXCHANGE_MAX_PENDING_MESSAGE.
+- Ajoute possibilité d'utiliser les Arcane::Real2x2 et Arcane::Real3x3 sur accélérateurs
+- Ajoute méthode Arcane::mesh_utils::printMeshGroupsMemoryUsage() pour
+  afficher la consommation mémoire associée aux groupes et
+  Arcane::mesh_utils::shrinkMeshGroups() pour redimensionner au plus
+  juste la mémoire utilisée par les groupes
+- Support pour punaiser les threads (voir \ref arcanedoc_launcher)
+
+Changements:
+
+- Ajoute espace de nom Arcane::ParallelMngUtils pour contenir les fonctions
+  utilitaires de Arcane::IParallelMng au lieu d'utiliser les méthodes
+  virtuelles de cette interface. Les nouvelles méthodes remplacent
+  Arcane::IParallelMng::createGetVariablesValuesOperation(),
+  Arcane::IParallelMng::createTransferValuesOperation(),
+  Arcane::IParallelMng::createExchanger(),
+  Arcane::IParallelMng::createSynchronizer(),
+  Arcane::IParallelMng::createTopology().
+- Rend obsolète les accès à `Arccore::ArrayView<Array<T>>` dans
+  Arcane::CaseOptionMultiSimpleT. Il faut utiliser la méthode
+  Arcane::CaseOptionMultiSimpleT::view() à la place.
+
+Corrections:
+
+- Ajoute une version 4 pour le calcul des couches fantômes qui permet
+  d'appeler Arcane::IMeshModifier::updateGhostLayers() même s'il y a
+  déjà une ou plusieurs couches de mailles fantomes.
+
+Interne:
+
+- Nettoyage de la gestion des messages des synchronisations
+- Débute support accélérateurs pour la version ROCM/HIP (AMD)
+- Support pour la version 2.34 de la glibc qui ne contient plus les
+  'hooks' de gestion mémoire (ce mécanisme était obsolète depuis des
+  années).
+- Ajoute possibilité de compiler avec le standard C++20.
+
+Passage version 2.0.6.0 de %Arccore:
+- Update Array views (#76)
+  - Add `constexpr` and `noexcept` to several methods of `Arccore::ArrayView`, `Arccore::ConstArrayView` and `Arccore::Span`
+  - Add converters from `std::array`
+- Separate metadata from data in 'Arccore::AbstractArray' (#72)
+- Deprecate `Arccore::Array::clone()`, `Arccore::Array2::clone()` and make `Arccore::Array2`
+  constructors protected (#71)
+- Add support for compilation with AMD ROCM HIP (e5d008b1b79b59)
+- Add method `Arccore::ITraceMng::fatalMessage()` to throw a
+  `Arccore::FatalErrorException` in a method marked `[[noreturn]]`
+- Add support to compile with C++20 with `ARCCORE_CXX_STANDARD`
+  optional CMake variable (665292fce)
+- [INTERNAL] Add support to change return type of `IMpiProfiling`
+  methods. These methods should return `int` instead of `void`
+- [INTERNAL] Add methods in `MpiAdapter` to send and receive messages without gathering statistics
+- [INTERNAL] Add methods in `MpiAdapter` to disable checking of requests. These
+  checks are disabled by default  if CMake variable
+  `ARCCORE_BUILD_MODE` is `Release`
+
+Arcane Version 3.2.0 (15 novembre 2021) {#arcanedoc_version320}
+======================================
+
+Nouveautés/Améliorations:
+
+- Ajoute une interface Arcane::IMeshPartitionerBase pour faire
+  uniquement le partitionnement sans support pour le
+  repartionnement. L'interface Arcane::IMeshPartitioner hérite
+  maintenant de Arcane::IMeshPartitionerBase.
+- Ajoute dans Arcane::MeshReaderMng la possibilité de créer des
+  maillages avec un Arcane::IParallelMng quelconque via la méthode
+  Arcane::MeshReaderMng::readMesh().
+- Ajoute une interface Arcane::IGridMeshPartitioner pour partitionner
+  un maillage suivant une grille. Un service de nom
+  `SimpleGridMeshPartitioner` implémente cette interface. La page
+  \ref arcanesnippet_imeshgridpartitioner1 montre un exemple d'utilisation.
+
+Changements:
+
+- Passage version CMake 3.18 sur les machines Unix et CMake 3.21 sous Windows.
+- Rend obsolète dans Arcane::ItemTypeMng la méthode `singleton()`. Les
+  instances de cette classe sont attachées au maillage et peuvent être
+  récupérées via Arcane::IMesh::itemTypeMng().
+- Déplace les classes gérant le maillage cartésian dans le répertoire
+  `arcane/cartesianmesh`. Les anciens chemins dans `arcane/cea`
+  restent valides.
+- Utilise par défaut la version 3 (au lieu de 2) du service de
+  création des mailles fantômes. Cette version est plus efficace
+  lorsqu'on utilise un grand nombre de sous-domaines car elle utilise
+  des communications collectives.
+- Supprime la préallocation mémoire pour les anciennes connectivités.
+- Rend privé à %Arcane les constructeurs de Arcane::ItemSharedInfo
+- Lance une exception fatale si on demande le support des tâches mais
+  qu'aucune implémentation n'est disponible. Auparavant, il y avait
+  juste un message d'avertissement.
+
+Corrections:
+
+- Corrige plantage (SEGV) lorsqu'on utilise les tâches et sous-tâches
+  en séquentiel.
+
+Arcane Version 3.1.2 (21 octobre 2021) {#arcanedoc_version310}
+======================================
+
+Nouveautés/Améliorations:
+
+- Nouvelle implémentation des graphes de maillage utilisant les
+  `Arcane::DoF`.
+- Ajoute possibilité de renuméroter (via la méthode
+  Arcane::ICartesianMesh::renumberItemsUniqueId()) les entités dans les
+  maillages AMR par patch pour avoir la même numérotation quel que
+  soit le découpage.
+- Mise à jour de la documentation pour les accélérateurs
+
+Changements:
+
+- Le lecteur de maillage au format `GMSH` est maintenant dans la
+  bibliothèque `arcane_std` au lieu de `arcane_ios`. Il n'y a donc
+  plus besoin de faire l'édition de lien avec cette dernière pour
+  pouvoir lire les maillages de ce format.
+- Suppression des anciens types d'entités `Link` et `DualNode` et des
+  énumérations et classes associées
+- Suppression de certaines classes associées aux anciennes connectivités
+- Supprime le support pour le système d'exploitation RedHat 6.
+
+Corrections:
+
+- Corrige plantage lors de la mise à jour des matériaux si la variable
+  globale associée à un matériau est désallouée
+  (Arcane::IVariable::isUsed()==false)
+- Corrige exception flottante (FPE) avec les versions 2.9.9+ de
+  `libxml2`. Cette bibliothèque fait explicitement des divisions par 0
+  lors de l'initialisation.
+
+Arcane Version 3.0.5 (30 septembre 2021) {#arcanedoc_version305}
 ======================================
 
 Nouveautés/Améliorations:
@@ -27,6 +283,14 @@ Nouveautés/Améliorations:
 - Ajoute support pour la version OneTBB 2021.
 - Ajoute macros RUNCOMMAND_ENUMERATE() et RUNCOMMAND_LOOP() pour
   itérer sur les accélérateurs
+- Ajoute classe Arcane::Accelerator::IAcceleratorMng pour récupérer
+  les informations pour utiliser les accélérateurs. Cette interface
+  permet de récupérer l'environnement d'exécution par défaut et la
+  file d'exécution par défaut.
+- Ajoute classe Arcane::StandaloneAcceleratorMng pour utiliser les
+  accélérateurs sans initialiser une application.
+- Ajoute support pour paralléliser en multi-thread les boucles
+  imbriquées jusqu'à 4 niveaux (PR #10)
 
 Changements:
 
@@ -63,10 +327,8 @@ ENUMERATE_CELL(icell,allCells()){
 - [config] Supporte le cas où plusieurs versions du SDK pour 'dotnet'
   sont installées. Dans ce cas la version la plus récente est utilisée.
 
-Arcane Version 3.0.3 (... 2021) {#arcanedoc_version303}
+Arcane Version 3.0.3 (Not released) {#arcanedoc_version303}
 ======================================
-
-[TEMPORARY]
 
 Nouveautés/Améliorations:
 
@@ -355,11 +617,11 @@ Cette version comporte les développements suivants:
   équilibrage de charge et retour-arrière.
 - Possibilité de détruire les maillages additionnels via un la classe
   Arcane::IMeshMng:
-  ~~~~~~~~~~~~~~~~~~~~~{.cpp}
-Arcane::ISubDomain* sd = ...;
-Arcane::IMesh* mesh_to_destroy = ...;
-sd->meshMng()->destroyMesh(mesh_to_destroy);
-~~~~~~~~~~~~~~~~~~~~~
+  ~~~~~~~~~~~~~~~~~~~~{.cpp}
+  Arcane::ISubDomain* sd = ...;
+  Arcane::IMesh* mesh_to_destroy = ...;
+  sd->meshMng()->destroyMesh(mesh_to_destroy);
+  ~~~~~~~~~~~~~~~~~~~~
   Le pointeur `mesh_to_destroy` ne doit plus être utilisé après appel
   à la méthode de destruction.
 - Support dans Arcane::mesh::BasicParticleExchanger des particules qui
@@ -380,6 +642,7 @@ Arcane Version 2.16.0 (18 juillet 2019) {#arcanedoc_version2160}
 ======================================
 
 Cette version comporte les développements suivants:
+
 - Ajout du profiling interne pour les points d'entrée et les appels
   MPI. Le format des traces dépend de la valeur de la variable
   d'environnement qui active cette fonctionnalité :
@@ -397,6 +660,7 @@ Arcane Version 2.15.0 (13 juin 2019) {#arcanedoc_version2150}
 ======================================
 
 Cette version comporte les développements suivants:
+
 - Support pour les messages MPI de plus de 2Go. Cela ne concerne que
   les message de type MPI_Send/MPI_Recv et uniquement si on passe
   par Arcane::ISerializer.
@@ -434,6 +698,7 @@ Arcane Version 2.14.0 (04 mars 2019) {#arcanedoc_version2140}
 ======================================
 
 Cette version comporte les développements suivants:
+
 - intégration des développements IFPEN concernant les entités de type
   *degré de liberté* (classe Arcane::DoF).
 - possibilité de rediriger les sorties listing à la fois sur le flot
@@ -455,6 +720,7 @@ Arcane Version 2.13.0 (21 janvier 2019) {#arcanedoc_version2130}
 ======================================
 
 Cette version comporte les développements suivants:
+
 - **[INCOMPATIBILITÉ]** Modification des méthodes *begin()* et *end()* pour les
   classes tableaux et vues sur les tableaux (Arccore::ArrayView,
   Arccore::ConstArrayView, Arccore::Span, Arccore::Array) afin de
@@ -476,6 +742,7 @@ Arcane Version 2.12.0 (11 décembre 2018) {#arcanedoc_version2120}
 ======================================
 
 Cette version comporte les développements suivants:
+
 - amélioration de la visualisation des variables avec les dernières
   versions de totalview et ajout de la visualisation pour les
   variables scalaires
@@ -488,6 +755,7 @@ Arcane Version 2.11.0 (18 octobre 2018) {#arcanedoc_version2110}
 ======================================
 
 Cette version comporte les développements suivants:
+
 - Support des tableaux (Arccore::Array) et chaînes de caractères
   (Arccore::String) dépassant 2Go. En interne, le nombre d'éléments
   est maintenant stocké sur 64bits au lieu de 32bits.
@@ -499,6 +767,7 @@ Arcane Version 2.10.1 (04 octobre 2018) {#arcanedoc_version2101}
 ======================================
 
 Cette version comporte les développements suivants:
+
 - Possibilité de spécifier plusieurs interfaces pour les services via
   la macro ARCANE_REGISTER_SERVICE(). Auparavant cela n'était possible
   que via les fichiers 'axl'.
@@ -523,6 +792,7 @@ Arcane Version 2.10.0 (septembre 2018) {#arcanedoc_version2100}
 ======================================
 
 Cette version comporte les développements suivants:
+
 - Création d'une nouvelle composante '%Arccore' regroupant la partie de
   %Arcane commune avec Alien. Cette composante contient une partie de
   'arcane_utils' et 'arcane_mpi'. Par conséquent, les classes de base
@@ -569,6 +839,7 @@ for( A* a : array_of_b){
   est du type std::random_iterator.
   Suivant les cas d'utilisation, le code actuel peut-être changé comme
   suit:
+  
   - Utilisation de begin() pour récupérer un pointeur sur le début du
     tableau: utiliser data() à la place:
 ~~~~~~~~~~~~~~~~~~~~~{.cpp}

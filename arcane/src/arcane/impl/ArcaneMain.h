@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -34,7 +34,7 @@ class ICodeService;
 class ServiceFactoryInfo;
 class ArcaneMainExecInfo;
 class DotNetRuntimeInitialisationInfo;
-class AcceleratorRuntimeInitialisationInfo;
+
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -78,6 +78,7 @@ class ARCANE_IMPL_EXPORT ArcaneMain
 {
   friend class ArcaneMainExecInfo;
   friend class ArcaneLauncher;
+  friend class ArcaneMainAutoDetectRuntimeHelper;
   class Impl;
 
  public:
@@ -347,6 +348,7 @@ class ARCANE_IMPL_EXPORT ArcaneMain
   static void _checkAutoDetectMPI();
   static int _checkAutoDetectAccelerator();
   static void _setArcaneLibraryPath();
+  static int _initRuntimes();
 };
 
 /*---------------------------------------------------------------------------*/

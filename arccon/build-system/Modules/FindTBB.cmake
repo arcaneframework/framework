@@ -6,6 +6,7 @@
 # TBB_LIBRARIES, the libraries to link against to use TBB.
 # TBB_FOUND, If false, do not try to use TBB.
 
+include(${CMAKE_CURRENT_LIST_DIR}/../commands/commands.cmake)
 arccon_return_if_package_found(TBB)
 
 # A partir des versions OneTBB (2020+), il existe un fichier de configuration
@@ -33,7 +34,7 @@ find_library(TBB_LIBRARY_RELEASE NAMES tbb)
 message(STATUS "TBB DEBUG ${TBB_LIBRARY_DEBUG}")
 message(STATUS "TBB RELEASE ${TBB_LIBRARY_RELEASE}")
 
-find_path(TBB_INCLUDE_DIR tbb/tbb_thread.h)
+find_path(TBB_INCLUDE_DIR tbb/task.h)
 
 message(STATUS "TBB_INCLUDE_DIR = ${TBB_INCLUDE_DIR}")
 

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -59,10 +59,14 @@ public:
 
 public:
 
+  bool isActivated() const override {
+    return m_is_activated ;
+  }
+
   /*! Ajoute une dépendance entre deux familles ; un élément de \a master_family est constitué d'éléments de \a slave_family.
    *  La responsabilité de la mémoire de \a master_to_slave_connectivity est prise en charge par ItemFamilyNetwork
    */
-  void addDependency(IItemFamily* master_family, IItemFamily* slave_family, IIncrementalItemConnectivity* master_to_slave_connectivity) override;
+  void addDependency(IItemFamily* master_family, IItemFamily* slave_family, IIncrementalItemConnectivity* master_to_slave_connectivity, bool is_deep_connectivity) override;
 
   /*! Ajoute une relation entre deux familles ; un élément de \a source_family est connecté à un ou plusieurs éléments de \a target_family
    *  La responsabilité de la mémoire de \a source_to_target_connectivity est prise en charge par ItemFamilyNetwork
@@ -94,8 +98,9 @@ public:
   SharedArray<IIncrementalItemConnectivity*> getParentRelations(IItemFamily* target_family) override;
 
   //! Obtenir la liste de toutes les familles
-  virtual std::set<IItemFamily*> getFamilies() {return m_families;}
+  const std::set<IItemFamily*>& getFamilies() const override {return m_families;}
 
+  SharedArray<IItemFamily*> getFamilies(eSchedulingOrder order) const override;
 
   //! Ordonnance l'exécution d'une tâche, dans l'ordre topologique ou topologique inverse du graphe de dépendance des familles
   void schedule(IItemFamilyNetworkTask task, eSchedulingOrder order = TopologicalOrder) override;
@@ -106,18 +111,21 @@ public:
   //! Récupère l'information relative au stockage de la connectivité
   bool isStored(IIncrementalItemConnectivity* connectivity) override;
 
+  bool isDeep(IIncrementalItemConnectivity* connectivity) override;
+
 private:
-  ITraceMng* m_trace_mng;
+  ITraceMng* m_trace_mng = nullptr;
+  bool m_is_activated = false ;
   using ConnectivityGraph = GraphBaseT<IItemFamily*, IIncrementalItemConnectivity*>;
-  DirectedGraphT<IItemFamily*, IIncrementalItemConnectivity*> m_relation_graph;
-  DirectedAcyclicGraphT<IItemFamily*, IIncrementalItemConnectivity*> m_dependency_graph;
+  mutable DirectedGraphT<IItemFamily*, IIncrementalItemConnectivity*> m_relation_graph;
+  mutable DirectedAcyclicGraphT<IItemFamily*, IIncrementalItemConnectivity*> m_dependency_graph;
   List<IIncrementalItemConnectivity*> m_connectivity_list;
-  std::map<IIncrementalItemConnectivity*,bool> m_connectivity_status; // bool = is_stored
+  std::map<IIncrementalItemConnectivity*,std::pair<bool,bool>> m_connectivity_status; // bool = is_stored
   std::set<IItemFamily*> m_families;
 
 private:
   void _checkConnectivityName(IIncrementalItemConnectivity* connectivity, const String& name);
-  std::pair<IIncrementalItemConnectivity* const,bool>& _getConnectivityStatus(IIncrementalItemConnectivity* connectivity);
+  std::pair<IIncrementalItemConnectivity* const, std::pair<bool,bool>>& _getConnectivityStatus(IIncrementalItemConnectivity* connectivity);
   SharedArray<IIncrementalItemConnectivity*> _getConnectivitiesFromGraph(const ConnectivityGraph::ConnectedEdgeSet& connectivity_edges);
   SharedArray<IIncrementalItemConnectivity*> _getConnectivitiesFromGraph(const ConnectivityGraph::ConnectedEdgeSet& connectivity_edges1, const ConnectivityGraph::ConnectedEdgeSet& connectivity_edges2);
 };

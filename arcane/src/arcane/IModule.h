@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IModule.h                                                   (C) 2000-2019 */
+/* IModule.h                                                   (C) 2000-2021 */
 /*                                                                           */
 /* Interface de la classe Module.                                            */
 /*---------------------------------------------------------------------------*/
@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcaneGlobal.h"
+#include "arcane/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -26,13 +26,8 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 class IVariableRef;
-class CaseOptionsMain;
 class IParallelMng;
-class ISession;
-class VersionInfo;
-class ISubDomain;
-class IMesh;
-class MeshHandle;
+class CaseOptionsMain;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -69,8 +64,11 @@ class ARCANE_CORE_EXPORT IModule
   //! Maillage associé
   virtual MeshHandle defaultMeshHandle() const =0;
 
-  //! Gestionnaire du parallélisme
+  //! Gestionnaire du parallélisme par échange de message
   virtual IParallelMng* parallelMng() const =0;
+
+ //! Gestionnaire des accélérateurs
+  virtual IAcceleratorMng* acceleratorMng() const =0;
 
   //! Gestionnaire de traces.
   virtual ITraceMng* traceMng() const =0;

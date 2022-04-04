@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* FaceFamily.h                                                (C) 2000-2017 */
+/* FaceFamily.h                                                (C) 2000-2021 */
 /*                                                                           */
 /* Famille de faces.                                                         */
 /*---------------------------------------------------------------------------*/
@@ -14,19 +14,18 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/mesh/ItemFamily.h"
 #include "arcane/utils/FatalErrorException.h"
 
 #include "arcane/IItemFamilyModifier.h"
+
+#include "arcane/mesh/ItemFamily.h"
+#include "arcane/mesh/ItemInternalConnectivityIndex.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -53,10 +52,10 @@ class ARCANE_MESH_EXPORT FaceFamily
 , public IItemFamilyModifier
 {
   class TopologyModifier;
-  typedef ItemConnectivitySelectorT<NodeCompactIncrementalItemConnectivity,IncrementalItemConnectivity> NodeConnectivity;
-  typedef ItemConnectivitySelectorT<EdgeCompactIncrementalItemConnectivity,IncrementalItemConnectivity> EdgeConnectivity;
-  typedef ItemConnectivitySelectorT<FaceCompactIncrementalItemConnectivity,IncrementalItemConnectivity> FaceConnectivity;
-  typedef ItemConnectivitySelectorT<CellCompactIncrementalItemConnectivity,IncrementalItemConnectivity> CellConnectivity;
+  typedef ItemConnectivitySelectorT<NodeInternalConnectivityIndex,IncrementalItemConnectivity> NodeConnectivity;
+  typedef ItemConnectivitySelectorT<EdgeInternalConnectivityIndex,IncrementalItemConnectivity> EdgeConnectivity;
+  typedef ItemConnectivitySelectorT<FaceInternalConnectivityIndex,IncrementalItemConnectivity> FaceConnectivity;
+  typedef ItemConnectivitySelectorT<CellInternalConnectivityIndex,IncrementalItemConnectivity> CellConnectivity;
 
  public:
 
@@ -65,7 +64,7 @@ class ARCANE_MESH_EXPORT FaceFamily
 
  public:
 
-  virtual void build() override;
+  void build() override;
   virtual void preAllocate(Integer nb_item);
 
  public:
@@ -147,6 +146,8 @@ class ARCANE_MESH_EXPORT FaceFamily
 
   void setConnectivity(const Integer c);
 
+  void reorientFacesIfNeeded();
+
  public:
 
   virtual void computeSynchronizeInfos() override;
@@ -187,8 +188,7 @@ class ARCANE_MESH_EXPORT FaceFamily
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

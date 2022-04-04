@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -73,6 +73,8 @@ class StringScalarData
   DataType& value() override { return m_value; }
   const DataType& value() const override { return m_value; }
   void resize(Integer) override {}
+  IData* clone() override { return cloneTrue(); }
+  IData* cloneEmpty() override { return cloneTrueEmpty(); };
   Ref<IData> cloneRef() override { return makeRef(cloneTrue()); }
   Ref<IData> cloneEmptyRef() override { return makeRef(cloneTrueEmpty()); }
   DataStorageTypeInfo storageTypeInfo() const override;
@@ -162,7 +164,7 @@ createSerializedDataRef(bool use_basic_type) const
   Span<const Byte> base_values = local_values;
   auto sd = arcaneCreateSerializedDataRef(DT_Byte, base_values.size(), 1, nb_element,
                                           nb_base_element, false, extents);
-  sd->setBytes(base_values);
+  sd->setConstBytes(base_values);
   //m_trace->info() << " WRITE STRING " << m_value << " len=" << len;
   return sd;
 }
@@ -188,7 +190,7 @@ assignSerializedData(const ISerializedData* sdata)
   if (sdata->baseDataType() != DT_Byte)
     throw ArgumentException(A_FUNCINFO, "Bad serialized type");
 
-  Span<const Byte> byte_values = sdata->bytes();
+  Span<const Byte> byte_values = sdata->constBytes();
   Int64 len = sdata->nbBaseElement();
   //m_trace->info() << " ASSIGN STRING n=" << len
   //                << " ptr=" << (void*)byte_values.begin();

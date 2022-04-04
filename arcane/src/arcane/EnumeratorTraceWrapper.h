@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2021 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -86,11 +86,11 @@ class EnumeratorTraceWrapper
 
 #if defined(ARCANE_TRACE_ENUMERATOR)
 #define A_TRACE_ITEM_ENUMERATOR(_EnumeratorClassName) \
-  ::Arcane::EnumeratorTraceWrapper< ::Arcane::_EnumeratorClassName, ::Arcane::IItemEnumeratorTracer >
+  ::Arcane::EnumeratorTraceWrapper< _EnumeratorClassName, ::Arcane::IItemEnumeratorTracer >
 #define A_TRACE_ENUMERATOR_WHERE   ,A_FUNCINFO
 #else
 #define A_TRACE_ITEM_ENUMERATOR(_EnumeratorClassName) \
-  ::Arcane::_EnumeratorClassName
+  _EnumeratorClassName
 #define A_TRACE_ENUMERATOR_WHERE
 #endif
 
