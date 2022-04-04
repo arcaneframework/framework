@@ -480,8 +480,8 @@ getBinary(T& value)
   size_t sizeofT = sizeof(T);
 
   // Le fichier VTK est en big endian et les CPU actuels sont en little endian.
-  unsigned char* bigEndian = (unsigned char*) malloc(sizeofT);
-  unsigned char* littleEndian = (unsigned char*) malloc(sizeofT);
+  Byte* bigEndian = (Byte*) malloc(sizeofT);
+  Byte* littleEndian = (Byte*) malloc(sizeofT);
 
   // On lit les 'sizeofT' prochains octets que l'on met dans bigEndian.
   m_stream->read((char*)bigEndian, sizeofT);
@@ -659,7 +659,7 @@ readMesh(IPrimaryMesh* mesh, const String& file_name, const String& dir_name, bo
 /*---------------------------------------------------------------------------*/
 
 bool VtkMeshIOService::
-_readStructuredGrid(IPrimaryMesh* mesh,VtkFile& vtk_file,bool use_internal_partition)
+_readStructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_partition)
 {
   // Lecture du nombre de points: DIMENSIONS nx ny nz
   const char* buf = nullptr;
@@ -672,18 +672,23 @@ _readStructuredGrid(IPrimaryMesh* mesh,VtkFile& vtk_file,bool use_internal_parti
     std::string dimension_str;
     iline >> ws >> dimension_str >> ws >> nb_node_x
           >> ws >> nb_node_y >> ws >> nb_node_z;
-    if (!iline){
+
+    if (!iline)
+    {
       error() << "Syntax error while reading grid dimensions";
       return true;
     }
-    vtk_file.checkString(dimension_str,"DIMENSIONS");
-    if (nb_node_x<=1 || nb_node_y<=1 || nb_node_z<=1){
+
+    vtk_file.checkString(dimension_str, "DIMENSIONS");
+    if (nb_node_x <= 1 || nb_node_y <= 1 || nb_node_z <= 1)
+    {
       error() << "Invalid dimensions: x=" << nb_node_x << " y=" << nb_node_y << " z=" << nb_node_z;
       return true;
     }
   }
   info() << " Infos: " << nb_node_x << " " << nb_node_y << " " << nb_node_z;
   Integer nb_node = nb_node_x * nb_node_y * nb_node_z;
+
   // Lecture du nombre de points: POINTS nb float
   std::string float_str;
   {
@@ -693,13 +698,14 @@ _readStructuredGrid(IPrimaryMesh* mesh,VtkFile& vtk_file,bool use_internal_parti
     Integer nb_node_read = 0;
     iline >> ws >> points_str >> ws >> nb_node_read
           >> ws >> float_str;
-    if (!iline){
+    if (!iline)
+    {
       error() << "Syntax error while reading grid dimensions";
       return true;
     }
-    vtk_file.checkString(points_str,"POINTS");
-    //vtk_file.checkString(float_str,"float");
-    if (nb_node_read!=nb_node){
+    vtk_file.checkString(points_str, "POINTS");
+    if (nb_node_read != nb_node)
+    {
       error() << "Number of invalid nodes: expected=" << nb_node << " found=" << nb_node_read;
       return true;
     }
@@ -707,11 +713,11 @@ _readStructuredGrid(IPrimaryMesh* mesh,VtkFile& vtk_file,bool use_internal_parti
 
   Int32 sub_domain_id = mesh->parallelMng()->commRank();
 
-  Integer nb_cell_x = nb_node_x-1;
-  Integer nb_cell_y = nb_node_y-1;
-  Integer nb_cell_z = nb_node_z-1;
+  Integer nb_cell_x = nb_node_x - 1;
+  Integer nb_cell_y = nb_node_y - 1;
+  Integer nb_cell_z = nb_node_z - 1;
 
-  if (use_internal_partition && sub_domain_id!=0){
+  if (use_internal_partition && sub_domain_id != 0){
     nb_node_x = 0;
     nb_node_y = 0;
     nb_node_z = 0;
@@ -720,8 +726,8 @@ _readStructuredGrid(IPrimaryMesh* mesh,VtkFile& vtk_file,bool use_internal_parti
     nb_cell_z = 0;
   }
 
-  const Integer nb_node_yz = nb_node_y*nb_node_z;
-  const Integer nb_node_xy = nb_node_x*nb_node_y;
+  const Integer nb_node_yz = nb_node_y * nb_node_z;
+  const Integer nb_node_xy = nb_node_x * nb_node_y;
 
   Integer nb_cell = nb_cell_x * nb_cell_y * nb_cell_z;
   UniqueArray<Int32> cells_local_id(nb_cell);
@@ -735,9 +741,12 @@ _readStructuredGrid(IPrimaryMesh* mesh,VtkFile& vtk_file,bool use_internal_parti
     //Integer nb_node_local_id = 0;
     {
       Integer node_local_id = 0;
-      for( Integer x=0; x<nb_node_x; ++x ){
-        for( Integer z=0; z<nb_node_z; ++z ){
-          for( Integer y=0; y<nb_node_y; ++y ){
+      for( Integer x=0; x<nb_node_x; ++x )
+      {
+        for( Integer z=0; z<nb_node_z; ++z )
+        {
+          for( Integer y=0; y<nb_node_y; ++y )
+          {
     
             Integer node_unique_id = y + (z)*nb_node_y + x*nb_node_y*nb_node_z;
           
@@ -770,9 +779,12 @@ _readStructuredGrid(IPrimaryMesh* mesh,VtkFile& vtk_file,bool use_internal_parti
         ARCANE_FATAL("Null value for nb_node_xy");
 
       //Integer index = 0;
-      for( Integer z=0; z<nb_cell_z; ++z ){
-        for( Integer y=0; y<nb_cell_y; ++y ){
-          for( Integer x=0; x<nb_cell_x; ++x ){
+      for( Integer z=0; z<nb_cell_z; ++z )
+      {
+        for( Integer y=0; y<nb_cell_y; ++y )
+        {
+          for( Integer x=0; x<nb_cell_x; ++x )
+          {
             Integer current_cell_nb_node = 8;
           
             //Integer cell_unique_id = y + (z)*nb_cell_y + x*nb_cell_y*nb_cell_z;
@@ -885,7 +897,8 @@ _readStructuredGrid(IPrimaryMesh* mesh,VtkFile& vtk_file,bool use_internal_parti
     Int32UniqueArray zmin_surface_lid;
     Int32UniqueArray zmax_surface_lid;
 
-    ENUMERATE_FACE(iface,mesh->allFaces()){
+    ENUMERATE_FACE(iface,mesh->allFaces())
+    {
       const Face& face = *iface;
       Integer face_local_id = face.localId();
       bool is_xmin = true;
@@ -894,7 +907,8 @@ _readStructuredGrid(IPrimaryMesh* mesh,VtkFile& vtk_file,bool use_internal_parti
       bool is_ymax = true;
       bool is_zmin = true;
       bool is_zmax = true;
-      for( NodeEnumerator inode(face.nodes()); inode(); ++inode ){
+      for( NodeEnumerator inode(face.nodes()); inode(); ++inode )
+      {
         Node node = *inode;
         Int64 node_unique_id = node.uniqueId().asInt64();
         Int64 node_z = node_unique_id / nb_node_xy;
@@ -1163,28 +1177,25 @@ _readMetadata(IMesh* mesh, VtkFile& vtk_file)
   Real trash_real;
 
   const char* func_name = "VtkMeshIOService::_readMetadata()";
-  //info() << "METADATA D";
+
   if(vtk_file.isEof()) return false;
   String meta = vtk_file.getNextLine();
-  //info() << "METADATA F";
 
   // METADATA ?
   if(!vtk_file.isEqualString(meta, "METADATA"))
   {
-    //info() << "METADATA DD";
+    // S'il n'y a pas de METADATA, on demande à ce que la ligne lue soit relue la prochaine fois.
     vtk_file.reReadSameLine();
-    //info() << "METADATA FF";
     return false;
   }
 
-  info() << "METADATA DDD";
+  // Tant qu'il n'y a pas de ligne vide, on lit.
   while(!vtk_file.isEmptyNextLine() && !vtk_file.isEof())
   {
-  //info() << "METADATA 111";
   }
-  //info() << "METADATA FFF";
   return false;
   
+  // // Si l'on a besoin de faire quelque chose avec les METADATA un jour, voilà un code non testé.
   // const char* buf = vtk_file.getNextLine(); 
 
   
@@ -1296,6 +1307,7 @@ _readUnstructuredGrid(IPrimaryMesh* mesh,VtkFile& vtk_file,bool use_internal_par
     UniqueArray<Integer> cells_type;
     _readCellsUnstructuredGrid(mesh, vtk_file, cells_nb_node, cells_type, cells_connectivity);
     debug() << "Lecture _readCellsUnstructuredGrid OK";
+
     nb_cell = cells_nb_node.size();
     nb_cell_node = cells_connectivity.size();
     cells_local_id.resize(nb_cell);
@@ -1311,7 +1323,8 @@ _readUnstructuredGrid(IPrimaryMesh* mesh,VtkFile& vtk_file,bool use_internal_par
     {
       Integer cells_infos_index = 0;
       Integer connectivity_index = 0;
-      for( Integer i=0; i<nb_cell; ++i ){
+      for( Integer i=0; i<nb_cell; ++i )
+      {
         Integer current_cell_nb_node = cells_nb_node[i];
         Integer cell_unique_id = i;
           
@@ -1362,7 +1375,8 @@ _readUnstructuredGrid(IPrimaryMesh* mesh,VtkFile& vtk_file,bool use_internal_par
   // Positionne les coordonnées
   {
     VariableNodeReal3& nodes_coord_var(mesh->nodesCoordinates());
-    ENUMERATE_NODE(inode,mesh->allNodes()){
+    ENUMERATE_NODE(inode,mesh->allNodes())
+    {
       Node node = *inode;
       nodes_coord_var[inode] = node_coords[node.uniqueId().asInt32()];
     }
@@ -1371,10 +1385,8 @@ _readUnstructuredGrid(IPrimaryMesh* mesh,VtkFile& vtk_file,bool use_internal_par
   // Maintenant, regarde s'il existe des données associées aux fichier
   bool r = _readData(mesh, vtk_file, use_internal_partition, IK_Cell, cells_local_id, nb_node);
   debug() << "Lecture _readData OK";
-  if (r)
-    return r;
 
-  return false;
+  return r;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1399,8 +1411,8 @@ _readFacesMesh(IMesh* mesh, const String& file_name, const String& dir_name,
   // Lecture de la description
   String title = vtk_file.getNextLine();
   info() << "Titre du fichier VTK : " << title;
-  String format = vtk_file.getNextLine();
 
+  String format = vtk_file.getNextLine();
   if (! VtkFile::isEqualString(format,"ASCII"))
   {
     //error() << "Support exists only for 'ASCII' format (format='" << format << "')";
@@ -1787,7 +1799,8 @@ _readCellVariable(IMesh* mesh,VtkFile& vtk_file,const String& var_name,Integer n
   VariableCellReal * var = new VariableCellReal(VariableBuildInfo(mesh,var_name));
   m_variables.add(var);
   RealArrayView values(var->asArray());
-  for( Integer i=0; i<nb_cell; ++i ){
+  for( Integer i=0; i<nb_cell; ++i )
+  {
     Real v = vtk_file.getDouble();
     values[i] = v;
   }
