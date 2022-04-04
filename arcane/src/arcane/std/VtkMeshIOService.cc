@@ -194,7 +194,7 @@ class VtkFile
   static const int BUFSIZE = 10000;
 
  public:
-  VtkFile(std::istream* stream) : m_stream(stream), m_isInit(false), eof(false) {}
+  VtkFile(std::istream* stream) : m_stream(stream), m_isInit(false), eof(false), m_currentLine(false), isBinaryFile(false) {}
 
   const char* getCurrentLine();
   bool isEmptyNextLine();
@@ -483,16 +483,22 @@ getBinary(T& value)
   unsigned char* bigEndian = (unsigned char*) malloc(sizeofT);
   unsigned char* littleEndian = (unsigned char*) malloc(sizeofT);
 
+  // On lit les 'sizeofT' prochains octets que l'on met dans bigEndian.
   m_stream->read((char*)bigEndian, sizeofT);
 
+  // On transforme le bigEndian en littleEndian.
   for(int i = 0; i < sizeofT; i++)
   {
     littleEndian[sizeofT-1-i] = bigEndian[i];
   }
 
+  // On 'cast' la liste d'octet en type 'T'.
   T* conv = new(littleEndian) T;
   value = *conv;
 
+  ///delete(conv); // Ne pas delete conv car le free est réalisé sur littleEndian directement.
+  free(bigEndian);
+  free(littleEndian);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -565,6 +571,8 @@ readMesh(IPrimaryMesh* mesh, const String& file_name, const String& dir_name, bo
     return true;
   }
 
+  debug() << "Fichier ouvert : " << file_name.localstr();
+
   VtkFile vtk_file(&ifile);
   const char* buf = 0;
 
@@ -572,10 +580,12 @@ readMesh(IPrimaryMesh* mesh, const String& file_name, const String& dir_name, bo
   // Lecture title.
   String title = vtk_file.getNextLine();
 
-  info() << "Titre du fichier VTK : " << title;
+  info() << "Titre du fichier VTK : " << title.localstr();
 
   // Lecture format.
   String format = vtk_file.getNextLine();
+
+  debug() << "Format du fichier VTK : " << format.localstr();
 
   if (! VtkFile::isEqualString(format,"ASCII"))
   {
@@ -616,7 +626,7 @@ readMesh(IPrimaryMesh* mesh, const String& file_name, const String& dir_name, bo
       return true;
     }
   }
-  info() << "Lecture en-tête OK";
+  debug() << "Lecture en-tête OK";
   bool ret = true;
   switch(mesh_type)
   {
@@ -626,12 +636,12 @@ readMesh(IPrimaryMesh* mesh, const String& file_name, const String& dir_name, bo
 
   case VTK_MT_UnstructuredGrid:
     ret = _readUnstructuredGrid(mesh, vtk_file, use_internal_partition);
-    info() << "Lecture _readUnstructuredGrid OK";
+    debug() << "Lecture _readUnstructuredGrid OK";
     if (!ret)
     {
       // Tente de lire le fichier des faces s'il existe
       _readFacesMesh(mesh, file_name+"faces.vtk", dir_name, use_internal_partition);
-      info() << "Lecture _readFacesMesh OK";
+      debug() << "Lecture _readFacesMesh OK";
     }
     break;
 
@@ -641,6 +651,7 @@ readMesh(IPrimaryMesh* mesh, const String& file_name, const String& dir_name, bo
   /*while ( (buf=vtk_file.getNextLine()) != 0 ){
     info() << " STR " << buf;
     }*/
+  ifile.close();
   return ret;
 }
 
@@ -959,7 +970,6 @@ _readNodesUnstructuredGrid(IMesh* mesh, VtkFile& vtk_file, Array<Real3>& node_co
     throw IOException(func_name,"Syntax error while reading number of nodes");
 
   vtk_file.checkString(points_str, "POINTS");
-  // vtk_file.checkString(data_type_str, "float", "double");
 
   if (nb_node<0)
     throw IOException(A_FUNCINFO, String::format("Invalid number of nodes: n={0}", nb_node));
@@ -1025,6 +1035,9 @@ _readCellsUnstructuredGrid(IMesh* mesh, VtkFile& vtk_file,
 
   const char* func_name = "VtkMeshIOService::_readCellsUnstructuredGrid()";
   const char* buf = vtk_file.getNextLine();
+
+  //String buftest = vtk_file.getCurrentLine(); // DEBUG
+  //pinfo() << "Ligne lu : " << buftest.localstr();
 
   std::istringstream iline(buf);
   std::string cells_str;
@@ -1150,26 +1163,26 @@ _readMetadata(IMesh* mesh, VtkFile& vtk_file)
   Real trash_real;
 
   const char* func_name = "VtkMeshIOService::_readMetadata()";
-  info() << "METADATA D";
+  //info() << "METADATA D";
   if(vtk_file.isEof()) return false;
   String meta = vtk_file.getNextLine();
-  info() << "METADATA F";
+  //info() << "METADATA F";
 
   // METADATA ?
   if(!vtk_file.isEqualString(meta, "METADATA"))
   {
-    info() << "METADATA DD";
+    //info() << "METADATA DD";
     vtk_file.reReadSameLine();
-    info() << "METADATA FF";
+    //info() << "METADATA FF";
     return false;
   }
 
   info() << "METADATA DDD";
   while(!vtk_file.isEmptyNextLine() && !vtk_file.isEof())
   {
-  info() << "METADATA 111";
+  //info() << "METADATA 111";
   }
-  info() << "METADATA FFF";
+  //info() << "METADATA FFF";
   return false;
   
   // const char* buf = vtk_file.getNextLine(); 
@@ -1272,7 +1285,7 @@ _readUnstructuredGrid(IPrimaryMesh* mesh,VtkFile& vtk_file,bool use_internal_par
   {
     // Lecture première partie du fichier (après header).
     _readNodesUnstructuredGrid(mesh, vtk_file, node_coords);
-    info() << "Lecture _readNodesUnstructuredGrid OK";
+    debug() << "Lecture _readNodesUnstructuredGrid OK";
     nb_node = node_coords.size();
 
 
@@ -1282,7 +1295,7 @@ _readUnstructuredGrid(IPrimaryMesh* mesh,VtkFile& vtk_file,bool use_internal_par
     UniqueArray<Int64> cells_connectivity;
     UniqueArray<Integer> cells_type;
     _readCellsUnstructuredGrid(mesh, vtk_file, cells_nb_node, cells_type, cells_connectivity);
-    info() << "Lecture _readCellsUnstructuredGrid OK";
+    debug() << "Lecture _readCellsUnstructuredGrid OK";
     nb_cell = cells_nb_node.size();
     nb_cell_node = cells_connectivity.size();
     cells_local_id.resize(nb_cell);
@@ -1356,9 +1369,8 @@ _readUnstructuredGrid(IPrimaryMesh* mesh,VtkFile& vtk_file,bool use_internal_par
   }
 
   // Maintenant, regarde s'il existe des données associées aux fichier
-  info() << "Début Lecture _readData OK";
   bool r = _readData(mesh, vtk_file, use_internal_partition, IK_Cell, cells_local_id, nb_node);
-  info() << "Lecture _readData OK";
+  debug() << "Lecture _readData OK";
   if (r)
     return r;
 
