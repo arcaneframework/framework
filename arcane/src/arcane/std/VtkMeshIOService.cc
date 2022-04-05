@@ -190,7 +190,7 @@ class VtkFile
   static const int BUFSIZE = 10000;
 
  public:
-  VtkFile(std::istream* stream)
+  explicit VtkFile(std::istream* stream)
   : m_stream(stream)
   , m_isInit(false)
   , m_eof(false)
@@ -504,6 +504,11 @@ getBinary(T& value)
   // Le fichier VTK est en big endian et les CPU actuels sont en little endian.
   Byte* big_endian = new Byte[sizeofT];
   Byte* little_endian = new Byte[sizeofT];
+
+  // Correction CWE-120
+  if (sizeof(big_endian) < sizeofT) {
+    throw IOException("VtkFile::getBinary()", "CWE-120");
+  }
 
   // On lit les 'sizeofT' prochains octets que l'on met dans big_endian.
   m_stream->read((char*)big_endian, sizeofT);
@@ -1932,7 +1937,7 @@ class VtkLegacyMeshWriter
 , public IMeshWriter
 {
  public:
-  VtkLegacyMeshWriter(const ServiceBuildInfo& sbi)
+  explicit VtkLegacyMeshWriter(const ServiceBuildInfo& sbi)
   : BasicService(sbi)
   {}
 
