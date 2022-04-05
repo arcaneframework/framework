@@ -499,16 +499,11 @@ template <class T>
 void VtkFile::
 getBinary(T& value)
 {
-  size_t sizeofT = sizeof(T);
+  constexpr size_t sizeofT = sizeof(T);
 
   // Le fichier VTK est en big endian et les CPU actuels sont en little endian.
-  Byte* big_endian = new Byte[sizeofT];
-  Byte* little_endian = new Byte[sizeofT];
-
-  // Correction CWE-120
-  if (sizeof(big_endian) < sizeofT) {
-    throw IOException("VtkFile::getBinary()", "CWE-120");
-  }
+  Byte big_endian[sizeofT];
+  Byte little_endian[sizeofT];
 
   // On lit les 'sizeofT' prochains octets que l'on met dans big_endian.
   m_stream->read((char*)big_endian, sizeofT);
@@ -521,10 +516,6 @@ getBinary(T& value)
   // On 'cast' la liste d'octet en type 'T'.
   T* conv = new (little_endian) T;
   value = *conv;
-
-  ///delete(conv); // Ne pas delete conv car le delete est réalisé sur little_endian directement.
-  delete[] big_endian;
-  delete[] little_endian;
 }
 
 /*---------------------------------------------------------------------------*/
