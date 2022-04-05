@@ -196,6 +196,7 @@ class VtkFile
   , m_eof(false)
   , m_currentLine(false)
   , m_is_binary_file(false)
+  , m_buf{}
   {}
 
   const char* getCurrentLine();
@@ -501,24 +502,24 @@ getBinary(T& value)
   size_t sizeofT = sizeof(T);
 
   // Le fichier VTK est en big endian et les CPU actuels sont en little endian.
-  Byte bigEndian[sizeofT];
-  Byte littleEndian[sizeofT];
+  Byte* big_endian = new Byte[sizeofT];
+  Byte* little_endian = new Byte[sizeofT];
 
-  // On lit les 'sizeofT' prochains octets que l'on met dans bigEndian.
-  m_stream->read((char*)bigEndian, sizeofT);
+  // On lit les 'sizeofT' prochains octets que l'on met dans big_endian.
+  m_stream->read((char*)big_endian, sizeofT);
 
-  // On transforme le bigEndian en littleEndian.
-  for (int i = 0; i < sizeofT; i++) {
-    littleEndian[sizeofT - 1 - i] = bigEndian[i];
+  // On transforme le big_endian en little_endian.
+  for (size_t i = 0; i < sizeofT; i++) {
+    little_endian[sizeofT - 1 - i] = big_endian[i];
   }
 
   // On 'cast' la liste d'octet en type 'T'.
-  T* conv = new (littleEndian) T;
+  T* conv = new (little_endian) T;
   value = *conv;
 
-  ///delete(conv); // Ne pas delete conv car le delete est réalisé sur littleEndian directement.
-  delete (bigEndian);
-  delete (littleEndian);
+  ///delete(conv); // Ne pas delete conv car le delete est réalisé sur little_endian directement.
+  delete[] big_endian;
+  delete[] little_endian;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1230,10 +1231,7 @@ _readMetadata(IMesh* mesh, VtkFile& vtk_file)
 {
   ARCANE_UNUSED(mesh);
 
-  std::string trash;
-  Real trash_real;
-
-  const char* func_name = "VtkMeshIOService::_readMetadata()";
+  //const char* func_name = "VtkMeshIOService::_readMetadata()";
 
   if (vtk_file.isEof())
     return false;
@@ -1252,6 +1250,8 @@ _readMetadata(IMesh* mesh, VtkFile& vtk_file)
   return false;
 
   // // Si l'on a besoin de faire quelque chose avec les METADATA un jour, voilà un code non testé.
+  // std::string trash;
+  // Real trash_real;
   // const char* buf = vtk_file.getNextLine();
 
   // // INFORMATION ou COMPONENT_NAMES
