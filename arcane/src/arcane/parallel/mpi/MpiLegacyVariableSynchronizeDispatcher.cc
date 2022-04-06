@@ -115,6 +115,7 @@ _beginSynchronize(SyncBuffer& sync_buffer)
   MpiParallelMng* pm = m_mpi_parallel_mng;
   MPI_Comm comm = pm->communicator();
   MpiDatatypeList* dtlist = pm->datatypes();
+  MP::Mpi::IMpiProfiling* mpi_profiling = m_mpi_parallel_mng->adapter()->getMpiProfiling();
 
   //ITraceMng* trace = pm->traceMng();
   //trace->info() << " ** ** MPI BEGIN SYNC n=" << nb_message
@@ -134,13 +135,13 @@ _beginSynchronize(SyncBuffer& sync_buffer)
       if (!ghost_local_buffer.empty()){
         MPI_Request mpi_request;
         if (use_derived){
-          m_mpi_parallel_mng->adapter()->getMpiProfiling()->iRecv(var_values.data(),1,m_ghost_derived_types[i],
-                                                                  vsi.targetRank(),523,comm,&mpi_request);
+          mpi_profiling->iRecv(var_values.data(),1,m_ghost_derived_types[i],
+                               vsi.targetRank(),523,comm,&mpi_request);
         }
         else{
           MPI_Datatype dt = dtlist->datatype(SimpleType())->datatype();
-          m_mpi_parallel_mng->adapter()->getMpiProfiling()->iRecv(ghost_local_buffer.data(),ghost_local_buffer.size(),
-                                                                  dt,vsi.targetRank(),523,comm,&mpi_request);
+          mpi_profiling->iRecv(ghost_local_buffer.data(),ghost_local_buffer.size(),
+                               dt,vsi.targetRank(),523,comm,&mpi_request);
         }
         
         m_recv_requests[i] = mpi_request;
@@ -164,13 +165,13 @@ _beginSynchronize(SyncBuffer& sync_buffer)
       if (!share_local_buffer.empty()){
         MPI_Request mpi_request;
         if (use_derived){
-          m_mpi_parallel_mng->adapter()->getMpiProfiling()->iSend(var_values.data(),1,m_share_derived_types[i],
-                                                                  vsi.targetRank(),523,comm,&mpi_request);
+          mpi_profiling->iSend(var_values.data(),1,m_share_derived_types[i],
+                               vsi.targetRank(),523,comm,&mpi_request);
         }
         else{
           MPI_Datatype dt = dtlist->datatype(SimpleType())->datatype();
-          m_mpi_parallel_mng->adapter()->getMpiProfiling()->iSend(share_local_buffer.data(),share_local_buffer.size(),
-                                                                  dt,vsi.targetRank(),523,comm,&mpi_request);
+          mpi_profiling->iSend(share_local_buffer.data(),share_local_buffer.size(),
+                               dt,vsi.targetRank(),523,comm,&mpi_request);
         }
         m_send_requests.add(mpi_request);
         //trace->info() << "POST SEND " << vsi.m_target_rank;
@@ -181,7 +182,7 @@ _beginSynchronize(SyncBuffer& sync_buffer)
       pm->stat()->add("SyncPrepareDerived",prepare_time,1);
     }
     else{
-      pm->stat()->add("SyncPrepare",prepare_time,1);
+      pm->stat()->add("SyncPrepare",prepare_time,sync_buffer.totalShareSize());
     }
   }
 
@@ -260,12 +261,15 @@ _endSynchronize(SyncBuffer& sync_buffer)
                                                             mpi_status.data());
   //trace->info() << "Wait all end";
 
+  Int64 total_ghost_size = sync_buffer.totalGhostSize();
+  Int64 total_share_size = sync_buffer.totalShareSize();
+  Int64 total_size = total_ghost_size + total_share_size;
   if (use_derived){
-    pm->stat()->add("SyncWaitDerived",wait_time,1);
+    pm->stat()->add("SyncWaitDerived",wait_time,total_size);
   }
   else{
-    pm->stat()->add("SyncCopy",copy_time,1);
-    pm->stat()->add("SyncWait",wait_time,1);
+    pm->stat()->add("SyncCopy",copy_time,total_ghost_size);
+    pm->stat()->add("SyncWait",wait_time,total_size);
   }
   this->m_is_in_sync = false;
 }

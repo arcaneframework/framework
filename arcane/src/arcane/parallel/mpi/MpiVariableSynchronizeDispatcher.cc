@@ -140,7 +140,7 @@ _beginSynchronize(SyncBuffer& sync_buffer)
       }
     }
   }
-  pm->stat()->add("SyncPrepare", prepare_time, 1);
+  pm->stat()->add("SyncPrepare", prepare_time, sync_buffer.totalShareSize());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -203,8 +203,11 @@ _endSynchronize(SyncBuffer& sync_buffer)
     m_send_request_list->wait(Parallel::WaitAll);
   }
 
-  pm->stat()->add("SyncCopy",copy_time,1);
-  pm->stat()->add("SyncWait",wait_time,1);
+  Int64 total_ghost_size = sync_buffer.totalGhostSize();
+  Int64 total_share_size = sync_buffer.totalShareSize();
+  Int64 total_size = total_ghost_size + total_share_size;
+  pm->stat()->add("SyncCopy",copy_time,total_ghost_size);
+  pm->stat()->add("SyncWait",wait_time,total_size);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -181,6 +181,8 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
     ArrayView<SimpleType> dataView() { return m_data_view; }
     void copyReceive(Integer index);
     void copySend(Integer index);
+    Int64 totalGhostSize() const { return asBytes(m_ghost_buffer.constSpan()).size(); }
+    Int64 totalShareSize() const { return asBytes(m_share_buffer.constSpan()).size(); }
    private:
     Integer m_dim2_size = 0;
     //! Buffer pour toutes les données des entités fantômes qui serviront en réception
