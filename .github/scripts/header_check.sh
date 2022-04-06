@@ -1,6 +1,11 @@
 #!/bin/bash
 
-REGEX_EXCLUDE_FILES="/samples_build/samples|/arcane/extras|/arcane/tutorial"
+# Attention à ne pas ajouter d'espaces après le backslash.
+REGEX_EXCLUDE_FILES="/arcane/extras\
+|/arcane/src/arcane/utils/internal/json/rapidjson\
+|/arcane/src/arcane/dotnet/coreclr/hostfxr\.h\
+|/arcane/src/arcane/dotnet/coreclr/coreclr_delegates\.h\
+"
 
 CC_H_FILES=$(find $SOURCE -name '*.cc')
 CC_H_FILES+=" "

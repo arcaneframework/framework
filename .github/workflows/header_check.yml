@@ -30,6 +30,6 @@ jobs:
       - name: Upload log artifact
         uses: actions/upload-artifact@v2
         with:
-          name: Header Log Verification
+          name: Header Check Log
           path: ${{ env.ARCANE_SOURCE_DIR }}/output.log
           retention-days: 7
