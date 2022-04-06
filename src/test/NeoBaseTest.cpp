@@ -48,8 +48,10 @@ TEST(NeoUtils, test_array_view) {
   std::vector<int> dim2_const_view_vector_copy{ dim2_const_view.copy() };
   EXPECT_TRUE(std::equal(dim2_vec.begin(), dim2_vec.end(), dim2_const_view_vector_copy.begin()));
   // Try out of bound error
+#ifndef _MS_REL_ // if constepxr still experiencing problems with MSVC
   if constexpr (_debug) {EXPECT_DEATH(view[4], ".*i<m_size.*");}
   if constexpr (_debug) {EXPECT_DEATH(dim2_view[0][4], ".*i<m_size.*");}
+#endif
 }
 
 void _testItemLocalIds(Neo::utils::Int32 const& first_lid,
@@ -190,7 +192,9 @@ TEST(NeoTestProperty, test_property) {
   EXPECT_TRUE(property.isInitializableFrom(item_range));
   property.init(item_range, { 1,2,3 });
   // Cannot init twice : test assertion
+#ifndef _MS_REL_ // if constepxr still experiencing problems with MSVC
   if constexpr (_debug) {EXPECT_DEATH(property.init(item_range, values),".*Property must be empty.*");}
+#endif
   EXPECT_EQ(values.size(), property.size());
   auto prop_values = property.values();
   EXPECT_TRUE(std::equal(prop_values.begin(),prop_values.end(),values.begin()));
@@ -237,10 +241,12 @@ TEST(NeoTestProperty, test_property) {
   std::cout << "extracted_values_ref " << extracted_values_ref << std::endl;
   EXPECT_TRUE(std::equal(extracted_values.begin(), extracted_values.end(), extracted_values_ref.begin()));
   // todo check throw if lids out of bound
+#ifndef _MS_REL_ // if constepxr still experiencing problems with MSVC
   if constexpr (_debug) {EXPECT_DEATH(property[1000], ".*Input item lid.*");}
   if constexpr (_debug) {EXPECT_DEATH(const_property[1000], ".*Input item lid.*");}
   extracted_lids = { 100, 1000, 1000000 };
   if constexpr (_debug) {EXPECT_DEATH(property[extracted_lids], ".*Max input item lid.*");}
+#endif
   // Check append with holes, contiguous range
   item_range = { Neo::ItemLocalIds{ {}, 8, 2 } };
   values = { 8, 9 };
@@ -316,12 +322,16 @@ TEST(NeoTestProperty, test_property) {
 TEST(NeoTestArrayProperty, test_array_property) {
   auto array_property = Neo::ArrayProperty<Neo::utils::Int32>{ "test_array_property" };
   // check assert (debug only)
+#ifndef _MS_REL_ // if constepxr still experiencing problems with MSVC
   if constexpr (_debug) {EXPECT_DEATH(array_property[Neo::utils::NULL_ITEM_LID], ".*item local id must be >0.*");}
+#endif
   // add elements: 5 items with one value
   Neo::ItemRange item_range{ Neo::ItemLocalIds{ {}, 0, 5 } };
   std::vector<Neo::utils::Int32> values{ 0, 1, 2, 3, 4 };
   // Check cannot Try to init before resize
+#ifndef _MS_REL_ // if constepxr still experiencing problems with MSVC
   if constexpr (_debug) {EXPECT_DEATH(array_property.init(item_range, values), ".*call resize before init.*");}
+#endif
   array_property.resize({ 1, 1, 1, 1, 1 });
   array_property.init(item_range, values);
   array_property.debugPrint();
@@ -571,8 +581,10 @@ TEST(NeoTestPropertyView, test_property_view) {
   partial_property_view[2] = new_val;
   EXPECT_EQ(property[local_ids[2]], new_val);
   // Check out of bound
+#ifndef _MS_REL_ // if constepxr still experiencing problems with MSVC
   if constexpr (_debug) {EXPECT_DEATH(property_view[7], ".*Error, exceeds property view size.*");}
   if constexpr (_debug) {EXPECT_DEATH(partial_property_view[3], ".*Error, exceeds property view size.*");}
+#endif
 
 }
 
@@ -597,8 +609,10 @@ TEST(NeoTestPropertyView, test_property_const_view) {
     std::cout << "prop values at index " << i << " " << partial_property_const_view[i] << std::endl;
     EXPECT_EQ(partial_property_const_view[i],partial_values[i]);
   }
+#ifndef _MS_REL_ // if constepxr still experiencing problems with MSVC
   if constexpr (_debug) {EXPECT_DEATH(property_const_view[7], ".*Error, exceeds property view size.*");}
   if constexpr (_debug) {EXPECT_DEATH(partial_property_const_view[3], ".*Error, exceeds property view size.*");}
+#endif
   // test const iterator
   EXPECT_TRUE(property_const_view.end() == property_const_view.end());
   auto beg = property_const_view.begin();

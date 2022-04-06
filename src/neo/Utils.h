@@ -22,6 +22,9 @@
 #ifdef NDEBUG
   static constexpr bool ndebug = true;
   static constexpr bool _debug  = false;
+#ifdef _MSC_VER
+#define _MS_REL_
+#endif
 #else
   static constexpr bool ndebug = false;
   static constexpr bool _debug  = true;
