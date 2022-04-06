@@ -1,0 +1,35 @@
+name: Header/Encoding checker
+
+on:
+  # A executer que lorsque l'on demande.
+  workflow_dispatch:
+
+env:
+  # Arcane
+  ARCANE_SOURCE_DIR: '/home/runner/work/framework/framework/arcane'
+
+jobs:
+  check-headers:
+    name: check-headers-encoding
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          path: ${{ env.ARCANE_SOURCE_DIR }}
+          
+      - name: Check files
+        shell: bash
+        run: |
+          cd ${{ env.ARCANE_SOURCE_DIR }}
+          export SOURCE=.
+          chmod u+x ${{ env.ARCANE_SOURCE_DIR }}/.github/scripts/header_check.sh
+          ${{ env.ARCANE_SOURCE_DIR }}/.github/scripts/header_check.sh > ${{ env.ARCANE_SOURCE_DIR }}/output.log
+
+      - name: Upload log artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: Header Log Verification
+          path: ${{ env.ARCANE_SOURCE_DIR }}/output.log
+          retention-days: 7
