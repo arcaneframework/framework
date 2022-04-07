@@ -523,7 +523,7 @@ class SmallSpan
   : BaseClass(ptr,asize) {}
 
   template<std::size_t N,typename X,typename = is_same_const_type<X> >
-  constexpr ARCCORE_HOST_DEVICE SmallSpan(std::array<X,N>& from) noexcept
+  constexpr ARCCORE_HOST_DEVICE SmallSpan(std::array<X,N>& from)
   : BaseClass(from) {}
 
   //! Opérateur de recopie
