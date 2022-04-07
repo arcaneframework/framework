@@ -420,6 +420,8 @@ _computeSpecificGhostLayer()
         --min_part_id;
       if (max_part_id<(nb_coord-1) && math::isNearlyEqual(max_pos,coords[max_part_id]))
         ++max_part_id;
+      min_part[idir] = min_part_id;
+      max_part[idir] = max_part_id;
     }
 
     Int32 total_nb_part = 1;
