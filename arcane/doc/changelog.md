@@ -5,11 +5,16 @@
 
 Cette page contient les nouveautés de chaque version de %Arcane.
 
-Arcane Version 3.5.3 (?? mars 2022) {#arcanedoc_version350}
+Arcane Version 3.5.7 (07 avril 2022) {#arcanedoc_version350}
 ======================================
 
 Nouveautés/Améliorations:
 
+- Ajoute classe Arcane::SimdReal3x3 et Arcane::SimdReal2x2 qui sont
+  l'équivalent vectorielle des Arcane::Real3x3 et Arcane::Real2x2
+- Support de la version 4.2 des fichiers de maillage au format VTK
+- Ajoute une nouvelle implémentation des synchronisations qui utilise
+  l'appel `MPI_Sendrecv`.
 - Ajoute possibilité d'utiliser des messages collectifs
   (MPI_AllToAllv) au lieu de messages point à point lors de l´échange
   des entités suite à un équilibrage de charge. Ce mécanisme est
@@ -55,6 +60,7 @@ Interne:
   dans Arcane::NumArray (#153)
 - Ajoute `constexpr` et `noexcept` à certaines classes de Arccore
   (#156).
+- Passage version 2.0.9.0 de Arccore
 
 Arcane Version 3.4.5 (10 février 2022) {#arcanedoc_version340}
 ======================================
