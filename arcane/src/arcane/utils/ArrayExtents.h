@@ -32,6 +32,53 @@
 namespace Arcane
 {
 
+namespace detail
+{
+template<int RankValue>
+class ArrayExtentsTraits;
+
+template<>
+class ArrayExtentsTraits<0>
+{
+ public:
+  static constexpr ARCCORE_HOST_DEVICE std::array<Int32,0>
+  extendsInitHelper() { return {}; }
+};
+
+template<>
+class ArrayExtentsTraits<1>
+{
+ public:
+  static constexpr ARCCORE_HOST_DEVICE std::array<Int32,1>
+  extendsInitHelper() { return { 0 }; }
+};
+
+template<>
+class ArrayExtentsTraits<2>
+{
+ public:
+  static constexpr ARCCORE_HOST_DEVICE std::array<Int32,2>
+  extendsInitHelper() { return { 0, 0 }; }
+};
+
+template<>
+class ArrayExtentsTraits<3>
+{
+ public:
+  static constexpr ARCCORE_HOST_DEVICE std::array<Int32,3>
+  extendsInitHelper() { return { 0, 0, 0 }; }
+};
+
+template<>
+class ArrayExtentsTraits<4>
+{
+ public:
+  static constexpr ARCCORE_HOST_DEVICE std::array<Int32,4>
+  extendsInitHelper() { return { 0, 0, 0, 0 }; }
+};
+
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -68,14 +115,11 @@ class ArrayStridesBase
 {
  public:
   ARCCORE_HOST_DEVICE ArrayStridesBase()
-  {
-    for( int i=0; i<RankValue; ++i )
-      m_strides[i] = 0;
-  }
+  : m_strides(detail::ArrayExtentsTraits<RankValue>::extendsInitHelper()) { }
   //! Valeur du pas de la \a i-ème dimension.
   ARCCORE_HOST_DEVICE Int32 stride(int i) const { return m_strides[i]; }
   ARCCORE_HOST_DEVICE Int32 operator()(int i) const { return m_strides[i]; }
-  ARCCORE_HOST_DEVICE SmallSpan<const Int32> asSpan() const { return { m_strides, RankValue }; }
+  ARCCORE_HOST_DEVICE SmallSpan<const Int32> asSpan() const { return { m_strides.data(), RankValue }; }
   //! Valeur totale du pas
   ARCCORE_HOST_DEVICE Int64 totalStride() const
   {
@@ -87,7 +131,7 @@ class ArrayStridesBase
   // Instance contenant les dimensions après la première
   ARCCORE_HOST_DEVICE ArrayStridesBase<RankValue-1> removeFirstStride() const
   {
-    return ArrayStridesBase<RankValue-1>::fromSpan({m_strides+1,RankValue-1});
+    return ArrayStridesBase<RankValue-1>::fromSpan({m_strides.data()+1,RankValue-1});
   }
   /*!
    * \brief Construit une instance à partir des valeurs données dans \a stride.
@@ -102,7 +146,7 @@ class ArrayStridesBase
     return v;
   }
  protected:
-  Int32 m_strides[RankValue];
+  std::array<Int32,RankValue> m_strides;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -139,10 +183,7 @@ class ArrayExtentsBase
 {
  public:
   ARCCORE_HOST_DEVICE constexpr ArrayExtentsBase()
-  {
-    for( int i=0; i<RankValue; ++i )
-      m_extents[i] = 0;
-  }
+  : m_extents(detail::ArrayExtentsTraits<RankValue>::extendsInitHelper()) { }
  protected:
   explicit ARCCORE_HOST_DEVICE ArrayExtentsBase(SmallSpan<const Int32> extents)
   {
