@@ -201,6 +201,7 @@ struct PropertyViewIterator {
   using pointer = ValueType*;
   using reference = ValueType&;
   using PropertyViewIteratorType = PropertyViewIterator<ValueType>;
+  std::vector<int> const& m_indexes;
   typename std::vector<int>::const_iterator m_indexes_interator;
   ValueType* m_data_iterator;
 
@@ -250,15 +251,24 @@ struct PropertyViewIterator {
  protected:
   void _increment_iterator(){
     auto last_index = *m_indexes_interator;
-    m_indexes_interator++;
-    m_data_iterator += *m_indexes_interator - last_index;
+    ++m_indexes_interator;
+    if (m_indexes_interator != m_indexes.end()) {
+        m_data_iterator += *m_indexes_interator - last_index;
+    }
   }
   void _increment_iterator(difference_type n){
     for (auto i = 0; i < n ; ++i) {_increment_iterator();}
   }
   void _decrement_iterator(){
-    auto last_index = *m_indexes_interator;
-    m_indexes_interator--;
+      if (m_indexes_interator == m_indexes.begin()) return;
+      auto last_index = 0;
+      if (m_indexes_interator!=m_indexes.end()) {
+          last_index = *m_indexes_interator;
+      }
+      else {
+          last_index = *(m_indexes_interator-1);
+      }
+    --m_indexes_interator;
     m_data_iterator -= last_index-*m_indexes_interator;
   }
   void _decrement_iterator(difference_type n){
@@ -282,8 +292,8 @@ public:
 
   int size() const noexcept {return m_indexes.size();}
 
-  PropertyViewIterator<ValueType> begin() { return {m_indexes.begin()++,m_data_view.begin()+m_indexes[0]};}
-  PropertyViewIterator<ValueType> end()   { return {m_indexes.end(),m_data_view.end()};}
+  PropertyViewIterator<ValueType> begin() { return {m_indexes,m_indexes.begin()++,m_data_view.begin()+m_indexes[0]};}
+  PropertyViewIterator<ValueType> end()   { return {m_indexes,m_indexes.end(),m_data_view.end()};}
 };
 
 //----------------------------------------------------------------------------/
@@ -301,8 +311,8 @@ public:
     assert(("Error, exceeds property view size",index < m_indexes.size()));
     return m_data_view[m_indexes[index]];}
 
-  PropertyViewIterator<ValueType const> begin() { return {m_indexes.begin()++,m_data_view.begin()+m_indexes[0]};}
-  PropertyViewIterator<ValueType const> end()   { return {m_indexes.end(),m_data_view.end()};}
+  PropertyViewIterator<ValueType const> begin() { return {m_indexes,m_indexes.begin()++,m_data_view.begin()+m_indexes[0]};}
+  PropertyViewIterator<ValueType const> end()   { return {m_indexes,m_indexes.end(),m_data_view.end()};}
 };
 
 //----------------------------------------------------------------------------/
