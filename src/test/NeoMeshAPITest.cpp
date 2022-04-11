@@ -359,7 +359,7 @@ TEST(NeoMeshApiTest,AddItemConnectivity) {
     mesh.scheduleAddItems(dof_family, dof_uids, added_dofs_future_new);
     // Create a filtered ItemRange containing cells with uids 5 & 7
     auto filtered_future_cell_range =
-        Neo::make_future_range(added_cells_future, cell_uids, {5,7});
+        Neo::make_future_range(added_cells_future_new, cell_uids, {5,7});
     mesh.scheduleAddConnectivity(cell_family, filtered_future_cell_range,
                                  dof_family, {2, 1}, {7, 8, 7},
                                  "cell_to_dofs_new2",Neo::Mesh::ConnectivityOperation::Modify);
