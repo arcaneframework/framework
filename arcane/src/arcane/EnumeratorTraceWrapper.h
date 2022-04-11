@@ -27,7 +27,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -37,7 +38,15 @@ ARCANE_BEGIN_NAMESPACE
 class EnumeratorTraceInfo
 {
  public:
-  Int64ArrayView counters() { return Int64ArrayView(8,m_counters); }
+  EnumeratorTraceInfo()
+  {
+    for (int i = 0; i < 8; ++i)
+      m_counters[i] = 0;
+  }
+
+ public:
+  Int64ArrayView counters() { return Int64ArrayView(8, m_counters); }
+
  private:
   Int64 m_counters[8];
 };
@@ -54,28 +63,31 @@ class EnumeratorTraceInfo
  * - une méthode enterEnumerator() et une méthode exitEnumerator() pour
  * chaque type d'énumérateur supporté.
  */
-template<typename TrueEnumerator,typename TracerInterface>
+template <typename TrueEnumerator, typename TracerInterface>
 class EnumeratorTraceWrapper
 : public TrueEnumerator
 {
  public:
   EnumeratorTraceWrapper(TrueEnumerator&& tenum)
-  : TrueEnumerator(tenum), m_tracer(TracerInterface::singleton())
+  : TrueEnumerator(tenum)
+  , m_tracer(TracerInterface::singleton())
   {
     if (m_tracer)
-      m_tracer->enterEnumerator(*this,m_infos,nullptr);
+      m_tracer->enterEnumerator(*this, m_infos, nullptr);
   }
-  EnumeratorTraceWrapper(TrueEnumerator&& tenum,const TraceInfo& ti)
-  : TrueEnumerator(tenum), m_tracer(TracerInterface::singleton())
+  EnumeratorTraceWrapper(TrueEnumerator&& tenum, const TraceInfo& ti)
+  : TrueEnumerator(tenum)
+  , m_tracer(TracerInterface::singleton())
   {
     if (m_tracer)
-      m_tracer->enterEnumerator(*this,m_infos,&ti);
+      m_tracer->enterEnumerator(*this, m_infos, &ti);
   }
   ~EnumeratorTraceWrapper() ARCANE_NOEXCEPT_FALSE
   {
     if (m_tracer)
-      m_tracer->exitEnumerator(*this,m_infos);
+      m_tracer->exitEnumerator(*this, m_infos);
   }
+
  private:
   TracerInterface* m_tracer;
   EnumeratorTraceInfo m_infos;
@@ -86,8 +98,8 @@ class EnumeratorTraceWrapper
 
 #if defined(ARCANE_TRACE_ENUMERATOR)
 #define A_TRACE_ITEM_ENUMERATOR(_EnumeratorClassName) \
-  ::Arcane::EnumeratorTraceWrapper< _EnumeratorClassName, ::Arcane::IItemEnumeratorTracer >
-#define A_TRACE_ENUMERATOR_WHERE   ,A_FUNCINFO
+  ::Arcane::EnumeratorTraceWrapper< _EnumeratorClassName, ::Arcane::IItemEnumeratorTracer>
+#define A_TRACE_ENUMERATOR_WHERE , A_FUNCINFO
 #else
 #define A_TRACE_ITEM_ENUMERATOR(_EnumeratorClassName) \
   _EnumeratorClassName
@@ -97,7 +109,7 @@ class EnumeratorTraceWrapper
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
