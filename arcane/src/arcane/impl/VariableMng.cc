@@ -493,7 +493,8 @@ removeAllVariables()
       var_str() << "  " << v->fullName() << " (" << v->nbReference() << ")";
     }
   }
-  if (nb_ref!=0 && arcaneIsCheck())
+  bool is_check = arcaneIsCheck();
+  if (nb_ref!=0 && is_check)
     pwarning() << "The following variables are still referenced: "
                << var_str.str()
                << " (set the environment variable ARCANE_TRACE_VARIABLE_CREATION"
@@ -507,6 +508,24 @@ removeAllVariables()
                << " stack=" << var->assignmentStackTrace();
       }
     }
+  }
+
+  // Appelle explicitement 'unregisterVariable()' sur les variables restantes.
+  // Sans cela, si ensuite l'instance 'this' est détruite avant que les variables
+  // restantent ne le soit cela va provoquer un plantage (Read after free). Cela
+  // n'arrive normalement pas pour le C++ mais peut arriver pour le wrapping.
+  if (nb_ref!=0){
+    // Recopie les références dans un tableau temporaire
+    // car les appels à unregisterVariable() modifient l'itérateur ivar
+    // et aussi m_full_name_variable_map.
+    UniqueArray<VariableRef*> remaining_refs;
+    for( auto i : m_full_name_variable_map )
+      for( VarRefEnumerator ivar(i.second); ivar.hasNext(); ++ivar )
+        remaining_refs.add(*ivar);
+    for( VariableRef* r : remaining_refs )
+      r->unregisterVariable();
+    if (is_check)
+      info() << "Remaining variables after cleanup n=" << m_full_name_variable_map.size();
   }
 
   m_full_name_variable_map.clear();
