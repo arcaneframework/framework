@@ -261,8 +261,6 @@ void VariableRef::
 unregisterVariable()
 {
   _checkValid();
-  //TODO: utiliser verrou commun avec registerVariable() en multi-thread
-  subDomain()->variableMng()->removeVariableRef(this);
   m_variable->removeVariableRef(this);
   m_is_registered = false;
 }
@@ -274,8 +272,6 @@ void VariableRef::
 registerVariable()
 {
   _checkValid();
-  //TODO: utiliser verrou commun avec unregisterVariable() en multi-thread
-  subDomain()->variableMng()->addVariableRef(this);
   m_variable->addVariableRef(this);
   m_is_registered = true;
 }
@@ -287,7 +283,6 @@ void VariableRef::
 _internalInit(IVariable* variable)
 {
   m_variable = variable;
-  //subDomain()->checkId("VariableRef::VariableRef",m_variable->name());
   registerVariable();
   updateFromInternal();
   // Les variables autre que celles sur le maillages sont toujours utilisées
