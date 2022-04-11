@@ -287,9 +287,6 @@ class CaseOptionSimpleT
 	
   Type m_value; //!< Valeur de l'option
 
- private:
-
-  void _copyValue(const Type& rhs);
 };
 
 /*---------------------------------------------------------------------------*/

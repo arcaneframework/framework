@@ -1,4 +1,4 @@
-﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
 // Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
@@ -252,7 +252,7 @@ computeInfos()
     _markRemovableParticles();
     _computeItemsToSend2();
   }
-  else if (m_mesh->itemFamilyNetwork() && m_mesh->itemFamilyNetwork()->isActivated() > 0)
+  else if (m_mesh->itemFamilyNetwork() && m_mesh->itemFamilyNetwork()->isActivated())
   {
     if(m_mesh->useMeshItemFamilyDependencies())
     {
@@ -314,7 +314,7 @@ _computeGraphConnectivityInfos()
   m_neighbour_extra_cells_owner     = new DynamicMultiArray<Int32>(cell_variable_size);
   m_neighbour_extra_cells_new_owner = new DynamicMultiArray<Int32>(cell_variable_size);
   
-  if (m_mesh->itemFamilyNetwork() && m_mesh->itemFamilyNetwork()->isActivated() > 0 )
+  if (m_mesh->itemFamilyNetwork() && m_mesh->itemFamilyNetwork()->isActivated())
   {
       _addGraphConnectivityToNewConnectivityInfo();
   }

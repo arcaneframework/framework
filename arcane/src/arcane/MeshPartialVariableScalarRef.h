@@ -215,7 +215,7 @@ class MeshPartialVariableScalarRefT
  private:
 
   static VariableFactoryRegisterer m_auto_registerer;
-  static VariableInfo _buildVariableInfo(const VariableBuildInfo& vbi);
+  //static VariableInfo _buildVariableInfo(const VariableBuildInfo& vbi);
   static VariableTypeInfo _buildVariableTypeInfo();
   static VariableRef* _autoCreate(const VariableBuildInfo& vb);
 };
