@@ -65,6 +65,14 @@ arcane_add_arccon_packages(arcane_tests_lib PRIVATE ${PKGS})
 add_executable(arcane_tests_exec ${ARCANE_SRC_PATH}/arcane/tests/ArcaneTestMain.cc)
 set(ARCANE_TEST_PATH ${ARCANEBUILDROOT}/src/arcane/tests)
 
+# Recopie dans le répertoire les DLLs nécessaires à l'exécutable de test
+if (WIN32)
+  add_custom_command(TARGET arcane_tests_exec POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:arcane_tests_exec> $<TARGET_FILE_DIR:arcane_tests_exec>
+    COMMAND_EXPAND_LISTS
+    )
+endif()
+
 file(MAKE_DIRECTORY ${ARCANEBUILDROOT}/arcane/tests)
 file(MAKE_DIRECTORY ${ARCANEBUILDROOT}/arcane/tests/geometry)
 file(MAKE_DIRECTORY ${ARCANEBUILDROOT}/arcane/tests/solvers)
