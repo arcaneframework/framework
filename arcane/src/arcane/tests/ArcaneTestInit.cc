@@ -30,6 +30,7 @@ arcaneTestSetApplicationInfo()
 #ifdef ARCANE_OS_WIN32
   app_build_info.addDynamicLibrary("PerfectGas");
   app_build_info.addDynamicLibrary("StiffenedGas");
+  app_build_info.addDynamicLibrary("arcane_cea_tests");
 #endif
 
   // Modifie le répertoire de sortie pour prendren en compte le nom du

@@ -6,6 +6,8 @@ if(NOT ARCANE_CEA_MESH_PATH)
 endif()
 
 add_executable(arcanecea_tests_exec ${Arcane_SOURCE_DIR}/src/arcane/tests/ArcaneTestMain.cc)
+arcane_target_set_standard_path(arcanecea_tests_exec)
+
 set_target_properties(arcanecea_tests_exec PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 if (WIN32)
   set_target_properties(arcanecea_tests_exec PROPERTIES SUFFIX ".exe")
