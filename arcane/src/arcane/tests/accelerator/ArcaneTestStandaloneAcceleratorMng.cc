@@ -58,7 +58,7 @@ _testStandaloneLauncher(const CommandLineArguments& cmd_line_args,
 {
   ARCANE_UNUSED(method_name);
   ArcaneLauncher::init(cmd_line_args);
-  StandaloneAcceleratorMng launcher(ArcaneLauncher::createStandaloneAcceleratorMng());
+  StandaloneAcceleratorMng launcher{ArcaneLauncher::createStandaloneAcceleratorMng()};
   IAcceleratorMng* acc_mng = launcher.acceleratorMng();
   if (method_name=="TestSum")
     _testSum(acc_mng);
