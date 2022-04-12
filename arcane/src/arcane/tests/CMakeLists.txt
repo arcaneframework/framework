@@ -404,9 +404,11 @@ ARCANE_ADD_TEST(mesh_tied_interface_2d_1_vtk42 testMesh-tied_interface_2d_1-vtk4
 ARCANE_ADD_TEST(mesh_sphere_vtk42 testMesh-sphere-vtk42.arc)
 ARCANE_ADD_TEST(mesh_sphere_vtk42_binary testMesh-sphere-vtk42-binary.arc)
 arcane_add_test_sequential(mesh1_honeycomb2d testMesh-honeycomb2D-1.arc)
-arcane_add_test_parallel_thread(mesh1_honeycomb2d testMesh-honeycomb2D-1.arc 4)
 arcane_add_test_sequential(mesh1_honeycomb3d testMesh-honeycomb3D-1.arc)
-arcane_add_test_parallel_thread(mesh1_honeycomb3d testMesh-honeycomb3D-1.arc 4)
+if (PARTITIONER_FOUND)
+  arcane_add_test_parallel_thread(mesh1_honeycomb2d testMesh-honeycomb2D-1.arc 4)
+  arcane_add_test_parallel_thread(mesh1_honeycomb3d testMesh-honeycomb3D-1.arc 4)
+endif()
 
 ##############
 # UNIT TESTS #

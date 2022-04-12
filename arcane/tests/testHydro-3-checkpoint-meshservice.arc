@@ -8,6 +8,7 @@
   <meshes>
     <mesh>
       <filename internal-partition="true">sod.vtk</filename>
+      <partitioner>MeshPartitionerTester</partitioner>
       <initialization>
         <variable><name>Density</name><value>1.0</value><group>ZG</group></variable>
         <variable><name>Density</name><value>0.125</value><group>ZD</group></variable>
