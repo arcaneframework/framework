@@ -39,13 +39,13 @@ Pour les prérequis, voir les répertoires [Arcane](arcane/README.md) et [Arccor
 
 Pour récuperer les sources:
 
-~~~{.sh}
+~~~{sh}
 git clone --recurse-submodules /path/to/git
 ~~~
 
 ou
 
-~~~{.sh}
+~~~{sh}
 git clone /path/to/git
 cd framework && git submodule update --init --recursive
 ~~~
@@ -66,7 +66,7 @@ spécifier son chemin via CMAKE_PREFIX_PATH par exemple).
 
 Pour compiler Arcane et les composantes dont il dépend (arccore, axlstar, arccon)::
 
-~~~{.sh}
+~~~{sh}
 mkdir /path/to/build
 cmake -S /path/to/sources -B /path/to/build
 cmake --build /path/to/build
@@ -80,33 +80,59 @@ cibles. Pour éviter cela, il est possible de mettre à `TRUE` la variable
 CMake `FRAMEWORK_NO_EXPORT_PACKAGES`.
 
 Pour compiler uniquement Arcane en considérant que les dépendances
-sont déjà installées:
+Arccore, Arccon, Axlstar et ArcDependencies sont déjà installées:
 
-~~~{.sh}
+~~~{sh}
 mkdir /path/to/build
-cmake -S /path/to/sources -B /path/to/build -DFRAMEWORK_BUILD_COMPONENT=arcane -DArccon_ROOT=... -DArccore_ROOT=...
+cmake -S /path/to/sources -B /path/to/build -DFRAMEWORK_BUILD_COMPONENT=arcane -DArccon_ROOT=... -DArccore_ROOT=... -DAxlstar_ROOT=... -DArcDependencies_ROOT=...
 cmake --build /path/to/build
 ~~~
 
 ## Linux
 
+Cette section indique comment installer sour Linux x64 les dépendances
+nécessaires.
+
+### CMake
+
 Il faut au moins la version 3.18 de CMake. Si elle n'est pas présente sur votre système, la commande
 suivante permet de l'installer dans `/usr/local`. Il faudra ensuite
 ajouter le chemin correspondant dans la variable d'environnement PATH;
 
-~~~{.sh}
+~~~{sh}
 # Install CMake 21.3 in /usr/local/cmake
 MY_CMAKE_INSTALL_PATH=/usr/local/cmake-3.21.3
 wget https://github.com/Kitware/CMake/releases/download/v3.21.3/cmake-3.21.3-linux-x86_64.tar.gz
 sudo mkdir ${MY_CMAKE_INSTALL_PATH}
 sudo tar -C ${MY_CMAKE_INSTALL_PATH} -x --strip-components 1 -f cmake-3.21.3-linux-x86_64.tar.gz
-PATH=${MY_CMAKE_INSTALL_PATH}/bin:${PATH}
+export PATH=${MY_CMAKE_INSTALL_PATH}/bin:${PATH}
 cmake --version
 ~~~
 
-### Ubuntu 20.04
+### Environnement `.Net`
 
-~~~{.sh}
+L'environnement `.Net` est accessible via `apt` mais vous pouvez aussi
+directement télécharger un fichier `tar` contenant le binaire et les
+fichiers nécessaires. Pour l'architecture `x64`, les commandes
+suivantes installent l'environnement dans le répertoire `$HOME/dotnet`.
+
+~~~{sh}
+wget https://download.visualstudio.microsoft.com/download/pr/5e689959-c361-447f-af43-7c9da2595cc6/7cbba6786fe0c132d3c5a6053c85f80b/dotnet-sdk-6.0.103-linux-x64.tar.gz
+mkdir -p $HOME/dotnet && tar zxf dotnet-sdk-6.0.103-linux-x64.tar.gz -C $HOME/dotnet
+export DOTNET_ROOT=$HOME/dotnet
+export PATH=$PATH:$HOME/dotnet
+~~~
+
+Pour d'autres architectures, la page [Download
+.Net](https://dotnet.microsoft.com/en-us/download) contient la liste
+des téléchargements disponibles.
+
+### Ubuntu 20.04 via les packages systèmes
+
+Les commandes suivantes permettent d'installer les dépendances
+nécessaires pour Arcane (ainsi que les dépendances optionnelles `HDF5` et `ParMetis`):
+
+~~~{sh}
 sudo apt-get update
 sudo apt-get install -y apt-utils build-essential iputils-ping python3 git gfortran libglib2.0-dev libxml2-dev libhdf5-openmpi-dev libparmetis-dev wget
 wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
