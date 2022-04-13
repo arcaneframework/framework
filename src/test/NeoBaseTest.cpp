@@ -143,7 +143,7 @@ TEST(NeoTestFutureItemRange, test_future_item_range) {
   // Manually fill contained ItemRange
   std::vector<Neo::utils::Int32> lids{ 0, 2, 4, 6 };
   future_item_range.new_items = Neo::ItemRange{ Neo::ItemLocalIds{ lids } };
-  auto& internal_range = future_item_range.__internal__();
+  Neo::ItemRange& internal_range = future_item_range;
   EXPECT_EQ(&future_item_range.new_items, &internal_range);
   auto end_update = Neo::EndOfMeshUpdate{};
   {
@@ -151,10 +151,9 @@ TEST(NeoTestFutureItemRange, test_future_item_range) {
     std::vector<int> filter{ 0, 1, 2 };
     auto filtered_future_range =
     Neo::make_future_range(future_item_range, filter);
-    // Get item_ranges : warning get of filtered range must be down before get of future range target filtering by calling __internal__(). This call handled by mesh algos, must be done before calling associated future_range.get()
-    filtered_future_range.__internal__();
-    auto item_range = future_item_range.get(end_update);
+    // Get item_ranges
     auto filtered_range = filtered_future_range.get(end_update);
+    auto item_range = future_item_range.get(end_update);
     // Check item ranges
     auto lids_in_range = item_range.localIds();
     EXPECT_TRUE(std::equal(lids.begin(), lids.end(), lids_in_range.begin()));
@@ -176,8 +175,8 @@ TEST(NeoTestFutureItemRange, test_future_item_range) {
     // declare a filtered range -- filtered by values (the filter is computed)
     std::vector<Neo::utils::Int32> value_subset{ 2, 6 };
     auto filtered_future_range = Neo::make_future_range(future_item_range2, lids, value_subset);
-    // Get item_ranges : warning get of filtered range must be down before get of future range target filtering by calling __internal__(). This call handled by mesh algos, must be done before calling associated future_range.get()
-    auto& filtered_range = filtered_future_range.__internal__();
+    // Get item_range
+    auto filtered_range = filtered_future_range.get(end_update);
     auto filtered_range_lids = filtered_range.localIds();
     EXPECT_TRUE(std::equal(value_subset.begin(), value_subset.end(), filtered_range_lids.begin()));
   }

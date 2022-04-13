@@ -60,7 +60,7 @@ Neo::Family& Neo::Mesh::addFamily(Neo::ItemKind item_kind, std::string family_na
 
 void Neo::Mesh::scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::Int64> uids, Neo::FutureItemRange & added_item_range) noexcept
 {
-  auto& added_items = added_item_range.__internal__();
+  ItemRange& added_items = added_item_range;
   // Add items
   m_mesh_graph->addAlgorithm(  Neo::OutProperty{family,family.lidPropName()},
                                [&family,uids,&added_items](Neo::ItemLidsProperty & lids_property){
@@ -88,12 +88,12 @@ void Neo::Mesh::scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::In
 
 /*-----------------------------------------------------------------------------*/
 
-void Neo::Mesh::scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRange const& source_items,
-                                        Neo::Family& target_family, std::vector<int> nb_connected_item_per_item,
-                                        std::vector<Neo::utils::Int64> connected_item_uids,
-                                        std::string const& connectivity_unique_name,
-                                        ConnectivityOperation add_or_modify)
-{
+template <typename ItemRangeT>
+void Neo::Mesh::_scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRangeWrapper<ItemRangeT> source_items_wrapper,
+                                         Neo::Family& target_family, std::vector<int> nb_connected_item_per_item,
+                                         std::vector<Neo::utils::Int64> connected_item_uids,
+                                         std::string const& connectivity_unique_name,
+                                         ConnectivityOperation add_or_modify) {
   // add connectivity property if doesn't exist
   source_family.addArrayProperty<Neo::utils::Int32>(connectivity_unique_name);
   // Create connectivity wrapper and add it to mesh
@@ -110,13 +110,14 @@ void Neo::Mesh::scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRan
       Neo::InProperty{target_family,target_family.lidPropName()},
       Neo::OutProperty{source_family, connectivity_unique_name},
       [connected_item_uids{std::move(connected_item_uids)},
-             nb_connected_item_per_item{std::move(nb_connected_item_per_item)},
-             & source_items, &source_family, &target_family]
+          nb_connected_item_per_item{std::move(nb_connected_item_per_item)},
+          source_items_wrapper, &source_family, &target_family]
           (Neo::ItemLidsProperty const& source_family_lids_property,
            Neo::ItemLidsProperty const& target_family_lids_property,
            Neo::ArrayProperty<Neo::utils::Int32> & source2target){
         std::cout << "Algorithm: register connectivity between " <<
                   source_family.m_name << "  and  " << target_family.m_name << std::endl;
+        ItemRange const& source_items = source_items_wrapper.get();
         auto connected_item_lids = target_family_lids_property[connected_item_uids];
         if (source2target.isInitializableFrom(source_items)) {
           source2target.resize(std::move(nb_connected_item_per_item));
@@ -132,13 +133,26 @@ void Neo::Mesh::scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRan
 
 /*-----------------------------------------------------------------------------*/
 
+void Neo::Mesh::scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRange const& source_items,
+                                        Neo::Family& target_family, std::vector<int> nb_connected_item_per_item,
+                                        std::vector<Neo::utils::Int64> connected_item_uids,
+                                        std::string const& connectivity_unique_name,
+                                        ConnectivityOperation add_or_modify) {
+  _scheduleAddConnectivity(source_family, Neo::ItemRangeWrapper<const ItemRange>{source_items}, target_family,
+                           nb_connected_item_per_item, connected_item_uids, connectivity_unique_name, add_or_modify);
+}
+
+/*-----------------------------------------------------------------------------*/
+
 void Neo::Mesh::scheduleAddConnectivity(Neo::Family& source_family, Neo::FutureItemRange& source_items,
                                         Neo::Family& target_family, std::vector<int> nb_connected_item_per_item,
                                         std::vector<Neo::utils::Int64> connected_item_uids,
                                         std::string const& connectivity_unique_name,
                                         ConnectivityOperation add_or_modify)
 {
-  scheduleAddConnectivity(source_family,source_items.__internal__(),target_family,std::move(nb_connected_item_per_item),std::move(connected_item_uids),
+  _scheduleAddConnectivity(source_family,Neo::ItemRangeWrapper<FutureItemRange>{source_items},
+                           target_family,std::move(nb_connected_item_per_item),
+                           std::move(connected_item_uids),
                           connectivity_unique_name,add_or_modify);
 }
 
@@ -153,7 +167,9 @@ void Neo::Mesh::scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRan
   assert (("source items and connected item uids sizes are not coherent with nb_connected_item_per_item",
       source_items.size()*nb_connected_item_per_item == connected_item_uids.size()));
   std::vector<int> nb_connected_item_per_item_array(source_items.size(),nb_connected_item_per_item) ;
-  scheduleAddConnectivity(source_family,source_items,target_family,std::move(nb_connected_item_per_item_array),std::move(connected_item_uids),
+  scheduleAddConnectivity(source_family,source_items,target_family,
+                          std::move(nb_connected_item_per_item_array),
+                          std::move(connected_item_uids),
                           connectivity_unique_name,add_or_modify);
 }
 
@@ -169,7 +185,9 @@ void Neo::Mesh::scheduleAddConnectivity(Neo::Family& source_family, Neo::FutureI
       connected_item_uids.size()%nb_connected_item_per_item==0));
   auto source_item_size = connected_item_uids.size()/nb_connected_item_per_item;
   std::vector<int> nb_connected_item_per_item_array(source_item_size,nb_connected_item_per_item) ;
-  scheduleAddConnectivity(source_family,source_items.__internal__(),target_family,std::move(nb_connected_item_per_item_array),std::move(connected_item_uids),
+  _scheduleAddConnectivity(source_family,Neo::ItemRangeWrapper<FutureItemRange>{source_items},target_family,
+                          std::move(nb_connected_item_per_item_array),
+                          std::move(connected_item_uids),
                           connectivity_unique_name,add_or_modify);
 }
 
@@ -179,7 +197,7 @@ void Neo::Mesh::scheduleSetItemCoords(Neo::Family& item_family, Neo::FutureItemR
 {
   auto coord_prop_name = _itemCoordPropertyName(item_family);
   item_family.addProperty<Neo::utils::Real3>(coord_prop_name);
-  auto& added_items = future_added_item_range.__internal__();
+  ItemRange& added_items = future_added_item_range;
   m_mesh_graph->addAlgorithm(
           Neo::InProperty{item_family, item_family.lidPropName()},
           Neo::OutProperty{item_family,coord_prop_name},

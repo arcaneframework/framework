@@ -70,6 +70,15 @@ private:
   using ConnectivityMapType = std::map<std::string,Connectivity>;
   ConnectivityMapType m_connectivities;
 
+  template <typename ItemRangeT>
+  void _scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRangeWrapper<ItemRangeT> source_items,
+                                Neo::Family& target_family, std::vector<int> nb_connected_item_per_item,
+                                std::vector<Neo::utils::Int64> connected_item_uids,
+                                std::string const& connectivity_unique_name,
+                                ConnectivityOperation add_or_modify);
+
+
+
 public:
   /*!
    * @brief name of the mesh

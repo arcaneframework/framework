@@ -1100,6 +1100,10 @@ struct FutureItemRange {
   FutureItemRange(FutureItemRange&&) = default;
   FutureItemRange& operator=(FutureItemRange&&) = default;
 
+  operator ItemRange&() {
+    return _toItemRange();
+  }
+
   virtual ItemRange get(EndOfMeshUpdate const &) {
     if (is_data_released)
       throw std::runtime_error(
@@ -1108,7 +1112,8 @@ struct FutureItemRange {
     return std::move(new_items);
   }
 
-  virtual ItemRange& __internal__() {
+private:
+  virtual ItemRange& _toItemRange() {
     return new_items;
   }
 };
@@ -1136,12 +1141,17 @@ struct FilteredFutureItemRange : public FutureItemRange {
   FilteredFutureItemRange(FilteredFutureItemRange&&) = default;
   FilteredFutureItemRange& operator=(FilteredFutureItemRange&&) = default;
 
-  ItemRange get(EndOfMeshUpdate const & end_update) override {
-    if (!is_data_filtered) throw std::runtime_error("Impossible to call FilteredFutureItemRange.get(), data not yet filtered. Call __internal()__ first.");
-    return FutureItemRange::get(end_update);
+  operator ItemRange&() {
+    return _toItemRange();
   }
 
-  ItemRange& __internal__() override {
+  ItemRange get(EndOfMeshUpdate const & end_update) override {
+    _toItemRange(); // filter data if not yet done
+    return FutureItemRange::get(end_update); // move ItemRange. Class no longer usable
+  }
+
+private:
+  ItemRange& _toItemRange() override {
     if (!is_data_filtered) {
       std::vector<Neo::utils::Int32> filtered_lids(m_filter.size());
       auto local_ids = m_future_range.new_items.localIds();
@@ -1166,6 +1176,26 @@ inline Neo::FilteredFutureItemRange make_future_range(FutureItemRange& future_it
                                                std::vector<int> filter) {
   return FilteredFutureItemRange{future_item_range,std::move(filter)};
 }
+
+// rebuild
+
+//----------------------------------------------------------------------------/
+
+template <typename ItemRangeT>
+struct ItemRangeRefTypeT{ using type = ItemRange&;};
+
+template <>
+struct ItemRangeRefTypeT<ItemRange const> {using type = ItemRange const&;};
+
+template <typename ItemRangeT>
+struct ItemRangeWrapper {
+    ItemRangeT& m_item_range;
+    using ItemRangeRefType = typename ItemRangeRefTypeT<ItemRangeT>::type;
+
+    ItemRangeRefType get() const noexcept {
+        return m_item_range;
+    }
+};
 
 //----------------------------------------------------------------------------/
 
