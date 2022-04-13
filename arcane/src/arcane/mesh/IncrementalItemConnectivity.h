@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IncrementalItemConnectivity.h                               (C) 2000-2021 */
+/* IncrementalItemConnectivity.h                               (C) 2000-2022 */
 /*                                                                           */
 /* Connectivité incrémentale des entités.                                    */
 /*---------------------------------------------------------------------------*/
@@ -19,8 +19,8 @@
 #include "arcane/IItemFamily.h"
 #include "arcane/ItemVector.h"
 #include "arcane/VariableTypes.h"
-//#include "arcane/ItemInternal.h"
 #include "arcane/IIncrementalItemConnectivity.h"
+#include "arcane/IIndexedIncrementalItemConnectivity.h"
 
 #include "arcane/mesh/MeshGlobal.h"
 
@@ -34,8 +34,7 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 
 class IncrementalItemConnectivityContainer;
-class IndexedItemConnectivityAccessor ;
-
+class IndexedItemConnectivityAccessor;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -85,14 +84,19 @@ class ARCANE_MESH_EXPORT AbstractIncrementalItemConnectivity
  */
 class ARCANE_MESH_EXPORT IncrementalItemConnectivityBase
 : public AbstractIncrementalItemConnectivity
+, public IIndexedIncrementalItemConnectivity
 {
-public:
- template <class SourceFamily, class TargetFamily, class LegacyType, class CustomType> friend class NewWithLegacyConnectivity;
+ public:
+
+  template <class SourceFamily, class TargetFamily, class LegacyType, class CustomType>
+  friend class NewWithLegacyConnectivity;
 
  public:
+
   IncrementalItemConnectivityBase(IItemFamily* source_family,IItemFamily* target_family,
                                   const String& aname);
   ~IncrementalItemConnectivityBase();
+
  public:
 
   void notifySourceFamilyLocalIdChanged(Int32ConstArrayView new_to_old_ids) override;
@@ -106,8 +110,9 @@ public:
     return m_connectivity_list[ m_connectivity_index[lid] + index ];
   }
 
-  IndexedItemConnectivityViewBase connectivityView() const;
-  IndexedItemConnectivityAccessor connectivityAccessor() const ;
+  IIncrementalItemConnectivity* connectivity() final { return this; }
+  IndexedItemConnectivityViewBase connectivityView() const final;
+  IndexedItemConnectivityAccessor connectivityAccessor() const;
 
  public:
 
@@ -143,7 +148,8 @@ public:
   ItemVectorView _connectedItems(ItemLocalId item,ConnectivityItemVector& con_items) const final;
 
  protected:
-  bool m_is_empty = true ;
+
+  bool m_is_empty = true;
   Int32ArrayView m_connectivity_nb_item;
   Int32ArrayView m_connectivity_index;
   Int32ArrayView m_connectivity_list;
@@ -193,7 +199,6 @@ class ARCANE_MESH_EXPORT IncrementalItemConnectivity
   void dumpStats(std::ostream& out) const override;
 
   void compactConnectivityList();
-
 
  private:
 

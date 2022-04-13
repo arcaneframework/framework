@@ -54,6 +54,7 @@
 #include "arcane/IDeflateService.h"
 #include "arcane/IPrimaryMesh.h"
 #include "arcane/ItemTypes.h"
+#include "arcane/IIndexedIncrementalItemConnectivity.h"
 #include "arcane/IIncrementalItemConnectivity.h"
 #include "arcane/IItemConnectivityAccessor.h"
 #include "arcane/IItemConnectivityInfo.h"
