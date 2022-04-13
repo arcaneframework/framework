@@ -2,6 +2,12 @@
 
 #include "HoneyCombHeat_axl.h"
 #include <arcane/ITimeLoopMng.h>
+#include <arcane/IItemFamily.h>
+#include <arcane/IndexedItemConnectivityView.h>
+#include <arcane/IMesh.h>
+#include <arcane/UnstructuredMeshConnectivity.h>
+#include <arcane/ItemPrinter.h>
+#include <arcane/mesh/IncrementalItemConnectivity.h>
 
 using namespace Arcane;
 
@@ -15,9 +21,7 @@ class HoneyCombHeatModule
 {
  public:
 
-  explicit HoneyCombHeatModule(const ModuleBuildInfo& mbi)
-  : ArcaneHoneyCombHeatObject(mbi)
-  {}
+  explicit HoneyCombHeatModule(const ModuleBuildInfo& mbi);
 
  public:
 
@@ -35,8 +39,52 @@ class HoneyCombHeatModule
 
  private:
 
+  //! Connectivités standards du maillage
+  UnstructuredMeshConnectivityView m_mesh_connectivity_view;
+
+  //! Vue sur la connectivité Maille<->Maille par les faces
+  IndexedCellCellConnectivityView m_cell_cell_connectivity_view;
+
+  /*!
+   * \brief Index de la face (donc entre 0 et 5 (2D) ou 7 (3D)) dans la maille
+   * voisine pour la i-ème maille connectée.
+   *
+   * La valeur de \a i correspond au parcours via m_cell_cell_connectivity_view.
+   * Pour une maille interne, \a i est aussi l'index de la face dans cette propre maille
+   * mais ce n'est pas le cas pour une maille externe (c'est à dire une maille qui a
+   * au moins une face non connectée à une autre maille).
+   */
+  VariableCellArrayInt32 m_cell_neighbour_face_index;
+
+  /*!
+   * \brief Index de la face (donc entre 0 et 5 (2D) ou 7 (3D)) dans notre maille
+   * pour la i-ème maille connectée.
+   *
+   * La valeur de \a i correspond au parcours via m_cell_cell_connectivity_view.
+   * Pour une maille interne, \a i est aussi l'index de la face dans cette propre maille
+   * mais ce n'est pas le cas pour une maille externe (c'est à dire une maille qui a
+   * au moins une face non connectée à une autre maille).
+   */
+  VariableCellArrayInt32 m_cell_current_face_index;
+
+ private:
+
   void _applyBoundaryCondition();
+
+  Int32 _getNeighbourFaceIndex(CellLocalId cell, CellLocalId neighbour_cell);
+  Int32 _getCurrentFaceIndex(CellLocalId cell, FaceLocalId face);
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+HoneyCombHeatModule::
+HoneyCombHeatModule(const ModuleBuildInfo& mbi)
+: ArcaneHoneyCombHeatObject(mbi)
+, m_cell_neighbour_face_index(VariableBuildInfo(mbi.meshHandle(), "CellNeighbourFaceIndex"))
+, m_cell_current_face_index(VariableBuildInfo(mbi.meshHandle(), "CellCurrentFaceIndex"))
+{
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -78,6 +126,29 @@ compute()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Retourne l'index dans la liste des faces de 'neighbour_cell' de
+ * la face commune entre 'cell' et 'neighbour_cell'.
+ */
+Int32 HoneyCombHeatModule::
+_getNeighbourFaceIndex(CellLocalId cell, CellLocalId neighbour_cell)
+{
+  auto cell_face_cv = m_mesh_connectivity_view.cellFace();
+
+  Int32 face_neighbour_index = 0;
+  // Recherche la face commune entre 'neighbour_cell' et 'cell'.
+  for (FaceLocalId neighbour_face : cell_face_cv.faces(neighbour_cell)) {
+    for (FaceLocalId current_face : cell_face_cv.faces(cell)) {
+      if (current_face == neighbour_face)
+        return face_neighbour_index;
+    }
+    ++face_neighbour_index;
+  }
+  ARCANE_FATAL("No common face between the two cells '{0}' and '{1}'", cell, neighbour_cell);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 void HoneyCombHeatModule::
 startInit()
@@ -88,6 +159,83 @@ startInit()
 
   // Initialise le pas de temps à une valeur fixe
   m_global_deltat = 1.0;
+
+  const bool is_verbose = false;
+
+  m_mesh_connectivity_view.setMesh(mesh());
+
+  // Créé une connectivité Maille/Maille sur les mailles voisines
+  IItemFamily* cell_family = mesh()->cellFamily();
+  CellGroup cells = cell_family->allItems();
+  // NOTE: l'objet est automatiquement détruit par le maillage
+  auto* cn = new mesh::IncrementalItemConnectivity(cell_family, cell_family, "NeighbourCellCell");
+  ENUMERATE_CELL (icell, cells) {
+    Cell cell = *icell;
+    Integer nb_face = cell.nbFace();
+    cn->notifySourceItemAdded(cell);
+    for (Integer i = 0; i < nb_face; ++i) {
+      Face face = cell.face(i);
+      if (face.nbCell() == 2) {
+        Cell opposite_cell = (face.backCell() == cell) ? face.frontCell() : face.backCell();
+        cn->addConnectedItem(cell, opposite_cell);
+      }
+    }
+  }
+  m_cell_cell_connectivity_view = cn->connectivityView();
+
+  const Int32 max_neighbour = (mesh()->dimension() == 3) ? 8 : 6;
+  m_cell_neighbour_face_index.resize(max_neighbour);
+  m_cell_neighbour_face_index.fill(NULL_ITEM_LOCAL_ID);
+  m_cell_current_face_index.resize(max_neighbour);
+  m_cell_current_face_index.fill(NULL_ITEM_LOCAL_ID);
+
+  // Calcul l'index de la face voisine pour chaque maille connectée
+  ENUMERATE_ (Cell, icell, cells) {
+    Cell cell = *icell;
+    Int32 local_cell_index = 0;
+    for (CellLocalId neighbour_cell : m_cell_cell_connectivity_view.cells(icell)) {
+
+      Int32 neighbour_face_index = _getNeighbourFaceIndex(cell, neighbour_cell);
+      Int32 current_face_index = _getNeighbourFaceIndex(neighbour_cell, cell);
+
+      if (is_verbose)
+        info() << "Cell=" << cell.uniqueId() << " I=" << local_cell_index
+               << " neighbour_cell_local_id=" << neighbour_cell
+               << " face_index_in_neighbour_cell=" << neighbour_face_index
+               << " face_index_in_current_cell=" << current_face_index;
+
+      m_cell_neighbour_face_index[icell][local_cell_index] = neighbour_face_index;
+      m_cell_current_face_index[icell][local_cell_index] = current_face_index;
+      ++local_cell_index;
+    }
+  }
+
+  // Vérifie que tout est OK
+  {
+    auto cell_face_cv = m_mesh_connectivity_view.cellFace();
+
+    ENUMERATE_ (Cell, icell, cells) {
+      Cell cell = *icell;
+      auto neighbour_cells_id = m_cell_cell_connectivity_view.cells(icell);
+      for (Int32 i = 0; i < neighbour_cells_id.size(); ++i) {
+        CellLocalId neighbour_cell_id = neighbour_cells_id[i];
+
+        Int32 neighbour_face_index = m_cell_neighbour_face_index[icell][i];
+        Int32 current_face_index = m_cell_current_face_index[icell][i];
+
+        if (is_verbose)
+          info() << "Check: Cell=" << cell.uniqueId() << " I=" << i
+                 << " neighbour_cell_local_id=" << neighbour_cell_id
+                 << " face_index_in_neighbour_cell=" << neighbour_face_index
+                 << " face_index_in_current_cell=" << current_face_index;
+
+        FaceLocalId neighbour_face_id = cell_face_cv.faces(neighbour_cell_id)[neighbour_face_index];
+        FaceLocalId current_face_id = cell_face_cv.faces(cell)[current_face_index];
+        if (neighbour_face_id != current_face_id)
+          ARCANE_FATAL("Bad face neighbour={0} current={1} cell={2}", neighbour_face_id, current_face_id, ItemPrinter(cell));
+      }
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
