@@ -56,10 +56,7 @@ class ARCANE_MESH_EXPORT AbstractIncrementalItemConnectivity
 
  public:
 
-  virtual const String& name() const
-  {
-    return m_name;
-  }
+  String name() const override { return m_name; }
 
  public:
 
