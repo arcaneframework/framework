@@ -348,7 +348,7 @@ TEST(NeoTestArrayProperty, test_array_property) {
   array_property.append(item_range, values_added, nb_element_per_item);
   array_property.debugPrint(); // expected result: "0" "1" "2" "3" "4" "6" "6" "6" "7" (check with test framework)
   EXPECT_EQ(values.size() + values_added.size(), array_property.size());
-  auto ref_values = { 0, 1, 2, 3, 4, 6, 6, 6, 7 };
+  std::vector<int> ref_values = { 0, 1, 2, 3, 4, 6, 6, 6, 7 };
   EXPECT_TRUE(std::equal(ref_values.begin(), ref_values.end(), array_property.m_data.begin()));
   indexes = { 0, 1, 2, 3, 4, 5, 5, 8 };
   EXPECT_TRUE(std::equal(indexes.begin(), indexes.end(), array_property.m_indexes.begin()));
