@@ -482,6 +482,7 @@ public:
 
   bool useMeshItemFamilyDependencies() const override  {return m_use_mesh_item_family_dependencies; }
   IItemFamilyNetwork* itemFamilyNetwork() override {return m_item_family_network;}
+  IIndexedIncrementalItemConnectivityMng* indexedConnectivityMng() override { return nullptr; }
 
  public:
 

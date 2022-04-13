@@ -500,6 +500,7 @@ set( ARCANE_SOURCES    AbstractCaseDocumentVisitor.cc
    ITimeStats.h
    IInitialPartitioner.h
    IIndexedIncrementalItemConnectivity.h
+   IIndexedIncrementalItemConnectivityMng.h
    IIncrementalItemConnectivity.h
    IItemConnectivity.h
    IItemConnectivityAccessor.h

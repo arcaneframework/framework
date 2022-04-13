@@ -382,6 +382,9 @@ class IMesh : public IMeshBase
   //! Interface du réseau de familles (familles connectées)
   virtual IItemFamilyNetwork* itemFamilyNetwork() =0;
 
+  //! Interface du gestionnaire des connectivités incrémentales indexées.
+  virtual IIndexedIncrementalItemConnectivityMng* indexedConnectivityMng() =0;
+
  public:
 
   //! \internal
