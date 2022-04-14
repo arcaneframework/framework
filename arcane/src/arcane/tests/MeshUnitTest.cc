@@ -43,6 +43,9 @@
 #include "arcane/ServiceBuilder.h"
 #include "arcane/IParallelReplication.h"
 #include "arcane/IndexedItemConnectivityView.h"
+#include "arcane/IIndexedIncrementalItemConnectivityMng.h"
+#include "arcane/IIndexedIncrementalItemConnectivity.h"
+#include "arcane/IIncrementalItemConnectivity.h"
 
 #include "arcane/ServiceFinder2.h"
 #include "arcane/SerializeBuffer.h"
@@ -69,8 +72,6 @@
 #include "arcane/IXmlDocumentHolder.h"
 #include "arcane/IIOMng.h"
 #include "arcane/MeshReaderMng.h"
-
-#include "arcane/mesh/IncrementalItemConnectivity.h"
 
 #include <set>
 
@@ -1208,7 +1209,8 @@ _testAdditionnalConnectivity()
   IItemFamily* face_family = mesh()->faceFamily();
   CellGroup cells = cell_family->allItems();
   // NOTE: l'objet est automatiquement détruit par le maillage
-  auto* cn = new mesh::IncrementalItemConnectivity(cell_family,face_family,"CellNoBoundaryFace");
+  auto* idx_cn = mesh()->indexedConnectivityMng()->findOrCreateConnectivity(cell_family,face_family,"CellNoBoundaryFace");
+  auto* cn = idx_cn->connectivity();
   ENUMERATE_CELL(icell,cells){
     Cell cell = *icell;
     Integer nb_face = cell.nbFace();
@@ -1220,7 +1222,7 @@ _testAdditionnalConnectivity()
     }
   }
 
-  IndexedCellFaceConnectivityView cn_view(cn->connectivityView());
+  IndexedCellFaceConnectivityView cn_view(idx_cn->connectivityView());
   Int64 total_face_lid = 0;
   ENUMERATE_(Cell,icell,cells){
     for( FaceLocalId face : cn_view.faces(icell) )
