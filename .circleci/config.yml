@@ -471,7 +471,7 @@ jobs:
           name: Test
           # Avril 2022: Supprime le test 'utils' car sur circle-ci il plante à cause du fait qu'on ne peut
           # pas positionner les exceptions flottantes.
-          command: ctest --test-dir << pipeline.parameters.ARCANE_BUILD_DIR >> << pipeline.parameters.CT_OPTS >> -E '^.*_4mpithread$' -E utils
+          command: ctest --test-dir << pipeline.parameters.ARCANE_BUILD_DIR >> << pipeline.parameters.CT_OPTS >> -E '^utils1$|^.*_4mpithread$'
 
   aio-build-and-test:
     executor: large-executor-empty
