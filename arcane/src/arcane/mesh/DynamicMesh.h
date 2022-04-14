@@ -33,6 +33,7 @@
 #include "arcane/mesh/NewWithLegacyConnectivity.h"
 
 #include <functional>
+#include <memory>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -482,7 +483,7 @@ public:
 
   bool useMeshItemFamilyDependencies() const override  {return m_use_mesh_item_family_dependencies; }
   IItemFamilyNetwork* itemFamilyNetwork() override {return m_item_family_network;}
-  IIndexedIncrementalItemConnectivityMng* indexedConnectivityMng() override { return nullptr; }
+  IIndexedIncrementalItemConnectivityMng* indexedConnectivityMng() override { return m_indexed_connectivity_mng.get(); }
 
  public:
 
@@ -542,6 +543,7 @@ public:
   bool m_use_mesh_item_family_dependencies  = false ;
   IItemFamilyNetwork* m_item_family_network = nullptr;
   ItemTypeMng* m_item_type_mng = nullptr;
+  std::unique_ptr<IIndexedIncrementalItemConnectivityMng> m_indexed_connectivity_mng;
 
  private:
 

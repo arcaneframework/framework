@@ -33,6 +33,8 @@ set( ARCANE_SOURCES
   ExtraGhostParticlesBuilder.h
   ExtraGhostItemsManager.cc
   ExtraGhostItemsManager.h
+  IndexedIncrementalItemConnectivityMng.h
+  IndexedIncrementalItemConnectivityMng.cc
   ItemConnectivityInfo.cc
   ItemConnectivityInfo.h
   ItemConnectivitySelector.cc

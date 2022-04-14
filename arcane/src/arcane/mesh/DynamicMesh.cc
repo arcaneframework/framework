@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMesh.cc                                              (C) 2000-2021 */
+/* DynamicMesh.cc                                              (C) 2000-2022 */
 /*                                                                           */
 /* Classe de gestion d'un maillage non structuré évolutif.                   */
 /*---------------------------------------------------------------------------*/
@@ -74,7 +74,7 @@
 #include "arcane/mesh/ItemFamilyNetwork.h"
 #include "arcane/mesh/IncrementalItemConnectivity.h"
 #include "arcane/mesh/MeshExchanger.h"
-
+#include "arcane/mesh/IndexedIncrementalItemConnectivityMng.h"
 #include "arcane/mesh/NodeFamily.h"
 #include "arcane/mesh/EdgeFamily.h"
 #include "arcane/mesh/FaceFamily.h"
@@ -186,6 +186,7 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh, bo
 , m_connectivity_policy(InternalConnectivityPolicy::NewOnly)
 , m_mesh_part_info(makeMeshPartInfoFromParallelMng(m_parallel_mng))
 , m_item_type_mng(ItemTypeMng::_singleton())
+, m_indexed_connectivity_mng(new IndexedIncrementalItemConnectivityMng(m_parallel_mng->traceMng()))
 {
   m_node_family = new NodeFamily(this,"Node");
   m_edge_family = new EdgeFamily(this,"Edge");
@@ -266,6 +267,7 @@ DynamicMesh::
   if (m_extra_ghost_particles_builder->hasBuilder())
     info() << "WARNING: pending ExtraGhostParticlesBuilder reference";
 
+  m_indexed_connectivity_mng = nullptr;
   delete m_mesh_compact_mng;
   delete m_mesh_exchange_mng;
   delete m_extra_ghost_cells_builder;
