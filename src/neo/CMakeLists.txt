@@ -37,7 +37,11 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     target_compile_options(Neo PRIVATE -EHsc) # need to activate exception on clang-cl from Visual...?
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     # using GCC
-    target_compile_options(Neo PRIVATE -Wall -Wextra -Wpedantic -pedantic -Wconversion -pedantic-errors)
+    if (NO_PEDANTIC_ERRORS)
+        target_compile_options(Neo PRIVATE -Wall -Wextra -Wpedantic -pedantic -Wconversion)
+    else()
+        target_compile_options(Neo PRIVATE -Wall -Wextra -Wpedantic -pedantic -Wconversion -pedantic-errors)
+    endif()
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
     # using Intel C++ (not tested)
     target_compile_options(Neo PRIVATE)
