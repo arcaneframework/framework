@@ -72,6 +72,7 @@
 #include "arcane/IXmlDocumentHolder.h"
 #include "arcane/IIOMng.h"
 #include "arcane/MeshReaderMng.h"
+#include "arcane/UnstructuredMeshConnectivity.h"
 
 #include <set>
 
@@ -196,6 +197,7 @@ public:
   void _testAdditionnalConnectivity();
   void _testShrinkGroups();
   void _testDeallocateMesh();
+  void _testUnstructuredConnectivities();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -1202,6 +1204,8 @@ void MeshUnitTest::
 _testAdditionnalConnectivity()
 {
   info() << A_FUNCINFO;
+  ValueChecker vc(A_FUNCINFO);
+
   // Créé une connectivité maille->face contenant pour chaque mailles la liste
   // des faces n'étant pas à la frontière: il s'agit donc des faces qui ont
   // deux mailles connectées.
@@ -1227,8 +1231,88 @@ _testAdditionnalConnectivity()
   ENUMERATE_(Cell,icell,cells){
     for( FaceLocalId face : cn_view.faces(icell) )
       total_face_lid += face.localId();
+    // Vérifie la cohérence entre les méthodes
+    Span<const FaceLocalId> f1 = cn_view.faces(icell).ids();
+    Span<const FaceLocalId> f2 = cn_view.faceIds(icell).ids();
+    vc.areEqualArray(f1,f2,"SameArray");
+    Int32 n = cn_view.nbFace(icell);
+    vc.areEqual(n,cn_view.faceIds(icell).size(),"SameSize");
+    for( Int32 i=0; i<n; ++i )
+      vc.areEqual(cn_view.faceId(icell,i),cn_view.faces(icell)[i],"SameItem");
   }
   info() << "TOTAL_NB_FACE = " << total_face_lid;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshUnitTest::
+_testUnstructuredConnectivities()
+{
+  ValueChecker vc(A_FUNCINFO);
+
+  UnstructuredMeshConnectivityView connectivity_view;
+  connectivity_view.setMesh(this->mesh());
+
+  {
+    // Teste Cell->Face
+    IndexedCellFaceConnectivityView icv(connectivity_view.cellFace());
+    ENUMERATE_(Cell,icell,allCells()){
+      // Vérifie la cohérence entre les méthodes
+      Span<const FaceLocalId> f1 = icv.faces(icell).ids();
+      Span<const FaceLocalId> f2 = icv.faceIds(icell).ids();
+      vc.areEqualArray(f1,f2,"SameFaceArray");
+      Int32 n = icv.nbFace(icell);
+      vc.areEqual(n,icv.faceIds(icell).size(),"SameFaceSize");
+      for( Int32 i=0; i<n; ++i )
+        vc.areEqual(icv.faceId(icell,i),icv.faces(icell)[i],"SameFaceItem");
+    }
+  }
+
+  {
+    // Teste Cell->Node
+    IndexedCellNodeConnectivityView icv(connectivity_view.cellNode());
+    ENUMERATE_(Cell,icell,allCells()){
+      // Vérifie la cohérence entre les méthodes
+      Span<const NodeLocalId> f1 = icv.nodes(icell).ids();
+      Span<const NodeLocalId> f2 = icv.nodeIds(icell).ids();
+      vc.areEqualArray(f1,f2,"SameNodeArray");
+      Int32 n = icv.nbNode(icell);
+      vc.areEqual(n,icv.nodeIds(icell).size(),"SameNodeSize");
+      for( Int32 i=0; i<n; ++i )
+        vc.areEqual(icv.nodeId(icell,i),icv.nodes(icell)[i],"SameNodeItem");
+    }
+  }
+
+  {
+    // Teste Cell->Edge
+    IndexedCellEdgeConnectivityView icv(connectivity_view.cellEdge());
+    ENUMERATE_(Cell,icell,allCells()){
+      // Vérifie la cohérence entre les méthodes
+      Span<const EdgeLocalId> f1 = icv.edges(icell).ids();
+      Span<const EdgeLocalId> f2 = icv.edgeIds(icell).ids();
+      vc.areEqualArray(f1,f2,"SameEdgeArray");
+      Int32 n = icv.nbEdge(icell);
+      vc.areEqual(n,icv.edgeIds(icell).size(),"SameEdgeSize");
+      for( Int32 i=0; i<n; ++i )
+        vc.areEqual(icv.edgeId(icell,i),icv.edges(icell)[i],"SameEdgeItem");
+    }
+  }
+
+  {
+    // Teste Node->Cell
+    IndexedNodeCellConnectivityView icv(connectivity_view.nodeCell());
+    ENUMERATE_(Node,inode,allNodes()){
+      // Vérifie la cohérence entre les méthodes
+      Span<const CellLocalId> f1 = icv.cells(inode).ids();
+      Span<const CellLocalId> f2 = icv.cellIds(inode).ids();
+      vc.areEqualArray(f1,f2,"SameCellArray");
+      Int32 n = icv.nbCell(inode);
+      vc.areEqual(n,icv.cellIds(inode).size(),"SameCellSize");
+      for( Int32 i=0; i<n; ++i )
+        vc.areEqual(icv.cellId(inode,i),icv.cells(inode)[i],"SameCellItem");
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
