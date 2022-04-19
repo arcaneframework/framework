@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/TraceAccessor.h"
+#include "arcane/utils/Ref.h"
 #include "arcane/IIndexedIncrementalItemConnectivityMng.h"
 
 #include <map>
@@ -40,13 +41,13 @@ class ARCANE_MESH_EXPORT IndexedIncrementalItemConnectivityMng
 
  public:
 
-  IIndexedIncrementalItemConnectivity*
+  Ref<IIndexedIncrementalItemConnectivity>
   findOrCreateConnectivity(IItemFamily* source, IItemFamily* target, const String& name) override;
-  IIndexedIncrementalItemConnectivity* findConnectivity(const String& name);
+  Ref<IIndexedIncrementalItemConnectivity> findConnectivity(const String& name) override;
 
  private:
 
-  using ConnectivityMapType = std::map<String, IIndexedIncrementalItemConnectivity*>;
+  using ConnectivityMapType = std::map<String, Ref<IIndexedIncrementalItemConnectivity>>;
 
   ConnectivityMapType m_connectivity_map;
 };

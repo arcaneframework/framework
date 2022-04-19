@@ -1213,7 +1213,7 @@ _testAdditionnalConnectivity()
   IItemFamily* face_family = mesh()->faceFamily();
   CellGroup cells = cell_family->allItems();
   // NOTE: l'objet est automatiquement détruit par le maillage
-  auto* idx_cn = mesh()->indexedConnectivityMng()->findOrCreateConnectivity(cell_family,face_family,"CellNoBoundaryFace");
+  auto idx_cn = mesh()->indexedConnectivityMng()->findOrCreateConnectivity(cell_family,face_family,"CellNoBoundaryFace");
   auto* cn = idx_cn->connectivity();
   ENUMERATE_CELL(icell,cells){
     Cell cell = *icell;

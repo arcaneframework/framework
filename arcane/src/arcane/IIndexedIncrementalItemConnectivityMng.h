@@ -42,7 +42,7 @@ class ARCANE_CORE_EXPORT IIndexedIncrementalItemConnectivityMng
    * pas avec le même couple (source,target).
    * L'instance reste propriétaire de la connectivité retournée.
    */
-  virtual IIndexedIncrementalItemConnectivity*
+  virtual Ref<IIndexedIncrementalItemConnectivity>
   findOrCreateConnectivity(IItemFamily* source, IItemFamily* target, const String& name) = 0;
 
   /*!
@@ -51,7 +51,7 @@ class ARCANE_CORE_EXPORT IIndexedIncrementalItemConnectivityMng
    * Lève une exception si la connectivité de nom \a name n'est pas trouvée.
    * L'instance reste propriétaire de la connectivité retournée.
    */
-  virtual IIndexedIncrementalItemConnectivity*
+  virtual Ref<IIndexedIncrementalItemConnectivity>
   findConnectivity(const String& name) = 0;
 };
 

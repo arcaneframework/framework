@@ -20,7 +20,6 @@
 #include "arcane/ItemVector.h"
 #include "arcane/VariableTypes.h"
 #include "arcane/IIncrementalItemConnectivity.h"
-#include "arcane/IIndexedIncrementalItemConnectivity.h"
 
 #include "arcane/mesh/MeshGlobal.h"
 
@@ -59,9 +58,9 @@ class ARCANE_MESH_EXPORT AbstractIncrementalItemConnectivity
 
  public:
 
-  virtual ConstArrayView<IItemFamily*> families() const { return m_families.constView();}
-  virtual IItemFamily* sourceFamily() const { return m_source_family;}
-  virtual IItemFamily* targetFamily() const { return m_target_family;}
+  ConstArrayView<IItemFamily*> families() const override { return m_families.constView();}
+  IItemFamily* sourceFamily() const override { return m_source_family;}
+  IItemFamily* targetFamily() const override { return m_target_family;}
 
  protected:
 
@@ -84,7 +83,6 @@ class ARCANE_MESH_EXPORT AbstractIncrementalItemConnectivity
  */
 class ARCANE_MESH_EXPORT IncrementalItemConnectivityBase
 : public AbstractIncrementalItemConnectivity
-, public IIndexedIncrementalItemConnectivity
 {
  public:
 
@@ -110,8 +108,7 @@ class ARCANE_MESH_EXPORT IncrementalItemConnectivityBase
     return m_connectivity_list[ m_connectivity_index[lid] + index ];
   }
 
-  IIncrementalItemConnectivity* connectivity() final { return this; }
-  IndexedItemConnectivityViewBase connectivityView() const final;
+  IndexedItemConnectivityViewBase connectivityView() const;
   IndexedItemConnectivityAccessor connectivityAccessor() const;
 
  public:

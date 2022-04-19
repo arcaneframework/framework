@@ -12,6 +12,9 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/mesh/IndexedIncrementalItemConnectivityMng.h"
+
+#include "arcane/IndexedItemConnectivityView.h"
+#include "arcane/IIndexedIncrementalItemConnectivity.h"
 #include "arcane/mesh/IncrementalItemConnectivity.h"
 
 /*---------------------------------------------------------------------------*/
@@ -23,18 +26,43 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class IndexedIncrementalItemConnectivity
+: public IIndexedIncrementalItemConnectivity
+{
+ public:
+  explicit IndexedIncrementalItemConnectivity(IncrementalItemConnectivity* x)
+  : m_true_connectivity(x){}
+ public:
+  IIncrementalItemConnectivity* connectivity() override
+  {
+    return m_true_connectivity;
+  }
+  IndexedItemConnectivityViewBase connectivityView() const override
+  {
+    return m_true_connectivity->connectivityView();
+  }
+ public:
+  IncrementalItemConnectivity* m_true_connectivity;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 IndexedIncrementalItemConnectivityMng::
 IndexedIncrementalItemConnectivityMng(ITraceMng* tm)
 : TraceAccessor(tm)
 {
 }
 
-IIndexedIncrementalItemConnectivity* IndexedIncrementalItemConnectivityMng::
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<IIndexedIncrementalItemConnectivity> IndexedIncrementalItemConnectivityMng::
 findOrCreateConnectivity(IItemFamily* source, IItemFamily* target, const String& name)
 {
   ARCANE_CHECK_POINTER(source);
   ARCANE_CHECK_POINTER(target);
-  IIndexedIncrementalItemConnectivity* connectivity = nullptr;
+  Ref<IIndexedIncrementalItemConnectivity> connectivity;
   auto x = m_connectivity_map.find(name);
   if (x != m_connectivity_map.end()) {
     connectivity = x->second;
@@ -52,7 +80,8 @@ findOrCreateConnectivity(IItemFamily* source, IItemFamily* target, const String&
   }
   else {
     // Les connectivités créés sont désallouées automatiquement par les familles
-    connectivity = new mesh::IncrementalItemConnectivity(source, target, name);
+    auto* true_connectivity = new mesh::IncrementalItemConnectivity(source, target, name);
+    connectivity = makeRef<IIndexedIncrementalItemConnectivity>(new IndexedIncrementalItemConnectivity(true_connectivity));
     m_connectivity_map.insert(std::make_pair(name, connectivity));
   }
   return connectivity;
@@ -61,7 +90,7 @@ findOrCreateConnectivity(IItemFamily* source, IItemFamily* target, const String&
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IIndexedIncrementalItemConnectivity* IndexedIncrementalItemConnectivityMng::
+Ref<IIndexedIncrementalItemConnectivity> IndexedIncrementalItemConnectivityMng::
 findConnectivity(const String& name)
 {
   auto x = m_connectivity_map.find(name);
