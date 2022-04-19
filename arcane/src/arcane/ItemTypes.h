@@ -68,10 +68,20 @@ class ItemVector;
 template<typename T> class ItemVectorT;
 
 template <typename ItemType>
-class ItemLocalIdView;
+class ItemLocalIdViewT;
+
+// (Avril 2022) Fait un typedef de 'ItemLocalIdViewT' vers 'ItemLocalIdView'
+// pour compatibilité avec l'existant. A supprimer dès que possible.
+template <typename ItemType>
+using ItemLocalIdView ARCANE_DEPRECATED_REASON("Use 'ItemLocalIdViewT' instead") = ItemLocalIdViewT<ItemType>;
 
 template<typename ItemType1,typename ItemType2>
-class IndexedItemConnectivityView;
+class IndexedItemConnectivityViewT;
+
+// (Avril 2022) Fait un typedef de 'IndexedItemConnectivityView' vers 'IndexedItemConnectivityViewT'
+// pour compatibilité avec l'existant. A supprimer dès que possible.
+template<typename ItemType1,typename ItemType2>
+using IndexedItemConnectivityView ARCANE_DEPRECATED_REASON("Use 'IndexedItemConnectivityViewT' instead") = IndexedItemConnectivityViewT<ItemType1,ItemType2>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -254,6 +264,38 @@ typedef List<CellGroup> CellGroupList;
 typedef List<ParticleGroup> ParticleGroupList;
 /*! \brief Tableau de groupes de degre de liberte. */
 typedef List<DoFGroup> DoFGroupList;
+
+/*!
+ * \ingroup Mesh
+ * \brief Vue sur les localId() d'une liste de noeuds.
+ */
+typedef ItemLocalIdViewT<Node> NodeLocalIdView;
+/*!
+ * \ingroup Mesh
+ * \brief Vue sur les localId() d'une liste d'arêtes.
+ */
+typedef ItemLocalIdViewT<Edge> EdgeLocalIdView;
+/*!
+ * \ingroup Mesh
+ * \brief Vue sur les localId() d'une liste de faces.
+ */
+typedef ItemLocalIdViewT<Face> FaceLocalIdView;
+/*!
+ * \ingroup Mesh
+ * \brief Vue sur les localId() d'une liste de mailles.
+ */
+typedef ItemLocalIdViewT<Cell> CellLocalIdView;
+/*!
+ * \ingroup Mesh
+ * \brief Vue sur les localId() d'une liste de particules.
+ */
+typedef ItemLocalIdViewT<Particle> ParticleLocalIdView;
+
+/*!
+ * \ingroup Mesh
+ * \brief Vue sur les localId() d'une liste de DoF.
+ */
+typedef ItemLocalIdViewT<DoF> DoFLocalIdView;
 
 /*! \brief Type de la liste interne des entités
   
