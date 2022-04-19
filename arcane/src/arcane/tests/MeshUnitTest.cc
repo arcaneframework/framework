@@ -1258,10 +1258,13 @@ _testUnstructuredConnectivities()
     // Teste Cell->Face
     IndexedCellFaceConnectivityView icv(connectivity_view.cellFace());
     ENUMERATE_(Cell,icell,allCells()){
+      Cell cell = *icell;
       // Vérifie la cohérence entre les méthodes
       Span<const FaceLocalId> f1 = icv.faces(icell).ids();
       Span<const FaceLocalId> f2 = icv.faceIds(icell).ids();
-      vc.areEqualArray(f1,f2,"SameFaceArray");
+      Span<const FaceLocalId> f3 = cell.faceIds().ids();
+      vc.areEqualArray(f1,f2,"SameFaceArray1");
+      vc.areEqualArray(f1,f3,"SameFaceArray2");
       Int32 n = icv.nbFace(icell);
       vc.areEqual(n,icv.faceIds(icell).size(),"SameFaceSize");
       for( Int32 i=0; i<n; ++i )
