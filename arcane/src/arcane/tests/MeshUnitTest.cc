@@ -1276,10 +1276,13 @@ _testUnstructuredConnectivities()
     // Teste Cell->Node
     IndexedCellNodeConnectivityView icv(connectivity_view.cellNode());
     ENUMERATE_(Cell,icell,allCells()){
+      Cell cell = *icell;
       // Vérifie la cohérence entre les méthodes
       Span<const NodeLocalId> f1 = icv.nodes(icell).ids();
       Span<const NodeLocalId> f2 = icv.nodeIds(icell).ids();
-      vc.areEqualArray(f1,f2,"SameNodeArray");
+      Span<const NodeLocalId> f3 = cell.nodeIds().ids();
+      vc.areEqualArray(f1,f2,"SameNodeArray1");
+      vc.areEqualArray(f1,f3,"SameNodeArray2");
       Int32 n = icv.nbNode(icell);
       vc.areEqual(n,icv.nodeIds(icell).size(),"SameNodeSize");
       for( Int32 i=0; i<n; ++i )
@@ -1291,10 +1294,13 @@ _testUnstructuredConnectivities()
     // Teste Cell->Edge
     IndexedCellEdgeConnectivityView icv(connectivity_view.cellEdge());
     ENUMERATE_(Cell,icell,allCells()){
+      Cell cell = *icell;
       // Vérifie la cohérence entre les méthodes
       Span<const EdgeLocalId> f1 = icv.edges(icell).ids();
       Span<const EdgeLocalId> f2 = icv.edgeIds(icell).ids();
-      vc.areEqualArray(f1,f2,"SameEdgeArray");
+      Span<const EdgeLocalId> f3 = cell.edgeIds().ids();
+      vc.areEqualArray(f1,f2,"SameEdgeArray1");
+      vc.areEqualArray(f1,f3,"SameEdgeArray2");
       Int32 n = icv.nbEdge(icell);
       vc.areEqual(n,icv.edgeIds(icell).size(),"SameEdgeSize");
       for( Int32 i=0; i<n; ++i )
@@ -1306,10 +1312,13 @@ _testUnstructuredConnectivities()
     // Teste Node->Cell
     IndexedNodeCellConnectivityView icv(connectivity_view.nodeCell());
     ENUMERATE_(Node,inode,allNodes()){
+      Node node = *inode;
       // Vérifie la cohérence entre les méthodes
       Span<const CellLocalId> f1 = icv.cells(inode).ids();
       Span<const CellLocalId> f2 = icv.cellIds(inode).ids();
-      vc.areEqualArray(f1,f2,"SameCellArray");
+      Span<const CellLocalId> f3 = node.cellIds().ids();
+      vc.areEqualArray(f1,f2,"SameCellArray1");
+      vc.areEqualArray(f1,f3,"SameCellArray2");
       Int32 n = icv.nbCell(inode);
       vc.areEqual(n,icv.cellIds(inode).size(),"SameCellSize");
       for( Int32 i=0; i<n; ++i )

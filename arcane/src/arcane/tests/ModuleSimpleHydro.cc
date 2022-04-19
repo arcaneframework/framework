@@ -531,13 +531,10 @@ applyBoundaryCondition()
     TypesSimpleHydro::eBoundaryCondition type = options()->boundaryCondition[i].type.value();
 
     // boucle sur les faces de la surface
-    ENUMERATE_(Face,j,face_group){
-      Face face = *j;
-      Integer nb_node = face.nbNode();
-
+    ENUMERATE_(Face,iface,face_group){
+      Face face = *iface;
       // boucle sur les noeuds de la face
-      for( Integer k=0; k<nb_node; ++k ){
-        Node node = face.node(k);
+      for( NodeLocalId node : face.nodeIds() ){
         switch(type) {
         case TypesSimpleHydro::VelocityX: m_velocity[node].x = value; break;
         case TypesSimpleHydro::VelocityY: m_velocity[node].y = value; break;
