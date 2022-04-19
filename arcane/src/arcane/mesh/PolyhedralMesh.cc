@@ -59,8 +59,6 @@ namespace mesh
       case (IK_DoF):
         return Neo::ItemKind::IK_Dof;
       case (IK_Unknown):
-      case (IK_DualNode):
-      case (IK_Link):
       case (IK_Particle):
         return Neo::ItemKind::IK_None;
       }
