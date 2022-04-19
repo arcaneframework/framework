@@ -143,6 +143,12 @@ class ItemLocalIdView
   constexpr ARCCORE_HOST_DEVICE const_iterator end() const { return m_ids.end(); }
  public:
   constexpr ARCCORE_HOST_DEVICE const LocalIdType* data() const { return m_ids.data(); }
+ public:
+  static constexpr ARCCORE_HOST_DEVICE ItemLocalIdView<ItemType>
+  fromIds(SmallSpan<const Int32> v)
+  {
+    return ItemLocalIdView<ItemType>(reinterpret_cast<const LocalIdType*>(v.data()),v.size());
+  }
  private:
   SpanType m_ids;
 };

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Item.h                                                      (C) 2000-2020 */
+/* Item.h                                                      (C) 2000-2022 */
 /*                                                                           */
 /* Informations sur les éléments du maillage.                                */
 /*---------------------------------------------------------------------------*/
@@ -521,16 +521,28 @@ class ARCANE_CORE_EXPORT ItemWithNodes
   Integer nbNode() const { return m_internal->nbNode(); }
 
   //! i-ème noeud de l'élément
-  inline Node node(Integer i) const
+  inline Node node(Int32 i) const
   {
     // TODO: vérifier débordement.
     return Node(m_internal->internalNode(i));
   }
 
-  //! Enumére les noeuds connectées à l'entité
+  //! Liste des noeuds connectées à l'entité
   inline NodeVectorView nodes() const
   {
     return m_internal->internalNodes();
+  }
+
+  //! Liste des noeuds connectées à l'entité
+  inline ItemLocalIdView<Node> nodeIds() const
+  {
+    return ItemLocalIdView<Node>::fromIds(m_internal->nodeIds());
+  }
+
+  //! i-ème noeud connecté à l'entité.
+  inline NodeLocalId nodeId(Int32 index) const
+  {
+    return NodeLocalId(m_internal->nodeId(index));
   }
 
   ItemWithNodes* operator->() { return this; }
@@ -885,6 +897,18 @@ class ARCANE_CORE_EXPORT Cell
   //! Enumére les faces connectées à la maille
   inline FaceVectorView faces() const
   { return m_internal->internalFaces(); }
+
+  //! Liste des faces connectées à la maille
+  inline ItemLocalIdView<Face> faceIds() const
+  {
+    return ItemLocalIdView<Face>::fromIds(m_internal->faceIds());
+  }
+
+  //! i-ème face connectée à la maille
+  inline FaceLocalId faceId(Int32 index) const
+  {
+    return FaceLocalId(m_internal->faceId(index));
+  }
 
   //! Enumére les arêtes connectées à la maille
   inline EdgeVectorView edges() const
