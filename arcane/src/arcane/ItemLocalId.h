@@ -118,13 +118,27 @@ class ARCANE_CORE_EXPORT ParticleLocalId
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \ingroup Mesh
+ * \brief Index d'un 'DoF' dans une variable.
+ */
+class ARCANE_CORE_EXPORT DoFLocalId
+: public ItemLocalId
+{
+ public:
+  constexpr ARCCORE_HOST_DEVICE explicit DoFLocalId(Int32 id) : ItemLocalId(id){}
+  inline DoFLocalId(DoF item);
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \brief Vue typée sur une liste d'entités d'une connectivité.
  */
 template <typename ItemType>
 class ItemLocalIdView
 {
  public:
-  using LocalIdType = typename ItemType::LocalIdType;
+  using LocalIdType = typename ItemLocalIdTraitsT<ItemType>::LocalIdType;
   using SpanType = SmallSpan<const LocalIdType>;
   using iterator = typename SpanType::iterator;
   using const_iterator = typename SpanType::const_iterator;
