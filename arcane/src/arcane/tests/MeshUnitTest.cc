@@ -1226,7 +1226,7 @@ _testAdditionnalConnectivity()
     }
   }
 
-  IndexedCellFaceConnectivityView cn_view(idx_cn->connectivityView());
+  IndexedCellFaceConnectivityView cn_view(idx_cn->view());
   Int64 total_face_lid = 0;
   ENUMERATE_(Cell,icell,cells){
     for( FaceLocalId face : cn_view.faces(icell) )

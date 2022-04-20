@@ -45,7 +45,7 @@ class ARCANE_CORE_EXPORT IIndexedIncrementalItemConnectivity
   virtual IIncrementalItemConnectivity* connectivity() =0;
 
   //! Vue sur la connectivité.
-  virtual IndexedItemConnectivityViewBase connectivityView() const = 0;
+  virtual IndexedItemConnectivityViewBase view() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/

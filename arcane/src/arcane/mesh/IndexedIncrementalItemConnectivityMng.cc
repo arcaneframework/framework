@@ -37,7 +37,7 @@ class IndexedIncrementalItemConnectivity
   {
     return m_true_connectivity;
   }
-  IndexedItemConnectivityViewBase connectivityView() const override
+  IndexedItemConnectivityViewBase view() const override
   {
     return m_true_connectivity->connectivityView();
   }
