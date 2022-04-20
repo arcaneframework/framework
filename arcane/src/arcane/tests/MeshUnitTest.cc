@@ -198,6 +198,7 @@ public:
   void _testShrinkGroups();
   void _testDeallocateMesh();
   void _testUnstructuredConnectivities();
+  void _testFaces();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -284,6 +285,7 @@ executeTest()
   _testCustomMeshTools();
   _testAdditionnalConnectivity();
   _testShrinkGroups();
+  _testFaces();
   if (options()->testDeallocateMesh())
     _testDeallocateMesh();
 }
@@ -1339,6 +1341,29 @@ _testShrinkGroups()
   mesh_utils::printMeshGroupsMemoryUsage(mesh(),1);
   Int64 total = mesh_utils::printMeshGroupsMemoryUsage(mesh(),0);
   info() << "TotalMemoryForGroups=" << total;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshUnitTest::
+_testFaces()
+{
+  info() << A_FUNCINFO;
+  ValueChecker vc(A_FUNCINFO);
+
+  ENUMERATE_(Face,iface,allFaces()){
+    Face face = *iface;
+    vc.areEqual(face.backCell().itemLocalId(),face.backCellId(),"BackCell");
+    vc.areEqual(face.frontCell().itemLocalId(),face.frontCellId(),"FrontCell");
+  }
+
+  ENUMERATE_(Cell,icell,allCells()){
+    Cell cell = *icell;
+    for( Face face : cell.faces() ){
+      vc.areEqual(face.oppositeCell(cell).itemLocalId(),face.oppositeCellId(cell),"OppositeCell");
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/

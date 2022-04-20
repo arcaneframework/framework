@@ -127,7 +127,7 @@ class ParticleFamilyTester
         Cell cell = *icell;
         for( FaceEnumerator iface(cell.faces()); iface.hasNext(); ++iface ){
           Face face = *iface;
-          Cell opposite_cell = (face.backCell()==cell) ? face.frontCell() : face.backCell();
+          Cell opposite_cell = face.oppositeCell(cell);
           if (opposite_cell.null())
             continue;
           if (opposite_cell.owner()!=comm_rank){

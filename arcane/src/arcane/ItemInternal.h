@@ -548,19 +548,33 @@ class ARCANE_CORE_EXPORT ItemInternal
   bool isBoundary() const { return (flags() & II_Boundary)!=0; }
   //! Maille connectée à l'entité si l'entité est une entité sur la frontière (0 si aucune)
   ItemInternal* boundaryCell() const { return (flags() & II_Boundary) ? internalCell(0) : nullItem(); }
-  //! Maille derrière l'entité (0 si aucune)
+  //! Maille derrière l'entité (nullItem() si aucune)
   ItemInternal* backCell() const
   {
     if (flags() & II_HasBackCell)
       return internalCell((flags() & II_BackCellIsFirst) ? 0 : 1);
     return nullItem();
   }
-  //! Maille devant l'entité (0 si aucune)
+  //! Maille derrière l'entité (NULL_ITEM_LOCAL_ID si aucune)
+  Int32 backCellId() const
+  {
+    if (flags() & II_HasBackCell)
+      return cellId((flags() & II_BackCellIsFirst) ? 0 : 1);
+    return NULL_ITEM_LOCAL_ID;
+  }
+  //! Maille devant l'entité (nullItem() si aucune)
   ItemInternal* frontCell() const
   {
     if (flags() & II_HasFrontCell)
       return internalCell((flags() & II_FrontCellIsFirst) ? 0 : 1);
     return nullItem();
+  }
+  //! Maille devant l'entité (NULL_ITEM_LOCAL_ID si aucune)
+  Int32 frontCellId() const
+  {
+    if (flags() & II_HasFrontCell)
+      return cellId((flags() & II_FrontCellIsFirst) ? 0 : 1);
+    return NULL_ITEM_LOCAL_ID;
   }
   ItemInternal* masterFace() const
   {
@@ -652,10 +666,10 @@ class ARCANE_CORE_EXPORT ItemInternal
   Int32 cellLocalId(Integer index) { return _connectivity()->_cellLocalIdV2(m_local_id,index); }
 
   //@{
-  Int32 nodeId(Integer index) { return _connectivity()->_nodeLocalIdV2(m_local_id,index); }
-  Int32 edgeId(Integer index) { return _connectivity()->_edgeLocalIdV2(m_local_id,index); }
-  Int32 faceId(Integer index) { return _connectivity()->_faceLocalIdV2(m_local_id,index); }
-  Int32 cellId(Integer index) { return _connectivity()->_cellLocalIdV2(m_local_id,index); }
+  Int32 nodeId(Integer index) const { return _connectivity()->_nodeLocalIdV2(m_local_id,index); }
+  Int32 edgeId(Integer index) const { return _connectivity()->_edgeLocalIdV2(m_local_id,index); }
+  Int32 faceId(Integer index) const { return _connectivity()->_faceLocalIdV2(m_local_id,index); }
+  Int32 cellId(Integer index) const { return _connectivity()->_cellLocalIdV2(m_local_id,index); }
   //@}
 
  public:

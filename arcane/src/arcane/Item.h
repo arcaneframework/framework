@@ -800,8 +800,32 @@ class ARCANE_CORE_EXPORT Face
   //! Maille derrière la face (maille nulle si aucune)
   inline Cell backCell() const;
 
+  //! Maille derrière la face (maille nulle si aucune)
+  CellLocalId backCellId() const { return CellLocalId{m_internal->backCellId()}; }
+
   //! Maille devant la face (maille nulle si aucune)
   inline Cell frontCell() const;
+
+  //! Maille devant la face (maille nulle si aucune)
+  CellLocalId frontCellId() const { return CellLocalId{m_internal->frontCellId()}; }
+
+  /*!
+   * \brief Maille opposée de cette face à la maille \a cell.
+   *
+   * \pre backCell()==cell || frontCell()==cell.
+   */
+  inline Cell oppositeCell(Cell cell) const;
+
+  /*!
+   * \brief Maille opposée de cette face à la maille \a cell.
+   *
+   * \pre backCell()==cell || frontCell()==cell.
+   */
+  CellLocalId oppositeCellId(CellLocalId cell_id) const
+  {
+    ARCANE_ASSERT((backCellId()==cell_id || frontCellId()==cell_id),("cell is not connected to the face"));
+    return (backCellId()==cell_id) ? frontCellId() : backCellId();
+  }
 
   /*!
    * \brief Face maître associée à cette face.
@@ -1228,6 +1252,13 @@ inline Cell Face::
 frontCell() const
 {
   return Cell(m_internal->frontCell());
+}
+
+inline Cell Face::
+oppositeCell(Cell cell) const
+{
+  ARCANE_ASSERT((backCell()==cell || frontCell()==cell),("cell is not connected to the face"));
+  return (backCell()==cell) ? frontCell() : backCell();
 }
 
 inline Cell Face::
