@@ -224,9 +224,8 @@ _doTest2(Integer iteration,bool allow_no_cell_particle)
     UniqueArray<Cell> boundary_cells;
     ENUMERATE_CELL(icell,ownCells()){
       Cell cell = *icell;
-      for( FaceEnumerator iface(cell.faces()); iface.hasNext(); ++iface ){
-        Face face = *iface;
-        Cell opposite_cell = (face.backCell()==cell) ? face.frontCell() : face.backCell();
+      for( Face face : cell.faces() ){
+        Cell opposite_cell = face.oppositeCell(cell);
         if (opposite_cell.null())
           continue;
         if (!is_parallel || opposite_cell.owner()!=comm_rank){
@@ -294,7 +293,7 @@ _doTest2(Integer iteration,bool allow_no_cell_particle)
           if (!cell.null()){
             Integer nb_face = cell.nbFace();
             Face face = cell.face(index%nb_face);
-            Cell opposite_cell = (face.backCell()==cell) ? face.frontCell() : face.backCell();
+            Cell opposite_cell = face.oppositeCell(cell);
             if (opposite_cell.null()){
               ++nb_particle_tracking_finished;
               continue;
@@ -453,7 +452,7 @@ computeExtraParticlesToSend()
       Cell cell = *icell;
       for( FaceEnumerator iface(cell.faces()); iface.hasNext(); ++iface ){
         Face face = *iface;
-        Cell opposite_cell = (face.backCell()==cell) ? face.frontCell() : face.backCell();
+        Cell opposite_cell = face.oppositeCell(cell);
         if (opposite_cell.null())
           continue;
         if (opposite_cell.owner()!=comm_rank){

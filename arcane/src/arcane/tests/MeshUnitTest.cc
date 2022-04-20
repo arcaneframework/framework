@@ -43,6 +43,9 @@
 #include "arcane/ServiceBuilder.h"
 #include "arcane/IParallelReplication.h"
 #include "arcane/IndexedItemConnectivityView.h"
+#include "arcane/IIndexedIncrementalItemConnectivityMng.h"
+#include "arcane/IIndexedIncrementalItemConnectivity.h"
+#include "arcane/IIncrementalItemConnectivity.h"
 
 #include "arcane/ServiceFinder2.h"
 #include "arcane/SerializeBuffer.h"
@@ -69,8 +72,7 @@
 #include "arcane/IXmlDocumentHolder.h"
 #include "arcane/IIOMng.h"
 #include "arcane/MeshReaderMng.h"
-
-#include "arcane/mesh/IncrementalItemConnectivity.h"
+#include "arcane/UnstructuredMeshConnectivity.h"
 
 #include <set>
 
@@ -195,6 +197,8 @@ public:
   void _testAdditionnalConnectivity();
   void _testShrinkGroups();
   void _testDeallocateMesh();
+  void _testUnstructuredConnectivities();
+  void _testFaces();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -281,6 +285,7 @@ executeTest()
   _testCustomMeshTools();
   _testAdditionnalConnectivity();
   _testShrinkGroups();
+  _testFaces();
   if (options()->testDeallocateMesh())
     _testDeallocateMesh();
 }
@@ -1201,6 +1206,8 @@ void MeshUnitTest::
 _testAdditionnalConnectivity()
 {
   info() << A_FUNCINFO;
+  ValueChecker vc(A_FUNCINFO);
+
   // Créé une connectivité maille->face contenant pour chaque mailles la liste
   // des faces n'étant pas à la frontière: il s'agit donc des faces qui ont
   // deux mailles connectées.
@@ -1208,7 +1215,8 @@ _testAdditionnalConnectivity()
   IItemFamily* face_family = mesh()->faceFamily();
   CellGroup cells = cell_family->allItems();
   // NOTE: l'objet est automatiquement détruit par le maillage
-  auto* cn = new mesh::IncrementalItemConnectivity(cell_family,face_family,"CellNoBoundaryFace");
+  auto idx_cn = mesh()->indexedConnectivityMng()->findOrCreateConnectivity(cell_family,face_family,"CellNoBoundaryFace");
+  auto* cn = idx_cn->connectivity();
   ENUMERATE_CELL(icell,cells){
     Cell cell = *icell;
     Integer nb_face = cell.nbFace();
@@ -1220,13 +1228,105 @@ _testAdditionnalConnectivity()
     }
   }
 
-  IndexedCellFaceConnectivityView cn_view(cn->connectivityView());
+  IndexedCellFaceConnectivityView cn_view(idx_cn->view());
   Int64 total_face_lid = 0;
   ENUMERATE_(Cell,icell,cells){
     for( FaceLocalId face : cn_view.faces(icell) )
       total_face_lid += face.localId();
+    // Vérifie la cohérence entre les méthodes
+    Span<const FaceLocalId> f1 = cn_view.faces(icell).ids();
+    Span<const FaceLocalId> f2 = cn_view.faceIds(icell).ids();
+    vc.areEqualArray(f1,f2,"SameArray");
+    Int32 n = cn_view.nbFace(icell);
+    vc.areEqual(n,cn_view.faceIds(icell).size(),"SameSize");
+    for( Int32 i=0; i<n; ++i )
+      vc.areEqual(cn_view.faceId(icell,i),cn_view.faces(icell)[i],"SameItem");
   }
   info() << "TOTAL_NB_FACE = " << total_face_lid;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshUnitTest::
+_testUnstructuredConnectivities()
+{
+  ValueChecker vc(A_FUNCINFO);
+
+  UnstructuredMeshConnectivityView connectivity_view;
+  connectivity_view.setMesh(this->mesh());
+
+  {
+    // Teste Cell->Face
+    IndexedCellFaceConnectivityView icv(connectivity_view.cellFace());
+    ENUMERATE_(Cell,icell,allCells()){
+      Cell cell = *icell;
+      // Vérifie la cohérence entre les méthodes
+      Span<const FaceLocalId> f1 = icv.faces(icell).ids();
+      Span<const FaceLocalId> f2 = icv.faceIds(icell).ids();
+      Span<const FaceLocalId> f3 = cell.faceIds().ids();
+      vc.areEqualArray(f1,f2,"SameFaceArray1");
+      vc.areEqualArray(f1,f3,"SameFaceArray2");
+      Int32 n = icv.nbFace(icell);
+      vc.areEqual(n,icv.faceIds(icell).size(),"SameFaceSize");
+      for( Int32 i=0; i<n; ++i )
+        vc.areEqual(icv.faceId(icell,i),icv.faces(icell)[i],"SameFaceItem");
+    }
+  }
+
+  {
+    // Teste Cell->Node
+    IndexedCellNodeConnectivityView icv(connectivity_view.cellNode());
+    ENUMERATE_(Cell,icell,allCells()){
+      Cell cell = *icell;
+      // Vérifie la cohérence entre les méthodes
+      Span<const NodeLocalId> f1 = icv.nodes(icell).ids();
+      Span<const NodeLocalId> f2 = icv.nodeIds(icell).ids();
+      Span<const NodeLocalId> f3 = cell.nodeIds().ids();
+      vc.areEqualArray(f1,f2,"SameNodeArray1");
+      vc.areEqualArray(f1,f3,"SameNodeArray2");
+      Int32 n = icv.nbNode(icell);
+      vc.areEqual(n,icv.nodeIds(icell).size(),"SameNodeSize");
+      for( Int32 i=0; i<n; ++i )
+        vc.areEqual(icv.nodeId(icell,i),icv.nodes(icell)[i],"SameNodeItem");
+    }
+  }
+
+  {
+    // Teste Cell->Edge
+    IndexedCellEdgeConnectivityView icv(connectivity_view.cellEdge());
+    ENUMERATE_(Cell,icell,allCells()){
+      Cell cell = *icell;
+      // Vérifie la cohérence entre les méthodes
+      Span<const EdgeLocalId> f1 = icv.edges(icell).ids();
+      Span<const EdgeLocalId> f2 = icv.edgeIds(icell).ids();
+      Span<const EdgeLocalId> f3 = cell.edgeIds().ids();
+      vc.areEqualArray(f1,f2,"SameEdgeArray1");
+      vc.areEqualArray(f1,f3,"SameEdgeArray2");
+      Int32 n = icv.nbEdge(icell);
+      vc.areEqual(n,icv.edgeIds(icell).size(),"SameEdgeSize");
+      for( Int32 i=0; i<n; ++i )
+        vc.areEqual(icv.edgeId(icell,i),icv.edges(icell)[i],"SameEdgeItem");
+    }
+  }
+
+  {
+    // Teste Node->Cell
+    IndexedNodeCellConnectivityView icv(connectivity_view.nodeCell());
+    ENUMERATE_(Node,inode,allNodes()){
+      Node node = *inode;
+      // Vérifie la cohérence entre les méthodes
+      Span<const CellLocalId> f1 = icv.cells(inode).ids();
+      Span<const CellLocalId> f2 = icv.cellIds(inode).ids();
+      Span<const CellLocalId> f3 = node.cellIds().ids();
+      vc.areEqualArray(f1,f2,"SameCellArray1");
+      vc.areEqualArray(f1,f3,"SameCellArray2");
+      Int32 n = icv.nbCell(inode);
+      vc.areEqual(n,icv.cellIds(inode).size(),"SameCellSize");
+      for( Int32 i=0; i<n; ++i )
+        vc.areEqual(icv.cellId(inode,i),icv.cells(inode)[i],"SameCellItem");
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1241,6 +1341,29 @@ _testShrinkGroups()
   mesh_utils::printMeshGroupsMemoryUsage(mesh(),1);
   Int64 total = mesh_utils::printMeshGroupsMemoryUsage(mesh(),0);
   info() << "TotalMemoryForGroups=" << total;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshUnitTest::
+_testFaces()
+{
+  info() << A_FUNCINFO;
+  ValueChecker vc(A_FUNCINFO);
+
+  ENUMERATE_(Face,iface,allFaces()){
+    Face face = *iface;
+    vc.areEqual(face.backCell().itemLocalId(),face.backCellId(),"BackCell");
+    vc.areEqual(face.frontCell().itemLocalId(),face.frontCellId(),"FrontCell");
+  }
+
+  ENUMERATE_(Cell,icell,allCells()){
+    Cell cell = *icell;
+    for( Face face : cell.faces() ){
+      vc.areEqual(face.oppositeCell(cell).itemLocalId(),face.oppositeCellId(cell),"OppositeCell");
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/

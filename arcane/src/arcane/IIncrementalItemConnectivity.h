@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IIncrementalItemConnectivity.h                              (C) 2000-2018 */
+/* IIncrementalItemConnectivity.h                              (C) 2000-2022 */
 /*                                                                           */
 /* Interface de connectivité incrémentale des entités.                       */
 /*---------------------------------------------------------------------------*/
@@ -22,7 +22,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -42,12 +43,12 @@ class ARCANE_CORE_EXPORT IIncrementalItemConnectivity
 {
  public:
 
-  virtual ~IIncrementalItemConnectivity(){}
+  virtual ~IIncrementalItemConnectivity() = default;
 
  public:
 
   //! Nom de la connectivité
-  virtual const String& name() const =0;
+  virtual String name() const =0;
 
   //! Liste des familles (sourceFamily() + targetFamily())
   virtual ConstArrayView<IItemFamily*> families() const =0;
@@ -103,7 +104,7 @@ class ARCANE_CORE_EXPORT IIncrementalItemConnectivity
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

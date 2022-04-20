@@ -106,6 +106,8 @@ class IMeshBuilder;
 class MeshHandle;
 class MeshBuildInfo;
 class IPrimaryMesh;
+class IIndexedIncrementalItemConnectivityMng;
+class IIndexedIncrementalItemConnectivity;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

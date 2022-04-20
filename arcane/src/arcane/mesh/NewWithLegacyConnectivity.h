@@ -61,7 +61,7 @@ public:
 
   typedef ItemConnectivitySelectorT<LegacyType,CustomType> Base;
 
-  const String& name() const override {return Base::trueCustomConnectivity()->name();}
+  String name() const override {return Base::trueCustomConnectivity()->name();}
 
   bool isEmpty() const {
     return false ;

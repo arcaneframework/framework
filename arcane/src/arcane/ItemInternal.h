@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemInternal.h                                              (C) 2000-2020 */
+/* ItemInternal.h                                              (C) 2000-2022 */
 /*                                                                           */
 /* Partie interne d'une entité.                                              */
 /*---------------------------------------------------------------------------*/
@@ -214,6 +214,7 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   { return m_items->cells[ _hParentLocalIdV2(lid,aindex) ]; }
   ItemInternal* hChildV2(Int32 lid,Int32 aindex) const
   { return m_items->cells[ _hChildLocalIdV2(lid,aindex) ]; }
+
   ItemInternalVectorView nodesV2(Int32 lid) const
   { return ItemInternalVectorView(m_items->nodes,_nodeLocalIdsV2(lid),_nbNodeV2(lid)); }
   ItemInternalVectorView edgesV2(Int32 lid) const
@@ -223,7 +224,17 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   ItemInternalVectorView cellsV2(Int32 lid) const
   { return ItemInternalVectorView(m_items->cells,_cellLocalIdsV2(lid),_nbCellV2(lid)); }
 
+  Int32ConstArrayView nodeLocalIdsV2(Int32 lid) const
+  { return Int32ConstArrayView(_nbNodeV2(lid),_nodeLocalIdsV2(lid)); }
+  Int32ConstArrayView edgeLocalIdsV2(Int32 lid) const
+  { return Int32ConstArrayView(_nbEdgeV2(lid), _edgeLocalIdsV2(lid)); }
+  Int32ConstArrayView faceLocalIdsV2(Int32 lid) const
+  { return Int32ConstArrayView(_nbFaceV2(lid), _faceLocalIdsV2(lid)); }
+  Int32ConstArrayView cellLocalIdsV2(Int32 lid) const
+  { return Int32ConstArrayView(_nbCellV2(lid),_cellLocalIdsV2(lid)); }
+
  public:
+
   const Int32* _nodeLocalIdsV2(Int32 lid) const
   { return itemLocalIds(ItemInternalConnectivityList::NODE_IDX,lid); }
   const Int32* _edgeLocalIdsV2(Int32 lid) const
@@ -537,19 +548,33 @@ class ARCANE_CORE_EXPORT ItemInternal
   bool isBoundary() const { return (flags() & II_Boundary)!=0; }
   //! Maille connectée à l'entité si l'entité est une entité sur la frontière (0 si aucune)
   ItemInternal* boundaryCell() const { return (flags() & II_Boundary) ? internalCell(0) : nullItem(); }
-  //! Maille derrière l'entité (0 si aucune)
+  //! Maille derrière l'entité (nullItem() si aucune)
   ItemInternal* backCell() const
   {
     if (flags() & II_HasBackCell)
       return internalCell((flags() & II_BackCellIsFirst) ? 0 : 1);
     return nullItem();
   }
-  //! Maille devant l'entité (0 si aucune)
+  //! Maille derrière l'entité (NULL_ITEM_LOCAL_ID si aucune)
+  Int32 backCellId() const
+  {
+    if (flags() & II_HasBackCell)
+      return cellId((flags() & II_BackCellIsFirst) ? 0 : 1);
+    return NULL_ITEM_LOCAL_ID;
+  }
+  //! Maille devant l'entité (nullItem() si aucune)
   ItemInternal* frontCell() const
   {
     if (flags() & II_HasFrontCell)
       return internalCell((flags() & II_FrontCellIsFirst) ? 0 : 1);
     return nullItem();
+  }
+  //! Maille devant l'entité (NULL_ITEM_LOCAL_ID si aucune)
+  Int32 frontCellId() const
+  {
+    if (flags() & II_HasFrontCell)
+      return cellId((flags() & II_FrontCellIsFirst) ? 0 : 1);
+    return NULL_ITEM_LOCAL_ID;
   }
   ItemInternal* masterFace() const
   {
@@ -634,19 +659,18 @@ class ARCANE_CORE_EXPORT ItemInternal
 
  public:
 
+  // TODO: rendre obsolète les 4 méthodes suivantes
   Int32 nodeLocalId(Integer index) { return _connectivity()->_nodeLocalIdV2(m_local_id,index); }
   Int32 edgeLocalId(Integer index) { return _connectivity()->_edgeLocalIdV2(m_local_id,index); }
   Int32 faceLocalId(Integer index) { return _connectivity()->_faceLocalIdV2(m_local_id,index); }
   Int32 cellLocalId(Integer index) { return _connectivity()->_cellLocalIdV2(m_local_id,index); }
 
-#if 1
- private:
-
-  Int32 _nodeLocalIdV2(Integer index) { return _connectivity()->_nodeLocalIdV2(m_local_id,index); }
-  Int32 _edgeLocalIdV2(Integer index) { return _connectivity()->_edgeLocalIdV2(m_local_id,index); }
-  Int32 _faceLocalIdV2(Integer index) { return _connectivity()->_faceLocalIdV2(m_local_id,index); }
-  Int32 _cellLocalIdV2(Integer index) { return _connectivity()->_cellLocalIdV2(m_local_id,index); }
-#endif
+  //@{
+  Int32 nodeId(Integer index) const { return _connectivity()->_nodeLocalIdV2(m_local_id,index); }
+  Int32 edgeId(Integer index) const { return _connectivity()->_edgeLocalIdV2(m_local_id,index); }
+  Int32 faceId(Integer index) const { return _connectivity()->_faceLocalIdV2(m_local_id,index); }
+  Int32 cellId(Integer index) const { return _connectivity()->_cellLocalIdV2(m_local_id,index); }
+  //@}
 
  public:
 
@@ -663,11 +687,11 @@ class ARCANE_CORE_EXPORT ItemInternal
  public:
 
   /*!
-   * \brief Méthodes utilisant les nouvelles connectivités pour acceéder
+   * \brief Méthodes utilisant les nouvelles connectivités pour accéder
    * aux informations de connectivité. A ne pas utiliser en dehors de Arcane.
    *
    * \warning Ces méthodes ne doivent être appelées que sur les entités
-   * qui possèdent la connectivité associée ET qui sont nouveau format.
+   * qui possèdent la connectivité associée ET qui sont au nouveau format.
    * Par exemple, cela ne fonctionne pas sur Cell->Cell car il n'y a pas de
    * connectivité maille/maille, ni sur les Link car ils n'utilisent pas
    * les nouvelles connectivités. En cas de mauvaise utilisation, cela
@@ -679,6 +703,12 @@ class ARCANE_CORE_EXPORT ItemInternal
   ItemInternalVectorView internalEdges() const { return _connectivity()->edgesV2(m_local_id); }
   ItemInternalVectorView internalFaces() const { return _connectivity()->facesV2(m_local_id); }
   ItemInternalVectorView internalCells() const { return _connectivity()->cellsV2(m_local_id); }
+
+  Int32ConstArrayView nodeIds() const { return _connectivity()->nodeLocalIdsV2(m_local_id); }
+  Int32ConstArrayView edgeIds() const { return _connectivity()->edgeLocalIdsV2(m_local_id); }
+  Int32ConstArrayView faceIds() const { return _connectivity()->faceLocalIdsV2(m_local_id); }
+  Int32ConstArrayView cellIds() const { return _connectivity()->cellLocalIdsV2(m_local_id); }
+  //@}
 
  public:
 

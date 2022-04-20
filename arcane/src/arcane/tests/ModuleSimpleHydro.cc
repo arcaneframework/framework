@@ -349,9 +349,8 @@ hydroStartInit()
     m_cell_mass[icell] = m_density[icell] * m_volume[icell];
 
     Real contrib_node_mass = ARCANE_REAL(0.125) * m_cell_mass[cell];
-    for( NodeEnumerator i_node(cell.nodes()); i_node.hasNext(); ++i_node ){
+    for( NodeLocalId i_node : cell.nodeIds() )
       m_node_mass[i_node] += contrib_node_mass;
-    }
   }
 
   m_node_mass.synchronize();
@@ -532,13 +531,10 @@ applyBoundaryCondition()
     TypesSimpleHydro::eBoundaryCondition type = options()->boundaryCondition[i].type.value();
 
     // boucle sur les faces de la surface
-    ENUMERATE_(Face,j,face_group){
-      Face face = *j;
-      Integer nb_node = face.nbNode();
-
+    ENUMERATE_(Face,iface,face_group){
+      Face face = *iface;
       // boucle sur les noeuds de la face
-      for( Integer k=0; k<nb_node; ++k ){
-        Node node = face.node(k);
+      for( NodeLocalId node : face.nodeIds() ){
         switch(type) {
         case TypesSimpleHydro::VelocityX: m_velocity[node].x = value; break;
         case TypesSimpleHydro::VelocityY: m_velocity[node].y = value; break;
@@ -958,8 +954,8 @@ _specialInit()
   ENUMERATE_(Cell,icell,mesh->allCells()){
     Cell cell = *icell;
     Real3 p;
-    for( NodeEnumerator inode(cell.nodes()); inode.hasNext(); ++inode )
-      p += nodes_coord_var[inode];
+    for( NodeLocalId node_id : cell.nodeIds() )
+      p += nodes_coord_var[node_id];
     p /= cell.nbNode();
     Real density = 1.0;
     Real pressure = 1.0;

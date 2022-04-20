@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemLocalId.h                                               (C) 2000-2021 */
+/* ItemLocalId.h                                               (C) 2000-2022 */
 /*                                                                           */
 /* Index local sur une entité du maillage.                                   */
 /*---------------------------------------------------------------------------*/
@@ -41,6 +41,7 @@ class ARCANE_CORE_EXPORT ItemLocalId
   constexpr ARCCORE_HOST_DEVICE Int32 asInteger() const { return m_local_id; }
  public:
   constexpr ARCCORE_HOST_DEVICE Int32 localId() const { return m_local_id; }
+  constexpr ARCCORE_HOST_DEVICE bool isNull() const { return m_local_id==NULL_ITEM_LOCAL_ID; }
  private:
   Int32 m_local_id;
 };
@@ -118,20 +119,34 @@ class ARCANE_CORE_EXPORT ParticleLocalId
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \ingroup Mesh
+ * \brief Index d'un 'DoF' dans une variable.
+ */
+class ARCANE_CORE_EXPORT DoFLocalId
+: public ItemLocalId
+{
+ public:
+  constexpr ARCCORE_HOST_DEVICE explicit DoFLocalId(Int32 id) : ItemLocalId(id){}
+  inline DoFLocalId(DoF item);
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \brief Vue typée sur une liste d'entités d'une connectivité.
  */
 template <typename ItemType>
-class ItemLocalIdView
+class ItemLocalIdViewT
 {
  public:
-  using LocalIdType = typename ItemType::LocalIdType;
+  using LocalIdType = typename ItemLocalIdTraitsT<ItemType>::LocalIdType;
   using SpanType = SmallSpan<const LocalIdType>;
   using iterator = typename SpanType::iterator;
   using const_iterator = typename SpanType::const_iterator;
  public:
-  constexpr ARCCORE_HOST_DEVICE ItemLocalIdView(SpanType ids) : m_ids(ids){}
-  constexpr ARCCORE_HOST_DEVICE ItemLocalIdView(const LocalIdType* ids,Int32 s) : m_ids(ids,s){}
-  ItemLocalIdView() = default;
+  constexpr ARCCORE_HOST_DEVICE ItemLocalIdViewT(SpanType ids) : m_ids(ids){}
+  constexpr ARCCORE_HOST_DEVICE ItemLocalIdViewT(const LocalIdType* ids,Int32 s) : m_ids(ids,s){}
+  ItemLocalIdViewT() = default;
   constexpr ARCCORE_HOST_DEVICE operator SpanType() const { return m_ids; }
  public:
   constexpr ARCCORE_HOST_DEVICE SpanType ids() const { return m_ids; }
@@ -143,6 +158,12 @@ class ItemLocalIdView
   constexpr ARCCORE_HOST_DEVICE const_iterator end() const { return m_ids.end(); }
  public:
   constexpr ARCCORE_HOST_DEVICE const LocalIdType* data() const { return m_ids.data(); }
+ public:
+  static constexpr ARCCORE_HOST_DEVICE ItemLocalIdViewT<ItemType>
+  fromIds(SmallSpan<const Int32> v)
+  {
+    return ItemLocalIdView<ItemType>(reinterpret_cast<const LocalIdType*>(v.data()),v.size());
+  }
  private:
   SpanType m_ids;
 };
