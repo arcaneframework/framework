@@ -105,19 +105,19 @@ class ARCANE_CORE_EXPORT Item
    */
   enum
   {
-    Unknown = IT_NullType, //!< Elément de type nul
-    Vertex = IT_Vertex, //!< Elément de type noeud (1 sommet 1D, 2D et 3D)
-    Bar2 = IT_Line2, //!< Elément de type arête (2 sommets, 1D, 2D et 3D)
-    Tri3 = IT_Triangle3, //!< Elément de type triangle (3 sommets, 2D)
-    Quad4 = IT_Quad4, //!< Elément de type quad (4 sommets, 2D)
-    Pentagon5 = IT_Pentagon5, //!< Elément de type pentagone (5 sommets, 2D)
-    Hexagon6 = IT_Hexagon6, //!< Elément de type hexagone (6 sommets, 2D)
-    Tetra = IT_Tetraedron4, //!< Elément de type tétraédre (4 sommets, 3D)
-    Pyramid = IT_Pyramid5, //!< Elément de type pyramide  (5 sommets, 3D)
-    Penta = IT_Pentaedron6, //!< Elément de type pentaèdre (6 sommets, 3D)
-    Hexa = IT_Hexaedron8, //!< Elément de type hexaèdre  (8 sommets, 3D)
-    Wedge7 = IT_Heptaedron10, //!< Elément de type prisme à 7 faces (base pentagonale)
-    Wedge8 = IT_Octaedron12 //!< Elément de type prisme à 8 faces (base hexagonale)
+    Unknown ARCANE_DEPRECATED_REASON("Use 'IT_NullType' instead") = IT_NullType, //!< Elément de type nul
+    Vertex ARCANE_DEPRECATED_REASON("Use 'IT_Vertex' instead") = IT_Vertex, //!< Elément de type noeud (1 sommet 1D, 2D et 3D)
+    Bar2 ARCANE_DEPRECATED_REASON("Use 'IT_Line2' instead") = IT_Line2, //!< Elément de type arête (2 sommets, 1D, 2D et 3D)
+    Tri3 ARCANE_DEPRECATED_REASON("Use 'IT_Triangle3' instead") = IT_Triangle3, //!< Elément de type triangle (3 sommets, 2D)
+    Quad4 ARCANE_DEPRECATED_REASON("Use 'IT_Quad4' instead") = IT_Quad4, //!< Elément de type quad (4 sommets, 2D)
+    Pentagon5 ARCANE_DEPRECATED_REASON("Use 'IT_Pentagon5' instead") = IT_Pentagon5, //!< Elément de type pentagone (5 sommets, 2D)
+    Hexagon6 ARCANE_DEPRECATED_REASON("Use 'IT_Hexagon6' instead") = IT_Hexagon6, //!< Elément de type hexagone (6 sommets, 2D)
+    Tetra ARCANE_DEPRECATED_REASON("Use 'IT_Tetraedron4' instead") = IT_Tetraedron4, //!< Elément de type tétraédre (4 sommets, 3D)
+    Pyramid ARCANE_DEPRECATED_REASON("Use 'IT_Pyramid5' instead") = IT_Pyramid5, //!< Elément de type pyramide  (5 sommets, 3D)
+    Penta ARCANE_DEPRECATED_REASON("Use 'IT_Pentaedron6' instead") = IT_Pentaedron6, //!< Elément de type pentaèdre (6 sommets, 3D)
+    Hexa ARCANE_DEPRECATED_REASON("Use 'IT_Hexaedron8' instead") = IT_Hexaedron8, //!< Elément de type hexaèdre  (8 sommets, 3D)
+    Wedge7 ARCANE_DEPRECATED_REASON("Use 'IT_Heptaedron10' instead") = IT_Heptaedron10, //!< Elément de type prisme à 7 faces (base pentagonale)
+    Wedge8 ARCANE_DEPRECATED_REASON("Use 'IT_Octaedron12' instead") = IT_Octaedron12 //!< Elément de type prisme à 8 faces (base hexagonale)
     // Réduit au minimum pour compatibilité.
   };
 
@@ -163,30 +163,26 @@ class ARCANE_CORE_EXPORT Item
   //! \a true si l'entité est nul (i.e. non connecté au maillage)
   bool null() const { return m_internal->localId()==NULL_ITEM_ID; }
 
-  /*!
-   * \brief Identifiant local de l'entité dans le sous-domaine du processeur
-   *
-   * \deprecated. Utiliser localId() à la place.
-   */
-  inline ARCANE_DEPRECATED Int32 id() const { return m_local_id; }
+  //! Identifiant local de l'entité dans le sous-domaine du processeur
+  Int32 localId() const { return m_local_id; }
 
   //! Identifiant local de l'entité dans le sous-domaine du processeur
-  inline Int32 localId() const { return m_local_id; }
+  ItemLocalId itemLocalId() const { return ItemLocalId{ m_local_id }; }
 
   //! Identifiant unique sur tous les domaines
-  inline ItemUniqueId uniqueId() const { return m_internal->uniqueId(); }
+  ItemUniqueId uniqueId() const { return m_internal->uniqueId(); }
 
   //! Numéro du sous-domaine propriétaire de l'entité
-  inline Int32 owner() const { return m_internal->owner(); }
+  Int32 owner() const { return m_internal->owner(); }
 
   //! Type de l'entité
-  inline Int32 type() const { return m_internal->typeId(); }
+  Int32 type() const { return m_internal->typeId(); }
 
   //! Genre de l'entité
-  inline eItemKind kind() const { return m_internal->kind(); }
+  eItemKind kind() const { return m_internal->kind(); }
 
   //! \a true si l'entité est appartient au sous-domaine
-  inline bool isOwn() const { return m_internal->isOwn(); }
+  bool isOwn() const { return m_internal->isOwn(); }
 
   /*!
    * \brief Vrai si l'entité est partagé d'autres sous-domaines.
@@ -216,52 +212,55 @@ class ARCANE_CORE_EXPORT Item
   inline DoF toDoF() const;
 
   //! Nombre de parents
-  inline Int32 nbParent() const { return m_internal->nbParent(); }
+  Int32 nbParent() const { return m_internal->nbParent(); }
 
   //! i-ème parent
-  inline Item parent(Int32 i=0) const { return m_internal->parent(i); }
+  Item parent(Int32 i) const { return m_internal->parent(i); }
+
+  //! premier parent
+  Item parent() const { return m_internal->parent(0); }
 
  public:
 
   //! \a true si l'entité est du genre \a ItemWithNodes.
-  inline bool isItemWithNodes() const
+  bool isItemWithNodes() const
   {
     eItemKind ik = kind();
     return (ik==IK_Unknown || ik==IK_Edge || ik==IK_Face || ik==IK_Cell );
   }
 
   //! \a true si l'entité est du genre \a Node.
-  inline bool isNode() const
+  bool isNode() const
   {
     eItemKind ik = kind();
     return (ik==IK_Unknown || ik==IK_Node);
   }
   //! \a true si l'entité est du genre \a Cell.
-  inline bool isCell() const
+  bool isCell() const
   {
     eItemKind ik = kind();
     return (ik==IK_Unknown || ik==IK_Cell);
   }
   //! \a true si l'entité est du genre \a Edge.
-  inline bool isEdge() const
+  bool isEdge() const
   {
     eItemKind ik = kind();
     return (ik==IK_Unknown || ik==IK_Edge);
   }
   //! \a true si l'entité est du genre \a Edge.
-  inline bool isFace() const
+  bool isFace() const
   {
     eItemKind ik = kind();
     return (ik==IK_Unknown || ik==IK_Face);
   }
   //! \a true is l'entité est du genre \a Particle.
-  inline bool isParticle() const
+  bool isParticle() const
   {
     eItemKind ik = kind();
     return (ik==IK_Unknown || ik==IK_Particle);
   }
   //! \a true is l'entité est du genre \a DoF
-  inline bool isDoF() const
+  bool isDoF() const
   {
     eItemKind ik = kind();
     return (ik==IK_Unknown || ik==IK_DoF);
@@ -426,6 +425,9 @@ class ARCANE_CORE_EXPORT Node
   }
 
  public:
+
+  //! Identifiant local de l'entité dans le sous-domaine du processeur
+  NodeLocalId itemLocalId() const { return NodeLocalId{ m_local_id }; }
 
   //! Nombre d'arêtes connectées au noeud
   Int32 nbEdge() const { return m_internal->nbEdge(); }
@@ -634,6 +636,9 @@ class ARCANE_CORE_EXPORT Edge
 
  public:
 
+  //! Identifiant local de l'entité dans le sous-domaine du processeur
+  EdgeLocalId itemLocalId() const { return EdgeLocalId{ m_local_id }; }
+
   //! Nombre de sommets de l'arête
   Int32 nbNode() const { return 2; }
 
@@ -738,6 +743,9 @@ class ARCANE_CORE_EXPORT Face
   }
 
  public:
+
+  //! Identifiant local de l'entité dans le sous-domaine du processeur
+  FaceLocalId itemLocalId() const { return FaceLocalId{ m_local_id }; }
 
   //! Nombre de mailles de la face (1 ou 2)
   Int32 nbCell() const { return m_internal->nbCell(); }
@@ -931,6 +939,9 @@ class ARCANE_CORE_EXPORT Cell
 
  public:
 
+  //! Identifiant local de l'entité dans le sous-domaine du processeur
+  CellLocalId itemLocalId() const { return CellLocalId{ m_local_id }; }
+
   //! Nombre de faces de la maille
   Int32 nbFace() const { return m_internal->nbFace(); }
 
@@ -1071,6 +1082,9 @@ class Particle
 
  public:
 
+  //! Identifiant local de l'entité dans le sous-domaine du processeur
+  ParticleLocalId itemLocalId() const { return ParticleLocalId{ m_local_id }; }
+
   /*!
    * \brief Maille à laquelle appartient la particule.
    * Il faut appeler setCell() avant d'appeler cette fonction.
@@ -1151,6 +1165,9 @@ class DoF
 
   DoF* operator->() { return this; }
   const DoF* operator->() const { return this; }
+
+  //! Identifiant local de l'entité dans le sous-domaine du processeur
+  DoFLocalId itemLocalId() const { return DoFLocalId{ m_local_id }; }
 };
 
 /*---------------------------------------------------------------------------*/
