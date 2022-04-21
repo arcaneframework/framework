@@ -22,7 +22,6 @@
 #include "arcane/VariableTypedef.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/IParallelMng.h"
-#include "arcane/IGraph.h"
 #include "arcane/MeshItemInternalList.h"
 #include "arcane/XmlNode.h"
 #include "arcane/IMeshPartitionConstraintMng.h"
@@ -72,36 +71,36 @@ class EmptyMesh : public IMesh
 
  public:
 
-  virtual String name() const { _error(); return String{}; }
-  virtual Integer nbNode() { _error(); return -1; }
-  virtual Integer nbEdge() { _error(); return -1; }
-  virtual Integer nbFace() { _error(); return -1; }
-  virtual Integer nbCell() { _error(); return -1; }
-  virtual Integer nbItem(eItemKind) {_error(); return -1; }
-  virtual ITraceMng* traceMng() { _error(); return nullptr; }
-  virtual Integer dimension()   { _error(); return -1; }
-  virtual NodeGroup allNodes() { _error(); return NodeGroup{}; }
-  virtual EdgeGroup allEdges() { _error(); return EdgeGroup{}; }
-  virtual FaceGroup allFaces() { _error(); return FaceGroup{}; }
-  virtual CellGroup allCells() { _error(); return CellGroup{}; }
-  virtual NodeGroup ownNodes() { _error(); return NodeGroup{}; }
-  virtual EdgeGroup ownEdges() { _error(); return EdgeGroup{}; }
-  virtual FaceGroup ownFaces() { _error(); return FaceGroup{}; }
-  virtual CellGroup ownCells() { _error(); return CellGroup{}; }
-  virtual FaceGroup outerFaces() { _error(); return FaceGroup{}; }
+  virtual String name() const override { _error(); return String{}; }
+  virtual Integer nbNode() override { _error(); return -1; }
+  virtual Integer nbEdge() override { _error(); return -1; }
+  virtual Integer nbFace() override { _error(); return -1; }
+  virtual Integer nbCell() override { _error(); return -1; }
+  virtual Integer nbItem(eItemKind) override {_error(); return -1; }
+  virtual ITraceMng* traceMng() override { _error(); return nullptr; }
+  virtual Integer dimension()   override { _error(); return -1; }
+  virtual NodeGroup allNodes() override { _error(); return NodeGroup{}; }
+  virtual EdgeGroup allEdges() override { _error(); return EdgeGroup{}; }
+  virtual FaceGroup allFaces() override { _error(); return FaceGroup{}; }
+  virtual CellGroup allCells() override { _error(); return CellGroup{}; }
+  virtual NodeGroup ownNodes() override { _error(); return NodeGroup{}; }
+  virtual EdgeGroup ownEdges() override { _error(); return EdgeGroup{}; }
+  virtual FaceGroup ownFaces() override { _error(); return FaceGroup{}; }
+  virtual CellGroup ownCells() override { _error(); return CellGroup{}; }
+  virtual FaceGroup outerFaces() override { _error(); return FaceGroup{}; }
 
  public:
 
-  virtual IItemFamily* createItemFamily(eItemKind, const String&) {_error(); return nullptr; }
-  virtual IItemFamily* findItemFamily(eItemKind ,const String&,bool) { _error(); return nullptr; }
-  virtual IItemFamily* findItemFamily(const String&,bool ) { _error(); return nullptr; }
-  virtual IItemFamilyModifier* findItemFamilyModifier(eItemKind,const String&) { _error(); return nullptr; }
-  virtual IItemFamily* itemFamily(eItemKind) { _error(); return nullptr; }
-  virtual IItemFamily* nodeFamily() { _error(); return nullptr; }
-  virtual IItemFamily* edgeFamily() { _error(); return nullptr; }
-  virtual IItemFamily* faceFamily() { _error(); return nullptr; }
-  virtual IItemFamily* cellFamily() { _error(); return nullptr; }
-  virtual IItemFamilyCollection itemFamilies() { _error(); return IItemFamilyCollection{}; }
+  virtual IItemFamily* createItemFamily(eItemKind, const String&) override {_error(); return nullptr; }
+  virtual IItemFamily* findItemFamily(eItemKind ,const String&,bool,bool) override { _error(); return nullptr; }
+  virtual IItemFamily* findItemFamily(const String&,bool ) override { _error(); return nullptr; }
+  virtual IItemFamilyModifier* findItemFamilyModifier(eItemKind,const String&) override { _error(); return nullptr; }
+  virtual IItemFamily* itemFamily(eItemKind) override { _error(); return nullptr; }
+  virtual IItemFamily* nodeFamily() override { _error(); return nullptr; }
+  virtual IItemFamily* edgeFamily() override { _error(); return nullptr; }
+  virtual IItemFamily* faceFamily() override { _error(); return nullptr; }
+  virtual IItemFamily* cellFamily() override { _error(); return nullptr; }
+  virtual IItemFamilyCollection itemFamilies() override { _error(); return IItemFamilyCollection{}; }
 
  public:
 
@@ -125,10 +124,6 @@ class EmptyMesh : public IMesh
  public:
 
   virtual IParallelMng* parallelMng() override { _error(); return nullptr; }
-
- public:
-
-  virtual IGraph* graph() override { _error(); return nullptr; }
 
  public:
 
@@ -201,8 +196,10 @@ class EmptyMesh : public IMesh
  public:
 
   virtual IGhostLayerMng* ghostLayerMng() const override { _error(); return nullptr; }
+  virtual IMeshUniqueIdMng* meshUniqueIdMng() const override { _error(); return nullptr; }
   virtual IMeshChecker* checker() const override { _error(); return nullptr; }
   virtual const MeshPartInfo& meshPartInfo() const override { _error(); auto var=new MeshPartInfo{}; return *var; }
+  virtual bool useMeshItemFamilyDependencies() const override { _error(); return false; }
   virtual IItemFamilyNetwork* itemFamilyNetwork() override { _error(); return nullptr; }
 
  public:
@@ -214,6 +211,7 @@ class EmptyMesh : public IMesh
 
   virtual IMeshMng* meshMng() const override {  _error(); return nullptr; }
   virtual IVariableMng* variableMng() const override {  _error(); return nullptr; }
+  virtual ItemTypeMng* itemTypeMng() const override {  _error(); return nullptr; }
 };
 
 /*---------------------------------------------------------------------------*/

@@ -170,45 +170,6 @@ class IMesh : public IMeshBase
 
  public:
 
-  /*!
-   * \brief Retourne la famille de nom \a name.
-   *
-   * Si \a create_if_needed est vrai, la famille est créé si elle n'existait pas.
-   * Si \a register_modifier_if_created est vrai, le modifier de la famille est enregistré
-   */
-  virtual IItemFamily* findItemFamily(eItemKind ik,const String& name,bool create_if_needed=false,bool register_modifier_if_created=false) =0;
-
-  /*!
-   * \brief Retourne la famille de nom \a name.
-   *
-   * Si la famille demandée n'existe pas, si \a throw_exception vaut \a true une
-   * exception est levée, sinon le pointeur nul est retourné.
-   */
-  virtual IItemFamily* findItemFamily(const String& name,bool throw_exception=false) =0;
-
-  /*!
-   * \brief Retourne l'interface IItemFamilyModifier pour famille de nom \a name et de type \a ik
-   *
-   * Si ce modificateur n'est pas trouvé, retourne nullptr
-   */
-  virtual IItemFamilyModifier* findItemFamilyModifier(eItemKind ik,const String& name) =0;
-
-  /*!
-   * \brief Retourne la famille d'entité de type \a ik
-   */
-  virtual IItemFamily* itemFamily(eItemKind ik) =0;
-
-  //! Retourne la famille des noeuds.
-  virtual IItemFamily* nodeFamily() =0;
-  //! Retourne la famille des arêtes.
-  virtual IItemFamily* edgeFamily() =0;
-  //! Retourne la famille des faces.
-  virtual IItemFamily* faceFamily() =0;
-  //! Retourne la famille des mailles.
-  virtual IItemFamily* cellFamily() =0;
-
-  virtual IItemFamilyCollection itemFamilies() =0;
-
   virtual MeshItemInternalList* meshItemInternalList() =0;
 
  public:

@@ -57,9 +57,9 @@ class PolyhedralFamily : public ItemFamily{
   , m_mesh(mesh) {
     ItemFamily::build();
     m_sub_domain_id = subDomain()->subDomainId();
-    ItemTypeMng* itm = ItemTypeMng::singleton();
+    ItemTypeMng* itm = m_mesh->itemTypeMng();
     ItemTypeInfo* dof_type_info = itm->typeFromId(IT_NullType);
-    m_shared_info = _findSharedInfo(dof_type_info,0,0,1);
+    m_shared_info = _findSharedInfo(dof_type_info);
     _updateEmptyConnectivity();
   }
 
@@ -123,9 +123,7 @@ class PolyhedralFamily : public ItemFamily{
       break;
     case IK_DoF:
     case IK_Particle:
-    case IK_DualNode:
     case IK_Unknown:
-    case IK_Link:
       break;
     }
   }
@@ -284,7 +282,7 @@ namespace mesh
                               Neo::OutProperty{source_family,"NoOutProperty"},
                               [arcane_source_item_family, arcane_target_item_family, &source_family, &target_family, this,name]
                               (Neo::PropertyT<Neo::utils::Int32> const& arcane_item_lids,
-                               Neo::PropertyT<Neo::utils::Int32> & no_array_property){
+                               Neo::PropertyT<Neo::utils::Int32> & ){
                                 this->m_subdomain->traceMng()->info() << "ADD CONNECTIVITY";
                                 auto item_internal_connectivity_list = arcane_source_item_family->itemInternalConnectivityList();
                                   // todo check if families are default families
@@ -357,20 +355,6 @@ const MeshHandle& mesh::PolyhedralMesh::handle() const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-void mesh::PolyhedralMesh::
-_errorEmptyMesh() const
-{
-  ARCANE_FATAL("Cannot use PolyhedralMesh if Arcane is not linked with lib Neo");
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-
-
-#ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
-// All PolyhedralMesh methods must be defined twice (emtpy in the second case)
 
 mesh::PolyhedralMesh::
 PolyhedralMesh(ISubDomain* subdomain)
@@ -625,9 +609,7 @@ _updateMeshInternalList(eItemKind kind)
     break;
   case IK_DoF:
   case IK_Particle:
-  case IK_DualNode:
   case IK_Unknown:
-  case IK_Link:
     break;
   }
 }
@@ -687,58 +669,6 @@ read([[maybe_unused]] const String& filename)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-Integer Arcane::mesh::PolyhedralMesh::
-dimension()
-{
-  _errorEmptyMesh();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Integer Arcane::mesh::PolyhedralMesh::
-nbNode()
-{
-  _errorEmptyMesh();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Integer Arcane::mesh::PolyhedralMesh::
-nbEdge()
-{
-  _errorEmptyMesh();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Integer Arcane::mesh::PolyhedralMesh::
-nbFace()
-{
-  _errorEmptyMesh();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Integer Arcane::mesh::PolyhedralMesh::
-nbCell()
-{
-  _errorEmptyMesh();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Integer Arcane::mesh::PolyhedralMesh::
-nbItem([[maybe_unused]] eItemKind ik)
-{
-  _errorEmptyMesh();
-}
-
 
 #endif // ARCANE_HAS_CUSTOM_MESH_TOOLS
 
