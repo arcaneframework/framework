@@ -42,13 +42,57 @@ sont:
 - Arcane::Accelerator::RunCommand qui représente une commande (un
   noyau de calcul) associée à une file d'exécution.
 
-L'interface principale est Arcane::Accelerator::IAcceleratorMng. Une
-implémentation de cette interface est créé lors de l'initialisation et
-est disponible pour les modules via la méthode
-Arcane::AbstractModule::acceleratorMng().
+Il existe deux possibilités pour utiliser les accélérateurs dans
+Arcane:
+- via une instance de Arcane::Accelerator::IAcceleratorMng créé et
+  initialisée par %Arcane au moment du lancement de l'exécutable.
+- via une instgance de Arcane::Accelerator::Runner créée et
+  initialisée manuellement.
+
+### Utilisation dans les modules
+
+il est possible pour tout module de récupérer une implémentation de
+l'interface Arcane::Accelerator::IAcceleratorMng via la méthode
+Arcane::AbstractModule::acceleratorMng(). Le code suivant permet par
+exemple d'utiliser les accélérateurs depuis un point d'entrée:
+
+~~~{.cpp}
+// Fichier à include tout le temps
+#include "arcane/accelerator/core/IAcceleratorMng.h"
+#include "arcane/accelerator/core/RunQueue.h"
+
+// Fichier à inclure pour avoir RUNCOMMAND_ENUMERATE
+#include "arcane/accelerator/RunCommandEnumerate.h"
+
+// Fichier à inclure pour avoir RUNCOMMAND_LOOP
+#include "arcane/accelerator/RunCommandLoop.h"
+
+using namespace Arcane;
+using namespace Arcane::Accelerator;
+
+class MyModule
+: public Arcane::BasicModule
+{
+ public:
+  void myEntryPoint()
+  {
+    // Boucle sur les mailles déportée sur accélérateur
+    auto command1 = makeCommand(acceleratorMng()->defaultQueue());
+    command1 << RUNCOMMAND_ENUMERATE(Cell,vi,allCells()){
+    };
+
+    // Boucle classique 1D déportée sur accélérateur
+    auto command2 = makeCommand(acceleratorMng()->defaultQueue());
+    command2 << RUNCOMMAND_LOOP1(iter,5){
+    };
+  }
+};
+~~~
+
+### Utilisation via une instance spécifique de 'Runner'
 
 L'objet principal est la classe Arcane::Accelerator::Runner. Il est
-possible de créér plusieurs instances de cet objet.
+possible de créér plusieurs instances de cet objet Arcane::Accelerator::Runner.
 
 \note Actuellement, les méthodes de Arcane::Accelerator::Runner ne
 sont pas thread-safe.
@@ -168,6 +212,7 @@ Quel que soit le conteneur associé, la déclaration des vues est la
 même:
 
 ~~~{.cpp}
+#include "arcane/utils/NumArray.h"
 // Pour avoir les vues sur les variables
 #include "arcane/accelerator/VariableViews.h"
 // Pour avoir les vues sur les NumArray
@@ -193,12 +238,12 @@ accélérateurs:
 - les boucles classiques sur des tableaux via la commande
   RUNCOMMAND_LOOP().
 
-Ces deux macros permettent
-de définir après un bout de code qui est une fonction lambda du C++11 (TODO:
-ajouter référence) et qui sera déporté sur accélérateur. Ces macros
-s'utilisent via l'opérateur 'operator<<' sur une commande
-(Arcane::Accelerator::RunCommand). Le code après la macro est un code
-identique à celui d'une boucle C++ classique avec les modifications suivantes:
+Ces deux macros permettent de définir après un bout de code qui est
+une fonction lambda du C++11 (TODO: ajouter référence) et qui sera
+déporté sur accélérateur. Ces macros s'utilisent via l'opérateur
+'operator<<' sur une commande (Arcane::Accelerator::RunCommand). Le
+code après la macro est un code identique à celui d'une boucle C++
+classique avec les modifications suivantes:
 
 - les accolades sont obligatoires
 - il faut ajouter un `;` après la dernière accolade.
