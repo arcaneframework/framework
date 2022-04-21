@@ -46,7 +46,7 @@ public:
   
 public:
   SharedMeshVariableScalarRefT()
-    : m_true_variable()
+    : m_true_variable(nullptr)
     , m_family(NULL)
     , m_parent_family(NULL)
     , m_direct_access(false)

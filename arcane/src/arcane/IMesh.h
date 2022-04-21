@@ -15,7 +15,6 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/ArcaneTypes.h"
-#include "arcane/ItemTypes.h"
 #include "arcane/VariableTypedef.h"
 #include "arcane/IMeshBase.h"
 
@@ -45,7 +44,6 @@ class IMeshChecker;
 class IMeshCompactMng;
 class MeshPartInfo;
 class IItemFamilyNetwork;
-class IItemFamilyModifier;
 class MeshHandle;
 class IVariableMng;
 class ItemTypeMng;
@@ -131,33 +129,6 @@ class IMesh : public IMeshBase
   /*! Cet objet permet de lire/modifier la connectivité */
   virtual VariableScalarInteger connectivity() = 0;
 
-  //! Groupe de tous les noeuds
-  virtual NodeGroup allNodes() =0;
-
-  //! Groupe de toutes les arêtes
-  virtual EdgeGroup allEdges() =0;
-
-  //! Groupe de toutes les faces
-  virtual FaceGroup allFaces() =0;
-
-  //! Groupe de toutes les mailles
-  virtual CellGroup allCells() =0;
-
-  //! Groupe de tous les noeuds propres au domaine
-  virtual NodeGroup ownNodes() =0;
-
-  //! Groupe de toutes les arêtes propres au domaine
-  virtual EdgeGroup ownEdges() =0;
-
-  //! Groupe de toutes les faces propres au domaine
-  virtual FaceGroup ownFaces() =0;
-
-  //! Groupe de toutes les mailles propres au domaine
-  virtual CellGroup ownCells() =0;
-
-  //! Groupe de toutes les faces sur la frontière.
-  virtual FaceGroup outerFaces() =0;
-
 //! AMR
   //! Groupe de toutes les mailles actives
   virtual CellGroup allActiveCells() =0;
@@ -198,48 +169,6 @@ class IMesh : public IMeshBase
   virtual void destroyGroups() =0;
 
  public:
- 
-  //! Créé une famille de particule de nom \a name
-  virtual IItemFamily* createItemFamily(eItemKind ik,const String& name) =0;
-
-  /*!
-   * \brief Retourne la famille de nom \a name.
-   *
-   * Si \a create_if_needed est vrai, la famille est créé si elle n'existait pas.
-   * Si \a register_modifier_if_created est vrai, le modifier de la famille est enregistré
-   */
-  virtual IItemFamily* findItemFamily(eItemKind ik,const String& name,bool create_if_needed=false,bool register_modifier_if_created=false) =0;
-
-  /*!
-   * \brief Retourne la famille de nom \a name.
-   *
-   * Si la famille demandée n'existe pas, si \a throw_exception vaut \a true une
-   * exception est levée, sinon le pointeur nul est retourné.
-   */
-  virtual IItemFamily* findItemFamily(const String& name,bool throw_exception=false) =0;
-
-  /*!
-   * \brief Retourne l'interface IItemFamilyModifier pour famille de nom \a name et de type \a ik
-   *
-   * Si ce modificateur n'est pas trouvé, retourne nullptr
-   */
-  virtual IItemFamilyModifier* findItemFamilyModifier(eItemKind ik,const String& name) =0;
-
-  /*!
-   * \brief Retourne la famille d'entité de type \a ik
-   */
-  virtual IItemFamily* itemFamily(eItemKind ik) =0;
-
-  //! Retourne la famille des noeuds.
-  virtual IItemFamily* nodeFamily() =0;
-  //! Retourne la famille des arêtes.
-  virtual IItemFamily* edgeFamily() =0;
-  //! Retourne la famille des faces.
-  virtual IItemFamily* faceFamily() =0;
-  //! Retourne la famille des mailles.
-  virtual IItemFamily* cellFamily() =0;
-
-  virtual IItemFamilyCollection itemFamilies() =0;
 
   virtual MeshItemInternalList* meshItemInternalList() =0;
 
