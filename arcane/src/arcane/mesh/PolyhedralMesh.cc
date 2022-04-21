@@ -588,8 +588,6 @@ cellFamily()
   return m_default_arcane_families[IK_Cell];
 }
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 void mesh::PolyhedralMesh::
 _updateMeshInternalList(eItemKind kind)
