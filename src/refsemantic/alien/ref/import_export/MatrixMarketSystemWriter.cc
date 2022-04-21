@@ -104,7 +104,7 @@ void MatrixMarketSystemWriter::dump(Matrix const& A)
           fout << irow << " " << cols[k] << " " << values[k] << std::endl;
         }
       }
-      for (int ip = 0; ip < m_nproc; ++ip) {
+      for (int ip = 1; ip < m_nproc; ++ip) {
         Integer local_nnz = 0;
         Arccore::MessagePassing::mpReceive(m_parallel_mng, ArrayView<Integer>(1, &local_nnz), ip);
         if (local_nnz > 0) {
