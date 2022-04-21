@@ -16,8 +16,10 @@ namespace Alien {
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#ifdef KOKKOS_ENABLE_SERIAL
 typedef AlgebraTraits<BackEnd::tag::tpetraserial>::matrix_type TrilinosMatrixType;
 typedef AlgebraTraits<BackEnd::tag::tpetraserial>::vector_type TrilinosVectorType;
+#endif
 
 class ALIEN_TRILINOS_EXPORT TrilinosInternalLinearAlgebra
     : public IInternalLinearAlgebra<TrilinosMatrixType, TrilinosVectorType>
@@ -74,7 +76,7 @@ class ALIEN_TRILINOS_EXPORT TpetraOmpInternalLinearAlgebra
     : public IInternalLinearAlgebra<TpetraOmpMatrixType, TpetraOmpVectorType>
 {
  public:
-  TpetraOmpInternalLinearAlgebra(IParallelMng* pm = nullptr) {}
+  TpetraOmpInternalLinearAlgebra(Arccore::MessagePassing::IMessagePassingMng* pm = nullptr) {}
   virtual ~TpetraOmpInternalLinearAlgebra() {}
 
   // IInternalLinearAlgebra interface.
@@ -101,7 +103,7 @@ class ALIEN_TRILINOS_EXPORT TpetraPthInternalLinearAlgebra
     : public IInternalLinearAlgebra<TpetraPthMatrixType, TpetraPthVectorType>
 {
  public:
-  TpetraPthInternalLinearAlgebra(IParallelMng* pm = nullptr) {}
+  TpetraPthInternalLinearAlgebra(Arccore::MessagePassing::IMessagePassingMng* pm = nullptr) {}
   virtual ~TpetraPthInternalLinearAlgebra() {}
 
   // IInternalLinearAlgebra interface.
@@ -129,7 +131,7 @@ class ALIEN_TRILINOS_EXPORT TpetraCudaInternalLinearAlgebra
     : public IInternalLinearAlgebra<TpetraCudaMatrixType, TpetraCudaVectorType>
 {
  public:
-  TpetraCudaInternalLinearAlgebra(IParallelMng* pm = nullptr) {}
+  TpetraCudaInternalLinearAlgebra(Arccore::MessagePassing::IMessagePassingMng* pm = nullptr) {}
   virtual ~TpetraCudaInternalLinearAlgebra() {}
 
   // IInternalLinearAlgebra interface.

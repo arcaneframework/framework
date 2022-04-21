@@ -14,16 +14,10 @@ bool
 MatrixInternal<ValueT, TagT>::initMatrix(int local_offset, int nrows, int const* kcol,
     int const* cols, int block_size, ValueT const* values)
 {
-  using Teuchos::Array;
   m_local_offset = local_offset;
   m_local_size = nrows;
   int const* cols_ptr = cols;
   ValueT const* values_ptr = values;
-
-  Array<std::size_t> num_entries_per_row(nrows);
-  for (int irow = 0; irow < nrows; ++irow)
-    num_entries_per_row[irow] = kcol[irow + 1] - kcol[irow];
-  m_internal.reset(new matrix_type(this->m_map, num_entries_per_row));
   auto& csr_matrix = *m_internal;
   for (int irow = 0; irow < nrows; ++irow) {
     int row_size = kcol[irow + 1] - kcol[irow];
@@ -165,7 +159,9 @@ TrilinosMatrix<ValueT, TagT>::dump(std::string const& filename) const
       filename, *m_internal->m_internal);
 }
 
+#ifdef KOKKOS_ENABLE_SERIAL
 template class TrilinosMatrix<double, BackEnd::tag::tpetraserial>;
+#endif
 #ifdef KOKKOS_ENABLE_OPENMP
 template class TrilinosMatrix<double, BackEnd::tag::tpetraomp>;
 #endif

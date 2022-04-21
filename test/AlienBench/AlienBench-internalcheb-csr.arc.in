@@ -29,8 +29,8 @@
 
 
     <alien-bench>
-      <redistribution>false</redistribution>
       <!-- big diagonal-coefficient keep diagonal dominant matrix -->
+      <redistribution>false</redistribution>
       <diagonal-coefficient>0.</diagonal-coefficient>
       <lambdax>0.125</lambdax>
       <lambday>0.25</lambday>
@@ -38,18 +38,23 @@
       <sigma>1000000.</sigma>
       <epsilon>0.01</epsilon>
 
-      <linear-solver name="HTSSolver">
+     <alien-core-solver>
+        <backend>SimpleCSR</backend>
+        <solver>BCGS</solver>
+        <preconditioner>ChebyshevPoly</preconditioner>
+	<poly-order>1</poly-order>
+	<poly-factor>30.</poly-factor>
+	<poly-factor-max-iter>10</poly-factor-max-iter>
+        <max-iter>1000</max-iter>
+        <tol>1e-8</tol>
+        <output-level>2</output-level>
+      </alien-core-solver>
+      <linear-solver name="HypreSolver">
         <solver>BiCGStab</solver>
-        <max-iteration-num>1000</max-iteration-num>
+        <num-iterations-max>1000</num-iterations-max>
         <stop-criteria-value>1e-8</stop-criteria-value>
-        <preconditioner>ILU0</preconditioner>
-        <output>1</output>
-	<thread-env-type>1</thread-env-type>
-        <use-thread>true</use-thread>
-        <nb-threads>[% PARAM5 %]</nb-threads>
-        <nb-part>[% PARAM4 %]</nb-part>
-        <nb-subpart>[% PARAM4 %]</nb-subpart>
-        <metis>1</metis>
+        <preconditioner>Euclid</preconditioner>
+        <verbose>true</verbose>
       </linear-solver>
 
     

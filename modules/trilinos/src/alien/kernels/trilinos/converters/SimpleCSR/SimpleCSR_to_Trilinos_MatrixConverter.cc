@@ -101,11 +101,13 @@ SimpleCSR_to_Trilinos_MatrixConverter<TagT>::_buildBlock(
 {
 }
 
+#ifdef KOKKOS_ENABLE_SERIAL
 template class SimpleCSR_to_Trilinos_MatrixConverter<Alien::BackEnd::tag::tpetraserial>;
 typedef SimpleCSR_to_Trilinos_MatrixConverter<Alien::BackEnd::tag::tpetraserial>
     ConverterSerial;
 
 REGISTER_MATRIX_CONVERTER(ConverterSerial);
+#endif
 
 #ifdef KOKKOS_ENABLE_OPENMP
 template class SimpleCSR_to_Trilinos_MatrixConverter<Alien::BackEnd::tag::tpetraomp>;

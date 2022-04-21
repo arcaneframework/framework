@@ -40,6 +40,7 @@
 #include <alien/kernels/redistributor/Redistributor.h>
 #include <alien/ref/data/scalar/RedistributedVector.h>
 #include <alien/ref/data/scalar/RedistributedMatrix.h>
+#include <alien/ref/import_export/MatrixMarketSystemWriter.h>
 
 #include <alien/expression/solver/SolverStater.h>
 
@@ -360,9 +361,6 @@ AlienBenchModule::test()
                 typedef typename AlgebraType::BackEndType        BackEndType ;
                 typedef Alien::Iteration<AlgebraType>            StopCriteriaType ;
 
-
-                Timer::Sentry ts(&psolve_timer);
-
                 auto const& true_A = matrixA.impl()->get<BackEndType>() ;
                 auto const& true_b = vectorB.impl()->get<BackEndType>() ;
                 auto&       true_x = vectorX.impl()->get<BackEndType>(true) ;
@@ -391,6 +389,7 @@ AlienBenchModule::test()
                           precond.setOutputLevel(output_level) ;
                           precond.init() ;
 
+                          Timer::Sentry ts(&psolve_timer);
                           if(asynch==0)
                             solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
                           else
@@ -408,6 +407,7 @@ AlienBenchModule::test()
                           PrecondType precond{alg,true_A,polynom_factor,polynom_order,polynom_factor_max_iter,traceMng()} ;
                           precond.init() ;
 
+                          Timer::Sentry ts(&psolve_timer);
                           if(asynch==0)
                             solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
                           else
@@ -420,6 +420,8 @@ AlienBenchModule::test()
                           typedef Alien::DiagPreconditioner<AlgebraType> PrecondType ;
                           PrecondType      precond{alg,true_A} ;
                           precond.init() ;
+
+                          Timer::Sentry ts(&psolve_timer);
                           if(asynch==0)
                             solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
                           else
@@ -448,6 +450,7 @@ AlienBenchModule::test()
                       precond.setOutputLevel(output_level) ;
                       precond.init() ;
 
+                      Timer::Sentry ts(&psolve_timer);
                       if(asynch==0)
                         solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
                       else
@@ -465,6 +468,7 @@ AlienBenchModule::test()
                       PrecondType precond{alg,true_A,polynom_factor,polynom_order,polynom_factor_max_iter,traceMng()} ;
                       precond.init() ;
 
+                      Timer::Sentry ts(&psolve_timer);
                       if(asynch==0)
                         solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
                       else
@@ -478,6 +482,7 @@ AlienBenchModule::test()
                       PrecondType precond{alg,true_A,traceMng()} ;
                       precond.init() ;
 
+                      Timer::Sentry ts(&psolve_timer);
                       if(asynch==0)
                         solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
                       else
@@ -494,6 +499,7 @@ AlienBenchModule::test()
                       precond.setParameter("tol",           opt->filuTol()) ;
                       precond.init() ;
 
+                      Timer::Sentry ts(&psolve_timer);
                       if(asynch==0)
                         solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
                       else
@@ -508,6 +514,8 @@ AlienBenchModule::test()
                       typedef Alien::DiagPreconditioner<AlgebraType> PrecondType ;
                       PrecondType      precond{alg,true_A} ;
                       precond.init() ;
+
+                      Timer::Sentry ts(&psolve_timer);
                       if(asynch==0)
                         solver.solve(precond,stop_criteria,true_A,true_b,true_x) ;
                       else
@@ -678,6 +686,13 @@ AlienBenchModule::test()
             vx[i] = 0.;
             vb[i] = reader[i];
           }
+        }
+        if(i==0)
+        {
+          Alien::MatrixMarketSystemWriter matrix_exporter("AlienBenchMatrixA.mtx",m_parallel_mng->messagePassingMng()) ;
+          matrix_exporter.dump(matrixA) ;
+          Alien::MatrixMarketSystemWriter vector_exporter("AlienBenchVectorB.mtx",m_parallel_mng->messagePassingMng()) ;
+          vector_exporter.dump(vectorB) ;
         }
 
         Timer::Sentry ts(&psolve_timer);

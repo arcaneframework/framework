@@ -44,12 +44,7 @@
         <stop-criteria-value>1e-8</stop-criteria-value>
         <preconditioner>ILU0</preconditioner>
         <output>1</output>
-	<thread-env-type>1</thread-env-type>
-        <use-thread>true</use-thread>
-        <nb-threads>[% PARAM5 %]</nb-threads>
-        <nb-part>[% PARAM4 %]</nb-part>
-        <nb-subpart>[% PARAM4 %]</nb-subpart>
-        <metis>1</metis>
+	<nb-subpart>1</nb-subpart>
       </linear-solver>
 
     

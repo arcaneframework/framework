@@ -16,8 +16,11 @@
 
 namespace Alien {
 
+#ifdef KOKKOS_USE_SERIAL
 typedef LinearAlgebra<BackEnd::tag::tpetraserial> TrilinosLinearAlgebra;
+#endif
 #ifdef KOKKOS_USE_OPENMP
+typedef LinearAlgebra<BackEnd::tag::tpetraomp> TrilinosLinearAlgebra;
 typedef LinearAlgebra<BackEnd::tag::tpetraomp> TpetraOmpLinearAlgebra;
 #endif
 #ifdef KOKKOS_USE_THREADS

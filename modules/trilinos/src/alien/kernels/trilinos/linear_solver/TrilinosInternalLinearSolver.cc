@@ -7,9 +7,6 @@
 
 #include <vector>
 
-#include "alien/kernels/trilinos/TrilinosPrecomp.h"
-#include <Kokkos_Macros.hpp>
-#include <KokkosCompat_ClassicNodeAPI_Wrapper.hpp>
 
 #include <alien/data/Space.h>
 #include <alien/expression/solver/ILinearSolver.h>
@@ -25,6 +22,9 @@
 
 #include <alien/ref/AlienRefSemantic.h>
 
+#include "alien/kernels/trilinos/TrilinosPrecomp.h"
+#include <Kokkos_Macros.hpp>
+#include <KokkosCompat_ClassicNodeAPI_Wrapper.hpp>
 #include <alien/kernels/trilinos/TrilinosBackEnd.h>
 #include <alien/kernels/trilinos/data_structure/TrilinosInternal.h>
 #include <alien/kernels/trilinos/algebra/TrilinosLinearAlgebra.h>
@@ -54,7 +54,9 @@ const std::string TrilinosOptionTypes::preconditioner_type[NumOfPrecond] = {
 
 namespace Alien {
 
+#ifdef KOKKOS_ENABLE_SERIAL
 template class ALIEN_TRILINOS_EXPORT LinearSolver<BackEnd::tag::tpetraserial>;
+#endif
 #ifdef KOKKOS_ENABLE_OPENMP
 template class ALIEN_TRILINOS_EXPORT LinearSolver<BackEnd::tag::tpetraomp>;
 #endif
@@ -112,6 +114,25 @@ TrilinosInternalLinearSolver<TagT>::init()
   m_output_level = m_options->output();
 
   m_trilinos_solver.reset(new TrilinosInternal::SolverInternal<TagT>());
+  
+#ifdef TEST
+  if(use_amgx)
+  {
+      /* create config */
+      auto& env = m_trilinos_solver->m_amgx_env ;
+      std::string amgx_config_file("PBICGSTAB_CLASSICAL_JACOBI.json") ;
+      AMGX_SAFE_CALL(AMGX_config_create_from_file(&env.m_config, amgx_config_file.c_str()));
+
+      std::cout<<"CREATE AMGX RESOURCES"<<std::endl ;
+      AMGX_resources_create_simple(&env.m_resources,env.m_config);
+      env.m_mode = AMGX_mode_dDDI;
+      AMGX_solver_create(&env.m_solver, env.m_resources, env.m_mode,env.m_config);
+      AMGX_matrix_create(&env.m_A,      env.m_resources, env.m_mode);
+      AMGX_vector_create(&env.m_X,      env.m_resources, env.m_mode);
+      AMGX_vector_create(&env.m_Y,      env.m_resources, env.m_mode);
+      std::cout<<"END CREATE AMGX RESOURCES"<<std::endl ;
+  }
+#endif
   m_precond_name = TrilinosOptionTypes::precondName(m_options->preconditioner());
   auto* mpi_mng =
       dynamic_cast<Arccore::MessagePassing::Mpi::MpiMessagePassingMng*>(m_parallel_mng);
@@ -120,7 +141,6 @@ TrilinosInternalLinearSolver<TagT>::init()
 
   m_solver_name = TrilinosOptionTypes::solverName(m_options->solver());
   m_trilinos_solver->initSolverParameters(m_options);
-  
   m_initialized = true ;
 }
 
@@ -180,9 +200,11 @@ template <typename TagT>
 std::shared_ptr<ILinearAlgebra>
 TrilinosInternalLinearSolver<TagT>::algebra() const
 {
-  return std::shared_ptr<ILinearAlgebra>(new Alien::TrilinosLinearAlgebra());
+  //return std::shared_ptr<ILinearAlgebra>(new Alien::TrilinosLinearAlgebra());
+  return std::shared_ptr<ILinearAlgebra>(new Alien::LinearAlgebra<TagT>());
 }
 
+#ifdef KOKKOS_ENABLE_SERIAL
 template class TrilinosInternalLinearSolver<BackEnd::tag::tpetraserial>;
 
 IInternalLinearSolver<TrilinosMatrix<Real, BackEnd::tag::tpetraserial>,
@@ -192,13 +214,14 @@ TrilinosInternalLinearSolverFactory(
 {
   return new TrilinosInternalLinearSolver<BackEnd::tag::tpetraserial>(p_mng, options);
 }
+#endif
 
 #ifdef KOKKOS_ENABLE_OPENMP
 template class TrilinosInternalLinearSolver<BackEnd::tag::tpetraomp>;
 
 IInternalLinearSolver<TrilinosMatrix<Real, BackEnd::tag::tpetraomp>,
     TrilinosVector<Real, BackEnd::tag::tpetraomp>>*
-TpetraOmpInternalLinearSolverFactory(IParallelMng* p_mng, IOptionsTrilinosSolver* options)
+TpetraOmpInternalLinearSolverFactory(Arccore::MessagePassing::IMessagePassingMng* p_mng, IOptionsTrilinosSolver* options)
 {
   return new TrilinosInternalLinearSolver<BackEnd::tag::tpetraomp>(p_mng, options);
 }
@@ -209,7 +232,7 @@ template class TrilinosInternalLinearSolver<BackEnd::tag::tpetrapth>;
 
 IInternalLinearSolver<TrilinosMatrix<Real, BackEnd::tag::tpetrapth>,
     TrilinosVector<Real, BackEnd::tag::tpetrapth>>*
-TpetraPthInternalLinearSolverFactory(IParallelMng* p_mng, IOptionsTrilinosSolver* options)
+TpetraPthInternalLinearSolverFactory(Arccore::MessagePassing::IMessagePassingMng* p_mng, IOptionsTrilinosSolver* options)
 {
   return new TrilinosInternalLinearSolver<BackEnd::tag::tpetrapth>(p_mng, options);
 }
@@ -221,7 +244,7 @@ template class TrilinosInternalLinearSolver<BackEnd::tag::tpetracuda>;
 IInternalLinearSolver<TrilinosMatrix<Real, BackEnd::tag::tpetracuda>,
     TrilinosVector<Real, BackEnd::tag::tpetracuda>>*
 TpetraCudaInternalLinearSolverFactory(
-    IParallelMng* p_mng, IOptionsTrilinosSolver* options)
+    Arccore::MessagePassing::IMessagePassingMng* p_mng, IOptionsTrilinosSolver* options)
 {
   return new TrilinosInternalLinearSolver<BackEnd::tag::tpetracuda>(p_mng, options);
 }
@@ -241,7 +264,13 @@ TpetraCudaInternalLinearSolverFactory(
 namespace Alien {
 
 template<>
+#ifdef KOKKOS_ENABLE_SERIAL
 class SolverFabric<Alien::BackEnd::tag::tpetraserial>
+#else
+#ifdef KOKKOS_ENABLE_OPENMP
+class SolverFabric<Alien::BackEnd::tag::tpetraomp>
+#endif
+#endif
 : public ISolverFabric
 {
 public :
@@ -414,7 +443,13 @@ public :
         TrilinosSolverOptionsNames::_muelu             = options_muelu);
 
     // service
+#ifdef KOKKOS_ENABLE_SERIAL
     return  new Alien::TrilinosLinearSolver<BackEnd::tag::tpetraserial>(pm, solver_options);
+#else
+#ifdef KOKKOS_ENABLE_OPENMP
+    return  new Alien::TrilinosLinearSolver<BackEnd::tag::tpetraomp>(pm, solver_options);
+#endif
+#endif
   }
 
   Alien::ILinearSolver* create(CmdLineOptionType const& options,Alien::IMessagePassingMng* pm) const
@@ -428,7 +463,13 @@ public :
   }
 };
 
+#ifdef KOKKOS_ENABLE_SERIAL
 typedef SolverFabric<Alien::BackEnd::tag::tpetraserial> TrilinosSolverFabric ;
+#else
+#ifdef KOKKOS_ENABLE_OPENMP
+typedef SolverFabric<Alien::BackEnd::tag::tpetraomp> TrilinosSolverFabric ;
+#endif
+#endif
 REGISTER_SOLVER_FABRIC(TrilinosSolverFabric);
 
 } // namespace Alien

@@ -134,7 +134,9 @@ TrilinosVector<ValueT, TagT>::dump(std::string const& filename) const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+#ifdef KOKKOS_ENABLE_SERIAL
 template class TrilinosVector<double, BackEnd::tag::tpetraserial>;
+#endif
 #ifdef KOKKOS_ENABLE_OPENMP
 template class TrilinosVector<double, BackEnd::tag::tpetraomp>;
 #endif

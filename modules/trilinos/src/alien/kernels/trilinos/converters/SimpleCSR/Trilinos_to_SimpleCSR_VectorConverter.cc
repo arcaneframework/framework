@@ -51,10 +51,12 @@ Trilinos_to_SimpleCSR_VectorConverter<TagT>::convert(
 }
 
 /*---------------------------------------------------------------------------*/
+#ifdef KOKKOS_ENABLE_SERIAL
 template class Trilinos_to_SimpleCSR_VectorConverter<Alien::BackEnd::tag::tpetraserial>;
 typedef Trilinos_to_SimpleCSR_VectorConverter<Alien::BackEnd::tag::tpetraserial>
     Trilinos_to_SimpleCSR_VectorConverterSerial;
 REGISTER_VECTOR_CONVERTER(Trilinos_to_SimpleCSR_VectorConverterSerial);
+#endif
 #ifdef KOKKOS_ENABLE_OPENMP
 template class Trilinos_to_SimpleCSR_VectorConverter<Alien::BackEnd::tag::tpetraomp>;
 typedef Trilinos_to_SimpleCSR_VectorConverter<Alien::BackEnd::tag::tpetraomp>
@@ -72,4 +74,6 @@ template class Trilinos_to_SimpleCSR_VectorConverter<Alien::BackEnd::tag::tpetra
 typedef Trilinos_to_SimpleCSR_VectorConverter<Alien::BackEnd::tag::tpetracuda>
     Trilinos_to_SimpleCSR_VectorConverterCUDA;
 REGISTER_VECTOR_CONVERTER(Trilinos_to_SimpleCSR_VectorConverterCUDA);
+#else
+#warning "TRILINOS Trilinos2SimpleCSR Vector Converter not registrered"
 #endif

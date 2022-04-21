@@ -23,7 +23,9 @@ namespace Alien {
 /*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
+#ifdef KOKKOS_ENABLE_SERIAL
 template class ALIEN_TRILINOS_EXPORT LinearAlgebra<BackEnd::tag::tpetraserial>;
+#endif
 IInternalLinearAlgebra<TrilinosMatrixType, TrilinosVectorType>*
 TrilinosInternalLinearAlgebraFactory(Arccore::MessagePassing::IMessagePassingMng* pm)
 {
@@ -34,7 +36,7 @@ TrilinosInternalLinearAlgebraFactory(Arccore::MessagePassing::IMessagePassingMng
 template class ALIEN_TRILINOS_EXPORT LinearAlgebra<BackEnd::tag::tpetraomp>;
 
 IInternalLinearAlgebra<TpetraOmpMatrixType, TpetraOmpVectorType>*
-TpetraOmpInternalLinearAlgebraFactory(IParallelMng* pm)
+TpetraOmpInternalLinearAlgebraFactory(Arccore::MessagePassing::IMessagePassingMng* pm)
 {
   return new TpetraOmpInternalLinearAlgebra(pm);
 }
@@ -44,7 +46,7 @@ TpetraOmpInternalLinearAlgebraFactory(IParallelMng* pm)
 template class ALIEN_TRILINOS_EXPORT LinearAlgebra<BackEnd::tag::tpetrapth>;
 
 IInternalLinearAlgebra<TpetraPthMatrixType, TpetraPthVectorType>*
-TpetraPthInternalLinearAlgebraFactory(IParallelMng* pm)
+TpetraPthInternalLinearAlgebraFactory(Arccore::MessagePassing::IMessagePassingMng* pm)
 {
   return new TpetraPthInternalLinearAlgebra(pm);
 }
@@ -54,7 +56,7 @@ TpetraPthInternalLinearAlgebraFactory(IParallelMng* pm)
 template class ALIEN_TRILINOS_EXPORT LinearAlgebra<BackEnd::tag::tpetracuda>;
 
 IInternalLinearAlgebra<TpetraCudaMatrixType, TpetraCudaVectorType>*
-TpetraCudaInternalLinearAlgebraFactory(IParallelMng* pm)
+TpetraCudaInternalLinearAlgebraFactory(Arccore::MessagePassing::IMessagePassingMng* pm)
 {
   return new TpetraCudaInternalLinearAlgebra(pm);
 }

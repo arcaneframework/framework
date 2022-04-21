@@ -42,10 +42,13 @@ TrilinosLinearSolver<TagT>::TrilinosLinearSolver(
 
 /*---------------------------------------------------------------------------*/
 
+#ifdef KOKKOS_ENABLE_SERIAL
 template class TrilinosLinearSolver<BackEnd::tag::tpetraserial>;
 typedef TrilinosLinearSolver<BackEnd::tag::tpetraserial> SolverSerial;
 ARCANE_REGISTER_SERVICE_TRILINOSSOLVER(TrilinosSolver, SolverSerial);
+#endif
 
+  
 #ifdef KOKKOS_ENABLE_OPENMP
 template class TrilinosLinearSolver<BackEnd::tag::tpetraomp>;
 typedef TrilinosLinearSolver<BackEnd::tag::tpetraomp> SolverOMP;

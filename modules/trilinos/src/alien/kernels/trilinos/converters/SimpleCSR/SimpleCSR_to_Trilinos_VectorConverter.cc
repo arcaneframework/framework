@@ -57,10 +57,12 @@ SimpleCSR_to_Trilinos_VectorConverter<TagT>::convert(
 }
 
 /*---------------------------------------------------------------------------*/
+#ifdef KOKKOS_ENABLE_SERIAL
 template class SimpleCSR_to_Trilinos_VectorConverter<BackEnd::tag::tpetraserial>;
 typedef SimpleCSR_to_Trilinos_VectorConverter<BackEnd::tag::tpetraserial>
     SimpleCSR_to_Trilinos_VectorConverterSerial;
 REGISTER_VECTOR_CONVERTER(SimpleCSR_to_Trilinos_VectorConverterSerial);
+#endif
 
 #ifdef KOKKOS_ENABLE_OPENMP
 template class SimpleCSR_to_Trilinos_VectorConverter<BackEnd::tag::tpetraomp>;

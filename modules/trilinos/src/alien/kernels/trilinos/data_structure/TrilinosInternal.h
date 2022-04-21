@@ -8,6 +8,7 @@
  *  can be only included by LinearSystem and LinearSolver
  */
 
+#include <string>
 #include <alien/distribution/MatrixDistribution.h>
 
 #include <alien/kernels/trilinos/TrilinosPrecomp.h>
@@ -38,7 +39,18 @@
 
 #include <MatrixMarket_Tpetra.hpp>
 
-#endif
+#define HAVE_MUELU
+#ifdef HAVE_MUELU
+#include <Trilinos_version.h>
+#include <MueLu.hpp>
+
+#if defined(HAVE_MUELU_AMGX)
+#include <MueLu_AMGXOperator.hpp>
+//#include <MueLu_AMGX_Setup.hpp>
+#endif // HAVE_MUELU_AMGX
+#endif // HAVE_MUELU
+
+#endif // ALIEN_USE_TRILINOS
 
 /*---------------------------------------------------------------------------*/
 
@@ -53,6 +65,26 @@ struct Features
 };
 
 /*---------------------------------------------------------------------------*/
+#ifdef HAVE_MUELU_AMGX
+struct AMGXEnv
+{
+   AMGX_Mode               m_mode ;
+   AMGX_config_handle      m_config    = nullptr ;
+   AMGX_resources_handle   m_resources = nullptr ;
+   AMGX_solver_handle      m_solver    = nullptr ;
+   AMGX_matrix_handle      m_A         = nullptr ;
+   AMGX_vector_handle      m_X         = nullptr ;
+   AMGX_vector_handle      m_Y         = nullptr ;
+   int                     m_N         = 0 ;
+   int                     m_nnz       = 0 ;
+
+   std::vector<int>        m_muelu2amgx;
+
+   std::string             m_config_file ;
+   std::string             m_config_string ;
+} ;
+void solveAMGX(AMGXEnv& amgx_env,double* x, double* y) ;
+#endif
 struct TrilinosInternal
 {
   template <typename tpetra_tag> struct Node;
@@ -72,10 +104,11 @@ struct TrilinosInternal
 
   static std::string const& getExecutionSpace() { return m_execution_space; }
 
+ public :
+  static bool        m_amgx_is_initialized ;
  private:
-  static bool m_is_initialized;
-  static bool m_amgx_is_initialized;
-  static int m_nb_threads;
+  static bool        m_is_initialized;
+  static int         m_nb_threads;
   static std::size_t m_nb_hyper_threads;
   static std::size_t m_mpi_core_id_offset;
   static std::string m_execution_space;
@@ -83,12 +116,25 @@ struct TrilinosInternal
   static std::unique_ptr<const Teuchos::Comm<int>> m_trilinos_comm;
 };
 
+
+#ifdef HAVE_MUELU_AMGX
+void initAMGX(AMGXEnv& amgx_env) ;
+#endif
+#ifdef KOKKOS_ENABLE_SERIAL
 template <> struct TrilinosInternal::Node<BackEnd::tag::tpetraserial>
 {
   typedef Kokkos::Compat::KokkosSerialWrapperNode type;
   static const std::string name;
   static const std::string execution_space_name;
 };
+
+#ifdef HAVE_MUELU_AMGX
+inline void initAMGX(AMGXEnv& amgx_env,
+		     Tpetra::CrsMatrix<double, int, int,TrilinosInternal::Node<BackEnd::tag::tpetraserial>::type> const& matrix)
+{
+}
+#endif
+#endif
 
 #ifdef KOKKOS_ENABLE_OPENMP
 template <> struct TrilinosInternal::Node<BackEnd::tag::tpetraomp>
@@ -97,6 +143,12 @@ template <> struct TrilinosInternal::Node<BackEnd::tag::tpetraomp>
   static const std::string name;
   static const std::string execution_space_name;
 };
+#ifdef HAVE_MUELU_AMGX
+inline void initAMGX(AMGXEnv& amgx_env,
+		     Tpetra::CrsMatrix<double, int, int,TrilinosInternal::Node<BackEnd::tag::tpetraomp>::type> const& matrix)
+{
+}
+#endif
 #endif
 
 #ifdef KOKKOS_ENABLE_THREADS
@@ -115,28 +167,35 @@ template <> struct TrilinosInternal::Node<BackEnd::tag::tpetracuda>
   static const std::string name;
   static const std::string execution_space_name;
 };
+#ifdef HAVE_MUELU_AMGX
+void initAMGX(AMGXEnv& amgx_env,
+	      Tpetra::CrsMatrix<double, int, int,TrilinosInternal::Node<BackEnd::tag::tpetracuda>::type> const& matrix) ;
+#endif
 #endif
 
+#ifdef KOKKOS_ENABLE_SERIAL
 template <typename ValueT, typename TagT = BackEnd::tag::tpetraserial>
+#else
+#ifdef KOKKOS_ENABLE_OPENMP
+template <typename ValueT, typename TagT = BackEnd::tag::tpetraomp>
+#endif
+#endif
 class MatrixInternal
 {
  public:
   typedef ValueT scalar_type;
   typedef typename TrilinosInternal::Node<TagT>::type node_type;
-  typedef Tpetra::Map<int, int, node_type>            map_type;
-  typedef Tpetra::CrsGraph<int, int, node_type>       graph_type;
-  typedef typename graph_type::local_ordinal_type     local_ordinal_type;
-  typedef typename graph_type::global_ordinal_type    global_ordinal_type;
+  typedef Tpetra::Map<int, int, node_type> map_type;
+  typedef Tpetra::CrsGraph<int, int, node_type> graph_type;
+  typedef typename graph_type::local_ordinal_type local_ordinal_type;
+  typedef typename graph_type::global_ordinal_type global_ordinal_type;
 
-  typedef Tpetra::CrsMatrix<scalar_type,
-                            local_ordinal_type,
-                            global_ordinal_type,
-                            node_type>                 matrix_type;
+  typedef Tpetra::CrsMatrix<scalar_type, local_ordinal_type, global_ordinal_type,
+      node_type>
+      matrix_type;
 
-  typedef Tpetra::Vector<scalar_type,
-                         local_ordinal_type,
-                         global_ordinal_type,
-                         node_type>                    vector_type;
+  typedef Tpetra::Vector<scalar_type, local_ordinal_type, global_ordinal_type, node_type>
+      vector_type;
   
   typedef Teuchos::ScalarTraits<scalar_type>                 STS;
   typedef typename STS::magnitudeType                        magnitude_type;
@@ -164,7 +223,7 @@ class MatrixInternal
     m_map = rcp(new map_type(gsize, indices, 0, m_comm));
 
     //m_internal.reset(new matrix_type(this->m_map, 0, Tpetra::ProfileType(1)));
-    //m_internal.reset(new matrix_type(this->m_map, 10));
+    m_internal.reset(new matrix_type(this->m_map, 10));
   }
 
   bool initMatrix(int local_offset, int nrows, int const* kcol, int const* cols,
@@ -184,13 +243,18 @@ class MatrixInternal
   Teuchos::RCP<const map_type>           m_map;
   Teuchos::RCP<coord_vector_type>        m_coordinates;
 
-  std::unique_ptr<graph_type>            m_graph ;
-  std::unique_ptr<matrix_type>           m_internal;
+  std::unique_ptr<matrix_type> m_internal;
 };
 
 /*---------------------------------------------------------------------------*/
 
+#ifdef KOKKOS_ENABLE_SERIAL
 template <typename ValueT, typename TagT = BackEnd::tag::tpetraserial>
+#else
+#ifdef KOKKOS_ENABLE_OPENMP
+template <typename ValueT, typename TagT = BackEnd::tag::tpetraomp>
+#endif
+#endif
 class VectorInternal
 {
  public:

@@ -52,6 +52,7 @@ namespace BackEnd {
 class Matrix;
 class Vector;
 
+#ifdef KOKKOS_ENABLE_SERIAL
 extern IInternalLinearSolver<TrilinosMatrix<Real, BackEnd::tag::tpetraserial>,
     TrilinosVector<Real, BackEnd::tag::tpetraserial>>*
 TrilinosInternalLinearSolverFactory(
@@ -61,7 +62,21 @@ extern IInternalLinearAlgebra<TrilinosMatrix<Real, BackEnd::tag::tpetraserial>,
     TrilinosVector<Real, BackEnd::tag::tpetraserial>>*
 TrilinosInternalLinearAlgebraFactory(
     Arccore::MessagePassing::IMessagePassingMng* p_mng = nullptr);
+#else
+#ifdef KOKKOS_ENABLE_OPENMP
+extern IInternalLinearSolver<TrilinosMatrix<Real, BackEnd::tag::tpetraomp>,
+    TrilinosVector<Real, BackEnd::tag::tpetraomp>>*
+TrilinosInternalLinearSolverFactory(
+    Arccore::MessagePassing::IMessagePassingMng* p_mng, IOptionsTrilinosSolver* options);
 
+extern IInternalLinearAlgebra<TrilinosMatrix<Real, BackEnd::tag::tpetraomp>,
+    TrilinosVector<Real, BackEnd::tag::tpetraomp>>*
+TrilinosInternalLinearAlgebraFactory(
+    Arccore::MessagePassing::IMessagePassingMng* p_mng = nullptr);
+#endif
+#endif
+
+#ifdef KOKKOS_ENABLE_SERIAL
 template <> struct AlgebraTraits<BackEnd::tag::tpetraserial>
 {
   typedef TrilinosMatrix<Real, BackEnd::tag::tpetraserial> matrix_type;
@@ -84,16 +99,17 @@ template <> struct AlgebraTraits<BackEnd::tag::tpetraserial>
 
   static BackEndId name() { return "tpetraserial"; }
 };
+#endif
 
 #ifdef KOKKOS_ENABLE_OPENMP
 extern IInternalLinearSolver<TrilinosMatrix<Real, BackEnd::tag::tpetraomp>,
     TrilinosVector<Real, BackEnd::tag::tpetraomp>>*
 TpetraOmpInternalLinearSolverFactory(
-    IParallelMng* p_mng, IOptionsTrilinosSolver* options);
+    Arccore::MessagePassing::IMessagePassingMng* p_mng, IOptionsTrilinosSolver* options);
 
 extern IInternalLinearAlgebra<TrilinosMatrix<Real, BackEnd::tag::tpetraomp>,
     TrilinosVector<Real, BackEnd::tag::tpetraomp>>*
-TpetraOmpInternalLinearAlgebraFactory(IParallelMng* p_mng = nullptr);
+TpetraOmpInternalLinearAlgebraFactory(Arccore::MessagePassing::IMessagePassingMng* p_mng = nullptr);
 
 template <> struct AlgebraTraits<BackEnd::tag::tpetraomp>
 {
@@ -103,11 +119,11 @@ template <> struct AlgebraTraits<BackEnd::tag::tpetraomp>
   typedef IInternalLinearAlgebra<matrix_type, vector_type> algebra_type;
   typedef IInternalLinearSolver<matrix_type, vector_type> solver_type;
 
-  static algebra_type* algebra_factory(IParallelMng* p_mng = nullptr)
+  static algebra_type* algebra_factory(Arccore::MessagePassing::IMessagePassingMng* p_mng = nullptr)
   {
     return TpetraOmpInternalLinearAlgebraFactory();
   }
-  static solver_type* solver_factory(IParallelMng* p_mng, options_type* options)
+  static solver_type* solver_factory(Arccore::MessagePassing::IMessagePassingMng* p_mng, options_type* options)
   {
     return TpetraOmpInternalLinearSolverFactory(p_mng, options);
   }
@@ -151,11 +167,11 @@ template <> struct AlgebraTraits<BackEnd::tag::tpetrapth>
 extern IInternalLinearSolver<TrilinosMatrix<Real, BackEnd::tag::tpetracuda>,
     TrilinosVector<Real, BackEnd::tag::tpetracuda>>*
 TpetraCudaInternalLinearSolverFactory(
-    IParallelMng* p_mng, IOptionsTrilinosSolver* options);
+    Arccore::MessagePassing::IMessagePassingMng* p_mng, IOptionsTrilinosSolver* options);
 
 extern IInternalLinearAlgebra<TrilinosMatrix<Real, BackEnd::tag::tpetracuda>,
     TrilinosVector<Real, BackEnd::tag::tpetracuda>>*
-TpetraCudaInternalLinearAlgebraFactory(IParallelMng* p_mng = nullptr);
+TpetraCudaInternalLinearAlgebraFactory(Arccore::MessagePassing::IMessagePassingMng* p_mng = nullptr);
 
 template <> struct AlgebraTraits<BackEnd::tag::tpetracuda>
 {
@@ -165,11 +181,11 @@ template <> struct AlgebraTraits<BackEnd::tag::tpetracuda>
   typedef IInternalLinearAlgebra<matrix_type, vector_type> algebra_type;
   typedef IInternalLinearSolver<matrix_type, vector_type> solver_type;
 
-  static algebra_type* algebra_factory(IParallelMng* p_mng = nullptr)
+  static algebra_type* algebra_factory(Arccore::MessagePassing::IMessagePassingMng* p_mng = nullptr)
   {
     return TpetraCudaInternalLinearAlgebraFactory();
   }
-  static solver_type* solver_factory(IParallelMng* p_mng, options_type* options)
+  static solver_type* solver_factory(Arccore::MessagePassing::IMessagePassingMng* p_mng, options_type* options)
   {
     return TpetraCudaInternalLinearSolverFactory(p_mng, options);
   }

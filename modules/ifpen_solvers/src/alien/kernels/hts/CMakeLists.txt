@@ -43,6 +43,10 @@ if(TARGET eigen3)
   linkLibraries(alien_ifpen_solvers eigen3)
 endif()
 
+if(TARGET hypre)
+  linkLibraries(alien_ifpen_solvers hypre)
+endif()
+
 if(TARGET arpack)
   linkLibraries(alien_ifpen_solvers arpack)
 endif()
@@ -53,6 +57,10 @@ endif()
 
 if(TARGET hdf5)
   linkLibraries(alien_ifpen_solvers hdf5)
+endif()
+
+if(TARGET mkl)
+  linkLibraries(alien_ifpen_solvers mkl)
 endif()
 
 if(TARGET tbb)

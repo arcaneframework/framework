@@ -9,6 +9,10 @@ createLibrary(alien_trilinos
 set_target_properties(alien_trilinos
         PROPERTIES LINKER_LANGUAGE "CXX")
 
+if(ENABLE_CUDA)
+target_compile_options(alien_trilinos PRIVATE "-arch=sm_80 --extended-lambda ")
+endif()
+
 if (TARGET arcane_core)
     set(AXL_OPTION_GENERATION_TYPE "ALL")
     set(NAMESPACE_TYPE "Arcane")
@@ -31,6 +35,10 @@ if (TARGET arcane_core)
 else ()
     linkLibraries(alien_trilinos alien_strong_options)
 endif ()
+
+if(TARGET mkl)
+  linkLibraries(alien_trilinos mkl)
+endif()
 
 if (TARGET umfpack)
     linkLibraries(alien_trilinos umfpack)

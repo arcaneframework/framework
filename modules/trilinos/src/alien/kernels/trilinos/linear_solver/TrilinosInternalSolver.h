@@ -24,6 +24,8 @@
 #include <BelosTpetraAdapter.hpp>
 #include <BelosSolverFactory.hpp>
 #include <Ifpack2_Factory.hpp>
+#define HAVE_MUELU
+#ifdef HAVE_MUELU 
 #include <MueLu.hpp>
 
 #include <MueLu_BaseClass.hpp>
@@ -35,6 +37,7 @@
 #include <MueLu_ParameterListInterpreter.hpp>
 #include <MueLu_Utilities.hpp>
 #include <MueLu_CreateTpetraPreconditioner.hpp>
+#endif
 
 #include <Teuchos_GlobalMPISession.hpp>
 #include <Teuchos_oblackholestream.hpp>
@@ -43,7 +46,9 @@
 #include <MatrixMarket_Tpetra.hpp>
 
 #if defined(HAVE_MUELU_AMGX)
-#include <MueLu_AMGXOperator.hpp>
+//#include <MueLu_AMGXOperator.hpp>
+#include <alien/kernels/trilinos/linear_solver/ALIEN_AMGXOperator_decl.hpp>
+#include <alien/kernels/trilinos/linear_solver/ALIEN_AMGXOperator_def.hpp>
 #endif
 #endif
 
@@ -76,7 +81,7 @@ template <typename TagT> class SolverInternal
       node_type>
       prec_type;
 #ifdef HAVE_MUELU_AMGX
-  typedef MueLu::AMGXOperator<scalar_type, local_ordinal_type, global_ordinal_type,
+  typedef MueLu::ALIEN_AMGXOperator<scalar_type, local_ordinal_type, global_ordinal_type,
       node_type>
       amgx_prec_type;
 #endif
@@ -458,8 +463,9 @@ template <typename TagT> class SolverInternal
       using Teuchos::rcp;
       using Teuchos::Comm;
       using Teuchos::MpiComm;
+      std::cout<<"INIT AMGX OPERATOR : "<<comm<<std::endl ;
       m_comm = rcp(new MpiComm<int>(*comm));
-      m_amgx_M_ptr = new amgx_prec_type(*m_comm, *m_precond_parameters);
+      m_amgx_M_ptr = new amgx_prec_type(m_comm, *m_precond_parameters) ;
       m_amgx_M = rcp(m_amgx_M_ptr);
     }
 #endif
@@ -545,6 +551,7 @@ template <typename TagT> class SolverInternal
     //
     // RCP<muelu_prec_type> mueLuPreconditioner ;
     if (precondType.compare("MueLu") == 0) {
+#ifdef HAVE_MUELU
       typedef MueLu::TpetraOperator<scalar_type, local_ordinal_type, global_ordinal_type,
           node_type>
           prec_type;
@@ -556,6 +563,9 @@ template <typename TagT> class SolverInternal
       }
       RCP<prec_type> prec = MueLu::CreateTpetraPreconditioner(opMat, *plist);
       return prec;
+#else
+      return RCP<op_type>() ;
+#endif
     } else {
       typedef Ifpack2::Preconditioner<scalar_type, local_ordinal_type,
           global_ordinal_type, node_type>

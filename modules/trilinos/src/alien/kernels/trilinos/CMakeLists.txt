@@ -36,3 +36,7 @@ addSources(alien_trilinos
     eigen_solver/arcane/TrilinosEigenSolver.cc
     )
 linkLibraries(alien_trilinos trilinos)
+
+#if(TARGET nvamg)
+#linkLibraries(alien_trilinos nvamg)
+#endif()
