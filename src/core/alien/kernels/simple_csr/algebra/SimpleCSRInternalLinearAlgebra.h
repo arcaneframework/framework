@@ -23,6 +23,8 @@
 #include <alien/core/backend/IInternalLinearAlgebraExprT.h>
 #include <alien/core/backend/IInternalLinearAlgebraT.h>
 #include <alien/kernels/simple_csr/SimpleCSRBackEnd.h>
+#include <alien/kernels/simple_csr/SendRecvOp.h>
+#include <alien/kernels/simple_csr/LUSendRecvOp.h>
 
 #include <alien/distribution/VectorDistribution.h>
 #include <alien/distribution/MatrixDistribution.h>
@@ -37,6 +39,18 @@ namespace Alien
 
 typedef AlgebraTraits<BackEnd::tag::simplecsr>::matrix_type CSRMatrix;
 typedef AlgebraTraits<BackEnd::tag::simplecsr>::vector_type CSRVector;
+
+template <>
+struct LUSendRecvTraits<BackEnd::tag::simplecsr>
+{
+  // clang-format off
+  typedef CSRMatrix                                          matrix_type ;
+  typedef CSRVector                                          vector_type ;
+  typedef AlgebraTraits<BackEnd::tag::simplecsr>::value_type value_type ;
+  typedef SimpleCSRInternal::LUSendRecvOp<CSRMatrix>         matrix_op_type ;
+  typedef SimpleCSRInternal::SendRecvOp<value_type>          vector_op_type ;
+  // clang-format on
+};
 
 class ALIEN_EXPORT SimpleCSRInternalLinearAlgebra
 : public IInternalLinearAlgebra<CSRMatrix, CSRVector>

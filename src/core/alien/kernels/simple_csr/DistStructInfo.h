@@ -79,6 +79,36 @@ class ALIEN_EXPORT DistStructInfo
 
   void copy(const DistStructInfo& distStructInfo);
 
+  void computeUpperDiagOffset(const CSRStructInfo& profile) const
+  {
+    auto nrows = profile.getNRows();
+    auto row_offset = profile.getRowOffset();
+    m_upper_diag_offset.resize(nrows);
+    for (int irow = 0; irow < nrows; ++irow) {
+      int index = row_offset[irow];
+      for (int k = row_offset[irow]; k < row_offset[irow] + m_local_row_size[irow]; ++k) {
+        if (m_cols[k] < irow)
+          ++index;
+        else
+          break;
+      }
+      m_upper_diag_offset[irow] = index;
+    }
+  }
+
+  ConstArrayView<Integer> getUpperDiagOffset(const CSRStructInfo& profile) const
+  {
+    if (m_upper_diag_offset.size() == 0)
+      computeUpperDiagOffset(profile);
+    return m_upper_diag_offset.constView();
+  }
+
+  int const* dcol(const CSRStructInfo& profile) const
+  {
+    getUpperDiagOffset(profile);
+    return m_upper_diag_offset.data();
+  }
+
   // clang-format off
   Arccore::UniqueArray<Arccore::Integer> m_local_row_size;
   Arccore::Integer                       m_ghost_nrow = 0;
@@ -87,6 +117,8 @@ class ALIEN_EXPORT DistStructInfo
   Arccore::UniqueArray<Arccore::Integer> m_interface_rows;
   std::unordered_set<int>                m_interface_row_set;
   Arccore::UniqueArray<Arccore::Integer> m_cols;
+  mutable
+  Arccore::UniqueArray<Arccore::Integer> m_upper_diag_offset;
   CommInfo                               m_recv_info;
   CommInfo                               m_send_info;
   Arccore::UniqueArray<Arccore::Integer> m_block_sizes;

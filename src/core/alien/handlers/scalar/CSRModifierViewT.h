@@ -29,20 +29,29 @@
 namespace Alien
 {
 
-template <typename ProfileT>
+template <typename ProfileT, typename DistProfileInfoT>
 class CSRProfileConstViewT
 {
  protected:
-  ProfileT const& m_profile;
+  // clang-format off
+  ProfileT const&         m_profile;
+  DistProfileInfoT const& m_dist_info ;
+  bool                    m_is_parallel = false;
+  // clang-format on
 
  public:
   // clang-format off
   typedef ProfileT                        ProfileType ;
   typedef typename ProfileType::IndexType IndexType ;
+  typedef DistProfileInfoT                DistInfoType ;
   // clang-format on
 
-  CSRProfileConstViewT(ProfileT const& profile)
+  CSRProfileConstViewT(ProfileT const& profile,
+                       DistInfoType const& dist_info,
+                       bool is_parallel = false)
   : m_profile(profile)
+  , m_dist_info(dist_info)
+  , m_is_parallel(is_parallel)
   {}
 
   std::size_t nrows()
@@ -60,31 +69,41 @@ class CSRProfileConstViewT
     return m_profile.kcol();
   }
 
-  IndexType const* dcol()
-  {
-    return m_profile.dcol();
-  }
-
   IndexType const* cols()
   {
-    return m_profile.cols();
+    if (m_is_parallel)
+      return m_dist_info.m_cols.data();
+    else
+      return m_profile.cols();
+  }
+
+  IndexType const* dcol()
+  {
+    if (m_is_parallel)
+      return m_dist_info.dcol(m_profile);
+    else
+      return m_profile.dcol();
   }
 };
 
 template <typename MatrixT>
 class CSRConstViewT
-: public CSRProfileConstViewT<typename MatrixT::ProfileType>
+: public CSRProfileConstViewT<typename MatrixT::ProfileType,
+                              typename MatrixT::DistStructInfo>
 {
  public:
   // clang-format off
-    typedef MatrixT                           MatrixType ;
-    typedef typename MatrixType::ProfileType  ProfileType ;
-    typedef CSRProfileConstViewT<ProfileType> BaseType ;
-    typedef typename MatrixType::ValueType    ValueType ;
+    typedef MatrixT                                  MatrixType ;
+    typedef typename MatrixType::ProfileType         ProfileType ;
+    typedef typename MatrixType::DistStructInfo      DistStructInfo ;
+    typedef
+    CSRProfileConstViewT<ProfileType,DistStructInfo> BaseType ;
+    typedef typename MatrixType::ValueType           ValueType ;
+    typedef typename BaseType::IndexType             IndexType ;
   // clang-format on
 
   CSRConstViewT(MatrixT const& matrix)
-  : BaseType(matrix.getProfile())
+  : BaseType(matrix.getProfile(), matrix.getDistStructInfo(), matrix.isParallel())
   , m_matrix(matrix)
   {}
 
@@ -99,18 +118,22 @@ class CSRConstViewT
 
 template <typename MatrixT>
 class CSRModifierViewT
-: public CSRProfileConstViewT<typename MatrixT::ProfileType>
+: public CSRProfileConstViewT<typename MatrixT::ProfileType,
+                              typename MatrixT::DistStructInfo>
 {
  public:
   // clang-format off
-    typedef MatrixT                           MatrixType ;
-    typedef typename MatrixType::ProfileType  ProfileType ;
-    typedef CSRProfileConstViewT<ProfileType> BaseType ;
-    typedef typename MatrixType::ValueType    ValueType ;
+    typedef MatrixT                                  MatrixType ;
+    typedef typename MatrixType::ProfileType         ProfileType ;
+    typedef typename MatrixType::DistStructInfo      DistStructInfo ;
+    typedef
+    CSRProfileConstViewT<ProfileType,DistStructInfo> BaseType ;
+    typedef typename MatrixType::ValueType           ValueType ;
+    typedef typename BaseType::IndexType             IndexType ;
   // clang-format on
 
   CSRModifierViewT(MatrixT& matrix)
-  : BaseType(matrix.getProfile())
+  : BaseType(matrix.getProfile(), matrix.getDistStructInfo(), matrix.isParallel())
   , m_matrix(matrix)
   {
     m_matrix.notifyChanges();

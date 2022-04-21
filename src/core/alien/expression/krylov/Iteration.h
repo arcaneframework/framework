@@ -91,8 +91,10 @@ class Iteration
 
   void operator++()
   {
-    if (m_trace_mng)
+    if (m_trace_mng) {
+      m_trace_mng->info() << "================================";
       m_trace_mng->info() << "iteration (" << m_iter << ") criteria = " << getValue();
+    }
     ++m_iter;
   }
 

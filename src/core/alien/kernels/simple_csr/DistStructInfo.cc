@@ -23,16 +23,15 @@
  *      Author: gratienj
  */
 
-#include "DistStructInfo.h"
-
 #include <map>
 #include <set>
 #include <sstream>
 
-#include "../../core/block/VBlock.h"
-#include "../../core/block/VBlockOffsets.h"
+#include "alien/core/block/VBlock.h"
+#include "alien/core/block/VBlockOffsets.h"
 
 #include "CSRStructInfo.h"
+#include "DistStructInfo.h"
 #include "SendRecvOp.h"
 
 using namespace Arccore;
@@ -531,11 +530,13 @@ void DistStructInfo::copy(const DistStructInfo& src)
   m_local_row_size.copy(src.m_local_row_size);
   m_ghost_nrow = src.m_ghost_nrow;
   m_interface_nrow = src.m_interface_nrow;
+  m_first_upper_ghost_index = src.m_first_upper_ghost_index;
 
   m_interface_rows.copy(src.m_interface_rows);
   m_interface_row_set = src.m_interface_row_set;
   m_cols.copy(src.m_cols);
 
+  m_upper_diag_offset.copy(src.m_upper_diag_offset);
   m_block_sizes.copy(src.m_block_sizes);
   m_block_offsets.copy(src.m_block_offsets);
 

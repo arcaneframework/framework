@@ -55,6 +55,7 @@ class SimpleCSRMatrix : public IMatrixImpl
  public:
   // clang-format off
   static const bool                                    on_host_only = true ;
+  typedef BackEnd::tag::simplecsr                      TagType ;
   typedef ValueT                                       ValueType;
   typedef SimpleCSRInternal::CSRStructInfo             CSRStructInfo;
   typedef SimpleCSRInternal::CSRStructInfo             ProfileType;
@@ -151,6 +152,11 @@ class SimpleCSRMatrix : public IMatrixImpl
   Integer getGhostSize() const { return m_ghost_size; }
 
   Integer getAllocSize() const { return m_local_size + m_ghost_size; }
+
+  IMessagePassingMng* getParallelMng()
+  {
+    return m_parallel_mng;
+  }
 
   void sequentialStart()
   {

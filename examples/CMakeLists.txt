@@ -91,9 +91,27 @@ alien_test( BENCH krylov-simplecsr
             OPTIONS --nx 10 --ny 10 --solver bicgs --precond poly --kernel simplcsr)
             
 alien_test( BENCH krylov-simplecsr
+            NAME bicgs-poly-mpi
+            PROCS 4
+            COMMAND krylov_example.exe
+            OPTIONS --nx 10 --ny 10 --solver bicgs --precond poly --kernel simplcsr)
+        
+alien_test( BENCH krylov-simplecsr
             NAME bicgs-ilu0
             COMMAND krylov_example.exe 
             OPTIONS --nx 10 --ny 10 --solver bicgs --precond ilu0 --kernel simplcsr)
+
+alien_test( BENCH krylov-simplecsr
+            NAME bicgs-ilu0-mpi
+            PROCS 4
+            COMMAND krylov_example.exe 
+            OPTIONS --nx 10 --ny 10 --solver bicgs --precond ilu0 --kernel simplcsr)
+
+alien_test( BENCH krylov-simplecsr
+            NAME bicgs-filu0-mpi
+            PROCS 4
+            COMMAND krylov_example.exe 
+            OPTIONS --nx 10 --ny 10 --solver bicgs --precond filu0 --kernel simplcsr)
 
 alien_test( BENCH krylov-simplecsr
             NAME bicgs-filu0

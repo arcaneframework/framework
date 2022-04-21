@@ -177,7 +177,7 @@ Real SolverStat::lastSolveCpuTime() const
 /*---------------------------------------------------------------------------*/
 
 void SolverStat::print(
-ITraceMng* traceMng, ALIEN_UNUSED_PARAM const Alien::SolverStatus& status, ALIEN_UNUSED_PARAM String title) const
+ITraceMng* traceMng, const Alien::SolverStatus& status, String title) const
 {
   Integer prefix_size = 0;
   InternalTraceSizer sizer(prefix_size);
@@ -188,6 +188,10 @@ ITraceMng* traceMng, ALIEN_UNUSED_PARAM const Alien::SolverStatus& status, ALIEN
   traceMng->removeListener(&sizer);
   if (prefix_size > 0)
     --prefix_size; // remove whitespace
+
+  std::ostringstream oss;
+  _internalPrint(oss, prefix_size, status, title);
+  traceMng->info() << oss.str();
 }
 
 /*---------------------------------------------------------------------------*/

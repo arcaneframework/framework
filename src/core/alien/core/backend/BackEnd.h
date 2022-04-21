@@ -35,6 +35,9 @@ typedef String BackEndId;
 template <typename Tag>
 struct AlgebraTraits;
 
+template <typename Tag>
+class LUSendRecvTraits;
+
 namespace BackEnd
 {
   namespace tag

@@ -71,10 +71,14 @@ namespace BackEnd
 template <>
 struct AlgebraTraits<BackEnd::tag::simplecsr>
 {
-  typedef SimpleCSRTraits<Real>::MatrixType matrix_type;
-  typedef SimpleCSRTraits<Real>::VectorType vector_type;
-  typedef SimpleCSRTraits<Real>::AlgebraType algebra_type;
+  // clang-format off
+  typedef Real                                   value_type;
+  typedef SimpleCSRTraits<Real>::MatrixType      matrix_type;
+  typedef SimpleCSRTraits<Real>::VectorType      vector_type;
+  typedef SimpleCSRTraits<Real>::AlgebraType     algebra_type;
   typedef SimpleCSRTraits<Real>::AlgebraExprType algebra_expr_type;
+  // clang-format off
+  
   static algebra_type* algebra_factory(
   IMessagePassingMng* p_mng ALIEN_UNUSED_PARAM = nullptr)
   {

@@ -37,6 +37,7 @@ class FLUFactorisationAlgo
   typedef VectorT                              VectorType;
   typedef typename MatrixType::ProfileType     ProfileType ;
   typedef typename MatrixType::ValueType       ValueType;
+  typedef typename MatrixType::TagType         TagType ;
   // clang-format on
 
   FLUFactorisationAlgo()
@@ -66,7 +67,7 @@ class FLUFactorisationAlgo
     algebra.allocate(AlgebraT::resource(matrix), m_xk);
 
     if (m_nb_factorization_iter == 0) {
-      BaseType::factorize(*this->m_lu_matrix);
+      BaseType::factorize(*this->m_lu_matrix, false);
     }
     else {
       factorizeMultiIter(*this->m_lu_matrix);
@@ -76,6 +77,14 @@ class FLUFactorisationAlgo
     algebra.allocate(AlgebraT::resource(matrix), m_inv_diag);
     algebra.assign(m_inv_diag, 1.);
     algebra.computeInvDiag(*this->m_lu_matrix, m_inv_diag);
+
+    if (MatrixType::on_host_only) {
+      if (this->m_is_parallel) {
+        // Need to manage ghost and communications
+        this->m_x.resize(this->m_alloc_size);
+        m_xk.resize(this->m_alloc_size);
+      }
+    }
   }
 
   ///////////////////////////////////////////////////////////////////////
@@ -121,12 +130,26 @@ class FLUFactorisationAlgo
     auto values = modifier.data() ;
     // clang-format on
 
-    for (int iter = 0; iter < m_nb_factorization_iter; ++iter) {
-      auto matrix_values = CSRConstViewT<MatrixT>(matrix).data();
-      std::vector<ValueType> guest_values(nnz);
-      std::copy(values, values + nnz, guest_values.data());
-      std::copy(matrix_values, matrix_values + nnz, values);
-      factorizeIter(nrows, kcol, dcol, cols, values, guest_values.data());
+    if (this->m_lu_matrix->isParallel()) {
+      typename LUSendRecvTraits<TagType>::matrix_op_type op(*this->m_lu_matrix, this->m_distribution, this->m_work);
+      for (int iter = 0; iter < m_nb_factorization_iter; ++iter) {
+        auto matrix_values = CSRConstViewT<MatrixT>(matrix).data();
+        std::vector<ValueType> guest_values(nnz);
+        std::copy(values, values + nnz, guest_values.data());
+        std::copy(matrix_values, matrix_values + nnz, values);
+        op.recvLowerNeighbLUData(values);
+        op.sendUpperNeighbLUData(guest_values.data());
+        factorizeIter(nrows, kcol, dcol, cols, values, guest_values.data());
+      }
+    }
+    else {
+      for (int iter = 0; iter < m_nb_factorization_iter; ++iter) {
+        auto matrix_values = CSRConstViewT<MatrixT>(matrix).data();
+        std::vector<ValueType> guest_values(nnz);
+        std::copy(values, values + nnz, guest_values.data());
+        std::copy(matrix_values, matrix_values + nnz, values);
+        factorizeIter(nrows, kcol, dcol, cols, values, guest_values.data());
+      }
     }
   }
 
@@ -158,11 +181,39 @@ class FLUFactorisationAlgo
       // clang-format on
 
       std::copy(x_ptr, x_ptr + nrows, xk_ptr);
-      for (std::size_t irow = 0; irow < nrows; ++irow) {
-        ValueType val = y_ptr[irow];
-        for (int k = kcol[irow]; k < dcol[irow]; ++k)
-          val -= values[k] * xk_ptr[cols[k]];
-        x_ptr[irow] = val;
+      if (this->m_is_parallel) {
+        typedef typename LUSendRecvTraits<TagType>::vector_op_type SendRecvOpType;
+        SendRecvOpType op(xk_ptr,
+                          this->m_lu_matrix->getDistStructInfo().m_send_info,
+                          this->m_lu_matrix->getSendPolicy(),
+                          xk_ptr,
+                          this->m_lu_matrix->getDistStructInfo().m_recv_info,
+                          this->m_lu_matrix->getRecvPolicy(),
+                          this->m_lu_matrix->getParallelMng(),
+                          nullptr);
+
+        auto& local_row_size = this->m_lu_matrix->getDistStructInfo().m_local_row_size;
+        int first_upper_ghost_index = this->m_lu_matrix->getDistStructInfo().m_first_upper_ghost_index;
+        op.lowerRecv();
+        op.upperSend();
+        for (std::size_t irow = 0; irow < nrows; ++irow) {
+          ValueType val = y_ptr[irow];
+          for (int k = kcol[irow]; k < dcol[irow]; ++k)
+            val -= values[k] * xk_ptr[cols[k]];
+          for (int k = kcol[irow] + local_row_size[irow]; k < kcol[irow + 1]; ++k) {
+            if (cols[k] < first_upper_ghost_index)
+              val -= values[k] * xk_ptr[cols[k]];
+          }
+          x_ptr[irow] = val;
+        }
+      }
+      else {
+        for (std::size_t irow = 0; irow < nrows; ++irow) {
+          ValueType val = y_ptr[irow];
+          for (int k = kcol[irow]; k < dcol[irow]; ++k)
+            val -= values[k] * xk_ptr[cols[k]];
+          x_ptr[irow] = val;
+        }
       }
     }
     else {
@@ -193,14 +244,45 @@ class FLUFactorisationAlgo
       // clang-format on
 
       std::copy(x_ptr, x_ptr + nrows, xk_ptr);
-      for (std::size_t irow = 0; irow < nrows; ++irow) {
-        int dk = dcol[irow];
-        ValueType val = y_ptr[irow];
-        for (int k = dk + 1; k < kcol[irow + 1]; ++k) {
-          val -= values[k] * xk_ptr[cols[k]];
+      if (this->m_is_parallel) {
+        auto& local_row_size = this->m_lu_matrix->getDistStructInfo().m_local_row_size;
+        int first_upper_ghost_index = this->m_lu_matrix->getDistStructInfo().m_first_upper_ghost_index;
+
+        typedef typename LUSendRecvTraits<TagType>::vector_op_type SendRecvOpType;
+        SendRecvOpType op(xk_ptr,
+                          this->m_lu_matrix->getDistStructInfo().m_send_info,
+                          this->m_lu_matrix->getSendPolicy(),
+                          xk_ptr,
+                          this->m_lu_matrix->getDistStructInfo().m_recv_info,
+                          this->m_lu_matrix->getRecvPolicy(),
+                          this->m_lu_matrix->getParallelMng(),
+                          nullptr);
+        op.upperRecv();
+        op.lowerSend();
+        for (std::size_t irow = 0; irow < nrows; ++irow) {
+          int dk = dcol[irow];
+          ValueType val = y_ptr[irow];
+          for (int k = dk + 1; k < kcol[irow] + local_row_size[irow]; ++k) {
+            val -= values[k] * xk_ptr[cols[k]];
+          }
+          for (int k = kcol[irow] + local_row_size[irow]; k < kcol[irow + 1]; ++k) {
+            if (cols[k] >= first_upper_ghost_index)
+              val -= values[k] * xk_ptr[cols[k]];
+          }
+          val = val / values[dk];
+          x_ptr[irow] = val;
         }
-        val = val / values[dk];
-        x_ptr[irow] = val;
+      }
+      else {
+        for (std::size_t irow = 0; irow < nrows; ++irow) {
+          int dk = dcol[irow];
+          ValueType val = y_ptr[irow];
+          for (int k = dk + 1; k < kcol[irow + 1]; ++k) {
+            val -= values[k] * xk_ptr[cols[k]];
+          }
+          val = val / values[dk];
+          x_ptr[irow] = val;
+        }
       }
     }
     else {

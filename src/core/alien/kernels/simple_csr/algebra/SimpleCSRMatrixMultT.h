@@ -20,6 +20,8 @@
 
 #include <arccore/collections/Array2.h>
 
+#include <alien/handlers/scalar/CSRModifierViewT.h>
+
 /*---------------------------------------------------------------------------*/
 
 namespace Alien::SimpleCSRInternal
@@ -477,29 +479,33 @@ template <typename ValueT>
 void SimpleCSRMatrixMultT<ValueT>::multInvDiag(VectorType& y) const
 {
   Real* y_ptr = y.getDataPtr();
-  ConstArrayView<Real> matrix = m_matrix_impl.m_matrix.getValues();
-  ConstArrayView<Integer> cols = m_matrix_impl.m_matrix.getCSRProfile().getCols();
-  ConstArrayView<Integer> row_offset = m_matrix_impl.m_matrix.getCSRProfile().getRowOffset();
-  auto diag_offset = m_matrix_impl.m_matrix.getCSRProfile().getUpperDiagOffset();
-  for (Integer irow = 0; irow < m_matrix_impl.m_local_size; ++irow) {
-    y_ptr[irow] = y_ptr[irow] / matrix[diag_offset[irow]];
-  }
+  CSRConstViewT<MatrixType> view(m_matrix_impl);
+  // clang-format off
+  auto nrows  = view.nrows() ;
+  auto kcol   = view.kcol() ;
+  auto dcol   = view.dcol() ;
+  auto cols   = view.cols() ;
+  auto values = view.data() ;
+  // clang-format on
+  for (Integer irow = 0; irow < nrows; ++irow)
+    y_ptr[irow] = y_ptr[irow] / values[dcol[irow]];
 }
 
 template <typename ValueT>
 void SimpleCSRMatrixMultT<ValueT>::computeInvDiag(VectorType& y) const
 {
   Real* y_ptr = y.getDataPtr();
-  ConstArrayView<Real> matrix = m_matrix_impl.m_matrix.getValues();
-  ConstArrayView<Integer> cols = m_matrix_impl.m_matrix.getCSRProfile().getCols();
-  ConstArrayView<Integer> row_offset = m_matrix_impl.m_matrix.getCSRProfile().getRowOffset();
-  //auto diag_offset = m_matrix_impl.m_matrix.getCSRProfile().getDiagOffset() ;
-  for (Integer irow = 0; irow < m_matrix_impl.m_local_size; ++irow) {
-    for (Integer j = row_offset[irow]; j < row_offset[irow + 1]; ++j) {
-      if (cols[j] == irow)
-        y_ptr[irow] = 1. / matrix[j];
-    }
-  }
+
+  CSRConstViewT<MatrixType> view(m_matrix_impl);
+  // clang-format off
+  auto nrows  = view.nrows() ;
+  auto kcol   = view.kcol() ;
+  auto dcol   = view.dcol() ;
+  auto cols   = view.cols() ;
+  auto values = view.data() ;
+  // clang-format on
+  for (Integer irow = 0; irow < nrows; ++irow)
+    y_ptr[irow] = 1. / values[dcol[irow]];
 }
 
 /*---------------------------------------------------------------------------*/

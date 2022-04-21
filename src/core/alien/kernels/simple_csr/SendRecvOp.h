@@ -140,6 +140,7 @@ struct CommInfo
   void copy(const CommInfo& commInfo)
   {
     m_num_neighbours = commInfo.m_num_neighbours;
+    m_first_upper_neighb = commInfo.m_first_upper_neighb;
 
     m_ranks.copy(commInfo.m_ranks);
     m_ids.copy(commInfo.m_ids);
@@ -164,10 +165,14 @@ template <typename ValueT>
 class SendRecvOp : public IASynchOp
 {
  public:
-  SendRecvOp(const ValueT* send_buffer, const CommInfo& send_info,
-             CommProperty::ePolicyType send_policy, ValueT* recv_buffer,
-             const CommInfo& recv_info, CommProperty::ePolicyType recv_policy,
-             IMessagePassingMng* mng, Arccore::ITraceMng* trace_mng, Integer unknowns_num = 1)
+  SendRecvOp(const ValueT* send_buffer,
+             const CommInfo& send_info,
+             CommProperty::ePolicyType send_policy,
+             ValueT* recv_buffer,
+             const CommInfo& recv_info,
+             CommProperty::ePolicyType recv_policy,
+             IMessagePassingMng* mng, Arccore::ITraceMng* trace_mng,
+             Integer unknowns_num = 1)
   : m_is_variable_block(false)
   , m_send_buffer(send_buffer)
   , m_send_info(send_info)
@@ -180,11 +185,16 @@ class SendRecvOp : public IASynchOp
   , m_unknowns_num(unknowns_num)
   {}
 
-  SendRecvOp(const ValueT* send_buffer, const CommInfo& send_info,
-             CommProperty::ePolicyType send_policy, ValueT* recv_buffer,
-             const CommInfo& recv_info, CommProperty::ePolicyType recv_policy,
-             IMessagePassingMng* mng, Arccore::ITraceMng* trace_mng,
-             ConstArrayView<Integer> block_sizes, ConstArrayView<Integer> block_offsets)
+  SendRecvOp(const ValueT* send_buffer,
+             const CommInfo& send_info,
+             CommProperty::ePolicyType send_policy,
+             ValueT* recv_buffer,
+             const CommInfo& recv_info,
+             CommProperty::ePolicyType recv_policy,
+             IMessagePassingMng* mng,
+             Arccore::ITraceMng* trace_mng,
+             ConstArrayView<Integer> block_sizes,
+             ConstArrayView<Integer> block_offsets)
   : m_is_variable_block(true)
   , m_send_buffer(send_buffer)
   , m_send_info(send_info)
@@ -214,12 +224,181 @@ class SendRecvOp : public IASynchOp
       _end(insitu);
   }
 
+  void recv(bool insitu = true)
+  {
+    ValueT* rbuffer = m_recv_buffer;
+    if (m_recv_info.m_ids.size() && !insitu) {
+      int size = m_recv_info.m_ids_offset[m_recv_info.m_num_neighbours];
+      m_rbuffer.resize(size * m_unknowns_num);
+      rbuffer = &m_rbuffer[0];
+    }
+    for (int i = 0; i < m_recv_info.m_num_neighbours; ++i) {
+      int off = m_recv_info.m_ids_offset[i];
+      int size = m_recv_info.m_ids_offset[i + 1] - off;
+      ValueT* ptr = rbuffer + off * m_unknowns_num;
+      int rank = m_recv_info.m_ranks[i];
+      Arccore::MessagePassing::mpReceive(m_parallel_mng, ArrayView<ValueT>(size * m_unknowns_num, ptr), rank);
+    }
+    if (m_recv_info.m_ids.size() && !insitu) {
+      int size = m_recv_info.m_ids_offset[m_recv_info.m_num_neighbours] -
+      m_recv_info.m_ids_offset[0];
+      if (m_unknowns_num == 1)
+        for (int i = 0; i < size; ++i)
+          m_recv_buffer[m_recv_info.m_ids[i]] = m_rbuffer[i];
+      else
+        for (int i = 0; i < size; ++i)
+          for (std::size_t ui = 0; ui < m_unknowns_num; ++ui)
+            m_recv_buffer[m_recv_info.m_ids[i] * m_unknowns_num + ui] = m_rbuffer[i * m_unknowns_num + ui];
+    }
+  }
+
+  void lowerRecv(bool insitu = true)
+  {
+    ValueT* rbuffer = m_recv_buffer;
+    if (m_recv_info.m_ids.size() && !insitu) {
+      int size = m_recv_info.m_ids_offset[m_recv_info.m_first_upper_neighb];
+      m_rbuffer.resize(size * m_unknowns_num);
+      rbuffer = &m_rbuffer[0];
+    }
+    for (int i = 0; i < m_recv_info.m_first_upper_neighb; ++i) {
+      int off = m_recv_info.m_ids_offset[i];
+      int size = m_recv_info.m_ids_offset[i + 1] - off;
+      ValueT* ptr = rbuffer + off * m_unknowns_num;
+      int rank = m_recv_info.m_ranks[i];
+      Arccore::MessagePassing::mpReceive(m_parallel_mng, ArrayView<ValueT>(size * m_unknowns_num, ptr), rank);
+    }
+    if (m_recv_info.m_ids.size() && !insitu) {
+      int size = m_recv_info.m_ids_offset[m_recv_info.m_first_upper_neighb] -
+      m_recv_info.m_ids_offset[0];
+      if (m_unknowns_num == 1)
+        for (int i = 0; i < size; ++i)
+          m_recv_buffer[m_recv_info.m_ids[i]] = m_rbuffer[i];
+      else
+        for (int i = 0; i < size; ++i)
+          for (std::size_t ui = 0; ui < m_unknowns_num; ++ui)
+            m_recv_buffer[m_recv_info.m_ids[i] * m_unknowns_num + ui] = m_rbuffer[i * m_unknowns_num + ui];
+    }
+  }
+
+  void upperRecv(bool insitu = true)
+  {
+    ValueT* rbuffer = m_recv_buffer;
+    int size = 0;
+    if (m_recv_info.m_ids.size() && !insitu) {
+      size = m_recv_info.m_ids_offset[m_recv_info.m_num_neighbours] - m_recv_info.m_ids_offset[m_recv_info.m_first_upper_neighb];
+      m_rbuffer.resize(size * m_unknowns_num);
+      rbuffer = &m_rbuffer[0];
+    }
+    //for(int i=m_recv_info.m_first_upper_neighb;i<m_recv_info.m_num_neighbours;++i)
+    for (int i = m_recv_info.m_num_neighbours - 1; i > m_recv_info.m_first_upper_neighb - 1; --i) {
+      int off = m_recv_info.m_ids_offset[i];
+      int size = m_recv_info.m_ids_offset[i + 1] - off;
+      ValueT* ptr = rbuffer + off * m_unknowns_num;
+      int rank = m_recv_info.m_ranks[i];
+      Arccore::MessagePassing::mpReceive(m_parallel_mng, ArrayView<ValueT>(size * m_unknowns_num, ptr), rank);
+    }
+    if (m_recv_info.m_ids.size() && !insitu) {
+      int size = m_recv_info.m_ids_offset[m_recv_info.m_num_neighbours] -
+      m_recv_info.m_ids_offset[m_recv_info.m_first_upper_neighb];
+      if (m_unknowns_num == 1)
+        for (int i = 0; i < size; ++i)
+          m_recv_buffer[m_recv_info.m_ids[i]] = m_rbuffer[i];
+      else
+        for (int i = 0; i < size; ++i)
+          for (std::size_t ui = 0; ui < m_unknowns_num; ++ui)
+            m_recv_buffer[m_recv_info.m_ids[i] * m_unknowns_num + ui] = m_rbuffer[i * m_unknowns_num + ui];
+    }
+  }
+
+  void send()
+  {
+    ValueT const* sbuffer = m_send_buffer;
+    if (m_send_info.m_ids.size()) {
+      int size = m_send_info.m_ids_offset[m_send_info.m_num_neighbours] -
+      m_send_info.m_ids_offset[0];
+      m_sbuffer.resize(size * m_unknowns_num);
+      if (m_unknowns_num == 1)
+        for (int i = 0; i < size; ++i) {
+          m_sbuffer[i] = m_send_buffer[m_send_info.m_ids[i]];
+          //m_trace->info()<<"SEND"<<m_sbuffer[i];
+        }
+      else
+        for (int i = 0; i < size; ++i)
+          for (int ui = 0; ui < m_unknowns_num; ++ui)
+            m_sbuffer[i * m_unknowns_num + ui] = m_send_buffer[m_send_info.m_ids[i] * m_unknowns_num + ui];
+      sbuffer = &m_sbuffer[0];
+    }
+    for (int i = 0; i < m_send_info.m_num_neighbours; ++i) {
+      int off = m_send_info.m_ids_offset[i];
+      int size = m_send_info.m_ids_offset[i + 1] - off;
+      ValueT const* ptr = sbuffer + off * m_unknowns_num;
+      int rank = m_send_info.m_ranks[i];
+      Arccore::MessagePassing::mpSend(m_parallel_mng, ConstArrayView<ValueT>(size * m_unknowns_num, ptr), rank);
+    }
+  }
+
+  void lowerSend()
+  {
+    ValueT const* sbuffer = m_send_buffer;
+    if (m_send_info.m_ids.size()) {
+      int size = m_send_info.m_ids_offset[m_send_info.m_first_upper_neighb] -
+      m_send_info.m_ids_offset[0];
+      m_sbuffer.resize(size * m_unknowns_num);
+      if (m_unknowns_num == 1)
+        for (int i = 0; i < size; ++i) {
+          m_sbuffer[i] = m_send_buffer[m_send_info.m_ids[i]];
+          //m_trace->info()<<"SEND"<<m_sbuffer[i];
+        }
+      else
+        for (int i = 0; i < size; ++i)
+          for (std::size_t ui = 0; ui < m_unknowns_num; ++ui)
+            m_sbuffer[i * m_unknowns_num + ui] = m_send_buffer[m_send_info.m_ids[i] * m_unknowns_num + ui];
+      sbuffer = &m_sbuffer[0];
+    }
+    //for(int i=0;i<m_send_info.m_first_upper_neighb;++i)
+    for (int i = m_send_info.m_first_upper_neighb - 1; i > -1; --i) {
+      int off = m_send_info.m_ids_offset[i];
+      int size = m_send_info.m_ids_offset[i + 1] - off;
+      ValueT const* ptr = sbuffer + off * m_unknowns_num;
+      int rank = m_send_info.m_ranks[i];
+      Arccore::MessagePassing::mpSend(m_parallel_mng, ConstArrayView<ValueT>(size * m_unknowns_num, ptr), rank);
+    }
+  }
+
+  void upperSend()
+  {
+    ValueT const* sbuffer = nullptr;
+    if (m_send_info.m_ids.size()) {
+      int offset = m_send_info.m_ids_offset[m_send_info.m_first_upper_neighb] - m_send_info.m_ids_offset[0];
+      int size = m_send_info.m_ids_offset[m_send_info.m_num_neighbours] - m_send_info.m_ids_offset[m_send_info.m_first_upper_neighb];
+      m_sbuffer.resize(size * m_unknowns_num);
+      if (m_unknowns_num == 1)
+        for (int i = 0; i < size; ++i) {
+          m_sbuffer[i] = m_send_buffer[m_send_info.m_ids[offset + i]];
+        }
+      else
+        for (int i = 0; i < size; ++i)
+          for (std::size_t ui = 0; ui < m_unknowns_num; ++ui)
+            m_sbuffer[i * m_unknowns_num + ui] = m_send_buffer[m_send_info.m_ids[offset + i] * m_unknowns_num + ui];
+      sbuffer = &m_sbuffer[0];
+    }
+    else
+      sbuffer = m_send_buffer + m_send_info.m_ids_offset[m_send_info.m_first_upper_neighb] * m_unknowns_num;
+    ValueT const* ptr = sbuffer;
+    for (int i = m_send_info.m_first_upper_neighb; i < m_send_info.m_num_neighbours; ++i) {
+      int size = m_send_info.m_ids_offset[i + 1] - m_send_info.m_ids_offset[i];
+      int rank = m_send_info.m_ranks[i];
+      Arccore::MessagePassing::mpSend(m_parallel_mng, ConstArrayView<ValueT>(size * m_unknowns_num, ptr), rank);
+      ptr += size * m_unknowns_num;
+    }
+  }
+
  private:
   void _start(bool insitu)
   {
     if (m_recv_policy == CommProperty::ASynch) {
       m_recv_request.resize(m_recv_info.m_num_neighbours);
-      ValueT* rbuffer = NULL;
+      ValueT* rbuffer = nullptr;
       if (m_recv_info.m_ids.size() && !insitu) {
         Integer size = m_recv_info.m_ids_offset[m_recv_info.m_num_neighbours] - m_recv_info.m_ids_offset[0];
         m_rbuffer.resize(size * m_unknowns_num);
@@ -227,8 +406,6 @@ class SendRecvOp : public IASynchOp
       }
       else
         rbuffer = m_recv_buffer;
-      // alien_info([&] {cout() << "RecvInfo Nb Neighb :
-      // "<<m_recv_info.m_num_neighbours;}) ;
       for (Integer i = 0; i < m_recv_info.m_num_neighbours; ++i) {
         Integer off = m_recv_info.m_ids_offset[i];
         Integer size = m_recv_info.m_ids_offset[i + 1] - off;
@@ -247,7 +424,6 @@ class SendRecvOp : public IASynchOp
       if (m_unknowns_num == 1)
         for (Integer i = 0; i < size; ++i) {
           m_sbuffer[i] = m_send_buffer[m_send_info.m_ids[i]];
-          // m_trace->info()<<"SEND"<<m_sbuffer[i];
         }
       else
         for (Integer i = 0; i < size; ++i)
@@ -256,8 +432,6 @@ class SendRecvOp : public IASynchOp
             m_send_buffer[m_send_info.m_ids[i] * m_unknowns_num + ui];
       sbuffer = &m_sbuffer[0];
     }
-    // alien_info([&] {cout() << "SendInfo Nb Neighb : "<<m_send_info.m_num_neighbours;})
-    // ;
     for (Integer i = 0; i < m_send_info.m_num_neighbours; ++i) {
       Integer off = m_send_info.m_ids_offset[i];
       Integer size = m_send_info.m_ids_offset[i + 1] - off;

@@ -33,8 +33,8 @@ class ChebyshevPreconditioner
 {
  public:
   // clang-format off
-  static const bool                       m_use_saad_algo = saad ;
-  typedef AlgebraT                        AlgebraType ;
+  static const bool                       m_use_saad_algo = saad;
+  typedef AlgebraT                        AlgebraType;
   typedef typename AlgebraType::Matrix    MatrixType;
   typedef typename AlgebraType::Vector    VectorType;
   typedef typename MatrixType::ValueType  ValueType;
@@ -206,23 +206,22 @@ class ChebyshevPreconditioner
   ) const
   {
     /*
-        * r       = invD(b - Ax)
-        * s       = theta/delta
-        * rho_old = 1/sigma
-        * d       = 1/theta * r
-        * do k=0,k<degree
-        *   y = y + d
-        *   r = r - invD.A.d
-        *   rho = (2*sigma -rho_old)^-1
-        *   d   = rho*rho_old d + 2*rho/delta r
-        *   rho_old = rho
-        * enddo
-        */
+     * r       = invD(b - Ax)
+     * s       = theta/delta
+     * rho_old = 1/sigma
+     * d       = 1/theta * r
+     * do k=0,k<degree
+     *   y = y + d
+     *   r = r - invD.A.d
+     *   rho = (2*sigma -rho_old)^-1
+     *   d   = rho*rho_old d + 2*rho/delta r
+     *   rho_old = rho
+     * enddo
+     */
     //m_algebra.copy(x,y) ;
     //m_algebra.mult(m_matrix,x,m_y) ;
     //m_algebra.axpy(-1.,m_y,m_r) ;
     //m_algebra.copy(x,m_r) ;
-
     m_algebra.xyz(m_inv_diag, x, m_r);
     m_trace_mng->info() << "||R||" << m_algebra.norm2(m_r);
 
@@ -321,48 +320,47 @@ class ChebyshevPreconditioner
               VectorType& y) const
   {
     /*
-       * r       = b -Ax
-       * s       = theta/delta
-       * rho_old = 1/sigma
-       * d       = 1/theta * r
-       * do k=0,k<degree
-       *   y = y + d
-       *   r = r - Ad
-       *   rho = (2sigma1 -rho_old)^-1
-       *   d   = rho*rho_old d + 2*rho/delta r
-       *   rho_old = rho
-       * enddo
-       *
-       *
-       *
-       *
-           alpha = lambdaMax / eigRatio;
-           beta = boostFactor_ * lambdaMax;
-           delta = two / (beta - alpha);
-           theta = (beta + alpha) / two;
-           s1 = theta * delta;
+     * r       = b -Ax
+     * s       = theta/delta
+     * rho_old = 1/sigma
+     * d       = 1/theta * r
+     * do k=0,k<degree
+     *   y = y + d
+     *   r = r - Ad
+     *   rho = (2sigma1 -rho_old)^-1
+     *   d   = rho*rho_old d + 2*rho/delta r
+     *   rho_old = rho
+     * enddo
+     *
+     *
+     *
+     *
+     alpha = lambdaMax / eigRatio;
+     beta = boostFactor_ * lambdaMax;
+     delta = two / (beta - alpha);
+     theta = (beta + alpha) / two;
+     s1 = theta * delta;
 
-          // W := (1/theta)*D_inv*B and X := 0 + W.
+     // W := (1/theta)*D_inv*B and X := 0 + W.
 
-          // The rest of the iterations.
-          ST rhok = one / s1;
-          ST rhokp1, dtemp1, dtemp2;
-          for (int deg = 1; deg < numIters; ++deg)
-          {
-              rhokp1 = one / (two * s1 - rhok);
-              dtemp1 = rhokp1 * rhok;
-              dtemp2 = two * rhokp1 * delta;
-              rhok = rhokp1;
-              // W := dtemp2*D_inv*(B - A*X) + dtemp1*W.
-              // X := X + W
-          }
-       *
-       *
-       */
+     // The rest of the iterations.
+     ST rhok = one / s1;
+     ST rhokp1, dtemp1, dtemp2;
+     for (int deg = 1; deg < numIters; ++deg)
+     {
+     rhokp1 = one / (two * s1 - rhok);
+     dtemp1 = rhokp1 * rhok;
+     dtemp2 = two * rhokp1 * delta;
+     rhok = rhokp1;
+     // W := dtemp2*D_inv*(B - A*X) + dtemp1*W.
+     // X := X + W
+     }
+     *
+     *
+     */
 
     //m_algebra.copy(x,m_r) ;
     m_algebra.pointwiseMult(m_inv_diag, x, m_r);
-    //m_trace_mng->info()<<"||R||"<<m_algebra.norm2(m_r) ;
 
     ValueType sigma = m_theta / m_delta;
     ValueType rho_old = 1. / sigma;
@@ -452,11 +450,13 @@ class ChebyshevPreconditioner
   MatrixType const& m_matrix;
 
   //! facteur d'acceleration
-  ValueType m_factor;
-  ValueType m_alpha = 0.;
-  ValueType m_beta = 0.;
-  ValueType m_theta = 0.;
-  ValueType m_delta = 0.;
+  // clang-format off
+  ValueType m_factor = 0.;
+  ValueType m_alpha  = 0.;
+  ValueType m_beta   = 0.;
+  ValueType m_theta  = 0.;
+  ValueType m_delta  = 0.;
+  // clang-format on
 
   int m_polynome_order;
 

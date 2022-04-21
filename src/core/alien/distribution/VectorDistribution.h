@@ -206,6 +206,13 @@ class ALIEN_EXPORT VectorDistribution
   Arccore::Integer offset(Arccore::Integer p) const;
 
   /*!
+   * \brief Get the owner of an entry
+   * \param[in] i The global id of the element
+   * \returns The proc owner
+   */
+  Arccore::Integer owner(Arccore::Integer i) const;
+
+  /*!
    * \brief Clone the distribution
    * \returns A clone of the distribution
    */
@@ -241,13 +248,6 @@ class ALIEN_EXPORT VectorDistribution
    * \returns The global id of the element
    */
   Arccore::Integer localToGlobal(Arccore::Integer i, Arccore::Integer p) const;
-
-  /*!
-   * \brief Get the owner of an entry
-   * \param[in] i The global id of the element
-   * \returns The proc owner
-   */
-  Arccore::Integer owner(Arccore::Integer i) const;
 
   // due to 'private' of VectorDistribution methods
   // will be removed
