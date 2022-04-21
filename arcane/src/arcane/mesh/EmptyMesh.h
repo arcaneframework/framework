@@ -201,6 +201,7 @@ class EmptyMesh : public IMesh
   virtual const MeshPartInfo& meshPartInfo() const override { _error(); auto var=new MeshPartInfo{}; return *var; }
   virtual bool useMeshItemFamilyDependencies() const override { _error(); return false; }
   virtual IItemFamilyNetwork* itemFamilyNetwork() override { _error(); return nullptr; }
+  virtual IIndexedIncrementalItemConnectivityMng* indexedConnectivityMng() override { _error(); return nullptr; }
 
  public:
 
