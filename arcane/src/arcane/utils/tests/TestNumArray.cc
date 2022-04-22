@@ -20,8 +20,12 @@ TEST(NumArray,Basic)
 {
   std::cout << "TEST_NUMARRAY Basic\n";
 
-  NumArray<Real,1> array1(2);
+  NumArray<Real,1> array1(3);
   array1.s(1) = 5.0;
+  ASSERT_EQ(array1(1),5.0);
+  std::cout << " V=" << array1(1) << "\n";
+  array1[2] = 3.0;
+  ASSERT_EQ(array1[2],3.0);
   std::cout << " V=" << array1(1) << "\n";
   array1.resize(7);
   ASSERT_EQ(array1.totalNbElement(),7);

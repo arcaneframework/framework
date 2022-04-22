@@ -167,6 +167,8 @@ class MDSpan<DataType,1,LayoutType>
   {
     return m_ptr+offset(i);
   }
+  //! Valeur pour l'élément \a i
+  ARCCORE_HOST_DEVICE DataType operator[](Int32 i) const { return m_ptr[offset(i)]; }
  public:
   MDSpan<const DataType,1,LayoutType> constSpan() const
   { return MDSpan<const DataType,1,LayoutType>(m_ptr,m_extents); }

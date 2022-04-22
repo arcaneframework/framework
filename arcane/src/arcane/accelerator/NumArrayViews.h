@@ -83,6 +83,14 @@ class NumArrayView<Accessor,1,LayoutType>
   {
     return Accessor::build(m_values.ptrAt(idx));
   }
+  ARCCORE_HOST_DEVICE AccessorReturnType operator[](Int32 i) const
+  {
+    return Accessor::build(m_values.ptrAt(i));
+  }
+  ARCCORE_HOST_DEVICE AccessorReturnType operator[](ArrayBoundsIndex<1> idx) const
+  {
+    return Accessor::build(m_values.ptrAt(idx));
+  }
 
  private:
 

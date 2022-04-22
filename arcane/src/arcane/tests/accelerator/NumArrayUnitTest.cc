@@ -175,7 +175,10 @@ _executeTest1(eMemoryRessource mem_kind)
     command << RUNCOMMAND_LOOP1(iter, n1)
     {
       auto [i] = iter();
-      out_t1(i) = _getValue(i);
+      if ((i%2)==0)
+        out_t1(i) = _getValue(i);
+      else
+        out_t1[i] = _getValue(i);
     };
     NumArray<double, 1> host_t1(eMemoryRessource::Host);
     host_t1.copy(t1);
