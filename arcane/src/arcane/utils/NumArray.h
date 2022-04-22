@@ -217,6 +217,9 @@ class NumArrayBase
 /*!
  * \brief Tableau à 1 dimension pour les types numériques.
  *
+ * Les tableaux à une dimension possèdent l'opérateur 'operator[]' pour
+ * compatibilité avec les tableaux classiques du C++.
+ *
  * \sa NumArrayBase
  */
 template<class DataType,typename LayoutType>
@@ -249,21 +252,19 @@ class NumArray<DataType,1,LayoutType>
   }
  public:
   //! Valeur de la première dimension
-  Int32 dim1Size() const { return this->extent(0); }
+  constexpr Int32 dim1Size() const { return this->extent(0); }
  public:
   //! Valeur pour l'élément \a i
-  DataType operator()(Int32 i) const
-  {
-    return m_span(i);
-  }
+  DataType operator()(Int32 i) const { return m_span(i); }
   //! Positionne la valeur pour l'élément \a i
-  DataType& s(Int32 i)
-  {
-    return m_span(i);
-  }
+  DataType& s(Int32 i) { return m_span(i); }
+  //! Récupère une référence pour l'élément \a i
+  DataType& operator[](Int32 i) { return m_span(i); }
+  //! Valeur pour l'élément \a i
+  DataType operator[](Int32 i) const { return m_span(i); }
  public:
-  operator SpanType () { return this->span(); }
-  operator ConstSpanType () const { return this->constSpan(); }
+  constexpr operator SpanType () { return this->span(); }
+  constexpr operator ConstSpanType () const { return this->constSpan(); }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -302,9 +303,9 @@ class NumArray<DataType,2,LayoutType>
 
  public:
   //! Valeur de la première dimension
-  Int32 dim1Size() const { return extent(0); }
+  constexpr Int32 dim1Size() const { return extent(0); }
   //! Valeur de la deuxième dimension
-  Int32 dim2Size() const { return extent(1); }
+  constexpr Int32 dim2Size() const { return extent(1); }
  public:
   //! Valeur pour l'élément \a i,j
   DataType operator()(Int32 i,Int32 j) const
@@ -352,11 +353,11 @@ class NumArray<DataType,3,LayoutType>
   }
  public:
   //! Valeur de la première dimension
-  Int32 dim1Size() const { return extent(0); }
+  constexpr Int32 dim1Size() const { return extent(0); }
   //! Valeur de la deuxième dimension
-  Int32 dim2Size() const { return extent(1); }
+  constexpr Int32 dim2Size() const { return extent(1); }
   //! Valeur de la troisième dimension
-  Int32 dim3Size() const { return extent(2); }
+  constexpr Int32 dim3Size() const { return extent(2); }
  public:
   //! Valeur pour l'élément \a i,j,k
   DataType operator()(Int32 i,Int32 j,Int32 k) const
@@ -407,13 +408,13 @@ class NumArray<DataType,4,LayoutType>
 
  public:
   //! Valeur de la première dimension
-  Int32 dim1Size() const { return extent(0); }
+  constexpr Int32 dim1Size() const { return extent(0); }
   //! Valeur de la deuxième dimension
-  Int32 dim2Size() const { return extent(1); }
+  constexpr Int32 dim2Size() const { return extent(1); }
   //! Valeur de la troisième dimension
-  Int32 dim3Size() const { return extent(2); }
+  constexpr Int32 dim3Size() const { return extent(2); }
   //! Valeur de la quatrième dimension
-  Int32 dim4Size() const { return extent(3); }
+  constexpr Int32 dim4Size() const { return extent(3); }
  public:
   //! Valeur pour l'élément \a i,j,k,l
   DataType operator()(Int32 i,Int32 j,Int32 k,Int32 l) const
