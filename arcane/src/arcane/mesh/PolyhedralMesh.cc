@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PolyhedralMesh.cc                                     (C) 2000-2021       */
+/* PolyhedralMesh.cc                                           (C) 2000-2022 */
 /*                                                                           */
-/* Polyhedral mesh impl using Neo data structure                             */
+/* Polyhedral mesh impl using Neo data structure.                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -25,18 +25,22 @@
 /*---------------------------------------------------------------------------*/
 
 void Arcane::mesh::PolyhedralMesh::
-_errorEmptyMesh() const {
-  m_subdomain->traceMng()->fatal() << "Cannot use PolyhedralMesh if Arcane is not linked with lib Neo";
+_errorEmptyMesh() const
+{
+  ARCANE_FATAL("Cannot use PolyhedralMesh if Arcane is not linked with lib Neo");
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane {
+namespace Arcane
+{
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace mesh {
+namespace mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -92,9 +96,10 @@ class PolyhedralFamily : public ItemFamily{
     return item_internal;
   }
 
-  void addItems(Int64ConstArrayView uids, Int32ArrayView items) {
+  void addItems(Int64ConstArrayView uids, Int32ArrayView items)
+  {
     if (uids.empty()) return ;
-    ARCANE_ASSERT((uids.size()==items.size()),"one must have items.size==uids.size() ");
+    ARCANE_ASSERT((uids.size()==items.size()),("one must have items.size==uids.size()"));
     m_mesh->traceMng()->info() << " PolyhedralFamily::ADDITEMS " ;
     preAllocate(uids.size());
     auto index {0};
@@ -348,7 +353,8 @@ traceMng()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-const MeshHandle& mesh::PolyhedralMesh::handle() const
+const MeshHandle& mesh::PolyhedralMesh::
+handle() const
 {
   return m_mesh_handle;
 }
