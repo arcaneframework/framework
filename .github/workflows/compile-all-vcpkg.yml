@@ -21,11 +21,11 @@ jobs:
           - os: ubuntu-20.04
             triplet: x64-linux
             vcpkg_os: ubuntu-20.04
-            cmake_specific_args : '-DCMAKE_CXX_COMPILER_LAUNCHER=ccache'
+            cmake_specific_args : '-DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER_LAUNCHER=ccache'
           - os: 'windows-2019'
             triplet: x64-windows
             vcpkg_os: windows-2019
-            cmake_specific_args : '-DCMAKE_CXX_COMPILER_LAUNCHER="ccache"'
+            cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER="ccache"'
 #          - os: 'windows-2022'
 #            triplet: x64-windows
 #            vcpkg_os: windows-2019
@@ -128,7 +128,7 @@ jobs:
       - name: Configure build script
         shell: bash
         run: |
-          cmake -S "${{ github.workspace }}/_common/build_all" -B "${{ env.CMAKE_BUILD_DIR }}" -DCMAKE_VERBOSE_MAKEFILE=TRUE -DCMAKE_BUILD_TYPE=Release -DVCPKG_INSTALLED_DIR="${{ env.VCPKG_BUILD_DIR }}/installed" -DBUILD_SHARED_LIBS=TRUE -DARCANE_DEFAULT_PARTITIONER=Metis -DARCCON_REGISTER_PACKAGE_VERSION=2 -DCMAKE_TOOLCHAIN_FILE="${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake" -DCMAKE_DISABLE_FIND_PACKAGE_Hypre=TRUE ${{ matrix.cmake_specific_args }} -GNinja
+          cmake -S "${{ github.workspace }}/_common/build_all" -B "${{ env.CMAKE_BUILD_DIR }}" -DCMAKE_VERBOSE_MAKEFILE=TRUE -DVCPKG_INSTALLED_DIR="${{ env.VCPKG_BUILD_DIR }}/installed" -DBUILD_SHARED_LIBS=TRUE -DARCANE_DEFAULT_PARTITIONER=Metis -DARCCON_REGISTER_PACKAGE_VERSION=2 -DCMAKE_TOOLCHAIN_FILE="${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake" -DCMAKE_DISABLE_FIND_PACKAGE_Hypre=TRUE ${{ matrix.cmake_specific_args }} -GNinja
 
       - name: Build arcane
         shell: bash
