@@ -574,7 +574,7 @@ _executeTestMemoryCopy()
   // Initialise les tableaux
   for( int i=0; i<nb_value; ++i ){
     a.s(i) = i + 3;
-    b.s(i) = i + 5;
+    b[i] = i + 5;
   }
 
   NumArray<Int32,1> d_a(nb_value,dest_mem);
@@ -595,7 +595,7 @@ _executeTestMemoryCopy()
 
     command << RUNCOMMAND_LOOP1(iter, nb_value)
     {
-      out_c(iter) = in_a(iter) + in_b(iter);
+      out_c(iter) = in_a[iter] + in_b(iter);
     };
 
   }
