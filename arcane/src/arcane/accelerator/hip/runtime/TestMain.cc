@@ -1,3 +1,4 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 #include "arcane/utils/ArcaneGlobal.h"
 #include "arcane/utils/Exception.h"
 
