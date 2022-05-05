@@ -5,6 +5,8 @@ REGEX_EXCLUDE_FILES="/arcane/extras\
 |/arcane/src/arcane/utils/internal/json/rapidjson\
 |/arcane/src/arcane/dotnet/coreclr/hostfxr\.h\
 |/arcane/src/arcane/dotnet/coreclr/coreclr_delegates\.h\
+|/arcane/tutorial\
+|/arcane/ceapart/src/arcane/geometric/Generated.*\
 "
 
 CC_H_FILES=$(find $SOURCE -name '*.cc')

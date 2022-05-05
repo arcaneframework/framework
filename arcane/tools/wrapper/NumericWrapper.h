@@ -1,5 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
-// Wrapper pour swig.
+//-----------------------------------------------------------------------------
+// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* NumericWrapper.h                                            (C) 2000-2022 */
+/*                                                                           */
+/* Wrapper pour swig.                                                        */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 // Ce wrapper ne doit être utilisé que par le code généré par swig
 // Les types *_POD doivent pouvoir être utilisés depuis le C (C-linkage)
 // et donc utiliser les constructeurs par défaut (pour le constructeur vide et par recopie).
