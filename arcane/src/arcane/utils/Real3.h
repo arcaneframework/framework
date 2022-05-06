@@ -179,6 +179,12 @@ class ARCANE_UTILS_EXPORT Real3
   constexpr ARCCORE_HOST_DEVICE Real3& mulSame(Real b) { x*=b; y*=b; z*=b; return (*this); }
   //! Divise chaque composante du triplet par \a b
   constexpr ARCCORE_HOST_DEVICE Real3& divSame(Real b) { x/=b; y/=b; z/=b; return (*this); }
+
+  //! Créé un triplet qui vaut le produit vectoriel de ce triplet avec le triplet \a b.
+  constexpr ARCCORE_HOST_DEVICE Real3 cross(Real3 b)  const { return Real3(y*b.z-z*b.y, z*b.x-x*b.z, x*b.y-y*b.x); }
+  //! Retourne le produit scalaire de ce triplet avec le triplet \a b.
+  constexpr ARCCORE_HOST_DEVICE Real dot(Real3 b) const { return x*b.x + y*b.y + z*b.z; }
+
   //! Ajoute \a b au triplet.
   constexpr ARCCORE_HOST_DEVICE Real3& operator+= (Real3 b) { return add(b); }
   //! Soustrait \a b au triplet
