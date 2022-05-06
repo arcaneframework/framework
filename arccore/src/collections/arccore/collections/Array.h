@@ -429,6 +429,28 @@ class AbstractArray
     }
     return false;
   }
+  /*!
+   * /brief Vrai si le tableau contient l'élément de valeur \a v
+   * Si vrai, alors pos contiendra la position du premier élément trouvé.
+   * Si faux, alors pos contiendra la valeur \a -1.
+   * 
+   * /param v La valeur à trouver.
+   * /param pos La position de l'élément de valeur v trouvée (-1 si non présent).
+   * /return true Si l'élément de valeur \a v est trouvée.
+   * /return false Si l'élément de valeur \a v n'est pas trouvée.
+   */
+  bool contains(ConstReferenceType v,Int64& pos) const
+  {
+    const T* ptr = m_ptr;
+    for( Int64 i=0, n=m_md->size; i<n; ++i ){
+      if (ptr[i]==v){
+        pos = i;
+        return true;
+      }
+    }
+    pos = -1;
+    return false;
+  }
  public:
   //! Elément d'indice \a i
   ConstReferenceType operator[](Int64 i) const
