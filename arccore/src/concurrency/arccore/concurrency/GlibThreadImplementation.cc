@@ -114,19 +114,6 @@ createGlibThreadBarrier()
   return new GlibThreadBarrier();
 }
 
-namespace
-{
-inline void _atomicSet(volatile gint* v,int value)
-{
-  g_atomic_int_set(v,value);
-}
-//! Retourne true si on acquiere le lock (*v passe de 0 à 1)
-inline bool _tryLock(volatile gint* v)
-{
-  return g_atomic_int_compare_and_exchange(v,0,1)==1;
-}
-}
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -174,33 +161,33 @@ void GlibThreadImplementation::
 createSpinLock(Int64* spin_lock_addr)
 {
   volatile gint* v = (gint*)spin_lock_addr;
-  _atomicSet(v,0);
+  g_bit_unlock(v, 0);
 }
 
 void GlibThreadImplementation::
-lockSpinLock(Int64* spin_lock_addr,Int64* scoped_spin_lock_addr)
+lockSpinLock(Int64* spin_lock_addr, Int64* scoped_spin_lock_addr)
 {
   ARCCORE_UNUSED(scoped_spin_lock_addr);
 
   volatile gint* v = (gint*)spin_lock_addr;
   int loop = 0;
-  if (!_tryLock(v)){
-    do{
+  if (!g_bit_trylock(v, 0)) {
+    do {
       ++loop;
       //TODO: Faire Pause
-    } while(!_tryLock(v));
+    } while (!g_bit_trylock(v, 0));
   }
 }
 
 void GlibThreadImplementation::
-unlockSpinLock(Int64* spin_lock_addr,Int64* scoped_spin_lock_addr)
+unlockSpinLock(Int64* spin_lock_addr, Int64* scoped_spin_lock_addr)
 {
   ARCCORE_UNUSED(scoped_spin_lock_addr);
 
   volatile gint* v = (gint*)spin_lock_addr;
-  _atomicSet(v,0);
+  g_bit_unlock(v, 0);
 }
-  
+
 MutexImpl* GlibThreadImplementation::
 createMutex()
 {
