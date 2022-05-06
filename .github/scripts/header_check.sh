@@ -1,12 +1,17 @@
 #!/bin/bash
 
 # Attention à ne pas ajouter d'espaces après le backslash.
-REGEX_EXCLUDE_FILES="/arcane/extras\
-|/arcane/src/arcane/utils/internal/json/rapidjson\
+REGEX_EXCLUDE_FILES="/arcane/extras/\
+|/arcane/src/arcane/utils/internal/json/rapidjson/\
+|/arcane/tutorial/\
+|/arcane/src/arcane/packages/\
+|/arcane/cmake/test_glibc_malloc_hooks\.cc\
 |/arcane/src/arcane/dotnet/coreclr/hostfxr\.h\
 |/arcane/src/arcane/dotnet/coreclr/coreclr_delegates\.h\
-|/arcane/tutorial\
-|/arcane/ceapart/src/arcane/geometric/Generated.*\
+|/arcane/src/arcane/hyoda/HyodaDbg\.h\
+|/arcane/src/arcane/tests/AMR/ErrorEstimate\.h\
+|.*Generated.*\
+|.*Licensed.*\
 "
 
 CC_H_FILES=$(find $SOURCE -name '*.cc')

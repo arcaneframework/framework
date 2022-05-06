@@ -6,8 +6,8 @@
 using namespace Arcane;
 
 /**
- * Représente un module trés basique ne contenant aucune variable et un unique 
- * point d'entrée permettant d'afficher la chaine de caractères "Hello World!".
+ * Reprï¿½sente un module trï¿½s basique ne contenant aucune variable et un unique 
+ * point d'entrï¿½e permettant d'afficher la chaine de caractï¿½res "Hello World!".
  */
 class HelloWorldModule // : public ...
 {
