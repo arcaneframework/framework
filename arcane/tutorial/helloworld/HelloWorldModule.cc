@@ -1,3 +1,4 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 #include "HelloWorldModule.h"
 
 using namespace Arcane;
@@ -5,7 +6,7 @@ using namespace Arcane;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Le point d'entr�e printHelloWorld
+// Le point d'entrée printHelloWorld
 // ...
 
 /*---------------------------------------------------------------------------*/

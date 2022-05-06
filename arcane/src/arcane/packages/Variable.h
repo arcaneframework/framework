@@ -1,4 +1,4 @@
-// -- -*- C++ -*-
+﻿// -- -*- C++ -*-
 #include "arcane/ArcaneTypes.h"
 
 #include "arcane/VariableBuildInfo.h"

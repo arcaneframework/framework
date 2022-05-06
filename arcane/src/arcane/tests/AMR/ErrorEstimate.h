@@ -1,4 +1,4 @@
-/*
+﻿/*
  * ExactSolution.h
  *
  *      Author: mesriy

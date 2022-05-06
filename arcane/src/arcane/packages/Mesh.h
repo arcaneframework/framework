@@ -1,4 +1,4 @@
-//!-- -*- C++ -*- --
+﻿//!-- -*- C++ -*- --
 #include "arcane/IMesh.h"
 #include "arcane/IItemFamily.h"
 #include "arcane/Item.h"
