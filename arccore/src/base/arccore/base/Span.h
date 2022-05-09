@@ -307,7 +307,7 @@ class SpanImpl
    * /param v La valeur à trouver.
    * /return La position du premier élément de valeur \a v si présent, std::nullopt sinon.
    */
-  ARCCORE_HOST_DEVICE std::optional<SizeType> findFirst(const_reference v) const
+  std::optional<SizeType> findFirst(const_reference v) const
   {
     for( SizeType i=0; i<m_size; ++i ){
       if (m_ptr[i]==v)
