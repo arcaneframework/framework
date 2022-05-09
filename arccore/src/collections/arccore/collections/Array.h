@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Array.h                                                     (C) 2000-2022 */
+/* Array.h                                                     (C) 2000-2021 */
 /*                                                                           */
 /* Tableau 1D.                                                               */
 /*---------------------------------------------------------------------------*/
@@ -416,28 +416,6 @@ class AbstractArray
       if (ptr[i]==v)
         return true;
     }
-    return false;
-  }
-  /*!
-   * /brief Vrai si le tableau contient l'élément de valeur \a v
-   * Si vrai, alors pos contiendra la position du premier élément trouvé.
-   * Si faux, alors pos contiendra la valeur \a -1.
-   * 
-   * /param v La valeur à trouver.
-   * /param pos La position de l'élément de valeur v trouvée (-1 si non présent).
-   * /return true Si l'élément de valeur \a v est trouvée.
-   * /return false Si l'élément de valeur \a v n'est pas trouvée.
-   */
-  bool contains(ConstReferenceType v,Int64& pos) const
-  {
-    const T* ptr = m_ptr;
-    for( Int64 i=0, n=m_md->size; i<n; ++i ){
-      if (ptr[i]==v){
-        pos = i;
-        return true;
-      }
-    }
-    pos = -1;
     return false;
   }
  public:

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Span.h                                                      (C) 2000-2021 */
+/* Span.h                                                      (C) 2000-2022 */
 /*                                                                           */
 /* Vues sur des tableaux C.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -17,6 +17,7 @@
 #include "arccore/base/ArrayView.h"
 
 #include <type_traits>
+#include <optional>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -298,6 +299,21 @@ class SpanImpl
         return true;
     }
     return false;
+  }
+
+  /*!
+   * /brief Position du premier élément de valeur \a v
+   * 
+   * /param v La valeur à trouver.
+   * /return La position du premier élément de valeur \a v si présent, std::nullopt sinon.
+   */
+  ARCCORE_HOST_DEVICE std::optional<SizeType> findFirst(const_reference v) const
+  {
+    for( SizeType i=0; i<m_size; ++i ){
+      if (m_ptr[i]==v)
+        return i;
+    }
+    return std::nullopt;
   }
 
  public:
