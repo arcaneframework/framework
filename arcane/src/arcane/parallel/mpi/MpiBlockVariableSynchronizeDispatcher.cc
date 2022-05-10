@@ -57,6 +57,7 @@ MpiBlockVariableSynchronizeDispatcher(MpiBlockVariableSynchronizeDispatcherBuild
 , m_mpi_parallel_mng(bi.parallelMng())
 , m_request_list(m_mpi_parallel_mng->createRequestListRef())
 , m_block_size(bi.blockSize())
+, m_nb_sequence(bi.nbSequence())
 {
 }
 
@@ -68,6 +69,18 @@ MpiBlockVariableSynchronizeDispatcher<SimpleType>::
 compute(ItemGroupSynchronizeInfo* sync_info)
 {
   VariableSynchronizeDispatcher<SimpleType>::compute(sync_info);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename SimpleType> bool
+MpiBlockVariableSynchronizeDispatcher<SimpleType>::
+_isSkipRank(Int32 rank,Int32 sequence) const
+{
+  if (m_nb_sequence==1)
+    return false;
+  return (rank % m_nb_sequence) == sequence;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -105,7 +118,7 @@ MpiBlockVariableSynchronizeDispatcher<SimpleType>::
 _endSynchronize(SyncBuffer& sync_buffer)
 {
   auto sync_list = this->m_sync_info->infos();
-  Integer nb_message = sync_list.size();
+  const Int32 nb_message = sync_list.size();
 
   MpiParallelMng* pm = m_mpi_parallel_mng;
   MpiDatatypeList* dtlist = pm->datatypes();
@@ -120,49 +133,55 @@ _endSynchronize(SyncBuffer& sync_buffer)
   const MPI_Datatype mpi_dt = dtlist->datatype(SimpleType())->datatype();
 
   const Int32 block_size = m_block_size;
-  Int32 block_index = 0;
 
-  while (1){
-    {
-      MpiTimeInterval tit(&prepare_time);
-      m_request_list->clear();
+  for (Int32 isequence = 0; isequence<m_nb_sequence; ++isequence ){
+    Int32 block_index = 0;
+    while (1){
+      {
+        MpiTimeInterval tit(&prepare_time);
+        m_request_list->clear();
 
-      // Poste les messages de réception
-      for (Integer i = 0; i < nb_message; ++i) {
-        const VariableSyncInfo& vsi = sync_list[i];
-        ArrayView<SimpleType> buf0 = sync_buffer.ghostBuffer(i);
-        ArrayView<SimpleType> buf = buf0.subView(block_index,block_size);
-        if (!buf.empty()) {
-          auto req = mpi_adapter->receiveNonBlockingNoStat(buf.data(), buf.size(),
-                                                         vsi.targetRank(), mpi_dt, serialize_tag);
-          m_request_list->add(req);
+        // Poste les messages de réception
+        for (Integer i = 0; i < nb_message; ++i) {
+          const VariableSyncInfo& vsi = sync_list[i];
+          if (_isSkipRank(vsi.targetRank(),isequence))
+            continue;
+          ArrayView<SimpleType> buf0 = sync_buffer.ghostBuffer(i);
+          ArrayView<SimpleType> buf = buf0.subView(block_index,block_size);
+          if (!buf.empty()) {
+            auto req = mpi_adapter->receiveNonBlockingNoStat(buf.data(), buf.size(),
+                                                             vsi.targetRank(), mpi_dt, serialize_tag);
+            m_request_list->add(req);
+          }
+        }
+
+        // Poste les messages d'envoi en mode non bloquant.
+        for (Integer i = 0; i < nb_message; ++i) {
+          const VariableSyncInfo& vsi = sync_list[i];
+          if (_isSkipRank(vsi.targetRank(),isequence))
+            continue;
+          ArrayView<SimpleType> buf0 = sync_buffer.shareBuffer(i);
+          ArrayView<SimpleType> buf = buf0.subView(block_index,block_size);
+          if (!buf.empty()) {
+            auto request = mpi_adapter->sendNonBlockingNoStat(buf.data(), buf.size(),
+                                                              vsi.targetRank(), mpi_dt, serialize_tag);
+            m_request_list->add(request);
+          }
         }
       }
 
-      // Poste les messages d'envoi en mode non bloquant.
-      for (Integer i = 0; i < nb_message; ++i) {
-        ArrayView<SimpleType> buf0 = sync_buffer.shareBuffer(i);
-        ArrayView<SimpleType> buf = buf0.subView(block_index,block_size);
-        const VariableSyncInfo& vsi = sync_list[i];
-        if (!buf.empty()) {
-          auto request = mpi_adapter->sendNonBlockingNoStat(buf.data(), buf.size(),
-                                                            vsi.targetRank(), mpi_dt, serialize_tag);
-          m_request_list->add(request);
-        }
+      // Si aucune requête alors on a fini notre synchronisation
+      if (m_request_list->size()==0)
+        break;
+
+      // Attend que les messages soient terminés
+      {
+        MpiTimeInterval tit(&wait_time);
+        m_request_list->wait(Parallel::WaitAll);
       }
+
+      block_index += block_size;
     }
-
-    // Si aucune requête alors on a fini notre synchronisation
-    if (m_request_list->size()==0)
-      break;
-
-    // Attend que les messages soient terminés
-    {
-      MpiTimeInterval tit(&wait_time);
-      m_request_list->wait(Parallel::WaitAll);
-    }
-
-    block_index += block_size;
   }
 
 

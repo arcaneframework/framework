@@ -129,6 +129,13 @@ class MpiParallelMngUtilsFactory
           m_synchronize_block_size = block_size;
         m_synchronize_block_size = std::clamp(m_synchronize_block_size,0,1000000000);
       }
+      v = platform::getEnvironmentVariable("ARCANE_SYNCHRONIZE_NB_SEQUENCE");
+      if (!v.null()){
+        Int32 nb_sequence = 0;
+        if (!builtInGetValue(nb_sequence,v))
+          m_synchronize_nb_sequence = nb_sequence;
+        m_synchronize_nb_sequence = std::clamp(m_synchronize_nb_sequence,1,1024*1024);
+      }
     }
   }
  public:
@@ -162,8 +169,9 @@ class MpiParallelMngUtilsFactory
       vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiDirectSendrecvVariableSynchronizeDispatcher>(bi));
     }
     else if (m_synchronizer_version == 4){
-      tm->info() << "Using MpiSynchronizer V4 block_size=" << m_synchronize_block_size;
-      MpiBlockVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table,m_synchronize_block_size);
+      tm->info() << "Using MpiSynchronizer V4 block_size=" << m_synchronize_block_size
+                 << " nb_sequence=" << m_synchronize_nb_sequence;
+      MpiBlockVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table,m_synchronize_block_size,m_synchronize_nb_sequence);
       vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiBlockVariableSynchronizeDispatcher>(bi));
     }
     else{
@@ -176,6 +184,7 @@ class MpiParallelMngUtilsFactory
  private:
   Integer m_synchronizer_version = 1;
   Int32 m_synchronize_block_size = 32000;
+  Int32 m_synchronize_nb_sequence = 1;
 };
 
 /*---------------------------------------------------------------------------*/
