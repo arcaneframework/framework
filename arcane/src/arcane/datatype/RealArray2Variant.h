@@ -19,6 +19,7 @@
 #include "arcane/utils/Array2View.h"
 #include "arcane/utils/Real2x2.h"
 #include "arcane/utils/Real3x3.h"
+#include "arcane/utils/NumArray.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -43,9 +44,18 @@ class RealArray2Variant
   RealArray2Variant(UniqueArray2<Real> v)
   : RealArray2Variant(v.constView())
   {}
+  template<typename LayoutType>
+  RealArray2Variant(NumArray<Real,2,LayoutType>& v)
+  : RealArray2Variant(v.span())
+  {}
   RealArray2Variant(ConstArray2View<Real> v)
   {
     _setValue(v.data(), v.dim1Size(), v.dim2Size());
+  }
+  template<typename LayoutType>
+  RealArray2Variant(MDSpan<Real,2,LayoutType> v)
+  {
+    _setValue(v.to1DSpan().data(), v.dim1Size(), v.dim2Size());
   }
   RealArray2Variant(Real2x2 r)
   {
@@ -82,6 +92,19 @@ class RealArray2Variant
   { 
      ARCANE_ASSERT(index < m_nb_dim1, ("Index out of range"));
      return m_value[index];
+  }
+
+  Real& operator()(Int32 i,Int32 j)
+  { 
+     ARCANE_ASSERT(i < m_nb_dim1, ("Index i out of range"));
+     ARCANE_ASSERT(j < m_nb_dim2, ("Index j out of range"));
+     return m_value[i][j];
+  }
+  Real operator()(Int32 i,Int32 j) const
+  { 
+    ARCANE_ASSERT(i < m_nb_dim1, ("Index i out of range"));
+    ARCANE_ASSERT(j < m_nb_dim2, ("Index j out of range"));
+    return m_value[i][j];
   }
 
   Int32 dim1Size() const { return m_nb_dim1; }

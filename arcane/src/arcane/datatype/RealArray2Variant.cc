@@ -31,6 +31,8 @@ extern "C++" ARCANE_CORE_EXPORT void _arcaneTestRealArray2Variant()
   Real2x2 a22{ Real2{ -1.0, -2.5 }, Real2{ -2.0, 3.7 } };
   Real3x3 a33{ Real3{ -2.1, 3.9, 1.5 }, Real3{ 9.2, 3.4, 2.1 }, Real3{ 7.1, 4.5, 3.2 } };
 
+  NumArray<Real,2> num_data(3,3);
+
   const Integer nb_variants = 3;
   RealArray2Variant variants[nb_variants] = { RealArray2Variant(a), RealArray2Variant(a22), RealArray2Variant(a33) };
 
@@ -46,6 +48,8 @@ extern "C++" ARCANE_CORE_EXPORT void _arcaneTestRealArray2Variant()
     }
     std::cout << "]\n";
   }
+
+  RealArray2Variant variant2{num_data};
 }
 
 /*---------------------------------------------------------------------------*/
