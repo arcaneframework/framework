@@ -32,7 +32,6 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*
  * Cette implémentation découpe la synchronisation en bloc de taille fixe.
  * Tout le mécanisme est dans _endSynchronize().
@@ -76,10 +75,26 @@ compute(ItemGroupSynchronizeInfo* sync_info)
 
 template <typename SimpleType> void
 MpiBlockVariableSynchronizeDispatcher<SimpleType>::
-_beginSynchronize(SyncBuffer&)
+_beginSynchronize(SyncBuffer& sync_buffer)
 {
-  // Ne fait rien dans cette partie car cette implémentation ne supporte pas
-  // l'asyncrhonisme
+  // Ne fait rien au niveau MPI dans cette partie car cette implémentation
+  // ne supporte pas l'asyncrhonisme.
+  // On se contente de recopier les valeurs des variables dans le buffer d'envoi
+  // pour permettre ensuite de modifier les valeurs de la variable entre
+  // le _beginSynchronize() et le _endSynchronize().
+
+  double send_copy_time = 0.0;
+  {
+    MpiTimeInterval tit(&send_copy_time);
+
+    // Recopie les buffers d'envoi
+    auto sync_list = this->m_sync_info->infos();
+    Integer nb_message = sync_list.size();
+    for (Integer i = 0; i < nb_message; ++i)
+      sync_buffer.copySend(i);
+  }
+  Int64 total_share_size = sync_buffer.totalShareSize();
+  m_mpi_parallel_mng->stat()->add("SyncSendCopy",send_copy_time,total_share_size);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -91,7 +106,6 @@ _endSynchronize(SyncBuffer& sync_buffer)
 {
   auto sync_list = this->m_sync_info->infos();
   Integer nb_message = sync_list.size();
-
 
   MpiParallelMng* pm = m_mpi_parallel_mng;
   MpiDatatypeList* dtlist = pm->datatypes();
@@ -105,13 +119,6 @@ _endSynchronize(SyncBuffer& sync_buffer)
   constexpr int serialize_tag = 523;
   const MPI_Datatype mpi_dt = dtlist->datatype(SimpleType())->datatype();
 
-  {
-    MpiTimeInterval tit(&prepare_time);
-
-    // Recopie les buffers d'envoi
-    for (Integer i = 0; i < nb_message; ++i)
-      sync_buffer.copySend(i);
-  }
   const Int32 block_size = m_block_size;
   Int32 block_index = 0;
 
