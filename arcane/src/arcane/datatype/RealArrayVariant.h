@@ -16,6 +16,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/Array.h"
+#include "arcane/utils/NumArray.h"
 #include "arcane/utils/ArrayView.h"
 #include "arcane/utils/Real2.h"
 #include "arcane/utils/Real3.h"
@@ -42,9 +43,18 @@ class RealArrayVariant
   RealArrayVariant(UniqueArray<Real> v)
   : RealArrayVariant(v.constView())
   {}
+  template<typename LayoutType>
+  RealArrayVariant(NumArray<Real,1,LayoutType>& v)
+  : RealArrayVariant(v.span())
+  {}
   RealArrayVariant(ConstArrayView<Real> v)
   {
     _setValue(v.data(), v.size());
+  }
+  template<typename LayoutType>
+  RealArrayVariant(MDSpan<Real,1,LayoutType> v)
+  {
+    _setValue(v.to1DSpan().data(), v.extent(0));
   }
   RealArrayVariant(Real2 r)
   {
@@ -72,15 +82,25 @@ class RealArrayVariant
     return (*this);
   }
   
-  Real& operator [](Integer index) 
+  Real& operator[](Integer index) 
   { 
-     ARCANE_ASSERT(index < m_nb_value, ("Index out of range"));
-     return m_value[index];
+    ARCANE_ASSERT(index < m_nb_value, ("Index out of range"));
+    return m_value[index];
   }
-  const Real& operator [](Integer index) const
+  Real operator[](Integer index) const
   { 
-     ARCANE_ASSERT(index < m_nb_value, ("Index out of range"));
-     return m_value[index];
+    ARCANE_ASSERT(index < m_nb_value, ("Index out of range"));
+    return m_value[index];
+  }
+  Real& operator()(Integer index) 
+  { 
+    ARCANE_ASSERT(index < m_nb_value, ("Index out of range"));
+    return m_value[index];
+  }
+  Real operator()(Integer index) const
+  { 
+    ARCANE_ASSERT(index < m_nb_value, ("Index out of range"));
+    return m_value[index];
   }
 
   Int32 size() const { return m_nb_value; }
