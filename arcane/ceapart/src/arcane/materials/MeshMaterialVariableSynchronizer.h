@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariableSynchronizer.h                          (C) 2000-2017 */
+/* MeshMaterialVariableSynchronizer.h                          (C) 2000-2022 */
 /*                                                                           */
 /* Synchroniseur de variables matériaux.                                     */
 /*---------------------------------------------------------------------------*/
@@ -16,6 +16,7 @@
 
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/Array.h"
+#include "arcane/utils/Ref.h"
 
 #include "arcane/materials/IMeshMaterialVariableSynchronizer.h"
 #include "arcane/materials/MatVarIndex.h"
@@ -23,8 +24,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -56,6 +57,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableSynchronizer
   ConstArrayView<MatVarIndex> ghostItems(Int32 index) override;
   void recompute() override;
   void checkRecompute() override;
+  Ref<IMeshMaterialSynchronizeBuffer> commonBuffer() override { return m_commun_buffer; }
 
  private:
 
@@ -65,6 +67,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableSynchronizer
   UniqueArray< SharedArray<MatVarIndex> > m_ghost_items;
   Int64 m_timestamp;
   MatVarSpace m_var_space;
+  Ref<IMeshMaterialSynchronizeBuffer> m_commun_buffer;
 
  private:
 
@@ -74,8 +77,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableSynchronizer
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

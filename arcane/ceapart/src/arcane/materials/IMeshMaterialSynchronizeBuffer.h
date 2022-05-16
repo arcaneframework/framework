@@ -5,26 +5,22 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshMaterialVariableSynchronizer.h                         (C) 2000-2022 */
+/* IMeshMaterialSynchronizeBuffer.h                            (C) 2000-2022 */
 /*                                                                           */
-/* Interface du synchroniseur de variables matériaux.                        */
+/* Interface des buffers pour la synchronisation de variables matériaux.     */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MATERIALS_IMESHMATERIALVARIABLESYNCHRONIZER_H
-#define ARCANE_MATERIALS_IMESHMATERIALVARIABLESYNCHRONIZER_H
+#ifndef ARCANE_MATERIALS_IMESHMATERIALSYNCHRONIZEBUFFER_H
+#define ARCANE_MATERIALS_IMESHMATERIALSYNCHRONIZEBUFFER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#include "arcane/utils/ArrayView.h"
+#include "arcane/utils/Ref.h"
 
 #include "arcane/materials/MaterialsGlobal.h"
 
-#include "arcane/utils/ArrayView.h"
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-namespace Arcane
-{
-class IVariableSynchronizer;
-}
 
 namespace Arcane::Materials
 {
@@ -33,40 +29,40 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Interface du synchroniseur de variables matériaux.
+ * \brief Interface des buffers pour la synchronisation de variables matériaux.
  */
-class ARCANE_MATERIALS_EXPORT IMeshMaterialVariableSynchronizer
+class ARCANE_MATERIALS_EXPORT IMeshMaterialSynchronizeBuffer
 {
  public:
 
-  virtual ~IMeshMaterialVariableSynchronizer(){}
+  virtual ~IMeshMaterialSynchronizeBuffer(){}
 
  public:
 
-  //! Synchroniseur des variables classiques associé.
-  virtual IVariableSynchronizer* variableSynchronizer() =0;
+  //! Nombre de rangs
+  virtual Int32 nbRank() const =0;
 
-  /*!
-   * \brief Liste des MatVarIndex partagés pour le rang d'indice \a index
-   * dans le tableau variableSynchronizer::communicatingRanks();
-   */
-  virtual ConstArrayView<MatVarIndex> sharedItems(Int32 index) =0;
+  //! Positionne le nombre de rangs. Cela invalide les buffers d'envoi et de réception
+  virtual void setNbRank(Int32 nb_rank) =0;
 
-  /*!
-   * \brief Liste des MatVarIndex fantômes pour le rang d'indice \a index
-   * dans le tableau variableSynchronizer::communicatingRanks();
-   */
-  virtual ConstArrayView<MatVarIndex> ghostItems(Int32 index) =0;
+  //! Buffer d'envoi pour le rang \a rank
+  virtual Span<Byte> sendBuffer(Int32 rank) =0;
 
-  //! Recalcule les infos de synchronisation.
-  virtual void recompute() =0;
+  //! Positionne le nombre d'éléments pour le buffer d'envoi du rang \a rank
+  virtual void resizeSendBuffer(Int32 rank,Int64 new_size) =0;
 
-  //! Recalcule les infos de synchronisation si nécessaire.
-  virtual void checkRecompute() =0;
+  //! Buffer d'envoi pour le rang \a rank
+  virtual Span<Byte> receiveBuffer(Int32 rank) =0;
 
-  //! Buffer commun pour les messages.
-  virtual Ref<IMeshMaterialSynchronizeBuffer> commonBuffer() =0;
+  //! Positionne le nombre d'éléments pour le buffer de réceptions du rang \a rank
+  virtual void resizeReceiveBuffer(Int32 rank,Int64 new_size) =0;
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ARCANE_MATERIALS_EXPORT Ref<IMeshMaterialSynchronizeBuffer>
+makeMeshMaterialSynchronizeBufferRef();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

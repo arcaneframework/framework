@@ -318,9 +318,11 @@ synchronize()
 {
   Integer sync_version = m_p->materialMng()->synchronizeVariableVersion();
   // Seule la version 6 est disponible pour les variables milieux.
-  if (m_p->space()==MatVarSpace::Environment)
-    sync_version = 6;
-  if (sync_version==6){
+  if (m_p->space()==MatVarSpace::Environment){
+    if (sync_version<6)
+      sync_version = 6;
+  }
+  if (sync_version==6 || sync_version==7){
     MeshMaterialVariableSynchronizerList mmvsl(m_p->materialMng());
     mmvsl.add(this);
     mmvsl.apply();

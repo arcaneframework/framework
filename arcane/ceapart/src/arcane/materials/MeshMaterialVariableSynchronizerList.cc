@@ -5,11 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariableSynchronizerList.cc                     (C) 2000-2016 */
+/* MeshMaterialVariableSynchronizerList.cc                     (C) 2000-2022 */
 /*                                                                           */
 /* Synchroniseur de variables matériaux.                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#include "arcane/materials/MeshMaterialVariableSynchronizerList.h"
 
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/String.h"
@@ -19,20 +21,15 @@
 #include "arcane/IParallelMng.h"
 #include "arcane/IVariableSynchronizer.h"
 
-#include "arcane/materials/MeshMaterialVariableSynchronizerList.h"
 #include "arcane/materials/IMeshMaterialMng.h"
 #include "arcane/materials/MeshMaterialVariable.h"
-
-#include <vector>
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+#include "arcane/materials/IMeshMaterialSynchronizeBuffer.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -40,8 +37,11 @@ MATERIALS_BEGIN_NAMESPACE
 class MeshMaterialVariableSynchronizerList::Impl
 {
  public:
+
   Impl(IMeshMaterialMng* material_mng) : m_material_mng(material_mng){}
+
  public:
+
   IMeshMaterialMng* m_material_mng;
   UniqueArray<MeshMaterialVariable*> m_mat_env_vars;
   UniqueArray<MeshMaterialVariable*> m_env_only_vars;
@@ -92,9 +92,8 @@ add(MeshMaterialVariable* var)
   else if (mvs==MatVarSpace::Environment)
     m_p->m_env_only_vars.add(var);
   else
-    throw NotSupportedException(A_FUNCINFO,
-                                String::format("Invalid space for variable name={0} space={1}",
-                                               var->name(),(int)mvs));
+    ARCANE_THROW(NotSupportedException,"Invalid space for variable name={0} space={1}",
+                 var->name(),(int)mvs);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -104,6 +103,32 @@ void MeshMaterialVariableSynchronizerList::
 _synchronizeMultiple(ConstArrayView<MeshMaterialVariable*> vars,
                      IMeshMaterialVariableSynchronizer* mmvs)
 {
+  Int32 sync_version = m_p->m_material_mng->synchronizeVariableVersion();
+  Ref<IMeshMaterialSynchronizeBuffer> buf_list;
+
+  if (sync_version==7){
+    // Version 7. Utilise le buffer commun pour éviter les multiples allocations
+    buf_list = mmvs->commonBuffer();
+  }
+  else{
+    // Version 6. Le buffer est recrée à chaque fois.
+    buf_list = makeMeshMaterialSynchronizeBufferRef();
+    Int32ConstArrayView ranks = mmvs->variableSynchronizer()->communicatingRanks();
+    Integer nb_rank = ranks.size();
+    buf_list->setNbRank(nb_rank);
+  }
+
+  _synchronizeMultiple2(vars,mmvs,buf_list.get());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialVariableSynchronizerList::
+_synchronizeMultiple2(ConstArrayView<MeshMaterialVariable*> vars,
+                      IMeshMaterialVariableSynchronizer* mmvs,
+                      IMeshMaterialSynchronizeBuffer* buf_list)
+{
   // Version de la synchronisation qui envoie uniquement
   // les valeurs des matériaux et des milieux pour les mailles
   // partagées.
@@ -112,6 +137,7 @@ _synchronizeMultiple(ConstArrayView<MeshMaterialVariable*> vars,
 
   IVariableSynchronizer* var_syncer = mmvs->variableSynchronizer();
   IParallelMng* pm = var_syncer->parallelMng();
+  Int32 sync_version = m_p->m_material_mng->synchronizeVariableVersion();
 
   // TODO: gérer l'alignement des multiples buffer.
 
@@ -122,36 +148,33 @@ _synchronizeMultiple(ConstArrayView<MeshMaterialVariable*> vars,
     return;
 
   mmvs->checkRecompute();
-  //mmvs->recompute();
+
   ITraceMng* tm = pm->traceMng();
   Integer nb_var = vars.size();
-  tm->info(4) << "MAT_SYNCHRONIZE_V6 multiple n=" << nb_var;
+  tm->info(4) << "MAT_SYNCHRONIZE version=" << sync_version << " multiple n=" << nb_var;
 
   Int32UniqueArray data_sizes(nb_var);
   Integer all_datatype_size = 0;
   for( Integer i=0; i<nb_var; ++i ){
     data_sizes[i] = vars[i]->dataTypeSize();
     all_datatype_size += data_sizes[i];
-    tm->info(4) << "MAT_SYNCHRONIZE_V6 name=" << vars[i]->name()
+    tm->info(4) << "MAT_SYNCHRONIZE name=" << vars[i]->name()
                 << " size=" << data_sizes[i];
   }
   
   {
     Int32ConstArrayView ranks = var_syncer->communicatingRanks();
     Integer nb_rank = ranks.size();
-    std::vector< UniqueArray<Byte> > shared_values(nb_rank);
-    std::vector< UniqueArray<Byte> > ghost_values(nb_rank);
 
     UniqueArray<Parallel::Request> requests;
 
     // Poste les receive.
-    Int32UniqueArray recv_ranks(nb_rank);
     for( Integer i=0; i<nb_rank; ++i ){
       Int32 rank = ranks[i];
       ConstArrayView<MatVarIndex> ghost_matcells(mmvs->ghostItems(i));
       Integer total = ghost_matcells.size();
-      ghost_values[i].resize(total * all_datatype_size);
-      requests.add(pm->recv(ghost_values[i].view(),rank,false));
+      buf_list->resizeReceiveBuffer(i,total * all_datatype_size);
+      requests.add(pm->recv(buf_list->receiveBuffer(i).smallView(),rank,false));
     }
 
     // Poste les send
@@ -159,8 +182,8 @@ _synchronizeMultiple(ConstArrayView<MeshMaterialVariable*> vars,
       Int32 rank = ranks[i];
       ConstArrayView<MatVarIndex> shared_matcells(mmvs->sharedItems(i));
       Integer total_shared = shared_matcells.size();
-      shared_values[i].resize(total_shared * all_datatype_size);      
-      ByteArrayView values(shared_values[i]);
+      buf_list->resizeSendBuffer(i,total_shared * all_datatype_size);      
+      ByteArrayView values(buf_list->sendBuffer(i).smallView());
       Integer offset = 0;
       for( Integer z=0; z<nb_var; ++z ){
         Integer my_data_size = data_sizes[z];
@@ -176,7 +199,7 @@ _synchronizeMultiple(ConstArrayView<MeshMaterialVariable*> vars,
     for( Integer i=0; i<nb_rank; ++i ){
       ConstArrayView<MatVarIndex> ghost_matcells(mmvs->ghostItems(i));
       Integer total_ghost = ghost_matcells.size();
-      ByteConstArrayView values(ghost_values[i].constView());
+      ByteConstArrayView values(buf_list->receiveBuffer(i).smallView());
 
       Integer offset = 0;
       for( Integer z=0; z<nb_var; ++z ){
@@ -191,8 +214,7 @@ _synchronizeMultiple(ConstArrayView<MeshMaterialVariable*> vars,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

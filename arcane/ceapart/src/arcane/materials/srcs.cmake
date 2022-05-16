@@ -75,6 +75,7 @@ set(ARCANE_SOURCES
   MeshMaterialVariableSynchronizer.h
   MeshMaterialVariableSynchronizerList.cc
   MeshMaterialVariableSynchronizerList.h
+  MeshMaterialSynchronizeBuffer.cc
   AllEnvData.h
   ComponentItemInternal.h
   ComponentItem.h
@@ -134,5 +135,7 @@ set(ARCANE_SOURCES
   IMeshMaterialVariable.h
   IMeshMaterialModifierImpl.h
   IMeshMaterialVariableComputeFunction.h
+  IMeshMaterialModifierImpl.h
+  IMeshMaterialSynchronizeBuffer.h
   ItemMaterialVariableBaseT.H
   )
