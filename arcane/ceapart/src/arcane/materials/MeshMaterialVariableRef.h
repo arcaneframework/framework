@@ -537,10 +537,10 @@ typedef CellMaterialVariableArrayRef<Real3x3> MaterialVariableCellArrayReal3x3;
 
 #ifdef ARCANE_64BIT
 //! %Variable matériau de type tableau de \a #Integer
-typedef MaterialVariableCellInt64 MaterialVariableCellArrayInteger;
+typedef MaterialVariableCellArrayInt64 MaterialVariableCellArrayInteger;
 #else
 //! %Variable matériau de type tableau de \a #Integer
-typedef MaterialVariableCellInt32 MaterialVariableCellArrayInteger;
+typedef MaterialVariableCellArrayInt32 MaterialVariableCellArrayInteger;
 #endif
 
 /*---------------------------------------------------------------------------*/
