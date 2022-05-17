@@ -59,6 +59,13 @@ class ARCANE_CORE_EXPORT UnstructuredMeshConnectivityView
   IndexedNodeCellConnectivityView nodeCell() const
   { _checkValid(); return m_node_cell_connectivity_view; }
 
+  IndexedEdgeNodeConnectivityView edgeNode() const
+  { _checkValid(); return m_edge_node_connectivity_view; }
+  IndexedEdgeFaceConnectivityView edgeFace() const
+  { _checkValid(); return m_edge_face_connectivity_view; }
+  IndexedEdgeCellConnectivityView edgeCell() const
+  { _checkValid(); return m_edge_cell_connectivity_view; }
+
  private:
 
   IndexedCellNodeConnectivityView m_cell_node_connectivity_view;
@@ -72,6 +79,10 @@ class ARCANE_CORE_EXPORT UnstructuredMeshConnectivityView
   IndexedNodeEdgeConnectivityView m_node_edge_connectivity_view;
   IndexedNodeFaceConnectivityView m_node_face_connectivity_view;
   IndexedNodeCellConnectivityView m_node_cell_connectivity_view;
+
+  IndexedEdgeNodeConnectivityView m_edge_node_connectivity_view;
+  IndexedEdgeFaceConnectivityView m_edge_face_connectivity_view;
+  IndexedEdgeCellConnectivityView m_edge_cell_connectivity_view;
 
   IMesh* m_mesh = nullptr;
 
