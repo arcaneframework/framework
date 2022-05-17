@@ -18,10 +18,11 @@
 
 #pragma once
 
-#include <alien/kernels/simple_csr/algebra/CBLAS.h>
-#include <alien/utils/Precomp.h>
-#include <arccore/message_passing/Messages.h>
 #include <cmath>
+#include <arccore/message_passing/Messages.h>
+
+#include <alien/utils/Precomp.h>
+#include <alien/kernels/simple_csr/algebra/alien_cblas.h>
 
 namespace Alien
 {

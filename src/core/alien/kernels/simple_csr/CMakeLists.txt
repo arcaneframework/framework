@@ -15,6 +15,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 add_library(alien_kernel_simplecsr OBJECT
+        algebra/CBLASMPIKernel.h
+        algebra/alien_cblas.h
         algebra/SimpleCSRInternalLinearAlgebra.cc
         algebra/SimpleCSRInternalLinearAlgebra.h
         algebra/SimpleCSRLinearAlgebra.h
@@ -35,10 +37,9 @@ add_library(alien_kernel_simplecsr OBJECT
         SimpleCSRPrecomp.h
         )
 
-add_subdirectory(algebra)
 
 find_package(BLAS REQUIRED)
-target_link_libraries(alien_kernel_simplecsr PUBLIC ${BLAS_LIBRARIES})
+target_link_libraries(alien_kernel_simplecsr PUBLIC BLAS::BLAS)
 
 target_link_libraries(alien_kernel_simplecsr PUBLIC
         Arccore::arccore_trace
@@ -49,7 +50,3 @@ target_link_libraries(alien_kernel_simplecsr PUBLIC
 target_link_libraries(alien_kernel_simplecsr PUBLIC alien_utils alien_headers)
 
 install(TARGETS alien_kernel_simplecsr EXPORT ${ALIEN_EXPORT_TARGET})
-
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/algebra/CBLAS.h
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/alien/kernels/simple_csr/algebra)
-

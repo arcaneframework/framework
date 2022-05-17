@@ -14,7 +14,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.18)
 cmake_policy(SET CMP0079 NEW)
 
 # MUST be done before call to 'project'
@@ -164,9 +164,9 @@ set(version_config "${generated_dir}/${PROJECT_NAME}ConfigVersion.cmake")
 set(project_config "${generated_dir}/${PROJECT_NAME}Config.cmake")
 set(namespace "Alien::")
 
-if(ALIEN_USE_PERF_TIMER)
-  add_definitions(-DALIEN_USE_PERF_TIMER)
-endif()
+if (ALIEN_USE_PERF_TIMER)
+    add_definitions(-DALIEN_USE_PERF_TIMER)
+endif ()
 
 add_subdirectory(src)
 
