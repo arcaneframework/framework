@@ -1,3 +1,4 @@
+#! /usr/bin/env bash
 #
 # Copyright 2021 IFPEN-CEA
 #
@@ -15,16 +16,16 @@
 #
 #  SPDX-License-Identifier: Apache-2.0
 #
-ENV_FILE=/tmp/toto
+ENV_FILE=/tmp/foo
 
 [[ $# -ge 1 ]] && ENV_FILE="$1"
 
-if [ ! -f "${ENV_FILE}" ]; then
-  . /spack/share/spack/setup-env.sh
-  spack env activate -V alien
-  spack build-env --dump "${ENV_FILE}" alien
-  # Remove functions from environment.
-  awk '/function BASH_FUNC_(.*?)%%/,/export -f (.\S*?)/ { next } {print}' "${ENV_FILE}" > /tmp/foo && mv /tmp/foo "${ENV_FILE}"
-fi
-. "${ENV_FILE}"
+. /spack/share/spack/setup-env.sh && spack env activate -V alien && spack load --only dependencies --sh alien >"${ENV_FILE}"
 
+# Second argument flags that arccon and arccore should not be removed from environment
+[[ $# -lt 2 ]] && sed -e 's@[^:]*/\(arccon\|arccore\)-[^:]*@@g' -i "$ENV_FILE"
+# shellcheck disable=SC1090
+. "$ENV_FILE"
+
+# googletest is a build only dependency
+spack load googletest
