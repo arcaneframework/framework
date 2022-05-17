@@ -97,10 +97,9 @@ class MDSpanBase
     return m_ptr+offset(idx);
   }
  public:
-  MDSpanBase<const DataType,RankValue> constSpan() const
+  ARCCORE_HOST_DEVICE MDSpanBase<const DataType,RankValue> constSpan() const
   { return MDSpanBase<const DataType,RankValue>(m_ptr,m_extents); }
-  Span<DataType> to1DSpan() { return { m_ptr, m_extents.totalNbElement() }; }
-  Span<const DataType> to1DSpan() const { return { m_ptr, m_extents.totalNbElement() }; }
+  ARCCORE_HOST_DEVICE Span<DataType> to1DSpan() const { return { m_ptr, m_extents.totalNbElement() }; }
  private:
   // Utilisé uniquement par NumArrayBase pour la copie
   Span2<const DataType> _internalTo2DSpan() const
@@ -170,7 +169,7 @@ class MDSpan<DataType,1,LayoutType>
   //! Valeur pour l'élément \a i
   ARCCORE_HOST_DEVICE DataType operator[](Int32 i) const { return m_ptr[offset(i)]; }
  public:
-  MDSpan<const DataType,1,LayoutType> constSpan() const
+  ARCCORE_HOST_DEVICE MDSpan<const DataType,1,LayoutType> constSpan() const
   { return MDSpan<const DataType,1,LayoutType>(m_ptr,m_extents); }
 };
 
@@ -225,7 +224,7 @@ class MDSpan<DataType,2,LayoutType>
     return m_ptr + offset(i,j);
   }
  public:
-  MDSpan<const DataType,2,LayoutType> constSpan() const
+  ARCCORE_HOST_DEVICE MDSpan<const DataType,2,LayoutType> constSpan() const
   { return MDSpan<const DataType,2,LayoutType>(m_ptr,m_extents); }
 };
 
@@ -289,7 +288,7 @@ class MDSpan<DataType,3,LayoutType>
     return m_ptr+offset(i,j,k);
   }
  public:
-  MDSpan<const DataType,3,LayoutType> constSpan() const
+  ARCCORE_HOST_DEVICE MDSpan<const DataType,3,LayoutType> constSpan() const
   { return MDSpan<const DataType,3,LayoutType>(m_ptr,m_extents); }
 };
 
@@ -355,7 +354,7 @@ class MDSpan<DataType,4,LayoutType>
     return m_ptr + offset(i,j,k,l);
   }
  public:
-  MDSpan<const DataType,4,LayoutType> constSpan() const
+  ARCCORE_HOST_DEVICE MDSpan<const DataType,4,LayoutType> constSpan() const
   { return MDSpan<const DataType,4,LayoutType>(m_ptr,m_extents); }
 };
 

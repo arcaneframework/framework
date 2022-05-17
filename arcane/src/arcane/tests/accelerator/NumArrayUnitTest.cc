@@ -152,7 +152,6 @@ _executeTest1(eMemoryRessource mem_kind)
   info() << "Execute Test1 memory_ressource=" << mem_kind;
 
   auto queue = makeQueue(m_runner);
-  auto command = makeCommand(queue);
 
   // Ne pas changer les dimensions du tableau sinon
   // il faut aussi changer le calcul des sommes
@@ -170,27 +169,54 @@ _executeTest1(eMemoryRessource mem_kind)
     NumArray<double, 1> t1(mem_kind);
     t1.resize(n1);
 
-    auto out_t1 = viewOut(command, t1);
+    NumArray<double, 1> t2(mem_kind);
+    t2.resize(n1);
 
-    command << RUNCOMMAND_LOOP1(iter, n1)
     {
-      auto [i] = iter();
-      if ((i%2)==0)
-        out_t1(i) = _getValue(i);
-      else
-        out_t1[i] = _getValue(i);
-    };
-    NumArray<double, 1> host_t1(eMemoryRessource::Host);
-    host_t1.copy(t1);
-    double s1 = _doSum<1>(host_t1, { n1 });
-    info() << "SUM1 = " << s1;
-    vc.areEqual(s1, expected_sum1, "SUM1");
+      auto command = makeCommand(queue);
+      auto out_t1 = viewOut(command, t1);
+
+      command << RUNCOMMAND_LOOP1(iter, n1)
+      {
+        auto [i] = iter();
+        if ((i%2)==0)
+          out_t1(i) = _getValue(i);
+        else
+          out_t1[i] = _getValue(i);
+      };
+      NumArray<double, 1> host_t1(eMemoryRessource::Host);
+      host_t1.copy(t1);
+      double s1 = _doSum<1>(host_t1, { n1 });
+      info() << "SUM1 = " << s1;
+      vc.areEqual(s1, expected_sum1, "SUM1");
+    }
+    {
+      auto command = makeCommand(queue);
+      auto in_t1 = t1.constSpan();
+      MDSpan<double,1> out_t2 = t2.span();
+
+      command << RUNCOMMAND_LOOP1(iter, n1)
+      {
+        auto [i] = iter();
+        auto span1 = in_t1.constSpan().to1DSpan();
+        auto span2 = out_t2.to1DSpan();
+        span2[i] = span1[i];
+      };
+      //NumArray<double, 1> host_t1(eMemoryRessource::Host);
+      //host_t1.copy(t1);
+      NumArray<double, 1> host_t2(eMemoryRessource::Host);
+      host_t2.copy(t2);
+      double s2 = _doSum<1>(host_t2, { n1 });
+      info() << "SUM1_2 = " << s2;
+      vc.areEqual(s2, expected_sum1, "SUM1");
+    }
   }
 
   {
     NumArray<double, 2> t1(mem_kind);
     t1.resize(n1, n2);
 
+    auto command = makeCommand(queue);
     auto out_t1 = viewOut(command, t1);
 
     command << RUNCOMMAND_LOOP2(iter, n1, n2)
@@ -209,6 +235,7 @@ _executeTest1(eMemoryRessource mem_kind)
     NumArray<double, 3, LeftLayout3> t1(mem_kind);
     t1.resize(n1, n2, n3);
 
+    auto command = makeCommand(queue);
     auto out_t1 = viewOut(command, t1);
 
     command << RUNCOMMAND_LOOP3(iter, n1, n2, n3)
@@ -227,6 +254,7 @@ _executeTest1(eMemoryRessource mem_kind)
     NumArray<double, 3, RightLayout3> t1(mem_kind);
     t1.resize(n1, n2, n3);
 
+    auto command = makeCommand(queue);
     auto out_t1 = viewOut(command, t1);
 
     command << RUNCOMMAND_LOOP3(iter, n1, n2, n3)
@@ -245,6 +273,7 @@ _executeTest1(eMemoryRessource mem_kind)
     NumArray<double, 4> t1(mem_kind);
     t1.resize(n1, n2, n3, n4);
 
+    auto command = makeCommand(queue);
     auto out_t1 = viewOut(command, t1);
 
     command << RUNCOMMAND_LOOP4(iter, n1, n2, n3, n4)
