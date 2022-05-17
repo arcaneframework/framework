@@ -29,32 +29,50 @@ class MeshMaterialSynchronizeBuffer
 {
  public:
 
+  struct BufferInfo
+  {
+    void reset()
+    {
+      m_send_size = 0;
+      m_receive_size = 0;
+      m_send_buffer.clear();
+      m_receive_buffer.clear();
+    }
+    Int32 m_send_size = 0;
+    Int32 m_receive_size = 0;
+    UniqueArray<Byte> m_send_buffer;
+    UniqueArray<Byte> m_receive_buffer;
+  };
+
+ public:
+
   Int32 nbRank() const override { return m_nb_rank; }
   void setNbRank(Int32 nb_rank) override;
   Span<Byte> sendBuffer(Int32 index) override
   {
-    return m_send_buffers[index];
+    return m_buffer_infos[index].m_send_buffer;
   }
-  void resizeSendBuffer(Int32 index,Int64 new_size) override
+  void setSendBufferSize(Int32 index, Int32 new_size) override
   {
-    m_send_buffers[index].resize(new_size);
+    m_buffer_infos[index].m_send_size = new_size;
   }
   Span<Byte> receiveBuffer(Int32 index) override
   {
-    return m_receive_buffers[index];
+    return m_buffer_infos[index].m_receive_buffer;
+    ;
   }
-  void resizeReceiveBuffer(Int32 index,Int64 new_size) override
+  void setReceiveBufferSize(Int32 index, Int32 new_size) override
   {
-    m_receive_buffers[index].resize(new_size);
+    m_buffer_infos[index].m_receive_size = new_size;
   }
+  void allocate() override;
 
  public:
 
   Int32 m_nb_rank = 0;
-  UniqueArray< UniqueArray<Byte> > m_send_buffers;
-  UniqueArray< UniqueArray<Byte> > m_receive_buffers;
+  UniqueArray<BufferInfo> m_buffer_infos;
 };
-  
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -72,8 +90,21 @@ void MeshMaterialSynchronizeBuffer::
 setNbRank(Int32 nb_rank)
 {
   m_nb_rank = nb_rank;
-  m_send_buffers.resize(nb_rank);
-  m_receive_buffers.resize(nb_rank);
+  m_buffer_infos.resize(nb_rank);
+  for (auto& x : m_buffer_infos)
+    x.reset();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialSynchronizeBuffer::
+allocate()
+{
+  for (Integer i = 0; i < m_nb_rank; ++i) {
+    m_buffer_infos[i].m_send_buffer.resize(m_buffer_infos[i].m_send_size);
+    m_buffer_infos[i].m_receive_buffer.resize(m_buffer_infos[i].m_receive_size);
+  }
 }
 
 /*---------------------------------------------------------------------------*/

@@ -30,32 +30,42 @@ namespace Arcane::Materials
 /*!
  * \internal
  * \brief Interface des buffers pour la synchronisation de variables matériaux.
+ *
+ * Pour utiliser les instances de cette interface, il faut procéder comme suit:
+ * 1. Positionner le nombre de rangs via setNbRank().
+ * 2. Pour chaque buffer, appeler setSendBufferSize() et setReceiveBufferSize()
+ *    pour indiquer le nombre d'éléments de chaque buffer.
+ * 3. Appeler allocate() pour allouer les buffers.
+ * 4. Récupérer les vues sur les buffers via sendBuffer() ou receiveBuffer().
  */
 class ARCANE_MATERIALS_EXPORT IMeshMaterialSynchronizeBuffer
 {
  public:
 
-  virtual ~IMeshMaterialSynchronizeBuffer(){}
+  virtual ~IMeshMaterialSynchronizeBuffer() {}
 
  public:
 
   //! Nombre de rangs
-  virtual Int32 nbRank() const =0;
+  virtual Int32 nbRank() const = 0;
 
   //! Positionne le nombre de rangs. Cela invalide les buffers d'envoi et de réception
-  virtual void setNbRank(Int32 nb_rank) =0;
+  virtual void setNbRank(Int32 nb_rank) = 0;
 
-  //! Buffer d'envoi pour le rang \a rank
-  virtual Span<Byte> sendBuffer(Int32 rank) =0;
+  //! Buffer d'envoi pour le \a i-ème buffer
+  virtual Span<Byte> sendBuffer(Int32 i) = 0;
 
   //! Positionne le nombre d'éléments pour le buffer d'envoi du rang \a rank
-  virtual void resizeSendBuffer(Int32 rank,Int64 new_size) =0;
+  virtual void setSendBufferSize(Int32 index, Int32 new_size) = 0;
 
   //! Buffer d'envoi pour le rang \a rank
-  virtual Span<Byte> receiveBuffer(Int32 rank) =0;
+  virtual Span<Byte> receiveBuffer(Int32 rank) = 0;
 
   //! Positionne le nombre d'éléments pour le buffer de réceptions du rang \a rank
-  virtual void resizeReceiveBuffer(Int32 rank,Int64 new_size) =0;
+  virtual void setReceiveBufferSize(Int32 rank, Int32 new_size) = 0;
+
+  //! Alloue la mémoire pour les buffers
+  virtual void allocate() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -168,12 +168,20 @@ _synchronizeMultiple2(ConstArrayView<MeshMaterialVariable*> vars,
 
     UniqueArray<Parallel::Request> requests;
 
+    // Calcul la taille des buffers et réalloue si nécessaire
+    for( Integer i=0; i<nb_rank; ++i ){
+      ConstArrayView<MatVarIndex> ghost_matcells(mmvs->ghostItems(i));
+      Integer total_ghost = ghost_matcells.size();
+      buf_list->setReceiveBufferSize(i,total_ghost * all_datatype_size);
+      ConstArrayView<MatVarIndex> shared_matcells(mmvs->sharedItems(i));
+      Integer total_shared = shared_matcells.size();
+      buf_list->setSendBufferSize(i,total_shared * all_datatype_size);
+    }
+    buf_list->allocate();
+
     // Poste les receive.
     for( Integer i=0; i<nb_rank; ++i ){
       Int32 rank = ranks[i];
-      ConstArrayView<MatVarIndex> ghost_matcells(mmvs->ghostItems(i));
-      Integer total = ghost_matcells.size();
-      buf_list->resizeReceiveBuffer(i,total * all_datatype_size);
       requests.add(pm->recv(buf_list->receiveBuffer(i).smallView(),rank,false));
     }
 
@@ -182,7 +190,6 @@ _synchronizeMultiple2(ConstArrayView<MeshMaterialVariable*> vars,
       Int32 rank = ranks[i];
       ConstArrayView<MatVarIndex> shared_matcells(mmvs->sharedItems(i));
       Integer total_shared = shared_matcells.size();
-      buf_list->resizeSendBuffer(i,total_shared * all_datatype_size);      
       ByteArrayView values(buf_list->sendBuffer(i).smallView());
       Integer offset = 0;
       for( Integer z=0; z<nb_var; ++z ){
