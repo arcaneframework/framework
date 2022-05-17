@@ -254,7 +254,7 @@ namespace mesh
                               Neo::OutProperty{item_family,PolyhedralFamily::m_arcane_item_lids_property_name.localstr()},
                               [arcane_item_family,uids]
                               (Neo::ItemLidsProperty const& lids_property,
-                               Neo::PropertyT<Neo::utils::Int32> & arcane_item_lids){
+                               Neo::PropertyT<Neo::utils::Int32> &){
                                 Int32UniqueArray arcane_items(uids.size());
                                 arcane_item_family->addItems(uids,arcane_items);
                                 arcane_item_family->traceMng()->info() << arcane_items;
@@ -369,6 +369,7 @@ PolyhedralMesh(ISubDomain* subdomain)
 , m_mesh_handle{m_subdomain->meshMng()->createMeshHandle(m_mesh_handle_name)}
 , m_properties(std::make_unique<Properties>(subdomain->propertyMng(),String("ArcaneMeshProperties_")+m_name))
 , m_mesh{ std::make_unique<mesh::PolyhedralMeshImpl>(m_subdomain) }
+, m_item_type_mng(ItemTypeMng::_singleton())
 {
   m_mesh_handle._setMesh(this);
   m_mesh_item_internal_list.mesh = this;
@@ -627,6 +628,36 @@ itemFamily(eItemKind ik)
   return m_default_arcane_families[ik];
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ItemTypeMng* mesh::PolyhedralMesh::
+itemTypeMng() const
+{
+  return m_item_type_mng;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IItemFamily* mesh::PolyhedralMesh::
+findItemFamily(eItemKind ik, const String& name, bool create_if_needed, bool register_modifier_if_created)
+{
+  ARCANE_UNUSED(register_modifier_if_created); // IItemFamilyModifier not yet used in polyhedral mesh
+  // Check if is a default family
+  auto family = itemFamily(ik);
+  if (family) {
+    if (family->name() == name)
+      return family;
+  }
+  for (auto& family : m_arcane_families) {
+    if (family->itemKind() == ik && family->name() == name)
+      return family.get();
+  }
+  if (!create_if_needed)
+    return nullptr;
+  return createItemFamily(ik, name);
+}
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

@@ -8,9 +8,9 @@
 
  <meshes>
    <mesh name="PolyhedralMesh">
-     <filename>example_polyhedral_cell.xmf</filename>
+     <fichier>example_polyhedral_cell.xmf</fichier>
    </mesh>
- </meshess>
+ </meshes>
 
 <!-- <module-test-unitaire>-->
 <!--  <test name="MeshUnitTest">-->

@@ -27,8 +27,9 @@ namespace Arcane
 {
 namespace mesh
 {
-// TEMPORAIRE: pour que cette classe ait accès au singleton.
+// TEMPORAIRE: pour que ces classes aient accès au singleton.
 class DynamicMesh;
+class PolyhedralMesh;
 }
 class ArcaneMain;
 
@@ -63,6 +64,7 @@ class ARCANE_CORE_EXPORT ItemTypeMng
 {
   // Ces classes sont ici temporairement tant que le singleton est accessible.
   friend class mesh::DynamicMesh;
+  friend class mesh::PolyhedralMesh;
   friend class Application;
   friend class ArcaneMain;
   friend class Item;
