@@ -62,6 +62,7 @@ class PolyhedralMesh : public EmptyMesh {
   std::unique_ptr<PolyhedralMeshImpl> m_mesh; // using pimpl to limit dependency to neo lib to cc file
   MeshPartInfo m_part_info;
   bool m_is_allocated = false;
+  ItemTypeMng* m_item_type_mng;
 
  public:
   PolyhedralMesh(ISubDomain* subDomain);
@@ -145,6 +146,10 @@ class PolyhedralMesh : public EmptyMesh {
   bool isAmrActivated() const override { return false; }
 
   IItemFamily* itemFamily(eItemKind ik) override;
+
+  ItemTypeMng* itemTypeMng() const override;
+
+  IItemFamily* findItemFamily(eItemKind ik,const String& name,bool create_if_needed,bool register_modifier_if_created) override;
 
 #endif // ARCANE_HAS_CUSTOM_MESH_TOOLS
 
