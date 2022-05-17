@@ -106,18 +106,23 @@ _synchronizeMultiple(ConstArrayView<MeshMaterialVariable*> vars,
   Int32 sync_version = m_p->m_material_mng->synchronizeVariableVersion();
   Ref<IMeshMaterialSynchronizeBuffer> buf_list;
 
-  if (sync_version==7){
-    // Version 7. Utilise le buffer commun pour éviter les multiples allocations
+  if (sync_version==8){
+    // Version 8. Utilise le buffer commun pour éviter les multiples allocations
     buf_list = mmvs->commonBuffer();
   }
+  else if (sync_version==7){
+    // Version 7. Utilise un buffer unique mais réalloué à chaque fois.
+    buf_list =  impl::makeOneBufferMeshMaterialSynchronizeBufferRef();
+  }
   else{
-    // Version 6. Le buffer est recrée à chaque fois.
-    buf_list = makeMeshMaterialSynchronizeBufferRef();
+    // Version 6. Version historique avec plusieurs buffers recréés à chaque fois.
+    buf_list = impl::makeMultiBufferMeshMaterialSynchronizeBufferRef();
+  }
+  if (sync_version<8){
     Int32ConstArrayView ranks = mmvs->variableSynchronizer()->communicatingRanks();
     Integer nb_rank = ranks.size();
     buf_list->setNbRank(nb_rank);
   }
-
   _synchronizeMultiple2(vars,mmvs,buf_list.get());
 }
 

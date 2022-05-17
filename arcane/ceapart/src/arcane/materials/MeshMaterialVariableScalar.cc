@@ -322,7 +322,7 @@ synchronize()
     if (sync_version<6)
       sync_version = 6;
   }
-  if (sync_version==6 || sync_version==7){
+  if (sync_version>=6){
     MeshMaterialVariableSynchronizerList mmvsl(m_p->materialMng());
     mmvsl.add(this);
     mmvsl.apply();

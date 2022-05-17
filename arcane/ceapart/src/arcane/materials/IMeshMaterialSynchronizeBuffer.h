@@ -71,8 +71,13 @@ class ARCANE_MATERIALS_EXPORT IMeshMaterialSynchronizeBuffer
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace impl
+{
 extern "C++" ARCANE_MATERIALS_EXPORT Ref<IMeshMaterialSynchronizeBuffer>
-makeMeshMaterialSynchronizeBufferRef();
+makeMultiBufferMeshMaterialSynchronizeBufferRef();
+extern "C++" ARCANE_MATERIALS_EXPORT Ref<IMeshMaterialSynchronizeBuffer>
+makeOneBufferMeshMaterialSynchronizeBufferRef();
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

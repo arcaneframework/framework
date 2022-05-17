@@ -41,7 +41,7 @@ MeshMaterialVariableSynchronizer(IMeshMaterialMng* material_mng,
 , m_variable_synchronizer(var_syncer)
 , m_timestamp(-1)
 , m_var_space(space)
-, m_commun_buffer(makeMeshMaterialSynchronizeBufferRef())
+, m_commun_buffer(impl::makeOneBufferMeshMaterialSynchronizeBufferRef())
 {
 }
 
