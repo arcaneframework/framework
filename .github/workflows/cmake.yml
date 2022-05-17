@@ -33,7 +33,16 @@ jobs:
         config:
           - {
             name: "ubuntu20.04 release",
-            container: "ghcr.io/arcaneframework/alien-base:ubuntu20.04",
+            container: "ghcr.io/arcaneframework/alien-ci-ubuntu20.04:main",
+            precommand: "",
+            build_type: "RelWithDebInfo",
+            build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -G Ninja",
+            alien_options: "-DALIEN_DEFAULT_OPTIONS:BOOL=ON -DALIEN_PLUGIN_GINKGO:BOOL=ON -DALIEN_PLUGIN_GINKGO_OMP:BOOL=ON",
+            isspack: false
+          }
+          - {
+            name: "ubuntu22.04 release",
+            container: "ghcr.io/arcaneframework/alien-ci-ubuntu22.04:main",
             precommand: "",
             build_type: "RelWithDebInfo",
             build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -G Ninja",
@@ -42,7 +51,7 @@ jobs:
           }
           - {
             name: "ubuntu20.04 debug",
-            container: "ghcr.io/arcaneframework/alien-base:ubuntu20.04",
+            container: "ghcr.io/arcaneframework/alien-ci-ubuntu20.04:main",
             precommand: "",
             build_type: "Debug",
             build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -G Ninja -DENABLE_SANITIZER_ADDRESS:BOOL=ON -DENABLE_SANITIZER_UNDEFINED_BEHAVIOR:BOOL=ON",
@@ -51,7 +60,7 @@ jobs:
           }
           - {
             name: "ubuntu20.04 debug memory",
-            container: "ghcr.io/arcaneframework/alien-base:ubuntu20.04",
+            container: "ghcr.io/arcaneframework/alien-ci-ubuntu20.04:main",
             precommand: "",
             build_type: "Debug",
             build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -G Ninja -DENABLE_SANITIZER_MEMORY:BOOL=ON",
@@ -60,7 +69,7 @@ jobs:
           }
           - {
             name: "ubuntu20.04 debug minimal",
-            container: "ghcr.io/arcaneframework/alien-base:ubuntu20.04",
+            container: "ghcr.io/arcaneframework/alien-ci-ubuntu20.04:main",
             precommand: "",
             build_type: "Debug",
             build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -G Ninja",
@@ -69,7 +78,7 @@ jobs:
           }
           - {
             name: "centos7 gimkl 2018b release",
-            container: "ghcr.io/arcaneframework/centos-gimkl-2018b-alien:7-ccache",
+            container: " ghcr.io/arcaneframework/centos-gimkl-2018b-alienlegacy:7-latest",
             precommand: ". /env.sh",
             build_type: "RelWithDebInfo",
             build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_FLAGS='-L${EBROOTLIBXML2} -lxml2'",
@@ -78,7 +87,7 @@ jobs:
           }
           - {
             name: "rocky8 gimkl 2018b release",
-            container: "ghcr.io/arcaneframework/rockylinux-gimkl-2018b-alien:8-latest",
+            container: "ghcr.io/arcaneframework/rockylinux-gimkl-2018b-alienlegacy:8-latest",
             precommand: ". /env.sh",
             build_type: "RelWithDebInfo",
             build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_FLAGS='-L${EBROOTLIBXML2} -lxml2'",

@@ -10,7 +10,7 @@ jobs:
   build:
     name: sphinx-doc
     runs-on: ubuntu-latest
-    container: arcaneframework/alien-base:ubuntu20.04
+    container: ghcr.io/arcaneframework/alien-ci-ubuntu22.04:main
     steps:
       - uses: actions/checkout@v2
 
