@@ -254,7 +254,7 @@ namespace mesh
                               Neo::OutProperty{item_family,PolyhedralFamily::m_arcane_item_lids_property_name.localstr()},
                               [arcane_item_family,uids]
                               (Neo::ItemLidsProperty const& lids_property,
-                               Neo::PropertyT<Neo::utils::Int32> & arcane_item_lids){
+                               Neo::PropertyT<Neo::utils::Int32> &){
                                 Int32UniqueArray arcane_items(uids.size());
                                 arcane_item_family->addItems(uids,arcane_items);
                                 arcane_item_family->traceMng()->info() << arcane_items;
