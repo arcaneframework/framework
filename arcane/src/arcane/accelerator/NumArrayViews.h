@@ -91,6 +91,10 @@ class NumArrayView<Accessor,1,LayoutType>
   {
     return Accessor::build(m_values.ptrAt(idx));
   }
+  ARCCORE_HOST_DEVICE Span<DataType> to1DSpan() const
+  {
+    return m_values.to1DSpan();
+  }
 
  private:
 
@@ -124,6 +128,10 @@ class NumArrayView<Accessor,2,LayoutType>
   ARCCORE_HOST_DEVICE AccessorReturnType operator()(ArrayBoundsIndex<2> idx) const
   {
     return Accessor::build(m_values.ptrAt(idx));
+  }
+  ARCCORE_HOST_DEVICE Span<DataType> to1DSpan() const
+  {
+    return m_values.to1DSpan();
   }
 
  private:
@@ -159,6 +167,10 @@ class NumArrayView<Accessor,3,LayoutType>
   {
     return Accessor::build(m_values.ptrAt(idx));
   }
+  ARCCORE_HOST_DEVICE Span<DataType> to1DSpan() const
+  {
+    return m_values.to1DSpan();
+  }
 
  private:
 
@@ -192,6 +204,10 @@ class NumArrayView<Accessor,4,LayoutType>
   ARCCORE_HOST_DEVICE AccessorReturnType operator()(ArrayBoundsIndex<4> idx) const
   {
     return Accessor::build(m_values.ptrAt(idx));
+  }
+  ARCCORE_HOST_DEVICE Span<DataType> to1DSpan() const
+  {
+    return m_values.to1DSpan();
   }
 
  private:

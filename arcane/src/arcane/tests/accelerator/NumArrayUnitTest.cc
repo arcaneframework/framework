@@ -172,6 +172,9 @@ _executeTest1(eMemoryRessource mem_kind)
     NumArray<double, 1> t2(mem_kind);
     t2.resize(n1);
 
+    NumArray<double, 1> t3(mem_kind);
+    t3.resize(n1);
+
     {
       auto command = makeCommand(queue);
       auto out_t1 = viewOut(command, t1);
@@ -202,13 +205,29 @@ _executeTest1(eMemoryRessource mem_kind)
         auto span2 = out_t2.to1DSpan();
         span2[i] = span1[i];
       };
-      //NumArray<double, 1> host_t1(eMemoryRessource::Host);
-      //host_t1.copy(t1);
+
       NumArray<double, 1> host_t2(eMemoryRessource::Host);
       host_t2.copy(t2);
       double s2 = _doSum<1>(host_t2, { n1 });
       info() << "SUM1_2 = " << s2;
-      vc.areEqual(s2, expected_sum1, "SUM1");
+      vc.areEqual(s2, expected_sum1, "SUM1_2");
+    }
+    {
+      auto command = makeCommand(queue);
+      auto in_t1 = viewIn(command,t1);
+      auto out_t3 = viewOut(command,t3);
+
+      command << RUNCOMMAND_LOOP1(iter, n1)
+      {
+        auto [i] = iter();
+        out_t3.to1DSpan()[i] = in_t1.to1DSpan()[i];
+      };
+
+      NumArray<double, 1> host_t3(eMemoryRessource::Host);
+      host_t3.copy(t3);
+      double s3 = _doSum<1>(host_t3, { n1 });
+      info() << "SUM1_3 = " << s3;
+      vc.areEqual(s3, expected_sum1, "SUM1_3");
     }
   }
 
