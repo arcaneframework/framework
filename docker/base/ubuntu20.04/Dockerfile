@@ -31,6 +31,13 @@ RUN apt-get install --no-install-recommends -y \
     python3-breathe sphinx-rtd-theme-common \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# CMake from Kitware's repository
+RUN apt-get purge --auto-remove -y cmake \
+    && curl -L https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null > /etc/apt/trusted.gpg.d/kitware.asc \
+    && echo 'deb https://apt.kitware.com/ubuntu/ focal main' > /etc/apt/sources.list.d/kitware.list \
+    && apt-get update && apt-get install -y cmake \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
 # gtest package contains only src, we need to compile it
 RUN export BDIR=$(mktemp -d) && cd ${BDIR} && \
     cmake /usr/src/googletest && \
