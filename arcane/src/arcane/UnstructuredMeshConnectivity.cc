@@ -72,6 +72,10 @@ setMesh(IMesh* mesh)
   _internalInit(m_node_edge_connectivity_view,mesh);
   _internalInit(m_node_face_connectivity_view,mesh);
   _internalInit(m_node_cell_connectivity_view,mesh);
+
+  _internalInit(m_edge_node_connectivity_view,mesh);
+  _internalInit(m_edge_face_connectivity_view,mesh);
+  _internalInit(m_edge_cell_connectivity_view,mesh);
 }
 
 /*---------------------------------------------------------------------------*/

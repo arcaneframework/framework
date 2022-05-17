@@ -5,13 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SubMeshTestModule.cc                                        (C) 2000-2016 */
+/* SubMeshTestModule.cc                                        (C) 2000-2022 */
 /*                                                                           */
 /* Module de test du sous-maillage                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/List.h"
 
@@ -29,6 +27,7 @@
 #include "arcane/ITimeLoopMng.h"
 #include "arcane/IVariableMng.h"
 #include "arcane/SharedVariable.h"
+#include "arcane/UnstructuredMeshConnectivity.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 #include "arcane/tests/SubMeshTest_axl.h"
@@ -38,7 +37,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_BEGIN_NAMESPACE
+namespace ArcaneTest
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -89,7 +89,8 @@ private:
   Directory m_output_directory; 
   bool m_output_dir_created;
 
-private:
+ private:
+
   // Les variables de traitement du cas test
 
   // Variables de contrôle
@@ -112,8 +113,11 @@ private:
 
   // Post-processing
   RealUniqueArray times; 
-  VariableCellReal * new_data;
+  VariableCellReal* new_data;
 
+ private:
+
+  void _checkEdgeConnectivity();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -298,8 +302,10 @@ void SubMeshTestModule::
 build()
 {
   Connectivity c(mesh()->connectivity());
-  if (options()->submeshKind() == IK_Face)
+  if (options()->submeshKind() == IK_Face){
+    info() << "Adding edge connectivity";
     c.enableConnectivity(Connectivity::CT_HasEdge);
+  }
   // c.enableConnectivity(Connectivity::CT_EdgeConnectivity);
 }
 
@@ -405,6 +411,10 @@ init()
   node_uids = new VariableNodeInt64(Arcane::VariableBuildInfo(mesh(), "Uids", mesh()->nodeFamily()->name()));
   ENUMERATE_NODE(inode,mesh()->allNodes())
     (*node_uids)[inode] = inode->uniqueId();
+
+  // Teste la connectivité aux arêtes
+  if (options()->submeshKind() == IK_Face)
+    _checkEdgeConnectivity();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -673,7 +683,44 @@ compute()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_END_NAMESPACE
+void SubMeshTestModule::
+_checkEdgeConnectivity()
+{
+  UnstructuredMeshConnectivityView mc;
+  mc.setMesh(mesh());
+
+  auto edge_node = mc.edgeNode();
+  auto edge_face = mc.edgeFace();
+  auto edge_cell = mc.edgeCell();
+  Int64 total_id = 0;
+  ENUMERATE_(Edge,iedge,mesh()->allEdges()){
+    Edge edge = *iedge;
+    bool do_print = edge.localId()<12;
+    if (do_print)
+      info() << "EDGE i=" << edge.localId();
+    for( NodeLocalId node : edge_node.nodes(edge) ){
+      if (do_print)
+        info() << "  NODE i=" << node.localId();
+      total_id += node.localId();
+    }
+    for( FaceLocalId face : edge_face.faces(edge) ){
+      if (do_print)
+        info() << "  FACE i=" << face.localId();
+      total_id += face.localId();
+    }
+    for( CellLocalId cell : edge_cell.cells(edge) ){
+      if (do_print)
+        info() << "  CELL i=" << cell.localId();
+      total_id += cell.localId();
+    }
+  }
+  info() << "TOTAL_ID=" << total_id;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
