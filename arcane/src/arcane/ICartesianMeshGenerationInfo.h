@@ -47,6 +47,8 @@ class ARCANE_CORE_EXPORT ICartesianMeshGenerationInfo
   virtual Int32ConstArrayView ownNbCells() const =0;
   virtual Int64ConstArrayView ownCellOffsets() const =0;
   virtual Int64 firstOwnCellUniqueId() const =0;
+  virtual Real3 globalOrigin() const =0;
+  virtual Real3 globalLength() const =0;
 
   virtual void setOwnCellOffsets(Int64 x,Int64 y,Int64 z) =0;
   virtual void setGlobalNbCells(Int64 x,Int64 y,Int64 z) =0;
@@ -54,6 +56,8 @@ class ARCANE_CORE_EXPORT ICartesianMeshGenerationInfo
   virtual void setNbSubDomains(Int32 x,Int32 y,Int32 z) =0;
   virtual void setOwnNbCells(Int32 x,Int32 y,Int32 z) =0;
   virtual void setFirstOwnCellUniqueId(Int64 uid) =0;
+  virtual void setGlobalOrigin(Real3 pos) =0;
+  virtual void setGlobalLength(Real3 length) =0;
 };
 
 /*---------------------------------------------------------------------------*/

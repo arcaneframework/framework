@@ -608,6 +608,9 @@ generateMesh()
   m_generation_info->setSubDomainOffsets(sdXOffset(),sdYOffset(),sdZOffset());
   m_generation_info->setNbSubDomains(m_build_info.m_nsdx,m_build_info.m_nsdy,m_build_info.m_nsdz);
 
+  m_generation_info->setGlobalOrigin(m_build_info.m_origine);
+  m_generation_info->setGlobalLength(m_l);
+
   Int64 all_nb_cell_xy = ((Int64)all_nb_cell_x) * ((Int64)all_nb_cell_y);
   Int64 all_nb_cell_xyz = ((Int64)all_nb_cell_xy) * ((Int64)all_nb_cell_z);
   info() << " all cells: " << all_nb_cell_x << "x" << all_nb_cell_y << "y"

@@ -152,6 +152,32 @@ setFirstOwnCellUniqueId(Int64 uid)
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshGenerationInfo::
+setGlobalOrigin(Real3 pos)
+{
+  m_global_origin = pos;
+  Properties* p = m_mesh->properties();
+  p->setReal("GlobalMeshOriginX", m_global_origin.x);
+  p->setReal("GlobalMeshOriginY", m_global_origin.y);
+  p->setReal("GlobalMeshOriginZ", m_global_origin.z);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshGenerationInfo::
+setGlobalLength(Real3 length)
+{
+  m_global_length = length;
+  Properties* p = m_mesh->properties();
+  p->setReal("GlobalMeshLengthX", m_global_length.x);
+  p->setReal("GlobalMeshLengthY", m_global_length.y);
+  p->setReal("GlobalMeshLengthZ", m_global_length.z);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshGenerationInfo::
 _init()
 {
   Properties* p = m_mesh->properties();
@@ -176,6 +202,14 @@ _init()
   m_nb_sub_domains[MD_DirZ] = p->getInt32WithDefault("NbSubDomainZ", -1);
 
   m_first_own_cell_unique_id = p->getInt64WithDefault("CartesianFirstOnwCellUniqueId", -1);
+
+  m_global_origin.x = p->getRealWithDefault("GlobalMeshOriginX", 0.0);
+  m_global_origin.y = p->getRealWithDefault("GlobalMeshOriginY", 0.0);
+  m_global_origin.z = p->getRealWithDefault("GlobalMeshOriginZ", 0.0);
+
+  m_global_length.x = p->getRealWithDefault("GlobalMeshLengthX", 0.0);
+  m_global_length.y = p->getRealWithDefault("GlobalMeshLengthY", 0.0);
+  m_global_length.z = p->getRealWithDefault("GlobalMeshLengthZ", 0.0);
 }
 
 /*---------------------------------------------------------------------------*/

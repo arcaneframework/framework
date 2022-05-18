@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ArrayView.h"
+#include "arcane/utils/Real3.h"
 
 #include "arcane/ICartesianMeshGenerationInfo.h"
 
@@ -48,6 +49,8 @@ class ARCANE_CORE_EXPORT CartesianMeshGenerationInfo
   Int32ConstArrayView ownNbCells() const override { return m_own_nb_cells; };
   Int64ConstArrayView ownCellOffsets() const override { return m_own_cell_offsets; };
   Int64 firstOwnCellUniqueId() const override { return m_first_own_cell_unique_id; }
+  Real3 globalOrigin() const override { return m_global_origin; };
+  Real3 globalLength() const override { return m_global_length; };
 
  public:
 
@@ -57,6 +60,8 @@ class ARCANE_CORE_EXPORT CartesianMeshGenerationInfo
   void setNbSubDomains(Int32 x,Int32 y,Int32 z) override;
   void setOwnNbCells(Int32 x,Int32 y,Int32 z) override;
   void setFirstOwnCellUniqueId(Int64 uid) override;
+  void setGlobalOrigin(Real3 pos) override;
+  void setGlobalLength(Real3 length) override;
 
  private:
 
@@ -75,6 +80,8 @@ class ARCANE_CORE_EXPORT CartesianMeshGenerationInfo
   Int32 m_nb_sub_domain_ptr[NB_DIM];
   Int32 m_own_nb_cell_ptr[NB_DIM];
   Int64 m_own_cell_offset_ptr[NB_DIM];
+  Real3 m_global_origin;
+  Real3 m_global_length;
 
   Int64 m_first_own_cell_unique_id = -1;
 
