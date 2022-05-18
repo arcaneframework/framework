@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TraceInfo.h                                                 (C) 2000-2018 */
+/* TraceInfo.h                                                 (C) 2000-2022 */
 /*                                                                           */
 /* Informations de trace.                                                    */
 /*---------------------------------------------------------------------------*/
@@ -33,7 +33,7 @@ class TraceInfo
 {
  public:
   TraceInfo()
-  : m_file("(None)"), m_name("(None)"), m_line(-1) {}
+  : m_file("(None)"), m_name("(None)"), m_line(-1), m_print_signature(true) {}
   TraceInfo(const char* afile,const char* func_name,int aline)
   : m_file(afile), m_name(func_name), m_line(aline), m_print_signature(true) {}
   TraceInfo(const char* afile,const char* func_name,int aline,bool print_signature)

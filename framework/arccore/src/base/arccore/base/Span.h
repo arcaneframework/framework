@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Span.h                                                      (C) 2000-2021 */
+/* Span.h                                                      (C) 2000-2022 */
 /*                                                                           */
 /* Vues sur des tableaux C.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -17,6 +17,7 @@
 #include "arccore/base/ArrayView.h"
 
 #include <type_traits>
+#include <optional>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -100,12 +101,12 @@ class SpanImpl
 
   //! Construit une vue depuis un std::array
   template<std::size_t N,typename X,typename = is_same_const_type<X> >
-  constexpr ARCCORE_HOST_DEVICE SpanImpl(std::array<X,N>& from) noexcept
+  constexpr ARCCORE_HOST_DEVICE SpanImpl(std::array<X,N>& from)
   : m_ptr(from.data()), m_size(ArraySizeChecker<SizeType>::check(from.size())) {}
 
   //! Opérateur de recopie
   template<std::size_t N,typename X,typename = is_same_const_type<X> >
-  constexpr ARCCORE_HOST_DEVICE ThatClass& operator=(std::array<X,N>& from) noexcept
+  constexpr ARCCORE_HOST_DEVICE ThatClass& operator=(std::array<X,N>& from)
   {
     m_ptr = from.data();
     m_size = ArraySizeChecker<SizeType>::check(from.size());
@@ -300,6 +301,21 @@ class SpanImpl
     return false;
   }
 
+  /*!
+   * /brief Position du premier élément de valeur \a v
+   * 
+   * /param v La valeur à trouver.
+   * /return La position du premier élément de valeur \a v si présent, std::nullopt sinon.
+   */
+  std::optional<SizeType> findFirst(const_reference v) const
+  {
+    for( SizeType i=0; i<m_size; ++i ){
+      if (m_ptr[i]==v)
+        return i;
+    }
+    return std::nullopt;
+  }
+
  public:
 
   ARCCORE_HOST_DEVICE void setArray(const ArrayView<T>& v) noexcept
@@ -417,13 +433,14 @@ class Span
   //! Construit une vue à partir d'un std::array.
   template<std::size_t N,typename X,typename = is_same_const_type<X> >
   constexpr ARCCORE_HOST_DEVICE Span(std::array<X,N>& from) noexcept
-  : BaseClass(from) {}
+  : BaseClass(from.data(),from.size()) {}
 
   //! Opérateur de recopie
   template<std::size_t N,typename X,typename = is_same_const_type<X> >
   constexpr ARCCORE_HOST_DEVICE ThatClass& operator=(std::array<X,N>& from) noexcept
   {
-    BaseClass::operator=(from);
+    this->_setPtr(from.data());
+    this->_setSize(from.size());
     return (*this);
   }
 
@@ -522,12 +539,12 @@ class SmallSpan
   : BaseClass(ptr,asize) {}
 
   template<std::size_t N,typename X,typename = is_same_const_type<X> >
-  constexpr ARCCORE_HOST_DEVICE SmallSpan(std::array<X,N>& from) noexcept
+  constexpr ARCCORE_HOST_DEVICE SmallSpan(std::array<X,N>& from)
   : BaseClass(from) {}
 
   //! Opérateur de recopie
   template<std::size_t N,typename X,typename = is_same_const_type<X> >
-  constexpr ARCCORE_HOST_DEVICE ThatClass& operator=(std::array<X,N>& from) noexcept
+  constexpr ARCCORE_HOST_DEVICE ThatClass& operator=(std::array<X,N>& from)
   {
     BaseClass::operator=(from);
     return (*this);
@@ -604,7 +621,7 @@ operator!=(Span<const T> rhs, Span<const T> lhs)
 template<typename T> inline bool
 operator==(Span<T> rhs, Span<T> lhs)
 {
-  return operator==(rhs.constView(),lhs.constView());
+  return impl::areEqual(rhs,lhs);
 }
 
 template<typename T> inline bool

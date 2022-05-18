@@ -50,11 +50,18 @@ class StandaloneMpiMessagePassingMng::Impl
 
   ~Impl()
   {
-    m_adapter->destroy();
-    delete m_stat;
-    if (m_clean_comm) {
-      MPI_Comm_free(&m_communicator);
+    try{
+      m_adapter->destroy();
     }
+    catch(const Exception& ex){
+      std::cerr << "ERROR: msg=" << ex << "\n";
+    }
+
+    delete m_dispatchers;
+    delete m_stat;
+
+    if (m_clean_comm)
+      MPI_Comm_free(&m_communicator);
   }
 
   MpiMessagePassingMng::BuildInfo buildInfo() const
@@ -63,6 +70,7 @@ class StandaloneMpiMessagePassingMng::Impl
   }
 
  public:
+
   ReferenceCounter<ITraceMng> m_trace_mng;
   IStat* m_stat = nullptr;
   Dispatchers* m_dispatchers = nullptr;

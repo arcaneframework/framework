@@ -241,6 +241,14 @@ _testSpanStdArray()
     SpanType span1 { v1 };
     _checkSame(span1,v1,"span1==v1");
 
+    SpanType span2 { v1 };
+    ASSERT_TRUE(span1==span2);
+    ASSERT_FALSE(span1!=span2);
+
+    SpanType const_span2 { v1 };
+    ASSERT_TRUE(span1==const_span2);
+    ASSERT_FALSE(span1!=const_span2);
+
     span0 = v2;
     _checkSame(span0,v2,"span0==v2");
   }
@@ -257,6 +265,10 @@ _testSpanStdArray()
 
     ConstSpanType span2 { v3 };
     _checkSame(span2,v3,"const span2==v3");
+
+    ConstSpanType span3 { v3 };
+    ASSERT_TRUE(span2==span3);
+    ASSERT_FALSE(span2!=span3);
 
     span1 = v3;
     _checkSame(span1,v3,"const span1==v3");
@@ -343,7 +355,7 @@ _testSubViewInterval()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-TEST(ArrayView,SubViewInternval)
+TEST(ArrayView,SubViewInterval)
 {
   using namespace Arccore;
   _testSubViewInterval<ArrayView<Int64>>();

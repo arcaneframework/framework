@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Array4View.h                                                (C) 2000-2018 */
+/* Array4View.h                                                (C) 2000-2022 */
 /*                                                                           */
 /* Vue d'un tableau 4D.                                                      */
 /*---------------------------------------------------------------------------*/
@@ -46,43 +46,43 @@ class Array4View
 {
  public:
   //! Construit une vue
-  Array4View(DataType* ptr,Integer dim1_size,Integer dim2_size,
-             Integer dim3_size,Integer dim4_size)
+  constexpr Array4View(DataType* ptr,Integer dim1_size,Integer dim2_size,
+                       Integer dim3_size,Integer dim4_size)
   : m_ptr(ptr), m_dim1_size(dim1_size), m_dim2_size(dim2_size), m_dim3_size(dim3_size),
     m_dim4_size(dim4_size), m_dim34_size(dim3_size*dim4_size),
     m_dim234_size(m_dim34_size*dim2_size)
   {
   }
   //! Construit une vue vide
-  Array4View()
+  constexpr Array4View()
   : m_ptr(0), m_dim1_size(0), m_dim2_size(0), m_dim3_size(0), m_dim4_size(0),
     m_dim34_size(0), m_dim234_size(0)
   {
   }
  public:
   //! Valeur de la première dimension
-  Integer dim1Size() const { return m_dim1_size; }
+  constexpr Integer dim1Size() const { return m_dim1_size; }
   //! Valeur de la deuxième dimension
-  Integer dim2Size() const { return m_dim2_size; }
+  constexpr Integer dim2Size() const { return m_dim2_size; }
   //! Valeur de la troisième dimension
-  Integer dim3Size() const { return m_dim3_size; }
+  constexpr Integer dim3Size() const { return m_dim3_size; }
   //! Valeur de la quatrième dimension
-  Integer dim4Size() const { return m_dim4_size; }
+  constexpr Integer dim4Size() const { return m_dim4_size; }
   //! Nombre total d'éléments du tableau
-  Integer totalNbElement() const { return m_dim1_size*m_dim234_size; }
+  constexpr Integer totalNbElement() const { return m_dim1_size*m_dim234_size; }
  public:
-  Array3View<DataType> operator[](Integer i)
+  constexpr Array3View<DataType> operator[](Integer i)
   {
     ARCCORE_CHECK_AT(i,m_dim1_size);
     return Array3View<DataType>(m_ptr + (m_dim234_size*i),m_dim2_size,m_dim3_size,m_dim4_size);
   }
-  ConstArray3View<DataType> operator[](Integer i) const
+  constexpr ConstArray3View<DataType> operator[](Integer i) const
   {
     ARCCORE_CHECK_AT(i,m_dim1_size);
     return ConstArray3View<DataType>(m_ptr + (m_dim234_size*i),m_dim2_size,m_dim3_size,m_dim4_size);
   }
   //! Valeur pour l'élément \a i,j,k,l
-  DataType item(Integer i,Integer j,Integer k,Integer l) const
+  constexpr DataType item(Integer i,Integer j,Integer k,Integer l) const
   {
     ARCCORE_CHECK_AT(i,m_dim1_size);
     ARCCORE_CHECK_AT(j,m_dim2_size);
@@ -91,7 +91,7 @@ class Array4View
     return m_ptr[(m_dim234_size*i) + m_dim34_size*j + m_dim4_size*k + l];
   }
   //! Positionne la valeur pour l'élément \a i,j,k,l
-  void setItem(Integer i,Integer j,Integer k,Integer l,const DataType& value)
+  constexpr void setItem(Integer i,Integer j,Integer k,Integer l,const DataType& value)
   {
     ARCCORE_CHECK_AT(i,m_dim1_size);
     ARCCORE_CHECK_AT(j,m_dim2_size);
@@ -103,8 +103,11 @@ class Array4View
   /*!
    * \brief Pointeur sur le premier élément du tableau.
    */
-  inline DataType* unguardedBasePointer()
-  { return m_ptr; }
+  constexpr inline DataType* unguardedBasePointer() { return m_ptr; }
+  /*!
+   * \brief Pointeur sur le premier élément du tableau.
+   */
+  constexpr inline DataType* data() { return m_ptr; }
  private:
   DataType* m_ptr;
   Integer m_dim1_size; //!< Taille de la 1ere dimension
@@ -125,31 +128,31 @@ template<class DataType>
 class ConstArray4View
 {
  public:
-  ConstArray4View(DataType* ptr,Integer dim1_size,Integer dim2_size,
-                  Integer dim3_size,Integer dim4_size)
+  constexpr ConstArray4View(DataType* ptr,Integer dim1_size,Integer dim2_size,
+                            Integer dim3_size,Integer dim4_size)
   : m_ptr(ptr), m_dim1_size(dim1_size), m_dim2_size(dim2_size), m_dim3_size(dim3_size),
     m_dim4_size(dim4_size), m_dim34_size(dim3_size*dim4_size),
     m_dim234_size(m_dim34_size*dim2_size)
   {
   }
-  ConstArray4View()
-  : m_ptr(0), m_dim1_size(0), m_dim2_size(0), m_dim3_size(0), m_dim4_size(0),
+  constexpr ConstArray4View()
+  : m_ptr(nullptr), m_dim1_size(0), m_dim2_size(0), m_dim3_size(0), m_dim4_size(0),
     m_dim34_size(0), m_dim234_size(0)
   {
   }
  public:
-  Integer dim1Size() const { return m_dim1_size; }
-  Integer dim2Size() const { return m_dim2_size; }
-  Integer dim3Size() const { return m_dim3_size; }
-  Integer dim4Size() const { return m_dim4_size; }
-  Integer totalNbElement() const { return m_dim1_size*m_dim234_size; }
+  constexpr Integer dim1Size() const { return m_dim1_size; }
+  constexpr Integer dim2Size() const { return m_dim2_size; }
+  constexpr Integer dim3Size() const { return m_dim3_size; }
+  constexpr Integer dim4Size() const { return m_dim4_size; }
+  constexpr Integer totalNbElement() const { return m_dim1_size*m_dim234_size; }
  public:
-  ConstArray3View<DataType> operator[](Integer i) const
+  constexpr ConstArray3View<DataType> operator[](Integer i) const
   {
     ARCCORE_CHECK_AT(i,m_dim1_size);
     return ConstArray3View<DataType>(m_ptr + (m_dim234_size*i),m_dim2_size,m_dim3_size,m_dim4_size);
   }
-  DataType item(Integer i,Integer j,Integer k,Integer l) const
+  constexpr DataType item(Integer i,Integer j,Integer k,Integer l) const
   {
     ARCCORE_CHECK_AT(i,m_dim1_size);
     ARCCORE_CHECK_AT(j,m_dim2_size);
@@ -158,11 +161,10 @@ class ConstArray4View
     return m_ptr[(m_dim234_size*i) + m_dim34_size*j + m_dim4_size*k + l];
   }
  public:
-  /*!
-   * \brief Pointeur sur la mémoire allouée.
-   */
-  inline const DataType* unguardedBasePointer()
-  { return m_ptr; }
+  //! Pointeur sur la mémoire allouée.
+  constexpr inline const DataType* unguardedBasePointer() { return m_ptr; }
+  //! Pointeur sur la mémoire allouée.
+  constexpr inline const DataType* data() { return m_ptr; }
  private:
   const DataType* m_ptr;
   Integer m_dim1_size; //!< Taille de la 1ere dimension

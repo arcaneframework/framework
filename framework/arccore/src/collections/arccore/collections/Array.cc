@@ -150,10 +150,10 @@ _reallocate(Int64 new_capacity,Int64 sizeof_true_type,MemoryPointer current)
 /*---------------------------------------------------------------------------*/
 
 void ArrayMetaData::
-_deallocate(MemoryPointer current)
+_deallocate(MemoryPointer current) noexcept
 {
-  _checkAllocator();
-  allocator->deallocate(current);
+  if (allocator)
+    allocator->deallocate(current);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiSerializeMessageList.cc                                  (C) 2000-2020 */
+/* MpiSerializeMessageList.cc                                  (C) 2000-2022 */
 /*                                                                           */
 /* Gestion des messages de sérialisationd via MPI.                           */
 /*---------------------------------------------------------------------------*/
@@ -131,7 +131,7 @@ processPendingMessages()
   // de comparaison ne soit pas cohérent. De plus, il n'est normalement
   // plus nécessaire de faire ce tri car tout est non bloquant.
   //std::stable_sort(std::begin(m_messages_to_process),std::end(m_messages_to_process),_SortMessages());
-  bool print_sorted = false;
+  const bool print_sorted = false;
   if (print_sorted)
     for( Integer i=0, is=m_messages_to_process.size(); i<is; ++i ){
       ISerializeMessage* pmsg = m_messages_to_process[i];
@@ -155,7 +155,7 @@ processPendingMessages()
       // de legacySendSerializer() mais avant de fair cela il faut envoyer
       // les deux messages potentiels en même temps pour des raisons de
       // performance (voir MpiSerializeDispatcher::sendSerializer())
-      bool do_old = false;
+      const bool do_old = false;
       if (do_old){
         if (is_one_message_strategy)
           ARCCORE_THROW(NotSupportedException,"OneMessage strategy with legacy send serializer");

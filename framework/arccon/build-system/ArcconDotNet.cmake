@@ -30,7 +30,7 @@ if (DOTNET_EXEC)
   # Pour les options, voir le CMakeLists.txt de 'axlstar'
   set(ARCCON_MSBUILD_ARGS_coreclr publish /p:UseSharedCompilation=false ${ARCCON_MSBUILD_COMMON_ARGS})
   # Arguments pour fabriquer les packages NuGet
-  set(ARCCON_DOTNET_PACK_ARGS_coreclr pack --no-build --no-restore)
+  set(ARCCON_DOTNET_PACK_ARGS_coreclr pack --no-build --no-restore --no-dependencies /nodeReuse:false)
 
   # Récupère le numéro de version 'dotnet'
   execute_process(COMMAND ${DOTNET_EXEC} "--version" OUTPUT_VARIABLE CORECLR_EXEC_VERSION_OUTPUT OUTPUT_STRIP_TRAILING_WHITESPACE)
