@@ -22,16 +22,16 @@ cmake_policy(SET CMP0074 NEW)
 find_package(Alien REQUIRED)
 
 
-add_executable(bench_ginkgo bench_ginkgo.cpp)
+add_executable(bench_hypre bench.cpp)
 
-target_link_libraries(bench_ginkgo PUBLIC
-        Alien::alien_ginkgo
+target_link_libraries(bench_hypre PUBLIC
+        Alien::hypre_wrapper
         Alien::alien_semantic_move
         Alien::benchmark)
 
 include(GNUInstallDirs)
 
-install(TARGETS alien_benchmark EXPORT Alien
+install(TARGETS bench_hypre EXPORT Alien
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         )
 
@@ -45,9 +45,9 @@ if (ALIEN_UNIT_TESTS)
     #-----------------------------------------------------------
 
     alien_test(
-            BENCH ginkgo
-            NAME ginkgo.benchmark
+            BENCH hypre
+            NAME hypre.benchmark
             PROCS 2
-            COMMAND bench_ginkgo
+            COMMAND bench_hypre
     )
 endif ()

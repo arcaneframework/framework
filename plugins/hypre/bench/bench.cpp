@@ -24,12 +24,13 @@
 #include <alien/benchmark/ILinearProblem.h>
 #include <alien/benchmark/LinearBench.h>
 
-#include <alien/ginkgo/backend.h>
-#include <alien/ginkgo/options.h>
+#include <alien/hypre/backend.h>
+#include <alien/hypre/options.h>
+#include "alien/expression/solver/SolverStat.h"
 
 constexpr int NB_RUNS = 5;
 
-int test(const Alien::Ginkgo::OptionTypes::eSolver& solv, const Alien::Ginkgo::OptionTypes::ePreconditioner& prec, const std::string& mat_filename, const std::string& vec_filename)
+int test(const Alien::Hypre::OptionTypes::eSolver& solv, const Alien::Hypre::OptionTypes::ePreconditioner& prec, const std::string& mat_filename, const std::string& vec_filename)
 {
   auto* pm = Arccore::MessagePassing::Mpi::StandaloneMpiMessagePassingMng::create(MPI_COMM_WORLD);
   auto* tm = Arccore::arccoreCreateDefaultTraceMng();
@@ -40,22 +41,25 @@ int test(const Alien::Ginkgo::OptionTypes::eSolver& solv, const Alien::Ginkgo::O
   auto bench = Alien::Benchmark::LinearBench(std::move(problem));
 
   for (int i = 0; i < NB_RUNS; i++) {
-    Alien::Ginkgo::Options options;
+    Alien::Hypre::Options options;
     options.numIterationsMax(500);
     options.stopCriteriaValue(1e-8);
     options.preconditioner(prec); // Jacobi, NoPC
     options.solver(solv); //CG, GMRES, BICG, BICGSTAB
-    auto solver = Alien::Ginkgo::LinearSolver(options);
+    auto solver = Alien::Hypre::LinearSolver(options);
 
-    if (pm->commSize() == 1) {
-      tm->info() << "Running Ginkgo";
-      auto solution = bench.solve(&solver);
-    }
-    else {
-      tm->info() << "Running Ginkgo on a reduced communicator";
-      // Run ginkgo from a sequential communicator.
-      std::unique_ptr<Arccore::MessagePassing::IMessagePassingMng> ginkgo_pm(mpSplit(pm, pm->commRank() == 0));
-      auto solution = bench.solveWithRedistribution(&solver, ginkgo_pm.get());
+    tm->info() << "Running Hypre";
+    auto solution = bench.solve(&solver);
+
+    auto commsize = pm->commSize();
+    for (auto mask = 1; commsize >> mask; mask++) {
+      // Run Hypre from a sequential communicator.
+      auto hypre_pm = mpSplit(pm, !(pm->commRank() % (1 << mask)));
+      if (hypre_pm && hypre_pm->commRank() == 0) {
+        tm->info() << "Running Hypre on a reduced communicator of size = " << hypre_pm->commSize();
+      }
+      auto solution = bench.solveWithRedistribution(&solver, hypre_pm);
+      delete hypre_pm;
     }
   }
 
@@ -67,8 +71,8 @@ int main(int argc, char** argv)
 
   MPI_Init(&argc, &argv);
 
-  if (argc != 5 && argc != 4 && argc != 1) {
-    std::cerr << "Usage : ./bench_ginkgo [solver] [preconditioner] [matrix] [vector] \n"
+  if (argc != 5 && argc != 1) {
+    std::cerr << "Usage : ./bench_Hypre [solver] [preconditioner] [matrix] [vector] \n"
               << "  - solver : (CG|GMRES|BICG|BICGSTAB) \n"
               << "  - preconditioner : (Jacobi|NoPC) \n"
               << "  - MTX matrix file \n"
@@ -77,8 +81,8 @@ int main(int argc, char** argv)
   }
 
   // Default options, to run as test
-  auto solver = Alien::Ginkgo::OptionTypes::GMRES;
-  auto prec = Alien::Ginkgo::OptionTypes::Jacobi;
+  auto solver = Alien::Hypre::OptionTypes::GMRES;
+  auto prec = Alien::Hypre::OptionTypes::DiagPC;
   std::string matrix_file = "matrix.mtx";
   std::string vec_file = "rhs.mtx";
 
@@ -88,16 +92,10 @@ int main(int argc, char** argv)
   else {
     // Read the solver
     if (std::string(argv[1]) == "CG") {
-      solver = Alien::Ginkgo::OptionTypes::CG;
+      solver = Alien::Hypre::OptionTypes::CG;
     }
     else if (std::string(argv[1]) == "GMRES") {
-      solver = Alien::Ginkgo::OptionTypes::GMRES;
-    }
-    else if (std::string(argv[1]) == "BICG") {
-      solver = Alien::Ginkgo::OptionTypes::BICG;
-    }
-    else if (std::string(argv[1]) == "BICGSTAB") {
-      solver = Alien::Ginkgo::OptionTypes::BICGSTAB;
+      solver = Alien::Hypre::OptionTypes::GMRES;
     }
     else {
       std::cerr << "Unrecognized solver : " << argv[1] << "\n"
@@ -106,10 +104,13 @@ int main(int argc, char** argv)
     }
 
     if (std::string(argv[2]) == "Jacobi") {
-      prec = Alien::Ginkgo::OptionTypes::Jacobi;
+      prec = Alien::Hypre::OptionTypes::DiagPC;
     }
     else if (std::string(argv[2]) == "NoPC") {
-      prec = Alien::Ginkgo::OptionTypes::NoPC;
+      prec = Alien::Hypre::OptionTypes::NoPC;
+    }
+    else if (std::string(argv[2]) == "AMG") {
+      prec = Alien::Hypre::OptionTypes::AMGPC;
     }
     else {
       std::cerr << "Unrecognized preconditioner : " << argv[2] << "\n"
@@ -118,12 +119,7 @@ int main(int argc, char** argv)
     }
 
     matrix_file = std::string(argv[3]);
-    if (argc == 5) {
-      vec_file = std::string(argv[4]);
-    }
-    else {
-      vec_file = "";
-    }
+    vec_file = std::string(argv[4]);
   }
 
   auto ret = 0;

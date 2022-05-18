@@ -184,7 +184,10 @@ MatrixData ALIEN_MOVESEMANTIC_EXPORT
 readFromMatrixMarket(Arccore::MessagePassing::IMessagePassingMng* pm, const std::string& filename)
 {
   if (pm->commRank() == 0) { // Only rank 0 read the file
-    auto stream = std::ifstream(filename);
+    std::ifstream stream;
+    std::array<char, 1024 * 1024> buf; // Buffer for reading
+    stream.rdbuf()->pubsetbuf(buf.data(), buf.size());
+    stream.open(filename);
     if (!stream) {
       throw Arccore::FatalErrorException("readFromMatrixMarket", "Unable to read file");
     }
@@ -215,7 +218,10 @@ readFromMatrixMarket(const VectorDistribution& distribution, const std::string& 
   auto& v = out.impl()->template get<BackEnd::tag::DoK>(true);
 
   if (distribution.parallelMng()->commRank() == 0) { // Only rank 0 read the file
-    auto stream = std::ifstream(filename);
+    std::ifstream stream;
+    std::array<char, 1024 * 1024> buf; // Buffer for reading
+    stream.rdbuf()->pubsetbuf(buf.data(), buf.size());
+    stream.open(filename);
     if (!stream) {
       throw Arccore::FatalErrorException("readFromMatrixMarket", "Unable to read file");
     }

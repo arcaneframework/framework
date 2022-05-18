@@ -58,6 +58,8 @@ if (ALIEN_HYPRE_UNIT_TESTS)
     add_subdirectory(tests)
 endif (ALIEN_HYPRE_UNIT_TESTS)
 
+add_subdirectory(bench)
+
 # Install
 
 include(ArcconSetInstallDirs)

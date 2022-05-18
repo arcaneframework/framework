@@ -43,6 +43,7 @@ Project(Alien
 option(ALIEN_COMPONENT_RefSemantic "Whether or not to compile RefSemantic package" ON)
 option(ALIEN_COMPONENT_MoveSemantic "Whether or not to compile MoveSemantic package" ON)
 option(ALIEN_EXAMPLES "Whether or not to compile examples" ON)
+option(ALIEN_BENCHMARKS "Benchmark driver for Alien" ON)
 option(ALIEN_UNIT_TESTS "Whether or not to enable unit tests" OFF)
 option(ALIEN_EXPAND_TESTS "Run unit tests one by one" OFF)
 
@@ -169,6 +170,10 @@ if (ALIEN_USE_PERF_TIMER)
 endif ()
 
 add_subdirectory(src)
+
+if(ALIEN_BENCHMARKS)
+    add_subdirectory(benchmark)
+endif()
 
 if (ALIEN_PLUGIN_HYPRE)
     add_subdirectory(plugins/hypre)
