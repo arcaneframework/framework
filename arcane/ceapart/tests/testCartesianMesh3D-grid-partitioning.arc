@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml version="1.0" ?>
 <cas codename="ArcaneTest" xml:lang="fr" codeversion="1.0">
  <arcane>
   <titre>Test CartesianMesh</titre>
@@ -43,5 +43,7 @@
 
  <cartesian-mesh-tester>
    <unstructured-mesh-file>sphere.vtk</unstructured-mesh-file>
+   <expected-mesh-origin>-3.0 -3.0 -3.0</expected-mesh-origin>
+   <expected-mesh-length>6.0 6.0 6.0</expected-mesh-length>
  </cartesian-mesh-tester>
 </cas>

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml version="1.0" ?>
 <cas codename="ArcaneTest" xml:lang="fr" codeversion="1.0">
  <arcane>
   <titre>Test CartesianMesh</titre>
@@ -46,5 +46,7 @@
 
  <cartesian-mesh-tester>
    <unstructured-mesh-file>planar_unstructured_quad1.msh</unstructured-mesh-file>
+   <expected-mesh-origin>-1.2 -0.45 0.0</expected-mesh-origin>
+   <expected-mesh-length>2.3 1.7 0.0</expected-mesh-length>
  </cartesian-mesh-tester>
 </cas>
