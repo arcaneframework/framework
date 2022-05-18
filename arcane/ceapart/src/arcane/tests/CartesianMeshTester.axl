@@ -19,6 +19,16 @@
        Indique si on vérifie que les uniqueId() des faces sont bien contigus.
      </description>
    </simple>
+   <simple name="expected-mesh-origin" type="real3" optional="true" >
+     <description>
+       Valeur de l'origine du maillage
+     </description>
+   </simple>
+   <simple name="expected-mesh-length" type="real3" optional="true" >
+     <description>
+       Valeur de la longueur du maillage
+     </description>
+   </simple>
  </options>
 
  <entry-points>

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshTesterModule.cc                                (C) 2000-2021 */
+/* CartesianMeshTesterModule.cc                                (C) 2000-2022 */
 /*                                                                           */
 /* Module de test du gestionnaire de maillages cartésiens.                   */
 /*---------------------------------------------------------------------------*/
@@ -40,6 +40,7 @@
 #include "arcane/BasicService.h"
 #include "arcane/MeshReaderMng.h"
 #include "arcane/IGridMeshPartitioner.h"
+#include "arcane/ICartesianMeshGenerationInfo.h"
 
 #include "arcane/cea/ICartesianMesh.h"
 #include "arcane/cea/CellDirectionMng.h"
@@ -103,7 +104,9 @@ class CartesianMeshTesterModule
   void _sample(ICartesianMesh* cartesian_mesh);
   void _testXmlInfos();
   void _testGridPartitioning();
+  void _printCartesianMeshInfos();
   void _checkFaceUniqueIdsAreContiguous();
+  void _checkNearlyEqual(Real3 a,Real3 b,const String& message);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -394,6 +397,7 @@ init()
   _checkFaceUniqueIdsAreContiguous();
   _testXmlInfos();
   _testGridPartitioning();
+  _printCartesianMeshInfos();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -644,6 +648,42 @@ _testGridPartitioning()
       mesh_writer->writeMeshToFile(current_mesh,fname);
     }
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshTesterModule::
+_checkNearlyEqual(Real3 a,Real3 b,const String& message)
+{
+  info() << "A=" << a;
+  info() << "B=" << b;
+  if (!math::isNearlyEqual(a.x,b.x))
+    ARCANE_FATAL("Bad value X expected={0} value={1} message={2}",a.x,b.x,message);
+  if (!math::isNearlyEqual(a.y,b.y))
+    ARCANE_FATAL("Bad value Y expected={0} value={1} message={2}",a.y,b.y,message);
+  if (!math::isNearlyEqual(a.z,b.z))
+    ARCANE_FATAL("Bad value Z expected={0} value={1} message={2}",a.z,b.z,message);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshTesterModule::
+_printCartesianMeshInfos()
+{
+  auto* cartesian_info = ICartesianMeshGenerationInfo::getReference(defaultMesh(),false);
+  if (!cartesian_info)
+    ARCANE_FATAL("No cartesian info");
+
+  info() << "Test: _printCartesianMeshInfos()";
+  info() << " Origin=" << cartesian_info->globalOrigin();
+  info() << " Length=" << cartesian_info->globalLength();
+
+  if (options()->expectedMeshOrigin.isPresent())
+    _checkNearlyEqual(cartesian_info->globalOrigin(),options()->expectedMeshOrigin(),"Origin");
+  if (options()->expectedMeshLength.isPresent())
+    _checkNearlyEqual(cartesian_info->globalLength(),options()->expectedMeshLength(),"Length");
 }
 
 /*---------------------------------------------------------------------------*/
