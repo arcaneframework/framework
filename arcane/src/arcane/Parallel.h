@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Parallel.h                                                  (C) 2000-2020 */
+/* Parallel.h                                                  (C) 2000-2022 */
 /*                                                                           */
 /* Espace de nom des types gérant le parallélisme.                           */
 /*---------------------------------------------------------------------------*/
@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ArcaneGlobal.h"
+#include "arcane/utils/ArrayView.h"
 
 #include "arccore/base/RefDeclarations.h"
 #include "arccore/message_passing/Request.h"
@@ -121,6 +122,18 @@ namespace MessagePassing
  */
 extern "C++" ARCANE_CORE_EXPORT void
 namedBarrier(IParallelMng* pm,const String& name);
+
+/*!
+ * \brief Filtre les chaînes de caractères communes à tous les rangs de \a pm.
+ *
+ * Prend en entrée une liste \a input_string de chaînes de caractères et retourne
+ * dans \a common_strings celles qui sont communes à tous les rangs de \a pm.
+ * Les chaînes de caractères retournées dans \a common_strings sont triées
+ * par ordre alphabétique.
+ */
+extern "C++" ARCANE_CORE_EXPORT void
+filterCommonStrings(IParallelMng* pm,ConstArrayView<String> input_strings,
+                    Array<String>& common_strings);
 
 } // End namespace MessagePassing
 

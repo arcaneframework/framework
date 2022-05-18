@@ -1686,9 +1686,12 @@ _dumpTimeInfos(JSONWriter& json_writer)
 
   {
     JSONWriter::Object o(json_writer,"MessagePassingStats");
-    Parallel::IStat* s = m_sub_domain->parallelMng()->stat();
-    if (s)
+    IParallelMng* pm = m_sub_domain->parallelMng();
+    Parallel::IStat* s = pm->stat();
+    if (s){
+      Parallel::printStatsCollective(s,pm);
       s->dumpJSON(json_writer);
+    }
   }
   {
     JSONWriter::Object o(json_writer,"VariablesStats");

@@ -5,25 +5,27 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Parallel.cc                                                 (C) 2000-2017 */
+/* Parallel.cc                                                 (C) 2000-2022 */
 /*                                                                           */
 /* Espace de nom des types gérant le parallélisme.                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
+#include "arcane/Parallel.h"
 
 #include "arcane/utils/String.h"
 #include "arcane/utils/ArrayView.h"
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/Parallel.h"
 #include "arcane/IParallelMng.h"
 #include "arcane/IParallelMng.h"
 #include "arcane/IParallelTopology.h"
 #include "arcane/IParallelReplication.h"
+#include "arcane/SerializeBuffer.h"
 
 #include <iostream>
+#include <map>
+#include <set>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -36,7 +38,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -81,11 +84,79 @@ namedBarrier(IParallelMng* pm,const String& name)
   }
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" void MessagePassing::
+filterCommonStrings(IParallelMng* pm,ConstArrayView<String> input_strings,
+                    Array<String>& common_strings)
+{
+  const Int32 nb_string = input_strings.size();
+
+  // Créé un buffer pour sérialiser les noms des variables dont on dispose
+  SerializeBuffer send_buf;
+  send_buf.setMode(ISerializer::ModeReserve);
+  send_buf.reserve(DT_Int32,1);
+  for( Integer i=0; i<nb_string; ++i ){
+    send_buf.reserve(input_strings[i]);
+  }
+
+  send_buf.allocateBuffer();
+  send_buf.setMode(ISerializer::ModePut);
+  send_buf.putInt32(nb_string);
+  for( Integer i=0; i<nb_string; ++i ){
+    send_buf.put(input_strings[i]);
+  }
+
+  // Récupère les infos des autres PE.
+  SerializeBuffer recv_buf;
+  pm->allGather(&send_buf,&recv_buf);
+
+  std::map<String,Int32> string_occurences;
+
+  Int32 nb_rank = pm->commSize();
+  recv_buf.setMode(ISerializer::ModeGet);
+  for( Integer i=0; i<nb_rank; ++i ){
+    Int32 nb_string_rank = recv_buf.getInt32();
+    for( Integer z=0; z<nb_string_rank; ++z ){
+      String x;
+      recv_buf.get(x);
+      auto vo = string_occurences.find(x);
+      if (vo==string_occurences.end())
+        string_occurences.insert(std::make_pair(x,1));
+      else
+        vo->second = vo->second + 1;
+    }
+  }
+
+  // Parcours la liste des chaînes de caractète et range dans \a out_strings
+  // celles qui sont disponibles sur tous les rangs de \a pm
+  std::set<String> common_set;
+  {
+    auto end_iter = string_occurences.end();
+    for( Integer i=0; i<nb_string; ++i ){
+      String str = input_strings[i];
+      auto i_str = string_occurences.find(str);
+      if (i_str==end_iter)
+        // Ne devrait pas arriver
+        continue;
+      if (i_str->second!=nb_rank)
+        continue;
+      common_set.insert(str);
+    }
+  }
+
+  // Créé la liste finale en itérant sur \a common_set
+  // qui est trié alphabétiquement.
+  common_strings.clear();
+  for( const String& s : common_set )
+    common_strings.add(s);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
