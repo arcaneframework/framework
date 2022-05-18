@@ -5,11 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariableScalar.cc                               (C) 2000-2020 */
+/* MeshMaterialVariableScalar.cc                               (C) 2000-2022 */
 /*                                                                           */
 /* Variable scalaire sur un matériau du maillage.                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#include "arcane/materials/MeshMaterialVariable.h"
 
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/ScopedPtr.h"
@@ -21,7 +23,6 @@
 #include "arcane/utils/Array2.h"
 #include "arcane/utils/CheckedConvert.h"
 
-#include "arcane/materials/MeshMaterialVariable.h"
 #include "arcane/materials/MeshMaterialVariablePrivate.h"
 #include "arcane/materials/MaterialVariableBuildInfo.h"
 #include "arcane/materials/IMeshMaterial.h"
@@ -48,6 +49,9 @@
 #include "arcane/ItemPrinter.h"
 #include "arcane/IVariableSynchronizer.h"
 #include "arcane/core/internal/IDataInternal.h"
+#include "arcane/Timer.h"
+
+#include "arcane/parallel/IStat.h"
 
 #include "arcane/datatype/DataTypeTraits.h"
 #include "arcane/datatype/DataStorageBuildInfo.h"
@@ -316,8 +320,26 @@ template<typename DataType> void
 ItemMaterialVariableScalar<DataType>::
 synchronize()
 {
+  IParallelMng* pm = m_p->materialMng()->mesh()->parallelMng();
+  Timer timer(pm->timerMng(),"MatTimer",Timer::TimerReal);
+  Int64 message_size = 0;
+  {
+    Timer::Sentry ts(&timer);
+    message_size = _synchronize2();
+  }
+  pm->stat()->add("MaterialSync",timer.lastActivationTime(),message_size);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> Int64
+ItemMaterialVariableScalar<DataType>::
+_synchronize2()
+{
+  Int64 message_size = 0;
   Integer sync_version = m_p->materialMng()->synchronizeVariableVersion();
-  // Seule la version 6 est disponible pour les variables milieux.
+  // Seules les versions 6 et ultérieures sont disponibles pour les variables milieux.
   if (m_p->space()==MatVarSpace::Environment){
     if (sync_version<6)
       sync_version = 6;
@@ -326,6 +348,7 @@ synchronize()
     MeshMaterialVariableSynchronizerList mmvsl(m_p->materialMng());
     mmvsl.add(this);
     mmvsl.apply();
+    message_size = mmvsl.totalMessageSize();
   }
   else if (sync_version==5 || sync_version==4 || sync_version==3){
     _synchronizeV5();
@@ -335,6 +358,7 @@ synchronize()
   }
   else
     _synchronizeV1();
+  return message_size;
 }
 
 /*---------------------------------------------------------------------------*/

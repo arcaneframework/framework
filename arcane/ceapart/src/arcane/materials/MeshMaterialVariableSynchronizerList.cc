@@ -45,6 +45,7 @@ class MeshMaterialVariableSynchronizerList::Impl
   IMeshMaterialMng* m_material_mng;
   UniqueArray<MeshMaterialVariable*> m_mat_env_vars;
   UniqueArray<MeshMaterialVariable*> m_env_only_vars;
+  Int64 m_total_size = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -68,9 +69,19 @@ MeshMaterialVariableSynchronizerList::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+Int64 MeshMaterialVariableSynchronizerList::
+totalMessageSize() const
+{
+  return m_p->m_total_size;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void MeshMaterialVariableSynchronizerList::
 apply()
 {
+  m_p->m_total_size = 0;
   // TODO: modifier le synchroniser pour faire cela en une passe
   // de send/recv/wait.
   IMeshMaterialMng* mm = m_p->m_material_mng;
@@ -124,6 +135,7 @@ _synchronizeMultiple(ConstArrayView<MeshMaterialVariable*> vars,
     buf_list->setNbRank(nb_rank);
   }
   _synchronizeMultiple2(vars,mmvs,buf_list.get());
+  m_p->m_total_size += buf_list->totalSize();
 }
 
 /*---------------------------------------------------------------------------*/

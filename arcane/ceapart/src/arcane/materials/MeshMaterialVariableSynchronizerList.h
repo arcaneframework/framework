@@ -30,7 +30,12 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Liste de variables à synchroniser.
+ * \brief Synchronisation d'une liste de variables matériaux.
+ *
+ * La méthode add() permet d'ajouter des variables à synchroniser.
+ * Il faut ensuite appeler apply() pour effectuer la synchronisation.
+ *
+ * Une instance de ce cette classe peut-être utilisée plusieurs fois.
  */
 class ARCANE_MATERIALS_EXPORT MeshMaterialVariableSynchronizerList
 {
@@ -46,8 +51,14 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableSynchronizerList
 
  public:
 
+  //! Effectue la synchronisation
   void apply();
+
+  //! Ajoute la variable \a var à la liste des variables à synchroniser
   void add(MeshMaterialVariable* var);
+
+  //! Après appel à apply(), contient la taille des messages envoyés
+  Int64 totalMessageSize() const;
 
  private:
 

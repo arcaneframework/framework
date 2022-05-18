@@ -69,6 +69,9 @@ class ARCANE_MATERIALS_EXPORT IMeshMaterialSynchronizeBuffer
 
   //! Alloue la mémoire pour les buffers
   virtual void allocate() = 0;
+
+  //! Taille totale allouée pour les buffers
+  virtual Int64 totalSize() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -72,15 +72,19 @@ class MultiBufferMeshMaterialSynchronizeBuffer
   }
   void allocate() override
   {
+    m_total_size = 0;
     for (auto& x : m_buffer_infos) {
       x.m_send_buffer.resize(x.m_send_size);
       x.m_receive_buffer.resize(x.m_receive_size);
+      m_total_size += x.m_send_size + x.m_receive_size;
     }
   }
+  Int64 totalSize() const override { return m_total_size; }
 
  public:
 
   Int32 m_nb_rank = 0;
+  Int64 m_total_size = 0;
   UniqueArray<BufferInfo> m_buffer_infos;
 };
 
@@ -161,6 +165,7 @@ class OneBufferMeshMaterialSynchronizeBuffer
       receive_index += x.m_receive_size;
     }
   }
+  Int64 totalSize() const override { return m_buffer.largeSize(); }
 
  public:
 
