@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariableSynchronizerList.h                      (C) 2000-2016 */
+/* MeshMaterialVariableSynchronizerList.h                      (C) 2000-2022 */
 /*                                                                           */
 /* Liste de variables à synchroniser.                                        */
 /*---------------------------------------------------------------------------*/
@@ -23,27 +23,19 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-MATERIALS_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class MeshMaterialVariable;
-class IMeshMaterialMng;
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Liste de variables à synchroniser.
+ * \brief Synchronisation d'une liste de variables matériaux.
+ *
+ * La méthode add() permet d'ajouter des variables à synchroniser.
+ * Il faut ensuite appeler apply() pour effectuer la synchronisation.
+ *
+ * Une instance de ce cette classe peut-être utilisée plusieurs fois.
  */
 class ARCANE_MATERIALS_EXPORT MeshMaterialVariableSynchronizerList
 {
@@ -59,22 +51,32 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariableSynchronizerList
 
  public:
 
+  //! Effectue la synchronisation
   void apply();
+
+  //! Ajoute la variable \a var à la liste des variables à synchroniser
   void add(MeshMaterialVariable* var);
+
+  //! Après appel à apply(), contient la taille des messages envoyés
+  Int64 totalMessageSize() const;
 
  private:
 
   Impl* m_p;
 
+ private:
+
   void _synchronizeMultiple(ConstArrayView<MeshMaterialVariable*> vars,
                             IMeshMaterialVariableSynchronizer* mmvs);
+  void _synchronizeMultiple2(ConstArrayView<MeshMaterialVariable*> vars,
+                             IMeshMaterialVariableSynchronizer* mmvs,
+                             IMeshMaterialSynchronizeBuffer* buf_list);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

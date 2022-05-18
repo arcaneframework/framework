@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariableSynchronizer.cc                         (C) 2000-2016 */
+/* MeshMaterialVariableSynchronizer.cc                         (C) 2000-2022 */
 /*                                                                           */
 /* Synchroniseur de variables matériaux.                                     */
 /*---------------------------------------------------------------------------*/
@@ -21,14 +21,13 @@
 #include "arcane/materials/IMeshMaterialMng.h"
 #include "arcane/materials/MatItemEnumerator.h"
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+#include "arcane/materials/IMeshMaterialSynchronizeBuffer.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -42,6 +41,7 @@ MeshMaterialVariableSynchronizer(IMeshMaterialMng* material_mng,
 , m_variable_synchronizer(var_syncer)
 , m_timestamp(-1)
 , m_var_space(space)
+, m_commun_buffer(impl::makeOneBufferMeshMaterialSynchronizeBufferRef())
 {
 }
 
@@ -149,6 +149,8 @@ recompute()
   Int32ConstArrayView ranks = var_syncer->communicatingRanks();
   Integer nb_rank = ranks.size();
 
+  m_commun_buffer->setNbRank(nb_rank);
+
   m_shared_items.resize(nb_rank);
   m_ghost_items.resize(nb_rank);
 
@@ -177,8 +179,7 @@ recompute()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

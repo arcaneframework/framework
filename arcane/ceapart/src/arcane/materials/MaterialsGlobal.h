@@ -71,7 +71,9 @@ class MatImpurePartItemVectorView;
 class MatItemVectorView;
 class MaterialVariableBuildInfo;
 class MeshMaterialVariableSynchronizerList;
+class MeshMaterialVariable;
 class MatVarIndex;
+class IMeshMaterialSynchronizeBuffer;
 
 template <typename DataType> class ItemMaterialVariableScalar;
 template <typename ItemType,typename DataType> class MeshMaterialVariableScalar;

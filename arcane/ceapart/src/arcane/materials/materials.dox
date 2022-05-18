@@ -1,4 +1,4 @@
-// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*!
  * \defgroup ArcaneMaterials Matériaux et des milieux.
  *
@@ -490,6 +490,20 @@
  * mmvsl.apply();
 \endcode
 
+ Depuis la version 3.6 de Arcane, il existe deux autres versions de la
+ synchronisation qui fonctionne de manière identique à la version 6
+ mais avec les modifications suivantes:
+ - La version 7 n'effectue qu'une seule allocation mémoire pour les
+ buffers d'envoi et de réception (alors que la version 6 effectue
+ autant d'allocation qu'il y a de sous-domaines voisins)
+ - La version 8 qui est identique à la version 7 au détail près que
+ les buffers alloués sont conservés entre deux synchronisations. Cette
+ version permet d'éviter des allocations/désallocations successives au
+ prix d'une augmentation mémoire.
+ Ces deux versions ont pour but d'éviter de faire trop de cycles
+ d'allocations/désallocations qui peuvent demander une charge de
+ travail importante pour les cartes réseaux pour accès directs à la
+ mémoire (RMA).
 
  \subsection arcanedoc_material_variable_dependencies Gestion des dépendances
 
