@@ -24,7 +24,10 @@
 
 namespace Arcane::Materials
 {
-
+/*
+ * TODO: Cette interface pourrait être utilisée en dehors des matériaux.
+ *       Regarder comment la rendre générique.
+ */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -55,14 +58,14 @@ class ARCANE_MATERIALS_EXPORT IMeshMaterialSynchronizeBuffer
   //! Buffer d'envoi pour le \a i-ème buffer
   virtual Span<Byte> sendBuffer(Int32 i) = 0;
 
-  //! Positionne le nombre d'éléments pour le buffer d'envoi du rang \a rank
-  virtual void setSendBufferSize(Int32 index, Int32 new_size) = 0;
+  //! Positionne le nombre d'éléments pour le \a i-ème buffer d'envoi
+  virtual void setSendBufferSize(Int32 i, Int32 new_size) = 0;
 
-  //! Buffer d'envoi pour le rang \a rank
-  virtual Span<Byte> receiveBuffer(Int32 rank) = 0;
+  //! Buffer d'envoi pour le \a i-\ème buffer
+  virtual Span<Byte> receiveBuffer(Int32 i) = 0;
 
-  //! Positionne le nombre d'éléments pour le buffer de réceptions du rang \a rank
-  virtual void setReceiveBufferSize(Int32 rank, Int32 new_size) = 0;
+  //! Positionne le nombre d'éléments pour le \a i-ème buffer de réception
+  virtual void setReceiveBufferSize(Int32 i, Int32 new_size) = 0;
 
   //! Alloue la mémoire pour les buffers
   virtual void allocate() = 0;
