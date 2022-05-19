@@ -369,7 +369,7 @@ ItemMaterialVariableScalar<DataType>::
 synchronize(MeshMaterialVariableSynchronizerList& sync_list)
 {
   Integer sync_version = m_p->materialMng()->synchronizeVariableVersion();
-  if (sync_version==6){
+  if (sync_version>=6){
     sync_list.add(this);
   }
   else
