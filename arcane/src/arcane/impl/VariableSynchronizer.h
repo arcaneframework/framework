@@ -183,7 +183,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizer
                    ArrayView<ShareRankInfo> share_ranks_info);
   void _printSyncList();
   void _synchronize(IVariable* var);
-  void _synchronize(VariableCollection vars);
+  void _synchronizeMulti(VariableCollection vars);
   bool _canSynchronizeMulti(const VariableCollection& vars);
 };
 

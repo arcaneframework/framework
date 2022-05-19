@@ -643,32 +643,17 @@ synchronize(IVariable* var)
 void VariableSynchronizer::
 synchronize(VariableCollection vars)
 {
-  IParallelMng* pm = m_parallel_mng;
-  ITimeStats* ts = pm->timeStats();
-  Timer::Phase tphase(ts,TP_Communication);
+  if (vars.empty())
+    return;
 
-  debug(Trace::High) << " Proc " << pm->commRank() << " MultiSync variable";
-  if (m_trace_sync){
-    info() << " MultiSynchronize"
-           << " stack=" << platform::getStackTrace();
+  const bool use_multi = m_allow_multi_sync;
+  if (use_multi && _canSynchronizeMulti(vars)){
+    _synchronizeMulti(vars);
   }
-  // Debut de la synchro
-  if (m_on_synchronized.hasObservers()){
-    VariableSynchronizerEventArgs args(vars,this);
-    m_on_synchronized.notify(args);
-  }
-  if (!m_sync_timer)
-    m_sync_timer = new Timer(pm->timerMng(),"SyncTimer",Timer::TimerReal);
-  {
-    Timer::Sentry ts(m_sync_timer);
-    _synchronize(vars);
-  }
-  Real elapsed_time = m_sync_timer->lastActivationTime();
-  pm->stat()->add("MultiSynchronize",elapsed_time,1);
-  // Fin de la synchro
-  if (m_on_synchronized.hasObservers()){
-    VariableSynchronizerEventArgs args(vars,this,elapsed_time);
-    m_on_synchronized.notify(args);
+  else{
+    for( VariableCollection::Enumerator ivar(vars); ++ivar; ){
+      synchronize(*ivar);
+    }
   }
 }
 
@@ -744,22 +729,37 @@ _canSynchronizeMulti(const VariableCollection& vars)
 /*---------------------------------------------------------------------------*/
 
 void VariableSynchronizer::
-_synchronize(VariableCollection vars)
+_synchronizeMulti(VariableCollection vars)
 {
-  if (vars.empty())
-    return;
+  IParallelMng* pm = m_parallel_mng;
+  ITimeStats* ts = pm->timeStats();
+  Timer::Phase tphase(ts,TP_Communication);
 
-  const bool use_multi = m_allow_multi_sync;
-  if (use_multi && _canSynchronizeMulti(vars)){
+  debug(Trace::High) << " Proc " << pm->commRank() << " MultiSync variable";
+  if (m_trace_sync){
+    info() << " MultiSynchronize"
+           << " stack=" << platform::getStackTrace();
+  }
+  // Debut de la synchro
+  if (m_on_synchronized.hasObservers()){
+    VariableSynchronizerEventArgs args(vars,this);
+    m_on_synchronized.notify(args);
+  }
+  if (!m_sync_timer)
+    m_sync_timer = new Timer(pm->timerMng(),"SyncTimer",Timer::TimerReal);
+  {
+    Timer::Sentry ts(m_sync_timer);
     m_multi_dispatcher->synchronize(vars,m_sync_list.infos());
     for( VariableCollection::Enumerator ivar(vars); ++ivar; ){
       (*ivar)->setIsSynchronized();
     }
   }
-  else{
-    for( VariableCollection::Enumerator ivar(vars); ++ivar; ){
-      _synchronize(*ivar);
-    }
+  Real elapsed_time = m_sync_timer->lastActivationTime();
+  pm->stat()->add("MultiSynchronize",elapsed_time,1);
+  // Fin de la synchro
+  if (m_on_synchronized.hasObservers()){
+    VariableSynchronizerEventArgs args(vars,this,elapsed_time);
+    m_on_synchronized.notify(args);
   }
 }
 
