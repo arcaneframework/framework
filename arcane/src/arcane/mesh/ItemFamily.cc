@@ -969,8 +969,6 @@ prepareForDump()
     //TODO: pouvoir spécifier si on souhaite compacter ou pas.
     compactItems(false);
 
-    compactReferences();
-
     // Suppose compression
     m_infos.prepareForDump();
     m_item_shared_infos->prepareForDump();
@@ -1249,17 +1247,19 @@ compactItems(bool do_sort)
 {
   _compactItems(do_sort);
 
-  // Il est necessaire de mettre a jour les groupes.
-  // TODO verifier s'il faut le faire tout le temps
-  m_need_prepare_dump = true;
+  // On compacte les références pour éviter d'avoir un 
+  // m_items_data qui s'étend trop.
+  compactReferences();
 
-  // Indique aussi qu'il faudra refaire un compactReference()
-  // lors du dump.
-  // NOTE: spécifier cela forcera aussi un recompactage lors du prepareForDump()
-  // et ce compactage est inutile dans le cas présent.
-  // TODO: regarder comment indiquer au prepareForDump() qu'on souhaite
-  // juste faire un compactReference().
-  m_item_need_prepare_dump = true;
+  // Il est nécessaire de mettre à jour les groupes 
+  // après un compactReferences().
+  for( ItemGroupList::Enumerator i(m_item_groups); ++i; ){
+    ItemGroup group = *i;
+    // Pas besoin de recalculer le groupe des entités globales
+    if (group==m_infos.allItems())
+      continue;
+    group.internal()->checkNeedUpdate();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1693,6 +1693,7 @@ _resizeInfos(Integer new_size)
             << " var_capacity=" << m_internal_variables->m_items_data._internalTrueData()->capacity()
             << " ptr=" << m_internal_variables->m_items_data.data()
             << " old_size=" << old_size
+            << " new_size=" << m_items_data->size()
             << " nb_item=" << m_infos.nbItem()
             << " max_local_id=" << maxLocalId();
     _setSharedInfosBasePtr();

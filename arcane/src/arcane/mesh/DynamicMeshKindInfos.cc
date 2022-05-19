@@ -590,8 +590,8 @@ beginCompactItems(ItemFamilyCompactInfos& compact_infos)
           //        << " destroyed=" << is_destroyed;
         }
         if (old_index!=total_nb){
-          ARCANE_FATAL("Family '{0}' bad indices: expected={1} found={2}",
-                       itemFamily()->name(),nb_internal,total_nb);
+          ARCANE_FATAL("Family '{0}' bad indices: expected={1} found={2} (nb_internal={3})",
+                       itemFamily()->name(),old_index,total_nb,nb_internal);
         }
       }
     }
