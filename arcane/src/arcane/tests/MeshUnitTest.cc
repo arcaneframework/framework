@@ -642,10 +642,16 @@ _testItemAdjency2()
   ENUMERATE_FACE(iface,outerFaces())
     boundary_set.insert(iface->localId());
 
+  // Test l'accès à la valeur via l'itérateur
+  VariableFaceInt32 face_id(VariableBuildInfo(mesh(),"FaceId"));
+  ENUMERATE_ITEMPAIR(Face,Face,iface,ad_list){
+    face_id[iface] = iface.itemLocalId();
+  }
+
   Int64 total_uid = 0;
   ENUMERATE_ITEMPAIR(Face,Face,iface,ad_list){
-    //const Face& item = *iface;
-    // info() << " ITEM uid=" << item.uniqueId() << " nb_sub=" << iface.nbSubItem();
+    if (face_id[iface]!=iface.itemLocalId())
+      ARCANE_FATAL("Bad value for variable v={0} expected={1}",face_id[iface],iface.itemLocalId());
     
     ENUMERATE_SUB_ITEM(Face,isubface,iface){
       const Face& subface = *isubface;
