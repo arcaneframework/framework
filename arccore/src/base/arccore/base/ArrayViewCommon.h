@@ -104,6 +104,29 @@ areEqual(ViewType rhs, ViewType lhs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+//! Indique si les deux vues sont égales
+template<typename View2DType> inline bool
+areEqual2D(View2DType rhs, View2DType lhs)
+{
+  using size_type = typename View2DType::size_type;
+  const size_type dim1_size = rhs.dim1Size();
+  const size_type dim2_size = rhs.dim2Size();
+  if (dim1_size!=lhs.dim1Size())
+    return false;
+  if (dim2_size!=lhs.dim2Size())
+    return false;
+  for( size_type i=0; i<dim1_size; ++i ){
+    for( size_type j=0; j<dim2_size; ++j ){
+      if (rhs(i,j)!=lhs(i,j))
+        return false;
+    }
+  }
+  return true;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 //! Lance une exception 'ArgumentException'
 extern "C++" ARCCORE_BASE_EXPORT void
 arccoreThrowTooBigInteger [[noreturn]] (std::size_t size);

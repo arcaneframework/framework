@@ -36,6 +36,8 @@ namespace Arccore
 template<class DataType>
 class Array2View
 {
+  friend class SmallSpan2<DataType>;
+  friend class SmallSpan2<const DataType>;
   friend class Span2<DataType>;
   friend class Span2<const DataType>;
  public:
@@ -78,6 +80,21 @@ class Array2View
     ARCCORE_CHECK_AT(j,m_dim2_size);
     m_ptr[(m_dim2_size*i) + j] = value;
   }
+  //! Valeur de l'élément [\a i][\a j]
+  constexpr const DataType operator()(Integer i,Integer j) const
+  {
+    ARCCORE_CHECK_AT(i,m_dim1_size);
+    ARCCORE_CHECK_AT(j,m_dim2_size);
+    return m_ptr[(m_dim2_size*i) + j];
+  }
+  //! Valeur de l'élément [\a i][\a j]
+  constexpr DataType& operator()(Integer i,Integer j)
+  {
+    ARCCORE_CHECK_AT(i,m_dim1_size);
+    ARCCORE_CHECK_AT(j,m_dim2_size);
+    return m_ptr[(m_dim2_size*i) + j];
+  }
+
  public:
   /*!
    * \brief Pointeur sur la mémoire allouée.
@@ -103,6 +120,8 @@ class Array2View
 template<class DataType>
 class ConstArray2View
 {
+  friend class SmallSpan2<const DataType>;
+  friend class Span2<const DataType>;
  public:
   constexpr ConstArray2View(const DataType* ptr,Integer dim1_size,Integer dim2_size)
   : m_ptr(ptr), m_dim1_size(dim1_size), m_dim2_size(dim2_size)
@@ -131,6 +150,13 @@ class ConstArray2View
     ARCCORE_CHECK_AT(j,m_dim2_size);
     return m_ptr[(m_dim2_size*i) + j];
   } 
+  //! Valeur de l'élément [\a i][\a j]
+  constexpr const DataType operator()(Integer i,Integer j) const
+  {
+    ARCCORE_CHECK_AT(i,m_dim1_size);
+    ARCCORE_CHECK_AT(j,m_dim2_size);
+    return m_ptr[(m_dim2_size*i) + j];
+  }
  public:
   /*!
    * \brief Pointeur sur la mémoire allouée.

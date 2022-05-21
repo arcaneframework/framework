@@ -38,8 +38,8 @@ namespace Arccore
  * \endcode
  *
  * Il est néammoins préférable d'utiliser directement les méthodes
- * item() ou setItem() pour accéder en lecture ou écriture à un élément
- * du tableau.
+ * item() ou setItem() (ou l'opérateur operator()) pour accéder en lecture ou
+ * écriture à un élément du tableau.
  */
 template<class DataType>
 class Array4View
@@ -83,6 +83,24 @@ class Array4View
   }
   //! Valeur pour l'élément \a i,j,k,l
   constexpr DataType item(Integer i,Integer j,Integer k,Integer l) const
+  {
+    ARCCORE_CHECK_AT(i,m_dim1_size);
+    ARCCORE_CHECK_AT(j,m_dim2_size);
+    ARCCORE_CHECK_AT(k,m_dim3_size);
+    ARCCORE_CHECK_AT(l,m_dim4_size);
+    return m_ptr[(m_dim234_size*i) + m_dim34_size*j + m_dim4_size*k + l];
+  }
+  //! Valeur pour l'élément \a i,j,k,l
+  constexpr const DataType& operator()(Integer i,Integer j,Integer k,Integer l) const
+  {
+    ARCCORE_CHECK_AT(i,m_dim1_size);
+    ARCCORE_CHECK_AT(j,m_dim2_size);
+    ARCCORE_CHECK_AT(k,m_dim3_size);
+    ARCCORE_CHECK_AT(l,m_dim4_size);
+    return m_ptr[(m_dim234_size*i) + m_dim34_size*j + m_dim4_size*k + l];
+  }
+  //! Valeur pour l'élément \a i,j,k,l
+  constexpr DataType& operator()(Integer i,Integer j,Integer k,Integer l)
   {
     ARCCORE_CHECK_AT(i,m_dim1_size);
     ARCCORE_CHECK_AT(j,m_dim2_size);

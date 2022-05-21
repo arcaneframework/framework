@@ -75,7 +75,14 @@ class Array3View
     ARCCORE_CHECK_AT(k,m_dim3_size);
     return m_ptr[(m_dim23_size*i) + m_dim3_size*j + k];
   }
-  constexpr DataType operator()(Integer i,Integer j,Integer k) const
+  constexpr const DataType& operator()(Integer i,Integer j,Integer k) const
+  {
+    ARCCORE_CHECK_AT(i,m_dim1_size);
+    ARCCORE_CHECK_AT(j,m_dim2_size);
+    ARCCORE_CHECK_AT(k,m_dim3_size);
+    return m_ptr[(m_dim23_size*i) + m_dim3_size*j + k];
+  }
+  constexpr DataType& operator()(Integer i,Integer j,Integer k)
   {
     ARCCORE_CHECK_AT(i,m_dim1_size);
     ARCCORE_CHECK_AT(j,m_dim2_size);
@@ -134,6 +141,13 @@ class ConstArray3View
     return ConstArray2View<DataType>(m_ptr + (m_dim23_size*i),m_dim2_size,m_dim3_size);
   }
   constexpr DataType item(Integer i,Integer j,Integer k) const
+  {
+    ARCCORE_CHECK_AT(i,m_dim1_size);
+    ARCCORE_CHECK_AT(j,m_dim2_size);
+    ARCCORE_CHECK_AT(k,m_dim3_size);
+    return m_ptr[(m_dim23_size*i) + m_dim3_size*j + k];
+  }
+  constexpr const DataType& operator()(Integer i,Integer j,Integer k) const
   {
     ARCCORE_CHECK_AT(i,m_dim1_size);
     ARCCORE_CHECK_AT(j,m_dim2_size);

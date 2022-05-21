@@ -140,6 +140,17 @@ class SpanImpl
    *
    * En mode \a check, vérifie les débordements.
    */
+  constexpr ARCCORE_HOST_DEVICE reference operator()(SizeType i) const
+  {
+    ARCCORE_CHECK_AT(i,m_size);
+    return m_ptr[i];
+  }
+
+  /*!
+   * \brief i-ème élément du tableau.
+   *
+   * En mode \a check, vérifie les débordements.
+   */
   constexpr ARCCORE_HOST_DEVICE reference item(SizeType i) const
   {
     ARCCORE_CHECK_AT(i,m_size);
@@ -644,7 +655,6 @@ operator!=(SmallSpan<T> rhs, SmallSpan<T> lhs)
 {
   return !(rhs==lhs);
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

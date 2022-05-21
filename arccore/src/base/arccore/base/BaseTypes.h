@@ -62,7 +62,9 @@ template<class DataType> class CoreArray;
 template<typename T,typename SizeType> class SpanImpl;
 template<typename T> class Span;
 template<typename T> class SmallSpan;
+template<typename T,typename SizeType> class Span2Impl;
 template<typename T> class Span2;
+template<typename T> class SmallSpan2;
 
 class StringImpl;
 class String;
