@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableViews.h                                             (C) 2000-2021 */
+/* VariableViews.h                                             (C) 2000-2022 */
 /*                                                                           */
 /* Gestion des vues sur les variables pour les accélérateurs.                */
 /*---------------------------------------------------------------------------*/
@@ -68,21 +68,24 @@ class View1DSetter
  public:
   using ValueType = DataType;
   using DataTypeReturnReference = View1DSetter<DataType>;
-  explicit ARCCORE_HOST_DEVICE View1DSetter(Span<DataType> data) : m_data(data){}
-  ARCCORE_HOST_DEVICE DataViewSetter<DataType> operator[](Int64 index) const
+  explicit ARCCORE_HOST_DEVICE View1DSetter(SmallSpan<DataType> data) : m_data(data){}
+  ARCCORE_HOST_DEVICE DataViewSetter<DataType> operator[](Int32 index) const
+  {
+    return DataViewSetter<DataType>(m_data.ptrAt(index));
+  }
+  ARCCORE_HOST_DEVICE DataViewSetter<DataType> operator()(Int32 index) const
   {
     return DataViewSetter<DataType>(m_data.ptrAt(index));
   }
   DataTypeReturnReference& operator=(const View1DSetter<DataType>& rhs) = delete;
  public:
-  ARCCORE_HOST_DEVICE void copy(Span<const DataType> rhs)
+  ARCCORE_HOST_DEVICE void copy(SmallSpan<const DataType> rhs)
   {
     m_data.copy(rhs);
   }
  private:
-  Span<DataType> m_data;
+  SmallSpan<DataType> m_data;
 };
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -98,7 +101,7 @@ class View1DGetterSetter
   using ValueType = DataType;
   using DataTypeReturnReference = View1DGetterSetter<DataType>;
  public:
-  explicit ARCCORE_HOST_DEVICE View1DGetterSetter(Span<DataType> data) : View1DSetter<DataType>(data){}
+  explicit ARCCORE_HOST_DEVICE View1DGetterSetter(SmallSpan<DataType> data) : View1DSetter<DataType>(data){}
   DataTypeReturnReference& operator=(const View1DGetterSetter<DataType>& rhs) = delete;
  public:
   ARCCORE_HOST_DEVICE DataViewGetterSetter<DataType> operator[](Int64 index) const
@@ -106,9 +109,11 @@ class View1DGetterSetter
     return DataViewGetterSetter<DataType>(m_data.ptrAt(index));
   }
  public:
-  ARCCORE_HOST_DEVICE Span<DataType> value() const { return m_data; }
-  ARCCORE_HOST_DEVICE operator Span<DataType>() { return m_data; }
-  ARCCORE_HOST_DEVICE operator Span<const DataType>() const { return m_data; }
+  ARCCORE_HOST_DEVICE SmallSpan<DataType> value() const { return m_data; }
+  ARCCORE_HOST_DEVICE operator SmallSpan<DataType>() { return m_data; }
+  ARCCORE_HOST_DEVICE operator SmallSpan<const DataType>() const { return m_data; }
+  ARCCORE_HOST_DEVICE operator Span<DataType>() { return { m_data.data(), m_data.size() }; }
+  ARCCORE_HOST_DEVICE operator Span<const DataType>() const { return { m_data.data(), m_data.size() }; }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -128,7 +133,7 @@ class ItemVariableScalarOutViewT
 
  public:
 
-  ItemVariableScalarOutViewT(RunCommand& command,IVariable* var,Span<DataType> v)
+  ItemVariableScalarOutViewT(RunCommand& command,IVariable* var,SmallSpan<DataType> v)
   : VariableViewBase(command,var), m_values(v.data()),
     m_size(v.size()){}
 
@@ -145,29 +150,36 @@ class ItemVariableScalarOutViewT
   }
 
   //! Opérateur d'accès pour l'entité \a item
-  ARCCORE_HOST_DEVICE Accessor operator[](ItemIndexType i) const
+  ARCCORE_HOST_DEVICE Accessor operator[](ItemIndexType item) const
   {
-    ARCANE_CHECK_AT(i.localId(),m_size);
-    return Accessor(this->m_values + i.localId());
+    ARCANE_CHECK_AT(item.localId(),m_size);
+    return Accessor(this->m_values + item.localId());
   }
 
   //! Opérateur d'accès pour l'entité \a item
-  ARCCORE_HOST_DEVICE Accessor value(ItemIndexType i) const
+  ARCCORE_HOST_DEVICE Accessor operator()(ItemIndexType item) const
   {
-    ARCANE_CHECK_AT(i.localId(),m_size);
-    return Accessor(this->m_values + i.localId());
+    ARCANE_CHECK_AT(item.localId(),m_size);
+    return Accessor(this->m_values + item.localId());
+  }
+
+  //! Opérateur d'accès pour l'entité \a item
+  ARCCORE_HOST_DEVICE Accessor value(ItemIndexType item) const
+  {
+    ARCANE_CHECK_AT(item.localId(),m_size);
+    return Accessor(this->m_values + item.localId());
   }
 
   //! Positionne la valeur pour l'entité \a item à \a v
-  ARCCORE_HOST_DEVICE void setValue(ItemIndexType i,const DataType& v) const
+  ARCCORE_HOST_DEVICE void setValue(ItemIndexType item,const DataType& v) const
   {
-    ARCANE_CHECK_AT(i.localId(),m_size);
-    this->m_values[i.localId()] = v;
+    ARCANE_CHECK_AT(item.localId(),m_size);
+    this->m_values[item.localId()] = v;
   }
 
  private:
   DataType* m_values;
-  Int64 m_size;
+  Int32 m_size;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -185,7 +197,7 @@ class ItemVariableScalarInViewT
 
  public:
 
-  ItemVariableScalarInViewT(RunCommand& command,IVariable* var,Span<const DataType> v)
+  ItemVariableScalarInViewT(RunCommand& command,IVariable* var,SmallSpan<const DataType> v)
   : VariableViewBase(command,var), m_values(v){}
 
   //! Opérateur d'accès vectoriel avec indirection.
@@ -205,19 +217,25 @@ class ItemVariableScalarInViewT
   }
 
   //! Opérateur d'accès pour l'entité \a item
-  ARCCORE_HOST_DEVICE const DataType& operator[](ItemIndexType i) const
+  ARCCORE_HOST_DEVICE const DataType& operator[](ItemIndexType item) const
   {
-    return this->m_values[i.localId()];
+    return this->m_values[item.localId()];
   }
 
   //! Opérateur d'accès pour l'entité \a item
-  ARCCORE_HOST_DEVICE const DataType& value(ItemIndexType i) const
+  ARCCORE_HOST_DEVICE const DataType& operator()(ItemIndexType item) const
   {
-    return this->m_values[i.localId()];
+    return this->m_values[item.localId()];
+  }
+
+  //! Opérateur d'accès pour l'entité \a item
+  ARCCORE_HOST_DEVICE const DataType& value(ItemIndexType item) const
+  {
+    return this->m_values[item.localId()];
   }
 
  private:
-  Span<const DataType> m_values;
+  SmallSpan<const DataType> m_values;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -235,23 +253,29 @@ class ItemVariableArrayInViewT
 
  public:
 
-  ItemVariableArrayInViewT(RunCommand& command,IVariable* var,Span2<const DataType> v)
+  ItemVariableArrayInViewT(RunCommand& command,IVariable* var,SmallSpan2<const DataType> v)
   : VariableViewBase(command,var), m_values(v){}
 
   //! Opérateur d'accès pour l'entité \a item
-  ARCCORE_HOST_DEVICE const Span<const DataType> operator[](ItemIndexType i) const
+  ARCCORE_HOST_DEVICE const SmallSpan<const DataType> operator[](ItemIndexType i) const
   {
     return this->m_values[i.localId()];
   }
 
+  //! Opérateur d'accès pour la \a i-ème valeur de l'entité \a item
+  ARCCORE_HOST_DEVICE const DataType& operator()(ItemIndexType item,Int32 i) const
+  {
+    return this->m_values[item.localId()][i];
+  }
+
   //! Opérateur d'accès pour l'entité \a item
-  ARCCORE_HOST_DEVICE const Span<const DataType> value(ItemIndexType i) const
+  ARCCORE_HOST_DEVICE const SmallSpan<const DataType> value(ItemIndexType i) const
   {
     return this->m_values[i.localId()];
   }
 
  private:
-  Span2<const DataType> m_values;
+  SmallSpan2<const DataType> m_values;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -271,23 +295,29 @@ class ItemVariableArrayOutViewT
 
  public:
 
-  ItemVariableArrayOutViewT(RunCommand& command,IVariable* var,Span2<DataType> v)
+  ItemVariableArrayOutViewT(RunCommand& command,IVariable* var,SmallSpan2<DataType> v)
   : VariableViewBase(command,var), m_values(v){}
 
   //! Opérateur d'accès pour l'entité \a item
-  ARCCORE_HOST_DEVICE DataTypeReturnType operator[](ItemIndexType i) const
+  ARCCORE_HOST_DEVICE DataTypeReturnType operator[](ItemIndexType item) const
   {
-    return DataTypeReturnType(this->m_values[i.localId()]);
+    return DataTypeReturnType(this->m_values[item.localId()]);
+  }
+
+  //! Opérateur d'accès pour la \a i-ème valeur de l'entité \a item
+  ARCCORE_HOST_DEVICE DataType& operator()(ItemIndexType item,Int32 i) const
+  {
+    return this->m_values[item.localId()][i];
   }
 
   //! Opérateur d'accès pour l'entité \a item
-  ARCCORE_HOST_DEVICE Span<DataType> value(ItemIndexType i) const
+  ARCCORE_HOST_DEVICE SmallSpan<DataType> value(ItemIndexType item) const
   {
-    return DataTypeReturnType(this->m_values[i.localId()]);
+    return DataTypeReturnType(this->m_values[item.localId()]);
   }
 
  private:
-  Span2<DataType> m_values;
+  SmallSpan2<DataType> m_values;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -324,11 +354,17 @@ class ItemVariableRealNScalarOutViewT
  public:
 
   //! Construit la vue
-  ItemVariableRealNScalarOutViewT(RunCommand& command,IVariable* var,Span<DataType> v)
+  ItemVariableRealNScalarOutViewT(RunCommand& command,IVariable* var,SmallSpan<DataType> v)
   : VariableViewBase(command,var), m_values(v.data()), m_size(v.size()){}
 
   //! Opérateur d'accès vectoriel avec indirection.
   SimdSetter<DataType> operator[](SimdItemIndexT<ItemType> simd_item) const
+  {
+    return SimdSetter<DataType>(m_values,simd_item.simdLocalIds());
+  }
+
+  //! Opérateur d'accès vectoriel avec indirection.
+  SimdSetter<DataType> operator()(SimdItemIndexT<ItemType> simd_item) const
   {
     return SimdSetter<DataType>(m_values,simd_item.simdLocalIds());
   }
@@ -339,8 +375,21 @@ class ItemVariableRealNScalarOutViewT
     return SimdDirectSetter<DataType>(m_values+simd_item.baseLocalId());
   }
 
+  //! Opérateur d'accès vectoriel sans indirection.
+  SimdDirectSetter<DataType> operator()(SimdItemDirectIndexT<ItemType> simd_item) const
+  {
+    return SimdDirectSetter<DataType>(m_values+simd_item.baseLocalId());
+  }
+
   //! Opérateur d'accès pour l'entité \a item
   ARCCORE_HOST_DEVICE Accessor operator[](ItemIndexType item) const
+  {
+    ARCANE_CHECK_AT(item.localId(),m_size);
+    return Accessor(this->m_values+item.localId());
+  }
+
+  //! Opérateur d'accès pour l'entité \a item
+  ARCCORE_HOST_DEVICE Accessor operator()(ItemIndexType item) const
   {
     ARCANE_CHECK_AT(item.localId(),m_size);
     return Accessor(this->m_values+item.localId());
@@ -362,7 +411,7 @@ class ItemVariableRealNScalarOutViewT
 
  private:
   DataType* m_values;
-  Int64 m_size;
+  Int32 m_size;
 };
 
 /*---------------------------------------------------------------------------*/
