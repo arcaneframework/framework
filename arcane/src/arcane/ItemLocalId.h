@@ -21,6 +21,8 @@
 
 namespace Arcane
 {
+// TODO: rendre obsolète les constructeurs qui prennent un argument
+// un ItemEnumerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -34,7 +36,8 @@ class ARCANE_CORE_EXPORT ItemLocalId
   constexpr ARCCORE_HOST_DEVICE ItemLocalId() : m_local_id(NULL_ITEM_LOCAL_ID){}
   constexpr ARCCORE_HOST_DEVICE explicit ItemLocalId(Int32 id) : m_local_id(id){}
   // La définition de ce constructeur est dans ItemInternal.h
-  inline explicit ItemLocalId(ItemInternal* item);
+  inline ItemLocalId(ItemInternal* item);
+  inline ItemLocalId(ItemEnumerator enumerator);
   inline ItemLocalId(Item item);
   constexpr ARCCORE_HOST_DEVICE operator Int32() const { return m_local_id; }
   constexpr ARCCORE_HOST_DEVICE Int32 asInt32() const { return m_local_id; }
@@ -50,84 +53,19 @@ class ARCANE_CORE_EXPORT ItemLocalId
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup Mesh
- * \brief Index d'un Node dans une variable.
+ * \brief Index d'une entité \a ItemType dans une variable.
  */
-class ARCANE_CORE_EXPORT NodeLocalId
+template<typename ItemType> class ItemLocalIdT
 : public ItemLocalId
 {
  public:
-  constexpr ARCCORE_HOST_DEVICE explicit NodeLocalId(Int32 id) : ItemLocalId(id){}
-  inline NodeLocalId(Node node);
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \ingroup Mesh
- * \brief Index d'une Edge dans une variable.
- */
-class ARCANE_CORE_EXPORT EdgeLocalId
-: public ItemLocalId
-{
+  constexpr ARCCORE_HOST_DEVICE explicit ItemLocalIdT(Int32 id) : ItemLocalId(id){}
+  inline ItemLocalIdT(ItemInternal* item);
+  inline ItemLocalIdT(ItemEnumeratorT<ItemType> enumerator);
+  inline ItemLocalIdT(ItemType item);
  public:
-  constexpr ARCCORE_HOST_DEVICE explicit EdgeLocalId(Int32 id) : ItemLocalId(id){}
-  inline EdgeLocalId(Edge edge);
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \ingroup Mesh
- * \brief Index d'une Face dans une variable.
- */
-class ARCANE_CORE_EXPORT FaceLocalId
-: public ItemLocalId
-{
- public:
-  constexpr ARCCORE_HOST_DEVICE explicit FaceLocalId(Int32 id) : ItemLocalId(id){}
-  inline FaceLocalId(Face item);
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \ingroup Mesh
- * \brief Index d'une Cell dans une variable.
- */
-class ARCANE_CORE_EXPORT CellLocalId
-: public ItemLocalId
-{
- public:
-  constexpr ARCCORE_HOST_DEVICE explicit CellLocalId(Int32 id) : ItemLocalId(id){}
-  inline CellLocalId(Cell item);
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \ingroup Mesh
- * \brief Index d'une Particle dans une variable.
- */
-class ARCANE_CORE_EXPORT ParticleLocalId
-: public ItemLocalId
-{
- public:
-  constexpr ARCCORE_HOST_DEVICE explicit ParticleLocalId(Int32 id) : ItemLocalId(id){}
-  inline ParticleLocalId(Particle item);
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \ingroup Mesh
- * \brief Index d'un 'DoF' dans une variable.
- */
-class ARCANE_CORE_EXPORT DoFLocalId
-: public ItemLocalId
-{
- public:
-  constexpr ARCCORE_HOST_DEVICE explicit DoFLocalId(Int32 id) : ItemLocalId(id){}
-  inline DoFLocalId(DoF item);
+  ARCANE_DEPRECATED_REASON("Y2022: Use strongly typed 'ItemEnumeratorT<ItemType>' or 'ItemType'")
+  inline ItemLocalIdT(ItemEnumerator enumerator);
 };
 
 /*---------------------------------------------------------------------------*/
