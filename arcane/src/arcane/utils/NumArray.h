@@ -184,6 +184,10 @@ class NumArrayBase
   {
     return m_span(idx);
   }
+  DataType& operator()(ArrayBoundsIndex<RankValue> idx)
+  {
+    return m_span(idx);
+  }
   DataType& s(ArrayBoundsIndex<RankValue> idx)
   {
     return m_span(idx);
@@ -257,6 +261,8 @@ class NumArray<DataType,1,LayoutType>
   //! Valeur pour l'élément \a i
   DataType operator()(Int32 i) const { return m_span(i); }
   //! Positionne la valeur pour l'élément \a i
+  DataType& operator()(Int32 i) { return m_span(i); }
+  //! Positionne la valeur pour l'élément \a i
   DataType& s(Int32 i) { return m_span(i); }
   //! Récupère une référence pour l'élément \a i
   DataType& operator[](Int32 i) { return m_span(i); }
@@ -313,6 +319,11 @@ class NumArray<DataType,2,LayoutType>
     return m_span(i,j);
   }
   //! Positionne la valeur pour l'élément \a i,j
+  DataType& operator()(Int32 i,Int32 j)
+  {
+    return m_span(i,j);
+  }
+  //! Positionne la valeur pour l'élément \a i,j
   DataType& s(Int32 i,Int32 j)
   {
     return m_span(i,j);
@@ -361,6 +372,11 @@ class NumArray<DataType,3,LayoutType>
  public:
   //! Valeur pour l'élément \a i,j,k
   DataType operator()(Int32 i,Int32 j,Int32 k) const
+  {
+    return m_span(i,j,k);
+  }
+  //! Positionne la valeur pour l'élément \a i,j,k
+  DataType& operator()(Int32 i,Int32 j,Int32 k)
   {
     return m_span(i,j,k);
   }
@@ -418,6 +434,11 @@ class NumArray<DataType,4,LayoutType>
  public:
   //! Valeur pour l'élément \a i,j,k,l
   DataType operator()(Int32 i,Int32 j,Int32 k,Int32 l) const
+  {
+    return m_span(i,j,k,l);
+  }
+  //! Positionne la valeur pour l'élément \a i,j,k,l
+  DataType& operator()(Int32 i,Int32 j,Int32 k,Int32 l)
   {
     return m_span(i,j,k,l);
   }
