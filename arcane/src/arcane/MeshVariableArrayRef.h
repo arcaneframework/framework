@@ -69,36 +69,17 @@ class ItemVariableArrayRefT
   
  public:
 
-  ConstArrayType operator[](const Item& i) const
-  { 
-    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND(i);
-    return this->m_view[i.localId()]; 
-  }
-  ArrayType operator[](const Item& i)
-  { 
-    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND(i);
-    return this->m_view[i.localId()]; 
-  }
-  ConstArrayType operator[](const ItemGroupRangeIterator& i) const
-  {
-    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND(i);
-    return this->m_view[i.itemLocalId()];
-  }
-  ArrayType operator[](const ItemGroupRangeIterator& i)
-  {
-    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND(i);
-    return this->m_view[i.itemLocalId()];
-  }
-  ConstArrayType operator[](const ItemEnumerator& i) const
-  {
-    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND((*i));
-    return this->m_view[i.localId()];
-  }
-  ArrayType operator[](const ItemEnumerator& i)
-  {
-    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND((*i));
-    return this->m_view[i.localId()];
-  }
+  //! Valeur non modifiable de l'entité \a item
+  ConstArrayType operator[](ItemLocalId item) const { return this->m_view[item.localId()]; }
+
+  //! Valeur modifiable de l'entité \a item
+  ArrayType operator[](ItemLocalId item) { return this->m_view[item.localId()]; }
+
+  //! Valeur non modifiable de la \a i-éme valeur de l'entité \a item
+  const DataType operator()(ItemLocalId item,Int32 i) const { return this->m_view.item(item.localId(),i); }
+
+  //! Valeur modifiable de la \a i-éme valeur de l'entité \a item
+  DataType& operator()(ItemLocalId item,Int32 i) { return this->m_view[item.localId()][i]; }
 
  public:
 
@@ -166,26 +147,17 @@ class MeshVariableArrayRefT
 
  public:
 
-  ConstArrayType operator[](const ItemType& i) const
-  { return this->m_view[i.localId()]; }
-  ArrayType operator[](const ItemType& i)
-  { return this->m_view[i.localId()]; }
-  ConstArrayType operator[](const ItemGroupRangeIteratorT<ItemType>& i) const
-  { return this->m_view[i.itemLocalId()]; }
-  ArrayType operator[](const ItemGroupRangeIteratorT<ItemType>& i)
-  { return this->m_view[i.itemLocalId()]; }
-  ConstArrayType operator[](const ItemPairEnumeratorSubT<ItemType>& i) const
-  { return this->m_view[i.itemLocalId()]; }
-  ArrayType operator[](const ItemPairEnumeratorSubT<ItemType>& i)
-  { return this->m_view[i.itemLocalId()]; }
-  ConstArrayType operator[](const ItemEnumeratorT<ItemType>& i) const
-  { return this->m_view[i.localId()]; }
-  ArrayType operator[](const ItemEnumeratorT<ItemType>& i)
-  { return this->m_view[i.localId()]; }
-  ConstArrayType operator[](ItemLocalIdType i) const
-  { return this->m_view[i.localId()]; }
-  ArrayType operator[](ItemLocalIdType i)
-  { return this->m_view[i.localId()]; }
+  //! Valeur non modifiable de l'entité \a item
+  ConstArrayType operator[](ItemLocalIdType item) const { return this->m_view[item.localId()]; }
+
+  //! Valeur modifiable de l'entité \a item
+  ArrayType operator[](ItemLocalIdType item) { return this->m_view[item.localId()]; }
+
+  //! Valeur non modifiable de la \a i-éme valeur de l'entité \a item
+  const DataType operator()(ItemLocalIdType item,Int32 i) const { return this->m_view[item.localId()][i]; }
+
+  //! Valeur modifiable de la \a i-éme valeur de l'entité \a item
+  DataType& operator()(ItemLocalIdType item,Int32 i) { return this->m_view[item.localId()][i]; }
 
  public:
 	
