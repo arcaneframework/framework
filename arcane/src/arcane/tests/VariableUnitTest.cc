@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableUnitTest.cc                                         (C) 2000-2021 */
+/* VariableUnitTest.cc                                         (C) 2000-2022 */
 /*                                                                           */
 /* Service de test des variables.                                            */
 /*---------------------------------------------------------------------------*/
@@ -30,7 +30,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_BEGIN_NAMESPACE
+namespace ArcaneTest
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -286,7 +287,10 @@ _testRefersTo()
       ENUMERATE_CELL(icell,allCells()){
         CellLocalId id { icell.itemLocalId() };
         for( Integer i=0; i<dim2_size; ++i )
-          var1[id][i] = i + 3 + id;
+          if ( (i%2) == 0 )
+            var1[id][i] = i + 3 + id;
+          else
+            var1(id,i) = i + 3 + id;
       }
       ENUMERATE_CELL(icell,allCells()){
         CellLocalId id { icell.itemLocalId() };
@@ -311,7 +315,7 @@ _testRefersTo()
 
     for( Integer i=0, n1=var1.dim1Size(); i<n1; ++i )
       for( Integer j=0, n2=var1.dim2Size(); j<n2; ++j )
-        vc.areEqual(var1[i][j],fill_value2,"Array2RealCompare");
+        vc.areEqual(var1.item(i,j),fill_value2,"Array2RealCompare");
 
     var1.refersTo(var2);
 
@@ -439,7 +443,7 @@ _testSwapHelper(MeshVarType& cells)
     info() << "NB ERROR3 = " << nb_error;
 
     if (nb_error!=0)
-      fatal() << "Error in variable swapping (2) n=" << nb_error;
+      ARCANE_FATAL("Error in variable swapping (2) n=",nb_error);
   }
 }
 
@@ -497,7 +501,7 @@ _testSwap()
     info() << "NB ERROR3 = " << nb_error;
 
     if (nb_error!=0)
-      fatal() << "Error in variable swapping (2) n=" << nb_error;
+      ARCANE_FATAL("Error in variable swapping (2) n={0}",nb_error);
   }
 }
 
@@ -519,7 +523,7 @@ class AlignmentChecker
   void operator()(MeshVariableScalarRefT<ItemType,DataType>& var)
   {
     info() << "VAR1D=" << var.name() << " sizeofArray=" << sizeof(ArrayImplT<DataType>);
-    void* ptr = var.asArray().unguardedBasePointer();
+    void* ptr = var.asArray().data();
     intptr_t int_ptr = (intptr_t)ptr;
     intptr_t modulo = int_ptr % align_size;
     if (modulo != 0){
@@ -533,7 +537,7 @@ class AlignmentChecker
   void operator()(MeshVariableArrayRefT<ItemType,DataType>& var)
   {
     info() << "VAR2D=" << var.name();
-    void* ptr = var.asArray().unguardedBasePointer();
+    void* ptr = var.asArray().data();
     intptr_t int_ptr = (intptr_t)ptr;
     intptr_t modulo = int_ptr % align_size;
     if (modulo != 0){
@@ -560,13 +564,13 @@ _testAlignment()
   m_array_cells.applyFunctor(xad);
 
   if (xad.nb_error!=0)
-    fatal() << "Invalid alignment for variables nb_error=" << xad.nb_error;
+    ARCANE_FATAL("Invalid alignment for variables nb_error={0}",xad.nb_error);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_END_NAMESPACE
+} // End namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

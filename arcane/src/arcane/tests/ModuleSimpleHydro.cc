@@ -741,60 +741,60 @@ computeCQs(Real3 node_coord[8],Real3 face_coord[6],const Cell& cell)
   const Real five = ARCANE_REAL(5.0);
 
   // Calcul des normales face 1 :
-  const Real3 n1a04 = demi * math::vecMul(node_coord[0] - c0 , node_coord[3] - c0);
-  const Real3 n1a03 = demi * math::vecMul(node_coord[3] - c0 , node_coord[2] - c0);
-  const Real3 n1a02 = demi * math::vecMul(node_coord[2] - c0 , node_coord[1] - c0);
-  const Real3 n1a01 = demi * math::vecMul(node_coord[1] - c0 , node_coord[0] - c0);
+  const Real3 n1a04 = demi * math::cross(node_coord[0] - c0 , node_coord[3] - c0);
+  const Real3 n1a03 = demi * math::cross(node_coord[3] - c0 , node_coord[2] - c0);
+  const Real3 n1a02 = demi * math::cross(node_coord[2] - c0 , node_coord[1] - c0);
+  const Real3 n1a01 = demi * math::cross(node_coord[1] - c0 , node_coord[0] - c0);
 
   // Calcul des normales face 2 :
-  const Real3 n2a05 = demi * math::vecMul(node_coord[0] - c1 , node_coord[4] - c1);
-  const Real3 n2a12 = demi * math::vecMul(node_coord[4] - c1 , node_coord[7] - c1);
-  const Real3 n2a08 = demi * math::vecMul(node_coord[7] - c1 , node_coord[3] - c1);
-  const Real3 n2a04 = demi * math::vecMul(node_coord[3] - c1 , node_coord[0] - c1);
+  const Real3 n2a05 = demi * math::cross(node_coord[0] - c1 , node_coord[4] - c1);
+  const Real3 n2a12 = demi * math::cross(node_coord[4] - c1 , node_coord[7] - c1);
+  const Real3 n2a08 = demi * math::cross(node_coord[7] - c1 , node_coord[3] - c1);
+  const Real3 n2a04 = demi * math::cross(node_coord[3] - c1 , node_coord[0] - c1);
 
   // Calcul des normales face 3 :
-  const Real3 n3a01 = demi * math::vecMul(node_coord[0] - c2 , node_coord[1] - c2);
-  const Real3 n3a06 = demi * math::vecMul(node_coord[1] - c2 , node_coord[5] - c2);
-  const Real3 n3a09 = demi * math::vecMul(node_coord[5] - c2 , node_coord[4] - c2);
-  const Real3 n3a05 = demi * math::vecMul(node_coord[4] - c2 , node_coord[0] - c2);
+  const Real3 n3a01 = demi * math::cross(node_coord[0] - c2 , node_coord[1] - c2);
+  const Real3 n3a06 = demi * math::cross(node_coord[1] - c2 , node_coord[5] - c2);
+  const Real3 n3a09 = demi * math::cross(node_coord[5] - c2 , node_coord[4] - c2);
+  const Real3 n3a05 = demi * math::cross(node_coord[4] - c2 , node_coord[0] - c2);
 
   // Calcul des normales face 4 :
-  const Real3 n4a09 = demi * math::vecMul(node_coord[4] - c3 , node_coord[5] - c3);
-  const Real3 n4a10 = demi * math::vecMul(node_coord[5] - c3 , node_coord[6] - c3);
-  const Real3 n4a11 = demi * math::vecMul(node_coord[6] - c3 , node_coord[7] - c3);
-  const Real3 n4a12 = demi * math::vecMul(node_coord[7] - c3 , node_coord[4] - c3);
+  const Real3 n4a09 = demi * math::cross(node_coord[4] - c3 , node_coord[5] - c3);
+  const Real3 n4a10 = demi * math::cross(node_coord[5] - c3 , node_coord[6] - c3);
+  const Real3 n4a11 = demi * math::cross(node_coord[6] - c3 , node_coord[7] - c3);
+  const Real3 n4a12 = demi * math::cross(node_coord[7] - c3 , node_coord[4] - c3);
 	
   // Calcul des normales face 5 :
-  const Real3 n5a02 = demi * math::vecMul(node_coord[1] - c4 , node_coord[2] - c4);
-  const Real3 n5a07 = demi * math::vecMul(node_coord[2] - c4 , node_coord[6] - c4);
-  const Real3 n5a10 = demi * math::vecMul(node_coord[6] - c4 , node_coord[5] - c4);
-  const Real3 n5a06 = demi * math::vecMul(node_coord[5] - c4 , node_coord[1] - c4);
+  const Real3 n5a02 = demi * math::cross(node_coord[1] - c4 , node_coord[2] - c4);
+  const Real3 n5a07 = demi * math::cross(node_coord[2] - c4 , node_coord[6] - c4);
+  const Real3 n5a10 = demi * math::cross(node_coord[6] - c4 , node_coord[5] - c4);
+  const Real3 n5a06 = demi * math::cross(node_coord[5] - c4 , node_coord[1] - c4);
       
   // Calcul des normales face 6 :
-  const Real3 n6a03 = demi * math::vecMul(node_coord[2] - c5 , node_coord[3] - c5);
-  const Real3 n6a08 = demi * math::vecMul(node_coord[3] - c5 , node_coord[7] - c5);
-  const Real3 n6a11 = demi * math::vecMul(node_coord[7] - c5 , node_coord[6] - c5);
-  const Real3 n6a07 = demi * math::vecMul(node_coord[6] - c5 , node_coord[2] - c5);
+  const Real3 n6a03 = demi * math::cross(node_coord[2] - c5 , node_coord[3] - c5);
+  const Real3 n6a08 = demi * math::cross(node_coord[3] - c5 , node_coord[7] - c5);
+  const Real3 n6a11 = demi * math::cross(node_coord[7] - c5 , node_coord[6] - c5);
+  const Real3 n6a07 = demi * math::cross(node_coord[6] - c5 , node_coord[2] - c5);
 
   const Real real_1div12 = ARCANE_REAL(1.0) / ARCANE_REAL(12.0);
 
   // Calcul des résultantes aux sommets :
-  m_cell_cqs[cell][0] = (five*(n1a01 + n1a04 + n2a04 + n2a05 + n3a05 + n3a01) +
-                         (n1a02 + n1a03 + n2a08 + n2a12 + n3a06 + n3a09))*real_1div12;
-  m_cell_cqs[cell][1] = (five*(n1a01 + n1a02 + n3a01 + n3a06 + n5a06 + n5a02) +
-                         (n1a04 + n1a03 + n3a09 + n3a05 + n5a10 + n5a07))*real_1div12;
-  m_cell_cqs[cell][2] = (five*(n1a02 + n1a03 + n5a07 + n5a02 + n6a07 + n6a03) +
-                         (n1a01 + n1a04 + n5a06 + n5a10 + n6a11 + n6a08))*real_1div12;
-  m_cell_cqs[cell][3] = (five*(n1a03 + n1a04 + n2a08 + n2a04 + n6a08 + n6a03) +
-                         (n1a01 + n1a02 + n2a05 + n2a12 + n6a07 + n6a11))*real_1div12;
-  m_cell_cqs[cell][4] = (five*(n2a05 + n2a12 + n3a05 + n3a09 + n4a09 + n4a12) +
-                         (n2a08 + n2a04 + n3a01 + n3a06 + n4a10 + n4a11))*real_1div12;
-  m_cell_cqs[cell][5] = (five*(n3a06 + n3a09 + n4a09 + n4a10 + n5a10 + n5a06) +
-                         (n3a01 + n3a05 + n4a12 + n4a11 + n5a07 + n5a02))*real_1div12;
-  m_cell_cqs[cell][6] = (five*(n4a11 + n4a10 + n5a10 + n5a07 + n6a07 + n6a11) +
-                         (n4a12 + n4a09 + n5a06 + n5a02 + n6a03 + n6a08))*real_1div12;
-  m_cell_cqs[cell][7] = (five*(n2a08 + n2a12 + n4a12 + n4a11 + n6a11 + n6a08) +
-                         (n2a04 + n2a05 + n4a09 + n4a10 + n6a07 + n6a03))*real_1div12;
+  m_cell_cqs(cell,0) = (five*(n1a01 + n1a04 + n2a04 + n2a05 + n3a05 + n3a01) +
+                        (n1a02 + n1a03 + n2a08 + n2a12 + n3a06 + n3a09))*real_1div12;
+  m_cell_cqs(cell,1) = (five*(n1a01 + n1a02 + n3a01 + n3a06 + n5a06 + n5a02) +
+                        (n1a04 + n1a03 + n3a09 + n3a05 + n5a10 + n5a07))*real_1div12;
+  m_cell_cqs(cell,2) = (five*(n1a02 + n1a03 + n5a07 + n5a02 + n6a07 + n6a03) +
+                        (n1a01 + n1a04 + n5a06 + n5a10 + n6a11 + n6a08))*real_1div12;
+  m_cell_cqs(cell,3) = (five*(n1a03 + n1a04 + n2a08 + n2a04 + n6a08 + n6a03) +
+                        (n1a01 + n1a02 + n2a05 + n2a12 + n6a07 + n6a11))*real_1div12;
+  m_cell_cqs(cell,4) = (five*(n2a05 + n2a12 + n3a05 + n3a09 + n4a09 + n4a12) +
+                        (n2a08 + n2a04 + n3a01 + n3a06 + n4a10 + n4a11))*real_1div12;
+  m_cell_cqs(cell,5) = (five*(n3a06 + n3a09 + n4a09 + n4a10 + n5a10 + n5a06) +
+                        (n3a01 + n3a05 + n4a12 + n4a11 + n5a07 + n5a02))*real_1div12;
+  m_cell_cqs(cell,6) = (five*(n4a11 + n4a10 + n5a10 + n5a07 + n6a07 + n6a11) +
+                        (n4a12 + n4a09 + n5a06 + n5a02 + n6a03 + n6a08))*real_1div12;
+  m_cell_cqs(cell,7) = (five*(n2a08 + n2a12 + n4a12 + n4a11 + n6a11 + n6a08) +
+                        (n2a04 + n2a05 + n4a09 + n4a10 + n6a07 + n6a03))*real_1div12;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -860,11 +860,11 @@ _computeGeometricValues(CellVectorView cells)
     {
       Real volume = 0.;
       for( Integer i_node=0; i_node<8; ++i_node )
-        volume += math::scaMul(coord[i_node],m_cell_cqs[icell][i_node]);
+        volume += math::dot(coord[i_node],m_cell_cqs(icell,i_node));
       volume /= ARCANE_REAL(3.0);
 
-      m_old_volume[icell] = m_volume[icell];
-      m_volume[icell] = volume;
+      m_old_volume(icell) = m_volume(icell);
+      m_volume(icell) = volume;
     }
 
   }
