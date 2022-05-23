@@ -227,6 +227,14 @@ arcane_copy_mesh(sphere_v4.2_binary sphere_v4.2_binary vtk)
 
 configure_file(test-CasePartVtu.sh.in ${ARCANE_TEST_PATH}/test-CasePartVtu.sh)
 
+# Copie le répertoire des données dans le répertoire d'exécution des tests
+# Cela est nécessaire pour certains cas comme ceux faisant une reprise
+# depuis une ancienne version de Arcane
+file(COPY ${TEST_PATH}/data/test_output_continue_hydro3_cartesian_small
+  DESTINATION ${ARCANE_TEST_WORKDIR} USE_SOURCE_PERMISSIONS)
+file(COPY ${TEST_PATH}/data/test_output_continue_hydro3_cartesian_small_4shm
+  DESTINATION ${ARCANE_TEST_WORKDIR} USE_SOURCE_PERMISSIONS)
+
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
@@ -468,6 +476,10 @@ arcane_add_test_parallel_all(amr2 testAMR-2.arc 3 4)
 arcane_add_test_parallel_all(amr2_checkpoint testAMR-2-checkpoint.arc 3 4 -c 2)
 ARCANE_ADD_TEST(hydro3 testHydro-3.arc -m 50)
 arcane_add_test_sequential(hydro3_cartesian testHydro-3-cartesian.arc -m 50)
+arcane_add_test_sequential(hydro3_cartesian_small testHydro-3-cartesian-small.arc -m 10)
+arcane_add_test_parallel_thread(hydro3_cartesian_small testHydro-3-cartesian-small.arc 4 -m 10)
+arcane_add_test_script(continue_hydro3_cartesian_small continue_hydro3_cartesian_small.xml)
+arcane_add_test_script(continue_hydro3_cartesian_small_4shm continue_hydro3_cartesian_small_4shm.xml)
 arcane_add_test_parallel(hydro3_cartesian_8proc testHydro-3-cartesian.arc 8 "-m 50")
 arcane_add_test_parallel_all(hydro3_meshservice testHydro-3-meshservice.arc 3 4 -m 50)
 arcane_add_test_parallel_all(hydro3_checkpoint_meshservice testHydro-3-checkpoint-meshservice.arc 3 4 -c 3 -m 10)
