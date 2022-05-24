@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DumpW.h                                                     (C) 2000-2011 */
+/* DumpW.h                                                     (C) 2000-2022 */
 /*                                                                           */
 /* Wrapper de IDataWriter sous l'ancienne interface IDumpW.                  */
 /*---------------------------------------------------------------------------*/
@@ -13,8 +13,6 @@
 #define ARCANE_STD_DUMPW_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/IDataWriter.h"
 #include "arcane/ArcaneTypes.h"
@@ -28,7 +26,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -41,32 +40,35 @@ class IData;
 
 /*! \brief wrapper transformant des appels à l'interface IDataWriter en ex IDumpW
  */
-class ARCANE_STD_EXPORT DumpW 
-  : public IDataWriter
+class ARCANE_STD_EXPORT DumpW
+: public IDataWriter
 {
-public:
+ public:
+
   //! Constructeur
   DumpW();
 
   //! Libère les ressources
   virtual ~DumpW();
 
-public:
-  
+ public:
+
   //! Notifie le début d'écriture
   void beginWrite(const VariableCollection& vars);
 
   //! Ecrit les données \a data de la variable \a var
-  void write(IVariable* var,IData* data);
+  void write(IVariable* var, IData* data);
 
-public:
+ public:
+
   //! Notifie la fin d'écriture
   virtual void endWrite() = 0;
 
   //! Positionne les infos des méta-données
   virtual void setMetaData(const String& meta_data) = 0;
 
-protected:
+ protected:
+
   //! Visiteur
   class DataVisitor;
 
@@ -74,41 +76,53 @@ protected:
   virtual void beginWrite() = 0;
 
   //! Ecriture pour la variable \a v du tableau \a a
-  virtual void writeVal(IVariable& v,ConstArrayView<Byte> a) =0;
-  virtual void writeVal(IVariable& v,ConstArrayView<Real> a) =0;
-  virtual void writeVal(IVariable& v,ConstArrayView<Int64> a)  =0;
-  virtual void writeVal(IVariable& v,ConstArrayView<Int32> a)  =0;
-  virtual void writeVal(IVariable& v,ConstArrayView<Real2> a) =0;
-  virtual void writeVal(IVariable& v,ConstArrayView<Real3> a)  =0;
-  virtual void writeVal(IVariable& v,ConstArrayView<Real2x2> a) =0;
-  virtual void writeVal(IVariable& v,ConstArrayView<Real3x3> a)  =0;
-  virtual void writeVal(IVariable& v,ConstArrayView<String> a)  =0;
+  virtual void writeVal(IVariable& v, ConstArrayView<Byte> a) = 0;
+  virtual void writeVal(IVariable& v, ConstArrayView<Real> a) = 0;
+  virtual void writeVal(IVariable& v, ConstArrayView<Int64> a) = 0;
+  virtual void writeVal(IVariable& v, ConstArrayView<Int32> a) = 0;
+  virtual void writeVal(IVariable&, ConstArrayView<Int16>)
+  {
+    throw NotSupportedException(A_FUNCINFO);
+  }
+  virtual void writeVal(IVariable& v, ConstArrayView<Real2> a) = 0;
+  virtual void writeVal(IVariable& v, ConstArrayView<Real3> a) = 0;
+  virtual void writeVal(IVariable& v, ConstArrayView<Real2x2> a) = 0;
+  virtual void writeVal(IVariable& v, ConstArrayView<Real3x3> a) = 0;
+  virtual void writeVal(IVariable& v, ConstArrayView<String> a) = 0;
 
-  virtual void writeVal(IVariable& v,ConstArray2View<Byte> a) =0;
-  virtual void writeVal(IVariable& v,ConstArray2View<Real> a)  =0;
-  virtual void writeVal(IVariable& v,ConstArray2View<Int64> a)  =0;
-  virtual void writeVal(IVariable& v,ConstArray2View<Int32> a)  =0;
-  virtual void writeVal(IVariable& v,ConstArray2View<Real2> a) =0;
-  virtual void writeVal(IVariable& v,ConstArray2View<Real3> a)  =0;
-  virtual void writeVal(IVariable& v,ConstArray2View<Real2x2> a) =0;
-  virtual void writeVal(IVariable& v,ConstArray2View<Real3x3> a)  =0;
+  virtual void writeVal(IVariable& v, ConstArray2View<Byte> a) = 0;
+  virtual void writeVal(IVariable& v, ConstArray2View<Real> a) = 0;
+  virtual void writeVal(IVariable& v, ConstArray2View<Int64> a) = 0;
+  virtual void writeVal(IVariable& v, ConstArray2View<Int32> a) = 0;
+  virtual void writeVal(IVariable&, ConstArray2View<Int16>)
+  {
+    throw NotSupportedException(A_FUNCINFO);
+  }
+  virtual void writeVal(IVariable& v, ConstArray2View<Real2> a) = 0;
+  virtual void writeVal(IVariable& v, ConstArray2View<Real3> a) = 0;
+  virtual void writeVal(IVariable& v, ConstArray2View<Real2x2> a) = 0;
+  virtual void writeVal(IVariable& v, ConstArray2View<Real3x3> a) = 0;
 
-  virtual void writeVal(IVariable& v,ConstMultiArray2View<Byte> a) =0;
-  virtual void writeVal(IVariable& v,ConstMultiArray2View<Real> a)  =0;
-  virtual void writeVal(IVariable& v,ConstMultiArray2View<Int64> a)  =0;
-  virtual void writeVal(IVariable& v,ConstMultiArray2View<Int32> a)  =0;
-  virtual void writeVal(IVariable& v,ConstMultiArray2View<Real2> a) =0;
-  virtual void writeVal(IVariable& v,ConstMultiArray2View<Real3> a)  =0;
-  virtual void writeVal(IVariable& v,ConstMultiArray2View<Real2x2> a) =0;
-  virtual void writeVal(IVariable& v,ConstMultiArray2View<Real3x3> a)  =0;
+  virtual void writeVal(IVariable& v, ConstMultiArray2View<Byte> a) = 0;
+  virtual void writeVal(IVariable& v, ConstMultiArray2View<Real> a) = 0;
+  virtual void writeVal(IVariable& v, ConstMultiArray2View<Int64> a) = 0;
+  virtual void writeVal(IVariable& v, ConstMultiArray2View<Int32> a) = 0;
+  virtual void writeVal(IVariable&, ConstMultiArray2View<Int16>)
+  {
+    throw NotSupportedException(A_FUNCINFO);
+  }
+  virtual void writeVal(IVariable& v, ConstMultiArray2View<Real2> a) = 0;
+  virtual void writeVal(IVariable& v, ConstMultiArray2View<Real3> a) = 0;
+  virtual void writeVal(IVariable& v, ConstMultiArray2View<Real2x2> a) = 0;
+  virtual void writeVal(IVariable& v, ConstMultiArray2View<Real3x3> a) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif /* ARCANE_STD_DUMPW_H */
+#endif

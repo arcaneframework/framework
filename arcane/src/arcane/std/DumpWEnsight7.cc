@@ -614,6 +614,7 @@ class DumpWEnsight7
   void writeVal(IVariable& v, ConstArrayView<Real> a) override { _writeRealValT<Real>(v, a); }
   void writeVal(IVariable&, ConstArrayView<Real2>) override {}
   void writeVal(IVariable&, ConstArrayView<Real3>) override;
+  void writeVal(IVariable& v, ConstArrayView<Int16> a) override { _writeRealValT<Int16>(v, a); }
   void writeVal(IVariable& v, ConstArrayView<Int32> a) override { _writeRealValT<Int32>(v, a); }
   void writeVal(IVariable& v, ConstArrayView<Int64> a) override { _writeRealValT<Int64>(v, a); }
   void writeVal(IVariable&, ConstArrayView<Real2x2>) override {}
@@ -624,6 +625,7 @@ class DumpWEnsight7
   void writeVal(IVariable& v, ConstArray2View<Real> a) override { _writeRealValT<Real>(v, a); }
   void writeVal(IVariable&, ConstArray2View<Real2>) override {}
   void writeVal(IVariable&, ConstArray2View<Real3>) override;
+  void writeVal(IVariable& v, ConstArray2View<Int16> a) override { _writeRealValT<Int16>(v, a); }
   void writeVal(IVariable& v, ConstArray2View<Int32> a) override { _writeRealValT<Int32>(v, a); }
   void writeVal(IVariable& v, ConstArray2View<Int64> a) override { _writeRealValT<Int64>(v, a); }
   void writeVal(IVariable&, ConstArray2View<Real2x2>) override {}
@@ -633,6 +635,7 @@ class DumpWEnsight7
   void writeVal(IVariable& v, ConstMultiArray2View<Real> a) override { _writeRealValT<Real>(v, a); }
   void writeVal(IVariable&, ConstMultiArray2View<Real2>) override {}
   void writeVal(IVariable&, ConstMultiArray2View<Real3> a) override;
+  void writeVal(IVariable& v, ConstMultiArray2View<Int16> a) override { _writeRealValT<Int16>(v, a); }
   void writeVal(IVariable& v, ConstMultiArray2View<Int32> a) override { _writeRealValT<Int32>(v, a); }
   void writeVal(IVariable& v, ConstMultiArray2View<Int64> a) override { _writeRealValT<Int64>(v, a); }
   void writeVal(IVariable&, ConstMultiArray2View<Real2x2>) override {}
