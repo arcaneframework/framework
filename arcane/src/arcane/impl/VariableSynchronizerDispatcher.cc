@@ -327,12 +327,12 @@ synchronize(VariableCollection vars,ConstArrayView<VariableSyncInfo> sync_infos)
     Int32ConstArrayView share_ids = sync_infos[i].shareIds();
     sbuf->setMode(ISerializer::ModeReserve);
     for( VariableCollection::Enumerator ivar(vars); ++ivar; ){
-      (*ivar)->serialize(sbuf,share_ids,0);
+      (*ivar)->serialize(sbuf,share_ids,nullptr);
     }
     sbuf->allocateBuffer();
     sbuf->setMode(ISerializer::ModePut);
     for( VariableCollection::Enumerator ivar(vars); ++ivar; ){
-      (*ivar)->serialize(sbuf,share_ids,0);
+      (*ivar)->serialize(sbuf,share_ids,nullptr);
     }
   }
   exchanger->processExchange();
@@ -342,7 +342,7 @@ synchronize(VariableCollection vars,ConstArrayView<VariableSyncInfo> sync_infos)
     Int32ConstArrayView ghost_ids = sync_infos[i].ghostIds();
     sbuf->setMode(ISerializer::ModeGet);
     for( VariableCollection::Enumerator ivar(vars); ++ivar; ){
-      (*ivar)->serialize(sbuf,ghost_ids,0);
+      (*ivar)->serialize(sbuf,ghost_ids,nullptr);
     }
   }
 }

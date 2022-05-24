@@ -149,6 +149,7 @@ compute()
         continue;
       Int64 uid = item_internal->uniqueId().asInt64();
       if (owner==A_NULL_RANK || owner>=nb_rank){
+        ++nb_error;
         if (nb_error<10)
           bad_items_uid.add(uid);
         continue;
@@ -625,7 +626,7 @@ synchronize(IVariable* var)
   if (!m_sync_timer)
     m_sync_timer = new Timer(pm->timerMng(),"SyncTimer",Timer::TimerReal);
   {
-    Timer::Sentry ts(m_sync_timer);
+    Timer::Sentry ts2(m_sync_timer);
     _synchronize(var);
   }
   Real elapsed_time = m_sync_timer->lastActivationTime();
@@ -748,7 +749,7 @@ _synchronizeMulti(VariableCollection vars)
   if (!m_sync_timer)
     m_sync_timer = new Timer(pm->timerMng(),"SyncTimer",Timer::TimerReal);
   {
-    Timer::Sentry ts(m_sync_timer);
+    Timer::Sentry ts2(m_sync_timer);
     m_multi_dispatcher->synchronize(vars,m_sync_list.infos());
     for( VariableCollection::Enumerator ivar(vars); ++ivar; ){
       (*ivar)->setIsSynchronized();
