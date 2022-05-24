@@ -1,0 +1,3 @@
+<?xml version="1.0"?>
+<checkpoint-info nb-sub-domain="4" nb-replication="1"><service name="ArcaneBasic2CheckpointReader" directory="test_output_hydro3_cartesian_small_4thread/protection"><meta-data>&lt;infos version='1'/&gt;
+</meta-data></service><times last-time="0.001357947691" last-index="0"><time value="0.001357947691"/></times></checkpoint-info>

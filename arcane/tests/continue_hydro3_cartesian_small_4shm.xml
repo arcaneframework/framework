@@ -1,0 +1,4 @@
+<?xml version="1.0" ?>
+<commands>
+  <test>-m 5 -arcane_opt continue @ARCANE_TEST_CASEPATH@/testHydro-3-cartesian-small-nodump.arc</test>
+</commands>
