@@ -1261,6 +1261,7 @@ _saveProperties()
   p->setInt32("part-info-nb-part",m_mesh_part_info.nbPart());
   p->setInt32("part-info-replication-rank",m_mesh_part_info.replicationRank());
   p->setInt32("part-info-nb-replication",m_mesh_part_info.nbReplication());
+  p->setBool("has-itemsharedinfo-variables",true);
 }
 
 /*---------------------------------------------------------------------------*/

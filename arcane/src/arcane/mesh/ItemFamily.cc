@@ -74,6 +74,34 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace
+{
+
+template<typename DataType> inline bool
+_checkResizeArray(Array<DataType>& array,Integer new_max_index)
+{
+  Integer s = array.size();
+  if (new_max_index>=s){
+    Integer new_size = new_max_index + 1;
+    if (new_size>array.capacity()){
+      if (new_size>5000000)
+        array.reserve((Integer)(new_size * 1.2));
+      else if (new_size>500000)
+        array.reserve((Integer)(new_size * 1.5));
+      else
+        array.reserve((Integer)(new_size * 2.0));
+    }
+    array.resize(new_size);
+    return true;
+  }
+  return false;
+}
+
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 class ItemFamily::Variables
 {
  public:
@@ -83,6 +111,9 @@ class ItemFamily::Variables
             const String& shared_data_name,
             const String& data_name,
             const String& unique_ids_name,
+            const String& items_owner_name,
+            const String& items_flags_name,
+            const String& items_typeid_name,
             const String& groups_name,
             const String& current_id_name,
             const String& new_owner_name,
@@ -91,18 +122,20 @@ class ItemFamily::Variables
             const String& parent_family_depth_name,
             const String& child_meshes_name,
             const String& child_families_name)
-  : m_items_shared_data_index(VariableBuildInfo(mesh,shared_data_name,IVariable::PPrivate))
-    , m_items_data(VariableBuildInfo(mesh,data_name,IVariable::PPrivate))
-    , m_items_unique_id(VariableBuildInfo(mesh,unique_ids_name,IVariable::PPrivate))
-    , m_groups_name(VariableBuildInfo(mesh,groups_name))
-    , m_current_id(VariableBuildInfo(mesh,current_id_name))
-    , m_items_new_owner(VariableBuildInfo(mesh,new_owner_name,family_name,
-                                          IVariable::PSubDomainDepend|IVariable::PExecutionDepend),item_kind)
-    , m_parent_mesh_name(VariableBuildInfo(mesh,parent_mesh_name,IVariable::PPrivate))
-    , m_parent_family_name(VariableBuildInfo(mesh,parent_family_name,IVariable::PPrivate))
-    , m_parent_family_depth(VariableBuildInfo(mesh,parent_family_depth_name,IVariable::PPrivate))
-    , m_child_meshes_name(VariableBuildInfo(mesh,child_meshes_name,IVariable::PPrivate))
-    , m_child_families_name(VariableBuildInfo(mesh,child_families_name,IVariable::PPrivate))
+  : m_items_shared_data_index(VariableBuildInfo(mesh,shared_data_name,IVariable::PPrivate)),
+    m_items_data(VariableBuildInfo(mesh,data_name,IVariable::PPrivate)),
+    m_items_unique_id(VariableBuildInfo(mesh,unique_ids_name,IVariable::PPrivate)),
+    m_items_owner(VariableBuildInfo(mesh,items_owner_name,IVariable::PPrivate)),
+    m_items_flags(VariableBuildInfo(mesh,items_flags_name,IVariable::PPrivate)),
+    m_items_typeid(VariableBuildInfo(mesh,items_typeid_name,IVariable::PPrivate)),
+    m_groups_name(VariableBuildInfo(mesh,groups_name)),
+    m_current_id(VariableBuildInfo(mesh,current_id_name)),
+    m_items_new_owner(VariableBuildInfo(mesh,new_owner_name,family_name,IVariable::PSubDomainDepend|IVariable::PExecutionDepend),item_kind),
+    m_parent_mesh_name(VariableBuildInfo(mesh,parent_mesh_name,IVariable::PPrivate)),
+    m_parent_family_name(VariableBuildInfo(mesh,parent_family_name,IVariable::PPrivate)),
+    m_parent_family_depth(VariableBuildInfo(mesh,parent_family_depth_name,IVariable::PPrivate)),
+    m_child_meshes_name(VariableBuildInfo(mesh,child_meshes_name,IVariable::PPrivate)),
+    m_child_families_name(VariableBuildInfo(mesh,child_families_name,IVariable::PPrivate))
     {}
  public:
   void setUsed()
@@ -114,9 +147,17 @@ class ItemFamily::Variables
   VariableArrayInt32 m_items_data;
   //! Contient les uniqueIds() des entités de cette famille
   VariableArrayInt64 m_items_unique_id;
+  //! Contient les owner() des entités de cette famille
+  VariableArrayInt32 m_items_owner;
+  //! Contient les flags() des entités de cette famille
+  VariableArrayInt32 m_items_flags;
+  //! Contient les type() des entités de cette famille
+  VariableArrayInt16 m_items_typeid;
   VariableArrayString m_groups_name;
   VariableScalarInteger m_current_id;
-  /*! \brief Contient le sous-domaine propriétaire de l'entité.
+  /*!
+   * \brief Contient le sous-domaine propriétaire de l'entité.
+   *
    * Cette variable est redondante avec le champ owner() de ItemInternal
    * et n'a une valeur différente qu'au moment où des entités changent
    * de propriétaire. Par conséquent, il ne devrait pas être nécessaire de l'allouer
@@ -158,9 +199,6 @@ ItemFamily(IMesh* mesh,eItemKind ik,const String& name)
 , m_properties(new Properties(*mesh->properties(),name))
 , m_connectivity_mng(nullptr)
 , m_policy_mng(nullptr)
-, m_items_data(nullptr)
-, m_items_unique_id(nullptr)
-, m_internal_variables(nullptr)
 , m_default_sub_domain_owner(NULL_SUB_DOMAIN_ID)
 , m_sub_domain_id(mesh->meshPartInfo().partRank())
 , m_is_parallel(false)
@@ -248,6 +286,9 @@ build()
   {
     String var_data_name(_variableName("FamilyItemsData"));
     String var_unique_ids_name(_variableName("FamilyUniqueIds"));
+    String var_owner_name(_variableName("FamilyOwner"));
+    String var_flags_name(_variableName("FamilyFlags"));
+    String var_type_name(_variableName("FamilyType"));
     String var_count_name(_variableName("FamilyItemsShared"));
     String var_groups_name(_variableName("FamilyGroupsName"));
     String var_current_id_name(_variableName("FamilyCurrentId"));
@@ -258,7 +299,8 @@ build()
     String var_child_meshes_name(_variableName("ChildMeshesName"));
     String var_child_families_name(_variableName("ChildFamiliesName"));
     m_internal_variables = new Variables(m_mesh,name(),itemKind(),var_count_name,
-                                         var_data_name,var_unique_ids_name,var_groups_name,
+                                         var_data_name,var_unique_ids_name,var_owner_name,
+                                         var_flags_name,var_type_name,var_groups_name,
                                          var_current_id_name,var_new_owner_name,
                                          var_parent_mesh_name,var_parent_family_name,
                                          var_parent_family_depth_name,
@@ -268,8 +310,9 @@ build()
     m_items_data->reserve(1000);
     m_items_unique_id = &m_internal_variables->m_items_unique_id._internalTrueData()->_internalDeprecatedValue();
     m_items_unique_id_view = m_items_unique_id->view();
-    //m_items_unique_ids->reserve(1000);
-    //m_variables->m_current_id = 0;
+    m_items_owner = &m_internal_variables->m_items_owner._internalTrueData()->_internalDeprecatedValue();
+    m_items_flags = &m_internal_variables->m_items_flags._internalTrueData()->_internalDeprecatedValue();
+    m_items_typeid = &m_internal_variables->m_items_typeid._internalTrueData()->_internalDeprecatedValue();
   }
 
   // Pour pouvoir remettre à jour les ItemSharedInfos après relecture
@@ -932,18 +975,38 @@ prepareForDump()
   }
   m_item_need_prepare_dump = false;
   if (m_need_prepare_dump){
+    // Dans les versions d'Arcane antérieures à la 3.7, les
+    // champs owner(), flags() et typeId() des entités sont conservés
+    // dans ItemSharedInfo. Pour pouvoir faire une protection qui sera
+    // lisible avec une version ultérieure de Arcane, on sauve ces informations
+    // dans les trois variables qui seront à terme le seul endroit où ces
+    // valeurs seront disponibles.
+    ArrayView<Int32> items_flags_view = m_items_flags->view();
+    ArrayView<Int32> items_owner_view = m_items_owner->view();
+    ArrayView<Int16> items_typeid_view = m_items_typeid->view();
     m_internal_variables->m_current_id = m_current_id;
-    debug() << " SET FAMILY ID name=" << name() << " id= " << m_current_id
+    info(4) << " SET FAMILY ID name=" << name() << " id= " << m_current_id
             << " saveid=" << m_internal_variables->m_current_id();
     ItemInternalList items(m_infos.itemsInternal());
     Integer nb_item = m_infos.nbItem();
     m_internal_variables->m_items_shared_data_index.resize(nb_item);
     IntegerArrayView items_shared_data_index(m_internal_variables->m_items_shared_data_index);
-    debug() << "ItemFamily::prepareForDump(): " << m_name
+    info(4) << "ItemFamily::prepareForDump(): " << m_name
             << " count=" << nb_item << " currentid=" << m_current_id;
+    // Normalement items[i]->localId()==i pour toute les entités car on a effectué un compactage
+    if (arcaneIsCheck()){
+      for( Integer i=0; i<nb_item; ++i ){
+        ItemInternal* item = items[i];
+        if (item->localId()!=i)
+          ARCANE_FATAL("Incoherence between index ({0}) and localId() ({1})",i,item->localId());
+      }
+    }
     for( Integer i=0; i<nb_item; ++i ){
       ItemInternal* item = items[i];
       items_shared_data_index[i] = item->sharedInfo()->index();
+      items_owner_view[i] = item->owner();
+      items_flags_view[i] = item->flags();
+      items_typeid_view[i] = item->typeId();
 #if 0
 #ifdef ARCANE_DEBUG
       //if (itemKind()==IK_Particle){
@@ -1714,29 +1777,6 @@ _updateSharedInfoRemoved7(ItemInternal*)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType> inline bool
-_checkResizeArray(Array<DataType>& array,Integer new_max_index)
-{
-  Integer s = array.size();
-  if (new_max_index>=s){
-    Integer new_size = new_max_index + 1;
-    if (new_size>array.capacity()){
-      if (new_size>5000000)
-        array.reserve((Integer)(new_size * 1.2));
-      else if (new_size>500000)
-        array.reserve((Integer)(new_size * 1.5));
-      else
-        array.reserve((Integer)(new_size * 2.0));
-    }
-    array.resize(new_size);
-    return true;
-  }
-  return false;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 void ItemFamily::
 _setUniqueId(Int32 lid,Int64 uid)
 {
@@ -1765,6 +1805,9 @@ _allocateInfos(ItemInternal* item,Int64 uid,ItemSharedInfo* isi)
   //  le réalloc des m_source_incremental_item_connectivities.
   Int32 local_id = item->localId();
   _setUniqueId(local_id,uid);
+  _checkResizeArray(*m_items_owner,local_id);
+  _checkResizeArray(*m_items_flags,local_id);
+  _checkResizeArray(*m_items_typeid,local_id);
   // Il faut positionner le ItemSharedInfo avant le _allocMany
   // sinon les tests de vérification échouent.
   item->setSharedInfo(isi);
