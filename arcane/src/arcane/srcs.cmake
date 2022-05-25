@@ -80,6 +80,10 @@ set( ARCANE_SOURCES
    core/materials/MeshMaterialVariableIndexer.cc
    core/materials/ComponentItemListBuilder.h
    core/materials/ComponentItemListBuilder.cc
+   core/materials/ComponentItem.cc
+   core/materials/ComponentItem.h
+   core/materials/ComponentItemInternal.cc
+   core/materials/ComponentItemInternal.h
 
    Data.cc
    DataTypeDispatchingDataVisitor.cc

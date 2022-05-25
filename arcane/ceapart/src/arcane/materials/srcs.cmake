@@ -1,9 +1,7 @@
 set(ARCANE_SOURCES
   AllEnvData.cc
   AllEnvData.h
-  ComponentItemInternal.cc
   ComponentItemInternal.h
-  ComponentItem.cc
   ComponentItem.h
   ComponentItemListBuilder.h
   ComponentItemVector.cc

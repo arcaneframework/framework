@@ -5,42 +5,40 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ComponentItem.cc                                            (C) 2000-2013 */
+/* ComponentItemInternal.cc                                    (C) 2000-2022 */
 /*                                                                           */
-/* Entités matériau et milieux.                                              */
+/* Partie interne d'une maille matériau ou milieu.                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/TraceInfo.h"
+#include "arcane/core/materials/ComponentItemInternal.h"
 
-#include "arcane/materials/MatItem.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+#include "arcane/utils/BadCastException.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ComponentCell::
-_badConversion(Int32 level,Int32 expected_level)
+namespace Arcane::Materials
 {
-  throw FatalErrorException(A_FUNCINFO,
-                            String::format("bad level for internal component cell level={0} expected={1}",
-                                           level,expected_level));
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ComponentItemInternal ComponentItemInternal::nullComponentItemInternal;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ComponentItemInternal::
+_throwBadCast(Int32 v)
+{
+  throw BadCastException(A_FUNCINFO,String::format("Can not cast v={0} to type 'Int16'",v));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -110,7 +110,6 @@ class ARCANE_CORE_EXPORT ComponentItemLocalId
  public:
   ComponentItemLocalId() : m_local_id(-1,-1){}
   explicit ComponentItemLocalId(MatVarIndex mvi) : m_local_id(mvi){}
-  inline ComponentItemLocalId(ComponentCell item);
  public:
   MatVarIndex localId() const { return m_local_id; }
  private:
@@ -123,7 +122,7 @@ class ARCANE_CORE_EXPORT ComponentItemLocalId
  * \ingroup ArcaneMaterials
  * \brief Index d'un Item matériaux pure dans une variable.
  */
-class PureMatVarIndex
+class ARCANE_CORE_EXPORT PureMatVarIndex
 {
  public:
   explicit PureMatVarIndex(Int32 idx) : m_index(idx){}
