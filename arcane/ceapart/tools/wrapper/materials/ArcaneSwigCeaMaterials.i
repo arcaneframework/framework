@@ -56,7 +56,7 @@ ARCANE_STD_EXHANDLER
 %include arcane/core/materials/IMeshComponent.h
 %include arcane/core/materials/IMeshMaterial.h
 %include arcane/core/materials/IMeshEnvironment.h
-%include arcane/materials/IMeshMaterialMng.h
+%include arcane/core/materials/IMeshMaterialMng.h
 %include arcane/materials/CellToAllEnvCellConverter.h
 %include MeshMaterialVariable.i
 %exception;

@@ -80,9 +80,6 @@ typedef IMeshEnvironment* IMeshEnvironmentPtr;
 /*---------------------------------------------------------------------------*/
 
 //! Liste de composants multi-matériaux du maillage.
-typedef ConstArrayView<IMeshComponent*> MeshComponentList;
-
-//! Liste de composants multi-matériaux du maillage.
 typedef ConstArrayView<IMeshComponent*> MeshComponentListView;
 
 //! Liste de milieux du maillage.

@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/materials/IMeshMaterialMng.h"
+#include "arcane/core/materials/IMeshMaterialMng.h"
 
 #include "arcane/utils/Ref.h"
 #include "arcane/utils/FatalErrorException.h"

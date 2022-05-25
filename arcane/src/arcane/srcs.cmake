@@ -70,6 +70,8 @@ set( ARCANE_SOURCES
    core/materials/MatVarIndex.h
    core/materials/MatVarIndex.cc
    core/materials/IMeshMaterialVariable.h
+   core/materials/IMeshMaterialMng.cc
+   core/materials/IMeshMaterialMng.h
    core/materials/IMeshBlock.h
    core/materials/IMeshComponent.h
    core/materials/IMeshEnvironment.h

@@ -35,6 +35,7 @@ namespace Arcane::Materials
 
 class AllEnvCellVectorView;
 class ComponentCell;
+class IMeshBlock;
 class IMeshComponent;
 class IMeshMaterial;
 class IMeshEnvironment;
@@ -53,6 +54,12 @@ class EnvImpurePartItemVectorView;
 class EnvPartItemVectorView;
 
 class IMeshMaterialMng;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Liste de composants multi-matériaux du maillage.
+typedef ConstArrayView<IMeshComponent*> MeshComponentList;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
