@@ -5,30 +5,18 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MaterialGlobal.h                                            (C) 2000-2019 */
+/* MaterialsGlobal.h                                           (C) 2000-2022 */
 /*                                                                           */
 /* Déclarations générales des matériaux de Arcane.                           */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MATERIALS_MATERIALGLOBAL_H
-#define ARCANE_MATERIALS_MATERIALGLOBAL_H
+#ifndef ARCANE_MATERIALS_MATERIALSGLOBAL_H
+#define ARCANE_MATERIALS_MATERIALSGLOBAL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/UtilsTypes.h"
+#include "arcane/core/materials/MaterialsCoreGlobal.h"
 
 #include <iosfwd>
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#define MATERIALS_BEGIN_NAMESPACE  namespace Materials {
-#define MATERIALS_END_NAMESPACE    }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace Arcane
-{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -42,7 +30,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Materials
+namespace Arcane::Materials
 {
 
 /*---------------------------------------------------------------------------*/
@@ -143,51 +131,8 @@ enum class eModificationFlags
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Opération de mise à jour des milieux/matériaux.
- */
-enum class eOperation
-{
-  //! Ajoute des entités
-  Add,
-  //! Supprime des entités
-  Remove
-};
 
-//! Opérateur de sortie sur un flot
-extern "C++" std::ostream&
-operator<< (std::ostream& ostr,eOperation operation);
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Espace de définition d'une variable matériau.
- */
-enum class MatVarSpace
-{
-  // TODO: renommer Material en MaterialAndEnvironment
-  //! Variable ayant des valeurs sur les milieux et matériaux
-  MaterialAndEnvironment = 1,
-  //! Variable ayant des valeurs uniquement sur les milieux
-  Environment
-};
-
-//! Partie d'un composant
-enum class eMatPart
-{
-  Pure = 0,
-  Impure =1
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // End namespace Materials
-
-} // End namespace Arcane
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

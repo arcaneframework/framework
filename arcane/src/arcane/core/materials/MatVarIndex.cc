@@ -5,45 +5,46 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ComponentItemListBuilder.cc                                 (C) 2000-2015 */
+/* MatVarIndex.cc                                              (C) 2000-2016 */
 /*                                                                           */
-/* Classe d'aide à la construction d'une liste de ComponentItem.             */
+/* Index sur les variables matériaux.                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/materials/ComponentItemListBuilder.h"
-#include "arcane/materials/MeshMaterialVariableIndexer.h"
+#include "arcane/core/materials/MatVarIndex.h"
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+#include "arcane/utils/Iostream.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ComponentItemListBuilder::
-ComponentItemListBuilder(MeshMaterialVariableIndexer* var_indexer,
-                         Integer begin_index_in_partial)
-: m_component_index(var_indexer->index()+1)
-, m_index_in_partial(begin_index_in_partial)
-, m_indexer(var_indexer)
+namespace Arcane::Materials
 {
-  Integer reserve_size = 4000;
-  m_pure_matvar_indexes.reserve(reserve_size);
-  m_partial_matvar_indexes.reserve(reserve_size);
-  m_partial_local_ids.reserve(reserve_size);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+std::ostream&
+operator<<(std::ostream& o,const MatVarIndex& mvi)
+{
+  o << mvi.arrayIndex() << ":" << mvi.valueIndex();
+  return o;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+std::ostream&
+operator<<(std::ostream& o,const ComponentItemLocalId& mvi)
+{
+  o << mvi.localId();
+  return o;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

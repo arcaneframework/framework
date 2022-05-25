@@ -1,5 +1,7 @@
 set(CURRENT_SRC_PATH  ${Arcane_SOURCE_DIR}/src)
-set( ARCANE_SOURCES    AbstractCaseDocumentVisitor.cc
+
+set( ARCANE_SOURCES
+  AbstractCaseDocumentVisitor.cc
    AbstractCaseDocumentVisitor.h
    AbstractDataVisitor.cc
    AbstractDataVisitor.h
@@ -58,9 +60,25 @@ set( ARCANE_SOURCES    AbstractCaseDocumentVisitor.cc
    Connectivity.cc
    Connectivity.h
    ICartesianMeshGenerationInfo.h
+
    core/internal/IDataInternal.h
    core/internal/CartesianMeshGenerationInfo.h
    core/internal/CartesianMeshGenerationInfo.cc
+
+   core/materials/MaterialsCoreGlobal.h
+   core/materials/MaterialsCoreGlobal.cc
+   core/materials/MatVarIndex.h
+   core/materials/MatVarIndex.cc
+   core/materials/IMeshMaterialVariable.h
+   core/materials/IMeshBlock.h
+   core/materials/IMeshComponent.h
+   core/materials/IMeshEnvironment.h
+   core/materials/IMeshMaterial.h
+   core/materials/MeshMaterialVariableIndexer.h
+   core/materials/MeshMaterialVariableIndexer.cc
+   core/materials/ComponentItemListBuilder.h
+   core/materials/ComponentItemListBuilder.cc
+
    Data.cc
    DataTypeDispatchingDataVisitor.cc
    DataTypeDispatchingDataVisitor.h

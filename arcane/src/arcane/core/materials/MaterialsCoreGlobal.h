@@ -5,53 +5,101 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MatVarIndex.cc                                              (C) 2000-2016 */
+/* MaterialsCoreGlobal.h                                       (C) 2000-2022 */
 /*                                                                           */
-/* Index sur les variables matériaux.                                        */
+/* Déclarations générales des matériaux de Arcane.                           */
+/*---------------------------------------------------------------------------*/
+#ifndef ARCANE_MATERIALS_MATERIALSCOREGLOBAL_H
+#define ARCANE_MATERIALS_MATERIALSCOREGLOBAL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/Iostream.h"
+#include "arcane/utils/UtilsTypes.h"
 
-#include "arcane/materials/MatVarIndex.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
+#include <iosfwd>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#define MATERIALS_BEGIN_NAMESPACE  namespace Materials {
+#define MATERIALS_END_NAMESPACE    }
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-std::ostream&
-operator<<(std::ostream& o,const MatVarIndex& mvi)
+namespace Arcane::Materials
 {
-  o << mvi.arrayIndex() << ":" << mvi.valueIndex();
-  return o;
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-std::ostream&
-operator<<(std::ostream& o,const ComponentItemLocalId& mvi)
+class AllEnvCellVectorView;
+class ComponentCell;
+class IMeshComponent;
+class IMeshMaterial;
+class IMeshEnvironment;
+class MatVarIndex;
+class MeshMaterialVariableIndexer;
+class MeshMaterialInfo;
+class MatCell;
+class EnvCell;
+class MatItemVectorView;
+class EnvItemVectorView;
+class MatPurePartItemVectorView;
+class MatImpurePartItemVectorView;
+class MatPartItemVectorView;
+class EnvPurePartItemVectorView;
+class EnvImpurePartItemVectorView;
+class EnvPartItemVectorView;
+
+class IMeshMaterialMng;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Espace de définition d'une variable matériau.
+ */
+enum class MatVarSpace
 {
-  o << mvi.localId();
-  return o;
-}
+  //! Variable ayant des valeurs sur les milieux et matériaux
+  MaterialAndEnvironment = 1,
+  //! Variable ayant des valeurs uniquement sur les milieux
+  Environment
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+//! Partie d'un composant
+enum class eMatPart
+{
+  Pure = 0,
+  Impure =1
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Opération de mise à jour des milieux/matériaux.
+ */
+enum class eOperation
+{
+  //! Ajoute des entités
+  Add,
+  //! Supprime des entités
+  Remove
+};
+
+//! Opérateur de sortie sur un flot
+extern "C++" std::ostream&
+operator<< (std::ostream& ostr,eOperation operation);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace Arcane::Materials
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#endif  

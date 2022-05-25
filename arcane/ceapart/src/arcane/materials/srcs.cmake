@@ -5,7 +5,6 @@ set(ARCANE_SOURCES
   ComponentItemInternal.h
   ComponentItem.cc
   ComponentItem.h
-  ComponentItemListBuilder.cc
   ComponentItemListBuilder.h
   ComponentItemVector.cc
   ComponentItemVector.h
@@ -25,7 +24,6 @@ set(ARCANE_SOURCES
   EnvItemVector.h
   MatItemEnumerator.cc
   MatItemEnumerator.h
-  MatVarIndex.cc
   MatVarIndex.h
   MeshComponentData.cc
   MeshComponentData.h
@@ -65,7 +63,6 @@ set(ARCANE_SOURCES
   MeshMaterialVariableDependInfo.h
   MeshMaterialVariableRef.cc
   MeshMaterialVariableRef.h
-  MeshMaterialVariableIndexer.cc
   MeshMaterialVariableIndexer.h
   MeshEnvironmentVariableRef.cc
   MeshEnvironmentVariableRef.h
