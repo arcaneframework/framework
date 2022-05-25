@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshMaterialMng.h                                          (C) 2000-2019 */
+/* IMeshMaterialMng.h                                          (C) 2000-2022 */
 /*                                                                           */
 /* Interface du gestionnaire des matériaux d'un maillage.                    */
 /*---------------------------------------------------------------------------*/
@@ -23,18 +23,15 @@
 
 namespace Arcane
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 class IMesh;
 class IVariable;
 class MeshHandle;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Materials
+namespace Arcane::Materials
 {
 
 /*---------------------------------------------------------------------------*/
@@ -50,6 +47,7 @@ class IMeshMaterialModifierImpl;
 class IMeshComponent;
 class IMeshMaterialVariable;
 class IMeshMaterialVariableSynchronizer;
+class MeshMaterialMngFactory;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -81,9 +79,11 @@ class IMeshMaterialVariableSynchronizer;
  */
 class ARCANE_MATERIALS_EXPORT IMeshMaterialMng
 {
+  friend class MeshMaterialMngFactory;
+
  public:
 
-  virtual ~IMeshMaterialMng(){}
+ virtual ~IMeshMaterialMng() = default;
 
  public:
 
@@ -480,13 +480,27 @@ class ARCANE_MATERIALS_EXPORT IMeshMaterialMng
 
   //! Vrai si on est en train de faire un échange de maillage avec gestion des matériaux.
   virtual bool isInMeshMaterialExchange() const =0;
+
+ public:
+
+  //!\internal
+  class IFactory
+  {
+   public:
+    virtual ~IFactory() = default;
+    virtual Ref<IMeshMaterialMng> getTrueReference(const MeshHandle& mesh_handle,bool is_create) =0;
+  };
+
+ private:
+
+  //!\internal
+  static void _internalSetFactory(IFactory* f);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Materials
-} // End namespace Arcane
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

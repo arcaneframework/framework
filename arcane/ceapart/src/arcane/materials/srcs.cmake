@@ -129,6 +129,7 @@ set(ARCANE_SOURCES
   IMeshEnvironment.h
   IMeshMaterialVariableSynchronizer.h
   IMeshMaterialMng.h
+  IMeshMaterialMng.cc
   IMeshMaterialVariable.h
   IMeshMaterialModifierImpl.h
   IMeshMaterialVariableComputeFunction.h

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialMng.cc                                          (C) 2000-2016 */
+/* MeshMaterialMng.cc                                          (C) 2000-2022 */
 /*                                                                           */
 /* Gestionnaire des matériaux et milieux d'un maillage.                      */
 /*---------------------------------------------------------------------------*/
@@ -60,13 +60,15 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" IMeshMaterialMng*
+namespace
+{
+IMeshMaterialMng*
 arcaneCreateMeshMaterialMng(const MeshHandle& mesh_handle,const String& name)
 {
   MeshMaterialMng* mmm = new MeshMaterialMng(mesh_handle,name);
@@ -74,6 +76,7 @@ arcaneCreateMeshMaterialMng(const MeshHandle& mesh_handle,const String& name)
   //          << " ref=" << mesh_handle.reference() << " this=" << mmm << "\n";
   mmm->build();
   return mmm;
+}
 }
 
 /*---------------------------------------------------------------------------*/
@@ -927,8 +930,31 @@ view(Int32ConstArrayView local_ids)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Ref<IMeshMaterialMng> IMeshMaterialMng::
-getTrueReference(const MeshHandle& mesh_handle,bool create)
+class MeshMaterialMngFactory
+: public IMeshMaterialMng::IFactory
+{
+ public:
+  MeshMaterialMngFactory()
+  {
+    IMeshMaterialMng::_internalSetFactory(this);
+  }
+  ~MeshMaterialMngFactory()
+  {
+    IMeshMaterialMng::_internalSetFactory(nullptr);
+  }
+ public:
+  Ref<IMeshMaterialMng> getTrueReference(const MeshHandle& mesh_handle,bool is_create) override;
+ public:
+  static MeshMaterialMngFactory m_mesh_material_mng_factory;
+};
+
+MeshMaterialMngFactory MeshMaterialMngFactory::m_mesh_material_mng_factory{};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<IMeshMaterialMng> MeshMaterialMngFactory::
+getTrueReference(const MeshHandle& mesh_handle,bool is_create)
 {
   //TODO: faire lock pour multi-thread
   typedef AutoDestroyUserData<Ref<IMeshMaterialMng>> UserDataType;
@@ -938,7 +964,7 @@ getTrueReference(const MeshHandle& mesh_handle,bool create)
 
   IUserData* ud = udlist->data(name,true);
   if (!ud){
-    if (!create)
+    if (!is_create)
       return {};
     IMeshMaterialMng* mm = arcaneCreateMeshMaterialMng(mesh_handle,"StdMat");
     Ref<IMeshMaterialMng> mm_ref = makeRef(mm);
@@ -949,26 +975,6 @@ getTrueReference(const MeshHandle& mesh_handle,bool create)
   if (!adud)
     ARCANE_FATAL("Can not cast to IMeshMaterialMng*");
   return *(adud->data());
-}
-
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-IMeshMaterialMng* IMeshMaterialMng::
-getReference(const MeshHandle& mesh_handle,bool create)
-{
-  return getTrueReference(mesh_handle,create).get();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-IMeshMaterialMng* IMeshMaterialMng::
-getReference(IMesh* mesh,bool is_create)
-{
-  ARCANE_CHECK_POINTER(mesh);
-  return getReference(mesh->handle(),is_create);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1136,8 +1142,7 @@ recreateFromDump()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
