@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Interface d'un composant (matériau ou milieu) d'un maillage.              */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MATERIALS_IMESHCOMPONENT_H
-#define ARCANE_MATERIALS_IMESHCOMPONENT_H
+#ifndef ARCANE_MATERIALS_CORE_IMESHCOMPONENT_H
+#define ARCANE_MATERIALS_CORE_IMESHCOMPONENT_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -22,19 +22,6 @@
 
 namespace Arcane::Materials
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class IMeshMaterialMng;
-class MeshMaterialVariableIndexer;
-class ComponentItemInternal;
-class ComponentCell;
-class ComponentItemVectorView;
-class AllEnvCell;
-class ComponentPartItemVectorView;
-class ComponentPurePartItemVectorView;
-class ComponentImpurePartItemVectorView;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

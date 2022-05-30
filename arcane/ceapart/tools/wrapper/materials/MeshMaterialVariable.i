@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-%include arcane/materials/IMeshMaterialVariable.h
+%include arcane/core/materials/IMeshMaterialVariable.h
 %include arcane/materials/MeshMaterialVariableRef.h
 
 /*---------------------------------------------------------------------------*/

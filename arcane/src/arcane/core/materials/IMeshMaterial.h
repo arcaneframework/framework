@@ -24,17 +24,6 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-/*class IMeshMaterialMng;
-class MeshMaterialInfo;
-class IMeshEnvironment;
-class MeshMaterialVariableIndexer;
-class MatItemVectorView;
-class MatCell;
-class AllEnvCell;*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
  * \ingroup ArcaneMaterials
  * \brief Interface d'un matériau utilisateur.

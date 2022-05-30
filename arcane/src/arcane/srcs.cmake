@@ -65,8 +65,10 @@ set( ARCANE_SOURCES
    core/internal/CartesianMeshGenerationInfo.h
    core/internal/CartesianMeshGenerationInfo.cc
 
+   core/materials/CellToAllEnvCellConverter.h
    core/materials/MaterialsCoreGlobal.h
    core/materials/MaterialsCoreGlobal.cc
+   core/materials/MatItem.h
    core/materials/MatVarIndex.h
    core/materials/MatVarIndex.cc
    core/materials/IMeshMaterialVariable.h

@@ -38,6 +38,7 @@ class ComponentCell;
 class IMeshBlock;
 class IMeshComponent;
 class IMeshMaterial;
+class IMeshMaterialMng;
 class IMeshEnvironment;
 class MatVarIndex;
 class MeshMaterialVariableIndexer;
@@ -52,8 +53,12 @@ class MatPartItemVectorView;
 class EnvPurePartItemVectorView;
 class EnvImpurePartItemVectorView;
 class EnvPartItemVectorView;
-
-class IMeshMaterialMng;
+class ComponentItemInternal;
+class AllEnvCell;
+class ComponentItemVectorView;
+class ComponentPartItemVectorView;
+class ComponentPurePartItemVectorView;
+class ComponentImpurePartItemVectorView;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
