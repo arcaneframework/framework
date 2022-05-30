@@ -17,8 +17,10 @@
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/Array.h"
 
-#include "arcane/materials/IMeshMaterialVariable.h"
-#include "arcane/materials/MatVarIndex.h"
+#include "arcane/core/materials/IMeshMaterialVariable.h"
+#include "arcane/core/materials/MatVarIndex.h"
+
+#include "arcane/materials/MaterialsGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

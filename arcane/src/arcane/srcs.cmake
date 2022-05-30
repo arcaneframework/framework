@@ -86,6 +86,10 @@ set( ARCANE_SOURCES
    core/materials/ComponentItem.h
    core/materials/ComponentItemInternal.cc
    core/materials/ComponentItemInternal.h
+   core/materials/ComponentItemVectorView.cc
+   core/materials/ComponentItemVectorView.h
+   core/materials/ComponentPartItemVectorView.cc
+   core/materials/ComponentPartItemVectorView.h
 
    Data.cc
    DataTypeDispatchingDataVisitor.cc

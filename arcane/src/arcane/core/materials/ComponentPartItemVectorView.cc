@@ -5,20 +5,20 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ComponentPartItemVectorView.cc                              (C) 2000-2017 */
+/* ComponentPartItemVectorView.cc                              (C) 2000-2022 */
 /*                                                                           */
 /* Vue sur un vecteur sur une partie des entités composants.                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/materials/ComponentPartItemVectorView.h"
-#include "arcane/materials/IMeshMaterial.h"
+#include "arcane/core/materials/ComponentPartItemVectorView.h"
+#include "arcane/core/materials/IMeshMaterial.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -43,8 +43,7 @@ EnvPartItemVectorView(IMeshEnvironment* env,const ComponentPartItemVectorView& v
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -19,7 +19,6 @@ ARCANE_SWIG_SPECIALIZE_CONSTARRAYVIEW(Arcane::Materials::IMeshEnvironmentPtr,Arc
   }
 %}
 
-
 %typemap(cscode) Arcane::Materials::IMeshEnvironment
 %{
   public new ComponentItemEnumerator<EnvItem> GetEnumerator()
@@ -39,8 +38,8 @@ ARCANE_SWIG_SPECIALIZE_CONSTARRAYVIEW(Arcane::Materials::IMeshEnvironmentPtr,Arc
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-%include arcane/materials/ComponentPartItemVectorView.h
-%include arcane/materials/ComponentItemVectorView.h
+%include arcane/core/materials/ComponentPartItemVectorView.h
+%include arcane/core/materials/ComponentItemVectorView.h
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

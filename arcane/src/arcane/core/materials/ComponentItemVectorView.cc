@@ -5,27 +5,25 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ComponentItemVectorView.cc                                  (C) 2000-2015 */
+/* ComponentItemVectorView.cc                                  (C) 2000-2022 */
 /*                                                                           */
 /* Vue sur un vecteur sur des entités composants.                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/core/materials/ComponentItemVectorView.h"
+
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/ArgumentException.h"
 
-#include "arcane/materials/ComponentItemVectorView.h"
-#include "arcane/materials/IMeshMaterial.h"
-#include "arcane/materials/IMeshEnvironment.h"
+#include "arcane/core/materials/IMeshMaterial.h"
+#include "arcane/core/materials/IMeshEnvironment.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -63,8 +61,7 @@ _subView(Integer begin,Integer size)
 
   if (begin>=nb_total){
     // Indice de début supérieur au nombre d'éléments.
-    throw ArgumentException(A_FUNCINFO,
-                            String::format("Bad 'begin' value '{0}' total={1}",begin,nb_total));
+    ARCANE_THROW(ArgumentException,"Bad 'begin' value '{0}' total={1}",begin,nb_total);
   }
 
   ConstArrayView<ComponentItemInternal*> mn = m_items_internal_main_view.subView(begin,size);
@@ -94,8 +91,7 @@ _subView(Integer begin,Integer size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

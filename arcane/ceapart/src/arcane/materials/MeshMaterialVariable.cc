@@ -5,11 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariable.cc                                     (C) 2000-2016 */
+/* MeshMaterialVariable.cc                                     (C) 2000-2022 */
 /*                                                                           */
 /* Variable sur un matériau du maillage.                                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#include "arcane/materials/MeshMaterialVariable.h"
 
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/TraceInfo.h"
@@ -22,23 +24,20 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ScopedPtr.h"
 
-#include "arcane/materials/MeshMaterialVariable.h"
-#include "arcane/materials/MeshMaterialVariablePrivate.h"
+#include "arcane/core/materials/IMeshMaterialMng.h"
+#include "arcane/core/materials/IMeshMaterial.h"
+#include "arcane/core/materials/IMeshEnvironment.h"
+#include "arcane/core/materials/ComponentItemVectorView.h"
 
+#include "arcane/materials/MeshMaterialVariablePrivate.h"
 #include "arcane/materials/MeshMaterialVariableIndexer.h"
 #include "arcane/materials/MaterialVariableBuildInfo.h"
-#include "arcane/materials/IMeshMaterialMng.h"
-#include "arcane/materials/IMeshMaterial.h"
-#include "arcane/materials/IMeshEnvironment.h"
 #include "arcane/materials/MatItemEnumerator.h"
 #include "arcane/materials/MeshMaterialVariableRef.h"
 #include "arcane/materials/MeshMaterialVariableDependInfo.h"
 #include "arcane/materials/IMeshMaterialVariableComputeFunction.h"
 #include "arcane/materials/IMeshMaterialVariableSynchronizer.h"
 #include "arcane/materials/MeshMaterialVariableSynchronizerList.h"
-#include "arcane/materials/ComponentItemVectorView.h"
-
-//#include "arcane/datatype/DataTypeTraits.h"
 
 #include "arcane/Variable.h"
 #include "arcane/VariableDependInfo.h"
@@ -49,17 +48,13 @@
 #include "arcane/IParallelMng.h"
 #include "arcane/ItemPrinter.h"
 #include "arcane/Parallel.h"
-
 #include "arcane/IData.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -67,7 +62,7 @@ MATERIALS_BEGIN_NAMESPACE
 MeshMaterialVariablePrivate::
 MeshMaterialVariablePrivate(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
 : m_nb_reference(0)
-, m_first_reference(0)
+, m_first_reference(nullptr)
 , m_name(v.name())
 , m_material_mng(v.materialMng())
 , m_keep_on_change(true)
@@ -174,7 +169,7 @@ removeVariableRef(MeshMaterialVariableRef* ref)
   // En cas d'erreur, on ne peut rien afficher car il est possible que m_p ait
   // déjà été détruit.
   if (nb_ref<0)
-    throw FatalErrorException(A_FUNCINFO,"Invalid reference number for variable");
+    ARCANE_FATAL("Invalid reference number for variable");
 
   // Lorsqu'il n'y a plus de références sur cette variable, le signale au
   // gestionnaire de variable et se détruit
@@ -283,8 +278,7 @@ update(IMeshMaterial* mat)
       cf->execute(mat);
     }
     else{
-      String s = "no compute function for variable " + name();
-      throw FatalErrorException(A_FUNCINFO,s);
+      ARCANE_FATAL("no compute function for variable '{0}'",name());
     }
   }
 }
@@ -389,14 +383,7 @@ space() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariableRef.cc                                  (C) 2000-2016 */
+/* MeshMaterialVariableRef.cc                                  (C) 2000-2022 */
 /*                                                                           */
 /* Référence à une variable sur un matériau du maillage.                     */
 /*---------------------------------------------------------------------------*/
@@ -20,32 +20,29 @@
 
 #include "arcane/MeshVariableScalarRef.h"
 #include "arcane/VariableBuildInfo.h"
-
 #include "arcane/ArcaneException.h"
 
+#include "arcane/core/materials/IMeshMaterialMng.h"
+#include "arcane/core/materials/IMeshMaterial.h"
+
 #include "arcane/materials/MeshMaterialVariableRef.h"
-#include "arcane/materials/IMeshMaterialMng.h"
-#include "arcane/materials/IMeshMaterial.h"
 #include "arcane/materials/MeshMaterialVariable.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 MeshMaterialVariableRef::
 MeshMaterialVariableRef()
-: m_material_variable(0)
-, m_previous_reference(0)
-, m_next_reference(0)
-, m_global_variable(0)
+: m_material_variable(nullptr)
+, m_previous_reference(nullptr)
+, m_next_reference(nullptr)
+, m_global_variable(nullptr)
 , m_is_registered(false)
 {
 }
@@ -136,8 +133,7 @@ setNextReference(MeshMaterialVariableRef* v)
 void MeshMaterialVariableRef::
 _throwInvalid() const
 {
-  String msg("Utilisation d'une référence de variable non initialisée");
-  throw InternalErrorException(A_FUNCINFO,msg);
+  ARCANE_THROW(InternalErrorException,"Trying to use unitialized variable reference");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -525,7 +521,7 @@ globalVariable()
 {
   GlobalVariableRefType* rt = m_private_part->globalVariableReference();
   if (!rt)
-    throw FatalErrorException(A_FUNCINFO,"null global variable");
+    ARCANE_FATAL("null global variable");
   return *rt;
 }
 
@@ -538,7 +534,7 @@ globalVariable() const
 {
   GlobalVariableRefType* rt = m_private_part->globalVariableReference();
   if (!rt)
-    throw FatalErrorException(A_FUNCINFO,"null global variable");
+    ARCANE_FATAL("null global variable");
   return *rt;
 }
 
@@ -642,7 +638,7 @@ globalVariable()
 {
   GlobalVariableRefType* rt = m_private_part->globalVariableReference();
   if (!rt)
-    throw FatalErrorException(A_FUNCINFO,"null global variable");
+    ARCANE_FATAL("null global variable");
   return *rt;
 }
 
@@ -655,7 +651,7 @@ globalVariable() const
 {
   GlobalVariableRefType* rt = m_private_part->globalVariableReference();
   if (!rt)
-    throw FatalErrorException(A_FUNCINFO,"null global variable");
+    ARCANE_FATAL("null global variable");
   return *rt;
 }
 
@@ -701,8 +697,7 @@ template class CellMaterialVariableArrayRef<Real3x3>;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

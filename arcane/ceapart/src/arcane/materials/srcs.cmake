@@ -6,9 +6,7 @@ set(ARCANE_SOURCES
   ComponentItemListBuilder.h
   ComponentItemVector.cc
   ComponentItemVector.h
-  ComponentPartItemVectorView.cc
   ComponentPartItemVectorView.h
-  ComponentItemVectorView.cc
   ComponentItemVectorView.h
   ComponentSimd.cc
   ComponentSimd.h
