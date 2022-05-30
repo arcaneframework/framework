@@ -75,7 +75,10 @@ class ARCANE_CORE_EXPORT ItemPairEnumerator
     return static_cast<Int32>(m_indexes[m_current + 1] - m_indexes[m_current]);
   }
 
- protected:
+  //! Conversion vers un ItemLocalIdT<ItemType>
+  operator ItemLocalId () const { return ItemLocalId{ itemLocalId() }; }
+
+  protected:
   Int32 m_current;
   Int32 m_end;
   Int64ConstArrayView m_indexes;
@@ -106,6 +109,8 @@ class ItemPairEnumeratorSubT
   {
     return ItemType(m_items_internal.data(), m_items_local_id[m_current]);
   }
+  //! Conversion vers un ItemLocalIdT<ItemType>
+  operator ItemLocalIdT<ItemType> () const { return ItemLocalIdT<ItemType>{ this->itemLocalId() }; }
 };
 
 /*---------------------------------------------------------------------------*/

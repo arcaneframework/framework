@@ -88,6 +88,7 @@ class ARCANE_CORE_EXPORT Item
     Index() : m_local_id(NULL_ITEM_LOCAL_ID){}
     explicit Index(Int32 id) : m_local_id(id){}
     Index(Item item) : m_local_id(item.localId()){}
+    operator ItemLocalId() const { return ItemLocalId{m_local_id}; }
    public:
     Int32 localId() const { return m_local_id; }
    private:
@@ -391,6 +392,7 @@ class ARCANE_CORE_EXPORT Node
    public:
     explicit Index(Int32 id) : Base(id){}
     Index(Node item) : Base(item){}
+    operator NodeLocalId() const { return NodeLocalId{localId()}; }
   };
  public:
   //! Type du localId()
@@ -600,6 +602,7 @@ class ARCANE_CORE_EXPORT Edge
    public:
     explicit Index(Int32 id) : Base(id){}
     Index(Edge item) : Base(item){}
+    operator EdgeLocalId() const { return EdgeLocalId{localId()}; }
   };
  public:
   //! Type du localId()
@@ -707,6 +710,7 @@ class ARCANE_CORE_EXPORT Face
    public:
     explicit Index(Int32 id) : Base(id){}
     Index(Face item) : Base(item){}
+    operator FaceLocalId() const { return FaceLocalId{localId()}; }
   };
 
  public:
@@ -927,6 +931,7 @@ class ARCANE_CORE_EXPORT Cell
    public:
     explicit Index(Int32 id) : Base(id){}
     Index(Cell item) : Base(item){}
+    operator CellLocalId() const { return CellLocalId{localId()}; }
   };
  public:
   //! Type du localId()
@@ -1322,13 +1327,17 @@ toDoF() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ItemLocalId::ItemLocalId(Item item) : m_local_id(item.localId()){}
-NodeLocalId::NodeLocalId(Node item) : ItemLocalId(item.localId()){}
-EdgeLocalId::EdgeLocalId(Edge item) : ItemLocalId(item.localId()){}
-FaceLocalId::FaceLocalId(Face item) : ItemLocalId(item.localId()){}
-CellLocalId::CellLocalId(Cell item) : ItemLocalId(item.localId()){}
-ParticleLocalId::ParticleLocalId(Particle item) : ItemLocalId(item.localId()){}
-DoFLocalId::DoFLocalId(DoF item) : ItemLocalId(item.localId()){}
+inline ItemLocalId::
+ItemLocalId(Item item)
+: m_local_id(item.localId())
+{
+}
+
+template<typename ItemType> inline ItemLocalIdT<ItemType>::
+ItemLocalIdT(ItemType item)
+: ItemLocalId(item.localId())
+{
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

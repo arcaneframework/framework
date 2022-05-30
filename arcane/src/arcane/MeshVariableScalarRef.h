@@ -34,16 +34,16 @@ namespace Arcane
 template<typename DataTypeT>
 class ItemNumericOperation
 {
-public:
+ public:
   typedef ItemVariableScalarRefT<DataTypeT> VarType;
-public:
-  static void add  (VarType&,const  VarType&,const ItemGroup&) { _notSupported(); }
-  static void sub  (VarType&,const  VarType&,const ItemGroup&) { _notSupported(); }
-  static void mult (VarType&,const  VarType&,const ItemGroup&) { _notSupported(); }
-  static void mult (VarType&,const DataTypeT&,const ItemGroup&) { _notSupported(); }
+ public:
+  static void add(VarType&,const  VarType&,const ItemGroup&) { _notSupported(); }
+  static void sub(VarType&,const  VarType&,const ItemGroup&) { _notSupported(); }
+  static void mult(VarType&,const  VarType&,const ItemGroup&) { _notSupported(); }
+  static void mult(VarType&,const DataTypeT&,const ItemGroup&) { _notSupported(); }
   static void power(VarType&,const DataTypeT&,const ItemGroup&) { _notSupported(); }
   static void _notSupported()
-  { throw FatalErrorException("ItemNumeraticOperation: operation not supported"); }
+  { ARCANE_FATAL("ItemNumeraticOperation: operation not supported"); }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -162,53 +162,17 @@ class ItemVariableScalarRefT
 
  public:
 
-  const DataTypeT& operator[](const Item& i) const
-  {
-    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND(i);
-    return this->_value(i.localId());
-  }
+  //! Valeur non modifiable de l'entité \a item
+  const DataType& operator[](ItemLocalId item) const { return this->_value(item.localId()); }
 
-  DataTypeReturnReference operator[](const Item& i)
-  {
-    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND(i);
-    return this->_value(i.localId());
-  }
+  //! Valeur modifiable de l'entité \a item
+  DataTypeReturnReference operator[](ItemLocalId item) { return this->_value(item.localId()); }
 
-  const DataTypeT& operator[](const ItemGroupRangeIteratorT<Item>& i) const
-  {
-    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND(i);
-    return this->_value(i.itemLocalId());
-  }
+  //! Valeur non modifiable de l'entité \a item
+  const DataType& operator()(ItemLocalId item) const { return this->_value(item.localId()); }
 
-  DataTypeReturnReference operator[](const ItemGroupRangeIterator& i)
-  {
-    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND(i);
-    return this->_value(i.itemLocalId());
-  }
-
-  const DataTypeT& operator[](const ItemEnumerator& i) const
-  {
-    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND((*i));
-    return this->_value(i.itemLocalId());
-  }
-
-  DataTypeReturnReference operator[](const ItemEnumerator& i)
-  {
-    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND((*i));
-    return this->_value(i.itemLocalId());
-  }
-
-  const DataTypeT& operator[](const ItemPairEnumerator& i) const
-  {
-    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND((*i));
-    return this->_value(i.itemLocalId());
-  }
-
-  DataTypeReturnReference operator[](const ItemPairEnumerator& i)
-  {
-    ARCANE_CHECK_VALID_ITEM_AND_GROUP_KIND((*i));
-    return this->_value(i.itemLocalId());
-  }
+  //! Valeur modifiable de l'entité \a item
+  DataTypeReturnReference operator()(ItemLocalId item) { return this->_value(item.localId()); }
 
  public:
 
@@ -226,7 +190,7 @@ template<typename ItemTypeT,typename DataTypeT>
 class MeshVariableScalarRefT
 : public ItemVariableScalarRefT<DataTypeT>
 {
-public:
+ public:
   
   typedef DataTypeT DataType;
   typedef ItemTypeT ItemType;
@@ -234,7 +198,7 @@ public:
   typedef const DataTypeT& ConstReturnReferenceType;
   typedef DataTypeT& ReturnReferenceType;
  
-protected:
+ protected:
 
   typedef typename ItemType::Index ItemIndexType;
   typedef typename ItemType::LocalIdType ItemLocalIdType;
@@ -244,7 +208,7 @@ protected:
   typedef MeshVariableScalarRefT<ItemType,DataTypeT> ThatClass;
   typedef typename BaseClass::DataTypeReturnReference DataTypeReturnReference;
 
-public:
+ public:
 
   //! Construit une référence à la variable spécifiée dans \a vb
   ARCANE_CORE_EXPORT MeshVariableScalarRefT(const VariableBuildInfo& vb);
@@ -259,9 +223,9 @@ public:
   ThatClass& operator=(const ThatClass& rhs) = delete;
 
 #ifdef ARCANE_DOTNET
-public:
+ public:
 #else
-protected:
+ protected:
 #endif
 
   //! Constructeur vide
@@ -284,75 +248,31 @@ protected:
 
  public:
 
-  const DataTypeT& operator[](const ItemType& i) const
+  //! Valeur non modifiable de l'entité \a item
+  const DataTypeT& operator[](ItemLocalIdType i) const { return this->_value(i.localId()); }
+
+  //! Valeur modifiable de l'entité \a item
+  DataTypeReturnReference operator[](ItemLocalIdType i) { return this->_value(i.localId()); }
+
+  //! Valeur non modifiable de l'entité \a item
+  const DataTypeT& operator()(ItemLocalIdType i) const { return this->_value(i.localId()); }
+
+  //! Valeur modifiable de l'entité \a item
+  DataTypeReturnReference operator()(ItemLocalIdType i) { return this->_value(i.localId()); }
+
+  //! Valeur modifiable de l'entité \a item
+  DataTypeT& getReference(ItemLocalIdType item)
   {
-    return this->_value(i.localId());
-  }
-  DataTypeReturnReference operator[](const ItemType& i)
-  {
-    return this->_value(i.localId());
-  }
-  DataTypeT& getReference(const ItemType& i)
-  {
-    return this->_value(i.localId());
-  }
-  const DataTypeT& operator[](const ItemGroupRangeIteratorT<ItemType>& i) const
-  {
-    return this->_value(i.itemLocalId());
-  }
-  DataTypeReturnReference operator[](const ItemGroupRangeIteratorT<ItemType>& i)
-  {
-    return this->_value(i.itemLocalId());
-  }
-  const DataTypeT& operator[](const ItemEnumeratorT<ItemType>& i) const
-  {
-    return this->_value(i.itemLocalId());
-  }
-  DataTypeReturnReference operator[](const ItemEnumeratorT<ItemType>& i)
-  {
-    return this->_value(i.itemLocalId());
+    return this->_value(item.localId());
   }
 
-  const DataTypeT& operator[](const ItemPairEnumeratorSubT<ItemType>& i) const
-  {
-    return this->_value(i.itemLocalId());
-  }
-  DataTypeReturnReference operator[](const ItemPairEnumeratorSubT<ItemType>& i)
-  {
-    return this->_value(i.itemLocalId());
-  }
-
-  const DataTypeT& item(const ItemGroupRangeIteratorT<ItemType>& i) const
-  {
-    return this->_value(i.index());
-  }
-  void setItem(const ItemGroupRangeIteratorT<ItemType>& i,const DataTypeT& v)
-  {
-    this->_value(i.index()) = v;
-  }
-  const DataTypeT& item(const ItemType& i) const
+  const DataTypeT& item(ItemLocalIdType i) const
   {
     return this->_value(i.localId());
   }
-  void setItem(const ItemType& i,const DataTypeT& v)
+  void setItem(ItemLocalIdType i,const DataTypeT& v)
   {
     this->_value(i.localId()) = v;
-  }
-  const DataTypeT& item(const ItemEnumeratorT<ItemType>& i) const
-  {
-    return this->_value(i.index());
-  }
-  void setItem(const ItemEnumeratorT<ItemType>& i,const DataTypeT& v)
-  {
-    this->_value(i.index()) = v;
-  }
-  const DataTypeT& item(const ItemPairEnumeratorSubT<ItemType>& i) const
-  {
-    return this->_value(i.index());
-  }
-  void setItem(const ItemPairEnumeratorSubT<ItemType>& i,const DataTypeT& v)
-  {
-    this->_value(i.index()) = v;
   }
 #ifdef ARCANE_DOTNET_WRAPPER
   const DataTypeT& item(Int32 i) const
@@ -364,24 +284,6 @@ protected:
     this->_value(i) = v;
   }
 #endif
-
-  const DataType& operator[](ItemIndexType i) const
-  {
-    return this->_value(i.localId());
-  }
-  DataTypeReturnReference operator[](ItemIndexType i)
-  {
-    return this->_value(i.localId());
-  }
-
-  const DataType& operator[](ItemLocalIdType i) const
-  {
-    return this->_value(i.localId());
-  }
-  DataTypeReturnReference operator[](ItemLocalIdType i)
-  {
-    return this->_value(i.localId());
-  }
 
  public:
 

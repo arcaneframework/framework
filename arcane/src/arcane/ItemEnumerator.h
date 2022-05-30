@@ -107,12 +107,6 @@ class ItemEnumerator
 
   constexpr ItemLocalId asItemLocalId() const { return ItemLocalId{m_local_ids[m_index]}; }
 
-  //! Conversion vers un 'ItemLocalId'
-  constexpr operator ItemLocalId() const
-  {
-    return ItemLocalId(m_local_ids[m_index]);
-  }
-
   static ItemEnumerator fromItemEnumerator(const ItemEnumerator& rhs)
   {
     return ItemEnumerator(rhs);
@@ -171,11 +165,6 @@ class ItemEnumeratorT
 
   constexpr LocalIdType asItemLocalId() const { return LocalIdType{m_local_ids[m_index]}; }
 
-  operator LocalIdType() const
-  {
-    return LocalIdType(m_local_ids[m_index]);
-  }
-
   static ItemEnumeratorT<ItemType> fromItemEnumerator(const ItemEnumerator& rhs)
   {
     return ItemEnumeratorT<ItemType>(rhs,true);
@@ -201,6 +190,35 @@ enumerator() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+inline ItemLocalId::
+ItemLocalId(ItemEnumerator enumerator)
+: m_local_id(enumerator.asItemLocalId())
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+// TODO: ajouter vérification du bon type
+template<typename ItemType> inline ItemLocalIdT<ItemType>::
+ItemLocalIdT(ItemEnumerator enumerator)
+: ItemLocalId(enumerator.asItemLocalId())
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename ItemType> inline ItemLocalIdT<ItemType>::
+ItemLocalIdT(ItemEnumeratorT<ItemType> enumerator)
+:
+ItemLocalId(enumerator.asItemLocalId())
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace
 
 /*---------------------------------------------------------------------------*/
@@ -208,7 +226,6 @@ enumerator() const
 
 #define ARCANE_CHECK_ENUMERATOR(enumerator,testgroup)                   \
   ARCANE_ASSERT(((enumerator).group()==(testgroup).internal()),("Invalid access on partial data using enumerator not associated to underlying group %s",testgroup.name().localstr()))
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

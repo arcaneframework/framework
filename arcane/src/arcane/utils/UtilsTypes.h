@@ -55,7 +55,9 @@ using Arccore::StringImpl;
 using Arccore::Span;
 using Arccore::Span2;
 using Arccore::SmallSpan;
+using Arccore::SmallSpan2;
 using Arccore::SpanImpl;
+using Arccore::Span2Impl;
 using Arccore::eBasicDataType;
 
 using Arccore::TraceInfo;

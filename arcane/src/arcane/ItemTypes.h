@@ -50,11 +50,13 @@ class IPrimaryMesh;
 class IItemFamily;
 
 class ItemLocalId;
-class NodeLocalId;
-class CellLocalId;
-class EdgeLocalId;
-class FaceLocalId;
-class ParticleLocalId;
+template<typename T> class ItemLocalIdT;
+using NodeLocalId = ItemLocalIdT<Node>;
+using EdgeLocalId = ItemLocalIdT<Edge>;
+using FaceLocalId = ItemLocalIdT<Face>;
+using CellLocalId = ItemLocalIdT<Cell>;
+using ParticleLocalId = ItemLocalIdT<Particle>;
+using DoFLocalId = ItemLocalIdT<DoF>;
 class IndexedItemConnectivityViewBase;
 class IndexedItemConnectivityAccessor;
 
@@ -205,6 +207,11 @@ typedef ItemEnumeratorT<Cell> CellEnumerator;
  */
 typedef ItemEnumeratorT<Particle> ParticleEnumerator;
 
+/*!
+ * \ingroup Mesh
+ * \brief Enumérateurs sur des DoFs.
+ */
+typedef ItemEnumeratorT<DoF> DoFEnumerator;
 
 /*!
  * \ingroup Mesh
