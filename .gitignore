@@ -58,3 +58,5 @@ Debug*
 .vs
 /build
 /out
+
+CMakeUserPresets.json
