@@ -23,7 +23,6 @@ set(ARCANE_SOURCES
   MatVarIndex.h
   MeshComponentData.cc
   MeshComponentData.h
-  MeshComponentPartData.cc
   MeshComponentPartData.h
   MeshMaterialExchangeMng.cc
   MeshMaterialExchangeMng.h

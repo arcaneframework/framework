@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MatItemEnumerator.h                                         (C) 2000-2016 */
+/* MatItemEnumerator.h                                         (C) 2000-2022 */
 /*                                                                           */
 /* Enumérateurs sur les mailles materiaux.                                   */
 /*---------------------------------------------------------------------------*/
@@ -23,14 +23,9 @@
 
 #include "arcane/EnumeratorTraceWrapper.h"
 
-#include "arcane/materials/MatItem.h"
-#include "arcane/materials/MeshMaterialVariableIndexer.h"
+#include "arcane/core/materials/MatItem.h"
+#include "arcane/core/materials/MeshMaterialVariableIndexer.h"
 #include "arcane/materials/IEnumeratorTracer.h"
-
-// Laisse ces 2 includes pour des raisons de compatibilité
-// mais il faudrait les supprimer
-#include "arcane/materials/IMeshMaterialMng.h"
-#include "arcane/materials/IMeshBlock.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -44,8 +39,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -686,8 +681,7 @@ class ARCANE_MATERIALS_EXPORT EnvEnumerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

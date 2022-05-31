@@ -37,7 +37,6 @@
 #include "arcane/materials/MeshMaterialVariableDependInfo.h"
 #include "arcane/materials/IMeshMaterialVariableComputeFunction.h"
 #include "arcane/materials/IMeshMaterialVariableSynchronizer.h"
-#include "arcane/materials/MeshMaterialVariableSynchronizerList.h"
 
 #include "arcane/Variable.h"
 #include "arcane/VariableDependInfo.h"

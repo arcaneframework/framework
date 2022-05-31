@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Déclarations générales des matériaux de Arcane.                           */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MATERIALS_MATERIALSCOREGLOBAL_H
-#define ARCANE_MATERIALS_MATERIALSCOREGLOBAL_H
+#ifndef ARCANE_CORE_MATERIALS_MATERIALSCOREGLOBAL_H
+#define ARCANE_CORE_MATERIALS_MATERIALSCOREGLOBAL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -65,6 +65,13 @@ class ComponentImpurePartItemVectorView;
 
 //! Liste de composants multi-matériaux du maillage.
 typedef ConstArrayView<IMeshComponent*> MeshComponentList;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+static const Int32 LEVEL_MATERIAL = 1;
+static const Int32 LEVEL_ENVIRONMENT = 2;
+static const Int32 LEVEL_ALLENVIRONMENT = 0;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

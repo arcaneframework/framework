@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshComponentPartData.cc                                    (C) 2000-2021 */
+/* MeshComponentPartData.cc                                    (C) 2000-2022 */
 /*                                                                           */
 /* Données d'une partie (pure ou partielle) d'un constituant.                */
 /*---------------------------------------------------------------------------*/
@@ -18,11 +18,11 @@
 #include "arcane/IItemFamily.h"
 #include "arcane/ItemPrinter.h"
 
-#include "arcane/materials/MeshMaterialVariableIndexer.h"
-#include "arcane/materials/IMeshComponent.h"
-#include "arcane/materials/MeshComponentPartData.h"
-#include "arcane/materials/ComponentItemInternal.h"
-#include "arcane/materials/ComponentPartItemVectorView.h"
+#include "arcane/core/materials/MeshMaterialVariableIndexer.h"
+#include "arcane/core/materials/IMeshComponent.h"
+#include "arcane/core/materials/MeshComponentPartData.h"
+#include "arcane/core/materials/ComponentItemInternal.h"
+#include "arcane/core/materials/ComponentPartItemVectorView.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/Item.h"
+
 #include "arcane/core/materials/ComponentItem.h"
 #include "arcane/core/materials/ComponentItemInternal.h"
 #include "arcane/core/materials/IMeshMaterial.h"
@@ -25,13 +26,6 @@
 
 namespace Arcane::Materials
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class MatCell;
-class EnvCell;
-class AllEnvCell;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -50,7 +44,7 @@ class AllEnvCell;
  * matériau ou d'un milieux change. Il ne faut donc pas
  * conservér une maille de ce type entre deux changements de cette liste.
  */
-class ARCANE_MATERIALS_EXPORT MatCell
+class ARCANE_CORE_EXPORT MatCell
 : public ComponentCell
 {
  public:
@@ -107,7 +101,7 @@ class ARCANE_MATERIALS_EXPORT MatCell
  * matériau ou d'un milieux change. Il ne faut donc pas
  * conserver une maille de ce type entre deux changements de cette liste.
  */
-class ARCANE_MATERIALS_EXPORT EnvCell
+class ARCANE_CORE_EXPORT EnvCell
 : public ComponentCell
 {
  public:
@@ -163,7 +157,7 @@ class ARCANE_MATERIALS_EXPORT EnvCell
  * matériau ou d'un milieux change. Il ne faut donc pas
  * conservér une maille de ce type entre deux changements de cette liste.
  */
-class ARCANE_MATERIALS_EXPORT AllEnvCell
+class ARCANE_CORE_EXPORT AllEnvCell
 : public ComponentCell
 {
  public:

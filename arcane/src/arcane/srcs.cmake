@@ -90,6 +90,8 @@ set( ARCANE_SOURCES
    core/materials/ComponentItemVectorView.h
    core/materials/ComponentPartItemVectorView.cc
    core/materials/ComponentPartItemVectorView.h
+   core/materials/MeshComponentPartData.cc
+   core/materials/MeshComponentPartData.h
 
    Data.cc
    DataTypeDispatchingDataVisitor.cc

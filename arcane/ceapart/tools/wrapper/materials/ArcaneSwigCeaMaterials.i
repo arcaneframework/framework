@@ -5,6 +5,7 @@
 %{
 #include "ArcaneSwigUtils.h"
 #include "arcane/materials/IMeshMaterialMng.h"
+#include "arcane/materials/IMeshBlock.h"
 #include "arcane/materials/IMeshEnvironment.h"
 #include "arcane/materials/IMeshMaterial.h"
 #include "arcane/materials/MatItemEnumerator.h"

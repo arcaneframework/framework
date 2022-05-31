@@ -102,13 +102,6 @@ typedef ComponentItemVectorView ComponentCellVectorView;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-static const Int32 LEVEL_MATERIAL = 1;
-static const Int32 LEVEL_ENVIRONMENT = 2;
-static const Int32 LEVEL_ALLENVIRONMENT = 0;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
  * \brief flags pour paramétrer le comportement lors d'une modification
  * de matériaux ou milieux.

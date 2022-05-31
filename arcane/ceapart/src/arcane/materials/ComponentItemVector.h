@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ComponentItemVector.h                                       (C) 2000-2017 */
+/* ComponentItemVector.h                                       (C) 2000-2022 */
 /*                                                                           */
 /* Vecteur sur des entités composants.                                       */
 /*---------------------------------------------------------------------------*/
@@ -19,27 +19,22 @@
 
 #include "arcane/ItemGroup.h"
 
-#include "arcane/materials/IMeshComponent.h"
-#include "arcane/materials/MeshMaterialVariableIndexer.h"
-#include "arcane/materials/ComponentItemVectorView.h"
-#include "arcane/materials/ComponentPartItemVectorView.h"
+#include "arcane/core/materials/IMeshComponent.h"
+#include "arcane/core/materials/MeshMaterialVariableIndexer.h"
+#include "arcane/core/materials/ComponentItemVectorView.h"
+#include "arcane/core/materials/ComponentPartItemVectorView.h"
+
+#include "arcane/materials/MaterialsGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class IMeshMaterialMng;
-class IMeshComponent;
-class ComponentItemVectorView;
 class MeshComponentPartData;
 
 /*---------------------------------------------------------------------------*/
@@ -161,11 +156,7 @@ class ARCANE_MATERIALS_EXPORT ComponentItemVector
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
