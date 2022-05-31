@@ -17,6 +17,7 @@
 #include "arcane/core/materials/IMeshMaterial.h"
 #include "arcane/core/materials/IMeshEnvironment.h"
 #include "arcane/core/materials/MatVarIndex.h"
+#include "arcane/core/materials/MatItem.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

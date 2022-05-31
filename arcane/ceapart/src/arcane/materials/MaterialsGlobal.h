@@ -88,18 +88,6 @@ typedef ConstArrayView<IMeshEnvironment*> MeshEnvironmentListView;
 //! Liste de matériaux du maillage.
 typedef ConstArrayView<IMeshMaterial*> MeshMaterialListView;
 
-//! Liste de ComponentCell issues d'un IMeshComponent.
-typedef ComponentItemVector ComponentCellVector;
-
-//! Type de la vue sur un EnvCellVector
-typedef EnvItemVectorView EnvCellVectorView;
-
-//! Type de la vue sur un MatCellVector
-typedef MatItemVectorView MatCellVectorView;
-
-//! Type de la vue sur un ComponentCellVector
-typedef ComponentItemVectorView ComponentCellVectorView;
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!

@@ -4,7 +4,6 @@ set(ARCANE_SOURCES
   ComponentItemInternal.h
   ComponentItem.h
   ComponentItemListBuilder.h
-  ComponentItemVector.cc
   ComponentItemVector.h
   ComponentPartItemVectorView.h
   ComponentItemVectorView.h
@@ -14,11 +13,8 @@ set(ARCANE_SOURCES
   EnumeratorTracer.h
   MaterialsGlobal.cc
   MaterialsGlobal.h
-  MatItemVector.cc
   MatItemVector.h
-  EnvItemVector.cc
   EnvItemVector.h
-  MatItemEnumerator.cc
   MatItemEnumerator.h
   MatVarIndex.h
   MeshComponentData.cc

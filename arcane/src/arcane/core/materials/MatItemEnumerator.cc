@@ -11,14 +11,13 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/materials/MatItemEnumerator.h"
+#include "arcane/core/materials/MatItemEnumerator.h"
 
 #include "arcane/core/materials/ComponentItemVectorView.h"
 #include "arcane/core/materials/IMeshMaterialMng.h"
 #include "arcane/core/materials/IMeshBlock.h"
-
-#include "arcane/materials/MatItemVector.h"
-#include "arcane/materials/EnvItemVector.h"
+#include "arcane/core/materials/MatItemVector.h"
+#include "arcane/core/materials/EnvItemVector.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

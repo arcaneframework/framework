@@ -5,19 +5,19 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ComponentItemVector.cc                                      (C) 2000-2017 */
+/* ComponentItemVector.cc                                      (C) 2000-2022 */
 /*                                                                           */
 /* Vecteur sur les entités d'un composant.                                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/materials/ComponentItemVector.h"
+#include "arcane/core/materials/ComponentItemVector.h"
 
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/FatalErrorException.h"
 
 #include "arcane/core/materials/IMeshComponent.h"
-#include "arcane/materials/MeshComponentPartData.h"
+#include "arcane/core/materials/MeshComponentPartData.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

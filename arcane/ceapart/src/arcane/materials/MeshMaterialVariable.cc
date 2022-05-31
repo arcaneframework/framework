@@ -28,9 +28,9 @@
 #include "arcane/core/materials/IMeshMaterial.h"
 #include "arcane/core/materials/IMeshEnvironment.h"
 #include "arcane/core/materials/ComponentItemVectorView.h"
+#include "arcane/core/materials/MeshMaterialVariableIndexer.h"
 
 #include "arcane/materials/MeshMaterialVariablePrivate.h"
-#include "arcane/materials/MeshMaterialVariableIndexer.h"
 #include "arcane/materials/MaterialVariableBuildInfo.h"
 #include "arcane/materials/MatItemEnumerator.h"
 #include "arcane/materials/MeshMaterialVariableRef.h"

@@ -44,7 +44,7 @@ namespace Arcane::Materials
  * matériau ou d'un milieux change. Il ne faut donc pas
  * conservér une maille de ce type entre deux changements de cette liste.
  */
-class ARCANE_CORE_EXPORT MatCell
+class MatCell
 : public ComponentCell
 {
  public:
@@ -101,7 +101,7 @@ class ARCANE_CORE_EXPORT MatCell
  * matériau ou d'un milieux change. Il ne faut donc pas
  * conserver une maille de ce type entre deux changements de cette liste.
  */
-class ARCANE_CORE_EXPORT EnvCell
+class EnvCell
 : public ComponentCell
 {
  public:
@@ -157,7 +157,7 @@ class ARCANE_CORE_EXPORT EnvCell
  * matériau ou d'un milieux change. Il ne faut donc pas
  * conservér une maille de ce type entre deux changements de cette liste.
  */
-class ARCANE_CORE_EXPORT AllEnvCell
+class AllEnvCell
 : public ComponentCell
 {
  public:

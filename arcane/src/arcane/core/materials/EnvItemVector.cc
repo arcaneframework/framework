@@ -5,34 +5,29 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MatCellVector.cc                                            (C) 2000-2016 */
+/* EnvItemVector.cc                                            (C) 2000-2022 */
 /*                                                                           */
-/* Vecteur sur les entités d'un matériau.                                    */
+/* Vecteur sur les entités d'un milieu.                                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/materials/MatItemVector.h"
-#include "arcane/materials/MatItemEnumerator.h"
-#include "arcane/materials/IMeshMaterialMng.h"
+#include "arcane/core/materials/EnvItemVector.h"
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+#include "arcane/core/materials/MatItemEnumerator.h"
+#include "arcane/core/materials/IMeshMaterialMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-MatCellVector::
-MatCellVector(const CellGroup& group,IMeshMaterial* material)
-: ComponentItemVector(material)
+EnvCellVector::
+EnvCellVector(const CellGroup& group,IMeshEnvironment* environment)
+: ComponentItemVector(environment)
 {
   _build(group.view());
 }
@@ -40,9 +35,9 @@ MatCellVector(const CellGroup& group,IMeshMaterial* material)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MatCellVector::
-MatCellVector(CellVectorView view,IMeshMaterial* material)
-: ComponentItemVector(material)
+EnvCellVector::
+EnvCellVector(CellVectorView view,IMeshEnvironment* environment)
+: ComponentItemVector(environment)
 {
   _build(view);
 }
@@ -50,28 +45,28 @@ MatCellVector(CellVectorView view,IMeshMaterial* material)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MatCellVector::
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void EnvCellVector::
 _build(CellVectorView view)
 {
   UniqueArray<ComponentItemInternal*> internals[2];
   UniqueArray<MatVarIndex> matvar_indexes[2];
   IMeshComponent* my_component = _component();
-
   ENUMERATE_ALLENVCELL(iallenvcell,_materialMng()->view(view)){
     AllEnvCell all_env_cell = *iallenvcell;
     ENUMERATE_CELL_ENVCELL(ienvcell,all_env_cell){
-      ENUMERATE_CELL_MATCELL(imatcell,(*ienvcell)){
-        MatCell mc = *imatcell;
-        if (mc.component()==my_component){
-          MatVarIndex idx = mc._varIndex();
-          if (idx.arrayIndex()==0){
-            internals[0].add(mc.internal());
-            matvar_indexes[0].add(idx);
-          }
-          else{
-            internals[1].add(mc.internal());
-            matvar_indexes[1].add(idx);
-          }
+      EnvCell ec = *ienvcell;
+      if (ec.component()==my_component){
+        MatVarIndex idx = ec._varIndex();
+        if (idx.arrayIndex()==0){
+          internals[0].add(ec.internal());
+          matvar_indexes[0].add(idx);
+        }
+        else{
+          internals[1].add(ec.internal());
+          matvar_indexes[1].add(idx);
         }
       }
     }
@@ -83,20 +78,16 @@ _build(CellVectorView view)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IMeshMaterial* MatCellVector::
-material() const
+IMeshEnvironment* EnvCellVector::
+environment() const
 {
-  return static_cast<IMeshMaterial*>(component());
+  return static_cast<IMeshEnvironment*>(component());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

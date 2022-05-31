@@ -86,10 +86,18 @@ set( ARCANE_SOURCES
    core/materials/ComponentItem.h
    core/materials/ComponentItemInternal.cc
    core/materials/ComponentItemInternal.h
+   core/materials/ComponentItemVector.cc
+   core/materials/ComponentItemVector.h
    core/materials/ComponentItemVectorView.cc
    core/materials/ComponentItemVectorView.h
    core/materials/ComponentPartItemVectorView.cc
    core/materials/ComponentPartItemVectorView.h
+   core/materials/EnvItemVector.cc
+   core/materials/EnvItemVector.h
+   core/materials/MatItemVector.cc
+   core/materials/MatItemVector.h
+   core/materials/MatItemEnumerator.cc
+   core/materials/MatItemEnumerator.h
    core/materials/MeshComponentPartData.cc
    core/materials/MeshComponentPartData.h
 
