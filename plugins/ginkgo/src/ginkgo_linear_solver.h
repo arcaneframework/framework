@@ -95,9 +95,5 @@ class InternalLinearSolver
   using stop_res_type = std::unique_ptr<gko::stop::RelativeResidualNorm<>::Factory, std::default_delete<gko::stop::RelativeResidualNorm<>::Factory>>;
   using exec_type = std::shared_ptr<const gko::Executor>;
 
-  void solve_CG(const Matrix& A, const Vector& b, Vector& x, const int& prec, stop_iter_type& iter_stop, stop_res_type& res_stop, exec_type& exec, std::chrono::nanoseconds& time);
-  void solve_GMRES(const Matrix& A, const Vector& b, Vector& x, const int& prec, stop_iter_type& iter_stop, stop_res_type& res_stop, exec_type& exec, std::chrono::nanoseconds& time);
-  void solve_BICG(const Matrix& A, const Vector& b, Vector& x, const int& prec, stop_iter_type& iter_stop, stop_res_type& res_stop, exec_type& exec, std::chrono::nanoseconds& time);
-  void solve_BICGSTAB(const Matrix& A, const Vector& b, Vector& x, const int& prec, stop_iter_type& iter_stop, stop_res_type& res_stop, exec_type& exec, std::chrono::nanoseconds& time);
   void display_solver_infos(const Alien::Ginkgo::OptionTypes::eSolver& solver, const Alien::Ginkgo::OptionTypes::ePreconditioner& prec);
 };

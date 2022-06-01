@@ -51,8 +51,10 @@ target_link_libraries(move.gtest.seq PRIVATE
         )
 
 if (ALIEN_EXPAND_TESTS)
-    #    gtest_discover_tests(move.gtest.seq TEST_PREFIX "move." TEST_SUFFIX ".seq")
-    #    gtest_discover_tests(move.gtest.mpi TEST_PREFIX "move." TEST_SUFFIX ".seq")
+    gtest_discover_tests(move.gtest.seq TEST_PREFIX "move." TEST_SUFFIX ".seq" TEST_LIST move-seq DISCOVERY_TIMEOUT 10)
+    set_tests_properties(${move-seq} PROPERTIES TIMEOUT 30)
+    gtest_discover_tests(move.gtest.mpi TEST_PREFIX "move." TEST_SUFFIX ".seq" TEST_LIST move-mpi DISCOVERY_TIMEOUT 10)
+    set_tests_properties(${move-mpi} PROPERTIES TIMEOUT 30)
 else (ALIEN_EXPAND_TESTS)
     alien_test(
             BENCH move

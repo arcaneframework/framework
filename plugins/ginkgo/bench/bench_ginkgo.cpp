@@ -29,7 +29,7 @@
 
 constexpr int NB_RUNS = 5;
 
-int test(const Alien::Ginkgo::OptionTypes::eSolver& solv, const Alien::Ginkgo::OptionTypes::ePreconditioner& prec, const std::string& mat_filename, const std::string& vec_filename)
+int test(const Alien::Ginkgo::OptionTypes::eSolver& solv, const Alien::Ginkgo::OptionTypes::ePreconditioner& prec, const std::string& mat_filename, const std::string& vec_filename, const int& block_size)
 {
   auto* pm = Arccore::MessagePassing::Mpi::StandaloneMpiMessagePassingMng::create(MPI_COMM_WORLD);
   auto* tm = Arccore::arccoreCreateDefaultTraceMng();
@@ -44,6 +44,7 @@ int test(const Alien::Ginkgo::OptionTypes::eSolver& solv, const Alien::Ginkgo::O
     options.numIterationsMax(500);
     options.stopCriteriaValue(1e-8);
     options.preconditioner(prec); // Jacobi, NoPC
+    options.blockSize(block_size); // block size
     options.solver(solv); //CG, GMRES, BICG, BICGSTAB
     auto solver = Alien::Ginkgo::LinearSolver(options);
 
@@ -67,12 +68,13 @@ int main(int argc, char** argv)
 
   MPI_Init(&argc, &argv);
 
-  if (argc != 5 && argc != 4 && argc != 1) {
+  if (argc != 1 && (argc > 6 || argc < 4)) {
     std::cerr << "Usage : ./bench_ginkgo [solver] [preconditioner] [matrix] [vector] \n"
               << "  - solver : (CG|GMRES|BICG|BICGSTAB) \n"
-              << "  - preconditioner : (Jacobi|NoPC) \n"
+              << "  - preconditioner : (Jacobi|Ilu0|NoPC) \n"
               << "  - MTX matrix file \n"
-              << "  - optional MTX vector file \n";
+              << "  - optional MTX vector file \n"
+              << "  - optional block size \n";
     return -1;
   }
 
@@ -81,6 +83,7 @@ int main(int argc, char** argv)
   auto prec = Alien::Ginkgo::OptionTypes::Jacobi;
   std::string matrix_file = "matrix.mtx";
   std::string vec_file = "rhs.mtx";
+  int block_size = 1;
 
   if (argc == 1) {
     // do nothing
@@ -105,30 +108,38 @@ int main(int argc, char** argv)
       return -1;
     }
 
+    // Read the preconditioner
     if (std::string(argv[2]) == "Jacobi") {
       prec = Alien::Ginkgo::OptionTypes::Jacobi;
+    }
+    else if (std::string(argv[2]) == "Ilu") {
+      prec = Alien::Ginkgo::OptionTypes::Ilu;
     }
     else if (std::string(argv[2]) == "NoPC") {
       prec = Alien::Ginkgo::OptionTypes::NoPC;
     }
     else {
       std::cerr << "Unrecognized preconditioner : " << argv[2] << "\n"
-                << "  - preconditioner list : (Jacobi|NoPC) \n";
+                << "  - preconditioner list : (Jacobi|Ilu|NoPC) \n";
       return -1;
     }
 
     matrix_file = std::string(argv[3]);
-    if (argc == 5) {
+    if (argc >= 5) {
       vec_file = std::string(argv[4]);
     }
     else {
       vec_file = "";
     }
+    // Read the optional block size
+    if (argc >= 6) {
+      block_size = std::atoi(argv[5]);
+    }
   }
 
   auto ret = 0;
   try {
-    ret = test(solver, prec, matrix_file, vec_file);
+    ret = test(solver, prec, matrix_file, vec_file, block_size);
   }
   catch (const Arccore::Exception& ex) {
     std::cerr << "Exception: " << ex << '\n';

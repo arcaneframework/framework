@@ -20,25 +20,20 @@
 
 bool InternalLinearSolver::solve(const Matrix& A, const Vector& b, Vector& x)
 {
-
-  // preconditioner's choice
-  int prec;
-  switch (m_options.preconditioner()) {
-  case OptionTypes::Jacobi:
-    prec = 1;
-    break;
-  case OptionTypes::NoPC:
-    prec = 0;
-    break;
-  default:
-    alien_fatal([&] { cout() << "Undefined Ginkgo preconditioner option"; });
-    break;
-  }
+  /*************************************
+  *     Get executor and Matrix
+  **************************************/
 
   // get the executor from the Matrix A
   auto exec = A.internal()->get_executor();
 
-  // Prepare the stopping criteria
+  // make a shared pointer on the matrix A
+  auto pA = std::shared_ptr<const gko::matrix::Csr<double, int>>(A.internal(), [](auto* p) {});
+
+  /*************************************
+  *     Prepare the stopping criteria
+  **************************************/
+
   const double threshold{ m_options.stopCriteriaValue() };
   const unsigned long max_iters = static_cast<unsigned int>(m_options.numIterationsMax());
 
@@ -51,34 +46,107 @@ bool InternalLinearSolver::solve(const Matrix& A, const Vector& b, Vector& x)
                   .with_tolerance(threshold)
                   .on(exec);
 
-  // Add Convergence logger
+  /*************************************
+  *     Add Convergence logger
+  **************************************/
+
   std::shared_ptr<const gko::log::Convergence<double>> conv_logger = gko::log::Convergence<double>::create(exec);
   iter_stop->add_logger(conv_logger);
   res_stop->add_logger(conv_logger);
 
-  // init timer
-  std::chrono::nanoseconds time(0);
+  /*************************************
+  *     Prepare Preconditioner Factories
+  **************************************/
 
-  /// --- Find a better way to switch solver ...
+  // Ilu preconditioner : generate concrete factorization for input matrix, and declare preconditioner factory
+  auto par_ilu_fact = gko::factorization::ParIlu<double>::build().on(exec);
+  std::unique_ptr<gko::factorization::ParIlu<double>> par_ilu;
+  if (m_options.preconditioner() == OptionTypes::Ilu) {
+    par_ilu = par_ilu_fact->generate(pA);
+  }
+  auto ilu_prec_factory = gko::preconditioner::Ilu<gko::solver::LowerTrs<double>, gko::solver::UpperTrs<double>, false>::build().on(exec);
+
+  // Jacobi preconditioner : declare factory with blockSize parameter
+  auto jacobi_prec_factory = gko::preconditioner::Jacobi<double>::build().on(exec);
+  jacobi_prec_factory->get_parameters().max_block_size = m_options.blockSize();
+
+  /*************************************
+  *     Handle Solver Choice
+  **************************************/
+
+  // declare generic solver
+  std::shared_ptr<gko::LinOp> solver;
+
+  // create the solver
   switch (m_options.solver()) {
-  case OptionTypes::CG:
-    solve_CG(A, b, x, prec, iter_stop, res_stop, exec, time);
-    break;
-  case OptionTypes::GMRES:
-    solve_GMRES(A, b, x, prec, iter_stop, res_stop, exec, time);
-    break;
-  case OptionTypes::BICG:
-    solve_BICG(A, b, x, prec, iter_stop, res_stop, exec, time);
-    break;
-  case OptionTypes::BICGSTAB:
-    solve_BICGSTAB(A, b, x, prec, iter_stop, res_stop, exec, time);
-    break;
+  case OptionTypes::CG: {
+    // generate the solver
+    solver = gko::solver::Cg<double>::build().with_criteria(gko::share(iter_stop), gko::share(res_stop)).on(exec)->generate(pA);
+
+    // set the preconditioner
+    if (m_options.preconditioner() == OptionTypes::Jacobi) { //Jacobi
+      gko::as<gko::solver::Cg<double>>(solver)->set_preconditioner(jacobi_prec_factory->generate(pA));
+    }
+    else if (m_options.preconditioner() == OptionTypes::Ilu) { //ILU
+      gko::as<gko::solver::Cg<double>>(solver)->set_preconditioner(ilu_prec_factory->generate(gko::share(par_ilu)));
+    }
+  } break;
+  case OptionTypes::GMRES: {
+    // generate the solver
+    solver = gko::solver::Gmres<double>::build().with_criteria(gko::share(iter_stop), gko::share(res_stop)).on(exec)->generate(pA);
+
+    // set the preconditioner
+    if (m_options.preconditioner() == OptionTypes::Jacobi) { //Jacobi
+      gko::as<gko::solver::Gmres<double>>(solver)->set_preconditioner(jacobi_prec_factory->generate(pA));
+    }
+    else if (m_options.preconditioner() == OptionTypes::Ilu) { //ILU
+      gko::as<gko::solver::Gmres<double>>(solver)->set_preconditioner(ilu_prec_factory->generate(gko::share(par_ilu)));
+    }
+  } break;
+  case OptionTypes::BICG: {
+    // generate the solver
+    solver = gko::solver::Bicg<double>::build().with_criteria(gko::share(iter_stop), gko::share(res_stop)).on(exec)->generate(pA);
+
+    // set the preconditioner
+    if (m_options.preconditioner() == OptionTypes::Jacobi) { //Jacobi
+      gko::as<gko::solver::Bicg<double>>(solver)->set_preconditioner(jacobi_prec_factory->generate(pA));
+    }
+    else if (m_options.preconditioner() == OptionTypes::Ilu) { //ILU
+      gko::as<gko::solver::Bicg<double>>(solver)->set_preconditioner(ilu_prec_factory->generate(gko::share(par_ilu)));
+    }
+  } break;
+  case OptionTypes::BICGSTAB: {
+    // generate the solver
+    solver = gko::solver::Bicgstab<double>::build().with_criteria(gko::share(iter_stop), gko::share(res_stop)).on(exec)->generate(pA);
+
+    // set the preconditioner
+    if (m_options.preconditioner() == OptionTypes::Jacobi) { //Jacobi
+      gko::as<gko::solver::Bicgstab<double>>(solver)->set_preconditioner(jacobi_prec_factory->generate(pA));
+    }
+    else if (m_options.preconditioner() == OptionTypes::Ilu) { //ILU
+      gko::as<gko::solver::Bicgstab<double>>(solver)->set_preconditioner(ilu_prec_factory->generate(gko::share(par_ilu)));
+    }
+  } break;
   default:
     alien_fatal([&] {
       cout() << "Undefined solver option";
     });
     break;
   }
+
+  /**
+   solve with timing
+  **/
+
+  std::chrono::nanoseconds time(0);
+  auto tic = std::chrono::steady_clock::now();
+  solver->apply(lend(b.internal()), lend(x.internal()));
+  auto toc = std::chrono::steady_clock::now();
+  time += std::chrono::duration_cast<std::chrono::nanoseconds>(toc - tic);
+
+  /**
+   Update infos
+  **/
 
   // Get nb iterations + final residual
   auto num_iters = conv_logger->get_num_iterations();
@@ -118,125 +186,6 @@ bool InternalLinearSolver::solve(const Matrix& A, const Vector& b, Vector& x)
   return m_status.succeeded;
 }
 
-void InternalLinearSolver::solve_CG(const Matrix& A, const Vector& b, Vector& x, const int& prec, stop_iter_type& iter_stop, stop_res_type& res_stop, exec_type& exec, std::chrono::nanoseconds& time)
-{
-
-  auto solver_factory =
-  gko::solver::Cg<double>::build()
-  .with_criteria(
-  gko::share(iter_stop),
-  gko::share(res_stop))
-  .on(exec);
-
-  // make a shared pointer on the matrix A, make_shared does not work : loses the pointer to the gko::executor !
-  auto pA = std::shared_ptr<const gko::matrix::Csr<double, int>>(A.internal(), [](auto* p) {});
-
-  // generate the solver
-  auto solver = solver_factory->generate(pA);
-
-  // generate and set the preconditioner
-  if (prec == 1) {
-    using Preconditioner = typename gko::preconditioner::Jacobi<double>;
-    std::shared_ptr<Preconditioner> new_prec = Preconditioner::build().on(exec)->generate(pA);
-    solver->set_preconditioner(new_prec);
-  }
-
-  // solve with timing
-  auto tic = std::chrono::steady_clock::now();
-  solver->apply(lend(b.internal()), lend(x.internal()));
-  auto toc = std::chrono::steady_clock::now();
-  time += std::chrono::duration_cast<std::chrono::nanoseconds>(toc - tic);
-}
-
-void InternalLinearSolver::solve_GMRES(const Matrix& A, const Vector& b, Vector& x, const int& prec, stop_iter_type& iter_stop, stop_res_type& res_stop, exec_type& exec, std::chrono::nanoseconds& time)
-{
-
-  auto solver_factory =
-  gko::solver::Gmres<double>::build()
-  .with_criteria(
-  gko::share(iter_stop),
-  gko::share(res_stop))
-  .on(exec);
-
-  // make a shared pointer on the matrix A, make_shared does not work : loses the pointer to the gko::executor !
-  auto pA = std::shared_ptr<const gko::matrix::Csr<double, int>>(A.internal(), [](auto* p) {});
-
-  // generate the solver
-  auto solver = solver_factory->generate(pA);
-
-  // generate and set the preconditioner
-  if (prec == 1) {
-    using Preconditioner = typename gko::preconditioner::Jacobi<double>;
-    std::shared_ptr<Preconditioner> new_prec = Preconditioner::build().on(exec)->generate(pA);
-    solver->set_preconditioner(new_prec);
-  }
-
-  // solve with timing
-  auto tic = std::chrono::steady_clock::now();
-  solver->apply(lend(b.internal()), lend(x.internal()));
-  auto toc = std::chrono::steady_clock::now();
-  time += std::chrono::duration_cast<std::chrono::nanoseconds>(toc - tic);
-}
-
-void InternalLinearSolver::solve_BICG(const Matrix& A, const Vector& b, Vector& x, const int& prec, stop_iter_type& iter_stop, stop_res_type& res_stop, exec_type& exec, std::chrono::nanoseconds& time)
-{
-
-  auto solver_factory =
-  gko::solver::Bicg<double>::build()
-  .with_criteria(
-  gko::share(iter_stop),
-  gko::share(res_stop))
-  .on(exec);
-
-  // make a shared pointer on the matrix A, make_shared does not work : loses the pointer to the gko::executor !
-  auto pA = std::shared_ptr<const gko::matrix::Csr<double, int>>(A.internal(), [](auto* p) {});
-
-  // generate the solver
-  auto solver = solver_factory->generate(pA);
-
-  // generate and set the preconditioner
-  if (prec == 1) {
-    using Preconditioner = typename gko::preconditioner::Jacobi<double>;
-    std::shared_ptr<Preconditioner> new_prec = Preconditioner::build().on(exec)->generate(pA);
-    solver->set_preconditioner(new_prec);
-  }
-
-  // solve with timing
-  auto tic = std::chrono::steady_clock::now();
-  solver->apply(lend(b.internal()), lend(x.internal()));
-  auto toc = std::chrono::steady_clock::now();
-  time += std::chrono::duration_cast<std::chrono::nanoseconds>(toc - tic);
-}
-
-void InternalLinearSolver::solve_BICGSTAB(const Matrix& A, const Vector& b, Vector& x, const int& prec, stop_iter_type& iter_stop, stop_res_type& res_stop, exec_type& exec, std::chrono::nanoseconds& time)
-{
-  auto solver_factory =
-  gko::solver::Bicgstab<double>::build()
-  .with_criteria(
-  gko::share(iter_stop),
-  gko::share(res_stop))
-  .on(exec);
-
-  // make a shared pointer on the matrix A, make_shared does not work : loses the pointer to the gko::executor !
-  auto pA = std::shared_ptr<const gko::matrix::Csr<double, int>>(A.internal(), [](auto* p) {});
-
-  // generate the solver
-  auto solver = solver_factory->generate(pA);
-
-  // generate and set the preconditioner
-  if (prec == 1) {
-    using Preconditioner = typename gko::preconditioner::Jacobi<double>;
-    std::shared_ptr<Preconditioner> new_prec = Preconditioner::build().on(exec)->generate(pA);
-    solver->set_preconditioner(new_prec);
-  }
-
-  // solve with timing
-  auto tic = std::chrono::steady_clock::now();
-  solver->apply(lend(b.internal()), lend(x.internal()));
-  auto toc = std::chrono::steady_clock::now();
-  time += std::chrono::duration_cast<std::chrono::nanoseconds>(toc - tic);
-}
-
 void InternalLinearSolver::display_solver_infos(const Alien::Ginkgo::OptionTypes::eSolver& solver, const Alien::Ginkgo::OptionTypes::ePreconditioner& prec)
 {
   std::cout << "Solver : ";
@@ -262,6 +211,10 @@ void InternalLinearSolver::display_solver_infos(const Alien::Ginkgo::OptionTypes
   switch (prec) {
   case OptionTypes::Jacobi:
     std::cout << "Jacobi" << std::endl;
+    std::cout << "Jacobi block size : " << m_options.blockSize() << std::endl;
+    break;
+  case OptionTypes::Ilu:
+    std::cout << "Ilu" << std::endl;
     break;
   case OptionTypes::NoPC:
     std::cout << "No preconditioner" << std::endl;
