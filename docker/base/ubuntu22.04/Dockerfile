@@ -21,6 +21,7 @@ RUN apt-get install --no-install-recommends -y \
     petsc-dev \
     libhypre-dev \
     libsuperlu-dist-dev \
+    trilinos-all-dev \
     libboost-dev \
     libboost-program-options-dev \
     libgtest-dev \

@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - \[move\]: add a `clone()` method to `MatrixData` and `VectorData`
 - \[core\]: dramatic improvement of `DoK` performance
 - \[core\]: `Redistributor` object must be built from an allocated `MessagePassingMng`
+- \[trilinos\]: new wrapper for trilinos library (belos + ifpack2 + tpetra)
 
 ## 1.1.3
 

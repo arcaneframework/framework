@@ -46,7 +46,7 @@ jobs:
             precommand: "",
             build_type: "RelWithDebInfo",
             build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -G Ninja",
-            alien_options: "-DALIEN_DEFAULT_OPTIONS:BOOL=ON -DALIEN_PLUGIN_GINKGO:BOOL=ON -DALIEN_PLUGIN_GINKGO_OMP:BOOL=ON",
+            alien_options: "-DALIEN_DEFAULT_OPTIONS:BOOL=ON -DALIEN_PLUGIN_GINKGO:BOOL=ON -DALIEN_PLUGIN_GINKGO_OMP:BOOL=ON  -DALIEN_PLUGIN_TRILINOS:BOOL=ON -DALIEN_PLUGIN_TRILINOS_SERIAL:BOOL=ON",
             isspack: false
           }
           - {
