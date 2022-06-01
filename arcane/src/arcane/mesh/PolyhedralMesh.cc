@@ -284,7 +284,7 @@ namespace mesh
       mesh_graph.addAlgorithm(Neo::InProperty{source_family,PolyhedralFamily::m_arcane_item_lids_property_name.localstr()},
                               Neo::OutProperty{source_family,"NoOutProperty"},
                               [arcane_source_item_family, arcane_target_item_family, &source_family, &target_family, this,name]
-                              (Neo::PropertyT<Neo::utils::Int32> const& arcane_item_lids,
+                              (Neo::PropertyT<Neo::utils::Int32> const& ,
                                Neo::PropertyT<Neo::utils::Int32> & ){
                                 this->m_subdomain->traceMng()->info() << "ADD CONNECTIVITY";
                                 auto item_internal_connectivity_list = arcane_source_item_family->itemInternalConnectivityList();
