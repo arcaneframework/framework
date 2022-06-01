@@ -68,6 +68,11 @@ template <typename ItemType,typename DataType> class MeshMaterialVariableScalar;
 template <typename ItemType,typename DataType> class MeshMaterialVariableArray;
 template<typename DataType> class CellMaterialVariableScalarRef;
 
+template<typename ItemType,typename DataType>
+class IMeshMaterialVariableScalar;
+template<typename ItemType,typename DataType>
+class IMeshMaterialVariableArray;
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

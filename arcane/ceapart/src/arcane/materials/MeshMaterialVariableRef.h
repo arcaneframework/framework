@@ -26,8 +26,8 @@
 #include "arcane/VariableRef.h"
 
 #include "arcane/core/materials/IMeshMaterialVariable.h"
+#include "arcane/core/materials/MatItemEnumerator.h"
 
-#include "arcane/materials/MatItemEnumerator.h"
 #include "arcane/materials/MeshMaterialVariableComputeFunction.h"
 
 /*---------------------------------------------------------------------------*/
@@ -209,9 +209,12 @@ template<typename DataType>
 class CellMaterialVariableScalarRef
 : public MeshMaterialVariableRef
 {
+  using TruePrivatePartType = MeshMaterialVariableScalar<Cell,DataType>;
+
  public:
 
-  typedef MeshMaterialVariableScalar<Cell,DataType> PrivatePartType;
+  using PrivatePartType = IMeshMaterialVariableScalar<Cell,DataType>;
+
   typedef Cell ItemType;
   typedef MeshVariableScalarRefT<ItemType,DataType> GlobalVariableRefType;
 
@@ -361,11 +364,13 @@ template<typename DataType>
 class CellMaterialVariableArrayRef
 : public MeshMaterialVariableRef
 {
+  using TruePrivatePartType = MeshMaterialVariableArray<Cell,DataType>;
+
  public:
 
-  typedef MeshMaterialVariableArray<Cell,DataType> PrivatePartType;
-  typedef Cell ItemType;
-  typedef MeshVariableArrayRefT<ItemType,DataType> GlobalVariableRefType;
+  using PrivatePartType = IMeshMaterialVariableArray<Cell,DataType>;
+  using ItemType = Cell;
+  using GlobalVariableRefType = MeshVariableArrayRefT<ItemType,DataType>;
 
  public:
 

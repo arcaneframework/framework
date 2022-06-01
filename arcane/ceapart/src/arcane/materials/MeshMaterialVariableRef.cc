@@ -133,7 +133,7 @@ setNextReference(MeshMaterialVariableRef* v)
 void MeshMaterialVariableRef::
 _throwInvalid() const
 {
-  ARCANE_THROW(InternalErrorException,"Trying to use unitialized variable reference");
+  ARCANE_THROW(InternalErrorException,"Trying to use uninitialized variable reference");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -256,7 +256,7 @@ addMaterialDepend(const MeshMaterialVariableRef& var,const TraceInfo& tinfo)
 
 template<typename DataType> CellMaterialVariableScalarRef<DataType>::
 CellMaterialVariableScalarRef(const VariableBuildInfo& vb)
-: m_private_part(PrivatePartType::getReference(vb,nullptr,MatVarSpace::MaterialAndEnvironment))
+: m_private_part(TruePrivatePartType::getReference(vb,nullptr,MatVarSpace::MaterialAndEnvironment))
 , m_value(0)
 {
   _init();
@@ -267,7 +267,7 @@ CellMaterialVariableScalarRef(const VariableBuildInfo& vb)
 
 template<typename DataType> CellMaterialVariableScalarRef<DataType>::
 CellMaterialVariableScalarRef(const MaterialVariableBuildInfo& vb)
-: m_private_part(PrivatePartType::getReference(vb,MatVarSpace::MaterialAndEnvironment))
+: m_private_part(TruePrivatePartType::getReference(vb,MatVarSpace::MaterialAndEnvironment))
 , m_value(0)
 {
   _init();
@@ -300,8 +300,8 @@ CellMaterialVariableScalarRef<DataType>::
 _init()
 {
   if (m_private_part){
-    m_value = m_private_part->views();
-    _internalInit(m_private_part);
+    m_value = m_private_part->valuesView();
+    _internalInit(m_private_part->toMeshMaterialVariable());
   }
 }
 
@@ -333,7 +333,7 @@ template<typename DataType> void
 CellMaterialVariableScalarRef<DataType>::
 updateFromInternal()
 {
-  m_value = m_private_part->views();
+  m_value = m_private_part->valuesView();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -547,8 +547,8 @@ globalVariable() const
 // TODO: fusionner avec la version scalaire
 template<typename DataType> CellMaterialVariableArrayRef<DataType>::
 CellMaterialVariableArrayRef(const VariableBuildInfo& vb)
-: m_private_part(PrivatePartType::getReference(vb,nullptr,MatVarSpace::MaterialAndEnvironment))
-, m_value(0)
+: m_private_part(TruePrivatePartType::getReference(vb,nullptr,MatVarSpace::MaterialAndEnvironment))
+, m_value(nullptr)
 {
   _init();
 }
@@ -559,8 +559,8 @@ CellMaterialVariableArrayRef(const VariableBuildInfo& vb)
 // TODO: fusionner avec la version scalaire
 template<typename DataType> CellMaterialVariableArrayRef<DataType>::
 CellMaterialVariableArrayRef(const MaterialVariableBuildInfo& vb)
-: m_private_part(PrivatePartType::getReference(vb,MatVarSpace::MaterialAndEnvironment))
-, m_value(0)
+: m_private_part(TruePrivatePartType::getReference(vb,MatVarSpace::MaterialAndEnvironment))
+, m_value(nullptr)
 {
   _init();
 }
@@ -572,7 +572,7 @@ CellMaterialVariableArrayRef(const MaterialVariableBuildInfo& vb)
 template<typename DataType>  CellMaterialVariableArrayRef<DataType>::
 CellMaterialVariableArrayRef(const CellMaterialVariableArrayRef<DataType>& rhs)
 : m_private_part(rhs.m_private_part)
-, m_value(0)
+, m_value(nullptr)
 {
   // Il faut incrémenter manuellement le compteur de référence car normalement
   // cela est fait dans getReference() mais ici on ne l'appelle pas
@@ -591,8 +591,8 @@ CellMaterialVariableArrayRef<DataType>::
 _init()
 {
   if (m_private_part){
-    m_value = m_private_part->views();
-    _internalInit(m_private_part);
+    m_value = m_private_part->valuesView();
+    _internalInit(m_private_part->toMeshMaterialVariable());
   }
 }
 
@@ -626,7 +626,7 @@ template<typename DataType> void
 CellMaterialVariableArrayRef<DataType>::
 updateFromInternal()
 {
-  m_value = m_private_part->views();
+  m_value = m_private_part->valuesView();
 }
 
 /*---------------------------------------------------------------------------*/
