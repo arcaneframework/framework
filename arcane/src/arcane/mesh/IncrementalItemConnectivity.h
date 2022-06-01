@@ -111,6 +111,8 @@ class ARCANE_MESH_EXPORT IncrementalItemConnectivityBase
   IndexedItemConnectivityViewBase connectivityView() const;
   IndexedItemConnectivityAccessor connectivityAccessor() const;
 
+  Int32 maxNbConnectedItem() const override;
+
  public:
 
   Int32ConstArrayView _connectedItemsLocalId(ItemLocalId lid) const
@@ -159,6 +161,8 @@ class ARCANE_MESH_EXPORT IncrementalItemConnectivityBase
   void _notifyConnectivityListChanged();
   void _notifyConnectivityIndexChanged();
   void _notifyConnectivityNbItemChanged();
+  void _computeMaxNbConnectedItem();
+  void _setNewMaxNbConnectedItems(Int32 new_max);
 };
 
 /*---------------------------------------------------------------------------*/

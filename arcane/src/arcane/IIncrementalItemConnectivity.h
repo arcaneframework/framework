@@ -99,6 +99,14 @@ class ARCANE_CORE_EXPORT IIncrementalItemConnectivity
 
   //! Sort sur le flot \a out des statistiques sur l'utilisation et la mémoire utilisée
   virtual void dumpStats(std::ostream& out) const =0;
+
+  /*!
+   * \brief Nombre maximum d'entités connectées à une entité source.
+   *
+   * Cette valeur peut être supérieure au nombre maximum actuel d'entités
+   * connectées s'il y a eu des appels à removeConnectedItem() et removeConnectedItems().
+   */
+  virtual Int32 maxNbConnectedItem() const =0;
 };
 
 /*---------------------------------------------------------------------------*/
