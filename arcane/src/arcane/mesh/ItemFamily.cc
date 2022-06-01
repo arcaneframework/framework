@@ -65,6 +65,8 @@
 #include "arcane/mesh/ItemData.h"
 #include "arcane/mesh/ConnectivityNewWithDependenciesTypes.h"
 
+#include <array>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -449,7 +451,8 @@ checkValidConnectivity()
 void ItemFamily::
 notifyEndUpdateFromMesh()
 {
-  // Recalcul les infos de connectivités globales à tous les sous-domaines
+  // Recalcule les infos de connectivités locale et globales à tous les sous-domaines
+  _computeConnectivityInfo(m_local_connectivity_info);
   _computeConnectivityInfo(m_global_connectivity_info);
   m_global_connectivity_info->reduce(parallelMng());
 }
@@ -2442,21 +2445,62 @@ _checkValidConnectivity()
 {
   {
     // Vérifie qu'il n'y a pas d'entité nulle.
-    Integer index = 0;
     ENUMERATE_ITEM(i,allItems()){
       Item item = *i;
       if (item.null())
         ARCANE_FATAL("family={0}: local item lid={1} is null",fullName(),item);
-      index++;
     }
   }
-  for( Integer i=0; i<ItemInternalConnectivityList::MAX_ITEM_KIND; ++i ){
+  constexpr Int32 MAX_KIND = ItemInternalConnectivityList::MAX_ITEM_KIND;
+  std::array<Int32,MAX_KIND> computed_max;
+  computed_max.fill(0);
+
+  for( Integer i=0; i<MAX_KIND; ++i ){
     Int32ConstArrayView con_list = m_item_connectivity_list.connectivityList(i);
     Int32ConstArrayView con_index = m_item_connectivity_list.connectivityIndex(i);
-    info(4) << "Family name=" << fullName();
-    info(4) << "I=" << i << " list_size=" << con_list.size()
-            << " list_ptr=" << con_list.unguardedBasePointer()
-            << " index_size=" << con_index.size();
+    Int32ConstArrayView con_nb_item = m_item_connectivity_list.connectivityNbItem(i);
+    Int32 stored_max_nb = m_item_connectivity_list.maxNbConnectedItem(i);
+    const Int32 con_nb_item_size = con_nb_item.size();
+
+    info(4) << "Family name=" << fullName() << " I=" << i << " list_size=" << con_list.size()
+            << " list_ptr=" << con_list.data()
+            << " index_size=" << con_index.size()
+            << " nb_item_size=" << con_nb_item_size;
+
+    Int32 max_nb = 0;
+    if (con_nb_item_size){
+      // Il faut itérer sur toutes les entités et pas sur \a con_nb_item
+      // car certaines valeurs peuvent ne pas être valides s'il y a des
+      // trous dans la numérotation.
+      ENUMERATE_ITEM(i,allItems()){
+        Int32 x = con_nb_item[i.itemLocalId()];
+        if (x>max_nb)
+          max_nb = x;
+      }
+      if (stored_max_nb<max_nb)
+        ARCANE_FATAL("Bad value for max connected item family={0} kind={1} stored={2} computed={3}",
+                     name(),i,stored_max_nb,max_nb);
+      computed_max[i] = max_nb;
+    }
+  }
+  // Vérifie que la valeur retournée par m_local_connectivity_info
+  // est au moins supérieure à 'computed_max'
+  {
+    std::array<Int32,MAX_KIND> stored_max;
+    stored_max.fill(0);
+    auto* ci = m_local_connectivity_info;
+    stored_max[ItemInternalConnectivityList::NODE_IDX] = ci->maxNodePerItem();
+    stored_max[ItemInternalConnectivityList::EDGE_IDX] = ci->maxEdgePerItem();
+    stored_max[ItemInternalConnectivityList::FACE_IDX] = ci->maxFacePerItem();
+    stored_max[ItemInternalConnectivityList::CELL_IDX] = ci->maxCellPerItem();
+    // Pour les deux suivants, il n'y a pas l'équivalent dans 'ItemConnectivityInfo' donc
+    // on mets les valeurs calculées pour ne pas générer d'erreur.
+    stored_max[ItemInternalConnectivityList::HPARENT_IDX] = computed_max[ItemInternalConnectivityList::HPARENT_IDX];
+    stored_max[ItemInternalConnectivityList::HCHILD_IDX] = computed_max[ItemInternalConnectivityList::HCHILD_IDX];
+    for( Integer i=0; i<MAX_KIND; ++i )
+      if (stored_max[i]<computed_max[i])
+        ARCANE_FATAL("Bad value for local_connectivity_info family={0} kind={1} stored={2} computed={3}",
+                     name(),i,stored_max[i],computed_max[i]);
   }
   for( auto  ics : m_connectivity_selector_list )
     ics->checkValidConnectivityList();
@@ -2535,6 +2579,9 @@ void ItemFamily::
 _computeConnectivityInfo(ItemConnectivityInfo* ici)
 {
   ici->fill(m_item_shared_infos,itemInternalConnectivityList());
+  info(5) << "COMPUTE CONNECTIVITY INFO family=" << name() << " v=" << ici
+          << " node=" << ici->maxNodePerItem() << " face=" << ici->maxFacePerItem()
+          << " edge=" << ici->maxEdgePerItem() << " cell=" << ici->maxCellPerItem();
 }
 
 /*---------------------------------------------------------------------------*/
