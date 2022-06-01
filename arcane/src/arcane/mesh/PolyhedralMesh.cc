@@ -163,6 +163,10 @@ class PolyhedralFamily : public ItemFamily{
 
 #include "neo/Mesh.h"
 
+#ifdef ARCANE_HAS_VTKIO
+#include "arcane/mesh/PolyhedralMeshTools.h"
+#endif
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -219,12 +223,6 @@ namespace mesh
     {}
 
    public:
-    void read(const String& filename)
-    {
-      m_subdomain->traceMng()->info() << "--PolyhedralMesh : reading " << filename;
-      // First step create a single cell
-      _createSingleCellTest();
-    }
 
     String name() const { return m_mesh.name(); }
 
@@ -383,8 +381,23 @@ void Arcane::mesh::PolyhedralMesh::
 read(const String& filename)
 {
   // First step: create manually a unit mesh
-  ARCANE_UNUSED(filename); // temporary
-  _createUnitMesh();
+//  ARCANE_UNUSED(filename); // temporary
+//  _createUnitMesh();
+  // Second step read a vtk polyhedral mesh
+  m_subdomain->traceMng()->info() << "--PolyhedralMesh : reading " << filename;
+  // First step create a single cell
+  //      _createSingleCellTest();
+  // Second step : read a vtk polyhedral file
+  UniqueArray<String> splitted_filename{};
+  filename.split(splitted_filename,'.');
+  auto file_extension = splitted_filename.back();
+  if (file_extension != "vtk")
+    m_subdomain->traceMng()->fatal() << "Only vtk file format supported for polyhedral mesh";
+#ifdef ARCANE_HAS_VTKIO
+  PolyhedralMeshTools::VtkReader::read(filename, *this);
+#else
+  ARCANE_FATAL("Need VTKIO to read polyhedral mesh");
+#endif
   m_is_allocated = true;
 }
 
