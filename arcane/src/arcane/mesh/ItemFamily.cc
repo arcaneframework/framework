@@ -1984,42 +1984,6 @@ findAdjencyItems(const ItemGroup& group,const ItemGroup& sub_group,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Integer ItemFamily::
-maxNodePerItem() const
-{
-  return m_local_connectivity_info->maxNodePerItem();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Integer ItemFamily::
-maxEdgePerItem() const
-{
-  return m_local_connectivity_info->maxEdgePerItem();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Integer ItemFamily::
-maxFacePerItem() const
-{
-  return m_local_connectivity_info->maxFacePerItem();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Integer ItemFamily::
-maxCellPerItem() const
-{
-  return m_local_connectivity_info->maxCellPerItem();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 IItemConnectivityInfo* ItemFamily::
 localConnectivityInfos() const
 {

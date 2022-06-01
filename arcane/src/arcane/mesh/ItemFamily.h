@@ -168,10 +168,6 @@ class ARCANE_MESH_EXPORT ItemFamily
 
  public:
 
-  Integer maxNodePerItem() const override;
-  Integer maxEdgePerItem() const override;
-  Integer maxFacePerItem() const override;
-  Integer maxCellPerItem() const override;
   IItemConnectivityInfo* localConnectivityInfos() const override;
   IItemConnectivityInfo* globalConnectivityInfos() const override;
 
