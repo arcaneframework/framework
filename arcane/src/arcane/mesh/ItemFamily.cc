@@ -450,7 +450,7 @@ void ItemFamily::
 notifyEndUpdateFromMesh()
 {
   // Recalcul les infos de connectivités globales à tous les sous-domaines
-  m_global_connectivity_info->fill(m_item_shared_infos);
+  _computeConnectivityInfo(m_global_connectivity_info);
   m_global_connectivity_info->reduce(parallelMng());
 }
 
@@ -495,13 +495,13 @@ _partialEndUpdate()
     // readFromDump() (par exemple suite à un retour-arrière), les données ne seront
     // pas restaurées si entre temps current_id n'a pas changé.
     if (m_need_prepare_dump){
-      m_local_connectivity_info->fill(m_item_shared_infos);
+      _computeConnectivityInfo(m_local_connectivity_info);
       ++m_current_id;
     }
     return true;
   }
   m_item_need_prepare_dump = true;
-  m_local_connectivity_info->fill(m_item_shared_infos);
+  _computeConnectivityInfo(m_local_connectivity_info);
   ++m_current_id;
   m_internal_variables->m_items_data.variable()->syncReferences();
   m_items_data = &m_internal_variables->m_items_data._internalTrueData()->_internalDeprecatedValue();
@@ -2589,6 +2589,15 @@ _updateItemsSharedFlag()
     for( auto id : shared_ids )
       items[id]->addFlags(ItemInternal::II_Shared);
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemFamily::
+_computeConnectivityInfo(ItemConnectivityInfo* ici)
+{
+  ici->fill(m_item_shared_infos,itemInternalConnectivityList());
 }
 
 /*---------------------------------------------------------------------------*/

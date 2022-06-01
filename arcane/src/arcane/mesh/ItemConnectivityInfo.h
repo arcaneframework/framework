@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemConnectivityInfo.h                                      (C) 2000-2013 */
+/* ItemConnectivityInfo.h                                      (C) 2000-2022 */
 /*                                                                           */
 /* Informations sur la connectivité par type d'entité.                       */
 /*---------------------------------------------------------------------------*/
@@ -21,21 +21,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
+namespace Arcane
+{
+class ItemInternalConnectivityList;
 class IParallelMng;
+}
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_MESH_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
+namespace Arcane::mesh
+{
 class ItemSharedInfoList;
 
 /*---------------------------------------------------------------------------*/
@@ -61,30 +54,20 @@ class ARCANE_MESH_EXPORT ItemConnectivityInfo
  public:
 
   ItemConnectivityInfo();
-  virtual ~ItemConnectivityInfo() {} //<! Libère les ressources
 
  public:
 
- public:
-
-  virtual Integer maxNodePerItem() const
-  { return m_infos[ICI_Node]; }
-  virtual Integer maxEdgePerItem() const
-  { return m_infos[ICI_Edge]; }
-  virtual Integer maxFacePerItem() const
-  { return m_infos[ICI_Face]; }
-  virtual Integer maxCellPerItem() const
-  { return m_infos[ICI_Cell]; }
-  virtual Integer maxNodeInItemTypeInfo() const
-  { return m_infos[ICI_NodeItemTypeInfo]; }
-  virtual Integer maxEdgeInItemTypeInfo() const
-  { return m_infos[ICI_EdgeItemTypeInfo]; }
-  virtual Integer maxFaceInItemTypeInfo() const
-  { return m_infos[ICI_FaceItemTypeInfo]; }
+  Integer maxNodePerItem() const override { return m_infos[ICI_Node]; }
+  Integer maxEdgePerItem() const override { return m_infos[ICI_Edge]; }
+  Integer maxFacePerItem() const override { return m_infos[ICI_Face]; }
+  Integer maxCellPerItem() const override { return m_infos[ICI_Cell]; }
+  Integer maxNodeInItemTypeInfo() const override { return m_infos[ICI_NodeItemTypeInfo]; }
+  Integer maxEdgeInItemTypeInfo() const override { return m_infos[ICI_EdgeItemTypeInfo]; }
+  Integer maxFaceInItemTypeInfo() const override { return m_infos[ICI_FaceItemTypeInfo]; }
 
  public:
 
-  void fill(ItemSharedInfoList* isl);
+  void fill(ItemSharedInfoList* isl,ItemInternalConnectivityList* clist);
   void reduce(IParallelMng* pm);
 
  private:
@@ -95,8 +78,7 @@ class ARCANE_MESH_EXPORT ItemConnectivityInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

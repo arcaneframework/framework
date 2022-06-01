@@ -194,7 +194,7 @@ IncrementalItemConnectivityBase(IItemFamily* source_family,IItemFamily* target_f
   typedef IncrementalItemConnectivityBase ThatClass;
   // Récupère les évènements de lecture pour indiquer qu'il faut mettre
   // à jour les vues.
-  m_p->m_observers.addObserver(this,&ThatClass::_notifyConnectivityNbItemChanged,
+  m_p->m_observers.addObserver(this,&ThatClass::_notifyConnectivityNbItemChangedFromObservable,
                                m_p->m_connectivity_nb_item_variable.variable()->readObservable());
 
   m_p->m_observers.addObserver(this,&ThatClass::_notifyConnectivityIndexChanged,
@@ -208,9 +208,7 @@ IncrementalItemConnectivityBase(IItemFamily* source_family,IItemFamily* target_f
   // il peut être réalloué et donc la vue associée devenir invalide.
   _notifyConnectivityListChanged();
   _notifyConnectivityIndexChanged();
-  _notifyConnectivityNbItemChanged();
-
-  _computeMaxNbConnectedItem();
+  _notifyConnectivityNbItemChangedFromObservable();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -253,6 +251,19 @@ _notifyConnectivityNbItemChanged()
   m_connectivity_nb_item = m_p->m_connectivity_nb_item_array.view();
   if (m_item_connectivity_list)
     m_item_connectivity_list->setConnectivityNbItem(m_item_connectivity_index,m_connectivity_nb_item);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * Méthode appelée lorsque la le nombre d'entité est modifié de manière externe,
+ * par exemple en reprise ou après un retour-arrière.
+ */
+void IncrementalItemConnectivityBase::
+_notifyConnectivityNbItemChangedFromObservable()
+{
+  _notifyConnectivityNbItemChanged();
+  _computeMaxNbConnectedItem();
 }
 
 /*---------------------------------------------------------------------------*/

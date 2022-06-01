@@ -508,8 +508,10 @@ class ARCANE_MESH_EXPORT ItemFamily
   }
 
  private:
+
   void _getConnectedItems(IIncrementalItemConnectivity* parent_connectivity,ItemVector& target_family_connected_items);
   void _fillHasExtraParentProperty(ItemScalarProperty<bool>& child_families_has_extra_parent,ItemVectorView connected_items);
+  void _computeConnectivityInfo(ItemConnectivityInfo* ici);
 };
 
 /*---------------------------------------------------------------------------*/
