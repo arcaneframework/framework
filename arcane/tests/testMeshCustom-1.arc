@@ -8,7 +8,8 @@
 
  <meshes>
    <mesh name="PolyhedralMesh">
-     <fichier>example_polyhedral_cell.xmf</fichier>
+<!--     <fichier>example_polyhedral_cell.xmf</fichier>-->
+     <fichier>faultx1_2x1x1.vtk</fichier>
    </mesh>
  </meshes>
 
