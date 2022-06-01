@@ -168,13 +168,6 @@ class ARCANE_MESH_EXPORT ItemFamily
 
  public:
 
-  Integer maxNodePerItem() const override;
-  Integer maxEdgePerItem() const override;
-  Integer maxFacePerItem() const override;
-  Integer maxCellPerItem() const override;
-  Integer maxLocalNodePerItemType() const override;
-  Integer maxLocalEdgePerItemType() const override;
-  Integer maxLocalFacePerItemType() const override;
   IItemConnectivityInfo* localConnectivityInfos() const override;
   IItemConnectivityInfo* globalConnectivityInfos() const override;
 
@@ -508,8 +501,10 @@ class ARCANE_MESH_EXPORT ItemFamily
   }
 
  private:
+
   void _getConnectedItems(IIncrementalItemConnectivity* parent_connectivity,ItemVector& target_family_connected_items);
   void _fillHasExtraParentProperty(ItemScalarProperty<bool>& child_families_has_extra_parent,ItemVectorView connected_items);
+  void _computeConnectivityInfo(ItemConnectivityInfo* ici);
 };
 
 /*---------------------------------------------------------------------------*/

@@ -131,16 +131,20 @@ class IncrementalItemConnectivityContainer
 
   ObserverPool m_observers;
 
+  /*!
+   * \brief Nombre maximum d'entités connectées.
+   *
+   * Il s'agit d'un majorant du nombre maximum d'entité connectées.
+   * Pour des raisons de performance, cette valeur n'est pas mise à jour
+   * si des entités sont retirées.
+   */
+  Int32 m_max_nb_item = 0;
+
  public:
-  Integer size() const {
-    return m_connectivity_nb_item_array.size() ;
-  }
 
-  bool isAllocated() const {
-    return size() > 0 ;
-  }
+  Integer size() const { return m_connectivity_nb_item_array.size(); }
 
-
+  bool isAllocated() const { return size()>0; }
 
   void _checkResize(Int32 lid)
   {
@@ -190,7 +194,7 @@ IncrementalItemConnectivityBase(IItemFamily* source_family,IItemFamily* target_f
   typedef IncrementalItemConnectivityBase ThatClass;
   // Récupère les évènements de lecture pour indiquer qu'il faut mettre
   // à jour les vues.
-  m_p->m_observers.addObserver(this,&ThatClass::_notifyConnectivityNbItemChanged,
+  m_p->m_observers.addObserver(this,&ThatClass::_notifyConnectivityNbItemChangedFromObservable,
                                m_p->m_connectivity_nb_item_variable.variable()->readObservable());
 
   m_p->m_observers.addObserver(this,&ThatClass::_notifyConnectivityIndexChanged,
@@ -204,7 +208,7 @@ IncrementalItemConnectivityBase(IItemFamily* source_family,IItemFamily* target_f
   // il peut être réalloué et donc la vue associée devenir invalide.
   _notifyConnectivityListChanged();
   _notifyConnectivityIndexChanged();
-  _notifyConnectivityNbItemChanged();
+  _notifyConnectivityNbItemChangedFromObservable();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -247,6 +251,56 @@ _notifyConnectivityNbItemChanged()
   m_connectivity_nb_item = m_p->m_connectivity_nb_item_array.view();
   if (m_item_connectivity_list)
     m_item_connectivity_list->setConnectivityNbItem(m_item_connectivity_index,m_connectivity_nb_item);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * Méthode appelée lorsque la le nombre d'entité est modifié de manière externe,
+ * par exemple en reprise ou après un retour-arrière.
+ */
+void IncrementalItemConnectivityBase::
+_notifyConnectivityNbItemChangedFromObservable()
+{
+  _notifyConnectivityNbItemChanged();
+  _computeMaxNbConnectedItem();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IncrementalItemConnectivityBase::
+_setNewMaxNbConnectedItems(Int32 new_max)
+{
+  if (new_max > m_p->m_max_nb_item){
+    m_p->m_max_nb_item = new_max;
+    if (m_item_connectivity_list)
+      m_item_connectivity_list->setMaxNbConnectedItem(m_item_connectivity_index,new_max);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IncrementalItemConnectivityBase::
+_computeMaxNbConnectedItem()
+{
+  // Force la remise à zéro pour être sur qu'il sera mis à jour
+  m_p->m_max_nb_item = -1;
+  Int32 max_nb_item = 0;
+  for( Int32 x : m_connectivity_nb_item )
+    if (x>max_nb_item)
+      max_nb_item = x;
+  _setNewMaxNbConnectedItems(max_nb_item);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int32 IncrementalItemConnectivityBase::
+maxNbConnectedItem() const
+{
+  return m_p->m_max_nb_item;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -470,6 +524,7 @@ addConnectedItem(ItemLocalId source_item,ItemLocalId target_item)
     }
   }
   ++(m_connectivity_nb_item[lid]);
+  _setNewMaxNbConnectedItems(m_connectivity_nb_item[lid]);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -504,6 +559,7 @@ addConnectedItems(ItemLocalId source_item,Integer nb_item)
   Integer new_pos_in_list = _increaseConnectivityList(NULL_ITEM_LOCAL_ID,alloc_size);
   m_connectivity_index[lid] = new_pos_in_list;
   m_connectivity_nb_item[lid] += nb_item;
+  _setNewMaxNbConnectedItems(m_connectivity_nb_item[lid]);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -708,7 +764,7 @@ compactConnectivityList()
     Int32 lid = i;
     Int32 nb = m_connectivity_nb_item[lid];
     Int32 index = m_connectivity_index[lid];
-    Int32ConstArrayView con_list(nb,old_connectivity_list.unguardedBasePointer()+index);
+    Int32ConstArrayView con_list(nb,old_connectivity_list.data()+index);
     Integer alloc_size = _computeAllocSize(nb);
     m_connectivity_index[lid] = new_pos_in_list;
     new_pos_in_list += alloc_size;
@@ -728,6 +784,7 @@ compactConnectivityList()
       m_connectivity_index[lid] = 0;
   }
   _notifyConnectivityListChanged();
+  _computeMaxNbConnectedItem();
   info(4) << "Compacting IncrementalItemConnectivity name=" << name()
           << " nb_item=" << nb_item << " old_size=" << old_size
           << " new_size=" << m_connectivity_list.size()
@@ -772,6 +829,7 @@ addConnectedItem(ItemLocalId source_item,ItemLocalId target_item)
   Int32 target_lid = target_item.localId();
   m_connectivity_list[lid] = target_lid;
   m_connectivity_nb_item[lid] = 1;
+  _setNewMaxNbConnectedItems(1);
 }
 
 /*---------------------------------------------------------------------------*/

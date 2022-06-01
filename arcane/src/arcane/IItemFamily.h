@@ -374,51 +374,7 @@ class IItemFamily
 
  public:
 
-  /*!
-   * \name Informations sur la connectivité.
-   *
-   * Ces informations sont recalculées dynamiquement lorsque le maillage évolue.
-   *
-   *
-   */
-  //@{
-  /*! Nombre maximal de noeuds par entité.
-   * \deprecated Utiliser localConnectivityInfos()->maxNodePerItem() à la place.
-   */    
-  virtual ARCANE_DEPRECATED_122 Integer maxNodePerItem() const =0;
-  
-  /*! Nombre maximal d'arêtes par entité
-   * \deprecated Utiliser localConnectivityInfos()->maxEdgePerItem() à la place.
-   */
-  virtual ARCANE_DEPRECATED_122 Integer maxEdgePerItem() const =0;
-
-  /*! Nombre maximal de faces par entité
-   * \deprecated Utiliser localConnectivityInfos()->maxFacePerItem() à la place.
-   */
-  virtual ARCANE_DEPRECATED_122 Integer maxFacePerItem() const =0;
-
-  /*! Nombre maximal de mailles par entité
-   * \deprecated Utiliser localConnectivityInfos()->maxCellPerItem() à la place.
-   */
-  virtual ARCANE_DEPRECATED_122 Integer maxCellPerItem() const =0;
-
-  /*! Nombre maximal de noeuds pour un type d'entité
-   * \deprecated Utiliser localConnectivityInfos()->maxNodeInItemTypeInfo() à la place.
-   */
-  virtual ARCANE_DEPRECATED_122 Integer maxLocalNodePerItemType() const =0;
-  
-  /*! Nombre maximal d'arêtes pour un type d'entité
-   * \deprecated Utiliser localConnectivityInfos()->maxEdgeInItemTypeInfo() à la place.
-   */
-  virtual ARCANE_DEPRECATED_122 Integer maxLocalEdgePerItemType() const =0;
-
-  /*! Nombre maximal de faces pour un type d'entité
-   * \deprecated Utiliser localConnectivityInfos()->maxFaceInItemTypeInfo() à la place.
-   */
-  virtual ARCANE_DEPRECATED_122 Integer maxLocalFacePerItemType() const =0;
-  //@}
-
-  //! Informations sur la connectivité locales au sous-domaine pour à cette famille
+  //! Informations sur la connectivité locale au sous-domaine pour à cette famille
   virtual IItemConnectivityInfo* localConnectivityInfos() const =0;
 
   //! Informations sur la connectivité globales à tous les sous-domaines.

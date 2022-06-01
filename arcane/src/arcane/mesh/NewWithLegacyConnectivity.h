@@ -125,7 +125,10 @@ public:
   //! localId() de la \a index-ième entitée connectées à l'entité source de numéro local \a lid
   Int32 connectedItemLocalId(ItemLocalId lid,Integer index) const override  {return Base::trueCustomConnectivity()->connectedItemLocalId(lid,index);}
 
-protected:
+  //! Nombre maximum d'entités connectées à une entité source.
+  Int32 maxNbConnectedItem() const override { return Base::trueCustomConnectivity()->maxNbConnectedItem(); }
+
+  protected:
 
   //! Implémente l'initialisation de \a civ pour cette connectivitée.
   void _initializeStorage(ConnectivityItemVector* civ) override {Base::trueCustomConnectivity()->_initializeStorage(civ);};

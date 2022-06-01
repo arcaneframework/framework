@@ -116,6 +116,9 @@ namespace Arcane
       return m_nb_item_cell[local_id];
     }
 
+    // NOTE: Une fois qu'on sera passé à la version C# 10, on pourra utiliser
+    // des tableaux de taille fixe
+
     Int32ArrayView m_indexes_node;
     Int32ArrayView m_indexes_edge;
     Int32ArrayView m_indexes_face;
@@ -136,6 +139,13 @@ namespace Arcane
     Int32ConstArrayView m_list_cell;
     Int32ConstArrayView m_list_hparent;
     Int32ConstArrayView m_list_hchild;
+
+    Int32 m_max_nb_item0;
+    Int32 m_max_nb_item1;
+    Int32 m_max_nb_item2;
+    Int32 m_max_nb_item3;
+    Int32 m_max_nb_item4;
+    Int32 m_max_nb_item5;
 
     MeshItemInternalList* m_items;
 
