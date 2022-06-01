@@ -372,8 +372,6 @@ _dumpConnectivityInfos(IItemConnectivityInfo* cell_family,IItemConnectivityInfo*
   info() << "max node per cell = " << cell_family->maxNodePerItem();
   info() << "max edge per cell = " << cell_family->maxEdgePerItem();
   info() << "max face per cell = " << cell_family->maxFacePerItem();
-  info() << "max local edge per cell = " << cell_family->maxEdgeInItemTypeInfo();
-  info() << "max local face per cell = " << cell_family->maxFaceInItemTypeInfo();
 
   info() << "max node per face = " << face_family->maxNodePerItem();
   info() << "max edge per face = " << face_family->maxEdgePerItem();

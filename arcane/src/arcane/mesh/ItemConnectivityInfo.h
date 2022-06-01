@@ -61,9 +61,6 @@ class ARCANE_MESH_EXPORT ItemConnectivityInfo
   Integer maxEdgePerItem() const override { return m_infos[ICI_Edge]; }
   Integer maxFacePerItem() const override { return m_infos[ICI_Face]; }
   Integer maxCellPerItem() const override { return m_infos[ICI_Cell]; }
-  Integer maxNodeInItemTypeInfo() const override { return m_infos[ICI_NodeItemTypeInfo]; }
-  Integer maxEdgeInItemTypeInfo() const override { return m_infos[ICI_EdgeItemTypeInfo]; }
-  Integer maxFaceInItemTypeInfo() const override { return m_infos[ICI_FaceItemTypeInfo]; }
 
  public:
 

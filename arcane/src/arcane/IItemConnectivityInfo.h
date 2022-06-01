@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IItemConnectivityInfo.h                                     (C) 2000-2013 */
+/* IItemConnectivityInfo.h                                     (C) 2000-2022 */
 /*                                                                           */
 /* Interface des informations sur la connectivité par type d'entité.         */
 /*---------------------------------------------------------------------------*/
@@ -19,10 +19,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -44,7 +42,7 @@ class IItemConnectivityInfo
 {
  public:
 
-  virtual ~IItemConnectivityInfo() {} //<! Libère les ressources
+  virtual ~IItemConnectivityInfo() = default; //<! Libère les ressources
 
  public:
 
@@ -59,21 +57,12 @@ class IItemConnectivityInfo
 
   //! Nombre maximal de mailles par entité
   virtual Integer maxCellPerItem() const =0;
-
-  //! Nombre maximal de noeuds pour les ItemTypeInfo de ce type d'entité
-  virtual Integer maxNodeInItemTypeInfo() const =0;
-  
-  //! Nombre maximal d'arêtes pour les ItemTypeInfo de ce type d'entité
-  virtual Integer maxEdgeInItemTypeInfo() const =0;
-
-  //! Nombre maximal de faces pour les ItemTypeInfo de ce type d'entité
-  virtual Integer maxFaceInItemTypeInfo() const =0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

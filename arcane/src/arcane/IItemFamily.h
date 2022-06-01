@@ -401,21 +401,6 @@ class IItemFamily
    * \deprecated Utiliser localConnectivityInfos()->maxCellPerItem() à la place.
    */
   virtual ARCANE_DEPRECATED_122 Integer maxCellPerItem() const =0;
-
-  /*! Nombre maximal de noeuds pour un type d'entité
-   * \deprecated Utiliser localConnectivityInfos()->maxNodeInItemTypeInfo() à la place.
-   */
-  virtual ARCANE_DEPRECATED_122 Integer maxLocalNodePerItemType() const =0;
-  
-  /*! Nombre maximal d'arêtes pour un type d'entité
-   * \deprecated Utiliser localConnectivityInfos()->maxEdgeInItemTypeInfo() à la place.
-   */
-  virtual ARCANE_DEPRECATED_122 Integer maxLocalEdgePerItemType() const =0;
-
-  /*! Nombre maximal de faces pour un type d'entité
-   * \deprecated Utiliser localConnectivityInfos()->maxFaceInItemTypeInfo() à la place.
-   */
-  virtual ARCANE_DEPRECATED_122 Integer maxLocalFacePerItemType() const =0;
   //@}
 
   //! Informations sur la connectivité locales au sous-domaine pour à cette famille

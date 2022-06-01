@@ -2020,33 +2020,6 @@ maxCellPerItem() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Integer ItemFamily::
-maxLocalNodePerItemType() const
-{
-  return m_local_connectivity_info->maxNodeInItemTypeInfo();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Integer ItemFamily::
-maxLocalEdgePerItemType() const
-{
-  return m_local_connectivity_info->maxEdgeInItemTypeInfo();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Integer ItemFamily::
-maxLocalFacePerItemType() const
-{
-  return m_local_connectivity_info->maxFaceInItemTypeInfo();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 IItemConnectivityInfo* ItemFamily::
 localConnectivityInfos() const
 {
