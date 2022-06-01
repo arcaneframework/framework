@@ -261,8 +261,11 @@ _notifyConnectivityNbItemChanged()
 void IncrementalItemConnectivityBase::
 _setNewMaxNbConnectedItems(Int32 new_max)
 {
-  if (new_max > m_p->m_max_nb_item)
+  if (new_max > m_p->m_max_nb_item){
     m_p->m_max_nb_item = new_max;
+    if (m_item_connectivity_list)
+      m_item_connectivity_list->setMaxNbConnectedItem(m_item_connectivity_index,new_max);
+  }
 }
 
 /*---------------------------------------------------------------------------*/

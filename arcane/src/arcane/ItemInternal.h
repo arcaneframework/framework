@@ -72,7 +72,11 @@ namespace Arcane
  */
 class ARCANE_CORE_EXPORT ItemInternalConnectivityList
 {
+  // IMPORTANT: Cette structure doit avoir le même agencement mémoire
+  // que la structure C# de même nom.
+
  private:
+
   /*!
    * \brief Vue spécifique pour gérer les entités nulles.
    *
@@ -119,8 +123,11 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
     Int32 m_size;
     Int32* m_data;
   };
+
  public:
-  enum {
+
+  enum
+  {
     NODE_IDX = 0,
     EDGE_IDX = 1,
     FACE_IDX = 2,
@@ -129,9 +136,13 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
     HCHILD_IDX = 5,
     MAX_ITEM_KIND = 6
   };
+
  public:
+
   static ItemInternalConnectivityList nullInstance;
+
  public:
+
   ItemInternalConnectivityList()
   : m_items(nullptr), m_nb_access_all(0), m_nb_access(0)
   {
@@ -141,9 +152,12 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
       m_nb_item_null_data[i][0] = 0;
       m_nb_item_null_data[i][1] = 0;
       m_nb_item[i].setNull(&m_nb_item_null_data[i][1]);
+      m_max_nb_item[i] = 0;
     }
   }
+
  public:
+
   /*!
    * \brief Liste des localId() des entités de type \a item_kind
    * connectées à l'entité de de localid() \a lid.
@@ -185,6 +199,11 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   {
     m_nb_item[item_kind] = v;
   }
+  //! Positionne le nombre maximum d'entités connectées.
+  void setMaxNbConnectedItem(Int32 item_kind,Int32 v)
+  {
+    m_max_nb_item[item_kind] = v;
+  }
   //! Tableau d'index des connectivités pour les entités de genre \a item_kind
   Int32ConstArrayView connectivityIndex(Int32 item_kind) const
   {
@@ -200,6 +219,12 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   {
     return m_nb_item[item_kind];
   }
+  //! Nombre maximum d'entités connectées.
+  Int32 maxNbConnectedItem(Int32 item_kind) const
+  {
+    return m_max_nb_item[item_kind];
+  }
+
  public:
 
   ItemInternal* nodeV2(Int32 lid,Int32 aindex) const
@@ -259,27 +284,37 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   { return itemLocalId(ItemInternalConnectivityList::HPARENT_IDX,lid,index); }
   Int32 _hChildLocalIdV2(Int32 lid,Int32 index) const
   { return itemLocalId(ItemInternalConnectivityList::HCHILD_IDX,lid,index); }
+
  public:
+
   Int32 _nbNodeV2(Int32 lid) const { return m_nb_item[NODE_IDX][lid]; }
   Int32 _nbEdgeV2(Int32 lid) const { return m_nb_item[EDGE_IDX][lid]; }
   Int32 _nbFaceV2(Int32 lid) const { return m_nb_item[FACE_IDX][lid]; }
   Int32 _nbCellV2(Int32 lid) const { return m_nb_item[CELL_IDX][lid]; }
   Int32 _nbHParentV2(Int32 lid) const { return m_nb_item[HPARENT_IDX][lid]; }
   Int32 _nbHChildrenV2(Int32 lid) const { return m_nb_item[HCHILD_IDX][lid]; }
+
  private:
+
   // Ces deux tableaux utilisent une vue modifiable par compatibilité avec les anciens
   // mécanismes. Une fois que ceci auront été supprimés alors il sera
   // constant
   Int32ArrayView m_indexes[MAX_ITEM_KIND];
   Int32View m_nb_item[MAX_ITEM_KIND];
   Int32ConstArrayView m_list[MAX_ITEM_KIND];
+  Int32 m_max_nb_item[MAX_ITEM_KIND];
+
  public:
+
   MeshItemInternalList* m_items;
+
  private:
   // Compte le nombre d'accès pour vérification. A supprimer par la suite.
   mutable Int64 m_nb_access_all;
   mutable Int64 m_nb_access;
+
  public:
+
   Int32ArrayView _mutableConnectivityIndex(Int32 item_kind) const
   {
     return m_indexes[item_kind];
@@ -290,8 +325,10 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   }
   Int32Array* m_indexes_array[MAX_ITEM_KIND];
   Int32Array* m_nb_item_array[MAX_ITEM_KIND];
+
  private:
- Int32 m_nb_item_null_data[MAX_ITEM_KIND][2];
+
+  Int32 m_nb_item_null_data[MAX_ITEM_KIND][2];
 };
 
 /*---------------------------------------------------------------------------*/
@@ -589,7 +626,8 @@ class ARCANE_CORE_EXPORT ItemInternal
   inline bool isSlaveFace() const { return flags() & II_SlaveFace; }
 
  public:
-  void reinitialize(Int64 uid,Integer aowner,Int32 owner_rank)
+
+  void reinitialize(Int64 uid,Int32 aowner,Int32 owner_rank)
   {
     setUniqueId(uid);
     setFlags(0);
@@ -693,8 +731,7 @@ class ARCANE_CORE_EXPORT ItemInternal
    * \warning Ces méthodes ne doivent être appelées que sur les entités
    * qui possèdent la connectivité associée ET qui sont au nouveau format.
    * Par exemple, cela ne fonctionne pas sur Cell->Cell car il n'y a pas de
-   * connectivité maille/maille, ni sur les Link car ils n'utilisent pas
-   * les nouvelles connectivités. En cas de mauvaise utilisation, cela
+   * connectivité maille/maille. En cas de mauvaise utilisation, cela
    * se traduit par un débordement de tableau.
    * 
    */
