@@ -55,7 +55,7 @@ ItemSharedInfo()
 ItemSharedInfo::
 ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
                ItemInternalConnectivityList* connectivity,Int64ArrayView* unique_ids)
-: m_nb_node(item_type->nbLocalNode())
+: m_nb_node(0)
 , m_nb_edge(0)
 , m_nb_face(0)
 , m_nb_cell(0)
@@ -79,73 +79,100 @@ ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList*
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+//! Constructeur de désérialisation
 ItemSharedInfo::
 ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
                ItemInternalConnectivityList* connectivity,Int64ArrayView* unique_ids,
                Int32ConstArrayView buffer)
-: m_nb_node(item_type->nbLocalNode())
-, m_nb_edge(buffer[1])
-, m_nb_face(buffer[2])
-, m_nb_cell(buffer[3])
+: m_nb_node(0)
+, m_nb_edge(0)
+, m_nb_face(0)
+, m_nb_cell(0)
 , m_items(items)
 , m_connectivity(connectivity)
 , m_item_family(family)
 , m_unique_ids(unique_ids)
 , m_item_type(item_type)
 , m_item_kind(family->itemKind())
-, m_edge_allocated(buffer[4])
-, m_face_allocated(buffer[5])
-, m_cell_allocated(buffer[6])
+, m_edge_allocated(0)
+, m_face_allocated(0)
+, m_cell_allocated(0)
 , m_type_id(item_type->typeId())
-, m_index(buffer[7])
-, m_nb_reference(buffer[8])
+, m_index(0)
+, m_nb_reference(0)
 {
-  //! AMR
-  if (buffer.size()>=serializeAMRSize()){
-    m_nb_hParent = buffer[9];
-    m_nb_hChildren = buffer[10];
-    m_hParent_allocated = buffer[11];
-    m_hChild_allocated = buffer[12];
+  // La taille du buffer dépend des versions de Arcane.
+  // Avant la 3.2 (Octobre 2021), la taille du buffer est 9 (non AMR) ou 13 (AMR)
+  // Entre la 3.2 et la 3.6 (Mai 2022), la taille vaut toujours 13
+  // A partir de la 3.6, la taille vaut 6.
+  //
+  // On ne cherche pas à faire de reprise avec des versions
+  // de Arcane antérieures à 3.2 donc on peut supposer que la taille
+  // du buffer vaut 13. Ces versions utilisent la nouvelle connectivité
+  // et donc le nombre des éléments est toujours 0 (ainsi que les *allocated)
+  // sauf pour m_nb_node.
+  //
+  // A partir de la 3.6, le nombre de noeuds n'est plus utilisé non
+  // plus et vaut toujours 0. On pourra donc pour les versions de fin
+  // 2022 supprimer ces champs de ItemSharedInfo.
+  Int32 buf_size = buffer.size();
+  if (buf_size>serializeWriteSize()){
+    m_nb_node = item_type->nbLocalNode();
+    m_nb_edge = buffer[1];
+    m_nb_face = buffer[2];
+    m_nb_cell = buffer[3];
+    m_edge_allocated = buffer[4];
+    m_face_allocated = buffer[5];
+    m_cell_allocated = buffer[6];
+    m_index = buffer[7];
+    m_nb_reference = buffer[8];
+    //! AMR
+    if (buf_size>=9){
+      m_nb_hParent = buffer[9];
+      m_nb_hChildren = buffer[10];
+      m_hParent_allocated = buffer[11];
+      m_hChild_allocated = buffer[12];
+    }
   }
+  else{
+    m_index = buffer[2];
+    m_nb_reference = buffer[3];
+  }
+
   _init(m_item_kind);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Nombre d'informations à écrire pour les données.
  *
- * On sauve toujours la même quantité d'informations que le maillage soit
- * AMR ou pas. Cela permettra à terme de supprimer 'm_is_amr_activated'.
- * On pourra le faire dès qu'il n'y aura plus besoin de faire une reprise
- * depuis une ancienne version de Arcane.
+ * A partir de version 3.6, on ne conserve plus d'informations sur le
+ * nombre d'entités connectées.
  */
 Integer ItemSharedInfo::
 serializeWriteSize()
 {
-  return serializeAMRSize();
+  return 6;
 }
 
 Integer ItemSharedInfo::
 serializeSize()
 {
-	//! AMR
-	if(ItemSharedInfo::m_is_amr_activated)
-		return serializeAMRSize();
-  return serializeNoAMRSize();
+	return serializeWriteSize();
 }
 
 Integer ItemSharedInfo::
 serializeAMRSize()
 {
-  return 13;
+  return serializeWriteSize();
 }
 
 Integer ItemSharedInfo::
 serializeNoAMRSize()
 {
-  return 9;
+  return serializeWriteSize();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -156,24 +183,13 @@ serializeWrite(Int32ArrayView buffer)
 {
   buffer[0] = m_type_id; // Doit toujours être le premier
 
-  buffer[1] = m_nb_edge;
-  buffer[2] = m_nb_face;
-  buffer[3] = m_nb_cell;
+  buffer[1] = 0x0307; // Numéro de version (3.7).
 
-  buffer[4] = m_edge_allocated;
-  buffer[5] = m_face_allocated;
-  buffer[6] = m_cell_allocated;
+  buffer[2] = m_index;
+  buffer[3] = m_nb_reference;
 
-  buffer[7] = m_index;
-  buffer[8] = m_nb_reference;
-
-  //! AMR
-  if (buffer.size()>=serializeAMRSize()){
-	  buffer[9] = m_nb_hParent;
-	  buffer[10] = m_nb_hChildren;
-	  buffer[11] = m_hParent_allocated;
-	  buffer[12] = m_hChild_allocated;
-  }
+  buffer[4] = 0; // Réservé
+  buffer[5] = 0; // Réservé
 }
 
 /*---------------------------------------------------------------------------*/
