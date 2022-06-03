@@ -248,11 +248,16 @@ readFromDump()
     Integer stored_size = m_variables->m_infos_values[0].size();
     if (stored_size==ItemSharedInfo::serializeAMRSize()){
     }
-    else if (stored_size!=element_size)
-      ARCANE_FATAL("Incoherence of saved data (most probably due to a"
-                   " difference of versions between the protection and the executable."
-                   " stored_size={0} element_size={1} count={2}",
-                   stored_size,element_size,n);
+    else if (stored_size!=element_size){
+      // On ne peut relire que les anciennes versions (avant la 3.6)
+      // dont la taille vaut 13 (avec AMR) ou 9 (sans AMR) ce qui correspond
+      // aux versions de Arcane de 2021.
+      if (stored_size!=13 && stored_size!=9)
+        ARCANE_FATAL("Incoherence of saved data (most probably due to a"
+                     " difference of versions between the protection and the executable."
+                     " stored_size={0} element_size={1} count={2}",
+                     stored_size,element_size,n);
+    }
   }
 
   // Tous les types vont a nouveau être ajoutés à la liste
