@@ -114,6 +114,8 @@ class ItemInternalVectorView
   typedef ItemInternalVectorViewConstIterator const_iterator;
  public:
 
+  ItemInternalVectorView() = default;
+
   ItemInternalVectorView(ItemInternalArrayView aitems,Int32ConstArrayView local_ids)
   : m_items(aitems), m_local_ids(local_ids) {}
 

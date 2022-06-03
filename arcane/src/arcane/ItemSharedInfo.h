@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemSharedInfo.h                                            (C) 2000-2020 */
+/* ItemSharedInfo.h                                            (C) 2000-2022 */
 /*                                                                           */
 /* Informations communes à plusieurs entités.                                */
 /*---------------------------------------------------------------------------*/
@@ -94,13 +94,19 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
  public:
   eItemKind itemKind() const { return m_item_kind; }
   IItemFamily* itemFamily() const { return m_item_family; }
-  Int32 nbNode() const { return m_nb_node; }
-  Int32 nbEdge() const { return m_nb_edge; }
-  Int32 nbFace() const { return m_nb_face; }
-  Int32 nbCell() const { return m_nb_cell; }
   Int32 nbParent() const { return m_nb_parent; }
-  Int32 nbHParent() const { return m_nb_hParent; }
-  Int32 nbHChildren() const {return m_nb_hChildren; }
+  Int32 nbNode() const { return m_nb_node; }
+
+  ARCANE_DEPRECATED_REASON("Y2020: This method always return 0")
+  constexpr Int32 nbEdge() const { return 0; }
+  ARCANE_DEPRECATED_REASON("Y2020: This method always return 0")
+  Int32 nbFace() const { return 0; }
+  ARCANE_DEPRECATED_REASON("Y2020: This method always return 0")
+  Int32 nbCell() const { return 0; }
+  ARCANE_DEPRECATED_REASON("Y2020: This method always return 0")
+  Int32 nbHParent() const { return 0; }
+  ARCANE_DEPRECATED_REASON("Y2020: This method always return 0")
+  Int32 nbHChildren() const { return 0; }
 
   Int32 typeId() const { return m_type_id; }
 
@@ -117,56 +123,67 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   Int32 minimumNeededMemory() const { return m_minimum_needed_memory; }
   ARCCORE_DEPRECATED_2021("This method always return 'false'")
   constexpr bool hasLegacyConnectivity() const { return false; }
+
  public:
+
   void print(std::ostream& o) const;
+
  public:
+
   ItemInternalVectorView nodes(Int32 data_index) const
   { return ItemInternalVectorView(m_items->nodes,m_infos+data_index+firstNode(),nbNode()); }
-  ItemInternalVectorView edges(Int32 data_index) const
-  { return ItemInternalVectorView(m_items->edges,m_infos+data_index+firstEdge(),nbEdge()); }
-  ItemInternalVectorView faces(Int32 data_index) const
-  { return ItemInternalVectorView(m_items->faces,m_infos+data_index+firstFace(),nbFace()); }
-  ItemInternalVectorView cells(Int32 data_index) const
-  { return ItemInternalVectorView(m_items->cells,m_infos+data_index+firstCell(),nbCell()); }
 
-  //!AMR
-  ItemInternalVectorView hChildren(Int32 data_index) const
-  { return ItemInternalVectorView(m_items->cells,m_infos+data_index+firstHChild(),nbHChildren()); }
+  ARCANE_DEPRECATED_REASON("Y2020: This list is always empty")
+  ItemInternalVectorView edges(Int32) const { return ItemInternalVectorView(); }
+
+  ARCANE_DEPRECATED_REASON("Y2020: This list is always empty")
+  ItemInternalVectorView faces(Int32) const { return ItemInternalVectorView(); }
+
+  ARCANE_DEPRECATED_REASON("Y2020: This list is always empty")
+  ItemInternalVectorView cells(Int32) const { return ItemInternalVectorView(); }
+
+  ARCANE_DEPRECATED_REASON("Y2020: This list is always empty")
+  ItemInternalVectorView hChildren(Int32) const { return ItemInternalVectorView(); }
+
  public:
-  ItemInternal* node(Int32 data_index,Int32 aindex) const
-  { return m_items->nodes[ m_infos[data_index + firstNode()+aindex] ]; }
-  ItemInternal* edge(Int32 data_index,Int32 aindex) const
-  { return m_items->edges[ m_infos[data_index + firstEdge()+aindex] ]; }
-  ItemInternal* face(Int32 data_index,Int32 aindex) const
-  { return m_items->faces[ m_infos[data_index + firstFace()+aindex] ]; }
-  ItemInternal* cell(Int32 data_index,Int32 aindex) const
-  { return m_items->cells[ m_infos[data_index + firstCell()+aindex] ]; }
-  //! AMR
+
   ItemInternal* parent(Integer data_index,Integer aindex) const
   { return _parents(aindex)[m_infos[data_index + firstParent()+aindex] ]; }
-  ItemInternal* hParent(Integer data_index,Integer aindex) const
-  { return m_items->cells[m_infos[data_index + firstHParent()+aindex] ]; }
-  ItemInternal* hChild(Int32 data_index,Int32 aindex) const
-  { return m_items->cells[m_infos[data_index + firstHChild()+aindex] ]; }
+
+  ItemInternal* node(Int32 data_index,Int32 aindex) const
+  { return m_items->nodes[ m_infos[data_index + firstNode()+aindex] ]; }
+
+  ARCANE_DEPRECATED_REASON("Y2020: This method always return 'nullptr'")
+  ItemInternal* edge(Int32,Int32) const { return nullptr; }
+  ARCANE_DEPRECATED_REASON("Y2020: This method always return 'nullptr'")
+  ItemInternal* face(Int32,Int32) const { return nullptr; }
+  ARCANE_DEPRECATED_REASON("Y2020: This method always return 'nullptr'")
+  ItemInternal* cell(Int32,Int32) const { return nullptr; }
+  ARCANE_DEPRECATED_REASON("Y2020: This method always return 'nullptr'")
+  ItemInternal* hParent(Integer,Integer) const { return nullptr; }
+  ARCANE_DEPRECATED_REASON("Y2020: This method always return 'nullptr'")
+  ItemInternal* hChild(Int32,Int32) const { return nullptr; }
 
  public:
+
   Int32 nodeLocalId(Int32 data_index,Int32 aindex) const
   { return m_infos[data_index+firstNode()+aindex]; }
-  Int32 edgeLocalId(Int32 data_index,Int32 aindex) const
-  { return m_infos[data_index+firstEdge()+aindex]; }
-  Int32 faceLocalId(Int32 data_index,Int32 aindex) const
-  { return m_infos[data_index+firstFace()+aindex]; }
-  Int32 cellLocalId(Int32 data_index,Int32 aindex) const
-  { return m_infos[data_index+firstCell()+aindex]; }
-  Integer parentLocalId(Integer data_index,Integer aindex) const
-  { return m_infos[data_index+firstParent()+aindex]; }
-  //! AMR
-  Int32 hParentLocalId(Integer data_index,Integer aindex) const
-  { return m_infos[data_index+firstHParent()+aindex]; }
-  Int32 hChildLocalId(Integer data_index,Integer aindex) const
-  { return m_infos[data_index+firstHChild()+aindex]; }
+
+  ARCANE_DEPRECATED_REASON("Y2020: This method always return 'NULL_ITEM_LOCAL_ID'")
+  Int32 edgeLocalId(Int32,Int32) const { return NULL_ITEM_LOCAL_ID; }
+  ARCANE_DEPRECATED_REASON("Y2020: This method always return 'NULL_ITEM_LOCAL_ID'")
+  Int32 faceLocalId(Int32,Int32) const { return NULL_ITEM_LOCAL_ID; }
+  ARCANE_DEPRECATED_REASON("Y2020: This method always return 'NULL_ITEM_LOCAL_ID'")
+  Int32 cellLocalId(Int32,Int32) const { return NULL_ITEM_LOCAL_ID; }
+  ARCANE_DEPRECATED_REASON("Y2020: This method always return 'NULL_ITEM_LOCAL_ID'")
+  Integer parentLocalId(Integer,Integer) const { return NULL_ITEM_LOCAL_ID; }
+  ARCANE_DEPRECATED_REASON("Y2020: This method always return 'NULL_ITEM_LOCAL_ID'")
+  Int32 hParentLocalId(Integer,Integer) const { return NULL_ITEM_LOCAL_ID; }
+  ARCANE_DEPRECATED_REASON("Y2020: This method always return 'NULL_ITEM_LOCAL_ID'")
+  Int32 hChildLocalId(Integer,Integer) const { return NULL_ITEM_LOCAL_ID; }
 
  public:
+
   void setNode(Int32 data_index,Int32 aindex,Int32 local_id) const
   { m_infos[ data_index+firstNode()+aindex] = local_id; }
   void setEdge(Int32 data_index,Int32 aindex,Int32 local_id) const
@@ -184,12 +201,12 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   { m_infos[ data_index+firstHChild()+aindex] = local_id; }
 
  public:
-  Int32 edgeAllocated() const { return m_edge_allocated; }
-  Int32 faceAllocated() const { return m_face_allocated; }
-  Int32 cellAllocated() const { return m_cell_allocated; }
-  //!AMR
-  Int32 hParentAllocated() const { return m_hParent_allocated; }
-  Int32 hChildAllocated() const { return m_hChild_allocated; }
+
+  constexpr Int32 edgeAllocated() const { return 0; }
+  constexpr Int32 faceAllocated() const { return 0; }
+  constexpr Int32 cellAllocated() const { return 0; }
+  constexpr Int32 hParentAllocated() const { return 0; }
+  constexpr Int32 hChildAllocated() const { return 0; }
 
  public:
   const Int32* _infos() const { return m_infos; }
@@ -212,8 +229,6 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   Int32 m_first_hChild = 0;
   Int32 m_nb_hParent = 0;
   Int32 m_nb_hChildren = 0;
-  // TODO: GG: ne devrait pas être statique
-  static bool m_is_amr_activated;
 
  public:
   MeshItemInternalList* m_items = nullptr;

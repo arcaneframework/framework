@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemSharedInfo.cc                                           (C) 2000-2020 */
+/* ItemSharedInfo.cc                                           (C) 2000-2022 */
 /*                                                                           */
 /* Informations communes à plusieurs entités.                                */
 /*---------------------------------------------------------------------------*/
@@ -30,8 +30,6 @@ namespace Arcane
 
 ItemSharedInfo ItemSharedInfo::nullItemSharedInfo;
 
-bool ItemSharedInfo::m_is_amr_activated = false;
-
 // Suppose NULL_ITEM_UNIQUE_ID == (-1) et NULL_ITEM_LOCAL_ID == (-1)
 // Cree un pseudo-tableau qui pourra etre indexé avec NULL_ITEM_LOCAL_ID
 // pour la maille nulle.
@@ -55,23 +53,12 @@ ItemSharedInfo()
 ItemSharedInfo::
 ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
                ItemInternalConnectivityList* connectivity,Int64ArrayView* unique_ids)
-: m_nb_node(0)
-, m_nb_edge(0)
-, m_nb_face(0)
-, m_nb_cell(0)
-, m_nb_hParent(0)
-, m_nb_hChildren(0)
-, m_items(items)
+: m_items(items)
 , m_connectivity(connectivity)
 , m_item_family(family)
 , m_unique_ids(unique_ids)
 , m_item_type(item_type)
 , m_item_kind(family->itemKind())
-, m_edge_allocated(0)
-, m_face_allocated(0)
-, m_cell_allocated(0)
-, m_hParent_allocated(0)
-, m_hChild_allocated(0)
 , m_type_id(item_type->typeId())
 {
   _init(m_item_kind);
@@ -84,22 +71,13 @@ ItemSharedInfo::
 ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
                ItemInternalConnectivityList* connectivity,Int64ArrayView* unique_ids,
                Int32ConstArrayView buffer)
-: m_nb_node(0)
-, m_nb_edge(0)
-, m_nb_face(0)
-, m_nb_cell(0)
-, m_items(items)
+: m_items(items)
 , m_connectivity(connectivity)
 , m_item_family(family)
 , m_unique_ids(unique_ids)
 , m_item_type(item_type)
 , m_item_kind(family->itemKind())
-, m_edge_allocated(0)
-, m_face_allocated(0)
-, m_cell_allocated(0)
 , m_type_id(item_type->typeId())
-, m_index(0)
-, m_nb_reference(0)
 {
   // La taille du buffer dépend des versions de Arcane.
   // Avant la 3.2 (Octobre 2021), la taille du buffer est 9 (non AMR) ou 13 (AMR)
@@ -116,7 +94,7 @@ ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList*
   // plus et vaut toujours 0. On pourra donc pour les versions de fin
   // 2022 supprimer ces champs de ItemSharedInfo.
   Int32 buf_size = buffer.size();
-  if (buf_size>serializeWriteSize()){
+  if (buf_size>=9){
     m_nb_node = item_type->nbLocalNode();
     m_nb_edge = buffer[1];
     m_nb_face = buffer[2];
@@ -127,14 +105,14 @@ ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList*
     m_index = buffer[7];
     m_nb_reference = buffer[8];
     //! AMR
-    if (buf_size>=9){
+    if (buf_size>=13){
       m_nb_hParent = buffer[9];
       m_nb_hChildren = buffer[10];
       m_hParent_allocated = buffer[11];
       m_hChild_allocated = buffer[12];
     }
   }
-  else{
+  else if (buf_size>=4){
     m_index = buffer[2];
     m_nb_reference = buffer[3];
   }
@@ -238,39 +216,40 @@ print(std::ostream& o) const
 void ItemSharedInfo::
 _init(eItemKind ik)
 {
+  ARCANE_ASSERT(m_hParent_allocated==0,("m_hParent_allocated should be zero"));
+  ARCANE_ASSERT(m_hChild_allocated==0,("m_hChild_allocated should be zero"));
+  ARCANE_ASSERT(m_nb_edge==0,("m_edge should be zero"));
+  ARCANE_ASSERT(m_nb_face==0,("m_face should be zero"));
+  ARCANE_ASSERT(m_nb_cell==0,("m_cell should be zero"));
+  ARCANE_ASSERT(m_edge_allocated==0,("m_edge_allocated should be zero"));
+  ARCANE_ASSERT(m_face_allocated==0,("m_face_allocated should be zero"));
+  ARCANE_ASSERT(m_cell_allocated==0,("m_cell_allocated should be zero"));
+
+  bool is_amr_activated = false;
+
   if (ik==IK_Node || ik==IK_Edge || ik==IK_Face || ik==IK_Cell){
     IItemFamily* base_family = m_item_family;
-    m_nb_parent = base_family->parentFamilyDepth();
+    m_nb_parent = 0;
+    if (base_family)
+      m_nb_parent = base_family->parentFamilyDepth();
     ARCANE_ASSERT((m_nb_parent<=1),("More than one parent level: not implemented"));
-    ItemSharedInfo::m_is_amr_activated = m_items->mesh->isAmrActivated();
+    is_amr_activated = m_items->mesh->isAmrActivated();
   }
 
   m_first_node = FIRST_NODE_INDEX;
   m_first_edge = m_first_node + m_nb_node;
-  m_first_face = m_first_edge + m_edge_allocated;
-  m_first_cell = m_first_face + m_face_allocated;
-  m_first_parent = m_first_cell + m_cell_allocated;
+  m_first_face = m_first_edge;
+  m_first_cell = m_first_edge;
+  m_first_parent = m_first_edge;
 
   //! AMR
-  if(ItemSharedInfo::m_is_amr_activated){
-    m_first_hParent = m_first_parent + m_nb_parent;
-    m_first_hChild = m_first_hParent + m_hParent_allocated;
-    m_needed_memory = m_first_hChild + m_hChild_allocated;
+  if (is_amr_activated){
+    m_first_hParent = m_first_edge + m_nb_parent;
+    m_first_hChild = m_first_edge + m_nb_parent;
   }
-  else {
-    m_needed_memory = m_first_parent + m_nb_parent;
-  }
-  m_minimum_needed_memory =
-    COMMON_BASE_MEMORY
-    + m_nb_node
-    + m_nb_edge
-    + m_nb_face
-    + m_nb_cell
-    + m_nb_parent;
 
-  //! AMR
-  if(ItemSharedInfo::m_is_amr_activated)
-   	m_minimum_needed_memory +=	m_nb_hParent + m_nb_hChildren;
+  m_needed_memory = m_first_edge + m_nb_parent;
+  m_minimum_needed_memory = COMMON_BASE_MEMORY + m_nb_node + m_nb_parent;
 }
 
 /*---------------------------------------------------------------------------*/
