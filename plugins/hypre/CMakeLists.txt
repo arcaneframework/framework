@@ -1,8 +1,42 @@
 option(ALIEN_HYPRE_UNIT_TESTS "Enable Hypre wrapper tests" ${ALIEN_UNIT_TESTS})
+option(ALIEN_HYPRE_DEVICE "Enable hypre's GPU backend" OFF)
 
 find_package(Hypre REQUIRED)
 
 find_package(MPI REQUIRED)
+
+include(CMakePushCheckState)
+cmake_push_check_state()
+get_target_property(HYPRE_TARGET_DEFINITIONS arccon::Hypre INTERFACE_COMPILE_DEFINITIONS)
+get_target_property(HYPRE_TARGET_INCLUDES arccon::Hypre INTERFACE_INCLUDE_DIRECTORIES)
+get_target_property(HYPRE_TARGET_LINK_OPTIONS arccon::Hypre INTERFACE_LINK_OPTIONS)
+get_target_property(HYPRE_TARGET_LIBRARIES arccon::Hypre INTERFACE_LINK_LIBRARIES)
+
+macro(setCMakeRequired NAME)
+    if (HYPRE_TARGET_${NAME})
+        set(CMAKE_REQUIRED_${NAME} ${HYPRE_TARGET_${NAME}})
+    endif ()
+endmacro()
+
+setCMakeRequired(DEFINITIONS)
+setCMakeRequired(INCLUDES)
+setCMakeRequired(LINK_OPTIONS)
+setCMakeRequired(LIBRARIES)
+
+include(CheckCXXSymbolExists)
+check_cxx_symbol_exists(HYPRE_Init "HYPRE_utilities.h" HAVE_HYPRE_INIT)
+
+include(CheckTypeSize)
+set(CMAKE_EXTRA_INCLUDE_FILES "HYPRE_utilities.h")
+check_type_size(HYPRE_BigInt HYPRE_BIGINT)
+
+check_type_size(HYPRE_MEMORY_DEVICE HYPRE_MEMORY_DEVICE)
+
+if (ALIEN_HYPRE_DEVICE AND NOT HAVE_HYPRE_MEMORY_DEVICE)
+    message(FATAL "Hypre device support enabled but not available.")
+endif ()
+
+cmake_pop_check_state()
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -16,10 +50,25 @@ add_library(hypre_wrapper
         src/hypre_matrix.h
         src/hypre_linear_algebra.cpp
         src/hypre_linear_solver.cpp
+        src/hypre_instance.h
+        src/hypre_instance.cpp
         src/converters/hypre_to_simplecsr_vector.cpp
         src/converters/simplecsr_to_hypre_vector.cpp
         src/converters/simplecsr_to_hypre_matrix.cpp
         src/hypre_linear_solver.h)
+
+if (ALIEN_HYPRE_DEVICE)
+    target_compile_definitions(hypre_wrapper PRIVATE ALIEN_HYPRE_DEVICE)
+endif ()
+
+if (HAVE_HYPRE_INIT)
+    target_compile_definitions(hypre_wrapper PRIVATE HAVE_HYPRE_INIT)
+endif ()
+
+if (HAVE_HYPRE_BIGINT)
+    target_compile_definitions(hypre_wrapper PRIVATE HAVE_HYPRE_BIGINT)
+endif ()
+
 
 target_link_libraries(hypre_wrapper PUBLIC
         Alien::alien_core

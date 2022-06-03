@@ -27,22 +27,23 @@
 
 #include <alien/hypre/backend.h>
 
-class SimpleCSR_to_Hypre_MatrixConverter : public Alien::IMatrixConverter
+namespace
+{
+class SimpleCSR_to_Hypre_MatrixConverter final : public Alien::IMatrixConverter
 {
  public:
-  SimpleCSR_to_Hypre_MatrixConverter() {}
+  SimpleCSR_to_Hypre_MatrixConverter() = default;
 
-  virtual ~SimpleCSR_to_Hypre_MatrixConverter() {}
+  ~SimpleCSR_to_Hypre_MatrixConverter() override = default;
 
- public:
-  BackEndId sourceBackend() const
+  BackEndId sourceBackend() const override
   {
     return Alien::AlgebraTraits<Alien::BackEnd::tag::simplecsr>::name();
   }
 
-  BackEndId targetBackend() const { return Alien::AlgebraTraits<Alien::BackEnd::tag::hypre>::name(); }
+  BackEndId targetBackend() const override { return Alien::AlgebraTraits<Alien::BackEnd::tag::hypre>::name(); }
 
-  void convert(const Alien::IMatrixImpl* sourceImpl, Alien::IMatrixImpl* targetImpl) const;
+  void convert(const Alien::IMatrixImpl* sourceImpl, Alien::IMatrixImpl* targetImpl) const override;
 
   void _build(const Alien::SimpleCSRMatrix<Arccore::Real>& sourceImpl, Alien::Hypre::Matrix& targetImpl) const;
 
@@ -74,33 +75,22 @@ void SimpleCSR_to_Hypre_MatrixConverter::_build(const Alien::SimpleCSRMatrix<Arc
   const auto localSize = profile.getNRow();
   const auto localOffset = dist.rowOffset();
 
-  const auto ilower = localOffset;
-  const auto iupper = localOffset + localSize - 1;
-  const auto jlower = ilower;
-  const auto jupper = iupper;
-
-  alien_debug([&] {
-    cout() << "Matrix range : "
-           << "[" << ilower << ":" << iupper << "]"
-           << "x"
-           << "[" << jlower << ":" << jupper << "]";
-  });
-
-  auto sizes = Arccore::UniqueArray<int>(localSize);
-  for (auto row = 0; row < localSize; ++row) {
-    sizes[row] = profile.getRowSize(row);
+  // Number of columns for each row
+  auto ncols = Arccore::UniqueArray<int>(localSize);
+  // Global Id for each row
+  auto rows = Arccore::UniqueArray<int>(localSize);
+  for (auto irow = 0; irow < localSize; ++irow) {
+    ncols[irow] = profile.getRowSize(irow);
+    rows[irow] = localOffset + irow;
   }
 
-  targetImpl.setProfile(ilower, iupper, jlower, jupper, sizes);
+  targetImpl.setProfile(ncols);
 
   auto values = sourceImpl.internal().getValues();
   auto cols = profile.getCols();
-  for (auto irow = 0; irow < localSize; ++irow) {
-    const auto row = localOffset + irow;
-    const auto ncols = profile.getRowSize(irow);
-    const auto col_offset = profile.getRowOffset()[irow];
-    targetImpl.setRowValues(row, cols.subConstView(col_offset, ncols), values.subConstView(col_offset, ncols));
-  }
+
+  // understand why values and cols can have different sizes !
+  targetImpl.setRowsValues(rows, ncols, cols, values.subConstView(0, cols.size()));
 
   targetImpl.assemble();
 }
@@ -145,7 +135,7 @@ void SimpleCSR_to_Hypre_MatrixConverter::_buildBlock(const Alien::SimpleCSRMatri
   Arccore::UniqueArray<int>& indices = sizes; // réutilisation du buffer
   indices.resize(std::max(max_line_size, localSize * block_size));
 
-  targetImpl.setProfile(ilower, iupper, jlower, jupper, sizes);
+  targetImpl.setProfile(sizes);
 
   auto cols = profile.getCols();
   auto m_values = matrixInternal.getValues();
@@ -176,5 +166,6 @@ void SimpleCSR_to_Hypre_MatrixConverter::_buildBlock(const Alien::SimpleCSRMatri
 
   targetImpl.assemble();
 }
+} // namespace
 
 REGISTER_MATRIX_CONVERTER(SimpleCSR_to_Hypre_MatrixConverter);

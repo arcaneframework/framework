@@ -57,15 +57,14 @@ template class ALIEN_HYPRE_EXPORT LinearAlgebra<BackEnd::tag::hypre>;
 
 namespace Alien::Hypre
 {
-class ALIEN_HYPRE_EXPORT InternalLinearAlgebra
+class ALIEN_HYPRE_EXPORT InternalLinearAlgebra final
 : public IInternalLinearAlgebra<Matrix, Vector>
 {
  public:
-  InternalLinearAlgebra() {}
+  InternalLinearAlgebra() = default;
 
-  virtual ~InternalLinearAlgebra() {}
+  ~InternalLinearAlgebra() override = default;
 
- public:
   // IInternalLinearAlgebra interface.
   Arccore::Real norm0(const Vector& x) const override;
 
@@ -85,9 +84,9 @@ class ALIEN_HYPRE_EXPORT InternalLinearAlgebra
 
   void scal(Arccore::Real alpha, Vector& x) const override;
 
-  void diagonal(const Matrix& a, Vector& x) const override;
+  void diagonal(const Matrix& m, Vector& v) const override;
 
-  void reciprocal(Vector& x) const override;
+  void reciprocal(Vector& v) const override;
 
   void pointwiseMult(const Vector& x, const Vector& y, Vector& w) const override;
 };

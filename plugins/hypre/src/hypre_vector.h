@@ -31,9 +31,8 @@ class Vector : public IVectorImpl
  public:
   explicit Vector(const MultiVectorImpl* multi_impl);
 
-  virtual ~Vector();
+  ~Vector() override;
 
- public:
   void setProfile(int ilower, int iupper);
 
   void setValues(Arccore::ConstArrayView<double> values);
@@ -47,7 +46,7 @@ class Vector : public IVectorImpl
   HYPRE_IJVector internal() const { return m_hypre; }
 
  private:
-  HYPRE_IJVector m_hypre;
+  HYPRE_IJVector m_hypre = nullptr;
   MPI_Comm m_comm;
 
   Arccore::UniqueArray<Arccore::Integer> m_rows;

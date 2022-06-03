@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - \[core\]: dramatic improvement of `DoK` performance
 - \[core\]: `Redistributor` object must be built from an allocated `MessagePassingMng`
 - \[trilinos\]: new wrapper for trilinos library (belos + ifpack2 + tpetra)
+- \[hypre\]: GPU support.
 
 ## 1.1.3
 
