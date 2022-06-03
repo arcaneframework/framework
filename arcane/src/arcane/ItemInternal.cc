@@ -224,14 +224,7 @@ _internalCopyAndChangeSharedInfos(ItemSharedInfo* old_isi,ItemSharedInfo* new_is
   Int32* new_data = item->dataPtr();
 
   ::memcpy(new_data+new_isi->firstNode(),old_data+old_isi->firstNode(),old_isi->nbNode()*sizeof(Int32));
-  ::memcpy(new_data+new_isi->firstEdge(),old_data+old_isi->firstEdge(),old_isi->nbEdge()*sizeof(Int32));
-  ::memcpy(new_data+new_isi->firstFace(),old_data+old_isi->firstFace(),old_isi->nbFace()*sizeof(Int32));
-  ::memcpy(new_data+new_isi->firstCell(),old_data+old_isi->firstCell(),old_isi->nbCell()*sizeof(Int32));
   ::memcpy(new_data+new_isi->firstParent(),old_data+old_isi->firstParent(),old_isi->nbParent()*sizeof(Int32));
-  //! AMR
-  ::memcpy(new_data+new_isi->firstHParent(),old_data+old_isi->firstHParent(),old_isi->nbHParent()*sizeof(Int32));
-  ::memcpy(new_data+new_isi->firstHChild(),old_data+old_isi->firstHChild(),old_isi->nbHChildren()*sizeof(Int32));
-  // OFF AMR
 }
 
 /*---------------------------------------------------------------------------*/
