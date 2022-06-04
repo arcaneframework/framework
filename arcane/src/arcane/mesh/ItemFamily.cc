@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemFamily.cc                                               (C) 2000-2021 */
+/* ItemFamily.cc                                               (C) 2000-2022 */
 /*                                                                           */
 /* Infos de maillage pour un genre d'entité donnée.                          */
 /*---------------------------------------------------------------------------*/
@@ -19,6 +19,7 @@
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/CheckedConvert.h"
+#include "arcane/utils/PlatformUtils.h"
 
 #include "arcane/IParallelMng.h"
 #include "arcane/ISubDomain.h"
@@ -325,6 +326,14 @@ build()
   m_variable_synchronizer = ParallelMngUtils::createSynchronizerRef(pm,this);
 
   m_item_sort_function = _defaultItemSortFunction();
+
+  {
+    String s = platform::getEnvironmentVariable("ARCANE_USE_LEGACY_COMPACT_ITEMS");
+    if (s=="TRUE" || s=="1"){
+      info() << "WARNING: Using legacy 'compactItem()' without compactReference()'";
+      m_use_legacy_compact_item = true;
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -966,8 +975,8 @@ prepareForDump()
             << " uid_size=" << m_items_unique_id->size() << " cap=" << m_items_unique_id->capacity()
             << " byte=" << m_items_unique_id->capacity()*sizeof(Int64);
 
-    //TODO: pouvoir spécifier si on souhaite compacter ou pas.
-    compactItems(false);
+    // TODO: pouvoir spécifier si on souhaite compacter ou pas.
+    _compactOnlyItems(false);
 
     compactReferences();
 
@@ -1067,13 +1076,7 @@ prepareForDump()
   // la sauvegarde sera correcte.
   // NOTE: Est-ce ici qu'il faut le faire ?
   // NOTE: plutot utiliser un observer sur la variable du groupe?
-  for( ItemGroupList::Enumerator i(m_item_groups); ++i; ){
-    ItemGroup group = *i;
-    // Pas besoin de recalculer le groupe des entités globales
-    if (group==m_infos.allItems())
-      continue;
-    group.internal()->checkNeedUpdate();
-  }
+  _applyCheckNeedUpdateOnGroups();
 
   m_need_prepare_dump = false;
 }
@@ -1189,6 +1192,21 @@ readFromDump()
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
+_applyCheckNeedUpdateOnGroups()
+{
+  for( ItemGroupList::Enumerator i(m_item_groups); ++i; ){
+    ItemGroup group = *i;
+    // Pas besoin de recalculer le groupe des entités globales
+    if (group==m_infos.allItems())
+      continue;
+    group.internal()->checkNeedUpdate();
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemFamily::
 _invalidateComputedGroups()
 {
   // Si le groupe a un parent, il n'a pas de variable associée et
@@ -1242,10 +1260,14 @@ _checkComputeSynchronizeInfos(Int32 changed)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Compacte les entités.
+ * \brief Compacte les entités sans mise à jour des références.
+ *
+ * Si on appelle cette méthode, il faut être sur ensuite d'appeler
+ * compactReference() sinon le tableau des itemsData() va grossir
+ * au cours du temps.
  */
 void ItemFamily::
-compactItems(bool do_sort)
+_compactOnlyItems(bool do_sort)
 {
   _compactItems(do_sort);
 
@@ -1260,6 +1282,27 @@ compactItems(bool do_sort)
   // TODO: regarder comment indiquer au prepareForDump() qu'on souhaite
   // juste faire un compactReference().
   m_item_need_prepare_dump = true;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Compacte les entités.
+ */
+void ItemFamily::
+compactItems(bool do_sort)
+{
+  _compactOnlyItems(do_sort);
+
+  if (!m_use_legacy_compact_item){
+    // On compacte les références pour éviter d'avoir un
+    // m_items_data qui s'étend trop.
+    compactReferences();
+
+    // Il est nécessaire de mettre à jour les groupes
+    // après un compactReferences().
+    _applyCheckNeedUpdateOnGroups();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1693,6 +1736,7 @@ _resizeInfos(Integer new_size)
             << " var_capacity=" << m_internal_variables->m_items_data._internalTrueData()->capacity()
             << " ptr=" << m_internal_variables->m_items_data.data()
             << " old_size=" << old_size
+            << " new_size=" << m_items_data->size()
             << " nb_item=" << m_infos.nbItem()
             << " max_local_id=" << maxLocalId();
     _setSharedInfosBasePtr();

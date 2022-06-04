@@ -443,6 +443,7 @@ class ARCANE_MESH_EXPORT ItemFamily
   ItemInternalConnectivityList m_item_connectivity_list;
 
   UniqueArray<ItemConnectivitySelector*> m_connectivity_selector_list_by_item_kind;
+  bool m_use_legacy_compact_item = false;
 
  protected:
 
@@ -468,6 +469,8 @@ class ARCANE_MESH_EXPORT ItemFamily
   void _readGroups();
   void _invalidateComputedGroups();
   void _compactItems(bool do_sort);
+  void _compactOnlyItems(bool do_sort);
+  void _applyCheckNeedUpdateOnGroups();
   void _setTopologyModifier(IItemFamilyTopologyModifier* tm);
 
  private:
