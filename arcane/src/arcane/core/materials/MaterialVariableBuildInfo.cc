@@ -5,16 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariableRef.cc                                  (C) 2000-2012 */
+/* MaterialVariableBuildInfo.cc                                (C) 2000-2022 */
 /*                                                                           */
-/* Référence à une variable sur un matériau du maillage.                      */
+/* Informations pour une construire une variable matériau.                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/NotImplementedException.h"
-
-#include "arcane/materials/MaterialVariableBuildInfo.h"
-#include "arcane/materials/IMeshMaterialMng.h"
+#include "arcane/core/materials/MaterialVariableBuildInfo.h"
+#include "arcane/core/materials/IMeshMaterialMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -22,8 +20,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -48,8 +46,7 @@ MaterialVariableBuildInfo(IMeshMaterialMng* mng,const VariableBuildInfo& vbi)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

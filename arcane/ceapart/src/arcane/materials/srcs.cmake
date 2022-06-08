@@ -26,7 +26,6 @@ set(ARCANE_SOURCES
   MeshMaterialMng.h
   MeshMaterialModifierImpl.cc
   MeshMaterialModifierImpl.h
-  MaterialVariableBuildInfo.cc
   MaterialVariableBuildInfo.h
   MeshMaterial.cc
   MeshMaterial.h

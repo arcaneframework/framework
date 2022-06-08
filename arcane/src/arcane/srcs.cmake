@@ -100,6 +100,8 @@ set( ARCANE_SOURCES
    core/materials/MatItemEnumerator.h
    core/materials/MeshComponentPartData.cc
    core/materials/MeshComponentPartData.h
+   core/materials/MaterialVariableBuildInfo.cc
+   core/materials/MaterialVariableBuildInfo.h
 
    Data.cc
    DataTypeDispatchingDataVisitor.cc
