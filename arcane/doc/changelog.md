@@ -5,6 +5,76 @@
 
 Cette page contient les nouveautés de chaque version de %Arcane.
 
+Arcane Version 3.6.5 (?? juin 2022) {#arcanedoc_version360}
+======================================
+
+Nouveautés/Améliorations:
+
+- Supprime allocation de la connectivité des noeuds dans les anciennes
+  connectivités. Cela permet de réduire l'empreinte mémoire (#231).
+- Ajoute pour les classes Arccore::Span, Arccore::ArrayView,
+  Arccore::ConstArrayView ainsi que les vues sur les variable
+  l'opérateur 'operator()' qui se comporte comme l'opérateur
+  'operator[]'. Cela permet d'uniformiser les écritures entre les
+  différents conteneurs et les vues associées (#223, #222, #205).
+- Ajoute dans Arcane::ICartesianMeshGenerationInfo les informations
+  sur l'origine et la dimension du maillage cartésien (#221).
+- Ajoute en fin d'exécution des statistiques collectives sur les temps
+  passés dans les opérations d'échange de message. Ces statistiques
+  comprennent le temps minimal, maximal et moyen pour l'ensemble des
+  rangs passés dans ces appels (#220)
+- Ajoute deux implémentations supplémentaires pour la synchronisation
+  des matériaux. La version 7 permet de faire une seule allocation
+  lors de cette synchronisation et la version 8 permet de conserver
+  cette allocation d'une synchronisation à l'autre (#219).
+- Ajoute implémentation des synchronisations en plusieurs phases
+  permettant d'utiliser des tableaux de taille fixe et/ou de faire sur
+  une sous-partie des voisins (#214).
+- Ajoute accès pour les accélérateurs à certaines méthodes de
+  Arcane::MDSpan (#217).
+- Ajoute accès aux connectivités aux arêtes dans
+  Arcane::UnstructuredMeshConnectivityView (#216)
+- Ajoute interface accessible via
+  'Arcane::IMesh::indexedConnectivityMng()' permet de facilement
+  ajouter de nouvelles connectivités (#201).
+
+Changements:
+
+- Compacte les références après un appel à
+  Arcane::IItemFamily::compactItems(). Cela permet d'éviter de faire
+  grossir inutilement le tableau des contenant les informations
+  internes des entités. Comme ce changement peut induire une
+  différence sur l'ordre de certaines opérations, il est possible de
+  le désactiver en positionnant la variable d'environnement
+  `ARCANE_USE_LEGACY_COMPACT_ITEMS` à la valeur `1` (#225).
+- Les types gérant le `localId()` associés aux entités (Arcane::NodeLocalId,
+  Arcane::CellLocalId, ...) sont maintenant des `typedef` d'une classe
+  template Arcane::ItemLocalIdT.
+- Supprime dans les opérateurs d'accès aux variables (operator[])
+  les différentes surcharges. Il faut maintenant utiliser un
+  'Arcane::ItemLocalIdT' comme indexeur. Des opérateurs de conversion
+  vers ce type ont été ajoutés pour que le code source reste compatible.
+- Désenregistre automatiquement les variables encores allouées
+  lorsqu'on appelle Arcane::IVariableMng::removeAllVariables(). Cela
+  permet d'éviter des plantages lorsque des références aux variables
+  existaient encore après cet appel. Cela peut notamment être le cas
+  avec les extensions C# car les services et modules associés sont
+  gérés par un 'Garbage Collector' (#200).
+
+Corrections:
+
+- Corrige mauvaises valeurs de Arcane::IItemFamily::localConnectivityInfos()
+  et Arcane::IItemFamily::globalConnectivityInfos() pour les connectivités
+  autres que celles aux noeuds. Ce bug avait été introduit lors du
+  passage aux nouvelles connectivités (#230, #27).
+
+Interne:
+
+- Utilise des variables pour conserver les champs Arcane::ItemInternal::owner() et
+  Arcane::ItemInternal::flags() au lieu de conserver l'information dans
+  Arcane::ItemSharedInfo. Cela permettra à terme de supprimer le champ
+  correspondant dans Arcane::ItemSharedInfo (#227).
+
 Arcane Version 3.5.7 (07 avril 2022) {#arcanedoc_version350}
 ======================================
 
