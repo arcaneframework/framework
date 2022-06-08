@@ -19,6 +19,9 @@ namespace Arcane.Axl.Xsd
       SubDomainDepend,
       SubDomainPrivate,
       NoRestore,
+      NoExchange,
+      Persistant,
+      NoReplicaSync,
       Undefined
     }
     //! Nom qualifié (avec le namespace de la classe).
@@ -79,6 +82,12 @@ namespace Arcane.Axl.Xsd
 
     public bool IsSubDomainPrivate { get { return subdomainprivateSpecified ? subdomainprivate : false; } }
 
+    public bool IsNoExchange { get { return noexchangeFieldSpecified ? noexchange : false; } }
+
+    public bool IsPersistant { get { return persistantFieldSpecified ? persistant : false; } }
+
+    public bool IsNoReplicaSync { get { return noreplicasyncFieldSpecified ? noreplicasync : false; } }
+
     public bool IsInFlow { get { return flow == Flow.@in; } }
 
     //! Indique si la variable est une variable sur un matériau (CEA only)
@@ -128,6 +137,12 @@ namespace Arcane.Axl.Xsd
           return Property.SubDomainPrivate;
         if (IsNoRestore)
           return Property.NoRestore;
+        if (IsNoExchange)
+          return Property.NoExchange;
+        if (IsPersistant)
+          return Property.Persistant;
+        if (IsNoReplicaSync)
+          return Property.NoReplicaSync;
         return Property.Undefined;
       } 
     }
@@ -147,6 +162,12 @@ namespace Arcane.Axl.Xsd
           properties.Add (Property.SubDomainPrivate);
         if (IsNoRestore)
           properties.Add (Property.NoRestore);
+        if (IsNoExchange)
+          properties.Add (Property.NoExchange);
+        if (IsPersistant)
+          properties.Add (Property.Persistant);
+        if (IsNoReplicaSync)
+          properties.Add (Property.NoReplicaSync);
         properties.RemoveAt (0);
         return properties;
       } 

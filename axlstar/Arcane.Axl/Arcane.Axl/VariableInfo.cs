@@ -82,6 +82,21 @@ namespace Arcane.Axl
      */
     public bool IsNoRestore { get { return m_no_restore; } }
 
+    bool m_no_exchange;
+    /**
+     * Valeur de l'attribut XML "no-exchange",
+     * indiquant si la valeur de la variable doit être échangé lors d'un équilibrage de charge.
+     */
+    public bool IsNoExchange { get { return m_no_exchange; } }
+
+    bool m_persistant;
+    //! Valeur de l'attribut XML "persistant",
+    public bool IsPersistant { get { return m_persistant; } }
+
+    bool m_no_replica_sync;
+    //! Valeur de l'attribut XML "no-replica-sync",
+    public bool IsNoReplicaSync { get { return m_no_replica_sync; } }
+
     public VariableInfo(XmlElement node)
     {
       m_dim = 0;
@@ -179,6 +194,9 @@ namespace Arcane.Axl
          m_no_restore = true;
       }
       m_sub_domain_depend = _ReadProperty(node,"sub-domain-depend");
+      m_no_exchange = _ReadProperty(node,"no-echange");
+      m_persistant = _ReadProperty(node,"persistant");
+      m_no_replica_sync = _ReadProperty(node,"no-replica-sync");
     }
 
     bool _ReadProperty(XmlElement node,string name)

@@ -38,30 +38,30 @@
         <xs:attribute name="type" use="optional">
           <xs:simpleType>
             <xs:restriction base="xs:string">
-           		<xs:enumeration value="ustring" />
-           		<xs:enumeration value="string" />
-       	    	<xs:enumeration value="real" />
-   	        	<xs:enumeration value="bool" />
-    	       	<xs:enumeration value="integer" />
-        	   	<xs:enumeration value="int16" />
-        	   	<xs:enumeration value="int32" />
-           		<xs:enumeration value="int64" />
-           		<xs:enumeration value="real2" />
-           		<xs:enumeration value="real3" />
-           		<xs:enumeration value="real2x2" />
-	           	<xs:enumeration value="real3x3" />
-    	       	<xs:enumeration value="string[]" />
-        	   	<xs:enumeration value="bool[]" />
-           		<xs:enumeration value="real[]" />
-           		<xs:enumeration value="real2[]" />
-           		<xs:enumeration value="real3[]" />
-	           	<xs:enumeration value="real2x2[]" />
-    	       	<xs:enumeration value="real3x3[]" />
-        	   	<xs:enumeration value="integer[]" />
-           		<xs:enumeration value="int16[]" />
-           		<xs:enumeration value="int32[]" />
-           		<xs:enumeration value="int64[]" />
-           	</xs:restriction>
+              <xs:enumeration value="ustring" />
+              <xs:enumeration value="string" />
+       	      <xs:enumeration value="real" />
+   	      <xs:enumeration value="bool" />
+    	      <xs:enumeration value="integer" />
+              <xs:enumeration value="int16" />
+              <xs:enumeration value="int32" />
+              <xs:enumeration value="int64" />
+              <xs:enumeration value="real2" />
+              <xs:enumeration value="real3" />
+              <xs:enumeration value="real2x2" />
+	      <xs:enumeration value="real3x3" />
+    	      <xs:enumeration value="string[]" />
+              <xs:enumeration value="bool[]" />
+              <xs:enumeration value="real[]" />
+              <xs:enumeration value="real2[]" />
+              <xs:enumeration value="real3[]" />
+	      <xs:enumeration value="real2x2[]" />
+    	      <xs:enumeration value="real3x3[]" />
+              <xs:enumeration value="integer[]" />
+              <xs:enumeration value="int16[]" />
+              <xs:enumeration value="int32[]" />
+              <xs:enumeration value="int64[]" />
+            </xs:restriction>
           </xs:simpleType>
         </xs:attribute>
         <xs:attribute name="unit" type="xs:string" use="optional" />
@@ -81,7 +81,7 @@
     <xs:complexContent>
       <xs:extension base="Option">
         <xs:attribute name="type" type="xs:string" use="optional" />
- 			</xs:extension>
+      </xs:extension>
     </xs:complexContent>
   </xs:complexType>
   
@@ -110,16 +110,16 @@
   <xs:complexType name="Complex">
     <xs:complexContent>
       <xs:extension base="Option">
-	      <xs:sequence minOccurs="0" maxOccurs="unbounded">
-	        <xs:choice>
-					  <xs:element name="complex" type="Complex"/>
-					  <xs:element name="enumeration" type="Enumeration"/>
-					  <xs:element name="service-instance" type="ServiceInstance"/>
- 						<xs:element name="extended" type="ExtendedType"/> 
-					  <xs:element name="simple" type="Simple"/>
-					  <xs:element name="attribute" type="Attribute" />
-	        </xs:choice>
-	      </xs:sequence>
+	<xs:sequence minOccurs="0" maxOccurs="unbounded">
+	  <xs:choice>
+	    <xs:element name="complex" type="Complex"/>
+	    <xs:element name="enumeration" type="Enumeration"/>
+	    <xs:element name="service-instance" type="ServiceInstance"/>
+ 	    <xs:element name="extended" type="ExtendedType"/> 
+	    <xs:element name="simple" type="Simple"/>
+	    <xs:element name="attribute" type="Attribute" />
+	  </xs:choice>
+	</xs:sequence>
         <xs:attribute name="ref" type="xs:string" use="optional" />
         <xs:attribute name="type" type="xs:string" use="optional" />
       </xs:extension>
@@ -133,17 +133,17 @@
   <!-- Elément module ...................................................... -->
   <xs:element name="module" type="Module"  />
 
-	<xs:complexType name="Module">
-		<xs:complexContent>
-	    <xs:extension base="Base">
-	      <xs:sequence>
+  <xs:complexType name="Module">
+    <xs:complexContent>
+      <xs:extension base="Base">
+	<xs:sequence>
           <xs:element ref="interface" minOccurs="0" maxOccurs="unbounded" />
-	        <xs:element ref="variables" minOccurs="0" />
-	        <xs:element ref="entry-points" minOccurs="0" />
+	  <xs:element ref="variables" minOccurs="0" />
+	  <xs:element ref="entry-points" minOccurs="0" />
           <xs:element ref="options" minOccurs="0" />
-	      </xs:sequence>
-	      <xs:attribute name="type" type="xs:string" use="optional" />
-	      <xs:attribute name="version" use="optional">
+	</xs:sequence>
+	<xs:attribute name="type" type="xs:string" use="optional" />
+	<xs:attribute name="version" use="optional">
           <xs:simpleType>
             <xs:restriction base="xs:string">
               <xs:enumeration value="1.0" />
@@ -151,13 +151,13 @@
           </xs:simpleType>
         </xs:attribute>
         <xs:attribute name="namespace-macro-name" type="xs:string" use="optional" />
-	      <xs:attribute name="namespace-name" type="xs:string" use="optional" />
-	      <xs:attribute name="parent-name" type="xs:string" use="optional" />
-	      <xs:attribute name="autoload" type="xs:boolean" default="false" />
-	      <xs:attributeGroup ref="createdAttrGroup" />
-	    </xs:extension>
-		</xs:complexContent>
-	</xs:complexType>
+	<xs:attribute name="namespace-name" type="xs:string" use="optional" />
+	<xs:attribute name="parent-name" type="xs:string" use="optional" />
+	<xs:attribute name="autoload" type="xs:boolean" default="false" />
+	<xs:attributeGroup ref="createdAttrGroup" />
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
 
   <!-- Elément service ...................................................... -->
   <xs:element name="service" type="Service" />  
@@ -238,11 +238,11 @@
     <xs:complexType>
       <xs:sequence minOccurs="0" maxOccurs="unbounded">
         <xs:choice>
-				  <xs:element name="complex" type="Complex"/>
-				  <xs:element name="enumeration" type="Enumeration"/>
-				  <xs:element name="service-instance" type="ServiceInstance"/>
-					<xs:element name="extended" type="ExtendedType"/> 
-				  <xs:element name="simple" type="Simple"/>
+	  <xs:element name="complex" type="Complex"/>
+	  <xs:element name="enumeration" type="Enumeration"/>
+	  <xs:element name="service-instance" type="ServiceInstance"/>
+	  <xs:element name="extended" type="ExtendedType"/> 
+	  <xs:element name="simple" type="Simple"/>
         </xs:choice>
       </xs:sequence>
     </xs:complexType>
@@ -254,8 +254,8 @@
       <xs:sequence minOccurs="1" maxOccurs="unbounded">
         <xs:element name="test">
           <xs:complexType>
-				    <xs:attribute name="name" type="xs:string" use="required" />
-				    <xs:attribute name="method-name" type="xs:string" use="required" />
+	    <xs:attribute name="name" type="xs:string" use="required" />
+	    <xs:attribute name="method-name" type="xs:string" use="required" />
           </xs:complexType>
         </xs:element>  
       </xs:sequence>
@@ -379,11 +379,11 @@
             <xs:attribute name="sub-domain-depend" type="xs:boolean" use="optional" />
             <xs:attribute name="sub-domain-private" type="xs:boolean" use="optional" />
             <xs:attribute name="need-sync" type="xs:boolean" use="optional" />
-            <!-- Les attributs 'material' et 'environment' sont spécifiques CEA.
-                 S'ils sont utilisés ailleurs que dans un contexte CEA, le code généré ne
-                 compilera pas. -->
             <xs:attribute name="material" type="xs:boolean" use="optional" />
             <xs:attribute name="environment" type="xs:boolean" use="optional" />
+            <xs:attribute name="no-exchange" type="xs:boolean" use="optional" />
+            <xs:attribute name="persistant" type="xs:boolean" use="optional" />
+            <xs:attribute name="no-replica-sync" type="xs:boolean" use="optional" />
           </xs:complexType>
         </xs:element>
       </xs:sequence>
@@ -409,8 +409,8 @@
   <xs:complexType name="Attribute">
     <xs:complexContent>
       <xs:extension base="Option">
-	   		<!--xs:attribute name="name" type="xs:string" use="required" /-->
-   			<xs:attribute name="type" type="xs:string" use="optional" default="string" />
+	<!--xs:attribute name="name" type="xs:string" use="required" /-->
+   	<xs:attribute name="type" type="xs:string" use="optional" default="string" />
       </xs:extension>
     </xs:complexContent>	
   </xs:complexType>
