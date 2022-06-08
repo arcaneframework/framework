@@ -64,16 +64,6 @@ MpiBlockVariableSynchronizeDispatcher(MpiBlockVariableSynchronizeDispatcherBuild
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename SimpleType> void
-MpiBlockVariableSynchronizeDispatcher<SimpleType>::
-compute(ItemGroupSynchronizeInfo* sync_info)
-{
-  VariableSynchronizeDispatcher<SimpleType>::compute(sync_info);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 template<typename SimpleType> bool
 MpiBlockVariableSynchronizeDispatcher<SimpleType>::
 _isSkipRank(Int32 rank,Int32 sequence) const

@@ -53,16 +53,6 @@ MpiDirectSendrecvVariableSynchronizeDispatcher(MpiDirectSendrecvVariableSynchron
 
 template<typename SimpleType> void
 MpiDirectSendrecvVariableSynchronizeDispatcher<SimpleType>::
-compute(ItemGroupSynchronizeInfo* sync_info)
-{
-  VariableSynchronizeDispatcher<SimpleType>::compute(sync_info);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename SimpleType> void
-MpiDirectSendrecvVariableSynchronizeDispatcher<SimpleType>::
 _beginSynchronize(SyncBuffer& sync_buffer)
 {
   auto sync_list = this->m_sync_info->infos();

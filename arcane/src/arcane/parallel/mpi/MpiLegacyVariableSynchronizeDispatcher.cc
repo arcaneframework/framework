@@ -55,11 +55,11 @@ MpiLegacyVariableSynchronizeDispatcher(MpiLegacyVariableSynchronizeDispatcherBui
 
 template<typename SimpleType> void
 MpiLegacyVariableSynchronizeDispatcher<SimpleType>::
-compute(ItemGroupSynchronizeInfo* sync_info)
+compute()
 {
   //m_mpi_parallel_mng->traceMng()->info() << "MPI COMPUTE";
-  VariableSynchronizeDispatcher<SimpleType>::compute(sync_info);
-  auto sync_list = sync_info->infos();
+  VariableSynchronizeDispatcher<SimpleType>::compute();
+  auto sync_list = this->m_sync_info->infos();
   if (m_use_derived_type){
     //TODO Utiliser des 'int' MPI au lieu de Int32
     Integer nb_message = sync_list.size();

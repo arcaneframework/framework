@@ -63,12 +63,12 @@ class MpiDirectSendrecvVariableSynchronizeDispatcher
 : public VariableSynchronizeDispatcher<SimpleType>
 {
  public:
+
   typedef typename VariableSynchronizeDispatcher<SimpleType>::SyncBuffer SyncBuffer;
+
  public:
 
   explicit MpiDirectSendrecvVariableSynchronizeDispatcher(MpiDirectSendrecvVariableSynchronizeDispatcherBuildInfo& bi);
-
-  void compute(ItemGroupSynchronizeInfo* sync_list) override;
 
  protected:
 
@@ -76,6 +76,7 @@ class MpiDirectSendrecvVariableSynchronizeDispatcher
   void _endSynchronize(SyncBuffer& sync_buffer) override;
 
  private:
+
   MpiParallelMng* m_mpi_parallel_mng;
 };
 

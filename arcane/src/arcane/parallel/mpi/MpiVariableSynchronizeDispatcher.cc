@@ -72,16 +72,6 @@ MpiVariableSynchronizeDispatcher(MpiVariableSynchronizeDispatcherBuildInfo& bi)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename SimpleType> void
-MpiVariableSynchronizeDispatcher<SimpleType>::
-compute(ItemGroupSynchronizeInfo* sync_info)
-{
-  VariableSynchronizeDispatcher<SimpleType>::compute(sync_info);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 template <typename SimpleType> void
 MpiVariableSynchronizeDispatcher<SimpleType>::
 _beginSynchronize(SyncBuffer& sync_buffer)
