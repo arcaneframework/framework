@@ -912,6 +912,18 @@ namespace Arcane.Axl.Xsd {
         
         private bool environmentFieldSpecified;
         
+        private bool noexchangeField;
+        
+        private bool noexchangeFieldSpecified;
+        
+        private bool persistantField;
+        
+        private bool persistantFieldSpecified;
+        
+        private bool noreplicasyncField;
+        
+        private bool noreplicasyncFieldSpecified;
+        
         public variablesVariable() {
             this.flowField = Flow.inout;
         }
@@ -1167,6 +1179,72 @@ namespace Arcane.Axl.Xsd {
             }
             set {
                 this.environmentFieldSpecified = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute("no-exchange")]
+        public bool noexchange {
+            get {
+                return this.noexchangeField;
+            }
+            set {
+                this.noexchangeField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        public bool noexchangeSpecified {
+            get {
+                return this.noexchangeFieldSpecified;
+            }
+            set {
+                this.noexchangeFieldSpecified = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute()]
+        public bool persistant {
+            get {
+                return this.persistantField;
+            }
+            set {
+                this.persistantField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        public bool persistantSpecified {
+            get {
+                return this.persistantFieldSpecified;
+            }
+            set {
+                this.persistantFieldSpecified = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute("no-replica-sync")]
+        public bool noreplicasync {
+            get {
+                return this.noreplicasyncField;
+            }
+            set {
+                this.noreplicasyncField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlIgnoreAttribute()]
+        public bool noreplicasyncSpecified {
+            get {
+                return this.noreplicasyncFieldSpecified;
+            }
+            set {
+                this.noreplicasyncFieldSpecified = value;
             }
         }
     }

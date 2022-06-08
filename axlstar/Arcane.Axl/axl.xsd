@@ -381,6 +381,9 @@
             <xs:attribute name="need-sync" type="xs:boolean" use="optional" />
             <xs:attribute name="material" type="xs:boolean" use="optional" />
             <xs:attribute name="environment" type="xs:boolean" use="optional" />
+            <xs:attribute name="no-exchange" type="xs:boolean" use="optional" />
+            <xs:attribute name="persistant" type="xs:boolean" use="optional" />
+            <xs:attribute name="no-replica-sync" type="xs:boolean" use="optional" />
           </xs:complexType>
         </xs:element>
       </xs:sequence>

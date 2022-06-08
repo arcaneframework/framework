@@ -105,6 +105,12 @@ namespace Arcane.Axl
                                "PSubDomainPrivate",ref is_first_attribute);
         _WriteVariableProperty(writer,variable_info.IsNoRestore,
                                "PNoRestore",ref is_first_attribute);
+        _WriteVariableProperty(writer,variable_info.IsNoExchange,
+                               "PNoRestore",ref is_first_attribute);
+        _WriteVariableProperty(writer,variable_info.IsPersistant,
+                               "PPersistant",ref is_first_attribute);
+        _WriteVariableProperty(writer,variable_info.IsNoReplicaSync,
+                               "PNoReplicaSync",ref is_first_attribute);
         writer.Write("));\n");
       }
     }
