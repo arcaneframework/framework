@@ -11,6 +11,8 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/Array.h"
+#include "arcane/utils/FatalErrorException.h"
+
 #include "arcane/datatype/RealArrayVariant.h"
 
 #include <iostream>
@@ -24,7 +26,8 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCANE_CORE_EXPORT void _arcaneTestRealArrayVariant()
+extern "C++" ARCANE_CORE_EXPORT
+void _arcaneTestRealArrayVariant()
 {
   NumArray<Real,1> num_data(4);
   num_data[0] = 2.4;
@@ -40,8 +43,7 @@ extern "C++" ARCANE_CORE_EXPORT void _arcaneTestRealArrayVariant()
   const Integer nb_variants = 3;
   RealArrayVariant variants[nb_variants] = { RealArrayVariant(a1), RealArrayVariant(a2), RealArrayVariant(a3) };
 
-  for (Integer v=0 ; v<nb_variants ; ++v)
-  {
+  for (Integer v=0 ; v<nb_variants ; ++v){
     std::cout << "A" << v << "=[ ";
     for (Integer i=0 ; i<variants[v].size() ; ++i)
       std::cout << variants[v][i] << " ";
@@ -49,6 +51,9 @@ extern "C++" ARCANE_CORE_EXPORT void _arcaneTestRealArrayVariant()
   }
 
   RealArrayVariant variant2{num_data};
+  NumArray<Real,1> num_data_copy(variant2);
+  if (num_data_copy.to1DSpan()!=num_data.to1DSpan())
+    ARCANE_FATAL("Bad value for copy");
 }
 
 /*---------------------------------------------------------------------------*/

@@ -109,6 +109,13 @@ class RealArrayVariant
   operator ConstArrayView<Real>() const { return ConstArrayView<Real>(m_nb_value, m_value); }
   operator Real2() const { return Real2(m_value[0], m_value[1]); }
   operator Real3() const { return Real3(m_value[0], m_value[1], m_value[2]); }
+  operator NumArray<Real,1>() const
+  {
+    NumArray<Real,1> v(m_nb_value);
+    for( Integer i=0, n=m_nb_value; i<n; ++i )
+      v[i] = m_value[i];
+    return v;
+  }
 
  private:
 

@@ -26,6 +26,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace Arcane
+{
+extern "C++" ARCANE_CORE_EXPORT
+void _arcaneTestRealArrayVariant();
+extern "C++" ARCANE_CORE_EXPORT void
+_arcaneTestRealArray2Variant();
+}
+
 namespace ArcaneTest
 {
 using namespace Arcane;
@@ -83,6 +91,7 @@ class NumArrayUnitTest
 
   void _executeTest1(eMemoryRessource mem_kind);
   void _executeTest2();
+  void _executeTest3();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -142,6 +151,7 @@ executeTest()
   // de RunQueue.
   _executeTest2();
   _executeTest2();
+  _executeTest3();
 }
 
 void NumArrayUnitTest::
@@ -383,6 +393,16 @@ _executeTest2()
   double s4 = _doSum<4>(t1, { n1, n2, n3, n4 });
   info() << "SUM4_ASYNC = " << s4;
   vc.areEqual(s4, expected_sum4, "SUM4_ASYNC");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void NumArrayUnitTest::
+_executeTest3()
+{
+  Arcane::_arcaneTestRealArrayVariant();
+  Arcane::_arcaneTestRealArray2Variant();
 }
 
 /*---------------------------------------------------------------------------*/

@@ -125,6 +125,15 @@ class RealArray2Variant
                               m_value[1][0], m_value[1][1], m_value[1][2],
                               m_value[2][0], m_value[2][1], m_value[2][2]);
   }
+  template<typename LayoutType>
+  operator NumArray<Real,2,LayoutType>() const
+  {
+    NumArray<Real,2> v(m_nb_dim1,m_nb_dim2);
+    for( Integer i=0, m=m_nb_dim1; i<m; ++i )
+      for( Integer j=0, n=m_nb_dim2; j<n; ++j )
+        v(i,j) = m_value[i][j];
+    return v;
+  }
 
  private:
 
