@@ -63,6 +63,9 @@
 namespace Arcane::Materials
 {
 
+extern "C++" IMeshMaterialVariableFactoryMng*
+arcaneCreateMeshMaterialVariableFactoryMng(IMeshMaterialMng* mm);
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -111,6 +114,7 @@ MeshMaterialMng(const MeshHandle& mesh_handle,const String& name)
   m_modifier = new MeshMaterialModifierImpl(this);
   m_all_env_data = new AllEnvData(this);
   m_exchange_mng = new MeshMaterialExchangeMng(this);
+  m_variable_factory_mng = arcaneCreateMeshMaterialVariableFactoryMng(this);
 }
 
 /*---------------------------------------------------------------------------*/

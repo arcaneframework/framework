@@ -78,6 +78,8 @@ set( ARCANE_SOURCES
    core/materials/IMeshComponent.h
    core/materials/IMeshEnvironment.h
    core/materials/IMeshMaterial.h
+   core/materials/IMeshMaterialVariableFactoryMng.h
+   core/materials/IMeshMaterialVariableFactory.h
    core/materials/MeshMaterialVariableIndexer.h
    core/materials/MeshMaterialVariableIndexer.cc
    core/materials/ComponentItemListBuilder.h

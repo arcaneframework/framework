@@ -5,22 +5,17 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MaterialsCoreGlobal.cc                                      (C) 2000-2022 */
+/* IMeshMaterialVariableFactory.h                              (C) 2000-2022 */
 /*                                                                           */
-/* Déclarations générales des matériaux de Arcane.                           */
+/* Interface d'une fabrique de variables matériaux.                          */
+/*---------------------------------------------------------------------------*/
+#ifndef ARCANE_CORE_MATERIALS_IMESHMATERIALVARIABLEFACTORY_H
+#define ARCANE_CORE_MATERIALS_IMESHMATERIALVARIABLEFACTORY_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/core/materials/IMeshMaterialVariable.h"
-#include "arcane/core/materials/IMeshBlock.h"
-#include "arcane/core/materials/IMeshComponent.h"
-#include "arcane/core/materials/IMeshMaterial.h"
-#include "arcane/core/materials/IMeshEnvironment.h"
-#include "arcane/core/materials/MatVarIndex.h"
-#include "arcane/core/materials/MatItem.h"
-#include "arcane/core/materials/IEnumeratorTracer.h"
-#include "arcane/core/materials/IMeshMaterialVariableFactoryMng.h"
-#include "arcane/core/materials/IMeshMaterialVariableFactory.h"
+#include "arcane/ArcaneTypes.h"
+#include "arcane/core/materials/MaterialsCoreGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -30,18 +25,25 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-IEnumeratorTracer* IEnumeratorTracer::m_singleton = nullptr;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void IEnumeratorTracer::
-_setSingleton(IEnumeratorTracer* tracer)
+/*!
+ * \internal
+ * \brief Interface d'une fabrique de variables matériaux.
+ */
+class ARCANE_CORE_EXPORT IMeshMaterialVariableFactory
 {
-  delete m_singleton;
-  m_singleton = tracer;
-}
+ public:
+  
+  virtual ~IMeshMaterialVariableFactory() = default;
+
+ public:
+
+  //! Créé une variable matériau
+  virtual Ref<IMeshMaterialVariable>
+  createVariable(const MaterialVariableBuildInfo& build_info) =0;
+
+  //! Informations sur le type de conteneur créé
+  virtual DataStorageTypeInfo storageTypeInfo() const =0;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -50,3 +52,5 @@ _setSingleton(IEnumeratorTracer* tracer)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#endif  

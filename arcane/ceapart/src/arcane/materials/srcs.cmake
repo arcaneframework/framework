@@ -63,6 +63,7 @@ set(ARCANE_SOURCES
   MeshMaterialVariableSynchronizerList.cc
   MeshMaterialVariableSynchronizerList.h
   MeshMaterialSynchronizeBuffer.cc
+  MeshMaterialVariableFactoryMng.cc
   AllEnvData.h
   ComponentItemInternal.h
   ComponentItem.h

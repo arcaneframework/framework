@@ -480,6 +480,9 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
   //! Vrai si on est en train de faire un échange de maillage avec gestion des matériaux.
   virtual bool isInMeshMaterialExchange() const =0;
 
+  //! Interface de la fabrique de variables
+  virtual IMeshMaterialVariableFactoryMng* variableFactoryMng() const =0;
+
  public:
 
   //!\internal

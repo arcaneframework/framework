@@ -62,8 +62,10 @@ class ComponentImpurePartItemVectorView;
 class MeshComponentPartData;
 class MatCellEnumerator;
 class ComponentItemVector;
-class MeshMaterialBuildInfo;
-class IMaterialVariableFactoryMng;
+class IMeshMaterialVariableFactoryMng;
+class IMeshMaterialVariableFactory;
+class IMeshMaterialVariable;
+class MaterialVariableBuildInfo;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
