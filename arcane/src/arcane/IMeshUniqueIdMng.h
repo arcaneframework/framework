@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshUniqueIdMng.h                                          (C) 2000-2021 */
+/* IMeshUniqueIdMng.h                                          (C) 2000-2022 */
 /*                                                                           */
 /* Interface du gestionnaire de numérotation des uniqueId() d'un maillage.   */
 /*---------------------------------------------------------------------------*/
@@ -48,7 +48,7 @@ class ARCANE_CORE_EXPORT IMeshUniqueIdMng
    * Les valeurs valides sont 0, 1, 2 et 3. La valeur par défaut est 1.
    * Si la version vaut 0 alors il n'y a pas de renumérotation. En parallèle,
    * il faut alors que les uniqueId() des faces soient cohérents entre
-   * les sous-domaines
+   * les sous-domaines.
    */  
   virtual void setFaceBuilderVersion(Integer n) =0;
 
@@ -57,6 +57,15 @@ class ARCANE_CORE_EXPORT IMeshUniqueIdMng
 
   /*!
    * \brief Positionne la version de la numérotation des arêtes.
+   *
+   * Les valeurs valides sont 0, 1 et 2. La valeur 1 fonctionne quel que
+   * soit le nombre de mailles mais il faut que le maillage soit lu par
+   * un seul processeur. La valeur 2 ne fonctionne que si le maximum des
+   * uniqueId() des noeuds ne dépasse pas 2^31.
+   *
+   * Si la version vaut 0 alors il n'y a pas de renumérotation. En parallèle,
+   * il faut alors que les uniqueId() des faces soient cohérents entre
+   * les sous-domaines.
    */  
   virtual void setEdgeBuilderVersion(Integer n) =0;
 

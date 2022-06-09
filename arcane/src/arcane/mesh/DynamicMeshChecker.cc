@@ -564,7 +564,7 @@ _checkValidItemOwner(IItemFamily* family)
         OStringStream ostr;
         Integer index = 0;
         for( ItemInternal* cell : cells ){
-          ostr() << " SubItem i=" << index << " item=" << ItemPrinter(cell);
+          ostr() << " SubCell i=" << index << " cell=" << ItemPrinter(cell);
           ++index;
         }
         error() << "Mesh " << m_mesh->name() << " Item" << ItemPrinter(item) << " has no cell with same owner:"
