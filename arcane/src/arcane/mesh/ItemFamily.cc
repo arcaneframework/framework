@@ -116,7 +116,6 @@ class ItemFamily::Variables
             const String& unique_ids_name,
             const String& items_owner_name,
             const String& items_flags_name,
-            const String& items_typeid_name,
             const String& groups_name,
             const String& current_id_name,
             const String& new_owner_name,
@@ -130,7 +129,6 @@ class ItemFamily::Variables
     m_items_unique_id(VariableBuildInfo(mesh,unique_ids_name,IVariable::PPrivate)),
     m_items_owner(VariableBuildInfo(mesh,items_owner_name,IVariable::PPrivate)),
     m_items_flags(VariableBuildInfo(mesh,items_flags_name,IVariable::PPrivate)),
-    m_items_typeid(VariableBuildInfo(mesh,items_typeid_name,IVariable::PPrivate)),
     m_groups_name(VariableBuildInfo(mesh,groups_name)),
     m_current_id(VariableBuildInfo(mesh,current_id_name)),
     m_items_new_owner(VariableBuildInfo(mesh,new_owner_name,family_name,IVariable::PSubDomainDepend|IVariable::PExecutionDepend),item_kind),
@@ -154,8 +152,6 @@ class ItemFamily::Variables
   VariableArrayInt32 m_items_owner;
   //! Contient les flags() des entités de cette famille
   VariableArrayInt32 m_items_flags;
-  //! Contient les type() des entités de cette famille
-  VariableArrayInt16 m_items_typeid;
   VariableArrayString m_groups_name;
   VariableScalarInteger m_current_id;
   /*!
@@ -291,7 +287,6 @@ build()
     String var_unique_ids_name(_variableName("FamilyUniqueIds"));
     String var_owner_name(_variableName("FamilyOwner"));
     String var_flags_name(_variableName("FamilyFlags"));
-    String var_type_name(_variableName("FamilyType"));
     String var_count_name(_variableName("FamilyItemsShared"));
     String var_groups_name(_variableName("FamilyGroupsName"));
     String var_current_id_name(_variableName("FamilyCurrentId"));
@@ -303,7 +298,7 @@ build()
     String var_child_families_name(_variableName("ChildFamiliesName"));
     m_internal_variables = new Variables(m_mesh,name(),itemKind(),var_count_name,
                                          var_data_name,var_unique_ids_name,var_owner_name,
-                                         var_flags_name,var_type_name,var_groups_name,
+                                         var_flags_name,var_groups_name,
                                          var_current_id_name,var_new_owner_name,
                                          var_parent_mesh_name,var_parent_family_name,
                                          var_parent_family_depth_name,
@@ -315,7 +310,6 @@ build()
     m_items_unique_id_view = m_items_unique_id->view();
     m_items_owner = &m_internal_variables->m_items_owner._internalTrueData()->_internalDeprecatedValue();
     m_items_flags = &m_internal_variables->m_items_flags._internalTrueData()->_internalDeprecatedValue();
-    m_items_typeid = &m_internal_variables->m_items_typeid._internalTrueData()->_internalDeprecatedValue();
   }
 
   // Pour pouvoir remettre à jour les ItemSharedInfos après relecture
@@ -995,7 +989,6 @@ prepareForDump()
     // valeurs seront disponibles.
     ArrayView<Int32> items_flags_view = m_items_flags->view();
     ArrayView<Int32> items_owner_view = m_items_owner->view();
-    ArrayView<Int16> items_typeid_view = m_items_typeid->view();
     m_internal_variables->m_current_id = m_current_id;
     info(4) << " SET FAMILY ID name=" << name() << " id= " << m_current_id
             << " saveid=" << m_internal_variables->m_current_id();
@@ -1018,7 +1011,6 @@ prepareForDump()
       items_shared_data_index[i] = item->sharedInfo()->index();
       items_owner_view[i] = item->owner();
       items_flags_view[i] = item->flags();
-      items_typeid_view[i] = item->typeId();
 #if 0
 #ifdef ARCANE_DEBUG
       //if (itemKind()==IK_Particle){
@@ -1854,7 +1846,6 @@ _allocateInfos(ItemInternal* item,Int64 uid,ItemSharedInfo* isi)
   _setUniqueId(local_id,uid);
   _checkResizeArray(*m_items_owner,local_id);
   _checkResizeArray(*m_items_flags,local_id);
-  _checkResizeArray(*m_items_typeid,local_id);
   // Il faut positionner le ItemSharedInfo avant le _allocMany
   // sinon les tests de vérification échouent.
   item->setSharedInfo(isi);

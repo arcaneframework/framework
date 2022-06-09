@@ -413,7 +413,6 @@ class ARCANE_MESH_EXPORT ItemFamily
   Int64Array* m_items_unique_id = nullptr;
   Int32Array* m_items_owner = nullptr;
   Int32Array* m_items_flags = nullptr;
-  Int16Array* m_items_typeid = nullptr;
   Int64ArrayView m_items_unique_id_view;
   Variables* m_internal_variables = nullptr;
   Int32 m_default_sub_domain_owner;
