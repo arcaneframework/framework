@@ -14,7 +14,7 @@ jobs:
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
     name: ubuntu coverity
     runs-on: ubuntu-latest
-    container: ghcr.io/arcaneframework/alien-base:ubuntu20.04
+    container: "ghcr.io/arcaneframework/alien-ci-ubuntu22.04:main"
     steps:
       # Checkout v2 does not include files listed in .gitattributes
       - uses: actions/checkout@v1
@@ -25,7 +25,7 @@ jobs:
         run: |
           ${{matrix.config.precommand}}
           cmake -B build -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-            -DALIEN_DEFAULT_OPTIONS:BOOL=ON -DALIEN_PLUGIN_HYPRE:BOOL=ON -DALIEN_PLUGIN_PETSC:BOOL=ON
+            -DALIEN_DEFAULT_OPTIONS:BOOL=ON -DALIEN_PLUGIN_HYPRE:BOOL=ON -DALIEN_PLUGIN_PETSC:BOOL=ON -DALIEN_PLUGIN_GINKGO:BOOL=ON -DALIEN_PLUGIN_GINKGO_OMP:BOOL=ON  -DALIEN_PLUGIN_TRILINOS:BOOL=ON -DALIEN_PLUGIN_TRILINOS_SERIAL:BOOL=ON
 
       # Setting up ccache from github cached files
       - name: Prepare coverity

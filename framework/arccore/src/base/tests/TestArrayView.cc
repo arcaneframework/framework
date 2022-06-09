@@ -7,6 +7,7 @@
 #include <gtest/gtest.h>
 
 #include "arccore/base/Span.h"
+#include "arccore/base/Span2.h"
 #include "arccore/base/ArrayView.h"
 #include "arccore/base/Array3View.h"
 #include "arccore/base/Array4View.h"
@@ -184,6 +185,26 @@ void _checkSame(A1& a1,A2& a2,const char* message)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// Vérifie que \a a1 et \a a2 sont identiques
+template<typename A1,typename A2>
+void _checkSame2(A1& a1,A2& a2,const char* message)
+{
+  using namespace Arccore;
+  using size_type = typename A1::size_type;
+  const Int64 s1_dim1 = a1.dim1Size();
+  const Int64 s2_dim1 = a2.dim1Size();
+  ASSERT_EQ(s1_dim1,s2_dim1) << "Bad size " << message;
+  const Int64 s1_dim2 = a1.dim2Size();
+  const Int64 s2_dim2 = a2.dim2Size();
+  ASSERT_EQ(s1_dim2,s2_dim2) << "Bad size " << message;
+  for( size_type i=0; i<s1_dim1; ++i )
+    for( size_type j=0; j<s1_dim2; ++j )
+      ASSERT_EQ(a1[i][j],a2[i][j]) << "Bad value[" << i << ',' << j << "]" << message;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 TEST(ArrayView,StdArray)
 {
   using namespace Arccore;
@@ -224,8 +245,7 @@ TEST(ArrayView,StdArray)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename SpanType,typename ConstSpanType>
-void
+template<typename SpanType,typename ConstSpanType> void
 _testSpanStdArray()
 {
   using namespace Arccore;
@@ -291,6 +311,79 @@ TEST(SmallSpan,StdArray)
 {
   using namespace Arccore;
   _testSpanStdArray<SmallSpan<Int64>,SmallSpan<const Int64>>();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename SpanType,typename ConstSpanType> void
+_testSpan2StdArray()
+{
+  using namespace Arccore;
+  std::array<Int64,0> v0;
+  std::array<Int64,6> v1 { 5, 7, 9, 32, -5, -6 };
+  std::array<Int64,5> v2 { 1, 9, 32, 41, -5 };
+  std::array<const Int64,12> v3 { 12, 33, 47, 55, 36, 13, 9, 7, 5, 1, 45, 38 };
+
+  SpanType s0 { };
+  SpanType s1 { v1.data(), 3, 2 };
+  SpanType s2 { v2.data(), 1, 5 };
+  ConstSpanType s3 { v3.data(), 4, 3 };
+
+  {
+    SpanType span0 { s0 };
+    _checkSame2(span0,s0,"span0==s0");
+
+    SpanType span1 { s1 };
+    _checkSame2(span1,s1,"span1==s1");
+
+    SpanType span2 { s1 };
+    ASSERT_TRUE(span1==span2);
+    ASSERT_FALSE(span1!=span2);
+
+    SpanType const_span2 { s1 };
+    ASSERT_TRUE(span1==const_span2);
+    ASSERT_FALSE(span1!=const_span2);
+  }
+
+  {
+    ConstSpanType span0 { s0 };
+    _checkSame2(span0,s0,"const span0==s0");
+
+    ConstSpanType span1 { s1 };
+    _checkSame2(span1,s1,"const span1==s1");
+
+    span0 = s2;
+    _checkSame2(span0,s2,"const span0==s2");
+
+    ConstSpanType span2 { s3 };
+    _checkSame2(span2,s3,"const span2==s3");
+
+    ConstSpanType span3 { s3 };
+    ASSERT_TRUE(span2==span3);
+    ASSERT_FALSE(span2!=span3);
+
+    span1 = s3;
+    _checkSame2(span1,s3,"const span1==s3");
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+TEST(Span2,StdArray)
+{
+  using namespace Arccore;
+  _testSpan2StdArray<Span2<Int64>,Span2<const Int64>>();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+TEST(SmallSpan2,StdArray)
+{
+  using namespace Arccore;
+  _testSpan2StdArray<SmallSpan2<Int64>,SmallSpan2<const Int64>>();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -383,6 +476,16 @@ template class SmallSpan<Int32>;
 template class SmallSpan<const Int32>;
 template class SmallSpan<double>;
 template class SmallSpan<const double>;
+
+template class Span2<Int32>;
+template class Span2<const Int32>;
+template class Span2<double>;
+template class Span2<const double>;
+
+template class SmallSpan2<Int32>;
+template class SmallSpan2<const Int32>;
+template class SmallSpan2<double>;
+template class SmallSpan2<const double>;
 }
 
 /*---------------------------------------------------------------------------*/

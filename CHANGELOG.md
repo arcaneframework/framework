@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+**News:**
+
 ## 1.1.4
 
 **News:**

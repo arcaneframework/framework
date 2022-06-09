@@ -197,6 +197,28 @@ class ArrayView
    *
    * En mode \a check, vérifie les débordements.
    */
+  constexpr reference operator()(Integer i)
+  {
+    ARCCORE_CHECK_AT(i,m_size);
+    return m_ptr[i];
+  }
+
+  /*!
+   * \brief i-ème élément du tableau.
+   *
+   * En mode \a check, vérifie les débordements.
+   */
+  constexpr const_reference operator()(Integer i) const
+  {
+    ARCCORE_CHECK_AT(i,m_size);
+    return m_ptr[i];
+  }
+
+  /*!
+   * \brief i-ème élément du tableau.
+   *
+   * En mode \a check, vérifie les débordements.
+   */
   constexpr const_reference item(Integer i) const
   {
     ARCCORE_CHECK_AT(i,m_size);
@@ -612,6 +634,17 @@ class ConstArrayView
    * En mode \a check, vérifie les débordements.
    */
   constexpr const_reference operator[](Integer i) const
+  {
+    ARCCORE_CHECK_AT(i,m_size);
+    return m_ptr[i];
+  }
+
+  /*!
+   * \brief i-ème élément du tableau.
+   *
+   * En mode \a check, vérifie les débordements.
+   */
+  constexpr const_reference operator()(Integer i) const
   {
     ARCCORE_CHECK_AT(i,m_size);
     return m_ptr[i];
