@@ -1224,7 +1224,6 @@ _testAdditionnalConnectivity()
   ENUMERATE_CELL(icell,cells){
     Cell cell = *icell;
     Integer nb_face = cell.nbFace();
-    cn->notifySourceItemAdded(cell);
     for( Integer i=0; i<nb_face; ++i ){
       Face face = cell.face(i);
       if (face.nbCell()==2)

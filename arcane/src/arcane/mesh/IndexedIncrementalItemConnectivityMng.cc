@@ -83,6 +83,11 @@ findOrCreateConnectivity(IItemFamily* source, IItemFamily* target, const String&
     auto* true_connectivity = new mesh::IncrementalItemConnectivity(source, target, name);
     connectivity = makeRef<IIndexedIncrementalItemConnectivity>(new IndexedIncrementalItemConnectivity(true_connectivity));
     m_connectivity_map.insert(std::make_pair(name, connectivity));
+
+    // Ajoute les entités existantes dans la connectivité.
+    ENUMERATE_(Item,iitem,source->allItems()){
+      true_connectivity->notifySourceItemAdded(*iitem);
+    }
   }
   return connectivity;
 }
