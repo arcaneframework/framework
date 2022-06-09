@@ -49,6 +49,8 @@ class CartesianMeshGeneratorBuildInfo
   bool m_is_generate_sod_groups = false;
   //! Version de l'algorithme de numérotation des faces
   Int32 m_face_numbering_version = -1;
+  //! Version de l'algorithme de numérotation des arêtes
+  Int32 m_edge_numbering_version = -1;
  public:
   void readOptionsFromXml(XmlNode cartesian_node);
 };

@@ -151,6 +151,14 @@ readOptionsFromXml(XmlNode cartesian_node)
         m_face_numbering_version = v;
     }
   }
+  {
+    XmlNode version_node = cartesian_node.child("edge-numbering-version");
+    if (!version_node.null()){
+      Int32 v = version_node.valueAsInteger(true);
+      if (v>=0)
+        m_edge_numbering_version = v;
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -894,9 +902,14 @@ generateMesh()
   }
 
   mesh->setDimension(m_mesh_dimension);
+
   info() << "FaceNumberingVersion = " << m_build_info.m_face_numbering_version;
   if (m_build_info.m_face_numbering_version>=0)
     mesh->meshUniqueIdMng()->setFaceBuilderVersion(m_build_info.m_face_numbering_version);
+
+  info() << "EdgeNumberingVersion = " << m_build_info.m_edge_numbering_version;
+  if (m_build_info.m_edge_numbering_version>=0)
+    mesh->meshUniqueIdMng()->setEdgeBuilderVersion(m_build_info.m_edge_numbering_version);
 
   mesh->allocateCells(own_nb_cell_xyz, cells_infos, true);
 
@@ -1055,6 +1068,7 @@ class Cartesian3DMeshGenerator
     m_build_info.m_origine.z = origin.z;
     m_build_info.m_is_generate_sod_groups = options()->generateSodGroups();
     m_build_info.m_face_numbering_version = options()->faceNumberingVersion();
+    m_build_info.m_edge_numbering_version = options()->edgeNumberingVersion();
 
     for( auto& o : options()->x() ){
       m_build_info.m_bloc_lx.add(o->length);
