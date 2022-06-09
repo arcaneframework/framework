@@ -47,6 +47,20 @@ TEST(NumArray,Basic)
   std::cout << " V=" << array4(1,2,3,4) << "\n";
   array4.resize(8,3,7,5);
   ASSERT_EQ(array4.totalNbElement(),(8*3*7*5));
+
+  NumArray<Real,1> num_data1(4, { 2.4, 5.6, 3.3, 5.4 });
+  ASSERT_EQ(num_data1[0], 2.4);
+  ASSERT_EQ(num_data1[1], 5.6);
+  ASSERT_EQ(num_data1[2], 3.3);
+  ASSERT_EQ(num_data1[3], 5.4);
+
+  NumArray<Real,2,RightLayout<2>> num_data2(3, 2, { 1.4, 15.6, 33.3, 7.4, 4.2, 6.5 });
+  ASSERT_EQ(num_data2(0,0), 1.4);
+  ASSERT_EQ(num_data2(0,1), 15.6);
+  ASSERT_EQ(num_data2(1,0), 33.3);
+  ASSERT_EQ(num_data2(1,1), 7.4);
+  ASSERT_EQ(num_data2(2,0), 4.2);
+  ASSERT_EQ(num_data2(2,1), 6.5);
 }
 
 /*---------------------------------------------------------------------------*/

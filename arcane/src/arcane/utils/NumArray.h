@@ -73,6 +73,15 @@ namespace impl
     Span<const std::byte> bytes() const { return asBytes(BaseClass::constSpan()); }
     void swap(NumArrayContainer<DataType>& rhs) { BaseClass::_swap(rhs); }
     void copy(Span<const DataType> rhs) { BaseClass::_copy(rhs.data()); }
+    void copyInitializerList(std::initializer_list<DataType> alist)
+    {
+      Span<DataType> s = to1DSpan();
+      Int32 index = 0;
+      for( auto x : alist ){
+        s[index] = x;
+        ++index;
+      }
+    }
   };
 }
 
@@ -249,6 +258,12 @@ class NumArray<DataType,1,LayoutType>
   : BaseClass(ArrayExtents<1>(dim1_size)){}
   NumArray(Int32 dim1_size,eMemoryRessource r)
   : BaseClass(ArrayExtents<1>{dim1_size},r){}
+  //! Construit un tableau à partir de valeurs prédéfinies
+  NumArray(Int32 dim1_size,std::initializer_list<DataType> alist)
+  : NumArray(dim1_size)
+  {
+    this->m_data.copyInitializerList(alist);
+  }
  public:
   void resize(Int32 dim1_size)
   {
@@ -301,6 +316,17 @@ class NumArray<DataType,2,LayoutType>
   : BaseClass(ArrayExtents<2>{dim1_size,dim2_size}){}
   NumArray(Int32 dim1_size,Int32 dim2_size,eMemoryRessource r)
   : BaseClass(ArrayExtents<2>{dim1_size,dim2_size},r){}
+  /*!
+   * \brief Construit un tableau à partir de valeurs prédéfinies.
+   *
+   * Les valeurs sont rangées de manière contigues en mémoire donc
+   * la liste \a alist doit avoir un layout qui correspond à celui de cette classe.
+   */
+  NumArray(Int32 dim1_size,Int32 dim2_size,std::initializer_list<DataType> alist)
+  : NumArray(dim1_size,dim2_size)
+  {
+    this->m_data.copyInitializerList(alist);
+  }
  public:
   void resize(Int32 dim1_size,Int32 dim2_size)
   {
