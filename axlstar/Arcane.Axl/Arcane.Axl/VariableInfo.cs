@@ -18,82 +18,82 @@ namespace Arcane.Axl
       * Valeur de l'attribut XML "field-name", nom de l'attribut représentant
       * la variable dans la classe générée.
       */
-    string m_field_name;
+    readonly string m_field_name;
     public string FieldName { get { return m_field_name; } }
 
-    string m_name;
+    readonly string m_name;
     //! Nom de la variable
     public string Name { get { return m_name; } }
 
-    Integer m_dim;
+    readonly Integer m_dim;
     /** Valeur de l'attribut XML "dim", dimension de la variable: 0, 1 ou 2. */
     public Integer Dimension { get { return m_dim; } }
 
-    ItemKind m_item_kind;
+    readonly ItemKind m_item_kind;
     /**
      * Valeur de l'attribut XML "item-kind",
      * type des éléments du maillage sur lequel repose la variable.
      */
     public ItemKind ItemKind { get { return m_item_kind; } }
 
-    string m_data_type;
+    readonly string m_data_type;
     /** Valeur de l'attribut XML "data-type", type des éléments de la variable. */
     public string DataType { get { return m_data_type; } }
 
-    bool m_no_dump;
+    readonly bool m_no_dump;
     /**
      * Valeur de l'attribut XML "dump",
      * indiquant si la variable doit etre sauvegardée.
      */
     public bool IsNoDump { get { return m_no_dump; } }
 
-    bool m_no_need_sync;
+    readonly bool m_no_need_sync;
     /**
      * Valeur de l'attribut XML "need-sync",
      * indiquant si la variable doit etre synchronisée.
      */
     public bool IsNoNeedSync { get { return m_no_need_sync; } }
 
-    bool m_execution_depend;
+    readonly bool m_execution_depend;
     /**
      * Valeur de l'attribut XML "execution-depend",
      * indiquant si la valeur de la variable dépend de l'exécution (par exemple le temps CPU).
      */
     public bool IsExecutionDepend { get { return m_execution_depend; } }
 
-    bool m_sub_domain_depend;
+    readonly bool m_sub_domain_depend;
     /**
      * Valeur de l'attribut XML "sub-domain-depend",
      * indiquant si la valeur de la variable dépend du découpage.
      */
     public bool IsSubDomainDepend { get { return m_sub_domain_depend; } }
 
-    bool m_sub_domain_private;
+    readonly bool m_sub_domain_private;
     /**
      * Valeur de l'attribut XML "sub-domain-private",
      * indiquant si la valeur de la variable dépend du sous-domaine.
      */
     public bool IsSubDomainPrivate { get { return m_sub_domain_private; } }
 
-    bool m_no_restore;
+    readonly bool m_no_restore;
     /**
      * Valeur de l'attribut XML "no-restore",
      * indiquant si la valeur de la variable doit être restaurée en cas de retour-arrière.
      */
     public bool IsNoRestore { get { return m_no_restore; } }
 
-    bool m_no_exchange;
+    readonly bool m_no_exchange;
     /**
      * Valeur de l'attribut XML "no-exchange",
      * indiquant si la valeur de la variable doit être échangé lors d'un équilibrage de charge.
      */
     public bool IsNoExchange { get { return m_no_exchange; } }
 
-    bool m_persistant;
+    readonly bool m_persistant;
     //! Valeur de l'attribut XML "persistant",
     public bool IsPersistant { get { return m_persistant; } }
 
-    bool m_no_replica_sync;
+    readonly bool m_no_replica_sync;
     //! Valeur de l'attribut XML "no-replica-sync",
     public bool IsNoReplicaSync { get { return m_no_replica_sync; } }
 
