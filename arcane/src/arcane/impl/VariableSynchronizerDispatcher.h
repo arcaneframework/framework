@@ -129,7 +129,8 @@ class ARCANE_IMPL_EXPORT IVariableSynchronizeDispatcher
  public:
   virtual ~IVariableSynchronizeDispatcher() = default;
  public:
-  virtual void compute(ItemGroupSynchronizeInfo* sync_list) =0;
+  virtual void setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info) =0;
+  virtual void compute() =0;
  protected:
 };
 
@@ -210,7 +211,8 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
   void applyDispatch(IArrayDataT<SimpleType>* data) override;
   void applyDispatch(IArray2DataT<SimpleType>* data) override;
   void applyDispatch(IMultiArray2DataT<SimpleType>* data) override;
-  void compute(ItemGroupSynchronizeInfo* sync_list) override;
+  void setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info) override;
+  void compute() override;
 
  protected:
 
@@ -272,11 +274,9 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerDispatcher
   {
   }
   ~VariableSynchronizerDispatcher();
-  void compute(ItemGroupSynchronizeInfo* sync_info);
-  IDataVisitor* visitor()
-  {
-    return m_dispatcher;
-  }
+  void setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info);
+  void compute();
+  IDataVisitor* visitor() { return m_dispatcher; }
  private:
   IParallelMng* m_parallel_mng;
   DispatcherType* m_dispatcher;

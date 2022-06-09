@@ -101,7 +101,7 @@ class MpiLegacyVariableSynchronizeDispatcher
     m_ghost_derived_types.clear();
   }
 
-  void compute(ItemGroupSynchronizeInfo* sync_list) override;
+  void compute() override;
 
  protected:
 

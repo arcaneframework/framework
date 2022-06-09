@@ -74,6 +74,7 @@ VariableSynchronizer(IParallelMng* pm,const ItemGroup& group,
     DispatcherType* dt = DispatcherType::create<SimpleVariableSynchronizeDispatcher>(bi);
     m_dispatcher = new VariableSynchronizerDispatcher(pm,dt);
   }
+  m_dispatcher->setItemGroupSynchronizeInfo(&m_sync_list);
   m_multi_dispatcher = new VariableSynchronizerMultiDispatcher(pm);
 
   {
@@ -177,7 +178,7 @@ compute()
   if (m_is_verbose){
     info() << "Begin compute dispatcher Date=" << platform::getCurrentDateTime();
   }
-  m_dispatcher->compute(&m_sync_list);
+  m_dispatcher->compute();
   if (m_is_verbose){
     info() << "End compute dispatcher Date=" << platform::getCurrentDateTime();
   }
@@ -692,7 +693,7 @@ changeLocalIds(Int32ConstArrayView old_to_new_ids)
     info(4) << "NEW_SHARE_SIZE=" << vsi.nbShare() << " old=" << old_nb_share;
     info(4) << "NEW_GHOST_SIZE=" << vsi.nbGhost() << " old=" << old_nb_ghost;
   }
-  m_dispatcher->compute(&m_sync_list);
+  m_dispatcher->compute();
 }
 
 /*---------------------------------------------------------------------------*/

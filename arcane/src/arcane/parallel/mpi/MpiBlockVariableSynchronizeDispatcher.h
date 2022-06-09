@@ -80,8 +80,6 @@ class MpiBlockVariableSynchronizeDispatcher
 
   explicit MpiBlockVariableSynchronizeDispatcher(MpiBlockVariableSynchronizeDispatcherBuildInfo& bi);
 
-  void compute(ItemGroupSynchronizeInfo* sync_list) override;
-
  protected:
 
   void _beginSynchronize(SyncBuffer& sync_buffer) override;

@@ -110,6 +110,14 @@ applyDispatch(IMultiArray2DataT<SimpleType>*)
   ARCANE_THROW(NotSupportedException,"Can not synchronize multiarray2 data");
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::
+setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info)
+{
+  m_sync_info = sync_info;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -118,11 +126,12 @@ applyDispatch(IMultiArray2DataT<SimpleType>*)
  * pour les synchronisations des variables 1D.
  */
 template<typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::
-compute(ItemGroupSynchronizeInfo* sync_info)
+compute()
 {
-  //IParallelMng* pm = m_parallel_mng;
-  m_sync_info = sync_info;
-  m_sync_list = sync_info->infos();
+  if (!m_sync_info)
+    ARCANE_FATAL("The instance is not initialised. You need to calss setItemGroupSynchronizeInfo() before");
+
+  m_sync_list = m_sync_info->infos();
   //Integer nb_message = sync_list.size();
   //pm->traceMng()->info() << "** RECOMPUTE SYNC LIST!!! N=" << nb_message
   //                       << " this=" << (IVariableSynchronizeDispatcher*)this
@@ -363,12 +372,22 @@ VariableSynchronizerDispatcher::
 /*---------------------------------------------------------------------------*/
 
 void VariableSynchronizerDispatcher::
-compute(ItemGroupSynchronizeInfo* sync_info)
+setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info)
+{
+  for( IVariableSynchronizeDispatcher* d : m_dispatcher->dispatchers() )
+    d->setItemGroupSynchronizeInfo(sync_info);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VariableSynchronizerDispatcher::
+compute()
 {
   ConstArrayView<IVariableSynchronizeDispatcher*> dispatchers = m_dispatcher->dispatchers();
   m_parallel_mng->traceMng()->info(4) << "DISPATCH RECOMPUTE";
   for( Integer i=0, is=dispatchers.size(); i<is; ++i )
-    dispatchers[i]->compute(sync_info);
+    dispatchers[i]->compute();
 }
 
 /*---------------------------------------------------------------------------*/
