@@ -45,7 +45,7 @@ class RealArray2Variant
   : RealArray2Variant(v.constView())
   {}
   template<typename LayoutType>
-  RealArray2Variant(NumArray<Real,2,LayoutType>& v)
+  RealArray2Variant(const NumArray<Real,2,LayoutType>& v)
   : RealArray2Variant(v.span())
   {}
   RealArray2Variant(ConstArray2View<Real> v)
@@ -54,6 +54,11 @@ class RealArray2Variant
   }
   template<typename LayoutType>
   RealArray2Variant(MDSpan<Real,2,LayoutType> v)
+  {
+    _setValue(v.to1DSpan().data(), v.dim1Size(), v.dim2Size());
+  }
+  template<typename LayoutType>
+  RealArray2Variant(MDSpan<const Real,2,LayoutType> v)
   {
     _setValue(v.to1DSpan().data(), v.dim1Size(), v.dim2Size());
   }
