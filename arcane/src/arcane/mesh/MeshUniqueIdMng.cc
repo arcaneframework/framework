@@ -36,6 +36,7 @@ MeshUniqueIdMng(ITraceMng* tm)
 , m_edge_builder_version(1)
 {
   _initFaceVersion();
+  _initEdgeVersion();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -95,6 +96,25 @@ _initFaceVersion()
 
   if (!platform::getEnvironmentVariable("ARCANE_NEW_MESHINIT").null()){
     m_face_builder_version = 2;
+    return;
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshUniqueIdMng::
+_initEdgeVersion()
+{
+  m_edge_builder_version = 1;
+
+  String edge_version_str = platform::getEnvironmentVariable("ARCANE_EDGE_UNIQUE_ID_BUILDER_VERSION");
+  if (!edge_version_str.null()){
+    Integer v = 0;
+    if (builtInGetValue(v,edge_version_str))
+      ARCANE_FATAL("Invalid value '{0}' for ARCANE_EDGE_UNIQUE_ID_BUILDER_VERSION. Value has to be an Integer",
+                   edge_version_str);
+    m_edge_builder_version = v;
     return;
   }
 }

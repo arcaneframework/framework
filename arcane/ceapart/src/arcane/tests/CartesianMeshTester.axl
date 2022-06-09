@@ -29,6 +29,11 @@
        Valeur de la longueur du maillage
      </description>
    </simple>
+   <simple name="has-edges" type="bool" default="false" >
+     <description>
+       Indique si on construit les arêtes
+     </description>
+   </simple>
  </options>
 
  <entry-points>

@@ -42,6 +42,8 @@
 #include "arcane/IGridMeshPartitioner.h"
 #include "arcane/ICartesianMeshGenerationInfo.h"
 
+#include "arcane/Connectivity.h"
+
 #include "arcane/cea/ICartesianMesh.h"
 #include "arcane/cea/CellDirectionMng.h"
 #include "arcane/cea/FaceDirectionMng.h"
@@ -278,6 +280,12 @@ staticInitialize(ISubDomain* sd)
 void CartesianMeshTesterModule::
 buildInit()
 {
+  bool has_edge = options()->hasEdges();
+  info() << "Adding edge connectivity?=" << has_edge;
+  if (has_edge){
+    Connectivity c(mesh()->connectivity());
+    c.enableConnectivity(Connectivity::CT_HasEdge);
+  }
   
   m_global_deltat.assign(1.0);
 

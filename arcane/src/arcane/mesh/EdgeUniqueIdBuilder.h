@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* EdgeUniqueIdBuilder.h                                       (C) 2000-2014 */
+/* EdgeUniqueIdBuilder.h                                       (C) 2000-2022 */
 /*                                                                           */
 /* Construction des indentifiants uniques des edges.                         */
 /*---------------------------------------------------------------------------*/
@@ -21,23 +21,18 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
+namespace Arcane
+{
 class SerializeBuffer;
 class IParallelExchanger;
 class IParallelMng;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
+namespace Arcane::mesh
+{
 class DynamicMesh;
 
 /*---------------------------------------------------------------------------*/
@@ -59,8 +54,8 @@ class EdgeUniqueIdBuilder
  public:
 
   //! Construit une instance pour le maillage \a mesh
-  EdgeUniqueIdBuilder(DynamicMeshIncrementalBuilder* mesh_builder);
-  virtual ~EdgeUniqueIdBuilder();
+  explicit EdgeUniqueIdBuilder(DynamicMeshIncrementalBuilder* mesh_builder);
+  ~EdgeUniqueIdBuilder() override;
 
  public:
 
@@ -76,13 +71,13 @@ class EdgeUniqueIdBuilder
   void _computeEdgesUniqueIdsSequential();
   void _computeEdgesUniqueIdsParallel3();
   void _exchangeData(IParallelExchanger* exchanger,BoundaryInfosMap& boundary_infos_to_send);
+  void _computeEdgesUniqueIdsParallelV2();
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

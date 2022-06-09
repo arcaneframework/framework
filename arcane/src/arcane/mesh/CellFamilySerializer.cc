@@ -129,7 +129,8 @@ deserializeItems(ISerializer* buf,Int32Array* cells_local_id)
   const bool has_edge = m_mesh_builder->hasEdge();
   const bool has_amr = mesh->isAmrActivated();
   const bool use_flags = m_use_flags;
-  info(4) << "DeserializeCells: nb_cell=" << nb_cell << " orig=" << orig_rank;
+  info(4) << "DeserializeCells: nb_cell=" << nb_cell << " orig=" << orig_rank << " has_edge=" << has_edge
+          << " has_amr=" << has_amr << " use_flags=" << use_flags;
   for( Integer i_cell=0; i_cell<nb_cell; ++i_cell ){
     Int64 memory_needed = buf->getInt64();
     mem_buf.resize(memory_needed);

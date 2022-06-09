@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* FaceUniqueIdBuilder2.cc                                     (C) 2000-2021 */
+/* FaceUniqueIdBuilder2.cc                                     (C) 2000-2022 */
 /*                                                                           */
 /* Construction des indentifiants uniques des faces.                         */
 /*---------------------------------------------------------------------------*/
@@ -181,14 +181,11 @@ class FaceUniqueIdBuilder2::NarrowCellFaceInfo
     m_value += v_rank << (BITS_CELL_UID);
     m_value += v_uid;
     if (cellUid()!=cell_uid)
-      throw FatalErrorException(A_FUNCINFO,
-                                String::format("Bad uid expected='{0}' computed='{1}' v={2}",cell_uid,cellUid(),m_value));
+      ARCANE_FATAL("Bad uid expected='{0}' computed='{1}' v={2}",cell_uid,cellUid(),m_value);
     if (rank()!=_rank)
-      throw FatalErrorException(A_FUNCINFO,
-                                String::format("Bad rank expected='{0}' computed='{1}'",_rank,rank()));
+      ARCANE_FATAL("Bad rank expected='{0}' computed='{1}'",_rank,rank());
     if (faceLocalIndex()!=face_local_index)
-      throw FatalErrorException(A_FUNCINFO,
-                                String::format("Bad local_index expected='{0}' computed='{1}'",face_local_index,faceLocalIndex()));
+      ARCANE_FATAL("Bad local_index expected='{0}' computed='{1}'",face_local_index,faceLocalIndex());
   }
   Int64 cellUid() const { return (m_value & MASK_CELL_UID) - 1; }
   Int32 rank() const { return CheckedConvert::toInt32( ((m_value & MASK_RANK) >> BITS_CELL_UID) - 1 ); }
@@ -565,7 +562,7 @@ _computeParallel()
 
   // Calcule et trie pour les faces frontières
   UniqueArray<BoundaryFaceInfo> boundary_faces_info;
-  _computeAndSortBoundaryFaces(boundary_faces_info); //&boundary_face_sorter);
+  _computeAndSortBoundaryFaces(boundary_faces_info);
 
   // Ici, les faces de bord sont triées en fonction de leur noeuds.
   // Normalement, dans cette liste, 2 éléments consécutifs BoundaryFaceInfo qui

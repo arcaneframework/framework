@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshUniqueIdMng.h                                           (C) 2000-2021 */
+/* MeshUniqueIdMng.h                                           (C) 2000-2022 */
 /*                                                                           */
 /* Gestionnaire de numérotation des uniqueId() d'un maillage.                */
 /*---------------------------------------------------------------------------*/
@@ -39,20 +39,21 @@ class ARCANE_MESH_EXPORT MeshUniqueIdMng
 
  public:
 
-  void setFaceBuilderVersion(Integer n) override;
-  Integer faceBuilderVersion() const override { return m_face_builder_version; }
+  void setFaceBuilderVersion(Int32 n) override;
+  Int32 faceBuilderVersion() const override { return m_face_builder_version; }
 
-  void setEdgeBuilderVersion(Integer n) override;
-  Integer edgeBuilderVersion() const override { return m_edge_builder_version; }
+  void setEdgeBuilderVersion(Int32 n) override;
+  Int32 edgeBuilderVersion() const override { return m_edge_builder_version; }
 
  private:
 
-  Integer m_face_builder_version;
-  Integer m_edge_builder_version;
+  Int32 m_face_builder_version;
+  Int32 m_edge_builder_version;
 
  private:
 
   void _initFaceVersion();
+  void _initEdgeVersion();
 };
 
 /*---------------------------------------------------------------------------*/

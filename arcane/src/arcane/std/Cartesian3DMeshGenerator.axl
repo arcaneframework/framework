@@ -37,6 +37,15 @@
       <userclass>User</userclass>
     </simple>
 
+    <simple name="edge-numbering-version" type="integer" default="2">
+      <description>
+        Version de l'algorithme pour la numérotation des arêtes. Seule
+        la valeur 2 est valide actuellement. Dans ce cas si les arêtes
+        sont activées alors le nombre maximum des noeuds est limité à 2^31.
+      </description>
+      <userclass>User</userclass>
+    </simple>
+
     <complex type="PartInfoX" name="x" minOccurs="1" maxOccurs="unbounded" >
       <userclass>User</userclass>
       <simple name="n" type="integer" >
