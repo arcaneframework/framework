@@ -83,10 +83,14 @@ namespace impl
     void copyInitializerList(std::initializer_list<DataType> alist)
     {
       Span<DataType> s = to1DSpan();
+      Int64 s1 = s.size();
       Int32 index = 0;
       for( auto x : alist ){
         s[index] = x;
         ++index;
+        // S'assure qu'on ne déborde pas
+        if (index>=s1)
+          break;
       }
     }
   };
@@ -270,6 +274,16 @@ class NumArray<DataType,1,LayoutType>
   : NumArray(dim1_size)
   {
     this->m_data.copyInitializerList(alist);
+  }
+  //! Construit une instance à partir d'une vue
+  NumArray(SmallSpan<const DataType> v) : NumArray(v.size())
+  {
+    this->m_data.copy(v);
+  }
+  //! Construit une instance à partir d'une vue
+  NumArray(Span<const DataType> v)
+  : NumArray(SmallSpan<const DataType>(v.data(),arcaneCheckArraySize(v.size())))
+  {
   }
  public:
 

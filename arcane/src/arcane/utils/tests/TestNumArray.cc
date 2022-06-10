@@ -186,6 +186,17 @@ TEST(NumArray3,Copy)
     vi2 = vi1;
     ASSERT_EQ(vi1.to1DSpan(),vi0.to1DSpan());
     ASSERT_EQ(vi2.to1DSpan(),vi1.to1DSpan());
+    NumArray<int,1> vi3(vi0.to1DSpan());
+    ASSERT_EQ(vi3.to1DSpan(),vi0.to1DSpan());
+  }
+
+  {
+    NumArray<int,1> vi0(4,{1,3,5,7});
+    NumArray<int,1> vi1(vi0);
+    NumArray<int,1> vi2;
+    vi2 = vi1;
+    ASSERT_EQ(vi1.to1DSpan(),vi0.to1DSpan());
+    ASSERT_EQ(vi2.to1DSpan(),vi1.to1DSpan());
   }
 }
 
