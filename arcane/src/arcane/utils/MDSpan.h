@@ -16,6 +16,7 @@
 
 #include "arcane/utils/ArrayExtents.h"
 #include "arcane/utils/ArrayBounds.h"
+#include "arcane/utils/NumericTraits.h"
 
 /*
  * ATTENTION:
@@ -152,22 +153,19 @@ class MDSpan<DataType,1,LayoutType>
   //! Valeur de la première dimension
   ARCCORE_HOST_DEVICE Int64 dim1Size() const { return m_extents(0); }
  public:
-  ARCCORE_HOST_DEVICE Int64 offset(Int32 i) const
-  {
-    return m_extents.offset(i);
-  }
+  ARCCORE_HOST_DEVICE Int64 offset(Int32 i) const { return m_extents.offset(i); }
   //! Valeur pour l'élément \a i
-  ARCCORE_HOST_DEVICE DataType& operator()(Int32 i) const
-  {
-    return m_ptr[offset(i)];
-  }
+  ARCCORE_HOST_DEVICE DataType& operator()(Int32 i) const { return m_ptr[offset(i)]; }
   //! Pointeur sur la valeur pour l'élément \a i
-  ARCCORE_HOST_DEVICE DataType* ptrAt(Int32 i) const
-  {
-    return m_ptr+offset(i);
-  }
+  ARCCORE_HOST_DEVICE DataType* ptrAt(Int32 i) const { return m_ptr+offset(i); }
   //! Valeur pour l'élément \a i
   ARCCORE_HOST_DEVICE DataType operator[](Int32 i) const { return m_ptr[offset(i)]; }
+  //! Valeur pour l'élément \a i et la composante \a a
+  template<typename X = DataType,typename SubType = typename NumericTraitsT<X>::SubscriptType >
+  ARCCORE_HOST_DEVICE SubType operator()(Int32 i,Int32 a) const { return m_ptr[offset(i)][a]; }
+  //! Valeur pour l'élément \a i et la composante \a [a][b]
+  template<typename X = DataType,typename Sub2Type = typename NumericTraitsT<X>::Subscript2Type >
+  ARCCORE_HOST_DEVICE Sub2Type operator()(Int32 i,Int32 a,Int32 b) const { return m_ptr[offset(i)][a][b]; }
  public:
   ARCCORE_HOST_DEVICE MDSpan<const DataType,1,LayoutType> constSpan() const
   { return MDSpan<const DataType,1,LayoutType>(m_ptr,m_extents); }
@@ -209,23 +207,22 @@ class MDSpan<DataType,2,LayoutType>
   //! Valeur de la deuxième dimension
   ARCCORE_HOST_DEVICE Int32 dim2Size() const { return m_extents(1); }
  public:
-  ARCCORE_HOST_DEVICE Int64 offset(Int32 i,Int32 j) const
-  {
-    return m_extents.offset(i,j);
-  }
+  ARCCORE_HOST_DEVICE Int64 offset(Int32 i,Int32 j) const { return m_extents.offset(i,j); }
   //! Valeur pour l'élément \a i,j
-  ARCCORE_HOST_DEVICE DataType& operator()(Int32 i,Int32 j) const
-  {
-    return m_ptr[offset(i,j)];
-  }
+  ARCCORE_HOST_DEVICE DataType& operator()(Int32 i,Int32 j) const { return m_ptr[offset(i,j)]; }
   //! Pointeur sur la valeur pour l'élément \a i,j
-  ARCCORE_HOST_DEVICE DataType* ptrAt(Int32 i,Int32 j) const
-  {
-    return m_ptr + offset(i,j);
-  }
+  ARCCORE_HOST_DEVICE DataType* ptrAt(Int32 i,Int32 j) const { return m_ptr + offset(i,j); }
+  //! Valeur pour l'élément \a i et la composante \a a
+  template<typename X = DataType,typename SubType = typename NumericTraitsT<X>::SubscriptType >
+  ARCCORE_HOST_DEVICE SubType operator()(Int32 i,Int32 j,Int32 a) const { return m_ptr[offset(i,j)][a]; }
+  //! Valeur pour l'élément \a i et la composante \a [a][b]
+  template<typename X = DataType,typename Sub2Type = typename NumericTraitsT<X>::Subscript2Type >
+  ARCCORE_HOST_DEVICE Sub2Type operator()(Int32 i,Int32 j,Int32 a,Int32 b) const { return m_ptr[offset(i,j)][a][b]; }
  public:
   ARCCORE_HOST_DEVICE MDSpan<const DataType,2,LayoutType> constSpan() const
-  { return MDSpan<const DataType,2,LayoutType>(m_ptr,m_extents); }
+  {
+    return MDSpan<const DataType,2,LayoutType>(m_ptr,m_extents);
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -273,23 +270,28 @@ class MDSpan<DataType,3,LayoutType>
   //! Valeur de la troisième dimension
   ARCCORE_HOST_DEVICE Int32 dim3Size() const { return m_extents(2); }
  public:
-  ARCCORE_HOST_DEVICE Int64 offset(Int32 i,Int32 j,Int32 k) const
-  {
-    return m_extents.offset(i,j,k);
-  }
+  ARCCORE_HOST_DEVICE Int64 offset(Int32 i,Int32 j,Int32 k) const { return m_extents.offset(i,j,k); }
   //! Valeur pour l'élément \a i,j,k
-  ARCCORE_HOST_DEVICE DataType& operator()(Int32 i,Int32 j,Int32 k) const
-  {
-    return m_ptr[offset(i,j,k)];
-  }
+  ARCCORE_HOST_DEVICE DataType& operator()(Int32 i,Int32 j,Int32 k) const { return m_ptr[offset(i,j,k)]; }
   //! Pointeur sur la valeur pour l'élément \a i,j,k
-  ARCCORE_HOST_DEVICE DataType* ptrAt(Int32 i,Int32 j,Int32 k) const
+  ARCCORE_HOST_DEVICE DataType* ptrAt(Int32 i,Int32 j,Int32 k) const { return m_ptr+offset(i,j,k); }
+  //! Valeur pour l'élément \a i et la composante \a a
+  template<typename X = DataType,typename SubType = typename NumericTraitsT<X>::SubscriptType >
+  ARCCORE_HOST_DEVICE SubType operator()(Int32 i,Int32 j,Int32 k,Int32 a) const
   {
-    return m_ptr+offset(i,j,k);
+    return m_ptr[offset(i,j,k)][a];
+  }
+  //! Valeur pour l'élément \a i et la composante \a [a][b]
+  template<typename X = DataType,typename Sub2Type = typename NumericTraitsT<X>::Subscript2Type >
+  ARCCORE_HOST_DEVICE Sub2Type operator()(Int32 i,Int32 j,Int32 k,Int32 a,Int32 b) const
+  {
+    return m_ptr[offset(i,j,k)][a][b];
   }
  public:
   ARCCORE_HOST_DEVICE MDSpan<const DataType,3,LayoutType> constSpan() const
-  { return MDSpan<const DataType,3,LayoutType>(m_ptr,m_extents); }
+  {
+    return MDSpan<const DataType,3,LayoutType>(m_ptr,m_extents);
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -353,9 +355,23 @@ class MDSpan<DataType,4,LayoutType>
   {
     return m_ptr + offset(i,j,k,l);
   }
+  //! Valeur pour l'élément \a i et la composante \a a
+  template<typename X = DataType,typename SubType = typename NumericTraitsT<X>::SubscriptType >
+  ARCCORE_HOST_DEVICE SubType operator()(Int32 i,Int32 j,Int32 k,Int32 l,Int32 a) const
+  {
+    return m_ptr[offset(i,j,k,l)][a];
+  }
+  //! Valeur pour l'élément \a i et la composante \a [a][b]
+  template<typename X = DataType,typename Sub2Type = typename NumericTraitsT<X>::Subscript2Type >
+  ARCCORE_HOST_DEVICE Sub2Type operator()(Int32 i,Int32 j,Int32 k,Int32 l,Int32 a,Int32 b) const
+  {
+    return m_ptr[offset(i,j,k,l)][a][b];
+  }
  public:
   ARCCORE_HOST_DEVICE MDSpan<const DataType,4,LayoutType> constSpan() const
-  { return MDSpan<const DataType,4,LayoutType>(m_ptr,m_extents); }
+  {
+    return MDSpan<const DataType,4,LayoutType>(m_ptr,m_extents);
+  }
 };
 
 /*---------------------------------------------------------------------------*/

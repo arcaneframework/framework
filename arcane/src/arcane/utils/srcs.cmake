@@ -76,6 +76,7 @@ set(ARCANE_SOURCES
   MemoryRessourceMng.cc
   Numeric.cc
   Numeric.h
+  NumericTraits.h
   NumArray.h
   NumArray.cc
   Observable.cc
