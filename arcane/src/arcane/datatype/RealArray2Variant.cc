@@ -28,12 +28,13 @@ namespace Arcane
 extern "C++" ARCANE_CORE_EXPORT void
 _arcaneTestRealArray2Variant()
 {
+  // NOTE: Les dimensions max pour un RealArray2Variant sont 3x3.
   Real data[4] = {2.4, 5.6,3.3, 4.4};
   ConstArray2View<Real> a(data, 2, 2);
   Real2x2 a22{ Real2{ -1.0, -2.5 }, Real2{ -2.0, 3.7 } };
   Real3x3 a33{ Real3{ -2.1, 3.9, 1.5 }, Real3{ 9.2, 3.4, 2.1 }, Real3{ 7.1, 4.5, 3.2 } };
 
-  NumArray<Real,2> num_data(3,3);
+  NumArray<Real,2> num_data(3, 2, {1.4, 2.3, 4.5, 5.7, 2.9 , 6.5 });
 
   const Integer nb_variants = 3;
   RealArray2Variant variants[nb_variants] = { RealArray2Variant(a), RealArray2Variant(a22), RealArray2Variant(a33) };
@@ -51,6 +52,9 @@ _arcaneTestRealArray2Variant()
 
   RealArray2Variant variant2{num_data};
   NumArray<Real,2> num_data_copy(variant2);
+  Span<const Real> variant2_span(variant2.data(),variant2.dim1Size()*variant2.dim2Size());
+  std::cout << "NUM_DATA     =" << num_data.to1DSpan() << "\n";
+  std::cout << "NUM_DATA_COPY=" << num_data_copy.to1DSpan() << "\n";
   if (num_data_copy.to1DSpan()!=num_data.to1DSpan())
     ARCANE_FATAL("Bad value for copy");
 }

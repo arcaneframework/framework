@@ -156,7 +156,7 @@ class RealArray2Variant
     ARCANE_ASSERT(nb_dim2 <= MAX_DIM2_SIZE, ("Dim2 size too large"));
     for (Integer i = 0 ; i < nb_dim1; ++i)
       for (Integer j = 0 ; j < nb_dim2; ++j)
-        m_value[i][j] = v[i * nb_dim1 + j];
+        m_value[i][j] = v[i * nb_dim2 + j];
   }
 };
 
