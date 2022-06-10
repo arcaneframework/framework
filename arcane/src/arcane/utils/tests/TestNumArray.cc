@@ -178,6 +178,15 @@ TEST(NumArray3,Copy)
   NumArray<Real,3> v2(nb_x*2,nb_y/2,nb_z*3);
 
   v.copy(v2.span());
+
+  {
+    NumArray<int,1> vi0(4,{1,3,5,7});
+    NumArray<int,1> vi1(vi0);
+    NumArray<int,1> vi2;
+    vi2 = vi1;
+    ASSERT_EQ(vi1.to1DSpan(),vi0.to1DSpan());
+    ASSERT_EQ(vi2.to1DSpan(),vi1.to1DSpan());
+  }
 }
 
 /*---------------------------------------------------------------------------*/

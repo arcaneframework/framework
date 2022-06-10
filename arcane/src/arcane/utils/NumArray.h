@@ -65,6 +65,13 @@ namespace impl
     {
       this->_initFromSpan(rhs.to1DSpan());
     }
+    NumArrayContainer<DataType>& operator=(const NumArrayContainer<DataType>& rhs)
+    {
+      if (this!=&rhs){
+        BaseClass::_copy(rhs.data());
+      }
+      return (*this);
+    }
    public:
     void resize(Int64 new_size) { BaseClass::_resize(new_size); }
     Span<DataType> to1DSpan() { return BaseClass::span(); }
