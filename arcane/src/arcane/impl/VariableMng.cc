@@ -483,26 +483,27 @@ removeAllVariables()
   m_auto_create_variables.each(Deleter());
 
   OStringStream var_str;
-  Integer nb_ref = 0;
+  UniqueArray<IVariable*> remaining_vars;
   for( auto i : m_full_name_variable_map ){
     IVariable* v = i.second;
     if (v->nbReference()==0)
       delete v;
     else{
-      ++nb_ref;
+      remaining_vars.add(v);
       var_str() << "  " << v->fullName() << " (" << v->nbReference() << ")";
     }
   }
   bool is_check = arcaneIsCheck();
-  if (nb_ref!=0 && is_check)
+  const bool has_remaining_vars = !remaining_vars.empty();
+  if (has_remaining_vars && is_check)
     pwarning() << "The following variables are still referenced: "
                << var_str.str()
                << " (set the environment variable ARCANE_TRACE_VARIABLE_CREATION"
                << " to get the stack trace)";
   bool has_trace = VariableRef::hasTraceCreation();
   if (has_trace){
-    for( auto i : m_full_name_variable_map ){
-      for( VarRefEnumerator ivar(i.second); ivar.hasNext(); ++ivar ){
+    for( auto i : remaining_vars ){
+      for( VarRefEnumerator ivar(i); ivar.hasNext(); ++ivar ){
         VariableRef* var = *ivar;
         info() << " variable name=" << var->name()
                << " stack=" << var->assignmentStackTrace();
@@ -514,13 +515,13 @@ removeAllVariables()
   // Sans cela, si ensuite l'instance 'this' est détruite avant que les variables
   // restantent ne le soit cela va provoquer un plantage (Read after free). Cela
   // n'arrive normalement pas pour le C++ mais peut arriver pour le wrapping.
-  if (nb_ref!=0){
+  if (has_remaining_vars){
     // Recopie les références dans un tableau temporaire
     // car les appels à unregisterVariable() modifient l'itérateur ivar
     // et aussi m_full_name_variable_map.
     UniqueArray<VariableRef*> remaining_refs;
-    for( auto i : m_full_name_variable_map )
-      for( VarRefEnumerator ivar(i.second); ivar.hasNext(); ++ivar )
+    for( auto i : remaining_vars )
+      for( VarRefEnumerator ivar(i); ivar.hasNext(); ++ivar )
         remaining_refs.add(*ivar);
     for( VariableRef* r : remaining_refs )
       r->unregisterVariable();
