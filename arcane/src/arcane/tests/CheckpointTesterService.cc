@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CheckpointTesterService.cc                                  (C) 2000-2018 */
+/* CheckpointTesterService.cc                                  (C) 2000-2022 */
 /*                                                                           */
 /* Service de test des protections/reprises.                                 */
 /*---------------------------------------------------------------------------*/
@@ -91,6 +91,7 @@ class CheckpointTesterService
   VariableScalarReal m_variable_with_property;
   VariableScalarString m_variable_scalar_string;
   VariableScalarString m_mesh_properties;
+  VariableArrayString m_group_names;
   IItemFamily* m_particle_family;
   ObserverPool m_observer_pool;
 
@@ -132,6 +133,7 @@ CheckpointTesterService(const ServiceBuildInfo& sbi)
                                              full_property))
 , m_variable_scalar_string(VariableBuildInfo(sbi.subDomain(),"VariableString"))
 , m_mesh_properties(VariableBuildInfo(sbi.meshHandle(),"TestCheckpointMeshProperties"))
+, m_group_names({sbi.meshHandle(),"TestCheckpointGroupNames"})
 , m_particle_family(nullptr)
 {
   // Sauve les valeurs des propriétés dans une variable pour vérifier leur
@@ -192,6 +194,19 @@ onTimeLoopStartInit()
     mesh2->setDimension(2);
     mesh2->allocateCells(0,Int64ConstArrayView(),false);
     mesh2->endAllocate();
+  }
+
+  {
+    // Remplit 'm_group_names' avec la liste de tous les groupes existants
+    ItemGroupCollection groups = mesh()->groups();
+    Int32 nb_group = groups.count();
+    m_group_names.resize(nb_group);
+    info() << "NB_MESH_GROUP=" << nb_group;
+    Int32 index = 0;
+    for ( ItemGroupCollection::Enumerator igroup(groups); ++igroup; ++index ){
+      ItemGroup g = *igroup;
+      m_group_names[index] = g.name();
+    }
   }
 }
 

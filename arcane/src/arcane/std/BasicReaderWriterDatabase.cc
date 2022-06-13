@@ -163,18 +163,26 @@ class BasicReaderWriterDatabaseCommon
     static constexpr int MAX_SIZE = 8;
     void fill(Int64ConstArrayView v)
     {
-      if (v.size()>MAX_SIZE)
-        ARCANE_FATAL("Number of extents ({0}) is greater than max allowed ({1})",v.size(),MAX_SIZE);
       nb = v.size();
+      if (nb>MAX_SIZE){
+        m_large_extents = v;
+        return;
+      }
       for( Int32 i=0; i<nb; ++i )
         sizes[i] = v[i];
     }
-    Int64ConstArrayView view() const { return Int64ConstArrayView(nb,sizes); }
+    Int64ConstArrayView view() const
+    {
+      if (nb<=MAX_SIZE)
+        return Int64ConstArrayView(nb,sizes);
+      return m_large_extents.view();
+    }
     Int32 size() const { return nb; }
    private:
     Int32 nb = 0;
    public:
     Int64 sizes[MAX_SIZE];
+    UniqueArray<Int64> m_large_extents;
   };
 
   struct DataInfo
