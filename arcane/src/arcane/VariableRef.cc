@@ -394,7 +394,7 @@ _throwInvalid() const
 void VariableRef::
 setProperty(int property)
 {
-  if (_checkValidPropertyChanged(property))
+  if (!_checkValidPropertyChanged(property))
     throw InvalidArgumentException(A_FUNCINFO,"property",property);
   m_reference_property |= property;
   m_variable->notifyReferencePropertyChanged();
@@ -406,7 +406,7 @@ setProperty(int property)
 void VariableRef::
 unsetProperty(int property)
 {
-  if (_checkValidPropertyChanged(property))
+  if (!_checkValidPropertyChanged(property))
     throw InvalidArgumentException(A_FUNCINFO,"property",property);
   m_reference_property &= ~property;
   m_variable->notifyReferencePropertyChanged();
@@ -414,7 +414,9 @@ unsetProperty(int property)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Regarde si une propriété peut-être changée dynamiquement.
+ */
 bool VariableRef::
 _checkValidPropertyChanged(int property)
 {
@@ -425,14 +427,17 @@ _checkValidPropertyChanged(int property)
   case IVariable::PSubDomainPrivate:
   case IVariable::PExecutionDepend:
   case IVariable::PNoRestore:
-    return false;
+  case IVariable::PNoExchange:
+  case IVariable::PPersistant:
+  case IVariable::PNoReplicaSync:
+    return true;
   case IVariable::PHasTrace:
   case IVariable::PPrivate:
-    return true;
+    return false;
   default:
     break;
   }
-  return true;
+  return false;
 }
 
 /*---------------------------------------------------------------------------*/
