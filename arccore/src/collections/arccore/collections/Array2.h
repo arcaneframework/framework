@@ -119,6 +119,30 @@ class Array2
     ARCCORE_CHECK_AT(i,m_md->dim1_size);
     return ConstArrayView<DataType>(ARCCORE_CAST_SMALL_SIZE(m_md->dim2_size),m_ptr + (m_md->dim2_size*i));
   }
+  // TODO: retourner un Span.
+  ArrayView<DataType> operator()(Int64 i)
+  {
+    ARCCORE_CHECK_AT(i,m_md->dim1_size);
+    return ArrayView<DataType>(ARCCORE_CAST_SMALL_SIZE(m_md->dim2_size),m_ptr + (m_md->dim2_size*i));
+  }
+  // TODO: retourner un Span
+  ConstArrayView<DataType> operator()(Int64 i) const
+  {
+    ARCCORE_CHECK_AT(i,m_md->dim1_size);
+    return ConstArrayView<DataType>(ARCCORE_CAST_SMALL_SIZE(m_md->dim2_size),m_ptr + (m_md->dim2_size*i));
+  }
+  DataType& operator()(Int64 i,Int64 j)
+  {
+    ARCCORE_CHECK_AT(i,m_md->dim1_size);
+    ARCCORE_CHECK_AT(j,m_md->dim2_size);
+    return m_ptr[ (m_md->dim2_size*i) + j ];
+  }
+  ConstReferenceType operator()(Int64 i,Int64 j) const
+  {
+    ARCCORE_CHECK_AT(i,m_md->dim1_size);
+    ARCCORE_CHECK_AT(j,m_md->dim2_size);
+    return m_ptr[ (m_md->dim2_size*i) + j ];
+  }
   DataType item(Int64 i,Int64 j)
   {
     ARCCORE_CHECK_AT(i,m_md->dim1_size);
