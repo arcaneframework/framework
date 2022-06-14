@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Array2.h                                                    (C) 2000-2021 */
+/* Array2.h                                                    (C) 2000-2022 */
 /*                                                                           */
 /* Tableau 2D classique.                                                     */
 /*---------------------------------------------------------------------------*/
@@ -81,6 +81,7 @@ class Array2
     this->copy(rhs);
   }
  protected:
+
   //! Créé un tableau vide avec un allocateur spécifique \a allocator
   explicit Array2(IMemoryAllocator* allocator)
   : AbstractArray<DataType>() { this->_initFromAllocator(allocator,0); }
@@ -95,11 +96,13 @@ class Array2
     resize(size1,size2);
   }
   ~Array2() = default;
+
  private:
+
   //! Interdit
-  void operator=(const Array2<DataType>& rhs);
+  Array2<DataType>& operator=(const Array2<DataType>& rhs) = delete;
   //! Interdit
-  Array2(const Array2<DataType>& rhs); 
+  Array2(const Array2<DataType>& rhs) = delete;
 
  protected:
 
@@ -143,6 +146,20 @@ class Array2
     ARCCORE_CHECK_AT(j,m_md->dim2_size);
     return m_ptr[ (m_md->dim2_size*i) + j ];
   }
+#ifdef ARCCORE_HAS_MULTI_SUBSCRIPT
+  DataType& operator[](Int64 i,Int64 j)
+  {
+    ARCCORE_CHECK_AT(i,m_md->dim1_size);
+    ARCCORE_CHECK_AT(j,m_md->dim2_size);
+    return m_ptr[ (m_md->dim2_size*i) + j ];
+  }
+  ConstReferenceType operator[](Int64 i,Int64 j) const
+  {
+    ARCCORE_CHECK_AT(i,m_md->dim1_size);
+    ARCCORE_CHECK_AT(j,m_md->dim2_size);
+    return m_ptr[ (m_md->dim2_size*i) + j ];
+  }
+#endif
   DataType item(Int64 i,Int64 j)
   {
     ARCCORE_CHECK_AT(i,m_md->dim1_size);

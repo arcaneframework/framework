@@ -530,6 +530,11 @@ TEST(Array2, Misc)
     c.shrink();
     c.shrink_to_fit();
     ASSERT_EQ(c.capacity(),c.totalNbElement()) << "Bad capacity (test 3)";
+    ASSERT_EQ(c[1][2],c(1,2));
+#ifdef ARCCORE_HAS_MULTI_SUBSCRIPT
+    bool is_ok = c[2,1]==c(2,1);
+    ASSERT_TRUE(is_ok);
+#endif
   }
 }
 

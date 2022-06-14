@@ -322,6 +322,11 @@ struct FalseType {};
 // Macros pour indiquer qu'on lance pas d'exceptions.
 #define ARCCORE_NOEXCEPT_FALSE noexcept(false)
 
+// Support pour operator[](a,b,...)
+#ifdef __cpp_multidimensional_subscript
+#define ARCCORE_HAS_MULTI_SUBSCRIPT
+#endif
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

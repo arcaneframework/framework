@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Span2.h                                                     (C) 2000-2018 */
+/* Span2.h                                                     (C) 2000-2022 */
 /*                                                                           */
 /* Vue d'un tableau 2D dont les dimensions utilisent des Int64.              */
 /*---------------------------------------------------------------------------*/
@@ -126,6 +126,15 @@ class Span2Impl
     ARCCORE_CHECK_AT(j,m_dim2_size);
     return m_ptr[(m_dim2_size*i) + j];
   }
+
+#ifdef ARCCORE_HAS_MULTI_SUBSCRIPT
+  ARCCORE_HOST_DEVICE reference operator[](SizeType i,SizeType j) const
+  {
+    ARCCORE_CHECK_AT(i,m_dim1_size);
+    ARCCORE_CHECK_AT(j,m_dim2_size);
+    return m_ptr[(m_dim2_size*i) + j];
+  }
+#endif
 
   //! Valeur de l'élément [\a i][\a j]
   ARCCORE_HOST_DEVICE ElementType item(SizeType i,SizeType j) const
