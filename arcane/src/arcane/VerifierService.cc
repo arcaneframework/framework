@@ -5,19 +5,18 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VerifierService.cc                                          (C) 2000-2020 */
+/* VerifierService.cc                                          (C) 2000-2022 */
 /*                                                                           */
 /* Classe de base du service de vérification des données.                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
+#include "arcane/VerifierService.h"
 
 #include "arcane/utils/List.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/OStringStream.h"
 
-#include "arcane/VerifierService.h"
 #include "arcane/ServiceBuildInfo.h"
 #include "arcane/ISubDomain.h"
 #include "arcane/IVariable.h"
@@ -34,7 +33,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -251,7 +251,7 @@ _doVerif(IDataReader* reader,const VariableList& variables,bool compare_ghost)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

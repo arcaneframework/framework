@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VerifierService.h                                           (C) 2000-2014 */
+/* VerifierService.h                                           (C) 2000-2022 */
 /*                                                                           */
-/* Classe de base du service de vérification des données.                    */
+/* Classe de base du service de vérification des variables.                  */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_VERIFIERSERVICE_H
 #define ARCANE_VERIFIERSERVICE_H
@@ -23,7 +23,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -58,29 +59,29 @@ class ARCANE_CORE_EXPORT VerifierService
   };
  public:
 
-  VerifierService(const ServiceBuildInfo& sbi);
-  virtual ~VerifierService();
+  explicit VerifierService(const ServiceBuildInfo& sbi);
+  ~VerifierService() override;
 
  public:
   
-  virtual IBase* serviceParent() const;
-  virtual IServiceInfo* serviceInfo() const { return m_service_info; }
-  virtual IService* serviceInterface() { return this; }
+  IBase* serviceParent() const override;
+  IServiceInfo* serviceInfo() const override { return m_service_info; }
+  IService* serviceInterface() override { return this; }
 
  public:
 
-  virtual void setFileName(const String& file_name) { m_file_name = file_name; }
-  virtual const String& fileName() const { return m_file_name; }
+  void setFileName(const String& file_name) override { m_file_name = file_name; }
+  String fileName() const override { return m_file_name; }
 
  public:
 
-  virtual void setResultFileName(const String& file_name) { m_result_file_name = file_name; }
-  virtual const String& resultfileName() const { return m_result_file_name; }
+  void setResultFileName(const String& file_name) override { m_result_file_name = file_name; }
+  String resultfileName() const override { return m_result_file_name; }
 
  public:
   
-  virtual void setSubDir(const String& sub_dir) { m_sub_dir = sub_dir; }
-  virtual const String& subDir() const { return m_sub_dir; }
+  void setSubDir(const String& sub_dir) override { m_sub_dir = sub_dir; }
+  String subDir() const override { return m_sub_dir; }
 
  protected:
 
@@ -111,7 +112,7 @@ class ARCANE_CORE_EXPORT VerifierService
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
