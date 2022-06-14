@@ -129,8 +129,7 @@ onExit()
 
   IParallelMng* pm = subDomain()->parallelMng();
   bool is_parallel = pm->isParallel();
-  Integer sid = pm->commRank();
-
+  Int32 rank = pm->commRank();
 
   Ref<IVerifierService> verifier_service;
 
@@ -140,10 +139,9 @@ onExit()
     String verifier_service_name = options()->verifierServiceName();
     // Autorise pour test une variable d'environnement pour surcharger le service
     String env_service_name = platform::getEnvironmentVariable("ARCANE_VERIFIER_SERVICE");
-    if (!env_service_name.null()){
-      info() << "Overloading verifier service with service '" << env_service_name << "'";
+    if (!env_service_name.null())
       verifier_service_name = env_service_name;
-    }
+    info() << "Verification Module using service=" << verifier_service_name;
     verifier_service = sf.createReference(verifier_service_name);
   }
 
@@ -152,16 +150,16 @@ onExit()
     compare_from_sequential = false;
 
   String result_file_name = options()->resultFile();
-  if (result_file_name.null())
+  if (result_file_name.empty())
     result_file_name = "compare.xml";
   verifier_service->setResultFileName(result_file_name);
 
   String reference_file_name = options()->referenceFile();
-  if (reference_file_name.null())
+  if (reference_file_name.empty())
     reference_file_name = "check";
   String base_reference_file_name = reference_file_name;
   if (is_parallel && !compare_from_sequential){
-    reference_file_name = reference_file_name + "." + sid;
+    reference_file_name = reference_file_name + "." + rank;
   }
   String base_file_name = base_reference_file_name;
   verifier_service->setFileName(base_file_name);
@@ -171,6 +169,7 @@ onExit()
     verifier_service->writeReferenceFile();
   }
   else{
+    info() << "Comparing reference file '" << base_file_name << "'";
     verifier_service->doVerifFromReferenceFile(compare_from_sequential,false);
   }
 }
