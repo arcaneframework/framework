@@ -2,7 +2,7 @@
 <cas codename="ArcaneTest" xml:lang="fr" codeversion="1.0">
  <arcane>
   <titre>Test Protections/Reprises</titre>
-  <description>Test des protections/reprise avec le interne Arcane (Version 1)</description>
+  <description>Test des protections/reprise avec le servce interne Arcane (Version 3)</description>
   <boucle-en-temps>BasicLoop</boucle-en-temps>
   <modules>
    <module name="ArcaneCheckpoint" actif="true" />
