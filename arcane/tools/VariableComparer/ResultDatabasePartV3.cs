@@ -63,6 +63,7 @@ namespace Arcane.VariableComparer
   {
     public class ACRDataBaseJSON
     {
+      // Ce champs est désérialisé depuis le JSON.
       public ACRDataBaseVariableInfo[] Data;
       public Dictionary<string, ACRDataBaseVariableInfo> Dict = new Dictionary<string, ACRDataBaseVariableInfo>();
 
@@ -92,7 +93,7 @@ namespace Arcane.VariableComparer
       FileInfo fi = new FileInfo(m_filename);
       m_file_length = fi.Length;
       const int epilog_size = BasicReaderWriterDatabaseEpilogFormat.STRUCT_SIZE;
-      if (m_file_length<epilog_size)
+      if (m_file_length < epilog_size)
         throw new ApplicationException($"File '{m_filename}' is too short");
       // Lit l'épilogue
       m_file_stream = new FileStream(m_filename, FileMode.Open, FileAccess.Read);
@@ -115,62 +116,77 @@ namespace Arcane.VariableComparer
     ACRDataBaseVariableInfo _GetAndCheckDimension1(string key_name)
     {
       ACRDataBaseVariableInfo vinfo = m_json_database.Dict[key_name];
-      if (vinfo.Extents == null || vinfo.Extents.Length == 0)
-        return null;
+      if (vinfo.Extents == null)
+        throw new ApplicationException($"extents for '{key_name}' is null");
+      if (vinfo.Extents.Length == 0)
+        throw new ApplicationException($"extents for '{key_name}' has 0 length");
       int ex_length = vinfo.Extents.Length;
       if (ex_length != 1)
         throw new ApplicationException($"extents for '{key_name}' should be of dimension 1 (v={ex_length}");
       return vinfo;
+    }
+    void _SeekFile(ACRDataBaseVariableInfo vinfo)
+    {
+      if (vinfo == null)
+        throw new ArgumentException("Null 'vinfo'");
+      if (vinfo.FileOffset < 0)
+        throw new ArgumentException($"Invalid negative 'FileOffset={vinfo.FileOffset}' in 'vinfo'");
+      m_file_stream.Seek(vinfo.FileOffset, SeekOrigin.Begin);
     }
 
     //! Lit les octests associés à la clé 'key_name' sans prendre en compte une éventuelle compression
     byte[] _ReadDirectPartAsBytes(string key_name)
     {
       ACRDataBaseVariableInfo vinfo = _GetAndCheckDimension1(key_name);
-      m_file_stream.Seek(vinfo.FileOffset, SeekOrigin.Begin);
       Int64 length = vinfo.Extents[0];
       byte[] bytes = new byte[length];
-      m_file_stream.Read(bytes, 0, (int)length);
+      if (length < 0) {
+        _SeekFile(vinfo);
+        m_file_stream.Read(bytes, 0, (int)length);
+      }
       return bytes;
     }
     public byte[] ReadPartAsBytes(string key_name)
     {
       ACRDataBaseVariableInfo vinfo = _GetAndCheckDimension1(key_name);
-      m_file_stream.Seek(vinfo.FileOffset, SeekOrigin.Begin);
       Int64 length = vinfo.Extents[0];
       byte[] out_bytes = new byte[length];
-
-      if (Deflater!=null && length>Deflater.MinCompressSize){
-        Console.WriteLine($"Reading compressed byte array for key {key_name}");
-        Int64 binary_len = m_file_binary_reader.ReadInt64();
-        Byte[] input_buffer = new Byte[binary_len];
-        m_file_stream.Read(input_buffer,0,input_buffer.Length);
-        Deflater.Decompress(input_buffer,out_bytes);
+      if (length > 0) {
+        _SeekFile(vinfo);
+        if (Deflater != null && length > Deflater.MinCompressSize) {
+          Console.WriteLine($"Reading compressed byte array for key {key_name}");
+          Int64 binary_len = m_file_binary_reader.ReadInt64();
+          Byte[] input_buffer = new Byte[binary_len];
+          m_file_stream.Read(input_buffer, 0, input_buffer.Length);
+          Deflater.Decompress(input_buffer, out_bytes);
+        }
+        else
+          m_file_stream.Read(out_bytes, 0, (int)length);
       }
-      else
-        m_file_stream.Read(out_bytes, 0, (int)length);
       return out_bytes;
     }
 
     public double[] ReadPartAsReal(string key_name)
     {
       ACRDataBaseVariableInfo vinfo = _GetAndCheckDimension1(key_name);
-      m_file_stream.Seek(vinfo.FileOffset, SeekOrigin.Begin);
       Int64 length = vinfo.Extents[0];
       double[] v = new double[length];
-      Int64 buf_out_len = length * sizeof(double);
-      BinaryReader reader = m_file_binary_reader;
-      if (Deflater!=null && length>Deflater.MinCompressSize){
-        Int64 binary_len = m_file_binary_reader.ReadInt64();
-        Byte[] input_buffer = new Byte[binary_len];
-        Byte[] output_buffer = new Byte[buf_out_len];
-        m_file_stream.Read(input_buffer,0,input_buffer.Length);
-        Deflater.Decompress(input_buffer,output_buffer);
-        reader = new BinaryReader(new MemoryStream(output_buffer));
-      }
+      if (length > 0) {
+        _SeekFile(vinfo);
+        Int64 buf_out_len = length * sizeof(double);
+        BinaryReader reader = m_file_binary_reader;
+        if (Deflater != null && length > Deflater.MinCompressSize) {
+          Int64 binary_len = m_file_binary_reader.ReadInt64();
+          Byte[] input_buffer = new Byte[binary_len];
+          Byte[] output_buffer = new Byte[buf_out_len];
+          m_file_stream.Read(input_buffer, 0, input_buffer.Length);
+          Deflater.Decompress(input_buffer, output_buffer);
+          reader = new BinaryReader(new MemoryStream(output_buffer));
+        }
 
-      for (int i = 0; i < length; ++i )
-        v[i] = reader.ReadDouble();
+        for (int i = 0; i < length; ++i)
+          v[i] = reader.ReadDouble();
+      }
       return v;
     }
   }
@@ -183,13 +199,13 @@ namespace Arcane.VariableComparer
     ResultDatabase m_database;
     int m_part;
     public int Part { get { return m_part; } }
-    
+
     MetaData m_metadata;
     public MetaData MetaData { get { return m_metadata; } }
-    
-    Dictionary<string,VariableDataInfo> m_variables_info;
-    public IDictionary<string,VariableDataInfo> VariablesDataInfo { get { return m_variables_info; } }
-    
+
+    Dictionary<string, VariableDataInfo> m_variables_info;
+    public IDictionary<string, VariableDataInfo> VariablesDataInfo { get { return m_variables_info; } }
+
     int m_version = 1;
 
     ACRDataBase m_acr_database;
@@ -197,25 +213,25 @@ namespace Arcane.VariableComparer
     /// <summary>
     /// Cree le bloc numero \a part de la base \a database
     /// </summary>
-    public ResultDatabasePartV3(ResultDatabase database,int part,ArcaneJSONDataBaseInfo arcane_db_info)
+    public ResultDatabasePartV3(ResultDatabase database, int part, ArcaneJSONDataBaseInfo arcane_db_info)
     {
       m_database = database;
       m_part = part;
       m_arcane_main_db_info = arcane_db_info;
     }
-    public void ReadVariableAsRealArray(string varname,double[] values,int array_index)
+    public void ReadVariableAsRealArray(string varname, double[] values, int array_index)
     {
       double[] file_values = m_acr_database.ReadPartAsReal(varname);
       file_values.CopyTo(values, array_index);
     }
-    
+
     public void Read()
     {
       string base_path = m_database.BasePath;
-      string acr_file_path = Path.Combine(base_path,String.Format("arcane_db_n{0}.acr",m_part));
+      string acr_file_path = Path.Combine(base_path, String.Format("arcane_db_n{0}.acr", m_part));
       m_acr_database = new ACRDataBase(acr_file_path);
       m_acr_database.OpenRead();
-      if (!String.IsNullOrEmpty(m_arcane_main_db_info.DataCompressor)){
+      if (!String.IsNullOrEmpty(m_arcane_main_db_info.DataCompressor)) {
         IDeflater d = Utils.CreateDeflater(m_arcane_main_db_info.DataCompressor);
         d.MinCompressSize = m_arcane_main_db_info.DataCompressorMinSize;
         m_acr_database.Deflater = d;
@@ -225,12 +241,12 @@ namespace Arcane.VariableComparer
       // Supprime un éventuel '\0' terminal.
       // TODO regarder pourquoi il y a un zéro terminal
       int string_length = metadata_string.Length;
-      if (string_length>0 && metadata_string[string_length-1]==0)
+      if (string_length > 0 && metadata_string[string_length - 1] == 0)
         metadata_string = metadata_string.Substring(0, string_length - 1);
       //Console.WriteLine("CHECKPOINT_METADATA='{0}'", metadata_string);
       m_metadata = new MetaData();
       m_metadata.ParseString(metadata_string);
-      Console.WriteLine("NB_VARIABLE={0} part={1}",m_metadata.Variables.Count,m_part);
+      Console.WriteLine("NB_VARIABLE={0} part={1}", m_metadata.Variables.Count, m_part);
       _ReadVariablesDataInfo();
     }
 
@@ -241,25 +257,25 @@ namespace Arcane.VariableComparer
       XmlDocument doc = new XmlDocument();
       doc.LoadXml(metadata_string);
       XmlElement doc_element = doc.DocumentElement;
-      
+
       // Récupère le numéro de version. Si absent, il s'agit de la version 1.
       string version_str = doc_element.GetAttribute("version");
       if (!String.IsNullOrEmpty(version_str))
         m_version = int.Parse(version_str);
       Console.WriteLine("MetaDataVersion = {0}", m_version);
-      m_variables_info = new Dictionary<string,VariableDataInfo>();
-      if (m_version!=3)
+      m_variables_info = new Dictionary<string, VariableDataInfo>();
+      if (m_version != 3)
         throw new ApplicationException($"Unsupported version '{m_version}'. Valid values are '3'");
 
-      foreach (XmlNode node in doc_element){
+      foreach (XmlNode node in doc_element) {
         if (node.Name != "variable-data")
           continue;
         XmlElement element = node as XmlElement;
         string full_name = element.GetAttribute("full-name");
-        VariableDataInfo vdi = new VariableDataInfo(full_name,element);
-        m_variables_info.Add(full_name,vdi);
+        VariableDataInfo vdi = new VariableDataInfo(full_name, element);
+        m_variables_info.Add(full_name, vdi);
       }
-      Console.WriteLine("NB_VAR_DATA_INFO={0}",m_variables_info.Count);
+      Console.WriteLine("NB_VAR_DATA_INFO={0}", m_variables_info.Count);
     }
   }
 }
