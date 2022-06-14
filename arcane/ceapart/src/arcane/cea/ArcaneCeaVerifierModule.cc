@@ -159,7 +159,7 @@ onExit()
     reference_file_name = "check";
   String base_reference_file_name = reference_file_name;
   if (is_parallel && !compare_from_sequential){
-    reference_file_name = reference_file_name + "." + rank;
+    base_reference_file_name = reference_file_name + "." + rank;
   }
   String base_file_name = base_reference_file_name;
   verifier_service->setFileName(base_file_name);
