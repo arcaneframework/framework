@@ -1,0 +1,5 @@
+<?xml version="1.0" ?>
+<commands>
+  <test>-m 5 @ARCANE_TEST_CASEPATH@/testCheckpoint-verifier-write.arc</test>
+  <driver>compare checkpoint-test-verifier-file checkpoint-test-verifier-file</driver>
+</commands>

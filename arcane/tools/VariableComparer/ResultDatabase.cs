@@ -26,7 +26,7 @@ namespace Arcane.VariableComparer
     public string DataCompressor;
     public int DataCompressorMinSize = 512;
   }
-  
+
   public class ResultDatabase
   {
     const string DB_FILENAME = "arcane_acr_db.json";
@@ -42,7 +42,7 @@ namespace Arcane.VariableComparer
 
     //! Non nul si on utilise la version des comparaisons utilisant DB_FILENAME
     ArcaneJSONDataBaseInfo m_arcane_db_info;
-    
+
     /// <summary>
     /// Cree une reference sur une base de resultat stockee sur le chemin \a base_path
     /// </summary>
@@ -94,10 +94,13 @@ namespace Arcane.VariableComparer
 
       return values;
     }
-    
+
     class JSONDataBaseObject
     {
+#pragma warning disable 0649
       public ArcaneJSONDataBaseInfo ArcaneCheckpointRestartDataBase;
+#pragma warning restore 0649
+
     }
     void _CheckAndReadJSONDataBase()
     {
@@ -112,32 +115,32 @@ namespace Arcane.VariableComparer
       Console.WriteLine($"Reading database file {db_filename}");
       string s = File.ReadAllText(db_filename);
       var o = JsonConvert.DeserializeObject<JSONDataBaseObject>(s);
-      if (o==null)
-        throw new ApplicationException($"Can not parse JSON database '{db_filename}'");
+      if (o == null)
+        throw new VariableComparerException($"Can not parse JSON database '{db_filename}'");
       var oinfo = o.ArcaneCheckpointRestartDataBase;
-      if (oinfo==null)
-        throw new ApplicationException($"Can not parse JSON database (second part) '{db_filename}'");
+      if (oinfo == null)
+        throw new VariableComparerException($"Can not parse JSON database (second part) '{db_filename}'");
       Console.WriteLine($"Version={oinfo.Version} NbPart={oinfo.NbPart} DataCompressor={oinfo.DataCompressor}");
       m_arcane_db_info = oinfo;
     }
     private void _ReadNbPart()
     {
-      string info_path = Path.Combine(m_base_path,"infos.txt");
+      string info_path = Path.Combine(m_base_path, "infos.txt");
       string values = File.ReadAllText(info_path);
       int nb_part = int.Parse(values);
-      if (nb_part<=0)
-        throw new ApplicationException("Bad values for number of part");
+      if (nb_part <= 0)
+        throw new VariableComparerException("Bad values for number of part");
       //Console.WriteLine("NB_PART={0}",nb_part);
       m_nb_part = nb_part;
     }
-    
+
     private void _ComputeItemVariables()
     {
-      Dictionary<string,CommonVariableInfo> nb_variables_occurence = new Dictionary<string,CommonVariableInfo>();
-      foreach(IResultDatabasePart data_part in m_parts){
-        Console.WriteLine("PARSING PART = {0}",data_part.Part);
-        IDictionary<string,VariableDataInfo> saved_infos = data_part.VariablesDataInfo;
-        foreach(VariableMetaData var_meta_data in data_part.MetaData.Variables){
+      Dictionary<string, CommonVariableInfo> nb_variables_occurence = new Dictionary<string, CommonVariableInfo>();
+      foreach (IResultDatabasePart data_part in m_parts) {
+        Console.WriteLine("PARSING PART = {0}", data_part.Part);
+        IDictionary<string, VariableDataInfo> saved_infos = data_part.VariablesDataInfo;
+        foreach (VariableMetaData var_meta_data in data_part.MetaData.Variables) {
           // Il faut que ce soit une variable du maillage
           if (String.IsNullOrEmpty(var_meta_data.ItemFamilyName))
             continue;
@@ -145,14 +148,14 @@ namespace Arcane.VariableComparer
           if (!String.IsNullOrEmpty(var_meta_data.ItemGroupName))
             continue;
           // Il faut que ce soit une variable scalaire sur le maillage
-          if (var_meta_data.Dimension!=1)
+          if (var_meta_data.Dimension != 1)
             continue;
           // Il faut que ce soit une variable dont la donnée est 'Real'
-          if (var_meta_data.DataType!="Real")
+          if (var_meta_data.DataType != "Real")
             continue;
           string fname = var_meta_data.FullName;
           bool is_written = saved_infos.ContainsKey(fname);
-          if (!is_written){
+          if (!is_written) {
             //Console.WriteLine("Variable '{0}' is not used",fname);
             continue;
           }
@@ -160,20 +163,20 @@ namespace Arcane.VariableComparer
           if (nb_variables_occurence.ContainsKey(fname))
             ++nb_variables_occurence[fname].NbOccurence;
           else
-            nb_variables_occurence.Add(fname,new CommonVariableInfo(var_meta_data));
+            nb_variables_occurence.Add(fname, new CommonVariableInfo(var_meta_data));
         }
       }
       int total = 0;
-      foreach(KeyValuePair<string,CommonVariableInfo> pair in nb_variables_occurence){
-        if (pair.Value.NbOccurence==m_nb_part){
-          m_item_variables.Add(pair.Key,pair.Value.MetaData);
+      foreach (KeyValuePair<string, CommonVariableInfo> pair in nb_variables_occurence) {
+        if (pair.Value.NbOccurence == m_nb_part) {
+          m_item_variables.Add(pair.Key, pair.Value.MetaData);
           //Console.WriteLine("ADD VARIABLE: name='{0}'",pair.Value.MetaData.FullName);
         }
         ++total;
       }
-      Console.WriteLine("TOTAL='{0}' '{1}'",total,m_item_variables.Count);
+      Console.WriteLine("TOTAL='{0}' '{1}'", total, m_item_variables.Count);
     }
 
-    
+
   }
 }

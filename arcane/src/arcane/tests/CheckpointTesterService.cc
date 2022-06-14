@@ -75,10 +75,12 @@ class CheckpointTesterService
  private:
 
   StdScalarMeshVariables<Node> m_nodes;
+  StdScalarMeshVariables<Edge> m_edges;
   StdScalarMeshVariables<Face> m_faces;
   StdScalarMeshVariables<Cell> m_cells;
   StdScalarMeshVariables<Particle>* m_particles;
   StdArrayMeshVariables<Node> m_array_nodes;
+  StdArrayMeshVariables<Edge> m_array_edges;
   StdArrayMeshVariables<Face> m_array_faces;
   StdArrayMeshVariables<Cell> m_array_cells;
   StdArrayMeshVariables<Particle>* m_array_particles;
@@ -116,10 +118,12 @@ CheckpointTesterService::
 CheckpointTesterService(const ServiceBuildInfo& sbi)
 : ArcaneCheckpointTesterObject(sbi)
 , m_nodes(sbi.meshHandle(),"TestCheckpointNodes")
+, m_edges(sbi.meshHandle(),"TestCheckpointEdges")
 , m_faces(sbi.meshHandle(),"TestCheckpointFaces")
 , m_cells(sbi.meshHandle(),"TestCheckpointCells")
 , m_particles(0)
 , m_array_nodes(sbi.meshHandle(),"TestCheckpointArrayNodes")
+, m_array_edges(sbi.meshHandle(),"TestCheckpointArrayEdges")
 , m_array_faces(sbi.meshHandle(),"TestCheckpointArrayFaces")
 , m_array_cells(sbi.meshHandle(),"TestCheckpointArrayCells")
 , m_array_particles(0)
@@ -354,11 +358,13 @@ _writeCheckpoint()
   m_variable_scalar_string = String("String_") + current_iteration;
 
   m_nodes.setValues(current_iteration, mesh->allNodes());
+  m_edges.setValues(current_iteration, mesh->allEdges());
   m_faces.setValues(current_iteration, mesh->allFaces());
   m_cells.setValues(current_iteration, mesh->allCells());
   if (m_particles)
     m_particles->setValues(current_iteration,m_particle_family->allItems());
   m_array_nodes.setValues(current_iteration, mesh->allNodes());
+  m_array_edges.setValues(current_iteration, mesh->allEdges());
   m_array_faces.setValues(current_iteration, mesh->allFaces());
   m_array_cells.setValues(current_iteration, mesh->allCells());
   if (m_array_particles)
@@ -380,11 +386,13 @@ _compareCheckpoint()
          << " saved_iteration=" << saved_iteration;
 
   nb_error += m_nodes.checkValues(saved_iteration,mesh->allNodes());
+  nb_error += m_edges.checkValues(saved_iteration,mesh->allEdges());
   nb_error += m_faces.checkValues(saved_iteration,mesh->allFaces());
   nb_error += m_cells.checkValues(saved_iteration,mesh->allCells());
   if (m_particles)
     nb_error += m_particles->checkValues(saved_iteration,m_particle_family->allItems());
   nb_error += m_array_nodes.checkValues(saved_iteration,mesh->allNodes());
+  nb_error += m_array_edges.checkValues(saved_iteration,mesh->allEdges());
   nb_error += m_array_faces.checkValues(saved_iteration,mesh->allFaces());
   nb_error += m_array_cells.checkValues(saved_iteration,mesh->allCells());
   if (m_array_particles)

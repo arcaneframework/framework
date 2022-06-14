@@ -472,7 +472,8 @@ ARCANE_ADD_TEST(checkpoint_basic2-v3 testCheckpoint-basic2-v3.arc -c 3 -m 5)
 if (LZ4_FOUND)
   arcane_add_test_sequential(checkpoint_basic2-v3-lz4 testCheckpoint-basic2-v3-lz4.arc -c 3 -m 5)
 endif()
-ARCANE_ADD_TEST(checkpoint_basic_ghost5 testCheckpoint-6.arc -c 3 -m 5)
+arcane_add_test(checkpoint_basic_ghost5 testCheckpoint-6.arc -c 3 -m 5)
+
 arcane_add_test_parallel_all(amr2 testAMR-2.arc 3 4)
 arcane_add_test_parallel_all(amr2_checkpoint testAMR-2-checkpoint.arc 3 4 -c 2)
 ARCANE_ADD_TEST(hydro3 testHydro-3.arc -m 50)
@@ -741,6 +742,9 @@ ARCANE_ADD_TEST_PARALLEL(aleph_multi testAlephMulti.arc 4)
 ARCANE_ADD_TEST_PARALLEL(aleph_multi testAlephMulti.arc 6)
 ARCANE_ADD_TEST_PARALLEL(aleph_multi testAlephMulti.arc 8)
 
+#################################################################
+#################################################################
+
 # Test les comparaisons bit à bit entre deux exécutions
 arcane_add_test_script(compare_seq_seq compare_seq_seq.xml)
 arcane_add_test_script(compare_seq_seq_v3 compare_seq_seq_v3.xml)
@@ -758,6 +762,11 @@ if (TARGET arcane_mpi)
   arcane_add_test_script(compare_seq_par_v3 compare_seq_par_v3.xml)
   arcane_add_test_script(compare_par_par_v3 compare_par_par_v3.xml)
 endif()
+arcane_add_test_script(checkpoint_verifier_seq_v3 checkpoint_verifier_seq_v3.xml)
+arcane_add_test_script(checkpoint_verifier_4pe_v3 checkpoint_verifier_4pe_v3.xml)
+
+#################################################################
+#################################################################
 
 # Test les reprises en changeant le nombre de sous-domaines
 arcane_add_test_script(checkpoint_change_n8_n5_thread checkpoint_change_n8_n5_thread.xml)

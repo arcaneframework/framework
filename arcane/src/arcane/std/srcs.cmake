@@ -33,7 +33,6 @@ set(ARCANE_SOURCES
   CartesianMeshGenerator.cc
   CartesianMeshGenerator.h
   ArcanePostProcessingModule.cc
-  ArcaneVerifierModule.cc
   ArcaneCheckpointModule.cc
   ArcaneDirectExecution.cc
   ArcaneCasePartitioner.cc
@@ -91,7 +90,6 @@ set(AXL_FILES
   ArcaneBasicCheckpoint
   ArcaneLoadBalance
   Ensight7PostProcessor
-  ArcaneVerifier
   ArcanePostProcessing
   ArcaneCheckpoint
   ArcaneDirectExecution

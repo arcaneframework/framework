@@ -1,127 +1,101 @@
-<?xml version="1.0" encoding="ISO-8859-1" ?><!-- -*- SGML -*- -->
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
 
 <!-- ###################################################################### -->
 <!-- ###################################################################### -->
 
-<!-- Options du jeu de données concernant le module de vérification de non-regression pour les codes CEA-->
+<!-- Options du jeu de donnÃ©es concernant le module de vÃ©rification de non-regression -->
 
-  <module name="ArcaneCeaVerifier" autoload="true">
-    <name lang='fr'>verificateur</name>
-    <description>
-      Options concernant les vérifications de non-régression
-    </description>
+<module name="ArcaneCeaVerifier" autoload="true">
+  <name lang='fr'>verificateur</name>
+  <userclass>User</userclass>
+  <description>
+    Options concernant les vÃ©rifications de non-rÃ©gression
+  </description>
 
-    <entry-points>
-      <entry-point method-name="onExit"
-                   name="VerifierOnExit"
-                   where="exit"
-                   property="auto-load-end"/>
-      <entry-point method-name="onInit"
-                   name="VerifierOnInit"
-                   where="init"
-                   property="auto-load-begin"/>
-    </entry-points>
+  <entry-points>
+    <entry-point method-name="onExit" name="VerifierOnExit" where="exit" property="auto-load-end"/>
+    <entry-point method-name="onInit" name="VerifierOnInit" where="init" property="auto-load-begin"/>
+  </entry-points>
 
-    <options>
+  <options>
       
-   <simple
-   name    = "verify"
-   type    = "bool"
-   default = "false"
-  >
-   <name lang='fr'>verification-active</name>
-   <description>
-Indique si la vérification est active
-   </description>
-  </simple>
+    <simple name="verify" type="bool" default="false">
+      <name lang='fr'>verification-active</name>
+      <userclass>User</userclass>
+      <description>
+        Indique si la vÃ©rification est active
+      </description>
+    </simple>
 
-  <simple
-   name    = "generate"
-   type    = "bool"
-   default = "false"
-  >
-   <name lang='fr'>generation</name>
-   <description>
-Indique s'il faut générer les informations pour une vérification ultérieure (vrai) ou 
-effectuer une vérification (faux)
-   </description>
-  </simple>
+    <simple name="generate" type="bool" default="false">
+      <name lang='fr'>generation</name>
+      <userclass>User</userclass>
+      <description>
+        Indique s'il faut gÃ©nÃ©rer les informations pour une vÃ©rification ultÃ©rieure (vrai) ou 
+        effectuer une vÃ©rification (faux)
+      </description>
+    </simple>
 
-  <simple
-   name    = "reference-file"
-   type    = "ustring"
-   default = "verif"
-  >
-   <name lang='fr'>fichier-reference</name>
-   <description>
-Nom du fichier contenant les valeurs de référence. En cas de génération et en
-mode parallèle, il y a autant de fichiers que de sous-domaines et chaque fichier
-est suffixé du numéro de sous-domaine
-   </description>
-  </simple>
+    <simple name="reference-file" type="ustring" default="verif">
+      <name lang='fr'>fichier-reference</name>
+      <userclass>User</userclass>
+      <description>
+        Nom du fichier contenant les valeurs de rÃ©fÃ©rence. En cas de gÃ©nÃ©ration et en
+        mode parallÃ¨le, il y a autant de fichiers que de sous-domaines et chaque fichier
+        est suffixÃ© du numÃ©ro de sous-domaine
+      </description>
+    </simple>
 
-  <simple
-   name    = "compare-parallel-sequential"
-   type    = "bool"
-   default = "false"
-  >
-   <name lang='fr'>comparaison-parallele-sequentiel</name>
-   <description>
-Si vrai, indique que la comparaison doit se faire avec entre un cas parallèl et une référence séquentielle.
-   </description>
-  </simple>
+    <simple name="compare-parallel-sequential" type="bool" default="false" >
+      <name lang='fr'>comparaison-parallele-sequentiel</name>
+      <description>
+        Si vrai, indique que la comparaison doit se faire avec entre un cas parallÃ¨l et une rÃ©fÃ©rence sÃ©quentielle.
+      </description>
+    </simple>
 
-  <simple
-   name    = "result-file"
-   type    = "ustring"
-   default = "compare.xml"
-  >
-   <name lang='fr'>fichier-resultat</name>
-   <description>
-Nom du fichier contenant les résultats. Il s'agit d'un fichier au format XML et
-il est préférable de mettre l'extension 'xml' au nom de fichier.
-   </description>
-  </simple>
+    <simple name="result-file" type="ustring" default="compare.xml" >
+      <name lang='fr'>fichier-resultat</name>
+      <userclass>User</userclass>
+      <description>
+        Nom du fichier contenant les rÃ©sultats. Il s'agit d'un fichier au format XML et
+        il est prÃ©fÃ©rable de mettre l'extension 'xml' au nom de fichier.
+      </description>
+    </simple>
 
-  <complex
-   name    = "trace"
-   type    = "Trace"
-   minOccurs = "0"
-   maxOccurs = "unbounded"
-  >
-   <name lang='fr'>trace</name>
-   <description>
-Liste des variables à tracer.
-   </description>
+    <simple name="verifier-service-name" type="ustring" default="ArcaneBasicVerifier2">
+      <userclass>User</userclass>
+      <description>
+        Nom du service utilisÃ© pour la vÃ©rification.
+      </description>
+    </simple>
 
-  <simple
-   name    = "variable-name"
-   type    = "ustring"
-  >
-   <name lang='fr'>nom-variable</name>
-   <description>
-Nom de la variable à tracer. Il doit s'agir d'une variable du maillage
-   </description>
-  </simple>
+    <complex name="trace" type="Trace" minOccurs="0" maxOccurs="unbounded" >
+      <name lang='fr'>trace</name>
+      <userclass>User</userclass>
+      <description>
+        NOTE: Cette options n'est plus utilisÃ©e
+      </description>
 
-  <simple
-   name    = "unique-id"
-   type    = "integer"
-   minOccurs = "0"
-   maxOccurs = "unbounded"
-  >
-   <name lang='fr'>unique-id</name>
-   <description>
-Numéro unique de l'entité à tracer.
-   </description>
-  </simple>
+      <simple name="variable-name" type="ustring">
+        <name lang='fr'>nom-variable</name>
+        <userclass>User</userclass>
+        <description>
+          NOTE: Cette options n'est plus utilisÃ©e
+        </description>
+      </simple>
 
-  </complex>
+      <simple name="unique-id" type="integer" minOccurs="0" maxOccurs="unbounded" >
+        <name lang='fr'>unique-id</name>
+        <userclass>User</userclass>
+        <description>
+          NOTE: Cette options n'est plus utilisÃ©e
+        </description>
+      </simple>
+    </complex>
 
-
- </options>
+  </options>
   
   <!-- ###################################################################### -->
   <!-- ###################################################################### -->
-  
+
 </module>

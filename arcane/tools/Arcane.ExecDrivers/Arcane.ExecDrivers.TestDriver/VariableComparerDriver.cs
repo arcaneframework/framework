@@ -19,6 +19,7 @@ namespace Arcane.ExecDrivers.TestDriver
       if (nb_arg < 2) {
         Console.WriteLine("Bad number of args.");
         Console.WriteLine("Usage: [exe] compare ref_path target_path");
+        throw new VariableComparerException("Bad number of arguments");
       }
       m_reference_path = args [0];
       m_target_path = args [1];

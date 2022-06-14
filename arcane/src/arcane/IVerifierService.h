@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IVerifierService.h                                          (C) 2000-2013 */
+/* IVerifierService.h                                          (C) 2000-2022 */
 /*                                                                           */
 /* Interface du service de vérification des données entre deux exécutions.   */
 /*---------------------------------------------------------------------------*/
@@ -20,10 +20,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -64,25 +62,25 @@ class IVerifierService
   //! Positionne le nom du fichier contenant les valeurs de référence
   virtual void setFileName(const String& file_name) =0;
   //! Nom du fichier contenant les valeurs de référence
-  virtual const String& fileName() const =0;
+  virtual String fileName() const =0;
 
  public:
 
   virtual void setResultFileName(const String& file_name) =0;
-  virtual const String& resultfileName() const =0;
+  virtual String resultfileName() const =0;
 
  public:
   
   //! Positionne le nom du sous répertoire contenant les valeurs de référence
   virtual void setSubDir(const String& sub_dir) =0;
   //! Nom du fichier contenant les valeurs de référence
-  virtual const String& subDir() const =0;
+  virtual String subDir() const =0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

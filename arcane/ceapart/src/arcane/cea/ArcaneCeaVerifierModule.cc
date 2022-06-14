@@ -5,13 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneCeaVerifierModule.cc                                  (C) 2000-2016 */
+/* ArcaneVerifierModule.cc                                     (C) 2000-2022 */
 /*                                                                           */
 /* Module de vérification.                                                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/ScopedPtr.h"
@@ -36,28 +34,29 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Module de vérification.
  */
-class ArcaneCeaVerifierModule
+class ArcaneVerifierModule
 : public ArcaneArcaneCeaVerifierObject
 {
  public:
 
-  ArcaneCeaVerifierModule(const ModuleBuildInfo& mb);
+  explicit ArcaneVerifierModule(const ModuleBuildInfo& mb);
 
  public:
 
-  virtual VersionInfo versionInfo() const { return VersionInfo(0,0,1); }
+  VersionInfo versionInfo() const override { return VersionInfo(0,0,1); }
 
  public:
 
-  virtual void onExit();
-  virtual void onInit();
+  void onExit() override;
+  void onInit() override;
 
  private:
 
@@ -71,13 +70,8 @@ class ArcaneCeaVerifierModule
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_MODULE_ARCANECEAVERIFIER(ArcaneCeaVerifierModule);
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ArcaneCeaVerifierModule::
-ArcaneCeaVerifierModule(const ModuleBuildInfo& mb)
+ArcaneVerifierModule::
+ArcaneVerifierModule(const ModuleBuildInfo& mb)
 : ArcaneArcaneCeaVerifierObject(mb)
 {
 }
@@ -85,58 +79,17 @@ ArcaneCeaVerifierModule(const ModuleBuildInfo& mb)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ArcaneCeaVerifierModule::
+void ArcaneVerifierModule::
 onInit()
 {
-  IVariableMng* vm = subDomain()->variableMng();
-  IMesh* mesh = defaultMesh();
-  Int64UniqueArray uids;
-  Int32UniqueArray local_ids;
-  const CaseOptionsArcaneCeaVerifier::CaseOptionTrace& traces(options()->trace);
-  for( Integer i=0; i<traces.size(); ++i ){
-    String var_name(traces[i]->variableName());
-    IVariable* var = vm->findVariable(var_name);
-    if (!var){
-      warning() << "La variable '" << var_name
-                << "' demandé en trace n'existe pas";
-      continue;
-    }
-    if (!var->isUsed()){
-      warning() << "La variable '" << var_name
-                << "' demandé en trace n'est pas utilisée";
-      continue;
-    }
-    eItemKind ik = var->itemKind();
-    if (ik==IK_Unknown){
-      warning() << "La variable '" << var_name
-                << "' demandé en trace n'est pas une variable"
-                << " associée à une entité de maillage";
-      continue;
-    }
-
-    IntegerConstArrayView iuids(traces[i]->uniqueId);
-    Integer nb_uid= iuids.size();
-    uids.resize(nb_uid);
-    local_ids.resize(nb_uid);
-    for( Integer z=0; z<nb_uid; ++z )
-      uids[z] = iuids[z];
-    IItemFamily* family = mesh->itemFamily(ik);
-    family->itemsUniqueIdToLocalId(local_ids,uids,false);
-    for( Integer z=0; z<nb_uid; ++z ){
-      info() << "Trace l'entité uid=" << local_ids[z] << " de '" << var_name << "'";
-      var->setTraceInfo(local_ids[z],TT_Read);
-    }
-    var->syncReferences();
-  }
-  if (options()->verify() || options()->generate()){
-    //subDomain()->timeLoopMng()->setVerificationActive(true);
-  }
+  if (options()->trace.size()!=0)
+    this->pwarning() << "The option 'trace' is no longer used and should be removed";
 
   if (!platform::getEnvironmentVariable("ARCANE_VERIFY_SORTEDGROUP").null()){
     info() << "Add observer to check sorted groups before checkpoint";
     // Ajoute un observer signalant les groupes non triés.
     m_observers.addObserver(this,
-                            &ArcaneCeaVerifierModule::_checkSortedGroups,
+                            &ArcaneVerifierModule::_checkSortedGroups,
                             subDomain()->checkpointMng()->writeObservable());
   }
 }
@@ -144,7 +97,7 @@ onInit()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ArcaneCeaVerifierModule::
+void ArcaneVerifierModule::
 _checkSortedGroups()
 {
   // Affiche la liste des groupes non triés.
@@ -158,7 +111,7 @@ _checkSortedGroups()
     else
       info() << "VerifierModule: group not sorted name=" << g.name();
   };
-  meshvisitor::visitGroups(mesh(),check_sorted_func);
+  meshvisitor::visitGroups(this->mesh(),check_sorted_func);
   info() << "VerifierModule: nb_unsorted_group=" << (nb_group-nb_sorted_group)
          << "/" << nb_group;
 }
@@ -166,53 +119,71 @@ _checkSortedGroups()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ArcaneCeaVerifierModule::
+void ArcaneVerifierModule::
 onExit()
 {
- if (!platform::getEnvironmentVariable("ARCANE_NO_VERIFY").null())
-    return;
   if (!options()->verify())
+    return;
+  if (!platform::getEnvironmentVariable("ARCANE_NO_VERIFY").null())
     return;
 
   IParallelMng* pm = subDomain()->parallelMng();
   bool is_parallel = pm->isParallel();
-  Integer sid = pm->commRank();
+  Int32 rank = pm->commRank();
 
-  ServiceBuilder<IVerifierService> sf(subDomain());
-  auto service2(sf.createReference("ArcaneBasicVerifier2"));
+  Ref<IVerifierService> verifier_service;
+
+  {
+    ServiceBuilder<IVerifierService> sf(subDomain());
+
+    String verifier_service_name = options()->verifierServiceName();
+    // Autorise pour test une variable d'environnement pour surcharger le service
+    String env_service_name = platform::getEnvironmentVariable("ARCANE_VERIFIER_SERVICE");
+    if (!env_service_name.null())
+      verifier_service_name = env_service_name;
+    info() << "Verification Module using service=" << verifier_service_name;
+    verifier_service = sf.createReference(verifier_service_name);
+  }
 
   bool compare_from_sequential = options()->compareParallelSequential();
   if (!is_parallel)
     compare_from_sequential = false;
 
   String result_file_name = options()->resultFile();
-  if (result_file_name.null())
+  if (result_file_name.empty())
     result_file_name = "compare.xml";
-  service2->setResultFileName(result_file_name);
+  verifier_service->setResultFileName(result_file_name);
 
   String reference_file_name = options()->referenceFile();
-  if (reference_file_name.null())
-    reference_file_name = "verif";
+  if (reference_file_name.empty())
+    reference_file_name = "check";
   String base_reference_file_name = reference_file_name;
   if (is_parallel && !compare_from_sequential){
-    reference_file_name = reference_file_name + "." + sid;
+    reference_file_name = reference_file_name + "." + rank;
   }
-  service2->setFileName(base_reference_file_name+"2");
+  String base_file_name = base_reference_file_name;
+  verifier_service->setFileName(base_file_name);
 
-  // Nouvelle version uniquement avec le BasicVerifier et plus HDF5.
   if (options()->generate()){
-    info() << "Ecriture du fichier de vérification";
-    service2->writeReferenceFile();
+    info() << "Writing check file '" << base_file_name << "'";
+    verifier_service->writeReferenceFile();
   }
   else{
-    service2->doVerifFromReferenceFile(compare_from_sequential,false);
+    info() << "Comparing reference file '" << base_file_name << "'";
+    verifier_service->doVerifFromReferenceFile(compare_from_sequential,false);
   }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+ARCANE_REGISTER_MODULE_ARCANECEAVERIFIER(ArcaneVerifierModule);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+} // End namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
