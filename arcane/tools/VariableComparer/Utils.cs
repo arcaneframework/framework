@@ -8,6 +8,12 @@ using System.Xml;
 
 namespace Arcane.VariableComparer
 {
+  public class VariableComparerException : ApplicationException
+  {
+    public VariableComparerException() { }
+    public VariableComparerException(string message) : base(message) { }
+    public VariableComparerException(string message, Exception inner_exception) : base(message, inner_exception) { }
+  }
   public static class Utils
   {
     internal static IDeflater CreateDeflater(string service_name)
@@ -20,7 +26,7 @@ namespace Arcane.VariableComparer
         deflater = new LZ4Deflater();
       }
       else
-        throw new ApplicationException("Can only handle 'Bzip2', 'LZ4', 'Bzip2DataCompressor' or 'LZ4DataCompressor' deflater-service");
+        throw new VariableComparerException($"Invalid name {service_name}. Can only handle 'Bzip2', 'LZ4', 'Bzip2DataCompressor' or 'LZ4DataCompressor' deflater-service");
       return deflater;
     }
     internal static IDeflater CreateOptionalDeflater(XmlElement doc_element)
@@ -29,7 +35,7 @@ namespace Arcane.VariableComparer
       if (String.IsNullOrEmpty(deflater_service))
         return null;
       IDeflater deflater = CreateDeflater(deflater_service);
-      
+
       // Cette valeur doit etre cohérente avec celle dans BasicReaderWriter.cc
       int deflate_min_size = 512;
 

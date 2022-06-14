@@ -64,7 +64,10 @@ namespace Arcane.VariableComparer
     public class ACRDataBaseJSON
     {
       // Ce champs est désérialisé depuis le JSON.
+      #pragma warning disable 0649
       public ACRDataBaseVariableInfo[] Data;
+      #pragma warning restore 0649
+
       public Dictionary<string, ACRDataBaseVariableInfo> Dict = new Dictionary<string, ACRDataBaseVariableInfo>();
 
       public void FillDictionary()
@@ -94,7 +97,7 @@ namespace Arcane.VariableComparer
       m_file_length = fi.Length;
       const int epilog_size = BasicReaderWriterDatabaseEpilogFormat.STRUCT_SIZE;
       if (m_file_length < epilog_size)
-        throw new ApplicationException($"File '{m_filename}' is too short");
+        throw new IOException($"File '{m_filename}' is too short");
       // Lit l'épilogue
       m_file_stream = new FileStream(m_filename, FileMode.Open, FileAccess.Read);
       m_file_stream.Seek(m_file_length - epilog_size, SeekOrigin.Begin);
@@ -109,7 +112,7 @@ namespace Arcane.VariableComparer
       //Console.WriteLine("JSON STRING={0}", json_string);
       ACRDataBaseJSON o = JsonConvert.DeserializeObject<ACRDataBaseJSON>(json_string);
       if (o == null)
-        throw new ApplicationException("Can not convert json infos from database to json object");
+        throw new VariableComparerException("Can not convert json infos from database to json object");
       m_json_database = o;
       m_json_database.FillDictionary();
     }
@@ -117,12 +120,12 @@ namespace Arcane.VariableComparer
     {
       ACRDataBaseVariableInfo vinfo = m_json_database.Dict[key_name];
       if (vinfo.Extents == null)
-        throw new ApplicationException($"extents for '{key_name}' is null");
+        throw new VariableComparerException($"extents for '{key_name}' is null");
       if (vinfo.Extents.Length == 0)
-        throw new ApplicationException($"extents for '{key_name}' has 0 length");
+        throw new VariableComparerException($"extents for '{key_name}' has 0 length");
       int ex_length = vinfo.Extents.Length;
       if (ex_length != 1)
-        throw new ApplicationException($"extents for '{key_name}' should be of dimension 1 (v={ex_length}");
+        throw new VariableComparerException($"extents for '{key_name}' should be of dimension 1 (v={ex_length}");
       return vinfo;
     }
     void _SeekFile(ACRDataBaseVariableInfo vinfo)
@@ -197,11 +200,10 @@ namespace Arcane.VariableComparer
   public class ResultDatabasePartV3 : IResultDatabasePart
   {
     ResultDatabase m_database;
-    int m_part;
-    public int Part { get { return m_part; } }
 
-    MetaData m_metadata;
-    public MetaData MetaData { get { return m_metadata; } }
+    public int Part { get; private set; }
+
+    public MetaData MetaData { get; private set; }
 
     Dictionary<string, VariableDataInfo> m_variables_info;
     public IDictionary<string, VariableDataInfo> VariablesDataInfo { get { return m_variables_info; } }
@@ -216,7 +218,7 @@ namespace Arcane.VariableComparer
     public ResultDatabasePartV3(ResultDatabase database, int part, ArcaneJSONDataBaseInfo arcane_db_info)
     {
       m_database = database;
-      m_part = part;
+      Part = part;
       m_arcane_main_db_info = arcane_db_info;
     }
     public void ReadVariableAsRealArray(string varname, double[] values, int array_index)
@@ -228,7 +230,7 @@ namespace Arcane.VariableComparer
     public void Read()
     {
       string base_path = m_database.BasePath;
-      string acr_file_path = Path.Combine(base_path, String.Format("arcane_db_n{0}.acr", m_part));
+      string acr_file_path = Path.Combine(base_path, String.Format("arcane_db_n{0}.acr", Part));
       m_acr_database = new ACRDataBase(acr_file_path);
       m_acr_database.OpenRead();
       if (!String.IsNullOrEmpty(m_arcane_main_db_info.DataCompressor)) {
@@ -244,9 +246,9 @@ namespace Arcane.VariableComparer
       if (string_length > 0 && metadata_string[string_length - 1] == 0)
         metadata_string = metadata_string.Substring(0, string_length - 1);
       //Console.WriteLine("CHECKPOINT_METADATA='{0}'", metadata_string);
-      m_metadata = new MetaData();
-      m_metadata.ParseString(metadata_string);
-      Console.WriteLine("NB_VARIABLE={0} part={1}", m_metadata.Variables.Count, m_part);
+      MetaData = new MetaData();
+      MetaData.ParseString(metadata_string);
+      Console.WriteLine("NB_VARIABLE={0} part={1}", MetaData.Variables.Count, Part);
       _ReadVariablesDataInfo();
     }
 
@@ -265,7 +267,7 @@ namespace Arcane.VariableComparer
       Console.WriteLine("MetaDataVersion = {0}", m_version);
       m_variables_info = new Dictionary<string, VariableDataInfo>();
       if (m_version != 3)
-        throw new ApplicationException($"Unsupported version '{m_version}'. Valid values are '3'");
+        throw new VariableComparerException($"Unsupported version '{m_version}'. Valid values are '3'");
 
       foreach (XmlNode node in doc_element) {
         if (node.Name != "variable-data")

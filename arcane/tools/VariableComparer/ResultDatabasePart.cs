@@ -61,21 +61,21 @@ namespace Arcane.VariableComparer
   /// </summary>
   public class ResultDatabasePart : IResultDatabasePart
   {
-    
+
     ResultDatabase m_database;
     int m_part;
     public int Part { get { return m_part; } }
-    
+
     MetaData m_metadata;
     public MetaData MetaData { get { return m_metadata; } }
-    
+
     Dictionary<string,VariableDataInfo> m_variables_info;
     public IDictionary<string,VariableDataInfo> VariablesDataInfo { get { return m_variables_info; } }
-    
+
     FileStream m_value_stream;
     IDeflater m_deflater;
     int m_version = 1;
-    
+
     /// <summary>
     /// Cree le bloc numero \a part de la base \a database
     /// </summary>
@@ -136,10 +136,10 @@ namespace Arcane.VariableComparer
         double z = reader.ReadDouble();
         //if (i<5)
         //Console.WriteLine("Z={0}",z);
-        values[array_index+i] = z; 
+        values[array_index+i] = z;
       }
     }
-    
+
     public void Read()
     {
       string base_path = m_database.BasePath;
@@ -161,7 +161,7 @@ namespace Arcane.VariableComparer
       XmlElement doc_element = doc.DocumentElement;
 
       m_deflater = Utils.CreateOptionalDeflater(doc_element);
-      
+
       // Récupère le numéro de version. Si absent, il s'agit de la version 1.
       string version_str = doc_element.GetAttribute("version");
       if (!String.IsNullOrEmpty(version_str))
@@ -169,7 +169,7 @@ namespace Arcane.VariableComparer
       Console.WriteLine("MetaDataVersion = {0}", m_version);
       m_variables_info = new Dictionary<string,VariableDataInfo>();
       if (m_version>=3)
-        throw new ApplicationException($"Unsupported version '{m_version}'. Valid values are '1' or '2'");
+        throw new VariableComparerException($"Unsupported version '{m_version}'. Valid values are '1' or '2'");
 
       foreach (XmlNode node in doc_element){
         if (node.Name != "variable-data")

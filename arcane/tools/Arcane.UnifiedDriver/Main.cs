@@ -28,7 +28,7 @@ namespace Arcane.UnifiedDriver
       for( int i=1; i<nb_arg; ++i )
         l_remaining_args.Add(args[i]);
       var remaining_args = l_remaining_args.ToArray();
-      int r = 0;
+
       switch (args[0]) {
         case "template":
           return Arcane.Templates.MainClass.MainExec(remaining_args);
@@ -43,7 +43,6 @@ namespace Arcane.UnifiedDriver
         default:
           throw new ApplicationException(String.Format("Bad option '{0}' for driver", args[0]));
       }
-      return r;
     }
   }
 }
