@@ -12,15 +12,12 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/Iterator.h"
-#include "arcane/utils/Ptr.h"
 #include "arcane/utils/List.h"
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/PlatformUtils.h"
-#include "arcane/utils/String.h"
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/IMemoryInfo.h"
 #include "arcane/utils/ITraceMng.h"
-#include "arcane/utils/ArcanePrecomp.h"
 #include "arcane/utils/IProfilingService.h"
 #include "arcane/utils/IMessagePassingProfilingService.h"
 #include "arcane/utils/ValueConvert.h"
@@ -33,17 +30,14 @@
 #include "arcane/IApplication.h"
 #include "arcane/IServiceLoader.h"
 #include "arcane/ISubDomain.h"
-#include "arcane/IApplication.h"
 #include "arcane/CommonVariables.h"
 #include "arcane/IVariableMng.h"
 #include "arcane/IEntryPoint.h"
 #include "arcane/IEntryPointMng.h"
 #include "arcane/IMesh.h"
 #include "arcane/IMeshSubMeshTransition.h"
-#include "arcane/ISession.h"
 #include "arcane/IModule.h"
 #include "arcane/Directory.h"
-#include "arcane/IVariableMng.h"
 #include "arcane/IModuleMng.h"
 #include "arcane/Timer.h"
 #include "arcane/ITimeLoop.h"
@@ -131,24 +125,8 @@ class TimeLoopMng
 
  public:
 
-  class RestoreVariableFilter
-  : public IVariableFilter
-  {
-   public:
-    virtual bool applyFilter(IVariable& var)
-    {
-      if (!var.isUsed())
-        return false;
-      if (var.property() & (IVariable::PTemporary|IVariable::PNoRestore))
-        return false;
-      return true;
-    }
-  };
-
- public:
-
-  TimeLoopMng(ISubDomain* sd);
-  ~TimeLoopMng();
+  explicit TimeLoopMng(ISubDomain* sd);
+  ~TimeLoopMng() override;
 
  public:
 
@@ -166,8 +144,8 @@ class TimeLoopMng
   EntryPointCollection loopEntryPoints() override { return m_loop_entry_points; }
   EntryPointCollection usedTimeLoopEntryPoints() override { return m_used_time_loop_entry_points; }
 
-  void registerTimeLoop(ITimeLoop * timeloop) override;
-  void setUsedTimeLoop(const String & clm) override;
+  void registerTimeLoop(ITimeLoop* timeloop) override;
+  void setUsedTimeLoop(const String& name) override;
 
   ITimeLoop* usedTimeLoop() const override { return m_used_time_loop; }
 
@@ -194,7 +172,7 @@ class TimeLoopMng
   void setVerificationActive(bool is_active) override { m_verification_active = is_active; }
   void doVerification(const String& name) override;
 
-  void registerActionMeshPartition(IMeshPartitionerBase* service) override;
+  void registerActionMeshPartition(IMeshPartitionerBase* mesh_partitioner) override;
 
   void timeLoopsName(StringCollection & names) const override;
   void timeLoops(TimeLoopCollection & time_loops) const override;
@@ -221,36 +199,27 @@ class TimeLoopMng
 
  protected:
 
-  void _doComputeLoop(Integer max_loop);
-  
   //! Ajoute un point d'entrée à exécuter
   void _addExecuteEntryPoint(IEntryPoint*);
-  /*!\brief Ajoute le point d'entrée de nom \a name à exécuter
-   * \retval \a true si le point d'entrée n'a pas été trouvé. */
-  bool _addExecuteEntryPoint(const String& name);
   //! Crée un module à partir de son nom
   bool _createModule(const String & module_name);
   //! Ajoute à la liste \a entry_points les points d'entrée proposés dans \a entry_points_info
   /*! Controle que ceux ci sont bien associé à \a where */
   void _processEntryPoints(EntryPointList& entry_points,
-                           const TimeLoopEntryPointInfoCollection& entry_points_name,
+                           const TimeLoopEntryPointInfoCollection& entry_points_info,
                            const char* where);
-  //! Ajoute à la liste \a entry_points les points d'entrée de \a all_entry_points associé à \a where
-  /*! Le filtrage fait office de controle */
-  void _processAllEntryPoints(EntryPointList& entry_points,
-                              const EntryPointCollection & all_entry_points,
-                              const char* ep_where);
   /**
    * Renseigne la liste d'état des modules en fonction des informations
    * contenues dans les éléments <modules> de la boucle en temps et du fichier de données.
    */
   void _fillModuleStateMap(ITimeLoop* time_loop);
 
-  /** Retourne le nom du module et le nom du point d'entrée à partir du nom
-      référencé dans la boucle en temps, de type ModuleName.EntryPointNamea.
-  */
-  void _extractModuleAndEntryPointName(const String & timeloop_entry_name,
-                                       String& module_name,String& entry_point_name);
+  /*!
+   * Retourne le nom du module et le nom du point d'entrée à partir du nom
+   * référencé dans la boucle en temps, de type ModuleName.EntryPointName.
+   */
+  static void _extractModuleAndEntryPointName(const String & timeloop_call_name,
+                                              String& module_name,String& entry_point_name);
 
  private:
 
@@ -310,7 +279,7 @@ class TimeLoopMng
   bool m_verification_at_entry_point;
   bool m_verification_only_at_exit = false;
 
-  IBackwardMng * m_backward_mng; //!< Gestionnaire du retour-arrière;
+  IBackwardMng* m_backward_mng; //!< Gestionnaire du retour-arrière;
   bool m_my_own_backward_mng;
 
   ModuleStateMap m_module_state_list; //! Etat de tous les modules référencés
@@ -320,7 +289,6 @@ class TimeLoopMng
 
   Ref<IVerifierService> m_verifier_service;
   IMeshPartitionerBase* m_mesh_partitioner;
-  long m_time_last_write_info_file;
   String m_message_class_name;
   Integer m_alarm_timer_value;
   Integer m_nb_loop;
@@ -334,10 +302,9 @@ class TimeLoopMng
 
  private:
 
-  void _execOneEntryPoint(IEntryPoint * entry_point, Integer index_value = 0, bool do_verif = false);
+  void _execOneEntryPoint(IEntryPoint* ic, Integer index_value = 0, bool do_verif = false);
   void _dumpTimeInfos(JSONWriter& json_writer);
-  void _resetTimer();
-  //void _writeExecInfoFile();
+  void _resetTimer() const;
   void _checkVerif(const String& entry_point_name,Integer index,bool do_verif);
   void _checkVerifSameOnAllReplica(const String& entry_point_name);
   void _createOwnDefaultBackwardMng();
@@ -352,7 +319,7 @@ class TimeLoopMng
 extern "C++" ITimeLoopMng*
 arcaneCreateTimeLoopMng(ISubDomain * mng)
 {
-  TimeLoopMng * tm = new TimeLoopMng(mng);
+  auto* tm = new TimeLoopMng(mng);
   return tm;
 }
 
@@ -360,13 +327,13 @@ arcaneCreateTimeLoopMng(ISubDomain * mng)
 /*---------------------------------------------------------------------------*/
 
 TimeLoopMng::
-TimeLoopMng(ISubDomain* mng)
-: TraceAccessor(mng->traceMng())
-, m_sub_domain(mng)
+TimeLoopMng(ISubDomain* sd)
+: TraceAccessor(sd->traceMng())
+, m_sub_domain(sd)
 , m_entry_point_mng(m_sub_domain->entryPointMng())
-, m_default_time_loop(0)
-, m_used_time_loop(0)
-, m_current_entry_point_ptr(0)
+, m_default_time_loop(nullptr)
+, m_used_time_loop(nullptr)
+, m_current_entry_point_ptr(nullptr)
 , m_stop_time_loop(false)
 , m_stop_has_error(false)
 , m_final_time_reached(false)
@@ -376,10 +343,9 @@ TimeLoopMng(ISubDomain* mng)
 , m_verif_path(".")
 , m_verification_active(false)
 , m_verification_at_entry_point(false)
-, m_backward_mng(0)
+, m_backward_mng(nullptr)
 , m_my_own_backward_mng(false)
-, m_mesh_partitioner(0)
-, m_time_last_write_info_file(0)
+, m_mesh_partitioner(nullptr)
 , m_message_class_name("TimeLoopMng")
 , m_alarm_timer_value(0)
 , m_nb_loop(0)
@@ -484,7 +450,6 @@ build()
       platform::recursiveCreateDirectory(m_verif_path);
     }
   }
-
 
   // Creation du service de "message passing profiling" le cas echeant
   {
@@ -659,7 +624,7 @@ _execOneEntryPoint(IEntryPoint * ic, Integer index, bool do_verif)
   m_observables[eTimeLoopEventType::BeginEntryPoint]->notifyAllObservers();
   ic->executeEntryPoint();
   m_observables[eTimeLoopEventType::EndEntryPoint]->notifyAllObservers();
-  m_current_entry_point_ptr = 0;
+  m_current_entry_point_ptr = nullptr;
   if (m_verification_at_entry_point && !m_verification_only_at_exit)
     _checkVerif(ic->name(),index,do_verif);
 }
@@ -857,7 +822,7 @@ nextEntryPoint()
   //return m_loop_entry_points->EntryPointList()[m_current_entry_point];
   const EntryPointList & cl = m_loop_entry_points;
   if (m_current_entry_point >= cl.count())
-    return 0;
+    return nullptr;
   return cl[m_current_entry_point];
 }
 
@@ -899,7 +864,7 @@ doOneIteration()
     execRestoreEntryPoints();
 
     // Repartitionnement inutile si retour-arrière
-    m_mesh_partitioner = 0;
+    m_mesh_partitioner = nullptr;
   }
 
   // Repartionnement demandé
@@ -1056,7 +1021,7 @@ registerTimeLoop(ITimeLoop * timeloop)
 
   log() << "Registering the time loop " << name;
 
-  TimeLoopMap::iterator tl = m_time_loop_list.find(name);
+  auto tl = m_time_loop_list.find(name);
   if (tl != m_time_loop_list.end())
     ARCANE_FATAL("The time loop '{0}' is defined twice",name);
 
@@ -1067,26 +1032,24 @@ registerTimeLoop(ITimeLoop * timeloop)
 /*---------------------------------------------------------------------------*/
 
 void TimeLoopMng::
-setUsedTimeLoop(const String & name)
+setUsedTimeLoop(const String& name)
 {
   ITraceMng * msg = traceMng();
   Trace::Setter mci(msg,m_message_class_name);
 
-  m_used_time_loop = 0;
+  m_used_time_loop = nullptr;
   if (name.null())
     m_used_time_loop = m_default_time_loop;
   else{
-    TimeLoopMap::iterator tl = m_time_loop_list.find(name);
+    auto tl = m_time_loop_list.find(name);
     if (tl != m_time_loop_list.end())
       m_used_time_loop = tl->second;
   }
 
   if (!m_used_time_loop){
     info() << "Available time loops: ";
-    TimeLoopMap::const_iterator tl = m_time_loop_list.begin();
-    TimeLoopMap::const_iterator te = m_time_loop_list.end();
-    for( ; tl!=te; ++tl ){
-      info() << "Time loop <" << tl->second->name() << ">";
+    for( auto tl : m_time_loop_list ){
+      info() << "Time loop <" << tl.second->name() << ">";
     }
     ARCANE_FATAL("Unknown time loop '{0}'",name);
   }
@@ -1157,7 +1120,7 @@ setUsedTimeLoop(const String & name)
   // Ajoute les autoload au début.
   EntryPointList entry_points(m_entry_point_mng->entryPoints());
   for( EntryPointCollection::Enumerator i(entry_points); ++i; ){
-    IEntryPoint * ic = * i;
+    IEntryPoint* ic = * i;
     if (ic->property() & IEntryPoint::PAutoLoadBegin)
       _addExecuteEntryPoint(ic);
   }
@@ -1236,7 +1199,7 @@ _processEntryPoints(EntryPointList& entry_points,
     String module_name;
     _extractModuleAndEntryPointName(timeloop_call_name,module_name,entry_point_name);
 
-    ModuleStateMap::iterator it = m_module_state_list.find(module_name);
+    auto it = m_module_state_list.find(module_name);
     if (it == m_module_state_list.end())
       ARCANE_FATAL("No module named '{0}' is referenced",module_name);
 
@@ -1262,49 +1225,17 @@ _processEntryPoints(EntryPointList& entry_points,
             << where << "\" of the time loop";
 
       if (ep_where==IEntryPoint::WComputeLoop && where!=ITimeLoop::WComputeLoop)
-        fatal() << msg.str();
+        ARCANE_FATAL(msg.str());
       if (ep_where==IEntryPoint::WRestore && where!=ITimeLoop::WRestore)
-        fatal() << msg.str();
+        ARCANE_FATAL(msg.str());
       if (ep_where==IEntryPoint::WExit && where!=ITimeLoop::WExit)
-        fatal() << msg.str();
+        ARCANE_FATAL(msg.str());
       if ((ep_where==IEntryPoint::WInit || 
            ep_where==IEntryPoint::WContinueInit ||
            ep_where==IEntryPoint::WStartInit)
           && where != ITimeLoop::WInit)
-        fatal() << msg.str();
+        ARCANE_FATAL(msg.str());
       
-      entry_points.add(entry_point);
-    }
-  }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void TimeLoopMng::
-_processAllEntryPoints(EntryPointList& entry_points,
-                       const EntryPointCollection & all_entry_points,
-                       const char* ep_where)
-{
-  for( EntryPointCollection::Enumerator i(all_entry_points); ++i; ){
-    IEntryPoint* entry_point = *i;
-    if (entry_point->where() != ep_where)
-      continue;
-
-    String entry_point_name = entry_point->name();
-    String module_name = entry_point->module()->name();
-    ModuleStateMap::iterator it = m_module_state_list.find(module_name);
-    if (it == m_module_state_list.end())
-      ARCANE_FATAL("No module named '{0}' is referenced",module_name);
-
-    const ModuleState & module_state = it->second;
-    if (!module_state.m_is_optional || module_state.m_is_active){
-      if (!module_state.m_alias.null())
-        module_name = module_state.m_alias;
-      StringBuilder call_alias(module_name);
-      call_alias += ".";
-      call_alias += entry_point_name;
-
       entry_points.add(entry_point);
     }
   }
@@ -1367,7 +1298,7 @@ _fillModuleStateMap(ITimeLoop* time_loop)
     if (ilang!=m_lang_module_factory_map.end())
       name = ilang->second->moduleName();
 
-    ModuleStateMap::iterator it = m_module_state_list.find(name);
+    auto it = m_module_state_list.find(name);
     if (it == m_module_state_list.end())
       // Lève une exception si le nom du module spécifié dans le JDD
       // ne correspond à aucun module enregistré.
@@ -1398,11 +1329,10 @@ _extractModuleAndEntryPointName(const String& timeloop_call_name,
                                 String& entry_point_name)
 {
   std::string std_timeloop_call_name(timeloop_call_name.localstr());
-  size_t index = std_timeloop_call_name.find_first_of(".");
+  size_t index = std_timeloop_call_name.find_first_of('.');
   if (index==std::string::npos){
-    fatal() << "The string '" << timeloop_call_name << "' is not "
-            << "a valid reference to an entry point (has to be of type "
-            << "'module_name.entry_point_name";
+    ARCANE_FATAL("The string '{0}' is not a valid reference to an entry point (has to be of type "
+                 "'module_name.entry_point_name)",timeloop_call_name);
   }
   std::string std_module_name = std_timeloop_call_name.substr(0, index);
   std::string std_entry_point_name = std_timeloop_call_name.substr(index+1);
@@ -1472,23 +1402,6 @@ _createModule(const String& module_name)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * Ajoute le point d'entrée de nom \a s à la liste des points d'entrée à exécuter.
- */
-bool TimeLoopMng::
-_addExecuteEntryPoint(const String& s)
-{
-  IEntryPoint * entry_point = m_entry_point_mng->findEntryPoint(s);
-  if (!entry_point){
-    error() << "No entry point named `" << s << "' is referenced";
-    return true;
-  }
-  _addExecuteEntryPoint(entry_point);
-  return false;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
  * Ajoute le point d'entrée \a s à la liste des points d'entrée.
  */
 void TimeLoopMng::
@@ -1545,7 +1458,6 @@ _dumpTimeInfos(JSONWriter& json_writer)
   Real total_exec_time = cpuTimeUsed();
 
   {
-    EntryPointCollection entry_points = m_entry_point_mng->entryPoints();
     Real total_cpu_time = 0.0;
     Real total_real_time = 0.0;
     Real compute_cpu_time = 0.0;
@@ -1696,7 +1608,7 @@ _dumpTimeInfos(JSONWriter& json_writer)
   info() << o.str();
 
   {
-    JSONWriter::Object o(json_writer,"MessagePassingStats");
+    JSONWriter::Object jo(json_writer,"MessagePassingStats");
     IParallelMng* pm = m_sub_domain->parallelMng();
     Parallel::IStat* s = pm->stat();
     if (s){
@@ -1705,17 +1617,17 @@ _dumpTimeInfos(JSONWriter& json_writer)
     }
   }
   {
-    JSONWriter::Object o(json_writer,"VariablesStats");
+    JSONWriter::Object jo(json_writer,"VariablesStats");
     m_sub_domain->variableMng()->dumpStatsJSON(json_writer);
   }
   {
-    JSONWriter::Object o(json_writer,"TimeStats");
+    JSONWriter::Object jo(json_writer,"TimeStats");
     m_sub_domain->timeStats()->dumpStatsJSON(json_writer);
   }
   {
     IProfilingService* ps = platform::getProfilingService();
     if (ps){
-      JSONWriter::Object o(json_writer,"Profiling");
+      JSONWriter::Object jo(json_writer,"Profiling");
       ps->dumpJSON(json_writer);
     }
   }
@@ -1892,7 +1804,7 @@ doComputeLoop(Integer max_loop)
       ps->initialize();
     // Désactive le profiling si demande spécifique
     if (want_specific_profiling)
-      ps = 0;
+      ps = nullptr;
     ProfilingSentry ps_sentry(ps);
     while (!is_end){
       if (max_loop!=0 && m_nb_loop>=max_loop){
@@ -1966,7 +1878,7 @@ doComputeLoop(Integer max_loop)
 /*---------------------------------------------------------------------------*/
 
 void TimeLoopMng::
-_resetTimer()
+_resetTimer() const
 {
   if (m_alarm_timer_value>0)
     platform::resetAlarmTimer(m_alarm_timer_value);
