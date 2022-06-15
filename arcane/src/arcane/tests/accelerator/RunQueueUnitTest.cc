@@ -109,7 +109,10 @@ executeTest()
   _executeTest1(false);
   _executeTest1(true);
   _executeTest2();
+  bool old_v = m_runner.isConcurrentQueueCreation();
+  m_runner.setConcurrentQueueCreation(true);
   _executeTest3();
+  m_runner.setConcurrentQueueCreation(old_v);
 }
 
 /*---------------------------------------------------------------------------*/

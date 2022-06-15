@@ -60,6 +60,17 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
   //! Indique si l'instance a été initialisée
   bool isInitialized() const;
 
+  /*!
+   * \brief Indique si on autorise la création de RunQueue depuis plusieurs threads.
+   *
+   * Cela nécessite d'utiliser un verrou (comme std::mutex) et peut dégrader les
+   * performances. Le défaut est \a false.
+   */
+  void setConcurrentQueueCreation(bool v);
+
+  //! Indique si la création concurrent de plusieurs RunQueue est autorisé
+  bool isConcurrentQueueCreation() const;
+
  private:
 
   // TODO: a supprimer
@@ -83,14 +94,22 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Créé une file temporaire associée à \a runner.
+/*!
+ * \brief Créé une file temporaire associée à \a runner.
+ *
+ * Cet appel est thread-safe si runner.isConcurrentQueueCreation()==true.
+ */
 inline RunQueue
 makeQueue(Runner& runner)
 {
   return RunQueue(runner);
 }
 
-//! Créé une file temporaire associée à \a runner.
+/*!
+ * \brief Créé une file temporaire associée à \a runner.
+ *
+ * Cet appel est thread-safe si runner.isConcurrentQueueCreation()==true.
+ */
 inline RunQueue
 makeQueue(Runner* runner)
 {
@@ -98,14 +117,22 @@ makeQueue(Runner* runner)
   return RunQueue(*runner);
 }
 
-//! Créé une file temporaire associée à \a runner avec les propriétés \a bi.
+/*!
+ * \brief Créé une file temporaire associée à \a runner avec les propriétés \a bi.
+ *
+ * Cet appel est thread-safe si runner.isConcurrentQueueCreation()==true.
+ */
 inline RunQueue
 makeQueue(Runner& runner,const RunQueueBuildInfo& bi)
 {
   return RunQueue(runner,bi);
 }
 
-//! Créé une file temporaire associée à \a runner avec les propriétés \a bi.
+/*!
+ * \brief Créé une file temporaire associée à \a runner avec les propriétés \a bi.
+ *
+ * Cet appel est thread-safe si runner.isConcurrentQueueCreation()==true.
+ */
 inline RunQueue
 makeQueue(Runner* runner,const RunQueueBuildInfo& bi)
 {
