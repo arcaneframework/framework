@@ -31,6 +31,7 @@ namespace Arcane::Accelerator
 class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
 {
   friend class RunCommand;
+  friend class impl::RunCommandLaunchInfo;
 
  public:
 
@@ -68,14 +69,13 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
   //! Bloque l'exécution sur l'instance tant que les jobs enregistrés dans \a event ne sont pas terminés
   void waitEvent(Ref<RunQueueEvent>& event);
 
- public:
+ private:
 
   impl::IRunQueueRuntime* _internalRuntime() const;
   impl::IRunQueueStream* _internalStream() const;
-
- private:
-
   impl::RunCommandImpl* _getCommandImpl();
+  //! Ajoute \a v au temps passé dans l'exécution pour cette file
+  void _addCommandTime(Real v);
 
  private:
 

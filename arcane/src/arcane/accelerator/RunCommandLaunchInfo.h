@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunCommandLaunchInfo.h                                      (C) 2000-2021 */
+/* RunCommandLaunchInfo.h                                      (C) 2000-2022 */
 /*                                                                           */
 /* Informations pour l'exécution d'une 'RunCommand'.                         */
 /*---------------------------------------------------------------------------*/
@@ -39,37 +39,56 @@ namespace Arcane::Accelerator::impl
 class ARCANE_ACCELERATOR_EXPORT RunCommandLaunchInfo
 {
  public:
-  struct ThreadBlockInfo
+
+ struct ThreadBlockInfo
   {
     int nb_block_per_grid;
     int nb_thread_per_block;
   };
+
  public:
+
   RunCommandLaunchInfo(RunCommand& command);
   ~RunCommandLaunchInfo();
   RunCommandLaunchInfo(const RunCommandLaunchInfo&) = delete;
   RunCommandLaunchInfo operator=(const RunCommandLaunchInfo&) = delete;
+
  public:
+
   eExecutionPolicy executionPolicy() const { return m_exec_policy; }
+
   /*!
    * \brief Indique qu'on commence l'exécution de la commande.
    *
    * Doit toujours être appelé avant de lancer la commande pour être
    * sur que cette méthode est appelée en cas d'exception.
    */
-  void beginExecute() { m_has_exec_begun = true; }
+  void beginExecute();
+
+  /*!
+   * \brief Signale la fin de l'exécution.
+   *
+   * Si la file associée à la commande est asynchrone, la commande
+   * peut continuer à s'exécuter après cet appel.
+   */
   void endExecute();
+
   ThreadBlockInfo computeThreadBlockInfo(Int64 full_size) const;
   void* _internalStreamImpl();
+
  private:
+
   RunCommand& m_command;
   bool m_has_exec_begun = false;
   bool m_is_notify_end_kernel_done = false;
   IRunQueueRuntime* m_runtime = nullptr;
   IRunQueueStream* m_queue_stream = nullptr;
   eExecutionPolicy m_exec_policy = eExecutionPolicy::Sequential;
+  double m_begin_time = 0.0;
+
  private:
-  void _begin();
+
+ void _begin();
 };
 
 /*---------------------------------------------------------------------------*/

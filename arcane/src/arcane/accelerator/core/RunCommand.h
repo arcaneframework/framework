@@ -35,6 +35,8 @@ namespace Arcane::Accelerator
 class ARCANE_ACCELERATOR_CORE_EXPORT RunCommand
 {
   friend impl::IReduceMemoryImpl* impl::internalGetOrCreateReduceMemoryImpl(RunCommand* command);
+  friend impl::RunCommandLaunchInfo;
+
  public:
 
   RunCommand(RunQueue& run_queue);
@@ -49,7 +51,11 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunCommand
   const TraceInfo& traceInfo() const;
   const String& kernelName() const;
   friend ARCANE_ACCELERATOR_CORE_EXPORT RunCommand& operator<<(RunCommand& command,const TraceInfo& trace_info);
-  void resetInfos();
+
+ private:
+
+  // Uniquement pour RunCommandLaunchInfo
+  void _resetInfos();
 
  public:
 

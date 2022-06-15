@@ -79,6 +79,9 @@
 #include "arcane/parallel/IStat.h"
 #include "arcane/IVariableSynchronizer.h"
 
+#include "arcane/accelerator/core/IAcceleratorMng.h"
+#include "arcane/accelerator/core/Runner.h"
+
 #include "arcane/impl/DefaultBackwardMng.h"
 
 #include <algorithm>
@@ -1577,6 +1580,14 @@ _dumpTimeInfos(JSONWriter& json_writer)
 
   const CommonVariables& scv = subDomain()->commonVariables();
   info() << "Information on the execution time";
+  {
+    Accelerator::IAcceleratorMng* acc_mng = m_sub_domain->acceleratorMng();
+    if (acc_mng->isInitialized()){
+      Accelerator::Runner* runner = acc_mng->defaultRunner();
+      info() << " TotalRunner (" << runner->executionPolicy() << ") = "
+             << runner->cumulativeCommandTime() << " seconds";
+    }
+  }
   info() << " TotalCPU  = " << total_exec_time << " seconds";
   info() << " CumulativeCPU  = " << scv.globalCPUTime()
          << " seconds (" << platform::timeToHourMinuteSecond(scv.globalCPUTime()) << ")";
