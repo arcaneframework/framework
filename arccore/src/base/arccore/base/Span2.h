@@ -108,47 +108,43 @@ class Span2Impl
 
  public:
 
-  ARCCORE_HOST_DEVICE SpanImpl<ElementType,SizeType> operator[](SizeType i) const
+  constexpr ARCCORE_HOST_DEVICE SpanImpl<ElementType,SizeType> operator[](SizeType i) const
   {
     ARCCORE_CHECK_AT(i,m_dim1_size);
     return SpanImpl<ElementType,SizeType>(m_ptr + (m_dim2_size*i),m_dim2_size);
   }
 
-  ARCCORE_HOST_DEVICE SpanImpl<ElementType,SizeType> operator()(SizeType i) const
+  constexpr ARCCORE_HOST_DEVICE SpanImpl<ElementType,SizeType> operator()(SizeType i) const
   {
     ARCCORE_CHECK_AT(i,m_dim1_size);
     return SpanImpl<ElementType,SizeType>(m_ptr + (m_dim2_size*i),m_dim2_size);
   }
 
-  ARCCORE_HOST_DEVICE reference operator()(SizeType i,SizeType j) const
+  constexpr ARCCORE_HOST_DEVICE reference operator()(SizeType i,SizeType j) const
   {
-    ARCCORE_CHECK_AT(i,m_dim1_size);
-    ARCCORE_CHECK_AT(j,m_dim2_size);
+    ARCCORE_CHECK_AT2(i,j,m_dim1_size,m_dim2_size);
     return m_ptr[(m_dim2_size*i) + j];
   }
 
 #ifdef ARCCORE_HAS_MULTI_SUBSCRIPT
-  ARCCORE_HOST_DEVICE reference operator[](SizeType i,SizeType j) const
+  constexpr ARCCORE_HOST_DEVICE reference operator[](SizeType i,SizeType j) const
   {
-    ARCCORE_CHECK_AT(i,m_dim1_size);
-    ARCCORE_CHECK_AT(j,m_dim2_size);
+    ARCCORE_CHECK_AT2(i,j,m_dim1_size,m_dim2_size);
     return m_ptr[(m_dim2_size*i) + j];
   }
 #endif
 
   //! Valeur de l'élément [\a i][\a j]
-  ARCCORE_HOST_DEVICE ElementType item(SizeType i,SizeType j) const
+  constexpr ARCCORE_HOST_DEVICE ElementType item(SizeType i,SizeType j) const
   {
-    ARCCORE_CHECK_AT(i,m_dim1_size);
-    ARCCORE_CHECK_AT(j,m_dim2_size);
+    ARCCORE_CHECK_AT2(i,j,m_dim1_size,m_dim2_size);
     return m_ptr[(m_dim2_size*i) + j];
   }
 
   //! Positionne l'élément [\a i][\a j] à \a value
-  ARCCORE_HOST_DEVICE ElementType setItem(SizeType i,SizeType j,const ElementType& value)
+  constexpr ARCCORE_HOST_DEVICE ElementType setItem(SizeType i,SizeType j,const ElementType& value)
   {
-    ARCCORE_CHECK_AT(i,m_dim1_size);
-    ARCCORE_CHECK_AT(j,m_dim2_size);
+    ARCCORE_CHECK_AT2(i,j,m_dim1_size,m_dim2_size);
     m_ptr[(m_dim2_size*i) + j] = value;
   }
 
@@ -157,7 +153,7 @@ class Span2Impl
   /*!
    * \brief Vue constante sur cette vue.
    */
-  view_type smallView()
+  constexpr view_type smallView()
   {
     Integer s1 = arccoreCheckArraySize(m_dim1_size);
     Integer s2 = arccoreCheckArraySize(m_dim2_size);
@@ -167,7 +163,7 @@ class Span2Impl
   /*!
    * \brief Vue constante sur cette vue.
    */
-  ConstArrayView<value_type> constSmallView() const
+  constexpr ConstArrayView<value_type> constSmallView() const
   {
     Integer s1 = arccoreCheckArraySize(m_dim1_size);
     Integer s2 = arccoreCheckArraySize(m_dim2_size);
@@ -176,18 +172,14 @@ class Span2Impl
 
  public:
 
-  /*!
-   * \brief Pointeur sur la mémoire allouée.
-   */
-  inline ElementType* unguardedBasePointer() { return m_ptr; }
-  /*!
-   * \brief Pointeur sur la mémoire allouée.
-   */
-  ARCCORE_HOST_DEVICE inline ElementType* data() { return m_ptr; }
-  /*!
-   * \brief Pointeur constant sur la mémoire allouée.
-   */
-  ARCCORE_HOST_DEVICE inline const ElementType* data() const { return m_ptr; }
+  //! Pointeur sur la mémoire allouée.
+  constexpr ElementType* unguardedBasePointer() { return m_ptr; }
+
+  //! Pointeur sur la mémoire allouée.
+  constexpr ARCCORE_HOST_DEVICE ElementType* data() { return m_ptr; }
+
+  //! Pointeur sur la mémoire allouée.
+  constexpr ARCCORE_HOST_DEVICE const ElementType* data() const { return m_ptr; }
 
  protected:
 

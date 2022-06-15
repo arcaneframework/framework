@@ -70,46 +70,34 @@ class Array3View
   }
   constexpr DataType item(Integer i,Integer j,Integer k) const
   {
-    ARCCORE_CHECK_AT(i,m_dim1_size);
-    ARCCORE_CHECK_AT(j,m_dim2_size);
-    ARCCORE_CHECK_AT(k,m_dim3_size);
+    ARCCORE_CHECK_AT3(i,j,k,m_dim1_size,m_dim2_size,m_dim3_size);
     return m_ptr[(m_dim23_size*i) + m_dim3_size*j + k];
   }
   constexpr const DataType& operator()(Integer i,Integer j,Integer k) const
   {
-    ARCCORE_CHECK_AT(i,m_dim1_size);
-    ARCCORE_CHECK_AT(j,m_dim2_size);
-    ARCCORE_CHECK_AT(k,m_dim3_size);
+    ARCCORE_CHECK_AT3(i,j,k,m_dim1_size,m_dim2_size,m_dim3_size);
     return m_ptr[(m_dim23_size*i) + m_dim3_size*j + k];
   }
   constexpr DataType& operator()(Integer i,Integer j,Integer k)
   {
-    ARCCORE_CHECK_AT(i,m_dim1_size);
-    ARCCORE_CHECK_AT(j,m_dim2_size);
-    ARCCORE_CHECK_AT(k,m_dim3_size);
+    ARCCORE_CHECK_AT3(i,j,k,m_dim1_size,m_dim2_size,m_dim3_size);
     return m_ptr[(m_dim23_size*i) + m_dim3_size*j + k];
   }
 #ifdef ARCCORE_HAS_MULTI_SUBSCRIPT
   constexpr const DataType& operator[](Integer i,Integer j,Integer k) const
   {
-    ARCCORE_CHECK_AT(i,m_dim1_size);
-    ARCCORE_CHECK_AT(j,m_dim2_size);
-    ARCCORE_CHECK_AT(k,m_dim3_size);
+    ARCCORE_CHECK_AT3(i,j,k,m_dim1_size,m_dim2_size,m_dim3_size);
     return m_ptr[(m_dim23_size*i) + m_dim3_size*j + k];
   }
   constexpr DataType& operator[](Integer i,Integer j,Integer k)
   {
-    ARCCORE_CHECK_AT(i,m_dim1_size);
-    ARCCORE_CHECK_AT(j,m_dim2_size);
-    ARCCORE_CHECK_AT(k,m_dim3_size);
+    ARCCORE_CHECK_AT3(i,j,k,m_dim1_size,m_dim2_size,m_dim3_size);
     return m_ptr[(m_dim23_size*i) + m_dim3_size*j + k];
   }
 #endif
   constexpr DataType setItem(Integer i,Integer j,Integer k,const DataType& value)
   {
-    ARCCORE_CHECK_AT(i,m_dim1_size);
-    ARCCORE_CHECK_AT(j,m_dim2_size);
-    ARCCORE_CHECK_AT(k,m_dim3_size);
+    ARCCORE_CHECK_AT3(i,j,k,m_dim1_size,m_dim2_size,m_dim3_size);
     m_ptr[(m_dim23_size*i) + m_dim3_size*j + k] = value;
   }
  public:
@@ -158,35 +146,32 @@ class ConstArray3View
   }
   constexpr DataType item(Integer i,Integer j,Integer k) const
   {
-    ARCCORE_CHECK_AT(i,m_dim1_size);
-    ARCCORE_CHECK_AT(j,m_dim2_size);
-    ARCCORE_CHECK_AT(k,m_dim3_size);
+    ARCCORE_CHECK_AT3(i,j,k,m_dim1_size,m_dim2_size,m_dim3_size);
     return m_ptr[(m_dim23_size*i) + m_dim3_size*j + k];
   }
   constexpr const DataType& operator()(Integer i,Integer j,Integer k) const
   {
-    ARCCORE_CHECK_AT(i,m_dim1_size);
-    ARCCORE_CHECK_AT(j,m_dim2_size);
-    ARCCORE_CHECK_AT(k,m_dim3_size);
+    ARCCORE_CHECK_AT3(i,j,k,m_dim1_size,m_dim2_size,m_dim3_size);
     return m_ptr[(m_dim23_size*i) + m_dim3_size*j + k];
   }
 #ifdef ARCCORE_HAS_MULTI_SUBSCRIPT
   constexpr const DataType& operator[](Integer i,Integer j,Integer k) const
   {
-    ARCCORE_CHECK_AT(i,m_dim1_size);
-    ARCCORE_CHECK_AT(j,m_dim2_size);
-    ARCCORE_CHECK_AT(k,m_dim3_size);
+    ARCCORE_CHECK_AT3(i,j,k,m_dim1_size,m_dim2_size,m_dim3_size);
     return m_ptr[(m_dim23_size*i) + m_dim3_size*j + k];
   }
 #endif
 
  public:
-  /*!
-   * \brief Pointeur sur la mémoire allouée.
-   */
-  constexpr inline const DataType* unguardedBasePointer() const
-  { return m_ptr; }
+
+  //! Pointeur sur la mémoire allouée.
+  constexpr inline const DataType* unguardedBasePointer() const { return m_ptr; }
+
+  //! Pointeur sur la mémoire allouée.
+  constexpr const DataType* data() const { return m_ptr; }
+
  private:
+
   const DataType* m_ptr;
   Integer m_dim1_size; //!< Taille de la 1ere dimension
   Integer m_dim2_size; //!< Taille de la 2eme dimension

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArccoreGlobal.h                                             (C) 2000-2020 */
+/* ArccoreGlobal.h                                             (C) 2000-2022 */
 /*                                                                           */
 /* Déclarations générales de Arccore.                                        */
 /*---------------------------------------------------------------------------*/
@@ -494,6 +494,13 @@ arccoreCheckAt(Int64 i,Int64 max_size)
 #else
 #define ARCCORE_CHECK_AT(a,b)
 #endif
+
+#define ARCCORE_CHECK_AT2(a0,a1,b0,b1) \
+  ARCCORE_CHECK_AT(a0,b0); ARCCORE_CHECK_AT(a1,b1)
+#define ARCCORE_CHECK_AT3(a0,a1,a2,b0,b1,b2) \
+  ARCCORE_CHECK_AT(a0,b0); ARCCORE_CHECK_AT(a1,b1); ARCCORE_CHECK_AT(a2,b2)
+#define ARCCORE_CHECK_AT4(a0,a1,a2,a3,b0,b1,b2,b3) \
+  ARCCORE_CHECK_AT(a0,b0); ARCCORE_CHECK_AT(a1,b1); ARCCORE_CHECK_AT(a2,b2); ARCCORE_CHECK_AT(a3,b3)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

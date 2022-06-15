@@ -329,12 +329,12 @@ class SpanImpl
 
  public:
 
-  ARCCORE_HOST_DEVICE void setArray(const ArrayView<T>& v) noexcept
+  constexpr ARCCORE_HOST_DEVICE void setArray(const ArrayView<T>& v) noexcept
   {
     m_ptr = v.m_ptr;
     m_size = v.m_size;
   }
-  ARCCORE_HOST_DEVICE void setArray(const Span<T>& v) noexcept
+  constexpr ARCCORE_HOST_DEVICE void setArray(const Span<T>& v) noexcept
   {
     m_ptr = v.m_ptr;
     m_size = v.m_size;
@@ -358,7 +358,7 @@ class SpanImpl
    * C'est à la classe dérivée de vérifier la cohérence entre le pointeur
    * alloué et la dimension donnée.
    */
-  void _setArray(pointer v,SizeType s) noexcept { m_ptr = v; m_size = s; }
+  constexpr void _setArray(pointer v,SizeType s) noexcept { m_ptr = v; m_size = s; }
 
   /*!
    * \brief Modifie le pointeur du début du tableau.
@@ -366,7 +366,7 @@ class SpanImpl
    * C'est à la classe dérivée de vérifier la cohérence entre le pointeur
    * alloué et la dimension donnée.
    */
-  void _setPtr(pointer v) noexcept { m_ptr = v; }
+  constexpr void _setPtr(pointer v) noexcept { m_ptr = v; }
 
   /*!
    * \brief Modifie la taille du tableau.
@@ -374,7 +374,7 @@ class SpanImpl
    * C'est à la classe dérivée de vérifier la cohérence entre le pointeur
    * alloué et la dimension donnée.
    */
-  void _setSize(SizeType s) noexcept { m_size = s; }
+  constexpr void _setSize(SizeType s) noexcept { m_size = s; }
 
  private:
 

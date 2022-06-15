@@ -84,57 +84,39 @@ class Array4View
   //! Valeur pour l'élément \a i,j,k,l
   constexpr DataType item(Integer i,Integer j,Integer k,Integer l) const
   {
-    ARCCORE_CHECK_AT(i,m_dim1_size);
-    ARCCORE_CHECK_AT(j,m_dim2_size);
-    ARCCORE_CHECK_AT(k,m_dim3_size);
-    ARCCORE_CHECK_AT(l,m_dim4_size);
+    ARCCORE_CHECK_AT4(i,j,k,l,m_dim1_size,m_dim2_size,m_dim3_size,m_dim4_size);
     return m_ptr[(m_dim234_size*i) + m_dim34_size*j + m_dim4_size*k + l];
   }
   //! Valeur pour l'élément \a i,j,k,l
   constexpr const DataType& operator()(Integer i,Integer j,Integer k,Integer l) const
   {
-    ARCCORE_CHECK_AT(i,m_dim1_size);
-    ARCCORE_CHECK_AT(j,m_dim2_size);
-    ARCCORE_CHECK_AT(k,m_dim3_size);
-    ARCCORE_CHECK_AT(l,m_dim4_size);
+    ARCCORE_CHECK_AT4(i,j,k,l,m_dim1_size,m_dim2_size,m_dim3_size,m_dim4_size);
     return m_ptr[(m_dim234_size*i) + m_dim34_size*j + m_dim4_size*k + l];
   }
   //! Valeur pour l'élément \a i,j,k,l
   constexpr DataType& operator()(Integer i,Integer j,Integer k,Integer l)
   {
-    ARCCORE_CHECK_AT(i,m_dim1_size);
-    ARCCORE_CHECK_AT(j,m_dim2_size);
-    ARCCORE_CHECK_AT(k,m_dim3_size);
-    ARCCORE_CHECK_AT(l,m_dim4_size);
+    ARCCORE_CHECK_AT4(i,j,k,l,m_dim1_size,m_dim2_size,m_dim3_size,m_dim4_size);
     return m_ptr[(m_dim234_size*i) + m_dim34_size*j + m_dim4_size*k + l];
   }
 #ifdef ARCCORE_HAS_MULTI_SUBSCRIPT
   //! Valeur pour l'élément \a i,j,k,l
   constexpr const DataType& operator[](Integer i,Integer j,Integer k,Integer l) const
   {
-    ARCCORE_CHECK_AT(i,m_dim1_size);
-    ARCCORE_CHECK_AT(j,m_dim2_size);
-    ARCCORE_CHECK_AT(k,m_dim3_size);
-    ARCCORE_CHECK_AT(l,m_dim4_size);
+    ARCCORE_CHECK_AT4(i,j,k,l,m_dim1_size,m_dim2_size,m_dim3_size,m_dim4_size);
     return m_ptr[(m_dim234_size*i) + m_dim34_size*j + m_dim4_size*k + l];
   }
   //! Valeur pour l'élément \a i,j,k,l
   constexpr DataType& operator[](Integer i,Integer j,Integer k,Integer l)
   {
-    ARCCORE_CHECK_AT(i,m_dim1_size);
-    ARCCORE_CHECK_AT(j,m_dim2_size);
-    ARCCORE_CHECK_AT(k,m_dim3_size);
-    ARCCORE_CHECK_AT(l,m_dim4_size);
+    ARCCORE_CHECK_AT4(i,j,k,l,m_dim1_size,m_dim2_size,m_dim3_size,m_dim4_size);
     return m_ptr[(m_dim234_size*i) + m_dim34_size*j + m_dim4_size*k + l];
   }
 #endif
   //! Positionne la valeur pour l'élément \a i,j,k,l
   constexpr void setItem(Integer i,Integer j,Integer k,Integer l,const DataType& value)
   {
-    ARCCORE_CHECK_AT(i,m_dim1_size);
-    ARCCORE_CHECK_AT(j,m_dim2_size);
-    ARCCORE_CHECK_AT(k,m_dim3_size);
-    ARCCORE_CHECK_AT(l,m_dim4_size);
+    ARCCORE_CHECK_AT4(i,j,k,l,m_dim1_size,m_dim2_size,m_dim3_size,m_dim4_size);
     m_ptr[(m_dim234_size*i) + m_dim34_size*j + m_dim4_size*k + l] = value;
   }
  public:
@@ -193,37 +175,32 @@ class ConstArray4View
   //! Valeur pour l'élément \a i,j,k,l
   constexpr const DataType& operator()(Integer i,Integer j,Integer k,Integer l) const
   {
-    ARCCORE_CHECK_AT(i,m_dim1_size);
-    ARCCORE_CHECK_AT(j,m_dim2_size);
-    ARCCORE_CHECK_AT(k,m_dim3_size);
-    ARCCORE_CHECK_AT(l,m_dim4_size);
+    ARCCORE_CHECK_AT4(i,j,k,l,m_dim1_size,m_dim2_size,m_dim3_size,m_dim4_size);
     return m_ptr[(m_dim234_size*i) + m_dim34_size*j + m_dim4_size*k + l];
   }
 #ifdef ARCCORE_HAS_MULTI_SUBSCRIPT
   //! Valeur pour l'élément \a i,j,k,l
   constexpr const DataType& operator[](Integer i,Integer j,Integer k,Integer l) const
   {
-    ARCCORE_CHECK_AT(i,m_dim1_size);
-    ARCCORE_CHECK_AT(j,m_dim2_size);
-    ARCCORE_CHECK_AT(k,m_dim3_size);
-    ARCCORE_CHECK_AT(l,m_dim4_size);
+    ARCCORE_CHECK_AT4(i,j,k,l,m_dim1_size,m_dim2_size,m_dim3_size,m_dim4_size);
     return m_ptr[(m_dim234_size*i) + m_dim34_size*j + m_dim4_size*k + l];
   }
 #endif
   constexpr DataType item(Integer i,Integer j,Integer k,Integer l) const
   {
-    ARCCORE_CHECK_AT(i,m_dim1_size);
-    ARCCORE_CHECK_AT(j,m_dim2_size);
-    ARCCORE_CHECK_AT(k,m_dim3_size);
-    ARCCORE_CHECK_AT(l,m_dim4_size);
+    ARCCORE_CHECK_AT4(i,j,k,l,m_dim1_size,m_dim2_size,m_dim3_size,m_dim4_size);
     return m_ptr[(m_dim234_size*i) + m_dim34_size*j + m_dim4_size*k + l];
   }
  public:
+
   //! Pointeur sur la mémoire allouée.
   constexpr inline const DataType* unguardedBasePointer() { return m_ptr; }
+
   //! Pointeur sur la mémoire allouée.
   constexpr inline const DataType* data() { return m_ptr; }
+
  private:
+
   const DataType* m_ptr;
   Integer m_dim1_size; //!< Taille de la 1ere dimension
   Integer m_dim2_size; //!< Taille de la 2eme dimension

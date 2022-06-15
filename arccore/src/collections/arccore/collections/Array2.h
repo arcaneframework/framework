@@ -136,40 +136,34 @@ class Array2
   }
   DataType& operator()(Int64 i,Int64 j)
   {
-    ARCCORE_CHECK_AT(i,m_md->dim1_size);
-    ARCCORE_CHECK_AT(j,m_md->dim2_size);
+    ARCCORE_CHECK_AT2(i,j,m_md->dim1_size,m_md->dim2_size);
     return m_ptr[ (m_md->dim2_size*i) + j ];
   }
   ConstReferenceType operator()(Int64 i,Int64 j) const
   {
-    ARCCORE_CHECK_AT(i,m_md->dim1_size);
-    ARCCORE_CHECK_AT(j,m_md->dim2_size);
+    ARCCORE_CHECK_AT2(i,j,m_md->dim1_size,m_md->dim2_size);
     return m_ptr[ (m_md->dim2_size*i) + j ];
   }
 #ifdef ARCCORE_HAS_MULTI_SUBSCRIPT
   DataType& operator[](Int64 i,Int64 j)
   {
-    ARCCORE_CHECK_AT(i,m_md->dim1_size);
-    ARCCORE_CHECK_AT(j,m_md->dim2_size);
+    ARCCORE_CHECK_AT2(i,j,m_md->dim1_size,m_md->dim2_size);
     return m_ptr[ (m_md->dim2_size*i) + j ];
   }
   ConstReferenceType operator[](Int64 i,Int64 j) const
   {
-    ARCCORE_CHECK_AT(i,m_md->dim1_size);
-    ARCCORE_CHECK_AT(j,m_md->dim2_size);
+    ARCCORE_CHECK_AT2(i,j,m_md->dim1_size,m_md->dim2_size);
     return m_ptr[ (m_md->dim2_size*i) + j ];
   }
 #endif
   DataType item(Int64 i,Int64 j)
   {
-    ARCCORE_CHECK_AT(i,m_md->dim1_size);
-    ARCCORE_CHECK_AT(j,m_md->dim2_size);
+    ARCCORE_CHECK_AT2(i,j,m_md->dim1_size,m_md->dim2_size);
     return m_ptr[ (m_md->dim2_size*i) + j ];
   }
   void setItem(Int64 i,Int64 j,ConstReferenceType v)
   {
-    ARCCORE_CHECK_AT(i,m_md->dim1_size);
-    ARCCORE_CHECK_AT(j,m_md->dim2_size);
+    ARCCORE_CHECK_AT2(i,j,m_md->dim1_size,m_md->dim2_size);
     m_ptr[ (m_md->dim2_size*i) + j ] = v;
   }
   //! Elément d'indice \a i. Vérifie toujours les débordements
