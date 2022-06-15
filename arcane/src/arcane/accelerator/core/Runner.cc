@@ -25,6 +25,7 @@
 #include <stack>
 #include <map>
 #include <atomic>
+#include <mutex>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -94,6 +95,31 @@ class Runner::Impl
   };
 
  public:
+
+  //! Verrou pour le pool de RunQueue en multi-thread.
+  class Lock
+  {
+   public:
+    explicit Lock(Impl* p)
+    {
+      if (p->m_use_pool_mutex){
+        m_mutex = p->m_pool_mutex.get();
+        if (m_mutex)
+          m_mutex->lock();
+      }
+    }
+    ~Lock()
+    {
+      if (m_mutex)
+        m_mutex->unlock();
+    }
+    Lock(const Lock&) = delete;
+    Lock& operator=(const Lock&) = delete;
+   private:
+    std::mutex* m_mutex = nullptr;
+  };
+
+ public:
   ~Impl()
   {
     for( auto& x : m_run_queue_pool_map ){
@@ -109,6 +135,13 @@ class Runner::Impl
     _add(runner,eExecutionPolicy::CUDA);
     _add(runner,eExecutionPolicy::HIP);
   }
+  void setConcurrentQueueCreation(bool v)
+  {
+    m_use_pool_mutex = v;
+    if (!m_pool_mutex.get())
+      m_pool_mutex = std::make_unique<std::mutex>();
+  }
+  bool isConcurrentQueueCreation() const { return m_use_pool_mutex; }
  public:
   RunQueueImplStack* getPool(eExecutionPolicy exec_policy)
   {
@@ -123,6 +156,8 @@ class Runner::Impl
   bool m_is_init = false;
  private:
   std::map<eExecutionPolicy,RunQueueImplStack*> m_run_queue_pool_map;
+  std::unique_ptr<std::mutex> m_pool_mutex;
+  bool m_use_pool_mutex = false;
  private:
   void _freePool(RunQueueImplStack* s)
   {
@@ -168,11 +203,13 @@ _internalCreateOrGetRunQueueImpl(eExecutionPolicy exec_policy)
 
   auto pool = m_p->getPool(exec_policy);
 
-  // TODO: rendre thread-safe
-  if (!pool->empty()){
-    impl::RunQueueImpl* p = pool->top();
-    pool->pop();
-    return p;
+  {
+    Impl::Lock my_lock(m_p);
+    if (!pool->empty()){
+      impl::RunQueueImpl* p = pool->top();
+      pool->pop();
+      return p;
+    }
   }
   
   return pool->createRunQueue(RunQueueBuildInfo{});
@@ -203,9 +240,11 @@ void Runner::
 _internalFreeRunQueueImpl(impl::RunQueueImpl* p)
 {
   _checkIsInit();
-  // TODO: rendre thread-safe
-  if (p->_isInPool())
-    m_p->getPool(p->executionPolicy())->push(p);
+  {
+    Impl::Lock my_lock(m_p);
+    if (p->_isInPool())
+      m_p->getPool(p->executionPolicy())->push(p);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -234,6 +273,24 @@ bool Runner::
 isInitialized() const
 {
   return m_p->m_is_init;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void Runner::
+setConcurrentQueueCreation(bool v)
+{
+  m_p->setConcurrentQueueCreation(v);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool Runner::
+isConcurrentQueueCreation() const
+{
+  return m_p->isConcurrentQueueCreation();
 }
 
 /*---------------------------------------------------------------------------*/
