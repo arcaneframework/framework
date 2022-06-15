@@ -240,7 +240,7 @@ RunCommand::
 /*---------------------------------------------------------------------------*/
 
 void RunCommand::
-resetInfos()
+_resetInfos()
 {
   m_p->reset();
 }

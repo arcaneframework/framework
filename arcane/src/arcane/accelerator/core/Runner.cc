@@ -150,6 +150,17 @@ class Runner::Impl
       ARCANE_FATAL("No RunQueueImplStack for execution policy '{0}'",(int)exec_policy);
     return x->second;
   }
+  void addTime(double v)
+  {
+    // 'v' est en seconde. On le convertit en nanosecond.
+    Int64 x = static_cast<Int64>(v * 1.0e9);
+    m_cumulative_command_time += x;
+  }
+  double cumulativeCommandTime() const
+  {
+    Int64 x = m_cumulative_command_time;
+    return static_cast<double>(x) / 1.0e9;
+  }
  public:
   //TODO: mettre à None lorsqu'on aura supprimé Runner::setExecutionPolicy()
   eExecutionPolicy m_execution_policy = eExecutionPolicy::Sequential;
@@ -158,6 +169,11 @@ class Runner::Impl
   std::map<eExecutionPolicy,RunQueueImplStack*> m_run_queue_pool_map;
   std::unique_ptr<std::mutex> m_pool_mutex;
   bool m_use_pool_mutex = false;
+  /*!
+   * \brief Temps passé dans le noyau en nano-seconde. On utilise un 'Int64'
+   * car les atomiques sur les flottants ne sont pas supportés partout.
+   */
+  std::atomic<Int64> m_cumulative_command_time = 0;
  private:
   void _freePool(RunQueueImplStack* s)
   {
@@ -326,6 +342,24 @@ _checkIsInit() const
 {
   if (!m_p->m_is_init)
     ARCANE_FATAL("Runner is not initialized. Call method initialize() before");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void Runner::
+_addCommandTime(double v)
+{
+  m_p->addTime( v);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+double Runner::
+cumulativeCommandTime() const
+{
+  return m_p->cumulativeCommandTime();
 }
 
 /*---------------------------------------------------------------------------*/

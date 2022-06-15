@@ -53,6 +53,7 @@ class RunCommandImpl;
 class IReduceMemoryImpl;
 class RunQueueImpl;
 class IRunQueueEventImpl;
+class RunCommandLaunchInfo;
 }
 
 /*---------------------------------------------------------------------------*/

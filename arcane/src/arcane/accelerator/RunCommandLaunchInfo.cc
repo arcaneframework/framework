@@ -43,7 +43,7 @@ RunCommandLaunchInfo::
   // pendant le lancement du noyau de calcul.
   if (!m_is_notify_end_kernel_done)
     m_queue_stream->notifyEndKernel(m_command);
-  m_command.resetInfos();
+  m_command._resetInfos();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -63,6 +63,18 @@ _begin()
 /*---------------------------------------------------------------------------*/
 
 void RunCommandLaunchInfo::
+beginExecute()
+{
+  if (m_has_exec_begun)
+    ARCANE_FATAL("beginExecute() has to be called before endExecute()");
+  m_has_exec_begun = true;
+  m_begin_time = platform::getRealTime();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunCommandLaunchInfo::
 endExecute()
 {
   if (!m_has_exec_begun)
@@ -72,6 +84,9 @@ endExecute()
   RunQueue& queue = m_command._internalQueue();
   if (!queue.isAsync())
     m_queue_stream->barrier();
+  double end_time = platform::getRealTime();
+  double diff_time = end_time - m_begin_time;
+  queue._addCommandTime(diff_time);
 }
 
 /*---------------------------------------------------------------------------*/
