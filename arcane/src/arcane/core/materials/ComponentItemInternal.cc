@@ -5,51 +5,40 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariableRef.cc                                  (C) 2000-2012 */
+/* ComponentItemInternal.cc                                    (C) 2000-2022 */
 /*                                                                           */
-/* Référence à une variable sur un matériau du maillage.                      */
+/* Partie interne d'une maille matériau ou milieu.                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/NotImplementedException.h"
+#include "arcane/core/materials/ComponentItemInternal.h"
 
-#include "arcane/materials/MaterialVariableBuildInfo.h"
-#include "arcane/materials/IMeshMaterialMng.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+#include "arcane/utils/BadCastException.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-MaterialVariableBuildInfo::
-MaterialVariableBuildInfo(IMeshMaterialMng* mng,const String& name,int property)
-: VariableBuildInfo(mng->mesh(),name,property)
-, m_material_mng(mng)
+namespace Arcane::Materials
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ComponentItemInternal ComponentItemInternal::nullComponentItemInternal;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ComponentItemInternal::
+_throwBadCast(Int32 v)
+{
+  throw BadCastException(A_FUNCINFO,String::format("Can not cast v={0} to type 'Int16'",v));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MaterialVariableBuildInfo::
-MaterialVariableBuildInfo(IMeshMaterialMng* mng,const VariableBuildInfo& vbi)
-: VariableBuildInfo(vbi)
-, m_material_mng(mng)
-{
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

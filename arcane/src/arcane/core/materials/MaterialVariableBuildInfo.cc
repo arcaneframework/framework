@@ -5,45 +5,48 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ComponentItemListBuilder.cc                                 (C) 2000-2015 */
+/* MaterialVariableBuildInfo.cc                                (C) 2000-2022 */
 /*                                                                           */
-/* Classe d'aide à la construction d'une liste de ComponentItem.             */
+/* Informations pour une construire une variable matériau.                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/materials/ComponentItemListBuilder.h"
-#include "arcane/materials/MeshMaterialVariableIndexer.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+#include "arcane/core/materials/MaterialVariableBuildInfo.h"
+#include "arcane/core/materials/IMeshMaterialMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ComponentItemListBuilder::
-ComponentItemListBuilder(MeshMaterialVariableIndexer* var_indexer,
-                         Integer begin_index_in_partial)
-: m_component_index(var_indexer->index()+1)
-, m_index_in_partial(begin_index_in_partial)
-, m_indexer(var_indexer)
+namespace Arcane::Materials
 {
-  Integer reserve_size = 4000;
-  m_pure_matvar_indexes.reserve(reserve_size);
-  m_partial_matvar_indexes.reserve(reserve_size);
-  m_partial_local_ids.reserve(reserve_size);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MaterialVariableBuildInfo::
+MaterialVariableBuildInfo(IMeshMaterialMng* mng,const String& name,int property)
+: VariableBuildInfo(mng->mesh(),name,property)
+, m_material_mng(mng)
+{
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+MaterialVariableBuildInfo::
+MaterialVariableBuildInfo(IMeshMaterialMng* mng,const VariableBuildInfo& vbi)
+: VariableBuildInfo(vbi)
+, m_material_mng(mng)
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

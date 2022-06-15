@@ -5,53 +5,52 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MatVarIndex.cc                                              (C) 2000-2016 */
+/* IMeshMaterialVariableFactory.h                              (C) 2000-2022 */
 /*                                                                           */
-/* Index sur les variables matériaux.                                        */
+/* Interface d'une fabrique de variables matériaux.                          */
+/*---------------------------------------------------------------------------*/
+#ifndef ARCANE_CORE_MATERIALS_IMESHMATERIALVARIABLEFACTORY_H
+#define ARCANE_CORE_MATERIALS_IMESHMATERIALVARIABLEFACTORY_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/Iostream.h"
-
-#include "arcane/materials/MatVarIndex.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
+#include "arcane/ArcaneTypes.h"
+#include "arcane/core/materials/MaterialsCoreGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-std::ostream&
-operator<<(std::ostream& o,const MatVarIndex& mvi)
+namespace Arcane::Materials
 {
-  o << mvi.arrayIndex() << ":" << mvi.valueIndex();
-  return o;
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-std::ostream&
-operator<<(std::ostream& o,const ComponentItemLocalId& mvi)
+/*!
+ * \internal
+ * \brief Interface d'une fabrique de variables matériaux.
+ */
+class ARCANE_CORE_EXPORT IMeshMaterialVariableFactory
 {
-  o << mvi.localId();
-  return o;
-}
+ public:
+  
+  virtual ~IMeshMaterialVariableFactory() = default;
+
+ public:
+
+  //! Créé une variable matériau
+  virtual Ref<IMeshMaterialVariable>
+  createVariable(const MaterialVariableBuildInfo& build_info) =0;
+
+  //! Informations sur le type de conteneur créé
+  virtual DataStorageTypeInfo storageTypeInfo() const =0;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#endif  

@@ -5,97 +5,79 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ComponentItemVectorView.cc                                  (C) 2000-2015 */
+/* IMeshMaterialMng.cc                                         (C) 2000-2022 */
 /*                                                                           */
-/* Vue sur un vecteur sur des entités composants.                            */
+/* Interface du gestionnaire des matériaux et milieux d'un maillage.         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/NotImplementedException.h"
-#include "arcane/utils/ArgumentException.h"
+#include "arcane/core/materials/IMeshMaterialMng.h"
 
-#include "arcane/materials/ComponentItemVectorView.h"
-#include "arcane/materials/IMeshMaterial.h"
-#include "arcane/materials/IMeshEnvironment.h"
+#include "arcane/utils/Ref.h"
+#include "arcane/utils/FatalErrorException.h"
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+#include "arcane/IMesh.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-IMeshMaterial* MatItemVectorView::
-material() const
+namespace Arcane::Materials
 {
-  return static_cast<IMeshMaterial*>(component());
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace {
+IMeshMaterialMng::IFactory* global_mesh_material_mng_factory = nullptr;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IMeshEnvironment* EnvItemVectorView::
-environment() const
+void IMeshMaterialMng::
+_internalSetFactory(IFactory* f)
 {
-  return static_cast<IMeshEnvironment*>(component());
+  global_mesh_material_mng_factory = f;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ComponentItemVectorView ComponentItemVectorView::
-_subView(Integer begin,Integer size)
+Ref<IMeshMaterialMng> IMeshMaterialMng::
+getTrueReference(const MeshHandle& mesh_handle,bool is_create)
 {
-  Integer nb_total = nbItem();
-
-  // Pas d'éléments, retourne un tableau vide
-  if (nb_total==0){
-    return ComponentItemVectorView(m_component);
+  auto* f = global_mesh_material_mng_factory;
+  if (!f){
+    if (is_create)
+      ARCANE_FATAL("No factory for 'IMeshMaterialMng': You need to link with 'arcane_materials' library");
+    return {};
   }
-
-  if (begin>=nb_total){
-    // Indice de début supérieur au nombre d'éléments.
-    throw ArgumentException(A_FUNCINFO,
-                            String::format("Bad 'begin' value '{0}' total={1}",begin,nb_total));
-  }
-
-  ConstArrayView<ComponentItemInternal*> mn = m_items_internal_main_view.subView(begin,size);
-  ConstArrayView<MatVarIndex> mvs = matvarIndexes().subView(begin,size);
-
-  return ComponentItemVectorView(m_component,mvs,mn);
+  return f->getTrueReference(mesh_handle,is_create);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MatItemVectorView MatItemVectorView::
-_subView(Integer begin,Integer size)
+IMeshMaterialMng* IMeshMaterialMng::
+getReference(const MeshHandle& mesh_handle,bool create)
 {
-  return MatItemVectorView(component(),ComponentItemVectorView::_subView(begin,size));
+  return getTrueReference(mesh_handle,create).get();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-EnvItemVectorView EnvItemVectorView::
-_subView(Integer begin,Integer size)
+IMeshMaterialMng* IMeshMaterialMng::
+getReference(IMesh* mesh,bool is_create)
 {
-  return EnvItemVectorView(component(),ComponentItemVectorView::_subView(begin,size));
+  ARCANE_CHECK_POINTER(mesh);
+  return getReference(mesh->handle(),is_create);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

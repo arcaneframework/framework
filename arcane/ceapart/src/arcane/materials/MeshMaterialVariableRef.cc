@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariableRef.cc                                  (C) 2000-2016 */
+/* MeshMaterialVariableRef.cc                                  (C) 2000-2022 */
 /*                                                                           */
 /* Référence à une variable sur un matériau du maillage.                     */
 /*---------------------------------------------------------------------------*/
@@ -20,32 +20,29 @@
 
 #include "arcane/MeshVariableScalarRef.h"
 #include "arcane/VariableBuildInfo.h"
-
 #include "arcane/ArcaneException.h"
 
+#include "arcane/core/materials/IMeshMaterialMng.h"
+#include "arcane/core/materials/IMeshMaterial.h"
+
 #include "arcane/materials/MeshMaterialVariableRef.h"
-#include "arcane/materials/IMeshMaterialMng.h"
-#include "arcane/materials/IMeshMaterial.h"
 #include "arcane/materials/MeshMaterialVariable.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 MeshMaterialVariableRef::
 MeshMaterialVariableRef()
-: m_material_variable(0)
-, m_previous_reference(0)
-, m_next_reference(0)
-, m_global_variable(0)
+: m_material_variable(nullptr)
+, m_previous_reference(nullptr)
+, m_next_reference(nullptr)
+, m_global_variable(nullptr)
 , m_is_registered(false)
 {
 }
@@ -136,8 +133,7 @@ setNextReference(MeshMaterialVariableRef* v)
 void MeshMaterialVariableRef::
 _throwInvalid() const
 {
-  String msg("Utilisation d'une référence de variable non initialisée");
-  throw InternalErrorException(A_FUNCINFO,msg);
+  ARCANE_THROW(InternalErrorException,"Trying to use uninitialized variable reference");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -260,7 +256,7 @@ addMaterialDepend(const MeshMaterialVariableRef& var,const TraceInfo& tinfo)
 
 template<typename DataType> CellMaterialVariableScalarRef<DataType>::
 CellMaterialVariableScalarRef(const VariableBuildInfo& vb)
-: m_private_part(PrivatePartType::getReference(vb,nullptr,MatVarSpace::MaterialAndEnvironment))
+: m_private_part(TruePrivatePartType::getReference(vb,nullptr,MatVarSpace::MaterialAndEnvironment))
 , m_value(0)
 {
   _init();
@@ -271,7 +267,7 @@ CellMaterialVariableScalarRef(const VariableBuildInfo& vb)
 
 template<typename DataType> CellMaterialVariableScalarRef<DataType>::
 CellMaterialVariableScalarRef(const MaterialVariableBuildInfo& vb)
-: m_private_part(PrivatePartType::getReference(vb,MatVarSpace::MaterialAndEnvironment))
+: m_private_part(TruePrivatePartType::getReference(vb,MatVarSpace::MaterialAndEnvironment))
 , m_value(0)
 {
   _init();
@@ -304,8 +300,8 @@ CellMaterialVariableScalarRef<DataType>::
 _init()
 {
   if (m_private_part){
-    m_value = m_private_part->views();
-    _internalInit(m_private_part);
+    m_value = m_private_part->valuesView();
+    _internalInit(m_private_part->toMeshMaterialVariable());
   }
 }
 
@@ -337,7 +333,7 @@ template<typename DataType> void
 CellMaterialVariableScalarRef<DataType>::
 updateFromInternal()
 {
-  m_value = m_private_part->views();
+  m_value = m_private_part->valuesView();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -525,7 +521,7 @@ globalVariable()
 {
   GlobalVariableRefType* rt = m_private_part->globalVariableReference();
   if (!rt)
-    throw FatalErrorException(A_FUNCINFO,"null global variable");
+    ARCANE_FATAL("null global variable");
   return *rt;
 }
 
@@ -538,7 +534,7 @@ globalVariable() const
 {
   GlobalVariableRefType* rt = m_private_part->globalVariableReference();
   if (!rt)
-    throw FatalErrorException(A_FUNCINFO,"null global variable");
+    ARCANE_FATAL("null global variable");
   return *rt;
 }
 
@@ -551,8 +547,8 @@ globalVariable() const
 // TODO: fusionner avec la version scalaire
 template<typename DataType> CellMaterialVariableArrayRef<DataType>::
 CellMaterialVariableArrayRef(const VariableBuildInfo& vb)
-: m_private_part(PrivatePartType::getReference(vb,nullptr,MatVarSpace::MaterialAndEnvironment))
-, m_value(0)
+: m_private_part(TruePrivatePartType::getReference(vb,nullptr,MatVarSpace::MaterialAndEnvironment))
+, m_value(nullptr)
 {
   _init();
 }
@@ -563,8 +559,8 @@ CellMaterialVariableArrayRef(const VariableBuildInfo& vb)
 // TODO: fusionner avec la version scalaire
 template<typename DataType> CellMaterialVariableArrayRef<DataType>::
 CellMaterialVariableArrayRef(const MaterialVariableBuildInfo& vb)
-: m_private_part(PrivatePartType::getReference(vb,MatVarSpace::MaterialAndEnvironment))
-, m_value(0)
+: m_private_part(TruePrivatePartType::getReference(vb,MatVarSpace::MaterialAndEnvironment))
+, m_value(nullptr)
 {
   _init();
 }
@@ -576,7 +572,7 @@ CellMaterialVariableArrayRef(const MaterialVariableBuildInfo& vb)
 template<typename DataType>  CellMaterialVariableArrayRef<DataType>::
 CellMaterialVariableArrayRef(const CellMaterialVariableArrayRef<DataType>& rhs)
 : m_private_part(rhs.m_private_part)
-, m_value(0)
+, m_value(nullptr)
 {
   // Il faut incrémenter manuellement le compteur de référence car normalement
   // cela est fait dans getReference() mais ici on ne l'appelle pas
@@ -595,8 +591,8 @@ CellMaterialVariableArrayRef<DataType>::
 _init()
 {
   if (m_private_part){
-    m_value = m_private_part->views();
-    _internalInit(m_private_part);
+    m_value = m_private_part->valuesView();
+    _internalInit(m_private_part->toMeshMaterialVariable());
   }
 }
 
@@ -630,7 +626,7 @@ template<typename DataType> void
 CellMaterialVariableArrayRef<DataType>::
 updateFromInternal()
 {
-  m_value = m_private_part->views();
+  m_value = m_private_part->valuesView();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -642,7 +638,7 @@ globalVariable()
 {
   GlobalVariableRefType* rt = m_private_part->globalVariableReference();
   if (!rt)
-    throw FatalErrorException(A_FUNCINFO,"null global variable");
+    ARCANE_FATAL("null global variable");
   return *rt;
 }
 
@@ -655,7 +651,7 @@ globalVariable() const
 {
   GlobalVariableRefType* rt = m_private_part->globalVariableReference();
   if (!rt)
-    throw FatalErrorException(A_FUNCINFO,"null global variable");
+    ARCANE_FATAL("null global variable");
   return *rt;
 }
 
@@ -701,8 +697,7 @@ template class CellMaterialVariableArrayRef<Real3x3>;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

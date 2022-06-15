@@ -5,16 +5,19 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MatItemEnumerator.cc                                        (C) 2000-2016 */
+/* MatItemEnumerator.cc                                        (C) 2000-2022 */
 /*                                                                           */
 /* Enumérateurs sur les mailles materiaux.                                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/materials/ComponentItemVectorView.h"
-#include "arcane/materials/MatItemEnumerator.h"
-#include "arcane/materials/MatItemVector.h"
-#include "arcane/materials/EnvItemVector.h"
+#include "arcane/core/materials/MatItemEnumerator.h"
+
+#include "arcane/core/materials/ComponentItemVectorView.h"
+#include "arcane/core/materials/IMeshMaterialMng.h"
+#include "arcane/core/materials/IMeshBlock.h"
+#include "arcane/core/materials/MatItemVector.h"
+#include "arcane/core/materials/EnvItemVector.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -22,8 +25,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -416,8 +419,7 @@ create(EnvPartItemVectorView v)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,5 +1,7 @@
 set(CURRENT_SRC_PATH  ${Arcane_SOURCE_DIR}/src)
-set( ARCANE_SOURCES    AbstractCaseDocumentVisitor.cc
+
+set( ARCANE_SOURCES
+  AbstractCaseDocumentVisitor.cc
    AbstractCaseDocumentVisitor.h
    AbstractDataVisitor.cc
    AbstractDataVisitor.h
@@ -58,9 +60,51 @@ set( ARCANE_SOURCES    AbstractCaseDocumentVisitor.cc
    Connectivity.cc
    Connectivity.h
    ICartesianMeshGenerationInfo.h
+
    core/internal/IDataInternal.h
    core/internal/CartesianMeshGenerationInfo.h
    core/internal/CartesianMeshGenerationInfo.cc
+
+   core/materials/CellToAllEnvCellConverter.h
+   core/materials/MaterialsCoreGlobal.h
+   core/materials/MaterialsCoreGlobal.cc
+   core/materials/MatItem.h
+   core/materials/MatVarIndex.h
+   core/materials/MatVarIndex.cc
+   core/materials/IMeshMaterialVariable.h
+   core/materials/IMeshMaterialMng.cc
+   core/materials/IMeshMaterialMng.h
+   core/materials/IMeshBlock.h
+   core/materials/IMeshComponent.h
+   core/materials/IMeshEnvironment.h
+   core/materials/IMeshMaterial.h
+   core/materials/IMeshMaterialVariableFactoryMng.h
+   core/materials/IMeshMaterialVariableFactory.h
+   core/materials/MeshMaterialVariableIndexer.h
+   core/materials/MeshMaterialVariableIndexer.cc
+   core/materials/ComponentItemListBuilder.h
+   core/materials/ComponentItemListBuilder.cc
+   core/materials/ComponentItem.cc
+   core/materials/ComponentItem.h
+   core/materials/ComponentItemInternal.cc
+   core/materials/ComponentItemInternal.h
+   core/materials/ComponentItemVector.cc
+   core/materials/ComponentItemVector.h
+   core/materials/ComponentItemVectorView.cc
+   core/materials/ComponentItemVectorView.h
+   core/materials/ComponentPartItemVectorView.cc
+   core/materials/ComponentPartItemVectorView.h
+   core/materials/EnvItemVector.cc
+   core/materials/EnvItemVector.h
+   core/materials/MatItemVector.cc
+   core/materials/MatItemVector.h
+   core/materials/MatItemEnumerator.cc
+   core/materials/MatItemEnumerator.h
+   core/materials/MeshComponentPartData.cc
+   core/materials/MeshComponentPartData.h
+   core/materials/MaterialVariableBuildInfo.cc
+   core/materials/MaterialVariableBuildInfo.h
+
    Data.cc
    DataTypeDispatchingDataVisitor.cc
    DataTypeDispatchingDataVisitor.h

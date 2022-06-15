@@ -5,46 +5,59 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ComponentPartItemVectorView.cc                              (C) 2000-2017 */
+/* IMeshMaterialVariableFactoryMng.h                           (C) 2000-2022 */
 /*                                                                           */
-/* Vue sur un vecteur sur une partie des entités composants.                 */
+/* Interface du gestionnaire de fabrique de variables matériaux.             */
+/*---------------------------------------------------------------------------*/
+#ifndef ARCANE_CORE_MATERIALS_IMESHMATERIALVARIABLEFACTORYMNG_H
+#define ARCANE_CORE_MATERIALS_IMESHMATERIALVARIABLEFACTORYMNG_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/materials/ComponentPartItemVectorView.h"
-#include "arcane/materials/IMeshMaterial.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
+#include "arcane/ArcaneTypes.h"
+#include "arcane/core/materials/MaterialsCoreGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MatPartItemVectorView::
-MatPartItemVectorView(IMeshMaterial* material,const ComponentPartItemVectorView& view)
-: ComponentPartItemVectorView(view)
-, m_material(material)
+namespace Arcane::Materials
 {
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-EnvPartItemVectorView::
-EnvPartItemVectorView(IMeshEnvironment* env,const ComponentPartItemVectorView& view)
-: ComponentPartItemVectorView(view)
-, m_environment(env)
+/*!
+ * \internal
+ * \brief Interface du gestionnaire de fabrique de variables matériaux.
+ */
+class ARCANE_CORE_EXPORT IMeshMaterialVariableFactoryMng
 {
-}
+ public:
+  
+  virtual ~IMeshMaterialVariableFactoryMng() = default;
+
+ public:
+
+  //! Construit l'instance
+  virtual void build() =0;
+
+  //! Gestionnaire de trace associé
+  virtual ITraceMng* traceMng() const =0;
+
+  //! Enregistre la fabrique \a factory.
+  virtual void registerFactory(Ref<IMeshMaterialVariableFactory> factory) =0;
+
+  //! Créé une variable matériau.
+  virtual Ref<IMeshMaterialVariable>
+  createVariable(const String& storage_type,
+                 const MaterialVariableBuildInfo& build_info) =0;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#endif  

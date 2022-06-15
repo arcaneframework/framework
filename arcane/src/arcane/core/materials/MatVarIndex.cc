@@ -5,42 +5,46 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ComponentItem.cc                                            (C) 2000-2013 */
+/* MatVarIndex.cc                                              (C) 2000-2016 */
 /*                                                                           */
-/* Entités matériau et milieux.                                              */
+/* Index sur les variables matériaux.                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/TraceInfo.h"
+#include "arcane/core/materials/MatVarIndex.h"
 
-#include "arcane/materials/MatItem.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+#include "arcane/utils/Iostream.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ComponentCell::
-_badConversion(Int32 level,Int32 expected_level)
+namespace Arcane::Materials
 {
-  throw FatalErrorException(A_FUNCINFO,
-                            String::format("bad level for internal component cell level={0} expected={1}",
-                                           level,expected_level));
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+std::ostream&
+operator<<(std::ostream& o,const MatVarIndex& mvi)
+{
+  o << mvi.arrayIndex() << ":" << mvi.valueIndex();
+  return o;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+std::ostream&
+operator<<(std::ostream& o,const ComponentItemLocalId& mvi)
+{
+  o << mvi.localId();
+  return o;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -5,6 +5,7 @@
 %{
 #include "ArcaneSwigUtils.h"
 #include "arcane/materials/IMeshMaterialMng.h"
+#include "arcane/materials/IMeshBlock.h"
 #include "arcane/materials/IMeshEnvironment.h"
 #include "arcane/materials/IMeshMaterial.h"
 #include "arcane/materials/MatItemEnumerator.h"
@@ -43,6 +44,7 @@ using namespace Arcane::Materials;
 %ignore Arcane::Materials::IMeshMaterialVariable::dumpValues;
 %ignore Arcane::Materials::IMeshMaterialMng::getReference;
 
+%include arcane/core/materials/MaterialsCoreGlobal.h
 %include arcane/materials/MaterialsGlobal.h
 #undef ARCANE_MATERIALS_EXPORT
 #define ARCANE_MATERIALS_EXPORT
@@ -50,16 +52,16 @@ using namespace Arcane::Materials;
 %include ComponentItemVector.i
 
 ARCANE_STD_EXHANDLER
-%include arcane/materials/MeshMaterialVariableIndexer.h
-%include arcane/materials/IMeshBlock.h
-%include arcane/materials/IMeshComponent.h
-%include arcane/materials/IMeshMaterial.h
-%include arcane/materials/IMeshEnvironment.h
-%include arcane/materials/IMeshMaterialMng.h
-%include arcane/materials/CellToAllEnvCellConverter.h
+%include arcane/core/materials/MeshMaterialVariableIndexer.h
+%include arcane/core/materials/IMeshBlock.h
+%include arcane/core/materials/IMeshComponent.h
+%include arcane/core/materials/IMeshMaterial.h
+%include arcane/core/materials/IMeshEnvironment.h
+%include arcane/core/materials/IMeshMaterialMng.h
+%include arcane/core/materials/CellToAllEnvCellConverter.h
 %include MeshMaterialVariable.i
 %exception;
 
-%include arcane/materials/IMeshMaterialMng.h
+//%include arcane/materials/IMeshMaterialMng.h
 
 %template(IMeshMaterialMng_Ref) Arcane::Ref<Arcane::Materials::IMeshMaterialMng>;

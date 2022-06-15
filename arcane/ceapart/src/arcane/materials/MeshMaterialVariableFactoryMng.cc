@@ -5,98 +5,136 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* EnvCellVector.cc                                            (C) 2000-2016 */
+/* MeshMaterialVariableFactoryMng.cc                           (C) 2000-2022 */
 /*                                                                           */
-/* Vecteur sur les entités d'un milieu.                                      */
+/* Gestionnaire des fabriques de variables matériaux.                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/materials/EnvItemVector.h"
-#include "arcane/materials/MatItemEnumerator.h"
+#include "arcane/utils/TraceAccessor.h"
+#include "arcane/utils/FatalErrorException.h"
+
+#include "arcane/datatype/DataStorageTypeInfo.h"
+
+#include "arcane/core/materials/IMeshMaterialVariableFactory.h"
+#include "arcane/core/materials/IMeshMaterialVariableFactoryMng.h"
+
 #include "arcane/materials/IMeshMaterialMng.h"
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+#include <map>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-EnvCellVector::
-EnvCellVector(const CellGroup& group,IMeshEnvironment* environment)
-: ComponentItemVector(environment)
+namespace Arcane::Materials
 {
-  _build(group.view());
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class MeshMaterialVariableFactoryMng
+: public TraceAccessor
+, public IMeshMaterialVariableFactoryMng
+{
+ public:
+  
+  MeshMaterialVariableFactoryMng(IMeshMaterialMng* mm);
+  ~MeshMaterialVariableFactoryMng() override;
+
+ public:
+
+  void build() override;
+  ITraceMng* traceMng() const override;
+  void registerFactory(Ref<IMeshMaterialVariableFactory> factory) override;
+  Ref<IMeshMaterialVariable>
+  createVariable(const String& storage_type,
+                 const MaterialVariableBuildInfo& build_info) override;
+
+ private:
+
+  IMeshMaterialMng* m_material_mng;
+  std::map<String,Ref<IMeshMaterialVariableFactory>> m_factories;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MeshMaterialVariableFactoryMng::
+MeshMaterialVariableFactoryMng(IMeshMaterialMng* mm)
+: TraceAccessor(mm->traceMng())
+, m_material_mng(mm)
+{
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-EnvCellVector::
-EnvCellVector(CellVectorView view,IMeshEnvironment* environment)
-: ComponentItemVector(environment)
+MeshMaterialVariableFactoryMng::
+~MeshMaterialVariableFactoryMng()
 {
-  _build(view);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void EnvCellVector::
-_build(CellVectorView view)
+Ref<IMeshMaterialVariable> MeshMaterialVariableFactoryMng::
+createVariable(const String& storage_type,const MaterialVariableBuildInfo& build_info)
 {
-  UniqueArray<ComponentItemInternal*> internals[2];
-  UniqueArray<MatVarIndex> matvar_indexes[2];
-  IMeshComponent* my_component = _component();
-  ENUMERATE_ALLENVCELL(iallenvcell,_materialMng()->view(view)){
-    AllEnvCell all_env_cell = *iallenvcell;
-    ENUMERATE_CELL_ENVCELL(ienvcell,all_env_cell){
-      EnvCell ec = *ienvcell;
-      if (ec.component()==my_component){
-        MatVarIndex idx = ec._varIndex();
-        if (idx.arrayIndex()==0){
-          internals[0].add(ec.internal());
-          matvar_indexes[0].add(idx);
-        }
-        else{
-          internals[1].add(ec.internal());
-          matvar_indexes[1].add(idx);
-        }
-      }
-    }
-  }
-  this->_setItemsInternal(internals[0],internals[1]);
-  this->_setMatVarIndexes(matvar_indexes[0],matvar_indexes[1]);
+  auto x = m_factories.find(storage_type);
+  if (x==m_factories.end())
+    ARCANE_FATAL("Can not find mesh IMeshMaterialVariableFactory named={0}",storage_type);
+
+  return x->second->createVariable(build_info);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IMeshEnvironment* EnvCellVector::
-environment() const
+void MeshMaterialVariableFactoryMng::
+build()
 {
-  return static_cast<IMeshEnvironment*>(component());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+ITraceMng* MeshMaterialVariableFactoryMng::
+traceMng() const
+{
+  return TraceAccessor::traceMng();
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+void MeshMaterialVariableFactoryMng::
+registerFactory(Ref<IMeshMaterialVariableFactory> factory)
+{
+  DataStorageTypeInfo t = factory->storageTypeInfo();
+  m_factories.insert(std::make_pair(t.fullName(),factory));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" IMeshMaterialVariableFactoryMng*
+arcaneCreateMeshMaterialVariableFactoryMng(IMeshMaterialMng* mm)
+{
+  auto* x = new MeshMaterialVariableFactoryMng(mm);
+  return x;
+}
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//extern "C++" void
+//arcaneRegisterSimpleData(IMeshMaterialVariableFactoryMng* df);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

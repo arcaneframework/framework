@@ -188,6 +188,11 @@ class MeshMaterialMng
 
   bool isInMeshMaterialExchange() const override;
 
+  IMeshMaterialVariableFactoryMng* variableFactoryMng() const override
+  {
+    return m_variable_factory_mng;
+  }
+
  public:
 
   AllEnvData* allEnvData() { return m_all_env_data; }
@@ -240,13 +245,14 @@ class MeshMaterialMng
   FullNameVariableMap m_full_name_variable_map;
   VariableToMaterialVariableMap m_var_to_mat_var_map;
 
-  Properties* m_properties;
+  Properties* m_properties = nullptr;
   AllEnvData* m_all_env_data;
   Int64 m_timestamp; //!< Compteur du nombre de modifications des matériaux.
   IMeshMaterialVariableSynchronizer* m_all_cells_mat_env_synchronizer;
   IMeshMaterialVariableSynchronizer* m_all_cells_env_only_synchronizer;
   Integer m_synchronize_variable_version;
-  MeshMaterialExchangeMng* m_exchange_mng;
+  MeshMaterialExchangeMng* m_exchange_mng = nullptr;
+  IMeshMaterialVariableFactoryMng* m_variable_factory_mng = nullptr;
 
  private:
 

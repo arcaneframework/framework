@@ -17,8 +17,10 @@
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/Array.h"
 
-#include "arcane/materials/IMeshMaterialVariable.h"
-#include "arcane/materials/MatVarIndex.h"
+#include "arcane/core/materials/IMeshMaterialVariable.h"
+#include "arcane/core/materials/MatVarIndex.h"
+
+#include "arcane/materials/MaterialsGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -91,7 +93,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariable
   void setComputeFunction(IMeshMaterialVariableComputeFunction* v) override;
   IMeshMaterialVariableComputeFunction* computeFunction() override;
   void dependInfos(Array<VariableDependInfo>& infos,
-                           Array<MeshMaterialVariableDependInfo>& mat_infos) override;
+                   Array<MeshMaterialVariableDependInfo>& mat_infos) override;
   //@}
 
  public:
@@ -418,22 +420,54 @@ class ItemMaterialVariableScalar
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
+ * \brief Interface d'accès pour CellMaterialVariableScalarRef.
+ */
+template<typename ItemType,typename DataType>
+class IMeshMaterialVariableScalar
+{
+ public:
+
+  using VariableRefType = MeshVariableScalarRefT<ItemType,DataType>;
+
+ public:
+
+  virtual ~IMeshMaterialVariableScalar() = default;
+
+ public:
+
+  virtual ArrayView<DataType>* valuesView() = 0;
+  virtual void fillFromArray(IMeshMaterial* mat,ConstArrayView<DataType> values) =0;
+  virtual void fillFromArray(IMeshMaterial* mat,ConstArrayView<DataType> values,Int32ConstArrayView indexes) =0;
+  virtual void fillToArray(IMeshMaterial* mat,ArrayView<DataType> values) =0;
+  virtual void fillToArray(IMeshMaterial* mat,ArrayView<DataType> values,Int32ConstArrayView indexes) =0;
+  virtual void fillPartialValues(const DataType& value) =0;
+  virtual VariableRefType* globalVariableReference() const =0;
+  virtual void incrementReference() =0;
+  virtual IMeshMaterialVariable* toMeshMaterialVariable() =0;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
  * \ingroup ArcaneMaterials
  * \brief Variable scalaire sur un matériau du maillage.
  */
 template<typename ItemType,typename DataType>
 class MeshMaterialVariableScalar
 : public ItemMaterialVariableScalar<DataType>
+, public IMeshMaterialVariableScalar<ItemType,DataType>
 {
  public:
 	
-  typedef MeshMaterialVariableScalar<ItemType,DataType> ThatClass;
-  typedef ItemType ItemTypeTemplate;
+  using ThatClass = MeshMaterialVariableScalar<ItemType,DataType>;
+  using ItemTypeTemplate = ItemType;
 
-  typedef MeshVariableScalarRefT<ItemType,DataType> VariableRefType;
-  typedef typename ItemMaterialVariableScalar<DataType>::PrivatePartType PrivatePartType;
+  using BaseClass = ItemMaterialVariableScalar<DataType>;
+  using VariableRefType = MeshVariableScalarRefT<ItemType,DataType>;
+  using PrivatePartType = typename BaseClass::PrivatePartType;
 
-  typedef VariableReferenceGetter<ThatClass> ReferenceGetter;
+  using ReferenceGetter = VariableReferenceGetter<ThatClass>;
   friend ReferenceGetter;
 
  protected:
@@ -456,9 +490,28 @@ class MeshMaterialVariableScalar
 
  public:
 
-  VariableRefType* globalVariableReference() const
-  { return m_true_global_variable_ref; }
-  
+  VariableRefType* globalVariableReference() const final { return m_true_global_variable_ref; }
+  void incrementReference() final { BaseClass::incrementReference(); }
+  ArrayView<DataType>* valuesView() final { return BaseClass::views(); }
+  void fillFromArray(IMeshMaterial* mat,ConstArrayView<DataType> values) final
+  {
+    return BaseClass::fillFromArray(mat,values);
+  }
+  void fillFromArray(IMeshMaterial* mat,ConstArrayView<DataType> values,Int32ConstArrayView indexes) final
+  {
+    BaseClass::fillFromArray(mat,values,indexes);
+  }
+  void fillToArray(IMeshMaterial* mat,ArrayView<DataType> values) final
+  {
+    BaseClass::fillToArray(mat,values);
+  }
+  void fillToArray(IMeshMaterial* mat,ArrayView<DataType> values,Int32ConstArrayView indexes) final
+  {
+    BaseClass::fillToArray(mat,values,indexes);
+  }
+  void fillPartialValues(const DataType& value) final { BaseClass::fillPartialValues(value); }
+  IMeshMaterialVariable* toMeshMaterialVariable() final { return this; }
+
  protected:
   
  private:
@@ -553,20 +606,49 @@ class ItemMaterialVariableArray
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
+ * \brief Interface d'accès pour CellMaterialVariableArrayRef.
+ */
+template<typename ItemType,typename DataType>
+class IMeshMaterialVariableArray
+{
+ public:
+
+  using VariableRefType = MeshVariableArrayRefT<ItemType,DataType>;
+
+ public:
+
+  virtual ~IMeshMaterialVariableArray() = default;
+
+ public:
+
+  virtual Array2View<DataType>* valuesView() =0;
+  virtual VariableRefType* globalVariableReference() const =0;
+  virtual void incrementReference() =0;
+  virtual IMeshMaterialVariable* toMeshMaterialVariable() =0;
+
+  virtual void resize(Int32 dim2_size) =0;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
  * \ingroup ArcaneMaterials
  * \brief Variable tableau sur un matériau du maillage.
  */
 template<typename ItemType,typename DataType>
 class MeshMaterialVariableArray
 : public ItemMaterialVariableArray<DataType>
+, public IMeshMaterialVariableArray<ItemType,DataType>
 {
  public:
 
   typedef MeshMaterialVariableArray<ItemType,DataType> ThatClass;
   typedef ItemType ItemTypeTemplate;
 
+  using BaseClass = ItemMaterialVariableArray<DataType>;
   typedef MeshVariableArrayRefT<ItemType,DataType> VariableRefType;
-  typedef typename ItemMaterialVariableArray<DataType>::PrivatePartType PrivatePartType;
+  using PrivatePartType = typename BaseClass::PrivatePartType;
 
   typedef VariableReferenceGetter<ThatClass> ReferenceGetter;
   friend ReferenceGetter;
@@ -589,8 +671,11 @@ class MeshMaterialVariableArray
 
  public:
 
-  VariableRefType* globalVariableReference() const
-  { return m_true_global_variable_ref; }
+  void incrementReference() final { BaseClass::incrementReference(); }
+  Array2View<DataType>* valuesView() final { return BaseClass::views(); }
+  void resize(Int32 dim2_size) final { BaseClass::resize(dim2_size); }
+  VariableRefType* globalVariableReference() const final { return m_true_global_variable_ref; }
+  IMeshMaterialVariable* toMeshMaterialVariable() final { return this; }
 
  private:
 

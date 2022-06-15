@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariableRef.h                                   (C) 2000-2016 */
+/* MeshMaterialVariableRef.h                                   (C) 2000-2022 */
 /*                                                                           */
 /* Référence à une variable sur un matériau du maillage.                     */
 /*---------------------------------------------------------------------------*/
@@ -23,28 +23,18 @@
 #include "arcane/utils/Array2View.h"
 
 #include "arcane/Item.h"
-
 #include "arcane/VariableRef.h"
-#include "arcane/materials/MatItemEnumerator.h"
-#include "arcane/materials/IMeshMaterialVariable.h"
+
+#include "arcane/core/materials/IMeshMaterialVariable.h"
+#include "arcane/core/materials/MatItemEnumerator.h"
+
 #include "arcane/materials/MeshMaterialVariableComputeFunction.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-//class VariableBuildInfo;
-//template <typename ItemType,typename DataTypeT> class MeshVariableScalarRefT;
-//template <typename ItemType,typename DataTypeT> class MeshVariableArrayRefT;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-MATERIALS_BEGIN_NAMESPACE
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -219,9 +209,12 @@ template<typename DataType>
 class CellMaterialVariableScalarRef
 : public MeshMaterialVariableRef
 {
+  using TruePrivatePartType = MeshMaterialVariableScalar<Cell,DataType>;
+
  public:
 
-  typedef MeshMaterialVariableScalar<Cell,DataType> PrivatePartType;
+  using PrivatePartType = IMeshMaterialVariableScalar<Cell,DataType>;
+
   typedef Cell ItemType;
   typedef MeshVariableScalarRefT<ItemType,DataType> GlobalVariableRefType;
 
@@ -371,11 +364,13 @@ template<typename DataType>
 class CellMaterialVariableArrayRef
 : public MeshMaterialVariableRef
 {
+  using TruePrivatePartType = MeshMaterialVariableArray<Cell,DataType>;
+
  public:
 
-  typedef MeshMaterialVariableArray<Cell,DataType> PrivatePartType;
-  typedef Cell ItemType;
-  typedef MeshVariableArrayRefT<ItemType,DataType> GlobalVariableRefType;
+  using PrivatePartType = IMeshMaterialVariableArray<Cell,DataType>;
+  using ItemType = Cell;
+  using GlobalVariableRefType = MeshVariableArrayRefT<ItemType,DataType>;
 
  public:
 
@@ -546,8 +541,7 @@ typedef MaterialVariableCellArrayInt32 MaterialVariableCellArrayInteger;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

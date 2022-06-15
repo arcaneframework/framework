@@ -5,85 +5,30 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MatCellVector.cc                                            (C) 2000-2016 */
+/* ComponentItemVectorView.cc                                  (C) 2000-2022 */
 /*                                                                           */
-/* Vecteur sur les entités d'un matériau.                                    */
+/* Vue sur un vecteur sur des entités composants.                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/materials/MatItemVector.h"
-#include "arcane/materials/MatItemEnumerator.h"
-#include "arcane/materials/IMeshMaterialMng.h"
+#include "arcane/core/materials/ComponentItemVectorView.h"
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+#include "arcane/utils/NotImplementedException.h"
+#include "arcane/utils/ArgumentException.h"
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
+#include "arcane/core/materials/IMeshMaterial.h"
+#include "arcane/core/materials/IMeshEnvironment.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-MatCellVector::
-MatCellVector(const CellGroup& group,IMeshMaterial* material)
-: ComponentItemVector(material)
+namespace Arcane::Materials
 {
-  _build(group.view());
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MatCellVector::
-MatCellVector(CellVectorView view,IMeshMaterial* material)
-: ComponentItemVector(material)
-{
-  _build(view);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void MatCellVector::
-_build(CellVectorView view)
-{
-  UniqueArray<ComponentItemInternal*> internals[2];
-  UniqueArray<MatVarIndex> matvar_indexes[2];
-  IMeshComponent* my_component = _component();
-
-  ENUMERATE_ALLENVCELL(iallenvcell,_materialMng()->view(view)){
-    AllEnvCell all_env_cell = *iallenvcell;
-    ENUMERATE_CELL_ENVCELL(ienvcell,all_env_cell){
-      ENUMERATE_CELL_MATCELL(imatcell,(*ienvcell)){
-        MatCell mc = *imatcell;
-        if (mc.component()==my_component){
-          MatVarIndex idx = mc._varIndex();
-          if (idx.arrayIndex()==0){
-            internals[0].add(mc.internal());
-            matvar_indexes[0].add(idx);
-          }
-          else{
-            internals[1].add(mc.internal());
-            matvar_indexes[1].add(idx);
-          }
-        }
-      }
-    }
-  }
-  this->_setItemsInternal(internals[0],internals[1]);
-  this->_setMatVarIndexes(matvar_indexes[0],matvar_indexes[1]);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-IMeshMaterial* MatCellVector::
+IMeshMaterial* MatItemVectorView::
 material() const
 {
   return static_cast<IMeshMaterial*>(component());
@@ -92,11 +37,61 @@ material() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+IMeshEnvironment* EnvItemVectorView::
+environment() const
+{
+  return static_cast<IMeshEnvironment*>(component());
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ComponentItemVectorView ComponentItemVectorView::
+_subView(Integer begin,Integer size)
+{
+  Integer nb_total = nbItem();
+
+  // Pas d'éléments, retourne un tableau vide
+  if (nb_total==0){
+    return ComponentItemVectorView(m_component);
+  }
+
+  if (begin>=nb_total){
+    // Indice de début supérieur au nombre d'éléments.
+    ARCANE_THROW(ArgumentException,"Bad 'begin' value '{0}' total={1}",begin,nb_total);
+  }
+
+  ConstArrayView<ComponentItemInternal*> mn = m_items_internal_main_view.subView(begin,size);
+  ConstArrayView<MatVarIndex> mvs = matvarIndexes().subView(begin,size);
+
+  return ComponentItemVectorView(m_component,mvs,mn);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MatItemVectorView MatItemVectorView::
+_subView(Integer begin,Integer size)
+{
+  return MatItemVectorView(component(),ComponentItemVectorView::_subView(begin,size));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+EnvItemVectorView EnvItemVectorView::
+_subView(Integer begin,Integer size)
+{
+  return EnvItemVectorView(component(),ComponentItemVectorView::_subView(begin,size));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

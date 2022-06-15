@@ -5,43 +5,48 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ComponentItemInternal.cc                                    (C) 2000-2014 */
+/* MaterialsCoreGlobal.cc                                      (C) 2000-2022 */
 /*                                                                           */
-/* Partie interne d'une maille matériau ou milieu.                           */
+/* Déclarations générales des matériaux de Arcane.                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/BadCastException.h"
-#include "arcane/materials/ComponentItemInternal.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ComponentItemInternal ComponentItemInternal::nullComponentItemInternal;
+#include "arcane/core/materials/IMeshMaterialVariable.h"
+#include "arcane/core/materials/IMeshBlock.h"
+#include "arcane/core/materials/IMeshComponent.h"
+#include "arcane/core/materials/IMeshMaterial.h"
+#include "arcane/core/materials/IMeshEnvironment.h"
+#include "arcane/core/materials/MatVarIndex.h"
+#include "arcane/core/materials/MatItem.h"
+#include "arcane/core/materials/IEnumeratorTracer.h"
+#include "arcane/core/materials/IMeshMaterialVariableFactoryMng.h"
+#include "arcane/core/materials/IMeshMaterialVariableFactory.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ComponentItemInternal::
-_throwBadCast(Int32 v)
+namespace Arcane::Materials
 {
-  throw BadCastException(A_FUNCINFO,String::format("Can not cast v={0} to type 'Int16'",v));
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IEnumeratorTracer* IEnumeratorTracer::m_singleton = nullptr;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IEnumeratorTracer::
+_setSingleton(IEnumeratorTracer* tracer)
+{
+  delete m_singleton;
+  m_singleton = tracer;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
