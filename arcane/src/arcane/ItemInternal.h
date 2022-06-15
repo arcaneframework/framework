@@ -147,8 +147,6 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   : m_items(nullptr), m_nb_access_all(0), m_nb_access(0)
   {
     for( Integer i=0; i<MAX_ITEM_KIND; ++i ){
-      m_indexes_array[i] = nullptr;
-      m_nb_item_array[i] = nullptr;
       m_nb_item_null_data[i][0] = 0;
       m_nb_item_null_data[i][1] = 0;
       m_nb_item[i].setNull(&m_nb_item_null_data[i][1]);
@@ -296,12 +294,9 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
 
  private:
 
-  // Ces deux tableaux utilisent une vue modifiable par compatibilité avec les anciens
-  // mécanismes. Une fois que ceci auront été supprimés alors il sera
-  // constant
-  Int32ArrayView m_indexes[MAX_ITEM_KIND];
+  ConstArrayView<Int32> m_indexes[MAX_ITEM_KIND];
   Int32View m_nb_item[MAX_ITEM_KIND];
-  Int32ConstArrayView m_list[MAX_ITEM_KIND];
+  ConstArrayView<Int32> m_list[MAX_ITEM_KIND];
   Int32 m_max_nb_item[MAX_ITEM_KIND];
 
  public:
@@ -309,22 +304,10 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   MeshItemInternalList* m_items;
 
  private:
+
   // Compte le nombre d'accès pour vérification. A supprimer par la suite.
   mutable Int64 m_nb_access_all;
   mutable Int64 m_nb_access;
-
- public:
-
-  Int32ArrayView _mutableConnectivityIndex(Int32 item_kind) const
-  {
-    return m_indexes[item_kind];
-  }
-  Int32ArrayView _mutableConnectivityNbItem(Int32 item_kind) const
-  {
-    return m_nb_item[item_kind].toMutableView();
-  }
-  Int32Array* m_indexes_array[MAX_ITEM_KIND];
-  Int32Array* m_nb_item_array[MAX_ITEM_KIND];
 
  private:
 

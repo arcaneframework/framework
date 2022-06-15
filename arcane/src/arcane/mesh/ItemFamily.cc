@@ -235,11 +235,6 @@ ItemFamily::
 
   for( IIncrementalItemConnectivity* c : m_source_incremental_item_connectivities )
     delete c;
-
-  for( Integer i=0; i<ItemInternalConnectivityList::MAX_ITEM_KIND; ++i ){
-    delete m_item_connectivity_list.m_indexes_array[i];
-    delete m_item_connectivity_list.m_nb_item_array[i];
-  }
 }
 
 /*---------------------------------------------------------------------------*/
