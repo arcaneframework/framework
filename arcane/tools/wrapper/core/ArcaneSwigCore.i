@@ -405,15 +405,15 @@ namespace Arcane
 class IEntryPoint
 {
  public:
-  static const char* WComputeLoop;
-  static const char* WBuild;
-  static const char* WInit;
-  static const char* WContinueInit;
-  static const char* WStartInit;
-  static const char* WRestore;
-  static const char* WOnMeshChanged;
-  static const char* WOnMeshRefinement;
-  static const char* WExit;
+  static const char* const WComputeLoop;
+  static const char* const WBuild;
+  static const char* const WInit;
+  static const char* const WContinueInit;
+  static const char* const WStartInit;
+  static const char* const WRestore;
+  static const char* const WOnMeshChanged;
+  static const char* const WOnMeshRefinement;
+  static const char* const WExit;
   enum
   {
     PNone = 0,
@@ -422,7 +422,7 @@ class IEntryPoint
   };
  public:
   virtual ~IEntryPoint() {}
-  virtual const String& name() const =0;
+  virtual String name() const =0;
 };
 }
 
@@ -463,7 +463,7 @@ class EntryPoint : public IEntryPoint
   EntryPoint();
  public:
   static EntryPoint* create(const EntryPointBuildInfo& bi);
-  virtual const String& name() const;
+  virtual String name() const;
 };
 }
 

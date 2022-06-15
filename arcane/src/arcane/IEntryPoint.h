@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IEntryPoint.h                                               (C) 2000-2012 */
+/* IEntryPoint.h                                               (C) 2000-2022 */
 /*                                                                           */
 /* Interface du point d'entrée d'un module.                                  */
 /*---------------------------------------------------------------------------*/
@@ -20,11 +20,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
+namespace Arcane
+{
 class IModule;
 
 /*---------------------------------------------------------------------------*/
@@ -36,28 +33,29 @@ class IModule;
 class ARCANE_CORE_EXPORT IEntryPoint
 {
  public:
+
   /*! @name Point d'appel
     Endroit ou est utilisé le point d'entrée.
    */
   //@{
   //! appelé pendant la boucle de calcul
-  static const char* WComputeLoop;
+  static const char* const WComputeLoop;
   //! appelé pour la construction du module
-  static const char* WBuild;
+  static const char* const WBuild;
   //! appelé pendant l'initialisation
-  static const char* WInit;
+  static const char* const WInit;
   //! appelé pendant l'initialisation d'une reprise
-  static const char* WContinueInit;
+  static const char* const WContinueInit;
   //! appelé pendant l'initialisation d'un nouveau cas
-  static const char* WStartInit;
+  static const char* const WStartInit;
   //! appelé pour restaurer les variables lors d'un retour arrière
-  static const char* WRestore;
+  static const char* const WRestore;
   //! appelé après un changement de maillage
-  static const char* WOnMeshChanged;
+  static const char* const WOnMeshChanged;
   //! appelé après un raffinement de maillage
-  static const char* WOnMeshRefinement;
+  static const char* const WOnMeshRefinement;
   //!< appelé lors de la terminaison du code.
-  static const char* WExit;
+  static const char* const WExit;
   //@}
 
   /*!
@@ -79,88 +77,75 @@ class ARCANE_CORE_EXPORT IEntryPoint
      * propriété sera toujours chargé, et que le point d'entrée sera ajouté
      * à la liste des points d'entrées s'exécutant en fin de boucle en temps.
      */
-    PAutoLoadEnd   = 2
+    PAutoLoadEnd = 2
   };
 
  public:
 
-  virtual ~IEntryPoint() {} //!< Libère les ressources
+  virtual ~IEntryPoint() = default; //!< Libère les ressources
 
  public:
-	
-  //! Retourne le nom du point d'entrée
-  virtual const String& name() const =0;
 
-  //! Nom complete du point d'entrée. Ce nom est unique
-  virtual const String& fullName() const =0;
+  //! Retourne le nom du point d'entrée.
+  virtual String name() const = 0;
+
+  //! Nom complet (avec le module) du point d'entrée. Ce nom est unique.
+  virtual String fullName() const = 0;
 
  public:
 
   //! Retourne le gestionnaire principal
-  virtual ISubDomain* subDomain() const =0;
+  ARCANE_DEPRECATED_REASON("Y2022: Do not use this method. Try to get 'ISubDomain' from another way")
+  virtual ISubDomain* subDomain() const = 0;
 
   //! Retourne le module associé au point d'entrée
-  virtual IModule* module() const =0;
+  virtual IModule* module() const = 0;
 
   //! Appelle le point d'entrée
-  virtual void executeEntryPoint() =0;
+  virtual void executeEntryPoint() = 0;
 
   /*!
-   * \brief Temps d'exécution passé dans ce point d'entrée en (en milli-s)
-   * \deprecated Utiliser totalCPUTime() à la place.
+   * \brief Consommation CPU totale passé dans ce point d'entrée en (en milli-s).
+   *
+   * La résolution de cette méthode est assez faible. Il est en préférable d'utiliser
+   * le temps réel totalElapsedTime().
    */
-  ARCANE_DEPRECATED_118 virtual Real totalTime() const =0;
-
-  /*!
-   * \brief Temps d'exécution de la dernière itération (en milli-s).
-   * \deprecated Utiliser lsatCPUTime() à la place.
-   */
-  ARCANE_DEPRECATED_118 virtual Real lastTime() const =0;
-
-  /*!
-   * \brief Consommation CPU totale passé dans ce point d'entrée en (en milli-s)
-   */
-  virtual Real totalCPUTime() const =0;
+  virtual Real totalCPUTime() const = 0;
 
   /*!
    * \brief Consommation CPU de la dernière itération (en milli-s).
+   *
+   * La résolution de cette méthode est assez faible. Il est en préférable d'utiliser
+   * le temps réel elapsedTime().
    */
-  virtual Real lastCPUTime() const =0;
+  virtual Real lastCPUTime() const = 0;
 
-  /*!
-   * \brief Temps d'exécution passé (temps horloge) dans ce point d'entrée en (en milli-s)
-   */
-  virtual Real totalElapsedTime() const =0;
+  //! Temps d'exécution passé (temps horloge) dans ce point d'entrée en (en milli-s)
+  virtual Real totalElapsedTime() const = 0;
 
-  /*!
-   * \brief Temps d'exécution (temps horloge) de la dernière itération (en milli-s).
-   */
-  virtual Real lastElapsedTime() const =0;
+  //! Temps d'exécution (temps horloge) de la dernière itération (en milli-s).
+  virtual Real lastElapsedTime() const = 0;
 
-  /*!
-   * \brief Temps total associé au timer \a type.
-   */
-  virtual Real totalTime(Timer::eTimerType type) const =0;
+  //! Temps total associé au timer \a type.
+  virtual Real totalTime(Timer::eTimerType type) const = 0;
 
-  /*!
-   * \brief Temps d'exécution de la dernière itération associé au timer \a type.
-   */
-  virtual Real lastTime(Timer::eTimerType type) const =0;
+  //! Temps d'exécution de la dernière itération associé au timer \a type.
+  virtual Real lastTime(Timer::eTimerType type) const = 0;
 
   //! Retourne le nombre de fois que le point d'entrée a été exécuté
-  virtual Integer nbCall() const =0;
+  virtual Integer nbCall() const = 0;
 
   //! Retourne l'endroit ou est appelé le point d'entrée.
-  virtual const String& where() const =0;
+  virtual String where() const = 0;
 
   //! Retourne les propriétés du point d'entrée.
-  virtual int property() const =0;
+  virtual int property() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

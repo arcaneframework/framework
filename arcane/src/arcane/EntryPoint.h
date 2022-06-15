@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* EntryPoint.h                                                (C) 2000-2019 */
+/* EntryPoint.h                                                (C) 2000-2022 */
 /*                                                                           */
 /* Point d'entrée d'un module.                                               */
 /*---------------------------------------------------------------------------*/
@@ -21,11 +21,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
+namespace Arcane
+{
 class Timer;
 
 /*---------------------------------------------------------------------------*/
@@ -93,21 +90,8 @@ class ARCANE_CORE_EXPORT EntryPoint
 {
  public:
 
-  /*!
-   * \brief Construit un point d'entrée.
-   *
-   * \param module module associé à la fonction
-   * \param where endroit ou est appelé le point d'entrée
-   * \param property propriétés du point d'entrée (voir IEntryPoint)
-   * \param name nom du point d'entrée
-   * \param caller encapsulation de la méthode à appeler.
-   *
-   * \deprecated Utiliser EntryPoint::create() ou addEntryPoint() à la place.
-   */
-  ARCANE_DEPRECATED_220 EntryPoint(IModule* module,const String& name,IFunctor* caller,
-                                   const String& where,int property);
   //! Libère les ressources
-  virtual ~EntryPoint();
+  ~EntryPoint() override;
 
  public:
 
@@ -122,22 +106,20 @@ class ARCANE_CORE_EXPORT EntryPoint
 
  public:
 	
-  virtual const String& name() const { return m_name; }
-  virtual const String& fullName() const { return m_full_name; }
-  virtual ISubDomain* subDomain() const { return m_sub_domain; }
-  virtual IModule* module() const { return m_module; }
-  virtual void executeEntryPoint();
-  virtual Real lastTime() const;
-  virtual Real totalTime() const;
-  virtual Real totalCPUTime() const;
-  virtual Real lastCPUTime() const;
-  virtual Real totalElapsedTime() const;
-  virtual Real lastElapsedTime() const;
-  virtual Real totalTime(Timer::eTimerType type) const;
-  virtual Real lastTime(Timer::eTimerType type) const;
-  virtual Integer nbCall() const { return m_nb_call; }
-  virtual const String& where() const { return m_where; }
-  virtual int property() const { return m_property; }
+  String name() const override { return m_name; }
+  String fullName() const override { return m_full_name; }
+  ISubDomain* subDomain() const override { return m_sub_domain; }
+  IModule* module() const override { return m_module; }
+  void executeEntryPoint() override;
+  Real totalCPUTime() const override;
+  Real lastCPUTime() const override;
+  Real totalElapsedTime() const override;
+  Real lastElapsedTime() const override;
+  Real totalTime(Timer::eTimerType type) const override;
+  Real lastTime(Timer::eTimerType type) const override;
+  Integer nbCall() const override { return m_nb_call; }
+  String where() const override { return m_where; }
+  int property() const override { return m_property; }
 
  private:
 
@@ -155,13 +137,16 @@ class ARCANE_CORE_EXPORT EntryPoint
 
  private:
 
-  EntryPoint(const EntryPointBuildInfo& build_info);
+  explicit EntryPoint(const EntryPointBuildInfo& build_info);
+
+ public:
+
   EntryPoint(const EntryPoint&) =delete;
   void operator=(const EntryPoint&) =delete;
 
  private:
 
-  void _getAddressForHyoda(void* =NULL);
+  void _getAddressForHyoda(void* =nullptr);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -213,7 +198,7 @@ addEntryPoint(ModuleType* module,const String& name,void (ModuleType::*func)(),
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
