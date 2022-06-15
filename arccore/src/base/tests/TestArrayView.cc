@@ -17,6 +17,37 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+TEST(Array2View,Misc)
+{
+  using namespace Arccore;
+  int nb_x = 3;
+  int nb_y = 4;
+  std::vector<Int32> buf(nb_x*nb_y);
+  for( size_t i=0, n=buf.size(); i<n; ++i )
+    buf[i] = (Int32)(i+1);
+
+  ConstArray2View<Int32> v(buf.data(),nb_x,nb_y);
+  Integer global_index = 0;
+  for( Integer x=0, xn=v.dim1Size(); x<xn; ++x ){
+    for( Integer y=0, yn=v.dim2Size(); y<yn; ++y ){
+      ++global_index;
+      Int32 val1 = v[x][y];
+      Int32 val2 = v.item(x,y);
+      std::cout  << " V=" << val1 << " x=" << x << " y=" << y;
+      ASSERT_TRUE(val1==val2) << "Difference values v1=" << val1 << " v2=" << val2;
+      ASSERT_TRUE(val1==global_index) << "Bad value v1=" << val1 << " expected=" << global_index;
+      ASSERT_EQ(v(x,y),val1);
+#ifdef ARCCORE_HAS_MULTI_SUBSCRIPT
+      bool is_ok = v[x,y]==val1;
+      ASSERT_TRUE(is_ok);
+#endif
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 TEST(Array3View,Misc)
 {
   using namespace Arccore;
@@ -38,6 +69,11 @@ TEST(Array3View,Misc)
         std::cout  << " V=" << val1 << " x=" << x << " y=" << y << " z=" << z << '\n';
         ASSERT_TRUE(val1==val2) << "Difference values v1=" << val1 << " v2=" << val2;
         ASSERT_TRUE(val1==global_index) << "Bad value v1=" << val1 << " expected=" << global_index;
+        ASSERT_EQ(v(x,y,z),val1);
+#ifdef ARCCORE_HAS_MULTI_SUBSCRIPT
+        bool is_ok = v[x,y,z] == val1;
+        ASSERT_TRUE(is_ok);
+#endif
       }
     }
   }
@@ -69,6 +105,11 @@ TEST(Array4View,Misc)
           std::cout << " V=" << val1 << " x=" << x << " y=" << y << " z=" << z << " a=" << a << '\n';
           ASSERT_TRUE(val1==val2) << "Difference values v1=" << val1 << " v2=" << val2;
           ASSERT_TRUE(val1==global_index) << "Bad value v1=" << val1 << " expected=" << global_index;
+          ASSERT_EQ(v(x,y,z,a),val1);
+#ifdef ARCCORE_HAS_MULTI_SUBSCRIPT
+          bool is_ok = v[x,y,z,a] == val1;
+          ASSERT_TRUE(is_ok);
+#endif
         }
       }
     }
@@ -320,7 +361,7 @@ template<typename SpanType,typename ConstSpanType> void
 _testSpan2StdArray()
 {
   using namespace Arccore;
-  std::array<Int64,0> v0;
+
   std::array<Int64,6> v1 { 5, 7, 9, 32, -5, -6 };
   std::array<Int64,5> v2 { 1, 9, 32, 41, -5 };
   std::array<const Int64,12> v3 { 12, 33, 47, 55, 36, 13, 9, 7, 5, 1, 45, 38 };
@@ -329,6 +370,15 @@ _testSpan2StdArray()
   SpanType s1 { v1.data(), 3, 2 };
   SpanType s2 { v2.data(), 1, 5 };
   ConstSpanType s3 { v3.data(), 4, 3 };
+
+  ASSERT_EQ(s1[2][1],s1(2,1));
+
+#ifdef ARCCORE_HAS_MULTI_SUBSCRIPT
+  {
+    bool is_ok = s1[2,1]==s1(2,1);
+    ASSERT_TRUE(is_ok);
+  }
+#endif
 
   {
     SpanType span0 { s0 };

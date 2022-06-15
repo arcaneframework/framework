@@ -122,11 +122,11 @@ endif()
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 # Version du standard C++ qu'on souhaite utiliser.
-# Les valeurs valides sont 17 ou 20
+# Les valeurs valides sont 17, 20 ou 23
 if (NOT DEFINED ARCCORE_CXX_STANDARD)
   set(ARCCORE_CXX_STANDARD 17)
 endif()
-set (ARCCORE_CXX_STANDARD_LIST 17 20)
+set (ARCCORE_CXX_STANDARD_LIST 17 20 23)
 if (NOT ${ARCCORE_CXX_STANDARD} IN_LIST ARCCORE_CXX_STANDARD_LIST)
   message(FATAL_ERROR "Invalid value for '${ARCCORE_CXX_STANDARD}' for ARCCORE_CXX_STANDARD."
     " Valid values are '${ARCCORE_CXX_STANDARD_LIST}'")

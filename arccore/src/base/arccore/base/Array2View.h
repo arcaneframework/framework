@@ -94,6 +94,22 @@ class Array2View
     ARCCORE_CHECK_AT(j,m_dim2_size);
     return m_ptr[(m_dim2_size*i) + j];
   }
+#ifdef ARCCORE_HAS_MULTI_SUBSCRIPT
+  //! Valeur de l'élément [\a i][\a j]
+  constexpr const DataType operator[](Integer i,Integer j) const
+  {
+    ARCCORE_CHECK_AT(i,m_dim1_size);
+    ARCCORE_CHECK_AT(j,m_dim2_size);
+    return m_ptr[(m_dim2_size*i) + j];
+  }
+  //! Valeur de l'élément [\a i][\a j]
+  constexpr DataType& operator[](Integer i,Integer j)
+  {
+    ARCCORE_CHECK_AT(i,m_dim1_size);
+    ARCCORE_CHECK_AT(j,m_dim2_size);
+    return m_ptr[(m_dim2_size*i) + j];
+  }
+#endif
 
  public:
   /*!
@@ -157,6 +173,15 @@ class ConstArray2View
     ARCCORE_CHECK_AT(j,m_dim2_size);
     return m_ptr[(m_dim2_size*i) + j];
   }
+#ifdef ARCCORE_HAS_MULTI_SUBSCRIPT
+  //! Valeur de l'élément [\a i][\a j]
+  constexpr const DataType operator[](Integer i,Integer j) const
+  {
+    ARCCORE_CHECK_AT(i,m_dim1_size);
+    ARCCORE_CHECK_AT(j,m_dim2_size);
+    return m_ptr[(m_dim2_size*i) + j];
+  }
+#endif
  public:
   /*!
    * \brief Pointeur sur la mémoire allouée.

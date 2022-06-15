@@ -425,6 +425,12 @@ class AbstractArray
     ARCCORE_CHECK_AT(i,m_md->size);
     return m_ptr[i];
   }
+  //! Elément d'indice \a i
+  ConstReferenceType operator()(Int64 i) const
+  {
+    ARCCORE_CHECK_AT(i,m_md->size);
+    return m_ptr[i];
+  }
  private:
   using AbstractArrayBase::m_meta_data;
  protected:
@@ -1089,6 +1095,17 @@ class Array
   }
   //! Elément d'indice \a i
   T& operator[](Int64 i)
+  {
+    ARCCORE_CHECK_AT(i,m_md->size);
+    return m_ptr[i];
+  }
+  ConstReferenceType operator()(Int64 i) const
+  {
+    ARCCORE_CHECK_AT(i,m_md->size);
+    return m_ptr[i];
+  }
+  //! Elément d'indice \a i
+  T& operator()(Int64 i)
   {
     ARCCORE_CHECK_AT(i,m_md->size);
     return m_ptr[i];
