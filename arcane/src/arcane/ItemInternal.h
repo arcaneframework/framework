@@ -21,6 +21,7 @@
 #include "arcane/ItemSharedInfo.h"
 #include "arcane/ItemUniqueId.h"
 #include "arcane/ItemLocalId.h"
+#include "arcane/ItemConnectivityContainerView.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -48,16 +49,6 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * Déclare temporairement les classes gérant les anciens accesseurs qui ont
- * besoin d'avoir accès aux méthodes privées de 'ItemInternal'.
- */
-namespace Arcane::mesh
-{
-class StandardItemFamilyCompactPolicy;
-class ParticleFamilyCompactPolicy;
-class NodeFamily;
-}
 
 namespace Arcane
 {
@@ -100,28 +91,29 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
 #endif
       return m_data[index];
     }
-    void operator=(Int32ArrayView v)
+    void operator=(ConstArrayView<Int32> v)
     {
       m_data = v.data();
       m_size = v.size();
     }
     // Il faut que data[NULL_ITEM_LOCAL_ID] soit valide.
-    void setNull(Int32* data)
+    // Il faut donc que (data-1) pointe vers une adresse valide
+    void setNull(const Int32* data)
     {
       m_data = data;
       m_size = 0;
     }
-    operator Int32ConstArrayView() const
+    operator ConstArrayView<Int32>() const
     {
-      return Int32ConstArrayView(m_size,m_data);
+      return ConstArrayView<Int32>(m_size,m_data);
     }
-    Int32ArrayView toMutableView() const
+    operator SmallSpan<const Int32>() const
     {
-      return Int32ArrayView(m_size,m_data);
+      return SmallSpan<const Int32>(m_data,m_size);
     }
    private:
     Int32 m_size;
-    Int32* m_data;
+    const Int32* m_data;
   };
 
  public:
@@ -182,45 +174,65 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   Int64 nbAccess() const { return m_nb_access; }
   //! Nombre d'appel à itemLocalIds()
   Int64 nbAccessAll() const { return m_nb_access_all; }
+
+ public:
+
   //! Positionne le tableau d'index des connectivités
-  void setConnectivityIndex(Int32 item_kind,Int32ArrayView v)
+  void setConnectivityIndex(Int32 item_kind,ConstArrayView<Int32> v)
   {
     m_indexes[item_kind] = v;
   }
   //! Positionne le tableau contenant la liste des connectivités
-  void setConnectivityList(Int32 item_kind,Int32ConstArrayView v)
+  void setConnectivityList(Int32 item_kind,ConstArrayView<Int32> v)
   {
     m_list[item_kind] = v;
   }
   //! Positionne le tableau contenant le nombre d'entités connectées.
-  void setConnectivityNbItem(Int32 item_kind,Int32ArrayView v)
+  void setConnectivityNbItem(Int32 item_kind,ConstArrayView<Int32> v)
   {
     m_nb_item[item_kind] = v;
   }
+
+ public:
+
   //! Positionne le nombre maximum d'entités connectées.
   void setMaxNbConnectedItem(Int32 item_kind,Int32 v)
   {
     m_max_nb_item[item_kind] = v;
   }
+
+ public:
+
   //! Tableau d'index des connectivités pour les entités de genre \a item_kind
+  ARCANE_DEPRECATED_REASON("Y2022: Use containerView() instead")
   Int32ConstArrayView connectivityIndex(Int32 item_kind) const
   {
     return m_indexes[item_kind];
   }
   //! Tableau contenant la liste des connectivités pour les entités de genre \a item_kind
+  ARCANE_DEPRECATED_REASON("Y2022: Use containerView() instead")
   Int32ConstArrayView connectivityList(Int32 item_kind) const
   {
     return m_list[item_kind];
   }
   //! Tableau contenant le nombre d'entités connectées pour les entités de genre \a item_kind
+  ARCANE_DEPRECATED_REASON("Y2022: Use containerView() instead")
   Int32ConstArrayView connectivityNbItem(Int32 item_kind) const
   {
     return m_nb_item[item_kind];
   }
+
+ public:
+
   //! Nombre maximum d'entités connectées.
   Int32 maxNbConnectedItem(Int32 item_kind) const
   {
     return m_max_nb_item[item_kind];
+  }
+
+  ItemConnectivityContainerView containerView(Int32 item_kind) const
+  {
+    return { m_list[item_kind], m_indexes[item_kind], m_nb_item[item_kind] };
   }
 
  public:
@@ -337,9 +349,6 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
  */
 class ARCANE_CORE_EXPORT ItemInternal
 {
-  friend class Arcane::mesh::StandardItemFamilyCompactPolicy;
-  friend class Arcane::mesh::ParticleFamilyCompactPolicy;
-  friend class Arcane::mesh::NodeFamily;
  public:
   enum
   { // L'affichage 'lisible' des flags est implémenté dans ItemPrinter

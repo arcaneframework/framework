@@ -129,22 +129,8 @@ class ARCANE_MESH_EXPORT ItemConnectivitySelectorT
     if (m_item_connectivity_index<0)
       return;
     auto x = m_item_connectivity_list;
-    auto current_list = x->connectivityList(m_item_connectivity_index);
-    auto ref_list = m_custom_connectivity->connectivityList();
-    auto current_indexes = x->connectivityIndex(m_item_connectivity_index);
-    auto ref_indexes = m_custom_connectivity->connectivityIndex();
-    auto* current_list_ptr = current_list.data();
-    auto* ref_list_ptr = ref_list.data();
-    if (current_list_ptr!=ref_list_ptr)
-      ARCANE_FATAL("Bad list base pointer current={0} ref={1}",current_list_ptr,ref_list_ptr);
-    if (current_list.size()!=ref_list.size())
-      ARCANE_FATAL("Bad list size current={0} ref={1}",current_list.size(),ref_list.size());
-    auto* current_indexes_ptr = current_indexes.data();
-    auto* ref_indexes_ptr = ref_indexes.data();
-    if (current_indexes_ptr!=ref_indexes_ptr)
-      ARCANE_FATAL("Bad indexes base pointer current={0} ref={1}",current_indexes_ptr,ref_indexes_ptr);
-    if (current_indexes.size()!=ref_indexes.size())
-      ARCANE_FATAL("Bad indexes size current={0} ref={1}",current_indexes.size(),ref_indexes.size());
+    ItemConnectivityContainerView ref_con_view = m_custom_connectivity->connectivityContainerView();
+    x->containerView(m_item_connectivity_index).checkSame(ref_con_view);
   }
 
   void compactConnectivities() override

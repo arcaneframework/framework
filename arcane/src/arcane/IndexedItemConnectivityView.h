@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IndexedItemConnectivityView.h                               (C) 2000-2021 */
+/* IndexedItemConnectivityView.h                               (C) 2000-2022 */
 /*                                                                           */
 /* Vues sur les connectivités utilisant des index.                           */
 /*---------------------------------------------------------------------------*/
@@ -34,6 +34,19 @@ namespace Arcane
 class ARCANE_CORE_EXPORT IndexedItemConnectivityViewBase
 {
  public:
+
+  IndexedItemConnectivityViewBase() = default;
+  IndexedItemConnectivityViewBase(ItemConnectivityContainerView container_view,
+                                  eItemKind source_kind,eItemKind target_kind)
+  : m_nb_item(container_view.m_nb_item), m_indexes(container_view.m_indexes), m_list_data(container_view.m_list)
+  , m_source_kind(source_kind), m_target_kind(target_kind)
+  {
+  }
+
+ public:
+
+  //! Nombre d'entités source
+  constexpr ARCCORE_HOST_DEVICE Int32 nbSourceItem() const { return m_nb_item.size(); }
   //! Nombre d'entités connectées à l'entité \a lid
   ARCCORE_HOST_DEVICE Int32 nbItem(ItemLocalId lid) const { return m_nb_item[lid]; }
   //! Liste des entités connectées à l'entité \a lid
@@ -44,8 +57,9 @@ class ARCANE_CORE_EXPORT IndexedItemConnectivityViewBase
   }
   eItemKind sourceItemKind() const { return m_source_kind; }
   eItemKind targetItemKind() const { return m_target_kind; }
- public:
+
   //! Initialise la vue
+  ARCANE_DEPRECATED_REASON("Y2022: This method is internal to Arcane and should be replaced by _init()")
   void init(SmallSpan<const Int32> nb_item,SmallSpan<const Int32> indexes,
             SmallSpan<const Int32> list_data,eItemKind source_kind,eItemKind target_kind)
   {
@@ -56,6 +70,8 @@ class ARCANE_CORE_EXPORT IndexedItemConnectivityViewBase
     m_target_kind = target_kind;
   }
 
+ public:
+
   void set(IndexedItemConnectivityViewBase view)
   {
     m_indexes = view.m_indexes;
@@ -64,13 +80,17 @@ class ARCANE_CORE_EXPORT IndexedItemConnectivityViewBase
     m_source_kind = view.m_source_kind;
     m_target_kind = view.m_target_kind;
   }
+
  protected:
+
   SmallSpan<const Int32> m_nb_item;
   SmallSpan<const Int32> m_indexes;
   SmallSpan<const Int32> m_list_data;
   eItemKind m_source_kind = IK_Unknown;
   eItemKind m_target_kind = IK_Unknown;
+
  protected:
+
   [[noreturn]] void _badConversion(eItemKind k1,eItemKind k2) const;
   inline void _checkValid(eItemKind k1,eItemKind k2) const
   {

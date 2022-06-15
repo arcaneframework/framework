@@ -110,6 +110,7 @@ class ARCANE_MESH_EXPORT IncrementalItemConnectivityBase
 
   IndexedItemConnectivityViewBase connectivityView() const;
   IndexedItemConnectivityAccessor connectivityAccessor() const;
+  ItemConnectivityContainerView connectivityContainerView() const;
 
   Int32 maxNbConnectedItem() const override;
 
