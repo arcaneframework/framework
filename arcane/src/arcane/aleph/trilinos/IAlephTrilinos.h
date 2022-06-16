@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*****************************************************************************
- * IAlephTrilinos.h                                            (C) 2010-2012 *
+ * IAlephTrilinos.h                                            (C) 2010-2022 *
  * constants for output types
  #define AZ_all             -4  Print out everything including matrix
  #define AZ_none             0  Print out no results (not even warnings)
@@ -29,7 +29,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -182,7 +183,7 @@ class AlephMatrixTrilinos : public IAlephMatrix
     debug() << "\t\t[AlephMatrixTrilinos::AlephMatrixCreate] TRILINOS MatrixCreate idx:" << m_index;
     Integer ilower = -1;
     Integer iupper = 0;
-    for (register int iCpu = 0; iCpu < m_kernel->size(); ++iCpu) {
+    for ( int iCpu = 0; iCpu < m_kernel->size(); ++iCpu) {
       if (m_kernel->rank() != m_kernel->solverRanks(m_index)[iCpu])
         continue;
       if (ilower == -1)
@@ -571,7 +572,7 @@ class TrilinosAlephFactoryImpl : public AbstractService
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
