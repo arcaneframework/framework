@@ -51,7 +51,9 @@ class PolyhedralFamily;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class PolyhedralMesh : public EmptyMesh {
+class PolyhedralMesh
+: public EmptyMesh
+{
  public :
   String m_name = "polyhedral_mesh";
   ISubDomain* m_subdomain;
@@ -62,7 +64,7 @@ class PolyhedralMesh : public EmptyMesh {
   std::unique_ptr<PolyhedralMeshImpl> m_mesh; // using pimpl to limit dependency to neo lib to cc file
   MeshPartInfo m_part_info;
   bool m_is_allocated = false;
-  ItemTypeMng* m_item_type_mng;
+  ItemTypeMng* m_item_type_mng = nullptr;
 
  public:
   PolyhedralMesh(ISubDomain* subDomain);

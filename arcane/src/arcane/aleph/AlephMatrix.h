@@ -5,19 +5,23 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AlephMatrix.h                                                    (C) 2010 */
+/* AlephMatrix.h                                               (C) 2000-2022 */
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
-#ifndef ALEPH_MATRIX_H
-#define ALEPH_MATRIX_H
+#ifndef ARCANE_ALEPH_MATRIX_H
+#define ARCANE_ALEPH_MATRIX_H
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-#include <map>
 #include "arcane/aleph/AlephGlobal.h"
 
+#include <map>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 class IAlephMatrix;
 
@@ -63,11 +67,11 @@ class ARCANE_ALEPH_EXPORT AlephMatrix
   void solveNow(AlephVector*, AlephVector*, AlephVector*, Integer&, Real*, AlephParams*);
 
  private:
-  AlephKernel* m_kernel;
+  AlephKernel* m_kernel = nullptr;
   Integer m_index;
   ArrayView<Integer> m_ranks;
   bool m_participating_in_solver;
-  IAlephMatrix* m_implementation;
+  IAlephMatrix* m_implementation = nullptr;
 
  private:
   // Matrice utilisée dans le cas où nous sommes le solveur
@@ -101,7 +105,7 @@ class ARCANE_ALEPH_EXPORT AlephMatrix
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* FunctorAMRTansport.h                                       (C) 2000-2010 */
+/* FunctorAMRTansport.h                                        (C) 2000-2022 */
 /*                                                                           */
-/* Fonctor avec deux arguments.                                                 */
+/* Fonctor avec deux arguments.                                              */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_FUNCTORAMRTRANSPORT_H
 #define ARCANE_UTILS_FUNCTORAMRTRANSPORT_H
@@ -19,7 +19,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -59,18 +60,17 @@ class AMRTransportFunctorT
   
  private:
 
-  ClassType* m_object; //!< Objet associé.
-  FuncPtr m_function; //!< Pointeur vers la méthode associée.
-  FuncPtr2 m_function2; //!< Pointeur vers la méthode associée.
+  ClassType* m_object = nullptr; //!< Objet associé.
+  FuncPtr m_function = nullptr; //!< Pointeur vers la méthode associée.
+  FuncPtr2 m_function2 = nullptr; //!< Pointeur vers la méthode associée.
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #endif  
-

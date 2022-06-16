@@ -1526,6 +1526,9 @@ void mesh_utils::
 removeItemAndKeepOrder(Int32ArrayView items,Int32 local_id)
 {
   Integer n = items.size();
+  if (n<=0)
+    ARCANE_FATAL("Can not remove item lid={0} because list is empty",local_id);
+
   --n;
   if (n==0){
     if (items[0]==local_id)

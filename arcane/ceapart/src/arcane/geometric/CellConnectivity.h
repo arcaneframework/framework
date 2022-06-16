@@ -41,13 +41,6 @@ class CellConnectivity
   CellConnectivity(Integer nb_node,Integer nb_edge,Integer nb_face,GeomType cell_type)
   : m_nb_node(nb_node), m_nb_edge(nb_edge), m_nb_face(nb_face), m_cell_type(cell_type)
   {
-    m_nb_sub_zone = 0;
-    m_nb_svc_face = 0;
-    m_node_association = 0;
-    m_node_connectic = 0;
-    m_edge_connectic = 0;
-    m_face_connectic = 0;
-    m_svc_face_connectic = 0;
   }
 
  public:
@@ -70,14 +63,14 @@ class CellConnectivity
 
  protected:
 
-  Integer m_nb_sub_zone; //!< Nombre de sous volume de controle
-  Integer m_nb_svc_face; //!< Nombre de sous faces internes SVC
+  Integer m_nb_sub_zone = 0; //!< Nombre de sous volume de controle
+  Integer m_nb_svc_face = 0; //!< Nombre de sous faces internes SVC
   //! Numero local du sommet associé au sous volume de controle
-  const Integer *m_node_association;
-  const NodeConnectic *m_node_connectic;
-  const EdgeConnectic *m_edge_connectic;
-  const FaceConnectic *m_face_connectic;
-  const SVCFaceConnectic *m_svc_face_connectic;
+  const Integer* m_node_association = nullptr;
+  const NodeConnectic* m_node_connectic = nullptr;
+  const EdgeConnectic* m_edge_connectic = nullptr;
+  const FaceConnectic* m_face_connectic = nullptr;
+  const SVCFaceConnectic* m_svc_face_connectic = nullptr;
 
  public:
 
@@ -92,8 +85,8 @@ class CellConnectivity
   Integer m_nb_node;
   Integer m_nb_edge;
   Integer m_nb_face;
-  Int32* m_edge_first_node;
-  Int32* m_edge_second_node;
+  Int32* m_edge_first_node = nullptr;
+  Int32* m_edge_second_node = nullptr;
   GeomType m_cell_type;
 
  protected:

@@ -412,8 +412,11 @@ class AlephMatrixHypre
     void* object;
     int ierr = 0;
 
-    HYPRE_IJVector solution = (dynamic_cast<AlephVectorHypre*>(x->implementation()))->m_hypre_ijvector;
-    HYPRE_IJVector RHS = (dynamic_cast<AlephVectorHypre*>(b->implementation()))->m_hypre_ijvector;
+    auto* ximpl = ARCANE_CHECK_POINTER(dynamic_cast<AlephVectorHypre*>(x->implementation()));
+    auto* bimpl = ARCANE_CHECK_POINTER(dynamic_cast<AlephVectorHypre*>(b->implementation()));
+
+    HYPRE_IJVector solution = ximpl->m_hypre_ijvector;
+    HYPRE_IJVector RHS = bimpl->m_hypre_ijvector;
     //HYPRE_IJVector tmp      = (dynamic_cast<AlephVectorHypre*> (t->implementation()))->m_hypre_ijvector;
 
     HYPRE_IJMatrixGetObject(m_hypre_ijmatrix, &object);
@@ -929,8 +932,9 @@ class AlephMatrixHypre
   }
 
  private:
-  HYPRE_IJMatrix m_hypre_ijmatrix;
-  HYPRE_ParCSRMatrix m_hypre_parmatrix;
+
+  HYPRE_IJMatrix m_hypre_ijmatrix = nullptr;
+  HYPRE_ParCSRMatrix m_hypre_parmatrix = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

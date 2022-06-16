@@ -79,7 +79,7 @@ template<typename DataType> class DataStorageFactory
     using DataContainerType = DataType;
     ITraceMng* trace = dfm->traceMng();
     DataStorageTypeInfo t = DataContainerType::staticStorageTypeInfo();
-    bool print_info = false;
+    const bool print_info = false;
     if (print_info && trace)
       trace->info() << "TYPE=" << t.basicDataType()
                     << " nb_basic=" << t.nbBasicElement()
