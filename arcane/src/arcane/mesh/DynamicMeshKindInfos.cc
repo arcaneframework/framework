@@ -510,7 +510,7 @@ beginCompactItems(ItemFamilyCompactInfos& compact_infos)
 
     debug() << "BEGIN = " << items.data() << " " << m_internals.data()
             << " S1=" << items.size() << " S2=" << m_internals.size();
-    bool print_infos = false;
+    const bool print_infos = false;
     {
       ITimerMng* tm = m_mesh->parallelMng()->timerMng();
       Timer timer(tm,"DynamicMeshKindInfos::beginCompactItems()",Timer::TimerReal);

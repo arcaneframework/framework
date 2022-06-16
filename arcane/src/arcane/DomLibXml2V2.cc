@@ -1973,6 +1973,7 @@ data(const DOMString& value) const
 
 NamedNodeMap::
 NamedNodeMap()
+: m_p(nullptr)
 {}
 NamedNodeMap::
 NamedNodeMap(NamedNodeMapPrv* p)

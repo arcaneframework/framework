@@ -18,8 +18,7 @@
 
 #include "arcane/core/materials/IMeshMaterialVariableFactory.h"
 #include "arcane/core/materials/IMeshMaterialVariableFactoryMng.h"
-
-#include "arcane/materials/IMeshMaterialMng.h"
+#include "arcane/core/materials/IMeshMaterialMng.h"
 
 #include <map>
 
@@ -31,10 +30,12 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+// ATTENTION à ne pas changer l'ordre d'héritage sinon cela provoque un
+// plantage lors du 'delete'.
+// TODO: Utiliser Ref<>
 class MeshMaterialVariableFactoryMng
-: public TraceAccessor
-, public IMeshMaterialVariableFactoryMng
+: public IMeshMaterialVariableFactoryMng
+, public TraceAccessor
 {
  public:
   
@@ -121,15 +122,9 @@ extern "C++" IMeshMaterialVariableFactoryMng*
 arcaneCreateMeshMaterialVariableFactoryMng(IMeshMaterialMng* mm)
 {
   auto* x = new MeshMaterialVariableFactoryMng(mm);
+  x->build();
   return x;
 }
-
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-//extern "C++" void
-//arcaneRegisterSimpleData(IMeshMaterialVariableFactoryMng* df);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -809,7 +809,8 @@ addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fat
 
   //! Type la table de hashage uniqueId()->ItemInternal*
   DynamicMeshKindInfos::ItemInternalMap& nodes_map = m_mesh->nodesMap();
-  DynamicMeshKindInfos::ItemInternalMap& parent_nodes_map = dynamic_cast<DynamicMesh*>(m_mesh->parentMesh())->nodesMap();
+  auto* parent_mesh = ARCANE_CHECK_POINTER(dynamic_cast<DynamicMesh*>(m_mesh->parentMesh()));
+  DynamicMeshKindInfos::ItemInternalMap& parent_nodes_map = parent_mesh->nodesMap();
 
   // Traitement des nouveaux noeuds
 

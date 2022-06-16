@@ -52,10 +52,10 @@ class ARCANE_CORE_EXPORT ComponentPartItemVectorView
     m_items_internal(items_internal), m_part(part)
   {
   }
- public:
+
   //! Construit une vue non initialisée
   ComponentPartItemVectorView()
-  : m_component(nullptr), m_component_part_index(-1)
+  : m_component(nullptr), m_component_part_index(-1), m_part(eMatPart::Pure)
   {
   }
 

@@ -238,16 +238,16 @@ class MeshMaterialSimdUnitTest
  public:
 
   MeshMaterialSimdUnitTest(const ServiceBuildInfo& cb);
-  ~MeshMaterialSimdUnitTest();
+  ~MeshMaterialSimdUnitTest() override;
 
  public:
 
-  virtual void initializeTest();
-  virtual void executeTest();
+  void initializeTest() override;
+  void executeTest() override;
 
  private:
 
-  IMeshEnvironment* m_env1;
+  IMeshEnvironment* m_env1 = nullptr;
   MaterialVariableCellReal m_mat_a;
   MaterialVariableCellReal m_mat_b;
   MaterialVariableCellReal m_mat_c;
@@ -268,7 +268,7 @@ class MeshMaterialSimdUnitTest
 
   UniqueArray<Int32> m_env1_pure_value_index;
   UniqueArray<Int32> m_env1_partial_value_index;
-  EnvCellVector* m_env1_as_vector;
+  EnvCellVector* m_env1_as_vector = nullptr;
   Int32 m_nb_z;
 
   void _initializeVariables();

@@ -128,6 +128,7 @@ MeshMaterialMng::
   if (tracer)
     tracer->dumpStats();
 
+  delete m_variable_factory_mng;
   delete m_exchange_mng;
   delete m_all_cells_env_only_synchronizer;
   delete m_all_cells_mat_env_synchronizer;

@@ -85,7 +85,8 @@ class SubMeshTestModule
   void _compute4TransposeItems();
   void _compute5MoveItems();
 
-private:
+ private:
+
   Directory m_output_directory; 
   bool m_output_dir_created;
 
@@ -94,18 +95,18 @@ private:
   // Les variables de traitement du cas test
 
   // Variables de contrôle
-  VariableNodeInt64 * node_uids;
-  bool check_variable;
-  VariableCellInt64 * new_cell_uids;
-  VariableFaceInt64 * new_face_uids;
-  VariableNodeInt64 * new_node_uids;
+  VariableNodeInt64* node_uids = nullptr;
+  bool check_variable = false;
+  VariableCellInt64* new_cell_uids = nullptr;
+  VariableFaceInt64* new_face_uids = nullptr;
+  VariableNodeInt64* new_node_uids = nullptr;
 
-  IMesh * new_mesh;
+  IMesh* new_mesh = nullptr;
 
   // Génération d'un sous-maillage du genre demandé
-  eItemKind parentKind;
+  eItemKind parentKind = IK_Unknown;
 
-  IItemFamily * myParentFamily;
+  IItemFamily* myParentFamily = nullptr;
   ItemGroup myParentItems;
   ItemGroup allParentItems;
   ItemGroup myNewParentItems;
@@ -113,7 +114,7 @@ private:
 
   // Post-processing
   RealUniqueArray times; 
-  VariableCellReal* new_data;
+  VariableCellReal* new_data = nullptr;
 
  private:
 

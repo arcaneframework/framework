@@ -619,7 +619,7 @@ class ARCANE_UTILS_EXPORT Injector
   Injector();
   Injector(const Injector&) = delete;
   Injector& operator=(const Injector&) = delete;
-  ~Injector() = default;
+  ~Injector();
 
  public:
   template <typename Type> void
