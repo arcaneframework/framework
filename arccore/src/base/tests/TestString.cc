@@ -9,10 +9,54 @@
 #include "arccore/base/String.h"
 #include "arccore/base/TraceInfo.h"
 #include "arccore/base/StringView.h"
+#include "arccore/base/StringUtils.h"
 
 #include <vector>
 
 using namespace Arccore;
+
+TEST(String, Utf8AndUtf16)
+{
+  {
+    String str1("▲▼●■◆");
+    std::vector<UChar> utf16_vector { StringUtils::asUtf16BE(str1) };
+    std::vector<UChar> big_endian_ref_vector { 0x25b2, 0x25bc, 0x25cf, 0x25a0, 0x25c6 };
+    for( int x : utf16_vector )
+      std::cout << "Utf16: " << std::hex << x << "\n";
+    ASSERT_EQ(big_endian_ref_vector,utf16_vector);
+  }
+  {
+    String str2;
+    Span<const Byte> b = str2.bytes();
+    ASSERT_EQ(b.size(),0);
+    ByteConstArrayView u = str2.utf8();
+    ASSERT_EQ(u.size(),0);
+  }
+
+  {
+    String str3("TX");
+    Span<const Byte> b = str3.bytes();
+    ASSERT_EQ(b.size(),2);
+    ByteConstArrayView u = str3.utf8();
+    ASSERT_EQ(u.size(),3);
+    ASSERT_EQ(u[2],0);
+  }
+  {
+    String str4("€");
+    std::array<Byte,3> ref_a { 0xe2, 0x82, 0xac };
+    Span<const Byte> ref_a_view{ref_a};
+    Span<const Byte> b = str4.bytes();
+    ASSERT_EQ(b.size(),3);
+    ASSERT_EQ(b,ref_a_view);
+    ByteConstArrayView u = str4.utf8();
+    ASSERT_EQ(u.size(),4);
+    ASSERT_EQ(u[3],0);
+    for( Integer i=0; i<3; ++i ){
+      ASSERT_EQ(u[i],ref_a[i]);
+      ASSERT_EQ(b[i],ref_a[i]);
+    }
+  }
+}
 
 TEST(String, Misc)
 {

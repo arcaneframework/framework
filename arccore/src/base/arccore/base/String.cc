@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* String.cc                                                   (C) 2000-2019 */
+/* String.cc                                                   (C) 2000-2022 */
 /*                                                                           */
 /* Chaîne de caractères unicode.                                             */
 /*---------------------------------------------------------------------------*/
@@ -19,13 +19,19 @@
 #include "arccore/base/TraceInfo.h"
 #include "arccore/base/FatalErrorException.h"
 #include "arccore/base/StringView.h"
+#include "arccore/base/StringUtils.h"
 
 #include <iostream>
 #include <cstring>
 #include <limits>
+#include <vector>
 
 #define A_FASTLOCK(ptr)
-
+/*!
+ * \file StringUtils.h
+ *
+ * \brief Fonctions utilitaires sur les chaînes de caractères.
+ */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -246,7 +252,7 @@ localstr() const
 /*---------------------------------------------------------------------------*/
 
 ConstArrayView<UChar> String::
-utf16() const
+_internalUtf16BE() const
 {
   A_FASTLOCK(this);
   if (!m_p){
@@ -257,6 +263,15 @@ utf16() const
   if (m_p)
     return m_p->utf16();
   return ConstArrayView<UChar>();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ConstArrayView<UChar> String::
+utf16() const
+{
+  return _internalUtf16BE();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -760,7 +775,10 @@ class StringFormatter
     Integer z = m_current_arg;
     ++m_current_arg;
     if (z>=100){
-      ARCCORE_FATAL("Too many args (maximum is 100)");
+      // N'arrive normalement jamais car seul ce fichier a accès à cette
+      // méthode.
+      std::cerr << "Too many args (maximum is 100)";
+      return;
     }
     else if (z>=10){
       nb_z = 2;
@@ -778,8 +796,8 @@ class StringFormatter
     std::string str = m_format.localstr();
     const char* local_str = str.c_str();
     // TODO: ne pas utiliser de String mais un StringBuilder pour format
-    const Integer slen = arccoreCheckArraySize(str.length());
-    for( Integer i=0; i<slen; ++i ){
+    const Int64 slen = str.length();
+    for( Int64 i=0; i<slen; ++i ){
       if (local_str[i]=='{'){
         if (i+nb_z>=slen)
           break;
@@ -1238,6 +1256,34 @@ operator>>(std::istream& i,String& str)
   i >> s;
   str = s;
   return i;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class StringUtilsImpl
+{
+ public:
+  static std::vector<UChar>
+  toUtf16BE(const String& str)
+  {
+    ConstArrayView<UChar> x{ str._internalUtf16BE() };
+    Int32 n = x.size();
+    if (n==0)
+      return {};
+    // x contient normalement toujours un zéro terminal que l'on ne met
+    // pas dans le vecteur
+    return { x.begin(), x.begin()+(n-1) };
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+std::vector<UChar> StringUtils::
+asUtf16BE(const String& str)
+{
+  return StringUtilsImpl::toUtf16BE(str);
 }
 
 /*---------------------------------------------------------------------------*/

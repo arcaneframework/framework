@@ -234,7 +234,7 @@ utf16_to_ucs4(Span<const UChar> uchar,Int64 index,Int32& wc)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Converti un caractère (UCS4) en utf16.
+ * \brief Converti un caractère (UCS4) en utf16 big-endian.
  *
  * Routine récupérée dans libiconv.
  *
