@@ -12,20 +12,24 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/std/Otf2LibWrapper.h"
-#include <numeric>
-#include <filesystem>
+
 #include "arcane/utils/Collection.h"
+#include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/FatalErrorException.h"
+
 #include "arcane/IDirectory.h"
 #include "arcane/IParallelMng.h"
 #include "arcane/ITimeLoopMng.h"
 #include "arcane/IEntryPoint.h"
 #include "arcane/IApplication.h"
-#include "arcane/utils/ITraceMng.h"
-#include "arcane/utils/FatalErrorException.h"
+
 #include "arccore/message_passing_mpi/MessagePassingMpiGlobal.h"
 #include "arccore/message_passing_mpi/MessagePassingMpiEnum.h"
 #include "arccore/base/PlatformUtils.h"
-#include "otf2/OTF2_MPI_Collectives.h"
+
+#include <otf2/OTF2_MPI_Collectives.h>
+#include <numeric>
+#include <filesystem>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -126,7 +130,6 @@ init(const String& archive_name)
 		m_sub_domain->traceMng()->info() << "{" << i.m_name << ", " << i.m_id << "}";
   */
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -352,8 +355,17 @@ _buildOtf2ClockAndStringDefinition(uint64_t global_start_time, uint64_t global_e
 	m_global_def_writer = OTF2_Archive_GetGlobalDefWriter(m_archive);
 
 	// Definition des proprietes temporelles
-	OTF2_GlobalDefWriter_WriteClockProperties(m_global_def_writer, 1000000000,
-	                                          global_start_time, global_end_time - global_start_time + 1);
+  // Un nouvel argument est disponible à partir de la version 3.0. Il s'agit du dernier argument
+  // *  @param realtimeTimestamp A realtime timestamp of the `globalOffset` timestamp
+  // *                           in nanoseconds since 1970-01-01T00:00 UTC. Use
+  // *                           @eref{OTF2_UNDEFINED_TIMESTAMP} if no such
+  // *                           timestamp exists. Since version 3.0.
+  OTF2_GlobalDefWriter_WriteClockProperties(m_global_def_writer, 1000000000,
+                                            global_start_time, global_end_time - global_start_time + 1
+#if OTF2_VERSION_MAJOR >= 3
+                                            ,OTF2_UNDEFINED_TIMESTAMP
+#endif
+                                            );
 
 	// Definition de toutes les noms que l'on verra apparaitre dans les outils capables de lire l'archive otf2
 	// On commence par les noms des operations MPI
@@ -540,12 +552,15 @@ _buildOtf2LocationDefinition()
 
 	// Location group pour tous les ranks MPI
 	for (Int32 i(0); i < m_sub_domain->nbSubDomain(); ++i) {
-		OTF2_GlobalDefWriter_WriteLocationGroup(m_global_def_writer, i /* id */,
-		                                        m_id.m_rank_offset + i /* name */,
-		                                        OTF2_LOCATION_GROUP_TYPE_PROCESS,
-		                                        0 /* system tree */);
+    OTF2_GlobalDefWriter_WriteLocationGroup(m_global_def_writer, i /* id */,
+                                            m_id.m_rank_offset + i /* name */,
+                                            OTF2_LOCATION_GROUP_TYPE_PROCESS,
+                                            0 /* system tree */
+#if OTF2_VERSION_MAJOR >= 3
+                                            ,OTF2_UNDEFINED_LOCATION_GROUP
+#endif
+                                            );
 	}
-
 	for (Int32 i(0); i < m_sub_domain->nbSubDomain(); ++i) {
 		OTF2_GlobalDefWriter_WriteLocation(m_global_def_writer, i /* id */, m_id.m_thread_id /* name */,
 		                                   OTF2_LOCATION_TYPE_CPU_THREAD, recv_buffer.at(i) /* # events */,
@@ -802,11 +817,19 @@ _buildOtf2GroupAndCommDefinition()
 	                                OTF2_GROUP_FLAG_NONE, 0, NULL);
 
 	// Definition du communicateur associe au groupe des comm
-	OTF2_GlobalDefWriter_WriteComm(m_global_def_writer, 0 /* id */, m_id.m_comm_world_id, 1 /* group */,
-	                               OTF2_UNDEFINED_COMM /* parent */);
+  OTF2_GlobalDefWriter_WriteComm(m_global_def_writer, 0 /* id */, m_id.m_comm_world_id, 1 /* group */,
+                                 OTF2_UNDEFINED_COMM /* parent */
+#if OTF2_VERSION_MAJOR >= 3
+                                 ,0
+#endif
+                                 );
 
-	OTF2_GlobalDefWriter_WriteComm(m_global_def_writer, 1 /* id */, m_id.m_comm_self_id, 2 /* group */,
-	                               OTF2_UNDEFINED_COMM /* parent */);
+  OTF2_GlobalDefWriter_WriteComm(m_global_def_writer, 1 /* id */, m_id.m_comm_self_id, 2 /* group */,
+                                 OTF2_UNDEFINED_COMM /* parent */
+#if OTF2_VERSION_MAJOR >= 3
+                                 ,0
+#endif
+                                 );
 
 	// Fermeture de la definition de l'archive pour enfin ecrire tout ca
 	OTF2_Archive_CloseGlobalDefWriter(m_archive, m_global_def_writer);
