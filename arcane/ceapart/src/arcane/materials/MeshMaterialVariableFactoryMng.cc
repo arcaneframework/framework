@@ -30,12 +30,10 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// ATTENTION à ne pas changer l'ordre d'héritage sinon cela provoque un
-// plantage lors du 'delete'.
 // TODO: Utiliser Ref<>
 class MeshMaterialVariableFactoryMng
-: public IMeshMaterialVariableFactoryMng
-, public TraceAccessor
+: public TraceAccessor
+, public IMeshMaterialVariableFactoryMng
 {
  public:
   

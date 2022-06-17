@@ -11,6 +11,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/materials/MeshMaterialMng.h"
+
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/AutoDestroyUserData.h"
@@ -28,9 +30,10 @@
 #include "arcane/Properties.h"
 #include "arcane/ServiceBuilder.h"
 
-#include "arcane/materials/MeshMaterialMng.h"
+#include "arcane/core/materials/IMeshMaterialVariableFactoryMng.h"
+#include "arcane/core/materials/IMeshMaterialVariable.h"
+
 #include "arcane/materials/MeshMaterialModifierImpl.h"
-#include "arcane/materials/IMeshMaterialVariable.h"
 #include "arcane/materials/MeshMaterialInfo.h"
 #include "arcane/materials/MeshEnvironmentBuildInfo.h"
 #include "arcane/materials/CellToAllEnvCellConverter.h"
