@@ -1,126 +1,60 @@
 version: 2.1
 
 executors:
-  small-executor:
+  # 4 CPU / 8Go RAM / 20c/min
+  large-executor-image:
     docker:
-      - image: ghcr.io/arcaneframework/ubuntu-2004_gcc-11:latest
+      - image: ghcr.io/arcaneframework/ubuntu-2204:gcc-12_clang-14_minimal
+    resource_class: large
     working_directory: ~/workspace
-    resource_class: small # 1 CPU / 2Go RAM
 
-  small-executor-cuda:
-    docker:
-      - image: ghcr.io/arcaneframework/ubuntu-2004_cuda-116_gcc-11:latest
-    working_directory: ~/workspace
-    resource_class: small # 1 CPU / 2Go RAM
-
-  large-executor:
-    docker:
-      - image: ghcr.io/arcaneframework/ubuntu-2004_gcc-11:latest
-    working_directory: ~/workspace
-    resource_class: large # 4 CPU / 8Go RAM
-
-  large-executor-cuda:
-    docker:
-      - image: ghcr.io/arcaneframework/ubuntu-2004_cuda-116_gcc-11:latest
-    working_directory: ~/workspace
-    resource_class: large # 4 CPU / 8Go RAM
-
-  large-executor-with-gpu:
+  # V100 / 8 CPU / 30Go RAM / 1000c/min
+  large-executor-gpu:
     machine:
-      resource_class: gpu.nvidia.small
       image: ubuntu-2004-cuda-11.4:202110-01
+    resource_class: gpu.nvidia.large
     working_directory: ~/workspace
 
+  # 2 CPU / 8Go RAM / 10c/min
   medium-executor-arm:
     machine:
-      image: ubuntu-2004:202101-01
+      image: ubuntu-2004:2022.04.1
     resource_class: arm.medium
     working_directory: ~/workspace
 
+  # 4 CPU / 15Go RAM / 20c/min
   large-executor-empty:
-    docker:
-      - image: cimg/base:stable
+    machine:
+      image: ubuntu-2204:2022.04.1
+    resource_class: large
     working_directory: ~/workspace
-    resource_class: large # 4 CPU / 8Go RAM
 
 # Les variables d'environnement.
 parameters:
-  ARCANE_BUILD_DIR:
+  SOURCE_DIR:
     type: string
-    default: "~/workspace/arcane_build"
+    default: "~/workspace"
 
-  ARCANE_INSTALL_DIR:
+  BUILD_DIR:
     type: string
-    default: "~/workspace/arcane_install"
+    default: "~/workspace/build"
 
-  ARCANE_SOURCE_DIR:
+  INSTALL_DIR:
     type: string
-    default: "~/workspace/arcane"
+    default: "~/workspace/install"
 
-
-  ARCCON_BUILD_DIR:
+  CT_RESULT_DIR:
     type: string
-    default: "~/workspace/arccon_build"
-
-  ARCCON_INSTALL_DIR:
+    default: "~/workspace/test"
+  
+  CT_OPTS:
     type: string
-    default: "~/workspace/arccon_install"
-
-  ARCCON_SOURCE_DIR:
-    type: string
-    default: "~/workspace/arccon"
-
-
-  ARCCORE_BUILD_DIR:
-    type: string
-    default: "~/workspace/arccore_build"
-
-  ARCCORE_INSTALL_DIR:
-    type: string
-    default: "~/workspace/arccore_install"
-
-  ARCCORE_SOURCE_DIR:
-    type: string
-    default: "~/workspace/arccore"
-
-
-  DEPENDENCIES_BUILD_DIR:
-    type: string
-    default: "~/workspace/dependencies_build"
-
-  DEPENDENCIES_INSTALL_DIR:
-    type: string
-    default: "~/workspace/dependencies_install"
-
-  DEPENDENCIES_SOURCE_DIR:
-    type: string
-    default: "~/workspace/dependencies"
-
-
-  AXLSTAR_BUILD_DIR:
-    type: string
-    default: "~/workspace/axlstar_build"
-
-  AXLSTAR_INSTALL_DIR:
-    type: string
-    default: "~/workspace/axlstar_install"
-
-  AXLSTAR_SOURCE_DIR:
-    type: string
-    default: "~/workspace/axlstar"
+    default: "--timeout 300 --output-on-failure"
 
 
   CM_BUILD_TYPE:
     type: string
     default: "Release"
-
-  CM_BUILD_OPTS_SMALL:
-    type: string
-    default: "-j1"
-
-  CM_BUILD_OPTS_LARGE:
-    type: string
-    default: "-j4"
 
   CM_CCACHE_OPTS:
     type: string
@@ -132,7 +66,7 @@ parameters:
 
   CM_COMPILER_NVCC:
     type: string
-    default: "-DARCANE_ACCELERATOR_MODE=CUDANVCC -DCMAKE_CUDA_COMPILER=`which nvcc`" # TODO : Verifier que le which est interprété correctement.
+    default: "-DARCANE_ACCELERATOR_MODE=CUDANVCC -DCMAKE_CUDA_COMPILER=`which nvcc`"
 
 
   CC_KEY_PREFIX:
@@ -143,164 +77,25 @@ parameters:
     type: string
     default: "circleci_arm"
 
-  CC_KEY_PREFIX_AIO:
+  CC_KEY_PREFIX_CUDA:
     type: string
-    default: "circleci_aio"
+    default: "circleci_cuda"
 
   CC_DIR:
     type: string
     default: "~/workspace/ccache"
 
-  
-  CT_OPTS:
-    type: string
-    default: "--timeout 300 --output-on-failure"
-  # Usage example : << pipeline.parameters.ARCCON_BUILD_DIR >>
 
 # Les jobs.
 jobs:
-  arccon-install:
-    executor: small-executor
-    steps:
-      # On récupère le dépot git (pas de dossier intermediaire comme dans nos GH Actions).
-      - checkout
-
-      - run:
-          name: Configure
-          command: cmake -S << pipeline.parameters.ARCCON_SOURCE_DIR >> -B << pipeline.parameters.ARCCON_BUILD_DIR >> -DCMAKE_BUILD_TYPE=<< pipeline.parameters.CM_BUILD_TYPE >> -DCMAKE_INSTALL_PREFIX=<< pipeline.parameters.ARCCON_INSTALL_DIR >> 
-
-      - run:
-          name: Build
-          command: cmake --build << pipeline.parameters.ARCCON_BUILD_DIR >> << pipeline.parameters.CM_BUILD_OPTS_SMALL >>
-
-      - run:
-          name: Install
-          command: cmake --install << pipeline.parameters.ARCCON_BUILD_DIR >>
-
-      # On demande à ce que le dossier "arccon_install" du repertoire "~/workspace" soit persistant.
-      # Remplace le "actions/upload-artifact" de GH Actions.
-      - persist_to_workspace:
-          root: ~/workspace
-          paths:
-              - arccon_install
-
-  arccore-install:
-    executor: small-executor
+  build-and-test:
+    executor: large-executor-image
     steps:
       - checkout
-
-      # On récupère les dossiers persistants et on les met dans "~/workspace".
-      # Remplace le "actions/download-artifact" de GH Actions.
-      - attach_workspace:
-          at: ~/workspace
-
-      # On restaure le cache (comme GH Actions actions/cache mais sans path).
-      - restore_cache:
-          keys: 
-            - << pipeline.parameters.CC_KEY_PREFIX >>-arccore-<< pipeline.parameters.CM_BUILD_TYPE >>-
-
-      - run:
-          name: Create ccache directory and ccache environment variables
-          command: |
-            echo 'export CCACHE_COMPRESS=true' >> $BASH_ENV
-            echo 'export CCACHE_COMPRESSLEVEL=6' >> $BASH_ENV
-            echo 'export CCACHE_DIR=<< pipeline.parameters.CC_DIR >>' >> $BASH_ENV
-            echo 'export CCACHE_MAXSIZE=500M' >> $BASH_ENV
-            mkdir -p << pipeline.parameters.CC_DIR >>
-
-
-      - run:
-          name: Configure
-          command: cmake -S << pipeline.parameters.ARCCORE_SOURCE_DIR >> -B << pipeline.parameters.ARCCORE_BUILD_DIR >> -DCMAKE_BUILD_TYPE=<< pipeline.parameters.CM_BUILD_TYPE >> -DCMAKE_INSTALL_PREFIX=<< pipeline.parameters.ARCCORE_INSTALL_DIR >> -DArccon_DIR=<< pipeline.parameters.ARCCON_INSTALL_DIR >>/share/cmake/Arccon -DBUILD_SHARED_LIBS=ON << pipeline.parameters.CM_CCACHE_OPTS >> << pipeline.parameters.CM_COMPILER >>
-
-      - run:
-          name: Build
-          command: cmake --build << pipeline.parameters.ARCCORE_BUILD_DIR >> << pipeline.parameters.CM_BUILD_OPTS_SMALL >>
-
-      - run:
-          name: Install
-          command: cmake --install << pipeline.parameters.ARCCORE_BUILD_DIR >>
-
-      # On doit spécifier qu'on veut récupérer le dossier "ccache" (par rapport à GH Actions où c'est sous-entendu).
-      - save_cache:
-          key: << pipeline.parameters.CC_KEY_PREFIX >>-arccore-<< pipeline.parameters.CM_BUILD_TYPE >>-{{ .BuildNum }}
-          paths:
-            - ~/workspace/ccache
-
-      # On ajoute deux dossiers persistants.
-      - persist_to_workspace:
-          root: ~/workspace
-          paths:
-              - arccore_build
-              - arccore_install
-
-  dependencies-install:
-    executor: small-executor
-    steps:
-      - checkout
-
-      # On récupère les sous-modules.
       - run:
           name: "Pull Submodules"
           command: |
             git submodule update --init
-
-      - attach_workspace:
-          at: ~/workspace
-
-
-      - run:
-          name: Configure
-          command: cmake -S << pipeline.parameters.DEPENDENCIES_SOURCE_DIR >> -B << pipeline.parameters.DEPENDENCIES_BUILD_DIR >> -DCMAKE_BUILD_TYPE=<< pipeline.parameters.CM_BUILD_TYPE >> -DCMAKE_INSTALL_PREFIX=<< pipeline.parameters.DEPENDENCIES_INSTALL_DIR >> -DArccon_DIR=<< pipeline.parameters.ARCCON_INSTALL_DIR >>/share/cmake/Arccon << pipeline.parameters.CM_COMPILER >>
-
-      - run:
-          name: Build
-          command: cmake --build << pipeline.parameters.DEPENDENCIES_BUILD_DIR >> << pipeline.parameters.CM_BUILD_OPTS_SMALL >>
-
-      - run:
-          name: Install
-          command: cmake --install << pipeline.parameters.DEPENDENCIES_BUILD_DIR >>
-
-
-      - persist_to_workspace:
-          root: ~/workspace
-          paths:
-              - dependencies_install
-
-  axlstar-install:
-    executor: small-executor
-    steps:
-      - checkout
-
-      - attach_workspace:
-          at: ~/workspace
-
-
-      - run:
-          name: Configure
-          command: cmake -S << pipeline.parameters.AXLSTAR_SOURCE_DIR >> -B << pipeline.parameters.AXLSTAR_BUILD_DIR >> -DCMAKE_BUILD_TYPE=<< pipeline.parameters.CM_BUILD_TYPE >> -DCMAKE_INSTALL_PREFIX=<< pipeline.parameters.AXLSTAR_INSTALL_DIR >> -DArccon_DIR=<< pipeline.parameters.ARCCON_INSTALL_DIR >>/share/cmake/Arccon -DArcDependencies_DIR=<< pipeline.parameters.DEPENDENCIES_INSTALL_DIR >>/share/cmake/ArcDependencies
-
-      - run:
-          name: Build
-          command: cmake --build << pipeline.parameters.AXLSTAR_BUILD_DIR >> << pipeline.parameters.CM_BUILD_OPTS_SMALL >>
-
-      - run:
-          name: Install
-          command: cmake --install << pipeline.parameters.AXLSTAR_BUILD_DIR >>
-
-
-      - persist_to_workspace:
-          root: ~/workspace
-          paths:
-              - axlstar_install
-
-  arcane-install:
-    executor: large-executor-cuda
-    steps:
-      - checkout
-
-      - attach_workspace:
-          at: ~/workspace
 
       - restore_cache:
           keys: 
@@ -315,55 +110,34 @@ jobs:
             echo 'export CCACHE_MAXSIZE=500M' >> $BASH_ENV
             mkdir -p << pipeline.parameters.CC_DIR >>
 
+      - run:
+          name: Configure 'framework'
+          command: |
+            cmake \
+            -S << pipeline.parameters.SOURCE_DIR >> \
+            -B << pipeline.parameters.BUILD_DIR >> \
+            -GNinja \
+            -DCMAKE_CXX_FLAGS_RELEASE="-O2" \
+            -DCMAKE_VERBOSE_MAKEFILE=TRUE \
+            -DCMAKE_BUILD_TYPE=<< pipeline.parameters.CM_BUILD_TYPE >> \
+            -DBUILD_SHARED_LIBS=TRUE \
+            -DARCANE_DEFAULT_PARTITIONER=Metis \
+            -DARCCON_REGISTER_PACKAGE_VERSION=2 \
+            << pipeline.parameters.CM_CCACHE_OPTS >>
 
       - run:
-          name: Configure
-          command: cmake -S << pipeline.parameters.ARCANE_SOURCE_DIR >> -B << pipeline.parameters.ARCANE_BUILD_DIR >> -DCMAKE_BUILD_TYPE=<< pipeline.parameters.CM_BUILD_TYPE >> -DCMAKE_INSTALL_PREFIX=<< pipeline.parameters.ARCANE_INSTALL_DIR >> -DArccon_DIR=<< pipeline.parameters.ARCCON_INSTALL_DIR >>/share/cmake/Arccon -DArccore_DIR=<< pipeline.parameters.ARCCORE_INSTALL_DIR >>/lib/cmake/Arccore -DAxlstar_DIR=<< pipeline.parameters.AXLSTAR_INSTALL_DIR >>/share/cmake/Axlstar -DArcDependencies_DIR=<< pipeline.parameters.DEPENDENCIES_INSTALL_DIR >>/share/cmake/ArcDependencies -DBUILD_SHARED_LIBS=ON -DARCANE_DEFAULT_PARTITIONER=Metis -DARCANE_WANT_TOTALVIEW=ON -DARCANE_WANT_LIBXML2=ON -DARCANE_WANT_LEGACY_CONNECTIVITY=OFF -DARCANE_WANT_CHECK=OFF -DARCANE_WANT_ARCCON_EXPORT_TARGET=OFF -DCMAKE_DISABLE_FIND_PACKAGE_Papi=ON << pipeline.parameters.CM_CCACHE_OPTS >> << pipeline.parameters.CM_COMPILER_NVCC >> << pipeline.parameters.CM_COMPILER >>
+          name: Build 'framework'
+          command: cmake --build << pipeline.parameters.BUILD_DIR >>
 
       - run:
-          name: Build
-          command: cmake --build << pipeline.parameters.ARCANE_BUILD_DIR >> << pipeline.parameters.CM_BUILD_OPTS_LARGE >>
-
-      - run:
-          name: Install
-          command: cmake --install << pipeline.parameters.ARCANE_BUILD_DIR >>
-
+          name: Get 'ccache' status
+          command: |
+            ccache -s
 
       - save_cache:
           key: << pipeline.parameters.CC_KEY_PREFIX >>-arcane-<< pipeline.parameters.CM_BUILD_TYPE >>-{{ .BuildNum }}
           paths:
             - ~/workspace/ccache
-
-      - persist_to_workspace:
-          root: ~/workspace
-          paths:
-              - arcane_build
-              - arcane_install
-
-  arccore-test:
-    executor: small-executor
-    steps:
-      - checkout
-
-      - attach_workspace:
-          at: ~/workspace
-
-      - run:
-          name: Test
-          command: ctest --test-dir << pipeline.parameters.ARCCORE_BUILD_DIR >> << pipeline.parameters.CT_OPTS >>
-
-      - store_artifacts:
-          path: << pipeline.parameters.ARCCORE_BUILD_DIR >>/Testing
-          destination: arccore-test-artifact
-          when: on_fail # TODO : Le "on_fail" n'a aucun effet...
-
-  arcane-test:
-    executor: large-executor-cuda
-    steps:
-      - checkout
-
-      - attach_workspace:
-          at: ~/workspace
 
       - run:
           name: Force execution of MPI in root session
@@ -371,15 +145,20 @@ jobs:
             echo 'export OMPI_ALLOW_RUN_AS_ROOT=1' >> $BASH_ENV
             echo 'export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1' >> $BASH_ENV
 
+      # On ne lance pas les tests qui utilisent 'mpithread' car ils ont besoin de 12 coeurs
+      # sur les machines à 4 coeurs cela pose problème.
       - run:
-          name: Test
-          command: ctest --test-dir << pipeline.parameters.ARCANE_BUILD_DIR >> << pipeline.parameters.CT_OPTS >> -E '^.*(4mpithread|cuda|accelerator).*$'
-          # CUDA : Pour l'instant, on exclut les tests avec cuda et/ou accelerator dans leur nom.
+          name: Test 'framework'
+          command: |
+            mkdir -p << pipeline.parameters.CT_RESULT_DIR >>
+            ctest --test-dir << pipeline.parameters.BUILD_DIR >> --output-junit << pipeline.parameters.CT_RESULT_DIR >>/results.xml << pipeline.parameters.CT_OPTS >> -E '^.*([3-9][_]*mpithread|[1-9][0-9]+[_]*mpithread|[5-9]proc|[1-9][0-9]+proc).*$'
+
+      - store_test_results:
+          path: << pipeline.parameters.CT_RESULT_DIR >>
 
       - store_artifacts:
-          path: << pipeline.parameters.ARCANE_BUILD_DIR >>/Testing
-          destination: arcane-test-artifact
-          when: on_fail # TODO : Le "on_fail" n'a aucun effet...
+          path: << pipeline.parameters.CT_RESULT_DIR >>
+
 
   arm-build-and-test:
     executor: medium-executor-arm
@@ -392,15 +171,18 @@ jobs:
           command: |
             git submodule update --init
             
-
       - run:
-          name: Install all packages for build Arcane
+          name: Install all packages to build Arcane
           command: |
             sudo apt-get update -y
             sudo apt-get install -y software-properties-common
             sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
             sudo apt-get update -y
-            sudo apt-get install -y --no-install-recommends gcc-11 g++-11 libc6-dev make dpkg-dev cmake apt-utils iputils-ping python3 git gfortran libglib2.0-dev libxml2-dev libhdf5-openmpi-dev libparmetis-dev wget libgtest-dev libtbb-dev rsync swig4.0 libhypre-dev petsc-dev ninja-build ccache valgrind paraview apt-transport-https
+            sudo apt-get install -y --no-install-recommends \
+            gcc-11 g++-11 libc6-dev make dpkg-dev cmake apt-utils iputils-ping python3 \
+            git gfortran libglib2.0-dev libxml2-dev libhdf5-openmpi-dev libparmetis-dev \
+            wget libgtest-dev libtbb-dev rsync swig4.0 libhypre-dev petsc-dev libbz2-dev \
+            ninja-build ccache valgrind apt-transport-https
             sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 100
             sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100
             sudo update-alternatives --install /usr/bin/cpp cpp-bin /usr/bin/cpp-11 100
@@ -446,15 +228,25 @@ jobs:
       - run:
           name: Configure
           command: |
-            cmake -S ~/workspace -B << pipeline.parameters.ARCANE_BUILD_DIR >> -DCMAKE_BUILD_TYPE=<< pipeline.parameters.CM_BUILD_TYPE >> -DCMAKE_INSTALL_PREFIX=<< pipeline.parameters.ARCANE_INSTALL_DIR >> -DARCANE_DEFAULT_PARTITIONER=Metis -DARCANE_WANT_TOTALVIEW=ON -DARCANE_WANT_LIBXML2=ON -DARCANE_WANT_LEGACY_CONNECTIVITY=OFF -DARCANE_WANT_CHECK=OFF -DARCANE_WANT_ARCCON_EXPORT_TARGET=OFF -DCMAKE_DISABLE_FIND_PACKAGE_Papi=ON << pipeline.parameters.CM_CCACHE_OPTS >> << pipeline.parameters.CM_COMPILER >>
+            cmake \
+            -S << pipeline.parameters.SOURCE_DIR >> \
+            -B << pipeline.parameters.BUILD_DIR >> \
+            -GNinja \
+            -DBUILD_SHARED_LIBS=ON \
+            -DCMAKE_BUILD_TYPE=<< pipeline.parameters.CM_BUILD_TYPE >> \
+            -DCMAKE_INSTALL_PREFIX=<< pipeline.parameters.INSTALL_DIR >> \
+            -DARCANE_DEFAULT_PARTITIONER=Metis \
+            -DARCANE_WANT_ARCCON_EXPORT_TARGET=OFF \
+            << pipeline.parameters.CM_CCACHE_OPTS >> \
+            << pipeline.parameters.CM_COMPILER >>
 
       - run:
           name: Build
-          command: cmake --build << pipeline.parameters.ARCANE_BUILD_DIR >> << pipeline.parameters.CM_BUILD_OPTS_LARGE >>
+          command: cmake --build << pipeline.parameters.BUILD_DIR >>
 
       - run:
           name: Install
-          command: cmake --install << pipeline.parameters.ARCANE_BUILD_DIR >>
+          command: cmake --install << pipeline.parameters.BUILD_DIR >>
 
       - save_cache:
           key: << pipeline.parameters.CC_KEY_PREFIX_ARM >>-arcane-<< pipeline.parameters.CM_BUILD_TYPE >>-{{ .BuildNum }}
@@ -471,20 +263,70 @@ jobs:
           name: Test
           # Avril 2022: Supprime le test 'utils' car sur circle-ci il plante à cause du fait qu'on ne peut
           # pas positionner les exceptions flottantes.
-          command: ctest --test-dir << pipeline.parameters.ARCANE_BUILD_DIR >> << pipeline.parameters.CT_OPTS >> -E '^utils1$|^.*_4mpithread$'
+          command: |
+            mkdir -p << pipeline.parameters.CT_RESULT_DIR >>
+            ctest --test-dir << pipeline.parameters.BUILD_DIR >> --output-junit << pipeline.parameters.CT_RESULT_DIR >>/results.xml << pipeline.parameters.CT_OPTS >> -E '^utils1$|^.*([1-9][_]*mpithread|[1-9][0-9]+[_]*mpithread|[3-9]proc|[1-9][0-9]+proc).*$'
 
-  aio-build-and-test:
-    executor: large-executor-empty
+      - store_test_results:
+          path: << pipeline.parameters.CT_RESULT_DIR >>
+
+      - store_artifacts:
+          path: << pipeline.parameters.CT_RESULT_DIR >>
+
+  cuda-build-and-test:
+    executor: large-executor-gpu
     steps:
       - checkout
+
+      # On récupère les sous-modules.
       - run:
           name: "Pull Submodules"
           command: |
             git submodule update --init
+            
+      - run:
+          name: Install all packages to build Arcane
+          command: |
+            sudo apt-get update -y
+            sudo apt-get install -y software-properties-common
+            sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+            sudo apt-get update -y
+            sudo apt-get install -y --no-install-recommends \
+            gcc-11 g++-11 libc6-dev make dpkg-dev cmake apt-utils iputils-ping python3 \
+            git gfortran libglib2.0-dev libxml2-dev libhdf5-openmpi-dev libparmetis-dev \
+            wget libgtest-dev libtbb-dev rsync swig4.0 libhypre-dev petsc-dev libbz2-dev \
+            ninja-build ccache valgrind apt-transport-https
+            sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 100
+            sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100
+            sudo update-alternatives --install /usr/bin/cpp cpp-bin /usr/bin/cpp-11 100
+            sudo update-alternatives --set g++ /usr/bin/g++-11
+            sudo update-alternatives --set gcc /usr/bin/gcc-11
+            sudo update-alternatives --set cpp-bin /usr/bin/cpp-11
+
+      - run:
+          name: Install Dotnet 6
+          command: |
+            wget https://dot.net/v1/dotnet-install.sh
+            sudo chmod u+x dotnet-install.sh
+            ./dotnet-install.sh
+            echo 'export PATH=/home/circleci/.dotnet:${PATH}' >> $BASH_ENV
+            PATH=/home/circleci/.dotnet:${PATH}
+
+      - run:
+          name: Install CMake 3.21
+          command: |
+            MY_CMAKE_INSTALL_PATH=/usr/local/cmake-3.21.3
+            wget https://github.com/Kitware/CMake/releases/download/v3.21.3/cmake-3.21.3-Linux-x86_64.tar.gz
+            sudo mkdir ${MY_CMAKE_INSTALL_PATH}
+            sudo tar -C ${MY_CMAKE_INSTALL_PATH} -x --strip-components 1 -f cmake-3.21.3-Linux-x86_64.tar.gz
+            echo 'export PATH=/usr/local/cmake-3.21.3/bin:${PATH}' >> $BASH_ENV
+            PATH=${MY_CMAKE_INSTALL_PATH}/bin:${PATH}
+            cmake --version
+      
 
       - restore_cache:
           keys: 
-            - << pipeline.parameters.CC_KEY_PREFIX_AIO >>-arcane-<< pipeline.parameters.CM_BUILD_TYPE >>-
+            - << pipeline.parameters.CC_KEY_PREFIX_CUDA >>-arcane-<< pipeline.parameters.CM_BUILD_TYPE >>-
 
       - run:
           name: Create ccache directory and ccache environment variables
@@ -497,121 +339,57 @@ jobs:
 
 
       - run:
-          name: "Install packages"
+          name: Configure
           command: |
-            sudo apt-get update
-            sudo apt-get install -y apt-utils iputils-ping g++ python3 git gfortran libglib2.0-dev libxml2-dev libhdf5-openmpi-dev libparmetis-dev wget libgtest-dev libtbb-dev rsync swig4.0 libhypre-dev petsc-dev ninja-build ccache
-            wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
-            sudo dpkg -i packages-microsoft-prod.deb
-            sudo apt-get update
-            sudo apt-get install -y apt-transport-https dotnet-sdk-6.0
-            wget https://github.com/Kitware/CMake/releases/download/v3.21.3/cmake-3.21.3-Linux-x86_64.tar.gz
-            cp cmake-3.21.3-Linux-x86_64.tar.gz /tmp
-            cd /tmp && tar xf cmake-3.21.3-Linux-x86_64.tar.gz
-            echo "Listing of /tmp"
-            ls -lart /tmp
-            echo "Listing of /tmp/cmake-3.21.3-linux-x86_64"
-            ls -lart /tmp/cmake-3.21.3-linux-x86_64
-            cd /tmp/cmake-3.21.3-linux-x86_64/ && sudo rsync -au . /usr/local
-            ls -lart /usr/local/bin
-            echo "Generate NuGet.config"
-            mkdir -p /home/circleci/.nuget/NuGet
-            cd /home/circleci/.nuget/NuGet && dotnet new nugetconfig
-            ls -lart /home/circleci/.nuget/NuGet
-            cd /home/circleci/.nuget/NuGet && mv nuget.config NuGet.config
-            echo "Print NuGet.config"
-            cat /home/circleci/.nuget/NuGet/NuGet.config
-            echo 'CMake version:'
-            cmake --version
-            echo 'ccache version:'
-            ccache --version
-            ccache -z
+            cmake \
+            -S << pipeline.parameters.SOURCE_DIR >> \
+            -B << pipeline.parameters.BUILD_DIR >> \
+            -GNinja \
+            -DBUILD_SHARED_LIBS=ON \
+            -DCMAKE_BUILD_TYPE=<< pipeline.parameters.CM_BUILD_TYPE >> \
+            -DCMAKE_INSTALL_PREFIX=<< pipeline.parameters.INSTALL_DIR >> \
+            -DARCANE_DEFAULT_PARTITIONER=Metis \
+            -DARCANE_WANT_ARCCON_EXPORT_TARGET=OFF \
+            << pipeline.parameters.CM_CCACHE_OPTS >> \
+            << pipeline.parameters.CM_COMPILER >>
 
       - run:
-          name: Configure 'framework'
-          command: |
-            cmake -S "_common/build_all" -B build -DCMAKE_CXX_FLAGS_RELEASE="-O2" -DCMAKE_VERBOSE_MAKEFILE=TRUE -DCMAKE_BUILD_TYPE=<< pipeline.parameters.CM_BUILD_TYPE >> -DBUILD_SHARED_LIBS=TRUE -DARCANE_DEFAULT_PARTITIONER=Metis -DARCCON_REGISTER_PACKAGE_VERSION=2 << pipeline.parameters.CM_CCACHE_OPTS >> -GNinja
+          name: Build
+          command: cmake --build << pipeline.parameters.BUILD_DIR >>
 
       - run:
-          name: Build 'framework'
-          command: |
-            cmake --build build
-
-      - run:
-          name: Get 'ccache' status
-          command: |
-            ccache -s
+          name: Install
+          command: cmake --install << pipeline.parameters.BUILD_DIR >>
 
       - save_cache:
-          key: << pipeline.parameters.CC_KEY_PREFIX_AIO >>-arcane-<< pipeline.parameters.CM_BUILD_TYPE >>-{{ .BuildNum }}
+          key: << pipeline.parameters.CC_KEY_PREFIX_CUDA >>-arcane-<< pipeline.parameters.CM_BUILD_TYPE >>-{{ .BuildNum }}
           paths:
             - ~/workspace/ccache
 
-      # On ne lance pas les tests qui utilisent 'mpithread' car ils ont besoin de 12 coeurs
-      # sur les machines à 4 coeurs cela pose problème.
       - run:
-          name: Test 'framework'
+          name: Force execution of MPI in root session
           command: |
-            mkdir test_results
-            echo BEFORE_PWD = `pwd`
-            cd build && ctest --output-junit ../test_results/results.xml --output-on-failure -E mpithread
-            echo AFTER_PWD = `pwd`
-            ls -al ../test_results
+            echo 'export OMPI_ALLOW_RUN_AS_ROOT=1' >> $BASH_ENV
+            echo 'export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1' >> $BASH_ENV
+
+      - run:
+          name: Test
+          command: |
+            mkdir -p << pipeline.parameters.CT_RESULT_DIR >>
+            ctest --test-dir << pipeline.parameters.BUILD_DIR >> --output-junit << pipeline.parameters.CT_RESULT_DIR >>/results.xml << pipeline.parameters.CT_OPTS >> -E mpithread
 
       - store_test_results:
-          path: test_results
+          path: << pipeline.parameters.CT_RESULT_DIR >>
 
       - store_artifacts:
-          path: test_results
+          path: << pipeline.parameters.CT_RESULT_DIR >>
+
 
 # Invoke jobs via workflows
 workflows:
-  build_and_test_cuda-116_gcc-11:
-    triggers: #use the triggers key to indicate a scheduled build
-      - schedule:
-          cron: "23 1 * * *" # Tous les jours à 01:23 (du matin).
-          filters:
-            branches:
-              only:
-                - main
+  build-and-test:
     jobs:
-      - arccon-install
-
-      - arccore-install:
-          requires:
-            - arccon-install
-
-      - dependencies-install:
-          requires:
-            - arccon-install
-
-      - axlstar-install:
-          requires:
-            - arccon-install
-            - dependencies-install
-
-      - arcane-install:
-          requires:
-            - arccon-install
-            - arccore-install
-            - dependencies-install
-            - axlstar-install
-
-      - arccore-test:
-          requires:
-            - arccore-install
-
-      - arcane-test:
-          requires:
-            - arccore-install
-            - dependencies-install
-            - axlstar-install
-            - arcane-install
-
-  # TODO : Voir si ce n'est pas mieux de faire AIO pour cuda (vu que les machines GPU ne supportent pas les images Docker).
-  # build_and_test_cuda-116_gcc-11:
-  #   jobs:
-  #     - cuda-build-and-test
+      - build-and-test
 
   build_and_test_arm:
     triggers: #use the triggers key to indicate a scheduled build
@@ -624,6 +402,13 @@ workflows:
     jobs:
       - arm-build-and-test
 
-  build-and-test-aio:
-    jobs:
-      - aio-build-and-test
+  # build_and_test_cuda:
+  #   triggers: #use the triggers key to indicate a scheduled build
+  #     - schedule:
+  #         cron: "23 1 * * *" # Tous les jours à 01:23 (du matin).
+  #         filters:
+  #           branches:
+  #             only:
+  #               - main
+  #   jobs:
+  #     - cuda-build-and-test
