@@ -107,16 +107,16 @@ class ARCANE_CORE_EXPORT IEntryPoint
   /*!
    * \brief Consommation CPU totale passé dans ce point d'entrée en (en milli-s).
    *
-   * La résolution de cette méthode est assez faible. Il est en préférable d'utiliser
-   * le temps réel totalElapsedTime().
+   * \note depuis la version 3.6 de Arcane, cette méthode renvoie la même valeur
+   * que totalElapsedTime().
    */
   virtual Real totalCPUTime() const = 0;
 
   /*!
    * \brief Consommation CPU de la dernière itération (en milli-s).
    *
-   * La résolution de cette méthode est assez faible. Il est en préférable d'utiliser
-   * le temps réel elapsedTime().
+   * \note depuis la version 3.6 de Arcane, cette méthode renvoie la même valeur
+   * que lastElapsedTime().
    */
   virtual Real lastCPUTime() const = 0;
 
@@ -126,11 +126,19 @@ class ARCANE_CORE_EXPORT IEntryPoint
   //! Temps d'exécution (temps horloge) de la dernière itération (en milli-s).
   virtual Real lastElapsedTime() const = 0;
 
-  //! Temps total associé au timer \a type.
-  virtual Real totalTime(Timer::eTimerType type) const = 0;
+  /*!
+   * \brief Retourne totalElapsedTime().
+   * \deprecated Utiliser totalElapsedTime() à la place
+   */
+  ARCANE_DEPRECATED_REASON("Y2022: Use totalElapsedTime() instead")
+  virtual Real totalTime(Timer::eTimerType) const = 0;
 
-  //! Temps d'exécution de la dernière itération associé au timer \a type.
-  virtual Real lastTime(Timer::eTimerType type) const = 0;
+  /*!
+   * \brief Retourne lastElapsedTime().
+   * \deprecated Utiliser lastElapsedTime() à la place
+   */
+  ARCANE_DEPRECATED_REASON("Y2022: Use lastElapsedTime() instead")
+  virtual Real lastTime(Timer::eTimerType) const = 0;
 
   //! Retourne le nombre de fois que le point d'entrée a été exécuté
   virtual Integer nbCall() const = 0;

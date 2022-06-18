@@ -123,17 +123,16 @@ class ARCANE_CORE_EXPORT EntryPoint
 
  private:
 
-  ISubDomain* m_sub_domain; //!< Gestionnaire de sous-domaine
-  IFunctor* m_caller; //!< Point d'appel
-  Timer* m_cpu_timer; //!< Timer CPU du point d'entrée
-  Timer* m_elapsed_timer; //!< Timer horloge du point d'entrée
+  ISubDomain* m_sub_domain = nullptr; //!< Gestionnaire de sous-domaine
+  IFunctor* m_caller = nullptr; //!< Point d'appel
+  Timer* m_elapsed_timer = nullptr; //!< Timer horloge du point d'entrée
   String m_name; //!< Nom du point d'entrée
   String m_full_name; //!< Nom du point d'entrée
-  IModule* m_module; //!< Module associé
+  IModule* m_module = nullptr; //!< Module associé
   String m_where; //!< Endroit de l'appel
-  int m_property; //!< Propriétés du point d'entrée
-  Integer m_nb_call; //!< Nombre de fois que le point d'entrée a été exécuté
-  bool m_is_destroy_caller; //!< Indique si on doit détruire le functor d'appel.
+  int m_property = 0; //!< Propriétés du point d'entrée
+  Integer m_nb_call = 0; //!< Nombre de fois que le point d'entrée a été exécuté
+  bool m_is_destroy_caller = false; //!< Indique si on doit détruire le functor d'appel.
 
  private:
 
