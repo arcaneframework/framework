@@ -144,7 +144,8 @@ class ARCCORE_BASE_EXPORT String
     m_const_ptr_size = 0;
     if (m_const_ptr)
       m_const_ptr_size = std::string_view(str).size();
-    _removeReference();
+    _removeReferenceIfNeeded();
+    m_p = nullptr;
     return (*this);
   }
   //! Copie \a str codé en UTF-8 dans cette instance.
@@ -152,7 +153,11 @@ class ARCCORE_BASE_EXPORT String
   //! Copie \a str codé en UTF-8 dans cette instance.
   String& operator=(const std::string& str);
 
-  ~String(); //!< Libère les ressources.
+  //! Libère les ressources.
+  ~String()
+  {
+    _removeReferenceIfNeeded();
+  }
 
  public:
 
@@ -272,11 +277,10 @@ class ARCCORE_BASE_EXPORT String
    */
   static String collapseWhiteSpace(const String& rhs);
 
-
-  //! Transforme tous les caracteres de la chaine en majuscules.
+  //! Transforme tous les caractères de la chaîne en majuscules.
   String upper() const;
 
-  //! Transforme tous les caracteres de la chaine en minuscules.
+  //! Transforme tous les caractères de la chaîne en minuscules.
   String lower() const;
 
   //! Retourne \a true si la chaîne est nulle.
@@ -480,6 +484,21 @@ class ARCCORE_BASE_EXPORT String
     m_const_ptr = str.m_const_ptr;
     m_const_ptr_size = str.m_const_ptr_size;
   }
+
+  /*!
+   * \brief Supprime la référence à l'implémentation si elle n'est pas nulle.
+   */
+  void _removeReferenceIfNeeded()
+  {
+    if (m_p)
+      _removeImplReference();
+  }
+
+  /*!
+   * \brief Supprime la référence à l'implémentation.
+   * \pre m_p != nullptr
+   */
+  void _removeImplReference();
 };
 
 /*---------------------------------------------------------------------------*/
