@@ -48,7 +48,6 @@ EntryPoint::
 EntryPoint(const EntryPointBuildInfo& bi)
 : m_sub_domain(bi.module()->subDomain())
 , m_caller(bi.caller())
-, m_cpu_timer(new Timer(m_sub_domain, bi.name(), Timer::TimerVirtual))
 , m_elapsed_timer(new Timer(m_sub_domain, bi.name(), Timer::TimerReal))
 , m_name(bi.name())
 , m_module(bi.module())
@@ -88,7 +87,6 @@ create(const EntryPointBuildInfo& bi)
 EntryPoint::
 ~EntryPoint()
 {
-  delete m_cpu_timer;
   delete m_elapsed_timer;
   //FIXME ceci ne doit pas etre detruit si on passe par le wrapper C#
   if (m_is_destroy_caller)
@@ -141,7 +139,6 @@ executeEntryPoint()
   Trace::Setter mclass(m_sub_domain->traceMng(), m_module->name());
 
   {
-    Timer::Sentry ts_cpu(m_cpu_timer);
     Timer::Sentry ts_elapsed(m_elapsed_timer);
     Timer::Action ts_action1(m_sub_domain, m_module->name());
     Timer::Phase ts_phase(m_sub_domain, TP_Computation);
@@ -158,7 +155,7 @@ executeEntryPoint()
 Real EntryPoint::
 lastCPUTime() const
 {
-  return m_cpu_timer->lastActivationTime();
+  return m_elapsed_timer->lastActivationTime();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -167,7 +164,7 @@ lastCPUTime() const
 Real EntryPoint::
 totalCPUTime() const
 {
-  return m_cpu_timer->totalTime();
+  return m_elapsed_timer->totalTime();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -192,10 +189,8 @@ totalElapsedTime() const
 /*---------------------------------------------------------------------------*/
 
 Real EntryPoint::
-totalTime(Timer::eTimerType type) const
+totalTime(Timer::eTimerType) const
 {
-  if (type == Timer::TimerVirtual)
-    return totalCPUTime();
   return totalElapsedTime();
 }
 
@@ -203,10 +198,8 @@ totalTime(Timer::eTimerType type) const
 /*---------------------------------------------------------------------------*/
 
 Real EntryPoint::
-lastTime(Timer::eTimerType type) const
+lastTime(Timer::eTimerType) const
 {
-  if (type == Timer::TimerVirtual)
-    return lastCPUTime();
   return lastElapsedTime();
 }
 
