@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TimerMng.h                                                  (C) 2000-2019 */
+/* TimerMng.h                                                  (C) 2000-2022 */
 /*                                                                           */
 /* Implémentation d'un gestionnaire de timer.                                */
 /*---------------------------------------------------------------------------*/
@@ -44,10 +44,6 @@ class ARCANE_IMPL_EXPORT TimerMng
 
  public:
 
-  ~TimerMng() override;
-
- public:
-
   void beginTimer(Timer* timer) override;
   Real endTimer(Timer* timer) override;
   Real getTime(Timer* timer) override;
@@ -59,21 +55,11 @@ class ARCANE_IMPL_EXPORT TimerMng
   virtual Real _getRealTime();
 
   //! Positionne un timer réel
-  virtual void _setRealTime();
+  virtual void _setRealTime() {}
   
  private:
 
-  std::atomic<Int64> m_nb_timer;
-
- private:
-
   void _errorInTimer(const String& msg,int retcode);
-
-  void _setVirtualTime();
-  Real _getVirtualTime();
-
-  void _setTime(Timer*);
-  Real _getTime(Timer*);
 };
 
 /*---------------------------------------------------------------------------*/
