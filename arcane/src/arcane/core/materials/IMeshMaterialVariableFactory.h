@@ -41,8 +41,8 @@ class ARCANE_CORE_EXPORT IMeshMaterialVariableFactory
   virtual Ref<IMeshMaterialVariable>
   createVariable(const MaterialVariableBuildInfo& build_info) =0;
 
-  //! Informations sur le type de conteneur créé
-  virtual DataStorageTypeInfo storageTypeInfo() const =0;
+  //! Informations sur le type de variable créée
+  virtual MaterialVariableTypeInfo materialVariableTypeInfo() const =0;
 };
 
 /*---------------------------------------------------------------------------*/

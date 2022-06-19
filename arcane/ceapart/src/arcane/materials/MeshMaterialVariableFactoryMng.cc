@@ -14,8 +14,7 @@
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/FatalErrorException.h"
 
-#include "arcane/datatype/DataStorageTypeInfo.h"
-
+#include "arcane/core/materials/MaterialVariableTypeInfo.h"
 #include "arcane/core/materials/IMeshMaterialVariableFactory.h"
 #include "arcane/core/materials/IMeshMaterialVariableFactoryMng.h"
 #include "arcane/core/materials/IMeshMaterialMng.h"
@@ -36,7 +35,7 @@ class MeshMaterialVariableFactoryMng
 , public IMeshMaterialVariableFactoryMng
 {
  public:
-  
+
   MeshMaterialVariableFactoryMng(IMeshMaterialMng* mm);
   ~MeshMaterialVariableFactoryMng() override;
 
@@ -47,12 +46,13 @@ class MeshMaterialVariableFactoryMng
   void registerFactory(Ref<IMeshMaterialVariableFactory> factory) override;
   Ref<IMeshMaterialVariable>
   createVariable(const String& storage_type,
-                 const MaterialVariableBuildInfo& build_info) override;
+                 const MaterialVariableBuildInfo& build_info,
+                 MatVarSpace space) override;
 
  private:
 
   IMeshMaterialMng* m_material_mng;
-  std::map<String,Ref<IMeshMaterialVariableFactory>> m_factories;
+  std::map<String, Ref<IMeshMaterialVariableFactory>> m_factories;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -77,11 +77,12 @@ MeshMaterialVariableFactoryMng::
 /*---------------------------------------------------------------------------*/
 
 Ref<IMeshMaterialVariable> MeshMaterialVariableFactoryMng::
-createVariable(const String& storage_type,const MaterialVariableBuildInfo& build_info)
+createVariable(const String& storage_type, const MaterialVariableBuildInfo& build_info,
+               MatVarSpace space)
 {
   auto x = m_factories.find(storage_type);
-  if (x==m_factories.end())
-    ARCANE_FATAL("Can not find mesh IMeshMaterialVariableFactory named={0}",storage_type);
+  if (x == m_factories.end())
+    ARCANE_FATAL("Can not find mesh IMeshMaterialVariableFactory named={0}", storage_type);
 
   return x->second->createVariable(build_info);
 }
@@ -109,8 +110,8 @@ traceMng() const
 void MeshMaterialVariableFactoryMng::
 registerFactory(Ref<IMeshMaterialVariableFactory> factory)
 {
-  DataStorageTypeInfo t = factory->storageTypeInfo();
-  m_factories.insert(std::make_pair(t.fullName(),factory));
+  MaterialVariableTypeInfo t = factory->materialVariableTypeInfo();
+  m_factories.insert(std::make_pair(t.fullName(), factory));
 }
 
 /*---------------------------------------------------------------------------*/
