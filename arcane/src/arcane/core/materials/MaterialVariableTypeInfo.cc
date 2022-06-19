@@ -5,17 +5,18 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshMaterialVariableFactoryMng.h                           (C) 2000-2022 */
+/* MaterialVariableTypeInfo.cc                                (C) 2000-2022 */
 /*                                                                           */
-/* Interface du gestionnaire de fabrique de variables matériaux.             */
-/*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CORE_MATERIALS_IMESHMATERIALVARIABLEFACTORYMNG_H
-#define ARCANE_CORE_MATERIALS_IMESHMATERIALVARIABLEFACTORYMNG_H
+/* Informations caractérisants le type d'une variable matériaux.             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
-#include "arcane/core/materials/MaterialsCoreGlobal.h"
+#include "arcane/core/materials/MaterialVariableTypeInfo.h"
+
+#include "arcane/utils/String.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -25,33 +26,12 @@ namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \internal
- * \brief Interface du gestionnaire de fabrique de variables matériaux.
- */
-class ARCANE_CORE_EXPORT IMeshMaterialVariableFactoryMng
+
+String MaterialVariableTypeInfo::
+fullName() const
 {
- public:
-  
-  virtual ~IMeshMaterialVariableFactoryMng() = default;
-
- public:
-
-  //! Construit l'instance
-  virtual void build() =0;
-
-  //! Gestionnaire de trace associé
-  virtual ITraceMng* traceMng() const =0;
-
-  //! Enregistre la fabrique \a factory.
-  virtual void registerFactory(Ref<IMeshMaterialVariableFactory> factory) =0;
-
-  //! Créé une variable matériau.
-  virtual Ref<IMeshMaterialVariable>
-  createVariable(const String& storage_type,
-                 const MaterialVariableBuildInfo& build_info,
-                 MatVarSpace space) =0;
-};
+  return m_variable_type_info.fullName();
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -60,5 +40,3 @@ class ARCANE_CORE_EXPORT IMeshMaterialVariableFactoryMng
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#endif  

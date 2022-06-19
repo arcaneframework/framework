@@ -5,16 +5,16 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshMaterialVariableFactoryMng.h                           (C) 2000-2022 */
+/* MaterialVariableTypeInfo.h                                  (C) 2000-2022 */
 /*                                                                           */
-/* Interface du gestionnaire de fabrique de variables matériaux.             */
+/* Informations caractérisants le type d'une variable matériaux.             */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CORE_MATERIALS_IMESHMATERIALVARIABLEFACTORYMNG_H
-#define ARCANE_CORE_MATERIALS_IMESHMATERIALVARIABLEFACTORYMNG_H
+#ifndef ARCANE_CORE_MATERIALS_MATERIALVARIABLETYPEINFO_H
+#define ARCANE_CORE_MATERIALS_MATERIALVARIABLETYPEINFO_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
+#include "arcane/VariableTypeInfo.h"
 #include "arcane/core/materials/MaterialsCoreGlobal.h"
 
 /*---------------------------------------------------------------------------*/
@@ -26,39 +26,42 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \internal
- * \brief Interface du gestionnaire de fabrique de variables matériaux.
+ * \brief Informations caractérisant le type d'une variable matériau.
+ *
+ * Les instances de cette classes peuvent être utilisées dans les
+ * constructeurs statiques. Pour éviter tout problème cette classe ne doit
+ * pas utiliser d'allocation dynamique.
  */
-class ARCANE_CORE_EXPORT IMeshMaterialVariableFactoryMng
+class ARCANE_CORE_EXPORT MaterialVariableTypeInfo
 {
  public:
-  
-  virtual ~IMeshMaterialVariableFactoryMng() = default;
+
+  constexpr MaterialVariableTypeInfo(eItemKind item_kind, eDataType data_type, Integer dimension)
+  : m_variable_type_info(item_kind, data_type, dimension, 0, false)
+  {}
 
  public:
 
-  //! Construit l'instance
-  virtual void build() =0;
+  //! Type d'entité de maillage
+  constexpr eItemKind itemKind() const { return m_variable_type_info.itemKind(); }
+  //! Dimension
+  constexpr Integer dimension() const { return m_variable_type_info.dimension(); }
+  //! Type des données de la variable
+  constexpr eDataType dataType() const { return m_variable_type_info.dataType(); }
+  //! Nom complet du type de la variable
+  String fullName() const;
 
-  //! Gestionnaire de trace associé
-  virtual ITraceMng* traceMng() const =0;
+ private:
 
-  //! Enregistre la fabrique \a factory.
-  virtual void registerFactory(Ref<IMeshMaterialVariableFactory> factory) =0;
-
-  //! Créé une variable matériau.
-  virtual Ref<IMeshMaterialVariable>
-  createVariable(const String& storage_type,
-                 const MaterialVariableBuildInfo& build_info,
-                 MatVarSpace space) =0;
+  VariableTypeInfo m_variable_type_info;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane::Materials
+} // namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif
