@@ -153,7 +153,10 @@ class PolyhedralMesh
 
   IItemFamily* findItemFamily(eItemKind ik,const String& name,bool create_if_needed,bool register_modifier_if_created) override;
 
+  PolyhedralFamily* arcaneDefaultFamily(eItemKind ik);
+
 #endif // ARCANE_HAS_CUSTOM_MESH_TOOLS
+
 
  private:
   [[noreturn]] void _errorEmptyMesh() const;

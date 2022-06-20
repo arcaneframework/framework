@@ -13,10 +13,13 @@
    </mesh>
  </meshes>
 
-<!-- <module-test-unitaire>-->
-<!--  <test name="MeshUnitTest">-->
-<!--   <ecrire-maillage>true</ecrire-maillage>-->
-<!--  </test>-->
-<!-- </module-test-unitaire>-->
+<custom-mesh-test>
+  <mesh-size>
+    <nb-cells>2</nb-cells>
+    <nb-faces>13</nb-faces>
+    <nb-edges>26</nb-edges>
+    <nb-nodes>16</nb-nodes>
+  </mesh-size>
+</custom-mesh-test>
 
 </cas>

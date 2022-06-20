@@ -393,12 +393,38 @@ read(const String& filename)
   auto file_extension = splitted_filename.back();
   if (file_extension != "vtk")
     m_subdomain->traceMng()->fatal() << "Only vtk file format supported for polyhedral mesh";
+
+  createItemFamily(IK_Cell, "CellFamily");
+  createItemFamily(IK_Node, "NodeFamily");
+  createItemFamily(IK_Face, "FaceFamily");
+  createItemFamily(IK_Edge, "EdgeFamily");
+  auto cell_family = arcaneDefaultFamily(IK_Cell);
+  auto node_family = arcaneDefaultFamily(IK_Node);
+  auto face_family = arcaneDefaultFamily(IK_Face);
+  auto edge_family = arcaneDefaultFamily(IK_Edge);
 #ifdef ARCANE_HAS_VTKIO
-  PolyhedralMeshTools::VtkReader::read(filename, *this);
+  PolyhedralMeshTools::VtkReader reader{filename};
+  PolyhedralMeshImpl::ItemLocalIds cell_lids,node_lids, face_lids, edge_lids;
+  // todo separate Link with Arcane and link with vtk structure
+  // Add items
+  m_mesh->scheduleAddItems(cell_family, reader.cellUids(), cell_lids);
+  m_mesh->scheduleAddItems(node_family, reader.nodeUids(), node_lids);
+  m_mesh->scheduleAddItems(face_family, reader.faceUids(), face_lids);
+  m_mesh->scheduleAddItems(edge_family, reader.edgeUids(), edge_lids);
+  // Add connectivities
+//  m_mesh->scheduleAddConnectivity(cell_family,cell_lids,reader.nbNodes(),node_family,reader.cellNodes(),String{"CellToNodes"});
+//  m_mesh->scheduleAddConnectivity(node_family,node_lids,1,cell_family,
+//                                  Int64UniqueArray{0,0,0,0,0,0},String{"NodeToCells"});
+  m_mesh->applyScheduledOperations();
+  cell_family->endUpdate();
+  node_family->endUpdate();
+  face_family->endUpdate();
+  edge_family->endUpdate();
+  endUpdate();
+  m_is_allocated = true;
 #else
   ARCANE_FATAL("Need VTKIO to read polyhedral mesh");
 #endif
-  m_is_allocated = true;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -670,6 +696,15 @@ findItemFamily(eItemKind ik, const String& name, bool create_if_needed, bool reg
   if (!create_if_needed)
     return nullptr;
   return createItemFamily(ik, name);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+mesh::PolyhedralFamily* mesh::PolyhedralMesh::
+arcaneDefaultFamily(eItemKind ik)
+{
+  return m_default_arcane_families[ik];
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -14,7 +14,12 @@
 #ifndef ARCANE_POLYHEDRALMESHTOOLS_H
 #define ARCANE_POLYHEDRALMESHTOOLS_H
 
+#include <vtkUnstructuredGrid.h>
+#include <vtkUnstructuredGridReader.h>
+#include <vtkNew.h>
+
 #include "arcane/ArcaneTypes.h"
+#include "arcane/utils/UniqueArray.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -28,7 +33,8 @@ namespace Arcane
 namespace mesh
 {
 
-  class PolyhedralMesh;
+class PolyhedralMesh;
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -36,9 +42,27 @@ namespace PolyhedralMeshTools
 {
 
   class VtkReader{
+
    public:
-    static void read(const String& filename, PolyhedralMesh& mesh1);
+    VtkReader(const String&  filename);
+
+    Int64ConstArrayView cellUids();
+    Int64ConstArrayView nodeUids();
+    Int64ConstArrayView faceUids();
+    Int64ConstArrayView edgeUids();
+
+    Integer nbNodes();
+
+   private:
+    const String& m_filename;
+    vtkNew<vtkUnstructuredGridReader> m_vtk_grid_reader;
+    UniqueArray<Int64> m_cell_uids, m_node_uids, m_face_uids, m_edge_uids, m_face_node_uids, m_edge_node_uids;
+    UniqueArray<Int32> m_face_nb_nodes;
+
+    bool _findFace(UniqueArray<Int64> face_nodes);
+    bool _findEdge(UniqueArray<Int64> edge_nodes);
   };
+
 
 } // namespace PolyhedralMeshTools
 
