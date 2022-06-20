@@ -71,6 +71,7 @@ set( ARCANE_SOURCES
    core/materials/MatItem.h
    core/materials/MatVarIndex.h
    core/materials/MatVarIndex.cc
+   core/materials/IEnumeratorTracer.h
    core/materials/IMeshMaterialVariable.h
    core/materials/IMeshMaterialMng.cc
    core/materials/IMeshMaterialMng.h
