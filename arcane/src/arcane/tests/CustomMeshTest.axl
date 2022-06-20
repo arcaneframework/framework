@@ -4,5 +4,13 @@
   <entry-points>
     <entry-point method-name="init" name="Init" where="init" property="none" />
   </entry-points>
-  <options/>
+  <options>
+    <complex name="mesh-size" minOccurs="0" type="MeshSizeType">
+      <simple name="nb-cells" type="integer"/>
+      <simple name="nb-faces" type="integer"/>
+      <simple name="nb-edges" type="integer"/>
+      <simple name="nb-nodes" type="integer"/>
+    </complex>
+  </options>
+
 </module>
