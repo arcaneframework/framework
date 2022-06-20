@@ -16,6 +16,10 @@
 
 #include "arcane/core/materials/IMeshComponent.h"
 
+// Cet include n'est pas utile pour ce '.h' mais on le laisse temporairement
+// pour compatibilité avec l'existant (Juin 2022).
+#include "arcane/core/materials/IMeshMaterialMng.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
