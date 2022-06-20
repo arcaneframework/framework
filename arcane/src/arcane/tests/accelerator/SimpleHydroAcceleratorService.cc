@@ -931,7 +931,7 @@ computeGeometricValues()
     // Calcule les résultantes aux sommets
     computeCQs(coord,face_coord,in_out_cell_cqs[cid]);
 
-    Span<const Real3> in_cqs(in_out_cell_cqs[cid]);
+    SmallSpan<const Real3> in_cqs(in_out_cell_cqs[cid]);
 
     // Calcule le volume de la maille
     {
