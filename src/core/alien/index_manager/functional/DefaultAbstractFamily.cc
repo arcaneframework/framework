@@ -129,7 +129,7 @@ DefaultAbstractFamily::owners(ConstArrayView<Int32> localIds) const
   const Integer size = localIds.size();
   SharedArray<Integer> result(size);
   for (Integer i = 0; i < size; ++i) {
-    result[i] = m_owners[i];
+    result[i] = m_owners[localIds[i]];
   }
   return SafeConstArrayView<Integer>(result);
 }
@@ -142,7 +142,7 @@ DefaultAbstractFamily::uids(ConstArrayView<Int32> localIds) const
   const Integer size = localIds.size();
   SharedArray<Int64> result(size);
   for (Integer i = 0; i < size; ++i) {
-    result[i] = m_unique_ids[i];
+    result[i] = m_unique_ids[localIds[i]];
   }
   return SafeConstArrayView<Int64>(result);
 }

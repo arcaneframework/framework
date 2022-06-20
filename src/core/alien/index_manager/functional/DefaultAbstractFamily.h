@@ -29,7 +29,7 @@ namespace Alien
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/* This module relies on the fact that local_id of the item i is also i.
+/*! This module relies on the fact that local_id of the item i is also i.
  */
 class ALIEN_EXPORT DefaultAbstractFamily : public IAbstractFamily
 {

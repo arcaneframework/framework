@@ -21,10 +21,11 @@ find_package(GTest REQUIRED)
 
 # tests with GTest
 
-add_executable(core.gtest.seq main.cpp
+add_executable(core.gtest.seq main.cpp TestFamilies.cc
         TestSpace.cc TestAlienInclude.cc TestSpacePartition.cc)
 
 add_executable(core.gtest.mpi main.cpp
+        TestFamilies.cc
         TestBackEnds.cc
         TestTimestamp.cc
         TestCompositeSpace.cc

@@ -6,6 +6,10 @@ All notable changes to this project will be documented in this file.
 
 **News:**
 
+**Fixed bugs:**
+
+- \[core\]: fix IndexManager bug when ghost items where first.
+
 ## 1.1.4
 
 **News:**

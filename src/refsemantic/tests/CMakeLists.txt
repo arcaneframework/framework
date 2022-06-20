@@ -36,10 +36,10 @@ add_executable(ref.gtest.seq main.cpp
         TestVBlockMatrix.cc
         TestRedistributor.cc
         TestMVExpr.cc)
-        
-IF(ALIEN_USE_SYCL)
-  target_sources(ref.gtest.seq PRIVATE TestMVSYCL.cc)
-ENDIF()
+
+IF (ALIEN_USE_SYCL)
+    target_sources(ref.gtest.seq PRIVATE TestMVSYCL.cc)
+ENDIF ()
 
 target_link_libraries(ref.gtest.mpi PRIVATE
         GTest::GTest
@@ -57,8 +57,8 @@ target_link_libraries(ref.gtest.seq PRIVATE
         )
 
 if (ALIEN_EXPAND_TESTS)
-    gtest_discover_tests(ref.gtest.seq TEST_PREFIX "ref." TEST_SUFFIX ".seq")
-    gtest_discover_tests(ref.gtest.mpi TEST_PREFIX "ref." TEST_SUFFIX ".seq")
+    gtest_discover_tests(ref.gtest.seq TEST_PREFIX "ref." TEST_SUFFIX ".seq" DISCOVERY_TIMEOUT 10)
+    gtest_discover_tests(ref.gtest.mpi TEST_PREFIX "ref." TEST_SUFFIX ".seq" DISCOVERY_TIMEOUT 10)
 else (ALIEN_EXPAND_TESTS)
     alien_test(
             BENCH ref
