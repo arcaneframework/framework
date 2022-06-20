@@ -1,28 +1,28 @@
 version: 2.1
 
 executors:
-  # 4 CPU / 8Go RAM / 20c/min
+  # 4 CPU - 8Go RAM - 20c/min
   large-executor-image:
     docker:
       - image: ghcr.io/arcaneframework/ubuntu-2204:gcc-12_clang-14_minimal
     resource_class: large
     working_directory: ~/workspace
 
-  # V100 / 8 CPU / 30Go RAM / 1000c/min
+  # V100 - 8 CPU - 30Go RAM - 1000c/min
   large-executor-gpu:
     machine:
       image: ubuntu-2004-cuda-11.4:202110-01
     resource_class: gpu.nvidia.large
     working_directory: ~/workspace
 
-  # 2 CPU / 8Go RAM / 10c/min
+  # 2 CPU - 8Go RAM - 10c/min
   medium-executor-arm:
     machine:
       image: ubuntu-2004:2022.04.1
     resource_class: arm.medium
     working_directory: ~/workspace
 
-  # 4 CPU / 15Go RAM / 20c/min
+  # 4 CPU - 15Go RAM - 20c/min
   large-executor-empty:
     machine:
       image: ubuntu-2204:2022.04.1

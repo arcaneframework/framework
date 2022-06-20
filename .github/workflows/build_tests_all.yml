@@ -369,16 +369,16 @@ jobs:
       fail-fast: false
       matrix:
         image_short: ['U20_G11_C12_CU116', 'U22_G11_C13_CU117']
-        version_short: ['M']
+        version_short: ['F', 'M']
         compilo_name: ['CLang', 'GCC']
         type: ['Debug', 'Release']
 
         include:
-          - compilo_name: 'GCC'
-            cmake_compilo: '-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DARCANE_ACCELERATOR_MODE=CUDANVCC -DCMAKE_CUDA_COMPILER=`which nvcc`'
-
           - compilo_name: 'CLang'
             cmake_compilo: '-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DARCANE_ACCELERATOR_MODE=CUDANVCC -DCMAKE_CUDA_COMPILER=`which nvcc`'
+          
+          - compilo_name: 'GCC'
+            cmake_compilo: '-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DARCANE_ACCELERATOR_MODE=CUDANVCC -DCMAKE_CUDA_COMPILER=`which nvcc`'
 
           - image_short: 'U20_G11_C12_CU116'
             image_long: 'ubuntu-2004:gcc-11_clang-12_cuda-116'
