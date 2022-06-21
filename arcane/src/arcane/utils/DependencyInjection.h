@@ -506,8 +506,6 @@ class ARCANE_UTILS_EXPORT GlobalRegisterer
   ProviderProperty m_factory_property;
 
  private:
-
-  void _init2() noexcept;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -40,6 +40,7 @@ set(ARCANE_SOURCES
   FileContent.cc
   FileContent.h
   GenericRegisterer.h
+  GenericRegisterer.cc
   GoBackwardException.cc
   GoBackwardException.h
   IDataCompressor.h

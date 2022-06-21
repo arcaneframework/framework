@@ -22,6 +22,14 @@
 namespace Arcane
 {
 
+class ARCANE_UTILS_EXPORT GenericRegistererBase
+{
+ protected:
+
+  [[noreturn]] void doErrorConflict();
+  [[noreturn]] void doErrorNonZeroCount();
+};
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -42,6 +50,7 @@ namespace Arcane
  */
 template <typename Type>
 class ARCANE_UTILS_EXPORT GenericRegisterer
+: public GenericRegistererBase
 {
  protected:
 
@@ -102,23 +111,38 @@ class ARCANE_UTILS_EXPORT GenericRegisterer
 
   void _init() noexcept
   {
+    Info& reg_info = Type::registererInfo();
     Type* current_instance = static_cast<Type*>(this);
     // ATTENTION: Cette méthode est appelée depuis un constructeur global
     // (donc avant le main()) et il ne faut pas faire d'exception dans ce code.
-    InstanceType* first = Type::registererInfo().firstRegisterer();
+    InstanceType* first = reg_info.firstRegisterer();
     if (!first) {
-      Type::registererInfo().m_first_registerer = current_instance;
+      reg_info.m_first_registerer = current_instance;
       m_previous = nullptr;
       m_next = nullptr;
     }
     else {
       InstanceType* next = first->nextRegisterer();
       m_next = first;
-      Type::registererInfo().m_first_registerer = current_instance;
+      reg_info.m_first_registerer = current_instance;
       if (next)
         next->m_previous = current_instance;
     }
-    ++Type::registererInfo().m_nb_registerer;
+    ++reg_info.m_nb_registerer;
+
+    // Check integrity
+    auto* p = reg_info.firstRegisterer();
+    Integer count = reg_info.nbRegisterer();
+    while (p && count > 0) {
+      p = p->nextRegisterer();
+      --count;
+    }
+    if (p) {
+      doErrorConflict();
+    }
+    else if (count > 0) {
+      doErrorNonZeroCount();
+    }
   }
 };
 

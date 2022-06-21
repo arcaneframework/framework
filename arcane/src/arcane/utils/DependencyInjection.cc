@@ -214,34 +214,12 @@ GlobalRegisterer(FactoryCreateFunc func, const ProviderProperty& property) noexc
 : m_factory_create_func(func)
 , m_factory_property(property)
 {
-  _init2();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 GenericRegisterer<GlobalRegisterer>::Info GlobalRegisterer::m_global_registerer_info;
-
-void GlobalRegisterer::
-_init2() noexcept
-{
-  // TODO mettre cela dans la classe base
-  // Check integrity
-  GlobalRegisterer* p = m_global_registerer_info.firstRegisterer();
-  Integer count = m_global_registerer_info.nbRegisterer();
-  while (p && count > 0) {
-    p = p->nextRegisterer();
-    --count;
-  }
-  if (p) {
-    std::cerr << "Arcane Fatal Error: Service '" << m_name << "' conflict in service registration" << std::endl;
-    exit(1);
-  }
-  else if (count > 0) {
-    std::cerr << "Arcane Fatal Error: Service '" << m_name << "' breaks service registration (inconsistent shortcut)" << std::endl;
-    exit(1);
-  }
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
