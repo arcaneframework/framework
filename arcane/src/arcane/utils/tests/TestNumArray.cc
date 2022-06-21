@@ -9,6 +9,11 @@
 
 #include "arcane/utils/NumArray.h"
 
+#include "arcane/utils/Real2.h"
+#include "arcane/utils/Real3.h"
+#include "arcane/utils/Real2x2.h"
+#include "arcane/utils/Real3x3.h"
+
 #include <vector>
 
 /*---------------------------------------------------------------------------*/
@@ -173,6 +178,26 @@ TEST(NumArray3,Copy)
   NumArray<Real,3> v2(nb_x*2,nb_y/2,nb_z*3);
 
   v.copy(v2.span());
+
+  {
+    NumArray<int,1> vi0(4,{1,3,5,7});
+    NumArray<int,1> vi1(vi0);
+    NumArray<int,1> vi2;
+    vi2 = vi1;
+    ASSERT_EQ(vi1.to1DSpan(),vi0.to1DSpan());
+    ASSERT_EQ(vi2.to1DSpan(),vi1.to1DSpan());
+    NumArray<int,1> vi3(vi0.to1DSpan());
+    ASSERT_EQ(vi3.to1DSpan(),vi0.to1DSpan());
+  }
+
+  {
+    NumArray<int,1> vi0(4,{1,3,5,7});
+    NumArray<int,1> vi1(vi0);
+    NumArray<int,1> vi2;
+    vi2 = vi1;
+    ASSERT_EQ(vi1.to1DSpan(),vi0.to1DSpan());
+    ASSERT_EQ(vi2.to1DSpan(),vi1.to1DSpan());
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -273,6 +298,55 @@ TEST(NumArray3,Layout)
       282, 56, 309, 3, 256, 30, 283, 57, 310, 4, 257, 31, 284, 58, 311
     };
     ASSERT_EQ(values.smallView(),ref_value.view());
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+TEST(NumArray,RealN)
+{
+  {
+    NumArray<Real2,1> a(5);
+    a(2) = Real2(0.0,3.2);
+    a(3,1) = 2.0;
+    ASSERT_EQ(a(3).y,2.0);
+  }
+
+  {
+    NumArray<Real3,1> a(5);
+    const Real3 v(0.0,3.2,5.6);
+    a(0) = v;
+    a(4,1) = 4.0;
+    ASSERT_EQ(a(4).y,4.0);
+    ASSERT_EQ(a(0),v);
+  }
+
+  {
+    NumArray<Real2x2,1> a(5);
+    const Real2 v0(1.2,1.7);
+    const Real2x2 v(Real2(3.2,5.6), Real2(3.4,1.7));
+    a(0) = v;
+    a(3,1,0) = v0.x;
+    a(3,1,1) = v0.y;
+    a(4,1,0) = 4.0;
+    ASSERT_EQ(a(4).y.x,4.0);
+    ASSERT_EQ(a(0),v);
+    ASSERT_EQ(a(3,1),v0);
+  }
+
+  {
+    NumArray<Real3x3,1> a(5);
+    const Real3 v0(1.2,3.4,1.7);
+    const Real3x3 v(Real3(0.0,3.2,5.6), Real3(1.2,3.4,1.7), Real3(9.2,1.4,5.0));
+    a(0) = v;
+    a(3,1,0) = v0.x;
+    a(3,1,1) = v0.y;
+    a(3,1,2) = v0.z;
+    a(4,1,2) = 4.0;
+    ASSERT_EQ(a(4).y.z,4.0);
+    ASSERT_EQ(a(0),v);
+    ASSERT_EQ(a(3,1),v0);
   }
 }
 

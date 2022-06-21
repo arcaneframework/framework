@@ -65,6 +65,13 @@ namespace impl
     {
       this->_initFromSpan(rhs.to1DSpan());
     }
+    NumArrayContainer<DataType>& operator=(const NumArrayContainer<DataType>& rhs)
+    {
+      if (this!=&rhs){
+        BaseClass::_copy(rhs.data());
+      }
+      return (*this);
+    }
    public:
     void resize(Int64 new_size) { BaseClass::_resize(new_size); }
     Span<DataType> to1DSpan() { return BaseClass::span(); }
@@ -76,10 +83,14 @@ namespace impl
     void copyInitializerList(std::initializer_list<DataType> alist)
     {
       Span<DataType> s = to1DSpan();
+      Int64 s1 = s.size();
       Int32 index = 0;
       for( auto x : alist ){
         s[index] = x;
         ++index;
+        // S'assure qu'on ne déborde pas
+        if (index>=s1)
+          break;
       }
     }
   };
@@ -264,15 +275,30 @@ class NumArray<DataType,1,LayoutType>
   {
     this->m_data.copyInitializerList(alist);
   }
+  //! Construit une instance à partir d'une vue
+  NumArray(SmallSpan<const DataType> v) : NumArray(v.size())
+  {
+    this->m_data.copy(v);
+  }
+  //! Construit une instance à partir d'une vue
+  NumArray(Span<const DataType> v)
+  : NumArray(SmallSpan<const DataType>(v.data(),arcaneCheckArraySize(v.size())))
+  {
+  }
  public:
+
   void resize(Int32 dim1_size)
   {
     this->resize(ArrayExtents<1>(dim1_size));
   }
+
  public:
+
   //! Valeur de la première dimension
   constexpr Int32 dim1Size() const { return this->extent(0); }
+
  public:
+
   //! Valeur pour l'élément \a i
   DataType operator()(Int32 i) const { return m_span(i); }
   //! Positionne la valeur pour l'élément \a i
@@ -283,7 +309,25 @@ class NumArray<DataType,1,LayoutType>
   DataType& operator[](Int32 i) { return m_span(i); }
   //! Valeur pour l'élément \a i
   DataType operator[](Int32 i) const { return m_span(i); }
+
  public:
+
+  //! Valeur pour l'élément \a i et la composante \a a
+  template<typename X = DataType,typename SubConstType = typename NumericTraitsT<X>::SubscriptConstType >
+  SubConstType operator()(Int32 i,Int32 a) const { return m_span(i,a); }
+  //! Valeur pour l'élément \a i et la composante \a [a][b]
+  template<typename X = DataType,typename SubType = typename NumericTraitsT<X>::SubscriptType >
+  SubType operator()(Int32 i,Int32 a) { return m_span(i,a); }
+
+  //! Valeur pour l'élément \a i et la composante \a a
+  template<typename X = DataType,typename Sub2ConstType = typename NumericTraitsT<X>::Subscript2ConstType >
+  Sub2ConstType operator()(Int32 i,Int32 a,Int32 b) const { return m_span(i,a,b); }
+  //! Valeur pour l'élément \a i et la composante \a [a][b]
+  template<typename X = DataType,typename Sub2Type = typename NumericTraitsT<X>::Subscript2Type >
+  Sub2Type operator()(Int32 i,Int32 a,Int32 b) { return m_span(i,a,b); }
+
+ public:
+
   constexpr operator SpanType () { return this->span(); }
   constexpr operator ConstSpanType () const { return this->constSpan(); }
 };
@@ -354,6 +398,22 @@ class NumArray<DataType,2,LayoutType>
   {
     return m_span(i,j);
   }
+
+ public:
+
+  //! Valeur pour l'élément \a i et la composante \a a
+  template<typename X = DataType,typename SubConstType = typename NumericTraitsT<X>::SubscriptConstType >
+  SubConstType operator()(Int32 i,Int32 j,Int32 a) const { return m_span(i,j,a); }
+  //! Valeur pour l'élément \a i et la composante \a [a][b]
+  template<typename X = DataType,typename SubType = typename NumericTraitsT<X>::SubscriptType >
+  SubType operator()(Int32 i,Int32 j,Int32 a) { return m_span(i,j,a); }
+
+  //! Valeur pour l'élément \a i et la composante \a a
+  template<typename X = DataType,typename Sub2ConstType = typename NumericTraitsT<X>::Subscript2ConstType >
+  Sub2ConstType operator()(Int32 i,Int32 j,Int32 a,Int32 b) const { return m_span(i,j,a,b); }
+  //! Valeur pour l'élément \a i et la composante \a [a][b]
+  template<typename X = DataType,typename Sub2Type = typename NumericTraitsT<X>::Subscript2Type >
+  Sub2Type operator()(Int32 i,Int32 j,Int32 a,Int32 b) { return m_span(i,j,a,b); }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -388,14 +448,18 @@ class NumArray<DataType,3,LayoutType>
   {
     this->resize(ArrayExtents<3>(dim1_size,dim2_size,dim3_size));
   }
+
  public:
+
   //! Valeur de la première dimension
   constexpr Int32 dim1Size() const { return extent(0); }
   //! Valeur de la deuxième dimension
   constexpr Int32 dim2Size() const { return extent(1); }
   //! Valeur de la troisième dimension
   constexpr Int32 dim3Size() const { return extent(2); }
+
  public:
+
   //! Valeur pour l'élément \a i,j,k
   DataType operator()(Int32 i,Int32 j,Int32 k) const
   {
@@ -411,6 +475,22 @@ class NumArray<DataType,3,LayoutType>
   {
     return m_span(i,j,k);
   }
+
+ public:
+
+  //! Valeur pour l'élément \a i et la composante \a a
+  template<typename X = DataType,typename SubConstType = typename NumericTraitsT<X>::SubscriptConstType >
+  SubConstType operator()(Int32 i,Int32 j,Int32 k,Int32 a) const { return m_span(i,j,k,a); }
+  //! Valeur pour l'élément \a i et la composante \a [a][b]
+  template<typename X = DataType,typename SubType = typename NumericTraitsT<X>::SubscriptType >
+  SubType operator()(Int32 i,Int32 j,Int32 k,Int32 a) { return m_span(i,j,k,a); }
+
+  //! Valeur pour l'élément \a i et la composante \a a
+  template<typename X = DataType,typename Sub2ConstType = typename NumericTraitsT<X>::Subscript2ConstType >
+  Sub2ConstType operator()(Int32 i,Int32 j,Int32 k,Int32 a,Int32 b) const { return m_span(i,j,k,a,b); }
+  //! Valeur pour l'élément \a i et la composante \a [a][b]
+  template<typename X = DataType,typename Sub2Type = typename NumericTraitsT<X>::Subscript2Type >
+  Sub2Type operator()(Int32 i,Int32 j,Int32 k,Int32 a,Int32 b) { return m_span(i,j,k,a,b); }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -473,6 +553,21 @@ class NumArray<DataType,4,LayoutType>
   {
     return m_span(i,j,k,l);
   }
+ public:
+
+  //! Valeur pour l'élément \a i et la composante \a a
+  template<typename X = DataType,typename SubConstType = typename NumericTraitsT<X>::SubscriptConstType >
+  SubConstType operator()(Int32 i,Int32 j,Int32 k,Int32 l,Int32 a) const { return m_span(i,j,k,l,a); }
+  //! Valeur pour l'élément \a i et la composante \a [a][b]
+  template<typename X = DataType,typename SubType = typename NumericTraitsT<X>::SubscriptType >
+  SubType operator()(Int32 i,Int32 j,Int32 k,Int32 l,Int32 a) { return m_span(i,j,k,l,a); }
+
+  //! Valeur pour l'élément \a i et la composante \a a
+  template<typename X = DataType,typename Sub2ConstType = typename NumericTraitsT<X>::Subscript2ConstType >
+  Sub2ConstType operator()(Int32 i,Int32 j,Int32 k,Int32 l,Int32 a,Int32 b) const { return m_span(i,j,k,l,a,b); }
+  //! Valeur pour l'élément \a i et la composante \a [a][b]
+  template<typename X = DataType,typename Sub2Type = typename NumericTraitsT<X>::Subscript2Type >
+  Sub2Type operator()(Int32 i,Int32 j,Int32 k,Int32 l,Int32 a,Int32 b) { return m_span(i,j,k,l,a,b); }
 };
 
 /*---------------------------------------------------------------------------*/
