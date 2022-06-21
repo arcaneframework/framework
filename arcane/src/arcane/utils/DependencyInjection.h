@@ -20,6 +20,7 @@
 
 #include "arcane/utils/Ref.h"
 #include "arcane/utils/ExternalRef.h"
+#include "arcane/utils/GenericRegisterer.h"
 
 #include "arccore/base/ReferenceCounterImpl.h"
 
@@ -465,8 +466,20 @@ class ARCANE_UTILS_EXPORT FactoryInfo
 /*---------------------------------------------------------------------------*/
 
 class ARCANE_UTILS_EXPORT GlobalRegisterer
+: public GenericRegisterer<GlobalRegisterer>
 {
+  using BaseClass = GenericRegisterer<GlobalRegisterer>;
+  static BaseClass::Info m_global_registerer_info;
+
  public:
+
+  static GenericRegisterer<GlobalRegisterer>::Info& registererInfo()
+  {
+    return m_global_registerer_info;
+  }
+
+ public:
+
   typedef FactoryInfo* (*FactoryCreateFunc)(const ProviderProperty& property);
 
  public:
@@ -475,9 +488,10 @@ class ARCANE_UTILS_EXPORT GlobalRegisterer
    *
    * Ce constructeur est utilisé pour enregistrer un service.
    */
-  GlobalRegisterer(FactoryCreateFunc func, const ProviderProperty& property) ARCANE_NOEXCEPT;
+  GlobalRegisterer(FactoryCreateFunc func, const ProviderProperty& property) noexcept;
 
  public:
+
   FactoryCreateFunc infoCreatorWithPropertyFunction() { return m_factory_create_func; }
 
   //! Nom du service
@@ -485,36 +499,15 @@ class ARCANE_UTILS_EXPORT GlobalRegisterer
 
   const ProviderProperty& property() const { return m_factory_property; }
 
-  //! Service précédent (0 si le premier)
-  GlobalRegisterer* previousService() const { return m_previous; }
-
-  //! Service suivant (0 si le dernier)
-  GlobalRegisterer* nextService() const { return m_next; }
-
- public:
-  //! Accès au premier élément de la chaine d'enregistreur de service
-  static GlobalRegisterer* firstService();
-
-  //! Nombre d'enregisteur de service dans la chaine
-  static Integer nbService();
-
  private:
+
   FactoryCreateFunc m_factory_create_func = nullptr;
   const char* m_name = nullptr;
   ProviderProperty m_factory_property;
-  GlobalRegisterer* m_previous = nullptr;
-  GlobalRegisterer* m_next = nullptr;
 
  private:
-  void _init();
 
-  //! Positionne le service précédent
-  /*! Utilisé en interne pour construire la chaine de service */
-  void _setPreviousService(GlobalRegisterer* s) { m_previous = s; }
-
-  //! Positionne le service suivant
-  /*! Utilisé en interne pour construire la chaine de service */
-  void _setNextService(GlobalRegisterer* s) { m_next = s; }
+  void _init2() noexcept;
 };
 
 /*---------------------------------------------------------------------------*/

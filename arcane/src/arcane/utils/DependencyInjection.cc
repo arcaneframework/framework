@@ -210,76 +210,37 @@ hasName(const String& str) const
 /*---------------------------------------------------------------------------*/
 
 GlobalRegisterer::
-GlobalRegisterer(FactoryCreateFunc func, const ProviderProperty& property) ARCANE_NOEXCEPT
+GlobalRegisterer(FactoryCreateFunc func, const ProviderProperty& property) noexcept
 : m_factory_create_func(func)
 , m_factory_property(property)
 {
-  _init();
+  _init2();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace
-{
-  GlobalRegisterer* global_arcane_first_service = nullptr;
-  Integer global_arcane_nb_service = 0;
-}
+GenericRegisterer<GlobalRegisterer>::Info GlobalRegisterer::m_global_registerer_info;
 
 void GlobalRegisterer::
-_init()
+_init2() noexcept
 {
-  // ATTENTION: Cette méthode est appelée depuis un constructeur global
-  // (donc avant le main()) et il ne faut pas faire d'exception dans ce code.
-  if (!global_arcane_first_service) {
-    global_arcane_first_service = this;
-    _setPreviousService(nullptr);
-    _setNextService(nullptr);
+  // TODO mettre cela dans la classe base
+  // Check integrity
+  GlobalRegisterer* p = m_global_registerer_info.firstRegisterer();
+  Integer count = m_global_registerer_info.nbRegisterer();
+  while (p && count > 0) {
+    p = p->nextRegisterer();
+    --count;
   }
-  else {
-    GlobalRegisterer* next = global_arcane_first_service->nextService();
-    _setNextService(global_arcane_first_service);
-    global_arcane_first_service = this;
-    if (next)
-      next->_setPreviousService(this);
+  if (p) {
+    std::cerr << "Arcane Fatal Error: Service '" << m_name << "' conflict in service registration" << std::endl;
+    exit(1);
   }
-  ++global_arcane_nb_service;
-
-  {
-    // Check integrity
-    GlobalRegisterer* p = global_arcane_first_service;
-    Integer count = global_arcane_nb_service;
-    while (p && count > 0) {
-      p = p->nextService();
-      --count;
-    }
-    if (p) {
-      cout << "Arcane Fatal Error: Service '" << m_name << "' conflict in service registration" << std::endl;
-      exit(1);
-    }
-    else if (count > 0) {
-      cout << "Arcane Fatal Error: Service '" << m_name << "' breaks service registration (inconsistent shortcut)" << std::endl;
-      exit(1);
-    }
+  else if (count > 0) {
+    std::cerr << "Arcane Fatal Error: Service '" << m_name << "' breaks service registration (inconsistent shortcut)" << std::endl;
+    exit(1);
   }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-GlobalRegisterer* GlobalRegisterer::
-firstService()
-{
-  return global_arcane_first_service;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Integer GlobalRegisterer::
-nbService()
-{
-  return global_arcane_nb_service;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -296,7 +257,7 @@ namespace Arcane::DependencyInjection
 void Injector::
 fillWithGlobalFactories()
 {
-  impl::GlobalRegisterer* g = impl::GlobalRegisterer::firstService();
+  impl::GlobalRegisterer* g = impl::GlobalRegisterer::firstRegisterer();
   Integer i = 0;
   while (g) {
     auto func = g->infoCreatorWithPropertyFunction();
@@ -306,7 +267,7 @@ fillWithGlobalFactories()
     if (fi)
       m_p->m_factories.addRange(fi->m_p->m_factories);
 
-    g = g->nextService();
+    g = g->nextRegisterer();
     ++i;
     if (i > 100000)
       ARCANE_FATAL("Infinite loop in DependencyInjection global factories");
