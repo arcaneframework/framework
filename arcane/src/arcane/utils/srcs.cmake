@@ -39,6 +39,7 @@ set(ARCANE_SOURCES
   FloatingPointExceptionSentry.h
   FileContent.cc
   FileContent.h
+  GenericRegisterer.h
   GoBackwardException.cc
   GoBackwardException.h
   IDataCompressor.h
