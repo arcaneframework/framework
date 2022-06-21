@@ -39,10 +39,9 @@ template<typename DataType>
 class CellEnvironmentVariableScalarRef
 : public MeshMaterialVariableRef
 {
-  using TruePrivatePartType = MeshMaterialVariableScalar<Cell,DataType>;
-
  public:
 
+  using TruePrivatePartType = MeshMaterialVariableScalar<Cell,DataType>;
   using PrivatePartType = IMeshMaterialVariableScalar<Cell,DataType>;
   typedef Cell ItemType;
   typedef MeshVariableScalarRefT<ItemType,DataType> GlobalVariableRefType;
@@ -151,10 +150,9 @@ template<typename DataType>
 class CellEnvironmentVariableArrayRef
 : public MeshMaterialVariableRef
 {
-  using TruePrivatePartType = MeshMaterialVariableArray<Cell,DataType>;
-
  public:
 
+  using TruePrivatePartType = MeshMaterialVariableArray<Cell,DataType>;
   using PrivatePartType = IMeshMaterialVariableArray<Cell,DataType>;
   using ItemType = Cell;
   using GlobalVariableRefType = MeshVariableArrayRefT<ItemType,DataType>;

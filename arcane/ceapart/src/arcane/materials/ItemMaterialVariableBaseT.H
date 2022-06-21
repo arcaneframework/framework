@@ -472,9 +472,9 @@ _fillPartialValuesWithSuperValues(MeshComponentList components)
  * Récupère ou construit une variable de type \a VariableTrueType dont
  * les caractéristiques sont données dans \a v.
  */
-template<typename VariableTrueType> VariableTrueType*
+template<typename VariableTrueType> IMeshMaterialVariable*
 VariableReferenceGetter<VariableTrueType>::
-getReference(const VariableBuildInfo& v,IMeshMaterialMng* mm,MatVarSpace mvs)
+getReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
 {
   typedef typename VariableTrueType::PrivatePartType PrivatePartType;
   typedef typename VariableTrueType::VariableRefType VariableRefType;
@@ -483,7 +483,8 @@ getReference(const VariableBuildInfo& v,IMeshMaterialMng* mm,MatVarSpace mvs)
   if (mesh_handle.isNull())
     ARCANE_FATAL("No mesh handle for material variable");
 
-  IMeshMaterialMng* mat_mng = mm;
+  IMeshMaterialMng* mat_mng = v.materialMng();
+
   //TODO: regarder si verrou necessaire
   if (!mat_mng)
     mat_mng = IMeshMaterialMng::getReference(mesh_handle,true);

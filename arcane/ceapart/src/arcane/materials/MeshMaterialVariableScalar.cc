@@ -780,28 +780,6 @@ MeshMaterialVariableScalar<ItemType,DataType>::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename ItemType,typename DataType>
-IMeshMaterialVariableScalar<ItemType,DataType>*
-MeshMaterialVariableScalar<ItemType,DataType>::
-getReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
-{
-  return getReference(v,v.materialMng(),mvs);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename ItemType,typename DataType>
-IMeshMaterialVariableScalar<ItemType,DataType>*
-MeshMaterialVariableScalar<ItemType,DataType>::
-getReference(const VariableBuildInfo& v,IMeshMaterialMng* mm,MatVarSpace mvs)
-{
-  return ReferenceGetter::getReference(v,mm,mvs);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -834,6 +812,16 @@ template class MeshMaterialVariableScalar<Cell,Real2>;
 template class MeshMaterialVariableScalar<Cell,Real3>;
 template class MeshMaterialVariableScalar<Cell,Real2x2>;
 template class MeshMaterialVariableScalar<Cell,Real3x3>;
+
+template class VariableReferenceGetter<MeshMaterialVariableScalar<Cell,Byte>>;
+template class VariableReferenceGetter<MeshMaterialVariableScalar<Cell,Real>>;
+template class VariableReferenceGetter<MeshMaterialVariableScalar<Cell,Int16>>;
+template class VariableReferenceGetter<MeshMaterialVariableScalar<Cell,Int32>>;
+template class VariableReferenceGetter<MeshMaterialVariableScalar<Cell,Int64>>;
+template class VariableReferenceGetter<MeshMaterialVariableScalar<Cell,Real2>>;
+template class VariableReferenceGetter<MeshMaterialVariableScalar<Cell,Real3>>;
+template class VariableReferenceGetter<MeshMaterialVariableScalar<Cell,Real2x2>>;
+template class VariableReferenceGetter<MeshMaterialVariableScalar<Cell,Real3x3>>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
