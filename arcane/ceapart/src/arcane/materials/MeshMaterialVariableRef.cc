@@ -24,6 +24,7 @@
 
 #include "arcane/core/materials/IMeshMaterialMng.h"
 #include "arcane/core/materials/IMeshMaterial.h"
+#include "arcane/core/materials/MaterialVariableBuildInfo.h"
 
 #include "arcane/materials/MeshMaterialVariableRef.h"
 #include "arcane/materials/MeshMaterialVariable.h"
@@ -256,10 +257,8 @@ addMaterialDepend(const MeshMaterialVariableRef& var,const TraceInfo& tinfo)
 
 template<typename DataType> CellMaterialVariableScalarRef<DataType>::
 CellMaterialVariableScalarRef(const VariableBuildInfo& vb)
-: m_private_part(TruePrivatePartType::getReference(vb,nullptr,MatVarSpace::MaterialAndEnvironment))
-, m_value(0)
+: CellMaterialVariableScalarRef(MaterialVariableBuildInfo(nullptr,vb))
 {
-  _init();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -267,7 +266,7 @@ CellMaterialVariableScalarRef(const VariableBuildInfo& vb)
 
 template<typename DataType> CellMaterialVariableScalarRef<DataType>::
 CellMaterialVariableScalarRef(const MaterialVariableBuildInfo& vb)
-: m_private_part(TruePrivatePartType::getReference(vb,MatVarSpace::MaterialAndEnvironment))
+: m_private_part(getVariableReference(this,vb,MatVarSpace::MaterialAndEnvironment))
 , m_value(0)
 {
   _init();
@@ -547,10 +546,8 @@ globalVariable() const
 // TODO: fusionner avec la version scalaire
 template<typename DataType> CellMaterialVariableArrayRef<DataType>::
 CellMaterialVariableArrayRef(const VariableBuildInfo& vb)
-: m_private_part(TruePrivatePartType::getReference(vb,nullptr,MatVarSpace::MaterialAndEnvironment))
-, m_value(nullptr)
+: CellMaterialVariableArrayRef(MaterialVariableBuildInfo(nullptr,vb))
 {
-  _init();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -559,7 +556,7 @@ CellMaterialVariableArrayRef(const VariableBuildInfo& vb)
 // TODO: fusionner avec la version scalaire
 template<typename DataType> CellMaterialVariableArrayRef<DataType>::
 CellMaterialVariableArrayRef(const MaterialVariableBuildInfo& vb)
-: m_private_part(TruePrivatePartType::getReference(vb,MatVarSpace::MaterialAndEnvironment))
+: m_private_part(getVariableReference(this,vb,MatVarSpace::MaterialAndEnvironment))
 , m_value(nullptr)
 {
   _init();

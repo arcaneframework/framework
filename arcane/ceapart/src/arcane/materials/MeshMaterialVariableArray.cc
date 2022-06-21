@@ -342,28 +342,6 @@ MeshMaterialVariableArray(const MaterialVariableBuildInfo& v,PrivatePartType* gl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename ItemType,typename DataType>
-IMeshMaterialVariableArray<ItemType,DataType>*
-MeshMaterialVariableArray<ItemType,DataType>::
-getReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
-{
-  return getReference(v,v.materialMng(),mvs);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename ItemType,typename DataType>
-IMeshMaterialVariableArray<ItemType,DataType>*
-MeshMaterialVariableArray<ItemType,DataType>::
-getReference(const VariableBuildInfo& v,IMeshMaterialMng* mm,MatVarSpace mvs)
-{
-  return ReferenceGetter::getReference(v,mm,mvs);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 template class ItemMaterialVariableBase< MaterialVariableArrayTraits<Real> >;
 template class ItemMaterialVariableBase< MaterialVariableArrayTraits<Byte> >;
 template class ItemMaterialVariableBase< MaterialVariableArrayTraits<Int16> >;
@@ -393,6 +371,16 @@ template class MeshMaterialVariableArray<Cell,Real2>;
 template class MeshMaterialVariableArray<Cell,Real3>;
 template class MeshMaterialVariableArray<Cell,Real2x2>;
 template class MeshMaterialVariableArray<Cell,Real3x3>;
+
+template class VariableReferenceGetter<MeshMaterialVariableArray<Cell,Byte>>;
+template class VariableReferenceGetter<MeshMaterialVariableArray<Cell,Real>>;
+template class VariableReferenceGetter<MeshMaterialVariableArray<Cell,Int16>>;
+template class VariableReferenceGetter<MeshMaterialVariableArray<Cell,Int32>>;
+template class VariableReferenceGetter<MeshMaterialVariableArray<Cell,Int64>>;
+template class VariableReferenceGetter<MeshMaterialVariableArray<Cell,Real2>>;
+template class VariableReferenceGetter<MeshMaterialVariableArray<Cell,Real3>>;
+template class VariableReferenceGetter<MeshMaterialVariableArray<Cell,Real2x2>>;
+template class VariableReferenceGetter<MeshMaterialVariableArray<Cell,Real3x3>>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

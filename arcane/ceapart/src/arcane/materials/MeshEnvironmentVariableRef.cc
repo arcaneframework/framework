@@ -11,6 +11,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/materials/MeshEnvironmentVariableRef.h"
+
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/Real2.h"
@@ -19,14 +21,13 @@
 #include "arcane/utils/Real3x3.h"
 
 #include "arcane/MeshVariableScalarRef.h"
-#include "arcane/VariableBuildInfo.h"
-
 #include "arcane/ArcaneException.h"
 
-#include "arcane/materials/MeshEnvironmentVariableRef.h"
 #include "arcane/materials/IMeshMaterialMng.h"
 #include "arcane/materials/IMeshMaterial.h"
 #include "arcane/materials/MeshMaterialVariable.h"
+
+#include "arcane/core/materials/MaterialVariableBuildInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -42,10 +43,8 @@ namespace Arcane::Materials
 
 template<typename DataType> CellEnvironmentVariableScalarRef<DataType>::
 CellEnvironmentVariableScalarRef(const VariableBuildInfo& vb)
-: m_private_part(TruePrivatePartType::getReference(vb,nullptr,MatVarSpace::Environment))
-, m_value(nullptr)
+: CellEnvironmentVariableScalarRef(MaterialVariableBuildInfo(nullptr,vb))
 {
-  _init();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -53,7 +52,7 @@ CellEnvironmentVariableScalarRef(const VariableBuildInfo& vb)
 
 template<typename DataType> CellEnvironmentVariableScalarRef<DataType>::
 CellEnvironmentVariableScalarRef(const MaterialVariableBuildInfo& vb)
-: m_private_part(TruePrivatePartType::getReference(vb,MatVarSpace::Environment))
+: m_private_part(getVariableReference(this,vb,MatVarSpace::Environment))
 , m_value(nullptr)
 {
   _init();
@@ -201,10 +200,8 @@ globalVariable() const
 // TODO: fusionner avec la version scalaire
 template<typename DataType> CellEnvironmentVariableArrayRef<DataType>::
 CellEnvironmentVariableArrayRef(const VariableBuildInfo& vb)
-: m_private_part(TruePrivatePartType::getReference(vb,nullptr,MatVarSpace::Environment))
-, m_value(nullptr)
+: CellEnvironmentVariableArrayRef(MaterialVariableBuildInfo(nullptr,vb))
 {
-  _init();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -213,7 +210,7 @@ CellEnvironmentVariableArrayRef(const VariableBuildInfo& vb)
 // TODO: fusionner avec la version scalaire
 template<typename DataType> CellEnvironmentVariableArrayRef<DataType>::
 CellEnvironmentVariableArrayRef(const MaterialVariableBuildInfo& vb)
-: m_private_part(TruePrivatePartType::getReference(vb,MatVarSpace::Environment))
+: m_private_part(getVariableReference(this,vb,MatVarSpace::Environment))
 , m_value(nullptr)
 {
   _init();

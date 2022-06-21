@@ -321,8 +321,8 @@ template<typename VariableTrueType>
 class VariableReferenceGetter
 {
  public:
-  static ARCANE_MATERIALS_EXPORT VariableTrueType*
-  getReference(const VariableBuildInfo& v,IMeshMaterialMng* mm,MatVarSpace mvs);
+  static ARCANE_MATERIALS_EXPORT IMeshMaterialVariable*
+  getReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -479,13 +479,6 @@ class MeshMaterialVariableScalar
                              VariableRefType* global_var_ref,MatVarSpace mvs);
   ARCANE_MATERIALS_EXPORT
   ~MeshMaterialVariableScalar();
-
- public:
-  
-  static ARCANE_MATERIALS_EXPORT ThatInterface*
-  getReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs);
-  static ARCANE_MATERIALS_EXPORT ThatInterface*
-  getReference(const VariableBuildInfo& v,IMeshMaterialMng* mm,MatVarSpace mvs);
 
  public:
 
@@ -664,13 +657,6 @@ class MeshMaterialVariableArray
 
  public:
 
-  static ARCANE_MATERIALS_EXPORT ThatInterface*
-  getReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs);
-  static ARCANE_MATERIALS_EXPORT ThatInterface*
-  getReference(const VariableBuildInfo& v,IMeshMaterialMng* mm,MatVarSpace mvs);
-
- public:
-
   void incrementReference() final { BaseClass::incrementReference(); }
   Array2View<DataType>* valuesView() final { return BaseClass::views(); }
   void resize(Int32 dim2_size) final { BaseClass::resize(dim2_size); }
@@ -683,6 +669,22 @@ class MeshMaterialVariableArray
 
  private:
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename VariableRefType> inline typename VariableRefType::PrivatePartType*
+getVariableReference(VariableRefType*,const MaterialVariableBuildInfo& v,MatVarSpace mvs)
+{
+  using TruePrivatePartType = typename VariableRefType::TruePrivatePartType;
+  using PrivatePartType = typename VariableRefType::PrivatePartType;
+  using ReferenceGetter = typename TruePrivatePartType::ReferenceGetter;
+
+  IMeshMaterialVariable* var = ReferenceGetter::getReference(v,mvs);
+  auto* true_var = dynamic_cast<PrivatePartType*>(var);
+  ARCANE_CHECK_POINTER(true_var);
+  return true_var;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
