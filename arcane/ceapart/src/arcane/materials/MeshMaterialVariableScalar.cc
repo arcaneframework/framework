@@ -781,7 +781,7 @@ MeshMaterialVariableScalar<ItemType,DataType>::
 /*---------------------------------------------------------------------------*/
 
 template<typename ItemType,typename DataType>
-MeshMaterialVariableScalar<ItemType,DataType>*
+IMeshMaterialVariableScalar<ItemType,DataType>*
 MeshMaterialVariableScalar<ItemType,DataType>::
 getReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
 {
@@ -792,22 +792,11 @@ getReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
 /*---------------------------------------------------------------------------*/
 
 template<typename ItemType,typename DataType>
-MeshMaterialVariableScalar<ItemType,DataType>*
+IMeshMaterialVariableScalar<ItemType,DataType>*
 MeshMaterialVariableScalar<ItemType,DataType>::
 getReference(const VariableBuildInfo& v,IMeshMaterialMng* mm,MatVarSpace mvs)
 {
   return ReferenceGetter::getReference(v,mm,mvs);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename ItemType,typename DataType> MeshMaterialVariableScalar<ItemType,DataType>* 
-MeshMaterialVariableScalar<ItemType,DataType>::
-getReference(IMeshMaterialVariable* var)
-{
-  ARCANE_UNUSED(var);
-  throw NotImplementedException(A_FUNCINFO);
 }
 
 /*---------------------------------------------------------------------------*/

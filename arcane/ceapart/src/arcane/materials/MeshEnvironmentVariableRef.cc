@@ -42,7 +42,7 @@ namespace Arcane::Materials
 
 template<typename DataType> CellEnvironmentVariableScalarRef<DataType>::
 CellEnvironmentVariableScalarRef(const VariableBuildInfo& vb)
-: m_private_part(PrivatePartType::getReference(vb,nullptr,MatVarSpace::Environment))
+: m_private_part(TruePrivatePartType::getReference(vb,nullptr,MatVarSpace::Environment))
 , m_value(nullptr)
 {
   _init();
@@ -53,7 +53,7 @@ CellEnvironmentVariableScalarRef(const VariableBuildInfo& vb)
 
 template<typename DataType> CellEnvironmentVariableScalarRef<DataType>::
 CellEnvironmentVariableScalarRef(const MaterialVariableBuildInfo& vb)
-: m_private_part(PrivatePartType::getReference(vb,MatVarSpace::Environment))
+: m_private_part(TruePrivatePartType::getReference(vb,MatVarSpace::Environment))
 , m_value(nullptr)
 {
   _init();
@@ -86,8 +86,8 @@ CellEnvironmentVariableScalarRef<DataType>::
 _init()
 {
   if (m_private_part){
-    m_value = m_private_part->views();
-    _internalInit(m_private_part);
+    m_value = m_private_part->valuesView();
+    _internalInit(m_private_part->toMeshMaterialVariable());
   }
 }
 
@@ -119,7 +119,7 @@ template<typename DataType> void
 CellEnvironmentVariableScalarRef<DataType>::
 updateFromInternal()
 {
-  m_value = m_private_part->views();
+  m_value = m_private_part->valuesView();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -201,7 +201,7 @@ globalVariable() const
 // TODO: fusionner avec la version scalaire
 template<typename DataType> CellEnvironmentVariableArrayRef<DataType>::
 CellEnvironmentVariableArrayRef(const VariableBuildInfo& vb)
-: m_private_part(PrivatePartType::getReference(vb,nullptr,MatVarSpace::Environment))
+: m_private_part(TruePrivatePartType::getReference(vb,nullptr,MatVarSpace::Environment))
 , m_value(nullptr)
 {
   _init();
@@ -213,7 +213,7 @@ CellEnvironmentVariableArrayRef(const VariableBuildInfo& vb)
 // TODO: fusionner avec la version scalaire
 template<typename DataType> CellEnvironmentVariableArrayRef<DataType>::
 CellEnvironmentVariableArrayRef(const MaterialVariableBuildInfo& vb)
-: m_private_part(PrivatePartType::getReference(vb,MatVarSpace::Environment))
+: m_private_part(TruePrivatePartType::getReference(vb,MatVarSpace::Environment))
 , m_value(nullptr)
 {
   _init();
@@ -245,8 +245,8 @@ CellEnvironmentVariableArrayRef<DataType>::
 _init()
 {
   if (m_private_part){
-    m_value = m_private_part->views();
-    _internalInit(m_private_part);
+    m_value = m_private_part->valuesView();
+    _internalInit(m_private_part->toMeshMaterialVariable());
   }
 }
 
@@ -280,7 +280,7 @@ template<typename DataType> void
 CellEnvironmentVariableArrayRef<DataType>::
 updateFromInternal()
 {
-  m_value = m_private_part->views();
+  m_value = m_private_part->valuesView();
 }
 
 /*---------------------------------------------------------------------------*/
