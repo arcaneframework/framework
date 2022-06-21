@@ -1,4 +1,5 @@
 name: '[All] Build/Install/Test Arcane Framework (Ubuntu 20.04-22.04 / GCC 11-12 / CLang 13-14 / CUDA 11.6-11.7 / Minimal-Full / Release-Debug)'
+# Attention : 48 tests sont lancés en même temps !!! (GitHub limite à 20 tests à la fois)
 
 on:
   schedule:
@@ -69,7 +70,7 @@ jobs:
             type_args: '-DCMAKE_BUILD_TYPE=Release
               -DARCCORE_BUILD_MODE=Check
               -DARCANE_BUILD_TYPE=Check'
-            type_excl_tests: '^.*([2-9][_]*mpithread|[1-9][0-9]+[_]*mpithread|[3-9]proc|[1-9][0-9]+proc).*$'
+            type_excl_tests: '^.*_4mpithread$'
 
           - type: 'Debug'
             type_args: '-DCMAKE_BUILD_TYPE=Debug
@@ -183,7 +184,7 @@ jobs:
             type_args: '-DCMAKE_BUILD_TYPE=Release
               -DARCCORE_BUILD_MODE=Check
               -DARCANE_BUILD_TYPE=Check'
-            type_excl_tests: '^.*([2-9][_]*mpithread|[1-9][0-9]+[_]*mpithread|[3-9]proc|[1-9][0-9]+proc).*$'
+            type_excl_tests: '^.*_4mpithread$'
 
           - type: 'Debug'
             type_args: '-DCMAKE_BUILD_TYPE=Debug
@@ -402,7 +403,7 @@ jobs:
             type_args: '-DCMAKE_BUILD_TYPE=Release
               -DARCCORE_BUILD_MODE=Check
               -DARCANE_BUILD_TYPE=Check'
-            type_excl_tests: '^.*([2-9][_]*mpithread|[1-9][0-9]+[_]*mpithread|[3-9]proc|[1-9][0-9]+proc).*$'
+            type_excl_tests: '^.*_4mpithread$'
 
           - type: 'Debug'
             type_args: '-DCMAKE_BUILD_TYPE=Debug
