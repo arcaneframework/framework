@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariableArray.cc                                (C) 2000-2018 */
+/* MeshMaterialVariableArray.cc                                (C) 2000-2022 */
 /*                                                                           */
 /* Variable tableau sur un matériau du maillage.                             */
 /*---------------------------------------------------------------------------*/
@@ -38,11 +38,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -346,7 +343,7 @@ MeshMaterialVariableArray(const MaterialVariableBuildInfo& v,PrivatePartType* gl
 /*---------------------------------------------------------------------------*/
 
 template<typename ItemType,typename DataType>
-MeshMaterialVariableArray<ItemType,DataType>*
+IMeshMaterialVariableArray<ItemType,DataType>*
 MeshMaterialVariableArray<ItemType,DataType>::
 getReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
 {
@@ -357,7 +354,7 @@ getReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
 /*---------------------------------------------------------------------------*/
 
 template<typename ItemType,typename DataType>
-MeshMaterialVariableArray<ItemType,DataType>*
+IMeshMaterialVariableArray<ItemType,DataType>*
 MeshMaterialVariableArray<ItemType,DataType>::
 getReference(const VariableBuildInfo& v,IMeshMaterialMng* mm,MatVarSpace mvs)
 {
@@ -400,8 +397,7 @@ template class MeshMaterialVariableArray<Cell,Real3x3>;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -461,6 +461,7 @@ class MeshMaterialVariableScalar
  public:
 	
   using ThatClass = MeshMaterialVariableScalar<ItemType,DataType>;
+  using ThatInterface = IMeshMaterialVariableScalar<ItemType,DataType>;
   using ItemTypeTemplate = ItemType;
 
   using BaseClass = ItemMaterialVariableScalar<DataType>;
@@ -481,12 +482,10 @@ class MeshMaterialVariableScalar
 
  public:
   
-  static ARCANE_MATERIALS_EXPORT ThatClass*
+  static ARCANE_MATERIALS_EXPORT ThatInterface*
   getReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs);
-  static ARCANE_MATERIALS_EXPORT ThatClass*
+  static ARCANE_MATERIALS_EXPORT ThatInterface*
   getReference(const VariableBuildInfo& v,IMeshMaterialMng* mm,MatVarSpace mvs);
-  static ARCANE_MATERIALS_EXPORT ThatClass*
-  getReference(IMeshMaterialVariable* var);
 
  public:
 
@@ -643,7 +642,8 @@ class MeshMaterialVariableArray
 {
  public:
 
-  typedef MeshMaterialVariableArray<ItemType,DataType> ThatClass;
+  using ThatClass = MeshMaterialVariableArray<ItemType,DataType>;
+  using ThatInterface = IMeshMaterialVariableArray<ItemType,DataType>;
   typedef ItemType ItemTypeTemplate;
 
   using BaseClass = ItemMaterialVariableArray<DataType>;
@@ -664,9 +664,9 @@ class MeshMaterialVariableArray
 
  public:
 
-  static ARCANE_MATERIALS_EXPORT ThatClass*
+  static ARCANE_MATERIALS_EXPORT ThatInterface*
   getReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs);
-  static ARCANE_MATERIALS_EXPORT ThatClass*
+  static ARCANE_MATERIALS_EXPORT ThatInterface*
   getReference(const VariableBuildInfo& v,IMeshMaterialMng* mm,MatVarSpace mvs);
 
  public:
