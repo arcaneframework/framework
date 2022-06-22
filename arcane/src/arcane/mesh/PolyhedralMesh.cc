@@ -398,10 +398,10 @@ read(const String& filename)
   createItemFamily(IK_Node, "NodeFamily");
   createItemFamily(IK_Face, "FaceFamily");
   createItemFamily(IK_Edge, "EdgeFamily");
-  auto cell_family = arcaneDefaultFamily(IK_Cell);
-  auto node_family = arcaneDefaultFamily(IK_Node);
-  auto face_family = arcaneDefaultFamily(IK_Face);
-  auto edge_family = arcaneDefaultFamily(IK_Edge);
+  [[maybe_unused]] auto cell_family = arcaneDefaultFamily(IK_Cell);
+  [[maybe_unused]] auto node_family = arcaneDefaultFamily(IK_Node);
+  [[maybe_unused]] auto face_family = arcaneDefaultFamily(IK_Face);
+  [[maybe_unused]] auto edge_family = arcaneDefaultFamily(IK_Edge);
 #ifdef ARCANE_HAS_VTKIO
   PolyhedralMeshTools::VtkReader reader{filename};
   PolyhedralMeshImpl::ItemLocalIds cell_lids,node_lids, face_lids, edge_lids;
