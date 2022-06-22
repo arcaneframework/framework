@@ -22,6 +22,9 @@
 
 #include "arcane/materials/MaterialsGlobal.h"
 
+// A supprimer
+#include "arcane/materials/MeshMaterialVariableFactoryRegisterer.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -511,6 +514,10 @@ class MeshMaterialVariableScalar
   VariableRefType* m_true_global_variable_ref;
 
  private:
+
+  static ARCANE_MATERIALS_EXPORT MaterialVariableTypeInfo _buildVarTypeInfo();
+  static ARCANE_MATERIALS_EXPORT IMeshMaterialVariable* _autoCreate(const MaterialVariableBuildInfo& vb);
+  static ARCANE_MATERIALS_EXPORT MeshMaterialVariableFactoryRegisterer m_auto_registerer;
 };
 
 /*---------------------------------------------------------------------------*/

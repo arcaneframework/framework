@@ -56,6 +56,8 @@
 #include "arcane/datatype/DataTypeTraits.h"
 #include "arcane/datatype/DataStorageBuildInfo.h"
 
+#include "arcane/VariableDataTypeTraits.h"
+
 #include <vector>
 
 /*---------------------------------------------------------------------------*/
@@ -775,6 +777,38 @@ template<typename ItemType,typename DataType>
 MeshMaterialVariableScalar<ItemType,DataType>::
 ~MeshMaterialVariableScalar()
 {
+}
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename ItemType,typename DataType> MeshMaterialVariableFactoryRegisterer
+MeshMaterialVariableScalar<ItemType,DataType>::m_auto_registerer(_autoCreate,_buildVarTypeInfo());
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename ItemType,typename DataType> MaterialVariableTypeInfo
+MeshMaterialVariableScalar<ItemType,DataType>::
+_buildVarTypeInfo()
+{
+  eItemKind ik = ItemTraitsT<ItemType>::kind();
+  eDataType dt = VariableDataTypeTraitsT<DataType>::type();
+  return MaterialVariableTypeInfo(ik,dt,0,MatVarSpace::Environment);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename ItemType,typename DataType> IMeshMaterialVariable*
+MeshMaterialVariableScalar<ItemType,DataType>::
+_autoCreate(const MaterialVariableBuildInfo& vb)
+{
+  return nullptr;
+  //eItemKind ik = ItemTraitsT<ItemType>::kind();
+  //eDataType dt = VariableDataTypeTraitsT<DataType>::type();
+  //return MaterialVariableTypeInfo(ik,dt,0,MatVarSpace::Environment);
 }
 
 /*---------------------------------------------------------------------------*/

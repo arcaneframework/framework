@@ -36,8 +36,10 @@ class ARCANE_CORE_EXPORT MaterialVariableTypeInfo
 {
  public:
 
-  constexpr MaterialVariableTypeInfo(eItemKind item_kind, eDataType data_type, Integer dimension)
+  constexpr MaterialVariableTypeInfo(eItemKind item_kind, eDataType data_type,
+                                     Integer dimension, MatVarSpace space)
   : m_variable_type_info(item_kind, data_type, dimension, 0, false)
+  , m_mat_var_space(space)
   {}
 
  public:
@@ -54,6 +56,11 @@ class ARCANE_CORE_EXPORT MaterialVariableTypeInfo
  private:
 
   VariableTypeInfo m_variable_type_info;
+  MatVarSpace m_mat_var_space;
+
+ private:
+
+  String _buildFullTypeName() const;
 };
 
 /*---------------------------------------------------------------------------*/
