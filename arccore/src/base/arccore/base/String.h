@@ -78,7 +78,7 @@ class ARCCORE_BASE_EXPORT String
  public:
 
   //! Crée une chaîne nulle
-  String() : m_p(nullptr), m_const_ptr(nullptr), m_const_ptr_size(0) {}
+  String() {}
   /*!
    * \brief Créé une chaîne à partir de \a str dans l'encodage UTF-8
    *
@@ -88,7 +88,7 @@ class ARCCORE_BASE_EXPORT String
    * il faut utiliser String(std::string_view) à la place.
    */   
   String(const char* str)
-  : m_p(nullptr), m_const_ptr(str), m_const_ptr_size(0)
+  : m_const_ptr(str)
   {
     if (str)
       m_const_ptr_size = std::string_view(str).size();
@@ -117,9 +117,17 @@ class ARCCORE_BASE_EXPORT String
   explicit String(StringImpl* impl);
   //! Créé une chaîne à partir de \a str
   String(const String& str);
+  //! Créé une chaîne à partir de \a str
+  String(String&& str)
+  : m_p(str.m_p), m_const_ptr(str.m_const_ptr),  m_const_ptr_size(str.m_const_ptr_size)
+  {
+    str._resetFields();
+  }
 
   //! Copie \a str dans cette instance.
   String& operator=(const String& str);
+  //! Copie \a str dans cette instance.
+  String& operator=(String&& str);
   //! Copie \a str dans cette instance.
   String& operator=(StringView str);
   /*!
@@ -136,7 +144,8 @@ class ARCCORE_BASE_EXPORT String
     m_const_ptr_size = 0;
     if (m_const_ptr)
       m_const_ptr_size = std::string_view(str).size();
-    _removeReference();
+    _removeReferenceIfNeeded();
+    m_p = nullptr;
     return (*this);
   }
   //! Copie \a str codé en UTF-8 dans cette instance.
@@ -144,7 +153,11 @@ class ARCCORE_BASE_EXPORT String
   //! Copie \a str codé en UTF-8 dans cette instance.
   String& operator=(const std::string& str);
 
-  ~String(); //!< Libère les ressources.
+  //! Libère les ressources.
+  ~String()
+  {
+    _removeReferenceIfNeeded();
+  }
 
  public:
 
@@ -264,11 +277,10 @@ class ARCCORE_BASE_EXPORT String
    */
   static String collapseWhiteSpace(const String& rhs);
 
-
-  //! Transforme tous les caracteres de la chaine en majuscules.
+  //! Transforme tous les caractères de la chaîne en majuscules.
   String upper() const;
 
-  //! Transforme tous les caracteres de la chaine en minuscules.
+  //! Transforme tous les caractères de la chaîne en minuscules.
   String lower() const;
 
   //! Retourne \a true si la chaîne est nulle.
@@ -446,9 +458,9 @@ class ARCCORE_BASE_EXPORT String
 
  private:
 
-  mutable StringImpl* m_p; //!< Implémentation de la classe
-  mutable const char* m_const_ptr;
-  mutable Int64 m_const_ptr_size; //!< Longueur de la chaîne si constante (-1 sinon)
+  mutable StringImpl* m_p = nullptr; //!< Implémentation de la classe
+  mutable const char* m_const_ptr = nullptr;
+  mutable Int64 m_const_ptr_size = 0; //!< Longueur de la chaîne si constante (-1 sinon)
 
   void _checkClone() const;
   bool isLess(const String& s) const;
@@ -460,6 +472,33 @@ class ARCCORE_BASE_EXPORT String
   }
   void _removeReference();
   ConstArrayView<UChar> _internalUtf16BE() const;
+  void _resetFields()
+  {
+    m_p = nullptr;
+    m_const_ptr = nullptr;
+    m_const_ptr_size = 0;
+  }
+  void _copyFields(const String& str)
+  {
+    m_p = str.m_p;
+    m_const_ptr = str.m_const_ptr;
+    m_const_ptr_size = str.m_const_ptr_size;
+  }
+
+  /*!
+   * \brief Supprime la référence à l'implémentation si elle n'est pas nulle.
+   */
+  void _removeReferenceIfNeeded()
+  {
+    if (m_p)
+      _removeImplReference();
+  }
+
+  /*!
+   * \brief Supprime la référence à l'implémentation.
+   * \pre m_p != nullptr
+   */
+  void _removeImplReference();
 };
 
 /*---------------------------------------------------------------------------*/

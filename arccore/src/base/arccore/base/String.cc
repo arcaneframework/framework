@@ -44,7 +44,6 @@ namespace Arccore
 String::
 String(const std::string& str)
 : m_p(new StringImpl(str))
-, m_const_ptr(nullptr)
 , m_const_ptr_size(-1)
 {
   m_p->addReference();
@@ -56,7 +55,6 @@ String(const std::string& str)
 String::
 String(std::string_view str)
 : m_p(new StringImpl(str))
-, m_const_ptr(nullptr)
 , m_const_ptr_size(-1)
 {
   m_p->addReference();
@@ -80,7 +78,6 @@ String(StringView str)
 String::
 String(const UCharConstArrayView& ustr)
 : m_p(new StringImpl(ustr.data()))
-, m_const_ptr(nullptr)
 , m_const_ptr_size(-1)
 {
   m_p->addReference();
@@ -92,7 +89,6 @@ String(const UCharConstArrayView& ustr)
 String::
 String(const Span<const Byte>& ustr)
 : m_p(new StringImpl(ustr))
-, m_const_ptr(nullptr)
 , m_const_ptr_size(-1)
 {
   m_p->addReference();
@@ -104,7 +100,6 @@ String(const Span<const Byte>& ustr)
 String::
 String(StringImpl* impl)
 : m_p(impl)
-, m_const_ptr(nullptr)
 , m_const_ptr_size(-1)
 {
   if (m_p)
@@ -117,7 +112,6 @@ String(StringImpl* impl)
 String::
 String(const char* str,Integer len)
 : m_p(new StringImpl(std::string_view(str,len)))
-, m_const_ptr(nullptr)
 , m_const_ptr_size(-1)
 {
   m_p->addReference();
@@ -129,7 +123,6 @@ String(const char* str,Integer len)
 String::
 String(char* str)
 : m_p(new StringImpl(str))
-, m_const_ptr(nullptr)
 , m_const_ptr_size(-1)
 {
   m_p->addReference();
@@ -171,27 +164,29 @@ String(const String& str)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-String::
-~String()
+String& String::
+operator=(const String& str)
 {
-  if (m_p)
-    m_p->removeReference();
+  if (str.m_p)
+    str.m_p->addReference();
+  _removeReferenceIfNeeded();
+  _copyFields(str);
+  return (*this);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 String& String::
-operator=(const String& str)
+operator=(String&& str)
 {
-  if (str.m_p)
-    str.m_p->addReference();
-  if (m_p)
-    m_p->removeReference();
-  m_p = str.m_p;
-  m_const_ptr = str.m_const_ptr;
-  m_const_ptr_size = str.m_const_ptr_size;
+  _removeReferenceIfNeeded();
+
+  _copyFields(str);
+  str._resetFields();
+
   return (*this);
+
 }
 
 /*---------------------------------------------------------------------------*/
@@ -227,14 +222,6 @@ operator=(const std::string& str)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void String::
-_removeReference()
-{
-  if (m_p)
-    m_p->removeReference();
-  m_p = nullptr;
-}
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -246,6 +233,15 @@ localstr() const
   if (m_p)
     return m_p->toStdStringView().data();
   return "";
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void String::
+_removeImplReference()
+{
+  m_p->removeReference();
 }
 
 /*---------------------------------------------------------------------------*/
