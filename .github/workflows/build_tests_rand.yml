@@ -1,0 +1,157 @@
+name: '[Rand] Build/Install/Test Arcane Framework (Ubuntu 20.04-22.04 / GCC 11-12 / CLang 13-14 / Full / Release-Debug)'
+
+on:
+  schedule:
+    - cron: '12 0 * * *' # Tous les matins à 00:12.
+
+  # A executer lorsque l'on demande.
+  workflow_dispatch:
+
+env:
+
+  SOURCE_DIR: '/__w/framework/framework/framework'
+  BUILD_DIR: '/__w/framework/framework/build'
+  INSTALL_DIR: '/__w/framework/framework/install'
+
+  # CTest
+  CT_RESULT_DIR: '/__w/framework/framework/test'
+  CT_OPTS: "--timeout 300 --output-on-failure"
+
+  # ccache
+  CCACHE_COMPRESS: true
+  CCACHE_COMPRESSLEVEL: 6
+  CCACHE_DIR: '/__w/framework/framework/ccache'
+  CCACHE_MAXSIZE: 5G
+
+  # CMake
+  CM_CCACHE_OPTS: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
+
+  # MPI
+  OMPI_ALLOW_RUN_AS_ROOT: 1
+  OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: 1
+
+jobs:
+  framework:
+    strategy:
+      fail-fast: false
+      matrix:
+        image_short: ['U20_G11_C13', 'U22_G12_C14']
+        version_short: ['F']
+        compilo_name: ['CLang', 'GCC']
+        type: ['Debug', 'Release']
+
+        include:
+          - compilo_name: 'CLang'
+            cmake_compilo: '-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++'
+
+          - compilo_name: 'GCC'
+            cmake_compilo: '-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++'
+
+          - image_short: 'U20_G11_C13'
+            image_long: 'ubuntu-2004:gcc-11_clang-13'
+            image_args: '-DARCCORE_CXX_STANDARD=20'
+
+          - image_short: 'U22_G12_C14'
+            image_long: 'ubuntu-2204:gcc-12_clang-14'
+            image_args: '-DARCCORE_CXX_STANDARD=23'
+
+          # - version_short: 'M'
+          #   version_long: 'minimal'
+          #   version_args: ''
+
+          - version_short: 'F'
+            version_long: 'full'
+            version_args: '-DCMAKE_DISABLE_FIND_PACKAGE_Papi=ON
+              -DPTScotch_INCLUDE_DIR="/usr/include/scotch"
+              -DMKL_INCLUDE_DIR="/usr/include/mkl"'
+
+          - type: 'Release'
+            type_args: '-DCMAKE_BUILD_TYPE=Release
+              -DARCCORE_BUILD_MODE=Check
+              -DARCANE_BUILD_TYPE=Check'
+            type_excl_tests: '^.*([2-9][_]*mpithread|[1-9][0-9]+[_]*mpithread|[3-9]proc|[1-9][0-9]+proc).*$'
+
+          - type: 'Debug'
+            type_args: '-DCMAKE_BUILD_TYPE=Debug
+              -DARCCORE_BUILD_MODE=Debug
+              -DARCANE_BUILD_TYPE=Debug'
+            type_excl_tests: '^.*_4mpithread$'
+
+
+    name: '[${{matrix.image_short}}_${{matrix.version_short}}]_Rand_${{matrix.compilo_name}}_${{matrix.type}}'
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/arcaneframework/${{matrix.image_long}}_${{matrix.version_long}}
+
+    steps:
+      - name: Checkout framework
+        uses: actions/checkout@v3
+        with:
+          path: ${{ env.SOURCE_DIR }}
+          submodules: true
+
+      - name: Get date
+        id: get-date
+        shell: bash
+        run: echo "::set-output name=date::$(/bin/date -u '+%Y%m%d%H%M%S')"
+
+      - name: Get cache for ccache tool
+        uses: actions/cache@v2
+        with:
+          path: ${{env.CCACHE_DIR}}
+          key: ${{matrix.image_short}}_${{matrix.version_short}}_${{matrix.compilo_name}}_${{matrix.type}}_rand-${{ steps.get-date.outputs.date }}-${{ github.run_number }}
+          restore-keys: ${{matrix.image_short}}_${{matrix.version_short}}_${{matrix.compilo_name}}_${{matrix.type}}_rand-
+
+      - name: Script Rand
+        id: script-rand
+        shell: bash
+        run: |
+          chmod u+x ${{ env.SOURCE_DIR }}/.github/scripts/rand_pkg.sh
+          echo "::set-output name=rand::$(${{ env.SOURCE_DIR }}/.github/scripts/rand_pkg.sh)"
+
+      - name: Configure
+        shell: bash
+        env:
+          ARCANE_NO_DEFAULT_PACKAGE: "TRUE"
+        run: |
+          cmake \
+          -S ${{ env.SOURCE_DIR }} \
+          -B ${{ env.BUILD_DIR }} \
+          -GNinja \
+          -DBUILD_SHARED_LIBS=ON \
+          -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }} \
+          -DARCANE_DEFAULT_PARTITIONER=Metis \
+          -DARCANE_WANT_ARCCON_EXPORT_TARGET=OFF \
+          ${{ steps.script-rand.outputs.rand }} \
+          ${{ env.CM_CCACHE_OPTS }} \
+          ${{ matrix.image_args }} \
+          ${{ matrix.version_args }} \
+          ${{ matrix.type_args }} \
+          ${{ matrix.cmake_compilo }}
+
+      - name: Build
+        shell: bash
+        run: |
+          cmake --build ${{ env.BUILD_DIR }}
+
+      - name: Install
+        shell: bash
+        run: cmake --install ${{ env.BUILD_DIR }}
+
+      - name: Test
+        shell: bash
+        run: |
+          mkdir -p ${{ env.CT_RESULT_DIR }}
+          ctest --test-dir ${{ env.BUILD_DIR }} --output-junit ${{ env.CT_RESULT_DIR }}/results.xml ${{ env.CT_OPTS }} -E '${{matrix.type_excl_tests}}'
+
+      - name: Upload test artifact
+        uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: ${{matrix.image_short}}_${{matrix.version_short}}_${{matrix.compilo_name}}_${{matrix.type}}_rand-test-artifact
+          path: ${{ env.CT_RESULT_DIR }}
+          retention-days: 1
+
+      - name: Get ccache status
+        shell: bash
+        run: ccache -s

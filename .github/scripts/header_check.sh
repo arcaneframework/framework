@@ -18,6 +18,8 @@ CC_H_FILES=$(find $SOURCE -name '*.cc')
 CC_H_FILES+=" "
 CC_H_FILES+=$(find $SOURCE -name '*.h')
 
+NUM_FILES_ERROR=0
+
 OUTPUT_LOG="Begin script\n\n"
 
 for FILE in $CC_H_FILES;
@@ -179,6 +181,7 @@ do
   if (( $COPY_LOG == 0 ))
   then
     OUTPUT_LOG+="File: $FILE\n$OUTPUT_LOG_FILE\n"
+    ((NUM_FILES_ERROR++))
   fi
 
 
@@ -187,3 +190,4 @@ done
 
 OUTPUT_LOG+="\nEnd script"
 echo -e $OUTPUT_LOG
+exit $NUM_FILES_ERROR
