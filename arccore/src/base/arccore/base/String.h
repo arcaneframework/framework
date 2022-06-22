@@ -32,6 +32,7 @@ class StringFormatterArg;
 class StringBuilder;
 class StringImpl;
 class StringView;
+class StringUtilsImpl;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -72,6 +73,7 @@ class ARCCORE_BASE_EXPORT String
   friend ARCCORE_BASE_EXPORT bool operator==(const String& a,const String& b);
   friend ARCCORE_BASE_EXPORT bool operator<(const String& a,const String& b);
   friend class StringBuilder;
+  friend class StringUtilsImpl;
 
  public:
 
@@ -172,7 +174,11 @@ class ARCCORE_BASE_EXPORT String
    *
    * \warning L'instance reste propriétaire de la valeur retournée et cette valeur
    * est invalidée par toute modification de cette instance.
+   *
+   * \deprecated Il faut utiliser StringUtils::asUtf16BE() à la place. A noter que
+   * la fonction StringUtils::asUtf16BE() ne contient pas de 0x00 terminal.
    */
+  [[deprecated("Y2022: Use StringUtils::asUtf16BE() instead")]]
   ConstArrayView<UChar> utf16() const;
 
   /*!
@@ -453,6 +459,7 @@ class ARCCORE_BASE_EXPORT String
     return std::string_view(m_const_ptr,m_const_ptr_size);
   }
   void _removeReference();
+  ConstArrayView<UChar> _internalUtf16BE() const;
 };
 
 /*---------------------------------------------------------------------------*/

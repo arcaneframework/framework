@@ -51,6 +51,7 @@ set(SOURCES
   StackTrace.cc
   String.h
   String.cc
+  StringUtils.h
   StringBuilder.h
   StringBuilder.cc
   StringImpl.h

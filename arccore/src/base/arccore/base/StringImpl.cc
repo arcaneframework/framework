@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* StringImpl.cc                                               (C) 2000-2019 */
+/* StringImpl.cc                                               (C) 2000-2022 */
 /*                                                                           */
 /* Implémentation d'une chaîne de caractère UTf-8 ou UTF-16.                 */
 /*---------------------------------------------------------------------------*/
@@ -30,6 +30,11 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 
 bool global_arccore_debug_string = false;
+
+namespace
+{
+const char* const global_empty_string = "";
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -149,8 +154,16 @@ bytes()
 {
   Span<const Byte> x = largeUtf8();
   Int64 size = x.size();
-  ARCCORE_ASSERT((size>0),("Null size in StringImpl::bytes()"));
-  return Span<const Byte>(x.data(),size-1);
+  if (size>0)
+    return { x.data(), size-1 };
+  // Ne devrait normalement pas arriver mais si c'est le cas on retourne
+  // une vue sur la chaîne vide car cette méthode garantit qu'il y a un
+  // zéro terminal à la fin.
+  // NOTE: On ne lève pas d'exception car cette méthode est utilisée dans les
+  // sorties via operator<< et cela peut être utilisé notamment dans
+  // les destructeurs des objets.
+  std::cerr << "INTERNAL ERROR: Null size in StringImpl::bytes()";
+  return { reinterpret_cast<const Byte*>(global_empty_string), 0 };
 }
 
 /*---------------------------------------------------------------------------*/
