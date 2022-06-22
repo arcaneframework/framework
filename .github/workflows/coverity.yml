@@ -17,7 +17,7 @@ jobs:
     name: ubuntu coverity
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/arcaneframework/ubuntu-2004:gcc-11_clang-13_full
+      image: ghcr.io/arcaneframework/ubuntu-2004:gcc-11_clang-12_cuda-116_full
     steps:
       # Checkout v2 does not include files listed in .gitattributes
       - name: Checkout
@@ -38,7 +38,8 @@ jobs:
           -DARCANE_DEFAULT_PARTITIONER=Metis \
           -DARCANE_WANT_LEGACY_CONNECTIVITY=OFF \
           -DARCANE_WANT_ARCCON_EXPORT_TARGET=OFF \
-          -DCMAKE_DISABLE_FIND_PACKAGE_Papi=ON
+          -DCMAKE_DISABLE_FIND_PACKAGE_Papi=ON \
+          -DCMAKE_DISABLE_FIND_PACKAGE_SWIG=ON
 
       - name: Install missing packages
         shell: 'bash'
