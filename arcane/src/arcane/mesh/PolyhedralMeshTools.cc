@@ -71,10 +71,15 @@ cellUids()
   if (m_cell_uids.empty()) {
     auto* vtk_grid = m_vtk_grid_reader->GetOutput();
     m_cell_uids.reserve(vtk_grid->GetNumberOfCells());
+    m_cell_nb_nodes.reserve(vtk_grid->GetNumberOfCells());
+    m_cell_node_uids.reserve(10 * vtk_grid->GetNumberOfCells()); // take a mean of 10 nodes per cell
     auto* cell_iter = vtk_grid->NewCellIterator();
     cell_iter->InitTraversal();
     while (!cell_iter->IsDoneWithTraversal()) {
       m_cell_uids.push_back(cell_iter->GetCellId());
+      m_cell_nb_nodes.push_back(Integer(cell_iter->GetNumberOfPoints()));
+      ArrayView<vtkIdType> cell_nodes{Integer(cell_iter->GetNumberOfPoints()),cell_iter->GetPointIds()->GetPointer(0)};
+      std::for_each(cell_nodes.begin(), cell_nodes.end(), [this](auto uid){ this->m_cell_node_uids.push_back(uid); });
       cell_iter->GoToNextCell();
     }
   }
@@ -235,6 +240,25 @@ nbNodes()
 {
   if (m_node_uids.empty()) nodeUids();
   return m_node_uids.size();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Arcane::Int64ConstArrayView Arcane::mesh::PolyhedralMeshTools::VtkReader::
+cellNodes()
+{
+  if (m_cell_node_uids.empty()) cellUids();
+  return m_cell_node_uids;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Arcane::Int32ConstArrayView Arcane::mesh::PolyhedralMeshTools::VtkReader::cellNbNodes()
+{
+  if (m_cell_nb_nodes.empty()) cellUids();
+  return m_cell_nb_nodes;
 }
 
 /*---------------------------------------------------------------------------*/
