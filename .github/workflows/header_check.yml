@@ -10,7 +10,7 @@ env:
 
 jobs:
   check-headers:
-    name: check-headers-encoding
+    name: Check
     runs-on: ubuntu-latest
     steps:
 
@@ -29,6 +29,7 @@ jobs:
 
       - name: Upload log artifact
         uses: actions/upload-artifact@v2
+        if: failure()
         with:
           name: Header Check Log
           path: ${{ env.ARCANE_SOURCE_DIR }}/output.log
