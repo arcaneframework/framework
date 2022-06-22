@@ -53,6 +53,8 @@ set(ARCANE_SOURCES
   MeshMaterialVariableDependInfo.h
   MeshMaterialVariableRef.cc
   MeshMaterialVariableRef.h
+  MeshMaterialVariableFactoryRegisterer.cc
+  MeshMaterialVariableFactoryRegisterer.h
   MeshMaterialVariableIndexer.h
   MeshEnvironmentVariableRef.cc
   MeshEnvironmentVariableRef.h
