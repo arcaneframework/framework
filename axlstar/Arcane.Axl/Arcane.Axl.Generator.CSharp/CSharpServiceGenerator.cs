@@ -52,9 +52,8 @@ namespace Arcane.Axl
 
     public override void writeFile()
     {
-	  if (HasTests) Console.WriteLine("WARNING: Balise <tests> non prise en compte avec le langage C#.");
-
-      //double version = m_info.m_version;
+      if (HasTests)
+        Console.WriteLine("WARNING: Balise <tests> non prise en compte avec le langage C#.");
 
       _writeClassFile(m_info.Name + "_axl.cs", null, false);
 
@@ -72,10 +71,12 @@ namespace Arcane.Axl
         file_stream.Write("namespace " + m_info.NamespaceName + "{\n");
       }
 
+      string parent_name = m_info.ParentName;
+
       // Ajoute un attribut pour indiquer au compilateur Arcane de ne pas generer de version
       // C++ de cette classe puisqu'il existe un axl.h correspondant
       file_stream.Write("public abstract class " + m_class_name + "\n");
-      file_stream.Write(": " + ConvertNamespace(m_info.ParentName) + "\n");
+      file_stream.Write(": " + ConvertNamespace(parent_name) + "\n");
       //for (Integer i = 0, iss = m_info.m_interfaces.Count; i < iss; ++i) {
       foreach(ServiceInfo.Interface itf in m_info.Interfaces){
         if (itf.IsInherited)
@@ -104,11 +105,13 @@ namespace Arcane.Axl
       file_stream.Write("    return si;\n");
       file_stream.Write("  }\n");
 
-      {
+      // Si la classe parent se termine par '_WrapperService', alors il s'agit d'une classe
+      // générée par swig qui possède déjà une implémentation de 'CreateFactory'. Il ne faut
+      // donc pas en générer une autre sinon la première ne serait pas appelée.
+      if (!parent_name.EndsWith("_WrapperService")){
         // Génère une fabrique au nouveau format pour créér les instances de ce service.
         file_stream.Write("   public static Arcane.IServiceFactory2 CreateFactory(Arcane.GenericServiceFactory gsf)\n");
         file_stream.Write("   { return new Arcane.AxlGeneratedServiceFactory(gsf); }\n");
-
       }
 
       // Constructeur
