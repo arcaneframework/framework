@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMessagePassingMng.h                                        (C) 2000-2020 */
+/* IMessagePassingMng.h                                        (C) 2000-2022 */
 /*                                                                           */
 /* Interface du gestionnaire des échanges de messages.                       */
 /*---------------------------------------------------------------------------*/
@@ -25,16 +25,31 @@ namespace Arccore::MessagePassing
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \brief Détruit l'instance \a p.
+ *
+ * L'instance \a p ne doit plus être utilisée après cet appel
+ */
+extern "C++" void ARCCORE_MESSAGEPASSING_EXPORT
+mpDelete(IMessagePassingMng* p);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \brief Interface du gestionnaire des échanges de messages.
  *
  * Ce gestionnaire ne fait pas grand chose en lui même et se contente de
  * déléguer les opérations via l'interface IDispatchers.
- * de
+ *
+ * Les instances de ces classes doivent être détruites via la méthode
+ * mpDelete().
  */
 class ARCCORE_MESSAGEPASSING_EXPORT IMessagePassingMng
 {
+  friend void mpDelete(IMessagePassingMng*);
+
  public:
 
+  // TODO: Rendre obsolète fin 2022: [[deprecated("Use mpDelete() instead")]]
   virtual ~IMessagePassingMng() = default;
 
  public:
