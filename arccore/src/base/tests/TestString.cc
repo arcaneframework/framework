@@ -21,7 +21,7 @@ namespace
 class IosFlagsWrapper
 {
  public:
-  IosFlagsWrapper(std::ostream* o) : m_stream(o), m_flags(o->flags()) {}
+  explicit IosFlagsWrapper(std::ostream* o) : m_stream(o), m_flags(o->flags()) {}
   ~IosFlagsWrapper() { m_stream->flags(m_flags); }
  private:
   std::ostream* m_stream;
