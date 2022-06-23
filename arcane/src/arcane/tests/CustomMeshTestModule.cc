@@ -135,7 +135,7 @@ _testEnumerationAndConnectivities(IMesh* mesh)
     info() << "edge with uid " << iedge->uniqueId().asInt64();
     info() << "edge number of faces " << iedge->faces().size();
     info() << "edge number of cells " << iedge->cells().size();
-    info() << "edge number of edges " << iedge->nodes().size();
+    info() << "edge number of nodes " << iedge->nodes().size();
     ENUMERATE_FACE (iface, iedge->faces()) {
       info() << "edge face " << iface.index() << " lid " << iface.localId() << " uid " << iface->uniqueId().asInt64();
     }
