@@ -53,8 +53,7 @@ namespace PolyhedralMeshTools
 
     Integer nbNodes();
 
-    Arcane::Int64ConstArrayView cellNodes();
-
+    Int64ConstArrayView cellNodes();
     Int32ConstArrayView cellNbNodes();
 
    private:

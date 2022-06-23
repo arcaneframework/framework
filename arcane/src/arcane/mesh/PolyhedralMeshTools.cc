@@ -27,7 +27,23 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Arcane::mesh::PolyhedralMeshTools::VtkReader::
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace mesh
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+
+PolyhedralMeshTools::VtkReader::
 VtkReader(const String& filename) : m_filename{filename}
 {
   if (filename.empty())
@@ -65,7 +81,7 @@ VtkReader(const String& filename) : m_filename{filename}
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Arcane::Int64ConstArrayView Arcane::mesh::PolyhedralMeshTools::VtkReader::
+Int64ConstArrayView PolyhedralMeshTools::VtkReader::
 cellUids()
 {
   if (m_cell_uids.empty()) {
@@ -89,7 +105,7 @@ cellUids()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Arcane::Int64ConstArrayView Arcane::mesh::PolyhedralMeshTools::VtkReader::
+Int64ConstArrayView PolyhedralMeshTools::VtkReader::
 nodeUids()
 {
   if (m_node_uids.empty()) {
@@ -106,7 +122,7 @@ nodeUids()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Arcane::Int64ConstArrayView Arcane::mesh::PolyhedralMeshTools::VtkReader::faceUids()
+Int64ConstArrayView PolyhedralMeshTools::VtkReader::faceUids()
 {
   if (m_face_uids.empty()) {
     auto* vtk_grid = m_vtk_grid_reader->GetOutput();
@@ -165,7 +181,7 @@ Arcane::Int64ConstArrayView Arcane::mesh::PolyhedralMeshTools::VtkReader::faceUi
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Arcane::Int64ConstArrayView Arcane::mesh::PolyhedralMeshTools::VtkReader::
+Int64ConstArrayView PolyhedralMeshTools::VtkReader::
 edgeUids()
 {
   // TODO check !!
@@ -214,7 +230,7 @@ edgeUids()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool Arcane::mesh::PolyhedralMeshTools::VtkReader::
+bool PolyhedralMeshTools::VtkReader::
 _findFace(UniqueArray<Int64> face_nodes)
 {
   // todo coder l'algo recherche : d'abord on vérifie nombre de noeuds puis on teste tant que l'id est égal (est-ce beaucoup plus rapide ?)
@@ -225,7 +241,7 @@ _findFace(UniqueArray<Int64> face_nodes)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool Arcane::mesh::PolyhedralMeshTools::VtkReader::
+bool PolyhedralMeshTools::VtkReader::
 _findEdge(UniqueArray<Int64> edge_nodes)
 {
   auto it = std::search(m_edge_node_uids.begin(), m_edge_node_uids.end(), std::boyer_moore_searcher(edge_nodes.begin(), edge_nodes.end()));
@@ -235,7 +251,7 @@ _findEdge(UniqueArray<Int64> edge_nodes)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Arccore::Integer Arcane::mesh::PolyhedralMeshTools::VtkReader::
+Integer PolyhedralMeshTools::VtkReader::
 nbNodes()
 {
   if (m_node_uids.empty()) nodeUids();
@@ -245,7 +261,7 @@ nbNodes()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Arcane::Int64ConstArrayView Arcane::mesh::PolyhedralMeshTools::VtkReader::
+Int64ConstArrayView PolyhedralMeshTools::VtkReader::
 cellNodes()
 {
   if (m_cell_node_uids.empty()) cellUids();
@@ -255,11 +271,22 @@ cellNodes()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Arcane::Int32ConstArrayView Arcane::mesh::PolyhedralMeshTools::VtkReader::cellNbNodes()
+Int32ConstArrayView PolyhedralMeshTools::VtkReader::
+cellNbNodes()
 {
   if (m_cell_nb_nodes.empty()) cellUids();
   return m_cell_nb_nodes;
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace mesh
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
