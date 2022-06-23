@@ -25,7 +25,7 @@ include(${ARCCON_CMAKE_COMMANDS})
 include(ArcconSetInstallDirs)
 include(ArcconDotNet)
 
-find_package(ArcDependencies REQUIRED)
+find_package(ArcDependencies "1.3.0" REQUIRED)
 
 message(STATUS "ARCDEPENDENCIES_NUGET_SOURCES_DIR = '${ARCDEPENDENCIES_NUGET_SOURCES_DIR}'")
 
