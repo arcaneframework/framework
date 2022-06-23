@@ -15,8 +15,23 @@
 
 using namespace Arccore;
 
+namespace
+{
+// Classe pour restaurer automatiquement les flags() d'un 'std::ostream'
+class IosFlagsWrapper
+{
+ public:
+  IosFlagsWrapper(std::ostream* o) : m_stream(o), m_flags(o->flags()) {}
+  ~IosFlagsWrapper() { m_stream->flags(m_flags); }
+ private:
+  std::ostream* m_stream;
+  std::ios_base::fmtflags m_flags;
+};
+}
+
 TEST(String, Utf8AndUtf16)
 {
+  IosFlagsWrapper io_wrapper(&std::cout);
   {
     String str1("▲▼●■◆");
     std::vector<UChar> utf16_vector { StringUtils::asUtf16BE(str1) };
