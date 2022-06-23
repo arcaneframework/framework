@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CoreArray.h                                                 (C) 2000-2018 */
+/* CoreArray.h                                                 (C) 2000-2022 */
 /*                                                                           */
 /* Tableau simple pour Arccore.                                              */
 /*---------------------------------------------------------------------------*/
@@ -23,9 +23,6 @@
 
 namespace Arccore
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -98,7 +95,7 @@ class CoreArray
   }
 
   //! Retourne la taille du tableau
-  inline Int64 size() const { return arccoreCheckArraySize(m_p.size()); }
+  inline Int64 size() const { return static_cast<Int64>(m_p.size()); }
 
   //! Retourne un iterateur sur le premier élément du tableau
   inline iterator begin() { return m_p.begin(); }
@@ -162,23 +159,13 @@ class CoreArray
  private:
   static Span<const DataType> _constView(const std::vector<DataType>& c)
   {
-    Int64 s = arccoreCheckArraySize(c.size());
+    Int64 s = static_cast<Int64>(c.size());
     return Span<const DataType>(c.data(),s);
-  }
-  static ConstArrayView<DataType> _constSmallView(const std::vector<DataType>& c)
-  {
-    Integer s = arccoreCheckArraySize(c.size());
-    return ConstArrayView<DataType>(s,c.data());
   }
   static Span<DataType> _view(std::vector<DataType>& c)
   {
-    Int64 s = arccoreCheckArraySize(c.size());
+    Int64 s = static_cast<Int64>(c.size());
     return Span<DataType>(c.data(),s);
-  }
-  static ArrayView<DataType> _smallView(std::vector<DataType>& c)
-  {
-    Integer s = arccoreCheckArraySize(c.size());
-    return ArrayView<DataType>(s,c.data());
   }
   static void _add(std::vector<DataType>& c,const DataType& v)
   {
