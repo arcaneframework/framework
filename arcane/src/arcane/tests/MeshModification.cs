@@ -66,7 +66,9 @@ public class MyStruct : IDisposable
 }
 
 [Arcane.Service("MeshModification",typeof(Arcane.IUnitTest))]
-public class MeshModificationService : Arcane.IUnitTest_WrapperService
+public class MeshModificationService
+//: Arcane.IUnitTest_WrapperService
+: ArcaneMeshModificationObject
 {
   TraceAccessor m_trace_accessor;
   public TraceAccessor Trace { get { return m_trace_accessor; } }
@@ -139,16 +141,16 @@ public class MeshModificationService : Arcane.IUnitTest_WrapperService
     }
     ItemGroup all_items = all_cells;
     foreach(Item ie in all_items){
-      Console.WriteLine("CELL_VIEW3 ie={0}",ie.LocalId);      
+      Console.WriteLine("CELL_VIEW3 ie={0}",ie.LocalId);
     }
       
     //Int32Array to_destroy_array = new Int32Array();
     //Int32Array.Wrapper to_destroy_array = 
     Int32Array to_destroy_array = new Int32Array();
-
+    Int32 modulo_to_remove = Options.RemoveFraction.Value();
     foreach(Cell c in all_cells){
       Console.WriteLine("Cell={0} lid={1}",c.UniqueId,c.LocalId);
-      if ((c.LocalId % 2)==0)
+      if ((c.LocalId % modulo_to_remove)==0)
         to_destroy_array.Add(c.LocalId);
     }
     IMeshModifier modifier = Mesh().Modifier();

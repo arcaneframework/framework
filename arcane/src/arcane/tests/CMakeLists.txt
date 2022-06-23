@@ -120,6 +120,11 @@ if (TARGET arcane_dotnet_wrapper_services)
     COMMAND ${ARCANE_AXL2CC}
     ARGS -i arcane/tests/. --lang c\# -o ${CSOUTPATH} ${CSPATH}/PerfectGasEOS.axl)
 
+  add_custom_command(OUTPUT ${CSOUTPATH}/MeshModification_axl.cs
+    DEPENDS ${CSPATH}/MeshModification.axl ${ARCANE_AXL2CC}
+    COMMAND ${ARCANE_AXL2CC}
+    ARGS -i arcane/tests/. --lang c\# -o ${CSOUTPATH} ${CSPATH}/MeshModification.axl)
+
   arccon_add_csharp_target(arcane_test_cs
     DOTNET_RUNTIME ${ARCANE_DOTNET_RUNTIME}
     BUILD_DIR ${LIBRARY_OUTPUT_PATH}
@@ -127,8 +132,10 @@ if (TARGET arcane_dotnet_wrapper_services)
     PROJECT_PATH ${ARCANE_CSHARP_PROJECT_PATH}/ArcaneTest
     PROJECT_NAME ArcaneTest.csproj
     MSBUILD_ARGS ${ARCANE_MSBUILD_ARGS}
-    DEPENDS ${CSOUTPATH}/SimpleHydroCS_axl.cs
+    DEPENDS
+    ${CSOUTPATH}/SimpleHydroCS_axl.cs
     ${CSOUTPATH}/PerfectGasEOS_axl.cs
+    ${CSOUTPATH}/MeshModification_axl.cs
     DOTNET_TARGET_DEPENDS dotnet_wrapper_services dotnet_wrapper_launcher
     )
 

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml version="1.0"?>
 <cas codename="ArcaneTest" xml:lang="fr" codeversion="1.0">
  <arcane>
   <titre>Test Arcane 1</titre>
@@ -15,7 +15,9 @@
  </maillage>
 
  <module-test-unitaire>
-  <test name="MeshModificationTester" />
+   <test name="MeshModification">
+     <remove-fraction>2</remove-fraction>
+   </test>
  </module-test-unitaire>
 
  <arcane-post-traitement>
