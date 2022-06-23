@@ -122,7 +122,8 @@ nodeUids()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int64ConstArrayView PolyhedralMeshTools::VtkReader::faceUids()
+Int64ConstArrayView PolyhedralMeshTools::VtkReader::
+faceUids()
 {
   if (m_face_uids.empty()) {
     auto* vtk_grid = m_vtk_grid_reader->GetOutput();
@@ -276,6 +277,26 @@ cellNbNodes()
 {
   if (m_cell_nb_nodes.empty()) cellUids();
   return m_cell_nb_nodes;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int64ConstArrayView PolyhedralMeshTools::VtkReader::
+faceNodes()
+{
+  if (m_face_node_uids.empty()) faceUids();
+  return m_face_node_uids;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int32ConstArrayView PolyhedralMeshTools::VtkReader::
+faceNbNodes()
+{
+  if (m_face_nb_nodes.empty()) faceUids();
+  return m_face_nb_nodes;
 }
 
 /*---------------------------------------------------------------------------*/
