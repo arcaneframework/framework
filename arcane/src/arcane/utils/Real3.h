@@ -140,7 +140,7 @@ class ARCANE_UTILS_EXPORT Real3
   {
     return math::isNearlyZero(x) && math::isNearlyZero(y) && math::isNearlyZero(z);
   }
-  //! Retourne la norme L2 du triplet \f$\sqrt{x^2+y^2+z^2}\f$
+  //! Retourne la norme L2 au carré du triplet \f$x^2+y^2+z^2\f$
   constexpr ARCCORE_HOST_DEVICE Real squareNormL2() const { return x*x + y*y + z*z; }
   //! Retourne la norme L2 du triplet \f$\sqrt{x^2+y^2+z^2}\f$
   ARCCORE_HOST_DEVICE Real normL2() const { return _sqrt(squareNormL2()); }
