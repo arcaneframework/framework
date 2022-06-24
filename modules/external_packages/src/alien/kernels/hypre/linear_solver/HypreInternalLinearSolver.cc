@@ -45,12 +45,16 @@ std::unique_ptr<HypreLibrary> HypreInternalLinearSolver::m_library_plugin ;
 
 HypreLibrary::HypreLibrary()
 {
+#if HYPRE_HAVE_HYPRE_INIT
   HYPRE_Init() ;
+#endif
 }
 
 HypreLibrary::~HypreLibrary()
 {
+#if HYPRE_HAVE_HYPRE_FINALIZE
   HYPRE_Finalize() ;
+#endif
 }
 
 /*---------------------------------------------------------------------------*/
