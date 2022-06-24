@@ -47,11 +47,11 @@ Alien requires a recent build environment:
 - Arccore
 - Google Tests, for unit tests
 
-On Ubuntu-20.04, installing this package is sufficient:
+On Ubuntu-20.04, installing these packages is sufficient for running hypre solvers:
 
  ```shell script
 apt-get install build-essential cmake gcc g++ gdb \
-        libhypre-dev libsuperlu-dist-dev \
+        libhypre-dev \
         libboost-dev libboost-program-options-dev libgtest-dev libglib2.0-dev
 ```
 

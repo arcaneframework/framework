@@ -37,7 +37,7 @@ jobs:
             precommand: "",
             build_type: "RelWithDebInfo",
             build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -G Ninja",
-            alien_options: "-DALIEN_DEFAULT_OPTIONS:BOOL=ON -DALIEN_PLUGIN_GINKGO:BOOL=ON -DALIEN_PLUGIN_GINKGO_OMP:BOOL=ON",
+            alien_options: "-DALIENDEV_EMBEDDED:BOOL=ON -DALIEN_DEFAULT_OPTIONS:BOOL=ON -DALIEN_PLUGIN_GINKGO:BOOL=ON -DALIEN_PLUGIN_GINKGO_OMP:BOOL=ON",
             isspack: false
           }
           - {
@@ -46,7 +46,7 @@ jobs:
             precommand: "",
             build_type: "RelWithDebInfo",
             build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -G Ninja",
-            alien_options: "-DALIEN_DEFAULT_OPTIONS:BOOL=ON -DALIEN_PLUGIN_GINKGO:BOOL=ON -DALIEN_PLUGIN_GINKGO_OMP:BOOL=ON  -DALIEN_PLUGIN_TRILINOS:BOOL=ON -DALIEN_PLUGIN_TRILINOS_SERIAL:BOOL=ON",
+            alien_options: "-DALIENDEV_EMBEDDED:BOOL=ON -DALIEN_DEFAULT_OPTIONS:BOOL=ON -DALIEN_PLUGIN_GINKGO:BOOL=ON -DALIEN_PLUGIN_GINKGO_OMP:BOOL=ON  -DALIEN_PLUGIN_TRILINOS:BOOL=ON -DALIEN_PLUGIN_TRILINOS_SERIAL:BOOL=ON",
             isspack: false
           }
           - {
@@ -55,7 +55,7 @@ jobs:
             precommand: "",
             build_type: "Debug",
             build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -G Ninja -DENABLE_SANITIZER_ADDRESS:BOOL=ON -DENABLE_SANITIZER_UNDEFINED_BEHAVIOR:BOOL=ON",
-            alien_options: "-DALIEN_DEFAULT_OPTIONS:BOOL=ON -DALIEN_PLUGIN_GINKGO:BOOL=ON -DALIEN_PLUGIN_GINKGO_OMP:BOOL=ON",
+            alien_options: "-DALIENDEV_EMBEDDED:BOOL=ON -DALIEN_DEFAULT_OPTIONS:BOOL=ON -DALIEN_PLUGIN_GINKGO:BOOL=ON -DALIEN_PLUGIN_GINKGO_OMP:BOOL=ON",
             isspack: false
           }
           - {
@@ -64,7 +64,7 @@ jobs:
             precommand: "",
             build_type: "Debug",
             build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -G Ninja -DENABLE_SANITIZER_MEMORY:BOOL=ON",
-            alien_options: "-DALIEN_DEFAULT_OPTIONS:BOOL=ON -DALIEN_PLUGIN_GINKGO:BOOL=ON -DALIEN_PLUGIN_GINKGO_OMP:BOOL=ON",
+            alien_options: "-DALIENDEV_EMBEDDED:BOOL=ON  -DALIEN_DEFAULT_OPTIONS:BOOL=ON -DALIEN_PLUGIN_GINKGO:BOOL=ON -DALIEN_PLUGIN_GINKGO_OMP:BOOL=ON",
             isspack: false
           }
           - {
@@ -73,7 +73,7 @@ jobs:
             precommand: "",
             build_type: "Debug",
             build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -G Ninja",
-            alien_options: "-DALIEN_DEFAULT_OPTIONS:BOOL=OFF -DALIENDEV_EMBEDDED:BOOL=ON -DALIEN_PLUGIN_GINKGO:BOOL=ON -DALIEN_PLUGIN_GINKGO_OMP:BOOL=ON",
+            alien_options: "-DALIENDEV_EMBEDDED:BOOL=ON  -DALIEN_DEFAULT_OPTIONS:BOOL=OFF -DALIEN_PLUGIN_GINKGO:BOOL=ON -DALIEN_PLUGIN_GINKGO_OMP:BOOL=ON",
             isspack: false
           }
           - {
@@ -82,7 +82,7 @@ jobs:
             precommand: ". /env.sh",
             build_type: "RelWithDebInfo",
             build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_FLAGS='-L${EBROOTLIBXML2} -lxml2'",
-            alien_options: "-DALIEN_DEFAULT_OPTIONS:BOOL=ON -DVerbose=ON -DBoost_NO_BOOST_CMAKE=ON -DBUILD_SHARED_LIBS=ON -DALIEN_USE_HDF5=ON",
+            alien_options: "-DALIENDEV_EMBEDDED:BOOL=ON -DALIEN_DEFAULT_OPTIONS:BOOL=ON -DVerbose=ON -DBoost_NO_BOOST_CMAKE=ON -DBUILD_SHARED_LIBS=ON -DALIEN_USE_HDF5=ON",
             isspack: false
           }
           - {
@@ -91,7 +91,7 @@ jobs:
             precommand: ". /env.sh",
             build_type: "RelWithDebInfo",
             build_options: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_FLAGS='-L${EBROOTLIBXML2} -lxml2'",
-            alien_options: "-DALIEN_DEFAULT_OPTIONS:BOOL=ON -DVerbose=ON -DBoost_NO_BOOST_CMAKE=ON -DBUILD_SHARED_LIBS=ON -DALIEN_USE_HDF5=ON",
+            alien_options: "-DALIENDEV_EMBEDDED:BOOL=ON -DALIEN_DEFAULT_OPTIONS:BOOL=ON -DVerbose=ON -DBoost_NO_BOOST_CMAKE=ON -DBUILD_SHARED_LIBS=ON -DALIEN_USE_HDF5=ON",
             isspack: false
           }
           - {

@@ -61,7 +61,6 @@ option(ALIEN_GENERATE_TUTORIAL "Compile examples of Alien" ON)
 
 option(ALIEN_PLUGIN_HYPRE "Whether or not to compile Hypre backend" OFF)
 option(ALIEN_PLUGIN_PETSC "Whether or not to compile PETSc backend" OFF)
-option(ALIEN_PLUGIN_SUPERLU "Whether or not to compile SuperLU backend" OFF)
 option(ALIEN_PLUGIN_TRILINOS "Whether or not to compile Trilinos backend" OFF)
 
 option(ALIEN_PLUGIN_GINKGO "Whether or not to compile Ginkgo backend" OFF)
@@ -73,7 +72,7 @@ option(ALIEN_PLUGIN_GINKGO_DPCPP "Whether or not to compile DPCPP Ginkgo backend
 
 get_filename_component(_fp_framework "framework/CMake" REALPATH)
 if (EXISTS ${_fp_framework})
-    option(ALIENDEV_EMBEDDED "[dev] forbid to compile Arcon and Arccore" ${ALIEN_DEFAULT_OPTIONS})
+    option(ALIENDEV_EMBEDDED "[dev] forbid to compile Arcon and Arccore" OFF)
 else ()
     set(ALIENDEV_EMBEDDED OFF)
 endif ()
@@ -183,10 +182,6 @@ endif (ALIEN_PLUGIN_HYPRE)
 if (ALIEN_PLUGIN_PETSC)
     add_subdirectory(plugins/petsc)
 endif (ALIEN_PLUGIN_PETSC)
-
-if (ALIEN_PLUGIN_SUPERLU)
-    add_subdirectory(plugins/superlu)
-endif (ALIEN_PLUGIN_SUPERLU)
 
 if (ALIEN_PLUGIN_TRILINOS)
     add_subdirectory(plugins/trilinos)
