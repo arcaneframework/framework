@@ -33,6 +33,13 @@ class SolverStater;
 class HypreMatrix;
 class HypreVector;
 
+class HypreLibrary
+{
+  public :
+  HypreLibrary() ;
+  virtual ~HypreLibrary() ;
+} ;
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -48,6 +55,11 @@ class HypreInternalLinearSolver : public IInternalLinearSolver<HypreMatrix, Hypr
   virtual ~HypreInternalLinearSolver();
 
  public:
+
+  static bool m_library_plugin_is_initialized ;
+
+  static std::unique_ptr<HypreLibrary> m_library_plugin ;
+
   virtual void init();
 
   void updateParallelMng(Arccore::MessagePassing::IMessagePassingMng* pm);
@@ -73,6 +85,8 @@ class HypreInternalLinearSolver : public IInternalLinearSolver<HypreMatrix, Hypr
 
  private:
   Status m_status;
+
+  Integer m_gpu_device_id = 0 ;
 
   // SolverStat m_stat;
   SolverStater m_stater;
