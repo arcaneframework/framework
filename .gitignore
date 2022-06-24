@@ -415,5 +415,4 @@ DerivedData/
 /*.gcno
 
 # CMake profile
-CMakeUserPresets.json
-
+/CMakeUserPresets.json

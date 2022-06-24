@@ -12,7 +12,7 @@ git clone https://github.com/arcaneframework/alien.git
 cd alien
 ```
 
-After, you can run CMake (at least version 3.15).
+After, you can run CMake (at least version 3.18).
 
 ```shell script
 mkdir build && cd build
@@ -22,8 +22,9 @@ cmake ..
 Useful CMake options:
 
 - ALIEN_FRAMEWORK_EXTERNAL, compile each subproject separately, OFF by default
+- ALIEN_PLUGIN_GINKGO, whether Ginkgo plugin is compiled, OFF by default
 - ALIEN_PLUGIN_HYPRE, whether Hypre plugin is compiled, OFF by default
-- ALIEN_PLUGIN_SUPERLU, whether SuperLUDist plugin is compiled, OFF by default
+- ALIEN_PLUGIN_TRILINOS, whether Trilinos plugin is compiled, OFF by default
 - ALIEN_USE_HDF5, whether HDF5 support is enabled, OFF by default.
 
 We can mention also other generic CMake options :
@@ -36,13 +37,15 @@ We can mention also other generic CMake options :
 
 Alien requires a recent build environment:
 
-- recent CMake (>= 3.15)
-- C++ compiler that supports C++-14 (gcc, llvm/clang, intel)
+- recent CMake (>= 3.18)
+- C++ compiler that supports C++-17 (gcc, llvm/clang, intel)
 - MPI
 - boost, at least with timer and program options components enabled
 - glib2
 - BLAS
-- Google Tests, for unit tests.
+- Arccon
+- Arccore
+- Google Tests, for unit tests
 
 On Ubuntu-20.04, installing this package is sufficient:
 
@@ -60,28 +63,12 @@ cd $(mktemp -d) && cmake /usr/src/googletest && cmake --build . --target install
 
 ## How it works ?
 
-This repository contains several other repositories, needed for Alien. It contains the following subdirectories:
+This repository contains the following subdirectories:
 
-- framework: from Arcane, these subdirectories are synchronized by `git subtree`
-    + arccon, which contains our build system, based on CMake;
-    + arccore, which contains base features on which Alien is built, mainly Array and ParallelManager;
 - src, the main repository for linear algebra,
-- plugins, with different plugins for Alien, to call Hypre or SuperLU external libraries.
+- plugins, with different plugins for Alien, to call Hypre, PETSC, Ginkgo or Trilinos external libraries.
 
-## For developers
-
-To update `arccore` and `arccon`, use `git subtree`.
-
-For example, to upgrade `arccore` to last commit of branch `main` of `framework` repository, run:
-
-```shell script
-cd ..
-git clone git@github.com:arcaneframework/framework
-cd framework
-git subtree split -P arccore -b arccore
-cd ../alien
-git subtree pull --prefix=framework/arccore --squash ../framework arccore
-```
+For git developers, Arccore and Arccon dependencies can be built on the fly setting `ALIENDEV_EMBEDDED` to `ON`.
 
 ## Documentation generation
 
@@ -95,7 +82,7 @@ conda env create -f alien-env.yml
 conda activate alien-env
 ```
 
-Then the CMAKE OPTIONS has to be activated in the Alien configuration step 
+Then the CMAKE OPTIONS has to be activated in the Alien configuration step
 
 ```shell script
 cmake -S `pwd`/alien \

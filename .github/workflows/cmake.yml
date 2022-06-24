@@ -174,14 +174,6 @@ jobs:
           ${{matrix.config.precommand}}
           cd ${{env.BUILD_DIR}} && cmake --install ${{env.BUILD_DIR}}
 
-      - name: Install Arccon
-        shell: bash
-        run: |
-          ${{matrix.config.precommand}}
-          cmake -B ${{env.BUILD_DIR}}/arccon -DCMAKE_BUILD_TYPE=${{matrix.config.build_type}} -DCMAKE_INSTALL_PREFIX=${{env.INSTALL_DIR}} framework/arccon/
-          cmake --build ${{env.BUILD_DIR}}/arccon --config ${{matrix.config.build_type}} -j $(nproc)
-          cd ${{env.BUILD_DIR}} && cmake --install ${{env.BUILD_DIR}}/arccon
-
       - name: TestInstallHypre
         shell: bash
         run: |

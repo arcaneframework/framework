@@ -95,21 +95,26 @@ include(sanitizers)
 
 # First we try to use external arccon and arccore
 if (ALIENDEV_EMBEDDED)
-    if (NOT DEFINED ARCCON_SRC_DIR)
-        set(ARCCON_SRC_DIR ${PROJECT_SOURCE_DIR}/framework/arccon)
-    endif ()
+    include(FetchContent)
 
-    if (NOT DEFINED ARCCORE_SRC_DIR)
-        set(ARCCORE_SRC_DIR ${PROJECT_SOURCE_DIR}/framework/arccore)
-    endif ()
+    FetchContent_Declare(
+            Arccon
+            URL https://github.com/arcaneframework/framework/releases/download/arcane-v3.5.7.0/arccon-1.2.0.src.tar.gz
+    )
 
+    FetchContent_Declare(
+            Arccore
+            URL https://github.com/arcaneframework/framework/releases/download/arccore-v2.0.11.0/arccore-2.0.11.0.src.tar.gz
+    )
     set(FRAMEWORK_EXPORT_NAME AlienFrameworkTargets)
 
     get_filename_component(_fp_framework "framework/CMake" REALPATH)
     if (EXISTS ${_fp_framework})
         list(APPEND CMAKE_MODULE_PATH ${_fp_framework})
     endif ()
-else (ALIENDEV_EMBEDDED)
+
+    FetchContent_MakeAvailable(Arccon Arccore)
+
     find_package(Arccon REQUIRED)
     list(APPEND CMAKE_MODULE_PATH ${ARCCON_MODULE_PATH})
 
@@ -142,10 +147,6 @@ if (ALIEN_GENERATE_DOCUMENTATION)
     set(DOXYGEN_GENERATE_XML YES)
 endif (ALIEN_GENERATE_DOCUMENTATION)
 
-# Use Arccon functions and macros
-find_package(Arccon REQUIRED)
-list(APPEND CMAKE_MODULE_PATH ${ARCCON_MODULE_PATH})
-
 # use arccon commands otherwise a
 include(${ARCCON_CMAKE_COMMANDS})
 include(ArcconSetInstallDirs)
@@ -171,9 +172,9 @@ endif ()
 
 add_subdirectory(src)
 
-if(ALIEN_BENCHMARKS)
+if (ALIEN_BENCHMARKS)
     add_subdirectory(benchmark)
-endif()
+endif ()
 
 if (ALIEN_PLUGIN_HYPRE)
     add_subdirectory(plugins/hypre)

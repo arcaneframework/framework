@@ -9,7 +9,8 @@ if (NOT ARCCORE_EXPORT_TARGET)
 endif ()
 
 # add directory only once !
+# FetchContent use <name>_SOURCE_DIR
 if (NOT TARGET arccore_full)
     set(ARCCORE_WANT_TEST OFF)
-    add_subdirectory(${ARCCORE_SRC_DIR} arccore)
+    add_subdirectory(${Arccore_SOURCE_DIR} arccore)
 endif (NOT TARGET arccore_full)
