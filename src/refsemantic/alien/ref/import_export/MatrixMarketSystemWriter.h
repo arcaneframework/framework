@@ -37,8 +37,8 @@ class ALIEN_REFSEMANTIC_EXPORT MatrixMarketSystemWriter
   MatrixMarketSystemWriter(std::string const& filename, Arccore::MessagePassing::IMessagePassingMng* parallel_mng = nullptr);
   virtual ~MatrixMarketSystemWriter();
 
-  void dump(Matrix const& A);
-  void dump(Vector const& rhs);
+  void dump(Matrix const& A, std::string const& description);
+  void dump(Vector const& rhs, std::string const& description);
 
  private:
   std::string m_filename;

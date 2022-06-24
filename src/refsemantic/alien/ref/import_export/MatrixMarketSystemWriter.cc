@@ -57,7 +57,7 @@ MatrixMarketSystemWriter::MatrixMarketSystemWriter(std::string const& filename,
 
 MatrixMarketSystemWriter::~MatrixMarketSystemWriter() {}
 
-void MatrixMarketSystemWriter::dump(Matrix const& A)
+void MatrixMarketSystemWriter::dump(Matrix const& A, std::string const& description)
 {
   const SimpleCSRMatrix<Real>& csr = A.impl()->get<BackEnd::tag::simplecsr>();
   const SimpleCSRMatrix<Real>::ProfileType& profile = csr.getProfile();
@@ -71,14 +71,14 @@ void MatrixMarketSystemWriter::dump(Matrix const& A)
     std::ofstream fout(m_filename);
     fout << "%%MatrixMarket matrix coordinate real general" << std::endl;
     fout << "%" << std::endl;
-    fout << "% Simple 25x25 grid." << std::endl;
+    fout << "% " << description << std::endl;
     fout << "%" << std::endl;
     fout << "% #rows #cols #nonzeros" << std::endl;
     fout << "% #vertices #hyperedges #pins" << std::endl;
     fout << nrows << " " << nrows << " " << nnz << std::endl;
     for (int irow = 0; irow < nrows; ++irow) {
       for (int k = kcol[irow]; k < kcol[irow + 1]; ++k) {
-        fout << irow << " " << cols[k] << " " << values[k] << std::endl;
+        fout << irow + 1 << " " << cols[k] + 1 << " " << values[k] << std::endl;
       }
     }
   }
@@ -94,14 +94,14 @@ void MatrixMarketSystemWriter::dump(Matrix const& A)
       std::ofstream fout(m_filename);
       fout << "%%MatrixMarket matrix coordinate real general" << std::endl;
       fout << "%" << std::endl;
-      fout << "% Simple 25x25 grid." << std::endl;
+      fout << "% " << description << std::endl;
       fout << "%" << std::endl;
       fout << "% #rows #cols #nonzeros" << std::endl;
       fout << "% #vertices #hyperedges #pins" << std::endl;
       fout << global_nrows << " " << global_nrows << " " << global_nnz << std::endl;
       for (int irow = 0; irow < nrows; ++irow) {
         for (int k = kcol[irow]; k < kcol[irow + 1]; ++k) {
-          fout << irow << " " << cols[k] << " " << values[k] << std::endl;
+          fout << irow + 1 << " " << cols[k] + 1 << " " << values[k] << std::endl;
         }
       }
       for (int ip = 1; ip < m_nproc; ++ip) {
@@ -125,8 +125,8 @@ void MatrixMarketSystemWriter::dump(Matrix const& A)
       Integer domain_offset = csr.distribution().rowOffset();
       for (int irow = 0; irow < nrows; ++irow) {
         for (int k = kcol[irow]; k < kcol[irow + 1]; ++k) {
-          indexes[2 * k] = domain_offset + irow;
-          indexes[2 * k + 1] = cols[k];
+          indexes[2 * k] = domain_offset + irow + 1;
+          indexes[2 * k + 1] = cols[k] + 1;
           local_values[k] = values[k];
         }
       }
@@ -136,7 +136,7 @@ void MatrixMarketSystemWriter::dump(Matrix const& A)
   }
 }
 
-void MatrixMarketSystemWriter::dump(Vector const& rhs)
+void MatrixMarketSystemWriter::dump(Vector const& rhs, std::string const& description)
 {
   const SimpleCSRVector<Real>& v = rhs.impl()->get<BackEnd::tag::simplecsr>();
   auto local_size = v.distribution().localSize();
@@ -145,11 +145,11 @@ void MatrixMarketSystemWriter::dump(Vector const& rhs)
     std::ofstream fout(m_filename);
     fout << "%%MatrixMarket matrix array real general" << std::endl;
     fout << "%" << std::endl;
-    fout << "% Simple 25x25 grid." << std::endl;
+    fout << "% " << description << std::endl;
     fout << "%" << std::endl;
     fout << local_size << " 1" << std::endl;
     for (int irow = 0; irow < local_size; ++irow) {
-      fout << irow << " " << values[irow] << std::endl;
+      fout << irow + 1 << " " << values[irow] << std::endl;
     }
   }
   else {
@@ -160,11 +160,11 @@ void MatrixMarketSystemWriter::dump(Vector const& rhs)
       std::ofstream fout(m_filename);
       fout << "%%MatrixMarket matrix array real general" << std::endl;
       fout << "%" << std::endl;
-      fout << "% Simple 25x25 grid." << std::endl;
+      fout << "% " << description << std::endl;
       fout << "%" << std::endl;
       fout << global_size << " 1" << std::endl;
       for (int irow = 0; irow < local_size; ++irow) {
-        fout << irow << " " << values[irow] << std::endl;
+        fout << irow + 1 << " " << values[irow] << std::endl;
       }
       for (int ip = 1; ip < m_nproc; ++ip) {
         Integer local_nrows = 0;
@@ -174,7 +174,7 @@ void MatrixMarketSystemWriter::dump(Vector const& rhs)
           UniqueArray<Real> local_values(local_nrows);
           Arccore::MessagePassing::mpReceive(m_parallel_mng, local_values, ip);
           for (int k = 0; k < local_nrows; ++k) {
-            fout << domain_offset + k << " " << local_values[k] << std::endl;
+            fout << domain_offset + k + 1 << " " << local_values[k] << std::endl;
           }
         }
       }
