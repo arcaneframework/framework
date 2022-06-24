@@ -100,7 +100,7 @@ class ItemLocalIdViewT
   static constexpr ARCCORE_HOST_DEVICE ItemLocalIdViewT<ItemType>
   fromIds(SmallSpan<const Int32> v)
   {
-    return ItemLocalIdView<ItemType>(reinterpret_cast<const LocalIdType*>(v.data()),v.size());
+    return ItemLocalIdViewT<ItemType>(reinterpret_cast<const LocalIdType*>(v.data()),v.size());
   }
  private:
   SpanType m_ids;
