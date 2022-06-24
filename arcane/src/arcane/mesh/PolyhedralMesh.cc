@@ -319,7 +319,7 @@ namespace mesh
                                  ItemLocalIds& source_items,
                                  ConnectivitySizeType&& nb_connected_items_per_item,
                                  PolyhedralFamily* arcane_target_item_family,
-                                 Int64ConstArrayView target_items_uids,
+                                 Int64ConstArrayView target_item_uids,
                                  String const& name)
     {
       // add connectivity in Neo
@@ -327,9 +327,17 @@ namespace mesh
                                               arcane_source_item_family->name().localstr());
       auto& target_family = m_mesh.findFamily(itemKindArcaneToNeo(arcane_target_item_family->itemKind()),
                                               arcane_target_item_family->name().localstr());
+      // Remove connectivities with a null item
+      std::vector<Int64> target_item_uids_filtered;
+      target_item_uids_filtered.reserve(target_item_uids.size());
+      std::copy_if(target_item_uids.begin(),
+                   target_item_uids.end(),
+                   std::back_inserter(target_item_uids_filtered),
+                   [](auto uid){return uid != NULL_ITEM_UNIQUE_ID; });
+      // Add connectivity (async)
       m_mesh.scheduleAddConnectivity(source_family, source_items.m_future_items, target_family,
                                      std::forward<ConnectivitySizeType>(nb_connected_items_per_item),
-                                     std::vector<Int64>{target_items_uids.begin(),target_items_uids.end()},
+                                     std::move(target_item_uids_filtered),
                                      name.localstr());
       // Register connectivity in Arcane : via un algo !! todo : quelle prop out
       auto& mesh_graph = m_mesh.internalMeshGraph();
@@ -470,6 +478,7 @@ read(const String& filename)
   m_mesh->scheduleAddConnectivity(cell_family,cell_lids,reader.cellNbNodes(),node_family,reader.cellNodes(),String{"CellToNodes"});
   m_mesh->scheduleAddConnectivity(face_family,face_lids,reader.faceNbNodes(),node_family,reader.faceNodes(),String{"FaceToNodes"});
   m_mesh->scheduleAddConnectivity(edge_family,edge_lids,2,node_family,reader.edgeNodes(),String{"EdgeToNodes"});
+  m_mesh->scheduleAddConnectivity(face_family,face_lids,reader.faceNbCells(),cell_family,reader.faceCells(),String{"FaceToCells"});
 //  m_mesh->scheduleAddConnectivity(node_family,node_lids,1,cell_family,
 //                                  Int64UniqueArray{0,0,0,0,0,0},String{"NodeToCells"});
   m_mesh->applyScheduledOperations();
