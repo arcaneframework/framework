@@ -3,6 +3,3 @@
 
 # exclude utilities from the release tarball
 _clang_format   export-ignore
-
-# Exclude framework dependencies from tarball
-/framework      export-ignore
