@@ -115,7 +115,7 @@ endif (ALIEN_TRILINOS_UNIT_TESTS)
 
 # Install
 
-include(ArcconSetInstallDirs)
+include(GNUInstallDirs)
 
 set(ALIENTRILINOS_EXPORT_TARGET ${PROJECT_NAME}Targets)
 

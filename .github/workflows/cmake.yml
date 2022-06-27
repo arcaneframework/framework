@@ -100,7 +100,7 @@ jobs:
             precommand: "source .devcontainer/use_spack.sh /tmp/spack-env",
             build_type: "RelWithDebInfo",
             build_options: "",
-            alien_options: "-DALIEN_DEFAULT_OPTIONS:BOOL=ON -DALIENDEV_EMBEDDED:BOOL=ON",
+            alien_options: "-DALIEN_DEFAULT_OPTIONS:BOOL=ON",
             isspack: true
           }
     steps:

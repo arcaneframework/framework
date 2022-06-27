@@ -56,7 +56,7 @@ endif (ALIEN_PETSC_UNIT_TESTS)
 
 # Install
 
-include(ArcconSetInstallDirs)
+include(GNUInstallDirs)
 
 set(ALIENPETSC_EXPORT_TARGET ${PROJECT_NAME}Targets)
 

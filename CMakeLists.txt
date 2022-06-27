@@ -110,11 +110,12 @@ if (ALIENDEV_EMBEDDED)
     FetchContent_MakeAvailable(Arccon Arccore)
 endif ()
 find_package(Arccon REQUIRED)
+# Only use find package with Arccon
 list(APPEND CMAKE_MODULE_PATH ${ARCCON_MODULE_PATH})
-include(${ARCCON_CMAKE_COMMANDS})
-include(ArcconSetInstallDirs)
 
 find_package(Arccore REQUIRED)
+
+include(GNUInstallDirs)
 
 if (ALIEN_DEFAULT_OPTIONS)
     find_package(HDF5 QUIET)

@@ -90,7 +90,7 @@ add_subdirectory(test)
 
 # Install
 
-include(ArcconSetInstallDirs)
+include(GNUInstallDirs)
 
 set(ALIENGINKGO_EXPORT_TARGET ${PROJECT_NAME}Targets)
 

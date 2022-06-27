@@ -22,8 +22,6 @@ ENV_FILE=/tmp/foo
 
 . /spack/share/spack/setup-env.sh && spack env activate -V alien && spack load --only dependencies --sh alien >"${ENV_FILE}"
 
-# Second argument flags that arccon and arccore should not be removed from environment
-[[ $# -lt 2 ]] && sed -e 's@[^:]*/\(arccon\|arccore\)-[^:]*@@g' -i "$ENV_FILE"
 # shellcheck disable=SC1090
 . "$ENV_FILE"
 

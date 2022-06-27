@@ -8,8 +8,8 @@ endif ()
 
 # FetchContent use <name>_SOURCE_DIR
 SET(ARCCON_CMAKE_COMMANDS ${Arccon_SOURCE_DIR}/Arccon.cmake)
-set(ARCCON_MODULE_PATH ${Arccon_SOURCE_DIR}/Modules)
+set(ARCCON_MODULE_PATH ${Arccon_SOURCE_DIR}/build-system/Modules)
 
-list(APPEND CMAKE_MODULE_PATH ${ARCCON_MODULE_PATH})
-include(${ARCCON_CMAKE_COMMANDS})
+#list(APPEND CMAKE_MODULE_PATH ${ARCCON_MODULE_PATH})
+#include(${ARCCON_CMAKE_COMMANDS})
 

@@ -111,7 +111,7 @@ add_subdirectory(bench)
 
 # Install
 
-include(ArcconSetInstallDirs)
+include(GNUInstallDirs)
 
 set(ALIENHYPRE_EXPORT_TARGET ${PROJECT_NAME}Targets)
 
