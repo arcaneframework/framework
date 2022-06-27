@@ -90,7 +90,7 @@ cmake --build /path/to/build
 
 ## Linux
 
-Cette section indique comment installer sour Linux x64 les dépendances
+Cette section indique comment installer sous Linux x64 les dépendances
 nécessaires.
 
 ### CMake
@@ -139,4 +139,15 @@ wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.
 sudo dpkg -i packages-microsoft-prod.deb
 sudo apt-get update
 sudo apt-get install -y apt-transport-https dotnet-sdk-6.0
+~~~
+
+### Arch Linux/Manjaro via Pacman/YAY
+
+Les commandes suivantes permettent d'installer CMake, .Net et les dépendances
+nécessaires pour Arcane (ainsi que les dépendances optionnelles `TBB`, `HDF5` et `ParMetis`):
+
+~~~{sh}
+sudo pacman -Syu
+sudo pacman -S gcc cmake python git gcc-fortran glib2 libxml2 hdf5-openmpi wget tbb dotnet-sdk aspnet-runtime aspnet-targeting-pack
+yay -S aur/parmetis
 ~~~
