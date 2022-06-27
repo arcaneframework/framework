@@ -108,12 +108,13 @@ if (ALIENDEV_EMBEDDED)
     endif ()
 
     FetchContent_MakeAvailable(Arccon Arccore)
-
-    find_package(Arccon REQUIRED)
-    list(APPEND CMAKE_MODULE_PATH ${ARCCON_MODULE_PATH})
-
-    find_package(Arccore REQUIRED)
 endif ()
+find_package(Arccon REQUIRED)
+list(APPEND CMAKE_MODULE_PATH ${ARCCON_MODULE_PATH})
+include(${ARCCON_CMAKE_COMMANDS})
+include(ArcconSetInstallDirs)
+
+find_package(Arccore REQUIRED)
 
 if (ALIEN_DEFAULT_OPTIONS)
     find_package(HDF5 QUIET)
@@ -141,9 +142,6 @@ if (ALIEN_GENERATE_DOCUMENTATION)
     set(DOXYGEN_GENERATE_XML YES)
 endif (ALIEN_GENERATE_DOCUMENTATION)
 
-# use arccon commands otherwise a
-include(${ARCCON_CMAKE_COMMANDS})
-include(ArcconSetInstallDirs)
 
 # ----------------------------------------------------------------------------
 # Configure installation layout.
