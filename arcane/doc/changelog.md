@@ -5,7 +5,7 @@
 
 Cette page contient les nouveautés de chaque version de %Arcane.
 
-Arcane Version 3.6.5 (?? juin 2022) {#arcanedoc_version360}
+Arcane Version 3.6.11 (?? juin 2022) {#arcanedoc_version360}
 ======================================
 
 Nouveautés/Améliorations:
@@ -37,6 +37,13 @@ Nouveautés/Améliorations:
 - Ajoute interface accessible via
   'Arcane::IMesh::indexedConnectivityMng()' permet de facilement
   ajouter de nouvelles connectivités (#201).
+- Ajout d'un nouvel algorithme de calcul des uniqueId() des arêtes
+  (Edge) pour les maillages cartésiens
+- Ajoute support pour les classes de Arccore de l'opérateur
+  `operator[]` avec arguments multiples (#241).
+- Possibilité de rendre thread-safe les appels à
+  Arcane::Accelerator::makeQueue() en appelant la méthode
+  Arcane::Accelerator::Runner::setConcurrentQueueCreation() (#242)
 
 Changements:
 
@@ -60,6 +67,9 @@ Changements:
   existaient encore après cet appel. Cela peut notamment être le cas
   avec les extensions C# car les services et modules associés sont
   gérés par un 'Garbage Collector' (#200).
+- Rend obsolète l'utilisation de Arcane::Timer::TimerVirtual. Les timers qui
+  utilisent cette propriété se comportent comme s'ils avaient
+  l'attribut Arcane::Timer::TimerReal.
 
 Corrections:
 
@@ -67,6 +77,7 @@ Corrections:
   et Arcane::IItemFamily::globalConnectivityInfos() pour les connectivités
   autres que celles aux noeuds. Ce bug avait été introduit lors du
   passage aux nouvelles connectivités (#230, #27).
+- Corrige divers bugs dans la version 3 de BasicReaderWriter (#238)
 
 Interne:
 
@@ -75,6 +86,29 @@ Interne:
   Arcane::ItemSharedInfo. Cela permettra à terme de supprimer le champ
   correspondant dans Arcane::ItemSharedInfo (#227).
 
+- Passage version 2.0.3.0 de Axlstar:
+
+  - Ajoute support dans les fichiers 'axl' des propriétés Arcane::IVariable::PNoExchange,
+    Arcane::IVariable::PNoReplicaSync et Arcane::IVariable::PPersistant.
+
+- Passage version 2.0.11.0 de %Arccore:
+
+  - Add function `mpDelete()` to destroy `IMessagePassingMng` instances (#258)
+  - Optimizations in class `String`(#256,#247)
+      - Add move constructor String(String&&) and move copy operator operator=(String&&)
+      - Make `String` destructor inline 
+      - Make method `String::utf16()` deprecated (replaced by `StringUtils::asUtf16BE()`)
+      - Methods `String::bytes()` and `String::format` no longer throws exceptions
+      - Add a namespace `StringUtils` to contains utilitarian functions.
+  - Add support for multisubscript `operator[]` from C++23 (#241)
+  - Add `operator()` to access values of `ArrayView`, `ArrayView2`,
+    `ArrayView3`, `ArrayView4`, `Span`, `Span2` and `const` versions
+    of these views (#223).
+  - Add `SmallSpan2` implementation for 2D arrays whose `size_type` is an `Int32` (#223).
+  - Add `SpanImpl::findFirst()` method  (#211)
+  - Fix build on Ubuntu 22.04
+
+    
 Arcane Version 3.5.7 (07 avril 2022) {#arcanedoc_version350}
 ======================================
 
