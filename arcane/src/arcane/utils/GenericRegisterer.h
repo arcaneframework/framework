@@ -49,7 +49,7 @@ class ARCANE_UTILS_EXPORT GenericRegistererBase
  * \endcode
  */
 template <typename Type>
-class ARCANE_UTILS_EXPORT GenericRegisterer
+class GenericRegisterer
 : public GenericRegistererBase
 {
  protected:
