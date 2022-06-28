@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Timer.h                                                     (C) 2000-2019 */
+/* Timer.h                                                     (C) 2000-2022 */
 /*                                                                           */
 /* Gestion d'un timer.                                                       */
 /*---------------------------------------------------------------------------*/
@@ -21,7 +21,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -34,29 +35,28 @@ class ITimeStats;
 /*!
  * \brief Gestion d'un timer.
 
- Une instance de cette classe permet de mesurer le temps passé entre son
- activation par la méthode start() et son arrêt par la méthode stop().
+ * Une instance de cette classe permet de mesurer le temps passé entre son
+ * activation par la méthode start() et son arrêt par la méthode stop().
 
- Le timer peut être utilisé plusieurs fois et il est possible de
- connaître à la fois le nombre d'activation (nbActivated()) et le temps
- total passé dans ses activations successives (totalTime()).
+ * Le timer peut être utilisé plusieurs fois et il est possible de
+ * connaître à la fois le nombre d'activation (nbActivated()) et le temps
+ * total passé dans ses activations successives (totalTime()).
 
- Il existe deux modes de fonctionnement:
- <ul>
- <li>#TimerVirtual: le timer utilise le temps CPU du processus. Ce temps
- est constant quelle que soit la charge de la machine;</li>
- <li>#TimerReal: le timer utilise le temps réel. La résolution de ce timer est
- en général meilleure qu'avec le type précédent mais elle n'est significative
- que lorsque la machine est dédiée au processus.</li>
- </ul>
-
- La résolution du timer dépend de la machine. Elle est de l'ordre de la
- milliseconde pour les timers utilisant le temps CPU et de l'ordre de
- la microseconde pour les timers utilisant le temps réel.
-
- \since 0.8.0
- \author Gilles Grospellier
- \date 30/08/2001
+ * Il existe deux modes de fonctionnement:
+ * <ul>
+ * <li>#TimerVirtual: le timer utilise le temps CPU du processus. Ce temps
+ * est constant quelle que soit la charge de la machine;</li>
+ * <li>#TimerReal: le timer utilise le temps réel. La résolution de ce timer est
+ * en général meilleure qu'avec le type précédent mais elle n'est significative
+ * que lorsque la machine est dédiée au processus.</li>
+ * </ul>
+ *
+ * \note Depuis la version 3.6 de %Arcane, le #TimerVirtual est obsolète et
+ * la valeur retournée sera équivalent à #TimerReal.
+ *
+* La résolution du timer dépend de la machine. Elle est de l'ordre de la
+ * milliseconde pour les timers utilisant le temps CPU et de l'ordre de
+ * la microseconde pour les timers utilisant le temps réel.
  */
 class ARCANE_CORE_EXPORT Timer
 {
@@ -65,8 +65,15 @@ class ARCANE_CORE_EXPORT Timer
   //! Type du timer
   enum eTimerType
   {
-    TimerVirtual, //!< Timer utilisant le temps CPU
-    TimerReal //!< Timer utilisant le temps réel
+    /*!
+     * \brief Timer utilisant le temps CPU (obsolète).
+     *
+     * \deprecated Ce timer n'est plus utilisé et se comporte comme
+     * le temps horloge (TimerReal).
+     */
+    TimerVirtual,
+    //! Timer utilisant le temps réel
+    TimerReal
   };
 
  public:
@@ -94,11 +101,11 @@ class ARCANE_CORE_EXPORT Timer
   /*!
    * \brief Postionne le nom de l'action en cours d'exécution.
    *
-   Le nom d'une action peut-être n'importe quoi. Il est
-   juste utilisé pour différencier les différentes partie d'une
-   exécution et connaître le temps de chacune d'elle.
-   Les actions doivent s'imbriquent les unes dans les autres
-  */
+   * Le nom d'une action peut-être n'importe quoi. Il est
+   * juste utilisé pour différencier les différentes partie d'une
+   * exécution et connaître le temps de chacune d'elle.
+   * Les actions doivent s'imbriquent les unes dans les autres
+   */
   class ARCANE_CORE_EXPORT Action
   {
    public:
@@ -138,11 +145,12 @@ class ARCANE_CORE_EXPORT Timer
    * Cette classe permet de simplement afficher au moment du destructeur,
    * le temps réel écoulé depuis l'appel au constructeur. L'affichage se fait
    * via la méthode info() du ITraceMng.
-   \code
+   * \code
    * {
    *   Timer::SimplePrinter sp(traceMng(),"myFunction");
    *   myFunction();
    * }
+   * \endcode
    */
   class ARCANE_CORE_EXPORT SimplePrinter
   {
@@ -243,7 +251,7 @@ class ARCANE_CORE_EXPORT Timer
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
