@@ -64,17 +64,18 @@ namespace PolyhedralMeshTools
     Int64ConstArrayView faceCells();
     Int32ConstArrayView faceNbCells();
 
+    Int32ConstArrayView edgeNbCells();
+    Int64ConstArrayView edgeCells();
 
    private:
     const String& m_filename;
     vtkNew<vtkUnstructuredGridReader> m_vtk_grid_reader;
     UniqueArray<Int64> m_cell_uids, m_node_uids, m_face_uids, m_edge_uids;
     UniqueArray<Int64> m_face_node_uids, m_edge_node_uids, m_cell_node_uids;
-    UniqueArray<Int64> m_face_cell_uids;
-    UniqueArray<Int32> m_face_nb_nodes, m_cell_nb_nodes, m_face_nb_cells;
+    UniqueArray<Int64> m_face_cell_uids, m_edge_cell_uids;
+    UniqueArray<Int32> m_face_nb_nodes, m_cell_nb_nodes, m_face_nb_cells, m_edge_nb_cells;
 
-    std::pair<bool, Int32> _findFace(Int64ConstArrayView face_nodes);
-    bool _findEdge(UniqueArray<Int64> edge_nodes);
+    std::pair<bool, Int32> _findFace(Int64ConstArrayView face_nodes, Int64ConstArrayView face_node_uids, Int32ConstArrayView face_nb_nodes);
   };
 
 

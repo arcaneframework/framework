@@ -155,7 +155,6 @@ faceUids()
     current_face_nodes.reserve(10);
     sorted_current_face_nodes.reserve(10);
     auto cell_index = 0;
-    auto face_pos = 0;
     for (int face_info_index = 0; face_info_index < face_info_size; cell_index++) { // face data are given by cell
       auto current_cell_nb_faces = Int32 (faces->GetValue(face_info_index++));
       for (auto face_index = 0; face_index < current_cell_nb_faces; ++face_index) {
@@ -165,7 +164,7 @@ faceUids()
         }
         sorted_current_face_nodes.resize(current_face_nodes.size());
         auto is_front_cell = mesh_utils::reorderNodesOfFace(current_face_nodes, sorted_current_face_nodes);
-        auto [is_face_found, existing_face_index] = _findFace(sorted_current_face_nodes);
+        auto [is_face_found, existing_face_index] = _findFace(sorted_current_face_nodes, m_face_node_uids, m_face_nb_nodes);
         if (!is_face_found) {
           m_face_uids.push_back(face_uid++); // todo parallel
           m_face_nb_nodes.push_back(current_face_nb_nodes);
@@ -223,7 +222,6 @@ faceUids()
 Int64ConstArrayView PolyhedralMeshTools::VtkReader::
 edgeUids()
 {
-  // TODO check !!
   if (m_edge_uids.empty()) {
     auto vtk_grid = m_vtk_grid_reader->GetOutput();
     m_edge_uids.reserve(2*vtk_grid->GetNumberOfPoints());
@@ -235,9 +233,12 @@ edgeUids()
       ARCANE_FATAL("Mesh {0} is not polyhedral: faces are not defined",m_filename);
     }
     Int64 edge_uid = 0;
-    m_edge_node_uids.reserve(2*m_edge_uids.size());
+    m_edge_node_uids.reserve(2*m_edge_uids.capacity());
     auto face_info_size = faces->GetNumberOfValues();
-    for (int face_info_index = 0; face_info_index < face_info_size; ) {
+    auto cell_index = 0;
+    UniqueArray<std::set<Int64>> edge_cells;
+    edge_cells.reserve(m_edge_uids.capacity());
+    for (int face_info_index = 0; face_info_index < face_info_size; ++cell_index) {
       auto current_cell_nb_faces = Int32 (faces->GetValue(face_info_index++));
       for (auto face_index = 0; face_index < current_cell_nb_faces; ++face_index) {
         auto current_face_nb_nodes = Int32(faces->GetValue(face_info_index++));
@@ -246,19 +247,40 @@ edgeUids()
         for (int node_index = 0; node_index < current_face_nb_nodes - 1; ++node_index) {
           current_edge = UniqueArray<Int64>{ faces->GetValue(face_info_index++), faces->GetValue(face_info_index) };
           mesh_utils::reorderNodesOfFace(current_edge, sorted_edge); // works for edges
-          if (!_findEdge(sorted_edge)) {
+          auto [is_edge_found, existing_edge_index] = _findFace(sorted_edge, m_edge_node_uids, Int32UniqueArray(m_edge_uids.size(),2)); // works for edges
+          if (!is_edge_found) {
+            edge_cells.push_back(std::set{ m_cell_uids[cell_index] });
             m_edge_uids.push_back(edge_uid++); // todo parallel
             m_edge_node_uids.addRange(sorted_edge);
+          }
+          else {
+            edge_cells[existing_edge_index].insert(m_cell_uids[cell_index]);
           }
         }
         current_edge = UniqueArray<Int64>{ faces->GetValue(face_info_index++), first_face_node_uid };
         mesh_utils::reorderNodesOfFace(current_edge, sorted_edge); // works for edges
-        if (!_findEdge(sorted_edge)) {
+        auto [is_edge_found, existing_edge_index] = _findFace(sorted_edge, m_edge_node_uids, Int32UniqueArray(m_edge_uids.size(),2)); // works for edges
+        if (!is_edge_found) {
+          edge_cells.push_back(std::set{ m_cell_uids[cell_index] });
           m_edge_uids.push_back(edge_uid++); // todo parallel
           m_edge_node_uids.addRange(sorted_edge);
         }
+        else {
+          edge_cells[existing_edge_index].insert(m_cell_uids[cell_index]);
+        }
       }
     }
+    // todo filter edge_uid_connected_cell_uid : put the cells uid in m_edge_cells_uids
+    m_edge_nb_cells.resize(m_edge_uids.size(),0);
+    std::transform(edge_cells.begin(), edge_cells.end(), m_edge_nb_cells.begin(), [](const auto& current_edge_cells) {
+                     return current_edge_cells.size();
+                   });
+    // fill edge_cell_uids
+    std::for_each(edge_cells.begin(), edge_cells.end(), [this](auto const& current_edge_cell) {
+      for (auto cell : current_edge_cell) {
+        m_edge_cell_uids.push_back(cell);
+      }
+    });
   }
   std::cout << "================EDGE NODES ==============" << std::endl;
   std::copy(m_edge_node_uids.begin(), m_edge_node_uids.end(), std::ostream_iterator<Int64>(std::cout, " "));
@@ -270,32 +292,22 @@ edgeUids()
 /*---------------------------------------------------------------------------*/
 
 std::pair<bool, Int32> PolyhedralMeshTools::VtkReader::
-_findFace(Int64ConstArrayView face_nodes)
+_findFace(Int64ConstArrayView face_nodes, Int64ConstArrayView face_node_uids, Int32ConstArrayView face_nb_nodes)
 {
   // todo coder l'algo recherche : d'abord on vérifie nombre de noeuds puis on teste tant que l'id est égal (est-ce beaucoup plus rapide ?)
-  auto it = std::search(m_face_node_uids.begin(), m_face_node_uids.end(), std::boyer_moore_searcher(face_nodes.begin(), face_nodes.end()));
+  auto it = std::search(face_node_uids.begin(), face_node_uids.end(), std::boyer_moore_searcher(face_nodes.begin(), face_nodes.end()));
   auto face_index = -1; // 0 starting index
-  if (it != m_face_node_uids.end()) {
+  if (it != face_node_uids.end()) {
     // compute face_index
-    auto found_face_position = std::distance(m_face_node_uids.begin(), it);
+    auto found_face_position = std::distance(face_node_uids.begin(), it);
     auto position = 0;
     face_index = 0;
     while (position != found_face_position){
-      position += m_face_nb_nodes[face_index++];
+      position += face_nb_nodes[face_index++];
     }
     // compute
   }
-  return std::make_pair(it != m_face_node_uids.end(),face_index);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-bool PolyhedralMeshTools::VtkReader::
-_findEdge(UniqueArray<Int64> edge_nodes)
-{
-  auto it = std::search(m_edge_node_uids.begin(), m_edge_node_uids.end(), std::boyer_moore_searcher(edge_nodes.begin(), edge_nodes.end()));
-  return it != m_edge_node_uids.end();
+  return std::make_pair(it != face_node_uids.end(),face_index);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -380,6 +392,24 @@ Int32ConstArrayView PolyhedralMeshTools::VtkReader::faceNbCells()
 {
   if (m_face_nb_cells.empty()) faceUids();
   return m_face_nb_cells;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int32ConstArrayView PolyhedralMeshTools::VtkReader::edgeNbCells()
+{
+  if (m_edge_nb_cells.empty()) edgeUids();
+  return m_edge_nb_cells;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int64ConstArrayView PolyhedralMeshTools::VtkReader::edgeCells()
+{
+  if (m_edge_cell_uids.empty()) edgeUids();
+  return m_edge_cell_uids;
 }
 
 /*---------------------------------------------------------------------------*/

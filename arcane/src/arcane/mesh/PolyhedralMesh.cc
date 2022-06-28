@@ -295,12 +295,17 @@ namespace mesh
                                  String const& name)
     {
       // debug
-      std::cout << "====================VALIDATE CELL NODES ==================" << std::endl;
-      auto cell_index = 0;
-      for (auto&& cell_nb_nodes : nb_connected_items_per_item) {
-        Int64ConstArrayView cell_nodes{ cell_nb_nodes, &target_items_uids[cell_index] };
-        std::copy(cell_nodes.begin(), cell_nodes.end(), std::ostream_iterator<Int64>{ std::cout, " " });
-        cell_index += cell_nb_nodes;
+      std::cout << "====================VALIDATE CONNECTIVITY  ==================" << std::endl;
+      auto item_index = 0;
+      std::cout << "==== nb connected items ====" << std::endl;
+      std::copy(nb_connected_items_per_item.begin(), nb_connected_items_per_item.end(), std::ostream_iterator<Int32>(std::cout, " "));
+      std::cout << std::endl << "==== connected items ====" << std::endl;
+      std::copy(target_items_uids.begin(), target_items_uids.end(), std::ostream_iterator<Int64>(std::cout, " "));
+      std::cout << std::endl;
+      for (auto&& nb_connected_items : nb_connected_items_per_item) {
+        Int64ConstArrayView connected_items{ nb_connected_items, &target_items_uids[item_index] };
+        std::copy(connected_items.begin(), connected_items.end(), std::ostream_iterator<Int64>{ std::cout, " " });
+        item_index += nb_connected_items;
         std::cout << "\n";
       }
       _scheduleAddConnectivity(arcane_source_item_family,
@@ -479,6 +484,7 @@ read(const String& filename)
   m_mesh->scheduleAddConnectivity(face_family,face_lids,reader.faceNbNodes(),node_family,reader.faceNodes(),String{"FaceToNodes"});
   m_mesh->scheduleAddConnectivity(edge_family,edge_lids,2,node_family,reader.edgeNodes(),String{"EdgeToNodes"});
   m_mesh->scheduleAddConnectivity(face_family,face_lids,reader.faceNbCells(),cell_family,reader.faceCells(),String{"FaceToCells"});
+  m_mesh->scheduleAddConnectivity(edge_family,edge_lids,reader.edgeNbCells(),cell_family,reader.edgeCells(),String{"EdgeToCells"});
 //  m_mesh->scheduleAddConnectivity(node_family,node_lids,1,cell_family,
 //                                  Int64UniqueArray{0,0,0,0,0,0},String{"NodeToCells"});
   m_mesh->applyScheduledOperations();
