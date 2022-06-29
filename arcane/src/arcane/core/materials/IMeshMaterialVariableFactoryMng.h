@@ -47,10 +47,9 @@ class ARCANE_CORE_EXPORT IMeshMaterialVariableFactoryMng
   virtual void registerFactory(Ref<IMeshMaterialVariableFactory> factory) =0;
 
   //! Créé une variable matériau.
-  virtual Ref<IMeshMaterialVariable>
+  virtual IMeshMaterialVariable*
   createVariable(const String& storage_type,
-                 const MaterialVariableBuildInfo& build_info,
-                 MatVarSpace space) =0;
+                 const MaterialVariableBuildInfo& build_info) =0;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -44,10 +44,8 @@ class MeshMaterialVariableFactoryMng
   void build() override;
   ITraceMng* traceMng() const override;
   void registerFactory(Ref<IMeshMaterialVariableFactory> factory) override;
-  Ref<IMeshMaterialVariable>
-  createVariable(const String& storage_type,
-                 const MaterialVariableBuildInfo& build_info,
-                 MatVarSpace space) override;
+  IMeshMaterialVariable* createVariable(const String& storage_type,
+                                        const MaterialVariableBuildInfo& build_info) override;
 
  private:
 
@@ -76,9 +74,8 @@ MeshMaterialVariableFactoryMng::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Ref<IMeshMaterialVariable> MeshMaterialVariableFactoryMng::
-createVariable(const String& storage_type, const MaterialVariableBuildInfo& build_info,
-               MatVarSpace space)
+IMeshMaterialVariable* MeshMaterialVariableFactoryMng::
+createVariable(const String& storage_type, const MaterialVariableBuildInfo& build_info)
 {
   auto x = m_factories.find(storage_type);
   if (x == m_factories.end())

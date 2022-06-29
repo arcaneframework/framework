@@ -779,23 +779,25 @@ MeshMaterialVariableScalar<ItemType,DataType>::
 {
 }
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 template<typename ItemType,typename DataType> MeshMaterialVariableFactoryRegisterer
-MeshMaterialVariableScalar<ItemType,DataType>::m_auto_registerer(_autoCreate,_buildVarTypeInfo());
+MeshMaterialVariableScalar<ItemType,DataType>::m_auto_registerer1(_autoCreate1,_buildVarTypeInfo(MatVarSpace::Environment));
+
+template<typename ItemType,typename DataType> MeshMaterialVariableFactoryRegisterer
+MeshMaterialVariableScalar<ItemType,DataType>::m_auto_registerer2(_autoCreate2,_buildVarTypeInfo(MatVarSpace::MaterialAndEnvironment));
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 template<typename ItemType,typename DataType> MaterialVariableTypeInfo
 MeshMaterialVariableScalar<ItemType,DataType>::
-_buildVarTypeInfo()
+_buildVarTypeInfo(MatVarSpace space)
 {
   eItemKind ik = ItemTraitsT<ItemType>::kind();
   eDataType dt = VariableDataTypeTraitsT<DataType>::type();
-  return MaterialVariableTypeInfo(ik,dt,0,MatVarSpace::Environment);
+  return MaterialVariableTypeInfo(ik,dt,0,space);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -803,12 +805,16 @@ _buildVarTypeInfo()
 
 template<typename ItemType,typename DataType> IMeshMaterialVariable*
 MeshMaterialVariableScalar<ItemType,DataType>::
-_autoCreate(const MaterialVariableBuildInfo& vb)
+_autoCreate1(const MaterialVariableBuildInfo& v)
 {
-  return nullptr;
-  //eItemKind ik = ItemTraitsT<ItemType>::kind();
-  //eDataType dt = VariableDataTypeTraitsT<DataType>::type();
-  //return MaterialVariableTypeInfo(ik,dt,0,MatVarSpace::Environment);
+  return ReferenceGetter::getReference(v,MatVarSpace::Environment);
+}
+
+template<typename ItemType,typename DataType> IMeshMaterialVariable*
+MeshMaterialVariableScalar<ItemType,DataType>::
+_autoCreate2(const MaterialVariableBuildInfo& v)
+{
+  return ReferenceGetter::getReference(v,MatVarSpace::MaterialAndEnvironment);
 }
 
 /*---------------------------------------------------------------------------*/

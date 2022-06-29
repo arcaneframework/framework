@@ -14,13 +14,47 @@
 #include "arcane/materials/MeshMaterialVariableFactoryRegisterer.h"
 
 #include "arcane/utils/Ref.h"
-//#include "arcane/materials/MeshMaterialVariableFactory.h"
+#include "arcane/core/materials/IMeshMaterialVariableFactory.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane::Materials
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class MeshMaterialVariableFactory
+: public IMeshMaterialVariableFactory
+{
+  using CreateFunc = MeshMaterialVariableFactoryVariableRefCreateFunc;
+
+ public:
+
+  MeshMaterialVariableFactory(const MaterialVariableTypeInfo& var_type_info,
+                              CreateFunc func)
+  : m_variable_type_info(var_type_info)
+  , m_function(func)
+  {
+  }
+
+  IMeshMaterialVariable* createVariable(const MaterialVariableBuildInfo& build_info) override
+  {
+    ARCANE_CHECK_POINTER(m_function);
+    return (*m_function)(build_info);
+  }
+
+  MaterialVariableTypeInfo materialVariableTypeInfo() const override
+  {
+    return m_variable_type_info;
+  }
+
+ private:
+
+  MaterialVariableTypeInfo m_variable_type_info;
+  CreateFunc m_function;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -39,8 +73,8 @@ registererInfo()
 Ref<IMeshMaterialVariableFactory> MeshMaterialVariableFactoryRegisterer::
 createFactory()
 {
-  return {};
-  //return new MeshMaterialFactory(m_function,m_variable_type_info);
+  auto* x = new MeshMaterialVariableFactory(m_variable_type_info, m_function);
+  return makeRef<IMeshMaterialVariableFactory>(x);
 }
 
 /*---------------------------------------------------------------------------*/

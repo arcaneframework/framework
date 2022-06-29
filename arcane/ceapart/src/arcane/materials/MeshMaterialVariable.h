@@ -24,6 +24,9 @@
 
 // A supprimer
 #include "arcane/materials/MeshMaterialVariableFactoryRegisterer.h"
+#include "arcane/core/materials/MaterialVariableBuildInfo.h"
+#include "arcane/core/materials/IMeshMaterialMng.h"
+#include "arcane/core/materials/IMeshMaterialVariableFactoryMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -513,11 +516,16 @@ class MeshMaterialVariableScalar
   
   VariableRefType* m_true_global_variable_ref;
 
+ public:
+
+  static ARCANE_MATERIALS_EXPORT MaterialVariableTypeInfo _buildVarTypeInfo(MatVarSpace space);
+
  private:
 
-  static ARCANE_MATERIALS_EXPORT MaterialVariableTypeInfo _buildVarTypeInfo();
-  static ARCANE_MATERIALS_EXPORT IMeshMaterialVariable* _autoCreate(const MaterialVariableBuildInfo& vb);
-  static ARCANE_MATERIALS_EXPORT MeshMaterialVariableFactoryRegisterer m_auto_registerer;
+  static ARCANE_MATERIALS_EXPORT IMeshMaterialVariable* _autoCreate1(const MaterialVariableBuildInfo& vb);
+  static ARCANE_MATERIALS_EXPORT IMeshMaterialVariable* _autoCreate2(const MaterialVariableBuildInfo& vb);
+  static ARCANE_MATERIALS_EXPORT MeshMaterialVariableFactoryRegisterer m_auto_registerer1;
+  static ARCANE_MATERIALS_EXPORT MeshMaterialVariableFactoryRegisterer m_auto_registerer2;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -674,7 +682,16 @@ class MeshMaterialVariableArray
 
   VariableRefType* m_true_global_variable_ref;
 
+ public:
+
+  static ARCANE_MATERIALS_EXPORT MaterialVariableTypeInfo _buildVarTypeInfo(MatVarSpace space);
+
  private:
+
+  static ARCANE_MATERIALS_EXPORT IMeshMaterialVariable* _autoCreate1(const MaterialVariableBuildInfo& vb);
+  static ARCANE_MATERIALS_EXPORT IMeshMaterialVariable* _autoCreate2(const MaterialVariableBuildInfo& vb);
+  static ARCANE_MATERIALS_EXPORT MeshMaterialVariableFactoryRegisterer m_auto_registerer1;
+  static ARCANE_MATERIALS_EXPORT MeshMaterialVariableFactoryRegisterer m_auto_registerer2;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -685,9 +702,23 @@ getVariableReference(VariableRefType*,const MaterialVariableBuildInfo& v,MatVarS
 {
   using TruePrivatePartType = typename VariableRefType::TruePrivatePartType;
   using PrivatePartType = typename VariableRefType::PrivatePartType;
-  using ReferenceGetter = typename TruePrivatePartType::ReferenceGetter;
 
-  IMeshMaterialVariable* var = ReferenceGetter::getReference(v,mvs);
+  MaterialVariableTypeInfo x = TruePrivatePartType::_buildVarTypeInfo(mvs);
+
+  MeshHandle mesh_handle = v.meshHandle();
+  if (mesh_handle.isNull())
+    ARCANE_FATAL("No mesh handle for material variable");
+
+  IMeshMaterialMng* mat_mng = v.materialMng();
+
+  // TODO: regarder si verrou necessaire
+  if (!mat_mng)
+    mat_mng = IMeshMaterialMng::getReference(mesh_handle,true);
+
+  IMeshMaterialVariableFactoryMng* vm = mat_mng->variableFactoryMng();
+  IMeshMaterialVariable* var = vm->createVariable(x.fullName(),v);
+
+  //IMeshMaterialVariable* var = ReferenceGetter::getReference(v,mvs);
   auto* true_var = dynamic_cast<PrivatePartType*>(var);
   ARCANE_CHECK_POINTER(true_var);
   return true_var;
