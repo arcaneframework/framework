@@ -349,7 +349,11 @@ class CellMaterialVariableScalarRef
   // TODO: Temporaire. a supprimer.
   ArrayView<DataType>* _internalValue() const { return m_value; }
  public:
-  void* _internalValueAsPointer() const { return m_value; }
+#ifdef ARCANE_DOTNET
+  // Uniquement pour le wrapper C#
+  //void* _internalValueAsPointer() const { return m_value; }
+  void* _internalValueAsPointerOfPointer() { return reinterpret_cast<void*>(&m_value); }
+#endif
 };
 
 /*---------------------------------------------------------------------------*/

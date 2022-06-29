@@ -58,6 +58,8 @@
 #include "arcane/tests/ArcaneTestGlobal.h"
 #include "arcane/tests/MeshMaterialTester_axl.h"
 
+#include "arcane/tests/IMaterialEquationOfState.h"
+
 // Inclut le .cc pour avoir la définition des méthodes templates
 #include "arcane/tests/StdMeshVariables.cc"
 

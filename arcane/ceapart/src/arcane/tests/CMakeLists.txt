@@ -22,6 +22,42 @@ if(TARGET arcane_aleph_sloop)
   target_link_libraries(arcane_cea_tests PUBLIC arcane_aleph_sloop)
 endif()
 
+# ----------------------------------------------------------------------------
+# Test wrapping C#
+# Il faut que le wrapper matériaux soit disponible
+if (TARGET arcane_dotnet_wrapper_cea_materials)
+  message(STATUS "ARC: ${ARCANE_DOTNET_WRAPPER_INCLUDE_DIRS}")
+  include(${Arcane_SOURCE_DIR}/tools/wrapper/ArcaneSwigUtils.cmake)
+  set_property(SOURCE MaterialEosService.i PROPERTY CPLUSPLUS ON)
+  set_property(SOURCE MaterialEosService.i PROPERTY INCLUDE_DIRECTORIES
+    ${Arcane_SOURCE_DIR}/src
+    ${Arcane_SOURCE_DIR}/tools/wrapper
+    ${Arcane_SOURCE_DIR}/ceapart/src
+    ${Arcane_SOURCE_DIR}/ceapart/tools/wrapper)
+  set_property(SOURCE MaterialEosService.i PROPERTY COMPILE_OPTIONS -namespace MaterialEos)
+  set(MATERIAL_CSHARP_OUTDIR ${CMAKE_CURRENT_BINARY_DIR})
+  file(MAKE_DIRECTORY ${MATERIAL_CSHARP_OUTDIR})
+
+  # NOTE: le nom doit commencer par 'lib' pour que mono trouve la bibliothèque
+  # au moment de l'exécution
+  swig_add_library(test_material_eos_csharp
+    TYPE SHARED
+    LANGUAGE CSHARP
+    SOURCES MaterialEosService.i
+    OUTPUT_DIR ${MATERIAL_CSHARP_OUTDIR}/cs_files
+    OUTFILE_DIR ${MATERIAL_CSHARP_OUTDIR}/cpp_files
+    )
+
+  target_link_libraries(test_material_eos_csharp PUBLIC arcane_dotnet_wrapper_cea_materials arcane_materials)
+  target_include_directories(test_material_eos_csharp PUBLIC ${Arcane_SOURCE_DIR}/tools/wrapper)
+  # Il faut que la cible soit installée au même endroit que l'exécutable de test pour
+  # qu'elle soit trouvée facilement.
+  #set_property(TARGET libmaterial_eos_csharp PROPERTY LIBRARY_OUTPUT_DIRECTORY ${EOS_BINARY_DIR})
+  target_link_libraries(arcane_tests_lib PUBLIC test_material_eos_csharp)
+endif()
+
+# ----------------------------------------------------------------------------
+
 # Indique que la bibliothèque des tests a besoin de celle-ci
 target_link_libraries(arcane_tests_lib PUBLIC arcane_cea_tests)
 

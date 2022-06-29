@@ -26,26 +26,26 @@
 %typemap(csclassmodifiers) Arcane::Materials::CellMaterialVariableScalarRef< DATATYPE > "public unsafe class"
 %typemap(cscode) Arcane::Materials::CellMaterialVariableScalarRef< DATATYPE >
 %{
-  DATATYPE##ArrayView* m_values;
+  DATATYPE##ArrayView** m_values;
 
   protected void _InitMeshVariable()
   {
-    m_values = (DATATYPE##ArrayView*)_internalValueAsPointer();
+    m_values = (DATATYPE##ArrayView**)_internalValueAsPointerOfPointer();
   }
   public DATATYPE this[MatVarIndex item]
   {
-    get { return m_values[item.ArrayIndex][item.ValueIndex]; }
-    set { m_values[item.ArrayIndex][item.ValueIndex] = value; }
+    get { return (*m_values)[item.ArrayIndex][item.ValueIndex]; }
+    set { (*m_values)[item.ArrayIndex][item.ValueIndex] = value; }
   }
   public DATATYPE this[ComponentItem item]
   {
-    get { return m_values[item._matvarArrayIndex][item._matvarValueIndex]; }
-    set { m_values[item._matvarArrayIndex][item._matvarValueIndex] = value; }
+    get { return (*m_values)[item._matvarArrayIndex][item._matvarValueIndex]; }
+    set { (*m_values)[item._matvarArrayIndex][item._matvarValueIndex] = value; }
   }
-  protected void _OnSizeChanged()
-  {
-    m_values = (DATATYPE##ArrayView*)_internalValueAsPointer();
-  }
+  //protected void _OnSizeChanged()
+  //{
+    //m_values = (DATATYPE##ArrayView*)_internalValueAsPointer();
+  //}
 %}
 
 %template(MaterialVariableCell##DATATYPE) Arcane::Materials::CellMaterialVariableScalarRef< DATATYPE >;
