@@ -261,6 +261,8 @@ edgeUids()
     m_cell_edges_uids.reserve(20*m_cell_uids.size()); // choose a value of 20 edge per cell
     UniqueArray<std::set<Int64>> face_edges;
     face_edges.resize(m_face_uids.size());
+    UniqueArray<std::set<Int64>> cell_edges;
+    cell_edges.resize(m_cell_uids.size());
     for (int face_info_index = 0; face_info_index < face_info_size; ++cell_index) {
       auto current_cell_nb_faces = Int32 (faces->GetValue(face_info_index++));
       for (auto face_index = 0; face_index < current_cell_nb_faces; ++face_index,++global_face_index) {
@@ -275,6 +277,7 @@ edgeUids()
             m_cell_nb_edges[cell_index] += 1;
             m_cell_edges_uids.push_back(edge_uid);
             face_edges[m_face_uid_indexes[global_face_index]].insert(edge_uid);
+            cell_edges[cell_index].insert(edge_uid);
             edge_cells.push_back(std::set{ m_cell_uids[cell_index] });
             edge_faces.push_back(Int64UniqueArray { m_cell_face_uids[m_cell_face_indexes[cell_index]+face_index] });
             m_edge_uids.push_back(edge_uid++); // todo parallel
@@ -284,6 +287,7 @@ edgeUids()
             edge_cells[existing_edge_index].insert(m_cell_uids[cell_index]);
             edge_faces[existing_edge_index].push_back(m_cell_face_uids[m_cell_face_indexes[cell_index]+face_index]);
             face_edges[m_face_uid_indexes[global_face_index]].insert(m_edge_uids[existing_edge_index]);
+            cell_edges[cell_index].insert(m_edge_uids[existing_edge_index]);
           }
         }
         current_edge = UniqueArray<Int64>{ faces->GetValue(face_info_index++), first_face_node_uid };
@@ -295,6 +299,7 @@ edgeUids()
           edge_cells.push_back(std::set{ m_cell_uids[cell_index] });
           edge_faces.push_back(Int64UniqueArray { m_cell_face_uids[m_cell_face_indexes[cell_index]+face_index] });
           face_edges[m_face_uid_indexes[global_face_index]].insert(edge_uid);
+          cell_edges[cell_index].insert(edge_uid);
           m_edge_uids.push_back(edge_uid++); // todo parallel
           m_edge_node_uids.addRange(sorted_edge);
         }
@@ -302,6 +307,7 @@ edgeUids()
           edge_cells[existing_edge_index].insert(m_cell_uids[cell_index]);
           edge_faces[existing_edge_index].push_back(m_cell_face_uids[m_cell_face_indexes[cell_index]+face_index]);
           face_edges[m_face_uid_indexes[global_face_index]].insert(m_edge_uids[existing_edge_index]);
+          cell_edges[cell_index].insert(m_edge_uids[existing_edge_index]);
         }
       }
     }
@@ -316,6 +322,10 @@ edgeUids()
     // fill face edge uids
     m_face_nb_edges.resize(m_face_uids.size(), 0);
     _flattenConnectivity(face_edges.constSpan(), m_face_nb_edges, m_face_edge_uids);
+
+    // fill cell edge uids
+    m_cell_nb_edges.resize(m_cell_uids.size(), 0);
+    _flattenConnectivity(cell_edges, m_cell_nb_edges, m_cell_edges_uids);
   }
   std::cout << "================EDGE NODES ==============" << std::endl;
   std::copy(m_edge_node_uids.begin(), m_edge_node_uids.end(), std::ostream_iterator<Int64>(std::cout, " "));
