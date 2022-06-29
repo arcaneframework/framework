@@ -73,18 +73,27 @@ namespace PolyhedralMeshTools
     Int32ConstArrayView edgeNbFaces();
     Int64ConstArrayView edgeFaces();
 
+    Int32ConstArrayView cellNbEdges();
+    Int64ConstArrayView cellEdges();
+
+    Int32ConstArrayView faceNbEdges();
+    Int64ConstArrayView faceEdges();
+
    private:
     const String& m_filename;
     vtkNew<vtkUnstructuredGridReader> m_vtk_grid_reader;
     Int64UniqueArray m_cell_uids, m_node_uids, m_face_uids, m_edge_uids;
     Int64UniqueArray m_face_node_uids, m_edge_node_uids, m_cell_node_uids;
     Int64UniqueArray m_face_cell_uids, m_edge_cell_uids, m_edge_face_uids;
-    Int64UniqueArray m_cell_face_uids;
+    Int64UniqueArray m_cell_face_uids, m_cell_edges_uids, m_face_edge_uids;
     Int32UniqueArray m_face_nb_nodes, m_cell_nb_nodes, m_face_nb_cells;
     Int32UniqueArray m_edge_nb_cells, m_edge_nb_faces, m_cell_nb_faces;
+    Int32UniqueArray m_cell_nb_edges, m_face_nb_edges, m_face_uid_indexes;
     Int32UniqueArray m_cell_face_indexes;
 
     std::pair<bool, Int32> _findFace(Int64ConstArrayView face_nodes, Int64ConstArrayView face_node_uids, Int32ConstArrayView face_nb_nodes);
+    template <typename Connectivity2DArray>
+    void _flattenConnectivity(Connectivity2DArray connected_item_2darray, Int32Span nb_connected_item_per_source_item, Int64UniqueArray& connected_item_array);
   };
 
 
