@@ -481,6 +481,7 @@ read(const String& filename)
   m_mesh->scheduleAddItems(edge_family, reader.edgeUids(), edge_lids);
   // Add connectivities
   m_mesh->scheduleAddConnectivity(cell_family,cell_lids,reader.cellNbNodes(),node_family,reader.cellNodes(),String{"CellToNodes"});
+  m_mesh->scheduleAddConnectivity(cell_family,cell_lids,reader.cellNbFaces(),face_family,reader.cellFaces(),String{"CellToFaces"});
   m_mesh->scheduleAddConnectivity(face_family,face_lids,reader.faceNbNodes(),node_family,reader.faceNodes(),String{"FaceToNodes"});
   m_mesh->scheduleAddConnectivity(edge_family,edge_lids,2,node_family,reader.edgeNodes(),String{"EdgeToNodes"});
   m_mesh->scheduleAddConnectivity(face_family,face_lids,reader.faceNbCells(),cell_family,reader.faceCells(),String{"FaceToCells"});

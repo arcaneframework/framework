@@ -151,14 +151,20 @@ faceUids()
     m_face_nb_nodes.reserve(nb_face_estimation);
     m_face_cell_uids.reserve(2 * nb_face_estimation);
     m_face_nb_cells.reserve(nb_face_estimation);
+    m_cell_face_uids.reserve(8*m_cell_uids.size()); // take a mean of 8 faces per cell
+    m_cell_nb_faces.resize(m_cell_uids.size(),0);
+    m_cell_face_indexes.resize(m_cell_uids.size(),-1);
     UniqueArray<Int64> current_face_nodes, sorted_current_face_nodes;
     current_face_nodes.reserve(10);
     sorted_current_face_nodes.reserve(10);
     auto cell_index = 0;
+    auto cell_face_index = 0;
     for (int face_info_index = 0; face_info_index < face_info_size; cell_index++) { // face data are given by cell
       auto current_cell_nb_faces = Int32 (faces->GetValue(face_info_index++));
+      m_cell_face_indexes[m_cell_uids[cell_index]] = cell_face_index;
       for (auto face_index = 0; face_index < current_cell_nb_faces; ++face_index) {
         auto current_face_nb_nodes = Int32 (faces->GetValue(face_info_index++));
+        m_cell_nb_faces[m_cell_uids[cell_index]] += 1;
         for (int node_index = 0; node_index < current_face_nb_nodes; ++node_index) {
           current_face_nodes.push_back(faces->GetValue(face_info_index++));
         }
@@ -166,6 +172,7 @@ faceUids()
         auto is_front_cell = mesh_utils::reorderNodesOfFace(current_face_nodes, sorted_current_face_nodes);
         auto [is_face_found, existing_face_index] = _findFace(sorted_current_face_nodes, m_face_node_uids, m_face_nb_nodes);
         if (!is_face_found) {
+          m_cell_face_uids.push_back(face_uid);
           m_face_uids.push_back(face_uid++); // todo parallel
           m_face_nb_nodes.push_back(current_face_nb_nodes);
           m_face_node_uids.addRange(sorted_current_face_nodes);
@@ -180,6 +187,7 @@ faceUids()
           }
         }
         else {
+          m_cell_face_uids.push_back(m_face_uids[existing_face_index]);
           m_face_nb_cells[existing_face_index]+=1;
           // add cell to face cell connectivity
           if (is_front_cell) {
@@ -205,6 +213,7 @@ faceUids()
         }
         current_face_nodes.clear();
         sorted_current_face_nodes.clear();
+        cell_face_index += m_cell_nb_faces[m_cell_uids[cell_index]];
       }
     }
   }
@@ -413,6 +422,26 @@ edgeCells()
 {
   if (m_edge_cell_uids.empty()) edgeUids();
   return m_edge_cell_uids;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int32ConstArrayView PolyhedralMeshTools::VtkReader::
+cellNbFaces()
+{
+  if (m_cell_nb_faces.empty()) faceUids();
+  return m_cell_nb_faces;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int64ConstArrayView PolyhedralMeshTools::VtkReader::
+cellFaces()
+{
+  if (m_cell_face_uids.empty()) faceUids();
+  return m_cell_face_uids;
 }
 
 /*---------------------------------------------------------------------------*/
