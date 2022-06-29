@@ -97,6 +97,14 @@ namespace Arcane.Axl
     //! Valeur de l'attribut XML "no-replica-sync",
     public bool IsNoReplicaSync { get { return m_no_replica_sync; } }
 
+    readonly bool m_is_environment;
+    //! Indique s'il s'agit d'une variable 'milieu'.
+    public bool IsEnvironment { get { return m_is_environment; } }
+
+    readonly bool m_is_material;
+    //! Indique s'il s'agit d'une variable 'materiau'.
+    public bool IsMaterial { get { return m_is_material; }}
+
     public VariableInfo(XmlElement node)
     {
       m_dim = 0;
@@ -197,6 +205,8 @@ namespace Arcane.Axl
       m_no_exchange = _ReadProperty(node,"no-echange");
       m_persistant = _ReadProperty(node,"persistant");
       m_no_replica_sync = _ReadProperty(node,"no-replica-sync");
+      m_is_environment = _ReadProperty(node,"environment");
+      m_is_material = _ReadProperty(node,"material");
     }
 
     bool _ReadProperty(XmlElement node,string name)
@@ -207,7 +217,7 @@ namespace Arcane.Axl
 
     /**
      * \brief Nom de la classe et du namespace pour cette variable.
-     * 
+     *
      * Par exemple, pour une variable aux mailles scalaires, le nom
      * est 'VariableCellReal' et le namespace 'Arcane'.
      */
@@ -229,9 +239,18 @@ namespace Arcane.Axl
         break;
       }
       name += m_data_type;
-
-      class_name = name;
-      namespace_name = "Arcane";
+      if (m_is_environment){
+        class_name = "Environment" + name;
+        namespace_name = "Arcane::Materials";
+      }
+      else if (m_is_material){
+        class_name = "Material" + name;
+        namespace_name = "Arcane::Materials";
+      }
+      else{
+        class_name = name;
+        namespace_name = "Arcane";
+      }
     }
 
   }
