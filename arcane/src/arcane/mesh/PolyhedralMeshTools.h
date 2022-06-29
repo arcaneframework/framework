@@ -70,6 +70,9 @@ namespace PolyhedralMeshTools
     Int32ConstArrayView cellNbFaces();
     Int64ConstArrayView cellFaces();
 
+    Int32ConstArrayView edgeNbFaces();
+    Int64ConstArrayView edgeFaces();
+
    private:
     const String& m_filename;
     vtkNew<vtkUnstructuredGridReader> m_vtk_grid_reader;
