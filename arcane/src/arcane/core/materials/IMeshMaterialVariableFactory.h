@@ -38,7 +38,7 @@ class ARCANE_CORE_EXPORT IMeshMaterialVariableFactory
  public:
 
   //! Créé une variable matériau
-  virtual Ref<IMeshMaterialVariable>
+  virtual IMeshMaterialVariable*
   createVariable(const MaterialVariableBuildInfo& build_info) =0;
 
   //! Informations sur le type de variable créée

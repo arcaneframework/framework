@@ -42,6 +42,7 @@
 #include "arcane/materials/MeshMaterialVariableSynchronizer.h"
 #include "arcane/materials/MeshMaterialExchangeMng.h"
 #include "arcane/materials/EnumeratorTracer.h"
+#include "arcane/materials/MeshMaterialVariableFactoryRegisterer.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -168,6 +169,14 @@ MeshMaterialMng::
 void MeshMaterialMng::
 build()
 {
+  {
+    auto* x = MeshMaterialVariableFactoryRegisterer::firstRegisterer();
+    while (x){
+      m_variable_factory_mng->registerFactory(x->createFactory());
+      x = x->nextRegisterer();
+    }
+  }
+
   // Choix des optimisations.
   {
     int default_flags = 0;

@@ -34,6 +34,9 @@
 #include "arcane/materials/ItemMaterialVariableBaseT.H"
 
 #include "arcane/datatype/DataTypeTraits.h"
+#include "arcane/datatype/DataStorageBuildInfo.h"
+
+#include "arcane/VariableDataTypeTraits.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -337,6 +340,47 @@ MeshMaterialVariableArray(const MaterialVariableBuildInfo& v,PrivatePartType* gl
 : ItemMaterialVariableArray<DataType>(v,global_var,global_var_ref,mvs)
 , m_true_global_variable_ref(global_var_ref) // Sera détruit par la classe de base
 {
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename ItemType,typename DataType> MeshMaterialVariableFactoryRegisterer
+MeshMaterialVariableArray<ItemType,DataType>::m_auto_registerer1(_autoCreate1,_buildVarTypeInfo(MatVarSpace::Environment));
+
+template<typename ItemType,typename DataType> MeshMaterialVariableFactoryRegisterer
+MeshMaterialVariableArray<ItemType,DataType>::m_auto_registerer2(_autoCreate1,_buildVarTypeInfo(MatVarSpace::MaterialAndEnvironment));
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename ItemType,typename DataType> MaterialVariableTypeInfo
+MeshMaterialVariableArray<ItemType,DataType>::
+_buildVarTypeInfo(MatVarSpace space)
+{
+  eItemKind ik = ItemTraitsT<ItemType>::kind();
+  eDataType dt = VariableDataTypeTraitsT<DataType>::type();
+  return MaterialVariableTypeInfo(ik,dt,1,space);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename ItemType,typename DataType> IMeshMaterialVariable*
+MeshMaterialVariableArray<ItemType,DataType>::
+_autoCreate1(const MaterialVariableBuildInfo& v)
+{
+  return ReferenceGetter::getReference(v,MatVarSpace::Environment);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename ItemType,typename DataType> IMeshMaterialVariable*
+MeshMaterialVariableArray<ItemType,DataType>::
+_autoCreate2(const MaterialVariableBuildInfo& v)
+{
+  return ReferenceGetter::getReference(v,MatVarSpace::MaterialAndEnvironment);
 }
 
 /*---------------------------------------------------------------------------*/
