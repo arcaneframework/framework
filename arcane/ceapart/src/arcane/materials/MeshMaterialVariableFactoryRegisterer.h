@@ -10,7 +10,7 @@
 /* Singleton permettant d'enregister une fabrique de variable matériaux.     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MATERIALS_MESHMATERIALVARIABLEFACTORYREGISTERER_H
-#define ARCANE_MATERiALS_MESHMATERIALVARIABLEFACTORYREGISTERER_H
+#define ARCANE_MATERIALS_MESHMATERIALVARIABLEFACTORYREGISTERER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

@@ -783,21 +783,33 @@ MeshMaterialVariableScalar<ItemType,DataType>::
 /*---------------------------------------------------------------------------*/
 
 template<typename ItemType,typename DataType> MeshMaterialVariableFactoryRegisterer
-MeshMaterialVariableScalar<ItemType,DataType>::m_auto_registerer1(_autoCreate1,_buildVarTypeInfo(MatVarSpace::Environment));
+MeshMaterialVariableScalar<ItemType,DataType>::
+m_auto_registerer1(_autoCreate1,ThatInterface::_buildVarTypeInfo(MatVarSpace::Environment));
 
 template<typename ItemType,typename DataType> MeshMaterialVariableFactoryRegisterer
-MeshMaterialVariableScalar<ItemType,DataType>::m_auto_registerer2(_autoCreate2,_buildVarTypeInfo(MatVarSpace::MaterialAndEnvironment));
+MeshMaterialVariableScalar<ItemType,DataType>::
+m_auto_registerer2(_autoCreate2,ThatInterface::_buildVarTypeInfo(MatVarSpace::MaterialAndEnvironment));
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 template<typename ItemType,typename DataType> MaterialVariableTypeInfo
-MeshMaterialVariableScalar<ItemType,DataType>::
+IMeshMaterialVariableScalar<ItemType,DataType>::
 _buildVarTypeInfo(MatVarSpace space)
 {
   eItemKind ik = ItemTraitsT<ItemType>::kind();
   eDataType dt = VariableDataTypeTraitsT<DataType>::type();
   return MaterialVariableTypeInfo(ik,dt,0,space);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename ItemType,typename DataType> IMeshMaterialVariableScalar<ItemType,DataType>*
+IMeshMaterialVariableScalar<ItemType,DataType>::
+getVariableReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
+{
+  return getVariableReference2<IMeshMaterialVariableScalar<ItemType,DataType>>(v,mvs);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -823,45 +835,22 @@ _autoCreate2(const MaterialVariableBuildInfo& v)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template class ItemMaterialVariableBase< MaterialVariableScalarTraits<Real> >;
-template class ItemMaterialVariableBase< MaterialVariableScalarTraits<Byte> >;
-template class ItemMaterialVariableBase< MaterialVariableScalarTraits<Int16> >;
-template class ItemMaterialVariableBase< MaterialVariableScalarTraits<Int32> >;
-template class ItemMaterialVariableBase< MaterialVariableScalarTraits<Int64> >;
-template class ItemMaterialVariableBase< MaterialVariableScalarTraits<Real2> >;
-template class ItemMaterialVariableBase< MaterialVariableScalarTraits<Real3> >;
-template class ItemMaterialVariableBase< MaterialVariableScalarTraits<Real2x2> >;
-template class ItemMaterialVariableBase< MaterialVariableScalarTraits<Real3x3> >;
+#define ARCANE_INSTANTIATE_MAT(type) \
+  template class ItemMaterialVariableBase< MaterialVariableScalarTraits<type> >;\
+  template class ItemMaterialVariableScalar<type>;\
+  template class MeshMaterialVariableScalar<Cell,type>;\
+  template class IMeshMaterialVariableScalar<Cell,type>;\
+  template class VariableReferenceGetter<MeshMaterialVariableScalar<Cell,type>>
 
-template class ItemMaterialVariableScalar<Real>;
-template class ItemMaterialVariableScalar<Byte>;
-template class ItemMaterialVariableScalar<Int16>;
-template class ItemMaterialVariableScalar<Int32>;
-template class ItemMaterialVariableScalar<Int64>;
-template class ItemMaterialVariableScalar<Real2>;
-template class ItemMaterialVariableScalar<Real3>;
-template class ItemMaterialVariableScalar<Real2x2>;
-template class ItemMaterialVariableScalar<Real3x3>;
-
-template class MeshMaterialVariableScalar<Cell,Byte>;
-template class MeshMaterialVariableScalar<Cell,Real>;
-template class MeshMaterialVariableScalar<Cell,Int16>;
-template class MeshMaterialVariableScalar<Cell,Int32>;
-template class MeshMaterialVariableScalar<Cell,Int64>;
-template class MeshMaterialVariableScalar<Cell,Real2>;
-template class MeshMaterialVariableScalar<Cell,Real3>;
-template class MeshMaterialVariableScalar<Cell,Real2x2>;
-template class MeshMaterialVariableScalar<Cell,Real3x3>;
-
-template class VariableReferenceGetter<MeshMaterialVariableScalar<Cell,Byte>>;
-template class VariableReferenceGetter<MeshMaterialVariableScalar<Cell,Real>>;
-template class VariableReferenceGetter<MeshMaterialVariableScalar<Cell,Int16>>;
-template class VariableReferenceGetter<MeshMaterialVariableScalar<Cell,Int32>>;
-template class VariableReferenceGetter<MeshMaterialVariableScalar<Cell,Int64>>;
-template class VariableReferenceGetter<MeshMaterialVariableScalar<Cell,Real2>>;
-template class VariableReferenceGetter<MeshMaterialVariableScalar<Cell,Real3>>;
-template class VariableReferenceGetter<MeshMaterialVariableScalar<Cell,Real2x2>>;
-template class VariableReferenceGetter<MeshMaterialVariableScalar<Cell,Real3x3>>;
+ARCANE_INSTANTIATE_MAT(Byte);
+ARCANE_INSTANTIATE_MAT(Int16);
+ARCANE_INSTANTIATE_MAT(Int32);
+ARCANE_INSTANTIATE_MAT(Int64);
+ARCANE_INSTANTIATE_MAT(Real);
+ARCANE_INSTANTIATE_MAT(Real2);
+ARCANE_INSTANTIATE_MAT(Real3);
+ARCANE_INSTANTIATE_MAT(Real2x2);
+ARCANE_INSTANTIATE_MAT(Real3x3);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
