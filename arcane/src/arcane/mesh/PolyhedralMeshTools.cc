@@ -388,7 +388,8 @@ faceCells()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int32ConstArrayView PolyhedralMeshTools::VtkReader::faceNbCells()
+Int32ConstArrayView PolyhedralMeshTools::VtkReader::
+faceNbCells()
 {
   if (m_face_nb_cells.empty()) faceUids();
   return m_face_nb_cells;
@@ -397,7 +398,8 @@ Int32ConstArrayView PolyhedralMeshTools::VtkReader::faceNbCells()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int32ConstArrayView PolyhedralMeshTools::VtkReader::edgeNbCells()
+Int32ConstArrayView PolyhedralMeshTools::VtkReader::
+edgeNbCells()
 {
   if (m_edge_nb_cells.empty()) edgeUids();
   return m_edge_nb_cells;
@@ -406,7 +408,8 @@ Int32ConstArrayView PolyhedralMeshTools::VtkReader::edgeNbCells()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int64ConstArrayView PolyhedralMeshTools::VtkReader::edgeCells()
+Int64ConstArrayView PolyhedralMeshTools::VtkReader::
+edgeCells()
 {
   if (m_edge_cell_uids.empty()) edgeUids();
   return m_edge_cell_uids;

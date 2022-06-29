@@ -292,7 +292,7 @@ namespace mesh
                                  Int32ConstArrayView nb_connected_items_per_item,
                                  PolyhedralFamily* arcane_target_item_family,
                                  Int64ConstArrayView target_items_uids,
-                                 String const& name)
+                                 String const& connectivity_name)
     {
       // debug
       std::cout << "====================VALIDATE CONNECTIVITY  ==================" << std::endl;
@@ -313,7 +313,7 @@ namespace mesh
                                std::vector<Int32>{ nb_connected_items_per_item.begin(), nb_connected_items_per_item.end() },
                                arcane_target_item_family,
                                target_items_uids,
-                               name);
+                               connectivity_name);
     }
 
     /*---------------------------------------------------------------------------*/
@@ -325,7 +325,7 @@ namespace mesh
                                  ConnectivitySizeType&& nb_connected_items_per_item,
                                  PolyhedralFamily* arcane_target_item_family,
                                  Int64ConstArrayView target_item_uids,
-                                 String const& name)
+                                 String const& connectivity_name)
     {
       // add connectivity in Neo
       auto& source_family = m_mesh.findFamily(itemKindArcaneToNeo(arcane_source_item_family->itemKind()),
@@ -343,19 +343,19 @@ namespace mesh
       m_mesh.scheduleAddConnectivity(source_family, source_items.m_future_items, target_family,
                                      std::forward<ConnectivitySizeType>(nb_connected_items_per_item),
                                      std::move(target_item_uids_filtered),
-                                     name.localstr());
+                                     connectivity_name.localstr());
       // Register connectivity in Arcane : via un algo !! todo : quelle prop out
       auto& mesh_graph = m_mesh.internalMeshGraph();
       source_family.addProperty <Int32>("NoOutProperty"); // todo remove : create noOutput algo in Neo
-      mesh_graph.addAlgorithm(Neo::InProperty{source_family,PolyhedralFamily::m_arcane_item_lids_property_name.localstr()},
+      mesh_graph.addAlgorithm(Neo::InProperty{source_family, connectivity_name.localstr()},
                               Neo::OutProperty{source_family,"NoOutProperty"},
-                              [arcane_source_item_family, arcane_target_item_family, &source_family, this,name]
-                              (Neo::PropertyT<Neo::utils::Int32> const& ,
+                              [arcane_source_item_family, arcane_target_item_family, &source_family, this, connectivity_name]
+                              (Neo::Mesh::ConnectivityPropertyType const& ,
                                Neo::PropertyT<Neo::utils::Int32> & ){
                                 this->m_subdomain->traceMng()->info() << "ADD CONNECTIVITY";
                                 auto item_internal_connectivity_list = arcane_source_item_family->itemInternalConnectivityList();
                                 // todo check if families are default families
-                                auto& connectivity_values = source_family.getConcreteProperty<Neo::Mesh::ConnectivityPropertyType>(name.localstr());
+                                auto& connectivity_values = source_family.getConcreteProperty<Neo::Mesh::ConnectivityPropertyType>(connectivity_name.localstr());
                                 auto nb_item_data = connectivity_values.m_offsets.data();
                                 auto nb_item_size = connectivity_values.m_offsets.size();
                                 item_internal_connectivity_list->setConnectivityNbItem(arcane_target_item_family->itemKind(),
