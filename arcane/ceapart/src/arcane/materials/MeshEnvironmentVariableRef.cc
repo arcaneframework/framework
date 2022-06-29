@@ -52,7 +52,7 @@ CellEnvironmentVariableScalarRef(const VariableBuildInfo& vb)
 
 template<typename DataType> CellEnvironmentVariableScalarRef<DataType>::
 CellEnvironmentVariableScalarRef(const MaterialVariableBuildInfo& vb)
-: m_private_part(getVariableReference(this,vb,MatVarSpace::Environment))
+: m_private_part(PrivatePartType::getVariableReference(vb,MatVarSpace::Environment))
 , m_value(nullptr)
 {
   _init();
@@ -210,7 +210,7 @@ CellEnvironmentVariableArrayRef(const VariableBuildInfo& vb)
 // TODO: fusionner avec la version scalaire
 template<typename DataType> CellEnvironmentVariableArrayRef<DataType>::
 CellEnvironmentVariableArrayRef(const MaterialVariableBuildInfo& vb)
-: m_private_part(getVariableReference(this,vb,MatVarSpace::Environment))
+: m_private_part(PrivatePartType::getVariableReference(vb,MatVarSpace::Environment))
 , m_value(nullptr)
 {
   _init();

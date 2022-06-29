@@ -346,21 +346,33 @@ MeshMaterialVariableArray(const MaterialVariableBuildInfo& v,PrivatePartType* gl
 /*---------------------------------------------------------------------------*/
 
 template<typename ItemType,typename DataType> MeshMaterialVariableFactoryRegisterer
-MeshMaterialVariableArray<ItemType,DataType>::m_auto_registerer1(_autoCreate1,_buildVarTypeInfo(MatVarSpace::Environment));
+MeshMaterialVariableArray<ItemType,DataType>::
+m_auto_registerer1(_autoCreate1,ThatInterface::_buildVarTypeInfo(MatVarSpace::Environment));
 
 template<typename ItemType,typename DataType> MeshMaterialVariableFactoryRegisterer
-MeshMaterialVariableArray<ItemType,DataType>::m_auto_registerer2(_autoCreate1,_buildVarTypeInfo(MatVarSpace::MaterialAndEnvironment));
+MeshMaterialVariableArray<ItemType,DataType>::
+m_auto_registerer2(_autoCreate1,ThatInterface::_buildVarTypeInfo(MatVarSpace::MaterialAndEnvironment));
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 template<typename ItemType,typename DataType> MaterialVariableTypeInfo
-MeshMaterialVariableArray<ItemType,DataType>::
+IMeshMaterialVariableArray<ItemType,DataType>::
 _buildVarTypeInfo(MatVarSpace space)
 {
   eItemKind ik = ItemTraitsT<ItemType>::kind();
   eDataType dt = VariableDataTypeTraitsT<DataType>::type();
   return MaterialVariableTypeInfo(ik,dt,1,space);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename ItemType,typename DataType> IMeshMaterialVariableArray<ItemType,DataType>*
+IMeshMaterialVariableArray<ItemType,DataType>::
+getVariableReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
+{
+  return getVariableReference2<IMeshMaterialVariableArray<ItemType,DataType>>(v,mvs);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -386,45 +398,22 @@ _autoCreate2(const MaterialVariableBuildInfo& v)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template class ItemMaterialVariableBase< MaterialVariableArrayTraits<Real> >;
-template class ItemMaterialVariableBase< MaterialVariableArrayTraits<Byte> >;
-template class ItemMaterialVariableBase< MaterialVariableArrayTraits<Int16> >;
-template class ItemMaterialVariableBase< MaterialVariableArrayTraits<Int32> >;
-template class ItemMaterialVariableBase< MaterialVariableArrayTraits<Int64> >;
-template class ItemMaterialVariableBase< MaterialVariableArrayTraits<Real2> >;
-template class ItemMaterialVariableBase< MaterialVariableArrayTraits<Real3> >;
-template class ItemMaterialVariableBase< MaterialVariableArrayTraits<Real2x2> >;
-template class ItemMaterialVariableBase< MaterialVariableArrayTraits<Real3x3> >;
+#define ARCANE_INSTANTIATE_MAT(type) \
+  template class ItemMaterialVariableBase< MaterialVariableArrayTraits<type> >;\
+  template class ItemMaterialVariableArray<type>;\
+  template class MeshMaterialVariableArray<Cell,type>;\
+  template class IMeshMaterialVariableArray<Cell,type>;\
+  template class VariableReferenceGetter<MeshMaterialVariableArray<Cell,type>>
 
-template class ItemMaterialVariableArray<Real>;
-template class ItemMaterialVariableArray<Byte>;
-template class ItemMaterialVariableArray<Int16>;
-template class ItemMaterialVariableArray<Int32>;
-template class ItemMaterialVariableArray<Int64>;
-template class ItemMaterialVariableArray<Real2>;
-template class ItemMaterialVariableArray<Real3>;
-template class ItemMaterialVariableArray<Real2x2>;
-template class ItemMaterialVariableArray<Real3x3>;
-
-template class MeshMaterialVariableArray<Cell,Byte>;
-template class MeshMaterialVariableArray<Cell,Real>;
-template class MeshMaterialVariableArray<Cell,Int16>;
-template class MeshMaterialVariableArray<Cell,Int32>;
-template class MeshMaterialVariableArray<Cell,Int64>;
-template class MeshMaterialVariableArray<Cell,Real2>;
-template class MeshMaterialVariableArray<Cell,Real3>;
-template class MeshMaterialVariableArray<Cell,Real2x2>;
-template class MeshMaterialVariableArray<Cell,Real3x3>;
-
-template class VariableReferenceGetter<MeshMaterialVariableArray<Cell,Byte>>;
-template class VariableReferenceGetter<MeshMaterialVariableArray<Cell,Real>>;
-template class VariableReferenceGetter<MeshMaterialVariableArray<Cell,Int16>>;
-template class VariableReferenceGetter<MeshMaterialVariableArray<Cell,Int32>>;
-template class VariableReferenceGetter<MeshMaterialVariableArray<Cell,Int64>>;
-template class VariableReferenceGetter<MeshMaterialVariableArray<Cell,Real2>>;
-template class VariableReferenceGetter<MeshMaterialVariableArray<Cell,Real3>>;
-template class VariableReferenceGetter<MeshMaterialVariableArray<Cell,Real2x2>>;
-template class VariableReferenceGetter<MeshMaterialVariableArray<Cell,Real3x3>>;
+ARCANE_INSTANTIATE_MAT(Byte);
+ARCANE_INSTANTIATE_MAT(Int16);
+ARCANE_INSTANTIATE_MAT(Int32);
+ARCANE_INSTANTIATE_MAT(Int64);
+ARCANE_INSTANTIATE_MAT(Real);
+ARCANE_INSTANTIATE_MAT(Real2);
+ARCANE_INSTANTIATE_MAT(Real3);
+ARCANE_INSTANTIATE_MAT(Real2x2);
+ARCANE_INSTANTIATE_MAT(Real3x3);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

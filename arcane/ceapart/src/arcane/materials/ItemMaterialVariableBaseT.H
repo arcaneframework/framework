@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemMaterialVariableBaseT.h                                 (C) 2000-2021 */
+/* ItemMaterialVariableBaseT.h                                 (C) 2000-2022 */
 /*                                                                           */
 /* Implémentation de la classe de base des variables matériaux.              */
 /*---------------------------------------------------------------------------*/
@@ -13,6 +13,7 @@
 
 #include "arcane/utils/Mutex.h"
 #include "arcane/utils/ArgumentException.h"
+#include "arcane/utils/FatalErrorException.h"
 
 #include "arcane/Observer.h"
 #include "arcane/IMesh.h"
@@ -23,7 +24,10 @@
 
 #include "arcane/materials/MeshMaterialVariableRef.h"
 #include "arcane/materials/ComponentItemListBuilder.h"
-#include "arcane/materials/IMeshMaterialMng.h"
+
+#include "arcane/core/materials/MaterialVariableBuildInfo.h"
+#include "arcane/core/materials/IMeshMaterialMng.h"
+#include "arcane/core/materials/IMeshMaterialVariableFactoryMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -71,7 +75,6 @@ globalVariable() const
 {
   return m_global_variable;
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -548,6 +551,32 @@ getReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
     ++true_mat_var->m_p->m_nb_reference;
     return true_mat_var;
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename PrivatePartType> inline PrivatePartType*
+getVariableReference2(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
+{
+  MaterialVariableTypeInfo x = PrivatePartType::_buildVarTypeInfo(mvs);
+
+  MeshHandle mesh_handle = v.meshHandle();
+  if (mesh_handle.isNull())
+    ARCANE_FATAL("No mesh handle for material variable");
+
+  IMeshMaterialMng* mat_mng = v.materialMng();
+
+  // TODO: regarder si verrou necessaire
+  if (!mat_mng)
+    mat_mng = IMeshMaterialMng::getReference(mesh_handle,true);
+
+  IMeshMaterialVariableFactoryMng* vm = mat_mng->variableFactoryMng();
+  IMeshMaterialVariable* var = vm->createVariable(x.fullName(),v);
+
+  auto* true_var = dynamic_cast<PrivatePartType*>(var);
+  ARCANE_CHECK_POINTER(true_var);
+  return true_var;
 }
 
 /*---------------------------------------------------------------------------*/
