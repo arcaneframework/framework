@@ -48,21 +48,21 @@ class IRandomNumberGenerator
   virtual Int64 seed() = 0;
 
   /**
-   * @brief Méthode permettant de générer une autre graine à partir de
-   * la graine en mémoire.
+   * @brief Méthode permettant de générer une graine "enfant" à partir d'une
+   * graine "parent".
    * 
-   * @return Int64 La nouvelle graine.
+   * @return Int64 La nouvelle graine généré à partir de la graine en mémoire.
    */
   virtual Int64 generateRandomSeed() = 0;
 
   /**
-   * @brief Méthode permettant de générer une autre graine à partir de
-   * la graine transmise en paramètre.
+   * @brief Méthode permettant de générer une graine "enfant" à partir d'une
+   * graine "parent".
    * 
    * Cette méthode n'utilise pas la graine en mémoire.
    * 
-   * @param parent_seed La graine d'origine.
-   * @return Int64 La nouvelle graine.
+   * @param parent_seed La graine "parent".
+   * @return Int64 La nouvelle graine généré à partir de la graine "parent".
    */
   virtual Int64 generateRandomSeed(Int64* parent_seed) = 0;
 

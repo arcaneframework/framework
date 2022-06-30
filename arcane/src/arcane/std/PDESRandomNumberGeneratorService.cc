@@ -42,8 +42,6 @@ seed()
   return m_seed;
 }
 
-// This routine spawns a "child" random number seed from a "parent" random
-// number seed.
 Int64 PDESRandomNumberGeneratorService::
 generateRandomSeed()
 {
@@ -57,13 +55,10 @@ Int64 PDESRandomNumberGeneratorService::
 generateRandomSeed(Int64* parent_seed)
 {
   Int64 spawned_seed = _hashState(*parent_seed);
-  // Bump the parent seed as that is what is expected from the interface.
   generateRandomNumber(parent_seed);
   return spawned_seed;
 }
 
-// Sample returns the pseudo-random number produced by a call to a random
-// number generator.
 Real PDESRandomNumberGeneratorService::
 generateRandomNumber()
 {
@@ -91,7 +86,13 @@ generateRandomNumber(Int64* seed)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Break a 64 bit state into 2 32 bit ints.
+/**
+ * @brief Méthode permettant de découper un uint64 en deux uint32.
+ * 
+ * @param uint64_in Le uint64 à découper en deux.
+ * @param front_bits Les 32 bits de poids fort.
+ * @param back_bits Les 32 bits de poids faible.
+ */
 void PDESRandomNumberGeneratorService::
 _breakupUInt64(uint64_t uint64_in, uint32_t& front_bits, uint32_t& back_bits)
 {
@@ -99,7 +100,13 @@ _breakupUInt64(uint64_t uint64_in, uint32_t& front_bits, uint32_t& back_bits)
   back_bits = static_cast<uint32_t>(uint64_in & 0xffffffff);
 }
 
-// Function used to reconstruct  a 64 bit from 2 32 bit ints.
+/**
+ * @brief Méthode permettant de regrouper deux uint32 en un uint64.
+ * 
+ * @param front_bits Les 32 bits de poids fort.
+ * @param back_bits Les 32 bits de poids faible.
+ * @return uint64_t Le uint64 reconstitué.
+ */
 uint64_t PDESRandomNumberGeneratorService::
 _reconstructUInt64(uint32_t front_bits, uint32_t back_bits)
 {
