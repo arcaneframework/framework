@@ -56,6 +56,8 @@
 #include "arcane/datatype/DataTypeTraits.h"
 #include "arcane/datatype/DataStorageBuildInfo.h"
 
+#include "arcane/VariableDataTypeTraits.h"
+
 #include <vector>
 
 /*---------------------------------------------------------------------------*/
@@ -780,71 +782,24 @@ MeshMaterialVariableScalar<ItemType,DataType>::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename ItemType,typename DataType>
-MeshMaterialVariableScalar<ItemType,DataType>*
-MeshMaterialVariableScalar<ItemType,DataType>::
-getReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
-{
-  return getReference(v,v.materialMng(),mvs);
-}
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename ItemType,typename DataType>
-MeshMaterialVariableScalar<ItemType,DataType>*
-MeshMaterialVariableScalar<ItemType,DataType>::
-getReference(const VariableBuildInfo& v,IMeshMaterialMng* mm,MatVarSpace mvs)
-{
-  return ReferenceGetter::getReference(v,mm,mvs);
-}
+#define ARCANE_INSTANTIATE_MAT(type) \
+  template class ItemMaterialVariableBase< MaterialVariableScalarTraits<type> >;\
+  template class ItemMaterialVariableScalar<type>;\
+  template class MeshMaterialVariableScalar<Cell,type>;\
+  template class MeshMaterialVariableCommonStaticImpl<MeshMaterialVariableScalar<Cell,type>>
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename ItemType,typename DataType> MeshMaterialVariableScalar<ItemType,DataType>* 
-MeshMaterialVariableScalar<ItemType,DataType>::
-getReference(IMeshMaterialVariable* var)
-{
-  ARCANE_UNUSED(var);
-  throw NotImplementedException(A_FUNCINFO);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template class ItemMaterialVariableBase< MaterialVariableScalarTraits<Real> >;
-template class ItemMaterialVariableBase< MaterialVariableScalarTraits<Byte> >;
-template class ItemMaterialVariableBase< MaterialVariableScalarTraits<Int16> >;
-template class ItemMaterialVariableBase< MaterialVariableScalarTraits<Int32> >;
-template class ItemMaterialVariableBase< MaterialVariableScalarTraits<Int64> >;
-template class ItemMaterialVariableBase< MaterialVariableScalarTraits<Real2> >;
-template class ItemMaterialVariableBase< MaterialVariableScalarTraits<Real3> >;
-template class ItemMaterialVariableBase< MaterialVariableScalarTraits<Real2x2> >;
-template class ItemMaterialVariableBase< MaterialVariableScalarTraits<Real3x3> >;
-
-template class ItemMaterialVariableScalar<Real>;
-template class ItemMaterialVariableScalar<Byte>;
-template class ItemMaterialVariableScalar<Int16>;
-template class ItemMaterialVariableScalar<Int32>;
-template class ItemMaterialVariableScalar<Int64>;
-template class ItemMaterialVariableScalar<Real2>;
-template class ItemMaterialVariableScalar<Real3>;
-template class ItemMaterialVariableScalar<Real2x2>;
-template class ItemMaterialVariableScalar<Real3x3>;
-
-template class MeshMaterialVariableScalar<Cell,Byte>;
-template class MeshMaterialVariableScalar<Cell,Real>;
-template class MeshMaterialVariableScalar<Cell,Int16>;
-template class MeshMaterialVariableScalar<Cell,Int32>;
-template class MeshMaterialVariableScalar<Cell,Int64>;
-template class MeshMaterialVariableScalar<Cell,Real2>;
-template class MeshMaterialVariableScalar<Cell,Real3>;
-template class MeshMaterialVariableScalar<Cell,Real2x2>;
-template class MeshMaterialVariableScalar<Cell,Real3x3>;
+ARCANE_INSTANTIATE_MAT(Byte);
+ARCANE_INSTANTIATE_MAT(Int16);
+ARCANE_INSTANTIATE_MAT(Int32);
+ARCANE_INSTANTIATE_MAT(Int64);
+ARCANE_INSTANTIATE_MAT(Real);
+ARCANE_INSTANTIATE_MAT(Real2);
+ARCANE_INSTANTIATE_MAT(Real3);
+ARCANE_INSTANTIATE_MAT(Real2x2);
+ARCANE_INSTANTIATE_MAT(Real3x3);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

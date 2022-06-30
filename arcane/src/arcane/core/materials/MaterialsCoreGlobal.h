@@ -66,6 +66,7 @@ class IMeshMaterialVariableFactoryMng;
 class IMeshMaterialVariableFactory;
 class IMeshMaterialVariable;
 class MaterialVariableBuildInfo;
+class MaterialVariableTypeInfo;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

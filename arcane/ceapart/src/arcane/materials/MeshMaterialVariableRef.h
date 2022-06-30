@@ -209,8 +209,6 @@ template<typename DataType>
 class CellMaterialVariableScalarRef
 : public MeshMaterialVariableRef
 {
-  using TruePrivatePartType = MeshMaterialVariableScalar<Cell,DataType>;
-
  public:
 
   using PrivatePartType = IMeshMaterialVariableScalar<Cell,DataType>;
@@ -364,8 +362,6 @@ template<typename DataType>
 class CellMaterialVariableArrayRef
 : public MeshMaterialVariableRef
 {
-  using TruePrivatePartType = MeshMaterialVariableArray<Cell,DataType>;
-
  public:
 
   using PrivatePartType = IMeshMaterialVariableArray<Cell,DataType>;

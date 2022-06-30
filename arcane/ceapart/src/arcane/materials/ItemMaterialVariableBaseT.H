@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemMaterialVariableBaseT.h                                 (C) 2000-2021 */
+/* ItemMaterialVariableBaseT.h                                 (C) 2000-2022 */
 /*                                                                           */
 /* Implémentation de la classe de base des variables matériaux.              */
 /*---------------------------------------------------------------------------*/
@@ -13,6 +13,7 @@
 
 #include "arcane/utils/Mutex.h"
 #include "arcane/utils/ArgumentException.h"
+#include "arcane/utils/FatalErrorException.h"
 
 #include "arcane/Observer.h"
 #include "arcane/IMesh.h"
@@ -23,7 +24,10 @@
 
 #include "arcane/materials/MeshMaterialVariableRef.h"
 #include "arcane/materials/ComponentItemListBuilder.h"
-#include "arcane/materials/IMeshMaterialMng.h"
+
+#include "arcane/core/materials/MaterialVariableBuildInfo.h"
+#include "arcane/core/materials/IMeshMaterialMng.h"
+#include "arcane/core/materials/IMeshMaterialVariableFactoryMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -71,7 +75,6 @@ globalVariable() const
 {
   return m_global_variable;
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -472,9 +475,9 @@ _fillPartialValuesWithSuperValues(MeshComponentList components)
  * Récupère ou construit une variable de type \a VariableTrueType dont
  * les caractéristiques sont données dans \a v.
  */
-template<typename VariableTrueType> VariableTrueType*
-VariableReferenceGetter<VariableTrueType>::
-getReference(const VariableBuildInfo& v,IMeshMaterialMng* mm,MatVarSpace mvs)
+template<typename VariableTrueType> IMeshMaterialVariable*
+MeshMaterialVariableCommonStaticImpl<VariableTrueType>::
+getReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
 {
   typedef typename VariableTrueType::PrivatePartType PrivatePartType;
   typedef typename VariableTrueType::VariableRefType VariableRefType;
@@ -483,7 +486,8 @@ getReference(const VariableBuildInfo& v,IMeshMaterialMng* mm,MatVarSpace mvs)
   if (mesh_handle.isNull())
     ARCANE_FATAL("No mesh handle for material variable");
 
-  IMeshMaterialMng* mat_mng = mm;
+  IMeshMaterialMng* mat_mng = v.materialMng();
+
   //TODO: regarder si verrou necessaire
   if (!mat_mng)
     mat_mng = IMeshMaterialMng::getReference(mesh_handle,true);
@@ -547,6 +551,31 @@ getReference(const VariableBuildInfo& v,IMeshMaterialMng* mm,MatVarSpace mvs)
     ++true_mat_var->m_p->m_nb_reference;
     return true_mat_var;
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename TrueType> MeshMaterialVariableFactoryRegisterer
+MeshMaterialVariableCommonStaticImpl<TrueType>::
+m_auto_registerer1(_autoCreate1,TrueType::BuilderType::_buildVarTypeInfo(MatVarSpace::Environment));
+
+template<typename TrueType> MeshMaterialVariableFactoryRegisterer
+MeshMaterialVariableCommonStaticImpl<TrueType>::
+m_auto_registerer2(_autoCreate2,TrueType::BuilderType::_buildVarTypeInfo(MatVarSpace::MaterialAndEnvironment));
+
+template<typename TrueType> IMeshMaterialVariable*
+MeshMaterialVariableCommonStaticImpl<TrueType>::
+_autoCreate1(const MaterialVariableBuildInfo& v)
+{
+  return getReference(v,MatVarSpace::Environment);
+}
+
+template<typename TrueType> IMeshMaterialVariable*
+MeshMaterialVariableCommonStaticImpl<TrueType>::
+_autoCreate2(const MaterialVariableBuildInfo& v)
+{
+  return getReference(v,MatVarSpace::MaterialAndEnvironment);
 }
 
 /*---------------------------------------------------------------------------*/

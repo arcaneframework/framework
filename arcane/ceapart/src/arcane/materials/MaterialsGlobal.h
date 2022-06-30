@@ -62,6 +62,7 @@ class MeshMaterialVariableSynchronizerList;
 class MeshMaterialVariable;
 class MatVarIndex;
 class IMeshMaterialSynchronizeBuffer;
+class MeshMaterialVariableRef;
 
 template <typename DataType> class ItemMaterialVariableScalar;
 template <typename ItemType,typename DataType> class MeshMaterialVariableScalar;
@@ -72,6 +73,8 @@ template<typename ItemType,typename DataType>
 class IMeshMaterialVariableScalar;
 template<typename ItemType,typename DataType>
 class IMeshMaterialVariableArray;
+
+typedef IMeshMaterialVariable* (*MeshMaterialVariableFactoryVariableRefCreateFunc)(const MaterialVariableBuildInfo& vb);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

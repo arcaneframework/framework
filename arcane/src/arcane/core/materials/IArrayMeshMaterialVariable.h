@@ -5,16 +5,18 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshMaterialVariableFactoryMng.h                           (C) 2000-2022 */
+/* IArrayMeshMaterialVariable.h                               (C) 2000-2022 */
 /*                                                                           */
-/* Interface du gestionnaire de fabrique de variables matériaux.             */
+/* Interface d'une variable matériau scalaire.                               */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CORE_MATERIALS_IMESHMATERIALVARIABLEFACTORYMNG_H
-#define ARCANE_CORE_MATERIALS_IMESHMATERIALVARIABLEFACTORYMNG_H
+#ifndef ARCANE_MATERIALS_IARRAYMESHMATERIALVARIABLE_H
+#define ARCANE_MATERIALS_IARRAYMESHMATERIALVARIABLE_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
+#include "arcane/utils/NotImplementedException.h"
+#include "arcane/utils/Array.h"
+
 #include "arcane/core/materials/MaterialsCoreGlobal.h"
 
 /*---------------------------------------------------------------------------*/
@@ -27,29 +29,32 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Interface du gestionnaire de fabrique de variables matériaux.
+ * \brief Interface d'accès pour CellMaterialVariableArrayRef.
  */
-class ARCANE_CORE_EXPORT IMeshMaterialVariableFactoryMng
+template<typename ItemType,typename DataType>
+class IMeshMaterialVariableArray
 {
  public:
-  
-  virtual ~IMeshMaterialVariableFactoryMng() = default;
+
+  using ThatInterface = IMeshMaterialVariableArray<ItemType,DataType>;
+  using ItemTypeType = ItemType;
+  using DataTypeType = DataType;
+  using BuilderType = MeshMaterialVariableBuildTraits<ThatInterface>;
+  using VariableRefType = MeshVariableArrayRefT<ItemType,DataType>;
+  static constexpr int dimension() { return 1; }
 
  public:
 
-  //! Construit l'instance
-  virtual void build() =0;
+  virtual ~IMeshMaterialVariableArray() = default;
 
-  //! Gestionnaire de trace associé
-  virtual ITraceMng* traceMng() const =0;
+ public:
 
-  //! Enregistre la fabrique \a factory.
-  virtual void registerFactory(Ref<IMeshMaterialVariableFactory> factory) =0;
+  virtual Array2View<DataType>* valuesView() =0;
+  virtual VariableRefType* globalVariableReference() const =0;
+  virtual void incrementReference() =0;
+  virtual IMeshMaterialVariable* toMeshMaterialVariable() =0;
 
-  //! Créé une variable matériau.
-  virtual IMeshMaterialVariable*
-  createVariable(const String& storage_type,
-                 const MaterialVariableBuildInfo& build_info) =0;
+  virtual void resize(Int32 dim2_size) =0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -60,4 +65,4 @@ class ARCANE_CORE_EXPORT IMeshMaterialVariableFactoryMng
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

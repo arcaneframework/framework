@@ -72,7 +72,10 @@ set( ARCANE_SOURCES
    core/materials/MatVarIndex.h
    core/materials/MatVarIndex.cc
    core/materials/IEnumeratorTracer.h
+   core/materials/IMeshMaterialVariable.cc
    core/materials/IMeshMaterialVariable.h
+   core/materials/IScalarMeshMaterialVariable.h
+   core/materials/IArrayMeshMaterialVariable.h
    core/materials/IMeshMaterialMng.cc
    core/materials/IMeshMaterialMng.h
    core/materials/IMeshBlock.h
@@ -105,6 +108,8 @@ set( ARCANE_SOURCES
    core/materials/MeshComponentPartData.h
    core/materials/MaterialVariableBuildInfo.cc
    core/materials/MaterialVariableBuildInfo.h
+   core/materials/MaterialVariableTypeInfo.cc
+   core/materials/MaterialVariableTypeInfo.h
 
    Data.cc
    DataTypeDispatchingDataVisitor.cc
