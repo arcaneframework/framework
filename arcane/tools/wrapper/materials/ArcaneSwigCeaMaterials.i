@@ -4,16 +4,16 @@
 
 %{
 #include "ArcaneSwigUtils.h"
-#include "arcane/materials/IMeshMaterialMng.h"
-#include "arcane/materials/IMeshBlock.h"
-#include "arcane/materials/IMeshEnvironment.h"
-#include "arcane/materials/IMeshMaterial.h"
-#include "arcane/materials/MatItemEnumerator.h"
-#include "arcane/materials/MatItem.h"
-#include "arcane/materials/ComponentPartItemVectorView.h"
-#include "arcane/materials/ComponentItemVectorView.h"
-#include "arcane/materials/CellToAllEnvCellConverter.h"
-#include "arcane/materials/MeshMaterialVariableRef.h"
+#include "arcane/core/materials/IMeshMaterialMng.h"
+#include "arcane/core/materials/IMeshBlock.h"
+#include "arcane/core/materials/IMeshEnvironment.h"
+#include "arcane/core/materials/IMeshMaterial.h"
+#include "arcane/core/materials/MatItemEnumerator.h"
+#include "arcane/core/materials/MatItem.h"
+#include "arcane/core/materials/ComponentPartItemVectorView.h"
+#include "arcane/core/materials/ComponentItemVectorView.h"
+#include "arcane/core/materials/CellToAllEnvCellConverter.h"
+#include "arcane/core/materials/MeshMaterialVariableRef.h"
 
 using namespace Arcane;
 using namespace Arcane::Materials;
@@ -45,7 +45,7 @@ using namespace Arcane::Materials;
 %ignore Arcane::Materials::IMeshMaterialMng::getReference;
 
 %include arcane/core/materials/MaterialsCoreGlobal.h
-%include arcane/materials/MaterialsGlobal.h
+
 #undef ARCANE_MATERIALS_EXPORT
 #define ARCANE_MATERIALS_EXPORT
 

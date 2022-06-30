@@ -56,10 +56,6 @@ add_subdirectory(src/arcane/hyoda)
 add_subdirectory(src/arcane/aleph/sloop)
 
 # ----------------------------------------------------------------------------
-
-add_subdirectory(tools/wrapper/materials)
-
-# ----------------------------------------------------------------------------
 # Ajoute des tests.
 # Ils doivent être après les autres cibles car ils peuvent en dépendre.
 add_subdirectory(src/arcane/tests)
