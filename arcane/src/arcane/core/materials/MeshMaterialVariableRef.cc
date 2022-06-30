@@ -25,9 +25,8 @@
 #include "arcane/core/materials/IMeshMaterialMng.h"
 #include "arcane/core/materials/IMeshMaterial.h"
 #include "arcane/core/materials/MaterialVariableBuildInfo.h"
-
-#include "arcane/materials/MeshMaterialVariableRef.h"
-#include "arcane/materials/MeshMaterialVariable.h"
+#include "arcane/core/materials/MeshMaterialVariableRef.h"
+//#include "arcane/core/materials/MeshMaterialVariable.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
