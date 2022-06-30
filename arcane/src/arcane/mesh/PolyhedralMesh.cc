@@ -234,9 +234,13 @@ namespace mesh
     Integer nbCell() const { return m_mesh.nbCells(); }
     Integer nbItem(eItemKind ik) const { return m_mesh.nbItems(itemKindArcaneToNeo(ik)); }
 
+    /*---------------------------------------------------------------------------*/
+
     void addFamily(eItemKind ik, const String& name){
       m_mesh.addFamily(itemKindArcaneToNeo(ik),name.localstr());
     }
+
+    /*---------------------------------------------------------------------------*/
 
     void scheduleAddItems(PolyhedralFamily* arcane_item_family,
                           Int64ConstArrayView uids,
@@ -263,47 +267,112 @@ namespace mesh
                               });
     }
 
+    /*---------------------------------------------------------------------------*/
+
     void scheduleAddConnectivity(PolyhedralFamily* arcane_source_item_family,
                                  ItemLocalIds& source_items,
                                  Integer nb_connected_items_per_item,
                                  PolyhedralFamily* arcane_target_item_family,
                                  Int64ConstArrayView target_items_uids,
-                                 String const& name){
+                                 String const& name)
+    {
+      // add connectivity in Neo
+      _scheduleAddConnectivity(arcane_source_item_family,
+                               source_items,
+                               nb_connected_items_per_item,
+                               arcane_target_item_family,
+                               target_items_uids,
+                               name);
+    }
+
+    /*---------------------------------------------------------------------------*/
+
+    void scheduleAddConnectivity(PolyhedralFamily* arcane_source_item_family,
+                                 ItemLocalIds& source_items,
+                                 Int32ConstArrayView nb_connected_items_per_item,
+                                 PolyhedralFamily* arcane_target_item_family,
+                                 Int64ConstArrayView target_items_uids,
+                                 String const& connectivity_name)
+    {
+      // debug
+      std::cout << "====================VALIDATE CONNECTIVITY  ==================" << std::endl;
+      std::cout << "== " << connectivity_name << std::endl;
+      auto item_index = 0;
+      std::cout << "==== nb connected items ====" << std::endl;
+      std::copy(nb_connected_items_per_item.begin(), nb_connected_items_per_item.end(), std::ostream_iterator<Int32>(std::cout, " "));
+      std::cout << std::endl << "==== connected items ====" << std::endl;
+      std::copy(target_items_uids.begin(), target_items_uids.end(), std::ostream_iterator<Int64>(std::cout, " "));
+      std::cout << std::endl;
+      for (auto&& nb_connected_items : nb_connected_items_per_item) {
+        Int64ConstArrayView connected_items{ nb_connected_items, &target_items_uids[item_index] };
+        std::copy(connected_items.begin(), connected_items.end(), std::ostream_iterator<Int64>{ std::cout, " " });
+        item_index += nb_connected_items;
+        std::cout << "\n";
+      }
+      _scheduleAddConnectivity(arcane_source_item_family,
+                               source_items,
+                               std::vector<Int32>{ nb_connected_items_per_item.begin(), nb_connected_items_per_item.end() },
+                               arcane_target_item_family,
+                               target_items_uids,
+                               connectivity_name);
+    }
+
+    /*---------------------------------------------------------------------------*/
+
+    // template to handle nb_items_per_item type (an int or an array)
+    template <typename ConnectivitySizeType>
+    void _scheduleAddConnectivity(PolyhedralFamily* arcane_source_item_family,
+                                 ItemLocalIds& source_items,
+                                 ConnectivitySizeType&& nb_connected_items_per_item,
+                                 PolyhedralFamily* arcane_target_item_family,
+                                 Int64ConstArrayView target_item_uids,
+                                 String const& connectivity_name)
+    {
       // add connectivity in Neo
       auto& source_family = m_mesh.findFamily(itemKindArcaneToNeo(arcane_source_item_family->itemKind()),
                                               arcane_source_item_family->name().localstr());
       auto& target_family = m_mesh.findFamily(itemKindArcaneToNeo(arcane_target_item_family->itemKind()),
                                               arcane_target_item_family->name().localstr());
+      // Remove connectivities with a null item
+      std::vector<Int64> target_item_uids_filtered;
+      target_item_uids_filtered.reserve(target_item_uids.size());
+      std::copy_if(target_item_uids.begin(),
+                   target_item_uids.end(),
+                   std::back_inserter(target_item_uids_filtered),
+                   [](auto uid){return uid != NULL_ITEM_UNIQUE_ID; });
+      // Add connectivity (async)
       m_mesh.scheduleAddConnectivity(source_family, source_items.m_future_items, target_family,
-                                     nb_connected_items_per_item,
-                                     std::vector<Int64>{target_items_uids.begin(),target_items_uids.end()},
-                                     name.localstr());
+                                     std::forward<ConnectivitySizeType>(nb_connected_items_per_item),
+                                     std::move(target_item_uids_filtered),
+                                     connectivity_name.localstr());
       // Register connectivity in Arcane : via un algo !! todo : quelle prop out
       auto& mesh_graph = m_mesh.internalMeshGraph();
       source_family.addProperty <Int32>("NoOutProperty"); // todo remove : create noOutput algo in Neo
-      mesh_graph.addAlgorithm(Neo::InProperty{source_family,PolyhedralFamily::m_arcane_item_lids_property_name.localstr()},
+      mesh_graph.addAlgorithm(Neo::InProperty{source_family, connectivity_name.localstr()},
                               Neo::OutProperty{source_family,"NoOutProperty"},
-                              [arcane_source_item_family, arcane_target_item_family, &source_family, &target_family, this,name]
-                              (Neo::PropertyT<Neo::utils::Int32> const& ,
+                              [arcane_source_item_family, arcane_target_item_family, &source_family, this, connectivity_name]
+                              (Neo::Mesh::ConnectivityPropertyType const& ,
                                Neo::PropertyT<Neo::utils::Int32> & ){
                                 this->m_subdomain->traceMng()->info() << "ADD CONNECTIVITY";
                                 auto item_internal_connectivity_list = arcane_source_item_family->itemInternalConnectivityList();
-                                  // todo check if families are default families
-                                  auto& connectivity_values = source_family.getConcreteProperty<Neo::Mesh::ConnectivityPropertyType>(name.localstr());
-                                  auto nb_item_data = connectivity_values.m_offsets.data();
-                                  auto nb_item_size = connectivity_values.m_offsets.size();
-                                  item_internal_connectivity_list->setConnectivityNbItem(arcane_target_item_family->itemKind(),
-                                                                                         Int32ArrayView{Integer(nb_item_size),nb_item_data});
-                                  auto connectivity_values_data = connectivity_values.m_data.data();
-                                  auto connectivity_values_size = connectivity_values.m_data.size();
-                                  item_internal_connectivity_list->setConnectivityList(arcane_target_item_family->itemKind(),
-                                                                                        Int32ArrayView{Integer(connectivity_values_size),connectivity_values_data});
-                                  auto connectivity_index_data = connectivity_values.m_indexes.data();
-                                  auto connectivity_index_size = connectivity_values.m_indexes.size();
-                                  item_internal_connectivity_list->setConnectivityIndex(arcane_target_item_family->itemKind(),
+                                // todo check if families are default families
+                                auto& connectivity_values = source_family.getConcreteProperty<Neo::Mesh::ConnectivityPropertyType>(connectivity_name.localstr());
+                                auto nb_item_data = connectivity_values.m_offsets.data();
+                                auto nb_item_size = connectivity_values.m_offsets.size();
+                                item_internal_connectivity_list->setConnectivityNbItem(arcane_target_item_family->itemKind(),
+                                                                                       Int32ArrayView{Integer(nb_item_size),nb_item_data});
+                                auto connectivity_values_data = connectivity_values.m_data.data();
+                                auto connectivity_values_size = connectivity_values.m_data.size();
+                                item_internal_connectivity_list->setConnectivityList(arcane_target_item_family->itemKind(),
+                                                                                     Int32ArrayView{Integer(connectivity_values_size),connectivity_values_data});
+                                auto connectivity_index_data = connectivity_values.m_indexes.data();
+                                auto connectivity_index_size = connectivity_values.m_indexes.size();
+                                item_internal_connectivity_list->setConnectivityIndex(arcane_target_item_family->itemKind(),
                                                                                       Int32ArrayView{ Integer(connectivity_index_size), connectivity_index_data });
                               });
     }
+
+    /*---------------------------------------------------------------------------*/
 
     void applyScheduledOperations() noexcept {
       m_mesh.applyScheduledOperations();
@@ -412,7 +481,18 @@ read(const String& filename)
   m_mesh->scheduleAddItems(face_family, reader.faceUids(), face_lids);
   m_mesh->scheduleAddItems(edge_family, reader.edgeUids(), edge_lids);
   // Add connectivities
-//  m_mesh->scheduleAddConnectivity(cell_family,cell_lids,reader.nbNodes(),node_family,reader.cellNodes(),String{"CellToNodes"});
+  m_mesh->scheduleAddConnectivity(cell_family,cell_lids,reader.cellNbNodes(),node_family,reader.cellNodes(),String{"CellToNodes"});
+  m_mesh->scheduleAddConnectivity(cell_family,cell_lids,reader.cellNbFaces(),face_family,reader.cellFaces(),String{"CellToFaces"});
+  m_mesh->scheduleAddConnectivity(face_family,face_lids,reader.faceNbNodes(),node_family,reader.faceNodes(),String{"FaceToNodes"});
+  m_mesh->scheduleAddConnectivity(edge_family,edge_lids,2,node_family,reader.edgeNodes(),String{"EdgeToNodes"});
+  m_mesh->scheduleAddConnectivity(face_family,face_lids,reader.faceNbCells(),cell_family,reader.faceCells(),String{"FaceToCells"});
+  m_mesh->scheduleAddConnectivity(edge_family,edge_lids,reader.edgeNbCells(),cell_family,reader.edgeCells(),String{"EdgeToCells"});
+  m_mesh->scheduleAddConnectivity(edge_family,edge_lids,reader.edgeNbFaces(),face_family,reader.edgeFaces(),String{"EdgeToFaces"});
+  m_mesh->scheduleAddConnectivity(face_family,face_lids,reader.faceNbEdges(),edge_family,reader.faceEdges(),String{"FaceToEdges"});
+  m_mesh->scheduleAddConnectivity(cell_family,cell_lids,reader.cellNbEdges(),edge_family,reader.cellEdges(),String{"CellToEdges"});
+  m_mesh->scheduleAddConnectivity(node_family,node_lids,reader.nodeNbCells(),cell_family,reader.nodeCells(),String{"NodeToCells"});
+  m_mesh->scheduleAddConnectivity(node_family,node_lids,reader.nodeNbFaces(),face_family,reader.nodeFaces(),String{"NodeToFaces"});
+  m_mesh->scheduleAddConnectivity(node_family,node_lids,reader.nodeNbEdges(),edge_family,reader.nodeEdges(),String{"NodeToEdges"});
 //  m_mesh->scheduleAddConnectivity(node_family,node_lids,1,cell_family,
 //                                  Int64UniqueArray{0,0,0,0,0,0},String{"NodeToCells"});
   m_mesh->applyScheduledOperations();
