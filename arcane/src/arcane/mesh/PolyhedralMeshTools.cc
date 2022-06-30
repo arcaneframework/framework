@@ -112,8 +112,15 @@ nodeUids()
     auto* vtk_grid = m_vtk_grid_reader->GetOutput();
     auto nb_nodes = vtk_grid->GetNumberOfPoints();
     m_node_uids.reserve(nb_nodes);
+    m_node_nb_cells.reserve(nb_nodes);
+    m_node_cell_uids.reserve(8 * nb_nodes);
     for (int node_index = 0; node_index < nb_nodes; ++node_index) {
       m_node_uids.push_back(node_index);
+      auto cell_nodes = vtkIdList::New();
+      vtk_grid->GetPointCells(node_index,cell_nodes);
+      Int64Span cell_nodes_view((Int64*)cell_nodes->GetPointer(0),cell_nodes->GetNumberOfIds());
+      m_node_cell_uids.addRange(cell_nodes_view);
+      m_node_nb_cells.push_back((Int32)cell_nodes->GetNumberOfIds());
     }
   }
   return m_node_uids;
@@ -565,6 +572,26 @@ _flattenConnectivity(Connectivity2DArray connected_item_2darray,
       connected_item_array.push_back(connected_item);
     }
   });
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int32ConstArrayView PolyhedralMeshTools::VtkReader::
+nodeNbCells()
+{
+  if (m_node_nb_cells.empty()) nodeUids();
+  return m_node_nb_cells;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int64ConstArrayView PolyhedralMeshTools::VtkReader::
+nodeCells()
+{
+  if (m_node_cell_uids.empty()) nodeUids();
+  return m_node_cell_uids;
 }
 
 /*---------------------------------------------------------------------------*/
