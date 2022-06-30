@@ -266,7 +266,7 @@ CellMaterialVariableScalarRef(const VariableBuildInfo& vb)
 
 template<typename DataType> CellMaterialVariableScalarRef<DataType>::
 CellMaterialVariableScalarRef(const MaterialVariableBuildInfo& vb)
-: m_private_part(PrivatePartType::getVariableReference(vb,MatVarSpace::MaterialAndEnvironment))
+: m_private_part(PrivatePartType::BuilderType::getVariableReference(vb,MatVarSpace::MaterialAndEnvironment))
 , m_value(0)
 {
   _init();
@@ -556,7 +556,7 @@ CellMaterialVariableArrayRef(const VariableBuildInfo& vb)
 // TODO: fusionner avec la version scalaire
 template<typename DataType> CellMaterialVariableArrayRef<DataType>::
 CellMaterialVariableArrayRef(const MaterialVariableBuildInfo& vb)
-: m_private_part(PrivatePartType::getVariableReference(vb,MatVarSpace::MaterialAndEnvironment))
+: m_private_part(PrivatePartType::BuilderType::getVariableReference(vb,MatVarSpace::MaterialAndEnvironment))
 , m_value(nullptr)
 {
   _init();
@@ -606,7 +606,7 @@ refersTo(const CellMaterialVariableArrayRef<DataType>& rhs)
   if (_isRegistered())
     unregisterVariable();
   m_private_part = rhs.m_private_part;
-  m_value = 0;
+  m_value = nullptr;
 
   // Il faut incrémenter manuellement le compteur de référence car normalement
   // cela est fait dans getReference() mais ici on ne l'appelle pas

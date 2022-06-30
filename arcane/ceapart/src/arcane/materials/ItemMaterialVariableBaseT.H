@@ -476,7 +476,7 @@ _fillPartialValuesWithSuperValues(MeshComponentList components)
  * les caractéristiques sont données dans \a v.
  */
 template<typename VariableTrueType> IMeshMaterialVariable*
-VariableReferenceGetter<VariableTrueType>::
+MeshMaterialVariableCommonStaticImpl<VariableTrueType>::
 getReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
 {
   typedef typename VariableTrueType::PrivatePartType PrivatePartType;
@@ -556,27 +556,26 @@ getReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename PrivatePartType> inline PrivatePartType*
-getVariableReference2(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
+template<typename TrueType> MeshMaterialVariableFactoryRegisterer
+MeshMaterialVariableCommonStaticImpl<TrueType>::
+m_auto_registerer1(_autoCreate1,TrueType::BuilderType::_buildVarTypeInfo(MatVarSpace::Environment));
+
+template<typename TrueType> MeshMaterialVariableFactoryRegisterer
+MeshMaterialVariableCommonStaticImpl<TrueType>::
+m_auto_registerer2(_autoCreate2,TrueType::BuilderType::_buildVarTypeInfo(MatVarSpace::MaterialAndEnvironment));
+
+template<typename TrueType> IMeshMaterialVariable*
+MeshMaterialVariableCommonStaticImpl<TrueType>::
+_autoCreate1(const MaterialVariableBuildInfo& v)
 {
-  MaterialVariableTypeInfo x = PrivatePartType::_buildVarTypeInfo(mvs);
+  return getReference(v,MatVarSpace::Environment);
+}
 
-  MeshHandle mesh_handle = v.meshHandle();
-  if (mesh_handle.isNull())
-    ARCANE_FATAL("No mesh handle for material variable");
-
-  IMeshMaterialMng* mat_mng = v.materialMng();
-
-  // TODO: regarder si verrou necessaire
-  if (!mat_mng)
-    mat_mng = IMeshMaterialMng::getReference(mesh_handle,true);
-
-  IMeshMaterialVariableFactoryMng* vm = mat_mng->variableFactoryMng();
-  IMeshMaterialVariable* var = vm->createVariable(x.fullName(),v);
-
-  auto* true_var = dynamic_cast<PrivatePartType*>(var);
-  ARCANE_CHECK_POINTER(true_var);
-  return true_var;
+template<typename TrueType> IMeshMaterialVariable*
+MeshMaterialVariableCommonStaticImpl<TrueType>::
+_autoCreate2(const MaterialVariableBuildInfo& v)
+{
+  return getReference(v,MatVarSpace::MaterialAndEnvironment);
 }
 
 /*---------------------------------------------------------------------------*/

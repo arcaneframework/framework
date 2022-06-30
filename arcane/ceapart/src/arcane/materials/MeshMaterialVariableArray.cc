@@ -36,8 +36,6 @@
 #include "arcane/datatype/DataTypeTraits.h"
 #include "arcane/datatype/DataStorageBuildInfo.h"
 
-#include "arcane/VariableDataTypeTraits.h"
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -345,65 +343,11 @@ MeshMaterialVariableArray(const MaterialVariableBuildInfo& v,PrivatePartType* gl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename ItemType,typename DataType> MeshMaterialVariableFactoryRegisterer
-MeshMaterialVariableArray<ItemType,DataType>::
-m_auto_registerer1(_autoCreate1,ThatInterface::_buildVarTypeInfo(MatVarSpace::Environment));
-
-template<typename ItemType,typename DataType> MeshMaterialVariableFactoryRegisterer
-MeshMaterialVariableArray<ItemType,DataType>::
-m_auto_registerer2(_autoCreate1,ThatInterface::_buildVarTypeInfo(MatVarSpace::MaterialAndEnvironment));
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename ItemType,typename DataType> MaterialVariableTypeInfo
-IMeshMaterialVariableArray<ItemType,DataType>::
-_buildVarTypeInfo(MatVarSpace space)
-{
-  eItemKind ik = ItemTraitsT<ItemType>::kind();
-  eDataType dt = VariableDataTypeTraitsT<DataType>::type();
-  return MaterialVariableTypeInfo(ik,dt,1,space);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename ItemType,typename DataType> IMeshMaterialVariableArray<ItemType,DataType>*
-IMeshMaterialVariableArray<ItemType,DataType>::
-getVariableReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
-{
-  return getVariableReference2<IMeshMaterialVariableArray<ItemType,DataType>>(v,mvs);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename ItemType,typename DataType> IMeshMaterialVariable*
-MeshMaterialVariableArray<ItemType,DataType>::
-_autoCreate1(const MaterialVariableBuildInfo& v)
-{
-  return ReferenceGetter::getReference(v,MatVarSpace::Environment);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename ItemType,typename DataType> IMeshMaterialVariable*
-MeshMaterialVariableArray<ItemType,DataType>::
-_autoCreate2(const MaterialVariableBuildInfo& v)
-{
-  return ReferenceGetter::getReference(v,MatVarSpace::MaterialAndEnvironment);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 #define ARCANE_INSTANTIATE_MAT(type) \
   template class ItemMaterialVariableBase< MaterialVariableArrayTraits<type> >;\
   template class ItemMaterialVariableArray<type>;\
   template class MeshMaterialVariableArray<Cell,type>;\
-  template class IMeshMaterialVariableArray<Cell,type>;\
-  template class VariableReferenceGetter<MeshMaterialVariableArray<Cell,type>>
+  template class MeshMaterialVariableCommonStaticImpl<MeshMaterialVariableArray<Cell,type>>
 
 ARCANE_INSTANTIATE_MAT(Byte);
 ARCANE_INSTANTIATE_MAT(Int16);

@@ -239,6 +239,19 @@ class ARCANE_CORE_EXPORT IMeshMaterialVariable
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe pour gérer la création du type concret de la variable matériaux.
+ */
+template<typename TrueType>
+class MeshMaterialVariableBuildTraits
+{
+ public:
+  static ARCANE_CORE_EXPORT MaterialVariableTypeInfo _buildVarTypeInfo(MatVarSpace space);
+  static ARCANE_CORE_EXPORT TrueType* getVariableReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs);
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 } // End namespace Arcane::Materials
 

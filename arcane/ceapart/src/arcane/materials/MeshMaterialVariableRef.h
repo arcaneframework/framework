@@ -211,7 +211,6 @@ class CellMaterialVariableScalarRef
 {
  public:
 
-  using TruePrivatePartType = MeshMaterialVariableScalar<Cell,DataType>;
   using PrivatePartType = IMeshMaterialVariableScalar<Cell,DataType>;
 
   typedef Cell ItemType;
@@ -365,7 +364,6 @@ class CellMaterialVariableArrayRef
 {
  public:
 
-  using TruePrivatePartType = MeshMaterialVariableArray<Cell,DataType>;
   using PrivatePartType = IMeshMaterialVariableArray<Cell,DataType>;
   using ItemType = Cell;
   using GlobalVariableRefType = MeshVariableArrayRefT<ItemType,DataType>;
