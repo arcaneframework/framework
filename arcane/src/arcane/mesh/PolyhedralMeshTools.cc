@@ -165,6 +165,7 @@ faceUids()
     Int64UniqueArray current_face_nodes, sorted_current_face_nodes;
     current_face_nodes.reserve(10);
     sorted_current_face_nodes.reserve(10);
+    UniqueArray<std::set<Int64>> node_faces(m_node_uids.size());
     auto cell_index = 0;
     auto cell_face_index = 0;
     auto global_face_index = 0;
@@ -182,6 +183,9 @@ faceUids()
         auto is_front_cell = mesh_utils::reorderNodesOfFace(current_face_nodes, sorted_current_face_nodes);
         auto [is_face_found, existing_face_index] = _findFace(sorted_current_face_nodes, m_face_node_uids, m_face_nb_nodes);
         if (!is_face_found) {
+          for (auto node : current_face_nodes) {
+            node_faces[node].insert(face_uid);
+          }
           m_cell_face_uids.push_back(face_uid);
           m_face_uids.push_back(face_uid++); // todo parallel
           m_face_nb_nodes.push_back(current_face_nb_nodes);
@@ -198,6 +202,9 @@ faceUids()
           }
         }
         else {
+          for (auto node : current_face_nodes) {
+            node_faces[node].insert(m_face_uids[existing_face_index]);
+          }
           m_cell_face_uids.push_back(m_face_uids[existing_face_index]);
           m_face_nb_cells[existing_face_index]+=1;
           m_face_uid_indexes[global_face_index] = existing_face_index;
@@ -228,6 +235,9 @@ faceUids()
       }
       cell_face_index += m_cell_nb_faces[m_cell_uids[cell_index]];
     }
+    // fill node_face_uids and node_nb_faces from node_faces (array form [nb_nodes][nb_connected_faces])
+    m_node_nb_faces.resize(m_node_uids.size(),0);
+    _flattenConnectivity(node_faces.constSpan(), m_node_nb_faces, m_node_face_uids);
   }
   std::cout << "================FACE NODES ==============" << std::endl;
   std::copy(m_face_node_uids.begin(), m_face_node_uids.end(), std::ostream_iterator<Int64>(std::cout, " "));
@@ -592,6 +602,26 @@ nodeCells()
 {
   if (m_node_cell_uids.empty()) nodeUids();
   return m_node_cell_uids;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int32ConstArrayView PolyhedralMeshTools::VtkReader::
+nodeNbFaces()
+{
+  if (m_node_nb_faces.empty()) faceUids();
+  return m_node_nb_faces;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int64ConstArrayView PolyhedralMeshTools::VtkReader::
+nodeFaces()
+{
+  if (m_node_face_uids.empty()) faceUids();
+  return m_node_face_uids;
 }
 
 /*---------------------------------------------------------------------------*/
