@@ -1,7 +1,3 @@
-include(${Arcane_SOURCE_DIR}/tools/wrapper/ArcaneSwigUtils.cmake)
-if (NOT ARCANE_HAS_SWIG)
-  return()
-endif()
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -27,7 +23,7 @@ arcane_wrapper_add_swig_target(NAME cea_materials
   INCLUDE_DIRECTORIES ${Arcane_SOURCE_DIR}/tools/wrapper ${ARCANECEA_SRC_PATH}
   )
 
-target_link_libraries(arcane_dotnet_wrapper_cea_materials PUBLIC arcane_materials)
+target_link_libraries(arcane_dotnet_wrapper_cea_materials PUBLIC arcane_core)
 
 # Indique les .i dont dépend ce wrapper
 set_property(TARGET arcane_dotnet_wrapper_cea_materials PROPERTY SWIG_DEPENDS ${ARCANE_SWIG_CEA_MATERIALS_FILES})
