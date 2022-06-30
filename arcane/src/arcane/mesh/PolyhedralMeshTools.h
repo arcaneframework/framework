@@ -85,17 +85,20 @@ namespace PolyhedralMeshTools
     Int32ConstArrayView nodeNbFaces();
     Int64ConstArrayView nodeFaces();
 
+    Int32ConstArrayView nodeNbEdges();
+    Int64ConstArrayView nodeEdges();
+
    private:
     const String& m_filename;
     vtkNew<vtkUnstructuredGridReader> m_vtk_grid_reader;
     Int64UniqueArray m_cell_uids, m_node_uids, m_face_uids, m_edge_uids;
     Int64UniqueArray m_face_node_uids, m_edge_node_uids, m_cell_node_uids;
     Int64UniqueArray m_face_cell_uids, m_edge_cell_uids, m_edge_face_uids;
-    Int64UniqueArray m_cell_face_uids, m_cell_edges_uids, m_face_edge_uids;
-    Int64UniqueArray m_node_cell_uids, m_node_face_uids;
+    Int64UniqueArray m_cell_face_uids, m_cell_edge_uids, m_face_edge_uids;
+    Int64UniqueArray m_node_cell_uids, m_node_face_uids, m_node_edge_uids;
     Int32UniqueArray m_face_nb_nodes, m_cell_nb_nodes, m_face_nb_cells;
     Int32UniqueArray m_edge_nb_cells, m_edge_nb_faces, m_cell_nb_faces;
-    Int32UniqueArray m_node_nb_cells, m_node_nb_faces;
+    Int32UniqueArray m_node_nb_cells, m_node_nb_faces, m_node_nb_edges;
     Int32UniqueArray m_cell_nb_edges, m_face_nb_edges, m_face_uid_indexes;
     Int32UniqueArray m_cell_face_indexes;
 
