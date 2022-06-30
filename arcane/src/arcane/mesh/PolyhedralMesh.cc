@@ -296,6 +296,7 @@ namespace mesh
     {
       // debug
       std::cout << "====================VALIDATE CONNECTIVITY  ==================" << std::endl;
+      std::cout << "== " << connectivity_name << std::endl;
       auto item_index = 0;
       std::cout << "==== nb connected items ====" << std::endl;
       std::copy(nb_connected_items_per_item.begin(), nb_connected_items_per_item.end(), std::ostream_iterator<Int32>(std::cout, " "));
@@ -489,6 +490,7 @@ read(const String& filename)
   m_mesh->scheduleAddConnectivity(edge_family,edge_lids,reader.edgeNbFaces(),face_family,reader.edgeFaces(),String{"EdgeToFaces"});
   m_mesh->scheduleAddConnectivity(face_family,face_lids,reader.faceNbEdges(),edge_family,reader.faceEdges(),String{"FaceToEdges"});
   m_mesh->scheduleAddConnectivity(cell_family,cell_lids,reader.cellNbEdges(),edge_family,reader.cellEdges(),String{"CellToEdges"});
+  m_mesh->scheduleAddConnectivity(node_family,node_lids,reader.nodeNbCells(),cell_family,reader.nodeCells(),String{"NodeToCells"});
 //  m_mesh->scheduleAddConnectivity(node_family,node_lids,1,cell_family,
 //                                  Int64UniqueArray{0,0,0,0,0,0},String{"NodeToCells"});
   m_mesh->applyScheduledOperations();
