@@ -28,6 +28,7 @@ add_subdirectory(services)
 add_subdirectory(hdf5)
 add_subdirectory(launcher)
 add_subdirectory(main)
+add_subdirectory(materials)
 
 # ----------------------------------------------------------------------------
 

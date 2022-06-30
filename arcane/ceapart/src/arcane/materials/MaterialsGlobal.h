@@ -62,39 +62,12 @@ class MeshMaterialVariableSynchronizerList;
 class MeshMaterialVariable;
 class MatVarIndex;
 class IMeshMaterialSynchronizeBuffer;
-class MeshMaterialVariableRef;
 
 template <typename DataType> class ItemMaterialVariableScalar;
 template <typename ItemType,typename DataType> class MeshMaterialVariableScalar;
 template <typename ItemType,typename DataType> class MeshMaterialVariableArray;
-template<typename DataType> class CellMaterialVariableScalarRef;
-
-template<typename ItemType,typename DataType>
-class IMeshMaterialVariableScalar;
-template<typename ItemType,typename DataType>
-class IMeshMaterialVariableArray;
 
 typedef IMeshMaterialVariable* (*MeshMaterialVariableFactoryVariableRefCreateFunc)(const MaterialVariableBuildInfo& vb);
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-typedef ComponentItemInternal* ComponentItemInternalPtr;
-typedef IMeshComponent* IMeshComponentPtr;
-typedef IMeshMaterial* IMeshMaterialPtr;
-typedef IMeshEnvironment* IMeshEnvironmentPtr;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-//! Liste de composants multi-matériaux du maillage.
-typedef ConstArrayView<IMeshComponent*> MeshComponentListView;
-
-//! Liste de milieux du maillage.
-typedef ConstArrayView<IMeshEnvironment*> MeshEnvironmentListView;
-
-//! Liste de matériaux du maillage.
-typedef ConstArrayView<IMeshMaterial*> MeshMaterialListView;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

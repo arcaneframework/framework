@@ -67,6 +67,27 @@ class IMeshMaterialVariableFactory;
 class IMeshMaterialVariable;
 class MaterialVariableBuildInfo;
 class MaterialVariableTypeInfo;
+class MeshMaterialVariableRef;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+typedef ComponentItemInternal* ComponentItemInternalPtr;
+typedef IMeshComponent* IMeshComponentPtr;
+typedef IMeshMaterial* IMeshMaterialPtr;
+typedef IMeshEnvironment* IMeshEnvironmentPtr;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Liste de composants multi-matériaux du maillage.
+typedef ConstArrayView<IMeshComponent*> MeshComponentListView;
+
+//! Liste de milieux du maillage.
+typedef ConstArrayView<IMeshEnvironment*> MeshEnvironmentListView;
+
+//! Liste de matériaux du maillage.
+typedef ConstArrayView<IMeshMaterial*> MeshMaterialListView;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -85,6 +106,13 @@ typedef ComponentItemVectorView ComponentCellVectorView;
 
 //! Liste de composants multi-matériaux du maillage.
 typedef ConstArrayView<IMeshComponent*> MeshComponentList;
+
+template<typename DataType> class CellMaterialVariableScalarRef;
+
+template<typename ItemType,typename DataType>
+class IMeshMaterialVariableScalar;
+template<typename ItemType,typename DataType>
+class IMeshMaterialVariableArray;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

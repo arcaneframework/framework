@@ -110,6 +110,10 @@ set( ARCANE_SOURCES
    core/materials/MaterialVariableBuildInfo.h
    core/materials/MaterialVariableTypeInfo.cc
    core/materials/MaterialVariableTypeInfo.h
+   core/materials/MeshMaterialVariableRef.cc
+   core/materials/MeshMaterialVariableRef.h
+   core/materials/MeshMaterialVariableComputeFunction.h
+   core/materials/IMeshMaterialVariableComputeFunction.h
 
    Data.cc
    DataTypeDispatchingDataVisitor.cc
