@@ -492,6 +492,7 @@ read(const String& filename)
   m_mesh->scheduleAddConnectivity(cell_family,cell_lids,reader.cellNbEdges(),edge_family,reader.cellEdges(),String{"CellToEdges"});
   m_mesh->scheduleAddConnectivity(node_family,node_lids,reader.nodeNbCells(),cell_family,reader.nodeCells(),String{"NodeToCells"});
   m_mesh->scheduleAddConnectivity(node_family,node_lids,reader.nodeNbFaces(),face_family,reader.nodeFaces(),String{"NodeToFaces"});
+  m_mesh->scheduleAddConnectivity(node_family,node_lids,reader.nodeNbEdges(),edge_family,reader.nodeEdges(),String{"NodeToEdges"});
 //  m_mesh->scheduleAddConnectivity(node_family,node_lids,1,cell_family,
 //                                  Int64UniqueArray{0,0,0,0,0,0},String{"NodeToCells"});
   m_mesh->applyScheduledOperations();
