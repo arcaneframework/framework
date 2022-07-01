@@ -48,12 +48,22 @@ class IRandomNumberGenerator
   virtual Int64 seed() = 0;
 
   /**
+   * @brief Méthode permettant de savoir si les sauts sont permis sur le
+   * générateur de graines.
+   * 
+   * @return true Si oui.
+   * @return false Si non.
+   */
+  virtual bool isLeapSeedSupported() = 0;
+
+  /**
    * @brief Méthode permettant de générer une graine "enfant" à partir d'une
    * graine "parent".
    * 
+   * @param leap Le saut à effectuer (0 = la graine n+1+0 / 1 = la graine n+1+1).
    * @return Int64 La nouvelle graine généré à partir de la graine en mémoire.
    */
-  virtual Int64 generateRandomSeed() = 0;
+  virtual Int64 generateRandomSeed(Integer leap = 0) = 0;
 
   /**
    * @brief Méthode permettant de générer une graine "enfant" à partir d'une
@@ -62,17 +72,28 @@ class IRandomNumberGenerator
    * Cette méthode n'utilise pas la graine en mémoire.
    * 
    * @param parent_seed La graine "parent".
+   * @param leap Le saut à effectuer (0 = la graine n+1+0 / 1 = la graine n+1+1).
    * @return Int64 La nouvelle graine généré à partir de la graine "parent".
    */
-  virtual Int64 generateRandomSeed(Int64* parent_seed) = 0;
+  virtual Int64 generateRandomSeed(Int64* parent_seed, Integer leap = 0) = 0;
+
+  /**
+   * @brief Méthode permettant de savoir si les sauts sont permis sur le
+   * générateur de nombres.
+   * 
+   * @return true Si oui.
+   * @return false Si non.
+   */
+  virtual bool isLeapNumberSupported() = 0;
 
   /**
    * @brief Méthode permettant de générer un nombre aléatoire avec
    * la graine en mémoire.
    * 
+   * @param leap Le saut à effectuer (0 = le nombre n+1+0 / 1 = le nombre n+1+1).
    * @return Real Le nombre généré (entre 0 et 1).
    */
-  virtual Real generateRandomNumber() = 0;
+  virtual Real generateRandomNumber(Integer leap = 0) = 0;
 
   /**
    * @brief Méthode permettant de générer un nombre aléatoire avec
@@ -81,9 +102,10 @@ class IRandomNumberGenerator
    * Cette méthode n'utilise pas la graine en mémoire.
    * 
    * @param seed La graine.
+   * @param leap Le saut à effectuer (0 = le nombre n+1+0 / 1 = le nombre n+1+1).
    * @return Real Le nombre généré (entre 0 et 1).
    */
-  virtual Real generateRandomNumber(Int64* seed) = 0;
+  virtual Real generateRandomNumber(Int64* seed, Integer leap = 0) = 0;
 };
 
 #endif

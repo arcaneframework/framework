@@ -5,10 +5,15 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PDESRandomNumberGeneratorService.hh                         (C) 2000-2022 */
+/* PDESRandomNumberGeneratorService.cc                         (C) 2000-2022 */
 /*                                                                           */
-/* Implémentation d'un générateur de nombres aléatoires.                     */
-/* Basé sur le générateur de Quicksilver (LLNL).                             */
+/* Implémentation d'un générateur de nombres aléatoires LCG.                 */
+/* Inspiré du générateur de Quicksilver (LLNL) et des pages 302-304          */
+/* du livre :                                                                */
+/*                                                                           */
+/*   Numerical Recipes in C                                                  */
+/*   The Art of Scientific Computing                                         */
+/*   Second Edition                                                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -36,17 +41,20 @@ class PDESRandomNumberGeneratorService
 
   Int64 seed() override;
 
-  Int64 generateRandomSeed() override;
-  Int64 generateRandomSeed(Int64* parent_seed) override;
+  bool isLeapSeedSupported() override {return true;};
+  Int64 generateRandomSeed(Integer leap) override;
+  Int64 generateRandomSeed(Int64* parent_seed, Integer leap) override;
 
-  Real generateRandomNumber() override;
-  Real generateRandomNumber(Int64* seed) override;
+  bool isLeapNumberSupported() override { return true; };
+  Real generateRandomNumber(Integer leap) override;
+  Real generateRandomNumber(Int64* seed, Integer leap) override;
 
  protected:
-  void _breakupUInt64(uint64_t uint64_in, uint32_t& front_bits, uint32_t& back_bits);
+  void _breakupUInt64(uint64_t uint64_in, uint32_t* front_bits, uint32_t* back_bits);
   uint64_t _reconstructUInt64(uint32_t front_bits, uint32_t back_bits);
-  void _psdes(uint32_t& lword, uint32_t& irword);
+  void _psdes(uint32_t* lword, uint32_t* irword);
   uint64_t _hashState(uint64_t initial_number);
+  Real _ran4(Int64* seed, Integer leap);
 
  protected:
   Int64 m_seed;

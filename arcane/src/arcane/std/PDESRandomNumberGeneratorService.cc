@@ -7,8 +7,13 @@
 /*---------------------------------------------------------------------------*/
 /* PDESRandomNumberGeneratorService.cc                         (C) 2000-2022 */
 /*                                                                           */
-/* Implémentation d'un générateur de nombres aléatoires.                     */
-/* Basé sur le générateur de Quicksilver (LLNL).                             */
+/* Implémentation d'un générateur de nombres aléatoires LCG.                 */
+/* Inspiré du générateur de Quicksilver (LLNL) et des pages 302-304          */
+/* du livre :                                                                */
+/*                                                                           */
+/*   Numerical Recipes in C                                                  */
+/*   The Art of Scientific Computing                                         */
+/*   Second Edition                                                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -26,7 +31,7 @@ initSeed()
     m_seed = options()->getInitialSeed();
   }
   else {
-    m_seed = 1029384756;
+    m_seed = 4294967297;
   }
 }
 
@@ -43,44 +48,37 @@ seed()
 }
 
 Int64 PDESRandomNumberGeneratorService::
-generateRandomSeed()
+generateRandomSeed(Integer leap)
 {
-  Int64 spawned_seed = _hashState(m_seed);
-  // Bump the parent seed as that is what is expected from the interface.
-  generateRandomNumber();
+  Int64 spawned_seed;
+  for(Integer i = 0; i < leap+1; i++){
+    spawned_seed = _hashState(m_seed);
+    generateRandomNumber(0);
+  }
   return spawned_seed;
 }
 
 Int64 PDESRandomNumberGeneratorService::
-generateRandomSeed(Int64* parent_seed)
+generateRandomSeed(Int64* parent_seed, Integer leap)
 {
-  Int64 spawned_seed = _hashState(*parent_seed);
-  generateRandomNumber(parent_seed);
+  Int64 spawned_seed;
+  for(Integer i = 0; i < leap+1; i++){
+    spawned_seed = _hashState(*parent_seed);
+    generateRandomNumber(parent_seed, 0);
+  }
   return spawned_seed;
 }
 
 Real PDESRandomNumberGeneratorService::
-generateRandomNumber()
+generateRandomNumber(Integer leap)
 {
-  // Reset the state from the previous value.
-  m_seed = 2862933555777941757ULL * (uint64_t)(m_seed) + 3037000493ULL;
-  // Map the int state in (0,2**64) to double (0,1)
-  // by multiplying by
-  // 1/(2**64 - 1) = 1/18446744073709551615.
-  volatile Real fin = 5.4210108624275222e-20 * (uint64_t)(m_seed);
-  return fin;
+  return _ran4(&m_seed, leap);
 }
 
 Real PDESRandomNumberGeneratorService::
-generateRandomNumber(Int64* seed)
+generateRandomNumber(Int64* seed, Integer leap)
 {
-  // Reset the state from the previous value.
-  *seed = 2862933555777941757ULL * (uint64_t)(*seed) + 3037000493ULL;
-  // Map the int state in (0,2**64) to double (0,1)
-  // by multiplying by
-  // 1/(2**64 - 1) = 1/18446744073709551615.
-  volatile Real fin = 5.4210108624275222e-20 * (uint64_t)(*seed);
-  return fin;
+  return _ran4(seed, leap);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -94,10 +92,10 @@ generateRandomNumber(Int64* seed)
  * @param back_bits Les 32 bits de poids faible.
  */
 void PDESRandomNumberGeneratorService::
-_breakupUInt64(uint64_t uint64_in, uint32_t& front_bits, uint32_t& back_bits)
+_breakupUInt64(uint64_t uint64_in, uint32_t* front_bits, uint32_t* back_bits)
 {
-  front_bits = static_cast<uint32_t>(uint64_in >> 32);
-  back_bits = static_cast<uint32_t>(uint64_in & 0xffffffff);
+  *front_bits = static_cast<uint32_t>(uint64_in >> 32);
+  *back_bits = static_cast<uint32_t>(uint64_in & 0xffffffff);
 }
 
 /**
@@ -130,40 +128,34 @@ _reconstructUInt64(uint32_t front_bits, uint32_t back_bits)
  * The Art of Scientific Computing
  * Second Edition
  * 
- * Pages 302-303
- * 
- * (Mais avec 2 itérations au lieu de 4)
+ * (Pages 302-303)
  * 
  * @param lword Moitié de gauche.
  * @param irword Moitié de droite.
  */
 void PDESRandomNumberGeneratorService::
-_psdes(uint32_t& lword, uint32_t& irword)
+_psdes(uint32_t* lword, uint32_t* irword)
 {
-  // This random number generator assumes that type uint32_t is a 32 bit int
-  // = 1/2 of a 64 bit int. The sizeof operator returns the size in bytes = 8
-  // bits.
-
-  const int NITER = 2;
+  const int NITER = 4;
   const uint32_t c1[] = { 0xbaa96887L, 0x1e17d32cL, 0x03bcdc3cL, 0x0f33d1b2L };
   const uint32_t c2[] = { 0x4b0f3b58L, 0xe874f0c3L, 0x6955c5a6L, 0x55a7ca46L };
 
-  uint32_t ia, ib, iswap, itmph = 0, itmpl = 0;
+  uint32_t ia, ib, iswap, itmph, itmpl;
 
   for (int i = 0; i < NITER; i++) {
-    ia = (iswap = irword) ^ c1[i];
+    ia = (iswap = (*irword)) ^ c1[i];
     itmpl = ia & 0xffff;
     itmph = ia >> 16;
     ib = itmpl * itmpl + ~(itmph * itmph);
 
-    irword = lword ^ (((ia = (ib >> 16) | ((ib & 0xffff) << 16)) ^ c2[i]) + itmpl * itmph);
+    *irword = (*lword) ^ (((ia = (ib >> 16) | ((ib & 0xffff) << 16)) ^ c2[i]) + itmpl * itmph);
 
-    lword = iswap;
+    *lword = iswap;
   }
 }
 
 /**
- * @brief Méthode permettant de générer une graine avec l'algorithme
+ * @brief Méthode permettant de générer une nouvelle graine avec l'algorithme
  * pseudo-DES.
  * 
  * @param initial_number La graine "parent".
@@ -172,14 +164,42 @@ _psdes(uint32_t& lword, uint32_t& irword)
 uint64_t PDESRandomNumberGeneratorService::
 _hashState(uint64_t initial_number)
 {
-  // break initial number apart into 2 32 bit ints
   uint32_t front_bits, back_bits;
-  _breakupUInt64(initial_number, front_bits, back_bits);
+  _breakupUInt64(initial_number, &front_bits, &back_bits);
 
-  // hash the bits
-  _psdes(front_bits, back_bits);
+  _psdes(&front_bits, &back_bits);
 
-  // put the hashed parts together into 1 64 bit int
   uint64_t fin = _reconstructUInt64(front_bits, back_bits);
+  return fin;
+}
+
+/**
+ * @brief Méthode permettant de générer des nombres pseudo-aléatoire
+ * à partir d'une graine.
+ * 
+ * Inspiré de l'algorithme ran4 du livre :
+ * Numerical Recipes in C
+ * The Art of Scientific Computing
+ * Second Edition
+ * 
+ * (Pages 303-304)
+ * 
+ * @param seed La graine.
+ * @param leap Le saut.
+ */
+Real PDESRandomNumberGeneratorService::
+_ran4(Int64* seed, Integer leap)
+{
+  uint32_t front_bits, back_bits, irword, lword;
+  _breakupUInt64((uint64_t)(*seed), &front_bits, &back_bits);
+  front_bits += leap;
+
+  irword = front_bits;
+  lword = back_bits;
+  _psdes(&lword, &irword);
+
+  *seed = (Int64)_reconstructUInt64(++front_bits, back_bits);
+
+  volatile Real fin = 5.4210108624275222e-20 * (Real)_reconstructUInt64(lword, irword);
   return fin;
 }

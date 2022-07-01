@@ -11,7 +11,7 @@
   </variables>
 
 	<options>
-    <simple name="initialSeed" type="int64" default="1029384756">
+    <simple name="initialSeed" type="int64" default="4294967297">
       <description>
         Graine initiale
       </description>
