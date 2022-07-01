@@ -49,7 +49,6 @@ endif()
 
 add_subdirectory(src/arcane/cartesianmesh)
 add_subdirectory(src/arcane/cea)
-add_subdirectory(src/arcane/materials)
 add_subdirectory(src/arcane/geometric)
 add_subdirectory(src/arcane/meshutils)
 add_subdirectory(src/arcane/hyoda)

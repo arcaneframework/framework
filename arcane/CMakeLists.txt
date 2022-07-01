@@ -909,6 +909,12 @@ add_subdirectory(src/arcane/tests)
 add_subdirectory(samples_build)
 
 # ----------------------------------------------------------------------------
+# Ajoute le répertoire matériaux.
+# Pour l'instant on le fait après les tests pour cohérence avec l'existant
+# car avant ce répertoire était dans ceapart.
+add_subdirectory(src/arcane/materials)
+
+# ----------------------------------------------------------------------------
 # Ajoute les sources spécifiques CEA.
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/ceapart/Arcane.cmake)
