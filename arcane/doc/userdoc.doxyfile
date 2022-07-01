@@ -607,7 +607,36 @@ WARN_LOGFILE           =
 # directories like "/usr/src/myproject". Separate the files or directories
 # with spaces.
 
-INPUT = @ARCANE_SRC_PATH@/arcane @ARCANE_SRC_PATH@/arcane/utils @ARCANE_SRC_PATH@/arcane/datatype @ARCANE_SRC_PATH@/arcane/parallel @ARCANE_SRC_PATH@/arcane/geometry @ARCANE_SRC_PATH@/arcane/accelerator/core @ARCANE_SRC_PATH@/arcane/accelerator @ARCANE_SRC_PATH@/arcane/launcher @ARCANESRCROOT@/doc @ARCANESRCROOT@/doc/user @ARCANESRCROOT@/doc/common @ARCANESRCROOT@/tutorial @ARCANESRCROOT@/tutorial/microhydro @ARCANESRCROOT@/tutorial/poisson @ARCANESRCROOT@/tutorial/helloworld @DOC_OUTPUT_DIR@/share/axl/dox @ARCANE_ADDITIONAL_DOC_PATH@ @Arccore_ROOT@/src/base/arccore/base @Arccore_ROOT@/src/collections/arccore/collections @Arccore_ROOT@/src/concurrency/arccore/concurrency @Arccore_ROOT@/src/trace/arccore/trace @Arccore_ROOT@/src/message_passing/arccore/message_passing @Arccore_ROOT@/src/message_passing_mpi/arccore/message_passing_mpi @Arccore_ROOT@/src/serialize/arccore/serialize @ARCANE_CEA_SOURCE_PATH@/src/arcane/cea @ARCANE_CEA_SOURCE_PATH@/src/arcane/cartesianmesh @ARCANE_CEA_SOURCE_PATH@/src/arcane/materials @ARCANE_CEA_SOURCE_PATH@/src/arcane/geometric @ARCANE_CEA_SOURCE_PATH@/doc
+INPUT = @ARCANE_SRC_PATH@/arcane \
+        @ARCANE_SRC_PATH@/arcane/utils \
+        @ARCANE_SRC_PATH@/arcane/datatype \
+        @ARCANE_SRC_PATH@/arcane/parallel \
+        @ARCANE_SRC_PATH@/arcane/geometry \
+        @ARCANE_SRC_PATH@/arcane/accelerator/core \
+        @ARCANE_SRC_PATH@/arcane/accelerator \
+        @ARCANE_SRC_PATH@/arcane/launcher \
+        @ARCANE_SRC_PATH@/arcane/core/materials \
+        @ARCANE_SRC_PATH@/arcane/materials \
+        @ARCANESRCROOT@/doc \
+        @ARCANESRCROOT@/doc/user \
+        @ARCANESRCROOT@/doc/common \
+        @ARCANESRCROOT@/tutorial \
+        @ARCANESRCROOT@/tutorial/microhydro \
+        @ARCANESRCROOT@/tutorial/poisson \
+        @ARCANESRCROOT@/tutorial/helloworld \
+        @DOC_OUTPUT_DIR@/share/axl/dox \
+        @ARCANE_ADDITIONAL_DOC_PATH@ \
+        @Arccore_ROOT@/src/base/arccore/base \
+        @Arccore_ROOT@/src/collections/arccore/collections \
+        @Arccore_ROOT@/src/concurrency/arccore/concurrency \
+        @Arccore_ROOT@/src/trace/arccore/trace \
+        @Arccore_ROOT@/src/message_passing/arccore/message_passing \
+        @Arccore_ROOT@/src/message_passing_mpi/arccore/message_passing_mpi \
+        @Arccore_ROOT@/src/serialize/arccore/serialize \
+        @ARCANE_CEA_SOURCE_PATH@/src/arcane/cea \
+        @ARCANE_CEA_SOURCE_PATH@/src/arcane/cartesianmesh \
+        @ARCANE_CEA_SOURCE_PATH@/src/arcane/geometric \
+        @ARCANE_CEA_SOURCE_PATH@/doc
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding, which is
