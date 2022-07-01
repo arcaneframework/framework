@@ -45,7 +45,7 @@ class PDESRandomNumberGeneratorService
  protected:
   void _breakupUInt64(uint64_t uint64_in, uint32_t& front_bits, uint32_t& back_bits);
   uint64_t _reconstructUInt64(uint32_t front_bits, uint32_t back_bits);
-  void _pseudoDES(uint32_t& lword, uint32_t& irword);
+  void _psdes(uint32_t& lword, uint32_t& irword);
   uint64_t _hashState(uint64_t initial_number);
 
  protected:

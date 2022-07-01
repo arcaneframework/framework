@@ -124,13 +124,21 @@ _reconstructUInt64(uint32_t front_bits, uint32_t back_bits)
   return reconstructed;
 }
 
-// Function sed to hash a 64 bit int into another, unrelated one.  It
-// does this in two 32 bit chuncks. This function uses the algorithm
-// from Numerical Recipies in C, 2nd edition: psdes, p. 302.  This is
-// used to make 64 bit numbers for use as initial states for the 64
-// bit lcg random number generator.
+/**
+ * @brief Algorithme Pseudo-DES du livre :
+ * Numerical Recipes in C
+ * The Art of Scientific Computing
+ * Second Edition
+ * 
+ * Pages 302-303
+ * 
+ * (Mais avec 2 itérations au lieu de 4)
+ * 
+ * @param lword Moitié de gauche.
+ * @param irword Moitié de droite.
+ */
 void PDESRandomNumberGeneratorService::
-_pseudoDES(uint32_t& lword, uint32_t& irword)
+_psdes(uint32_t& lword, uint32_t& irword)
 {
   // This random number generator assumes that type uint32_t is a 32 bit int
   // = 1/2 of a 64 bit int. The sizeof operator returns the size in bytes = 8
@@ -154,7 +162,13 @@ _pseudoDES(uint32_t& lword, uint32_t& irword)
   }
 }
 
-// Function used to hash a 64 bit int to get an initial state.
+/**
+ * @brief Méthode permettant de générer une graine avec l'algorithme
+ * pseudo-DES.
+ * 
+ * @param initial_number La graine "parent".
+ * @return uint64_t La graine "enfant".
+ */
 uint64_t PDESRandomNumberGeneratorService::
 _hashState(uint64_t initial_number)
 {
@@ -163,7 +177,7 @@ _hashState(uint64_t initial_number)
   _breakupUInt64(initial_number, front_bits, back_bits);
 
   // hash the bits
-  _pseudoDES(front_bits, back_bits);
+  _psdes(front_bits, back_bits);
 
   // put the hashed parts together into 1 64 bit int
   uint64_t fin = _reconstructUInt64(front_bits, back_bits);

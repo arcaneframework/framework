@@ -13,8 +13,8 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/BasicUnitTest.h"
-#include "arcane/tests/ArcaneTestGlobal.h"
 #include "arcane/IRandomNumberGenerator.h"
+#include "arcane/tests/ArcaneTestGlobal.h"
 
 #include "arcane/tests/PDESRandomNumberGeneratorUnitTest_axl.h"
 
@@ -35,11 +35,11 @@ class PDESRandomNumberGeneratorUnitTest
 : public ArcanePDESRandomNumberGeneratorUnitTestObject
 {
 
-public:
-
+ public:
   PDESRandomNumberGeneratorUnitTest(const ServiceBuildInfo& sb)
-    : ArcanePDESRandomNumberGeneratorUnitTestObject(sb) {}
-  
+  : ArcanePDESRandomNumberGeneratorUnitTestObject(sb)
+  {}
+
   ~PDESRandomNumberGeneratorUnitTest() {}
 
  public:
@@ -47,24 +47,22 @@ public:
   void executeTest() override;
 
  private:
-  Real testSameNumber1();
-  Real testSameNumber2(Int64* seed);
+  void hardcodedValues();
+  void mcPi();
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_PDESRANDOMNUMBERGENERATORUNITTEST(PDESRandomNumberGeneratorUnitTest,PDESRandomNumberGeneratorUnitTest);
+ARCANE_REGISTER_SERVICE_PDESRANDOMNUMBERGENERATORUNITTEST(PDESRandomNumberGeneratorUnitTest, PDESRandomNumberGeneratorUnitTest);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void PDESRandomNumberGeneratorUnitTest::
 initializeTest()
-{ 
+{
   info() << "init test";
-  IRandomNumberGenerator* rng = options()->getPDESRandomNumberGenerator();
-  rng->initSeed(1234);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -74,53 +72,75 @@ void PDESRandomNumberGeneratorUnitTest::
 executeTest()
 {
   info() << "execute test";
+  hardcodedValues();
+  mcPi();
+}
 
-  RealUniqueArray hardcoded_val{
-    0.516725, 0.951576, 0.214017, 0.113452, 0.136498, 0.297928, 0.848614,
-    0.693764, 0.0341259, 0.335914, 0.52437, 0.076249, 0.195428, 0.385534,
-    0.808555, 0.790372, 0.513851, 0.228777, 0.940043, 0.95412, 0.974406,
-    0.454503, 0.982343, 0.182935, 0.414793, 0.717564, 0.721307, 0.538425,
-    0.769439, 0.338561, 0.252165, 0.781353, 0.243085, 0.897954, 0.630723,
-    0.203992, 0.892035, 0.410771, 0.835602, 0.984837, 0.467565, 0.115473,
-    0.57945, 0.36899, 0.294814, 0.51338, 0.912344, 0.883036, 0.422084,
-    0.00667469, 0.225418, 0.944801, 0.0627036, 0.158594, 0.172918, 0.275475,
-    0.663461, 0.0480546, 0.749866, 0.920464, 0.350292, 0.405152, 0.122304,
-    0.242838, 0.256839, 0.597857, 0.833907, 0.262299, 0.823824, 0.821539,
-    0.789311, 0.325754, 0.0626824, 0.958881, 0.753192, 0.062305, 0.774736,
-    0.186629, 0.826519, 0.706924, 0.294629, 0.78588, 0.652581, 0.584414,
-    0.0227777, 0.56788, 0.831793, 0.532689, 0.14504, 0.327888, 0.0777679,
-    0.722275, 0.785179, 0.889842, 0.297335, 0.746968, 0.607782, 0.831934,
-    0.688667, 0.945306 };
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void PDESRandomNumberGeneratorUnitTest::
+hardcodedValues()
+{
+  RealUniqueArray hardcoded_vals{
+    0.516724778985669, 0.951575639462459, 0.214017442113625, 0.113452215466282, 0.136497679147474,
+    0.297928307979142, 0.848613773679716, 0.69376417765678, 0.0341259343774032, 0.335914134927294,
+    0.524369718341628, 0.0762489679450824, 0.195427668505095, 0.385533618754308, 0.808555203505577,
+    0.790372404179435, 0.513851356509879, 0.228776522421968, 0.9400429289383, 0.954120189848261,
+    0.974406265969566, 0.45450345475566, 0.982343054233386, 0.182934571343698, 0.414792727867528,
+    0.717564320222172, 0.721306926629546, 0.538424576724415, 0.769439219595771, 0.338561108169688,
+    0.252165243769624, 0.781352573121329, 0.243084625150057, 0.897954066508524, 0.630722828666102,
+    0.203992458549114, 0.89203488864855, 0.410770827095091, 0.835602077706583, 0.984837206954162,
+    0.467565379201215, 0.115473331360884, 0.579450164504076, 0.368990379360349, 0.294813738611727,
+    0.51337952908197, 0.91234376861166, 0.883035874719679, 0.422083838836506, 0.00667469376764362,
+    0.225417513283183, 0.944801292413933, 0.0627035634504842, 0.158594485189633, 0.172917887645002,
+    0.275475287273151, 0.663461022488118, 0.0480545682217666, 0.749866099266963, 0.92046420814911,
+    0.350291875641266, 0.405152262662532, 0.122304154890321, 0.242838342533977, 0.256838876882546,
+    0.597856846448952, 0.833906647392693, 0.262299087091481, 0.823823607111515, 0.821538592523385,
+    0.789310819432975, 0.325753562891748, 0.0626824027750862, 0.958881320190016, 0.753191869040414,
+    0.0623050461598611, 0.774735932039137, 0.186628521981319, 0.826519145858744, 0.706924328983029,
+    0.294628846858932, 0.785879742419044, 0.652581085031376, 0.584413789803133, 0.0227776700970457,
+    0.567879926605452, 0.831792842311932, 0.532689488124983, 0.145039682868574, 0.327888357350779,
+    0.0777678774172561, 0.722274800839576, 0.785179464589921, 0.889841618525496, 0.297335112128558,
+    0.74696807012906, 0.607782493880916, 0.83193419325477, 0.688666816283652, 0.945306412421895
+  };
 
   IRandomNumberGenerator* rng = options()->getPDESRandomNumberGenerator();
+  rng->initSeed(1234);
   Int64 initial_seed = 1234;
-  for(Integer i = 0; i < 100; i++){
+  for (Integer i = 0; i < hardcoded_vals.size(); i++) {
     Real val1 = rng->generateRandomNumber();
     Real val2 = rng->generateRandomNumber(&initial_seed);
-    if(val1 != val2) ARCANE_FATAL("[1] Valeurs differentes.");
-    if((Integer)(hardcoded_val[i]*10000) != (Integer)(val1*10000)) ARCANE_FATAL("[2] Valeurs differentes.");
+    if (val1 != val2)
+      ARCANE_FATAL("[1] Valeurs differentes.");
+    if ((Integer)(hardcoded_vals[i] * 1e9) != (Integer)(val1 * 1e9))
+      ARCANE_FATAL("[2] Valeurs differentes.");
   }
 }
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Real PDESRandomNumberGeneratorUnitTest::
-testSameNumber1()
+void PDESRandomNumberGeneratorUnitTest::
+mcPi()
 {
+  IRandomNumberGenerator* rng = options()->getPDESRandomNumberGenerator();
+  rng->initSeed();
 
-}
+  const Integer nb_iter(10000);
+  Real sum(0.);
 
-Real PDESRandomNumberGeneratorUnitTest::
-testSameNumber2(Int64* seed)
-{
-
+  for (Integer i = 0; i < nb_iter; i++) {
+    Real2 xy(rng->generateRandomNumber(), rng->generateRandomNumber());
+    if (xy.squareNormL2() < 1)
+      sum++;
+  }
+  Real estim = 4 * sum / nb_iter;
+  info() << "Pi ~= " << estim;
+  if (estim < 3.00 || estim > 3.50)
+    ARCANE_FATAL("[3] Pi.");
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-}
+} // namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
