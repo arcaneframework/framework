@@ -35,6 +35,10 @@
       <userclass>User</userclass>
     </simple>
 
+    <simple name="generate-sod-groups" type="bool" default="false">
+      <description>Vrai si on génère les groupes pour un cas test de sod (interne à Arcane)</description>
+    </simple>
+
     <simple name="face-numbering-version" type="integer" default="1">
       <description>
         Version de l'algorithme pour la numérotation des faces. La

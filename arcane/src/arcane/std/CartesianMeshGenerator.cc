@@ -975,6 +975,7 @@ class Cartesian2DMeshGenerator
     Real2 origin = options()->origin;
     m_build_info.m_origine.x = origin.x;
     m_build_info.m_origine.y = origin.y;
+    m_build_info.m_is_generate_sod_groups = options()->generateSodGroups();
     m_build_info.m_face_numbering_version = options()->faceNumberingVersion();
 
     for( auto& o : options()->x() ){
