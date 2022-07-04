@@ -32,11 +32,11 @@ namespace Arcane::Materials
  * \brief Interface d'accès pour CellMaterialVariableScalarRef.
  */
 template<typename ItemType,typename DataType>
-class IMeshMaterialVariableScalar
+class IScalarMeshMaterialVariable
 {
  public:
 
-  using ThatInterface = IMeshMaterialVariableScalar<ItemType,DataType>;
+  using ThatInterface = IScalarMeshMaterialVariable<ItemType,DataType>;
   using ItemTypeType = ItemType;
   using DataTypeType = DataType;
   using VariableRefType = MeshVariableScalarRefT<ItemType,DataType>;
@@ -45,7 +45,7 @@ class IMeshMaterialVariableScalar
 
  public:
 
-  virtual ~IMeshMaterialVariableScalar() = default;
+  virtual ~IScalarMeshMaterialVariable() = default;
 
  public:
 

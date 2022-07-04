@@ -440,12 +440,12 @@ class ItemMaterialVariableScalar
 template<typename ItemType,typename DataType>
 class MeshMaterialVariableScalar
 : public ItemMaterialVariableScalar<DataType>
-, public IMeshMaterialVariableScalar<ItemType,DataType>
+, public IScalarMeshMaterialVariable<ItemType,DataType>
 {
  public:
 	
   using ThatClass = MeshMaterialVariableScalar<ItemType,DataType>;
-  using ThatInterface = IMeshMaterialVariableScalar<ItemType,DataType>;
+  using ThatInterface = IScalarMeshMaterialVariable<ItemType,DataType>;
   using BuilderType = typename ThatInterface::BuilderType;
   using StaticImpl = MeshMaterialVariableCommonStaticImpl<ThatClass>;
   using ItemTypeTemplate = ItemType;
@@ -586,12 +586,12 @@ class ItemMaterialVariableArray
 template<typename ItemType,typename DataType>
 class MeshMaterialVariableArray
 : public ItemMaterialVariableArray<DataType>
-, public IMeshMaterialVariableArray<ItemType,DataType>
+, public IArrayMeshMaterialVariable<ItemType,DataType>
 {
  public:
 
   using ThatClass = MeshMaterialVariableArray<ItemType,DataType>;
-  using ThatInterface = IMeshMaterialVariableArray<ItemType,DataType>;
+  using ThatInterface = IArrayMeshMaterialVariable<ItemType,DataType>;
   using BuilderType = typename ThatInterface::BuilderType;
   using StaticImpl = MeshMaterialVariableCommonStaticImpl<ThatClass>;
   typedef ItemType ItemTypeTemplate;
