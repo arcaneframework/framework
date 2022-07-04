@@ -49,7 +49,6 @@ class IScalarMeshMaterialVariable
 
  public:
 
-  virtual ArrayView<DataType>* valuesView() = 0;
   virtual ArrayView<ArrayView<DataType>> _internalFullValuesView() = 0;
   virtual void fillFromArray(IMeshMaterial* mat,ConstArrayView<DataType> values) =0;
   virtual void fillFromArray(IMeshMaterial* mat,ConstArrayView<DataType> values,Int32ConstArrayView indexes) =0;

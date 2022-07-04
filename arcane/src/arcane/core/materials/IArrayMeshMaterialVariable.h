@@ -49,7 +49,7 @@ class IArrayMeshMaterialVariable
 
  public:
 
-  virtual Array2View<DataType>* valuesView() =0;
+  virtual ArrayView<Array2View<DataType>> _internalFullValuesView() = 0;
   virtual VariableRefType* globalVariableReference() const =0;
   virtual void incrementReference() =0;
   virtual IMeshMaterialVariable* toMeshMaterialVariable() =0;

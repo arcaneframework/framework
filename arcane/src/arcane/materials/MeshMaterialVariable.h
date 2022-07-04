@@ -371,7 +371,7 @@ class ItemMaterialVariableScalar
 
  protected:
 
-  ArrayView<ArrayView<DataType>> _trueViews() { return this->m_views; }
+  ArrayView<ArrayView<DataType>> _containerView() { return this->m_views; }
 
  public:
   
@@ -469,8 +469,7 @@ class MeshMaterialVariableScalar
 
   VariableRefType* globalVariableReference() const final { return m_true_global_variable_ref; }
   void incrementReference() final { BaseClass::incrementReference(); }
-  ArrayView<DataType>* valuesView() final { return BaseClass::views(); }
-  ArrayView<ArrayView<DataType>> _internalFullValuesView() final { return BaseClass::_trueViews(); }
+  ArrayView<ArrayView<DataType>> _internalFullValuesView() final { return BaseClass::_containerView(); }
   void fillFromArray(IMeshMaterial* mat,ConstArrayView<DataType> values) final
   {
     return BaseClass::fillFromArray(mat,values);
@@ -529,8 +528,7 @@ class ItemMaterialVariableArray
 
  public:
 
- public:
-
+  ARCANE_DEPRECATED_REASON("Y2022: Do not use internal storage accessor")
   Array2View<DataType>* views() { return m_views.data(); }
 
  public:
@@ -567,6 +565,7 @@ class ItemMaterialVariableArray
  protected:
 
   using BaseClass::m_p;
+  ArrayView<Array2View<DataType>> _containerView() { return m_views; }
 
  private:
 
@@ -614,7 +613,7 @@ class MeshMaterialVariableArray
  public:
 
   void incrementReference() final { BaseClass::incrementReference(); }
-  Array2View<DataType>* valuesView() final { return BaseClass::views(); }
+  ArrayView<Array2View<DataType>> _internalFullValuesView() final { return BaseClass::_containerView(); }
   void resize(Int32 dim2_size) final { BaseClass::resize(dim2_size); }
   VariableRefType* globalVariableReference() const final { return m_true_global_variable_ref; }
   IMeshMaterialVariable* toMeshMaterialVariable() final { return this; }

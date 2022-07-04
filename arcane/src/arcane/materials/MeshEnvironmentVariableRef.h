@@ -133,10 +133,12 @@ class CellEnvironmentVariableScalarRef
 
   PrivatePartType* m_private_part;
   ArrayView<DataType>* m_value;
+  ArrayView<ArrayView<DataType>> m_container_value;
 
  private:
 
   void _init();
+  void _setContainerView();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -246,10 +248,12 @@ class CellEnvironmentVariableArrayRef
 
   PrivatePartType* m_private_part;
   Array2View<DataType>* m_value;
+  ArrayView<Array2View<DataType>> m_container_value;
 
  private:
 
   void _init();
+  void _setContainerView();
 };
 
 /*---------------------------------------------------------------------------*/

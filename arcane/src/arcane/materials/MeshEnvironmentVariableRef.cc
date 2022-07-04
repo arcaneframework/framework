@@ -85,7 +85,7 @@ CellEnvironmentVariableScalarRef<DataType>::
 _init()
 {
   if (m_private_part){
-    m_value = m_private_part->valuesView();
+    this->_setContainerView();
     _internalInit(m_private_part->toMeshMaterialVariable());
   }
 }
@@ -101,8 +101,10 @@ refersTo(const CellEnvironmentVariableScalarRef<DataType>& rhs)
     return;
   if (_isRegistered())
     unregisterVariable();
+
   m_private_part = rhs.m_private_part;
   m_value = nullptr;
+  m_container_value = {};
 
   // Il faut incrémenter manuellement le compteur de référence car normalement
   // cela est fait dans getReference() mais ici on ne l'appelle pas
@@ -118,7 +120,7 @@ template<typename DataType> void
 CellEnvironmentVariableScalarRef<DataType>::
 updateFromInternal()
 {
-  m_value = m_private_part->valuesView();
+  _setContainerView();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -194,6 +196,23 @@ globalVariable() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template<typename DataType> void
+CellEnvironmentVariableScalarRef<DataType>::
+_setContainerView()
+{
+  if (m_private_part){
+    m_container_value = m_private_part->_internalFullValuesView();
+    m_value = m_container_value.data();
+  }
+  else{
+    m_container_value = {};
+    m_value = nullptr;
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -242,7 +261,7 @@ CellEnvironmentVariableArrayRef<DataType>::
 _init()
 {
   if (m_private_part){
-    m_value = m_private_part->valuesView();
+    _setContainerView();
     _internalInit(m_private_part->toMeshMaterialVariable());
   }
 }
@@ -259,8 +278,10 @@ refersTo(const CellEnvironmentVariableArrayRef<DataType>& rhs)
     return;
   if (_isRegistered())
     unregisterVariable();
+
   m_private_part = rhs.m_private_part;
   m_value = nullptr;
+  m_container_value = {};
 
   // Il faut incrémenter manuellement le compteur de référence car normalement
   // cela est fait dans getReference() mais ici on ne l'appelle pas
@@ -277,7 +298,7 @@ template<typename DataType> void
 CellEnvironmentVariableArrayRef<DataType>::
 updateFromInternal()
 {
-  m_value = m_private_part->valuesView();
+  _setContainerView();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -314,6 +335,23 @@ CellEnvironmentVariableArrayRef<DataType>::
 resize(Integer dim2_size)
 {
   m_private_part->resize(dim2_size);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> void
+CellEnvironmentVariableArrayRef<DataType>::
+_setContainerView()
+{
+  if (m_private_part){
+    m_container_value = m_private_part->_internalFullValuesView();
+    m_value = m_container_value.data();
+  }
+  else{
+    m_container_value = {};
+    m_value = nullptr;
+  }
 }
 
 /*---------------------------------------------------------------------------*/

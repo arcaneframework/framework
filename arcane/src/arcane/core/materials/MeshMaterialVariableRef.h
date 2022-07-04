@@ -340,15 +340,20 @@ class CellMaterialVariableScalarRef
 
   PrivatePartType* m_private_part;
   ArrayView<DataType>* m_value;
+  ArrayView<ArrayView<DataType>> m_container_value;
 
  private:
 
   void _init();
+  void _setContainerView();
 
  public:
+
   // TODO: Temporaire. a supprimer.
   ArrayView<DataType>* _internalValue() const { return m_value; }
+
  public:
+
   void* _internalValueAsPointer() const { return m_value; }
 };
 
@@ -469,10 +474,12 @@ class CellMaterialVariableArrayRef
 
   PrivatePartType* m_private_part;
   Array2View<DataType>* m_value;
+  ArrayView<Array2View<DataType>> m_container_value;
 
  private:
 
   void _init();
+  void _setContainerView();
 };
 
 /*---------------------------------------------------------------------------*/
