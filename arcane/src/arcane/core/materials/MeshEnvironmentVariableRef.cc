@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/materials/MeshEnvironmentVariableRef.h"
+#include "arcane/core/materials/MeshEnvironmentVariableRef.h"
 
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/TraceInfo.h"
@@ -23,10 +23,8 @@
 #include "arcane/MeshVariableScalarRef.h"
 #include "arcane/ArcaneException.h"
 
-#include "arcane/materials/IMeshMaterialMng.h"
-#include "arcane/materials/IMeshMaterial.h"
-#include "arcane/materials/MeshMaterialVariable.h"
-
+#include "arcane/core/materials/IMeshMaterialMng.h"
+#include "arcane/core/materials/IMeshMaterial.h"
 #include "arcane/core/materials/MaterialVariableBuildInfo.h"
 
 /*---------------------------------------------------------------------------*/

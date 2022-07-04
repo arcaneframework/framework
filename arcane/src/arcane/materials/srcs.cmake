@@ -55,7 +55,6 @@ set(ARCANE_SOURCES
   MeshMaterialVariableFactoryRegisterer.cc
   MeshMaterialVariableFactoryRegisterer.h
   MeshMaterialVariableIndexer.h
-  MeshEnvironmentVariableRef.cc
   MeshEnvironmentVariableRef.h
   MeshMaterialVariableScalar.cc
   MeshMaterialVariableArray.cc
