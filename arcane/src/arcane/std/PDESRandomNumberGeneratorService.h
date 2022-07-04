@@ -28,7 +28,6 @@ class PDESRandomNumberGeneratorService
  public:
   PDESRandomNumberGeneratorService(const ServiceBuildInfo& sbi)
   : ArcanePDESRandomNumberGeneratorObject(sbi)
-  , m_seed(0)
   {
     m_with_option = (sbi.creationType() == ST_CaseOption);
   }
@@ -37,17 +36,17 @@ class PDESRandomNumberGeneratorService
 
  public:
   void initSeed() override;
-  void initSeed(Int64 seed) override;
+  void initSeed(RandomNumberGeneratorSeed seed) override;
 
-  Int64 seed() override;
+  RandomNumberGeneratorSeed seed() override;
 
-  bool isLeapSeedSupported() override {return true;};
-  Int64 generateRandomSeed(Integer leap) override;
-  Int64 generateRandomSeed(Int64* parent_seed, Integer leap) override;
+  bool isLeapSeedSupported() override { return true; };
+  RandomNumberGeneratorSeed generateRandomSeed(Integer leap) override;
+  RandomNumberGeneratorSeed generateRandomSeed(RandomNumberGeneratorSeed* parent_seed, Integer leap) override;
 
   bool isLeapNumberSupported() override { return true; };
   Real generateRandomNumber(Integer leap) override;
-  Real generateRandomNumber(Int64* seed, Integer leap) override;
+  Real generateRandomNumber(RandomNumberGeneratorSeed* seed, Integer leap) override;
 
  protected:
   void _breakupUInt64(uint64_t uint64_in, uint32_t* front_bits, uint32_t* back_bits);

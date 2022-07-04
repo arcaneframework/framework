@@ -36,49 +36,66 @@ initSeed()
 }
 
 void PDESRandomNumberGeneratorService::
-initSeed(Int64 seed)
+initSeed(RandomNumberGeneratorSeed seed)
 {
-  m_seed = seed;
+  if (seed.sizeOfSeed() != sizeof(Int64)) {
+    ARCANE_FATAL("Bad size of seed");
+  }
+  seed.seed(m_seed);
 }
 
-Int64 PDESRandomNumberGeneratorService::
+RandomNumberGeneratorSeed PDESRandomNumberGeneratorService::
 seed()
 {
-  return m_seed;
+  return RandomNumberGeneratorSeed(m_seed);
 }
 
-Int64 PDESRandomNumberGeneratorService::
+// Les sauts négatifs sont supportés.
+RandomNumberGeneratorSeed PDESRandomNumberGeneratorService::
 generateRandomSeed(Integer leap)
 {
-  Int64 spawned_seed;
-  for(Integer i = 0; i < leap+1; i++){
-    spawned_seed = _hashState(m_seed);
-    generateRandomNumber(0);
+  // Pas besoin de faire de saut si leap == 0.
+  if (leap != 0) {
+    _ran4(&m_seed, leap - 1);
   }
-  return spawned_seed;
+  Int64 spawned_seed = _hashState(m_seed);
+  _ran4(&m_seed, 0);
+  return RandomNumberGeneratorSeed(spawned_seed);
 }
 
-Int64 PDESRandomNumberGeneratorService::
-generateRandomSeed(Int64* parent_seed, Integer leap)
+// Les sauts négatifs sont supportés.
+RandomNumberGeneratorSeed PDESRandomNumberGeneratorService::
+generateRandomSeed(RandomNumberGeneratorSeed* parent_seed, Integer leap)
 {
-  Int64 spawned_seed;
-  for(Integer i = 0; i < leap+1; i++){
-    spawned_seed = _hashState(*parent_seed);
-    generateRandomNumber(parent_seed, 0);
+  Int64 i_seed;
+  parent_seed->seed(i_seed);
+
+  // Pas besoin de faire de saut si leap == 0.
+  if (leap != 0) {
+    _ran4(&i_seed, leap - 1);
   }
-  return spawned_seed;
+  Int64 spawned_seed = _hashState(i_seed);
+  _ran4(&i_seed, 0);
+  parent_seed->setSeed(i_seed);
+  return RandomNumberGeneratorSeed(spawned_seed);
 }
 
+// Les sauts négatifs sont supportés.
 Real PDESRandomNumberGeneratorService::
 generateRandomNumber(Integer leap)
 {
   return _ran4(&m_seed, leap);
 }
 
+// Les sauts négatifs sont supportés.
 Real PDESRandomNumberGeneratorService::
-generateRandomNumber(Int64* seed, Integer leap)
+generateRandomNumber(RandomNumberGeneratorSeed* seed, Integer leap)
 {
-  return _ran4(seed, leap);
+  Int64 i_seed;
+  seed->seed(i_seed);
+  Real fin = _ran4(&i_seed, leap);
+  seed->setSeed(i_seed);
+  return fin;
 }
 
 /*---------------------------------------------------------------------------*/
