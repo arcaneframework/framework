@@ -110,9 +110,9 @@ typedef ConstArrayView<IMeshComponent*> MeshComponentList;
 template<typename DataType> class CellMaterialVariableScalarRef;
 
 template<typename ItemType,typename DataType>
-class IMeshMaterialVariableScalar;
+class IScalarMeshMaterialVariable;
 template<typename ItemType,typename DataType>
-class IMeshMaterialVariableArray;
+class IArrayMeshMaterialVariable;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

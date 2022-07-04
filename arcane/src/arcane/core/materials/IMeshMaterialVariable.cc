@@ -75,8 +75,8 @@ getVariableReference(const MaterialVariableBuildInfo& v,MatVarSpace mvs)
 /*---------------------------------------------------------------------------*/
 
 #define ARCANE_INSTANTIATE_MAT(type) \
-  template class ARCANE_TEMPLATE_EXPORT MeshMaterialVariableBuildTraits<IMeshMaterialVariableScalar<Cell,type>>; \
-  template class ARCANE_TEMPLATE_EXPORT MeshMaterialVariableBuildTraits<IMeshMaterialVariableArray<Cell,type>>
+  template class ARCANE_TEMPLATE_EXPORT MeshMaterialVariableBuildTraits<IScalarMeshMaterialVariable<Cell,type>>; \
+  template class ARCANE_TEMPLATE_EXPORT MeshMaterialVariableBuildTraits<IArrayMeshMaterialVariable<Cell,type>>
 
 ARCANE_INSTANTIATE_MAT(Byte);
 ARCANE_INSTANTIATE_MAT(Int16);

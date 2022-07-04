@@ -197,7 +197,7 @@ firstReference() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-const String& MeshMaterialVariable::
+String MeshMaterialVariable::
 name() const
 {
   return m_p->name();

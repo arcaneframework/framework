@@ -32,11 +32,11 @@ namespace Arcane::Materials
  * \brief Interface d'accès pour CellMaterialVariableArrayRef.
  */
 template<typename ItemType,typename DataType>
-class IMeshMaterialVariableArray
+class IArrayMeshMaterialVariable
 {
  public:
 
-  using ThatInterface = IMeshMaterialVariableArray<ItemType,DataType>;
+  using ThatInterface = IArrayMeshMaterialVariable<ItemType,DataType>;
   using ItemTypeType = ItemType;
   using DataTypeType = DataType;
   using BuilderType = MeshMaterialVariableBuildTraits<ThatInterface>;
@@ -45,11 +45,11 @@ class IMeshMaterialVariableArray
 
  public:
 
-  virtual ~IMeshMaterialVariableArray() = default;
+  virtual ~IArrayMeshMaterialVariable() = default;
 
  public:
 
-  virtual Array2View<DataType>* valuesView() =0;
+  virtual ArrayView<Array2View<DataType>> _internalFullValuesView() = 0;
   virtual VariableRefType* globalVariableReference() const =0;
   virtual void incrementReference() =0;
   virtual IMeshMaterialVariable* toMeshMaterialVariable() =0;

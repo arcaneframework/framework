@@ -26,7 +26,6 @@
 #include "arcane/core/materials/IMeshMaterial.h"
 #include "arcane/core/materials/MaterialVariableBuildInfo.h"
 #include "arcane/core/materials/MeshMaterialVariableRef.h"
-//#include "arcane/core/materials/MeshMaterialVariable.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -266,7 +265,7 @@ CellMaterialVariableScalarRef(const VariableBuildInfo& vb)
 template<typename DataType> CellMaterialVariableScalarRef<DataType>::
 CellMaterialVariableScalarRef(const MaterialVariableBuildInfo& vb)
 : m_private_part(PrivatePartType::BuilderType::getVariableReference(vb,MatVarSpace::MaterialAndEnvironment))
-, m_value(0)
+, m_value(nullptr)
 {
   _init();
 }
@@ -277,7 +276,7 @@ CellMaterialVariableScalarRef(const MaterialVariableBuildInfo& vb)
 template<typename DataType>  CellMaterialVariableScalarRef<DataType>::
 CellMaterialVariableScalarRef(const CellMaterialVariableScalarRef<DataType>& rhs)
 : m_private_part(rhs.m_private_part)
-, m_value(0)
+, m_value(nullptr)
 {
   // Il faut incrémenter manuellement le compteur de référence car normalement
   // cela est fait dans getReference() mais ici on ne l'appelle pas
@@ -298,7 +297,7 @@ CellMaterialVariableScalarRef<DataType>::
 _init()
 {
   if (m_private_part){
-    m_value = m_private_part->valuesView();
+    _setContainerView();
     _internalInit(m_private_part->toMeshMaterialVariable());
   }
 }
@@ -315,7 +314,8 @@ refersTo(const CellMaterialVariableScalarRef<DataType>& rhs)
   if (_isRegistered())
     unregisterVariable();
   m_private_part = rhs.m_private_part;
-  m_value = 0;
+  m_container_value = {};
+  m_value = nullptr;
 
   // Il faut incrémenter manuellement le compteur de référence car normalement
   // cela est fait dans getReference() mais ici on ne l'appelle pas
@@ -331,7 +331,7 @@ template<typename DataType> void
 CellMaterialVariableScalarRef<DataType>::
 updateFromInternal()
 {
-  m_value = m_private_part->valuesView();
+  _setContainerView();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -539,6 +539,23 @@ globalVariable() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template<typename DataType> void
+CellMaterialVariableScalarRef<DataType>::
+_setContainerView()
+{
+  if (m_private_part){
+    m_container_value = m_private_part->_internalFullValuesView();
+    m_value = m_container_value.data();
+  }
+  else{
+    m_container_value = {};
+    m_value = nullptr;
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -587,7 +604,7 @@ CellMaterialVariableArrayRef<DataType>::
 _init()
 {
   if (m_private_part){
-    m_value = m_private_part->valuesView();
+    _setContainerView();
     _internalInit(m_private_part->toMeshMaterialVariable());
   }
 }
@@ -604,8 +621,10 @@ refersTo(const CellMaterialVariableArrayRef<DataType>& rhs)
     return;
   if (_isRegistered())
     unregisterVariable();
+
   m_private_part = rhs.m_private_part;
   m_value = nullptr;
+  m_container_value = {};
 
   // Il faut incrémenter manuellement le compteur de référence car normalement
   // cela est fait dans getReference() mais ici on ne l'appelle pas
@@ -622,7 +641,7 @@ template<typename DataType> void
 CellMaterialVariableArrayRef<DataType>::
 updateFromInternal()
 {
-  m_value = m_private_part->valuesView();
+  _setContainerView();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -664,31 +683,39 @@ resize(Integer dim2_size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template<typename DataType> void
+CellMaterialVariableArrayRef<DataType>::
+_setContainerView()
+{
+  if (m_private_part){
+    m_container_value = m_private_part->_internalFullValuesView();
+    m_value = m_container_value.data();
+  }
+  else{
+    m_container_value = {};
+    m_value = nullptr;
+  }
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template class CellMaterialVariableScalarRef<Byte>;
-template class CellMaterialVariableScalarRef<Real>;
-template class CellMaterialVariableScalarRef<Int16>;
-template class CellMaterialVariableScalarRef<Int32>;
-template class CellMaterialVariableScalarRef<Int64>;
-template class CellMaterialVariableScalarRef<Real2>;
-template class CellMaterialVariableScalarRef<Real3>;
-template class CellMaterialVariableScalarRef<Real2x2>;
-template class CellMaterialVariableScalarRef<Real3x3>;
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template class CellMaterialVariableArrayRef<Byte>;
-template class CellMaterialVariableArrayRef<Real>;
-template class CellMaterialVariableArrayRef<Int16>;
-template class CellMaterialVariableArrayRef<Int32>;
-template class CellMaterialVariableArrayRef<Int64>;
-template class CellMaterialVariableArrayRef<Real2>;
-template class CellMaterialVariableArrayRef<Real3>;
-template class CellMaterialVariableArrayRef<Real2x2>;
-template class CellMaterialVariableArrayRef<Real3x3>;
+#define ARCANE_INSTANTIATE_MAT(type) \
+  template class ARCANE_TEMPLATE_EXPORT CellMaterialVariableScalarRef<type>;\
+  template class ARCANE_TEMPLATE_EXPORT CellMaterialVariableArrayRef<type>
+
+ARCANE_INSTANTIATE_MAT(Byte);
+ARCANE_INSTANTIATE_MAT(Int16);
+ARCANE_INSTANTIATE_MAT(Int32);
+ARCANE_INSTANTIATE_MAT(Int64);
+ARCANE_INSTANTIATE_MAT(Real);
+ARCANE_INSTANTIATE_MAT(Real2);
+ARCANE_INSTANTIATE_MAT(Real3);
+ARCANE_INSTANTIATE_MAT(Real2x2);
+ARCANE_INSTANTIATE_MAT(Real3x3);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/materials/MeshEnvironmentVariableRef.h"
+#include "arcane/core/materials/MeshEnvironmentVariableRef.h"
 
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/TraceInfo.h"
@@ -23,10 +23,8 @@
 #include "arcane/MeshVariableScalarRef.h"
 #include "arcane/ArcaneException.h"
 
-#include "arcane/materials/IMeshMaterialMng.h"
-#include "arcane/materials/IMeshMaterial.h"
-#include "arcane/materials/MeshMaterialVariable.h"
-
+#include "arcane/core/materials/IMeshMaterialMng.h"
+#include "arcane/core/materials/IMeshMaterial.h"
 #include "arcane/core/materials/MaterialVariableBuildInfo.h"
 
 /*---------------------------------------------------------------------------*/
@@ -85,7 +83,7 @@ CellEnvironmentVariableScalarRef<DataType>::
 _init()
 {
   if (m_private_part){
-    m_value = m_private_part->valuesView();
+    this->_setContainerView();
     _internalInit(m_private_part->toMeshMaterialVariable());
   }
 }
@@ -101,8 +99,10 @@ refersTo(const CellEnvironmentVariableScalarRef<DataType>& rhs)
     return;
   if (_isRegistered())
     unregisterVariable();
+
   m_private_part = rhs.m_private_part;
   m_value = nullptr;
+  m_container_value = {};
 
   // Il faut incrémenter manuellement le compteur de référence car normalement
   // cela est fait dans getReference() mais ici on ne l'appelle pas
@@ -118,7 +118,7 @@ template<typename DataType> void
 CellEnvironmentVariableScalarRef<DataType>::
 updateFromInternal()
 {
-  m_value = m_private_part->valuesView();
+  _setContainerView();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -194,6 +194,23 @@ globalVariable() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template<typename DataType> void
+CellEnvironmentVariableScalarRef<DataType>::
+_setContainerView()
+{
+  if (m_private_part){
+    m_container_value = m_private_part->_internalFullValuesView();
+    m_value = m_container_value.data();
+  }
+  else{
+    m_container_value = {};
+    m_value = nullptr;
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -242,7 +259,7 @@ CellEnvironmentVariableArrayRef<DataType>::
 _init()
 {
   if (m_private_part){
-    m_value = m_private_part->valuesView();
+    _setContainerView();
     _internalInit(m_private_part->toMeshMaterialVariable());
   }
 }
@@ -259,8 +276,10 @@ refersTo(const CellEnvironmentVariableArrayRef<DataType>& rhs)
     return;
   if (_isRegistered())
     unregisterVariable();
+
   m_private_part = rhs.m_private_part;
   m_value = nullptr;
+  m_container_value = {};
 
   // Il faut incrémenter manuellement le compteur de référence car normalement
   // cela est fait dans getReference() mais ici on ne l'appelle pas
@@ -277,7 +296,7 @@ template<typename DataType> void
 CellEnvironmentVariableArrayRef<DataType>::
 updateFromInternal()
 {
-  m_value = m_private_part->valuesView();
+  _setContainerView();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -319,31 +338,39 @@ resize(Integer dim2_size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template<typename DataType> void
+CellEnvironmentVariableArrayRef<DataType>::
+_setContainerView()
+{
+  if (m_private_part){
+    m_container_value = m_private_part->_internalFullValuesView();
+    m_value = m_container_value.data();
+  }
+  else{
+    m_container_value = {};
+    m_value = nullptr;
+  }
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template class CellEnvironmentVariableScalarRef<Byte>;
-template class CellEnvironmentVariableScalarRef<Real>;
-template class CellEnvironmentVariableScalarRef<Int16>;
-template class CellEnvironmentVariableScalarRef<Int32>;
-template class CellEnvironmentVariableScalarRef<Int64>;
-template class CellEnvironmentVariableScalarRef<Real2>;
-template class CellEnvironmentVariableScalarRef<Real3>;
-template class CellEnvironmentVariableScalarRef<Real2x2>;
-template class CellEnvironmentVariableScalarRef<Real3x3>;
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template class CellEnvironmentVariableArrayRef<Byte>;
-template class CellEnvironmentVariableArrayRef<Real>;
-template class CellEnvironmentVariableArrayRef<Int16>;
-template class CellEnvironmentVariableArrayRef<Int32>;
-template class CellEnvironmentVariableArrayRef<Int64>;
-template class CellEnvironmentVariableArrayRef<Real2>;
-template class CellEnvironmentVariableArrayRef<Real3>;
-template class CellEnvironmentVariableArrayRef<Real2x2>;
-template class CellEnvironmentVariableArrayRef<Real3x3>;
+#define ARCANE_INSTANTIATE_MAT(type) \
+  template class ARCANE_TEMPLATE_EXPORT CellEnvironmentVariableScalarRef<type>;\
+  template class ARCANE_TEMPLATE_EXPORT CellEnvironmentVariableArrayRef<type>
+
+ARCANE_INSTANTIATE_MAT(Byte);
+ARCANE_INSTANTIATE_MAT(Int16);
+ARCANE_INSTANTIATE_MAT(Int32);
+ARCANE_INSTANTIATE_MAT(Int64);
+ARCANE_INSTANTIATE_MAT(Real);
+ARCANE_INSTANTIATE_MAT(Real2);
+ARCANE_INSTANTIATE_MAT(Real3);
+ARCANE_INSTANTIATE_MAT(Real2x2);
+ARCANE_INSTANTIATE_MAT(Real3x3);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

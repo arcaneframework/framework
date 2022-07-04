@@ -212,7 +212,7 @@ class CellMaterialVariableScalarRef
 {
  public:
 
-  using PrivatePartType = IMeshMaterialVariableScalar<Cell,DataType>;
+  using PrivatePartType = IScalarMeshMaterialVariable<Cell,DataType>;
 
   typedef Cell ItemType;
   typedef MeshVariableScalarRefT<ItemType,DataType> GlobalVariableRefType;
@@ -340,15 +340,20 @@ class CellMaterialVariableScalarRef
 
   PrivatePartType* m_private_part;
   ArrayView<DataType>* m_value;
+  ArrayView<ArrayView<DataType>> m_container_value;
 
  private:
 
   void _init();
+  void _setContainerView();
 
  public:
+
   // TODO: Temporaire. a supprimer.
   ArrayView<DataType>* _internalValue() const { return m_value; }
+
  public:
+
   void* _internalValueAsPointer() const { return m_value; }
 };
 
@@ -365,7 +370,7 @@ class CellMaterialVariableArrayRef
 {
  public:
 
-  using PrivatePartType = IMeshMaterialVariableArray<Cell,DataType>;
+  using PrivatePartType = IArrayMeshMaterialVariable<Cell,DataType>;
   using ItemType = Cell;
   using GlobalVariableRefType = MeshVariableArrayRefT<ItemType,DataType>;
 
@@ -469,10 +474,12 @@ class CellMaterialVariableArrayRef
 
   PrivatePartType* m_private_part;
   Array2View<DataType>* m_value;
+  ArrayView<Array2View<DataType>> m_container_value;
 
  private:
 
   void _init();
+  void _setContainerView();
 };
 
 /*---------------------------------------------------------------------------*/
