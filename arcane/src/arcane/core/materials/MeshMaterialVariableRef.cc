@@ -703,28 +703,19 @@ _setContainerView()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template class CellMaterialVariableScalarRef<Byte>;
-template class CellMaterialVariableScalarRef<Real>;
-template class CellMaterialVariableScalarRef<Int16>;
-template class CellMaterialVariableScalarRef<Int32>;
-template class CellMaterialVariableScalarRef<Int64>;
-template class CellMaterialVariableScalarRef<Real2>;
-template class CellMaterialVariableScalarRef<Real3>;
-template class CellMaterialVariableScalarRef<Real2x2>;
-template class CellMaterialVariableScalarRef<Real3x3>;
+#define ARCANE_INSTANTIATE_MAT(type) \
+  template class ARCANE_TEMPLATE_EXPORT CellMaterialVariableScalarRef<type>;\
+  template class ARCANE_TEMPLATE_EXPORT CellMaterialVariableArrayRef<type>
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template class CellMaterialVariableArrayRef<Byte>;
-template class CellMaterialVariableArrayRef<Real>;
-template class CellMaterialVariableArrayRef<Int16>;
-template class CellMaterialVariableArrayRef<Int32>;
-template class CellMaterialVariableArrayRef<Int64>;
-template class CellMaterialVariableArrayRef<Real2>;
-template class CellMaterialVariableArrayRef<Real3>;
-template class CellMaterialVariableArrayRef<Real2x2>;
-template class CellMaterialVariableArrayRef<Real3x3>;
+ARCANE_INSTANTIATE_MAT(Byte);
+ARCANE_INSTANTIATE_MAT(Int16);
+ARCANE_INSTANTIATE_MAT(Int32);
+ARCANE_INSTANTIATE_MAT(Int64);
+ARCANE_INSTANTIATE_MAT(Real);
+ARCANE_INSTANTIATE_MAT(Real2);
+ARCANE_INSTANTIATE_MAT(Real3);
+ARCANE_INSTANTIATE_MAT(Real2x2);
+ARCANE_INSTANTIATE_MAT(Real3x3);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
