@@ -51,7 +51,7 @@ class ARCANE_CORE_EXPORT IMeshMaterialVariable
  public:
 
   //! Nom de la variable.
-  virtual const String& name() const =0;
+  virtual String name() const =0;
 
   //! Variable globale sur le maillage associée.
   virtual IVariable* globalVariable() const =0;

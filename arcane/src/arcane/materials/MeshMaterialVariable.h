@@ -71,7 +71,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialVariable
 
  public:
 
-  const String& name() const override;
+  String name() const override;
   void addVariableRef(MeshMaterialVariableRef* var_ref) override;
   void removeVariableRef(MeshMaterialVariableRef* var_ref) override;
   MeshMaterialVariableRef* firstReference() const override;
