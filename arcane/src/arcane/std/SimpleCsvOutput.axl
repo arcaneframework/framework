@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<service name="SimpleCsvOutput" version="1.0" singleton="true">
+
+  <description>Jeu de données du service SimpleCsvOutput</description>
+  <interface name="ISimpleTableOutput" />
+
+	<variables>
+  </variables>
+
+	<options>
+    <simple name="tableName" type="string" default="">
+      <description>
+        Name for table file (example: Results ).
+      </description>
+    </simple>
+
+    <simple name="tableDir" type="string" default="">
+      <description>
+        Directory for table file (example: ./example2/ ).
+      </description>
+    </simple>
+	</options>
+</service>

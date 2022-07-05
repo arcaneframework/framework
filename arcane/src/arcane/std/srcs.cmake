@@ -73,6 +73,9 @@ set(ARCANE_SOURCES
   PDESRandomNumberGeneratorService.cc
   PDESRandomNumberGeneratorService.h
 
+  SimpleCsvOutputService.cc
+  SimpleCsvOutputService.h
+
   MshMeshReader.cc
   MshMeshWriter.cc
   internal/IosFile.cc
@@ -108,4 +111,5 @@ set(AXL_FILES
   HoneyComb2DMeshGenerator
   HoneyComb3DMeshGenerator
   PDESRandomNumberGenerator
+  SimpleCsvOutput
 )
