@@ -1,20 +1,29 @@
 <?xml version="1.0" encoding="ISO-8859-1" ?>
 <service name="PDESRandomNumberGenerator" version="1.0" singleton="true">
 
+  <userclass>User</userclass>
   <description>
-    Genérateur de nombre (preudo-)aléatoire basé sur un algorithme de pseudo-DES.
+    Genérateur de nombre (pseudo-)aléatoire basé sur un algorithme pseudo-DES.
+
+    Voir le livre :
+    
+    Numerical Recipes in C
+    The Art of Scientific Computing
+    Second Edition
   </description>
 
-  <interface name="IRandomNumberGenerator" />
+  <interface name="Arcane::IRandomNumberGenerator" />
 
 	<variables>
   </variables>
 
 	<options>
     <simple name="initialSeed" type="int64" default="4294967297">
+      <userclass>User</userclass>
       <description>
-        Graine initiale
+        Graine initiale. Peut aussi être défini en paramètre lors de l'init.
       </description>
     </simple>
 	</options>
 </service>
+

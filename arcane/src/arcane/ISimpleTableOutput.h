@@ -18,8 +18,13 @@
 
 #include <optional>
 
-using namespace Arcane;
+namespace Arcane
+{
 
+/**
+ * @ingroup StandardService
+ * @brief Interface représentant une sortie de tableau simple.
+ */
 class ARCANE_CORE_EXPORT ISimpleTableOutput
 {
 public:
@@ -620,5 +625,7 @@ public:
    */
   virtual bool writeFile(String path, Integer only_proc = -1) = 0;
 };
+
+} // End namespace Arcane
 
 #endif

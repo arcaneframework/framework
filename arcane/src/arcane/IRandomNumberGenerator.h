@@ -17,7 +17,8 @@
 #include "arcane/utils/Array.h"
 #include "arcane/utils/UtilsTypes.h"
 
-using namespace Arcane;
+namespace Arcane
+{
 
 /**
  * @brief Classe représentant une graine.
@@ -203,8 +204,8 @@ class ARCANE_CORE_EXPORT RandomNumberGeneratorSeed
 };
 
 /**
+ * @ingroup StandardService
  * @brief Interface pour un générateur de nombre aléatoire.
- * 
  */
 class ARCANE_CORE_EXPORT IRandomNumberGenerator
 {
@@ -295,5 +296,6 @@ class ARCANE_CORE_EXPORT IRandomNumberGenerator
    */
   virtual Real generateRandomNumber(RandomNumberGeneratorSeed* seed, Integer leap = 0) = 0;
 };
+} // End namespace Arcane
 
 #endif

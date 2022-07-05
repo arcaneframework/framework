@@ -73,7 +73,7 @@
 
   <options>
 
-    <service-instance name="simple-table-output" type="ISimpleTableOutput">
+    <service-instance name="simple-table-output" type="Arcane::ISimpleTableOutput">
       <description>Service implémentant ISimpleTableOutput</description>
     </service-instance>
 

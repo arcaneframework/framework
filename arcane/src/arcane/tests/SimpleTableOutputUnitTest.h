@@ -11,9 +11,9 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include <arcane/IParallelMng.h>
-#include <arcane/ITimeLoopMng.h>
-#include <arcane/ServiceBuilder.h>
+#include "arcane/IParallelMng.h"
+#include "arcane/ITimeLoopMng.h"
+#include "arcane/ServiceBuilder.h"
 #include "arcane/BasicUnitTest.h"
 #include "arcane/ISimpleTableOutput.h"
 

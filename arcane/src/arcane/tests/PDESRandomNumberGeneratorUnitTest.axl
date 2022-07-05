@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="ISO-8859-1" ?>
+<?xml version="1.0" ?>
 <service name="PDESRandomNumberGeneratorUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest" namespace-name="ArcaneTest">
   <interface name="Arcane::IUnitTest" inherited="false" />
  
@@ -6,7 +6,7 @@
   </variables>
 
   <options>
-    <service-instance name="PDESRandomNumberGenerator" type="IRandomNumberGenerator">
+    <service-instance name="PDESRandomNumberGenerator" type="Arcane::IRandomNumberGenerator">
       <description>RNG</description>
     </service-instance>
   </options>
