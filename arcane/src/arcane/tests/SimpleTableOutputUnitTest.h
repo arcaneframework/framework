@@ -96,6 +96,9 @@ public:
   void testEditElemDown1() override;
   void testEditElemRight1() override;
 
+  void testEditNameRow() override;
+  void testEditNameColumn() override;
+
 
   void tearDown() override;
   void tearDownForClass() override;

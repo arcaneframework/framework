@@ -998,13 +998,50 @@ testEditElemRight1()
   ASSERT_EQUAL_ARRAY(result, ptrSTO->row("Ma ligne 1"));
 }
 
+void SimpleTableOutputUnitTest::
+testEditNameRow()
+{
+  ptrSTO->addRow("Ma ligne 1");
+  ptrSTO->addRow("Ma ligne 2");
+  ptrSTO->addRow("Ma ligne 3");
+  ptrSTO->addRow("Ma ligne ratée");
+
+  ptrSTO->addColumn("Ma colonne 1");
+
+  RealUniqueArray test = {1, 2, 3, 4};
+
+  ASSERT_TRUE(ptrSTO->addElemsColumn("Ma colonne 1", test));
+
+  ASSERT_TRUE(ptrSTO->editNameRow("Ma ligne ratée", "Ma ligne 4"));
+
+  ASSERT_EQUAL(ptrSTO->elem("Ma colonne 1", "Ma ligne 4"), 4.);
+}
+
+void SimpleTableOutputUnitTest::
+testEditNameColumn()
+{
+  ptrSTO->addColumn("Ma colonne 1");
+  ptrSTO->addColumn("Ma colonne 2");
+  ptrSTO->addColumn("Ma colonne 3");
+  ptrSTO->addColumn("Ma colonne ratée");
+
+  ptrSTO->addRow("Ma ligne 1");
+
+  RealUniqueArray test = {1, 2, 3, 4};
+
+  ASSERT_TRUE(ptrSTO->addElemsRow("Ma ligne 1", test));
+
+  ASSERT_TRUE(ptrSTO->editNameColumn("Ma colonne ratée", "Ma colonne 4"));
+
+  ASSERT_EQUAL(ptrSTO->elem("Ma colonne 4", "Ma ligne 1"), 4.);
+}
+
 
 void SimpleTableOutputUnitTest::
 tearDown()
 {
   // N'est pas exécuté après un test qui a échoué.
 }
-
 
 void SimpleTableOutputUnitTest::
 tearDownForClass()

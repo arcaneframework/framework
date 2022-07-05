@@ -69,6 +69,9 @@
     <test name="Test editElemUp/Down/Left/Right() 1" method-name="testEditElemUDLR1"/>
     <test name="Test editElemDown() 1" method-name="testEditElemDown1"/>
     <test name="Test editElemRight() 1" method-name="testEditElemRight1"/>
+
+    <test name="Test editNameRow()" method-name="testEditNameRow"/>
+    <test name="Test editNameColumn()" method-name="testEditNameColumn"/>
   </tests> 
 
   <options>

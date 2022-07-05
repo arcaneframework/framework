@@ -575,11 +575,43 @@ public:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-  // virtual bool editNameRow(Integer pos) = 0;
-  // virtual bool editNameRow(String name_row) = 0;
+  /**
+   * @brief Méthode permettant de changer le nom d'une ligne.
+   * 
+   * @param pos La position de la ligne.
+   * @param new_name Le nouveau nom de la ligne.
+   * @return true Si le changement a eu lieu.
+   * @return false Si le changement n'a pas eu lieu.
+   */
+  virtual bool editNameRow(Integer pos, String new_name) = 0;
+  /**
+   * @brief Méthode permettant de changer le nom d'une ligne.
+   * 
+   * @param name_row Le nom actuel de la ligne.
+   * @param new_name Le nouveau nom de la ligne.
+   * @return true Si le changement a eu lieu.
+   * @return false Si le changement n'a pas eu lieu.
+   */
+  virtual bool editNameRow(String name_row, String new_name) = 0;
 
-  // virtual bool editNameColumn(Integer pos) = 0;
-  // virtual bool editNameColumn(String name_column) = 0;
+  /**
+   * @brief Méthode permettant de changer le nom d'une colonne.
+   * 
+   * @param pos La position de la colonne.
+   * @param new_name Le nouveau nom de la colonne.
+   * @return true Si le changement a eu lieu.
+   * @return false Si le changement n'a pas eu lieu.
+   */
+  virtual bool editNameColumn(Integer pos, String new_name) = 0;
+  /**
+   * @brief Méthode permettant de changer le nom d'une colonne.
+   * 
+   * @param name_column Le nom actuel de la colonne.
+   * @param new_name Le nouveau nom de la colonne.
+   * @return true Si le changement a eu lieu.
+   * @return false Si le changement n'a pas eu lieu.
+   */
+  virtual bool editNameColumn(String name_column, String new_name) = 0;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -117,6 +117,11 @@ public:
   Integer numRows() override;
   Integer numColumns() override;
 
+  bool editNameRow(Integer pos, String new_name) override;
+  bool editNameRow(String name_row, String new_name) override;
+
+  bool editNameColumn(Integer pos, String new_name) override;
+  bool editNameColumn(String name_column, String new_name) override;
 
   Integer addAverageColumn(String name_column) override;
 

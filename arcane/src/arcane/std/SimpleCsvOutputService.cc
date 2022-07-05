@@ -666,6 +666,41 @@ numColumns()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+bool SimpleCsvOutputService::
+editNameRow(Integer pos, String new_name)
+{
+  if(pos < 0 || pos >= m_values_csv.dim1Size()) return false;
+  m_name_rows[pos] = new_name;
+  return true;
+}
+
+bool SimpleCsvOutputService::
+editNameRow(String name_row, String new_name)
+{
+  std::optional<Integer> pos_y = m_name_rows.span().findFirst(name_row);
+  if(pos_y) return editNameRow(pos_y.value(), new_name);
+  return false;
+}
+
+bool SimpleCsvOutputService::
+editNameColumn(Integer pos, String new_name)
+{
+  if(pos < 0 || pos >= m_values_csv.dim2Size()) return false;
+  m_name_columns[pos] = new_name;
+  return true;
+}
+
+bool SimpleCsvOutputService::
+editNameColumn(String name_column, String new_name)
+{
+  std::optional<Integer> pos_x = m_name_columns.span().findFirst(name_column);
+  if(pos_x) return editNameColumn(pos_x.value(), new_name);
+  return false;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 Integer SimpleCsvOutputService::
 addAverageColumn(String name_column)
 {
