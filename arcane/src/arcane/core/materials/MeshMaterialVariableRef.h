@@ -354,7 +354,11 @@ class CellMaterialVariableScalarRef
 
  public:
 
-  void* _internalValueAsPointer() const { return m_value; }
+#ifdef ARCANE_DOTNET
+  // Uniquement pour le wrapper C#
+  // TODO: a terme utiliser 'm_container_view' à la place
+  void* _internalValueAsPointerOfPointer() { return reinterpret_cast<void*>(&m_value); }
+#endif
 };
 
 /*---------------------------------------------------------------------------*/
