@@ -158,7 +158,7 @@ _psdes(uint32_t* lword, uint32_t* irword)
   const uint32_t c2[] = { 0x4b0f3b58L, 0xe874f0c3L, 0x6955c5a6L, 0x55a7ca46L };
 
   for (Integer i = 0; i < NITER; i++) {
-    uint32_t iswap = iswap = (*irword);
+    uint32_t iswap = (*irword);
     uint32_t ia = iswap ^ c1[i];
     uint32_t itmpl = ia & 0xffff;
     uint32_t itmph = ia >> 16;
