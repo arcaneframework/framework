@@ -56,6 +56,7 @@
 #include "arcane/materials/MeshMaterialInfo.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
+#include "arcane/tests/IMaterialEquationOfState.h"
 #include "arcane/tests/MeshMaterialTester_axl.h"
 
 // Inclut le .cc pour avoir la définition des méthodes templates
@@ -178,6 +179,7 @@ class MeshMaterialTesterModule
   _checkVectorCopy(VectorType& var_type);
   void _testComponentPart(IMeshMaterial* mat,IMeshEnvironment* env);
   void _initUnitTest();
+  void _applyEos(bool is_init);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -699,6 +701,36 @@ startInit()
   _setDependencies();
   _dumpNoDumpRealValues();
   _initUnitTest();
+
+  _applyEos(true);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Appelle le service d'EOS s'il est disponible.
+ */
+void MeshMaterialTesterModule::
+_applyEos(bool is_init)
+{
+  auto* x = options()->additionalEosService();
+  if (!x)
+    return;
+  ENUMERATE_ENV(ienv,m_material_mng){
+    IMeshEnvironment* env = *ienv;
+    ENUMERATE_MAT(imat,env){
+      IMeshMaterial* mat  = *imat;
+      info() << "EOS: mat=" << mat->name();
+      ENUMERATE_MATCELL(icell,mat){
+        MatCell mc = *icell;
+        info() << "";
+      }
+      if (is_init)
+        x->initEOS(mat,m_mat_pressure,m_mat_density,m_mat_internal_energy,m_mat_sound_speed);
+      else
+        x->applyEOS(mat,m_mat_density,m_mat_internal_energy,m_mat_pressure,m_mat_sound_speed);
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1668,6 +1700,20 @@ compute()
       m_check_spectral_values_iteration = (iteration*2)+1; 
      _setOrCheckSpectralValues(m_check_spectral_values_iteration,false);
     }
+  }
+  {
+    // Initialise la densité et l'energie interne dans les nouvelles mailles.
+    ENUMERATE_MAT(imat,m_material_mng){
+      Materials::IMeshMaterial* mat = *imat;
+      ENUMERATE_MATCELL(icell,mat){
+        MatCell mc = *icell;
+        if (m_mat_density[mc] == 0.0)
+          m_mat_density[mc] = 50.0;
+        if (m_mat_internal_energy[mc] == 0.0)
+          m_mat_internal_energy[mc] = 1.0;
+      }
+    }
+    _applyEos(false);
   }
 }
 

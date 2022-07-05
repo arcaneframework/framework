@@ -6,6 +6,9 @@
 
   <ItemGroup>
     <Compile Include="@CSPATH@/Test1.cs" />
+    <Compile Include="@CSPATH@/StiffenedGasMaterialEos.cs" />
+    <Compile Include="@CSOUTPATH@/MeshMaterialCSharpUnitTest_axl.cs" />
+    <Compile Include="@MATERIAL_CSHARP_OUTDIR@/cs_files/*.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../Arcane.Core/Arcane.Core.csproj" />
