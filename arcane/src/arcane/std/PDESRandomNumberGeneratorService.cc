@@ -153,20 +153,18 @@ _reconstructUInt64(uint32_t front_bits, uint32_t back_bits)
 void PDESRandomNumberGeneratorService::
 _psdes(uint32_t* lword, uint32_t* irword)
 {
-  const int NITER = 4;
+  const Integer NITER = 4;
   const uint32_t c1[] = { 0xbaa96887L, 0x1e17d32cL, 0x03bcdc3cL, 0x0f33d1b2L };
   const uint32_t c2[] = { 0x4b0f3b58L, 0xe874f0c3L, 0x6955c5a6L, 0x55a7ca46L };
 
-  uint32_t ia, ib, iswap, itmph, itmpl;
-
-  for (int i = 0; i < NITER; i++) {
-    ia = (iswap = (*irword)) ^ c1[i];
-    itmpl = ia & 0xffff;
-    itmph = ia >> 16;
-    ib = itmpl * itmpl + ~(itmph * itmph);
+  for (Integer i = 0; i < NITER; i++) {
+    uint32_t iswap = iswap = (*irword);
+    uint32_t ia = iswap ^ c1[i];
+    uint32_t itmpl = ia & 0xffff;
+    uint32_t itmph = ia >> 16;
+    uint32_t ib = itmpl * itmpl + ~(itmph * itmph);
 
     *irword = (*lword) ^ (((ia = (ib >> 16) | ((ib & 0xffff) << 16)) ^ c2[i]) + itmpl * itmph);
-
     *lword = iswap;
   }
 }
