@@ -560,6 +560,8 @@ arcane_add_accelerator_test_sequential(miniweather_array1_right_layout testMiniW
 arcane_add_accelerator_test_sequential(miniweather_array1_left_layout testMiniWeatherArrayLeftLayout.arc)
 arcane_add_accelerator_test_sequential(miniweather_array1_device testMiniWeatherArrayDevice.arc)
 
+arcane_add_test_sequential(PDESRandomNumberGeneratorUnitTest testPDESRandomNumberGenerator.arc)
+
 if(ARCANE_HAS_GEOMETRY)
   ARCANE_ADD_TEST(geometry testGeom.arc)
 endif()

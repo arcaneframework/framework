@@ -98,6 +98,7 @@
 #include "arcane/MeshPartInfo.h"
 #include "arcane/IGraph2.h"
 #include "arcane/IGraphModifier2.h"
+#include "arcane/IRandomNumberGenerator.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -65,9 +65,10 @@ set(ARCANE_SOURCES
   accelerator/MiniWeatherArraySequential.cc
   CustomMeshTestModule.cc
   TaskUnitTest.cc
-  )
+  PDESRandomNumberGeneratorUnitTest.cc
+)
 
-set(AXL_FILES 
+set(AXL_FILES
   CheckpointTester
   SimpleHydro
   ScriptTester
@@ -100,5 +101,6 @@ set(AXL_FILES
   geometry/GeometryUnitTest
   CustomMeshTest
   accelerator/SimpleHydroAccelerator
-  )
+  PDESRandomNumberGeneratorUnitTest
+)
 

@@ -70,6 +70,8 @@ set(ARCANE_SOURCES
   SodMeshGenerator.h
   SimpleMeshGenerator.h
   CartesianMeshGenerator.h
+  PDESRandomNumberGeneratorService.cc
+  PDESRandomNumberGeneratorService.h
 
   MshMeshReader.cc
   MshMeshWriter.cc
@@ -79,9 +81,9 @@ set(ARCANE_SOURCES
 
   internal/SodStandardGroupsBuilder.h
   internal/SodStandardGroupsBuilder.cc
-  )
+)
 
-set(AXL_FILES 
+set(AXL_FILES
   Hdf5ReaderWriter
   Hdf5VariableReader
   Hdf5VariableWriter
@@ -105,4 +107,5 @@ set(AXL_FILES
   Sod3DMeshGenerator
   HoneyComb2DMeshGenerator
   HoneyComb3DMeshGenerator
- )
+  PDESRandomNumberGenerator
+)

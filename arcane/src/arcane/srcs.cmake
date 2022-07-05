@@ -733,6 +733,7 @@ set( ARCANE_SOURCES
    PrivateVariableScalarT.H
    PrivateVariableArrayT.H
    IMeshBase.h
+   IRandomNumberGenerator.h
    datatype/ArrayVariant.h
    datatype/BadVariantTypeException.h
    datatype/DataTracer.h
