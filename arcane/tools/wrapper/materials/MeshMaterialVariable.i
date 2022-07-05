@@ -12,7 +12,7 @@
 %{
   private HandleRef swigCPtr;
 
-  internal $csclassname(IntPtr cPtr, bool cMemoryOwn) : base($imclassname.MaterialVariableCell##DATATYPE##_SWIGUpcast(cPtr), cMemoryOwn)
+  public $csclassname(IntPtr cPtr, bool cMemoryOwn) : base($imclassname.MaterialVariableCell##DATATYPE##_SWIGUpcast(cPtr), cMemoryOwn)
   {
     swigCPtr = new HandleRef(this, cPtr);
     _InitMeshVariable();
@@ -26,25 +26,21 @@
 %typemap(csclassmodifiers) Arcane::Materials::CellMaterialVariableScalarRef< DATATYPE > "public unsafe class"
 %typemap(cscode) Arcane::Materials::CellMaterialVariableScalarRef< DATATYPE >
 %{
-  DATATYPE##ArrayView* m_values;
+  DATATYPE##ArrayView** m_values;
 
   protected void _InitMeshVariable()
   {
-    m_values = (DATATYPE##ArrayView*)_internalValueAsPointer();
+    m_values = (DATATYPE##ArrayView**)_internalValueAsPointerOfPointer();
   }
   public DATATYPE this[MatVarIndex item]
   {
-    get { return m_values[item.ArrayIndex][item.ValueIndex]; }
-    set { m_values[item.ArrayIndex][item.ValueIndex] = value; }
+    get { return (*m_values)[item.ArrayIndex][item.ValueIndex]; }
+    set { (*m_values)[item.ArrayIndex][item.ValueIndex] = value; }
   }
   public DATATYPE this[ComponentItem item]
   {
-    get { return m_values[item._matvarArrayIndex][item._matvarValueIndex]; }
-    set { m_values[item._matvarArrayIndex][item._matvarValueIndex] = value; }
-  }
-  protected void _OnSizeChanged()
-  {
-    m_values = (DATATYPE##ArrayView*)_internalValueAsPointer();
+    get { return (*m_values)[item._matvarArrayIndex][item._matvarValueIndex]; }
+    set { (*m_values)[item._matvarArrayIndex][item._matvarValueIndex] = value; }
   }
 %}
 
