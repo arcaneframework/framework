@@ -74,14 +74,8 @@
   <options>
 
     <service-instance name="simple-table-output" type="ISimpleTableOutput">
-      <description>Service</description>
+      <description>Service implémentant ISimpleTableOutput</description>
     </service-instance>
-
-    <simple name="csvPath" type="string" default="">
-      <description>
-        Path and name for csv file (example: ./example.csv ).
-      </description>
-    </simple>
 
   </options>
 

@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SimpleCsvOutputService.hh                                         (C) 2000-2022 */
+/* SimpleCsvOutputService.hh                                   (C) 2000-2022 */
 /*                                                                           */
-/* Service permettant de construire et de sortir un .csv.                    */
+/* Service permettant de construire et de sortir un tableau au formet csv.   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -25,23 +25,23 @@ class SimpleCsvOutputService
 : public ArcaneSimpleCsvOutputObject
 {
 public:
-  SimpleCsvOutputService(const ServiceBuildInfo & sbi)
+  explicit SimpleCsvOutputService(const ServiceBuildInfo & sbi)
     : ArcaneSimpleCsvOutputObject(sbi)
-    , m_size_rows(0)
-    , m_size_columns(0)
+    , m_path_computed(false)
+    , m_path_only_P0(true)
+    , m_name_tab_computed(false)
+    , m_name_tab_only_P0(true)
     , m_name_rows(0)
     , m_name_columns(0)
-    , m_path_computed(false)
-    , m_name_tab_computed(false)
-    , m_path_only_P0(true)
-    , m_name_tab_only_P0(true)
+    , m_size_rows(0)
+    , m_size_columns(0)
     , m_last_row(-1)
     , m_last_column(-1)
     {
       m_with_option = (sbi.creationType() == ST_CaseOption);
     }
   
-  virtual ~SimpleCsvOutputService() {};
+  virtual ~SimpleCsvOutputService() = default;
 
 public:
   void init() override;
@@ -160,6 +160,7 @@ private:
   //       m_size_columns[3] = 1
   //       m_size_columns[0; 1; 2; 4; 5] = 2
   //       m_size_columns.size() = 6
+
   UniqueArray<Integer> m_size_rows;
   UniqueArray<Integer> m_size_columns;
 

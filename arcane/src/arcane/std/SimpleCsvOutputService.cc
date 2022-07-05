@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SimpleCsvOutputService.cc                                         (C) 2000-2022 */
+/* SimpleCsvOutputService.cc                                   (C) 2000-2022 */
 /*                                                                           */
-/* Service permettant de construire et de sortir un .csv.                    */
+/* Service permettant de construire et de sortir un tableau au formet csv.   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -689,9 +689,9 @@ void SimpleCsvOutputService::
 print(Integer only_proc)
 {
   if(only_proc != -1 && mesh()->parallelMng()->commRank() != only_proc) return;
-  pinfo() << "P" << mesh()->parallelMng()->commRank() << " - Ecriture du .csv dans la sortie standard :";
+  pinfo() << "P" << mesh()->parallelMng()->commRank() << " - Ecriture du tableau dans la sortie standard :";
   _print(std::cout);
-  pinfo() << "P" << mesh()->parallelMng()->commRank() << " - Fin écriture .csv";
+  pinfo() << "P" << mesh()->parallelMng()->commRank() << " - Fin écriture tableau";
 }
 
 bool SimpleCsvOutputService::
