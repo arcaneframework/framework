@@ -778,6 +778,11 @@ writeFile(String path, Integer only_proc)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/**
+ * @brief Méthode permettant de finaliser les noms avant écriture.
+ * 
+ * @return String Le nom du fichier à sortir (avec extension).
+ */
 String SimpleCsvOutputService::
 _computeFinal()
 {
@@ -792,14 +797,24 @@ _computeFinal()
   return m_name_tab + ".csv";
 }
 
+/**
+ * @brief Méthode permettant de remplacer les symboles de nom par leur valeur.
+ * 
+ * @param name [IN] Le nom à modifier.
+ * @param only_once [OUT] Si le nom contient le symbole '\@proc_id\@' permettant 
+ *                de différencier les fichiers écrits par differents processus.
+ * @return String Le nom avec les symboles remplacés.
+ */
 String SimpleCsvOutputService::
-_computeAt(String name, bool& only_P0)
+_computeAt(String name, bool& only_once)
 {
-  // On découpe la string là où se trouve les @.
+  // Permet de contourner le bug avec String::split() si le nom commence par '@'.
   if(name.startsWith("@")){
     name = "@" + name;
   }
+
   StringUniqueArray string_splited;
+  // On découpe la string là où se trouve les @.
   name.split(string_splited, '@');
 
   // On traite les mots entre les "@".
@@ -811,12 +826,12 @@ _computeAt(String name, bool& only_P0)
     if (proc_id)
     {
       string_splited[proc_id.value()] = String::fromNumber(mesh()->parallelMng()->commRank());
-      only_P0 = false;
+      only_once = false;
     }
-    // Il n'y a que P0 qui write.
+    // Il n'y a que un seul proc qui write.
     else
     {
-      only_P0 = true;
+      only_once = true;
     }
 
     // On recherche "num_procs" dans le tableau (donc @num_procs@ dans le nom).
@@ -832,12 +847,19 @@ _computeAt(String name, bool& only_P0)
   String combined = "";
   for (String str : string_splited)
   {
+    // Permet de contourner le bug avec String::split() s'il y a '@@@' dans le nom ou si le 
+    // nom commence par '@' (en complément des premières lignes de la méthode).
     if(str == "@") continue;
     combined = combined + str;
   }
   return combined;
 }
 
+/**
+ * @brief Méthode permettant d'écrire le tableau dans un stream de sortie.
+ * 
+ * @param stream [IN/OUT] Le stream de sortie.
+ */
 void SimpleCsvOutputService::
 _print(std::ostream& stream)
 {

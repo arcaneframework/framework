@@ -107,10 +107,6 @@ public:
   /**
    * @brief Méthode permettant d'ajouter plusieurs colonnes.
    * 
-   * Si le nombre d'élements dans 'elems' est plus grand que le
-   * nombre de lignes, l'ajout s'effectue quand même (mais les
-   * éléments en trop ne seront pas ajoutés).
-   * 
    * @param name_rows Les noms des colonnes.
    * @return true Si toutes les colonnes ont été créées.
    * @return false Si toutes les colonnes n'ont pas été créées.
@@ -356,9 +352,11 @@ public:
 /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant de récupérer un élément au-dessus du dernier élement dernièrement manipulé (ligne du dessus/même colonne).
+   * @brief Méthode permettant de récupérer un élément au-dessus du dernier
+   * élement dernièrement manipulé (ligne du dessus/même colonne).
    * 
-   * L'élement que l'on récupère devient donc le dernier élement "modifié" à la fin de cette méthode (si update_last_pos = true).
+   * L'élement que l'on récupère devient donc le dernier élement "modifié"
+   * à la fin de cette méthode (si update_last_pos = true).
    * 
    * @param update_last_pos Doit-on déplacer le curseur "dernier élement modifié" ?
    * @return Real L'élement trouvé (0 si non trouvé).
@@ -473,14 +471,14 @@ public:
    * @brief Méthode permettant d'obtenir une copie d'une ligne.
    * 
    * @param pos La position de la ligne.
-   * @return RealUniqueArray La copie de la ligne (tableau vide si non trouvé).
+   * @return RealUniqueArray La copie de la ligne (tableau vide si non trouvée).
    */
   virtual RealUniqueArray row(Integer pos) = 0;
   /**
    * @brief Méthode permettant d'obtenir une copie d'une ligne.
    * 
    * @param name_row Le nom de la ligne.
-   * @return RealUniqueArray La copie de la ligne (tableau vide si non trouvé).
+   * @return RealUniqueArray La copie de la ligne (tableau vide si non trouvée).
    */
   virtual RealUniqueArray row(String name_row) = 0;
 
@@ -488,14 +486,14 @@ public:
    * @brief Méthode permettant d'obtenir une copie d'une colonne.
    * 
    * @param pos La position de la colonne.
-   * @return RealUniqueArray La copie de la colonne (tableau vide si non trouvé).
+   * @return RealUniqueArray La copie de la colonne (tableau vide si non trouvée).
    */
   virtual RealUniqueArray column(Integer pos) = 0;
   /**
    * @brief Méthode permettant d'obtenir une copie d'une colonne.
    * 
    * @param name_column Le nom de la colonne.
-   * @return RealUniqueArray La copie de la colonne (tableau vide si non trouvé).
+   * @return RealUniqueArray La copie de la colonne (tableau vide si non trouvée).
    */
   virtual RealUniqueArray column(String name_column) = 0;
 
@@ -507,7 +505,7 @@ public:
    * Incluant les hypothétiques 'trous' dans la ligne.
    * 
    * @param pos La position de la ligne.
-   * @return Integer La taille de la ligne (0 si non trouvé).
+   * @return Integer La taille de la ligne (0 si non trouvée).
    */
   virtual Integer sizeRow(Integer pos) = 0;
   /**
@@ -515,7 +513,7 @@ public:
    * Incluant les hypotétiques 'trous' dans la ligne.
    * 
    * @param pos Le nom de la ligne.
-   * @return Integer La taille de la ligne (0 si non trouvé).
+   * @return Integer La taille de la ligne (0 si non trouvée).
    */
   virtual Integer sizeRow(String name_row) = 0;
 
@@ -524,7 +522,7 @@ public:
    * Incluant les hypotétiques 'trous' dans la colonne.
    * 
    * @param pos La position de la colonne.
-   * @return Integer La taille de la colonne (0 si non trouvé).
+   * @return Integer La taille de la colonne (0 si non trouvée).
    */
   virtual Integer sizeColumn(Integer pos) = 0;
   /**
@@ -532,7 +530,7 @@ public:
    * Incluant les hypotétiques 'trous' dans la colonne.
    * 
    * @param pos Le nom de la colonne.
-   * @return Integer La taille de la colonne (0 si non trouvé).
+   * @return Integer La taille de la colonne (0 si non trouvée).
    */
   virtual Integer sizeColumn(String name_column) = 0;
 
@@ -543,14 +541,14 @@ public:
    * @brief Méthode permettant de récupérer la position d'une ligne.
    * 
    * @param name_row Le nom de la ligne.
-   * @return Integer La position de la ligne (-1 si non trouvé).
+   * @return Integer La position de la ligne (-1 si non trouvée).
    */
   virtual Integer posRow(String name_row) = 0;
   /**
    * @brief Méthode permettant de récupérer la position d'une colonne.
    * 
    * @param name_row Le nom de la colonne.
-   * @return Integer La position de la colonne (-1 si non trouvé).
+   * @return Integer La position de la colonne (-1 si non trouvée).
    */
   virtual Integer posColumn(String name_column) = 0;
   
@@ -618,7 +616,7 @@ public:
 
   /**
    * @brief Méthode permettant de créer une colonne contenant la moyenne des
-   * éléments de chaque ligne
+   * éléments de chaque ligne.
    * 
    * @param name_column Le nom de la nouvelle colonne.
    * @return Integer La position de la colonne.
@@ -637,7 +635,7 @@ public:
   virtual void print(Integer only_proc = 0) = 0;
   /**
    * @brief Méthode permettant d'écrire le tableau dans un fichier.
-   * Si only_P0 == true, les processus autres que P0 retournent true.
+   * Si only_proc != -1, les processus autres que P0 retournent true.
    * 
    * @param only_proc L'id du processus devant écrire dans un fichier 
    *                  le tableau (-1 pour signifier "tous les processus").
@@ -647,7 +645,7 @@ public:
   virtual bool writeFile(Integer only_proc = -1) = 0;
   /**
    * @brief Méthode permettant d'écrire le tableau dans un fichier.
-   * Si only_P0 == true, les processus autres que P0 retournent true.
+   * Si only_proc != -1, les processus autres que P0 retournent true.
    * 
    * @param path Le répertoire où sera écrit le fichier.
    * @param only_proc L'id du processus devant écrire dans un fichier 

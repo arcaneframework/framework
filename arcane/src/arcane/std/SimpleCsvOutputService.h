@@ -130,7 +130,7 @@ public:
   bool writeFile(String path, Integer only_proc) override;
 
  private:
-  String _computeAt(String name, bool& only_P0);
+  String _computeAt(String name, bool& only_once);
   String _computeFinal();
   void _print(std::ostream& stream);
 
