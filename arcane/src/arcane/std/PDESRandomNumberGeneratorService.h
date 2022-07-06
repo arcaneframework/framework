@@ -1,4 +1,4 @@
-// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
 // Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
@@ -17,10 +17,23 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#ifndef ARCANE_STD_PDESRANDOMNUMBERGENERATORSERVICE_H
+#define ARCANE_STD_PDESRANDOMNUMBERGENERATORSERVICE_H
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 #include "arcane/IRandomNumberGenerator.h"
 #include "arcane/std/PDESRandomNumberGenerator_axl.h"
 
-using namespace Arcane;
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 class PDESRandomNumberGeneratorService
 : public ArcanePDESRandomNumberGeneratorObject
@@ -65,6 +78,16 @@ class PDESRandomNumberGeneratorService
 /*---------------------------------------------------------------------------*/
 
 ARCANE_REGISTER_SERVICE_PDESRANDOMNUMBERGENERATOR(PDESRandomNumberGenerator, PDESRandomNumberGeneratorService);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

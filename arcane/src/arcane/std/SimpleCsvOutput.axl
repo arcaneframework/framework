@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="ISO-8859-1" ?>
+ï»¿<?xml version="1.0" encoding="UTF-8"?>
 <service name="SimpleCsvOutput" version="1.0" singleton="true">
 
   <userclass>User</userclass>
@@ -15,46 +15,45 @@
     <simple name="tableName" type="string" default="">
       <userclass>User</userclass>
       <description>
-        Nom du tableau (sera écrit dans la première case du tableau et
+        Nom du tableau (sera Ã©crit dans la premiÃ¨re case du tableau et
         sera aussi le nom du fichier).
         Ne pas mettre l'extension ".csv".
 
         Exemple : "MonTableau"
 
-        Les 'symboles' de nom sont aussi supporté :
+        Les 'symboles' de nom sont aussi supportÃ© :
           - @proc_id@ : le rang du processus.
           - @num_procs@ : le nombre total de processus.
 
-        Lors de l'écriture, ces symboles seront remplacés par
-        se qu'il représente au moment de l'exécution.
+        Lors de l'Ã©criture, ces symboles seront remplacÃ©s par
+        se qu'il reprÃ©sente au moment de l'exÃ©cution.
 
         Exemple : "MonTableau_P@proc_id@"
 
-        Peut aussi être définis lors de l'appel à init().
+        Peut aussi Ãªtre dÃ©finis lors de l'appel Ã  init().
       </description>
     </simple>
 
     <simple name="tableDir" type="string" default="">
       <userclass>User</userclass>
       <description>
-        Nom du répertoire.
-        Le service peut créer un ou plusieurs sous-répertoire si nécessaire 
-        (mais pas de sous-sous-répertoire).
+        Nom du rÃ©pertoire.
+        Le service peut crÃ©er un ou plusieurs sous-rÃ©pertoire si nÃ©cessaire 
+        (mais pas de sous-sous-rÃ©pertoire).
 
         Exemple : "./MonDossier/"
 
-        Les 'symboles' de nom sont aussi supporté :
+        Les 'symboles' de nom sont aussi supportÃ© :
           - @proc_id@ : le rang du processus.
           - @num_procs@ : le nombre total de processus.
 
-        Lors de l'écriture, ces symboles seront remplacés par
-        se qu'il représente au moment de l'exécution.
+        Lors de l'Ã©criture, ces symboles seront remplacÃ©s par
+        se qu'il reprÃ©sente au moment de l'exÃ©cution.
 
         Exemple : "./MonDossierPourP@proc_id@/"
 
-        Peut aussi être définis lors de l'appel à writeFile().
+        Peut aussi Ãªtre dÃ©finis lors de l'appel Ã  writeFile().
       </description>
     </simple>
 	</options>
 </service>
-

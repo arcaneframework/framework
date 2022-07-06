@@ -1,4 +1,4 @@
-<?xml version="1.0" ?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <service name="PDESRandomNumberGeneratorUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest" namespace-name="ArcaneTest">
   <interface name="Arcane::IUnitTest" inherited="false" />
  

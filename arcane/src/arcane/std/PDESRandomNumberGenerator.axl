@@ -1,9 +1,9 @@
-<?xml version="1.0" encoding="ISO-8859-1" ?>
+ï»¿<?xml version="1.0" encoding="UTF-8"?>
 <service name="PDESRandomNumberGenerator" version="1.0" singleton="true">
 
   <userclass>User</userclass>
   <description>
-    Genérateur de nombre (pseudo-)aléatoire basé sur un algorithme pseudo-DES.
+    GenÃ©rateur de nombre (pseudo-)alÃ©atoire basÃ© sur un algorithme pseudo-DES.
 
     Voir le livre :
     
@@ -14,16 +14,15 @@
 
   <interface name="Arcane::IRandomNumberGenerator" />
 
-	<variables>
+  <variables>
   </variables>
 
-	<options>
+  <options>
     <simple name="initialSeed" type="int64" default="4294967297">
       <userclass>User</userclass>
       <description>
-        Graine initiale. Peut aussi être défini en paramètre lors de l'init.
+        Graine initiale. Peut aussi Ãªtre dÃ©fini en paramÃ¨tre lors de l'init.
       </description>
     </simple>
-	</options>
+  </options>
 </service>
-
