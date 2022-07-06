@@ -17,12 +17,11 @@
 #include "arcane/mesh/PolyhedralMeshTools.h"
 #include "arcane/utils/ArcaneGlobal.h"
 
-#include <neo/Mesh.h>
-
 #include <vtkCellIterator.h>
 #include <vtkIdTypeArray.h>
 
 #include <iostream>
+#include <numeric>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
