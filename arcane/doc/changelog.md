@@ -5,11 +5,15 @@
 
 Cette page contient les nouveautés de chaque version de %Arcane.
 
-Arcane Version 3.6.11 (?? juin 2022) {#arcanedoc_version360}
+Arcane Version 3.6.13 (06 juillet 2022) {#arcanedoc_version360}
 ======================================
 
 Nouveautés/Améliorations:
 
+- Ajout d'une interface Arcane::IRandomNumberGenerator pour un service
+  de génération de nombre aléatoire (#266)
+- Ajoute support des variables matériaux dans les fichiers `axl` pour
+  le générateur C# (#273)
 - Supprime allocation de la connectivité des noeuds dans les anciennes
   connectivités. Cela permet de réduire l'empreinte mémoire (#231).
 - Ajoute pour les classes Arccore::Span, Arccore::ArrayView,
@@ -47,6 +51,10 @@ Nouveautés/Améliorations:
 
 Changements:
 
+- Scinde en deux composantes les classes gérant les matériaux. Une
+  partie est maintenant dans la composante `arcane_core`. Ce
+  changement est normalement transparent pour les utilisateurs
+  d'%Arcane et il n'y a pas besoin de modifier les sources (#264,#270,#274)
 - Compacte les références après un appel à
   Arcane::IItemFamily::compactItems(). Cela permet d'éviter de faire
   grossir inutilement le tableau des contenant les informations

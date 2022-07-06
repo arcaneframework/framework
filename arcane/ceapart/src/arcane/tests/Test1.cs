@@ -3,10 +3,9 @@ using Arcane;
 using Arcane.Materials;
 
 [Arcane.Service("DotNetMaterialTest1",typeof(Arcane.IUnitTest))]
-public class DotNetMaterialTest1 : Arcane.IUnitTest_WrapperService
+public class DotNetMaterialTest1 : ArcaneMeshMaterialCSharpUnitTestObject
 {
   IMeshMaterialMng_Ref m_mesh_material_mng;
-  MaterialVariableCellReal m_mat_density;
 
   public DotNetMaterialTest1(ServiceBuildInfo bi) : base(bi)
   {
@@ -15,7 +14,6 @@ public class DotNetMaterialTest1 : Arcane.IUnitTest_WrapperService
   public override void InitializeTest()
   {
     m_mesh_material_mng = IMeshMaterialMng.GetTrueReference(Mesh().Handle());
-    m_mat_density = new MaterialVariableCellReal(new VariableBuildInfo(Mesh(),"Density"));
     Console.WriteLine("[C#] Initialize test");
   }
 

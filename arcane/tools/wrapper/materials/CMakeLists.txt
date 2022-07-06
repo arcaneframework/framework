@@ -20,7 +20,7 @@ arcane_wrapper_add_swig_target(NAME cea_materials
   SOURCE ArcaneSwigCeaMaterials.i
   NAMESPACE_NAME Arcane.Materials
   DLL_NAME Arcane.Cea.Materials
-  INCLUDE_DIRECTORIES ${Arcane_SOURCE_DIR}/tools/wrapper ${ARCANECEA_SRC_PATH}
+  SWIG_TARGET_DEPENDS core
   )
 
 target_link_libraries(arcane_dotnet_wrapper_cea_materials PUBLIC arcane_core)
