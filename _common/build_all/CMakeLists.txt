@@ -31,7 +31,7 @@ endmacro()
 
 arcane_set_if_unset(ARCANE_WANT_NUMERICS TRUE BOOL "Compile numerical library")
 arcane_set_if_unset(ARCANE_WANT_TOTALVIEW TRUE BOOL "Compile total view display")
-arcane_set_if_unset(ARCANE_DEFAULT_PARTITIONER Metis STRING "Default partitioner")
+arcane_set_if_unset(ARCANE_DEFAULT_PARTITIONER Auto STRING "Default partitioner")
 
 arcane_set_if_unset(ARCANE_BUILD_TYPE Release STRING "Arcane build type")
 arcane_set_if_unset(ARCANE_WANT_LIBXML2 TRUE BOOL "Use libxml2")
