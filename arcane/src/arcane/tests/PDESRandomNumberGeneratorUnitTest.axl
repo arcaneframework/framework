@@ -6,7 +6,7 @@
   </variables>
 
   <options>
-    <service-instance name="PDESRandomNumberGenerator" type="IRandomNumberGenerator">
+    <service-instance name="PDESRandomNumberGenerator" type="Arcane::IRandomNumberGenerator">
       <description>RNG</description>
     </service-instance>
   </options>

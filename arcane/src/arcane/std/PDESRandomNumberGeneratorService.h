@@ -17,10 +17,24 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#ifndef ARCANE_STD_PDESRANDOMNUMBERGENERATORSERVICE_H
+#define ARCANE_STD_PDESRANDOMNUMBERGENERATORSERVICE_H
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 #include "arcane/IRandomNumberGenerator.h"
 #include "arcane/std/PDESRandomNumberGenerator_axl.h"
 
-using namespace Arcane;
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 class PDESRandomNumberGeneratorService
 : public ArcanePDESRandomNumberGeneratorObject
@@ -28,6 +42,7 @@ class PDESRandomNumberGeneratorService
  public:
   PDESRandomNumberGeneratorService(const ServiceBuildInfo& sbi)
   : ArcanePDESRandomNumberGeneratorObject(sbi)
+  ,m_seed(4294967297)
   {
     m_with_option = (sbi.creationType() == ST_CaseOption);
   }
@@ -67,3 +82,10 @@ ARCANE_REGISTER_SERVICE_PDESRANDOMNUMBERGENERATOR(PDESRandomNumberGenerator, PDE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+} // End namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#endif
