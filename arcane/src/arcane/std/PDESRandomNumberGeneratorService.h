@@ -28,6 +28,7 @@ class PDESRandomNumberGeneratorService
  public:
   PDESRandomNumberGeneratorService(const ServiceBuildInfo& sbi)
   : ArcanePDESRandomNumberGeneratorObject(sbi)
+  , m_seed(4294967297)
   {
     m_with_option = (sbi.creationType() == ST_CaseOption);
   }
