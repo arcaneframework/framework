@@ -5,7 +5,7 @@
     Genérateur de nombre (preudo-)aléatoire basé sur un algorithme de pseudo-DES.
   </description>
 
-  <interface name="IRandomNumberGenerator" />
+  <interface name="Arcane::IRandomNumberGenerator" />
 
 	<variables>
   </variables>
