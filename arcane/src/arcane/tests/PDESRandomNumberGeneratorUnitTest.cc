@@ -28,11 +28,9 @@ setUpForClass()
   ptrRNG = options()->getPdesRandomNumberGenerator();
 }
 
-
 void PDESRandomNumberGeneratorUnitTest::
 setUp()
 {
-
 }
 
 void PDESRandomNumberGeneratorUnitTest::
@@ -46,15 +44,8 @@ testHardcodedValues()
     Real val1 = ptrRNG->generateRandomNumber();
     Real val2 = ptrRNG->generateRandomNumber(&initial_seed);
 
-    if (val1 != val2) {
-      info() << val1 << val2;
-      ARCANE_FATAL("[hardcodedValues:0] Valeurs differentes.");
-    }
-
-    if ((Integer)(hardcoded_vals[i] * 1e9) != (Integer)(val1 * 1e9)) {
-      info() << hardcoded_vals[i] << " " << val1;
-      ARCANE_FATAL("[hardcodedValues:1] Valeurs differentes.");
-    }
+    ASSERT_EQUAL(val1, val2);
+    ASSERT_NEARLY_EQUAL(val1, hardcoded_vals[i]);
   }
 }
 
@@ -69,18 +60,13 @@ testHardcodedSeeds()
     RandomNumberGeneratorSeed val11 = ptrRNG->generateRandomSeed();
     RandomNumberGeneratorSeed val22 = ptrRNG->generateRandomSeed(&initial_seed);
 
-    Int64 val1,val2;
-    val11.seed(val1);
-    val22.seed(val2);
+    // On peut mettre direct Int64 vu que l'on teste l'implem PDESRNGS.
+    Int64 val1, val2;
+    ASSERT_TRUE(val11.seed(val1, false));
+    ASSERT_TRUE(val22.seed(val2, false));
 
-    if (val1 != val2){
-      info() << val1 << val2;
-      ARCANE_FATAL("[hardcodedSeeds:0] Valeurs differentes.");
-    }
-    if (hardcoded_seeds[i] != val1){
-      info() << hardcoded_seeds[i] << " " << val1;
-      ARCANE_FATAL("[hardcodedSeeds:1] Valeurs differentes.");
-    }
+    ASSERT_EQUAL(val1, val2);
+    ASSERT_EQUAL(val1, hardcoded_seeds[i]);
   }
 }
 
@@ -93,7 +79,6 @@ tearDown()
 void PDESRandomNumberGeneratorUnitTest::
 tearDownForClass()
 {
-
 }
 
 /*---------------------------------------------------------------------------*/

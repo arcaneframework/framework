@@ -50,7 +50,7 @@ class PDESRandomNumberGeneratorService
   virtual ~PDESRandomNumberGeneratorService(){};
 
  public:
-  void initSeed() override;
+  bool initSeed() override;
   bool initSeed(RandomNumberGeneratorSeed seed) override;
 
   RandomNumberGeneratorSeed seed() override;

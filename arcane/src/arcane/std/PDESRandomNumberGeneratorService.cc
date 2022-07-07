@@ -28,7 +28,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void PDESRandomNumberGeneratorService::
+bool PDESRandomNumberGeneratorService::
 initSeed()
 {
   if (m_with_option) {
@@ -37,6 +37,7 @@ initSeed()
   else {
     m_seed = 4294967297;
   }
+  return true;
 }
 
 bool PDESRandomNumberGeneratorService::
@@ -85,7 +86,7 @@ RandomNumberGeneratorSeed PDESRandomNumberGeneratorService::
 generateRandomSeed(RandomNumberGeneratorSeed* parent_seed, Integer leap)
 {
   Int64 i_seed;
-  if(!parent_seed->seed(i_seed, false)){
+  if (!parent_seed->seed(i_seed, false)) {
     ARCANE_FATAL("Bad size of seed");
   }
 
@@ -111,7 +112,7 @@ Real PDESRandomNumberGeneratorService::
 generateRandomNumber(RandomNumberGeneratorSeed* seed, Integer leap)
 {
   Int64 i_seed;
-  if(!seed->seed(i_seed, false)){
+  if (!seed->seed(i_seed, false)) {
     ARCANE_FATAL("Bad size of seed");
   }
   Real fin = _ran4(&i_seed, leap);

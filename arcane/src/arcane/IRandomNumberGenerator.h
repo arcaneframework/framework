@@ -111,12 +111,11 @@ class ARCANE_CORE_EXPORT RandomNumberGeneratorSeed
   template <class T>
   bool setSeed(T value)
   {
-    if(m_seed.size() == 0){
+    if (m_seed.size() == 0) {
       return false;
     }
     memcpy(m_seed.data(), &value, std::min(m_seed.size(), (Integer)sizeof(T)));
-    for(Integer i = sizeof(T); i < m_seed.size(); i++)
-    {
+    for (Integer i = sizeof(T); i < m_seed.size(); i++) {
       m_seed[i] = 0x00;
     }
     return true;
@@ -286,8 +285,10 @@ class ARCANE_CORE_EXPORT IRandomNumberGenerator
    * Avec la graine en option (ou la graine par défaut si l'on est
    * en mode singleton).
    * 
+   * @return true Si l'initialisation a bien eu lieu.
+   * @return false Si l'initialisation n'a pas eu lieu.
    */
-  virtual void initSeed() = 0;
+  virtual bool initSeed() = 0;
 
   /**
    * @brief Méthode permettant d'initialiser le service.
