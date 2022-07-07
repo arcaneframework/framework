@@ -42,6 +42,7 @@ class PDESRandomNumberGeneratorService
   PDESRandomNumberGeneratorService(const ServiceBuildInfo& sbi)
   : ArcanePDESRandomNumberGeneratorObject(sbi)
   , m_seed(4294967297)
+  , m_size_of_seed(sizeof(Int64))
   {
     m_with_option = (sbi.creationType() == ST_CaseOption);
   }
@@ -50,9 +51,12 @@ class PDESRandomNumberGeneratorService
 
  public:
   void initSeed() override;
-  void initSeed(RandomNumberGeneratorSeed seed) override;
+  bool initSeed(RandomNumberGeneratorSeed seed) override;
 
   RandomNumberGeneratorSeed seed() override;
+  RandomNumberGeneratorSeed emptySeed() override;
+
+  Integer neededSizeOfSeed() override;
 
   bool isLeapSeedSupported() override { return true; };
   RandomNumberGeneratorSeed generateRandomSeed(Integer leap) override;
@@ -71,6 +75,7 @@ class PDESRandomNumberGeneratorService
 
  protected:
   Int64 m_seed;
+  Integer m_size_of_seed;
   bool m_with_option;
 };
 

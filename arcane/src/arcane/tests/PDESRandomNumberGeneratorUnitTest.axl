@@ -5,9 +5,20 @@
   <variables>
   </variables>
 
+  <tests 
+   class-set-up="setUpForClass" 
+   test-set-up="setUp" 
+   class-tear-down="tearDownForClass" 
+   test-tear-down="tearDown"
+  >
+    <test name="Test sauts de valeurs" method-name="testHardcodedValues"/>
+    <test name="Test sauts de graines" method-name="testHardcodedSeeds"/>
+  </tests> 
+
+
   <options>
-    <service-instance name="PDESRandomNumberGenerator" type="Arcane::IRandomNumberGenerator">
-      <description>RNG</description>
+    <service-instance name="pdes-random-number-generator" type="Arcane::IRandomNumberGenerator">
+      <description>Service PDESRandomNumberGenerator</description>
     </service-instance>
   </options>
 

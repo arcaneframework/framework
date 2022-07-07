@@ -1,7 +1,7 @@
-<?xml version="1.0"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <case codename="ArcaneTest" xml:lang="en" codeversion="1.0">
   <arcane>
-    <title>Test InOut</title>
+    <title>Test Service SimpleCsvOutput 1</title>
     <timeloop>UnitTest</timeloop>
   </arcane>
 

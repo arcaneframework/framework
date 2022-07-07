@@ -7,8 +7,8 @@
 /*---------------------------------------------------------------------------*/
 /* PDESRandomNumberGeneratorUnitTest.h                         (C) 2000-2022 */
 /*                                                                           */
-/* Service du test du générateur de nombres (pseudo-)aléatoires avec         */
-/* algorithme pseudo-DES.                                                    */
+/* Service de test du générateur de nombres (pseudo-)aléatoires avec         */
+/* l'algorithme pseudo-DES.                                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -44,16 +44,17 @@ class PDESRandomNumberGeneratorUnitTest
   ~PDESRandomNumberGeneratorUnitTest() {}
 
  public:
-  void initializeTest() override;
-  void executeTest() override;
+  void setUpForClass() override;
+  void setUp() override;
+
+  void testHardcodedValues() override;
+  void testHardcodedSeeds() override;
+
+  void tearDown() override;
+  void tearDownForClass() override;
 
  private:
-  void testRNGS();
-  void hardcodedValues();
-  void hardcodedSeeds();
-  void mcPi();
-  void leepSeeds();
-  void leepNumbers();
+  IRandomNumberGenerator* ptrRNG;
 
   const Int64 hardcoded_seed = 4294967297;
   const RealUniqueArray hardcoded_vals{

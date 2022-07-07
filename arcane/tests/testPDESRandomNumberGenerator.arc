@@ -1,9 +1,8 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <case codename="ArcaneTest" xml:lang="en" codeversion="1.0">
 
   <arcane>
-    <title>Test Arcane 1</title>
-    <description>Test Arcane 1</description>
+    <title>Test Service PDESRandomNumberGenerator 2</title>
     <timeloop>UnitTest</timeloop>
   </arcane>
 
@@ -32,10 +31,16 @@
   </meshes>
 
  <unit-test-module>
-    <test name="PDESRandomNumberGeneratorUnitTest">
-      <PDESRandomNumberGenerator name="PDESRandomNumberGenerator">
+    <xml-test name="PDESRandomNumberGeneratorUnitTest">
+      <pdes-random-number-generator name="PDESRandomNumberGenerator">
         <initialSeed>1234</initialSeed>
-      </PDESRandomNumberGenerator>
-    </test>
+      </pdes-random-number-generator>
+    </xml-test>
+
+    <xml-test name="RandomNumberGeneratorUnitTest">
+      <random-number-generator name="PDESRandomNumberGenerator">
+        <initialSeed>1234</initialSeed>
+      </random-number-generator>
+    </xml-test>
   </unit-test-module>
 </case>
