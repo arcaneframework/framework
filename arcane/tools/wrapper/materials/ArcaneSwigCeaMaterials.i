@@ -3,6 +3,7 @@
 %import core/ArcaneSwigCore.i
 
 %{
+#define ARCANE_DOTNET
 #include "ArcaneSwigUtils.h"
 #include "arcane/core/materials/IMeshMaterialMng.h"
 #include "arcane/core/materials/IMeshBlock.h"
@@ -18,6 +19,8 @@
 using namespace Arcane;
 using namespace Arcane::Materials;
 %}
+
+#define ARCANE_DOTNET
 
 // Supprime temporairement ces méthodes car elles ne sont pas bien wrappées
 %ignore Arcane::Materials::IMeshMaterialMng::view;
@@ -61,7 +64,5 @@ ARCANE_STD_EXHANDLER
 %include arcane/core/materials/CellToAllEnvCellConverter.h
 %include MeshMaterialVariable.i
 %exception;
-
-//%include arcane/materials/IMeshMaterialMng.h
 
 %template(IMeshMaterialMng_Ref) Arcane::Ref<Arcane::Materials::IMeshMaterialMng>;

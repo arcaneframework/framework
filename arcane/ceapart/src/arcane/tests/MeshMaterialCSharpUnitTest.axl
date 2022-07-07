@@ -1,0 +1,28 @@
+<?xml version="1.0" ?>
+<service name="MeshMaterialCSharpUnitTest" version="1.0" type="caseoption" parent-name="Arcane.IUnitTest_WrapperService">
+
+<description>Jeu de données du service de test unitaire MeshMaterialCSharpUnitTest</description>
+  <interface name="IUnitTest" inherited='false'/>
+
+  <options>
+    <!-- <simple name="remove-fraction" type="int32">
+      <description>Fraction de mailles a supprimer. Si la valeur est
+      de 2, on supprime la moitié des mailles. Si la valeur est 3 on
+      supprime un tier des mailles</description>
+    </simple> -->
+  </options>
+
+  <variables>
+    <variable
+      field-name="mat_density"
+      name="Density"
+      data-type="real"
+      item-kind="cell"
+      dim="0"
+      dump="true"
+      need-sync="true"
+      material="true"
+      />
+    
+  </variables>
+</service>

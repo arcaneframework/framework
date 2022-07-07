@@ -13,6 +13,7 @@ set(ARCANE_SOURCES
   CartesianMeshV2TestUtils.cc
   CartesianMeshV2TestUtils.h
   UnitTestCartesianMeshPatch.cc
+  IMaterialEquationOfState.h
 )
 
 set(AXL_FILES 

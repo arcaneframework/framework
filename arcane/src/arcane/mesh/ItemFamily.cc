@@ -131,7 +131,7 @@ class ItemFamily::Variables
     m_items_flags(VariableBuildInfo(mesh,items_flags_name,IVariable::PPrivate)),
     m_groups_name(VariableBuildInfo(mesh,groups_name)),
     m_current_id(VariableBuildInfo(mesh,current_id_name)),
-    m_items_new_owner(VariableBuildInfo(mesh,new_owner_name,family_name,IVariable::PSubDomainDepend|IVariable::PExecutionDepend),item_kind),
+    m_items_new_owner(VariableBuildInfo(mesh,new_owner_name,family_name,IVariable::PNoDump|IVariable::PSubDomainDepend|IVariable::PExecutionDepend),item_kind),
     m_parent_mesh_name(VariableBuildInfo(mesh,parent_mesh_name,IVariable::PPrivate)),
     m_parent_family_name(VariableBuildInfo(mesh,parent_family_name,IVariable::PPrivate)),
     m_parent_family_depth(VariableBuildInfo(mesh,parent_family_depth_name,IVariable::PPrivate)),

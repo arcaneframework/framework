@@ -95,6 +95,19 @@ Service utilisé pour l'équilibrage de charge.
    </description>
   </service-instance>
 
+  <!-- - - - - - additionnal-eos-service - - - - -->
+  <service-instance
+   name    = "additional-eos-service"
+   type    = "MaterialEos::IMaterialEquationOfState"
+   optional = "true"
+  >
+   <name lang='fr'>service-additionnel-eos</name>
+   <description>
+     Service additionnel de test d'EOS.
+     Si spécifié, le service est appelé au cours des itérations.
+   </description>
+  </service-instance>
+
  </options>
 
  <entry-points>
@@ -105,22 +118,35 @@ Service utilisé pour l'équilibrage de charge.
  </entry-points>
  
  <variables>
-      <variable field-name="mat_density"
-                name="Density"
+      <variable field-name="mat_density" name="Density" data-type="real" item-kind="cell" dim="0" material="true" />
+      <variable field-name="mat_pressure"
+                name="Pressure"
                 data-type="real"
                 item-kind="cell"
                 dim="0"
                 material="true"
-                >
-      </variable>
+                />
+      <variable field-name="mat_internal_energy"
+                name="InternalEnergy"
+                data-type="real"
+                item-kind="cell"
+                dim="0"
+                material="true"
+                />
+      <variable field-name="mat_sound_speed"
+                name="SoundSpeed"
+                data-type="real"
+                item-kind="cell"
+                dim="0"
+                material="true"
+                />
       <variable field-name="mat_spectral1"
                 name="Spectral1"
                 data-type="real"
                 item-kind="cell"
                 dim="1"
                 material="true"
-                >
-      </variable>
+                />
       <variable field-name="mat_spectral2"
                 name="Spectral2"
                 data-type="int32"
