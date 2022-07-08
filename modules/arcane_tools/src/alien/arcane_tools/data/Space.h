@@ -26,6 +26,8 @@ class Space final
   Space() {}
   
   Space(IIndexManager* index_mng, Arccore::String name = "Undefined");
+
+  Space(IIndexManager* index_mng, Integer block_size, Arccore::String name = "Undefined");
   
   Space(const Space& s) 
     : m_internal(s.m_internal) 
@@ -93,7 +95,10 @@ class Space final
     
   //! Index manager
   IIndexManager* indexManager() const { return m_index_mng; }
-    
+
+ private:
+  void _init();
+  
  private:
     
   std::shared_ptr<Alien::Space> m_internal;
