@@ -2,6 +2,7 @@
 #define ALIEN_ARCANETOOLS_INDEXSET_INDEXSETFABRIC_H
 
 #include <alien/data/Space.h>
+#include <alien/arcane_tools/data/Space.h>
 #include <alien/arcane_tools/IIndexManager.h>
 
 #include <arccore/trace/ITraceMng.h>

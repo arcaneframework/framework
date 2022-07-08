@@ -39,6 +39,16 @@ namespace ArcaneTools {
 
   /*---------------------------------------------------------------------------*/
 
+  inline 
+  VectorDistribution
+  createVectorDistribution(Space& space, Arcane::Integer block_size)
+  {
+    auto* im = space.indexManager();
+    
+    return Alien::VectorDistribution(space, im->localSize()/block_size, im->parallelMng());
+  }
+
+  /*---------------------------------------------------------------------------*/
   inline MatrixDistribution
   createMatrixDistribution(IIndexManager* index_mng, Alien::IMessagePassingMng* parallel_mng)
   {
@@ -65,6 +75,18 @@ namespace ArcaneTools {
 
     return Alien::MatrixDistribution(row_space, col_space, im->localSize(), im->parallelMng());
   }
+
+  /*---------------------------------------------------------------------------*/
+
+  inline 
+  MatrixDistribution
+  createMatrixDistribution(Space& space, Arcane::Integer block_size)
+  {
+    auto* im = space.indexManager();
+  
+    return Alien::MatrixDistribution(space, space, im->localSize()/block_size, im->parallelMng());
+  }
+  
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
 
