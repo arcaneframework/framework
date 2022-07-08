@@ -1,0 +1,85 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<service name="SimpleTableOutputUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest" namespace-name="ArcaneTest"> 
+  <interface name="Arcane::IUnitTest" inherited='false'/>
+
+  <description>Descripteur du service SimpleTableOutputUnitTest</description>
+
+  <variables>
+  </variables>
+
+  <tests class-set-up="setUpForClass" test-set-up="setUp" class-tear-down="tearDownForClass" test-tear-down="tearDown">
+    <test name="Test initial" method-name="testInit"/>
+
+    <test name="Test addRow() 1" method-name="testAddRow1"/>
+    <test name="Test addRow() 2" method-name="testAddRow2"/>
+    <test name="Test addRow() 3" method-name="testAddRow3"/>
+    <test name="Test addRows() 1" method-name="testAddRows1"/>
+
+    <test name="Test addColumn() 1" method-name="testAddColumn1"/>
+    <test name="Test addColumn() 2" method-name="testAddColumn2"/>
+    <test name="Test addColumn() 3" method-name="testAddColumn3"/>
+    <test name="Test addColumns() 1" method-name="testAddColumns1"/>
+
+    <test name="Test addElemRow() 1" method-name="testAddElemRow1"/>
+    <test name="Test addElemRow() 2" method-name="testAddElemRow2"/>
+
+    <test name="Test addElemSameRow() 1" method-name="testAddElemSameRow1"/>
+
+    <test name="Test addElemsRow() 1" method-name="testAddElemsRow1"/>
+    <test name="Test addElemsRow() 2" method-name="testAddElemsRow2"/>
+
+    <test name="Test addElemsSameRow() 1" method-name="testAddElemsSameRow1"/>
+
+    <test name="Test addElemColumn() 1" method-name="testAddElemColumn1"/>
+    <test name="Test addElemColumn() 2" method-name="testAddElemColumn2"/>
+
+    <test name="Test addElemSameColumn() 1" method-name="testAddElemSameColumn1"/>
+
+    <test name="Test addElemsColumn() 1" method-name="testAddElemsColumn1"/>
+    <test name="Test addElemsColumn() 2" method-name="testAddElemsColumn2"/>
+
+    <test name="Test addElemsSameColumn() 1" method-name="testAddElemsSameColumn1"/>
+
+    <test name="Test addElemSameColumn/Row() 1" method-name="testAddElemSame1"/>
+
+    <test name="Test editElem() 1" method-name="testEditElem1"/>
+    <test name="Test editElem() 2" method-name="testEditElem2"/>
+
+    <test name="Test elem() 1" method-name="testElem1"/>
+    <test name="Test elem() 2" method-name="testElem2"/>
+
+    <test name="Test sizeRow() 1" method-name="testSizeRow1"/>
+    <test name="Test sizeRow() 2" method-name="testSizeRow2"/>
+
+    <test name="Test sizeColumn() 1" method-name="testSizeColumn1"/>
+    <test name="Test sizeColumn() 2" method-name="testSizeColumn2"/>
+
+    <test name="Test posRowColumn() 1" method-name="testPosRowColumn1"/>
+
+    <test name="Test numRowColumn() 1" method-name="testNumRowColumn1"/>
+
+    <test name="Test addElemRow() / addElemSameColumn() 1" method-name="testAddRowSameColumn1"/>
+    <test name="Test addElemRow() / addElemSameColumn() 2" method-name="testAddRowSameColumn2"/>
+    <test name="Test addElemRow() / addElemSameColumn() 3" method-name="testAddRowSameColumn3"/>
+
+    <test name="Test addElemColumn() / addElemSameRow() 1" method-name="testAddColumnSameRow1"/>
+    <test name="Test addElemColumn() / addElemSameRow() 2" method-name="testAddColumnSameRow2"/>
+    <test name="Test addElemColumn() / addElemSameRow() 3" method-name="testAddColumnSameRow3"/>
+
+    <test name="Test editElemUp/Down/Left/Right() 1" method-name="testEditElemUDLR1"/>
+    <test name="Test editElemDown() 1" method-name="testEditElemDown1"/>
+    <test name="Test editElemRight() 1" method-name="testEditElemRight1"/>
+
+    <test name="Test editNameRow()" method-name="testEditNameRow"/>
+    <test name="Test editNameColumn()" method-name="testEditNameColumn"/>
+  </tests> 
+
+  <options>
+
+    <service-instance name="simple-table-output" type="Arcane::ISimpleTableOutput">
+      <description>Service implémentant ISimpleTableOutput</description>
+    </service-instance>
+
+  </options>
+
+</service>

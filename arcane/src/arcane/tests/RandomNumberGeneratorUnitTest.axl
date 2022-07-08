@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<service name="RandomNumberGeneratorUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest" namespace-name="ArcaneTest">
+  <interface name="Arcane::IUnitTest" inherited="false" />
+ 
+  <variables>
+  </variables>
+
+  <tests 
+   class-set-up="setUpForClass" 
+   test-set-up="setUp" 
+   class-tear-down="tearDownForClass" 
+   test-tear-down="tearDown"
+  >
+    <test name="Test RandomNumberGeneratorSeed class" method-name="testRNGS"/>
+    <test name="Test Pi" method-name="testMcPi"/>
+    <test name="Test leap RNG" method-name="testLeepNumbers"/>
+    <test name="Test leap RSG" method-name="testLeepSeeds"/>
+  </tests> 
+
+
+  <options>
+    <service-instance name="random-number-generator" type="Arcane::IRandomNumberGenerator">
+      <description>Service implémentant IRandomNumberGenerator</description>
+    </service-instance>
+  </options>
+
+</service>

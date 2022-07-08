@@ -66,6 +66,8 @@ set(ARCANE_SOURCES
   CustomMeshTestModule.cc
   TaskUnitTest.cc
   PDESRandomNumberGeneratorUnitTest.cc
+  RandomNumberGeneratorUnitTest.cc
+  SimpleTableOutputUnitTest.cc
 )
 
 set(AXL_FILES
@@ -102,5 +104,7 @@ set(AXL_FILES
   CustomMeshTest
   accelerator/SimpleHydroAccelerator
   PDESRandomNumberGeneratorUnitTest
+  RandomNumberGeneratorUnitTest
+  SimpleTableOutputUnitTest
 )
 

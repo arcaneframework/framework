@@ -1,13 +1,24 @@
-<?xml version="1.0" encoding="ISO-8859-1" ?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <service name="PDESRandomNumberGeneratorUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest" namespace-name="ArcaneTest">
   <interface name="Arcane::IUnitTest" inherited="false" />
  
   <variables>
   </variables>
 
+  <tests 
+   class-set-up="setUpForClass" 
+   test-set-up="setUp" 
+   class-tear-down="tearDownForClass" 
+   test-tear-down="tearDown"
+  >
+    <test name="Test sauts de valeurs" method-name="testHardcodedValues"/>
+    <test name="Test sauts de graines" method-name="testHardcodedSeeds"/>
+  </tests> 
+
+
   <options>
-    <service-instance name="PDESRandomNumberGenerator" type="Arcane::IRandomNumberGenerator">
-      <description>RNG</description>
+    <service-instance name="pdes-random-number-generator" type="Arcane::IRandomNumberGenerator">
+      <description>Service PDESRandomNumberGenerator</description>
     </service-instance>
   </options>
 

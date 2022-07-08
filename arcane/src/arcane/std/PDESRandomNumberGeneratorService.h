@@ -1,4 +1,4 @@
-// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
 // Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
@@ -19,7 +19,6 @@
 
 #ifndef ARCANE_STD_PDESRANDOMNUMBERGENERATORSERVICE_H
 #define ARCANE_STD_PDESRANDOMNUMBERGENERATORSERVICE_H
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -42,7 +41,8 @@ class PDESRandomNumberGeneratorService
  public:
   PDESRandomNumberGeneratorService(const ServiceBuildInfo& sbi)
   : ArcanePDESRandomNumberGeneratorObject(sbi)
-  ,m_seed(4294967297)
+  , m_seed(4294967297)
+  , m_size_of_seed(sizeof(Int64))
   {
     m_with_option = (sbi.creationType() == ST_CaseOption);
   }
@@ -50,10 +50,13 @@ class PDESRandomNumberGeneratorService
   virtual ~PDESRandomNumberGeneratorService(){};
 
  public:
-  void initSeed() override;
-  void initSeed(RandomNumberGeneratorSeed seed) override;
+  bool initSeed() override;
+  bool initSeed(RandomNumberGeneratorSeed seed) override;
 
   RandomNumberGeneratorSeed seed() override;
+  RandomNumberGeneratorSeed emptySeed() override;
+
+  Integer neededSizeOfSeed() override;
 
   bool isLeapSeedSupported() override { return true; };
   RandomNumberGeneratorSeed generateRandomSeed(Integer leap) override;
@@ -72,6 +75,7 @@ class PDESRandomNumberGeneratorService
 
  protected:
   Int64 m_seed;
+  Integer m_size_of_seed;
   bool m_with_option;
 };
 
@@ -89,3 +93,6 @@ ARCANE_REGISTER_SERVICE_PDESRANDOMNUMBERGENERATOR(PDESRandomNumberGenerator, PDE
 /*---------------------------------------------------------------------------*/
 
 #endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
