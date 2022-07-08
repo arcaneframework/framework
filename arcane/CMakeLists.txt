@@ -130,6 +130,13 @@ endif()
 # Cherche 'Arccon'
 
 find_package(Arccon REQUIRED)
+set(ARCANE_Arccon_NEEDED_VERSION "1.4.0")
+message(STATUS "Arccon_VERSION = ${Arccon_VERSION}")
+if (Arccon_VERSION VERSION_LESS ARCANE_AXLSTAR_NEEDED_VERSION)
+  message(FATAL_ERROR "Arccon version '${Arccon_VERSION}' is too old."
+    " Version ${ARCANE_Arccon_NEEDED_VERSION} required")
+endif()
+
 list(APPEND CMAKE_MODULE_PATH ${ARCCON_MODULE_PATH})
 include(${ARCCON_CMAKE_COMMANDS})
 include(LoadBuildSystem)
@@ -308,7 +315,7 @@ if (ARCANE_WANT_CHECK)
   set(ARCCORE_CHECK TRUE)
 endif()
 
-set(ARCANE_ARCCORE_NEEDED_VERSION "2.0.10")
+set(ARCANE_ARCCORE_NEEDED_VERSION "2.0.11")
 find_package(Arccore ${ARCANE_ARCCORE_NEEDED_VERSION} REQUIRED)
 message(STATUS "Arccore_DIR = ${Arccore_DIR}")
 if (Arccore_VERSION VERSION_LESS ARCANE_ARCCORE_NEEDED_VERSION)
