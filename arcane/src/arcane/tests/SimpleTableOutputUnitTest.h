@@ -11,11 +11,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/BasicUnitTest.h"
 #include "arcane/IParallelMng.h"
+#include "arcane/ISimpleTableOutput.h"
 #include "arcane/ITimeLoopMng.h"
 #include "arcane/ServiceBuilder.h"
-#include "arcane/BasicUnitTest.h"
-#include "arcane/ISimpleTableOutput.h"
 
 #include "arcane/tests/SimpleTableOutputUnitTest_axl.h"
 
@@ -34,14 +34,13 @@ using namespace Arcane;
 /*---------------------------------------------------------------------------*/
 
 class SimpleTableOutputUnitTest
-  : public ArcaneSimpleTableOutputUnitTestObject
+: public ArcaneSimpleTableOutputUnitTestObject
 {
-public:
- 
+ public:
   SimpleTableOutputUnitTest(const ServiceBuildInfo& sbi)
-    : ArcaneSimpleTableOutputUnitTestObject(sbi)
-    , ptrSTO(nullptr)
-    {}
+  : ArcaneSimpleTableOutputUnitTestObject(sbi)
+  , ptrSTO(nullptr)
+  {}
 
   ~SimpleTableOutputUnitTest() {}
 
@@ -49,7 +48,6 @@ public:
   void setUp() override;
 
   void testInit() override;
-
 
   void testAddRow1() override;
   void testAddRow2() override;
@@ -84,10 +82,10 @@ public:
 
   void testElem1() override;
   void testElem2() override;
-  
+
   void testSizeRow1() override;
   void testSizeRow2() override;
-  
+
   void testSizeColumn1() override;
   void testSizeColumn2() override;
 
@@ -111,18 +109,16 @@ public:
   void testEditNameRow() override;
   void testEditNameColumn() override;
 
-
   void testWriteFile() override;
-
 
   void tearDown() override;
   void tearDownForClass() override;
 
-private:
-  template<class T>
+ private:
+  template <class T>
   void ASSERT_EQUAL_ARRAY(UniqueArray<T> expected, UniqueArray<T> actual);
-  
-private:
+
+ private:
   ISimpleTableOutput* ptrSTO;
 };
 
