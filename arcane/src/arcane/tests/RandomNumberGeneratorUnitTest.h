@@ -39,6 +39,7 @@ class RandomNumberGeneratorUnitTest
  public:
   explicit RandomNumberGeneratorUnitTest(const ServiceBuildInfo& sb)
   : ArcaneRandomNumberGeneratorUnitTestObject(sb)
+  , ptrRNG(nullptr)
   {}
 
   ~RandomNumberGeneratorUnitTest() {}

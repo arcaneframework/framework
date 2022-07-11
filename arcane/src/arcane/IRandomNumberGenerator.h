@@ -87,6 +87,16 @@ class ARCANE_CORE_EXPORT RandomNumberGeneratorSeed
   }
 
   /**
+   * @brief Constructeur move.
+   * 
+   * @param seed La graine source.
+   */
+  RandomNumberGeneratorSeed(RandomNumberGeneratorSeed&& seed)
+  {
+    *this = std::move(seed);
+  }
+
+  /**
    * @brief Constructeur par défaut.
    * Nécessitera un appel à resize().
    */

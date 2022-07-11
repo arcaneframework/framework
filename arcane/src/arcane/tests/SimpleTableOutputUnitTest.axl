@@ -72,6 +72,8 @@
 
     <test name="Test editNameRow()" method-name="testEditNameRow"/>
     <test name="Test editNameColumn()" method-name="testEditNameColumn"/>
+
+    <test name="Test writeFile()" method-name="testWriteFile"/>
   </tests> 
 
   <options>

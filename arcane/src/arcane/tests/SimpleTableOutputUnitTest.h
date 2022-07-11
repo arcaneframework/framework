@@ -39,8 +39,9 @@ class SimpleTableOutputUnitTest
 public:
  
   SimpleTableOutputUnitTest(const ServiceBuildInfo& sbi)
-    : ArcaneSimpleTableOutputUnitTestObject(sbi) {
-    }
+    : ArcaneSimpleTableOutputUnitTestObject(sbi)
+    , ptrSTO(nullptr)
+    {}
 
   ~SimpleTableOutputUnitTest() {}
 
@@ -109,6 +110,9 @@ public:
 
   void testEditNameRow() override;
   void testEditNameColumn() override;
+
+
+  void testWriteFile() override;
 
 
   void tearDown() override;

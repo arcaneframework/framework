@@ -866,7 +866,11 @@ _computeAt(String name, bool& only_once)
 void SimpleCsvOutputService::
 _print(std::ostream& stream)
 {
-  stream << std::fixed << m_name_tab << m_separator;
+  // On enregistre les infos du stream pour les restaurer à la fin.
+  std::ios_base::fmtflags save_flags = stream.flags();
+  std::streamsize save_prec = stream.precision();
+
+  stream << std::setiosflags(std::ios::fixed) << m_name_tab << m_separator;
 
   for(Integer j = 0; j < m_name_columns.size(); j++) {
     stream << m_name_columns[j] << m_separator;
@@ -882,6 +886,9 @@ _print(std::ostream& stream)
     }
     stream << std::endl;
   }
+
+  stream.flags(save_flags);
+  stream.precision(save_prec);
 }
 
 /*---------------------------------------------------------------------------*/
