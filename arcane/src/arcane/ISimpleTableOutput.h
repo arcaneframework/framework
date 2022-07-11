@@ -636,6 +636,33 @@ public:
 /*---------------------------------------------------------------------------*/
 
   /**
+   * @brief Méthode permettant de modifier la précision du print.
+   * 
+   * Aussi bien pour la méthode 'print()' que les méthodes 'writeFile()'.
+   * 
+   * Note : Un appel à cette méthode sans le paramètre définira la précision
+   * par défaut.
+   * 
+   * @param precision La nouvelle précision.
+   */
+  virtual void setPrecision(Integer precision = 6) = 0;
+  /**
+   * @brief Méthode permettant de définir le flag 'std::fixed' ou non.
+   * 
+   * Aussi bien pour la méthode 'print()' que les méthodes 'writeFile()'.
+   * 
+   * Ce flag permet de 'forcer' le nombre de chiffre après la virgule à
+   * la précision voulu. Par exemple, si l'on a appelé 'setPrecision(4)',
+   * et que l'on appelle 'setFixed(true)', le print de '6.1' donnera '6.1000'.
+   * 
+   * Note : Un appel à cette méthode sans le paramètre définira le flag
+   * par défaut.
+   * 
+   * @param fixed Si le flag 'std::fixed' doit être défini ou non.
+   */
+  virtual void setFixed(bool fixed = true) = 0;
+
+  /**
    * @brief Méthode permettant d'afficher le tableau.
    * 
    * @param only_proc L'id du processus devant afficher le tableau (-1 pour 

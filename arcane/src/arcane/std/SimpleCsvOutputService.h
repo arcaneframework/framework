@@ -44,6 +44,8 @@ public:
     , m_path_only_P0(true)
     , m_name_tab_computed(false)
     , m_name_tab_only_P0(true)
+    , m_precision_print(6)
+    , m_is_fixed_print(true)
     , m_name_rows(0)
     , m_name_columns(0)
     , m_size_rows(0)
@@ -138,6 +140,9 @@ public:
 
   Integer addAverageColumn(String name_column) override;
 
+  void setPrecision(Integer precision) override;
+  void setFixed(bool fixed) override;
+
   void print(Integer only_proc) override;
   bool writeFile(Integer only_proc) override;
   bool writeFile(String path, Integer only_proc) override;
@@ -157,6 +162,8 @@ private:
   bool m_name_tab_only_P0;
 
   String m_separator;
+  Integer m_precision_print;
+  bool m_is_fixed_print;
 
   UniqueArray2<Real> m_values_csv;
 
