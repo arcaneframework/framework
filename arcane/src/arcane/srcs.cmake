@@ -134,6 +134,8 @@ set( ARCANE_SOURCES
    IndexedItemConnectivityView.h
    Item.cc
    Item.h
+   ItemConnectivityContainerView.h
+   ItemConnectivityContainerView.cc
    ItemEnumerator.cc
    ItemEnumerator.h
    ItemFunctor.cc

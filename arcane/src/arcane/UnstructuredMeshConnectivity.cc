@@ -46,10 +46,8 @@ _internalInit(ConnectivityView& cview,IMesh* mesh)
   IItemFamily* family = mesh->itemFamily(ik1);
   ItemInternalConnectivityList* clist = family->_unstructuredItemInternalConnectivityList();
   auto item_index_type = _IDX((ItemType2*)nullptr);
-  auto indexes = clist->connectivityIndex(item_index_type);
-  auto list_type = clist->connectivityList(item_index_type);
-  auto nb_item = clist->connectivityNbItem(item_index_type);
-  cview.init(nb_item,indexes,list_type,ik1,ik2);
+  auto container_view = clist->containerView(item_index_type);
+  cview = IndexedItemConnectivityViewBase(container_view,ik1,ik2);
 }
 }
 

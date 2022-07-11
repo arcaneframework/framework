@@ -30,37 +30,30 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 namespace Arcane::mesh
 {
-  IndexedItemConnectivityAccessor::IndexedItemConnectivityAccessor(IndexedItemConnectivityViewBase view, IItemFamily* target_item_family)
-  : IndexedItemConnectivityViewBase(view)
-  , m_target_item_family(target_item_family)
-  {}
 
-  IndexedItemConnectivityAccessor::IndexedItemConnectivityAccessor(IIncrementalItemConnectivity* connectivity)
-  : m_target_item_family(connectivity->targetFamily())
-  {
-    mesh::IncrementalItemConnectivityBase* ptr = dynamic_cast<mesh::IncrementalItemConnectivityBase*>(connectivity) ;
-    if(ptr)
-    {
-      IndexedItemConnectivityViewBase::set(ptr->connectivityView()) ;
-      //(*this) = ptr->connectivityView() ;
-    }
-  }
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-  void IndexedItemConnectivityAccessor::init(SmallSpan<const Int32> nb_item,
-            SmallSpan<const Int32> indexes,
-            SmallSpan<const Int32> list_data,
-            IItemFamily* source_item_family,
-            IItemFamily* target_item_family)
-  {
-    IndexedItemConnectivityViewBase::init(nb_item,
-                                          indexes,
-                                          list_data,
-                                          source_item_family->itemKind(),
-                                          target_item_family->itemKind()) ;
-    m_target_item_family = target_item_family ;
-  }
+IndexedItemConnectivityAccessor::
+IndexedItemConnectivityAccessor(IndexedItemConnectivityViewBase view, IItemFamily* target_item_family)
+: IndexedItemConnectivityViewBase(view)
+, m_target_item_family(target_item_family)
+{}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IndexedItemConnectivityAccessor::
+IndexedItemConnectivityAccessor(IIncrementalItemConnectivity* connectivity)
+: m_target_item_family(connectivity->targetFamily())
+{
+  auto* ptr = dynamic_cast<mesh::IncrementalItemConnectivityBase*>(connectivity);
+  if (ptr)
+    IndexedItemConnectivityViewBase::set(ptr->connectivityView()) ;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -328,8 +321,7 @@ setItemConnectivityList(ItemInternalConnectivityList* ilist,Int32 index)
 void IncrementalItemConnectivityBase::
 notifySourceFamilyLocalIdChanged(Int32ConstArrayView new_to_old_ids)
 {
-  if(m_p->isAllocated())
-  {
+  if(m_p->isAllocated()){
     m_p->m_connectivity_nb_item_variable.variable()->compact(new_to_old_ids);
     m_p->m_connectivity_index_variable.variable()->compact(new_to_old_ids);
     _notifyConnectivityNbItemChanged();
@@ -362,26 +354,28 @@ _connectedItems(ItemLocalId item,ConnectivityItemVector& con_items) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+ItemConnectivityContainerView IncrementalItemConnectivityBase::
+connectivityContainerView() const
+{
+  return { m_connectivity_list, m_connectivity_index, m_connectivity_nb_item };
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 IndexedItemConnectivityViewBase IncrementalItemConnectivityBase::
 connectivityView() const
 {
-  IndexedItemConnectivityViewBase view;
-  view.init(m_connectivity_nb_item,m_connectivity_index,m_connectivity_list,
-            _sourceFamily()->itemKind(), _targetFamily()->itemKind());
-  return view;
+  return { connectivityContainerView(), _sourceFamily()->itemKind(), _targetFamily()->itemKind()};
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 IndexedItemConnectivityAccessor IncrementalItemConnectivityBase::
 connectivityAccessor() const
 {
-  IndexedItemConnectivityAccessor accessor;
-  accessor.init(m_connectivity_nb_item,
-            m_connectivity_index,
-            m_connectivity_list,
-            _sourceFamily(),
-            _targetFamily());
-  return accessor;
+  return IndexedItemConnectivityAccessor(connectivityView(),_targetFamily());
 }
 
 /*---------------------------------------------------------------------------*/

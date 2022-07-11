@@ -61,6 +61,7 @@
 
 #include "arcane/ItemPrinter.h"
 #include "arcane/ConnectivityItemVector.h"
+#include "arcane/IndexedItemConnectivityView.h"
 
 #include "arcane/mesh/ItemProperty.h"
 #include "arcane/mesh/ItemData.h"
@@ -2486,24 +2487,20 @@ _checkValidConnectivity()
   computed_max.fill(0);
 
   for( Integer i=0; i<MAX_KIND; ++i ){
-    Int32ConstArrayView con_list = m_item_connectivity_list.connectivityList(i);
-    Int32ConstArrayView con_index = m_item_connectivity_list.connectivityIndex(i);
-    Int32ConstArrayView con_nb_item = m_item_connectivity_list.connectivityNbItem(i);
+    eItemKind target_kind = static_cast<eItemKind>(i);
+    IndexedItemConnectivityViewBase con_view{m_item_connectivity_list.containerView(i),itemKind(),target_kind};
     Int32 stored_max_nb = m_item_connectivity_list.maxNbConnectedItem(i);
-    const Int32 con_nb_item_size = con_nb_item.size();
+    const Int32 con_nb_item_size = con_view.nbSourceItem();
 
-    info(4) << "Family name=" << fullName() << " I=" << i << " list_size=" << con_list.size()
-            << " list_ptr=" << con_list.data()
-            << " index_size=" << con_index.size()
-            << " nb_item_size=" << con_nb_item_size;
+    info(4) << "Family name=" << fullName() << " I=" << i << " nb_item_size=" << con_nb_item_size;
 
     Int32 max_nb = 0;
-    if (con_nb_item_size){
+    if (con_nb_item_size!=0){
       // Il faut itérer sur toutes les entités et pas sur \a con_nb_item
       // car certaines valeurs peuvent ne pas être valides s'il y a des
       // trous dans la numérotation.
       ENUMERATE_ITEM(i,allItems()){
-        Int32 x = con_nb_item[i.itemLocalId()];
+        Int32 x = con_view.nbItem(i);
         if (x>max_nb)
           max_nb = x;
       }

@@ -5,58 +5,50 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IndexedItemConnectivityAccessor.h                               (C) 2000-2021 */
+/* ItemConnectivityContainerView.cc                            (C) 2000-2022 */
 /*                                                                           */
-/* Connectivité incrémentale des entités.                                    */
-/*---------------------------------------------------------------------------*/
-#pragma once
+/* Vues sur les conteneurs contenant les connectivités.                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/TraceAccessor.h"
+#include "arcane/ItemConnectivityContainerView.h"
 
-#include "arcane/IItemFamily.h"
-#include "arcane/ItemVector.h"
-#include "arcane/VariableTypes.h"
-//#include "arcane/ItemInternal.h"
-#include "arcane/IIncrementalItemConnectivity.h"
-
-#include "arcane/mesh/MeshGlobal.h"
+#include "arcane/utils/FatalErrorException.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-namespace Arcane::mesh
+
+namespace Arcane
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCANE_MESH_EXPORT IndexedItemConnectivityAccessor
-: public IndexedItemConnectivityViewBase
+void ItemConnectivityContainerView::
+checkSame(ItemConnectivityContainerView rhs) const
 {
- public:
-
-  IndexedItemConnectivityAccessor(IndexedItemConnectivityViewBase view, IItemFamily* target_item_family) ;
-  IndexedItemConnectivityAccessor(IIncrementalItemConnectivity* connectivity);
-  IndexedItemConnectivityAccessor() = default;
-
-  ItemVectorView operator()(ItemLocalId lid) const
-  {
-    //assert(m_target_item_family) ;
-    const Integer* ptr = & m_list_data[m_indexes[lid]];
-    return const_cast<IItemFamily*>(m_target_item_family)->view(ConstArrayView<Integer>( m_nb_item[lid], ptr )) ;
-  }
-
- private:
-
-  IItemFamily* m_target_item_family = nullptr;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // End namespace Arcane::mesh
+  auto current_list = m_list;
+  auto ref_list = rhs.m_list;
+  auto current_indexes = m_indexes;
+  auto ref_indexes = rhs.m_indexes;
+  auto* current_list_ptr = current_list.data();
+  auto* ref_list_ptr = ref_list.data();
+  if (current_list_ptr!=ref_list_ptr)
+    ARCANE_FATAL("Bad list base pointer current={0} ref={1}",current_list_ptr,ref_list_ptr);
+  if (current_list.size()!=ref_list.size())
+    ARCANE_FATAL("Bad list size current={0} ref={1}",current_list.size(),ref_list.size());
+  auto* current_indexes_ptr = current_indexes.data();
+  auto* ref_indexes_ptr = ref_indexes.data();
+  if (current_indexes_ptr!=ref_indexes_ptr)
+    ARCANE_FATAL("Bad indexes base pointer current={0} ref={1}",current_indexes_ptr,ref_indexes_ptr);
+  if (current_indexes.size()!=ref_indexes.size())
+    ARCANE_FATAL("Bad indexes size current={0} ref={1}",current_indexes.size(),ref_indexes.size());
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+} // End namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
