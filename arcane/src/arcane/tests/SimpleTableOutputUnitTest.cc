@@ -1047,6 +1047,29 @@ testEditNameColumn()
   ASSERT_EQUAL(ptrSTO->elem("Ma colonne 4", "Ma ligne 1"), 4.);
 }
 
+void SimpleTableOutputUnitTest::
+testWriteFile()
+{
+  ptrSTO->addColumn("Ma colonne 1");
+  ptrSTO->addColumn("Ma colonne 2");
+  ptrSTO->addColumn("Ma colonne 3");
+  ptrSTO->addColumn("Ma colonne 4");
+
+  ptrSTO->addRow("Ma ligne 1");
+  ptrSTO->addRow("Ma ligne 2");
+  ptrSTO->addRow("Ma ligne 3");
+  ptrSTO->addRow("Ma ligne 4");
+
+  ASSERT_TRUE(ptrSTO->addElemsColumn("Ma colonne 1", RealUniqueArray{1, 5, 9, 13}));
+  ASSERT_TRUE(ptrSTO->addElemsColumn("Ma colonne 2", RealUniqueArray{2, 6, 10, 14}));
+  ASSERT_TRUE(ptrSTO->addElemsRow("Ma ligne 1", RealUniqueArray{3.1, 4.234567891234567}));
+  ASSERT_TRUE(ptrSTO->addElemsRow("Ma ligne 2", RealUniqueArray{7.3, 8.4}));
+  ASSERT_TRUE(ptrSTO->addElemsRow("Ma ligne 3", RealUniqueArray{11.5, 12.6}));
+  ASSERT_TRUE(ptrSTO->addElemsRow("Ma ligne 4", RealUniqueArray{15.7, 16.8}));
+
+  ASSERT_TRUE(ptrSTO->writeFile("./testTable/", 0));
+}
+
 
 void SimpleTableOutputUnitTest::
 tearDown()

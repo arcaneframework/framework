@@ -39,6 +39,7 @@ class PDESRandomNumberGeneratorUnitTest
  public:
   explicit PDESRandomNumberGeneratorUnitTest(const ServiceBuildInfo& sb)
   : ArcanePDESRandomNumberGeneratorUnitTestObject(sb)
+  , ptrRNG(nullptr)
   {}
 
   ~PDESRandomNumberGeneratorUnitTest() {}
