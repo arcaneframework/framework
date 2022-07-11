@@ -47,6 +47,10 @@
 #include "arcane/parallel/mpi/MpiBlockVariableSynchronizeDispatcher.h"
 #include "arcane/parallel/mpi/MpiLegacyVariableSynchronizeDispatcher.h"
 #include "arcane/parallel/mpi/MpiDatatype.h"
+#include "arcane/parallel/mpi/IVariableSynchronizerMpiCommunicator.h"
+#if defined(ARCANE_HAS_MPI_NEIGHBOR)
+#include "arcane/parallel/mpi/MpiNeighborVariableSynchronizeDispatcher.h"
+#endif
 
 #include "arcane/SerializeMessage.h"
 
@@ -108,6 +112,126 @@ MpiParallelMngBuildInfo(MPI_Comm comm)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Communicateur spécifique créé via MPI_Dist_graph_create_adjacent.
+ */
+class VariableSynchronizerMpiCommunicator
+: public IVariableSynchronizerMpiCommunicator
+{
+ public:
+  VariableSynchronizerMpiCommunicator(MpiParallelMng* pm)
+  : m_mpi_parallel_mng(pm), m_topology_communicator(MPI_COMM_NULL){}
+  ~VariableSynchronizerMpiCommunicator() override
+  {
+    _checkFreeCommunicator();
+  }
+  MPI_Comm communicator() const override
+  {
+    return m_topology_communicator;
+  }
+  void compute(VariableSynchronizer* var_syncer) override
+  {
+    Int32ConstArrayView comm_ranks = var_syncer->communicatingRanks();
+    const Int32 nb_message = comm_ranks.size();
+
+    MpiParallelMng* pm = m_mpi_parallel_mng;
+
+    MPI_Comm old_comm = pm->communicator();
+
+    UniqueArray<int> destinations(nb_message);
+    for( Integer i=0; i<nb_message; ++i ){
+      destinations[i] = comm_ranks[i];
+    }
+
+    _checkFreeCommunicator();
+
+    int r = MPI_Dist_graph_create_adjacent(old_comm, nb_message, destinations.data(), MPI_UNWEIGHTED,
+                                           nb_message, destinations.data(), MPI_UNWEIGHTED,
+                                           MPI_INFO_NULL, 0, &m_topology_communicator);
+
+    if (r!=MPI_SUCCESS)
+      ARCANE_FATAL("Error '{0}' in MPI_Dist_graph_create",r);
+
+    // Vérifie que l'ordre des rangs pour l'implémentation MPI est le même que celui qu'on a dans
+    // le VariableSynchronizer.
+    {
+      int indegree = 0;
+      int outdegree = 0;
+      int weighted = 0;
+      MPI_Dist_graph_neighbors_count(m_topology_communicator,&indegree,&outdegree,&weighted);
+
+      if (indegree!=nb_message)
+        ARCANE_FATAL("Bad value '{0}' for 'indegree' (expected={1})",indegree,nb_message);
+      if (outdegree!=nb_message)
+        ARCANE_FATAL("Bad value '{0}' for 'outdegree' (expected={1})",outdegree,nb_message);
+
+      UniqueArray<int> srcs(indegree);
+      UniqueArray<int> dsts(outdegree);
+
+      MPI_Dist_graph_neighbors(m_topology_communicator,indegree,srcs.data(),MPI_UNWEIGHTED,outdegree,dsts.data(),MPI_UNWEIGHTED);
+
+      for(int k=0; k<outdegree; ++k){
+        int x = dsts[k];
+        if (x!=comm_ranks[k])
+          ARCANE_FATAL("Invalid destination rank order k={0} v={1} expected={2}",k,x,comm_ranks[k]);
+      }
+
+      for(int k=0; k<indegree; ++k ){
+        int x = srcs[k];
+        if (x!=comm_ranks[k])
+          ARCANE_FATAL("Invalid source rank order k={0} v={1} expected={2}",k,x,comm_ranks[k]);
+      }
+    }
+  }
+
+ private:
+
+  MpiParallelMng* m_mpi_parallel_mng = nullptr;
+  MPI_Comm m_topology_communicator = MPI_COMM_NULL;
+
+ private:
+
+  void _checkFreeCommunicator()
+  {
+    if (m_topology_communicator!=MPI_COMM_NULL)
+      MPI_Comm_free(&m_topology_communicator);
+    m_topology_communicator = MPI_COMM_NULL;
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Synchronizer spécifique MPI.
+ *
+ * Cette classe surcharge VariableSynchronizer::compute() pour calculer
+ * un communicateur spécifique.
+ */
+class MpiVariableSynchronizer
+: public VariableSynchronizer
+{
+ public:
+  MpiVariableSynchronizer(IParallelMng* pm,const ItemGroup& group,
+                          VariableSynchronizerDispatcher* dispatcher,
+                          Ref<IVariableSynchronizerMpiCommunicator> topology_info)
+  : VariableSynchronizer(pm,group,dispatcher)
+  , m_topology_info(topology_info)
+  {
+  }
+ public:
+  void compute() override
+  {
+    VariableSynchronizer::compute();
+    // Si non nul, calcule la topologie
+    if (m_topology_info.get())
+      m_topology_info->compute(this);
+  }
+ private:
+  Ref<IVariableSynchronizerMpiCommunicator> m_topology_info;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 class MpiParallelMngUtilsFactory
 : public ParallelMngUtilsFactoryBase
@@ -137,6 +261,8 @@ class MpiParallelMngUtilsFactory
         m_synchronize_nb_sequence = std::clamp(m_synchronize_nb_sequence,1,1024*1024);
       }
     }
+    if (platform::getEnvironmentVariable("ARCANE_SYNCHRONIZE_VERSION")=="5")
+      m_synchronizer_version = 5;
   }
  public:
   Ref<IVariableSynchronizer> createSynchronizer(IParallelMng* pm,IItemFamily* family) override
@@ -154,6 +280,7 @@ class MpiParallelMngUtilsFactory
 
   Ref<IVariableSynchronizer> _createSynchronizer(IParallelMng* pm,const ItemGroup& group,GroupIndexTable* table)
   {
+    Ref<IVariableSynchronizerMpiCommunicator> topology_info;
     MpiParallelMng* mpi_pm = ARCANE_CHECK_POINTER(dynamic_cast<MpiParallelMng*>(pm));
     typedef DataTypeDispatchingDataVisitor<IVariableSynchronizeDispatcher> DispatcherType;
     VariableSynchronizerDispatcher* vd = nullptr;
@@ -174,12 +301,22 @@ class MpiParallelMngUtilsFactory
       MpiBlockVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table,m_synchronize_block_size,m_synchronize_nb_sequence);
       vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiBlockVariableSynchronizeDispatcher>(bi));
     }
+    else if (m_synchronizer_version == 5){
+      tm->info() << "Using MpiSynchronizer V5";
+      topology_info = makeRef<IVariableSynchronizerMpiCommunicator>(new VariableSynchronizerMpiCommunicator(mpi_pm));
+#if defined(ARCANE_HAS_MPI_NEIGHBOR)
+      MpiNeighborVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table,topology_info);
+      vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiNeighborVariableSynchronizeDispatcher>(bi));
+#else
+      throw NotSupportedException(A_FUNCINFO,"Synchronize implementation V5 is not supported with this version of MPI");
+#endif
+    }
     else{
       tm->info() << "Using MpiSynchronizer V1";
       MpiLegacyVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table);
       vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiLegacyVariableSynchronizeDispatcher>(bi));
     }
-    return makeRef<IVariableSynchronizer>(new VariableSynchronizer(pm,group,vd));
+    return makeRef<IVariableSynchronizer>(new MpiVariableSynchronizer(pm,group,vd,topology_info));
   }
  private:
   Integer m_synchronizer_version = 1;

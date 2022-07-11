@@ -1,6 +1,7 @@
 set( ARCANE_SOURCES
   ArcaneMpi.cc
   ArcaneMpi.h
+  IVariableSynchronizerMpiCommunicator.h
   MpiParallelSuperMng.cc
   MpiDatatypeList.cc
   MpiDatatypeList.h
