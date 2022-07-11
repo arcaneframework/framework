@@ -1062,11 +1062,13 @@ testWriteFile()
 
   ASSERT_TRUE(ptrSTO->addElemsColumn("Ma colonne 1", RealUniqueArray{1, 5, 9, 13}));
   ASSERT_TRUE(ptrSTO->addElemsColumn("Ma colonne 2", RealUniqueArray{2, 6, 10, 14}));
-  ASSERT_TRUE(ptrSTO->addElemsRow("Ma ligne 1", RealUniqueArray{3.1, 4.234567891234567}));
+  ASSERT_TRUE(ptrSTO->addElemsRow("Ma ligne 1", RealUniqueArray{3.1, 45678910.2345678}));
   ASSERT_TRUE(ptrSTO->addElemsRow("Ma ligne 2", RealUniqueArray{7.3, 8.4}));
   ASSERT_TRUE(ptrSTO->addElemsRow("Ma ligne 3", RealUniqueArray{11.5, 12.6}));
   ASSERT_TRUE(ptrSTO->addElemsRow("Ma ligne 4", RealUniqueArray{15.7, 16.8}));
 
+  ptrSTO->setPrecision(15);
+  ptrSTO->setFixed(false);
   ASSERT_TRUE(ptrSTO->writeFile("./testTable/", 0));
 }
 

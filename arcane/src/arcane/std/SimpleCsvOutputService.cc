@@ -55,6 +55,9 @@ init(String name_table)
     m_path = _computeAt("./csv/", m_path_only_P0);
   }
   m_path_computed = true;
+
+  m_precision_print = 6;
+  m_is_fixed_print = true;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -724,6 +727,20 @@ addAverageColumn(String name_column)
 /*---------------------------------------------------------------------------*/
 
 void SimpleCsvOutputService::
+setPrecision(Integer precision)
+{
+  if(precision < 1) m_precision_print = 1;
+  else if(precision > (std::numeric_limits<Real>::digits10 + 1)) m_precision_print = (std::numeric_limits<Real>::digits10 + 1);
+  else m_precision_print = precision;
+}
+
+void SimpleCsvOutputService::
+setFixed(bool fixed)
+{
+  m_is_fixed_print = fixed;
+}
+
+void SimpleCsvOutputService::
 print(Integer only_proc)
 {
   if(only_proc != -1 && mesh()->parallelMng()->commRank() != only_proc) return;
@@ -870,7 +887,12 @@ _print(std::ostream& stream)
   std::ios_base::fmtflags save_flags = stream.flags();
   std::streamsize save_prec = stream.precision();
 
-  stream << std::setiosflags(std::ios::fixed) << m_name_tab << m_separator;
+  if(m_is_fixed_print){
+    stream << std::setiosflags(std::ios::fixed);
+  }
+  stream << std::setprecision(m_precision_print);
+
+  stream << m_name_tab << m_separator;
 
   for(Integer j = 0; j < m_name_columns.size(); j++) {
     stream << m_name_columns[j] << m_separator;
