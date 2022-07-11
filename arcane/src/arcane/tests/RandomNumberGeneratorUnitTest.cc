@@ -29,11 +29,9 @@ setUpForClass()
   ptrRNG = options()->getRandomNumberGenerator();
 }
 
-
 void RandomNumberGeneratorUnitTest::
 setUp()
 {
-
 }
 
 void RandomNumberGeneratorUnitTest::
@@ -83,7 +81,8 @@ testMcPi()
 void RandomNumberGeneratorUnitTest::
 testLeepNumbers()
 {
-  if(!ptrRNG->isLeapNumberSupported()) return;
+  if (!ptrRNG->isLeapNumberSupported())
+    return;
 
   RandomNumberGeneratorSeed r_seed = ptrRNG->emptySeed();
   r_seed = 1234;
@@ -97,7 +96,7 @@ testLeepNumbers()
 
   ptrRNG->initSeed(r_seed);
 
-  for (Integer i = 2; i < result.size(); i+=3) {
+  for (Integer i = 2; i < result.size(); i += 3) {
     Real number = ptrRNG->generateRandomNumber(2);
     ASSERT_EQUAL(result[i], number);
   }
@@ -112,7 +111,8 @@ testLeepNumbers()
 void RandomNumberGeneratorUnitTest::
 testLeepSeeds()
 {
-  if (!ptrRNG->isLeapSeedSupported()) return;
+  if (!ptrRNG->isLeapSeedSupported())
+    return;
 
   RandomNumberGeneratorSeed r_seed = (ptrRNG->emptySeed() = 5678);
   ptrRNG->initSeed(r_seed);
@@ -146,7 +146,6 @@ tearDown()
 void RandomNumberGeneratorUnitTest::
 tearDownForClass()
 {
-
 }
 
 /*---------------------------------------------------------------------------*/
