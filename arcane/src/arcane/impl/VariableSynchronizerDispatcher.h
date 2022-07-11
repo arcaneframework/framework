@@ -178,6 +178,12 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
     ArrayView<SimpleType> shareBuffer(Int32 index) { return m_share_locals_buffer[index]; }
     ConstArrayView<SimpleType> ghostBuffer(Int32 index) const { return m_ghost_locals_buffer[index]; }
     ConstArrayView<SimpleType> shareBuffer(Int32 index) const { return m_share_locals_buffer[index]; }
+    Int32 ghostDisplacement(Int32 index) const { return m_ghost_displacements[index]; }
+    Int32 shareDisplacement(Int32 index) const { return m_share_displacements[index]; }
+    ArrayView<SimpleType> ghostBuffer() { return m_ghost_buffer; }
+    ArrayView<SimpleType> shareBuffer() { return m_share_buffer; }
+    ConstArrayView<SimpleType> ghostBuffer() const { return m_ghost_buffer; }
+    ConstArrayView<SimpleType> shareBuffer() const { return m_share_buffer; }
     void setDataView(ArrayView<SimpleType> v) { m_data_view = v; }
     ArrayView<SimpleType> dataView() { return m_data_view; }
     void copyReceive(Integer index);
@@ -192,8 +198,12 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
     UniqueArray<SimpleType> m_share_buffer;
     //! Position dans \a m_ghost_buffer de chaque rang
     UniqueArray< ArrayView<SimpleType> > m_ghost_locals_buffer;
-    //! Position dans \a m_ghost_buffer de chaque rang
+    //! Position dans \a m_share_buffer de chaque rang
     UniqueArray< ArrayView<SimpleType> > m_share_locals_buffer;
+    //! Déplacement dans \a m_ghost_buffer de chaque rang
+    UniqueArray<Int32> m_ghost_displacements;
+    //! Déplacement dans \a m_share_buffer de chaque rang
+    UniqueArray<Int32> m_share_displacements;
     ItemGroupSynchronizeInfo* m_sync_info = nullptr;
     //! Vue sur les données de la variable
     ArrayView<SimpleType> m_data_view;
