@@ -44,7 +44,6 @@
 #include "arcane/parallel/mpi/MpiParallelNonBlockingCollective.h"
 #include "arcane/parallel/mpi/MpiVariableSynchronizeDispatcher.h"
 #include "arcane/parallel/mpi/MpiDirectSendrecvVariableSynchronizeDispatcher.h"
-#include "arcane/parallel/mpi/MpiBlockVariableSynchronizeDispatcher.h"
 #include "arcane/parallel/mpi/MpiLegacyVariableSynchronizeDispatcher.h"
 #include "arcane/parallel/mpi/MpiDatatype.h"
 #include "arcane/parallel/mpi/IVariableSynchronizerMpiCommunicator.h"
@@ -84,6 +83,8 @@ extern "C++" Ref<IGenericVariableSynchronizerDispatcherFactory>
 arcaneCreateMpiNeighborVariableSynchronizerFactory(MpiParallelMng* mpi_pm,
                                                    Ref<IVariableSynchronizerMpiCommunicator> synchronizer_communicator);
 #endif
+extern "C++" Ref<IGenericVariableSynchronizerDispatcherFactory>
+arcaneCreateMpiBlockVariableSynchronizerFactory(MpiParallelMng* mpi_pm, Int32 block_size, Int32 nb_sequence);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -289,6 +290,7 @@ class MpiParallelMngUtilsFactory
     typedef DataTypeDispatchingDataVisitor<IVariableSynchronizeDispatcher> DispatcherType;
     VariableSynchronizerDispatcher* vd = nullptr;
     ITraceMng* tm = pm->traceMng();
+    Ref<IGenericVariableSynchronizerDispatcherFactory> generic_factory;
     if (m_synchronizer_version == 2){
       tm->info() << "Using MpiSynchronizer V2";
       MpiVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table);
@@ -302,16 +304,13 @@ class MpiParallelMngUtilsFactory
     else if (m_synchronizer_version == 4){
       tm->info() << "Using MpiSynchronizer V4 block_size=" << m_synchronize_block_size
                  << " nb_sequence=" << m_synchronize_nb_sequence;
-      MpiBlockVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table,m_synchronize_block_size,m_synchronize_nb_sequence);
-      vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiBlockVariableSynchronizeDispatcher>(bi));
+      generic_factory = arcaneCreateMpiBlockVariableSynchronizerFactory(mpi_pm,m_synchronize_block_size,m_synchronize_nb_sequence);
     }
     else if (m_synchronizer_version == 5){
       tm->info() << "Using MpiSynchronizer V5";
       topology_info = makeRef<IVariableSynchronizerMpiCommunicator>(new VariableSynchronizerMpiCommunicator(mpi_pm));
 #if defined(ARCANE_HAS_MPI_NEIGHBOR)
-      auto factory = arcaneCreateMpiNeighborVariableSynchronizerFactory(mpi_pm,topology_info);
-      GenericVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table,factory);
-      vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<GenericVariableSynchronizeDispatcher>(bi));
+      generic_factory = arcaneCreateMpiNeighborVariableSynchronizerFactory(mpi_pm,topology_info);
 #else
       throw NotSupportedException(A_FUNCINFO,"Synchronize implementation V5 is not supported with this version of MPI");
 #endif
@@ -321,6 +320,13 @@ class MpiParallelMngUtilsFactory
       MpiLegacyVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table);
       vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiLegacyVariableSynchronizeDispatcher>(bi));
     }
+    // Si non nul on utilise la fabrique générique
+    if (generic_factory.get()){
+      GenericVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table,generic_factory);
+      vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<GenericVariableSynchronizeDispatcher>(bi));
+    }
+    if (!vd)
+      ARCANE_FATAL("No synchronizer created");
     return makeRef<IVariableSynchronizer>(new MpiVariableSynchronizer(pm,group,vd,topology_info));
   }
  private:

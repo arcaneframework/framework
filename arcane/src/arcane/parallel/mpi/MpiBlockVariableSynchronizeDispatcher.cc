@@ -11,13 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/parallel/mpi/MpiBlockVariableSynchronizeDispatcher.h"
-
 #include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/Real2.h"
-#include "arcane/utils/Real3.h"
-#include "arcane/utils/Real2x2.h"
-#include "arcane/utils/Real3x3.h"
 
 #include "arcane/parallel/mpi/MpiParallelMng.h"
 #include "arcane/parallel/mpi/MpiAdapter.h"
@@ -26,7 +20,8 @@
 #include "arcane/parallel/mpi/MpiTimeInterval.h"
 #include "arcane/parallel/IStat.h"
 
-#include "arcane/datatype/DataTypeTraits.h"
+#include "arcane/impl/IVariableSynchronizerBuffer.h"
+#include "arcane/impl/VariableSynchronizerDispatcher.h"
 
 #include "arccore/message_passing/IRequestList.h"
 
@@ -49,26 +44,97 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Implémentation par block pour MPI de la synchronisation.
+ *
+ * Les messages sont envoyés par bloc d'une taille fixe.
+ *
+ * NOTE: cette optimisation respecte la norme MPI qui dit qu'on ne doit
+ * plus toucher à la zone mémoire d'un message tant que celui-ci n'est
+ * pas fini.
+ */
+class MpiBlockVariableSynchronizerDispatcher
+: public AbstractGenericVariableSynchronizerDispatcher
+{
+ public:
 
-template<typename SimpleType>
-MpiBlockVariableSynchronizeDispatcher<SimpleType>::
-MpiBlockVariableSynchronizeDispatcher(MpiBlockVariableSynchronizeDispatcherBuildInfo& bi)
-: VariableSynchronizeDispatcher<SimpleType>(VariableSynchronizeDispatcherBuildInfo(bi.parallelMng(),bi.table()))
-, m_mpi_parallel_mng(bi.parallelMng())
+  class Factory;
+  explicit MpiBlockVariableSynchronizerDispatcher(Factory* f);
+
+ public:
+
+  void compute() override {}
+  void beginSynchronize(IVariableSynchronizerBuffer* buf) override;
+  void endSynchronize(IVariableSynchronizerBuffer* buf) override;
+
+ private:
+
+  MpiParallelMng* m_mpi_parallel_mng = nullptr;
+  Ref<Parallel::IRequestList> m_request_list;
+  Int32 m_block_size;
+  Int32 m_nb_sequence;
+
+ private:
+
+  bool _isSkipRank(Int32 rank, Int32 sequence) const;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class MpiBlockVariableSynchronizerDispatcher::Factory
+: public IGenericVariableSynchronizerDispatcherFactory
+{
+ public:
+
+  Factory(MpiParallelMng* mpi_pm, Int32 block_size, Int32 nb_sequence)
+  : m_mpi_parallel_mng(mpi_pm)
+  , m_block_size(block_size)
+  , m_nb_sequence(nb_sequence)
+  {}
+
+  Ref<IGenericVariableSynchronizerDispatcher> createInstance() override
+  {
+    auto* x = new MpiBlockVariableSynchronizerDispatcher(this);
+    return makeRef<IGenericVariableSynchronizerDispatcher>(x);
+  }
+
+ public:
+
+  MpiParallelMng* m_mpi_parallel_mng = nullptr;
+  Int32 m_block_size = 0;
+  Int32 m_nb_sequence = 0;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" Ref<IGenericVariableSynchronizerDispatcherFactory>
+arcaneCreateMpiBlockVariableSynchronizerFactory(MpiParallelMng* mpi_pm, Int32 block_size, Int32 nb_sequence)
+{
+  auto* x = new MpiBlockVariableSynchronizerDispatcher::Factory(mpi_pm, block_size, nb_sequence);
+  return makeRef<IGenericVariableSynchronizerDispatcherFactory>(x);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MpiBlockVariableSynchronizerDispatcher::
+MpiBlockVariableSynchronizerDispatcher(Factory* f)
+: m_mpi_parallel_mng(f->m_mpi_parallel_mng)
 , m_request_list(m_mpi_parallel_mng->createRequestListRef())
-, m_block_size(bi.blockSize())
-, m_nb_sequence(bi.nbSequence())
+, m_block_size(f->m_block_size)
+, m_nb_sequence(f->m_nb_sequence)
 {
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename SimpleType> bool
-MpiBlockVariableSynchronizeDispatcher<SimpleType>::
-_isSkipRank(Int32 rank,Int32 sequence) const
+bool MpiBlockVariableSynchronizerDispatcher::
+_isSkipRank(Int32 rank, Int32 sequence) const
 {
-  if (m_nb_sequence==1)
+  if (m_nb_sequence == 1)
     return false;
   return (rank % m_nb_sequence) == sequence;
 }
@@ -76,12 +142,9 @@ _isSkipRank(Int32 rank,Int32 sequence) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename SimpleType> void
-MpiBlockVariableSynchronizeDispatcher<SimpleType>::
-_beginSynchronize(SyncBuffer& sync_buffer)
+void MpiBlockVariableSynchronizerDispatcher::
+beginSynchronize(IVariableSynchronizerBuffer* vs_buf)
 {
-  IVariableSynchronizerBuffer* vs_buf = sync_buffer.genericBuffer();
-
   // Ne fait rien au niveau MPI dans cette partie car cette implémentation
   // ne supporte pas l'asyncrhonisme.
   // On se contente de recopier les valeurs des variables dans le buffer d'envoi
@@ -93,26 +156,23 @@ _beginSynchronize(SyncBuffer& sync_buffer)
     MpiTimeInterval tit(&send_copy_time);
 
     // Recopie les buffers d'envoi
-    auto sync_list = this->m_sync_info->infos();
+    auto sync_list = _syncInfo()->infos();
     Integer nb_message = sync_list.size();
     for (Integer i = 0; i < nb_message; ++i)
       vs_buf->copySend(i);
   }
-  Int64 total_share_size = sync_buffer.totalShareSize();
-  m_mpi_parallel_mng->stat()->add("SyncSendCopy",send_copy_time,total_share_size);
+  Int64 total_share_size = vs_buf->totalSendSize();
+  m_mpi_parallel_mng->stat()->add("SyncSendCopy", send_copy_time, total_share_size);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename SimpleType> void
-MpiBlockVariableSynchronizeDispatcher<SimpleType>::
-_endSynchronize(SyncBuffer& sync_buffer)
+void MpiBlockVariableSynchronizerDispatcher::
+endSynchronize(IVariableSynchronizerBuffer* vs_buf)
 {
-  auto sync_list = this->m_sync_info->infos();
+  auto sync_list = _syncInfo()->infos();
   const Int32 nb_message = sync_list.size();
-
-  IVariableSynchronizerBuffer* vs_buf = sync_buffer.genericBuffer();
 
   MpiParallelMng* pm = m_mpi_parallel_mng;
   Int32 my_rank = pm->commRank();
@@ -129,9 +189,9 @@ _endSynchronize(SyncBuffer& sync_buffer)
 
   const Int32 block_size = m_block_size;
 
-  for (Int32 isequence = 0; isequence<m_nb_sequence; ++isequence ){
+  for (Int32 isequence = 0; isequence < m_nb_sequence; ++isequence) {
     Int32 block_index = 0;
-    while (1){
+    while (1) {
       {
         MpiTimeInterval tit(&prepare_time);
         m_request_list->clear();
@@ -139,10 +199,10 @@ _endSynchronize(SyncBuffer& sync_buffer)
         // Poste les messages de réception
         for (Integer i = 0; i < nb_message; ++i) {
           const VariableSyncInfo& vsi = sync_list[i];
-          if (_isSkipRank(vsi.targetRank(),isequence))
+          if (_isSkipRank(vsi.targetRank(), isequence))
             continue;
           auto buf0 = vs_buf->receiveBuffer(i);
-          auto buf = buf0.subView(block_index,block_size);
+          auto buf = buf0.subView(block_index, block_size);
           if (!buf.empty()) {
             auto req = mpi_adapter->receiveNonBlockingNoStat(buf.data(), buf.size(),
                                                              vsi.targetRank(), mpi_dt, serialize_tag);
@@ -153,10 +213,10 @@ _endSynchronize(SyncBuffer& sync_buffer)
         // Poste les messages d'envoi en mode non bloquant.
         for (Integer i = 0; i < nb_message; ++i) {
           const VariableSyncInfo& vsi = sync_list[i];
-          if (_isSkipRank(my_rank,isequence))
+          if (_isSkipRank(my_rank, isequence))
             continue;
           auto buf0 = vs_buf->sendBuffer(i);
-          auto buf = buf0.subView(block_index,block_size);
+          auto buf = buf0.subView(block_index, block_size);
           if (!buf.empty()) {
             auto request = mpi_adapter->sendNonBlockingNoStat(buf.data(), buf.size(),
                                                               vsi.targetRank(), mpi_dt, serialize_tag);
@@ -166,7 +226,7 @@ _endSynchronize(SyncBuffer& sync_buffer)
       }
 
       // Si aucune requête alors on a fini notre synchronisation
-      if (m_request_list->size()==0)
+      if (m_request_list->size() == 0)
         break;
 
       // Attend que les messages soient terminés
@@ -179,7 +239,6 @@ _endSynchronize(SyncBuffer& sync_buffer)
     }
   }
 
-
   // Recopie les valeurs recues
   {
     MpiTimeInterval tit(&copy_time);
@@ -190,23 +249,10 @@ _endSynchronize(SyncBuffer& sync_buffer)
   Int64 total_ghost_size = vs_buf->totalReceiveSize();
   Int64 total_share_size = vs_buf->totalSendSize();
   Int64 total_size = total_ghost_size + total_share_size;
-  pm->stat()->add("SyncCopy",copy_time,total_ghost_size);
-  pm->stat()->add("SyncWait",wait_time,total_size);
+  pm->stat()->add("SyncCopy", copy_time, total_ghost_size);
+  pm->stat()->add("SyncWait", wait_time, total_size);
   pm->stat()->add("SyncPrepare", prepare_time, total_share_size);
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template class MpiBlockVariableSynchronizeDispatcher<Byte>;
-template class MpiBlockVariableSynchronizeDispatcher<Int16>;
-template class MpiBlockVariableSynchronizeDispatcher<Int32>;
-template class MpiBlockVariableSynchronizeDispatcher<Int64>;
-template class MpiBlockVariableSynchronizeDispatcher<Real>;
-template class MpiBlockVariableSynchronizeDispatcher<Real2>;
-template class MpiBlockVariableSynchronizeDispatcher<Real3>;
-template class MpiBlockVariableSynchronizeDispatcher<Real2x2>;
-template class MpiBlockVariableSynchronizeDispatcher<Real3x3>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
