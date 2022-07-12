@@ -119,8 +119,8 @@ class VariableSynchronizerMpiCommunicator
 : public IVariableSynchronizerMpiCommunicator
 {
  public:
-  VariableSynchronizerMpiCommunicator(MpiParallelMng* pm)
-  : m_mpi_parallel_mng(pm), m_topology_communicator(MPI_COMM_NULL){}
+  explicit VariableSynchronizerMpiCommunicator(MpiParallelMng* pm)
+  : m_mpi_parallel_mng(pm){}
   ~VariableSynchronizerMpiCommunicator() override
   {
     _checkFreeCommunicator();
