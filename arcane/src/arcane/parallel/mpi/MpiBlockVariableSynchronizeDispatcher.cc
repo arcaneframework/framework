@@ -111,6 +111,7 @@ _endSynchronize(SyncBuffer& sync_buffer)
   const Int32 nb_message = sync_list.size();
 
   MpiParallelMng* pm = m_mpi_parallel_mng;
+  Int32 my_rank = pm->commRank();
   MpiDatatypeList* dtlist = pm->datatypes();
 
   MP::Mpi::MpiAdapter* mpi_adapter = pm->adapter();
@@ -148,7 +149,7 @@ _endSynchronize(SyncBuffer& sync_buffer)
         // Poste les messages d'envoi en mode non bloquant.
         for (Integer i = 0; i < nb_message; ++i) {
           const VariableSyncInfo& vsi = sync_list[i];
-          if (_isSkipRank(vsi.targetRank(),isequence))
+          if (_isSkipRank(my_rank,isequence))
             continue;
           ArrayView<SimpleType> buf0 = sync_buffer.shareBuffer(i);
           ArrayView<SimpleType> buf = buf0.subView(block_index,block_size);
