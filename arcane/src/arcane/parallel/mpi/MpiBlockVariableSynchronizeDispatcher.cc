@@ -80,6 +80,8 @@ template <typename SimpleType> void
 MpiBlockVariableSynchronizeDispatcher<SimpleType>::
 _beginSynchronize(SyncBuffer& sync_buffer)
 {
+  IVariableSynchronizerBuffer* vs_buf = sync_buffer.genericBuffer();
+
   // Ne fait rien au niveau MPI dans cette partie car cette implémentation
   // ne supporte pas l'asyncrhonisme.
   // On se contente de recopier les valeurs des variables dans le buffer d'envoi
@@ -94,7 +96,7 @@ _beginSynchronize(SyncBuffer& sync_buffer)
     auto sync_list = this->m_sync_info->infos();
     Integer nb_message = sync_list.size();
     for (Integer i = 0; i < nb_message; ++i)
-      sync_buffer.copySend(i);
+      vs_buf->copySend(i);
   }
   Int64 total_share_size = sync_buffer.totalShareSize();
   m_mpi_parallel_mng->stat()->add("SyncSendCopy",send_copy_time,total_share_size);
@@ -110,6 +112,8 @@ _endSynchronize(SyncBuffer& sync_buffer)
   auto sync_list = this->m_sync_info->infos();
   const Int32 nb_message = sync_list.size();
 
+  IVariableSynchronizerBuffer* vs_buf = sync_buffer.genericBuffer();
+
   MpiParallelMng* pm = m_mpi_parallel_mng;
   Int32 my_rank = pm->commRank();
   MpiDatatypeList* dtlist = pm->datatypes();
@@ -121,7 +125,7 @@ _endSynchronize(SyncBuffer& sync_buffer)
   double wait_time = 0.0;
 
   constexpr int serialize_tag = 523;
-  const MPI_Datatype mpi_dt = dtlist->datatype(SimpleType())->datatype();
+  const MPI_Datatype mpi_dt = dtlist->datatype(Byte())->datatype();
 
   const Int32 block_size = m_block_size;
 
@@ -137,8 +141,8 @@ _endSynchronize(SyncBuffer& sync_buffer)
           const VariableSyncInfo& vsi = sync_list[i];
           if (_isSkipRank(vsi.targetRank(),isequence))
             continue;
-          ArrayView<SimpleType> buf0 = sync_buffer.ghostBuffer(i);
-          ArrayView<SimpleType> buf = buf0.subView(block_index,block_size);
+          auto buf0 = vs_buf->receiveBuffer(i);
+          auto buf = buf0.subView(block_index,block_size);
           if (!buf.empty()) {
             auto req = mpi_adapter->receiveNonBlockingNoStat(buf.data(), buf.size(),
                                                              vsi.targetRank(), mpi_dt, serialize_tag);
@@ -151,8 +155,8 @@ _endSynchronize(SyncBuffer& sync_buffer)
           const VariableSyncInfo& vsi = sync_list[i];
           if (_isSkipRank(my_rank,isequence))
             continue;
-          ArrayView<SimpleType> buf0 = sync_buffer.shareBuffer(i);
-          ArrayView<SimpleType> buf = buf0.subView(block_index,block_size);
+          auto buf0 = vs_buf->sendBuffer(i);
+          auto buf = buf0.subView(block_index,block_size);
           if (!buf.empty()) {
             auto request = mpi_adapter->sendNonBlockingNoStat(buf.data(), buf.size(),
                                                               vsi.targetRank(), mpi_dt, serialize_tag);
@@ -180,11 +184,11 @@ _endSynchronize(SyncBuffer& sync_buffer)
   {
     MpiTimeInterval tit(&copy_time);
     for (Integer i = 0; i < nb_message; ++i)
-      sync_buffer.copyReceive(i);
+      vs_buf->copyReceive(i);
   }
 
-  Int64 total_ghost_size = sync_buffer.totalGhostSize();
-  Int64 total_share_size = sync_buffer.totalShareSize();
+  Int64 total_ghost_size = vs_buf->totalReceiveSize();
+  Int64 total_share_size = vs_buf->totalSendSize();
   Int64 total_size = total_ghost_size + total_share_size;
   pm->stat()->add("SyncCopy",copy_time,total_ghost_size);
   pm->stat()->add("SyncWait",wait_time,total_size);
