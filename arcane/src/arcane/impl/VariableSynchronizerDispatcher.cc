@@ -129,7 +129,7 @@ template<typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::
 compute()
 {
   if (!m_sync_info)
-    ARCANE_FATAL("The instance is not initialised. You need to calss setItemGroupSynchronizeInfo() before");
+    ARCANE_FATAL("The instance is not initialized. You need to call setItemGroupSynchronizeInfo() before");
 
   m_sync_list = m_sync_info->infos();
   //Integer nb_message = sync_list.size();
