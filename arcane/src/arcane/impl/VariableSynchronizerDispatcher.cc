@@ -164,6 +164,9 @@ compute(IBufferCopier<SimpleType>* copier,ItemGroupSynchronizeInfo* sync_info,In
   m_ghost_locals_buffer.resize(nb_message);
   m_share_locals_buffer.resize(nb_message);
 
+  m_ghost_displacements.resize(nb_message);
+  m_share_displacements.resize(nb_message);
+
   Integer total_ghost_buffer = 0;
   Integer total_share_buffer = 0;
   for( Integer i=0; i<nb_message; ++i ){
@@ -180,9 +183,10 @@ compute(IBufferCopier<SimpleType>* copier,ItemGroupSynchronizeInfo* sync_info,In
       Int32ConstArrayView ghost_grp = vsi.ghostIds();
       Integer local_size = ghost_grp.size();
       m_ghost_locals_buffer[i] = ArrayView<SimpleType>();
+      Int32 displacement = array_index*dim2_size;
+      m_ghost_displacements[i] =  displacement;
       if (local_size!=0)
-        m_ghost_locals_buffer[i] = ArrayView<SimpleType>(local_size*dim2_size,
-                                                         &m_ghost_buffer[array_index*dim2_size]);
+        m_ghost_locals_buffer[i] = { local_size*dim2_size, &m_ghost_buffer[displacement] };
       array_index += local_size;
     }
   }
@@ -193,9 +197,10 @@ compute(IBufferCopier<SimpleType>* copier,ItemGroupSynchronizeInfo* sync_info,In
       Int32ConstArrayView share_grp = vsi.shareIds();
       Integer local_size = share_grp.size();
       m_share_locals_buffer[i] = ArrayView<SimpleType>();
+      Int32 displacement = array_index*dim2_size;
+      m_share_displacements[i] =  displacement;
       if (local_size!=0)
-        m_share_locals_buffer[i] = ArrayView<SimpleType>(local_size*dim2_size,
-                                                         &m_share_buffer[array_index*dim2_size]);
+        m_share_locals_buffer[i] = { local_size*dim2_size, &m_share_buffer[displacement] };
       array_index += local_size;
     }
   }
