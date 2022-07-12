@@ -11,13 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/parallel/mpi/MpiNeighborVariableSynchronizeDispatcher.h"
-
 #include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/Real2.h"
-#include "arcane/utils/Real3.h"
-#include "arcane/utils/Real2x2.h"
-#include "arcane/utils/Real3x3.h"
 #include "arcane/utils/CheckedConvert.h"
 
 #include "arcane/parallel/mpi/MpiParallelMng.h"
@@ -25,7 +19,11 @@
 #include "arcane/parallel/mpi/MpiDatatypeList.h"
 #include "arcane/parallel/mpi/MpiDatatype.h"
 #include "arcane/parallel/mpi/MpiTimeInterval.h"
+#include "arcane/parallel/mpi/IVariableSynchronizerMpiCommunicator.h"
 #include "arcane/parallel/IStat.h"
+
+#include "arcane/impl/IVariableSynchronizerBuffer.h"
+#include "arcane/impl/VariableSynchronizerDispatcher.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -42,11 +40,77 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*
+ * \brief Implémentation de la synchronisations des variables via
+ * MPI_Neighbor_alltoallv().
+ */
+class GenericMpiNeighborVariableSynchronizer
+: public AbstractGenericVariableSynchronizerDispatcher
+{
+ public:
+
+  class Factory;
+  explicit GenericMpiNeighborVariableSynchronizer(Factory* f);
+
+ public:
+
+  void compute() override;
+  void beginSynchronize(IVariableSynchronizerBuffer* buf) override;
+  void endSynchronize(IVariableSynchronizerBuffer* buf) override;
+
+ private:
+
+  MpiParallelMng* m_mpi_parallel_mng = nullptr;
+  UniqueArray<int> m_mpi_send_counts;
+  UniqueArray<int> m_mpi_receive_counts;
+  UniqueArray<int> m_mpi_send_displacements;
+  UniqueArray<int> m_mpi_receive_displacements;
+  Ref<IVariableSynchronizerMpiCommunicator> m_synchronizer_communicator;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class GenericMpiNeighborVariableSynchronizer::Factory
+: public IGenericVariableSynchronizerDispatcherFactory
+{
+ public:
+
+  Factory(MpiParallelMng* mpi_pm, Ref<IVariableSynchronizerMpiCommunicator> synchronizer_communicator)
+  : m_mpi_parallel_mng(mpi_pm)
+  , m_synchronizer_communicator(synchronizer_communicator)
+  {}
+
+  Ref<IGenericVariableSynchronizerDispatcher> createInstance() override
+  {
+    auto* x = new GenericMpiNeighborVariableSynchronizer(this);
+    return makeRef<IGenericVariableSynchronizerDispatcher>(x);
+  }
+
+ public:
+
+  MpiParallelMng* m_mpi_parallel_mng = nullptr;
+  Ref<IVariableSynchronizerMpiCommunicator> m_synchronizer_communicator;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" Ref<IGenericVariableSynchronizerDispatcherFactory>
+arcaneCreateMpiNeighborVariableSynchronizerFactory(MpiParallelMng* mpi_pm,
+                                                   Ref<IVariableSynchronizerMpiCommunicator> sync_communicator)
+{
+  auto* x = new GenericMpiNeighborVariableSynchronizer::Factory(mpi_pm, sync_communicator);
+  return makeRef<IGenericVariableSynchronizerDispatcherFactory>(x);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 GenericMpiNeighborVariableSynchronizer::
-GenericMpiNeighborVariableSynchronizer(MpiNeighborVariableSynchronizeDispatcherBuildInfo& bi)
-: m_mpi_parallel_mng(bi.parallelMng())
-, m_synchronizer_communicator(bi.synchronizerCommunicator())
+GenericMpiNeighborVariableSynchronizer(Factory* f)
+: m_mpi_parallel_mng(f->m_mpi_parallel_mng)
+, m_synchronizer_communicator(f->m_synchronizer_communicator)
 {
 }
 
@@ -139,12 +203,13 @@ endSynchronize(IVariableSynchronizerBuffer* buf)
 void GenericMpiNeighborVariableSynchronizer::
 compute()
 {
-  ARCANE_CHECK_POINTER(m_sync_info);
+  ItemGroupSynchronizeInfo* sync_info = _syncInfo();
+  ARCANE_CHECK_POINTER(sync_info);
 
   auto* sync_communicator = m_synchronizer_communicator.get();
   ARCANE_CHECK_POINTER(sync_communicator);
 
-  auto sync_list = m_sync_info->infos();
+  auto sync_list = sync_info->infos();
   const Int32 nb_message = sync_list.size();
 
   m_mpi_send_counts.resize(nb_message);
@@ -155,64 +220,6 @@ compute()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <typename SimpleType>
-MpiNeighborVariableSynchronizeDispatcher<SimpleType>::
-MpiNeighborVariableSynchronizeDispatcher(MpiNeighborVariableSynchronizeDispatcherBuildInfo& bi)
-: VariableSynchronizeDispatcher<SimpleType>(VariableSynchronizeDispatcherBuildInfo(bi.parallelMng(), bi.table()))
-, m_generic(bi)
-{
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <typename SimpleType> void
-MpiNeighborVariableSynchronizeDispatcher<SimpleType>::
-_beginSynchronize(SyncBuffer& sync_buffer)
-{
-  m_generic.beginSynchronize(sync_buffer.genericBuffer());
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <typename SimpleType> void
-MpiNeighborVariableSynchronizeDispatcher<SimpleType>::
-_endSynchronize(SyncBuffer& sync_buffer)
-{
-  m_generic.endSynchronize(sync_buffer.genericBuffer());
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <typename SimpleType> void
-MpiNeighborVariableSynchronizeDispatcher<SimpleType>::
-compute()
-{
-  VariableSynchronizeDispatcher<SimpleType>::compute();
-  m_generic.compute();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template class MpiNeighborVariableSynchronizeDispatcher<Byte>;
-template class MpiNeighborVariableSynchronizeDispatcher<Int16>;
-template class MpiNeighborVariableSynchronizeDispatcher<Int32>;
-template class MpiNeighborVariableSynchronizeDispatcher<Int64>;
-template class MpiNeighborVariableSynchronizeDispatcher<Real>;
-template class MpiNeighborVariableSynchronizeDispatcher<Real2>;
-template class MpiNeighborVariableSynchronizeDispatcher<Real3>;
-template class MpiNeighborVariableSynchronizeDispatcher<Real2x2>;
-template class MpiNeighborVariableSynchronizeDispatcher<Real3x3>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

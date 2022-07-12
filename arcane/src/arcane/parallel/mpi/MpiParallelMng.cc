@@ -48,9 +48,6 @@
 #include "arcane/parallel/mpi/MpiLegacyVariableSynchronizeDispatcher.h"
 #include "arcane/parallel/mpi/MpiDatatype.h"
 #include "arcane/parallel/mpi/IVariableSynchronizerMpiCommunicator.h"
-#if defined(ARCANE_HAS_MPI_NEIGHBOR)
-#include "arcane/parallel/mpi/MpiNeighborVariableSynchronizeDispatcher.h"
-#endif
 
 #include "arcane/SerializeMessage.h"
 
@@ -80,6 +77,13 @@ using namespace Arccore::MessagePassing::Mpi;
 
 extern "C++" IIOMng*
 arcaneCreateIOMng(IParallelMng* psm);
+
+#if defined(ARCANE_HAS_MPI_NEIGHBOR)
+// Défini dans MpiNeighborVariableSynchronizeDispatcher
+extern "C++" Ref<IGenericVariableSynchronizerDispatcherFactory>
+arcaneCreateMpiNeighborVariableSynchronizerFactory(MpiParallelMng* mpi_pm,
+                                                   Ref<IVariableSynchronizerMpiCommunicator> synchronizer_communicator);
+#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -305,8 +309,9 @@ class MpiParallelMngUtilsFactory
       tm->info() << "Using MpiSynchronizer V5";
       topology_info = makeRef<IVariableSynchronizerMpiCommunicator>(new VariableSynchronizerMpiCommunicator(mpi_pm));
 #if defined(ARCANE_HAS_MPI_NEIGHBOR)
-      MpiNeighborVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table,topology_info);
-      vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiNeighborVariableSynchronizeDispatcher>(bi));
+      auto factory = arcaneCreateMpiNeighborVariableSynchronizerFactory(mpi_pm,topology_info);
+      GenericVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table,factory);
+      vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<GenericVariableSynchronizeDispatcher>(bi));
 #else
       throw NotSupportedException(A_FUNCINFO,"Synchronize implementation V5 is not supported with this version of MPI");
 #endif
