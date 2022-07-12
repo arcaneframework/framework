@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* MpiNeighborVariableSynchronizeDispatcher.h                  (C) 2000-2022 */
 /*                                                                           */
-/* Gestion spécifique MPI des synchronisations des variables.                */
+/* Synchronisations des variables via MPI_Neighbor_alltoallv.                */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_PARALLEL_MPI_MPINEIGHBORVARIABLESYNCHRONIZEDISPATCHER_H
 #define ARCANE_PARALLEL_MPI_MPINEIGHBORVARIABLESYNCHRONIZEDISPATCHER_H
@@ -64,14 +64,31 @@ class MpiNeighborVariableSynchronizeDispatcherBuildInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+class GenericMpiNeighborVariableSynchronizer
+{
+ public:
+  explicit GenericMpiNeighborVariableSynchronizer(MpiNeighborVariableSynchronizeDispatcherBuildInfo& bi);
+ public:
+  void setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info) { m_sync_info = sync_info; }
+  void compute();
+  void beginSynchronize(IVariableSynchronizerBuffer* buf);
+  void endSynchronize(IVariableSynchronizerBuffer* buf);
+ private:
+  MpiParallelMng* m_mpi_parallel_mng = nullptr;
+  UniqueArray<int> m_mpi_send_counts;
+  UniqueArray<int> m_mpi_receive_counts;
+  UniqueArray<int> m_mpi_send_displacements;
+  UniqueArray<int> m_mpi_receive_displacements;
+  Ref<IVariableSynchronizerMpiCommunicator> m_synchronizer_communicator;
+  ItemGroupSynchronizeInfo* m_sync_info = nullptr;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
- * \brief Implémentation par neighbor pour MPI de la synchronisation.
- *
- * Les messages sont envoyés par bloc d'une taille fixe.
- *
- * NOTE: cette optimisation respecte la norme MPI qui dit qu'on ne doit
- * plus toucher à la zone mémoire d'un message tant que celui-ci n'est
- * pas fini.
+ * \brief Implémentation de la synchronisations des variables via
+ * MPI_Neighbor_alltoallv().
  */
 template <typename SimpleType>
 class MpiNeighborVariableSynchronizeDispatcher
@@ -85,6 +102,11 @@ class MpiNeighborVariableSynchronizeDispatcher
 
   explicit MpiNeighborVariableSynchronizeDispatcher(MpiNeighborVariableSynchronizeDispatcherBuildInfo& bi);
 
+  void setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info) override
+  {
+    VariableSynchronizeDispatcher<SimpleType>::setItemGroupSynchronizeInfo(sync_info);
+    m_generic.setItemGroupSynchronizeInfo(sync_info);
+  }
   void compute() override;
 
  protected:
@@ -94,15 +116,7 @@ class MpiNeighborVariableSynchronizeDispatcher
 
  private:
 
-  MpiParallelMng* m_mpi_parallel_mng = nullptr;
-  UniqueArray<int> m_mpi_send_counts;
-  UniqueArray<int> m_mpi_receive_counts;
-  UniqueArray<int> m_mpi_send_displacements;
-  UniqueArray<int> m_mpi_receive_displacements;
-  MPI_Comm m_neighbor_communicator;
-  Ref<IVariableSynchronizerMpiCommunicator> m_synchronizer_communicator;
-
- private:
+  GenericMpiNeighborVariableSynchronizer m_generic;
 };
 
 /*---------------------------------------------------------------------------*/
