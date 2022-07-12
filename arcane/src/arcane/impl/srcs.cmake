@@ -125,6 +125,7 @@ set( ARCANE_SOURCES
   VariableUtilities.h
   VariableSynchronizer.h
   IVariableSynchronizerBuffer.h
+  IGenericVariableSynchronizerDispatcher.h
   DataOperation.h
   DataOperation.cc
   SequentialParallelSuperMng.h

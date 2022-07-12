@@ -27,6 +27,7 @@
 
 #include "arcane/impl/IBufferCopier.h"
 #include "arcane/impl/IVariableSynchronizerBuffer.h"
+#include "arcane/impl/IGenericVariableSynchronizerDispatcher.h"
 
 #include "arcane/DataTypeDispatchingDataVisitor.h"
 
@@ -300,6 +301,43 @@ class ARCANE_IMPL_EXPORT SimpleVariableSynchronizeDispatcher
  private:
 
   UniqueArray<Parallel::Request> m_all_requests;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Class template pour les implémentations génériques indépendantes
+ * du type de donnée utilisé.
+ */
+template <typename SimpleType>
+class ARCANE_IMPL_EXPORT GenericVariableSynchronizeDispatcher
+: public VariableSynchronizeDispatcher<SimpleType>
+{
+ public:
+
+  using SyncBuffer = typename VariableSynchronizeDispatcher<SimpleType>::SyncBuffer;
+
+ public:
+
+  explicit GenericVariableSynchronizeDispatcher(GenericVariableSynchronizeDispatcherBuildInfo& bi);
+
+  void setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info) override
+  {
+    VariableSynchronizeDispatcher<SimpleType>::setItemGroupSynchronizeInfo(sync_info);
+    m_generic_instance->setItemGroupSynchronizeInfo(sync_info);
+  }
+  void compute() override;
+
+ public:
+ protected:
+
+  void _beginSynchronize(SyncBuffer& sync_buffer) override;
+  void _endSynchronize(SyncBuffer& sync_buffer) override;
+
+ private:
+
+  Ref<IGenericVariableSynchronizerDispatcherFactory> m_factory;
+  Ref<IGenericVariableSynchronizerDispatcher> m_generic_instance;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -323,6 +323,56 @@ _endSynchronize(SyncBuffer& sync_buffer)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename SimpleType>
+GenericVariableSynchronizeDispatcher<SimpleType>::
+GenericVariableSynchronizeDispatcher(GenericVariableSynchronizeDispatcherBuildInfo& bi)
+: VariableSynchronizeDispatcher<SimpleType>(VariableSynchronizeDispatcherBuildInfo(bi.parallelMng(), bi.table()))
+, m_factory(bi.factory())
+{
+  ARCANE_CHECK_POINTER(m_factory.get());
+  m_generic_instance = m_factory->createInstance();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename SimpleType> void
+GenericVariableSynchronizeDispatcher<SimpleType>::
+_beginSynchronize(SyncBuffer& sync_buffer)
+{
+  m_generic_instance->beginSynchronize(sync_buffer.genericBuffer());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename SimpleType> void
+GenericVariableSynchronizeDispatcher<SimpleType>::
+_endSynchronize(SyncBuffer& sync_buffer)
+{
+  m_generic_instance->endSynchronize(sync_buffer.genericBuffer());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename SimpleType> void
+GenericVariableSynchronizeDispatcher<SimpleType>::
+compute()
+{
+  VariableSynchronizeDispatcher<SimpleType>::compute();
+  m_generic_instance->compute();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void VariableSynchronizerMultiDispatcher::
 synchronize(VariableCollection vars,ConstArrayView<VariableSyncInfo> sync_infos)
 {
@@ -428,25 +478,20 @@ changeLocalIds(Int32ConstArrayView old_to_new_ids)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template class VariableSynchronizeDispatcher<Byte>;
-template class VariableSynchronizeDispatcher<Real>;
-template class VariableSynchronizeDispatcher<Int16>;
-template class VariableSynchronizeDispatcher<Int32>;
-template class VariableSynchronizeDispatcher<Int64>;
-template class VariableSynchronizeDispatcher<Real2>;
-template class VariableSynchronizeDispatcher<Real3>;
-template class VariableSynchronizeDispatcher<Real2x2>;
-template class VariableSynchronizeDispatcher<Real3x3>;
+#define ARCANE_INSTANTIATE(type) \
+  template class ARCANE_TEMPLATE_EXPORT VariableSynchronizeDispatcher<type>;\
+  template class ARCANE_TEMPLATE_EXPORT GenericVariableSynchronizeDispatcher<type>;\
+  template class ARCANE_TEMPLATE_EXPORT SimpleVariableSynchronizeDispatcher<type>
 
-template class SimpleVariableSynchronizeDispatcher<Byte>;
-template class SimpleVariableSynchronizeDispatcher<Real>;
-template class SimpleVariableSynchronizeDispatcher<Int16>;
-template class SimpleVariableSynchronizeDispatcher<Int32>;
-template class SimpleVariableSynchronizeDispatcher<Int64>;
-template class SimpleVariableSynchronizeDispatcher<Real2>;
-template class SimpleVariableSynchronizeDispatcher<Real3>;
-template class SimpleVariableSynchronizeDispatcher<Real2x2>;
-template class SimpleVariableSynchronizeDispatcher<Real3x3>;
+ARCANE_INSTANTIATE(Byte);
+ARCANE_INSTANTIATE(Int16);
+ARCANE_INSTANTIATE(Int32);
+ARCANE_INSTANTIATE(Int64);
+ARCANE_INSTANTIATE(Real);
+ARCANE_INSTANTIATE(Real2);
+ARCANE_INSTANTIATE(Real3);
+ARCANE_INSTANTIATE(Real2x2);
+ARCANE_INSTANTIATE(Real3x3);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
