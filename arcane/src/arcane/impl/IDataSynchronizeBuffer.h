@@ -28,11 +28,22 @@ namespace Arcane
 /*!
  * \brief Buffer générique pour la synchronisation de données.
  *
- * Cette instance peut être utilisée quel que soit le type de donnée de la synchronisation.
- * On utilise un buffer pour l'envoi (globalSendBuffer()) et un pour la réception
- * (globalReceiveBuffer()). Chaque buffer est composé de \a nbRank() parties, chaque
- * partie étant associée à un destinataire (sendBuffer() ou receiveBuffer()).
+ * Cette instance contient des buffers d'envoie et de réception et peut être
+ * utilisée quel que soit le type de donnée de la synchronisation.
  *
+ * Chaque buffer est composé de \a nbRank() parties et chaque
+ * partie est associée à un destinataire (sendBuffer() ou receiveBuffer()).
+ *
+ * Avant d'utiliser les buffers, il faut recopier les valeurs de la données
+ * La méthode copySend() permet de recopier les valeurs de la donnée dans le
+ * buffer d'envoi et copyReceive() permet de recopier le buffer de réception
+ * dans la donnée.
+ *
+ * Si hasGlobalBuffer() est vrai alors les buffers de chaque partie sont issues
+ * d'un buffer global et il est possible de le récupérer via globalSendBuffer()
+ * pour l'envoi et globalReceiveBuffer() pour la réception. Il est aussi
+ * possible dans ce de récupérer le déplacement de chaque sous-partie via
+ * les méthodes sendDisplacement() ou receiveDisplacement().
  */
 class ARCANE_IMPL_EXPORT IDataSynchronizeBuffer
 {
@@ -44,6 +55,8 @@ class ARCANE_IMPL_EXPORT IDataSynchronizeBuffer
 
   //! Nombre de rangs.
   virtual Int32 nbRank() const = 0;
+  //! Indique si les buffers sont globaux.
+  virtual bool hasGlobalBuffer() const = 0;
   //! Buffer d'envoi
   virtual Span<std::byte> globalSendBuffer() = 0;
   //! Buffer de réception

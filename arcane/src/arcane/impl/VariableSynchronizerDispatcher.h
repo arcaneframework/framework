@@ -179,6 +179,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
       GenericBuffer(SyncBuffer* b) : m_buffer(b){}
      public:
       Int32 nbRank() const override { return m_buffer->nbRank(); }
+      bool hasGlobalBuffer() const override { return true; }
       Span<std::byte> globalSendBuffer() override { return _toBytes(m_buffer->shareBuffer()); }
       Span<std::byte> globalReceiveBuffer() override { return _toBytes(m_buffer->ghostBuffer()); }
       Span<std::byte> sendBuffer(Int32 index) override { return _toBytes(m_buffer->shareBuffer(index)); }

@@ -160,6 +160,9 @@ endSynchronize(IDataSynchronizeBuffer* buf)
   double copy_time = 0.0;
   double wait_time = 0.0;
 
+  if (!buf->hasGlobalBuffer())
+    ARCANE_THROW(NotSupportedException,"Can not use MPI_Neighbor_alltoallv when hasGlobalBufer() is false");
+
   const MPI_Datatype mpi_dt = dtlist->datatype(Byte())->datatype();
 
   for (Integer i = 0; i < nb_message; ++i) {
