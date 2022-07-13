@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableSynchronizerDispatcher.h                            (C) 2000-2021 */
+/* VariableSynchronizerDispatcher.h                            (C) 2000-2022 */
 /*                                                                           */
 /* Service de synchronisation des variables.                                 */
 /*---------------------------------------------------------------------------*/
@@ -26,6 +26,8 @@
 #include "arcane/IParallelMng.h"
 
 #include "arcane/impl/IBufferCopier.h"
+#include "arcane/impl/IDataSynchronizeBuffer.h"
+#include "arcane/impl/IGenericVariableSynchronizerDispatcher.h"
 
 #include "arcane/DataTypeDispatchingDataVisitor.h"
 
@@ -170,9 +172,38 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
   //! Gère les buffers d'envoie et réception pour la synchronisation
   class ARCANE_IMPL_EXPORT SyncBuffer
   {
+    class GenericBuffer
+    : public IDataSynchronizeBuffer
+    {
+     public:
+      GenericBuffer(SyncBuffer* b) : m_buffer(b){}
+     public:
+      Int32 nbRank() const override { return m_buffer->nbRank(); }
+      bool hasGlobalBuffer() const override { return true; }
+      Span<std::byte> globalSendBuffer() override { return _toBytes(m_buffer->shareBuffer()); }
+      Span<std::byte> globalReceiveBuffer() override { return _toBytes(m_buffer->ghostBuffer()); }
+      Span<std::byte> sendBuffer(Int32 index) override { return _toBytes(m_buffer->shareBuffer(index)); }
+      Span<std::byte> receiveBuffer(Int32 index) override { return _toBytes(m_buffer->ghostBuffer(index)); }
+      Int64 sendDisplacement(Int32 index) const override { return m_buffer->shareDisplacement(index) * sizeof(SimpleType); }
+      Int64 receiveDisplacement(Int32 index) const override { return m_buffer->ghostDisplacement(index) * sizeof(SimpleType); }
+      void copySend(Int32 index) override { m_buffer->copySend(index); }
+      void copyReceive(Int32 index) override { m_buffer->copyReceive(index); }
+      Int64 totalSendSize() const { return  m_buffer->totalShareSize(); }
+      Int64 totalReceiveSize() const { return m_buffer->totalGhostSize(); }
+     private:
+      SyncBuffer* m_buffer;
+      Span<std::byte> _toBytes(ArrayView<SimpleType> view)
+      {
+        Int64 s = static_cast<Int64>(view.size()) * sizeof(SimpleType);
+        return { reinterpret_cast<std::byte*>(view.data()), s };
+      }
+    };
+   public:
+    SyncBuffer() : m_generic_buffer(this){}
    public:
     void compute(IBufferCopier<SimpleType>* copier,ItemGroupSynchronizeInfo* sync_list,Int32 dim2_size);
    public:
+    Int32 nbRank() const { return m_ghost_locals_buffer.size(); }
     Int32 dim2Size() const { return m_dim2_size; }
     ArrayView<SimpleType> ghostBuffer(Int32 index) { return m_ghost_locals_buffer[index]; }
     ArrayView<SimpleType> shareBuffer(Int32 index) { return m_share_locals_buffer[index]; }
@@ -190,7 +221,8 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
     void copySend(Integer index);
     Int64 totalGhostSize() const { return asBytes(m_ghost_buffer.constSpan()).size(); }
     Int64 totalShareSize() const { return asBytes(m_share_buffer.constSpan()).size(); }
-   private:
+    IDataSynchronizeBuffer* genericBuffer() { return &m_generic_buffer; }
+  private:
     Integer m_dim2_size = 0;
     //! Buffer pour toutes les données des entités fantômes qui serviront en réception
     UniqueArray<SimpleType> m_ghost_buffer;
@@ -208,6 +240,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
     //! Vue sur les données de la variable
     ArrayView<SimpleType> m_data_view;
     IBufferCopier<SimpleType>* m_buffer_copier = nullptr;
+    GenericBuffer m_generic_buffer;
   };
 
  public:
@@ -269,6 +302,43 @@ class ARCANE_IMPL_EXPORT SimpleVariableSynchronizeDispatcher
  private:
 
   UniqueArray<Parallel::Request> m_all_requests;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Class template pour les implémentations génériques indépendantes
+ * du type de donnée utilisé.
+ */
+template <typename SimpleType>
+class ARCANE_IMPL_EXPORT GenericVariableSynchronizeDispatcher
+: public VariableSynchronizeDispatcher<SimpleType>
+{
+ public:
+
+  using SyncBuffer = typename VariableSynchronizeDispatcher<SimpleType>::SyncBuffer;
+
+ public:
+
+  explicit GenericVariableSynchronizeDispatcher(GenericVariableSynchronizeDispatcherBuildInfo& bi);
+
+  void setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info) override
+  {
+    VariableSynchronizeDispatcher<SimpleType>::setItemGroupSynchronizeInfo(sync_info);
+    m_generic_instance->setItemGroupSynchronizeInfo(sync_info);
+  }
+  void compute() override;
+
+ public:
+ protected:
+
+  void _beginSynchronize(SyncBuffer& sync_buffer) override;
+  void _endSynchronize(SyncBuffer& sync_buffer) override;
+
+ private:
+
+  Ref<IGenericVariableSynchronizerDispatcherFactory> m_factory;
+  Ref<IGenericVariableSynchronizerDispatcher> m_generic_instance;
 };
 
 /*---------------------------------------------------------------------------*/

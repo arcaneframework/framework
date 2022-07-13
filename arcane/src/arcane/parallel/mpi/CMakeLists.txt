@@ -11,7 +11,6 @@ include(srcs.cmake)
 set(ARCANE_HAS_MPI_NEIGHBOR FALSE)
 if (MPI_CXX_VERSION VERSION_GREATER_EQUAL "3.1")
   list(APPEND ARCANE_SOURCES
-    MpiNeighborVariableSynchronizeDispatcher.h
     MpiNeighborVariableSynchronizeDispatcher.cc
     )
   set(ARCANE_HAS_MPI_NEIGHBOR TRUE)

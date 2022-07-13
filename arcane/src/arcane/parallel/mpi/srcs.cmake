@@ -16,9 +16,7 @@ set( ARCANE_SOURCES
   MpiParallelNonBlockingCollectiveDispatch.cc
   MpiParallelNonBlockingCollectiveDispatch.h
   MpiVariableSynchronizeDispatcher.cc
-  MpiVariableSynchronizeDispatcher.h
   MpiBlockVariableSynchronizeDispatcher.cc
-  MpiBlockVariableSynchronizeDispatcher.h
   MpiDirectSendrecvVariableSynchronizeDispatcher.cc
   MpiDirectSendrecvVariableSynchronizeDispatcher.h
   MpiLegacyVariableSynchronizeDispatcher.cc
@@ -35,7 +33,6 @@ set( ARCANE_SOURCES
   MpiParallelDispatch.h
   MpiParallelNonBlockingCollective.h
   MpiParallelNonBlockingCollectiveDispatch.h
-  MpiVariableSynchronizeDispatcher.h
   MpiSerializeMessage.h
   MpiSerializeMessageList.h
   MpiTimerMng.h

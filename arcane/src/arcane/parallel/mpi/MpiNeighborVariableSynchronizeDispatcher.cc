@@ -11,36 +11,25 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/parallel/mpi/MpiNeighborVariableSynchronizeDispatcher.h"
-
 #include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/Real2.h"
-#include "arcane/utils/Real3.h"
-#include "arcane/utils/Real2x2.h"
-#include "arcane/utils/Real3x3.h"
+#include "arcane/utils/CheckedConvert.h"
 
 #include "arcane/parallel/mpi/MpiParallelMng.h"
 #include "arcane/parallel/mpi/MpiAdapter.h"
-#include "arcane/parallel/mpi/MpiDatatypeList.h"
-#include "arcane/parallel/mpi/MpiDatatype.h"
 #include "arcane/parallel/mpi/MpiTimeInterval.h"
+#include "arcane/parallel/mpi/IVariableSynchronizerMpiCommunicator.h"
 #include "arcane/parallel/IStat.h"
 
-#include "arcane/datatype/DataTypeTraits.h"
-
-#include "arccore/message_passing/IRequestList.h"
+#include "arcane/impl/IDataSynchronizeBuffer.h"
+#include "arcane/impl/VariableSynchronizerDispatcher.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
- * Cette implémentation découpe la synchronisation en bloc de taille fixe.
- * Tout le mécanisme est dans _endSynchronize().
- * L'algorithme est le suivant:
- *
- * 1. Recopie dans les buffers d'envoi les valeurs à envoyer.
- * 2. Boucle sur Irecv/ISend/WaitAll tant que qu'il y a au moins une partie non vide.
- * 3. Recopie depuis les buffers de réception les valeurs des variables.
-*/
+ * Cette implémentation utilise la fonction MPI_Neighbor_alltoallv pour
+ * les synchronisations. Cette fonction est disponible dans la version 3.1
+ * de MPI.
+ */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -49,56 +38,112 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*
+ * \brief Implémentation de la synchronisations des variables via
+ * MPI_Neighbor_alltoallv().
+ */
+class MpiNeighborVariableSynchronizerDispatcher
+: public AbstractGenericVariableSynchronizerDispatcher
+{
+ public:
 
-template<typename SimpleType>
-MpiNeighborVariableSynchronizeDispatcher<SimpleType>::
-MpiNeighborVariableSynchronizeDispatcher(MpiNeighborVariableSynchronizeDispatcherBuildInfo& bi)
-: VariableSynchronizeDispatcher<SimpleType>(VariableSynchronizeDispatcherBuildInfo(bi.parallelMng(),bi.table()))
-, m_mpi_parallel_mng(bi.parallelMng())
-, m_neighbor_communicator(MPI_COMM_NULL)
-, m_synchronizer_communicator(bi.synchronizerCommunicator())
+  class Factory;
+  explicit MpiNeighborVariableSynchronizerDispatcher(Factory* f);
+
+ public:
+
+  void compute() override;
+  void beginSynchronize(IDataSynchronizeBuffer* buf) override;
+  void endSynchronize(IDataSynchronizeBuffer* buf) override;
+
+ private:
+
+  MpiParallelMng* m_mpi_parallel_mng = nullptr;
+  UniqueArray<int> m_mpi_send_counts;
+  UniqueArray<int> m_mpi_receive_counts;
+  UniqueArray<int> m_mpi_send_displacements;
+  UniqueArray<int> m_mpi_receive_displacements;
+  Ref<IVariableSynchronizerMpiCommunicator> m_synchronizer_communicator;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class MpiNeighborVariableSynchronizerDispatcher::Factory
+: public IGenericVariableSynchronizerDispatcherFactory
+{
+ public:
+
+  Factory(MpiParallelMng* mpi_pm, Ref<IVariableSynchronizerMpiCommunicator> synchronizer_communicator)
+  : m_mpi_parallel_mng(mpi_pm)
+  , m_synchronizer_communicator(synchronizer_communicator)
+  {}
+
+  Ref<IGenericVariableSynchronizerDispatcher> createInstance() override
+  {
+    auto* x = new MpiNeighborVariableSynchronizerDispatcher(this);
+    return makeRef<IGenericVariableSynchronizerDispatcher>(x);
+  }
+
+ public:
+
+  MpiParallelMng* m_mpi_parallel_mng = nullptr;
+  Ref<IVariableSynchronizerMpiCommunicator> m_synchronizer_communicator;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" Ref<IGenericVariableSynchronizerDispatcherFactory>
+arcaneCreateMpiNeighborVariableSynchronizerFactory(MpiParallelMng* mpi_pm,
+                                                   Ref<IVariableSynchronizerMpiCommunicator> sync_communicator)
+{
+  auto* x = new MpiNeighborVariableSynchronizerDispatcher::Factory(mpi_pm, sync_communicator);
+  return makeRef<IGenericVariableSynchronizerDispatcherFactory>(x);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MpiNeighborVariableSynchronizerDispatcher::
+MpiNeighborVariableSynchronizerDispatcher(Factory* f)
+: m_mpi_parallel_mng(f->m_mpi_parallel_mng)
+, m_synchronizer_communicator(f->m_synchronizer_communicator)
 {
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <typename SimpleType> void
-MpiNeighborVariableSynchronizeDispatcher<SimpleType>::
-_beginSynchronize(SyncBuffer& sync_buffer)
+void MpiNeighborVariableSynchronizerDispatcher::
+beginSynchronize(IDataSynchronizeBuffer* buf)
 {
   // Ne fait rien au niveau MPI dans cette partie car cette implémentation
   // ne supporte pas encore l'asynchronisme.
   // On se contente de recopier les valeurs des variables dans le buffer d'envoi
   // pour permettre ensuite de modifier les valeurs de la variable entre
-  // le _beginSynchronize() et le _endSynchronize().
+  // le beginSynchronize() et le endSynchronize().
 
   double send_copy_time = 0.0;
   {
     MpiTimeInterval tit(&send_copy_time);
 
     // Recopie les buffers d'envoi
-    auto sync_list = this->m_sync_info->infos();
-    Integer nb_message = sync_list.size();
+    Integer nb_message = buf->nbRank();
     for (Integer i = 0; i < nb_message; ++i)
-      sync_buffer.copySend(i);
+      buf->copySend(i);
   }
-  Int64 total_share_size = sync_buffer.totalShareSize();
+  Int64 total_share_size = buf->totalSendSize();
   m_mpi_parallel_mng->stat()->add("SyncSendCopy", send_copy_time, total_share_size);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename SimpleType> void
-MpiNeighborVariableSynchronizeDispatcher<SimpleType>::
-_endSynchronize(SyncBuffer& sync_buffer)
+void MpiNeighborVariableSynchronizerDispatcher::
+endSynchronize(IDataSynchronizeBuffer* buf)
 {
-  auto sync_list = this->m_sync_info->infos();
-  const Int32 nb_message = sync_list.size();
+  const Int32 nb_message = buf->nbRank();
 
   auto* sync_communicator = m_synchronizer_communicator.get();
   ARCANE_CHECK_POINTER(sync_communicator);
@@ -108,28 +153,30 @@ _endSynchronize(SyncBuffer& sync_buffer)
     ARCANE_FATAL("Invalid null communicator");
 
   MpiParallelMng* pm = m_mpi_parallel_mng;
-  MpiDatatypeList* dtlist = pm->datatypes();
+  const MPI_Datatype mpi_dt = MP::Mpi::MpiBuiltIn::datatype(Byte());
 
   double copy_time = 0.0;
   double wait_time = 0.0;
 
-  const MPI_Datatype mpi_dt = dtlist->datatype(SimpleType())->datatype();
-
-  ConstArrayView<SimpleType> send_buf = sync_buffer.shareBuffer();
-  ArrayView<SimpleType> receive_buf = sync_buffer.ghostBuffer();
+  if (!buf->hasGlobalBuffer())
+    ARCANE_THROW(NotSupportedException,"Can not use MPI_Neighbor_alltoallv when hasGlobalBufer() is false");
 
   for (Integer i = 0; i < nb_message; ++i) {
-    // TODO: vérifier débordement
-    Int32 nb_send = sync_buffer.shareBuffer(i).size();
-    Int32 nb_receive = sync_buffer.ghostBuffer(i).size();
+    Int32 nb_send = CheckedConvert::toInt32(buf->sendBuffer(i).size());
+    Int32 nb_receive = CheckedConvert::toInt32(buf->receiveBuffer(i).size());
+    Int32 send_displacement = CheckedConvert::toInt32(buf->sendDisplacement(i));
+    Int32 receive_displacement = CheckedConvert::toInt32(buf->receiveDisplacement(i));
+
     m_mpi_send_counts[i] = nb_send;
     m_mpi_receive_counts[i] = nb_receive;
-    m_mpi_send_displacements[i] = sync_buffer.shareDisplacement(i);
-    m_mpi_receive_displacements[i] = sync_buffer.ghostDisplacement(i);
+    m_mpi_send_displacements[i] = send_displacement;
+    m_mpi_receive_displacements[i] = receive_displacement;
   }
 
   {
     MpiTimeInterval tit(&wait_time);
+    auto send_buf = buf->globalSendBuffer();
+    auto receive_buf = buf->globalReceiveBuffer();
     MPI_Neighbor_alltoallv(send_buf.data(), m_mpi_send_counts.data(), m_mpi_send_displacements.data(), mpi_dt,
                            receive_buf.data(), m_mpi_receive_counts.data(), m_mpi_receive_displacements.data(), mpi_dt,
                            communicator);
@@ -139,11 +186,11 @@ _endSynchronize(SyncBuffer& sync_buffer)
   {
     MpiTimeInterval tit(&copy_time);
     for (Integer i = 0; i < nb_message; ++i)
-      sync_buffer.copyReceive(i);
+      buf->copyReceive(i);
   }
 
-  Int64 total_ghost_size = sync_buffer.totalGhostSize();
-  Int64 total_share_size = sync_buffer.totalShareSize();
+  Int64 total_ghost_size = buf->totalReceiveSize();
+  Int64 total_share_size = buf->totalSendSize();
   Int64 total_size = total_ghost_size + total_share_size;
   pm->stat()->add("SyncCopy", copy_time, total_ghost_size);
   pm->stat()->add("SyncWait", wait_time, total_size);
@@ -152,16 +199,16 @@ _endSynchronize(SyncBuffer& sync_buffer)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename SimpleType> void
-MpiNeighborVariableSynchronizeDispatcher<SimpleType>::
+void MpiNeighborVariableSynchronizerDispatcher::
 compute()
 {
-  VariableSynchronizeDispatcher<SimpleType>::compute();
+  ItemGroupSynchronizeInfo* sync_info = _syncInfo();
+  ARCANE_CHECK_POINTER(sync_info);
 
   auto* sync_communicator = m_synchronizer_communicator.get();
   ARCANE_CHECK_POINTER(sync_communicator);
 
-  auto sync_list = this->m_sync_info->infos();
+  auto sync_list = sync_info->infos();
   const Int32 nb_message = sync_list.size();
 
   m_mpi_send_counts.resize(nb_message);
@@ -172,16 +219,6 @@ compute()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-template class MpiNeighborVariableSynchronizeDispatcher<Byte>;
-template class MpiNeighborVariableSynchronizeDispatcher<Int16>;
-template class MpiNeighborVariableSynchronizeDispatcher<Int32>;
-template class MpiNeighborVariableSynchronizeDispatcher<Int64>;
-template class MpiNeighborVariableSynchronizeDispatcher<Real>;
-template class MpiNeighborVariableSynchronizeDispatcher<Real2>;
-template class MpiNeighborVariableSynchronizeDispatcher<Real3>;
-template class MpiNeighborVariableSynchronizeDispatcher<Real2x2>;
-template class MpiNeighborVariableSynchronizeDispatcher<Real3x3>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
