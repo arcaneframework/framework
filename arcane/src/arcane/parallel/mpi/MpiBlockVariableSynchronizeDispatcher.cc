@@ -15,8 +15,6 @@
 
 #include "arcane/parallel/mpi/MpiParallelMng.h"
 #include "arcane/parallel/mpi/MpiAdapter.h"
-#include "arcane/parallel/mpi/MpiDatatypeList.h"
-#include "arcane/parallel/mpi/MpiDatatype.h"
 #include "arcane/parallel/mpi/MpiTimeInterval.h"
 #include "arcane/parallel/IStat.h"
 
@@ -176,16 +174,15 @@ endSynchronize(IDataSynchronizeBuffer* vs_buf)
 
   MpiParallelMng* pm = m_mpi_parallel_mng;
   Int32 my_rank = pm->commRank();
-  MpiDatatypeList* dtlist = pm->datatypes();
 
   MP::Mpi::MpiAdapter* mpi_adapter = pm->adapter();
+  const MPI_Datatype mpi_dt = MP::Mpi::MpiBuiltIn::datatype(Byte());
 
   double prepare_time = 0.0;
   double copy_time = 0.0;
   double wait_time = 0.0;
 
   constexpr int serialize_tag = 523;
-  const MPI_Datatype mpi_dt = dtlist->datatype(Byte())->datatype();
 
   const Int32 block_size = m_block_size;
 

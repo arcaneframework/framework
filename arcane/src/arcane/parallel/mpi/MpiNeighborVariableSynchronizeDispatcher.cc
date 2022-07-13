@@ -16,8 +16,6 @@
 
 #include "arcane/parallel/mpi/MpiParallelMng.h"
 #include "arcane/parallel/mpi/MpiAdapter.h"
-#include "arcane/parallel/mpi/MpiDatatypeList.h"
-#include "arcane/parallel/mpi/MpiDatatype.h"
 #include "arcane/parallel/mpi/MpiTimeInterval.h"
 #include "arcane/parallel/mpi/IVariableSynchronizerMpiCommunicator.h"
 #include "arcane/parallel/IStat.h"
@@ -155,15 +153,13 @@ endSynchronize(IDataSynchronizeBuffer* buf)
     ARCANE_FATAL("Invalid null communicator");
 
   MpiParallelMng* pm = m_mpi_parallel_mng;
-  MpiDatatypeList* dtlist = pm->datatypes();
+  const MPI_Datatype mpi_dt = MP::Mpi::MpiBuiltIn::datatype(Byte());
 
   double copy_time = 0.0;
   double wait_time = 0.0;
 
   if (!buf->hasGlobalBuffer())
     ARCANE_THROW(NotSupportedException,"Can not use MPI_Neighbor_alltoallv when hasGlobalBufer() is false");
-
-  const MPI_Datatype mpi_dt = dtlist->datatype(Byte())->datatype();
 
   for (Integer i = 0; i < nb_message; ++i) {
     Int32 nb_send = CheckedConvert::toInt32(buf->sendBuffer(i).size());
