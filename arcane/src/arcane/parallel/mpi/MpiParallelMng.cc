@@ -42,7 +42,6 @@
 #include "arcane/parallel/mpi/MpiLock.h"
 #include "arcane/parallel/mpi/MpiSerializeMessage.h"
 #include "arcane/parallel/mpi/MpiParallelNonBlockingCollective.h"
-#include "arcane/parallel/mpi/MpiVariableSynchronizeDispatcher.h"
 #include "arcane/parallel/mpi/MpiDirectSendrecvVariableSynchronizeDispatcher.h"
 #include "arcane/parallel/mpi/MpiLegacyVariableSynchronizeDispatcher.h"
 #include "arcane/parallel/mpi/MpiDatatype.h"
@@ -85,6 +84,8 @@ arcaneCreateMpiNeighborVariableSynchronizerFactory(MpiParallelMng* mpi_pm,
 #endif
 extern "C++" Ref<IGenericVariableSynchronizerDispatcherFactory>
 arcaneCreateMpiBlockVariableSynchronizerFactory(MpiParallelMng* mpi_pm, Int32 block_size, Int32 nb_sequence);
+extern "C++" Ref<IGenericVariableSynchronizerDispatcherFactory>
+arcaneCreateMpiVariableSynchronizerFactory(MpiParallelMng* mpi_pm);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -293,8 +294,9 @@ class MpiParallelMngUtilsFactory
     Ref<IGenericVariableSynchronizerDispatcherFactory> generic_factory;
     if (m_synchronizer_version == 2){
       tm->info() << "Using MpiSynchronizer V2";
-      MpiVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table);
-      vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiVariableSynchronizeDispatcher>(bi));
+      generic_factory = arcaneCreateMpiVariableSynchronizerFactory(mpi_pm);
+      //MpiVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table);
+      //vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiVariableSynchronizeDispatcher>(bi));
     }
     else if (m_synchronizer_version == 3 ){
       tm->info() << "Using MpiSynchronizer V3";
