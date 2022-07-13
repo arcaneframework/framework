@@ -44,13 +44,13 @@ namespace Arcane
  * \brief Implémentation de la synchronisations des variables via
  * MPI_Neighbor_alltoallv().
  */
-class GenericMpiNeighborVariableSynchronizer
+class MpiNeighborVariableSynchronizerDispatcher
 : public AbstractGenericVariableSynchronizerDispatcher
 {
  public:
 
   class Factory;
-  explicit GenericMpiNeighborVariableSynchronizer(Factory* f);
+  explicit MpiNeighborVariableSynchronizerDispatcher(Factory* f);
 
  public:
 
@@ -71,7 +71,7 @@ class GenericMpiNeighborVariableSynchronizer
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class GenericMpiNeighborVariableSynchronizer::Factory
+class MpiNeighborVariableSynchronizerDispatcher::Factory
 : public IGenericVariableSynchronizerDispatcherFactory
 {
  public:
@@ -83,7 +83,7 @@ class GenericMpiNeighborVariableSynchronizer::Factory
 
   Ref<IGenericVariableSynchronizerDispatcher> createInstance() override
   {
-    auto* x = new GenericMpiNeighborVariableSynchronizer(this);
+    auto* x = new MpiNeighborVariableSynchronizerDispatcher(this);
     return makeRef<IGenericVariableSynchronizerDispatcher>(x);
   }
 
@@ -100,15 +100,15 @@ extern "C++" Ref<IGenericVariableSynchronizerDispatcherFactory>
 arcaneCreateMpiNeighborVariableSynchronizerFactory(MpiParallelMng* mpi_pm,
                                                    Ref<IVariableSynchronizerMpiCommunicator> sync_communicator)
 {
-  auto* x = new GenericMpiNeighborVariableSynchronizer::Factory(mpi_pm, sync_communicator);
+  auto* x = new MpiNeighborVariableSynchronizerDispatcher::Factory(mpi_pm, sync_communicator);
   return makeRef<IGenericVariableSynchronizerDispatcherFactory>(x);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-GenericMpiNeighborVariableSynchronizer::
-GenericMpiNeighborVariableSynchronizer(Factory* f)
+MpiNeighborVariableSynchronizerDispatcher::
+MpiNeighborVariableSynchronizerDispatcher(Factory* f)
 : m_mpi_parallel_mng(f->m_mpi_parallel_mng)
 , m_synchronizer_communicator(f->m_synchronizer_communicator)
 {
@@ -117,7 +117,7 @@ GenericMpiNeighborVariableSynchronizer(Factory* f)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void GenericMpiNeighborVariableSynchronizer::
+void MpiNeighborVariableSynchronizerDispatcher::
 beginSynchronize(IDataSynchronizeBuffer* buf)
 {
   // Ne fait rien au niveau MPI dans cette partie car cette implémentation
@@ -142,7 +142,7 @@ beginSynchronize(IDataSynchronizeBuffer* buf)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void GenericMpiNeighborVariableSynchronizer::
+void MpiNeighborVariableSynchronizerDispatcher::
 endSynchronize(IDataSynchronizeBuffer* buf)
 {
   const Int32 nb_message = buf->nbRank();
@@ -203,7 +203,7 @@ endSynchronize(IDataSynchronizeBuffer* buf)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void GenericMpiNeighborVariableSynchronizer::
+void MpiNeighborVariableSynchronizerDispatcher::
 compute()
 {
   ItemGroupSynchronizeInfo* sync_info = _syncInfo();
