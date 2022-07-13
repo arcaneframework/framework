@@ -93,7 +93,7 @@ class MpiVariableSynchronizeDispatcher::Factory
 {
  public:
 
-  Factory(MpiParallelMng* mpi_pm)
+  explicit Factory(MpiParallelMng* mpi_pm)
   : m_mpi_parallel_mng(mpi_pm)
   {}
 
