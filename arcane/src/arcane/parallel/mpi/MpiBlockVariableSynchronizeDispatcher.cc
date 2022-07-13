@@ -20,7 +20,7 @@
 #include "arcane/parallel/mpi/MpiTimeInterval.h"
 #include "arcane/parallel/IStat.h"
 
-#include "arcane/impl/IVariableSynchronizerBuffer.h"
+#include "arcane/impl/IDataSynchronizeBuffer.h"
 #include "arcane/impl/VariableSynchronizerDispatcher.h"
 
 #include "arccore/message_passing/IRequestList.h"
@@ -64,8 +64,8 @@ class MpiBlockVariableSynchronizerDispatcher
  public:
 
   void compute() override {}
-  void beginSynchronize(IVariableSynchronizerBuffer* buf) override;
-  void endSynchronize(IVariableSynchronizerBuffer* buf) override;
+  void beginSynchronize(IDataSynchronizeBuffer* buf) override;
+  void endSynchronize(IDataSynchronizeBuffer* buf) override;
 
  private:
 
@@ -143,7 +143,7 @@ _isSkipRank(Int32 rank, Int32 sequence) const
 /*---------------------------------------------------------------------------*/
 
 void MpiBlockVariableSynchronizerDispatcher::
-beginSynchronize(IVariableSynchronizerBuffer* vs_buf)
+beginSynchronize(IDataSynchronizeBuffer* vs_buf)
 {
   // Ne fait rien au niveau MPI dans cette partie car cette implémentation
   // ne supporte pas l'asyncrhonisme.
@@ -169,7 +169,7 @@ beginSynchronize(IVariableSynchronizerBuffer* vs_buf)
 /*---------------------------------------------------------------------------*/
 
 void MpiBlockVariableSynchronizerDispatcher::
-endSynchronize(IVariableSynchronizerBuffer* vs_buf)
+endSynchronize(IDataSynchronizeBuffer* vs_buf)
 {
   auto sync_list = _syncInfo()->infos();
   const Int32 nb_message = sync_list.size();

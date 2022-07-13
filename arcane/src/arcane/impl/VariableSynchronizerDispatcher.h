@@ -26,7 +26,7 @@
 #include "arcane/IParallelMng.h"
 
 #include "arcane/impl/IBufferCopier.h"
-#include "arcane/impl/IVariableSynchronizerBuffer.h"
+#include "arcane/impl/IDataSynchronizeBuffer.h"
 #include "arcane/impl/IGenericVariableSynchronizerDispatcher.h"
 
 #include "arcane/DataTypeDispatchingDataVisitor.h"
@@ -173,7 +173,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
   class ARCANE_IMPL_EXPORT SyncBuffer
   {
     class GenericBuffer
-    : public IVariableSynchronizerBuffer
+    : public IDataSynchronizeBuffer
     {
      public:
       GenericBuffer(SyncBuffer* b) : m_buffer(b){}
@@ -220,7 +220,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
     void copySend(Integer index);
     Int64 totalGhostSize() const { return asBytes(m_ghost_buffer.constSpan()).size(); }
     Int64 totalShareSize() const { return asBytes(m_share_buffer.constSpan()).size(); }
-    IVariableSynchronizerBuffer* genericBuffer() { return &m_generic_buffer; }
+    IDataSynchronizeBuffer* genericBuffer() { return &m_generic_buffer; }
   private:
     Integer m_dim2_size = 0;
     //! Buffer pour toutes les données des entités fantômes qui serviront en réception

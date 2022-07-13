@@ -22,7 +22,7 @@
 #include "arcane/parallel/mpi/IVariableSynchronizerMpiCommunicator.h"
 #include "arcane/parallel/IStat.h"
 
-#include "arcane/impl/IVariableSynchronizerBuffer.h"
+#include "arcane/impl/IDataSynchronizeBuffer.h"
 #include "arcane/impl/VariableSynchronizerDispatcher.h"
 
 /*---------------------------------------------------------------------------*/
@@ -55,8 +55,8 @@ class GenericMpiNeighborVariableSynchronizer
  public:
 
   void compute() override;
-  void beginSynchronize(IVariableSynchronizerBuffer* buf) override;
-  void endSynchronize(IVariableSynchronizerBuffer* buf) override;
+  void beginSynchronize(IDataSynchronizeBuffer* buf) override;
+  void endSynchronize(IDataSynchronizeBuffer* buf) override;
 
  private:
 
@@ -118,7 +118,7 @@ GenericMpiNeighborVariableSynchronizer(Factory* f)
 /*---------------------------------------------------------------------------*/
 
 void GenericMpiNeighborVariableSynchronizer::
-beginSynchronize(IVariableSynchronizerBuffer* buf)
+beginSynchronize(IDataSynchronizeBuffer* buf)
 {
   // Ne fait rien au niveau MPI dans cette partie car cette implémentation
   // ne supporte pas encore l'asynchronisme.
@@ -143,7 +143,7 @@ beginSynchronize(IVariableSynchronizerBuffer* buf)
 /*---------------------------------------------------------------------------*/
 
 void GenericMpiNeighborVariableSynchronizer::
-endSynchronize(IVariableSynchronizerBuffer* buf)
+endSynchronize(IDataSynchronizeBuffer* buf)
 {
   const Int32 nb_message = buf->nbRank();
 

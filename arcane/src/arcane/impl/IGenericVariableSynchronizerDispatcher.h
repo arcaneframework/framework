@@ -22,7 +22,7 @@
 
 namespace Arcane
 {
-class IVariableSynchronizerBuffer;
+class IDataSynchronizeBuffer;
 class ItemGroupSynchronizeInfo;
 class IParallelMng;
 class GroupIndexTable;
@@ -42,8 +42,8 @@ class ARCANE_IMPL_EXPORT IGenericVariableSynchronizerDispatcher
 
   virtual void setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info) = 0;
   virtual void compute() = 0;
-  virtual void beginSynchronize(IVariableSynchronizerBuffer* buf) = 0;
-  virtual void endSynchronize(IVariableSynchronizerBuffer* buf) = 0;
+  virtual void beginSynchronize(IDataSynchronizeBuffer* buf) = 0;
+  virtual void endSynchronize(IDataSynchronizeBuffer* buf) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

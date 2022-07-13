@@ -124,7 +124,7 @@ set( ARCANE_SOURCES
   TransferValuesParallelOperation.h
   VariableUtilities.h
   VariableSynchronizer.h
-  IVariableSynchronizerBuffer.h
+  IDataSynchronizeBuffer.h
   IGenericVariableSynchronizerDispatcher.h
   DataOperation.h
   DataOperation.cc

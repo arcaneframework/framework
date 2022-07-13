@@ -5,13 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IVariableSynchronizerBuffer.h                               (C) 2000-2022 */
+/* IDataSynchronizeBuffer.h                                    (C) 2000-2022 */
 /*                                                                           */
-/* Interface d'un buffer générique pour la synchronisation de variables.     */
+/* Interface d'un buffer générique pour la synchronisation de donnéess.      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IMPL_IVARIABLESYNCHRONIZERBUFFER_H
-#define ARCANE_IMPL_IVARIABLESYNCHRONIZERBUFFER_H
+#ifndef ARCANE_IMPL_IDATASYNCHRONIZEBUFFER_H
+#define ARCANE_IMPL_IDATASYNCHRONIZEBUFFER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -26,7 +26,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Buffer générique pour la synchronisation de variables.
+ * \brief Buffer générique pour la synchronisation de données.
  *
  * Cette instance peut être utilisée quel que soit le type de donnée de la synchronisation.
  * On utilise un buffer pour l'envoi (globalSendBuffer()) et un pour la réception
@@ -34,11 +34,11 @@ namespace Arcane
  * partie étant associée à un destinataire (sendBuffer() ou receiveBuffer()).
  *
  */
-class ARCANE_IMPL_EXPORT IVariableSynchronizerBuffer
+class ARCANE_IMPL_EXPORT IDataSynchronizeBuffer
 {
  public:
 
-  virtual ~IVariableSynchronizerBuffer() = default;
+  virtual ~IDataSynchronizeBuffer() = default;
 
  public:
 
@@ -56,9 +56,9 @@ class ARCANE_IMPL_EXPORT IVariableSynchronizerBuffer
   virtual Int64 sendDisplacement(Int32 index) const = 0;
   //! Déplacement depuis le début de receiveBuffer() pour le rang \a index
   virtual Int64 receiveDisplacement(Int32 index) const = 0;
-  //! Recopie depuis le buffer de réception dans les données de la variable
+  //! Recopie dans les données depuis le buffer de réception.
   virtual void copyReceive(Int32 index) = 0;
-  //! Recopie dans le buffer d'envoi les données de la variable
+  //! Recopie dans le buffer d'envoi les données
   virtual void copySend(Int32 index) = 0;
   //! Taille totale à envoyer en octet
   virtual Int64 totalSendSize() const = 0;
