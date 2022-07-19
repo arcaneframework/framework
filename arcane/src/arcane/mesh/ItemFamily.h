@@ -26,6 +26,8 @@
 
 #include "arcane/IItemConnectivity.h"
 
+#include "arcane/ItemSharedInfo.h"
+
 #include <map>
 #include <set>
 
@@ -229,6 +231,7 @@ class ARCANE_MESH_EXPORT ItemFamily
 
   const DynamicMeshKindInfos& infos() const { return m_infos; }
   Int64ArrayView* uniqueIds();
+  ItemSharedInfo::ItemVariableViews* viewsForItemSharedInfo() { return &m_views_for_item_shared_info; }
 
  public:
 
@@ -413,6 +416,10 @@ class ARCANE_MESH_EXPORT ItemFamily
   Int64Array* m_items_unique_id = nullptr;
   Int32Array* m_items_owner = nullptr;
   Int32Array* m_items_flags = nullptr;
+  Int32Array* m_items_nb_parent = nullptr;
+  // Cee champs est utilisé par les instances de ItemSharedInfo
+  ItemSharedInfo::ItemVariableViews m_views_for_item_shared_info;
+  // TODO: a supprimer car redondant avec le champs correspondant de m_views_for_item_shared_info
   Int64ArrayView m_items_unique_id_view;
   Variables* m_internal_variables = nullptr;
   Int32 m_default_sub_domain_owner;
@@ -474,7 +481,6 @@ class ARCANE_MESH_EXPORT ItemFamily
 
  private:
   
-  inline void _setUniqueId(Int32 lid,Int64 uid);
   void _setSharedInfosBasePtr();
   void _setSharedInfosNoCopy(ItemInternal* item,ItemSharedInfo* isi);
   void _setDataIndexForItem(ItemInternal* item,Int32 data_index);
@@ -507,6 +513,7 @@ class ARCANE_MESH_EXPORT ItemFamily
   void _getConnectedItems(IIncrementalItemConnectivity* parent_connectivity,ItemVector& target_family_connected_items);
   void _fillHasExtraParentProperty(ItemScalarProperty<bool>& child_families_has_extra_parent,ItemVectorView connected_items);
   void _computeConnectivityInfo(ItemConnectivityInfo* ici);
+  void _updateItemViews();
 };
 
 /*---------------------------------------------------------------------------*/

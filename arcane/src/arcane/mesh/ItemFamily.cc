@@ -117,6 +117,7 @@ class ItemFamily::Variables
             const String& unique_ids_name,
             const String& items_owner_name,
             const String& items_flags_name,
+            const String& items_nb_parent_name,
             const String& groups_name,
             const String& current_id_name,
             const String& new_owner_name,
@@ -130,6 +131,7 @@ class ItemFamily::Variables
     m_items_unique_id(VariableBuildInfo(mesh,unique_ids_name,IVariable::PPrivate)),
     m_items_owner(VariableBuildInfo(mesh,items_owner_name,IVariable::PPrivate)),
     m_items_flags(VariableBuildInfo(mesh,items_flags_name,IVariable::PPrivate)),
+    m_items_nb_parent(VariableBuildInfo(mesh,items_nb_parent_name,IVariable::PPrivate)),
     m_groups_name(VariableBuildInfo(mesh,groups_name)),
     m_current_id(VariableBuildInfo(mesh,current_id_name)),
     m_items_new_owner(VariableBuildInfo(mesh,new_owner_name,family_name,IVariable::PNoDump|IVariable::PSubDomainDepend|IVariable::PExecutionDepend),item_kind),
@@ -145,6 +147,8 @@ class ItemFamily::Variables
     m_items_new_owner.setUsed(true);
   }
  public:
+  //! Indice dans le tableau des ItemSharedInfo pour chaque entité.
+  // TODO: utiliser un Int16 lorsqu'on aura limité le nombre de ItemSharedInfo sur un Int16
   VariableArrayInteger m_items_shared_data_index;
   VariableArrayInt32 m_items_data;
   //! Contient les uniqueIds() des entités de cette famille
@@ -153,6 +157,14 @@ class ItemFamily::Variables
   VariableArrayInt32 m_items_owner;
   //! Contient les flags() des entités de cette famille
   VariableArrayInt32 m_items_flags;
+  /*!
+   * \brief Contient le parent() des entités de cette famille.
+   *
+   * Cela n'est utilisé qu'avec les sous-maillages et on suppose qu'il n'y a
+   * qu'un seul parent par entité. Si un jour on veut plusieurs parent il faudra
+   * que cette variable soit un 'Array2'.
+   */
+  VariableArrayInt32 m_items_nb_parent;
   VariableArrayString m_groups_name;
   VariableScalarInteger m_current_id;
   /*!
@@ -283,6 +295,7 @@ build()
     String var_unique_ids_name(_variableName("FamilyUniqueIds"));
     String var_owner_name(_variableName("FamilyOwner"));
     String var_flags_name(_variableName("FamilyFlags"));
+    String var_nb_parent_name(_variableName("FamilyItemNbParent"));
     String var_count_name(_variableName("FamilyItemsShared"));
     String var_groups_name(_variableName("FamilyGroupsName"));
     String var_current_id_name(_variableName("FamilyCurrentId"));
@@ -294,7 +307,7 @@ build()
     String var_child_families_name(_variableName("ChildFamiliesName"));
     m_internal_variables = new Variables(m_mesh,name(),itemKind(),var_count_name,
                                          var_data_name,var_unique_ids_name,var_owner_name,
-                                         var_flags_name,var_groups_name,
+                                         var_flags_name,var_nb_parent_name,var_groups_name,
                                          var_current_id_name,var_new_owner_name,
                                          var_parent_mesh_name,var_parent_family_name,
                                          var_parent_family_depth_name,
@@ -303,9 +316,10 @@ build()
     m_items_data = &m_internal_variables->m_items_data._internalTrueData()->_internalDeprecatedValue();
     m_items_data->reserve(1000);
     m_items_unique_id = &m_internal_variables->m_items_unique_id._internalTrueData()->_internalDeprecatedValue();
-    m_items_unique_id_view = m_items_unique_id->view();
     m_items_owner = &m_internal_variables->m_items_owner._internalTrueData()->_internalDeprecatedValue();
     m_items_flags = &m_internal_variables->m_items_flags._internalTrueData()->_internalDeprecatedValue();
+    m_items_nb_parent = &m_internal_variables->m_items_nb_parent._internalTrueData()->_internalDeprecatedValue();
+    _updateItemViews();
   }
 
   // Pour pouvoir remettre à jour les ItemSharedInfos après relecture
@@ -1087,7 +1101,8 @@ readFromDump()
   if (m_infos.allItems().isOwn() && part_info.nbPart()>1)
     m_infos.allItems().setOwn(false);
 
-  m_items_unique_id_view = m_items_unique_id->view();
+  _updateItemViews();
+
   // NOTE: l'implémentation actuelle suppose que les dataIndex() des
   // entites sont consécutifs et croissants avec le localId() des entités
   // (c.a.d l'entité de localId() valant 0 à aussi un dataIndex() de 0,
@@ -1813,17 +1828,6 @@ _updateSharedInfoRemoved7(ItemInternal*)
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-_setUniqueId(Int32 lid,Int64 uid)
-{
-  _checkResizeArray(*m_items_unique_id,lid);
-  (*m_items_unique_id)[lid] = uid;
-  m_items_unique_id_view = m_items_unique_id->view();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemFamily::
 _allocateInfos(ItemInternal* item,Int64 uid,ItemTypeInfo* type)
 {
   ItemSharedInfo* isi = _findSharedInfo(type);
@@ -1839,9 +1843,16 @@ _allocateInfos(ItemInternal* item,Int64 uid,ItemSharedInfo* isi)
   // TODO: faire en même temps que le réalloc de la variable uniqueId()
   //  le réalloc des m_source_incremental_item_connectivities.
   Int32 local_id = item->localId();
-  _setUniqueId(local_id,uid);
-  _checkResizeArray(*m_items_owner,local_id);
-  _checkResizeArray(*m_items_flags,local_id);
+  {
+    bool is_resize = _checkResizeArray(*m_items_unique_id,local_id);
+    is_resize |= _checkResizeArray(*m_items_owner,local_id);
+    is_resize |= _checkResizeArray(*m_items_flags,local_id);
+    if (m_parent_family_depth>0)
+      is_resize |= _checkResizeArray(*m_items_nb_parent,local_id);
+    if (is_resize)
+      _updateItemViews();
+    (*m_items_unique_id)[local_id] = uid;
+  }
   // Il faut positionner le ItemSharedInfo avant le _allocMany
   // sinon les tests de vérification échouent.
   item->setSharedInfo(isi);
@@ -1862,7 +1873,7 @@ void ItemFamily::
 _notifyDataIndexChanged()
 {
   //warning() << "Data Index changed ! " << m_name;
-  m_items_unique_id_view = m_items_unique_id->view();
+  _updateItemViews();
   _setSharedInfosBasePtr();
 }
 
@@ -2609,6 +2620,20 @@ _computeConnectivityInfo(ItemConnectivityInfo* ici)
   info(5) << "COMPUTE CONNECTIVITY INFO family=" << name() << " v=" << ici
           << " node=" << ici->maxNodePerItem() << " face=" << ici->maxFacePerItem()
           << " edge=" << ici->maxEdgePerItem() << " cell=" << ici->maxCellPerItem();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemFamily::
+_updateItemViews()
+{
+  m_views_for_item_shared_info.m_unique_ids_view = m_items_unique_id->view();
+  m_views_for_item_shared_info.m_flags_view = m_items_flags->view();
+  m_views_for_item_shared_info.m_owners_view = m_items_owner->view();
+  m_views_for_item_shared_info.m_parent_ids_view = m_items_nb_parent->view();
+
+  m_items_unique_id_view = m_items_unique_id->view();
 }
 
 /*---------------------------------------------------------------------------*/

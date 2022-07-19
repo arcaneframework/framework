@@ -52,11 +52,11 @@ ItemSharedInfo()
 
 ItemSharedInfo::
 ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
-               ItemInternalConnectivityList* connectivity,Int64ArrayView* unique_ids)
+               ItemInternalConnectivityList* connectivity,ItemVariableViews* variable_views)
 : m_items(items)
 , m_connectivity(connectivity)
 , m_item_family(family)
-, m_unique_ids(unique_ids)
+, m_unique_ids(&(variable_views->m_unique_ids_view))
 , m_item_type(item_type)
 , m_item_kind(family->itemKind())
 , m_type_id(item_type->typeId())
@@ -69,12 +69,12 @@ ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList*
 //! Constructeur de désérialisation
 ItemSharedInfo::
 ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
-               ItemInternalConnectivityList* connectivity,Int64ArrayView* unique_ids,
+               ItemInternalConnectivityList* connectivity,ItemVariableViews* variable_views,
                Int32ConstArrayView buffer)
 : m_items(items)
 , m_connectivity(connectivity)
 , m_item_family(family)
-, m_unique_ids(unique_ids)
+, m_unique_ids(&(variable_views->m_unique_ids_view))
 , m_item_type(item_type)
 , m_item_kind(family->itemKind())
 , m_type_id(item_type->typeId())

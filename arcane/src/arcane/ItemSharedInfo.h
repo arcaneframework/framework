@@ -26,6 +26,7 @@
 namespace Arcane::mesh
 {
 class ItemSharedInfoList;
+class ItemFamily;
 }
 
 namespace Arcane
@@ -65,10 +66,28 @@ class ItemInternalConnectivityList;
  */
 class ARCANE_CORE_EXPORT ItemSharedInfo
 {
+ private:
+
+  /*!
+   * Liste des vues sur les variabes associées aux entités.
+   *
+   * Ces variables sont toutes indexables par le localId()
+   * de l'entité. Elles sont toujours allouées sauf 'm_parent_ids_view'
+   * qui n'est alloué que si l'entité est dans un sous-maillage
+   */
+  struct ItemVariableViews
+  {
+    Int64ArrayView m_unique_ids_view;
+    Int32ArrayView m_flags_view;
+    Int32ArrayView m_owners_view;
+    Int32ArrayView m_parent_ids_view;
+  };
+
  public:
 
   friend class ItemInternal;
   friend class mesh::ItemSharedInfoList;
+  friend class mesh::ItemFamily;
 
   static const Int32 NULL_INDEX = static_cast<Int32>(-1);
 
@@ -86,12 +105,13 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   // Seule ItemSharedInfoList peut créer des instances de cette classe autre que
   // l'instance nulle.
   ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
-                 ItemInternalConnectivityList* connectivity,Int64ArrayView* unique_ids);
+                 ItemInternalConnectivityList* connectivity,ItemVariableViews* variable_views);
 
   ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
-                 ItemInternalConnectivityList* connectivity,Int64ArrayView* unique_ids,
+                 ItemInternalConnectivityList* connectivity,ItemVariableViews* variable_views,
                  Int32ConstArrayView buffer);
  public:
+
   eItemKind itemKind() const { return m_item_kind; }
   IItemFamily* itemFamily() const { return m_item_family; }
   Int32 nbParent() const { return m_nb_parent; }

@@ -279,7 +279,7 @@ readFromDump()
     // Le premier élément du tampon contient toujours le type de l'entité
     ItemTypeInfo* it = itm->typeFromId(buffer[0]);
     ItemSharedInfo* isi = m_item_shared_infos[i];
-    *isi = ItemSharedInfo(m_family,it,miil,iicl,m_family->uniqueIds(),buffer);
+    *isi = ItemSharedInfo(m_family,it,miil,iicl,m_family->viewsForItemSharedInfo(),buffer);
 
     ItemNumElements ine(it->typeId(),isi->nbEdge(),isi->nbFace(),isi->nbCell(),
                         isi->nbHParent(),isi->nbHChildren(),
@@ -373,7 +373,7 @@ findSharedInfo(ItemTypeInfo* type)
   // Infos pas trouvé. On en construit une nouvelle
   ItemSharedInfo* isi = allocOne();
   Integer old_index = isi->index();
-  *isi = ItemSharedInfo(m_family,type,miil,iicl,m_family->uniqueIds());
+  *isi = ItemSharedInfo(m_family,type,miil,iicl,m_family->viewsForItemSharedInfo());
   isi->setIndex(old_index);
   //isi->m_infos = m_items_infos.begin();
   std::pair<ItemSharedInfoMap::iterator,bool> old = m_infos_map->insert(std::make_pair(ine,isi));
