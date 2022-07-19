@@ -432,7 +432,7 @@ class ARCANE_CORE_EXPORT ItemInternal
   */
   void setOwner(Integer suid,Int32 current_sub_domain)
   {
-    m_shared_info->setOwner(m_data_index,suid);
+    m_shared_info->_setOwnerV2(m_local_id,suid);
     int f = flags();
     if (suid==current_sub_domain)
       f |= II_Own;
@@ -442,13 +442,13 @@ class ARCANE_CORE_EXPORT ItemInternal
   }
 
   //! Numéro du sous-domaine propriétaire de l'entité
-  Int32 owner() const { return m_shared_info->owner(m_data_index); }
+  Int32 owner() const { return m_shared_info->_ownerV2(m_local_id); }
 
   //! Flags de l'entité
-  Int32 flags() const { return m_shared_info->flags(m_data_index); }
+  Int32 flags() const { return m_shared_info->_flagsV2(m_local_id); }
 
   //! Positionne les flags de l'entité
-  void setFlags(Int32 f)  { m_shared_info->setFlags(m_data_index,f); }
+  void setFlags(Int32 f) { m_shared_info->_setFlagsV2(m_local_id,f); }
 
   //! Ajoute les flags \added_flags à ceux de l'entité
   void addFlags(Int32 added_flags)

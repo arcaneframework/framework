@@ -991,14 +991,6 @@ prepareForDump()
   }
   m_item_need_prepare_dump = false;
   if (m_need_prepare_dump){
-    // Dans les versions d'Arcane antérieures à la 3.7, les
-    // champs owner(), flags() et typeId() des entités sont conservés
-    // dans ItemSharedInfo. Pour pouvoir faire une protection qui sera
-    // lisible avec une version ultérieure de Arcane, on sauve ces informations
-    // dans les trois variables qui seront à terme le seul endroit où ces
-    // valeurs seront disponibles.
-    ArrayView<Int32> items_flags_view = m_items_flags->view();
-    ArrayView<Int32> items_owner_view = m_items_owner->view();
     m_internal_variables->m_current_id = m_current_id;
     info(4) << " SET FAMILY ID name=" << name() << " id= " << m_current_id
             << " saveid=" << m_internal_variables->m_current_id();
@@ -1019,8 +1011,6 @@ prepareForDump()
     for( Integer i=0; i<nb_item; ++i ){
       ItemInternal* item = items[i];
       items_shared_data_index[i] = item->sharedInfo()->index();
-      items_owner_view[i] = item->owner();
-      items_flags_view[i] = item->flags();
 #if 0
 #ifdef ARCANE_DEBUG
       //if (itemKind()==IK_Particle){

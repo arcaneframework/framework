@@ -211,15 +211,10 @@ _internalCopyAndChangeSharedInfos(ItemSharedInfo* old_isi,ItemSharedInfo* new_is
 {
   ItemInternal* item = this;
 
-  Integer old_flags = item->flags();
-  Integer old_owner = item->owner();
   Int32* old_data = item->dataPtr();
 
   item->setSharedInfo(new_isi);
   item->setDataIndex(new_data_index);
-
-  new_isi->setFlags(new_data_index,old_flags);
-  new_isi->setOwner(new_data_index,old_owner);
 
   Int32* new_data = item->dataPtr();
 
