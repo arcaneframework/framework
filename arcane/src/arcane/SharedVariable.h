@@ -103,26 +103,26 @@ public:
   DataTypeReturnReference operator[](const ItemType & i) 
   {
     ARCANE_ASSERT((m_family!=m_parent_family || i.internal()==i.internal()->parent(m_family_depth)),("Confusion: item parent differs from item"));
-    return m_true_variable.asArray()[(m_direct_access)?i.localId():i.internal()->parentPtr()[m_family_depth]];
+    return m_true_variable.asArray()[(m_direct_access)?i.localId():i.internal()->parentId(m_family_depth)];
   }
 
   DataType operator[](const ItemType & i) const
   { 
     ARCANE_ASSERT((m_family!=m_parent_family || i.internal()==i.internal()->parent(m_family_depth)),("Confusion: item parent differs from item"));
-    return m_true_variable.asArray()[(m_direct_access)?i.localId():i.internal()->parentPtr()[m_family_depth]];
+    return m_true_variable.asArray()[(m_direct_access)?i.localId():i.internal()->parentId(m_family_depth)];
   }
 
   
   DataTypeReturnReference operator[](const ItemEnumeratorT<ItemType> & i) 
   {
     ARCANE_ASSERT((m_family!=m_parent_family || (*i).internal()==i->parent(m_family_depth)),("Confusion: item parent differs from item"));
-    return m_true_variable.asArray()[(m_direct_access)?i.localId():i->internal()->parentPtr()[m_family_depth]];
+    return m_true_variable.asArray()[(m_direct_access)?i.localId():i->internal()->parentId(m_family_depth)];
   }
 
   DataType operator[](const ItemEnumeratorT<ItemType> & i) const
   { 
     ARCANE_ASSERT((m_family!=m_parent_family || (*i).internal()==i->parent(m_family_depth)),("Confusion: item parent differs from item"));
-    return m_true_variable.asArray()[(m_direct_access)?i.localId():i->internal()->parentPtr()[m_family_depth]];
+    return m_true_variable.asArray()[(m_direct_access)?i.localId():i->internal()->parentId(m_family_depth)];
   }
 
   TrueVariable & trueVariable() 
@@ -213,26 +213,26 @@ public:
   DataTypeReturnReference operator[](const Item & i) 
   {
     ARCANE_ASSERT((m_family!=m_parent_family || i.internal()==i.internal()->parent(m_family_depth)),("Confusion: item parent differs from item"));
-    return m_true_variable.asArray()[(m_direct_access)?i.localId():i.internal()->parentPtr()[m_family_depth]];
+    return m_true_variable.asArray()[(m_direct_access)?i.localId():i.internal()->parentId(m_family_depth)];
   }
 
   DataType operator[](const Item & i) const
   { 
     ARCANE_ASSERT((m_family!=m_parent_family || i.internal()==i.internal()->parent(m_family_depth)),("Confusion: item parent differs from item"));
-    return m_true_variable.asArray()[(m_direct_access)?i.localId():i.internal()->parentPtr()[m_family_depth]];
+    return m_true_variable.asArray()[(m_direct_access)?i.localId():i.internal()->parentId(m_family_depth)];
   }
 
   
   DataTypeReturnReference operator[](const ItemEnumerator & i) 
   {
     ARCANE_ASSERT((m_family!=m_parent_family || (*i).internal()==i->parent(m_family_depth)),("Confusion: item parent differs from item"));
-    return m_true_variable.asArray()[(m_direct_access)?i.localId():i->internal()->parentPtr()[m_family_depth]];
+    return m_true_variable.asArray()[(m_direct_access)?i.localId():i->internal()->parentId(m_family_depth)];
   }
 
   DataType operator[](const ItemEnumerator & i) const
   { 
     ARCANE_ASSERT((m_family!=m_parent_family || (*i).internal()==i->parent(m_family_depth)),("Confusion: item parent differs from item"));
-    return m_true_variable.asArray()[(m_direct_access)?i.localId():i->internal()->parentPtr()[m_family_depth]];
+    return m_true_variable.asArray()[(m_direct_access)?i.localId():i->internal()->parentId(m_family_depth)];
   }
 
   TrueVariable & trueVariable() 

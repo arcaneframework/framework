@@ -224,7 +224,6 @@ _internalCopyAndChangeSharedInfos(ItemSharedInfo* old_isi,ItemSharedInfo* new_is
   Int32* new_data = item->dataPtr();
 
   ::memcpy(new_data+new_isi->firstNode(),old_data+old_isi->firstNode(),old_isi->nbNode()*sizeof(Int32));
-  ::memcpy(new_data+new_isi->firstParent(),old_data+old_isi->firstParent(),old_isi->nbParent()*sizeof(Int32));
 }
 
 /*---------------------------------------------------------------------------*/

@@ -649,7 +649,8 @@ class ARCANE_CORE_EXPORT ItemInternal
 
  public:
 
-  ItemInternal* parent(Integer index) const { return m_shared_info->parent(m_data_index,index); }
+  ItemInternal* parent(Integer index) const { return m_shared_info->_parentV2(m_local_id,index); }
+  Int32 parentId(Integer index) const { return m_shared_info->_parentLocalIdV2(m_local_id,index); }
 
  public:
 
@@ -666,7 +667,20 @@ class ARCANE_CORE_EXPORT ItemInternal
 
  public:
 
-  Int32* parentPtr() { return m_shared_info->m_infos + m_data_index + m_shared_info->firstParent(); }
+  /*!
+   * \brief Pointeur sur la liste des parents.
+   *
+   * Comme actuellement on ne supporte qu'un seul niveau il est uniquement autorisé
+   * de faire parentPtr()[0]. Cela ne permet aucune vérification et il est
+   * donc préférable d'utiliser parentId() ou setParent() à la place.
+   *
+   * Au mois de juillet 2022 cette méthode n'est plus utilisée dans Arcane donc si
+   * aucun code ne l'utilise (ce qui devrait être le cas car il s'agit d'une méthode
+   * interne) on pourra la supprimer rapidement.
+   */
+  ARCANE_DEPRECATED_REASON("Y2022: Use parentId() or setParent() instead")
+  Int32* parentPtr() { return m_shared_info->_parentPtr(m_local_id); }
+
   /**
    * @returns le rang de l'enfant \p (iitem).
    * exemple: si rank = m_internal->whichChildAmI(iitem); donc
@@ -676,10 +690,10 @@ class ARCANE_CORE_EXPORT ItemInternal
 
  public:
 
-  //! AMR
-  void setParent(Integer aindex,Int32 local_id)
+  //! Positionne le \a i-ème parent (actuellement aindex doit valoir 0)
+  void setParent(Integer aindex,Int32 parent_local_id)
   {
-    m_shared_info->setParent(m_data_index,aindex,local_id);
+    m_shared_info->_setParentV2(m_local_id,aindex,parent_local_id);
   }
 
   //! Mémoire nécessaire pour stocker les infos de l'entité

@@ -167,8 +167,27 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
 
  public:
 
-  ItemInternal* parent(Integer data_index,Integer aindex) const
-  { return _parents(aindex)[m_infos[data_index + firstParent()+aindex] ]; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception. Use _parentV2() instead")
+  ItemInternal* parent(Integer,Integer) const;
+
+ private:
+
+  ItemInternal* _parentV2(Int32 local_id,[[maybe_unused]] Integer aindex) const
+  {
+    // Actuellement un seul parent est supporté donc \a aindex doit valoir 0.
+    ARCANE_ASSERT((aindex==0),("Only one parent access implemented"));
+    return _parents()[(*m_parent_item_ids)[local_id]];
+  }
+  Int32 _parentLocalIdV2(Int32 local_id,[[maybe_unused]] Integer aindex) const
+  {
+    // Actuellement un seul parent est supporté donc \a aindex doit valoir 0.
+    ARCANE_ASSERT((aindex==0),("Only one parent access implemented"));
+    return (*m_parent_item_ids)[local_id];
+  }
+  void _setParentV2(Int32 local_id,Integer aindex,Int32 parent_local_id) const;
+  Int32* _parentPtr(Int32 local_id) const;
+
+ public:
 
   ItemInternal* node(Int32 data_index,Int32 aindex) const
   { return m_items->nodes[ m_infos[data_index + firstNode()+aindex] ]; }
@@ -212,8 +231,8 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   { m_infos[ data_index+firstFace()+aindex] = local_id; }
   void setCell(Int32 data_index,Int32 aindex,Int32 local_id) const
   { m_infos[ data_index+firstCell()+aindex] = local_id; }
-  void setParent(Integer data_index,Integer aindex,Integer local_id) const
-  { m_infos[ data_index+firstParent()+aindex] = local_id; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception. Use _setParentV2() instead")
+  void setParent(Integer data_index,Integer aindex,Integer local_id) const;
   //! AMR
   void setHParent(Integer data_index,Integer aindex,Integer local_id) const
   { m_infos[ data_index+firstHParent()+aindex] = local_id; }
@@ -255,6 +274,7 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   ItemInternalConnectivityList* m_connectivity;
   IItemFamily* m_item_family = nullptr;
   Int64ArrayView* m_unique_ids = nullptr;
+  Int32ArrayView* m_parent_item_ids = nullptr;
   ItemTypeInfo* m_item_type = nullptr;
   eItemKind m_item_kind = IK_Unknown;
  private:
@@ -309,7 +329,7 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
 
   void _init(eItemKind ik);
   //! Version non optimisé mais robuste d'accès à l'ItemInternalArrayView parent
-  ItemInternalArrayView _parents(Integer index) const;
+  ItemInternalArrayView _parents() const;
 };
 
 /*---------------------------------------------------------------------------*/

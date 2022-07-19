@@ -1358,6 +1358,14 @@ beginCompactItems(ItemFamilyCompactInfos& compact_infos)
 
   if (m_connectivity_mng)
     m_connectivity_mng->notifyLocalIdChanged(this,old_to_new_ids, nbItem());
+
+  // Compactage des variables internes associées aux entités
+  {
+    if (m_parent_family_depth>0)
+      m_internal_variables->m_items_nb_parent.variable()->compact(new_to_old_ids);
+
+    _updateItemViews();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1516,9 +1524,8 @@ _compactFromParentFamily(const ItemFamilyCompactInfos& compact_infos)
   ItemInternalArrayView items(itemsInternal());
   for( Integer z=0, zs=items.size(); z<zs; ++z ){
     ItemInternal* item = items[z];
-    Int32 * parentPtr = item->parentPtr();
-    Int32 old_parent_lid = parentPtr[0]; // depth==1 only !!
-    parentPtr[0] = old_to_new_lids[old_parent_lid];
+    Int32 old_parent_lid = item->parentId(0); // depth==1 only !!
+    item->setParent(0,old_to_new_lids[old_parent_lid]);
   }
   // Si depth>1, il faudrait plutot propager le compactage en modifiant les
   // oldToNewLocalIds des familles du sous-maillage courant et en appelant
