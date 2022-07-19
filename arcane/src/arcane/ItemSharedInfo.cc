@@ -14,6 +14,7 @@
 #include "arcane/ItemSharedInfo.h"
 
 #include "arcane/utils/Iostream.h"
+#include "arcane/utils/FatalErrorException.h"
 
 #include "arcane/IMesh.h"
 #include "arcane/IItemFamily.h"
@@ -52,11 +53,12 @@ ItemSharedInfo()
 
 ItemSharedInfo::
 ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
-               ItemInternalConnectivityList* connectivity,Int64ArrayView* unique_ids)
+               ItemInternalConnectivityList* connectivity,ItemVariableViews* variable_views)
 : m_items(items)
 , m_connectivity(connectivity)
 , m_item_family(family)
-, m_unique_ids(unique_ids)
+, m_unique_ids(&(variable_views->m_unique_ids_view))
+, m_parent_item_ids(&(variable_views->m_parent_ids_view))
 , m_item_type(item_type)
 , m_item_kind(family->itemKind())
 , m_type_id(item_type->typeId())
@@ -69,12 +71,13 @@ ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList*
 //! Constructeur de désérialisation
 ItemSharedInfo::
 ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
-               ItemInternalConnectivityList* connectivity,Int64ArrayView* unique_ids,
+               ItemInternalConnectivityList* connectivity,ItemVariableViews* variable_views,
                Int32ConstArrayView buffer)
 : m_items(items)
 , m_connectivity(connectivity)
 , m_item_family(family)
-, m_unique_ids(unique_ids)
+, m_unique_ids(&(variable_views->m_unique_ids_view))
+, m_parent_item_ids(&(variable_views->m_parent_ids_view))
 , m_item_type(item_type)
 , m_item_kind(family->itemKind())
 , m_type_id(item_type->typeId())
@@ -248,22 +251,53 @@ _init(eItemKind ik)
     m_first_hChild = m_first_edge + m_nb_parent;
   }
 
-  m_needed_memory = m_first_edge + m_nb_parent;
-  m_minimum_needed_memory = COMMON_BASE_MEMORY + m_nb_node + m_nb_parent;
+  m_needed_memory = m_first_edge;
+  m_minimum_needed_memory = COMMON_BASE_MEMORY + m_nb_node;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 ItemInternalArrayView ItemSharedInfo::
-_parents(Integer index) const
+_parents() const
 {
-  ARCANE_ASSERT((index==0),("Only one parent access implemented"));
-#ifndef NO_USER_WARNING
-#warning "(HP) TODO: à optimiser comme m_dual_items"
-#endif /* NO_USER_WARNING */
   // En pointant vers le bon champ du MeshItemInternalList dans le maillage parent
   return m_items->mesh->itemFamily(m_item_kind)->parentFamily()->itemsInternal();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ItemInternal* ItemSharedInfo::
+parent(Integer,Integer) const
+{
+  ARCANE_FATAL("This method is no longer valid");
+}
+
+void ItemSharedInfo::
+setParent(Integer,Integer,Integer) const
+{
+  ARCANE_FATAL("This method is no longer valid");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemSharedInfo::
+_setParentV2(Int32 local_id,[[maybe_unused]] Integer aindex,Int32 parent_local_id) const
+{
+  ARCANE_ASSERT((aindex==0),("Only one parent access implemented"));
+  (*m_parent_item_ids)[local_id] = parent_local_id;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int32* ItemSharedInfo::
+_parentPtr(Int32 local_id) const
+{
+  // GG: ATTENTION: Cela ne fonctionne que si on a au plus un seul parent.
+  return m_parent_item_ids->ptrAt(local_id);
 }
 
 /*---------------------------------------------------------------------------*/
