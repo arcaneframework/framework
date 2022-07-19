@@ -275,6 +275,8 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   IItemFamily* m_item_family = nullptr;
   Int64ArrayView* m_unique_ids = nullptr;
   Int32ArrayView* m_parent_item_ids = nullptr;
+  Int32ArrayView* m_owners = nullptr;
+  Int32ArrayView* m_flags = nullptr;
   ItemTypeInfo* m_item_type = nullptr;
   eItemKind m_item_kind = IK_Unknown;
  private:
@@ -301,19 +303,24 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   static Integer serializeSize();
   static Integer serializeAMRSize();
   static Integer serializeNoAMRSize();
- public:
-
-  Int32 owner(Int32 data_index) const
-  { return m_infos[data_index+OWNER_INDEX]; }
-  void setOwner(Int32 data_index,Int32 aowner) const
-  { m_infos[data_index+OWNER_INDEX] = aowner; }
 
  public:
 
-  Int32 flags(Int32 data_index) const
-  { return m_infos[data_index+FLAGS_INDEX]; }
-  void setFlags(Int32 data_index,Int32 f) const
-  { m_infos[data_index+FLAGS_INDEX] = f; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception. Use _ownerV2() instead")
+  Int32 owner(Int32 data_index) const;
+  ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception. Use _setOwnerV2() instead")
+  void setOwner(Int32 data_index,Int32 aowner) const;
+  ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception. Use _flagsV2() instead")
+  Int32 flags(Int32 data_index) const;
+  ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception. Use _setFlagsV2() instead")
+  void setFlags(Int32 data_index,Int32 f) const;
+
+ private:
+
+  Int32 _ownerV2(Int32 local_id) const { return (*m_owners)[local_id]; }
+  void _setOwnerV2(Int32 local_id,Int32 aowner) const { (*m_owners)[local_id] = aowner; }
+  Int32 _flagsV2(Int32 local_id) const { return (*m_flags)[local_id]; }
+  void _setFlagsV2(Int32 local_id,Int32 f) const { (*m_flags)[local_id] = f; }
 
  private:
 

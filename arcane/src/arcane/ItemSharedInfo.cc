@@ -59,6 +59,8 @@ ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList*
 , m_item_family(family)
 , m_unique_ids(&(variable_views->m_unique_ids_view))
 , m_parent_item_ids(&(variable_views->m_parent_ids_view))
+, m_owners(&(variable_views->m_owners_view))
+, m_flags(&(variable_views->m_flags_view))
 , m_item_type(item_type)
 , m_item_kind(family->itemKind())
 , m_type_id(item_type->typeId())
@@ -78,6 +80,8 @@ ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList*
 , m_item_family(family)
 , m_unique_ids(&(variable_views->m_unique_ids_view))
 , m_parent_item_ids(&(variable_views->m_parent_ids_view))
+, m_owners(&(variable_views->m_owners_view))
+, m_flags(&(variable_views->m_flags_view))
 , m_item_type(item_type)
 , m_item_kind(family->itemKind())
 , m_type_id(item_type->typeId())
@@ -276,6 +280,30 @@ parent(Integer,Integer) const
 
 void ItemSharedInfo::
 setParent(Integer,Integer,Integer) const
+{
+  ARCANE_FATAL("This method is no longer valid");
+}
+
+Int32 ItemSharedInfo::
+owner(Int32) const
+{
+  ARCANE_FATAL("This method is no longer valid");
+}
+
+void ItemSharedInfo::
+setOwner(Int32,Int32) const
+{
+  ARCANE_FATAL("This method is no longer valid");
+}
+
+Int32 ItemSharedInfo::
+flags(Int32) const
+{
+  ARCANE_FATAL("This method is no longer valid");
+}
+
+void ItemSharedInfo::
+setFlags(Int32,Int32) const
 {
   ARCANE_FATAL("This method is no longer valid");
 }
