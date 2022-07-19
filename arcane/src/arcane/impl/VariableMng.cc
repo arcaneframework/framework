@@ -1355,8 +1355,8 @@ _readVariablesMetaData(VariableMetaDataList& vmd_list,const XmlNode& variables_n
   String ustr_property("property");
   String ustr_multitag("multi-tag");
   vmd_list.clear();
-  for( auto var : vars.range() ){
- 
+
+  for( auto var : vars ){
     String full_type = var.attrValue(ustr_full_type);
     VariableDataTypeInfo vdti(full_type);
 
@@ -1432,9 +1432,8 @@ _readMeshesMetaData(const XmlNode& meshes_node)
   XmlNodeList meshes = meshes_node.children("mesh");
   ISubDomain* sd = subDomain();
   IMeshMng* mesh_mng = sd->meshMng();
-  IMainFactory* main_factory = sd->application()->mainFactory();
   IMeshFactoryMng* mesh_factory_mng = mesh_mng->meshFactoryMng();
-  for( XmlNode var : meshes.range() ){
+  for( XmlNode var : meshes ){
     String mesh_name = var.attrValue("name");
     String mesh_factory_name = var.attrValue("factory-name");
     MeshHandle* mesh_handle = mesh_mng->findMeshHandle(mesh_name,false);
@@ -1445,21 +1444,17 @@ _readMeshesMetaData(const XmlNode& meshes_node)
     info() << "Creating from checkpoint mesh='" << mesh_name
            << "' sequential?=" << is_sequential
            << " factory=" << mesh_factory_name;
-    // Si 'mesh_factory_name' est non nul, on l'utilise. Normalement c'est
-    // toujours le cas (à partir de avril 2020) sauf si la protection
-    // est issue d'une ancienne version de Arcane. A terme, on pourra donc
-    // supprimer l'utilisation de 'IMainFactory'.
-    IParallelMng* seq_pm = sd->parallelMng()->sequentialParallelMng();
-    if (mesh_factory_name.null()){
-      if (is_sequential)
-        main_factory->createMesh(sd,seq_pm,mesh_name);
-      else
-        main_factory->createMesh(sd,mesh_name);
-    }
-    else{
+    // Depuis avril 2020, l'attribut 'factory-name' est doit être présent
+    // et sa valeur non nulle.
+    if (mesh_factory_name.null())
+      ARCANE_FATAL("No attribute 'factory-name' for mesh");
+
+    {
       MeshBuildInfo mbi(mesh_name);
       mbi.addFactoryName(mesh_factory_name);
-      IParallelMng* mesh_pm = (is_sequential) ? seq_pm : sd->parallelMng();
+      IParallelMng* mesh_pm = sd->parallelMng();
+      if (is_sequential)
+        mesh_pm = sd->parallelMng()->sequentialParallelMng();
       mbi.addParallelMng(Arccore::makeRef(mesh_pm));
       mesh_factory_mng->createMesh(mbi);
     }
@@ -1669,7 +1664,7 @@ readVariablesData(IVariableMng* vm,VariableMng::IDataReaderWrapper* reader)
 {
   _buildVariablesToRead(vm);
   reader->beginRead(m_vars_to_read);
-  for( auto ivar : m_var_read_info_list.range() ){
+  for( auto ivar : m_var_read_info_list ){
     // NOTE: var peut-être nul
     IVariable* var = ivar.m_variable;
     IData* data = ivar.m_data;
