@@ -29,77 +29,16 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/**
- * @brief Classe représentant une graine.
- * 
- * Une graine est définie comme étant un tableau de Bytes.
- * Sa taille est définie grâce à un des constructeurs ou grâce à la méthode
- * "resize()".
- * 
- * Une fois que la taille du tableau a été définie,
- *  - le seul moyen de la modifier est d'appeler "resize()",
- *  - si l'on appelle "setSeed()", la valeur sera rognée si sa taille est trop
- *    grande ou des "0x00" seront ajoutés à la fin du tableau si sa taille est 
- *    trop petite (attention aux entiers non signés négatifs).
- *  - si l'on appelle "seed()" avec un type de taille différente à la taille
- *    du tableau, on aura le même comportement que "setSeed()" (mais avec 
- *    le paramètre [OUT]).
- * 
- * L'utilisation normal d'une RNGSeed veut que la taille ne soit jamais modifiée
- * après coup. Pour être sûr de la taille de la seed lors de l'init, 
- * IRandomNumberGenerator possède une méthode "emptySeed()" permettant de
- * récupérer une RNGSeed vide de taille correcte pour l'implémentation. Un appel
- * à "seed_vide.setSeed(T)" produira donc une seed de taille correct, quelque
- * soit le type T de la valeur.
- *   
- */
+typedef ByteArrayView seed;
+
 class ARCANE_CORE_EXPORT RandomNumberGeneratorSeed
 {
  public:
-  /**
-   * @brief Constructeur avec graine de type T et taille du tableau de Bytes.
-   * 
-   * - Si sizeof(T) > sizeOfSeed, alors la valeur sera rognée.
-   * - Si sizeof(T) < sizeOfSeed et T=signed alors la valeur changera et
-   *   deviendra positive.
-   * - Si sizeof(T) = sizeOfSeed (ou sizeof(T) < sizeOfSeed et T=unsigned),
-   *   parfait !
-   * 
-   * @tparam T Le type de graine (Int64 par ex).
-   * @param value La valeur de la graine.
-   * @param sizeOfSeed La taille de la graine.
-   */
-  template <class T>
-  explicit RandomNumberGeneratorSeed(T value, Integer sizeOfSeed)
+  RandomNumberGeneratorSeed(ByteArrayView av)
   {
-    resize(sizeOfSeed);
-    setSeed(value);
+    m_seed = av;
   }
 
-  /**
-   * @brief Constructeur copie.
-   * 
-   * @param seed La graine source.
-   */
-  RandomNumberGeneratorSeed(const RandomNumberGeneratorSeed& seed)
-  {
-    m_seed.copy(seed.constView());
-  }
-
-  /**
-   * @brief Constructeur move.
-   * 
-   * @param seed La graine source.
-   */
-  RandomNumberGeneratorSeed(RandomNumberGeneratorSeed&& seed)
-  {
-    *this = std::move(seed);
-  }
-
-  /**
-   * @brief Constructeur par défaut.
-   * Nécessitera un appel à resize().
-   */
   RandomNumberGeneratorSeed()
   : m_seed(0)
   {}
@@ -183,33 +122,15 @@ class ARCANE_CORE_EXPORT RandomNumberGeneratorSeed
     return m_seed.size();
   }
 
-  /**
-   * @brief Méthode permettant de récupérer une vue constante sur le tableau
-   * de Byte interne.
-   * 
-   * @return ByteConstArrayView La vue.
-   */
+
+  ByteArrayView view()
+  {
+    return m_seed;
+  }
+
   ByteConstArrayView constView() const
   {
     return m_seed.constView();
-  }
-
-  /**
-   * @brief Méthode permettant de modifier la taille du tableau de Byte interne.
-   * 
-   * Si la taille voulu est plus petite que la taille d'origine, il y aura
-   * une perte de donnée. A faire uniquement si c'est voulu.
-   * Si la taille voulu est plus grande que la taille d'origine, il y aura
-   * un ajout de 0x00 au début (attention aux entiers signés négatifs).
-   * 
-   * @param sizeOf La nouvelle taille.
-   * @return true Si la taille a bien été modifiée.
-   * @return false Si la taille n'a pas été modifiée.
-   */
-  bool resize(Integer sizeOf)
-  {
-    m_seed.resize(sizeOf, 0x00);
-    return true;
   }
 
   /**
@@ -218,13 +139,13 @@ class ARCANE_CORE_EXPORT RandomNumberGeneratorSeed
    * @param seed La graine source.
    * @return RandomNumberGeneratorSeed& La graine destination.
    */
-  RandomNumberGeneratorSeed& operator=(const RandomNumberGeneratorSeed& seed)
+  RandomNumberGeneratorSeed& operator=(RandomNumberGeneratorSeed& seed)
   {
     if (this == &seed) {
       return *this;
     }
 
-    m_seed.copy(seed.constView());
+    m_seed = seed.view();
     return *this;
   }
 
@@ -276,7 +197,7 @@ class ARCANE_CORE_EXPORT RandomNumberGeneratorSeed
   }
 
  protected:
-  ByteUniqueArray m_seed;
+  ByteArrayView m_seed;
 };
 
 /**
