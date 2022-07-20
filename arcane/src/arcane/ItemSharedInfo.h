@@ -322,15 +322,10 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   Int32 _flagsV2(Int32 local_id) const { return (*m_flags)[local_id]; }
   void _setFlagsV2(Int32 local_id,Int32 f) const { (*m_flags)[local_id] = f; }
 
- private:
-
-  static const Int32 OWNER_INDEX = 0;
-  static const Int32 FLAGS_INDEX = 1;
-  static const Int32 FIRST_NODE_INDEX = 2;
-
  public:
 
-  static const Int32 COMMON_BASE_MEMORY = 2;
+  // TODO: a supprimer
+  static const Int32 COMMON_BASE_MEMORY = 0;
 
  private:
 

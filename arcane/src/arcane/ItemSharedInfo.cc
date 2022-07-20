@@ -100,6 +100,9 @@ ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList*
   // A partir de la 3.6, le nombre de noeuds n'est plus utilisé non
   // plus et vaut toujours 0. On pourra donc pour les versions de fin
   // 2022 supprimer ces champs de ItemSharedInfo.
+
+  // TODO: Indiquer qu'à partir de la version 3.7 on ne supporte
+  // que buf_size==6 avec le numéro de version 0x0307
   Int32 buf_size = buffer.size();
   if (buf_size>=9){
     m_nb_node = item_type->nbLocalNode();
@@ -225,9 +228,10 @@ _init(eItemKind ik)
 {
   ARCANE_ASSERT(m_hParent_allocated==0,("m_hParent_allocated should be zero"));
   ARCANE_ASSERT(m_hChild_allocated==0,("m_hChild_allocated should be zero"));
-  ARCANE_ASSERT(m_nb_edge==0,("m_edge should be zero"));
-  ARCANE_ASSERT(m_nb_face==0,("m_face should be zero"));
-  ARCANE_ASSERT(m_nb_cell==0,("m_cell should be zero"));
+  ARCANE_ASSERT(m_nb_node==0,("m_nb_node should be zero"));
+  ARCANE_ASSERT(m_nb_edge==0,("m_nb_edge should be zero"));
+  ARCANE_ASSERT(m_nb_face==0,("m_nb_face should be zero"));
+  ARCANE_ASSERT(m_nb_cell==0,("m_nb_cell should be zero"));
   ARCANE_ASSERT(m_edge_allocated==0,("m_edge_allocated should be zero"));
   ARCANE_ASSERT(m_face_allocated==0,("m_face_allocated should be zero"));
   ARCANE_ASSERT(m_cell_allocated==0,("m_cell_allocated should be zero"));
@@ -243,7 +247,7 @@ _init(eItemKind ik)
     is_amr_activated = m_items->mesh->isAmrActivated();
   }
 
-  m_first_node = FIRST_NODE_INDEX;
+  m_first_node = 0;
   m_first_edge = m_first_node + m_nb_node;
   m_first_face = m_first_edge;
   m_first_cell = m_first_edge;
