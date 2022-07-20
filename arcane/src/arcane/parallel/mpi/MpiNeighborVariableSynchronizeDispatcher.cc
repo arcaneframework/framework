@@ -211,10 +211,22 @@ compute()
   auto sync_list = sync_info->infos();
   const Int32 nb_message = sync_list.size();
 
-  m_mpi_send_counts.resize(nb_message);
-  m_mpi_receive_counts.resize(nb_message);
-  m_mpi_send_displacements.resize(nb_message);
-  m_mpi_receive_displacements.resize(nb_message);
+  // Certaines versions de OpenMPI (avant la 4.1) plantent s'ils n'y a pas
+  // de messages et qu'un des tableaux suivant est vide. Pour contourner
+  // ce problème on alloue un tableau de taille 1.
+  Int32 size = nb_message;
+  if (size==0)
+    size = 1;
+
+  m_mpi_send_counts.resize(size);
+  m_mpi_receive_counts.resize(size);
+  m_mpi_send_displacements.resize(size);
+  m_mpi_receive_displacements.resize(size);
+
+  m_mpi_send_counts.fill(0);
+  m_mpi_receive_counts.fill(0);
+  m_mpi_send_displacements.fill(0);
+  m_mpi_receive_displacements.fill(0);
 }
 
 /*---------------------------------------------------------------------------*/
