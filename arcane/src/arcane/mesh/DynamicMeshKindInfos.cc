@@ -672,20 +672,26 @@ finishCompactItems(ItemFamilyCompactInfos& compact_infos)
   // TODO: tableau a supprimer
   UniqueArray<ItemInternal> new_items(m_nb_item);
   UniqueArray<Int64> new_uids(m_nb_item);
-  for( Integer i=0, n=m_nb_item; i<n; ++i )
-  {
+  UniqueArray<Int32> new_owners(m_nb_item);
+  UniqueArray<Int32> new_flags(m_nb_item);
+
+  for( Integer i=0, n=m_nb_item; i<n; ++i ) {
     ItemInternal* old_item = m_internals[ new_to_old_local_ids[ i ] ];
     new_uids[i] = old_item->uniqueId().asInt64();
-    //Integer current_local_id = old_item->localId();
+    new_owners[i] = old_item->owner();
+    new_flags[i] = old_item->flags();
     new_items[i] = *old_item;
   }
 
   Integer nb_error = 0;
+  Int32 sid = m_mesh->meshPartInfo().partRank();
 
   for( Integer i=0; i<m_nb_item; ++i ){
     ItemInternal* ii = m_internals[i];
     *ii = new_items[i];
     ii->setLocalId(i);
+    ii->setFlags(new_flags[i]);
+    ii->setOwner(new_owners[i],sid);
     ii->setUniqueId(new_uids[i]);
     // L'entité est marqué comme créée
     //_setAdded(ii);
