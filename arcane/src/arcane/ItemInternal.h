@@ -697,9 +697,11 @@ class ARCANE_CORE_EXPORT ItemInternal
   }
 
   //! Mémoire nécessaire pour stocker les infos de l'entité
-  Integer neededMemory() const { return m_shared_info->neededMemory(); }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
+  constexpr Integer neededMemory() const { return 0; }
   //! Mémoire minimale nécessaire pour stocker les infos de l'entité (sans tampon)
-  Integer minimumNeededMemory() const { return m_shared_info->minimumNeededMemory(); }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
+  constexpr Integer minimumNeededMemory() const { return 0; }
 
  public:
 

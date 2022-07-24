@@ -259,8 +259,8 @@ _init(eItemKind ik)
     m_first_hChild = m_first_edge + m_nb_parent;
   }
 
-  m_needed_memory = m_first_edge;
-  m_minimum_needed_memory = COMMON_BASE_MEMORY + m_nb_node;
+  m_needed_memory = 0;
+  m_minimum_needed_memory = 0;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -275,6 +275,42 @@ _parents() const
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+void ItemSharedInfo::
+setNode(Int32,Int32,Int32) const
+{
+  ARCANE_FATAL("This method is no longer valid");
+}
+
+void ItemSharedInfo::
+setEdge(Int32,Int32,Int32) const
+{
+  ARCANE_FATAL("This method is no longer valid");
+}
+
+void ItemSharedInfo::
+setFace(Int32,Int32,Int32) const
+{
+  ARCANE_FATAL("This method is no longer valid");
+}
+
+void ItemSharedInfo::
+setCell(Int32,Int32,Int32) const
+{
+  ARCANE_FATAL("This method is no longer valid");
+}
+
+void ItemSharedInfo::
+setHParent(Int32,Int32,Int32) const
+{
+  ARCANE_FATAL("This method is no longer valid");
+}
+
+void ItemSharedInfo::
+setHChild(Int32,Int32,Int32) const
+{
+  ARCANE_FATAL("This method is no longer valid");
+}
 
 ItemInternal* ItemSharedInfo::
 parent(Integer,Integer) const

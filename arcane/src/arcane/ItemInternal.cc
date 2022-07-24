@@ -207,28 +207,19 @@ _setFaceBackAndFrontCells(Int32 back_cell_lid,Int32 front_cell_lid)
 /*---------------------------------------------------------------------------*/
 
 void ItemInternal::
-_internalCopyAndChangeSharedInfos(ItemSharedInfo* old_isi,ItemSharedInfo* new_isi,Integer new_data_index)
+_internalCopyAndChangeSharedInfos(ItemSharedInfo*,ItemSharedInfo* new_isi,Integer new_data_index)
 {
   ItemInternal* item = this;
-
-  Int32* old_data = item->dataPtr();
-
   item->setSharedInfo(new_isi);
   item->setDataIndex(new_data_index);
-
-  Int32* new_data = item->dataPtr();
-
-  ::memcpy(new_data+new_isi->firstNode(),old_data+old_isi->firstNode(),old_isi->nbNode()*sizeof(Int32));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void ItemInternal::
-_internalCopyAndSetDataIndex(Int32* data_ptr,Int32 data_index)
+_internalCopyAndSetDataIndex(Int32*,Int32 data_index)
 {
-  Integer nb = neededMemory();
-  ::memcpy(data_ptr + data_index,this->dataPtr(),nb*sizeof(Int32));
   setDataIndex(data_index);
 }
 
