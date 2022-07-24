@@ -131,13 +131,20 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
 
   Int32 typeId() const { return m_type_id; }
 
-  Int32 firstNode() const { return m_first_node; }
-  Int32 firstEdge() const { return m_first_edge; }
-  Int32 firstFace() const { return m_first_face; }
-  Int32 firstCell() const { return m_first_cell; }
-  Int32 firstParent() const { return m_first_parent; }
-  Int32 firstHParent() const { return m_first_hParent; }
-  Int32 firstHChild() const {return m_first_hChild; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
+  Int32 firstNode() const { return 0; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
+  Int32 firstEdge() const { return 0; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
+  Int32 firstFace() const { return 0; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
+  Int32 firstCell() const { return 0; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
+  Int32 firstParent() const { return 0; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
+  Int32 firstHParent() const { return 0; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
+  Int32 firstHChild() const { return 0; }
 
   ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
   constexpr Int32 neededMemory() const { return 0; }
@@ -248,24 +255,18 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   constexpr Int32 hChildAllocated() const { return 0; }
 
  public:
+
   const Int32* _infos() const { return m_infos; }
   void _setInfos(Int32* ptr) { m_infos = ptr; }
+
  private:
+
   Int32* m_infos = nullptr;
- private:
-  Int32 m_first_node = 0;
   Int32 m_nb_node = 0;
-  Int32 m_first_edge = 0;
   Int32 m_nb_edge = 0;
-  Int32 m_first_face = 0;
   Int32 m_nb_face = 0;
-  Int32 m_first_cell = 0;
   Int32 m_nb_cell = 0;
-  Int32 m_first_parent = 0;
   Int32 m_nb_parent = 0;
-  //! AMR
-  Int32 m_first_hParent = 0;
-  Int32 m_first_hChild = 0;
   Int32 m_nb_hParent = 0;
   Int32 m_nb_hChildren = 0;
 
@@ -282,15 +283,6 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   eItemKind m_item_kind = IK_Unknown;
 
  private:
-
-  Int32 m_needed_memory = 0;
-  Int32 m_minimum_needed_memory = 0;
-  Int32 m_edge_allocated = 0;
-  Int32 m_face_allocated = 0;
-  Int32 m_cell_allocated = 0;
-  //! AMR
-  Int32 m_hParent_allocated = 0;
-  Int32 m_hChild_allocated = 0;
 
   Int32 m_type_id = IT_NullType;
   Int32 m_index = NULL_INDEX;

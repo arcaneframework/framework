@@ -109,17 +109,12 @@ ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList*
     m_nb_edge = buffer[1];
     m_nb_face = buffer[2];
     m_nb_cell = buffer[3];
-    m_edge_allocated = buffer[4];
-    m_face_allocated = buffer[5];
-    m_cell_allocated = buffer[6];
     m_index = buffer[7];
     m_nb_reference = buffer[8];
     //! AMR
     if (buf_size>=13){
       m_nb_hParent = buffer[9];
       m_nb_hChildren = buffer[10];
-      m_hParent_allocated = buffer[11];
-      m_hChild_allocated = buffer[12];
     }
   }
   else if (buf_size>=4){
@@ -188,33 +183,17 @@ print(std::ostream& o) const
 {
   o << " This: " << this
     << " Infos: " << m_infos
-    << " FirstNode: " << m_first_node
     << " NbNode: " << m_nb_node
-    << " FirstEdge: " << m_first_edge
     << " NbEdge: " << m_nb_edge
-    << " FirstFace: " << m_first_face
     << " NbFace: " << m_nb_face
-    << " FirstCell: " << m_first_cell
     << " NbCell: " << m_nb_cell
-    << " FirstParent: " << m_first_parent
     << " NbParent; " << m_nb_parent
-    //! AMR
-    << " FirsthParent: " << m_first_hParent
     << " NbhParent: " << m_nb_hParent
-    << " FirsthChild: " << m_first_hChild
     << " NbhChildren: " << m_nb_hChildren
-    << " hParentAlloc: " << m_hParent_allocated
-    << " hChildAlloc: " << m_hChild_allocated
-    // OFF AMR
     << " Items: " << m_items
     << " Connectivity: " << m_connectivity
     << " Family: " << m_item_family->fullName()
     << " TypeInfo: " << m_item_type
-    << " NeededMemory: " << m_needed_memory
-    << " MiniumMemory: " << m_minimum_needed_memory
-    << " EdgeAlloc: " << m_edge_allocated
-    << " FaceAlloc: " << m_face_allocated
-    << " CellAlloc: " << m_cell_allocated
     << " TypeId: " << m_type_id
     << " Index: " << m_index
     << " NbReference: " << m_nb_reference;
@@ -226,17 +205,10 @@ print(std::ostream& o) const
 void ItemSharedInfo::
 _init(eItemKind ik)
 {
-  ARCANE_ASSERT(m_hParent_allocated==0,("m_hParent_allocated should be zero"));
-  ARCANE_ASSERT(m_hChild_allocated==0,("m_hChild_allocated should be zero"));
   ARCANE_ASSERT(m_nb_node==0,("m_nb_node should be zero"));
   ARCANE_ASSERT(m_nb_edge==0,("m_nb_edge should be zero"));
   ARCANE_ASSERT(m_nb_face==0,("m_nb_face should be zero"));
   ARCANE_ASSERT(m_nb_cell==0,("m_nb_cell should be zero"));
-  ARCANE_ASSERT(m_edge_allocated==0,("m_edge_allocated should be zero"));
-  ARCANE_ASSERT(m_face_allocated==0,("m_face_allocated should be zero"));
-  ARCANE_ASSERT(m_cell_allocated==0,("m_cell_allocated should be zero"));
-
-  bool is_amr_activated = false;
 
   if (ik==IK_Node || ik==IK_Edge || ik==IK_Face || ik==IK_Cell){
     IItemFamily* base_family = m_item_family;
@@ -244,23 +216,7 @@ _init(eItemKind ik)
     if (base_family)
       m_nb_parent = base_family->parentFamilyDepth();
     ARCANE_ASSERT((m_nb_parent<=1),("More than one parent level: not implemented"));
-    is_amr_activated = m_items->mesh->isAmrActivated();
   }
-
-  m_first_node = 0;
-  m_first_edge = m_first_node + m_nb_node;
-  m_first_face = m_first_edge;
-  m_first_cell = m_first_edge;
-  m_first_parent = m_first_edge;
-
-  //! AMR
-  if (is_amr_activated){
-    m_first_hParent = m_first_edge + m_nb_parent;
-    m_first_hChild = m_first_edge + m_nb_parent;
-  }
-
-  m_needed_memory = 0;
-  m_minimum_needed_memory = 0;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -364,7 +320,7 @@ _setParentV2(Int32 local_id,[[maybe_unused]] Integer aindex,Int32 parent_local_i
 Int32* ItemSharedInfo::
 _parentPtr(Int32 local_id) const
 {
-  // GG: ATTENTION: Cela ne fonctionne que si on a au plus un seul parent.
+  // GG: ATTENTION: Cela ne fonctionne que si on a au plus un parent.
   return m_parent_item_ids->ptrAt(local_id);
 }
 
