@@ -54,7 +54,7 @@ testHardcodedValues()
 void PDESRandomNumberGeneratorUnitTest::
 testHardcodedSeeds()
 {
-  ByteUniqueArray r_seed(ptrRNG->neededSizeOfSeed());
+  ByteUniqueArray r_seed = ptrRNG->emptySeedBUA();
   RNGSeedHelper(r_seed).setValue(hardcoded_seed);
   ptrRNG->initSeed(r_seed);
 

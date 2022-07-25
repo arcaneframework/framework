@@ -56,7 +56,8 @@ class PDESRandomNumberGeneratorService
 
   RandomNumberGeneratorSeed seed() override;
   RandomNumberGeneratorSeed emptySeed() override;
-  ByteArrayView viewSeed() override;
+  ByteUniqueArray emptySeedBUA() override;
+  ByteConstArrayView viewSeed() override;
 
   Integer neededSizeOfSeed() override;
 

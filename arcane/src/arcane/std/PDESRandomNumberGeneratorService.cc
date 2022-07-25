@@ -63,7 +63,7 @@ seed()
   return RandomNumberGeneratorSeed(m_seed, m_size_of_seed);
 }
 
-ByteArrayView PDESRandomNumberGeneratorService::
+ByteConstArrayView PDESRandomNumberGeneratorService::
 viewSeed()
 {
   return RNGSeedHelper(&m_seed).view();
@@ -73,6 +73,12 @@ RandomNumberGeneratorSeed PDESRandomNumberGeneratorService::
 emptySeed()
 {
   return RandomNumberGeneratorSeed(0, m_size_of_seed);
+}
+
+ByteUniqueArray PDESRandomNumberGeneratorService::
+emptySeedBUA()
+{
+  return ByteUniqueArray(m_size_of_seed);
 }
 
 Integer PDESRandomNumberGeneratorService::
@@ -105,7 +111,7 @@ generateRandomSeedBUA(Integer leap)
   Int64 spawned_seed = _hashState(m_seed);
   _ran4(&m_seed, 0);
 
-  return RNGSeedHelper(&spawned_seed).clone();
+  return RNGSeedHelper(&spawned_seed).copy();
 }
 
 // Les sauts négatifs sont supportés.
@@ -139,7 +145,7 @@ generateRandomSeed(ByteArrayView parent_seed, Integer leap)
   }
   Int64 spawned_seed = _hashState(*i_seed);
   _ran4(i_seed, 0);
-  return RNGSeedHelper(&spawned_seed).clone();
+  return RNGSeedHelper(&spawned_seed).copy();
 }
 
 // Les sauts négatifs sont supportés.
