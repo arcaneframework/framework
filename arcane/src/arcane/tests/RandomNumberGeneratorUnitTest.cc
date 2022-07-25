@@ -35,32 +35,6 @@ setUp()
 }
 
 void RandomNumberGeneratorUnitTest::
-testRNGS()
-{
-  Integer aaa = 1234;
-  RandomNumberGeneratorSeed test_a(aaa, sizeof(Integer));
-
-  Integer bbb;
-  test_a.seed(bbb);
-  ASSERT_TRUE(aaa == bbb);
-
-  RandomNumberGeneratorSeed test_b(bbb, sizeof(Integer)); //1234
-  ASSERT_TRUE(test_a == test_b);
-
-  test_b = 1234;
-  ASSERT_TRUE(test_a == test_b);
-
-  RandomNumberGeneratorSeed test_c = test_a;
-  ASSERT_TRUE(test_a == test_c);
-
-  test_c.resize(sizeof(Int64));
-  ASSERT_TRUE(test_a != test_c);
-
-  test_b = (ptrRNG->emptySeed() = 1234);
-  ASSERT_TRUE(test_b == test_c);
-}
-
-void RandomNumberGeneratorUnitTest::
 testMcPi()
 {
   ptrRNG->initSeed();
@@ -84,8 +58,8 @@ testLeepNumbers()
   if (!ptrRNG->isLeapNumberSupported())
     return;
 
-  RandomNumberGeneratorSeed r_seed = ptrRNG->emptySeed();
-  r_seed = 1234;
+  ByteUniqueArray r_seed(ptrRNG->neededSizeOfSeed());
+  RNGSeedHelper(r_seed).setValue(1234);
   ptrRNG->initSeed(r_seed);
 
   RealUniqueArray result(100);
@@ -114,25 +88,26 @@ testLeepSeeds()
   if (!ptrRNG->isLeapSeedSupported())
     return;
 
-  RandomNumberGeneratorSeed r_seed = (ptrRNG->emptySeed() = 5678);
+  ByteUniqueArray r_seed(ptrRNG->neededSizeOfSeed());
+  RNGSeedHelper(r_seed).setValue(5678);
   ptrRNG->initSeed(r_seed);
 
-  UniqueArray<RandomNumberGeneratorSeed> result(100);
+  UniqueArray<ByteUniqueArray> result(100);
 
   for (Integer i = 0; i < result.size(); i++) {
-    result[i] = ptrRNG->generateRandomSeed();
+    result[i] = ptrRNG->generateRandomSeedBUA();
   }
 
   ptrRNG->initSeed(r_seed);
 
   for (Integer i = 2; i < result.size(); i += 3) {
-    RandomNumberGeneratorSeed seed = ptrRNG->generateRandomSeed(2);
+    ByteUniqueArray seed = ptrRNG->generateRandomSeedBUA(2);
     ASSERT_TRUE(result[i] == seed);
   }
 
   // On teste aussi les sauts négatifs.
   for (Integer i = result.size() - 3; i >= 0; i--) {
-    RandomNumberGeneratorSeed seed = ptrRNG->generateRandomSeed(-2);
+    ByteUniqueArray seed = ptrRNG->generateRandomSeedBUA(-2);
     ASSERT_TRUE(result[i] == seed);
   }
 }

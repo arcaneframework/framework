@@ -36,13 +36,15 @@ setUp()
 void PDESRandomNumberGeneratorUnitTest::
 testHardcodedValues()
 {
-  RandomNumberGeneratorSeed r_seed = (ptrRNG->emptySeed() = hardcoded_seed);
+  ByteUniqueArray r_seed(ptrRNG->neededSizeOfSeed());
+  RNGSeedHelper(r_seed).setValue(hardcoded_seed);
   ptrRNG->initSeed(r_seed);
-  RandomNumberGeneratorSeed initial_seed(r_seed);
+
+  ByteUniqueArray initial_seed(r_seed);
 
   for (Integer i = 0; i < hardcoded_vals.size(); i++) {
     Real val1 = ptrRNG->generateRandomNumber();
-    Real val2 = ptrRNG->generateRandomNumber(&initial_seed);
+    Real val2 = ptrRNG->generateRandomNumber(initial_seed);
 
     ASSERT_EQUAL(val1, val2);
     ASSERT_NEARLY_EQUAL(val1, hardcoded_vals[i]);
@@ -52,18 +54,20 @@ testHardcodedValues()
 void PDESRandomNumberGeneratorUnitTest::
 testHardcodedSeeds()
 {
-  RandomNumberGeneratorSeed r_seed = (ptrRNG->emptySeed() = hardcoded_seed);
+  ByteUniqueArray r_seed(ptrRNG->neededSizeOfSeed());
+  RNGSeedHelper(r_seed).setValue(hardcoded_seed);
   ptrRNG->initSeed(r_seed);
-  RandomNumberGeneratorSeed initial_seed(r_seed);
+
+  ByteUniqueArray initial_seed(r_seed);
 
   for (Integer i = 0; i < hardcoded_seeds.size(); i++) {
-    RandomNumberGeneratorSeed val11 = ptrRNG->generateRandomSeed();
-    RandomNumberGeneratorSeed val22 = ptrRNG->generateRandomSeed(&initial_seed);
+    ByteUniqueArray val11 = ptrRNG->generateRandomSeedBUA();
+    ByteUniqueArray val22 = ptrRNG->generateRandomSeed(initial_seed);
 
     // On peut mettre direct Int64 vu que l'on teste l'implem PDESRNGS.
     Int64 val1, val2;
-    ASSERT_TRUE(val11.seed(val1, false));
-    ASSERT_TRUE(val22.seed(val2, false));
+    ASSERT_TRUE(RNGSeedHelper(val11).value(val1, false));
+    ASSERT_TRUE(RNGSeedHelper(val22).value(val2, false));
 
     ASSERT_EQUAL(val1, val2);
     ASSERT_EQUAL(val1, hardcoded_seeds[i]);

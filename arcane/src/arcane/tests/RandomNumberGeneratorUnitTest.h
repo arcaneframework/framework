@@ -48,7 +48,6 @@ class RandomNumberGeneratorUnitTest
   void setUpForClass() override;
   void setUp() override;
 
-  void testRNGS() override;
   void testMcPi() override;
   void testLeepNumbers() override;
   void testLeepSeeds() override;

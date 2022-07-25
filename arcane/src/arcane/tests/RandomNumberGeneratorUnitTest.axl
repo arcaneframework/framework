@@ -11,7 +11,6 @@
    class-tear-down="tearDownForClass" 
    test-tear-down="tearDown"
   >
-    <test name="Test RandomNumberGeneratorSeed class" method-name="testRNGS"/>
     <test name="Test Pi" method-name="testMcPi"/>
     <test name="Test leap RNG" method-name="testLeepNumbers"/>
     <test name="Test leap RSG" method-name="testLeepSeeds"/>

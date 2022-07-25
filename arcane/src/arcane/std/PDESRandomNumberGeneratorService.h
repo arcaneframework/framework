@@ -52,19 +52,25 @@ class PDESRandomNumberGeneratorService
  public:
   bool initSeed() override;
   bool initSeed(RandomNumberGeneratorSeed seed) override;
+  bool initSeed(ByteArrayView seed) override;
 
   RandomNumberGeneratorSeed seed() override;
   RandomNumberGeneratorSeed emptySeed() override;
+  ByteArrayView viewSeed() override;
 
   Integer neededSizeOfSeed() override;
 
   bool isLeapSeedSupported() override { return true; };
   RandomNumberGeneratorSeed generateRandomSeed(Integer leap) override;
+  ByteUniqueArray generateRandomSeedBUA(Integer leap = 0) override;
+
   RandomNumberGeneratorSeed generateRandomSeed(RandomNumberGeneratorSeed* parent_seed, Integer leap) override;
+  ByteUniqueArray generateRandomSeed(ByteArrayView parent_seed, Integer leap = 0) override;
 
   bool isLeapNumberSupported() override { return true; };
   Real generateRandomNumber(Integer leap) override;
   Real generateRandomNumber(RandomNumberGeneratorSeed* seed, Integer leap) override;
+  Real generateRandomNumber(ByteArrayView seed, Integer leap = 0) override;
 
  protected:
   void _breakupUInt64(uint64_t uint64_in, uint32_t* front_bits, uint32_t* back_bits);

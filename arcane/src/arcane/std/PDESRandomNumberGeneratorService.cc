@@ -43,10 +43,17 @@ initSeed()
 bool PDESRandomNumberGeneratorService::
 initSeed(RandomNumberGeneratorSeed seed)
 {
-  if (seed.sizeOfSeed() != m_size_of_seed) {
+  return initSeed(seed.view());
+}
+
+bool PDESRandomNumberGeneratorService::
+initSeed(ByteArrayView seed)
+{
+  RNGSeedHelper helper(seed);
+  if (helper.sizeOfSeed() != m_size_of_seed) {
     return false;
   }
-  seed.seed(m_seed);
+  helper.value(m_seed);
   return true;
 }
 
@@ -54,6 +61,12 @@ RandomNumberGeneratorSeed PDESRandomNumberGeneratorService::
 seed()
 {
   return RandomNumberGeneratorSeed(m_seed, m_size_of_seed);
+}
+
+ByteArrayView PDESRandomNumberGeneratorService::
+viewSeed()
+{
+  return RNGSeedHelper(&m_seed).view();
 }
 
 RandomNumberGeneratorSeed PDESRandomNumberGeneratorService::
@@ -82,6 +95,20 @@ generateRandomSeed(Integer leap)
 }
 
 // Les sauts négatifs sont supportés.
+ByteUniqueArray PDESRandomNumberGeneratorService::
+generateRandomSeedBUA(Integer leap)
+{
+  // Pas besoin de faire de saut si leap == 0.
+  if (leap != 0) {
+    _ran4(&m_seed, leap - 1);
+  }
+  Int64 spawned_seed = _hashState(m_seed);
+  _ran4(&m_seed, 0);
+
+  return RNGSeedHelper(&spawned_seed).clone();
+}
+
+// Les sauts négatifs sont supportés.
 RandomNumberGeneratorSeed PDESRandomNumberGeneratorService::
 generateRandomSeed(RandomNumberGeneratorSeed* parent_seed, Integer leap)
 {
@@ -101,6 +128,21 @@ generateRandomSeed(RandomNumberGeneratorSeed* parent_seed, Integer leap)
 }
 
 // Les sauts négatifs sont supportés.
+ByteUniqueArray PDESRandomNumberGeneratorService::
+generateRandomSeed(ByteArrayView parent_seed, Integer leap)
+{
+  Int64* i_seed = (Int64*)parent_seed.data();
+
+  // Pas besoin de faire de saut si leap == 0.
+  if (leap != 0) {
+    _ran4(i_seed, leap - 1);
+  }
+  Int64 spawned_seed = _hashState(*i_seed);
+  _ran4(i_seed, 0);
+  return RNGSeedHelper(&spawned_seed).clone();
+}
+
+// Les sauts négatifs sont supportés.
 Real PDESRandomNumberGeneratorService::
 generateRandomNumber(Integer leap)
 {
@@ -117,6 +159,15 @@ generateRandomNumber(RandomNumberGeneratorSeed* seed, Integer leap)
   }
   Real fin = _ran4(&i_seed, leap);
   seed->setSeed(i_seed);
+  return fin;
+}
+
+// Les sauts négatifs sont supportés.
+Real PDESRandomNumberGeneratorService::
+generateRandomNumber(ByteArrayView seed, Integer leap)
+{
+  Int64* i_seed = (Int64*)seed.data();
+  Real fin = _ran4(i_seed, leap);
   return fin;
 }
 
