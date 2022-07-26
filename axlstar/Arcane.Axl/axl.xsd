@@ -4,7 +4,7 @@
   <xs:import namespace="http://www.w3.org/XML/1998/namespace" />
 
   <!-- Classe de base ...................................................... -->
-  <!-- Séquence de 4 éléments: name, userclass, default et description ..... -->
+  <!-- Sï¿½quence de 4 ï¿½lï¿½ments: name, userclass, default et description ..... -->
 
   <xs:complexType name="Base">
     <xs:sequence>
@@ -130,7 +130,7 @@
     <xs:attribute ref="xml:space"/>
   </xs:attributeGroup>
   
-  <!-- Elément module ...................................................... -->
+  <!-- Elï¿½ment module ...................................................... -->
   <xs:element name="module" type="Module"  />
 
   <xs:complexType name="Module">
@@ -159,7 +159,7 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <!-- Elément service ...................................................... -->
+  <!-- Elï¿½ment service ...................................................... -->
   <xs:element name="service" type="Service" />  
   
   <xs:complexType name="Service">
@@ -307,6 +307,7 @@
       <xs:enumeration value="real3" />
       <xs:enumeration value="real3x3" />
       <xs:enumeration value="bool" />
+      <xs:enumeration value="byte" />
       <xs:enumeration value="ustring" />
     </xs:restriction>
   </xs:simpleType>
