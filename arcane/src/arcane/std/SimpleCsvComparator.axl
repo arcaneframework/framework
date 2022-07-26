@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<service name="SimpleCsvComparator" version="1.0" singleton="true">
+
+  <userclass>User</userclass>
+  <description>
+    Service de comparaison de tableau au format CSV.
+  </description>
+
+  <interface name="Arcane::ISimpleTableComparator" />
+
+	<variables>
+  </variables>
+
+	<options>
+	</options>
+</service>

@@ -18,11 +18,6 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/ISimpleTableOutput.h"
-
-#include "arcane/BasicUnitTest.h"
-#include <arcane/ServiceBuilder.h>
-#include <arcane/ServiceFactory.h>
-
 #include "arcane/std/SimpleCsvOutput_axl.h"
 
 /*---------------------------------------------------------------------------*/
@@ -138,6 +133,12 @@ class SimpleCsvOutputService
   void print(Integer only_proc) override;
   bool writeFile(Integer only_proc) override;
   bool writeFile(String path, Integer only_proc) override;
+
+  String path() override;
+  void setPath(String path) override;
+
+  String name() override;
+  void setName(String name) override;
 
  private:
   String _computeAt(String name, bool& only_once);

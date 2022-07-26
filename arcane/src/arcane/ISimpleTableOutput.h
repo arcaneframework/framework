@@ -11,15 +11,13 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_ISIMPLEOUTPUT_H
-#define ARCANE_ISIMPLEOUTPUT_H
+#ifndef ARCANE_ISIMPLETABLEOUTPUT_H
+#define ARCANE_ISIMPLETABLEOUTPUT_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include <arcane/ItemTypes.h>
-
-#include <optional>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -690,6 +688,41 @@ public:
    * @return false Si le fichier n'a pas été correctement écrit.
    */
   virtual bool writeFile(String path, Integer only_proc = -1) = 0;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+  /**
+   * @brief Accesseur permettant de récupérer le chemin actuellement
+   * enregistré dans la classe. 
+   * 
+   * @return String Le chemin.
+   */
+  virtual String path() = 0;
+
+  /**
+   * @brief Accesseur permettant de définir le chemin
+   * dans lequel enregistrer le(s) tableau(x).
+   * 
+   * @param path Le chemin.
+   */
+  virtual void setPath(String path) = 0;
+
+  /**
+   * @brief Accesseur permettant de récupérer le nom actuellement
+   * enregistré dans la classe. 
+   * 
+   * @return String Le nom.
+   */
+  virtual String name() = 0;
+
+    /**
+   * @brief Accesseur permettant de définir le nom
+   * du tableau (et du fichier de sortie).
+   * 
+   * @param path Le chemin.
+   */
+  virtual void setName(String name) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

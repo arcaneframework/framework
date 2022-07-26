@@ -100,6 +100,7 @@
 #include "arcane/IGraphModifier2.h"
 #include "arcane/IRandomNumberGenerator.h"
 #include "arcane/ISimpleTableOutput.h"
+#include "arcane/ISimpleTableComparator.h"
 
 
 /*---------------------------------------------------------------------------*/

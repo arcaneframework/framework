@@ -862,6 +862,43 @@ writeFile(String path, Integer only_proc)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+String SimpleCsvOutputService::
+path()
+{
+  if (!m_path_computed) {
+    m_path = _computeAt(m_path, m_path_only_P0);
+    m_path_computed = true;
+  }
+  return m_path;
+}
+
+void SimpleCsvOutputService::
+setPath(String path)
+{
+  m_path = path;
+  m_path_computed = false;
+}
+
+String SimpleCsvOutputService::
+name()
+{
+  if (!m_name_tab_computed) {
+    m_name_tab = _computeAt(m_name_tab, m_name_tab_only_P0);
+    m_name_tab_computed = true;
+  }
+  return m_name_tab;
+}
+
+void SimpleCsvOutputService::
+setName(String name)
+{
+  m_name_tab = name;
+  m_name_tab_computed = false;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /**
  * @brief Méthode permettant de finaliser les noms avant écriture.
  * 

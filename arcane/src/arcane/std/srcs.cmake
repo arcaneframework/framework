@@ -76,6 +76,9 @@ set(ARCANE_SOURCES
   SimpleCsvOutputService.cc
   SimpleCsvOutputService.h
 
+  SimpleCsvComparatorService.cc
+  SimpleCsvComparatorService.h
+
   MshMeshReader.cc
   MshMeshWriter.cc
   internal/IosFile.cc
@@ -112,4 +115,5 @@ set(AXL_FILES
   HoneyComb3DMeshGenerator
   PDESRandomNumberGenerator
   SimpleCsvOutput
+  SimpleCsvComparator
 )
