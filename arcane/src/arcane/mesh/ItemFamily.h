@@ -225,8 +225,6 @@ class ARCANE_MESH_EXPORT ItemFamily
                            Int32ConstArrayView second_source,
                            Int32ConstArrayView destination) override;
   void compactItems(bool do_sort) override;
-  virtual void compactReferences();
-
   void clearItems() override;
 
   const DynamicMeshKindInfos& infos() const { return m_infos; }

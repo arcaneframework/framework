@@ -74,11 +74,6 @@ class ParticleFamilyCompactPolicy
   }
   void compactConnectivityData() override
   {
-    // NOTE GG: pour être conforme au code existant on appelle compactReference()
-    // que si la famille possède la notion de fantôme
-    // mais je pense qu'il faudrait le faire tout le temps.
-    if (m_family->getEnableGhostItems())
-      m_family->compactReferences();
   }
   IItemFamily* family() const override { return m_family; }
  private:

@@ -962,8 +962,6 @@ prepareForDump()
     // TODO: pouvoir spécifier si on souhaite compacter ou pas.
     _compactOnlyItems(false);
 
-    compactReferences();
-
     // Suppose compression
     m_infos.prepareForDump();
     m_item_shared_infos->prepareForDump();
@@ -1265,10 +1263,6 @@ compactItems(bool do_sort)
   _compactOnlyItems(do_sort);
 
   if (!m_use_legacy_compact_item){
-    // On compacte les références pour éviter d'avoir un
-    // m_items_data qui s'étend trop.
-    compactReferences();
-
     // Il est nécessaire de mettre à jour les groupes
     // après un compactReferences().
     _applyCheckNeedUpdateOnGroups();
@@ -1507,8 +1501,7 @@ addItems(Int64ConstArrayView unique_ids,Int32ArrayView items)
 {
   ARCANE_UNUSED(unique_ids);
   ARCANE_UNUSED(items);
-  throw NotSupportedException(A_FUNCINFO,
-                              "this kind of family doesn't support this operation");
+  ARCANE_THROW(NotSupportedException,"this kind of family doesn't support this operation");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1519,8 +1512,7 @@ addItems(Int64ConstArrayView unique_ids,ArrayView<Item> items)
 {
   ARCANE_UNUSED(unique_ids);
   ARCANE_UNUSED(items);
-  throw NotSupportedException(A_FUNCINFO,
-                              "this kind of family doesn't support this operation");
+  ARCANE_THROW(NotSupportedException,"this kind of family doesn't support this operation");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1531,8 +1523,7 @@ addItems(Int64ConstArrayView unique_ids,ItemGroup items)
 {
   ARCANE_UNUSED(unique_ids);
   ARCANE_UNUSED(items);
-  throw NotSupportedException(A_FUNCINFO,
-                              "this kind of family doesn't support this operation");
+  ARCANE_THROW(NotSupportedException,"this kind of family doesn't support this operation");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1543,8 +1534,7 @@ internalRemoveItems(Int32ConstArrayView local_ids,bool keep_ghost)
 {
   ARCANE_UNUSED(local_ids);
   ARCANE_UNUSED(keep_ghost);
-  throw NotSupportedException(A_FUNCINFO,
-                              "this kind of family doesn't support this operation");
+  ARCANE_THROW(NotSupportedException,"this kind of family doesn't support this operation");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1553,8 +1543,7 @@ internalRemoveItems(Int32ConstArrayView local_ids,bool keep_ghost)
 void ItemFamily::
 exchangeItems()
 {
-  throw NotSupportedException(A_FUNCINFO,
-                              "this kind of family doesn't support this operation");
+  ARCANE_THROW(NotSupportedException,"this kind of family doesn't support this operation");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1565,8 +1554,7 @@ mergeItems(Int32 local_id1, Int32 local_id2)
 {
   ARCANE_UNUSED(local_id1);
   ARCANE_UNUSED(local_id2);
-  throw NotSupportedException(A_FUNCINFO,
-                              "this kind of family doesn't support this operation");
+  ARCANE_THROW(NotSupportedException,"this kind of family doesn't support this operation");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1577,38 +1565,7 @@ getMergedItemLID(Int32 local_id1, Int32 local_id2)
 {
   ARCANE_UNUSED(local_id1);
   ARCANE_UNUSED(local_id2);
-  throw NotSupportedException(A_FUNCINFO,
-                              "this kind of family doesn't support this operation");
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemFamily::
-compactReferences()
-{
-  Integer old_mem = m_items_data->size();
-
-  //TODO: il faut prendre la mémoire réellement utilisée et
-  // pas la mémoire necessaire
-  ItemInternalList items(m_infos.itemsInternal());
-  Integer nb_item = items.size();
-  Integer needed_memory = 0;
-
-  info(4) << "CompactRefererences: family=" << fullName()
-          << " old=" << old_mem << " new=" << needed_memory;
-
-  Int32UniqueArray new_data;
-  new_data.resize(needed_memory);
-  Int32* new_data_ptr = new_data.data();
-  Integer current_index = 0;
-  for( Integer i=0; i<nb_item; ++i ){
-    ItemInternal* item = items[i];
-    Integer nb = 0;
-    item->_internalCopyAndSetDataIndex(new_data_ptr,current_index);
-    current_index += nb;
-  }
-  m_items_data->copy(new_data);
+  ARCANE_THROW(NotSupportedException,"this kind of family doesn't support this operation");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1870,9 +1827,6 @@ clearItems()
   m_infos.clear();
 
   endUpdate();
-
-  // Compacte les références pour économiser la mémoire.
-  compactReferences();
 }
 
 /*---------------------------------------------------------------------------*/
