@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemSharedInfoList.h                                        (C) 2000-2020 */
+/* ItemSharedInfoList.h                                        (C) 2000-2022 */
 /*                                                                           */
 /* Liste de 'ItemSharedInfo'.                                                */
 /*---------------------------------------------------------------------------*/
@@ -103,10 +103,16 @@ class ItemSharedInfoList
   bool hasChanged() { return m_list_changed; }
 
  public:
-  Integer maxNodePerItem();
-  Integer maxEdgePerItem();
-  Integer maxFacePerItem();
-  Integer maxCellPerItem();
+
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
+  Integer maxNodePerItem() const { return 0; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
+  Integer maxEdgePerItem() const { return 0; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
+  Integer maxFacePerItem() const { return 0; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
+  Integer maxCellPerItem() const { return 0; }
+
   Integer maxLocalNodePerItemType();
   Integer maxLocalEdgePerItemType();
   Integer maxLocalFacePerItemType();
@@ -140,23 +146,19 @@ class ItemSharedInfoList
 
  private:
 
-  ItemFamily* m_family;
-  Integer m_nb_item_shared_info; //!< Nombre d'objets alloués
-  eItemKind m_item_kind;
+  ItemFamily* m_family = nullptr;
+  Integer m_nb_item_shared_info = 0; //!< Nombre d'objets alloués
+  eItemKind m_item_kind= IK_Unknown;
   UniqueArray<ItemSharedInfo*> m_item_shared_infos;
   UniqueArray<ItemSharedInfo*> m_free_item_shared_infos;
   MultiBufferT<ItemSharedInfo>* m_item_shared_infos_buffer;
-  ItemSharedInfoMap* m_infos_map;
-  Variables* m_variables;
-  bool m_list_changed;
-  bool m_connectivity_info_changed;
-  Integer m_max_node_per_item;
-  Integer m_max_edge_per_item;
-  Integer m_max_face_per_item;
-  Integer m_max_cell_per_item;
-  Integer m_max_node_per_item_type;
-  Integer m_max_edge_per_item_type;
-  Integer m_max_face_per_item_type;
+  ItemSharedInfoMap* m_infos_map = nullptr;
+  Variables* m_variables = nullptr;
+  bool m_list_changed = false;
+  bool m_connectivity_info_changed = true;
+  Integer m_max_node_per_item_type = 0;
+  Integer m_max_edge_per_item_type = 0;
+  Integer m_max_face_per_item_type = 0;
 
  private:
 

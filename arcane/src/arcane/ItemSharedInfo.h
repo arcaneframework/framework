@@ -248,10 +248,15 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
 
  public:
 
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
   constexpr Int32 edgeAllocated() const { return 0; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
   constexpr Int32 faceAllocated() const { return 0; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
   constexpr Int32 cellAllocated() const { return 0; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
   constexpr Int32 hParentAllocated() const { return 0; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
   constexpr Int32 hChildAllocated() const { return 0; }
 
  public:

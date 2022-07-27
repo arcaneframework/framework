@@ -38,11 +38,6 @@ ItemConnectivityInfo()
 void ItemConnectivityInfo::
 fill(ItemSharedInfoList* item_shared_infos,ItemInternalConnectivityList* clist)
 {
-  m_infos[ICI_Node] = item_shared_infos->maxNodePerItem();
-  m_infos[ICI_Edge] = item_shared_infos->maxEdgePerItem();
-  m_infos[ICI_Face] = item_shared_infos->maxFacePerItem();
-  m_infos[ICI_Cell] = item_shared_infos->maxCellPerItem();
-
   m_infos[ICI_Node] = clist->maxNbConnectedItem(ItemInternalConnectivityList::NODE_IDX);
   m_infos[ICI_Edge] = clist->maxNbConnectedItem(ItemInternalConnectivityList::EDGE_IDX);
   m_infos[ICI_Face] = clist->maxNbConnectedItem(ItemInternalConnectivityList::FACE_IDX);
