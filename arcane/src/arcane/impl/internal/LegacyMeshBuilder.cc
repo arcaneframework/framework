@@ -230,7 +230,7 @@ allocateMeshes()
 void LegacyMeshBuilder::
 initializeMeshVariablesFromCaseFile()
 {
-  info() << "Initialization of the variable from the confirguration file";
+  info() << "Initialization of the variable from the configuration file";
   CaseNodeNames* cnn = m_sub_domain->caseDocument()->caseNodeNames();
   for( const LegacyMeshBuilder::MeshBuildInfo& mbi : m_meshes_build_info ){
     IMesh* mesh = mbi.m_mesh;
