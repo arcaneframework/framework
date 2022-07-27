@@ -137,10 +137,7 @@ build()
 void NodeFamily::
 preAllocate(Integer nb_item)
 {
-  Integer base_mem = ItemSharedInfo::COMMON_BASE_MEMORY;
-  Integer mem = base_mem * (nb_item+1);
-  info() << "Nodefamily: reserve=" << mem;
-  _reserveInfosMemory(mem);
+  ARCANE_UNUSED(nb_item);
 }
 
 /*---------------------------------------------------------------------------*/

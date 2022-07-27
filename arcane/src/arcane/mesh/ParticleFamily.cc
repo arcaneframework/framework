@@ -424,10 +424,6 @@ preAllocate(Integer nb_item)
   Integer wanted_size = 2*(nb_item+infos().nbItem());
   if (nb_hash<wanted_size)
     itemsMap().resize(wanted_size,true);
-  Integer nb_cell = 1;
-  Integer base_mem = nb_cell + ItemSharedInfo::COMMON_BASE_MEMORY;
-  Integer mem = base_mem * (nb_item+1);
-  _reserveInfosMemory(mem);
 }
 
 /*---------------------------------------------------------------------------*/

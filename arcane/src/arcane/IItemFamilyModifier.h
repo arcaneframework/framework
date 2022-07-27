@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IItemFamilyModifier.h                                       (C) 2000-2021 */
+/* IItemFamilyModifier.h                                       (C) 2000-2022 */
 /*                                                                           */
 /* Interface de modification d'une famille                                   */
 /*---------------------------------------------------------------------------*/
@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/ArcaneTypes.h"
+#include "arcane/ItemTypes.h"
 
 #include "arcane/mesh/MeshInfos.h"
 

@@ -187,46 +187,20 @@ namespace Arcane
   [StructLayout(LayoutKind.Sequential)]
   public unsafe struct ItemSharedInfo
   {
-    const Integer OWNER_INDEX = 0;
-    const Integer FLAGS_INDEX = 1;
-    const Integer FIRST_NODE_INDEX = 2;
-    internal const Integer COMMON_BASE_MEMORY = 2;
-
-    internal Int32* m_infos;
-    internal Integer m_first_node;
-    Integer m_nb_node;
-    internal Integer m_first_edge;
-    Integer m_nb_edge;
-    internal Integer m_first_face;
-    Integer m_nb_face;
-    internal Integer m_first_cell;
-    Integer m_nb_cell;
-    internal Integer m_first_parent;
-    internal Integer m_nb_parent;
-    //! AMR
-    internal Int32 m_first_hParent;  
-    internal Int32 m_first_hChild;
-    internal Int32 m_nb_hParent;
-    internal Int32 m_nb_hChildren;
-
     internal MeshItemInternalList* m_items;
     internal ItemInternalConnectivityList* m_connectivity;
     internal IntPtr m_family; //IItemFamily* m_family;
     internal Int64ArrayView* m_unique_ids;
+    internal Int32ArrayView* m_parent_item_ids;
+    internal Int32ArrayView* m_owners;
+    internal Int32ArrayView* m_flags;
     internal IntPtr m_item_type; //ItemTypeInfo* m_item_type;
     internal eItemKind m_item_kind; //eItemKind m_item_kind;
-    internal Integer m_needed_memory;
-    internal Integer m_minimum_needed_memory;
-    internal Integer m_edge_allocated;
-    internal Integer m_face_allocated;
-    internal Integer m_cell_allocated;
-    //! AMR
-    internal Int32 m_hParent_allocated;
-    internal Int32 m_hChild_allocated;
 
-    internal Integer m_type_id;
-    internal Integer m_index;
-    internal Integer m_nb_reference;
+    internal Int32 m_type_id;
+    internal Int32 m_nb_parent;
+    internal Int32 m_index;
+    internal Int32 m_nb_reference;
 
     //! Pour l'entité nulle
     private static ItemSharedInfo* null_item_shared_info = null;
@@ -241,64 +215,6 @@ namespace Arcane
         }
         return null_item_shared_info;
       }
-    }
-
-    bool hasLegacyConnectivity() { return false; }
-
-    public Integer NbNode
-    {
-      get { return m_nb_node; }
-    }
-    public Integer NbFace
-    {
-      get { return m_nb_node; }
-    }
-    public Integer NbCell
-    {
-      get { return m_nb_cell; }
-    }
-    public ItemInternal* Node(Integer index,Integer data_index)
-    {
-      return m_items->nodes.m_ptr[m_infos[data_index+index+m_first_node]];
-    }
-    public Int32 NodeLocalId(Integer index,Integer data_index)
-    {
-      return m_infos[data_index+index+m_first_node];
-    }
-    public NodeList Nodes(Integer data_index)
-    {
-      return new NodeList(m_items->nodes.m_ptr,m_infos+data_index+m_first_node,m_nb_node);
-    }
-
-    public ItemInternal* Face(Integer index,Integer data_index)
-    {
-      return m_items->faces.m_ptr[m_infos[data_index+index+m_first_face]];
-    }
-    public Int32 FaceLocalId(Integer index,Integer data_index)
-    {
-      return m_infos[data_index+index+m_first_face];
-    }
-    public ItemList<Face> Faces(Integer data_index)
-    {
-      return new ItemList<Face>(m_items->faces.m_ptr,m_infos+data_index+m_first_face,m_nb_face);
-    }
-
-    public ItemInternal* Cell(Integer index,Integer data_index)
-    {
-      return m_items->cells.m_ptr[m_infos[data_index+index+m_first_cell]];
-    }
-    public Int32 CellLocalId(Integer index,Integer data_index)
-    {
-      return m_infos[data_index+index+m_first_cell];
-    }
-    public ItemList<Cell> Cells(Integer data_index)
-    {
-      return new ItemList<Cell>(m_items->cells.m_ptr,m_infos+data_index+m_first_cell,m_nb_cell);
-    }
-
-    internal Integer Flags(Integer data_index)
-    {
-      return m_infos[data_index+FLAGS_INDEX];
     }
   }
 
@@ -366,10 +282,9 @@ namespace Arcane
     public bool IsNull { get { return m_local_id==NULL_ITEM_LOCAL_ID; } }
     
     //! Flags de l'entité
-    public Integer Flags { get { return m_shared_info->Flags(m_data_index); } }
+    public Integer Flags { get { return m_shared_info->m_flags->At(m_local_id); } }
     ItemInternalConnectivityList* _connectivity() { return m_shared_info->m_connectivity; }
 
-#if USE_NEW_CONNECTIVITY
     public ItemInternal* Node(Integer index)
     {
       return _connectivity()->Node(m_local_id,index);
@@ -420,59 +335,6 @@ namespace Arcane
     {
       get { return _connectivity()->NbFace(m_local_id); }
     }
-
-#else
-    public ItemInternal* Node(Integer index)
-    {
-      return m_shared_info->Node(index,m_data_index);
-    }
-    public Int32 NodeLocalId(Integer index)
-    {
-      return m_shared_info->NodeLocalId(index,m_data_index);
-    }
-    public NodeList Nodes
-    {
-      get { return m_shared_info->Nodes(m_data_index); }
-    }
-    public Int32 NbNode
-    {
-      get { return m_shared_info->NbNode(); }
-    }
-
-    public ItemInternal* Cell(Integer index)
-    {
-      return m_shared_info->Cell(index,m_data_index);
-    }
-    public Int32 CellLocalId(Integer index)
-    {
-      return m_shared_info->CellLocalId(index,m_data_index);
-    }
-    public ItemList<Cell> Cells
-    {
-      get { return m_shared_info->Cells(m_data_index); }
-    }
-    public Int32 NbCell
-    {
-      get { return m_shared_info->NbCell(); }
-    }
-
-    public ItemInternal* Face(Integer index)
-    {
-      return m_shared_info->Face(index,m_data_index);
-    }
-    public Int32 FaceLocalId(Integer index)
-    {
-      return m_shared_info->FaceLocalId(index,m_data_index);
-    }
-    public ItemList<Face> Faces
-    {
-      get { return m_shared_info->Faces(m_data_index); }
-    }
-    public Int32 NbFace
-    {
-      get { return m_shared_info->NbFace(); }
-    }
-#endif
 
     public Int64 UniqueId()
     {

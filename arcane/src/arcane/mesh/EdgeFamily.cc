@@ -199,12 +199,7 @@ findOrAllocOne(Int64 uid,bool& is_alloc)
 void EdgeFamily::
 preAllocate(Integer nb_item)
 {
-  Integer mem = 0;
-  Integer base_mem = ItemSharedInfo::COMMON_BASE_MEMORY;
-  if (m_has_edge) { // On n'alloue rien du tout si on n'a pas d'arête
-    mem = base_mem * (nb_item+1);
-  }
-  _reserveInfosMemory(mem);
+  ARCANE_UNUSED(nb_item);
 }
 
 /*---------------------------------------------------------------------------*/

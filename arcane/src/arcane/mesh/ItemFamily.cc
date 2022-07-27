@@ -113,7 +113,6 @@ class ItemFamily::Variables
             const String& family_name,
             eItemKind item_kind,
             const String& shared_data_name,
-            const String& data_name,
             const String& unique_ids_name,
             const String& items_owner_name,
             const String& items_flags_name,
@@ -127,7 +126,6 @@ class ItemFamily::Variables
             const String& child_meshes_name,
             const String& child_families_name)
   : m_items_shared_data_index(VariableBuildInfo(mesh,shared_data_name,IVariable::PPrivate)),
-    m_items_data(VariableBuildInfo(mesh,data_name,IVariable::PPrivate)),
     m_items_unique_id(VariableBuildInfo(mesh,unique_ids_name,IVariable::PPrivate)),
     m_items_owner(VariableBuildInfo(mesh,items_owner_name,IVariable::PPrivate)),
     m_items_flags(VariableBuildInfo(mesh,items_flags_name,IVariable::PPrivate)),
@@ -150,7 +148,6 @@ class ItemFamily::Variables
   //! Indice dans le tableau des ItemSharedInfo pour chaque entité.
   // TODO: utiliser un Int16 lorsqu'on aura limité le nombre de ItemSharedInfo sur un Int16
   VariableArrayInteger m_items_shared_data_index;
-  VariableArrayInt32 m_items_data;
   //! Contient les uniqueIds() des entités de cette famille
   VariableArrayInt64 m_items_unique_id;
   //! Contient les owner() des entités de cette famille
@@ -291,7 +288,6 @@ build()
   // NOTE: si on change les noms ici, il faut aussi les changer dans MeshStats.cc
   // sinon les statistiques ne seront pas fiables.
   {
-    String var_data_name(_variableName("FamilyItemsData"));
     String var_unique_ids_name(_variableName("FamilyUniqueIds"));
     String var_owner_name(_variableName("FamilyOwner"));
     String var_flags_name(_variableName("FamilyFlags"));
@@ -306,26 +302,19 @@ build()
     String var_child_meshes_name(_variableName("ChildMeshesName"));
     String var_child_families_name(_variableName("ChildFamiliesName"));
     m_internal_variables = new Variables(m_mesh,name(),itemKind(),var_count_name,
-                                         var_data_name,var_unique_ids_name,var_owner_name,
+                                         var_unique_ids_name,var_owner_name,
                                          var_flags_name,var_nb_parent_name,var_groups_name,
                                          var_current_id_name,var_new_owner_name,
                                          var_parent_mesh_name,var_parent_family_name,
                                          var_parent_family_depth_name,
                                          var_child_meshes_name,
                                          var_child_families_name);
-    m_items_data = &m_internal_variables->m_items_data._internalTrueData()->_internalDeprecatedValue();
-    m_items_data->reserve(1000);
     m_items_unique_id = &m_internal_variables->m_items_unique_id._internalTrueData()->_internalDeprecatedValue();
     m_items_owner = &m_internal_variables->m_items_owner._internalTrueData()->_internalDeprecatedValue();
     m_items_flags = &m_internal_variables->m_items_flags._internalTrueData()->_internalDeprecatedValue();
     m_items_nb_parent = &m_internal_variables->m_items_nb_parent._internalTrueData()->_internalDeprecatedValue();
     _updateItemViews();
   }
-
-  // Pour pouvoir remettre à jour les ItemSharedInfos après relecture
-  m_observers.addObserver(this,
-                          &ItemFamily::_notifyDataIndexChanged,
-                          m_internal_variables->m_items_data.variable()->readObservable());
 
   m_variable_synchronizer = ParallelMngUtils::createSynchronizerRef(pm,this);
 
@@ -519,8 +508,6 @@ _partialEndUpdate()
   m_item_need_prepare_dump = true;
   _computeConnectivityInfo(m_local_connectivity_info);
   ++m_current_id;
-  m_internal_variables->m_items_data.variable()->syncReferences();
-  m_items_data = &m_internal_variables->m_items_data._internalTrueData()->_internalDeprecatedValue();
 
   // Update "external" connectivities
   if (m_connectivity_mng)
@@ -921,50 +908,6 @@ _checkNeedEndUpdate() const
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-_setSharedInfosBasePtr()
-{
-  Int32* new_ptr = m_items_data->data();
-  m_item_shared_infos->setSharedInfosPtr(new_ptr);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemFamily::
-_setDataIndexForItem(ItemInternal* item,Int32 data_index)
-{
-  item->setDataIndex(data_index);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemFamily::
-_setSharedInfoForItem(ItemInternal* item,ItemSharedInfo* isi,Int32 data_index)
-{
-  item->setSharedInfo(isi);
-  _setDataIndexForItem(item,data_index);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Modifie le ItemInternal::sharedInfo() en considérant que seul
- * le nombre d'entités connecté change.
- *
- * Dans ce cas, il faut uniquement mettre à jour le nombre d'entités
- * connectées si on utilise les anciennes connectivités.
- */
-void ItemFamily::
-_setSharedInfosNoCopy(ItemInternal* item,ItemSharedInfo* isi)
-{
-  item->setSharedInfo(isi);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemFamily::
 prepareForDump()
 {
   info(4) << "ItemFamily::prepareFromDump(): " << fullName()
@@ -981,8 +924,6 @@ prepareForDump()
 
     // TODO: pouvoir spécifier si on souhaite compacter ou pas.
     _compactOnlyItems(false);
-
-    compactReferences();
 
     // Suppose compression
     m_infos.prepareForDump();
@@ -1104,7 +1045,6 @@ readFromDump()
   Integer nb_item = items_shared_data_index.size();
   info(4) << "ItemFamily::readFromDump(): " << fullName()
           << " count=" << nb_item
-          << " data=" << m_internal_variables->m_items_data.size()
           << " currentid=" << m_current_id
           << " saveid=" << m_internal_variables->m_current_id();
 
@@ -1144,7 +1084,6 @@ readFromDump()
   }
 
   m_item_shared_infos->readFromDump();
-  _setSharedInfosBasePtr();
   m_infos.readFromDump();
 
   // En relecture les entités sont compactées donc la valeur max du localId()
@@ -1152,14 +1091,12 @@ readFromDump()
   {
     ArrayView<ItemSharedInfo*> item_shared_infos = m_item_shared_infos->itemSharedInfos();
     ItemInternalList items(m_infos.itemsInternal());
-    Integer data_index = 0;
     for( Integer i=0; i<nb_item; ++i ){
       Integer shared_data_index = items_shared_data_index[i];
       ItemSharedInfo* isi = item_shared_infos[shared_data_index];
       Int64 uid = (*m_items_unique_id)[i];
       ItemInternal* item = m_infos.allocOne(uid);
-      _setSharedInfoForItem(item,isi,data_index);
-      data_index += isi->neededMemory();
+      item->setSharedInfo(isi);
     }
   }
   // Supprime les entités du groupe total car elles vont être remises à jour
@@ -1288,10 +1225,6 @@ compactItems(bool do_sort)
   _compactOnlyItems(do_sort);
 
   if (!m_use_legacy_compact_item){
-    // On compacte les références pour éviter d'avoir un
-    // m_items_data qui s'étend trop.
-    compactReferences();
-
     // Il est nécessaire de mettre à jour les groupes
     // après un compactReferences().
     _applyCheckNeedUpdateOnGroups();
@@ -1530,8 +1463,7 @@ addItems(Int64ConstArrayView unique_ids,Int32ArrayView items)
 {
   ARCANE_UNUSED(unique_ids);
   ARCANE_UNUSED(items);
-  throw NotSupportedException(A_FUNCINFO,
-                              "this kind of family doesn't support this operation");
+  ARCANE_THROW(NotSupportedException,"this kind of family doesn't support this operation");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1542,8 +1474,7 @@ addItems(Int64ConstArrayView unique_ids,ArrayView<Item> items)
 {
   ARCANE_UNUSED(unique_ids);
   ARCANE_UNUSED(items);
-  throw NotSupportedException(A_FUNCINFO,
-                              "this kind of family doesn't support this operation");
+  ARCANE_THROW(NotSupportedException,"this kind of family doesn't support this operation");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1554,8 +1485,7 @@ addItems(Int64ConstArrayView unique_ids,ItemGroup items)
 {
   ARCANE_UNUSED(unique_ids);
   ARCANE_UNUSED(items);
-  throw NotSupportedException(A_FUNCINFO,
-                              "this kind of family doesn't support this operation");
+  ARCANE_THROW(NotSupportedException,"this kind of family doesn't support this operation");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1566,8 +1496,7 @@ internalRemoveItems(Int32ConstArrayView local_ids,bool keep_ghost)
 {
   ARCANE_UNUSED(local_ids);
   ARCANE_UNUSED(keep_ghost);
-  throw NotSupportedException(A_FUNCINFO,
-                              "this kind of family doesn't support this operation");
+  ARCANE_THROW(NotSupportedException,"this kind of family doesn't support this operation");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1576,8 +1505,7 @@ internalRemoveItems(Int32ConstArrayView local_ids,bool keep_ghost)
 void ItemFamily::
 exchangeItems()
 {
-  throw NotSupportedException(A_FUNCINFO,
-                              "this kind of family doesn't support this operation");
+  ARCANE_THROW(NotSupportedException,"this kind of family doesn't support this operation");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1588,8 +1516,7 @@ mergeItems(Int32 local_id1, Int32 local_id2)
 {
   ARCANE_UNUSED(local_id1);
   ARCANE_UNUSED(local_id2);
-  throw NotSupportedException(A_FUNCINFO,
-                              "this kind of family doesn't support this operation");
+  ARCANE_THROW(NotSupportedException,"this kind of family doesn't support this operation");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1600,43 +1527,7 @@ getMergedItemLID(Int32 local_id1, Int32 local_id2)
 {
   ARCANE_UNUSED(local_id1);
   ARCANE_UNUSED(local_id2);
-  throw NotSupportedException(A_FUNCINFO,
-                              "this kind of family doesn't support this operation");
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemFamily::
-compactReferences()
-{
-  Integer old_mem = m_items_data->size();
-
-  //TODO: il faut prendre la mémoire réellement utilisée et
-  // pas la mémoire necessaire
-  ItemInternalList items(m_infos.itemsInternal());
-  Integer nb_item = items.size();
-  Integer needed_memory = 0;
-  for( Integer i=0; i<nb_item; ++i ){
-    needed_memory += items[i]->neededMemory();
-  }
-
-  info(4) << "CompactRefererences: family=" << fullName()
-          << " old=" << old_mem << " new=" << needed_memory;
-
-  Int32UniqueArray new_data;
-  new_data.resize(needed_memory);
-  Int32* new_data_ptr = new_data.data();
-  Integer current_index = 0;
-  for( Integer i=0; i<nb_item; ++i ){
-    ItemInternal* item = items[i];
-    Integer nb = item->neededMemory();
-    item->_internalCopyAndSetDataIndex(new_data_ptr,current_index);
-    current_index += nb;
-  }
-  m_items_data->copy(new_data);
-
-  _setSharedInfosBasePtr();
+  ARCANE_THROW(NotSupportedException,"this kind of family doesn't support this operation");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1652,41 +1543,6 @@ _checkValid()
       ARCANE_FATAL("Family {0} Bad value for partRank ({1}) expected={2}",
                    fullName(),m_sub_domain_id,part_rank);
   }
-  // Vérifie que 'm_items_data' et 'm_internal_variables->m_items_data'
-  // sont les mêmes
-  {
-    Int32* i1 = m_items_data->data();
-    Int32* i2 = m_internal_variables->m_items_data._internalTrueData()->_internalDeprecatedValue().data();
-    if (i1!=i2){
-      fatal() << "ItemFamily: " << m_name
-              << ": items_data invalid ptr1=" << i1 << " ptr2=" << i2;
-    }
-  }
-
-  // Vérifie que la famille est valide.
-  // 1. Vérifie que chaque entité à un sharedInfo() dont le pointeur
-  //    contenant le tableau des info est identique à \a m_items_data->begin()
-  ItemInternalList items(m_infos.itemsInternal());
-  Int32* infos_begin = m_items_data->data();
-  Integer nb_error = 0;
-  for( Integer i=0, is=items.size(); i<is; ++i ){
-    ItemInternal* item = items[i];
-    ItemSharedInfo* isi = item->sharedInfo();
-    if (isi->_infos()!=infos_begin){
-      if (nb_error<10)
-        error() << "ItemFamily: Info shared by an invalid entity"
-                << " LID=" << i << " Item=" << item
-                << " Shared=" << isi << " Begin=" << isi->_infos()
-                << " (expected:" << infos_begin;
-      ++nb_error;
-    }
-    //TODO: verifier que 'isi' est bien dans la table de hashage
-  }
-  if (nb_error!=0){
-    m_item_shared_infos->dumpSharedInfos();
-    fatal() << "ItemFamily: " << m_name << ": " << nb_error
-            << " errors: invalid internal structure";
-  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1695,18 +1551,7 @@ _checkValid()
 void ItemFamily::
 _reserveInfosMemory(Integer memory)
 {
-  Int32* old_ptr = m_items_data->data();
-  m_items_data->reserve(memory);
-  Int32* new_ptr = m_items_data->data();
-  if (old_ptr!=new_ptr){
-    info(4) << "RESIZE_ONE1 Size=" << m_items_data->size() << " capacity=" << m_items_data->capacity()
-            << " ptr=" << new_ptr << " name=" << m_name
-            << " var_size=" << m_internal_variables->m_items_data.size()
-            << " var_capacity=" << m_internal_variables->m_items_data._internalTrueData()->capacity()
-            << " ptr=" << m_internal_variables->m_items_data.data();
-    _setSharedInfosBasePtr();
-    _checkValid();
-  }
+  ARCANE_UNUSED(memory);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1715,33 +1560,7 @@ _reserveInfosMemory(Integer memory)
 void ItemFamily::
 _resizeInfos(Integer new_size)
 {
-  Int32* old_ptr = m_items_data->data();
-  Integer old_size = m_items_data->size();
-  Integer old_capacity = m_items_data->capacity();
-  if (new_size>old_capacity){
-    if (new_size>5000000)
-      m_items_data->reserve((Integer)(new_size * 1.2));
-    else if (new_size>500000)
-      m_items_data->reserve((Integer)(new_size * 1.5));
-    else
-      m_items_data->reserve((Integer)(new_size * 2.0));
-  }
-  m_items_data->resize(new_size);
-  Int32* new_ptr = m_items_data->data();
-  if (old_ptr!=new_ptr){
-    info(4) << "RESIZE_ONE2 OldSize=" << old_size << " new_size=" << new_size
-            << " capacity=" << m_items_data->capacity()
-            << " ptr=" << new_ptr << " name=" << m_name
-            << " var_size=" << m_internal_variables->m_items_data.size()
-            << " var_capacity=" << m_internal_variables->m_items_data._internalTrueData()->capacity()
-            << " ptr=" << m_internal_variables->m_items_data.data()
-            << " old_size=" << old_size
-            << " new_size=" << m_items_data->size()
-            << " nb_item=" << m_infos.nbItem()
-            << " max_local_id=" << maxLocalId();
-    _setSharedInfosBasePtr();
-    _checkValid();
-  }
+  ARCANE_UNUSED(new_size);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1750,9 +1569,8 @@ _resizeInfos(Integer new_size)
 Integer ItemFamily::
 _allocMany(Integer memory)
 {
-  Integer s = m_items_data->size();
-  _resizeInfos(s+memory);
-  return s;
+  ARCANE_UNUSED(memory);
+  return 0;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1762,7 +1580,6 @@ ItemSharedInfo* ItemFamily::
 _findSharedInfo(ItemTypeInfo* type)
 {
   ItemSharedInfo* isi = m_item_shared_infos->findSharedInfo(type);
-  isi->_setInfos(m_items_data->data());
   return isi;
 }
 
@@ -1770,13 +1587,12 @@ _findSharedInfo(ItemTypeInfo* type)
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-_copyInfos(ItemInternal* item,ItemSharedInfo* old_isi,ItemSharedInfo* new_isi)
+_copyInfos(ItemInternal* item,ItemSharedInfo*,ItemSharedInfo* new_isi)
 {
   // Signale qu'il faudra compacter les entités au moment du dump
   m_item_need_prepare_dump = true;
 
-  Integer new_data_index = _allocMany(new_isi->neededMemory());
-  item->_internalCopyAndChangeSharedInfos(old_isi,new_isi,new_data_index);
+  item->setSharedInfo(new_isi);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1787,7 +1603,7 @@ _updateSharedInfoAdded(ItemInternal* item)
 {
   ItemSharedInfo* old_isi = item->sharedInfo();
   ItemSharedInfo* new_isi = _findSharedInfo(old_isi->m_item_type);
-  _setSharedInfosNoCopy(item,new_isi);
+  item->setSharedInfo(new_isi);
 
   m_need_prepare_dump = true;
   new_isi->addReference();
@@ -1805,7 +1621,7 @@ _updateSharedInfoRemoved4(ItemInternal* item)
 
   ItemSharedInfo* old_isi = item->sharedInfo();
   ItemSharedInfo* new_isi = _findSharedInfo(old_isi->m_item_type);
-  _setSharedInfosNoCopy(item,new_isi);
+  item->setSharedInfo(new_isi);
 
   new_isi->addReference();
   old_isi->removeReference();
@@ -1850,11 +1666,8 @@ _allocateInfos(ItemInternal* item,Int64 uid,ItemSharedInfo* isi)
       _updateItemViews();
     (*m_items_unique_id)[local_id] = uid;
   }
-  // Il faut positionner le ItemSharedInfo avant le _allocMany
-  // sinon les tests de vérification échouent.
+
   item->setSharedInfo(isi);
-  Integer new_data_index = _allocMany(isi->neededMemory());
-  _setSharedInfoForItem(item,isi,new_data_index);
   
   item->reinitialize(uid,m_default_sub_domain_owner,m_sub_domain_id);
   ++m_nb_allocate_info;
@@ -1869,9 +1682,7 @@ _allocateInfos(ItemInternal* item,Int64 uid,ItemSharedInfo* isi)
 void ItemFamily::
 _notifyDataIndexChanged()
 {
-  //warning() << "Data Index changed ! " << m_name;
   _updateItemViews();
-  _setSharedInfosBasePtr();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1966,9 +1777,6 @@ clearItems()
   m_infos.clear();
 
   endUpdate();
-
-  // Compacte les références pour économiser la mémoire.
-  compactReferences();
 }
 
 /*---------------------------------------------------------------------------*/

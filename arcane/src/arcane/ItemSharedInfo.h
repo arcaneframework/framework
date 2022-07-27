@@ -115,32 +115,41 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   eItemKind itemKind() const { return m_item_kind; }
   IItemFamily* itemFamily() const { return m_item_family; }
   Int32 nbParent() const { return m_nb_parent; }
-  Int32 nbNode() const { return m_nb_node; }
 
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
+  constexpr Int32 nbNode() const { return 0; }
   ARCANE_DEPRECATED_REASON("Y2020: This method always return 0")
   constexpr Int32 nbEdge() const { return 0; }
   ARCANE_DEPRECATED_REASON("Y2020: This method always return 0")
-  Int32 nbFace() const { return 0; }
+  constexpr Int32 nbFace() const { return 0; }
   ARCANE_DEPRECATED_REASON("Y2020: This method always return 0")
-  Int32 nbCell() const { return 0; }
+  constexpr Int32 nbCell() const { return 0; }
   ARCANE_DEPRECATED_REASON("Y2020: This method always return 0")
-  Int32 nbHParent() const { return 0; }
+  constexpr Int32 nbHParent() const { return 0; }
   ARCANE_DEPRECATED_REASON("Y2020: This method always return 0")
-  Int32 nbHChildren() const { return 0; }
+  constexpr Int32 nbHChildren() const { return 0; }
 
   Int32 typeId() const { return m_type_id; }
 
-  Int32 firstNode() const { return m_first_node; }
-  Int32 firstEdge() const { return m_first_edge; }
-  Int32 firstFace() const { return m_first_face; }
-  Int32 firstCell() const { return m_first_cell; }
-  Int32 firstParent() const { return m_first_parent; }
-  //! AMR
-  Int32 firstHParent() const { return m_first_hParent; }
-  Int32 firstHChild() const {return m_first_hChild; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
+  Int32 firstNode() const { return 0; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
+  Int32 firstEdge() const { return 0; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
+  Int32 firstFace() const { return 0; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
+  Int32 firstCell() const { return 0; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
+  Int32 firstParent() const { return 0; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
+  Int32 firstHParent() const { return 0; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
+  Int32 firstHChild() const { return 0; }
 
-  Int32 neededMemory() const { return m_needed_memory; }
-  Int32 minimumNeededMemory() const { return m_minimum_needed_memory; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
+  constexpr Int32 neededMemory() const { return 0; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
+  constexpr Int32 minimumNeededMemory() const { return 0; }
   ARCCORE_DEPRECATED_2021("This method always return 'false'")
   constexpr bool hasLegacyConnectivity() const { return false; }
 
@@ -150,8 +159,8 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
 
  public:
 
-  ItemInternalVectorView nodes(Int32 data_index) const
-  { return ItemInternalVectorView(m_items->nodes,m_infos+data_index+firstNode(),nbNode()); }
+  ARCANE_DEPRECATED_REASON("Y2022: This list is always empty")
+  ItemInternalVectorView nodes(Int32) const { return ItemInternalVectorView(); }
 
   ARCANE_DEPRECATED_REASON("Y2020: This list is always empty")
   ItemInternalVectorView edges(Int32) const { return ItemInternalVectorView(); }
@@ -189,9 +198,8 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
 
  public:
 
-  ItemInternal* node(Int32 data_index,Int32 aindex) const
-  { return m_items->nodes[ m_infos[data_index + firstNode()+aindex] ]; }
-
+  ARCANE_DEPRECATED_REASON("Y2020: This method always return 'nullptr'")
+  ItemInternal* node(Int32,Int32) const { return nullptr; }
   ARCANE_DEPRECATED_REASON("Y2020: This method always return 'nullptr'")
   ItemInternal* edge(Int32,Int32) const { return nullptr; }
   ARCANE_DEPRECATED_REASON("Y2020: This method always return 'nullptr'")
@@ -205,9 +213,8 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
 
  public:
 
-  Int32 nodeLocalId(Int32 data_index,Int32 aindex) const
-  { return m_infos[data_index+firstNode()+aindex]; }
-
+  ARCANE_DEPRECATED_REASON("Y2020: This method always return 'NULL_ITEM_LOCAL_ID'")
+  Int32 nodeLocalId(Int32,Int32) const { return NULL_ITEM_LOCAL_ID; }
   ARCANE_DEPRECATED_REASON("Y2020: This method always return 'NULL_ITEM_LOCAL_ID'")
   Int32 edgeLocalId(Int32,Int32) const { return NULL_ITEM_LOCAL_ID; }
   ARCANE_DEPRECATED_REASON("Y2020: This method always return 'NULL_ITEM_LOCAL_ID'")
@@ -223,53 +230,44 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
 
  public:
 
-  void setNode(Int32 data_index,Int32 aindex,Int32 local_id) const
-  { m_infos[ data_index+firstNode()+aindex] = local_id; }
-  void setEdge(Int32 data_index,Int32 aindex,Int32 local_id) const
-  { m_infos[ data_index+firstEdge()+aindex] = local_id; }
-  void setFace(Int32 data_index,Int32 aindex,Int32 local_id) const
-  { m_infos[ data_index+firstFace()+aindex] = local_id; }
-  void setCell(Int32 data_index,Int32 aindex,Int32 local_id) const
-  { m_infos[ data_index+firstCell()+aindex] = local_id; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception.")
+  void setNode(Int32,Int32,Int32) const;
+  ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception.")
+  void setEdge(Int32,Int32,Int32) const;
+  ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception.")
+  void setFace(Int32,Int32,Int32) const;
+  ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception.")
+  void setCell(Int32,Int32,Int32) const;
+  ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception.")
+  void setHParent(Int32,Int32,Int32) const;
+  ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception.")
+  void setHChild(Int32,Int32,Int32) const;
+
   ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception. Use _setParentV2() instead")
-  void setParent(Integer data_index,Integer aindex,Integer local_id) const;
-  //! AMR
-  void setHParent(Integer data_index,Integer aindex,Integer local_id) const
-  { m_infos[ data_index+firstHParent()+aindex] = local_id; }
-  void setHChild(Int32 data_index,Int32 aindex,Int32 local_id) const
-  { m_infos[ data_index+firstHChild()+aindex] = local_id; }
+  void setParent(Integer,Integer,Integer) const;
 
  public:
 
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
   constexpr Int32 edgeAllocated() const { return 0; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
   constexpr Int32 faceAllocated() const { return 0; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
   constexpr Int32 cellAllocated() const { return 0; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
   constexpr Int32 hParentAllocated() const { return 0; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
   constexpr Int32 hChildAllocated() const { return 0; }
 
  public:
-  const Int32* _infos() const { return m_infos; }
-  void _setInfos(Int32* ptr) { m_infos = ptr; }
- private:
-  Int32* m_infos = nullptr;
- private:
-  Int32 m_first_node = 0;
-  Int32 m_nb_node = 0;
-  Int32 m_first_edge = 0;
-  Int32 m_nb_edge = 0;
-  Int32 m_first_face = 0;
-  Int32 m_nb_face = 0;
-  Int32 m_first_cell = 0;
-  Int32 m_nb_cell = 0;
-  Int32 m_first_parent = 0;
-  Int32 m_nb_parent = 0;
-  //! AMR
-  Int32 m_first_hParent = 0;
-  Int32 m_first_hChild = 0;
-  Int32 m_nb_hParent = 0;
-  Int32 m_nb_hChildren = 0;
+
+  ARCANE_DEPRECATED_REASON("Y2022: This method always returns 'nullptr'")
+  const Int32* _infos() const { return nullptr; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception.")
+  void _setInfos(Int32* ptr);
 
  public:
+
   MeshItemInternalList* m_items = nullptr;
   ItemInternalConnectivityList* m_connectivity;
   IItemFamily* m_item_family = nullptr;
@@ -279,20 +277,16 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   Int32ArrayView* m_flags = nullptr;
   ItemTypeInfo* m_item_type = nullptr;
   eItemKind m_item_kind = IK_Unknown;
+
  private:
-  Int32 m_needed_memory = 0;
-  Int32 m_minimum_needed_memory = 0;
-  Int32 m_edge_allocated = 0;
-  Int32 m_face_allocated = 0;
-  Int32 m_cell_allocated = 0;
-  //! AMR
-  Int32 m_hParent_allocated = 0;
-  Int32 m_hChild_allocated = 0;
 
   Int32 m_type_id = IT_NullType;
+  Int32 m_nb_parent = 0;
   Int32 m_index = NULL_INDEX;
   Int32 m_nb_reference = 0;
+
  public:
+
   Int32 index() const { return m_index; }
   void setIndex(Int32 aindex) { m_index = aindex; }
   Int32 nbReference() const { return m_nb_reference; }
@@ -307,13 +301,13 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
  public:
 
   ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception. Use _ownerV2() instead")
-  Int32 owner(Int32 data_index) const;
+  Int32 owner(Int32) const;
   ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception. Use _setOwnerV2() instead")
-  void setOwner(Int32 data_index,Int32 aowner) const;
+  void setOwner(Int32,Int32) const;
   ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception. Use _flagsV2() instead")
-  Int32 flags(Int32 data_index) const;
+  Int32 flags(Int32) const;
   ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception. Use _setFlagsV2() instead")
-  void setFlags(Int32 data_index,Int32 f) const;
+  void setFlags(Int32,Int32) const;
 
  private:
 
@@ -322,20 +316,16 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   Int32 _flagsV2(Int32 local_id) const { return (*m_flags)[local_id]; }
   void _setFlagsV2(Int32 local_id,Int32 f) const { (*m_flags)[local_id] = f; }
 
- private:
-
-  static const Int32 OWNER_INDEX = 0;
-  static const Int32 FLAGS_INDEX = 1;
-  static const Int32 FIRST_NODE_INDEX = 2;
-
  public:
 
-  static const Int32 COMMON_BASE_MEMORY = 2;
+  // TODO: a supprimer
+  ARCANE_DEPRECATED_REASON("Y2022: COMMON_BASE_MEMORY is always 0")
+  static const Int32 COMMON_BASE_MEMORY = 0;
 
  private:
 
   void _init(eItemKind ik);
-  //! Version non optimisé mais robuste d'accès à l'ItemInternalArrayView parent
+  //! Version non optimisée mais robuste d'accès à l'ItemInternalArrayView parent
   ItemInternalArrayView _parents() const;
 };
 

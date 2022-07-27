@@ -5,20 +5,19 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CellFamily.cc                                               (C) 2000-2017 */
+/* CellFamily.cc                                               (C) 2000-2022 */
 /*                                                                           */
 /* Famille de mailles.                                                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
+#include "arcane/mesh/CellFamily.h"
 
 #include "arcane/utils/FatalErrorException.h"
 
 #include "arcane/mesh/NodeFamily.h"
 #include "arcane/mesh/EdgeFamily.h"
 #include "arcane/mesh/FaceFamily.h"
-#include "arcane/mesh/CellFamily.h"
 
 #include "arcane/mesh/CellMerger.h"
 
@@ -216,10 +215,7 @@ findOrAllocOne(Int64 uid,ItemTypeInfo* type,bool& is_alloc)
 void CellFamily::
 preAllocate(Integer nb_item)
 {
-  Integer base_mem = ItemSharedInfo::COMMON_BASE_MEMORY;
-  Integer mem = base_mem * (nb_item+1);
-  info() << "Cellfamily: reserve=" << mem;
-  _reserveInfosMemory(mem);
+  ARCANE_UNUSED(nb_item);
 }
 
 /*---------------------------------------------------------------------------*/

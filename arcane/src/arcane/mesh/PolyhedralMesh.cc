@@ -75,9 +75,6 @@ class PolyhedralFamily : public ItemFamily{
     Integer wanted_size = 2*(nb_item+infos().nbItem());
     if (nb_hash<wanted_size)
       itemsMap().resize(wanted_size,true);
-    Integer base_mem = 1+ItemSharedInfo::COMMON_BASE_MEMORY;
-    Integer mem = base_mem * (nb_item+1);
-    _reserveInfosMemory(mem);
     m_empty_connectivity_indexes.resize(nb_item + nbItem(),0);
     m_empty_connectivity_nb_item.resize(nb_item + nbItem(), 0);
     _updateEmptyConnectivity();
