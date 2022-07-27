@@ -921,19 +921,9 @@ _checkNeedEndUpdate() const
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-_setDataIndexForItem(ItemInternal* item,Int32 data_index)
-{
-  item->setDataIndex(data_index);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemFamily::
-_setSharedInfoForItem(ItemInternal* item,ItemSharedInfo* isi,Int32 data_index)
+_setSharedInfoForItem(ItemInternal* item,ItemSharedInfo* isi)
 {
   item->setSharedInfo(isi);
-  _setDataIndexForItem(item,data_index);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1141,14 +1131,12 @@ readFromDump()
   {
     ArrayView<ItemSharedInfo*> item_shared_infos = m_item_shared_infos->itemSharedInfos();
     ItemInternalList items(m_infos.itemsInternal());
-    Integer data_index = 0;
     for( Integer i=0; i<nb_item; ++i ){
       Integer shared_data_index = items_shared_data_index[i];
       ItemSharedInfo* isi = item_shared_infos[shared_data_index];
       Int64 uid = (*m_items_unique_id)[i];
       ItemInternal* item = m_infos.allocOne(uid);
-      _setSharedInfoForItem(item,isi,data_index);
-      data_index += isi->neededMemory();
+      _setSharedInfoForItem(item,isi);
     }
   }
   // Supprime les entités du groupe total car elles vont être remises à jour
@@ -1606,9 +1594,6 @@ compactReferences()
   ItemInternalList items(m_infos.itemsInternal());
   Integer nb_item = items.size();
   Integer needed_memory = 0;
-  for( Integer i=0; i<nb_item; ++i ){
-    needed_memory += items[i]->neededMemory();
-  }
 
   info(4) << "CompactRefererences: family=" << fullName()
           << " old=" << old_mem << " new=" << needed_memory;
@@ -1619,7 +1604,7 @@ compactReferences()
   Integer current_index = 0;
   for( Integer i=0; i<nb_item; ++i ){
     ItemInternal* item = items[i];
-    Integer nb = item->neededMemory();
+    Integer nb = 0;
     item->_internalCopyAndSetDataIndex(new_data_ptr,current_index);
     current_index += nb;
   }
@@ -1656,17 +1641,7 @@ _checkValid()
 void ItemFamily::
 _reserveInfosMemory(Integer memory)
 {
-  Int32* old_ptr = m_items_data->data();
-  m_items_data->reserve(memory);
-  Int32* new_ptr = m_items_data->data();
-  if (old_ptr!=new_ptr){
-    info(4) << "RESIZE_ONE1 Size=" << m_items_data->size() << " capacity=" << m_items_data->capacity()
-            << " ptr=" << new_ptr << " name=" << m_name
-            << " var_size=" << m_internal_variables->m_items_data.size()
-            << " var_capacity=" << m_internal_variables->m_items_data._internalTrueData()->capacity()
-            << " ptr=" << m_internal_variables->m_items_data.data();
-    _checkValid();
-  }
+  ARCANE_UNUSED(memory);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1675,32 +1650,7 @@ _reserveInfosMemory(Integer memory)
 void ItemFamily::
 _resizeInfos(Integer new_size)
 {
-  Int32* old_ptr = m_items_data->data();
-  Integer old_size = m_items_data->size();
-  Integer old_capacity = m_items_data->capacity();
-  if (new_size>old_capacity){
-    if (new_size>5000000)
-      m_items_data->reserve((Integer)(new_size * 1.2));
-    else if (new_size>500000)
-      m_items_data->reserve((Integer)(new_size * 1.5));
-    else
-      m_items_data->reserve((Integer)(new_size * 2.0));
-  }
-  m_items_data->resize(new_size);
-  Int32* new_ptr = m_items_data->data();
-  if (old_ptr!=new_ptr){
-    info(4) << "RESIZE_ONE2 OldSize=" << old_size << " new_size=" << new_size
-            << " capacity=" << m_items_data->capacity()
-            << " ptr=" << new_ptr << " name=" << m_name
-            << " var_size=" << m_internal_variables->m_items_data.size()
-            << " var_capacity=" << m_internal_variables->m_items_data._internalTrueData()->capacity()
-            << " ptr=" << m_internal_variables->m_items_data.data()
-            << " old_size=" << old_size
-            << " new_size=" << m_items_data->size()
-            << " nb_item=" << m_infos.nbItem()
-            << " max_local_id=" << maxLocalId();
-    _checkValid();
-  }
+  ARCANE_UNUSED(new_size);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1709,9 +1659,8 @@ _resizeInfos(Integer new_size)
 Integer ItemFamily::
 _allocMany(Integer memory)
 {
-  Integer s = m_items_data->size();
-  _resizeInfos(s+memory);
-  return s;
+  ARCANE_UNUSED(memory);
+  return 0;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1733,7 +1682,7 @@ _copyInfos(ItemInternal* item,ItemSharedInfo* old_isi,ItemSharedInfo* new_isi)
   // Signale qu'il faudra compacter les entités au moment du dump
   m_item_need_prepare_dump = true;
 
-  Integer new_data_index = _allocMany(new_isi->neededMemory());
+  Integer new_data_index = 0;
   item->_internalCopyAndChangeSharedInfos(old_isi,new_isi,new_data_index);
 }
 
@@ -1811,8 +1760,7 @@ _allocateInfos(ItemInternal* item,Int64 uid,ItemSharedInfo* isi)
   // Il faut positionner le ItemSharedInfo avant le _allocMany
   // sinon les tests de vérification échouent.
   item->setSharedInfo(isi);
-  Integer new_data_index = _allocMany(isi->neededMemory());
-  _setSharedInfoForItem(item,isi,new_data_index);
+  _setSharedInfoForItem(item,isi);
   
   item->reinitialize(uid,m_default_sub_domain_owner,m_sub_domain_id);
   ++m_nb_allocate_info;

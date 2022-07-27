@@ -454,11 +454,15 @@ class ARCANE_MESH_EXPORT ItemFamily
  protected:
 
   virtual IItemInternalSortFunction* _defaultItemSortFunction();
+
+  ARCANE_DEPRECATED_REASON("Y2022: This method is a now a no-operation")
   void _reserveInfosMemory(Integer memory);
+  ARCANE_DEPRECATED_REASON("Y2022: This method is a now a no-operation")
   void _resizeInfos(Integer memory);
 
   ItemSharedInfo* _findSharedInfo(ItemTypeInfo* type);
 
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
   Integer _allocMany(Integer memory);
   void _setSharedInfosPtr(Integer* ptr);
   void _copyInfos(ItemInternal* item,ItemSharedInfo* old_isi,ItemSharedInfo* new_isi);
@@ -482,8 +486,7 @@ class ARCANE_MESH_EXPORT ItemFamily
  private:
   
   void _setSharedInfosNoCopy(ItemInternal* item,ItemSharedInfo* isi);
-  void _setDataIndexForItem(ItemInternal* item,Int32 data_index);
-  void _setSharedInfoForItem(ItemInternal* item,ItemSharedInfo* isi,Int32 data_index);
+  void _setSharedInfoForItem(ItemInternal* item,ItemSharedInfo* isi);
   void _updateItemsSharedFlag();
 
  protected:
