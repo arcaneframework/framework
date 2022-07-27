@@ -41,25 +41,26 @@ initSeed()
 }
 
 bool PDESRandomNumberGeneratorService::
-initSeed(RandomNumberGeneratorSeed seed)
+initSeed(ByteArrayView seed)
 {
-  if (seed.sizeOfSeed() != m_size_of_seed) {
+  RNGSeedHelper helper(seed);
+  if (helper.sizeOfSeed() != m_size_of_seed) {
     return false;
   }
-  seed.seed(m_seed);
+  helper.value(m_seed);
   return true;
 }
 
-RandomNumberGeneratorSeed PDESRandomNumberGeneratorService::
-seed()
+ByteConstArrayView PDESRandomNumberGeneratorService::
+viewSeed()
 {
-  return RandomNumberGeneratorSeed(m_seed, m_size_of_seed);
+  return RNGSeedHelper(&m_seed).constView();
 }
 
-RandomNumberGeneratorSeed PDESRandomNumberGeneratorService::
+ByteUniqueArray PDESRandomNumberGeneratorService::
 emptySeed()
 {
-  return RandomNumberGeneratorSeed(0, m_size_of_seed);
+  return ByteUniqueArray(m_size_of_seed);
 }
 
 Integer PDESRandomNumberGeneratorService::
@@ -69,7 +70,7 @@ neededSizeOfSeed()
 }
 
 // Les sauts négatifs sont supportés.
-RandomNumberGeneratorSeed PDESRandomNumberGeneratorService::
+ByteUniqueArray PDESRandomNumberGeneratorService::
 generateRandomSeed(Integer leap)
 {
   // Pas besoin de faire de saut si leap == 0.
@@ -78,26 +79,26 @@ generateRandomSeed(Integer leap)
   }
   Int64 spawned_seed = _hashState(m_seed);
   _ran4(&m_seed, 0);
-  return RandomNumberGeneratorSeed(spawned_seed, m_size_of_seed);
+
+  return RNGSeedHelper(&spawned_seed).copy();
 }
 
 // Les sauts négatifs sont supportés.
-RandomNumberGeneratorSeed PDESRandomNumberGeneratorService::
-generateRandomSeed(RandomNumberGeneratorSeed* parent_seed, Integer leap)
+ByteUniqueArray PDESRandomNumberGeneratorService::
+generateRandomSeed(ByteArrayView parent_seed, Integer leap)
 {
-  Int64 i_seed;
-  if (!parent_seed->seed(i_seed, false)) {
-    ARCANE_FATAL("Bad size of seed");
+  if(parent_seed.size() != m_size_of_seed) {
+    ARCANE_FATAL("Erreur de taille de graine.");
   }
+  Int64* i_seed = (Int64*)parent_seed.data();
 
   // Pas besoin de faire de saut si leap == 0.
   if (leap != 0) {
-    _ran4(&i_seed, leap - 1);
+    _ran4(i_seed, leap - 1);
   }
-  Int64 spawned_seed = _hashState(i_seed);
-  _ran4(&i_seed, 0);
-  parent_seed->setSeed(i_seed);
-  return RandomNumberGeneratorSeed(spawned_seed, m_size_of_seed);
+  Int64 spawned_seed = _hashState(*i_seed);
+  _ran4(i_seed, 0);
+  return RNGSeedHelper(&spawned_seed).copy();
 }
 
 // Les sauts négatifs sont supportés.
@@ -109,14 +110,13 @@ generateRandomNumber(Integer leap)
 
 // Les sauts négatifs sont supportés.
 Real PDESRandomNumberGeneratorService::
-generateRandomNumber(RandomNumberGeneratorSeed* seed, Integer leap)
+generateRandomNumber(ByteArrayView seed, Integer leap)
 {
-  Int64 i_seed;
-  if (!seed->seed(i_seed, false)) {
-    ARCANE_FATAL("Bad size of seed");
+  if(seed.size() != m_size_of_seed) {
+    ARCANE_FATAL("Erreur de taille de graine.");
   }
-  Real fin = _ran4(&i_seed, leap);
-  seed->setSeed(i_seed);
+  Int64* i_seed = (Int64*)seed.data();
+  Real fin = _ran4(i_seed, leap);
   return fin;
 }
 

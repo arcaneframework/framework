@@ -30,101 +30,64 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /**
- * @brief Classe représentant une graine.
+ * @brief Classe permettant de manipuler facilement une graine.
  * 
- * Une graine est définie comme étant un tableau de Bytes.
- * Sa taille est définie grâce à un des constructeurs ou grâce à la méthode
- * "resize()".
+ * Une graine est représentée par un tableau de Byte.
+ * Cette classe utilise un ArrayView de ce tableau.
  * 
- * Une fois que la taille du tableau a été définie,
- *  - le seul moyen de la modifier est d'appeler "resize()",
- *  - si l'on appelle "setSeed()", la valeur sera rognée si sa taille est trop
- *    grande ou des "0x00" seront ajoutés à la fin du tableau si sa taille est 
- *    trop petite (attention aux entiers non signés négatifs).
- *  - si l'on appelle "seed()" avec un type de taille différente à la taille
- *    du tableau, on aura le même comportement que "setSeed()" (mais avec 
- *    le paramètre [OUT]).
+ * Cette classe permet de définir une valeur dans le tableau et
+ * de récupérer cette valeur (autres autres choses).
  * 
- * L'utilisation normal d'une RNGSeed veut que la taille ne soit jamais modifiée
- * après coup. Pour être sûr de la taille de la seed lors de l'init, 
- * IRandomNumberGenerator possède une méthode "emptySeed()" permettant de
- * récupérer une RNGSeed vide de taille correcte pour l'implémentation. Un appel
- * à "seed_vide.setSeed(T)" produira donc une seed de taille correct, quelque
- * soit le type T de la valeur.
- *   
+ * Cette classe ne stocke pas le tableau mais uniquement
+ * un ArrayView de ce tableau.
+ * 
  */
-class ARCANE_CORE_EXPORT RandomNumberGeneratorSeed
+class ARCANE_CORE_EXPORT RNGSeedHelper
 {
  public:
+
   /**
-   * @brief Constructeur avec graine de type T et taille du tableau de Bytes.
+   * @brief Constructeur de la classe.
    * 
-   * - Si sizeof(T) > sizeOfSeed, alors la valeur sera rognée.
-   * - Si sizeof(T) < sizeOfSeed et T=signed alors la valeur changera et
-   *   deviendra positive.
-   * - Si sizeof(T) = sizeOfSeed (ou sizeof(T) < sizeOfSeed et T=unsigned),
-   *   parfait !
+   * @param av Un ArrayView de tableau représentant une graine.
+   */
+  RNGSeedHelper(ByteArrayView av)
+  {
+    m_seed = av;
+  }
+
+  /**
+   * @brief Constructeur de classe.
    * 
-   * @tparam T Le type de graine (Int64 par ex).
-   * @param value La valeur de la graine.
-   * @param sizeOfSeed La taille de la graine.
+   * @tparam T Un type de base.
+   * @param var Un pointeur vers la graine 
+   *            (attention, ne fait pas une copie de la valeur !)
    */
   template <class T>
-  explicit RandomNumberGeneratorSeed(T value, Integer sizeOfSeed)
+  RNGSeedHelper(T* var)
   {
-    resize(sizeOfSeed);
-    setSeed(value);
+    m_seed = ByteArrayView(sizeof(T), (Byte*)var);
   }
 
-  /**
-   * @brief Constructeur copie.
-   * 
-   * @param seed La graine source.
-   */
-  RandomNumberGeneratorSeed(const RandomNumberGeneratorSeed& seed)
-  {
-    m_seed.copy(seed.constView());
-  }
-
-  /**
-   * @brief Constructeur move.
-   * 
-   * @param seed La graine source.
-   */
-  RandomNumberGeneratorSeed(RandomNumberGeneratorSeed&& seed)
-  {
-    *this = std::move(seed);
-  }
-
-  /**
-   * @brief Constructeur par défaut.
-   * Nécessitera un appel à resize().
-   */
-  RandomNumberGeneratorSeed()
-  : m_seed(0)
-  {}
-
-  virtual ~RandomNumberGeneratorSeed() {}
+  virtual ~RNGSeedHelper() = default;
 
  public:
+
   /**
-   * @brief Méthode permettant de définir une graine.
+   * @brief Méthode permettant de définir une valeur dans la graine.
    * 
-   * Attention, le tableau interne doit avoir une taille >= 1
-   * avant l'appel à cette méthode.
-   * 
-   * @tparam T Le type de graine.
-   * @param value La valeur de la graine.
-   * @return true Si la graine a pu être construite.
-   * @return false Si la graine n'a pas pu être construite.
+   * @tparam T Le type de valeur.
+   * @param value_in La futur valeur de la graine.
+   * @return true Si la valeur a pu être attribuée.
+   * @return false Si la valeur n'a pas pu être attribuée.
    */
   template <class T>
-  bool setSeed(T value)
+  bool setValue(T value_in)
   {
-    if (m_seed.size() == 0) {
+    if (m_seed.empty()) {
       return false;
     }
-    memcpy(m_seed.data(), &value, std::min(m_seed.size(), (Integer)sizeof(T)));
+    memcpy(m_seed.data(), &value_in, std::min(m_seed.size(), (Integer)sizeof(T)));
     for (Integer i = sizeof(T); i < m_seed.size(); i++) {
       m_seed[i] = 0x00;
     }
@@ -135,20 +98,20 @@ class ARCANE_CORE_EXPORT RandomNumberGeneratorSeed
    * @brief Méthode permettant de récupérer la valeur de la graine.
    * 
    * @tparam T Le type de la graine.
-   * @param value [OUT] La valeur de la graine.
+   * @param value_out [OUT] La valeur de la graine.
    * @param without_size_check Si le rognage de la valeur est autorisé.
-   * @return true Si la graine a pu être placé.
-   * @return false Si la graine n'a pas pu être placé ou si le tableau 
+   * @return true Si la valeur a pu être récupérée.
+   * @return false Si la valeur n'a pas pu être récupérée ou si le tableau 
    *               a une taille nulle.
    */
   template <class T>
-  bool seed(T& value, bool without_size_check = true) const
+  bool value(T& value_out, bool without_size_check = true) const
   {
-    if (m_seed.size() == 0 || (!without_size_check && sizeof(T) != m_seed.size())) {
+    if (m_seed.empty() || (!without_size_check && sizeof(T) != m_seed.size())) {
       return false;
     }
-    value = 0;
-    memcpy(&value, m_seed.data(), std::min(m_seed.size(), (Integer)sizeof(T)));
+    value_out = 0;
+    memcpy(&value_out, m_seed.data(), std::min(m_seed.size(), (Integer)sizeof(T)));
     return true;
   }
 
@@ -156,20 +119,20 @@ class ARCANE_CORE_EXPORT RandomNumberGeneratorSeed
    * @brief Méthode permettant de récupérer la valeur de la graine.
    * 
    * @tparam T Le type de la graine.
-   * @param value [OUT] La valeur de la graine.
+   * @param value_out [OUT] La valeur de la graine.
    * @param without_size_check Si le rognage de la valeur est autorisé.
-   * @return true Si la graine a pu être placé.
-   * @return false Si la graine n'a pas pu être placé ou si le tableau 
+   * @return true Si la valeur a pu être récupérée.
+   * @return false Si la valeur n'a pas pu être récupérée ou si le tableau 
    *               a une taille nulle.
    */
   template <class T>
-  bool seed(T* value, bool without_size_check = true) const
+  bool value(T* value_out, bool without_size_check = true) const
   {
-    if (m_seed.size() == 0 || (sizeof(T) != m_seed.size() && !without_size_check)) {
+    if (m_seed.empty() || (sizeof(T) != m_seed.size() && !without_size_check)) {
       return false;
     }
-    *value = 0;
-    memcpy(value, m_seed.data(), std::min(m_seed.size(), (Integer)sizeof(T)));
+    *value_out = 0;
+    memcpy(value_out, m_seed.data(), std::min(m_seed.size(), (Integer)sizeof(T)));
     return true;
   }
 
@@ -184,8 +147,7 @@ class ARCANE_CORE_EXPORT RandomNumberGeneratorSeed
   }
 
   /**
-   * @brief Méthode permettant de récupérer une vue constante sur le tableau
-   * de Byte interne.
+   * @brief Méthode permettant de récupérer une vue constante.
    * 
    * @return ByteConstArrayView La vue.
    */
@@ -195,88 +157,42 @@ class ARCANE_CORE_EXPORT RandomNumberGeneratorSeed
   }
 
   /**
-   * @brief Méthode permettant de modifier la taille du tableau de Byte interne.
+   * @brief Méthode permettant de récupérer une vue.
    * 
-   * Si la taille voulu est plus petite que la taille d'origine, il y aura
-   * une perte de donnée. A faire uniquement si c'est voulu.
-   * Si la taille voulu est plus grande que la taille d'origine, il y aura
-   * un ajout de 0x00 au début (attention aux entiers signés négatifs).
-   * 
-   * @param sizeOf La nouvelle taille.
-   * @return true Si la taille a bien été modifiée.
-   * @return false Si la taille n'a pas été modifiée.
+   * @return ByteArrayView La vue.
    */
-  bool resize(Integer sizeOf)
+  ByteArrayView view()
   {
-    m_seed.resize(sizeOf, 0x00);
-    return true;
-  }
-
-  /**
-   * @brief Opérateur de copie.
-   * 
-   * @param seed La graine source.
-   * @return RandomNumberGeneratorSeed& La graine destination.
-   */
-  RandomNumberGeneratorSeed& operator=(const RandomNumberGeneratorSeed& seed)
-  {
-    if (this == &seed) {
-      return *this;
-    }
-
-    m_seed.copy(seed.constView());
-    return *this;
+    return m_seed;
   }
 
   /**
    * @brief Opérateur de copie depuis une valeur de graine.
    * 
-   * Attention, le tableau interne doit avoir une taille >= 1
-   * avant l'appel à cette méthode.
-   * 
    * @tparam T Le type de la graine.
    * @param value La valeur de la graine.
-   * @return RandomNumberGeneratorSeed& La graine destination.
+   * @return RNGSeedHelper& La graine destination.
    */
   template <class T>
-  RandomNumberGeneratorSeed& operator=(T value)
+  RNGSeedHelper& operator=(T new_value)
   {
-    setSeed(value);
+    setValue(new_value);
     return *this;
   }
 
   /**
-   * @brief Opérateur de comparaison.
+   * @brief Méthode permettant de récupérer une copie du
+   * tableau de Byte.
    * 
-   * @param seed La graine à comparer.
-   * @return true Si les deux graines sont identiques.
-   * @return false Si les deux graines ne sont pas identiques.
+   * @return ByteUniqueArray La copie du tableau de Byte.
    */
-  bool operator==(const RandomNumberGeneratorSeed& seed) const
+  ByteUniqueArray copy()
   {
-    ByteConstArrayView my_data = constView();
-    ByteConstArrayView other_data = seed.constView();
-
-    if (my_data != other_data) {
-      return false;
-    }
-    return true;
-  }
-
-  /**
-   * @brief Opérateur de comparaison.
-   * 
-   * @param seed La graine à comparer.
-   * @return true Si les deux graines ne sont pas identiques.
-   * @return false Si les deux graines sont identiques.
-   */
-  bool operator!=(const RandomNumberGeneratorSeed& seed) const
-  {
-    return !operator==(seed);
+    return ByteUniqueArray(m_seed);
   }
 
  protected:
-  ByteUniqueArray m_seed;
+  ByteArrayView m_seed;
 };
 
 /**
@@ -309,24 +225,25 @@ class ARCANE_CORE_EXPORT IRandomNumberGenerator
    * @return true Si l'initialisation a bien eu lieu.
    * @return false Si l'initialisation n'a pas eu lieu.
    */
-  virtual bool initSeed(RandomNumberGeneratorSeed seed) = 0;
+  virtual bool initSeed(ByteArrayView seed) = 0;
 
   /**
-   * @brief Méthode permettant de récupérer la graine actuelle.
+   * @brief Méthode permettant de récupérer une vue constante sur la
+   * graine actuelle.
    * 
-   * @return Int64 La graine.
+   * @return ByteArrayView La graine.
    */
-  virtual RandomNumberGeneratorSeed seed() = 0;
+  virtual ByteConstArrayView viewSeed() = 0;
 
   /**
    * @brief Méthode permettant de récupérer une graine vide de bonne taille.
    * 
-   * @return Int64 La graine vide.
+   * @return ByteUniqueArray La graine vide.
    */
-  virtual RandomNumberGeneratorSeed emptySeed() = 0;
+  virtual ByteUniqueArray emptySeed() = 0;
 
   /**
-   * @brief Méthode permettant de savoir la taille de seed nécessaire
+   * @brief Méthode permettant de connaitre la taille de seed nécessaire
    * pour l'implémentation.
    * 
    * @return Integer La taille de seed nécessaire (en octet).
@@ -347,9 +264,9 @@ class ARCANE_CORE_EXPORT IRandomNumberGenerator
    * graine "parent".
    * 
    * @param leap Le saut à effectuer (0 = la graine n+1+0 / 1 = la graine n+1+1).
-   * @return Int64 La nouvelle graine généré à partir de la graine en mémoire.
+   * @return ByteUniqueArray La nouvelle graine généré à partir de la graine en mémoire.
    */
-  virtual RandomNumberGeneratorSeed generateRandomSeed(Integer leap = 0) = 0;
+  virtual ByteUniqueArray generateRandomSeed(Integer leap = 0) = 0;
 
   /**
    * @brief Méthode permettant de générer une graine "enfant" à partir d'une
@@ -358,11 +275,11 @@ class ARCANE_CORE_EXPORT IRandomNumberGenerator
    * Cette méthode n'utilise pas la graine en mémoire mais la graine en paramètre.
    * Si la graine en paramètre n'a pas la bonne taille, une erreur sera émise.
    * 
-   * @param parent_seed [IN] La graine "parent".
+   * @param parent_seed [IN/OUT] La graine "parent".
    * @param leap Le saut à effectuer (0 = la graine n+1+0 / 1 = la graine n+1+1).
-   * @return Int64 La nouvelle graine généré à partir de la graine "parent".
+   * @return ByteUniqueArray La nouvelle graine généré à partir de la graine "parent".
    */
-  virtual RandomNumberGeneratorSeed generateRandomSeed(RandomNumberGeneratorSeed* parent_seed, Integer leap = 0) = 0;
+  virtual ByteUniqueArray generateRandomSeed(ByteArrayView parent_seed, Integer leap = 0) = 0;
 
   /**
    * @brief Méthode permettant de savoir si les sauts sont permis sur le
@@ -389,11 +306,11 @@ class ARCANE_CORE_EXPORT IRandomNumberGenerator
    * Cette méthode n'utilise pas la graine en mémoire mais la graine en paramètre.
    * Si la graine en paramètre n'a pas la bonne taille, une erreur sera émise.
    * 
-   * @param seed [IN] La graine.
+   * @param seed [IN/OUT] La graine.
    * @param leap Le saut à effectuer (0 = le nombre n+1+0 / 1 = le nombre n+1+1).
    * @return Real Le nombre généré (entre 0 et 1).
    */
-  virtual Real generateRandomNumber(RandomNumberGeneratorSeed* seed, Integer leap = 0) = 0;
+  virtual Real generateRandomNumber(ByteArrayView seed, Integer leap = 0) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
