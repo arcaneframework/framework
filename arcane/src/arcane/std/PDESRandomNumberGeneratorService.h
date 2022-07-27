@@ -42,7 +42,6 @@ class PDESRandomNumberGeneratorService
   PDESRandomNumberGeneratorService(const ServiceBuildInfo& sbi)
   : ArcanePDESRandomNumberGeneratorObject(sbi)
   , m_seed(4294967297)
-  , m_size_of_seed(sizeof(Int64))
   {
     m_with_option = (sbi.creationType() == ST_CaseOption);
   }
@@ -51,26 +50,19 @@ class PDESRandomNumberGeneratorService
 
  public:
   bool initSeed() override;
-  bool initSeed(RandomNumberGeneratorSeed seed) override;
   bool initSeed(ByteArrayView seed) override;
 
-  RandomNumberGeneratorSeed seed() override;
-  RandomNumberGeneratorSeed emptySeed() override;
-  ByteUniqueArray emptySeedBUA() override;
+  ByteUniqueArray emptySeed() override;
   ByteConstArrayView viewSeed() override;
 
   Integer neededSizeOfSeed() override;
 
   bool isLeapSeedSupported() override { return true; };
-  RandomNumberGeneratorSeed generateRandomSeed(Integer leap) override;
-  ByteUniqueArray generateRandomSeedBUA(Integer leap = 0) override;
-
-  RandomNumberGeneratorSeed generateRandomSeed(RandomNumberGeneratorSeed* parent_seed, Integer leap) override;
+  ByteUniqueArray generateRandomSeed(Integer leap = 0) override;
   ByteUniqueArray generateRandomSeed(ByteArrayView parent_seed, Integer leap = 0) override;
 
   bool isLeapNumberSupported() override { return true; };
   Real generateRandomNumber(Integer leap) override;
-  Real generateRandomNumber(RandomNumberGeneratorSeed* seed, Integer leap) override;
   Real generateRandomNumber(ByteArrayView seed, Integer leap = 0) override;
 
  protected:
@@ -82,7 +74,7 @@ class PDESRandomNumberGeneratorService
 
  protected:
   Int64 m_seed;
-  Integer m_size_of_seed;
+  const Integer m_size_of_seed = sizeof(Int64);
   bool m_with_option;
 };
 

@@ -54,14 +54,14 @@ testHardcodedValues()
 void PDESRandomNumberGeneratorUnitTest::
 testHardcodedSeeds()
 {
-  ByteUniqueArray r_seed = ptrRNG->emptySeedBUA();
+  ByteUniqueArray r_seed = ptrRNG->emptySeed();
   RNGSeedHelper(r_seed).setValue(hardcoded_seed);
   ptrRNG->initSeed(r_seed);
 
   ByteUniqueArray initial_seed(r_seed);
 
   for (Integer i = 0; i < hardcoded_seeds.size(); i++) {
-    ByteUniqueArray val11 = ptrRNG->generateRandomSeedBUA();
+    ByteUniqueArray val11 = ptrRNG->generateRandomSeed();
     ByteUniqueArray val22 = ptrRNG->generateRandomSeed(initial_seed);
 
     // On peut mettre direct Int64 vu que l'on teste l'implem PDESRNGS.

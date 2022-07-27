@@ -95,19 +95,19 @@ testLeepSeeds()
   UniqueArray<ByteUniqueArray> result(100);
 
   for (Integer i = 0; i < result.size(); i++) {
-    result[i] = ptrRNG->generateRandomSeedBUA();
+    result[i] = ptrRNG->generateRandomSeed();
   }
 
   ptrRNG->initSeed(r_seed);
 
   for (Integer i = 2; i < result.size(); i += 3) {
-    ByteUniqueArray seed = ptrRNG->generateRandomSeedBUA(2);
+    ByteUniqueArray seed = ptrRNG->generateRandomSeed(2);
     ASSERT_TRUE(result[i] == seed);
   }
 
   // On teste aussi les sauts négatifs.
   for (Integer i = result.size() - 3; i >= 0; i--) {
-    ByteUniqueArray seed = ptrRNG->generateRandomSeedBUA(-2);
+    ByteUniqueArray seed = ptrRNG->generateRandomSeed(-2);
     ASSERT_TRUE(result[i] == seed);
   }
 }

@@ -11,8 +11,8 @@
    class-tear-down="tearDownForClass" 
    test-tear-down="tearDown"
   >
-    <test name="Test sauts de valeurs" method-name="testHardcodedValues"/>
-    <test name="Test sauts de graines" method-name="testHardcodedSeeds"/>
+    <test name="Test valeurs générées" method-name="testHardcodedValues"/>
+    <test name="Test graines générées" method-name="testHardcodedSeeds"/>
   </tests> 
 
 
