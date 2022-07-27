@@ -113,7 +113,6 @@ class ItemFamily::Variables
             const String& family_name,
             eItemKind item_kind,
             const String& shared_data_name,
-            const String& data_name,
             const String& unique_ids_name,
             const String& items_owner_name,
             const String& items_flags_name,
@@ -127,7 +126,6 @@ class ItemFamily::Variables
             const String& child_meshes_name,
             const String& child_families_name)
   : m_items_shared_data_index(VariableBuildInfo(mesh,shared_data_name,IVariable::PPrivate)),
-    m_items_data(VariableBuildInfo(mesh,data_name,IVariable::PPrivate)),
     m_items_unique_id(VariableBuildInfo(mesh,unique_ids_name,IVariable::PPrivate)),
     m_items_owner(VariableBuildInfo(mesh,items_owner_name,IVariable::PPrivate)),
     m_items_flags(VariableBuildInfo(mesh,items_flags_name,IVariable::PPrivate)),
@@ -150,7 +148,6 @@ class ItemFamily::Variables
   //! Indice dans le tableau des ItemSharedInfo pour chaque entité.
   // TODO: utiliser un Int16 lorsqu'on aura limité le nombre de ItemSharedInfo sur un Int16
   VariableArrayInteger m_items_shared_data_index;
-  VariableArrayInt32 m_items_data;
   //! Contient les uniqueIds() des entités de cette famille
   VariableArrayInt64 m_items_unique_id;
   //! Contient les owner() des entités de cette famille
@@ -291,7 +288,6 @@ build()
   // NOTE: si on change les noms ici, il faut aussi les changer dans MeshStats.cc
   // sinon les statistiques ne seront pas fiables.
   {
-    String var_data_name(_variableName("FamilyItemsData"));
     String var_unique_ids_name(_variableName("FamilyUniqueIds"));
     String var_owner_name(_variableName("FamilyOwner"));
     String var_flags_name(_variableName("FamilyFlags"));
@@ -306,26 +302,19 @@ build()
     String var_child_meshes_name(_variableName("ChildMeshesName"));
     String var_child_families_name(_variableName("ChildFamiliesName"));
     m_internal_variables = new Variables(m_mesh,name(),itemKind(),var_count_name,
-                                         var_data_name,var_unique_ids_name,var_owner_name,
+                                         var_unique_ids_name,var_owner_name,
                                          var_flags_name,var_nb_parent_name,var_groups_name,
                                          var_current_id_name,var_new_owner_name,
                                          var_parent_mesh_name,var_parent_family_name,
                                          var_parent_family_depth_name,
                                          var_child_meshes_name,
                                          var_child_families_name);
-    m_items_data = &m_internal_variables->m_items_data._internalTrueData()->_internalDeprecatedValue();
-    m_items_data->reserve(1000);
     m_items_unique_id = &m_internal_variables->m_items_unique_id._internalTrueData()->_internalDeprecatedValue();
     m_items_owner = &m_internal_variables->m_items_owner._internalTrueData()->_internalDeprecatedValue();
     m_items_flags = &m_internal_variables->m_items_flags._internalTrueData()->_internalDeprecatedValue();
     m_items_nb_parent = &m_internal_variables->m_items_nb_parent._internalTrueData()->_internalDeprecatedValue();
     _updateItemViews();
   }
-
-  // Pour pouvoir remettre à jour les ItemSharedInfos après relecture
-  m_observers.addObserver(this,
-                          &ItemFamily::_notifyDataIndexChanged,
-                          m_internal_variables->m_items_data.variable()->readObservable());
 
   m_variable_synchronizer = ParallelMngUtils::createSynchronizerRef(pm,this);
 
@@ -519,8 +508,6 @@ _partialEndUpdate()
   m_item_need_prepare_dump = true;
   _computeConnectivityInfo(m_local_connectivity_info);
   ++m_current_id;
-  m_internal_variables->m_items_data.variable()->syncReferences();
-  m_items_data = &m_internal_variables->m_items_data._internalTrueData()->_internalDeprecatedValue();
 
   // Update "external" connectivities
   if (m_connectivity_mng)
@@ -1058,7 +1045,6 @@ readFromDump()
   Integer nb_item = items_shared_data_index.size();
   info(4) << "ItemFamily::readFromDump(): " << fullName()
           << " count=" << nb_item
-          << " data=" << m_internal_variables->m_items_data.size()
           << " currentid=" << m_current_id
           << " saveid=" << m_internal_variables->m_current_id();
 
@@ -1556,15 +1542,6 @@ _checkValid()
     if (m_sub_domain_id!=part_rank)
       ARCANE_FATAL("Family {0} Bad value for partRank ({1}) expected={2}",
                    fullName(),m_sub_domain_id,part_rank);
-  }
-  // Vérifie que 'm_items_data' et 'm_internal_variables->m_items_data'
-  // sont les mêmes
-  {
-    Int32* i1 = m_items_data->data();
-    Int32* i2 = m_internal_variables->m_items_data._internalTrueData()->_internalDeprecatedValue().data();
-    if (i1!=i2){
-      ARCANE_FATAL("ItemFamily: {0} : items_data invalid ptr1={1} ptr2={2}",m_name,i1,i2);
-    }
   }
 }
 

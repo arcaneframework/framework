@@ -410,7 +410,6 @@ class ARCANE_MESH_EXPORT ItemFamily
 
  private:
 
-  Int32Array* m_items_data = nullptr;
   Int64Array* m_items_unique_id = nullptr;
   Int32Array* m_items_owner = nullptr;
   Int32Array* m_items_flags = nullptr;
