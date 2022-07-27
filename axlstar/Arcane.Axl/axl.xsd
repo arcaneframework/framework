@@ -307,6 +307,7 @@
       <xs:enumeration value="real3" />
       <xs:enumeration value="real3x3" />
       <xs:enumeration value="bool" />
+      <xs:enumeration value="byte" />
       <xs:enumeration value="ustring" />
     </xs:restriction>
   </xs:simpleType>

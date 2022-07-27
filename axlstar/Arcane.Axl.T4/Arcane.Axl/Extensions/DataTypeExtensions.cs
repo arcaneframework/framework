@@ -14,6 +14,8 @@ namespace Arcane.Axl
       switch(type){
       case Xsd.DataType.@bool:
         return "Bool";
+      case Xsd.DataType.@byte:
+        return "Byte";
       case Xsd.DataType.int16:
         return "Int16";
       case Xsd.DataType.int32:

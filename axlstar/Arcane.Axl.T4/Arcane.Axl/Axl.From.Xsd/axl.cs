@@ -1286,6 +1286,9 @@ namespace Arcane.Axl.Xsd {
         
         /// <remarks/>
         @bool,
+
+        /// <remarks/>
+        @byte,
         
         /// <remarks/>
         ustring,
