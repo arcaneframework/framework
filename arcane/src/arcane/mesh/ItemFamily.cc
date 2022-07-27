@@ -921,30 +921,6 @@ _checkNeedEndUpdate() const
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-_setSharedInfoForItem(ItemInternal* item,ItemSharedInfo* isi)
-{
-  item->setSharedInfo(isi);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Modifie le ItemInternal::sharedInfo() en considérant que seul
- * le nombre d'entités connecté change.
- *
- * Dans ce cas, il faut uniquement mettre à jour le nombre d'entités
- * connectées si on utilise les anciennes connectivités.
- */
-void ItemFamily::
-_setSharedInfosNoCopy(ItemInternal* item,ItemSharedInfo* isi)
-{
-  item->setSharedInfo(isi);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemFamily::
 prepareForDump()
 {
   info(4) << "ItemFamily::prepareFromDump(): " << fullName()
@@ -1134,7 +1110,7 @@ readFromDump()
       ItemSharedInfo* isi = item_shared_infos[shared_data_index];
       Int64 uid = (*m_items_unique_id)[i];
       ItemInternal* item = m_infos.allocOne(uid);
-      _setSharedInfoForItem(item,isi);
+      item->setSharedInfo(isi);
     }
   }
   // Supprime les entités du groupe total car elles vont être remises à jour
@@ -1634,13 +1610,12 @@ _findSharedInfo(ItemTypeInfo* type)
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-_copyInfos(ItemInternal* item,ItemSharedInfo* old_isi,ItemSharedInfo* new_isi)
+_copyInfos(ItemInternal* item,ItemSharedInfo*,ItemSharedInfo* new_isi)
 {
   // Signale qu'il faudra compacter les entités au moment du dump
   m_item_need_prepare_dump = true;
 
-  Integer new_data_index = 0;
-  item->_internalCopyAndChangeSharedInfos(old_isi,new_isi,new_data_index);
+  item->setSharedInfo(new_isi);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1651,7 +1626,7 @@ _updateSharedInfoAdded(ItemInternal* item)
 {
   ItemSharedInfo* old_isi = item->sharedInfo();
   ItemSharedInfo* new_isi = _findSharedInfo(old_isi->m_item_type);
-  _setSharedInfosNoCopy(item,new_isi);
+  item->setSharedInfo(new_isi);
 
   m_need_prepare_dump = true;
   new_isi->addReference();
@@ -1669,7 +1644,7 @@ _updateSharedInfoRemoved4(ItemInternal* item)
 
   ItemSharedInfo* old_isi = item->sharedInfo();
   ItemSharedInfo* new_isi = _findSharedInfo(old_isi->m_item_type);
-  _setSharedInfosNoCopy(item,new_isi);
+  item->setSharedInfo(new_isi);
 
   new_isi->addReference();
   old_isi->removeReference();
@@ -1714,10 +1689,8 @@ _allocateInfos(ItemInternal* item,Int64 uid,ItemSharedInfo* isi)
       _updateItemViews();
     (*m_items_unique_id)[local_id] = uid;
   }
-  // Il faut positionner le ItemSharedInfo avant le _allocMany
-  // sinon les tests de vérification échouent.
+
   item->setSharedInfo(isi);
-  _setSharedInfoForItem(item,isi);
   
   item->reinitialize(uid,m_default_sub_domain_owner,m_sub_domain_id);
   ++m_nb_allocate_info;

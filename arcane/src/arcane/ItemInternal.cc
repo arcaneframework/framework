@@ -207,20 +207,9 @@ _setFaceBackAndFrontCells(Int32 back_cell_lid,Int32 front_cell_lid)
 /*---------------------------------------------------------------------------*/
 
 void ItemInternal::
-_internalCopyAndChangeSharedInfos(ItemSharedInfo*,ItemSharedInfo* new_isi,Integer new_data_index)
+setDataIndex(Integer)
 {
-  ItemInternal* item = this;
-  item->setSharedInfo(new_isi);
-  item->setDataIndex(new_data_index);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemInternal::
-_internalCopyAndSetDataIndex(Int32*,Int32 data_index)
-{
-  setDataIndex(data_index);
+  ARCANE_FATAL("This method is no longer valid");
 }
 
 /*---------------------------------------------------------------------------*/

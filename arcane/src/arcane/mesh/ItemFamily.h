@@ -463,7 +463,7 @@ class ARCANE_MESH_EXPORT ItemFamily
   ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
   Integer _allocMany(Integer memory);
   void _setSharedInfosPtr(Integer* ptr);
-  void _copyInfos(ItemInternal* item,ItemSharedInfo* old_isi,ItemSharedInfo* new_isi);
+  void _copyInfos(ItemInternal* item,ItemSharedInfo*,ItemSharedInfo* new_isi);
   void _checkValid();
   void _checkValidConnectivity();
   void _notifyDataIndexChanged();
@@ -483,8 +483,6 @@ class ARCANE_MESH_EXPORT ItemFamily
 
  private:
   
-  void _setSharedInfosNoCopy(ItemInternal* item,ItemSharedInfo* isi);
-  void _setSharedInfoForItem(ItemInternal* item,ItemSharedInfo* isi);
   void _updateItemsSharedFlag();
 
  protected:

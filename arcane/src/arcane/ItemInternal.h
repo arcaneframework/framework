@@ -390,10 +390,9 @@ class ARCANE_CORE_EXPORT ItemInternal
   static ItemInternal nullItemInternal;
   static ItemInternal* nullItem() { return &nullItemInternal; }
  public:
-  ItemInternal() : m_local_id(NULL_ITEM_LOCAL_ID), m_data_index(0),
-  m_shared_info(&ItemSharedInfo::nullItemSharedInfo)
+  ItemInternal() : m_local_id(NULL_ITEM_LOCAL_ID),  m_shared_info(&ItemSharedInfo::nullItemSharedInfo)
 #ifndef ARCANE_USE_SHAREDINFO_CONNECTIVITY
-  , m_connectivity(&ItemInternalConnectivityList::nullInstance)
+ , m_connectivity(&ItemInternalConnectivityList::nullInstance)
 #endif
   {}
  public:
@@ -659,12 +658,8 @@ class ARCANE_CORE_EXPORT ItemInternal
 
  public:
 
-  Int32 dataIndex() { return m_data_index; }
-
- private:
-
-  ARCANE_DEPRECATED_REASON("Y2022: This method always returns 'nullptr'")
-  Int32* dataPtr() { return nullptr; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always returns 0")
+  Int32 dataIndex() { return 0; }
 
  public:
 
@@ -722,7 +717,8 @@ class ARCANE_CORE_EXPORT ItemInternal
  public:
 
   void setLocalId(Int32 local_id) { m_local_id = local_id; }
-  void setDataIndex(Integer index) { m_data_index = index; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception.")
+  void setDataIndex(Integer);
   void setSharedInfo(ItemSharedInfo* shared_infos)
   {
     m_shared_info = shared_infos;
@@ -773,10 +769,6 @@ class ARCANE_CORE_EXPORT ItemInternal
    * plus de mailles connectées.
    */
   void _setFaceBackAndFrontCells(Int32 back_cell_lid,Int32 front_cell_lid);
-
- public:
-  void _internalCopyAndChangeSharedInfos(ItemSharedInfo* old_isi,ItemSharedInfo* new_isi,Integer new_data_index);
-  void _internalCopyAndSetDataIndex(Int32* data_ptr,Int32 data_index);
   //@}
 
  private:
@@ -788,7 +780,7 @@ class ARCANE_CORE_EXPORT ItemInternal
    */
   Int32 m_local_id;
   //! Indice des données de cette entité dans le tableau des données.
-  Int32 m_data_index;
+  Int32 m_data_index = 0;
   //!< Infos partagées entre toutes les entités ayant les mêmes caractéristiques
   ItemSharedInfo* m_shared_info;
 #ifndef ARCANE_USE_SHAREDINFO_CONNECTIVITY
