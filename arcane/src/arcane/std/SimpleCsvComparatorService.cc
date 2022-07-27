@@ -40,8 +40,38 @@ readSimpleTableOutputEntry()
 {
   m_name_tab = m_iSTO->name();
   m_path = m_iSTO->path();
-  m_path.endsWith("/");
+
+  Directory dir(m_path);
+
+  String dir_path = dir.path();
+
+  String rogn = dir_path.substring(0, dir_path.len()-1);
+  info() << rogn;
+
+
+  // if (name.startsWith("/")) {
+  //   name = "/" + name;
+  // }
+
+  // StringUniqueArray string_splited;
+  // name.split(string_splited, '/');
+
+  // if (string_splited.size() > 1) {
+  //   std::optional<Integer> proc_id = string_splited.span().findFirst("proc_id");
+  //   if (proc_id) {
+  //     string_splited[proc_id.value()] = String::fromNumber(mesh()->parallelMng()->commRank());
+  //     only_once = false;
+  //   }
+  //   else {
+  //     only_once = true;
+  //   }
+
+  //   std::optional<Integer> num_procs = string_splited.span().findFirst("num_procs");
+  //   if (num_procs) {
+  //     string_splited[num_procs.value()] = String::fromNumber(mesh()->parallelMng()->commSize());
+  //   }
 }
+
 void SimpleCsvComparatorService::
 editRefFileEntry(String path, String name, bool no_edit_path)
 {
