@@ -120,7 +120,6 @@ jobs:
           -GNinja \
           -DBUILD_SHARED_LIBS=ON \
           -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }} \
-          -DARCANE_DEFAULT_PARTITIONER=Metis \
           -DARCANE_WANT_ARCCON_EXPORT_TARGET=OFF \
           ${{ steps.script-rand.outputs.rand }} \
           ${{ env.CM_CCACHE_OPTS }} \
