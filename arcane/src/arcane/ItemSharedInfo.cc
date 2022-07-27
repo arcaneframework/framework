@@ -304,6 +304,12 @@ setFlags(Int32,Int32) const
   ARCANE_FATAL("This method is no longer valid");
 }
 
+void ItemSharedInfo::
+_setInfos(Int32* ptr)
+{
+  ARCANE_FATAL("This method is no longer valid");
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

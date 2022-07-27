@@ -420,18 +420,6 @@ dumpSharedInfos()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ItemSharedInfoList::
-setSharedInfosPtr(Int32* ptr)
-{
-  for( ConstIterT<ItemSharedInfoMap> i(*m_infos_map); i(); ++i ){
-    ItemSharedInfo* isi = i->second;
-    isi->_setInfos(ptr);
-  }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 Integer ItemSharedInfoList::
 maxNodePerItem()
 {

@@ -115,10 +115,6 @@ class ItemSharedInfoList
 
   ItemSharedInfo* findSharedInfo(ItemTypeInfo* type);
 
- public:
-
-  void setSharedInfosPtr(Int32* ptr);
-
  private:
 
   ItemSharedInfo* _allocOne(bool& need_alloc)

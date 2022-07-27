@@ -481,7 +481,6 @@ class ARCANE_MESH_EXPORT ItemFamily
 
  private:
   
-  void _setSharedInfosBasePtr();
   void _setSharedInfosNoCopy(ItemInternal* item,ItemSharedInfo* isi);
   void _setDataIndexForItem(ItemInternal* item,Int32 data_index);
   void _setSharedInfoForItem(ItemInternal* item,ItemSharedInfo* isi,Int32 data_index);

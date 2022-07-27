@@ -256,8 +256,10 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
 
  public:
 
-  const Int32* _infos() const { return m_infos; }
-  void _setInfos(Int32* ptr) { m_infos = ptr; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always returns 'nullptr'")
+  const Int32* _infos() const { return nullptr; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception.")
+  void _setInfos(Int32* ptr);
 
  private:
 

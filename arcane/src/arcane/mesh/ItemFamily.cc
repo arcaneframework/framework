@@ -921,16 +921,6 @@ _checkNeedEndUpdate() const
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-_setSharedInfosBasePtr()
-{
-  Int32* new_ptr = m_items_data->data();
-  m_item_shared_infos->setSharedInfosPtr(new_ptr);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemFamily::
 _setDataIndexForItem(ItemInternal* item,Int32 data_index)
 {
   item->setDataIndex(data_index);
@@ -1144,7 +1134,6 @@ readFromDump()
   }
 
   m_item_shared_infos->readFromDump();
-  _setSharedInfosBasePtr();
   m_infos.readFromDump();
 
   // En relecture les entités sont compactées donc la valeur max du localId()
@@ -1635,8 +1624,6 @@ compactReferences()
     current_index += nb;
   }
   m_items_data->copy(new_data);
-
-  _setSharedInfosBasePtr();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1658,34 +1645,8 @@ _checkValid()
     Int32* i1 = m_items_data->data();
     Int32* i2 = m_internal_variables->m_items_data._internalTrueData()->_internalDeprecatedValue().data();
     if (i1!=i2){
-      fatal() << "ItemFamily: " << m_name
-              << ": items_data invalid ptr1=" << i1 << " ptr2=" << i2;
+      ARCANE_FATAL("ItemFamily: {0} : items_data invalid ptr1={1} ptr2={2}",m_name,i1,i2);
     }
-  }
-
-  // Vérifie que la famille est valide.
-  // 1. Vérifie que chaque entité à un sharedInfo() dont le pointeur
-  //    contenant le tableau des info est identique à \a m_items_data->begin()
-  ItemInternalList items(m_infos.itemsInternal());
-  Int32* infos_begin = m_items_data->data();
-  Integer nb_error = 0;
-  for( Integer i=0, is=items.size(); i<is; ++i ){
-    ItemInternal* item = items[i];
-    ItemSharedInfo* isi = item->sharedInfo();
-    if (isi->_infos()!=infos_begin){
-      if (nb_error<10)
-        error() << "ItemFamily: Info shared by an invalid entity"
-                << " LID=" << i << " Item=" << item
-                << " Shared=" << isi << " Begin=" << isi->_infos()
-                << " (expected:" << infos_begin;
-      ++nb_error;
-    }
-    //TODO: verifier que 'isi' est bien dans la table de hashage
-  }
-  if (nb_error!=0){
-    m_item_shared_infos->dumpSharedInfos();
-    fatal() << "ItemFamily: " << m_name << ": " << nb_error
-            << " errors: invalid internal structure";
   }
 }
 
@@ -1704,7 +1665,6 @@ _reserveInfosMemory(Integer memory)
             << " var_size=" << m_internal_variables->m_items_data.size()
             << " var_capacity=" << m_internal_variables->m_items_data._internalTrueData()->capacity()
             << " ptr=" << m_internal_variables->m_items_data.data();
-    _setSharedInfosBasePtr();
     _checkValid();
   }
 }
@@ -1739,7 +1699,6 @@ _resizeInfos(Integer new_size)
             << " new_size=" << m_items_data->size()
             << " nb_item=" << m_infos.nbItem()
             << " max_local_id=" << maxLocalId();
-    _setSharedInfosBasePtr();
     _checkValid();
   }
 }
@@ -1762,7 +1721,6 @@ ItemSharedInfo* ItemFamily::
 _findSharedInfo(ItemTypeInfo* type)
 {
   ItemSharedInfo* isi = m_item_shared_infos->findSharedInfo(type);
-  isi->_setInfos(m_items_data->data());
   return isi;
 }
 
@@ -1869,9 +1827,7 @@ _allocateInfos(ItemInternal* item,Int64 uid,ItemSharedInfo* isi)
 void ItemFamily::
 _notifyDataIndexChanged()
 {
-  //warning() << "Data Index changed ! " << m_name;
   _updateItemViews();
-  _setSharedInfosBasePtr();
 }
 
 /*---------------------------------------------------------------------------*/
