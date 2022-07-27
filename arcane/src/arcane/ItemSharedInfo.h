@@ -261,17 +261,6 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception.")
   void _setInfos(Int32* ptr);
 
- private:
-
-  Int32* m_infos = nullptr;
-  Int32 m_nb_node = 0;
-  Int32 m_nb_edge = 0;
-  Int32 m_nb_face = 0;
-  Int32 m_nb_cell = 0;
-  Int32 m_nb_parent = 0;
-  Int32 m_nb_hParent = 0;
-  Int32 m_nb_hChildren = 0;
-
  public:
 
   MeshItemInternalList* m_items = nullptr;
@@ -287,6 +276,7 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
  private:
 
   Int32 m_type_id = IT_NullType;
+  Int32 m_nb_parent = 0;
   Int32 m_index = NULL_INDEX;
   Int32 m_nb_reference = 0;
 

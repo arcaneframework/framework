@@ -187,15 +187,6 @@ namespace Arcane
   [StructLayout(LayoutKind.Sequential)]
   public unsafe struct ItemSharedInfo
   {
-    internal Int32* m_infos;
-    Int32 m_nb_node;
-    Int32 m_nb_edge;
-    Int32 m_nb_face;
-    Int32 m_nb_cell;
-    internal Int32 m_nb_parent;
-    internal Int32 m_nb_hParent;
-    internal Int32 m_nb_hChildren;
-
     internal MeshItemInternalList* m_items;
     internal ItemInternalConnectivityList* m_connectivity;
     internal IntPtr m_family; //IItemFamily* m_family;
@@ -207,6 +198,7 @@ namespace Arcane
     internal eItemKind m_item_kind; //eItemKind m_item_kind;
 
     internal Int32 m_type_id;
+    internal Int32 m_nb_parent;
     internal Int32 m_index;
     internal Int32 m_nb_reference;
 

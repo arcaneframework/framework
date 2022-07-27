@@ -663,7 +663,8 @@ class ARCANE_CORE_EXPORT ItemInternal
 
  private:
 
-  Int32* dataPtr() { return m_shared_info->m_infos + m_data_index; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always returns 'nullptr'")
+  Int32* dataPtr() { return nullptr; }
 
  public:
 
