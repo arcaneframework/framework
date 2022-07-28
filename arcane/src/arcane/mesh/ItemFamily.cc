@@ -1587,38 +1587,9 @@ _findSharedInfo(ItemTypeInfo* type)
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-_updateSharedInfoAdded(ItemInternal* item)
+_updateSharedInfo()
 {
-  ItemSharedInfo* old_isi = item->sharedInfo();
-  ItemSharedInfoWithType* new_isi = _findSharedInfo(item->typeInfo());
-  ARCANE_ASSERT(old_isi==new_isi->sharedInfo(),("Old and new ItemSharedInfo are different"));
-  item->setSharedInfo(new_isi->sharedInfo(),new_isi->itemTypeId());
-
-  m_need_prepare_dump = true;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemFamily::
-_updateSharedInfoRemoved4(ItemInternal* item)
-{
-  // TODO: regarder pourquoi _updateSharedInfoRemoved7() n'a pas le même code.
-  m_need_prepare_dump = true;
-
-  ItemSharedInfo* old_isi = item->sharedInfo();
-  ItemSharedInfoWithType* new_isi = _findSharedInfo(item->typeInfo());
-  ARCANE_ASSERT(old_isi==new_isi->sharedInfo(),("Old and new ItemSharedInfo are different"));
-  item->setSharedInfo(new_isi->sharedInfo(),new_isi->itemTypeId());
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemFamily::
-_updateSharedInfoRemoved7(ItemInternal*)
-{
-  // TODO: regarder fusion possible avec les autres surcharges de _updateSharedInfo
+  //TODO: Regarder si cela est toujours utile
   m_need_prepare_dump = true;
 }
 

@@ -392,9 +392,7 @@ class ARCANE_MESH_EXPORT ItemFamily
  protected:
 
   void _checkNeedEndUpdate() const;
-  void _updateSharedInfoAdded(ItemInternal* item);
-  void _updateSharedInfoRemoved4(ItemInternal* item);
-  void _updateSharedInfoRemoved7(ItemInternal* item);
+  void _updateSharedInfo();
 
   void _allocateInfos(ItemInternal* item,Int64 uid,ItemSharedInfoWithType* isi);
   void _allocateInfos(ItemInternal* item,Int64 uid,ItemTypeInfo* type);
