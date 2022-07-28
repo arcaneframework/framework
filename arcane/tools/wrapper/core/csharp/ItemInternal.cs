@@ -196,8 +196,6 @@ namespace Arcane
     internal Int32ArrayView* m_owners;
     internal Int32ArrayView* m_flags;
     internal eItemKind m_item_kind;
-
-    internal Int32 m_type_id;
     internal Int32 m_nb_parent;
 
     //! Pour l'entité nulle

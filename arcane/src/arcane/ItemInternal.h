@@ -517,7 +517,7 @@ class ARCANE_CORE_EXPORT ItemInternal
     return this->internalHChild(0)->isSubactive();
   }
   //! Numéro du type de l'entité
-  Integer typeId() const { return m_shared_info->typeId(); }
+  Integer typeId() const { return m_item_type_id; }
   //! Type de l'entité.
   ItemTypeInfo* typeInfo() const { return m_shared_info->typeInfoFromId(m_item_type_id); }
   //! Infos partagées de l'entité.

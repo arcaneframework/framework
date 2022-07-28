@@ -59,8 +59,7 @@ class ItemSharedInfoWithType
  private:
 
   ItemSharedInfoWithType(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
-                         ItemInternalConnectivityList* connectivity,ItemVariableViews* variable_views)
-  : ItemSharedInfo(family,item_type,items,connectivity,variable_views){}
+                         ItemInternalConnectivityList* connectivity,ItemVariableViews* variable_views);
 
   ItemSharedInfoWithType(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
                          ItemInternalConnectivityList* connectivity,ItemVariableViews* variable_views,
@@ -88,6 +87,7 @@ class ItemSharedInfoWithType
 
  private:
 
+  Int32 m_type_id = IT_NullType;
   Int32 m_index = NULL_INDEX;
   Int32 m_nb_reference = 0;
 };

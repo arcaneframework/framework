@@ -106,7 +106,7 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
 
   // Seule ItemSharedInfoList peut créer des instances de cette classe autre que
   // l'instance nulle.
-  ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
+  ItemSharedInfo(IItemFamily* family,MeshItemInternalList* items,
                  ItemInternalConnectivityList* connectivity,ItemVariableViews* variable_views);
 
  public:
@@ -129,7 +129,8 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   ARCANE_DEPRECATED_REASON("Y2020: This method always return 0")
   constexpr Int32 nbHChildren() const { return 0; }
 
-  Int32 typeId() const { return m_type_id; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception. Use ItemInternal::typeId() instead")
+  Int32 typeId() const;
 
   ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
   Int32 firstNode() const { return 0; }
@@ -280,7 +281,6 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
 
  private:
 
-  Int32 m_type_id = IT_NullType;
   Int32 m_nb_parent = 0;
 
  public:

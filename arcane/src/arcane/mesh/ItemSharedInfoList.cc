@@ -35,9 +35,18 @@ namespace Arcane::mesh
 
 ItemSharedInfoWithType::
 ItemSharedInfoWithType(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
+                       ItemInternalConnectivityList* connectivity,ItemVariableViews* variable_views)
+: ItemSharedInfo(family,items,connectivity,variable_views)
+, m_type_id(item_type->typeId())
+{
+}
+
+ItemSharedInfoWithType::
+ItemSharedInfoWithType(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
                        ItemInternalConnectivityList* connectivity,ItemVariableViews* variable_views,
                        Int32ConstArrayView buffer)
-: ItemSharedInfo(family,item_type,items,connectivity,variable_views)
+: ItemSharedInfo(family,items,connectivity,variable_views)
+, m_type_id(item_type->typeId())
 {
   // La taille du buffer dépend des versions de Arcane.
   // Avant la 3.2 (Octobre 2021), la taille du buffer est 9 (non AMR) ou 13 (AMR)

@@ -52,7 +52,7 @@ ItemSharedInfo()
 /*---------------------------------------------------------------------------*/
 
 ItemSharedInfo::
-ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
+ItemSharedInfo(IItemFamily* family,MeshItemInternalList* items,
                ItemInternalConnectivityList* connectivity,ItemVariableViews* variable_views)
 : m_items(items)
 , m_connectivity(connectivity)
@@ -63,7 +63,6 @@ ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList*
 , m_owners(&(variable_views->m_owners_view))
 , m_flags(&(variable_views->m_flags_view))
 , m_item_kind(family->itemKind())
-, m_type_id(item_type->typeId())
 {
   _init(m_item_kind);
 }
@@ -78,8 +77,7 @@ print(std::ostream& o) const
     << " NbParent; " << m_nb_parent
     << " Items: " << m_items
     << " Connectivity: " << m_connectivity
-    << " Family: " << m_item_family->fullName()
-    << " TypeId: " << m_type_id;
+    << " Family: " << m_item_family->fullName();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -215,6 +213,15 @@ ItemTypeInfo* ItemSharedInfo::
 typeInfoFromId(Int32 type_id) const
 {
   return m_item_type_mng->typeFromId(type_id);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int32 ItemSharedInfo::
+typeId() const
+{
+  ARCANE_FATAL("This method is no longer valid");
 }
 
 /*---------------------------------------------------------------------------*/
