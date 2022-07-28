@@ -189,8 +189,8 @@ namespace Arcane
   {
     internal MeshItemInternalList* m_items;
     internal ItemInternalConnectivityList* m_connectivity;
-    internal IntPtr m_family; //IItemFamily* m_family;
-    internal IntPtr m_item_type_mng; //ItemTypeMng* m_item_type_mng = nullptr;
+    internal IntPtr m_family; // IItemFamily*;
+    internal IntPtr m_item_type_mng; // ItemTypeMng*
     internal Int64ArrayView* m_unique_ids;
     internal Int32ArrayView* m_parent_item_ids;
     internal Int32ArrayView* m_owners;
