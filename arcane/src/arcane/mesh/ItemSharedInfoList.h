@@ -37,6 +37,46 @@ namespace Arcane::mesh
 
 class ItemFamily;
 
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe temporaire pour conserver un ItemSharedInfo et un type d'entité.
+ *
+ * Cette classe permet de faire la transition entre la version de Arcane où
+ * le ItemSharedInfo contient aussi le type de l'entité et les futures versions
+ * où cela ne sera pas le cas.
+ */
+class ItemSharedInfoWithType
+: private ItemSharedInfo
+{
+  friend class ItemSharedInfoList;
+
+ public:
+
+  ItemSharedInfoWithType(){}
+
+ private:
+
+  ItemSharedInfoWithType(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
+                         ItemInternalConnectivityList* connectivity,ItemVariableViews* variable_views)
+  : ItemSharedInfo(family,item_type,items,connectivity,variable_views){}
+
+  ItemSharedInfoWithType(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
+                         ItemInternalConnectivityList* connectivity,ItemVariableViews* variable_views,
+                         Int32ConstArrayView buffer)
+  : ItemSharedInfo(family,item_type,items,connectivity,variable_views,buffer){}
+
+ public:
+
+  ItemSharedInfo* sharedInfo() { return this; }
+  friend std::ostream& operator<<(std::ostream& o,const ItemSharedInfoWithType& isi)
+  {
+    isi.print(o);
+    return o;
+  }
+};
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -52,41 +92,42 @@ class ItemSharedInfoList
 
   class ItemNumElements;
   class Variables;
-  typedef std::map<ItemNumElements,ItemSharedInfo*> ItemSharedInfoMap;
-
- private:
-
+  typedef std::map<ItemNumElements,ItemSharedInfoWithType*> ItemSharedInfoMap;
 
  public:
 
-  ItemSharedInfoList(ItemFamily* family);
+  explicit ItemSharedInfoList(ItemFamily* family);
   //! Libère les ressources
   ~ItemSharedInfoList();
 
  public:
 
-  ConstArrayView<ItemSharedInfo*> itemSharedInfos() const { return m_item_shared_infos; }
-  ArrayView<ItemSharedInfo*> itemSharedInfos() { return m_item_shared_infos; }
+  ConstArrayView<ItemSharedInfoWithType*> itemSharedInfos() const { return m_item_shared_infos; }
+  ArrayView<ItemSharedInfoWithType*> itemSharedInfos() { return m_item_shared_infos; }
 
-  ItemSharedInfo* allocOne()
+ private:
+
+  ItemSharedInfoWithType* allocOne()
   {
     bool need_alloc = false;
-    ItemSharedInfo* next = _allocOne(need_alloc);
+    ItemSharedInfoWithType* next = _allocOne(need_alloc);
     return next;
   }
 
-  ItemSharedInfo* allocOne(bool& need_alloc)
+  ItemSharedInfoWithType* allocOne(bool& need_alloc)
   {
-    ItemSharedInfo* next = _allocOne(need_alloc);
+    ItemSharedInfoWithType* next = _allocOne(need_alloc);
     return next;
   }
 
-  void removeOne(ItemSharedInfo* item)
+  void removeOne(ItemSharedInfoWithType* item)
   {
     m_list_changed = true;
     m_free_item_shared_infos.add(item);
     --m_nb_item_shared_info;
   }
+
+ public:
 
   //! Vérifie si les structures internes de l'instance sont valides
   void checkValid();
@@ -120,13 +161,13 @@ class ItemSharedInfoList
 
  public:
 
-  ItemSharedInfo* findSharedInfo(ItemTypeInfo* type);
+  ItemSharedInfoWithType* findSharedInfo(ItemTypeInfo* type);
 
  private:
 
-  ItemSharedInfo* _allocOne(bool& need_alloc)
+  ItemSharedInfoWithType* _allocOne(bool& need_alloc)
   {
-    ItemSharedInfo* new_item = 0;
+    ItemSharedInfoWithType* new_item = 0;
     Integer nb_free = m_free_item_shared_infos.size();
     m_list_changed = true;
     if (nb_free!=0){
@@ -149,9 +190,9 @@ class ItemSharedInfoList
   ItemFamily* m_family = nullptr;
   Integer m_nb_item_shared_info = 0; //!< Nombre d'objets alloués
   eItemKind m_item_kind = IK_Unknown;
-  UniqueArray<ItemSharedInfo*> m_item_shared_infos;
-  UniqueArray<ItemSharedInfo*> m_free_item_shared_infos;
-  MultiBufferT<ItemSharedInfo>* m_item_shared_infos_buffer;
+  UniqueArray<ItemSharedInfoWithType*> m_item_shared_infos;
+  UniqueArray<ItemSharedInfoWithType*> m_free_item_shared_infos;
+  MultiBufferT<ItemSharedInfoWithType>* m_item_shared_infos_buffer;
   ItemSharedInfoMap* m_infos_map = nullptr;
   Variables* m_variables = nullptr;
   bool m_list_changed = false;

@@ -109,7 +109,7 @@ ItemSharedInfoList(ItemFamily* family)
 : TraceAccessor(family->traceMng())
 , m_family(family)
 , m_item_kind(family->itemKind())
-, m_item_shared_infos_buffer(new MultiBufferT<ItemSharedInfo>(100))
+, m_item_shared_infos_buffer(new MultiBufferT<ItemSharedInfoWithType>(100))
 , m_infos_map(new ItemSharedInfoMap())
 {
   {
@@ -204,8 +204,8 @@ readFromDump()
     Int32ConstArrayView buffer(m_variables->m_infos_values[i]);
     // Le premier élément du tampon contient toujours le type de l'entité
     ItemTypeInfo* it = itm->typeFromId(buffer[0]);
-    ItemSharedInfo* isi = m_item_shared_infos[i];
-    *isi = ItemSharedInfo(m_family,it,miil,iicl,m_family->viewsForItemSharedInfo(),buffer);
+    ItemSharedInfoWithType* isi = m_item_shared_infos[i];
+    *isi = ItemSharedInfoWithType(m_family,it,miil,iicl,m_family->viewsForItemSharedInfo(),buffer);
 
     ItemNumElements ine(it->typeId());
     std::pair<ItemSharedInfoMap::iterator,bool> old = m_infos_map->insert(std::make_pair(ine,isi));
@@ -259,7 +259,7 @@ checkValid()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ItemSharedInfo* ItemSharedInfoList::
+ItemSharedInfoWithType* ItemSharedInfoList::
 findSharedInfo(ItemTypeInfo* type)
 {
   ItemNumElements ine(type->typeId());
@@ -269,9 +269,9 @@ findSharedInfo(ItemTypeInfo* type)
   MeshItemInternalList* miil = m_family->mesh()->meshItemInternalList();
   ItemInternalConnectivityList* iicl = m_family->itemInternalConnectivityList();
   // Infos pas trouvé. On en construit une nouvelle
-  ItemSharedInfo* isi = allocOne();
+  ItemSharedInfoWithType* isi = allocOne();
   Integer old_index = isi->index();
-  *isi = ItemSharedInfo(m_family,type,miil,iicl,m_family->viewsForItemSharedInfo());
+  *isi = ItemSharedInfoWithType(m_family,type,miil,iicl,m_family->viewsForItemSharedInfo());
   isi->setIndex(old_index);
   std::pair<ItemSharedInfoMap::iterator,bool> old = m_infos_map->insert(std::make_pair(ine,isi));
 

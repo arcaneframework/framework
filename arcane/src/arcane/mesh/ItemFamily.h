@@ -396,7 +396,7 @@ class ARCANE_MESH_EXPORT ItemFamily
   void _updateSharedInfoRemoved4(ItemInternal* item);
   void _updateSharedInfoRemoved7(ItemInternal* item);
 
-  void _allocateInfos(ItemInternal* item,Int64 uid,ItemSharedInfo* isi);
+  void _allocateInfos(ItemInternal* item,Int64 uid,ItemSharedInfoWithType* isi);
   void _allocateInfos(ItemInternal* item,Int64 uid,ItemTypeInfo* type);
   void _endUpdate(bool need_check_remove);
   bool _partialEndUpdate();
@@ -457,7 +457,7 @@ class ARCANE_MESH_EXPORT ItemFamily
   ARCANE_DEPRECATED_REASON("Y2022: This method is a now a no-operation")
   void _resizeInfos(Integer memory);
 
-  ItemSharedInfo* _findSharedInfo(ItemTypeInfo* type);
+  ItemSharedInfoWithType* _findSharedInfo(ItemTypeInfo* type);
 
   ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
   Integer _allocMany(Integer memory);

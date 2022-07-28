@@ -27,6 +27,7 @@ namespace Arcane::mesh
 {
 class ItemSharedInfoList;
 class ItemFamily;
+class ItemSharedInfoWithType;
 }
 
 namespace Arcane
@@ -88,6 +89,7 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   friend class ItemInternal;
   friend class mesh::ItemSharedInfoList;
   friend class mesh::ItemFamily;
+  friend class mesh::ItemSharedInfoWithType;
 
   static const Int32 NULL_INDEX = static_cast<Int32>(-1);
 

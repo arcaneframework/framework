@@ -47,7 +47,7 @@ namespace mesh
 
 class PolyhedralFamily : public ItemFamily{
   IMesh* m_mesh;
-  ItemSharedInfo* m_shared_info = nullptr;
+  ItemSharedInfoWithType* m_shared_info = nullptr;
   Int32UniqueArray m_empty_connectivity {0};
   Int32UniqueArray m_empty_connectivity_indexes;
   Int32UniqueArray m_empty_connectivity_nb_item;

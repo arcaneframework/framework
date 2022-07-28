@@ -1089,11 +1089,11 @@ readFromDump()
   // En relecture les entités sont compactées donc la valeur max du localId()
   // est égal au nombre d'entité.
   {
-    ArrayView<ItemSharedInfo*> item_shared_infos = m_item_shared_infos->itemSharedInfos();
+    auto item_shared_infos = m_item_shared_infos->itemSharedInfos();
     ItemInternalList items(m_infos.itemsInternal());
     for( Integer i=0; i<nb_item; ++i ){
       Integer shared_data_index = items_shared_data_index[i];
-      ItemSharedInfo* isi = item_shared_infos[shared_data_index];
+      ItemSharedInfo* isi = item_shared_infos[shared_data_index]->sharedInfo();
       Int64 uid = (*m_items_unique_id)[i];
       ItemInternal* item = m_infos.allocOne(uid);
       item->setSharedInfo(isi);
@@ -1576,11 +1576,10 @@ _allocMany(Integer memory)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ItemSharedInfo* ItemFamily::
+ItemSharedInfoWithType* ItemFamily::
 _findSharedInfo(ItemTypeInfo* type)
 {
-  ItemSharedInfo* isi = m_item_shared_infos->findSharedInfo(type);
-  return isi;
+  return m_item_shared_infos->findSharedInfo(type);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1602,7 +1601,7 @@ void ItemFamily::
 _updateSharedInfoAdded(ItemInternal* item)
 {
   ItemSharedInfo* old_isi = item->sharedInfo();
-  ItemSharedInfo* new_isi = _findSharedInfo(old_isi->m_item_type);
+  ItemSharedInfo* new_isi = _findSharedInfo(old_isi->m_item_type)->sharedInfo();
   item->setSharedInfo(new_isi);
 
   m_need_prepare_dump = true;
@@ -1620,7 +1619,7 @@ _updateSharedInfoRemoved4(ItemInternal* item)
   m_need_prepare_dump = true;
 
   ItemSharedInfo* old_isi = item->sharedInfo();
-  ItemSharedInfo* new_isi = _findSharedInfo(old_isi->m_item_type);
+  ItemSharedInfo* new_isi = _findSharedInfo(old_isi->m_item_type)->sharedInfo();
   item->setSharedInfo(new_isi);
 
   new_isi->addReference();
@@ -1643,7 +1642,7 @@ _updateSharedInfoRemoved7(ItemInternal*)
 void ItemFamily::
 _allocateInfos(ItemInternal* item,Int64 uid,ItemTypeInfo* type)
 {
-  ItemSharedInfo* isi = _findSharedInfo(type);
+  ItemSharedInfoWithType* isi = _findSharedInfo(type);
   _allocateInfos(item,uid,isi);
 }
 
@@ -1651,7 +1650,7 @@ _allocateInfos(ItemInternal* item,Int64 uid,ItemTypeInfo* type)
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-_allocateInfos(ItemInternal* item,Int64 uid,ItemSharedInfo* isi)
+_allocateInfos(ItemInternal* item,Int64 uid,ItemSharedInfoWithType* isi)
 {
   // TODO: faire en même temps que le réalloc de la variable uniqueId()
   //  le réalloc des m_source_incremental_item_connectivities.
@@ -1667,7 +1666,7 @@ _allocateInfos(ItemInternal* item,Int64 uid,ItemSharedInfo* isi)
     (*m_items_unique_id)[local_id] = uid;
   }
 
-  item->setSharedInfo(isi);
+  item->setSharedInfo(isi->sharedInfo());
   
   item->reinitialize(uid,m_default_sub_domain_owner,m_sub_domain_id);
   ++m_nb_allocate_info;
