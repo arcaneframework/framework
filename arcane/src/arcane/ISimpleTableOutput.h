@@ -681,32 +681,41 @@ public:
    * @brief Méthode permettant d'écrire le tableau dans un fichier.
    * Si only_proc != -1, les processus autres que P0 retournent true.
    * 
-   * @param path Le répertoire où sera écrit le fichier.
+   * @param dir Le répertoire où sera écrit le fichier
+   *            . Le chemin final sera "./[output_dir]/csv/[dir]/"
    * @param only_proc L'id du processus devant écrire dans un fichier 
    *                  le tableau (-1 pour signifier "tous les processus").
    * @return true Si le fichier a été correctement écrit.
    * @return false Si le fichier n'a pas été correctement écrit.
    */
-  virtual bool writeFile(String path, Integer only_proc = -1) = 0;
+  virtual bool writeFile(String dir, Integer only_proc = -1) = 0;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Accesseur permettant de récupérer le chemin actuellement
+   * @brief Accesseur permettant de récupérer le répertoire actuellement
    * enregistré dans la classe. 
+   * 
+   * @return String Le répertoire.
+   */
+  virtual String dir() = 0;
+
+    /**
+   * @brief Accesseur permettant de récupérer le chemin où sera
+   * enregistré le(s) tableau(x). 
    * 
    * @return String Le chemin.
    */
   virtual String path() = 0;
 
   /**
-   * @brief Accesseur permettant de définir le chemin
+   * @brief Accesseur permettant de définir le répertoire
    * dans lequel enregistrer le(s) tableau(x).
    * 
-   * @param path Le chemin.
+   * @param dir Le répertoire.
    */
-  virtual void setPath(String path) = 0;
+  virtual void setDir(String dir) = 0;
 
   /**
    * @brief Accesseur permettant de récupérer le nom actuellement
@@ -720,7 +729,7 @@ public:
    * @brief Accesseur permettant de définir le nom
    * du tableau (et du fichier de sortie).
    * 
-   * @param path Le chemin.
+   * @param name Le nom.
    */
   virtual void setName(String name) = 0;
 };

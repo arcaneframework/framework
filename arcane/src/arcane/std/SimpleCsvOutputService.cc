@@ -42,18 +42,17 @@ init()
 void SimpleCsvOutputService::
 init(String name_table)
 {
-  m_name_tab = _computeAt(name_table, m_name_tab_only_P0);
+  m_name_tab = _computeName(name_table, m_name_tab_only_P0);
   m_name_tab_computed = true;
 
   m_separator = ";";
 
-  if (m_with_option && options()->getTableDir() != "") {
-    m_path = _computeAt(options()->getTableDir(), m_path_only_P0);
+  if (m_with_option) {
+    m_dir_string = options()->getTableDir();
   }
   else {
-    m_path = _computeAt("./csv/", m_path_only_P0);
+    m_dir_string = "";
   }
-  m_path_computed = true;
 
   m_precision_print = 6;
   m_is_fixed_print = true;
@@ -814,6 +813,10 @@ print(Integer only_proc)
 bool SimpleCsvOutputService::
 writeFile(Integer only_proc)
 {
+  // Création du répertoire.
+  bool result = _computePath();
+  if(!result) return false;
+
   // Si l'on n'est pas le processus demandé, on return true.
   // -1 = tout le monde écrit.
   if (only_proc != -1 && mesh()->parallelMng()->commRank() != only_proc)
@@ -823,25 +826,14 @@ writeFile(Integer only_proc)
 
   // Si true, alors les noms de fichier et dossier ne permettent pas d'écrire
   // un fichier par processus (pas de @proc_id@ dans l'un des noms).
-  bool only_one_proc = m_path_only_P0 && m_name_tab_only_P0;
+  bool only_one_proc = m_dir_only_P0 && m_name_tab_only_P0;
 
   // Si l'on a only_proc == -1 et que only_one_proc == true, alors il n'y a que le
   // processus 0 qui doit écrire.
   if ((only_proc == -1 && only_one_proc) && mesh()->parallelMng()->commRank() != 0)
     return true;
 
-  Directory dir(m_path);
-  bool sf = false;
-  if (mesh()->parallelMng()->commRank() == 0 || only_proc != -1) {
-    sf = dir.createDirectory();
-  }
-  if (mesh()->parallelMng()->commSize() != 1 && only_proc == -1) {
-    sf = mesh()->parallelMng()->reduce(Parallel::ReduceMax, sf ? 1 : 0);
-  }
-  if (sf)
-    return false;
-
-  std::ofstream ofile(dir.file(file_name).localstr());
+  std::ofstream ofile(m_dir.file(file_name).localstr());
   if (ofile.fail())
     return false;
 
@@ -852,10 +844,10 @@ writeFile(Integer only_proc)
 }
 
 bool SimpleCsvOutputService::
-writeFile(String path, Integer only_proc)
+writeFile(String dir, Integer only_proc)
 {
-  m_path = path;
-  m_path_computed = false;
+  m_dir_string = dir;
+  m_dir_computed = false;
   return writeFile(only_proc);
 }
 
@@ -863,27 +855,33 @@ writeFile(String path, Integer only_proc)
 /*---------------------------------------------------------------------------*/
 
 String SimpleCsvOutputService::
-path()
+dir()
 {
-  if (!m_path_computed) {
-    m_path = _computeAt(m_path, m_path_only_P0);
-    m_path_computed = true;
+  if (!m_dir_computed) {
+    m_dir_string = _computeName(m_dir_string, m_dir_only_P0);
+    m_dir_computed = true;
   }
-  return m_path;
+  return m_dir_string;
 }
 
 void SimpleCsvOutputService::
-setPath(String path)
+setDir(String dir)
 {
-  m_path = path;
-  m_path_computed = false;
+  m_dir_string = dir;
+  m_dir_computed = false;
+}
+
+String SimpleCsvOutputService::
+path()
+{
+  return m_dir.path();
 }
 
 String SimpleCsvOutputService::
 name()
 {
   if (!m_name_tab_computed) {
-    m_name_tab = _computeAt(m_name_tab, m_name_tab_only_P0);
+    m_name_tab = _computeName(m_name_tab, m_name_tab_only_P0);
     m_name_tab_computed = true;
   }
   return m_name_tab;
@@ -907,12 +905,12 @@ setName(String name)
 String SimpleCsvOutputService::
 _computeFinal()
 {
-  if (!m_path_computed) {
-    m_path = _computeAt(m_path, m_path_only_P0);
-    m_path_computed = true;
+  if (!m_dir_computed) {
+    m_dir_string = _computeName(m_dir_string, m_dir_only_P0);
+    m_dir_computed = true;
   }
   if (!m_name_tab_computed) {
-    m_name_tab = _computeAt(m_name_tab, m_name_tab_only_P0);
+    m_name_tab = _computeName(m_name_tab, m_name_tab_only_P0);
     m_name_tab_computed = true;
   }
   return m_name_tab + ".csv";
@@ -927,7 +925,7 @@ _computeFinal()
  * @return String Le nom avec les symboles remplacés.
  */
 String SimpleCsvOutputService::
-_computeAt(String name, bool& only_once)
+_computeName(String name, bool& only_once)
 {
   // Permet de contourner le bug avec String::split() si le nom commence par '@'.
   if (name.startsWith("@")) {
@@ -1010,6 +1008,28 @@ _print(std::ostream& stream)
   stream.flags(save_flags);
   stream.precision(save_prec);
 }
+
+bool SimpleCsvOutputService::
+_computePath()
+{
+  int sf = 0;
+
+  Directory d(subDomain()->exportDirectory(), "csv");
+  m_dir = Directory(d, m_dir_string);
+
+  if (mesh()->parallelMng()->commRank() == 0) {
+    sf += d.createDirectory();
+    sf += m_dir.createDirectory();
+  }
+  if (mesh()->parallelMng()->commSize() > 1) {
+    sf = mesh()->parallelMng()->reduce(Parallel::ReduceMax, sf);
+  }
+  if (sf)
+    return false;
+
+  return true;
+}
+
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

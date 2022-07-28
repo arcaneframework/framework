@@ -18,6 +18,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/ISimpleTableOutput.h"
+#include "arcane/Directory.h"
 #include "arcane/std/SimpleCsvOutput_axl.h"
 
 /*---------------------------------------------------------------------------*/
@@ -35,8 +36,8 @@ class SimpleCsvOutputService
  public:
   explicit SimpleCsvOutputService(const ServiceBuildInfo& sbi)
   : ArcaneSimpleCsvOutputObject(sbi)
-  , m_path_computed(false)
-  , m_path_only_P0(true)
+  , m_dir_computed(false)
+  , m_dir_only_P0(true)
   , m_name_tab_computed(false)
   , m_name_tab_only_P0(true)
   , m_precision_print(6)
@@ -132,23 +133,28 @@ class SimpleCsvOutputService
 
   void print(Integer only_proc) override;
   bool writeFile(Integer only_proc) override;
-  bool writeFile(String path, Integer only_proc) override;
+  bool writeFile(String dir, Integer only_proc) override;
 
+  String dir() override;
+  void setDir(String dir) override;
+  
   String path() override;
-  void setPath(String path) override;
 
   String name() override;
   void setName(String name) override;
 
  private:
-  String _computeAt(String name, bool& only_once);
+  String _computeName(String name, bool& only_once);
   String _computeFinal();
   void _print(std::ostream& stream);
+  bool _computePath();
 
  private:
-  String m_path;
-  bool m_path_computed;
-  bool m_path_only_P0;
+  String m_dir_string;
+  bool m_dir_computed;
+  bool m_dir_only_P0;
+
+  Directory m_dir;
 
   String m_name_tab;
   bool m_name_tab_computed;
