@@ -45,17 +45,18 @@ public:
   // Il faut donc préciser à l'user qu'il doit avoir totalement rempli
   // le STO (valeurs, nom, path).
   // (nom et path peuvent être définis après coup avec editRefFileEntry).
-  virtual void addSimpleTableOutputEntry(ISimpleTableOutput* ptr_sto) = 0;
-
-  virtual void readSimpleTableOutputEntry() = 0;
+  virtual void init(ISimpleTableOutput* ptr_sto) = 0;
 
   // Permet de def nom et path après coup (et de forcer un autre path).
-  virtual void editRefFileEntry(String path, String name, bool no_edit_path) = 0;
+  virtual void editRefFileEntry(String path, String name) = 0;
 
   // Permet d'écrire le reffile. Modifie auto le path (ce n'est pas à l'user de le faire).
   // (sauf si editRefFileEntry(,,true)).
   virtual bool writeRefFile(Integer only_proc = -1) = 0;
-  virtual bool writeRefFile(String path, Integer only_proc = -1) = 0;
+  virtual bool readRefFile(Integer only_proc = -1) = 0;
+
+  virtual bool isRefExist(Integer only_proc = -1) = 0;
+  virtual void print() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

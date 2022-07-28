@@ -20,9 +20,8 @@
 #include "arcane/ISimpleTableOutput.h"
 #include "arcane/ISimpleTableComparator.h"
 
-#include "arcane/BasicUnitTest.h"
-#include <arcane/ServiceBuilder.h>
-#include <arcane/ServiceFactory.h>
+#include <arcane/Directory.h>
+#include <arcane/utils/Iostream.h>
 
 #include "arcane/std/SimpleCsvComparator_axl.h"
 
@@ -42,6 +41,7 @@ class SimpleCsvComparatorService
   explicit SimpleCsvComparatorService(const ServiceBuildInfo& sbi)
   : ArcaneSimpleCsvComparatorObject(sbi)
   , m_iSTO(nullptr)
+  , m_is_file_open(false)
   {
     m_with_option = (sbi.creationType() == ST_CaseOption);
   }
@@ -50,17 +50,30 @@ class SimpleCsvComparatorService
 
  public:
   
-  void addSimpleTableOutputEntry(ISimpleTableOutput* ptr_sto) override;
-  void readSimpleTableOutputEntry() override;
-  void editRefFileEntry(String path, String name, bool no_edit_path) override;
+  void init(ISimpleTableOutput* ptr_sto) override;
+  void editRefFileEntry(String path, String name) override;
   bool writeRefFile(Integer only_proc) override;
-  bool writeRefFile(String path, Integer only_proc) override;
+  bool readRefFile(Integer only_proc) override;
+  bool isRefExist(Integer only_proc) override;
+  void print() override;
 
- private:
-  String m_path;
-  String m_name_tab;
+ protected:
+  void _openFile(String name_file);
+
+ protected:
+  Directory m_path_ref;
+  String m_path_ref_str;
+  String m_name_ref;
+
+  std::ifstream m_ifstream;
+  bool m_is_file_open;
 
   ISimpleTableOutput* m_iSTO;
+
+  UniqueArray2<Real> m_values_csv;
+
+  UniqueArray<String> m_name_rows;
+  UniqueArray<String> m_name_columns_with_name_of_tab;
 
   bool m_with_option;
 };

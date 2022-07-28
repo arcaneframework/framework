@@ -42,7 +42,7 @@ setUpForClass()
   ptrSTC = options()->getSimpleTableComparator();
 
   // Init STO
-  ptrSTO->init("test");
+  ptrSTO->init("test", "dir_test");
 
   ptrSTO->addColumn("Ma colonne 1");
   ptrSTO->addColumn("Ma colonne 2");
@@ -56,11 +56,15 @@ setUpForClass()
   RealUniqueArray result2 = { 4, 5, 6 };
   RealUniqueArray result3 = { 7, 8, 9 };
 
-  ptrSTO->writeFile("test_csv_comparator", 0);
+  //ptrSTO->writeFile("test_csv_comparator", 0);
 
   // Init STC
-  ptrSTC->addSimpleTableOutputEntry(ptrSTO);
-  ptrSTC->readSimpleTableOutputEntry();
+  ptrSTC->init(ptrSTO);
+  ptrSTC->writeRefFile();
+
+  ptrSTC->readRefFile();
+
+  ptrSTC->print();
 
 }
 
