@@ -70,6 +70,10 @@ class ItemSharedInfoWithType
  public:
 
   ItemSharedInfo* sharedInfo() { return this; }
+  Int32 itemTypeId() { return this->m_type_id; }
+
+ public:
+
   friend std::ostream& operator<<(std::ostream& o,const ItemSharedInfoWithType& isi)
   {
     isi.print(o);

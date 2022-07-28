@@ -1093,10 +1093,10 @@ readFromDump()
     ItemInternalList items(m_infos.itemsInternal());
     for( Integer i=0; i<nb_item; ++i ){
       Integer shared_data_index = items_shared_data_index[i];
-      ItemSharedInfo* isi = item_shared_infos[shared_data_index]->sharedInfo();
+      ItemSharedInfoWithType* isi = item_shared_infos[shared_data_index];
       Int64 uid = (*m_items_unique_id)[i];
       ItemInternal* item = m_infos.allocOne(uid);
-      item->setSharedInfo(isi);
+      item->setSharedInfo(isi->sharedInfo(),isi->itemTypeId());
     }
   }
   // Supprime les entités du groupe total car elles vont être remises à jour
@@ -1586,26 +1586,14 @@ _findSharedInfo(ItemTypeInfo* type)
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-_copyInfos(ItemInternal* item,ItemSharedInfo*,ItemSharedInfo* new_isi)
-{
-  // Signale qu'il faudra compacter les entités au moment du dump
-  m_item_need_prepare_dump = true;
-
-  item->setSharedInfo(new_isi);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemFamily::
 _updateSharedInfoAdded(ItemInternal* item)
 {
   ItemSharedInfo* old_isi = item->sharedInfo();
-  ItemSharedInfo* new_isi = _findSharedInfo(old_isi->m_item_type)->sharedInfo();
-  item->setSharedInfo(new_isi);
+  ItemSharedInfoWithType* new_isi = _findSharedInfo(item->typeInfo());
+  item->setSharedInfo(new_isi->sharedInfo(),new_isi->itemTypeId());
 
   m_need_prepare_dump = true;
-  new_isi->addReference();
+  new_isi->sharedInfo()->addReference();
   old_isi->removeReference();
 }
 
@@ -1619,10 +1607,10 @@ _updateSharedInfoRemoved4(ItemInternal* item)
   m_need_prepare_dump = true;
 
   ItemSharedInfo* old_isi = item->sharedInfo();
-  ItemSharedInfo* new_isi = _findSharedInfo(old_isi->m_item_type)->sharedInfo();
-  item->setSharedInfo(new_isi);
+  ItemSharedInfoWithType* new_isi = _findSharedInfo(item->typeInfo());
+  item->setSharedInfo(new_isi->sharedInfo(),new_isi->itemTypeId());
 
-  new_isi->addReference();
+  new_isi->sharedInfo()->addReference();
   old_isi->removeReference();
 }
 
@@ -1666,7 +1654,7 @@ _allocateInfos(ItemInternal* item,Int64 uid,ItemSharedInfoWithType* isi)
     (*m_items_unique_id)[local_id] = uid;
   }
 
-  item->setSharedInfo(isi->sharedInfo());
+  item->setSharedInfo(isi->sharedInfo(),isi->itemTypeId());
   
   item->reinitialize(uid,m_default_sub_domain_owner,m_sub_domain_id);
   ++m_nb_allocate_info;

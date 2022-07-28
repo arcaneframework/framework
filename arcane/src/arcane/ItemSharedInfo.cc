@@ -57,11 +57,11 @@ ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList*
 : m_items(items)
 , m_connectivity(connectivity)
 , m_item_family(family)
+, m_item_type_mng(family->mesh()->itemTypeMng())
 , m_unique_ids(&(variable_views->m_unique_ids_view))
 , m_parent_item_ids(&(variable_views->m_parent_ids_view))
 , m_owners(&(variable_views->m_owners_view))
 , m_flags(&(variable_views->m_flags_view))
-, m_item_type(item_type)
 , m_item_kind(family->itemKind())
 , m_type_id(item_type->typeId())
 {
@@ -78,11 +78,11 @@ ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList*
 : m_items(items)
 , m_connectivity(connectivity)
 , m_item_family(family)
+, m_item_type_mng(family->mesh()->itemTypeMng())
 , m_unique_ids(&(variable_views->m_unique_ids_view))
 , m_parent_item_ids(&(variable_views->m_parent_ids_view))
 , m_owners(&(variable_views->m_owners_view))
 , m_flags(&(variable_views->m_flags_view))
-, m_item_type(item_type)
 , m_item_kind(family->itemKind())
 , m_type_id(item_type->typeId())
 {
@@ -176,7 +176,6 @@ print(std::ostream& o) const
     << " Items: " << m_items
     << " Connectivity: " << m_connectivity
     << " Family: " << m_item_family->fullName()
-    << " TypeInfo: " << m_item_type
     << " TypeId: " << m_type_id
     << " Index: " << m_index
     << " NbReference: " << m_nb_reference;
@@ -306,6 +305,15 @@ _parentPtr(Int32 local_id) const
 {
   // GG: ATTENTION: Cela ne fonctionne que si on a au plus un parent.
   return m_parent_item_ids->ptrAt(local_id);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ItemTypeInfo* ItemSharedInfo::
+typeInfoFromId(Int32 type_id) const
+{
+  return m_item_type_mng->typeFromId(type_id);
 }
 
 /*---------------------------------------------------------------------------*/

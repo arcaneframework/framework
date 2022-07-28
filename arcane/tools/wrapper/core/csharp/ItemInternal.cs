@@ -190,11 +190,12 @@ namespace Arcane
     internal MeshItemInternalList* m_items;
     internal ItemInternalConnectivityList* m_connectivity;
     internal IntPtr m_family; //IItemFamily* m_family;
+    internal IntPtr m_item_type_mng; //ItemTypeMng* m_item_type_mng = nullptr;
     internal Int64ArrayView* m_unique_ids;
     internal Int32ArrayView* m_parent_item_ids;
     internal Int32ArrayView* m_owners;
     internal Int32ArrayView* m_flags;
-    internal IntPtr m_item_type; //ItemTypeInfo* m_item_type;
+    //internal IntPtr m_item_type; //ItemTypeInfo* m_item_type;
     internal eItemKind m_item_kind; //eItemKind m_item_kind;
 
     internal Int32 m_type_id;

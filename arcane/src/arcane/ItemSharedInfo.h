@@ -117,6 +117,7 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   eItemKind itemKind() const { return m_item_kind; }
   IItemFamily* itemFamily() const { return m_item_family; }
   Int32 nbParent() const { return m_nb_parent; }
+  ItemTypeInfo* typeInfoFromId(Int32 type_id) const;
 
   ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
   constexpr Int32 nbNode() const { return 0; }
@@ -273,11 +274,12 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   MeshItemInternalList* m_items = nullptr;
   ItemInternalConnectivityList* m_connectivity;
   IItemFamily* m_item_family = nullptr;
+  ItemTypeMng* m_item_type_mng = nullptr;
   Int64ArrayView* m_unique_ids = nullptr;
   Int32ArrayView* m_parent_item_ids = nullptr;
   Int32ArrayView* m_owners = nullptr;
   Int32ArrayView* m_flags = nullptr;
-  ItemTypeInfo* m_item_type = nullptr;
+  //ItemTypeInfo* m_item_type = nullptr;
   eItemKind m_item_kind = IK_Unknown;
 
  private:

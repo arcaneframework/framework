@@ -519,7 +519,7 @@ class ARCANE_CORE_EXPORT ItemInternal
   //! Numéro du type de l'entité
   Integer typeId() const { return m_shared_info->typeId(); }
   //! Type de l'entité.
-  ItemTypeInfo* typeInfo() const { return m_shared_info->m_item_type; }
+  ItemTypeInfo* typeInfo() const { return m_shared_info->typeInfoFromId(m_item_type_id); }
   //! Infos partagées de l'entité.
   ItemSharedInfo* sharedInfo() const { return m_shared_info; }
   //! Famille dont est issue l'entité
@@ -699,9 +699,10 @@ class ARCANE_CORE_EXPORT ItemInternal
   void setLocalId(Int32 local_id) { m_local_id = local_id; }
   ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception.")
   void setDataIndex(Integer);
-  void setSharedInfo(ItemSharedInfo* shared_infos)
+  void setSharedInfo(ItemSharedInfo* shared_infos,Int32 type_id)
   {
     m_shared_info = shared_infos;
+    m_item_type_id = type_id;
   }
 
  public:
@@ -756,13 +757,11 @@ class ARCANE_CORE_EXPORT ItemInternal
    * Pour des raisons de performance, le numéro local doit être
    * le premier champs de la classe.
    */
-  Int32 m_local_id;
+  Int32 m_local_id = NULL_ITEM_LOCAL_ID;
   /*!
-   * \brief Indice des données de cette entité dans le tableau des données.
-   *
-   * Ce champs n'est plus utilisé depuis la version 3.7 de Arcane.
+   * \brief Type de l'entité.
    */
-  Int32 m_padding = 0;
+  Int32 m_item_type_id = 0;
   //! Infos partagées entre toutes les entités ayant les mêmes caractéristiques
   ItemSharedInfo* m_shared_info;
 
