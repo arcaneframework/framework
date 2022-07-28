@@ -111,9 +111,6 @@ ItemSharedInfoList(ItemFamily* family)
 , m_item_kind(family->itemKind())
 , m_item_shared_infos_buffer(new MultiBufferT<ItemSharedInfo>(100))
 , m_infos_map(new ItemSharedInfoMap())
-, m_max_node_per_item_type(0)
-, m_max_edge_per_item_type(0)
-, m_max_face_per_item_type(0)
 {
   {
     String var_name(family->name());
@@ -309,62 +306,6 @@ dumpSharedInfos()
     info() << "INE: " << i->first;
     info() << "ISI: " << *i->second;
   }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Integer ItemSharedInfoList::
-maxLocalNodePerItemType()
-{
-  _checkConnectivityInfo();
-  return m_max_node_per_item_type;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Integer ItemSharedInfoList::
-maxLocalEdgePerItemType()
-{
-  _checkConnectivityInfo();
-  return m_max_edge_per_item_type;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Integer ItemSharedInfoList::
-maxLocalFacePerItemType()
-{
-  _checkConnectivityInfo();
-  return m_max_face_per_item_type;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemSharedInfoList::
-_checkConnectivityInfo()
-{
-  if (!m_connectivity_info_changed)
-    return;
-
-  m_max_node_per_item_type = 0;
-  m_max_edge_per_item_type = 0;
-  m_max_face_per_item_type = 0;
-
-  for( ConstIterT<ItemSharedInfoMap> i(*m_infos_map); i(); ++i ){
-    ItemSharedInfo* isi = i->second;
-    m_max_node_per_item_type = math::max(m_max_node_per_item_type,
-                                         isi->m_item_type->nbLocalNode());
-    m_max_edge_per_item_type = math::max(m_max_edge_per_item_type,
-                                         isi->m_item_type->nbLocalEdge());
-    m_max_face_per_item_type = math::max(m_max_face_per_item_type,
-                                         isi->m_item_type->nbLocalFace());
-  }
-
-  m_connectivity_info_changed = false;
 }
 
 /*---------------------------------------------------------------------------*/

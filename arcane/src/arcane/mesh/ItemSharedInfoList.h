@@ -84,7 +84,6 @@ class ItemSharedInfoList
   void removeOne(ItemSharedInfo* item)
   {
     m_list_changed = true;
-    m_connectivity_info_changed = true;
     m_free_item_shared_infos.add(item);
     --m_nb_item_shared_info;
   }
@@ -112,10 +111,12 @@ class ItemSharedInfoList
   Integer maxFacePerItem() const { return 0; }
   ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
   Integer maxCellPerItem() const { return 0; }
-
-  Integer maxLocalNodePerItemType();
-  Integer maxLocalEdgePerItemType();
-  Integer maxLocalFacePerItemType();
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
+  Integer maxLocalNodePerItemType() const { return 0; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
+  Integer maxLocalEdgePerItemType() const { return 0; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
+  Integer maxLocalFacePerItemType() const { return 0; }
 
  public:
 
@@ -128,7 +129,6 @@ class ItemSharedInfoList
     ItemSharedInfo* new_item = 0;
     Integer nb_free = m_free_item_shared_infos.size();
     m_list_changed = true;
-    m_connectivity_info_changed = true;
     if (nb_free!=0){
       new_item = m_free_item_shared_infos.back();
       m_free_item_shared_infos.popBack();
@@ -148,21 +148,13 @@ class ItemSharedInfoList
 
   ItemFamily* m_family = nullptr;
   Integer m_nb_item_shared_info = 0; //!< Nombre d'objets alloués
-  eItemKind m_item_kind= IK_Unknown;
+  eItemKind m_item_kind = IK_Unknown;
   UniqueArray<ItemSharedInfo*> m_item_shared_infos;
   UniqueArray<ItemSharedInfo*> m_free_item_shared_infos;
   MultiBufferT<ItemSharedInfo>* m_item_shared_infos_buffer;
   ItemSharedInfoMap* m_infos_map = nullptr;
   Variables* m_variables = nullptr;
   bool m_list_changed = false;
-  bool m_connectivity_info_changed = true;
-  Integer m_max_node_per_item_type = 0;
-  Integer m_max_edge_per_item_type = 0;
-  Integer m_max_face_per_item_type = 0;
-
- private:
-
-  void _checkConnectivityInfo();
 };
 
 /*---------------------------------------------------------------------------*/

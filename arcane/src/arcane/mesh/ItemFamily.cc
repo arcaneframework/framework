@@ -2421,7 +2421,7 @@ _updateItemsSharedFlag()
 void ItemFamily::
 _computeConnectivityInfo(ItemConnectivityInfo* ici)
 {
-  ici->fill(m_item_shared_infos,itemInternalConnectivityList());
+  ici->fill(itemInternalConnectivityList());
   info(5) << "COMPUTE CONNECTIVITY INFO family=" << name() << " v=" << ici
           << " node=" << ici->maxNodePerItem() << " face=" << ici->maxFacePerItem()
           << " edge=" << ici->maxEdgePerItem() << " cell=" << ici->maxCellPerItem();
