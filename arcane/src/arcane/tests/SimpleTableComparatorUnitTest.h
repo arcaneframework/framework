@@ -14,6 +14,7 @@
 #include "arcane/BasicUnitTest.h"
 #include "arcane/IParallelMng.h"
 #include "arcane/ISimpleTableComparator.h"
+#include "arcane/ISimpleTableOutput.h"
 #include "arcane/ITimeLoopMng.h"
 #include "arcane/ServiceBuilder.h"
 
@@ -58,6 +59,7 @@ class SimpleTableComparatorUnitTest
 
  private:
   ISimpleTableOutput* ptrSTO;
+  ISimpleTableComparator* ptrSTC;
 };
 
 /*---------------------------------------------------------------------------*/

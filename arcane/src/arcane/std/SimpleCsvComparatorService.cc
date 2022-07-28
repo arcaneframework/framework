@@ -38,16 +38,19 @@ addSimpleTableOutputEntry(ISimpleTableOutput* ptr_sto)
 void SimpleCsvComparatorService::
 readSimpleTableOutputEntry()
 {
-  m_name_tab = m_iSTO->name();
-  m_path = m_iSTO->path();
-
-  Directory dir(m_path);
+  Directory dir(m_iSTO->path());
 
   String dir_path = dir.path();
 
   String rogn = dir_path.substring(0, dir_path.len()-1);
   info() << rogn;
+  rogn = rogn + "_ref/";
+  info() << rogn;
 
+  dir = Directory(rogn);
+
+  m_path = dir.path();
+  m_name_tab = m_iSTO->name();
 
   // if (name.startsWith("/")) {
   //   name = "/" + name;

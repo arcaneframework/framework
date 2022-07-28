@@ -17,6 +17,10 @@
       <description>Service implémentant ISimpleTableComparator</description>
     </service-instance>
 
+    <service-instance name="simple-table-output" type="Arcane::ISimpleTableOutput">
+      <description>Service implémentant ISimpleTableOutput</description>
+    </service-instance>
+
   </options>
 
 </service>

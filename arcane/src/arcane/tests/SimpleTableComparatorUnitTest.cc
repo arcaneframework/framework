@@ -38,6 +38,29 @@ ASSERT_EQUAL_ARRAY(UniqueArray<T> expected, UniqueArray<T> actual)
 void SimpleTableComparatorUnitTest::
 setUpForClass()
 {
+  ptrSTO = options()->getSimpleTableOutput();
+  ptrSTC = options()->getSimpleTableComparator();
+
+  // Init STO
+  ptrSTO->init("test");
+
+  ptrSTO->addColumn("Ma colonne 1");
+  ptrSTO->addColumn("Ma colonne 2");
+  ptrSTO->addColumn("Ma colonne 3");
+
+  ptrSTO->addRow("Ma ligne 1", RealUniqueArray{ 1, 2, 3 });
+  ptrSTO->addRow("Ma ligne 2", RealUniqueArray{ 4, 5, 6 });
+  ptrSTO->addRow("Ma ligne 3", RealUniqueArray{ 7, 8, 9 });
+
+  RealUniqueArray result1 = { 1, 2, 2 };
+  RealUniqueArray result2 = { 4, 5, 6 };
+  RealUniqueArray result3 = { 7, 8, 9 };
+
+  ptrSTO->writeFile("test_csv_comparator", 0);
+
+  // Init STC
+  ptrSTC->addSimpleTableOutputEntry(ptrSTO);
+  ptrSTC->readSimpleTableOutputEntry();
 
 }
 
