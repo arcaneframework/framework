@@ -16,6 +16,7 @@
 #include <arcane/Directory.h>
 #include <arcane/IMesh.h>
 #include <arcane/IParallelMng.h>
+#include "arcane/utils/StringBuilder.h"
 
 #include <optional>
 
@@ -42,18 +43,23 @@ init()
 void SimpleCsvOutputService::
 init(String name_table)
 {
-  m_name_tab = _computeName(name_table, m_name_tab_only_P0);
-  m_name_tab_computed = true;
-
-  m_separator = ";";
-
   if (m_with_option) {
-    m_dir_string = options()->getTableDir();
+    init(name_table, m_dir_string = options()->getTableDir());
   }
   else {
-    m_dir_string = "";
+    init(name_table, "");
   }
+}
 
+void SimpleCsvOutputService::
+init(String name_table, String name_dir)
+{
+  m_name_tab = name_table;
+  _computeName();
+
+  m_dir_string = name_dir;
+
+  m_separator = ";";
   m_precision_print = 6;
   m_is_fixed_print = true;
 }
@@ -813,8 +819,11 @@ print(Integer only_proc)
 bool SimpleCsvOutputService::
 writeFile(Integer only_proc)
 {
+  // Finalisation du nom du csv (si ce n'est pas déjà fait).
+  _computeName();
+
   // Création du répertoire.
-  bool result = _computePath();
+  bool result = _createDirectory();
   if(!result) return false;
 
   // Si l'on n'est pas le processus demandé, on return true.
@@ -822,18 +831,12 @@ writeFile(Integer only_proc)
   if (only_proc != -1 && mesh()->parallelMng()->commRank() != only_proc)
     return true;
 
-  String file_name = _computeFinal();
-
-  // Si true, alors les noms de fichier et dossier ne permettent pas d'écrire
-  // un fichier par processus (pas de @proc_id@ dans l'un des noms).
-  bool only_one_proc = m_dir_only_P0 && m_name_tab_only_P0;
-
-  // Si l'on a only_proc == -1 et que only_one_proc == true, alors il n'y a que le
+  // Si l'on a only_proc == -1 et que m_name_tab_only_once == true, alors il n'y a que le
   // processus 0 qui doit écrire.
-  if ((only_proc == -1 && only_one_proc) && mesh()->parallelMng()->commRank() != 0)
+  if ((only_proc == -1 && m_name_tab_only_once) && mesh()->parallelMng()->commRank() != 0)
     return true;
 
-  std::ofstream ofile(m_dir.file(file_name).localstr());
+  std::ofstream ofile(m_dir.file(m_name_csv).localstr());
   if (ofile.fail())
     return false;
 
@@ -857,10 +860,6 @@ writeFile(String dir, Integer only_proc)
 String SimpleCsvOutputService::
 dir()
 {
-  if (!m_dir_computed) {
-    m_dir_string = _computeName(m_dir_string, m_dir_only_P0);
-    m_dir_computed = true;
-  }
   return m_dir_string;
 }
 
@@ -872,49 +871,48 @@ setDir(String dir)
 }
 
 String SimpleCsvOutputService::
-path()
+nameTab()
 {
-  return m_dir.path();
-}
-
-String SimpleCsvOutputService::
-name()
-{
-  if (!m_name_tab_computed) {
-    m_name_tab = _computeName(m_name_tab, m_name_tab_only_P0);
-    m_name_tab_computed = true;
-  }
+  _computeName();
   return m_name_tab;
 }
 
 void SimpleCsvOutputService::
-setName(String name)
+setNameTab(String name)
 {
   m_name_tab = name;
   m_name_tab_computed = false;
 }
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/**
- * @brief Méthode permettant de finaliser les noms avant écriture.
- * 
- * @return String Le nom du fichier à sortir (avec extension).
- */
 String SimpleCsvOutputService::
-_computeFinal()
+nameFile()
 {
-  if (!m_dir_computed) {
-    m_dir_string = _computeName(m_dir_string, m_dir_only_P0);
-    m_dir_computed = true;
-  }
-  if (!m_name_tab_computed) {
-    m_name_tab = _computeName(m_name_tab, m_name_tab_only_P0);
-    m_name_tab_computed = true;
-  }
-  return m_name_tab + ".csv";
+  _computeName();
+  return m_name_csv;
 }
+
+Directory SimpleCsvOutputService::
+pathOutput()
+{
+  return Directory(rootPathOutput(), m_dir_string);
+}
+
+Directory SimpleCsvOutputService::
+rootPathOutput()
+{
+  return Directory(subDomain()->exportDirectory(), "csv");
+}
+
+bool SimpleCsvOutputService::
+isOneFileByProcsPermited()
+{
+  _computeName();
+  return !m_name_tab_only_once;
+}
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 /**
  * @brief Méthode permettant de remplacer les symboles de nom par leur valeur.
@@ -924,17 +922,21 @@ _computeFinal()
  *                de différencier les fichiers écrits par differents processus.
  * @return String Le nom avec les symboles remplacés.
  */
-String SimpleCsvOutputService::
-_computeName(String name, bool& only_once)
+void SimpleCsvOutputService::
+_computeName()
 {
+  if(m_name_tab_computed){
+    return;
+  }
+
   // Permet de contourner le bug avec String::split() si le nom commence par '@'.
-  if (name.startsWith("@")) {
-    name = "@" + name;
+  if (m_name_tab.startsWith("@")) {
+    m_name_tab = "@" + m_name_tab;
   }
 
   StringUniqueArray string_splited;
   // On découpe la string là où se trouve les @.
-  name.split(string_splited, '@');
+  m_name_tab.split(string_splited, '@');
 
   // On traite les mots entre les "@".
   if (string_splited.size() > 1) {
@@ -943,11 +945,11 @@ _computeName(String name, bool& only_once)
     // On remplace "@proc_id@" par l'id du proc.
     if (proc_id) {
       string_splited[proc_id.value()] = String::fromNumber(mesh()->parallelMng()->commRank());
-      only_once = false;
+      m_name_tab_only_once = false;
     }
     // Il n'y a que un seul proc qui write.
     else {
-      only_once = true;
+      m_name_tab_only_once = true;
     }
 
     // On recherche "num_procs" dans le tableau (donc @num_procs@ dans le nom).
@@ -959,15 +961,21 @@ _computeName(String name, bool& only_once)
   }
 
   // On recombine la chaine.
-  String combined = "";
+  StringBuilder combined = "";
   for (String str : string_splited) {
     // Permet de contourner le bug avec String::split() s'il y a '@@@' dans le nom ou si le
     // nom commence par '@' (en complément des premières lignes de la méthode).
     if (str == "@")
       continue;
-    combined = combined + str;
+    combined.append(str);
   }
-  return combined;
+
+  m_name_tab = combined.toString();
+  combined.append(".csv");
+  m_name_csv = combined.toString();
+
+  m_name_tab_computed = true;
+  return;
 }
 
 /**
@@ -1010,11 +1018,18 @@ _print(std::ostream& stream)
 }
 
 bool SimpleCsvOutputService::
-_computePath()
+_createDirectory()
 {
+  if(m_dir_computed){
+    return true;
+  }
+
   int sf = 0;
 
-  Directory d(subDomain()->exportDirectory(), "csv");
+  // TODO : Voir si l'on peut combiner les deux en faisant
+  // "csv/" + m_dir_string
+  // (Windows ?)
+  Directory d = rootPathOutput();
   m_dir = Directory(d, m_dir_string);
 
   if (mesh()->parallelMng()->commRank() == 0) {
@@ -1024,9 +1039,13 @@ _computePath()
   if (mesh()->parallelMng()->commSize() > 1) {
     sf = mesh()->parallelMng()->reduce(Parallel::ReduceMax, sf);
   }
-  if (sf)
+  if (sf != 0){
+    m_dir_computed = false;
+    warning() << "Erreur lors de la création des répertoires";
     return false;
+  }
 
+  m_dir_computed = true;
   return true;
 }
 

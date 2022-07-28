@@ -18,6 +18,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include <arcane/ItemTypes.h>
+#include <arcane/Directory.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -52,6 +53,14 @@ public:
    * @param name_table Le nom du tableau (et du fichier de sortie).
    */
   virtual void init(String name_table) = 0;
+  /**
+   * @brief Méthode permettant d'initialiser le tableau.
+   * 
+   * @param name_table Le nom du tableau (et du fichier de sortie).
+   * @param name_dir Le nom du dossier dans lequel enregistrer les tableaux.
+   */
+  virtual void init(String name_table, String name_dir) = 0;
+
   /**
    * @brief Méthode permettant de nettoyer le tableau.
    * Nécessite un init() après.
@@ -694,44 +703,83 @@ public:
 /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Accesseur permettant de récupérer le répertoire actuellement
-   * enregistré dans la classe. 
+   * @brief Accesseur permettant de récupérer le nom du répertoire où sera
+   * placé les tableaux.
+   * 
+   * Peut-être différent pour chaque processus (dépendant de l'implémentation).
    * 
    * @return String Le répertoire.
    */
   virtual String dir() = 0;
 
-    /**
-   * @brief Accesseur permettant de récupérer le chemin où sera
-   * enregistré le(s) tableau(x). 
-   * 
-   * @return String Le chemin.
-   */
-  virtual String path() = 0;
 
   /**
    * @brief Accesseur permettant de définir le répertoire
-   * dans lequel enregistrer le(s) tableau(x).
+   * dans lequel enregistrer les tableaux.
+   * 
+   * Peut-être différent pour chaque processus (dépendant de l'implémentation).
    * 
    * @param dir Le répertoire.
    */
   virtual void setDir(String dir) = 0;
 
   /**
-   * @brief Accesseur permettant de récupérer le nom actuellement
-   * enregistré dans la classe. 
+   * @brief Accesseur permettant de récupérer le nom des tableaux.
+   * 
+   * Peut-être différent pour chaque processus (dépendant de l'implémentation).
    * 
    * @return String Le nom.
    */
-  virtual String name() = 0;
+  virtual String nameTab() = 0;
 
     /**
-   * @brief Accesseur permettant de définir le nom
-   * du tableau (et du fichier de sortie).
+   * @brief Accesseur permettant de définir le nom du tableau.
+   * 
+   * Peut-être différent pour chaque processus (dépendant de l'implémentation).
    * 
    * @param name Le nom.
    */
-  virtual void setName(String name) = 0;
+  virtual void setNameTab(String name) = 0;
+
+  /**
+   * @brief Accesseur permettant de récupérer le nom des fichiers.
+   * 
+   * Peut-être différent pour chaque processus (dépendant de l'implémentation).
+   * 
+   * @return String Le nom.
+   */
+  virtual String nameFile() = 0;
+
+    /**
+   * @brief Accesseur permettant de récupérer le chemin où sera
+   * enregistrés les tableaux. 
+   * 
+   * En comparaison avec rootPathOutput(), le retour peut être
+   * different selon le "dir" et le "name".
+   * 
+   * @return String Le chemin.
+   */
+  virtual Directory pathOutput() = 0;
+
+
+    /**
+   * @brief Accesseur permettant de récupérer le chemin où l'implémentation
+   * enregistre ces tableaux. 
+   * 
+   * En comparaison avec pathOutput(), le retour ne dépend pas de "dir" ou de "name".
+   * 
+   * @return String Le chemin.
+   */
+  virtual Directory rootPathOutput() = 0;
+
+  /**
+   * @brief Méthode permettant de savoir si les paramètres actuellement en possession
+   * de l'implémentation lui permet d'écrire un fichier par processus.
+   * 
+   * @return true Si oui, l'implémentation peut écrire un fichier par processus.
+   * @return false Sinon, il n'y a qu'un seul fichier qui peut être écrit.
+   */
+  virtual bool isOneFileByProcsPermited() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -37,9 +37,8 @@ class SimpleCsvOutputService
   explicit SimpleCsvOutputService(const ServiceBuildInfo& sbi)
   : ArcaneSimpleCsvOutputObject(sbi)
   , m_dir_computed(false)
-  , m_dir_only_P0(true)
   , m_name_tab_computed(false)
-  , m_name_tab_only_P0(true)
+  , m_name_tab_only_once(true)
   , m_precision_print(6)
   , m_is_fixed_print(true)
   , m_name_rows(0)
@@ -57,6 +56,7 @@ class SimpleCsvOutputService
  public:
   void init() override;
   void init(String name_table) override;
+  void init(String name_table, String name_dir) override;
 
   void clear() override;
 
@@ -137,28 +137,32 @@ class SimpleCsvOutputService
 
   String dir() override;
   void setDir(String dir) override;
-  
-  String path() override;
 
-  String name() override;
-  void setName(String name) override;
+  String nameTab() override;
+  void setNameTab(String name) override;
+  String nameFile() override;
+  
+  Directory pathOutput() override;
+  Directory rootPathOutput() override;
+
+  bool isOneFileByProcsPermited() override;
 
  private:
-  String _computeName(String name, bool& only_once);
   String _computeFinal();
   void _print(std::ostream& stream);
-  bool _computePath();
+  void _computeName();
+  bool _createDirectory();
 
  private:
   String m_dir_string;
   bool m_dir_computed;
-  bool m_dir_only_P0;
 
   Directory m_dir;
 
   String m_name_tab;
+  String m_name_csv;
   bool m_name_tab_computed;
-  bool m_name_tab_only_P0;
+  bool m_name_tab_only_once;
 
   String m_separator;
   Integer m_precision_print;
