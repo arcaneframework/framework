@@ -3178,13 +3178,12 @@ mergeMeshes(ConstArrayView<IMesh*> meshes)
 void DynamicMesh::
 _printConnectivityPolicy()
 {
-  info() << "Using new connectivity accessor in ItemInternal";
-
   info() << "Connectivity policy=" << (int)m_connectivity_policy
          << " connectivity_size_policy=" << ARCANE_ITEM_CONNECTIVITY_SIZE_MODE
          << " sizeof(ItemInternal)=" << sizeof(ItemInternal)
          << " sizeof(ItemInternalConnectivityList)=" << sizeof(ItemInternalConnectivityList)
-         << " sizeof(ItemSharedInfo)=" << sizeof(ItemSharedInfo);
+         << " sizeof(ItemSharedInfo)=" << sizeof(ItemSharedInfo)
+         << " sizeof(Item)=" << sizeof(Item);
 
   if (m_connectivity_policy != InternalConnectivityPolicy::NewOnly)
     ARCANE_FATAL("Invalid value '{0}' for InternalConnectivityPolicy. Only '{1}' is allowed",

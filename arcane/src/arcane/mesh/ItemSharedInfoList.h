@@ -64,13 +64,19 @@ class ItemSharedInfoWithType
 
   ItemSharedInfoWithType(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
                          ItemInternalConnectivityList* connectivity,ItemVariableViews* variable_views,
-                         Int32ConstArrayView buffer)
-  : ItemSharedInfo(family,item_type,items,connectivity,variable_views,buffer){}
+                         Int32ConstArrayView buffer);
 
  public:
 
   ItemSharedInfo* sharedInfo() { return this; }
   Int32 itemTypeId() { return this->m_type_id; }
+  Int32 index() const { return m_index; }
+  void setIndex(Int32 aindex) { m_index = aindex; }
+  Int32 nbReference() const { return m_nb_reference; }
+  void addReference(){ ++m_nb_reference; }
+  void removeReference(){ --m_nb_reference; }
+  void serializeWrite(Int32ArrayView buffer);
+  static Integer serializeSize() { return 6; }
 
  public:
 
@@ -79,6 +85,11 @@ class ItemSharedInfoWithType
     isi.print(o);
     return o;
   }
+
+ private:
+
+  Int32 m_index = NULL_INDEX;
+  Int32 m_nb_reference = 0;
 };
 
 /*---------------------------------------------------------------------------*/

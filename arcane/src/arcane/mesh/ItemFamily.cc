@@ -951,7 +951,8 @@ prepareForDump()
     }
     for( Integer i=0; i<nb_item; ++i ){
       ItemInternal* item = items[i];
-      items_shared_data_index[i] = item->sharedInfo()->index();
+      ItemSharedInfoWithType* isi = m_item_shared_infos->findSharedInfo(item->typeInfo());
+      items_shared_data_index[i] = isi->index();
 #if 0
 #ifdef ARCANE_DEBUG
       //if (itemKind()==IK_Particle){
@@ -1590,11 +1591,10 @@ _updateSharedInfoAdded(ItemInternal* item)
 {
   ItemSharedInfo* old_isi = item->sharedInfo();
   ItemSharedInfoWithType* new_isi = _findSharedInfo(item->typeInfo());
+  ARCANE_ASSERT(old_isi==new_isi->sharedInfo(),("Old and new ItemSharedInfo are different"));
   item->setSharedInfo(new_isi->sharedInfo(),new_isi->itemTypeId());
 
   m_need_prepare_dump = true;
-  new_isi->sharedInfo()->addReference();
-  old_isi->removeReference();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1608,10 +1608,8 @@ _updateSharedInfoRemoved4(ItemInternal* item)
 
   ItemSharedInfo* old_isi = item->sharedInfo();
   ItemSharedInfoWithType* new_isi = _findSharedInfo(item->typeInfo());
+  ARCANE_ASSERT(old_isi==new_isi->sharedInfo(),("Old and new ItemSharedInfo are different"));
   item->setSharedInfo(new_isi->sharedInfo(),new_isi->itemTypeId());
-
-  new_isi->sharedInfo()->addReference();
-  old_isi->removeReference();
 }
 
 /*---------------------------------------------------------------------------*/

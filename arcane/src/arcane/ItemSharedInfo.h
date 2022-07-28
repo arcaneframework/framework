@@ -109,9 +109,6 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
                  ItemInternalConnectivityList* connectivity,ItemVariableViews* variable_views);
 
-  ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
-                 ItemInternalConnectivityList* connectivity,ItemVariableViews* variable_views,
-                 Int32ConstArrayView buffer);
  public:
 
   eItemKind itemKind() const { return m_item_kind; }
@@ -279,28 +276,12 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   Int32ArrayView* m_parent_item_ids = nullptr;
   Int32ArrayView* m_owners = nullptr;
   Int32ArrayView* m_flags = nullptr;
-  //ItemTypeInfo* m_item_type = nullptr;
   eItemKind m_item_kind = IK_Unknown;
 
  private:
 
   Int32 m_type_id = IT_NullType;
   Int32 m_nb_parent = 0;
-  Int32 m_index = NULL_INDEX;
-  Int32 m_nb_reference = 0;
-
- public:
-
-  Int32 index() const { return m_index; }
-  void setIndex(Int32 aindex) { m_index = aindex; }
-  Int32 nbReference() const { return m_nb_reference; }
-  void addReference(){ ++m_nb_reference; }
-  void removeReference(){ --m_nb_reference; }
-  void serializeWrite(Int32ArrayView buffer);
-  static Integer serializeWriteSize();
-  static Integer serializeSize();
-  static Integer serializeAMRSize();
-  static Integer serializeNoAMRSize();
 
  public:
 

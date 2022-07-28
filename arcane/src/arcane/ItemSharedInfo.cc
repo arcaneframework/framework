@@ -70,103 +70,6 @@ ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList*
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-//! Constructeur de désérialisation
-ItemSharedInfo::
-ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
-               ItemInternalConnectivityList* connectivity,ItemVariableViews* variable_views,
-               Int32ConstArrayView buffer)
-: m_items(items)
-, m_connectivity(connectivity)
-, m_item_family(family)
-, m_item_type_mng(family->mesh()->itemTypeMng())
-, m_unique_ids(&(variable_views->m_unique_ids_view))
-, m_parent_item_ids(&(variable_views->m_parent_ids_view))
-, m_owners(&(variable_views->m_owners_view))
-, m_flags(&(variable_views->m_flags_view))
-, m_item_kind(family->itemKind())
-, m_type_id(item_type->typeId())
-{
-  // La taille du buffer dépend des versions de Arcane.
-  // Avant la 3.2 (Octobre 2021), la taille du buffer est 9 (non AMR) ou 13 (AMR)
-  // Entre la 3.2 et la 3.6 (Mai 2022), la taille vaut toujours 13
-  // A partir de la 3.6, la taille vaut 6.
-  //
-  // On ne cherche pas à faire de reprise avec des versions
-  // de Arcane antérieures à 3.2 donc on peut supposer que la taille
-  // du buffer vaut 13. Ces versions utilisent la nouvelle connectivité
-  // et donc le nombre des éléments est toujours 0 (ainsi que les *allocated)
-  // sauf pour m_nb_node.
-  //
-  // A partir de la 3.6, le nombre de noeuds n'est plus utilisé non
-  // plus et vaut toujours 0. On pourra donc pour les versions de fin
-  // 2022 supprimer ces champs de ItemSharedInfo.
-
-  // TODO: Indiquer qu'à partir de la version 3.7 on ne supporte
-  // que buf_size==6 avec le numéro de version 0x0307
-  Int32 buf_size = buffer.size();
-  if (buf_size>=9){
-    ARCANE_FATAL("Invalid buf size '{0}'. This is probably because your version of Arcane is too old",buf_size);
-  }
-  else if (buf_size>=4){
-    m_index = buffer[2];
-    m_nb_reference = buffer[3];
-  }
-
-  _init(m_item_kind);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*!
- * \brief Nombre d'informations à écrire pour les données.
- *
- * A partir de version 3.6, on ne conserve plus d'informations sur le
- * nombre d'entités connectées.
- */
-Integer ItemSharedInfo::
-serializeWriteSize()
-{
-  return 6;
-}
-
-Integer ItemSharedInfo::
-serializeSize()
-{
-	return serializeWriteSize();
-}
-
-Integer ItemSharedInfo::
-serializeAMRSize()
-{
-  return serializeWriteSize();
-}
-
-Integer ItemSharedInfo::
-serializeNoAMRSize()
-{
-  return serializeWriteSize();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemSharedInfo::
-serializeWrite(Int32ArrayView buffer)
-{
-  buffer[0] = m_type_id; // Doit toujours être le premier
-
-  buffer[1] = 0x0307; // Numéro de version (3.7).
-
-  buffer[2] = m_index;
-  buffer[3] = m_nb_reference;
-
-  buffer[4] = 0; // Réservé
-  buffer[5] = 0; // Réservé
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 void ItemSharedInfo::
 print(std::ostream& o) const
@@ -176,9 +79,7 @@ print(std::ostream& o) const
     << " Items: " << m_items
     << " Connectivity: " << m_connectivity
     << " Family: " << m_item_family->fullName()
-    << " TypeId: " << m_type_id
-    << " Index: " << m_index
-    << " NbReference: " << m_nb_reference;
+    << " TypeId: " << m_type_id;
 }
 
 /*---------------------------------------------------------------------------*/
