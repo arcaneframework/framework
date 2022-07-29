@@ -63,7 +63,6 @@ class SimpleCsvComparatorService
   bool writeRefFile(Integer only_proc) override;
   bool readRefFile(Integer only_proc) override;
   bool isRefExist(Integer only_proc) override;
-  void print() override;
   bool compareWithRef(Integer only_proc, Integer epsilon) override;
 
   bool addColumnToCompare(String name_column) override;

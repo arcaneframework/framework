@@ -213,31 +213,6 @@ compareWithRef(Integer only_proc, Integer epsilon)
   return is_ok;
 }
 
-// TODO DEBUG A suppr.
-void SimpleCsvComparatorService::
-print()
-{
-  String m_separator = ";";
-
-  std::cout << std::setiosflags(std::ios::fixed);
-  std::cout << std::setprecision(std::numeric_limits<Real>::digits10 + 1);
-
-  for (Integer j = 0; j < m_name_columns_with_name_of_tab.size(); j++) {
-    std::cout << m_name_columns_with_name_of_tab[j] << m_separator;
-  }
-  std::cout << std::endl;
-
-  for (Integer i = 0; i < m_values_csv.dim1Size(); i++) {
-    std::cout << m_name_rows[i] << m_separator;
-    ConstArrayView<Real> view = m_values_csv[i];
-    for (Integer j = 0; j < m_values_csv.dim2Size(); j++) {
-      std::cout << view[j] << m_separator;
-    }
-    std::cout << std::endl;
-  }
-}
-
-
 bool SimpleCsvComparatorService::
 addColumnToCompare(String name_column)
 {

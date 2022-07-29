@@ -55,6 +55,10 @@ public:
    */
   virtual void init(ISimpleTableOutput* ptr_sto) = 0;
 
+  /**
+   * @brief Méthode permettant de remettre à zero l'objet.
+   * Necessite un appel à init() après.
+   */
   virtual void clear() = 0;
 
   /**
@@ -101,12 +105,6 @@ public:
    * @return false Si le fichier n'a pas été trouvé (et si processus appelant != only_proc).
    */
   virtual bool isRefExist(Integer only_proc = -1) = 0;
-
-  /**
-   * @brief Méthode permettant d'écrire le tableau sur la sortie standard.
-   * 
-   */
-  virtual void print() = 0;
 
   /**
    * @brief Méthode permettant de comparer l'objet de type ISimpleTableOutput
