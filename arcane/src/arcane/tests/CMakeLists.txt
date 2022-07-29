@@ -238,8 +238,11 @@ configure_file(test-CasePartVtu.sh.in ${ARCANE_TEST_PATH}/test-CasePartVtu.sh)
 # Copie le répertoire des données dans le répertoire d'exécution des tests
 # Cela est nécessaire pour certains cas comme ceux faisant une reprise
 # depuis une ancienne version de Arcane
+
+# La protection pour ce test est issue du test hydro3_cartesian_small
 file(COPY ${TEST_PATH}/data/test_output_continue_hydro3_cartesian_small
   DESTINATION ${ARCANE_TEST_WORKDIR} USE_SOURCE_PERMISSIONS)
+# La protection pour ce test est issue du test hydro3_cartesian_small_4thread
 file(COPY ${TEST_PATH}/data/test_output_continue_hydro3_cartesian_small_4shm
   DESTINATION ${ARCANE_TEST_WORKDIR} USE_SOURCE_PERMISSIONS)
 
