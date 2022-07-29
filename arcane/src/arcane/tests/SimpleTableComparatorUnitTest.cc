@@ -60,6 +60,8 @@ setUpForClass()
   ptrSTC->init(ptrSTO);
   ptrSTC->writeRefFile();
 
+  ptrSTO->editElem("Ma colonne 1", "Ma ligne 1", 0);
+
   ptrSTC->readRefFile();
 
   ptrSTC->print();

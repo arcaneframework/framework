@@ -19,6 +19,7 @@
 
 #include <optional>
 #include <string>
+#include <regex>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -142,11 +143,13 @@ compareWithRef(Integer epsilon)
       Real val2 = view[j];
       if(math::isNearlyEqualWithEpsilon(val1, val2, epsilon))
       {
-        info() << "OK";
+        info() << "Compare value -- Column name: " << m_name_columns_with_name_of_tab[j+1] << " -- Row name: " << m_name_rows[i];
+        info() << "It's equals";
       }
       else
       {
-        info() << "NOK";
+        info() << "Compare value -- Column name: " << m_name_columns_with_name_of_tab[j+1] << " -- Row name: " << m_name_rows[i];
+        warning() << "It's not equals";
         isOk = false;
       }
     }
@@ -195,15 +198,67 @@ _openFile(String name_file)
 bool SimpleCsvComparatorService::
 _exploreColumn(Integer pos)
 {
+  // S'il n'y a pas de précisions, on compare toutes les colonnes.
+  if(m_compared_columns.empty() && m_regex_columns.empty()) {
+    return true;
+  }
+
   String name_column = m_name_columns_with_name_of_tab[pos+1];
-  return true;
+
+  // D'abord, on regarde si le nom de la colonne est dans 
+  // le tableau. 
+  if(m_compared_columns.contains(name_column))
+  {
+    return true;
+  }
+  // S'il n'est pas dans le tableau et qu'il n'a a pas de regex
+  // on return false.
+  else if(m_regex_columns.empty())
+  {
+    return false;
+  }
+
+  // Sinon, on regarde aussi la regex.
+  std::regex self_regex(m_regex_columns.localstr(), std::regex_constants::ECMAScript | std::regex_constants::icase);
+  if (std::regex_search(name_column.localstr(), self_regex))
+  {
+    return !m_is_excluding_regex_columns;
+  }
+
+  return m_is_excluding_regex_columns;
 }
 
 bool SimpleCsvComparatorService::
 _exploreRows(Integer pos)
 {
+  // S'il n'y a pas de précisions, on compare toutes les colonnes.
+  if(m_compared_rows.empty() && m_regex_rows.empty()) {
+    return true;
+  }
+
   String name_rows = m_name_rows[pos];
-  return true;
+
+  // D'abord, on regarde si le nom de la colonne est dans 
+  // le tableau. 
+  if(m_compared_rows.contains(name_rows))
+  {
+    return true;
+  }
+  // S'il n'est pas dans le tableau et qu'il n'a a pas de regex
+  // on return false.
+  else if(m_regex_rows.empty())
+  {
+    return false;
+  }
+
+  // Sinon, on regarde aussi la regex.
+  std::regex self_regex(m_regex_rows.localstr(), std::regex_constants::ECMAScript | std::regex_constants::icase);
+  if (std::regex_search(name_rows.localstr(), self_regex))
+  {
+    return !m_is_excluding_regex_rows;
+  }
+
+  return m_is_excluding_regex_rows;
 }
 
 /*---------------------------------------------------------------------------*/
