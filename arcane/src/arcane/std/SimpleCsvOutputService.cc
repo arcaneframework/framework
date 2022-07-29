@@ -62,6 +62,8 @@ init(String name_table, String name_dir)
   m_separator = ";";
   m_precision_print = 6;
   m_is_fixed_print = true;
+
+  m_root = Directory(subDomain()->exportDirectory(), "csv");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -913,7 +915,14 @@ pathOutput()
 Directory SimpleCsvOutputService::
 rootPathOutput()
 {
-  return Directory(subDomain()->exportDirectory(), "csv");
+  return m_root;
+}
+
+void SimpleCsvOutputService::
+setRootPathOutput(Directory path_root)
+{
+  m_root = path_root;
+  m_dir_computed = false;
 }
 
 bool SimpleCsvOutputService::
@@ -921,6 +930,12 @@ isOneFileByProcsPermited()
 {
   _computeName();
   return !m_name_tab_only_once;
+}
+
+String SimpleCsvOutputService::
+fileExtension()
+{
+  return m_file_extension;
 }
 
 
@@ -1035,14 +1050,10 @@ _createDirectory()
     return true;
   }
 
-  int sf = 0;
-
-  // TODO : Voir si l'on peut combiner les deux en faisant
-  // "csv/" + m_dir_string
-  // (Windows ?)
   Directory d = rootPathOutput();
   m_dir = Directory(d, m_dir_string);
 
+  int sf = 0;
   if (mesh()->parallelMng()->commRank() == 0) {
     sf += d.createDirectory();
     sf += m_dir.createDirectory();

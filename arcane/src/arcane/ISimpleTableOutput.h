@@ -788,6 +788,13 @@ public:
   virtual Directory rootPathOutput() = 0;
 
   /**
+   * @brief Méthode permettant de changer le répertoire de destination
+   * des tableaux.
+   * 
+   * @param path_root Le nouveau répertoire de destination.
+   */
+  virtual void setRootPathOutput(Directory path_root) = 0;
+  /**
    * @brief Méthode permettant de savoir si les paramètres actuellement en possession
    * de l'implémentation lui permet d'écrire un fichier par processus.
    * 
@@ -795,6 +802,9 @@ public:
    * @return false Sinon, il n'y a qu'un seul fichier qui peut être écrit.
    */
   virtual bool isOneFileByProcsPermited() = 0;
+
+  virtual String fileExtension() = 0;
+
 };
 
 /*---------------------------------------------------------------------------*/

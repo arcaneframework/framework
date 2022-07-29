@@ -147,6 +147,9 @@ class SimpleCsvOutputService
   
   Directory pathOutput() override;
   Directory rootPathOutput() override;
+  void setRootPathOutput(Directory path_root) override;
+  
+  String fileExtension() override;
 
   bool isOneFileByProcsPermited() override;
 
@@ -161,6 +164,7 @@ class SimpleCsvOutputService
   bool m_dir_computed;
 
   Directory m_dir;
+  Directory m_root;
 
   String m_name_tab;
   String m_name_csv;
@@ -170,6 +174,8 @@ class SimpleCsvOutputService
   String m_separator;
   Integer m_precision_print;
   bool m_is_fixed_print;
+
+  const String m_file_extension = "csv";
 
   UniqueArray2<Real> m_values_csv;
 

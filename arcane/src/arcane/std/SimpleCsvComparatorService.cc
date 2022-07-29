@@ -38,8 +38,8 @@ init(ISimpleTableOutput* ptr_sto)
   m_iSTO = ptr_sto;
 
   // On déduit l'emplacement des fichiers de réferences.
-  m_path_ref_str = m_iSTO->dir()+"_ref";
-  m_path_ref = Directory(m_iSTO->rootPathOutput(), m_path_ref_str);
+  m_path_ref_str = m_iSTO->dir();
+  m_path_ref = Directory(Directory(subDomain()->exportDirectory(), "csv_refs"), m_path_ref_str);
   m_name_ref = m_iSTO->nameFile();
 }
 
@@ -80,10 +80,12 @@ writeRefFile(Integer only_proc)
   // On sauvegarde les paramètres d'origines.
   Integer save_preci = m_iSTO->precision();
   bool save_fixed = m_iSTO->fixed();
+  Directory save_root = m_iSTO->rootPathOutput();
 
   // On défini la précision max.
   m_iSTO->setPrecision(std::numeric_limits<Real>::digits10 + 1);
   m_iSTO->setFixed(true);
+  m_iSTO->setRootPathOutput(Directory(subDomain()->exportDirectory(), "csv_refs"));
 
   // On écrit nos fichiers de référence.
   bool fin = m_iSTO->writeFile(m_path_ref_str, only_proc);
@@ -91,6 +93,7 @@ writeRefFile(Integer only_proc)
   // On remet les paramètres par défault.
   m_iSTO->setPrecision(save_preci);
   m_iSTO->setFixed(save_fixed);
+  m_iSTO->setRootPathOutput(save_root);
 
   return fin;
 }
