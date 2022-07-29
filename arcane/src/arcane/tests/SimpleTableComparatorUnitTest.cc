@@ -40,7 +40,47 @@ setUpForClass()
 {
   ptrSTO = options()->getSimpleTableOutput();
   ptrSTC = options()->getSimpleTableComparator();
+}
 
+void SimpleTableComparatorUnitTest::
+setUp()
+{
+  ptrSTO->clear();
+  ptrSTC->clear();
+}
+
+void SimpleTableComparatorUnitTest::
+testSimple()
+{
+  // Init STO
+  ptrSTO->init("test", "dir_test");
+
+  ptrSTO->addColumn("Ma colonne 1");
+  ptrSTO->addColumn("Ma colonne 2");
+  ptrSTO->addColumn("Ma colonne 3");
+
+  ptrSTO->addRow("Ma ligne 1", RealUniqueArray{ 1, 2, 3 });
+  ptrSTO->addRow("Ma ligne 2", RealUniqueArray{ 4, 5, 6 });
+  ptrSTO->addRow("Ma ligne 3", RealUniqueArray{ 7, 8, 9 });
+
+
+  // Init STC
+  ptrSTC->init(ptrSTO);
+  ASSERT_TRUE(ptrSTC->writeRefFile());
+
+  ptrSTO->editElem("Ma colonne 1", "Ma ligne 1", 0);
+
+  ASSERT_TRUE(ptrSTC->readRefFile());
+
+  ptrSTC->editRegexColumns("^.*1$");
+  ptrSTC->isARegexExclusiveColumns(true);
+
+  ASSERT_TRUE(ptrSTC->compareWithRef());
+}
+
+void SimpleTableComparatorUnitTest::
+testFullReal()
+{
   // Init STO
   ptrSTO->init("test", "dir_test");
 
@@ -49,39 +89,257 @@ setUpForClass()
   ptrSTO->addColumn("Ma colonne 3");
 
   ptrSTO->addRow("Ma ligne 1", RealUniqueArray{ 1.234567891, 2, 3 });
-  ptrSTO->addRow("Ma ligne 2", RealUniqueArray{ 456789101112, 5, 6 });
-  ptrSTO->addRow("Ma ligne 3", RealUniqueArray{ 7, 8, 9 });
+  ptrSTO->addRow("Ma ligne 2", RealUniqueArray{ 456789101112, -1056789.21354689, 6 });
+  ptrSTO->addRow("Ma ligne 3", RealUniqueArray{ 7, 8, -0.0001 });
 
-  ptrSTO->print();
-
-  //ptrSTO->writeFile("test_csv_comparator", 0);
+  ptrSTO->writeFile("test_csv_comparator", 0);
 
   // Init STC
   ptrSTC->init(ptrSTO);
-  ptrSTC->writeRefFile();
+  ASSERT_TRUE(ptrSTC->writeRefFile());
+  ASSERT_TRUE(ptrSTC->readRefFile());
+  ASSERT_TRUE(ptrSTC->compareWithRef());
+}
+
+void SimpleTableComparatorUnitTest::
+testError()
+{
+  // Init STO
+  ptrSTO->init("test", "dir_test");
+
+  ptrSTO->addColumn("Ma colonne 1");
+  ptrSTO->addColumn("Ma colonne 2");
+  ptrSTO->addColumn("Ma colonne 3");
+
+  ptrSTO->addRow("Ma ligne 1", RealUniqueArray{ 1, 2, 3 });
+  ptrSTO->addRow("Ma ligne 2", RealUniqueArray{ 4, 5, 6 });
+  ptrSTO->addRow("Ma ligne 3", RealUniqueArray{ 7, 8, 9 });
+
+
+  // Init STC
+  ptrSTC->init(ptrSTO);
+  ASSERT_TRUE(ptrSTC->writeRefFile());
 
   ptrSTO->editElem("Ma colonne 1", "Ma ligne 1", 0);
 
-  ptrSTC->readRefFile();
+  ASSERT_TRUE(ptrSTC->readRefFile());
+  ASSERT_FALSE(ptrSTC->compareWithRef());
+}
 
-  ptrSTC->editRegexColumns("^.*1$");
+void SimpleTableComparatorUnitTest::
+testIncludeRow()
+{
+  // Init STO
+  ptrSTO->init("test", "dir_test");
+
+  ptrSTO->addColumn("Ma colonne 1");
+  ptrSTO->addColumn("Ma colonne 2");
+  ptrSTO->addColumn("Ma colonne 3");
+
+  ptrSTO->addRow("Ma ligne 1", RealUniqueArray{ 1, 2, 3 });
+  ptrSTO->addRow("Ma ligne 2", RealUniqueArray{ 4, 5, 6 });
+  ptrSTO->addRow("Ma ligne 3", RealUniqueArray{ 7, 8, 9 });
+
+
+  // Init STC
+  ptrSTC->init(ptrSTO);
+  ASSERT_TRUE(ptrSTC->writeRefFile());
+
+  ptrSTO->editElem("Ma colonne 1", "Ma ligne 1", 0);
+  ptrSTO->editElem("Ma colonne 1", "Ma ligne 2", 0);
+
+  ASSERT_TRUE(ptrSTC->readRefFile());
+
+  ptrSTC->addRowToCompare("Ma ligne 3");
+
+  ASSERT_TRUE(ptrSTC->compareWithRef());
+}
+
+void SimpleTableComparatorUnitTest::
+testIncludeColumn()
+{
+  // Init STO
+  ptrSTO->init("test", "dir_test");
+
+  ptrSTO->addColumn("Ma colonne 1");
+  ptrSTO->addColumn("Ma colonne 2");
+  ptrSTO->addColumn("Ma colonne 3");
+
+  ptrSTO->addRow("Ma ligne 1", RealUniqueArray{ 1, 2, 3 });
+  ptrSTO->addRow("Ma ligne 2", RealUniqueArray{ 4, 5, 6 });
+  ptrSTO->addRow("Ma ligne 3", RealUniqueArray{ 7, 8, 9 });
+
+
+  // Init STC
+  ptrSTC->init(ptrSTO);
+  ASSERT_TRUE(ptrSTC->writeRefFile());
+
+  ptrSTO->editElem("Ma colonne 1", "Ma ligne 1", 0);
+  ptrSTO->editElem("Ma colonne 2", "Ma ligne 2", 0);
+
+  ASSERT_TRUE(ptrSTC->readRefFile());
+
+  ptrSTC->addColumnToCompare("Ma colonne 3");
+
+  ASSERT_TRUE(ptrSTC->compareWithRef());
+}
+
+void SimpleTableComparatorUnitTest::
+testIncludeRowColumn()
+{
+  // Init STO
+  ptrSTO->init("test", "dir_test");
+
+  ptrSTO->addColumn("Ma colonne 1");
+  ptrSTO->addColumn("Ma colonne 2");
+  ptrSTO->addColumn("Ma colonne 3");
+
+  ptrSTO->addRow("Ma ligne 1", RealUniqueArray{ 1, 2, 3 });
+  ptrSTO->addRow("Ma ligne 2", RealUniqueArray{ 4, 5, 6 });
+  ptrSTO->addRow("Ma ligne 3", RealUniqueArray{ 7, 8, 9 });
+
+
+  // Init STC
+  ptrSTC->init(ptrSTO);
+  ASSERT_TRUE(ptrSTC->writeRefFile());
+
+  ptrSTO->editElem("Ma colonne 2", "Ma ligne 1", 0);
+  ptrSTO->editElem("Ma colonne 2", "Ma ligne 2", 0);
+  ptrSTO->editElem("Ma colonne 2", "Ma ligne 3", 0);
+
+  ptrSTO->editElem("Ma colonne 1", "Ma ligne 2", 0);
+  ptrSTO->editElem("Ma colonne 2", "Ma ligne 2", 99);
+  ptrSTO->editElem("Ma colonne 3", "Ma ligne 2", 0);
+
+  ASSERT_TRUE(ptrSTC->readRefFile());
+
+  ptrSTC->addColumnToCompare("Ma colonne 1");
+  ptrSTC->addColumnToCompare("Ma colonne 3");
+  ptrSTC->addRowToCompare("Ma ligne 1");
+  ptrSTC->addRowToCompare("Ma ligne 3");
+
+  ASSERT_TRUE(ptrSTC->compareWithRef());
+}
+
+void SimpleTableComparatorUnitTest::
+testRegexRow()
+{
+  // Init STO
+  ptrSTO->init("test", "dir_test");
+
+  ptrSTO->addColumn("Ma colonne 1");
+  ptrSTO->addColumn("Ma colonne 2");
+  ptrSTO->addColumn("Ma colonne 3");
+
+  ptrSTO->addRow("Ma ligne 1", RealUniqueArray{ 1, 2, 3});
+  ptrSTO->addRow("Ma ligne 2", RealUniqueArray{ 4, 5, 6});
+  ptrSTO->addRow("Ma ligne 3", RealUniqueArray{ 7, 8, 9});
+  ptrSTO->addRow("Ma ligne 4", RealUniqueArray{ 4, 5, 7});
+  ptrSTO->addRow("Ma ligne 5", RealUniqueArray{ 8, 1, 2});
+
+
+  // Init STC
+  ptrSTC->init(ptrSTO);
+  ASSERT_TRUE(ptrSTC->writeRefFile());
+
+  ptrSTO->editElem("Ma colonne 1", "Ma ligne 4", 0);
+  ptrSTO->editElem("Ma colonne 2", "Ma ligne 5", 0);
+
+  ASSERT_TRUE(ptrSTC->readRefFile());
+
+  ptrSTC->addRowToCompare("Ma ligne 1");
+  ptrSTC->addRowToCompare("Ma ligne 2");
+  ptrSTC->addRowToCompare("Ma ligne 3");
+
+  // 3 inclus.
+  ptrSTC->editRegexRows("^.*[3-9]+$");
+  ptrSTC->isARegexExclusiveRows(true);
+
+  ASSERT_TRUE(ptrSTC->compareWithRef());
+}
+
+void SimpleTableComparatorUnitTest::
+testRegexColumn()
+{
+  // Init STO
+  ptrSTO->init("test", "dir_test");
+
+  ptrSTO->addColumn("Ma colonne 1");
+  ptrSTO->addColumn("Ma colonne 2");
+  ptrSTO->addColumn("Ma colonne 3");
+  ptrSTO->addColumn("Ma colonne 4");
+  ptrSTO->addColumn("Ma colonne 5");
+
+  ptrSTO->addRow("Ma ligne 1", RealUniqueArray{ 1, 2, 3, 4, 5 });
+  ptrSTO->addRow("Ma ligne 2", RealUniqueArray{ 4, 5, 6, 7, 8 });
+  ptrSTO->addRow("Ma ligne 3", RealUniqueArray{ 7, 8, 9, 1, 2 });
+
+
+  // Init STC
+  ptrSTC->init(ptrSTO);
+  ASSERT_TRUE(ptrSTC->writeRefFile());
+
+  ptrSTO->editElem("Ma colonne 4", "Ma ligne 1", 0);
+  ptrSTO->editElem("Ma colonne 5", "Ma ligne 2", 0);
+
+  ASSERT_TRUE(ptrSTC->readRefFile());
+
+  ptrSTC->addColumnToCompare("Ma colonne 1");
+  ptrSTC->addColumnToCompare("Ma colonne 2");
+  ptrSTC->addColumnToCompare("Ma colonne 3");
+
+  // 3 inclus.
+  ptrSTC->editRegexColumns("^.*[3-9]+$");
   ptrSTC->isARegexExclusiveColumns(true);
 
-  ptrSTC->print();
-  ptrSTC->compareWithRef();
-
+  ASSERT_TRUE(ptrSTC->compareWithRef());
 }
 
 void SimpleTableComparatorUnitTest::
-setUp()
+testRegexRowColumn()
 {
+  // Init STO
+  ptrSTO->init("test", "dir_test");
 
-}
+  ptrSTO->addColumn("Ma colonne 1");
+  ptrSTO->addColumn("Ma colonne 2");
+  ptrSTO->addColumn("Ma colonne 3");
+  ptrSTO->addColumn("Ma colonne 4");
+  ptrSTO->addColumn("Ma colonne 5");
 
-void SimpleTableComparatorUnitTest::
-testInit()
-{
+  ptrSTO->addRow("Ma ligne 1", RealUniqueArray{ 1, 2,   3, 4,   5 });
+  ptrSTO->addRow("Ma ligne 2", RealUniqueArray{ 4, 5,   6, 7,   8 });
 
+  ptrSTO->addRow("Ma ligne 3", RealUniqueArray{ 7, 8,   9, 1,   2 });
+  ptrSTO->addRow("Ma ligne 4", RealUniqueArray{ 4, 5,   7, 4,   5 });
+
+  ptrSTO->addRow("Ma ligne 5", RealUniqueArray{ 8, 1,   2, 7,   8 });
+
+
+  // Init STC
+  ptrSTC->init(ptrSTO);
+  ASSERT_TRUE(ptrSTC->writeRefFile());
+
+  ptrSTO->editElem("Ma colonne 1", "Ma ligne 3", 0);
+  ptrSTO->editElem("Ma colonne 2", "Ma ligne 4", 0);
+  ptrSTO->editElem("Ma colonne 3", "Ma ligne 3", 0);
+  ptrSTO->editElem("Ma colonne 4", "Ma ligne 4", 0);
+  ptrSTO->editElem("Ma colonne 5", "Ma ligne 3", 0);
+  ptrSTO->editElem("Ma colonne 3", "Ma ligne 1", 0);
+  ptrSTO->editElem("Ma colonne 4", "Ma ligne 2", 0);
+  ptrSTO->editElem("Ma colonne 3", "Ma ligne 3", 0);
+  ptrSTO->editElem("Ma colonne 4", "Ma ligne 4", 0);
+  ptrSTO->editElem("Ma colonne 3", "Ma ligne 5", 0);
+
+  ASSERT_TRUE(ptrSTC->readRefFile());
+
+  ptrSTC->addColumnToCompare("Ma colonne 5");
+  ptrSTC->editRegexColumns("^.*[1-2]+$");
+
+  ptrSTC->editRegexRows("^.*[3-4]+$");
+  ptrSTC->isARegexExclusiveRows(true);
+
+  ASSERT_TRUE(ptrSTC->compareWithRef());
 }
 
 void SimpleTableComparatorUnitTest::

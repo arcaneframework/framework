@@ -55,6 +55,8 @@ public:
    */
   virtual void init(ISimpleTableOutput* ptr_sto) = 0;
 
+  virtual void clear() = 0;
+
   /**
    * @brief Méthode permettant de renseigner un autre emplacement
    * pour les fichiers de références.

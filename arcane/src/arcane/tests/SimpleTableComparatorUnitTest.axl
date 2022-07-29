@@ -8,7 +8,15 @@
   </variables>
 
   <tests class-set-up="setUpForClass" test-set-up="setUp" class-tear-down="tearDownForClass" test-tear-down="tearDown">
-    <test name="Test initial" method-name="testInit"/>
+    <test name="Test simple" method-name="testSimple"/>
+    <test name="Test real" method-name="testFullReal"/>
+    <test name="Test error" method-name="testError"/>
+    <test name="Test include row" method-name="testIncludeRow"/>
+    <test name="Test include column" method-name="testIncludeColumn"/>
+    <test name="Test include row and column" method-name="testIncludeRowColumn"/>
+    <test name="Test regex row" method-name="testRegexRow"/>
+    <test name="Test regex column" method-name="testRegexColumn"/>
+    <test name="Test regex row and column" method-name="testRegexRowColumn"/>
   </tests> 
 
   <options>

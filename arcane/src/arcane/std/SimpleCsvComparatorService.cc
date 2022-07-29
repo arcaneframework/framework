@@ -44,6 +44,29 @@ init(ISimpleTableOutput* ptr_sto)
 }
 
 void SimpleCsvComparatorService::
+clear()
+{
+  m_values_csv.clear();
+
+  m_name_rows.clear();
+  m_name_columns_with_name_of_tab.clear();
+
+  m_iSTO = nullptr;
+  _closeFile();
+  
+  m_is_file_read = false;
+
+  m_regex_rows = "";
+  m_is_excluding_regex_rows = false;
+
+  m_regex_columns = "";
+  m_is_excluding_regex_columns = false;
+
+  m_compared_rows.clear();
+  m_compared_columns.clear();
+}
+
+void SimpleCsvComparatorService::
 editRefFileEntry(String path, String name)
 {
   m_path_ref_str = path;
@@ -102,6 +125,7 @@ readRefFile(Integer only_proc)
   // moins une ligne.
   if(!std::getline(m_ifstream, line)) {
     m_is_file_read = false;
+    _closeFile();
     return false;
   }
 
@@ -114,6 +138,7 @@ readRefFile(Integer only_proc)
   // colonnes vides (ou aucunes colonnes) et aucunes lignes.
   if(!std::getline(m_ifstream, line)) {
     m_is_file_read = true;
+    _closeFile();
     return true;
   }
 
@@ -145,6 +170,7 @@ readRefFile(Integer only_proc)
   } while(std::getline(m_ifstream, line));
 
   m_is_file_read = true;
+  _closeFile();
   return true;
 }
 
@@ -179,7 +205,7 @@ compareWithRef(Integer only_proc, Integer epsilon)
       const Real val2 = view[j];
 
       if(!math::isNearlyEqualWithEpsilon(val1, val2, epsilon)) {
-        warning() << "Values not equals -- Column name: " << m_name_columns_with_name_of_tab[j+1] << " -- Row name: " << m_name_rows[i];
+        warning() << "Values not equals -- Column name: \"" << m_name_columns_with_name_of_tab[j+1] << "\" -- Row name: \"" << m_name_rows[i] << "\"";
         is_ok = false;
       }
     }
@@ -277,6 +303,14 @@ _openFile(String name_file)
   if(m_is_file_open) return;
   m_ifstream.open(m_path_ref.file(name_file).localstr(), std::ifstream::in);
   m_is_file_open = true;
+}
+
+void SimpleCsvComparatorService::
+_closeFile()
+{
+  if(!m_is_file_open) return;
+  m_ifstream.close();
+  m_is_file_open = false;
 }
 
 bool SimpleCsvComparatorService::

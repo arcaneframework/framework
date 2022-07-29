@@ -48,7 +48,15 @@ class SimpleTableComparatorUnitTest
   void setUpForClass() override;
   void setUp() override;
 
-  void testInit() override;
+  void testSimple() override;
+  void testFullReal() override;
+  void testError() override;
+  void testIncludeRow() override;
+  void testIncludeColumn() override;
+  void testIncludeRowColumn() override;
+  void testRegexRow() override;
+  void testRegexColumn() override;
+  void testRegexRowColumn() override;
 
   void tearDown() override;
   void tearDownForClass() override;

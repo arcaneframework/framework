@@ -58,6 +58,7 @@ class SimpleCsvComparatorService
  public:
   
   void init(ISimpleTableOutput* ptr_sto) override;
+  void clear() override;
   void editRefFileEntry(String path, String name) override;
   bool writeRefFile(Integer only_proc) override;
   bool readRefFile(Integer only_proc) override;
@@ -79,6 +80,7 @@ class SimpleCsvComparatorService
 
  protected:
   void _openFile(String name_file);
+  void _closeFile();
   bool _exploreColumn(Integer pos);
   bool _exploreRows(Integer pos);
 
