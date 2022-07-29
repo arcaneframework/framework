@@ -37,6 +37,61 @@ namespace Arcane::mesh
 
 class ItemFamily;
 
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe temporaire pour conserver un ItemSharedInfo et un type d'entité.
+ *
+ * Cette classe permet de faire la transition entre la version de Arcane où
+ * le ItemSharedInfo contient aussi le type de l'entité et les futures versions
+ * où cela ne sera pas le cas.
+ */
+class ItemSharedInfoWithType
+: private ItemSharedInfo
+{
+  friend class ItemSharedInfoList;
+
+ public:
+
+  ItemSharedInfoWithType(){}
+
+ private:
+
+  ItemSharedInfoWithType(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
+                         ItemInternalConnectivityList* connectivity,ItemVariableViews* variable_views);
+
+  ItemSharedInfoWithType(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
+                         ItemInternalConnectivityList* connectivity,ItemVariableViews* variable_views,
+                         Int32ConstArrayView buffer);
+
+ public:
+
+  ItemSharedInfo* sharedInfo() { return this; }
+  Int32 itemTypeId() { return this->m_type_id; }
+  Int32 index() const { return m_index; }
+  void setIndex(Int32 aindex) { m_index = aindex; }
+  Int32 nbReference() const { return m_nb_reference; }
+  void addReference(){ ++m_nb_reference; }
+  void removeReference(){ --m_nb_reference; }
+  void serializeWrite(Int32ArrayView buffer);
+  static Integer serializeSize() { return 6; }
+
+ public:
+
+  friend std::ostream& operator<<(std::ostream& o,const ItemSharedInfoWithType& isi)
+  {
+    isi.print(o);
+    return o;
+  }
+
+ private:
+
+  Int32 m_type_id = IT_NullType;
+  Int32 m_index = NULL_INDEX;
+  Int32 m_nb_reference = 0;
+};
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -52,42 +107,42 @@ class ItemSharedInfoList
 
   class ItemNumElements;
   class Variables;
-  typedef std::map<ItemNumElements,ItemSharedInfo*> ItemSharedInfoMap;
-
- private:
-
+  typedef std::map<ItemNumElements,ItemSharedInfoWithType*> ItemSharedInfoMap;
 
  public:
 
-  ItemSharedInfoList(ItemFamily* family);
+  explicit ItemSharedInfoList(ItemFamily* family);
   //! Libère les ressources
   ~ItemSharedInfoList();
 
  public:
 
-  ConstArrayView<ItemSharedInfo*> itemSharedInfos() const { return m_item_shared_infos; }
-  ArrayView<ItemSharedInfo*> itemSharedInfos() { return m_item_shared_infos; }
+  ConstArrayView<ItemSharedInfoWithType*> itemSharedInfos() const { return m_item_shared_infos; }
+  ArrayView<ItemSharedInfoWithType*> itemSharedInfos() { return m_item_shared_infos; }
 
-  ItemSharedInfo* allocOne()
+ private:
+
+  ItemSharedInfoWithType* allocOne()
   {
     bool need_alloc = false;
-    ItemSharedInfo* next = _allocOne(need_alloc);
+    ItemSharedInfoWithType* next = _allocOne(need_alloc);
     return next;
   }
 
-  ItemSharedInfo* allocOne(bool& need_alloc)
+  ItemSharedInfoWithType* allocOne(bool& need_alloc)
   {
-    ItemSharedInfo* next = _allocOne(need_alloc);
+    ItemSharedInfoWithType* next = _allocOne(need_alloc);
     return next;
   }
 
-  void removeOne(ItemSharedInfo* item)
+  void removeOne(ItemSharedInfoWithType* item)
   {
     m_list_changed = true;
-    m_connectivity_info_changed = true;
     m_free_item_shared_infos.add(item);
     --m_nb_item_shared_info;
   }
+
+ public:
 
   //! Vérifie si les structures internes de l'instance sont valides
   void checkValid();
@@ -112,23 +167,24 @@ class ItemSharedInfoList
   Integer maxFacePerItem() const { return 0; }
   ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
   Integer maxCellPerItem() const { return 0; }
-
-  Integer maxLocalNodePerItemType();
-  Integer maxLocalEdgePerItemType();
-  Integer maxLocalFacePerItemType();
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
+  Integer maxLocalNodePerItemType() const { return 0; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
+  Integer maxLocalEdgePerItemType() const { return 0; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
+  Integer maxLocalFacePerItemType() const { return 0; }
 
  public:
 
-  ItemSharedInfo* findSharedInfo(ItemTypeInfo* type);
+  ItemSharedInfoWithType* findSharedInfo(ItemTypeInfo* type);
 
  private:
 
-  ItemSharedInfo* _allocOne(bool& need_alloc)
+  ItemSharedInfoWithType* _allocOne(bool& need_alloc)
   {
-    ItemSharedInfo* new_item = 0;
+    ItemSharedInfoWithType* new_item = 0;
     Integer nb_free = m_free_item_shared_infos.size();
     m_list_changed = true;
-    m_connectivity_info_changed = true;
     if (nb_free!=0){
       new_item = m_free_item_shared_infos.back();
       m_free_item_shared_infos.popBack();
@@ -148,21 +204,13 @@ class ItemSharedInfoList
 
   ItemFamily* m_family = nullptr;
   Integer m_nb_item_shared_info = 0; //!< Nombre d'objets alloués
-  eItemKind m_item_kind= IK_Unknown;
-  UniqueArray<ItemSharedInfo*> m_item_shared_infos;
-  UniqueArray<ItemSharedInfo*> m_free_item_shared_infos;
-  MultiBufferT<ItemSharedInfo>* m_item_shared_infos_buffer;
+  eItemKind m_item_kind = IK_Unknown;
+  UniqueArray<ItemSharedInfoWithType*> m_item_shared_infos;
+  UniqueArray<ItemSharedInfoWithType*> m_free_item_shared_infos;
+  MultiBufferT<ItemSharedInfoWithType>* m_item_shared_infos_buffer;
   ItemSharedInfoMap* m_infos_map = nullptr;
   Variables* m_variables = nullptr;
   bool m_list_changed = false;
-  bool m_connectivity_info_changed = true;
-  Integer m_max_node_per_item_type = 0;
-  Integer m_max_edge_per_item_type = 0;
-  Integer m_max_face_per_item_type = 0;
-
- private:
-
-  void _checkConnectivityInfo();
 };
 
 /*---------------------------------------------------------------------------*/

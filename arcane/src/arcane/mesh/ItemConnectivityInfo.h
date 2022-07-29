@@ -27,9 +27,11 @@ class ItemInternalConnectivityList;
 class IParallelMng;
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 namespace Arcane::mesh
 {
-class ItemSharedInfoList;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -44,12 +46,9 @@ class ARCANE_MESH_EXPORT ItemConnectivityInfo
     ICI_Node = 0,
     ICI_Edge,
     ICI_Face,
-    ICI_Cell,
-    ICI_NodeItemTypeInfo,
-    ICI_EdgeItemTypeInfo,
-    ICI_FaceItemTypeInfo
+    ICI_Cell
   };
-  static const int NB_ICI = 7;
+  static const int NB_ICI = 4;
 
  public:
 
@@ -64,7 +63,7 @@ class ARCANE_MESH_EXPORT ItemConnectivityInfo
 
  public:
 
-  void fill(ItemSharedInfoList* isl,ItemInternalConnectivityList* clist);
+  void fill(ItemInternalConnectivityList* clist);
   void reduce(IParallelMng* pm);
 
  private:

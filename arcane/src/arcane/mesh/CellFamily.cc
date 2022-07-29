@@ -501,7 +501,7 @@ _addChildrenCellsToCell(ItemInternal* parent_cell,Int32ConstArrayView children_c
     ItemLocalId item_lid(parent_cell);
     c->addConnectedItems(item_lid,nb_children);
   }
-  _updateSharedInfoAdded(parent_cell);
+  _updateSharedInfo();
 
   auto x = _topologyModifier();
   for( Integer i=0; i<nb_children; ++i )

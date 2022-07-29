@@ -951,7 +951,8 @@ prepareForDump()
     }
     for( Integer i=0; i<nb_item; ++i ){
       ItemInternal* item = items[i];
-      items_shared_data_index[i] = item->sharedInfo()->index();
+      ItemSharedInfoWithType* isi = m_item_shared_infos->findSharedInfo(item->typeInfo());
+      items_shared_data_index[i] = isi->index();
 #if 0
 #ifdef ARCANE_DEBUG
       //if (itemKind()==IK_Particle){
@@ -1089,14 +1090,14 @@ readFromDump()
   // En relecture les entités sont compactées donc la valeur max du localId()
   // est égal au nombre d'entité.
   {
-    ArrayView<ItemSharedInfo*> item_shared_infos = m_item_shared_infos->itemSharedInfos();
+    auto item_shared_infos = m_item_shared_infos->itemSharedInfos();
     ItemInternalList items(m_infos.itemsInternal());
     for( Integer i=0; i<nb_item; ++i ){
       Integer shared_data_index = items_shared_data_index[i];
-      ItemSharedInfo* isi = item_shared_infos[shared_data_index];
+      ItemSharedInfoWithType* isi = item_shared_infos[shared_data_index];
       Int64 uid = (*m_items_unique_id)[i];
       ItemInternal* item = m_infos.allocOne(uid);
-      item->setSharedInfo(isi);
+      item->setSharedInfo(isi->sharedInfo(),isi->itemTypeId());
     }
   }
   // Supprime les entités du groupe total car elles vont être remises à jour
@@ -1576,64 +1577,19 @@ _allocMany(Integer memory)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ItemSharedInfo* ItemFamily::
+ItemSharedInfoWithType* ItemFamily::
 _findSharedInfo(ItemTypeInfo* type)
 {
-  ItemSharedInfo* isi = m_item_shared_infos->findSharedInfo(type);
-  return isi;
+  return m_item_shared_infos->findSharedInfo(type);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-_copyInfos(ItemInternal* item,ItemSharedInfo*,ItemSharedInfo* new_isi)
+_updateSharedInfo()
 {
-  // Signale qu'il faudra compacter les entités au moment du dump
-  m_item_need_prepare_dump = true;
-
-  item->setSharedInfo(new_isi);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemFamily::
-_updateSharedInfoAdded(ItemInternal* item)
-{
-  ItemSharedInfo* old_isi = item->sharedInfo();
-  ItemSharedInfo* new_isi = _findSharedInfo(old_isi->m_item_type);
-  item->setSharedInfo(new_isi);
-
-  m_need_prepare_dump = true;
-  new_isi->addReference();
-  old_isi->removeReference();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemFamily::
-_updateSharedInfoRemoved4(ItemInternal* item)
-{
-  // TODO: regarder pourquoi _updateSharedInfoRemoved7() n'a pas le même code.
-  m_need_prepare_dump = true;
-
-  ItemSharedInfo* old_isi = item->sharedInfo();
-  ItemSharedInfo* new_isi = _findSharedInfo(old_isi->m_item_type);
-  item->setSharedInfo(new_isi);
-
-  new_isi->addReference();
-  old_isi->removeReference();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemFamily::
-_updateSharedInfoRemoved7(ItemInternal*)
-{
-  // TODO: regarder fusion possible avec les autres surcharges de _updateSharedInfo
+  //TODO: Regarder si cela est toujours utile
   m_need_prepare_dump = true;
 }
 
@@ -1643,7 +1599,7 @@ _updateSharedInfoRemoved7(ItemInternal*)
 void ItemFamily::
 _allocateInfos(ItemInternal* item,Int64 uid,ItemTypeInfo* type)
 {
-  ItemSharedInfo* isi = _findSharedInfo(type);
+  ItemSharedInfoWithType* isi = _findSharedInfo(type);
   _allocateInfos(item,uid,isi);
 }
 
@@ -1651,7 +1607,7 @@ _allocateInfos(ItemInternal* item,Int64 uid,ItemTypeInfo* type)
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-_allocateInfos(ItemInternal* item,Int64 uid,ItemSharedInfo* isi)
+_allocateInfos(ItemInternal* item,Int64 uid,ItemSharedInfoWithType* isi)
 {
   // TODO: faire en même temps que le réalloc de la variable uniqueId()
   //  le réalloc des m_source_incremental_item_connectivities.
@@ -1667,7 +1623,7 @@ _allocateInfos(ItemInternal* item,Int64 uid,ItemSharedInfo* isi)
     (*m_items_unique_id)[local_id] = uid;
   }
 
-  item->setSharedInfo(isi);
+  item->setSharedInfo(isi->sharedInfo(),isi->itemTypeId());
   
   item->reinitialize(uid,m_default_sub_domain_owner,m_sub_domain_id);
   ++m_nb_allocate_info;
@@ -2421,7 +2377,7 @@ _updateItemsSharedFlag()
 void ItemFamily::
 _computeConnectivityInfo(ItemConnectivityInfo* ici)
 {
-  ici->fill(m_item_shared_infos,itemInternalConnectivityList());
+  ici->fill(itemInternalConnectivityList());
   info(5) << "COMPUTE CONNECTIVITY INFO family=" << name() << " v=" << ici
           << " node=" << ici->maxNodePerItem() << " face=" << ici->maxFacePerItem()
           << " edge=" << ici->maxEdgePerItem() << " cell=" << ici->maxCellPerItem();

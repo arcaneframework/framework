@@ -29,6 +29,7 @@ namespace Arcane::mesh
 {
 class IncrementalItemConnectivity;
 class OneItemIncrementalItemConnectivity;
+class ItemSharedInfoWithType;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -129,7 +130,7 @@ class ARCANE_MESH_EXPORT ParticleFamily
  private:
   
   ItemTypeInfo* m_particle_type_info;
-  ItemSharedInfo* m_particle_shared_info;
+  ItemSharedInfoWithType* m_particle_shared_info;
   Int32 m_sub_domain_id;
   bool m_enable_ghost_items;
   CellConnectivity* m_cell_connectivity;

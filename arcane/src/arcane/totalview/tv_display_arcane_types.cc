@@ -217,7 +217,7 @@ TV_ttf_display_type(const Arcane::ItemInternal * obj)
   TV_ttf_add_row("kind","eItemKind",&shared_info->m_item_kind);
   
   snprintf(strtype,sizeof(strtype),"type=%s",obj->typeInfo()->typeName().localstr());
-  TV_ttf_add_row(strtype,"ItemTypeInfo*",&shared_info->m_item_type);
+  //TV_ttf_add_row(strtype,"ItemTypeInfo*",&shared_info->m_item_type);
 
   {
     // Nodes

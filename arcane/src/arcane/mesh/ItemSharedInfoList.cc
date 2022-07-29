@@ -33,6 +33,72 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+ItemSharedInfoWithType::
+ItemSharedInfoWithType(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
+                       ItemInternalConnectivityList* connectivity,ItemVariableViews* variable_views)
+: ItemSharedInfo(family,items,connectivity,variable_views)
+, m_type_id(item_type->typeId())
+{
+}
+
+ItemSharedInfoWithType::
+ItemSharedInfoWithType(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
+                       ItemInternalConnectivityList* connectivity,ItemVariableViews* variable_views,
+                       Int32ConstArrayView buffer)
+: ItemSharedInfo(family,items,connectivity,variable_views)
+, m_type_id(item_type->typeId())
+{
+  // La taille du buffer dépend des versions de Arcane.
+  // Avant la 3.2 (Octobre 2021), la taille du buffer est 9 (non AMR) ou 13 (AMR)
+  // Entre la 3.2 et la 3.6 (Mai 2022), la taille vaut toujours 13
+  // A partir de la 3.6, la taille vaut 6.
+  //
+  // On ne cherche pas à faire de reprise avec des versions
+  // de Arcane antérieures à 3.2 donc on peut supposer que la taille
+  // du buffer vaut 13. Ces versions utilisent la nouvelle connectivité
+  // et donc le nombre des éléments est toujours 0 (ainsi que les *allocated)
+  // sauf pour m_nb_node.
+  //
+  // A partir de la 3.6, le nombre de noeuds n'est plus utilisé non
+  // plus et vaut toujours 0. On pourra donc pour les versions de fin
+  // 2022 supprimer ces champs de ItemSharedInfo.
+
+  // TODO: Indiquer qu'à partir de la version 3.7 on ne supporte
+  // que buf_size==6 avec le numéro de version 0x0307
+  Int32 buf_size = buffer.size();
+  if (buf_size>=9){
+    ARCANE_FATAL("Invalid buf size '{0}'. This is probably because your version of Arcane is too old",buf_size);
+  }
+  else if (buf_size>=4){
+    m_index = buffer[2];
+    m_nb_reference = buffer[3];
+  }
+
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemSharedInfoWithType::
+serializeWrite(Int32ArrayView buffer)
+{
+  buffer[0] = m_type_id; // Doit toujours être le premier
+
+  buffer[1] = 0x0307; // Numéro de version (3.7).
+
+  buffer[2] = m_index;
+  buffer[3] = m_nb_reference;
+
+  buffer[4] = 0; // Réservé
+  buffer[5] = 0; // Réservé
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 class ItemSharedInfoList::ItemNumElements
 {
  public:
@@ -109,11 +175,8 @@ ItemSharedInfoList(ItemFamily* family)
 : TraceAccessor(family->traceMng())
 , m_family(family)
 , m_item_kind(family->itemKind())
-, m_item_shared_infos_buffer(new MultiBufferT<ItemSharedInfo>(100))
+, m_item_shared_infos_buffer(new MultiBufferT<ItemSharedInfoWithType>(100))
 , m_infos_map(new ItemSharedInfoMap())
-, m_max_node_per_item_type(0)
-, m_max_edge_per_item_type(0)
-, m_max_face_per_item_type(0)
 {
   {
     String var_name(family->name());
@@ -149,7 +212,7 @@ prepareForDump()
     return;
   m_list_changed = false;
   //Integer n = m_item_shared_infos.size();
-  Integer element_size = ItemSharedInfo::serializeWriteSize();
+  Integer element_size = ItemSharedInfoWithType::serializeSize();
   m_variables->m_infos_values.resize(n,element_size);
   for( Integer i=0; i<n; ++i ){
     m_item_shared_infos[i]->serializeWrite(m_variables->m_infos_values[i]);
@@ -167,7 +230,7 @@ prepareForDump()
 void ItemSharedInfoList::
 readFromDump()
 {
-  Integer element_size = ItemSharedInfo::serializeSize();
+  Integer element_size = ItemSharedInfoWithType::serializeSize();
   Integer n = m_variables->m_infos_values.dim1Size();
   info() << "ItemSharedInfoList: read: " << m_family->name() << " count=" << n;
 
@@ -175,7 +238,7 @@ readFromDump()
     // Le nombre d'éléments sauvés dépend de la version de Arcane et du fait
     // qu'on utilise ou pas l'AMR.
     Integer stored_size = m_variables->m_infos_values[0].size();
-    if (stored_size==ItemSharedInfo::serializeAMRSize()){
+    if (stored_size==ItemSharedInfoWithType::serializeSize()){
     }
     else if (stored_size!=element_size){
       // On ne peut relire que les anciennes versions (avant la 3.6)
@@ -207,8 +270,8 @@ readFromDump()
     Int32ConstArrayView buffer(m_variables->m_infos_values[i]);
     // Le premier élément du tampon contient toujours le type de l'entité
     ItemTypeInfo* it = itm->typeFromId(buffer[0]);
-    ItemSharedInfo* isi = m_item_shared_infos[i];
-    *isi = ItemSharedInfo(m_family,it,miil,iicl,m_family->viewsForItemSharedInfo(),buffer);
+    ItemSharedInfoWithType* isi = m_item_shared_infos[i];
+    *isi = ItemSharedInfoWithType(m_family,it,miil,iicl,m_family->viewsForItemSharedInfo(),buffer);
 
     ItemNumElements ine(it->typeId());
     std::pair<ItemSharedInfoMap::iterator,bool> old = m_infos_map->insert(std::make_pair(ine,isi));
@@ -247,7 +310,7 @@ checkValid()
   // Premièrement, le item->localId() doit correspondre à l'indice
   // dans le tableau m_internal
   for( Integer i=0, is=m_item_shared_infos.size(); i<is; ++i ){
-    ItemSharedInfo* item = m_item_shared_infos[i];
+    ItemSharedInfoWithType* item = m_item_shared_infos[i];
     if (item->index()!=i){
       error() << "The index (" << item->index() << ") from the list 'ItemSharedInfo' "
               << "of the family " << m_family->name() << " is not "
@@ -262,7 +325,7 @@ checkValid()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ItemSharedInfo* ItemSharedInfoList::
+ItemSharedInfoWithType* ItemSharedInfoList::
 findSharedInfo(ItemTypeInfo* type)
 {
   ItemNumElements ine(type->typeId());
@@ -272,9 +335,9 @@ findSharedInfo(ItemTypeInfo* type)
   MeshItemInternalList* miil = m_family->mesh()->meshItemInternalList();
   ItemInternalConnectivityList* iicl = m_family->itemInternalConnectivityList();
   // Infos pas trouvé. On en construit une nouvelle
-  ItemSharedInfo* isi = allocOne();
+  ItemSharedInfoWithType* isi = allocOne();
   Integer old_index = isi->index();
-  *isi = ItemSharedInfo(m_family,type,miil,iicl,m_family->viewsForItemSharedInfo());
+  *isi = ItemSharedInfoWithType(m_family,type,miil,iicl,m_family->viewsForItemSharedInfo());
   isi->setIndex(old_index);
   std::pair<ItemSharedInfoMap::iterator,bool> old = m_infos_map->insert(std::make_pair(ine,isi));
 
@@ -309,62 +372,6 @@ dumpSharedInfos()
     info() << "INE: " << i->first;
     info() << "ISI: " << *i->second;
   }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Integer ItemSharedInfoList::
-maxLocalNodePerItemType()
-{
-  _checkConnectivityInfo();
-  return m_max_node_per_item_type;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Integer ItemSharedInfoList::
-maxLocalEdgePerItemType()
-{
-  _checkConnectivityInfo();
-  return m_max_edge_per_item_type;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Integer ItemSharedInfoList::
-maxLocalFacePerItemType()
-{
-  _checkConnectivityInfo();
-  return m_max_face_per_item_type;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemSharedInfoList::
-_checkConnectivityInfo()
-{
-  if (!m_connectivity_info_changed)
-    return;
-
-  m_max_node_per_item_type = 0;
-  m_max_edge_per_item_type = 0;
-  m_max_face_per_item_type = 0;
-
-  for( ConstIterT<ItemSharedInfoMap> i(*m_infos_map); i(); ++i ){
-    ItemSharedInfo* isi = i->second;
-    m_max_node_per_item_type = math::max(m_max_node_per_item_type,
-                                         isi->m_item_type->nbLocalNode());
-    m_max_edge_per_item_type = math::max(m_max_edge_per_item_type,
-                                         isi->m_item_type->nbLocalEdge());
-    m_max_face_per_item_type = math::max(m_max_face_per_item_type,
-                                         isi->m_item_type->nbLocalFace());
-  }
-
-  m_connectivity_info_changed = false;
 }
 
 /*---------------------------------------------------------------------------*/

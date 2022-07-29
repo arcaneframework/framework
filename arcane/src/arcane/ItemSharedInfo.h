@@ -27,6 +27,7 @@ namespace Arcane::mesh
 {
 class ItemSharedInfoList;
 class ItemFamily;
+class ItemSharedInfoWithType;
 }
 
 namespace Arcane
@@ -88,6 +89,7 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   friend class ItemInternal;
   friend class mesh::ItemSharedInfoList;
   friend class mesh::ItemFamily;
+  friend class mesh::ItemSharedInfoWithType;
 
   static const Int32 NULL_INDEX = static_cast<Int32>(-1);
 
@@ -104,17 +106,15 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
 
   // Seule ItemSharedInfoList peut créer des instances de cette classe autre que
   // l'instance nulle.
-  ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
+  ItemSharedInfo(IItemFamily* family,MeshItemInternalList* items,
                  ItemInternalConnectivityList* connectivity,ItemVariableViews* variable_views);
 
-  ItemSharedInfo(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
-                 ItemInternalConnectivityList* connectivity,ItemVariableViews* variable_views,
-                 Int32ConstArrayView buffer);
  public:
 
   eItemKind itemKind() const { return m_item_kind; }
   IItemFamily* itemFamily() const { return m_item_family; }
   Int32 nbParent() const { return m_nb_parent; }
+  ItemTypeInfo* typeInfoFromId(Int32 type_id) const;
 
   ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
   constexpr Int32 nbNode() const { return 0; }
@@ -129,7 +129,8 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   ARCANE_DEPRECATED_REASON("Y2020: This method always return 0")
   constexpr Int32 nbHChildren() const { return 0; }
 
-  Int32 typeId() const { return m_type_id; }
+  ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception. Use ItemInternal::typeId() instead")
+  Int32 typeId() const;
 
   ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
   Int32 firstNode() const { return 0; }
@@ -271,32 +272,16 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   MeshItemInternalList* m_items = nullptr;
   ItemInternalConnectivityList* m_connectivity;
   IItemFamily* m_item_family = nullptr;
+  ItemTypeMng* m_item_type_mng = nullptr;
   Int64ArrayView* m_unique_ids = nullptr;
   Int32ArrayView* m_parent_item_ids = nullptr;
   Int32ArrayView* m_owners = nullptr;
   Int32ArrayView* m_flags = nullptr;
-  ItemTypeInfo* m_item_type = nullptr;
   eItemKind m_item_kind = IK_Unknown;
 
  private:
 
-  Int32 m_type_id = IT_NullType;
   Int32 m_nb_parent = 0;
-  Int32 m_index = NULL_INDEX;
-  Int32 m_nb_reference = 0;
-
- public:
-
-  Int32 index() const { return m_index; }
-  void setIndex(Int32 aindex) { m_index = aindex; }
-  Int32 nbReference() const { return m_nb_reference; }
-  void addReference(){ ++m_nb_reference; }
-  void removeReference(){ --m_nb_reference; }
-  void serializeWrite(Int32ArrayView buffer);
-  static Integer serializeWriteSize();
-  static Integer serializeSize();
-  static Integer serializeAMRSize();
-  static Integer serializeNoAMRSize();
 
  public:
 

@@ -155,7 +155,7 @@ private:
   ItemInternal* _allocDoFGhost(const Int64 uid, const Int32 owner);
   ItemInternal* _findOrAllocDoF(const Int64 uid,bool is_alloc);
 
-  ItemSharedInfo* m_shared_info;
+  ItemSharedInfoWithType* m_shared_info;
 
   friend class DynamicMesh;
 

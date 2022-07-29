@@ -189,18 +189,14 @@ namespace Arcane
   {
     internal MeshItemInternalList* m_items;
     internal ItemInternalConnectivityList* m_connectivity;
-    internal IntPtr m_family; //IItemFamily* m_family;
+    internal IntPtr m_family; // IItemFamily*;
+    internal IntPtr m_item_type_mng; // ItemTypeMng*
     internal Int64ArrayView* m_unique_ids;
     internal Int32ArrayView* m_parent_item_ids;
     internal Int32ArrayView* m_owners;
     internal Int32ArrayView* m_flags;
-    internal IntPtr m_item_type; //ItemTypeInfo* m_item_type;
-    internal eItemKind m_item_kind; //eItemKind m_item_kind;
-
-    internal Int32 m_type_id;
+    internal eItemKind m_item_kind;
     internal Int32 m_nb_parent;
-    internal Int32 m_index;
-    internal Int32 m_nb_reference;
 
     //! Pour l'entité nulle
     private static ItemSharedInfo* null_item_shared_info = null;
@@ -258,11 +254,8 @@ namespace Arcane
 
     internal static ItemInternal* null_item = null;
     public Int32 m_local_id;
-    public Int32 m_data_index;
+    public Int32 m_type_id;
     ItemSharedInfo* m_shared_info;
-    // Le champ 'm_connectivity' n'est actif que si Arcane a été compilé
-    // sans la macro 'ARCANE_USE_SHAREDINFO_CONNECTIVITY'
-    // public ItemInternalConnectivityList* m_connectivity;
     
     internal static ItemInternal* Zero
     {
@@ -272,7 +265,7 @@ namespace Arcane
           int size = Marshal.SizeOf(typeof(ItemInternal));
           null_item = (ItemInternal*)Marshal.AllocHGlobal(size);
           null_item->m_local_id = NULL_ITEM_LOCAL_ID;
-          null_item->m_data_index = 0;
+          null_item->m_type_id = 0;
           null_item->m_shared_info = ItemSharedInfo.Zero;
         }
         return null_item;
