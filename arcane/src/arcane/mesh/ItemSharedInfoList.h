@@ -68,7 +68,7 @@ class ItemSharedInfoWithType
  public:
 
   ItemSharedInfo* sharedInfo() { return this; }
-  Int32 itemTypeId() { return this->m_type_id; }
+  ItemTypeId itemTypeId() { return this->m_type_id; }
   Int32 index() const { return m_index; }
   void setIndex(Int32 aindex) { m_index = aindex; }
   Int32 nbReference() const { return m_nb_reference; }
@@ -87,7 +87,7 @@ class ItemSharedInfoWithType
 
  private:
 
-  Int32 m_type_id = IT_NullType;
+  ItemTypeId m_type_id;
   Int32 m_index = NULL_INDEX;
   Int32 m_nb_reference = 0;
 };

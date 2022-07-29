@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemInternal.cc                                             (C) 2000-2020 */
+/* ItemInternal.cc                                             (C) 2000-2022 */
 /*                                                                           */
 /* Partie interne d'une entité.                                              */
 /*---------------------------------------------------------------------------*/
@@ -17,6 +17,7 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/TraceInfo.h"
+#include "arcane/utils/CheckedConvert.h"
 
 #include "arcane/IItemFamily.h"
 #include "arcane/IItemFamilyTopologyModifier.h"
@@ -66,6 +67,16 @@ asInt32() const
   if (m_unique_id>2147483647)
     ARCANE_FATAL("Unique id is too big to be converted to a Int32");
   return (Int32)(m_unique_id);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ItemTypeId ItemTypeId::
+fromInteger(Int64 v)
+{
+  Int16 x = CheckedConvert::toInt16(v);
+  return ItemTypeId{x};
 }
 
 /*---------------------------------------------------------------------------*/

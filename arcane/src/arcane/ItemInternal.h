@@ -21,6 +21,7 @@
 #include "arcane/ItemSharedInfo.h"
 #include "arcane/ItemUniqueId.h"
 #include "arcane/ItemLocalId.h"
+#include "arcane/ItemTypeId.h"
 #include "arcane/ItemConnectivityContainerView.h"
 
 /*---------------------------------------------------------------------------*/
@@ -516,8 +517,10 @@ class ARCANE_CORE_EXPORT ItemInternal
       return true;
     return this->internalHChild(0)->isSubactive();
   }
-  //! Numéro du type de l'entité
-  Integer typeId() const { return m_item_type_id; }
+  //! Type de l'entité
+  Int16 typeId() const { return m_item_type_id; }
+  //! Type de l'entité
+  ItemTypeId itemTypeId() const { return ItemTypeId(m_item_type_id); }
   //! Type de l'entité.
   ItemTypeInfo* typeInfo() const { return m_shared_info->typeInfoFromId(m_item_type_id); }
   //! Infos partagées de l'entité.
@@ -699,7 +702,7 @@ class ARCANE_CORE_EXPORT ItemInternal
   void setLocalId(Int32 local_id) { m_local_id = local_id; }
   ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception.")
   void setDataIndex(Integer);
-  void setSharedInfo(ItemSharedInfo* shared_infos,Int32 type_id)
+  void setSharedInfo(ItemSharedInfo* shared_infos,ItemTypeId type_id)
   {
     m_shared_info = shared_infos;
     m_item_type_id = type_id;
@@ -761,7 +764,7 @@ class ARCANE_CORE_EXPORT ItemInternal
   /*!
    * \brief Type de l'entité.
    */
-  Int32 m_item_type_id = 0;
+  Int16 m_item_type_id = 0;
   //! Infos partagées entre toutes les entités ayant les mêmes caractéristiques
   ItemSharedInfo* m_shared_info;
 

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemTypeInfoBuilder.cc                                      (C) 2000-2019 */
+/* ItemTypeInfoBuilder.cc                                      (C) 2000-2022 */
 /*                                                                           */
 /* Constructeur de type d'entité de maillage.                                */
 /*---------------------------------------------------------------------------*/
@@ -27,8 +27,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 void ItemTypeInfoBuilder::
-setInfos(ItemTypeMng* mng,
-         Integer type_id, String type_name,
+setInfos(ItemTypeMng* mng, ItemTypeId type_id, String type_name,
          Integer nb_node, Integer nb_edge, Integer nb_face)
 {
   m_mng = mng;
@@ -36,6 +35,17 @@ setInfos(ItemTypeMng* mng,
   m_nb_node = nb_node;
   m_type_name = type_name;
   _setNbEdgeAndFace(nb_edge,nb_face);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemTypeInfoBuilder::
+setInfos(ItemTypeMng* mng,
+         Integer type_id, String type_name,
+         Integer nb_node, Integer nb_edge, Integer nb_face)
+{
+  setInfos(mng,ItemTypeId::fromInteger(type_id),type_name,nb_node,nb_edge,nb_face);
 }
 
 /*---------------------------------------------------------------------------*/

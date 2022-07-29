@@ -160,83 +160,83 @@ static const Integer NULL_SUB_DOMAIN_ID = static_cast<Integer>(-1);
 static const Int32 A_NULL_RANK = static_cast<Int32>(-1);
 
 //! Numéro du type d'entité inconnu ou null
-static const Integer IT_NullType = 0;
+static const Int16 IT_NullType = 0;
 //! Numéro du type d'entité Noeud (1 sommet 1D, 2D et 3D)
-static const Integer IT_Vertex = 1;
+static const Int16 IT_Vertex = 1;
 //! Numéro du type d'entité Arête (2 sommets, 1D, 2D et 3D)
-static const Integer IT_Line2 = 2;
+static const Int16 IT_Line2 = 2;
 //! Numéro du type d'entité Triangle (3 sommets, 2D)
-static const Integer IT_Triangle3 = 3;
+static const Int16 IT_Triangle3 = 3;
 //! Numéro du type d'entité Quadrilatère (4 sommets, 2D)
-static const Integer IT_Quad4 = 4;
+static const Int16 IT_Quad4 = 4;
 //! Numéro du type d'entité Pentagone (5 sommets, 2D)
-static const Integer IT_Pentagon5 = 5;
+static const Int16 IT_Pentagon5 = 5;
 //! Numéro du type d'entité Hexagone (6 sommets, 2D)
-static const Integer IT_Hexagon6 = 6;
+static const Int16 IT_Hexagon6 = 6;
 //! Numéro du type d'entité Tetraèdre (4 sommets, 3D)
-static const Integer IT_Tetraedron4 = 7;
+static const Int16 IT_Tetraedron4 = 7;
 //! Numéro du type d'entité Pyramide (5 sommets, 3D)
-static const Integer IT_Pyramid5 = 8;
+static const Int16 IT_Pyramid5 = 8;
 //! Numéro du type d'entité Prisme (6 sommets, 3D)
-static const Integer IT_Pentaedron6 = 9;
+static const Int16 IT_Pentaedron6 = 9;
 //! Numéro du type d'entité Hexaèdre (8 sommets, 3D)
-static const Integer IT_Hexaedron8 = 10;
+static const Int16 IT_Hexaedron8 = 10;
 //! Numéro du type d'entité Heptaèdre (prisme à base pentagonale)
-static const Integer IT_Heptaedron10 = 11;
+static const Int16 IT_Heptaedron10 = 11;
 //! Numéro du type d'entité Octaèdre (prisme à base hexagonale)
-static const Integer IT_Octaedron12 = 12;
+static const Int16 IT_Octaedron12 = 12;
 //! Numéro du type d'entité HemiHexa7 (héxahèdre à 1 dégénérescence)
-static const Integer IT_HemiHexa7 = 13;
+static const Int16 IT_HemiHexa7 = 13;
 //! Numéro du type d'entité HemiHexa6 (héxahèdre à 2 dégénérescences non contigues)
-static const Integer IT_HemiHexa6 = 14;
+static const Int16 IT_HemiHexa6 = 14;
 //! Numéro du type d'entité HemiHexa5 (héxahèdres à 3 dégénérescences non contigues)
-static const Integer IT_HemiHexa5 = 15;
+static const Int16 IT_HemiHexa5 = 15;
 //! Numéro du type d'entité AntiWedgeLeft6 (héxahèdre à 2 dégénérescences contigues)
-static const Integer IT_AntiWedgeLeft6 = 16;
+static const Int16 IT_AntiWedgeLeft6 = 16;
 //! Numéro du type d'entité AntiWedgeRight6 (héxahèdre à 2 dégénérescences contigues (seconde forme))
-static const Integer IT_AntiWedgeRight6 = 17;
+static const Int16 IT_AntiWedgeRight6 = 17;
 //! Numéro du type d'entité DiTetra5 (héxahèdre à 3 dégénérescences orthogonales)
-static const Integer IT_DiTetra5 = 18;
+static const Int16 IT_DiTetra5 = 18;
 //! Numero du type d'entite noeud dual d'un sommet
-static const Integer IT_DualNode = 19;
+static const Int16 IT_DualNode = 19;
 //! Numero du type d'entite noeud dual d'une arête
-static const Integer IT_DualEdge = 20;
+static const Int16 IT_DualEdge = 20;
 //! Numero du type d'entite noeud dual d'une face
-static const Integer IT_DualFace = 21;
+static const Int16 IT_DualFace = 21;
 //! Numero du type d'entite noeud dual d'une cellule
-static const Integer IT_DualCell = 22;
+static const Int16 IT_DualCell = 22;
 //! Numéro du type d'entité liaison
-static const Integer IT_Link = 23;
+static const Int16 IT_Link = 23;
 //! Numéro du type d'entité Face pour les maillages 1D.
-static const Integer IT_FaceVertex = 24;
+static const Int16 IT_FaceVertex = 24;
 //! Numéro du type d'entité Cell pour les maillages 1D.
-static const Integer IT_CellLine2 = 25;
+static const Int16 IT_CellLine2 = 25;
 //! Numero du type d'entite noeud dual d'une particule
-static const Integer IT_DualParticle = 26;
+static const Int16 IT_DualParticle = 26;
 
 //! Numéro du type d'entité Enneèdre (prisme à base heptagonale)
-static const Integer IT_Enneedron14 = 27;
+static const Int16 IT_Enneedron14 = 27;
 //! Numéro du type d'entité Decaèdre (prisme à base Octogonale)
-static const Integer IT_Decaedron16 = 28;
+static const Int16 IT_Decaedron16 = 28;
 
 //! Numéro du type d'entité Heptagon 2D (heptagonale)
-static const Integer IT_Heptagon7 = 29;
+static const Int16 IT_Heptagon7 = 29;
 
 //! Numéro du type d'entité Octogon 2D (Octogonale)
-static const Integer IT_Octogon8 = 30;
+static const Int16 IT_Octogon8 = 30;
 
 //! Éléments quadratiques
 //@{
 //! Ligne d'ordre 2
-static const Integer IT_Line3 = 31;
+static const Int16 IT_Line3 = 31;
 //! Triangle d'ordre 2
-static const Integer IT_Triangle6 = 32;
+static const Int16 IT_Triangle6 = 32;
 //! Quadrangle d'ordre 2 (avec 4 noeuds sur les faces)
-static const Integer IT_Quad8 = 33;
+static const Int16 IT_Quad8 = 33;
 //! Tétraèdre d'ordre 2
-static const Integer IT_Tetraedron10 = 34;
+static const Int16 IT_Tetraedron10 = 34;
 //! Hexaèdre d'ordre 2
-static const Integer IT_Hexaedron20 = 35;
+static const Int16 IT_Hexaedron20 = 35;
 //@}
 
 //! Nombre de types d'entités disponible par défaut

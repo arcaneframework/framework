@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemTypeInfo.h                                              (C) 2000-2006 */
+/* ItemTypeInfo.h                                              (C) 2000-2022 */
 /*                                                                           */
 /* Informations sur un type d'entité du maillage.                            */
 /*---------------------------------------------------------------------------*/
@@ -15,30 +15,33 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/String.h"
+
 #include "arcane/ItemTypeMng.h"
+#include "arcane/ItemTypeId.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup Mesh
  * \brief Infos sur un type d'entité du maillage.
-
- Une instance de cette classe décrit un type d'entité de maillage, par
- exemple une maille hexédrique, une maille quadrangulaire.
-
- \sa ItemTypeMng
-
- \internal
- 
- Il ne doit exister qu'une instance par type d'entité. La création d'un
- type se fait par la classe dérivée ItemTypeInfoBuilder. Les types doivent
- être créée avant toute création de maillage (i.e durant
- l'initialisation de l'architecture).
+ *
+ * Une instance de cette classe décrit un type d'entité de maillage, par
+ * exemple une maille hexédrique, une maille quadrangulaire.
+ *
+ * \sa ItemTypeMng
+ *
+ * \internal
+ *
+ * Il ne doit exister qu'une instance par type d'entité. La création d'un
+ * type se fait par la classe dérivée ItemTypeInfoBuilder. Les types doivent
+ * être créée avant toute création de maillage (i.e durant
+ * l'initialisation de l'architecture).
  */
 class ItemTypeInfo
 {
@@ -97,7 +100,9 @@ class ItemTypeInfo
  public:
 
   //! Numéro du type
-  Integer typeId() const { return m_type_id; }
+  Int16 typeId() const { return m_type_id.typeId(); }
+  //! Numéro du type
+  ItemTypeId itemTypeId() const { return m_type_id; }
   //! Nombre de noeuds de l'entité
   Integer nbLocalNode() const { return m_nb_node; }
   //! Nombre de faces de l'entité
@@ -105,29 +110,29 @@ class ItemTypeInfo
   //! Nombre d'arêtes de l'entité
   Integer nbLocalEdge() const { return m_nb_edge; }
   //! Nom du type
-  const String typeName() const { return m_type_name; }
+  String typeName() const { return m_type_name; }
 
  public:
 
   //! Connectivité locale de la \a i-ème arête de la maille
   LocalEdge localEdge(Integer id) const
-    {
-      Array<Integer>& buf = m_mng->m_ids_buffer;
-      Integer fi = buf[m_first_item_index + id];
-      return LocalEdge(&buf[fi]);
-    }
+  {
+    Array<Integer>& buf = m_mng->m_ids_buffer;
+    Integer fi = buf[m_first_item_index + id];
+    return LocalEdge(&buf[fi]);
+  }
 
   //! Connectivité locale de la \a i-ème face de la maille
   LocalFace localFace(Integer id) const
-    {
-      Array<Integer>& buf = m_mng->m_ids_buffer;
-      Integer fi = buf[m_first_item_index + m_nb_edge + id];
-      return LocalFace(&buf[fi]);
-    }
+  {
+    Array<Integer>& buf = m_mng->m_ids_buffer;
+    Integer fi = buf[m_first_item_index + m_nb_edge + id];
+    return LocalFace(&buf[fi]);
+  }
 
  protected:
   ItemTypeMng* m_mng;
-  Integer m_type_id;
+  ItemTypeId m_type_id;
   Integer m_nb_node;
   Integer m_nb_edge;
   Integer m_nb_face;
@@ -138,7 +143,7 @@ class ItemTypeInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
