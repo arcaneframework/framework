@@ -56,9 +56,12 @@ class SimpleCsvComparatorService
   bool readRefFile(Integer only_proc) override;
   bool isRefExist(Integer only_proc) override;
   void print() override;
+  bool compareWithRef(Integer epsilon) override;
 
  protected:
   void _openFile(String name_file);
+  bool _exploreColumn(Integer pos);
+  bool _exploreRows(Integer pos);
 
  protected:
   Directory m_path_ref;
@@ -70,10 +73,20 @@ class SimpleCsvComparatorService
 
   ISimpleTableOutput* m_iSTO;
 
-  UniqueArray2<Real> m_values_csv;
+  RealUniqueArray2 m_values_csv;
 
-  UniqueArray<String> m_name_rows;
-  UniqueArray<String> m_name_columns_with_name_of_tab;
+  StringUniqueArray m_name_rows;
+  StringUniqueArray m_name_columns_with_name_of_tab;
+
+  String m_regex_rows;
+  bool m_is_excluding_regex_rows;
+
+  String m_regex_columns;
+  bool m_is_excluding_regex_columns;
+
+  StringUniqueArray m_compared_rows;
+  StringUniqueArray m_compared_columns;
+
 
   bool m_with_option;
 };

@@ -51,7 +51,22 @@ editRefFileEntry(String path, String name)
 bool SimpleCsvComparatorService::
 writeRefFile(Integer only_proc)
 {
-  return m_iSTO->writeFile(m_path_ref_str, only_proc);
+  // On sauvegarde les paramètres d'origines.
+  Integer save_preci = m_iSTO->precision();
+  bool save_fixed = m_iSTO->fixed();
+
+  // On défini la précision max.
+  m_iSTO->setPrecision(std::numeric_limits<Real>::digits10 + 1);
+  m_iSTO->setFixed(true);
+
+  // On écrit nos fichiers de référence.
+  bool fin = m_iSTO->writeFile(m_path_ref_str, only_proc);
+
+  // On remet les paramètres par défault.
+  m_iSTO->setPrecision(save_preci);
+  m_iSTO->setFixed(save_fixed);
+
+  return fin;
 }
 
 bool SimpleCsvComparatorService::
@@ -103,7 +118,7 @@ readRefFile(Integer only_proc)
     ligne.split(splitted_line, ';');
     m_name_rows.add(splitted_line[0]);
     for(Integer i = 1; i < splitted_line.size(); i++){
-      m_values_csv[compt_line][i-1] = std::stold(splitted_line[i].localstr());
+      m_values_csv[compt_line][i-1] = std::stod(splitted_line[i].localstr());
     }
     compt_line++;
   } while(std::getline(m_ifstream, line));
@@ -112,11 +127,43 @@ readRefFile(Integer only_proc)
   return true;
 }
 
+bool SimpleCsvComparatorService::
+compareWithRef(Integer epsilon)
+{
+  bool isOk = true;
+  Integer dim1 = m_values_csv.dim1Size();
+  Integer dim2 = m_values_csv.dim2Size();
+  for (Integer i = 0; i < dim1; i++) {
+    if(!_exploreRows(i)) continue;
+    ConstArrayView<Real> view = m_values_csv[i];
+    for (Integer j = 0; j < dim2; j++) {
+      if(!_exploreColumn(j)) continue;
+      Real val1 = m_iSTO->elem(m_name_columns_with_name_of_tab[j+1], m_name_rows[i]);
+      Real val2 = view[j];
+      if(math::isNearlyEqualWithEpsilon(val1, val2, epsilon))
+      {
+        info() << "OK";
+      }
+      else
+      {
+        info() << "NOK";
+        isOk = false;
+      }
+    }
+  }
+  return isOk;
+}
+
 // TODO DEBUG A suppr.
 void SimpleCsvComparatorService::
 print()
 {
   String m_separator = ";";
+
+
+  std::cout << std::setiosflags(std::ios::fixed);
+
+  std::cout << std::setprecision(std::numeric_limits<Real>::digits10 + 1);
 
   for (Integer j = 0; j < m_name_columns_with_name_of_tab.size(); j++) {
     std::cout << m_name_columns_with_name_of_tab[j] << m_separator;
@@ -124,7 +171,7 @@ print()
   std::cout << std::endl;
 
   for (Integer i = 0; i < m_values_csv.dim1Size(); i++) {
-      std::cout << m_name_rows[i];
+    std::cout << m_name_rows[i];
     std::cout << m_separator;
     ConstArrayView<Real> view = m_values_csv[i];
     for (Integer j = 0; j < m_values_csv.dim2Size(); j++) {
@@ -143,6 +190,20 @@ _openFile(String name_file)
   if(m_is_file_open) return;
   m_ifstream.open(m_path_ref.file(name_file).localstr(), std::ifstream::in);
   m_is_file_open = true;
+}
+
+bool SimpleCsvComparatorService::
+_exploreColumn(Integer pos)
+{
+  String name_column = m_name_columns_with_name_of_tab[pos+1];
+  return true;
+}
+
+bool SimpleCsvComparatorService::
+_exploreRows(Integer pos)
+{
+  String name_rows = m_name_rows[pos];
+  return true;
 }
 
 /*---------------------------------------------------------------------------*/

@@ -48,13 +48,11 @@ setUpForClass()
   ptrSTO->addColumn("Ma colonne 2");
   ptrSTO->addColumn("Ma colonne 3");
 
-  ptrSTO->addRow("Ma ligne 1", RealUniqueArray{ 1, 2, 3 });
-  ptrSTO->addRow("Ma ligne 2", RealUniqueArray{ 4, 5, 6 });
+  ptrSTO->addRow("Ma ligne 1", RealUniqueArray{ 1.234567891, 2, 3 });
+  ptrSTO->addRow("Ma ligne 2", RealUniqueArray{ 456789101112, 5, 6 });
   ptrSTO->addRow("Ma ligne 3", RealUniqueArray{ 7, 8, 9 });
 
-  RealUniqueArray result1 = { 1, 2, 2 };
-  RealUniqueArray result2 = { 4, 5, 6 };
-  RealUniqueArray result3 = { 7, 8, 9 };
+  ptrSTO->print();
 
   //ptrSTO->writeFile("test_csv_comparator", 0);
 
@@ -65,6 +63,7 @@ setUpForClass()
   ptrSTC->readRefFile();
 
   ptrSTC->print();
+  ptrSTC->compareWithRef();
 
 }
 

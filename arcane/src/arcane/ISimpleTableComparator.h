@@ -57,6 +57,8 @@ public:
 
   virtual bool isRefExist(Integer only_proc = -1) = 0;
   virtual void print() = 0;
+  virtual bool compareWithRef(Integer epsilon = 0) = 0;
+
 };
 
 /*---------------------------------------------------------------------------*/
