@@ -82,11 +82,10 @@ namespace
 {
 
 template<typename DataType> inline bool
-_checkResizeArray(Array<DataType>& array,Integer new_max_index)
+_checkResizeArray(Array<DataType>& array,Int32 new_size,bool force_resize)
 {
   Integer s = array.size();
-  if (new_max_index>=s){
-    Integer new_size = new_max_index + 1;
+  if (new_size>s || force_resize){
     if (new_size>array.capacity()){
       if (new_size>5000000)
         array.reserve((Integer)(new_size * 1.2));
@@ -116,6 +115,7 @@ class ItemFamily::Variables
             const String& unique_ids_name,
             const String& items_owner_name,
             const String& items_flags_name,
+            const String& items_type_id_name,
             const String& items_nb_parent_name,
             const String& groups_name,
             const String& current_id_name,
@@ -129,6 +129,7 @@ class ItemFamily::Variables
     m_items_unique_id(VariableBuildInfo(mesh,unique_ids_name,IVariable::PPrivate)),
     m_items_owner(VariableBuildInfo(mesh,items_owner_name,IVariable::PPrivate)),
     m_items_flags(VariableBuildInfo(mesh,items_flags_name,IVariable::PPrivate)),
+    m_items_type_id(VariableBuildInfo(mesh,items_type_id_name,IVariable::PPrivate)),
     m_items_nb_parent(VariableBuildInfo(mesh,items_nb_parent_name,IVariable::PPrivate)),
     m_groups_name(VariableBuildInfo(mesh,groups_name)),
     m_current_id(VariableBuildInfo(mesh,current_id_name)),
@@ -154,6 +155,8 @@ class ItemFamily::Variables
   VariableArrayInt32 m_items_owner;
   //! Contient les flags() des entités de cette famille
   VariableArrayInt32 m_items_flags;
+  //! Contient les typeId() des entités de cette famille
+  VariableArrayInt16 m_items_type_id;
   /*!
    * \brief Contient le parent() des entités de cette famille.
    *
@@ -291,6 +294,7 @@ build()
     String var_unique_ids_name(_variableName("FamilyUniqueIds"));
     String var_owner_name(_variableName("FamilyOwner"));
     String var_flags_name(_variableName("FamilyFlags"));
+    String var_typeid_name(_variableName("FamilyItemTypeId"));
     String var_nb_parent_name(_variableName("FamilyItemNbParent"));
     String var_count_name(_variableName("FamilyItemsShared"));
     String var_groups_name(_variableName("FamilyGroupsName"));
@@ -303,7 +307,7 @@ build()
     String var_child_families_name(_variableName("ChildFamiliesName"));
     m_internal_variables = new Variables(m_mesh,name(),itemKind(),var_count_name,
                                          var_unique_ids_name,var_owner_name,
-                                         var_flags_name,var_nb_parent_name,var_groups_name,
+                                         var_flags_name,var_typeid_name,var_nb_parent_name,var_groups_name,
                                          var_current_id_name,var_new_owner_name,
                                          var_parent_mesh_name,var_parent_family_name,
                                          var_parent_family_depth_name,
@@ -312,6 +316,7 @@ build()
     m_items_unique_id = &m_internal_variables->m_items_unique_id._internalTrueData()->_internalDeprecatedValue();
     m_items_owner = &m_internal_variables->m_items_owner._internalTrueData()->_internalDeprecatedValue();
     m_items_flags = &m_internal_variables->m_items_flags._internalTrueData()->_internalDeprecatedValue();
+    m_items_type_id = &m_internal_variables->m_items_type_id._internalTrueData()->_internalDeprecatedValue();
     m_items_nb_parent = &m_internal_variables->m_items_nb_parent._internalTrueData()->_internalDeprecatedValue();
     _updateItemViews();
   }
@@ -916,6 +921,12 @@ prepareForDump()
           << " m_item_shared_infos->hasChanged()=" << m_item_shared_infos->hasChanged()
           << " nb_item=" << m_infos.nbItem();
 
+  {
+    auto* p = m_properties;
+    p->setInt32("dump-version",0x0307);
+    p->setInt32("nb-item",m_infos.nbItem());
+  }
+
   // TODO: ajoute flag vérification si nécessaire
   if (m_item_need_prepare_dump || m_item_shared_infos->hasChanged()){
     info(4) << "Prepare for dump:2: name=" << m_name << " nb_alloc=" << m_nb_allocate_info
@@ -932,11 +943,13 @@ prepareForDump()
   }
   m_item_need_prepare_dump = false;
   if (m_need_prepare_dump){
+    Integer nb_item = m_infos.nbItem();
+    // TODO: regarder si ce ne serait pas mieux de faire cela dans finishCompactItem()
+    _resizeItemVariables(nb_item,true);
     m_internal_variables->m_current_id = m_current_id;
     info(4) << " SET FAMILY ID name=" << name() << " id= " << m_current_id
             << " saveid=" << m_internal_variables->m_current_id();
     ItemInternalList items(m_infos.itemsInternal());
-    Integer nb_item = m_infos.nbItem();
     m_internal_variables->m_items_shared_data_index.resize(nb_item);
     IntegerArrayView items_shared_data_index(m_internal_variables->m_items_shared_data_index);
     info(4) << "ItemFamily::prepareForDump(): " << m_name
@@ -1021,8 +1034,31 @@ prepareForDump()
 void ItemFamily::
 readFromDump()
 {
-  //TODO: GG: utiliser un flag pour indiquer qu'il faudra reconstruire
+  // TODO: GG: utiliser un flag pour indiquer qu'il faudra reconstruire
   // les infos de synchro mais ne pas le faire directement dans cette methode.
+
+  Int32 nb_item = 0;
+  Int32 dump_version = 0;
+  // Indique si on utilise la variable contenant le type de l'entité pour
+  // construire les ItemInternal. Cela n'est possible qu'avec les protections
+  // effectuées depuis une version 3.7 de Arcane. Avant cela il faut utiliser
+  // la variable m_items_shared_data_index.
+  bool use_type_variable = false;
+  {
+    Int32 x = 0;
+    auto* p = m_properties;
+    if (p->get("dump-version",x))
+      dump_version = x;
+    if (dump_version>=0x0307){
+      use_type_variable = true;
+      nb_item = p->getInt32("nb-item");
+    }
+  }
+
+  const bool allow_old_version = true;
+  if (!allow_old_version)
+    if (dump_version<0x0307)
+      ARCANE_FATAL("Your checkpoint is from a version of Arcane which is too old (mininum version is 3.7)");
 
   // Le numéro de la partie peut changer en reprise. Il faut donc le
   // remettre à jour. De même, si on passe d'un maillage séquentiel à un
@@ -1033,8 +1069,6 @@ readFromDump()
   if (m_infos.allItems().isOwn() && part_info.nbPart()>1)
     m_infos.allItems().setOwn(false);
 
-  _updateItemViews();
-
   // NOTE: l'implémentation actuelle suppose que les dataIndex() des
   // entites sont consécutifs et croissants avec le localId() des entités
   // (c.a.d l'entité de localId() valant 0 à aussi un dataIndex() de 0,
@@ -1043,11 +1077,23 @@ readFromDump()
   // Lorsque ce ne sera plus le cas (trou dans la numérotation), il faudra
   // ajouter une variable data_index sur les entités.
   IntegerArrayView items_shared_data_index(m_internal_variables->m_items_shared_data_index);
-  Integer nb_item = items_shared_data_index.size();
+  if (!use_type_variable)
+    nb_item = items_shared_data_index.size();
+
   info(4) << "ItemFamily::readFromDump(): " << fullName()
           << " count=" << nb_item
           << " currentid=" << m_current_id
-          << " saveid=" << m_internal_variables->m_current_id();
+          << " saveid=" << m_internal_variables->m_current_id()
+          << " use_type_variable?=" << use_type_variable
+          << " dump_version=" << dump_version;
+
+  if (!use_type_variable){
+    // Avec les anciennes protections il n'y a pas la variable pour le type de l'entité.
+    // Il faut donc l'allouer ici car on s'en sert lorsqu'on appelle ItemInternal::setSharedInfo().
+    if (nb_item>0)
+      _checkResizeArray(*m_items_type_id,nb_item,false);
+  }
+  _updateItemViews();
 
   if (m_internal_variables->m_current_id()==m_current_id){
     debug() << "Family unchanged. Nothing to do.";
@@ -1089,7 +1135,19 @@ readFromDump()
 
   // En relecture les entités sont compactées donc la valeur max du localId()
   // est égal au nombre d'entité.
-  {
+
+  if (use_type_variable){
+    ItemTypeMng* type_mng = mesh()->itemTypeMng();
+    for( Integer i=0; i<nb_item; ++i ){;
+      ItemTypeId type_id{(*m_items_type_id)[i]};
+      ItemSharedInfoWithType* isi = _findSharedInfo(type_mng->typeFromId(type_id));
+      Int64 uid = (*m_items_unique_id)[i];
+      ItemInternal* item = m_infos.allocOne(uid);
+      item->setSharedInfo(isi->sharedInfo(),type_id);
+    }
+  }
+  else{
+    // Méthode utilisée pour les protections issues des versions 3.6 et antérieure de Arcane.
     auto item_shared_infos = m_item_shared_infos->itemSharedInfos();
     ItemInternalList items(m_infos.itemsInternal());
     for( Integer i=0; i<nb_item; ++i ){
@@ -1100,6 +1158,7 @@ readFromDump()
       item->setSharedInfo(isi->sharedInfo(),isi->itemTypeId());
     }
   }
+
   // Supprime les entités du groupe total car elles vont être remises à jour
   // lors de l'appel à _endUpdate()
   m_infos.allItems().clear();
@@ -1607,23 +1666,34 @@ _allocateInfos(ItemInternal* item,Int64 uid,ItemTypeInfo* type)
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
+_resizeItemVariables(Int32 new_size,bool force_resize)
+{
+  bool is_resize = _checkResizeArray(*m_items_unique_id,new_size,force_resize);
+  is_resize |= _checkResizeArray(*m_items_owner,new_size,force_resize);
+  is_resize |= _checkResizeArray(*m_items_flags,new_size,force_resize);
+  is_resize |= _checkResizeArray(*m_items_type_id,new_size,force_resize);
+  if (m_parent_family_depth>0)
+    is_resize |= _checkResizeArray(*m_items_nb_parent,new_size,force_resize);
+  if (is_resize)
+    _updateItemViews();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemFamily::
 _allocateInfos(ItemInternal* item,Int64 uid,ItemSharedInfoWithType* isi)
 {
   // TODO: faire en même temps que le réalloc de la variable uniqueId()
   //  le réalloc des m_source_incremental_item_connectivities.
   Int32 local_id = item->localId();
-  {
-    bool is_resize = _checkResizeArray(*m_items_unique_id,local_id);
-    is_resize |= _checkResizeArray(*m_items_owner,local_id);
-    is_resize |= _checkResizeArray(*m_items_flags,local_id);
-    if (m_parent_family_depth>0)
-      is_resize |= _checkResizeArray(*m_items_nb_parent,local_id);
-    if (is_resize)
-      _updateItemViews();
-    (*m_items_unique_id)[local_id] = uid;
-  }
+  _resizeItemVariables(local_id+1,false);
 
-  item->setSharedInfo(isi->sharedInfo(),isi->itemTypeId());
+  // TODO: regarder si encore utile car ItemInternal::reinitialize() doit le faire
+  (*m_items_unique_id)[local_id] = uid;
+
+  ItemTypeId iti = isi->itemTypeId();
+  item->setSharedInfo(isi->sharedInfo(),iti);
   
   item->reinitialize(uid,m_default_sub_domain_owner,m_sub_domain_id);
   ++m_nb_allocate_info;
@@ -2391,6 +2461,7 @@ _updateItemViews()
 {
   m_views_for_item_shared_info.m_unique_ids_view = m_items_unique_id->view();
   m_views_for_item_shared_info.m_flags_view = m_items_flags->view();
+  m_views_for_item_shared_info.m_type_ids_view = m_items_type_id->view();
   m_views_for_item_shared_info.m_owners_view = m_items_owner->view();
   m_views_for_item_shared_info.m_parent_ids_view = m_items_nb_parent->view();
 

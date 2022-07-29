@@ -702,10 +702,12 @@ class ARCANE_CORE_EXPORT ItemInternal
   void setLocalId(Int32 local_id) { m_local_id = local_id; }
   ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception.")
   void setDataIndex(Integer);
+  //! \internal
   void setSharedInfo(ItemSharedInfo* shared_infos,ItemTypeId type_id)
   {
     m_shared_info = shared_infos;
     m_item_type_id = type_id;
+    shared_infos->_setTypeId(m_local_id,type_id.typeId());
   }
 
  public:
