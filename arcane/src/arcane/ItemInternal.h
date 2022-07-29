@@ -518,7 +518,7 @@ class ARCANE_CORE_EXPORT ItemInternal
     return this->internalHChild(0)->isSubactive();
   }
   //! Type de l'entité
-  Integer typeId() const { return m_item_type_id; }
+  Int16 typeId() const { return m_item_type_id; }
   //! Type de l'entité
   ItemTypeId itemTypeId() const { return ItemTypeId(m_item_type_id); }
   //! Type de l'entité.
@@ -702,10 +702,10 @@ class ARCANE_CORE_EXPORT ItemInternal
   void setLocalId(Int32 local_id) { m_local_id = local_id; }
   ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception.")
   void setDataIndex(Integer);
-  void setSharedInfo(ItemSharedInfo* shared_infos,Int32 type_id)
+  void setSharedInfo(ItemSharedInfo* shared_infos,ItemTypeId type_id)
   {
     m_shared_info = shared_infos;
-    m_item_type_id = (Int16)type_id;
+    m_item_type_id = type_id;
   }
 
  public:

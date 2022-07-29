@@ -100,7 +100,7 @@ class ItemTypeInfo
  public:
 
   //! Numéro du type
-  Integer typeId() const { return m_type_id.typeId(); }
+  Int16 typeId() const { return m_type_id.typeId(); }
   //! Numéro du type
   ItemTypeId itemTypeId() const { return m_type_id; }
   //! Nombre de noeuds de l'entité

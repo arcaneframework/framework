@@ -31,14 +31,27 @@ namespace Arcane
 class ARCANE_CORE_EXPORT ItemTypeId
 {
  public:
-  constexpr ARCCORE_HOST_DEVICE ItemTypeId() = default;
-  constexpr ARCCORE_HOST_DEVICE explicit ItemTypeId(Int16 id) : m_type_id(id){}
+
+  ItemTypeId() = default;
+  constexpr ARCCORE_HOST_DEVICE explicit ItemTypeId(Int16 id)
+  : m_type_id(id)
+  {}
   constexpr ARCCORE_HOST_DEVICE operator Int16() const { return m_type_id; }
-  constexpr ARCCORE_HOST_DEVICE Int32 asInt16() const { return m_type_id; }
+
  public:
+
   constexpr ARCCORE_HOST_DEVICE Int16 typeId() const { return m_type_id; }
-  constexpr ARCCORE_HOST_DEVICE bool isNull() const { return m_type_id==IT_NullType; }
+  constexpr ARCCORE_HOST_DEVICE bool isNull() const { return m_type_id == IT_NullType; }
+  /*!
+   * \brief Créé une instance à partir d'un entier.
+   *
+   * Cette méthode lève une exception si \a v est supérieur à la valeur
+   * maximale autorisée qui est actuellement 2^15.
+   */
+  static ItemTypeId fromInteger(Int64 v);
+
  private:
+
   Int16 m_type_id = IT_NullType;
 };
 

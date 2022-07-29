@@ -177,7 +177,7 @@ class ARCANE_CORE_EXPORT Item
   Int32 owner() const { return m_internal->owner(); }
 
   //! Type de l'entité
-  Int32 type() const { return m_internal->typeId(); }
+  Int16 type() const { return m_internal->typeId(); }
 
   //! Type de l'entité
   ItemTypeId itemTypeId() const { return m_internal->itemTypeId(); }

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemTypeInfoBuilder.h                                       (C) 2000-2019 */
+/* ItemTypeInfoBuilder.h                                       (C) 2000-2022 */
 /*                                                                           */
 /* Construction d'un type d'entité du maillage.                              */
 /*---------------------------------------------------------------------------*/
@@ -53,8 +53,13 @@ class ItemTypeInfoBuilder
 
  public:
 
+  // TODO: Rendre obsolète
   void setInfos(ItemTypeMng* mng,
                 Integer type_id, String type_name,
+                Integer nb_node, Integer nb_edge, Integer nb_face);
+
+  void setInfos(ItemTypeMng* mng,
+                ItemTypeId type_id, String type_name,
                 Integer nb_node, Integer nb_edge, Integer nb_face);
 
   /*!

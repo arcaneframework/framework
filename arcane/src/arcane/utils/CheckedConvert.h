@@ -132,6 +132,19 @@ toInt32(Int64 v)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+//! Converti un \c Int64 en un \c Int16
+
+inline Int16
+toInt16(Int64 v)
+{
+  if (v>std::numeric_limits<Int16>::max() || v<std::numeric_limits<Int16>::min())
+    throw BadCastException(A_FUNCINFO,
+                           String::format("Invalid conversion from '{0}' to type Int16",v));
+  return (Int16)v;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Multiplie trois 'Integer' et vérifie que le résultat peut être contenu
  * dans un 'Integer'.
