@@ -62,6 +62,7 @@ ItemSharedInfo(IItemFamily* family,MeshItemInternalList* items,
 , m_parent_item_ids(&(variable_views->m_parent_ids_view))
 , m_owners(&(variable_views->m_owners_view))
 , m_flags(&(variable_views->m_flags_view))
+, m_typeids(&(variable_views->m_typeids_view))
 , m_item_kind(family->itemKind())
 {
   _init(m_item_kind);

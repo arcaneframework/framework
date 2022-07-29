@@ -674,12 +674,14 @@ finishCompactItems(ItemFamilyCompactInfos& compact_infos)
   UniqueArray<Int64> new_uids(m_nb_item);
   UniqueArray<Int32> new_owners(m_nb_item);
   UniqueArray<Int32> new_flags(m_nb_item);
+  UniqueArray<Int16> new_typeids(m_nb_item);
 
   for( Integer i=0, n=m_nb_item; i<n; ++i ) {
     ItemInternal* old_item = m_internals[ new_to_old_local_ids[ i ] ];
     new_uids[i] = old_item->uniqueId().asInt64();
     new_owners[i] = old_item->owner();
     new_flags[i] = old_item->flags();
+    new_typeids[i] = old_item->typeId();
     new_items[i] = *old_item;
   }
 
@@ -693,6 +695,8 @@ finishCompactItems(ItemFamilyCompactInfos& compact_infos)
     ii->setFlags(new_flags[i]);
     ii->setOwner(new_owners[i],sid);
     ii->setUniqueId(new_uids[i]);
+    ItemSharedInfo* isi = ii->sharedInfo();
+    ii->setSharedInfo(isi,ItemTypeId(new_typeids[i]));
     // L'entité est marqué comme créée
     //_setAdded(ii);
 #ifdef ARCANE_CHECK

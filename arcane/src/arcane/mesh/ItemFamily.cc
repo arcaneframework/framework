@@ -116,6 +116,7 @@ class ItemFamily::Variables
             const String& unique_ids_name,
             const String& items_owner_name,
             const String& items_flags_name,
+            const String& items_typeid_name,
             const String& items_nb_parent_name,
             const String& groups_name,
             const String& current_id_name,
@@ -129,6 +130,7 @@ class ItemFamily::Variables
     m_items_unique_id(VariableBuildInfo(mesh,unique_ids_name,IVariable::PPrivate)),
     m_items_owner(VariableBuildInfo(mesh,items_owner_name,IVariable::PPrivate)),
     m_items_flags(VariableBuildInfo(mesh,items_flags_name,IVariable::PPrivate)),
+    m_items_typeid(VariableBuildInfo(mesh,items_typeid_name,IVariable::PPrivate)),
     m_items_nb_parent(VariableBuildInfo(mesh,items_nb_parent_name,IVariable::PPrivate)),
     m_groups_name(VariableBuildInfo(mesh,groups_name)),
     m_current_id(VariableBuildInfo(mesh,current_id_name)),
@@ -154,6 +156,8 @@ class ItemFamily::Variables
   VariableArrayInt32 m_items_owner;
   //! Contient les flags() des entités de cette famille
   VariableArrayInt32 m_items_flags;
+  //! Contient les typeId() des entités de cette famille
+  VariableArrayInt16 m_items_typeid;
   /*!
    * \brief Contient le parent() des entités de cette famille.
    *
@@ -291,6 +295,7 @@ build()
     String var_unique_ids_name(_variableName("FamilyUniqueIds"));
     String var_owner_name(_variableName("FamilyOwner"));
     String var_flags_name(_variableName("FamilyFlags"));
+    String var_typeid_name(_variableName("FamilyTypeId"));
     String var_nb_parent_name(_variableName("FamilyItemNbParent"));
     String var_count_name(_variableName("FamilyItemsShared"));
     String var_groups_name(_variableName("FamilyGroupsName"));
@@ -303,7 +308,7 @@ build()
     String var_child_families_name(_variableName("ChildFamiliesName"));
     m_internal_variables = new Variables(m_mesh,name(),itemKind(),var_count_name,
                                          var_unique_ids_name,var_owner_name,
-                                         var_flags_name,var_nb_parent_name,var_groups_name,
+                                         var_flags_name,var_typeid_name,var_nb_parent_name,var_groups_name,
                                          var_current_id_name,var_new_owner_name,
                                          var_parent_mesh_name,var_parent_family_name,
                                          var_parent_family_depth_name,
@@ -312,6 +317,7 @@ build()
     m_items_unique_id = &m_internal_variables->m_items_unique_id._internalTrueData()->_internalDeprecatedValue();
     m_items_owner = &m_internal_variables->m_items_owner._internalTrueData()->_internalDeprecatedValue();
     m_items_flags = &m_internal_variables->m_items_flags._internalTrueData()->_internalDeprecatedValue();
+    m_items_typeid = &m_internal_variables->m_items_typeid._internalTrueData()->_internalDeprecatedValue();
     m_items_nb_parent = &m_internal_variables->m_items_nb_parent._internalTrueData()->_internalDeprecatedValue();
     _updateItemViews();
   }
@@ -1616,6 +1622,7 @@ _allocateInfos(ItemInternal* item,Int64 uid,ItemSharedInfoWithType* isi)
     bool is_resize = _checkResizeArray(*m_items_unique_id,local_id);
     is_resize |= _checkResizeArray(*m_items_owner,local_id);
     is_resize |= _checkResizeArray(*m_items_flags,local_id);
+    is_resize |= _checkResizeArray(*m_items_typeid,local_id);
     if (m_parent_family_depth>0)
       is_resize |= _checkResizeArray(*m_items_nb_parent,local_id);
     if (is_resize)
@@ -1623,7 +1630,8 @@ _allocateInfos(ItemInternal* item,Int64 uid,ItemSharedInfoWithType* isi)
     (*m_items_unique_id)[local_id] = uid;
   }
 
-  item->setSharedInfo(isi->sharedInfo(),isi->itemTypeId());
+  ItemTypeId iti = isi->itemTypeId();
+  item->setSharedInfo(isi->sharedInfo(),iti);
   
   item->reinitialize(uid,m_default_sub_domain_owner,m_sub_domain_id);
   ++m_nb_allocate_info;
@@ -2391,6 +2399,7 @@ _updateItemViews()
 {
   m_views_for_item_shared_info.m_unique_ids_view = m_items_unique_id->view();
   m_views_for_item_shared_info.m_flags_view = m_items_flags->view();
+  m_views_for_item_shared_info.m_typeids_view = m_items_typeid->view();
   m_views_for_item_shared_info.m_owners_view = m_items_owner->view();
   m_views_for_item_shared_info.m_parent_ids_view = m_items_nb_parent->view();
 

@@ -411,6 +411,7 @@ class ARCANE_MESH_EXPORT ItemFamily
   Int64Array* m_items_unique_id = nullptr;
   Int32Array* m_items_owner = nullptr;
   Int32Array* m_items_flags = nullptr;
+  Int16Array* m_items_typeid = nullptr;
   Int32Array* m_items_nb_parent = nullptr;
   // Cee champs est utilisé par les instances de ItemSharedInfo
   ItemSharedInfo::ItemVariableViews m_views_for_item_shared_info;

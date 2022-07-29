@@ -80,6 +80,7 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   {
     Int64ArrayView m_unique_ids_view;
     Int32ArrayView m_flags_view;
+    Int16ArrayView m_typeids_view;
     Int32ArrayView m_owners_view;
     Int32ArrayView m_parent_ids_view;
   };
@@ -277,6 +278,7 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   Int32ArrayView* m_parent_item_ids = nullptr;
   Int32ArrayView* m_owners = nullptr;
   Int32ArrayView* m_flags = nullptr;
+  Int16ArrayView* m_typeids = nullptr;
   eItemKind m_item_kind = IK_Unknown;
 
  private:
@@ -300,6 +302,9 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   void _setOwnerV2(Int32 local_id,Int32 aowner) const { (*m_owners)[local_id] = aowner; }
   Int32 _flagsV2(Int32 local_id) const { return (*m_flags)[local_id]; }
   void _setFlagsV2(Int32 local_id,Int32 f) const { (*m_flags)[local_id] = f; }
+
+  Int16 _typeId(Int32 local_id) const { return (*m_typeids)[local_id]; }
+  void _setTypeId(Int32 local_id,Int16 v) const { (*m_typeids)[local_id] = v; }
 
  public:
 
