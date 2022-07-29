@@ -59,6 +59,17 @@ public:
   virtual void print() = 0;
   virtual bool compareWithRef(Integer epsilon = 0) = 0;
 
+  virtual bool addColumnToCompare(String name_column) = 0;
+  virtual bool addRowToCompare(String name_row) = 0;
+
+  virtual bool removeColumnToCompare(String name_column) = 0;
+  virtual bool removeRowToCompare(String name_row) = 0;
+
+  virtual bool editRegexColumns(String regex_column) = 0;
+  virtual bool editRegexRows(String regex_row) = 0;
+
+  virtual bool isARegexExclusiveColumns(bool is_exclusive) = 0;
+  virtual bool isARegexExclusiveRows(bool is_exclusive) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

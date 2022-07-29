@@ -64,6 +64,9 @@ setUpForClass()
 
   ptrSTC->readRefFile();
 
+  ptrSTC->editRegexColumns("^.*1$");
+  ptrSTC->isARegexExclusiveColumns(true);
+
   ptrSTC->print();
   ptrSTC->compareWithRef();
 

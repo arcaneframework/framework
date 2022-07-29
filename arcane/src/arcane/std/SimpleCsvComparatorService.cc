@@ -261,6 +261,65 @@ _exploreRows(Integer pos)
   return m_is_excluding_regex_rows;
 }
 
+
+bool SimpleCsvComparatorService::
+addColumnToCompare(String name_column)
+{
+  m_compared_columns.add(name_column);
+  return true;
+}
+bool SimpleCsvComparatorService::
+addRowToCompare(String name_row)
+{
+  m_compared_rows.add(name_row);
+  return true;
+}
+
+bool SimpleCsvComparatorService::
+removeColumnToCompare(String name_column)
+{
+  std::optional index = m_compared_columns.span().findFirst(name_column);
+  if(index) {
+    m_compared_columns.remove(index.value());
+    return true;
+  }
+  return false;
+}
+bool SimpleCsvComparatorService::
+removeRowToCompare(String name_row)
+{
+  std::optional index = m_compared_rows.span().findFirst(name_row);
+  if(index) {
+    m_compared_rows.remove(index.value());
+    return true;
+  }
+  return false;
+}
+
+bool SimpleCsvComparatorService::
+editRegexColumns(String regex_column)
+{
+  m_regex_columns = regex_column;
+  return true;
+}
+bool SimpleCsvComparatorService::
+editRegexRows(String regex_row)
+{
+  m_regex_rows = regex_row;
+  return true;
+}
+
+bool SimpleCsvComparatorService::
+isARegexExclusiveColumns(bool is_exclusive)
+{
+  m_is_excluding_regex_columns = is_exclusive;
+}
+bool SimpleCsvComparatorService::
+isARegexExclusiveRows(bool is_exclusive)
+{
+  m_is_excluding_regex_rows = is_exclusive;
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

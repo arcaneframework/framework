@@ -58,6 +58,18 @@ class SimpleCsvComparatorService
   void print() override;
   bool compareWithRef(Integer epsilon) override;
 
+  bool addColumnToCompare(String name_column) override;
+  bool addRowToCompare(String name_row) override;
+
+  bool removeColumnToCompare(String name_column) override;
+  bool removeRowToCompare(String name_row) override;
+
+  bool editRegexColumns(String regex_column) override;
+  bool editRegexRows(String regex_row) override;
+
+  bool isARegexExclusiveColumns(bool is_exclusive) override;
+  bool isARegexExclusiveRows(bool is_exclusive) override;
+
  protected:
   void _openFile(String name_file);
   bool _exploreColumn(Integer pos);
