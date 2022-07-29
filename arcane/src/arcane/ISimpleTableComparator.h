@@ -41,35 +41,149 @@ public:
   virtual ~ISimpleTableComparator() = default;
 
 public:
-  // C'est a partir de cette interface qu'on récupère toutes les infos.
-  // Il faut donc préciser à l'user qu'il doit avoir totalement rempli
-  // le STO (valeurs, nom, path).
-  // (nom et path peuvent être définis après coup avec editRefFileEntry).
+
+  /**
+   * @brief Méthode permettant d'initialiser le service.
+   * 
+   * Le pointeur vers une implémentation de ISimpleTableOutput
+   * doit contenir les valeurs à comparer ou à écrire en tant que
+   * valeurs de référence et l'emplacement de destination des
+   * fichiers de sortie, pour que soit automatiquement déterminé
+   * l'emplacement des fichiers de réferences.
+   * 
+   * @param ptr_sto Une implémentation de ISimpleTableOutput.
+   */
   virtual void init(ISimpleTableOutput* ptr_sto) = 0;
 
-  // Permet de def nom et path après coup (et de forcer un autre path).
+  /**
+   * @brief Méthode permettant de renseigner un autre emplacement
+   * pour les fichiers de références.
+   * 
+   * @param path Le chemin vers les fichiers de référence.
+   * @param name Le nom du fichier de référence pour le processus appelant.
+   */
   virtual void editRefFileEntry(String path, String name) = 0;
 
-  // Permet d'écrire le reffile. Modifie auto le path (ce n'est pas à l'user de le faire).
-  // (sauf si editRefFileEntry(,,true)).
+  /**
+   * @brief Méthode permettant d'écrire les fichiers de référence.
+   * 
+   * @warning Cette méthode utilise l'objet pointé par le pointeur donné
+   *          lors de l'init(), donc l'écriture s'effectura dans le format
+   *          voulu par l'implémentation de ISimpleTableOutput.
+   *          Si les formats de lecture et d'écriture ne correspondent
+   *          pas, un appel à "compareWithRef()" retournera forcement
+   *          false.
+   * 
+   * @param only_proc Le processus qui doit écrire son fichier (-1 pour tous les processus).
+   * @return true Si l'écriture a bien eu lieu.
+   * @return false Si l'écriture n'a pas eu lieu (et si processus appelant != only_proc).
+   */
   virtual bool writeRefFile(Integer only_proc = -1) = 0;
+  /**
+   * @brief Méthode permettant de lire les fichiers de références.
+   * 
+   * Le type des fichiers de réference doit correspondre à l'implémentation
+   * de cette interface choisi (exemple : fichier .csv -> SimpleCsvComparatorService).
+   * 
+   * @param only_proc Le processus qui doit lire son fichier (-1 pour tous les processus).
+   * @return true Si le fichier a été lu.
+   * @return false Si le fichier n'a pas été lu (et si processus appelant != only_proc).
+   */
   virtual bool readRefFile(Integer only_proc = -1) = 0;
 
+  /**
+   * @brief Méthode permettant de savoir si les fichiers de réferences existent.
+   * 
+   * @param only_proc Le processus qui doit chercher son fichier (-1 pour tous les processus). 
+   * @return true Si le fichier a été trouvé.
+   * @return false Si le fichier n'a pas été trouvé (et si processus appelant != only_proc).
+   */
   virtual bool isRefExist(Integer only_proc = -1) = 0;
-  virtual void print() = 0;
-  virtual bool compareWithRef(Integer epsilon = 0) = 0;
 
+  /**
+   * @brief Méthode permettant d'écrire le tableau sur la sortie standard.
+   * 
+   */
+  virtual void print() = 0;
+
+  /**
+   * @brief Méthode permettant de comparer l'objet de type ISimpleTableOutput
+   * aux fichiers de réference.
+   * 
+   * @param only_proc Le processus qui doit comparer ses résultats (-1 pour tous les processus). 
+   * @param epsilon La marge d'erreur.
+   * @return true S'il n'y a pas de différences.
+   * @return false S'il y a au moins une différence (et si processus appelant != only_proc).
+   */
+  virtual bool compareWithRef(Integer only_proc = -1, Integer epsilon = 0) = 0;
+
+  /**
+   * @brief Méthode permettant d'ajouter une colonne dans la liste des colonnes
+   * à comparer.
+   * 
+   * @param name_column Le nom de la colonne à comparer.
+   * @return true Si le nom a bien été ajouté.
+   * @return false Sinon.
+   */
   virtual bool addColumnToCompare(String name_column) = 0;
+  /**
+   * @brief Méthode permettant d'ajouter une ligne dans la liste des lignes
+   * à comparer.
+   * 
+   * @param name_row Le nom de la ligne à comparer.
+   * @return true Si le nom a bien été ajouté.
+   * @return false Sinon.
+   */
   virtual bool addRowToCompare(String name_row) = 0;
 
+  /**
+   * @brief Méthode permettant de supprimer une colonne de la liste des
+   * colonnes à comparer.
+   * 
+   * @param name_column Le nom de la colonne à supprimer de la liste.
+   * @return true Si la suppression a eu lieu.
+   * @return false Sinon.
+   */
   virtual bool removeColumnToCompare(String name_column) = 0;
+  /**
+   * @brief Méthode permettant de supprimer une ligne de la liste des
+   * lignes à comparer.
+   * 
+   * @param name_row Le nom de la ligne à supprimer de la liste.
+   * @return true Si la suppression a eu lieu.
+   * @return false Sinon.
+   */
   virtual bool removeRowToCompare(String name_row) = 0;
 
-  virtual bool editRegexColumns(String regex_column) = 0;
-  virtual bool editRegexRows(String regex_row) = 0;
+  /**
+   * @brief Méthode permettant d'ajouter une expression régulière
+   * permettant de déterminer les colonnes à comparer.
+   * 
+   * @param regex_column L'expression régulière (format ECMAScript).
+   */
+  virtual void editRegexColumns(String regex_column) = 0;
+  /**
+   * @brief Méthode permettant d'ajouter une expression régulière
+   * permettant de déterminer les lignes à comparer.
+   * 
+   * @param regex_row L'expression régulière (format ECMAScript).
+   */
+  virtual void editRegexRows(String regex_row) = 0;
 
-  virtual bool isARegexExclusiveColumns(bool is_exclusive) = 0;
-  virtual bool isARegexExclusiveRows(bool is_exclusive) = 0;
+  /**
+   * @brief Méthode permettant de demander à ce que l'expression régulière
+   * exclut des colonnes au lieu d'en inclure.
+   * 
+   * @param is_exclusive Si l'expression régulière est excluante.
+   */
+  virtual void isARegexExclusiveColumns(bool is_exclusive) = 0;
+  /**
+   * @brief Méthode permettant de demander à ce que l'expression régulière
+   * exclut des lignes au lieu d'en inclure.
+   * 
+   * @param is_exclusive Si l'expression régulière est excluante.
+   */
+  virtual void isARegexExclusiveRows(bool is_exclusive) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

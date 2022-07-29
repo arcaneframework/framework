@@ -33,10 +33,11 @@ namespace Arcane
 void SimpleCsvComparatorService::
 init(ISimpleTableOutput* ptr_sto)
 {
+  // On enregistre le pointeur qui nous est donné.
   ARCANE_CHECK_PTR(ptr_sto);
   m_iSTO = ptr_sto;
-  // On déduit la position des tableaux de références avec le STO qu'on 
-  // nous a donné.
+
+  // On déduit l'emplacement des fichiers de réferences.
   m_path_ref_str = m_iSTO->dir()+"_ref";
   m_path_ref = Directory(m_iSTO->rootPathOutput(), m_path_ref_str);
   m_name_ref = m_iSTO->nameFile();
@@ -45,6 +46,7 @@ init(ISimpleTableOutput* ptr_sto)
 void SimpleCsvComparatorService::
 editRefFileEntry(String path, String name)
 {
+  m_path_ref_str = path;
   m_path_ref = Directory(path);
   m_name_ref = name;
 }
@@ -75,25 +77,33 @@ isRefExist(Integer only_proc)
 {
   if (only_proc != -1 && mesh()->parallelMng()->commRank() != only_proc)
     return false;
+
+  // On ouvre en lecture le fichier de ref de notre proc.
   _openFile(m_name_ref);
-  info() << "file : " << m_name_ref << " " << m_ifstream.good();
   return m_ifstream.good();
 }
 
 bool SimpleCsvComparatorService::
 readRefFile(Integer only_proc)
 {
+  if (only_proc != -1 && mesh()->parallelMng()->commRank() != only_proc)
+    return false;
+
   // Pas de fichier, pas de chocolats.
-  if(!isRefExist(only_proc)) return false;
-  info() << "Pass 1";
+  if(!isRefExist(only_proc)) {
+    m_is_file_read = false;
+    return false;
+  }
 
   std::string line;
 
   // S'il n'y a pas de première ligne, on arrete là.
   // Un fichier écrit par SimpleCsvOutput possède toujours au
   // moins une ligne.
-  if(!std::getline(m_ifstream, line)) return false;
-  info() << "Pass 2";
+  if(!std::getline(m_ifstream, line)) {
+    m_is_file_read = false;
+    return false;
+  }
 
   // Sinon, on a la ligne d'entête, contenant les noms
   // des colonnes (et le nom du tableau).
@@ -102,59 +112,79 @@ readRefFile(Integer only_proc)
 
   // S'il n'y a pas d'autres lignes, c'est qu'il n'y a que des 
   // colonnes vides (ou aucunes colonnes) et aucunes lignes.
-  if(!std::getline(m_ifstream, line)) return true;
-  info() << "Pass 3";
+  if(!std::getline(m_ifstream, line)) {
+    m_is_file_read = true;
+    return true;
+  }
 
-  Integer num_columns = m_name_columns_with_name_of_tab.size()-1;
-
-  m_values_csv.resize(1, num_columns);
-
+  // Maintenant que l'on a le nombre de colonnes, on peut définir
+  // la dimension 2 du tableau de valeurs.
+  m_values_csv.resize(1, m_name_columns_with_name_of_tab.size()-1);
 
   Integer compt_line = 0;
 
   do{
-    StringUniqueArray splitted_line;
+    // On n'a pas le nombre de lignes en avance,
+    // donc on doit resize à chaque tour.
     m_values_csv.resize(compt_line+1);
+
+    // On split la ligne récupéré.
+    StringUniqueArray splitted_line;
     String ligne(line);
     ligne.split(splitted_line, ';');
+
+    // Le premier élement est le nom de ligne.
     m_name_rows.add(splitted_line[0]);
+
+    // Les autres élements sont des Reals.
     for(Integer i = 1; i < splitted_line.size(); i++){
       m_values_csv[compt_line][i-1] = std::stod(splitted_line[i].localstr());
     }
+
     compt_line++;
   } while(std::getline(m_ifstream, line));
-  info() << "Pass 4";
 
+  m_is_file_read = true;
   return true;
 }
 
 bool SimpleCsvComparatorService::
-compareWithRef(Integer epsilon)
+compareWithRef(Integer only_proc, Integer epsilon)
 {
-  bool isOk = true;
-  Integer dim1 = m_values_csv.dim1Size();
-  Integer dim2 = m_values_csv.dim2Size();
+  // Si le proc appelant ne doit pas lire.
+  if (only_proc != -1 && mesh()->parallelMng()->commRank() != only_proc){
+    return false;
+  }
+  // Si le fichier ne peut pas être lu.
+  if (!m_is_file_read && !readRefFile(only_proc)){
+    return false;
+  }
+
+  bool is_ok = true;
+
+  const Integer dim1 = m_values_csv.dim1Size();
+  const Integer dim2 = m_values_csv.dim2Size();
+
   for (Integer i = 0; i < dim1; i++) {
+    // On regarde si l'on doit comparer la ligne actuelle.
     if(!_exploreRows(i)) continue;
+
     ConstArrayView<Real> view = m_values_csv[i];
+
     for (Integer j = 0; j < dim2; j++) {
+    // On regarde si l'on doit comparer la colonne actuelle.
       if(!_exploreColumn(j)) continue;
-      Real val1 = m_iSTO->elem(m_name_columns_with_name_of_tab[j+1], m_name_rows[i]);
-      Real val2 = view[j];
-      if(math::isNearlyEqualWithEpsilon(val1, val2, epsilon))
-      {
-        info() << "Compare value -- Column name: " << m_name_columns_with_name_of_tab[j+1] << " -- Row name: " << m_name_rows[i];
-        info() << "It's equals";
-      }
-      else
-      {
-        info() << "Compare value -- Column name: " << m_name_columns_with_name_of_tab[j+1] << " -- Row name: " << m_name_rows[i];
-        warning() << "It's not equals";
-        isOk = false;
+
+      const Real val1 = m_iSTO->elem(m_name_columns_with_name_of_tab[j+1], m_name_rows[i]);
+      const Real val2 = view[j];
+
+      if(!math::isNearlyEqualWithEpsilon(val1, val2, epsilon)) {
+        warning() << "Values not equals -- Column name: " << m_name_columns_with_name_of_tab[j+1] << " -- Row name: " << m_name_rows[i];
+        is_ok = false;
       }
     }
   }
-  return isOk;
+  return is_ok;
 }
 
 // TODO DEBUG A suppr.
@@ -163,9 +193,7 @@ print()
 {
   String m_separator = ";";
 
-
   std::cout << std::setiosflags(std::ios::fixed);
-
   std::cout << std::setprecision(std::numeric_limits<Real>::digits10 + 1);
 
   for (Integer j = 0; j < m_name_columns_with_name_of_tab.size(); j++) {
@@ -174,91 +202,13 @@ print()
   std::cout << std::endl;
 
   for (Integer i = 0; i < m_values_csv.dim1Size(); i++) {
-    std::cout << m_name_rows[i];
-    std::cout << m_separator;
+    std::cout << m_name_rows[i] << m_separator;
     ConstArrayView<Real> view = m_values_csv[i];
     for (Integer j = 0; j < m_values_csv.dim2Size(); j++) {
       std::cout << view[j] << m_separator;
     }
     std::cout << std::endl;
   }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void SimpleCsvComparatorService::
-_openFile(String name_file)
-{
-  if(m_is_file_open) return;
-  m_ifstream.open(m_path_ref.file(name_file).localstr(), std::ifstream::in);
-  m_is_file_open = true;
-}
-
-bool SimpleCsvComparatorService::
-_exploreColumn(Integer pos)
-{
-  // S'il n'y a pas de précisions, on compare toutes les colonnes.
-  if(m_compared_columns.empty() && m_regex_columns.empty()) {
-    return true;
-  }
-
-  String name_column = m_name_columns_with_name_of_tab[pos+1];
-
-  // D'abord, on regarde si le nom de la colonne est dans 
-  // le tableau. 
-  if(m_compared_columns.contains(name_column))
-  {
-    return true;
-  }
-  // S'il n'est pas dans le tableau et qu'il n'a a pas de regex
-  // on return false.
-  else if(m_regex_columns.empty())
-  {
-    return false;
-  }
-
-  // Sinon, on regarde aussi la regex.
-  std::regex self_regex(m_regex_columns.localstr(), std::regex_constants::ECMAScript | std::regex_constants::icase);
-  if (std::regex_search(name_column.localstr(), self_regex))
-  {
-    return !m_is_excluding_regex_columns;
-  }
-
-  return m_is_excluding_regex_columns;
-}
-
-bool SimpleCsvComparatorService::
-_exploreRows(Integer pos)
-{
-  // S'il n'y a pas de précisions, on compare toutes les colonnes.
-  if(m_compared_rows.empty() && m_regex_rows.empty()) {
-    return true;
-  }
-
-  String name_rows = m_name_rows[pos];
-
-  // D'abord, on regarde si le nom de la colonne est dans 
-  // le tableau. 
-  if(m_compared_rows.contains(name_rows))
-  {
-    return true;
-  }
-  // S'il n'est pas dans le tableau et qu'il n'a a pas de regex
-  // on return false.
-  else if(m_regex_rows.empty())
-  {
-    return false;
-  }
-
-  // Sinon, on regarde aussi la regex.
-  std::regex self_regex(m_regex_rows.localstr(), std::regex_constants::ECMAScript | std::regex_constants::icase);
-  if (std::regex_search(name_rows.localstr(), self_regex))
-  {
-    return !m_is_excluding_regex_rows;
-  }
-
-  return m_is_excluding_regex_rows;
 }
 
 
@@ -296,29 +246,108 @@ removeRowToCompare(String name_row)
   return false;
 }
 
-bool SimpleCsvComparatorService::
+void SimpleCsvComparatorService::
 editRegexColumns(String regex_column)
 {
   m_regex_columns = regex_column;
-  return true;
 }
-bool SimpleCsvComparatorService::
+void SimpleCsvComparatorService::
 editRegexRows(String regex_row)
 {
   m_regex_rows = regex_row;
-  return true;
 }
 
-bool SimpleCsvComparatorService::
+void SimpleCsvComparatorService::
 isARegexExclusiveColumns(bool is_exclusive)
 {
   m_is_excluding_regex_columns = is_exclusive;
 }
-bool SimpleCsvComparatorService::
+void SimpleCsvComparatorService::
 isARegexExclusiveRows(bool is_exclusive)
 {
   m_is_excluding_regex_rows = is_exclusive;
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SimpleCsvComparatorService::
+_openFile(String name_file)
+{
+  if(m_is_file_open) return;
+  m_ifstream.open(m_path_ref.file(name_file).localstr(), std::ifstream::in);
+  m_is_file_open = true;
+}
+
+bool SimpleCsvComparatorService::
+_exploreColumn(Integer pos)
+{
+  // S'il n'y a pas de précisions, on compare toutes les colonnes.
+  if(m_compared_columns.empty() && m_regex_columns.empty()) {
+    return true;
+  }
+
+  const String name_column = m_name_columns_with_name_of_tab[pos+1];
+
+  // D'abord, on regarde si le nom de la colonne est dans le tableau. 
+  if(m_compared_columns.contains(name_column))
+  {
+    return true;
+  }
+
+  // S'il n'est pas dans le tableau et qu'il n'a a pas de regex, on return false.
+  else if(m_regex_columns.empty())
+  {
+    return false;
+  }
+
+  // Sinon, on regarde aussi la regex.
+  // TODO : Voir s'il y a un interet de faire des regex en mode JS.
+  std::regex self_regex(m_regex_columns.localstr(), std::regex_constants::ECMAScript | std::regex_constants::icase);
+
+  // Si quelque chose dans le nom correspond à la regex.
+  if (std::regex_search(name_column.localstr(), self_regex))
+  {
+    return !m_is_excluding_regex_columns;
+  }
+
+  // Sinon.
+  return m_is_excluding_regex_columns;
+}
+
+bool SimpleCsvComparatorService::
+_exploreRows(Integer pos)
+{
+  // S'il n'y a pas de précisions, on compare toutes les colonnes.
+  if(m_compared_rows.empty() && m_regex_rows.empty()) {
+    return true;
+  }
+
+  const String name_rows = m_name_rows[pos];
+
+  // D'abord, on regarde si le nom de la colonne est dans le tableau. 
+  if(m_compared_rows.contains(name_rows))
+  {
+    return true;
+  }
+  // S'il n'est pas dans le tableau et qu'il n'a a pas de regex, on return false.
+  else if(m_regex_rows.empty())
+  {
+    return false;
+  }
+
+  // Sinon, on regarde aussi la regex.
+  // TODO : Voir s'il y a un interet de faire des regex en mode JS.
+  std::regex self_regex(m_regex_rows.localstr(), std::regex_constants::ECMAScript | std::regex_constants::icase);
+  if (std::regex_search(name_rows.localstr(), self_regex))
+  {
+    return !m_is_excluding_regex_rows;
+  }
+
+  return m_is_excluding_regex_rows;
+}
+
+
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

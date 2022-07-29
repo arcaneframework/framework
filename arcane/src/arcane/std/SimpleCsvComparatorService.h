@@ -40,8 +40,15 @@ class SimpleCsvComparatorService
  public:
   explicit SimpleCsvComparatorService(const ServiceBuildInfo& sbi)
   : ArcaneSimpleCsvComparatorObject(sbi)
-  , m_iSTO(nullptr)
+  , m_path_ref_str("_ref")
+  , m_name_ref("Table")
   , m_is_file_open(false)
+  , m_is_file_read(false)
+  , m_iSTO(nullptr)
+  , m_regex_rows()
+  , m_is_excluding_regex_rows(false)
+  , m_regex_columns()
+  , m_is_excluding_regex_columns(false)
   {
     m_with_option = (sbi.creationType() == ST_CaseOption);
   }
@@ -56,7 +63,7 @@ class SimpleCsvComparatorService
   bool readRefFile(Integer only_proc) override;
   bool isRefExist(Integer only_proc) override;
   void print() override;
-  bool compareWithRef(Integer epsilon) override;
+  bool compareWithRef(Integer only_proc, Integer epsilon) override;
 
   bool addColumnToCompare(String name_column) override;
   bool addRowToCompare(String name_row) override;
@@ -64,11 +71,11 @@ class SimpleCsvComparatorService
   bool removeColumnToCompare(String name_column) override;
   bool removeRowToCompare(String name_row) override;
 
-  bool editRegexColumns(String regex_column) override;
-  bool editRegexRows(String regex_row) override;
+  void editRegexColumns(String regex_column) override;
+  void editRegexRows(String regex_row) override;
 
-  bool isARegexExclusiveColumns(bool is_exclusive) override;
-  bool isARegexExclusiveRows(bool is_exclusive) override;
+  void isARegexExclusiveColumns(bool is_exclusive) override;
+  void isARegexExclusiveRows(bool is_exclusive) override;
 
  protected:
   void _openFile(String name_file);
@@ -82,6 +89,7 @@ class SimpleCsvComparatorService
 
   std::ifstream m_ifstream;
   bool m_is_file_open;
+  bool m_is_file_read;
 
   ISimpleTableOutput* m_iSTO;
 
@@ -98,7 +106,6 @@ class SimpleCsvComparatorService
 
   StringUniqueArray m_compared_rows;
   StringUniqueArray m_compared_columns;
-
 
   bool m_with_option;
 };
