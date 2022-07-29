@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemTypeMng.h                                               (C) 2000-2021 */
+/* ItemTypeMng.h                                               (C) 2000-2022 */
 /*                                                                           */
 /* Gestionnaire des types d'entité du maillage.                              */
 /*---------------------------------------------------------------------------*/
@@ -18,7 +18,7 @@
 #include "arcane/utils/Array.h"
 #include "arcane/utils/Atomic.h"
 
-#include "arcane/ArcaneTypes.h"
+#include "arcane/ItemTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -68,6 +68,7 @@ class ARCANE_CORE_EXPORT ItemTypeMng
   friend class Application;
   friend class ArcaneMain;
   friend class Item;
+
  protected:
 
   //! Constructeur vide (non initialisé)
@@ -77,7 +78,7 @@ class ARCANE_CORE_EXPORT ItemTypeMng
  public:
 
   //! Constructeur effectif
-  void build(IParallelSuperMng * parallel_mng, ITraceMng * trace);
+  void build(IParallelSuperMng* parallel_mng, ITraceMng* trace);
 
  private:
   /*! \brief Instance singleton du type
@@ -99,7 +100,9 @@ class ARCANE_CORE_EXPORT ItemTypeMng
   static String _legacyTypeName(Integer t);
 
  public:
-  /*! \brief Instance singleton du type
+
+  /*!
+   * \brief Instance singleton du type
    *
    * Le singleton est créé lors du premier appel à cette fonction.
    * Il reste valide tant que destroySingleton() n'a pas été appelé
@@ -122,8 +125,14 @@ class ARCANE_CORE_EXPORT ItemTypeMng
   //! Type correspondant au numéro \a id
   ItemTypeInfo* typeFromId(Integer id) const;
 
+  //! Type correspondant au numéro \a id
+  ItemTypeInfo* typeFromId(ItemTypeId id) const;
+
   //! Nom du type correspondant au numéro \a id
   String typeName(Integer id) const;
+
+  //! Nom du type correspondant au numéro \a id
+  String typeName(ItemTypeId id) const;
 
   //! Affiche les infos sur les types disponibles sur le flot \a ostr
   void printTypes(std::ostream& ostr);
@@ -138,10 +147,12 @@ class ARCANE_CORE_EXPORT ItemTypeMng
   static Int32 nbHChildrenByItemType(Integer type);
 
  private:
+
   //! Lecture des types a partir d'un fichier de nom filename
   void readTypes(IParallelSuperMng * parallel_mng, const String & filename);
 
  private:
+
   //! Instance singleton
   static ItemTypeMng* singleton_instance;
 
@@ -167,8 +178,11 @@ class ARCANE_CORE_EXPORT ItemTypeMng
 
  public:
 
-  //! Tampon d'allocation des données de type
-  /*! Public en attendant d'affiner la gestion de l'accès */
+  /*!
+   * \brief Tampon d'allocation des données de type.
+   *
+   * Ce champs est public en attendant d'affiner la gestion de l'accès.
+   */
   UniqueArray<Integer> m_ids_buffer;
   
  private:

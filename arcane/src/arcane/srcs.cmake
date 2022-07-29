@@ -660,6 +660,7 @@ set( ARCANE_SOURCES
    ItemArrayEnumerator.h
    ItemGroupRangeIterator.h
    ItemLocalId.h
+   ItemTypeId.h
    ItemLoop.h
    Dom.h
    DomDeclaration.h

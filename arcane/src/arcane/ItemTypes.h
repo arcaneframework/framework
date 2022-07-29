@@ -50,6 +50,7 @@ class IPrimaryMesh;
 class IItemFamily;
 
 class ItemLocalId;
+class ItemTypeId;
 template<typename T> class ItemLocalIdT;
 using NodeLocalId = ItemLocalIdT<Node>;
 using EdgeLocalId = ItemLocalIdT<Edge>;

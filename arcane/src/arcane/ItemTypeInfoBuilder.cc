@@ -32,7 +32,7 @@ setInfos(ItemTypeMng* mng,
          Integer nb_node, Integer nb_edge, Integer nb_face)
 {
   m_mng = mng;
-  m_type_id = type_id;
+  m_type_id = ItemTypeId{type_id};
   m_nb_node = nb_node;
   m_type_name = type_name;
   _setNbEdgeAndFace(nb_edge,nb_face);
