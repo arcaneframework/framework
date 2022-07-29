@@ -790,23 +790,6 @@ addAverageColumn(String name_column)
 /*---------------------------------------------------------------------------*/
 
 void SimpleCsvOutputService::
-setPrecision(Integer precision)
-{
-  if (precision < 1)
-    m_precision_print = 1;
-  else if (precision > (std::numeric_limits<Real>::digits10 + 1))
-    m_precision_print = (std::numeric_limits<Real>::digits10 + 1);
-  else
-    m_precision_print = precision;
-}
-
-void SimpleCsvOutputService::
-setFixed(bool fixed)
-{
-  m_is_fixed_print = fixed;
-}
-
-void SimpleCsvOutputService::
 print(Integer only_proc)
 {
   if (only_proc != -1 && mesh()->parallelMng()->commRank() != only_proc)
@@ -856,6 +839,36 @@ writeFile(String dir, Integer only_proc)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+Integer SimpleCsvOutputService::
+precision()
+{
+  return m_precision_print;
+}
+
+void SimpleCsvOutputService::
+setPrecision(Integer precision)
+{
+  if (precision < 1)
+    m_precision_print = 1;
+  else if (precision > (std::numeric_limits<Real>::digits10 + 1))
+    m_precision_print = (std::numeric_limits<Real>::digits10 + 1);
+  else
+    m_precision_print = precision;
+}
+
+bool SimpleCsvOutputService::
+fixed()
+{
+  return m_is_fixed_print;
+}
+
+void SimpleCsvOutputService::
+setFixed(bool fixed)
+{
+  m_is_fixed_print = fixed;
+}
+
 
 String SimpleCsvOutputService::
 dir()
@@ -1003,9 +1016,7 @@ _print(std::ostream& stream)
   stream << std::endl;
 
   for (Integer i = 0; i < m_values_csv.dim1Size(); i++) {
-    if (m_name_rows.size() > i)
-      stream << m_name_rows[i];
-    stream << m_separator;
+    stream << m_name_rows[i] << m_separator;
     ConstArrayView<Real> view = m_values_csv[i];
     for (Integer j = 0; j < m_values_csv.dim2Size(); j++) {
       stream << view[j] << m_separator;

@@ -643,33 +643,6 @@ public:
 /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant de modifier la précision du print.
-   * 
-   * Aussi bien pour la méthode 'print()' que les méthodes 'writeFile()'.
-   * 
-   * Note : Un appel à cette méthode sans le paramètre définira la précision
-   * par défaut.
-   * 
-   * @param precision La nouvelle précision.
-   */
-  virtual void setPrecision(Integer precision = 6) = 0;
-  /**
-   * @brief Méthode permettant de définir le flag 'std::fixed' ou non.
-   * 
-   * Aussi bien pour la méthode 'print()' que les méthodes 'writeFile()'.
-   * 
-   * Ce flag permet de 'forcer' le nombre de chiffre après la virgule à
-   * la précision voulu. Par exemple, si l'on a appelé 'setPrecision(4)',
-   * et que l'on appelle 'setFixed(true)', le print de '6.1' donnera '6.1000'.
-   * 
-   * Note : Un appel à cette méthode sans le paramètre définira le flag
-   * par défaut.
-   * 
-   * @param fixed Si le flag 'std::fixed' doit être défini ou non.
-   */
-  virtual void setFixed(bool fixed = true) = 0;
-
-  /**
    * @brief Méthode permettant d'afficher le tableau.
    * 
    * @param only_proc L'id du processus devant afficher le tableau (-1 pour 
@@ -703,6 +676,50 @@ public:
 /*---------------------------------------------------------------------------*/
 
   /**
+   * @brief Méthode permettant de récupérer la précision actuellement
+   * utilisée pour l'écriture des valeurs.
+   * 
+   * @return Integer La précision.
+   */
+  virtual Integer precision() = 0;
+  /**
+   * @brief Méthode permettant de modifier la précision du print.
+   * 
+   * Aussi bien pour la méthode 'print()' que les méthodes 'writeFile()'.
+   * 
+   * \note Un appel à cette méthode sans le paramètre définira la précision
+   * par défaut.
+   * 
+   * @param precision La nouvelle précision.
+   */
+  virtual void setPrecision(Integer precision = 6) = 0;
+
+  /**
+   * @brief Méthode permettant de savoir si le frag 'std::fixed' est
+   * actif ou non pour l'écriture des valeurs.
+   * 
+   * @return true Si oui.
+   * @return false Si non.
+   */
+  virtual bool fixed() = 0;
+  /**
+   * @brief Méthode permettant de définir le flag 'std::fixed' ou non.
+   * 
+   * Aussi bien pour la méthode 'print()' que les méthodes 'writeFile()'.
+   * 
+   * Ce flag permet de 'forcer' le nombre de chiffre après la virgule à
+   * la précision voulu. Par exemple, si l'on a appelé 'setPrecision(4)',
+   * et que l'on appelle 'setFixed(true)', le print de '6.1' donnera '6.1000'.
+   * 
+   * \note Un appel à cette méthode sans le paramètre définira le flag
+   * par défaut.
+   * 
+   * @param fixed Si le flag 'std::fixed' doit être défini ou non.
+   */
+  virtual void setFixed(bool fixed = true) = 0;
+
+
+  /**
    * @brief Accesseur permettant de récupérer le nom du répertoire où sera
    * placé les tableaux.
    * 
@@ -711,8 +728,6 @@ public:
    * @return String Le répertoire.
    */
   virtual String dir() = 0;
-
-
   /**
    * @brief Accesseur permettant de définir le répertoire
    * dans lequel enregistrer les tableaux.
@@ -723,6 +738,7 @@ public:
    */
   virtual void setDir(String dir) = 0;
 
+
   /**
    * @brief Accesseur permettant de récupérer le nom des tableaux.
    * 
@@ -731,8 +747,7 @@ public:
    * @return String Le nom.
    */
   virtual String nameTab() = 0;
-
-    /**
+  /**
    * @brief Accesseur permettant de définir le nom du tableau.
    * 
    * Peut-être différent pour chaque processus (dépendant de l'implémentation).
@@ -750,7 +765,7 @@ public:
    */
   virtual String nameFile() = 0;
 
-    /**
+  /**
    * @brief Accesseur permettant de récupérer le chemin où sera
    * enregistrés les tableaux. 
    * 
@@ -762,7 +777,7 @@ public:
   virtual Directory pathOutput() = 0;
 
 
-    /**
+  /**
    * @brief Accesseur permettant de récupérer le chemin où l'implémentation
    * enregistre ces tableaux. 
    * 

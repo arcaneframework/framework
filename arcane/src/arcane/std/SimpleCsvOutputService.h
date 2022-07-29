@@ -128,12 +128,15 @@ class SimpleCsvOutputService
 
   Integer addAverageColumn(String name_column) override;
 
-  void setPrecision(Integer precision) override;
-  void setFixed(bool fixed) override;
-
   void print(Integer only_proc) override;
   bool writeFile(Integer only_proc) override;
   bool writeFile(String dir, Integer only_proc) override;
+
+  Integer precision() override;
+  void setPrecision(Integer precision) override;
+
+  bool fixed() override;
+  void setFixed(bool fixed) override;
 
   String dir() override;
   void setDir(String dir) override;
