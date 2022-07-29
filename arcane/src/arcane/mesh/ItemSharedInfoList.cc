@@ -66,14 +66,11 @@ ItemSharedInfoWithType(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInter
   // TODO: Indiquer qu'à partir de la version 3.7 on ne supporte
   // que buf_size==6 avec le numéro de version 0x0307
   Int32 buf_size = buffer.size();
-  if (buf_size>=9){
-    ARCANE_FATAL("Invalid buf size '{0}'. This is probably because your version of Arcane is too old",buf_size);
-  }
-  else if (buf_size>=4){
-    m_index = buffer[2];
-    m_nb_reference = buffer[3];
-  }
-
+  if (buf_size!=6)
+    ARCANE_FATAL("Invalid buf size '{0}'. This is probably because your checkpoint is from a version of Arcane which is too old (before 3.6)",
+                 buf_size);
+  m_index = buffer[2];
+  m_nb_reference = buffer[3];
 }
 
 /*---------------------------------------------------------------------------*/

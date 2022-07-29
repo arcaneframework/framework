@@ -1110,6 +1110,16 @@ typeFromId(Integer id) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+ItemTypeInfo* ItemTypeMng::
+typeFromId(ItemTypeId id) const
+{
+  ARCANE_ASSERT((m_initialized),("Cannot use not built ItemTypeMng"));
+  return m_types[id.typeId()];
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 String ItemTypeMng::
 typeName(Integer id) const
 {
