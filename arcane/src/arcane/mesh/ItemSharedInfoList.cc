@@ -34,18 +34,15 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 
 ItemSharedInfoWithType::
-ItemSharedInfoWithType(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
-                       ItemInternalConnectivityList* connectivity,ItemVariableViews* variable_views)
-: ItemSharedInfo(family,items,connectivity,variable_views)
+ItemSharedInfoWithType(ItemSharedInfo* shared_info,ItemTypeInfo* item_type)
+: m_shared_info(shared_info)
 , m_type_id(item_type->typeId())
 {
 }
 
 ItemSharedInfoWithType::
-ItemSharedInfoWithType(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
-                       ItemInternalConnectivityList* connectivity,ItemVariableViews* variable_views,
-                       Int32ConstArrayView buffer)
-: ItemSharedInfo(family,items,connectivity,variable_views)
+ItemSharedInfoWithType(ItemSharedInfo* shared_info,ItemTypeInfo* item_type,Int32ConstArrayView buffer)
+: m_shared_info(shared_info)
 , m_type_id(item_type->typeId())
 {
   // La taille du buffer dépend des versions de Arcane.
@@ -191,6 +188,22 @@ ItemSharedInfoList::
   delete m_variables;
   delete m_infos_map;
   delete m_item_shared_infos_buffer;
+  delete m_common_item_shared_info;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemSharedInfoList::
+_checkCreateCommonItemSharedInfo()
+{
+  if (!m_common_item_shared_info){
+    MeshItemInternalList* miil = m_family->mesh()->meshItemInternalList();
+    ItemInternalConnectivityList* iicl = m_family->itemInternalConnectivityList();
+    ItemSharedInfo::ItemVariableViews* ivv = m_family->viewsForItemSharedInfo();
+    ItemSharedInfo* isi = new ItemSharedInfo(m_family,miil,iicl,ivv);
+    m_common_item_shared_info = isi;
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -259,8 +272,7 @@ readFromDump()
   for( Integer i=0; i<n; ++i )
     allocOne();
 
-  MeshItemInternalList* miil = m_family->mesh()->meshItemInternalList();
-  ItemInternalConnectivityList* iicl = m_family->itemInternalConnectivityList();
+  _checkCreateCommonItemSharedInfo();
 
   ItemTypeMng* itm = m_family->mesh()->itemTypeMng();
   for( Integer i=0; i<n; ++i ){
@@ -268,7 +280,7 @@ readFromDump()
     // Le premier élément du tampon contient toujours le type de l'entité
     ItemTypeInfo* it = itm->typeFromId(buffer[0]);
     ItemSharedInfoWithType* isi = m_item_shared_infos[i];
-    *isi = ItemSharedInfoWithType(m_family,it,miil,iicl,m_family->viewsForItemSharedInfo(),buffer);
+    *isi = ItemSharedInfoWithType(m_common_item_shared_info,it,buffer);
 
     ItemNumElements ine(it->typeId());
     std::pair<ItemSharedInfoMap::iterator,bool> old = m_infos_map->insert(std::make_pair(ine,isi));
@@ -325,16 +337,15 @@ checkValid()
 ItemSharedInfoWithType* ItemSharedInfoList::
 findSharedInfo(ItemTypeInfo* type)
 {
+  _checkCreateCommonItemSharedInfo();
   ItemNumElements ine(type->typeId());
   ItemSharedInfoMap::const_iterator i = m_infos_map->find(ine);
   if (i!=m_infos_map->end())
     return i->second;
-  MeshItemInternalList* miil = m_family->mesh()->meshItemInternalList();
-  ItemInternalConnectivityList* iicl = m_family->itemInternalConnectivityList();
   // Infos pas trouvé. On en construit une nouvelle
   ItemSharedInfoWithType* isi = allocOne();
   Integer old_index = isi->index();
-  *isi = ItemSharedInfoWithType(m_family,type,miil,iicl,m_family->viewsForItemSharedInfo());
+  *isi = ItemSharedInfoWithType(m_common_item_shared_info,type);
   isi->setIndex(old_index);
   std::pair<ItemSharedInfoMap::iterator,bool> old = m_infos_map->insert(std::make_pair(ine,isi));
 

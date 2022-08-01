@@ -48,26 +48,23 @@ class ItemFamily;
  * où cela ne sera pas le cas.
  */
 class ItemSharedInfoWithType
-: private ItemSharedInfo
 {
   friend class ItemSharedInfoList;
+  using ItemVariableViews = ItemSharedInfo::ItemVariableViews;
+  static const Int32 NULL_INDEX = ItemSharedInfo::NULL_INDEX;
 
  public:
 
-  ItemSharedInfoWithType(){}
+  ItemSharedInfoWithType() : m_shared_info(&ItemSharedInfo::nullItemSharedInfo) {}
 
  private:
 
-  ItemSharedInfoWithType(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
-                         ItemInternalConnectivityList* connectivity,ItemVariableViews* variable_views);
-
-  ItemSharedInfoWithType(IItemFamily* family,ItemTypeInfo* item_type,MeshItemInternalList* items,
-                         ItemInternalConnectivityList* connectivity,ItemVariableViews* variable_views,
-                         Int32ConstArrayView buffer);
+  ItemSharedInfoWithType(ItemSharedInfo* shared_info,ItemTypeInfo* item_type);
+  ItemSharedInfoWithType(ItemSharedInfo* shared_info,ItemTypeInfo* item_type,Int32ConstArrayView buffer);
 
  public:
 
-  ItemSharedInfo* sharedInfo() { return this; }
+  ItemSharedInfo* sharedInfo() { return m_shared_info; }
   ItemTypeId itemTypeId() { return this->m_type_id; }
   Int32 index() const { return m_index; }
   void setIndex(Int32 aindex) { m_index = aindex; }
@@ -81,12 +78,13 @@ class ItemSharedInfoWithType
 
   friend std::ostream& operator<<(std::ostream& o,const ItemSharedInfoWithType& isi)
   {
-    isi.print(o);
+    isi.m_shared_info->print(o);
     return o;
   }
 
  private:
 
+  ItemSharedInfo* m_shared_info = nullptr;
   ItemTypeId m_type_id;
   Int32 m_index = NULL_INDEX;
   Int32 m_nb_reference = 0;
@@ -119,6 +117,7 @@ class ItemSharedInfoList
 
   ConstArrayView<ItemSharedInfoWithType*> itemSharedInfos() const { return m_item_shared_infos; }
   ArrayView<ItemSharedInfoWithType*> itemSharedInfos() { return m_item_shared_infos; }
+  ItemSharedInfo* commonItemSharedInfo() { return m_common_item_shared_info; }
 
  private:
 
@@ -203,6 +202,7 @@ class ItemSharedInfoList
  private:
 
   ItemFamily* m_family = nullptr;
+  ItemSharedInfo* m_common_item_shared_info = nullptr;
   Integer m_nb_item_shared_info = 0; //!< Nombre d'objets alloués
   eItemKind m_item_kind = IK_Unknown;
   UniqueArray<ItemSharedInfoWithType*> m_item_shared_infos;
@@ -211,6 +211,10 @@ class ItemSharedInfoList
   ItemSharedInfoMap* m_infos_map = nullptr;
   Variables* m_variables = nullptr;
   bool m_list_changed = false;
+
+ private:
+
+  void _checkCreateCommonItemSharedInfo();
 };
 
 /*---------------------------------------------------------------------------*/
