@@ -60,6 +60,8 @@ public:
    * Necessite un appel à init() après.
    */
   virtual void clear() = 0;
+  
+  virtual void print(Integer only_proc = 0) = 0;
 
   virtual void editRootDir(Directory root_dir) = 0;
 

@@ -55,7 +55,7 @@ init(String name_table, String name_dir)
 
   m_name_output_dir = name_dir;
 
-  m_separator = ";";
+  m_separator = ';';
   m_precision_print = 6;
   m_is_fixed_print = true;
 
@@ -69,10 +69,7 @@ init(String name_table, String name_dir)
 void SimpleCsvOutputService::
 clear()
 {
-  m_values_csv.clear();
-
-  m_name_rows.clear();
-  m_name_columns.clear();
+  clearCsv();
 
   m_size_rows.clear();
   m_size_columns.clear();
@@ -791,11 +788,7 @@ addAverageColumn(String name_column)
 void SimpleCsvOutputService::
 print(Integer only_proc)
 {
-  if (only_proc != -1 && mesh()->parallelMng()->commRank() != only_proc)
-    return;
-  pinfo() << "P" << mesh()->parallelMng()->commRank() << " - Ecriture du tableau dans la sortie standard :";
-  _print(std::cout);
-  pinfo() << "P" << mesh()->parallelMng()->commRank() << " - Fin écriture tableau";
+  printCsv(only_proc);
 }
 
 bool SimpleCsvOutputService::
@@ -805,22 +798,23 @@ writeFile(Directory root_dir, Integer only_proc)
   _computeName();
 
   // Création du répertoire.
-  bool result = _createDirectory(root_dir);
+  bool result = createDirectory(root_dir);
   if(!result) {
     error() << "Erreur lors de la création de root_dir";
     return false;
   }
 
-  Directory output_dir = Directory(root_dir, m_name_output_dir);
+  // Si l'on n'est pas le processus demandé, on return true.
+  // -1 = tout le monde écrit.
+  if (only_proc != -1 && mesh()->parallelMng()->commRank() != only_proc)
+    return true;
 
-  // Création du répertoire.
-  result = _createDirectory(output_dir);
-  if(!result) {
-    error() << "Erreur lors de la création de output_dir";
-    return false;
-  }
+  // Si l'on a only_proc == -1 et que m_name_tab_only_once == true, alors il n'y a que le
+  // processus 0 qui doit écrire.
+  if ((only_proc == -1 && m_name_tab_only_once) && mesh()->parallelMng()->commRank() != 0)
+    return true;
 
-  return _writeFile(output_dir, only_proc);
+  return writeCsv(Directory(root_dir, m_name_output_dir), m_name_csv);
 }
 
 bool SimpleCsvOutputService::
@@ -931,29 +925,6 @@ outputFileType()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool SimpleCsvOutputService::
-_writeFile(Directory output_dir, Integer only_proc)
-{
-  // Si l'on n'est pas le processus demandé, on return true.
-  // -1 = tout le monde écrit.
-  if (only_proc != -1 && mesh()->parallelMng()->commRank() != only_proc)
-    return true;
-
-  // Si l'on a only_proc == -1 et que m_name_tab_only_once == true, alors il n'y a que le
-  // processus 0 qui doit écrire.
-  if ((only_proc == -1 && m_name_tab_only_once) && mesh()->parallelMng()->commRank() != 0)
-    return true;
-
-  std::ofstream ofile(output_dir.file(m_name_csv).localstr());
-  if (ofile.fail())
-    return false;
-
-  _print(ofile);
-
-  ofile.close();
-  return true;
-}
-
 /**
  * @brief Méthode permettant de remplacer les symboles de nom par leur valeur.
  * 
@@ -1018,57 +989,6 @@ _computeName()
   m_name_tab_computed = true;
   return;
 }
-
-/**
- * @brief Méthode permettant d'écrire le tableau dans un stream de sortie.
- * 
- * @param stream [IN/OUT] Le stream de sortie.
- */
-void SimpleCsvOutputService::
-_print(std::ostream& stream)
-{
-  // On enregistre les infos du stream pour les restaurer à la fin.
-  std::ios_base::fmtflags save_flags = stream.flags();
-  std::streamsize save_prec = stream.precision();
-
-  if (m_is_fixed_print) {
-    stream << std::setiosflags(std::ios::fixed);
-  }
-  stream << std::setprecision(m_precision_print);
-
-  stream << m_name_tab << m_separator;
-
-  for (Integer j = 0; j < m_name_columns.size(); j++) {
-    stream << m_name_columns[j] << m_separator;
-  }
-  stream << std::endl;
-
-  for (Integer i = 0; i < m_values_csv.dim1Size(); i++) {
-    stream << m_name_rows[i] << m_separator;
-    ConstArrayView<Real> view = m_values_csv[i];
-    for (Integer j = 0; j < m_values_csv.dim2Size(); j++) {
-      stream << view[j] << m_separator;
-    }
-    stream << std::endl;
-  }
-
-  stream.flags(save_flags);
-  stream.precision(save_prec);
-}
-
-bool SimpleCsvOutputService::
-_createDirectory(Directory dir)
-{
-  int sf = 0;
-  if (mesh()->parallelMng()->commRank() == 0) {
-    sf = dir.createDirectory();
-  }
-  if (mesh()->parallelMng()->commSize() > 1) {
-    sf = mesh()->parallelMng()->reduce(Parallel::ReduceMax, sf);
-  }
-  return sf == 0;
-}
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

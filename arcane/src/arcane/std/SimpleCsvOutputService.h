@@ -18,6 +18,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/ISimpleTableOutput.h"
+#include "arcane/std/SimpleCsvReaderWriter.h"
 #include "arcane/Directory.h"
 #include "arcane/std/SimpleCsvOutput_axl.h"
 
@@ -32,16 +33,14 @@ namespace Arcane
 
 class SimpleCsvOutputService
 : public ArcaneSimpleCsvOutputObject
+, public SimpleCsvReaderWriter
 {
  public:
   explicit SimpleCsvOutputService(const ServiceBuildInfo& sbi)
   : ArcaneSimpleCsvOutputObject(sbi)
+  , SimpleCsvReaderWriter(mesh())
   , m_name_tab_computed(false)
   , m_name_tab_only_once(true)
-  , m_precision_print(6)
-  , m_is_fixed_print(true)
-  , m_name_rows(0)
-  , m_name_columns(0)
   , m_size_rows(0)
   , m_size_columns(0)
   , m_last_row(-1)
@@ -153,9 +152,7 @@ class SimpleCsvOutputService
   bool isOneFileByProcsPermited() override;
 
  private:
-  bool _writeFile(Directory output_dir, Integer only_proc);
   String _computeFinal();
-  void _print(std::ostream& stream);
   void _computeName();
   bool _createDirectory(Directory dir);
   bool _createOutputDirectory();
@@ -166,21 +163,10 @@ class SimpleCsvOutputService
 
   Directory m_root;
 
-  String m_name_tab;
   String m_name_csv;
   bool m_name_tab_computed;
   bool m_name_tab_only_once;
 
-  String m_separator;
-  Integer m_precision_print;
-  bool m_is_fixed_print;
-
-  const String m_output_file_type = "csv";
-
-  UniqueArray2<Real> m_values_csv;
-
-  UniqueArray<String> m_name_rows;
-  UniqueArray<String> m_name_columns;
 
   // Tailles des lignes/colonnes
   // (et pas le nombre d'éléments, on compte les "trous" entre les éléments ici,

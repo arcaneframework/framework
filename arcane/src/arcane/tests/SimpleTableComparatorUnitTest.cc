@@ -120,9 +120,14 @@ testError()
   ptrSTC->init(ptrSTO);
   ASSERT_TRUE(ptrSTC->writeRefFile());
 
+  ptrSTO->print();
+
   ptrSTO->editElem("Ma colonne 1", "Ma ligne 1", 0);
 
+  ptrSTO->print();
+
   ASSERT_TRUE(ptrSTC->readRefFile());
+  ptrSTC->print();
   ASSERT_FALSE(ptrSTC->compareWithRef());
 }
 

@@ -73,6 +73,9 @@ set(ARCANE_SOURCES
   PDESRandomNumberGeneratorService.cc
   PDESRandomNumberGeneratorService.h
 
+  SimpleCsvReaderWriter.cc
+  SimpleCsvReaderWriter.h
+
   SimpleCsvOutputService.cc
   SimpleCsvOutputService.h
 
