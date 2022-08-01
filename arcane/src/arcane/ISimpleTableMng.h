@@ -5,14 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ISimpleTable.hh                                       (C) 2000-2022 */
+/* ISimpleTableMng.hh                                       (C) 2000-2022 */
 /*                                                                           */
 /* Interface pour simples services de tableaux de valeurs.         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_ISIMPLETABLE_H
-#define ARCANE_ISIMPLETABLE_H
+#ifndef ARCANE_ISIMPLETABLEMNG_H
+#define ARCANE_ISIMPLETABLEMNG_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -33,10 +33,10 @@ namespace Arcane
  * @ingroup StandardService
  * @brief Interface représentant une sortie de tableau simple.
  */
-class ARCANE_CORE_EXPORT ISimpleTable
+class ARCANE_CORE_EXPORT ISimpleTableMng
 {
 public:
-  virtual ~ISimpleTable() = default;
+  virtual ~ISimpleTableMng() = default;
 
 public:
 
@@ -616,17 +616,6 @@ public:
    * @return Integer La position de la colonne.
    */
   virtual Integer addAverageColumn(String name_column) = 0;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-  /**
-   * @brief Méthode permettant d'afficher le tableau.
-   * 
-   * @param only_proc L'id du processus devant afficher le tableau (-1 pour 
-   *                  signifier "tous les processus").
-   */
-  virtual void print(Integer only_proc = 0) = 0;
 
 };
 

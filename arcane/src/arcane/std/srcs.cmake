@@ -76,6 +76,9 @@ set(ARCANE_SOURCES
   SimpleCsvReaderWriter.cc
   SimpleCsvReaderWriter.h
 
+  SimpleTableMng.cc
+  SimpleTableMng.h
+
   SimpleCsvOutputService.cc
   SimpleCsvOutputService.h
 
