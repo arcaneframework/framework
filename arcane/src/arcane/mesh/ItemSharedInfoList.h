@@ -109,7 +109,7 @@ class ItemSharedInfoList
 
  public:
 
-  explicit ItemSharedInfoList(ItemFamily* family);
+  ItemSharedInfoList(ItemFamily* family,ItemSharedInfo* common_shared_info);
   //! Libère les ressources
   ~ItemSharedInfoList();
 
@@ -117,7 +117,6 @@ class ItemSharedInfoList
 
   ConstArrayView<ItemSharedInfoWithType*> itemSharedInfos() const { return m_item_shared_infos; }
   ArrayView<ItemSharedInfoWithType*> itemSharedInfos() { return m_item_shared_infos; }
-  ItemSharedInfo* commonItemSharedInfo() { return m_common_item_shared_info; }
 
  private:
 
@@ -211,10 +210,6 @@ class ItemSharedInfoList
   ItemSharedInfoMap* m_infos_map = nullptr;
   Variables* m_variables = nullptr;
   bool m_list_changed = false;
-
- private:
-
-  void _checkCreateCommonItemSharedInfo();
 };
 
 /*---------------------------------------------------------------------------*/

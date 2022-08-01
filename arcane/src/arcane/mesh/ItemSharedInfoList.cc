@@ -165,9 +165,10 @@ class ItemSharedInfoList::Variables
 /*---------------------------------------------------------------------------*/
 
 ItemSharedInfoList::
-ItemSharedInfoList(ItemFamily* family)
+ItemSharedInfoList(ItemFamily* family,ItemSharedInfo* common_shared_info)
 : TraceAccessor(family->traceMng())
 , m_family(family)
+, m_common_item_shared_info(common_shared_info)
 , m_item_kind(family->itemKind())
 , m_item_shared_infos_buffer(new MultiBufferT<ItemSharedInfoWithType>(100))
 , m_infos_map(new ItemSharedInfoMap())
@@ -188,22 +189,6 @@ ItemSharedInfoList::
   delete m_variables;
   delete m_infos_map;
   delete m_item_shared_infos_buffer;
-  delete m_common_item_shared_info;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemSharedInfoList::
-_checkCreateCommonItemSharedInfo()
-{
-  if (!m_common_item_shared_info){
-    MeshItemInternalList* miil = m_family->mesh()->meshItemInternalList();
-    ItemInternalConnectivityList* iicl = m_family->itemInternalConnectivityList();
-    ItemSharedInfo::ItemVariableViews* ivv = m_family->viewsForItemSharedInfo();
-    ItemSharedInfo* isi = new ItemSharedInfo(m_family,miil,iicl,ivv);
-    m_common_item_shared_info = isi;
-  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -272,8 +257,6 @@ readFromDump()
   for( Integer i=0; i<n; ++i )
     allocOne();
 
-  _checkCreateCommonItemSharedInfo();
-
   ItemTypeMng* itm = m_family->mesh()->itemTypeMng();
   for( Integer i=0; i<n; ++i ){
     Int32ConstArrayView buffer(m_variables->m_infos_values[i]);
@@ -318,7 +301,7 @@ checkValid()
 
   // Premièrement, le item->localId() doit correspondre à l'indice
   // dans le tableau m_internal
-  for( Integer i=0, is=m_item_shared_infos.size(); i<is; ++i ){
+  for( Integer i=0, n=m_item_shared_infos.size(); i<n; ++i ){
     ItemSharedInfoWithType* item = m_item_shared_infos[i];
     if (item->index()!=i){
       error() << "The index (" << item->index() << ") from the list 'ItemSharedInfo' "
@@ -337,7 +320,6 @@ checkValid()
 ItemSharedInfoWithType* ItemSharedInfoList::
 findSharedInfo(ItemTypeInfo* type)
 {
-  _checkCreateCommonItemSharedInfo();
   ItemNumElements ine(type->typeId());
   ItemSharedInfoMap::const_iterator i = m_infos_map->find(ine);
   if (i!=m_infos_map->end())

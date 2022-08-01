@@ -203,7 +203,8 @@ ItemFamily(IMesh* mesh,eItemKind ik,const String& name)
 , m_infos(mesh,ik,name)
 , m_need_prepare_dump(true)
 , m_item_internal_list(mesh->meshItemInternalList())
-, m_item_shared_infos(new ItemSharedInfoList(this))
+, m_common_item_shared_info(new ItemSharedInfo(this,m_item_internal_list,&m_item_connectivity_list,&m_views_for_item_shared_info))
+, m_item_shared_infos(new ItemSharedInfoList(this,m_common_item_shared_info))
 , m_current_variable_item_size(0)
 , m_item_sort_function(nullptr)
 , m_local_connectivity_info(nullptr)
@@ -248,6 +249,8 @@ ItemFamily::
 
   for( IIncrementalItemConnectivity* c : m_source_incremental_item_connectivities )
     delete c;
+
+  delete m_common_item_shared_info;
 }
 
 /*---------------------------------------------------------------------------*/
