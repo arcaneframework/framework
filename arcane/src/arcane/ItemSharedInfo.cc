@@ -31,6 +31,11 @@ namespace Arcane
 
 ItemSharedInfo ItemSharedInfo::nullItemSharedInfo;
 
+// TODO: A terme il faudra pouvoir changer cela pour utiliser une valeur
+// allouée dynamiquement ce qui permettra à cette instance d'être utilisée
+// sur GPU.
+ItemSharedInfo* ItemSharedInfo::nullItemSharedInfoPointer = &ItemSharedInfo::nullItemSharedInfo;
+
 // Suppose NULL_ITEM_UNIQUE_ID == (-1) et NULL_ITEM_LOCAL_ID == (-1)
 // Cree un pseudo-tableau qui pourra etre indexé avec NULL_ITEM_LOCAL_ID
 // pour la maille nulle.

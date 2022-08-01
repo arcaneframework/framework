@@ -25,7 +25,6 @@
 
 namespace Arcane::mesh
 {
-class ItemSharedInfoList;
 class ItemFamily;
 class ItemSharedInfoWithType;
 }
@@ -44,26 +43,12 @@ class ItemInternalConnectivityList;
 /*!
  * \internal
  * \brief Structure interne partagée d'une entité de maillage.
-
- Cette classe renferme des informations communes à plusieurs entités.
- Il s'agit d'une implémentation du design pattern FlyWeight. Cela
- permet de faire des économies mémoire importantes lorsque le maillage
- comporte un grand nombre d'entités similaire et qu'il est en grande
- partie structuré.
-
- Comme une instance de cette classe est partagée par plusieurs entités, il
- ne faut en cas la modifier directement. C'est à l'implémentation (Mesh)
- de fournir un mécanisme gérant les instances de cette classe.
-
- Parmi les informations partagées se trouvent le nombre des entités
- connectées à cette entité (nombre de noeuds, d'arêtes, de faces et
- de mailles) mais aussi les informations locales à un type d'entité
- donné comme par exemple la liste et la connectivité locale des
- faces d'un héxaèdre. Ces informations sont directements gérées par
- la classe ItemTypeInfo.
-
- \todo Il ne faut plus utiliser les localFace(), localEdge() mais
- passer par l'intermédiaire de m_item_type.
+ *
+ * Cette classe renferme des informations communes à plusieurs entités.
+ *
+ * Comme une instance de cette classe est partagée par plusieurs entités, il
+ * ne faut en cas la modifier directement. C'est à l'implémentation (Mesh)
+ * de fournir un mécanisme gérant les instances de cette classe.
  */
 class ARCANE_CORE_EXPORT ItemSharedInfo
 {
@@ -88,7 +73,6 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
  public:
 
   friend class ItemInternal;
-  friend class mesh::ItemSharedInfoList;
   friend class mesh::ItemFamily;
   friend class mesh::ItemSharedInfoWithType;
 
@@ -96,8 +80,17 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
 
  public:
 
+  // TODO: Rendre privé. Il faut passer maintenant passer par nullInstance()
   //! Pour l'entité nulle
   static ItemSharedInfo nullItemSharedInfo;
+
+ private:
+
+  static ItemSharedInfo* nullItemSharedInfoPointer;
+
+ public:
+
+  static ItemSharedInfo* nullInstance() { return nullItemSharedInfoPointer; }
 
  public:
 
@@ -105,8 +98,7 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
 
  private:
 
-  // Seule ItemSharedInfoList peut créer des instances de cette classe autre que
-  // l'instance nulle.
+  // Seule ItemFamily peut créer des instances de cette classe autre que l'instance nulle.
   ItemSharedInfo(IItemFamily* family,MeshItemInternalList* items,
                  ItemInternalConnectivityList* connectivity,ItemVariableViews* variable_views);
 
