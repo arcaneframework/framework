@@ -40,8 +40,8 @@ class SimpleCsvComparatorService
  public:
   explicit SimpleCsvComparatorService(const ServiceBuildInfo& sbi)
   : ArcaneSimpleCsvComparatorObject(sbi)
-  , m_path_ref_str("_ref")
-  , m_name_ref("Table")
+  , m_output_dir("_ref")
+  , m_tab_name("Table")
   , m_is_file_open(false)
   , m_is_file_read(false)
   , m_iSTO(nullptr)
@@ -59,7 +59,7 @@ class SimpleCsvComparatorService
   
   void init(ISimpleTableOutput* ptr_sto) override;
   void clear() override;
-  void editRefFileEntry(String path, String name) override;
+  void editRootDir(Directory root_dir) override;
   bool writeRefFile(Integer only_proc) override;
   bool readRefFile(Integer only_proc) override;
   bool isRefExist(Integer only_proc) override;
@@ -84,15 +84,18 @@ class SimpleCsvComparatorService
   bool _exploreRows(Integer pos);
 
  protected:
-  Directory m_path_ref;
-  String m_path_ref_str;
-  String m_name_ref;
+  Directory m_ref_path;
+  Directory m_root_path;
+  String m_output_dir;
+  String m_tab_name;
+  String m_file_name;
 
   std::ifstream m_ifstream;
   bool m_is_file_open;
   bool m_is_file_read;
 
   ISimpleTableOutput* m_iSTO;
+  bool m_is_csv_implem;
 
   RealUniqueArray2 m_values_csv;
 

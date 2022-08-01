@@ -38,9 +38,22 @@ init(ISimpleTableOutput* ptr_sto)
   m_iSTO = ptr_sto;
 
   // On déduit l'emplacement des fichiers de réferences.
-  m_path_ref_str = m_iSTO->dir();
-  m_path_ref = Directory(Directory(subDomain()->exportDirectory(), "csv_refs"), m_path_ref_str);
-  m_name_ref = m_iSTO->nameFile();
+  m_output_dir = m_iSTO->outputDir();
+  m_root_path = Directory(subDomain()->exportDirectory(), "csv_refs");
+  m_ref_path = Directory(m_root_path, m_output_dir);
+  m_tab_name = m_iSTO->tabName();
+  if(m_iSTO->outputFileType() == "csv")
+  {
+    m_file_name = m_iSTO->fileName();
+    m_is_csv_implem = true;
+  }
+  else
+  {
+    m_file_name = m_tab_name + ".csv";
+    m_is_csv_implem = false;
+    warning() << "L'implémentation de ISimpleTableOutput n'utilise pas de fichier de type 'csv'";
+  }
+
 }
 
 void SimpleCsvComparatorService::
@@ -64,36 +77,42 @@ clear()
 
   m_compared_rows.clear();
   m_compared_columns.clear();
+  m_is_csv_implem = false;
 }
 
 void SimpleCsvComparatorService::
-editRefFileEntry(String path, String name)
+editRootDir(Directory root_dir)
 {
-  m_path_ref_str = path;
-  m_path_ref = Directory(path);
-  m_name_ref = name;
+  m_root_path = root_dir;
+  m_ref_path = Directory(m_root_path, m_output_dir);
 }
 
 bool SimpleCsvComparatorService::
 writeRefFile(Integer only_proc)
 {
+  if(!m_is_csv_implem) {
+    warning() << "Pour l'instant, ce service utilise la méthode 'writeFile()' \
+                  de l'objet implémentant ISimpleTableOutput \
+                  passé en paramètre lors de l'init, or cet objet \
+                  n'utilise pas le type 'csv', donc impossible \
+                  d'utiliser cette méthode.";
+    return false;
+  }
+
   // On sauvegarde les paramètres d'origines.
   Integer save_preci = m_iSTO->precision();
   bool save_fixed = m_iSTO->fixed();
-  Directory save_root = m_iSTO->rootPathOutput();
 
   // On défini la précision max.
   m_iSTO->setPrecision(std::numeric_limits<Real>::digits10 + 1);
   m_iSTO->setFixed(true);
-  m_iSTO->setRootPathOutput(Directory(subDomain()->exportDirectory(), "csv_refs"));
 
   // On écrit nos fichiers de référence.
-  bool fin = m_iSTO->writeFile(m_path_ref_str, only_proc);
+  bool fin = m_iSTO->writeFile(m_root_path, only_proc);
 
   // On remet les paramètres par défault.
   m_iSTO->setPrecision(save_preci);
   m_iSTO->setFixed(save_fixed);
-  m_iSTO->setRootPathOutput(save_root);
 
   return fin;
 }
@@ -105,7 +124,7 @@ isRefExist(Integer only_proc)
     return false;
 
   // On ouvre en lecture le fichier de ref de notre proc.
-  _openFile(m_name_ref);
+  _openFile(m_file_name);
   return m_ifstream.good();
 }
 
@@ -279,7 +298,7 @@ void SimpleCsvComparatorService::
 _openFile(String name_file)
 {
   if(m_is_file_open) return;
-  m_ifstream.open(m_path_ref.file(name_file).localstr(), std::ifstream::in);
+  m_ifstream.open(m_ref_path.file(name_file).localstr(), std::ifstream::in);
   m_is_file_open = true;
 }
 

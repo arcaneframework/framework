@@ -46,20 +46,20 @@ public:
   /**
    * @brief Méthode permettant d'initialiser le tableau.
    */
-  virtual void init() = 0;
+  virtual bool init() = 0;
   /**
    * @brief Méthode permettant d'initialiser le tableau.
    * 
    * @param name_table Le nom du tableau (et du fichier de sortie).
    */
-  virtual void init(String name_table) = 0;
+  virtual bool init(String name_table) = 0;
   /**
    * @brief Méthode permettant d'initialiser le tableau.
    * 
    * @param name_table Le nom du tableau (et du fichier de sortie).
    * @param name_dir Le nom du dossier dans lequel enregistrer les tableaux.
    */
-  virtual void init(String name_table, String name_dir) = 0;
+  virtual bool init(String name_table, String name_dir) = 0;
 
   /**
    * @brief Méthode permettant de nettoyer le tableau.
@@ -649,6 +649,9 @@ public:
    *                  signifier "tous les processus").
    */
   virtual void print(Integer only_proc = 0) = 0;
+
+  virtual bool writeFile(Directory root_dir, Integer only_proc) = 0;
+
   /**
    * @brief Méthode permettant d'écrire le tableau dans un fichier.
    * Si only_proc != -1, les processus autres que P0 retournent true.
@@ -669,6 +672,8 @@ public:
    *                  le tableau (-1 pour signifier "tous les processus").
    * @return true Si le fichier a été correctement écrit.
    * @return false Si le fichier n'a pas été correctement écrit.
+   * 
+   * @deprecated Utiliser setOutputDir() puis writeFile() à la place.
    */
   virtual bool writeFile(String dir, Integer only_proc = -1) = 0;
 
@@ -727,7 +732,7 @@ public:
    * 
    * @return String Le répertoire.
    */
-  virtual String dir() = 0;
+  virtual String outputDir() = 0;
   /**
    * @brief Accesseur permettant de définir le répertoire
    * dans lequel enregistrer les tableaux.
@@ -736,7 +741,7 @@ public:
    * 
    * @param dir Le répertoire.
    */
-  virtual void setDir(String dir) = 0;
+  virtual void setOutputDir(String dir) = 0;
 
 
   /**
@@ -746,7 +751,7 @@ public:
    * 
    * @return String Le nom.
    */
-  virtual String nameTab() = 0;
+  virtual String tabName() = 0;
   /**
    * @brief Accesseur permettant de définir le nom du tableau.
    * 
@@ -754,7 +759,7 @@ public:
    * 
    * @param name Le nom.
    */
-  virtual void setNameTab(String name) = 0;
+  virtual void setTabName(String name) = 0;
 
   /**
    * @brief Accesseur permettant de récupérer le nom des fichiers.
@@ -763,7 +768,7 @@ public:
    * 
    * @return String Le nom.
    */
-  virtual String nameFile() = 0;
+  virtual String fileName() = 0;
 
   /**
    * @brief Accesseur permettant de récupérer le chemin où sera
@@ -774,7 +779,7 @@ public:
    * 
    * @return String Le chemin.
    */
-  virtual Directory pathOutput() = 0;
+  virtual Directory outputPath() = 0;
 
 
   /**
@@ -785,15 +790,8 @@ public:
    * 
    * @return String Le chemin.
    */
-  virtual Directory rootPathOutput() = 0;
+  virtual Directory rootPath() = 0;
 
-  /**
-   * @brief Méthode permettant de changer le répertoire de destination
-   * des tableaux.
-   * 
-   * @param path_root Le nouveau répertoire de destination.
-   */
-  virtual void setRootPathOutput(Directory path_root) = 0;
   /**
    * @brief Méthode permettant de savoir si les paramètres actuellement en possession
    * de l'implémentation lui permet d'écrire un fichier par processus.
@@ -803,7 +801,7 @@ public:
    */
   virtual bool isOneFileByProcsPermited() = 0;
 
-  virtual String fileExtension() = 0;
+  virtual String outputFileType() = 0;
 
 };
 

@@ -61,14 +61,7 @@ public:
    */
   virtual void clear() = 0;
 
-  /**
-   * @brief Méthode permettant de renseigner un autre emplacement
-   * pour les fichiers de références.
-   * 
-   * @param path Le chemin vers les fichiers de référence.
-   * @param name Le nom du fichier de référence pour le processus appelant.
-   */
-  virtual void editRefFileEntry(String path, String name) = 0;
+  virtual void editRootDir(Directory root_dir) = 0;
 
   /**
    * @brief Méthode permettant d'écrire les fichiers de référence.

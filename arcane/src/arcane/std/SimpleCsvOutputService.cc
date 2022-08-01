@@ -29,41 +29,38 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void SimpleCsvOutputService::
+bool SimpleCsvOutputService::
 init()
 {
   if (m_with_option && options()->getTableName() != "") {
-    init(options()->getTableName());
+    return init(options()->getTableName());
   }
-  else {
-    init("Table_@proc_id@");
-  }
+  return init("Table_@proc_id@");
 }
 
-void SimpleCsvOutputService::
+bool SimpleCsvOutputService::
 init(String name_table)
 {
   if (m_with_option) {
-    init(name_table, m_dir_string = options()->getTableDir());
+    return init(name_table, options()->getTableDir());
   }
-  else {
-    init(name_table, "");
-  }
+  return init(name_table, "");
 }
 
-void SimpleCsvOutputService::
+bool SimpleCsvOutputService::
 init(String name_table, String name_dir)
 {
   m_name_tab = name_table;
   _computeName();
 
-  m_dir_string = name_dir;
+  m_name_output_dir = name_dir;
 
   m_separator = ";";
   m_precision_print = 6;
   m_is_fixed_print = true;
 
-  m_root = Directory(subDomain()->exportDirectory(), "csv");
+  m_root = Directory(subDomain()->exportDirectory(), m_output_file_type);
+  return true;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -802,41 +799,41 @@ print(Integer only_proc)
 }
 
 bool SimpleCsvOutputService::
-writeFile(Integer only_proc)
+writeFile(Directory root_dir, Integer only_proc)
 {
   // Finalisation du nom du csv (si ce n'est pas déjà fait).
   _computeName();
 
   // Création du répertoire.
-  bool result = _createDirectory();
-  if(!result) return false;
-
-  // Si l'on n'est pas le processus demandé, on return true.
-  // -1 = tout le monde écrit.
-  if (only_proc != -1 && mesh()->parallelMng()->commRank() != only_proc)
-    return true;
-
-  // Si l'on a only_proc == -1 et que m_name_tab_only_once == true, alors il n'y a que le
-  // processus 0 qui doit écrire.
-  if ((only_proc == -1 && m_name_tab_only_once) && mesh()->parallelMng()->commRank() != 0)
-    return true;
-
-  std::ofstream ofile(m_dir.file(m_name_csv).localstr());
-  if (ofile.fail())
+  bool result = _createDirectory(root_dir);
+  if(!result) {
+    error() << "Erreur lors de la création de root_dir";
     return false;
+  }
 
-  _print(ofile);
+  Directory output_dir = Directory(root_dir, m_name_output_dir);
 
-  ofile.close();
-  return true;
+  // Création du répertoire.
+  result = _createDirectory(output_dir);
+  if(!result) {
+    error() << "Erreur lors de la création de output_dir";
+    return false;
+  }
+
+  return _writeFile(output_dir, only_proc);
+}
+
+bool SimpleCsvOutputService::
+writeFile(Integer only_proc)
+{
+  return writeFile(m_root, only_proc);
 }
 
 bool SimpleCsvOutputService::
 writeFile(String dir, Integer only_proc)
 {
-  m_dir_string = dir;
-  m_dir_computed = false;
-  return writeFile(only_proc);
+  setOutputDir(dir);
+  return writeFile(m_root, only_proc);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -873,56 +870,48 @@ setFixed(bool fixed)
 
 
 String SimpleCsvOutputService::
-dir()
+outputDir()
 {
-  return m_dir_string;
+  return m_name_output_dir;
 }
 
 void SimpleCsvOutputService::
-setDir(String dir)
+setOutputDir(String dir)
 {
-  m_dir_string = dir;
-  m_dir_computed = false;
+  m_name_output_dir = dir;
 }
 
 String SimpleCsvOutputService::
-nameTab()
+tabName()
 {
   _computeName();
   return m_name_tab;
 }
 
 void SimpleCsvOutputService::
-setNameTab(String name)
+setTabName(String name)
 {
   m_name_tab = name;
   m_name_tab_computed = false;
 }
 
 String SimpleCsvOutputService::
-nameFile()
+fileName()
 {
   _computeName();
   return m_name_csv;
 }
 
 Directory SimpleCsvOutputService::
-pathOutput()
+outputPath()
 {
-  return Directory(rootPathOutput(), m_dir_string);
+  return Directory(m_root, m_name_output_dir);
 }
 
 Directory SimpleCsvOutputService::
-rootPathOutput()
+rootPath()
 {
   return m_root;
-}
-
-void SimpleCsvOutputService::
-setRootPathOutput(Directory path_root)
-{
-  m_root = path_root;
-  m_dir_computed = false;
 }
 
 bool SimpleCsvOutputService::
@@ -933,14 +922,37 @@ isOneFileByProcsPermited()
 }
 
 String SimpleCsvOutputService::
-fileExtension()
+outputFileType()
 {
-  return m_file_extension;
+  return m_output_file_type;
 }
 
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+bool SimpleCsvOutputService::
+_writeFile(Directory output_dir, Integer only_proc)
+{
+  // Si l'on n'est pas le processus demandé, on return true.
+  // -1 = tout le monde écrit.
+  if (only_proc != -1 && mesh()->parallelMng()->commRank() != only_proc)
+    return true;
+
+  // Si l'on a only_proc == -1 et que m_name_tab_only_once == true, alors il n'y a que le
+  // processus 0 qui doit écrire.
+  if ((only_proc == -1 && m_name_tab_only_once) && mesh()->parallelMng()->commRank() != 0)
+    return true;
+
+  std::ofstream ofile(output_dir.file(m_name_csv).localstr());
+  if (ofile.fail())
+    return false;
+
+  _print(ofile);
+
+  ofile.close();
+  return true;
+}
 
 /**
  * @brief Méthode permettant de remplacer les symboles de nom par leur valeur.
@@ -999,7 +1011,8 @@ _computeName()
   }
 
   m_name_tab = combined.toString();
-  combined.append(".csv");
+  combined.append(".");
+  combined.append(m_output_file_type);
   m_name_csv = combined.toString();
 
   m_name_tab_computed = true;
@@ -1044,31 +1057,16 @@ _print(std::ostream& stream)
 }
 
 bool SimpleCsvOutputService::
-_createDirectory()
+_createDirectory(Directory dir)
 {
-  if(m_dir_computed){
-    return true;
-  }
-
-  Directory d = rootPathOutput();
-  m_dir = Directory(d, m_dir_string);
-
   int sf = 0;
   if (mesh()->parallelMng()->commRank() == 0) {
-    sf += d.createDirectory();
-    sf += m_dir.createDirectory();
+    sf = dir.createDirectory();
   }
   if (mesh()->parallelMng()->commSize() > 1) {
     sf = mesh()->parallelMng()->reduce(Parallel::ReduceMax, sf);
   }
-  if (sf != 0){
-    m_dir_computed = false;
-    warning() << "Erreur lors de la création des répertoires";
-    return false;
-  }
-
-  m_dir_computed = true;
-  return true;
+  return sf == 0;
 }
 
 

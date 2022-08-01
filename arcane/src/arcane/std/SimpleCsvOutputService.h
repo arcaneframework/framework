@@ -36,7 +36,6 @@ class SimpleCsvOutputService
  public:
   explicit SimpleCsvOutputService(const ServiceBuildInfo& sbi)
   : ArcaneSimpleCsvOutputObject(sbi)
-  , m_dir_computed(false)
   , m_name_tab_computed(false)
   , m_name_tab_only_once(true)
   , m_precision_print(6)
@@ -54,9 +53,9 @@ class SimpleCsvOutputService
   virtual ~SimpleCsvOutputService() = default;
 
  public:
-  void init() override;
-  void init(String name_table) override;
-  void init(String name_table, String name_dir) override;
+  bool init() override;
+  bool init(String name_table) override;
+  bool init(String name_table, String name_dir) override;
 
   void clear() override;
 
@@ -130,6 +129,7 @@ class SimpleCsvOutputService
 
   void print(Integer only_proc) override;
   bool writeFile(Integer only_proc) override;
+  bool writeFile(Directory root_dir, Integer only_proc) override;
   bool writeFile(String dir, Integer only_proc) override;
 
   Integer precision() override;
@@ -138,32 +138,32 @@ class SimpleCsvOutputService
   bool fixed() override;
   void setFixed(bool fixed) override;
 
-  String dir() override;
-  void setDir(String dir) override;
+  String outputDir() override;
+  void setOutputDir(String dir) override;
 
-  String nameTab() override;
-  void setNameTab(String name) override;
-  String nameFile() override;
+  String tabName() override;
+  void setTabName(String name) override;
+  String fileName() override;
   
-  Directory pathOutput() override;
-  Directory rootPathOutput() override;
-  void setRootPathOutput(Directory path_root) override;
+  Directory outputPath() override;
+  Directory rootPath() override;
   
-  String fileExtension() override;
+  String outputFileType() override;
 
   bool isOneFileByProcsPermited() override;
 
  private:
+  bool _writeFile(Directory output_dir, Integer only_proc);
   String _computeFinal();
   void _print(std::ostream& stream);
   void _computeName();
-  bool _createDirectory();
+  bool _createDirectory(Directory dir);
+  bool _createOutputDirectory();
+  bool _createRoot();
 
  private:
-  String m_dir_string;
-  bool m_dir_computed;
+  String m_name_output_dir;
 
-  Directory m_dir;
   Directory m_root;
 
   String m_name_tab;
@@ -175,7 +175,7 @@ class SimpleCsvOutputService
   Integer m_precision_print;
   bool m_is_fixed_print;
 
-  const String m_file_extension = "csv";
+  const String m_output_file_type = "csv";
 
   UniqueArray2<Real> m_values_csv;
 
