@@ -69,6 +69,7 @@ namespace Arcane
  et les opérations de comparaisons ne sont valident sur l'entitée nulle.
  */
 class ARCANE_CORE_EXPORT Item
+: protected ItemBase
 {
  public:
 
@@ -81,6 +82,7 @@ class ARCANE_CORE_EXPORT Item
 
   /*!
    * \brief Index d'un Item dans une variable.
+   * \deprecated
    */
   class Index
   {
@@ -132,28 +134,26 @@ class ARCANE_CORE_EXPORT Item
  public:
 
   //! Création d'une entité de maillage nulle
-  Item() : m_internal(&ItemInternal::nullItemInternal), m_local_id(NULL_ITEM_ID) {}
+  Item() : m_internal(&ItemInternal::nullItemInternal) {}
 
   //! Constructeur de recopie
-  Item(const Item& rhs) : m_internal(rhs.m_internal), m_local_id(rhs.m_local_id) {}
+  Item(const Item& rhs) : ItemBase(rhs), m_internal(rhs.m_internal) {}
 
   //! Construit une référence à l'entité \a internal
-  Item(ItemInternal* ainternal)
-  : m_internal(ainternal), m_local_id(ainternal->localId()) {}
+  Item(ItemInternal* ainternal) : ItemBase(ainternal), m_internal(ainternal) {}
 
   //! Construit une référence à l'entité \a internal
-  Item(const ItemInternalPtr* internals,Int32 local_id)
-  : m_internal(internals[local_id]), m_local_id(local_id) {}
+  Item(const ItemInternalPtr* internals,Int32 local_id) : ItemBase(internals[local_id]), m_internal(internals[local_id]) {}
 
   //! Opérateur de copie
-  const Item& operator=(ItemInternal* ainternal)
+  Item& operator=(ItemInternal* ainternal)
   {
     _set(ainternal);
     return (*this);
   }
 
   //! Opérateur de copie
-  const Item& operator=(const Item& from)
+  Item& operator=(const Item& from)
   {
     _set(from);
     return (*this);
@@ -296,8 +296,8 @@ class ARCANE_CORE_EXPORT Item
 
  protected:
 
+  using ItemBase::m_local_id;
   ItemInternal* m_internal; //!< Partie interne de l'élément
-  Int32 m_local_id; //!< Indice local
 
  protected:
 
@@ -309,13 +309,15 @@ class ARCANE_CORE_EXPORT Item
   void _badConversion() const;
   void _set(ItemInternal* ainternal)
   {
+    _setFromInternal(ainternal);
     m_internal = ainternal;
-    m_local_id = ainternal->localId();
+    //m_local_id = ainternal->localId();
   }
   void _set(const Item& rhs)
   {
+    _setFromInternal(rhs.internal());
     m_internal = rhs.m_internal;
-    m_local_id = rhs.m_local_id;
+    //m_local_id = rhs.m_local_id;
   }
 };
 
@@ -386,6 +388,7 @@ class ARCANE_CORE_EXPORT Node
  public:
   /*!
    * \brief Index d'un Node dans une variable.
+   * \deprecated
    */
   class Index
   : public Item::Index
@@ -596,6 +599,7 @@ class ARCANE_CORE_EXPORT Edge
  public:
   /*!
    * \brief Index d'une Edge dans une variable.
+   * \deprecated
    */
   class Index
   : public Item::Index
@@ -704,6 +708,7 @@ class ARCANE_CORE_EXPORT Face
  public:
   /*!
    * \brief Index d'une Face dans une variable.
+   * \deprecated
    */
   class Index
   : public Item::Index
@@ -925,6 +930,7 @@ class ARCANE_CORE_EXPORT Cell
  public:
   /*!
    * \brief Index d'une Cell dans une variable.
+   * \deprecated
    */
   class Index
   : public Item::Index

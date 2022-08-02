@@ -607,13 +607,18 @@ class ARCANE_CORE_EXPORT ItemBase
   Int32 m_padding = 0;
 
   //! Infos partagées entre toutes les entités ayant les mêmes caractéristiques
-  ItemSharedInfo* m_shared_info;
+  ItemSharedInfo* m_shared_info = nullptr;
 
  private:
 
   ItemInternalConnectivityList* _connectivity() const
   {
     return m_shared_info->m_connectivity;
+  }
+  void _setFromInternal(ItemBase* rhs)
+  {
+    m_local_id = rhs->m_local_id;
+    m_shared_info = rhs->m_shared_info;
   }
 };
 
