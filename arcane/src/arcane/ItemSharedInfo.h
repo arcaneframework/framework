@@ -242,30 +242,22 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception.")
   void _setInfos(Int32* ptr);
 
- public:
+ private:
 
+  // ATTENTION:
+  // Toute modification de la liste ou du type des champs doit être
+  // reportée dans le wrapper C# (tools/wrapper/core/csharp) et
+  // dans le proxy pour totalview (src/arcane/totalview)
   MeshItemInternalList* m_items = nullptr;
   ItemInternalConnectivityList* m_connectivity;
   IItemFamily* m_item_family = nullptr;
-
- private:
-
   ItemTypeMng* m_item_type_mng = nullptr;
-
- public:
-
-  // TODO: Rendre privé (encore utilisé par TTF)
   Int64ArrayView m_unique_ids;
-
- private:
-
   Int32ArrayView m_parent_item_ids;
   Int32ArrayView m_owners;
   Int32ArrayView m_flags;
   Int16ArrayView m_type_ids;
- public:
   eItemKind m_item_kind = IK_Unknown;
- private:
   Int32 m_nb_parent = 0;
 
  public:
