@@ -31,11 +31,31 @@ namespace Arcane
 
 ItemSharedInfo ItemSharedInfo::nullItemSharedInfo;
 
+// TODO: A terme il faudra pouvoir changer cela pour utiliser une valeur
+// allouée dynamiquement ce qui permettra à cette instance d'être utilisée
+// sur GPU.
+ItemSharedInfo* ItemSharedInfo::nullItemSharedInfoPointer = &ItemSharedInfo::nullItemSharedInfo;
+
+namespace
+{
 // Suppose NULL_ITEM_UNIQUE_ID == (-1) et NULL_ITEM_LOCAL_ID == (-1)
 // Cree un pseudo-tableau qui pourra etre indexé avec NULL_ITEM_LOCAL_ID
 // pour la maille nulle.
-static Int64 null_int64_buf[2] = { NULL_ITEM_UNIQUE_ID, NULL_ITEM_UNIQUE_ID };
-static Int64ArrayView null_unique_ids(1,null_int64_buf + 1);
+Int64 null_int64_buf[2] = { NULL_ITEM_UNIQUE_ID, NULL_ITEM_UNIQUE_ID };
+Int64ArrayView null_unique_ids(1,null_int64_buf + 1);
+
+Int32 null_parent_items_buf[2] = { NULL_ITEM_ID, NULL_ITEM_ID };
+Int32ArrayView null_parent_item_ids(1,null_parent_items_buf+1);
+
+Int32 null_owners_buf[2] = { A_NULL_RANK, A_NULL_RANK };
+Int32ArrayView null_owners(1,null_owners_buf);
+
+Int32 null_flags_buf[2] = { 0, 0 };
+Int32ArrayView null_flags(1,null_flags_buf+1);
+
+Int16 null_type_ids_buf[2] = { IT_NullType, IT_NullType };
+Int16ArrayView null_type_ids(1,null_type_ids_buf + 1);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -43,7 +63,11 @@ static Int64ArrayView null_unique_ids(1,null_int64_buf + 1);
 ItemSharedInfo::
 ItemSharedInfo()
 : m_connectivity(&ItemInternalConnectivityList::nullInstance)
-, m_unique_ids(&null_unique_ids)
+, m_unique_ids(null_unique_ids)
+, m_parent_item_ids(null_parent_item_ids)
+, m_owners(null_owners)
+, m_flags(null_flags)
+, m_type_ids(null_type_ids)
 {
   _init(IK_Unknown);
 }
@@ -52,17 +76,11 @@ ItemSharedInfo()
 /*---------------------------------------------------------------------------*/
 
 ItemSharedInfo::
-ItemSharedInfo(IItemFamily* family,MeshItemInternalList* items,
-               ItemInternalConnectivityList* connectivity,ItemVariableViews* variable_views)
+ItemSharedInfo(IItemFamily* family,MeshItemInternalList* items,ItemInternalConnectivityList* connectivity)
 : m_items(items)
 , m_connectivity(connectivity)
 , m_item_family(family)
 , m_item_type_mng(family->mesh()->itemTypeMng())
-, m_unique_ids(&(variable_views->m_unique_ids_view))
-, m_parent_item_ids(&(variable_views->m_parent_ids_view))
-, m_owners(&(variable_views->m_owners_view))
-, m_flags(&(variable_views->m_flags_view))
-, m_type_ids(&(variable_views->m_type_ids_view))
 , m_item_kind(family->itemKind())
 {
   _init(m_item_kind);
@@ -191,20 +209,20 @@ _setInfos(Int32*)
 /*---------------------------------------------------------------------------*/
 
 void ItemSharedInfo::
-_setParentV2(Int32 local_id,[[maybe_unused]] Integer aindex,Int32 parent_local_id) const
+_setParentV2(Int32 local_id,[[maybe_unused]] Integer aindex,Int32 parent_local_id)
 {
   ARCANE_ASSERT((aindex==0),("Only one parent access implemented"));
-  (*m_parent_item_ids)[local_id] = parent_local_id;
+  m_parent_item_ids[local_id] = parent_local_id;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 Int32* ItemSharedInfo::
-_parentPtr(Int32 local_id) const
+_parentPtr(Int32 local_id)
 {
   // GG: ATTENTION: Cela ne fonctionne que si on a au plus un parent.
-  return m_parent_item_ids->ptrAt(local_id);
+  return m_parent_item_ids.ptrAt(local_id);
 }
 
 /*---------------------------------------------------------------------------*/

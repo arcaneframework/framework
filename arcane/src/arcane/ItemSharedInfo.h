@@ -25,7 +25,6 @@
 
 namespace Arcane::mesh
 {
-class ItemSharedInfoList;
 class ItemFamily;
 class ItemSharedInfoWithType;
 }
@@ -44,60 +43,36 @@ class ItemInternalConnectivityList;
 /*!
  * \internal
  * \brief Structure interne partagée d'une entité de maillage.
-
- Cette classe renferme des informations communes à plusieurs entités.
- Il s'agit d'une implémentation du design pattern FlyWeight. Cela
- permet de faire des économies mémoire importantes lorsque le maillage
- comporte un grand nombre d'entités similaire et qu'il est en grande
- partie structuré.
-
- Comme une instance de cette classe est partagée par plusieurs entités, il
- ne faut en cas la modifier directement. C'est à l'implémentation (Mesh)
- de fournir un mécanisme gérant les instances de cette classe.
-
- Parmi les informations partagées se trouvent le nombre des entités
- connectées à cette entité (nombre de noeuds, d'arêtes, de faces et
- de mailles) mais aussi les informations locales à un type d'entité
- donné comme par exemple la liste et la connectivité locale des
- faces d'un héxaèdre. Ces informations sont directements gérées par
- la classe ItemTypeInfo.
-
- \todo Il ne faut plus utiliser les localFace(), localEdge() mais
- passer par l'intermédiaire de m_item_type.
+ *
+ * Cette classe renferme des informations communes à plusieurs entités.
+ *
+ * Comme une instance de cette classe est partagée par plusieurs entités, il
+ * ne faut en cas la modifier directement. C'est à l'implémentation (Mesh)
+ * de fournir un mécanisme gérant les instances de cette classe.
  */
 class ARCANE_CORE_EXPORT ItemSharedInfo
 {
- private:
-
-  /*!
-   * Liste des vues sur les variabes associées aux entités.
-   *
-   * Ces variables sont toutes indexables par le localId()
-   * de l'entité. Elles sont toujours allouées sauf 'm_parent_ids_view'
-   * qui n'est alloué que si l'entité est dans un sous-maillage
-   */
-  struct ItemVariableViews
-  {
-    Int64ArrayView m_unique_ids_view;
-    Int32ArrayView m_flags_view;
-    Int16ArrayView m_type_ids_view;
-    Int32ArrayView m_owners_view;
-    Int32ArrayView m_parent_ids_view;
-  };
-
- public:
-
   friend class ItemInternal;
-  friend class mesh::ItemSharedInfoList;
   friend class mesh::ItemFamily;
   friend class mesh::ItemSharedInfoWithType;
+
+ public:
 
   static const Int32 NULL_INDEX = static_cast<Int32>(-1);
 
  public:
 
+  // TODO: Rendre privé. Il faut passer maintenant passer par nullInstance()
   //! Pour l'entité nulle
   static ItemSharedInfo nullItemSharedInfo;
+
+ private:
+
+  static ItemSharedInfo* nullItemSharedInfoPointer;
+
+ public:
+
+  static ItemSharedInfo* nullInstance() { return nullItemSharedInfoPointer; }
 
  public:
 
@@ -105,10 +80,9 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
 
  private:
 
-  // Seule ItemSharedInfoList peut créer des instances de cette classe autre que
-  // l'instance nulle.
+  // Seule ItemFamily peut créer des instances de cette classe autre que l'instance nulle.
   ItemSharedInfo(IItemFamily* family,MeshItemInternalList* items,
-                 ItemInternalConnectivityList* connectivity,ItemVariableViews* variable_views);
+                 ItemInternalConnectivityList* connectivity);
 
  public:
 
@@ -187,16 +161,16 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   {
     // Actuellement un seul parent est supporté donc \a aindex doit valoir 0.
     ARCANE_ASSERT((aindex==0),("Only one parent access implemented"));
-    return _parents()[(*m_parent_item_ids)[local_id]];
+    return _parents()[m_parent_item_ids[local_id]];
   }
   Int32 _parentLocalIdV2(Int32 local_id,[[maybe_unused]] Integer aindex) const
   {
     // Actuellement un seul parent est supporté donc \a aindex doit valoir 0.
     ARCANE_ASSERT((aindex==0),("Only one parent access implemented"));
-    return (*m_parent_item_ids)[local_id];
+    return m_parent_item_ids[local_id];
   }
-  void _setParentV2(Int32 local_id,Integer aindex,Int32 parent_local_id) const;
-  Int32* _parentPtr(Int32 local_id) const;
+  void _setParentV2(Int32 local_id,Integer aindex,Int32 parent_local_id);
+  Int32* _parentPtr(Int32 local_id);
 
  public:
 
@@ -268,21 +242,22 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception.")
   void _setInfos(Int32* ptr);
 
- public:
+ private:
 
+  // ATTENTION:
+  // Toute modification de la liste ou du type des champs doit être
+  // reportée dans le wrapper C# (tools/wrapper/core/csharp) et
+  // dans le proxy pour totalview (src/arcane/totalview)
   MeshItemInternalList* m_items = nullptr;
   ItemInternalConnectivityList* m_connectivity;
   IItemFamily* m_item_family = nullptr;
   ItemTypeMng* m_item_type_mng = nullptr;
-  Int64ArrayView* m_unique_ids = nullptr;
-  Int32ArrayView* m_parent_item_ids = nullptr;
-  Int32ArrayView* m_owners = nullptr;
-  Int32ArrayView* m_flags = nullptr;
-  Int16ArrayView* m_type_ids = nullptr;
+  Int64ArrayView m_unique_ids;
+  Int32ArrayView m_parent_item_ids;
+  Int32ArrayView m_owners;
+  Int32ArrayView m_flags;
+  Int16ArrayView m_type_ids;
   eItemKind m_item_kind = IK_Unknown;
-
- private:
-
   Int32 m_nb_parent = 0;
 
  public:
@@ -298,13 +273,13 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
 
  private:
 
-  Int32 _ownerV2(Int32 local_id) const { return (*m_owners)[local_id]; }
-  void _setOwnerV2(Int32 local_id,Int32 aowner) const { (*m_owners)[local_id] = aowner; }
-  Int32 _flagsV2(Int32 local_id) const { return (*m_flags)[local_id]; }
-  void _setFlagsV2(Int32 local_id,Int32 f) const { (*m_flags)[local_id] = f; }
+  Int32 _ownerV2(Int32 local_id) const { return m_owners[local_id]; }
+  void _setOwnerV2(Int32 local_id,Int32 aowner) { m_owners[local_id] = aowner; }
+  Int32 _flagsV2(Int32 local_id) const { return m_flags[local_id]; }
+  void _setFlagsV2(Int32 local_id,Int32 f) { m_flags[local_id] = f; }
 
-  Int16 _typeId(Int32 local_id) const { return (*m_type_ids)[local_id]; }
-  void _setTypeId(Int32 local_id,Int16 v) const { (*m_type_ids)[local_id] = v; }
+  Int16 _typeId(Int32 local_id) const { return m_type_ids[local_id]; }
+  void _setTypeId(Int32 local_id,Int16 v) { m_type_ids[local_id] = v; }
 
  public:
 

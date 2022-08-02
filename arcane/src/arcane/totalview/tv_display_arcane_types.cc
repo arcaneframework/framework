@@ -102,6 +102,23 @@ class _ArrayStruct
   Arccore::ArrayImplBase* m_p;
   _ArrayMetaData* m_md;
 };
+// ATTENTION: classe qui mime la représentation de Arcane::ItemSharedInfo.
+// A modifier si cette dernière évolue.
+class _ItemSharedInfo
+{
+ public:
+  Arcane::MeshItemInternalList* m_items = nullptr;
+  Arcane::ItemInternalConnectivityList* m_connectivity;
+  Arcane::IItemFamily* m_item_family = nullptr;
+  Arcane::ItemTypeMng* m_item_type_mng = nullptr;
+  Arcane::Int64ArrayView m_unique_ids;
+  Arcane::Int32ArrayView m_parent_item_ids;
+  Arcane::Int32ArrayView m_owners;
+  Arcane::Int32ArrayView m_flags;
+  Arcane::Int16ArrayView m_type_ids;
+  Arcane::eItemKind m_item_kind;
+  Arcane::Int32 m_nb_parent;
+};
 }
 /*---------------------------------------------------------------------------*/
 /*                             Arcane::Array  (sur type de base)             */
@@ -209,11 +226,10 @@ TV_ttf_display_type(const Arcane::ItemInternal * obj)
 
   arcane_ttf_header();
   TV_ttf_add_row("local_id","Integer",reinterpret_cast<const int*>(obj));
-  Arcane::ItemSharedInfo * shared_info = obj->sharedInfo();
+  _ItemSharedInfo * shared_info = reinterpret_cast<_ItemSharedInfo*>(obj->sharedInfo());
   const Integer local_id = obj->localId();
-  //const Integer data_index = const_cast<Arcane::ItemInternal*>(obj)->dataIndex();
 
-  TV_ttf_add_row("unique_id","Int64",&shared_info->m_unique_ids->data()[local_id]);
+  TV_ttf_add_row("unique_id","Int64",shared_info->m_unique_ids.ptrAt(local_id));
   TV_ttf_add_row("kind","eItemKind",&shared_info->m_item_kind);
   
   snprintf(strtype,sizeof(strtype),"type=%s",obj->typeInfo()->typeName().localstr());

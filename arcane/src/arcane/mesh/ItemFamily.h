@@ -229,7 +229,8 @@ class ARCANE_MESH_EXPORT ItemFamily
 
   const DynamicMeshKindInfos& infos() const { return m_infos; }
   Int64ArrayView* uniqueIds();
-  ItemSharedInfo::ItemVariableViews* viewsForItemSharedInfo() { return &m_views_for_item_shared_info; }
+
+  ItemSharedInfo* commonItemSharedInfo() { return m_common_item_shared_info; }
 
  public:
 
@@ -355,15 +356,13 @@ class ARCANE_MESH_EXPORT ItemFamily
 
   void _detachCells2(Int32ConstArrayView local_ids);
 
- private:
-
  protected:
 
   String m_name;
   String m_full_name;
   IMesh* m_mesh;
   ISubDomain* m_sub_domain;
-  IItemFamily * m_parent_family;
+  IItemFamily* m_parent_family;
   Integer m_parent_family_depth;
  private:
   DynamicMeshKindInfos m_infos;
@@ -371,6 +370,9 @@ class ARCANE_MESH_EXPORT ItemFamily
   ItemGroupList m_item_groups;
   bool m_need_prepare_dump;
   MeshItemInternalList* m_item_internal_list;
+ private:
+  ItemSharedInfo* m_common_item_shared_info = nullptr;
+ protected:
   ItemSharedInfoList* m_item_shared_infos;
   ObserverPool m_observers;
   Ref<IVariableSynchronizer> m_variable_synchronizer;
@@ -413,9 +415,7 @@ class ARCANE_MESH_EXPORT ItemFamily
   Int32Array* m_items_flags = nullptr;
   Int16Array* m_items_type_id = nullptr;
   Int32Array* m_items_nb_parent = nullptr;
-  // Cee champs est utilisé par les instances de ItemSharedInfo
-  ItemSharedInfo::ItemVariableViews m_views_for_item_shared_info;
-  // TODO: a supprimer car redondant avec le champs correspondant de m_views_for_item_shared_info
+  // TODO: a supprimer car redondant avec le champ correspondant de ItemSharedInfo
   Int64ArrayView m_items_unique_id_view;
   Variables* m_internal_variables = nullptr;
   Int32 m_default_sub_domain_owner;

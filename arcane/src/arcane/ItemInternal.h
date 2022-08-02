@@ -384,17 +384,17 @@ class ARCANE_CORE_EXPORT ItemInternal
   {
 #ifdef ARCANE_CHECK
     if (m_local_id!=NULL_ITEM_LOCAL_ID)
-      arcaneCheckAt((Integer)m_local_id,m_shared_info->m_unique_ids->size());
+      arcaneCheckAt((Integer)m_local_id,m_shared_info->m_unique_ids.size());
 #endif
     // Ne pas utiliser l'accesseur normal car ce tableau peut etre utilise pour la maille
     // nulle et dans ce cas m_local_id vaut NULL_ITEM_LOCAL_ID (qui est negatif)
     // ce qui provoque une exception pour debordement de tableau.
-    return ItemUniqueId(m_shared_info->m_unique_ids->data()[m_local_id]);
+    return ItemUniqueId(m_shared_info->m_unique_ids.data()[m_local_id]);
   }
   void setUniqueId(Int64 uid)
   {
     _checkUniqueId(uid);
-    (*m_shared_info->m_unique_ids)[m_local_id] = uid;
+    m_shared_info->m_unique_ids[m_local_id] = uid;
   }
 
   //! Annule l'uniqueId a la valeur NULL_ITEM_UNIQUE_ID

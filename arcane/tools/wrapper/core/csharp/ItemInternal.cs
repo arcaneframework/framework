@@ -191,10 +191,11 @@ namespace Arcane
     internal ItemInternalConnectivityList* m_connectivity;
     internal IntPtr m_family; // IItemFamily*;
     internal IntPtr m_item_type_mng; // ItemTypeMng*
-    internal Int64ArrayView* m_unique_ids;
-    internal Int32ArrayView* m_parent_item_ids;
-    internal Int32ArrayView* m_owners;
-    internal Int32ArrayView* m_flags;
+    internal Int64ArrayView m_unique_ids;
+    internal Int32ArrayView m_parent_item_ids;
+    internal Int32ArrayView m_owners;
+    internal Int32ArrayView m_flags;
+    internal Int16ArrayView m_type_ids;
     internal eItemKind m_item_kind;
     internal Int32 m_nb_parent;
 
@@ -275,7 +276,7 @@ namespace Arcane
     public bool IsNull { get { return m_local_id==NULL_ITEM_LOCAL_ID; } }
     
     //! Flags de l'entité
-    public Integer Flags { get { return m_shared_info->m_flags->At(m_local_id); } }
+    public Integer Flags { get { return m_shared_info->m_flags.At(m_local_id); } }
     ItemInternalConnectivityList* _connectivity() { return m_shared_info->m_connectivity; }
 
     public ItemInternal* Node(Integer index)
@@ -331,7 +332,7 @@ namespace Arcane
 
     public Int64 UniqueId()
     {
-      return m_shared_info->m_unique_ids->At(m_local_id);
+      return m_shared_info->m_unique_ids.At(m_local_id);
     }
     public eItemKind Kind
     {
