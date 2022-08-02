@@ -36,11 +36,26 @@ ItemSharedInfo ItemSharedInfo::nullItemSharedInfo;
 // sur GPU.
 ItemSharedInfo* ItemSharedInfo::nullItemSharedInfoPointer = &ItemSharedInfo::nullItemSharedInfo;
 
+namespace
+{
 // Suppose NULL_ITEM_UNIQUE_ID == (-1) et NULL_ITEM_LOCAL_ID == (-1)
 // Cree un pseudo-tableau qui pourra etre indexé avec NULL_ITEM_LOCAL_ID
 // pour la maille nulle.
-static Int64 null_int64_buf[2] = { NULL_ITEM_UNIQUE_ID, NULL_ITEM_UNIQUE_ID };
-static Int64ArrayView null_unique_ids(1,null_int64_buf + 1);
+Int64 null_int64_buf[2] = { NULL_ITEM_UNIQUE_ID, NULL_ITEM_UNIQUE_ID };
+Int64ArrayView null_unique_ids(1,null_int64_buf + 1);
+
+Int32 null_parent_items_buf[2] = { NULL_ITEM_ID, NULL_ITEM_ID };
+Int32ArrayView null_parent_item_ids(1,null_parent_items_buf+1);
+
+Int32 null_owners_buf[2] = { A_NULL_RANK, A_NULL_RANK };
+Int32ArrayView null_owners(1,null_owners_buf);
+
+Int32 null_flags_buf[2] = { 0, 0 };
+Int32ArrayView null_flags(1,null_flags_buf+1);
+
+Int16 null_type_ids_buf[2] = { IT_NullType, IT_NullType };
+Int16ArrayView null_type_ids(1,null_type_ids_buf + 1);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -49,6 +64,10 @@ ItemSharedInfo::
 ItemSharedInfo()
 : m_connectivity(&ItemInternalConnectivityList::nullInstance)
 , m_unique_ids(null_unique_ids)
+, m_parent_item_ids(null_parent_item_ids)
+, m_owners(null_owners)
+, m_flags(null_flags)
+, m_type_ids(null_type_ids)
 {
   _init(IK_Unknown);
 }
