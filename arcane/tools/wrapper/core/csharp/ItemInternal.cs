@@ -256,7 +256,7 @@ namespace Arcane
 
     internal static ItemInternal* null_item = null;
     public Int32 m_local_id;
-    public Int16 m_type_id;
+    public Int32 m_padding;
     ItemSharedInfo* m_shared_info;
     
     internal static ItemInternal* Zero
@@ -267,7 +267,6 @@ namespace Arcane
           int size = Marshal.SizeOf(typeof(ItemInternal));
           null_item = (ItemInternal*)Marshal.AllocHGlobal(size);
           null_item->m_local_id = NULL_ITEM_LOCAL_ID;
-          null_item->m_type_id = 0;
           null_item->m_shared_info = ItemSharedInfo.Zero;
         }
         return null_item;

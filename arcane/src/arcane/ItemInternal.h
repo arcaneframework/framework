@@ -358,7 +358,7 @@ class ARCANE_CORE_EXPORT ItemBase
  public:
 
   ItemBase() : m_shared_info(ItemSharedInfo::nullItemSharedInfoPointer) {}
-  ItemBase(ItemBase* x) : m_local_id(x->m_local_id), m_item_type_id(x->m_item_type_id), m_shared_info(x->m_shared_info) {}
+  ItemBase(ItemBase* x) : m_local_id(x->m_local_id), m_shared_info(x->m_shared_info) {}
 
  public:
 
@@ -397,6 +397,15 @@ class ARCANE_CORE_EXPORT ItemBase
   Int32 nbHChildren() const { return _connectivity()->_nbHChildrenV2(m_local_id); }
   //! Nombre de parent
   Integer nbParent() const { return m_shared_info->nbParent(); }
+
+ public:
+
+  //! Type de l'entité
+  Int16 typeId() const { return m_shared_info->_typeId(m_local_id); }
+  //! Type de l'entité
+  ItemTypeId itemTypeId() const { return ItemTypeId(typeId()); }
+  //! Type de l'entité.
+  ItemTypeInfo* typeInfo() const { return m_shared_info->typeInfoFromId(typeId()); }
 
   //! @returns le niveau de raffinement de l'item courant. Si l'item
   //! parent est \p NULL donc par convention il est au niveau 0,
@@ -564,14 +573,8 @@ class ARCANE_CORE_EXPORT ItemBase
    */
   Int32 m_local_id = NULL_ITEM_LOCAL_ID;
 
-  /*!
-   * \brief Type de l'entité.
-   *
-   * \warning Ce champ ne doit pas être utilisé par cette classe.
-   * Seul ItemInternal peut y accéder pour éviter d'avoir à toujours connaitre le type
-   * de l'entité.
-   */
-  Int16 m_item_type_id = 0;
+  //! Champ servant uniquement à gérer explicitement l'alignement
+  Int32 m_padding = 0;
 
   //! Infos partagées entre toutes les entités ayant les mêmes caractéristiques
   ItemSharedInfo* m_shared_info;
@@ -640,14 +643,6 @@ class ARCANE_CORE_EXPORT ItemInternal
     return nullItem();
   }
 
- public:
-
-  //! Type de l'entité
-  Int16 typeId() const { return m_item_type_id; }
-  //! Type de l'entité
-  ItemTypeId itemTypeId() const { return ItemTypeId(m_item_type_id); }
-  //! Type de l'entité.
-  ItemTypeInfo* typeInfo() const { return m_shared_info->typeInfoFromId(m_item_type_id); }
 
  public:
 
@@ -807,7 +802,6 @@ class ARCANE_CORE_EXPORT ItemInternal
   void setSharedInfo(ItemSharedInfo* shared_infos,ItemTypeId type_id)
   {
     m_shared_info = shared_infos;
-    m_item_type_id = type_id;
     shared_infos->_setTypeId(m_local_id,type_id.typeId());
   }
 
