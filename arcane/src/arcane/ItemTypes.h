@@ -44,6 +44,7 @@ class DoF;
 class Item;
 class ItemWithNodes;
 class ItemInternal;
+class ItemBase;
 
 class IMesh;
 class IPrimaryMesh;
