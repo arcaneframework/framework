@@ -162,7 +162,7 @@ class ARCANE_CORE_EXPORT Item
  public:
 
   //! \a true si l'entité est nul (i.e. non connecté au maillage)
-  bool null() const { return m_internal->localId()==NULL_ITEM_ID; }
+  bool null() const { return m_local_id==NULL_ITEM_ID; }
 
   //! Identifiant local de l'entité dans le sous-domaine du processeur
   Int32 localId() const { return m_local_id; }
@@ -219,10 +219,10 @@ class ARCANE_CORE_EXPORT Item
   Int32 nbParent() const { return ItemBase::nbParent(); }
 
   //! i-ème parent
-  Item parent(Int32 i) const { return m_internal->parent(i); }
+  Item parent(Int32 i) const { return ItemBase::legacyParent(i); }
 
   //! premier parent
-  Item parent() const { return m_internal->parent(0); }
+  Item parent() const { return ItemBase::legacyParent(0); }
 
  public:
 
@@ -465,13 +465,13 @@ class ARCANE_CORE_EXPORT Node
   CellLocalId cellId(Int32 i) const { return CellLocalId(ItemBase::cellId(i)); }
 
   //! Liste des arêtes du noeud
-  EdgeVectorView edges() const { return m_internal-> internalEdges(); }
+  EdgeVectorView edges() const { return ItemBase::legacyInternalEdges(); }
 
   //! Liste des faces du noeud
-  FaceVectorView faces() const { return m_internal-> internalFaces(); }
+  FaceVectorView faces() const { return ItemBase::legacyInternalFaces(); }
 
   //! Liste des mailles du noeud
-  CellVectorView cells() const { return m_internal-> internalCells(); }
+  CellVectorView cells() const { return ItemBase::legacyInternalCells(); }
 
   //! Liste des arêtes du noeud
   EdgeLocalIdView edgeIds() const
@@ -496,19 +496,19 @@ class ARCANE_CORE_EXPORT Node
   //! Enumére les mailles connectées au noeud
   ItemVectorView activeCells(Int32Array& local_ids) const
   {
-    return m_internal->activeCells(local_ids);
+    return ItemBase::legacyActiveCells(local_ids);
   }
 
   //! Enumére les faces connectées au noeud
   FaceVectorView activeFaces(Int32Array& local_ids) const
   {
-    return m_internal->activeFaces(local_ids);
+    return ItemBase::legacyActiveFaces(local_ids);
   }
 
   //! Enumére les arêtes connectées au noeud
   EdgeVectorView activeEdges() const
   {
-    return m_internal->activeEdges();
+    return ItemBase::legacyActiveEdges();
   }
 
   // TODO: a supprimer
@@ -564,10 +564,10 @@ class ARCANE_CORE_EXPORT ItemWithNodes
   Int32 nbNode() const { return ItemBase::nbNode(); }
 
   //! i-ème noeud de l'entité
-  Node node(Int32 i) const { return Node(m_internal->internalNode(i)); }
+  Node node(Int32 i) const { return Node(ItemBase::legacyInternalNode(i)); }
 
   //! Liste des noeuds de l'entité
-  NodeVectorView nodes() const { return m_internal->internalNodes(); }
+  NodeVectorView nodes() const { return ItemBase::legacyInternalNodes(); }
 
   //! Liste des noeuds de l'entité
   NodeLocalIdView nodeIds() const
@@ -664,7 +664,7 @@ class ARCANE_CORE_EXPORT Edge
   inline Cell cell(Int32 i) const;
 
   //! Liste des mailles de l'arête
-  CellVectorView cells() const { return m_internal->internalCells(); }
+  CellVectorView cells() const { return ItemBase::legacyInternalCells(); }
 
   //! i-ème maille de l'arête
   CellLocalId cellId(Int32 i) const { return CellLocalId(ItemBase::cellId(i)); }
@@ -679,7 +679,7 @@ class ARCANE_CORE_EXPORT Edge
   inline Face face(Int32 i) const;
 
   //! Liste des faces de l'arête
-  FaceVectorView faces() const { return m_internal->internalFaces(); }
+  FaceVectorView faces() const { return ItemBase::legacyInternalFaces(); }
 
   //! i-ème face de l'arête
   FaceLocalId faceId(Int32 i) const { return FaceLocalId(ItemBase::faceId(i)); }
@@ -768,7 +768,7 @@ class ARCANE_CORE_EXPORT Face
   inline Cell cell(Int32 i) const;
 
   //! Liste des mailles de la face
-  CellVectorView cells() const { return m_internal-> internalCells(); }
+  CellVectorView cells() const { return ItemBase::legacyInternalCells(); }
 
   //! i-ème maille de la face
   CellLocalId cellId(Int32 i) const { return CellLocalId(ItemBase::cellId(i)); }
@@ -849,7 +849,7 @@ class ARCANE_CORE_EXPORT Face
    *
    * \sa ITiedInterface
    */
-  Face masterFace() const { return m_internal->masterFace(); }
+  Face masterFace() const { return ItemBase::legacyMasterFace(); }
 
   //! \a true s'il s'agit de la face maître d'une interface
   bool isMasterFace() const { return ItemBase::isMasterFace(); }
@@ -869,7 +869,7 @@ class ARCANE_CORE_EXPORT Face
   FaceVectorView slaveFaces() const
   {
     if (ItemBase::isMasterFace())
-      return m_internal->internalFaces();
+      return ItemBase::legacyInternalFaces();
     return FaceVectorView();
   }
 
@@ -879,10 +879,10 @@ class ARCANE_CORE_EXPORT Face
   Int32 nbEdge() const { return ItemBase::nbEdge(); }
 
   //! i-ème arête de la face
-  Edge edge(Int32 i) const { return Edge(m_internal->internalEdge(i)); }
+  Edge edge(Int32 i) const { return Edge(ItemBase::legacyInternalEdge(i)); }
 
   //! Liste des arêtes de la face
-  EdgeVectorView edges() const { return m_internal->internalEdges(); }
+  EdgeVectorView edges() const { return ItemBase::legacyInternalEdges(); }
 
   //! i-ème arête de la face
   EdgeLocalId edgeId(Int32 i) const { return EdgeLocalId(ItemBase::edgeId(i)); }
@@ -986,10 +986,10 @@ class ARCANE_CORE_EXPORT Cell
   Int32 nbFace() const { return ItemBase::nbFace(); }
 
   //! i-ème face de la maille
-  Face face(Int32 i) const { return Face(m_internal->internalFace(i)); }
+  Face face(Int32 i) const { return Face(ItemBase::legacyInternalFace(i)); }
 
   //! Liste des faces de la maille
-  FaceVectorView faces() const { return m_internal->internalFaces(); }
+  FaceVectorView faces() const { return ItemBase::legacyInternalFaces(); }
 
   //! i-ème face de la maille
   FaceLocalId faceId(Int32 i) const { return FaceLocalId(ItemBase::faceId(i)); }
@@ -1004,13 +1004,13 @@ class ARCANE_CORE_EXPORT Cell
   Int32 nbEdge() const { return ItemBase::nbEdge(); }
 
   //! i-ème arête de la maille
-  Edge edge(Int32 i) const { return Edge(m_internal->internalEdge(i)); }
+  Edge edge(Int32 i) const { return Edge(ItemBase::legacyInternalEdge(i)); }
 
   //! i-ème arête de la maille
   EdgeLocalId edgeId(Int32 i) const { return EdgeLocalId(ItemBase::edgeId(i)); }
 
   //! Liste des arêtes de la maille
-  EdgeVectorView edges() const { return m_internal->internalEdges(); }
+  EdgeVectorView edges() const { return ItemBase::legacyInternalEdges(); }
 
   //! Liste des arêtes de la maille
   EdgeLocalIdView edgeIds() const
@@ -1024,15 +1024,15 @@ class ARCANE_CORE_EXPORT Cell
   //! Une fusion des deux notions est envisageable dans un deuxième temps
   //! dans un premier temps, les appelations, pour l'amr, sont en français i.e. parent -> pere et child -> enfant
   //! un seul parent
-  Cell hParent() const { return Cell(m_internal->internalHParent(0)); }
+  Cell hParent() const { return Cell(ItemBase::legacyInternalHParent(0)); }
 
   Int32 nbHChildren() const { return ItemBase::nbHChildren(); }
 
   //! i-ème enfant
-  Cell hChild(Int32 i) const { return Cell(m_internal->internalHChild(i)); }
+  Cell hChild(Int32 i) const { return Cell(ItemBase::legacyInternalHChild(i)); }
 
   //! parent de niveau 0
-  Cell topHParent() const { return Cell(m_internal->topHParent()); }
+  Cell topHParent() const { return Cell(ItemBase::legacyTopHParent()); }
 
   /*!
    * \returns \p true si l'item est actif (i.e. n'a pas de
@@ -1070,7 +1070,7 @@ class ARCANE_CORE_EXPORT Cell
    */
   Int32 whichChildAmI(const ItemInternal *iitem) const
   {
-    return m_internal->whichChildAmI(iitem);
+    return ItemBase::whichChildAmI(iitem->localId());
   }
 
   Cell* operator->() { return this; }
@@ -1130,7 +1130,7 @@ class Particle
    * Il faut appeler setCell() avant d'appeler cette fonction.
    * \precondition hasCell() doit être vrai.
    */
-  Cell cell() const { return Cell(m_internal->internalCell(0)); }
+  Cell cell() const { return Cell(ItemBase::legacyInternalCell(0)); }
 
   //! Maille connectée à la particule
   CellLocalId cellId() const { return CellLocalId(ItemBase::cellId(0)); }
@@ -1148,7 +1148,7 @@ class Particle
     Int32 cell_local_id = ItemBase::cellId(0);
     if (cell_local_id==NULL_ITEM_LOCAL_ID)
       return Cell();
-    return Cell(m_internal->internalCell(0));
+    return Cell(ItemBase::legacyInternalCell(0));
   }
 
   Particle* operator->() { return this; }
@@ -1219,19 +1219,19 @@ class DoF
 inline Edge Node::
 edge(Int32 i) const
 {
-  return Edge(m_internal->internalEdge(i));
+  return Edge(ItemBase::legacyInternalEdge(i));
 }
 
 inline Face Node::
 face(Int32 i) const
 {
-  return Face(m_internal->internalFace(i));
+  return Face(ItemBase::legacyInternalFace(i));
 }
 
 inline Cell Node::
 cell(Int32 i) const
 {
-  return Cell(m_internal->internalCell(i));
+  return Cell(ItemBase::legacyInternalCell(i));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1240,13 +1240,13 @@ cell(Int32 i) const
 inline Face Edge::
 face(Int32 i) const
 {
-  return Face(m_internal->internalFace(i));
+  return Face(ItemBase::legacyInternalFace(i));
 }
 
 inline Cell Edge::
 cell(Int32 i) const
 {
-  return Cell(m_internal->internalCell(i));
+  return Cell(ItemBase::legacyInternalCell(i));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1255,19 +1255,19 @@ cell(Int32 i) const
 inline Cell Face::
 boundaryCell() const
 {
-  return Cell(m_internal->boundaryCell());
+  return Cell(ItemBase::legacyBoundaryCell());
 }
 
 inline Cell Face::
 backCell() const
 {
-  return Cell(m_internal->backCell());
+  return Cell(ItemBase::legacyBackCell());
 }
 
 inline Cell Face::
 frontCell() const
 {
-  return Cell(m_internal->frontCell());
+  return Cell(ItemBase::legacyFrontCell());
 }
 
 inline Cell Face::
@@ -1280,7 +1280,7 @@ oppositeCell(Cell cell) const
 inline Cell Face::
 cell(Int32 i) const
 {
-  return Cell(m_internal->internalCell(i));
+  return Cell(ItemBase::legacyInternalCell(i));
 }
 
 /*---------------------------------------------------------------------------*/

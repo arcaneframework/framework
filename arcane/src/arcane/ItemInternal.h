@@ -567,6 +567,8 @@ class ARCANE_CORE_EXPORT ItemBase
   Int32 edgeId(Integer index) const { return _connectivity()->_edgeLocalIdV2(m_local_id,index); }
   Int32 faceId(Integer index) const { return _connectivity()->_faceLocalIdV2(m_local_id,index); }
   Int32 cellId(Integer index) const { return _connectivity()->_cellLocalIdV2(m_local_id,index); }
+  Int32 hParentId(Int32 index) const { return _connectivity()->_hParentLocalIdV2(m_local_id,index); }
+  Int32 hChildId(Int32 index) const { return _connectivity()->_hChildLocalIdV2(m_local_id,index); }
   //@}
 
   /*!
@@ -580,6 +582,11 @@ class ARCANE_CORE_EXPORT ItemBase
    * se traduit par un débordement de tableau.
    */
   //@{
+  ItemInternalVectorView legacyInternalNodes() const { return _connectivity()->nodesV2(m_local_id); }
+  ItemInternalVectorView legacyInternalEdges() const { return _connectivity()->edgesV2(m_local_id); }
+  ItemInternalVectorView legacyInternalFaces() const { return _connectivity()->facesV2(m_local_id); }
+  ItemInternalVectorView legacyInternalCells() const { return _connectivity()->cellsV2(m_local_id); }
+
   Int32ConstArrayView nodeIds() const { return _connectivity()->nodeLocalIdsV2(m_local_id); }
   Int32ConstArrayView edgeIds() const { return _connectivity()->edgeLocalIdsV2(m_local_id); }
   Int32ConstArrayView faceIds() const { return _connectivity()->faceLocalIdsV2(m_local_id); }
@@ -592,6 +599,38 @@ class ARCANE_CORE_EXPORT ItemBase
   ItemBase cellBase(Int32 index) const { return _connectivity()->cellBase(m_local_id,index); }
   ItemBase hParentBase(Int32 index) const { return _connectivity()->hParentBase(m_local_id,index); }
   ItemBase hChildBase(Int32 index) const { return _connectivity()->hChildBase(m_local_id,index); }
+
+ public:
+
+ /**
+   * @returns le rang de l'enfant \p (iitem).
+   * exemple: si rank = m_internal->whichChildAmI(iitem); donc
+   * m_internal->hChild(rank) serait iitem;
+   */
+  Int32 whichChildAmI(Int32 local_id) const;
+
+ public:
+
+  ItemInternalVectorView legacyActiveCells(Int32Array& local_ids) const;
+  ItemInternalVectorView legacyActiveFaces(Int32Array& local_ids) const;
+  ItemInternalVectorView legacyActiveEdges() const;
+  ItemInternal* legacyInternalNode(Int32 index) const { return _connectivity()->nodeV2(m_local_id,index); }
+  ItemInternal* legacyInternalEdge(Int32 index) const { return _connectivity()->edgeV2(m_local_id,index); }
+  ItemInternal* legacyInternalFace(Int32 index) const { return _connectivity()->faceV2(m_local_id,index); }
+  ItemInternal* legacyInternalCell(Int32 index) const { return _connectivity()->cellV2(m_local_id,index); }
+  ItemInternal* legacyInternalHParent(Int32 index) const { return _connectivity()->hParentV2(m_local_id,index); }
+  ItemInternal* legacyInternalHChild(Int32 index) const { return _connectivity()->hChildV2(m_local_id,index); }
+  ItemInternal* legacyParent(Integer index) const { return m_shared_info->_parentV2(m_local_id,index); }
+
+  //! Maille connectée à l'entité si l'entité est une entité sur la frontière (0 si aucune)
+  ItemInternal* legacyBoundaryCell() const;
+  //! Maille derrière l'entité (nullItem() si aucune)
+  ItemInternal* legacyBackCell() const;
+  //! Maille devant l'entité (nullItem() si aucune)
+  ItemInternal* legacyFrontCell() const;
+  ItemInternal* legacyMasterFace() const;
+
+  ItemInternal* legacyTopHParent() const;
 
  private:
 
@@ -678,7 +717,6 @@ class ARCANE_CORE_EXPORT ItemInternal
     return nullItem();
   }
 
-
  public:
 
   void setUniqueId(Int64 uid)
@@ -756,8 +794,6 @@ class ARCANE_CORE_EXPORT ItemInternal
   ItemInternalVectorView internalItems(Edge*) const { return internalEdges(); }
   ItemInternalVectorView internalItems(Face*) const { return internalFaces(); }
   ItemInternalVectorView internalItems(Cell*) const { return internalCells(); }
-
-  //! AMR
   ItemInternalVectorView activeCells(Int32Array& local_ids) const;
   ItemInternalVectorView activeFaces(Int32Array& local_ids) const;
   ItemInternalVectorView activeEdges() const;
@@ -904,6 +940,39 @@ template<typename ItemType> inline ItemLocalIdT<ItemType>::
 ItemLocalIdT(ItemInternal* item)
 : ItemLocalId(item->localId())
 {
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+inline ItemInternal* ItemBase::
+legacyBoundaryCell() const
+{
+  return (flags() & II_Boundary) ? legacyInternalCell(0) : ItemInternal::nullItem();
+}
+
+inline ItemInternal* ItemBase::
+legacyBackCell() const
+{
+  if (flags() & II_HasBackCell)
+    return legacyInternalCell((flags() & II_BackCellIsFirst) ? 0 : 1);
+  return ItemInternal::nullItem();
+}
+
+inline ItemInternal* ItemBase::
+legacyFrontCell() const
+{
+  if (flags() & II_HasFrontCell)
+    return legacyInternalCell((flags() & II_FrontCellIsFirst) ? 0 : 1);
+  return ItemInternal::nullItem();
+}
+
+inline ItemInternal* ItemBase::
+legacyMasterFace() const
+{
+  if (flags() & II_SlaveFace)
+    return legacyInternalFace(0);
+  return ItemInternal::nullItem();
 }
 
 /*---------------------------------------------------------------------------*/
