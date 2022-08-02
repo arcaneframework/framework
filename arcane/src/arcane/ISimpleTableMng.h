@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ISimpleTableMng.hh                                       (C) 2000-2022 */
+/* TODO                                       (C) 2000-2022 */
 /*                                                                           */
-/* Interface pour simples services de tableaux de valeurs.         */
+/*          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -19,6 +19,9 @@
 
 #include <arcane/ItemTypes.h>
 #include <arcane/Directory.h>
+#include <arcane/IMesh.h>
+#include "arcane/utils/Array.h"
+#include "arcane/utils/Array2.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -29,9 +32,59 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+struct ARCANE_CORE_EXPORT SimpleTableInternal
+{
+  SimpleTableInternal()
+  {}
+  ~SimpleTableInternal() = default;
+
+  void clear()
+  {
+    m_values_csv.clear();
+    m_name_rows.clear();
+    m_name_columns.clear();
+    m_name_tab = "";
+    m_size_rows.clear();
+    m_size_columns.clear();
+    m_last_row = -1;
+    m_last_column = -1;
+  }
+
+  UniqueArray2<Real> m_values_csv;
+
+  UniqueArray<String> m_name_rows;
+  UniqueArray<String> m_name_columns;
+
+  String m_name_tab;
+
+    // Tailles des lignes/colonnes
+  // (et pas le nombre d'éléments, on compte les "trous" entre les éléments ici,
+  // mais sans le trou de fin).
+  // Ex. : {{"1", "2", "0", "3", "0", "0"},
+  //        {"4", "5", "6", "0", "7", "8"},
+  //        {"0", "0", "0", "0", "0", "0"}}
+
+  //       m_size_rows[0] = 4
+  //       m_size_rows[1] = 6
+  //       m_size_rows[2] = 0
+  //       m_size_rows.size() = 3
+
+  //       m_size_columns[3] = 1
+  //       m_size_columns[0; 1; 2; 4; 5] = 2
+  //       m_size_columns.size() = 6
+  UniqueArray<Integer> m_size_rows;
+  UniqueArray<Integer> m_size_columns;
+
+  // Dernier élement ajouté.
+  Integer m_last_row;
+  Integer m_last_column;
+
+  IMesh* m_mesh;
+};
+
 /**
  * @ingroup StandardService
- * @brief Interface représentant une sortie de tableau simple.
+ * @brief TODO
  */
 class ARCANE_CORE_EXPORT ISimpleTableMng
 {
@@ -567,6 +620,12 @@ public:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+  virtual String nameRow(Integer pos) = 0;
+  virtual String nameColumn(Integer pos) = 0;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
   /**
    * @brief Méthode permettant de changer le nom d'une ligne.
    * 
@@ -616,6 +675,11 @@ public:
    * @return Integer La position de la colonne.
    */
   virtual Integer addAverageColumn(String name_column) = 0;
+
+
+  virtual SimpleTableInternal* internal() = 0;
+  virtual void setInternal(SimpleTableInternal* sti) = 0;
+  virtual void setInternal(SimpleTableInternal& sti) = 0;
 
 };
 

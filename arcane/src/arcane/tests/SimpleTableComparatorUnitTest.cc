@@ -46,7 +46,7 @@ void SimpleTableComparatorUnitTest::
 setUp()
 {
   ptrSTO->clear();
-  ptrSTC->clear();
+  //ptrSTC->clear();
 }
 
 void SimpleTableComparatorUnitTest::

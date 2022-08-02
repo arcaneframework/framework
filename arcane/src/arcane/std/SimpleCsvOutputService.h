@@ -17,8 +17,10 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ISimpleTableOutput.h"
+#include "arcane/std/SimpleTableMng.h"
+#include "arcane/std/SimpleTableOutputMng.h"
 #include "arcane/std/SimpleCsvReaderWriter.h"
+#include "arcane/ISimpleTableOutput.h"
 #include "arcane/Directory.h"
 #include "arcane/std/SimpleCsvOutput_axl.h"
 
@@ -33,165 +35,138 @@ namespace Arcane
 
 class SimpleCsvOutputService
 : public ArcaneSimpleCsvOutputObject
-, public SimpleCsvReaderWriter
 {
  public:
   explicit SimpleCsvOutputService(const ServiceBuildInfo& sbi)
   : ArcaneSimpleCsvOutputObject(sbi)
-  , SimpleCsvReaderWriter(mesh())
-  , m_name_tab_computed(false)
-  , m_name_tab_only_once(true)
-  , m_size_rows(0)
-  , m_size_columns(0)
-  , m_last_row(-1)
-  , m_last_column(-1)
   {
     m_with_option = (sbi.creationType() == ST_CaseOption);
+
+    m_internal.m_mesh = mesh();
+    
+    m_stm.setInternal(m_internal);
+    m_stom.setInternal(m_internal);
   }
 
   virtual ~SimpleCsvOutputService() = default;
 
  public:
-  bool init() override;
-  bool init(String name_table) override;
-  bool init(String name_table, String name_dir) override;
+  bool init() override { return m_stom.init(); };
+  bool init(String name_table) override { return m_stom.init(name_table); };
+  bool init(String name_table, String name_dir) override { return m_stom.init(name_table, name_dir); };
 
-  void clear() override;
+  void clear() override { return m_stm.clear(); };
 
-  Integer addRow(String name_row) override;
-  Integer addRow(String name_row, ConstArrayView<Real> elems) override;
-  bool addRows(StringConstArrayView name_rows) override;
+  Integer addRow(String name_row) override { return m_stm.addRow(name_row); };
+  Integer addRow(String name_row, ConstArrayView<Real> elems) override { return m_stm.addRow(name_row, elems); };
+  bool addRows(StringConstArrayView name_rows) override { return m_stm.addRows(name_rows); };
 
-  Integer addColumn(String name_column) override;
-  Integer addColumn(String name_column, ConstArrayView<Real> elems) override;
-  bool addColumns(StringConstArrayView name_columns) override;
+  Integer addColumn(String name_column) override { return m_stm.addColumn(name_column); };
+  Integer addColumn(String name_column, ConstArrayView<Real> elems) override { return m_stm.addColumn(name_column, elems); };
+  bool addColumns(StringConstArrayView name_columns) override { return m_stm.addColumns(name_columns); };
 
-  bool addElemRow(Integer pos, Real elem) override;
-  bool addElemRow(String name_row, Real elem, bool create_if_not_exist) override;
-  bool addElemSameRow(Real elem) override;
+  bool addElemRow(Integer pos, Real elem) override { return m_stm.addElemRow(pos, elem); };
+  bool addElemRow(String name_row, Real elem, bool create_if_not_exist) override { return m_stm.addElemRow(name_row, elem, create_if_not_exist); };
+  bool addElemSameRow(Real elem) override { return m_stm.addElemSameRow(elem); };
 
-  bool addElemsRow(Integer pos, ConstArrayView<Real> elems) override;
-  bool addElemsRow(String name_row, ConstArrayView<Real> elems, bool create_if_not_exist) override;
-  bool addElemsSameRow(ConstArrayView<Real> elems) override;
+  bool addElemsRow(Integer pos, ConstArrayView<Real> elems) override { return m_stm.addElemsRow(pos, elems); };
+  bool addElemsRow(String name_row, ConstArrayView<Real> elems, bool create_if_not_exist) override { return m_stm.addElemsRow(name_row, elems, create_if_not_exist); };
+  bool addElemsSameRow(ConstArrayView<Real> elems) override { return m_stm.addElemsSameRow(elems); };
 
-  bool addElemColumn(Integer pos, Real elem) override;
-  bool addElemColumn(String name_column, Real elem, bool create_if_not_exist) override;
-  bool addElemSameColumn(Real elem) override;
+  bool addElemColumn(Integer pos, Real elem) override { return m_stm.addElemColumn(pos, elem); };
+  bool addElemColumn(String name_column, Real elem, bool create_if_not_exist) override { return m_stm.addElemColumn(name_column, elem, create_if_not_exist); };
+  bool addElemSameColumn(Real elem) override { return m_stm.addElemSameColumn(elem); };
 
-  bool addElemsColumn(Integer pos, ConstArrayView<Real> elems) override;
-  bool addElemsColumn(String name_column, ConstArrayView<Real> elems, bool create_if_not_exist) override;
-  bool addElemsSameColumn(ConstArrayView<Real> elems) override;
+  bool addElemsColumn(Integer pos, ConstArrayView<Real> elems) override { return m_stm.addElemsColumn(pos, elems); };
+  bool addElemsColumn(String name_column, ConstArrayView<Real> elems, bool create_if_not_exist) override { return m_stm.addElemsColumn(name_column, elems, create_if_not_exist); };
+  bool addElemsSameColumn(ConstArrayView<Real> elems) override { return m_stm.addElemsSameColumn(elems); };
 
-  bool editElemUp(Real elem, bool update_last_pos) override;
-  bool editElemDown(Real elem, bool update_last_pos) override;
-  bool editElemLeft(Real elem, bool update_last_pos) override;
-  bool editElemRight(Real elem, bool update_last_pos) override;
+  bool editElemUp(Real elem, bool update_last_pos) override { return m_stm.editElemUp(elem, update_last_pos); };
+  bool editElemDown(Real elem, bool update_last_pos) override { return m_stm.editElemDown(elem, update_last_pos); };
+  bool editElemLeft(Real elem, bool update_last_pos) override { return m_stm.editElemLeft(elem, update_last_pos); };
+  bool editElemRight(Real elem, bool update_last_pos) override { return m_stm.editElemRight(elem, update_last_pos); };
 
-  Real elemUp(bool update_last_pos) override;
-  Real elemDown(bool update_last_pos) override;
-  Real elemLeft(bool update_last_pos) override;
-  Real elemRight(bool update_last_pos) override;
+  Real elemUp(bool update_last_pos) override { return m_stm.elemUp(update_last_pos); };
+  Real elemDown(bool update_last_pos) override { return m_stm.elemDown(update_last_pos); };
+  Real elemLeft(bool update_last_pos) override { return m_stm.elemLeft(update_last_pos); };
+  Real elemRight(bool update_last_pos) override { return m_stm.elemRight(update_last_pos); };
 
-  bool editElem(Real elem) override;
-  bool editElem(Integer pos_x, Integer pos_y, Real elem) override;
-  bool editElem(String name_column, String name_row, Real elem) override;
+  bool editElem(Real elem) override { return m_stm.editElem(elem); };
+  bool editElem(Integer pos_x, Integer pos_y, Real elem) override { return m_stm.editElem(pos_x, pos_y, elem); };
+  bool editElem(String name_column, String name_row, Real elem) override { return m_stm.editElem(name_column, name_row, elem); };
 
-  Real elem() override;
-  Real elem(Integer pos_x, Integer pos_y, bool update_last_pos) override;
-  Real elem(String name_column, String name_row, bool update_last_pos) override;
+  Real elem() override { return m_stm.elem(); };
+  Real elem(Integer pos_x, Integer pos_y, bool update_last_pos) override { return m_stm.elem(pos_x, pos_y, update_last_pos); };
+  Real elem(String name_column, String name_row, bool update_last_pos) override { return m_stm.elem(name_column, name_row, update_last_pos); };
 
-  RealUniqueArray row(Integer pos) override;
-  RealUniqueArray column(Integer pos) override;
+  RealUniqueArray row(Integer pos) override { return m_stm.row(pos); };
+  RealUniqueArray column(Integer pos) override { return m_stm.column(pos); };
 
-  RealUniqueArray row(String name_row) override;
-  RealUniqueArray column(String name_column) override;
+  RealUniqueArray row(String name_row) override { return m_stm.row(name_row); };
+  RealUniqueArray column(String name_column) override { return m_stm.column(name_column); };
 
-  Integer sizeRow(Integer pos) override;
-  Integer sizeColumn(Integer pos) override;
+  Integer sizeRow(Integer pos) override { return m_stm.sizeRow(pos); };
+  Integer sizeColumn(Integer pos) override { return m_stm.sizeColumn(pos); };
 
-  Integer sizeRow(String name_row) override;
-  Integer sizeColumn(String name_column) override;
+  Integer sizeRow(String name_row) override { return m_stm.sizeRow(name_row); };
+  Integer sizeColumn(String name_column) override { return m_stm.sizeColumn(name_column); };
 
-  Integer posRow(String name_row) override;
-  Integer posColumn(String name_column) override;
+  Integer posRow(String name_row) override { return m_stm.posRow(name_row); };
+  Integer posColumn(String name_column) override { return m_stm.posColumn(name_column); };
 
-  Integer numRows() override;
-  Integer numColumns() override;
+  Integer numRows() override { return m_stm.numRows(); };
+  Integer numColumns() override { return m_stm.numColumns(); };
 
-  bool editNameRow(Integer pos, String new_name) override;
-  bool editNameRow(String name_row, String new_name) override;
+  String nameRow(Integer pos) override { return m_stm.nameRow(pos); };
+  String nameColumn(Integer pos) override { return m_stm.nameColumn(pos); };
 
-  bool editNameColumn(Integer pos, String new_name) override;
-  bool editNameColumn(String name_column, String new_name) override;
+  bool editNameRow(Integer pos, String new_name) override { return m_stm.editNameRow(pos, new_name); };
+  bool editNameRow(String name_row, String new_name) override { return m_stm.editNameRow(name_row, new_name); };
 
-  Integer addAverageColumn(String name_column) override;
+  bool editNameColumn(Integer pos, String new_name) override { return m_stm.editNameColumn(pos, new_name); };
+  bool editNameColumn(String name_column, String new_name) override { return m_stm.editNameColumn(name_column, new_name); };
 
-  void print(Integer only_proc) override;
-  bool writeFile(Integer only_proc) override;
-  bool writeFile(Directory root_dir, Integer only_proc) override;
-  bool writeFile(String dir, Integer only_proc) override;
+  Integer addAverageColumn(String name_column) override { return m_stm.addAverageColumn(name_column); };
 
-  Integer precision() override;
-  void setPrecision(Integer precision) override;
+  void print(Integer only_proc) override { return m_stom.print(only_proc); };
+  bool writeFile(Integer only_proc) override { return m_stom.writeFile(only_proc); };
+  bool writeFile(Directory root_dir, Integer only_proc) override { return m_stom.writeFile(root_dir, only_proc); };
+  bool writeFile(String dir, Integer only_proc) override { return m_stom.writeFile(dir, only_proc); };
 
-  bool fixed() override;
-  void setFixed(bool fixed) override;
+  Integer precision() override { return m_stom.precision(); };
+  void setPrecision(Integer precision) override { return m_stom.setPrecision(precision); };
 
-  String outputDir() override;
-  void setOutputDir(String dir) override;
+  bool fixed() override { return m_stom.fixed(); };
+  void setFixed(bool fixed) override { return m_stom.setFixed(fixed); };
 
-  String tabName() override;
-  void setTabName(String name) override;
-  String fileName() override;
+  String outputDir() override { return m_stom.outputDir(); };
+  void setOutputDir(String dir) override { return m_stom.setOutputDir(dir); };
+
+  String tabName() override { return m_stom.tabName(); };
+  void setTabName(String name) override { return m_stom.setTabName(name); };
+  String fileName() override { return m_stom.fileName(); };
   
-  Directory outputPath() override;
-  Directory rootPath() override;
+  Directory outputPath() override { return m_stom.outputPath(); };
+  Directory rootPath() override { return m_stom.rootPath(); };
   
-  String outputFileType() override;
+  String outputFileType() override { return m_stom.outputFileType(); };
 
-  bool isOneFileByProcsPermited() override;
+  bool isOneFileByProcsPermited() override { return m_stom.isOneFileByProcsPermited(); };
+
+  SimpleTableInternal* internal() override { return m_stm.internal(); };
+  void setInternal(SimpleTableInternal* sti) override { m_stm.setInternal(sti); m_stom.setInternal(sti); };
+  void setInternal(SimpleTableInternal& sti) override { m_stm.setInternal(sti); m_stom.setInternal(sti); };
+
+  ISimpleTableReaderWriter* readerWriter() override { return m_stom.readerWriter(); };
+  void setReaderWriter(ISimpleTableReaderWriter* strw) override { m_stom.setReaderWriter(strw); } ;
+  void setReaderWriter(ISimpleTableReaderWriter& strw) override { m_stom.setReaderWriter(strw); } ;
 
  private:
-  String _computeFinal();
-  void _computeName();
-  bool _createDirectory(Directory dir);
-  bool _createOutputDirectory();
-  bool _createRoot();
-
- private:
-  String m_name_output_dir;
-
-  Directory m_root;
-
-  String m_name_csv;
-  bool m_name_tab_computed;
-  bool m_name_tab_only_once;
-
-
-  // Tailles des lignes/colonnes
-  // (et pas le nombre d'éléments, on compte les "trous" entre les éléments ici,
-  // mais sans le trou de fin).
-  // Ex. : {{"1", "2", "0", "3", "0", "0"},
-  //        {"4", "5", "6", "0", "7", "8"},
-  //        {"0", "0", "0", "0", "0", "0"}}
-
-  //       m_size_rows[0] = 4
-  //       m_size_rows[1] = 6
-  //       m_size_rows[2] = 0
-  //       m_size_rows.size() = 3
-
-  //       m_size_columns[3] = 1
-  //       m_size_columns[0; 1; 2; 4; 5] = 2
-  //       m_size_columns.size() = 6
-
-  UniqueArray<Integer> m_size_rows;
-  UniqueArray<Integer> m_size_columns;
-
-  // Dernier élement ajouté.
-  Integer m_last_row;
-  Integer m_last_column;
-
   bool m_with_option;
+  SimpleTableInternal m_internal;
+  ISimpleTableReaderWriter* m_strw;
+  SimpleTableMng m_stm;
+  SimpleTableOutputMng m_stom;
 };
 
 /*---------------------------------------------------------------------------*/

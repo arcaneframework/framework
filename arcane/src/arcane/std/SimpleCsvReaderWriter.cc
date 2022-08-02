@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SimpleCsvComparatorService.cc                                   (C) 2000-2022 */
+/* TODO                                   (C) 2000-2022 */
 /*                                                                           */
-/* Service permettant de construire et de sortir un tableau au formet csv.   */
+/* .   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -25,7 +25,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 bool SimpleCsvReaderWriter::
-writeCsv(Directory dst, String file)
+write(Directory dst, String file)
 {
   if(!createDirectory(dst)) {
     return false;
@@ -42,9 +42,9 @@ writeCsv(Directory dst, String file)
 }
 
 bool SimpleCsvReaderWriter::
-readCsv(Directory src, String file)
+read(Directory src, String file)
 {
-  clearCsv();
+  clear();
 
   std::ifstream stream;
 
@@ -71,8 +71,8 @@ readCsv(Directory src, String file)
     StringUniqueArray tmp;
     ligne.split(tmp, m_separator);
     // Normalement, tmp[0] existe toujours (peut-être = à "" (vide)).
-    m_name_tab = tmp[0];
-    m_name_columns = tmp.subConstView(1, tmp.size());
+    m_sti->m_name_tab = tmp[0];
+    m_sti->m_name_columns = tmp.subConstView(1, tmp.size());
   }
 
   // S'il n'y a pas d'autres lignes, c'est qu'il n'y a que des 
@@ -84,14 +84,14 @@ readCsv(Directory src, String file)
 
   // Maintenant que l'on a le nombre de colonnes, on peut définir
   // la dimension 2 du tableau de valeurs.
-  m_values_csv.resize(1, m_name_columns.size());
+  m_sti->m_values_csv.resize(1, m_sti->m_name_columns.size());
 
   Integer compt_line = 0;
 
   do{
     // On n'a pas le nombre de lignes en avance,
     // donc on doit resize à chaque tour.
-    m_values_csv.resize(compt_line+1);
+    m_sti->m_values_csv.resize(compt_line+1);
 
     // On split la ligne récupéré.
     StringUniqueArray splitted_line;
@@ -99,11 +99,11 @@ readCsv(Directory src, String file)
     ligne.split(splitted_line, m_separator);
 
     // Le premier élement est le nom de ligne.
-    m_name_rows.add(splitted_line[0]);
+    m_sti->m_name_rows.add(splitted_line[0]);
 
     // Les autres élements sont des Reals.
     for(Integer i = 1; i < splitted_line.size(); i++){
-      m_values_csv[compt_line][i-1] = std::stod(splitted_line[i].localstr());
+      m_sti->m_values_csv[compt_line][i-1] = std::stod(splitted_line[i].localstr());
     }
 
     compt_line++;
@@ -114,22 +114,72 @@ readCsv(Directory src, String file)
 }
 
 bool SimpleCsvReaderWriter::
-clearCsv()
+clear()
 {
-  m_values_csv.clear();
+  m_sti->m_values_csv.clear();
 
-  m_name_rows.clear();
-  m_name_columns.clear();
+  m_sti->m_name_rows.clear();
+  m_sti->m_name_columns.clear();
   return true;
 }
 
 void SimpleCsvReaderWriter::
-printCsv(Integer only_proc)
+print(Integer only_proc)
 {
-  if (only_proc != -1 && m_mesh->parallelMng()->commRank() != only_proc)
+  if (only_proc != -1 && m_sti->m_mesh->parallelMng()->commRank() != only_proc)
     return;
   _print(std::cout);
 }
+
+Integer SimpleCsvReaderWriter::
+precision()
+{
+  return m_precision_print;
+}
+
+void SimpleCsvReaderWriter::
+setPrecision(Integer precision)
+{
+  if (precision < 1)
+    m_precision_print = 1;
+  else if (precision > (std::numeric_limits<Real>::digits10 + 1))
+    m_precision_print = (std::numeric_limits<Real>::digits10 + 1);
+  else
+    m_precision_print = precision;
+}
+
+bool SimpleCsvReaderWriter::
+fixed()
+{
+  return m_is_fixed_print;
+}
+
+void SimpleCsvReaderWriter::
+setFixed(bool fixed)
+{
+  m_is_fixed_print = fixed;
+}
+
+
+SimpleTableInternal* SimpleCsvReaderWriter::
+internal() 
+{
+  return m_sti;
+}
+
+void SimpleCsvReaderWriter::
+setInternal(SimpleTableInternal* sti) 
+{
+  ARCANE_CHECK_PTR(sti);
+  m_sti = sti;
+}
+
+void SimpleCsvReaderWriter::
+setInternal(SimpleTableInternal& sti) 
+{
+  m_sti = &sti;
+}
+
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -139,11 +189,11 @@ bool SimpleCsvReaderWriter::
 createDirectory(Directory& dir)
 {
   int sf = 0;
-  if (m_mesh->parallelMng()->commRank() == 0) {
+  if (m_sti->m_mesh->parallelMng()->commRank() == 0) {
     sf = dir.createDirectory();
   }
-  if (m_mesh->parallelMng()->commSize() > 1) {
-    sf = m_mesh->parallelMng()->reduce(Parallel::ReduceMax, sf);
+  if (m_sti->m_mesh->parallelMng()->commSize() > 1) {
+    sf = m_sti->m_mesh->parallelMng()->reduce(Parallel::ReduceMax, sf);
   }
   return sf == 0;
 }
@@ -186,17 +236,17 @@ _print(std::ostream& stream)
   }
   stream << std::setprecision(m_precision_print);
 
-  stream << m_name_tab << m_separator;
+  stream << m_sti->m_name_tab << m_separator;
 
-  for (Integer j = 0; j < m_name_columns.size(); j++) {
-    stream << m_name_columns[j] << m_separator;
+  for (Integer j = 0; j < m_sti->m_name_columns.size(); j++) {
+    stream << m_sti->m_name_columns[j] << m_separator;
   }
   stream << std::endl;
 
-  for (Integer i = 0; i < m_values_csv.dim1Size(); i++) {
-    stream << m_name_rows[i] << m_separator;
-    ConstArrayView<Real> view = m_values_csv[i];
-    for (Integer j = 0; j < m_values_csv.dim2Size(); j++) {
+  for (Integer i = 0; i < m_sti->m_values_csv.dim1Size(); i++) {
+    stream << m_sti->m_name_rows[i] << m_separator;
+    ConstArrayView<Real> view = m_sti->m_values_csv[i];
+    for (Integer j = 0; j < m_sti->m_values_csv.dim2Size(); j++) {
       stream << view[j] << m_separator;
     }
     stream << std::endl;

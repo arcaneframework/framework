@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SimpleTableMng.hh                                   (C) 2000-2022 */
+/* TODO                                   (C) 2000-2022 */
 /*                                                                           */
-/* Service permettant de construire et de sortir un tableau au formet csv.   */
+/*    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -17,11 +17,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ISimpleTableOutput.h"
 #include "arcane/ISimpleTableMng.h"
-#include "arcane/std/SimpleCsvReaderWriter.h"
 #include "arcane/Directory.h"
 #include "arcane/IMesh.h"
+#include "arcane/utils/Array.h"
+#include "arcane/utils/Array2.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -36,8 +36,14 @@ class SimpleTableMng
 : public ISimpleTableMng
 {
  public:
-  SimpleTableMng(IMesh* mesh)
-  : m_mesh(mesh)
+  SimpleTableMng(SimpleTableInternal* sti)
+  : m_sti(sti)
+  {
+
+  }
+
+  SimpleTableMng()
+  : m_sti(nullptr)
   {
 
   }
@@ -107,6 +113,9 @@ class SimpleTableMng
   Integer numRows() override;
   Integer numColumns() override;
 
+  String nameRow(Integer pos) override;
+  String nameColumn(Integer pos) override;
+
   bool editNameRow(Integer pos, String new_name) override;
   bool editNameRow(String name_row, String new_name) override;
 
@@ -115,23 +124,13 @@ class SimpleTableMng
 
   Integer addAverageColumn(String name_column) override;
 
-
- public:
-  Integer precision();
+  SimpleTableInternal* internal() override;
+  void setInternal(SimpleTableInternal* sti) override;
+  void setInternal(SimpleTableInternal& sti) override;
 
  private:
-  IMesh* m_mesh;
+  SimpleTableInternal* m_sti;
 
-  UniqueArray2<Real> m_values_csv;
-
-  UniqueArray<String> m_name_rows;
-  UniqueArray<String> m_name_columns;
-
-  UniqueArray<Integer> m_size_rows;
-  UniqueArray<Integer> m_size_columns;
-
-  Integer m_last_row;
-  Integer m_last_column;
 };
 
 /*---------------------------------------------------------------------------*/

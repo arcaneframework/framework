@@ -7,8 +7,10 @@
 /*---------------------------------------------------------------------------*/
 /* TODO */
 /*---------------------------------------------------------------------------*/
+
 #ifndef ARCANE_STD_SIMPLECSVREADERWRITER_H
 #define ARCANE_STD_SIMPLECSVREADERWRITER_H
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -22,6 +24,7 @@
 #include "arcane/ISubDomain.h"
 #include "arcane/IParallelMng.h"
 #include "arcane/IMesh.h"
+#include "arcane/ISimpleTableReaderWriter.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -33,13 +36,20 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 class SimpleCsvReaderWriter
+: public ISimpleTableReaderWriter
 {
  public:
-  SimpleCsvReaderWriter(IMesh* mesh)
-  : m_mesh(mesh)
-  , m_name_rows(0)
-  , m_name_columns(0)
-  , m_name_tab("")
+  SimpleCsvReaderWriter(SimpleTableInternal* sti)
+  : m_sti(sti)
+  , m_separator(';')
+  , m_precision_print(6)
+  , m_is_fixed_print(true)
+  {
+
+  }
+
+  SimpleCsvReaderWriter()
+  : m_sti(nullptr)
   , m_separator(';')
   , m_precision_print(6)
   , m_is_fixed_print(true)
@@ -50,11 +60,23 @@ class SimpleCsvReaderWriter
   ~SimpleCsvReaderWriter() = default;
 
  public:
-  bool writeCsv(Directory dst, String file);
-  bool readCsv(Directory src, String file);
-  bool clearCsv();
-  void printCsv(Integer only_proc = 0);
-  
+  bool write(Directory dst, String file) override;
+  bool read(Directory src, String file) override;
+  bool clear() override;
+  void print(Integer only_proc = 0) override;
+
+  Integer precision() override;
+  void setPrecision(Integer precision) override;
+
+  bool fixed() override;
+  void setFixed(bool fixed) override;
+
+  String typeFile() override {return "csv";};
+
+  SimpleTableInternal* internal() override;
+  void setInternal(SimpleTableInternal* sti) override;
+  void setInternal(SimpleTableInternal& sti) override;
+
  protected:
   bool createDirectory(Directory& dir);
   bool isFileExist(Directory dir, String file);
@@ -65,20 +87,13 @@ class SimpleCsvReaderWriter
   void _print(std::ostream& stream);
 
  protected:
-  IMesh* m_mesh;
-
-  UniqueArray2<Real> m_values_csv;
-
-  UniqueArray<String> m_name_rows;
-  UniqueArray<String> m_name_columns;
-
-  String m_name_tab;
-
   char m_separator;
   Integer m_precision_print;
   bool m_is_fixed_print;
 
   const String m_output_file_type = "csv";
+
+  SimpleTableInternal* m_sti;
 };
 
 /*---------------------------------------------------------------------------*/

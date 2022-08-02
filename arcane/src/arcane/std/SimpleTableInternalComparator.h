@@ -5,28 +5,25 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SimpleCsvComparatorService.hh                                   (C) 2000-2022 */
+/* TODO                                   (C) 2000-2022 */
 /*                                                                           */
-/* Service permettant de construire et de sortir un tableau au formet csv.   */
+/*    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_STD_SIMPLECSVCOMPARATORSERVICE_H
-#define ARCANE_STD_SIMPLECSVCOMPARATORSERVICE_H
+#ifndef ARCANE_STD_SIMPLETABLEINTERNALCOMPARATOR_H
+#define ARCANE_STD_SIMPLETABLEINTERNALCOMPARATOR_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/ISimpleTableMng.h"
-#include "arcane/ISimpleTableOutput.h"
-#include "arcane/ISimpleTableComparator.h"
-#include "arcane/std/SimpleTableInternalComparator.h"
-#include "arcane/std/SimpleCsvReaderWriter.h"
-
-#include <arcane/Directory.h>
-#include <arcane/utils/Iostream.h>
-
-#include "arcane/std/SimpleCsvComparator_axl.h"
+#include "arcane/std/SimpleTableMng.h"
+#include "arcane/ISimpleTableReaderWriter.h"
+#include "arcane/ISimpleTableInternalComparator.h"
+#include "arcane/Directory.h"
+#include "arcane/utils/Array.h"
+#include "arcane/utils/Array2.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -37,35 +34,28 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class SimpleCsvComparatorService
-: public ArcaneSimpleCsvComparatorObject
+class SimpleTableInternalComparator
+: public ISimpleTableInternalComparator
 {
  public:
-  explicit SimpleCsvComparatorService(const ServiceBuildInfo& sbi)
-  : ArcaneSimpleCsvComparatorObject(sbi)
-  , m_output_dir("_ref")
-  , m_is_file_open(false)
-  , m_is_file_read(false)
-  , m_iSTO(nullptr)
+  SimpleTableInternalComparator(SimpleTableInternal* sti_ref, SimpleTableInternal* sti_to_compare)
+  : m_sti_ref(sti_ref)
+  , m_sti_to_compare(sti_to_compare)
   {
-    m_with_option = (sbi.creationType() == ST_CaseOption);
-
-    m_sti_to_compare.m_mesh = mesh();
-
-    m_scrw.setInternal(m_sti_to_compare);
+    m_stm_ref.setInternal(m_sti_ref);
+    m_stm_to_compare.setInternal(m_sti_to_compare);
   }
 
-  virtual ~SimpleCsvComparatorService() = default;
+  SimpleTableInternalComparator()
+  : m_sti_ref(nullptr)
+  , m_sti_to_compare(nullptr)
+  {
+  }
+
+  virtual ~SimpleTableInternalComparator() = default;
 
  public:
-  
-  void init(ISimpleTableOutput* ptr_sto) override;
-  void editRootDir(Directory root_dir) override;
-  void print(Integer only_proc) override;
-  bool writeRefFile(Integer only_proc) override;
-  bool readRefFile(Integer only_proc) override;
-  bool isRefExist(Integer only_proc) override;
-  bool compareWithRef(Integer only_proc, Integer epsilon) override;
+  bool compare(Integer epsilon) override;
 
   bool addColumnToCompare(String name_column) override;
   bool addRowToCompare(String name_row) override;
@@ -79,34 +69,34 @@ class SimpleCsvComparatorService
   void isARegexExclusiveColumns(bool is_exclusive) override;
   void isARegexExclusiveRows(bool is_exclusive) override;
 
- protected:
-  bool _exploreColumn(Integer pos);
-  bool _exploreRows(Integer pos);
+  SimpleTableInternal* internalRef() override;
+  void setInternalRef(SimpleTableInternal* sti) override;
+  void setInternalRef(SimpleTableInternal& sti) override;
 
- protected:
-  Directory m_ref_path;
-  Directory m_root_path;
-  String m_output_dir;
-  String m_file_name;
-  String m_name_tab;
+  SimpleTableInternal* internalToCompare() override;
+  void setInternalToCompare(SimpleTableInternal* sti) override;
+  void setInternalToCompare(SimpleTableInternal& sti) override;
 
-  std::ifstream m_ifstream;
-  bool m_is_file_open;
-  bool m_is_file_read;
+ private:
+  bool _exploreColumn(String column_name);
+  bool _exploreRows(String row_name);
 
-  ISimpleTableOutput* m_iSTO;
+ private:
+  String m_regex_rows;
+  bool m_is_excluding_regex_rows;
 
-  SimpleTableInternalComparator m_stic;
-  SimpleCsvReaderWriter m_scrw;
-  SimpleTableInternal m_sti_to_compare;
+  String m_regex_columns;
+  bool m_is_excluding_regex_columns;
 
-  bool m_with_option;
+  StringUniqueArray m_compared_rows;
+  StringUniqueArray m_compared_columns;
+
+  SimpleTableInternal* m_sti_ref;
+  SimpleTableInternal* m_sti_to_compare;
+
+  SimpleTableMng m_stm_ref;
+  SimpleTableMng m_stm_to_compare;
 };
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_REGISTER_SERVICE_SIMPLECSVCOMPARATOR(SimpleCsvComparator, SimpleCsvComparatorService);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -79,6 +79,12 @@ set(ARCANE_SOURCES
   SimpleTableMng.cc
   SimpleTableMng.h
 
+  SimpleTableOutputMng.cc
+  SimpleTableOutputMng.h
+
+  SimpleTableInternalComparator.cc
+  SimpleTableInternalComparator.h
+
   SimpleCsvOutputService.cc
   SimpleCsvOutputService.h
 
