@@ -27,6 +27,7 @@ namespace Arcane::mesh
 {
 class ItemFamily;
 class ItemSharedInfoWithType;
+class DynamicMeshKindInfos;
 }
 
 namespace Arcane
@@ -54,6 +55,7 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
 {
   friend class ItemInternal;
   friend class mesh::ItemFamily;
+  friend class mesh::DynamicMeshKindInfos;
   friend class mesh::ItemSharedInfoWithType;
 
  public:
@@ -259,6 +261,7 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   Int16ArrayView m_type_ids;
   eItemKind m_item_kind = IK_Unknown;
   Int32 m_nb_parent = 0;
+  ConstArrayView<ItemInternal*> m_items_internal; //!< ItemInternal des entités
 
  public:
 

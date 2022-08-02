@@ -118,6 +118,7 @@ class _ItemSharedInfo
   Arcane::Int16ArrayView m_type_ids;
   Arcane::eItemKind m_item_kind;
   Arcane::Int32 m_nb_parent;
+  Arcane::ConstArrayView<Arcane::ItemInternal*> m_items_internal;
 };
 }
 /*---------------------------------------------------------------------------*/

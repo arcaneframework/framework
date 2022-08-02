@@ -336,6 +336,7 @@ readFromDump()
   // Supprime toutes les entités
   m_nb_item = 0;
   m_internals.clear();
+  _updateItemSharedInfoInternalView();
   m_free_internals.clear();
   m_items_map.clear();
   delete m_item_internals_buffer;
@@ -723,6 +724,7 @@ finishCompactItems(ItemFamilyCompactInfos& compact_infos)
 
   // Retaillage optimal des tableaux
   m_internals.resize(m_nb_item);
+  _updateItemSharedInfoInternalView();
   m_free_internals.clear();
 
   if (m_is_verbose){
@@ -900,6 +902,26 @@ _badUniqueIdMap() const
     ARCANE_FATAL("family have unique id map");
   else
     ARCANE_FATAL("family does not have unique id map");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMeshKindInfos::
+setItemFamily(ItemFamily* item_family)
+{
+  m_item_family = item_family;
+  m_common_item_shared_info = item_family->commonItemSharedInfo();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMeshKindInfos::
+_updateItemSharedInfoInternalView()
+{
+  if (m_common_item_shared_info)
+    m_common_item_shared_info->m_items_internal = m_internals.constView();
 }
 
 /*---------------------------------------------------------------------------*/

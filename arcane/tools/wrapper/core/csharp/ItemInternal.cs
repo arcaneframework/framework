@@ -198,6 +198,7 @@ namespace Arcane
     internal Int16ArrayView m_type_ids;
     internal eItemKind m_item_kind;
     internal Int32 m_nb_parent;
+    internal ItemInternalList m_items_internal;
 
     //! Pour l'entité nulle
     private static ItemSharedInfo* null_item_shared_info = null;
@@ -255,7 +256,7 @@ namespace Arcane
 
     internal static ItemInternal* null_item = null;
     public Int32 m_local_id;
-    public Int32 m_type_id;
+    public Int16 m_type_id;
     ItemSharedInfo* m_shared_info;
     
     internal static ItemInternal* Zero

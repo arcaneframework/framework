@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMeshKindInfos.h                                      (C) 2000-2017 */
+/* DynamicMeshKindInfos.h                                      (C) 2000-2022 */
 /*                                                                           */
 /* Infos de maillage pour un genre d'entité donnée.                          */
 /*---------------------------------------------------------------------------*/
@@ -28,27 +28,26 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 class ItemFamilyCompactInfos;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
+namespace Arcane::mesh
+{
 class ItemFamily;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Infos de maillage pour un genre donné d'entité.
- 
- Une instance de cette classe gère toutes les structures de maillage
- pour une entité d'un genre donné.
-*/
+ *
+ * Une instance de cette classe gère toutes les structures de maillage
+ * pour une entité d'un genre donné.
+ */
 class ARCANE_MESH_EXPORT DynamicMeshKindInfos
 : public TraceAccessor
 {
@@ -255,10 +254,7 @@ class ARCANE_MESH_EXPORT DynamicMeshKindInfos
     return m_item_family;
   }
 
-  void setItemFamily(ItemFamily* item_family)
-  {
-    m_item_family = item_family;
-  }
+  void setItemFamily(ItemFamily* item_family);
 
   bool hasUniqueIdMap() const
   {
@@ -296,6 +292,7 @@ class ARCANE_MESH_EXPORT DynamicMeshKindInfos
       lid = m_internals.size();
       new_item->setLocalId(lid);
       m_internals.add(new_item);
+      _updateItemSharedInfoInternalView();
       need_alloc = true;
     }
     m_added_items.add(lid);
@@ -321,6 +318,7 @@ class ARCANE_MESH_EXPORT DynamicMeshKindInfos
   bool m_has_unique_id_map;
   //! Temporaire tant que oldToNewLocalIds() et newToOldLocalIds() existent
   ItemFamilyCompactInfos* m_compact_infos;
+  ItemSharedInfo* m_common_item_shared_info = nullptr;
 
  public:
   
@@ -360,13 +358,13 @@ class ARCANE_MESH_EXPORT DynamicMeshKindInfos
   void _dumpList();
   void _badSameUniqueId(Int64 unique_id) const;
   void _badUniqueIdMap() const;
+  void _updateItemSharedInfoInternalView();
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
