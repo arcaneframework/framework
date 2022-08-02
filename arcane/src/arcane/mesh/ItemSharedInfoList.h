@@ -50,7 +50,6 @@ class ItemFamily;
 class ItemSharedInfoWithType
 {
   friend class ItemSharedInfoList;
-  using ItemVariableViews = ItemSharedInfo::ItemVariableViews;
   static const Int32 NULL_INDEX = ItemSharedInfo::NULL_INDEX;
 
  public:

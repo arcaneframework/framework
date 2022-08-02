@@ -211,9 +211,8 @@ TV_ttf_display_type(const Arcane::ItemInternal * obj)
   TV_ttf_add_row("local_id","Integer",reinterpret_cast<const int*>(obj));
   Arcane::ItemSharedInfo * shared_info = obj->sharedInfo();
   const Integer local_id = obj->localId();
-  //const Integer data_index = const_cast<Arcane::ItemInternal*>(obj)->dataIndex();
 
-  TV_ttf_add_row("unique_id","Int64",&shared_info->m_unique_ids->data()[local_id]);
+  TV_ttf_add_row("unique_id","Int64",shared_info->m_unique_ids.ptrAt(local_id));
   TV_ttf_add_row("kind","eItemKind",&shared_info->m_item_kind);
   
   snprintf(strtype,sizeof(strtype),"type=%s",obj->typeInfo()->typeName().localstr());

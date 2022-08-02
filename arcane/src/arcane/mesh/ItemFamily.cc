@@ -203,7 +203,7 @@ ItemFamily(IMesh* mesh,eItemKind ik,const String& name)
 , m_infos(mesh,ik,name)
 , m_need_prepare_dump(true)
 , m_item_internal_list(mesh->meshItemInternalList())
-, m_common_item_shared_info(new ItemSharedInfo(this,m_item_internal_list,&m_item_connectivity_list,&m_views_for_item_shared_info))
+, m_common_item_shared_info(new ItemSharedInfo(this,m_item_internal_list,&m_item_connectivity_list))
 , m_item_shared_infos(new ItemSharedInfoList(this,m_common_item_shared_info))
 , m_current_variable_item_size(0)
 , m_item_sort_function(nullptr)
@@ -2462,11 +2462,11 @@ _computeConnectivityInfo(ItemConnectivityInfo* ici)
 void ItemFamily::
 _updateItemViews()
 {
-  m_views_for_item_shared_info.m_unique_ids_view = m_items_unique_id->view();
-  m_views_for_item_shared_info.m_flags_view = m_items_flags->view();
-  m_views_for_item_shared_info.m_type_ids_view = m_items_type_id->view();
-  m_views_for_item_shared_info.m_owners_view = m_items_owner->view();
-  m_views_for_item_shared_info.m_parent_ids_view = m_items_nb_parent->view();
+  m_common_item_shared_info->m_unique_ids = m_items_unique_id->view();
+  m_common_item_shared_info->m_flags = m_items_flags->view();
+  m_common_item_shared_info->m_type_ids = m_items_type_id->view();
+  m_common_item_shared_info->m_owners = m_items_owner->view();
+  m_common_item_shared_info->m_parent_item_ids = m_items_nb_parent->view();
 
   m_items_unique_id_view = m_items_unique_id->view();
 }

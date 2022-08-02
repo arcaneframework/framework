@@ -52,29 +52,11 @@ class ItemInternalConnectivityList;
  */
 class ARCANE_CORE_EXPORT ItemSharedInfo
 {
- private:
-
-  /*!
-   * Liste des vues sur les variabes associées aux entités.
-   *
-   * Ces variables sont toutes indexables par le localId()
-   * de l'entité. Elles sont toujours allouées sauf 'm_parent_ids_view'
-   * qui n'est alloué que si l'entité est dans un sous-maillage
-   */
-  struct ItemVariableViews
-  {
-    Int64ArrayView m_unique_ids_view;
-    Int32ArrayView m_flags_view;
-    Int16ArrayView m_type_ids_view;
-    Int32ArrayView m_owners_view;
-    Int32ArrayView m_parent_ids_view;
-  };
-
- public:
-
   friend class ItemInternal;
   friend class mesh::ItemFamily;
   friend class mesh::ItemSharedInfoWithType;
+
+ public:
 
   static const Int32 NULL_INDEX = static_cast<Int32>(-1);
 
@@ -100,7 +82,7 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
 
   // Seule ItemFamily peut créer des instances de cette classe autre que l'instance nulle.
   ItemSharedInfo(IItemFamily* family,MeshItemInternalList* items,
-                 ItemInternalConnectivityList* connectivity,ItemVariableViews* variable_views);
+                 ItemInternalConnectivityList* connectivity);
 
  public:
 
@@ -179,16 +161,16 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   {
     // Actuellement un seul parent est supporté donc \a aindex doit valoir 0.
     ARCANE_ASSERT((aindex==0),("Only one parent access implemented"));
-    return _parents()[(*m_parent_item_ids)[local_id]];
+    return _parents()[m_parent_item_ids[local_id]];
   }
   Int32 _parentLocalIdV2(Int32 local_id,[[maybe_unused]] Integer aindex) const
   {
     // Actuellement un seul parent est supporté donc \a aindex doit valoir 0.
     ARCANE_ASSERT((aindex==0),("Only one parent access implemented"));
-    return (*m_parent_item_ids)[local_id];
+    return m_parent_item_ids[local_id];
   }
-  void _setParentV2(Int32 local_id,Integer aindex,Int32 parent_local_id) const;
-  Int32* _parentPtr(Int32 local_id) const;
+  void _setParentV2(Int32 local_id,Integer aindex,Int32 parent_local_id);
+  Int32* _parentPtr(Int32 local_id);
 
  public:
 
@@ -265,16 +247,25 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   MeshItemInternalList* m_items = nullptr;
   ItemInternalConnectivityList* m_connectivity;
   IItemFamily* m_item_family = nullptr;
-  ItemTypeMng* m_item_type_mng = nullptr;
-  Int64ArrayView* m_unique_ids = nullptr;
-  Int32ArrayView* m_parent_item_ids = nullptr;
-  Int32ArrayView* m_owners = nullptr;
-  Int32ArrayView* m_flags = nullptr;
-  Int16ArrayView* m_type_ids = nullptr;
-  eItemKind m_item_kind = IK_Unknown;
 
  private:
 
+  ItemTypeMng* m_item_type_mng = nullptr;
+
+ public:
+
+  // TODO: Rendre privé (encore utilisé par TTF)
+  Int64ArrayView m_unique_ids;
+
+ private:
+
+  Int32ArrayView m_parent_item_ids;
+  Int32ArrayView m_owners;
+  Int32ArrayView m_flags;
+  Int16ArrayView m_type_ids;
+ public:
+  eItemKind m_item_kind = IK_Unknown;
+ private:
   Int32 m_nb_parent = 0;
 
  public:
@@ -290,13 +281,13 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
 
  private:
 
-  Int32 _ownerV2(Int32 local_id) const { return (*m_owners)[local_id]; }
-  void _setOwnerV2(Int32 local_id,Int32 aowner) const { (*m_owners)[local_id] = aowner; }
-  Int32 _flagsV2(Int32 local_id) const { return (*m_flags)[local_id]; }
-  void _setFlagsV2(Int32 local_id,Int32 f) const { (*m_flags)[local_id] = f; }
+  Int32 _ownerV2(Int32 local_id) const { return m_owners[local_id]; }
+  void _setOwnerV2(Int32 local_id,Int32 aowner) { m_owners[local_id] = aowner; }
+  Int32 _flagsV2(Int32 local_id) const { return m_flags[local_id]; }
+  void _setFlagsV2(Int32 local_id,Int32 f) { m_flags[local_id] = f; }
 
-  Int16 _typeId(Int32 local_id) const { return (*m_type_ids)[local_id]; }
-  void _setTypeId(Int32 local_id,Int16 v) const { (*m_type_ids)[local_id] = v; }
+  Int16 _typeId(Int32 local_id) const { return m_type_ids[local_id]; }
+  void _setTypeId(Int32 local_id,Int16 v) { m_type_ids[local_id] = v; }
 
  public:
 

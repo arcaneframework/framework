@@ -48,7 +48,7 @@ static Int64ArrayView null_unique_ids(1,null_int64_buf + 1);
 ItemSharedInfo::
 ItemSharedInfo()
 : m_connectivity(&ItemInternalConnectivityList::nullInstance)
-, m_unique_ids(&null_unique_ids)
+, m_unique_ids(null_unique_ids)
 {
   _init(IK_Unknown);
 }
@@ -57,17 +57,11 @@ ItemSharedInfo()
 /*---------------------------------------------------------------------------*/
 
 ItemSharedInfo::
-ItemSharedInfo(IItemFamily* family,MeshItemInternalList* items,
-               ItemInternalConnectivityList* connectivity,ItemVariableViews* variable_views)
+ItemSharedInfo(IItemFamily* family,MeshItemInternalList* items,ItemInternalConnectivityList* connectivity)
 : m_items(items)
 , m_connectivity(connectivity)
 , m_item_family(family)
 , m_item_type_mng(family->mesh()->itemTypeMng())
-, m_unique_ids(&(variable_views->m_unique_ids_view))
-, m_parent_item_ids(&(variable_views->m_parent_ids_view))
-, m_owners(&(variable_views->m_owners_view))
-, m_flags(&(variable_views->m_flags_view))
-, m_type_ids(&(variable_views->m_type_ids_view))
 , m_item_kind(family->itemKind())
 {
   _init(m_item_kind);
@@ -196,20 +190,20 @@ _setInfos(Int32*)
 /*---------------------------------------------------------------------------*/
 
 void ItemSharedInfo::
-_setParentV2(Int32 local_id,[[maybe_unused]] Integer aindex,Int32 parent_local_id) const
+_setParentV2(Int32 local_id,[[maybe_unused]] Integer aindex,Int32 parent_local_id)
 {
   ARCANE_ASSERT((aindex==0),("Only one parent access implemented"));
-  (*m_parent_item_ids)[local_id] = parent_local_id;
+  m_parent_item_ids[local_id] = parent_local_id;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 Int32* ItemSharedInfo::
-_parentPtr(Int32 local_id) const
+_parentPtr(Int32 local_id)
 {
   // GG: ATTENTION: Cela ne fonctionne que si on a au plus un parent.
-  return m_parent_item_ids->ptrAt(local_id);
+  return m_parent_item_ids.ptrAt(local_id);
 }
 
 /*---------------------------------------------------------------------------*/

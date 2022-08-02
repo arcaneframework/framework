@@ -53,9 +53,9 @@ void ItemInternal::
 unsetUniqueId()
 {
 #ifdef ARCANE_CHECK
-  _checkUniqueId((*m_shared_info->m_unique_ids)[m_local_id]);
+  _checkUniqueId(m_shared_info->m_unique_ids[m_local_id]);
 #endif
-  (*m_shared_info->m_unique_ids)[m_local_id] = NULL_ITEM_UNIQUE_ID;
+  m_shared_info->m_unique_ids[m_local_id] = NULL_ITEM_UNIQUE_ID;
 }
 
 /*---------------------------------------------------------------------------*/
