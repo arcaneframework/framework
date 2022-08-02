@@ -43,6 +43,22 @@ class Item;
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
+ * \brief Classe pour construire une instance de ItemBase
+ */
+class ARCANE_CORE_EXPORT ItemBaseBuildInfo
+{
+ public:
+  ItemBaseBuildInfo(Int32 local_id,ItemSharedInfo* shared_info)
+  : m_local_id(local_id), m_shared_info(shared_info) {}
+ public:
+  Int32 m_local_id;
+  ItemSharedInfo* m_shared_info;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
  * \brief Informations de connectivité, pour une famille d'entité,
  * permettant la transition entre les anciennes et nouvelles implémentations
  * des connectivités.
@@ -236,6 +252,19 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   ItemInternal* hChildV2(Int32 lid,Int32 aindex) const
   { return m_items->cells[ _hChildLocalIdV2(lid,aindex) ]; }
 
+  ItemBaseBuildInfo nodeBase(Int32 lid,Int32 aindex) const
+  { return ItemBaseBuildInfo(_nodeLocalIdV2(lid,aindex),m_items->m_node_shared_info); }
+  ItemBaseBuildInfo edgeBase(Int32 lid,Int32 aindex) const
+  { return ItemBaseBuildInfo(_edgeLocalIdV2(lid,aindex),m_items->m_edge_shared_info); }
+  ItemBaseBuildInfo faceBase(Int32 lid,Int32 aindex) const
+  { return ItemBaseBuildInfo(_faceLocalIdV2(lid,aindex),m_items->m_face_shared_info); }
+  ItemBaseBuildInfo cellBase(Int32 lid,Int32 aindex) const
+  { return ItemBaseBuildInfo(_cellLocalIdV2(lid,aindex),m_items->m_cell_shared_info); }
+  ItemBaseBuildInfo hParentBase(Int32 lid,Int32 aindex) const
+  { return ItemBaseBuildInfo(_hParentLocalIdV2(lid,aindex),m_items->m_cell_shared_info); }
+  ItemBaseBuildInfo hChildBase(Int32 lid,Int32 aindex) const
+  { return ItemBaseBuildInfo(_hChildLocalIdV2(lid,aindex),m_items->m_cell_shared_info); }
+
   ItemInternalVectorView nodesV2(Int32 lid) const
   { return ItemInternalVectorView(m_items->nodes,_nodeLocalIdsV2(lid),_nbNodeV2(lid)); }
   ItemInternalVectorView edgesV2(Int32 lid) const
@@ -359,6 +388,7 @@ class ARCANE_CORE_EXPORT ItemBase
 
   ItemBase() : m_shared_info(ItemSharedInfo::nullItemSharedInfoPointer) {}
   ItemBase(ItemBase* x) : m_local_id(x->m_local_id), m_shared_info(x->m_shared_info) {}
+  ItemBase(ItemBaseBuildInfo x) : m_local_id(x.m_local_id), m_shared_info(x.m_shared_info) {}
 
  public:
 
@@ -418,7 +448,7 @@ class ARCANE_CORE_EXPORT ItemBase
     if (this->nbHParent() == 0)
       return 0;
     //! sinon je suis au niveau supérieur que celui de mon parent
-    return (this->internalHParent(0).level() + 1);
+    return (this->hParentBase(0).level() + 1);
   }
 
   //! @returns \p true si l'item est un ancetre (i.e. a un
@@ -429,9 +459,9 @@ class ARCANE_CORE_EXPORT ItemBase
       return false;
     if (!this->hasHChildren())
       return false;
-    if (this->internalHChild(0).isActive())
+    if (this->hChildBase(0).isActive())
       return true;
-    return this->internalHChild(0).isAncestor();
+    return this->hChildBase(0).isAncestor();
   }
   //! @returns \p true si l'item a des enfants (actifs ou non),
   //! \p false  sinon. Renvoie toujours \p false si l'AMR est désactivé.
@@ -462,7 +492,7 @@ class ARCANE_CORE_EXPORT ItemBase
       return false;
     if (!this->hasHChildren())
       return true;
-    return this->internalHChild(0).isSubactive();
+    return this->hChildBase(0).isSubactive();
   }
 
   //! Famille dont est issue l'entité
@@ -489,12 +519,12 @@ class ARCANE_CORE_EXPORT ItemBase
   //! \a true si l'entité est sur la frontière
   bool isBoundary() const { return (flags() & II_Boundary)!=0; }
   //! Maille connectée à l'entité si l'entité est une entité sur la frontière (0 si aucune)
-  ItemBase boundaryCell() const { return (flags() & II_Boundary) ? internalCell(0) : ItemBase(); }
+  ItemBase boundaryCell() const { return (flags() & II_Boundary) ? cellBase(0) : ItemBase(); }
   //! Maille derrière l'entité (nullItem() si aucune)
   ItemBase backCell() const
   {
     if (flags() & II_HasBackCell)
-      return internalCell((flags() & II_BackCellIsFirst) ? 0 : 1);
+      return cellBase((flags() & II_BackCellIsFirst) ? 0 : 1);
     return {};
   }
   //! Maille derrière l'entité (NULL_ITEM_LOCAL_ID si aucune)
@@ -508,7 +538,7 @@ class ARCANE_CORE_EXPORT ItemBase
   ItemBase frontCell() const
   {
     if (flags() & II_HasFrontCell)
-      return internalCell((flags() & II_FrontCellIsFirst) ? 0 : 1);
+      return cellBase((flags() & II_FrontCellIsFirst) ? 0 : 1);
     return {};
   }
   //! Maille devant l'entité (NULL_ITEM_LOCAL_ID si aucune)
@@ -521,7 +551,7 @@ class ARCANE_CORE_EXPORT ItemBase
   ItemBase masterFace() const
   {
     if (flags() & II_SlaveFace)
-      return internalFace(0);
+      return faceBase(0);
     return {};
   }
   //! \a true s'il s'agit de la face maître d'une interface
@@ -556,12 +586,12 @@ class ARCANE_CORE_EXPORT ItemBase
   Int32ConstArrayView cellIds() const { return _connectivity()->cellLocalIdsV2(m_local_id); }
   //@}
 
-  inline ItemBase internalNode(Int32 index) const;
-  inline ItemBase internalEdge(Int32 index) const;
-  inline ItemBase internalFace(Int32 index) const;
-  inline ItemBase internalCell(Int32 index) const;
-  inline ItemBase internalHParent(Int32 index) const;
-  inline ItemBase internalHChild(Int32 index) const;
+  ItemBase nodeBase(Int32 index) const { return _connectivity()->nodeBase(m_local_id,index); }
+  ItemBase edgeBase(Int32 index) const { return _connectivity()->edgeBase(m_local_id,index); }
+  ItemBase faceBase(Int32 index) const { return _connectivity()->faceBase(m_local_id,index); }
+  ItemBase cellBase(Int32 index) const { return _connectivity()->cellBase(m_local_id,index); }
+  ItemBase hParentBase(Int32 index) const { return _connectivity()->hParentBase(m_local_id,index); }
+  ItemBase hChildBase(Int32 index) const { return _connectivity()->hChildBase(m_local_id,index); }
 
  private:
 
@@ -870,13 +900,6 @@ ItemLocalIdT(ItemInternal* item)
 : ItemLocalId(item->localId())
 {
 }
-
-ItemBase ItemBase::internalNode(Int32 index) const { return _connectivity()->nodeV2(m_local_id,index); }
-ItemBase ItemBase::internalEdge(Int32 index) const { return _connectivity()->edgeV2(m_local_id,index); }
-ItemBase ItemBase::internalFace(Int32 index) const { return _connectivity()->faceV2(m_local_id,index); }
-ItemBase ItemBase::internalCell(Int32 index) const { return _connectivity()->cellV2(m_local_id,index); }
-ItemBase ItemBase::internalHParent(Int32 index) const { return _connectivity()->hParentV2(m_local_id,index); }
-ItemBase ItemBase::internalHChild(Int32 index) const { return _connectivity()->hChildV2(m_local_id,index); }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
