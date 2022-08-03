@@ -156,12 +156,6 @@ fileOffset()
 }
 
 void TextWriter::
-_writeComments(const String& comment)
-{
-  m_p->m_ostream << "# " << comment << '\n';
-}
-
-void TextWriter::
 _binaryWrite(const void* bytes,Int64 len)
 {
   std::ostream& o = m_p->m_ostream;

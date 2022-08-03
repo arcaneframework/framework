@@ -62,7 +62,6 @@ class TextWriter
  private:
   Impl* m_p;
  private:
-  void _writeComments(const String& comment);
   void _binaryWrite(const void* bytes,Int64 len);
 };
 

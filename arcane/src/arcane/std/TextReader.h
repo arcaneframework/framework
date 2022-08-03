@@ -64,12 +64,6 @@ class TextReader
  private:
   Impl* m_p;
  private:
-  void _removeComments();
-  Integer _getInteger();
-  Int16 _getInt16();
-  Int32 _getInt32();
-  Int64 _getInt64();
-  Real _getReal();
   void _binaryRead(void* bytes,Int64 len);
   void _checkStream(const char* type,Int64 nb_read_value);
 };
