@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshItemInternalList.h                                      (C) 2000-2016 */
+/* MeshItemInternalList.h                                      (C) 2000-2022 */
 /*                                                                           */
 /* Tableaux d'indirection sur les entités d'un maillage.                     */
 /*---------------------------------------------------------------------------*/
@@ -14,10 +14,20 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/ItemTypes.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
+class ItemSharedInfo;
+class ItemInternalConnectivityList;
+
+namespace mesh
+{
+class DynamicMesh;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -27,9 +37,8 @@ ARCANE_BEGIN_NAMESPACE
  */
 class MeshItemInternalList
 {
- public:
-
-  MeshItemInternalList() : mesh(nullptr) {}
+  friend class mesh::DynamicMesh;
+  friend class ItemInternalConnectivityList;
 
  public:
 
@@ -37,16 +46,20 @@ class MeshItemInternalList
   ItemInternalArrayView edges;
   ItemInternalArrayView faces;
   ItemInternalArrayView cells;
-  ItemInternalArrayView dualNodes;
-  ItemInternalArrayView links;
-  ItemInternalArrayView particles;
-  IMesh* mesh;
+  IMesh* mesh = nullptr;
+
+ private:
+
+  ItemSharedInfo* m_node_shared_info = nullptr;
+  ItemSharedInfo* m_edge_shared_info = nullptr;
+  ItemSharedInfo* m_face_shared_info = nullptr;
+  ItemSharedInfo* m_cell_shared_info = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1046,7 +1046,7 @@ _testItemArray()
   ENUMERATE_CELLZ(icell,v2){
     Cell c = *icell;
     info(6) << "CELL =" << ItemPrinter(c);
-    for( NodeEnumerator inode(icell->nodes()); inode.hasNext(); ++inode ){
+    for( NodeEnumerator inode(c.nodes()); inode.hasNext(); ++inode ){
       info(7) << "NODE =" << ItemPrinter(*inode);
     }
   }

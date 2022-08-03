@@ -36,6 +36,24 @@
 
 namespace Arcane
 {
+class ItemInternal;
+class Item;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Classe pour construire une instance de ItemBase
+ */
+class ARCANE_CORE_EXPORT ItemBaseBuildInfo
+{
+ public:
+  ItemBaseBuildInfo(Int32 local_id,ItemSharedInfo* shared_info)
+  : m_local_id(local_id), m_shared_info(shared_info) {}
+ public:
+  Int32 m_local_id;
+  ItemSharedInfo* m_shared_info;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -234,6 +252,19 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   ItemInternal* hChildV2(Int32 lid,Int32 aindex) const
   { return m_items->cells[ _hChildLocalIdV2(lid,aindex) ]; }
 
+  ItemBaseBuildInfo nodeBase(Int32 lid,Int32 aindex) const
+  { return ItemBaseBuildInfo(_nodeLocalIdV2(lid,aindex),m_items->m_node_shared_info); }
+  ItemBaseBuildInfo edgeBase(Int32 lid,Int32 aindex) const
+  { return ItemBaseBuildInfo(_edgeLocalIdV2(lid,aindex),m_items->m_edge_shared_info); }
+  ItemBaseBuildInfo faceBase(Int32 lid,Int32 aindex) const
+  { return ItemBaseBuildInfo(_faceLocalIdV2(lid,aindex),m_items->m_face_shared_info); }
+  ItemBaseBuildInfo cellBase(Int32 lid,Int32 aindex) const
+  { return ItemBaseBuildInfo(_cellLocalIdV2(lid,aindex),m_items->m_cell_shared_info); }
+  ItemBaseBuildInfo hParentBase(Int32 lid,Int32 aindex) const
+  { return ItemBaseBuildInfo(_hParentLocalIdV2(lid,aindex),m_items->m_cell_shared_info); }
+  ItemBaseBuildInfo hChildBase(Int32 lid,Int32 aindex) const
+  { return ItemBaseBuildInfo(_hChildLocalIdV2(lid,aindex),m_items->m_cell_shared_info); }
+
   ItemInternalVectorView nodesV2(Int32 lid) const
   { return ItemInternalVectorView(m_items->nodes,_nodeLocalIdsV2(lid),_nbNodeV2(lid)); }
   ItemInternalVectorView edgesV2(Int32 lid) const
@@ -312,27 +343,11 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \internal
- * \brief Structure interne d'une entité de maillage.
 
- Cette instance contient la structure interne d'une entité de maillage.
- Elle ne doit être manipulée que par ceux qui savent ce qu'il font...
-
- Pour utiliser une entité, il faut utiliser la classe Item ou l'une
- de ces classes dérivées.
-
- En règle général, le maillage (IMesh) auquel l'entité appartient maintient
- différentes structures permettant de manipuler le maillage. Ces structures
- sont souvent recalculés dynamiquement lorsque cela est nécessaire (lazy
- evaluation). C'est le cas par exemple des groupes d'entités propres
- au sous-domaine ou de la table de conversion des numéros globaux en
- numéros locaux. C'est pourquoi il est primordial lorqu'on effectue
- une série de modifications d'instances de cette classe de notifier
- le maillage des changements effectués.
- */
-class ARCANE_CORE_EXPORT ItemInternal
+class ARCANE_CORE_EXPORT ItemBase
 {
+  friend class ItemInternal;
+  friend class Item;
  public:
   enum
   { // L'affichage 'lisible' des flags est implémenté dans ItemPrinter
@@ -370,13 +385,13 @@ class ARCANE_CORE_EXPORT ItemInternal
   II_FrontCellIsFirst + II_BackCellIsFirst;
 
  public:
-  //! Entité nulle
-  static ItemInternal nullItemInternal;
-  static ItemInternal* nullItem() { return &nullItemInternal; }
+
+  ItemBase() : m_shared_info(ItemSharedInfo::nullItemSharedInfoPointer) {}
+  ItemBase(ItemBase* x) : m_local_id(x->m_local_id), m_shared_info(x->m_shared_info) {}
+  ItemBase(ItemBaseBuildInfo x) : m_local_id(x.m_local_id), m_shared_info(x.m_shared_info) {}
+
  public:
-  ItemInternal() : m_local_id(NULL_ITEM_LOCAL_ID),  m_shared_info(&ItemSharedInfo::nullItemSharedInfo)
-  {}
- public:
+
   //! Numéro local (au sous-domaine) de l'entité
   Int32 localId() const { return m_local_id; }
   //! Numéro unique de l'entité
@@ -391,6 +406,326 @@ class ARCANE_CORE_EXPORT ItemInternal
     // ce qui provoque une exception pour debordement de tableau.
     return ItemUniqueId(m_shared_info->m_unique_ids.data()[m_local_id]);
   }
+
+  //! Numéro du sous-domaine propriétaire de l'entité
+  Int32 owner() const { return m_shared_info->_ownerV2(m_local_id); }
+
+  //! Flags de l'entité
+  Int32 flags() const { return m_shared_info->_flagsV2(m_local_id); }
+
+  //! Nombre de noeuds de l'entité
+  Integer nbNode() const { return _connectivity()->_nbNodeV2(m_local_id); }
+  //! Nombre d'arêtes de l'entité ou nombre d'arêtes connectés à l'entités (pour les noeuds)
+  Integer nbEdge() const { return _connectivity()->_nbEdgeV2(m_local_id); }
+  //! Nombre de faces de l'entité ou nombre de faces connectés à l'entités (pour les noeuds et arêtes)
+  Integer nbFace() const { return _connectivity()->_nbFaceV2(m_local_id); }
+  //! Nombre de mailles connectées à l'entité (pour les noeuds, arêtes et faces)
+  Integer nbCell() const { return _connectivity()->_nbCellV2(m_local_id); }
+  //! Nombre de parent
+  Int32 nbHParent() const { return _connectivity()->_nbHParentV2(m_local_id); }
+  //! Nombre d' enfants
+  Int32 nbHChildren() const { return _connectivity()->_nbHChildrenV2(m_local_id); }
+  //! Nombre de parent
+  Integer nbParent() const { return m_shared_info->nbParent(); }
+
+ public:
+
+  //! Type de l'entité
+  Int16 typeId() const { return m_shared_info->_typeId(m_local_id); }
+  //! Type de l'entité
+  ItemTypeId itemTypeId() const { return ItemTypeId(typeId()); }
+  //! Type de l'entité.
+  ItemTypeInfo* typeInfo() const { return m_shared_info->typeInfoFromId(typeId()); }
+
+  //! @returns le niveau de raffinement de l'item courant. Si l'item
+  //! parent est \p NULL donc par convention il est au niveau 0,
+  //! sinon il est simplement au niveau que celui de son parent.
+  inline Int32 level() const
+  {
+    //! si je n'ai pas de parent donc j'ai été crée
+    //! directement à partir d'un fichier ou par l'utilisateur,
+    //! donc je suis un item de niveau 0
+    if (this->nbHParent() == 0)
+      return 0;
+    //! sinon je suis au niveau supérieur que celui de mon parent
+    return (this->hParentBase(0).level() + 1);
+  }
+
+  //! @returns \p true si l'item est un ancetre (i.e. a un
+  //! enfant actif ou un enfant ancetre), \p false sinon. Renvoie toujours \p false si l'AMR est désactivé.
+  inline bool isAncestor() const
+  {
+    if (this->isActive())
+      return false;
+    if (!this->hasHChildren())
+      return false;
+    if (this->hChildBase(0).isActive())
+      return true;
+    return this->hChildBase(0).isAncestor();
+  }
+  //! @returns \p true si l'item a des enfants (actifs ou non),
+  //! \p false  sinon. Renvoie toujours \p false si l'AMR est désactivé.
+  inline bool hasHChildren () const
+  {
+    if (this->nbHChildren() == 0) // TODO ? à vérifier !
+      return false;
+    else
+      return true;
+  }
+
+  //! @returns \p true si l'item est actif (i.e. n'a pas de
+  //! descendants actifs), \p false  sinon. Notez qu'il suffit de vérifier
+  //! le premier enfant seulement. Renvoie toujours \p true si l'AMR est désactivé.
+  inline bool isActive() const
+  {
+    if ( (flags() & II_Inactive) | (flags() & II_CoarsenInactive))
+      return false;
+    else
+      return true;
+  }
+
+  //! @returns \p true si l'item est subactif (i.e. pas actif et n'a pas de
+  //! descendants), \p false  sinon.Renvoie toujours \p false si l'AMR est désactivé.
+  inline  bool isSubactive() const
+  {
+    if (this->isActive())
+      return false;
+    if (!this->hasHChildren())
+      return true;
+    return this->hChildBase(0).isSubactive();
+  }
+
+  //! Famille dont est issue l'entité
+  IItemFamily* family() const { return m_shared_info->m_item_family; }
+  //! Genre de l'entité
+  eItemKind kind() const { return m_shared_info->m_item_kind; }
+  //! Vrai si l'entité est l'entité nulle
+  bool null() const { return m_local_id==NULL_ITEM_LOCAL_ID; }
+  //! Vrai si l'entité appartient au sous-domaine
+  bool isOwn() const { return (flags() & II_Own)!=0; }
+  /*!
+   * \brief Vrai si l'entité est partagé d'autres sous-domaines.
+   *
+   * Cette méthode n'est pertinente que si les informations de connectivités
+   * ont été calculées.
+   */
+  bool isShared() const { return (flags() & II_Shared)!=0; }
+
+  //! Vrai si l'entité est supprimée
+  bool isSuppressed() const { return (flags() & II_Suppressed)!=0; }
+  //! Vrai si l'entité est détachée
+  bool isDetached() const { return (flags() & II_Detached)!=0; }
+
+  //! \a true si l'entité est sur la frontière
+  bool isBoundary() const { return (flags() & II_Boundary)!=0; }
+  //! Maille connectée à l'entité si l'entité est une entité sur la frontière (0 si aucune)
+  ItemBase boundaryCell() const { return (flags() & II_Boundary) ? cellBase(0) : ItemBase(); }
+  //! Maille derrière l'entité (nullItem() si aucune)
+  ItemBase backCell() const
+  {
+    if (flags() & II_HasBackCell)
+      return cellBase((flags() & II_BackCellIsFirst) ? 0 : 1);
+    return {};
+  }
+  //! Maille derrière l'entité (NULL_ITEM_LOCAL_ID si aucune)
+  Int32 backCellId() const
+  {
+    if (flags() & II_HasBackCell)
+      return cellId((flags() & II_BackCellIsFirst) ? 0 : 1);
+    return NULL_ITEM_LOCAL_ID;
+  }
+  //! Maille devant l'entité (nullItem() si aucune)
+  ItemBase frontCell() const
+  {
+    if (flags() & II_HasFrontCell)
+      return cellBase((flags() & II_FrontCellIsFirst) ? 0 : 1);
+    return {};
+  }
+  //! Maille devant l'entité (NULL_ITEM_LOCAL_ID si aucune)
+  Int32 frontCellId() const
+  {
+    if (flags() & II_HasFrontCell)
+      return cellId((flags() & II_FrontCellIsFirst) ? 0 : 1);
+    return NULL_ITEM_LOCAL_ID;
+  }
+  ItemBase masterFace() const
+  {
+    if (flags() & II_SlaveFace)
+      return faceBase(0);
+    return {};
+  }
+  //! \a true s'il s'agit de la face maître d'une interface
+  inline bool isMasterFace() const { return flags() & II_MasterFace; }
+
+  //! \a true s'il s'agit d'une face esclave d'une interface
+  inline bool isSlaveFace() const { return flags() & II_SlaveFace; }
+
+  Int32 parentId(Integer index) const { return m_shared_info->_parentLocalIdV2(m_local_id,index); }
+
+  //@{
+  Int32 nodeId(Integer index) const { return _connectivity()->_nodeLocalIdV2(m_local_id,index); }
+  Int32 edgeId(Integer index) const { return _connectivity()->_edgeLocalIdV2(m_local_id,index); }
+  Int32 faceId(Integer index) const { return _connectivity()->_faceLocalIdV2(m_local_id,index); }
+  Int32 cellId(Integer index) const { return _connectivity()->_cellLocalIdV2(m_local_id,index); }
+  Int32 hParentId(Int32 index) const { return _connectivity()->_hParentLocalIdV2(m_local_id,index); }
+  Int32 hChildId(Int32 index) const { return _connectivity()->_hChildLocalIdV2(m_local_id,index); }
+  //@}
+
+  /*!
+   * \brief Méthodes utilisant les nouvelles connectivités pour accéder
+   * aux informations de connectivité. A ne pas utiliser en dehors de Arcane.
+   *
+   * \warning Ces méthodes ne doivent être appelées que sur les entités
+   * qui possèdent la connectivité associée ET qui sont au nouveau format.
+   * Par exemple, cela ne fonctionne pas sur Cell->Cell car il n'y a pas de
+   * connectivité maille/maille. En cas de mauvaise utilisation, cela
+   * se traduit par un débordement de tableau.
+   */
+  //@{
+  ItemInternalVectorView legacyInternalNodes() const { return _connectivity()->nodesV2(m_local_id); }
+  ItemInternalVectorView legacyInternalEdges() const { return _connectivity()->edgesV2(m_local_id); }
+  ItemInternalVectorView legacyInternalFaces() const { return _connectivity()->facesV2(m_local_id); }
+  ItemInternalVectorView legacyInternalCells() const { return _connectivity()->cellsV2(m_local_id); }
+
+  Int32ConstArrayView nodeIds() const { return _connectivity()->nodeLocalIdsV2(m_local_id); }
+  Int32ConstArrayView edgeIds() const { return _connectivity()->edgeLocalIdsV2(m_local_id); }
+  Int32ConstArrayView faceIds() const { return _connectivity()->faceLocalIdsV2(m_local_id); }
+  Int32ConstArrayView cellIds() const { return _connectivity()->cellLocalIdsV2(m_local_id); }
+  //@}
+
+  ItemBase nodeBase(Int32 index) const { return _connectivity()->nodeBase(m_local_id,index); }
+  ItemBase edgeBase(Int32 index) const { return _connectivity()->edgeBase(m_local_id,index); }
+  ItemBase faceBase(Int32 index) const { return _connectivity()->faceBase(m_local_id,index); }
+  ItemBase cellBase(Int32 index) const { return _connectivity()->cellBase(m_local_id,index); }
+  ItemBase hParentBase(Int32 index) const { return _connectivity()->hParentBase(m_local_id,index); }
+  ItemBase hChildBase(Int32 index) const { return _connectivity()->hChildBase(m_local_id,index); }
+
+ public:
+
+ /**
+   * @returns le rang de l'enfant \p (iitem).
+   * exemple: si rank = m_internal->whichChildAmI(iitem); donc
+   * m_internal->hChild(rank) serait iitem;
+   */
+  Int32 whichChildAmI(Int32 local_id) const;
+
+ public:
+
+  inline ItemInternal* itemInternal() const;
+
+  ItemInternalVectorView legacyActiveCells(Int32Array& local_ids) const;
+  ItemInternalVectorView legacyActiveFaces(Int32Array& local_ids) const;
+  ItemInternalVectorView legacyActiveEdges() const;
+  ItemInternal* legacyInternalNode(Int32 index) const { return _connectivity()->nodeV2(m_local_id,index); }
+  ItemInternal* legacyInternalEdge(Int32 index) const { return _connectivity()->edgeV2(m_local_id,index); }
+  ItemInternal* legacyInternalFace(Int32 index) const { return _connectivity()->faceV2(m_local_id,index); }
+  ItemInternal* legacyInternalCell(Int32 index) const { return _connectivity()->cellV2(m_local_id,index); }
+  ItemInternal* legacyInternalHParent(Int32 index) const { return _connectivity()->hParentV2(m_local_id,index); }
+  ItemInternal* legacyInternalHChild(Int32 index) const { return _connectivity()->hChildV2(m_local_id,index); }
+  ItemInternal* legacyParent(Integer index) const { return m_shared_info->_parentV2(m_local_id,index); }
+
+  //! Maille connectée à l'entité si l'entité est une entité sur la frontière (0 si aucune)
+  ItemInternal* legacyBoundaryCell() const;
+  //! Maille derrière l'entité (nullItem() si aucune)
+  ItemInternal* legacyBackCell() const;
+  //! Maille devant l'entité (nullItem() si aucune)
+  ItemInternal* legacyFrontCell() const;
+  ItemInternal* legacyMasterFace() const;
+
+  ItemInternal* legacyTopHParent() const;
+
+ private:
+
+  /*!
+   * \brief Numéro local (au sous-domaine) de l'entité.
+   *
+   * Pour des raisons de performance, le numéro local doit être
+   * le premier champs de la classe.
+   */
+  Int32 m_local_id = NULL_ITEM_LOCAL_ID;
+
+  //! Champ servant uniquement à gérer explicitement l'alignement
+  Int32 m_padding = 0;
+
+  //! Infos partagées entre toutes les entités ayant les mêmes caractéristiques
+  ItemSharedInfo* m_shared_info = nullptr;
+
+ private:
+
+  ItemInternalConnectivityList* _connectivity() const
+  {
+    return m_shared_info->m_connectivity;
+  }
+  void _setFromInternal(ItemBase* rhs)
+  {
+    m_local_id = rhs->m_local_id;
+    m_shared_info = rhs->m_shared_info;
+  }
+  void _setFromInternal(const ItemBase& rhs)
+  {
+    m_local_id = rhs.m_local_id;
+    m_shared_info = rhs.m_shared_info;
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Structure interne d'une entité de maillage.
+
+ Cette instance contient la structure interne d'une entité de maillage.
+ Elle ne doit être manipulée que par ceux qui savent ce qu'il font...
+
+ Pour utiliser une entité, il faut utiliser la classe Item ou l'une
+ de ces classes dérivées.
+
+ En règle général, le maillage (IMesh) auquel l'entité appartient maintient
+ différentes structures permettant de manipuler le maillage. Ces structures
+ sont souvent recalculés dynamiquement lorsque cela est nécessaire (lazy
+ evaluation). C'est le cas par exemple des groupes d'entités propres
+ au sous-domaine ou de la table de conversion des numéros globaux en
+ numéros locaux. C'est pourquoi il est primordial lorqu'on effectue
+ une série de modifications d'instances de cette classe de notifier
+ le maillage des changements effectués.
+ */
+class ARCANE_CORE_EXPORT ItemInternal
+: public ItemBase
+{
+
+ public:
+
+  //! Entité nulle
+  static ItemInternal nullItemInternal;
+  static ItemInternal* nullItem() { return &nullItemInternal; }
+
+ public:
+
+  //! Maille connectée à l'entité si l'entité est une entité sur la frontière (0 si aucune)
+  ItemInternal* boundaryCell() const { return (flags() & II_Boundary) ? internalCell(0) : nullItem(); }
+  //! Maille derrière l'entité (nullItem() si aucune)
+  ItemInternal* backCell() const
+  {
+    if (flags() & II_HasBackCell)
+      return internalCell((flags() & II_BackCellIsFirst) ? 0 : 1);
+    return nullItem();
+  }
+  //! Maille devant l'entité (nullItem() si aucune)
+  ItemInternal* frontCell() const
+  {
+    if (flags() & II_HasFrontCell)
+      return internalCell((flags() & II_FrontCellIsFirst) ? 0 : 1);
+    return nullItem();
+  }
+  ItemInternal* masterFace() const
+  {
+    if (flags() & II_SlaveFace)
+      return internalFace(0);
+    return nullItem();
+  }
+
+ public:
+
   void setUniqueId(Int64 uid)
   {
     _checkUniqueId(uid);
@@ -421,12 +756,6 @@ class ARCANE_CORE_EXPORT ItemInternal
     setFlags(f);
   }
 
-  //! Numéro du sous-domaine propriétaire de l'entité
-  Int32 owner() const { return m_shared_info->_ownerV2(m_local_id); }
-
-  //! Flags de l'entité
-  Int32 flags() const { return m_shared_info->_flagsV2(m_local_id); }
-
   //! Positionne les flags de l'entité
   void setFlags(Int32 f) { m_shared_info->_setFlagsV2(m_local_id,f); }
 
@@ -446,105 +775,8 @@ class ARCANE_CORE_EXPORT ItemInternal
     this->setFlags(f);
   }
 
-  //! Nombre de noeuds de l'entité
-  Integer nbNode() const { return _connectivity()->_nbNodeV2(m_local_id); }
-  //! Nombre d'arêtes de l'entité ou nombre d'arêtes connectés à l'entités (pour les noeuds)
-  Integer nbEdge() const { return _connectivity()->_nbEdgeV2(m_local_id); }
-  //! Nombre de faces de l'entité ou nombre de faces connectés à l'entités (pour les noeuds et arêtes)
-  Integer nbFace() const { return _connectivity()->_nbFaceV2(m_local_id); }
-  //! Nombre de mailles connectées à l'entité (pour les noeuds, arêtes et faces)
-  Integer nbCell() const { return _connectivity()->_nbCellV2(m_local_id); }
-  //! Nombre de parent
-  Int32 nbHParent() const { return _connectivity()->_nbHParentV2(m_local_id); }
-  //! Nombre d' enfants
-  Int32 nbHChildren() const { return _connectivity()->_nbHChildrenV2(m_local_id); }
-  //! Nombre de parent
-  Integer nbParent() const { return m_shared_info->nbParent(); }
-
-  //! @returns \p true si l'item est actif (i.e. n'a pas de
-  //! descendants actifs), \p false  sinon. Notez qu'il suffit de vérifier
-  //! le premier enfant seulement. Renvoie toujours \p true si l'AMR est désactivé.
-  inline bool isActive() const
-  {
-	  if ( (flags() & II_Inactive)  | (flags() & II_CoarsenInactive))
-		  return false;
-	  else
-		  return true;
-  }
-
-  //! @returns le niveau de raffinement de l'item courant.  Si l'item
-  //! parent est \p NULL donc par convention il est au niveau 0,
-  //! sinon il est simplement au niveau que celui de son parent.
-  inline Int32 level() const
-  {
-	  //! si je n'ai pas de parent donc j'ai été crée
-	  //! directement à partir d'un fichier ou par l'utilisateur,
-	  //! donc je suis un item de niveau 0
-	  if (this->nbHParent() == 0)
-		  return 0;
-	  //! sinon je suis au niveau supérieur que celui de mon parent
-	  return (this->internalHParent(0)->level() + 1);
-  }
-
-  //! @returns \p true si l'item est un ancetre (i.e. a un
-  //! enfant actif ou un enfant ancetre), \p false sinon. Renvoie toujours \p false si l'AMR est désactivé.
-  inline bool isAncestor() const
-  {
-    if (this->isActive())
-      return false;
-    if (!this->hasHChildren())
-      return false;
-    if (this->internalHChild(0)->isActive())
-      return true;
-    return this->internalHChild(0)->isAncestor();
-  }
-  //! @returns \p true si l'item a des enfants (actifs ou non),
-  //! \p false  sinon. Renvoie toujours \p false si l'AMR est désactivé.
-  inline bool hasHChildren () const
-  {
-    if (this->nbHChildren() == 0) // TODO ? à vérifier !
-      return false;
-    else
-      return true;
-  }
-  //! @returns \p true si l'item est subactif (i.e. pas actif et n'a pas de
-  //! descendants), \p false  sinon.Renvoie toujours \p false si l'AMR est désactivé.
-  inline  bool isSubactive() const
-  {
-    if (this->isActive())
-      return false;
-    if (!this->hasHChildren())
-      return true;
-    return this->internalHChild(0)->isSubactive();
-  }
-  //! Type de l'entité
-  Int16 typeId() const { return m_item_type_id; }
-  //! Type de l'entité
-  ItemTypeId itemTypeId() const { return ItemTypeId(m_item_type_id); }
-  //! Type de l'entité.
-  ItemTypeInfo* typeInfo() const { return m_shared_info->typeInfoFromId(m_item_type_id); }
   //! Infos partagées de l'entité.
   ItemSharedInfo* sharedInfo() const { return m_shared_info; }
-  //! Famille dont est issue l'entité
-  IItemFamily* family() const { return m_shared_info->m_item_family; }
-  //! Genre de l'entité
-  eItemKind kind() const { return m_shared_info->m_item_kind; }
-  //! Vrai si l'entité est l'entité nulle
-  bool null() const { return m_local_id==NULL_ITEM_LOCAL_ID; }
-  //! Vrai si l'entité appartient au sous-domaine
-  bool isOwn() const { return (flags() & II_Own)!=0; }
-  /*!
-   * \brief Vrai si l'entité est partagé d'autres sous-domaines.
-   *
-   * Cette méthode n'est pertinente que si les informations de connectivités
-   * ont été calculées.
-   */
-  bool isShared() const { return (flags() & II_Shared)!=0; }
-
-  //! Vrai si l'entité est supprimée
-  bool isSuppressed() const { return (flags() & II_Suppressed)!=0; }
-  //! Vrai si l'entité est détachée
-  bool isDetached() const { return (flags() & II_Detached)!=0; }
   //! Positionne l'état détachée de l'entité
   void setDetached(bool v)
   {
@@ -555,51 +787,6 @@ class ARCANE_CORE_EXPORT ItemInternal
       f &= ~II_Detached;
     setFlags(f);
   }
-  //! \a true si l'entité est sur la frontière
-  bool isBoundary() const { return (flags() & II_Boundary)!=0; }
-  //! Maille connectée à l'entité si l'entité est une entité sur la frontière (0 si aucune)
-  ItemInternal* boundaryCell() const { return (flags() & II_Boundary) ? internalCell(0) : nullItem(); }
-  //! Maille derrière l'entité (nullItem() si aucune)
-  ItemInternal* backCell() const
-  {
-    if (flags() & II_HasBackCell)
-      return internalCell((flags() & II_BackCellIsFirst) ? 0 : 1);
-    return nullItem();
-  }
-  //! Maille derrière l'entité (NULL_ITEM_LOCAL_ID si aucune)
-  Int32 backCellId() const
-  {
-    if (flags() & II_HasBackCell)
-      return cellId((flags() & II_BackCellIsFirst) ? 0 : 1);
-    return NULL_ITEM_LOCAL_ID;
-  }
-  //! Maille devant l'entité (nullItem() si aucune)
-  ItemInternal* frontCell() const
-  {
-    if (flags() & II_HasFrontCell)
-      return internalCell((flags() & II_FrontCellIsFirst) ? 0 : 1);
-    return nullItem();
-  }
-  //! Maille devant l'entité (NULL_ITEM_LOCAL_ID si aucune)
-  Int32 frontCellId() const
-  {
-    if (flags() & II_HasFrontCell)
-      return cellId((flags() & II_FrontCellIsFirst) ? 0 : 1);
-    return NULL_ITEM_LOCAL_ID;
-  }
-  ItemInternal* masterFace() const
-  {
-    if (flags() & II_SlaveFace)
-      return internalFace(0);
-    return nullItem();
-  }
-  //! \a true s'il s'agit de la face maître d'une interface
-  inline bool isMasterFace() const { return flags() & II_MasterFace; }
-
-  //! \a true s'il s'agit d'une face esclave d'une interface
-  inline bool isSlaveFace() const { return flags() & II_SlaveFace; }
-
- public:
 
   void reinitialize(Int64 uid,Int32 aowner,Int32 owner_rank)
   {
@@ -614,8 +801,6 @@ class ARCANE_CORE_EXPORT ItemInternal
   ItemInternalVectorView internalItems(Edge*) const { return internalEdges(); }
   ItemInternalVectorView internalItems(Face*) const { return internalFaces(); }
   ItemInternalVectorView internalItems(Cell*) const { return internalCells(); }
-
-  //! AMR
   ItemInternalVectorView activeCells(Int32Array& local_ids) const;
   ItemInternalVectorView activeFaces(Int32Array& local_ids) const;
   ItemInternalVectorView activeEdges() const;
@@ -628,11 +813,7 @@ class ARCANE_CORE_EXPORT ItemInternal
   ItemInternal* internalCell(Int32 index) const { return _connectivity()->cellV2(m_local_id,index); }
   ItemInternal* internalHParent(Int32 index) const { return _connectivity()->hParentV2(m_local_id,index); }
   ItemInternal* internalHChild(Int32 index) const { return _connectivity()->hChildV2(m_local_id,index); }
-
- public:
-
   ItemInternal* parent(Integer index) const { return m_shared_info->_parentV2(m_local_id,index); }
-  Int32 parentId(Integer index) const { return m_shared_info->_parentLocalIdV2(m_local_id,index); }
 
  public:
 
@@ -690,13 +871,6 @@ class ARCANE_CORE_EXPORT ItemInternal
   Int32 faceLocalId(Integer index) { return _connectivity()->_faceLocalIdV2(m_local_id,index); }
   Int32 cellLocalId(Integer index) { return _connectivity()->_cellLocalIdV2(m_local_id,index); }
 
-  //@{
-  Int32 nodeId(Integer index) const { return _connectivity()->_nodeLocalIdV2(m_local_id,index); }
-  Int32 edgeId(Integer index) const { return _connectivity()->_edgeLocalIdV2(m_local_id,index); }
-  Int32 faceId(Integer index) const { return _connectivity()->_faceLocalIdV2(m_local_id,index); }
-  Int32 cellId(Integer index) const { return _connectivity()->_cellLocalIdV2(m_local_id,index); }
-  //@}
-
  public:
 
   void setLocalId(Int32 local_id) { m_local_id = local_id; }
@@ -706,7 +880,6 @@ class ARCANE_CORE_EXPORT ItemInternal
   void setSharedInfo(ItemSharedInfo* shared_infos,ItemTypeId type_id)
   {
     m_shared_info = shared_infos;
-    m_item_type_id = type_id;
     shared_infos->_setTypeId(m_local_id,type_id.typeId());
   }
 
@@ -728,11 +901,6 @@ class ARCANE_CORE_EXPORT ItemInternal
   ItemInternalVectorView internalEdges() const { return _connectivity()->edgesV2(m_local_id); }
   ItemInternalVectorView internalFaces() const { return _connectivity()->facesV2(m_local_id); }
   ItemInternalVectorView internalCells() const { return _connectivity()->cellsV2(m_local_id); }
-
-  Int32ConstArrayView nodeIds() const { return _connectivity()->nodeLocalIdsV2(m_local_id); }
-  Int32ConstArrayView edgeIds() const { return _connectivity()->edgeLocalIdsV2(m_local_id); }
-  Int32ConstArrayView faceIds() const { return _connectivity()->faceLocalIdsV2(m_local_id); }
-  Int32ConstArrayView cellIds() const { return _connectivity()->cellLocalIdsV2(m_local_id); }
   //@}
 
  public:
@@ -754,31 +922,12 @@ class ARCANE_CORE_EXPORT ItemInternal
   void _setFaceBackAndFrontCells(Int32 back_cell_lid,Int32 front_cell_lid);
   //@}
 
- private:
-
- /*!
-   * \brief Numéro local (au sous-domaine) de l'entité.
-   *
-   * Pour des raisons de performance, le numéro local doit être
-   * le premier champs de la classe.
-   */
-  Int32 m_local_id = NULL_ITEM_LOCAL_ID;
-  /*!
-   * \brief Type de l'entité.
-   */
-  Int16 m_item_type_id = 0;
-  //! Infos partagées entre toutes les entités ayant les mêmes caractéristiques
-  ItemSharedInfo* m_shared_info;
 
  private:
 
   void _checkUniqueId(Int64 new_uid) const;
 
   inline void _setFaceInfos(Int32 mod_flags);
-  inline ItemInternalConnectivityList* _connectivity() const
-  {
-    return m_shared_info->m_connectivity;
-  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -798,6 +947,50 @@ template<typename ItemType> inline ItemLocalIdT<ItemType>::
 ItemLocalIdT(ItemInternal* item)
 : ItemLocalId(item->localId())
 {
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+inline ItemInternal* ItemBase::
+itemInternal() const
+{
+  if (m_local_id!=NULL_ITEM_LOCAL_ID)
+    return m_shared_info->m_items_internal[m_local_id];
+  return ItemInternal::nullItem();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+inline ItemInternal* ItemBase::
+legacyBoundaryCell() const
+{
+  return (flags() & II_Boundary) ? legacyInternalCell(0) : ItemInternal::nullItem();
+}
+
+inline ItemInternal* ItemBase::
+legacyBackCell() const
+{
+  if (flags() & II_HasBackCell)
+    return legacyInternalCell((flags() & II_BackCellIsFirst) ? 0 : 1);
+  return ItemInternal::nullItem();
+}
+
+inline ItemInternal* ItemBase::
+legacyFrontCell() const
+{
+  if (flags() & II_HasFrontCell)
+    return legacyInternalCell((flags() & II_FrontCellIsFirst) ? 0 : 1);
+  return ItemInternal::nullItem();
+}
+
+inline ItemInternal* ItemBase::
+legacyMasterFace() const
+{
+  if (flags() & II_SlaveFace)
+    return legacyInternalFace(0);
+  return ItemInternal::nullItem();
 }
 
 /*---------------------------------------------------------------------------*/

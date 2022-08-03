@@ -69,6 +69,7 @@ namespace Arcane
  et les opérations de comparaisons ne sont valident sur l'entitée nulle.
  */
 class ARCANE_CORE_EXPORT Item
+: protected ItemBase
 {
  public:
 
@@ -81,6 +82,7 @@ class ARCANE_CORE_EXPORT Item
 
   /*!
    * \brief Index d'un Item dans une variable.
+   * \deprecated
    */
   class Index
   {
@@ -132,28 +134,29 @@ class ARCANE_CORE_EXPORT Item
  public:
 
   //! Création d'une entité de maillage nulle
-  Item() : m_internal(&ItemInternal::nullItemInternal), m_local_id(NULL_ITEM_ID) {}
+  Item() {}
 
   //! Constructeur de recopie
-  Item(const Item& rhs) : m_internal(rhs.m_internal), m_local_id(rhs.m_local_id) {}
+  Item(const Item& rhs) : ItemBase(rhs) {}
 
   //! Construit une référence à l'entité \a internal
-  Item(ItemInternal* ainternal)
-  : m_internal(ainternal), m_local_id(ainternal->localId()) {}
+  Item(ItemInternal* ainternal) : ItemBase(ainternal) {}
+
+  //! Construit une référence à l'entité \a abase
+  Item(const ItemBase& abase) : ItemBase(abase) {}
 
   //! Construit une référence à l'entité \a internal
-  Item(const ItemInternalPtr* internals,Int32 local_id)
-  : m_internal(internals[local_id]), m_local_id(local_id) {}
+  Item(const ItemInternalPtr* internals,Int32 local_id) : ItemBase(internals[local_id]) {}
 
   //! Opérateur de copie
-  const Item& operator=(ItemInternal* ainternal)
+  Item& operator=(ItemInternal* ainternal)
   {
     _set(ainternal);
     return (*this);
   }
 
   //! Opérateur de copie
-  const Item& operator=(const Item& from)
+  Item& operator=(const Item& from)
   {
     _set(from);
     return (*this);
@@ -162,7 +165,7 @@ class ARCANE_CORE_EXPORT Item
  public:
 
   //! \a true si l'entité est nul (i.e. non connecté au maillage)
-  bool null() const { return m_internal->localId()==NULL_ITEM_ID; }
+  bool null() const { return m_local_id==NULL_ITEM_ID; }
 
   //! Identifiant local de l'entité dans le sous-domaine du processeur
   Int32 localId() const { return m_local_id; }
@@ -171,22 +174,22 @@ class ARCANE_CORE_EXPORT Item
   ItemLocalId itemLocalId() const { return ItemLocalId{ m_local_id }; }
 
   //! Identifiant unique sur tous les domaines
-  ItemUniqueId uniqueId() const { return m_internal->uniqueId(); }
+  ItemUniqueId uniqueId() const { return ItemBase::uniqueId(); }
 
   //! Numéro du sous-domaine propriétaire de l'entité
-  Int32 owner() const { return m_internal->owner(); }
+  Int32 owner() const { return ItemBase::owner(); }
 
   //! Type de l'entité
-  Int16 type() const { return m_internal->typeId(); }
+  Int16 type() const { return ItemBase::typeId(); }
 
   //! Type de l'entité
-  ItemTypeId itemTypeId() const { return m_internal->itemTypeId(); }
+  ItemTypeId itemTypeId() const { return ItemBase::itemTypeId(); }
 
   //! Genre de l'entité
-  eItemKind kind() const { return m_internal->kind(); }
+  eItemKind kind() const { return ItemBase::kind(); }
 
   //! \a true si l'entité est appartient au sous-domaine
-  bool isOwn() const { return m_internal->isOwn(); }
+  bool isOwn() const { return ItemBase::isOwn(); }
 
   /*!
    * \brief Vrai si l'entité est partagé d'autres sous-domaines.
@@ -198,7 +201,7 @@ class ARCANE_CORE_EXPORT Item
    * Cette méthode n'est pertinente que si les informations de connectivité
    * ont été calculées (par un appel à IItemFamily::computeSynchronizeInfos()).
    */
-  bool isShared() const { return m_internal->isShared(); }
+  bool isShared() const { return ItemBase::isShared(); }
 
   //! Converti l'entité en le genre \a ItemWithNodes.
   inline ItemWithNodes toItemWithNodes() const;
@@ -216,13 +219,13 @@ class ARCANE_CORE_EXPORT Item
   inline DoF toDoF() const;
 
   //! Nombre de parents
-  Int32 nbParent() const { return m_internal->nbParent(); }
+  Int32 nbParent() const { return ItemBase::nbParent(); }
 
   //! i-ème parent
-  Item parent(Int32 i) const { return m_internal->parent(i); }
+  Item parent(Int32 i) const { return ItemBase::legacyParent(i); }
 
   //! premier parent
-  Item parent() const { return m_internal->parent(0); }
+  Item parent() const { return ItemBase::legacyParent(0); }
 
  public:
 
@@ -278,7 +281,7 @@ class ARCANE_CORE_EXPORT Item
    * \warning La partie interne de l'entité ne doit être modifiée que
    * par ceux qui savent ce qu'ils font.
    */
-  ItemInternal* internal() const { return m_internal; }
+  ItemInternal* internal() const { return ItemBase::itemInternal(); }
 
   /*!
    * \brief Infos sur le type de l'entité.
@@ -287,7 +290,7 @@ class ARCANE_CORE_EXPORT Item
    * un type donné d'entité , comme par exemple les numérotations locales
    * de ces faces ou de ses arêtes.
    */
-  const ItemTypeInfo* typeInfo() const { return m_internal->typeInfo(); }
+  const ItemTypeInfo* typeInfo() const { return ItemBase::typeInfo(); }
 
  public:
 
@@ -296,8 +299,7 @@ class ARCANE_CORE_EXPORT Item
 
  protected:
 
-  ItemInternal* m_internal; //!< Partie interne de l'élément
-  Int32 m_local_id; //!< Indice local
+  using ItemBase::m_local_id;
 
  protected:
 
@@ -309,13 +311,11 @@ class ARCANE_CORE_EXPORT Item
   void _badConversion() const;
   void _set(ItemInternal* ainternal)
   {
-    m_internal = ainternal;
-    m_local_id = ainternal->localId();
+    _setFromInternal(ainternal);
   }
   void _set(const Item& rhs)
   {
-    m_internal = rhs.m_internal;
-    m_local_id = rhs.m_local_id;
+    _setFromInternal(rhs);
   }
 };
 
@@ -386,6 +386,7 @@ class ARCANE_CORE_EXPORT Node
  public:
   /*!
    * \brief Index d'un Node dans une variable.
+   * \deprecated
    */
   class Index
   : public Item::Index
@@ -409,6 +410,10 @@ class ARCANE_CORE_EXPORT Node
 
   //! Construit une référence à l'entité \a internal
   Node(ItemInternal* ainternal) : Item(ainternal)
+  { ARCANE_CHECK_KIND(isNode); }
+
+  //! Construit une référence à l'entité \a abase
+  Node(ItemBase abase) : Item(abase)
   { ARCANE_CHECK_KIND(isNode); }
 
   //! Construit une référence à l'entité \a internal
@@ -435,13 +440,13 @@ class ARCANE_CORE_EXPORT Node
   NodeLocalId itemLocalId() const { return NodeLocalId{ m_local_id }; }
 
   //! Nombre d'arêtes connectées au noeud
-  Int32 nbEdge() const { return m_internal->nbEdge(); }
+  Int32 nbEdge() const { return ItemBase::nbEdge(); }
 
   //! Nombre de faces connectées au noeud
-  Int32 nbFace() const { return m_internal->nbFace(); }
+  Int32 nbFace() const { return ItemBase::nbFace(); }
 
   //! Nombre de mailles connectées au noeud
-  Int32 nbCell() const { return m_internal->nbCell(); }
+  Int32 nbCell() const { return ItemBase::nbCell(); }
 
   //! i-ème arête du noeud
   inline Edge edge(Int32 i) const;
@@ -453,39 +458,39 @@ class ARCANE_CORE_EXPORT Node
   inline Cell cell(Int32 i) const;
 
   //! i-ème arête du noeud
-  EdgeLocalId edgeId(Int32 i) const { return EdgeLocalId(m_internal->edgeId(i)); }
+  EdgeLocalId edgeId(Int32 i) const { return EdgeLocalId(ItemBase::edgeId(i)); }
 
   //! i-ème face du noeud
-  FaceLocalId faceId(Int32 i) const { return FaceLocalId(m_internal->faceId(i)); }
+  FaceLocalId faceId(Int32 i) const { return FaceLocalId(ItemBase::faceId(i)); }
 
   //! i-ème maille du noeud
-  CellLocalId cellId(Int32 i) const { return CellLocalId(m_internal->cellId(i)); }
+  CellLocalId cellId(Int32 i) const { return CellLocalId(ItemBase::cellId(i)); }
 
   //! Liste des arêtes du noeud
-  EdgeVectorView edges() const { return m_internal-> internalEdges(); }
+  EdgeVectorView edges() const { return ItemBase::legacyInternalEdges(); }
 
   //! Liste des faces du noeud
-  FaceVectorView faces() const { return m_internal-> internalFaces(); }
+  FaceVectorView faces() const { return ItemBase::legacyInternalFaces(); }
 
   //! Liste des mailles du noeud
-  CellVectorView cells() const { return m_internal-> internalCells(); }
+  CellVectorView cells() const { return ItemBase::legacyInternalCells(); }
 
   //! Liste des arêtes du noeud
   EdgeLocalIdView edgeIds() const
   {
-    return EdgeLocalIdView::fromIds(m_internal->edgeIds());
+    return EdgeLocalIdView::fromIds(ItemBase::edgeIds());
   }
 
   //! Liste des faces du noeud
   FaceLocalIdView faceIds() const
   {
-    return FaceLocalIdView::fromIds(m_internal->faceIds());
+    return FaceLocalIdView::fromIds(ItemBase::faceIds());
   }
 
   //! Liste des mailles du noeud
   CellLocalIdView cellIds() const
   {
-    return CellLocalIdView::fromIds(m_internal->cellIds());
+    return CellLocalIdView::fromIds(ItemBase::cellIds());
   }
 
   // AMR
@@ -493,22 +498,24 @@ class ARCANE_CORE_EXPORT Node
   //! Enumére les mailles connectées au noeud
   ItemVectorView activeCells(Int32Array& local_ids) const
   {
-    return m_internal->activeCells(local_ids);
+    return ItemBase::legacyActiveCells(local_ids);
   }
 
   //! Enumére les faces connectées au noeud
   FaceVectorView activeFaces(Int32Array& local_ids) const
   {
-    return m_internal->activeFaces(local_ids);
+    return ItemBase::legacyActiveFaces(local_ids);
   }
 
   //! Enumére les arêtes connectées au noeud
   EdgeVectorView activeEdges() const
   {
-    return m_internal->activeEdges();
+    return ItemBase::legacyActiveEdges();
   }
 
+  // TODO: a supprimer
   Node* operator->() { return this; }
+  // TODO: a supprimer
   const Node* operator->() const { return this; }
 };
 
@@ -534,6 +541,10 @@ class ARCANE_CORE_EXPORT ItemWithNodes
   ItemWithNodes(ItemInternal* ainternal) : Item(ainternal)
   { ARCANE_CHECK_KIND(isItemWithNodes); }
 
+  //! Construit une référence à l'entité \a abase
+  ItemWithNodes(const ItemBase& abase) : Item(abase)
+  { ARCANE_CHECK_KIND(isItemWithNodes); }
+
   //! Construit une référence à l'entité \a internal
   ItemWithNodes(const ItemInternalPtr* internals,Int32 local_id)
   : Item(internals,local_id)
@@ -556,24 +567,24 @@ class ARCANE_CORE_EXPORT ItemWithNodes
  public:
 
   //! Nombre de noeuds de l'entité
-  Int32 nbNode() const { return m_internal->nbNode(); }
+  Int32 nbNode() const { return ItemBase::nbNode(); }
 
   //! i-ème noeud de l'entité
-  Node node(Int32 i) const { return Node(m_internal->internalNode(i)); }
+  Node node(Int32 i) const { return Node(ItemBase::legacyInternalNode(i)); }
 
   //! Liste des noeuds de l'entité
-  NodeVectorView nodes() const { return m_internal->internalNodes(); }
+  NodeVectorView nodes() const { return ItemBase::legacyInternalNodes(); }
 
   //! Liste des noeuds de l'entité
   NodeLocalIdView nodeIds() const
   {
-    return NodeLocalIdView::fromIds(m_internal->nodeIds());
+    return NodeLocalIdView::fromIds(ItemBase::nodeIds());
   }
 
   //! i-ème noeud de l'entité.
   NodeLocalId nodeId(Int32 index) const
   {
-    return NodeLocalId(m_internal->nodeId(index));
+    return NodeLocalId(ItemBase::nodeId(index));
   }
 
   ItemWithNodes* operator->() { return this; }
@@ -596,6 +607,7 @@ class ARCANE_CORE_EXPORT Edge
  public:
   /*!
    * \brief Index d'une Edge dans une variable.
+   * \deprecated
    */
   class Index
   : public Item::Index
@@ -619,6 +631,10 @@ class ARCANE_CORE_EXPORT Edge
 
   //! Construit une référence à l'entité \a internal
   Edge(ItemInternal* ainternal) : ItemWithNodes(ainternal)
+  { ARCANE_CHECK_KIND(isEdge); }
+
+  //! Construit une référence à l'entité \a abase
+  Edge(const ItemBase& abase) : ItemWithNodes(abase)
   { ARCANE_CHECK_KIND(isEdge); }
 
   //! Construit une référence à l'entité \a internal
@@ -649,39 +665,39 @@ class ARCANE_CORE_EXPORT Edge
   Int32 nbNode() const { return 2; }
 
   //! Nombre de faces connectées à l'arête
-  Int32 nbFace() const { return m_internal->nbFace(); }
+  Int32 nbFace() const { return ItemBase::nbFace(); }
 
   //! Nombre de mailles connectées à l'arête
-  Int32 nbCell() const { return m_internal->nbCell(); }
+  Int32 nbCell() const { return ItemBase::nbCell(); }
 
   //! i-ème maille de l'arête
   inline Cell cell(Int32 i) const;
 
   //! Liste des mailles de l'arête
-  CellVectorView cells() const { return m_internal->internalCells(); }
+  CellVectorView cells() const { return ItemBase::legacyInternalCells(); }
 
   //! i-ème maille de l'arête
-  CellLocalId cellId(Int32 i) const { return CellLocalId(m_internal->cellId(i)); }
+  CellLocalId cellId(Int32 i) const { return CellLocalId(ItemBase::cellId(i)); }
 
   //! Liste des mailles de l'arête
   CellLocalIdView cellIds() const
   {
-    return CellLocalIdView::fromIds(m_internal->cellIds());
+    return CellLocalIdView::fromIds(ItemBase::cellIds());
   }
 
   //! i-ème face de l'arête
   inline Face face(Int32 i) const;
 
   //! Liste des faces de l'arête
-  FaceVectorView faces() const { return m_internal->internalFaces(); }
+  FaceVectorView faces() const { return ItemBase::legacyInternalFaces(); }
 
   //! i-ème face de l'arête
-  FaceLocalId faceId(Int32 i) const { return FaceLocalId(m_internal->faceId(i)); }
+  FaceLocalId faceId(Int32 i) const { return FaceLocalId(ItemBase::faceId(i)); }
 
   //! Liste des faces de l'arête
   FaceLocalIdView faceIds() const
   {
-    return FaceLocalIdView::fromIds(m_internal->faceIds());
+    return FaceLocalIdView::fromIds(ItemBase::faceIds());
   }
 
   Edge* operator->() { return this; }
@@ -704,6 +720,7 @@ class ARCANE_CORE_EXPORT Face
  public:
   /*!
    * \brief Index d'une Face dans une variable.
+   * \deprecated
    */
   class Index
   : public Item::Index
@@ -728,6 +745,10 @@ class ARCANE_CORE_EXPORT Face
 
   //! Construit une référence à l'entité \a internal
   Face(ItemInternal* ainternal) : ItemWithNodes(ainternal)
+  { ARCANE_CHECK_KIND(isFace); }
+
+  //! Construit une référence à l'entité \a abase
+  Face(ItemBase abase) : ItemWithNodes(abase)
   { ARCANE_CHECK_KIND(isFace); }
 
   //! Construit une référence à l'entité \a internal
@@ -755,21 +776,21 @@ class ARCANE_CORE_EXPORT Face
   FaceLocalId itemLocalId() const { return FaceLocalId{ m_local_id }; }
 
   //! Nombre de mailles de la face (1 ou 2)
-  Int32 nbCell() const { return m_internal->nbCell(); }
+  Int32 nbCell() const { return ItemBase::nbCell(); }
 
   //! i-ème maille de la face
   inline Cell cell(Int32 i) const;
 
   //! Liste des mailles de la face
-  CellVectorView cells() const { return m_internal-> internalCells(); }
+  CellVectorView cells() const { return ItemBase::legacyInternalCells(); }
 
   //! i-ème maille de la face
-  CellLocalId cellId(Int32 i) const { return CellLocalId(m_internal->cellId(i)); }
+  CellLocalId cellId(Int32 i) const { return CellLocalId(ItemBase::cellId(i)); }
 
   //! Liste des mailles de la face
   CellLocalIdView cellIds() const
   {
-    return CellLocalIdView::fromIds(m_internal->cellIds());
+    return CellLocalIdView::fromIds(ItemBase::cellIds());
   }
 
   /*!
@@ -777,18 +798,18 @@ class ARCANE_CORE_EXPORT Face
    *
    * \warning Une face au bord du sous-domaine n'est pas nécessairement au bord du maillage global.
    */
-  bool isSubDomainBoundary() const { return m_internal->isBoundary(); }
+  bool isSubDomainBoundary() const { return ItemBase::isBoundary(); }
 
   /*!
    * \a true si la face est au bord du sous-domaine.
    * \deprecated Utiliser isSubDomainBoundary() à la place.
    */
-  ARCANE_DEPRECATED_118 bool isBoundary() const { return m_internal->isBoundary(); }
+  ARCANE_DEPRECATED_118 bool isBoundary() const { return ItemBase::isBoundary(); }
 
   //! Indique si la face est au bord t orientée vers l'extérieur.
   bool isSubDomainBoundaryOutside() const
   {
-    return isSubDomainBoundary() && (m_internal->flags() & ItemInternal::II_HasBackCell);
+    return isSubDomainBoundary() && (ItemBase::flags() & ItemInternal::II_HasBackCell);
   }
 
   /*!
@@ -808,13 +829,13 @@ class ARCANE_CORE_EXPORT Face
   inline Cell backCell() const;
 
   //! Maille derrière la face (maille nulle si aucune)
-  CellLocalId backCellId() const { return CellLocalId{m_internal->backCellId()}; }
+  CellLocalId backCellId() const { return CellLocalId{ItemBase::backCellId()}; }
 
   //! Maille devant la face (maille nulle si aucune)
   inline Cell frontCell() const;
 
   //! Maille devant la face (maille nulle si aucune)
-  CellLocalId frontCellId() const { return CellLocalId{m_internal->frontCellId()}; }
+  CellLocalId frontCellId() const { return CellLocalId{ItemBase::frontCellId()}; }
 
   /*!
    * \brief Maille opposée de cette face à la maille \a cell.
@@ -842,13 +863,13 @@ class ARCANE_CORE_EXPORT Face
    *
    * \sa ITiedInterface
    */
-  Face masterFace() const { return m_internal->masterFace(); }
+  Face masterFace() const { return ItemBase::legacyMasterFace(); }
 
   //! \a true s'il s'agit de la face maître d'une interface
-  bool isMasterFace() const { return m_internal->isMasterFace(); }
+  bool isMasterFace() const { return ItemBase::isMasterFace(); }
 
   //! \a true s'il s'agit d'une face esclave d'une interface
-  bool isSlaveFace() const { return m_internal->isSlaveFace(); }
+  bool isSlaveFace() const { return ItemBase::isSlaveFace(); }
 
   //! \a true s'il s'agit d'une face esclave ou maître d'une interface
   bool isTiedFace() const { return isSlaveFace() || isMasterFace(); }
@@ -861,29 +882,29 @@ class ARCANE_CORE_EXPORT Face
    */
   FaceVectorView slaveFaces() const
   {
-    if (m_internal->isMasterFace())
-      return m_internal->internalFaces();
+    if (ItemBase::isMasterFace())
+      return ItemBase::legacyInternalFaces();
     return FaceVectorView();
   }
 
  public:
 
   //! Nombre d'arêtes de la face
-  Int32 nbEdge() const { return m_internal->nbEdge(); }
+  Int32 nbEdge() const { return ItemBase::nbEdge(); }
 
   //! i-ème arête de la face
-  Edge edge(Int32 i) const { return Edge(m_internal->internalEdge(i)); }
+  Edge edge(Int32 i) const { return Edge(ItemBase::legacyInternalEdge(i)); }
 
   //! Liste des arêtes de la face
-  EdgeVectorView edges() const { return m_internal->internalEdges(); }
+  EdgeVectorView edges() const { return ItemBase::legacyInternalEdges(); }
 
   //! i-ème arête de la face
-  EdgeLocalId edgeId(Int32 i) const { return EdgeLocalId(m_internal->edgeId(i)); }
+  EdgeLocalId edgeId(Int32 i) const { return EdgeLocalId(ItemBase::edgeId(i)); }
 
   //! Liste des arêtes de la face
   EdgeLocalIdView edgeIds() const
   {
-    return EdgeLocalIdView::fromIds(m_internal->edgeIds());
+    return EdgeLocalIdView::fromIds(ItemBase::edgeIds());
   }
 
   Face* operator->() { return this; }
@@ -925,6 +946,7 @@ class ARCANE_CORE_EXPORT Cell
  public:
   /*!
    * \brief Index d'une Cell dans une variable.
+   * \deprecated
    */
   class Index
   : public Item::Index
@@ -948,6 +970,10 @@ class ARCANE_CORE_EXPORT Cell
 
   //! Construit une référence à l'entité \a internal
   Cell(ItemInternal* ainternal) : ItemWithNodes(ainternal)
+  { ARCANE_CHECK_KIND(isCell); }
+
+  //! Construit une référence à l'entité \a abase
+  Cell(ItemBase abase) : ItemWithNodes(abase)
   { ARCANE_CHECK_KIND(isCell); }
 
   //! Construit une référence à l'entité \a internal
@@ -975,39 +1001,39 @@ class ARCANE_CORE_EXPORT Cell
   CellLocalId itemLocalId() const { return CellLocalId{ m_local_id }; }
 
   //! Nombre de faces de la maille
-  Int32 nbFace() const { return m_internal->nbFace(); }
+  Int32 nbFace() const { return ItemBase::nbFace(); }
 
   //! i-ème face de la maille
-  Face face(Int32 i) const { return Face(m_internal->internalFace(i)); }
+  Face face(Int32 i) const { return Face(ItemBase::legacyInternalFace(i)); }
 
   //! Liste des faces de la maille
-  FaceVectorView faces() const { return m_internal->internalFaces(); }
+  FaceVectorView faces() const { return ItemBase::legacyInternalFaces(); }
 
   //! i-ème face de la maille
-  FaceLocalId faceId(Int32 i) const { return FaceLocalId(m_internal->faceId(i)); }
+  FaceLocalId faceId(Int32 i) const { return FaceLocalId(ItemBase::faceId(i)); }
 
   //! Liste des faces de la maille
   FaceLocalIdView faceIds() const
   {
-    return FaceLocalIdView::fromIds(m_internal->faceIds());
+    return FaceLocalIdView::fromIds(ItemBase::faceIds());
   }
 
   //! Nombre d'arêtes de la maille
-  Int32 nbEdge() const { return m_internal->nbEdge(); }
+  Int32 nbEdge() const { return ItemBase::nbEdge(); }
 
   //! i-ème arête de la maille
-  Edge edge(Int32 i) const { return Edge(m_internal->internalEdge(i)); }
+  Edge edge(Int32 i) const { return Edge(ItemBase::legacyInternalEdge(i)); }
 
   //! i-ème arête de la maille
-  EdgeLocalId edgeId(Int32 i) const { return EdgeLocalId(m_internal->edgeId(i)); }
+  EdgeLocalId edgeId(Int32 i) const { return EdgeLocalId(ItemBase::edgeId(i)); }
 
   //! Liste des arêtes de la maille
-  EdgeVectorView edges() const { return m_internal->internalEdges(); }
+  EdgeVectorView edges() const { return ItemBase::legacyInternalEdges(); }
 
   //! Liste des arêtes de la maille
   EdgeLocalIdView edgeIds() const
   {
-    return EdgeLocalIdView::fromIds(m_internal->edgeIds());
+    return EdgeLocalIdView::fromIds(ItemBase::edgeIds());
   }
 
   //! AMR
@@ -1016,44 +1042,44 @@ class ARCANE_CORE_EXPORT Cell
   //! Une fusion des deux notions est envisageable dans un deuxième temps
   //! dans un premier temps, les appelations, pour l'amr, sont en français i.e. parent -> pere et child -> enfant
   //! un seul parent
-  Cell hParent() const { return Cell(m_internal->internalHParent(0)); }
+  Cell hParent() const { return Cell(ItemBase::legacyInternalHParent(0)); }
 
-  Int32 nbHChildren() const { return m_internal->nbHChildren(); }
+  Int32 nbHChildren() const { return ItemBase::nbHChildren(); }
 
   //! i-ème enfant
-  Cell hChild(Int32 i) const { return Cell(m_internal->internalHChild(i)); }
+  Cell hChild(Int32 i) const { return Cell(ItemBase::legacyInternalHChild(i)); }
 
   //! parent de niveau 0
-  Cell topHParent() const { return Cell(m_internal->topHParent()); }
+  Cell topHParent() const { return Cell(ItemBase::legacyTopHParent()); }
 
   /*!
    * \returns \p true si l'item est actif (i.e. n'a pas de
    * descendants actifs), \p false  sinon. Notez qu'il suffit de vérifier
    * le premier enfant seulement. Renvoie toujours \p true si l'AMR est désactivé.
    */
-  bool isActive() const { return m_internal->isActive(); }
+  bool isActive() const { return ItemBase::isActive(); }
 
-  bool isSubactive() const { return m_internal->isSubactive(); }
+  bool isSubactive() const { return ItemBase::isSubactive(); }
 
   /*!
    * \returns \p true si l'item est un ancetre (i.e. a un
    * enfant actif ou un enfant ancetre), \p false sinon.
    * Renvoie toujours \p false si l'AMR est désactivé.
    */
-  bool isAncestor() const { return m_internal->isAncestor(); }
+  bool isAncestor() const { return ItemBase::isAncestor(); }
 
   /*!
    * \returns \p true si l'item a des enfants (actifs ou non),
    * \p false  sinon. Renvoie toujours \p false si l'AMR est désactivé.
    */
-  bool hasHChildren() const { return m_internal->hasHChildren(); }
+  bool hasHChildren() const { return ItemBase::hasHChildren(); }
 
   /*!
    * \returns le niveau de raffinement de l'item courant.  Si l'item
    * parent est \p NULL donc par convention il est au niveau 0,
    * sinon il est simplement au niveau superieur que celui de son parent.
    */
-  Int32 level() const { return m_internal->level(); }
+  Int32 level() const { return ItemBase::level(); }
 
   /*!
    * \returns le rang de l'enfant \p (iitem).
@@ -1062,7 +1088,7 @@ class ARCANE_CORE_EXPORT Cell
    */
   Int32 whichChildAmI(const ItemInternal *iitem) const
   {
-    return m_internal->whichChildAmI(iitem);
+    return ItemBase::whichChildAmI(iitem->localId());
   }
 
   Cell* operator->() { return this; }
@@ -1091,6 +1117,10 @@ class Particle
 
   //! Construit une référence à l'entité \a internal
   Particle(ItemInternal* ainternal) : Item(ainternal)
+  { ARCANE_CHECK_KIND(isParticle); }
+
+  //! Construit une référence à l'entité \a abase
+  Particle(const ItemBase& abase) : Item(abase)
   { ARCANE_CHECK_KIND(isParticle); }
 
   //! Construit une référence à l'entité \a internal
@@ -1122,13 +1152,13 @@ class Particle
    * Il faut appeler setCell() avant d'appeler cette fonction.
    * \precondition hasCell() doit être vrai.
    */
-  Cell cell() const { return Cell(m_internal->internalCell(0)); }
+  Cell cell() const { return Cell(ItemBase::legacyInternalCell(0)); }
 
   //! Maille connectée à la particule
-  CellLocalId cellId() const { return CellLocalId(m_internal->cellId(0)); }
+  CellLocalId cellId() const { return CellLocalId(ItemBase::cellId(0)); }
 
   //! Vrai si la particule est dans une maille du maillage
-  bool hasCell() const { return (m_internal->cellLocalId(0)!=NULL_ITEM_LOCAL_ID); }
+  bool hasCell() const { return (ItemBase::cellId(0)!=NULL_ITEM_LOCAL_ID); }
 
   /*!
    * \brief Maille à laquelle appartient la particule ou maille nulle.
@@ -1137,10 +1167,10 @@ class Particle
    */
   Cell cellOrNull() const
   {
-    Int32 cell_local_id = m_internal->cellLocalId(0);
+    Int32 cell_local_id = ItemBase::cellId(0);
     if (cell_local_id==NULL_ITEM_LOCAL_ID)
       return Cell();
-    return Cell(m_internal->internalCell(0));
+    return Cell(ItemBase::legacyInternalCell(0));
   }
 
   Particle* operator->() { return this; }
@@ -1174,6 +1204,10 @@ class DoF
 
   //! Construit une référence à l'entité \a internal
   DoF(ItemInternal* ainternal) : Item(ainternal)
+  { ARCANE_CHECK_KIND(isDoF); }
+
+  //! Construit une référence à l'entité \a abase
+  DoF(const ItemBase& abase) : Item(abase)
   { ARCANE_CHECK_KIND(isDoF); }
 
   //! Construit une référence à l'entité \a internal
@@ -1211,19 +1245,19 @@ class DoF
 inline Edge Node::
 edge(Int32 i) const
 {
-  return Edge(m_internal->internalEdge(i));
+  return Edge(ItemBase::legacyInternalEdge(i));
 }
 
 inline Face Node::
 face(Int32 i) const
 {
-  return Face(m_internal->internalFace(i));
+  return Face(ItemBase::legacyInternalFace(i));
 }
 
 inline Cell Node::
 cell(Int32 i) const
 {
-  return Cell(m_internal->internalCell(i));
+  return Cell(ItemBase::legacyInternalCell(i));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1232,13 +1266,13 @@ cell(Int32 i) const
 inline Face Edge::
 face(Int32 i) const
 {
-  return Face(m_internal->internalFace(i));
+  return Face(ItemBase::legacyInternalFace(i));
 }
 
 inline Cell Edge::
 cell(Int32 i) const
 {
-  return Cell(m_internal->internalCell(i));
+  return Cell(ItemBase::legacyInternalCell(i));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1247,19 +1281,19 @@ cell(Int32 i) const
 inline Cell Face::
 boundaryCell() const
 {
-  return Cell(m_internal->boundaryCell());
+  return Cell(ItemBase::legacyBoundaryCell());
 }
 
 inline Cell Face::
 backCell() const
 {
-  return Cell(m_internal->backCell());
+  return Cell(ItemBase::legacyBackCell());
 }
 
 inline Cell Face::
 frontCell() const
 {
-  return Cell(m_internal->frontCell());
+  return Cell(ItemBase::legacyFrontCell());
 }
 
 inline Cell Face::
@@ -1272,7 +1306,7 @@ oppositeCell(Cell cell) const
 inline Cell Face::
 cell(Int32 i) const
 {
-  return Cell(m_internal->internalCell(i));
+  return Cell(ItemBase::legacyInternalCell(i));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1282,49 +1316,49 @@ inline ItemWithNodes Item::
 toItemWithNodes() const
 {
   ARCANE_CHECK_KIND(isItemWithNodes);
-  return ItemWithNodes(m_internal);
+  return ItemWithNodes(*this);
 }
 
 inline Node Item::
 toNode() const
 {
   ARCANE_CHECK_KIND(isNode);
-  return Node(m_internal);
+  return Node(*this);
 }
 
 inline Edge Item::
 toEdge() const
 {
   ARCANE_CHECK_KIND(isEdge);
-  return Edge(m_internal);
+  return Edge(*this);
 }
 
 inline Face Item::
 toFace() const
 {
   ARCANE_CHECK_KIND(isFace);
-  return Face(m_internal);
+  return Face(*this);
 }
 
 inline Cell Item::
 toCell() const
 {
   ARCANE_CHECK_KIND(isCell);
-  return Cell(m_internal);
+  return Cell(*this);
 }
 
 inline Particle Item::
 toParticle() const
 {
   ARCANE_CHECK_KIND(isParticle);
-  return Particle(m_internal);
+  return Particle(*this);
 }
 
 inline DoF Item::
 toDoF() const
 {
   ARCANE_CHECK_KIND(isDoF);
-  return DoF(m_internal);
+  return DoF(*this);
 }
 
 /*---------------------------------------------------------------------------*/
