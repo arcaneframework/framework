@@ -73,33 +73,6 @@ TextReader::
 /*---------------------------------------------------------------------------*/
 
 void TextReader::
-_removeComments()
-{
-  int c = '\0';
-  char bufline[4096];
-  while ((c = m_p->m_istream.peek()) == '#') {
-    ++m_p->m_current_line;
-    m_p->m_istream.getline(bufline, 4000, '\n');
-  }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Integer TextReader::
-_getInteger()
-{
-  _removeComments();
-  ++m_p->m_current_line;
-  Integer value = 0;
-  m_p->m_istream >> value >> std::ws;
-  return value;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void TextReader::
 readIntegers(Span<Integer> values)
 {
   read(values);
@@ -126,9 +99,6 @@ void TextReader::
 read(Span<Byte> values)
 {
   Int64 nb_value = values.size();
-  // _removeComments() nécessaire pour compatibilité avec première version.
-  // a supprimer par la suite
-  _removeComments();
   _binaryRead(values.data(), nb_value);
   _checkStream("Byte[]", nb_value);
 }
@@ -196,58 +166,6 @@ _binaryRead(void* values, Int64 len)
   else {
     s.read((char*)values, len);
   }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Int32 TextReader::
-_getInt32()
-{
-  _removeComments();
-  ++m_p->m_current_line;
-  Int32 value = 0;
-  m_p->m_istream >> value >> ws;
-  return value;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Int16 TextReader::
-_getInt16()
-{
-  _removeComments();
-  ++m_p->m_current_line;
-  Int16 value = 0;
-  m_p->m_istream >> value >> ws;
-  return value;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Int64 TextReader::
-_getInt64()
-{
-  _removeComments();
-  ++m_p->m_current_line;
-  Int64 value = 0;
-  m_p->m_istream >> value >> ws;
-  return value;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Real TextReader::
-_getReal()
-{
-  _removeComments();
-  ++m_p->m_current_line;
-  Real value = 0;
-  m_p->m_istream >> value >> ws;
-  return value;
 }
 
 /*---------------------------------------------------------------------------*/
