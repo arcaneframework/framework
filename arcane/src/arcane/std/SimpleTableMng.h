@@ -42,11 +42,12 @@ class SimpleTableMng
 
   }
 
-  SimpleTableMng()
-  : m_sti(nullptr)
-  {
+  // SimpleTableMng()
+  // : m_sti(nullptr)
+  // {
+  //   std::cout << "Attention, STM vide !" << std::endl;
 
-  }
+  // }
 
   virtual ~SimpleTableMng() = default;
 

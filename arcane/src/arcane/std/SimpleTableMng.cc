@@ -777,6 +777,7 @@ void SimpleTableMng::
 setInternal(SimpleTableInternal& sti) 
 {
   m_sti = &sti;
+  ARCANE_CHECK_PTR(m_sti);
 }
 
 /*---------------------------------------------------------------------------*/

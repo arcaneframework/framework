@@ -37,19 +37,19 @@ class SimpleTableOutputMng
 : public ISimpleTableOutputMng
 {
  public:
-  SimpleTableOutputMng(SimpleTableInternal* sti, ISimpleTableReaderWriter* strw)
-  : m_sti(sti)
+  SimpleTableOutputMng(ISimpleTableReaderWriter* strw)
+  : m_sti(strw->internal())
   , m_strw(strw)
   {
 
   }
 
-  SimpleTableOutputMng()
-  : m_sti(nullptr)
-  , m_strw(nullptr)
-  {
-
-  }
+  // SimpleTableOutputMng()
+  // : m_sti(nullptr)
+  // , m_strw(nullptr)
+  // {
+  //   std::cout << "Attention, STOM vide !" << std::endl;
+  // }
 
   virtual ~SimpleTableOutputMng() = default;
 
@@ -102,8 +102,6 @@ class SimpleTableOutputMng
   String m_name_output_dir;
 
   Directory m_root;
-
-  String m_name_file;
 
   bool m_name_tab_computed;
   bool m_name_tab_only_once;

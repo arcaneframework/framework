@@ -51,6 +51,8 @@ public:
    */
   virtual bool compare(Integer epsilon = 0) = 0;
 
+  virtual void clear() = 0;
+
   /**
    * @brief Méthode permettant d'ajouter une colonne dans la liste des colonnes
    * à comparer.

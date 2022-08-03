@@ -41,21 +41,25 @@ class SimpleTableInternalComparator
   SimpleTableInternalComparator(SimpleTableInternal* sti_ref, SimpleTableInternal* sti_to_compare)
   : m_sti_ref(sti_ref)
   , m_sti_to_compare(sti_to_compare)
+  , m_stm_ref(m_sti_ref)
+  , m_stm_to_compare(m_sti_to_compare)
   {
-    m_stm_ref.setInternal(m_sti_ref);
-    m_stm_to_compare.setInternal(m_sti_to_compare);
+
   }
 
-  SimpleTableInternalComparator()
-  : m_sti_ref(nullptr)
-  , m_sti_to_compare(nullptr)
-  {
-  }
+  // SimpleTableInternalComparator()
+  // : m_sti_ref(nullptr)
+  // , m_sti_to_compare(nullptr)
+  // {
+  //   std::cout << "Attention, STIC vide !" << std::endl;
+  // }
 
   virtual ~SimpleTableInternalComparator() = default;
 
  public:
   bool compare(Integer epsilon) override;
+
+  void clear() override;
 
   bool addColumnToCompare(String name_column) override;
   bool addRowToCompare(String name_row) override;

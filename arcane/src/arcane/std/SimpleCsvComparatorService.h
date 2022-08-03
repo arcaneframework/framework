@@ -47,12 +47,12 @@ class SimpleCsvComparatorService
   , m_is_file_open(false)
   , m_is_file_read(false)
   , m_iSTO(nullptr)
+  , m_stic(m_sti_ref, &m_sti_to_compare)
+  , m_scrw(&m_sti_to_compare)
   {
     m_with_option = (sbi.creationType() == ST_CaseOption);
 
     m_sti_to_compare.m_mesh = mesh();
-
-    m_scrw.setInternal(m_sti_to_compare);
   }
 
   virtual ~SimpleCsvComparatorService() = default;
@@ -60,6 +60,7 @@ class SimpleCsvComparatorService
  public:
   
   void init(ISimpleTableOutput* ptr_sto) override;
+  void clear() override;
   void editRootDir(Directory root_dir) override;
   void print(Integer only_proc) override;
   bool writeRefFile(Integer only_proc) override;
@@ -99,6 +100,7 @@ class SimpleCsvComparatorService
   SimpleTableInternalComparator m_stic;
   SimpleCsvReaderWriter m_scrw;
   SimpleTableInternal m_sti_to_compare;
+  SimpleTableInternal* m_sti_ref;
 
   bool m_with_option;
 };

@@ -45,6 +45,7 @@ init(String name_table)
 bool SimpleTableOutputMng::
 init(String name_table, String name_dir)
 {
+  ARCANE_CHECK_PTR(m_sti);
   m_sti->m_name_tab = name_table;
   _computeName();
 
@@ -60,12 +61,15 @@ init(String name_table, String name_dir)
 void SimpleTableOutputMng::
 print(Integer only_proc)
 {
+  ARCANE_CHECK_PTR(m_strw);
   m_strw->print(only_proc);
 }
 
 bool SimpleTableOutputMng::
 writeFile(Directory root_dir, Integer only_proc)
 {
+  ARCANE_CHECK_PTR(m_sti);
+  ARCANE_CHECK_PTR(m_strw);
   // Finalisation du nom du csv (si ce n'est pas déjà fait).
   _computeName();
 
@@ -107,12 +111,14 @@ writeFile(String dir, Integer only_proc)
 Integer SimpleTableOutputMng::
 precision()
 {
+  ARCANE_CHECK_PTR(m_strw);
   return m_strw->precision();
 }
 
 void SimpleTableOutputMng::
 setPrecision(Integer precision)
 {
+  ARCANE_CHECK_PTR(m_strw);
   m_strw->setPrecision(precision);
 
 }
@@ -120,12 +126,14 @@ setPrecision(Integer precision)
 bool SimpleTableOutputMng::
 fixed()
 {
+  ARCANE_CHECK_PTR(m_strw);
   return m_strw->fixed();
 }
 
 void SimpleTableOutputMng::
 setFixed(bool fixed)
 {
+  ARCANE_CHECK_PTR(m_strw);
   m_strw->setFixed(fixed);
 }
 
@@ -145,6 +153,7 @@ setOutputDir(String dir)
 String SimpleTableOutputMng::
 tabName()
 {
+  ARCANE_CHECK_PTR(m_sti);
   _computeName();
   return m_sti->m_name_tab;
 }
@@ -152,6 +161,7 @@ tabName()
 void SimpleTableOutputMng::
 setTabName(String name)
 {
+  ARCANE_CHECK_PTR(m_sti);
   m_sti->m_name_tab = name;
   m_name_tab_computed = false;
 }
@@ -159,8 +169,9 @@ setTabName(String name)
 String SimpleTableOutputMng::
 fileName()
 {
+  ARCANE_CHECK_PTR(m_sti);
   _computeName();
-  return m_name_file;
+  return m_sti->m_name_tab + "." + m_strw->typeFile();
 }
 
 Directory SimpleTableOutputMng::
@@ -185,6 +196,7 @@ isOneFileByProcsPermited()
 String SimpleTableOutputMng::
 outputFileType()
 {
+  ARCANE_CHECK_PTR(m_strw);
   return m_strw->typeFile();
 }
 
@@ -210,18 +222,14 @@ _computeName()
   ARCANE_CHECK_PTR(m_sti);
   ARCANE_CHECK_PTR(m_strw);
 
-  std::cout << "-------------------------1" << std::endl;
-
   // Permet de contourner le bug avec String::split() si le nom commence par '@'.
   if (m_sti->m_name_tab.startsWith("@")) {
     m_sti->m_name_tab = "@" + m_sti->m_name_tab;
   }
-  std::cout << "-------------------------2" << std::endl;
 
   StringUniqueArray string_splited;
   // On découpe la string là où se trouve les @.
   m_sti->m_name_tab.split(string_splited, '@');
-  std::cout << "-------------------------3" << std::endl;
 
   // On traite les mots entre les "@".
   if (string_splited.size() > 1) {
@@ -244,7 +252,6 @@ _computeName()
       string_splited[num_procs.value()] = String::fromNumber(m_sti->m_mesh->parallelMng()->commSize());
     }
   }
-  std::cout << "-------------------------4" << std::endl;
 
   // On recombine la chaine.
   StringBuilder combined = "";
@@ -255,13 +262,8 @@ _computeName()
       continue;
     combined.append(str);
   }
-  std::cout << "-------------------------5" << std::endl;
 
   m_sti->m_name_tab = combined.toString();
-  combined.append(".");
-  combined.append(m_strw->typeFile());
-  std::cout << "-------------------------6" << std::endl;
-  m_name_file = combined.toString();
 
   m_name_tab_computed = true;
   return;
@@ -284,6 +286,7 @@ void SimpleTableOutputMng::
 setInternal(SimpleTableInternal& sti) 
 {
   m_sti = &sti;
+  ARCANE_CHECK_PTR(m_sti);
 }
 
 ISimpleTableReaderWriter* SimpleTableOutputMng::
@@ -303,6 +306,7 @@ void SimpleTableOutputMng::
 setReaderWriter(ISimpleTableReaderWriter& strw) 
 {
   m_strw = &strw;
+  ARCANE_CHECK_PTR(m_strw);
 }
 
 

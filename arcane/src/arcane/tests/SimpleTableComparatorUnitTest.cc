@@ -46,7 +46,7 @@ void SimpleTableComparatorUnitTest::
 setUp()
 {
   ptrSTO->clear();
-  //ptrSTC->clear();
+  ptrSTC->clear();
 }
 
 void SimpleTableComparatorUnitTest::
@@ -104,6 +104,7 @@ testFullReal()
 void SimpleTableComparatorUnitTest::
 testError()
 {
+  ptrSTC->print();
   // Init STO
   ptrSTO->init("test", "dir_test");
 
@@ -118,7 +119,9 @@ testError()
 
   // Init STC
   ptrSTC->init(ptrSTO);
+  ptrSTC->print();
   ASSERT_TRUE(ptrSTC->writeRefFile());
+  ptrSTC->print();
 
   ptrSTO->print();
 

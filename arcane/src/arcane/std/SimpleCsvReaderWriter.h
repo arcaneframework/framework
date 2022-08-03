@@ -48,14 +48,14 @@ class SimpleCsvReaderWriter
 
   }
 
-  SimpleCsvReaderWriter()
-  : m_sti(nullptr)
-  , m_separator(';')
-  , m_precision_print(6)
-  , m_is_fixed_print(true)
-  {
-
-  }
+  // SimpleCsvReaderWriter()
+  // : m_sti(nullptr)
+  // , m_separator(';')
+  // , m_precision_print(6)
+  // , m_is_fixed_print(true)
+  // {
+  //   std::cout << "Attention, SCRW vide !" << std::endl;
+  // }
 
   ~SimpleCsvReaderWriter() = default;
 
@@ -71,15 +71,11 @@ class SimpleCsvReaderWriter
   bool fixed() override;
   void setFixed(bool fixed) override;
 
-  String typeFile() override {return "csv";};
+  String typeFile() override { return m_output_file_type; };
 
   SimpleTableInternal* internal() override;
   void setInternal(SimpleTableInternal* sti) override;
   void setInternal(SimpleTableInternal& sti) override;
-
- protected:
-  bool createDirectory(Directory& dir);
-  bool isFileExist(Directory dir, String file);
 
  private:
   bool _openFile(std::ifstream& stream, Directory dir, String file);

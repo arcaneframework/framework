@@ -27,11 +27,12 @@ namespace Arcane
 bool SimpleCsvReaderWriter::
 write(Directory dst, String file)
 {
-  if(!createDirectory(dst)) {
+  ARCANE_CHECK_PTR(m_sti);
+  if(!SimpleTableReaderWriterUtils::createDirectoryOnlyP0(m_sti->m_mesh, dst)) {
     return false;
   }
 
-  std::ofstream ofile(dst.file(file).localstr());
+  std::ofstream ofile((dst.file(file)+"."+typeFile()).localstr());
   if (ofile.fail())
     return false;
 
@@ -44,9 +45,12 @@ write(Directory dst, String file)
 bool SimpleCsvReaderWriter::
 read(Directory src, String file)
 {
+  ARCANE_CHECK_PTR(m_sti);
   clear();
 
   std::ifstream stream;
+
+  file = file+"."+typeFile();
 
   // Pas de fichier, pas de chocolats.
   if(!_openFile(stream, src, file)) {
@@ -116,6 +120,7 @@ read(Directory src, String file)
 bool SimpleCsvReaderWriter::
 clear()
 {
+  ARCANE_CHECK_PTR(m_sti);
   m_sti->m_values_csv.clear();
 
   m_sti->m_name_rows.clear();
@@ -126,6 +131,7 @@ clear()
 void SimpleCsvReaderWriter::
 print(Integer only_proc)
 {
+  ARCANE_CHECK_PTR(m_sti);
   if (only_proc != -1 && m_sti->m_mesh->parallelMng()->commRank() != only_proc)
     return;
   _print(std::cout);
@@ -178,33 +184,7 @@ void SimpleCsvReaderWriter::
 setInternal(SimpleTableInternal& sti) 
 {
   m_sti = &sti;
-}
-
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-
-bool SimpleCsvReaderWriter::
-createDirectory(Directory& dir)
-{
-  int sf = 0;
-  if (m_sti->m_mesh->parallelMng()->commRank() == 0) {
-    sf = dir.createDirectory();
-  }
-  if (m_sti->m_mesh->parallelMng()->commSize() > 1) {
-    sf = m_sti->m_mesh->parallelMng()->reduce(Parallel::ReduceMax, sf);
-  }
-  return sf == 0;
-}
-
-bool SimpleCsvReaderWriter::
-isFileExist(Directory dir, String file)
-{
-  std::ifstream stream;
-  bool fin = _openFile(stream, dir, file);
-  _closeFile(stream);
-  return fin;
+  ARCANE_CHECK_PTR(m_sti);
 }
 
 
@@ -227,6 +207,7 @@ _closeFile(std::ifstream& stream)
 void SimpleCsvReaderWriter::
 _print(std::ostream& stream)
 {
+  ARCANE_CHECK_PTR(m_sti);
   // On enregistre les infos du stream pour les restaurer à la fin.
   std::ios_base::fmtflags save_flags = stream.flags();
   std::streamsize save_prec = stream.precision();

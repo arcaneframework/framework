@@ -37,6 +37,9 @@ namespace Arcane
 bool SimpleTableInternalComparator::
 compare(Integer epsilon)
 {
+  ARCANE_CHECK_PTR(m_sti_ref);
+  ARCANE_CHECK_PTR(m_sti_to_compare);
+
   bool is_ok = true;
 
   const Integer dim1 = m_stm_ref.numRows();
@@ -64,6 +67,19 @@ compare(Integer epsilon)
     }
   }
   return is_ok;
+}
+
+void SimpleTableInternalComparator::
+clear()
+{
+  m_regex_rows = "";
+  m_is_excluding_regex_rows = false;
+
+  m_regex_columns = "";
+  m_is_excluding_regex_columns = false;
+
+  m_compared_rows.clear();
+  m_compared_columns.clear();
 }
 
 bool SimpleTableInternalComparator::
@@ -142,6 +158,7 @@ setInternalRef(SimpleTableInternal& sti_ref)
 {
   m_sti_ref = &sti_ref;
   m_stm_ref.setInternal(m_sti_ref);
+  ARCANE_CHECK_PTR(m_sti_ref);
 }
 
 
@@ -164,6 +181,7 @@ setInternalToCompare(SimpleTableInternal& sti_to_compare)
 {
   m_sti_to_compare = &sti_to_compare;
   m_stm_to_compare.setInternal(m_sti_to_compare);
+  ARCANE_CHECK_PTR(m_sti_to_compare);
 }
 
 

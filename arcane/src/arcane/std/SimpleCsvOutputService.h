@@ -39,13 +39,13 @@ class SimpleCsvOutputService
  public:
   explicit SimpleCsvOutputService(const ServiceBuildInfo& sbi)
   : ArcaneSimpleCsvOutputObject(sbi)
+  , m_scrw(&m_internal)
+  , m_stm(&m_internal)
+  , m_stom(&m_scrw)
   {
     m_with_option = (sbi.creationType() == ST_CaseOption);
 
     m_internal.m_mesh = mesh();
-    
-    m_stm.setInternal(m_internal);
-    m_stom.setInternal(m_internal);
   }
 
   virtual ~SimpleCsvOutputService() = default;
@@ -164,7 +164,7 @@ class SimpleCsvOutputService
  private:
   bool m_with_option;
   SimpleTableInternal m_internal;
-  ISimpleTableReaderWriter* m_strw;
+  SimpleCsvReaderWriter m_scrw;
   SimpleTableMng m_stm;
   SimpleTableOutputMng m_stom;
 };

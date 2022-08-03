@@ -37,14 +37,29 @@ init(ISimpleTableOutput* ptr_sto)
   ARCANE_CHECK_PTR(ptr_sto);
   m_iSTO = ptr_sto;
 
-  m_stic.setInternalRef(m_iSTO->internal());
+  m_sti_ref = m_iSTO->internal();
+
+  m_stic.setInternalRef(m_sti_ref);
 
   // On déduit l'emplacement des fichiers de réferences.
   m_output_dir = m_iSTO->outputDir();
-  m_root_path = Directory(subDomain()->exportDirectory(), "csv_refs");
+  m_root_path = Directory(subDomain()->exportDirectory(), m_iSTO->outputFileType()+"_refs");
   m_ref_path = Directory(m_root_path, m_output_dir);
   m_name_tab = m_iSTO->tabName();
   m_file_name = m_name_tab+"."+m_iSTO->outputFileType();
+}
+
+void SimpleCsvComparatorService::
+clear()
+{
+  m_stic.clear();
+
+  m_sti_to_compare.clear();
+
+  m_sti_ref = nullptr;
+  m_iSTO = nullptr;
+  
+  m_is_file_read = false;
 }
 
 void SimpleCsvComparatorService::
@@ -57,7 +72,7 @@ editRootDir(Directory root_dir)
 void SimpleCsvComparatorService::
 print(Integer only_proc)
 {
-  //TODO
+  m_scrw.print(only_proc);
 }
 
 bool SimpleCsvComparatorService::
@@ -88,11 +103,7 @@ readRefFile(Integer only_proc)
   if (only_proc != -1 && mesh()->parallelMng()->commRank() != only_proc)
     return false;
 
-  m_is_file_read = m_scrw.read(m_ref_path, m_file_name);
-
-  if(m_is_file_read){
-    m_stic.setInternalToCompare(m_scrw.internal());
-  }
+  m_is_file_read = m_scrw.read(m_ref_path, m_name_tab);
 
   return m_is_file_read;
 }

@@ -35,7 +35,8 @@ namespace Arcane
 struct ARCANE_CORE_EXPORT SimpleTableInternal
 {
   SimpleTableInternal()
-  {}
+  {
+  }
   ~SimpleTableInternal() = default;
 
   void clear()

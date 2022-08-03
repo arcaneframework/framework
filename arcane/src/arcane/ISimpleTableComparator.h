@@ -57,7 +57,7 @@ public:
    * @brief Méthode permettant de remettre à zero l'objet.
    * Necessite un appel à init() après.
    */
-  //virtual void clear() = 0;
+  virtual void clear() = 0;
   
   virtual void print(Integer only_proc = 0) = 0;
 
