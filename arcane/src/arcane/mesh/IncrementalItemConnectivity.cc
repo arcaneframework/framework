@@ -993,6 +993,7 @@ dumpStats(std::ostream& out) const
 void OneItemIncrementalItemConnectivity::
 compactConnectivityList()
 {
+  _computeMaxNbConnectedItem();
 }
 
 /*---------------------------------------------------------------------------*/
