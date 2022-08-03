@@ -157,11 +157,9 @@ onExit()
   String reference_file_name = options()->referenceFile();
   if (reference_file_name.empty())
     reference_file_name = "check";
-  String base_reference_file_name = reference_file_name;
-  if (is_parallel && !compare_from_sequential){
-    base_reference_file_name = reference_file_name + "." + rank;
-  }
-  String base_file_name = base_reference_file_name;
+
+  info() << "Verification check is_parallel?=" << is_parallel << " compare_from_sequential?=" << compare_from_sequential;
+  String base_file_name = reference_file_name;
   verifier_service->setFileName(base_file_name);
 
   if (options()->generate()){
