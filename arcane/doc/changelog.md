@@ -5,6 +5,55 @@
 
 Cette page contient les nouveautés de chaque version de %Arcane.
 
+Arcane Version 3.7.x (... aout 2022) {#arcanedoc_version370}
+======================================
+
+WIP
+
+Nouveautés/Améliorations:
+
+- Ajoute possibilité de spécifier le mot clé `Auto` pour la variable
+  CMake `ARCANE_DEFAULT_PARTITIONER`. Cela permet de choisir
+  automatiquement lors de la configuration le partitionneur utilisé
+  en fonction de ceux disponibles (#279).
+- Ajoute implémentation des synchronisations qui utilise la fonction
+  `MPI_Neighbor_alltoallv` (#281).
+- Réduction de l'empreinte mémoire utilisée pour la gestion des
+  connectivités suite aux différentes modifications internes
+
+Changements:
+
+- Ajoute classe Arcane:ItemTypeId pour gérer le type de l'entité (#294)
+- Le type de l'entité est maintenant conservé sur un Arcane::Int16 au
+  lieu d'un Arcane::Int32 (#294)
+
+Corrections:
+
+- Corrige bug lors de la lecture des informations avec le service
+  `BasicReaderwriter` lorsqu'une compression est active (#299)
+- Corrige bug introduit dans la version 3.6 qui changeait le nom du
+  répertoire de sortie pour les comparaisons bit à bit avec le service
+  `ArcaneCeaVerifier` (#300).
+- Corrige mauvais recalcul du nombre maximum d'entités connectées à
+  une entité dans le cas des particules (#301)
+
+Interne:
+
+- Simplifie l'implémentation des synchronisations fournissant un
+  mécanisme indépendant du type de la donnée (#282).
+- Utilise des variables pour gérer certaines données sur les entités
+  telles que Arcane::Item::owner(), Arcane::Item::typeId(). Cela
+  permettra à terme de rendre ces informations accessibles sur
+  accélérateurs (#284, #285, #292, #295)
+- Ajout d'une classe Arcane::ItemBase servant de classe de base pour
+  Arcane::Item et Arcane::ItemInternal (#298).
+- Suppression d'une indirection lorsqu'on accède aux informations des
+  connectivités à partir d'une entité (par exemple
+  Arcane::Cell::node())  (#298).
+- Simplification de la gestion des informations communes aux entités
+  dans une famille pour qu'il n'y ait maintenant plus qu'une seule
+  instance commune de 'Arcane::ItemSharedInfo' (#290, #292, #297).
+
 Arcane Version 3.6.13 (06 juillet 2022) {#arcanedoc_version360}
 ======================================
 
