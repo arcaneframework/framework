@@ -108,7 +108,8 @@ computeFacesUniqueIds()
   Real diff = (Real)(end_time - begin_time);
   info() << "TIME to compute face unique ids=" << diff;
 
-  _checkNoDuplicate();
+  if (arcaneIsCheck())
+    _checkNoDuplicate();
 
   ItemInternalMap& faces_map = m_mesh->facesMap();
 
@@ -136,7 +137,7 @@ _checkNoDuplicate()
 {
   info() << "Check no duplicate face uniqueId";
   ItemInternalMap& faces_map = m_mesh->facesMap();
-  std::map<ItemUniqueId,ItemInternal*> checked_faces_map;
+  std::set<ItemUniqueId> checked_faces_map;
   ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,faces_map){
     ItemInternal* face = nbid->value();
     ItemUniqueId uid = face->uniqueId();
@@ -145,7 +146,7 @@ _checkNoDuplicate()
       pwarning() << "Duplicate Face UniqueId=" << uid;
       ARCANE_FATAL("Duplicate Face uniqueId={0}",uid);
     }
-    checked_faces_map.insert(std::make_pair(uid,face));
+    checked_faces_map.insert(uid);
   }
 }
 

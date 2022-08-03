@@ -43,8 +43,9 @@ void ItemInternalMap::
 notifyUniqueIdsChanged()
 {
   BaseClass& c = *this;
-  // Vérifie qu'on n'a pas deux fois la même clé.
-  {
+
+  if (arcaneIsCheck()){
+    // Vérifie qu'on n'a pas deux fois la même clé.
     std::set<Int64> uids;
     ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,c){
       Int64 uid = nbid->value()->uniqueId().asInt64();
