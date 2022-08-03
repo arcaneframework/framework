@@ -783,6 +783,7 @@ if (TARGET arcane_mpi)
   arcane_add_test_script(compare_par_par_v3 compare_par_par_v3.xml)
 endif()
 arcane_add_test_script(checkpoint_verifier_seq_v3 checkpoint_verifier_seq_v3.xml)
+arcane_add_test_script(checkpoint_verifier_seq_4pe_v3 checkpoint_verifier_seq_4pe_v3.xml)
 arcane_add_test_script(checkpoint_verifier_4pe_v3 checkpoint_verifier_4pe_v3.xml)
 
 #################################################################
