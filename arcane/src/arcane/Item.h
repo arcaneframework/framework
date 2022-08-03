@@ -134,16 +134,19 @@ class ARCANE_CORE_EXPORT Item
  public:
 
   //! Création d'une entité de maillage nulle
-  Item() : m_internal(&ItemInternal::nullItemInternal) {}
+  Item() {}
 
   //! Constructeur de recopie
-  Item(const Item& rhs) : ItemBase(rhs), m_internal(rhs.m_internal) {}
+  Item(const Item& rhs) : ItemBase(rhs) {}
 
   //! Construit une référence à l'entité \a internal
-  Item(ItemInternal* ainternal) : ItemBase(ainternal), m_internal(ainternal) {}
+  Item(ItemInternal* ainternal) : ItemBase(ainternal) {}
+
+  //! Construit une référence à l'entité \a abase
+  Item(const ItemBase& abase) : ItemBase(abase) {}
 
   //! Construit une référence à l'entité \a internal
-  Item(const ItemInternalPtr* internals,Int32 local_id) : ItemBase(internals[local_id]), m_internal(internals[local_id]) {}
+  Item(const ItemInternalPtr* internals,Int32 local_id) : ItemBase(internals[local_id]) {}
 
   //! Opérateur de copie
   Item& operator=(ItemInternal* ainternal)
@@ -278,7 +281,7 @@ class ARCANE_CORE_EXPORT Item
    * \warning La partie interne de l'entité ne doit être modifiée que
    * par ceux qui savent ce qu'ils font.
    */
-  ItemInternal* internal() const { return m_internal; }
+  ItemInternal* internal() const { return ItemBase::itemInternal(); }
 
   /*!
    * \brief Infos sur le type de l'entité.
@@ -297,7 +300,6 @@ class ARCANE_CORE_EXPORT Item
  protected:
 
   using ItemBase::m_local_id;
-  ItemInternal* m_internal; //!< Partie interne de l'élément
 
  protected:
 
@@ -310,14 +312,10 @@ class ARCANE_CORE_EXPORT Item
   void _set(ItemInternal* ainternal)
   {
     _setFromInternal(ainternal);
-    m_internal = ainternal;
-    //m_local_id = ainternal->localId();
   }
   void _set(const Item& rhs)
   {
-    _setFromInternal(rhs.internal());
-    m_internal = rhs.m_internal;
-    //m_local_id = rhs.m_local_id;
+    _setFromInternal(rhs);
   }
 };
 
@@ -412,6 +410,10 @@ class ARCANE_CORE_EXPORT Node
 
   //! Construit une référence à l'entité \a internal
   Node(ItemInternal* ainternal) : Item(ainternal)
+  { ARCANE_CHECK_KIND(isNode); }
+
+  //! Construit une référence à l'entité \a abase
+  Node(ItemBase abase) : Item(abase)
   { ARCANE_CHECK_KIND(isNode); }
 
   //! Construit une référence à l'entité \a internal
@@ -539,6 +541,10 @@ class ARCANE_CORE_EXPORT ItemWithNodes
   ItemWithNodes(ItemInternal* ainternal) : Item(ainternal)
   { ARCANE_CHECK_KIND(isItemWithNodes); }
 
+  //! Construit une référence à l'entité \a abase
+  ItemWithNodes(const ItemBase& abase) : Item(abase)
+  { ARCANE_CHECK_KIND(isItemWithNodes); }
+
   //! Construit une référence à l'entité \a internal
   ItemWithNodes(const ItemInternalPtr* internals,Int32 local_id)
   : Item(internals,local_id)
@@ -625,6 +631,10 @@ class ARCANE_CORE_EXPORT Edge
 
   //! Construit une référence à l'entité \a internal
   Edge(ItemInternal* ainternal) : ItemWithNodes(ainternal)
+  { ARCANE_CHECK_KIND(isEdge); }
+
+  //! Construit une référence à l'entité \a abase
+  Edge(const ItemBase& abase) : ItemWithNodes(abase)
   { ARCANE_CHECK_KIND(isEdge); }
 
   //! Construit une référence à l'entité \a internal
@@ -735,6 +745,10 @@ class ARCANE_CORE_EXPORT Face
 
   //! Construit une référence à l'entité \a internal
   Face(ItemInternal* ainternal) : ItemWithNodes(ainternal)
+  { ARCANE_CHECK_KIND(isFace); }
+
+  //! Construit une référence à l'entité \a abase
+  Face(ItemBase abase) : ItemWithNodes(abase)
   { ARCANE_CHECK_KIND(isFace); }
 
   //! Construit une référence à l'entité \a internal
@@ -958,6 +972,10 @@ class ARCANE_CORE_EXPORT Cell
   Cell(ItemInternal* ainternal) : ItemWithNodes(ainternal)
   { ARCANE_CHECK_KIND(isCell); }
 
+  //! Construit une référence à l'entité \a abase
+  Cell(ItemBase abase) : ItemWithNodes(abase)
+  { ARCANE_CHECK_KIND(isCell); }
+
   //! Construit une référence à l'entité \a internal
   Cell(const ItemInternalPtr* internals,Int32 local_id)
   : ItemWithNodes(internals,local_id)
@@ -1101,6 +1119,10 @@ class Particle
   Particle(ItemInternal* ainternal) : Item(ainternal)
   { ARCANE_CHECK_KIND(isParticle); }
 
+  //! Construit une référence à l'entité \a abase
+  Particle(const ItemBase& abase) : Item(abase)
+  { ARCANE_CHECK_KIND(isParticle); }
+
   //! Construit une référence à l'entité \a internal
   Particle(const ItemInternalPtr* internals,Int32 local_id)
   : Item(internals,local_id)
@@ -1182,6 +1204,10 @@ class DoF
 
   //! Construit une référence à l'entité \a internal
   DoF(ItemInternal* ainternal) : Item(ainternal)
+  { ARCANE_CHECK_KIND(isDoF); }
+
+  //! Construit une référence à l'entité \a abase
+  DoF(const ItemBase& abase) : Item(abase)
   { ARCANE_CHECK_KIND(isDoF); }
 
   //! Construit une référence à l'entité \a internal
@@ -1290,49 +1316,49 @@ inline ItemWithNodes Item::
 toItemWithNodes() const
 {
   ARCANE_CHECK_KIND(isItemWithNodes);
-  return ItemWithNodes(m_internal);
+  return ItemWithNodes(*this);
 }
 
 inline Node Item::
 toNode() const
 {
   ARCANE_CHECK_KIND(isNode);
-  return Node(m_internal);
+  return Node(*this);
 }
 
 inline Edge Item::
 toEdge() const
 {
   ARCANE_CHECK_KIND(isEdge);
-  return Edge(m_internal);
+  return Edge(*this);
 }
 
 inline Face Item::
 toFace() const
 {
   ARCANE_CHECK_KIND(isFace);
-  return Face(m_internal);
+  return Face(*this);
 }
 
 inline Cell Item::
 toCell() const
 {
   ARCANE_CHECK_KIND(isCell);
-  return Cell(m_internal);
+  return Cell(*this);
 }
 
 inline Particle Item::
 toParticle() const
 {
   ARCANE_CHECK_KIND(isParticle);
-  return Particle(m_internal);
+  return Particle(*this);
 }
 
 inline DoF Item::
 toDoF() const
 {
   ARCANE_CHECK_KIND(isDoF);
-  return DoF(m_internal);
+  return DoF(*this);
 }
 
 /*---------------------------------------------------------------------------*/

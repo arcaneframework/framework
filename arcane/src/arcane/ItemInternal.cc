@@ -110,7 +110,7 @@ topHParent() const
 ItemInternal* ItemBase::
 legacyTopHParent() const
 {
-  const ItemInternal* top_it = static_cast<const ItemInternal*>(this);
+  const ItemInternal* top_it = itemInternal();
   while (top_it->nbHParent())
     top_it = top_it->legacyInternalHParent(0);
   ARCANE_ASSERT((!top_it->null()),("topHParent Problem!"));

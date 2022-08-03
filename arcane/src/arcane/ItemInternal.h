@@ -611,6 +611,8 @@ class ARCANE_CORE_EXPORT ItemBase
 
  public:
 
+  inline ItemInternal* itemInternal() const;
+
   ItemInternalVectorView legacyActiveCells(Int32Array& local_ids) const;
   ItemInternalVectorView legacyActiveFaces(Int32Array& local_ids) const;
   ItemInternalVectorView legacyActiveEdges() const;
@@ -658,6 +660,11 @@ class ARCANE_CORE_EXPORT ItemBase
   {
     m_local_id = rhs->m_local_id;
     m_shared_info = rhs->m_shared_info;
+  }
+  void _setFromInternal(const ItemBase& rhs)
+  {
+    m_local_id = rhs.m_local_id;
+    m_shared_info = rhs.m_shared_info;
   }
 };
 
@@ -940,6 +947,17 @@ template<typename ItemType> inline ItemLocalIdT<ItemType>::
 ItemLocalIdT(ItemInternal* item)
 : ItemLocalId(item->localId())
 {
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+inline ItemInternal* ItemBase::
+itemInternal() const
+{
+  if (m_local_id!=NULL_ITEM_LOCAL_ID)
+    return m_shared_info->m_items_internal[m_local_id];
+  return ItemInternal::nullItem();
 }
 
 /*---------------------------------------------------------------------------*/
