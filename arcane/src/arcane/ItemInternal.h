@@ -343,7 +343,21 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Classe de base pour les entités du maillage.
+ *
+ * Cette classe est la classe de base commune à Item et ItemInternal.
+ * Cette classe est normalement interne à Arcane et il est préférable d'utiliser
+ * les versions spécialisés telles que Item, Node, Face, Edge, Cell, Particle
+ * ou DoF.
+ *
+ * Les instances de cette classe sont des objets temporaires qui ne doivent
+ * pas être conservés entre deux modifications topologiques du maillage s'il y
+ * a des compressions (IItemFamily::compactItems()) lors de ces modifications.
+ *
+ * L'ensemble des méthodes de cette classe sont en lecture seule et ne
+ * permettent pas de modifier une entité.
+ */
 class ARCANE_CORE_EXPORT ItemBase
 {
   friend class ItemInternal;
@@ -501,6 +515,8 @@ class ARCANE_CORE_EXPORT ItemBase
   eItemKind kind() const { return m_shared_info->m_item_kind; }
   //! Vrai si l'entité est l'entité nulle
   bool null() const { return m_local_id==NULL_ITEM_LOCAL_ID; }
+  //! Vrai si l'entité est l'entité nulle
+  bool isNull() const { return m_local_id==NULL_ITEM_LOCAL_ID; }
   //! Vrai si l'entité appartient au sous-domaine
   bool isOwn() const { return (flags() & II_Own)!=0; }
   /*!
@@ -582,10 +598,10 @@ class ARCANE_CORE_EXPORT ItemBase
    * se traduit par un débordement de tableau.
    */
   //@{
-  ItemInternalVectorView legacyInternalNodes() const { return _connectivity()->nodesV2(m_local_id); }
-  ItemInternalVectorView legacyInternalEdges() const { return _connectivity()->edgesV2(m_local_id); }
-  ItemInternalVectorView legacyInternalFaces() const { return _connectivity()->facesV2(m_local_id); }
-  ItemInternalVectorView legacyInternalCells() const { return _connectivity()->cellsV2(m_local_id); }
+  ItemInternalVectorView internalNodes() const { return _connectivity()->nodesV2(m_local_id); }
+  ItemInternalVectorView internalEdges() const { return _connectivity()->edgesV2(m_local_id); }
+  ItemInternalVectorView internalFaces() const { return _connectivity()->facesV2(m_local_id); }
+  ItemInternalVectorView internalCells() const { return _connectivity()->cellsV2(m_local_id); }
 
   Int32ConstArrayView nodeIds() const { return _connectivity()->nodeLocalIdsV2(m_local_id); }
   Int32ConstArrayView edgeIds() const { return _connectivity()->edgeLocalIdsV2(m_local_id); }
@@ -599,6 +615,7 @@ class ARCANE_CORE_EXPORT ItemBase
   ItemBase cellBase(Int32 index) const { return _connectivity()->cellBase(m_local_id,index); }
   ItemBase hParentBase(Int32 index) const { return _connectivity()->hParentBase(m_local_id,index); }
   ItemBase hChildBase(Int32 index) const { return _connectivity()->hChildBase(m_local_id,index); }
+  inline ItemBase parentBase(Int32 index) const;
 
  public:
 
@@ -613,26 +630,11 @@ class ARCANE_CORE_EXPORT ItemBase
 
   inline ItemInternal* itemInternal() const;
 
-  ItemInternalVectorView legacyActiveCells(Int32Array& local_ids) const;
-  ItemInternalVectorView legacyActiveFaces(Int32Array& local_ids) const;
-  ItemInternalVectorView legacyActiveEdges() const;
-  ItemInternal* legacyInternalNode(Int32 index) const { return _connectivity()->nodeV2(m_local_id,index); }
-  ItemInternal* legacyInternalEdge(Int32 index) const { return _connectivity()->edgeV2(m_local_id,index); }
-  ItemInternal* legacyInternalFace(Int32 index) const { return _connectivity()->faceV2(m_local_id,index); }
-  ItemInternal* legacyInternalCell(Int32 index) const { return _connectivity()->cellV2(m_local_id,index); }
-  ItemInternal* legacyInternalHParent(Int32 index) const { return _connectivity()->hParentV2(m_local_id,index); }
-  ItemInternal* legacyInternalHChild(Int32 index) const { return _connectivity()->hChildV2(m_local_id,index); }
-  ItemInternal* legacyParent(Integer index) const { return m_shared_info->_parentV2(m_local_id,index); }
+  ItemInternalVectorView activeCells(Int32Array& local_ids) const;
+  ItemInternalVectorView activeFaces(Int32Array& local_ids) const;
+  ItemInternalVectorView activeEdges() const;
 
-  //! Maille connectée à l'entité si l'entité est une entité sur la frontière (0 si aucune)
-  ItemInternal* legacyBoundaryCell() const;
-  //! Maille derrière l'entité (nullItem() si aucune)
-  ItemInternal* legacyBackCell() const;
-  //! Maille devant l'entité (nullItem() si aucune)
-  ItemInternal* legacyFrontCell() const;
-  ItemInternal* legacyMasterFace() const;
-
-  ItemInternal* legacyTopHParent() const;
+  ItemBase topHParentBase() const;
 
  private:
 
@@ -801,9 +803,6 @@ class ARCANE_CORE_EXPORT ItemInternal
   ItemInternalVectorView internalItems(Edge*) const { return internalEdges(); }
   ItemInternalVectorView internalItems(Face*) const { return internalFaces(); }
   ItemInternalVectorView internalItems(Cell*) const { return internalCells(); }
-  ItemInternalVectorView activeCells(Int32Array& local_ids) const;
-  ItemInternalVectorView activeFaces(Int32Array& local_ids) const;
-  ItemInternalVectorView activeEdges() const;
 
  public:
 
@@ -963,34 +962,10 @@ itemInternal() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-inline ItemInternal* ItemBase::
-legacyBoundaryCell() const
+inline ItemBase ItemBase::
+parentBase(Int32 index) const
 {
-  return (flags() & II_Boundary) ? legacyInternalCell(0) : ItemInternal::nullItem();
-}
-
-inline ItemInternal* ItemBase::
-legacyBackCell() const
-{
-  if (flags() & II_HasBackCell)
-    return legacyInternalCell((flags() & II_BackCellIsFirst) ? 0 : 1);
-  return ItemInternal::nullItem();
-}
-
-inline ItemInternal* ItemBase::
-legacyFrontCell() const
-{
-  if (flags() & II_HasFrontCell)
-    return legacyInternalCell((flags() & II_FrontCellIsFirst) ? 0 : 1);
-  return ItemInternal::nullItem();
-}
-
-inline ItemInternal* ItemBase::
-legacyMasterFace() const
-{
-  if (flags() & II_SlaveFace)
-    return legacyInternalFace(0);
-  return ItemInternal::nullItem();
+  return ItemBase(m_shared_info->_parentV2(m_local_id,index));
 }
 
 /*---------------------------------------------------------------------------*/

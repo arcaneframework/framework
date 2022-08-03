@@ -107,15 +107,15 @@ topHParent() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ItemInternal* ItemBase::
-legacyTopHParent() const
+ItemBase ItemBase::
+topHParentBase() const
 {
-  const ItemInternal* top_it = itemInternal();
-  while (top_it->nbHParent())
-    top_it = top_it->legacyInternalHParent(0);
-  ARCANE_ASSERT((!top_it->null()),("topHParent Problem!"));
-  ARCANE_ASSERT((top_it->level() == 0),("topHParent Problem"));
-  return const_cast<ItemInternal*>(top_it);
+  ItemBase top_it = *this;
+  while (top_it.nbHParent())
+    top_it = top_it.hParentBase(0);
+  ARCANE_ASSERT((!top_it.null()),("topHParent Problem!"));
+  ARCANE_ASSERT((top_it.level() == 0),("topHParent Problem"));
+  return top_it;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -162,65 +162,47 @@ whichChildAmI(const ItemInternal *iitem) const
 /*---------------------------------------------------------------------------*/
 
 ItemInternalVectorView ItemBase::
-legacyActiveCells(Int32Array& local_ids) const
+activeCells(Int32Array& local_ids) const
 {
 	const Integer nbcell = this->nbCell();
 	for(Integer icell = 0 ; icell < nbcell ; ++icell) {
-    ItemInternal* cell   = this->legacyInternalCell(icell);
-    if (cell->isActive()){
-      const Int32 local_id = cell->localId();
+    ItemBase cell = this->cellBase(icell);
+    if (cell.isActive()){
+      const Int32 local_id = cell.localId();
       local_ids.add(local_id);
     }
 	}
 	return ItemInternalVectorView(m_shared_info->m_items->cells,local_ids);
 }
 
-ItemInternalVectorView ItemInternal::
-activeCells(Int32Array& local_ids) const
-{
-  return legacyActiveCells(local_ids);
-}
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 ItemInternalVectorView ItemBase::
-legacyActiveFaces(Int32Array& local_ids) const
+activeFaces(Int32Array& local_ids) const
 {
 	const Integer nbface = this->nbFace();
 	for(Integer iface = 0 ; iface < nbface ; ++iface) {
-		ItemInternal* face   = this->legacyInternalFace(iface);
-		if (!face->isBoundary()){
-			ItemInternal* bcell = face->backCell();
-      ItemInternal* fcell = face->frontCell();
-			if ( (bcell && bcell->isActive()) && (fcell && fcell->isActive()) )
-				local_ids.add(face->localId());
+		ItemBase face = this->faceBase(iface);
+		if (!face.isBoundary()){
+			ItemBase bcell = face.backCell();
+      ItemBase fcell = face.frontCell();
+			if ( (!bcell.null() && bcell.isActive()) && (!fcell.null() && fcell.isActive()) )
+				local_ids.add(face.localId());
 		}
 		else {
-			ItemInternal* bcell = face->boundaryCell();
-			if ( (bcell && bcell->isActive()) )
-				local_ids.add(face->localId());
+			ItemBase bcell = face.boundaryCell();
+			if ( (!bcell.null() && bcell.isActive()) )
+				local_ids.add(face.localId());
 		}
 	}
 	return ItemInternalVectorView(m_shared_info->m_items->faces,local_ids);
 }
 
-ItemInternalVectorView ItemInternal::
-activeFaces(Int32Array& local_ids) const
-{
-  return legacyActiveFaces(local_ids);
-}
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 ItemInternalVectorView ItemBase::
-legacyActiveEdges() const
-{
-	ARCANE_THROW(NotImplementedException,"Active edges group not yet implemented");
-}
-
-ItemInternalVectorView ItemInternal::
 activeEdges() const
 {
 	ARCANE_THROW(NotImplementedException,"Active edges group not yet implemented");
