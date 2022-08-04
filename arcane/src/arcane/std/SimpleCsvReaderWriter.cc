@@ -117,14 +117,11 @@ read(Directory src, String file)
   return true;
 }
 
-bool SimpleCsvReaderWriter::
+void SimpleCsvReaderWriter::
 clear()
 {
   ARCANE_CHECK_PTR(m_sti);
-  m_sti->m_values_csv.clear();
-
-  m_sti->m_name_rows.clear();
-  m_sti->m_name_columns.clear();
+  m_sti->clear();
   return true;
 }
 

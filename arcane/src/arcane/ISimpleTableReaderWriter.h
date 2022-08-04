@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/*                                        (C) 2000-2022 */
+/* ISimpleTableReaderWriter.h                                  (C) 2000-2022 */
 /*                                                                           */
-/* TODO         */
+/* Interface représentant un lecteur/écrivain de tableau simple.             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -30,6 +30,14 @@
 namespace Arcane
 {
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/**
+ * @brief Classe contenant deux méthodes statiques
+ * utile pour les implémentations.
+ * 
+ */
 class ARCANE_CORE_EXPORT SimpleTableReaderWriterUtils
 {
  public:
@@ -57,8 +65,16 @@ class ARCANE_CORE_EXPORT SimpleTableReaderWriterUtils
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+
 /**
- * @brief TODO
+ * @brief Interface de classe permettant de lire un fichier et d'écrire
+ * un fichier avec ou à partir d'un SimpleTableInternal.
+ * 
+ * Le fichier lu devra, de préférence, avoir été écrit par une implem de
+ * cette même interface.
+ * 
+ * Impérativement donc, un fichier écrit par une implémentation de cette
+ * interface devra pouvoir être lu par cette même implémentation.
  */
 class ARCANE_CORE_EXPORT ISimpleTableReaderWriter
 {
@@ -67,11 +83,8 @@ public:
 
 public:
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
   /**
-   * @brief Méthode permettant d'écrire un tableau dans un fichier.
+   * @brief Méthode permettant d'écrire un tableau simple dans un fichier.
    * L'extension sera ajouté par l'implémentation.
    * 
    * @param dst Le répertoire de destination. Il sera créé s'il n'existe pas.
@@ -82,15 +95,28 @@ public:
   virtual bool write(Directory dst, String file_name) = 0;
 
   /**
-   * @brief 
-   * TODO : Mettre last_pos à 0
-   * @param src 
-   * @param file_name 
-   * @return true 
-   * @return false 
+   * @brief Méthode permettant de lire un fichier contenant un tableau simple.
+   * L'extension sera ajouté par l'implémentation.
+   * 
+   * @param src Le répertoire source.
+   * @param file_name Le nom du fichier (sans extension).
+   * @return true Si le fichier a bien été lu.
+   * @return false Si le fichier n'a pas pu être lu.
    */
   virtual bool read(Directory src, String file_name) = 0;
-  virtual bool clear() = 0;
+
+  /**
+   * @brief Méthode permettant d'effacer le contenu de l'objet
+   * SimpleTableInternal.
+   */
+  virtual void clear() = 0;
+
+  /**
+   * @brief Méthode permettant d'écrire le tableau dans la
+   * sortie standard.
+   * Le format d'écriture est libre (pour l'implémentation
+   * csv, l'écriture se fait pareil que dans un fichier csv).
+   */
   virtual void print() = 0;
 
   /**
@@ -100,12 +126,13 @@ public:
    * @return Integer La précision.
    */
   virtual Integer precision() = 0;
+
   /**
    * @brief Méthode permettant de modifier la précision du print.
    * 
    * Aussi bien pour la méthode 'print()' que la méthode 'write()'.
    * 
-   * \note Un appel à cette méthode sans le paramètre définira la précision
+   * @note Un appel à cette méthode sans le paramètre définira la précision
    * par défaut.
    * 
    * @param precision La nouvelle précision.
@@ -129,16 +156,39 @@ public:
    * la précision voulu. Par exemple, si l'on a appelé 'setPrecision(4)',
    * et que l'on appelle 'setFixed(true)', le print de '6.1' donnera '6.1000'.
    * 
-   * \note Un appel à cette méthode sans le paramètre définira le flag
+   * @note Un appel à cette méthode sans le paramètre définira le flag
    * par défaut.
    * 
    * @param fixed Si le flag 'std::fixed' doit être défini ou non.
    */
   virtual void setFixed(bool fixed = true) = 0;
   
+  /**
+   * @brief Méthode permettant de récupérer le type de fichier
+   * qui sera écrit par l'implémentation. ("csv" sera retourné
+   * pour l'implémentation csv).
+   * 
+   * @return String Le type/l'extension du fichier utilisé.
+   */
   virtual String typeFile() = 0;
 
+  /**
+   * @brief Méthode permettant de récupérer le pointeur vers l'objet
+   * SimpleTableInternal utilisé.
+   * 
+   * @return SimpleTableInternal* Le pointeur utilisé. 
+   */
   virtual SimpleTableInternal* internal() = 0;
+
+  /**
+   * @brief Méthode permettant de définir un pointeur vers
+   * SimpleTableInternal.
+   * 
+   * @warning Il est déconseillé d'utiliser cette méthode, sauf si
+   * vous savez ce que vous faite.
+   * 
+   * @param strw Le pointeur vers SimpleTableInternal.
+   */
   virtual void setInternal(SimpleTableInternal* sti) = 0;
 };
 

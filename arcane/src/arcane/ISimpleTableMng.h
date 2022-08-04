@@ -34,6 +34,11 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 // TODO : Voir pour ajouter ISharedReference.
+
+/**
+ * @brief 
+ * 
+ */
 struct ARCANE_CORE_EXPORT SimpleTableInternal
 {
   SimpleTableInternal(ISubDomain* sub_domain)

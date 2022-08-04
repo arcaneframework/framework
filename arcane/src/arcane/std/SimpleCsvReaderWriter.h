@@ -61,7 +61,7 @@ class SimpleCsvReaderWriter
  public:
   bool write(Directory dst, String file) override;
   bool read(Directory src, String file) override;
-  bool clear() override;
+  void clear() override;
   void print() override;
 
   Integer precision() override;
