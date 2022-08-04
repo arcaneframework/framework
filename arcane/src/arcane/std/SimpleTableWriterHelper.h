@@ -11,15 +11,15 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_STD_SIMPLETABLEOUTPUTMNG_H
-#define ARCANE_STD_SIMPLETABLEOUTPUTMNG_H
+#ifndef ARCANE_STD_SIMPLETABLEWRITERHELPER_H
+#define ARCANE_STD_SIMPLETABLEWRITERHELPER_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/ISimpleTableMng.h"
 #include "arcane/ISimpleTableReaderWriter.h"
-#include "arcane/ISimpleTableOutputMng.h"
+#include "arcane/ISimpleTableWriterHelper.h"
 #include "arcane/Directory.h"
 #include "arcane/utils/Array.h"
 #include "arcane/utils/Array2.h"
@@ -33,21 +33,33 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class SimpleTableOutputMng
-: public ISimpleTableOutputMng
+class SimpleTableWriterHelper
+: public ISimpleTableWriterHelper
 {
  public:
-  SimpleTableOutputMng(ISimpleTableReaderWriter* strw)
+  SimpleTableWriterHelper(ISimpleTableReaderWriter* strw)
   : m_sti(strw->internal())
   , m_strw(strw)
   , m_name_output_dir("")
+  , m_name_tab_without_computation("")
   , m_root()
   , m_name_tab_computed(false)
   , m_name_tab_only_once(false)
   {
   }
 
-  virtual ~SimpleTableOutputMng() = default;
+  SimpleTableWriterHelper()
+  : m_sti(nullptr)
+  , m_strw(nullptr)
+  , m_name_output_dir("")
+  , m_name_tab_without_computation("")
+  , m_root()
+  , m_name_tab_computed(false)
+  , m_name_tab_only_once(false)
+  {
+  }
+
+  virtual ~SimpleTableWriterHelper() = default;
 
  public:
   bool init() override;
@@ -57,7 +69,6 @@ class SimpleTableOutputMng
   void print(Integer only_proc) override;
   bool writeFile(Integer only_proc) override;
   bool writeFile(Directory root_dir, Integer only_proc) override;
-  bool writeFile(String dir, Integer only_proc) override;
 
   Integer precision() override;
   void setPrecision(Integer precision) override;
@@ -66,39 +77,36 @@ class SimpleTableOutputMng
   void setFixed(bool fixed) override;
 
   String outputDir() override;
+  String outputDirWithoutComputation() override;
   void setOutputDir(String dir) override;
 
   String tabName() override;
+  String tabNameWithoutComputation() override;
   void setTabName(String name) override;
+
   String fileName() override;
   
   Directory outputPath() override;
   Directory rootPath() override;
   
-  String outputFileType() override;
+  String typeFile() override;
 
   bool isOneFileByProcsPermited() override;
 
   SimpleTableInternal* internal() override;
-  void setInternal(SimpleTableInternal* sti) override;
-  void setInternal(SimpleTableInternal& sti) override;
-
+  
   ISimpleTableReaderWriter* readerWriter() override;
   void setReaderWriter(ISimpleTableReaderWriter* strw) override;
-  void setReaderWriter(ISimpleTableReaderWriter& strw) override;
 
  protected:
-  String _computeFinal();
   void _computeName();
-  bool _createDirectory(Directory dir);
-  bool _createOutputDirectory();
-  bool _createRoot();
 
  protected:
   SimpleTableInternal* m_sti;
   ISimpleTableReaderWriter* m_strw;
 
   String m_name_output_dir;
+  String m_name_tab_without_computation;
 
   Directory m_root;
 

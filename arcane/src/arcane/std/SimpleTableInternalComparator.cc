@@ -35,7 +35,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 bool SimpleTableInternalComparator::
-compare(Integer epsilon)
+compare(Integer epsilon, bool compare_dim)
 {
   ARCANE_CHECK_PTR(m_sti_ref);
   ARCANE_CHECK_PTR(m_sti_to_compare);
@@ -44,6 +44,10 @@ compare(Integer epsilon)
 
   const Integer dim1 = m_stm_ref.numRows();
   const Integer dim2 = m_stm_ref.numColumns();
+
+  if(compare_dim && (dim1 != m_stm_to_compare.numRows() || dim2 != m_stm_to_compare.numColumns())) {
+    return false;
+  }
 
   for (Integer i = 0; i < dim1; i++) {
     // On regarde si l'on doit comparer la ligne actuelle.
@@ -78,42 +82,32 @@ clear()
   m_regex_columns = "";
   m_is_excluding_regex_columns = false;
 
-  m_compared_rows.clear();
-  m_compared_columns.clear();
+  m_rows_to_compare.clear();
+  m_columns_to_compare.clear();
 }
 
 bool SimpleTableInternalComparator::
-addColumnToCompare(String name_column)
+addColumnForComparing(String name_column)
 {
-  m_compared_columns.add(name_column);
+  m_columns_to_compare.add(name_column);
   return true;
 }
 bool SimpleTableInternalComparator::
-addRowToCompare(String name_row)
+addRowForComparing(String name_row)
 {
-  m_compared_rows.add(name_row);
+  m_rows_to_compare.add(name_row);
   return true;
 }
 
-bool SimpleTableInternalComparator::
-removeColumnToCompare(String name_column)
+void SimpleTableInternalComparator::
+isAnArrayExclusiveColumns(bool is_exclusive)
 {
-  std::optional index = m_compared_columns.span().findFirst(name_column);
-  if(index) {
-    m_compared_columns.remove(index.value());
-    return true;
-  }
-  return false;
+  m_is_excluding_array_columns = is_exclusive;
 }
-bool SimpleTableInternalComparator::
-removeRowToCompare(String name_row)
+void SimpleTableInternalComparator::
+isAnArrayExclusiveRows(bool is_exclusive)
 {
-  std::optional index = m_compared_rows.span().findFirst(name_row);
-  if(index) {
-    m_compared_rows.remove(index.value());
-    return true;
-  }
-  return false;
+  m_is_excluding_array_rows = is_exclusive;
 }
 
 void SimpleTableInternalComparator::
@@ -153,19 +147,11 @@ setInternalRef(SimpleTableInternal* sti_ref)
   m_stm_ref.setInternal(m_sti_ref);
 }
 
-void SimpleTableInternalComparator::
-setInternalRef(SimpleTableInternal& sti_ref) 
-{
-  m_sti_ref = &sti_ref;
-  m_stm_ref.setInternal(m_sti_ref);
-  ARCANE_CHECK_PTR(m_sti_ref);
-}
-
 
 SimpleTableInternal* SimpleTableInternalComparator::
 internalToCompare() 
 {
-  return m_sti_ref;
+  return m_sti_to_compare;
 }
 
 void SimpleTableInternalComparator::
@@ -176,15 +162,6 @@ setInternalToCompare(SimpleTableInternal* sti_to_compare)
   m_stm_to_compare.setInternal(m_sti_to_compare);
 }
 
-void SimpleTableInternalComparator::
-setInternalToCompare(SimpleTableInternal& sti_to_compare) 
-{
-  m_sti_to_compare = &sti_to_compare;
-  m_stm_to_compare.setInternal(m_sti_to_compare);
-  ARCANE_CHECK_PTR(m_sti_to_compare);
-}
-
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -192,20 +169,18 @@ bool SimpleTableInternalComparator::
 _exploreColumn(String column_name)
 {
   // S'il n'y a pas de précisions, on compare toutes les colonnes.
-  if(m_compared_columns.empty() && m_regex_columns.empty()) {
+  if(m_columns_to_compare.empty() && m_regex_columns.empty()) {
     return true;
   }
 
-  // D'abord, on regarde si le nom de la colonne est dans le tableau. 
-  if(m_compared_columns.contains(column_name))
-  {
-    return true;
+  if(m_columns_to_compare.contains(column_name)){
+    return !m_is_excluding_array_columns;
   }
 
   // S'il n'est pas dans le tableau et qu'il n'a a pas de regex, on return false.
   else if(m_regex_columns.empty())
   {
-    return false;
+    return m_is_excluding_array_columns;
   }
 
   // Sinon, on regarde aussi la regex.
@@ -226,19 +201,19 @@ bool SimpleTableInternalComparator::
 _exploreRows(String row_name)
 {
   // S'il n'y a pas de précisions, on compare toutes les colonnes.
-  if(m_compared_rows.empty() && m_regex_rows.empty()) {
+  if(m_rows_to_compare.empty() && m_regex_rows.empty()) {
     return true;
   }
 
   // D'abord, on regarde si le nom de la colonne est dans le tableau. 
-  if(m_compared_rows.contains(row_name))
+  if(m_rows_to_compare.contains(row_name))
   {
-    return true;
+    return !m_is_excluding_array_rows;
   }
   // S'il n'est pas dans le tableau et qu'il n'a a pas de regex, on return false.
   else if(m_regex_rows.empty())
   {
-    return false;
+    return m_is_excluding_array_rows;
   }
 
   // Sinon, on regarde aussi la regex.

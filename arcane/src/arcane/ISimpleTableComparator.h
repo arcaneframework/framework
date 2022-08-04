@@ -108,7 +108,7 @@ public:
    * @return true S'il n'y a pas de différences.
    * @return false S'il y a au moins une différence (et si processus appelant != only_proc).
    */
-  virtual bool compareWithRef(Integer only_proc = -1, Integer epsilon = 0) = 0;
+  virtual bool compareWithRef(Integer only_proc = -1, Integer epsilon = 0, bool dim_compare = false) = 0;
 
   /**
    * @brief Méthode permettant d'ajouter une colonne dans la liste des colonnes
@@ -118,7 +118,7 @@ public:
    * @return true Si le nom a bien été ajouté.
    * @return false Sinon.
    */
-  virtual bool addColumnToCompare(String name_column) = 0;
+  virtual bool addColumnForComparing(String name_column) = 0;
   /**
    * @brief Méthode permettant d'ajouter une ligne dans la liste des lignes
    * à comparer.
@@ -127,26 +127,10 @@ public:
    * @return true Si le nom a bien été ajouté.
    * @return false Sinon.
    */
-  virtual bool addRowToCompare(String name_row) = 0;
+  virtual bool addRowForComparing(String name_row) = 0;
 
-  /**
-   * @brief Méthode permettant de supprimer une colonne de la liste des
-   * colonnes à comparer.
-   * 
-   * @param name_column Le nom de la colonne à supprimer de la liste.
-   * @return true Si la suppression a eu lieu.
-   * @return false Sinon.
-   */
-  virtual bool removeColumnToCompare(String name_column) = 0;
-  /**
-   * @brief Méthode permettant de supprimer une ligne de la liste des
-   * lignes à comparer.
-   * 
-   * @param name_row Le nom de la ligne à supprimer de la liste.
-   * @return true Si la suppression a eu lieu.
-   * @return false Sinon.
-   */
-  virtual bool removeRowToCompare(String name_row) = 0;
+  virtual void isAnArrayExclusiveColumns(bool is_exclusive) = 0;
+  virtual void isAnArrayExclusiveRows(bool is_exclusive) = 0;
 
   /**
    * @brief Méthode permettant d'ajouter une expression régulière

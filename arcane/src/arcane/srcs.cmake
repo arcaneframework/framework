@@ -741,8 +741,8 @@ set(ARCANE_SOURCES
   ISimpleTableInternalComparator.h
   ISimpleTableMng.h
   ISimpleTableOutput.h
-  ISimpleTableOutputMng.h
   ISimpleTableReaderWriter.h
+  ISimpleTableWriterHelper.h
 
   datatype/ArrayVariant.h
   datatype/BadVariantTypeException.h

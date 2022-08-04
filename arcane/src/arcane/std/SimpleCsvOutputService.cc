@@ -22,6 +22,33 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+bool SimpleCsvOutputService::
+init()
+{
+  if (m_with_option && options()->getTableName() != "") {
+    return m_stom.init(options()->getTableName());
+  }
+  return m_stom.init();
+}
+
+bool SimpleCsvOutputService::
+init(String name_table)
+{
+  if (m_with_option) {
+    return m_stom.init(name_table, options()->getTableDir());
+  }
+  return m_stom.init(name_table);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool SimpleCsvOutputService::
+writeFile(String dir, Integer only_proc) 
+{
+  m_stom.setOutputDir(dir);
+  return m_stom.writeFile(only_proc);
+}
 
 
 /*---------------------------------------------------------------------------*/

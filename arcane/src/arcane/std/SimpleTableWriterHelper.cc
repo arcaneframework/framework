@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/std/SimpleTableOutputMng.h"
+#include "arcane/std/SimpleTableWriterHelper.h"
 
 #include <arcane/Directory.h>
 #include <arcane/IMesh.h>
@@ -30,23 +30,24 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool SimpleTableOutputMng::
+bool SimpleTableWriterHelper::
 init()
 {
   return init("Table_@proc_id@");
 }
 
-bool SimpleTableOutputMng::
+bool SimpleTableWriterHelper::
 init(String name_table)
 {
   return init(name_table, "");
 }
 
-bool SimpleTableOutputMng::
+bool SimpleTableWriterHelper::
 init(String name_table, String name_dir)
 {
   ARCANE_CHECK_PTR(m_sti);
-  m_sti->m_name_tab = name_table;
+
+  setTabName(name_table);
   _computeName();
 
   m_name_output_dir = name_dir;
@@ -58,14 +59,16 @@ init(String name_table, String name_dir)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void SimpleTableOutputMng::
+void SimpleTableWriterHelper::
 print(Integer only_proc)
 {
   ARCANE_CHECK_PTR(m_strw);
-  m_strw->print(only_proc);
+  if (only_proc != -1 && m_sti->m_sub_domain->parallelMng()->commRank() != only_proc)
+    return;
+  m_strw->print();
 }
 
-bool SimpleTableOutputMng::
+bool SimpleTableWriterHelper::
 writeFile(Directory root_dir, Integer only_proc)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -92,30 +95,23 @@ writeFile(Directory root_dir, Integer only_proc)
   return m_strw->write(Directory(root_dir, m_name_output_dir), m_sti->m_name_tab);
 }
 
-bool SimpleTableOutputMng::
+bool SimpleTableWriterHelper::
 writeFile(Integer only_proc)
 {
   return writeFile(m_root, only_proc);
 }
 
-bool SimpleTableOutputMng::
-writeFile(String dir, Integer only_proc)
-{
-  setOutputDir(dir);
-  return writeFile(m_root, only_proc);
-}
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Integer SimpleTableOutputMng::
+Integer SimpleTableWriterHelper::
 precision()
 {
   ARCANE_CHECK_PTR(m_strw);
   return m_strw->precision();
 }
 
-void SimpleTableOutputMng::
+void SimpleTableWriterHelper::
 setPrecision(Integer precision)
 {
   ARCANE_CHECK_PTR(m_strw);
@@ -123,14 +119,14 @@ setPrecision(Integer precision)
 
 }
 
-bool SimpleTableOutputMng::
+bool SimpleTableWriterHelper::
 fixed()
 {
   ARCANE_CHECK_PTR(m_strw);
   return m_strw->fixed();
 }
 
-void SimpleTableOutputMng::
+void SimpleTableWriterHelper::
 setFixed(bool fixed)
 {
   ARCANE_CHECK_PTR(m_strw);
@@ -138,19 +134,25 @@ setFixed(bool fixed)
 }
 
 
-String SimpleTableOutputMng::
+String SimpleTableWriterHelper::
 outputDir()
 {
   return m_name_output_dir;
 }
 
-void SimpleTableOutputMng::
+String SimpleTableWriterHelper::
+outputDirWithoutComputation()
+{
+  return m_name_output_dir;
+}
+
+void SimpleTableWriterHelper::
 setOutputDir(String dir)
 {
   m_name_output_dir = dir;
 }
 
-String SimpleTableOutputMng::
+String SimpleTableWriterHelper::
 tabName()
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -158,15 +160,22 @@ tabName()
   return m_sti->m_name_tab;
 }
 
-void SimpleTableOutputMng::
+String SimpleTableWriterHelper::
+tabNameWithoutComputation()
+{
+  return m_name_tab_without_computation;
+}
+
+void SimpleTableWriterHelper::
 setTabName(String name)
 {
   ARCANE_CHECK_PTR(m_sti);
   m_sti->m_name_tab = name;
+  m_name_tab_without_computation = name;
   m_name_tab_computed = false;
 }
 
-String SimpleTableOutputMng::
+String SimpleTableWriterHelper::
 fileName()
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -174,27 +183,27 @@ fileName()
   return m_sti->m_name_tab + "." + m_strw->typeFile();
 }
 
-Directory SimpleTableOutputMng::
+Directory SimpleTableWriterHelper::
 outputPath()
 {
   return Directory(m_root, m_name_output_dir);
 }
 
-Directory SimpleTableOutputMng::
+Directory SimpleTableWriterHelper::
 rootPath()
 {
   return m_root;
 }
 
-bool SimpleTableOutputMng::
+bool SimpleTableWriterHelper::
 isOneFileByProcsPermited()
 {
   _computeName();
   return !m_name_tab_only_once;
 }
 
-String SimpleTableOutputMng::
-outputFileType()
+String SimpleTableWriterHelper::
+typeFile()
 {
   ARCANE_CHECK_PTR(m_strw);
   return m_strw->typeFile();
@@ -212,7 +221,7 @@ outputFileType()
  *                de différencier les fichiers écrits par differents processus.
  * @return String Le nom avec les symboles remplacés.
  */
-void SimpleTableOutputMng::
+void SimpleTableWriterHelper::
 _computeName()
 {
   if(m_name_tab_computed){
@@ -269,44 +278,24 @@ _computeName()
   return;
 }
 
-SimpleTableInternal* SimpleTableOutputMng::
+SimpleTableInternal* SimpleTableWriterHelper::
 internal() 
 {
   return m_sti;
 }
 
-void SimpleTableOutputMng::
-setInternal(SimpleTableInternal* sti) 
-{
-  ARCANE_CHECK_PTR(sti);
-  m_sti = sti;
-}
-
-void SimpleTableOutputMng::
-setInternal(SimpleTableInternal& sti) 
-{
-  m_sti = &sti;
-  ARCANE_CHECK_PTR(m_sti);
-}
-
-ISimpleTableReaderWriter* SimpleTableOutputMng::
+ISimpleTableReaderWriter* SimpleTableWriterHelper::
 readerWriter() 
 {
   return m_strw;
 }
 
-void SimpleTableOutputMng::
-setReaderWriter(ISimpleTableReaderWriter* strw) 
+void SimpleTableWriterHelper::
+setReaderWriter(ISimpleTableReaderWriter* strw)
 {
-  ARCANE_CHECK_PTR(strw);
-  m_strw = strw;
-}
-
-void SimpleTableOutputMng::
-setReaderWriter(ISimpleTableReaderWriter& strw) 
-{
-  m_strw = &strw;
   ARCANE_CHECK_PTR(m_strw);
+  m_strw = strw;
+  m_sti = m_strw->internal();
 }
 
 

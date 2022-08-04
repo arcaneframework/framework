@@ -69,13 +69,13 @@ class SimpleCsvComparatorService
   bool writeRefFile(Integer only_proc) override;
   bool readRefFile(Integer only_proc) override;
   bool isRefExist(Integer only_proc) override;
-  bool compareWithRef(Integer only_proc, Integer epsilon) override;
+  bool compareWithRef(Integer only_proc, Integer epsilon, bool dim_compare) override;
 
-  bool addColumnToCompare(String name_column) override;
-  bool addRowToCompare(String name_row) override;
+  bool addColumnForComparing(String name_column) override;
+  bool addRowForComparing(String name_row) override;
 
-  bool removeColumnToCompare(String name_column) override;
-  bool removeRowToCompare(String name_row) override;
+  void isAnArrayExclusiveColumns(bool is_exclusive) override;
+  void isAnArrayExclusiveRows(bool is_exclusive) override;
 
   void editRegexColumns(String regex_column) override;
   void editRegexRows(String regex_row) override;

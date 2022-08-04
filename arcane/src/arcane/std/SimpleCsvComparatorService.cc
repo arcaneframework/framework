@@ -38,7 +38,6 @@ init(ISimpleTableOutput* ptr_sto)
   m_iSTO = ptr_sto;
 
   m_sti_ref = m_iSTO->internal();
-
   m_stic.setInternalRef(m_sti_ref);
 
   // On déduit l'emplacement des fichiers de réferences.
@@ -72,13 +71,15 @@ editRootDir(Directory root_dir)
 void SimpleCsvComparatorService::
 print(Integer only_proc)
 {
-  m_scrw.print(only_proc);
+  if (only_proc != -1 && subDomain()->parallelMng()->commRank() != only_proc)
+    return;
+  m_scrw.print();
 }
 
 bool SimpleCsvComparatorService::
 writeRefFile(Integer only_proc)
 {
-  
+  ARCANE_CHECK_PTR(m_iSTO);
   // On sauvegarde les paramètres d'origines.
   Integer save_preci = m_iSTO->precision();
   bool save_fixed = m_iSTO->fixed();
@@ -118,8 +119,9 @@ isRefExist(Integer only_proc)
 }
 
 bool SimpleCsvComparatorService::
-compareWithRef(Integer only_proc, Integer epsilon)
+compareWithRef(Integer only_proc, Integer epsilon, bool dim_compare)
 {
+  ARCANE_CHECK_PTR(m_sti_ref);
   // Si le proc appelant ne doit pas lire.
   if (only_proc != -1 && mesh()->parallelMng()->commRank() != only_proc){
     return false;
@@ -129,29 +131,31 @@ compareWithRef(Integer only_proc, Integer epsilon)
     return false;
   }
 
-  return m_stic.compare(epsilon);
+  m_sti_ref->m_values_csv.dim1Size();
+
+  return m_stic.compare(epsilon, dim_compare);
 }
 
 bool SimpleCsvComparatorService::
-addColumnToCompare(String name_column)
+addColumnForComparing(String name_column)
 {
-  return m_stic.addColumnToCompare(name_column);
+  return m_stic.addColumnForComparing(name_column);
 }
 bool SimpleCsvComparatorService::
-addRowToCompare(String name_row)
+addRowForComparing(String name_row)
 {
-  return m_stic.addRowToCompare(name_row);
+  return m_stic.addRowForComparing(name_row);
 }
 
-bool SimpleCsvComparatorService::
-removeColumnToCompare(String name_column)
+void SimpleCsvComparatorService::
+isAnArrayExclusiveColumns(bool is_exclusive)
 {
-  return m_stic.removeColumnToCompare(name_column);
+  m_stic.isAnArrayExclusiveColumns(is_exclusive);
 }
-bool SimpleCsvComparatorService::
-removeRowToCompare(String name_row)
+void SimpleCsvComparatorService::
+isAnArrayExclusiveRows(bool is_exclusive)
 {
-  return m_stic.removeRowToCompare(name_row);
+  m_stic.isAnArrayExclusiveRows(is_exclusive);
 }
 
 void SimpleCsvComparatorService::

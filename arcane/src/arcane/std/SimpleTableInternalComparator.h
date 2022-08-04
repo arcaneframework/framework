@@ -47,21 +47,37 @@ class SimpleTableInternalComparator
   , m_is_excluding_regex_rows(false)
   , m_regex_columns("")
   , m_is_excluding_regex_columns(false)
+  , m_is_excluding_array_rows(false)
+  , m_is_excluding_array_columns(false)
+  {
+  }
+
+  SimpleTableInternalComparator()
+  : m_sti_ref(nullptr)
+  , m_sti_to_compare(nullptr)
+  , m_stm_ref(m_sti_ref)
+  , m_stm_to_compare(m_sti_to_compare)
+  , m_regex_rows("")
+  , m_is_excluding_regex_rows(false)
+  , m_regex_columns("")
+  , m_is_excluding_regex_columns(false)
+  , m_is_excluding_array_rows(false)
+  , m_is_excluding_array_columns(false)
   {
   }
 
   virtual ~SimpleTableInternalComparator() = default;
 
  public:
-  bool compare(Integer epsilon) override;
+  bool compare(Integer epsilon, bool compare_dim) override;
 
   void clear() override;
 
-  bool addColumnToCompare(String name_column) override;
-  bool addRowToCompare(String name_row) override;
+  bool addColumnForComparing(String name_column) override;
+  bool addRowForComparing(String name_row) override;
 
-  bool removeColumnToCompare(String name_column) override;
-  bool removeRowToCompare(String name_row) override;
+  void isAnArrayExclusiveColumns(bool is_exclusive) override;
+  void isAnArrayExclusiveRows(bool is_exclusive) override;
 
   void editRegexColumns(String regex_column) override;
   void editRegexRows(String regex_row) override;
@@ -71,11 +87,9 @@ class SimpleTableInternalComparator
 
   SimpleTableInternal* internalRef() override;
   void setInternalRef(SimpleTableInternal* sti) override;
-  void setInternalRef(SimpleTableInternal& sti) override;
 
   SimpleTableInternal* internalToCompare() override;
   void setInternalToCompare(SimpleTableInternal* sti) override;
-  void setInternalToCompare(SimpleTableInternal& sti) override;
 
  protected:
   bool _exploreColumn(String column_name);
@@ -94,8 +108,11 @@ class SimpleTableInternalComparator
   String m_regex_columns;
   bool m_is_excluding_regex_columns;
 
-  StringUniqueArray m_compared_rows;
-  StringUniqueArray m_compared_columns;
+  StringUniqueArray m_rows_to_compare;
+  bool m_is_excluding_array_rows;
+
+  StringUniqueArray m_columns_to_compare;
+  bool m_is_excluding_array_columns;
 };
 
 /*---------------------------------------------------------------------------*/

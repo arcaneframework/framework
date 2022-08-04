@@ -58,7 +58,6 @@ class ARCANE_CORE_EXPORT SimpleTableReaderWriterUtils
 /*---------------------------------------------------------------------------*/
 
 /**
- * @ingroup StandardService
  * @brief TODO
  */
 class ARCANE_CORE_EXPORT ISimpleTableReaderWriter
@@ -71,10 +70,28 @@ public:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-  virtual bool write(Directory dst, String file) = 0;
-  virtual bool read(Directory src, String file) = 0;
+  /**
+   * @brief Méthode permettant d'écrire un tableau dans un fichier.
+   * L'extension sera ajouté par l'implémentation.
+   * 
+   * @param dst Le répertoire de destination. Il sera créé s'il n'existe pas.
+   * @param file_name Le nom du fichier (sans extension).
+   * @return true Si le fichier a bien été écrit.
+   * @return false Si le fichier n'a pas pu être écrit.
+   */
+  virtual bool write(Directory dst, String file_name) = 0;
+
+  /**
+   * @brief 
+   * TODO : Mettre last_pos à 0
+   * @param src 
+   * @param file_name 
+   * @return true 
+   * @return false 
+   */
+  virtual bool read(Directory src, String file_name) = 0;
   virtual bool clear() = 0;
-  virtual void print(Integer only_proc = 0) = 0;
+  virtual void print() = 0;
 
   /**
    * @brief Méthode permettant de récupérer la précision actuellement
@@ -86,7 +103,7 @@ public:
   /**
    * @brief Méthode permettant de modifier la précision du print.
    * 
-   * Aussi bien pour la méthode 'print()' que les méthodes 'writeFile()'.
+   * Aussi bien pour la méthode 'print()' que la méthode 'write()'.
    * 
    * \note Un appel à cette méthode sans le paramètre définira la précision
    * par défaut.
@@ -106,7 +123,7 @@ public:
   /**
    * @brief Méthode permettant de définir le flag 'std::fixed' ou non.
    * 
-   * Aussi bien pour la méthode 'print()' que les méthodes 'writeFile()'.
+   * Aussi bien pour la méthode 'print()' que la méthode 'write()'.
    * 
    * Ce flag permet de 'forcer' le nombre de chiffre après la virgule à
    * la précision voulu. Par exemple, si l'on a appelé 'setPrecision(4)',
@@ -123,8 +140,6 @@ public:
 
   virtual SimpleTableInternal* internal() = 0;
   virtual void setInternal(SimpleTableInternal* sti) = 0;
-  virtual void setInternal(SimpleTableInternal& sti) = 0;
-
 };
 
 /*---------------------------------------------------------------------------*/

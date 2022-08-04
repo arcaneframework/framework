@@ -5,14 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ISimpleTableOutputMng.hh                                       (C) 2000-2022 */
+/* ISimpleTableWriterHelper.hh                                       (C) 2000-2022 */
 /*                                                                           */
 /* TODO         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_ISIMPLETABLEOUTPUTMNG_H
-#define ARCANE_ISIMPLETABLEOUTPUTMNG_H
+#ifndef ARCANE_ISIMPLETABLEWRITERHELPER_H
+#define ARCANE_ISIMPLETABLEWRITERHELPER_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -32,13 +32,12 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /**
- * @ingroup StandardService
  * @brief TODO
  */
-class ARCANE_CORE_EXPORT ISimpleTableOutputMng
+class ARCANE_CORE_EXPORT ISimpleTableWriterHelper
 {
 public:
-  virtual ~ISimpleTableOutputMng() = default;
+  virtual ~ISimpleTableWriterHelper() = default;
 
 public:
 
@@ -86,20 +85,6 @@ public:
    * @return false Si le fichier n'a pas été correctement écrit.
    */
   virtual bool writeFile(Integer only_proc = -1) = 0;
-  /**
-   * @brief Méthode permettant d'écrire le tableau dans un fichier.
-   * Si only_proc != -1, les processus autres que P0 retournent true.
-   * 
-   * @param dir Le répertoire où sera écrit le fichier
-   *            . Le chemin final sera "./[output_dir]/csv/[dir]/"
-   * @param only_proc L'id du processus devant écrire dans un fichier 
-   *                  le tableau (-1 pour signifier "tous les processus").
-   * @return true Si le fichier a été correctement écrit.
-   * @return false Si le fichier n'a pas été correctement écrit.
-   * 
-   * @deprecated Utiliser setOutputDir() puis writeFile() à la place.
-   */
-  virtual bool writeFile(String dir, Integer only_proc = -1) = 0;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -147,6 +132,7 @@ public:
    */
   virtual void setFixed(bool fixed = true) = 0;
 
+  virtual String outputDirWithoutComputation() = 0;
 
   /**
    * @brief Accesseur permettant de récupérer le nom du répertoire où sera
@@ -166,6 +152,8 @@ public:
    * @param dir Le répertoire.
    */
   virtual void setOutputDir(String dir) = 0;
+
+  virtual String tabNameWithoutComputation() = 0;
 
 
   /**
@@ -225,16 +213,13 @@ public:
    */
   virtual bool isOneFileByProcsPermited() = 0;
 
-  virtual String outputFileType() = 0;
+  virtual String typeFile() = 0;
 
   virtual SimpleTableInternal* internal() = 0;
-  virtual void setInternal(SimpleTableInternal* sti) = 0;
-  virtual void setInternal(SimpleTableInternal& sti) = 0;
-
 
   virtual ISimpleTableReaderWriter* readerWriter() = 0;
   virtual void setReaderWriter(ISimpleTableReaderWriter* strw) = 0;
-  virtual void setReaderWriter(ISimpleTableReaderWriter& strw) = 0;
+
 };
 
 /*---------------------------------------------------------------------------*/

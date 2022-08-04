@@ -41,6 +41,11 @@ class SimpleTableMng
   {
   }
 
+  SimpleTableMng()
+  : m_sti(nullptr)
+  {
+  }
+
   virtual ~SimpleTableMng() = default;
 
  public:
@@ -119,7 +124,6 @@ class SimpleTableMng
 
   SimpleTableInternal* internal() override;
   void setInternal(SimpleTableInternal* sti) override;
-  void setInternal(SimpleTableInternal& sti) override;
 
  protected:
   SimpleTableInternal* m_sti;

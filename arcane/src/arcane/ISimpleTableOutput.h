@@ -17,7 +17,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include <arcane/ISimpleTableOutputMng.h>
+#include <arcane/ISimpleTableWriterHelper.h>
 #include <arcane/ISimpleTableMng.h>
 
 /*---------------------------------------------------------------------------*/
@@ -34,8 +34,6 @@ namespace Arcane
  * @brief Interface représentant une sortie de tableau simple.
  */
 class ARCANE_CORE_EXPORT ISimpleTableOutput
-: public ISimpleTableMng
-, public ISimpleTableOutputMng
 {
 public:
   virtual ~ISimpleTableOutput() = default;
@@ -631,6 +629,14 @@ public:
    */
   virtual bool editNameColumn(String name_column, String new_name) = 0;
 
+  /**
+   * @brief Méthode permettant de créer une colonne contenant la moyenne des
+   * éléments de chaque ligne.
+   * 
+   * @param name_column Le nom de la nouvelle colonne.
+   * @return Integer La position de la colonne.
+   */
+  virtual Integer addAverageColumn(String name_column) = 0;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -795,15 +801,9 @@ public:
 
   virtual String outputFileType() = 0;
 
-
   virtual SimpleTableInternal* internal() = 0;
-  virtual void setInternal(SimpleTableInternal* sti) = 0;
-  virtual void setInternal(SimpleTableInternal& sti) = 0;
-
 
   virtual ISimpleTableReaderWriter* readerWriter() = 0;
-  virtual void setReaderWriter(ISimpleTableReaderWriter* strw) = 0;
-  virtual void setReaderWriter(ISimpleTableReaderWriter& strw) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -33,6 +33,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// TODO : Voir pour ajouter ISharedReference.
 struct ARCANE_CORE_EXPORT SimpleTableInternal
 {
   SimpleTableInternal(ISubDomain* sub_domain)
@@ -682,8 +683,6 @@ public:
 
   virtual SimpleTableInternal* internal() = 0;
   virtual void setInternal(SimpleTableInternal* sti) = 0;
-  virtual void setInternal(SimpleTableInternal& sti) = 0;
-
 };
 
 /*---------------------------------------------------------------------------*/

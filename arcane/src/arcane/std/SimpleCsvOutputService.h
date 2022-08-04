@@ -18,7 +18,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/std/SimpleTableMng.h"
-#include "arcane/std/SimpleTableOutputMng.h"
+#include "arcane/std/SimpleTableWriterHelper.h"
 #include "arcane/std/SimpleCsvReaderWriter.h"
 #include "arcane/ISimpleTableOutput.h"
 #include "arcane/Directory.h"
@@ -51,8 +51,8 @@ class SimpleCsvOutputService
   virtual ~SimpleCsvOutputService() = default;
 
  public:
-  bool init() override { return m_stom.init(); };
-  bool init(String name_table) override { return m_stom.init(name_table); };
+  bool init() override;
+  bool init(String name_table) override;
   bool init(String name_table, String name_dir) override { return m_stom.init(name_table, name_dir); };
 
   void clear() override { return m_stm.clear(); };
@@ -131,7 +131,7 @@ class SimpleCsvOutputService
   void print(Integer only_proc) override { return m_stom.print(only_proc); };
   bool writeFile(Integer only_proc) override { return m_stom.writeFile(only_proc); };
   bool writeFile(Directory root_dir, Integer only_proc) override { return m_stom.writeFile(root_dir, only_proc); };
-  bool writeFile(String dir, Integer only_proc) override { return m_stom.writeFile(dir, only_proc); };
+  bool writeFile(String dir, Integer only_proc) override;
 
   Integer precision() override { return m_stom.precision(); };
   void setPrecision(Integer precision) override { return m_stom.setPrecision(precision); };
@@ -149,23 +149,18 @@ class SimpleCsvOutputService
   Directory outputPath() override { return m_stom.outputPath(); };
   Directory rootPath() override { return m_stom.rootPath(); };
   
-  String outputFileType() override { return m_stom.outputFileType(); };
+  String outputFileType() override { return m_stom.typeFile(); };
 
   bool isOneFileByProcsPermited() override { return m_stom.isOneFileByProcsPermited(); };
 
-  SimpleTableInternal* internal() override { return m_stm.internal(); };
-  void setInternal(SimpleTableInternal* sti) override { m_stm.setInternal(sti); m_stom.setInternal(sti); };
-  void setInternal(SimpleTableInternal& sti) override { m_stm.setInternal(sti); m_stom.setInternal(sti); };
-
-  ISimpleTableReaderWriter* readerWriter() override { return m_stom.readerWriter(); };
-  void setReaderWriter(ISimpleTableReaderWriter* strw) override { m_stom.setReaderWriter(strw); } ;
-  void setReaderWriter(ISimpleTableReaderWriter& strw) override { m_stom.setReaderWriter(strw); } ;
+  SimpleTableInternal* internal() override { return &m_internal; };
+  ISimpleTableReaderWriter* readerWriter() override { return &m_scrw; };
 
  private:
   SimpleTableInternal m_internal;
   SimpleCsvReaderWriter m_scrw;
   SimpleTableMng m_stm;
-  SimpleTableOutputMng m_stom;
+  SimpleTableWriterHelper m_stom;
   bool m_with_option;
 };
 

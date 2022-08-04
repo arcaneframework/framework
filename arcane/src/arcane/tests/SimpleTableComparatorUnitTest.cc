@@ -71,7 +71,7 @@ testSimple()
   ptrSTO->editElem("Ma colonne 1", "Ma ligne 1", 0);
 
   ASSERT_TRUE(ptrSTC->readRefFile());
-
+  ptrSTC->print();
   ptrSTC->editRegexColumns("^.*1$");
   ptrSTC->isARegexExclusiveColumns(true);
 
@@ -158,7 +158,7 @@ testIncludeRow()
 
   ASSERT_TRUE(ptrSTC->readRefFile());
 
-  ptrSTC->addRowToCompare("Ma ligne 3");
+  ptrSTC->addRowForComparing("Ma ligne 3");
 
   ASSERT_TRUE(ptrSTC->compareWithRef());
 }
@@ -187,7 +187,7 @@ testIncludeColumn()
 
   ASSERT_TRUE(ptrSTC->readRefFile());
 
-  ptrSTC->addColumnToCompare("Ma colonne 3");
+  ptrSTC->addColumnForComparing("Ma colonne 3");
 
   ASSERT_TRUE(ptrSTC->compareWithRef());
 }
@@ -221,10 +221,10 @@ testIncludeRowColumn()
 
   ASSERT_TRUE(ptrSTC->readRefFile());
 
-  ptrSTC->addColumnToCompare("Ma colonne 1");
-  ptrSTC->addColumnToCompare("Ma colonne 3");
-  ptrSTC->addRowToCompare("Ma ligne 1");
-  ptrSTC->addRowToCompare("Ma ligne 3");
+  ptrSTC->addColumnForComparing("Ma colonne 1");
+  ptrSTC->addColumnForComparing("Ma colonne 3");
+  ptrSTC->addRowForComparing("Ma ligne 1");
+  ptrSTC->addRowForComparing("Ma ligne 3");
 
   ASSERT_TRUE(ptrSTC->compareWithRef());
 }
@@ -255,9 +255,9 @@ testRegexRow()
 
   ASSERT_TRUE(ptrSTC->readRefFile());
 
-  ptrSTC->addRowToCompare("Ma ligne 1");
-  ptrSTC->addRowToCompare("Ma ligne 2");
-  ptrSTC->addRowToCompare("Ma ligne 3");
+  ptrSTC->addRowForComparing("Ma ligne 1");
+  ptrSTC->addRowForComparing("Ma ligne 2");
+  ptrSTC->addRowForComparing("Ma ligne 3");
 
   // 3 inclus.
   ptrSTC->editRegexRows("^.*[3-9]+$");
@@ -292,9 +292,9 @@ testRegexColumn()
 
   ASSERT_TRUE(ptrSTC->readRefFile());
 
-  ptrSTC->addColumnToCompare("Ma colonne 1");
-  ptrSTC->addColumnToCompare("Ma colonne 2");
-  ptrSTC->addColumnToCompare("Ma colonne 3");
+  ptrSTC->addColumnForComparing("Ma colonne 1");
+  ptrSTC->addColumnForComparing("Ma colonne 2");
+  ptrSTC->addColumnForComparing("Ma colonne 3");
 
   // 3 inclus.
   ptrSTC->editRegexColumns("^.*[3-9]+$");
@@ -341,7 +341,7 @@ testRegexRowColumn()
 
   ASSERT_TRUE(ptrSTC->readRefFile());
 
-  ptrSTC->addColumnToCompare("Ma colonne 5");
+  ptrSTC->addColumnForComparing("Ma colonne 5");
   ptrSTC->editRegexColumns("^.*[1-2]+$");
 
   ptrSTC->editRegexRows("^.*[3-4]+$");

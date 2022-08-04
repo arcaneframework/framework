@@ -129,11 +129,9 @@ clear()
 }
 
 void SimpleCsvReaderWriter::
-print(Integer only_proc)
+print()
 {
   ARCANE_CHECK_PTR(m_sti);
-  if (only_proc != -1 && m_sti->m_sub_domain->parallelMng()->commRank() != only_proc)
-    return;
   _print(std::cout);
 }
 
@@ -179,14 +177,6 @@ setInternal(SimpleTableInternal* sti)
   ARCANE_CHECK_PTR(sti);
   m_sti = sti;
 }
-
-void SimpleCsvReaderWriter::
-setInternal(SimpleTableInternal& sti) 
-{
-  m_sti = &sti;
-  ARCANE_CHECK_PTR(m_sti);
-}
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

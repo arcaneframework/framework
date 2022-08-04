@@ -47,13 +47,22 @@ class SimpleCsvReaderWriter
   {
   }
 
+  SimpleCsvReaderWriter()
+  : m_sti(nullptr)
+  , m_separator(';')
+  , m_precision_print(6)
+  , m_is_fixed_print(true)
+  {
+  }
+
+
   ~SimpleCsvReaderWriter() = default;
 
  public:
   bool write(Directory dst, String file) override;
   bool read(Directory src, String file) override;
   bool clear() override;
-  void print(Integer only_proc = 0) override;
+  void print() override;
 
   Integer precision() override;
   void setPrecision(Integer precision) override;
@@ -65,7 +74,6 @@ class SimpleCsvReaderWriter
 
   SimpleTableInternal* internal() override;
   void setInternal(SimpleTableInternal* sti) override;
-  void setInternal(SimpleTableInternal& sti) override;
 
  protected:
   bool _openFile(std::ifstream& stream, Directory dir, String file);

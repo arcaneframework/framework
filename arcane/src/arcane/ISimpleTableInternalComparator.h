@@ -44,12 +44,16 @@ public:
    * @brief Méthode permettant de comparer l'objet de type ISimpleTableOutput
    * aux fichiers de réference.
    * 
+   * Les tableaux contenant les instructions de comparaisons ainsi que les regex seront
+   * effacés si les tableaux sont identiques (si return true).
+   * 
    * @param only_proc Le processus qui doit comparer ses résultats (-1 pour tous les processus). 
    * @param epsilon La marge d'erreur.
+   * @param compare_dim Si l'on doit comparer les dimensions des STI.
    * @return true S'il n'y a pas de différences.
    * @return false S'il y a au moins une différence (et si processus appelant != only_proc).
    */
-  virtual bool compare(Integer epsilon = 0) = 0;
+  virtual bool compare(Integer epsilon = 0, bool compare_dim = false) = 0;
 
   virtual void clear() = 0;
 
@@ -61,7 +65,7 @@ public:
    * @return true Si le nom a bien été ajouté.
    * @return false Sinon.
    */
-  virtual bool addColumnToCompare(String name_column) = 0;
+  virtual bool addColumnForComparing(String name_column) = 0;
   /**
    * @brief Méthode permettant d'ajouter une ligne dans la liste des lignes
    * à comparer.
@@ -70,26 +74,11 @@ public:
    * @return true Si le nom a bien été ajouté.
    * @return false Sinon.
    */
-  virtual bool addRowToCompare(String name_row) = 0;
+  virtual bool addRowForComparing(String name_row) = 0;
 
-  /**
-   * @brief Méthode permettant de supprimer une colonne de la liste des
-   * colonnes à comparer.
-   * 
-   * @param name_column Le nom de la colonne à supprimer de la liste.
-   * @return true Si la suppression a eu lieu.
-   * @return false Sinon.
-   */
-  virtual bool removeColumnToCompare(String name_column) = 0;
-  /**
-   * @brief Méthode permettant de supprimer une ligne de la liste des
-   * lignes à comparer.
-   * 
-   * @param name_row Le nom de la ligne à supprimer de la liste.
-   * @return true Si la suppression a eu lieu.
-   * @return false Sinon.
-   */
-  virtual bool removeRowToCompare(String name_row) = 0;
+  virtual void isAnArrayExclusiveColumns(bool is_exclusive) = 0;
+  virtual void isAnArrayExclusiveRows(bool is_exclusive) = 0;
+
 
   /**
    * @brief Méthode permettant d'ajouter une expression régulière
@@ -124,11 +113,9 @@ public:
 
   virtual SimpleTableInternal* internalRef() = 0;
   virtual void setInternalRef(SimpleTableInternal* sti) = 0;
-  virtual void setInternalRef(SimpleTableInternal& sti) = 0;
 
   virtual SimpleTableInternal* internalToCompare() = 0;
   virtual void setInternalToCompare(SimpleTableInternal* sti) = 0;
-  virtual void setInternalToCompare(SimpleTableInternal& sti) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
