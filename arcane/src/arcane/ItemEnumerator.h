@@ -70,6 +70,8 @@ class ItemEnumerator
   ItemEnumerator(const ItemInternalEnumerator& rhs)
   : m_items(rhs.m_items), m_local_ids(rhs.m_local_ids),
     m_index(rhs.m_index), m_count(rhs.m_count), m_group_impl(nullptr) {}
+  ItemEnumerator(const ItemInternalPtr* items,const Int32* local_ids,Int32 index,Int32 n, const ItemGroupImpl * agroup = nullptr)
+  : m_items(items), m_local_ids(local_ids), m_index(index), m_count(n), m_group_impl(agroup) {}
 
  public:
 
@@ -124,35 +126,76 @@ class ItemEnumerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Enumérateur sur une liste typée d'entités
+ * \brief Enumérateur sur une liste typée d'entités de type \a ItemType
  */
 template<typename ItemType>
 class ItemEnumeratorT
-: public ItemEnumerator
 {
+ private:
+
+  using ItemInternalPtr = ItemInternal*;
+  using  LocalIdType = typename ItemType::LocalIdType;
+
  public:
 
-  typedef typename ItemType::LocalIdType LocalIdType;
-
- public:
-
-  ItemEnumeratorT() {}
-  ItemEnumeratorT(const ItemInternalPtr* items,const Int32* local_ids,Integer n, const ItemGroupImpl * agroup = 0)
-  : ItemEnumerator(items,local_ids,n,agroup) {}
+  ItemEnumeratorT()
+  : m_items(nullptr), m_local_ids(nullptr), m_index(0), m_count(0), m_group_impl(nullptr) {}
+  ItemEnumeratorT(const ItemInternalPtr* items,const Int32* local_ids,Integer n, const ItemGroupImpl * agroup = nullptr)
+  : m_items(items), m_local_ids(local_ids), m_index(0), m_count(n), m_group_impl(agroup) {}
+  ItemEnumeratorT(const ItemInternalArrayView& items,const Int32ConstArrayView& local_ids, const ItemGroupImpl * agroup = nullptr)
+  : m_items(items.data()), m_local_ids(local_ids.data()), m_index(0), m_count(local_ids.size()), m_group_impl(agroup) {}
+  ItemEnumeratorT(const ItemInternalVectorView& view, const ItemGroupImpl * agroup = nullptr)
+  : m_items(view.items().data()), m_local_ids(view.localIds().data()),
+    m_index(0), m_count(view.size()), m_group_impl(agroup) {}
+  ItemEnumeratorT(const ItemVectorView& rhs)
+  : ItemEnumeratorT((const ItemInternalVectorView&)rhs) {}
   ItemEnumeratorT(const ItemVectorViewT<ItemType>& rhs)
-  : ItemEnumerator(rhs) {}
-
- public:
-
-  [[deprecated("Y2021: Use strongly typed enumerator (Node, Face, Cell, ...) instead of generic (Item) enumerator")]]
-  ItemEnumeratorT(const ItemInternalEnumerator& rhs)
-  : ItemEnumerator(rhs) {}
+  : ItemEnumeratorT((const ItemInternalVectorView&)rhs) {}
 
   [[deprecated("Y2021: Use strongly typed enumerator (Node, Face, Cell, ...) instead of generic (Item) enumerator")]]
   ItemEnumeratorT(const ItemEnumerator& rhs)
-  : ItemEnumerator(rhs) {}
+  : m_items(rhs.unguardedItems()), m_local_ids(rhs.unguardedLocalIds()),
+    m_index(rhs.index()), m_count(rhs.count()), m_group_impl(rhs.group()) {}
+  [[deprecated("Y2021: Use strongly typed enumerator (Node, Face, Cell, ...) instead of generic (Item) enumerator")]]
+  ItemEnumeratorT(const ItemInternalEnumerator& rhs)
+  : m_items(rhs.m_items), m_local_ids(rhs.m_local_ids),
+    m_index(rhs.m_index), m_count(rhs.m_count), m_group_impl(nullptr) {}
 
  public:
+
+  //! Conversion vers un ItemEnumerator
+  operator ItemEnumerator() const { return ItemEnumerator(m_items,m_local_ids,m_index,m_count,m_group_impl); }
+
+ public:
+
+  constexpr void operator++() { ++m_index; }
+  constexpr bool operator()() { return m_index<m_count; }
+  constexpr bool hasNext() { return m_index<m_count; }
+
+  //! Nombre d'éléments de l'énumérateur
+  constexpr Integer count() const { return m_count; }
+
+  //! Indice courant de l'énumérateur
+  constexpr Integer index() const { return m_index; }
+
+  //! localId() de l'entité courante.
+  constexpr Int32 itemLocalId() const { return m_local_ids[m_index]; }
+
+  //! localId() de l'entité courante.
+  constexpr Int32 localId() const { return m_local_ids[m_index]; }
+
+  //! Indices locaux
+  constexpr const Int32* unguardedLocalIds() const { return m_local_ids; }
+
+  //! Indices locaux
+  constexpr const ItemInternalPtr* unguardedItems() const { return m_items; }
+
+  //! Partie interne (pour usage interne uniquement)
+  constexpr ItemInternal* internal() const { return m_items[m_local_ids[m_index]]; }
+
+  //! Groupe sous-jacent s'il existe (0 sinon)
+  /*! Ceci vise à pouvoir tester que les accès par ce énumérateur sur un objet partiel sont licites */
+  constexpr const ItemGroupImpl* group() const { return m_group_impl; }
 
   ItemType operator*() const
   {
@@ -170,11 +213,20 @@ class ItemEnumeratorT
     return ItemEnumeratorT<ItemType>(rhs,true);
   }
 
-  private:
+ private:
+
+  const ItemInternalPtr* m_items;
+  const Int32* ARCANE_RESTRICT m_local_ids;
+  Integer m_index;
+  Integer m_count;
+  const ItemGroupImpl* m_group_impl; // pourrait être retiré en mode release si nécessaire
+
+ private:
 
   //! Constructeur seulement utilisé par fromItemEnumerator()
   ItemEnumeratorT(const ItemEnumerator& rhs,bool)
-  : ItemEnumerator(rhs) {}
+  : m_items(rhs.unguardedItems()), m_local_ids(rhs.unguardedLocalIds()),
+    m_index(rhs.index()), m_count(rhs.count()), m_group_impl(rhs.group()) {}
 };
 
 /*---------------------------------------------------------------------------*/
@@ -199,6 +251,15 @@ ItemLocalId(ItemEnumerator enumerator)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template<typename ItemType> inline ItemLocalId::
+ItemLocalId(ItemEnumeratorT<ItemType> enumerator)
+: m_local_id(enumerator.asItemLocalId())
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 // TODO: ajouter vérification du bon type
 template<typename ItemType> inline ItemLocalIdT<ItemType>::
 ItemLocalIdT(ItemEnumerator enumerator)
@@ -211,8 +272,7 @@ ItemLocalIdT(ItemEnumerator enumerator)
 
 template<typename ItemType> inline ItemLocalIdT<ItemType>::
 ItemLocalIdT(ItemEnumeratorT<ItemType> enumerator)
-:
-ItemLocalId(enumerator.asItemLocalId())
+: ItemLocalId(enumerator.asItemLocalId())
 {
 }
 
