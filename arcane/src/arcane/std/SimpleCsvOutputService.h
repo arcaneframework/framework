@@ -22,6 +22,7 @@
 #include "arcane/std/SimpleCsvReaderWriter.h"
 #include "arcane/ISimpleTableOutput.h"
 #include "arcane/Directory.h"
+#include "arcane/IParallelMng.h"
 #include "arcane/std/SimpleCsvOutput_axl.h"
 
 /*---------------------------------------------------------------------------*/
@@ -39,13 +40,12 @@ class SimpleCsvOutputService
  public:
   explicit SimpleCsvOutputService(const ServiceBuildInfo& sbi)
   : ArcaneSimpleCsvOutputObject(sbi)
+  , m_internal(subDomain())
   , m_scrw(&m_internal)
   , m_stm(&m_internal)
   , m_stom(&m_scrw)
   {
     m_with_option = (sbi.creationType() == ST_CaseOption);
-
-    m_internal.m_mesh = mesh();
   }
 
   virtual ~SimpleCsvOutputService() = default;
@@ -162,11 +162,11 @@ class SimpleCsvOutputService
   void setReaderWriter(ISimpleTableReaderWriter& strw) override { m_stom.setReaderWriter(strw); } ;
 
  private:
-  bool m_with_option;
   SimpleTableInternal m_internal;
   SimpleCsvReaderWriter m_scrw;
   SimpleTableMng m_stm;
   SimpleTableOutputMng m_stom;
+  bool m_with_option;
 };
 
 /*---------------------------------------------------------------------------*/

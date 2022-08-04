@@ -43,22 +43,25 @@ class SimpleCsvComparatorService
  public:
   explicit SimpleCsvComparatorService(const ServiceBuildInfo& sbi)
   : ArcaneSimpleCsvComparatorObject(sbi)
+  , m_iSTO(nullptr)
+  , m_ref_path()
+  , m_root_path()
   , m_output_dir("_ref")
+  , m_file_name("")
+  , m_name_tab("")
   , m_is_file_open(false)
   , m_is_file_read(false)
-  , m_iSTO(nullptr)
+  , m_sti_ref(nullptr)
+  , m_sti_to_compare(subDomain())
   , m_stic(m_sti_ref, &m_sti_to_compare)
   , m_scrw(&m_sti_to_compare)
   {
     m_with_option = (sbi.creationType() == ST_CaseOption);
-
-    m_sti_to_compare.m_mesh = mesh();
   }
 
   virtual ~SimpleCsvComparatorService() = default;
 
  public:
-  
   void init(ISimpleTableOutput* ptr_sto) override;
   void clear() override;
   void editRootDir(Directory root_dir) override;
@@ -80,13 +83,16 @@ class SimpleCsvComparatorService
   void isARegexExclusiveColumns(bool is_exclusive) override;
   void isARegexExclusiveRows(bool is_exclusive) override;
 
- protected:
+ private:
   bool _exploreColumn(Integer pos);
   bool _exploreRows(Integer pos);
 
- protected:
+ private:
+  ISimpleTableOutput* m_iSTO;
+
   Directory m_ref_path;
   Directory m_root_path;
+
   String m_output_dir;
   String m_file_name;
   String m_name_tab;
@@ -95,12 +101,10 @@ class SimpleCsvComparatorService
   bool m_is_file_open;
   bool m_is_file_read;
 
-  ISimpleTableOutput* m_iSTO;
-
+  SimpleTableInternal* m_sti_ref;
+  SimpleTableInternal m_sti_to_compare;
   SimpleTableInternalComparator m_stic;
   SimpleCsvReaderWriter m_scrw;
-  SimpleTableInternal m_sti_to_compare;
-  SimpleTableInternal* m_sti_ref;
 
   bool m_with_option;
 };

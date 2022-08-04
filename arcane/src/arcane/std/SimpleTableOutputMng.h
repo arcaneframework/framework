@@ -40,16 +40,12 @@ class SimpleTableOutputMng
   SimpleTableOutputMng(ISimpleTableReaderWriter* strw)
   : m_sti(strw->internal())
   , m_strw(strw)
+  , m_name_output_dir("")
+  , m_root()
+  , m_name_tab_computed(false)
+  , m_name_tab_only_once(false)
   {
-
   }
-
-  // SimpleTableOutputMng()
-  // : m_sti(nullptr)
-  // , m_strw(nullptr)
-  // {
-  //   std::cout << "Attention, STOM vide !" << std::endl;
-  // }
 
   virtual ~SimpleTableOutputMng() = default;
 
@@ -91,23 +87,23 @@ class SimpleTableOutputMng
   void setReaderWriter(ISimpleTableReaderWriter* strw) override;
   void setReaderWriter(ISimpleTableReaderWriter& strw) override;
 
- private:
+ protected:
   String _computeFinal();
   void _computeName();
   bool _createDirectory(Directory dir);
   bool _createOutputDirectory();
   bool _createRoot();
 
- private:
+ protected:
+  SimpleTableInternal* m_sti;
+  ISimpleTableReaderWriter* m_strw;
+
   String m_name_output_dir;
 
   Directory m_root;
 
   bool m_name_tab_computed;
   bool m_name_tab_only_once;
-
-  SimpleTableInternal* m_sti;
-  ISimpleTableReaderWriter* m_strw;
 };
 
 /*---------------------------------------------------------------------------*/

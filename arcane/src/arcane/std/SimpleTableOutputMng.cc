@@ -51,7 +51,7 @@ init(String name_table, String name_dir)
 
   m_name_output_dir = name_dir;
 
-  m_root = Directory(m_sti->m_mesh->subDomain()->exportDirectory(), m_strw->typeFile());
+  m_root = Directory(m_sti->m_sub_domain->exportDirectory(), m_strw->typeFile());
   return true;
 }
 
@@ -74,19 +74,19 @@ writeFile(Directory root_dir, Integer only_proc)
   _computeName();
 
   // Création du répertoire.
-  bool result = SimpleTableReaderWriterUtils::createDirectoryOnlyP0(m_sti->m_mesh, root_dir);
+  bool result = SimpleTableReaderWriterUtils::createDirectoryOnlyP0(m_sti->m_sub_domain, root_dir);
   if(!result) {
     return false;
   }
 
   // Si l'on n'est pas le processus demandé, on return true.
   // -1 = tout le monde écrit.
-  if (only_proc != -1 && m_sti->m_mesh->parallelMng()->commRank() != only_proc)
+  if (only_proc != -1 && m_sti->m_sub_domain->parallelMng()->commRank() != only_proc)
     return true;
 
   // Si l'on a only_proc == -1 et que m_sti->m_name_tab_only_once == true, alors il n'y a que le
   // processus 0 qui doit écrire.
-  if ((only_proc == -1 && m_name_tab_only_once) && m_sti->m_mesh->parallelMng()->commRank() != 0)
+  if ((only_proc == -1 && m_name_tab_only_once) && m_sti->m_sub_domain->parallelMng()->commRank() != 0)
     return true;
 
   return m_strw->write(Directory(root_dir, m_name_output_dir), m_sti->m_name_tab);
@@ -237,7 +237,7 @@ _computeName()
     std::optional<Integer> proc_id = string_splited.span().findFirst("proc_id");
     // On remplace "@proc_id@" par l'id du proc.
     if (proc_id) {
-      string_splited[proc_id.value()] = String::fromNumber(m_sti->m_mesh->parallelMng()->commRank());
+      string_splited[proc_id.value()] = String::fromNumber(m_sti->m_sub_domain->parallelMng()->commRank());
       m_name_tab_only_once = false;
     }
     // Il n'y a que un seul proc qui write.
@@ -249,7 +249,7 @@ _computeName()
     std::optional<Integer> num_procs = string_splited.span().findFirst("num_procs");
     // On remplace "@num_procs@" par l'id du proc.
     if (num_procs) {
-      string_splited[num_procs.value()] = String::fromNumber(m_sti->m_mesh->parallelMng()->commSize());
+      string_splited[num_procs.value()] = String::fromNumber(m_sti->m_sub_domain->parallelMng()->commSize());
     }
   }
 

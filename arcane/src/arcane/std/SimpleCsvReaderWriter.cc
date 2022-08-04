@@ -28,7 +28,7 @@ bool SimpleCsvReaderWriter::
 write(Directory dst, String file)
 {
   ARCANE_CHECK_PTR(m_sti);
-  if(!SimpleTableReaderWriterUtils::createDirectoryOnlyP0(m_sti->m_mesh, dst)) {
+  if(!SimpleTableReaderWriterUtils::createDirectoryOnlyP0(m_sti->m_sub_domain, dst)) {
     return false;
   }
 
@@ -132,7 +132,7 @@ void SimpleCsvReaderWriter::
 print(Integer only_proc)
 {
   ARCANE_CHECK_PTR(m_sti);
-  if (only_proc != -1 && m_sti->m_mesh->parallelMng()->commRank() != only_proc)
+  if (only_proc != -1 && m_sti->m_sub_domain->parallelMng()->commRank() != only_proc)
     return;
   _print(std::cout);
 }

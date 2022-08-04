@@ -39,15 +39,7 @@ class SimpleTableMng
   SimpleTableMng(SimpleTableInternal* sti)
   : m_sti(sti)
   {
-
   }
-
-  // SimpleTableMng()
-  // : m_sti(nullptr)
-  // {
-  //   std::cout << "Attention, STM vide !" << std::endl;
-
-  // }
 
   virtual ~SimpleTableMng() = default;
 
@@ -129,9 +121,8 @@ class SimpleTableMng
   void setInternal(SimpleTableInternal* sti) override;
   void setInternal(SimpleTableInternal& sti) override;
 
- private:
+ protected:
   SimpleTableInternal* m_sti;
-
 };
 
 /*---------------------------------------------------------------------------*/

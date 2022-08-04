@@ -45,17 +45,7 @@ class SimpleCsvReaderWriter
   , m_precision_print(6)
   , m_is_fixed_print(true)
   {
-
   }
-
-  // SimpleCsvReaderWriter()
-  // : m_sti(nullptr)
-  // , m_separator(';')
-  // , m_precision_print(6)
-  // , m_is_fixed_print(true)
-  // {
-  //   std::cout << "Attention, SCRW vide !" << std::endl;
-  // }
 
   ~SimpleCsvReaderWriter() = default;
 
@@ -77,19 +67,20 @@ class SimpleCsvReaderWriter
   void setInternal(SimpleTableInternal* sti) override;
   void setInternal(SimpleTableInternal& sti) override;
 
- private:
+ protected:
   bool _openFile(std::ifstream& stream, Directory dir, String file);
   void _closeFile(std::ifstream& stream);
   void _print(std::ostream& stream);
 
  protected:
+  SimpleTableInternal* m_sti;
+
   char m_separator;
+
   Integer m_precision_print;
   bool m_is_fixed_print;
 
   const String m_output_file_type = "csv";
-
-  SimpleTableInternal* m_sti;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -33,14 +33,14 @@ namespace Arcane
 class ARCANE_CORE_EXPORT SimpleTableReaderWriterUtils
 {
  public:
-  static bool createDirectoryOnlyP0(IMesh* mesh, Directory& dir)
+  static bool createDirectoryOnlyP0(ISubDomain* sub_domain, Directory& dir)
   {
     int sf = 0;
-    if (mesh->parallelMng()->commRank() == 0) {
+    if (sub_domain->parallelMng()->commRank() == 0) {
       sf = dir.createDirectory();
     }
-    if (mesh->parallelMng()->commSize() > 1) {
-      sf = mesh->parallelMng()->reduce(Parallel::ReduceMax, sf);
+    if (sub_domain->parallelMng()->commSize() > 1) {
+      sf = sub_domain->parallelMng()->reduce(Parallel::ReduceMax, sf);
     }
     return sf == 0;
   };

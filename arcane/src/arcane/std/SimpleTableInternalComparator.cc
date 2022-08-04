@@ -61,7 +61,7 @@ compare(Integer epsilon)
       const Real val2 = m_stm_to_compare.elem(column, row, false);
 
       if(!math::isNearlyEqualWithEpsilon(val1, val2, epsilon)) {
-        m_sti_ref->m_mesh->traceMng()->warning() << "Values not equals -- Column name: \"" << column << "\" -- Row name: \"" << row << "\"";
+        m_sti_ref->m_sub_domain->traceMng()->warning() << "Values not equals -- Column name: \"" << column << "\" -- Row name: \"" << row << "\"";
         is_ok = false;
       }
     }

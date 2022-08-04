@@ -43,16 +43,12 @@ class SimpleTableInternalComparator
   , m_sti_to_compare(sti_to_compare)
   , m_stm_ref(m_sti_ref)
   , m_stm_to_compare(m_sti_to_compare)
+  , m_regex_rows("")
+  , m_is_excluding_regex_rows(false)
+  , m_regex_columns("")
+  , m_is_excluding_regex_columns(false)
   {
-
   }
-
-  // SimpleTableInternalComparator()
-  // : m_sti_ref(nullptr)
-  // , m_sti_to_compare(nullptr)
-  // {
-  //   std::cout << "Attention, STIC vide !" << std::endl;
-  // }
 
   virtual ~SimpleTableInternalComparator() = default;
 
@@ -81,11 +77,17 @@ class SimpleTableInternalComparator
   void setInternalToCompare(SimpleTableInternal* sti) override;
   void setInternalToCompare(SimpleTableInternal& sti) override;
 
- private:
+ protected:
   bool _exploreColumn(String column_name);
   bool _exploreRows(String row_name);
 
- private:
+ protected:
+  SimpleTableInternal* m_sti_ref;
+  SimpleTableInternal* m_sti_to_compare;
+
+  SimpleTableMng m_stm_ref;
+  SimpleTableMng m_stm_to_compare;
+
   String m_regex_rows;
   bool m_is_excluding_regex_rows;
 
@@ -94,12 +96,6 @@ class SimpleTableInternalComparator
 
   StringUniqueArray m_compared_rows;
   StringUniqueArray m_compared_columns;
-
-  SimpleTableInternal* m_sti_ref;
-  SimpleTableInternal* m_sti_to_compare;
-
-  SimpleTableMng m_stm_ref;
-  SimpleTableMng m_stm_to_compare;
 };
 
 /*---------------------------------------------------------------------------*/

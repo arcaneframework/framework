@@ -20,6 +20,7 @@
 #include <arcane/ItemTypes.h>
 #include <arcane/Directory.h>
 #include <arcane/IMesh.h>
+#include <arcane/ISubDomain.h>
 #include "arcane/utils/Array.h"
 #include "arcane/utils/Array2.h"
 
@@ -34,7 +35,8 @@ namespace Arcane
 
 struct ARCANE_CORE_EXPORT SimpleTableInternal
 {
-  SimpleTableInternal()
+  SimpleTableInternal(ISubDomain* sub_domain)
+  : m_sub_domain(sub_domain)
   {
   }
   ~SimpleTableInternal() = default;
@@ -80,7 +82,7 @@ struct ARCANE_CORE_EXPORT SimpleTableInternal
   Integer m_last_row;
   Integer m_last_column;
 
-  IMesh* m_mesh;
+  ISubDomain* m_sub_domain;
 };
 
 /**
