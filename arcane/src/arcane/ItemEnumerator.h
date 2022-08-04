@@ -139,14 +139,14 @@ class ItemEnumeratorT
  public:
 
   ItemEnumeratorT()
-  : m_items(nullptr), m_local_ids(nullptr), m_index(0), m_count(0), m_group_impl(nullptr) {}
+  : m_items(nullptr), m_local_ids(nullptr), m_index(0), m_count(0), m_group_impl(nullptr) { _init(); }
   ItemEnumeratorT(const ItemInternalPtr* items,const Int32* local_ids,Integer n, const ItemGroupImpl * agroup = nullptr)
-  : m_items(items), m_local_ids(local_ids), m_index(0), m_count(n), m_group_impl(agroup) {}
+  : m_items(items), m_local_ids(local_ids), m_index(0), m_count(n), m_group_impl(agroup) { _init(); }
   ItemEnumeratorT(const ItemInternalArrayView& items,const Int32ConstArrayView& local_ids, const ItemGroupImpl * agroup = nullptr)
-  : m_items(items.data()), m_local_ids(local_ids.data()), m_index(0), m_count(local_ids.size()), m_group_impl(agroup) {}
+  : m_items(items.data()), m_local_ids(local_ids.data()), m_index(0), m_count(local_ids.size()), m_group_impl(agroup) { _init(); }
   ItemEnumeratorT(const ItemInternalVectorView& view, const ItemGroupImpl * agroup = nullptr)
   : m_items(view.items().data()), m_local_ids(view.localIds().data()),
-    m_index(0), m_count(view.size()), m_group_impl(agroup) {}
+    m_index(0), m_count(view.size()), m_group_impl(agroup) { _init(); }
   ItemEnumeratorT(const ItemVectorView& rhs)
   : ItemEnumeratorT((const ItemInternalVectorView&)rhs) {}
   ItemEnumeratorT(const ItemVectorViewT<ItemType>& rhs)
@@ -155,11 +155,11 @@ class ItemEnumeratorT
   [[deprecated("Y2021: Use strongly typed enumerator (Node, Face, Cell, ...) instead of generic (Item) enumerator")]]
   ItemEnumeratorT(const ItemEnumerator& rhs)
   : m_items(rhs.unguardedItems()), m_local_ids(rhs.unguardedLocalIds()),
-    m_index(rhs.index()), m_count(rhs.count()), m_group_impl(rhs.group()) {}
+    m_index(rhs.index()), m_count(rhs.count()), m_group_impl(rhs.group()) {  _init(); }
   [[deprecated("Y2021: Use strongly typed enumerator (Node, Face, Cell, ...) instead of generic (Item) enumerator")]]
   ItemEnumeratorT(const ItemInternalEnumerator& rhs)
   : m_items(rhs.m_items), m_local_ids(rhs.m_local_ids),
-    m_index(rhs.m_index), m_count(rhs.m_count), m_group_impl(nullptr) {}
+    m_index(rhs.m_index), m_count(rhs.m_count), m_group_impl(nullptr) {  _init(); }
 
  public:
 
@@ -168,9 +168,15 @@ class ItemEnumeratorT
 
  public:
 
-  constexpr void operator++() { ++m_index; }
-  constexpr bool operator()() { return m_index<m_count; }
-  constexpr bool hasNext() { return m_index<m_count; }
+  constexpr void operator++()
+  {
+    ++m_index;
+    m_is_not_end = (m_index<m_count);
+    if (m_is_not_end)
+      m_base.m_local_id = m_local_ids[m_index];
+  }
+  constexpr bool operator()() { return m_is_not_end; }
+  constexpr bool hasNext() { return m_is_not_end; }
 
   //! Nombre d'éléments de l'énumérateur
   constexpr Integer count() const { return m_count; }
@@ -179,19 +185,19 @@ class ItemEnumeratorT
   constexpr Integer index() const { return m_index; }
 
   //! localId() de l'entité courante.
-  constexpr Int32 itemLocalId() const { return m_local_ids[m_index]; }
+  constexpr Int32 itemLocalId() const { return m_base.m_local_id; }
 
   //! localId() de l'entité courante.
-  constexpr Int32 localId() const { return m_local_ids[m_index]; }
+  constexpr Int32 localId() const { return m_base.m_local_id; }
 
   //! Indices locaux
-  constexpr const Int32* unguardedLocalIds() const { return m_local_ids; }
+  constexpr const Int32* unguardedLocalIds() const { return m_base.m_local_id; }
 
   //! Indices locaux
   constexpr const ItemInternalPtr* unguardedItems() const { return m_items; }
 
   //! Partie interne (pour usage interne uniquement)
-  constexpr ItemInternal* internal() const { return m_items[m_local_ids[m_index]]; }
+  constexpr ItemInternal* internal() const { return m_items[m_base.m_local_id]; }
 
   //! Groupe sous-jacent s'il existe (0 sinon)
   /*! Ceci vise à pouvoir tester que les accès par ce énumérateur sur un objet partiel sont licites */
@@ -199,14 +205,14 @@ class ItemEnumeratorT
 
   ItemType operator*() const
   {
-    return ItemType(m_items,m_local_ids[m_index]);
+    return ItemType(m_base);
   }
   ItemType operator->() const
   {
-    return ItemType(m_items[m_local_ids[m_index]]);
+    return ItemType(m_base);
   }
 
-  constexpr LocalIdType asItemLocalId() const { return LocalIdType{m_local_ids[m_index]}; }
+  constexpr LocalIdType asItemLocalId() const { return LocalIdType{m_base.m_local_id}; }
 
   static ItemEnumeratorT<ItemType> fromItemEnumerator(const ItemEnumerator& rhs)
   {
@@ -215,10 +221,12 @@ class ItemEnumeratorT
 
  private:
 
+  ItemBaseBuildInfo m_base;
   const ItemInternalPtr* m_items;
   const Int32* ARCANE_RESTRICT m_local_ids;
-  Integer m_index;
-  Integer m_count;
+  Int32 m_index;
+  Int32 m_count;
+  bool m_is_not_end;
   const ItemGroupImpl* m_group_impl; // pourrait être retiré en mode release si nécessaire
 
  private:
@@ -226,7 +234,16 @@ class ItemEnumeratorT
   //! Constructeur seulement utilisé par fromItemEnumerator()
   ItemEnumeratorT(const ItemEnumerator& rhs,bool)
   : m_items(rhs.unguardedItems()), m_local_ids(rhs.unguardedLocalIds()),
-    m_index(rhs.index()), m_count(rhs.count()), m_group_impl(rhs.group()) {}
+    m_index(rhs.index()), m_count(rhs.count()), m_group_impl(rhs.group()) {  _init(); }
+
+  void _init()
+  {
+    m_is_not_end = (m_index<m_count);
+    if (m_is_not_end){
+      m_base.m_local_id = m_local_ids[m_index];
+      m_base.m_shared_info = m_items[m_base.m_local_id]->sharedInfo();
+    }
+  }
 };
 
 /*---------------------------------------------------------------------------*/

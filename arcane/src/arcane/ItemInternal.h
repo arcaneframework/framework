@@ -48,11 +48,12 @@ class Item;
 class ARCANE_CORE_EXPORT ItemBaseBuildInfo
 {
  public:
+  ItemBaseBuildInfo() = default;
   ItemBaseBuildInfo(Int32 local_id,ItemSharedInfo* shared_info)
   : m_local_id(local_id), m_shared_info(shared_info) {}
  public:
-  Int32 m_local_id;
-  ItemSharedInfo* m_shared_info;
+  Int32 m_local_id = NULL_ITEM_LOCAL_ID;
+  ItemSharedInfo* m_shared_info = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
