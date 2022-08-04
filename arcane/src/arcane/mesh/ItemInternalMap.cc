@@ -19,7 +19,7 @@
 
 #include "arcane/ItemInternal.h"
 
-#include <set>
+#include <unordered_set>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -43,9 +43,10 @@ void ItemInternalMap::
 notifyUniqueIdsChanged()
 {
   BaseClass& c = *this;
-  // Vérifie qu'on n'a pas deux fois la même clé.
-  {
-    std::set<Int64> uids;
+
+  if (arcaneIsCheck()){
+    // Vérifie qu'on n'a pas deux fois la même clé.
+    std::unordered_set<Int64> uids;
     ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,c){
       Int64 uid = nbid->value()->uniqueId().asInt64();
       if (uids.find(uid)!=uids.end())
