@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* FaceUniqueIdBuilder.cc                                      (C) 2000-2021 */
+/* FaceUniqueIdBuilder.cc                                      (C) 2000-2022 */
 /*                                                                           */
 /* Construction des indentifiants uniques des faces.                         */
 /*---------------------------------------------------------------------------*/
@@ -29,6 +29,8 @@
 #include "arcane/ISerializeMessage.h"
 #include "arcane/ISerializer.h"
 #include "arcane/ParallelMngUtils.h"
+
+#include <unordered_set>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -137,7 +139,7 @@ _checkNoDuplicate()
 {
   info() << "Check no duplicate face uniqueId";
   ItemInternalMap& faces_map = m_mesh->facesMap();
-  std::set<ItemUniqueId> checked_faces_map;
+  std::unordered_set<Int64> checked_faces_map;
   ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,faces_map){
     ItemInternal* face = nbid->value();
     ItemUniqueId uid = face->uniqueId();
