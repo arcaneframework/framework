@@ -156,10 +156,10 @@ class ItemEnumeratorT
   ItemEnumeratorT(const ItemEnumerator& rhs)
   : m_items(rhs.unguardedItems()), m_local_ids(rhs.unguardedLocalIds()),
     m_index(rhs.index()), m_count(rhs.count()), m_group_impl(rhs.group()) {  _init(); }
+
   [[deprecated("Y2021: Use strongly typed enumerator (Node, Face, Cell, ...) instead of generic (Item) enumerator")]]
   ItemEnumeratorT(const ItemInternalEnumerator& rhs)
-  : m_items(rhs.m_items), m_local_ids(rhs.m_local_ids),
-    m_index(rhs.m_index), m_count(rhs.m_count), m_group_impl(nullptr) {  _init(); }
+  : ItemEnumeratorT(ItemEnumerator(rhs)) {}
 
  public:
 
@@ -203,14 +203,8 @@ class ItemEnumeratorT
   /*! Ceci vise à pouvoir tester que les accès par ce énumérateur sur un objet partiel sont licites */
   constexpr const ItemGroupImpl* group() const { return m_group_impl; }
 
-  ItemType operator*() const
-  {
-    return ItemType(m_base);
-  }
-  ItemType operator->() const
-  {
-    return ItemType(m_base);
-  }
+  constexpr ItemType operator*() const { return m_base; }
+  constexpr const ItemType* operator->() const { return &m_base; }
 
   constexpr LocalIdType asItemLocalId() const { return LocalIdType{m_base.m_local_id}; }
 
@@ -221,7 +215,7 @@ class ItemEnumeratorT
 
  private:
 
-  ItemBaseBuildInfo m_base;
+  ItemType m_base;
   const ItemInternalPtr* m_items;
   const Int32* ARCANE_RESTRICT m_local_ids;
   Int32 m_index;
@@ -240,8 +234,8 @@ class ItemEnumeratorT
   {
     m_is_not_end = (m_index<m_count);
     if (m_is_not_end){
-      m_base.m_local_id = m_local_ids[m_index];
-      m_base.m_shared_info = m_items[m_base.m_local_id]->sharedInfo();
+      Int32 lid = m_local_ids[m_index];
+      m_base = ItemType(ItemBaseBuildInfo(lid,m_items[lid]->sharedInfo()));
     }
   }
 };
