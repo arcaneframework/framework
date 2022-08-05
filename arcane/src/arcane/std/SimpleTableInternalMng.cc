@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/std/SimpleTableMng.h"
+#include "arcane/std/SimpleTableInternalMng.h"
 
 #include <arcane/Directory.h>
 #include <arcane/IMesh.h>
@@ -29,8 +29,8 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void SimpleTableMng::
-clear()
+void SimpleTableInternalMng::
+clearInternal()
 {
   ARCANE_CHECK_PTR(m_sti);
   m_sti->clear();
@@ -39,7 +39,7 @@ clear()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Integer SimpleTableMng::
+Integer SimpleTableInternalMng::
 addRow(String name_row)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -54,7 +54,7 @@ addRow(String name_row)
   return pos;
 }
 
-Integer SimpleTableMng::
+Integer SimpleTableInternalMng::
 addRow(String name_row, ConstArrayView<Real> elems)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -69,7 +69,7 @@ addRow(String name_row, ConstArrayView<Real> elems)
   return pos;
 }
 
-bool SimpleTableMng::
+bool SimpleTableInternalMng::
 addRows(StringConstArrayView name_rows)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -91,7 +91,7 @@ addRows(StringConstArrayView name_rows)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Integer SimpleTableMng::
+Integer SimpleTableInternalMng::
 addColumn(String name_column)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -106,7 +106,7 @@ addColumn(String name_column)
   return pos;
 }
 
-Integer SimpleTableMng::
+Integer SimpleTableInternalMng::
 addColumn(String name_column, ConstArrayView<Real> elems)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -121,7 +121,7 @@ addColumn(String name_column, ConstArrayView<Real> elems)
   return pos;
 }
 
-bool SimpleTableMng::
+bool SimpleTableInternalMng::
 addColumns(StringConstArrayView name_columns)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -143,7 +143,7 @@ addColumns(StringConstArrayView name_columns)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool SimpleTableMng::
+bool SimpleTableInternalMng::
 addElemRow(Integer pos, Real elem)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -174,7 +174,7 @@ addElemRow(Integer pos, Real elem)
   return true;
 }
 
-bool SimpleTableMng::
+bool SimpleTableInternalMng::
 addElemRow(String name_row, Real elem, bool create_if_not_exist)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -188,7 +188,7 @@ addElemRow(String name_row, Real elem, bool create_if_not_exist)
     return false;
 }
 
-bool SimpleTableMng::
+bool SimpleTableInternalMng::
 addElemSameRow(Real elem)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -200,7 +200,7 @@ addElemSameRow(Real elem)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool SimpleTableMng::
+bool SimpleTableInternalMng::
 addElemsRow(Integer pos, ConstArrayView<Real> elems)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -225,7 +225,7 @@ addElemsRow(Integer pos, ConstArrayView<Real> elems)
   return elems.size() <= m_sti->m_values_csv.dim2Size() - size_row;
 }
 
-bool SimpleTableMng::
+bool SimpleTableInternalMng::
 addElemsRow(String name_row, ConstArrayView<Real> elems, bool create_if_not_exist)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -240,7 +240,7 @@ addElemsRow(String name_row, ConstArrayView<Real> elems, bool create_if_not_exis
     return false;
 }
 
-bool SimpleTableMng::
+bool SimpleTableInternalMng::
 addElemsSameRow(ConstArrayView<Real> elems)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -252,7 +252,7 @@ addElemsSameRow(ConstArrayView<Real> elems)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool SimpleTableMng::
+bool SimpleTableInternalMng::
 addElemColumn(Integer pos, Real elem)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -275,7 +275,7 @@ addElemColumn(Integer pos, Real elem)
   return true;
 }
 
-bool SimpleTableMng::
+bool SimpleTableInternalMng::
 addElemColumn(String name_column, Real elem, bool create_if_not_exist)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -289,7 +289,7 @@ addElemColumn(String name_column, Real elem, bool create_if_not_exist)
     return false;
 }
 
-bool SimpleTableMng::
+bool SimpleTableInternalMng::
 addElemSameColumn(Real elem)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -301,7 +301,7 @@ addElemSameColumn(Real elem)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool SimpleTableMng::
+bool SimpleTableInternalMng::
 addElemsColumn(Integer pos, ConstArrayView<Real> elems)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -325,7 +325,7 @@ addElemsColumn(Integer pos, ConstArrayView<Real> elems)
   return elems.size() <= m_sti->m_values_csv.dim1Size() - size_column;
 }
 
-bool SimpleTableMng::
+bool SimpleTableInternalMng::
 addElemsColumn(String name_column, ConstArrayView<Real> elems, bool create_if_not_exist)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -340,7 +340,7 @@ addElemsColumn(String name_column, ConstArrayView<Real> elems, bool create_if_no
     return false;
 }
 
-bool SimpleTableMng::
+bool SimpleTableInternalMng::
 addElemsSameColumn(ConstArrayView<Real> elems)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -352,7 +352,7 @@ addElemsSameColumn(ConstArrayView<Real> elems)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool SimpleTableMng::
+bool SimpleTableInternalMng::
 editElemUp(Real elem, bool update_last_pos)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -370,7 +370,7 @@ editElemUp(Real elem, bool update_last_pos)
   return true;
 }
 
-bool SimpleTableMng::
+bool SimpleTableInternalMng::
 editElemDown(Real elem, bool update_last_pos)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -389,7 +389,7 @@ editElemDown(Real elem, bool update_last_pos)
   return true;
 }
 
-bool SimpleTableMng::
+bool SimpleTableInternalMng::
 editElemLeft(Real elem, bool update_last_pos)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -407,7 +407,7 @@ editElemLeft(Real elem, bool update_last_pos)
   return true;
 }
 
-bool SimpleTableMng::
+bool SimpleTableInternalMng::
 editElemRight(Real elem, bool update_last_pos)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -429,7 +429,7 @@ editElemRight(Real elem, bool update_last_pos)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Real SimpleTableMng::
+Real SimpleTableInternalMng::
 elemUp(bool update_last_pos)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -449,7 +449,7 @@ elemUp(bool update_last_pos)
   return m_sti->m_values_csv[m_sti->m_last_row - 1][m_sti->m_last_column];
 }
 
-Real SimpleTableMng::
+Real SimpleTableInternalMng::
 elemDown(bool update_last_pos)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -470,7 +470,7 @@ elemDown(bool update_last_pos)
   return m_sti->m_values_csv[m_sti->m_last_row + 1][m_sti->m_last_column];
 }
 
-Real SimpleTableMng::
+Real SimpleTableInternalMng::
 elemLeft(bool update_last_pos)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -490,7 +490,7 @@ elemLeft(bool update_last_pos)
   return m_sti->m_values_csv[m_sti->m_last_row][m_sti->m_last_column - 1];
 }
 
-Real SimpleTableMng::
+Real SimpleTableInternalMng::
 elemRight(bool update_last_pos)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -514,7 +514,7 @@ elemRight(bool update_last_pos)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool SimpleTableMng::
+bool SimpleTableInternalMng::
 editElem(Real elem)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -522,7 +522,7 @@ editElem(Real elem)
   return true;
 }
 
-bool SimpleTableMng::
+bool SimpleTableInternalMng::
 editElem(Integer pos_x, Integer pos_y, Real elem)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -542,7 +542,7 @@ editElem(Integer pos_x, Integer pos_y, Real elem)
   return true;
 }
 
-bool SimpleTableMng::
+bool SimpleTableInternalMng::
 editElem(String name_column, String name_row, Real elem)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -557,14 +557,14 @@ editElem(String name_column, String name_row, Real elem)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Real SimpleTableMng::
+Real SimpleTableInternalMng::
 elem()
 {
   ARCANE_CHECK_PTR(m_sti);
   return m_sti->m_values_csv[m_sti->m_last_row][m_sti->m_last_column];
 }
 
-Real SimpleTableMng::
+Real SimpleTableInternalMng::
 elem(Integer pos_x, Integer pos_y, bool update_last_pos)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -579,7 +579,7 @@ elem(Integer pos_x, Integer pos_y, bool update_last_pos)
   return m_sti->m_values_csv[pos_y][pos_x];
 }
 
-Real SimpleTableMng::
+Real SimpleTableInternalMng::
 elem(String name_column, String name_row, bool update_last_pos)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -594,7 +594,7 @@ elem(String name_column, String name_row, bool update_last_pos)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-RealUniqueArray SimpleTableMng::
+RealUniqueArray SimpleTableInternalMng::
 row(Integer pos)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -606,7 +606,7 @@ row(Integer pos)
   return copie;
 }
 
-RealUniqueArray SimpleTableMng::
+RealUniqueArray SimpleTableInternalMng::
 row(String name_row)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -619,7 +619,7 @@ row(String name_row)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-RealUniqueArray SimpleTableMng::
+RealUniqueArray SimpleTableInternalMng::
 column(Integer pos)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -632,7 +632,7 @@ column(Integer pos)
   return copie;
 }
 
-RealUniqueArray SimpleTableMng::
+RealUniqueArray SimpleTableInternalMng::
 column(String name_column)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -645,7 +645,7 @@ column(String name_column)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Integer SimpleTableMng::
+Integer SimpleTableInternalMng::
 sizeRow(Integer pos)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -654,7 +654,7 @@ sizeRow(Integer pos)
   return m_sti->m_size_rows[pos];
 }
 
-Integer SimpleTableMng::
+Integer SimpleTableInternalMng::
 sizeRow(String name_row)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -667,7 +667,7 @@ sizeRow(String name_row)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Integer SimpleTableMng::
+Integer SimpleTableInternalMng::
 sizeColumn(Integer pos)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -676,7 +676,7 @@ sizeColumn(Integer pos)
   return m_sti->m_size_columns[pos];
 }
 
-Integer SimpleTableMng::
+Integer SimpleTableInternalMng::
 sizeColumn(String name_column)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -689,7 +689,7 @@ sizeColumn(String name_column)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Integer SimpleTableMng::
+Integer SimpleTableInternalMng::
 posRow(String name_row)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -699,7 +699,7 @@ posRow(String name_row)
   return -1;
 }
 
-Integer SimpleTableMng::
+Integer SimpleTableInternalMng::
 posColumn(String name_column)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -712,14 +712,14 @@ posColumn(String name_column)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Integer SimpleTableMng::
+Integer SimpleTableInternalMng::
 numRows()
 {
   ARCANE_CHECK_PTR(m_sti);
   return m_sti->m_values_csv.dim1Size();
 }
 
-Integer SimpleTableMng::
+Integer SimpleTableInternalMng::
 numColumns()
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -729,7 +729,7 @@ numColumns()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-String SimpleTableMng::
+String SimpleTableInternalMng::
 nameRow(Integer pos)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -739,7 +739,7 @@ nameRow(Integer pos)
   return m_sti->m_name_rows[pos];
 }
 
-String SimpleTableMng::
+String SimpleTableInternalMng::
 nameColumn(Integer pos)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -752,7 +752,7 @@ nameColumn(Integer pos)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool SimpleTableMng::
+bool SimpleTableInternalMng::
 editNameRow(Integer pos, String new_name)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -762,7 +762,7 @@ editNameRow(Integer pos, String new_name)
   return true;
 }
 
-bool SimpleTableMng::
+bool SimpleTableInternalMng::
 editNameRow(String name_row, String new_name)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -772,7 +772,7 @@ editNameRow(String name_row, String new_name)
   return false;
 }
 
-bool SimpleTableMng::
+bool SimpleTableInternalMng::
 editNameColumn(Integer pos, String new_name)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -782,7 +782,7 @@ editNameColumn(Integer pos, String new_name)
   return true;
 }
 
-bool SimpleTableMng::
+bool SimpleTableInternalMng::
 editNameColumn(String name_column, String new_name)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -795,7 +795,7 @@ editNameColumn(String name_column, String new_name)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Integer SimpleTableMng::
+Integer SimpleTableInternalMng::
 addAverageColumn(String name_column)
 {
   ARCANE_CHECK_PTR(m_sti);
@@ -812,13 +812,13 @@ addAverageColumn(String name_column)
   return pos;
 }
 
-SimpleTableInternal* SimpleTableMng::
+SimpleTableInternal* SimpleTableInternalMng::
 internal() 
 {
   return m_sti;
 }
 
-void SimpleTableMng::
+void SimpleTableInternalMng::
 setInternal(SimpleTableInternal* sti) 
 {
   ARCANE_CHECK_PTR(sti);

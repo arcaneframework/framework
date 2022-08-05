@@ -25,7 +25,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 bool SimpleCsvReaderWriter::
-write(Directory dst, String file)
+writeTable(Directory dst, String file)
 {
   ARCANE_CHECK_PTR(m_sti);
   if(!SimpleTableReaderWriterUtils::createDirectoryOnlyP0(m_sti->m_sub_domain, dst)) {
@@ -43,10 +43,10 @@ write(Directory dst, String file)
 }
 
 bool SimpleCsvReaderWriter::
-read(Directory src, String file)
+readTable(Directory src, String file)
 {
   ARCANE_CHECK_PTR(m_sti);
-  clear();
+  clearInternal();
 
   std::ifstream stream;
 
@@ -114,11 +114,18 @@ read(Directory src, String file)
   } while(std::getline(stream, line));
 
   _closeFile(stream);
+
+  m_sti->m_size_rows.resize(m_sti->m_name_rows.size());
+  m_sti->m_size_rows.fill(m_sti->m_values_csv.dim2Size());
+
+  m_sti->m_size_columns.resize(m_sti->m_name_columns.size());
+  m_sti->m_size_columns.fill(m_sti->m_values_csv.dim1Size());
+
   return true;
 }
 
 void SimpleCsvReaderWriter::
-clear()
+clearInternal()
 {
   ARCANE_CHECK_PTR(m_sti);
   m_sti->clear();

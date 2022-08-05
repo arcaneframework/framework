@@ -46,6 +46,9 @@ compare(Integer epsilon, bool compare_dim)
   const Integer dim2 = m_stm_ref.numColumns();
 
   if(compare_dim && (dim1 != m_stm_to_compare.numRows() || dim2 != m_stm_to_compare.numColumns())) {
+    m_sti_ref->m_sub_domain->traceMng()->warning() << "Dimensions not equals -- Expected dimensions: " 
+      << dim1 << "x" << dim2 << " -- Found dimensions: "
+      << m_stm_to_compare.numRows() << "x" << m_stm_to_compare.numColumns();
     return false;
   }
 
@@ -74,7 +77,7 @@ compare(Integer epsilon, bool compare_dim)
 }
 
 void SimpleTableInternalComparator::
-clear()
+clearComparator()
 {
   m_regex_rows = "";
   m_is_excluding_regex_rows = false;

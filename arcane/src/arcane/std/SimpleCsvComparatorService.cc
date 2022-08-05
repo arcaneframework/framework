@@ -51,7 +51,7 @@ init(ISimpleTableOutput* ptr_sto)
 void SimpleCsvComparatorService::
 clear()
 {
-  m_stic.clear();
+  m_stic.clearComparator();
 
   m_sti_to_compare.clear();
 
@@ -104,7 +104,7 @@ readRefFile(Integer only_proc)
   if (only_proc != -1 && mesh()->parallelMng()->commRank() != only_proc)
     return false;
 
-  m_is_file_read = m_scrw.read(m_ref_path, m_name_tab);
+  m_is_file_read = m_scrw.readTable(m_ref_path, m_name_tab);
 
   return m_is_file_read;
 }

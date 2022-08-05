@@ -20,7 +20,7 @@
 
 #include <arcane/ItemTypes.h>
 #include <arcane/Directory.h>
-#include <arcane/ISimpleTableMng.h>
+#include <arcane/ISimpleTableInternalMng.h>
 #include <arcane/ISimpleTableReaderWriter.h>
 
 /*---------------------------------------------------------------------------*/
@@ -45,7 +45,7 @@ namespace Arcane
  * 
  * Dans la partie SimpleTable, les symboles de noms sont des
  * mots-clefs entourés d'arobases et qui seront replacés
- * par leur signficationlors de l'exécution.
+ * par leur signfication lors de l'exécution.
  * Dans l'implémentation SimpleTableWriterHelper, il y a
  * actuellement deux symboles de noms pris en charge :
  * - \@proc_id\@ : Sera remplacé par l'id du processus.
@@ -62,14 +62,20 @@ public:
 
   /**
    * @brief Méthode permettant d'initialiser l'objet.
-   * Notamment le nom du tableau et le nom du répertoire qui contiendra
-   * les fichiers (le répertoire des tableaux/name_dir).
+   * Notamment le nom du tableau (name_tab) et le nom du répertoire qui
+   * contiendra les fichiers (le répertoire des tableaux/name_dir).
+   * 
+   * Les valeurs par défauts de name_tab et de name_dir sont
+   * laissées à la discretion de l'implémentation.
    */
   virtual bool init() = 0;
   /**
    * @brief Méthode permettant d'initialiser l'objet.
    * Notamment le nom du tableau et le nom du répertoire qui contiendra
    * les fichiers (le répertoire des tableaux/name_dir).
+   * 
+   * La valeur par défaut de name_dir est laissée à la discretion 
+   * de l'implémentation.
    * 
    * @param name_table Le nom du tableau (et du fichier de sortie).
    */
@@ -97,7 +103,7 @@ public:
 
   /**
    * @brief Méthode permettant d'écrire le tableau dans un fichier.
-   * Si only_proc != -1, les processus autres que P0 retournent true.
+   * Si only_proc != -1, les processus autres que only_proc retournent true.
    * 
    * Par exemple, dans l'implémentation SimpleTableWriterHelper,
    * le ou les fichiers seront écrits dans le répertoire :
@@ -113,7 +119,7 @@ public:
 
   /**
    * @brief Méthode permettant d'écrire le tableau dans un fichier.
-   * Si only_proc != -1, les processus autres que P0 retournent true.
+   * Si only_proc != -1, les processus autres que only_proc retournent true.
    * 
    * Par exemple, dans l'implémentation SimpleTableWriterHelper,
    * le ou les fichiers seront écrits dans le répertoire :
@@ -237,7 +243,7 @@ public:
    * 
    * Peut-être différent pour chaque processus (dépendant de l'implémentation).
    * 
-   * Ici, les symboles de noms ont été résolus et l'extension est ajouté.
+   * Ici, les symboles de noms ont été résolus et l'extension est ajoutée.
    * 
    * @return String Le nom.
    */
@@ -277,7 +283,7 @@ public:
   virtual bool isOneFileByProcsPermited() = 0;
 
   /**
-   * @brief Méthode permettant de connaitre le type de retour qui sera utilisé.
+   * @brief Méthode permettant de connaitre le type de fichier qui sera utilisé.
    * 
    * @return String 
    */
@@ -304,7 +310,8 @@ public:
    * une implem de ISimpleTableReaderWriter.
    * 
    * @warning Il est déconseillé d'utiliser cette méthode, sauf si
-   * vous savez ce que vous faite.
+   * vous savez ce que vous faite. La destruction de l'objet reste
+   * à la charge de l'appelant.
    * 
    * @param strw Le pointeur vers une implem de ISimpleTableReaderWriter.
    */

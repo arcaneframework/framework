@@ -59,9 +59,9 @@ class SimpleCsvReaderWriter
   ~SimpleCsvReaderWriter() = default;
 
  public:
-  bool write(Directory dst, String file) override;
-  bool read(Directory src, String file) override;
-  void clear() override;
+  bool writeTable(Directory dst, String file) override;
+  bool readTable(Directory src, String file) override;
+  void clearInternal() override;
   void print() override;
 
   Integer precision() override;

@@ -18,7 +18,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include <arcane/ISimpleTableWriterHelper.h>
-#include <arcane/ISimpleTableMng.h>
+#include <arcane/ISimpleTableInternalMng.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -60,7 +60,10 @@ public:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-
+  /**
+   * @brief Méthode permettant de remettre à zéro les tableaux
+   * internes. Nécessite un appel à init() après.
+   */
   virtual void clear() = 0;
 
 /*---------------------------------------------------------------------------*/
@@ -799,10 +802,33 @@ public:
    */
   virtual bool isOneFileByProcsPermited() = 0;
 
+  /**
+   * @brief Méthode permettant de connaitre le type de fichier du service.
+   * 
+   * @return String Le type de fichier.
+   */
   virtual String outputFileType() = 0;
 
+  /**
+   * @brief Méthode permettant de récupérer le pointeur vers l'objet
+   * SimpleTableInternal utilisé.
+   * 
+   * Cet objet est géré par ce service. C'est donc ce service qui
+   * se chargera de sa destruction.
+   * 
+   * @return SimpleTableInternal* Un pointeur vers l'objet interne. 
+   */
   virtual SimpleTableInternal* internal() = 0;
 
+  /**
+   * @brief Méthode permettant de récupérer le pointeur vers l'objet
+   * ISimpleTableReaderWriter utilisé.
+   * 
+   * Cet objet est géré par ce service. C'est donc ce service qui
+   * se chargera de sa destruction.
+   * 
+   * @return ISimpleTableReaderWriter* Un pointeur vers l'objet interne. 
+   */
   virtual ISimpleTableReaderWriter* readerWriter() = 0;
 };
 

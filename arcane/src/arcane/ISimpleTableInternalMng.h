@@ -5,14 +5,15 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TODO                                       (C) 2000-2022 */
+/* ISimpleTableInternalMng.h                                   (C) 2000-2022 */
 /*                                                                           */
-/*          */
+/* Interface représentant un gestionnaire de SimpleTableInternal. Fichier    */
+/* contenant également la structure SimpleTableInternal.                     */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_ISIMPLETABLEMNG_H
-#define ARCANE_ISIMPLETABLEMNG_H
+#ifndef ARCANE_ISIMPLETABLEINTERNALMNG_H
+#define ARCANE_ISIMPLETABLEINTERNALMNG_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -36,7 +37,17 @@ namespace Arcane
 // TODO : Voir pour ajouter ISharedReference.
 
 /**
- * @brief 
+ * @brief Structure représentant un tableau simple.
+ * 
+ * Un tableau simple ressemble à ça :
+ * 
+ * NomTableau | C1 | C2 | C3
+ *    L1      |Val1|Val2|Val3
+ *    L2      |Val4|Val5|Val6
+ * 
+ * Un nom de tableau, une liste de noms de lignes,
+ * une liste de noms de colonnes et une liste 2D
+ * de valeur (Real pour l'instant).
  * 
  */
 struct ARCANE_CORE_EXPORT SimpleTableInternal
@@ -92,20 +103,48 @@ struct ARCANE_CORE_EXPORT SimpleTableInternal
 };
 
 /**
- * @ingroup StandardService
- * @brief TODO
+ * @brief Interface de classe représentant un gestionnaire
+ * de SimpleTableInternal (aka STI). 
+ * 
+ * Ce gestionnaire permet de faire plusieurs types d'opérations
+ * sur le STI : ajout de lignes, de colonnes, de valeurs, &c.
+ * 
+ * Il y a deux modes d'exploitations (qui peuvent être mélangés) : 
+ * - en utilisant les noms ou positions des lignes/colonnes,
+ * - en utilisant un pointeur de position dans le tableau.
+ * 
+ * Le premier mode est le plus simple à utiliser et est suffisant
+ * pour la plupart des utilisateurs. On donne un nom (ou une position)
+ * de ligne ou de colonne et une valeur, et cette valeur est placée
+ * à la suite des autres valeurs sur la ligne ou sur la colonne.
+ * 
+ * Le second mode est plus avancé et sert surtout à remplacer des
+ * élements déjà présent ou à optimiser les performances (s'il y a 
+ * 40 lignes, 40 valeurs à ajouter à la suite et qu'on utilise les 
+ * noms des colonnes 40 fois, cela fait 40 recherches de String dans un 
+ * StringUniqueArray, ce qui n'est pas top niveau optimisation).
+ * Un pointeur représentant le dernier élement ajouté est présent dans
+ * STI. On peut modifier les élements autour de ce pointeur (haut, bas
+ * gauche, droite) avec les méthodes présentes.
+ * Ce pointeur peut être placé n'importe où grâce au méthodes elem().
+ * Ce pointeur n'est pas lu par les méthodes du premier mode mais est
+ * mis à jour par ces dernières.
  */
-class ARCANE_CORE_EXPORT ISimpleTableMng
+class ARCANE_CORE_EXPORT ISimpleTableInternalMng
 {
 public:
-  virtual ~ISimpleTableMng() = default;
+  virtual ~ISimpleTableInternalMng() = default;
 
 public:
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-  virtual void clear() = 0;
+  /**
+   * @brief Méthode permettant d'effacer le contenu
+   * du SimpleTableInternal.
+   */
+  virtual void clearInternal() = 0;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -685,8 +724,24 @@ public:
    */
   virtual Integer addAverageColumn(String name_column) = 0;
 
-
+  /**
+   * @brief Méthode permettant de récupérer le pointeur vers l'objet
+   * SimpleTableInternal utilisé.
+   * 
+   * @return SimpleTableInternal* Le pointeur utilisé. 
+   */
   virtual SimpleTableInternal* internal() = 0;
+
+  /**
+   * @brief Méthode permettant de définir un pointeur vers
+   * SimpleTableInternal.
+   * 
+   * @warning Il est déconseillé d'utiliser cette méthode, sauf si
+   * vous savez ce que vous faite. La destruction de l'objet reste
+   * à la charge de l'appelant.
+   * 
+   * @param strw Le pointeur vers SimpleTableInternal.
+   */
   virtual void setInternal(SimpleTableInternal* sti) = 0;
 };
 

@@ -17,8 +17,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ISimpleTableMng.h"
-#include "arcane/std/SimpleTableMng.h"
+#include "arcane/ISimpleTableInternalMng.h"
+#include "arcane/std/SimpleTableInternalMng.h"
 #include "arcane/ISimpleTableReaderWriter.h"
 #include "arcane/ISimpleTableInternalComparator.h"
 #include "arcane/Directory.h"
@@ -71,7 +71,7 @@ class SimpleTableInternalComparator
  public:
   bool compare(Integer epsilon, bool compare_dim) override;
 
-  void clear() override;
+  void clearComparator() override;
 
   bool addColumnForComparing(String name_column) override;
   bool addRowForComparing(String name_row) override;
@@ -99,8 +99,8 @@ class SimpleTableInternalComparator
   SimpleTableInternal* m_sti_ref;
   SimpleTableInternal* m_sti_to_compare;
 
-  SimpleTableMng m_stm_ref;
-  SimpleTableMng m_stm_to_compare;
+  SimpleTableInternalMng m_stm_ref;
+  SimpleTableInternalMng m_stm_to_compare;
 
   String m_regex_rows;
   bool m_is_excluding_regex_rows;

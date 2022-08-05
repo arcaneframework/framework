@@ -92,7 +92,7 @@ writeFile(Directory root_dir, Integer only_proc)
   if ((only_proc == -1 && m_name_tab_only_once) && m_sti->m_sub_domain->parallelMng()->commRank() != 0)
     return true;
 
-  return m_strw->write(Directory(root_dir, m_name_output_dir), m_sti->m_name_tab);
+  return m_strw->writeTable(Directory(root_dir, m_name_output_dir), m_sti->m_name_tab);
 }
 
 bool SimpleTableWriterHelper::

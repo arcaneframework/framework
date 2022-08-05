@@ -739,7 +739,7 @@ set(ARCANE_SOURCES
   IRandomNumberGenerator.h
   ISimpleTableComparator.h
   ISimpleTableInternalComparator.h
-  ISimpleTableMng.h
+  ISimpleTableInternalMng.h
   ISimpleTableOutput.h
   ISimpleTableReaderWriter.h
   ISimpleTableWriterHelper.h

@@ -74,8 +74,8 @@ set(ARCANE_SOURCES
   PDESRandomNumberGeneratorService.cc
   PDESRandomNumberGeneratorService.h
   
-  SimpleTableMng.cc
-  SimpleTableMng.h
+  SimpleTableInternalMng.cc
+  SimpleTableInternalMng.h
   
   SimpleTableWriterHelper.cc
   SimpleTableWriterHelper.h

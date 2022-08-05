@@ -11,13 +11,13 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_STD_SIMPLETABLEMNG_H
-#define ARCANE_STD_SIMPLETABLEMNG_H
+#ifndef ARCANE_STD_SIMPLETABLEINTERNALMNG_H
+#define ARCANE_STD_SIMPLETABLEINTERNALMNG_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ISimpleTableMng.h"
+#include "arcane/ISimpleTableInternalMng.h"
 #include "arcane/Directory.h"
 #include "arcane/IMesh.h"
 #include "arcane/utils/Array.h"
@@ -32,24 +32,24 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class SimpleTableMng
-: public ISimpleTableMng
+class SimpleTableInternalMng
+: public ISimpleTableInternalMng
 {
  public:
-  SimpleTableMng(SimpleTableInternal* sti)
+  SimpleTableInternalMng(SimpleTableInternal* sti)
   : m_sti(sti)
   {
   }
 
-  SimpleTableMng()
+  SimpleTableInternalMng()
   : m_sti(nullptr)
   {
   }
 
-  virtual ~SimpleTableMng() = default;
+  virtual ~SimpleTableInternalMng() = default;
 
  public:
-  void clear() override;
+  void clearInternal() override;
 
   Integer addRow(String name_row) override;
   Integer addRow(String name_row, ConstArrayView<Real> elems) override;

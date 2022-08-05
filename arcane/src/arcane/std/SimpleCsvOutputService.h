@@ -17,7 +17,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/std/SimpleTableMng.h"
+#include "arcane/std/SimpleTableInternalMng.h"
 #include "arcane/std/SimpleTableWriterHelper.h"
 #include "arcane/std/SimpleCsvReaderWriter.h"
 #include "arcane/ISimpleTableOutput.h"
@@ -55,7 +55,7 @@ class SimpleCsvOutputService
   bool init(String name_table) override;
   bool init(String name_table, String name_dir) override { return m_stom.init(name_table, name_dir); };
 
-  void clear() override { return m_stm.clear(); };
+  void clear() override { return m_stm.clearInternal(); };
 
   Integer addRow(String name_row) override { return m_stm.addRow(name_row); };
   Integer addRow(String name_row, ConstArrayView<Real> elems) override { return m_stm.addRow(name_row, elems); };
@@ -159,7 +159,7 @@ class SimpleCsvOutputService
  private:
   SimpleTableInternal m_internal;
   SimpleCsvReaderWriter m_scrw;
-  SimpleTableMng m_stm;
+  SimpleTableInternalMng m_stm;
   SimpleTableWriterHelper m_stom;
   bool m_with_option;
 };

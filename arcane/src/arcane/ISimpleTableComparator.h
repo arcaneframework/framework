@@ -5,9 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/*                                        (C) 2000-2022 */
+/* ISimpleTableComparator.h                                    (C) 2000-2022 */
 /*                                                                           */
-/* TODO    */
+/* Interface pour les services permettant de comparer un ISimpleTableOutput  */
+/* et un fichier de référence.                                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -31,7 +32,19 @@ namespace Arcane
 
 /**
  * @ingroup StandardService
- * @brief TODO
+ * @brief Interface de classe représentant un comparateur
+ * de tableaux. À utiliser avec un service implémentant
+ * ISimpleTableOutput.
+ * 
+ * La différence avec ISimpleTableInternalComparator est
+ * que l'on compare un SimpleTableInternal contenu dans
+ * un ISimpleTableOutput avec un SimpleTableInternal
+ * généré à partir d'un fichier de référence.
+ * 
+ * Cette interface permet aussi de générer les fichiers
+ * de référence en utilisant le nom de répertoire et
+ * le nom de tableau du ISimpleTableOutput, permettant
+ * de faciliter le processus.
  */
 class ARCANE_CORE_EXPORT ISimpleTableComparator
 {
@@ -46,7 +59,7 @@ public:
    * Le pointeur vers une implémentation de ISimpleTableOutput
    * doit contenir les valeurs à comparer ou à écrire en tant que
    * valeurs de référence et l'emplacement de destination des
-   * fichiers de sortie, pour que soit automatiquement déterminé
+   * fichiers de sorties, pour que soit automatiquement déterminé
    * l'emplacement des fichiers de réferences.
    * 
    * @param ptr_sto Une implémentation de ISimpleTableOutput.
@@ -55,20 +68,35 @@ public:
 
   /**
    * @brief Méthode permettant de remettre à zero l'objet.
-   * Necessite un appel à init() après.
+   * Necessite un appel à init() puis à readRefFile() après.
    */
   virtual void clear() = 0;
   
+  /**
+   * @brief Méthode permettant d'afficher le tableau lu.
+   * 
+   * @param only_proc Le processus qui doit afficher son tableau (-1 pour tous les processus).
+   */
   virtual void print(Integer only_proc = 0) = 0;
 
+  /**
+   * @brief Méthode permettant de modifier le répertoire racine.
+   * Cela permet d'écrire ou de rechercher des fichiers de réferences
+   * autre part que dans le répertoire déterminé par l'implémentation.
+   * 
+   * Par défaut, pour l'implémentation csv, le répertoire racine est :
+   * ./output/csv_ref/
+   * 
+   * @param root_dir Le nouveau répertoire racine.
+   */
   virtual void editRootDir(Directory root_dir) = 0;
 
   /**
    * @brief Méthode permettant d'écrire les fichiers de référence.
    * 
-   * @warning Cette méthode utilise l'objet pointé par le pointeur donné
-   *          lors de l'init(), donc l'écriture s'effectura dans le format
-   *          voulu par l'implémentation de ISimpleTableOutput.
+   * @warning (Pour l'instant), cette méthode utilise l'objet pointé par 
+   *          le pointeur donné lors de l'init(), donc l'écriture s'effectura 
+   *          dans le format voulu par l'implémentation de ISimpleTableOutput.
    *          Si les formats de lecture et d'écriture ne correspondent
    *          pas, un appel à "compareWithRef()" retournera forcement
    *          false.
@@ -101,10 +129,11 @@ public:
 
   /**
    * @brief Méthode permettant de comparer l'objet de type ISimpleTableOutput
-   * aux fichiers de réference.
+   * aux fichiers de réferences.
    * 
    * @param only_proc Le processus qui doit comparer ses résultats (-1 pour tous les processus). 
    * @param epsilon La marge d'erreur.
+   * @param dim_compare Si l'on doit aussi comparer les dimensions des tableaux de valeurs.
    * @return true S'il n'y a pas de différences.
    * @return false S'il y a au moins une différence (et si processus appelant != only_proc).
    */
@@ -129,8 +158,28 @@ public:
    */
   virtual bool addRowForComparing(String name_row) = 0;
 
+  /**
+   * @brief Méthode permettant de définir si le tableau de
+   * colonnes représente les colonnes à inclure dans la
+   * comparaison (false/par défaut) ou représente les colonnes
+   * à exclure de la comparaison (true).
+   * 
+   * @param is_exclusive true si les colonnes doivent être
+   *                     exclus.
+   */
   virtual void isAnArrayExclusiveColumns(bool is_exclusive) = 0;
+
+  /**
+   * @brief Méthode permettant de définir si le tableau de
+   * lignes représente les lignes à inclure dans la
+   * comparaison (false/par défaut) ou représente les lignes
+   * à exclure de la comparaison (true).
+   * 
+   * @param is_exclusive true si les lignes doivent être
+   *                     exclus.
+   */
   virtual void isAnArrayExclusiveRows(bool is_exclusive) = 0;
+
 
   /**
    * @brief Méthode permettant d'ajouter une expression régulière

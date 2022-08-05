@@ -19,7 +19,7 @@
 
 #include <arcane/ItemTypes.h>
 #include <arcane/Directory.h>
-#include <arcane/ISimpleTableMng.h>
+#include <arcane/ISimpleTableInternalMng.h>
 #include "arcane/IParallelMng.h"
 #include "arcane/IMesh.h"
 #include <arcane/utils/Iostream.h>
@@ -70,11 +70,14 @@ class ARCANE_CORE_EXPORT SimpleTableReaderWriterUtils
  * @brief Interface de classe permettant de lire un fichier et d'écrire
  * un fichier avec ou à partir d'un SimpleTableInternal.
  * 
- * Le fichier lu devra, de préférence, avoir été écrit par une implem de
- * cette même interface.
+ * Le fichier lu devra, de préférence, avoir été écrit par une implémentation 
+ * de cette même interface.
  * 
  * Impérativement donc, un fichier écrit par une implémentation de cette
  * interface devra pouvoir être lu par cette même implémentation.
+ * 
+ * L'implémentation ne devra pas détruire l'objet SimpleTableInternal
+ * pointé par le pointeur utilisé. C'est à l'appelant de gérer ça.
  */
 class ARCANE_CORE_EXPORT ISimpleTableReaderWriter
 {
@@ -85,35 +88,71 @@ public:
 
   /**
    * @brief Méthode permettant d'écrire un tableau simple dans un fichier.
+   * 
    * L'extension sera ajouté par l'implémentation.
    * 
-   * @param dst Le répertoire de destination. Il sera créé s'il n'existe pas.
+   * Le répertoire de destination sera créé par l'implémentation s'il
+   * n'existe pas.
+   * 
+   * Les élements de SimpleTableInternal qui doivent impérativement
+   * être écrits sont :
+   * - les noms des lignes    (m_name_rows),
+   * - les noms des colonnes  (m_name_columns),
+   * - le nom du tableau      (m_name_tab),
+   * - les valeurs du tableau (m_values_csv).
+   * 
+   * Les autres élements de SimpleTableInternal ne sont pas obligatoire.
+   * 
+   * @param dst Le répertoire de destination.
    * @param file_name Le nom du fichier (sans extension).
    * @return true Si le fichier a bien été écrit.
    * @return false Si le fichier n'a pas pu être écrit.
    */
-  virtual bool write(Directory dst, String file_name) = 0;
+  virtual bool writeTable(Directory dst, String file_name) = 0;
 
   /**
    * @brief Méthode permettant de lire un fichier contenant un tableau simple.
+   * 
    * L'extension sera ajouté par l'implémentation.
+   * 
+   * Un appel à SimpleTableInternal::clear() devra être effectué avant la lecture.
+   * 
+   * Les élements qui doivent impérativement être récupérés sont :
+   * - les noms des lignes    (m_name_rows),
+   * - les noms des colonnes  (m_name_columns),
+   * - le nom du tableau      (m_name_tab),
+   * - les valeurs du tableau (m_values_csv).
+   * 
+   * Les élements qui doivent être déduit si non récupérés sont :
+   * - les tailles des lignes   (m_size_rows),
+   * - les tailles des colonnes (m_size_columns).
+   * 
+   * Déduction par défaut pour m_size_rows :
+   * - len(m_size_rows) = len(m_name_rows)
+   * - m_size_rows[*]   = m_values_csv.dim2Size()
+   * 
+   * Déduction par défaut pour m_size_columns :
+   * - len(m_size_columns) = len(m_name_columns)
+   * - m_size_columns[*]   = m_values_csv.dim1Size()
+   * 
    * 
    * @param src Le répertoire source.
    * @param file_name Le nom du fichier (sans extension).
    * @return true Si le fichier a bien été lu.
    * @return false Si le fichier n'a pas pu être lu.
    */
-  virtual bool read(Directory src, String file_name) = 0;
+  virtual bool readTable(Directory src, String file_name) = 0;
 
   /**
    * @brief Méthode permettant d'effacer le contenu de l'objet
    * SimpleTableInternal.
    */
-  virtual void clear() = 0;
+  virtual void clearInternal() = 0;
 
   /**
    * @brief Méthode permettant d'écrire le tableau dans la
    * sortie standard.
+   * 
    * Le format d'écriture est libre (pour l'implémentation
    * csv, l'écriture se fait pareil que dans un fichier csv).
    */
@@ -130,7 +169,7 @@ public:
   /**
    * @brief Méthode permettant de modifier la précision du print.
    * 
-   * Aussi bien pour la méthode 'print()' que la méthode 'write()'.
+   * Aussi bien pour la méthode 'print()' que la méthode 'writetable()'.
    * 
    * @note Un appel à cette méthode sans le paramètre définira la précision
    * par défaut.
@@ -150,7 +189,7 @@ public:
   /**
    * @brief Méthode permettant de définir le flag 'std::fixed' ou non.
    * 
-   * Aussi bien pour la méthode 'print()' que la méthode 'write()'.
+   * Aussi bien pour la méthode 'print()' que la méthode 'writetable()'.
    * 
    * Ce flag permet de 'forcer' le nombre de chiffre après la virgule à
    * la précision voulu. Par exemple, si l'on a appelé 'setPrecision(4)',
@@ -185,7 +224,8 @@ public:
    * SimpleTableInternal.
    * 
    * @warning Il est déconseillé d'utiliser cette méthode, sauf si
-   * vous savez ce que vous faite.
+   * vous savez ce que vous faite. La destruction de l'objet reste
+   * à la charge de l'appelant.
    * 
    * @param strw Le pointeur vers SimpleTableInternal.
    */
