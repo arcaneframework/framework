@@ -122,7 +122,6 @@ clear()
 {
   ARCANE_CHECK_PTR(m_sti);
   m_sti->clear();
-  return true;
 }
 
 void SimpleCsvReaderWriter::
