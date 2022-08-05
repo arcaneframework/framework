@@ -25,7 +25,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 bool SimpleCsvReaderWriter::
-writeTable(Directory dst, const String& file_name)
+writeTable(const Directory& dst, const String& file_name)
 {
   ARCANE_CHECK_PTR(m_sti);
   if(!SimpleTableReaderWriterUtils::createDirectoryOnlyP0(m_sti->m_sub_domain, dst)) {
@@ -43,7 +43,7 @@ writeTable(Directory dst, const String& file_name)
 }
 
 bool SimpleCsvReaderWriter::
-readTable(Directory src, const String& file_name)
+readTable(const Directory& src, const String& file_name)
 {
   ARCANE_CHECK_PTR(m_sti);
   clearInternal();

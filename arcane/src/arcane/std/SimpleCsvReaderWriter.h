@@ -59,8 +59,8 @@ class SimpleCsvReaderWriter
   ~SimpleCsvReaderWriter() = default;
 
  public:
-  bool writeTable(Directory dst, const String& file_name) override;
-  bool readTable(Directory src, const String& file_name) override;
+  bool writeTable(const Directory& dst, const String& file_name) override;
+  bool readTable(const Directory& src, const String& file_name) override;
   void clearInternal() override;
   void print() override;
 

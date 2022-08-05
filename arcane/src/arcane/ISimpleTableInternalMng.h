@@ -19,8 +19,6 @@
 /*---------------------------------------------------------------------------*/
 
 #include <arcane/ItemTypes.h>
-#include <arcane/Directory.h>
-#include <arcane/IMesh.h>
 #include <arcane/ISubDomain.h>
 #include "arcane/utils/Array.h"
 #include "arcane/utils/Array2.h"

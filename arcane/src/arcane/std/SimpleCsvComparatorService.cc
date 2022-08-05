@@ -62,7 +62,7 @@ clear()
 }
 
 void SimpleCsvComparatorService::
-editRootDir(Directory root_dir)
+editRootDir(const Directory& root_dir)
 {
   m_root_path = root_dir;
   m_ref_path = Directory(m_root_path, m_output_dir);

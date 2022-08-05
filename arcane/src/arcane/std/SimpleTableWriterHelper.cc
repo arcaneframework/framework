@@ -69,7 +69,7 @@ print(Integer only_proc)
 }
 
 bool SimpleTableWriterHelper::
-writeFile(Directory root_dir, Integer only_proc)
+writeFile(const Directory& root_dir, Integer only_proc)
 {
   ARCANE_CHECK_PTR(m_sti);
   ARCANE_CHECK_PTR(m_strw);

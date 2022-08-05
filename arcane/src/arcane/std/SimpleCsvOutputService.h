@@ -130,7 +130,7 @@ class SimpleCsvOutputService
 
   void print(Integer only_proc) override { return m_stom.print(only_proc); };
   bool writeFile(Integer only_proc) override { return m_stom.writeFile(only_proc); };
-  bool writeFile(Directory root_dir, Integer only_proc) override { return m_stom.writeFile(root_dir, only_proc); };
+  bool writeFile(const Directory& root_dir, Integer only_proc) override { return m_stom.writeFile(root_dir, only_proc); };
   bool writeFile(const String& dir, Integer only_proc) override;
 
   Integer precision() override { return m_stom.precision(); };

@@ -68,7 +68,7 @@ class SimpleTableWriterHelper
 
   void print(Integer only_proc) override;
   bool writeFile(Integer only_proc) override;
-  bool writeFile(Directory root_dir, Integer only_proc) override;
+  bool writeFile(const Directory& root_dir, Integer only_proc) override;
 
   Integer precision() override;
   void setPrecision(Integer precision) override;

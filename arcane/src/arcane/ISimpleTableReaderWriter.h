@@ -41,7 +41,7 @@ namespace Arcane
 class ARCANE_CORE_EXPORT SimpleTableReaderWriterUtils
 {
  public:
-  static bool createDirectoryOnlyP0(ISubDomain* sub_domain, Directory& dir)
+  static bool createDirectoryOnlyP0(ISubDomain* sub_domain, const Directory& dir)
   {
     int sf = 0;
     if (sub_domain->parallelMng()->commRank() == 0) {
@@ -52,7 +52,7 @@ class ARCANE_CORE_EXPORT SimpleTableReaderWriterUtils
     }
     return sf == 0;
   };
-  static bool isFileExist(Directory dir, const String& file)
+  static bool isFileExist(const Directory& dir, const String& file)
   {
     std::ifstream stream;
     stream.open(dir.file(file).localstr(), std::ifstream::in);
@@ -108,7 +108,7 @@ public:
    * @return true Si le fichier a bien été écrit.
    * @return false Si le fichier n'a pas pu être écrit.
    */
-  virtual bool writeTable(Directory dst, const String& file_name) = 0;
+  virtual bool writeTable(const Directory& dst, const String& file_name) = 0;
 
   /**
    * @brief Méthode permettant de lire un fichier contenant un tableau simple.
@@ -141,7 +141,7 @@ public:
    * @return true Si le fichier a bien été lu.
    * @return false Si le fichier n'a pas pu être lu.
    */
-  virtual bool readTable(Directory src, const String& file_name) = 0;
+  virtual bool readTable(const Directory& src, const String& file_name) = 0;
 
   /**
    * @brief Méthode permettant d'effacer le contenu de l'objet

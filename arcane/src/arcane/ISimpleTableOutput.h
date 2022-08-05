@@ -651,7 +651,7 @@ public:
    */
   virtual void print(Integer only_proc = 0) = 0;
 
-  virtual bool writeFile(Directory root_dir, Integer only_proc) = 0;
+  virtual bool writeFile(const Directory& root_dir, Integer only_proc) = 0;
 
   /**
    * @brief Méthode permettant d'écrire le tableau dans un fichier.

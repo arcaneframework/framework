@@ -115,7 +115,7 @@ public:
    * @return true Si le fichier a été correctement écrit.
    * @return false Si le fichier n'a pas été correctement écrit.
    */
-  virtual bool writeFile(Directory root_dir, Integer only_proc) = 0;
+  virtual bool writeFile(const Directory& root_dir, Integer only_proc) = 0;
 
   /**
    * @brief Méthode permettant d'écrire le tableau dans un fichier.

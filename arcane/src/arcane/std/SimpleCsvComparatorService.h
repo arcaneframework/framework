@@ -64,7 +64,7 @@ class SimpleCsvComparatorService
  public:
   void init(ISimpleTableOutput* ptr_sto) override;
   void clear() override;
-  void editRootDir(Directory root_dir) override;
+  void editRootDir(const Directory& root_dir) override;
   void print(Integer only_proc) override;
   bool writeRefFile(Integer only_proc) override;
   bool readRefFile(Integer only_proc) override;

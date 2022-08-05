@@ -89,7 +89,7 @@ public:
    * 
    * @param root_dir Le nouveau répertoire racine.
    */
-  virtual void editRootDir(Directory root_dir) = 0;
+  virtual void editRootDir(const Directory& root_dir) = 0;
 
   /**
    * @brief Méthode permettant d'écrire les fichiers de référence.

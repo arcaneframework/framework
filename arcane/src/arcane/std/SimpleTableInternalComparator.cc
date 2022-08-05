@@ -13,7 +13,6 @@
 
 #include "arcane/std/SimpleTableInternalComparator.h"
 
-#include <arcane/Directory.h>
 #include <arcane/IMesh.h>
 #include <arcane/IParallelMng.h>
 #include <arcane/ISubDomain.h>
