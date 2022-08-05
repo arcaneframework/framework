@@ -32,7 +32,7 @@ init()
 }
 
 bool SimpleCsvOutputService::
-init(String name_table)
+init(const String& name_table)
 {
   if (m_with_option) {
     return m_stom.init(name_table, options()->getTableDir());
@@ -44,7 +44,7 @@ init(String name_table)
 /*---------------------------------------------------------------------------*/
 
 bool SimpleCsvOutputService::
-writeFile(String dir, Integer only_proc) 
+writeFile(const String& dir, Integer only_proc) 
 {
   m_stom.setOutputDir(dir);
   return m_stom.writeFile(only_proc);

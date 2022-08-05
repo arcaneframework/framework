@@ -40,7 +40,7 @@ clearInternal()
 /*---------------------------------------------------------------------------*/
 
 Integer SimpleTableInternalMng::
-addRow(String name_row)
+addRow(const String& name_row)
 {
   ARCANE_CHECK_PTR(m_sti);
   Integer pos = m_sti->m_values_csv.dim1Size();
@@ -55,7 +55,7 @@ addRow(String name_row)
 }
 
 Integer SimpleTableInternalMng::
-addRow(String name_row, ConstArrayView<Real> elems)
+addRow(const String& name_row, ConstArrayView<Real> elems)
 {
   ARCANE_CHECK_PTR(m_sti);
   Integer pos = m_sti->m_values_csv.dim1Size();
@@ -92,7 +92,7 @@ addRows(StringConstArrayView name_rows)
 /*---------------------------------------------------------------------------*/
 
 Integer SimpleTableInternalMng::
-addColumn(String name_column)
+addColumn(const String& name_column)
 {
   ARCANE_CHECK_PTR(m_sti);
   Integer pos = m_sti->m_values_csv.dim2Size();
@@ -107,7 +107,7 @@ addColumn(String name_column)
 }
 
 Integer SimpleTableInternalMng::
-addColumn(String name_column, ConstArrayView<Real> elems)
+addColumn(const String& name_column, ConstArrayView<Real> elems)
 {
   ARCANE_CHECK_PTR(m_sti);
   Integer pos = m_sti->m_values_csv.dim2Size();
@@ -175,7 +175,7 @@ addElemRow(Integer pos, Real elem)
 }
 
 bool SimpleTableInternalMng::
-addElemRow(String name_row, Real elem, bool create_if_not_exist)
+addElemRow(const String& name_row, Real elem, bool create_if_not_exist)
 {
   ARCANE_CHECK_PTR(m_sti);
   std::optional<Integer> pos = m_sti->m_name_rows.span().findFirst(name_row);
@@ -226,7 +226,7 @@ addElemsRow(Integer pos, ConstArrayView<Real> elems)
 }
 
 bool SimpleTableInternalMng::
-addElemsRow(String name_row, ConstArrayView<Real> elems, bool create_if_not_exist)
+addElemsRow(const String& name_row, ConstArrayView<Real> elems, bool create_if_not_exist)
 {
   ARCANE_CHECK_PTR(m_sti);
   std::optional<Integer> pos = m_sti->m_name_rows.span().findFirst(name_row);
@@ -276,7 +276,7 @@ addElemColumn(Integer pos, Real elem)
 }
 
 bool SimpleTableInternalMng::
-addElemColumn(String name_column, Real elem, bool create_if_not_exist)
+addElemColumn(const String& name_column, Real elem, bool create_if_not_exist)
 {
   ARCANE_CHECK_PTR(m_sti);
   std::optional<Integer> pos = m_sti->m_name_columns.span().findFirst(name_column);
@@ -326,7 +326,7 @@ addElemsColumn(Integer pos, ConstArrayView<Real> elems)
 }
 
 bool SimpleTableInternalMng::
-addElemsColumn(String name_column, ConstArrayView<Real> elems, bool create_if_not_exist)
+addElemsColumn(const String& name_column, ConstArrayView<Real> elems, bool create_if_not_exist)
 {
   ARCANE_CHECK_PTR(m_sti);
   std::optional<Integer> pos = m_sti->m_name_columns.span().findFirst(name_column);
@@ -543,7 +543,7 @@ editElem(Integer pos_x, Integer pos_y, Real elem)
 }
 
 bool SimpleTableInternalMng::
-editElem(String name_column, String name_row, Real elem)
+editElem(const String& name_column, const String& name_row, Real elem)
 {
   ARCANE_CHECK_PTR(m_sti);
   std::optional<Integer> pos_x = m_sti->m_name_columns.span().findFirst(name_column);
@@ -580,7 +580,7 @@ elem(Integer pos_x, Integer pos_y, bool update_last_pos)
 }
 
 Real SimpleTableInternalMng::
-elem(String name_column, String name_row, bool update_last_pos)
+elem(const String& name_column, const String& name_row, bool update_last_pos)
 {
   ARCANE_CHECK_PTR(m_sti);
   std::optional<Integer> pos_x = m_sti->m_name_columns.span().findFirst(name_column);
@@ -607,7 +607,7 @@ row(Integer pos)
 }
 
 RealUniqueArray SimpleTableInternalMng::
-row(String name_row)
+row(const String& name_row)
 {
   ARCANE_CHECK_PTR(m_sti);
   std::optional<Integer> pos_y = m_sti->m_name_rows.span().findFirst(name_row);
@@ -633,7 +633,7 @@ column(Integer pos)
 }
 
 RealUniqueArray SimpleTableInternalMng::
-column(String name_column)
+column(const String& name_column)
 {
   ARCANE_CHECK_PTR(m_sti);
   std::optional<Integer> pos_x = m_sti->m_name_columns.span().findFirst(name_column);
@@ -655,7 +655,7 @@ sizeRow(Integer pos)
 }
 
 Integer SimpleTableInternalMng::
-sizeRow(String name_row)
+sizeRow(const String& name_row)
 {
   ARCANE_CHECK_PTR(m_sti);
   std::optional<Integer> pos_y = m_sti->m_name_rows.span().findFirst(name_row);
@@ -677,7 +677,7 @@ sizeColumn(Integer pos)
 }
 
 Integer SimpleTableInternalMng::
-sizeColumn(String name_column)
+sizeColumn(const String& name_column)
 {
   ARCANE_CHECK_PTR(m_sti);
   std::optional<Integer> pos_x = m_sti->m_name_columns.span().findFirst(name_column);
@@ -690,7 +690,7 @@ sizeColumn(String name_column)
 /*---------------------------------------------------------------------------*/
 
 Integer SimpleTableInternalMng::
-posRow(String name_row)
+posRow(const String& name_row)
 {
   ARCANE_CHECK_PTR(m_sti);
   std::optional<Integer> pos_y = m_sti->m_name_rows.span().findFirst(name_row);
@@ -700,7 +700,7 @@ posRow(String name_row)
 }
 
 Integer SimpleTableInternalMng::
-posColumn(String name_column)
+posColumn(const String& name_column)
 {
   ARCANE_CHECK_PTR(m_sti);
   std::optional<Integer> pos_x = m_sti->m_name_columns.span().findFirst(name_column);
@@ -753,7 +753,7 @@ nameColumn(Integer pos)
 /*---------------------------------------------------------------------------*/
 
 bool SimpleTableInternalMng::
-editNameRow(Integer pos, String new_name)
+editNameRow(Integer pos, const String& new_name)
 {
   ARCANE_CHECK_PTR(m_sti);
   if (pos < 0 || pos >= m_sti->m_values_csv.dim1Size())
@@ -763,7 +763,7 @@ editNameRow(Integer pos, String new_name)
 }
 
 bool SimpleTableInternalMng::
-editNameRow(String name_row, String new_name)
+editNameRow(const String& name_row, const String& new_name)
 {
   ARCANE_CHECK_PTR(m_sti);
   std::optional<Integer> pos_y = m_sti->m_name_rows.span().findFirst(name_row);
@@ -773,7 +773,7 @@ editNameRow(String name_row, String new_name)
 }
 
 bool SimpleTableInternalMng::
-editNameColumn(Integer pos, String new_name)
+editNameColumn(Integer pos, const String& new_name)
 {
   ARCANE_CHECK_PTR(m_sti);
   if (pos < 0 || pos >= m_sti->m_values_csv.dim2Size())
@@ -783,7 +783,7 @@ editNameColumn(Integer pos, String new_name)
 }
 
 bool SimpleTableInternalMng::
-editNameColumn(String name_column, String new_name)
+editNameColumn(const String& name_column, const String& new_name)
 {
   ARCANE_CHECK_PTR(m_sti);
   std::optional<Integer> pos_x = m_sti->m_name_columns.span().findFirst(name_column);
@@ -796,7 +796,7 @@ editNameColumn(String name_column, String new_name)
 /*---------------------------------------------------------------------------*/
 
 Integer SimpleTableInternalMng::
-addAverageColumn(String name_column)
+addAverageColumn(const String& name_column)
 {
   ARCANE_CHECK_PTR(m_sti);
   Integer pos = addColumn(name_column);

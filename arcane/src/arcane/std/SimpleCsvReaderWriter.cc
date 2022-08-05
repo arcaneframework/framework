@@ -25,14 +25,14 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 bool SimpleCsvReaderWriter::
-writeTable(Directory dst, String file)
+writeTable(Directory dst, const String& file_name)
 {
   ARCANE_CHECK_PTR(m_sti);
   if(!SimpleTableReaderWriterUtils::createDirectoryOnlyP0(m_sti->m_sub_domain, dst)) {
     return false;
   }
 
-  std::ofstream ofile((dst.file(file)+"."+typeFile()).localstr());
+  std::ofstream ofile((dst.file(file_name)+"."+typeFile()).localstr());
   if (ofile.fail())
     return false;
 
@@ -43,17 +43,15 @@ writeTable(Directory dst, String file)
 }
 
 bool SimpleCsvReaderWriter::
-readTable(Directory src, String file)
+readTable(Directory src, const String& file_name)
 {
   ARCANE_CHECK_PTR(m_sti);
   clearInternal();
 
   std::ifstream stream;
 
-  file = file+"."+typeFile();
-
   // Pas de fichier, pas de chocolats.
-  if(!_openFile(stream, src, file)) {
+  if(!_openFile(stream, src, file_name+"."+typeFile())) {
     return false;
   }
 
@@ -185,7 +183,7 @@ setInternal(SimpleTableInternal* sti)
 /*---------------------------------------------------------------------------*/
 
 bool SimpleCsvReaderWriter::
-_openFile(std::ifstream& stream, Directory dir, String file)
+_openFile(std::ifstream& stream, Directory dir, const String& file)
 {
   stream.open(dir.file(file).localstr(), std::ifstream::in);
   return stream.good();

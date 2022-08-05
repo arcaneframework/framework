@@ -48,14 +48,14 @@ public:
    * 
    * @param name_table Le nom du tableau (et du fichier de sortie).
    */
-  virtual bool init(String name_table) = 0;
+  virtual bool init(const String& name_table) = 0;
   /**
    * @brief Méthode permettant d'initialiser le tableau.
    * 
    * @param name_table Le nom du tableau (et du fichier de sortie).
    * @param name_dir Le nom du dossier dans lequel enregistrer les tableaux.
    */
-  virtual bool init(String name_table, String name_dir) = 0;
+  virtual bool init(const String& name_table, const String& name_dir) = 0;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -75,7 +75,7 @@ public:
    * @param name_row Le nom de la ligne.
    * @return Integer La position de la ligne dans le tableau.
    */
-  virtual Integer addRow(String name_row) = 0;
+  virtual Integer addRow(const String& name_row) = 0;
   /**
    * @brief Méthode permettant d'ajouter une ligne.
    * 
@@ -87,7 +87,7 @@ public:
    * @param elems Les éléments à insérer sur la ligne.
    * @return Integer La position de la ligne dans le tableau.
    */
-  virtual Integer addRow(String name_row, ConstArrayView<Real> elems) = 0;
+  virtual Integer addRow(const String& name_row, ConstArrayView<Real> elems) = 0;
   /**
    * @brief Méthode permettant d'ajouter plusieurs lignes.
    * 
@@ -106,7 +106,7 @@ public:
    * @param name_column Le nom de la colonne.
    * @return Integer La position de la colonne dans le tableau.
    */
-  virtual Integer addColumn(String name_column) = 0;
+  virtual Integer addColumn(const String& name_column) = 0;
   /**
    * @brief Méthode permettant d'ajouter une colonne.
    * 
@@ -118,7 +118,7 @@ public:
    * @param elems Les éléments à ajouter sur la colonne.
    * @return Integer La position de la colonne dans le tableau.
    */
-  virtual Integer addColumn(String name_column, ConstArrayView<Real> elems) = 0;
+  virtual Integer addColumn(const String& name_column, ConstArrayView<Real> elems) = 0;
   /**
    * @brief Méthode permettant d'ajouter plusieurs colonnes.
    * 
@@ -150,7 +150,7 @@ public:
    * @return true Si l'élément a pu être ajouté.
    * @return false Si l'élément n'a pas pu être ajouté.
    */
-  virtual bool addElemRow(String name_row, Real elem, bool create_if_not_exist = true) = 0;
+  virtual bool addElemRow(const String& name_row, Real elem, bool create_if_not_exist = true) = 0;
   /**
    * @brief Méthode permettant d'ajouter un élément sur la ligne 
    * dernièrement manipulée.
@@ -195,7 +195,7 @@ public:
    * @return true Si tous les éléments ont été ajoutés.
    * @return false Si [0;len(elems)[ éléments ont été ajoutés.
    */
-  virtual bool addElemsRow(String name_row, ConstArrayView<Real> elems, bool create_if_not_exist = true) = 0;
+  virtual bool addElemsRow(const String& name_row, ConstArrayView<Real> elems, bool create_if_not_exist = true) = 0;
   /**
    * @brief Méthode permettant d'ajouter plusieurs éléments sur la 
    * ligne dernièrement manipulée.
@@ -236,7 +236,7 @@ public:
    * @return true Si l'élément a pu être ajouté.
    * @return false Si l'élément n'a pas pu être ajouté.
    */
-  virtual bool addElemColumn(String name_column, Real elem, bool create_if_not_exist = true) = 0;
+  virtual bool addElemColumn(const String& name_column, Real elem, bool create_if_not_exist = true) = 0;
   /**
    * @brief Méthode permettant d'ajouter un élément sur la colonne
    * dernièrement manipulée.
@@ -280,7 +280,7 @@ public:
    * @return true Si tous les éléments ont été ajoutés.
    * @return false Si [0;len(elems)[ éléments ont été ajoutés.
    */
-  virtual bool addElemsColumn(String name_column, ConstArrayView<Real> elems, bool create_if_not_exist = true) = 0;
+  virtual bool addElemsColumn(const String& name_column, ConstArrayView<Real> elems, bool create_if_not_exist = true) = 0;
   /**
    * @brief Méthode permettant d'ajouter plusieurs éléments sur la
    * colonne dernièrement manipulée.
@@ -447,7 +447,7 @@ public:
    * @return true Si l'élement a bien été remplacé.
    * @return false Si l'élement n'a pas pu être remplacé.
    */
-  virtual bool editElem(String name_column, String name_row, Real elem) = 0;
+  virtual bool editElem(const String& name_column, const String& name_row, Real elem) = 0;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -477,7 +477,7 @@ public:
    * @param update_last_pos Doit-on déplacer le curseur "dernier élement modifié" ?
    * @return Real L'élement trouvé (0 si non trouvé).
    */
-  virtual Real elem(String name_column, String name_row, bool update_last_pos = false) = 0;
+  virtual Real elem(const String& name_column, const String& name_row, bool update_last_pos = false) = 0;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -495,7 +495,7 @@ public:
    * @param name_row Le nom de la ligne.
    * @return RealUniqueArray La copie de la ligne (tableau vide si non trouvée).
    */
-  virtual RealUniqueArray row(String name_row) = 0;
+  virtual RealUniqueArray row(const String& name_row) = 0;
 
   /**
    * @brief Méthode permettant d'obtenir une copie d'une colonne.
@@ -510,7 +510,7 @@ public:
    * @param name_column Le nom de la colonne.
    * @return RealUniqueArray La copie de la colonne (tableau vide si non trouvée).
    */
-  virtual RealUniqueArray column(String name_column) = 0;
+  virtual RealUniqueArray column(const String& name_column) = 0;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -530,7 +530,7 @@ public:
    * @param pos Le nom de la ligne.
    * @return Integer La taille de la ligne (0 si non trouvée).
    */
-  virtual Integer sizeRow(String name_row) = 0;
+  virtual Integer sizeRow(const String& name_row) = 0;
 
   /**
    * @brief Méthode permettant d'obtenir la taille d'une colonne.
@@ -547,7 +547,7 @@ public:
    * @param pos Le nom de la colonne.
    * @return Integer La taille de la colonne (0 si non trouvée).
    */
-  virtual Integer sizeColumn(String name_column) = 0;
+  virtual Integer sizeColumn(const String& name_column) = 0;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -558,14 +558,14 @@ public:
    * @param name_row Le nom de la ligne.
    * @return Integer La position de la ligne (-1 si non trouvée).
    */
-  virtual Integer posRow(String name_row) = 0;
+  virtual Integer posRow(const String& name_row) = 0;
   /**
    * @brief Méthode permettant de récupérer la position d'une colonne.
    * 
    * @param name_row Le nom de la colonne.
    * @return Integer La position de la colonne (-1 si non trouvée).
    */
-  virtual Integer posColumn(String name_column) = 0;
+  virtual Integer posColumn(const String& name_column) = 0;
   
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -602,7 +602,7 @@ public:
    * @return true Si le changement a eu lieu.
    * @return false Si le changement n'a pas eu lieu.
    */
-  virtual bool editNameRow(Integer pos, String new_name) = 0;
+  virtual bool editNameRow(Integer pos, const String& new_name) = 0;
   /**
    * @brief Méthode permettant de changer le nom d'une ligne.
    * 
@@ -611,7 +611,7 @@ public:
    * @return true Si le changement a eu lieu.
    * @return false Si le changement n'a pas eu lieu.
    */
-  virtual bool editNameRow(String name_row, String new_name) = 0;
+  virtual bool editNameRow(const String& name_row, const String& new_name) = 0;
 
   /**
    * @brief Méthode permettant de changer le nom d'une colonne.
@@ -621,7 +621,7 @@ public:
    * @return true Si le changement a eu lieu.
    * @return false Si le changement n'a pas eu lieu.
    */
-  virtual bool editNameColumn(Integer pos, String new_name) = 0;
+  virtual bool editNameColumn(Integer pos, const String& new_name) = 0;
   /**
    * @brief Méthode permettant de changer le nom d'une colonne.
    * 
@@ -630,7 +630,7 @@ public:
    * @return true Si le changement a eu lieu.
    * @return false Si le changement n'a pas eu lieu.
    */
-  virtual bool editNameColumn(String name_column, String new_name) = 0;
+  virtual bool editNameColumn(const String& name_column, const String& new_name) = 0;
 
   /**
    * @brief Méthode permettant de créer une colonne contenant la moyenne des
@@ -639,7 +639,7 @@ public:
    * @param name_column Le nom de la nouvelle colonne.
    * @return Integer La position de la colonne.
    */
-  virtual Integer addAverageColumn(String name_column) = 0;
+  virtual Integer addAverageColumn(const String& name_column) = 0;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -676,7 +676,7 @@ public:
    * 
    * @deprecated Utiliser setOutputDir() puis writeFile() à la place.
    */
-  virtual bool writeFile(String dir, Integer only_proc = -1) = 0;
+  virtual bool writeFile(const String& dir, Integer only_proc = -1) = 0;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -742,7 +742,7 @@ public:
    * 
    * @param dir Le répertoire.
    */
-  virtual void setOutputDir(String dir) = 0;
+  virtual void setOutputDir(const String& dir) = 0;
 
 
   /**
@@ -760,7 +760,7 @@ public:
    * 
    * @param name Le nom.
    */
-  virtual void setTabName(String name) = 0;
+  virtual void setTabName(const String& name) = 0;
 
   /**
    * @brief Accesseur permettant de récupérer le nom des fichiers.

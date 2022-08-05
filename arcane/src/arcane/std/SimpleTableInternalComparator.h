@@ -73,14 +73,14 @@ class SimpleTableInternalComparator
 
   void clearComparator() override;
 
-  bool addColumnForComparing(String name_column) override;
-  bool addRowForComparing(String name_row) override;
+  bool addColumnForComparing(const String& name_column) override;
+  bool addRowForComparing(const String& name_row) override;
 
   void isAnArrayExclusiveColumns(bool is_exclusive) override;
   void isAnArrayExclusiveRows(bool is_exclusive) override;
 
-  void editRegexColumns(String regex_column) override;
-  void editRegexRows(String regex_row) override;
+  void editRegexColumns(const String& regex_column) override;
+  void editRegexRows(const String& regex_row) override;
 
   void isARegexExclusiveColumns(bool is_exclusive) override;
   void isARegexExclusiveRows(bool is_exclusive) override;
@@ -92,8 +92,8 @@ class SimpleTableInternalComparator
   void setInternalToCompare(SimpleTableInternal* sti) override;
 
  protected:
-  bool _exploreColumn(String column_name);
-  bool _exploreRows(String row_name);
+  bool _exploreColumn(const String& column_name);
+  bool _exploreRows(const String& row_name);
 
  protected:
   SimpleTableInternal* m_sti_ref;

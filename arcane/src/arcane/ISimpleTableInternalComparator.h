@@ -97,7 +97,7 @@ public:
    * @return true Si le nom a bien été ajouté.
    * @return false Sinon.
    */
-  virtual bool addColumnForComparing(String name_column) = 0;
+  virtual bool addColumnForComparing(const String& name_column) = 0;
   /**
    * @brief Méthode permettant d'ajouter une ligne dans la liste des lignes
    * à comparer.
@@ -106,7 +106,7 @@ public:
    * @return true Si le nom a bien été ajouté.
    * @return false Sinon.
    */
-  virtual bool addRowForComparing(String name_row) = 0;
+  virtual bool addRowForComparing(const String& name_row) = 0;
 
   /**
    * @brief Méthode permettant de définir si le tableau de
@@ -137,14 +137,14 @@ public:
    * 
    * @param regex_column L'expression régulière (format ECMAScript).
    */
-  virtual void editRegexColumns(String regex_column) = 0;
+  virtual void editRegexColumns(const String& regex_column) = 0;
   /**
    * @brief Méthode permettant d'ajouter une expression régulière
    * permettant de déterminer les lignes à comparer.
    * 
    * @param regex_row L'expression régulière (format ECMAScript).
    */
-  virtual void editRegexRows(String regex_row) = 0;
+  virtual void editRegexRows(const String& regex_row) = 0;
 
   /**
    * @brief Méthode permettant de demander à ce que l'expression régulière

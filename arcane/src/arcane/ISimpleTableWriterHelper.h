@@ -79,7 +79,7 @@ public:
    * 
    * @param name_table Le nom du tableau (et du fichier de sortie).
    */
-  virtual bool init(String name_table) = 0;
+  virtual bool init(const String& name_table) = 0;
   /**
    * @brief Méthode permettant d'initialiser l'objet.
    * Notamment le nom du tableau et le nom du répertoire qui contiendra
@@ -88,7 +88,7 @@ public:
    * @param name_table Le nom du tableau (et du fichier de sortie).
    * @param name_dir Le nom du dossier dans lequel enregistrer les tableaux.
    */
-  virtual bool init(String name_table, String name_dir) = 0;
+  virtual bool init(const String& name_table, const String& name_dir) = 0;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -208,7 +208,7 @@ public:
    * 
    * @param dir Le répertoire.
    */
-  virtual void setOutputDir(String dir) = 0;
+  virtual void setOutputDir(const String& dir) = 0;
 
 
   /**
@@ -236,7 +236,7 @@ public:
    * 
    * @param name Le nom.
    */
-  virtual void setTabName(String name) = 0;
+  virtual void setTabName(const String& name) = 0;
 
   /**
    * @brief Méthode permettant de récupérer le nom du fichier.

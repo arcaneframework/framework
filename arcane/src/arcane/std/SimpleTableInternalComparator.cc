@@ -90,13 +90,13 @@ clearComparator()
 }
 
 bool SimpleTableInternalComparator::
-addColumnForComparing(String name_column)
+addColumnForComparing(const String& name_column)
 {
   m_columns_to_compare.add(name_column);
   return true;
 }
 bool SimpleTableInternalComparator::
-addRowForComparing(String name_row)
+addRowForComparing(const String& name_row)
 {
   m_rows_to_compare.add(name_row);
   return true;
@@ -114,12 +114,12 @@ isAnArrayExclusiveRows(bool is_exclusive)
 }
 
 void SimpleTableInternalComparator::
-editRegexColumns(String regex_column)
+editRegexColumns(const String& regex_column)
 {
   m_regex_columns = regex_column;
 }
 void SimpleTableInternalComparator::
-editRegexRows(String regex_row)
+editRegexRows(const String& regex_row)
 {
   m_regex_rows = regex_row;
 }
@@ -169,7 +169,7 @@ setInternalToCompare(SimpleTableInternal* sti_to_compare)
 /*---------------------------------------------------------------------------*/
 
 bool SimpleTableInternalComparator::
-_exploreColumn(String column_name)
+_exploreColumn(const String& column_name)
 {
   // S'il n'y a pas de précisions, on compare toutes les colonnes.
   if(m_columns_to_compare.empty() && m_regex_columns.empty()) {
@@ -201,7 +201,7 @@ _exploreColumn(String column_name)
 }
 
 bool SimpleTableInternalComparator::
-_exploreRows(String row_name)
+_exploreRows(const String& row_name)
 {
   // S'il n'y a pas de précisions, on compare toutes les colonnes.
   if(m_rows_to_compare.empty() && m_regex_rows.empty()) {

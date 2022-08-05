@@ -63,8 +63,8 @@ class SimpleTableWriterHelper
 
  public:
   bool init() override;
-  bool init(String name_table) override;
-  bool init(String name_table, String name_dir) override;
+  bool init(const String& name_table) override;
+  bool init(const String& name_table, const String& name_dir) override;
 
   void print(Integer only_proc) override;
   bool writeFile(Integer only_proc) override;
@@ -78,11 +78,11 @@ class SimpleTableWriterHelper
 
   String outputDir() override;
   String outputDirWithoutComputation() override;
-  void setOutputDir(String dir) override;
+  void setOutputDir(const String& dir) override;
 
   String tabName() override;
   String tabNameWithoutComputation() override;
-  void setTabName(String name) override;
+  void setTabName(const String& name) override;
 
   String fileName() override;
   

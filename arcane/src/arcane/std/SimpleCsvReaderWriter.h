@@ -59,8 +59,8 @@ class SimpleCsvReaderWriter
   ~SimpleCsvReaderWriter() = default;
 
  public:
-  bool writeTable(Directory dst, String file) override;
-  bool readTable(Directory src, String file) override;
+  bool writeTable(Directory dst, const String& file_name) override;
+  bool readTable(Directory src, const String& file_name) override;
   void clearInternal() override;
   void print() override;
 
@@ -76,7 +76,7 @@ class SimpleCsvReaderWriter
   void setInternal(SimpleTableInternal* sti) override;
 
  protected:
-  bool _openFile(std::ifstream& stream, Directory dir, String file);
+  bool _openFile(std::ifstream& stream, Directory dir, const String& file);
   void _closeFile(std::ifstream& stream);
   void _print(std::ostream& stream);
 

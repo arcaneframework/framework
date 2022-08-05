@@ -137,12 +137,12 @@ compareWithRef(Integer only_proc, Integer epsilon, bool dim_compare)
 }
 
 bool SimpleCsvComparatorService::
-addColumnForComparing(String name_column)
+addColumnForComparing(const String& name_column)
 {
   return m_stic.addColumnForComparing(name_column);
 }
 bool SimpleCsvComparatorService::
-addRowForComparing(String name_row)
+addRowForComparing(const String& name_row)
 {
   return m_stic.addRowForComparing(name_row);
 }
@@ -159,12 +159,12 @@ isAnArrayExclusiveRows(bool is_exclusive)
 }
 
 void SimpleCsvComparatorService::
-editRegexColumns(String regex_column)
+editRegexColumns(const String& regex_column)
 {
   m_stic.editRegexColumns(regex_column);
 }
 void SimpleCsvComparatorService::
-editRegexRows(String regex_row)
+editRegexRows(const String& regex_row)
 {
   m_stic.editRegexRows(regex_row);
 }

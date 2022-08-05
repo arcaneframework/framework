@@ -37,13 +37,13 @@ init()
 }
 
 bool SimpleTableWriterHelper::
-init(String name_table)
+init(const String& name_table)
 {
   return init(name_table, "");
 }
 
 bool SimpleTableWriterHelper::
-init(String name_table, String name_dir)
+init(const String& name_table, const String& name_dir)
 {
   ARCANE_CHECK_PTR(m_sti);
 
@@ -147,7 +147,7 @@ outputDirWithoutComputation()
 }
 
 void SimpleTableWriterHelper::
-setOutputDir(String dir)
+setOutputDir(const String& dir)
 {
   m_name_output_dir = dir;
 }
@@ -167,7 +167,7 @@ tabNameWithoutComputation()
 }
 
 void SimpleTableWriterHelper::
-setTabName(String name)
+setTabName(const String& name)
 {
   ARCANE_CHECK_PTR(m_sti);
   m_sti->m_name_tab = name;
