@@ -2142,7 +2142,7 @@ _checkCreation()
   Integer n = 0;
   ParallelLoopOptions options;
   options.setGrainSize(20);
-  Parallel::For(0,1000,options,this,&MeshMaterialTesterModule::_checkCreation2);
+  arcaneParallelFor(0,1000,options,[&](Integer a,Integer n) { _checkCreation2(a,n); });
 
   info() << "CHECK CREATE N=" << n;
 
