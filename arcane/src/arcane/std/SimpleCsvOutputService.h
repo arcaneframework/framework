@@ -19,9 +19,9 @@
 
 #include "arcane/ISimpleTableOutput.h"
 
+#include "arcane/std/SimpleCsvReaderWriter.h"
 #include "arcane/std/SimpleTableInternalMng.h"
 #include "arcane/std/SimpleTableWriterHelper.h"
-#include "arcane/std/SimpleCsvReaderWriter.h"
 
 #include "arcane/Directory.h"
 
@@ -147,10 +147,10 @@ class SimpleCsvOutputService
   String tabName() override { return m_stom.tabName(); };
   void setTabName(const String& name) override { return m_stom.setTabName(name); };
   String fileName() override { return m_stom.fileName(); };
-  
+
   Directory outputPath() override { return m_stom.outputPath(); };
   Directory rootPath() override { return m_stom.rootPath(); };
-  
+
   String outputFileType() override { return m_stom.typeFile(); };
 
   bool isOneFileByProcsPermited() override { return m_stom.isOneFileByProcsPermited(); };

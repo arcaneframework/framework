@@ -13,12 +13,12 @@
 
 #include "arcane/std/SimpleTableInternalComparator.h"
 
-#include "arcane/utils/Numeric.h"
 #include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/Numeric.h"
 
-#include <string>
-#include <regex>
 #include <optional>
+#include <regex>
+#include <string>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -40,29 +40,29 @@ compare(Integer epsilon, bool compare_dim)
   const Integer dim1 = m_stm_ref.numRows();
   const Integer dim2 = m_stm_ref.numColumns();
 
-  if(compare_dim && (dim1 != m_stm_to_compare.numRows() || dim2 != m_stm_to_compare.numColumns())) {
-    m_sti_ref->m_sub_domain->traceMng()->warning() << "Dimensions not equals -- Expected dimensions: " 
-      << dim1 << "x" << dim2 << " -- Found dimensions: "
-      << m_stm_to_compare.numRows() << "x" << m_stm_to_compare.numColumns();
+  if (compare_dim && (dim1 != m_stm_to_compare.numRows() || dim2 != m_stm_to_compare.numColumns())) {
+    m_sti_ref->m_sub_domain->traceMng()->warning() << "Dimensions not equals -- Expected dimensions: "
+                                                   << dim1 << "x" << dim2 << " -- Found dimensions: "
+                                                   << m_stm_to_compare.numRows() << "x" << m_stm_to_compare.numColumns();
     return false;
   }
 
   for (Integer i = 0; i < dim1; i++) {
     // On regarde si l'on doit comparer la ligne actuelle.
     String row = m_stm_ref.nameRow(i);
-    if(!_exploreRows(row)) continue;
-
+    if (!_exploreRows(row))
+      continue;
 
     for (Integer j = 0; j < dim2; j++) {
-    // On regarde si l'on doit comparer la colonne actuelle.
+      // On regarde si l'on doit comparer la colonne actuelle.
       String column = m_stm_ref.nameColumn(j);
-      if(!_exploreColumn(column)) continue;
-
+      if (!_exploreColumn(column))
+        continue;
 
       const Real val1 = m_stm_ref.elem(column, row, false);
       const Real val2 = m_stm_to_compare.elem(column, row, false);
 
-      if(!math::isNearlyEqualWithEpsilon(val1, val2, epsilon)) {
+      if (!math::isNearlyEqualWithEpsilon(val1, val2, epsilon)) {
         m_sti_ref->m_sub_domain->traceMng()->warning() << "Values not equals -- Column name: \"" << column << "\" -- Row name: \"" << row << "\"";
         is_ok = false;
       }
@@ -130,30 +130,28 @@ isARegexExclusiveRows(bool is_exclusive)
   m_is_excluding_regex_rows = is_exclusive;
 }
 
-
 SimpleTableInternal* SimpleTableInternalComparator::
-internalRef() 
+internalRef()
 {
   return m_sti_ref;
 }
 
 void SimpleTableInternalComparator::
-setInternalRef(SimpleTableInternal* sti_ref) 
+setInternalRef(SimpleTableInternal* sti_ref)
 {
   ARCANE_CHECK_PTR(sti_ref);
   m_sti_ref = sti_ref;
   m_stm_ref.setInternal(m_sti_ref);
 }
 
-
 SimpleTableInternal* SimpleTableInternalComparator::
-internalToCompare() 
+internalToCompare()
 {
   return m_sti_to_compare;
 }
 
 void SimpleTableInternalComparator::
-setInternalToCompare(SimpleTableInternal* sti_to_compare) 
+setInternalToCompare(SimpleTableInternal* sti_to_compare)
 {
   ARCANE_CHECK_PTR(sti_to_compare);
   m_sti_to_compare = sti_to_compare;
@@ -167,17 +165,16 @@ bool SimpleTableInternalComparator::
 _exploreColumn(const String& column_name)
 {
   // S'il n'y a pas de précisions, on compare toutes les colonnes.
-  if(m_columns_to_compare.empty() && m_regex_columns.empty()) {
+  if (m_columns_to_compare.empty() && m_regex_columns.empty()) {
     return true;
   }
 
-  if(m_columns_to_compare.contains(column_name)){
+  if (m_columns_to_compare.contains(column_name)) {
     return !m_is_excluding_array_columns;
   }
 
   // S'il n'est pas dans le tableau et qu'il n'a a pas de regex, on return false.
-  else if(m_regex_columns.empty())
-  {
+  else if (m_regex_columns.empty()) {
     return m_is_excluding_array_columns;
   }
 
@@ -186,8 +183,7 @@ _exploreColumn(const String& column_name)
   std::regex self_regex(m_regex_columns.localstr(), std::regex_constants::ECMAScript | std::regex_constants::icase);
 
   // Si quelque chose dans le nom correspond à la regex.
-  if (std::regex_search(column_name.localstr(), self_regex))
-  {
+  if (std::regex_search(column_name.localstr(), self_regex)) {
     return !m_is_excluding_regex_columns;
   }
 
@@ -199,26 +195,23 @@ bool SimpleTableInternalComparator::
 _exploreRows(const String& row_name)
 {
   // S'il n'y a pas de précisions, on compare toutes les colonnes.
-  if(m_rows_to_compare.empty() && m_regex_rows.empty()) {
+  if (m_rows_to_compare.empty() && m_regex_rows.empty()) {
     return true;
   }
 
-  // D'abord, on regarde si le nom de la colonne est dans le tableau. 
-  if(m_rows_to_compare.contains(row_name))
-  {
+  // D'abord, on regarde si le nom de la colonne est dans le tableau.
+  if (m_rows_to_compare.contains(row_name)) {
     return !m_is_excluding_array_rows;
   }
   // S'il n'est pas dans le tableau et qu'il n'a a pas de regex, on return false.
-  else if(m_regex_rows.empty())
-  {
+  else if (m_regex_rows.empty()) {
     return m_is_excluding_array_rows;
   }
 
   // Sinon, on regarde aussi la regex.
   // TODO : Voir s'il y a un interet de faire des regex en mode JS.
   std::regex self_regex(m_regex_rows.localstr(), std::regex_constants::ECMAScript | std::regex_constants::icase);
-  if (std::regex_search(row_name.localstr(), self_regex))
-  {
+  if (std::regex_search(row_name.localstr(), self_regex)) {
     return !m_is_excluding_regex_rows;
   }
 

@@ -17,12 +17,12 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/ISimpleTableComparator.h"
 #include "arcane/ISimpleTableInternalMng.h"
 #include "arcane/ISimpleTableOutput.h"
-#include "arcane/ISimpleTableComparator.h"
 
-#include "arcane/std/SimpleTableInternalComparator.h"
 #include "arcane/std/SimpleCsvReaderWriter.h"
+#include "arcane/std/SimpleTableInternalComparator.h"
 
 #include "arcane/Directory.h"
 

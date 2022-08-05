@@ -84,16 +84,16 @@ class SimpleTableWriterHelper
   void setTabName(const String& name) override;
 
   String fileName() override;
-  
+
   Directory outputPath() override;
   Directory rootPath() override;
-  
+
   String typeFile() override;
 
   bool isOneFileByProcsPermited() override;
 
   SimpleTableInternal* internal() override;
-  
+
   ISimpleTableReaderWriter* readerWriter() override;
   void setReaderWriter(ISimpleTableReaderWriter* strw) override;
 

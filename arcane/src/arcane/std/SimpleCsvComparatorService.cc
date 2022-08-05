@@ -14,12 +14,13 @@
 #include "arcane/std/SimpleCsvComparatorService.h"
 
 #include "arcane/Directory.h"
-#include "arcane/utils/Iostream.h"
+#include "arcane/IMesh.h"
 #include "arcane/IParallelMng.h"
+#include "arcane/utils/Iostream.h"
 
 #include <optional>
-#include <string>
 #include <regex>
+#include <string>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -42,10 +43,10 @@ init(ISimpleTableOutput* ptr_sto)
 
   // On déduit l'emplacement des fichiers de réferences.
   m_output_dir = m_iSTO->outputDir();
-  m_root_path = Directory(subDomain()->exportDirectory(), m_iSTO->outputFileType()+"_refs");
+  m_root_path = Directory(subDomain()->exportDirectory(), m_iSTO->outputFileType() + "_refs");
   m_ref_path = Directory(m_root_path, m_output_dir);
   m_name_tab = m_iSTO->tabName();
-  m_file_name = m_name_tab+"."+m_iSTO->outputFileType();
+  m_file_name = m_name_tab + "." + m_iSTO->outputFileType();
 }
 
 void SimpleCsvComparatorService::
@@ -57,7 +58,7 @@ clear()
 
   m_sti_ref = nullptr;
   m_iSTO = nullptr;
-  
+
   m_is_file_read = false;
 }
 
@@ -101,7 +102,7 @@ writeRefFile(Integer only_proc)
 bool SimpleCsvComparatorService::
 readRefFile(Integer only_proc)
 {
-  if (only_proc != -1 && mesh()->parallelMng()->commRank() != only_proc)
+  if (only_proc != -1 && subDomain()->parallelMng()->commRank() != only_proc)
     return false;
 
   m_is_file_read = m_scrw.readTable(m_ref_path, m_name_tab);
@@ -112,7 +113,7 @@ readRefFile(Integer only_proc)
 bool SimpleCsvComparatorService::
 isRefExist(Integer only_proc)
 {
-  if (only_proc != -1 && mesh()->parallelMng()->commRank() != only_proc)
+  if (only_proc != -1 && subDomain()->parallelMng()->commRank() != only_proc)
     return false;
 
   return SimpleTableReaderWriterUtils::isFileExist(m_ref_path, m_file_name);
@@ -123,11 +124,11 @@ compareWithRef(Integer only_proc, Integer epsilon, bool dim_compare)
 {
   ARCANE_CHECK_PTR(m_sti_ref);
   // Si le proc appelant ne doit pas lire.
-  if (only_proc != -1 && mesh()->parallelMng()->commRank() != only_proc){
+  if (only_proc != -1 && subDomain()->parallelMng()->commRank() != only_proc) {
     return false;
   }
   // Si le fichier ne peut pas être lu.
-  if (!m_is_file_read && !readRefFile(only_proc)){
+  if (!m_is_file_read && !readRefFile(only_proc)) {
     return false;
   }
 

@@ -17,9 +17,9 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/ISimpleTableInternalComparator.h"
 #include "arcane/ISimpleTableInternalMng.h"
 #include "arcane/ISimpleTableReaderWriter.h"
-#include "arcane/ISimpleTableInternalComparator.h"
 
 #include "arcane/std/SimpleTableInternalMng.h"
 #include "arcane/utils/Array.h"

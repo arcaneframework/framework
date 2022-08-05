@@ -1,4 +1,4 @@
-// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
 // Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
@@ -29,11 +29,11 @@ bool SimpleCsvReaderWriter::
 writeTable(const Directory& dst, const String& file_name)
 {
   ARCANE_CHECK_PTR(m_sti);
-  if(!SimpleTableReaderWriterUtils::createDirectoryOnlyP0(m_sti->m_sub_domain, dst)) {
+  if (!SimpleTableReaderWriterUtils::createDirectoryOnlyP0(m_sti->m_sub_domain, dst)) {
     return false;
   }
 
-  std::ofstream ofile((dst.file(file_name)+"."+typeFile()).localstr());
+  std::ofstream ofile((dst.file(file_name) + "." + typeFile()).localstr());
   if (ofile.fail())
     return false;
 
@@ -52,7 +52,7 @@ readTable(const Directory& src, const String& file_name)
   std::ifstream stream;
 
   // Pas de fichier, pas de chocolats.
-  if(!_openFile(stream, src, file_name+"."+typeFile())) {
+  if (!_openFile(stream, src, file_name + "." + typeFile())) {
     return false;
   }
 
@@ -61,7 +61,7 @@ readTable(const Directory& src, const String& file_name)
   // S'il n'y a pas de première ligne, on arrete là.
   // Un fichier écrit par SimpleCsvOutput possède toujours au
   // moins une ligne.
-  if(!std::getline(stream, line)) {
+  if (!std::getline(stream, line)) {
     _closeFile(stream);
     return false;
   }
@@ -78,9 +78,9 @@ readTable(const Directory& src, const String& file_name)
     m_sti->m_name_columns = tmp.subConstView(1, tmp.size());
   }
 
-  // S'il n'y a pas d'autres lignes, c'est qu'il n'y a que des 
+  // S'il n'y a pas d'autres lignes, c'est qu'il n'y a que des
   // colonnes vides (ou aucunes colonnes) et aucunes lignes.
-  if(!std::getline(stream, line)) {
+  if (!std::getline(stream, line)) {
     _closeFile(stream);
     return true;
   }
@@ -91,10 +91,10 @@ readTable(const Directory& src, const String& file_name)
 
   Integer compt_line = 0;
 
-  do{
+  do {
     // On n'a pas le nombre de lignes en avance,
     // donc on doit resize à chaque tour.
-    m_sti->m_values_csv.resize(compt_line+1);
+    m_sti->m_values_csv.resize(compt_line + 1);
 
     // On split la ligne récupéré.
     StringUniqueArray splitted_line;
@@ -105,12 +105,12 @@ readTable(const Directory& src, const String& file_name)
     m_sti->m_name_rows.add(splitted_line[0]);
 
     // Les autres élements sont des Reals.
-    for(Integer i = 1; i < splitted_line.size(); i++){
-      m_sti->m_values_csv[compt_line][i-1] = std::stod(splitted_line[i].localstr());
+    for (Integer i = 1; i < splitted_line.size(); i++) {
+      m_sti->m_values_csv[compt_line][i - 1] = std::stod(splitted_line[i].localstr());
     }
 
     compt_line++;
-  } while(std::getline(stream, line));
+  } while (std::getline(stream, line));
 
   _closeFile(stream);
 
@@ -166,15 +166,14 @@ setFixed(bool fixed)
   m_is_fixed_print = fixed;
 }
 
-
 SimpleTableInternal* SimpleCsvReaderWriter::
-internal() 
+internal()
 {
   return m_sti;
 }
 
 void SimpleCsvReaderWriter::
-setInternal(SimpleTableInternal* sti) 
+setInternal(SimpleTableInternal* sti)
 {
   ARCANE_CHECK_PTR(sti);
   m_sti = sti;

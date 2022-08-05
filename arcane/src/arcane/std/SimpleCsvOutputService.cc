@@ -44,12 +44,11 @@ init(const String& name_table)
 /*---------------------------------------------------------------------------*/
 
 bool SimpleCsvOutputService::
-writeFile(const String& dir, Integer only_proc) 
+writeFile(const String& dir, Integer only_proc)
 {
   m_stom.setOutputDir(dir);
   return m_stom.writeFile(only_proc);
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

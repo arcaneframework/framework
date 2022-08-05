@@ -76,7 +76,7 @@ writeFile(const Directory& root_dir, Integer only_proc)
 
   // Création du répertoire.
   bool result = SimpleTableReaderWriterUtils::createDirectoryOnlyP0(m_sti->m_sub_domain, root_dir);
-  if(!result) {
+  if (!result) {
     return false;
   }
 
@@ -114,7 +114,6 @@ setPrecision(Integer precision)
 {
   ARCANE_CHECK_PTR(m_strw);
   m_strw->setPrecision(precision);
-
 }
 
 bool SimpleTableWriterHelper::
@@ -130,7 +129,6 @@ setFixed(bool fixed)
   ARCANE_CHECK_PTR(m_strw);
   m_strw->setFixed(fixed);
 }
-
 
 String SimpleTableWriterHelper::
 outputDir()
@@ -207,7 +205,6 @@ typeFile()
   return m_strw->typeFile();
 }
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -222,7 +219,7 @@ typeFile()
 void SimpleTableWriterHelper::
 _computeName()
 {
-  if(m_name_tab_computed){
+  if (m_name_tab_computed) {
     return;
   }
 
@@ -277,13 +274,13 @@ _computeName()
 }
 
 SimpleTableInternal* SimpleTableWriterHelper::
-internal() 
+internal()
 {
   return m_sti;
 }
 
 ISimpleTableReaderWriter* SimpleTableWriterHelper::
-readerWriter() 
+readerWriter()
 {
   return m_strw;
 }
@@ -295,7 +292,6 @@ setReaderWriter(ISimpleTableReaderWriter* strw)
   m_strw = strw;
   m_sti = m_strw->internal();
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

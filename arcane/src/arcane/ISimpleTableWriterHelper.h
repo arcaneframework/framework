@@ -1,4 +1,4 @@
-// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
 // Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
@@ -21,8 +21,8 @@
 #include "arcane/ISimpleTableInternalMng.h"
 #include "arcane/ISimpleTableReaderWriter.h"
 
-#include "arcane/ItemTypes.h"
 #include "arcane/Directory.h"
+#include "arcane/ItemTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -56,11 +56,10 @@ namespace Arcane
  */
 class ARCANE_CORE_EXPORT ISimpleTableWriterHelper
 {
-public:
+ public:
   virtual ~ISimpleTableWriterHelper() = default;
 
-public:
-
+ public:
   /**
    * @brief Méthode permettant d'initialiser l'objet.
    * Notamment le nom du tableau (name_tab) et le nom du répertoire qui
@@ -91,8 +90,8 @@ public:
    */
   virtual bool init(const String& name_table, const String& name_dir) = 0;
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
 
   /**
    * @brief Méthode permettant d'afficher le tableau.
@@ -134,8 +133,8 @@ public:
    */
   virtual bool writeFile(Integer only_proc = -1) = 0;
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
 
   /**
    * @brief Méthode permettant de récupérer la précision actuellement
@@ -211,7 +210,6 @@ public:
    */
   virtual void setOutputDir(const String& dir) = 0;
 
-
   /**
    * @brief Méthode permettant de récupérer le nom du tableau tel qu'il
    * a été donné précédement.
@@ -260,7 +258,6 @@ public:
    * @return String Le chemin.
    */
   virtual Directory outputPath() = 0;
-
 
   /**
    * @brief Méthode permettant de récupérer le chemin où l'implémentation
@@ -317,7 +314,6 @@ public:
    * @param strw Le pointeur vers une implem de ISimpleTableReaderWriter.
    */
   virtual void setReaderWriter(ISimpleTableReaderWriter* strw) = 0;
-
 };
 
 /*---------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
 // Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
@@ -19,9 +19,9 @@
 
 #include "arcane/ISimpleTableInternalMng.h"
 
-#include "arcane/ItemTypes.h"
-#include "arcane/IParallelMng.h"
 #include "arcane/Directory.h"
+#include "arcane/IParallelMng.h"
+#include "arcane/ItemTypes.h"
 #include "arcane/utils/Iostream.h"
 
 /*---------------------------------------------------------------------------*/
@@ -65,7 +65,6 @@ class ARCANE_CORE_EXPORT SimpleTableReaderWriterUtils
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-
 /**
  * @brief Interface de classe permettant de lire un fichier et d'écrire
  * un fichier avec ou à partir d'un SimpleTableInternal.
@@ -81,11 +80,10 @@ class ARCANE_CORE_EXPORT SimpleTableReaderWriterUtils
  */
 class ARCANE_CORE_EXPORT ISimpleTableReaderWriter
 {
-public:
+ public:
   virtual ~ISimpleTableReaderWriter() = default;
 
-public:
-
+ public:
   /**
    * @brief Méthode permettant d'écrire un tableau simple dans un fichier.
    * 
@@ -201,7 +199,7 @@ public:
    * @param fixed Si le flag 'std::fixed' doit être défini ou non.
    */
   virtual void setFixed(bool fixed = true) = 0;
-  
+
   /**
    * @brief Méthode permettant de récupérer le type de fichier
    * qui sera écrit par l'implémentation. ("csv" sera retourné
