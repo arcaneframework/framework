@@ -17,12 +17,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/ISimpleTableOutput.h"
+
 #include "arcane/std/SimpleTableInternalMng.h"
 #include "arcane/std/SimpleTableWriterHelper.h"
 #include "arcane/std/SimpleCsvReaderWriter.h"
-#include "arcane/ISimpleTableOutput.h"
+
 #include "arcane/Directory.h"
-#include "arcane/IParallelMng.h"
+
 #include "arcane/std/SimpleCsvOutput_axl.h"
 
 /*---------------------------------------------------------------------------*/

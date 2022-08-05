@@ -20,11 +20,11 @@
 #include "arcane/ISimpleTableInternalMng.h"
 #include "arcane/ISimpleTableOutput.h"
 #include "arcane/ISimpleTableComparator.h"
+
 #include "arcane/std/SimpleTableInternalComparator.h"
 #include "arcane/std/SimpleCsvReaderWriter.h"
 
-#include <arcane/Directory.h>
-#include <arcane/utils/Iostream.h>
+#include "arcane/Directory.h"
 
 #include "arcane/std/SimpleCsvComparator_axl.h"
 

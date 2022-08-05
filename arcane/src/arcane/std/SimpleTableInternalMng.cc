@@ -13,10 +13,6 @@
 
 #include "arcane/std/SimpleTableInternalMng.h"
 
-#include <arcane/IMesh.h>
-#include <arcane/IParallelMng.h>
-#include "arcane/utils/StringBuilder.h"
-
 #include <optional>
 
 /*---------------------------------------------------------------------------*/

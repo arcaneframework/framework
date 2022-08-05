@@ -18,11 +18,11 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/ISimpleTableInternalMng.h"
-#include "arcane/std/SimpleTableInternalMng.h"
 #include "arcane/ISimpleTableReaderWriter.h"
 #include "arcane/ISimpleTableInternalComparator.h"
+
+#include "arcane/std/SimpleTableInternalMng.h"
 #include "arcane/utils/Array.h"
-#include "arcane/utils/Array2.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -18,8 +18,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include <arcane/ItemTypes.h>
-#include <arcane/ISubDomain.h>
+#include "arcane/ItemTypes.h"
+#include "arcane/ISubDomain.h"
 #include "arcane/utils/Array.h"
 #include "arcane/utils/Array2.h"
 

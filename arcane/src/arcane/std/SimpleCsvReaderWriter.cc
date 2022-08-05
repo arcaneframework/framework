@@ -13,7 +13,8 @@
 
 #include "arcane/std/SimpleCsvReaderWriter.h"
 
-#include <arcane/Directory.h>
+#include "arcane/Directory.h"
+#include "arcane/utils/Iostream.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

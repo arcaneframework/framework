@@ -13,10 +13,8 @@
 
 #include "arcane/std/SimpleTableWriterHelper.h"
 
-#include <arcane/Directory.h>
-#include <arcane/IMesh.h>
-#include <arcane/IParallelMng.h>
-#include <arcane/ISubDomain.h>
+#include "arcane/Directory.h"
+#include "arcane/IParallelMng.h"
 #include "arcane/utils/StringBuilder.h"
 
 #include <optional>
