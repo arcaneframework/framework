@@ -29,7 +29,7 @@ bool SimpleCsvReaderWriter::
 writeTable(const Directory& dst, const String& file_name)
 {
   ARCANE_CHECK_PTR(m_simple_table_internal);
-  if (!SimpleTableReaderWriterUtils::createDirectoryOnlyProcess0(m_simple_table_internal->m_sub_domain, dst)) {
+  if (!SimpleTableReaderWriterUtils::createDirectoryOnlyProcess0(m_simple_table_internal->m_parallel_mng, dst)) {
     return false;
   }
 

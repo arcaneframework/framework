@@ -29,19 +29,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 bool SimpleTableWriterHelper::
-init()
-{
-  return init("Table_@proc_id@");
-}
-
-bool SimpleTableWriterHelper::
-init(const String& table_name)
-{
-  return init(table_name, "");
-}
-
-bool SimpleTableWriterHelper::
-init(const String& table_name, const String& directory_name)
+init(const Directory& root_directory, const String& table_name, const String& directory_name)
 {
   ARCANE_CHECK_PTR(m_simple_table_internal);
 
@@ -50,7 +38,7 @@ init(const String& table_name, const String& directory_name)
 
   m_name_output_directory = directory_name;
 
-  m_root = Directory(m_simple_table_internal->m_sub_domain->exportDirectory(), m_simple_table_reader_writer->fileType());
+  m_root = Directory(root_directory, m_simple_table_reader_writer->fileType());
   return true;
 }
 
@@ -61,7 +49,7 @@ void SimpleTableWriterHelper::
 print(Integer process_id)
 {
   ARCANE_CHECK_PTR(m_simple_table_reader_writer);
-  if (process_id != -1 && m_simple_table_internal->m_sub_domain->parallelMng()->commRank() != process_id)
+  if (process_id != -1 && m_simple_table_internal->m_parallel_mng->commRank() != process_id)
     return;
   m_simple_table_reader_writer->print();
 }
@@ -75,19 +63,19 @@ writeFile(const Directory& root_directory, Integer process_id)
   _computeName();
 
   // Création du répertoire.
-  bool result = SimpleTableReaderWriterUtils::createDirectoryOnlyProcess0(m_simple_table_internal->m_sub_domain, root_directory);
+  bool result = SimpleTableReaderWriterUtils::createDirectoryOnlyProcess0(m_simple_table_internal->m_parallel_mng, root_directory);
   if (!result) {
     return false;
   }
 
   // Si l'on n'est pas le processus demandé, on return true.
   // -1 = tout le monde écrit.
-  if (process_id != -1 && m_simple_table_internal->m_sub_domain->parallelMng()->commRank() != process_id)
+  if (process_id != -1 && m_simple_table_internal->m_parallel_mng->commRank() != process_id)
     return true;
 
   // Si l'on a process_id == -1 et que m_simple_table_internal->m_name_table_once_process == true, alors il n'y a que le
   // processus 0 qui doit écrire.
-  if ((process_id == -1 && m_name_table_once_process) && m_simple_table_internal->m_sub_domain->parallelMng()->commRank() != 0)
+  if ((process_id == -1 && m_name_table_once_process) && m_simple_table_internal->m_parallel_mng->commRank() != 0)
     return true;
 
   return m_simple_table_reader_writer->writeTable(Directory(root_directory, m_name_output_directory), m_simple_table_internal->m_table_name);
@@ -241,7 +229,7 @@ _computeName()
     std::optional<Integer> proc_id = string_splited.span().findFirst("proc_id");
     // On remplace "@proc_id@" par l'id du proc.
     if (proc_id) {
-      string_splited[proc_id.value()] = String::fromNumber(m_simple_table_internal->m_sub_domain->parallelMng()->commRank());
+      string_splited[proc_id.value()] = String::fromNumber(m_simple_table_internal->m_parallel_mng->commRank());
       m_name_table_once_process = false;
     }
     // Il n'y a que un seul proc qui write.
@@ -253,7 +241,7 @@ _computeName()
     std::optional<Integer> num_procs = string_splited.span().findFirst("num_procs");
     // On remplace "@num_procs@" par l'id du proc.
     if (num_procs) {
-      string_splited[num_procs.value()] = String::fromNumber(m_simple_table_internal->m_sub_domain->parallelMng()->commSize());
+      string_splited[num_procs.value()] = String::fromNumber(m_simple_table_internal->m_parallel_mng->commSize());
     }
   }
 

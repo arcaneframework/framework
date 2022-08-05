@@ -41,7 +41,7 @@ compare(Integer epsilon, bool compare_dimension_too)
   const Integer dim2 = m_simple_table_internal_mng_reference.numberOfColumns();
 
   if (compare_dimension_too && (dim1 != m_simple_table_internal_mng_to_compare.numberOfRows() || dim2 != m_simple_table_internal_mng_to_compare.numberOfColumns())) {
-    m_simple_table_internal_reference->m_sub_domain->traceMng()->warning() << "Dimensions not equals -- Expected dimensions: "
+    m_simple_table_internal_reference->m_parallel_mng->traceMng()->warning() << "Dimensions not equals -- Expected dimensions: "
                                                    << dim1 << "x" << dim2 << " -- Found dimensions: "
                                                    << m_simple_table_internal_mng_to_compare.numberOfRows() << "x" << m_simple_table_internal_mng_to_compare.numberOfColumns();
     return false;
@@ -63,7 +63,7 @@ compare(Integer epsilon, bool compare_dimension_too)
       const Real val2 = m_simple_table_internal_mng_to_compare.element(column, row, false);
 
       if (!math::isNearlyEqualWithEpsilon(val1, val2, epsilon)) {
-        m_simple_table_internal_reference->m_sub_domain->traceMng()->warning() << "Values not equals -- Column name: \"" << column << "\" -- Row name: \"" << row << "\"";
+        m_simple_table_internal_reference->m_parallel_mng->traceMng()->warning() << "Values not equals -- Column name: \"" << column << "\" -- Row name: \"" << row << "\"";
         is_ok = false;
       }
     }

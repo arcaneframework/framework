@@ -61,9 +61,7 @@ class SimpleTableWriterHelper
   virtual ~SimpleTableWriterHelper() = default;
 
  public:
-  bool init() override;
-  bool init(const String& table_name) override;
-  bool init(const String& table_name, const String& directory_name) override;
+  bool init(const Directory& root_directory, const String& table_name, const String& directory_name) override;
 
   void print(Integer process_id) override;
   bool writeFile(Integer process_id) override;

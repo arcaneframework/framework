@@ -62,33 +62,13 @@ class ARCANE_CORE_EXPORT ISimpleTableWriterHelper
  public:
   /**
    * @brief Méthode permettant d'initialiser l'objet.
-   * Notamment le nom du tableau (name_tab) et le nom du répertoire qui
-   * contiendra les fichiers (le répertoire des tableaux/directory_name).
-   * 
-   * Les valeurs par défauts de name_tab et de directory_name sont
-   * laissées à la discretion de l'implémentation.
-   */
-  virtual bool init() = 0;
-  /**
-   * @brief Méthode permettant d'initialiser l'objet.
-   * Notamment le nom du tableau et le nom du répertoire qui contiendra
-   * les fichiers (le répertoire des tableaux/directory_name).
-   * 
-   * La valeur par défaut de directory_name est laissée à la discretion 
-   * de l'implémentation.
-   * 
-   * @param table_name Le nom du tableau (et du fichier de sortie).
-   */
-  virtual bool init(const String& table_name) = 0;
-  /**
-   * @brief Méthode permettant d'initialiser l'objet.
    * Notamment le nom du tableau et le nom du répertoire qui contiendra
    * les fichiers (le répertoire des tableaux/directory_name).
    * 
    * @param table_name Le nom du tableau (et du fichier de sortie).
    * @param directory_name Le nom du dossier dans lequel enregistrer les tableaux.
    */
-  virtual bool init(const String& table_name, const String& directory_name) = 0;
+  virtual bool init(const Directory& root_directory, const String& table_name, const String& directory_name) = 0;
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/

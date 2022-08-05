@@ -24,6 +24,7 @@
 #include "arcane/std/SimpleTableWriterHelper.h"
 
 #include "arcane/Directory.h"
+#include "arcane/IMesh.h"
 
 #include "arcane/std/SimpleCsvOutput_axl.h"
 
@@ -42,7 +43,7 @@ class SimpleCsvOutputService
  public:
   explicit SimpleCsvOutputService(const ServiceBuildInfo& sbi)
   : ArcaneSimpleCsvOutputObject(sbi)
-  , m_internal(subDomain())
+  , m_internal(mesh()->parallelMng())
   , m_simple_csv_reader_writer(&m_internal)
   , m_simple_table_internal_mng(&m_internal)
   , m_simple_table_output_mng(&m_simple_csv_reader_writer)
@@ -55,7 +56,7 @@ class SimpleCsvOutputService
  public:
   bool init() override;
   bool init(const String& table_name) override;
-  bool init(const String& table_name, const String& directory_name) override { return m_simple_table_output_mng.init(table_name, directory_name); };
+  bool init(const String& table_name, const String& directory_name) override;
 
   void clear() override { return m_simple_table_internal_mng.clearInternal(); };
 

@@ -17,7 +17,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ISubDomain.h"
+#include "arcane/IParallelMng.h"
 #include "arcane/ItemTypes.h"
 #include "arcane/utils/Array.h"
 #include "arcane/utils/Array2.h"
@@ -49,8 +49,8 @@ namespace Arcane
  */
 struct ARCANE_CORE_EXPORT SimpleTableInternal
 {
-  SimpleTableInternal(ISubDomain* sub_domain)
-  : m_sub_domain(sub_domain)
+  SimpleTableInternal(IParallelMng* parallel_mng)
+  : m_parallel_mng(parallel_mng)
   {
   }
   ~SimpleTableInternal() = default;
@@ -96,7 +96,7 @@ struct ARCANE_CORE_EXPORT SimpleTableInternal
   Integer m_last_row;
   Integer m_last_column;
 
-  ISubDomain* m_sub_domain;
+  IParallelMng* m_parallel_mng;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -25,6 +25,7 @@
 #include "arcane/std/SimpleTableInternalComparator.h"
 
 #include "arcane/Directory.h"
+#include "arcane/IMesh.h"
 
 #include "arcane/std/SimpleCsvComparator_axl.h"
 
@@ -52,7 +53,7 @@ class SimpleCsvComparatorService
   , m_is_file_open(false)
   , m_is_file_read(false)
   , m_simple_table_internal_reference(nullptr)
-  , m_simple_table_internal_to_compare(subDomain())
+  , m_simple_table_internal_to_compare(mesh()->parallelMng())
   , m_simple_table_internal_comparator(m_simple_table_internal_reference, &m_simple_table_internal_to_compare)
   , m_simple_csv_reader_writer(&m_simple_table_internal_to_compare)
   {
