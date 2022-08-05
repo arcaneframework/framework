@@ -444,50 +444,47 @@ class Test4
     ParallelLoopOptions loop_options;
     loop_options.setGrainSize(1000);
     {
-      // Implémentation obsolète
       DoAtomic atomic_action;
       m_action = &atomic_action;
       Real v1 = platform::getRealTime();
-      Parallel::For(0,n,n2,this,&Test4::_DoLoop);
+      ParallelLoopOptions loop_options2;
+      loop_options2.setGrainSize(n2);
+      arcaneParallelFor(0,n,loop_options2,[&](Integer a,Integer n){ _DoLoop(a,n); });
       Real v2 = platform::getRealTime();
       _print("atomic",m_action->value(),v2-v1,n);
     }
     {
-      // Implémentation obsolète
       DoSpinLock spinlock_action;
       m_action = &spinlock_action;
       Real v1 = platform::getRealTime();
-      Parallel::For(0,n,loop_options,this,&Test4::_DoLoop);
+      arcaneParallelFor(0,n,loop_options,[&](Integer a,Integer n){ _DoLoop(a,n); });
       Real v2 = platform::getRealTime();
       _print("spin",m_action->value(),v2-v1,n);
     }
     {
-      // Implémentation obsolète
       DoMutex mutex_action;
       m_action = &mutex_action;
       Real v1 = platform::getRealTime();
-      Parallel::For(0,n,loop_options,this,&Test4::_DoLoop);
+      arcaneParallelFor(0,n,loop_options,[&](Integer a,Integer n){ _DoLoop(a,n); });
       Real v2 = platform::getRealTime();
       _print("mutex",m_action->value(),v2-v1,n);
     }
 #ifdef ARCANE_HAS_PACKAGE_TBB
     {
-      // Implémentation obsolète
       DoSpinLockTBB spintbb_action;
       m_action = &spintbb_action;
       Real v1 = platform::getRealTime();
-      Parallel::For(0,n,loop_options,this,&Test4::_DoLoop);
+      arcaneParallelFor(0,n,loop_options,[&](Integer a,Integer n){ _DoLoop(a,n); });
       Real v2 = platform::getRealTime();
       _print("spintbb",m_action->value(),v2-v1,n);
     }
 #endif
     {
-      // Implémentation obsolète
       // Test Mutex avec syntaxe des lambda fonction du C++0x
       DoMutex mutex_action;
       m_action = &mutex_action;
       Real v1 = platform::getRealTime();
-      Parallel::For(0,n,loop_options,[this](Integer /*i0*/,Integer size)
+      arcaneParallelFor(0,n,loop_options,[this](Integer /*i0*/,Integer size)
                     {
                       m_action->loop(size*10);
                     });
@@ -597,10 +594,12 @@ class Test6
     // Implémentation obsolète
     m_value = 0;
     Int64 n0 = m_first_value-1;
-    Int64 nb = m_nb_value;
+    Int32 nb = m_nb_value;
     Int64 n1 = n0 + nb;
     info() << "T6_Exec first=" << m_first_value << " n=" << m_nb_value;
-    Parallel::For(m_first_value,nb,m_step_size,this,&Test6::loop);
+    ParallelLoopOptions loop_options;
+    loop_options.setGrainSize(m_step_size);
+    arcaneParallelFor(m_first_value,nb,loop_options,[&](Integer a,Integer n){ loop(a,n); });
     // \a m_value doit être égal à la somme des n1 premiers entiers
     // moins la somme des n0 premiers entiers.
     Int64 n0_sum = (n0 * (n0 + 1)) / 2;
@@ -760,7 +759,9 @@ initializeTest()
                           TaskFactory::createThreadObservable());
 
   Func my_functor;
-  Parallel::For(50,1000,100,&my_functor,&Func::exec);
+  ParallelLoopOptions loop_options;
+  loop_options.setGrainSize(100);
+  arcaneParallelFor(50,1000,loop_options,[&](Integer a,Integer n){ my_functor.exec(a,n); });
 }
 
 /*---------------------------------------------------------------------------*/

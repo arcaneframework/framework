@@ -105,7 +105,9 @@ executeTest()
   Integer nb_var = m_variables.size();
   info() << "EXECUTE TEST nb_var=" << nb_var;
   m_nb_done = 0;
-  Parallel::For(0,nb_var,1,this,&TaskUnitTestCS::_oneWrite);
+  ParallelLoopOptions loop_opt;
+  loop_opt.setGrainSize(1);
+  arcaneParallelFor(0,nb_var,loop_opt,[&](Int32 a,Int32 n){ _oneWrite(a,n); });
   //m_cs_data_writer.reset();
 }
 

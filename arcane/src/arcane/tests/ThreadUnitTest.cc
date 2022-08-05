@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ThreadUnitTest.cc                                           (C) 2000-2010 */
+/* ThreadUnitTest.cc                                           (C) 2000-2022 */
 /*                                                                           */
 /* Service de test des threads.                                              */
 /*---------------------------------------------------------------------------*/
@@ -34,7 +34,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_BEGIN_NAMESPACE
+namespace ArcaneTest
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -212,17 +213,15 @@ class Test3
 class ThreadUnitTest
 : public ArcaneThreadUnitTestObject
 {
-public:
+ public:
 
-public:
-
-  ThreadUnitTest(const ServiceBuildInfo& cb);
+  explicit ThreadUnitTest(const ServiceBuildInfo& cb);
   ~ThreadUnitTest();
 
  public:
 
-  virtual void initializeTest();
-  virtual void executeTest();
+  void initializeTest() override;
+  void executeTest() override;
 
  private:
 
@@ -284,7 +283,7 @@ initializeTest()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_END_NAMESPACE
+} // End namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
