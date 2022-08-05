@@ -74,13 +74,13 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalComparator
   /**
    * @brief Méthode permettant de comparer les valeurs des deux STI.
    * 
-   * @param only_proc Le processus qui doit comparer ses résultats (-1 pour tous les processus). 
+   * @param process_id Le processus qui doit comparer ses résultats (-1 pour tous les processus). 
    * @param epsilon La marge d'erreur.
-   * @param compare_dim Si l'on doit comparer les dimensions des STI.
+   * @param compare_dimension_too Si l'on doit comparer les dimensions des STI.
    * @return true S'il n'y a pas de différences.
    * @return false S'il y a au moins une différence.
    */
-  virtual bool compare(Integer epsilon = 0, bool compare_dim = false) = 0;
+  virtual bool compare(Integer epsilon = 0, bool compare_dimension_too = false) = 0;
 
   /**
    * @brief Méthode permettant de vider les tableaux de comparaison
@@ -93,20 +93,20 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalComparator
    * @brief Méthode permettant d'ajouter une colonne dans la liste des colonnes
    * à comparer.
    * 
-   * @param name_column Le nom de la colonne à comparer.
+   * @param column_name Le nom de la colonne à comparer.
    * @return true Si le nom a bien été ajouté.
    * @return false Sinon.
    */
-  virtual bool addColumnForComparing(const String& name_column) = 0;
+  virtual bool addColumnForComparing(const String& column_name) = 0;
   /**
    * @brief Méthode permettant d'ajouter une ligne dans la liste des lignes
    * à comparer.
    * 
-   * @param name_row Le nom de la ligne à comparer.
+   * @param row_name Le nom de la ligne à comparer.
    * @return true Si le nom a bien été ajouté.
    * @return false Sinon.
    */
-  virtual bool addRowForComparing(const String& name_row) = 0;
+  virtual bool addRowForComparing(const String& row_name) = 0;
 
   /**
    * @brief Méthode permettant de définir si le tableau de
@@ -176,9 +176,9 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalComparator
    * vous savez ce que vous faite. La destruction de l'objet reste
    * à la charge de l'appelant.
    * 
-   * @param strw Le pointeur vers SimpleTableInternal.
+   * @param simple_table_reader_writer Le pointeur vers SimpleTableInternal.
    */
-  virtual void setInternalRef(SimpleTableInternal* sti) = 0;
+  virtual void setInternalRef(SimpleTableInternal* simple_table_internal) = 0;
 
   /**
    * @brief Méthode permettant de récupérer le pointeur vers l'objet
@@ -196,9 +196,9 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalComparator
    * vous savez ce que vous faite. La destruction de l'objet reste
    * à la charge de l'appelant.
    * 
-   * @param strw Le pointeur vers SimpleTableInternal.
+   * @param simple_table_reader_writer Le pointeur vers SimpleTableInternal.
    */
-  virtual void setInternalToCompare(SimpleTableInternal* sti) = 0;
+  virtual void setInternalToCompare(SimpleTableInternal* simple_table_internal) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

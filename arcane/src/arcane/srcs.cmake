@@ -737,6 +737,9 @@ set(ARCANE_SOURCES
   IMeshBase.h
 
   IRandomNumberGenerator.h
+
+  SimpleTableInternal.h
+
   ISimpleTableComparator.h
   ISimpleTableInternalComparator.h
   ISimpleTableInternalMng.h

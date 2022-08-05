@@ -32,13 +32,13 @@ class SimpleTableInternalMng
 : public ISimpleTableInternalMng
 {
  public:
-  SimpleTableInternalMng(SimpleTableInternal* sti)
-  : m_sti(sti)
+  SimpleTableInternalMng(SimpleTableInternal* simple_table_internal)
+  : m_simple_table_internal(simple_table_internal)
   {
   }
 
   SimpleTableInternalMng()
-  : m_sti(nullptr)
+  : m_simple_table_internal(nullptr)
   {
   }
 
@@ -47,82 +47,82 @@ class SimpleTableInternalMng
  public:
   void clearInternal() override;
 
-  Integer addRow(const String& name_row) override;
-  Integer addRow(const String& name_row, ConstArrayView<Real> elems) override;
-  bool addRows(StringConstArrayView name_rows) override;
+  Integer addRow(const String& row_name) override;
+  Integer addRow(const String& row_name, ConstArrayView<Real> elements) override;
+  bool addRows(StringConstArrayView rows_names) override;
 
-  Integer addColumn(const String& name_column) override;
-  Integer addColumn(const String& name_column, ConstArrayView<Real> elems) override;
-  bool addColumns(StringConstArrayView name_columns) override;
+  Integer addColumn(const String& column_name) override;
+  Integer addColumn(const String& column_name, ConstArrayView<Real> elements) override;
+  bool addColumns(StringConstArrayView columns_names) override;
 
-  bool addElemRow(Integer pos, Real elem) override;
-  bool addElemRow(const String& name_row, Real elem, bool create_if_not_exist) override;
-  bool addElemSameRow(Real elem) override;
+  bool addElementInRow(Integer position, Real element) override;
+  bool addElementInRow(const String& row_name, Real element, bool create_if_not_exist) override;
+  bool addElementInSameRow(Real element) override;
 
-  bool addElemsRow(Integer pos, ConstArrayView<Real> elems) override;
-  bool addElemsRow(const String& name_row, ConstArrayView<Real> elems, bool create_if_not_exist) override;
-  bool addElemsSameRow(ConstArrayView<Real> elems) override;
+  bool addElementsInRow(Integer position, ConstArrayView<Real> elements) override;
+  bool addElementsInRow(const String& row_name, ConstArrayView<Real> elements, bool create_if_not_exist) override;
+  bool addElementsInSameRow(ConstArrayView<Real> elements) override;
 
-  bool addElemColumn(Integer pos, Real elem) override;
-  bool addElemColumn(const String& name_column, Real elem, bool create_if_not_exist) override;
-  bool addElemSameColumn(Real elem) override;
+  bool addElementInColumn(Integer position, Real element) override;
+  bool addElementInColumn(const String& column_name, Real element, bool create_if_not_exist) override;
+  bool addElementInSameColumn(Real element) override;
 
-  bool addElemsColumn(Integer pos, ConstArrayView<Real> elems) override;
-  bool addElemsColumn(const String& name_column, ConstArrayView<Real> elems, bool create_if_not_exist) override;
-  bool addElemsSameColumn(ConstArrayView<Real> elems) override;
+  bool addElementsInColumn(Integer position, ConstArrayView<Real> elements) override;
+  bool addElementsInColumn(const String& column_name, ConstArrayView<Real> elements, bool create_if_not_exist) override;
+  bool addElementsInSameColumn(ConstArrayView<Real> elements) override;
 
-  bool editElemUp(Real elem, bool update_last_pos) override;
-  bool editElemDown(Real elem, bool update_last_pos) override;
-  bool editElemLeft(Real elem, bool update_last_pos) override;
-  bool editElemRight(Real elem, bool update_last_pos) override;
+  bool editElementUp(Real element, bool update_last_position) override;
+  bool editElementDown(Real element, bool update_last_position) override;
+  bool editElementLeft(Real element, bool update_last_position) override;
+  bool editElementRight(Real element, bool update_last_position) override;
 
-  Real elemUp(bool update_last_pos) override;
-  Real elemDown(bool update_last_pos) override;
-  Real elemLeft(bool update_last_pos) override;
-  Real elemRight(bool update_last_pos) override;
+  Real elementUp(bool update_last_position) override;
+  Real elementDown(bool update_last_position) override;
+  Real elementLeft(bool update_last_position) override;
+  Real elementRight(bool update_last_position) override;
 
-  bool editElem(Real elem) override;
-  bool editElem(Integer pos_x, Integer pos_y, Real elem) override;
-  bool editElem(const String& name_column, const String& name_row, Real elem) override;
+  bool editElement(Real element) override;
+  bool editElement(Integer position_x, Integer position_y, Real element) override;
+  bool editElement(const String& column_name, const String& row_name, Real element) override;
 
-  Real elem() override;
-  Real elem(Integer pos_x, Integer pos_y, bool update_last_pos) override;
-  Real elem(const String& name_column, const String& name_row, bool update_last_pos) override;
+  Real element() override;
+  Real element(Integer position_x, Integer position_y, bool update_last_position) override;
+  Real element(const String& column_name, const String& row_name, bool update_last_position) override;
 
-  RealUniqueArray row(Integer pos) override;
-  RealUniqueArray column(Integer pos) override;
+  RealUniqueArray row(Integer position) override;
+  RealUniqueArray column(Integer position) override;
 
-  RealUniqueArray row(const String& name_row) override;
-  RealUniqueArray column(const String& name_column) override;
+  RealUniqueArray row(const String& row_name) override;
+  RealUniqueArray column(const String& column_name) override;
 
-  Integer sizeRow(Integer pos) override;
-  Integer sizeColumn(Integer pos) override;
+  Integer rowSize(Integer position) override;
+  Integer columnSize(Integer position) override;
 
-  Integer sizeRow(const String& name_row) override;
-  Integer sizeColumn(const String& name_column) override;
+  Integer rowSize(const String& row_name) override;
+  Integer columnSize(const String& column_name) override;
 
-  Integer posRow(const String& name_row) override;
-  Integer posColumn(const String& name_column) override;
+  Integer rowPosition(const String& row_name) override;
+  Integer columnPosition(const String& column_name) override;
 
-  Integer numRows() override;
-  Integer numColumns() override;
+  Integer numberOfRows() override;
+  Integer numberOfColumns() override;
 
-  String nameRow(Integer pos) override;
-  String nameColumn(Integer pos) override;
+  String rowName(Integer position) override;
+  String columnName(Integer position) override;
 
-  bool editNameRow(Integer pos, const String& new_name) override;
-  bool editNameRow(const String& name_row, const String& new_name) override;
+  bool editRowName(Integer position, const String& new_name) override;
+  bool editRowName(const String& row_name, const String& new_name) override;
 
-  bool editNameColumn(Integer pos, const String& new_name) override;
-  bool editNameColumn(const String& name_column, const String& new_name) override;
+  bool editColumnName(Integer position, const String& new_name) override;
+  bool editColumnName(const String& column_name, const String& new_name) override;
 
-  Integer addAverageColumn(const String& name_column) override;
+  Integer addAverageColumn(const String& column_name) override;
 
   SimpleTableInternal* internal() override;
-  void setInternal(SimpleTableInternal* sti) override;
+  void setInternal(SimpleTableInternal* simple_table_internal) override;
 
  protected:
-  SimpleTableInternal* m_sti;
+  SimpleTableInternal* m_simple_table_internal;
 };
 
 /*---------------------------------------------------------------------------*/

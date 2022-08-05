@@ -41,21 +41,21 @@ namespace Arcane
 class ARCANE_CORE_EXPORT SimpleTableReaderWriterUtils
 {
  public:
-  static bool createDirectoryOnlyP0(ISubDomain* sub_domain, const Directory& dir)
+  static bool createDirectoryOnlyProcess0(ISubDomain* sub_domain, const Directory& directory)
   {
     int sf = 0;
     if (sub_domain->parallelMng()->commRank() == 0) {
-      sf = dir.createDirectory();
+      sf = directory.createDirectory();
     }
     if (sub_domain->parallelMng()->commSize() > 1) {
       sf = sub_domain->parallelMng()->reduce(Parallel::ReduceMax, sf);
     }
     return sf == 0;
   };
-  static bool isFileExist(const Directory& dir, const String& file)
+  static bool isFileExist(const Directory& directory, const String& file)
   {
     std::ifstream stream;
-    stream.open(dir.file(file).localstr(), std::ifstream::in);
+    stream.open(directory.file(file).localstr(), std::ifstream::in);
     bool fin = stream.good();
     stream.close();
     return fin;
@@ -94,10 +94,10 @@ class ARCANE_CORE_EXPORT ISimpleTableReaderWriter
    * 
    * Les élements de SimpleTableInternal qui doivent impérativement
    * être écrits sont :
-   * - les noms des lignes    (m_name_rows),
-   * - les noms des colonnes  (m_name_columns),
-   * - le nom du tableau      (m_name_tab),
-   * - les valeurs du tableau (m_values_csv).
+   * - les noms des lignes    (m_row_names),
+   * - les noms des colonnes  (m_column_names),
+   * - le nom du tableau      (m_table_name),
+   * - les valeurs du tableau (m_values).
    * 
    * Les autres élements de SimpleTableInternal ne sont pas obligatoire.
    * 
@@ -116,22 +116,22 @@ class ARCANE_CORE_EXPORT ISimpleTableReaderWriter
    * Un appel à SimpleTableInternal::clear() devra être effectué avant la lecture.
    * 
    * Les élements qui doivent impérativement être récupérés sont :
-   * - les noms des lignes    (m_name_rows),
-   * - les noms des colonnes  (m_name_columns),
-   * - le nom du tableau      (m_name_tab),
-   * - les valeurs du tableau (m_values_csv).
+   * - les noms des lignes    (m_row_names),
+   * - les noms des colonnes  (m_column_names),
+   * - le nom du tableau      (m_table_name),
+   * - les valeurs du tableau (m_values).
    * 
    * Les élements qui doivent être déduit si non récupérés sont :
-   * - les tailles des lignes   (m_size_rows),
-   * - les tailles des colonnes (m_size_columns).
+   * - les tailles des lignes   (m_row_sizes),
+   * - les tailles des colonnes (m_column_sizes).
    * 
-   * Déduction par défaut pour m_size_rows :
-   * - len(m_size_rows) = len(m_name_rows)
-   * - m_size_rows[*]   = m_values_csv.dim2Size()
+   * Déduction par défaut pour m_row_sizes :
+   * - len(m_row_sizes) = len(m_row_names)
+   * - m_row_sizes[*]   = m_values.dim2Size()
    * 
-   * Déduction par défaut pour m_size_columns :
-   * - len(m_size_columns) = len(m_name_columns)
-   * - m_size_columns[*]   = m_values_csv.dim1Size()
+   * Déduction par défaut pour m_column_sizes :
+   * - len(m_column_sizes) = len(m_column_names)
+   * - m_column_sizes[*]   = m_values.dim1Size()
    * 
    * 
    * @param src Le répertoire source.
@@ -183,7 +183,7 @@ class ARCANE_CORE_EXPORT ISimpleTableReaderWriter
    * @return true Si oui.
    * @return false Si non.
    */
-  virtual bool fixed() = 0;
+  virtual bool isFixed() = 0;
   /**
    * @brief Méthode permettant de définir le flag 'std::fixed' ou non.
    * 
@@ -207,7 +207,7 @@ class ARCANE_CORE_EXPORT ISimpleTableReaderWriter
    * 
    * @return String Le type/l'extension du fichier utilisé.
    */
-  virtual String typeFile() = 0;
+  virtual String fileType() = 0;
 
   /**
    * @brief Méthode permettant de récupérer le pointeur vers l'objet
@@ -225,9 +225,9 @@ class ARCANE_CORE_EXPORT ISimpleTableReaderWriter
    * vous savez ce que vous faite. La destruction de l'objet reste
    * à la charge de l'appelant.
    * 
-   * @param strw Le pointeur vers SimpleTableInternal.
+   * @param simple_table_reader_writer Le pointeur vers SimpleTableInternal.
    */
-  virtual void setInternal(SimpleTableInternal* sti) = 0;
+  virtual void setInternal(SimpleTableInternal* simple_table_internal) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

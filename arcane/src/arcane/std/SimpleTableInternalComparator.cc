@@ -30,40 +30,40 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 bool SimpleTableInternalComparator::
-compare(Integer epsilon, bool compare_dim)
+compare(Integer epsilon, bool compare_dimension_too)
 {
-  ARCANE_CHECK_PTR(m_sti_ref);
-  ARCANE_CHECK_PTR(m_sti_to_compare);
+  ARCANE_CHECK_PTR(m_simple_table_internal_reference);
+  ARCANE_CHECK_PTR(m_simple_table_internal_to_compare);
 
   bool is_ok = true;
 
-  const Integer dim1 = m_stm_ref.numRows();
-  const Integer dim2 = m_stm_ref.numColumns();
+  const Integer dim1 = m_simple_table_internal_mng_reference.numberOfRows();
+  const Integer dim2 = m_simple_table_internal_mng_reference.numberOfColumns();
 
-  if (compare_dim && (dim1 != m_stm_to_compare.numRows() || dim2 != m_stm_to_compare.numColumns())) {
-    m_sti_ref->m_sub_domain->traceMng()->warning() << "Dimensions not equals -- Expected dimensions: "
+  if (compare_dimension_too && (dim1 != m_simple_table_internal_mng_to_compare.numberOfRows() || dim2 != m_simple_table_internal_mng_to_compare.numberOfColumns())) {
+    m_simple_table_internal_reference->m_sub_domain->traceMng()->warning() << "Dimensions not equals -- Expected dimensions: "
                                                    << dim1 << "x" << dim2 << " -- Found dimensions: "
-                                                   << m_stm_to_compare.numRows() << "x" << m_stm_to_compare.numColumns();
+                                                   << m_simple_table_internal_mng_to_compare.numberOfRows() << "x" << m_simple_table_internal_mng_to_compare.numberOfColumns();
     return false;
   }
 
   for (Integer i = 0; i < dim1; i++) {
     // On regarde si l'on doit comparer la ligne actuelle.
-    String row = m_stm_ref.nameRow(i);
+    String row = m_simple_table_internal_mng_reference.rowName(i);
     if (!_exploreRows(row))
       continue;
 
     for (Integer j = 0; j < dim2; j++) {
       // On regarde si l'on doit comparer la colonne actuelle.
-      String column = m_stm_ref.nameColumn(j);
+      String column = m_simple_table_internal_mng_reference.columnName(j);
       if (!_exploreColumn(column))
         continue;
 
-      const Real val1 = m_stm_ref.elem(column, row, false);
-      const Real val2 = m_stm_to_compare.elem(column, row, false);
+      const Real val1 = m_simple_table_internal_mng_reference.element(column, row, false);
+      const Real val2 = m_simple_table_internal_mng_to_compare.element(column, row, false);
 
       if (!math::isNearlyEqualWithEpsilon(val1, val2, epsilon)) {
-        m_sti_ref->m_sub_domain->traceMng()->warning() << "Values not equals -- Column name: \"" << column << "\" -- Row name: \"" << row << "\"";
+        m_simple_table_internal_reference->m_sub_domain->traceMng()->warning() << "Values not equals -- Column name: \"" << column << "\" -- Row name: \"" << row << "\"";
         is_ok = false;
       }
     }
@@ -85,15 +85,15 @@ clearComparator()
 }
 
 bool SimpleTableInternalComparator::
-addColumnForComparing(const String& name_column)
+addColumnForComparing(const String& column_name)
 {
-  m_columns_to_compare.add(name_column);
+  m_columns_to_compare.add(column_name);
   return true;
 }
 bool SimpleTableInternalComparator::
-addRowForComparing(const String& name_row)
+addRowForComparing(const String& row_name)
 {
-  m_rows_to_compare.add(name_row);
+  m_rows_to_compare.add(row_name);
   return true;
 }
 
@@ -133,29 +133,29 @@ isARegexExclusiveRows(bool is_exclusive)
 SimpleTableInternal* SimpleTableInternalComparator::
 internalRef()
 {
-  return m_sti_ref;
+  return m_simple_table_internal_reference;
 }
 
 void SimpleTableInternalComparator::
 setInternalRef(SimpleTableInternal* sti_ref)
 {
   ARCANE_CHECK_PTR(sti_ref);
-  m_sti_ref = sti_ref;
-  m_stm_ref.setInternal(m_sti_ref);
+  m_simple_table_internal_reference = sti_ref;
+  m_simple_table_internal_mng_reference.setInternal(m_simple_table_internal_reference);
 }
 
 SimpleTableInternal* SimpleTableInternalComparator::
 internalToCompare()
 {
-  return m_sti_to_compare;
+  return m_simple_table_internal_to_compare;
 }
 
 void SimpleTableInternalComparator::
 setInternalToCompare(SimpleTableInternal* sti_to_compare)
 {
   ARCANE_CHECK_PTR(sti_to_compare);
-  m_sti_to_compare = sti_to_compare;
-  m_stm_to_compare.setInternal(m_sti_to_compare);
+  m_simple_table_internal_to_compare = sti_to_compare;
+  m_simple_table_internal_mng_to_compare.setInternal(m_simple_table_internal_to_compare);
 }
 
 /*---------------------------------------------------------------------------*/

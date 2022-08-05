@@ -27,58 +27,58 @@ namespace Arcane
 void SimpleTableInternalMng::
 clearInternal()
 {
-  ARCANE_CHECK_PTR(m_sti);
-  m_sti->clear();
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  m_simple_table_internal->clear();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 Integer SimpleTableInternalMng::
-addRow(const String& name_row)
+addRow(const String& row_name)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  Integer pos = m_sti->m_values_csv.dim1Size();
-  m_sti->m_values_csv.resize(pos + 1);
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  Integer position = m_simple_table_internal->m_values.dim1Size();
+  m_simple_table_internal->m_values.resize(position + 1);
 
-  m_sti->m_name_rows.add(name_row);
-  m_sti->m_size_rows.add(0);
+  m_simple_table_internal->m_row_names.add(row_name);
+  m_simple_table_internal->m_row_sizes.add(0);
 
-  m_sti->m_last_row = pos;
+  m_simple_table_internal->m_last_row = position;
 
-  return pos;
+  return position;
 }
 
 Integer SimpleTableInternalMng::
-addRow(const String& name_row, ConstArrayView<Real> elems)
+addRow(const String& row_name, ConstArrayView<Real> elements)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  Integer pos = m_sti->m_values_csv.dim1Size();
-  m_sti->m_values_csv.resize(pos + 1);
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  Integer position = m_simple_table_internal->m_values.dim1Size();
+  m_simple_table_internal->m_values.resize(position + 1);
 
-  m_sti->m_name_rows.add(name_row);
-  m_sti->m_size_rows.add(0);
+  m_simple_table_internal->m_row_names.add(row_name);
+  m_simple_table_internal->m_row_sizes.add(0);
 
-  addElemsRow(pos, elems);
+  addElementsInRow(position, elements);
 
-  return pos;
+  return position;
 }
 
 bool SimpleTableInternalMng::
-addRows(StringConstArrayView name_rows)
+addRows(StringConstArrayView rows_names)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  Integer size = name_rows.size();
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  Integer size = rows_names.size();
   if (size == 0)
     return true;
 
-  Integer pos = m_sti->m_values_csv.dim1Size();
-  m_sti->m_values_csv.resize(pos + size);
+  Integer position = m_simple_table_internal->m_values.dim1Size();
+  m_simple_table_internal->m_values.resize(position + size);
 
-  m_sti->m_name_rows.addRange(name_rows);
-  m_sti->m_size_rows.addRange(IntegerUniqueArray(size, 0));
+  m_simple_table_internal->m_row_names.addRange(rows_names);
+  m_simple_table_internal->m_row_sizes.addRange(IntegerUniqueArray(size, 0));
 
-  m_sti->m_last_row = pos;
+  m_simple_table_internal->m_last_row = position;
 
   return true;
 }
@@ -87,50 +87,50 @@ addRows(StringConstArrayView name_rows)
 /*---------------------------------------------------------------------------*/
 
 Integer SimpleTableInternalMng::
-addColumn(const String& name_column)
+addColumn(const String& column_name)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  Integer pos = m_sti->m_values_csv.dim2Size();
-  m_sti->m_values_csv.resize(m_sti->m_values_csv.dim1Size(), pos + 1);
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  Integer position = m_simple_table_internal->m_values.dim2Size();
+  m_simple_table_internal->m_values.resize(m_simple_table_internal->m_values.dim1Size(), position + 1);
 
-  m_sti->m_name_columns.add(name_column);
-  m_sti->m_size_columns.add(0);
+  m_simple_table_internal->m_column_names.add(column_name);
+  m_simple_table_internal->m_column_sizes.add(0);
 
-  m_sti->m_last_column = pos;
+  m_simple_table_internal->m_last_column = position;
 
-  return pos;
+  return position;
 }
 
 Integer SimpleTableInternalMng::
-addColumn(const String& name_column, ConstArrayView<Real> elems)
+addColumn(const String& column_name, ConstArrayView<Real> elements)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  Integer pos = m_sti->m_values_csv.dim2Size();
-  m_sti->m_values_csv.resize(m_sti->m_values_csv.dim1Size(), pos + 1);
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  Integer position = m_simple_table_internal->m_values.dim2Size();
+  m_simple_table_internal->m_values.resize(m_simple_table_internal->m_values.dim1Size(), position + 1);
 
-  m_sti->m_name_columns.add(name_column);
-  m_sti->m_size_columns.add(0);
+  m_simple_table_internal->m_column_names.add(column_name);
+  m_simple_table_internal->m_column_sizes.add(0);
 
-  addElemsColumn(pos, elems);
+  addElementsInColumn(position, elements);
 
-  return pos;
+  return position;
 }
 
 bool SimpleTableInternalMng::
-addColumns(StringConstArrayView name_columns)
+addColumns(StringConstArrayView columns_names)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  Integer size = name_columns.size();
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  Integer size = columns_names.size();
   if (size == 0)
     return true;
 
-  Integer pos = m_sti->m_values_csv.dim2Size();
-  m_sti->m_values_csv.resize(m_sti->m_values_csv.dim1Size(), pos + size);
+  Integer position = m_simple_table_internal->m_values.dim2Size();
+  m_simple_table_internal->m_values.resize(m_simple_table_internal->m_values.dim1Size(), position + size);
 
-  m_sti->m_name_columns.addRange(name_columns);
-  m_sti->m_size_columns.addRange(IntegerUniqueArray(size, 0));
+  m_simple_table_internal->m_column_names.addRange(columns_names);
+  m_simple_table_internal->m_column_sizes.addRange(IntegerUniqueArray(size, 0));
 
-  m_sti->m_last_column = pos;
+  m_simple_table_internal->m_last_column = position;
 
   return true;
 }
@@ -139,285 +139,285 @@ addColumns(StringConstArrayView name_columns)
 /*---------------------------------------------------------------------------*/
 
 bool SimpleTableInternalMng::
-addElemRow(Integer pos, Real elem)
+addElementInRow(Integer position, Real element)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  if (pos < 0 || pos >= m_sti->m_values_csv.dim1Size())
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  if (position < 0 || position >= m_simple_table_internal->m_values.dim1Size())
     return false;
 
-  ArrayView<Real> view = m_sti->m_values_csv[pos];
-  Integer size_row = m_sti->m_size_rows[pos];
+  ArrayView<Real> view = m_simple_table_internal->m_values[position];
+  Integer size_row = m_simple_table_internal->m_row_sizes[position];
 
-  if (m_sti->m_values_csv.dim2Size() < size_row + 1)
+  if (m_simple_table_internal->m_values.dim2Size() < size_row + 1)
     return false;
 
-  view[size_row] = elem;
+  view[size_row] = element;
 
-  m_sti->m_last_row = pos;
-  m_sti->m_last_column = size_row;
+  m_simple_table_internal->m_last_row = position;
+  m_simple_table_internal->m_last_column = size_row;
 
-  m_sti->m_size_rows[pos]++;
+  m_simple_table_internal->m_row_sizes[position]++;
   // Il peut y avoir des élements sur la ligne d'après à la même colonne.
-  // Exemple : addElemRow(pos=L01, elem=NEW):
+  // Exemple : addElementInRow(position=L01, element=NEW):
   // aaa|C00|C01|C02
   // L00|123|456|789
   // L01|147|NEW|
   // L02|159|753|852
   // Il y a 753 donc la taille de la colonne reste égale à 3.
-  m_sti->m_size_columns[size_row] = std::max(pos + 1, m_sti->m_size_columns[size_row]);
+  m_simple_table_internal->m_column_sizes[size_row] = std::max(position + 1, m_simple_table_internal->m_column_sizes[size_row]);
 
   return true;
 }
 
 bool SimpleTableInternalMng::
-addElemRow(const String& name_row, Real elem, bool create_if_not_exist)
+addElementInRow(const String& row_name, Real element, bool create_if_not_exist)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  std::optional<Integer> pos = m_sti->m_name_rows.span().findFirst(name_row);
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  std::optional<Integer> position = m_simple_table_internal->m_row_names.span().findFirst(row_name);
 
-  if (pos)
-    return addElemRow(pos.value(), elem);
+  if (position)
+    return addElementInRow(position.value(), element);
   else if (create_if_not_exist)
-    return addElemRow(addRow(name_row), elem);
+    return addElementInRow(addRow(row_name), element);
   else
     return false;
 }
 
 bool SimpleTableInternalMng::
-addElemSameRow(Real elem)
+addElementInSameRow(Real element)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  if (m_sti->m_last_row == -1 || m_sti->m_last_column == -1)
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  if (m_simple_table_internal->m_last_row == -1 || m_simple_table_internal->m_last_column == -1)
     return false;
-  return addElemRow(m_sti->m_last_row, elem);
+  return addElementInRow(m_simple_table_internal->m_last_row, element);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 bool SimpleTableInternalMng::
-addElemsRow(Integer pos, ConstArrayView<Real> elems)
+addElementsInRow(Integer position, ConstArrayView<Real> elements)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  if (pos < 0 || pos >= m_sti->m_values_csv.dim1Size())
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  if (position < 0 || position >= m_simple_table_internal->m_values.dim1Size())
     return false;
 
-  ArrayView<Real> view = m_sti->m_values_csv[pos];
-  Integer size_row = m_sti->m_size_rows[pos];
-  Integer min_size = (elems.size() <= m_sti->m_values_csv.dim2Size() - size_row
-                      ? elems.size()
-                      : m_sti->m_values_csv.dim2Size() - size_row);
+  ArrayView<Real> view = m_simple_table_internal->m_values[position];
+  Integer size_row = m_simple_table_internal->m_row_sizes[position];
+  Integer min_size = (elements.size() <= m_simple_table_internal->m_values.dim2Size() - size_row
+                      ? elements.size()
+                      : m_simple_table_internal->m_values.dim2Size() - size_row);
 
   for (Integer i = 0; i < min_size; i++) {
-    view[i + size_row] = elems[i];
-    m_sti->m_size_columns[i + size_row] = std::max(pos + 1, m_sti->m_size_columns[i + size_row]);
+    view[i + size_row] = elements[i];
+    m_simple_table_internal->m_column_sizes[i + size_row] = std::max(position + 1, m_simple_table_internal->m_column_sizes[i + size_row]);
   }
-  m_sti->m_size_rows[pos] += min_size;
+  m_simple_table_internal->m_row_sizes[position] += min_size;
 
-  m_sti->m_last_row = pos;
-  m_sti->m_last_column = m_sti->m_size_rows[pos] - 1;
+  m_simple_table_internal->m_last_row = position;
+  m_simple_table_internal->m_last_column = m_simple_table_internal->m_row_sizes[position] - 1;
 
-  return elems.size() <= m_sti->m_values_csv.dim2Size() - size_row;
+  return elements.size() <= m_simple_table_internal->m_values.dim2Size() - size_row;
 }
 
 bool SimpleTableInternalMng::
-addElemsRow(const String& name_row, ConstArrayView<Real> elems, bool create_if_not_exist)
+addElementsInRow(const String& row_name, ConstArrayView<Real> elements, bool create_if_not_exist)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  std::optional<Integer> pos = m_sti->m_name_rows.span().findFirst(name_row);
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  std::optional<Integer> position = m_simple_table_internal->m_row_names.span().findFirst(row_name);
 
-  if (pos)
-    return addElemsRow(pos.value(), elems);
-  // Permet d'avoir un return bool (sinon on pourrait simplement faire addRow(name_row, elems)).
+  if (position)
+    return addElementsInRow(position.value(), elements);
+  // Permet d'avoir un return bool (sinon on pourrait simplement faire addRow(row_name, elements)).
   else if (create_if_not_exist)
-    return addElemsRow(addRow(name_row), elems);
+    return addElementsInRow(addRow(row_name), elements);
   else
     return false;
 }
 
 bool SimpleTableInternalMng::
-addElemsSameRow(ConstArrayView<Real> elems)
+addElementsInSameRow(ConstArrayView<Real> elements)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  if (m_sti->m_last_row == -1 || m_sti->m_last_column == -1)
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  if (m_simple_table_internal->m_last_row == -1 || m_simple_table_internal->m_last_column == -1)
     return false;
-  return addElemsRow(m_sti->m_last_row, elems);
+  return addElementsInRow(m_simple_table_internal->m_last_row, elements);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 bool SimpleTableInternalMng::
-addElemColumn(Integer pos, Real elem)
+addElementInColumn(Integer position, Real element)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  if (pos < 0 || pos >= m_sti->m_values_csv.dim2Size())
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  if (position < 0 || position >= m_simple_table_internal->m_values.dim2Size())
     return false;
 
-  Integer size_column = m_sti->m_size_columns[pos];
+  Integer size_column = m_simple_table_internal->m_column_sizes[position];
 
-  if (m_sti->m_values_csv.dim1Size() < size_column + 1)
+  if (m_simple_table_internal->m_values.dim1Size() < size_column + 1)
     return false;
 
-  m_sti->m_values_csv[size_column][pos] = elem;
+  m_simple_table_internal->m_values[size_column][position] = element;
 
-  m_sti->m_last_column = pos;
-  m_sti->m_last_row = size_column;
+  m_simple_table_internal->m_last_column = position;
+  m_simple_table_internal->m_last_row = size_column;
 
-  m_sti->m_size_columns[pos]++;
-  m_sti->m_size_rows[size_column] = std::max(pos + 1, m_sti->m_size_rows[size_column]);
+  m_simple_table_internal->m_column_sizes[position]++;
+  m_simple_table_internal->m_row_sizes[size_column] = std::max(position + 1, m_simple_table_internal->m_row_sizes[size_column]);
 
   return true;
 }
 
 bool SimpleTableInternalMng::
-addElemColumn(const String& name_column, Real elem, bool create_if_not_exist)
+addElementInColumn(const String& column_name, Real element, bool create_if_not_exist)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  std::optional<Integer> pos = m_sti->m_name_columns.span().findFirst(name_column);
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  std::optional<Integer> position = m_simple_table_internal->m_column_names.span().findFirst(column_name);
 
-  if (pos)
-    return addElemColumn(pos.value(), elem);
+  if (position)
+    return addElementInColumn(position.value(), element);
   else if (create_if_not_exist)
-    return addElemColumn(addColumn(name_column), elem);
+    return addElementInColumn(addColumn(column_name), element);
   else
     return false;
 }
 
 bool SimpleTableInternalMng::
-addElemSameColumn(Real elem)
+addElementInSameColumn(Real element)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  if (m_sti->m_last_row == -1 || m_sti->m_last_column == -1)
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  if (m_simple_table_internal->m_last_row == -1 || m_simple_table_internal->m_last_column == -1)
     return false;
-  return addElemColumn(m_sti->m_last_column, elem);
+  return addElementInColumn(m_simple_table_internal->m_last_column, element);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 bool SimpleTableInternalMng::
-addElemsColumn(Integer pos, ConstArrayView<Real> elems)
+addElementsInColumn(Integer position, ConstArrayView<Real> elements)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  if (pos < 0 || pos >= m_sti->m_values_csv.dim2Size())
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  if (position < 0 || position >= m_simple_table_internal->m_values.dim2Size())
     return false;
 
-  Integer size_column = m_sti->m_size_columns[pos];
-  Integer min_size = (elems.size() <= m_sti->m_values_csv.dim1Size() - size_column
-                      ? elems.size()
-                      : m_sti->m_values_csv.dim1Size() - size_column);
+  Integer size_column = m_simple_table_internal->m_column_sizes[position];
+  Integer min_size = (elements.size() <= m_simple_table_internal->m_values.dim1Size() - size_column
+                      ? elements.size()
+                      : m_simple_table_internal->m_values.dim1Size() - size_column);
 
   for (Integer i = 0; i < min_size; i++) {
-    m_sti->m_values_csv[i + size_column][pos] = elems[i];
-    m_sti->m_size_rows[i + size_column] = std::max(pos + 1, m_sti->m_size_rows[i + size_column]);
+    m_simple_table_internal->m_values[i + size_column][position] = elements[i];
+    m_simple_table_internal->m_row_sizes[i + size_column] = std::max(position + 1, m_simple_table_internal->m_row_sizes[i + size_column]);
   }
-  m_sti->m_size_columns[pos] += min_size;
+  m_simple_table_internal->m_column_sizes[position] += min_size;
 
-  m_sti->m_last_column = pos;
-  m_sti->m_last_row = m_sti->m_size_columns[pos] - 1;
+  m_simple_table_internal->m_last_column = position;
+  m_simple_table_internal->m_last_row = m_simple_table_internal->m_column_sizes[position] - 1;
 
-  return elems.size() <= m_sti->m_values_csv.dim1Size() - size_column;
+  return elements.size() <= m_simple_table_internal->m_values.dim1Size() - size_column;
 }
 
 bool SimpleTableInternalMng::
-addElemsColumn(const String& name_column, ConstArrayView<Real> elems, bool create_if_not_exist)
+addElementsInColumn(const String& column_name, ConstArrayView<Real> elements, bool create_if_not_exist)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  std::optional<Integer> pos = m_sti->m_name_columns.span().findFirst(name_column);
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  std::optional<Integer> position = m_simple_table_internal->m_column_names.span().findFirst(column_name);
 
-  if (pos)
-    return addElemsColumn(pos.value(), elems);
-  // Permet d'avoir un return bool (sinon on pourrait simplement faire addColumn(name_column, elems)).
+  if (position)
+    return addElementsInColumn(position.value(), elements);
+  // Permet d'avoir un return bool (sinon on pourrait simplement faire addColumn(column_name, elements)).
   else if (create_if_not_exist)
-    return addElemsColumn(addColumn(name_column), elems);
+    return addElementsInColumn(addColumn(column_name), elements);
   else
     return false;
 }
 
 bool SimpleTableInternalMng::
-addElemsSameColumn(ConstArrayView<Real> elems)
+addElementsInSameColumn(ConstArrayView<Real> elements)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  if (m_sti->m_last_row == -1 || m_sti->m_last_column == -1)
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  if (m_simple_table_internal->m_last_row == -1 || m_simple_table_internal->m_last_column == -1)
     return false;
-  return addElemsColumn(m_sti->m_last_column, elems);
+  return addElementsInColumn(m_simple_table_internal->m_last_column, elements);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 bool SimpleTableInternalMng::
-editElemUp(Real elem, bool update_last_pos)
+editElementUp(Real element, bool update_last_position)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  if (m_sti->m_last_row == -1 || m_sti->m_last_column == -1 || m_sti->m_last_row - 1 < 0)
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  if (m_simple_table_internal->m_last_row == -1 || m_simple_table_internal->m_last_column == -1 || m_simple_table_internal->m_last_row - 1 < 0)
     return false;
-  m_sti->m_last_row--;
+  m_simple_table_internal->m_last_row--;
 
-  // Pas besoin d'ajuster la taille de la colonne car on est sûr que m_sti->m_size_columns[m_sti->m_last_column] >= m_sti->m_last_row.
-  if (m_sti->m_size_rows[m_sti->m_last_row] <= m_sti->m_last_column)
-    m_sti->m_size_rows[m_sti->m_last_row] = m_sti->m_last_column + 1;
+  // Pas besoin d'ajuster la taille de la colonne car on est sûr que m_simple_table_internal->m_column_sizes[m_simple_table_internal->m_last_column] >= m_simple_table_internal->m_last_row.
+  if (m_simple_table_internal->m_row_sizes[m_simple_table_internal->m_last_row] <= m_simple_table_internal->m_last_column)
+    m_simple_table_internal->m_row_sizes[m_simple_table_internal->m_last_row] = m_simple_table_internal->m_last_column + 1;
 
-  m_sti->m_values_csv[m_sti->m_last_row][m_sti->m_last_column] = elem;
-  if (!update_last_pos)
-    m_sti->m_last_row++;
+  m_simple_table_internal->m_values[m_simple_table_internal->m_last_row][m_simple_table_internal->m_last_column] = element;
+  if (!update_last_position)
+    m_simple_table_internal->m_last_row++;
   return true;
 }
 
 bool SimpleTableInternalMng::
-editElemDown(Real elem, bool update_last_pos)
+editElementDown(Real element, bool update_last_position)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  if (m_sti->m_last_row == -1 || m_sti->m_last_column == -1 || m_sti->m_last_row + 1 >= m_sti->m_values_csv.dim1Size())
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  if (m_simple_table_internal->m_last_row == -1 || m_simple_table_internal->m_last_column == -1 || m_simple_table_internal->m_last_row + 1 >= m_simple_table_internal->m_values.dim1Size())
     return false;
-  m_sti->m_last_row++;
+  m_simple_table_internal->m_last_row++;
 
-  if (m_sti->m_size_rows[m_sti->m_last_row] <= m_sti->m_last_column)
-    m_sti->m_size_rows[m_sti->m_last_row] = m_sti->m_last_column + 1;
-  if (m_sti->m_size_columns[m_sti->m_last_column] <= m_sti->m_last_row)
-    m_sti->m_size_columns[m_sti->m_last_column] = m_sti->m_last_row + 1;
+  if (m_simple_table_internal->m_row_sizes[m_simple_table_internal->m_last_row] <= m_simple_table_internal->m_last_column)
+    m_simple_table_internal->m_row_sizes[m_simple_table_internal->m_last_row] = m_simple_table_internal->m_last_column + 1;
+  if (m_simple_table_internal->m_column_sizes[m_simple_table_internal->m_last_column] <= m_simple_table_internal->m_last_row)
+    m_simple_table_internal->m_column_sizes[m_simple_table_internal->m_last_column] = m_simple_table_internal->m_last_row + 1;
 
-  m_sti->m_values_csv[m_sti->m_last_row][m_sti->m_last_column] = elem;
-  if (!update_last_pos)
-    m_sti->m_last_row--;
+  m_simple_table_internal->m_values[m_simple_table_internal->m_last_row][m_simple_table_internal->m_last_column] = element;
+  if (!update_last_position)
+    m_simple_table_internal->m_last_row--;
   return true;
 }
 
 bool SimpleTableInternalMng::
-editElemLeft(Real elem, bool update_last_pos)
+editElementLeft(Real element, bool update_last_position)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  if (m_sti->m_last_row == -1 || m_sti->m_last_column == -1 || m_sti->m_last_column - 1 < 0)
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  if (m_simple_table_internal->m_last_row == -1 || m_simple_table_internal->m_last_column == -1 || m_simple_table_internal->m_last_column - 1 < 0)
     return false;
-  m_sti->m_last_column--;
+  m_simple_table_internal->m_last_column--;
 
-  // Pas besoin d'ajuster la taille de la ligne car on est sûr que m_sti->m_size_rows[m_sti->m_last_row] >= m_sti->m_last_column.
-  if (m_sti->m_size_columns[m_sti->m_last_column] <= m_sti->m_last_row)
-    m_sti->m_size_columns[m_sti->m_last_column] = m_sti->m_last_row + 1;
+  // Pas besoin d'ajuster la taille de la ligne car on est sûr que m_simple_table_internal->m_row_sizes[m_simple_table_internal->m_last_row] >= m_simple_table_internal->m_last_column.
+  if (m_simple_table_internal->m_column_sizes[m_simple_table_internal->m_last_column] <= m_simple_table_internal->m_last_row)
+    m_simple_table_internal->m_column_sizes[m_simple_table_internal->m_last_column] = m_simple_table_internal->m_last_row + 1;
 
-  m_sti->m_values_csv[m_sti->m_last_row][m_sti->m_last_column] = elem;
-  if (!update_last_pos)
-    m_sti->m_last_column++;
+  m_simple_table_internal->m_values[m_simple_table_internal->m_last_row][m_simple_table_internal->m_last_column] = element;
+  if (!update_last_position)
+    m_simple_table_internal->m_last_column++;
   return true;
 }
 
 bool SimpleTableInternalMng::
-editElemRight(Real elem, bool update_last_pos)
+editElementRight(Real element, bool update_last_position)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  if (m_sti->m_last_row == -1 || m_sti->m_last_column == -1 || m_sti->m_last_column + 1 >= m_sti->m_values_csv.dim2Size())
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  if (m_simple_table_internal->m_last_row == -1 || m_simple_table_internal->m_last_column == -1 || m_simple_table_internal->m_last_column + 1 >= m_simple_table_internal->m_values.dim2Size())
     return false;
-  m_sti->m_last_column++;
+  m_simple_table_internal->m_last_column++;
 
-  if (m_sti->m_size_rows[m_sti->m_last_row] <= m_sti->m_last_column)
-    m_sti->m_size_rows[m_sti->m_last_row] = m_sti->m_last_column + 1;
-  if (m_sti->m_size_columns[m_sti->m_last_column] <= m_sti->m_last_row)
-    m_sti->m_size_columns[m_sti->m_last_column] = m_sti->m_last_row + 1;
+  if (m_simple_table_internal->m_row_sizes[m_simple_table_internal->m_last_row] <= m_simple_table_internal->m_last_column)
+    m_simple_table_internal->m_row_sizes[m_simple_table_internal->m_last_row] = m_simple_table_internal->m_last_column + 1;
+  if (m_simple_table_internal->m_column_sizes[m_simple_table_internal->m_last_column] <= m_simple_table_internal->m_last_row)
+    m_simple_table_internal->m_column_sizes[m_simple_table_internal->m_last_column] = m_simple_table_internal->m_last_row + 1;
 
-  m_sti->m_values_csv[m_sti->m_last_row][m_sti->m_last_column] = elem;
-  if (!update_last_pos)
-    m_sti->m_last_column--;
+  m_simple_table_internal->m_values[m_simple_table_internal->m_last_row][m_simple_table_internal->m_last_column] = element;
+  if (!update_last_position)
+    m_simple_table_internal->m_last_column--;
   return true;
 }
 
@@ -425,127 +425,127 @@ editElemRight(Real elem, bool update_last_pos)
 /*---------------------------------------------------------------------------*/
 
 Real SimpleTableInternalMng::
-elemUp(bool update_last_pos)
+elementUp(bool update_last_position)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  if (m_sti->m_last_row == -1 || m_sti->m_last_column == -1 || m_sti->m_last_row - 1 < 0)
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  if (m_simple_table_internal->m_last_row == -1 || m_simple_table_internal->m_last_column == -1 || m_simple_table_internal->m_last_row - 1 < 0)
     return 0;
 
-  // Par rapport à editElemUp(), si on ne veut pas mettre à jour la dernière position,
-  // on ne verifie pas ni modifie m_sti->m_size_rows.
-  if (update_last_pos) {
-    m_sti->m_last_row--;
-    // Pas besoin d'ajuster la taille de la colonne car on est sûr que m_sti->m_size_columns[m_sti->m_last_column] >= m_sti->m_last_row.
-    if (m_sti->m_size_rows[m_sti->m_last_row] <= m_sti->m_last_column)
-      m_sti->m_size_rows[m_sti->m_last_row] = m_sti->m_last_column + 1;
-    return m_sti->m_values_csv[m_sti->m_last_row][m_sti->m_last_column];
+  // Par rapport à editElementUp(), si on ne veut pas mettre à jour la dernière position,
+  // on ne verifie pas ni modifie m_simple_table_internal->m_row_sizes.
+  if (update_last_position) {
+    m_simple_table_internal->m_last_row--;
+    // Pas besoin d'ajuster la taille de la colonne car on est sûr que m_simple_table_internal->m_column_sizes[m_simple_table_internal->m_last_column] >= m_simple_table_internal->m_last_row.
+    if (m_simple_table_internal->m_row_sizes[m_simple_table_internal->m_last_row] <= m_simple_table_internal->m_last_column)
+      m_simple_table_internal->m_row_sizes[m_simple_table_internal->m_last_row] = m_simple_table_internal->m_last_column + 1;
+    return m_simple_table_internal->m_values[m_simple_table_internal->m_last_row][m_simple_table_internal->m_last_column];
   }
 
-  return m_sti->m_values_csv[m_sti->m_last_row - 1][m_sti->m_last_column];
+  return m_simple_table_internal->m_values[m_simple_table_internal->m_last_row - 1][m_simple_table_internal->m_last_column];
 }
 
 Real SimpleTableInternalMng::
-elemDown(bool update_last_pos)
+elementDown(bool update_last_position)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  if (m_sti->m_last_row == -1 || m_sti->m_last_column == -1 || m_sti->m_last_row + 1 >= m_sti->m_values_csv.dim1Size())
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  if (m_simple_table_internal->m_last_row == -1 || m_simple_table_internal->m_last_column == -1 || m_simple_table_internal->m_last_row + 1 >= m_simple_table_internal->m_values.dim1Size())
     return 0;
 
-  // Par rapport à editElemDown(), si on ne veut pas mettre à jour la dernière position,
-  // on ne verifie pas ni modifie m_sti->m_size_rows.
-  if (update_last_pos) {
-    m_sti->m_last_row++;
+  // Par rapport à editElementDown(), si on ne veut pas mettre à jour la dernière position,
+  // on ne verifie pas ni modifie m_simple_table_internal->m_row_sizes.
+  if (update_last_position) {
+    m_simple_table_internal->m_last_row++;
 
-    if (m_sti->m_size_rows[m_sti->m_last_row] <= m_sti->m_last_column)
-      m_sti->m_size_rows[m_sti->m_last_row] = m_sti->m_last_column + 1;
-    if (m_sti->m_size_columns[m_sti->m_last_column] <= m_sti->m_last_row)
-      m_sti->m_size_columns[m_sti->m_last_column] = m_sti->m_last_row + 1;
-    return m_sti->m_values_csv[m_sti->m_last_row][m_sti->m_last_column];
+    if (m_simple_table_internal->m_row_sizes[m_simple_table_internal->m_last_row] <= m_simple_table_internal->m_last_column)
+      m_simple_table_internal->m_row_sizes[m_simple_table_internal->m_last_row] = m_simple_table_internal->m_last_column + 1;
+    if (m_simple_table_internal->m_column_sizes[m_simple_table_internal->m_last_column] <= m_simple_table_internal->m_last_row)
+      m_simple_table_internal->m_column_sizes[m_simple_table_internal->m_last_column] = m_simple_table_internal->m_last_row + 1;
+    return m_simple_table_internal->m_values[m_simple_table_internal->m_last_row][m_simple_table_internal->m_last_column];
   }
-  return m_sti->m_values_csv[m_sti->m_last_row + 1][m_sti->m_last_column];
+  return m_simple_table_internal->m_values[m_simple_table_internal->m_last_row + 1][m_simple_table_internal->m_last_column];
 }
 
 Real SimpleTableInternalMng::
-elemLeft(bool update_last_pos)
+elementLeft(bool update_last_position)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  if (m_sti->m_last_row == -1 || m_sti->m_last_column == -1 || m_sti->m_last_column - 1 < 0)
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  if (m_simple_table_internal->m_last_row == -1 || m_simple_table_internal->m_last_column == -1 || m_simple_table_internal->m_last_column - 1 < 0)
     return 0;
 
-  // Par rapport à editElemLeft(), si on ne veut pas mettre à jour la dernière position,
-  // on ne verifie pas ni modifie m_sti->m_size_columns.
-  if (update_last_pos) {
-    m_sti->m_last_column--;
+  // Par rapport à editElementLeft(), si on ne veut pas mettre à jour la dernière position,
+  // on ne verifie pas ni modifie m_simple_table_internal->m_column_sizes.
+  if (update_last_position) {
+    m_simple_table_internal->m_last_column--;
 
-    // Pas besoin d'ajuster la taille de la ligne car on est sûr que m_sti->m_size_rows[m_sti->m_last_row] >= m_sti->m_last_column.
-    if (m_sti->m_size_columns[m_sti->m_last_column] <= m_sti->m_last_row)
-      m_sti->m_size_columns[m_sti->m_last_column] = m_sti->m_last_row + 1;
-    return m_sti->m_values_csv[m_sti->m_last_row][m_sti->m_last_column];
+    // Pas besoin d'ajuster la taille de la ligne car on est sûr que m_simple_table_internal->m_row_sizes[m_simple_table_internal->m_last_row] >= m_simple_table_internal->m_last_column.
+    if (m_simple_table_internal->m_column_sizes[m_simple_table_internal->m_last_column] <= m_simple_table_internal->m_last_row)
+      m_simple_table_internal->m_column_sizes[m_simple_table_internal->m_last_column] = m_simple_table_internal->m_last_row + 1;
+    return m_simple_table_internal->m_values[m_simple_table_internal->m_last_row][m_simple_table_internal->m_last_column];
   }
-  return m_sti->m_values_csv[m_sti->m_last_row][m_sti->m_last_column - 1];
+  return m_simple_table_internal->m_values[m_simple_table_internal->m_last_row][m_simple_table_internal->m_last_column - 1];
 }
 
 Real SimpleTableInternalMng::
-elemRight(bool update_last_pos)
+elementRight(bool update_last_position)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  if (m_sti->m_last_row == -1 || m_sti->m_last_column == -1 || m_sti->m_last_column + 1 >= m_sti->m_values_csv.dim2Size())
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  if (m_simple_table_internal->m_last_row == -1 || m_simple_table_internal->m_last_column == -1 || m_simple_table_internal->m_last_column + 1 >= m_simple_table_internal->m_values.dim2Size())
     return 0;
 
-  // Par rapport à editElemRight(), si on ne veut pas mettre à jour la dernière position,
-  // on ne verifie pas ni modifie m_sti->m_size_columns.
-  if (update_last_pos) {
-    m_sti->m_last_column++;
+  // Par rapport à editElementRight(), si on ne veut pas mettre à jour la dernière position,
+  // on ne verifie pas ni modifie m_simple_table_internal->m_column_sizes.
+  if (update_last_position) {
+    m_simple_table_internal->m_last_column++;
 
-    if (m_sti->m_size_rows[m_sti->m_last_row] <= m_sti->m_last_column)
-      m_sti->m_size_rows[m_sti->m_last_row] = m_sti->m_last_column + 1;
-    if (m_sti->m_size_columns[m_sti->m_last_column] <= m_sti->m_last_row)
-      m_sti->m_size_columns[m_sti->m_last_column] = m_sti->m_last_row + 1;
-    return m_sti->m_values_csv[m_sti->m_last_row][m_sti->m_last_column];
+    if (m_simple_table_internal->m_row_sizes[m_simple_table_internal->m_last_row] <= m_simple_table_internal->m_last_column)
+      m_simple_table_internal->m_row_sizes[m_simple_table_internal->m_last_row] = m_simple_table_internal->m_last_column + 1;
+    if (m_simple_table_internal->m_column_sizes[m_simple_table_internal->m_last_column] <= m_simple_table_internal->m_last_row)
+      m_simple_table_internal->m_column_sizes[m_simple_table_internal->m_last_column] = m_simple_table_internal->m_last_row + 1;
+    return m_simple_table_internal->m_values[m_simple_table_internal->m_last_row][m_simple_table_internal->m_last_column];
   }
-  return m_sti->m_values_csv[m_sti->m_last_row][m_sti->m_last_column + 1];
+  return m_simple_table_internal->m_values[m_simple_table_internal->m_last_row][m_simple_table_internal->m_last_column + 1];
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 bool SimpleTableInternalMng::
-editElem(Real elem)
+editElement(Real element)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  m_sti->m_values_csv[m_sti->m_last_row][m_sti->m_last_column] = elem;
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  m_simple_table_internal->m_values[m_simple_table_internal->m_last_row][m_simple_table_internal->m_last_column] = element;
   return true;
 }
 
 bool SimpleTableInternalMng::
-editElem(Integer pos_x, Integer pos_y, Real elem)
+editElement(Integer position_x, Integer position_y, Real element)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  if (pos_x < 0 || pos_x >= m_sti->m_values_csv.dim2Size() || pos_y < 0 || pos_y >= m_sti->m_values_csv.dim1Size())
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  if (position_x < 0 || position_x >= m_simple_table_internal->m_values.dim2Size() || position_y < 0 || position_y >= m_simple_table_internal->m_values.dim1Size())
     return false;
 
-  if (m_sti->m_size_columns[pos_x] <= pos_y)
-    m_sti->m_size_columns[pos_x] = pos_y + 1;
-  if (m_sti->m_size_rows[pos_y] <= pos_x)
-    m_sti->m_size_rows[pos_y] = pos_x + 1;
+  if (m_simple_table_internal->m_column_sizes[position_x] <= position_y)
+    m_simple_table_internal->m_column_sizes[position_x] = position_y + 1;
+  if (m_simple_table_internal->m_row_sizes[position_y] <= position_x)
+    m_simple_table_internal->m_row_sizes[position_y] = position_x + 1;
 
-  m_sti->m_values_csv[pos_y][pos_x] = elem;
+  m_simple_table_internal->m_values[position_y][position_x] = element;
 
-  m_sti->m_last_row = pos_y;
-  m_sti->m_last_column = pos_x;
+  m_simple_table_internal->m_last_row = position_y;
+  m_simple_table_internal->m_last_column = position_x;
 
   return true;
 }
 
 bool SimpleTableInternalMng::
-editElem(const String& name_column, const String& name_row, Real elem)
+editElement(const String& column_name, const String& row_name, Real element)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  std::optional<Integer> pos_x = m_sti->m_name_columns.span().findFirst(name_column);
-  std::optional<Integer> pos_y = m_sti->m_name_rows.span().findFirst(name_row);
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  std::optional<Integer> position_x = m_simple_table_internal->m_column_names.span().findFirst(column_name);
+  std::optional<Integer> position_y = m_simple_table_internal->m_row_names.span().findFirst(row_name);
 
-  if (pos_x && pos_y)
-    return editElem(pos_x.value(), pos_y.value(), elem);
+  if (position_x && position_y)
+    return editElement(position_x.value(), position_y.value(), element);
   return false;
 }
 
@@ -553,36 +553,36 @@ editElem(const String& name_column, const String& name_row, Real elem)
 /*---------------------------------------------------------------------------*/
 
 Real SimpleTableInternalMng::
-elem()
+element()
 {
-  ARCANE_CHECK_PTR(m_sti);
-  return m_sti->m_values_csv[m_sti->m_last_row][m_sti->m_last_column];
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  return m_simple_table_internal->m_values[m_simple_table_internal->m_last_row][m_simple_table_internal->m_last_column];
 }
 
 Real SimpleTableInternalMng::
-elem(Integer pos_x, Integer pos_y, bool update_last_pos)
+element(Integer position_x, Integer position_y, bool update_last_position)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  if (pos_x < 0 || pos_x >= m_sti->m_values_csv.dim2Size() || pos_y < 0 || pos_y >= m_sti->m_values_csv.dim1Size())
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  if (position_x < 0 || position_x >= m_simple_table_internal->m_values.dim2Size() || position_y < 0 || position_y >= m_simple_table_internal->m_values.dim1Size())
     return 0;
 
-  if (update_last_pos) {
-    m_sti->m_last_column = pos_x;
-    m_sti->m_last_row = pos_y;
+  if (update_last_position) {
+    m_simple_table_internal->m_last_column = position_x;
+    m_simple_table_internal->m_last_row = position_y;
   }
 
-  return m_sti->m_values_csv[pos_y][pos_x];
+  return m_simple_table_internal->m_values[position_y][position_x];
 }
 
 Real SimpleTableInternalMng::
-elem(const String& name_column, const String& name_row, bool update_last_pos)
+element(const String& column_name, const String& row_name, bool update_last_position)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  std::optional<Integer> pos_x = m_sti->m_name_columns.span().findFirst(name_column);
-  std::optional<Integer> pos_y = m_sti->m_name_rows.span().findFirst(name_row);
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  std::optional<Integer> position_x = m_simple_table_internal->m_column_names.span().findFirst(column_name);
+  std::optional<Integer> position_y = m_simple_table_internal->m_row_names.span().findFirst(row_name);
 
-  if (pos_x && pos_y)
-    return elem(pos_x.value(), pos_y.value(), update_last_pos);
+  if (position_x && position_y)
+    return element(position_x.value(), position_y.value(), update_last_position);
   return 0;
 }
 
@@ -590,24 +590,24 @@ elem(const String& name_column, const String& name_row, bool update_last_pos)
 /*---------------------------------------------------------------------------*/
 
 RealUniqueArray SimpleTableInternalMng::
-row(Integer pos)
+row(Integer position)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  Integer size = sizeRow(pos);
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  Integer size = rowSize(position);
   RealUniqueArray copie(size);
   for (Integer i = 0; i < size; i++) {
-    copie[i] = m_sti->m_values_csv[pos][i];
+    copie[i] = m_simple_table_internal->m_values[position][i];
   }
   return copie;
 }
 
 RealUniqueArray SimpleTableInternalMng::
-row(const String& name_row)
+row(const String& row_name)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  std::optional<Integer> pos_y = m_sti->m_name_rows.span().findFirst(name_row);
-  if (pos_y)
-    return row(pos_y.value());
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  std::optional<Integer> position_y = m_simple_table_internal->m_row_names.span().findFirst(row_name);
+  if (position_y)
+    return row(position_y.value());
   return RealUniqueArray(0);
 }
 
@@ -615,25 +615,25 @@ row(const String& name_row)
 /*---------------------------------------------------------------------------*/
 
 RealUniqueArray SimpleTableInternalMng::
-column(Integer pos)
+column(Integer position)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  Integer size = sizeColumn(pos);
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  Integer size = columnSize(position);
 
   RealUniqueArray copie(size);
   for (Integer i = 0; i < size; i++) {
-    copie[i] = m_sti->m_values_csv[i][pos];
+    copie[i] = m_simple_table_internal->m_values[i][position];
   }
   return copie;
 }
 
 RealUniqueArray SimpleTableInternalMng::
-column(const String& name_column)
+column(const String& column_name)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  std::optional<Integer> pos_x = m_sti->m_name_columns.span().findFirst(name_column);
-  if (pos_x)
-    return column(pos_x.value());
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  std::optional<Integer> position_x = m_simple_table_internal->m_column_names.span().findFirst(column_name);
+  if (position_x)
+    return column(position_x.value());
   return RealUniqueArray(0);
 }
 
@@ -641,21 +641,21 @@ column(const String& name_column)
 /*---------------------------------------------------------------------------*/
 
 Integer SimpleTableInternalMng::
-sizeRow(Integer pos)
+rowSize(Integer position)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  if (pos < 0 || pos >= m_sti->m_values_csv.dim1Size())
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  if (position < 0 || position >= m_simple_table_internal->m_values.dim1Size())
     return 0;
-  return m_sti->m_size_rows[pos];
+  return m_simple_table_internal->m_row_sizes[position];
 }
 
 Integer SimpleTableInternalMng::
-sizeRow(const String& name_row)
+rowSize(const String& row_name)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  std::optional<Integer> pos_y = m_sti->m_name_rows.span().findFirst(name_row);
-  if (pos_y)
-    return sizeRow(pos_y.value());
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  std::optional<Integer> position_y = m_simple_table_internal->m_row_names.span().findFirst(row_name);
+  if (position_y)
+    return rowSize(position_y.value());
   return 0;
 }
 
@@ -663,21 +663,21 @@ sizeRow(const String& name_row)
 /*---------------------------------------------------------------------------*/
 
 Integer SimpleTableInternalMng::
-sizeColumn(Integer pos)
+columnSize(Integer position)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  if (pos < 0 || pos >= m_sti->m_values_csv.dim2Size())
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  if (position < 0 || position >= m_simple_table_internal->m_values.dim2Size())
     return 0;
-  return m_sti->m_size_columns[pos];
+  return m_simple_table_internal->m_column_sizes[position];
 }
 
 Integer SimpleTableInternalMng::
-sizeColumn(const String& name_column)
+columnSize(const String& column_name)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  std::optional<Integer> pos_x = m_sti->m_name_columns.span().findFirst(name_column);
-  if (pos_x)
-    return sizeColumn(pos_x.value());
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  std::optional<Integer> position_x = m_simple_table_internal->m_column_names.span().findFirst(column_name);
+  if (position_x)
+    return columnSize(position_x.value());
   return 0;
 }
 
@@ -685,22 +685,22 @@ sizeColumn(const String& name_column)
 /*---------------------------------------------------------------------------*/
 
 Integer SimpleTableInternalMng::
-posRow(const String& name_row)
+rowPosition(const String& row_name)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  std::optional<Integer> pos_y = m_sti->m_name_rows.span().findFirst(name_row);
-  if (pos_y)
-    return pos_y.value();
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  std::optional<Integer> position_y = m_simple_table_internal->m_row_names.span().findFirst(row_name);
+  if (position_y)
+    return position_y.value();
   return -1;
 }
 
 Integer SimpleTableInternalMng::
-posColumn(const String& name_column)
+columnPosition(const String& column_name)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  std::optional<Integer> pos_x = m_sti->m_name_columns.span().findFirst(name_column);
-  if (pos_x)
-    return pos_x.value();
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  std::optional<Integer> position_x = m_simple_table_internal->m_column_names.span().findFirst(column_name);
+  if (position_x)
+    return position_x.value();
   return -1;
 }
 
@@ -708,82 +708,82 @@ posColumn(const String& name_column)
 /*---------------------------------------------------------------------------*/
 
 Integer SimpleTableInternalMng::
-numRows()
+numberOfRows()
 {
-  ARCANE_CHECK_PTR(m_sti);
-  return m_sti->m_values_csv.dim1Size();
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  return m_simple_table_internal->m_values.dim1Size();
 }
 
 Integer SimpleTableInternalMng::
-numColumns()
+numberOfColumns()
 {
-  ARCANE_CHECK_PTR(m_sti);
-  return m_sti->m_values_csv.dim2Size();
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  return m_simple_table_internal->m_values.dim2Size();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 String SimpleTableInternalMng::
-nameRow(Integer pos)
+rowName(Integer position)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  if (pos < 0 || pos >= m_sti->m_values_csv.dim1Size())
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  if (position < 0 || position >= m_simple_table_internal->m_values.dim1Size())
     return "";
 
-  return m_sti->m_name_rows[pos];
+  return m_simple_table_internal->m_row_names[position];
 }
 
 String SimpleTableInternalMng::
-nameColumn(Integer pos)
+columnName(Integer position)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  if (pos < 0 || pos >= m_sti->m_values_csv.dim2Size())
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  if (position < 0 || position >= m_simple_table_internal->m_values.dim2Size())
     return "";
 
-  return m_sti->m_name_columns[pos];
+  return m_simple_table_internal->m_column_names[position];
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 bool SimpleTableInternalMng::
-editNameRow(Integer pos, const String& new_name)
+editRowName(Integer position, const String& new_name)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  if (pos < 0 || pos >= m_sti->m_values_csv.dim1Size())
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  if (position < 0 || position >= m_simple_table_internal->m_values.dim1Size())
     return false;
-  m_sti->m_name_rows[pos] = new_name;
+  m_simple_table_internal->m_row_names[position] = new_name;
   return true;
 }
 
 bool SimpleTableInternalMng::
-editNameRow(const String& name_row, const String& new_name)
+editRowName(const String& row_name, const String& new_name)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  std::optional<Integer> pos_y = m_sti->m_name_rows.span().findFirst(name_row);
-  if (pos_y)
-    return editNameRow(pos_y.value(), new_name);
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  std::optional<Integer> position_y = m_simple_table_internal->m_row_names.span().findFirst(row_name);
+  if (position_y)
+    return editRowName(position_y.value(), new_name);
   return false;
 }
 
 bool SimpleTableInternalMng::
-editNameColumn(Integer pos, const String& new_name)
+editColumnName(Integer position, const String& new_name)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  if (pos < 0 || pos >= m_sti->m_values_csv.dim2Size())
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  if (position < 0 || position >= m_simple_table_internal->m_values.dim2Size())
     return false;
-  m_sti->m_name_columns[pos] = new_name;
+  m_simple_table_internal->m_column_names[position] = new_name;
   return true;
 }
 
 bool SimpleTableInternalMng::
-editNameColumn(const String& name_column, const String& new_name)
+editColumnName(const String& column_name, const String& new_name)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  std::optional<Integer> pos_x = m_sti->m_name_columns.span().findFirst(name_column);
-  if (pos_x)
-    return editNameColumn(pos_x.value(), new_name);
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  std::optional<Integer> position_x = m_simple_table_internal->m_column_names.span().findFirst(column_name);
+  if (position_x)
+    return editColumnName(position_x.value(), new_name);
   return false;
 }
 
@@ -791,33 +791,33 @@ editNameColumn(const String& name_column, const String& new_name)
 /*---------------------------------------------------------------------------*/
 
 Integer SimpleTableInternalMng::
-addAverageColumn(const String& name_column)
+addAverageColumn(const String& column_name)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  Integer pos = addColumn(name_column);
-  for (Integer i = 0; i < m_sti->m_values_csv.dim1Size(); i++) {
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  Integer position = addColumn(column_name);
+  for (Integer i = 0; i < m_simple_table_internal->m_values.dim1Size(); i++) {
     Real avg = 0.0;
-    ConstArrayView<Real> view = m_sti->m_values_csv[i];
+    ConstArrayView<Real> view = m_simple_table_internal->m_values[i];
     for (Integer j = 0; j < view.size() - 1; j++) {
       avg += view[j];
     }
     avg /= view.size() - 1;
-    addElemColumn(pos, avg);
+    addElementInColumn(position, avg);
   }
-  return pos;
+  return position;
 }
 
 SimpleTableInternal* SimpleTableInternalMng::
 internal()
 {
-  return m_sti;
+  return m_simple_table_internal;
 }
 
 void SimpleTableInternalMng::
-setInternal(SimpleTableInternal* sti)
+setInternal(SimpleTableInternal* simple_table_internal)
 {
-  ARCANE_CHECK_PTR(sti);
-  m_sti = sti;
+  ARCANE_CHECK_PTR(simple_table_internal);
+  m_simple_table_internal = simple_table_internal;
 }
 
 /*---------------------------------------------------------------------------*/

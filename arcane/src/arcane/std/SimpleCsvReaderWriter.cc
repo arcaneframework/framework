@@ -28,12 +28,12 @@ namespace Arcane
 bool SimpleCsvReaderWriter::
 writeTable(const Directory& dst, const String& file_name)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  if (!SimpleTableReaderWriterUtils::createDirectoryOnlyP0(m_sti->m_sub_domain, dst)) {
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  if (!SimpleTableReaderWriterUtils::createDirectoryOnlyProcess0(m_simple_table_internal->m_sub_domain, dst)) {
     return false;
   }
 
-  std::ofstream ofile((dst.file(file_name) + "." + typeFile()).localstr());
+  std::ofstream ofile((dst.file(file_name) + "." + fileType()).localstr());
   if (ofile.fail())
     return false;
 
@@ -46,13 +46,13 @@ writeTable(const Directory& dst, const String& file_name)
 bool SimpleCsvReaderWriter::
 readTable(const Directory& src, const String& file_name)
 {
-  ARCANE_CHECK_PTR(m_sti);
+  ARCANE_CHECK_PTR(m_simple_table_internal);
   clearInternal();
 
   std::ifstream stream;
 
   // Pas de fichier, pas de chocolats.
-  if (!_openFile(stream, src, file_name + "." + typeFile())) {
+  if (!_openFile(stream, src, file_name + "." + fileType())) {
     return false;
   }
 
@@ -74,8 +74,8 @@ readTable(const Directory& src, const String& file_name)
     StringUniqueArray tmp;
     ligne.split(tmp, m_separator);
     // Normalement, tmp[0] existe toujours (peut-être = à "" (vide)).
-    m_sti->m_name_tab = tmp[0];
-    m_sti->m_name_columns = tmp.subConstView(1, tmp.size());
+    m_simple_table_internal->m_table_name = tmp[0];
+    m_simple_table_internal->m_column_names = tmp.subConstView(1, tmp.size());
   }
 
   // S'il n'y a pas d'autres lignes, c'est qu'il n'y a que des
@@ -87,14 +87,14 @@ readTable(const Directory& src, const String& file_name)
 
   // Maintenant que l'on a le nombre de colonnes, on peut définir
   // la dimension 2 du tableau de valeurs.
-  m_sti->m_values_csv.resize(1, m_sti->m_name_columns.size());
+  m_simple_table_internal->m_values.resize(1, m_simple_table_internal->m_column_names.size());
 
   Integer compt_line = 0;
 
   do {
     // On n'a pas le nombre de lignes en avance,
     // donc on doit resize à chaque tour.
-    m_sti->m_values_csv.resize(compt_line + 1);
+    m_simple_table_internal->m_values.resize(compt_line + 1);
 
     // On split la ligne récupéré.
     StringUniqueArray splitted_line;
@@ -102,11 +102,11 @@ readTable(const Directory& src, const String& file_name)
     ligne.split(splitted_line, m_separator);
 
     // Le premier élement est le nom de ligne.
-    m_sti->m_name_rows.add(splitted_line[0]);
+    m_simple_table_internal->m_row_names.add(splitted_line[0]);
 
     // Les autres élements sont des Reals.
     for (Integer i = 1; i < splitted_line.size(); i++) {
-      m_sti->m_values_csv[compt_line][i - 1] = std::stod(splitted_line[i].localstr());
+      m_simple_table_internal->m_values[compt_line][i - 1] = std::stod(splitted_line[i].localstr());
     }
 
     compt_line++;
@@ -114,11 +114,11 @@ readTable(const Directory& src, const String& file_name)
 
   _closeFile(stream);
 
-  m_sti->m_size_rows.resize(m_sti->m_name_rows.size());
-  m_sti->m_size_rows.fill(m_sti->m_values_csv.dim2Size());
+  m_simple_table_internal->m_row_sizes.resize(m_simple_table_internal->m_row_names.size());
+  m_simple_table_internal->m_row_sizes.fill(m_simple_table_internal->m_values.dim2Size());
 
-  m_sti->m_size_columns.resize(m_sti->m_name_columns.size());
-  m_sti->m_size_columns.fill(m_sti->m_values_csv.dim1Size());
+  m_simple_table_internal->m_column_sizes.resize(m_simple_table_internal->m_column_names.size());
+  m_simple_table_internal->m_column_sizes.fill(m_simple_table_internal->m_values.dim1Size());
 
   return true;
 }
@@ -126,14 +126,14 @@ readTable(const Directory& src, const String& file_name)
 void SimpleCsvReaderWriter::
 clearInternal()
 {
-  ARCANE_CHECK_PTR(m_sti);
-  m_sti->clear();
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  m_simple_table_internal->clear();
 }
 
 void SimpleCsvReaderWriter::
 print()
 {
-  ARCANE_CHECK_PTR(m_sti);
+  ARCANE_CHECK_PTR(m_simple_table_internal);
   _print(std::cout);
 }
 
@@ -155,7 +155,7 @@ setPrecision(Integer precision)
 }
 
 bool SimpleCsvReaderWriter::
-fixed()
+isFixed()
 {
   return m_is_fixed_print;
 }
@@ -169,23 +169,23 @@ setFixed(bool fixed)
 SimpleTableInternal* SimpleCsvReaderWriter::
 internal()
 {
-  return m_sti;
+  return m_simple_table_internal;
 }
 
 void SimpleCsvReaderWriter::
-setInternal(SimpleTableInternal* sti)
+setInternal(SimpleTableInternal* simple_table_internal)
 {
-  ARCANE_CHECK_PTR(sti);
-  m_sti = sti;
+  ARCANE_CHECK_PTR(simple_table_internal);
+  m_simple_table_internal = simple_table_internal;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 bool SimpleCsvReaderWriter::
-_openFile(std::ifstream& stream, Directory dir, const String& file)
+_openFile(std::ifstream& stream, Directory directory, const String& file)
 {
-  stream.open(dir.file(file).localstr(), std::ifstream::in);
+  stream.open(directory.file(file).localstr(), std::ifstream::in);
   return stream.good();
 }
 
@@ -198,7 +198,7 @@ _closeFile(std::ifstream& stream)
 void SimpleCsvReaderWriter::
 _print(std::ostream& stream)
 {
-  ARCANE_CHECK_PTR(m_sti);
+  ARCANE_CHECK_PTR(m_simple_table_internal);
   // On enregistre les infos du stream pour les restaurer à la fin.
   std::ios_base::fmtflags save_flags = stream.flags();
   std::streamsize save_prec = stream.precision();
@@ -208,17 +208,17 @@ _print(std::ostream& stream)
   }
   stream << std::setprecision(m_precision_print);
 
-  stream << m_sti->m_name_tab << m_separator;
+  stream << m_simple_table_internal->m_table_name << m_separator;
 
-  for (Integer j = 0; j < m_sti->m_name_columns.size(); j++) {
-    stream << m_sti->m_name_columns[j] << m_separator;
+  for (Integer j = 0; j < m_simple_table_internal->m_column_names.size(); j++) {
+    stream << m_simple_table_internal->m_column_names[j] << m_separator;
   }
   stream << std::endl;
 
-  for (Integer i = 0; i < m_sti->m_values_csv.dim1Size(); i++) {
-    stream << m_sti->m_name_rows[i] << m_separator;
-    ConstArrayView<Real> view = m_sti->m_values_csv[i];
-    for (Integer j = 0; j < m_sti->m_values_csv.dim2Size(); j++) {
+  for (Integer i = 0; i < m_simple_table_internal->m_values.dim1Size(); i++) {
+    stream << m_simple_table_internal->m_row_names[i] << m_separator;
+    ConstArrayView<Real> view = m_simple_table_internal->m_values[i];
+    for (Integer j = 0; j < m_simple_table_internal->m_values.dim2Size(); j++) {
       stream << view[j] << m_separator;
     }
     stream << std::endl;

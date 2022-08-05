@@ -35,22 +35,22 @@ init()
 }
 
 bool SimpleTableWriterHelper::
-init(const String& name_table)
+init(const String& table_name)
 {
-  return init(name_table, "");
+  return init(table_name, "");
 }
 
 bool SimpleTableWriterHelper::
-init(const String& name_table, const String& name_dir)
+init(const String& table_name, const String& directory_name)
 {
-  ARCANE_CHECK_PTR(m_sti);
+  ARCANE_CHECK_PTR(m_simple_table_internal);
 
-  setTabName(name_table);
+  setTableName(table_name);
   _computeName();
 
-  m_name_output_dir = name_dir;
+  m_name_output_directory = directory_name;
 
-  m_root = Directory(m_sti->m_sub_domain->exportDirectory(), m_strw->typeFile());
+  m_root = Directory(m_simple_table_internal->m_sub_domain->exportDirectory(), m_simple_table_reader_writer->fileType());
   return true;
 }
 
@@ -58,45 +58,45 @@ init(const String& name_table, const String& name_dir)
 /*---------------------------------------------------------------------------*/
 
 void SimpleTableWriterHelper::
-print(Integer only_proc)
+print(Integer process_id)
 {
-  ARCANE_CHECK_PTR(m_strw);
-  if (only_proc != -1 && m_sti->m_sub_domain->parallelMng()->commRank() != only_proc)
+  ARCANE_CHECK_PTR(m_simple_table_reader_writer);
+  if (process_id != -1 && m_simple_table_internal->m_sub_domain->parallelMng()->commRank() != process_id)
     return;
-  m_strw->print();
+  m_simple_table_reader_writer->print();
 }
 
 bool SimpleTableWriterHelper::
-writeFile(const Directory& root_dir, Integer only_proc)
+writeFile(const Directory& root_directory, Integer process_id)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  ARCANE_CHECK_PTR(m_strw);
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  ARCANE_CHECK_PTR(m_simple_table_reader_writer);
   // Finalisation du nom du csv (si ce n'est pas déjà fait).
   _computeName();
 
   // Création du répertoire.
-  bool result = SimpleTableReaderWriterUtils::createDirectoryOnlyP0(m_sti->m_sub_domain, root_dir);
+  bool result = SimpleTableReaderWriterUtils::createDirectoryOnlyProcess0(m_simple_table_internal->m_sub_domain, root_directory);
   if (!result) {
     return false;
   }
 
   // Si l'on n'est pas le processus demandé, on return true.
   // -1 = tout le monde écrit.
-  if (only_proc != -1 && m_sti->m_sub_domain->parallelMng()->commRank() != only_proc)
+  if (process_id != -1 && m_simple_table_internal->m_sub_domain->parallelMng()->commRank() != process_id)
     return true;
 
-  // Si l'on a only_proc == -1 et que m_sti->m_name_tab_only_once == true, alors il n'y a que le
+  // Si l'on a process_id == -1 et que m_simple_table_internal->m_name_table_once_process == true, alors il n'y a que le
   // processus 0 qui doit écrire.
-  if ((only_proc == -1 && m_name_tab_only_once) && m_sti->m_sub_domain->parallelMng()->commRank() != 0)
+  if ((process_id == -1 && m_name_table_once_process) && m_simple_table_internal->m_sub_domain->parallelMng()->commRank() != 0)
     return true;
 
-  return m_strw->writeTable(Directory(root_dir, m_name_output_dir), m_sti->m_name_tab);
+  return m_simple_table_reader_writer->writeTable(Directory(root_directory, m_name_output_directory), m_simple_table_internal->m_table_name);
 }
 
 bool SimpleTableWriterHelper::
-writeFile(Integer only_proc)
+writeFile(Integer process_id)
 {
-  return writeFile(m_root, only_proc);
+  return writeFile(m_root, process_id);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -105,84 +105,84 @@ writeFile(Integer only_proc)
 Integer SimpleTableWriterHelper::
 precision()
 {
-  ARCANE_CHECK_PTR(m_strw);
-  return m_strw->precision();
+  ARCANE_CHECK_PTR(m_simple_table_reader_writer);
+  return m_simple_table_reader_writer->precision();
 }
 
 void SimpleTableWriterHelper::
 setPrecision(Integer precision)
 {
-  ARCANE_CHECK_PTR(m_strw);
-  m_strw->setPrecision(precision);
+  ARCANE_CHECK_PTR(m_simple_table_reader_writer);
+  m_simple_table_reader_writer->setPrecision(precision);
 }
 
 bool SimpleTableWriterHelper::
-fixed()
+isFixed()
 {
-  ARCANE_CHECK_PTR(m_strw);
-  return m_strw->fixed();
+  ARCANE_CHECK_PTR(m_simple_table_reader_writer);
+  return m_simple_table_reader_writer->isFixed();
 }
 
 void SimpleTableWriterHelper::
 setFixed(bool fixed)
 {
-  ARCANE_CHECK_PTR(m_strw);
-  m_strw->setFixed(fixed);
+  ARCANE_CHECK_PTR(m_simple_table_reader_writer);
+  m_simple_table_reader_writer->setFixed(fixed);
 }
 
 String SimpleTableWriterHelper::
-outputDir()
+outputDirectory()
 {
-  return m_name_output_dir;
+  return m_name_output_directory;
 }
 
 String SimpleTableWriterHelper::
-outputDirWithoutComputation()
+outputDirectoryWithoutComputation()
 {
-  return m_name_output_dir;
+  return m_name_output_directory;
 }
 
 void SimpleTableWriterHelper::
-setOutputDir(const String& dir)
+setOutputDirectory(const String& directory)
 {
-  m_name_output_dir = dir;
+  m_name_output_directory = directory;
 }
 
 String SimpleTableWriterHelper::
-tabName()
+tableName()
 {
-  ARCANE_CHECK_PTR(m_sti);
+  ARCANE_CHECK_PTR(m_simple_table_internal);
   _computeName();
-  return m_sti->m_name_tab;
+  return m_simple_table_internal->m_table_name;
 }
 
 String SimpleTableWriterHelper::
-tabNameWithoutComputation()
+tableNameWithoutComputation()
 {
-  return m_name_tab_without_computation;
+  return m_name_table_without_computation;
 }
 
 void SimpleTableWriterHelper::
-setTabName(const String& name)
+setTableName(const String& name)
 {
-  ARCANE_CHECK_PTR(m_sti);
-  m_sti->m_name_tab = name;
-  m_name_tab_without_computation = name;
-  m_name_tab_computed = false;
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  m_simple_table_internal->m_table_name = name;
+  m_name_table_without_computation = name;
+  m_name_table_computed = false;
 }
 
 String SimpleTableWriterHelper::
 fileName()
 {
-  ARCANE_CHECK_PTR(m_sti);
+  ARCANE_CHECK_PTR(m_simple_table_internal);
   _computeName();
-  return m_sti->m_name_tab + "." + m_strw->typeFile();
+  return m_simple_table_internal->m_table_name + "." + m_simple_table_reader_writer->fileType();
 }
 
 Directory SimpleTableWriterHelper::
 outputPath()
 {
-  return Directory(m_root, m_name_output_dir);
+  return Directory(m_root, m_name_output_directory);
 }
 
 Directory SimpleTableWriterHelper::
@@ -195,14 +195,14 @@ bool SimpleTableWriterHelper::
 isOneFileByProcsPermited()
 {
   _computeName();
-  return !m_name_tab_only_once;
+  return !m_name_table_once_process;
 }
 
 String SimpleTableWriterHelper::
-typeFile()
+fileType()
 {
-  ARCANE_CHECK_PTR(m_strw);
-  return m_strw->typeFile();
+  ARCANE_CHECK_PTR(m_simple_table_reader_writer);
+  return m_simple_table_reader_writer->fileType();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -219,21 +219,21 @@ typeFile()
 void SimpleTableWriterHelper::
 _computeName()
 {
-  if (m_name_tab_computed) {
+  if (m_name_table_computed) {
     return;
   }
 
-  ARCANE_CHECK_PTR(m_sti);
-  ARCANE_CHECK_PTR(m_strw);
+  ARCANE_CHECK_PTR(m_simple_table_internal);
+  ARCANE_CHECK_PTR(m_simple_table_reader_writer);
 
   // Permet de contourner le bug avec String::split() si le nom commence par '@'.
-  if (m_sti->m_name_tab.startsWith("@")) {
-    m_sti->m_name_tab = "@" + m_sti->m_name_tab;
+  if (m_simple_table_internal->m_table_name.startsWith("@")) {
+    m_simple_table_internal->m_table_name = "@" + m_simple_table_internal->m_table_name;
   }
 
   StringUniqueArray string_splited;
   // On découpe la string là où se trouve les @.
-  m_sti->m_name_tab.split(string_splited, '@');
+  m_simple_table_internal->m_table_name.split(string_splited, '@');
 
   // On traite les mots entre les "@".
   if (string_splited.size() > 1) {
@@ -241,19 +241,19 @@ _computeName()
     std::optional<Integer> proc_id = string_splited.span().findFirst("proc_id");
     // On remplace "@proc_id@" par l'id du proc.
     if (proc_id) {
-      string_splited[proc_id.value()] = String::fromNumber(m_sti->m_sub_domain->parallelMng()->commRank());
-      m_name_tab_only_once = false;
+      string_splited[proc_id.value()] = String::fromNumber(m_simple_table_internal->m_sub_domain->parallelMng()->commRank());
+      m_name_table_once_process = false;
     }
     // Il n'y a que un seul proc qui write.
     else {
-      m_name_tab_only_once = true;
+      m_name_table_once_process = true;
     }
 
     // On recherche "num_procs" dans le tableau (donc @num_procs@ dans le nom).
     std::optional<Integer> num_procs = string_splited.span().findFirst("num_procs");
     // On remplace "@num_procs@" par l'id du proc.
     if (num_procs) {
-      string_splited[num_procs.value()] = String::fromNumber(m_sti->m_sub_domain->parallelMng()->commSize());
+      string_splited[num_procs.value()] = String::fromNumber(m_simple_table_internal->m_sub_domain->parallelMng()->commSize());
     }
   }
 
@@ -267,30 +267,30 @@ _computeName()
     combined.append(str);
   }
 
-  m_sti->m_name_tab = combined.toString();
+  m_simple_table_internal->m_table_name = combined.toString();
 
-  m_name_tab_computed = true;
+  m_name_table_computed = true;
   return;
 }
 
 SimpleTableInternal* SimpleTableWriterHelper::
 internal()
 {
-  return m_sti;
+  return m_simple_table_internal;
 }
 
 ISimpleTableReaderWriter* SimpleTableWriterHelper::
 readerWriter()
 {
-  return m_strw;
+  return m_simple_table_reader_writer;
 }
 
 void SimpleTableWriterHelper::
-setReaderWriter(ISimpleTableReaderWriter* strw)
+setReaderWriter(ISimpleTableReaderWriter* simple_table_reader_writer)
 {
-  ARCANE_CHECK_PTR(m_strw);
-  m_strw = strw;
-  m_sti = m_strw->internal();
+  ARCANE_CHECK_PTR(m_simple_table_reader_writer);
+  m_simple_table_reader_writer = simple_table_reader_writer;
+  m_simple_table_internal = m_simple_table_reader_writer->internal();
 }
 
 /*---------------------------------------------------------------------------*/

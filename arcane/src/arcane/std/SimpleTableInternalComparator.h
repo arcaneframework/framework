@@ -38,10 +38,10 @@ class SimpleTableInternalComparator
 {
  public:
   SimpleTableInternalComparator(SimpleTableInternal* sti_ref, SimpleTableInternal* sti_to_compare)
-  : m_sti_ref(sti_ref)
-  , m_sti_to_compare(sti_to_compare)
-  , m_stm_ref(m_sti_ref)
-  , m_stm_to_compare(m_sti_to_compare)
+  : m_simple_table_internal_reference(sti_ref)
+  , m_simple_table_internal_to_compare(sti_to_compare)
+  , m_simple_table_internal_mng_reference(m_simple_table_internal_reference)
+  , m_simple_table_internal_mng_to_compare(m_simple_table_internal_to_compare)
   , m_regex_rows("")
   , m_is_excluding_regex_rows(false)
   , m_regex_columns("")
@@ -52,10 +52,10 @@ class SimpleTableInternalComparator
   }
 
   SimpleTableInternalComparator()
-  : m_sti_ref(nullptr)
-  , m_sti_to_compare(nullptr)
-  , m_stm_ref(m_sti_ref)
-  , m_stm_to_compare(m_sti_to_compare)
+  : m_simple_table_internal_reference(nullptr)
+  , m_simple_table_internal_to_compare(nullptr)
+  , m_simple_table_internal_mng_reference(m_simple_table_internal_reference)
+  , m_simple_table_internal_mng_to_compare(m_simple_table_internal_to_compare)
   , m_regex_rows("")
   , m_is_excluding_regex_rows(false)
   , m_regex_columns("")
@@ -68,12 +68,12 @@ class SimpleTableInternalComparator
   virtual ~SimpleTableInternalComparator() = default;
 
  public:
-  bool compare(Integer epsilon, bool compare_dim) override;
+  bool compare(Integer epsilon, bool compare_dimension_too) override;
 
   void clearComparator() override;
 
-  bool addColumnForComparing(const String& name_column) override;
-  bool addRowForComparing(const String& name_row) override;
+  bool addColumnForComparing(const String& column_name) override;
+  bool addRowForComparing(const String& row_name) override;
 
   void isAnArrayExclusiveColumns(bool is_exclusive) override;
   void isAnArrayExclusiveRows(bool is_exclusive) override;
@@ -85,21 +85,21 @@ class SimpleTableInternalComparator
   void isARegexExclusiveRows(bool is_exclusive) override;
 
   SimpleTableInternal* internalRef() override;
-  void setInternalRef(SimpleTableInternal* sti) override;
+  void setInternalRef(SimpleTableInternal* simple_table_internal) override;
 
   SimpleTableInternal* internalToCompare() override;
-  void setInternalToCompare(SimpleTableInternal* sti) override;
+  void setInternalToCompare(SimpleTableInternal* simple_table_internal) override;
 
  protected:
   bool _exploreColumn(const String& column_name);
   bool _exploreRows(const String& row_name);
 
  protected:
-  SimpleTableInternal* m_sti_ref;
-  SimpleTableInternal* m_sti_to_compare;
+  SimpleTableInternal* m_simple_table_internal_reference;
+  SimpleTableInternal* m_simple_table_internal_to_compare;
 
-  SimpleTableInternalMng m_stm_ref;
-  SimpleTableInternalMng m_stm_to_compare;
+  SimpleTableInternalMng m_simple_table_internal_mng_reference;
+  SimpleTableInternalMng m_simple_table_internal_mng_to_compare;
 
   String m_regex_rows;
   bool m_is_excluding_regex_rows;

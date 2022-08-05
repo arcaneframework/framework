@@ -26,28 +26,28 @@ bool SimpleCsvOutputService::
 init()
 {
   if (m_with_option && options()->getTableName() != "") {
-    return m_stom.init(options()->getTableName());
+    return m_simple_table_output_mng.init(options()->getTableName());
   }
-  return m_stom.init();
+  return m_simple_table_output_mng.init();
 }
 
 bool SimpleCsvOutputService::
-init(const String& name_table)
+init(const String& table_name)
 {
   if (m_with_option) {
-    return m_stom.init(name_table, options()->getTableDir());
+    return m_simple_table_output_mng.init(table_name, options()->getTableDir());
   }
-  return m_stom.init(name_table);
+  return m_simple_table_output_mng.init(table_name);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 bool SimpleCsvOutputService::
-writeFile(const String& dir, Integer only_proc)
+writeFile(const String& directory, Integer process_id)
 {
-  m_stom.setOutputDir(dir);
-  return m_stom.writeFile(only_proc);
+  m_simple_table_output_mng.setOutputDirectory(directory);
+  return m_simple_table_output_mng.writeFile(process_id);
 }
 
 /*---------------------------------------------------------------------------*/

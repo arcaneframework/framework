@@ -32,153 +32,153 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 void SimpleCsvComparatorService::
-init(ISimpleTableOutput* ptr_sto)
+init(ISimpleTableOutput* simple_table_output_ptr)
 {
   // On enregistre le pointeur qui nous est donné.
-  ARCANE_CHECK_PTR(ptr_sto);
-  m_iSTO = ptr_sto;
+  ARCANE_CHECK_PTR(simple_table_output_ptr);
+  m_simple_table_output_ptr = simple_table_output_ptr;
 
-  m_sti_ref = m_iSTO->internal();
-  m_stic.setInternalRef(m_sti_ref);
+  m_simple_table_internal_reference = m_simple_table_output_ptr->internal();
+  m_simple_table_internal_comparator.setInternalRef(m_simple_table_internal_reference);
 
   // On déduit l'emplacement des fichiers de réferences.
-  m_output_dir = m_iSTO->outputDir();
-  m_root_path = Directory(subDomain()->exportDirectory(), m_iSTO->outputFileType() + "_refs");
-  m_ref_path = Directory(m_root_path, m_output_dir);
-  m_name_tab = m_iSTO->tabName();
-  m_file_name = m_name_tab + "." + m_iSTO->outputFileType();
+  m_output_directory = m_simple_table_output_ptr->outputDirectory();
+  m_root_path = Directory(subDomain()->exportDirectory(), m_simple_table_output_ptr->fileType() + "_refs");
+  m_reference_path = Directory(m_root_path, m_output_directory);
+  m_table_name = m_simple_table_output_ptr->tableName();
+  m_file_name = m_table_name + "." + m_simple_table_output_ptr->fileType();
 }
 
 void SimpleCsvComparatorService::
 clear()
 {
-  m_stic.clearComparator();
+  m_simple_table_internal_comparator.clearComparator();
 
-  m_sti_to_compare.clear();
+  m_simple_table_internal_to_compare.clear();
 
-  m_sti_ref = nullptr;
-  m_iSTO = nullptr;
+  m_simple_table_internal_reference = nullptr;
+  m_simple_table_output_ptr = nullptr;
 
   m_is_file_read = false;
 }
 
 void SimpleCsvComparatorService::
-editRootDir(const Directory& root_dir)
+editRootDirectory(const Directory& root_directory)
 {
-  m_root_path = root_dir;
-  m_ref_path = Directory(m_root_path, m_output_dir);
+  m_root_path = root_directory;
+  m_reference_path = Directory(m_root_path, m_output_directory);
 }
 
 void SimpleCsvComparatorService::
-print(Integer only_proc)
+print(Integer process_id)
 {
-  if (only_proc != -1 && subDomain()->parallelMng()->commRank() != only_proc)
+  if (process_id != -1 && subDomain()->parallelMng()->commRank() != process_id)
     return;
-  m_scrw.print();
+  m_simple_csv_reader_writer.print();
 }
 
 bool SimpleCsvComparatorService::
-writeRefFile(Integer only_proc)
+writeReferenceFile(Integer process_id)
 {
-  ARCANE_CHECK_PTR(m_iSTO);
+  ARCANE_CHECK_PTR(m_simple_table_output_ptr);
   // On sauvegarde les paramètres d'origines.
-  Integer save_preci = m_iSTO->precision();
-  bool save_fixed = m_iSTO->fixed();
+  Integer save_preci = m_simple_table_output_ptr->precision();
+  bool save_fixed = m_simple_table_output_ptr->isFixed();
 
   // On défini la précision max.
-  m_iSTO->setPrecision(std::numeric_limits<Real>::digits10 + 1);
-  m_iSTO->setFixed(true);
+  m_simple_table_output_ptr->setPrecision(std::numeric_limits<Real>::digits10 + 1);
+  m_simple_table_output_ptr->setFixed(true);
 
   // On écrit nos fichiers de référence.
-  bool fin = m_iSTO->writeFile(m_root_path, only_proc);
+  bool fin = m_simple_table_output_ptr->writeFile(m_root_path, process_id);
 
   // On remet les paramètres par défault.
-  m_iSTO->setPrecision(save_preci);
-  m_iSTO->setFixed(save_fixed);
+  m_simple_table_output_ptr->setPrecision(save_preci);
+  m_simple_table_output_ptr->setFixed(save_fixed);
 
   return fin;
 }
 
 bool SimpleCsvComparatorService::
-readRefFile(Integer only_proc)
+readReferenceFile(Integer process_id)
 {
-  if (only_proc != -1 && subDomain()->parallelMng()->commRank() != only_proc)
+  if (process_id != -1 && subDomain()->parallelMng()->commRank() != process_id)
     return false;
 
-  m_is_file_read = m_scrw.readTable(m_ref_path, m_name_tab);
+  m_is_file_read = m_simple_csv_reader_writer.readTable(m_reference_path, m_table_name);
 
   return m_is_file_read;
 }
 
 bool SimpleCsvComparatorService::
-isRefExist(Integer only_proc)
+isReferenceExist(Integer process_id)
 {
-  if (only_proc != -1 && subDomain()->parallelMng()->commRank() != only_proc)
+  if (process_id != -1 && subDomain()->parallelMng()->commRank() != process_id)
     return false;
 
-  return SimpleTableReaderWriterUtils::isFileExist(m_ref_path, m_file_name);
+  return SimpleTableReaderWriterUtils::isFileExist(m_reference_path, m_file_name);
 }
 
 bool SimpleCsvComparatorService::
-compareWithRef(Integer only_proc, Integer epsilon, bool dim_compare)
+compareWithReference(Integer process_id, Integer epsilon, bool compare_dimension_too)
 {
-  ARCANE_CHECK_PTR(m_sti_ref);
+  ARCANE_CHECK_PTR(m_simple_table_internal_reference);
   // Si le proc appelant ne doit pas lire.
-  if (only_proc != -1 && subDomain()->parallelMng()->commRank() != only_proc) {
+  if (process_id != -1 && subDomain()->parallelMng()->commRank() != process_id) {
     return false;
   }
   // Si le fichier ne peut pas être lu.
-  if (!m_is_file_read && !readRefFile(only_proc)) {
+  if (!m_is_file_read && !readReferenceFile(process_id)) {
     return false;
   }
 
-  m_sti_ref->m_values_csv.dim1Size();
+  m_simple_table_internal_reference->m_values.dim1Size();
 
-  return m_stic.compare(epsilon, dim_compare);
+  return m_simple_table_internal_comparator.compare(epsilon, compare_dimension_too);
 }
 
 bool SimpleCsvComparatorService::
-addColumnForComparing(const String& name_column)
+addColumnForComparing(const String& column_name)
 {
-  return m_stic.addColumnForComparing(name_column);
+  return m_simple_table_internal_comparator.addColumnForComparing(column_name);
 }
 bool SimpleCsvComparatorService::
-addRowForComparing(const String& name_row)
+addRowForComparing(const String& row_name)
 {
-  return m_stic.addRowForComparing(name_row);
+  return m_simple_table_internal_comparator.addRowForComparing(row_name);
 }
 
 void SimpleCsvComparatorService::
 isAnArrayExclusiveColumns(bool is_exclusive)
 {
-  m_stic.isAnArrayExclusiveColumns(is_exclusive);
+  m_simple_table_internal_comparator.isAnArrayExclusiveColumns(is_exclusive);
 }
 void SimpleCsvComparatorService::
 isAnArrayExclusiveRows(bool is_exclusive)
 {
-  m_stic.isAnArrayExclusiveRows(is_exclusive);
+  m_simple_table_internal_comparator.isAnArrayExclusiveRows(is_exclusive);
 }
 
 void SimpleCsvComparatorService::
 editRegexColumns(const String& regex_column)
 {
-  m_stic.editRegexColumns(regex_column);
+  m_simple_table_internal_comparator.editRegexColumns(regex_column);
 }
 void SimpleCsvComparatorService::
 editRegexRows(const String& regex_row)
 {
-  m_stic.editRegexRows(regex_row);
+  m_simple_table_internal_comparator.editRegexRows(regex_row);
 }
 
 void SimpleCsvComparatorService::
 isARegexExclusiveColumns(bool is_exclusive)
 {
-  m_stic.isARegexExclusiveColumns(is_exclusive);
+  m_simple_table_internal_comparator.isARegexExclusiveColumns(is_exclusive);
 }
 void SimpleCsvComparatorService::
 isARegexExclusiveRows(bool is_exclusive)
 {
-  m_stic.isARegexExclusiveRows(is_exclusive);
+  m_simple_table_internal_comparator.isARegexExclusiveRows(is_exclusive);
 }
 
 /*---------------------------------------------------------------------------*/

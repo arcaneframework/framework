@@ -43,9 +43,9 @@ class SimpleCsvOutputService
   explicit SimpleCsvOutputService(const ServiceBuildInfo& sbi)
   : ArcaneSimpleCsvOutputObject(sbi)
   , m_internal(subDomain())
-  , m_scrw(&m_internal)
-  , m_stm(&m_internal)
-  , m_stom(&m_scrw)
+  , m_simple_csv_reader_writer(&m_internal)
+  , m_simple_table_internal_mng(&m_internal)
+  , m_simple_table_output_mng(&m_simple_csv_reader_writer)
   {
     m_with_option = (sbi.creationType() == ST_CaseOption);
   }
@@ -54,115 +54,115 @@ class SimpleCsvOutputService
 
  public:
   bool init() override;
-  bool init(const String& name_table) override;
-  bool init(const String& name_table, const String& name_dir) override { return m_stom.init(name_table, name_dir); };
+  bool init(const String& table_name) override;
+  bool init(const String& table_name, const String& directory_name) override { return m_simple_table_output_mng.init(table_name, directory_name); };
 
-  void clear() override { return m_stm.clearInternal(); };
+  void clear() override { return m_simple_table_internal_mng.clearInternal(); };
 
-  Integer addRow(const String& name_row) override { return m_stm.addRow(name_row); };
-  Integer addRow(const String& name_row, ConstArrayView<Real> elems) override { return m_stm.addRow(name_row, elems); };
-  bool addRows(StringConstArrayView name_rows) override { return m_stm.addRows(name_rows); };
+  Integer addRow(const String& row_name) override { return m_simple_table_internal_mng.addRow(row_name); };
+  Integer addRow(const String& row_name, ConstArrayView<Real> elements) override { return m_simple_table_internal_mng.addRow(row_name, elements); };
+  bool addRows(StringConstArrayView rows_names) override { return m_simple_table_internal_mng.addRows(rows_names); };
 
-  Integer addColumn(const String& name_column) override { return m_stm.addColumn(name_column); };
-  Integer addColumn(const String& name_column, ConstArrayView<Real> elems) override { return m_stm.addColumn(name_column, elems); };
-  bool addColumns(StringConstArrayView name_columns) override { return m_stm.addColumns(name_columns); };
+  Integer addColumn(const String& column_name) override { return m_simple_table_internal_mng.addColumn(column_name); };
+  Integer addColumn(const String& column_name, ConstArrayView<Real> elements) override { return m_simple_table_internal_mng.addColumn(column_name, elements); };
+  bool addColumns(StringConstArrayView columns_names) override { return m_simple_table_internal_mng.addColumns(columns_names); };
 
-  bool addElemRow(Integer pos, Real elem) override { return m_stm.addElemRow(pos, elem); };
-  bool addElemRow(const String& name_row, Real elem, bool create_if_not_exist) override { return m_stm.addElemRow(name_row, elem, create_if_not_exist); };
-  bool addElemSameRow(Real elem) override { return m_stm.addElemSameRow(elem); };
+  bool addElementInRow(Integer position, Real element) override { return m_simple_table_internal_mng.addElementInRow(position, element); };
+  bool addElementInRow(const String& row_name, Real element, bool create_if_not_exist) override { return m_simple_table_internal_mng.addElementInRow(row_name, element, create_if_not_exist); };
+  bool addElementInSameRow(Real element) override { return m_simple_table_internal_mng.addElementInSameRow(element); };
 
-  bool addElemsRow(Integer pos, ConstArrayView<Real> elems) override { return m_stm.addElemsRow(pos, elems); };
-  bool addElemsRow(const String& name_row, ConstArrayView<Real> elems, bool create_if_not_exist) override { return m_stm.addElemsRow(name_row, elems, create_if_not_exist); };
-  bool addElemsSameRow(ConstArrayView<Real> elems) override { return m_stm.addElemsSameRow(elems); };
+  bool addElementsInRow(Integer position, ConstArrayView<Real> elements) override { return m_simple_table_internal_mng.addElementsInRow(position, elements); };
+  bool addElementsInRow(const String& row_name, ConstArrayView<Real> elements, bool create_if_not_exist) override { return m_simple_table_internal_mng.addElementsInRow(row_name, elements, create_if_not_exist); };
+  bool addElementsInSameRow(ConstArrayView<Real> elements) override { return m_simple_table_internal_mng.addElementsInSameRow(elements); };
 
-  bool addElemColumn(Integer pos, Real elem) override { return m_stm.addElemColumn(pos, elem); };
-  bool addElemColumn(const String& name_column, Real elem, bool create_if_not_exist) override { return m_stm.addElemColumn(name_column, elem, create_if_not_exist); };
-  bool addElemSameColumn(Real elem) override { return m_stm.addElemSameColumn(elem); };
+  bool addElementInColumn(Integer position, Real element) override { return m_simple_table_internal_mng.addElementInColumn(position, element); };
+  bool addElementInColumn(const String& column_name, Real element, bool create_if_not_exist) override { return m_simple_table_internal_mng.addElementInColumn(column_name, element, create_if_not_exist); };
+  bool addElementInSameColumn(Real element) override { return m_simple_table_internal_mng.addElementInSameColumn(element); };
 
-  bool addElemsColumn(Integer pos, ConstArrayView<Real> elems) override { return m_stm.addElemsColumn(pos, elems); };
-  bool addElemsColumn(const String& name_column, ConstArrayView<Real> elems, bool create_if_not_exist) override { return m_stm.addElemsColumn(name_column, elems, create_if_not_exist); };
-  bool addElemsSameColumn(ConstArrayView<Real> elems) override { return m_stm.addElemsSameColumn(elems); };
+  bool addElementsInColumn(Integer position, ConstArrayView<Real> elements) override { return m_simple_table_internal_mng.addElementsInColumn(position, elements); };
+  bool addElementsInColumn(const String& column_name, ConstArrayView<Real> elements, bool create_if_not_exist) override { return m_simple_table_internal_mng.addElementsInColumn(column_name, elements, create_if_not_exist); };
+  bool addElementsInSameColumn(ConstArrayView<Real> elements) override { return m_simple_table_internal_mng.addElementsInSameColumn(elements); };
 
-  bool editElemUp(Real elem, bool update_last_pos) override { return m_stm.editElemUp(elem, update_last_pos); };
-  bool editElemDown(Real elem, bool update_last_pos) override { return m_stm.editElemDown(elem, update_last_pos); };
-  bool editElemLeft(Real elem, bool update_last_pos) override { return m_stm.editElemLeft(elem, update_last_pos); };
-  bool editElemRight(Real elem, bool update_last_pos) override { return m_stm.editElemRight(elem, update_last_pos); };
+  bool editElementUp(Real element, bool update_last_position) override { return m_simple_table_internal_mng.editElementUp(element, update_last_position); };
+  bool editElementDown(Real element, bool update_last_position) override { return m_simple_table_internal_mng.editElementDown(element, update_last_position); };
+  bool editElementLeft(Real element, bool update_last_position) override { return m_simple_table_internal_mng.editElementLeft(element, update_last_position); };
+  bool editElementRight(Real element, bool update_last_position) override { return m_simple_table_internal_mng.editElementRight(element, update_last_position); };
 
-  Real elemUp(bool update_last_pos) override { return m_stm.elemUp(update_last_pos); };
-  Real elemDown(bool update_last_pos) override { return m_stm.elemDown(update_last_pos); };
-  Real elemLeft(bool update_last_pos) override { return m_stm.elemLeft(update_last_pos); };
-  Real elemRight(bool update_last_pos) override { return m_stm.elemRight(update_last_pos); };
+  Real elementUp(bool update_last_position) override { return m_simple_table_internal_mng.elementUp(update_last_position); };
+  Real elementDown(bool update_last_position) override { return m_simple_table_internal_mng.elementDown(update_last_position); };
+  Real elementLeft(bool update_last_position) override { return m_simple_table_internal_mng.elementLeft(update_last_position); };
+  Real elementRight(bool update_last_position) override { return m_simple_table_internal_mng.elementRight(update_last_position); };
 
-  bool editElem(Real elem) override { return m_stm.editElem(elem); };
-  bool editElem(Integer pos_x, Integer pos_y, Real elem) override { return m_stm.editElem(pos_x, pos_y, elem); };
-  bool editElem(const String& name_column, const String& name_row, Real elem) override { return m_stm.editElem(name_column, name_row, elem); };
+  bool editElement(Real element) override { return m_simple_table_internal_mng.editElement(element); };
+  bool editElement(Integer position_x, Integer position_y, Real element) override { return m_simple_table_internal_mng.editElement(position_x, position_y, element); };
+  bool editElement(const String& column_name, const String& row_name, Real element) override { return m_simple_table_internal_mng.editElement(column_name, row_name, element); };
 
-  Real elem() override { return m_stm.elem(); };
-  Real elem(Integer pos_x, Integer pos_y, bool update_last_pos) override { return m_stm.elem(pos_x, pos_y, update_last_pos); };
-  Real elem(const String& name_column, const String& name_row, bool update_last_pos) override { return m_stm.elem(name_column, name_row, update_last_pos); };
+  Real element() override { return m_simple_table_internal_mng.element(); };
+  Real element(Integer position_x, Integer position_y, bool update_last_position) override { return m_simple_table_internal_mng.element(position_x, position_y, update_last_position); };
+  Real element(const String& column_name, const String& row_name, bool update_last_position) override { return m_simple_table_internal_mng.element(column_name, row_name, update_last_position); };
 
-  RealUniqueArray row(Integer pos) override { return m_stm.row(pos); };
-  RealUniqueArray column(Integer pos) override { return m_stm.column(pos); };
+  RealUniqueArray row(Integer position) override { return m_simple_table_internal_mng.row(position); };
+  RealUniqueArray column(Integer position) override { return m_simple_table_internal_mng.column(position); };
 
-  RealUniqueArray row(const String& name_row) override { return m_stm.row(name_row); };
-  RealUniqueArray column(const String& name_column) override { return m_stm.column(name_column); };
+  RealUniqueArray row(const String& row_name) override { return m_simple_table_internal_mng.row(row_name); };
+  RealUniqueArray column(const String& column_name) override { return m_simple_table_internal_mng.column(column_name); };
 
-  Integer sizeRow(Integer pos) override { return m_stm.sizeRow(pos); };
-  Integer sizeColumn(Integer pos) override { return m_stm.sizeColumn(pos); };
+  Integer rowSize(Integer position) override { return m_simple_table_internal_mng.rowSize(position); };
+  Integer columnSize(Integer position) override { return m_simple_table_internal_mng.columnSize(position); };
 
-  Integer sizeRow(const String& name_row) override { return m_stm.sizeRow(name_row); };
-  Integer sizeColumn(const String& name_column) override { return m_stm.sizeColumn(name_column); };
+  Integer rowSize(const String& row_name) override { return m_simple_table_internal_mng.rowSize(row_name); };
+  Integer columnSize(const String& column_name) override { return m_simple_table_internal_mng.columnSize(column_name); };
 
-  Integer posRow(const String& name_row) override { return m_stm.posRow(name_row); };
-  Integer posColumn(const String& name_column) override { return m_stm.posColumn(name_column); };
+  Integer rowPosition(const String& row_name) override { return m_simple_table_internal_mng.rowPosition(row_name); };
+  Integer columnPosition(const String& column_name) override { return m_simple_table_internal_mng.columnPosition(column_name); };
 
-  Integer numRows() override { return m_stm.numRows(); };
-  Integer numColumns() override { return m_stm.numColumns(); };
+  Integer numberOfRows() override { return m_simple_table_internal_mng.numberOfRows(); };
+  Integer numberOfColumns() override { return m_simple_table_internal_mng.numberOfColumns(); };
 
-  String nameRow(Integer pos) override { return m_stm.nameRow(pos); };
-  String nameColumn(Integer pos) override { return m_stm.nameColumn(pos); };
+  String rowName(Integer position) override { return m_simple_table_internal_mng.rowName(position); };
+  String columnName(Integer position) override { return m_simple_table_internal_mng.columnName(position); };
 
-  bool editNameRow(Integer pos, const String& new_name) override { return m_stm.editNameRow(pos, new_name); };
-  bool editNameRow(const String& name_row, const String& new_name) override { return m_stm.editNameRow(name_row, new_name); };
+  bool editRowName(Integer position, const String& new_name) override { return m_simple_table_internal_mng.editRowName(position, new_name); };
+  bool editRowName(const String& row_name, const String& new_name) override { return m_simple_table_internal_mng.editRowName(row_name, new_name); };
 
-  bool editNameColumn(Integer pos, const String& new_name) override { return m_stm.editNameColumn(pos, new_name); };
-  bool editNameColumn(const String& name_column, const String& new_name) override { return m_stm.editNameColumn(name_column, new_name); };
+  bool editColumnName(Integer position, const String& new_name) override { return m_simple_table_internal_mng.editColumnName(position, new_name); };
+  bool editColumnName(const String& column_name, const String& new_name) override { return m_simple_table_internal_mng.editColumnName(column_name, new_name); };
 
-  Integer addAverageColumn(const String& name_column) override { return m_stm.addAverageColumn(name_column); };
+  Integer addAverageColumn(const String& column_name) override { return m_simple_table_internal_mng.addAverageColumn(column_name); };
 
-  void print(Integer only_proc) override { return m_stom.print(only_proc); };
-  bool writeFile(Integer only_proc) override { return m_stom.writeFile(only_proc); };
-  bool writeFile(const Directory& root_dir, Integer only_proc) override { return m_stom.writeFile(root_dir, only_proc); };
-  bool writeFile(const String& dir, Integer only_proc) override;
+  void print(Integer process_id) override { return m_simple_table_output_mng.print(process_id); };
+  bool writeFile(Integer process_id) override { return m_simple_table_output_mng.writeFile(process_id); };
+  bool writeFile(const Directory& root_directory, Integer process_id) override { return m_simple_table_output_mng.writeFile(root_directory, process_id); };
+  bool writeFile(const String& directory, Integer process_id) override;
 
-  Integer precision() override { return m_stom.precision(); };
-  void setPrecision(Integer precision) override { return m_stom.setPrecision(precision); };
+  Integer precision() override { return m_simple_table_output_mng.precision(); };
+  void setPrecision(Integer precision) override { return m_simple_table_output_mng.setPrecision(precision); };
 
-  bool fixed() override { return m_stom.fixed(); };
-  void setFixed(bool fixed) override { return m_stom.setFixed(fixed); };
+  bool isFixed() override { return m_simple_table_output_mng.isFixed(); };
+  void setFixed(bool fixed) override { return m_simple_table_output_mng.setFixed(fixed); };
 
-  String outputDir() override { return m_stom.outputDir(); };
-  void setOutputDir(const String& dir) override { return m_stom.setOutputDir(dir); };
+  String outputDirectory() override { return m_simple_table_output_mng.outputDirectory(); };
+  void setOutputDirectory(const String& directory) override { return m_simple_table_output_mng.setOutputDirectory(directory); };
 
-  String tabName() override { return m_stom.tabName(); };
-  void setTabName(const String& name) override { return m_stom.setTabName(name); };
-  String fileName() override { return m_stom.fileName(); };
+  String tableName() override { return m_simple_table_output_mng.tableName(); };
+  void setTableName(const String& name) override { return m_simple_table_output_mng.setTableName(name); };
+  String fileName() override { return m_simple_table_output_mng.fileName(); };
 
-  Directory outputPath() override { return m_stom.outputPath(); };
-  Directory rootPath() override { return m_stom.rootPath(); };
+  Directory outputPath() override { return m_simple_table_output_mng.outputPath(); };
+  Directory rootPath() override { return m_simple_table_output_mng.rootPath(); };
 
-  String outputFileType() override { return m_stom.typeFile(); };
+  String fileType() override { return m_simple_table_output_mng.fileType(); };
 
-  bool isOneFileByProcsPermited() override { return m_stom.isOneFileByProcsPermited(); };
+  bool isOneFileByProcsPermited() override { return m_simple_table_output_mng.isOneFileByProcsPermited(); };
 
   SimpleTableInternal* internal() override { return &m_internal; };
-  ISimpleTableReaderWriter* readerWriter() override { return &m_scrw; };
+  ISimpleTableReaderWriter* readerWriter() override { return &m_simple_csv_reader_writer; };
 
  private:
   SimpleTableInternal m_internal;
-  SimpleCsvReaderWriter m_scrw;
-  SimpleTableInternalMng m_stm;
-  SimpleTableWriterHelper m_stom;
+  SimpleCsvReaderWriter m_simple_csv_reader_writer;
+  SimpleTableInternalMng m_simple_table_internal_mng;
+  SimpleTableWriterHelper m_simple_table_output_mng;
   bool m_with_option;
 };
 

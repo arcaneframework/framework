@@ -36,25 +36,25 @@ class SimpleTableWriterHelper
 : public ISimpleTableWriterHelper
 {
  public:
-  SimpleTableWriterHelper(ISimpleTableReaderWriter* strw)
-  : m_sti(strw->internal())
-  , m_strw(strw)
-  , m_name_output_dir("")
-  , m_name_tab_without_computation("")
+  SimpleTableWriterHelper(ISimpleTableReaderWriter* simple_table_reader_writer)
+  : m_simple_table_internal(simple_table_reader_writer->internal())
+  , m_simple_table_reader_writer(simple_table_reader_writer)
+  , m_name_output_directory("")
+  , m_name_table_without_computation("")
   , m_root()
-  , m_name_tab_computed(false)
-  , m_name_tab_only_once(false)
+  , m_name_table_computed(false)
+  , m_name_table_once_process(false)
   {
   }
 
   SimpleTableWriterHelper()
-  : m_sti(nullptr)
-  , m_strw(nullptr)
-  , m_name_output_dir("")
-  , m_name_tab_without_computation("")
+  : m_simple_table_internal(nullptr)
+  , m_simple_table_reader_writer(nullptr)
+  , m_name_output_directory("")
+  , m_name_table_without_computation("")
   , m_root()
-  , m_name_tab_computed(false)
-  , m_name_tab_only_once(false)
+  , m_name_table_computed(false)
+  , m_name_table_once_process(false)
   {
   }
 
@@ -62,55 +62,55 @@ class SimpleTableWriterHelper
 
  public:
   bool init() override;
-  bool init(const String& name_table) override;
-  bool init(const String& name_table, const String& name_dir) override;
+  bool init(const String& table_name) override;
+  bool init(const String& table_name, const String& directory_name) override;
 
-  void print(Integer only_proc) override;
-  bool writeFile(Integer only_proc) override;
-  bool writeFile(const Directory& root_dir, Integer only_proc) override;
+  void print(Integer process_id) override;
+  bool writeFile(Integer process_id) override;
+  bool writeFile(const Directory& root_directory, Integer process_id) override;
 
   Integer precision() override;
   void setPrecision(Integer precision) override;
 
-  bool fixed() override;
+  bool isFixed() override;
   void setFixed(bool fixed) override;
 
-  String outputDir() override;
-  String outputDirWithoutComputation() override;
-  void setOutputDir(const String& dir) override;
+  String outputDirectory() override;
+  String outputDirectoryWithoutComputation() override;
+  void setOutputDirectory(const String& directory) override;
 
-  String tabName() override;
-  String tabNameWithoutComputation() override;
-  void setTabName(const String& name) override;
+  String tableName() override;
+  String tableNameWithoutComputation() override;
+  void setTableName(const String& name) override;
 
   String fileName() override;
 
   Directory outputPath() override;
   Directory rootPath() override;
 
-  String typeFile() override;
+  String fileType() override;
 
   bool isOneFileByProcsPermited() override;
 
   SimpleTableInternal* internal() override;
 
   ISimpleTableReaderWriter* readerWriter() override;
-  void setReaderWriter(ISimpleTableReaderWriter* strw) override;
+  void setReaderWriter(ISimpleTableReaderWriter* simple_table_reader_writer) override;
 
  protected:
   void _computeName();
 
  protected:
-  SimpleTableInternal* m_sti;
-  ISimpleTableReaderWriter* m_strw;
+  SimpleTableInternal* m_simple_table_internal;
+  ISimpleTableReaderWriter* m_simple_table_reader_writer;
 
-  String m_name_output_dir;
-  String m_name_tab_without_computation;
+  String m_name_output_directory;
+  String m_name_table_without_computation;
 
   Directory m_root;
 
-  bool m_name_tab_computed;
-  bool m_name_tab_only_once;
+  bool m_name_table_computed;
+  bool m_name_table_once_process;
 };
 
 /*---------------------------------------------------------------------------*/

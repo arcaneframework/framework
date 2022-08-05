@@ -63,32 +63,32 @@ class ARCANE_CORE_EXPORT ISimpleTableWriterHelper
   /**
    * @brief Méthode permettant d'initialiser l'objet.
    * Notamment le nom du tableau (name_tab) et le nom du répertoire qui
-   * contiendra les fichiers (le répertoire des tableaux/name_dir).
+   * contiendra les fichiers (le répertoire des tableaux/directory_name).
    * 
-   * Les valeurs par défauts de name_tab et de name_dir sont
+   * Les valeurs par défauts de name_tab et de directory_name sont
    * laissées à la discretion de l'implémentation.
    */
   virtual bool init() = 0;
   /**
    * @brief Méthode permettant d'initialiser l'objet.
    * Notamment le nom du tableau et le nom du répertoire qui contiendra
-   * les fichiers (le répertoire des tableaux/name_dir).
+   * les fichiers (le répertoire des tableaux/directory_name).
    * 
-   * La valeur par défaut de name_dir est laissée à la discretion 
+   * La valeur par défaut de directory_name est laissée à la discretion 
    * de l'implémentation.
    * 
-   * @param name_table Le nom du tableau (et du fichier de sortie).
+   * @param table_name Le nom du tableau (et du fichier de sortie).
    */
-  virtual bool init(const String& name_table) = 0;
+  virtual bool init(const String& table_name) = 0;
   /**
    * @brief Méthode permettant d'initialiser l'objet.
    * Notamment le nom du tableau et le nom du répertoire qui contiendra
-   * les fichiers (le répertoire des tableaux/name_dir).
+   * les fichiers (le répertoire des tableaux/directory_name).
    * 
-   * @param name_table Le nom du tableau (et du fichier de sortie).
-   * @param name_dir Le nom du dossier dans lequel enregistrer les tableaux.
+   * @param table_name Le nom du tableau (et du fichier de sortie).
+   * @param directory_name Le nom du dossier dans lequel enregistrer les tableaux.
    */
-  virtual bool init(const String& name_table, const String& name_dir) = 0;
+  virtual bool init(const String& table_name, const String& directory_name) = 0;
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
@@ -96,42 +96,42 @@ class ARCANE_CORE_EXPORT ISimpleTableWriterHelper
   /**
    * @brief Méthode permettant d'afficher le tableau.
    * 
-   * @param only_proc L'id du processus devant afficher le tableau (-1 pour 
+   * @param process_id L'id du processus devant afficher le tableau (-1 pour 
    *                  signifier "tous les processus").
    */
-  virtual void print(Integer only_proc = 0) = 0;
+  virtual void print(Integer process_id = 0) = 0;
 
   /**
    * @brief Méthode permettant d'écrire le tableau dans un fichier.
-   * Si only_proc != -1, les processus autres que only_proc retournent true.
+   * Si process_id != -1, les processus autres que process_id retournent true.
    * 
    * Par exemple, dans l'implémentation SimpleTableWriterHelper,
    * le ou les fichiers seront écrits dans le répertoire :
-   * root_dir/[name_dir]/[name_table].[ISimpleTableReaderWriter.typeFile()]
+   * root_directory/[directory_name]/[table_name].[ISimpleTableReaderWriter.fileType()]
    * 
-   * @param root_dir Le répertoire racine où créer le répertoire des tableaux.
-   * @param only_proc L'id du processus devant écrire dans un fichier 
+   * @param root_directory Le répertoire racine où créer le répertoire des tableaux.
+   * @param process_id L'id du processus devant écrire dans un fichier 
    *                  le tableau (-1 pour signifier "tous les processus").
    * @return true Si le fichier a été correctement écrit.
    * @return false Si le fichier n'a pas été correctement écrit.
    */
-  virtual bool writeFile(const Directory& root_dir, Integer only_proc) = 0;
+  virtual bool writeFile(const Directory& root_directory, Integer process_id) = 0;
 
   /**
    * @brief Méthode permettant d'écrire le tableau dans un fichier.
-   * Si only_proc != -1, les processus autres que only_proc retournent true.
+   * Si process_id != -1, les processus autres que process_id retournent true.
    * 
    * Par exemple, dans l'implémentation SimpleTableWriterHelper,
    * le ou les fichiers seront écrits dans le répertoire :
-   * ./[output]/[name_dir]/[name_table].[ISimpleTableReaderWriter.typeFile()]
+   * ./[output]/[directory_name]/[table_name].[ISimpleTableReaderWriter.fileType()]
    * "output" est fourni par Arcane.
    * 
-   * @param only_proc L'id du processus devant écrire dans un fichier 
+   * @param process_id L'id du processus devant écrire dans un fichier 
    *                  le tableau (-1 pour signifier "tous les processus").
    * @return true Si le fichier a été correctement écrit.
    * @return false Si le fichier n'a pas été correctement écrit.
    */
-  virtual bool writeFile(Integer only_proc = -1) = 0;
+  virtual bool writeFile(Integer process_id = -1) = 0;
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
@@ -162,7 +162,7 @@ class ARCANE_CORE_EXPORT ISimpleTableWriterHelper
    * @return true Si oui.
    * @return false Si non.
    */
-  virtual bool fixed() = 0;
+  virtual bool isFixed() = 0;
   /**
    * @brief Méthode permettant de définir le flag 'std::fixed' ou non.
    * 
@@ -187,7 +187,7 @@ class ARCANE_CORE_EXPORT ISimpleTableWriterHelper
    * 
    * @return String Le répertoire.
    */
-  virtual String outputDirWithoutComputation() = 0;
+  virtual String outputDirectoryWithoutComputation() = 0;
 
   /**
    * @brief Méthode permettant de récupérer le nom du répertoire où sera
@@ -199,16 +199,16 @@ class ARCANE_CORE_EXPORT ISimpleTableWriterHelper
    * 
    * @return String Le répertoire.
    */
-  virtual String outputDir() = 0;
+  virtual String outputDirectory() = 0;
   /**
    * @brief Méthode permettant de définir le répertoire
    * dans lequel enregistrer les tableaux.
    * 
    * Peut-être différent pour chaque processus (dépendant de l'implémentation).
    * 
-   * @param dir Le répertoire.
+   * @param directory Le répertoire.
    */
-  virtual void setOutputDir(const String& dir) = 0;
+  virtual void setOutputDirectory(const String& directory) = 0;
 
   /**
    * @brief Méthode permettant de récupérer le nom du tableau tel qu'il
@@ -218,7 +218,7 @@ class ARCANE_CORE_EXPORT ISimpleTableWriterHelper
    * 
    * @return String Le nom.
    */
-  virtual String tabNameWithoutComputation() = 0;
+  virtual String tableNameWithoutComputation() = 0;
 
   /**
    * @brief Méthode permettant de récupérer le nom du tableau.
@@ -229,13 +229,13 @@ class ARCANE_CORE_EXPORT ISimpleTableWriterHelper
    * 
    * @return String Le nom.
    */
-  virtual String tabName() = 0;
+  virtual String tableName() = 0;
   /**
    * @brief Méthode permettant de définir le nom du tableau.
    * 
    * @param name Le nom.
    */
-  virtual void setTabName(const String& name) = 0;
+  virtual void setTableName(const String& name) = 0;
 
   /**
    * @brief Méthode permettant de récupérer le nom du fichier.
@@ -253,7 +253,7 @@ class ARCANE_CORE_EXPORT ISimpleTableWriterHelper
    * enregistrés les tableaux. 
    * 
    * Exemple (relatif) :
-   * ./output/csv/[name_dir]/
+   * ./output/csv/[directory_name]/
    * 
    * @return String Le chemin.
    */
@@ -285,7 +285,7 @@ class ARCANE_CORE_EXPORT ISimpleTableWriterHelper
    * 
    * @return String 
    */
-  virtual String typeFile() = 0;
+  virtual String fileType() = 0;
 
   /**
    * @brief Méthode permettant de récupérer le pointeur vers l'objet
@@ -311,9 +311,9 @@ class ARCANE_CORE_EXPORT ISimpleTableWriterHelper
    * vous savez ce que vous faite. La destruction de l'objet reste
    * à la charge de l'appelant.
    * 
-   * @param strw Le pointeur vers une implem de ISimpleTableReaderWriter.
+   * @param simple_table_reader_writer Le pointeur vers une implem de ISimpleTableReaderWriter.
    */
-  virtual void setReaderWriter(ISimpleTableReaderWriter* strw) = 0;
+  virtual void setReaderWriter(ISimpleTableReaderWriter* simple_table_reader_writer) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
