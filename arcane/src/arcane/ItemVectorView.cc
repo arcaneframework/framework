@@ -29,6 +29,7 @@ ItemVectorView(IItemFamily* family, ConstArrayView<Int32> local_ids)
 : m_items(family->itemsInternal())
 , m_local_ids(local_ids)
 {
+  _init();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -39,6 +40,7 @@ ItemVectorView(IItemFamily* family, ItemIndexArrayView indexes)
 : m_items(family->itemsInternal())
 , m_local_ids(indexes)
 {
+ _init();
 }
 
 /*---------------------------------------------------------------------------*/

@@ -172,7 +172,7 @@ activeCells(Int32Array& local_ids) const
       local_ids.add(local_id);
     }
 	}
-	return ItemInternalVectorView(m_shared_info->m_items->cells,local_ids);
+	return ItemInternalVectorView(m_shared_info,m_shared_info->m_items->cells,local_ids);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -196,7 +196,7 @@ activeFaces(Int32Array& local_ids) const
 				local_ids.add(face.localId());
 		}
 	}
-	return ItemInternalVectorView(m_shared_info->m_items->faces,local_ids);
+	return ItemInternalVectorView(m_shared_info,m_shared_info->m_items->faces,local_ids);
 }
 
 /*---------------------------------------------------------------------------*/

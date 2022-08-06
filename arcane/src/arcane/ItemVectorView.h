@@ -43,10 +43,6 @@ class ItemVectorViewConstIterator
                               Integer index)
   : m_items(items), m_local_ids(local_ids), m_index(index){}
  public:
-  // Pas directement utilisé mais est nécessaire pour ICC 17.0
-  ItemVectorViewConstIterator()
-  : m_items(nullptr), m_local_ids(nullptr), m_index(0){}
- public:
   typedef ItemVectorViewConstIterator ThatClass;
  public:
   typedef std::random_access_iterator_tag iterator_category;
@@ -60,7 +56,9 @@ class ItemVectorViewConstIterator
   typedef Integer size_type;
   //! Type d'une distance entre itérateur éléments du tableau
   typedef Integer difference_type;
+
  public:
+
   Item operator*() const { return m_items[ m_local_ids[m_index] ]; }
   Item operator->() const { return m_items[ m_local_ids[m_index] ]; }
   ThatClass& operator++() { ++m_index; return (*this); }
@@ -93,7 +91,9 @@ class ItemVectorViewConstIterator
   {
     return !(lhs==rhs);
   }
+
  protected:
+
   const ItemInternalPtr* m_items;
   const Int32* ARCANE_RESTRICT m_local_ids;
   Integer m_index;
@@ -153,20 +153,20 @@ class ARCANE_CORE_EXPORT ItemVectorView
 
   // TODO: a supprimer dès qu'on n'aura plus besoin de ItemInternal
   ItemVectorView(const ItemInternalArrayView& aitems,const Int32ConstArrayView& local_ids)
-  : m_items(aitems), m_local_ids(local_ids) {}
+  : m_items(aitems), m_local_ids(local_ids) { _init(); }
   // TODO: a supprimer dès qu'on n'aura plus besoin de ItemInternal
   ItemVectorView(ItemInternalArrayView aitems,ItemIndexArrayView indexes)
-  : m_items(aitems), m_local_ids(indexes) {}
+  : m_items(aitems), m_local_ids(indexes) { _init(); }
 
  public:
 
   ItemVectorView() = default;
   ItemVectorView(const ItemInternalVectorView& view)
-  : m_items(view.items()), m_local_ids(view.localIds()) {}
+  : m_items(view.items()), m_local_ids(view.localIds()) { _init(); }
   ItemVectorView(ItemInfoListView item_info_list_view,ConstArrayView<Int32> local_ids)
-  : m_items(item_info_list_view._itemsInternal()), m_local_ids(local_ids) {}
+  : m_items(item_info_list_view._itemsInternal()), m_local_ids(local_ids) { _init(); }
   ItemVectorView(ItemInfoListView item_info_list_view,ItemIndexArrayView indexes)
-  : m_items(item_info_list_view._itemsInternal()), m_local_ids(indexes) {}
+  : m_items(item_info_list_view._itemsInternal()), m_local_ids(indexes) { _init(); }
   ItemVectorView(IItemFamily* family,ConstArrayView<Int32> local_ids);
   ItemVectorView(IItemFamily* family,ItemIndexArrayView indexes);
 
@@ -174,13 +174,13 @@ class ARCANE_CORE_EXPORT ItemVectorView
 
   operator ItemInternalVectorView() const
   {
-    return ItemInternalVectorView(m_items,m_local_ids);
+    return ItemInternalVectorView(m_shared_info,m_items,m_local_ids);
   }
 
   //! Accède au \a i-ème élément du vecteur
   inline Item operator[](Integer index) const
   {
-    return m_items[ m_local_ids[index] ];
+    return Item(ItemBaseBuildInfo(m_local_ids[index],m_shared_info));
   }
 
   //! Nombre d'éléments du vecteur
@@ -216,6 +216,15 @@ class ARCANE_CORE_EXPORT ItemVectorView
   
   ItemInternalArrayView m_items;
   ItemIndexArrayView m_local_ids;
+  ItemSharedInfo* m_shared_info = nullptr;
+
+ private:
+
+  void _init()
+  {
+    if (size()>0)
+      m_shared_info = m_items[0]->sharedInfo();
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -261,7 +270,7 @@ class ItemVectorViewT
 
   ItemType operator[](Integer index) const
   {
-    return ItemType(m_items.data(),m_local_ids[index]);
+    return ItemType(ItemBaseBuildInfo(m_local_ids[index],m_shared_info));
   }
 
  public:
