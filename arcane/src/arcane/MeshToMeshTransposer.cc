@@ -118,13 +118,14 @@ _transpose(IItemFamily * familyA, IItemFamily * familyB, const ItemVectorView & 
   // Ne traite que la transposition sur un seul niveau
   if (parent_familyA == familyB) {
     // meshA est sous-maillage de meshB
-    SharedArray<Int32> lidsB(itemsA.size(),NULL_ITEM_LOCAL_ID);
+    UniqueArray<Int32> lidsB(itemsA.size(),NULL_ITEM_LOCAL_ID);
     ENUMERATE_ITEM(iitem,itemsA) {
       const Item & item = *iitem;
       lidsB[iitem.index()] = item.parent().localId();
     }
-    return ItemVector(familyB,lidsB,false);
-  } else if (parent_familyB == familyA) {
+    return ItemVector(familyB,lidsB);
+  }
+  else if (parent_familyB == familyA) {
     // meshB est sous-maillage de meshA
     if (kindB==IK_Node || kindB==IK_Face || kindB==IK_Edge || kindB==IK_Cell ) {
       // Actuellement les uids sont les mêmes entre sous-maillages et maillage parent 
@@ -133,10 +134,11 @@ _transpose(IItemFamily * familyA, IItemFamily * familyB, const ItemVectorView & 
       ENUMERATE_ITEM(iitem,itemsA) {
         uidsA[iitem.index()] = iitem->uniqueId();
       }
-      SharedArray<Int32> lidsB(uidsA.size());
+      UniqueArray<Int32> lidsB(uidsA.size());
       familyB->itemsUniqueIdToLocalId(lidsB,uidsA,do_fatal);
-      return ItemVector(familyB,lidsB,false);
-    } else {
+      return ItemVector(familyB,lidsB);
+    }
+    else {
       throw NotImplementedException(A_FUNCINFO,"Cannot only transpose item to cell or node");
     }
   } else if (familyA == familyB) {
