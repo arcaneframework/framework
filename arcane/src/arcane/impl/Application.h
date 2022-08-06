@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Application.h                                               (C) 2000-2020 */
+/* Application.h                                               (C) 2000-2022 */
 /*                                                                           */
 /* Implémentation IApplication.                                              */
 /*---------------------------------------------------------------------------*/
@@ -93,18 +93,13 @@ class ARCANE_IMPL_EXPORT Application
   String userConfigPath() const override { return m_user_config_path; }
   IMainFactory* mainFactory() const override { return m_main_factory; }
 
-  ByteConstArrayView configBytes() const override { return m_config_bytes; }
   ByteConstSpan configBuffer() const override { return asBytes(m_config_bytes.constSpan()); }
-  XmlNode configRootElement() const  override { return m_config_root_element; }
-  ByteConstArrayView userConfigBytes() const override { return m_user_config_bytes; }
   ByteConstSpan userConfigBuffer() const override { return asBytes(m_user_config_bytes.constSpan()); }
-  XmlNode userConfigRootElement() const override { return m_user_config_root_element; }
   
   SessionCollection sessions() override { return m_sessions; }
   void addSession(ISession* s) override;
   void removeSession(ISession* s) override;
 
-  ServiceFactoryInfoCollection serviceFactoryInfos() override;
   ServiceFactory2Collection serviceFactories2() override;
   ModuleFactoryInfoCollection moduleFactoryInfos() override;
 

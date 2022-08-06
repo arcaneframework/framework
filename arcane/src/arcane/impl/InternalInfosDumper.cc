@@ -256,7 +256,7 @@ dumpInternalAllInfos()
   IMainFactory* main_factory = m_application->mainFactory();
   Ref<ICodeService> code_service = _getDefaultService();
 
-  ByteConstArrayView config_bytes = m_application->configBytes();
+  ByteConstSpan config_bytes = m_application->configBuffer();
   ScopedPtrT<IXmlDocumentHolder> config_doc(m_application->ioMng()->parseXmlBuffer(config_bytes,String()));
   if (!config_doc.get())
     ARCANE_FATAL("Can not parse code configuration file");
@@ -429,7 +429,7 @@ dumpArcaneDatabase()
   ISubDomain* sub_domain(session->createSubDomain(sdbi));
   ScopedPtrT<IServiceLoader> service_loader(main_factory->createServiceLoader());
 
-  ByteConstArrayView config_bytes = m_application->configBytes();
+  ByteConstSpan config_bytes = m_application->configBuffer();
   ScopedPtrT<IXmlDocumentHolder> config_doc(app->ioMng()->parseXmlBuffer(config_bytes,String()));
   if (!config_doc.get())
     ARCANE_FATAL("Can not parse code configuration file");

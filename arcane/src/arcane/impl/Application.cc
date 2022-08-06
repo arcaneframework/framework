@@ -881,15 +881,6 @@ removeSession(ISession* session)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ServiceFactoryInfoCollection Application::
-serviceFactoryInfos()
-{
-  return m_service_and_module_factory_mng->serviceFactoryInfos();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 ServiceFactory2Collection Application::
 serviceFactories2()
 {

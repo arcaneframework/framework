@@ -5,13 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ServiceLoader.cc                                            (C) 2000-2018 */
+/* ServiceLoader.cc                                            (C) 2000-2022 */
 /*                                                                           */
 /* Chargeur des services disponibles dans le code.                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/Collection.h"
@@ -35,7 +33,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -199,13 +198,14 @@ loadSingletonService(ISubDomain* sd,const String& name)
     return true;
   }
 
-  ServiceFactoryInfoCollection service_factory_infos(sd->application()->serviceFactoryInfos());
-  for( ServiceFactoryInfoCollection::Enumerator i(service_factory_infos); ++i; ){
-    IServiceFactoryInfo* sfi = *i;
+  ServiceFactory2Collection service_factory_infos(sd->application()->serviceFactories2());
+  for( ServiceFactory2Collection::Enumerator i(service_factory_infos); ++i; ){
+    Internal::IServiceFactory2* sf2 = *i;
+    IServiceInfo* si = sf2->serviceInfo();
+    IServiceFactoryInfo* sfi = si->factoryInfo();
     if (!do_all)
       if (!sfi->isSingleton())
         continue;
-    IServiceInfo* si = sfi->serviceInfo();
     if (si->localName()!=name)
       continue;
 
@@ -229,15 +229,16 @@ _loadServices(IApplication* application,const ServiceBuildInfoBase& sbib)
   // (ils ont la propriété isAutoload() à vrai).
   IServiceMng* service_mng = sbib.serviceParent()->serviceMng();
  
-  ServiceFactoryInfoCollection service_factory_infos(application->serviceFactoryInfos());
-  for( ServiceFactoryInfoCollection::Enumerator i(service_factory_infos); ++i; ){
-    IServiceFactoryInfo* sfi = *i;
+  ServiceFactory2Collection service_factory_infos(application->serviceFactories2());
+  for( ServiceFactory2Collection::Enumerator i(service_factory_infos); ++i; ){
+    Internal::IServiceFactory2* sf2 = *i;
+    IServiceInfo* si = sf2->serviceInfo();
+    IServiceFactoryInfo* sfi = si->factoryInfo();
     if (!sfi->isSingleton())
       continue;
     if (!sfi->isAutoload())
       continue;
 
-    IServiceInfo* si = sfi->serviceInfo();
     _createSingletonInstance(service_mng,si,sbib);
   }
 }
@@ -283,7 +284,7 @@ initializeModuleFactories(ISubDomain* sd)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
