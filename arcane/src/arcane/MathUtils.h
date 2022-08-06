@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MathUtils.h                                                 (C) 2000-2021 */
+/* MathUtils.h                                                 (C) 2000-2022 */
 /*                                                                           */
 /* Fonctions mathématiques diverses.                                         */
 /*---------------------------------------------------------------------------*/
@@ -26,7 +26,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -197,22 +198,6 @@ prodTens(Real3 u,Real3 v)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Produit scalaire matrice 
- * \warning Cette fonction ne doit plus être utilisée car elle n'est pas
- * cohérente avec les conventions choisies pour Real3x3.
- * \deprecated Il faut utiliser l'opérateur * du Real3x3 à la place.
- */
-inline ARCANE_DEPRECATED_116 Real3x3
-prodTensScal(Real3x3 t,Real a)
-{
-  return Real3x3::fromColumns(a*t.x.x, a*t.x.y, a*t.x.z,
-                              a*t.y.x, a*t.y.y, a*t.y.z,
-                              a*t.z.x, a*t.z.y, a*t.z.z);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
  * \brief Produit matrice vecteur entre un tenseur et un vecteur.
  *
  * \ingroup GroupMathUtils
@@ -241,29 +226,6 @@ ARCCORE_HOST_DEVICE inline Real3
 prodVecTens(Real3 v,Real3x3 t)
 {
   return Real3(dot(v,Real3(t.x.x,t.y.x,t.z.x)),dot(v,Real3(t.x.y,t.y.y,t.z.y)),dot(v,Real3(t.x.z,t.y.z,t.z.z)));
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Produit matrice matrice entre deux tenseurs
- *
- * \warning Cette fonction ne doit plus être utilisée car elle n'est pas
- * cohérente avec les conventions choisies pour Real3x3.
- * \deprecated Il faut utiliser matrixProduct() à la place.
- */
-inline ARCANE_DEPRECATED_116 Real3x3
-prodTensTens(Real3x3 t,Real3x3 v)
-{
-  return Real3x3::fromColumns(t.x.x*v.x.x+t.x.y*v.y.x+t.x.z*v.z.x,
-                              t.x.x*v.x.y+t.x.y*v.y.y+t.x.z*v.z.y,
-                              t.x.x*v.x.z+t.x.y*v.y.z+t.x.z*v.z.z,
-                              t.y.x*v.x.x+t.y.y*v.y.x+t.y.z*v.z.x,
-                              t.y.x*v.x.y+t.y.y*v.y.y+t.y.z*v.z.y,
-                              t.y.x*v.x.z+t.y.y*v.y.z+t.y.z*v.z.z,
-                              t.z.x*v.x.x+t.z.y*v.y.x+t.z.z*v.z.x,
-                              t.z.x*v.x.y+t.z.y*v.y.y+t.z.z*v.z.y,
-                              t.z.x*v.x.z+t.z.y*v.y.z+t.z.z*v.z.z);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -685,22 +647,6 @@ matrixDeterminant(Real3x3 m)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief  Calcul du déterminant d'une matrice 3x3 dans le bon sens
- *
- * \deprecated Ne pas utiliser car ne respecte la convention ligne
- * des Real3x3. Utiliser det() à la place
- */
-inline ARCANE_DEPRECATED_116 Real
-matrix3x3Det2(Real3x3 m) {
-  return
-      m.x.x*(m.y.y*m.z.z-m.z.y*m.y.z)
-    - m.y.x*(m.x.y*m.z.z-m.z.y*m.x.z)
-    + m.z.x*(m.x.y*m.y.z-m.y.y*m.x.z);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
  * \brief Norme d'un vecteur
  *
  * \deprecated Utiliser Real3.abs() à la place.
@@ -722,21 +668,6 @@ matrix3x3Id()
   return Real3x3(Real3(1.0, 0.0, 0.0),
                  Real3(0.0, 1.0, 0.0),
                  Real3(0.0, 0.0, 1.0));
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Calcul du déterminant d'une matrice 3x3.
- *
- * \deprecated Utiliser matrixDeterminant()
- */
-inline ARCANE_DEPRECATED_116 Real
-matrix3x3Det(Real3x3 m)
-{
-  return m.x.x*(m.y.y*m.z.z-m.y.z*m.z.y)
-  - m.x.y*(m.y.x*m.z.z-m.y.z*m.z.x)
-  + m.x.z*(m.y.x*m.z.y-m.y.y*m.z.x);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -764,57 +695,6 @@ inverseMatrix(Real3x3 m)
 {
   Real d = m.determinant();
   return inverseMatrix(m,d);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief  Calcul de l'inverse d'une matrice 3x3 dans le bon sens
- * \deprecated Utiliser inverseMatrix() à la place
- */
-inline ARCANE_DEPRECATED_116 Real3x3
-matrix3x3Inv2(Real3x3 m, Real d)
-{
-  Real3x3 inv_m;
-
-  inv_m = Real3x3::fromColumns(-m.y.z*m.z.y + m.y.y*m.z.z,
-                               m.y.z*m.z.x - m.y.x*m.z.z,
-                               -m.y.y*m.z.x + m.y.x*m.z.y,
-                               m.x.z*m.z.y - m.x.y*m.z.z,
-                               -m.x.z*m.z.x + m.x.x*m.z.z,
-                               m.x.y*m.z.x - m.x.x*m.z.y,
-                               -m.x.z*m.y.y + m.x.y*m.y.z,
-                               m.x.z*m.y.x - m.x.x*m.y.z,
-                               -m.x.y*m.y.x + m.x.x*m.y.y);
-
-  inv_m /= d;
-
-  return inv_m;
-}
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Inverse d'une matrice 3x3 pleine à déterminant non nul (issu de Mathematica).
- * \deprecated Utiliser inverseMatrix() à la place
- */
-inline ARCANE_DEPRECATED_116 Real3x3
-matrix3x3Inv(Real3x3 m, Real d)
-{
-  Real inv_d = 1.0 / d;
-  Real3x3 inv_m = Real3x3::fromColumns((-m.y.z*m.z.y + m.y.y*m.z.z),
-                                       ( m.y.z*m.z.x - m.y.x*m.z.z),
-                                       (-m.y.y*m.z.x + m.y.x*m.z.y),
-                                       ( m.x.z*m.z.y - m.x.y*m.z.z),
-                                       (-m.x.z*m.z.x + m.x.x*m.z.z),
-                                       ( m.x.y*m.z.x - m.x.x*m.z.y),
-                                       (-m.x.z*m.y.y + m.x.y*m.y.z),
-                                       ( m.x.z*m.y.x - m.x.x*m.y.z),
-                                       (-m.x.y*m.y.x + m.x.x*m.y.y)
-                                       );
-  
-  inv_m *= inv_d;
-
-  return inv_m;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -917,23 +797,6 @@ matrix3x3Prod(Real3x3 m1, Real3x3 m2)
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Produit matrice 3x3 . vecteur 
- * \warning Cette fonction ne doit plus être utilisée car elle n'est pas
- * cohérente avec les conventions choisies pour Real3x3.
- * \deprecated Il faut utiliser la méthode multiply() à la place.
- */
-inline ARCANE_DEPRECATED Real3
-matrix3x3VectProd(Real3x3 m, Real3 v)
-{
-  return Real3( m.x.x*v.x + m.y.x*v.y + m.z.x*v.z,
-                m.x.y*v.x + m.y.y*v.y + m.z.y*v.z,
-                m.x.z*v.x + m.y.z*v.y + m.z.z*v.z 
-                );
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Produit matrice 3x3 . vecteur 
  */
 inline Real3
 multiply(Real3x3 m, Real3 v)
@@ -966,38 +829,6 @@ isNearlyId(Real3x3 m, Real epsilon = 1.e-10)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Produit scalaire de deux vecteurs à 3 composantes
- *
- * \deprecated Utiliser dot() à la place.
- */
-inline ARCANE_DEPRECATED_118 Real
-dotProduct3(Real3 v1, Real3 v2)  // meth.
-{
-  return v1.x*v2.x + v1.y*v2.y + v1.z*v2.z;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Symétrie d'un vecteur u par rapport à un plan de normale n.
- *
- * \deprecated Utiliser planarSymmetric() (avec 2 m) à la place.
- */
-inline ARCANE_DEPRECATED Real3 
-planarSymetric(const Real3 u, const Real3 n) 
-{
-  Real3 u_tilde;
-  if (n.normL2()==0){
-    arcaneMathError(n.normL2(),"planarSymetric");
-  }	
-  Real3 norm = n / n.normL2();
-  u_tilde = u - 2.0 * dot(norm,u) * norm;
-  return u_tilde;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
  * \ingroup GroupMathUtils
  * \brief Symétrie d'un vecteur \a u par rapport à un plan de normale \a n.
  */
@@ -1014,25 +845,6 @@ planarSymmetric(Real3 u,Real3 n)
   u_tilde = u - 2.0 * dot(norm,u) * norm;
   return u_tilde;
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Symétrie d'un vecteur \a u par rapport à un axe de vecteur directeur \a a.
- *
- * \deprecated Utiliser axisSymmetric() (avec 2 m) à la place.
- */ 
-inline ARCANE_DEPRECATED_118 Real3
-axisSymetric(const Real3 u, const Real3 a)
-{
-  Real3 u_tilde;
-  if (a.normL2()==0){
-    arcaneMathError(Convert::toDouble(a.normL2()),"axisSymetric");
-  }	
-  Real3 norm = a / a.normL2();    
-  u_tilde = 2.0 * dot(u,norm) * norm - u;
-  return u_tilde;	
-} 
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1196,7 +1008,7 @@ power(ArrayView<T> lhs,T o)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
