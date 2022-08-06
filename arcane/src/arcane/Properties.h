@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Properties.h                                                (C) 2000-2020 */
+/* Properties.h                                                (C) 2000-2022 */
 /*                                                                           */
 /* Liste de propriétés.                                                      */
 /*---------------------------------------------------------------------------*/
@@ -78,28 +78,6 @@ class ARCANE_CORE_EXPORT Properties
   virtual ~Properties();
 
  public:
-
-  /*!
-   * \brief Positionne une propriété booléenne.
-   *
-   * \param name nom de la propriété
-   * \param value valeur de la propriété à positionner.
-   * \retval ancienne valeur de la propriété.
-   *
-   * \deprecated Utiliser setBool().
-   */
-  ARCANE_DEPRECATED_122 bool setBoolProperty(const String& name,bool value);
-  
-  /*!
-   * \brief Valeur d'une propriété booléenne.
-   *
-   * \param name nom de la propriété
-   * \retval vrai si la propriété existe et a pour valeur \a true.
-   * \retval faux si la propriété est absente ou a pour valeur \a false.
-   *
-   * \deprecated Utiliser getBool().
-   */
-  ARCANE_DEPRECATED_122 bool boolProperty(const String& name); 
 
   //! Positionne une propriété de type bool de nom \a name et de valeur \a value.
   void setBool(const String& name,bool value);
