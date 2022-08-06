@@ -60,7 +60,7 @@ DoFFamily::
 addDoFs(Int64ConstArrayView dof_uids, Int32ArrayView dof_lids)
 {
   ARCANE_ASSERT((dof_uids.size() == dof_lids.size()),("in addDofs(uids,lids) given uids and lids array must have same size"))
-  addItems(dof_uids,dof_lids);
+  _addItems(dof_uids,dof_lids);
   return view(dof_lids);
 }
 
@@ -79,9 +79,8 @@ addGhostDoFs(Int64ConstArrayView dof_uids, Int32ArrayView dof_lids, Int32ConstAr
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-DoFFamily::
-addItems(Int64ConstArrayView unique_ids, Int32ArrayView items)
+void DoFFamily::
+_addItems(Int64ConstArrayView unique_ids, Int32ArrayView items)
 {
   Integer nb_item = unique_ids.size();
    if (nb_item==0)

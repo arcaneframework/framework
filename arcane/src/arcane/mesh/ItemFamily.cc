@@ -1522,74 +1522,10 @@ _compactFromParentFamily(const ItemFamilyCompactInfos& compact_infos)
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
-addItems(Int64ConstArrayView unique_ids,Int32ArrayView items)
-{
-  ARCANE_UNUSED(unique_ids);
-  ARCANE_UNUSED(items);
-  ARCANE_THROW(NotSupportedException,"this kind of family doesn't support this operation");
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemFamily::
-addItems(Int64ConstArrayView unique_ids,ArrayView<Item> items)
-{
-  ARCANE_UNUSED(unique_ids);
-  ARCANE_UNUSED(items);
-  ARCANE_THROW(NotSupportedException,"this kind of family doesn't support this operation");
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemFamily::
-addItems(Int64ConstArrayView unique_ids,ItemGroup items)
-{
-  ARCANE_UNUSED(unique_ids);
-  ARCANE_UNUSED(items);
-  ARCANE_THROW(NotSupportedException,"this kind of family doesn't support this operation");
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemFamily::
 internalRemoveItems(Int32ConstArrayView local_ids,bool keep_ghost)
 {
   ARCANE_UNUSED(local_ids);
   ARCANE_UNUSED(keep_ghost);
-  ARCANE_THROW(NotSupportedException,"this kind of family doesn't support this operation");
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemFamily::
-exchangeItems()
-{
-  ARCANE_THROW(NotSupportedException,"this kind of family doesn't support this operation");
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ItemFamily::
-mergeItems(Int32 local_id1, Int32 local_id2)
-{
-  ARCANE_UNUSED(local_id1);
-  ARCANE_UNUSED(local_id2);
-  ARCANE_THROW(NotSupportedException,"this kind of family doesn't support this operation");
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Int32 ItemFamily::
-getMergedItemLID(Int32 local_id1, Int32 local_id2)
-{
-  ARCANE_UNUSED(local_id1);
-  ARCANE_UNUSED(local_id2);
   ARCANE_THROW(NotSupportedException,"this kind of family doesn't support this operation");
 }
 

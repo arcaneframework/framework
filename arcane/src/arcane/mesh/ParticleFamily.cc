@@ -144,7 +144,7 @@ _findOrAllocParticle(Int64 uid,bool& is_alloc)
 ParticleVectorView ParticleFamily::
 addParticles(Int64ConstArrayView unique_ids,Int32ArrayView items)
 {
-  addItems(unique_ids,items);
+  _addItems(unique_ids,items);
   return view(items);
 }
 
@@ -177,7 +177,7 @@ addParticles(Int64ConstArrayView unique_ids,
              Int32ConstArrayView cells_local_id,
              Int32ArrayView items)
 {
-  addItems(unique_ids,items);
+  _addItems(unique_ids,items);
   Integer n = items.size();
   for( Integer i=0; i<n; ++i ){
     _setCell(ItemLocalId(items[i]),ItemLocalId(cells_local_id[i]));
@@ -213,7 +213,7 @@ setParticlesCell(ParticleVectorView particles,CellVectorView new_cells)
 /*---------------------------------------------------------------------------*/
 
 void ParticleFamily::
-addItems(Int64ConstArrayView unique_ids,Int32ArrayView items)
+_addItems(Int64ConstArrayView unique_ids,Int32ArrayView items)
 {
   Integer nb_item = unique_ids.size();
   if (nb_item==0)
@@ -263,64 +263,6 @@ addItems(Int64ConstArrayView unique_ids,Int32ConstArrayView owners,Int32ArrayVie
 /*---------------------------------------------------------------------------*/
 
 void ParticleFamily::
-addItems(Int64ConstArrayView unique_ids,ArrayView<Item> items)
-{
-  Integer nb_item = unique_ids.size();
-  if (nb_item==0)
-    return;
-  preAllocate(nb_item);
-  bool need_alloc = false;
-  for( Integer i=0; i<nb_item; ++i ){
-    Int64 uid = unique_ids[i];
-    ItemInternal* ii = _allocParticle(uid,need_alloc);
-    items[i] = ii;
-  }
-
-  m_need_prepare_dump = true;
-  _printInfos(nb_item);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \deprecated Utiliser autres surcharges de addItems().
- */
-void ParticleFamily::
-addItems(Int64ConstArrayView unique_ids,ItemGroup item_group)
-{
-  Integer nb_item = unique_ids.size();
-  if (nb_item==0){
-    if (!item_group.null())
-      item_group.clear();
-    return;
-  }
-  preAllocate(nb_item);
-  bool need_alloc = false;
-  if (item_group.null()){
-    for( Integer i=0; i<nb_item; ++i ){
-      Int64 uid = unique_ids[i];
-      _allocParticle(uid,need_alloc);
-    }
-  }
-  else{
-    if (item_group.itemKind()!=itemKind())
-      throw FatalErrorException(A_FUNCINFO,"bad group type");
-    Int32UniqueArray items(nb_item);
-    for( Integer i=0; i<nb_item; ++i ){
-      Int64 uid = unique_ids[i];
-      ItemInternal* ii = _allocParticle(uid,need_alloc);
-      items[i] = ii->localId();
-    }
-    item_group.setItems(items);
-  }
-  m_need_prepare_dump = true;
-  _printInfos(nb_item);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ParticleFamily::
 exchangeParticles()
 {
   ItemsExchangeInfo2 ex(this);
@@ -334,15 +276,6 @@ exchangeParticles()
   endUpdate();
   ex.readGroups();
   ex.readVariables();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ParticleFamily::
-exchangeItems()
-{
-  exchangeParticles();
 }
 
 /*---------------------------------------------------------------------------*/

@@ -126,7 +126,6 @@ class ARCANE_MESH_EXPORT ItemFamily
   const String& fullName() const override { return m_full_name; }
   eItemKind itemKind() const override { return m_infos.kind(); }
   Integer nbItem() const override;
-  Int32 variableMaxSize() const override { return maxLocalId(); }
   Int32 maxLocalId() const override;
   ItemInternalList itemsInternal() override;
   VariableItemInt32& itemsNewOwner() override;
@@ -175,22 +174,12 @@ class ARCANE_MESH_EXPORT ItemFamily
 
  public:
 
-  void addItems(Int64ConstArrayView unique_ids,Int32ArrayView items) override;
-  void addItems(Int64ConstArrayView unique_ids,ArrayView<Item> items) override;
-  void addItems(Int64ConstArrayView unique_ids,ItemGroup item_group) override;
-  void removeItems(Int32ConstArrayView local_ids,bool keep_ghost =false) override
-  {
-    internalRemoveItems(local_ids,keep_ghost);
-  }
   void internalRemoveItems(Int32ConstArrayView local_ids,bool keep_ghost =false) override;
   void removeItems2(ItemDataList& item_data_list) override; // Remove items based on family dependencies (ItemFamilyNetwork)
   void removeNeedRemoveMarkedItems() override;
-  void exchangeItems() override;
+
   ItemVectorView view(Int32ConstArrayView local_ids) override;
   ItemVectorView view() override;
-
-  void mergeItems(Int32 local_id1,Int32 local_id2) override;
-  Int32 getMergedItemLID(Int32 local_id1,Int32 local_id2) override;
 
   ItemInternal* findOneItem(Int64 uid) override { return m_infos.findOne(uid) ; }
 
