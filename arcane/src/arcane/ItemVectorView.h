@@ -38,10 +38,11 @@ class ItemVectorViewConstIterator
  protected:
   friend class ItemVectorView;
   typedef ItemInternal* ItemInternalPtr;
-  ItemVectorViewConstIterator(const ItemInternalPtr* items,
+  ItemVectorViewConstIterator(ItemSharedInfo* shared_info,
+                              const ItemInternalPtr* items,
                               const Int32* ARCANE_RESTRICT local_ids,
                               Integer index)
-  : m_items(items), m_local_ids(local_ids), m_index(index){}
+  : m_shared_info(shared_info), m_items(items), m_local_ids(local_ids), m_index(index){}
  public:
   typedef ItemVectorViewConstIterator ThatClass;
  public:
@@ -59,8 +60,7 @@ class ItemVectorViewConstIterator
 
  public:
 
-  Item operator*() const { return m_items[ m_local_ids[m_index] ]; }
-  Item operator->() const { return m_items[ m_local_ids[m_index] ]; }
+  Item operator*() const { return Item(ItemBaseBuildInfo(m_local_ids[m_index],m_shared_info)); }
   ThatClass& operator++() { ++m_index; return (*this); }
   ThatClass& operator--() { --m_index; return (*this); }
   void operator+=(difference_type v) { m_index += v; }
@@ -72,12 +72,12 @@ class ItemVectorViewConstIterator
   friend ThatClass operator-(const ThatClass& a,difference_type v)
   {
     Integer index = a.m_index - v;
-    return ThatClass(a.m_items,a.m_local_ids,index);
+    return ThatClass(a.m_shared_info,a.m_items,a.m_local_ids,index);
   }
   friend ThatClass operator+(const ThatClass& a,difference_type v)
   {
     Integer index = a.m_index + v;
-    return ThatClass(a.m_items,a.m_local_ids,index);
+    return ThatClass(a.m_shared_info,a.m_items,a.m_local_ids,index);
   }
   friend bool operator<(const ThatClass& lhs,const ThatClass& rhs)
   {
@@ -85,15 +85,19 @@ class ItemVectorViewConstIterator
   }
   friend bool operator==(const ThatClass& lhs,const ThatClass& rhs)
   {
-    return lhs.m_items==rhs.m_items && lhs.m_local_ids==rhs.m_local_ids && lhs.m_index==rhs.m_index;
+    return lhs.m_shared_info==rhs.m_shared_info && lhs.m_items==rhs.m_items && lhs.m_local_ids==rhs.m_local_ids && lhs.m_index==rhs.m_index;
   }
   friend bool operator!=(const ThatClass& lhs,const ThatClass& rhs)
   {
     return !(lhs==rhs);
   }
 
+  ARCANE_DEPRECATED_REASON("Y2022: This method returns a temporary. Use 'operator*' instead")
+  Item operator->() const { return m_items[ m_local_ids[m_index] ]; }
+
  protected:
 
+  ItemSharedInfo* m_shared_info;
   const ItemInternalPtr* m_items;
   const Int32* ARCANE_RESTRICT m_local_ids;
   Integer m_index;
@@ -106,16 +110,24 @@ template<typename ItemType>
 class ItemVectorViewConstIteratorT
 : public ItemVectorViewConstIterator
 {
- public:
-  ItemVectorViewConstIteratorT(const ItemInternalPtr* items,
+  friend class ItemVectorViewT<ItemType>;
+
+ private:
+
+  // Autorisé seulement par ItemVectorViewT.
+  ItemVectorViewConstIteratorT(ItemSharedInfo* shared_info,
+                               const ItemInternalPtr* items,
                                const Int32* ARCANE_RESTRICT local_ids,
                                Integer index)
-  : ItemVectorViewConstIterator(items,local_ids,index){}
+  : ItemVectorViewConstIterator(shared_info,items,local_ids,index){}
+
  public:
+
   typedef ItemVectorViewConstIteratorT<ItemType> ThatClass;
+
  public:
-  ItemType operator*() const { return m_items[ m_local_ids[m_index] ]; }
-  ItemType operator->() const { return m_items[ m_local_ids[m_index] ]; }
+
+  ItemType operator*() const { return ItemType(ItemBaseBuildInfo(m_local_ids[m_index],m_shared_info)); }
   ThatClass& operator++() { ++m_index; return (*this); }
   ThatClass& operator--() { --m_index; return (*this); }
   Integer operator-(const ThatClass& b) const
@@ -132,6 +144,11 @@ class ItemVectorViewConstIteratorT
     Integer index = m_index + v;
     return ThatClass(m_items,m_local_ids,index);
   }
+
+ public:
+
+  ARCANE_DEPRECATED_REASON("Y2022: This method returns a temporary. Use 'operator*' instead")
+  ItemType operator->() const { return m_items[ m_local_ids[m_index] ]; }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -199,11 +216,11 @@ class ARCANE_CORE_EXPORT ItemVectorView
   }
   inline const_iterator begin() const
   {
-    return const_iterator(m_items.unguardedBasePointer(),m_local_ids.unguardedBasePointer(),0);
+    return const_iterator(m_shared_info,m_items.unguardedBasePointer(),m_local_ids.unguardedBasePointer(),0);
   }
   inline const_iterator end() const
   {
-    return const_iterator(m_items.unguardedBasePointer(),m_local_ids.unguardedBasePointer(),this->size());
+    return const_iterator(m_shared_info,m_items.unguardedBasePointer(),m_local_ids.unguardedBasePointer(),this->size());
   }
   //! Vue sur le tableau des indices
   inline ItemIndexArrayView indexes() const { return m_local_ids; }
@@ -282,11 +299,11 @@ class ItemVectorViewT
   }
   inline const_iterator begin() const
   {
-    return const_iterator(m_items.unguardedBasePointer(),m_local_ids.unguardedBasePointer(),0);
+    return const_iterator(m_shared_info,m_items.unguardedBasePointer(),m_local_ids.unguardedBasePointer(),0);
   }
   inline const_iterator end() const
   {
-    return const_iterator(m_items.unguardedBasePointer(),m_local_ids.unguardedBasePointer(),this->size());
+    return const_iterator(m_shared_info,m_items.unguardedBasePointer(),m_local_ids.unguardedBasePointer(),this->size());
   }
 };
 
