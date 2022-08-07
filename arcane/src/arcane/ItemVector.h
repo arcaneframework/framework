@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemVector.h                                                (C) 2000-2018 */
+/* ItemVector.h                                                (C) 2000-2022 */
 /*                                                                           */
 /* Vue sur un vecteur (tableau indirect) d'entités.                          */
 /*---------------------------------------------------------------------------*/
@@ -21,10 +21,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -61,19 +59,6 @@ class ItemVector
   //! Créé un vecteur associé à la famille \a family et contenant les entités \a local_ids.
   ItemVector(IItemFamily* afamily,Int32ConstArrayView local_ids)
   : m_items(afamily->itemsInternal()), m_local_ids(local_ids), m_family(afamily) {}
-  /*!
-   * \brief Constructeur par référence sur ItemInternals et liste de localId.
-   *
-   * Ce constructeur est obsolète et l'argument do_clone n'est plus utilisé. Les
-   * entités de \a lids sont toujours copiées.
-   *
-   * \deprecated Utiliser ItemVector(IItemFamily*,Int32ConstArrayView) à la place.
-   */
-  ARCANE_DEPRECATED_280 ItemVector(IItemFamily* afamily, const SharedArray<Int32>& lids, bool do_clone)
-  : m_items(afamily->itemsInternal()), m_local_ids(lids.clone()), m_family(afamily)
-  {
-    ARCANE_UNUSED(do_clone);
-  }
 
   //! Créé un vecteur pour \a size éléments associé à la famille \a family.
   ItemVector(IItemFamily* afamily,Integer asize)
@@ -159,24 +144,6 @@ class ItemVector
     return m_local_ids.constView();
   }
 
-  //! Conteneur de localIds
-  /*! Peut etre directement utilisé pour construire un ItemGroup 
-   *  Redondance avec viewAsArray car fusion impl cea et ifp
-   */
-  ARCANE_DEPRECATED Int32ConstArrayView localIds() const 
-  { 
-    return m_local_ids; 
-  }
-
-  /*!
-   * \brief Supprime l'entité à l'index \a index.
-   * \deprecated Utiliser removeAt() à la place.
-   */
-  ARCANE_DEPRECATED_240 void remoteAt(Int32 index)
-  {
-    m_local_ids.remove(index);
-  }
-
   //! Supprime l'entité à l'index \a index
   void removeAt(Int32 index)
   {
@@ -255,16 +222,6 @@ class ItemVectorT
   //! Créé un vecteur associé à la famille \a afamily et contenant les entités \a local_ids.
   ItemVectorT(IItemFamily* afamily,Int32ConstArrayView local_ids)
   : ItemVector(afamily, local_ids) {}
-  /*!
-   * \brief Constructeur par référence sur ItemInternals et liste de localId.
-   *
-   * Ce constructeur est obsolète et l'argument do_clone n'est plus utilisé. Les
-   * entités de \a lids sont toujours copiées.
-   *
-   * \deprecated Utiliser ItemVectorT(IItemFamily*,Int32ConstArrayView) à la place.
-   */
-  ARCANE_DEPRECATED_280 ItemVectorT(IItemFamily* afamily, const SharedArray<Int32>& lids, bool do_clone)
-  : ItemVector(afamily,lids,do_clone){}
   //! Constructeur par copie
   ItemVectorT(const ItemVector &rhs)
   : ItemVector(rhs) {}
@@ -326,7 +283,7 @@ ItemVectorViewT(const ItemVectorT<ItemType>& rhs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

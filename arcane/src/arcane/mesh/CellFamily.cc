@@ -358,34 +358,6 @@ internalRemoveItems(Int32ConstArrayView local_ids,bool keep_ghost)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-void CellFamily::
-mergeItems(Int32 local_id1,Int32 local_id2)
-{
-  ItemInternal* icell1 = m_item_internal_list->cells[local_id1];
-  ItemInternal* icell2 = m_item_internal_list->cells[local_id2];
-
-  CellMerger cm(traceMng());
-  cm.merge(icell1, icell2);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Int32 CellFamily::
-getMergedItemLID(Int32 local_id1,Int32 local_id2)
-{
-  ItemInternal* icell1 = m_item_internal_list->cells[local_id1];
-  ItemInternal* icell2 = m_item_internal_list->cells[local_id2];
-
-  CellMerger cm(traceMng());
-  ItemInternal* remaining_cell = cm.getItemInternal(icell1, icell2);
-
-  return (remaining_cell==icell1) ? local_id1 : local_id2;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
  * \brief Remplace le noeud d'index \a index de la maille \a cell avec
  * celui de localId() \a node.

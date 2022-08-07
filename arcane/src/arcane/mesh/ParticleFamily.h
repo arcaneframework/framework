@@ -82,15 +82,10 @@ class ARCANE_MESH_EXPORT ParticleFamily
                                           Int32ArrayView items_local_id) override;
   virtual void removeParticles(Int32ConstArrayView items_local_id) override;
 
-  virtual void addItems(Int64ConstArrayView unique_ids,Int32ArrayView items) override;
-  virtual void addItems(Int64ConstArrayView unique_ids,Int32ConstArrayView owners,Int32ArrayView items);
+  void addItems(Int64ConstArrayView unique_ids,Int32ConstArrayView owners,Int32ArrayView items);
 
-  virtual void addItems(Int64ConstArrayView unique_ids,ArrayView<Item> items) override;
-  virtual void addItems(Int64ConstArrayView unique_ids,ItemGroup item_group) override;
   virtual void internalRemoveItems(Int32ConstArrayView local_ids,bool keep_ghost) override;
   virtual void exchangeParticles() override;
-  virtual void exchangeItems() override;
-
 
   virtual void setParticleCell(Particle particle,Cell new_cell) override;
   virtual void setParticlesCell(ParticleVectorView particles,CellVectorView new_cells) override;
@@ -142,6 +137,7 @@ class ARCANE_MESH_EXPORT ParticleFamily
   void _setSharedInfo();
   inline void _setCell(ItemLocalId particle,ItemLocalId cell);
   inline void _initializeNewlyAllocatedParticle(ItemInternal* particle,Int64 uid);
+  void _addItems(Int64ConstArrayView unique_ids,Int32ArrayView items);
 };
 
 /*---------------------------------------------------------------------------*/

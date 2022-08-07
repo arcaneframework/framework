@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IItemFamily.h                                               (C) 2000-2020 */
+/* IItemFamily.h                                               (C) 2000-2022 */
 /*                                                                           */
 /* Interface d'une famille d'entités.                                        */
 /*---------------------------------------------------------------------------*/
@@ -128,12 +128,6 @@ class IItemFamily
   virtual Integer nbItem() const =0;
 
   /*!
-   * \brief Taille nécessaire pour dimensionner les variables sur ces entités.
-   * \deprecated Utiliser maxLocalId() à la place.
-   */
-  virtual ARCANE_DEPRECATED_112 Int32 variableMaxSize() const =0;
-
-  /*!
    * Taille nécessaire pour dimensionner les variables sur ces entités.
    *
    * Il s'agit du maximum des Item::localId() des entités de cette famille plus 1.
@@ -195,58 +189,6 @@ class IItemFamily
 
  public:
 
-#if 1
-  /*!
-   * \brief Alloue des entités.
-   *
-   * Après appel à cette opération, il faut appeler endUpdate() pour notifier
-   * à l'instance la fin des modifications. Il est possible d'enchaîner plusieurs
-   * allocations avant d'appeler endUpdate(). Les \a unique_ids doivent
-   * être unique sur l'ensemble des sous-domaines. Il est possible de vérifier
-   * cela via checkUniqueIds().
-   * \a items doit avoir le même nombre d'éléments que \a unique_ids
-   * et sera remplit en retour avec les numéros locaux des entités créées.
-   * Il est possible après création d'obtenir une vue sur les entités créés via view().
-   * \code
-   * Int64UniqueArray my_unique_ids;
-   * Int32UniqueArray my_local_ids;
-   * my_unique_ids.add(25);
-   * my_unique_ids.add(32);
-   * family->addItems(my_unique_ids,my_local_ids);
-   * family->endUpdate();
-   * ENUMERATE_ITEM(iitem,family->view(my_local_ids)){
-   *   const Item& item = *iitem;
-   *   info() << "Item local_id=" << item.localId() << " unique_id=" << item.uniqueId();
-   * }
-   * \endcode
-   */
-  virtual ARCANE_DEPRECATED_114 void addItems(Int64ConstArrayView unique_ids,Int32ArrayView items) =0;
-
-  /*!
-   * \deprecated.
-   * Il faut utiliser addItems(Int64ConstArrayView,Int32ArrayView)
-   */
-  virtual ARCANE_DEPRECATED_114 void addItems(Int64ConstArrayView unique_ids,ArrayView<Item> items) =0;
-
-  /*!
-   * \deprecated.
-   * Il faut utiliser addItems(Int64ConstArrayView,Int32ArrayView)
-   */
-  virtual ARCANE_DEPRECATED_114 void addItems(Int64ConstArrayView unique_ids,ItemGroup item_group) =0;
-
-  /*!
-   * \brief Échange des entités.
-   *
-   * Cette méthode n'est supportée que pour les familles de particule.
-   * Pour les éléments du maillage comme les noeuds, faces ou maille, il faut utiliser IMesh::exchangeItems().
-   *
-   * Les nouveaux propriétaires des entités sont données par la itemsNewOwner().
-   *
-   * Cette opération est bloquante et collective.
-   */
-  virtual ARCANE_DEPRECATED_114 void exchangeItems() =0;
-#endif
-
   /*!
    * \brief Vue sur les entités.
    *
@@ -263,27 +205,20 @@ class IItemFamily
    */
   virtual ItemVectorView view() =0;
 
-#if 1
   /*!
    * \brief Supprime des entités.
+   *
+   * Utilise le graphe (Familles, Connectivités) ItemFamilyNetwork
    */
-  virtual ARCANE_DEPRECATED_114 void removeItems(Int32ConstArrayView local_ids,bool keep_ghost=false) =0;
-#endif
-  
-  /*!
-     * \brief Supprime des entités.
-     *
-     * Utilise le graphe (Familles, Connectivités) ItemFamilyNetwork
-     */
-    virtual void removeItems2(mesh::ItemDataList& item_data_list) =0;
+  virtual void removeItems2(mesh::ItemDataList& item_data_list) =0;
 
-    /*!
-     * \brief Supprime des entités et met a jour les connectivites. Ne supprime pas d'eventuels sous items orphelins.
-     *
-     * Contexte d'utilisation avec un graphe des familles. Les sous items orphelins ont du eux aussi etre marque NeedRemove.
-     * Il n'y a donc pas besoin de les gerer dans les familles parentes.
-     */
-    virtual void removeNeedRemoveMarkedItems() =0;
+  /*!
+   * \brief Supprime des entités et met a jour les connectivites. Ne supprime pas d'eventuels sous items orphelins.
+   *
+   * Contexte d'utilisation avec un graphe des familles. Les sous items orphelins ont du eux aussi etre marque NeedRemove.
+   * Il n'y a donc pas besoin de les gerer dans les familles parentes.
+   */
+  virtual void removeNeedRemoveMarkedItems() =0;
 
   /*
    * \brief Entité de numéro unique \a unique_id.
@@ -291,29 +226,6 @@ class IItemFamily
    * Si aucune entité avec cet \a unique_id n'est trouvé, retourne null.
    */
   virtual ItemInternal* findOneItem(Int64 unique_id) =0;
- 
-  /** 
-   * Fusionne deux entités en une plus grande. Par exemple, deux
-   * mailles partageant une face. L'intérêt est de conserver ainsi les
-   * uniqueIds() en parallèle.
-   * 
-   * @note La maille résultante est construite en remplacement de la
-   * première maille, de numéro \a local_id1
-   * 
-   * @param local_id1 numéro local de la première entité
-   * @param local_id2 numéro local de la seconde entité
-   */
-  ARCANE_DEPRECATED_240 virtual void mergeItems(Int32 local_id1,Int32 local_id2) = 0;
-
-  /** 
-   * Détermine quel sera le localId de la maille apres fusion.
-   * 
-   * @param local_id1 numéro local de la première entité
-   * @param local_id2 numéro local de la seconde entité
-   * 
-   * @return le local id de la maille fusionnée
-   */
-  ARCANE_DEPRECATED_240 virtual Int32 getMergedItemLID(Int32 local_id1,Int32 local_id2) = 0;
 
   /*! \brief Notifie la fin de modification de la liste des entités.
    *

@@ -788,20 +788,6 @@ operator=(const Properties& rhs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-bool Properties::
-setBoolProperty(const String& aname,bool value)
-{
-  return m_p->setScalarValue(aname,value);
-}
-bool Properties::
-boolProperty(const String& aname)
-{
-  return getBool(aname);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 void Properties::
 setBool(const String& aname,bool value)
 {   

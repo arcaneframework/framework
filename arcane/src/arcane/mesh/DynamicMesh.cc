@@ -1029,7 +1029,7 @@ removeCells(Int32ConstArrayView cells_local_id,bool update_graph)
   if (m_use_mesh_item_family_dependencies)
     removeItems(m_cell_family,cells_local_id);
   else
-    m_cell_family->removeItems(cells_local_id);  
+    m_cell_family->internalRemoveItems(cells_local_id);
 }
 
 /*---------------------------------------------------------------------------*/

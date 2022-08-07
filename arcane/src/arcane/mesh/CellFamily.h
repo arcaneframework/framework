@@ -106,29 +106,6 @@ class ARCANE_MESH_EXPORT CellFamily
    */
   virtual void internalRemoveItems(Int32ConstArrayView local_ids,bool keep_ghost=false) override;
 
-  /**
-   * Fusionne deux entités en une plus grande. Par exemple, deux
-   * mailles partageant une face. L'intérêt est de conserver ainsi les
-   * uniqueIds() en parallèle.
-   *
-   * @note La maille résultante est construite en remplacement de la
-   * première maille, de numéro \a local_id1
-   *
-   * @param local_id1 numéro local de la première entité
-   * @param local_id2 numéro local de la seconde entité
-   */
-  void mergeItems(Int32 local_id1,Int32 local_id2) override;
-
-  /**
-   * Détermine quel sera le localId de la maille apres fusion.
-   *
-   * @param local_id1 numéro local de la première entité
-   * @param local_id2 numéro local de la seconde entité
-   *
-   * @return le local id de la maille fusionnée
-   */
-  Int32 getMergedItemLID(Int32 local_id1,Int32 local_id2) override;
-
   //! Définit la connectivité active pour le maillage associé
   /*! Ceci conditionne les connectivités à la charge de cette famille */
   void setConnectivity(const Integer c);

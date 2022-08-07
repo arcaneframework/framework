@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IApplication.h                                              (C) 2000-2021 */
+/* IApplication.h                                              (C) 2000-2022 */
 /*                                                                           */
 /* Interface de l'application.                                               */
 /*---------------------------------------------------------------------------*/
@@ -109,46 +109,10 @@ class ARCANE_CORE_EXPORT IApplication
   //! Nom de l'utilisateur
   virtual String userName() const =0;
 
-  /*!
-   * \brief Elément racine du DOM de la configuration globale.
-   *
-   * \deprecated Ne pas utiliser car suivant l'implémentation
-   * (actuellement Xerces), l'accès au document retourné n'est pas nécessairement
-   * thread-safe. Utiliser configBytes() à la place et lire le fichier
-   * si besoin.
-   */
-  virtual ARCANE_DEPRECATED_120 XmlNode configRootElement() const =0;
-
-  /*
-   * \brief Contenu du fichier Xml de configuration du code.
-   *
-   * \deprecated Utitiliser configBuffer() à la place
-   */
-  ARCCORE_DEPRECATED_2020("Use configBuffer() instead") virtual
-  ByteConstArrayView configBytes() const =0;
-
   /*
    * \brief Contenu du fichier Xml de configuration du code.
    */
   virtual ByteConstSpan configBuffer() const =0;
-
-  /*!
-   * \brief Elément racine du DOM de la configuration utilisateur.
-   *
-   * \deprecated Ne pas utiliser car suivant l'implémentation
-   * (actuellement Xerces), l'accès au document retourné n'est pas nécessairement
-   * thread-safe. Utiliser userConfigBuffer() à la place et lire le fichier
-   * si besoin.
-   */
-  virtual ARCANE_DEPRECATED_120 XmlNode userConfigRootElement() const =0;
-
-  /*
-   * \brief Contenu du fichier Xml de configuration utilisateur.
-   *
-   * \deprecated Utitiliser userConfigBuffer() à la place
-   */
-  ARCCORE_DEPRECATED_2020("Use configBuffer() instead") virtual
-  ByteConstArrayView userConfigBytes() const =0;
 
   /*
    * \brief Contenu du fichier Xml de configuration utilisateur
@@ -169,9 +133,6 @@ class ARCANE_CORE_EXPORT IApplication
 
   //! Manufacture principale.
   virtual IMainFactory* mainFactory() const =0;
-
-  //! Liste des informations sur les fabriques des services
-  virtual ARCANE_DEPRECATED_200 ServiceFactoryInfoCollection serviceFactoryInfos() =0;
 
   //! Liste des informations sur les fabriques des modules
   virtual ModuleFactoryInfoCollection moduleFactoryInfos() =0;
