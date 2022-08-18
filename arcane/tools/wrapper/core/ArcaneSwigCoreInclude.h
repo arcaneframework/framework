@@ -36,6 +36,7 @@
 #include "arcane/ItemPairGroupBuilder.h"
 #include "arcane/VariableCollection.h"
 #include "arcane/Item.h"
+#include "arcane/ItemInfoListView.h"
 #include "arcane/ItemEnumerator.h"
 #include "arcane/IParallelSuperMng.h"
 #include "arcane/BasicModule.h"

@@ -30,6 +30,7 @@
 #include "arcane/IMeshSubMeshTransition.h"
 #include "arcane/IApplication.h"
 #include "arcane/IDataFactoryMng.h"
+#include "arcane/ItemInfoListView.h"
 #include "arcane/ItemPairGroup.h"
 #include "arcane/ItemPairGroupImpl.h"
 #include "arcane/IMeshUtilities.h"
@@ -362,6 +363,15 @@ ItemInternalList ItemFamily::
 itemsInternal()
 {
   return m_infos.itemsInternal();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ItemInfoListView ItemFamily::
+itemInfoListView()
+{
+  return ItemInfoListView(this,m_common_item_shared_info,itemsInternal());
 }
 
 /*---------------------------------------------------------------------------*/

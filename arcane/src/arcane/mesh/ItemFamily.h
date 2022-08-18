@@ -128,6 +128,7 @@ class ARCANE_MESH_EXPORT ItemFamily
   Integer nbItem() const override;
   Int32 maxLocalId() const override;
   ItemInternalList itemsInternal() override;
+  ItemInfoListView itemInfoListView() override;
   VariableItemInt32& itemsNewOwner() override;
   IItemFamily * parentFamily() const override;
   void setParentFamily(IItemFamily * parent) override;

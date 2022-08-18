@@ -137,9 +137,14 @@ class IItemFamily
   //! Tableau interne des entités
   virtual ItemInternalArrayView itemsInternal() =0;
 
-  //! IItemFamily parent
-  /*! Issue des imbrications de sous-maillages
-   *  \return NULL si n'a pas de famille parente
+  //! Vue sur la liste d'informations sur les entités
+  virtual ItemInfoListView itemInfoListView() =0;
+
+  /*!
+   * \brief IItemFamily parent
+   *
+   * Issue des imbrications de sous-maillages
+   * \return nullptr si n'a pas de famille parente
    */
   virtual IItemFamily* parentFamily() const = 0;
 
