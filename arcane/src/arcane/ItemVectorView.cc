@@ -5,13 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemInfoListView.cc                                         (C) 2000-2022 */
+/* ItemVectorView.cc                                           (C) 2000-2022 */
 /*                                                                           */
 /* Vue sur une liste pour obtenir des informations sur les entités.          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ItemInfoListView.h"
+#include "arcane/Item.h"
 
 #include "arcane/IItemFamily.h"
 
@@ -24,11 +24,21 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ItemInfoListView::
-ItemInfoListView(IItemFamily* family)
+ItemVectorView::
+ItemVectorView(IItemFamily* family, ConstArrayView<Int32> local_ids)
+: m_items(family->itemsInternal())
+, m_local_ids(local_ids)
 {
-  if (family)
-    *this = family->itemInfoListView();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ItemVectorView::
+ItemVectorView(IItemFamily* family, ItemIndexArrayView indexes)
+: m_items(family->itemsInternal())
+, m_local_ids(indexes)
+{
 }
 
 /*---------------------------------------------------------------------------*/

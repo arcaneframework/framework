@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemVectorView.h                                            (C) 2000-2018 */
+/* ItemVectorView.h                                            (C) 2000-2022 */
 /*                                                                           */
 /* Vue sur un vecteur (tableau indirect) d'entités.                          */
 /*---------------------------------------------------------------------------*/
@@ -16,11 +16,13 @@
 
 #include "arcane/ItemInternalVectorView.h"
 #include "arcane/ItemIndexArrayView.h"
+#include "arcane/ItemInfoListView.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -141,19 +143,32 @@ class ItemVectorViewConstIteratorT
  * pas modifié et que la famille d'entité associée à ce tableau n'est
  * elle même pas modifiée.
  */
-class ItemVectorView
+class ARCANE_CORE_EXPORT ItemVectorView
 {
  public:
-  typedef ItemVectorViewConstIterator const_iterator;
+
+  using const_iterator = ItemVectorViewConstIterator;
+
  public:
 
-  ItemVectorView(){}
+  // TODO: a supprimer dès qu'on n'aura plus besoin de ItemInternal
   ItemVectorView(const ItemInternalArrayView& aitems,const Int32ConstArrayView& local_ids)
   : m_items(aitems), m_local_ids(local_ids) {}
+  // TODO: a supprimer dès qu'on n'aura plus besoin de ItemInternal
   ItemVectorView(ItemInternalArrayView aitems,ItemIndexArrayView indexes)
   : m_items(aitems), m_local_ids(indexes) {}
+
+ public:
+
+  ItemVectorView() = default;
   ItemVectorView(const ItemInternalVectorView& view)
   : m_items(view.items()), m_local_ids(view.localIds()) {}
+  ItemVectorView(ItemInfoListView item_info_list_view,ConstArrayView<Int32> local_ids)
+  : m_items(item_info_list_view._itemsInternal()), m_local_ids(local_ids) {}
+  ItemVectorView(ItemInfoListView item_info_list_view,ItemIndexArrayView indexes)
+  : m_items(item_info_list_view._itemsInternal()), m_local_ids(indexes) {}
+  ItemVectorView(IItemFamily* family,ConstArrayView<Int32> local_ids);
+  ItemVectorView(IItemFamily* family,ItemIndexArrayView indexes);
 
  public:
 
@@ -213,19 +228,34 @@ class ItemVectorViewT
 : public ItemVectorView
 {
  public:
-  typedef ItemVectorViewConstIteratorT<ItemType> const_iterator;
+
+  using const_iterator = ItemVectorViewConstIteratorT<ItemType>;
+
  public:
 
-  ItemVectorViewT() : ItemVectorView() {}
+  // TODO: a supprimer dès qu'on n'aura plus besoin de ItemInternal
   ItemVectorViewT(const ItemInternalArrayView& aitems,const Int32ConstArrayView& local_ids)
   : ItemVectorView(aitems,local_ids) {}
+  // TODO: a supprimer dès qu'on n'aura plus besoin de ItemInternal
   ItemVectorViewT(ItemInternalArrayView aitems,ItemIndexArrayView indexes)
   : ItemVectorView(aitems,indexes) {}
+
+ public:
+
+  ItemVectorViewT() = default;
   ItemVectorViewT(const ItemVectorView& rhs)
   : ItemVectorView(rhs) {}
   inline ItemVectorViewT(const ItemVectorT<ItemType>& rhs);
   ItemVectorViewT(const ItemInternalVectorView& rhs)
   : ItemVectorView(rhs) {}
+  ItemVectorViewT(ItemInfoListView item_info_list_view,ConstArrayView<Int32> local_ids)
+  : ItemVectorView(item_info_list_view,local_ids) {}
+  ItemVectorViewT(ItemInfoListView item_info_list_view,ItemIndexArrayView indexes)
+  : ItemVectorView(item_info_list_view,indexes) {}
+  ItemVectorViewT(IItemFamily* family,ConstArrayView<Int32> local_ids)
+  : ItemVectorView(family,local_ids) {}
+  ItemVectorViewT(IItemFamily* family,ItemIndexArrayView indexes)
+  : ItemVectorView(family,indexes) {}
 
  public:
 
@@ -254,7 +284,7 @@ class ItemVectorViewT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

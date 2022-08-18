@@ -554,6 +554,7 @@ set( ARCANE_SOURCES
    ItemTypes.h
    ItemUniqueId.h
    ItemVectorView.h
+   ItemVectorView.cc
    ItemVector.h
    ItemInternalVectorView.h
    ISharedReference.h
