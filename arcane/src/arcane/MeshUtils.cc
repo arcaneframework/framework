@@ -534,7 +534,7 @@ writeMeshInfosSorted(IMesh* mesh,const String& file_name)
   Int32UniqueArray cells_sorted_id(nb_cell);
   {
     // Trie les noeuds par ordre croissant de leur coordonnées
-    ItemInternalList nodes(mesh->itemsInternal(IK_Node));
+    NodeInfoListView nodes(mesh->nodeFamily());
     for( Integer i=0; i<nb_node; ++i )
       sorted_nodes[i] = nodes[i];
     {
@@ -546,7 +546,7 @@ writeMeshInfosSorted(IMesh* mesh,const String& file_name)
       nodes_sorted_id[sorted_nodes[i].localId()] = i;
 
     // Trie les arêtes
-    ItemInternalList edges(mesh->itemsInternal(IK_Edge));
+    EdgeInfoListView edges(mesh->edgeFamily());
     for( Integer i=0; i<nb_edge; ++i )
       sorted_edges[i] = edges[i];
     {
@@ -557,7 +557,7 @@ writeMeshInfosSorted(IMesh* mesh,const String& file_name)
       edges_sorted_id[sorted_edges[i].localId()] = i;
 
     // Trie les faces
-    ItemInternalList faces(mesh->itemsInternal(IK_Face));
+    FaceInfoListView faces(mesh->faceFamily());
     for( Integer i=0; i<nb_face; ++i )
       sorted_faces[i] = faces[i];
     {
@@ -568,7 +568,7 @@ writeMeshInfosSorted(IMesh* mesh,const String& file_name)
       faces_sorted_id[sorted_faces[i].localId()] = i;
 
     // Trie les mailles
-    ItemInternalList cells(mesh->itemsInternal(IK_Cell));
+    CellInfoListView cells(mesh->cellFamily());
     for( Integer i=0; i<nb_cell; ++i )
       sorted_cells[i] = cells[i];
     {
@@ -694,9 +694,9 @@ writeMeshInfos(IMesh* mesh,const String& file_name)
         << " Cells " << nb_cell
         << "\n";
 
-  ItemInternalList nodes(mesh->itemsInternal(IK_Node));
-  ItemInternalList faces(mesh->itemsInternal(IK_Face));
-  ItemInternalList cells(mesh->itemsInternal(IK_Cell));
+  NodeInfoListView nodes(mesh->nodeFamily());
+  FaceInfoListView faces(mesh->faceFamily());
+  CellInfoListView cells(mesh->cellFamily());
   //TODO pouvoir afficher les infos même si on n'est pas un maillage primaire
   VariableNodeReal3& coords(mesh->toPrimaryMesh()->nodesCoordinates());
 
