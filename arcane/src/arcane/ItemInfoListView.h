@@ -87,8 +87,127 @@ class ARCANE_CORE_EXPORT ItemInfoListView
  private:
 
   IItemFamily* m_family = nullptr;
+
+ protected:
+
   ItemSharedInfo* m_item_shared_info = nullptr;
   ItemInternalArrayView m_item_internal_list;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename ItemType>
+class ARCANE_CORE_EXPORT ItemInfoListViewT
+: public ItemInfoListView
+{
+ public:
+
+  //! Construit une vue associée à la famille \a family.
+  explicit ItemInfoListViewT(IItemFamily* family)
+  : ItemInfoListView(family)
+  {}
+
+ public:
+
+  //! Entité associé du numéro local \a local_id
+  inline ItemType operator[](ItemLocalId local_id) const;
+
+  //! Entité associé du numéro local \a local_id
+  inline ItemType operator[](Int32 local_id) const;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class ARCANE_CORE_EXPORT NodeInfoListView
+: public ItemInfoListViewT<Node>
+{
+ public:
+
+  using BaseClass = ItemInfoListViewT<Node>;
+
+ public:
+
+  //! Construit une vue associée à la famille \a family.
+  explicit NodeInfoListView(IItemFamily* family)
+  : BaseClass(family)
+  {}
+};
+
+class ARCANE_CORE_EXPORT EdgeInfoListView
+: public ItemInfoListViewT<Edge>
+{
+ public:
+
+  using BaseClass = ItemInfoListViewT<Edge>;
+
+ public:
+
+  //! Construit une vue associée à la famille \a family.
+  explicit EdgeInfoListView(IItemFamily* family)
+  : BaseClass(family)
+  {}
+};
+
+class ARCANE_CORE_EXPORT FaceInfoListView
+: public ItemInfoListViewT<Face>
+{
+ public:
+
+  using BaseClass = ItemInfoListViewT<Face>;
+
+ public:
+
+  //! Construit une vue associée à la famille \a family.
+  explicit FaceInfoListView(IItemFamily* family)
+  : BaseClass(family)
+  {}
+};
+
+class ARCANE_CORE_EXPORT CellInfoListView
+: public ItemInfoListViewT<Cell>
+{
+ public:
+
+  using BaseClass = ItemInfoListViewT<Cell>;
+
+ public:
+
+  //! Construit une vue associée à la famille \a family.
+  explicit CellInfoListView(IItemFamily* family)
+  : BaseClass(family)
+  {}
+};
+
+class ARCANE_CORE_EXPORT ParticleInfoListView
+: public ItemInfoListViewT<Particle>
+{
+ public:
+
+  using BaseClass = ItemInfoListViewT<Particle>;
+
+ public:
+
+  //! Construit une vue associée à la famille \a family.
+  explicit ParticleInfoListView(IItemFamily* family)
+  : BaseClass(family)
+  {}
+};
+
+class ARCANE_CORE_EXPORT DoFInfoListView
+: public ItemInfoListViewT<DoF>
+{
+ public:
+
+  using BaseClass = ItemInfoListViewT<DoF>;
+
+ public:
+
+  //! Construit une vue associée à la famille \a family.
+  explicit DoFInfoListView(IItemFamily* family)
+  : BaseClass(family)
+  {}
 };
 
 /*---------------------------------------------------------------------------*/

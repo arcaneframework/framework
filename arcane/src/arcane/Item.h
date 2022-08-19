@@ -1397,6 +1397,24 @@ operator[](Int32 local_id) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template<typename ItemType> inline ItemType ItemInfoListViewT<ItemType>::
+operator[](ItemLocalId local_id) const
+{
+  return ItemType(ItemBase(ItemBaseBuildInfo(local_id.localId(), m_item_shared_info)));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename ItemType> inline ItemType ItemInfoListViewT<ItemType>::
+operator[](Int32 local_id) const
+{
+  return ItemType(ItemBase(ItemBaseBuildInfo(local_id, m_item_shared_info)));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
