@@ -158,6 +158,8 @@ set( ARCANE_SOURCES
    ItemGroupRangeIterator.h
    ItemInternal.cc
    ItemInternal.h
+   ItemInfoListView.h
+   ItemInfoListView.cc
    ItemSharedInfo.cc
    ItemSharedInfo.h
    ItemTypeInfo.cc
@@ -552,6 +554,7 @@ set( ARCANE_SOURCES
    ItemTypes.h
    ItemUniqueId.h
    ItemVectorView.h
+   ItemVectorView.cc
    ItemVector.h
    ItemInternalVectorView.h
    ISharedReference.h

@@ -321,6 +321,18 @@ class IItemOperationByBasicType;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+class ItemInfoListView;
+template <typename ItemType> class ItemInfoListViewT;
+class NodeInfoListView;
+class EdgeInfoListView;
+class FaceInfoListView;
+class CellInfoListView;
+class ParticleInfoListView;
+class DoFInfoListView;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Politique d'utilisation des connectivités.
  *

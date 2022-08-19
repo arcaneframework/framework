@@ -557,7 +557,7 @@ view() const
   Int32 flags = 0;
   if (m_impl->isContigousLocalIds())
     flags |= ItemIndexArrayView::F_Contigous;
-  return ItemVectorView(m_impl->itemsInternal(),ItemIndexArrayView(m_impl->itemsLocalId(),flags));
+  return ItemVectorView(m_impl->itemFamily(),ItemIndexArrayView(m_impl->itemsLocalId(),flags));
 }
 
 /*---------------------------------------------------------------------------*/
