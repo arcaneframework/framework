@@ -67,6 +67,8 @@ class ARCANE_CORE_EXPORT ItemInfoListView
   //! Famille associée
   IItemFamily* itemFamily() const { return m_family; }
 
+  // NOTE: Les définitions des deux méthodes operator[] sont dans Item.h
+
   //! Entité associé du numéro local \a local_id
   inline Item operator[](ItemLocalId local_id) const;
 
@@ -92,11 +94,17 @@ class ARCANE_CORE_EXPORT ItemInfoListView
 
   ItemSharedInfo* m_item_shared_info = nullptr;
   ItemInternalArrayView m_item_internal_list;
+
+ protected:
+
+  void _checkValid(eItemKind expected_kind);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Classe de base des vues spécialisées des informations sur les entités.
+ */
 template <typename ItemType>
 class ARCANE_CORE_EXPORT ItemInfoListViewT
 : public ItemInfoListView
@@ -106,9 +114,13 @@ class ARCANE_CORE_EXPORT ItemInfoListViewT
   //! Construit une vue associée à la famille \a family.
   explicit ItemInfoListViewT(IItemFamily* family)
   : ItemInfoListView(family)
-  {}
+  {
+    _checkValid(ItemTraitsT<ItemType>::kind());
+  }
 
  public:
+
+  // NOTE: Les définitions des deux méthodes operator[] sont dans Item.h
 
   //! Entité associé du numéro local \a local_id
   inline ItemType operator[](ItemLocalId local_id) const;
@@ -119,7 +131,9 @@ class ARCANE_CORE_EXPORT ItemInfoListViewT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Vue sur les informations des noeuds.
+ */
 class ARCANE_CORE_EXPORT NodeInfoListView
 : public ItemInfoListViewT<Node>
 {
@@ -135,6 +149,11 @@ class ARCANE_CORE_EXPORT NodeInfoListView
   {}
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vue sur les informations des arêtes.
+ */
 class ARCANE_CORE_EXPORT EdgeInfoListView
 : public ItemInfoListViewT<Edge>
 {
@@ -150,6 +169,11 @@ class ARCANE_CORE_EXPORT EdgeInfoListView
   {}
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vue sur les informations des faces.
+ */
 class ARCANE_CORE_EXPORT FaceInfoListView
 : public ItemInfoListViewT<Face>
 {
@@ -165,6 +189,11 @@ class ARCANE_CORE_EXPORT FaceInfoListView
   {}
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vue sur les informations des mailles.
+ */
 class ARCANE_CORE_EXPORT CellInfoListView
 : public ItemInfoListViewT<Cell>
 {
@@ -180,6 +209,11 @@ class ARCANE_CORE_EXPORT CellInfoListView
   {}
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vue sur les informations des particules.
+ */
 class ARCANE_CORE_EXPORT ParticleInfoListView
 : public ItemInfoListViewT<Particle>
 {
@@ -195,6 +229,11 @@ class ARCANE_CORE_EXPORT ParticleInfoListView
   {}
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Vue sur les informations des DoFs.
+ */
 class ARCANE_CORE_EXPORT DoFInfoListView
 : public ItemInfoListViewT<DoF>
 {
