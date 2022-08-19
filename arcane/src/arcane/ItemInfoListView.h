@@ -17,21 +17,15 @@
 #include "arcane/utils/ArrayView.h"
 
 #include "arcane/ItemTypes.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace Arcane::mesh
-{
-class ItemFamily;
-}
+#include "arcane/ItemSharedInfo.h"
+#include "arcane/ItemUniqueId.h"
+#include "arcane/ItemLocalId.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
-class ItemSharedInfo;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -40,6 +34,9 @@ class ItemSharedInfo;
  *
  * Comme toutes les vues, ces instances sont temporaires et ne doivent pas être
  * conservées entre deux modifications de la famille associée.
+ *
+ * Les méthodes de cette classe ne sont valides que si l'instance a été initialisée
+ * avec une famille (IItemFamily) non nulle.
  *
  * Via cette classe, il est possible de récupérer une instance de Item à partir
  * d'un numéro local ItemLocalId.
@@ -69,11 +66,35 @@ class ARCANE_CORE_EXPORT ItemInfoListView
 
   // NOTE: Les définitions des deux méthodes operator[] sont dans Item.h
 
-  //! Entité associé du numéro local \a local_id
+  //! Entité associée du numéro local \a local_id
   inline Item operator[](ItemLocalId local_id) const;
 
-  //! Entité associé du numéro local \a local_id
+  //! Entité associée du numéro local \a local_id
   inline Item operator[](Int32 local_id) const;
+
+  //! Propriétaire de l'entité de numéro local \a local_id
+  Int32 owner(Int32 local_id) const { return m_item_shared_info->_ownerV2(local_id); }
+
+  //! Propriétaire de l'entité de numéro local \a local_id
+  Int32 owner(ItemLocalId local_id) const { return m_item_shared_info->_ownerV2(local_id.localId()); }
+
+  //! Type de l'entité de numéro local \a local_id
+  Int16 typeId(Int32 local_id) const { return m_item_shared_info->_typeId(local_id); }
+
+  //! Type de l'entité de numéro local \a local_id
+  Int16 typeId(ItemLocalId local_id) const { return m_item_shared_info->_typeId(local_id.localId()); }
+
+  //! uniqueId() de l'entité de numéro local \a local_id
+  ItemUniqueId uniqueId(Int32 local_id) const
+  {
+    return ItemUniqueId{ m_item_shared_info->m_unique_ids[local_id] };
+  }
+
+  //! uniqueId() de l'entité de numéro local \a local_id
+  ItemUniqueId uniqueId(ItemLocalId local_id) const
+  {
+    return ItemUniqueId{ m_item_shared_info->m_unique_ids[local_id.localId()] };
+  }
 
  private:
 
@@ -122,10 +143,10 @@ class ARCANE_CORE_EXPORT ItemInfoListViewT
 
   // NOTE: Les définitions des deux méthodes operator[] sont dans Item.h
 
-  //! Entité associé du numéro local \a local_id
+  //! Entité associée du numéro local \a local_id
   inline ItemType operator[](ItemLocalId local_id) const;
 
-  //! Entité associé du numéro local \a local_id
+  //! Entité associée du numéro local \a local_id
   inline ItemType operator[](Int32 local_id) const;
 };
 

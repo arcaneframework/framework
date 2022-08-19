@@ -1046,7 +1046,13 @@ _testItemArray()
     Item c2 = cells_info_view[local_ids[i]];
     info(6) << "CELL =" << ItemPrinter(c);
     if (c2.uniqueId()!=c.uniqueId())
-      ARCANE_FATAL("Not same uniqueId() uid1={0} uid2={1}",c.uniqueId(),c2.uniqueId());
+      ARCANE_FATAL("Not same uniqueId() (1) uid1={0} uid2={1}",c.uniqueId(),c2.uniqueId());
+    if (cells_info_view.uniqueId(local_ids[i])!=c.uniqueId())
+      ARCANE_FATAL("Not same uniqueId() (2) uid1={0} uid2={1}",cells_info_view.uniqueId(local_ids[i]),c.uniqueId());
+    if (cells_info_view.owner(local_ids[i])!=c.owner())
+      ARCANE_FATAL("Not same owner() owner1={0} owner2={1}",cells_info_view.owner(local_ids[i]),c.owner());
+    if (cells_info_view.typeId(local_ids[i])!=c.type())
+      ARCANE_FATAL("Not same typeId() type1={0} type2={1}",cells_info_view.typeId(local_ids[i]),c.type());
   }
   ENUMERATE_CELLZ(icell,v2){
     Cell c = *icell;
