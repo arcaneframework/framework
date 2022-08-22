@@ -24,6 +24,7 @@
 #include "arcane/ISimpleTableWriterHelper.h"
 
 #include "arcane/Directory.h"
+#include "arcane/utils/FatalErrorException.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -47,6 +48,8 @@ class SimpleTableWriterHelper
   , m_name_table_computed(false)
   , m_name_table_once_process(false)
   {
+    if (simple_table_reader_writer.isNull())
+      ARCANE_FATAL("Null Ref");
   }
 
   SimpleTableWriterHelper()

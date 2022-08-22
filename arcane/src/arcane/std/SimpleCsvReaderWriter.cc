@@ -28,7 +28,6 @@ namespace Arcane
 bool SimpleCsvReaderWriter::
 writeTable(const Directory& dst, const String& file_name)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   if (!SimpleTableReaderWriterUtils::createDirectoryOnlyProcess0(m_simple_table_internal->m_parallel_mng, dst)) {
     return false;
   }
@@ -46,7 +45,6 @@ writeTable(const Directory& dst, const String& file_name)
 bool SimpleCsvReaderWriter::
 readTable(const Directory& src, const String& file_name)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   clearInternal();
 
   std::ifstream stream;
@@ -126,16 +124,17 @@ readTable(const Directory& src, const String& file_name)
 void SimpleCsvReaderWriter::
 clearInternal()
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   m_simple_table_internal->clear();
 }
 
 void SimpleCsvReaderWriter::
 print()
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   _print(std::cout);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 Integer SimpleCsvReaderWriter::
 precision()
@@ -166,6 +165,9 @@ setFixed(bool fixed)
   m_is_fixed_print = fixed;
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 Ref<SimpleTableInternal> SimpleCsvReaderWriter::
 internal()
 {
@@ -175,6 +177,8 @@ internal()
 void SimpleCsvReaderWriter::
 setInternal(const Ref<SimpleTableInternal>& simple_table_internal)
 {
+  if (simple_table_internal.isNull())
+    ARCANE_FATAL("Null Ref");
   m_simple_table_internal = simple_table_internal;
 }
 
@@ -197,7 +201,6 @@ _closeFile(std::ifstream& stream)
 void SimpleCsvReaderWriter::
 _print(std::ostream& stream)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   // On enregistre les infos du stream pour les restaurer à la fin.
   std::ios_base::fmtflags save_flags = stream.flags();
   std::streamsize save_prec = stream.precision();

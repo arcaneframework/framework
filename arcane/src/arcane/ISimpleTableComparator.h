@@ -109,7 +109,7 @@ class ARCANE_CORE_EXPORT ISimpleTableComparator
   /**
    * @brief Méthode permettant de lire les fichiers de références.
    * 
-   * Le type des fichiers de réference doit correspondre à l'implémentation
+   * Le type des fichiers de référence doit correspondre à l'implémentation
    * de cette interface choisi (exemple : fichier .csv -> SimpleCsvComparatorService).
    * 
    * @param rank Le processus qui doit lire son fichier (-1 pour tous les processus).

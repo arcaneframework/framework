@@ -18,6 +18,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/ISimpleTableInternalMng.h"
+#include "arcane/utils/FatalErrorException.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -35,6 +36,8 @@ class SimpleTableInternalMng
   SimpleTableInternalMng(Ref<SimpleTableInternal> simple_table_internal)
   : m_simple_table_internal(simple_table_internal)
   {
+    if (simple_table_internal.isNull())
+      ARCANE_FATAL("Null Ref");
   }
 
   SimpleTableInternalMng()

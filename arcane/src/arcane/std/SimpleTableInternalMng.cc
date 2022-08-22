@@ -27,7 +27,6 @@ namespace Arcane
 void SimpleTableInternalMng::
 clearInternal()
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   m_simple_table_internal->clear();
 }
 
@@ -37,7 +36,6 @@ clearInternal()
 Integer SimpleTableInternalMng::
 addRow(const String& row_name)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   Integer position = m_simple_table_internal->m_values.dim1Size();
   m_simple_table_internal->m_values.resize(position + 1);
 
@@ -52,7 +50,6 @@ addRow(const String& row_name)
 Integer SimpleTableInternalMng::
 addRow(const String& row_name, ConstArrayView<Real> elements)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   Integer position = m_simple_table_internal->m_values.dim1Size();
   m_simple_table_internal->m_values.resize(position + 1);
 
@@ -67,7 +64,6 @@ addRow(const String& row_name, ConstArrayView<Real> elements)
 bool SimpleTableInternalMng::
 addRows(StringConstArrayView rows_names)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   Integer size = rows_names.size();
   if (size == 0)
     return true;
@@ -89,7 +85,6 @@ addRows(StringConstArrayView rows_names)
 Integer SimpleTableInternalMng::
 addColumn(const String& column_name)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   Integer position = m_simple_table_internal->m_values.dim2Size();
   m_simple_table_internal->m_values.resize(m_simple_table_internal->m_values.dim1Size(), position + 1);
 
@@ -104,7 +99,6 @@ addColumn(const String& column_name)
 Integer SimpleTableInternalMng::
 addColumn(const String& column_name, ConstArrayView<Real> elements)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   Integer position = m_simple_table_internal->m_values.dim2Size();
   m_simple_table_internal->m_values.resize(m_simple_table_internal->m_values.dim1Size(), position + 1);
 
@@ -119,7 +113,6 @@ addColumn(const String& column_name, ConstArrayView<Real> elements)
 bool SimpleTableInternalMng::
 addColumns(StringConstArrayView columns_names)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   Integer size = columns_names.size();
   if (size == 0)
     return true;
@@ -141,7 +134,6 @@ addColumns(StringConstArrayView columns_names)
 bool SimpleTableInternalMng::
 addElementInRow(Integer position, Real element)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   if (position < 0 || position >= m_simple_table_internal->m_values.dim1Size())
     return false;
 
@@ -172,7 +164,6 @@ addElementInRow(Integer position, Real element)
 bool SimpleTableInternalMng::
 addElementInRow(const String& row_name, Real element, bool create_if_not_exist)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   std::optional<Integer> position = m_simple_table_internal->m_row_names.span().findFirst(row_name);
 
   if (position)
@@ -186,7 +177,6 @@ addElementInRow(const String& row_name, Real element, bool create_if_not_exist)
 bool SimpleTableInternalMng::
 addElementInSameRow(Real element)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   if (m_simple_table_internal->m_last_row == -1 || m_simple_table_internal->m_last_column == -1)
     return false;
   return addElementInRow(m_simple_table_internal->m_last_row, element);
@@ -198,7 +188,6 @@ addElementInSameRow(Real element)
 bool SimpleTableInternalMng::
 addElementsInRow(Integer position, ConstArrayView<Real> elements)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   if (position < 0 || position >= m_simple_table_internal->m_values.dim1Size())
     return false;
 
@@ -223,7 +212,6 @@ addElementsInRow(Integer position, ConstArrayView<Real> elements)
 bool SimpleTableInternalMng::
 addElementsInRow(const String& row_name, ConstArrayView<Real> elements, bool create_if_not_exist)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   std::optional<Integer> position = m_simple_table_internal->m_row_names.span().findFirst(row_name);
 
   if (position)
@@ -238,7 +226,6 @@ addElementsInRow(const String& row_name, ConstArrayView<Real> elements, bool cre
 bool SimpleTableInternalMng::
 addElementsInSameRow(ConstArrayView<Real> elements)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   if (m_simple_table_internal->m_last_row == -1 || m_simple_table_internal->m_last_column == -1)
     return false;
   return addElementsInRow(m_simple_table_internal->m_last_row, elements);
@@ -250,7 +237,6 @@ addElementsInSameRow(ConstArrayView<Real> elements)
 bool SimpleTableInternalMng::
 addElementInColumn(Integer position, Real element)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   if (position < 0 || position >= m_simple_table_internal->m_values.dim2Size())
     return false;
 
@@ -273,7 +259,6 @@ addElementInColumn(Integer position, Real element)
 bool SimpleTableInternalMng::
 addElementInColumn(const String& column_name, Real element, bool create_if_not_exist)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   std::optional<Integer> position = m_simple_table_internal->m_column_names.span().findFirst(column_name);
 
   if (position)
@@ -287,7 +272,6 @@ addElementInColumn(const String& column_name, Real element, bool create_if_not_e
 bool SimpleTableInternalMng::
 addElementInSameColumn(Real element)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   if (m_simple_table_internal->m_last_row == -1 || m_simple_table_internal->m_last_column == -1)
     return false;
   return addElementInColumn(m_simple_table_internal->m_last_column, element);
@@ -299,7 +283,6 @@ addElementInSameColumn(Real element)
 bool SimpleTableInternalMng::
 addElementsInColumn(Integer position, ConstArrayView<Real> elements)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   if (position < 0 || position >= m_simple_table_internal->m_values.dim2Size())
     return false;
 
@@ -323,7 +306,6 @@ addElementsInColumn(Integer position, ConstArrayView<Real> elements)
 bool SimpleTableInternalMng::
 addElementsInColumn(const String& column_name, ConstArrayView<Real> elements, bool create_if_not_exist)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   std::optional<Integer> position = m_simple_table_internal->m_column_names.span().findFirst(column_name);
 
   if (position)
@@ -338,7 +320,6 @@ addElementsInColumn(const String& column_name, ConstArrayView<Real> elements, bo
 bool SimpleTableInternalMng::
 addElementsInSameColumn(ConstArrayView<Real> elements)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   if (m_simple_table_internal->m_last_row == -1 || m_simple_table_internal->m_last_column == -1)
     return false;
   return addElementsInColumn(m_simple_table_internal->m_last_column, elements);
@@ -350,7 +331,6 @@ addElementsInSameColumn(ConstArrayView<Real> elements)
 bool SimpleTableInternalMng::
 editElementUp(Real element, bool update_last_position)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   if (m_simple_table_internal->m_last_row == -1 || m_simple_table_internal->m_last_column == -1 || m_simple_table_internal->m_last_row - 1 < 0)
     return false;
   m_simple_table_internal->m_last_row--;
@@ -368,7 +348,6 @@ editElementUp(Real element, bool update_last_position)
 bool SimpleTableInternalMng::
 editElementDown(Real element, bool update_last_position)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   if (m_simple_table_internal->m_last_row == -1 || m_simple_table_internal->m_last_column == -1 || m_simple_table_internal->m_last_row + 1 >= m_simple_table_internal->m_values.dim1Size())
     return false;
   m_simple_table_internal->m_last_row++;
@@ -387,7 +366,6 @@ editElementDown(Real element, bool update_last_position)
 bool SimpleTableInternalMng::
 editElementLeft(Real element, bool update_last_position)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   if (m_simple_table_internal->m_last_row == -1 || m_simple_table_internal->m_last_column == -1 || m_simple_table_internal->m_last_column - 1 < 0)
     return false;
   m_simple_table_internal->m_last_column--;
@@ -405,7 +383,6 @@ editElementLeft(Real element, bool update_last_position)
 bool SimpleTableInternalMng::
 editElementRight(Real element, bool update_last_position)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   if (m_simple_table_internal->m_last_row == -1 || m_simple_table_internal->m_last_column == -1 || m_simple_table_internal->m_last_column + 1 >= m_simple_table_internal->m_values.dim2Size())
     return false;
   m_simple_table_internal->m_last_column++;
@@ -427,7 +404,6 @@ editElementRight(Real element, bool update_last_position)
 Real SimpleTableInternalMng::
 elementUp(bool update_last_position)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   if (m_simple_table_internal->m_last_row == -1 || m_simple_table_internal->m_last_column == -1 || m_simple_table_internal->m_last_row - 1 < 0)
     return 0;
 
@@ -447,7 +423,6 @@ elementUp(bool update_last_position)
 Real SimpleTableInternalMng::
 elementDown(bool update_last_position)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   if (m_simple_table_internal->m_last_row == -1 || m_simple_table_internal->m_last_column == -1 || m_simple_table_internal->m_last_row + 1 >= m_simple_table_internal->m_values.dim1Size())
     return 0;
 
@@ -468,7 +443,6 @@ elementDown(bool update_last_position)
 Real SimpleTableInternalMng::
 elementLeft(bool update_last_position)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   if (m_simple_table_internal->m_last_row == -1 || m_simple_table_internal->m_last_column == -1 || m_simple_table_internal->m_last_column - 1 < 0)
     return 0;
 
@@ -488,7 +462,6 @@ elementLeft(bool update_last_position)
 Real SimpleTableInternalMng::
 elementRight(bool update_last_position)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   if (m_simple_table_internal->m_last_row == -1 || m_simple_table_internal->m_last_column == -1 || m_simple_table_internal->m_last_column + 1 >= m_simple_table_internal->m_values.dim2Size())
     return 0;
 
@@ -512,7 +485,6 @@ elementRight(bool update_last_position)
 bool SimpleTableInternalMng::
 editElement(Real element)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   m_simple_table_internal->m_values[m_simple_table_internal->m_last_row][m_simple_table_internal->m_last_column] = element;
   return true;
 }
@@ -520,7 +492,6 @@ editElement(Real element)
 bool SimpleTableInternalMng::
 editElement(Integer position_x, Integer position_y, Real element)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   if (position_x < 0 || position_x >= m_simple_table_internal->m_values.dim2Size() || position_y < 0 || position_y >= m_simple_table_internal->m_values.dim1Size())
     return false;
 
@@ -540,7 +511,6 @@ editElement(Integer position_x, Integer position_y, Real element)
 bool SimpleTableInternalMng::
 editElement(const String& column_name, const String& row_name, Real element)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   std::optional<Integer> position_x = m_simple_table_internal->m_column_names.span().findFirst(column_name);
   std::optional<Integer> position_y = m_simple_table_internal->m_row_names.span().findFirst(row_name);
 
@@ -555,14 +525,12 @@ editElement(const String& column_name, const String& row_name, Real element)
 Real SimpleTableInternalMng::
 element()
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   return m_simple_table_internal->m_values[m_simple_table_internal->m_last_row][m_simple_table_internal->m_last_column];
 }
 
 Real SimpleTableInternalMng::
 element(Integer position_x, Integer position_y, bool update_last_position)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   if (position_x < 0 || position_x >= m_simple_table_internal->m_values.dim2Size() || position_y < 0 || position_y >= m_simple_table_internal->m_values.dim1Size())
     return 0;
 
@@ -577,7 +545,6 @@ element(Integer position_x, Integer position_y, bool update_last_position)
 Real SimpleTableInternalMng::
 element(const String& column_name, const String& row_name, bool update_last_position)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   std::optional<Integer> position_x = m_simple_table_internal->m_column_names.span().findFirst(column_name);
   std::optional<Integer> position_y = m_simple_table_internal->m_row_names.span().findFirst(row_name);
 
@@ -592,7 +559,6 @@ element(const String& column_name, const String& row_name, bool update_last_posi
 RealUniqueArray SimpleTableInternalMng::
 row(Integer position)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   Integer size = rowSize(position);
   RealUniqueArray copie(size);
   for (Integer i = 0; i < size; i++) {
@@ -604,7 +570,6 @@ row(Integer position)
 RealUniqueArray SimpleTableInternalMng::
 row(const String& row_name)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   std::optional<Integer> position_y = m_simple_table_internal->m_row_names.span().findFirst(row_name);
   if (position_y)
     return row(position_y.value());
@@ -617,7 +582,6 @@ row(const String& row_name)
 RealUniqueArray SimpleTableInternalMng::
 column(Integer position)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   Integer size = columnSize(position);
 
   RealUniqueArray copie(size);
@@ -630,7 +594,6 @@ column(Integer position)
 RealUniqueArray SimpleTableInternalMng::
 column(const String& column_name)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   std::optional<Integer> position_x = m_simple_table_internal->m_column_names.span().findFirst(column_name);
   if (position_x)
     return column(position_x.value());
@@ -643,7 +606,6 @@ column(const String& column_name)
 Integer SimpleTableInternalMng::
 rowSize(Integer position)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   if (position < 0 || position >= m_simple_table_internal->m_values.dim1Size())
     return 0;
   return m_simple_table_internal->m_row_sizes[position];
@@ -652,7 +614,6 @@ rowSize(Integer position)
 Integer SimpleTableInternalMng::
 rowSize(const String& row_name)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   std::optional<Integer> position_y = m_simple_table_internal->m_row_names.span().findFirst(row_name);
   if (position_y)
     return rowSize(position_y.value());
@@ -665,7 +626,6 @@ rowSize(const String& row_name)
 Integer SimpleTableInternalMng::
 columnSize(Integer position)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   if (position < 0 || position >= m_simple_table_internal->m_values.dim2Size())
     return 0;
   return m_simple_table_internal->m_column_sizes[position];
@@ -674,7 +634,6 @@ columnSize(Integer position)
 Integer SimpleTableInternalMng::
 columnSize(const String& column_name)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   std::optional<Integer> position_x = m_simple_table_internal->m_column_names.span().findFirst(column_name);
   if (position_x)
     return columnSize(position_x.value());
@@ -687,7 +646,6 @@ columnSize(const String& column_name)
 Integer SimpleTableInternalMng::
 rowPosition(const String& row_name)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   std::optional<Integer> position_y = m_simple_table_internal->m_row_names.span().findFirst(row_name);
   if (position_y)
     return position_y.value();
@@ -697,7 +655,6 @@ rowPosition(const String& row_name)
 Integer SimpleTableInternalMng::
 columnPosition(const String& column_name)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   std::optional<Integer> position_x = m_simple_table_internal->m_column_names.span().findFirst(column_name);
   if (position_x)
     return position_x.value();
@@ -710,14 +667,12 @@ columnPosition(const String& column_name)
 Integer SimpleTableInternalMng::
 numberOfRows()
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   return m_simple_table_internal->m_values.dim1Size();
 }
 
 Integer SimpleTableInternalMng::
 numberOfColumns()
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   return m_simple_table_internal->m_values.dim2Size();
 }
 
@@ -727,7 +682,6 @@ numberOfColumns()
 String SimpleTableInternalMng::
 rowName(Integer position)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   if (position < 0 || position >= m_simple_table_internal->m_values.dim1Size())
     return "";
 
@@ -737,7 +691,6 @@ rowName(Integer position)
 String SimpleTableInternalMng::
 columnName(Integer position)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   if (position < 0 || position >= m_simple_table_internal->m_values.dim2Size())
     return "";
 
@@ -750,7 +703,6 @@ columnName(Integer position)
 bool SimpleTableInternalMng::
 editRowName(Integer position, const String& new_name)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   if (position < 0 || position >= m_simple_table_internal->m_values.dim1Size())
     return false;
   m_simple_table_internal->m_row_names[position] = new_name;
@@ -760,7 +712,6 @@ editRowName(Integer position, const String& new_name)
 bool SimpleTableInternalMng::
 editRowName(const String& row_name, const String& new_name)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   std::optional<Integer> position_y = m_simple_table_internal->m_row_names.span().findFirst(row_name);
   if (position_y)
     return editRowName(position_y.value(), new_name);
@@ -770,7 +721,6 @@ editRowName(const String& row_name, const String& new_name)
 bool SimpleTableInternalMng::
 editColumnName(Integer position, const String& new_name)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   if (position < 0 || position >= m_simple_table_internal->m_values.dim2Size())
     return false;
   m_simple_table_internal->m_column_names[position] = new_name;
@@ -780,7 +730,6 @@ editColumnName(Integer position, const String& new_name)
 bool SimpleTableInternalMng::
 editColumnName(const String& column_name, const String& new_name)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   std::optional<Integer> position_x = m_simple_table_internal->m_column_names.span().findFirst(column_name);
   if (position_x)
     return editColumnName(position_x.value(), new_name);
@@ -793,7 +742,6 @@ editColumnName(const String& column_name, const String& new_name)
 Integer SimpleTableInternalMng::
 addAverageColumn(const String& column_name)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   Integer position = addColumn(column_name);
   for (Integer i = 0; i < m_simple_table_internal->m_values.dim1Size(); i++) {
     Real avg = 0.0;
@@ -807,6 +755,9 @@ addAverageColumn(const String& column_name)
   return position;
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 Ref<SimpleTableInternal> SimpleTableInternalMng::
 internal()
 {
@@ -816,6 +767,8 @@ internal()
 void SimpleTableInternalMng::
 setInternal(const Ref<SimpleTableInternal>& simple_table_internal)
 {
+  if (simple_table_internal.isNull())
+    ARCANE_FATAL("Null Ref");
   m_simple_table_internal = simple_table_internal;
 }
 

@@ -32,9 +32,6 @@ namespace Arcane
 bool SimpleTableInternalComparator::
 compare(Integer epsilon, bool compare_dimension_too)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal_reference);
-  ARCANE_CHECK_PTR(m_simple_table_internal_to_compare);
-
   bool is_ok = true;
 
   const Integer dim1 = m_simple_table_internal_mng_reference.numberOfRows();
@@ -42,8 +39,8 @@ compare(Integer epsilon, bool compare_dimension_too)
 
   if (compare_dimension_too && (dim1 != m_simple_table_internal_mng_to_compare.numberOfRows() || dim2 != m_simple_table_internal_mng_to_compare.numberOfColumns())) {
     m_simple_table_internal_reference->m_parallel_mng->traceMng()->warning() << "Dimensions not equals -- Expected dimensions: "
-                                                   << dim1 << "x" << dim2 << " -- Found dimensions: "
-                                                   << m_simple_table_internal_mng_to_compare.numberOfRows() << "x" << m_simple_table_internal_mng_to_compare.numberOfColumns();
+                                                                             << dim1 << "x" << dim2 << " -- Found dimensions: "
+                                                                             << m_simple_table_internal_mng_to_compare.numberOfRows() << "x" << m_simple_table_internal_mng_to_compare.numberOfColumns();
     return false;
   }
 
@@ -130,6 +127,9 @@ isARegexExclusiveRows(bool is_exclusive)
   m_is_excluding_regex_rows = is_exclusive;
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 Ref<SimpleTableInternal> SimpleTableInternalComparator::
 internalRef()
 {
@@ -139,6 +139,8 @@ internalRef()
 void SimpleTableInternalComparator::
 setInternalRef(const Ref<SimpleTableInternal>& sti_ref)
 {
+  if (sti_ref.isNull())
+    ARCANE_FATAL("Null Ref");
   m_simple_table_internal_reference = sti_ref;
   m_simple_table_internal_mng_reference.setInternal(m_simple_table_internal_reference);
 }
@@ -152,6 +154,8 @@ internalToCompare()
 void SimpleTableInternalComparator::
 setInternalToCompare(const Ref<SimpleTableInternal>& sti_to_compare)
 {
+  if (sti_to_compare.isNull())
+    ARCANE_FATAL("Null Ref");
   m_simple_table_internal_to_compare = sti_to_compare;
   m_simple_table_internal_mng_to_compare.setInternal(m_simple_table_internal_to_compare);
 }

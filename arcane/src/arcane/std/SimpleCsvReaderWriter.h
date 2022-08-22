@@ -20,6 +20,7 @@
 #include "arcane/ISimpleTableReaderWriter.h"
 
 #include "arcane/Directory.h"
+#include "arcane/utils/FatalErrorException.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -40,6 +41,8 @@ class SimpleCsvReaderWriter
   , m_precision_print(6)
   , m_is_fixed_print(true)
   {
+    if (simple_table_internal.isNull())
+      ARCANE_FATAL("Null Ref");
   }
 
   SimpleCsvReaderWriter()

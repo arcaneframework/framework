@@ -257,35 +257,31 @@ class ARCANE_CORE_EXPORT ISimpleTableWriterHelper
   /**
    * @brief Méthode permettant de connaitre le type de fichier qui sera utilisé.
    * 
-   * @return String 
+   * @return String Le type de fichier de sortie (= l'extension).
    */
   virtual String fileType() = 0;
 
   /**
-   * @brief Méthode permettant de récupérer le pointeur vers l'objet
+   * @brief Méthode permettant de récupérer une référence vers l'objet
    * SimpleTableInternal utilisé.
    * 
-   * @return SimpleTableInternal* Le pointeur utilisé. 
+   * @return Ref<SimpleTableInternal> Une copie de la référence. 
    */
   virtual Ref<SimpleTableInternal> internal() = 0;
 
   /**
-   * @brief Méthode permettant de récupérer le pointeur vers l'objet
+   * @brief Méthode permettant de récupérer une référence vers l'objet
    * ISimpleTableReaderWriter utilisé.
    * 
-   * @return ISimpleTableReaderWriter* Le pointeur utilisé.
+   * @return Ref<ISimpleTableReaderWriter> Une copie de la référence. 
    */
   virtual Ref<ISimpleTableReaderWriter> readerWriter() = 0;
 
   /**
-   * @brief Méthode permettant de définir un pointeur vers
-   * une implem de ISimpleTableReaderWriter.
+   * @brief Méthode permettant de définir une référence vers un
+   * ISimpleTableReaderWriter.
    * 
-   * @warning Il est déconseillé d'utiliser cette méthode, sauf si
-   * vous savez ce que vous faite. La destruction de l'objet reste
-   * à la charge de l'appelant.
-   * 
-   * @param simple_table_reader_writer Le pointeur vers une implem de ISimpleTableReaderWriter.
+   * @param simple_table_reader_writer La référence vers un ISimpleTableReaderWriter.
    */
   virtual void setReaderWriter(const Ref<ISimpleTableReaderWriter>& simple_table_reader_writer) = 0;
 };

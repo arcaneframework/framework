@@ -807,24 +807,18 @@ class ARCANE_CORE_EXPORT ISimpleTableOutput
   virtual String fileType() = 0;
 
   /**
-   * @brief Méthode permettant de récupérer le pointeur vers l'objet
+   * @brief Méthode permettant de récupérer une référence vers l'objet
    * SimpleTableInternal utilisé.
    * 
-   * Cet objet est géré par ce service. C'est donc ce service qui
-   * se chargera de sa destruction.
-   * 
-   * @return SimpleTableInternal* Un pointeur vers l'objet interne. 
+   * @return Ref<SimpleTableInternal> Une copie de la référence. 
    */
   virtual Ref<SimpleTableInternal> internal() = 0;
 
   /**
-   * @brief Méthode permettant de récupérer le pointeur vers l'objet
+   * @brief Méthode permettant de récupérer une référence vers l'objet
    * ISimpleTableReaderWriter utilisé.
    * 
-   * Cet objet est géré par ce service. C'est donc ce service qui
-   * se chargera de sa destruction.
-   * 
-   * @return ISimpleTableReaderWriter* Un pointeur vers l'objet interne. 
+   * @return Ref<ISimpleTableReaderWriter> Une copie de la référence. 
    */
   virtual Ref<ISimpleTableReaderWriter> readerWriter() = 0;
 };

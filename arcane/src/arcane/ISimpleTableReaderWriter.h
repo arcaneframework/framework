@@ -228,22 +228,18 @@ class ARCANE_CORE_EXPORT ISimpleTableReaderWriter
   virtual String fileType() = 0;
 
   /**
-   * @brief Méthode permettant de récupérer le pointeur vers l'objet
+   * @brief Méthode permettant de récupérer une référence vers l'objet
    * SimpleTableInternal utilisé.
    * 
-   * @return SimpleTableInternal* Le pointeur utilisé. 
+   * @return Ref<SimpleTableInternal> Une copie de la référence. 
    */
   virtual Ref<SimpleTableInternal> internal() = 0;
 
   /**
-   * @brief Méthode permettant de définir un pointeur vers
+   * @brief Méthode permettant de définir une référence vers un
    * SimpleTableInternal.
    * 
-   * @warning Il est déconseillé d'utiliser cette méthode, sauf si
-   * vous savez ce que vous faite. La destruction de l'objet reste
-   * à la charge de l'appelant.
-   * 
-   * @param simple_table_reader_writer Le pointeur vers SimpleTableInternal.
+   * @param simple_table_internal La référence vers un SimpleTableInternal.
    */
   virtual void setInternal(const Ref<SimpleTableInternal>& simple_table_internal) = 0;
 };

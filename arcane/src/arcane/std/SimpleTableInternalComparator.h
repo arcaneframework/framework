@@ -23,6 +23,7 @@
 
 #include "arcane/std/SimpleTableInternalMng.h"
 #include "arcane/utils/Array.h"
+#include "arcane/utils/FatalErrorException.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -49,13 +50,15 @@ class SimpleTableInternalComparator
   , m_is_excluding_array_rows(false)
   , m_is_excluding_array_columns(false)
   {
+    if (sti_ref.isNull() || sti_to_compare.isNull())
+      ARCANE_FATAL("Null Ref");
   }
 
   SimpleTableInternalComparator()
   : m_simple_table_internal_reference()
   , m_simple_table_internal_to_compare()
-  , m_simple_table_internal_mng_reference(m_simple_table_internal_reference)
-  , m_simple_table_internal_mng_to_compare(m_simple_table_internal_to_compare)
+  , m_simple_table_internal_mng_reference()
+  , m_simple_table_internal_mng_to_compare()
   , m_regex_rows("")
   , m_is_excluding_regex_rows(false)
   , m_regex_columns("")

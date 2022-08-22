@@ -74,7 +74,6 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalComparator
   /**
    * @brief Méthode permettant de comparer les valeurs des deux STI.
    * 
-   * @param rank Le processus qui doit comparer ses résultats (-1 pour tous les processus). 
    * @param epsilon La marge d'erreur.
    * @param compare_dimension_too Si l'on doit comparer les dimensions des STI.
    * @return true S'il n'y a pas de différences.
@@ -161,42 +160,34 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalComparator
   virtual void isARegexExclusiveRows(bool is_exclusive) = 0;
 
   /**
-   * @brief Méthode permettant de récupérer le pointeur vers l'objet
-   * SimpleTableInternal de référence utilisé.
+   * @brief Méthode permettant de récupérer une référence vers l'objet
+   * SimpleTableInternal "de référence" utilisé.
    * 
-   * @return SimpleTableInternal* Le pointeur utilisé. 
+   * @return Ref<SimpleTableInternal> Une copie de la référence. 
    */
   virtual Ref<SimpleTableInternal> internalRef() = 0;
 
   /**
-   * @brief Méthode permettant de définir un pointeur vers
-   * SimpleTableInternal de référence.
+   * @brief Méthode permettant de définir une référence vers un
+   * SimpleTableInternal "de référence".
    * 
-   * @warning Il est déconseillé d'utiliser cette méthode, sauf si
-   * vous savez ce que vous faite. La destruction de l'objet reste
-   * à la charge de l'appelant.
-   * 
-   * @param simple_table_reader_writer Le pointeur vers SimpleTableInternal.
+   * @param simple_table_internal La référence vers un SimpleTableInternal.
    */
   virtual void setInternalRef(const Ref<SimpleTableInternal>& simple_table_internal) = 0;
 
   /**
-   * @brief Méthode permettant de récupérer le pointeur vers l'objet
-   * SimpleTableInternal à comparer utilisé.
+   * @brief Méthode permettant de récupérer une référence vers l'objet
+   * SimpleTableInternal "à comparer" utilisé.
    * 
-   * @return SimpleTableInternal* Le pointeur utilisé. 
+   * @return Ref<SimpleTableInternal> Une copie de la référence. 
    */
   virtual Ref<SimpleTableInternal> internalToCompare() = 0;
 
   /**
-   * @brief Méthode permettant de définir un pointeur vers
-   * SimpleTableInternal à comparer.
+   * @brief Méthode permettant de définir une référence vers
+   * SimpleTableInternal "à comparer".
    * 
-   * @warning Il est déconseillé d'utiliser cette méthode, sauf si
-   * vous savez ce que vous faite. La destruction de l'objet reste
-   * à la charge de l'appelant.
-   * 
-   * @param simple_table_reader_writer Le pointeur vers SimpleTableInternal.
+   * @param simple_table_internal La référence vers un SimpleTableInternal.
    */
   virtual void setInternalToCompare(const Ref<SimpleTableInternal>& simple_table_internal) = 0;
 };

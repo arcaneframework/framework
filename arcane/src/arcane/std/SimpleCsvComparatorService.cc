@@ -123,7 +123,6 @@ isReferenceExist(Integer rank)
 bool SimpleCsvComparatorService::
 compareWithReference(Integer rank, Integer epsilon, bool compare_dimension_too)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal_reference);
   // Si le proc appelant ne doit pas lire.
   if (rank != -1 && subDomain()->parallelMng()->commRank() != rank) {
     return false;

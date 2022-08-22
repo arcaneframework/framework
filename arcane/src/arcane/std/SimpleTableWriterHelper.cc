@@ -33,8 +33,6 @@ namespace Arcane
 bool SimpleTableWriterHelper::
 init(const Directory& root_directory, const String& table_name, const String& directory_name)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
-
   setTableName(table_name);
   _computeName();
 
@@ -50,7 +48,6 @@ init(const Directory& root_directory, const String& table_name, const String& di
 void SimpleTableWriterHelper::
 print(Integer rank)
 {
-  ARCANE_CHECK_PTR(m_simple_table_reader_writer);
   if (rank != -1 && m_simple_table_internal->m_parallel_mng->commRank() != rank)
     return;
   m_simple_table_reader_writer->print();
@@ -59,8 +56,6 @@ print(Integer rank)
 bool SimpleTableWriterHelper::
 writeFile(const Directory& root_directory, Integer rank)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
-  ARCANE_CHECK_PTR(m_simple_table_reader_writer);
   // Finalisation du nom du csv (si ce n'est pas déjà fait).
   _computeName();
 
@@ -95,30 +90,29 @@ writeFile(Integer rank)
 Integer SimpleTableWriterHelper::
 precision()
 {
-  ARCANE_CHECK_PTR(m_simple_table_reader_writer);
   return m_simple_table_reader_writer->precision();
 }
 
 void SimpleTableWriterHelper::
 setPrecision(Integer precision)
 {
-  ARCANE_CHECK_PTR(m_simple_table_reader_writer);
   m_simple_table_reader_writer->setPrecision(precision);
 }
 
 bool SimpleTableWriterHelper::
 isFixed()
 {
-  ARCANE_CHECK_PTR(m_simple_table_reader_writer);
   return m_simple_table_reader_writer->isFixed();
 }
 
 void SimpleTableWriterHelper::
 setFixed(bool fixed)
 {
-  ARCANE_CHECK_PTR(m_simple_table_reader_writer);
   m_simple_table_reader_writer->setFixed(fixed);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 String SimpleTableWriterHelper::
 outputDirectory()
@@ -138,10 +132,12 @@ setOutputDirectory(const String& directory)
   m_name_output_directory = directory;
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 String SimpleTableWriterHelper::
 tableName()
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   _computeName();
   return m_simple_table_internal->m_table_name;
 }
@@ -155,16 +151,17 @@ tableNameWithoutComputation()
 void SimpleTableWriterHelper::
 setTableName(const String& name)
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   m_simple_table_internal->m_table_name = name;
   m_name_table_without_computation = name;
   m_name_table_computed = false;
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 String SimpleTableWriterHelper::
 fileName()
 {
-  ARCANE_CHECK_PTR(m_simple_table_internal);
   _computeName();
   return m_simple_table_internal->m_table_name + "." + m_simple_table_reader_writer->fileType();
 }
@@ -191,8 +188,31 @@ isOneFileByRanksPermited()
 String SimpleTableWriterHelper::
 fileType()
 {
-  ARCANE_CHECK_PTR(m_simple_table_reader_writer);
   return m_simple_table_reader_writer->fileType();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<SimpleTableInternal> SimpleTableWriterHelper::
+internal()
+{
+  return m_simple_table_internal;
+}
+
+Ref<ISimpleTableReaderWriter> SimpleTableWriterHelper::
+readerWriter()
+{
+  return m_simple_table_reader_writer;
+}
+
+void SimpleTableWriterHelper::
+setReaderWriter(const Ref<ISimpleTableReaderWriter>& simple_table_reader_writer)
+{
+  if (simple_table_reader_writer.isNull())
+    ARCANE_FATAL("Null Ref");
+  m_simple_table_reader_writer = simple_table_reader_writer;
+  m_simple_table_internal = m_simple_table_reader_writer->internal();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -212,9 +232,6 @@ _computeName()
   if (m_name_table_computed) {
     return;
   }
-
-  ARCANE_CHECK_PTR(m_simple_table_internal);
-  ARCANE_CHECK_PTR(m_simple_table_reader_writer);
 
   // Permet de contourner le bug avec String::split() si le nom commence par '@'.
   if (m_simple_table_internal->m_table_name.startsWith("@")) {
@@ -261,25 +278,6 @@ _computeName()
 
   m_name_table_computed = true;
   return;
-}
-
-Ref<SimpleTableInternal> SimpleTableWriterHelper::
-internal()
-{
-  return m_simple_table_internal;
-}
-
-Ref<ISimpleTableReaderWriter> SimpleTableWriterHelper::
-readerWriter()
-{
-  return m_simple_table_reader_writer;
-}
-
-void SimpleTableWriterHelper::
-setReaderWriter(const Ref<ISimpleTableReaderWriter>& simple_table_reader_writer)
-{
-  m_simple_table_reader_writer = simple_table_reader_writer;
-  m_simple_table_internal = m_simple_table_reader_writer->internal();
 }
 
 /*---------------------------------------------------------------------------*/
