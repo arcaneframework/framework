@@ -7,8 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* ISimpleTableInternalMng.h                                   (C) 2000-2022 */
 /*                                                                           */
-/* Interface représentant un gestionnaire de SimpleTableInternal. Fichier    */
-/* contenant également la structure SimpleTableInternal.                     */
+/* Interface représentant un gestionnaire de SimpleTableInternal.    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

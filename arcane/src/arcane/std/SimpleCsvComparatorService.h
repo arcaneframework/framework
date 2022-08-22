@@ -5,9 +5,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SimpleCsvComparatorService.hh                                   (C) 2000-2022 */
+/* SimpleCsvComparatorService.h                                (C) 2000-2022 */
 /*                                                                           */
-/* Service permettant de construire et de sortir un tableau au formet csv.   */
+/* Service permettant de comparer un ISimpleTableOutput avec un fichier de   */
+/* référence en format csv.                                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

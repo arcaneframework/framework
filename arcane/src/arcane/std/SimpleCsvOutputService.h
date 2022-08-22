@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SimpleCsvOutputService.hh                                   (C) 2000-2022 */
+/* SimpleCsvOutputService.h                                    (C) 2000-2022 */
 /*                                                                           */
 /* Service permettant de construire et de sortir un tableau au formet csv.   */
 /*---------------------------------------------------------------------------*/

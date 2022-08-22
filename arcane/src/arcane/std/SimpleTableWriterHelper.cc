@@ -5,9 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TODO                                   (C) 2000-2022 */
+/* SimpleTableWriterHelper.cc                                  (C) 2000-2022 */
 /*                                                                           */
-/*    */
+/* Classe permettant d'écrire un SimpleTableInternal dans un fichier.        */
+/* Simplifie l'utilisation de l'écrivain en gérant le multiprocessus et les  */
+/* noms des fichiers/dossiers.                                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
