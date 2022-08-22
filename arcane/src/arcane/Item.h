@@ -43,8 +43,13 @@ namespace Arcane
  * \ingroup Mesh
 
  Les éléments du maillage sont les noeuds (Node), les mailles (Cell),
- les faces (Face) et les arêtes (Edge). Chacun de ses éléments est décrit
+ les faces (Face), les arêtes (Edge), les particules (Particle) ou les
+ degrés de liberté (DoF). Chacun de ses éléments est décrit
  dans la classe dérivée correspondante.
+
+ Cette classe et les classes dérivées sont des objets légers qui s'utilisent par
+ valeur plutôt que par référence et qui ne doivent pas être conservés entre deux
+ modifications du la famille (IItemFamily) à laquelle ils sont associés.
 
  Quel que soit son type un élément du maillage possède un identifiant
  unique (localId()) pour son type et local au sous-domaine géré et un identifiant
@@ -58,15 +63,9 @@ namespace Arcane
  première face aura l'identifiant 0, la seconde 1 et ainsi de suite
  jusqu'à 10.
 
- Cette classe contient aussi les déclarations des types des éléments supportés
- des types d'éléments de maillage supportés (KindType) et
- des constantes comme le nombre maximum de sommets dans une face. Ces
- constantes peuvent être utilisées quand on doit définir des tableaux
- qui conviennent quel que soit le type de maille par exemple.
-
- Il existe une entité de correspondant à un objet nul. C'est la seul
+ Il existe une entité correspondant à un objet nul. C'est la seule
  pour laquelle null() est vrai. Aucune opération autre que l'appel à null()
- et les opérations de comparaisons ne sont valident sur l'entitée nulle.
+ et les opérations de comparaisons ne sont valides sur l'entité nulle.
  */
 class ARCANE_CORE_EXPORT Item
 : protected ItemBase
@@ -134,14 +133,13 @@ class ARCANE_CORE_EXPORT Item
  public:
 
   //! Création d'une entité de maillage nulle
-  Item() {}
-
-  //! Constructeur de recopie
-  Item(const Item& rhs) : ItemBase(rhs) {}
+  Item() = default;
 
   //! Construit une référence à l'entité \a internal
   Item(ItemInternal* ainternal) : ItemBase(ainternal) {}
 
+  // NOTE: Pour le constructeur suivant; il est indispensable d'utiliser
+  // const& pour éviter une ambiguité avec le constructeur par recopie
   //! Construit une référence à l'entité \a abase
   Item(const ItemBase& abase) : ItemBase(abase) {}
 
@@ -152,13 +150,6 @@ class ARCANE_CORE_EXPORT Item
   Item& operator=(ItemInternal* ainternal)
   {
     _set(ainternal);
-    return (*this);
-  }
-
-  //! Opérateur de copie
-  Item& operator=(const Item& from)
-  {
-    _set(from);
     return (*this);
   }
 
@@ -294,7 +285,9 @@ class ARCANE_CORE_EXPORT Item
 
  public:
 
+  // TODO a supprimer
   Item* operator->() { return this; }
+  // TODO a supprimer
   const Item* operator->() const { return this; }
 
  protected:
@@ -403,10 +396,7 @@ class ARCANE_CORE_EXPORT Node
   typedef NodeLocalId LocalIdType;
 
   //! Création d'un noeud non connecté au maillage
-  Node() : Item() {}
-
-  //! Constructeur de recopie
-  Node(const Node& rhs) : Item(rhs) {}
+  Node() = default;
 
   //! Construit une référence à l'entité \a internal
   Node(ItemInternal* ainternal) : Item(ainternal)
@@ -414,6 +404,10 @@ class ARCANE_CORE_EXPORT Node
 
   //! Construit une référence à l'entité \a abase
   Node(ItemBase abase) : Item(abase)
+  { ARCANE_CHECK_KIND(isNode); }
+
+  //! Construit une référence à l'entité \a abase
+  explicit Node(Item aitem) : Item(aitem)
   { ARCANE_CHECK_KIND(isNode); }
 
   //! Construit une référence à l'entité \a internal
@@ -424,13 +418,6 @@ class ARCANE_CORE_EXPORT Node
   Node& operator=(ItemInternal* ainternal)
   {
     _set(ainternal);
-    return (*this);
-  }
-
-  //! Opérateur de copie
-  Node& operator=(const Node& from)
-  {
-    _set(from);
     return (*this);
   }
 
@@ -532,17 +519,18 @@ class ARCANE_CORE_EXPORT ItemWithNodes
  public:
   
   //! Création d'une entité non connectée au maillage
-  ItemWithNodes() : Item() {}
-
-  //! Constructeur de recopie
-  ItemWithNodes(const ItemWithNodes& rhs) : Item(rhs) {}
+  ItemWithNodes() = default;
 
   //! Construit une référence à l'entité \a internal
   ItemWithNodes(ItemInternal* ainternal) : Item(ainternal)
   { ARCANE_CHECK_KIND(isItemWithNodes); }
 
   //! Construit une référence à l'entité \a abase
-  ItemWithNodes(const ItemBase& abase) : Item(abase)
+  ItemWithNodes(ItemBase abase) : Item(abase)
+  { ARCANE_CHECK_KIND(isItemWithNodes); }
+
+  //! Construit une référence à l'entité \a aitem
+  explicit ItemWithNodes(Item aitem) : Item(aitem)
   { ARCANE_CHECK_KIND(isItemWithNodes); }
 
   //! Construit une référence à l'entité \a internal
@@ -554,13 +542,6 @@ class ARCANE_CORE_EXPORT ItemWithNodes
   ItemWithNodes& operator=(ItemInternal* ainternal)
   {
     _set(ainternal);
-    return (*this);
-  }
-
-  //! Opérateur de copie
-  ItemWithNodes& operator=(const ItemWithNodes& from)
-  {
-    _set(from);
     return (*this);
   }
 
@@ -587,7 +568,9 @@ class ARCANE_CORE_EXPORT ItemWithNodes
     return NodeLocalId(ItemBase::nodeId(index));
   }
 
+  // TODO: a supprimer
   ItemWithNodes* operator->() { return this; }
+  // TODO: a supprimer
   const ItemWithNodes* operator->() const { return this; }
 };
 
@@ -624,17 +607,18 @@ class ARCANE_CORE_EXPORT Edge
   typedef EdgeLocalId LocalIdType;
 
   //! Créé une arête nulle
-  Edge() : ItemWithNodes() {}
-
-  //! Constructeur de recopie
-  Edge(const Edge& rhs) : ItemWithNodes(rhs) {}
+  Edge() = default;
 
   //! Construit une référence à l'entité \a internal
   Edge(ItemInternal* ainternal) : ItemWithNodes(ainternal)
   { ARCANE_CHECK_KIND(isEdge); }
 
   //! Construit une référence à l'entité \a abase
-  Edge(const ItemBase& abase) : ItemWithNodes(abase)
+  Edge(ItemBase abase) : ItemWithNodes(abase)
+  { ARCANE_CHECK_KIND(isEdge); }
+
+  //! Construit une référence à l'entité \a aitem
+  explicit Edge(Item aitem) : ItemWithNodes(aitem)
   { ARCANE_CHECK_KIND(isEdge); }
 
   //! Construit une référence à l'entité \a internal
@@ -646,13 +630,6 @@ class ARCANE_CORE_EXPORT Edge
   Edge& operator=(ItemInternal* ainternal)
   {
     _set(ainternal);
-    return (*this);
-  }
-
-  //! Opérateur de copie
-  Edge& operator=(const Edge& from)
-  {
-    _set(from);
     return (*this);
   }
 
@@ -700,7 +677,9 @@ class ARCANE_CORE_EXPORT Edge
     return FaceLocalIdView::fromIds(ItemBase::faceIds());
   }
 
+  // TODO: a supprimer
   Edge* operator->() { return this; }
+  // TODO: a supprimer
   const Edge* operator->() const { return this; }
 };
 
@@ -738,10 +717,7 @@ class ARCANE_CORE_EXPORT Face
   typedef FaceLocalId LocalIdType;
 
   //! Création d'une face non connecté au maillage
-  Face() : ItemWithNodes() {}
-
-  //! Constructeur de recopie
-  Face(const Face& rhs) : ItemWithNodes(rhs) {}
+  Face() = default;
 
   //! Construit une référence à l'entité \a internal
   Face(ItemInternal* ainternal) : ItemWithNodes(ainternal)
@@ -749,6 +725,10 @@ class ARCANE_CORE_EXPORT Face
 
   //! Construit une référence à l'entité \a abase
   Face(ItemBase abase) : ItemWithNodes(abase)
+  { ARCANE_CHECK_KIND(isFace); }
+
+  //! Construit une référence à l'entité \a aitem
+  explicit Face(Item aitem) : ItemWithNodes(aitem)
   { ARCANE_CHECK_KIND(isFace); }
 
   //! Construit une référence à l'entité \a internal
@@ -760,13 +740,6 @@ class ARCANE_CORE_EXPORT Face
   Face& operator=(ItemInternal* ainternal)
   {
     _set(ainternal);
-    return (*this);
-  }
-
-  //! Opérateur de copie
-  Face& operator=(const Face& from)
-  {
-    _set(from);
     return (*this);
   }
 
@@ -907,7 +880,9 @@ class ARCANE_CORE_EXPORT Face
     return EdgeLocalIdView::fromIds(ItemBase::edgeIds());
   }
 
+  // TODO: a supprimer
   Face* operator->() { return this; }
+  // TODO: a supprimer
   const Face* operator->() const { return this; }
 };
 
@@ -963,10 +938,7 @@ class ARCANE_CORE_EXPORT Cell
   typedef CellLocalId LocalIdType;
 
   //! Constructeur d'une maille nulle
-  Cell() : ItemWithNodes() {}
-
-  //! Constructeur de recopie
-  Cell(const Cell& rhs) : ItemWithNodes(rhs) {}
+  Cell() = default;
 
   //! Construit une référence à l'entité \a internal
   Cell(ItemInternal* ainternal) : ItemWithNodes(ainternal)
@@ -974,6 +946,10 @@ class ARCANE_CORE_EXPORT Cell
 
   //! Construit une référence à l'entité \a abase
   Cell(ItemBase abase) : ItemWithNodes(abase)
+  { ARCANE_CHECK_KIND(isCell); }
+
+  //! Construit une référence à l'entité \a aitem
+  explicit Cell(Item aitem) : ItemWithNodes(aitem)
   { ARCANE_CHECK_KIND(isCell); }
 
   //! Construit une référence à l'entité \a internal
@@ -985,13 +961,6 @@ class ARCANE_CORE_EXPORT Cell
   Cell& operator=(ItemInternal* ainternal)
   {
     _set(ainternal);
-    return (*this);
-  }
-
-  //! Opérateur de copie
-  Cell& operator=(const Cell& from)
-  {
-    _set(from);
     return (*this);
   }
 
@@ -1091,7 +1060,9 @@ class ARCANE_CORE_EXPORT Cell
     return ItemBase::whichChildAmI(iitem->localId());
   }
 
+  // TODO: a supprimer
   Cell* operator->() { return this; }
+  // TODO: a supprimer
   const Cell* operator->() const { return this; }
 };
 
@@ -1110,17 +1081,18 @@ class Particle
   typedef ParticleLocalId LocalIdType;
 
   //! Constructeur d'une particule nulle
-  Particle() : Item() {}
-
-  //! Constructeur de recopie
-  Particle(const Particle& rhs) : Item(rhs) {}
+  Particle() = default;
 
   //! Construit une référence à l'entité \a internal
   Particle(ItemInternal* ainternal) : Item(ainternal)
   { ARCANE_CHECK_KIND(isParticle); }
 
   //! Construit une référence à l'entité \a abase
-  Particle(const ItemBase& abase) : Item(abase)
+  Particle(ItemBase abase) : Item(abase)
+  { ARCANE_CHECK_KIND(isParticle); }
+
+  //! Construit une référence à l'entité \a aitem
+  explicit Particle(Item aitem) : Item(aitem)
   { ARCANE_CHECK_KIND(isParticle); }
 
   //! Construit une référence à l'entité \a internal
@@ -1132,13 +1104,6 @@ class Particle
   Particle& operator=(ItemInternal* ainternal)
   {
     _set(ainternal);
-    return (*this);
-  }
-
-  //! Opérateur de copie
-  Particle& operator=(const Particle& from)
-  {
-    _set(from);
     return (*this);
   }
 
@@ -1173,7 +1138,9 @@ class Particle
     return Cell(ItemBase::cellBase(0));
   }
 
+  // TODO: a supprimer
   Particle* operator->() { return this; }
+  // TODO: a supprimer
   const Particle* operator->() const { return this; }
 };
 
@@ -1197,17 +1164,18 @@ class DoF
  public:
 
   //! Constructeur d'une maille non connectée
-  DoF() : Item() {}
-
-  //! Constructeur de recopie
-  DoF(const DoF& rhs) : Item(rhs) {}
+  DoF() = default;
 
   //! Construit une référence à l'entité \a internal
   DoF(ItemInternal* ainternal) : Item(ainternal)
   { ARCANE_CHECK_KIND(isDoF); }
 
   //! Construit une référence à l'entité \a abase
-  DoF(const ItemBase& abase) : Item(abase)
+  DoF(ItemBase abase) : Item(abase)
+  { ARCANE_CHECK_KIND(isDoF); }
+
+  //! Construit une référence à l'entité \a abase
+  explicit DoF(Item aitem) : Item(aitem)
   { ARCANE_CHECK_KIND(isDoF); }
 
   //! Construit une référence à l'entité \a internal
@@ -1222,14 +1190,9 @@ class DoF
     return (*this);
   }
 
-  //! Opérateur de copie
-  DoF& operator=(const DoF& from)
-  {
-    _set(from);
-    return (*this);
-  }
-
+  // TODO A supprimer
   DoF* operator->() { return this; }
+  // TODO A supprimer
   const DoF* operator->() const { return this; }
 
   //! Identifiant local de l'entité dans le sous-domaine du processeur
