@@ -41,6 +41,16 @@ namespace Arcane
 class ARCANE_CORE_EXPORT SimpleTableReaderWriterUtils
 {
  public:
+  /**
+   * @brief Méthode statique permettant de créer un répertoire avec plusieurs
+   * processus.
+   * @note C'est une méthode collective qui doit être appelée par tous les processus.
+   * 
+   * @param parallel_mng Le parallel manager du contexte actuel.
+   * @param directory Le répertoire à créer.
+   * @return true Si le répertoire a été correctement créé.
+   * @return false Si le répertoire n'a pas pu être créé.
+   */
   static bool createDirectoryOnlyProcess0(IParallelMng* parallel_mng, const Directory& directory)
   {
     int sf = 0;
@@ -52,6 +62,14 @@ class ARCANE_CORE_EXPORT SimpleTableReaderWriterUtils
     }
     return sf == 0;
   };
+  /**
+   * @brief Méthode statique permettant de vérifier l'existance d'un fichier.
+   * 
+   * @param directory Le répertoire où se situe le fichier.
+   * @param file Le nom du fichier (avec l'extension).
+   * @return true Si le fichier existe déjà.
+   * @return false Si le fichier n'existe pas.
+   */
   static bool isFileExist(const Directory& directory, const String& file)
   {
     std::ifstream stream;
