@@ -7,7 +7,7 @@ arcane_find_package(Lima)
 include(srcs.cmake)
 
 if (Lima_FOUND)
-  list(APPEND ARCANE_SOURCES Lima.cc BasicRayMeshIntersection.cc)
+  list(APPEND ARCANE_SOURCES Lima.cc)
   if (ARCANE_LIMA_HAS_MLI)
     list(APPEND ARCANE_SOURCES LimaMalipp1.cc LimaMalippT.h)
   endif()

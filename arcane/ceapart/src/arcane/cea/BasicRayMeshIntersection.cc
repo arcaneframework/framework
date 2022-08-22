@@ -5,13 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicRayMeshIntersection.cc                                 (C) 2000-2015 */
+/* BasicRayMeshIntersection.cc                                 (C) 2000-2022 */
 /*                                                                           */
 /* Service basique de calcul d'intersection entre segments et maillage.      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
 #include "arcane/utils/Array.h"
 #include "arcane/utils/Real3.h"
 #include "arcane/utils/StringBuilder.h"
@@ -29,13 +28,27 @@
 #include "arcane/VariableTypes.h"
 #include "arcane/IRayMeshIntersection.h"
 #include "arcane/IParallelMng.h"
+#include "arcane/IParticleFamily.h"
 
+#include "arcane_packages.h"
+
+#ifdef ARCANE_HAS_PACKAGE_LIMA
 #include <Lima/lima++.h>
+#define GLOBAL_HAS_LIMA true
+#else
+#define GLOBAL_HAS_LIMA false
+#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace
+{
+const bool global_has_lima = GLOBAL_HAS_LIMA;
+};
+
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -778,7 +791,7 @@ compute(IItemFamily* ray_family,
                << " face=" << fi.face_local_id
                << " new_owner=" << rays_new_owner[ray];*/
       }
-      ray_family->exchangeItems();
+      ray_family->toParticleFamily()->exchangeParticles();
     }
   }
   else{
@@ -820,7 +833,8 @@ compute(IItemFamily* ray_family,
       local_directions[index] = rays_direction[iitem];
       local_positions[index] = rays_position[iitem];
     }
-    _writeSegments(my_rank,local_positions,local_directions,local_distances);
+    if (global_has_lima)
+      _writeSegments(my_rank,local_positions,local_directions,local_distances);
   }
 
 }
@@ -837,6 +851,7 @@ _writeSegments(Int32 rank,
                Real3ConstArrayView directions,
                RealConstArrayView distances)
 {
+#ifdef ARCANE_HAS_PACKAGE_LIMA
   Lima::Maillage lima("segments");
   lima.dimension(Lima::D3);
 
@@ -862,6 +877,9 @@ _writeSegments(Int32 rank,
   sb+=".unf";
   std::string s(sb.toString().localstr());
   lima.ecrire(s);
+#else
+  ARCANE_THROW(NotSupportedException,"Lima is not available");
+#endif
 }
 
 /*---------------------------------------------------------------------------*/
@@ -873,7 +891,7 @@ ARCANE_REGISTER_SUB_DOMAIN_FACTORY(BasicRayMeshIntersection,IRayMeshIntersection
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

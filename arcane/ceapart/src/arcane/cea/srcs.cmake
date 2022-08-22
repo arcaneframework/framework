@@ -1,4 +1,5 @@
 set( ARCANE_SOURCES
+  BasicRayMeshIntersection.cc
   LimaCutInfosReader.cc
   LimaCutInfosReader.h
   SplitSDMeshPartitioner.h
