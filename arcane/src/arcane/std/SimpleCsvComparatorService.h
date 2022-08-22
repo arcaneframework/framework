@@ -67,11 +67,11 @@ class SimpleCsvComparatorService
   void init(ISimpleTableOutput* simple_table_output_ptr) override;
   void clear() override;
   void editRootDirectory(const Directory& root_directory) override;
-  void print(Integer process_id) override;
-  bool writeReferenceFile(Integer process_id) override;
-  bool readReferenceFile(Integer process_id) override;
-  bool isReferenceExist(Integer process_id) override;
-  bool compareWithReference(Integer process_id, Integer epsilon, bool compare_dimension_too) override;
+  void print(Integer rank) override;
+  bool writeReferenceFile(Integer rank) override;
+  bool readReferenceFile(Integer rank) override;
+  bool isReferenceExist(Integer rank) override;
+  bool compareWithReference(Integer rank, Integer epsilon, bool compare_dimension_too) override;
 
   bool addColumnForComparing(const String& column_name) override;
   bool addRowForComparing(const String& row_name) override;

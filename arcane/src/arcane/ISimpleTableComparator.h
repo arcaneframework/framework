@@ -75,9 +75,9 @@ class ARCANE_CORE_EXPORT ISimpleTableComparator
   /**
    * @brief Méthode permettant d'afficher le tableau lu.
    * 
-   * @param process_id Le processus qui doit afficher son tableau (-1 pour tous les processus).
+   * @param rank Le processus qui doit afficher son tableau (-1 pour tous les processus).
    */
-  virtual void print(Integer process_id = 0) = 0;
+  virtual void print(Integer rank = 0) = 0;
 
   /**
    * @brief Méthode permettant de modifier le répertoire racine.
@@ -101,43 +101,43 @@ class ARCANE_CORE_EXPORT ISimpleTableComparator
    *          pas, un appel à "compareWithReference()" retournera forcement
    *          false.
    * 
-   * @param process_id Le processus qui doit écrire son fichier (-1 pour tous les processus).
+   * @param rank Le processus qui doit écrire son fichier (-1 pour tous les processus).
    * @return true Si l'écriture a bien eu lieu.
-   * @return false Si l'écriture n'a pas eu lieu (et si processus appelant != process_id).
+   * @return false Si l'écriture n'a pas eu lieu (et si processus appelant != rank).
    */
-  virtual bool writeReferenceFile(Integer process_id = -1) = 0;
+  virtual bool writeReferenceFile(Integer rank = -1) = 0;
   /**
    * @brief Méthode permettant de lire les fichiers de références.
    * 
    * Le type des fichiers de réference doit correspondre à l'implémentation
    * de cette interface choisi (exemple : fichier .csv -> SimpleCsvComparatorService).
    * 
-   * @param process_id Le processus qui doit lire son fichier (-1 pour tous les processus).
+   * @param rank Le processus qui doit lire son fichier (-1 pour tous les processus).
    * @return true Si le fichier a été lu.
-   * @return false Si le fichier n'a pas été lu (et si processus appelant != process_id).
+   * @return false Si le fichier n'a pas été lu (et si processus appelant != rank).
    */
-  virtual bool readReferenceFile(Integer process_id = -1) = 0;
+  virtual bool readReferenceFile(Integer rank = -1) = 0;
 
   /**
    * @brief Méthode permettant de savoir si les fichiers de réferences existent.
    * 
-   * @param process_id Le processus qui doit chercher son fichier (-1 pour tous les processus). 
+   * @param rank Le processus qui doit chercher son fichier (-1 pour tous les processus). 
    * @return true Si le fichier a été trouvé.
-   * @return false Si le fichier n'a pas été trouvé (et si processus appelant != process_id).
+   * @return false Si le fichier n'a pas été trouvé (et si processus appelant != rank).
    */
-  virtual bool isReferenceExist(Integer process_id = -1) = 0;
+  virtual bool isReferenceExist(Integer rank = -1) = 0;
 
   /**
    * @brief Méthode permettant de comparer l'objet de type ISimpleTableOutput
    * aux fichiers de réferences.
    * 
-   * @param process_id Le processus qui doit comparer ses résultats (-1 pour tous les processus). 
+   * @param rank Le processus qui doit comparer ses résultats (-1 pour tous les processus). 
    * @param epsilon La marge d'erreur.
    * @param compare_dimension_too Si l'on doit aussi comparer les dimensions des tableaux de valeurs.
    * @return true S'il n'y a pas de différences.
-   * @return false S'il y a au moins une différence (et si processus appelant != process_id).
+   * @return false S'il y a au moins une différence (et si processus appelant != rank).
    */
-  virtual bool compareWithReference(Integer process_id = -1, Integer epsilon = 0, bool compare_dimension_too = false) = 0;
+  virtual bool compareWithReference(Integer rank = -1, Integer epsilon = 0, bool compare_dimension_too = false) = 0;
 
   /**
    * @brief Méthode permettant d'ajouter une colonne dans la liste des colonnes

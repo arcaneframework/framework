@@ -646,37 +646,37 @@ class ARCANE_CORE_EXPORT ISimpleTableOutput
   /**
    * @brief Méthode permettant d'afficher le tableau.
    * 
-   * @param process_id L'id du processus devant afficher le tableau (-1 pour 
+   * @param rank L'id du processus devant afficher le tableau (-1 pour 
    *                  signifier "tous les processus").
    */
-  virtual void print(Integer process_id = 0) = 0;
+  virtual void print(Integer rank = 0) = 0;
 
-  virtual bool writeFile(const Directory& root_directory, Integer process_id) = 0;
+  virtual bool writeFile(const Directory& root_directory, Integer rank) = 0;
 
   /**
    * @brief Méthode permettant d'écrire le tableau dans un fichier.
-   * Si process_id != -1, les processus autres que P0 retournent true.
+   * Si rank != -1, les processus autres que P0 retournent true.
    * 
-   * @param process_id L'id du processus devant écrire dans un fichier 
+   * @param rank L'id du processus devant écrire dans un fichier 
    *                  le tableau (-1 pour signifier "tous les processus").
    * @return true Si le fichier a été correctement écrit.
    * @return false Si le fichier n'a pas été correctement écrit.
    */
-  virtual bool writeFile(Integer process_id = -1) = 0;
+  virtual bool writeFile(Integer rank = -1) = 0;
   /**
    * @brief Méthode permettant d'écrire le tableau dans un fichier.
-   * Si process_id != -1, les processus autres que P0 retournent true.
+   * Si rank != -1, les processus autres que P0 retournent true.
    * 
    * @param directory Le répertoire où sera écrit le fichier
    *            . Le chemin final sera "./[output_dir]/csv/[directory]/"
-   * @param process_id L'id du processus devant écrire dans un fichier 
+   * @param rank L'id du processus devant écrire dans un fichier 
    *                  le tableau (-1 pour signifier "tous les processus").
    * @return true Si le fichier a été correctement écrit.
    * @return false Si le fichier n'a pas été correctement écrit.
    * 
    * @deprecated Utiliser setOutputDirectory() puis writeFile() à la place.
    */
-  virtual bool writeFile(const String& directory, Integer process_id = -1) = 0;
+  virtual bool writeFile(const String& directory, Integer rank = -1) = 0;
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
@@ -797,7 +797,7 @@ class ARCANE_CORE_EXPORT ISimpleTableOutput
    * @return true Si oui, l'implémentation peut écrire un fichier par processus.
    * @return false Sinon, il n'y a qu'un seul fichier qui peut être écrit.
    */
-  virtual bool isOneFileByProcsPermited() = 0;
+  virtual bool isOneFileByRanksPermited() = 0;
 
   /**
    * @brief Méthode permettant de connaitre le type de fichier du service.

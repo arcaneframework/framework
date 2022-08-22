@@ -65,9 +65,9 @@ class SimpleTableWriterHelper
  public:
   bool init(const Directory& root_directory, const String& table_name, const String& directory_name) override;
 
-  void print(Integer process_id) override;
-  bool writeFile(Integer process_id) override;
-  bool writeFile(const Directory& root_directory, Integer process_id) override;
+  void print(Integer rank) override;
+  bool writeFile(Integer rank) override;
+  bool writeFile(const Directory& root_directory, Integer rank) override;
 
   Integer precision() override;
   void setPrecision(Integer precision) override;
@@ -90,7 +90,7 @@ class SimpleTableWriterHelper
 
   String fileType() override;
 
-  bool isOneFileByProcsPermited() override;
+  bool isOneFileByRanksPermited() override;
 
   SimpleTableInternal* internal() override;
 

@@ -131,10 +131,10 @@ class SimpleCsvOutputService
 
   Integer addAverageColumn(const String& column_name) override { return m_simple_table_internal_mng.addAverageColumn(column_name); };
 
-  void print(Integer process_id) override { return m_simple_table_output_mng.print(process_id); };
-  bool writeFile(Integer process_id) override { return m_simple_table_output_mng.writeFile(process_id); };
-  bool writeFile(const Directory& root_directory, Integer process_id) override { return m_simple_table_output_mng.writeFile(root_directory, process_id); };
-  bool writeFile(const String& directory, Integer process_id) override;
+  void print(Integer rank) override { return m_simple_table_output_mng.print(rank); };
+  bool writeFile(Integer rank) override { return m_simple_table_output_mng.writeFile(rank); };
+  bool writeFile(const Directory& root_directory, Integer rank) override { return m_simple_table_output_mng.writeFile(root_directory, rank); };
+  bool writeFile(const String& directory, Integer rank) override;
 
   Integer precision() override { return m_simple_table_output_mng.precision(); };
   void setPrecision(Integer precision) override { return m_simple_table_output_mng.setPrecision(precision); };
@@ -154,7 +154,7 @@ class SimpleCsvOutputService
 
   String fileType() override { return m_simple_table_output_mng.fileType(); };
 
-  bool isOneFileByProcsPermited() override { return m_simple_table_output_mng.isOneFileByProcsPermited(); };
+  bool isOneFileByRanksPermited() override { return m_simple_table_output_mng.isOneFileByRanksPermited(); };
 
   SimpleTableInternal* internal() override { return &m_internal; };
   ISimpleTableReaderWriter* readerWriter() override { return &m_simple_csv_reader_writer; };

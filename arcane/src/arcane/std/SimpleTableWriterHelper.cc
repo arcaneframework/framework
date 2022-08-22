@@ -48,16 +48,16 @@ init(const Directory& root_directory, const String& table_name, const String& di
 /*---------------------------------------------------------------------------*/
 
 void SimpleTableWriterHelper::
-print(Integer process_id)
+print(Integer rank)
 {
   ARCANE_CHECK_PTR(m_simple_table_reader_writer);
-  if (process_id != -1 && m_simple_table_internal->m_parallel_mng->commRank() != process_id)
+  if (rank != -1 && m_simple_table_internal->m_parallel_mng->commRank() != rank)
     return;
   m_simple_table_reader_writer->print();
 }
 
 bool SimpleTableWriterHelper::
-writeFile(const Directory& root_directory, Integer process_id)
+writeFile(const Directory& root_directory, Integer rank)
 {
   ARCANE_CHECK_PTR(m_simple_table_internal);
   ARCANE_CHECK_PTR(m_simple_table_reader_writer);
@@ -72,21 +72,21 @@ writeFile(const Directory& root_directory, Integer process_id)
 
   // Si l'on n'est pas le processus demandé, on return true.
   // -1 = tout le monde écrit.
-  if (process_id != -1 && m_simple_table_internal->m_parallel_mng->commRank() != process_id)
+  if (rank != -1 && m_simple_table_internal->m_parallel_mng->commRank() != rank)
     return true;
 
-  // Si l'on a process_id == -1 et que m_simple_table_internal->m_name_table_once_process == true, alors il n'y a que le
+  // Si l'on a rank == -1 et que m_simple_table_internal->m_name_table_once_process == true, alors il n'y a que le
   // processus 0 qui doit écrire.
-  if ((process_id == -1 && m_name_table_once_process) && m_simple_table_internal->m_parallel_mng->commRank() != 0)
+  if ((rank == -1 && m_name_table_once_process) && m_simple_table_internal->m_parallel_mng->commRank() != 0)
     return true;
 
   return m_simple_table_reader_writer->writeTable(Directory(root_directory, m_name_output_directory), m_simple_table_internal->m_table_name);
 }
 
 bool SimpleTableWriterHelper::
-writeFile(Integer process_id)
+writeFile(Integer rank)
 {
-  return writeFile(m_root, process_id);
+  return writeFile(m_root, rank);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -182,7 +182,7 @@ rootPath()
 }
 
 bool SimpleTableWriterHelper::
-isOneFileByProcsPermited()
+isOneFileByRanksPermited()
 {
   _computeName();
   return !m_name_table_once_process;

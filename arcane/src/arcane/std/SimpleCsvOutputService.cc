@@ -51,10 +51,10 @@ init(const String& table_name, const String& directory_name)
 /*---------------------------------------------------------------------------*/
 
 bool SimpleCsvOutputService::
-writeFile(const String& directory, Integer process_id)
+writeFile(const String& directory, Integer rank)
 {
   m_simple_table_output_mng.setOutputDirectory(directory);
-  return m_simple_table_output_mng.writeFile(process_id);
+  return m_simple_table_output_mng.writeFile(rank);
 }
 
 /*---------------------------------------------------------------------------*/

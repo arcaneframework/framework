@@ -74,7 +74,7 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalComparator
   /**
    * @brief Méthode permettant de comparer les valeurs des deux STI.
    * 
-   * @param process_id Le processus qui doit comparer ses résultats (-1 pour tous les processus). 
+   * @param rank Le processus qui doit comparer ses résultats (-1 pour tous les processus). 
    * @param epsilon La marge d'erreur.
    * @param compare_dimension_too Si l'on doit comparer les dimensions des STI.
    * @return true S'il n'y a pas de différences.

@@ -76,42 +76,42 @@ class ARCANE_CORE_EXPORT ISimpleTableWriterHelper
   /**
    * @brief Méthode permettant d'afficher le tableau.
    * 
-   * @param process_id L'id du processus devant afficher le tableau (-1 pour 
+   * @param rank L'id du processus devant afficher le tableau (-1 pour 
    *                  signifier "tous les processus").
    */
-  virtual void print(Integer process_id = 0) = 0;
+  virtual void print(Integer rank = 0) = 0;
 
   /**
    * @brief Méthode permettant d'écrire le tableau dans un fichier.
-   * Si process_id != -1, les processus autres que process_id retournent true.
+   * Si rank != -1, les processus autres que rank retournent true.
    * 
    * Par exemple, dans l'implémentation SimpleTableWriterHelper,
    * le ou les fichiers seront écrits dans le répertoire :
    * root_directory/[directory_name]/[table_name].[ISimpleTableReaderWriter.fileType()]
    * 
    * @param root_directory Le répertoire racine où créer le répertoire des tableaux.
-   * @param process_id L'id du processus devant écrire dans un fichier 
+   * @param rank L'id du processus devant écrire dans un fichier 
    *                  le tableau (-1 pour signifier "tous les processus").
    * @return true Si le fichier a été correctement écrit.
    * @return false Si le fichier n'a pas été correctement écrit.
    */
-  virtual bool writeFile(const Directory& root_directory, Integer process_id) = 0;
+  virtual bool writeFile(const Directory& root_directory, Integer rank) = 0;
 
   /**
    * @brief Méthode permettant d'écrire le tableau dans un fichier.
-   * Si process_id != -1, les processus autres que process_id retournent true.
+   * Si rank != -1, les processus autres que rank retournent true.
    * 
    * Par exemple, dans l'implémentation SimpleTableWriterHelper,
    * le ou les fichiers seront écrits dans le répertoire :
    * ./[output]/[directory_name]/[table_name].[ISimpleTableReaderWriter.fileType()]
    * "output" est fourni par Arcane.
    * 
-   * @param process_id L'id du processus devant écrire dans un fichier 
+   * @param rank L'id du processus devant écrire dans un fichier 
    *                  le tableau (-1 pour signifier "tous les processus").
    * @return true Si le fichier a été correctement écrit.
    * @return false Si le fichier n'a pas été correctement écrit.
    */
-  virtual bool writeFile(Integer process_id = -1) = 0;
+  virtual bool writeFile(Integer rank = -1) = 0;
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
@@ -128,12 +128,9 @@ class ARCANE_CORE_EXPORT ISimpleTableWriterHelper
    * 
    * Aussi bien pour la méthode 'print()' que les méthodes 'writeFile()'.
    * 
-   * @note Un appel à cette méthode sans le paramètre définira la précision
-   * par défaut.
-   * 
    * @param precision La nouvelle précision.
    */
-  virtual void setPrecision(Integer precision = 6) = 0;
+  virtual void setPrecision(Integer precision) = 0;
 
   /**
    * @brief Méthode permettant de savoir si le frag 'std::fixed' est
@@ -152,12 +149,9 @@ class ARCANE_CORE_EXPORT ISimpleTableWriterHelper
    * la précision voulu. Par exemple, si l'on a appelé 'setPrecision(4)',
    * et que l'on appelle 'setFixed(true)', le print de '6.1' donnera '6.1000'.
    * 
-   * \note Un appel à cette méthode sans le paramètre définira le flag
-   * par défaut.
-   * 
    * @param fixed Si le flag 'std::fixed' doit être défini ou non.
    */
-  virtual void setFixed(bool fixed = true) = 0;
+  virtual void setFixed(bool fixed) = 0;
 
   /**
    * @brief Méthode permettant de récupérer le nom du répertoire tel qu'il
@@ -258,7 +252,7 @@ class ARCANE_CORE_EXPORT ISimpleTableWriterHelper
    * @return true Si oui, l'implémentation peut écrire un fichier par processus.
    * @return false Sinon, il n'y a qu'un seul fichier qui peut être écrit.
    */
-  virtual bool isOneFileByProcsPermited() = 0;
+  virtual bool isOneFileByRanksPermited() = 0;
 
   /**
    * @brief Méthode permettant de connaitre le type de fichier qui sera utilisé.

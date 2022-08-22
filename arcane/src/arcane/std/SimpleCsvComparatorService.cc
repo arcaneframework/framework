@@ -71,15 +71,15 @@ editRootDirectory(const Directory& root_directory)
 }
 
 void SimpleCsvComparatorService::
-print(Integer process_id)
+print(Integer rank)
 {
-  if (process_id != -1 && subDomain()->parallelMng()->commRank() != process_id)
+  if (rank != -1 && subDomain()->parallelMng()->commRank() != rank)
     return;
   m_simple_csv_reader_writer.print();
 }
 
 bool SimpleCsvComparatorService::
-writeReferenceFile(Integer process_id)
+writeReferenceFile(Integer rank)
 {
   ARCANE_CHECK_PTR(m_simple_table_output_ptr);
   // On sauvegarde les paramètres d'origines.
@@ -91,7 +91,7 @@ writeReferenceFile(Integer process_id)
   m_simple_table_output_ptr->setFixed(true);
 
   // On écrit nos fichiers de référence.
-  bool fin = m_simple_table_output_ptr->writeFile(m_root_path, process_id);
+  bool fin = m_simple_table_output_ptr->writeFile(m_root_path, rank);
 
   // On remet les paramètres par défault.
   m_simple_table_output_ptr->setPrecision(save_preci);
@@ -101,9 +101,9 @@ writeReferenceFile(Integer process_id)
 }
 
 bool SimpleCsvComparatorService::
-readReferenceFile(Integer process_id)
+readReferenceFile(Integer rank)
 {
-  if (process_id != -1 && subDomain()->parallelMng()->commRank() != process_id)
+  if (rank != -1 && subDomain()->parallelMng()->commRank() != rank)
     return false;
 
   m_is_file_read = m_simple_csv_reader_writer.readTable(m_reference_path, m_table_name);
@@ -112,24 +112,24 @@ readReferenceFile(Integer process_id)
 }
 
 bool SimpleCsvComparatorService::
-isReferenceExist(Integer process_id)
+isReferenceExist(Integer rank)
 {
-  if (process_id != -1 && subDomain()->parallelMng()->commRank() != process_id)
+  if (rank != -1 && subDomain()->parallelMng()->commRank() != rank)
     return false;
 
   return SimpleTableReaderWriterUtils::isFileExist(m_reference_path, m_file_name);
 }
 
 bool SimpleCsvComparatorService::
-compareWithReference(Integer process_id, Integer epsilon, bool compare_dimension_too)
+compareWithReference(Integer rank, Integer epsilon, bool compare_dimension_too)
 {
   ARCANE_CHECK_PTR(m_simple_table_internal_reference);
   // Si le proc appelant ne doit pas lire.
-  if (process_id != -1 && subDomain()->parallelMng()->commRank() != process_id) {
+  if (rank != -1 && subDomain()->parallelMng()->commRank() != rank) {
     return false;
   }
   // Si le fichier ne peut pas être lu.
-  if (!m_is_file_read && !readReferenceFile(process_id)) {
+  if (!m_is_file_read && !readReferenceFile(rank)) {
     return false;
   }
 
