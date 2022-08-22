@@ -37,7 +37,7 @@ class SimpleTableInternalComparator
 : public ISimpleTableInternalComparator
 {
  public:
-  SimpleTableInternalComparator(SimpleTableInternal* sti_ref, SimpleTableInternal* sti_to_compare)
+  SimpleTableInternalComparator(const Ref<SimpleTableInternal>& sti_ref, const Ref<SimpleTableInternal>& sti_to_compare)
   : m_simple_table_internal_reference(sti_ref)
   , m_simple_table_internal_to_compare(sti_to_compare)
   , m_simple_table_internal_mng_reference(m_simple_table_internal_reference)
@@ -52,8 +52,8 @@ class SimpleTableInternalComparator
   }
 
   SimpleTableInternalComparator()
-  : m_simple_table_internal_reference(nullptr)
-  , m_simple_table_internal_to_compare(nullptr)
+  : m_simple_table_internal_reference()
+  , m_simple_table_internal_to_compare()
   , m_simple_table_internal_mng_reference(m_simple_table_internal_reference)
   , m_simple_table_internal_mng_to_compare(m_simple_table_internal_to_compare)
   , m_regex_rows("")
@@ -84,19 +84,19 @@ class SimpleTableInternalComparator
   void isARegexExclusiveColumns(bool is_exclusive) override;
   void isARegexExclusiveRows(bool is_exclusive) override;
 
-  SimpleTableInternal* internalRef() override;
-  void setInternalRef(SimpleTableInternal* simple_table_internal) override;
+  Ref<SimpleTableInternal> internalRef() override;
+  void setInternalRef(const Ref<SimpleTableInternal>& simple_table_internal) override;
 
-  SimpleTableInternal* internalToCompare() override;
-  void setInternalToCompare(SimpleTableInternal* simple_table_internal) override;
+  Ref<SimpleTableInternal> internalToCompare() override;
+  void setInternalToCompare(const Ref<SimpleTableInternal>& simple_table_internal) override;
 
  protected:
   bool _exploreColumn(const String& column_name);
   bool _exploreRows(const String& row_name);
 
  protected:
-  SimpleTableInternal* m_simple_table_internal_reference;
-  SimpleTableInternal* m_simple_table_internal_to_compare;
+  Ref<SimpleTableInternal> m_simple_table_internal_reference;
+  Ref<SimpleTableInternal> m_simple_table_internal_to_compare;
 
   SimpleTableInternalMng m_simple_table_internal_mng_reference;
   SimpleTableInternalMng m_simple_table_internal_mng_to_compare;

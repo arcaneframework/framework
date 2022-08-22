@@ -43,12 +43,14 @@ class SimpleCsvOutputService
  public:
   explicit SimpleCsvOutputService(const ServiceBuildInfo& sbi)
   : ArcaneSimpleCsvOutputObject(sbi)
-  , m_internal(mesh()->parallelMng())
-  , m_simple_csv_reader_writer(&m_internal)
-  , m_simple_table_internal_mng(&m_internal)
-  , m_simple_table_output_mng(&m_simple_csv_reader_writer)
   {
     m_with_option = (sbi.creationType() == ST_CaseOption);
+
+    m_internal = makeRef(new SimpleTableInternal(mesh()->parallelMng()));
+    m_simple_csv_reader_writer = makeRef(new SimpleCsvReaderWriter(m_internal));
+
+    m_simple_table_internal_mng.setInternal(m_internal);
+    m_simple_table_output_mng.setReaderWriter(m_simple_csv_reader_writer);
   }
 
   virtual ~SimpleCsvOutputService() = default;
@@ -156,14 +158,16 @@ class SimpleCsvOutputService
 
   bool isOneFileByRanksPermited() override { return m_simple_table_output_mng.isOneFileByRanksPermited(); };
 
-  SimpleTableInternal* internal() override { return &m_internal; };
-  ISimpleTableReaderWriter* readerWriter() override { return &m_simple_csv_reader_writer; };
+  Ref<SimpleTableInternal> internal() override { return m_internal; };
+  Ref<ISimpleTableReaderWriter> readerWriter() override { return m_simple_csv_reader_writer; };
 
  private:
-  SimpleTableInternal m_internal;
-  SimpleCsvReaderWriter m_simple_csv_reader_writer;
   SimpleTableInternalMng m_simple_table_internal_mng;
   SimpleTableWriterHelper m_simple_table_output_mng;
+
+  Ref<SimpleTableInternal> m_internal;
+  Ref<SimpleCsvReaderWriter> m_simple_csv_reader_writer;
+
   bool m_with_option;
 };
 

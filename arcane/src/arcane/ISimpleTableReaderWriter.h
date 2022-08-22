@@ -233,7 +233,7 @@ class ARCANE_CORE_EXPORT ISimpleTableReaderWriter
    * 
    * @return SimpleTableInternal* Le pointeur utilisé. 
    */
-  virtual SimpleTableInternal* internal() = 0;
+  virtual Ref<SimpleTableInternal> internal() = 0;
 
   /**
    * @brief Méthode permettant de définir un pointeur vers
@@ -245,7 +245,7 @@ class ARCANE_CORE_EXPORT ISimpleTableReaderWriter
    * 
    * @param simple_table_reader_writer Le pointeur vers SimpleTableInternal.
    */
-  virtual void setInternal(SimpleTableInternal* simple_table_internal) = 0;
+  virtual void setInternal(const Ref<SimpleTableInternal>& simple_table_internal) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -130,30 +130,28 @@ isARegexExclusiveRows(bool is_exclusive)
   m_is_excluding_regex_rows = is_exclusive;
 }
 
-SimpleTableInternal* SimpleTableInternalComparator::
+Ref<SimpleTableInternal> SimpleTableInternalComparator::
 internalRef()
 {
   return m_simple_table_internal_reference;
 }
 
 void SimpleTableInternalComparator::
-setInternalRef(SimpleTableInternal* sti_ref)
+setInternalRef(const Ref<SimpleTableInternal>& sti_ref)
 {
-  ARCANE_CHECK_PTR(sti_ref);
   m_simple_table_internal_reference = sti_ref;
   m_simple_table_internal_mng_reference.setInternal(m_simple_table_internal_reference);
 }
 
-SimpleTableInternal* SimpleTableInternalComparator::
+Ref<SimpleTableInternal> SimpleTableInternalComparator::
 internalToCompare()
 {
   return m_simple_table_internal_to_compare;
 }
 
 void SimpleTableInternalComparator::
-setInternalToCompare(SimpleTableInternal* sti_to_compare)
+setInternalToCompare(const Ref<SimpleTableInternal>& sti_to_compare)
 {
-  ARCANE_CHECK_PTR(sti_to_compare);
   m_simple_table_internal_to_compare = sti_to_compare;
   m_simple_table_internal_mng_to_compare.setInternal(m_simple_table_internal_to_compare);
 }

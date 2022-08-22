@@ -55,9 +55,9 @@ clear()
 {
   m_simple_table_internal_comparator.clearComparator();
 
-  m_simple_table_internal_to_compare.clear();
+  m_simple_table_internal_to_compare->clear();
 
-  m_simple_table_internal_reference = nullptr;
+  m_simple_table_internal_reference.reset();
   m_simple_table_output_ptr = nullptr;
 
   m_is_file_read = false;

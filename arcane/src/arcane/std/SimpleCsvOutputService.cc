@@ -46,7 +46,6 @@ init(const String& table_name, const String& directory_name)
   return m_simple_table_output_mng.init(subDomain()->exportDirectory(), table_name, directory_name);
 }
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

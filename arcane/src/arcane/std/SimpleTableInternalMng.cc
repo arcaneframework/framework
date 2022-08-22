@@ -807,16 +807,15 @@ addAverageColumn(const String& column_name)
   return position;
 }
 
-SimpleTableInternal* SimpleTableInternalMng::
+Ref<SimpleTableInternal> SimpleTableInternalMng::
 internal()
 {
   return m_simple_table_internal;
 }
 
 void SimpleTableInternalMng::
-setInternal(SimpleTableInternal* simple_table_internal)
+setInternal(const Ref<SimpleTableInternal>& simple_table_internal)
 {
-  ARCANE_CHECK_PTR(simple_table_internal);
   m_simple_table_internal = simple_table_internal;
 }
 

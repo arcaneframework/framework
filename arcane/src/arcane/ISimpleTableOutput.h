@@ -815,7 +815,7 @@ class ARCANE_CORE_EXPORT ISimpleTableOutput
    * 
    * @return SimpleTableInternal* Un pointeur vers l'objet interne. 
    */
-  virtual SimpleTableInternal* internal() = 0;
+  virtual Ref<SimpleTableInternal> internal() = 0;
 
   /**
    * @brief Méthode permettant de récupérer le pointeur vers l'objet
@@ -826,7 +826,7 @@ class ARCANE_CORE_EXPORT ISimpleTableOutput
    * 
    * @return ISimpleTableReaderWriter* Un pointeur vers l'objet interne. 
    */
-  virtual ISimpleTableReaderWriter* readerWriter() = 0;
+  virtual Ref<ISimpleTableReaderWriter> readerWriter() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

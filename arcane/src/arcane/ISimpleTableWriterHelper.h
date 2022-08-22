@@ -267,7 +267,7 @@ class ARCANE_CORE_EXPORT ISimpleTableWriterHelper
    * 
    * @return SimpleTableInternal* Le pointeur utilisé. 
    */
-  virtual SimpleTableInternal* internal() = 0;
+  virtual Ref<SimpleTableInternal> internal() = 0;
 
   /**
    * @brief Méthode permettant de récupérer le pointeur vers l'objet
@@ -275,7 +275,7 @@ class ARCANE_CORE_EXPORT ISimpleTableWriterHelper
    * 
    * @return ISimpleTableReaderWriter* Le pointeur utilisé.
    */
-  virtual ISimpleTableReaderWriter* readerWriter() = 0;
+  virtual Ref<ISimpleTableReaderWriter> readerWriter() = 0;
 
   /**
    * @brief Méthode permettant de définir un pointeur vers
@@ -287,7 +287,7 @@ class ARCANE_CORE_EXPORT ISimpleTableWriterHelper
    * 
    * @param simple_table_reader_writer Le pointeur vers une implem de ISimpleTableReaderWriter.
    */
-  virtual void setReaderWriter(ISimpleTableReaderWriter* simple_table_reader_writer) = 0;
+  virtual void setReaderWriter(const Ref<ISimpleTableReaderWriter>& simple_table_reader_writer) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

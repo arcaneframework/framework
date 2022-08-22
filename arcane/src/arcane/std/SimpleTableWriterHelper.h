@@ -38,7 +38,7 @@ class SimpleTableWriterHelper
 : public ISimpleTableWriterHelper
 {
  public:
-  SimpleTableWriterHelper(ISimpleTableReaderWriter* simple_table_reader_writer)
+  SimpleTableWriterHelper(const Ref<ISimpleTableReaderWriter>& simple_table_reader_writer)
   : m_simple_table_internal(simple_table_reader_writer->internal())
   , m_simple_table_reader_writer(simple_table_reader_writer)
   , m_name_output_directory("")
@@ -50,8 +50,8 @@ class SimpleTableWriterHelper
   }
 
   SimpleTableWriterHelper()
-  : m_simple_table_internal(nullptr)
-  , m_simple_table_reader_writer(nullptr)
+  : m_simple_table_internal()
+  , m_simple_table_reader_writer()
   , m_name_output_directory("")
   , m_name_table_without_computation("")
   , m_root()
@@ -92,17 +92,17 @@ class SimpleTableWriterHelper
 
   bool isOneFileByRanksPermited() override;
 
-  SimpleTableInternal* internal() override;
+  Ref<SimpleTableInternal> internal() override;
 
-  ISimpleTableReaderWriter* readerWriter() override;
-  void setReaderWriter(ISimpleTableReaderWriter* simple_table_reader_writer) override;
+  Ref<ISimpleTableReaderWriter> readerWriter() override;
+  void setReaderWriter(const Ref<ISimpleTableReaderWriter>& simple_table_reader_writer) override;
 
  protected:
   void _computeName();
 
  protected:
-  SimpleTableInternal* m_simple_table_internal;
-  ISimpleTableReaderWriter* m_simple_table_reader_writer;
+  Ref<SimpleTableInternal> m_simple_table_internal;
+  Ref<ISimpleTableReaderWriter> m_simple_table_reader_writer;
 
   String m_name_output_directory;
   String m_name_table_without_computation;

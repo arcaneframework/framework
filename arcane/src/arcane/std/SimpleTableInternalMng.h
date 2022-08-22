@@ -32,13 +32,13 @@ class SimpleTableInternalMng
 : public ISimpleTableInternalMng
 {
  public:
-  SimpleTableInternalMng(SimpleTableInternal* simple_table_internal)
+  SimpleTableInternalMng(Ref<SimpleTableInternal> simple_table_internal)
   : m_simple_table_internal(simple_table_internal)
   {
   }
 
   SimpleTableInternalMng()
-  : m_simple_table_internal(nullptr)
+  : m_simple_table_internal()
   {
   }
 
@@ -118,11 +118,11 @@ class SimpleTableInternalMng
 
   Integer addAverageColumn(const String& column_name) override;
 
-  SimpleTableInternal* internal() override;
-  void setInternal(SimpleTableInternal* simple_table_internal) override;
+  Ref<SimpleTableInternal> internal() override;
+  void setInternal(const Ref<SimpleTableInternal>& simple_table_internal) override;
 
  protected:
-  SimpleTableInternal* m_simple_table_internal;
+  Ref<SimpleTableInternal> m_simple_table_internal;
 };
 
 /*---------------------------------------------------------------------------*/

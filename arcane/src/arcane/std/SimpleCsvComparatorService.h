@@ -53,12 +53,13 @@ class SimpleCsvComparatorService
   , m_table_name("")
   , m_is_file_open(false)
   , m_is_file_read(false)
-  , m_simple_table_internal_reference(nullptr)
-  , m_simple_table_internal_to_compare(mesh()->parallelMng())
-  , m_simple_table_internal_comparator(m_simple_table_internal_reference, &m_simple_table_internal_to_compare)
-  , m_simple_csv_reader_writer(&m_simple_table_internal_to_compare)
   {
     m_with_option = (sbi.creationType() == ST_CaseOption);
+
+    m_simple_table_internal_to_compare = makeRef(new SimpleTableInternal(mesh()->parallelMng()));
+
+    m_simple_table_internal_comparator.setInternalToCompare(m_simple_table_internal_to_compare);
+    m_simple_csv_reader_writer.setInternal(m_simple_table_internal_to_compare);
   }
 
   virtual ~SimpleCsvComparatorService() = default;
@@ -103,8 +104,9 @@ class SimpleCsvComparatorService
   bool m_is_file_open;
   bool m_is_file_read;
 
-  SimpleTableInternal* m_simple_table_internal_reference;
-  SimpleTableInternal m_simple_table_internal_to_compare;
+  Ref<SimpleTableInternal> m_simple_table_internal_reference;
+  Ref<SimpleTableInternal> m_simple_table_internal_to_compare;
+
   SimpleTableInternalComparator m_simple_table_internal_comparator;
   SimpleCsvReaderWriter m_simple_csv_reader_writer;
 

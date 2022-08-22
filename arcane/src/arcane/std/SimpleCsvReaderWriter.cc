@@ -166,16 +166,15 @@ setFixed(bool fixed)
   m_is_fixed_print = fixed;
 }
 
-SimpleTableInternal* SimpleCsvReaderWriter::
+Ref<SimpleTableInternal> SimpleCsvReaderWriter::
 internal()
 {
   return m_simple_table_internal;
 }
 
 void SimpleCsvReaderWriter::
-setInternal(SimpleTableInternal* simple_table_internal)
+setInternal(const Ref<SimpleTableInternal>& simple_table_internal)
 {
-  ARCANE_CHECK_PTR(simple_table_internal);
   m_simple_table_internal = simple_table_internal;
 }
 

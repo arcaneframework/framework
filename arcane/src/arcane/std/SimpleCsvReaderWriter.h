@@ -34,7 +34,7 @@ class SimpleCsvReaderWriter
 : public ISimpleTableReaderWriter
 {
  public:
-  SimpleCsvReaderWriter(SimpleTableInternal* simple_table_internal)
+  SimpleCsvReaderWriter(const Ref<SimpleTableInternal>& simple_table_internal)
   : m_simple_table_internal(simple_table_internal)
   , m_separator(';')
   , m_precision_print(6)
@@ -43,7 +43,7 @@ class SimpleCsvReaderWriter
   }
 
   SimpleCsvReaderWriter()
-  : m_simple_table_internal(nullptr)
+  : m_simple_table_internal()
   , m_separator(';')
   , m_precision_print(6)
   , m_is_fixed_print(true)
@@ -66,8 +66,8 @@ class SimpleCsvReaderWriter
 
   String fileType() override { return m_output_file_type; };
 
-  SimpleTableInternal* internal() override;
-  void setInternal(SimpleTableInternal* simple_table_internal) override;
+  Ref<SimpleTableInternal> internal() override;
+  void setInternal(const Ref<SimpleTableInternal>& simple_table_internal) override;
 
  protected:
   bool _openFile(std::ifstream& stream, Directory directory, const String& file);
@@ -75,7 +75,7 @@ class SimpleCsvReaderWriter
   void _print(std::ostream& stream);
 
  protected:
-  SimpleTableInternal* m_simple_table_internal;
+  Ref<SimpleTableInternal> m_simple_table_internal;
 
   char m_separator;
 

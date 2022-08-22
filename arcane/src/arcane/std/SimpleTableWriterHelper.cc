@@ -263,22 +263,21 @@ _computeName()
   return;
 }
 
-SimpleTableInternal* SimpleTableWriterHelper::
+Ref<SimpleTableInternal> SimpleTableWriterHelper::
 internal()
 {
   return m_simple_table_internal;
 }
 
-ISimpleTableReaderWriter* SimpleTableWriterHelper::
+Ref<ISimpleTableReaderWriter> SimpleTableWriterHelper::
 readerWriter()
 {
   return m_simple_table_reader_writer;
 }
 
 void SimpleTableWriterHelper::
-setReaderWriter(ISimpleTableReaderWriter* simple_table_reader_writer)
+setReaderWriter(const Ref<ISimpleTableReaderWriter>& simple_table_reader_writer)
 {
-  ARCANE_CHECK_PTR(m_simple_table_reader_writer);
   m_simple_table_reader_writer = simple_table_reader_writer;
   m_simple_table_internal = m_simple_table_reader_writer->internal();
 }

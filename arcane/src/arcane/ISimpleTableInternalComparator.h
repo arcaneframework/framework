@@ -166,7 +166,7 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalComparator
    * 
    * @return SimpleTableInternal* Le pointeur utilisé. 
    */
-  virtual SimpleTableInternal* internalRef() = 0;
+  virtual Ref<SimpleTableInternal> internalRef() = 0;
 
   /**
    * @brief Méthode permettant de définir un pointeur vers
@@ -178,7 +178,7 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalComparator
    * 
    * @param simple_table_reader_writer Le pointeur vers SimpleTableInternal.
    */
-  virtual void setInternalRef(SimpleTableInternal* simple_table_internal) = 0;
+  virtual void setInternalRef(const Ref<SimpleTableInternal>& simple_table_internal) = 0;
 
   /**
    * @brief Méthode permettant de récupérer le pointeur vers l'objet
@@ -186,7 +186,7 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalComparator
    * 
    * @return SimpleTableInternal* Le pointeur utilisé. 
    */
-  virtual SimpleTableInternal* internalToCompare() = 0;
+  virtual Ref<SimpleTableInternal> internalToCompare() = 0;
 
   /**
    * @brief Méthode permettant de définir un pointeur vers
@@ -198,7 +198,7 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalComparator
    * 
    * @param simple_table_reader_writer Le pointeur vers SimpleTableInternal.
    */
-  virtual void setInternalToCompare(SimpleTableInternal* simple_table_internal) = 0;
+  virtual void setInternalToCompare(const Ref<SimpleTableInternal>& simple_table_internal) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
