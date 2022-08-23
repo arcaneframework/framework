@@ -192,7 +192,17 @@ class ItemEnumerator
 : public ItemEnumeratorBaseT<Item>
 {
   friend class ItemEnumeratorCS;
-  template<class T> friend class ItemEnumeratorBaseT;
+  // NOTE: Normalement il suffirait de faire cela:
+  //   template<class T> friend class ItemEnumeratorBase;
+  // mais cela ne fonctionne pas avec GCC 8. On fait donc la spécialisation
+  // à la main
+  friend class ItemEnumeratorBaseT<Node>;
+  friend class ItemEnumeratorBaseT<ItemWithNodes>;
+  friend class ItemEnumeratorBaseT<Edge>;
+  friend class ItemEnumeratorBaseT<Face>;
+  friend class ItemEnumeratorBaseT<Cell>;
+  friend class ItemEnumeratorBaseT<Particle>;
+  friend class ItemEnumeratorBaseT<DoF>;
 
  public:
 
