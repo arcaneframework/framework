@@ -39,8 +39,17 @@ init(ISimpleTableOutput* simple_table_output_ptr)
   ARCANE_CHECK_PTR(simple_table_output_ptr);
   m_simple_table_output_ptr = simple_table_output_ptr;
 
-  m_simple_table_internal_reference = m_simple_table_output_ptr->internal();
-  m_simple_table_internal_comparator.setInternalRef(m_simple_table_internal_reference);
+  if(!m_is_already_init) {
+    m_is_already_init = true;
+
+    m_simple_table_internal_reference = makeRef(new SimpleTableInternal(mesh()->parallelMng()));
+
+    m_simple_table_internal_comparator.setInternalRef(m_simple_table_internal_reference);
+    m_simple_csv_reader_writer.setInternal(m_simple_table_internal_reference);
+  }
+
+  m_simple_table_internal_to_compare = m_simple_table_output_ptr->internal();
+  m_simple_table_internal_comparator.setInternalToCompare(m_simple_table_internal_to_compare);
 
   // On déduit l'emplacement des fichiers de réferences.
   m_output_directory = m_simple_table_output_ptr->outputDirectory();
@@ -54,13 +63,11 @@ void SimpleCsvComparatorService::
 clear()
 {
   m_simple_table_internal_comparator.clearComparator();
-
-  m_simple_table_internal_to_compare->clear();
-
-  m_simple_table_internal_reference.reset();
-  m_simple_table_output_ptr = nullptr;
-
   m_is_file_read = false;
+  
+  if(m_is_already_init) {
+    m_simple_table_internal_reference->clear();
+  }
 }
 
 void SimpleCsvComparatorService::
@@ -131,8 +138,6 @@ compareWithReference(Integer rank, Integer epsilon, bool compare_dimension_too)
   if (!m_is_file_read && !readReferenceFile(rank)) {
     return false;
   }
-
-  m_simple_table_internal_reference->m_values.dim1Size();
 
   return m_simple_table_internal_comparator.compare(epsilon, compare_dimension_too);
 }

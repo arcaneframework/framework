@@ -62,7 +62,6 @@ class ARCANE_CORE_EXPORT ISimpleTableOutput
 
   /**
    * @brief Méthode permettant de remettre à zéro les tableaux
-   * internes. Nécessite un appel à init() après.
    */
   virtual void clear() = 0;
 

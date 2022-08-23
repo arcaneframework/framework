@@ -43,7 +43,23 @@ init(const String& table_name)
 bool SimpleCsvOutputService::
 init(const String& table_name, const String& directory_name)
 {
+  if(!m_is_already_init) {
+    m_is_already_init = true;
+
+    m_internal = makeRef(new SimpleTableInternal(mesh()->parallelMng()));
+    m_simple_csv_reader_writer = makeRef(new SimpleCsvReaderWriter(m_internal));
+
+    m_simple_table_internal_mng.setInternal(m_internal);
+    m_simple_table_output_mng.setReaderWriter(m_simple_csv_reader_writer);
+  }
   return m_simple_table_output_mng.init(subDomain()->exportDirectory(), table_name, directory_name);
+}
+void SimpleCsvOutputService::
+clear() 
+{
+  if(m_is_already_init) {
+    m_simple_table_internal_mng.clearInternal();
+  }
 }
 
 /*---------------------------------------------------------------------------*/

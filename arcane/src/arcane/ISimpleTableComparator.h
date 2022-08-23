@@ -67,8 +67,9 @@ class ARCANE_CORE_EXPORT ISimpleTableComparator
   virtual void init(ISimpleTableOutput* simple_table_output_ptr) = 0;
 
   /**
-   * @brief Méthode permettant de remettre à zero l'objet.
-   * Nécessite un appel à init() puis à readReferenceFile() après.
+   * @brief Méthode permettant d'effacer les données lues par readReferenceFile().
+   * @note Efface le SimpleTableInternal du comparateur sans toucher à celui du
+   * SimpleTableOutput.
    */
   virtual void clear() = 0;
 

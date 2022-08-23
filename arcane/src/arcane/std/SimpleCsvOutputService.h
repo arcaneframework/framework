@@ -43,14 +43,9 @@ class SimpleCsvOutputService
  public:
   explicit SimpleCsvOutputService(const ServiceBuildInfo& sbi)
   : ArcaneSimpleCsvOutputObject(sbi)
+  , m_is_already_init(false)
   {
     m_with_option = (sbi.creationType() == ST_CaseOption);
-
-    m_internal = makeRef(new SimpleTableInternal(mesh()->parallelMng()));
-    m_simple_csv_reader_writer = makeRef(new SimpleCsvReaderWriter(m_internal));
-
-    m_simple_table_internal_mng.setInternal(m_internal);
-    m_simple_table_output_mng.setReaderWriter(m_simple_csv_reader_writer);
   }
 
   virtual ~SimpleCsvOutputService() = default;
@@ -60,7 +55,7 @@ class SimpleCsvOutputService
   bool init(const String& table_name) override;
   bool init(const String& table_name, const String& directory_name) override;
 
-  void clear() override { return m_simple_table_internal_mng.clearInternal(); };
+  void clear() override;
 
   Integer addRow(const String& row_name) override { return m_simple_table_internal_mng.addRow(row_name); };
   Integer addRow(const String& row_name, ConstArrayView<Real> elements) override { return m_simple_table_internal_mng.addRow(row_name, elements); };
@@ -168,6 +163,7 @@ class SimpleCsvOutputService
   Ref<SimpleTableInternal> m_internal;
   Ref<SimpleCsvReaderWriter> m_simple_csv_reader_writer;
 
+  bool m_is_already_init;
   bool m_with_option;
 };
 
