@@ -99,8 +99,12 @@
 #include "arcane/IGraph2.h"
 #include "arcane/IGraphModifier2.h"
 #include "arcane/IRandomNumberGenerator.h"
-#include "arcane/ISimpleTableOutput.h"
 #include "arcane/ISimpleTableComparator.h"
+#include "arcane/ISimpleTableInternalComparator.h"
+#include "arcane/ISimpleTableInternalMng.h"
+#include "arcane/ISimpleTableOutput.h"
+#include "arcane/ISimpleTableReaderWriter.h"
+#include "arcane/ISimpleTableWriterHelper.h"
 
 
 /*---------------------------------------------------------------------------*/

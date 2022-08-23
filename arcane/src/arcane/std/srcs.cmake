@@ -73,6 +73,18 @@ set(ARCANE_SOURCES
 
   PDESRandomNumberGeneratorService.cc
   PDESRandomNumberGeneratorService.h
+
+  SimpleCsvComparatorService.cc
+  SimpleCsvComparatorService.h
+  
+  SimpleCsvOutputService.cc
+  SimpleCsvOutputService.h
+  
+  SimpleCsvReaderWriter.cc
+  SimpleCsvReaderWriter.h
+  
+  SimpleTableInternalComparator.cc
+  SimpleTableInternalComparator.h
   
   SimpleTableInternalMng.cc
   SimpleTableInternalMng.h
@@ -80,18 +92,6 @@ set(ARCANE_SOURCES
   SimpleTableWriterHelper.cc
   SimpleTableWriterHelper.h
   
-  SimpleTableInternalComparator.cc
-  SimpleTableInternalComparator.h
-
-  SimpleCsvReaderWriter.cc
-  SimpleCsvReaderWriter.h
-  
-  SimpleCsvOutputService.cc
-  SimpleCsvOutputService.h
-  
-  SimpleCsvComparatorService.cc
-  SimpleCsvComparatorService.h
-
   MshMeshReader.cc
   MshMeshWriter.cc
   internal/IosFile.cc

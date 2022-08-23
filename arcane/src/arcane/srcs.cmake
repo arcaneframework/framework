@@ -1,6 +1,6 @@
 set(CURRENT_SRC_PATH  ${Arcane_SOURCE_DIR}/src)
 
-set(ARCANE_SOURCES
+set( ARCANE_SOURCES
   AbstractCaseDocumentVisitor.cc
    AbstractCaseDocumentVisitor.h
    AbstractDataVisitor.cc
