@@ -159,6 +159,8 @@ typedef ItemGroupT<DoF> DoFGroup;
 class ItemInternalEnumerator;
 template<typename ItemType>
 class ItemEnumeratorT;
+template<typename ItemType>
+class ItemEnumeratorBaseT;
 
 /*!
  * \ingroup Mesh

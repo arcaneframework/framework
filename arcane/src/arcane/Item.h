@@ -70,7 +70,7 @@ namespace Arcane
 class ARCANE_CORE_EXPORT Item
 : protected ItemBase
 {
-  friend class ItemEnumeratorT<Item>;
+  friend class ItemEnumeratorBaseT<Item>;
 
  public:
 
@@ -378,7 +378,7 @@ namespace Arcane
 class ARCANE_CORE_EXPORT Node
 : public Item
 {
-  friend class ItemEnumeratorT<Node>;
+  friend class ItemEnumeratorBaseT<Node>;
 
  public:
   /*!
@@ -520,7 +520,7 @@ class ARCANE_CORE_EXPORT Node
 class ARCANE_CORE_EXPORT ItemWithNodes
 : public Item
 {
-  friend class ItemEnumeratorT<ItemWithNodes>;
+  friend class ItemEnumeratorBaseT<ItemWithNodes>;
 
  public:
   
@@ -593,7 +593,7 @@ class ARCANE_CORE_EXPORT ItemWithNodes
 class ARCANE_CORE_EXPORT Edge
 : public ItemWithNodes
 {
-  friend class ItemEnumeratorT<Edge>;
+  friend class ItemEnumeratorBaseT<Edge>;
 
  public:
   /*!
@@ -704,7 +704,7 @@ class ARCANE_CORE_EXPORT Edge
 class ARCANE_CORE_EXPORT Face
 : public ItemWithNodes
 {
-  friend class ItemEnumeratorT<Face>;
+  friend class ItemEnumeratorBaseT<Face>;
 
  public:
   /*!
@@ -928,7 +928,7 @@ class ARCANE_CORE_EXPORT Face
 class ARCANE_CORE_EXPORT Cell
 : public ItemWithNodes
 {
-  friend class ItemEnumeratorT<Cell>;
+  friend class ItemEnumeratorBaseT<Cell>;
 
  public:
   /*!
@@ -1087,7 +1087,7 @@ class ARCANE_CORE_EXPORT Cell
 class Particle
 : public Item
 {
-  friend class ItemEnumeratorT<Particle>;
+  friend class ItemEnumeratorBaseT<Particle>;
 
  public:
   
@@ -1175,7 +1175,7 @@ class Particle
 class DoF
 : public Item
 {
-  friend class ItemEnumeratorT<DoF>;
+  friend class ItemEnumeratorBaseT<DoF>;
 
  public:
 

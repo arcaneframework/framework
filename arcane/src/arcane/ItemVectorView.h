@@ -239,9 +239,9 @@ class ARCANE_CORE_EXPORT ItemVectorView
 
   void _init()
   {
-    if (size()>0)
-      m_shared_info = m_items[0]->sharedInfo();
+    m_shared_info = (size()>0 && !m_items.empty()) ? m_items[0]->sharedInfo() : ItemSharedInfo::nullInstance();
   }
+  void _init2(IItemFamily* family);
 };
 
 /*---------------------------------------------------------------------------*/
