@@ -49,7 +49,7 @@ class SimpleTableWriterHelper
   , m_name_table_once_process(false)
   {
     if (simple_table_reader_writer.isNull())
-      ARCANE_FATAL("Null Ref");
+      ARCANE_FATAL("La réference passée en paramètre est Null.");
   }
 
   SimpleTableWriterHelper()

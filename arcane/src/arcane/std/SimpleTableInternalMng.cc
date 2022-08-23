@@ -768,7 +768,7 @@ void SimpleTableInternalMng::
 setInternal(const Ref<SimpleTableInternal>& simple_table_internal)
 {
   if (simple_table_internal.isNull())
-    ARCANE_FATAL("Null Ref");
+    ARCANE_FATAL("La réference passée en paramètre est Null.");
   m_simple_table_internal = simple_table_internal;
 }
 

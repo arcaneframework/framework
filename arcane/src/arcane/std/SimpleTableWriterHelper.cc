@@ -210,7 +210,7 @@ void SimpleTableWriterHelper::
 setReaderWriter(const Ref<ISimpleTableReaderWriter>& simple_table_reader_writer)
 {
   if (simple_table_reader_writer.isNull())
-    ARCANE_FATAL("Null Ref");
+    ARCANE_FATAL("La réference passée en paramètre est Null.");
   m_simple_table_reader_writer = simple_table_reader_writer;
   m_simple_table_internal = m_simple_table_reader_writer->internal();
 }

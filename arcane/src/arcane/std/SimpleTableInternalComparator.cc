@@ -140,7 +140,7 @@ void SimpleTableInternalComparator::
 setInternalRef(const Ref<SimpleTableInternal>& sti_ref)
 {
   if (sti_ref.isNull())
-    ARCANE_FATAL("Null Ref");
+    ARCANE_FATAL("La réference passée en paramètre est Null.");
   m_simple_table_internal_reference = sti_ref;
   m_simple_table_internal_mng_reference.setInternal(m_simple_table_internal_reference);
 }
@@ -155,7 +155,7 @@ void SimpleTableInternalComparator::
 setInternalToCompare(const Ref<SimpleTableInternal>& sti_to_compare)
 {
   if (sti_to_compare.isNull())
-    ARCANE_FATAL("Null Ref");
+    ARCANE_FATAL("La réference passée en paramètre est Null.");
   m_simple_table_internal_to_compare = sti_to_compare;
   m_simple_table_internal_mng_to_compare.setInternal(m_simple_table_internal_to_compare);
 }

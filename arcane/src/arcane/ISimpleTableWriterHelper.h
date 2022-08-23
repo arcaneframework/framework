@@ -104,7 +104,6 @@ class ARCANE_CORE_EXPORT ISimpleTableWriterHelper
    * Par exemple, dans l'implémentation SimpleTableWriterHelper,
    * le ou les fichiers seront écrits dans le répertoire :
    * ./[output]/[directory_name]/[table_name].[ISimpleTableReaderWriter.fileType()]
-   * "output" est fourni par Arcane.
    * 
    * @param rank L'id du processus devant écrire dans un fichier 
    *                  le tableau (-1 pour signifier "tous les processus").

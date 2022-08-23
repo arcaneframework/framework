@@ -68,7 +68,7 @@ class ARCANE_CORE_EXPORT ISimpleTableComparator
 
   /**
    * @brief Méthode permettant de remettre à zero l'objet.
-   * Necessite un appel à init() puis à readReferenceFile() après.
+   * Nécessite un appel à init() puis à readReferenceFile() après.
    */
   virtual void clear() = 0;
 

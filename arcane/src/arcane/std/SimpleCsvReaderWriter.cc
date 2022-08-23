@@ -49,14 +49,14 @@ readTable(const Directory& src, const String& file_name)
 
   std::ifstream stream;
 
-  // Pas de fichier, pas de chocolats.
+  // S'il n'y a pas de fichier, on retourne false.
   if (!_openFile(stream, src, file_name + "." + fileType())) {
     return false;
   }
 
   std::string line;
 
-  // S'il n'y a pas de première ligne, on arrete là.
+  // S'il n'y a pas de première ligne, on arrête là.
   // Un fichier écrit par SimpleCsvOutput possède toujours au
   // moins une ligne.
   if (!std::getline(stream, line)) {
@@ -94,7 +94,7 @@ readTable(const Directory& src, const String& file_name)
     // donc on doit resize à chaque tour.
     m_simple_table_internal->m_values.resize(compt_line + 1);
 
-    // On split la ligne récupéré.
+    // On split la ligne récupérée.
     StringUniqueArray splitted_line;
     String ligne(line);
     ligne.split(splitted_line, m_separator);
@@ -112,6 +112,8 @@ readTable(const Directory& src, const String& file_name)
 
   _closeFile(stream);
 
+  // On n'a pas sauvegardé les tailles des lignes/colonnes donc on met la taille max
+  // pour chaque ligne/colonne.
   m_simple_table_internal->m_row_sizes.resize(m_simple_table_internal->m_row_names.size());
   m_simple_table_internal->m_row_sizes.fill(m_simple_table_internal->m_values.dim2Size());
 
@@ -178,7 +180,7 @@ void SimpleCsvReaderWriter::
 setInternal(const Ref<SimpleTableInternal>& simple_table_internal)
 {
   if (simple_table_internal.isNull())
-    ARCANE_FATAL("Null Ref");
+    ARCANE_FATAL("La réference passée en paramètre est Null.");
   m_simple_table_internal = simple_table_internal;
 }
 

@@ -51,7 +51,7 @@ class SimpleTableInternalComparator
   , m_is_excluding_array_columns(false)
   {
     if (sti_ref.isNull() || sti_to_compare.isNull())
-      ARCANE_FATAL("Null Ref");
+      ARCANE_FATAL("La réference passée en paramètre est Null.");
   }
 
   SimpleTableInternalComparator()

@@ -42,7 +42,7 @@ class SimpleCsvReaderWriter
   , m_is_fixed_print(true)
   {
     if (simple_table_internal.isNull())
-      ARCANE_FATAL("Null Ref");
+      ARCANE_FATAL("La réference passée en paramètre est Null.");
   }
 
   SimpleCsvReaderWriter()
