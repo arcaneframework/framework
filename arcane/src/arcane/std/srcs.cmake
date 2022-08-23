@@ -70,12 +70,28 @@ set(ARCANE_SOURCES
   SodMeshGenerator.h
   SimpleMeshGenerator.h
   CartesianMeshGenerator.h
+
   PDESRandomNumberGeneratorService.cc
   PDESRandomNumberGeneratorService.h
 
+  SimpleCsvComparatorService.cc
+  SimpleCsvComparatorService.h
+  
   SimpleCsvOutputService.cc
   SimpleCsvOutputService.h
-
+  
+  SimpleCsvReaderWriter.cc
+  SimpleCsvReaderWriter.h
+  
+  SimpleTableInternalComparator.cc
+  SimpleTableInternalComparator.h
+  
+  SimpleTableInternalMng.cc
+  SimpleTableInternalMng.h
+  
+  SimpleTableWriterHelper.cc
+  SimpleTableWriterHelper.h
+  
   MshMeshReader.cc
   MshMeshWriter.cc
   internal/IosFile.cc
@@ -112,4 +128,5 @@ set(AXL_FILES
   HoneyComb3DMeshGenerator
   PDESRandomNumberGenerator
   SimpleCsvOutput
+  SimpleCsvComparator
 )

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SimpleCsvOutputService.hh                                   (C) 2000-2022 */
+/* SimpleCsvOutputService.h                                    (C) 2000-2022 */
 /*                                                                           */
 /* Service permettant de construire et de sortir un tableau au formet csv.   */
 /*---------------------------------------------------------------------------*/
@@ -19,9 +19,12 @@
 
 #include "arcane/ISimpleTableOutput.h"
 
-#include "arcane/BasicUnitTest.h"
-#include <arcane/ServiceBuilder.h>
-#include <arcane/ServiceFactory.h>
+#include "arcane/std/SimpleCsvReaderWriter.h"
+#include "arcane/std/SimpleTableInternalMng.h"
+#include "arcane/std/SimpleTableWriterHelper.h"
+
+#include "arcane/Directory.h"
+#include "arcane/IMesh.h"
 
 #include "arcane/std/SimpleCsvOutput_axl.h"
 
@@ -40,150 +43,130 @@ class SimpleCsvOutputService
  public:
   explicit SimpleCsvOutputService(const ServiceBuildInfo& sbi)
   : ArcaneSimpleCsvOutputObject(sbi)
-  , m_path_computed(false)
-  , m_path_only_P0(true)
-  , m_name_tab_computed(false)
-  , m_name_tab_only_P0(true)
-  , m_precision_print(6)
-  , m_is_fixed_print(true)
-  , m_name_rows(0)
-  , m_name_columns(0)
-  , m_size_rows(0)
-  , m_size_columns(0)
-  , m_last_row(-1)
-  , m_last_column(-1)
   {
     m_with_option = (sbi.creationType() == ST_CaseOption);
+
+    m_internal = makeRef(new SimpleTableInternal(mesh()->parallelMng()));
+    m_simple_csv_reader_writer = makeRef(new SimpleCsvReaderWriter(m_internal));
+
+    m_simple_table_internal_mng.setInternal(m_internal);
+    m_simple_table_output_mng.setReaderWriter(m_simple_csv_reader_writer);
   }
 
   virtual ~SimpleCsvOutputService() = default;
 
  public:
-  void init() override;
-  void init(String name_table) override;
+  bool init() override;
+  bool init(const String& table_name) override;
+  bool init(const String& table_name, const String& directory_name) override;
 
-  void clear() override;
+  void clear() override { return m_simple_table_internal_mng.clearInternal(); };
 
-  Integer addRow(String name_row) override;
-  Integer addRow(String name_row, ConstArrayView<Real> elems) override;
-  bool addRows(StringConstArrayView name_rows) override;
+  Integer addRow(const String& row_name) override { return m_simple_table_internal_mng.addRow(row_name); };
+  Integer addRow(const String& row_name, ConstArrayView<Real> elements) override { return m_simple_table_internal_mng.addRow(row_name, elements); };
+  bool addRows(StringConstArrayView rows_names) override { return m_simple_table_internal_mng.addRows(rows_names); };
 
-  Integer addColumn(String name_column) override;
-  Integer addColumn(String name_column, ConstArrayView<Real> elems) override;
-  bool addColumns(StringConstArrayView name_columns) override;
+  Integer addColumn(const String& column_name) override { return m_simple_table_internal_mng.addColumn(column_name); };
+  Integer addColumn(const String& column_name, ConstArrayView<Real> elements) override { return m_simple_table_internal_mng.addColumn(column_name, elements); };
+  bool addColumns(StringConstArrayView columns_names) override { return m_simple_table_internal_mng.addColumns(columns_names); };
 
-  bool addElemRow(Integer pos, Real elem) override;
-  bool addElemRow(String name_row, Real elem, bool create_if_not_exist) override;
-  bool addElemSameRow(Real elem) override;
+  bool addElementInRow(Integer position, Real element) override { return m_simple_table_internal_mng.addElementInRow(position, element); };
+  bool addElementInRow(const String& row_name, Real element, bool create_if_not_exist) override { return m_simple_table_internal_mng.addElementInRow(row_name, element, create_if_not_exist); };
+  bool addElementInSameRow(Real element) override { return m_simple_table_internal_mng.addElementInSameRow(element); };
 
-  bool addElemsRow(Integer pos, ConstArrayView<Real> elems) override;
-  bool addElemsRow(String name_row, ConstArrayView<Real> elems, bool create_if_not_exist) override;
-  bool addElemsSameRow(ConstArrayView<Real> elems) override;
+  bool addElementsInRow(Integer position, ConstArrayView<Real> elements) override { return m_simple_table_internal_mng.addElementsInRow(position, elements); };
+  bool addElementsInRow(const String& row_name, ConstArrayView<Real> elements, bool create_if_not_exist) override { return m_simple_table_internal_mng.addElementsInRow(row_name, elements, create_if_not_exist); };
+  bool addElementsInSameRow(ConstArrayView<Real> elements) override { return m_simple_table_internal_mng.addElementsInSameRow(elements); };
 
-  bool addElemColumn(Integer pos, Real elem) override;
-  bool addElemColumn(String name_column, Real elem, bool create_if_not_exist) override;
-  bool addElemSameColumn(Real elem) override;
+  bool addElementInColumn(Integer position, Real element) override { return m_simple_table_internal_mng.addElementInColumn(position, element); };
+  bool addElementInColumn(const String& column_name, Real element, bool create_if_not_exist) override { return m_simple_table_internal_mng.addElementInColumn(column_name, element, create_if_not_exist); };
+  bool addElementInSameColumn(Real element) override { return m_simple_table_internal_mng.addElementInSameColumn(element); };
 
-  bool addElemsColumn(Integer pos, ConstArrayView<Real> elems) override;
-  bool addElemsColumn(String name_column, ConstArrayView<Real> elems, bool create_if_not_exist) override;
-  bool addElemsSameColumn(ConstArrayView<Real> elems) override;
+  bool addElementsInColumn(Integer position, ConstArrayView<Real> elements) override { return m_simple_table_internal_mng.addElementsInColumn(position, elements); };
+  bool addElementsInColumn(const String& column_name, ConstArrayView<Real> elements, bool create_if_not_exist) override { return m_simple_table_internal_mng.addElementsInColumn(column_name, elements, create_if_not_exist); };
+  bool addElementsInSameColumn(ConstArrayView<Real> elements) override { return m_simple_table_internal_mng.addElementsInSameColumn(elements); };
 
-  bool editElemUp(Real elem, bool update_last_pos) override;
-  bool editElemDown(Real elem, bool update_last_pos) override;
-  bool editElemLeft(Real elem, bool update_last_pos) override;
-  bool editElemRight(Real elem, bool update_last_pos) override;
+  bool editElementUp(Real element, bool update_last_position) override { return m_simple_table_internal_mng.editElementUp(element, update_last_position); };
+  bool editElementDown(Real element, bool update_last_position) override { return m_simple_table_internal_mng.editElementDown(element, update_last_position); };
+  bool editElementLeft(Real element, bool update_last_position) override { return m_simple_table_internal_mng.editElementLeft(element, update_last_position); };
+  bool editElementRight(Real element, bool update_last_position) override { return m_simple_table_internal_mng.editElementRight(element, update_last_position); };
 
-  Real elemUp(bool update_last_pos) override;
-  Real elemDown(bool update_last_pos) override;
-  Real elemLeft(bool update_last_pos) override;
-  Real elemRight(bool update_last_pos) override;
+  Real elementUp(bool update_last_position) override { return m_simple_table_internal_mng.elementUp(update_last_position); };
+  Real elementDown(bool update_last_position) override { return m_simple_table_internal_mng.elementDown(update_last_position); };
+  Real elementLeft(bool update_last_position) override { return m_simple_table_internal_mng.elementLeft(update_last_position); };
+  Real elementRight(bool update_last_position) override { return m_simple_table_internal_mng.elementRight(update_last_position); };
 
-  bool editElem(Real elem) override;
-  bool editElem(Integer pos_x, Integer pos_y, Real elem) override;
-  bool editElem(String name_column, String name_row, Real elem) override;
+  bool editElement(Real element) override { return m_simple_table_internal_mng.editElement(element); };
+  bool editElement(Integer position_x, Integer position_y, Real element) override { return m_simple_table_internal_mng.editElement(position_x, position_y, element); };
+  bool editElement(const String& column_name, const String& row_name, Real element) override { return m_simple_table_internal_mng.editElement(column_name, row_name, element); };
 
-  Real elem() override;
-  Real elem(Integer pos_x, Integer pos_y, bool update_last_pos) override;
-  Real elem(String name_column, String name_row, bool update_last_pos) override;
+  Real element() override { return m_simple_table_internal_mng.element(); };
+  Real element(Integer position_x, Integer position_y, bool update_last_position) override { return m_simple_table_internal_mng.element(position_x, position_y, update_last_position); };
+  Real element(const String& column_name, const String& row_name, bool update_last_position) override { return m_simple_table_internal_mng.element(column_name, row_name, update_last_position); };
 
-  RealUniqueArray row(Integer pos) override;
-  RealUniqueArray column(Integer pos) override;
+  RealUniqueArray row(Integer position) override { return m_simple_table_internal_mng.row(position); };
+  RealUniqueArray column(Integer position) override { return m_simple_table_internal_mng.column(position); };
 
-  RealUniqueArray row(String name_row) override;
-  RealUniqueArray column(String name_column) override;
+  RealUniqueArray row(const String& row_name) override { return m_simple_table_internal_mng.row(row_name); };
+  RealUniqueArray column(const String& column_name) override { return m_simple_table_internal_mng.column(column_name); };
 
-  Integer sizeRow(Integer pos) override;
-  Integer sizeColumn(Integer pos) override;
+  Integer rowSize(Integer position) override { return m_simple_table_internal_mng.rowSize(position); };
+  Integer columnSize(Integer position) override { return m_simple_table_internal_mng.columnSize(position); };
 
-  Integer sizeRow(String name_row) override;
-  Integer sizeColumn(String name_column) override;
+  Integer rowSize(const String& row_name) override { return m_simple_table_internal_mng.rowSize(row_name); };
+  Integer columnSize(const String& column_name) override { return m_simple_table_internal_mng.columnSize(column_name); };
 
-  Integer posRow(String name_row) override;
-  Integer posColumn(String name_column) override;
+  Integer rowPosition(const String& row_name) override { return m_simple_table_internal_mng.rowPosition(row_name); };
+  Integer columnPosition(const String& column_name) override { return m_simple_table_internal_mng.columnPosition(column_name); };
 
-  Integer numRows() override;
-  Integer numColumns() override;
+  Integer numberOfRows() override { return m_simple_table_internal_mng.numberOfRows(); };
+  Integer numberOfColumns() override { return m_simple_table_internal_mng.numberOfColumns(); };
 
-  bool editNameRow(Integer pos, String new_name) override;
-  bool editNameRow(String name_row, String new_name) override;
+  String rowName(Integer position) override { return m_simple_table_internal_mng.rowName(position); };
+  String columnName(Integer position) override { return m_simple_table_internal_mng.columnName(position); };
 
-  bool editNameColumn(Integer pos, String new_name) override;
-  bool editNameColumn(String name_column, String new_name) override;
+  bool editRowName(Integer position, const String& new_name) override { return m_simple_table_internal_mng.editRowName(position, new_name); };
+  bool editRowName(const String& row_name, const String& new_name) override { return m_simple_table_internal_mng.editRowName(row_name, new_name); };
 
-  Integer addAverageColumn(String name_column) override;
+  bool editColumnName(Integer position, const String& new_name) override { return m_simple_table_internal_mng.editColumnName(position, new_name); };
+  bool editColumnName(const String& column_name, const String& new_name) override { return m_simple_table_internal_mng.editColumnName(column_name, new_name); };
 
-  void setPrecision(Integer precision) override;
-  void setFixed(bool fixed) override;
+  Integer addAverageColumn(const String& column_name) override { return m_simple_table_internal_mng.addAverageColumn(column_name); };
 
-  void print(Integer only_proc) override;
-  bool writeFile(Integer only_proc) override;
-  bool writeFile(String path, Integer only_proc) override;
+  void print(Integer rank) override { return m_simple_table_output_mng.print(rank); };
+  bool writeFile(Integer rank) override { return m_simple_table_output_mng.writeFile(rank); };
+  bool writeFile(const Directory& root_directory, Integer rank) override { return m_simple_table_output_mng.writeFile(root_directory, rank); };
+  bool writeFile(const String& directory, Integer rank) override;
+
+  Integer precision() override { return m_simple_table_output_mng.precision(); };
+  void setPrecision(Integer precision) override { return m_simple_table_output_mng.setPrecision(precision); };
+
+  bool isFixed() override { return m_simple_table_output_mng.isFixed(); };
+  void setFixed(bool fixed) override { return m_simple_table_output_mng.setFixed(fixed); };
+
+  String outputDirectory() override { return m_simple_table_output_mng.outputDirectory(); };
+  void setOutputDirectory(const String& directory) override { return m_simple_table_output_mng.setOutputDirectory(directory); };
+
+  String tableName() override { return m_simple_table_output_mng.tableName(); };
+  void setTableName(const String& name) override { return m_simple_table_output_mng.setTableName(name); };
+  String fileName() override { return m_simple_table_output_mng.fileName(); };
+
+  Directory outputPath() override { return m_simple_table_output_mng.outputPath(); };
+  Directory rootPath() override { return m_simple_table_output_mng.rootPath(); };
+
+  String fileType() override { return m_simple_table_output_mng.fileType(); };
+
+  bool isOneFileByRanksPermited() override { return m_simple_table_output_mng.isOneFileByRanksPermited(); };
+
+  Ref<SimpleTableInternal> internal() override { return m_internal; };
+  Ref<ISimpleTableReaderWriter> readerWriter() override { return m_simple_csv_reader_writer; };
 
  private:
-  String _computeAt(String name, bool& only_once);
-  String _computeFinal();
-  void _print(std::ostream& stream);
+  SimpleTableInternalMng m_simple_table_internal_mng;
+  SimpleTableWriterHelper m_simple_table_output_mng;
 
- private:
-  String m_path;
-  bool m_path_computed;
-  bool m_path_only_P0;
-
-  String m_name_tab;
-  bool m_name_tab_computed;
-  bool m_name_tab_only_P0;
-
-  String m_separator;
-  Integer m_precision_print;
-  bool m_is_fixed_print;
-
-  UniqueArray2<Real> m_values_csv;
-
-  UniqueArray<String> m_name_rows;
-  UniqueArray<String> m_name_columns;
-
-  // Tailles des lignes/colonnes
-  // (et pas le nombre d'éléments, on compte les "trous" entre les éléments ici,
-  // mais sans le trou de fin).
-  // Ex. : {{"1", "2", "0", "3", "0", "0"},
-  //        {"4", "5", "6", "0", "7", "8"},
-  //        {"0", "0", "0", "0", "0", "0"}}
-
-  //       m_size_rows[0] = 4
-  //       m_size_rows[1] = 6
-  //       m_size_rows[2] = 0
-  //       m_size_rows.size() = 3
-
-  //       m_size_columns[3] = 1
-  //       m_size_columns[0; 1; 2; 4; 5] = 2
-  //       m_size_columns.size() = 6
-
-  UniqueArray<Integer> m_size_rows;
-  UniqueArray<Integer> m_size_columns;
-
-  // Dernier élement ajouté.
-  Integer m_last_row;
-  Integer m_last_column;
+  Ref<SimpleTableInternal> m_internal;
+  Ref<SimpleCsvReaderWriter> m_simple_csv_reader_writer;
 
   bool m_with_option;
 };

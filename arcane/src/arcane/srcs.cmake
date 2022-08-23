@@ -739,8 +739,18 @@ set( ARCANE_SOURCES
    PrivateVariableScalarT.H
    PrivateVariableArrayT.H
    IMeshBase.h
+
    IRandomNumberGenerator.h
+
+   SimpleTableInternal.h
+
+   ISimpleTableComparator.h
+   ISimpleTableInternalComparator.h
+   ISimpleTableInternalMng.h
    ISimpleTableOutput.h
+   ISimpleTableReaderWriter.h
+   ISimpleTableWriterHelper.h
+
    datatype/ArrayVariant.h
    datatype/BadVariantTypeException.h
    datatype/DataTracer.h

@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<service name="SimpleTableComparatorUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest" namespace-name="ArcaneTest"> 
+  <interface name="Arcane::IUnitTest" inherited='false'/>
+
+  <description>Descripteur du service SimpleTableComparatorUnitTest</description>
+
+  <variables>
+  </variables>
+
+  <tests class-set-up="setUpForClass" test-set-up="setUp" class-tear-down="tearDownForClass" test-tear-down="tearDown">
+    <test name="Test simple" method-name="testSimple"/>
+    <test name="Test real" method-name="testFullReal"/>
+    <test name="Test error" method-name="testError"/>
+    <test name="Test include row" method-name="testIncludeRow"/>
+    <test name="Test include column" method-name="testIncludeColumn"/>
+    <test name="Test include row and column" method-name="testIncludeRowColumn"/>
+    <test name="Test regex row" method-name="testRegexRow"/>
+    <test name="Test regex column" method-name="testRegexColumn"/>
+    <test name="Test regex row and column" method-name="testRegexRowColumn"/>
+  </tests> 
+
+  <options>
+
+    <service-instance name="simple-table-comparator" type="Arcane::ISimpleTableComparator">
+      <description>Service implémentant ISimpleTableComparator</description>
+    </service-instance>
+
+    <service-instance name="simple-table-output" type="Arcane::ISimpleTableOutput">
+      <description>Service implémentant ISimpleTableOutput</description>
+    </service-instance>
+
+  </options>
+
+</service>

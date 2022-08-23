@@ -68,6 +68,7 @@ set(ARCANE_SOURCES
   PDESRandomNumberGeneratorUnitTest.cc
   RandomNumberGeneratorUnitTest.cc
   SimpleTableOutputUnitTest.cc
+  SimpleTableComparatorUnitTest.cc
 )
 
 set(AXL_FILES
@@ -106,5 +107,6 @@ set(AXL_FILES
   PDESRandomNumberGeneratorUnitTest
   RandomNumberGeneratorUnitTest
   SimpleTableOutputUnitTest
+  SimpleTableComparatorUnitTest
 )
 

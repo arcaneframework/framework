@@ -5,20 +5,24 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ISimpleTableOutput.hh                                       (C) 2000-2022 */
+/* ISimpleTableInternalMng.h                                   (C) 2000-2022 */
 /*                                                                           */
-/* Interface pour simples services de sortie de tableaux de valeurs.         */
+/* Interface représentant un gestionnaire de SimpleTableInternal.    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#ifndef ARCANE_ISIMPLETABLEOUTPUT_H
-#define ARCANE_ISIMPLETABLEOUTPUT_H
+#ifndef ARCANE_ISIMPLETABLEINTERNALMNG_H
+#define ARCANE_ISIMPLETABLEINTERNALMNG_H
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ISimpleTableInternalMng.h"
-#include "arcane/ISimpleTableWriterHelper.h"
+#include "arcane/SimpleTableInternal.h"
+
+#include "arcane/ISubDomain.h"
+#include "arcane/ItemTypes.h"
+#include "arcane/utils/Array.h"
+#include "arcane/utils/Array2.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -30,41 +34,47 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 /**
- * @ingroup StandardService
- * @brief Interface représentant une sortie de tableau simple.
+ * @brief Interface de classe représentant un gestionnaire
+ * de SimpleTableInternal (aka STI). 
+ * 
+ * Ce gestionnaire permet de faire plusieurs types d'opérations
+ * sur le STI : ajout de lignes, de colonnes, de valeurs, &c.
+ * 
+ * Il y a deux modes d'exploitations (qui peuvent être mélangés) : 
+ * - en utilisant les noms ou positions des lignes/colonnes,
+ * - en utilisant un pointeur de position dans le tableau.
+ * 
+ * Le premier mode est le plus simple à utiliser et est suffisant
+ * pour la plupart des utilisateurs. On donne un nom (ou une position)
+ * de ligne ou de colonne et une valeur, et cette valeur est placée
+ * à la suite des autres valeurs sur la ligne ou sur la colonne.
+ * 
+ * Le second mode est plus avancé et sert surtout à remplacer des
+ * élements déjà présent ou à optimiser les performances (s'il y a 
+ * 40 lignes, 40 valeurs à ajouter à la suite et qu'on utilise les 
+ * noms des colonnes 40 fois, cela fait 40 recherches de String dans un 
+ * StringUniqueArray, ce qui n'est pas top niveau optimisation).
+ * Un pointeur représentant le dernier élement ajouté est présent dans
+ * STI. On peut modifier les élements autour de ce pointeur (haut, bas
+ * gauche, droite) avec les méthodes présentes.
+ * Ce pointeur peut être placé n'importe où grâce au méthodes element().
+ * Ce pointeur n'est pas lu par les méthodes du premier mode mais est
+ * mis à jour par ces dernières.
  */
-class ARCANE_CORE_EXPORT ISimpleTableOutput
+class ARCANE_CORE_EXPORT ISimpleTableInternalMng
 {
  public:
-  virtual ~ISimpleTableOutput() = default;
+  virtual ~ISimpleTableInternalMng() = default;
 
  public:
-  /**
-   * @brief Méthode permettant d'initialiser le tableau.
-   */
-  virtual bool init() = 0;
-  /**
-   * @brief Méthode permettant d'initialiser le tableau.
-   * 
-   * @param table_name Le nom du tableau (et du fichier de sortie).
-   */
-  virtual bool init(const String& table_name) = 0;
-  /**
-   * @brief Méthode permettant d'initialiser le tableau.
-   * 
-   * @param table_name Le nom du tableau (et du fichier de sortie).
-   * @param directory_name Le nom du dossier dans lequel enregistrer les tableaux.
-   */
-  virtual bool init(const String& table_name, const String& directory_name) = 0;
-
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
 
   /**
-   * @brief Méthode permettant de remettre à zéro les tableaux
-   * internes. Nécessite un appel à init() après.
+   * @brief Méthode permettant d'effacer le contenu
+   * du SimpleTableInternal.
    */
-  virtual void clear() = 0;
+  virtual void clearInternal() = 0;
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
@@ -632,6 +642,9 @@ class ARCANE_CORE_EXPORT ISimpleTableOutput
    */
   virtual bool editColumnName(const String& column_name, const String& new_name) = 0;
 
+  /*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
+
   /**
    * @brief Méthode permettant de créer une colonne contenant la moyenne des
    * éléments de chaque ligne.
@@ -640,171 +653,6 @@ class ARCANE_CORE_EXPORT ISimpleTableOutput
    * @return Integer La position de la colonne.
    */
   virtual Integer addAverageColumn(const String& column_name) = 0;
-
-  /*---------------------------------------------------------------------------*/
-  /*---------------------------------------------------------------------------*/
-  /**
-   * @brief Méthode permettant d'afficher le tableau.
-   * 
-   * @param rank L'id du processus devant afficher le tableau (-1 pour 
-   *                  signifier "tous les processus").
-   */
-  virtual void print(Integer rank = 0) = 0;
-
-  virtual bool writeFile(const Directory& root_directory, Integer rank) = 0;
-
-  /**
-   * @brief Méthode permettant d'écrire le tableau dans un fichier.
-   * Si rank != -1, les processus autres que P0 retournent true.
-   * 
-   * @param rank L'id du processus devant écrire dans un fichier 
-   *                  le tableau (-1 pour signifier "tous les processus").
-   * @return true Si le fichier a été correctement écrit.
-   * @return false Si le fichier n'a pas été correctement écrit.
-   */
-  virtual bool writeFile(Integer rank = -1) = 0;
-  /**
-   * @brief Méthode permettant d'écrire le tableau dans un fichier.
-   * Si rank != -1, les processus autres que P0 retournent true.
-   * 
-   * @param directory Le répertoire où sera écrit le fichier
-   *            . Le chemin final sera "./[output_dir]/csv/[directory]/"
-   * @param rank L'id du processus devant écrire dans un fichier 
-   *                  le tableau (-1 pour signifier "tous les processus").
-   * @return true Si le fichier a été correctement écrit.
-   * @return false Si le fichier n'a pas été correctement écrit.
-   * 
-   * @deprecated Utiliser setOutputDirectory() puis writeFile() à la place.
-   */
-  virtual bool writeFile(const String& directory, Integer rank = -1) = 0;
-
-  /*---------------------------------------------------------------------------*/
-  /*---------------------------------------------------------------------------*/
-
-  /**
-   * @brief Méthode permettant de récupérer la précision actuellement
-   * utilisée pour l'écriture des valeurs.
-   * 
-   * @return Integer La précision.
-   */
-  virtual Integer precision() = 0;
-  /**
-   * @brief Méthode permettant de modifier la précision du print.
-   * 
-   * Aussi bien pour la méthode 'print()' que les méthodes 'writeFile()'.
-   * 
-   * \note Un appel à cette méthode sans le paramètre définira la précision
-   * par défaut.
-   * 
-   * @param precision La nouvelle précision.
-   */
-  virtual void setPrecision(Integer precision = 6) = 0;
-
-  /**
-   * @brief Méthode permettant de savoir si le frag 'std::fixed' est
-   * actif ou non pour l'écriture des valeurs.
-   * 
-   * @return true Si oui.
-   * @return false Si non.
-   */
-  virtual bool isFixed() = 0;
-  /**
-   * @brief Méthode permettant de définir le flag 'std::fixed' ou non.
-   * 
-   * Aussi bien pour la méthode 'print()' que les méthodes 'writeFile()'.
-   * 
-   * Ce flag permet de 'forcer' le nombre de chiffre après la virgule à
-   * la précision voulu. Par exemple, si l'on a appelé 'setPrecision(4)',
-   * et que l'on appelle 'setFixed(true)', le print de '6.1' donnera '6.1000'.
-   * 
-   * \note Un appel à cette méthode sans le paramètre définira le flag
-   * par défaut.
-   * 
-   * @param fixed Si le flag 'std::fixed' doit être défini ou non.
-   */
-  virtual void setFixed(bool fixed = true) = 0;
-
-  /**
-   * @brief Accesseur permettant de récupérer le nom du répertoire où sera
-   * placé les tableaux.
-   * 
-   * Peut-être différent pour chaque processus (dépendant de l'implémentation).
-   * 
-   * @return String Le répertoire.
-   */
-  virtual String outputDirectory() = 0;
-  /**
-   * @brief Accesseur permettant de définir le répertoire
-   * dans lequel enregistrer les tableaux.
-   * 
-   * Peut-être différent pour chaque processus (dépendant de l'implémentation).
-   * 
-   * @param directory Le répertoire.
-   */
-  virtual void setOutputDirectory(const String& directory) = 0;
-
-  /**
-   * @brief Accesseur permettant de récupérer le nom des tableaux.
-   * 
-   * Peut-être différent pour chaque processus (dépendant de l'implémentation).
-   * 
-   * @return String Le nom.
-   */
-  virtual String tableName() = 0;
-  /**
-   * @brief Accesseur permettant de définir le nom du tableau.
-   * 
-   * Peut-être différent pour chaque processus (dépendant de l'implémentation).
-   * 
-   * @param name Le nom.
-   */
-  virtual void setTableName(const String& name) = 0;
-
-  /**
-   * @brief Accesseur permettant de récupérer le nom des fichiers.
-   * 
-   * Peut-être différent pour chaque processus (dépendant de l'implémentation).
-   * 
-   * @return String Le nom.
-   */
-  virtual String fileName() = 0;
-
-  /**
-   * @brief Accesseur permettant de récupérer le chemin où sera
-   * enregistrés les tableaux. 
-   * 
-   * En comparaison avec rootPathOutput(), le retour peut être
-   * different selon le "directory" et le "name".
-   * 
-   * @return String Le chemin.
-   */
-  virtual Directory outputPath() = 0;
-
-  /**
-   * @brief Accesseur permettant de récupérer le chemin où l'implémentation
-   * enregistre ces tableaux. 
-   * 
-   * En comparaison avec pathOutput(), le retour ne dépend pas de "directory" ou de "name".
-   * 
-   * @return String Le chemin.
-   */
-  virtual Directory rootPath() = 0;
-
-  /**
-   * @brief Méthode permettant de savoir si les paramètres actuellement en possession
-   * de l'implémentation lui permet d'écrire un fichier par processus.
-   * 
-   * @return true Si oui, l'implémentation peut écrire un fichier par processus.
-   * @return false Sinon, il n'y a qu'un seul fichier qui peut être écrit.
-   */
-  virtual bool isOneFileByRanksPermited() = 0;
-
-  /**
-   * @brief Méthode permettant de connaitre le type de fichier du service.
-   * 
-   * @return String Le type de fichier.
-   */
-  virtual String fileType() = 0;
 
   /**
    * @brief Méthode permettant de récupérer une référence vers l'objet
@@ -815,12 +663,12 @@ class ARCANE_CORE_EXPORT ISimpleTableOutput
   virtual Ref<SimpleTableInternal> internal() = 0;
 
   /**
-   * @brief Méthode permettant de récupérer une référence vers l'objet
-   * ISimpleTableReaderWriter utilisé.
+   * @brief Méthode permettant de définir une référence vers un
+   * SimpleTableInternal.
    * 
-   * @return Ref<ISimpleTableReaderWriter> Une copie de la référence. 
+   * @param simple_table_internal La référence vers un SimpleTableInternal.
    */
-  virtual Ref<ISimpleTableReaderWriter> readerWriter() = 0;
+  virtual void setInternal(const Ref<SimpleTableInternal>& simple_table_internal) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -38,21 +38,16 @@
       <userclass>User</userclass>
       <description>
         Nom du répertoire.
-        Le service peut créer un ou plusieurs sous-répertoire si nécessaire 
-        (mais pas de sous-sous-répertoire).
 
-        Exemple : "./MonDossier/"
+        Exemple : "MonDossier"
 
-        Les 'symboles' de nom sont aussi supporté :
-          - @proc_id@ : le rang du processus.
-          - @num_procs@ : le nombre total de processus.
-
-        Lors de l'écriture, ces symboles seront remplacés par
-        se qu'il représente au moment de l'exécution.
-
-        Exemple : "./MonDossierPourP@proc_id@/"
+        En prenant cet exemple, les fichiers CSV seront enregistrés dans le
+        répertoire ./output/csv/MonDossier/
 
         Peut aussi être définis lors de l'appel à writeFile().
+
+        Si vide, alors les fichiers CSV seront écrit dans le répertoire
+        ./output/csv/
       </description>
     </simple>
 	</options>
