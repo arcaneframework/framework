@@ -690,14 +690,12 @@ _node2DoFConnectivityRegistered()
   _checkConnectivityUpdateAfterCompact(node2dof, remaining_node_lids, remaining_node_uids, node2dof.itemProperty().size());
 
   // Remove a second node
+  // update node lids
+  new_nodes_lids = remaining_node_lids;
   nb_remaining_nodes = new_nodes_lids.dim2Size()-(nb_removed_nodes+1);
   remaining_node_lids.resize(nb_subdomain,nb_remaining_nodes);
   remaining_node_uids.resize(nb_subdomain,nb_remaining_nodes);
-  // GG: désactive ce test en parallèle car il plante en mode check
-  if (!mesh()->parallelMng()->isParallel())
-    _removeNodes(new_nodes_lids,nb_removed_nodes,removed_node_lids,removed_node_uids,remaining_node_lids,remaining_node_uids);
-  else
-    warning() << "Test is temporarely removed because it throws IndexOutOfRange exception";
+  _removeNodes(new_nodes_lids,nb_removed_nodes,removed_node_lids,removed_node_uids,remaining_node_lids,remaining_node_uids);
   node_family->endUpdate();
   node_family->computeSynchronizeInfos();
 
@@ -1217,14 +1215,8 @@ _removeNodes(Int32ConstArray2View new_nodes_lids,
       remaining_node_lids[rank].copy(new_nodes_lids[rank].subConstView(nb_removed_nodes,nb_remaining_nodes));
       remaining_nodes[rank] = node_family->view(remaining_node_lids[rank]);
       Int32 i = 0;
-      Int32 my_index = 0;
       ENUMERATE_NODE(inode,removed_nodes[rank])
       {
-        // La ligne ci-dessous fait un débordement de tableau en mode check.
-        // Cela est du au fait que localId() spécifié par removed_nodes peut avoir été modifié
-        // après un compactage et qu'il n'est plus valide.
-        info() << "Item=" << removed_nodes[rank][my_index].uniqueId();
-        ++my_index;
         node_family->removeNodeIfNotConnected(inode->internal());
         removed_node_uids[rank][i++] = inode->uniqueId().asInt64();
       }
