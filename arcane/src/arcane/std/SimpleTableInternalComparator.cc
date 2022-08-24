@@ -30,7 +30,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 bool SimpleTableInternalComparator::
-compare(Integer epsilon, bool compare_dimension_too)
+compare(Real epsilon, bool compare_dimension_too)
 {
   bool is_ok = true;
 
@@ -59,13 +59,22 @@ compare(Integer epsilon, bool compare_dimension_too)
       const Real val1 = m_simple_table_internal_mng_reference.element(column, row, false);
       const Real val2 = m_simple_table_internal_mng_to_compare.element(column, row, false);
 
-      if (!math::isNearlyEqualWithEpsilon(val1, val2, epsilon)) {
-        m_simple_table_internal_reference->m_parallel_mng->traceMng()->warning() << "Values not equals -- Column name: \"" << column << "\" -- Row name: \"" << row << "\"";
+      if (!_isNearlyEqualWithAcceptableError(val1, val2, epsilon)) {
+        m_simple_table_internal_reference->m_parallel_mng->traceMng()->warning() 
+          << std::setiosflags(std::ios::fixed) << std::setprecision(std::numeric_limits<Real>::max_digits10)
+          << "Values not equals -- Column name: \"" << column << "\" -- Row name: \"" << row 
+          << "\" -- Expected value: " << val1 << " -- Found value: " << val2;
         is_ok = false;
       }
     }
   }
   return is_ok;
+}
+
+bool SimpleTableInternalComparator::
+_isNearlyEqualWithAcceptableError(Real a, Real b, Real error)
+{
+  return (math::floor(a / error) == math::floor(b / error));
 }
 
 void SimpleTableInternalComparator::

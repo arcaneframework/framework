@@ -103,8 +103,8 @@ class ARCANE_CORE_EXPORT ISimpleTableComparator
    *          false.
    * 
    * @param rank Le processus qui doit écrire son fichier (-1 pour tous les processus).
-   * @return true Si l'écriture a bien eu lieu.
-   * @return false Si l'écriture n'a pas eu lieu (et si processus appelant != rank).
+   * @return true Si l'écriture a bien eu lieu (et si processus appelant != rank).
+   * @return false Si l'écriture n'a pas eu lieu.
    */
   virtual bool writeReferenceFile(Integer rank = -1) = 0;
   /**
@@ -114,8 +114,8 @@ class ARCANE_CORE_EXPORT ISimpleTableComparator
    * de cette interface choisi (exemple : fichier .csv -> SimpleCsvComparatorService).
    * 
    * @param rank Le processus qui doit lire son fichier (-1 pour tous les processus).
-   * @return true Si le fichier a été lu.
-   * @return false Si le fichier n'a pas été lu (et si processus appelant != rank).
+   * @return true Si le fichier a été lu (et si processus appelant != rank).
+   * @return false Si le fichier n'a pas été lu.
    */
   virtual bool readReferenceFile(Integer rank = -1) = 0;
 
@@ -123,8 +123,8 @@ class ARCANE_CORE_EXPORT ISimpleTableComparator
    * @brief Méthode permettant de savoir si les fichiers de réferences existent.
    * 
    * @param rank Le processus qui doit chercher son fichier (-1 pour tous les processus). 
-   * @return true Si le fichier a été trouvé.
-   * @return false Si le fichier n'a pas été trouvé (et si processus appelant != rank).
+   * @return true Si le fichier a été trouvé (et si processus appelant != rank).
+   * @return false Si le fichier n'a pas été trouvé.
    */
   virtual bool isReferenceExist(Integer rank = -1) = 0;
 
@@ -135,10 +135,10 @@ class ARCANE_CORE_EXPORT ISimpleTableComparator
    * @param rank Le processus qui doit comparer ses résultats (-1 pour tous les processus). 
    * @param epsilon La marge d'erreur.
    * @param compare_dimension_too Si l'on doit aussi comparer les dimensions des tableaux de valeurs.
-   * @return true S'il n'y a pas de différences.
-   * @return false S'il y a au moins une différence (et si processus appelant != rank).
+   * @return true S'il n'y a pas de différences (et si processus appelant != rank).
+   * @return false S'il y a au moins une différence.
    */
-  virtual bool compareWithReference(Integer rank = -1, Integer epsilon = 0, bool compare_dimension_too = false) = 0;
+  virtual bool compareWithReference(Integer rank = -1, Real epsilon = 1, bool compare_dimension_too = false) = 0;
 
   /**
    * @brief Méthode permettant d'ajouter une colonne dans la liste des colonnes

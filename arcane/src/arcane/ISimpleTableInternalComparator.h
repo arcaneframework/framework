@@ -79,7 +79,7 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalComparator
    * @return true S'il n'y a pas de différences.
    * @return false S'il y a au moins une différence.
    */
-  virtual bool compare(Integer epsilon = 0, bool compare_dimension_too = false) = 0;
+  virtual bool compare(Real epsilon = 1.0, bool compare_dimension_too = false) = 0;
 
   /**
    * @brief Méthode permettant de vider les tableaux de comparaison

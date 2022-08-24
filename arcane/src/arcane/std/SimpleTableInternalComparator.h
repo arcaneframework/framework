@@ -71,7 +71,7 @@ class SimpleTableInternalComparator
   virtual ~SimpleTableInternalComparator() = default;
 
  public:
-  bool compare(Integer epsilon, bool compare_dimension_too) override;
+  bool compare(Real epsilon, bool compare_dimension_too) override;
 
   void clearComparator() override;
 
@@ -96,6 +96,7 @@ class SimpleTableInternalComparator
  protected:
   bool _exploreColumn(const String& column_name);
   bool _exploreRows(const String& row_name);
+  bool _isNearlyEqualWithAcceptableError(Real a, Real b, Real error);
 
  protected:
   Ref<SimpleTableInternal> m_simple_table_internal_reference;
