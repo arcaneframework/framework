@@ -691,13 +691,10 @@ class ARCANE_CORE_EXPORT ISimpleTableOutput
    * @brief Méthode permettant de modifier la précision du print.
    * 
    * Aussi bien pour la méthode 'print()' que les méthodes 'writeFile()'.
-   * 
-   * \note Un appel à cette méthode sans le paramètre définira la précision
-   * par défaut.
-   * 
+
    * @param precision La nouvelle précision.
    */
-  virtual void setPrecision(Integer precision = 6) = 0;
+  virtual void setPrecision(Integer precision) = 0;
 
   /**
    * @brief Méthode permettant de savoir si le frag 'std::fixed' est
@@ -710,18 +707,37 @@ class ARCANE_CORE_EXPORT ISimpleTableOutput
   /**
    * @brief Méthode permettant de définir le flag 'std::fixed' ou non.
    * 
-   * Aussi bien pour la méthode 'print()' que les méthodes 'writeFile()'.
+   * Aussi bien pour la méthode 'print()' que la méthode 'writetable()'.
    * 
    * Ce flag permet de 'forcer' le nombre de chiffre après la virgule à
    * la précision voulu. Par exemple, si l'on a appelé 'setPrecision(4)',
    * et que l'on appelle 'setFixed(true)', le print de '6.1' donnera '6.1000'.
    * 
-   * \note Un appel à cette méthode sans le paramètre définira le flag
-   * par défaut.
+   * @warning TODO
    * 
    * @param fixed Si le flag 'std::fixed' doit être défini ou non.
    */
-  virtual void setFixed(bool fixed = true) = 0;
+  virtual void setFixed(bool fixed) = 0;
+
+  /**
+   * @brief Méthode permettant de savoir si le frag 'std::scientific' est
+   * actif ou non pour l'écriture des valeurs.
+   * 
+   * @return true Si oui.
+   * @return false Si non.
+   */
+  virtual bool isForcedToUseScientificNotation() = 0;
+  /**
+   * @brief Méthode permettant de définir le flag 'std::scientific' ou non.
+   * 
+   * Aussi bien pour la méthode 'print()' que la méthode 'writetable()'.
+   * 
+   * Ce flag permet de 'forcer' l'affichage des valeurs en écriture
+   * scientifique.
+   * 
+   * @param use_scientific Si le flag 'std::scientific' doit être défini ou non.
+   */
+  virtual void setForcedToUseScientificNotation(bool use_scientific) = 0;
 
   /**
    * @brief Accesseur permettant de récupérer le nom du répertoire où sera

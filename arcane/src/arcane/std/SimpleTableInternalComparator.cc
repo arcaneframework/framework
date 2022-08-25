@@ -66,7 +66,7 @@ compare(Real epsilon, bool compare_dimension_too)
 
       if (!_isNearlyEqualWithAcceptableError(val1, val2, epsilon)) {
         m_simple_table_internal_reference->m_parallel_mng->traceMng()->warning() 
-          << std::setiosflags(std::ios::fixed) << std::setprecision(std::numeric_limits<Real>::max_digits10)
+          << std::scientific << std::setprecision(std::numeric_limits<Real>::digits10)
           << "Values not equals -- Column name: \"" << column << "\" -- Row name: \"" << row 
           << "\" -- Expected value: " << val1 << " -- Found value: " << val2;
         is_ok = false;

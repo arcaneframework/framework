@@ -1059,7 +1059,7 @@ testWriteFile()
   ASSERT_TRUE(ptrSTO->addElementsInRow("Ma ligne 4", RealUniqueArray{ 15.7, 16.8 }));
 
   ptrSTO->setPrecision(15);
-  ptrSTO->setFixed(false);
+  ptrSTO->setForcedToUseScientificNotation(false);
   ASSERT_TRUE(ptrSTO->writeFile("./testTable/", 0));
 }
 

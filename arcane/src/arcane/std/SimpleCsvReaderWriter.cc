@@ -174,6 +174,18 @@ setFixed(bool fixed)
   m_is_fixed_print = fixed;
 }
 
+bool SimpleCsvReaderWriter::
+isForcedToUseScientificNotation()
+{
+  return m_scientific_notation;
+}
+
+void SimpleCsvReaderWriter::
+setForcedToUseScientificNotation(bool use_scientific)
+{
+  m_scientific_notation = use_scientific;
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -216,6 +228,9 @@ _print(std::ostream& stream)
 
   if (m_is_fixed_print) {
     stream << std::setiosflags(std::ios::fixed);
+  }
+  if (m_scientific_notation) {
+    stream << std::scientific;
   }
   stream << std::setprecision(m_precision_print);
 

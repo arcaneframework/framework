@@ -91,17 +91,20 @@ writeReferenceFile(Integer rank)
   ARCANE_CHECK_PTR(m_simple_table_output_ptr);
   // On sauvegarde les paramètres d'origines.
   Integer save_preci = m_simple_table_output_ptr->precision();
+  bool save_scientific = m_simple_table_output_ptr->isForcedToUseScientificNotation();
   bool save_fixed = m_simple_table_output_ptr->isFixed();
 
-  // On défini la précision max.
+  // On défini la précision max (+2 pour erreurs d'arrondis).
   m_simple_table_output_ptr->setPrecision(std::numeric_limits<Real>::max_digits10);
-  m_simple_table_output_ptr->setFixed(true);
+  m_simple_table_output_ptr->setForcedToUseScientificNotation(true);
+  m_simple_table_output_ptr->setFixed(false);
 
   // On écrit nos fichiers de référence.
   bool fin = m_simple_table_output_ptr->writeFile(m_root_path, rank);
 
   // On remet les paramètres par défault.
   m_simple_table_output_ptr->setPrecision(save_preci);
+  m_simple_table_output_ptr->setForcedToUseScientificNotation(save_scientific);
   m_simple_table_output_ptr->setFixed(save_fixed);
 
   return fin;

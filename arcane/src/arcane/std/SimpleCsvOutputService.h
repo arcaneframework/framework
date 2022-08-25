@@ -139,6 +139,9 @@ class SimpleCsvOutputService
   bool isFixed() override { return m_simple_table_output_mng.isFixed(); };
   void setFixed(bool fixed) override { return m_simple_table_output_mng.setFixed(fixed); };
 
+  bool isForcedToUseScientificNotation() override { return m_simple_table_output_mng.isForcedToUseScientificNotation(); };
+  void setForcedToUseScientificNotation(bool use_scientific) override { return m_simple_table_output_mng.setForcedToUseScientificNotation(use_scientific); };
+
   String outputDirectory() override { return m_simple_table_output_mng.outputDirectory(); };
   void setOutputDirectory(const String& directory) override { return m_simple_table_output_mng.setOutputDirectory(directory); };
 

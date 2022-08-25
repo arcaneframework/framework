@@ -78,6 +78,9 @@ class SimpleTableWriterHelper
   bool isFixed() override;
   void setFixed(bool fixed) override;
 
+  bool isForcedToUseScientificNotation() override;
+  void setForcedToUseScientificNotation(bool use_scientific) override;
+
   String outputDirectory() override;
   String outputDirectoryWithoutComputation() override;
   void setOutputDirectory(const String& directory) override;

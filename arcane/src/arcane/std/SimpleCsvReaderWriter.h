@@ -39,7 +39,8 @@ class SimpleCsvReaderWriter
   : m_simple_table_internal(simple_table_internal)
   , m_separator(';')
   , m_precision_print(6)
-  , m_is_fixed_print(true)
+  , m_is_fixed_print(false)
+  , m_scientific_notation(false)
   {
     if (simple_table_internal.isNull())
       ARCANE_FATAL("La réference passée en paramètre est Null.");
@@ -49,7 +50,8 @@ class SimpleCsvReaderWriter
   : m_simple_table_internal()
   , m_separator(';')
   , m_precision_print(6)
-  , m_is_fixed_print(true)
+  , m_is_fixed_print(false)
+  , m_scientific_notation(false)
   {
   }
 
@@ -66,6 +68,9 @@ class SimpleCsvReaderWriter
 
   bool isFixed() override;
   void setFixed(bool fixed) override;
+
+  bool isForcedToUseScientificNotation() override;
+  void setForcedToUseScientificNotation(bool use_scientific) override;
 
   String fileType() override { return m_output_file_type; };
 
@@ -84,7 +89,8 @@ class SimpleCsvReaderWriter
 
   Integer m_precision_print;
   bool m_is_fixed_print;
-
+  bool m_scientific_notation;
+  
   const String m_output_file_type = "csv";
 };
 

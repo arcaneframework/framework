@@ -111,6 +111,18 @@ setFixed(bool fixed)
   m_simple_table_reader_writer->setFixed(fixed);
 }
 
+bool SimpleTableWriterHelper::
+isForcedToUseScientificNotation()
+{
+  return m_simple_table_reader_writer->isForcedToUseScientificNotation();
+}
+
+void SimpleTableWriterHelper::
+setForcedToUseScientificNotation(bool use_scientific)
+{
+  m_simple_table_reader_writer->setForcedToUseScientificNotation(use_scientific);
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
