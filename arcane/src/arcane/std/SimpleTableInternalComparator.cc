@@ -37,23 +37,28 @@ compare(Real epsilon, bool compare_dimension_too)
   const Integer dim1 = m_simple_table_internal_mng_reference.numberOfRows();
   const Integer dim2 = m_simple_table_internal_mng_reference.numberOfColumns();
 
-  if (compare_dimension_too && (dim1 != m_simple_table_internal_mng_to_compare.numberOfRows() || dim2 != m_simple_table_internal_mng_to_compare.numberOfColumns())) {
+  const Integer dim1_to_compare = m_simple_table_internal_mng_to_compare.numberOfRows();
+  const Integer dim2_to_compare = m_simple_table_internal_mng_to_compare.numberOfColumns();
+
+  if (compare_dimension_too && (dim1 != dim1_to_compare || dim2 != dim2_to_compare)) {
     m_simple_table_internal_reference->m_parallel_mng->traceMng()->warning() << "Dimensions not equals -- Expected dimensions: "
                                                                              << dim1 << "x" << dim2 << " -- Found dimensions: "
-                                                                             << m_simple_table_internal_mng_to_compare.numberOfRows() << "x" << m_simple_table_internal_mng_to_compare.numberOfColumns();
+                                                                             << dim1_to_compare << "x" << dim2_to_compare;
     return false;
   }
 
   for (Integer i = 0; i < dim1; i++) {
-    // On regarde si l'on doit comparer la ligne actuelle.
     String row = m_simple_table_internal_mng_reference.rowName(i);
-    if (!_exploreRows(row))
+    // On regarde si l'on doit comparer la ligne actuelle.
+    // On regarde si la ligne est présente dans le STI to_compare.
+    if (!_exploreRows(row) || m_simple_table_internal_mng_to_compare.rowPosition(row) == -1)
       continue;
 
     for (Integer j = 0; j < dim2; j++) {
-      // On regarde si l'on doit comparer la colonne actuelle.
       String column = m_simple_table_internal_mng_reference.columnName(j);
-      if (!_exploreColumn(column))
+      // On regarde si l'on doit comparer la colonne actuelle.
+      // On regarde si la colonne est présente dans le STI to_compare.
+      if (!_exploreColumn(column) || m_simple_table_internal_mng_to_compare.columnPosition(column) == -1)
         continue;
 
       const Real val1 = m_simple_table_internal_mng_reference.element(column, row, false);
