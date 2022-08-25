@@ -50,6 +50,14 @@ struct ARCANE_CORE_EXPORT SimpleTableInternal
 {
   SimpleTableInternal(IParallelMng* parallel_mng)
   : m_parallel_mng(parallel_mng)
+  , m_values()
+  , m_row_names()
+  , m_column_names()
+  , m_table_name("")
+  , m_row_sizes()
+  , m_column_sizes()
+  , m_last_row(-1)
+  , m_last_column(-1)
   {
   }
   ~SimpleTableInternal() = default;
@@ -65,6 +73,7 @@ struct ARCANE_CORE_EXPORT SimpleTableInternal
     m_last_row = -1;
     m_last_column = -1;
   }
+  IParallelMng* m_parallel_mng;
 
   UniqueArray2<Real> m_values;
 
@@ -91,11 +100,9 @@ struct ARCANE_CORE_EXPORT SimpleTableInternal
   UniqueArray<Integer> m_row_sizes;
   UniqueArray<Integer> m_column_sizes;
 
-  // Dernier élement ajouté.
+  // Position du dernier élement ajouté.
   Integer m_last_row;
   Integer m_last_column;
-
-  IParallelMng* m_parallel_mng;
 };
 
 /*---------------------------------------------------------------------------*/

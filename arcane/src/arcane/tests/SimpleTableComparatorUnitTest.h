@@ -41,6 +41,7 @@ class SimpleTableComparatorUnitTest
   SimpleTableComparatorUnitTest(const ServiceBuildInfo& sbi)
   : ArcaneSimpleTableComparatorUnitTestObject(sbi)
   , ptrSTO(nullptr)
+  , ptrSTC(nullptr)
   {}
 
   ~SimpleTableComparatorUnitTest() {}
@@ -60,10 +61,6 @@ class SimpleTableComparatorUnitTest
 
   void tearDown() override;
   void tearDownForClass() override;
-
- private:
-  template <class T>
-  void ASSERT_EQUAL_ARRAY(UniqueArray<T> expected, UniqueArray<T> actual);
 
  private:
   ISimpleTableOutput* ptrSTO;
