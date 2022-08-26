@@ -703,9 +703,9 @@ AlienBenchModule::test()
         if(i==0)
         {
           Alien::MatrixMarketSystemWriter matrix_exporter("AlienBenchMatrixA.mtx",m_parallel_mng->messagePassingMng()) ;
-          matrix_exporter.dump(matrixA,description.str()) ;
+//          matrix_exporter.dump(matrixA,description.str()) ;
           Alien::MatrixMarketSystemWriter vector_exporter("AlienBenchVectorB.mtx",m_parallel_mng->messagePassingMng()) ;
-          vector_exporter.dump(vectorB,description.str()) ;
+//          vector_exporter.dump(vectorB,description.str()) ;
         }
 
         Timer::Sentry ts(&psolve_timer);
