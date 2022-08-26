@@ -3,7 +3,14 @@ cmake_minimum_required(VERSION 3.13)
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-project(ALIEN) # Le nom est important car les axl sont générés dans <PROJECT_NAME>/axl
+
+file(READ "version" ALIEN_VERSION_STR_FULL)
+string(REPLACE "_dev" "" ALIEN_VERSION ${ALIEN_VERSION_STR_FULL})
+string(STRIP "${ALIEN_VERSION}" ALIEN_VERSION)  # In case of \n
+message(STATUS "AlienLegacyVersion = ${ALIEN_VERSION}")
+
+project(ALIEN 
+        VERSION ${ALIEN_VERSION}) # Le nom est important car les axl sont générés dans <PROJECT_NAME>/axl
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
