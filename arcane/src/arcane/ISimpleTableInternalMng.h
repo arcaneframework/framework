@@ -82,8 +82,9 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalMng
   /**
    * @brief Méthode permettant d'ajouter une ligne.
    * 
-   * @param row_name Le nom de la ligne.
-   * @return Integer La position de la ligne dans le tableau.
+   * @param row_name Le nom de la ligne. Doit être non vide.
+   * @return Integer La position de la ligne dans le tableau 
+   *                 (-1 si le nom donné est incorrect).
    */
   virtual Integer addRow(const String& row_name) = 0;
   /**
@@ -93,15 +94,16 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalMng
    * nombre de colonnes, l'ajout s'effectue quand même (mais les
    * éléments en trop ne seront pas ajoutés).
    * 
-   * @param row_name Le nom de la ligne.
+   * @param row_name Le nom de la ligne. Doit être non vide.
    * @param elements Les éléments à insérer sur la ligne.
    * @return Integer La position de la ligne dans le tableau.
+   *                 (-1 si le nom donné est incorrect).
    */
   virtual Integer addRow(const String& row_name, ConstArrayView<Real> elements) = 0;
   /**
    * @brief Méthode permettant d'ajouter plusieurs lignes.
    * 
-   * @param rows_names Les noms des lignes.
+   * @param rows_names Les noms des lignes. Chaque nom doit être non vide.
    * @return true Si toutes les lignes ont été créées.
    * @return false Si toutes les lignes n'ont pas été créées.
    */
@@ -113,8 +115,9 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalMng
   /**
    * @brief Méthode permettant d'ajouter une colonne.
    * 
-   * @param column_name Le nom de la colonne.
+   * @param column_name Le nom de la colonne. Doit être non vide.
    * @return Integer La position de la colonne dans le tableau.
+   *                 (-1 si le nom donné est incorrect).
    */
   virtual Integer addColumn(const String& column_name) = 0;
   /**
@@ -124,15 +127,16 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalMng
    * nombre de lignes, l'ajout s'effectue quand même (mais les
    * éléments en trop ne seront pas ajoutés).
    * 
-   * @param column_name Le nom de la colonne.
+   * @param column_name Le nom de la colonne. Doit être non vide.
    * @param elements Les éléments à ajouter sur la colonne.
    * @return Integer La position de la colonne dans le tableau.
+   *                 (-1 si le nom donné est incorrect).
    */
   virtual Integer addColumn(const String& column_name, ConstArrayView<Real> elements) = 0;
   /**
    * @brief Méthode permettant d'ajouter plusieurs colonnes.
    * 
-   * @param rows_names Les noms des colonnes.
+   * @param rows_names Les noms des colonnes. Chaque nom doit être non vide.
    * @return true Si toutes les colonnes ont été créées.
    * @return false Si toutes les colonnes n'ont pas été créées.
    */
@@ -598,7 +602,24 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalMng
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/
 
+  /**
+   * @brief Méthode permettant de récupérer le nom d'une ligne
+   * à partir de sa position.
+   * 
+   * @param position La position de la ligne.
+   * @return String Le nom de la ligne 
+   *         (chaine vide si la ligne n'a pas été trouvé).
+   */
   virtual String rowName(Integer position) = 0;
+
+  /**
+   * @brief Méthode permettant de récupérer le nom d'une colonne
+   * à partir de sa position.
+   * 
+   * @param position La position de la colonne.
+   * @return String Le nom de la colonne 
+   *         (chaine vide si la colonne n'a pas été trouvé).
+   */
   virtual String columnName(Integer position) = 0;
 
   /*---------------------------------------------------------------------------*/
@@ -608,7 +629,7 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalMng
    * @brief Méthode permettant de changer le nom d'une ligne.
    * 
    * @param position La position de la ligne.
-   * @param new_name Le nouveau nom de la ligne.
+   * @param new_name Le nouveau nom de la ligne. Doit être non vide.
    * @return true Si le changement a eu lieu.
    * @return false Si le changement n'a pas eu lieu.
    */
@@ -617,7 +638,7 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalMng
    * @brief Méthode permettant de changer le nom d'une ligne.
    * 
    * @param row_name Le nom actuel de la ligne.
-   * @param new_name Le nouveau nom de la ligne.
+   * @param new_name Le nouveau nom de la ligne. Doit être non vide.
    * @return true Si le changement a eu lieu.
    * @return false Si le changement n'a pas eu lieu.
    */
@@ -627,7 +648,7 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalMng
    * @brief Méthode permettant de changer le nom d'une colonne.
    * 
    * @param position La position de la colonne.
-   * @param new_name Le nouveau nom de la colonne.
+   * @param new_name Le nouveau nom de la colonne. Doit être non vide.
    * @return true Si le changement a eu lieu.
    * @return false Si le changement n'a pas eu lieu.
    */
@@ -636,7 +657,7 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalMng
    * @brief Méthode permettant de changer le nom d'une colonne.
    * 
    * @param column_name Le nom actuel de la colonne.
-   * @param new_name Le nouveau nom de la colonne.
+   * @param new_name Le nouveau nom de la colonne. Doit être non vide.
    * @return true Si le changement a eu lieu.
    * @return false Si le changement n'a pas eu lieu.
    */
@@ -649,7 +670,7 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalMng
    * @brief Méthode permettant de créer une colonne contenant la moyenne des
    * éléments de chaque ligne.
    * 
-   * @param column_name Le nom de la nouvelle colonne.
+   * @param column_name Le nom de la nouvelle colonne. Doit être non vide.
    * @return Integer La position de la colonne.
    */
   virtual Integer addAverageColumn(const String& column_name) = 0;
