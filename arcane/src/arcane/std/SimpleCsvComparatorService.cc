@@ -85,6 +85,9 @@ print(Integer rank)
   m_simple_csv_reader_writer.print();
 }
 
+/**
+ * Méthode effectuant des opérations collectives.
+ */
 bool SimpleCsvComparatorService::
 writeReferenceFile(Integer rank)
 {

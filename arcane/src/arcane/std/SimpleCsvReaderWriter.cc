@@ -28,10 +28,6 @@ namespace Arcane
 bool SimpleCsvReaderWriter::
 writeTable(const Directory& dst, const String& file_name)
 {
-  if (!SimpleTableReaderWriterUtils::createDirectoryOnlyProcess0(m_simple_table_internal->m_parallel_mng, dst)) {
-    return false;
-  }
-
   std::ofstream ofile((dst.file(file_name) + "." + fileType()).localstr());
   if (ofile.fail())
     return false;

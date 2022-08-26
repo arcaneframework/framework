@@ -644,6 +644,7 @@ class ARCANE_CORE_EXPORT ISimpleTableOutput
   /*---------------------------------------------------------------------------*/
   /**
    * @brief Méthode permettant d'afficher le tableau.
+   * Méthode effectuant des opérations collectives.
    * 
    * @param rank L'id du processus devant afficher le tableau (-1 pour 
    *                  signifier "tous les processus").
@@ -654,6 +655,7 @@ class ARCANE_CORE_EXPORT ISimpleTableOutput
 
   /**
    * @brief Méthode permettant d'écrire le tableau dans un fichier.
+   * Méthode effectuant des opérations collectives.
    * Si rank != -1, les processus autres que P0 retournent true.
    * 
    * @param rank L'id du processus devant écrire dans un fichier 
@@ -664,6 +666,7 @@ class ARCANE_CORE_EXPORT ISimpleTableOutput
   virtual bool writeFile(Integer rank = -1) = 0;
   /**
    * @brief Méthode permettant d'écrire le tableau dans un fichier.
+   * Méthode effectuant des opérations collectives.
    * Si rank != -1, les processus autres que P0 retournent true.
    * 
    * @param directory Le répertoire où sera écrit le fichier

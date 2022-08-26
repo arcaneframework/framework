@@ -53,6 +53,9 @@ print(Integer rank)
   m_simple_table_reader_writer->print();
 }
 
+/**
+ * Méthode effectuant des opérations collectives.
+ */
 bool SimpleTableWriterHelper::
 writeFile(const Directory& root_directory, Integer rank)
 {
@@ -61,6 +64,13 @@ writeFile(const Directory& root_directory, Integer rank)
 
   // Création du répertoire.
   bool result = SimpleTableReaderWriterUtils::createDirectoryOnlyProcess0(m_simple_table_internal->m_parallel_mng, root_directory);
+  if (!result) {
+    return false;
+  }
+
+  Directory output_directory(root_directory, m_name_output_directory);
+
+  result = SimpleTableReaderWriterUtils::createDirectoryOnlyProcess0(m_simple_table_internal->m_parallel_mng, output_directory);
   if (!result) {
     return false;
   }
@@ -75,9 +85,12 @@ writeFile(const Directory& root_directory, Integer rank)
   if ((rank == -1 && m_name_table_once_process) && m_simple_table_internal->m_parallel_mng->commRank() != 0)
     return true;
 
-  return m_simple_table_reader_writer->writeTable(Directory(root_directory, m_name_output_directory), m_simple_table_internal->m_table_name);
+  return m_simple_table_reader_writer->writeTable(output_directory, m_simple_table_internal->m_table_name);
 }
 
+/**
+ * Méthode effectuant des opérations collectives.
+ */
 bool SimpleTableWriterHelper::
 writeFile(Integer rank)
 {
