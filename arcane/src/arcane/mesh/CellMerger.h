@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CellMerger.h                                                (C) 2000-2020 */
+/* CellMerger.h                                                (C) 2000-2022 */
 /*                                                                           */
 /* Fusionne deux mailles.                                                    */
 /*---------------------------------------------------------------------------*/
@@ -17,14 +17,10 @@
 #include "arcane/mesh/MeshGlobal.h"
 
 #include "arcane/utils/String.h"
+#include "arcane/ItemTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-namespace Arcane
-{
-class ItemInternal;
-}
 
 namespace Arcane::mesh
 {
@@ -55,7 +51,20 @@ class ARCANE_MESH_EXPORT CellMerger
    * \note la fusion est \b toujours effectuée dans \a i_cell_1, \a i_cell_2
    * devient une maille applatie qui sera détruite par la suite.
    */
-  void merge(ItemInternal* i_cell_1,ItemInternal* i_cell_2);
+  void merge(Cell i_cell_1,Cell i_cell_2);
+
+  /*!
+   * \brief Retourne l'ItemInteral utilisé par la maille après fusion
+   *
+   * \param i_cell_1 un pointeur sur la premiere maille
+   * \param i_cell_2 un pointeur sur la deuxième maille
+   *
+   * \return un pointeur sur la nouvelle maille.
+   *
+   * \note le nouveau pointeur est toujours soit \a i_cell_1 soit
+   * \a i_cell_2. Aucune allocation de mémoire n'est effectuée.
+   */
+  ItemInternal* getItemInternal(ItemInternal* i_cell_1, ItemInternal* i_cell_2);
 
   /*!
    * \brief Retourne l'ItemInteral utilisé par la maille après fusion
@@ -68,7 +77,7 @@ class ARCANE_MESH_EXPORT CellMerger
    * \note le nouveau pointeur est toujours soit \a i_cell_1 soit
    * \a i_cell_2. Aucune allocation de mémoire n'est effectuée.
    */
-  ItemInternal* getItemInternal(ItemInternal* i_cell_1, ItemInternal* i_cell_2);
+  Cell getCell(Cell i_cell_1, Cell i_cell_2);
 
  private:
 

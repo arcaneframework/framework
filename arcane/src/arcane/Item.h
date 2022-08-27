@@ -1069,9 +1069,19 @@ class ARCANE_CORE_EXPORT Cell
    * exemple: si rank = m_internal->whichChildAmI(iitem); donc
    * m_internal->hChild(rank) serait iitem;
    */
-  Int32 whichChildAmI(const ItemInternal *iitem) const
+  Int32 whichChildAmI(const ItemInternal* iitem) const
   {
     return ItemBase::whichChildAmI(iitem->localId());
+  }
+
+  /*!
+   * \returns le rang de l'enfant avec \p (iitem).
+   * exemple: si rank = m_internal->whichChildAmI(iitem); donc
+   * m_internal->hChild(rank) serait iitem;
+   */
+  Int32 whichChildAmI(CellLocalId local_id) const
+  {
+    return ItemBase::whichChildAmI(local_id);
   }
 
   // TODO: a supprimer

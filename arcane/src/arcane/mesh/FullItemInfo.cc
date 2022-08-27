@@ -130,10 +130,9 @@ class ArrayDumpAdapter
 };
 
 template<typename Adapter> void
-_dumpCellInfo(ItemInternal* icell,Adapter buf, Integer parent_info,
+_dumpCellInfo(Cell cell,Adapter buf, Integer parent_info,
               bool has_edge, bool has_amr,bool with_flags)
 {
-  Cell cell(icell);
   buf.put(cell.type());
   buf.put(cell.uniqueId().asInt64());
   buf.put(cell.owner());
@@ -188,11 +187,11 @@ _dumpCellInfo(ItemInternal* icell,Adapter buf, Integer parent_info,
     else {
       Cell hParent = cell.hParent();
       buf.put(hParent.uniqueId().asInt64());
-      buf.put(hParent.whichChildAmI(icell));
+      buf.put(hParent.whichChildAmI(cell));
     }
   }
   if (with_flags)
-    buf.put(icell->flags());
+    buf.put(cell.internal()->flags());
 }
 
 }
@@ -209,11 +208,11 @@ dump(ItemInternal* icell,ISerializer* buf, Integer parent_info,
 }
 
 void FullCellInfo::
-dump(ItemInternal* icell,Array<Int64>& buf, Integer parent_info,
+dump(Cell cell,Array<Int64>& buf, Integer parent_info,
      bool has_edge, bool has_amr,bool with_flags)
 {
   ArrayDumpAdapter adapter(buf);
-  _dumpCellInfo(icell,adapter,parent_info,has_edge,has_amr,with_flags);
+  _dumpCellInfo(cell,adapter,parent_info,has_edge,has_amr,with_flags);
 }
 
 /*---------------------------------------------------------------------------*/
