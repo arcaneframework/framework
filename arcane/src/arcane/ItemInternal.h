@@ -344,8 +344,16 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+namespace impl
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Classe de base pour les entités du maillage.
+ *
+ * Cette classe est interne à %Arcane.
  *
  * Cette classe est la classe de base commune à Item et ItemInternal.
  * Cette classe est normalement interne à Arcane et il est préférable d'utiliser
@@ -361,8 +369,8 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
  */
 class ARCANE_CORE_EXPORT ItemBase
 {
-  friend class ItemInternal;
-  friend class Item;
+  friend class ::Arcane::ItemInternal;
+  friend class ::Arcane::Item;
  public:
   enum
   { // L'affichage 'lisible' des flags est implémenté dans ItemPrinter
@@ -673,6 +681,11 @@ class ARCANE_CORE_EXPORT ItemBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+} // End namespace impl
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \internal
  * \brief Structure interne d'une entité de maillage.
@@ -693,7 +706,7 @@ class ARCANE_CORE_EXPORT ItemBase
  le maillage des changements effectués.
  */
 class ARCANE_CORE_EXPORT ItemInternal
-: public ItemBase
+: public impl::ItemBase
 {
 
  public:
@@ -952,7 +965,7 @@ ItemLocalIdT(ItemInternal* item)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-inline ItemInternal* ItemBase::
+inline ItemInternal* impl::ItemBase::
 itemInternal() const
 {
   if (m_local_id!=NULL_ITEM_LOCAL_ID)
@@ -963,7 +976,7 @@ itemInternal() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-inline ItemBase ItemBase::
+inline impl::ItemBase impl::ItemBase::
 parentBase(Int32 index) const
 {
   return ItemBase(m_shared_info->_parentV2(m_local_id,index));

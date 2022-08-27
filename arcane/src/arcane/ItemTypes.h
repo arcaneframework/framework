@@ -44,7 +44,11 @@ class DoF;
 class Item;
 class ItemWithNodes;
 class ItemInternal;
+namespace impl
+{
 class ItemBase;
+}
+
 
 class IMesh;
 class IPrimaryMesh;

@@ -68,7 +68,7 @@ namespace Arcane
  et les opérations de comparaisons ne sont valides sur l'entité nulle.
  */
 class ARCANE_CORE_EXPORT Item
-: protected ItemBase
+: protected impl::ItemBase
 {
   friend class ItemEnumeratorBaseT<Item>;
 
@@ -78,6 +78,8 @@ class ARCANE_CORE_EXPORT Item
   
   //! Type du localId()
   typedef ItemLocalId LocalIdType;
+
+  using ItemBase = impl::ItemBase;
 
  public:
 
@@ -1361,7 +1363,7 @@ ItemLocalIdT(ItemType item)
 inline Item ItemInfoListView::
 operator[](ItemLocalId local_id) const
 {
-  return Item(ItemBase(ItemBaseBuildInfo(local_id.localId(), m_item_shared_info)));
+  return Item(impl::ItemBase(ItemBaseBuildInfo(local_id.localId(), m_item_shared_info)));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1370,7 +1372,7 @@ operator[](ItemLocalId local_id) const
 inline Item ItemInfoListView::
 operator[](Int32 local_id) const
 {
-  return Item(ItemBase(ItemBaseBuildInfo(local_id, m_item_shared_info)));
+  return Item(impl::ItemBase(ItemBaseBuildInfo(local_id, m_item_shared_info)));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1379,7 +1381,7 @@ operator[](Int32 local_id) const
 template<typename ItemType> inline ItemType ItemInfoListViewT<ItemType>::
 operator[](ItemLocalId local_id) const
 {
-  return ItemType(ItemBase(ItemBaseBuildInfo(local_id.localId(), m_item_shared_info)));
+  return ItemType(impl::ItemBase(ItemBaseBuildInfo(local_id.localId(), m_item_shared_info)));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1388,7 +1390,7 @@ operator[](ItemLocalId local_id) const
 template<typename ItemType> inline ItemType ItemInfoListViewT<ItemType>::
 operator[](Int32 local_id) const
 {
-  return ItemType(ItemBase(ItemBaseBuildInfo(local_id, m_item_shared_info)));
+  return ItemType(impl::ItemBase(ItemBaseBuildInfo(local_id, m_item_shared_info)));
 }
 
 /*---------------------------------------------------------------------------*/

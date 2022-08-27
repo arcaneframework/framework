@@ -117,7 +117,7 @@ class ItemInternalVectorView
 
   friend class ItemVectorView;
   friend class ItemInternalConnectivityList;
-  friend class ItemBase;
+  friend class impl::ItemBase;
   using const_iterator = ItemInternalVectorViewConstIterator;
 
  public:

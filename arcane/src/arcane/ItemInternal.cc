@@ -107,7 +107,7 @@ topHParent() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ItemBase ItemBase::
+impl::ItemBase impl::ItemBase::
 topHParentBase() const
 {
   ItemBase top_it = *this;
@@ -135,7 +135,7 @@ topHParent()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int32 ItemBase::
+Int32 impl::ItemBase::
 whichChildAmI(Int32 local_id) const
 {
   ARCANE_ASSERT((this->hasHChildren()), ("item has non-child!"));
@@ -161,7 +161,7 @@ whichChildAmI(const ItemInternal *iitem) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ItemInternalVectorView ItemBase::
+ItemInternalVectorView impl::ItemBase::
 activeCells(Int32Array& local_ids) const
 {
 	const Integer nbcell = this->nbCell();
@@ -178,7 +178,7 @@ activeCells(Int32Array& local_ids) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ItemInternalVectorView ItemBase::
+ItemInternalVectorView impl::ItemBase::
 activeFaces(Int32Array& local_ids) const
 {
 	const Integer nbface = this->nbFace();
@@ -202,7 +202,7 @@ activeFaces(Int32Array& local_ids) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ItemInternalVectorView ItemBase::
+ItemInternalVectorView impl::ItemBase::
 activeEdges() const
 {
 	ARCANE_THROW(NotImplementedException,"Active edges group not yet implemented");
