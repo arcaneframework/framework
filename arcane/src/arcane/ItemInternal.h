@@ -48,11 +48,12 @@ class Item;
 class ARCANE_CORE_EXPORT ItemBaseBuildInfo
 {
  public:
+  ItemBaseBuildInfo() = default;
   ItemBaseBuildInfo(Int32 local_id,ItemSharedInfo* shared_info)
   : m_local_id(local_id), m_shared_info(shared_info) {}
  public:
-  Int32 m_local_id;
-  ItemSharedInfo* m_shared_info;
+  Int32 m_local_id = NULL_ITEM_LOCAL_ID;
+  ItemSharedInfo* m_shared_info = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -266,13 +267,13 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   { return ItemBaseBuildInfo(_hChildLocalIdV2(lid,aindex),m_items->m_cell_shared_info); }
 
   ItemInternalVectorView nodesV2(Int32 lid) const
-  { return ItemInternalVectorView(m_items->nodes,_nodeLocalIdsV2(lid),_nbNodeV2(lid)); }
+  { return ItemInternalVectorView(m_items->m_node_shared_info,m_items->nodes,_nodeLocalIdsV2(lid),_nbNodeV2(lid)); }
   ItemInternalVectorView edgesV2(Int32 lid) const
-  { return ItemInternalVectorView(m_items->edges,_edgeLocalIdsV2(lid),_nbEdgeV2(lid)); }
+  { return ItemInternalVectorView(m_items->m_edge_shared_info,m_items->edges,_edgeLocalIdsV2(lid),_nbEdgeV2(lid)); }
   ItemInternalVectorView facesV2(Int32 lid) const
-  { return ItemInternalVectorView(m_items->faces,_faceLocalIdsV2(lid),_nbFaceV2(lid)); }
+  { return ItemInternalVectorView(m_items->m_face_shared_info,m_items->faces,_faceLocalIdsV2(lid),_nbFaceV2(lid)); }
   ItemInternalVectorView cellsV2(Int32 lid) const
-  { return ItemInternalVectorView(m_items->cells,_cellLocalIdsV2(lid),_nbCellV2(lid)); }
+  { return ItemInternalVectorView(m_items->m_cell_shared_info,m_items->cells,_cellLocalIdsV2(lid),_nbCellV2(lid)); }
 
   Int32ConstArrayView nodeLocalIdsV2(Int32 lid) const
   { return Int32ConstArrayView(_nbNodeV2(lid),_nodeLocalIdsV2(lid)); }

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemInternalVectorView.h                                    (C) 2000-2017 */
+/* ItemInternalVectorView.h                                    (C) 2000-2022 */
 /*                                                                           */
 /* Vue sur un vecteur (tableau indirect) d'entités.                          */
 /*---------------------------------------------------------------------------*/
@@ -16,17 +16,20 @@
 
 #include "arcane/utils/ArrayView.h"
 #include "arcane/ItemTypes.h"
+
 #include <iterator>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 class ItemInternal;
+class ItemSharedInfo;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -111,16 +114,23 @@ class ItemInternalVectorViewConstIterator
 class ItemInternalVectorView
 {
  public:
-  typedef ItemInternalVectorViewConstIterator const_iterator;
+
+  friend class ItemVectorView;
+  friend class ItemInternalConnectivityList;
+  friend class ItemBase;
+  using const_iterator = ItemInternalVectorViewConstIterator;
+
  public:
 
   ItemInternalVectorView() = default;
 
-  ItemInternalVectorView(ItemInternalArrayView aitems,Int32ConstArrayView local_ids)
-  : m_items(aitems), m_local_ids(local_ids) {}
+ private:
 
-  ItemInternalVectorView(ItemInternalArrayView aitems,const Int32* local_ids,Integer count)
-  : m_items(aitems), m_local_ids(count,local_ids) {}
+  ItemInternalVectorView(ItemSharedInfo* si,ItemInternalArrayView aitems,Int32ConstArrayView local_ids)
+  : m_items(aitems), m_local_ids(local_ids), m_shared_info(si) { }
+
+  ItemInternalVectorView(ItemSharedInfo* si,ItemInternalArrayView aitems,const Int32* local_ids,Integer count)
+  : m_items(aitems), m_local_ids(count,local_ids), m_shared_info(si) { }
 
  public:
 
@@ -141,11 +151,12 @@ class ItemInternalVectorView
 
  public:
 
-  inline const_iterator begin() const
+  const_iterator begin() const
   {
     return const_iterator(m_items.unguardedBasePointer(),m_local_ids.unguardedBasePointer(),0);
   }
-  inline const_iterator end() const
+
+  const_iterator end() const
   {
     return const_iterator(m_items.unguardedBasePointer(),m_local_ids.unguardedBasePointer(),this->size());
   }
@@ -154,12 +165,13 @@ class ItemInternalVectorView
 
   ItemInternalArrayView m_items;
   Int32ConstArrayView m_local_ids;
+  ItemSharedInfo* m_shared_info = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

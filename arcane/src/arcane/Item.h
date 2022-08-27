@@ -70,6 +70,8 @@ namespace Arcane
 class ARCANE_CORE_EXPORT Item
 : protected ItemBase
 {
+  friend class ItemEnumeratorBaseT<Item>;
+
  public:
 
   typedef ItemInternal* ItemInternalPtr;
@@ -376,6 +378,8 @@ namespace Arcane
 class ARCANE_CORE_EXPORT Node
 : public Item
 {
+  friend class ItemEnumeratorBaseT<Node>;
+
  public:
   /*!
    * \brief Index d'un Node dans une variable.
@@ -516,6 +520,8 @@ class ARCANE_CORE_EXPORT Node
 class ARCANE_CORE_EXPORT ItemWithNodes
 : public Item
 {
+  friend class ItemEnumeratorBaseT<ItemWithNodes>;
+
  public:
   
   //! Création d'une entité non connectée au maillage
@@ -587,6 +593,8 @@ class ARCANE_CORE_EXPORT ItemWithNodes
 class ARCANE_CORE_EXPORT Edge
 : public ItemWithNodes
 {
+  friend class ItemEnumeratorBaseT<Edge>;
+
  public:
   /*!
    * \brief Index d'une Edge dans une variable.
@@ -696,6 +704,8 @@ class ARCANE_CORE_EXPORT Edge
 class ARCANE_CORE_EXPORT Face
 : public ItemWithNodes
 {
+  friend class ItemEnumeratorBaseT<Face>;
+
  public:
   /*!
    * \brief Index d'une Face dans une variable.
@@ -918,6 +928,8 @@ class ARCANE_CORE_EXPORT Face
 class ARCANE_CORE_EXPORT Cell
 : public ItemWithNodes
 {
+  friend class ItemEnumeratorBaseT<Cell>;
+
  public:
   /*!
    * \brief Index d'une Cell dans une variable.
@@ -1075,6 +1087,8 @@ class ARCANE_CORE_EXPORT Cell
 class Particle
 : public Item
 {
+  friend class ItemEnumeratorBaseT<Particle>;
+
  public:
   
   //! Type du localId()
@@ -1161,6 +1175,8 @@ class Particle
 class DoF
 : public Item
 {
+  friend class ItemEnumeratorBaseT<DoF>;
+
  public:
 
   //! Constructeur d'une maille non connectée

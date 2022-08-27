@@ -29,6 +29,7 @@ ItemVectorView(IItemFamily* family, ConstArrayView<Int32> local_ids)
 : m_items(family->itemsInternal())
 , m_local_ids(local_ids)
 {
+  _init2(family);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -39,6 +40,21 @@ ItemVectorView(IItemFamily* family, ItemIndexArrayView indexes)
 : m_items(family->itemsInternal())
 , m_local_ids(indexes)
 {
+ _init2(family);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemVectorView::
+_init2(IItemFamily* family)
+{
+  if (family){
+    ItemInfoListView info_view(family);
+    m_shared_info = info_view.m_item_shared_info;
+  }
+  else
+    m_shared_info = ItemSharedInfo::nullInstance();
 }
 
 /*---------------------------------------------------------------------------*/

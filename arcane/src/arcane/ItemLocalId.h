@@ -38,6 +38,7 @@ class ARCANE_CORE_EXPORT ItemLocalId
   // La définition de ce constructeur est dans ItemInternal.h
   inline ItemLocalId(ItemInternal* item);
   inline ItemLocalId(ItemEnumerator enumerator);
+  template<typename ItemType> inline ItemLocalId(ItemEnumeratorT<ItemType> enumerator);
   inline ItemLocalId(Item item);
   constexpr ARCCORE_HOST_DEVICE operator Int32() const { return m_local_id; }
   constexpr ARCCORE_HOST_DEVICE Int32 asInt32() const { return m_local_id; }
