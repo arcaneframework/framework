@@ -773,18 +773,6 @@ _computeFaceNormal(Face face, const SharedVariableNodeReal3& nodes_coord) const
 /*---------------------------------------------------------------------------*/
 
 void FaceFamily::
-removeCellFromFace(ItemInternal* face,ItemInternal* cell_to_remove, bool no_destroy)
-{
-  _checkValidItem(cell_to_remove);
-  if (!no_destroy)
-    throw NotSupportedException(A_FUNCINFO,"no_destroy==false");
-  removeCellFromFace(face,ItemLocalId(cell_to_remove));
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void FaceFamily::
 removeCellFromFace(Face xface,ItemLocalId cell_to_remove_lid)
 {
   _checkValidItem(xface);

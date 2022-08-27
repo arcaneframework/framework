@@ -253,28 +253,15 @@ addFaceToEdge(Edge edge,Face new_face)
 /*---------------------------------------------------------------------------*/
 
 inline void EdgeFamily::
-_removeEdge(ItemInternal* iedge)
+_removeEdge(Edge edge)
 {
-  Edge edge(iedge);
   for( Node node : edge.nodes() )
     m_node_family->removeEdgeFromNode(node,edge);
-  _removeOne(iedge);
+  _removeOne(edge.internal());
   // On ne supprime pas ici les autres relations (face->edge,cell->edge)
   // Car l'ordre de suppression doit toujours être cell, face, edge, node
   // donc node est en dernier et tout est déjà fait
   // Par ailleurs, cela évite des problèmes de récursivité
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void EdgeFamily::
-removeCellFromEdge(ItemInternal* edge,ItemInternal* cell_to_remove, bool no_destroy)
-{
-  _checkValidItem(cell_to_remove);
-  if (!no_destroy)
-    throw NotSupportedException(A_FUNCINFO,"no_destroy==false");
-  removeCellFromEdge(edge,ItemLocalId(cell_to_remove));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -287,18 +274,6 @@ removeCellFromEdge(Edge edge,ItemLocalId cell_to_remove_lid)
     return;
   _checkValidItem(edge);
   m_cell_connectivity->removeConnectedItem(ItemLocalId(edge),cell_to_remove_lid);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void EdgeFamily::
-removeFaceFromEdge(ItemInternal* edge,ItemInternal* face_to_remove)
-{
-  if (!Connectivity::hasConnectivity(m_mesh_connectivity,Connectivity::CT_EdgeToFace))
-    return;
-  _checkValidSourceTargetItems(edge,face_to_remove);
-  m_face_connectivity->removeConnectedItem(ItemLocalId(edge),ItemLocalId(face_to_remove));
 }
 
 /*---------------------------------------------------------------------------*/

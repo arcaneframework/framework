@@ -192,37 +192,11 @@ addEdgeToNode(Node node,Edge new_edge)
 /*---------------------------------------------------------------------------*/
 
 void NodeFamily::
-removeEdgeFromNode(ItemInternal* node,ItemInternal* edge_to_remove)
-{
-  if (!Connectivity::hasConnectivity(m_mesh_connectivity,Connectivity::CT_NodeToEdge))
-    return;
-
-  _checkValidSourceTargetItems(node,edge_to_remove);
-  m_edge_connectivity->removeConnectedItem(ItemLocalId(node),ItemLocalId(edge_to_remove));
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void NodeFamily::
 removeEdgeFromNode(ItemLocalId node,ItemLocalId edge_to_remove)
 {
   if (!Connectivity::hasConnectivity(m_mesh_connectivity,Connectivity::CT_NodeToEdge))
     return;
   m_edge_connectivity->removeConnectedItem(node,edge_to_remove);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void NodeFamily::
-removeFaceFromNode(ItemInternal* node,ItemInternal* face_to_remove)
-{
-  if (m_no_face_connectivity)
-    return;
-
-  _checkValidSourceTargetItems(node,face_to_remove);
-  m_face_connectivity->removeConnectedItem(ItemLocalId(node),ItemLocalId(face_to_remove));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -235,18 +209,6 @@ removeFaceFromNode(ItemLocalId node,ItemLocalId face_to_remove)
     return;
 
   m_face_connectivity->removeConnectedItem(node,face_to_remove);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void NodeFamily::
-removeCellFromNode(ItemInternal* node,ItemInternal* cell_to_remove, bool no_destroy)
-{
-	_checkValidItem(cell_to_remove);
-  if (!no_destroy)
-    throw NotSupportedException(A_FUNCINFO,"no_destroy==false");
-  removeCellFromNode(node,ItemLocalId(cell_to_remove));
 }
 
 /*---------------------------------------------------------------------------*/

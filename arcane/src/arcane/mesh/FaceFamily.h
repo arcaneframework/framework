@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* FaceFamily.h                                                (C) 2000-2021 */
+/* FaceFamily.h                                                (C) 2000-2022 */
 /*                                                                           */
 /* Famille de faces.                                                         */
 /*---------------------------------------------------------------------------*/
@@ -72,15 +72,12 @@ class ARCANE_MESH_EXPORT FaceFamily
   // IItemFamilyModifier Interface
   ItemInternal* allocOne(Int64 uid,ItemTypeInfo* type, MeshInfos& mesh_info) override;
   ItemInternal* findOrAllocOne(Int64 uid,ItemTypeInfo* type,MeshInfos& mesh_info, bool& is_alloc) override;
-  IItemFamily*  family() override {return this;}
+  IItemFamily* family() override { return this; }
 
   ItemInternal* allocOne(Int64 uid,ItemTypeInfo* type);
   ItemInternal* findOrAllocOne(Int64 uid,ItemTypeInfo* type,bool& is_alloc);
 
  public:
-
-  //! \deprecated Utiliser la version removeCellFromFace(ItemInternal*,ItemLocalId)
-  ARCANE_DEPRECATED_240 void removeCellFromFace(ItemInternal* face,ItemInternal* cell_to_remove, bool no_destroy=false);
 
   //! Ajoute une maille derrière la face
   void addBackCellToFace(Face face,Cell new_cell);

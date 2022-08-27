@@ -62,17 +62,12 @@ class ARCANE_MESH_EXPORT EdgeFamily
 
   void replaceNode(ItemLocalId edge,Integer index,ItemLocalId node);
 
-  //! \deprecated Utiliser la version removeCellFromEdge(ItemInternal*,ItemLocalId)
-  void removeCellFromEdge(ItemInternal* edge,ItemInternal* cell_to_remove, bool no_destroy=false);
-
   //! Ajoute une maille voisine à une arête
   void addCellToEdge(Edge edge,Cell new_cell);
   //! Ajoute une maille voisine à une arête
   void addFaceToEdge(Edge edge,Face new_face);
   //! Supprime une maille d'une arête
   void removeCellFromEdge(Edge edge,ItemLocalId cell_to_remove_lid);
-  //! Supprime une maille d'une arête
-  ARCANE_DEPRECATED_260 void removeFaceFromEdge(ItemInternal* edge,ItemInternal* face_to_remove);
   //! Supprime une maille d'une arête
   void removeFaceFromEdge(ItemLocalId edge,ItemLocalId face_to_remove);
   //! Supprime l'arête si elle n'est plus connectée
@@ -99,7 +94,7 @@ class ARCANE_MESH_EXPORT EdgeFamily
   //! Famille des noeuds associée à cette famille
   NodeFamily* m_node_family;
 
-  inline void _removeEdge(ItemInternal* edge);
+  inline void _removeEdge(Edge edge);
   inline void _createOne(ItemInternal* item,Int64 uid);
 };
 
