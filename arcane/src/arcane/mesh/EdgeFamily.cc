@@ -5,13 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* EdgeFamily.cc                                               (C) 2000-2017 */
+/* EdgeFamily.cc                                               (C) 2000-2022 */
 /*                                                                           */
 /* Famille d'arêtes.                                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
+#include "arcane/mesh/EdgeFamily.h"
 
 #include "arcane/utils/FatalErrorException.h"
 
@@ -22,7 +22,6 @@
 #include "arcane/Connectivity.h"
 
 #include "arcane/mesh/NodeFamily.h"
-#include "arcane/mesh/EdgeFamily.h"
 #include "arcane/mesh/CompactIncrementalItemConnectivity.h"
 #include "arcane/mesh/ItemConnectivitySelector.h"
 #include "arcane/mesh/AbstractItemFamilyTopologyModifier.h"
@@ -31,8 +30,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -230,7 +229,7 @@ replaceNode(ItemLocalId edge,Integer index,ItemLocalId node)
 /*---------------------------------------------------------------------------*/
 
 void EdgeFamily::
-addCellToEdge(ItemInternal* edge,ItemInternal* new_cell)
+addCellToEdge(Edge edge,Cell new_cell)
 {
   if (!Connectivity::hasConnectivity(m_mesh_connectivity,Connectivity::CT_EdgeToCell))
     return;
@@ -242,7 +241,7 @@ addCellToEdge(ItemInternal* edge,ItemInternal* new_cell)
 /*---------------------------------------------------------------------------*/
 
 void EdgeFamily::
-addFaceToEdge(ItemInternal* edge,ItemInternal* new_face)
+addFaceToEdge(Edge edge,Face new_face)
 {
   if (!Connectivity::hasConnectivity(m_mesh_connectivity,Connectivity::CT_EdgeToFace))
     return;
@@ -282,7 +281,7 @@ removeCellFromEdge(ItemInternal* edge,ItemInternal* cell_to_remove, bool no_dest
 /*---------------------------------------------------------------------------*/
 
 void EdgeFamily::
-removeCellFromEdge(ItemInternal* edge,ItemLocalId cell_to_remove_lid)
+removeCellFromEdge(Edge edge,ItemLocalId cell_to_remove_lid)
 {
   if (!Connectivity::hasConnectivity(m_mesh_connectivity,Connectivity::CT_EdgeToCell))
     return;
@@ -317,11 +316,12 @@ removeFaceFromEdge(ItemLocalId edge,ItemLocalId face_to_remove)
 /*---------------------------------------------------------------------------*/
 
 void EdgeFamily::
-removeEdgeIfNotConnected(ItemInternal* edge)
+removeEdgeIfNotConnected(Edge edge)
 {
-	_checkValidItem(edge);
-	if (!edge->isSuppressed() && edge->nbCell()==0){
-    _removeEdge(edge);
+  ItemInternal* iedge = edge.internal();
+	_checkValidItem(iedge);
+	if (!iedge->isSuppressed() && iedge->nbCell()==0){
+    _removeEdge(iedge);
   }
 }
 
@@ -347,8 +347,7 @@ setConnectivity(const Integer c)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

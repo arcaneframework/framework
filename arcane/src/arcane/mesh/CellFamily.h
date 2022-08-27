@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CellFamily.h                                                (C) 2000-2021 */
+/* CellFamily.h                                                (C) 2000-2022 */
 /*                                                                           */
 /* Famille de mailles.                                                       */
 /*---------------------------------------------------------------------------*/
@@ -122,12 +122,12 @@ class ARCANE_MESH_EXPORT CellFamily
  public:
 
   //! AMR
-  void _addParentCellToCell(ItemInternal* cell,ItemInternal* parent_cell);
-  void _addChildCellToCell(ItemInternal* parent_cell,Integer rank,ItemInternal* child_cell);
-  void _addChildrenCellsToCell(ItemInternal* parent_cell,Int32ConstArrayView children_cells_lid);
-  void _removeParentCellToCell(ItemInternal* cell);
-  void _removeChildCellToCell(ItemInternal* parent_cell,ItemInternal* cell);
-  void _removeChildrenCellsToCell(ItemInternal* parent_cell);
+  void _addParentCellToCell(Cell cell,Cell parent_cell);
+  void _addChildCellToCell(Cell parent_cell,Integer rank,Cell child_cell);
+  void _addChildrenCellsToCell(Cell parent_cell,Int32ConstArrayView children_cells_lid);
+  void _removeParentCellToCell(Cell cell);
+  void _removeChildCellToCell(Cell parent_cell,Cell cell);
+  void _removeChildrenCellsToCell(Cell parent_cell);
 
  public:
 

@@ -83,50 +83,40 @@ class ARCANE_MESH_EXPORT FaceFamily
   ARCANE_DEPRECATED_240 void removeCellFromFace(ItemInternal* face,ItemInternal* cell_to_remove, bool no_destroy=false);
 
   //! Ajoute une maille derrière la face
-  void addBackCellToFace(ItemInternal* face,ItemInternal* new_cell);
+  void addBackCellToFace(Face face,Cell new_cell);
   //! Ajoute une maille devant la face
-  void addFrontCellToFace(ItemInternal* face,ItemInternal* new_cell);
+  void addFrontCellToFace(Face face,Cell new_cell);
   //! Supprime une maille de la face
-  void removeCellFromFace(ItemInternal* face,ItemLocalId cell_to_remove_lid);
+  void removeCellFromFace(Face face,ItemLocalId cell_to_remove_lid);
   //! Ajoute une arête devant la face
-  void addEdgeToFace(ItemInternal* face,ItemInternal* new_edge);
+  void addEdgeToFace(Face face,Edge new_edge);
   //! Supprime une arête de la face
   /*! Pas de notion de no_destroy car la consistence est orientée par les mailles et non les arêtes */
-  void removeEdgeFromFace(ItemInternal* face,ItemInternal* edge_to_remove);
+  void removeEdgeFromFace(Face face,Edge edge_to_remove);
   //! Supprime la face si elle n'est plus connectée
-  void removeFaceIfNotConnected(ItemInternal* face);
+  void removeFaceIfNotConnected(Face face);
 
   void replaceNode(ItemLocalId face,Integer index,ItemLocalId node);
   void replaceEdge(ItemLocalId face,Integer index,ItemLocalId edge);
   void replaceFace(ItemLocalId face,Integer index,ItemLocalId face2);
   void replaceCell(ItemLocalId face,Integer index,ItemLocalId cell);
 
-  void setBackAndFrontCells(ItemInternal* face,Int32 back_cell_lid,Int32 front_cell_lid);
+  void setBackAndFrontCells(Face face,Int32 back_cell_lid,Int32 front_cell_lid);
 
   //! AMR
-  //!
   void replaceBackCellToFace(Face face,ItemLocalId new_cell);
-  //!
   void replaceFrontCellToFace(Face face,ItemLocalId new_cell);
-  //!
   void addBackFrontCellsFromParentFace(ItemInternal* subface,ItemInternal* face);
-  //!
   void replaceBackFrontCellsFromParentFace(Cell subcell,Face subface,Cell cell,Face face);
-  //!
   bool isSubFaceInFace(Face subface,Face face) const;
-  //!
   bool isChildOnFace(ItemWithNodes child,Face face) const;
-  //!
   void subFaces(Face face,Array<ItemInternal*>& subfaces);
-  //!
   void allSubFaces(Face face,Array<ItemInternal*>& subfaces);
-  //!
   void activeSubFaces(Face face,Array<ItemInternal*>& subfaces);
-  //!
   void familyTree (Array<ItemInternal*>& family,Cell item, const bool reset=true) const;
-  //!
   void activeFamilyTree (Array<ItemInternal*>& family,Cell item, const bool reset=true) const;
   // OFF AMR
+
   /*!
    * \brief Indique s'il faut vérifier l'orientation des mailles et des faces.
    *
@@ -135,8 +125,7 @@ class ARCANE_MESH_EXPORT FaceFamily
    * ne soit pas correcte. Par exemple, il est possible d'avoir deux mailles
    * derrière une face. Dans ce cas, il faut désactiver cette option.
    */
-  void setCheckOrientation(bool is_check)
-    { m_check_orientation = is_check; }
+  void setCheckOrientation(bool is_check) { m_check_orientation = is_check; }
 
   //! Renseigne les informations liées à l'interface liée \a interface
   void applyTiedInterface(ITiedInterface* interface);

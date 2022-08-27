@@ -492,6 +492,12 @@ class ARCANE_MESH_EXPORT ItemFamily
     ARCANE_UNUSED(target);
 #endif
   }
+  void _checkValidItem(Item item) { _checkValidItem(item.internal()); }
+  void _checkValidSourceTargetItems(Item source,Item target)
+  {
+    _checkValidItem(source.internal());
+    _checkValidItem(target.internal());
+  }
 
  private:
 
