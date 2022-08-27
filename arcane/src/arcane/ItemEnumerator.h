@@ -154,7 +154,7 @@ class ItemEnumeratorBaseT
   ItemEnumeratorBaseT(const ItemEnumerator& rhs,bool);
 
   ItemEnumeratorBaseT(const ItemInternalPtr* items,const Int32* local_ids,Int32 index,Int32 n,
-                      const ItemGroupImpl * agroup,ItemBase item_base)
+                      const ItemGroupImpl * agroup,impl::ItemBase item_base)
   : m_base(item_base), m_items(items), m_local_ids(local_ids), m_index(index), m_count(n), m_group_impl(agroup)
   {
     m_is_not_end = (m_index<m_count);
@@ -231,7 +231,7 @@ class ItemEnumerator
  private:
 
   ItemEnumerator(const ItemInternalPtr* items,const Int32* local_ids,Int32 index,Int32 n,
-                 const ItemGroupImpl* agroup,ItemBase item_base)
+                 const ItemGroupImpl* agroup,impl::ItemBase item_base)
   : BaseClass(items,local_ids,index,n,agroup,item_base){}
 };
 
