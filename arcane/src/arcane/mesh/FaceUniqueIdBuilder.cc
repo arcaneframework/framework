@@ -262,7 +262,7 @@ _computeFacesUniqueIdsParallelV1()
 
     ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,faces_map){
       ItemInternal* face = nbid->value();
-      bool boundary_val = face->flags() & ItemInternal::II_Boundary;
+      bool boundary_val = face->flags() & ItemFlags::II_Boundary;
       if (boundary_val)
         faces.add(face);
     }
@@ -298,8 +298,8 @@ _computeFacesUniqueIdsParallelV1()
       faces_infos2.clear();
       for( Integer i_face=first_face_to_send; i_face<first_face_to_send+real_nb_face_to_send; ++i_face ){
         Face face(faces[i_face]);
-        face.internal()->addFlags(ItemInternal::II_Shared | ItemInternal::II_SubDomainBoundary);
-        bool has_back_cell = face.internal()->flags() & ItemInternal::II_HasBackCell;
+        face.internal()->addFlags(ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary);
+        bool has_back_cell = face.internal()->flags() & ItemFlags::II_HasBackCell;
         faces_infos2.add(face.type());
         for( Node node : face.nodes() )
           faces_infos2.add(node.uniqueId().asInt64());

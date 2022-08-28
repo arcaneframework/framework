@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshExchanger.h                                            (C) 2000-2016 */
+/* IMeshExchanger.h                                            (C) 2000-2022 */
 /*                                                                           */
 /* Gestion d'un échange de maillage entre sous-domaines.                     */
 /*---------------------------------------------------------------------------*/
@@ -19,7 +19,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -73,7 +74,7 @@ class ARCANE_CORE_EXPORT IMeshExchanger
    * Après appel à cette méthode chaque entité du maillage est modifiée comme suit:
    * - le champ Item::owner() indique le nouveau propriétaire.
    * - les entités qui seront supprimées après l'échange sont marquées par le flag
-   *   ItemInternal::II_NeedRemove (sauf pour l'instant pour les particules
+   *   ItemFlags::II_NeedRemove (sauf pour l'instant pour les particules
    *   sans notion de fantôme mais c'est temporaire).
    *
    * Retourne \a true s'il n'y a aucun échange à effectuer.
@@ -101,7 +102,7 @@ class ARCANE_CORE_EXPORT IMeshExchanger
    * \brief Supprime de ce sous-domaine les entités qui ne doivent plus
    * s'y trouver suite à l'échange.
    *
-   * Toutes les entités marquées avec le flag ItemInternal::II_NeedRemove
+   * Toutes les entités marquées avec le flag ItemFlags::II_NeedRemove
    * sont supprimées.
    *
    * \pre phase()==ePhase::RemoveItems
@@ -165,7 +166,7 @@ class ARCANE_CORE_EXPORT IMeshExchanger
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -341,16 +341,16 @@ class ARCANE_MESH_EXPORT DynamicMeshKindInfos
   inline void _setSuppressed(ItemInternal* item)
   {
     int f = item->flags();
-    f &= ~ItemInternal::II_Added;
-    f |= ItemInternal::II_Suppressed;
+    f &= ~ItemFlags::II_Added;
+    f |= ItemFlags::II_Suppressed;
     item->setFlags(f);
   }
 
   inline void _setAdded(ItemInternal* item)
   {
     int f = item->flags();
-    f |= ItemInternal::II_Added;
-    f &= ~ItemInternal::II_Suppressed;
+    f |= ItemFlags::II_Added;
+    f &= ~ItemFlags::II_Suppressed;
     item->setFlags(f);
   }
 

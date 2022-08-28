@@ -5,18 +5,17 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParticleFamily.cc                                           (C) 2000-2018 */
+/* ParticleFamily.cc                                           (C) 2000-2022 */
 /*                                                                           */
 /* Famille de particules.                                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
+#include "arcane/mesh/ParticleFamily.h"
 
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/PlatformUtils.h"
 
-#include "arcane/mesh/ParticleFamily.h"
 #include "arcane/mesh/ItemsExchangeInfo2.h"
 #include "arcane/mesh/DynamicMesh.h"
 #include "arcane/mesh/IncrementalItemConnectivity.h"
@@ -33,12 +32,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -410,8 +405,8 @@ removeNeedRemoveMarkedItems()
     ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,particle_map){
       ItemInternal* item = nbid->value();
       Integer f = item->flags();
-      if (f & ItemInternal::II_NeedRemove){
-          f &= ~ItemInternal::II_NeedRemove;
+      if (f & ItemFlags::II_NeedRemove){
+          f &= ~ItemFlags::II_NeedRemove;
           item->setFlags(f);
           lids_to_remove.add(item->localId());
       }
@@ -426,8 +421,7 @@ removeNeedRemoveMarkedItems()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

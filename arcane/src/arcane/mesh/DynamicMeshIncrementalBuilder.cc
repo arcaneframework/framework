@@ -1659,8 +1659,8 @@ _removeNeedRemoveMarkedItems(ItemInternalMap& map)
   ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,map){
     ItemInternal* item = nbid->value();
     Integer f = item->flags();
-    if (f & ItemInternal::II_NeedRemove){
-      f &= ~ItemInternal::II_NeedRemove;
+    if (f & ItemFlags::II_NeedRemove){
+      f &= ~ItemFlags::II_NeedRemove;
       item->setFlags(f);
       items_to_remove.add(item);
     }
@@ -1713,8 +1713,8 @@ removeNeedRemoveMarkedItems()
           ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,particle_map){
             ItemInternal* item = nbid->value();
             Integer f = item->flags();
-            if (f & ItemInternal::II_NeedRemove){
-              f &= ~ItemInternal::II_NeedRemove;
+            if (f & ItemFlags::II_NeedRemove){
+              f &= ~ItemFlags::II_NeedRemove;
               item->setFlags(f);
               lids_to_remove.add(item->localId());
             }

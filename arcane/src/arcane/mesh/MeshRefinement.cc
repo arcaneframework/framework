@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshRefinement.cc                                           (C) 2000-2020 */
+/* MeshRefinement.cc                                           (C) 2000-2022 */
 /*                                                                           */
 /* Manipulation d'un maillage AMR.                                           */
 /*---------------------------------------------------------------------------*/
@@ -59,7 +59,8 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 
 #ifdef ACTIVATE_PERF_COUNTER
-const std::string MeshRefinement::PerfCounter::m_names[MeshRefinement::PerfCounter::NbCounters] = {
+const std::string MeshRefinement::PerfCounter::m_names[MeshRefinement::PerfCounter::NbCounters] =
+  {
     "INIT",
     "CLEAR",
     "ENDUPDATE",
@@ -332,7 +333,7 @@ flagCellToRefine(Int32ConstArrayView lids)
     ItemInternal* item = cells[lids[i]];
     //ARCANE_ASSERT((item->type() ==IT_Hexaedron8),(""));
     Integer f = item->flags();
-    f |= ItemInternal::II_Refine;
+    f |= ItemFlags::II_Refine;
     item->setFlags(f);
   }
 }
@@ -350,7 +351,7 @@ flagCellToCoarsen(Int32ConstArrayView lids)
     ItemInternal* item = cells[lids[i]];
     //ARCANE_ASSERT((item->type() ==IT_Hexaedron8),(""));
     Integer f = item->flags();
-    f |= ItemInternal::II_Coarsen;
+    f |= ItemFlags::II_Coarsen;
     item->setFlags(f);
   }
 }
@@ -673,8 +674,8 @@ uniformlyRefine(Integer n)
       const Cell& cell = *icell;
       ItemInternal* iitem = cell.internal();
       Integer f = iitem->flags();
-      f &= ~ItemInternal::II_Coarsen;
-      f |= ItemInternal::II_Refine;
+      f &= ~ItemFlags::II_Coarsen;
+      f |= ItemFlags::II_Refine;
       iitem->setFlags(f);
     }
     // Raffine tous les items que nous avons flaggés.
@@ -707,12 +708,12 @@ uniformlyCoarsen(Integer n)
       const Cell cell = *icell;
       ItemInternal* iitem = cell.internal();
       Integer f = iitem->flags();
-      f &= ~ItemInternal::II_Refine;
-      f |= ItemInternal::II_Coarsen;
+      f &= ~ItemFlags::II_Refine;
+      f |= ItemFlags::II_Coarsen;
       iitem->setFlags(f);
       if (iitem->nbHParent() != 0){
         f = iitem->internalHParent(0)->flags();
-        f |= ItemInternal::II_CoarsenInactive;
+        f |= ItemFlags::II_CoarsenInactive;
         iitem->internalHParent(0)->setFlags(f);
       }
     }
@@ -883,7 +884,7 @@ _checkUnflagged(bool arcane_assert_pass)
   ENUMERATE_CELL(icell,m_mesh->ownActiveCells()){
     const Cell cell = *icell;
     const Integer f = cell.internal()->flags();
-    if ( (f & ItemInternal::II_Refine) | (f & ItemInternal::II_Coarsen))
+    if ( (f & ItemFlags::II_Refine) | (f & ItemFlags::II_Coarsen))
     {
       found_flag = true;
       break;
@@ -938,47 +939,47 @@ _makeFlagParallelConsistent()
       // conservatifs que nos propres flags , comme quand un raffinement d'une
       // des mailles du processeur distant est dicté par un raffinement d'une de nos mailles
       const Integer g = flag_cells_consistent[Cell(iitem)];
-      if((g & ItemInternal::II_Refine) && !(f & ItemInternal::II_Refine))
+      if((g & ItemFlags::II_Refine) && !(f & ItemFlags::II_Refine))
       {
-        f |= ItemInternal::II_Refine;
+        f |= ItemFlags::II_Refine;
         iitem->setFlags(f);
         parallel_consistent = false;
       }
-      else if ((g & ItemInternal::II_Coarsen) && !(f & ItemInternal::II_Coarsen))
+      else if ((g & ItemFlags::II_Coarsen) && !(f & ItemFlags::II_Coarsen))
       {
-        f |= ItemInternal::II_Coarsen;
+        f |= ItemFlags::II_Coarsen;
         iitem->setFlags(f);
         parallel_consistent = false;
       }
-      else if ((g & ItemInternal::II_JustCoarsened) && !(f & ItemInternal::II_JustCoarsened))
+      else if ((g & ItemFlags::II_JustCoarsened) && !(f & ItemFlags::II_JustCoarsened))
       {
-        f |= ItemInternal::II_JustCoarsened;
+        f |= ItemFlags::II_JustCoarsened;
         iitem->setFlags(f);
         parallel_consistent = false;
       }
-      else if ((g & ItemInternal::II_JustRefined) && !(f & ItemInternal::II_JustRefined))
+      else if ((g & ItemFlags::II_JustRefined) && !(f & ItemFlags::II_JustRefined))
       {
-        f |= ItemInternal::II_JustRefined;
+        f |= ItemFlags::II_JustRefined;
         iitem->setFlags(f);
         parallel_consistent = false;
       }
       /*
-       else if ((g & ItemInternal::II_CoarsenInactive) && !(f & ItemInternal::II_CoarsenInactive)){
-       f |= ItemInternal::II_CoarsenInactive;
-       //f |= ItemInternal::II_Inactive;
+       else if ((g & ItemFlags::II_CoarsenInactive) && !(f & ItemFlags::II_CoarsenInactive)){
+       f |= ItemFlags::II_CoarsenInactive;
+       //f |= ItemFlags::II_Inactive;
        iitem->setFlags(f);
        parallel_consistent = false;
        }
-       else if ((g & ItemInternal::II_DoNothing) && !(f & ItemInternal::II_DoNothing)){
-       f |= ItemInternal::II_DoNothing;
-       //f |= ItemInternal::II_Inactive;
+       else if ((g & ItemFlags::II_DoNothing) && !(f & ItemFlags::II_DoNothing)){
+       f |= ItemFlags::II_DoNothing;
+       //f |= ItemFlags::II_Inactive;
        iitem->setFlags(f);
        parallel_consistent = false;
        }
 
-       else if ((g & ItemInternal::II_Inactive) && !(f & ItemInternal::II_Inactive)){
-       f |= ItemInternal::II_Inactive;
-       //f |= ItemInternal::II_Inactive;
+       else if ((g & ItemFlags::II_Inactive) && !(f & ItemFlags::II_Inactive)){
+       f |= ItemFlags::II_Inactive;
+       //f |= ItemFlags::II_Inactive;
        iitem->setFlags(f);
        parallel_consistent = false;
        }*/
@@ -1031,26 +1032,26 @@ _makeFlagParallelConsistent2()
     //if(iitem->owner() != sid)
     {
       Integer g = flag_cells_consistent[Cell(iitem)];
-      if ((g & ItemInternal::II_JustCoarsened) && !(f & ItemInternal::II_JustCoarsened))
+      if ((g & ItemFlags::II_JustCoarsened) && !(f & ItemFlags::II_JustCoarsened))
       {
-        f |= ItemInternal::II_JustCoarsened;
+        f |= ItemFlags::II_JustCoarsened;
         iitem->setFlags(f);
         parallel_consistent = false;
       }
-      else if ((g & ItemInternal::II_JustRefined) && !(f & ItemInternal::II_JustRefined))
+      else if ((g & ItemFlags::II_JustRefined) && !(f & ItemFlags::II_JustRefined))
       {
-        f |= ItemInternal::II_JustRefined;
+        f |= ItemFlags::II_JustRefined;
         iitem->setFlags(f);
         parallel_consistent = false;
       }
-      else if ((g & ItemInternal::II_Inactive) && !(f & ItemInternal::II_Inactive))
+      else if ((g & ItemFlags::II_Inactive) && !(f & ItemFlags::II_Inactive))
       {
-        f |= ItemInternal::II_Inactive;
+        f |= ItemFlags::II_Inactive;
         iitem->setFlags(f);
         parallel_consistent = false;
       }
-      /*else if ((f & ItemInternal::II_JustRefined) && !(g & ItemInternal::II_JustRefined)){
-       f &= ~ItemInternal::II_JustRefined;
+      /*else if ((f & ItemFlags::II_JustRefined) && !(g & ItemFlags::II_JustRefined)){
+       f &= ~ItemFlags::II_JustRefined;
        iitem->setFlags(f);
        parallel_consistent = false;
        }*/
@@ -1104,10 +1105,10 @@ _makeCoarseningCompatible(const bool maintain_level_one)
     max_level = std::max(max_level, iitem->level());
 
     Integer f = iitem->flags();
-    if ((iitem->level() == 0) && (f & ItemInternal::II_Coarsen))
+    if ((iitem->level() == 0) && (f & ItemFlags::II_Coarsen))
     {
-      f &= ~ItemInternal::II_Coarsen;
-      f |= ItemInternal::II_DoNothing;
+      f &= ~ItemFlags::II_Coarsen;
+      f |= ItemFlags::II_DoNothing;
       iitem->setFlags(f);
     }
   }
@@ -1143,7 +1144,7 @@ _makeCoarseningCompatible(const bool maintain_level_one)
         ItemInternal* iitem = cell.internal();
         bool my_flag_changed = false;
         Integer f = iitem->flags();
-        if (f & ItemInternal::II_Coarsen){ // Si l'item est actif et le flag de déraffinement est placé
+        if (f & ItemFlags::II_Coarsen){ // Si l'item est actif et le flag de déraffinement est placé
           const Int32 my_level = iitem->level();
           for( FaceEnumerator iface(cell.faces()); iface.hasNext(); ++iface )
           {
@@ -1163,9 +1164,9 @@ _makeCoarseningCompatible(const bool maintain_level_one)
 
               {
                 if ((ineighbor->level() == my_level) &&
-                    (ineighbor->flags() & ItemInternal::II_Refine)){ // le voisin est à mon niveau et veut être raffiné
-                  f &= ~ItemInternal::II_Coarsen;
-                  f |= ItemInternal::II_DoNothing;
+                    (ineighbor->flags() & ItemFlags::II_Refine)){ // le voisin est à mon niveau et veut être raffiné
+                  f &= ~ItemFlags::II_Coarsen;
+                  f |= ItemFlags::II_DoNothing;
                   iitem->setFlags(f);
                   my_flag_changed = true;
                   break;
@@ -1176,8 +1177,8 @@ _makeCoarseningCompatible(const bool maintain_level_one)
                 // tandis qu'il peut être possible de me déraffiner si tous les enfants
                 // de cet item veulent être déraffinés, il est impossible de savoir à ce stade.
                 // On l'oublie pour le moment. Ceci peut être réalisé dans deux étapes.
-                f &= ~ItemInternal::II_Coarsen;
-                f |= ItemInternal::II_DoNothing;
+                f &= ~ItemFlags::II_Coarsen;
+                f |= ItemFlags::II_DoNothing;
                 iitem->setFlags(f);
                 my_flag_changed = true;
                 break;
@@ -1249,24 +1250,24 @@ _makeCoarseningCompatible(const bool maintain_level_one)
           ItemInternal *child = iitem->internalHChild(c);
           if (child->owner() != sid)
             found_remote_child = true;
-          else if (!(child->flags() & ItemInternal::II_Coarsen) || !child->isActive() )
+          else if (!(child->flags() & ItemFlags::II_Coarsen) || !child->isActive() )
             is_a_candidate = false;
         }
 
         if (!is_a_candidate && !found_remote_child){
           Integer f = iitem->flags();
-          f |= ItemInternal::II_Inactive;
+          f |= ItemFlags::II_Inactive;
           iitem->setFlags(f);
 
           for (Integer c=0; c<iitem->nbHChildren(); c++){
             ItemInternal *child = iitem->internalHChild(c);
             if (child->owner() != sid)
               continue;
-            if (child->flags() & ItemInternal::II_Coarsen){
+            if (child->flags() & ItemFlags::II_Coarsen){
               level_one_satisfied = false;
               f = child->flags();
-              f &= ~ItemInternal::II_Coarsen;
-              f |= ItemInternal::II_DoNothing;
+              f &= ~ItemFlags::II_Coarsen;
+              f |= ItemFlags::II_DoNothing;
               child->setFlags(f);
             }
           }
@@ -1291,19 +1292,19 @@ _makeCoarseningCompatible(const bool maintain_level_one)
         ItemInternal *child = iitem->internalHChild(c);
         if (child->owner() != sid)
           found_remote_child = true;
-        else if (!(child->flags() & ItemInternal::II_Coarsen))
+        else if (!(child->flags() & ItemFlags::II_Coarsen))
           all_children_flagged_for_coarsening = false;
       }
       Integer f = iitem->flags();
-      f &= ~ItemInternal::II_CoarsenInactive;
+      f &= ~ItemFlags::II_CoarsenInactive;
       if (!found_remote_child && all_children_flagged_for_coarsening)
       {
-        f |= ItemInternal::II_CoarsenInactive;
+        f |= ItemFlags::II_CoarsenInactive;
         iitem->setFlags(f);
       }
       else if (!found_remote_child)
       {
-        f |= ItemInternal::II_Inactive;
+        f |= ItemFlags::II_Inactive;
         iitem->setFlags(f);
       }
     }
@@ -1354,7 +1355,7 @@ _makeRefinementCompatible(const bool maintain_level_one)
       ENUMERATE_CELL(icell,m_mesh->allActiveCells()){
         const Cell cell = *icell;
         ItemInternal* iitem = cell.internal();
-        if (iitem->flags() & ItemInternal::II_Refine){ // Si l'item est actif et le flag de
+        if (iitem->flags() & ItemFlags::II_Refine){ // Si l'item est actif et le flag de
           // raffinement est placé
           const Int32 my_level = iitem->level();
           bool refinable = true;
@@ -1379,10 +1380,10 @@ _makeRefinementCompatible(const bool maintain_level_one)
               //         ce processus.
               Integer f = ineighbor->flags();
               if ( ( (ineighbor->level()+1) == my_level) &&
-                  ( f&ItemInternal::II_UserMark1) ){
+                  ( f&ItemFlags::II_UserMark1) ){
                 refinable = false;
                 Integer my_f = iitem->flags() ;
-                my_f &= ~ItemInternal::II_Refine;
+                my_f &= ~ItemFlags::II_Refine;
                 iitem->setFlags(my_f);
                 break;
               }
@@ -1407,14 +1408,14 @@ _makeRefinementCompatible(const bool maintain_level_one)
                 //        1c: Le voisin veut être déjà raffiné     -> PROBLEM
                 if (neighbor.level() == my_level){
                   Integer f = ineighbor->flags();
-                  if (f & ItemInternal::II_Coarsen)
+                  if (f & ItemFlags::II_Coarsen)
                   {
-                    f &= ~ItemInternal::II_Coarsen;
-                    f |= ItemInternal::II_DoNothing;
+                    f &= ~ItemFlags::II_Coarsen;
+                    f |= ItemFlags::II_DoNothing;
                     ineighbor->setFlags(f);
                     if (ineighbor->nbHParent() != 0){
                       f = ineighbor->internalHParent(0)->flags();
-                      f |= ItemInternal::II_Inactive;
+                      f |= ItemFlags::II_Inactive;
                       ineighbor->internalHParent(0)->setFlags(f);
                     }
                     compatible_with_coarsening = false;
@@ -1432,14 +1433,14 @@ _makeRefinementCompatible(const bool maintain_level_one)
                 else if ((ineighbor->level()+1) == my_level)
                 {
                   Integer f = ineighbor->flags();
-                  if (!(f & ItemInternal::II_Refine))
+                  if (!(f & ItemFlags::II_Refine))
                   {
-                    f &= ~ItemInternal::II_Coarsen;
-                    f |= ItemInternal::II_Refine;
+                    f &= ~ItemFlags::II_Coarsen;
+                    f |= ItemFlags::II_Refine;
                     ineighbor->setFlags(f);
                     if (ineighbor->nbHParent() != 0){
                       f = ineighbor->internalHParent(0)->flags();
-                      f |= ItemInternal::II_Inactive;
+                      f |= ItemFlags::II_Inactive;
                       ineighbor->internalHParent(0)->setFlags(f);
                     }
                     compatible_with_coarsening = false;
@@ -1500,7 +1501,7 @@ _coarsenItems()
     // items actifs flaggés prour déraffinement ne seront
     // pas supprimés jusqu'à contraction via MeshRefinement::contract()
 
-    if(iitem->flags() & ItemInternal::II_Coarsen){
+    if(iitem->flags() & ItemFlags::II_Coarsen){
       // Houups?  aucun item de niveau-0 ne doit être a la fois actif
       // et flaggé pour déraffinement.
       ARCANE_ASSERT ( (iitem->level() != 0), ("no level-0 element should be active and flagged for coarsening"));
@@ -1522,7 +1523,7 @@ _coarsenItems()
       // Le maillage a certainement changé
       mesh_changed = true;
     }
-    else if (iitem->flags() & ItemInternal::II_CoarsenInactive)
+    else if (iitem->flags() & ItemFlags::II_CoarsenInactive)
     {
       switch (iitem->typeId())
       {
@@ -1609,7 +1610,7 @@ _refineItems(Int64Array& cell_to_refine_uids)
   {
     const Cell& cell = *icell;
     ItemInternal* iitem = cell.internal();
-    if(iitem->flags() & ItemInternal::II_Refine)
+    if(iitem->flags() & ItemFlags::II_Refine)
     {
       cell_to_refine_uids.add(cell.uniqueId());
       cell_to_refine_internals.add(cell.internal());
@@ -1625,7 +1626,7 @@ _refineItems(Int64Array& cell_to_refine_uids)
    ENUMERATE_CELL(icell,m_mesh->ownCells()){
    Cell cell = *icell;
    ItemInternal* iitem = cell.internal();
-   if(iitem->flags() & ItemInternal::II_Refine)
+   if(iitem->flags() & ItemFlags::II_Refine)
    local_copy_of_cells.add(iitem);
    }
    */
@@ -1720,32 +1721,32 @@ _cleanRefinementFlags()
     ItemInternal* iitem = cell.internal();
     Integer f = iitem->flags();
     if (iitem->isActive()){
-      f |= ItemInternal::II_DoNothing;
+      f |= ItemFlags::II_DoNothing;
       iitem->setFlags(f);
     }
     else{
-      f |= ItemInternal::II_Inactive;
+      f |= ItemFlags::II_Inactive;
       iitem->setFlags(f);
     }
     // Ceci pourrait être laissé de la derniè étape
-    if (f & ItemInternal::II_JustRefined){
-      f &= ~ItemInternal::II_JustRefined;
-      f |= ItemInternal::II_DoNothing;
+    if (f & ItemFlags::II_JustRefined){
+      f &= ~ItemFlags::II_JustRefined;
+      f |= ItemFlags::II_DoNothing;
       iitem->setFlags(f);
     }
-    if (f & ItemInternal::II_JustCoarsened){
-      f &= ~ItemInternal::II_JustCoarsened;
-      f |= ItemInternal::II_DoNothing;
+    if (f & ItemFlags::II_JustCoarsened){
+      f &= ~ItemFlags::II_JustCoarsened;
+      f |= ItemFlags::II_DoNothing;
       iitem->setFlags(f);
     }
-    if (f & ItemInternal::II_JustAdded){
-      f &= ~ItemInternal::II_JustAdded;
-      f |= ItemInternal::II_DoNothing;
+    if (f & ItemFlags::II_JustAdded){
+      f &= ~ItemFlags::II_JustAdded;
+      f |= ItemFlags::II_DoNothing;
       iitem->setFlags(f);
     }
-    if (f & ItemInternal::II_CoarsenInactive){
-      f &= ~ItemInternal::II_CoarsenInactive;
-      f |= ItemInternal::II_DoNothing;
+    if (f & ItemFlags::II_CoarsenInactive){
+      f &= ~ItemFlags::II_CoarsenInactive;
+      f |= ItemFlags::II_DoNothing;
       iitem->setFlags(f);
     }
   }
@@ -1805,7 +1806,7 @@ _contract()
         }
         if (active_parent){
           parent_cells.add(iitem);
-          ARCANE_ASSERT((iitem->flags() & ItemInternal::II_JustCoarsened), ("Incoherent JustCoarsened flag"));
+          ARCANE_ASSERT((iitem->flags() & ItemFlags::II_JustCoarsened), ("Incoherent JustCoarsened flag"));
         }
         // informe le client du changement de maillage
         mesh_changed = true;
@@ -2141,7 +2142,7 @@ _removeGhostChildren()
     if (cell->owner() == sid)
       continue;
 
-    if (cell->flags() & ItemInternal::II_JustCoarsened){
+    if (cell->flags() & ItemFlags::II_JustCoarsened){
       for (Integer c = 0, cs = cell->nbHChildren(); c < cs; c++){
         cells_to_remove.add(cell->internalHChild(c)->localId());
         counter++;
@@ -2321,10 +2322,10 @@ _populateBackFrontCellsFromChildrenFaces(ItemInternal* face, ItemInternal* paren
         for (Integer fc = 0; fc < nb_child_faces; fc++){
           if (f == rp.face_mapping(c, fc) && (rp.face_mapping_topo(c, fc))){
             ItemInternal* subface = child->internalFace(fc);
-            if (subface->flags() & ItemInternal::II_HasBackCell){
+            if (subface->flags() & ItemFlags::II_HasBackCell){
               m_face_family->addFrontCellToFace(subface, parent_cell);
             }
-            else if (subface->flags() & ItemInternal::II_HasFrontCell){
+            else if (subface->flags() & ItemFlags::II_HasFrontCell){
               m_face_family->addBackCellToFace(subface, parent_cell);
             }
             ARCANE_ASSERT((subface->backCell() != subface->frontCell()), ("back front cells error"));

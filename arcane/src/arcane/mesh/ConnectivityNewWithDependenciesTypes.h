@@ -5,16 +5,17 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ConnectivityNewWithDependenciesTypes.h                      (C) 2000-2017 */
+/* ConnectivityNewWithDependenciesTypes.h                      (C) 2000-2022 */
 /*                                                                           */
 /* Types utilisés dans le mode connectivités avec dépendances des familles   */
 /*---------------------------------------------------------------------------*/
-
-
-#ifndef ARCANE_CONNECTIVITYNEWWITHDEPENDENCIESTYPES_H_
-#define ARCANE_CONNECTIVITYNEWWITHDEPENDENCIESTYPES_H_
+#ifndef ARCANE_MESH_CONNECTIVITYNEWWITHDEPENDENCIESTYPES_H_
+#define ARCANE_MESH_CONNECTIVITYNEWWITHDEPENDENCIESTYPES_H_
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ArcaneGlobal.h"
+
 #include "arcane/mesh/MeshGlobal.h"
 #include "arcane/mesh/FaceFamily.h"
 #include "arcane/mesh/CellFamily.h"
@@ -221,7 +222,7 @@ private:
     //      Dans le nouveau mode les check devront etre faits via des proprietes.
     bool check_orientation = false; // SDC cf. ci-dessus
     if (check_orientation){
-      if (face->flags() & ItemInternal::II_HasFrontCell){
+      if (face->flags() & ItemFlags::II_HasFrontCell){
         ItemInternal* current_cell = m_cell_family->itemsInternal()[connectedItemLocalId(ItemLocalId(face),1)]; // FrontCell is the second connected cell
         ARCANE_FATAL("Face already having a front cell."
             " This is most probably due to the fact that the face"
@@ -256,7 +257,7 @@ private:
     //      Dans le nouveau mode les check devront etre faits via des proprietes.
     bool check_orientation = false; // SDC cf. ci-dessus
     if (check_orientation){
-      if (face->flags() & ItemInternal::II_HasBackCell){
+      if (face->flags() & ItemFlags::II_HasBackCell){
         ItemInternal* current_cell = m_cell_family->itemsInternal()[connectedItemLocalId(ItemLocalId(face),0)]; // BackCell is the first connected cell
         ARCANE_FATAL("Face already having a back cell."
             " This is most probably due to the fact that the face"
@@ -291,7 +292,7 @@ private:
         // Reste uniquement la back_cell
         IncrementalItemConnectivity::addConnectedItem(face_lid,back_cell_lid); // add the class name for the case of Face to Cell connectivity. The class is overridden to handle family dependencies but the base method must be called here.
         // add flags
-        mod_flags = (ItemInternal::II_Boundary | ItemInternal::II_HasBackCell | ItemInternal::II_BackCellIsFirst);
+        mod_flags = (ItemFlags::II_Boundary | ItemFlags::II_HasBackCell | ItemFlags::II_BackCellIsFirst);
       }
       // Ici reste aucune maille mais comme on a tout supprimé il n'y a rien
       // à faire
@@ -300,17 +301,17 @@ private:
       // Reste uniquement la front cell
       IncrementalItemConnectivity::addConnectedItem(face_lid,front_cell_lid);
       // add flags
-      mod_flags = (ItemInternal::II_Boundary | ItemInternal::II_HasFrontCell | ItemInternal::II_FrontCellIsFirst);
+      mod_flags = (ItemFlags::II_Boundary | ItemFlags::II_HasFrontCell | ItemFlags::II_FrontCellIsFirst);
     }
     else{
       // Il y a deux mailles connectées. La back_cell est toujours la première.
       IncrementalItemConnectivity::addConnectedItem(face_lid,back_cell_lid);
       IncrementalItemConnectivity::addConnectedItem(face_lid,front_cell_lid);
       // add flags
-      mod_flags = (ItemInternal::II_HasFrontCell | ItemInternal::II_HasBackCell | ItemInternal::II_BackCellIsFirst);
+      mod_flags = (ItemFlags::II_HasFrontCell | ItemFlags::II_HasBackCell | ItemFlags::II_BackCellIsFirst);
     }
     Int32 face_flags = face->flags();
-    face_flags &= ~ItemInternal::II_InterfaceFlags;
+    face_flags &= ~ItemFlags::II_InterfaceFlags;
     face_flags |= mod_flags;
     face->setFlags(face_flags);
   }

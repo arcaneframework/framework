@@ -5,9 +5,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/*  ParallelAMRConsistency.cc                                  (C) 2000-2017 */
-/*  Created on: Dec 22, 2010                                                 */
-/*      Author: mesriy                                                       */
+/*  ParallelAMRConsistency.cc                                  (C) 2000-2022 */
+/*                                                                           */
 /* Consistence parallèle des uid des noeuds/faces dans le cas AMR            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -50,26 +49,23 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 //! AMR
 
 #ifdef ACTIVATE_PERF_COUNTER
-const std::string ParallelAMRConsistency::PerfCounter::m_names[ParallelAMRConsistency::PerfCounter::NbCounters] = {
+const std::string ParallelAMRConsistency::PerfCounter::m_names[ParallelAMRConsistency::PerfCounter::NbCounters] =
+  {
     "INIT",
     "COMPUTE",
     "GATHERFACE",
     "UPDATE",
     "REHASH",
     "ENDUPDATE"
-} ;
+  };
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -109,8 +105,8 @@ init()
     int face_flags = face.internal()->flags();
     if (face.nbCell()==2 && (face.cell(0).level()==0 && face.cell(1).level()==0)){
       if ( (face.cell(0)->owner()!=sid || face.cell(1).owner()!= sid) ||
-           (face_flags & ItemInternal::II_Shared) ||
-           (face_flags & ItemInternal::II_SubDomainBoundary)){
+           (face_flags & ItemFlags::II_Shared) ||
+           (face_flags & ItemFlags::II_SubDomainBoundary)){
         m_shared_face_uids.add(face_uid);
       }
       else if (_hasSharedNodes(face)){
@@ -161,7 +157,7 @@ _hasSharedNodes(Face face)
 {
   //CHECK that one edge is connected to a ghost cell
   for ( Node node : face.nodes() ){
-    if (node.internal()->flags() &  ItemInternal::II_Shared)
+    if (node.internal()->flags() &  ItemFlags::II_Shared)
       return true;
   }
   return false;
@@ -227,7 +223,7 @@ makeNewItemsConsistent(NodeMapCoordToUid& node_finder, FaceMapCoordToUid& face_f
       if (subfaces.size() != 1){
         for (Integer s = 0; s < subfaces.size(); s++){
           Face face2 = subfaces[s];
-          face2.internal()->addFlags(ItemInternal::II_Shared | ItemInternal::II_SubDomainBoundary);
+          face2.internal()->addFlags(ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary);
           Int64 uid = face2.uniqueId() ;
           bool face_to_send = face_finder.isNewUid(uid);
           if(face_to_send){
@@ -237,11 +233,11 @@ makeNewItemsConsistent(NodeMapCoordToUid& node_finder, FaceMapCoordToUid& face_f
             active_faces.insert(ItemMapValue(uid,face2.internal()));
             active_faces_to_send.add(ItemUniqueId(uid));
             for ( Node node : face2.nodes() ){
-              node.internal()->addFlags(ItemInternal::II_Shared | ItemInternal::II_SubDomainBoundary);
+              node.internal()->addFlags(ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary);
               active_nodes.insert(ItemMapValue(node.uniqueId(),node.internal())) ;
             }
             for ( Edge edge : face2.edges() ){
-              edge.internal()->addFlags(ItemInternal::II_Shared | ItemInternal::II_SubDomainBoundary);
+              edge.internal()->addFlags(ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary);
             }
           }
         }
@@ -261,8 +257,8 @@ makeNewItemsConsistent(NodeMapCoordToUid& node_finder, FaceMapCoordToUid& face_f
         Integer next = i==nb_node-1?0:i+1;
         Node node1 = face.node(i) ;
         Node node2 = face.node(next) ;
-        if( (node1.internal()->flags() & (ItemInternal::II_Shared | ItemInternal::II_SubDomainBoundary)) &&
-            (node2.internal()->flags() & (ItemInternal::II_Shared | ItemInternal::II_SubDomainBoundary) ) ){
+        if( (node1.internal()->flags() & (ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary)) &&
+            (node2.internal()->flags() & (ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary) ) ){
           edges.add(Edge(m_nodes_coord[node1],m_nodes_coord[node2]-m_nodes_coord[node1])) ;
         }
       }
@@ -281,7 +277,7 @@ makeNewItemsConsistent(NodeMapCoordToUid& node_finder, FaceMapCoordToUid& face_f
               Real3 n = Xi-edges[j].first ;
               Real sinteta = math::cross(edges[j].second,n).squareNormL2() ;
               if (math::isZero(sinteta)){
-                node_i.internal()->addFlags(ItemInternal::II_Shared | ItemInternal::II_SubDomainBoundary);
+                node_i.internal()->addFlags(ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary);
                 //active_nodes_set.insert(node_i);
                 active_nodes.insert(ItemMapValue(node_i->uniqueId(),node_i.internal())) ;
                 _addNodeToList(node_i, m_active_nodes);
@@ -346,7 +342,7 @@ makeNewItemsConsistent(NodeMapCoordToUid& node_finder, FaceMapCoordToUid& face_f
     node->setUniqueId(ni.uniqueId());
     node->setOwner(ni.owner(), sid);
     int f = node->flags();
-    f |= ItemInternal::II_Shared | ItemInternal::II_SubDomainBoundary;
+    f |= ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary;
     node->setFlags(f);
     nodes_map.add(new_uid,node) ;
   }
@@ -613,7 +609,7 @@ makeNewItemsConsistent2(MapCoordToUid& node_finder, MapCoordToUid& face_finder)
   ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,faces_map){
     Face face(nbid->value());
     bool is_sub_domain_boundary_face = false;
-    if (face.internal()->flags() & ItemInternal::II_SubDomainBoundary){
+    if (face.internal()->flags() & ItemFlags::II_SubDomainBoundary){
       is_sub_domain_boundary_face = true; // true is not needed
     }
     else{
@@ -628,17 +624,17 @@ makeNewItemsConsistent2(MapCoordToUid& node_finder, MapCoordToUid& face_finder)
       true_face_family->allSubFaces(face, subfaces);
       for (Integer s = 0; s < subfaces.size(); s++){
         Face face2 = subfaces[s];
-        face2.internal()->addFlags(ItemInternal::II_Shared | ItemInternal::II_SubDomainBoundary);
+        face2.internal()->addFlags(ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary);
         _addFaceToList2(face2, m_active_faces2);
         active_faces_set.insert(face2.internal());
         ++nb_sub_domain_boundary_face;
         for ( Node node : face2.nodes() ){
-          node.internal()->addFlags(ItemInternal::II_Shared | ItemInternal::II_SubDomainBoundary);
+          node.internal()->addFlags(ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary);
           active_nodes_set.insert(node.internal());
           _addNodeToList(node, m_active_nodes);
         }
         for ( Edge edge : face2.edges() )
-          edge.internal()->addFlags(ItemInternal::II_Shared | ItemInternal::II_SubDomainBoundary);
+          edge.internal()->addFlags(ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary);
       }
     }
   }
@@ -826,8 +822,7 @@ _gatherItems(ConstArrayView<ItemUniqueId> nodes_to_send,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

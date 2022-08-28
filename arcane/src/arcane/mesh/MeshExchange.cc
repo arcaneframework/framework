@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshExchange.cc                                             (C) 2000-2020 */
+/* MeshExchange.cc                                             (C) 2000-2022 */
 /*                                                                           */
 /* Echange un maillage entre entre sous-domaines.                            */
 /*---------------------------------------------------------------------------*/
@@ -1307,7 +1307,7 @@ _printItemToRemove(IItemFamily* family)
   // SDC DEBUG PRINT
   debug() << "= ITEM TO REMOVE FOR FAMILY " << family->name();
   ENUMERATE_ITEM(item, family->allItems()) {
-    if (item->internal()->flags() & ItemInternal::II_NeedRemove) debug() << "== TO REMOVE ITEM " << item->uniqueId()   << " kind " << item->kind();
+    if (item->internal()->flags() & ItemFlags::II_NeedRemove) debug() << "== TO REMOVE ITEM " << item->uniqueId()   << " kind " << item->kind();
   }
 }
 
@@ -1333,7 +1333,7 @@ _markRemovableDoFs()
         // Check if the item must stay on the subdomain (ie dest_rank or new_owner contain the subdomain)
         if (!item_dest_ranks.contains(m_rank) && item_new_owners[item] != m_rank)
         {
-          item.internal()->setFlags(item.internal()->flags() | ItemInternal::II_NeedRemove);
+          item.internal()->setFlags(item.internal()->flags() | ItemFlags::II_NeedRemove);
         }
       }
     }
@@ -1361,7 +1361,7 @@ _markRemovableItems(bool with_cell_family)
         // Check if the item must stay on the subdomain (ie dest_rank or new_owner contain the subdomain)
         if (!item_dest_ranks.contains(m_rank) && item_new_owners[item] != m_rank)
         {
-          item.internal()->setFlags(item.internal()->flags() | ItemInternal::II_NeedRemove);
+          item.internal()->setFlags(item.internal()->flags() | ItemFlags::II_NeedRemove);
         }
       }
     }
@@ -1423,7 +1423,7 @@ _markRemovableCells(Int32ConstArrayView cells_new_owner,bool  use_active_cells)
     }
     if (!keep_cell)
     {
-      cell.internal()->setFlags(cell.internal()->flags() | ItemInternal::II_NeedRemove);
+      cell.internal()->setFlags(cell.internal()->flags() | ItemFlags::II_NeedRemove);
     }
   }
 }

@@ -2118,8 +2118,8 @@ removeNeedRemoveMarkedItems()
   ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,item_map){
     ItemInternal* item = nbid->value();
     Integer f = item->flags();
-    if (f & ItemInternal::II_NeedRemove){
-      f &= ~ItemInternal::II_NeedRemove & ItemInternal::II_Suppressed;
+    if (f & ItemFlags::II_NeedRemove){
+      f &= ~ItemFlags::II_NeedRemove & ItemFlags::II_Suppressed;
       item->setFlags(f);
       items_to_remove.add(item);
       items_to_remove_lids.add(item->localId());
@@ -2389,7 +2389,7 @@ _updateItemsSharedFlag()
 {
   ItemInternalList items(_itemsInternal());
   for( Integer i=0, n=items.size(); i<n; ++i )
-    items[i]->removeFlags(ItemInternal::II_Shared);
+    items[i]->removeFlags(ItemFlags::II_Shared);
   Int32ConstArrayView comm_ranks = m_variable_synchronizer->communicatingRanks();
   Integer nb_rank = comm_ranks.size();
   // Parcours les sharedItems() du synchroniseur et positionne le flag
@@ -2397,7 +2397,7 @@ _updateItemsSharedFlag()
   for( Integer i=0; i<nb_rank; ++i ){
     Int32ConstArrayView shared_ids = m_variable_synchronizer->sharedItems(i);
     for( auto id : shared_ids )
-      items[id]->addFlags(ItemInternal::II_Shared);
+      items[id]->addFlags(ItemFlags::II_Shared);
   }
 }
 

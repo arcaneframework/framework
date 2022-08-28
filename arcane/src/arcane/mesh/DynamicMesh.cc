@@ -2011,7 +2011,7 @@ _removeGhostChildItems2(Array<Int64>& cells_to_coarsen)
       Cell cell(icell);
       if (cell.owner() != sid)
         return;
-      if (icell->flags() & ItemInternal::II_JustCoarsened){
+      if (icell->flags() & ItemFlags::II_JustCoarsened){
         cells_to_coarsen.add(cell.uniqueId()) ;
         for(Integer c=0,cs=cell.nbHChildren();c<cs;c++){
           cells_to_remove.add(cell.hChild(c).internal());
