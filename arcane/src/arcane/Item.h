@@ -794,7 +794,7 @@ class ARCANE_CORE_EXPORT Face
   //! Indique si la face est au bord t orientée vers l'extérieur.
   bool isSubDomainBoundaryOutside() const
   {
-    return isSubDomainBoundary() && (ItemBase::flags() & ItemInternal::II_HasBackCell);
+    return isSubDomainBoundary() && (ItemBase::flags() & ItemFlags::II_HasBackCell);
   }
 
   /*!

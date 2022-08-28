@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemPrinter.cc                                              (C) 2000-2020 */
+/* ItemPrinter.cc                                              (C) 2000-2022 */
 /*                                                                           */
 /* Ecriture d'Item sur flux.                                                 */
 /*---------------------------------------------------------------------------*/
@@ -197,43 +197,43 @@ _printFlags(std::ostream& o, Integer flags)
 {
   Integer position = 0;
   o << ",flags=";
-  if (flags & ItemInternal::II_Boundary)
+  if (flags & ItemFlags::II_Boundary)
     o << ((position++)?"|":"") << "Boundary";
-  if (flags & ItemInternal::II_HasFrontCell)
+  if (flags & ItemFlags::II_HasFrontCell)
     o << ((position++)?"|":"") << "HasFrontCell";
-  if (flags & ItemInternal::II_HasBackCell)
+  if (flags & ItemFlags::II_HasBackCell)
     o << ((position++)?"|":"") << "HasBackCell";
-  if (flags & ItemInternal::II_FrontCellIsFirst)
+  if (flags & ItemFlags::II_FrontCellIsFirst)
     o << ((position++)?"|":"") << "FrontCellIsFirst";
-  if (flags & ItemInternal::II_BackCellIsFirst)
+  if (flags & ItemFlags::II_BackCellIsFirst)
     o << ((position++)?"|":"") << "BackCellIsFirst";
-  if (flags & ItemInternal::II_Own)
+  if (flags & ItemFlags::II_Own)
     o << ((position++)?"|":"") << "Own";
-  if (flags & ItemInternal::II_Added)
+  if (flags & ItemFlags::II_Added)
     o << ((position++)?"|":"") << "Added";
-  if (flags & ItemInternal::II_Suppressed)
+  if (flags & ItemFlags::II_Suppressed)
     o << ((position++)?"|":"") << "Suppressed";
-  if (flags & ItemInternal::II_Shared)
+  if (flags & ItemFlags::II_Shared)
     o << ((position++)?"|":"") << "Shared";
-  if (flags & ItemInternal::II_SubDomainBoundary)
+  if (flags & ItemFlags::II_SubDomainBoundary)
     o << ((position++)?"|":"") << "SubDomainBoundary";
-//   if (flags & ItemInternal::II_JustRemoved)
+//   if (flags & ItemFlags::II_JustRemoved)
 //     o << ((position++)?"|":"") << "JustRemoved";
-  if (flags & ItemInternal::II_JustAdded)
+  if (flags & ItemFlags::II_JustAdded)
     o << ((position++)?"|":"") << "JustAdded";
-  if (flags & ItemInternal::II_NeedRemove)
+  if (flags & ItemFlags::II_NeedRemove)
     o << ((position++)?"|":"") << "NeedRemove";
-  if (flags & ItemInternal::II_SlaveFace)
+  if (flags & ItemFlags::II_SlaveFace)
     o << ((position++)?"|":"") << "SlaveFace";
-  if (flags & ItemInternal::II_MasterFace)
+  if (flags & ItemFlags::II_MasterFace)
     o << ((position++)?"|":"") << "MasterFace";
-  if (flags & ItemInternal::II_Detached)
+  if (flags & ItemFlags::II_Detached)
     o << ((position++)?"|":"") << "Detached";
-  if (flags & ItemInternal::II_HasTrace)
+  if (flags & ItemFlags::II_HasTrace)
     o << ((position++)?"|":"") << "HasTrace";
-  if (flags & ItemInternal::II_UserMark1)
+  if (flags & ItemFlags::II_UserMark1)
     o << ((position++)?"|":"") << "UserMark1";
-  if (flags & ItemInternal::II_UserMark2)
+  if (flags & ItemFlags::II_UserMark2)
     o << ((position++)?"|":"") << "UserMark2";
   if (position==0)
     o << "0";

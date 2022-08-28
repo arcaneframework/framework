@@ -345,7 +345,7 @@ addBackCellToFace(Face face,Cell new_cell)
   // par couches
   if (m_check_orientation){
     ItemInternal* current_cell = face.internal()->backCell();
-    if (face.internal()->flags() & ItemInternal::II_HasBackCell){
+    if (face.internal()->flags() & ItemFlags::II_HasBackCell){
       ARCANE_FATAL("Face already having a back cell."
                    " This is most probably due to the fact that the face"
                    " is connected to a reverse cell with a negative volume."
@@ -378,7 +378,7 @@ addFrontCellToFace(Face face,Cell new_cell)
   // par couches
   if (m_check_orientation){
     Cell current_cell = face.frontCell();
-    if (face.internal()->flags() & ItemInternal::II_HasFrontCell){
+    if (face.internal()->flags() & ItemFlags::II_HasFrontCell){
       ARCANE_FATAL("Face already having a front cell."
                    " This is most probably due to the fact that the face"
                    " is connected to a reverse cell with a negative volume."
@@ -431,13 +431,13 @@ addBackFrontCellsFromParentFace(ItemInternal* subface,ItemInternal* face)
 	Cell fcell= face->frontCell();
 	Cell bcell= face->backCell();
 
-	if (subface->flags() & ItemInternal::II_HasBackCell){
+	if (subface->flags() & ItemFlags::II_HasBackCell){
     if(fcell.isActive()) 
       addFrontCellToFace(subface,face->frontCell());
     else if(bcell.isActive())
       addFrontCellToFace(subface,face->backCell());
 	}
-	else if (subface->flags() & ItemInternal::II_HasFrontCell){
+	else if (subface->flags() & ItemFlags::II_HasFrontCell){
     if(bcell.isActive()) 
       addBackCellToFace(subface,face->backCell());
     else if (fcell.isActive())
@@ -863,7 +863,7 @@ void FaceFamily::
 _addMasterFaceToFace(ItemInternal* face,ItemInternal* master_face)
 {
   m_face_connectivity->addConnectedItem(ItemLocalId(face),ItemLocalId(master_face));
-  face->addFlags(ItemInternal::II_SlaveFace);
+  face->addFlags(ItemFlags::II_SlaveFace);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -875,7 +875,7 @@ _addSlaveFacesToFace(ItemInternal* master_face,Int32ConstArrayView slave_faces_l
   Integer nb_slave = slave_faces_lid.size();
   for( Integer i=0; i<nb_slave; ++i )
     m_face_connectivity->addConnectedItem(ItemLocalId(master_face),ItemLocalId(slave_faces_lid[i]));
-  master_face->addFlags(ItemInternal::II_MasterFace);
+  master_face->addFlags(ItemFlags::II_MasterFace);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -885,7 +885,7 @@ void FaceFamily::
 _removeMasterFaceToFace(ItemInternal* face)
 {
   m_face_connectivity->removeConnectedItems(ItemLocalId(face));
-  face->removeFlags(ItemInternal::II_SlaveFace);
+  face->removeFlags(ItemFlags::II_SlaveFace);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -895,7 +895,7 @@ void FaceFamily::
 _removeSlaveFacesToFace(ItemInternal* master_face)
 {
   m_face_connectivity->removeConnectedItems(ItemLocalId(master_face));
-  master_face->removeFlags(ItemInternal::II_MasterFace);
+  master_face->removeFlags(ItemFlags::II_MasterFace);
 }
 
 /*---------------------------------------------------------------------------*/

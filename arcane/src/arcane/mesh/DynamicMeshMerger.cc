@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMeshMerger.cc                                        (C) 2000-2018 */
+/* DynamicMeshMerger.cc                                        (C) 2000-2022 */
 /*                                                                           */
 /* Fusion de plusieurs maillages.                                            */
 /*---------------------------------------------------------------------------*/
@@ -39,9 +39,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane
-{
-namespace mesh
+namespace Arcane::mesh
 {
 
 /*---------------------------------------------------------------------------*/
@@ -171,7 +169,7 @@ class MergeMeshExchanger
           // Les entités transférées seront supprimées.
           // NOTE: il serait possible de rendre cela optionnel si on
           // ne souhaite pas modifier le maillage qui est fusionné.
-          ii->addFlags(ItemInternal::II_NeedRemove);
+          ii->addFlags(ItemFlags::II_NeedRemove);
         }
         family_exchanger->setExchangeItems(items_to_send);
       }
@@ -370,8 +368,7 @@ mergeMeshes(ConstArrayView<DynamicMesh*> meshes)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Mesh
-} // End namespace Arcane
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -5,13 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GhostLayerBuilder2.cc                                       (C) 2000-2021 */
+/* GhostLayerBuilder2.cc                                       (C) 2000-2022 */
 /*                                                                           */
 /* Construction des couches fantomes.                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/HashTableMap.h"
 #include "arcane/utils/PlatformUtils.h"
@@ -287,7 +285,7 @@ addGhostLayers()
     ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid,nodes_map){
       ItemInternal* node = iid->value();
       Int32 f = node->flags();
-      if (f & ItemInternal::II_Shared){
+      if (f & ItemFlags::II_Shared){
         node_layer[node->localId()] = 1;
         ++boundary_nodes_uid_count;
       }
@@ -356,8 +354,8 @@ _markBoundaryNodes(ArrayView<Int32> node_layer)
   IParallelMng* pm = m_mesh->parallelMng();
   const Int32 my_rank = pm->commRank();
   ItemInternalMap& faces_map = m_mesh->facesMap();
-  // TODO: regarder s'il est correcte de modifier ItemInternal::II_SubDomainBoundary
-  const int shared_and_boundary_flags = ItemInternal::II_Shared | ItemInternal::II_SubDomainBoundary;
+  // TODO: regarder s'il est correcte de modifier ItemFlags::II_SubDomainBoundary
+  const int shared_and_boundary_flags = ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary;
   // Parcours les faces et marque les noeuds, arêtes et faces frontieres
   ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid,faces_map){
     ItemInternal* face_internal = iid->value();
@@ -828,14 +826,14 @@ _markBoundaryItems()
   Int32 my_rank = pm->commRank();
   ItemInternalMap& faces_map = m_mesh->facesMap();
 
-  const int shared_and_boundary_flags = ItemInternal::II_Shared | ItemInternal::II_SubDomainBoundary;
+  const int shared_and_boundary_flags = ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary;
 
   // Parcours les faces et marque les noeuds, arêtes et faces frontieres
   ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid,faces_map){
     Face face = iid->value();
     ItemInternal* face_internal = face->internal();
     bool is_sub_domain_boundary_face = false;
-    if (face_internal->flags() & ItemInternal::II_Boundary){
+    if (face_internal->flags() & ItemFlags::II_Boundary){
       is_sub_domain_boundary_face = true;
     }
     else{

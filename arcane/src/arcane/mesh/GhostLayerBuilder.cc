@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GhostLayerBuilder.cc                                        (C) 2000-2021 */
+/* GhostLayerBuilder.cc                                        (C) 2000-2022 */
 /*                                                                           */
 /* Construction des couches fantomes.                                        */
 /*---------------------------------------------------------------------------*/
@@ -214,7 +214,7 @@ _addOneGhostLayerV2()
   // ItemInternalMap& edges_map = m_mesh->edgesMap(); // N'est pas utilisé directement par l'algo
   ItemInternalMap& nodes_map = m_mesh->nodesMap(); // Localise les modifications
 
-  const int shared_and_boundary_flags = ItemInternal::II_Shared | ItemInternal::II_SubDomainBoundary;
+  const int shared_and_boundary_flags = ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary;
   // Parcours les faces et marque les noeuds, arêtes et faces frontieres
   ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid,faces_map){
     Face face = iid->value();
@@ -224,7 +224,7 @@ _addOneGhostLayerV2()
       ostr() << '\n';
     }
     bool is_sub_domain_boundary_face = false;
-    if (face_internal->flags() & ItemInternal::II_Boundary){
+    if (face_internal->flags() & ItemFlags::II_Boundary){
       is_sub_domain_boundary_face = true;
     }
     else{
@@ -248,7 +248,7 @@ _addOneGhostLayerV2()
   ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid,nodes_map){
     ItemInternal* node = iid->value();
     Int32 f = node->flags();
-    if (f & ItemInternal::II_Shared){
+    if (f & ItemFlags::II_Shared){
       Int64 node_uid = node->uniqueId();
       if (node_uid>my_max_node_uid)
         my_max_node_uid = node_uid;
@@ -281,7 +281,7 @@ _addOneGhostLayerV2()
     //bool add_cell = false;
     for( Node inode : cell.nodes() ){
       //info() << "** CHECK NODE node=" << i_node->uniqueId() << " cell=" << cell->uniqueId();
-      if (inode.internal()->flags() & ItemInternal::II_Shared){
+      if (inode.internal()->flags() & ItemFlags::II_Shared){
         Int64 node_uid = inode.uniqueId();
         //info() << "** ADD BOUNDARY CELL node=" << node_uid << " cell=" << cell->uniqueId();
         Int32 dest_rank = uid_to_subdomain_converter.uidToRank(node_uid);
@@ -621,7 +621,7 @@ addGhostChildFromParent2(Array<Int64>& ghost_cell_to_refine)
     if (cell->owner()  == sid)
       continue;
     // cela suppose que les flags sont deja synchronises
-    if(cell->flags() & ItemInternal::II_JustRefined){
+    if(cell->flags() & ItemFlags::II_JustRefined){
       // cell to add
       ghost_cell_to_refine.add(cell->uniqueId()) ;
       Int64Array& v = boundary_infos_to_send.lookupAdd(cell->owner())->value();

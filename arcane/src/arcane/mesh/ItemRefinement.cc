@@ -5,13 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemRefinement.cc                                           (C) 2000-2017 */
+/* ItemRefinement.cc                                           (C) 2000-2022 */
 /*                                                                           */
 /* liste de méthodes de manipulation d'un maillage AMR.                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
+#include "arcane/mesh/ItemRefinement.h"
 
 #include "arcane/utils/UtilsTypes.h"
 #include "arcane/utils/Real3.h"
@@ -31,20 +31,13 @@
 #include "arcane/ItemVector.h"
 
 #include <vector>
-#include "arcane/mesh/ItemRefinement.h"
 #include "arcane/mesh/MeshRefinement.h"
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_MESH_BEGIN_NAMESPACE
-
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -159,7 +152,7 @@ refineOneCell(Cell item, MeshRefinement& mesh_refinement)
   ItemTypeMng* itm = m_mesh->itemTypeMng();
   const Int32 nb_hChildren = itm->nbHChildrenByItemType(item.type());
   const Int32 nb_nodes = item.nbNode();
-  ARCANE_ASSERT((item.internal()->flags() & ItemInternal::II_Refine), ("Item is not flagged for refinement"));
+  ARCANE_ASSERT((item.internal()->flags() & ItemFlags::II_Refine), ("Item is not flagged for refinement"));
   ARCANE_ASSERT((item.isActive()), ("Refine non-active item is forbidden!"));
 
   debug(Trace::High) << "[refineOneCell] nb_hChildren=" << nb_hChildren;
@@ -205,7 +198,7 @@ refineOneCell(Cell item, MeshRefinement& mesh_refinement)
       for (Integer i = 0; i < m_nb_cell_to_add; ++i){
         ItemInternal* child = cells[m_cells_lid[i]];
         Integer cf = child->flags();
-        cf |= ItemInternal::II_JustAdded;
+        cf |= ItemFlags::II_JustAdded;
         child->setFlags(cf);
       }
     }
@@ -216,8 +209,8 @@ refineOneCell(Cell item, MeshRefinement& mesh_refinement)
       //debug() << "[refineOneCell] child #"<<child->localId();
       ARCANE_ASSERT((child.isSubactive()), ("child must be a sub active item!"));
       Integer f = child.internal()->flags();
-      f |= ItemInternal::II_JustAdded;
-      f &= ~ItemInternal::II_Inactive;
+      f |= ItemFlags::II_JustAdded;
+      f &= ~ItemFlags::II_Inactive;
       child.internal()->setFlags(f);
     }
   }
@@ -225,9 +218,9 @@ refineOneCell(Cell item, MeshRefinement& mesh_refinement)
   // Maintenant, Unset le flag de raffinement de l'item
   //debug(Trace::High) << "[refineOneCell] et on flush le flag";
   Integer f = item.internal()->flags();
-  f &= ~ItemInternal::II_Refine;
-  f |= ItemInternal::II_Inactive;
-  f |= ItemInternal::II_JustRefined;
+  f &= ~ItemFlags::II_Refine;
+  f |= ItemFlags::II_Inactive;
+  f |= ItemFlags::II_JustRefined;
   item.internal()->setFlags(f);
 #if defined(ARCANE_DEBUG_ASSERT)
   for (Integer c = 0; c < nb_hChildren; c++){
@@ -249,7 +242,7 @@ coarsenOneCell(Cell item, const ItemRefinementPatternT<typeID>& rp)
   //! HexEmbeddingMatrix hex_em;
   //! refine(hex_em,item)
 
-  ARCANE_ASSERT ( (item->internal()->flags() & ItemInternal::II_CoarsenInactive), ("Item is not for coarsening!"));
+  ARCANE_ASSERT ( (item->internal()->flags() & ItemFlags::II_CoarsenInactive), ("Item is not for coarsening!"));
   ARCANE_ASSERT ( (!item->isActive()), ("Item is active!"));
   //debug(Trace::High) << "[coarsenOneCell] "<<item_internal->uniqueId();
   // ATT: Nous ne supprimons pas les enfants jusqu'à contraction via MeshRefinement::contract()
@@ -266,16 +259,16 @@ coarsenOneCell(Cell item, const ItemRefinementPatternT<typeID>& rp)
     if (mychild->owner() != sid)
       continue;
     Integer f = mychild.internal()->flags();
-    ARCANE_ASSERT ((f & ItemInternal::II_Coarsen),("Item is not flagged for coarsening"));
-    f &= ~ItemInternal::II_Coarsen;
-    f |= ItemInternal::II_Inactive;
-    //      f |= ItemInternal::II_NeedRemove; // TODO activer le flag de suppression
+    ARCANE_ASSERT ((f & ItemFlags::II_Coarsen),("Item is not flagged for coarsening"));
+    f &= ~ItemFlags::II_Coarsen;
+    f |= ItemFlags::II_Inactive;
+    //      f |= ItemFlags::II_NeedRemove; // TODO activer le flag de suppression
     mychild.internal()->setFlags(f);
   }
   Integer f = item.internal()->flags();
-  f &= ~ItemInternal::II_Inactive; // TODO verify if this condition is needed
-  f &= ~ItemInternal::II_CoarsenInactive;
-  f |= ItemInternal::II_JustCoarsened;
+  f &= ~ItemFlags::II_Inactive; // TODO verify if this condition is needed
+  f &= ~ItemFlags::II_CoarsenInactive;
+  f |= ItemFlags::II_JustCoarsened;
   //debug(Trace::High) << "[coarsenOneCell] item_internal->flags()="<<f;
   item.internal()->setFlags(f);
 
@@ -499,8 +492,7 @@ ARCANE_INSTANTIATE(IT_DiTetra5);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

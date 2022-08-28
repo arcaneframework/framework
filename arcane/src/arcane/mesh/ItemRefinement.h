@@ -5,37 +5,31 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemRefinement.h                                            (C) 2000-2010 */
-/*  Created on: Jul 16, 2010                                                 */
-/*      Author: mesriy                                                       */
+/* ItemRefinement.h                                            (C) 2000-2022 */
 /*                                                                           */
 /* méthodes de manipulation d'un Item du maillage par des techniques AMR.    */
 /*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_ITEMREFINEMENT_H
 #define ARCANE_MESH_ITEMREFINEMENT_H
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
+#include "arcane/VariableTypes.h"
+
 #include "arcane/mesh/MeshGlobal.h"
 #include "arcane/mesh/MeshRefinement.h"
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-//! AMR
-
-#include<set>
-#include<vector>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+#include <set>
+#include <vector>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-class IMesh;
 
-
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -43,20 +37,21 @@ ARCANE_MESH_BEGIN_NAMESPACE
 class ItemRefinement
 : public TraceAccessor
 {
-public:
+ public:
 	/**
 	 * Constructor.
 	 */
 	ItemRefinement (IMesh *mesh);
 
-private:
-	// le ctor de copie et l'opérateur d'affectation sont
+ private:
+
+  // le ctor de copie et l'opérateur d'affectation sont
 	// déclarés privés mais non implémentés.  C'est la
 	// technique standard pour les empêcher d'être utilisés.
 	ItemRefinement (const ItemRefinement&);
 	ItemRefinement& operator=(const ItemRefinement&);
 
-public:
+ public:
 
 	/**
 	 * Destructor.
@@ -94,7 +89,8 @@ public:
   void updateChildHMin(ArrayView<ItemInternal*> cells) ;
 
  private:
-	Real hmin(Cell) const;
+
+  Real hmin(Cell) const;
 	Real3 faceCenter(ItemInternal* face,SharedVariableNodeReal3& nodes_coords) const;
 
 	template <int typeID>
@@ -103,7 +99,8 @@ public:
 	template <int typeID>
 	void computeOrigNodesCoords(Cell item, const ItemRefinementPatternT<typeID>& rp, const Integer sid);
 
-private:
+ private:
+
 	IMesh* m_mesh;
 	VariableCellReal m_cell_hmin;
   VariableNodeReal3& m_orig_nodes_coords;
@@ -134,16 +131,9 @@ private:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#endif /* ARCANE_MESH_ITEMREFINEMENT_H */
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+#endif
