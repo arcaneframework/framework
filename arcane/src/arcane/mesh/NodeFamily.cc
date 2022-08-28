@@ -155,7 +155,7 @@ endAllocate()
 /*---------------------------------------------------------------------------*/
 
 void NodeFamily::
-addCellToNode(ItemInternal* node,ItemInternal* new_cell)
+addCellToNode(Node node,Cell new_cell)
 {
   _checkValidSourceTargetItems(node,new_cell);
   Int32 cell_lid = new_cell->localId();
@@ -166,7 +166,7 @@ addCellToNode(ItemInternal* node,ItemInternal* new_cell)
 /*---------------------------------------------------------------------------*/
 
 void NodeFamily::
-addFaceToNode(ItemInternal* node,ItemInternal* new_face)
+addFaceToNode(Node node,Face new_face)
 {
   if (m_no_face_connectivity)
     return;
@@ -179,7 +179,7 @@ addFaceToNode(ItemInternal* node,ItemInternal* new_face)
 /*---------------------------------------------------------------------------*/
 
 void NodeFamily::
-addEdgeToNode(ItemInternal* node,ItemInternal* new_edge)
+addEdgeToNode(Node node,Edge new_edge)
 {
   if (!Connectivity::hasConnectivity(m_mesh_connectivity,Connectivity::CT_NodeToEdge))
     return;
@@ -192,37 +192,11 @@ addEdgeToNode(ItemInternal* node,ItemInternal* new_edge)
 /*---------------------------------------------------------------------------*/
 
 void NodeFamily::
-removeEdgeFromNode(ItemInternal* node,ItemInternal* edge_to_remove)
-{
-  if (!Connectivity::hasConnectivity(m_mesh_connectivity,Connectivity::CT_NodeToEdge))
-    return;
-
-  _checkValidSourceTargetItems(node,edge_to_remove);
-  m_edge_connectivity->removeConnectedItem(ItemLocalId(node),ItemLocalId(edge_to_remove));
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void NodeFamily::
 removeEdgeFromNode(ItemLocalId node,ItemLocalId edge_to_remove)
 {
   if (!Connectivity::hasConnectivity(m_mesh_connectivity,Connectivity::CT_NodeToEdge))
     return;
   m_edge_connectivity->removeConnectedItem(node,edge_to_remove);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void NodeFamily::
-removeFaceFromNode(ItemInternal* node,ItemInternal* face_to_remove)
-{
-  if (m_no_face_connectivity)
-    return;
-
-  _checkValidSourceTargetItems(node,face_to_remove);
-  m_face_connectivity->removeConnectedItem(ItemLocalId(node),ItemLocalId(face_to_remove));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -241,19 +215,7 @@ removeFaceFromNode(ItemLocalId node,ItemLocalId face_to_remove)
 /*---------------------------------------------------------------------------*/
 
 void NodeFamily::
-removeCellFromNode(ItemInternal* node,ItemInternal* cell_to_remove, bool no_destroy)
-{
-	_checkValidItem(cell_to_remove);
-  if (!no_destroy)
-    throw NotSupportedException(A_FUNCINFO,"no_destroy==false");
-  removeCellFromNode(node,ItemLocalId(cell_to_remove));
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void NodeFamily::
-removeCellFromNode(ItemInternal* node,ItemLocalId cell_to_remove_lid)
+removeCellFromNode(Node node,ItemLocalId cell_to_remove_lid)
 {
 	_checkValidItem(node);
   m_cell_connectivity->removeConnectedItem(ItemLocalId(node),cell_to_remove_lid);
@@ -263,14 +225,14 @@ removeCellFromNode(ItemInternal* node,ItemLocalId cell_to_remove_lid)
 /*---------------------------------------------------------------------------*/
 
 void NodeFamily::
-removeNodeIfNotConnected(ItemInternal* node)
+removeNodeIfNotConnected(Node node)
 {
 	_checkValidItem(node);
-
-	if (!node->isSuppressed()){
-		Integer nb_cell = node->nbCell();
+  ItemInternal* iinode = node.internal();
+	if (!iinode->isSuppressed()){
+		Integer nb_cell = iinode->nbCell();
 		if (nb_cell == 0)
-			_removeNode(node);
+			_removeNode(iinode);
 	}
 }
 

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* FullItemInfo.h                                              (C) 2000-2021 */
+/* FullItemInfo.h                                              (C) 2000-2022 */
 /*                                                                           */
 /* Information de sérialisation d'une maille.                                */
 /*---------------------------------------------------------------------------*/
@@ -14,19 +14,15 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/mesh/MeshGlobal.h"
+
 #include "arcane/utils/CheckedConvert.h"
 
 #include "arcane/ItemTypeMng.h"
-
-#include "arcane/mesh/MeshGlobal.h"
+#include "arcane/ItemTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-namespace Arcane
-{
-class ItemInternal;
-}
 
 namespace Arcane::mesh
 {
@@ -109,7 +105,8 @@ class FullCellInfo
   static Integer memoryUsed(ItemTypeInfo* it, Integer parent_info, bool has_edge, bool has_amr,bool with_flags);
   ARCCORE_DEPRECATED_2020("Use dump() overload with buffer")
   static void dump(ItemInternal* cell, ISerializer* buf, Integer parent_info, bool has_edge, bool has_amr,bool with_flags);
-  static void dump(ItemInternal* cell, Array<Int64>& buf, Integer parent_info, bool has_edge, bool has_amr,bool with_flags);
+
+  static void dump(Cell cell, Array<Int64>& buf, Integer parent_info, bool has_edge, bool has_amr,bool with_flags);
   static Integer parentInfo(IMesh* mesh);
 
  protected:
@@ -119,11 +116,15 @@ class FullCellInfo
  public:
 
   Int64ConstArrayView m_infos;
+
  private:
+
   Integer m_nb_node;
   Integer m_nb_edge;
   Integer m_nb_face;
+
  public:
+
   Integer m_first_edge;
   Integer m_first_face;
   Integer m_memory_used;

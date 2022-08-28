@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NodeFamily.h                                                (C) 2000-2021 */
+/* NodeFamily.h                                                (C) 2000-2022 */
 /*                                                                           */
 /* Famille de noeuds.                                                        */
 /*---------------------------------------------------------------------------*/
@@ -113,18 +113,14 @@ class ARCANE_MESH_EXPORT NodeFamily
   void replaceFace(ItemLocalId node,Integer index,ItemLocalId face);
   void replaceCell(ItemLocalId node,Integer index,ItemLocalId cell);
 
-  void addCellToNode(ItemInternal* node,ItemInternal* new_cell);
-  void addFaceToNode(ItemInternal* node,ItemInternal* new_face);
-  void addEdgeToNode(ItemInternal* node,ItemInternal* new_edge);
-  ARCANE_DEPRECATED_260 void removeEdgeFromNode(ItemInternal* node,ItemInternal* edge_to_remove);
+  void addCellToNode(Node node,Cell new_cell);
+  void addFaceToNode(Node node,Face new_face);
+  void addEdgeToNode(Node node,Edge new_edge);
   void removeEdgeFromNode(ItemLocalId node,ItemLocalId edge_to_remove);
-  ARCANE_DEPRECATED_260 void removeFaceFromNode(ItemInternal* node,ItemInternal* face_to_remove);
   void removeFaceFromNode(ItemLocalId node,ItemLocalId face_to_remove);
-  //! \deprecated Utiliser la version removeCellFromNode(ItemInternal*,ItemLocalId)
-  ARCANE_DEPRECATED_240 void removeCellFromNode(ItemInternal* node,ItemInternal* cell_to_remove,bool no_destroy=false);
-  void removeCellFromNode(ItemInternal* node,ItemLocalId cell_to_remove_lid);
+  void removeCellFromNode(Node node,ItemLocalId cell_to_remove_lid);
   //! Supprime le noeud siln'est plus connecté
-  void removeNodeIfNotConnected(ItemInternal* node);
+  void removeNodeIfNotConnected(Node node);
 
   VariableNodeReal3& nodesCoordinates()
   {

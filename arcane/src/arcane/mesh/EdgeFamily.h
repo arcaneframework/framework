@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* EdgeFamily.h                                                (C) 2000-2021 */
+/* EdgeFamily.h                                                (C) 2000-2022 */
 /*                                                                           */
 /* Famille d'arêtes.                                                         */
 /*---------------------------------------------------------------------------*/
@@ -62,21 +62,16 @@ class ARCANE_MESH_EXPORT EdgeFamily
 
   void replaceNode(ItemLocalId edge,Integer index,ItemLocalId node);
 
-  //! \deprecated Utiliser la version removeCellFromEdge(ItemInternal*,ItemLocalId)
-  void removeCellFromEdge(ItemInternal* edge,ItemInternal* cell_to_remove, bool no_destroy=false);
-
   //! Ajoute une maille voisine à une arête
-  void addCellToEdge(ItemInternal* edge,ItemInternal* new_cell);
+  void addCellToEdge(Edge edge,Cell new_cell);
   //! Ajoute une maille voisine à une arête
-  void addFaceToEdge(ItemInternal* edge,ItemInternal* new_face);
+  void addFaceToEdge(Edge edge,Face new_face);
   //! Supprime une maille d'une arête
-  void removeCellFromEdge(ItemInternal* edge,ItemLocalId cell_to_remove_lid);
-  //! Supprime une maille d'une arête
-  ARCANE_DEPRECATED_260 void removeFaceFromEdge(ItemInternal* edge,ItemInternal* face_to_remove);
+  void removeCellFromEdge(Edge edge,ItemLocalId cell_to_remove_lid);
   //! Supprime une maille d'une arête
   void removeFaceFromEdge(ItemLocalId edge,ItemLocalId face_to_remove);
   //! Supprime l'arête si elle n'est plus connectée
-  void removeEdgeIfNotConnected(ItemInternal* edge);
+  void removeEdgeIfNotConnected(Edge edge);
 
   //! Définit la connectivité active pour le maillage associé
   /*! Ceci conditionne les connectivités à la charge de cette famille */
@@ -85,7 +80,7 @@ class ARCANE_MESH_EXPORT EdgeFamily
  protected:
 
   ItemTypeInfo* m_edge_type;
-  bool    m_has_edge;
+  bool m_has_edge;
   Integer m_node_prealloc;
   Integer m_face_prealloc;
   Integer m_cell_prealloc;
@@ -99,7 +94,7 @@ class ARCANE_MESH_EXPORT EdgeFamily
   //! Famille des noeuds associée à cette famille
   NodeFamily* m_node_family;
 
-  inline void _removeEdge(ItemInternal* edge);
+  inline void _removeEdge(Edge edge);
   inline void _createOne(ItemInternal* item,Int64 uid);
 };
 

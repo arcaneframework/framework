@@ -5,11 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CellMerger.cc                                               (C) 2000-2017 */
+/* CellMerger.cc                                               (C) 2000-2022 */
 /*                                                                           */
 /* Fusionne deux mailles.                                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#include "arcane/mesh/CellMerger.h"
 
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/StringBuilder.h"
@@ -22,7 +24,6 @@
 #include "arcane/IItemFamilyTopologyModifier.h"
 #include "arcane/IMesh.h"
 
-#include "arcane/mesh/CellMerger.h"
 #include "arcane/mesh/FaceReorienter.h"
 
 #include <map>
@@ -31,8 +32,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1122,8 +1123,10 @@ _promoteType(const _Type& t1,const _Type& t2) const
 /*---------------------------------------------------------------------------*/
 
 void CellMerger::
-merge(ItemInternal* i_cell_1,ItemInternal* i_cell_2)
+merge(Cell cell_1,Cell cell_2)
 {
+  ItemInternal* i_cell_1 = cell_1.internal();
+  ItemInternal* i_cell_2 = cell_2.internal();
   _Type cell_1_type = _getCellType(i_cell_1->typeId());
   IMesh* mesh = i_cell_1->family()->mesh();
   ItemSwapperUtils swap_utils(mesh);
@@ -1132,10 +1135,10 @@ merge(ItemInternal* i_cell_1,ItemInternal* i_cell_2)
   case Hexahedron:
   case Pyramid:
   case Pentahedron:
-      {
-        CellToHexahedronMerger(&swap_utils,i_cell_1, i_cell_2);
-        return;
-      }
+    {
+      CellToHexahedronMerger(&swap_utils,i_cell_1, i_cell_2);
+      return;
+    }
   case Quadrilateral:
   case Triangle:{
     {
@@ -1148,6 +1151,15 @@ merge(ItemInternal* i_cell_1,ItemInternal* i_cell_2)
   }
   }
   ARCANE_FATAL("Merge for this kind of cell not implemented\n");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Cell CellMerger::
+getCell(Cell i_cell_1,Cell i_cell_2)
+{
+  return Cell(getItemInternal(i_cell_1.internal(),i_cell_2.internal()));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1195,8 +1207,7 @@ getItemInternal(ItemInternal* i_cell_1,ItemInternal* i_cell_2)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

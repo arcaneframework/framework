@@ -438,19 +438,18 @@ setConnectivity(const Integer c)
 /*---------------------------------------------------------------------------*/
 
 void CellFamily::
-_addParentCellToCell(ItemInternal* cell,ItemInternal* parent_cell)
+_addParentCellToCell(Cell cell,Cell parent_cell)
 {
   m_hparent_connectivity->addConnectedItem(ItemLocalId(cell),ItemLocalId(parent_cell));
-  //_updateSharedInfoAdded(cell,0,0,0,1,0);
-  //cell->setHParent(0,parent_cell);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void CellFamily::
-_addChildCellToCell(ItemInternal* iparent_cell,Integer rank,ItemInternal* child_cell)
+_addChildCellToCell(Cell iparent_cell,Integer rank,Cell child_cell)
 {
+  ItemInternal* iparent = iparent_cell.internal();
   Cell parent_cell(iparent_cell);
   // NOTE GG: Cette méthode ne semble fonctionner que si \a rank
   // correspond parent_cell->nbHChildren().
@@ -458,14 +457,14 @@ _addChildCellToCell(ItemInternal* iparent_cell,Integer rank,ItemInternal* child_
   m_hchild_connectivity->addConnectedItem(parent_cell,ItemLocalId(NULL_ITEM_LOCAL_ID));
   auto x = _topologyModifier();
   x->replaceHChild(ItemLocalId(iparent_cell),rank,ItemLocalId(child_cell));
-  iparent_cell->addFlags(ItemInternal::II_Inactive);
+  iparent->addFlags(ItemInternal::II_Inactive);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void CellFamily::
-_addChildrenCellsToCell(ItemInternal* parent_cell,Int32ConstArrayView children_cells_lid)
+_addChildrenCellsToCell(Cell parent_cell,Int32ConstArrayView children_cells_lid)
 {
   Integer nb_children = children_cells_lid.size();
   auto c = m_hchild_connectivity->trueCustomConnectivity();
@@ -479,14 +478,14 @@ _addChildrenCellsToCell(ItemInternal* parent_cell,Int32ConstArrayView children_c
   for( Integer i=0; i<nb_children; ++i )
     x->replaceHChild(ItemLocalId(parent_cell),i,ItemLocalId(children_cells_lid[i]));
 
-  parent_cell->addFlags(ItemInternal::II_Inactive);
+  parent_cell->internal()->addFlags(ItemInternal::II_Inactive);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void CellFamily::
-_removeParentCellToCell(ItemInternal* cell)
+_removeParentCellToCell(Cell cell)
 {
   m_hparent_connectivity->removeConnectedItems(ItemLocalId(cell));
 }
@@ -495,23 +494,23 @@ _removeParentCellToCell(ItemInternal* cell)
 /*---------------------------------------------------------------------------*/
 
 void CellFamily::
-_removeChildCellToCell(ItemInternal* parent_cell,ItemInternal* cell)
+_removeChildCellToCell(Cell parent_cell,Cell cell)
 {
   //_updateSharedInfoRemoved(parent_cell,0,0,0,0,1);
   m_hchild_connectivity->removeConnectedItem(ItemLocalId(parent_cell),ItemLocalId(cell));
-  parent_cell->removeFlags(ItemInternal::II_Inactive);
+  parent_cell.internal()->removeFlags(ItemInternal::II_Inactive);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void CellFamily::
-_removeChildrenCellsToCell(ItemInternal* parent_cell)
+_removeChildrenCellsToCell(Cell parent_cell)
 {
   m_hchild_connectivity->removeConnectedItems(ItemLocalId(parent_cell));
   //Integer nb_children = parent_cell->nbHChildren();
   //_updateSharedInfoRemoved(parent_cell,0,0,0,0,nb_children);
-  parent_cell->removeFlags(ItemInternal::II_Inactive);
+  parent_cell.internal()->removeFlags(ItemInternal::II_Inactive);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -5,13 +5,13 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* FaceFamily.cc                                               (C) 2000-2020 */
+/* FaceFamily.cc                                               (C) 2000-2022 */
 /*                                                                           */
 /* Famille de faces.                                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
+#include "arcane/mesh/FaceFamily.h"
 
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/NotImplementedException.h"
@@ -20,7 +20,6 @@
 
 #include "arcane/mesh/NodeFamily.h"
 #include "arcane/mesh/EdgeFamily.h"
-#include "arcane/mesh/FaceFamily.h"
 #include "arcane/mesh/IncrementalItemConnectivity.h"
 #include "arcane/mesh/CompactIncrementalItemConnectivity.h"
 #include "arcane/mesh/ItemConnectivitySelector.h"
@@ -299,9 +298,10 @@ replaceCell(ItemLocalId face,Integer index,ItemLocalId cell)
  * mailles connectées.
  */
 void FaceFamily::
-setBackAndFrontCells(ItemInternal* face,Int32 iback_cell_lid,Int32 ifront_cell_lid)
+setBackAndFrontCells(Face face,Int32 iback_cell_lid,Int32 ifront_cell_lid)
 {
-  face->_setFaceBackAndFrontCells(iback_cell_lid,ifront_cell_lid);
+  ItemInternal* iface = face.internal();
+  iface->_setFaceBackAndFrontCells(iback_cell_lid,ifront_cell_lid);
   ItemLocalId back_cell_lid(iback_cell_lid);
   ItemLocalId front_cell_lid(ifront_cell_lid);
   auto c = m_cell_connectivity->trueCustomConnectivity();
@@ -335,17 +335,17 @@ setBackAndFrontCells(ItemInternal* face,Int32 iback_cell_lid,Int32 ifront_cell_l
 /*---------------------------------------------------------------------------*/
 
 void FaceFamily::
-addBackCellToFace(ItemInternal* face,ItemInternal* new_cell)
+addBackCellToFace(Face face,Cell new_cell)
 {
   _checkValidSourceTargetItems(face,new_cell);
 
-  Integer nb_cell = face->nbCell();
+  Integer nb_cell = face.nbCell();
 
   // SDP: les tests suivants sont imcompatibles avec le raffinement
   // par couches
   if (m_check_orientation){
-    ItemInternal* current_cell = face->backCell();
-    if (face->flags() & ItemInternal::II_HasBackCell){
+    ItemInternal* current_cell = face.internal()->backCell();
+    if (face.internal()->flags() & ItemInternal::II_HasBackCell){
       ARCANE_FATAL("Face already having a back cell."
                    " This is most probably due to the fact that the face"
                    " is connected to a reverse cell with a negative volume."
@@ -360,7 +360,7 @@ addBackCellToFace(ItemInternal* face,ItemInternal* new_cell)
   _updateSharedInfo();
 
   // Si on a déjà une maille, il s'agit de la front cell.
-  Int32 front_cell_lid = (nb_cell==1) ? face->cellLocalId(0) : NULL_ITEM_LOCAL_ID;
+  Int32 front_cell_lid = (nb_cell==1) ? face.cellId(0) : NULL_ITEM_LOCAL_ID;
   setBackAndFrontCells(face,new_cell->localId(),front_cell_lid);
 }
 
@@ -368,7 +368,7 @@ addBackCellToFace(ItemInternal* face,ItemInternal* new_cell)
 /*---------------------------------------------------------------------------*/
 
 void FaceFamily::
-addFrontCellToFace(ItemInternal* face,ItemInternal* new_cell)
+addFrontCellToFace(Face face,Cell new_cell)
 {
   _checkValidSourceTargetItems(face,new_cell);
 
@@ -377,8 +377,8 @@ addFrontCellToFace(ItemInternal* face,ItemInternal* new_cell)
   // SDP: les tests suivants sont imcompatibles avec le raffinement
   // par couches
   if (m_check_orientation){
-    ItemInternal* current_cell = face->frontCell();
-    if (face->flags() & ItemInternal::II_HasFrontCell){
+    Cell current_cell = face.frontCell();
+    if (face.internal()->flags() & ItemInternal::II_HasFrontCell){
       ARCANE_FATAL("Face already having a front cell."
                    " This is most probably due to the fact that the face"
                    " is connected to a reverse cell with a negative volume."
@@ -393,7 +393,7 @@ addFrontCellToFace(ItemInternal* face,ItemInternal* new_cell)
   _updateSharedInfo();
 
   // Si on a déjà une maille, il s'agit de la back cell.
-  Int32 back_cell_lid = (nb_cell==1) ? face->cellLocalId(0) : NULL_ITEM_LOCAL_ID;
+  Int32 back_cell_lid = (nb_cell==1) ? face.cellId(0) : NULL_ITEM_LOCAL_ID;
   setBackAndFrontCells(face,back_cell_lid,new_cell->localId());
 }
 
@@ -687,7 +687,7 @@ activeFamilyTree(Array<ItemInternal*>& family,Cell item,const bool reset) const
 /*---------------------------------------------------------------------------*/
 
 void FaceFamily::
-addEdgeToFace(ItemInternal* face,ItemInternal* new_edge)
+addEdgeToFace(Face face,Edge new_edge)
 {
   if (!Connectivity::hasConnectivity(m_mesh_connectivity,Connectivity::CT_FaceToEdge))
     return;
@@ -700,7 +700,7 @@ addEdgeToFace(ItemInternal* face,ItemInternal* new_edge)
 /*---------------------------------------------------------------------------*/
 
 void FaceFamily::
-removeEdgeFromFace(ItemInternal* face,ItemInternal* edge_to_remove)
+removeEdgeFromFace(Face face,Edge edge_to_remove)
 {
   if (!Connectivity::hasConnectivity(m_mesh_connectivity,Connectivity::CT_FaceToEdge))
     return;
@@ -773,21 +773,10 @@ _computeFaceNormal(Face face, const SharedVariableNodeReal3& nodes_coord) const
 /*---------------------------------------------------------------------------*/
 
 void FaceFamily::
-removeCellFromFace(ItemInternal* face,ItemInternal* cell_to_remove, bool no_destroy)
+removeCellFromFace(Face xface,ItemLocalId cell_to_remove_lid)
 {
-  _checkValidItem(cell_to_remove);
-  if (!no_destroy)
-    throw NotSupportedException(A_FUNCINFO,"no_destroy==false");
-  removeCellFromFace(face,ItemLocalId(cell_to_remove));
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void FaceFamily::
-removeCellFromFace(ItemInternal* face,ItemLocalId cell_to_remove_lid)
-{
-  _checkValidItem(face);
+  _checkValidItem(xface);
+  ItemInternal* face = xface.internal();
 
   Integer nb_cell = face->nbCell();
 
@@ -856,8 +845,10 @@ removeCellFromFace(ItemInternal* face,ItemLocalId cell_to_remove_lid)
 /*---------------------------------------------------------------------------*/
 
 void FaceFamily::
-removeFaceIfNotConnected(ItemInternal* face)
+removeFaceIfNotConnected(Face xface)
 {
+  ItemInternal* face = xface.internal();
+
 	_checkValidItem(face);
 
 	if (!face->isSuppressed() && face->nbCell()==0){
