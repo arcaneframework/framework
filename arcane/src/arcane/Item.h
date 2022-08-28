@@ -289,9 +289,10 @@ class ARCANE_CORE_EXPORT Item
 
  public:
 
-  // TODO a supprimer
+  ARCANE_DEPRECATED_REASON("Y2022: Do not use this operator. Use operator '.' instead")
   Item* operator->() { return this; }
-  // TODO a supprimer
+
+  ARCANE_DEPRECATED_REASON("Y2022: Do not use this operator. Use operator '.' instead")
   const Item* operator->() const { return this; }
 
  protected:
@@ -506,9 +507,10 @@ class ARCANE_CORE_EXPORT Node
     return ItemBase::activeEdges();
   }
 
-  // TODO: a supprimer
+  ARCANE_DEPRECATED_REASON("Y2022: Do not use this operator. Use operator '.' instead")
   Node* operator->() { return this; }
-  // TODO: a supprimer
+
+  ARCANE_DEPRECATED_REASON("Y2022: Do not use this operator. Use operator '.' instead")
   const Node* operator->() const { return this; }
 };
 
@@ -576,9 +578,10 @@ class ARCANE_CORE_EXPORT ItemWithNodes
     return NodeLocalId(ItemBase::nodeId(index));
   }
 
-  // TODO: a supprimer
+  ARCANE_DEPRECATED_REASON("Y2022: Do not use this operator. Use operator '.' instead")
   ItemWithNodes* operator->() { return this; }
-  // TODO: a supprimer
+
+  ARCANE_DEPRECATED_REASON("Y2022: Do not use this operator. Use operator '.' instead")
   const ItemWithNodes* operator->() const { return this; }
 };
 
@@ -687,9 +690,10 @@ class ARCANE_CORE_EXPORT Edge
     return FaceLocalIdView::fromIds(ItemBase::faceIds());
   }
 
-  // TODO: a supprimer
+  ARCANE_DEPRECATED_REASON("Y2022: Do not use this operator. Use operator '.' instead")
   Edge* operator->() { return this; }
-  // TODO: a supprimer
+
+  ARCANE_DEPRECATED_REASON("Y2022: Do not use this operator. Use operator '.' instead")
   const Edge* operator->() const { return this; }
 };
 
@@ -892,9 +896,10 @@ class ARCANE_CORE_EXPORT Face
     return EdgeLocalIdView::fromIds(ItemBase::edgeIds());
   }
 
-  // TODO: a supprimer
+  ARCANE_DEPRECATED_REASON("Y2022: Do not use this operator. Use operator '.' instead")
   Face* operator->() { return this; }
-  // TODO: a supprimer
+
+  ARCANE_DEPRECATED_REASON("Y2022: Do not use this operator. Use operator '.' instead")
   const Face* operator->() const { return this; }
 };
 
@@ -1084,9 +1089,10 @@ class ARCANE_CORE_EXPORT Cell
     return ItemBase::whichChildAmI(local_id);
   }
 
-  // TODO: a supprimer
+  ARCANE_DEPRECATED_REASON("Y2022: Do not use this operator. Use operator '.' instead")
   Cell* operator->() { return this; }
-  // TODO: a supprimer
+
+  ARCANE_DEPRECATED_REASON("Y2022: Do not use this operator. Use operator '.' instead")
   const Cell* operator->() const { return this; }
 };
 
@@ -1164,9 +1170,10 @@ class Particle
     return Cell(ItemBase::cellBase(0));
   }
 
-  // TODO: a supprimer
+  ARCANE_DEPRECATED_REASON("Y2022: Do not use this operator. Use operator '.' instead")
   Particle* operator->() { return this; }
-  // TODO: a supprimer
+
+  ARCANE_DEPRECATED_REASON("Y2022: Do not use this operator. Use operator '.' instead")
   const Particle* operator->() const { return this; }
 };
 
@@ -1218,9 +1225,10 @@ class DoF
     return (*this);
   }
 
-  // TODO A supprimer
+  ARCANE_DEPRECATED_REASON("Y2022: Do not use this operator. Use operator '.' instead")
   DoF* operator->() { return this; }
-  // TODO A supprimer
+
+  ARCANE_DEPRECATED_REASON("Y2022: Do not use this operator. Use operator '.' instead")
   const DoF* operator->() const { return this; }
 
   //! Identifiant local de l'entité dans le sous-domaine du processeur
