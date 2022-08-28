@@ -412,7 +412,7 @@ _computeFacesUniqueIdsParallelV1()
       Int64 opposite_cell_uid = faces_opposite_cell_uid[face.localId()];
       if (face.backCell()==cell)
         ++nb_back_face;
-      else if (face->nbCell()==1 && opposite_cell_uid==NULL_ITEM_ID){
+      else if (face.nbCell()==1 && opposite_cell_uid==NULL_ITEM_ID){
         ++nb_true_boundary_face;
       }
     }
@@ -539,7 +539,7 @@ _computeFacesUniqueIdsParallelV1()
     OStringStream ostr;
     ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,cells_map){
       Cell cell(nbid->value());
-      Int64 cell_uid = cell->uniqueId().asInt64();
+      Int64 cell_uid = cell.uniqueId().asInt64();
       Integer face_index = 0;
       for( Face face : cell.faces() ){
         Int64 opposite_cell_uid = faces_opposite_cell_uid[face.localId()];
@@ -559,10 +559,10 @@ _computeFacesUniqueIdsParallelV1()
           opposite_cell_uid = face.backCell().uniqueId().asInt64();
         }
         ostr() << "NEW UNIQUE ID FOR FACE"
-               << " lid=" << face->localId()
+               << " lid=" << face.localId()
                << " cell=" << cell_uid
-               << " face=" << face->uniqueId()
-               << " nbcell=" << face->nbCell()
+               << " face=" << face.uniqueId()
+               << " nbcell=" << face.nbCell()
                << " cellindex=" << face_index << " (";
         for( Node node : face.nodes() )
           ostr() << ' ' << node.uniqueId();
@@ -766,8 +766,8 @@ _computeFacesUniqueIdsParallelV2()
     }
     v.add(first_node_uid);     // 0
     v.add(my_rank);            // 1
-    v.add(face->uniqueId());   // 2
-    v.add(face->type());     // 3
+    v.add(face.uniqueId());   // 2
+    v.add(face.type());     // 3
     Cell back_cell = face.backCell();
     Cell front_cell = face.frontCell();
     if (back_cell.null())     // 4 : only used for debug
@@ -779,7 +779,7 @@ _computeFacesUniqueIdsParallelV2()
     else
       v.add(front_cell.uniqueId());
     for( Integer z=0, zs=face.nbNode(); z<zs; ++z )
-      v.add(face.node(z)->uniqueId());
+      v.add(face.node(z).uniqueId());
   }
 
   // Positionne la liste des envoies
@@ -972,7 +972,7 @@ _computeFacesUniqueIdsSequential()
 
   ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,cells_map){
     Cell cell(nbid->value());
-    Int32 cell_uid = cell->uniqueId().asInt32();
+    Int32 cell_uid = cell.uniqueId().asInt32();
     Integer nb_num_back_face = 0;
     Integer nb_true_boundary_face = 0;
     for( Face face : cell.faces() ){
@@ -1000,9 +1000,9 @@ _computeFacesUniqueIdsSequential()
         Int64 opposite_cell_uid = NULL_ITEM_UNIQUE_ID;
         bool true_boundary = false;
         bool internal_other = false;
-        if (face->backCell()==cell){
+        if (face.backCell()==cell){
         }
-        else if (face->nbCell()==1){
+        else if (face.nbCell()==1){
           true_boundary = true;
         }
         else{

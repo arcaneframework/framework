@@ -306,7 +306,7 @@ setBackAndFrontCells(Face face,Int32 iback_cell_lid,Int32 ifront_cell_lid)
   ItemLocalId front_cell_lid(ifront_cell_lid);
   auto c = m_cell_connectivity->trueCustomConnectivity();
   if (c){
-    ItemLocalId face_lid(face->localId());
+    ItemLocalId face_lid(face.localId());
     // Supprime toutes les mailles connectées.
     // TODO: optimiser en ne supprimant pas s'il n'y a pas besoin pour éviter
     // des réallocations.
@@ -361,7 +361,7 @@ addBackCellToFace(Face face,Cell new_cell)
 
   // Si on a déjà une maille, il s'agit de la front cell.
   Int32 front_cell_lid = (nb_cell==1) ? face.cellId(0) : NULL_ITEM_LOCAL_ID;
-  setBackAndFrontCells(face,new_cell->localId(),front_cell_lid);
+  setBackAndFrontCells(face,new_cell.localId(),front_cell_lid);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -372,7 +372,7 @@ addFrontCellToFace(Face face,Cell new_cell)
 {
   _checkValidSourceTargetItems(face,new_cell);
 
-  Integer nb_cell = face->nbCell();
+  Integer nb_cell = face.nbCell();
 
   // SDP: les tests suivants sont imcompatibles avec le raffinement
   // par couches
@@ -394,7 +394,7 @@ addFrontCellToFace(Face face,Cell new_cell)
 
   // Si on a déjà une maille, il s'agit de la back cell.
   Int32 back_cell_lid = (nb_cell==1) ? face.cellId(0) : NULL_ITEM_LOCAL_ID;
-  setBackAndFrontCells(face,back_cell_lid,new_cell->localId());
+  setBackAndFrontCells(face,back_cell_lid,new_cell.localId());
 }
 
 //! AMR
@@ -476,7 +476,7 @@ replaceBackFrontCellsFromParentFace(Cell subcell,Face subface,
       }
     }
     else{
-      if(fcell->level()>fscell->level()){
+      if(fcell.level()>fscell.level()){
         replaceFrontCellToFace(subface,fcell);
       }
     }
@@ -493,8 +493,8 @@ isSubFaceInFace(Face subface,Face face) const
   bool is_true= false;
 
   //TODO : un std::binary_search pour accelerer la recherche
-  for( Node inode : subface->nodes() ){
-    for( Node inode2 : face->nodes() ){
+  for( Node inode : subface.nodes() ){
+    for( Node inode2 : face.nodes() ){
       if (inode.uniqueId() == inode2.uniqueId()) {// il suffit qu'un seul noeud concide
         is_true = true;
         break;
@@ -581,7 +581,7 @@ allSubFaces(Face face,Array<ItemInternal*>& subfaces)
     cell= face.cell(0);
   }
 
-  for(Integer c=0;c<cell->nbHChildren();c++){
+  for(Integer c=0;c<cell.nbHChildren();c++){
     Cell child = cell.hChild(c);
     if (isChildOnFace(child,face)){
       for( Face subface : child.faces() ){
@@ -603,8 +603,8 @@ activeSubFaces(Face face,Array<ItemInternal*>& subfaces)
 	const Integer nb_cell= face.nbCell();
 
 	if(nb_cell==2) {
-		Cell fcell = face->frontCell();
-		Cell bcell = face->backCell();
+		Cell fcell = face.frontCell();
+		Cell bcell = face.backCell();
 		if(fcell.level() > bcell.level())
 			cell = face.frontCell();
 		else {
@@ -670,12 +670,12 @@ activeFamilyTree(Array<ItemInternal*>& family,Cell item,const bool reset) const
 	if (reset)
 		family.clear();
 	// Add this item to the family tree.
-	if(item->isActive())
+	if(item.isActive())
 		family.add(item.internal());
 	else
 		for (Integer c=0, cs=item.nbHChildren(); c<cs; c++){
 			Cell ichild= item.hChild(c);
-			if (ichild->isOwn())
+			if (ichild.isOwn())
 				activeFamilyTree(family,ichild,false);
 		}
 

@@ -128,7 +128,7 @@ mergeNodes(Int32ConstArrayView nodes_local_id,
         info(4) << " OLD_node=" << (*inode).uniqueId() << " new=" << new_node.uniqueId();
       }
       mesh_utils::reorderNodesOfFace(face_new_nodes_uid,face_new_nodes_sorted_uid);
-      ItemInternal* new_face = ItemTools::findFaceInNode(new_face_first_node.internal(),face->type(),face_new_nodes_sorted_uid);
+      ItemInternal* new_face = ItemTools::findFaceInNode(new_face_first_node.internal(),face.type(),face_new_nodes_sorted_uid);
       if (!new_face)
         ARCANE_FATAL("Can not find corresponding face nodes_uid={0}",face_new_nodes_sorted_uid);
       info(4) << "NEW FACE=" << new_face->uniqueId() << " nb_cell=" << new_face->nbCell();

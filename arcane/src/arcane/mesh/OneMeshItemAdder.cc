@@ -829,7 +829,7 @@ addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fat
       Int32 idx = ((direct_node_order) ? i_node : (item_nb_node-1-i_node));
       parent_item = item.toItemWithNodes().node(idx);
     }
-    Int64 new_node_uid = nodes_uid[i_node] = parent_item->uniqueId();
+    Int64 new_node_uid = nodes_uid[i_node] = parent_item.uniqueId();
     ItemInternal* node_internal = m_node_family.findOrAllocOne(new_node_uid,is_add);
     if (is_add){
 #ifdef ARCANE_DEBUG_DYNAMIC_MESH
@@ -883,8 +883,8 @@ addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fat
       info() << "Création edge " << new_edge_uid << ' '
              << edge_internal->uniqueId() << ' ' << edge_internal->localId();
 #endif /* ARCANE_DEBUG_DYNAMIC_MESH */
-      edge_internal->setParent(0,parent_item->localId());
-      edge_internal->setOwner(parent_item->owner(),m_mesh_info.rank());
+      edge_internal->setParent(0,parent_item.localId());
+      edge_internal->setOwner(parent_item.owner(),m_mesh_info.rank());
 
       {
         ItemInternal* current_node_internal = nodes_map.lookupValue(first_node);

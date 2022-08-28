@@ -336,16 +336,14 @@ _createGraphOfDof() {
 
         links_infos[links_infos_index++] = m_dualUid_mng.uniqueIdOf(face);
 
-        if ( !back_cell->null() )
-        {
-            links_infos[links_infos_index] = cell_to_dual_node_property[back_cell];
+        if ( !back_cell.null() ) {
+          links_infos[links_infos_index] = cell_to_dual_node_property[back_cell];
         }
 
         links_infos_index++;
 
-        if ( !front_cell->null() )
-        {
-            links_infos[links_infos_index] = cell_to_dual_node_property[front_cell];
+        if ( !front_cell.null() ) {
+          links_infos[links_infos_index] = cell_to_dual_node_property[front_cell];
         }
 
         links_infos_index++;
@@ -437,21 +435,17 @@ _createGraphOfDof() {
         continue;
       }
 
-      if ( !back_cell->null() && !front_cell->null() )
-      {
+      if ( !back_cell.null() && !front_cell.null() ) {
         links_infos4[links_infos_index++] = math::max(m_dualUid_mng.uniqueIdOf(face,back_cell),m_dualUid_mng.uniqueIdOf(face,front_cell));
       }
-      else if ( !front_cell->null() )
-      {
+      else if ( !front_cell.null() ) {
         links_infos4[links_infos_index++] = m_dualUid_mng.uniqueIdOf(face,front_cell);
       }
-      else if ( !back_cell->null() )
-      {
+      else if ( !back_cell.null() ) {
         links_infos4[links_infos_index++] = m_dualUid_mng.uniqueIdOf(face,back_cell);
       }
 
-      if ( !back_cell->null() )
-      {
+      if ( !back_cell.null() ) {
         ENUMERATE_PARTICLE(i_part,all_particles){
           const Particle part = *i_part;
           const Cell & cell   = i_part->cell();
@@ -463,8 +457,7 @@ _createGraphOfDof() {
 
       links_infos_index++;
 
-      if ( !front_cell->null() )
-      {
+      if ( !front_cell.null() ) {
         ENUMERATE_PARTICLE(i_part,all_particles){
           const Particle part = *i_part;
           const Cell & cell   = i_part->cell();

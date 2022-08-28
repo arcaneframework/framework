@@ -694,14 +694,14 @@ _computeAndSortBoundaryFaces(Array<BoundaryFaceInfo>& boundary_faces_info)
   ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid,faces_map){
     Face face(iid->value());
     BoundaryFaceInfo fsi;
-    Integer nb_cell = face->nbCell();
+    Integer nb_cell = face.nbCell();
     if (nb_cell==2)
       continue;
 
     fsi.m_rank = my_rank;
     fsi.setNodes(face);
     Cell cell = face.cell(0);
-    fsi.m_cell_uid = cell->uniqueId();
+    fsi.m_cell_uid = cell.uniqueId();
     Integer face_local_index = 0;
     for( Integer z=0, zs=cell.nbFace(); z<zs; ++z )
       if (cell.face(z)==face){

@@ -484,7 +484,7 @@ transportFunction (Array<ItemInternal*>& old_items, AMROperationType op)
   case Restriction:
     for(Integer i=0,is=old_items.size();i<is;i++){
       Cell parent = old_items[i];
-      UInt32 nb_children = parent->nbHChildren() ;
+      UInt32 nb_children = parent.nbHChildren() ;
       Real value = 0. ;
       for (UInt32 j = 0; j < nb_children; j++) {
         value += data[parent.hChild(j)] ;
@@ -497,7 +497,7 @@ transportFunction (Array<ItemInternal*>& old_items, AMROperationType op)
       Cell parent= old_items[i];
       // coarse-to-fine: interpolation
       Real value = data[parent] ;
-      for (UInt32 j = 0, js = parent->nbHChildren(); j < js; j++){
+      for (UInt32 j = 0, js = parent.nbHChildren(); j < js; j++){
         data[parent.hChild(j)] = value ;
       }
     }

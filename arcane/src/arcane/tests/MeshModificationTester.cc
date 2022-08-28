@@ -266,7 +266,7 @@ _refineCells()
     for(int i=0; i<nb_node_added; ++i){
       Int32 new_local_id = new_nodes_local_id[i];
       Item new_node = new_nodes[new_local_id];
-      info() << String::format("NEW LOCAL ID={0} Coord={1} UID={2}",new_local_id, nodes_to_add_coords[i],new_node->uniqueId());
+      info() << String::format("NEW LOCAL ID={0} Coord={1} UID={2}",new_local_id, nodes_to_add_coords[i],new_node.uniqueId());
       nodes_coords[new_nodes[new_local_id]] = nodes_to_add_coords[i];
     }
 

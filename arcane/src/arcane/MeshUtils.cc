@@ -909,7 +909,7 @@ writeMeshConnectivity(IMesh* mesh,const String& file_name)
       }
       {
         ofile << "<faces count='" << item_nb_face << "'>";
-        for( ItemInternalEnumerator i_face(item->faces()); i_face(); ++i_face )
+        for( ItemInternalEnumerator i_face(item.faces()); i_face(); ++i_face )
           ofile << ' ' << i_face->uniqueId();
         ofile << "</faces>";
       }
@@ -918,7 +918,7 @@ writeMeshConnectivity(IMesh* mesh,const String& file_name)
         auto new_end = std::unique(std::begin(ghost_cells_layer1),std::end(ghost_cells_layer1));
         ghost_cells_layer1.resize(arcaneCheckArraySize(new_end-std::begin(ghost_cells_layer1)));
         ofile << "<ghost1 count='" << ghost_cells_layer1.size() << "'>";
-        for( auto j : ghost_cells_layer1.range() )
+        for( auto j : ghost_cells_layer1 )
           ofile << ' ' << j;
         ofile << "</ghost1>\n";
       }

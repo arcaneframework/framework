@@ -528,7 +528,7 @@ _computeEdgesUniqueIdsSequential()
 
   ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,cells_map){
     Cell cell = nbid->value();
-    Int32 cell_uid = cell->uniqueId().asInt32();
+    Int32 cell_uid = cell.uniqueId().asInt32();
     Integer nb_num_back_edge = 0;
     Integer nb_true_boundary_edge = 0;
     for( Edge edge : cell.edges()){
@@ -559,7 +559,7 @@ _computeEdgesUniqueIdsSequential()
 
   ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,cells_map){
     Cell cell = nbid->value();
-    Int32 cell_uid = cell->uniqueId().asInt32();
+    Int32 cell_uid = cell.uniqueId().asInt32();
     Integer nb_num_back_edge = 0;
     Integer nb_true_boundary_edge = 0;
     for( Edge edge : cell.edges() ){
@@ -576,7 +576,7 @@ _computeEdgesUniqueIdsSequential()
       if (edge_new_uid!=NULL_ITEM_UNIQUE_ID){
         //info() << "NEW EDGE UID: LID=" << edge->localId() << " OLDUID=" << edge->uniqueId()
         //<< " NEWUID=" << edge_new_uid << " THIS=" << edge;
-        edge->internal()->setUniqueId(edge_new_uid);
+        edge.internal()->setUniqueId(edge_new_uid);
       }
     }
   }
@@ -591,7 +591,7 @@ _computeEdgesUniqueIdsSequential()
         Int64 opposite_cell_uid = NULL_ITEM_UNIQUE_ID;
         bool true_boundary = false;
         bool internal_other = false;
-        if (edge->internal()->backCell()==cell){
+        if (edge.internal()->backCell()==cell){
         }
         else if (edge.nbCell()==1){
           true_boundary = true;

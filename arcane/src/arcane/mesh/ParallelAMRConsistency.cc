@@ -104,7 +104,7 @@ init()
     ItemUniqueId face_uid = face.uniqueId();
     int face_flags = face.internal()->flags();
     if (face.nbCell()==2 && (face.cell(0).level()==0 && face.cell(1).level()==0)){
-      if ( (face.cell(0)->owner()!=sid || face.cell(1).owner()!= sid) ||
+      if ( (face.cell(0).owner()!=sid || face.cell(1).owner()!= sid) ||
            (face_flags & ItemFlags::II_Shared) ||
            (face_flags & ItemFlags::II_SubDomainBoundary)){
         m_shared_face_uids.add(face_uid);
@@ -266,7 +266,7 @@ makeNewItemsConsistent(NodeMapCoordToUid& node_finder, FaceMapCoordToUid& face_f
       true_face_family->allSubFaces(face, subfaces);
       for (Integer s = 0; s < subfaces.size(); s++){
         Face face2(subfaces[s]);
-        Int64 uid = face2->uniqueId() ;
+        Int64 uid = face2.uniqueId() ;
         bool face_to_send = face_finder.isNewUid(uid) ;
         if (face_to_send){
           Integer nb_node2 = face2.nbNode() ;
@@ -279,7 +279,7 @@ makeNewItemsConsistent(NodeMapCoordToUid& node_finder, FaceMapCoordToUid& face_f
               if (math::isZero(sinteta)){
                 node_i.internal()->addFlags(ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary);
                 //active_nodes_set.insert(node_i);
-                active_nodes.insert(ItemMapValue(node_i->uniqueId(),node_i.internal())) ;
+                active_nodes.insert(ItemMapValue(node_i.uniqueId(),node_i.internal())) ;
                 _addNodeToList(node_i, m_active_nodes);
               }
             }
