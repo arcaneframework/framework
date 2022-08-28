@@ -478,7 +478,7 @@ _addChildrenCellsToCell(Cell parent_cell,Int32ConstArrayView children_cells_lid)
   for( Integer i=0; i<nb_children; ++i )
     x->replaceHChild(ItemLocalId(parent_cell),i,ItemLocalId(children_cells_lid[i]));
 
-  parent_cell->internal()->addFlags(ItemFlags::II_Inactive);
+  parent_cell.internal()->addFlags(ItemFlags::II_Inactive);
 }
 
 /*---------------------------------------------------------------------------*/

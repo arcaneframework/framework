@@ -166,7 +166,7 @@ _dumpCellInfo(Cell cell,Adapter buf, Integer parent_info,
     }
   }
   if (parent_info & FullCellInfo::PI_Face) {
-    for( Face face : cell->faces() ){
+    for( Face face : cell.faces() ){
       Item parent = face.parent(0);
       buf.put(parent.uniqueId().asInt64());
       buf.put(parent.type());

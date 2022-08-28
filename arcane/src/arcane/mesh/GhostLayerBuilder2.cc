@@ -404,13 +404,13 @@ _addGhostLayer(Integer current_layer,Int32ConstArrayView node_layer)
     // Ne traite pas les mailles qui ne m'appartiennent pas
     if (m_version>=4 && cell.owner()!=my_rank)
       continue;
-    Int64 cell_uid = cell->uniqueId();
+    Int64 cell_uid = cell.uniqueId();
     for( Node node : cell.nodes() ){
       Int32 node_lid = node.localId();
       bool do_it = false;
       //if (node_lid>=node_layer.size())
       //do_it = true;
-      if (cell->owner()!=my_rank){
+      if (cell.owner()!=my_rank){
         do_it = true;
       }
       else{
@@ -831,7 +831,7 @@ _markBoundaryItems()
   // Parcours les faces et marque les noeuds, arêtes et faces frontieres
   ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid,faces_map){
     Face face = iid->value();
-    ItemInternal* face_internal = face->internal();
+    ItemInternal* face_internal = face.internal();
     bool is_sub_domain_boundary_face = false;
     if (face_internal->flags() & ItemFlags::II_Boundary){
       is_sub_domain_boundary_face = true;

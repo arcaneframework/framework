@@ -743,7 +743,7 @@ _setFacesNodeNumbers(Face i_face_1,Face i_face_2)
 FaceToQuadrilateralMerger::
 FaceToQuadrilateralMerger(ItemSwapperUtils* swap_utils,Face face1,Face face2)
 {
-  ARCANE_ASSERT(face2->type()==IT_Quad4,("The cell is not a quadrangle"));
+  ARCANE_ASSERT(face2.type()==IT_Quad4,("The cell is not a quadrangle"));
 
   if (_setFacesNodeNumbers(face1,face2)) {
     ARCANE_ASSERT(m_face_2_exchanged_node_numbers.size() == 2,
@@ -871,7 +871,7 @@ _setCellsNodeNumbers(Cell i_cell_1,Cell i_cell_2)
 CellToQuadrilateralMerger::
 CellToQuadrilateralMerger(ItemSwapperUtils* swap_utils,Cell cell1,Cell cell2)
 {
-  ARCANE_ASSERT(cell2->type()==IT_Quad4,("Cell2 is not a IT_Quad4"));
+  ARCANE_ASSERT(cell2.type()==IT_Quad4,("Cell2 is not a IT_Quad4"));
 
   CommonFaceFinder common_face(cell1,cell2);
 

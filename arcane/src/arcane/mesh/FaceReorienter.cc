@@ -130,12 +130,12 @@ checkAndChangeOrientation(Face face)
   bool cell0_is_back_cell = false;
 
   if (face_nb_node == 2) {
-    cell0_is_back_cell = (cell.node(local_face.node(0))->uniqueId() == face_smallest_node_uids.first);
+    cell0_is_back_cell = (cell.node(local_face.node(0)).uniqueId() == face_smallest_node_uids.first);
   }
   else {
     for (Integer i_node=0; i_node<local_face.nbNode(); ++i_node) {
-      if (cell.node(local_face.node(i_node))->uniqueId() == face_smallest_node_uids.first) {
-        if (cell.node(local_face.node((i_node+1)%local_face.nbNode()))->uniqueId() == face_smallest_node_uids.second) {
+      if (cell.node(local_face.node(i_node)).uniqueId() == face_smallest_node_uids.first) {
+        if (cell.node(local_face.node((i_node+1)%local_face.nbNode())).uniqueId() == face_smallest_node_uids.second) {
           cell0_is_back_cell = true;
           break;
         }
@@ -147,7 +147,7 @@ checkAndChangeOrientation(Face face)
     }
   }
   
-  Int32 cell1_lid = (face->nbCell()==2) ? face.cell(1).localId() : NULL_ITEM_LOCAL_ID;
+  Int32 cell1_lid = (face.nbCell()==2) ? face.cell(1).localId() : NULL_ITEM_LOCAL_ID;
   // Paire contenant la back_cell et front_cell de la face.
   std::pair<Int32,Int32> face_cells(cell1_lid, cell0_lid);
   if (cell0_is_back_cell) {
@@ -167,8 +167,8 @@ checkAndChangeOrientationAMR(Face face)
   if (!m_face_family)
     m_face_family = ARCANE_CHECK_POINTER(dynamic_cast<FaceFamily*>(iface->family()));
 
-  m_nodes_unique_id.resize(face->nbNode());
-  m_nodes_local_id.resize(face->nbNode());
+  m_nodes_unique_id.resize(face.nbNode());
+  m_nodes_local_id.resize(face.nbNode());
 
   for (Integer i_node=0; i_node<face.nbNode(); ++i_node) {
     m_nodes_unique_id[i_node] = face.node(i_node).uniqueId();
@@ -192,18 +192,18 @@ checkAndChangeOrientationAMR(Face face)
   bool cell_1 = false;
   Cell cell;
 
-  if(face->nbCell() == 2){
-    if(face->cell(0)->level() >= face->cell(1)->level()){
-      cell = face->cell(0);
+  if(face.nbCell() == 2){
+    if(face.cell(0).level() >= face.cell(1).level()){
+      cell = face.cell(0);
       cell_0 = true;
     }
     else {
-      cell = face->cell(1);
+      cell = face.cell(1);
       cell_1 = true;
     }
   }
   else {
-    cell = face->cell(0);
+    cell = face.cell(0);
     cell_0 = true;
   }
   Integer local_face_number = -1;
@@ -222,13 +222,13 @@ checkAndChangeOrientationAMR(Face face)
   const ItemTypeInfo::LocalFace& local_face = cell.typeInfo()->localFace(local_face_number);
   bool cell_is_back_cell = false;
 
-  if (face->nbNode() == 2) {
-    cell_is_back_cell = (cell->node(local_face.node(0))->uniqueId() == face_smallest_node_uids.first);
+  if (face.nbNode() == 2) {
+    cell_is_back_cell = (cell.node(local_face.node(0)).uniqueId() == face_smallest_node_uids.first);
   }
   else {
     for (Integer i_node=0; i_node<local_face.nbNode(); ++i_node) {
-      if (cell->node(local_face.node(i_node))->uniqueId() == face_smallest_node_uids.first) {
-        if (cell->node(local_face.node((i_node+1)%local_face.nbNode()))->uniqueId() == face_smallest_node_uids.second) {
+      if (cell.node(local_face.node(i_node)).uniqueId() == face_smallest_node_uids.first) {
+        if (cell.node(local_face.node((i_node+1)%local_face.nbNode())).uniqueId() == face_smallest_node_uids.second) {
           cell_is_back_cell = true;
           break;
         }
@@ -242,7 +242,7 @@ checkAndChangeOrientationAMR(Face face)
 
   // Paire contenant la back_cell et front_cell de la face.
   std::pair<Int32,Int32> face_cells(NULL_ITEM_LOCAL_ID,NULL_ITEM_LOCAL_ID);
-  bool face_has_two_cell = (face->nbCell()==2);
+  bool face_has_two_cell = (face.nbCell()==2);
 
   if(cell_0){
     Int32 cell1_lid = (face_has_two_cell) ? face.cell(1).localId() : NULL_ITEM_LOCAL_ID;

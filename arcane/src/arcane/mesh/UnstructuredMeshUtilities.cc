@@ -169,7 +169,7 @@ changeOwnersFromCells()
     VariableItemInt32& particles_owner(family->itemsNewOwner());
     ENUMERATE_PARTICLE(i_particle,family->allItems()){
       Particle particle = *i_particle ;
-      particles_owner[particle] = cells_owner[particle->cell()] ;
+      particles_owner[particle] = cells_owner[particle.cell()] ;
     }
   }
 

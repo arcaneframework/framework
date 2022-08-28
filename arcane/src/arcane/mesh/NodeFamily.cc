@@ -158,7 +158,7 @@ void NodeFamily::
 addCellToNode(Node node,Cell new_cell)
 {
   _checkValidSourceTargetItems(node,new_cell);
-  Int32 cell_lid = new_cell->localId();
+  Int32 cell_lid = new_cell.localId();
   m_cell_connectivity->addConnectedItem(ItemLocalId(node),ItemLocalId(cell_lid));
 }
 

@@ -85,7 +85,7 @@ faceCenter(ItemInternal* iface,SharedVariableNodeReal3& nodes_coords) const
   for( Node node : face.nodes() ){
     pfc += nodes_coords[node];
   }
-  pfc /= static_cast<Real> (face->nbNode());
+  pfc /= static_cast<Real> (face.nbNode());
   return pfc ;
 }
 
@@ -242,8 +242,8 @@ coarsenOneCell(Cell item, const ItemRefinementPatternT<typeID>& rp)
   //! HexEmbeddingMatrix hex_em;
   //! refine(hex_em,item)
 
-  ARCANE_ASSERT ( (item->internal()->flags() & ItemFlags::II_CoarsenInactive), ("Item is not for coarsening!"));
-  ARCANE_ASSERT ( (!item->isActive()), ("Item is active!"));
+  ARCANE_ASSERT ( (item.internal()->flags() & ItemFlags::II_CoarsenInactive), ("Item is not for coarsening!"));
+  ARCANE_ASSERT ( (!item.isActive()), ("Item is active!"));
   //debug(Trace::High) << "[coarsenOneCell] "<<item_internal->uniqueId();
   // ATT: Nous ne supprimons pas les enfants jusqu'à contraction via MeshRefinement::contract()
 
@@ -256,7 +256,7 @@ coarsenOneCell(Cell item, const ItemRefinementPatternT<typeID>& rp)
     Cell mychild = item.hChild(c);
     //debug(Trace::High) << "\t[coarsenOneCell] child #"<<c << ' ' << mychild->uniqueId() << " " << mychild->owner();
 
-    if (mychild->owner() != sid)
+    if (mychild.owner() != sid)
       continue;
     Integer f = mychild.internal()->flags();
     ARCANE_ASSERT ((f & ItemFlags::II_Coarsen),("Item is not flagged for coarsening"));
@@ -337,7 +337,7 @@ computeHChildren(Cell item, MeshRefinement& mesh_refinement)
           //nous avons pu trouver le noeud, dans ce cas nous
           //n'aurons pas besoin de le chercher plus tard ni de le creer.
           if (em_val == 1.){
-            m_nodes_uid[c][nc] = item.node(n)->uniqueId().asInt64();
+            m_nodes_uid[c][nc] = item.node(n).uniqueId().asInt64();
             nodes_set.insert(m_nodes_uid[c][nc]);
           }
         }

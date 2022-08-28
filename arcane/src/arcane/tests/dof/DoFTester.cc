@@ -358,14 +358,13 @@ _node2DoFConnectivity()
 
   // Use it: get DoF from cell
   Int64 dof_uid;
-  ENUMERATE_NODE(inode,allNodes())
-  {
+  ENUMERATE_NODE(inode,allNodes()) {
     const DoF& connected_dof = node2dof(inode);
     dof_uid = connected_dof.uniqueId().asInt64();
     // Check Ghost policy node and dof have same owner
     if (connected_dof.owner() != inode->owner()) fatal() << "Error in node to dof connectivity ghost policy";
     info() << String::format("dof uid {0} owned by {1} connected to node uid {2} owned by {3} ",
-                                      dof_uid, connected_dof->owner(), inode->uniqueId().asInt64(), inode->owner());
+                                      dof_uid, connected_dof.owner(), inode->uniqueId().asInt64(), inode->owner());
   }
   // New api to avoid ConnectivityItemVector uncomprehension
   // Inside an enumerate: create the connectivity vector only once
@@ -386,7 +385,7 @@ _node2DoFConnectivity()
   ENUMERATE_DOF(idof,dof_vec2){
     dof_uid = idof->uniqueId().asInt64();
     info() << String::format("dof uid {0} owned by {1}  connected to node uid {2} owned by {3}  ",
-                             dof_uid, idof->owner(), my_node->uniqueId().asInt64(), my_node->owner());
+                             dof_uid, idof->owner(), my_node.uniqueId().asInt64(), my_node.owner());
   }
 
   // clean
@@ -472,7 +471,7 @@ _cell2DoFsConnectivity()
   ENUMERATE_DOF(idof,dof_vec2){
     dof_uid = idof->uniqueId().asInt64();
     info() << String::format("dof uid {0} owned by {1}  connected to cell uid {2} owned by {3}  ",
-                             dof_uid, idof->owner(), my_cell->uniqueId().asInt64(), my_cell->owner());
+                             dof_uid, idof->owner(), my_cell.uniqueId().asInt64(), my_cell.owner());
   }
 
   // Test constructor by item_property
@@ -553,7 +552,7 @@ _Face2DoFsMultiConnectivity()
    ENUMERATE_DOF(idof,dof_vec2){
      dof_uid = idof->uniqueId().asInt64();
      info() << String::format("dof uid {0} owned by {1}  connected to face uid {2} owned by {3}  ",
-                              dof_uid, idof->owner(), my_face->uniqueId().asInt64(), my_face->owner());
+                              dof_uid, idof->owner(), my_face.uniqueId().asInt64(), my_face.owner());
    }
 
   // Test constructor by item_property

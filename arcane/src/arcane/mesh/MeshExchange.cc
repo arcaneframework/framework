@@ -776,7 +776,7 @@ _familyTree (Int32Array& family,Cell item,
 	family.add(item.localId());
 	// Recurse into the items children, if it has them.
 	// Do not clear the array any more.
-	if (!item->isActive())
+	if (!item.isActive())
 		for (Integer c=0, cs=item.nbHChildren(); c<cs; c++){
 			Item ichild = item.hChild(c);
 			if (ichild.isOwn())
@@ -1025,13 +1025,11 @@ void MeshExchange::
 _addDestRank(const Item& item, IItemFamily* item_family, const Integer new_owner) // take an ItemInternal* ?
 {
   ItemDestRankArray* item_dest_ranks = nullptr;
-  if (item->owner() == m_rank)
-  {
+  if (item.owner() == m_rank) {
     item_dest_ranks = m_item_dest_ranks_map[item_family];// this search could be written outside the enumerate (but the enumerate is cheap : on connected items)
   }
-  else
-  {
-    item_dest_ranks= m_ghost_item_dest_ranks_map[item->owner()][item_family];
+  else {
+    item_dest_ranks= m_ghost_item_dest_ranks_map[item.owner()][item_family];
   }
   // Insert element only if not present
   auto& item_ranks_internal = item_dest_ranks->at(item.localId());

@@ -228,7 +228,7 @@ _addOneGhostLayerV2()
       is_sub_domain_boundary_face = true;
     }
     else{
-      if (face->nbCell()==2 && (face.cell(0)->owner()!=my_rank || face.cell(1)->owner()!=my_rank))
+      if (face.nbCell()==2 && (face.cell(0).owner()!=my_rank || face.cell(1).owner()!=my_rank))
         is_sub_domain_boundary_face = true;
     }
     if (is_sub_domain_boundary_face){
