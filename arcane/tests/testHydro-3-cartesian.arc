@@ -16,6 +16,7 @@
         <x><n>100</n><length>2.0</length></x>
         <y><n>15</n><length>2.0</length></y>
         <z><n>10</n><length>4.0</length></z>
+       <face-numbering-version>1</face-numbering-version>
         <!-- <x><n>2</n><length>2.0</length><progression>1.0</progression></x>
         <x><n>3</n><length>3.0</length><progression>4.0</progression></x>
         <x><n>3</n><length>3.0</length><progression>8.0</progression></x>
