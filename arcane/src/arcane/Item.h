@@ -410,7 +410,7 @@ class ARCANE_CORE_EXPORT Node
   { ARCANE_CHECK_KIND(isNode); }
 
   //! Construit une référence à l'entité \a abase
-  Node(ItemBase abase) : Item(abase)
+  Node(const ItemBase& abase) : Item(abase)
   { ARCANE_CHECK_KIND(isNode); }
 
   //! Construit une référence à l'entité \a abase
@@ -536,7 +536,7 @@ class ARCANE_CORE_EXPORT ItemWithNodes
   { ARCANE_CHECK_KIND(isItemWithNodes); }
 
   //! Construit une référence à l'entité \a abase
-  ItemWithNodes(ItemBase abase) : Item(abase)
+  ItemWithNodes(const ItemBase& abase) : Item(abase)
   { ARCANE_CHECK_KIND(isItemWithNodes); }
 
   //! Construit une référence à l'entité \a aitem
@@ -627,7 +627,7 @@ class ARCANE_CORE_EXPORT Edge
   { ARCANE_CHECK_KIND(isEdge); }
 
   //! Construit une référence à l'entité \a abase
-  Edge(ItemBase abase) : ItemWithNodes(abase)
+  Edge(const ItemBase& abase) : ItemWithNodes(abase)
   { ARCANE_CHECK_KIND(isEdge); }
 
   //! Construit une référence à l'entité \a aitem
@@ -740,7 +740,7 @@ class ARCANE_CORE_EXPORT Face
   { ARCANE_CHECK_KIND(isFace); }
 
   //! Construit une référence à l'entité \a abase
-  Face(ItemBase abase) : ItemWithNodes(abase)
+  Face(const ItemBase& abase) : ItemWithNodes(abase)
   { ARCANE_CHECK_KIND(isFace); }
 
   //! Construit une référence à l'entité \a aitem
@@ -964,7 +964,7 @@ class ARCANE_CORE_EXPORT Cell
   { ARCANE_CHECK_KIND(isCell); }
 
   //! Construit une référence à l'entité \a abase
-  Cell(ItemBase abase) : ItemWithNodes(abase)
+  Cell(const ItemBase& abase) : ItemWithNodes(abase)
   { ARCANE_CHECK_KIND(isCell); }
 
   //! Construit une référence à l'entité \a aitem
@@ -1120,7 +1120,7 @@ class Particle
   { ARCANE_CHECK_KIND(isParticle); }
 
   //! Construit une référence à l'entité \a abase
-  Particle(ItemBase abase) : Item(abase)
+  Particle(const ItemBase& abase) : Item(abase)
   { ARCANE_CHECK_KIND(isParticle); }
 
   //! Construit une référence à l'entité \a aitem
@@ -1206,7 +1206,7 @@ class DoF
   { ARCANE_CHECK_KIND(isDoF); }
 
   //! Construit une référence à l'entité \a abase
-  DoF(ItemBase abase) : Item(abase)
+  DoF(const ItemBase& abase) : Item(abase)
   { ARCANE_CHECK_KIND(isDoF); }
 
   //! Construit une référence à l'entité \a abase
