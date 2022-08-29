@@ -163,8 +163,30 @@ typedef ItemGroupT<DoF> DoFGroup;
 class ItemInternalEnumerator;
 template<typename ItemType>
 class ItemEnumeratorT;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template<typename ItemType>
-class ItemEnumeratorBaseT;
+class ItemEnumeratorBaseV1T;
+
+template<typename ItemType>
+class ItemEnumeratorBaseV2T;
+
+#ifndef ARCANE_ITEMENUMERATOR_VERSION
+#define ARCANE_ITEMENUMERATOR_VERSION 2
+#endif
+
+#if ARCANE_ITEMENUMERATOR_VERSION == 1
+template<typename ItemType> using ItemEnumeratorBaseT = ItemEnumeratorBaseV1T<ItemType>;
+#elif ARCANE_ITEMENUMERATOR_VERSION == 2
+template<typename ItemType> using ItemEnumeratorBaseT = ItemEnumeratorBaseV2T<ItemType>;
+#elif
+#error "Invalid value for define ARCANE_ITEMENUMERATOR_VERSION. Valid values are 1 or 2"
+#endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 /*!
  * \ingroup Mesh
