@@ -173,6 +173,9 @@ class ItemEnumeratorBaseV1T;
 template<typename ItemType>
 class ItemEnumeratorBaseV2T;
 
+template<typename ItemType>
+class ItemEnumeratorBaseV3T;
+
 #ifndef ARCANE_ITEMENUMERATOR_VERSION
 #define ARCANE_ITEMENUMERATOR_VERSION 2
 #endif
@@ -181,8 +184,10 @@ class ItemEnumeratorBaseV2T;
 template<typename ItemType> using ItemEnumeratorBaseT = ItemEnumeratorBaseV1T<ItemType>;
 #elif ARCANE_ITEMENUMERATOR_VERSION == 2
 template<typename ItemType> using ItemEnumeratorBaseT = ItemEnumeratorBaseV2T<ItemType>;
+#elif ARCANE_ITEMENUMERATOR_VERSION == 3
+template<typename ItemType> using ItemEnumeratorBaseT = ItemEnumeratorBaseV3T<ItemType>;
 #elif
-#error "Invalid value for define ARCANE_ITEMENUMERATOR_VERSION. Valid values are 1 or 2"
+#error "Invalid value for define ARCANE_ITEMENUMERATOR_VERSION. Valid values are 1, 2 or 3"
 #endif
 
 /*---------------------------------------------------------------------------*/
