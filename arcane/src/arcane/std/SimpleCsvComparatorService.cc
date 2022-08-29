@@ -134,7 +134,7 @@ isReferenceExist(Integer rank)
 }
 
 bool SimpleCsvComparatorService::
-compareWithReference(Integer rank, Real epsilon, bool compare_dimension_too)
+compareWithReference(Integer rank, bool compare_dimension_too)
 {
   // Si le proc appelant ne doit pas lire.
   if (rank != -1 && subDomain()->parallelMng()->commRank() != rank) {
@@ -145,7 +145,37 @@ compareWithReference(Integer rank, Real epsilon, bool compare_dimension_too)
     return false;
   }
 
-  return m_simple_table_internal_comparator.compare(epsilon, compare_dimension_too);
+  return m_simple_table_internal_comparator.compare(compare_dimension_too);
+}
+
+bool SimpleCsvComparatorService::
+compareElemWithReference(const String& column_name, const String& row_name, Integer rank)
+{
+  // Si le proc appelant ne doit pas lire.
+  if (rank != -1 && subDomain()->parallelMng()->commRank() != rank) {
+    return true;
+  }
+  // Si le fichier ne peut pas être lu.
+  if (!m_is_file_read && !readReferenceFile(rank)) {
+    return false;
+  }
+
+  return m_simple_table_internal_comparator.compareElem(column_name, row_name);
+}
+
+bool SimpleCsvComparatorService::
+compareElemWithReference(Real elem, const String& column_name, const String& row_name, Integer rank)
+{
+  // Si le proc appelant ne doit pas lire.
+  if (rank != -1 && subDomain()->parallelMng()->commRank() != rank) {
+    return true;
+  }
+  // Si le fichier ne peut pas être lu.
+  if (!m_is_file_read && !readReferenceFile(rank)) {
+    return false;
+  }
+
+  return m_simple_table_internal_comparator.compareElem(elem, column_name, row_name);
 }
 
 bool SimpleCsvComparatorService::
@@ -190,6 +220,17 @@ void SimpleCsvComparatorService::
 isARegexExclusiveRows(bool is_exclusive)
 {
   m_simple_table_internal_comparator.isARegexExclusiveRows(is_exclusive);
+}
+
+bool SimpleCsvComparatorService::
+addEpsilonColumn(const String& column_name, Real epsilon)
+{
+  return m_simple_table_internal_comparator.addEpsilonColumn(column_name, epsilon);
+}
+bool SimpleCsvComparatorService::
+addEpsilonRow(const String& row_name, Real epsilon)
+{
+  return m_simple_table_internal_comparator.addEpsilonRow(row_name, epsilon);
 }
 
 /*---------------------------------------------------------------------------*/
