@@ -694,7 +694,16 @@ class ARCANE_CORE_EXPORT ISimpleTableOutput
    * @brief Méthode permettant de modifier la précision du print.
    * 
    * Aussi bien pour la méthode 'print()' que les méthodes 'writeFile()'.
-
+   * 
+   * @warning Le flag "std::fixed" modifie le comportement de "setPrecision()",
+   *          si le flag "std::fixed" est désactivé, la précision définira le
+   *          nombre de chiffres total (avant et après la virgule) ;
+   *          si le flag "std::fixed" est activé, la précision définira le
+   *          nombre de chiffres après la virgule. Attention donc lors de
+   *          l'utilisation de "std::numeric_limits<Real>::max_digits10"
+   *          (pour l'écriture) ou de "std::numeric_limits<Real>::digits10"
+   *          (pour la lecture) qui sont à utiliser sans le flag "std::fixed".
+   * 
    * @param precision La nouvelle précision.
    */
   virtual void setPrecision(Integer precision) = 0;
@@ -716,7 +725,14 @@ class ARCANE_CORE_EXPORT ISimpleTableOutput
    * la précision voulu. Par exemple, si l'on a appelé 'setPrecision(4)',
    * et que l'on appelle 'setFixed(true)', le print de '6.1' donnera '6.1000'.
    * 
-   * @warning TODO
+   * @warning Le flag "std::fixed" modifie le comportement de "setPrecision()",
+   *          si le flag "std::fixed" est désactivé, la précision définira le
+   *          nombre de chiffres total (avant et après la virgule) ;
+   *          si le flag "std::fixed" est activé, la précision définira le
+   *          nombre de chiffres après la virgule. Attention donc lors de
+   *          l'utilisation de "std::numeric_limits<Real>::max_digits10"
+   *          (pour l'écriture) ou de "std::numeric_limits<Real>::digits10"
+   *          (pour la lecture) qui sont à utiliser sans le flag "std::fixed".
    * 
    * @param fixed Si le flag 'std::fixed' doit être défini ou non.
    */
