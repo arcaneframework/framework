@@ -85,23 +85,29 @@ print(Integer rank)
   m_simple_csv_reader_writer.print();
 }
 
+/**
+ * Méthode effectuant des opérations collectives.
+ */
 bool SimpleCsvComparatorService::
 writeReferenceFile(Integer rank)
 {
   ARCANE_CHECK_PTR(m_simple_table_output_ptr);
   // On sauvegarde les paramètres d'origines.
   Integer save_preci = m_simple_table_output_ptr->precision();
+  bool save_scientific = m_simple_table_output_ptr->isForcedToUseScientificNotation();
   bool save_fixed = m_simple_table_output_ptr->isFixed();
 
-  // On défini la précision max.
-  m_simple_table_output_ptr->setPrecision(std::numeric_limits<Real>::digits10 + 1);
-  m_simple_table_output_ptr->setFixed(true);
+  // On défini la précision max (+2 pour erreurs d'arrondis).
+  m_simple_table_output_ptr->setPrecision(std::numeric_limits<Real>::max_digits10);
+  m_simple_table_output_ptr->setForcedToUseScientificNotation(true);
+  m_simple_table_output_ptr->setFixed(false);
 
   // On écrit nos fichiers de référence.
   bool fin = m_simple_table_output_ptr->writeFile(m_root_path, rank);
 
   // On remet les paramètres par défault.
   m_simple_table_output_ptr->setPrecision(save_preci);
+  m_simple_table_output_ptr->setForcedToUseScientificNotation(save_scientific);
   m_simple_table_output_ptr->setFixed(save_fixed);
 
   return fin;
@@ -111,7 +117,7 @@ bool SimpleCsvComparatorService::
 readReferenceFile(Integer rank)
 {
   if (rank != -1 && subDomain()->parallelMng()->commRank() != rank)
-    return false;
+    return true;
 
   m_is_file_read = m_simple_csv_reader_writer.readTable(m_reference_path, m_table_name);
 
@@ -122,17 +128,17 @@ bool SimpleCsvComparatorService::
 isReferenceExist(Integer rank)
 {
   if (rank != -1 && subDomain()->parallelMng()->commRank() != rank)
-    return false;
+    return true;
 
   return SimpleTableReaderWriterUtils::isFileExist(m_reference_path, m_file_name);
 }
 
 bool SimpleCsvComparatorService::
-compareWithReference(Integer rank, Integer epsilon, bool compare_dimension_too)
+compareWithReference(Integer rank, Real epsilon, bool compare_dimension_too)
 {
   // Si le proc appelant ne doit pas lire.
   if (rank != -1 && subDomain()->parallelMng()->commRank() != rank) {
-    return false;
+    return true;
   }
   // Si le fichier ne peut pas être lu.
   if (!m_is_file_read && !readReferenceFile(rank)) {

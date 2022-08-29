@@ -30,37 +30,45 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 bool SimpleTableInternalComparator::
-compare(Integer epsilon, bool compare_dimension_too)
+compare(Real epsilon, bool compare_dimension_too)
 {
   bool is_ok = true;
 
   const Integer dim1 = m_simple_table_internal_mng_reference.numberOfRows();
   const Integer dim2 = m_simple_table_internal_mng_reference.numberOfColumns();
 
-  if (compare_dimension_too && (dim1 != m_simple_table_internal_mng_to_compare.numberOfRows() || dim2 != m_simple_table_internal_mng_to_compare.numberOfColumns())) {
+  const Integer dim1_to_compare = m_simple_table_internal_mng_to_compare.numberOfRows();
+  const Integer dim2_to_compare = m_simple_table_internal_mng_to_compare.numberOfColumns();
+
+  if (compare_dimension_too && (dim1 != dim1_to_compare || dim2 != dim2_to_compare)) {
     m_simple_table_internal_reference->m_parallel_mng->traceMng()->warning() << "Dimensions not equals -- Expected dimensions: "
                                                                              << dim1 << "x" << dim2 << " -- Found dimensions: "
-                                                                             << m_simple_table_internal_mng_to_compare.numberOfRows() << "x" << m_simple_table_internal_mng_to_compare.numberOfColumns();
+                                                                             << dim1_to_compare << "x" << dim2_to_compare;
     return false;
   }
 
   for (Integer i = 0; i < dim1; i++) {
-    // On regarde si l'on doit comparer la ligne actuelle.
     String row = m_simple_table_internal_mng_reference.rowName(i);
-    if (!_exploreRows(row))
+    // On regarde si l'on doit comparer la ligne actuelle.
+    // On regarde si la ligne est présente dans le STI to_compare.
+    if (!_exploreRows(row) || m_simple_table_internal_mng_to_compare.rowPosition(row) == -1)
       continue;
 
     for (Integer j = 0; j < dim2; j++) {
-      // On regarde si l'on doit comparer la colonne actuelle.
       String column = m_simple_table_internal_mng_reference.columnName(j);
-      if (!_exploreColumn(column))
+      // On regarde si l'on doit comparer la colonne actuelle.
+      // On regarde si la colonne est présente dans le STI to_compare.
+      if (!_exploreColumn(column) || m_simple_table_internal_mng_to_compare.columnPosition(column) == -1)
         continue;
 
       const Real val1 = m_simple_table_internal_mng_reference.element(column, row, false);
       const Real val2 = m_simple_table_internal_mng_to_compare.element(column, row, false);
 
-      if (!math::isNearlyEqualWithEpsilon(val1, val2, epsilon)) {
-        m_simple_table_internal_reference->m_parallel_mng->traceMng()->warning() << "Values not equals -- Column name: \"" << column << "\" -- Row name: \"" << row << "\"";
+      if (!_isNearlyEqualWithAcceptableError(val1, val2, epsilon)) {
+        m_simple_table_internal_reference->m_parallel_mng->traceMng()->warning() 
+          << std::scientific << std::setprecision(std::numeric_limits<Real>::digits10)
+          << "Values not equals -- Column name: \"" << column << "\" -- Row name: \"" << row 
+          << "\" -- Expected value: " << val1 << " -- Found value: " << val2;
         is_ok = false;
       }
     }
@@ -163,6 +171,14 @@ setInternalToCompare(const Ref<SimpleTableInternal>& sti_to_compare)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/**
+ * @brief Méthode permettant de savoir si la colonne avec le nom column_name
+ * doit être exploré ou non.
+ * 
+ * @param column_name Le nom de la colonne à verifier.
+ * @return true Si la colonne doit être vérifiée.
+ * @return false Si la colonne ne doit pas être vérifiée.
+ */
 bool SimpleTableInternalComparator::
 _exploreColumn(const String& column_name)
 {
@@ -193,15 +209,23 @@ _exploreColumn(const String& column_name)
   return m_is_excluding_regex_columns;
 }
 
+/**
+ * @brief Méthode permettant de savoir si la ligne avec le nom column_name
+ * doit être exploré ou non.
+ * 
+ * @param column_name Le nom de la ligne à verifier.
+ * @return true Si la ligne doit être vérifiée.
+ * @return false Si la ligne ne doit pas être vérifiée.
+ */
 bool SimpleTableInternalComparator::
 _exploreRows(const String& row_name)
 {
-  // S'il n'y a pas de précisions, on compare toutes les colonnes.
+  // S'il n'y a pas de précisions, on compare toutes les lignes.
   if (m_rows_to_compare.empty() && m_regex_rows.empty()) {
     return true;
   }
 
-  // D'abord, on regarde si le nom de la colonne est dans le tableau.
+  // D'abord, on regarde si le nom de la ligne est dans le tableau.
   if (m_rows_to_compare.contains(row_name)) {
     return !m_is_excluding_array_rows;
   }
@@ -218,6 +242,27 @@ _exploreRows(const String& row_name)
   }
 
   return m_is_excluding_regex_rows;
+}
+
+/**
+ * @brief Méthode permettant de savoir si deux Real sont (presque) égaux.
+ * 
+ * @param a Le premier Real.
+ * @param b Le second Real.
+ * @param error La marge d'erreur. Exemple : 0.01 signifie que l'on veux comparer
+ *              uniquement la partie entière et deux chiffres après la virgule.
+ *              Si l'on donne 0 comme marge d'erreur, alors on ne prend plus
+ *              en compte de marge d'erreur et on compare tout le Real.
+ * @return true Si les Real sont (presque) égaux.
+ * @return false Si les Real ne sont pas (presque) égaux.
+ */
+bool SimpleTableInternalComparator::
+_isNearlyEqualWithAcceptableError(Real a, Real b, Real error)
+{
+  if (error == 0) {
+    return a == b;
+  }
+  return (math::floor(a / error) == math::floor(b / error));
 }
 
 /*---------------------------------------------------------------------------*/

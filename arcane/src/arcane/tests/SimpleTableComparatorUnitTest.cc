@@ -22,19 +22,6 @@ namespace ArcaneTest
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <class T>
-void SimpleTableComparatorUnitTest::
-ASSERT_EQUAL_ARRAY(UniqueArray<T> expected, UniqueArray<T> actual)
-{
-  ASSERT_EQUAL(expected.size(), actual.size());
-  for (Integer i = 0; i < actual.size(); i++) {
-    ASSERT_EQUAL(expected[i], actual[i]);
-  }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 void SimpleTableComparatorUnitTest::
 setUpForClass()
 {

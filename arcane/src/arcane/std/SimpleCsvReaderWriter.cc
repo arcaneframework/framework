@@ -28,10 +28,6 @@ namespace Arcane
 bool SimpleCsvReaderWriter::
 writeTable(const Directory& dst, const String& file_name)
 {
-  if (!SimpleTableReaderWriterUtils::createDirectoryOnlyProcess0(m_simple_table_internal->m_parallel_mng, dst)) {
-    return false;
-  }
-
   std::ofstream ofile((dst.file(file_name) + "." + fileType()).localstr());
   if (ofile.fail())
     return false;
@@ -104,7 +100,14 @@ readTable(const Directory& src, const String& file_name)
 
     // Les autres élements sont des Reals.
     for (Integer i = 1; i < splitted_line.size(); i++) {
-      m_simple_table_internal->m_values[compt_line][i - 1] = std::stod(splitted_line[i].localstr());
+      std::string std_string = splitted_line[i].localstr();
+      std::size_t pos_comma = std_string.find(',');
+
+      if(pos_comma != std::string::npos) {
+        std_string[pos_comma] = '.';
+      }
+
+      m_simple_table_internal->m_values[compt_line][i - 1] = std::stod(std_string);
     }
 
     compt_line++;
@@ -149,8 +152,8 @@ setPrecision(Integer precision)
 {
   if (precision < 1)
     m_precision_print = 1;
-  else if (precision > (std::numeric_limits<Real>::digits10 + 1))
-    m_precision_print = (std::numeric_limits<Real>::digits10 + 1);
+  else if (precision > (std::numeric_limits<Real>::max_digits10))
+    m_precision_print = (std::numeric_limits<Real>::max_digits10);
   else
     m_precision_print = precision;
 }
@@ -165,6 +168,18 @@ void SimpleCsvReaderWriter::
 setFixed(bool fixed)
 {
   m_is_fixed_print = fixed;
+}
+
+bool SimpleCsvReaderWriter::
+isForcedToUseScientificNotation()
+{
+  return m_scientific_notation;
+}
+
+void SimpleCsvReaderWriter::
+setForcedToUseScientificNotation(bool use_scientific)
+{
+  m_scientific_notation = use_scientific;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -209,6 +224,9 @@ _print(std::ostream& stream)
 
   if (m_is_fixed_print) {
     stream << std::setiosflags(std::ios::fixed);
+  }
+  if (m_scientific_notation) {
+    stream << std::scientific;
   }
   stream << std::setprecision(m_precision_print);
 

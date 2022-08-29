@@ -67,7 +67,7 @@ class SimpleCsvComparatorService
   bool writeReferenceFile(Integer rank) override;
   bool readReferenceFile(Integer rank) override;
   bool isReferenceExist(Integer rank) override;
-  bool compareWithReference(Integer rank, Integer epsilon, bool compare_dimension_too) override;
+  bool compareWithReference(Integer rank, Real epsilon, bool compare_dimension_too) override;
 
   bool addColumnForComparing(const String& column_name) override;
   bool addRowForComparing(const String& row_name) override;
