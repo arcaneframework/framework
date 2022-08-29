@@ -91,7 +91,6 @@ testFullReal()
 void SimpleTableComparatorUnitTest::
 testError()
 {
-  ptrSTC->print();
   // Init STO
   ptrSTO->init("test", "dir_test");
 
@@ -106,18 +105,11 @@ testError()
 
   // Init STC
   ptrSTC->init(ptrSTO);
-  ptrSTC->print();
   ASSERT_TRUE(ptrSTC->writeReferenceFile());
-  ptrSTC->print();
-
-  ptrSTO->print();
 
   ptrSTO->editElement("Ma colonne 1", "Ma ligne 1", 0);
 
-  ptrSTO->print();
-
   ASSERT_TRUE(ptrSTC->readReferenceFile());
-  ptrSTC->print();
   ASSERT_FALSE(ptrSTC->compareWithReference());
 }
 
@@ -335,6 +327,181 @@ testRegexRowColumn()
   ptrSTC->isARegexExclusiveRows(true);
 
   ASSERT_TRUE(ptrSTC->compareWithReference());
+}
+
+void SimpleTableComparatorUnitTest::
+testEpsilonColumn()
+{
+  // Init STO
+  ptrSTO->init("test", "dir_test");
+
+  ptrSTO->addColumn("Ma colonne 1");
+  ptrSTO->addColumn("Ma colonne 2");
+
+  ptrSTO->addRow("Ma ligne 1", RealUniqueArray{3478974.40208692104, 299512107932106.125});
+  ptrSTO->addRow("Ma ligne 2", RealUniqueArray{299538753331624.312, 3445501.01118461927});
+
+
+  // Init STC
+  ptrSTC->init(ptrSTO);
+  ASSERT_TRUE(ptrSTC->writeReferenceFile());
+
+  ptrSTO->editElement("Ma colonne 1", "Ma ligne 1", 3478974.40208692150); //OK
+  ptrSTO->editElement("Ma colonne 2", "Ma ligne 1", 299512107932106.062); //NOK
+  ptrSTO->editElement("Ma colonne 1", "Ma ligne 2", 299538753331624.250); //OK
+  ptrSTO->editElement("Ma colonne 2", "Ma ligne 2", 3445501.01118461974); //OK
+
+  ASSERT_TRUE(ptrSTC->readReferenceFile());
+
+  ptrSTC->addEpsilonRow("Ma ligne 1", 1.0e-15);
+  ptrSTC->addEpsilonRow("Ma ligne 2", 1.0e-15);
+
+  ASSERT_TRUE(ptrSTC->compareWithReference());
+
+  ptrSTC->addEpsilonRow("Ma ligne 1", 8.0e-17);
+  ptrSTC->addEpsilonRow("Ma ligne 2", 1.0e-15);
+
+  ASSERT_FALSE(ptrSTC->compareWithReference());
+}
+
+void SimpleTableComparatorUnitTest::
+testEpsilonRow()
+{
+  // Init STO
+  ptrSTO->init("test", "dir_test");
+
+  ptrSTO->addColumn("Ma colonne 1");
+  ptrSTO->addColumn("Ma colonne 2");
+
+  ptrSTO->addRow("Ma ligne 1", RealUniqueArray{3478974.40208692104, 299512107932106.125});
+  ptrSTO->addRow("Ma ligne 2", RealUniqueArray{299538753331624.312, 3445501.01118461927});
+
+
+  // Init STC
+  ptrSTC->init(ptrSTO);
+  ASSERT_TRUE(ptrSTC->writeReferenceFile());
+
+  ptrSTO->editElement("Ma colonne 1", "Ma ligne 1", 3478974.40208692150); //OK
+  ptrSTO->editElement("Ma colonne 2", "Ma ligne 1", 299512107932106.062); //NOK
+  ptrSTO->editElement("Ma colonne 1", "Ma ligne 2", 299538753331624.250); //OK
+  ptrSTO->editElement("Ma colonne 2", "Ma ligne 2", 3445501.01118461974); //OK
+
+  ASSERT_TRUE(ptrSTC->readReferenceFile());
+
+  ptrSTC->addEpsilonColumn("Ma colonne 1", 1.0e-15);
+  ptrSTC->addEpsilonColumn("Ma colonne 2", 1.0e-15);
+
+  ASSERT_TRUE(ptrSTC->compareWithReference());
+
+  ptrSTC->addEpsilonColumn("Ma colonne 1", 8.0e-17);
+  ptrSTC->addEpsilonColumn("Ma colonne 2", 1.0e-15);
+
+  ASSERT_FALSE(ptrSTC->compareWithReference());
+}
+
+void SimpleTableComparatorUnitTest::
+testEpsilonRowColumn()
+{
+  // Init STO
+  ptrSTO->init("test", "dir_test");
+
+  ptrSTO->addColumn("Ma colonne 1");
+  ptrSTO->addColumn("Ma colonne 2");
+
+  ptrSTO->addRow("Ma ligne 1", RealUniqueArray{3478974.40208692104, 299512107932106.125});
+  ptrSTO->addRow("Ma ligne 2", RealUniqueArray{299538753331624.312, 3445501.01118461927});
+
+
+  // Init STC
+  ptrSTC->init(ptrSTO);
+  ASSERT_TRUE(ptrSTC->writeReferenceFile());
+
+  ptrSTO->editElement("Ma colonne 1", "Ma ligne 1", 3478974.40208692150); //OK
+  ptrSTO->editElement("Ma colonne 2", "Ma ligne 1", 299512107932106.062); //NOK
+  ptrSTO->editElement("Ma colonne 1", "Ma ligne 2", 299538753331624.250); //OK
+  ptrSTO->editElement("Ma colonne 2", "Ma ligne 2", 3445501.01118461974); //OK
+
+  ASSERT_TRUE(ptrSTC->readReferenceFile());
+
+  ptrSTC->addEpsilonColumn("Ma colonne 1", 1.0e-15);
+  ptrSTC->addEpsilonColumn("Ma colonne 2", 8.0e-17);
+
+  ptrSTC->addEpsilonRow("Ma ligne 1", 1.0e-15);
+  ptrSTC->addEpsilonRow("Ma ligne 2", 1.0e-15);
+
+  ASSERT_TRUE(ptrSTC->compareWithReference());
+
+  ptrSTC->addEpsilonRow("Ma ligne 1", 8.0e-17);
+
+  ASSERT_FALSE(ptrSTC->compareWithReference());
+}
+
+void SimpleTableComparatorUnitTest::
+testCompareOneElem()
+{
+  // Init STO
+  ptrSTO->init("test", "dir_test");
+
+  ptrSTO->addColumn("Ma colonne 1");
+  ptrSTO->addColumn("Ma colonne 2");
+
+  ptrSTO->addRow("Ma ligne 1", RealUniqueArray{3478974.40208692104, 299512107932106.125});
+  ptrSTO->addRow("Ma ligne 2", RealUniqueArray{299538753331624.312, 3445501.01118461927});
+
+
+  // Init STC
+  ptrSTC->init(ptrSTO);
+  ASSERT_TRUE(ptrSTC->writeReferenceFile());
+
+  ptrSTO->editElement("Ma colonne 1", "Ma ligne 1", 3478974.40208692150); //OK
+  ptrSTO->editElement("Ma colonne 2", "Ma ligne 1", 299512107932106.062); //NOK
+  ptrSTO->editElement("Ma colonne 1", "Ma ligne 2", 299538753331624.250); //OK
+  ptrSTO->editElement("Ma colonne 2", "Ma ligne 2", 3445501.01118461974); //OK
+
+  ASSERT_TRUE(ptrSTC->readReferenceFile());
+
+  ptrSTC->addEpsilonColumn("Ma colonne 1", 1.0e-15);
+  ptrSTC->addEpsilonColumn("Ma colonne 2", 8.0e-17);
+
+  ptrSTC->addEpsilonRow("Ma ligne 1", 8.0e-17);
+  ptrSTC->addEpsilonRow("Ma ligne 2", 1.0e-15);
+
+  ASSERT_TRUE(ptrSTC->compareElemWithReference("Ma colonne 1", "Ma ligne 1"));
+  ASSERT_FALSE(ptrSTC->compareElemWithReference("Ma colonne 2", "Ma ligne 1"));
+  ASSERT_TRUE(ptrSTC->compareElemWithReference("Ma colonne 1", "Ma ligne 2"));
+  ASSERT_TRUE(ptrSTC->compareElemWithReference("Ma colonne 2", "Ma ligne 2"));
+
+  ASSERT_FALSE(ptrSTC->compareWithReference());
+}
+
+void SimpleTableComparatorUnitTest::
+testCompareWithElem()
+{
+  // Init STO
+  ptrSTO->init("test", "dir_test");
+
+  ptrSTO->addColumn("Ma colonne 1");
+  ptrSTO->addColumn("Ma colonne 2");
+
+  ptrSTO->addRow("Ma ligne 1", RealUniqueArray{3478974.40208692104, 299512107932106.125});
+  ptrSTO->addRow("Ma ligne 2", RealUniqueArray{299538753331624.312, 3445501.01118461927});
+
+
+  // Init STC
+  ptrSTC->init(ptrSTO);
+  ASSERT_TRUE(ptrSTC->writeReferenceFile());
+  ASSERT_TRUE(ptrSTC->readReferenceFile());
+
+  ptrSTC->addEpsilonColumn("Ma colonne 1", 1.0e-15);
+  ptrSTC->addEpsilonColumn("Ma colonne 2", 8.0e-17);
+
+  ptrSTC->addEpsilonRow("Ma ligne 1", 8.0e-17);
+  ptrSTC->addEpsilonRow("Ma ligne 2", 1.0e-15);
+
+  ASSERT_TRUE(ptrSTC->compareElemWithReference(3478974.40208692150, "Ma colonne 1", "Ma ligne 1"));
+  ASSERT_FALSE(ptrSTC->compareElemWithReference(299512107932106.062, "Ma colonne 2", "Ma ligne 1"));
+  ASSERT_TRUE(ptrSTC->compareElemWithReference(299538753331624.250, "Ma colonne 1", "Ma ligne 2"));
+  ASSERT_TRUE(ptrSTC->compareElemWithReference(3445501.01118461974, "Ma colonne 2", "Ma ligne 2"));
 }
 
 void SimpleTableComparatorUnitTest::

@@ -30,10 +30,8 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 bool SimpleTableInternalComparator::
-compare(Real epsilon, bool compare_dimension_too)
+compare(bool compare_dimension_too)
 {
-  bool is_ok = true;
-
   const Integer dim1 = m_simple_table_internal_mng_reference.numberOfRows();
   const Integer dim2 = m_simple_table_internal_mng_reference.numberOfColumns();
 
@@ -47,12 +45,21 @@ compare(Real epsilon, bool compare_dimension_too)
     return false;
   }
 
+  Integer error_count = 0;
+  const Integer max_error_print = 10;
+
   for (Integer i = 0; i < dim1; i++) {
     String row = m_simple_table_internal_mng_reference.rowName(i);
     // On regarde si l'on doit comparer la ligne actuelle.
     // On regarde si la ligne est présente dans le STI to_compare.
     if (!_exploreRows(row) || m_simple_table_internal_mng_to_compare.rowPosition(row) == -1)
       continue;
+
+    auto search_epsilons_row = m_epsilons_row.find(row);
+    Real epsilon_row = -1.0;
+    if(search_epsilons_row != m_epsilons_row.end()) {
+      epsilon_row = search_epsilons_row->second;
+    }
 
     for (Integer j = 0; j < dim2; j++) {
       String column = m_simple_table_internal_mng_reference.columnName(j);
@@ -64,17 +71,77 @@ compare(Real epsilon, bool compare_dimension_too)
       const Real val1 = m_simple_table_internal_mng_reference.element(column, row, false);
       const Real val2 = m_simple_table_internal_mng_to_compare.element(column, row, false);
 
-      if (!_isNearlyEqualWithAcceptableError(val1, val2, epsilon)) {
-        m_simple_table_internal_reference->m_parallel_mng->traceMng()->warning() 
-          << std::scientific << std::setprecision(std::numeric_limits<Real>::digits10)
-          << "Values not equals -- Column name: \"" << column << "\" -- Row name: \"" << row 
-          << "\" -- Expected value: " << val1 << " -- Found value: " << val2;
-        is_ok = false;
+      auto search_epsilons_column = m_epsilons_column.find(column);
+      Real epsilon_column = -1.0;
+      if(search_epsilons_column != m_epsilons_column.end()) {
+        epsilon_column = search_epsilons_column->second;
+      }
+
+      Real final_epsilon = math::max(epsilon_row, epsilon_column);
+
+      if((final_epsilon < 0 && !math::isNearlyEqual(val1, val2))
+       ||(final_epsilon >= 0 && !math::isNearlyEqualWithEpsilon(val1, val2, final_epsilon))) {
+
+        if(error_count < max_error_print){
+          m_simple_table_internal_reference->m_parallel_mng->traceMng()->warning() 
+            << std::scientific << std::setprecision(std::numeric_limits<Real>::digits10)
+            << "Values not equals -- Column name: \"" << column << "\" -- Row name: \"" << row 
+            << "\" -- Expected value: " << val1 << " -- Found value: " << val2 << " -- Epsilon: " << final_epsilon;
+        }
+        error_count++;
       }
     }
   }
-  return is_ok;
+  if(error_count > 0){
+    m_simple_table_internal_reference->m_parallel_mng->traceMng()->warning()
+      << "Number of errors: " << error_count;
+    return false;
+  }
+  return true;
 }
+
+bool SimpleTableInternalComparator::
+compareElem(const String& column_name, const String& row_name)
+{
+  if (m_simple_table_internal_mng_to_compare.rowPosition(row_name) == -1
+   || m_simple_table_internal_mng_to_compare.columnPosition(column_name) == -1)
+    return false;
+
+  const Real val2 = m_simple_table_internal_mng_to_compare.element(column_name, row_name, false);
+
+  return compareElem(val2, column_name, row_name);
+}
+
+bool SimpleTableInternalComparator::
+compareElem(Real elem, const String& column_name, const String& row_name)
+{
+  if (m_simple_table_internal_mng_reference.rowPosition(row_name) == -1
+   || m_simple_table_internal_mng_reference.columnPosition(column_name) == -1)
+    return false;
+
+  auto search_epsilons_row = m_epsilons_row.find(row_name);
+  Real epsilon_row = -1.0;
+  if(search_epsilons_row != m_epsilons_row.end()) {
+    epsilon_row = search_epsilons_row->second;
+  }
+
+  auto search_epsilons_column = m_epsilons_column.find(column_name);
+  Real epsilon_column = -1.0;
+  if(search_epsilons_column != m_epsilons_column.end()) {
+    epsilon_column = search_epsilons_column->second;
+  }
+
+  Real final_epsilon = math::max(epsilon_row, epsilon_column);
+
+  const Real val1 = m_simple_table_internal_mng_reference.element(column_name, row_name, false);
+
+  if ((final_epsilon < 0 && !math::isNearlyEqual(val1, elem))
+   || (final_epsilon >= 0 && !math::isNearlyEqualWithEpsilon(val1, elem, final_epsilon))) {
+    return false;
+  }
+  return true;
+}
+
 
 void SimpleTableInternalComparator::
 clearComparator()
@@ -87,6 +154,9 @@ clearComparator()
 
   m_rows_to_compare.clear();
   m_columns_to_compare.clear();
+
+  m_epsilons_column.clear();
+  m_epsilons_row.clear();
 }
 
 bool SimpleTableInternalComparator::
@@ -133,6 +203,23 @@ void SimpleTableInternalComparator::
 isARegexExclusiveRows(bool is_exclusive)
 {
   m_is_excluding_regex_rows = is_exclusive;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool SimpleTableInternalComparator::
+addEpsilonColumn(const String& column_name, Real epsilon)
+{
+  m_epsilons_column[column_name] = epsilon;
+  return true;
+}
+
+bool SimpleTableInternalComparator::
+addEpsilonRow(const String& row_name, Real epsilon)
+{
+  m_epsilons_row[row_name] = epsilon;
+  return true;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -242,27 +329,6 @@ _exploreRows(const String& row_name)
   }
 
   return m_is_excluding_regex_rows;
-}
-
-/**
- * @brief Méthode permettant de savoir si deux Real sont (presque) égaux.
- * 
- * @param a Le premier Real.
- * @param b Le second Real.
- * @param error La marge d'erreur. Exemple : 0.01 signifie que l'on veux comparer
- *              uniquement la partie entière et deux chiffres après la virgule.
- *              Si l'on donne 0 comme marge d'erreur, alors on ne prend plus
- *              en compte de marge d'erreur et on compare tout le Real.
- * @return true Si les Real sont (presque) égaux.
- * @return false Si les Real ne sont pas (presque) égaux.
- */
-bool SimpleTableInternalComparator::
-_isNearlyEqualWithAcceptableError(Real a, Real b, Real error)
-{
-  if (error == 0) {
-    return a == b;
-  }
-  return (math::floor(a / error) == math::floor(b / error));
 }
 
 /*---------------------------------------------------------------------------*/

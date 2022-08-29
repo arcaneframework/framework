@@ -74,12 +74,40 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalComparator
   /**
    * @brief Méthode permettant de comparer les valeurs des deux STI.
    * 
-   * @param epsilon La marge d'erreur.
    * @param compare_dimension_too Si l'on doit comparer les dimensions des STI.
    * @return true S'il n'y a pas de différences.
    * @return false S'il y a au moins une différence.
    */
-  virtual bool compare(Real epsilon = 1.0, bool compare_dimension_too = false) = 0;
+  virtual bool compare(bool compare_dimension_too = false) = 0;
+
+  /**
+   * @brief Méthode permettant de comparer uniquement un élement.
+   * Les deux SimpleTableInternal sont représentés par des Ref,
+   * donc toujours à jour.
+   * Cette méthode peut être utilisé pendant le calcul, permettant
+   * de comparer les valeurs au fur et à mesure de l'avancement du
+   * calcul, au lieu de faire une comparaison final à la fin (il est
+   * tout de même possible de faire les deux).
+   * 
+   * @param column_name Le nom de la colonne où se trouve l'élément.
+   * @param row_name Le nom de la ligne où se trouve l'élément.
+   * @return true Si les deux valeurs sont égales.
+   * @return false Si les deux valeurs sont différentes.
+   */
+  virtual bool compareElem(const String& column_name, const String& row_name) = 0;
+
+  /**
+   * @brief Méthode permettant de comparer une valeur avec
+   * une valeur du tableau de référence.
+   * Cette méthode n'utilise pas l'internal 'toCompare'.
+   * 
+   * @param elem La valeur à comparer.
+   * @param column_name Le nom de la colonne où se trouve l'élément de référence.
+   * @param row_name Le nom de la ligne où se trouve l'élément de référence.
+   * @return true Si les deux valeurs sont égales.
+   * @return false Si les deux valeurs sont différentes.
+   */
+  virtual bool compareElem(Real elem, const String& column_name, const String& row_name) = 0;
 
   /**
    * @brief Méthode permettant de vider les tableaux de comparaison
@@ -158,6 +186,37 @@ class ARCANE_CORE_EXPORT ISimpleTableInternalComparator
    * @param is_exclusive Si l'expression régulière est excluante.
    */
   virtual void isARegexExclusiveRows(bool is_exclusive) = 0;
+
+  /**
+   * @brief Méthode permettant de définir un epsilon pour une colonne donnée.
+   * Cet epsilon doit être positif pour être pris en compte.
+   * S'il y a confit avec un epsilon de ligne (défini avec addEpsilonRow()),
+   * c'est l'epsilon le plus grand qui est pris en compte.
+   * @note Si un epsilon a déjà été défini sur cette colonne, alors l'ancien
+   * epsilon sera remplacé.
+   * 
+   * @param column_name Le nom de la colonne où l'epsilon sera pris en compte.
+   * @param epsilon La marge d'erreur epsilon.
+   * @return true Si l'epsilon a bien pu être défini.
+   * @return false Si l'epsilon n'a pas pu être défini.
+   */
+  virtual bool addEpsilonColumn(const String& column_name, Real epsilon) = 0;
+
+  /**
+   * @brief Méthode permettant de définir un epsilon pour une ligne donnée.
+   * Cet epsilon doit être positif pour être pris en compte.
+   * S'il y a confit avec un epsilon de colonne (défini avec addEpsilonColumn()),
+   * c'est l'epsilon le plus grand qui est pris en compte.
+   * @note Si un epsilon a déjà été défini sur cette ligne, alors l'ancien
+   * epsilon sera remplacé.
+   * 
+   * @param column_name Le nom de la ligne où l'epsilon sera pris en compte.
+   * @param epsilon La marge d'erreur epsilon.
+   * @return true Si l'epsilon a bien pu être défini.
+   * @return false Si l'epsilon n'a pas pu être défini.
+   */
+  virtual bool addEpsilonRow(const String& row_name, Real epsilon) = 0;
+
 
   /**
    * @brief Méthode permettant de récupérer une référence vers l'objet

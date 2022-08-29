@@ -67,7 +67,10 @@ class SimpleCsvComparatorService
   bool writeReferenceFile(Integer rank) override;
   bool readReferenceFile(Integer rank) override;
   bool isReferenceExist(Integer rank) override;
-  bool compareWithReference(Integer rank, Real epsilon, bool compare_dimension_too) override;
+  bool compareWithReference(Integer rank, bool compare_dimension_too) override;
+
+  bool compareElemWithReference(const String& column_name, const String& row_name, Integer rank) override;
+  bool compareElemWithReference(Real elem, const String& column_name, const String& row_name, Integer rank) override;
 
   bool addColumnForComparing(const String& column_name) override;
   bool addRowForComparing(const String& row_name) override;
@@ -80,6 +83,9 @@ class SimpleCsvComparatorService
 
   void isARegexExclusiveColumns(bool is_exclusive) override;
   void isARegexExclusiveRows(bool is_exclusive) override;
+
+  bool addEpsilonColumn(const String& column_name, Real epsilon) override;
+  bool addEpsilonRow(const String& row_name, Real epsilon) override;
 
  private:
   bool _exploreColumn(Integer position);

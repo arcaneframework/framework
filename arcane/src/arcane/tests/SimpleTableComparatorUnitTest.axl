@@ -17,6 +17,11 @@
     <test name="Test regex row" method-name="testRegexRow"/>
     <test name="Test regex column" method-name="testRegexColumn"/>
     <test name="Test regex row and column" method-name="testRegexRowColumn"/>
+    <test name="Test epsilon row" method-name="testEpsilonRow"/>
+    <test name="Test epsilon column" method-name="testEpsilonColumn"/>
+    <test name="Test epsilon row and column" method-name="testEpsilonRowColumn"/>
+    <test name="Test compare one elem" method-name="testCompareOneElem"/>
+    <test name="Test compare with elem" method-name="testCompareWithElem"/>
   </tests> 
 
   <options>

@@ -25,6 +25,8 @@
 #include "arcane/utils/Array.h"
 #include "arcane/utils/FatalErrorException.h"
 
+#include <map>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -49,6 +51,8 @@ class SimpleTableInternalComparator
   , m_is_excluding_regex_columns(false)
   , m_is_excluding_array_rows(false)
   , m_is_excluding_array_columns(false)
+  , m_epsilons_column()
+  , m_epsilons_row()
   {
     if (sti_ref.isNull() || sti_to_compare.isNull())
       ARCANE_FATAL("La réference passée en paramètre est Null.");
@@ -65,13 +69,18 @@ class SimpleTableInternalComparator
   , m_is_excluding_regex_columns(false)
   , m_is_excluding_array_rows(false)
   , m_is_excluding_array_columns(false)
+  , m_epsilons_column()
+  , m_epsilons_row()
   {
   }
 
   virtual ~SimpleTableInternalComparator() = default;
 
  public:
-  bool compare(Real epsilon, bool compare_dimension_too) override;
+  bool compare(bool compare_dimension_too) override;
+
+  bool compareElem(const String& column_name, const String& row_name) override;
+  bool compareElem(Real elem, const String& column_name, const String& row_name) override;
 
   void clearComparator() override;
 
@@ -87,6 +96,10 @@ class SimpleTableInternalComparator
   void isARegexExclusiveColumns(bool is_exclusive) override;
   void isARegexExclusiveRows(bool is_exclusive) override;
 
+  bool addEpsilonColumn(const String& column_name, Real epsilon) override;
+  bool addEpsilonRow(const String& row_name, Real epsilon) override;
+
+
   Ref<SimpleTableInternal> internalRef() override;
   void setInternalRef(const Ref<SimpleTableInternal>& simple_table_internal) override;
 
@@ -96,7 +109,6 @@ class SimpleTableInternalComparator
  protected:
   bool _exploreColumn(const String& column_name);
   bool _exploreRows(const String& row_name);
-  bool _isNearlyEqualWithAcceptableError(Real a, Real b, Real error);
 
  protected:
   Ref<SimpleTableInternal> m_simple_table_internal_reference;
@@ -116,6 +128,9 @@ class SimpleTableInternalComparator
 
   StringUniqueArray m_columns_to_compare;
   bool m_is_excluding_array_columns;
+
+  std::map<String, Real> m_epsilons_column;
+  std::map<String, Real> m_epsilons_row;
 };
 
 /*---------------------------------------------------------------------------*/
