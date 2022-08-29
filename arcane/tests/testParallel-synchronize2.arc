@@ -17,6 +17,7 @@
         <x><n>100</n><length>1.0</length></x>
         <y><n>10</n><length>1.0</length></y>
         <z><n>40</n><length>1.0</length></z>
+        <face-numbering-version>1</face-numbering-version>
       </generator>
     </mesh>
   </meshes>

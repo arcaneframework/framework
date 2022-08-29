@@ -16,6 +16,7 @@
         <x><n>4</n><length>2.0</length></x>
         <y><n>3</n><length>2.0</length></y>
         <z><n>2</n><length>4.0</length></z>
+       <face-numbering-version>1</face-numbering-version>
       </generator>
       <initialization>
         <variable><name>Density</name><value>1.0</value><group>ZG</group></variable>

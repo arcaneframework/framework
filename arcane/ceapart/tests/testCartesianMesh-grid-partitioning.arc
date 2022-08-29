@@ -40,6 +40,7 @@
        <y><n>6</n><length>0.5</length><progression>1.1</progression></y>
        <y><n>6</n><length>0.8</length><progression>1.2</progression></y>
        <y><n>6</n><length>0.4</length><progression>1.3</progression></y>
+       <face-numbering-version>1</face-numbering-version>
      </generator>
    </mesh>
  </meshes>

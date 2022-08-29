@@ -37,6 +37,7 @@
        <x><n>30</n><length>6.0</length></x>
        <y><n>30</n><length>6.0</length></y>
        <z><n>30</n><length>6.0</length></z>
+       <face-numbering-version>1</face-numbering-version>
      </generator>
    </mesh>
  </meshes>

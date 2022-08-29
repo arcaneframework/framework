@@ -39,7 +39,7 @@
       <description>Vrai si on génère les groupes pour un cas test de sod (interne à Arcane)</description>
     </simple>
 
-    <simple name="face-numbering-version" type="integer" default="1">
+    <simple name="face-numbering-version" type="integer" default="4">
       <description>
         Version de l'algorithme pour la numérotation des faces. La
         version 1 correspond à la numérotation non structurée. La
