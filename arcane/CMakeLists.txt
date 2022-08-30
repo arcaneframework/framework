@@ -1201,6 +1201,11 @@ arcane_gen_package_config_file(arcane_packages.h)
 # ----------------------------------------------------------------------------
 ## Création et génération de ArcaneConfig.cmake ##
 
+set(ARCANE_EXPORT_PACKAGES TRUE)
+if (FRAMEWORK_NO_EXPORT_PACKAGES)
+  set(ARCANE_EXPORT_PACKAGES FALSE)
+endif()
+
 # ----------------------------------------------------------------------------
 # Créé une bibliothèque interface qui s'appelle 'arcane_full' et qui contient
 # la liste des bibliothèques utilisées par un code.
@@ -1262,9 +1267,9 @@ install(FILES
 set(_ARCANE_PACKAGES_ROOTINFO)
 foreach(package ${ARCANE_PACKAGE_LIST})
   if (${package}_DIR)
-    set(_ARCANE_PACKAGES_ROOTINFO "${_ARCANE_PACKAGES_ROOTINFO}set(${package}_DIR \"${${package}_DIR}\")\n")
+    set(_ARCANE_PACKAGES_ROOTINFO "${_ARCANE_PACKAGES_ROOTINFO}arcane_set_if_unset(${package}_DIR \"${${package}_DIR}\")\n")
   elseif (${package}_ROOT)
-    set(_ARCANE_PACKAGES_ROOTINFO "${_ARCANE_PACKAGES_ROOTINFO}set(${package}_ROOT \"${${package}_ROOT}\")\n")
+    set(_ARCANE_PACKAGES_ROOTINFO "${_ARCANE_PACKAGES_ROOTINFO}arcane_set_if_unset(${package}_ROOT \"${${package}_ROOT}\")\n")
   endif()
 endforeach()
 file(APPEND ${generated_config_dir}/ArcaneConfigCache.cmake ${_ARCANE_PACKAGES_ROOTINFO})

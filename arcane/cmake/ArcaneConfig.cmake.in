@@ -14,11 +14,23 @@ set(ARCANE_PREFIX_DIR "${PACKAGE_PREFIX_DIR}")
 include(${CMAKE_CURRENT_LIST_DIR}/ArcanePathHints.cmake)
 
 # ----------------------------------------------------------------------------
+# Ajoute lecture des chemins par défaut si ces derniers ne sont pas
+# spécifiés par l'utilisateur. Ajoute aussi au CMAKE_PREFIX_PATH celui
+# utilisé lors de la configuration de Arcane. Cela permet à l'utilisateur de
+# le surcharger sans être obligé de le spécifier
+include(${CMAKE_CURRENT_LIST_DIR}/ArcaneConfigCache.cmake)
+if (ARCANE_CMAKE_PREFIX_PATH)
+  list(APPEND CMAKE_PREFIX_PATH "${ARCANE_CMAKE_PREFIX_PATH}")
+endif()
+
+# ----------------------------------------------------------------------------
 # Récupère le chemin de 'arccore'
 # Il faut dire à Arcane de ne pas faire les find_dependency() car cela
 # nécessite l'utilisation de Arccon et aussi de positionner par l'utilisateur
 # les chemins des différents packages.
-set(ARCCORE_NO_FIND_DEPENDENCY TRUE)
+if (@ARCANE_EXPORT_PACKAGES@)
+  set(ARCCORE_NO_FIND_DEPENDENCY TRUE)
+endif()
 find_package(Arccore REQUIRED
   HINTS "${ARCANE_ARCCORE_HINT_PATH}"
   "${ARCANE_PREFIX_DIR}/${ARCANE_ARCCORE_CONFIG_INSTALL_DIR}"
