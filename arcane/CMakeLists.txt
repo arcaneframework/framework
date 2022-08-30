@@ -994,6 +994,15 @@ message(STATUS "RELEASE FLAGS TYPE ${CMAKE_CXX_FLAGS_RELEASE}")
 set(ARCANE_ITEM_CONNECTIVITY_SIZE_MODE 2 CACHE STRING "Item connectivity size mode")
 
 # ----------------------------------------------------------------------------
+# Configuration pour l'implémentation de ItemEnumerator.
+# Cette configuration est uniquement pour les développeurs à des fins de test.
+if (NOT ARCANE_ITEMENUMERATOR_VERSION)
+  set(ARCANE_ITEMENUMERATOR_VERSION 3)
+endif ()
+
+set(ARCANE_ITEMENUMERATOR_VERSION ${ARCANE_ITEMENUMERATOR_VERSION} CACHE STRING "Implementation version of ItemEnumerator")
+
+# ----------------------------------------------------------------------------
 
 macro(ARCANE_WRITE_ONE_CONFIG varname configname)
   if(${varname})
@@ -1033,6 +1042,7 @@ function(ARCANE_GEN_CORE_CONFIG_FILE filename)
   set(_STR "${_STR}#define ARCANE_ITEM_CONNECTIVITY_SIZE_MODE_LEGACY 1\n")
   set(_STR "${_STR}#define ARCANE_ITEM_CONNECTIVITY_SIZE_MODE_NEW 2\n")
   set(_STR "${_STR}#define ARCANE_ITEM_CONNECTIVITY_SIZE_MODE_DYNAMIC 3\n")
+  set(_STR "${_STR}#define ARCANE_ITEMENUMERATOR_VERSION ${ARCANE_ITEMENUMERATOR_VERSION}\n")
   ARCANE_WRITE_ONE_CONFIG(ARCANE_USE_THREAD ARCANE_HAS_THREAD)
   ARCANE_WRITE_ONE_CONFIG(ARCCORE_CHECK ARCANE_CHECK)
   ARCANE_WRITE_ONE_CONFIG(ARCCORE_DEBUG ARCANE_DEBUG)

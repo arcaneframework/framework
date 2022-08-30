@@ -70,7 +70,9 @@ namespace Arcane
 class ARCANE_CORE_EXPORT Item
 : protected impl::ItemBase
 {
-  friend class ItemEnumeratorBaseT<Item>;
+  friend class ItemEnumeratorBaseV1T<Item>;
+  friend class ItemEnumeratorBaseV2T<Item>;
+  friend class ItemEnumeratorBaseV3T<Item>;
 
  public:
 
@@ -381,7 +383,9 @@ namespace Arcane
 class ARCANE_CORE_EXPORT Node
 : public Item
 {
-  friend class ItemEnumeratorBaseT<Node>;
+  friend class ItemEnumeratorBaseV1T<Node>;
+  friend class ItemEnumeratorBaseV2T<Node>;
+  friend class ItemEnumeratorBaseV3T<Node>;
 
  public:
   /*!
@@ -524,7 +528,9 @@ class ARCANE_CORE_EXPORT Node
 class ARCANE_CORE_EXPORT ItemWithNodes
 : public Item
 {
-  friend class ItemEnumeratorBaseT<ItemWithNodes>;
+  friend class ItemEnumeratorBaseV1T<ItemWithNodes>;
+  friend class ItemEnumeratorBaseV2T<ItemWithNodes>;
+  friend class ItemEnumeratorBaseV3T<ItemWithNodes>;
 
  public:
   
@@ -598,7 +604,9 @@ class ARCANE_CORE_EXPORT ItemWithNodes
 class ARCANE_CORE_EXPORT Edge
 : public ItemWithNodes
 {
-  friend class ItemEnumeratorBaseT<Edge>;
+  friend class ItemEnumeratorBaseV1T<Edge>;
+  friend class ItemEnumeratorBaseV2T<Edge>;
+  friend class ItemEnumeratorBaseV3T<Edge>;
 
  public:
   /*!
@@ -710,7 +718,9 @@ class ARCANE_CORE_EXPORT Edge
 class ARCANE_CORE_EXPORT Face
 : public ItemWithNodes
 {
-  friend class ItemEnumeratorBaseT<Face>;
+  friend class ItemEnumeratorBaseV1T<Face>;
+  friend class ItemEnumeratorBaseV2T<Face>;
+  friend class ItemEnumeratorBaseV3T<Face>;
 
  public:
   /*!
@@ -935,7 +945,9 @@ class ARCANE_CORE_EXPORT Face
 class ARCANE_CORE_EXPORT Cell
 : public ItemWithNodes
 {
-  friend class ItemEnumeratorBaseT<Cell>;
+  friend class ItemEnumeratorBaseV1T<Cell>;
+  friend class ItemEnumeratorBaseV2T<Cell>;
+  friend class ItemEnumeratorBaseV3T<Cell>;
 
  public:
   /*!
@@ -1105,7 +1117,9 @@ class ARCANE_CORE_EXPORT Cell
 class Particle
 : public Item
 {
-  friend class ItemEnumeratorBaseT<Particle>;
+  friend class ItemEnumeratorBaseV1T<Particle>;
+  friend class ItemEnumeratorBaseV2T<Particle>;
+  friend class ItemEnumeratorBaseV3T<Particle>;
 
  public:
   
@@ -1194,7 +1208,9 @@ class Particle
 class DoF
 : public Item
 {
-  friend class ItemEnumeratorBaseT<DoF>;
+  friend class ItemEnumeratorBaseV1T<DoF>;
+  friend class ItemEnumeratorBaseV2T<DoF>;
+  friend class ItemEnumeratorBaseV3T<DoF>;
 
  public:
 
