@@ -64,6 +64,9 @@
 #include "arcane/impl/Application.h"
 #include "arcane/impl/ConfigurationReader.h"
 
+#include "arcane/ItemEnumerator.h"
+#include "arcane/Item.h"
+
 #include "arccore_version.h"
 
 #ifdef ARCANE_OS_WIN32
@@ -513,7 +516,7 @@ build()
  
   m_trace->info(4) << "*** UserName: " << m_user_name;
   m_trace->info(4) << "*** HomeDirectory: " << platform::getHomeDirectory();
- 
+
 #ifdef ARCANE_CHECK_MEMORY
   arcaneGlobalMemoryInfo()->setTraceMng(m_trace);
 #endif
@@ -706,6 +709,13 @@ initialize()
         m_trace->info() << "WARNING: enumerator tracing is not available when using multi-tasking.";
     }
   }
+
+  m_trace->info() << "sizeof(ItemInternal)=" << sizeof(ItemInternal)
+                  << " sizeof(ItemInternalConnectivityList)=" << sizeof(ItemInternalConnectivityList)
+                  << " sizeof(ItemSharedInfo)=" << sizeof(ItemSharedInfo);
+  m_trace->info() << "sizeof(Item)=" << sizeof(Item)
+                  << " sizeof(ItemEnumerator)=" << sizeof(Item)
+                  << " ItemEnumeratorVersion=" << ItemEnumerator::version();
 }
 
 /*---------------------------------------------------------------------------*/
