@@ -997,7 +997,7 @@ set(ARCANE_ITEM_CONNECTIVITY_SIZE_MODE 2 CACHE STRING "Item connectivity size mo
 # Configuration pour l'implémentation de ItemEnumerator.
 # Cette configuration est uniquement pour les développeurs à des fins de test.
 if (NOT ARCANE_ITEMENUMERATOR_VERSION)
-  set(ARCANE_ITEMENUMERATOR_VERSION 2)
+  set(ARCANE_ITEMENUMERATOR_VERSION 3)
 endif ()
 
 set(ARCANE_ITEMENUMERATOR_VERSION ${ARCANE_ITEMENUMERATOR_VERSION} CACHE STRING "Implementation version of ItemEnumerator")
