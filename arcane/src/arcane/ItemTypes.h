@@ -186,7 +186,7 @@ template<typename ItemType> using ItemEnumeratorBaseT = ItemEnumeratorBaseV1T<It
 template<typename ItemType> using ItemEnumeratorBaseT = ItemEnumeratorBaseV2T<ItemType>;
 #elif ARCANE_ITEMENUMERATOR_VERSION == 3
 template<typename ItemType> using ItemEnumeratorBaseT = ItemEnumeratorBaseV3T<ItemType>;
-#elif
+#else
 #error "Invalid value for define ARCANE_ITEMENUMERATOR_VERSION. Valid values are 1, 2 or 3"
 #endif
 
