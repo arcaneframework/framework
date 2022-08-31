@@ -118,14 +118,22 @@ endif()
 
 # Indique qu'on souhaite exporter dans 'ArcaneTargets' les cibles des packages
 # trouvés par 'Arccon'.
-option(ARCANE_WANT_ARCCON_EXPORT_TARGET "Export arccon targets in arcane." ON)
+option(ARCANE_WANT_ARCCON_EXPORT_TARGET "Export arccon targets in arcane." OFF)
+option(ARCANE_USE_FIND_DEPENDENCIES "Use find_dependency() in ArcaneConfig.cmake." ON)
+
+# Si on n'utilise pas find_dependency, il faut alors forcément exporter les packages
+# dans 'ArcaneTargets'
+if (NOT ARCANE_USE_FIND_DEPENDENCIES)
+  set(ARCANE_WANT_ARCCON_EXPORT_TARGET ON)
+endif()
+
 if(ARCANE_WANT_ARCCON_EXPORT_TARGET)
   if(NOT FRAMEWORK_NO_EXPORT_PACKAGES)
     set(ARCCON_EXPORT_TARGET ArcaneTargets)
   endif()
 endif()
 
-option(ARCANE_USE_FIND_DEPENDENCIES "Use find_dependency() in ArcaneConfig.cmake." ON)
+
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
