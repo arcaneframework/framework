@@ -8,9 +8,22 @@
  
 arccon_return_if_package_found(Parmetis)
 
-find_path(Parmetis_INCLUDE_DIR parmetis.h)
-
 set(Parmetis_FOUND FALSE)
+
+set(_SAVED_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
+unset(CMAKE_MODULE_PATH)
+find_package(parmetis CONFIG QUIET)
+set(CMAKE_MODULE_PATH ${_SAVED_CMAKE_MODULE_PATH})
+
+# Si on a un fichier ParmetisConfig.cmake, alors cette cible est définie et on
+# l'utilise directement
+if (TARGET parmetis)
+  message(STATUS "Found 'parmetis' CMake configuration file")
+  arccon_register_cmake_config_target(Parmetis CONFIG_TARGET_NAME parmetis PACKAGE_NAME Parmetis)
+  return()
+endif()
+
+find_path(Parmetis_INCLUDE_DIR parmetis.h)
 
 if(Parmetis_INCLUDE_DIR)
   set(Parmetis_FOUND TRUE)
@@ -32,18 +45,12 @@ else()
 
   find_path(Metis_INCLUDE_DIR NAMES metis.h PATHS ${Parmetis_INCLUDE_DIR})
   message(STATUS "Metis_INCLUDE_DIR = ${Metis_INCLUDE_DIR}")
-
 endif()
-
-# Parmetis > 4 does not require metis when compiled as a shared library
-#if(NOT METIS_LIBRARY)
-#  SET( Parmetis_FOUND "NO" )
-#endif(NOT METIS_LIBRARY)
 
 message(STATUS "Parmetis_LIBRARY = ${Parmetis_LIBRARY}")
 message(STATUS "Parmetis_INCLUDE_DIR = ${Parmetis_INCLUDE_DIR}")
 
-if(Parmetis_FOUND)
+if (Parmetis_FOUND)
   set(Parmetis_LIBRARIES ${Parmetis_LIBRARY} ${Metis_LIBRARY})
   set(Parmetis_INCLUDE_DIRS ${Parmetis_INCLUDE_DIR} ${Metis_INCLUDE_DIR})
   arccon_register_package_library(Parmetis Parmetis)
