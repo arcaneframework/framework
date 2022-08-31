@@ -7,8 +7,17 @@ if(WIN32)
   cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 endif()
 
+# ----------------------------------------------------------------------------
 
+# Indique si on fait un find_dependency des packages publics
 set(ARCANE_USE_FIND_DEPENDENCIES @ARCANE_USE_FIND_DEPENDENCIES@)
+
+# Indique si on fait charge implicitement les chemins des packages issus
+# de la configuration de Arcane. Cela permet à l'utilisateur de ne pas les
+# spécifier et de garantir la cohérence des chemins des packages.
+if(NOT DEFINED ARCANE_USE_CONFIGURATION_PATH)
+  set(ARCANE_USE_CONFIGURATION_PATH TRUE)
+endif()
 
 # ----------------------------------------------------------------------------
 # Défini une variable 'ARCANE_PREFIX_DIR' car PACKAGE_PREFIX_DIR
@@ -21,9 +30,12 @@ include(${CMAKE_CURRENT_LIST_DIR}/ArcanePathHints.cmake)
 # spécifiés par l'utilisateur. Ajoute aussi au CMAKE_PREFIX_PATH celui
 # utilisé lors de la configuration de Arcane. Cela permet à l'utilisateur de
 # le surcharger sans être obligé de le spécifier
-include(${CMAKE_CURRENT_LIST_DIR}/ArcaneConfigCache.cmake)
-if (ARCANE_CMAKE_PREFIX_PATH)
-  list(APPEND CMAKE_PREFIX_PATH "${ARCANE_CMAKE_PREFIX_PATH}")
+
+if (ARCANE_USE_CONFIGURATION_PATH)
+  include(${CMAKE_CURRENT_LIST_DIR}/ArcaneConfigCache.cmake)
+  if (ARCANE_CMAKE_PREFIX_PATH)
+    list(APPEND CMAKE_PREFIX_PATH "${ARCANE_CMAKE_PREFIX_PATH}")
+  endif()
 endif()
 
 # ----------------------------------------------------------------------------
@@ -38,9 +50,9 @@ endif()
 
 # ----------------------------------------------------------------------------
 # Récupère le chemin de 'arccore'
-# Il faut dire à Arcane de ne pas faire les find_dependency() car cela
-# nécessite l'utilisation de Arccon et aussi de positionner par l'utilisateur
-# les chemins des différents packages.
+# Si on export les packages, i faut dire à Arccore de ne pas faire
+# les find_dependency() car cela nécessite l'utilisation de Arccon et aussi
+# de positionner par l'utilisateur les chemins des différents packages.
 if (@ARCANE_EXPORT_PACKAGES@)
   set(ARCCORE_NO_FIND_DEPENDENCY TRUE)
 endif()
