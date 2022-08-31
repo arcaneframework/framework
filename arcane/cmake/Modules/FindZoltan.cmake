@@ -1,4 +1,5 @@
-# Find Zoltan includes and library
+﻿# Find Zoltan includes and library
+arccon_return_if_package_found(Zoltan)
 
 # Ce package est fourni par trilinos. Il est aussi possible pour les anciennes
 # versions (avant 2012) de le trouver directement.
@@ -23,3 +24,10 @@ endif()
 
 # Si pas trouvé via trilinos, essaie de le trouver manuellement
 arccon_find_legacy_package(NAME Zoltan LIBRARIES zoltan HEADERS zoltan.h)
+
+# ----------------------------------------------------------------------------
+# Local Variables:
+# tab-width: 2
+# indent-tabs-mode: nil
+# coding: utf-8-with-signature
+# End:

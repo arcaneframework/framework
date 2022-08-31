@@ -1,1 +1,11 @@
+﻿# -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+
+# Macro pour positionner une variable si elle ne l'est pas déjà
+macro(arcane_set_if_unset)
+  if(NOT ${ARGV0})
+    message(VERBOSE "SET: ${ARGV0} to ${ARGV1}")
+    set(${ARGV0} "${ARGV1}")
+  endif()
+endmacro()
+
 set(ARCANE_CMAKE_PREFIX_PATH "@CMAKE_PREFIX_PATH@")

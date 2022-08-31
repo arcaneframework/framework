@@ -6,6 +6,8 @@
 # Parmetis_LIBRARIES, the libraries to link against to use Parmetis.
 # Parmetis_FOUND, If false, do not try to use Parmetis.
  
+arccon_return_if_package_found(Parmetis)
+
 find_path(Parmetis_INCLUDE_DIR parmetis.h)
 
 set(Parmetis_FOUND FALSE)

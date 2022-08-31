@@ -1,4 +1,4 @@
-#
+﻿#
 # Find 'GeometryKernel' headers and libraries.
 #
 # This module defines
@@ -6,9 +6,7 @@
 # GEOMETRYKERNEL_LIBRARIES
 # GEOMETRYKERNEL_FOUND, If false, do not try to use it
 
-if (TARGET arcconpkg_GeometryKernel)
-  return()
-endif()
+arccon_return_if_package_found(GeometryKernel)
 
 # lib extension depends on build type
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
@@ -45,3 +43,10 @@ if(GEOMETRYKERNEL_INCLUDE_DIR AND GEOMETRYKERNEL_LIBRARY) # AND GEOMETRYKERNEL_L
   # externe puisqu'il référence des sources de Arcane. Il ne doit donc pas être exporté.
   #arccon_register_package_library(GeometryKernel GEOMETRYKERNEL)
 endif()
+
+# ----------------------------------------------------------------------------
+# Local Variables:
+# tab-width: 2
+# indent-tabs-mode: nil
+# coding: utf-8-with-signature
+# End:

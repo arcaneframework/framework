@@ -14,7 +14,7 @@ if (NOT FRAMEWORK_BUILD_COMPONENT)
   set (FRAMEWORK_BUILD_COMPONENT all)
 endif()
 
-option(FRAMEWORK_NO_EXPORT_PACKAGES "True if we don't want to export packages found by arccon in {Arccore|Arcane}Targets.cmake.")
+option(FRAMEWORK_NO_EXPORT_PACKAGES "True if we don't want to export packages found by arccon in {Arccore|Arcane}Targets.cmake." ON)
 
 if (FRAMEWORK_BUILD_COMPONENT STREQUAL all)
   # Compile Arcane et ses composantes en même temps

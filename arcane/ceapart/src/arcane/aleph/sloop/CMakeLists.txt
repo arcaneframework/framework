@@ -1,6 +1,9 @@
 message(STATUS "Parsing ${CMAKE_CURRENT_SOURCE_DIR}")
-set(PKGS MPI Sloop SuperLU)
-arcane_find_package(Sloop)
+set(PKGS Sloop SuperLU MPI)
+foreach(package ${PKGS})
+  arcane_find_package(${package})
+endforeach()
+
 if (NOT TARGET arccon::sloop)
   message(STATUS "Removing aleph/sloop because package 'Sloop' is not available")
   return()
@@ -20,10 +23,6 @@ arcane_add_library(arcane_aleph_sloop
 
 target_include_directories(arcane_aleph_sloop PUBLIC $<BUILD_INTERFACE:${ARCANECEA_SRC_PATH}> $<INSTALL_INTERFACE:include>)
 target_link_libraries(arcane_aleph_sloop PUBLIC arcane_core)
-target_link_libraries(arcane_aleph_sloop PRIVATE arccon::sloop)
-if (TARGET arccon::superlu)
-  target_link_libraries(arcane_aleph_sloop PRIVATE arccon::superlu)
-endif()
-target_link_libraries(arcane_aleph_sloop PRIVATE arccon::MPI)
 
+arcane_add_arccon_packages(arcane_aleph_sloop PRIVATE ${PKGS})
 arcane_register_library(arcane_aleph_sloop OPTIONAL)

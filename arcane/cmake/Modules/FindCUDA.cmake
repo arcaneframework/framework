@@ -1,6 +1,9 @@
+Ôªø# NOTE: Ce FindCUDA n'est utilis√© que pour 'aleph_cuda' et il est obsol√®te.
+# Il faudrait utiliser find_package(CUDAToolkit) √† la place
+
 # A partir de CMake 3.0, le package CUDA est disponible
-# Pour l'instant on ne s'en sert que pour rÈcupÈrer le numÈro
-# de version de CUDA et s'il est infÈrieur ‡ 7 on n'utilise
+# Pour l'instant on ne s'en sert que pour r√©cup√©rer le num√©ro
+# de version de CUDA et s'il est inf√©rieur √† 7 on n'utilise
 # par CUDA car il n'y aura pas le support du C++11.
 set(_SAVED_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
 unset(CMAKE_MODULE_PATH)
@@ -41,3 +44,10 @@ if (CUDA_VERSION_MAJOR GREATER 6)
 else ()
   message(STATUS "Disabling cuda because version is too old (version 7+ required)")
 endif ()
+
+# ----------------------------------------------------------------------------
+# Local Variables:
+# tab-width: 2
+# indent-tabs-mode: nil
+# coding: utf-8-with-signature
+# End:

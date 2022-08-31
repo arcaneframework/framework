@@ -284,7 +284,10 @@ function(arcane_add_arccon_packages target visibility)
     endif()
     #message(STATUS "Check add package '${_PKG}'")
     if (TARGET ${_PKG})
-      #message(STATUS "Add package '${_PKG}'")
+      #message(STATUS "Add package '${_PKG}' VISIBILITY=${visibility}")
+      if (NOT ${visibility} STREQUAL PRIVATE)
+        list(APPEND ARCANE_PUBLIC_FOUND_PACKAGES ${package})
+      endif()
       target_link_libraries(${target} ${visibility} ${_PKG})
 
       # Récupère les bibliothèques définies dans le package.
@@ -312,6 +315,7 @@ function(arcane_add_arccon_packages target visibility)
       target_link_libraries(${target} PUBLIC "-Wl,-rpath,${path}")
     endforeach()
   endif()
+  set(ARCANE_PUBLIC_FOUND_PACKAGES ${ARCANE_PUBLIC_FOUND_PACKAGES} CACHE STRING "List of public external packages founds" FORCE)
 endfunction()
 
 # ----------------------------------------------------------------------------

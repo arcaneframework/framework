@@ -118,12 +118,22 @@ endif()
 
 # Indique qu'on souhaite exporter dans 'ArcaneTargets' les cibles des packages
 # trouvés par 'Arccon'.
-option(ARCANE_WANT_ARCCON_EXPORT_TARGET "Export arccon targets in arcane." ON)
+option(ARCANE_WANT_ARCCON_EXPORT_TARGET "Export arccon targets in arcane." OFF)
+option(ARCANE_USE_FIND_DEPENDENCIES "Use find_dependency() in ArcaneConfig.cmake." ON)
+
+# Si on n'utilise pas find_dependency, il faut alors forcément exporter les packages
+# dans 'ArcaneTargets'
+if (NOT ARCANE_USE_FIND_DEPENDENCIES)
+  set(ARCANE_WANT_ARCCON_EXPORT_TARGET ON)
+endif()
+
 if(ARCANE_WANT_ARCCON_EXPORT_TARGET)
   if(NOT FRAMEWORK_NO_EXPORT_PACKAGES)
     set(ARCCON_EXPORT_TARGET ArcaneTargets)
   endif()
 endif()
+
+
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -395,6 +405,8 @@ endif()
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/${CMAKE_FIND_DIR})
 
 # ----------------------------------------------------------------------------
+# OBSOLÈTE (09/2022): Utiliser arccon_register_package_library() à la place
+#
 # Macro pour créer une bibliothèque interface pour référencer facilement
 # le package dans les dépendances. 'lib_name' contiend le nom
 # de la bibliothèque interface et 'var_name' le prefix des variables
@@ -451,6 +463,8 @@ set(ARCANE_LIBRARIES)
 # (par exemple 'arcane_utils' et 'Arcane::arcane_utils')
 set(ARCANE_EXPORTED_TARGETS)
 set(ARCANE_EXPORTED_TARGETS "" CACHE STRING "List of exported targets" FORCE)
+set(ARCANE_PUBLIC_FOUND_PACKAGES)
+set(ARCANE_PUBLIC_FOUND_PACKAGES "" CACHE STRING "List of public external packages founds" FORCE)
 
 # ----------------------------------------------------------------------------
 # Ajoute à ARCANE_LIBRARIES les cibles issues de 'Arccore' pour qu'elles soient
@@ -1100,8 +1114,8 @@ endfunction()
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-# Cette propriété est utilisée dans le fichier de configuration généré et il ne
-# faut pas la supprimer.
+# Ces propriétés sont utilisées dans le fichier de configuration généré et il ne
+# faut pas les supprimer.
 get_property(ARCANE_CMAKE_PACKAGE_LIST GLOBAL PROPERTY PACKAGES_FOUND)
 message(STATUS "PackageList registered by CMake: ${ARCANE_CMAKE_PACKAGE_LIST}")
 list(APPEND ARCANE_PACKAGE_LIST ${_CMAKE_PACKAGE_LIST} ${ARCANE_CMAKE_PACKAGE_LIST})
@@ -1201,6 +1215,11 @@ arcane_gen_package_config_file(arcane_packages.h)
 # ----------------------------------------------------------------------------
 ## Création et génération de ArcaneConfig.cmake ##
 
+set(ARCANE_EXPORT_PACKAGES TRUE)
+if (FRAMEWORK_NO_EXPORT_PACKAGES)
+  set(ARCANE_EXPORT_PACKAGES FALSE)
+endif()
+
 # ----------------------------------------------------------------------------
 # Créé une bibliothèque interface qui s'appelle 'arcane_full' et qui contient
 # la liste des bibliothèques utilisées par un code.
@@ -1257,14 +1276,17 @@ install(FILES
   ${generated_config_dir}/ArcaneConfigVersion.cmake
   DESTINATION ${ARCANE_CMAKE_CONFIG_DIR})
 
+# Installe les 'Find*' fournis par Arcane
+arccon_install_directory(NAMES cmake/Modules DESTINATION "${ARCANE_CMAKE_CONFIG_DIR}")
+
 # ----------------------------------------------------------------------------
 
 set(_ARCANE_PACKAGES_ROOTINFO)
 foreach(package ${ARCANE_PACKAGE_LIST})
   if (${package}_DIR)
-    set(_ARCANE_PACKAGES_ROOTINFO "${_ARCANE_PACKAGES_ROOTINFO}set(${package}_DIR \"${${package}_DIR}\")\n")
+    set(_ARCANE_PACKAGES_ROOTINFO "${_ARCANE_PACKAGES_ROOTINFO}arcane_set_if_unset(${package}_DIR \"${${package}_DIR}\")\n")
   elseif (${package}_ROOT)
-    set(_ARCANE_PACKAGES_ROOTINFO "${_ARCANE_PACKAGES_ROOTINFO}set(${package}_ROOT \"${${package}_ROOT}\")\n")
+    set(_ARCANE_PACKAGES_ROOTINFO "${_ARCANE_PACKAGES_ROOTINFO}arcane_set_if_unset(${package}_ROOT \"${${package}_ROOT}\")\n")
   endif()
 endforeach()
 file(APPEND ${generated_config_dir}/ArcaneConfigCache.cmake ${_ARCANE_PACKAGES_ROOTINFO})

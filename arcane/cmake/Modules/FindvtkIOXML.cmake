@@ -1,4 +1,4 @@
-# VTK peut se trouver soit directement, soit via Paraview.
+﻿# VTK peut se trouver soit directement, soit via Paraview.
 # Pour Arcane, le package 'vtkIOXML'  sert uniquement pour la gestion des fichiers 'vtu'
 
 # VTK/Paraview utilise les fichiers *Config.cmake et définissent des cibles
@@ -10,9 +10,7 @@
 # sur le fait que vtk fournit pour chaque package 'x' une variable 'x_DEPENDS' qui
 # contient les dépendances.
 
-if(TARGET arccon::vtkIOXML)
-  return()
-endif()
+arccon_return_if_package_found(vtkIOXML)
 
 find_package(ParaView QUIET)
 find_package(VTK QUIET COMPONENTS vtkIOXML)
@@ -30,8 +28,17 @@ if(TARGET vtkIOXML)
   # On supprime la valeur de vtkIOXML_LIBRARIES car les bibliothèques dépendantes
   # seront positionnées via add_depend_lib_to_list
   set(vtkIOXML_LIBRARIES)
-  arcane_add_package_library(vtkIOXML vtkIOXML)
+  arccon_register_package_library(vtkIOXML vtkIOXML)
+  # Pour compatibilité avec l'existant (septembre 2022)
+  add_library(arcane::vtkIOXML ALIAS arcconpkg_vtkIOXML)
   arcane_vtkutils_add_depend_lib_to_list(vtkIOXML)
   message(STATUS "vtkIOXML LIBRARIES=${_ALLLIBS}")
   target_link_libraries(arcanepkg_vtkIOXML INTERFACE ${_ALLLIBS})
 endif()
+
+# ----------------------------------------------------------------------------
+# Local Variables:
+# tab-width: 2
+# indent-tabs-mode: nil
+# coding: utf-8-with-signature
+# End:

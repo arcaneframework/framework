@@ -1,4 +1,4 @@
-#
+﻿#
 # Find the 'lz4' includes and library
 #
 # This module defines
@@ -6,9 +6,7 @@
 # LZ4_LIBRARIES, the libraries to link against to use lz4.
 # LZ4_FOUND, If false, do not try to use lz4.
 
-if (TARGET arccon::LZ4)
-  return()
-endif()
+arccon_return_if_package_found(LZ4)
 
 # Il n'y a pas de find_package correspondant à 'LZ4' dans 'CMake'
 find_library(LZ4_LIBRARY lz4)
@@ -25,3 +23,10 @@ if(LZ4_INCLUDE_DIR AND LZ4_LIBRARY)
 endif()
 
 arccon_register_package_library(LZ4 LZ4)
+
+# ----------------------------------------------------------------------------
+# Local Variables:
+# tab-width: 2
+# indent-tabs-mode: nil
+# coding: utf-8-with-signature
+# End:

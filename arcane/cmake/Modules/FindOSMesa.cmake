@@ -1,6 +1,4 @@
-if(TARGET arccon::OSMesa)
-  return()
-endif()
+﻿arccon_return_if_package_found(OSMesa)
 
 find_library(OSMesa_LIBRARY OSMesa)
 message(STATUS "OSMesa_LIBRARY = ${OSMesa_LIBRARY}")
@@ -25,3 +23,10 @@ if (OSMesa_INCLUDE_DIR AND OSMesa_LIBRARY)
   set(OSMesa_INCLUDE_DIRS ${OSMesa_INCLUDE_DIR})
 endif()
 arccon_register_package_library(OSMesa OSMesa)
+
+# ----------------------------------------------------------------------------
+# Local Variables:
+# tab-width: 2
+# indent-tabs-mode: nil
+# coding: utf-8-with-signature
+# End:
