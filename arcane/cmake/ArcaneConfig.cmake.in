@@ -212,7 +212,7 @@ arcane_internal_add_alias(arcane_build_compile_flags)
 # ----------------------------------------------------------------------------
 
 set(_INTERNAL_ARCANE_PACKAGES @ARCANE_CMAKE_PACKAGE_LIST@)
-set(_INTERNAL_ARCANE_FOUND_PACKAGES @ARCANE_FOUND_PACKAGE_LIST@)
+set(_INTERNAL_ARCANE_FOUND_PACKAGES @ARCANE_PUBLIC_FOUND_PACKAGES@)
 
 # ----------------------------------------------------------------------------
 # Fais un 'find_dependency' de tous les packages trouvés lors de la

@@ -455,6 +455,8 @@ set(ARCANE_LIBRARIES)
 # (par exemple 'arcane_utils' et 'Arcane::arcane_utils')
 set(ARCANE_EXPORTED_TARGETS)
 set(ARCANE_EXPORTED_TARGETS "" CACHE STRING "List of exported targets" FORCE)
+set(ARCANE_PUBLIC_FOUND_PACKAGES)
+set(ARCANE_PUBLIC_FOUND_PACKAGES "" CACHE STRING "List of public external packages founds" FORCE)
 
 # ----------------------------------------------------------------------------
 # Ajoute à ARCANE_LIBRARIES les cibles issues de 'Arccore' pour qu'elles soient
@@ -1110,21 +1112,6 @@ get_property(ARCANE_CMAKE_PACKAGE_LIST GLOBAL PROPERTY PACKAGES_FOUND)
 message(STATUS "PackageList registered by CMake: ${ARCANE_CMAKE_PACKAGE_LIST}")
 list(APPEND ARCANE_PACKAGE_LIST ${_CMAKE_PACKAGE_LIST} ${ARCANE_CMAKE_PACKAGE_LIST})
 message(STATUS "ArcanePackageList: ${ARCANE_PACKAGE_LIST}")
-
-# Construit la liste des packages trouvés
-set(ARCANE_FOUND_PACKAGE_LIST "")
-foreach(package ${ARCANE_CMAKE_PACKAGE_LIST})
-  set(FORMATTED_PACKAGE_NAME "${package}                    ")
-  string(SUBSTRING "${FORMATTED_PACKAGE_NAME}" 0 20 FORMATTED_PACKAGE_NAME)
-  if(${package}_FOUND)
-    list(APPEND ARCANE_FOUND_PACKAGE_LIST ${package})
-  endif()
-endforeach()
-# Supprime les packages suivants de la liste car ils ne sont pas utilisés
-# directement par les utilisateurs d'Arcane
-list(REMOVE_ITEM ARCANE_FOUND_PACKAGE_LIST CoreClrEmbed)
-list(REMOVE_ITEM ARCANE_FOUND_PACKAGE_LIST MonoEmbed)
-list(REMOVE_ITEM ARCANE_FOUND_PACKAGE_LIST Mono)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
