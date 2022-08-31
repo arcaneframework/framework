@@ -7,6 +7,9 @@ if(WIN32)
   cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 endif()
 
+
+set(ARCANE_USE_FIND_DEPENDENCIES @ARCANE_USE_FIND_DEPENDENCIES@)
+
 # ----------------------------------------------------------------------------
 # Défini une variable 'ARCANE_PREFIX_DIR' car PACKAGE_PREFIX_DIR
 # peut changer avec des includes
@@ -21,6 +24,16 @@ include(${CMAKE_CURRENT_LIST_DIR}/ArcanePathHints.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/ArcaneConfigCache.cmake)
 if (ARCANE_CMAKE_PREFIX_PATH)
   list(APPEND CMAKE_PREFIX_PATH "${ARCANE_CMAKE_PREFIX_PATH}")
+endif()
+
+# ----------------------------------------------------------------------------
+# Récupère le chemin de 'arccon'
+
+if (ARCANE_USE_FIND_DEPENDENCIES)
+  find_package(Arccon REQUIRED
+    HINTS "${ARCANE_ARCCON_HINT_PATH}"
+    "${ARCANE_PREFIX_DIR}/${ARCANE_ARCCON_CONFIG_INSTALL_DIR}"
+    )
 endif()
 
 # ----------------------------------------------------------------------------
@@ -196,7 +209,33 @@ arcane_internal_add_alias(arcane_full)
 arcane_internal_add_alias(arcane_export_compile_flags)
 arcane_internal_add_alias(arcane_build_compile_flags)
 
+# ----------------------------------------------------------------------------
+
 set(_INTERNAL_ARCANE_PACKAGES @ARCANE_CMAKE_PACKAGE_LIST@)
+set(_INTERNAL_ARCANE_FOUND_PACKAGES @ARCANE_FOUND_PACKAGE_LIST@)
+
+# ----------------------------------------------------------------------------
+# Fais un 'find_dependency' de tous les packages trouvés lors de la
+# configuration de Arcane.
+
+if (ARCANE_USE_FIND_DEPENDENCIES)
+  include(${ARCCON_CMAKE_COMMANDS})
+
+  set(_SAVED_CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}")
+  list(APPEND CMAKE_MODULE_PATH ${ARCCON_MODULE_PATH})
+  list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/Modules)
+  message(VERBOSE "Autodetect Arcane packages CMAKE_MODULE_PATH=${CMAKE_MODULE_PATH}")
+  message(VERBOSE "Autodetect Arcane packages list = ${_INTERNAL_ARCANE_FOUND_PACKAGES}")
+  foreach(_lib ${_INTERNAL_ARCANE_FOUND_PACKAGES})
+    if (NOT TARGET arcconpkg_${_lib})
+      find_dependency(${_lib})
+    endif()
+  endforeach()
+  set(CMAKE_MODULE_PATH "${_SAVED_CMAKE_MODULE_PATH}")
+endif()
+
+# ----------------------------------------------------------------------------
+
 foreach(_lib ${_INTERNAL_ARCANE_PACKAGES})
   set(_target_name "arcconpkg_${_lib}")
   if (TARGET "Arcane::${_target_name}")

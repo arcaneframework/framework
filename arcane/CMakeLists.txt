@@ -125,6 +125,8 @@ if(ARCANE_WANT_ARCCON_EXPORT_TARGET)
   endif()
 endif()
 
+option(ARCANE_USE_FIND_DEPENDENCIES "Use find_dependency() in ArcaneConfig.cmake." ON)
+
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 # Cherche 'Arccon'
@@ -395,6 +397,8 @@ endif()
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/${CMAKE_FIND_DIR})
 
 # ----------------------------------------------------------------------------
+# OBSOLÈTE (09/2022): Utiliser arccon_register_package_library() à la place
+#
 # Macro pour créer une bibliothèque interface pour référencer facilement
 # le package dans les dépendances. 'lib_name' contiend le nom
 # de la bibliothèque interface et 'var_name' le prefix des variables
@@ -1100,12 +1104,27 @@ endfunction()
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
-# Cette propriété est utilisée dans le fichier de configuration généré et il ne
-# faut pas la supprimer.
+# Ces propriétés sont utilisées dans le fichier de configuration généré et il ne
+# faut pas les supprimer.
 get_property(ARCANE_CMAKE_PACKAGE_LIST GLOBAL PROPERTY PACKAGES_FOUND)
 message(STATUS "PackageList registered by CMake: ${ARCANE_CMAKE_PACKAGE_LIST}")
 list(APPEND ARCANE_PACKAGE_LIST ${_CMAKE_PACKAGE_LIST} ${ARCANE_CMAKE_PACKAGE_LIST})
 message(STATUS "ArcanePackageList: ${ARCANE_PACKAGE_LIST}")
+
+# Construit la liste des packages trouvés
+set(ARCANE_FOUND_PACKAGE_LIST "")
+foreach(package ${ARCANE_CMAKE_PACKAGE_LIST})
+  set(FORMATTED_PACKAGE_NAME "${package}                    ")
+  string(SUBSTRING "${FORMATTED_PACKAGE_NAME}" 0 20 FORMATTED_PACKAGE_NAME)
+  if(${package}_FOUND)
+    list(APPEND ARCANE_FOUND_PACKAGE_LIST ${package})
+  endif()
+endforeach()
+# Supprime les packages suivants de la liste car ils ne sont pas utilisés
+# directement par les utilisateurs d'Arcane
+list(REMOVE_ITEM ARCANE_FOUND_PACKAGE_LIST CoreClrEmbed)
+list(REMOVE_ITEM ARCANE_FOUND_PACKAGE_LIST MonoEmbed)
+list(REMOVE_ITEM ARCANE_FOUND_PACKAGE_LIST Mono)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
@@ -1261,6 +1280,9 @@ install(FILES
   ${generated_config_dir}/ArcaneConfigCache.cmake
   ${generated_config_dir}/ArcaneConfigVersion.cmake
   DESTINATION ${ARCANE_CMAKE_CONFIG_DIR})
+
+# Installe les 'Find*' fournis par Arcane
+arccon_install_directory(NAMES cmake/Modules DESTINATION "${ARCANE_CMAKE_CONFIG_DIR}")
 
 # ----------------------------------------------------------------------------
 
