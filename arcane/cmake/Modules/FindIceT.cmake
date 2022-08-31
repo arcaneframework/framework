@@ -1,6 +1,4 @@
-if (TARGET arccon::IceT)
-  return()
-endif()
+﻿arccon_return_if_package_found(IceT)
 
 find_library(IceT_CORE_LIBRARY IceTCore)
 find_library(IceT_MPI_LIBRARY IceTMPI)
@@ -23,3 +21,10 @@ if(IceT_INCLUDE_DIR AND IceT_CORE_LIBRARY AND IceT_GL_LIBRARY AND IceT_MPI_LIBRA
 endif()
 
 arccon_register_package_library(IceT IceT)
+
+# ----------------------------------------------------------------------------
+# Local Variables:
+# tab-width: 2
+# indent-tabs-mode: nil
+# coding: utf-8-with-signature
+# End:

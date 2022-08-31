@@ -1,10 +1,12 @@
-#
+﻿#
 # Find the TrilinosMpi includes and library
 #
 # This module defines
 # TRILINOS_INCLUDE_DIRS, where to find headers,
 # TRILINOS_LIBRARIES, the libraries to link against to use Trilinos.
 # TRILINOS_FOUND, If false, do not try to use Trilinos.
+
+arccon_return_if_package_found(Trilinos)
 
 set(Trilinos_TARGETS_IMPORTED 1)
 find_package(AztecOO QUIET)
@@ -52,3 +54,10 @@ if(NOT TRILINOS_FOUND)
  unset(TRILINOS_INCLUDE_DIRS)
  unset(TRILINOS_LIBRARIES)
 endif()
+
+# ----------------------------------------------------------------------------
+# Local Variables:
+# tab-width: 2
+# indent-tabs-mode: nil
+# coding: utf-8-with-signature
+# End:

@@ -1,10 +1,12 @@
-#
+ï»¿#
 # Find the libunwind includes and library
 #
 # This module defines
 # LibUnwind_INCLUDE_DIR, where to find headers,
 # LibUnwind_LIBRARIES, the libraries to link against to use libunwind.
 # LibUnwind_FOUND, If false, do not try to use libunwind.
+
+arccon_return_if_package_found(LibUnwind)
 
 find_path(LibUnwind_INCLUDE_DIR libunwind.h)
  
@@ -13,9 +15,9 @@ find_library(LibUnwind_LIBRARY unwind)
 find_library(LIBLZMA_LIBRARY lzma)
 
 # NOTE: la libunwind peut utiliser la lib lzma
-# pour gérer les symboles de débug qui sont compressés.
-# Comme on ne peut pas savoir facilement si la version installée
-# de libunwind utilise lzma, on cherche cette bibliothèque et
+# pour gÃ©rer les symboles de dÃ©bug qui sont compressÃ©s.
+# Comme on ne peut pas savoir facilement si la version installÃ©e
+# de libunwind utilise lzma, on cherche cette bibliothÃ¨que et
 # on la rajoute si on la trouve.
 
 set(LibUnwind_FOUND)
@@ -30,3 +32,9 @@ endif()
 
 arccon_register_package_library(LibUnwind LibUnwind)
 
+# ----------------------------------------------------------------------------
+# Local Variables:
+# tab-width: 2
+# indent-tabs-mode: nil
+# coding: utf-8-with-signature
+# End:

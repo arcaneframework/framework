@@ -1,4 +1,4 @@
-#
+﻿#
 # Find the Ptscotch includes and library
 #
 # This module defines
@@ -6,6 +6,8 @@
 # PTScotch_LIBRARIES, the libraries to link against to use Ptscotch.
 # PTScotch_FOUND, If false, do not try to use Ptscotch.
  
+arccon_return_if_package_found(PTScotch)
+
 find_path(PTScotch_INCLUDE_DIR ptscotch.h)
  
 FIND_LIBRARY(PTScotch_LIBRARY ptscotch)
@@ -33,7 +35,7 @@ if(PTScotch_INCLUDE_DIR AND PTScotch_LIBRARY)
   SET( PTScotch_FOUND "YES" )
   SET( PTScotch_LIBRARIES ${PTScotch_LIBRARY} ${PTScotchERR_LIBRARY})
   SET( PTScotch_INCLUDE_DIRS ${PTScotch_INCLUDE_DIR})
-  # Pour PTScotch version 6 besoin d'une lib suppl�mentaire
+  # Pour PTScotch version 6 besoin d'une lib supplémentaire
   if(SCOTCH_LIBRARY)
     list(APPEND PTScotch_LIBRARIES ${SCOTCH_LIBRARY})
   endif(SCOTCH_LIBRARY)	
@@ -42,3 +44,10 @@ if(PTScotch_INCLUDE_DIR AND PTScotch_LIBRARY)
   endif(PTScotch_EXTRA_LIBS)
   arccon_register_package_library(PTScotch PTScotch)
 endif()
+
+# ----------------------------------------------------------------------------
+# Local Variables:
+# tab-width: 2
+# indent-tabs-mode: nil
+# coding: utf-8-with-signature
+# End:

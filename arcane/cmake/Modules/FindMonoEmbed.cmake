@@ -8,9 +8,12 @@
 #
 # If found, a target 'arcane::MonoEmbed' is defined
 
+arccon_return_if_package_found(MonoEmbed)
+
 # Si on a trouvé 'mono', utilise le chemin de l'exécutable
 # pour fixer la valeur de la variable d'environnement
 # pour pkg-config
+
 if (MONO_EXEC)
   # Récupère les chemins liés à 'mono'.
   get_filename_component(MONO_EXEC_PATH ${MONO_EXEC} PATH CACHE)
@@ -54,7 +57,9 @@ if (MONOEMBEDPKG_FOUND)
   endforeach(lib ${MONOEMBEDPKG_LIBRARIES})
   set(MONOEMBED_FOUND "YES")
   set(MONOEMBED_INCLUDE_DIRS ${MONOEMBEDPKG_INCLUDE_DIRS})
-  arcane_add_package_library(MonoEmbed MONOEMBED)
+  arccon_register_package_library(MonoEmbed MONOEMBED)
+  # Pour compatibilité avec l'existant (septembre 2022)
+  add_library(arcane::MonoEmbed ALIAS arcconpkg_MonoEmbed)
 endif (MONOEMBEDPKG_FOUND)
 
 set(MONOEMBED_EXEC_PATH ${MONO_EXEC_PATH})

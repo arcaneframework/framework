@@ -1,4 +1,4 @@
-#
+﻿#
 # Find the 'bzip2' includes and library
 #
 # This module defines
@@ -6,9 +6,7 @@
 # BZIP2_LIBRARIES, the libraries to link against to use bzip2.
 # BZIP2_FOUND, If false, do not try to use bzip2.
 
-if (TARGET arccon::BZip2)
-  return()
-endif()
+arccon_return_if_package_found(BZip2)
 
 # TODO: utiliser le package correspondant de CMake.
 find_library(BZip2_LIBRARY bz2)
@@ -25,3 +23,10 @@ if(BZip2_INCLUDE_DIR AND BZip2_LIBRARY)
 endif()
 
 arccon_register_package_library(BZip2 BZip2)
+
+# ----------------------------------------------------------------------------
+# Local Variables:
+# tab-width: 2
+# indent-tabs-mode: nil
+# coding: utf-8-with-signature
+# End:

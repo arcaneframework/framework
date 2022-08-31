@@ -1,4 +1,4 @@
-#
+﻿#
 # Find the Intel MKL includes and library
 #
 # This module defines
@@ -6,9 +6,7 @@
 # MKL_LIBRARIES, the libraries to link against to use MKL.
 # MKL_FOUND, If false, do not try to use MKL.
 
-if (TARGET arccon::MKL)
-  return()
-endif()
+arccon_return_if_package_found(MKL)
 
 find_path(MKL_INCLUDE_DIRS mkl.h)
 if (MKL_INCLUDE_DIRS)
@@ -30,3 +28,10 @@ message(STATUS "MKL_INCLUDE_DIRS = ${MKL_INCLUDE_DIRS}")
 message(STATUS "MKL_LIBRARIES = ${MKL_LIBRARIES}")
 
 arccon_register_package_library(MKL MKL)
+
+# ----------------------------------------------------------------------------
+# Local Variables:
+# tab-width: 2
+# indent-tabs-mode: nil
+# coding: utf-8-with-signature
+# End:

@@ -1,4 +1,4 @@
-#
+﻿#
 # Find the 'Udunits' includes and library
 #
 # This module defines
@@ -6,6 +6,8 @@
 # Udunits_LIBRARIES, the libraries to link against to use Udunits.
 # Udunits_FOUND, If false, do not try to use Udunits.
  
+arccon_return_if_package_found(Udunits)
+
 find_library(Udunits_LIBRARY udunits2)
 find_library(Udunits_EXPAT_LIBRARY expat)
 find_path(Udunits_INCLUDE_DIR udunits2.h)
@@ -21,3 +23,10 @@ if (Udunits_INCLUDE_DIR AND Udunits_LIBRARY AND Udunits_EXPAT_LIBRARY)
   set(Udunits_INCLUDE_DIRS ${Udunits_INCLUDE_DIR})
   arccon_register_package_library(Udunits Udunits)
 endif ()
+
+# ----------------------------------------------------------------------------
+# Local Variables:
+# tab-width: 2
+# indent-tabs-mode: nil
+# coding: utf-8-with-signature
+# End:
