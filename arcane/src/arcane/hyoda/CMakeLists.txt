@@ -22,7 +22,8 @@ arcane_add_library(arcane_hyoda
 )
 
 target_link_libraries(arcane_hyoda PUBLIC arcane_core arcane_utils)
-target_link_libraries(arcane_hyoda PRIVATE arccon::OSMesa arccon::IceT OpenGL::GLU OpenGL::GL arccon::MPI)
+target_link_libraries(arcane_hyoda PRIVATE OpenGL::GLU OpenGL::GL)
+arcane_add_arccon_packages(arcane_hyoda PRIVATE OSMesa IceT MPI)
 
 arcane_register_library(arcane_hyoda OPTIONAL)
 

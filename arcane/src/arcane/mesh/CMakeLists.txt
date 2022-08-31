@@ -27,7 +27,7 @@ endif()
 
 if (TARGET arccon::vtkIOXML) # this dependency to vtk is temporary, will be in Neo then
   target_compile_definitions(arcane_mesh PRIVATE ARCANE_HAS_VTKIO)
-  target_link_libraries(arcane_mesh PRIVATE arccon::vtkIOXML)
+  arcane_add_arccon_packages(arcane_mesh PRIVATE vtkIOXML)
 endif()
 
 arcane_register_library(arcane_mesh)

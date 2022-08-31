@@ -1,4 +1,6 @@
-﻿set(PKGS LibUnwind Papi Parmetis PTScotch Udunits Zoltan HDF5 MPI MKL BZip2 LZ4 Otf2 DbgHelp)
+﻿set(PRIVATE_PKGS LibUnwind Papi Parmetis PTScotch Udunits Zoltan MKL BZip2 LZ4 Otf2 DbgHelp)
+set(PUBLIC_PKGS HDF5 MPI)
+set(PKGS ${PRIVATE_PKGS} ${PUBLIC_PKGS})
 # HWLoc est pour l'instant incompatible avec MPC (probablement pas completement thread-safe)
 # NOTE: Cela n'a pas été testé depuis 2011.
 if(NOT ARCANE_USE_MPC)
@@ -139,7 +141,8 @@ if (OTF2_FOUND AND UNIX)
   target_link_libraries(arcane_std PUBLIC stdc++fs)
 endif()
 
-arcane_add_arccon_packages(arcane_std PRIVATE ${PKGS})
+arcane_add_arccon_packages(arcane_std PRIVATE ${PRIVATE_PKGS})
+arcane_add_arccon_packages(arcane_std PUBLIC ${PUBLIC_PKGS})
 
 arcane_register_library(arcane_std)
 

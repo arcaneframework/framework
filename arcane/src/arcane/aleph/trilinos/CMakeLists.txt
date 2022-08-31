@@ -14,6 +14,5 @@ arcane_add_library(arcane_aleph_trilinos
 )
 
 arcane_add_arccon_packages(arcane_aleph_trilinos PRIVATE ${PKGS})
-target_link_libraries(arcane_aleph_trilinos PRIVATE arccon::Trilinos arccon::MPI)
 target_link_libraries(arcane_aleph_trilinos PUBLIC arcane_core)
 arcane_register_library(arcane_aleph_trilinos OPTIONAL)

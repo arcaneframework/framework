@@ -27,6 +27,5 @@ if (ARCANE_HYPRE_VERSION VERSION_LESS 2.14)
   target_compile_definitions(arcane_aleph_hypre PUBLIC ALEPH_HYPRE_USE_OLD_MALLOC)
 endif()
 
-target_link_libraries(arcane_aleph_hypre PUBLIC arccon::Hypre arccon::MPI)
 target_link_libraries(arcane_aleph_hypre PUBLIC ${ARCANE_BASE_LIBRARIES})
 arcane_register_library(arcane_aleph_hypre OPTIONAL)

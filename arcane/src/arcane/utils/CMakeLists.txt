@@ -18,7 +18,8 @@ target_include_directories(arcane_utils PUBLIC $<BUILD_INTERFACE:${ARCANE_SRC_PA
 target_link_libraries(arcane_utils PUBLIC $<BUILD_INTERFACE:arcane_build_compile_flags> arcane_export_compile_flags)
 
 # Ajoute dépendances provenant de 'Arccore'
-target_link_libraries(arcane_utils PUBLIC Arccore::arccore_trace Arccore::arccore_concurrency Arccore::arccore_collections Arccore::arccore_base arccon::Glib)
+target_link_libraries(arcane_utils PUBLIC Arccore::arccore_trace Arccore::arccore_concurrency Arccore::arccore_collections Arccore::arccore_base)
+arcane_add_arccon_packages(arcane_utils PUBLIC Glib)
 
 # ----------------------------------------------------------------------------
 # Indique qu'il faut le C++17 par défaut ou sinon celui spécifié par

@@ -1,4 +1,4 @@
-set(PKGS MonoEmbed)
+set(PKGS MonoEmbed Glib)
 arcane_find_package(MonoEmbed)
 if(NOT TARGET arccon::MonoEmbed)
   message(STATUS "Disabling 'arcane_mono' because MonoEmbed is not found")
@@ -24,6 +24,6 @@ if (MONOEMBEDPKG_VERSION VERSION_GREATER_EQUAL "6.0")
   target_compile_definitions(arcane_mono PRIVATE ARCANE_MONO_NO_THREAD_ATTACH)
 endif()
 
-target_link_libraries(arcane_mono PRIVATE arcane_utils arcane::MonoEmbed arccon::Glib)
+target_link_libraries(arcane_mono PRIVATE arcane_utils)
 
 arcane_register_library(arcane_mono OPTIONAL)
