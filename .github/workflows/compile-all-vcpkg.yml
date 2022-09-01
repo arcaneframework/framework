@@ -136,7 +136,7 @@ jobs:
       - name: Configure build script
         shell: bash
         run: |
-          cmake -S "${{ github.workspace }}/_common/build_all" -B "${{ env.CMAKE_BUILD_DIR }}" -DCMAKE_VERBOSE_MAKEFILE=TRUE -DVCPKG_INSTALLED_DIR="${{ env.VCPKG_BUILD_DIR }}/installed" -DBUILD_SHARED_LIBS=TRUE -DARCANE_DEFAULT_PARTITIONER=Metis -DARCCON_REGISTER_PACKAGE_VERSION=2 -DCMAKE_TOOLCHAIN_FILE="${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake" ${{ matrix.cmake_specific_args }} -GNinja
+          cmake -S "${{ github.workspace }}/_common/build_all" -B "${{ env.CMAKE_BUILD_DIR }}" -DCMAKE_VERBOSE_MAKEFILE=TRUE -DVCPKG_INSTALLED_DIR="${{ env.VCPKG_BUILD_DIR }}/installed" -DBUILD_SHARED_LIBS=TRUE -DARCANE_ADD_RPATH_TO_LIBS=OFF -DARCCON_REGISTER_PACKAGE_VERSION=2 -DCMAKE_TOOLCHAIN_FILE="${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake" ${{ matrix.cmake_specific_args }} -GNinja
 
       - name: Build arcane
         shell: bash
