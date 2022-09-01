@@ -144,7 +144,7 @@ addOneFace(Int64 a_face_uid, Int64ConstArrayView a_node_list, Integer a_type)
 /*---------------------------------------------------------------------------*/
 
 ItemInternal* OneMeshItemAdder::
-addOneFace(ItemTypeInfo* type, Int64 face_uid, Int32 sub_domain_id, Int64ConstArrayView nodes_uid)
+addOneFace(ItemTypeId type_id, Int64 face_uid, Int32 sub_domain_id, Int64ConstArrayView nodes_uid)
 {
   const Integer face_nb_node = nodes_uid.size();
 
@@ -155,7 +155,8 @@ addOneFace(ItemTypeInfo* type, Int64 face_uid, Int32 sub_domain_id, Int64ConstAr
   mesh_utils::reorderNodesOfFace(m_work_face_orig_nodes_uid,m_work_face_sorted_nodes);
   
   bool is_add_face = false;
-  ItemInternal* face = m_face_family.findOrAllocOne(face_uid,type,is_add_face);
+  Face xface = m_face_family.findOrAllocOne(face_uid,type_id,is_add_face);
+  ItemInternal* face = xface.internal();
   
   // La face n'existe pas
   if (is_add_face) { 
@@ -298,13 +299,13 @@ _findInternalEdge(Integer i_edge, const CellInfoProxy& cell_info, Int64 first_no
  \retval true si la maille est effectivement ajoutée
 */
 ItemInternal* OneMeshItemAdder::
-addOneCell(ItemTypeInfo* type,
+addOneCell(ItemTypeId type_id,
            Int64 cell_uid,
-           Integer sub_domain_id,
+           Int32 sub_domain_id,
            Int64ConstArrayView nodes_uid,
            bool allow_build_face)
 {
-  CellInfoProxy cell_info_proxy(type,cell_uid,sub_domain_id,nodes_uid,allow_build_face);
+  CellInfoProxy cell_info_proxy(m_item_type_mng->typeFromId(type_id),cell_uid,sub_domain_id,nodes_uid,allow_build_face);
 
   return _addOneCell(cell_info_proxy);
 }
@@ -328,7 +329,7 @@ addOneCell(const FullCellInfo& cell_info)
 ItemInternal* OneMeshItemAdder::
 addOneItem(IItemFamily* family,
            IItemFamilyModifier* family_modifier,
-           ItemTypeInfo* type,
+           ItemTypeId type_id,
            Int64 item_uid,
            Integer item_owner,
            Integer sub_domain_id,
@@ -337,7 +338,7 @@ addOneItem(IItemFamily* family,
 {
   ARCANE_ASSERT(m_mesh->itemFamilyNetwork(),("ItemFamilyNetwork is required to call OneMeshItemAdder::addOneItem"));
   bool is_alloc = true;
-  Item xitem = family_modifier->findOrAllocOne(item_uid,type->itemTypeId(),m_mesh_info,is_alloc); // don't forget to add print in the class method
+  Item xitem = family_modifier->findOrAllocOne(item_uid,type_id,m_mesh_info,is_alloc); // don't forget to add print in the class method
   ItemInternal* item = xitem.internal();
   item->setOwner(item_owner,sub_domain_id);
   // Add connectivities if needed
@@ -382,7 +383,7 @@ addOneItem(IItemFamily* family,
 ItemInternal* OneMeshItemAdder::
 addOneItem2(IItemFamily* family,
             IItemFamilyModifier* family_modifier,
-            ItemTypeInfo* type,
+            ItemTypeId type_id,
             Int64 item_uid,
             Integer item_owner,
             Integer sub_domain_id,
@@ -391,7 +392,7 @@ addOneItem2(IItemFamily* family,
 {
   ARCANE_ASSERT(m_mesh->itemFamilyNetwork(),("ItemFamilyNetwork is required to call OneMeshItemAdder::addOneItem"));
   bool is_alloc = true;
-  Item xitem = family_modifier->findOrAllocOne(item_uid,type->itemTypeId(),m_mesh_info,is_alloc); // don't forget to add print in the class method
+  Item xitem = family_modifier->findOrAllocOne(item_uid,type_id,m_mesh_info,is_alloc); // don't forget to add print in the class method
   ItemInternal* item = xitem.internal();
   item->setOwner(item_owner,sub_domain_id);
   // Add connectivities if needed
