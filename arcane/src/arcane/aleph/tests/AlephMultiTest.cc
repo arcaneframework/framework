@@ -260,8 +260,6 @@ class AlephSolver
 AlephMultiTest::
 AlephMultiTest(const ModuleBuildInfo& mbi)
 : ArcaneAlephMultiTestObject(mbi)
-, m_global_aleph_solver(0)
-, m_aleph_factory(0)
 {
 }
 

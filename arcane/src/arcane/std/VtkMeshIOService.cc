@@ -5,13 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VtkMeshIOService.cc                                         (C) 2000-2020 */
+/* VtkMeshIOService.cc                                         (C) 2000-2022 */
 /*                                                                           */
 /* Lecture/Ecriture d'un maillage au format Vtk historique (legacy).         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/Collection.h"
 #include "arcane/utils/Enumerator.h"
@@ -192,9 +190,9 @@ class VtkFile
  public:
   explicit VtkFile(std::istream* stream)
   : m_stream(stream)
-  , m_isInit(false)
-  , m_eof(false)
-  , m_currentLine(false)
+  , m_is_init(false)
+  , m_need_reread_current_line(false)
+  , m_is_eof(false)
   , m_is_binary_file(false)
   , m_buf{}
   {}
@@ -210,9 +208,9 @@ class VtkFile
 
   static bool isEqualString(const String& current_value, const String& expected_value);
 
-  void reReadSameLine() { m_currentLine = true; }
+  void reReadSameLine() { m_need_reread_current_line = true; }
 
-  bool isEof() { return m_eof; }
+  bool isEof() { return m_is_eof; }
 
   template <class T>
   void getBinary(T& type);
@@ -223,20 +221,21 @@ class VtkFile
   void setIsBinaryFile(bool new_val) { m_is_binary_file = new_val; }
 
  private:
+
+  //! Le stream.
+  std::istream* m_stream = nullptr;
+
   //! Y'a-t-il eu au moins une ligne lue.
-  bool m_isInit;
+  bool m_is_init;
 
   //! Doit-on relire la même ligne.
-  bool m_currentLine;
+  bool m_need_reread_current_line;
 
   //! Est-on à la fin du fichier.
-  bool m_eof;
+  bool m_is_eof;
 
   //! Est-ce un fichier contenant des données en binaire.
   bool m_is_binary_file;
-
-  //! Le stream.
-  std::istream* m_stream;
 
   //! Le buffer contenant la ligne lue.
   char m_buf[BUFSIZE];
@@ -253,7 +252,7 @@ class VtkFile
 const char* VtkFile::
 getCurrentLine()
 {
-  if (!m_isInit)
+  if (!m_is_init)
     getNextLine();
   return m_buf;
 }
@@ -265,7 +264,7 @@ getCurrentLine()
  * \brief Permet de voir si la prochaine ligne est vide.
  *        
  * A la fin de cette méthode, le buffer contiendra la prochaine ligne
- * non vide. Le booléen m_currentLine permettera de demander à getNextLine
+ * non vide. Le booléen m_need_reread_current_line permettera de demander à getNextLine
  * de renvoyer cette ligne qui n'a pas été lue.
  * 
  * \return true s'il y a une ligne vide, false sinon
@@ -273,16 +272,16 @@ getCurrentLine()
 bool VtkFile::
 isEmptyNextLine()
 {
-  m_isInit = true;
+  m_is_init = true;
 
   // On veut que getNextLine lise une nouvelle ligne.
   // (on met à false dans le cas où cette méthode serai
   // appelée plusieurs fois à la suite).
-  m_currentLine = false;
+  m_need_reread_current_line = false;
 
   // Si l'on est arrivé à la fin du fichier lors du précédent appel de cette méthode ou
   // de getNextLine, on envoie une erreur.
-  if (m_eof) {
+  if (m_is_eof) {
     throw IOException("VtkFile::isEmptyNextLine()", "Unexpected EndOfFile");
   }
 
@@ -294,7 +293,7 @@ isEmptyNextLine()
     // Si on arrive au bout du fichier, on return true (pour dire oui, il y a une ligne vide,
     // à l'appelant de gérer ça).
     if (m_stream->eof()) {
-      m_eof = true;
+      m_is_eof = true;
       return true;
     }
 
@@ -305,7 +304,7 @@ isEmptyNextLine()
 
       // On demande à ce que le prochain appel à getNextLine renvoie la ligne
       // qui vient tout juste d'être bufferisée.
-      m_currentLine = true;
+      m_need_reread_current_line = true;
       return true;
     }
     else {
@@ -339,7 +338,7 @@ isEmptyNextLine()
         getNextLine();
       }
     }
-    m_currentLine = true;
+    m_need_reread_current_line = true;
     return false;
   }
   throw IOException("VtkFile::isEmptyNextLine()", "Not Good");
@@ -356,17 +355,17 @@ isEmptyNextLine()
 const char* VtkFile::
 getNextLine()
 {
-  m_isInit = true;
+  m_is_init = true;
 
   // On return le buffer actuel, si celui-ci n'a pas été utilisé.
-  if (m_currentLine) {
-    m_currentLine = false;
+  if (m_need_reread_current_line) {
+    m_need_reread_current_line = false;
     return getCurrentLine();
   }
 
   // Si l'on est arrivé à la fin du fichier lors du précédent appel de cette méthode ou
   // de isEmptyNextLine, on envoie une erreur.
-  if (m_eof) {
+  if (m_is_eof) {
     throw IOException("VtkFile::isEmptyNextLine()", "Unexpected EndOfFile");
   }
 
@@ -377,7 +376,7 @@ getNextLine()
     // Si on arrive au bout du fichier, on return le buffer avec \0 au début (c'est à l'appelant d'appeler
     // isEof() pour savoir si le fichier est fini ou non).
     if (m_stream->eof()) {
-      m_eof = true;
+      m_is_eof = true;
       m_buf[0] = '\0';
       return m_buf;
     }

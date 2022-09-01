@@ -18,7 +18,7 @@
 #include "arcane_packages.h"
 
 #ifdef ARCANE_HAS_PACKAGE_TBB
-#include <tbb/tbb.h>
+#include <tbb/concurrent_queue.h>
 #endif
 
 #include <glib.h>
@@ -90,7 +90,6 @@ class TBBAsyncQueue
   void* tryPop()
   {
     void* v = 0;
-    int count = 1;
     m_shared_queue.try_pop(v);
     return v;
   }
