@@ -305,7 +305,7 @@ function(arcane_add_arccon_packages target visibility)
   endforeach()
   # TODO: regarder plutôt sur quelles plateforme il faut le
   # faire au lieu de juste retirer windows.
-  if (NOT WIN32 AND (_RPATH_LIST))
+  if (NOT WIN32 AND (_RPATH_LIST) AND ARCANE_ADD_RPATH_TO_LIBS)
     list(REMOVE_DUPLICATES _RPATH_LIST)
     # Les répertoires systèmes ne doivent pas être dans le rpath
     set(_REMOVED_DIRS "/lib" "/lib64" "/usr/lib" "/usr/lib64")
