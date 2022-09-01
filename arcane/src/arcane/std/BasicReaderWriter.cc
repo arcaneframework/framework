@@ -329,7 +329,7 @@ class BasicGenericReader
   }
   ~BasicGenericReader() override
   {
-    for (auto x : m_variables_data_info )
+    for (const auto& x : m_variables_data_info )
       delete x.second;
   }
  public:
@@ -618,7 +618,7 @@ class BasicGenericWriter
   }
   ~BasicGenericWriter()
   {
-    for( auto x : m_variables_data_info ){
+    for( const auto& x : m_variables_data_info ){
       delete x.second;
     }
   }
@@ -765,7 +765,7 @@ endWrite()
     root.setAttrValue("min-compress-size",String::fromNumber(dc->minCompressSize()));
   }
   root.setAttrValue("version",String::fromNumber(m_version));
-  for( auto i : m_variables_data_info ){
+  for( const auto& i : m_variables_data_info ){
     VariableDataInfo* vdi = i.second;
     XmlNode e = root.createAndAppendElement("variable-data");
     e.setAttrValue("full-name",vdi->fullName());
@@ -931,7 +931,7 @@ BasicWriter(IApplication* app,IParallelMng* pm,const String& path,
 BasicWriter::
 ~BasicWriter()
 {
-  for( auto i : m_parallel_data_writers )
+  for( const auto& i : m_parallel_data_writers )
     delete i.second;
 }
 
@@ -1283,9 +1283,9 @@ initialize()
 BasicReader::
 ~BasicReader()
 {
-  for( auto i : m_parallel_data_readers )
+  for( const auto& i : m_parallel_data_readers )
     delete i.second;
-  for( auto r : m_global_readers )
+  for( const auto& r : m_global_readers )
     delete r;
 }
 

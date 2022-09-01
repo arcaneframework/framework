@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshCompacter.cc                                            (C) 2000-2016 */
+/* MeshCompacter.cc                                            (C) 2000-2022 */
 /*                                                                           */
 /* Gestion d'un échange de maillage entre sous-domaines.                     */
 /*---------------------------------------------------------------------------*/
@@ -24,12 +24,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-ARCANE_MESH_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
+namespace Arcane::mesh
+{
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -68,7 +64,7 @@ MeshCompacter(IItemFamily* family,ITimeStats* stats)
 MeshCompacter::
 ~MeshCompacter()
 {
-  for( auto i : m_family_compact_infos_map )
+  for( const auto& i : m_family_compact_infos_map )
     delete i.second;
 }
 
@@ -145,7 +141,7 @@ compactVariablesAndGroups()
   // Il ne faut le faire que sur les familles qui sont compactées.
   if (m_is_compact_variables_and_groups){
     Timer::Action ts_action(m_time_stats,"CompactVariables");
-    for( auto iter : m_family_compact_infos_map ){
+    for( const auto& iter : m_family_compact_infos_map ){
       const ItemFamilyCompactInfos* compact_infos = iter.second;
       IItemFamilyCompactPolicy* c = compact_infos->family()->policyMng()->compactPolicy();
       c->compactVariablesAndGroups(*compact_infos);
@@ -188,7 +184,7 @@ endCompact()
   {
     Timer::Action ts_action(m_time_stats,"CompactItemFinish");
 
-    for( auto iter : m_family_compact_infos_map ){
+    for( const auto& iter : m_family_compact_infos_map ){
       ItemFamilyCompactInfos* compact_infos = iter.second;
       IItemFamilyCompactPolicy* c = compact_infos->family()->policyMng()->compactPolicy();
       c->endCompact(*compact_infos);
@@ -286,8 +282,7 @@ families() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

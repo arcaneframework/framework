@@ -281,7 +281,7 @@ ItemGroupImplPrivate::
 {
   // (HP) TODO: vérifier qu'il n'y a plus d'observer à cet instant
   // Ceux des sous-groupes n'ont pas été détruits
-  for( auto i : m_observers ) {
+  for( const auto& i : m_observers ) {
     delete i.second;
   }
   delete m_variable_items_local_id;
@@ -344,7 +344,7 @@ void ItemGroupImplPrivate::
 notifyExtendObservers(const Int32ConstArrayView * info)
 {
   ARCANE_ASSERT((!m_need_recompute || m_is_all_items),("Operation on invalid group"));
-  for( auto i : m_observers ) {
+  for( const auto& i : m_observers ) {
     IItemGroupObserver * obs = i.second;
     obs->executeExtend(info);
   }
@@ -359,7 +359,7 @@ void ItemGroupImplPrivate::
 notifyReduceObservers(const Int32ConstArrayView * info)
 {
   ARCANE_ASSERT((!m_need_recompute || m_is_all_items),("Operation on invalid group"));
-  for( auto i : m_observers ) {
+  for( const auto& i : m_observers ) {
     IItemGroupObserver * obs = i.second;
     obs->executeReduce(info);
   }
@@ -374,7 +374,7 @@ void ItemGroupImplPrivate::
 notifyCompactObservers(const Int32ConstArrayView * info)
 {
   ARCANE_ASSERT((!m_need_recompute || m_is_all_items),("Operation on invalid group"));
-  for( auto i : m_observers ) {
+  for( const auto& i : m_observers ) {
     IItemGroupObserver * obs = i.second;
     obs->executeCompact(info);
   }
@@ -393,7 +393,7 @@ notifyInvalidateObservers()
 #endif /* NO_USER_WARNING */
   // Cela peut se produire en cas d'invalidation en cascade
   // ARCANE_ASSERT((!m_need_recompute),("Operation on invalid group"));
-  for( auto i : m_observers ) {
+  for( const auto& i : m_observers ) {
     IItemGroupObserver * obs = i.second;
     obs->executeInvalidate();
   }
@@ -1696,7 +1696,7 @@ clear()
   items_lid.clear();
   m_p->m_need_recompute = false;
   std::map<String,ItemGroupImpl*> & sub_groups = m_p->m_sub_groups;
-  for( auto i : sub_groups )
+  for( const auto& i : sub_groups )
     i.second->clear();
   m_p->notifyInvalidateObservers();
 }
@@ -1997,7 +1997,7 @@ _forceInvalidate(const bool self_invalidate)
   }
 
   std::map<String,ItemGroupImpl*> & sub_groups = m_p->m_sub_groups;
-  for( auto i : sub_groups )
+  for( const auto& i : sub_groups )
     i.second->_forceInvalidate(true);
 }
 
@@ -2011,7 +2011,7 @@ destroy()
   // en faire une copie
   {
     std::vector<const void*> ptrs;
-    for( auto i : m_p->m_observers )
+    for( const auto& i : m_p->m_observers )
       ptrs.push_back(i.first);
     for( const void* i : ptrs )
       detachObserver(i);

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableMng.cc                                              (C) 2000-2020 */
+/* VariableMng.cc                                              (C) 2000-2022 */
 /*                                                                           */
 /* Classe gérant l'ensemble des variables.                                   */
 /*---------------------------------------------------------------------------*/
@@ -484,7 +484,7 @@ removeAllVariables()
 
   OStringStream var_str;
   UniqueArray<IVariable*> remaining_vars;
-  for( auto i : m_full_name_variable_map ){
+  for( const auto& i : m_full_name_variable_map ){
     IVariable* v = i.second;
     if (v->nbReference()==0)
       delete v;
@@ -502,7 +502,7 @@ removeAllVariables()
                << " to get the stack trace)";
   bool has_trace = VariableRef::hasTraceCreation();
   if (has_trace){
-    for( auto i : remaining_vars ){
+    for( const auto& i : remaining_vars ){
       for( VarRefEnumerator ivar(i); ivar.hasNext(); ++ivar ){
         VariableRef* var = *ivar;
         info() << " variable name=" << var->name()
@@ -520,7 +520,7 @@ removeAllVariables()
     // car les appels à unregisterVariable() modifient l'itérateur ivar
     // et aussi m_full_name_variable_map.
     UniqueArray<VariableRef*> remaining_refs;
-    for( auto i : remaining_vars )
+    for( const auto& i : remaining_vars )
       for( VarRefEnumerator ivar(i); ivar.hasNext(); ++ivar )
         remaining_refs.add(*ivar);
     for( VariableRef* r : remaining_refs )
@@ -538,7 +538,7 @@ removeAllVariables()
 void VariableMng::
 detachMeshVariables(IMesh* mesh)
 {
-  for( auto i : m_full_name_variable_map ){
+  for( const auto& i : m_full_name_variable_map ){
     IVariable* v = i.second;
     ItemGroup group = v->itemGroup();
     if (group.null())
@@ -783,7 +783,7 @@ void VariableMng::
 dumpList(std::ostream& o,IModule* c)
 {
   o << "  ** VariableMng::Variable list\n";
-  for( auto i : m_full_name_variable_map ){
+  for( const auto& i : m_full_name_variable_map ){
     for( VarRefEnumerator ivar(i.second); ivar.hasNext(); ++ivar ){
       if ((*ivar)->module()!=c)
         continue;
@@ -799,14 +799,14 @@ void VariableMng::
 dumpList(std::ostream& o)
 {
   o << "  ** VariableMng::Variable list\n";
-  for( auto i : m_full_name_variable_map ){
+  for( const auto& i : m_full_name_variable_map ){
     for( VarRefEnumerator ivar(i.second); ivar.hasNext(); ++ivar ){
       _dumpVariable(*(*ivar),o);
     }
   }
   {
     Real mem_used = 0;
-    for( auto i : m_full_name_variable_map )
+    for( const auto& i : m_full_name_variable_map )
       mem_used += i.second->allocatedMemory();
     o << "  ** VariableMng::Allocated memory : " << mem_used;
     o << '\n';
@@ -835,7 +835,7 @@ initializeVariables(bool is_continue)
   ARCANE_UNUSED(is_continue);
 
   info() << "Initialisation des variables";
-  for( auto i : m_full_name_variable_map ){
+  for( const auto& i : m_full_name_variable_map ){
     for( VarRefEnumerator ivar(i.second); ivar.hasNext(); ++ivar ){
       VariableRef* var_ref = *ivar;
       IModule* module = var_ref->module();
@@ -855,7 +855,7 @@ initializeVariables(bool is_continue)
 void VariableMng::
 variables(VariableRefCollection v,IModule* c)
 {
-  for( auto i : m_full_name_variable_map ){
+  for( const auto& i : m_full_name_variable_map ){
     for( VarRefEnumerator ivar(i.second); ivar.hasNext(); ++ivar ){
       if ((*ivar)->module()==c)
         v.add(*ivar);
@@ -872,7 +872,7 @@ variables()
   if (m_variables_changed){
     m_variables_changed = false;
     m_variables.clear();
-    for( auto i : m_full_name_variable_map ){
+    for( const auto& i : m_full_name_variable_map ){
       m_variables.add(i.second);
     }
   }
@@ -888,7 +888,7 @@ usedVariables()
   if (m_used_variables_changed){
     m_used_variables_changed = false;
     m_used_variables.clear();
-    for( auto i : m_full_name_variable_map ){
+    for( const auto& i : m_full_name_variable_map ){
       IVariable* var = i.second;
       if (var->isUsed())
         m_used_variables.add(var);
@@ -987,7 +987,7 @@ writeVariables2(IDataWriter* writer,IVariableFilter* filter,bool use_hash)
 
   // Calcul la liste des variables à sauver
   VariableList vars;
-  for( auto i : m_full_name_variable_map ){
+  for( const auto& i : m_full_name_variable_map ){
     IVariable* var = i.second;
     bool apply_var = true;
     if (filter)
@@ -1010,7 +1010,7 @@ writeVariables2(IDataWriter* writer,const VariableCollection& vars,bool use_hash
     return;
   if (vars.empty()){
     VariableList var_array;
-    for( auto i : m_full_name_variable_map ){
+    for( const auto& i : m_full_name_variable_map ){
       IVariable* var = i.second;
       var_array.add(var);
     }
@@ -1215,7 +1215,7 @@ class VariableMetaDataList
   }
   void clear()
   {
-    for( auto x : m_vmd_map )
+    for( const auto& x : m_vmd_map )
       delete x.second;
     m_vmd_map.clear();
   }
@@ -1356,7 +1356,7 @@ _readVariablesMetaData(VariableMetaDataList& vmd_list,const XmlNode& variables_n
   String ustr_multitag("multi-tag");
   vmd_list.clear();
 
-  for( auto var : vars ){
+  for( const auto& var : vars ){
     String full_type = var.attrValue(ustr_full_type);
     VariableDataTypeInfo vdti(full_type);
 
@@ -1400,7 +1400,7 @@ _createVariablesFromMetaData(const VariableMetaDataList& vmd_list)
 {
   ISubDomain* sd = subDomain();
   // Récupère ou construit les variables qui n'existent pas encore.
-  for( auto xvmd : vmd_list ){
+  for( const auto& xvmd : vmd_list ){
     auto& vmd = *(xvmd.second);
     const String& full_name = vmd.fullName();
     IVariable* var = findVariableFullyQualified(full_name);
@@ -1559,7 +1559,7 @@ _checkHashFunction(const VariableMetaDataList& vmd_list)
   Int32 sid = pm->commRank();
   Directory listing_dir = subDomain()->listingDirectory();
   
-  for( auto i : vmd_list ){
+  for( const auto& i : vmd_list ){
     String reference_hash = i.second->hash();
     // Teste si la valeur de hashage est présente. C'est normalement
     // toujours le cas, sauf si la protection vient d'une ancienne
@@ -1602,7 +1602,7 @@ void VariableMng::
 _buildFilteredVariableList(VariableReaderMng& var_read_mng,IVariableFilter* filter)
 {
   VariableMetaDataList& vmd_list = var_read_mng.variableMetaDataList();
-  for( auto i : m_full_name_variable_map ){
+  for( const auto& i : m_full_name_variable_map ){
     IVariable* var = i.second;
     bool apply_me = true;
     if (filter)
@@ -1646,7 +1646,7 @@ _buildVariablesToRead(IVariableMng* vm)
 {
   m_vars_to_read.clear();
   m_var_read_info_list.clear();
-  for( auto x : m_vmd_list ){
+  for( const auto& x : m_vmd_list ){
     const String& full_name = x.first;
     IVariable* var = vm->findVariableFullyQualified(full_name);
     if (!var)
@@ -1664,7 +1664,7 @@ readVariablesData(IVariableMng* vm,VariableMng::IDataReaderWrapper* reader)
 {
   _buildVariablesToRead(vm);
   reader->beginRead(m_vars_to_read);
-  for( auto ivar : m_var_read_info_list ){
+  for( const auto& ivar : m_var_read_info_list ){
     // NOTE: var peut-être nul
     IVariable* var = ivar.m_variable;
     IData* data = ivar.m_data;
@@ -1723,7 +1723,7 @@ _finalizeReadVariables(const VariableList& vars_to_read)
   // se charge de faire cela.
   // NOTE: de plus, il n'est nécessaire de le faire que sur les variables
   // de \a vars_to_read.
-  for( auto i : m_full_name_variable_map  )
+  for( const auto& i : m_full_name_variable_map  )
     i.second->syncReferences();
 
   // Notifie les observateurs qu'une lecture vient d'être faite.
@@ -1740,7 +1740,7 @@ exportSize(const VariableCollection& vars)
 {
   Real total_size = 0;
   if (vars.empty()){
-    for( auto i : m_full_name_variable_map ){
+    for( const auto& i : m_full_name_variable_map ){
       IVariable* var = i.second;
       if (var->isUsed()){
         Real n = (Real)(var->allocatedMemory());
@@ -1810,7 +1810,7 @@ dumpStats(std::ostream& ostr,bool is_verbose)
   UniqueArray<IVariable*> memory_sorted_variables;
 
   ModuleVariableMap modules_variables;
-  for( auto i : m_full_name_variable_map ){
+  for( const auto& i : m_full_name_variable_map ){
     //for( VariableRefList::Enumerator ivar(m_variables_ref); ++ivar; ){
     IVariable* var = i.second;
     if (!var->isUsed())
@@ -1832,7 +1832,7 @@ dumpStats(std::ostream& ostr,bool is_verbose)
     }
   }
 
-  for( auto i : m_full_name_variable_map ){
+  for( const auto& i : m_full_name_variable_map ){
     IVariable* var = i.second;
     // Pas de statistiques sur les variables non utilisées
     if (!var->isUsed())
@@ -1992,7 +1992,7 @@ dumpStatsJSON(JSONWriter& writer)
 {
   writer.writeKey("Variables");
   writer.beginArray();
-  for( auto i : m_full_name_variable_map ){
+  for( const auto& i : m_full_name_variable_map ){
     IVariable* var = i.second;
     if (var->dimension()==0)
       continue;

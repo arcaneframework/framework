@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemFamilyNetwork.cc                                        (C) 2000-2017 */
+/* ItemFamilyNetwork.cc                                        (C) 2000-2022 */
 /*                                                                           */
 /* ItemFamily relations through their connectivities.                        */
 /*---------------------------------------------------------------------------*/
@@ -18,22 +18,18 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void ItemFamilyNetwork::
-addDependency(IItemFamily* master_family, IItemFamily* slave_family, IIncrementalItemConnectivity* master_to_slave_connectivity, bool is_deep_connectivity)
+addDependency(IItemFamily* master_family, IItemFamily* slave_family,
+              IIncrementalItemConnectivity* master_to_slave_connectivity, bool is_deep_connectivity)
 {
   m_dependency_graph.addEdge(master_family,slave_family,master_to_slave_connectivity);
-  if(master_to_slave_connectivity)
-  {
+  if(master_to_slave_connectivity) {
     m_connectivity_list.add(master_to_slave_connectivity);
     m_connectivity_status[master_to_slave_connectivity] = std::make_pair(false,is_deep_connectivity); // connectivity not stored by default
   }
@@ -186,7 +182,7 @@ _getConnectivitiesFromGraph(const ConnectivityGraph::ConnectedEdgeSet& connectiv
 {
   SharedArray<IIncrementalItemConnectivity*> connectivities(connectivity_edges.size());
   Integer index(0);
-  for (auto connectivity_edge : connectivity_edges){
+  for (const auto& connectivity_edge : connectivity_edges){
     connectivities[index++] = connectivity_edge;
   }
   return connectivities;
@@ -200,10 +196,10 @@ _getConnectivitiesFromGraph(const ConnectivityGraph::ConnectedEdgeSet& connectiv
 {
   SharedArray<IIncrementalItemConnectivity*> connectivities(connectivity_edges1.size()+connectivity_edges2.size());
   Integer index(0);
-  for (auto connectivity_edge : connectivity_edges1){
+  for (const auto& connectivity_edge : connectivity_edges1){
     connectivities[index++] = connectivity_edge;
   }
-  for (auto connectivity_edge : connectivity_edges2){
+  for (const auto& connectivity_edge : connectivity_edges2){
     connectivities[index++] = connectivity_edge;
   }
   return connectivities;
@@ -252,22 +248,18 @@ getFamilies(eSchedulingOrder order) const
   switch (order)
   {
     case TopologicalOrder:
-      for (auto family : m_dependency_graph.topologicalSort())
-      {
-        families.add(family) ;
-      }
+      for (const auto& family : m_dependency_graph.topologicalSort())
+        families.add(family);
       break;
     case InverseTopologicalOrder:
-      for (auto family : m_dependency_graph.topologicalSort().reverseOrder())
-      {
-        families.add(family) ;
-      }
+      for (const auto& family : m_dependency_graph.topologicalSort().reverseOrder())
+        families.add(family);
       break;
     case Unknown:
-      throw m_trace_mng->fatal() << "Cannot schedule task, scheduling order is unkwnown. Set Scheduling order";
+      ARCANE_FATAL("Cannot schedule task, scheduling order is unkwnown. Set Scheduling order");
       break;
   }
-  return families ;
+  return families;
 }
 
 void ItemFamilyNetwork::
@@ -275,19 +267,15 @@ schedule(IItemFamilyNetworkTask task, eSchedulingOrder scheduling_order)
 {
   switch (scheduling_order) {
     case TopologicalOrder:
-      for (auto family : m_dependency_graph.topologicalSort())
-        {
-          task(family);
-        }
+      for (const auto& family : m_dependency_graph.topologicalSort())
+        task(family);
       break;
     case InverseTopologicalOrder:
-      for (auto family : m_dependency_graph.topologicalSort().reverseOrder())
-        {
-          task(family);
-        }
+      for (const auto& family : m_dependency_graph.topologicalSort().reverseOrder())
+        task(family);
       break;
     case Unknown:
-      throw m_trace_mng->fatal() << "Cannot schedule task, scheduling order is unkwnown. Set Scheduling order";
+      ARCANE_FATAL("Cannot schedule task, scheduling order is unkwnown. Set Scheduling order");
       break;
   }
 }
@@ -299,16 +287,16 @@ std::pair<IIncrementalItemConnectivity* const,std::pair<bool,bool>>& ItemFamilyN
 _getConnectivityStatus(IIncrementalItemConnectivity* connectivity)
 {
   auto connectivity_iterator = m_connectivity_status.find(connectivity);
-  if (connectivity_iterator == m_connectivity_status.end()) throw FatalErrorException(String::format("Cannot find connectivity {0} between families {1} and {2}",
-                                                                                                      connectivity->name(),connectivity->sourceFamily(),connectivity->targetFamily()));
+  if (connectivity_iterator == m_connectivity_status.end())
+    ARCANE_FATAL("Cannot find connectivity {0} between families {1} and {2}",
+                 connectivity->name(),connectivity->sourceFamily(),connectivity->targetFamily());
   return *(connectivity_iterator);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

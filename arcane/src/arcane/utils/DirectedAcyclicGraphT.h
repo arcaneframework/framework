@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DirectedAcyclicGraphT.h                                     (C) 2000-2017 */
+/* DirectedAcyclicGraphT.h                                     (C) 2000-2022 */
 /*                                                                           */
 /* Implementation of a directed acyclic graph                                */
 /*---------------------------------------------------------------------------*/
@@ -24,7 +24,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -153,18 +154,14 @@ public:
   {
     if (m_compute_vertex_levels) _computeVertexLevels();
     this->m_trace_mng->info() << "--- Directed Graph ---";
-    for (auto vertex_entry: this->m_adjacency_list)
-      {
-        _printGraphEntry(vertex_entry);
-      }
+    for (const auto& vertex_entry: this->m_adjacency_list)
+      _printGraphEntry(vertex_entry);
 
     std::ostringstream oss;
     this->m_trace_mng->info() << oss.str();
 
-    for (auto vertex_level_set_entry : m_vertex_level_map)
-      {
-        this->m_trace_mng->info() << "-- Graph has vertex " << vertex_level_set_entry.first << " with level " << vertex_level_set_entry.second;
-      }
+    for (const auto& vertex_level_set_entry : m_vertex_level_map)
+      this->m_trace_mng->info() << "-- Graph has vertex " << vertex_level_set_entry.first << " with level " << vertex_level_set_entry.second;
   }
 
   /*! La detection de cycle se fait avec un pattern lazy qui n'est lancé que lors de l'appel à topologicalSort() et print().
@@ -194,10 +191,8 @@ private:
     // Current algo cannot update vertex level ; need to clear the map.
     m_vertex_level_map.clear();
     // compute vertex level
-    for (auto vertex_entry : this->m_adjacency_list)
-      {
-        _computeVertexLevel(vertex_entry.first,0);
-      }
+    for (const auto& vertex_entry : this->m_adjacency_list)
+      _computeVertexLevel(vertex_entry.first,0);
     m_compute_vertex_levels = false;
   }
 
@@ -220,10 +215,8 @@ private:
         if (vertex_adjacency_list != Base::m_adjacency_list.end())
           {
             ++level;
-            for (auto child_vertex : vertex_adjacency_list->second.first)
-              {
-                _computeVertexLevel(child_vertex,level);
-              }
+            for (const auto& child_vertex : vertex_adjacency_list->second.first)
+              _computeVertexLevel(child_vertex,level);
           }
       }
     // Remove vertex from cycle detection
@@ -245,10 +238,8 @@ private:
   void _printGraphEntry(const typename Base::AdjacencyListType::value_type& vertex_entry)
   {
     this->m_trace_mng->info() << "-- Vertex " << vertex_entry.first << " depends on ";
-    for (auto connected_vertex : vertex_entry.second.first )
-      {
-        this->m_trace_mng->info() << "  - " << connected_vertex;
-      }
+    for (const auto& connected_vertex : vertex_entry.second.first )
+      this->m_trace_mng->info() << "  - " << connected_vertex;
   }
 
 };
@@ -256,7 +247,7 @@ private:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

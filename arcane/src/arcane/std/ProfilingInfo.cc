@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ProfilingInfo.cc                                            (C) 2000-2021 */
+/* ProfilingInfo.cc                                            (C) 2000-2022 */
 /*                                                                           */
 /* Informations de profiling.                                                */
 /*---------------------------------------------------------------------------*/
@@ -644,7 +644,7 @@ addEvent(void* address,int overflow_event[MAX_COUNTER],int nb_overflow_event)
 void ProfInfos::
 _sortFunctions(std::set<ProfFuncInfo*,ProfFuncComparer>& sorted_func)
 {
-  for( auto x : m_func_map )
+  for( const auto& x : m_func_map )
     if (x.second)
       sorted_func.insert(x.second);
 }
@@ -941,7 +941,7 @@ printInfos(bool dump_file)
   if (dump_file){
     // Créée une liste des piles triée par nombre d'évènements décroissant.
     UniqueArray<SortedProfStackInfo> sorted_stacks;
-    for( auto x : global_infos->m_stack_map ){
+    for( const auto& x : global_infos->m_stack_map ){
       const ProfStackInfo& psi = x.first;
       Int64 nb_stack = x.second;
       sorted_stacks.add(SortedProfStackInfo(psi,nb_stack));
@@ -952,7 +952,7 @@ printInfos(bool dump_file)
     std::ofstream ofile;
     ofile.open(file_name.localstr());
 
-    for( auto x : sorted_stacks.range() ){
+    for( const auto& x : sorted_stacks.range() ){
       const ProfStackInfo& psi = x.stackInfo();
       Int64 nb_stack = x.nbCount();
       if (nb_stack<2)
@@ -1058,13 +1058,13 @@ dumpJSON(JSONWriter& writer)
   ProfInfos* global_infos = this;
 
   Int64 total_event = 1;
-  for( auto x : global_infos->m_addr_map ){
+  for( const auto& x : global_infos->m_addr_map ){
     Int64 nb_event = x.second.m_counters[0];
     total_event += nb_event;
   }
 
   Int64 total_func_event = 0;
-  for( auto x : global_infos->m_func_map ){
+  for( const auto& x : global_infos->m_func_map ){
     ProfFuncInfo* pf = x.second;
     Int64 nb_event = pf->m_counters[0];
     total_func_event += nb_event;
@@ -1131,7 +1131,7 @@ dumpJSON(JSONWriter& writer)
   {
     // Créée une liste des piles triée par nombre d'évènements décroissant.
     UniqueArray<SortedProfStackInfo> sorted_stacks;
-    for( auto x : global_infos->m_stack_map ){
+    for( const auto& x : global_infos->m_stack_map ){
       const ProfStackInfo& psi = x.first;
       Int64 nb_stack = x.second;
       sorted_stacks.add(SortedProfStackInfo(psi,nb_stack));
@@ -1140,7 +1140,7 @@ dumpJSON(JSONWriter& writer)
 
     writer.writeKey("StackMap");
     writer.beginArray();
-    for( auto x : sorted_stacks.range() ){
+    for( const auto& x : sorted_stacks.range() ){
       const ProfStackInfo& psi = x.stackInfo();
       Int64 nb_stack = x.nbCount();
       if (nb_stack<2)

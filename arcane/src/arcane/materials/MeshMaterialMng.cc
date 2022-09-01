@@ -437,7 +437,7 @@ endCreate(bool is_continue)
   }
   // Il faut construire et initialiser les variables qui ont été
   // créées avant cette allocation.
-  for( auto i : m_full_name_variable_map ){
+  for( const auto& i : m_full_name_variable_map ){
     IMeshMaterialVariable* mv = i.second;
     info() << "BUILD FROM MANAGER name=" << mv->name() << " this=" << this;
     mv->buildFromManager(is_continue);
@@ -589,7 +589,7 @@ _endUpdate()
 void MeshMaterialMng::
 syncVariablesReferences()
 {
-  for( auto i : m_full_name_variable_map ){
+  for( const auto& i : m_full_name_variable_map ){
     IMeshMaterialVariable* mv = i.second;
     info(4) << "SYNC REFERENCES FROM MANAGER name=" << mv->name();
     mv->syncReferences();
@@ -604,7 +604,7 @@ visitVariables(IFunctorWithArgumentT<IMeshMaterialVariable*>* functor)
 {
   if (!functor)
     return;
-  for( auto i : m_full_name_variable_map ){
+  for( const auto& i : m_full_name_variable_map ){
     IMeshMaterialVariable* mv = i.second;
     functor->executeFunctor(mv);
   }
@@ -729,7 +729,7 @@ fillWithUsedVariables(Array<IMeshMaterialVariable*>& variables)
 
   // Utilise la map sur les noms des variables pour garantir un même
   // ordre de parcours quels que soient les sous-domaines.
-  for( auto i : m_full_name_variable_map ){
+  for( const auto& i : m_full_name_variable_map ){
     IMeshMaterialVariable* ivar = i.second;
     if (ivar->globalVariable()->isUsed())
       variables.add(ivar);
