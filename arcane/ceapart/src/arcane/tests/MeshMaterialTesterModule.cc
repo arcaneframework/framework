@@ -723,7 +723,7 @@ _applyEos(bool is_init)
       info() << "EOS: mat=" << mat->name();
       ENUMERATE_MATCELL(icell,mat){
         MatCell mc = *icell;
-        info() << "";
+        info() << " v=" << mc.globalCell().uniqueId();
       }
       if (is_init)
         x->initEOS(mat,m_mat_pressure,m_mat_density,m_mat_internal_energy,m_mat_sound_speed);

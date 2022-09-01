@@ -129,7 +129,6 @@ onExit()
 
   IParallelMng* pm = subDomain()->parallelMng();
   bool is_parallel = pm->isParallel();
-  Int32 rank = pm->commRank();
 
   Ref<IVerifierService> verifier_service;
 

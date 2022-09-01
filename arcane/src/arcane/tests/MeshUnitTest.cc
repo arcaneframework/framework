@@ -1165,7 +1165,7 @@ _testSharedItems()
   Int64 nb_shared = 0;
   ENUMERATE_ITEM(iitem,cell_family->allItems()){
     Item item = *iitem;
-    Int32 counter = var_counter[iitem];
+    Int32 counter = var_counter[item.toCell()];
     if (counter>1)
       ++nb_shared;
     if (counter>1 && !item.isShared())

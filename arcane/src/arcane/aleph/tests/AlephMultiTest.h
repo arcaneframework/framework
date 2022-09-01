@@ -22,6 +22,7 @@ class AlephMultiTest
 : public ArcaneAlephMultiTestObject
 {
  public:
+
   struct SolverBuildInfo
   {
    public:
@@ -42,7 +43,8 @@ class AlephMultiTest
   void compute(void);
 
  private:
-  AlephFactory* m_aleph_factory;
+
+  AlephFactory* m_aleph_factory = nullptr;
   UniqueArray<AlephSolver*> m_global_aleph_solver;
   UniqueArray<SolverBuildInfo> m_solvers_build_info;
   UniqueArray<AlephSolver*> m_posted_solvers;

@@ -66,7 +66,7 @@ GeomShapeMng(const GeomShapeMng& rhs)
 void GeomShapeMng::
 initialize()
 {
-  IMesh* mesh = m_cell_shape_nodes.variable()->mesh();
+  IMesh* mesh = m_cell_shape_nodes.variable()->meshHandle().mesh();
   //TODO: il faut utiliser le globalConnectivity() de IItemFamily
   // mais pour l'instant celui-ci n'est pas correctement calculé
   // lors de l'init.

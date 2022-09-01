@@ -89,7 +89,7 @@ findWhichLidFromMapMap(IVariable* var,
     String var_idx_name(var->name());
     var_idx_name = var_idx_name + String("_idx");
     VariableItemInt32* var_idx =
-    new VariableItemInt32(VariableBuildInfo(var->mesh(),
+    new VariableItemInt32(VariableBuildInfo(var->meshHandle(),
                                             var_idx_name),
                           var->itemKind());
     // On rajoute à notre map la variable '_idx' de cette variable

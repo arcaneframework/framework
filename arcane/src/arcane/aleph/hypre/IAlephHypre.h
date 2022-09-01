@@ -19,13 +19,13 @@
 #ifndef MPICH_SKIP_MPICXX
 #define MPICH_SKIP_MPICXX
 #endif
-#include "HYPRE.h"
-#include "HYPRE_utilities.h"
-#include "HYPRE_IJ_mv.h"
-#include "HYPRE_parcsr_mv.h"
-#include "HYPRE_parcsr_ls.h"
-#include "_hypre_parcsr_mv.h"
-#include "krylov.h"
+#include <HYPRE.h>
+#include <HYPRE_utilities.h>
+#include <HYPRE_IJ_mv.h>
+#include <HYPRE_parcsr_mv.h>
+#include <HYPRE_parcsr_ls.h>
+#include <_hypre_parcsr_mv.h>
+#include <krylov.h>
 
 #ifndef ItacRegion
 #define ItacRegion(a, x)

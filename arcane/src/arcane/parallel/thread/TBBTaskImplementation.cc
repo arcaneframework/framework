@@ -165,7 +165,8 @@ inline ComplexLoopRanges<1>
 _fromTBBRange(const tbb::blocked_rangeNd<Int32,1> & r)
 {
   ArrayBounds<1> lower_bounds(r.dim(0).begin());
-  ArrayBounds<1> sizes(r.dim(0).size());
+  auto s0 = static_cast<Int32>(r.dim(0).size());
+  ArrayBounds<1> sizes(s0);
   return { lower_bounds, sizes };
 }
 
@@ -173,7 +174,9 @@ inline ComplexLoopRanges<2>
 _fromTBBRange(const tbb::blocked_rangeNd<Int32,2>& r)
 {
   ArrayBounds<2> lower_bounds(r.dim(0).begin(),r.dim(1).begin());
-  ArrayBounds<2> sizes(r.dim(0).size(),r.dim(1).size());
+  auto s0 = static_cast<Int32>(r.dim(0).size());
+  auto s1 = static_cast<Int32>(r.dim(1).size());
+  ArrayBounds<2> sizes(s0,s1);
   return { lower_bounds, sizes };
 }
 
@@ -181,7 +184,10 @@ inline ComplexLoopRanges<3>
 _fromTBBRange(const tbb::blocked_rangeNd<Int32,3> & r)
 {
   ArrayBounds<3> lower_bounds(r.dim(0).begin(),r.dim(1).begin(),r.dim(2).begin());
-  ArrayBounds<3> sizes(r.dim(0).size(),r.dim(1).size(),r.dim(2).size());
+  auto s0 = static_cast<Int32>(r.dim(0).size());
+  auto s1 = static_cast<Int32>(r.dim(1).size());
+  auto s2 = static_cast<Int32>(r.dim(2).size());
+  ArrayBounds<3> sizes(s0,s1,s2);
   return { lower_bounds, sizes };
 }
 
@@ -189,7 +195,11 @@ inline ComplexLoopRanges<4>
 _fromTBBRange(const tbb::blocked_rangeNd<Int32,4>& r)
 {
   ArrayBounds<4> lower_bounds(r.dim(0).begin(),r.dim(1).begin(),r.dim(2).begin(),r.dim(3).begin());
-  ArrayBounds<4> sizes(r.dim(0).size(),r.dim(1).size(),r.dim(2).size(),r.dim(3).size());
+  auto s0 = static_cast<Int32>(r.dim(0).size());
+  auto s1 = static_cast<Int32>(r.dim(1).size());
+  auto s2 = static_cast<Int32>(r.dim(2).size());
+  auto s3 = static_cast<Int32>(r.dim(3).size());
+  ArrayBounds<4> sizes(s0,s1,s2,s3);
   return { lower_bounds, sizes };
 }
 
@@ -781,7 +791,7 @@ class TBBDeterministicParallelFor
    */
   void operator()(tbb::blocked_range<Integer>& range) const
   {
-    Integer nb_iter = range.size();
+    Integer nb_iter = static_cast<Integer>(range.size());
     for( Integer i=0; i<nb_iter; ++i ){
       Integer task_id = range.begin() + i;
       for ( Integer k=0, kn=m_nb_block_per_thread; k<kn; ++k ){

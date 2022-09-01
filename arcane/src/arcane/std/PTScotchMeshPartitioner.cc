@@ -232,7 +232,7 @@ partitionMesh(bool initial_partition,Int32 nb_part)
   }
 
 #ifdef SCOTCH_SCALING
-  PartitionConverter<float,SCOTCH_Num> converter(pm, SCOTCH_NUMMAX/2, cells_weights);
+  PartitionConverter<float,SCOTCH_Num> converter(pm, (double)SCOTCH_NUMMAX / 2.0, cells_weights);
   ArrayConverter<float,SCOTCH_Num,PartitionConverter<float,SCOTCH_Num> > scotch_vwgtConvert(cells_weights, converter);
 #else
   ArrayConverter<float,SCOTCH_Num> scotch_vwgtConvert(cells_weights);
@@ -446,7 +446,7 @@ partitionMesh(bool initial_partition,Int32 nb_part)
       if (!cellUsedWithConstraints(item))
         continue;
 
-      SCOTCH_Num new_owner = scotch_part[index];
+      auto new_owner = static_cast<Int32>(scotch_part[index]);
       ++index;
       changeCellOwner(item, cells_new_owner, new_owner);
     }

@@ -878,6 +878,10 @@ _writeSegments(Int32 rank,
   std::string s(sb.toString().localstr());
   lima.ecrire(s);
 #else
+  ARCANE_UNUSED(rank);
+  ARCANE_UNUSED(positions);
+  ARCANE_UNUSED(directions);
+  ARCANE_UNUSED(distances);
   ARCANE_THROW(NotSupportedException,"Lima is not available");
 #endif
 }

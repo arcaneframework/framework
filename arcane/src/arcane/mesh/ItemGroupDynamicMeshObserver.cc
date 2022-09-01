@@ -21,12 +21,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -95,18 +91,16 @@ executeCompact(const Int32ConstArrayView * pinfo)
 {
   if (!pinfo)
     throw ArgumentException(A_FUNCINFO,"Compact info required");
+
   // Le compactage est traité dans ItemFamily::_compactFromParentFamily
   // afin de procéder de manière consistante famille par famille
   if (arcaneIsDebug()){
-    ITraceMng* traceMng = m_mesh->traceMng();
-    const Int32ConstArrayView & old_to_new_ids = *pinfo;
+    ITraceMng* trace_mng = m_mesh->traceMng();
+    const Int32ConstArrayView& old_to_new_ids = *pinfo;
     IItemFamily* family = m_mesh->cellFamily();
-    ItemFamily* parent_family = dynamic_cast<ItemFamily*>(family->parentFamily());
-    IntegerConstArrayView old_to_new_ids2(parent_family->infos().oldToNewLocalIds());
-    ARCANE_ASSERT((old_to_new_ids.size()==old_to_new_ids2.size()),("Incompatible compact info"));
-    for(Integer i=0;i<old_to_new_ids.size();++i) {
-      ARCANE_ASSERT((old_to_new_ids[i]==old_to_new_ids2[i]),("Incompatible compact info"));
-      traceMng->debug(Trace::Highest) << "OldToNew " << parent_family->name() << " " << i << " " << old_to_new_ids2[i];
+    ItemFamily* parent_family = ARCANE_CHECK_POINTER(dynamic_cast<ItemFamily*>(family->parentFamily()));
+    for(Integer i=0; i<old_to_new_ids.size() ; ++i ) {
+      trace_mng->debug(Trace::Highest) << "OldToNew " << parent_family->name() << " " << i << " " << old_to_new_ids[i];
     }
   }
 }
@@ -116,18 +110,13 @@ executeCompact(const Int32ConstArrayView * pinfo)
 void ItemGroupDynamicMeshObserver::
 executeInvalidate()
 {
-  throw FatalErrorException(A_FUNCINFO,"Not implemented");
+  ARCANE_FATAL("Not implemented");
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -378,7 +378,7 @@ amrCoarsen(RealArray& values, const Real trigCoarsen)
       //dynMesh->trueFaceFamily().replaceBackCellToFace(face.internal(),cellFamily()->itemsInternal()[lids_to_be_attached[j]]);
       dynMesh->trueFaceFamily().addBackCellToFace(face.internal(), mesh()->cellFamily()->itemsInternal()[lids_to_be_attached[j]]);
     }
-    faceReorienter.checkAndChangeOrientation(face.internal());
+    faceReorienter.checkAndChangeOrientation(face);
   }
   //faceFamily()->endUpdate();
 
