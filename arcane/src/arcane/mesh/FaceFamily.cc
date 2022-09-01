@@ -159,7 +159,7 @@ _createOne(ItemInternal* item,Int64 uid,ItemTypeInfo* type)
  * de l'item. La mise à jour du nombre d'item du maillage est donc fait dans cette méthode,
  * et non dans le bloc appelant.
  */
-ItemInternal* FaceFamily::
+Item FaceFamily::
 allocOne(Int64 uid,ItemTypeInfo* type, MeshInfos& mesh_info)
 {
   ++mesh_info.nbFace();
@@ -191,15 +191,14 @@ allocOne(Int64 uid,ItemTypeInfo* type)
  * la face est créée. \a is_alloc est vrai si la face vient d'être créée.
  *
  */
-ItemInternal* FaceFamily::
+Item FaceFamily::
 findOrAllocOne(Int64 uid,ItemTypeInfo* type,MeshInfos& mesh_info, bool& is_alloc)
 {
   auto face = findOrAllocOne(uid,type,is_alloc);
-  if (is_alloc) ++mesh_info.nbFace();
+  if (is_alloc)
+    ++mesh_info.nbFace();
   return face;
 }
-
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

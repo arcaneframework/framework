@@ -53,9 +53,9 @@ public:
 public:
 
   //! Alloue un élément dans la famille et met à jour le \a mesh_info correspondant
-  virtual ItemInternal* allocOne(Int64 uid,ItemTypeInfo* type, mesh::MeshInfos& mesh_info) =0;
-  virtual ItemInternal* findOrAllocOne(Int64 uid,ItemTypeInfo* type, mesh::MeshInfos& mesh_info, bool& is_alloc) = 0;
-  virtual IItemFamily*  family() = 0;
+  virtual Item allocOne(Int64 uid,ItemTypeInfo* type, mesh::MeshInfos& mesh_info) =0;
+  virtual Item findOrAllocOne(Int64 uid,ItemTypeInfo* type, mesh::MeshInfos& mesh_info, bool& is_alloc) = 0;
+  virtual IItemFamily* family() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

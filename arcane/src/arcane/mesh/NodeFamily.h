@@ -70,7 +70,7 @@ class ARCANE_MESH_EXPORT NodeFamily
    */
 
   // IItemFamilyModifier interface
-  ItemInternal* allocOne(Int64 uid,ItemTypeInfo* type, MeshInfos& mesh_info) override
+  Item allocOne(Int64 uid,ItemTypeInfo* type, MeshInfos& mesh_info) override
   {
     ARCANE_ASSERT((type->typeId() == IT_Vertex),("Creating node with a type not equal to IT_Vertex"));
     ARCANE_UNUSED(type);
@@ -87,7 +87,7 @@ class ARCANE_MESH_EXPORT NodeFamily
   }
 
   // IItemFamilyModifier interface
-  ItemInternal* findOrAllocOne(Int64 uid,ItemTypeInfo* type,MeshInfos& mesh_info, bool& is_alloc) override
+  Item findOrAllocOne(Int64 uid,ItemTypeInfo* type,MeshInfos& mesh_info, bool& is_alloc) override
   {
     ARCANE_ASSERT((type->typeId() == IT_Vertex),("Creating node with a type not equal to IT_Vertex"));
     ARCANE_UNUSED(type);

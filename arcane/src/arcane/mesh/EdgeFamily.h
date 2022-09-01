@@ -53,9 +53,9 @@ class ARCANE_MESH_EXPORT EdgeFamily
 
   //! Version appelées dans l'ajout générique d'item
   // IItemFamilyModifier interface
-  ItemInternal* allocOne(Int64 uid,ItemTypeInfo* type, MeshInfos& mesh_info) override;
-  ItemInternal* findOrAllocOne(Int64 uid,ItemTypeInfo* type,MeshInfos& mesh_info, bool& is_alloc) override;
-  IItemFamily*  family() override {return this;}
+  Item allocOne(Int64 uid,ItemTypeInfo* type, MeshInfos& mesh_info) override;
+  Item findOrAllocOne(Int64 uid,ItemTypeInfo* type,MeshInfos& mesh_info, bool& is_alloc) override;
+  IItemFamily* family() override {return this;}
 
   ItemInternal* allocOne(Int64 uid);
   ItemInternal* findOrAllocOne(Int64 uid,bool& is_alloc);

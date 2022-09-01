@@ -70,8 +70,8 @@ class ARCANE_MESH_EXPORT FaceFamily
  public:
 
   // IItemFamilyModifier Interface
-  ItemInternal* allocOne(Int64 uid,ItemTypeInfo* type, MeshInfos& mesh_info) override;
-  ItemInternal* findOrAllocOne(Int64 uid,ItemTypeInfo* type,MeshInfos& mesh_info, bool& is_alloc) override;
+  Item allocOne(Int64 uid,ItemTypeInfo* type, MeshInfos& mesh_info) override;
+  Item findOrAllocOne(Int64 uid,ItemTypeInfo* type,MeshInfos& mesh_info, bool& is_alloc) override;
   IItemFamily* family() override { return this; }
 
   ItemInternal* allocOne(Int64 uid,ItemTypeInfo* type);

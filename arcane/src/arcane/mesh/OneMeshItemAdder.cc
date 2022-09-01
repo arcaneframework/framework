@@ -337,12 +337,12 @@ addOneItem(IItemFamily* family,
 {
   ARCANE_ASSERT(m_mesh->itemFamilyNetwork(),("ItemFamilyNetwork is required to call OneMeshItemAdder::addOneItem"));
   bool is_alloc = true;
-  ItemInternal* item = family_modifier->findOrAllocOne(item_uid,type,m_mesh_info,is_alloc); // don't forget to add print in the class method
+  Item xitem = family_modifier->findOrAllocOne(item_uid,type,m_mesh_info,is_alloc); // don't forget to add print in the class method
+  ItemInternal* item = xitem.internal();
   item->setOwner(item_owner,sub_domain_id);
   // Add connectivities if needed
   Integer info_index = 0;
-  for (Integer family_index = 0; family_index < nb_connected_family; ++family_index)
-    {
+  for (Integer family_index = 0; family_index < nb_connected_family; ++family_index){
       // get connected family
       eItemKind family_kind = static_cast<eItemKind>(connectivity_info[info_index++]); // another way ?
       Int32 nb_connected_item = CheckedConvert::toInt32(connectivity_info[info_index++]);
@@ -361,14 +361,14 @@ addOneItem(IItemFamily* family,
       // get connected item lids
       Int32UniqueArray connected_item_lids(nb_connected_item);
       connected_family->itemsUniqueIdToLocalId(connected_item_lids,connectivity_info.subView(info_index,nb_connected_item),true);
-      for (Integer connected_item_index = 0; connected_item_index < nb_connected_item; ++connected_item_index)
-        {
+      for (Integer connected_item_index = 0; connected_item_index < nb_connected_item; ++connected_item_index){
           if (family_to_connected_family) {
               // pre-alloc are done (=> use replace) when a dependency relation ("owning relation") while not when only a relation (use add)
               if (! is_dependency) family_to_connected_family->addConnectedItem(ItemLocalId(item),ItemLocalId(connected_item_lids[connected_item_index]));
               else family_to_connected_family->replaceConnectedItem(ItemLocalId(item),connected_item_index,ItemLocalId(connected_item_lids[connected_item_index])); // does not work with face to edges...
           }
-          if (connected_family_to_family) connected_family_to_family->addConnectedItem(ItemLocalId(connected_item_lids[connected_item_index]),ItemLocalId(item));
+          if (connected_family_to_family)
+            connected_family_to_family->addConnectedItem(ItemLocalId(connected_item_lids[connected_item_index]),ItemLocalId(item));
         }
       info_index+= nb_connected_item;
     }
@@ -391,7 +391,8 @@ addOneItem2(IItemFamily* family,
 {
   ARCANE_ASSERT(m_mesh->itemFamilyNetwork(),("ItemFamilyNetwork is required to call OneMeshItemAdder::addOneItem"));
   bool is_alloc = true;
-  ItemInternal* item = family_modifier->findOrAllocOne(item_uid,type,m_mesh_info,is_alloc); // don't forget to add print in the class method
+  Item xitem = family_modifier->findOrAllocOne(item_uid,type,m_mesh_info,is_alloc); // don't forget to add print in the class method
+  ItemInternal* item = xitem.internal();
   item->setOwner(item_owner,sub_domain_id);
   // Add connectivities if needed
   Integer info_index = 0;
@@ -402,8 +403,7 @@ addOneItem2(IItemFamily* family,
     Int32 nb_connected_item = CheckedConvert::toInt32(connectivity_info[info_index++]);
     if (nb_connected_item == 0) continue;
     IItemFamily* connected_family = nullptr ;
-    switch(family_kind)
-    {
+    switch(family_kind){
       case IK_Particle:
         connected_family = m_mesh->findItemFamily(family_kind, ParticleFamily::defaultFamilyName(), false,false);
         break ;

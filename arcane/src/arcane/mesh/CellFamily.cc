@@ -166,7 +166,7 @@ _createOne(ItemInternal* item,Int64 uid,ItemTypeInfo* type)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ItemInternal* CellFamily::
+Item CellFamily::
 allocOne(Int64 uid,ItemTypeInfo* type, MeshInfos& mesh_info)
 {
   ++mesh_info.nbCell();
@@ -176,7 +176,7 @@ allocOne(Int64 uid,ItemTypeInfo* type, MeshInfos& mesh_info)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ItemInternal* CellFamily::
+Item CellFamily::
 findOrAllocOne(Int64 uid,ItemTypeInfo* type,MeshInfos& mesh_info, bool& is_alloc)
 {
   auto cell = findOrAllocOne(uid,type,is_alloc);

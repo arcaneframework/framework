@@ -131,7 +131,7 @@ _createOne(ItemInternal* item,Int64 uid)
  * de l'item. La mise à jour du nombre d'item du maillage est donc fait dans cette méthode,
  * et non dans le bloc appelant.
  */
-ItemInternal* EdgeFamily::
+Item EdgeFamily::
 allocOne(Int64 uid,ItemTypeInfo* type, MeshInfos& mesh_info)
 {
   ARCANE_ASSERT((type->typeId() == IT_Line2),(""));
@@ -165,7 +165,7 @@ allocOne(Int64 uid)
  * Si une arête de numéro unique \a uid existe déjà, la retourne. Sinon,
  * l'arête est créée. \a is_alloc est vrai si l'arête vient d'être créée.
  */
-ItemInternal* EdgeFamily::
+Item EdgeFamily::
 findOrAllocOne(Int64 uid,ItemTypeInfo* type,MeshInfos& mesh_info, bool& is_alloc)
 {
   ARCANE_ASSERT((type->typeId() == IT_Line2),(""));
