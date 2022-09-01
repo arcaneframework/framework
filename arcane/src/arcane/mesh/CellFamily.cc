@@ -151,38 +151,64 @@ _createOne(ItemInternal* item,Int64 uid,ItemTypeInfo* type)
   m_item_internal_list->cells = _itemsInternal();
   _allocateInfos(item,uid,type);
   auto nc = m_node_connectivity->trueCustomConnectivity();
-  if (nc)
-    nc->addConnectedItems(item_lid,type->nbLocalNode());
+  nc->addConnectedItems(item_lid,type->nbLocalNode());
   if (m_edge_prealloc!=0){
     auto ec = m_edge_connectivity->trueCustomConnectivity();
-    if (ec)
-      ec->addConnectedItems(item_lid,type->nbLocalEdge());
+    ec->addConnectedItems(item_lid,type->nbLocalEdge());
   }
   auto fc = m_face_connectivity->trueCustomConnectivity();
-  if (fc)
-    fc->addConnectedItems(item_lid,type->nbLocalFace());
+  fc->addConnectedItems(item_lid,type->nbLocalFace());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+inline void CellFamily::
+_createOne(ItemInternal* item,Int64 uid,ItemTypeId type_id)
+{
+  _createOne(item,uid,_itemTypeMng()->typeFromId(type_id));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 Item CellFamily::
-allocOne(Int64 uid,ItemTypeInfo* type, MeshInfos& mesh_info)
+allocOne(Int64 uid,ItemTypeId type_id, MeshInfos& mesh_info)
 {
   ++mesh_info.nbCell();
-  return allocOne(uid,type);
+  return allocOne(uid,type_id);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 Item CellFamily::
-findOrAllocOne(Int64 uid,ItemTypeInfo* type,MeshInfos& mesh_info, bool& is_alloc)
+findOrAllocOne(Int64 uid,ItemTypeId type_id,MeshInfos& mesh_info, bool& is_alloc)
 {
-  auto cell = findOrAllocOne(uid,type,is_alloc);
+  auto cell = findOrAllocOne(uid,type_id,is_alloc);
   if (is_alloc)
     ++mesh_info.nbCell();
   return cell;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Cell CellFamily::
+allocOne(Int64 uid,ItemTypeId type_id)
+{
+  ItemInternal* item = _allocOne(uid);
+  _createOne(item,uid,type_id);
+  return item;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Cell CellFamily::
+findOrAllocOne(Int64 uid,ItemTypeId type_id,bool& is_alloc)
+{
+  return findOrAllocOne(uid,_itemTypeMng()->typeFromId(type_id),is_alloc);
 }
 
 /*---------------------------------------------------------------------------*/

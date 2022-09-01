@@ -97,7 +97,7 @@ private:
 
  public:
 
-  Item allocOne(Int64 uid,ItemTypeInfo*, MeshInfos&) override
+  Item allocOne(Int64 uid,ItemTypeId, MeshInfos&) override
   {
     return _allocDoF(uid);
   }
@@ -108,7 +108,7 @@ private:
   }
 
   // IItemFamilyModifier interface
-  Item findOrAllocOne(Int64 uid,ItemTypeInfo*,MeshInfos&, bool& is_alloc) override
+  Item findOrAllocOne(Int64 uid,ItemTypeId,MeshInfos&, bool& is_alloc) override
   {
     auto dof = _findOrAllocDoF(uid,is_alloc);
     return dof;

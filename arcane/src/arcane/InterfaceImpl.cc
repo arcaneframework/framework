@@ -180,6 +180,24 @@ primaryMesh()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+ItemInternal* IItemFamilyModifier::
+allocOne(Int64 uid,ItemTypeInfo* type, mesh::MeshInfos& mesh_info)
+{
+  return allocOne(uid,type->itemTypeId(),mesh_info).internal();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ItemInternal* IItemFamilyModifier::
+findOrAllocOne(Int64 uid,ItemTypeInfo* type, mesh::MeshInfos& mesh_info, bool& is_alloc)
+{
+  return findOrAllocOne(uid,type->itemTypeId(),mesh_info,is_alloc).internal();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/

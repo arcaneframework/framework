@@ -152,6 +152,15 @@ _createOne(ItemInternal* item,Int64 uid,ItemTypeInfo* type)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+inline void FaceFamily::
+_createOne(ItemInternal* item,Int64 uid,ItemTypeId type_id)
+{
+  _createOne(item,uid,_itemTypeMng()->typeFromId(type_id));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Alloue une face de numéro unique \a uid et de type \a type. Ajout générique d'item.
  *
@@ -160,10 +169,10 @@ _createOne(ItemInternal* item,Int64 uid,ItemTypeInfo* type)
  * et non dans le bloc appelant.
  */
 Item FaceFamily::
-allocOne(Int64 uid,ItemTypeInfo* type, MeshInfos& mesh_info)
+allocOne(Int64 uid,ItemTypeId type_id, MeshInfos& mesh_info)
 {
   ++mesh_info.nbFace();
-  return allocOne(uid,type);
+  return allocOne(uid,type_id);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -182,7 +191,7 @@ allocOne(Int64 uid,ItemTypeInfo* type)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Récupère ou alloue une face de numéro unique \a uid et de type \a type. Ajout générique d'item.
+ * \brief Récupère ou alloue une face de numéro unique \a uid et de type \a type.
  *
  * Cette version est faite pour être appelée dans un bloc générique ignorant le type
  * de l'item. La mise à jour du nombre d'item du maillage est donc fait dans cette méthode,
@@ -192,9 +201,9 @@ allocOne(Int64 uid,ItemTypeInfo* type)
  *
  */
 Item FaceFamily::
-findOrAllocOne(Int64 uid,ItemTypeInfo* type,MeshInfos& mesh_info, bool& is_alloc)
+findOrAllocOne(Int64 uid,ItemTypeId type_id,MeshInfos& mesh_info, bool& is_alloc)
 {
-  auto face = findOrAllocOne(uid,type,is_alloc);
+  auto face = findOrAllocOne(uid,type_id,is_alloc);
   if (is_alloc)
     ++mesh_info.nbFace();
   return face;
@@ -211,10 +220,33 @@ findOrAllocOne(Int64 uid,ItemTypeInfo* type,MeshInfos& mesh_info, bool& is_alloc
 ItemInternal* FaceFamily::
 findOrAllocOne(Int64 uid,ItemTypeInfo* type,bool& is_alloc)
 {
-  // ARCANE_ASSERT((type->typeId() != IT_Vertex),("Bad new 1D face uid=%ld", uid)); // Assertion OK, but expensive ?
   ItemInternal* item = _findOrAllocOne(uid,is_alloc);
   if (is_alloc){
     _createOne(item,uid,type);
+  }
+  return item;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Face FaceFamily::
+allocOne(Int64 uid,ItemTypeId type_id)
+{
+  ItemInternal* item = _allocOne(uid);
+  _createOne(item,uid,type_id);
+  return item;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Face FaceFamily::
+findOrAllocOne(Int64 uid,ItemTypeId type_id,bool& is_alloc)
+{
+  ItemInternal* item = _findOrAllocOne(uid,is_alloc);
+  if (is_alloc){
+    _createOne(item,uid,type_id);
   }
   return item;
 }

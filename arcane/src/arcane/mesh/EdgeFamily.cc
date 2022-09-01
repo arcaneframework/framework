@@ -132,10 +132,10 @@ _createOne(ItemInternal* item,Int64 uid)
  * et non dans le bloc appelant.
  */
 Item EdgeFamily::
-allocOne(Int64 uid,ItemTypeInfo* type, MeshInfos& mesh_info)
+allocOne(Int64 uid,ItemTypeId type_id, MeshInfos& mesh_info)
 {
-  ARCANE_ASSERT((type->typeId() == IT_Line2),(""));
-  ARCANE_UNUSED(type);
+  ARCANE_ASSERT((type_id == IT_Line2),(""));
+  ARCANE_UNUSED(type_id);
   ++mesh_info.nbEdge();
   return allocOne(uid);
 }
@@ -166,12 +166,13 @@ allocOne(Int64 uid)
  * l'arête est créée. \a is_alloc est vrai si l'arête vient d'être créée.
  */
 Item EdgeFamily::
-findOrAllocOne(Int64 uid,ItemTypeInfo* type,MeshInfos& mesh_info, bool& is_alloc)
+findOrAllocOne(Int64 uid,ItemTypeId type_id,MeshInfos& mesh_info, bool& is_alloc)
 {
-  ARCANE_ASSERT((type->typeId() == IT_Line2),(""));
-  ARCANE_UNUSED(type);
+  ARCANE_ASSERT((type_id == IT_Line2),(""));
+  ARCANE_UNUSED(type_id);
   auto edge = findOrAllocOne(uid,is_alloc);
-  if (is_alloc) ++mesh_info.nbEdge();
+  if (is_alloc)
+    ++mesh_info.nbEdge();
   return edge;
 }
 

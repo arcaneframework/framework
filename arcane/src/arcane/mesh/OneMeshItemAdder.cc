@@ -337,7 +337,7 @@ addOneItem(IItemFamily* family,
 {
   ARCANE_ASSERT(m_mesh->itemFamilyNetwork(),("ItemFamilyNetwork is required to call OneMeshItemAdder::addOneItem"));
   bool is_alloc = true;
-  Item xitem = family_modifier->findOrAllocOne(item_uid,type,m_mesh_info,is_alloc); // don't forget to add print in the class method
+  Item xitem = family_modifier->findOrAllocOne(item_uid,type->itemTypeId(),m_mesh_info,is_alloc); // don't forget to add print in the class method
   ItemInternal* item = xitem.internal();
   item->setOwner(item_owner,sub_domain_id);
   // Add connectivities if needed
@@ -391,7 +391,7 @@ addOneItem2(IItemFamily* family,
 {
   ARCANE_ASSERT(m_mesh->itemFamilyNetwork(),("ItemFamilyNetwork is required to call OneMeshItemAdder::addOneItem"));
   bool is_alloc = true;
-  Item xitem = family_modifier->findOrAllocOne(item_uid,type,m_mesh_info,is_alloc); // don't forget to add print in the class method
+  Item xitem = family_modifier->findOrAllocOne(item_uid,type->itemTypeId(),m_mesh_info,is_alloc); // don't forget to add print in the class method
   ItemInternal* item = xitem.internal();
   item->setOwner(item_owner,sub_domain_id);
   // Add connectivities if needed

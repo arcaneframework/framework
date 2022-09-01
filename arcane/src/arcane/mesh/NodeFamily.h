@@ -70,10 +70,10 @@ class ARCANE_MESH_EXPORT NodeFamily
    */
 
   // IItemFamilyModifier interface
-  Item allocOne(Int64 uid,ItemTypeInfo* type, MeshInfos& mesh_info) override
+  Item allocOne(Int64 uid,ItemTypeId type_id, MeshInfos& mesh_info) override
   {
-    ARCANE_ASSERT((type->typeId() == IT_Vertex),("Creating node with a type not equal to IT_Vertex"));
-    ARCANE_UNUSED(type);
+    ARCANE_ASSERT((type_id == IT_Vertex),("Creating node with a type not equal to IT_Vertex"));
+    ARCANE_UNUSED(type_id);
     ++mesh_info.nbNode();
     return allocOne(uid);
   }
@@ -87,12 +87,13 @@ class ARCANE_MESH_EXPORT NodeFamily
   }
 
   // IItemFamilyModifier interface
-  Item findOrAllocOne(Int64 uid,ItemTypeInfo* type,MeshInfos& mesh_info, bool& is_alloc) override
+  Item findOrAllocOne(Int64 uid,ItemTypeId type_id,MeshInfos& mesh_info, bool& is_alloc) override
   {
-    ARCANE_ASSERT((type->typeId() == IT_Vertex),("Creating node with a type not equal to IT_Vertex"));
-    ARCANE_UNUSED(type);
+    ARCANE_ASSERT((type_id == IT_Vertex),("Creating node with a type not equal to IT_Vertex"));
+    ARCANE_UNUSED(type_id);
     auto node = findOrAllocOne(uid,is_alloc);
-    if (is_alloc) ++mesh_info.nbNode();
+    if (is_alloc)
+      ++mesh_info.nbNode();
     return node;
   }
 
