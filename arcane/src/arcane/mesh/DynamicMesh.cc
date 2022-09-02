@@ -617,7 +617,7 @@ initializeVariables(const XmlNode& init_node)
   bool has_error = false;
   IVariableMng* vm = m_sub_domain->variableMng();
   XmlNodeList child_list = init_node.children(String("variable"));
-  for( auto i : child_list ){
+  for( const auto& i : child_list ){
     String var_name = i.attrValue("nom");
     IVariable* var = vm->findMeshVariable(this,var_name);
     if (!var){
@@ -880,7 +880,7 @@ _serializeItems(ISerializer* buffer,Int32ConstArrayView item_local_ids, IItemFam
   using FamilyLidMap = std::map<String, Int32UniqueArray>;
   FamilyLidMap serialized_items;
   serialized_items[item_family->name()] = item_local_ids;
-  for (auto connectivity : mesh()->itemFamilyNetwork()->getChildDependencies(item_family)){
+  for (const auto& connectivity : mesh()->itemFamilyNetwork()->getChildDependencies(item_family)){
     ENUMERATE_ITEM(item, item_family->view(item_local_ids)) {
       auto connectivity_accessor = ConnectivityItemVector{connectivity};
       auto& connected_family_serialized_items = serialized_items[connectivity->targetFamily()->name()];
@@ -3208,7 +3208,7 @@ _updateItemFamilyDependencies(VariableScalarInteger connectivity)
   if (!m_item_family_network)
     return;
   Connectivity c(connectivity);
-  for (auto con : m_item_family_network->getConnectivities()) {
+  for (const auto& con : m_item_family_network->getConnectivities()) {
     if (c.hasConnectivity(c.kindsToConnectivity(con->sourceFamily()->itemKind(),con->targetFamily()->itemKind()))){
       m_item_family_network->setIsStored(con);
     }

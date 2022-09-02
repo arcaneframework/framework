@@ -442,7 +442,7 @@ _computeSpecificGhostLayer()
 
   if (m_is_verbose) {
     info() << "GHOST_CELLS_TO_SEND";
-    for (auto v : m_ghost_cells_builder->m_ghost_cell_uids) {
+    for (const auto& v : m_ghost_cells_builder->m_ghost_cell_uids) {
       info() << "RANK=" << v.first << " ids=" << v.second;
     }
   }

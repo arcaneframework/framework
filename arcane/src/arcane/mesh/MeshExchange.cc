@@ -191,16 +191,16 @@ MeshExchange(IMesh* mesh)
 MeshExchange::
 ~MeshExchange()
 {
-  for( auto itosend : m_items_to_send )
+  for( const auto& itosend : m_items_to_send )
     delete itosend.second;
   delete m_neighbour_cells_owner;
   delete m_neighbour_cells_new_owner;
   delete m_neighbour_extra_cells_owner;
   delete m_neighbour_extra_cells_new_owner;
-  for (auto idestrank : m_item_dest_ranks_map)
+  for( const auto& idestrank : m_item_dest_ranks_map)
     delete idestrank.second;
-  for (auto ighostdestrank_map : m_ghost_item_dest_ranks_map)
-    for (auto ighostdestrank : ighostdestrank_map)
+  for (const auto& ighostdestrank_map : m_ghost_item_dest_ranks_map)
+    for (const auto& ighostdestrank : ighostdestrank_map)
       delete ighostdestrank.second;
 }
 
@@ -560,7 +560,7 @@ _addItemToSend(ArrayView< std::set<Int32> > items_to_send,
 void MeshExchange::
 _computeItemsToSend(bool send_dof)
 {
-  for( auto iter : m_items_to_send )
+  for( const auto& iter : m_items_to_send )
     iter.second->resize(m_nb_rank);
 
   IItemFamily* node_family = mesh()->nodeFamily();
@@ -620,7 +620,7 @@ _computeItemsToSend(bool send_dof)
   }
 
   // S'assure qu'on ne s'envoie pas les entités
-  for( auto iter : m_items_to_send )
+  for( const auto& iter : m_items_to_send )
     (*(iter.second))[m_rank].clear();
 
   bool is_print = false;
@@ -790,7 +790,7 @@ _familyTree (Int32Array& family,Cell item,
 void MeshExchange::
 _computeItemsToSend2()
 {
-  for( auto iter : m_items_to_send )
+  for( const auto& iter : m_items_to_send )
     iter.second->resize(m_nb_rank);
 
   IItemFamily* node_family = mesh()->nodeFamily();
@@ -859,7 +859,7 @@ _computeItemsToSend2()
   }
  
   // S'assure qu'on ne s'envoie pas les entités
-  for( auto iter : m_items_to_send )
+  for( const auto& iter : m_items_to_send )
     (*(iter.second))[m_rank].clear();
 }
 
@@ -932,18 +932,15 @@ _propagatesToChildConnectivities(IItemFamily* family)
    * }
    */
   auto child_connectivities = m_mesh->itemFamilyNetwork()->getChildConnectivities(family);
-  for (auto child_connectivity : child_connectivities)
-  {
+  for (const auto& child_connectivity : child_connectivities){
     //if(!child_connectivity->isEmpty())
     {
-      auto accessor = IndexedItemConnectivityAccessor(child_connectivity) ;
-      ENUMERATE_ITEM(item, family->allItems())
-      {
+      auto accessor = IndexedItemConnectivityAccessor(child_connectivity);
+      ENUMERATE_ITEM(item, family->allItems()){
         // Parse child relations
         _addDestRank(*item,family,item_new_owner[item]);
 
-        ENUMERATE_ITEM(connected_item,accessor(ItemLocalId(item)))
-        {
+        ENUMERATE_ITEM(connected_item,accessor(ItemLocalId(item))){
           _addDestRank(*connected_item,child_connectivity->targetFamily(),*item,family);
         }
       }
@@ -1001,16 +998,13 @@ _propagatesToChildDependencies(IItemFamily* family)
   //    would contain the immediate children (FirstRankChildren) would be an EdgeSet or smthg near
   //    => thus we would need to add to the DAG a method children(const Edge&) (see for the name firstRankChildren ??)
   auto child_dependencies =  m_mesh->itemFamilyNetwork()->getChildDependencies(family);
-  for (auto child_dependency :child_dependencies)
-  {
+  for (const auto& child_dependency :child_dependencies){
     //if(!child_dependency->isEmpty())
     {
-      auto accessor = IndexedItemConnectivityAccessor(child_dependency) ;
-      ENUMERATE_ITEM(item, family->allItems())
-      {
+      auto accessor = IndexedItemConnectivityAccessor(child_dependency);
+      ENUMERATE_ITEM(item, family->allItems()){
         // Parse child dependencies
-          ENUMERATE_ITEM(connected_item,accessor(ItemLocalId(item)))
-          {
+          ENUMERATE_ITEM(connected_item,accessor(ItemLocalId(item))){
             _addDestRank(*connected_item,child_dependency->targetFamily(),*item, family); // as simple as that ??
           }
       }
@@ -1033,7 +1027,8 @@ _addDestRank(const Item& item, IItemFamily* item_family, const Integer new_owner
   }
   // Insert element only if not present
   auto& item_ranks_internal = item_dest_ranks->at(item.localId());
-  if (! item_ranks_internal.contains(new_owner)) item_dest_ranks->at(item.localId()).add(new_owner);
+  if (!item_ranks_internal.contains(new_owner))
+    item_dest_ranks->at(item.localId()).add(new_owner);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1062,9 +1057,9 @@ _addDestRank(const Item& item, IItemFamily* item_family, const Item& followed_it
   auto& current_dest_ranks = item_dest_ranks->at(item.localId());
   IntegerUniqueArray new_dest_rank_to_add;
   new_dest_rank_to_add.reserve((new_dest_ranks.size()));
-  for (auto& new_dest_rank : new_dest_ranks)
-  {
-    if (!current_dest_ranks.contains(new_dest_rank)) new_dest_rank_to_add.add(new_dest_rank);
+  for (auto& new_dest_rank : new_dest_ranks){
+    if (!current_dest_ranks.contains(new_dest_rank))
+      new_dest_rank_to_add.add(new_dest_rank);
   }
   current_dest_ranks.addRange(new_dest_rank_to_add);
 }
@@ -1122,8 +1117,7 @@ _exchangeCellDataInfos3()
   Int32UniqueArray family_nb_items;
   Int64UniqueArray item_uids;
 
-  for( Integer i=0, is=recv_sub_domains.size(); i<is; ++i )
-  {
+  for( Integer i=0, is=recv_sub_domains.size(); i<is; ++i ){
       ISerializeMessage* comm = sd_exchange->messageToSend(i);
       Int32 dest_sub_domain = comm->destination().value();
       ISerializer* sbuf = comm->serializer();
@@ -1132,7 +1126,7 @@ _exchangeCellDataInfos3()
       item_nb_dest_ranks.clear();
       family_nb_items.clear();
       item_uids.clear();
-      for (auto family_ghost_item_dest_ranks : m_ghost_item_dest_ranks_map[dest_sub_domain]) {
+      for (const auto& family_ghost_item_dest_ranks : m_ghost_item_dest_ranks_map[dest_sub_domain]) {
         Integer family_nb_item = 0;
         item_lids.clear();
         item_families.add(family_ghost_item_dest_ranks.first);
@@ -1152,7 +1146,7 @@ _exchangeCellDataInfos3()
       }
       sbuf->setMode(ISerializer::ModeReserve);
       sbuf->reserve(DT_Int64,1); // nb_item_family
-      for (auto family: item_families)
+      for (const auto& family: item_families)
         sbuf->reserve(family->name()); // ItemFamily->name
       sbuf->reserveInteger(item_families.size()); // ItemFamily->itemKind
       sbuf->reserveArray(item_uids);
@@ -1164,9 +1158,9 @@ _exchangeCellDataInfos3()
       sbuf->setMode(ISerializer::ModePut);
 
       sbuf->putInt64(item_families.size());
-      for (auto family: item_families)
+      for (const auto& family: item_families)
         sbuf->put(family->name()); // ItemFamily->name
-      for (auto family: item_families)
+      for (const auto& family: item_families)
         sbuf->putInteger(family->itemKind()); // ItemFamily->itemKind
       sbuf->putArray(item_uids);
       sbuf->putArray(family_nb_items);
@@ -1200,8 +1194,7 @@ _exchangeCellDataInfos3()
       Int64ArrayView family_item_uids = item_uids.subView(item_uid_index,family_nb_items[family_index]);
       item_lids.resize(family_item_uids.size());
       family->itemsUniqueIdToLocalId(item_lids,family_item_uids,true);
-      for (auto item_lid : item_lids)
-      {
+      for (const auto& item_lid : item_lids){
         auto sub_view = item_dest_ranks.subView(item_dest_rank_index,item_nb_dest_ranks[item_nb_dest_rank_index]);
         m_item_dest_ranks_map[family]->at(item_lid).addRange(sub_view);
         item_dest_rank_index+= item_nb_dest_ranks[item_nb_dest_rank_index++];
@@ -1216,7 +1209,7 @@ _exchangeCellDataInfos3()
 void MeshExchange::
 _computeItemsToSend3()
 {
-  for( auto iter : m_items_to_send )
+  for( const auto& iter : m_items_to_send )
     iter.second->resize(m_nb_rank);
 
   IItemFamily* node_family = mesh()->nodeFamily();
@@ -1236,8 +1229,8 @@ _computeItemsToSend3()
       if (particle_family && particle_family->getEnableGhostItems()==true){
         ArrayView<std::set<Int32>> to_send = _getItemsToSend(family);
         ENUMERATE_PARTICLE(iparticle,particle_family->allItems().own()){
-          for (auto dest_rank : m_item_dest_ranks_map[m_cell_family]->at(iparticle->cell().localId())) {
-                to_send[dest_rank].insert(iparticle->localId());
+          for (const auto& dest_rank : m_item_dest_ranks_map[m_cell_family]->at(iparticle->cell().localId())) {
+            to_send[dest_rank].insert(iparticle->localId());
           }
         }
       }
@@ -1245,7 +1238,7 @@ _computeItemsToSend3()
   }
 
   // S'assure qu'on ne s'envoie pas les entités
-  for( auto iter : m_items_to_send )
+  for( const auto& iter : m_items_to_send )
     (*(iter.second))[m_rank].clear();
 
   // SDC DEBUG
@@ -1266,10 +1259,8 @@ _setItemsToSend(IItemFamily* family)
   if (iter==m_items_to_send.end())
     ARCANE_FATAL("No items to send for family '{0}'",family->name());
   ArrayView<std::set<Int32>> items_to_send = iter->second->view();
-  for (Integer item_lid = 0 ; item_lid < m_item_dest_ranks_map[family]->size(); ++item_lid)
-  {
-    for (auto dest_rank : m_item_dest_ranks_map[family]->at(item_lid))
-    {
+  for (Integer item_lid = 0 ; item_lid < m_item_dest_ranks_map[family]->size(); ++item_lid){
+    for (const auto& dest_rank : m_item_dest_ranks_map[family]->at(item_lid)){
       items_to_send[dest_rank].insert(item_lid);
     }
   }
@@ -1288,10 +1279,10 @@ _printItemToSend(IItemFamily* family)
   // SDC DEBUG print
   Integer rank = 0;
   debug() << "= ITEM TO SEND FOR FAMILY " << family->name();
-  for (auto owner_lids : items_to_send) {
+  for (const auto& owner_lids : items_to_send) {
     debug() << "== RANK " << rank++;
     for (auto item_lid : owner_lids){
-        debug() << "=== has items " << item_lid;
+      debug() << "=== has items " << item_lid;
     }
   }
 }
@@ -1314,14 +1305,12 @@ _printItemToRemove(IItemFamily* family)
 void MeshExchange::
 _markRemovableDoFs()
 {
-  for (auto item_dest_ranks_iter : m_item_dest_ranks_map)
-  { // todo use C++17 structured bindings
+  for (const auto& item_dest_ranks_iter : m_item_dest_ranks_map){
+    // todo use C++17 structured bindings
     IItemFamily* family = item_dest_ranks_iter.first;
-    if(family->itemKind() == IK_DoF )
-    {
+    if(family->itemKind() == IK_DoF ){
       auto & item_new_owners = family->itemsNewOwner();
-      ENUMERATE_ITEM(item, family->allItems())
-      {
+      ENUMERATE_ITEM(item, family->allItems()){
         Int32ArrayView item_dest_ranks;
         // Get destination rank for item (depending if it's ghost or own)
         if (item->isOwn())
@@ -1329,8 +1318,7 @@ _markRemovableDoFs()
         else
           item_dest_ranks = m_ghost_item_dest_ranks_map[item->owner()][family]->at(item->localId()).view();
         // Check if the item must stay on the subdomain (ie dest_rank or new_owner contain the subdomain)
-        if (!item_dest_ranks.contains(m_rank) && item_new_owners[item] != m_rank)
-        {
+        if (!item_dest_ranks.contains(m_rank) && item_new_owners[item] != m_rank){
           item.internal()->setFlags(item.internal()->flags() | ItemFlags::II_NeedRemove);
         }
       }
@@ -1342,14 +1330,12 @@ _markRemovableDoFs()
 void MeshExchange::
 _markRemovableItems(bool with_cell_family)
 {
-  for (auto item_dest_ranks_iter : m_item_dest_ranks_map)
-  { // todo use C++17 structured bindings
+  for (const auto& item_dest_ranks_iter : m_item_dest_ranks_map){
+    // todo use C++17 structured bindings
     IItemFamily* family = item_dest_ranks_iter.first;
-    if(with_cell_family || family->name()!=m_cell_family->name() )
-    {
+    if(with_cell_family || family->name()!=m_cell_family->name() ){
       auto & item_new_owners = family->itemsNewOwner();
-      ENUMERATE_ITEM(item, family->allItems())
-      {
+      ENUMERATE_ITEM(item, family->allItems()){
         Int32ArrayView item_dest_ranks;
         // Get destination rank for item (depending if it's ghost or own)
         if (item->isOwn())
@@ -1357,13 +1343,12 @@ _markRemovableItems(bool with_cell_family)
         else
           item_dest_ranks = m_ghost_item_dest_ranks_map[item->owner()][family]->at(item.localId()).view();
         // Check if the item must stay on the subdomain (ie dest_rank or new_owner contain the subdomain)
-        if (!item_dest_ranks.contains(m_rank) && item_new_owners[item] != m_rank)
-        {
+        if (!item_dest_ranks.contains(m_rank) && item_new_owners[item] != m_rank){
           item.internal()->setFlags(item.internal()->flags() | ItemFlags::II_NeedRemove);
         }
       }
     }
-//    _printItemToRemove(item_dest_ranks_iter.first); // SDC DEBUG
+    //    _printItemToRemove(item_dest_ranks_iter.first); // SDC DEBUG
   }
 }
 
@@ -1456,18 +1441,19 @@ _checkSubItemsDestRanks()
   m_mesh->itemFamilyNetwork()->schedule([this](IItemFamily* family){
     ENUMERATE_ITEM(item, family->allItems().own()) {
       const auto& item_dest_ranks = m_item_dest_ranks_map[family]->at(item.localId());
-      for (auto child_dependency : m_mesh->itemFamilyNetwork()->getChildDependencies(family))
+      for (const auto& child_dependency : m_mesh->itemFamilyNetwork()->getChildDependencies(family))
       {
         auto accessor = IndexedItemConnectivityAccessor(child_dependency);
         ENUMERATE_ITEM(connected_item,accessor(ItemLocalId(item))){
           Int32ConstArrayView subitem_dest_ranks;
           // test can only be done for own subitems, otherwise their dest_ranks are only partially known => to see
           if (connected_item->isOwn()) {
-              subitem_dest_ranks = m_item_dest_ranks_map[child_dependency->targetFamily()]->at(connected_item.localId()).constView();
-          for (auto dest_rank : item_dest_ranks) {
-            if (! subitem_dest_ranks.contains(dest_rank)) fatal() << "Dest Rank " << dest_rank << " for item " << item->kind() << " uid "<< item->uniqueId()
-                                                                  << " not present in subitem " << connected_item->kind() << " uid " << connected_item->uniqueId()
-                                                                  << " dest ranks " << subitem_dest_ranks << " ower " << connected_item->owner();
+            subitem_dest_ranks = m_item_dest_ranks_map[child_dependency->targetFamily()]->at(connected_item.localId()).constView();
+            for (auto dest_rank : item_dest_ranks) {
+              if (! subitem_dest_ranks.contains(dest_rank))
+                fatal() << "Dest Rank " << dest_rank << " for item " << item->kind() << " uid "<< item->uniqueId()
+                        << " not present in subitem " << connected_item->kind() << " uid " << connected_item->uniqueId()
+                        << " dest ranks " << subitem_dest_ranks << " ower " << connected_item->owner();
             }
           }
         }
@@ -1519,8 +1505,7 @@ _exchangeGhostItemDataInfos()
     item_nb_dest_ranks.clear();
     family_nb_items.clear();
     item_uids.clear();
-    for (auto family_item_dest_ranks : m_item_dest_ranks_map)
-    {
+    for (const auto& family_item_dest_ranks : m_item_dest_ranks_map){
       Integer family_nb_item = 0;
       IItemFamily* family = family_item_dest_ranks.first;
       if (family->nbItem() == 0) continue; // skip empty family
@@ -1528,7 +1513,7 @@ _exchangeGhostItemDataInfos()
       // Get shared items with dest_sub_domain
       auto subdomain_index = _getSubdomainIndexInCommunicatingRanks(dest_sub_domain, family->allItemsSynchronizer()->communicatingRanks());
       auto shared_item_lids = family->allItemsSynchronizer()->sharedItems(subdomain_index);
-      for (auto item_lid : shared_item_lids){
+      for (const auto& item_lid : shared_item_lids){
         if (family_item_dest_ranks.second->at(item_lid).size() == 0) continue;
         item_dest_ranks.addRange(family_item_dest_ranks.second->at(item_lid));
         item_nb_dest_ranks.add(family_item_dest_ranks.second->at(item_lid).size());
@@ -1542,7 +1527,7 @@ _exchangeGhostItemDataInfos()
     sbuf->setMode(ISerializer::ModeReserve);
 
     sbuf->reserve(DT_Int64,1); // nb_item_family
-    for (auto family: item_families)
+    for (const auto& family: item_families)
       sbuf->reserve(family->name()); // ItemFamily->name
     sbuf->reserve(DT_Int64,item_families.size()); // ItemFamily->itemKind
 
@@ -1555,9 +1540,9 @@ _exchangeGhostItemDataInfos()
     sbuf->setMode(ISerializer::ModePut);
 
     sbuf->putInt64(item_families.size());
-    for (auto family: item_families)
+    for (const auto& family: item_families)
       sbuf->put(family->name()); // ItemFamily->name
-    for (auto family: item_families)
+    for (const auto& family: item_families)
       sbuf->putInteger(family->itemKind()); // ItemFamily->itemKind
 
     sbuf->putArray(item_uids);
@@ -1590,7 +1575,7 @@ _exchangeGhostItemDataInfos()
       Int64ArrayView family_item_uids = item_uids.subView(item_uid_index,family_nb_items[family_index]);
       Int32UniqueArray item_lids(family_item_uids.size());
       family->itemsUniqueIdToLocalId(item_lids,family_item_uids,true);
-      for (auto item_lid : item_lids) {
+      for (const auto& item_lid : item_lids) {
         auto sub_view = item_dest_ranks.subView(item_dest_rank_index,item_nb_dest_ranks[item_nb_dest_rank_index]);
         Int32 dest_rank = comm->destination().value();
         m_ghost_item_dest_ranks_map[dest_rank][family]->at(item_lid).addRange(sub_view);

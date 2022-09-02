@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryInfo.cc                                               (C) 2000-2021 */
+/* MemoryInfo.cc                                               (C) 2000-2022 */
 /*                                                                           */
 /* Collecteur d'informations sur l'usage mémoire.                            */
 /*---------------------------------------------------------------------------*/
@@ -484,14 +484,14 @@ _printInfos(std::ostream& ostr)
   size_t nb_chunk = m_infos.size();
   std::vector<MemoryInfoSorter> sorted_chunk;
   sorted_chunk.reserve(nb_chunk);
-  for( auto i : m_infos ){
+  for( const auto& i : m_infos ){
     sorted_chunk.push_back(MemoryInfoSorter(i.second.size(),i.second.allocId(),
                                             i.second.iteration(),
                                             i.first,i.second.owner(),i.second.stackTrace()));
   }
   std::sort(sorted_chunk.begin(),sorted_chunk.end());
 
-  for( auto i : sorted_chunk){
+  for( const auto& i : sorted_chunk){
     const void* v = i.m_ptr;
     const void* owner = i.m_owner;
     Int64 size = i.m_size;

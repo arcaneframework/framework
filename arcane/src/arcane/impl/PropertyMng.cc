@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PropertyMng.cc                                              (C) 2000-2020 */
+/* PropertyMng.cc                                              (C) 2000-2022 */
 /*                                                                           */
 /* Gestionnaire des protections.                                             */
 /*---------------------------------------------------------------------------*/
@@ -29,8 +29,6 @@
 
 namespace Arcane
 {
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -173,7 +171,7 @@ serialize(ISerializer* serializer)
     serializer->reserve(DT_Int32, 1); // SERIALIZE_VERSION
     serializer->reserve(DT_Int64, 1); // Nombre d'éléments dans la map
 
-    for (auto v : m_properties_map) {
+    for (auto& v : m_properties_map) {
       serializer->reserve(v.first);
       //info() << "SERIALIZE RESERVE name=" << v->first;
       v.second.serialize(serializer);
@@ -183,7 +181,7 @@ serialize(ISerializer* serializer)
     serializer->putInt32(SERIALIZE_VERSION); // SERIALIZE_VERSION
     serializer->putInt64(m_properties_map.size()); // Nombre d'éléments dans la map
 
-    for (auto v : m_properties_map) {
+    for (auto& v : m_properties_map) {
       serializer->put(v.first);
       //info() << "SERIALIZE PUT name=" << v->first;
       v.second.serialize(serializer);
@@ -259,7 +257,7 @@ readFrom(Span<const Byte> bytes)
 void PropertyMng::
 print(std::ostream& o) const
 {
-  for (auto v : m_properties_map) {
+  for (const auto& v : m_properties_map) {
     const Properties& p = v.second;
     o << '[' << p.fullName() << "]\n";
     p.print(o);
