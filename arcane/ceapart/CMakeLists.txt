@@ -22,24 +22,16 @@ if(ARCANE_USE_MPC)
 endif()
 
 # ----------------------------------------------------------------------------
-# Ajoute 'cmake/Modules' à la CMAKE_MODULE_PATH pour la recherche de packages
-
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
-
-# ----------------------------------------------------------------------------
 
 include(cmake/VT100.cmake)
 if(NOT WIN32)
   # Lima a besoin de LM et F90 donc il faut qu'ils soient
   # recherchés avan lui
-  include(cmake/FindF90.cmake)
-  include(cmake/FindLM.cmake)
   include(cmake/FindItac.cmake)
   include(cmake/FindMathlink.cmake)
 
   if(NOT DISABLE_SLOOP_AND_TRILINOS)
     include(cmake/FindSuperLU.cmake)
-    #include(cmake/FindSloop.cmake)
   endif()
 endif()
 
