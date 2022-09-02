@@ -16,9 +16,4 @@ if(NOT WIN32)
   set(BoldMagenta "${Esc}[1;35m")
   set(BoldCyan    "${Esc}[1;36m")
   set(BoldWhite   "${Esc}[1;37m")
-  message(STATUS 
-    "${Red}C${Green}o${Yellow}l${Blue}o${Magenta}r" 
-    " ${Cyan}m${White}o${BoldRed}d${BoldGreen}e"
-    " ${BoldYellow}e${BoldBlue}n${BoldMagenta}a${BoldCyan}b${BoldWhite}l${Red}e${Green}d${ColourReset}"
-    )
 endif()
