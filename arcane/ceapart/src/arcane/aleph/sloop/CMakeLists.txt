@@ -4,7 +4,7 @@ foreach(package ${PKGS})
   arcane_find_package(${package})
 endforeach()
 
-if (NOT TARGET arccon::sloop)
+if (NOT TARGET arccon::Sloop)
   message(STATUS "Removing aleph/sloop because package 'Sloop' is not available")
   return()
 endif()

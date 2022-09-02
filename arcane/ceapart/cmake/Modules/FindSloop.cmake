@@ -1,4 +1,6 @@
-﻿# Recherche d'abord avec le fichier de configuration CMake fourni par 'sloop'
+﻿arccon_return_if_package_found(Sloop)
+
+# Recherche d'abord avec le fichier de configuration CMake fourni par 'sloop'
 set(_SAVED_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
 unset(CMAKE_MODULE_PATH)
 find_package(Sloop CONFIG QUIET)
@@ -15,6 +17,7 @@ if (Sloop_FOUND)
   target_link_libraries(arcanepkg_sloop INTERFACE sloop)
   add_library(arccon::sloop ALIAS arcanepkg_sloop)
   set(SLOOP_FOUND TRUE CACHE BOOL "Is Package 'SLOOP' Found" FORCE)
+  arccon_register_cmake_config_target(Sloop CONFIG_TARGET_NAME sloop PACKAGE_NAME Sloop)
   return()
 endif()
 
@@ -50,7 +53,7 @@ if (SLOOP_FOUND)
 endif ()
 
 if (SLOOP_FOUND)
-  arcane_add_package_library(sloop SLOOP)
+  arccon_register_package_library(sloop SLOOP)
 endif()
 
 # ----------------------------------------------------------------------------
