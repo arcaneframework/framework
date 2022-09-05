@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TimeHistoryMng2.cc                                          (C) 2000-2021 */
+/* TimeHistoryMng2.cc                                          (C) 2000-2022 */
 /*                                                                           */
 /* Module gérant un historique de valeurs (Version 2).                       */
 /*---------------------------------------------------------------------------*/
@@ -419,76 +419,76 @@ class TimeHistoryMng2
  public:
 	
   TimeHistoryMng2(const ModuleBuildInfo& cb, bool add_entry_points=true);
-  virtual ~TimeHistoryMng2();
+  ~TimeHistoryMng2() override;
 
  public:
 	
-  virtual VersionInfo versionInfo() const { return VersionInfo(1,0,0); }
+  VersionInfo versionInfo() const override { return VersionInfo(1,0,0); }
 
  public:
 
-  virtual void addValue(const String& name,Real value,bool end_time,bool is_local=false)
-	{
+  void addValue(const String& name,Real value,bool end_time,bool is_local) override
+  {
     RealConstArrayView values(1,&value);
     _addHistoryValue(name,values,end_time,is_local);
   }
-  virtual void addValue(const String& name,Int64 value,bool end_time,bool is_local=false)
-	{
+  void addValue(const String& name,Int64 value,bool end_time,bool is_local) override
+  {
     Int64ConstArrayView values(1,&value);
     _addHistoryValue(name,values,end_time,is_local);
   }
-  virtual void addValue(const String& name,Int32 value,bool end_time,bool is_local=false)
-	{
+  void addValue(const String& name,Int32 value,bool end_time,bool is_local) override
+  {
     Int32ConstArrayView values(1,&value);
     _addHistoryValue(name,values,end_time,is_local);
   }
-  virtual void addValue(const String& name,RealConstArrayView values,bool end_time=true,bool is_local=false)
+  void addValue(const String& name,RealConstArrayView values,bool end_time,bool is_local) override
   {
     _addHistoryValue(name,values,end_time,is_local);
   }
-  virtual void addValue(const String& name,Int32ConstArrayView values,bool end_time=true,bool is_local=false)
+  void addValue(const String& name,Int32ConstArrayView values,bool end_time,bool is_local) override
   {
     _addHistoryValue(name,values,end_time,is_local);
   }
-  virtual void addValue(const String& name,Int64ConstArrayView values,bool end_time=true,bool is_local=false)
+  void addValue(const String& name,Int64ConstArrayView values,bool end_time,bool is_local) override
   {
     _addHistoryValue(name,values,end_time,is_local);
   }
 
  public:
 
-  void timeHistoryBegin();
-  void timeHistoryEnd();
-  void timeHistoryInit();
-  void timeHistoryStartInit();
-  void timeHistoryContinueInit();
+  void timeHistoryBegin() override;
+  void timeHistoryEnd() override;
+  void timeHistoryInit() override;
+  void timeHistoryStartInit() override;
+  void timeHistoryContinueInit() override;
+  void timeHistoryRestore() override;
   void timeHistoryStartInitEnd();
-  void timeHistoryRestore();
 
  public:
 
-  virtual void addCurveWriter(ITimeHistoryCurveWriter2* writer);
-  virtual void removeCurveWriter(ITimeHistoryCurveWriter2* writer)
+  void addCurveWriter(ITimeHistoryCurveWriter2* writer) override;
+  void removeCurveWriter(ITimeHistoryCurveWriter2* writer) override
   {
     m_curve_writers2.erase(writer);
   }
-  virtual void removeCurveWriter(const String& name);
+  void removeCurveWriter(const String& name) override;
 
  public:
 
-  virtual void dumpHistory(bool is_verbose);
-  virtual void dumpCurves(ITimeHistoryCurveWriter2* writer);
+  void dumpHistory(bool is_verbose) override;
+  void dumpCurves(ITimeHistoryCurveWriter2* writer) override;
 
-  virtual bool active() const { return m_is_active; }
-  virtual void setActive(bool is_active) { m_is_active = is_active; }
+  bool active() const override { return m_is_active; }
+  void setActive(bool is_active) override { m_is_active = is_active; }
 
-  virtual bool isDumpActive() const { return m_is_dump_active; }
-  virtual void setDumpActive(bool is_active) { m_is_dump_active = is_active; }
+  bool isDumpActive() const override { return m_is_dump_active; }
+  void setDumpActive(bool is_active) override { m_is_dump_active = is_active; }
 
-  virtual bool isShrinkActive() const { return m_is_shrink_active; }
-  virtual void setShrinkActive(bool is_active) { m_is_shrink_active = is_active; }
+  bool isShrinkActive() const override { return m_is_shrink_active; }
+  void setShrinkActive(bool is_active) override { m_is_shrink_active = is_active; }
 
-  virtual void applyTransformation(ITimeHistoryTransformer* v);
+  void applyTransformation(ITimeHistoryTransformer* v) override;
 
  private:
 
@@ -564,8 +564,10 @@ TimeHistoryMng2::
     delete v;
   }
 
-  for( auto cw : m_curve_writers2 )
+  for( auto& c : m_curve_writers2 ) {
+    auto cw = c;
     cw.destroy();
+  }
   m_curve_writers2.clear();
 
   m_history_list.clear();
@@ -579,7 +581,7 @@ timeHistoryStartInit()
 {
   //warning() << "timeHistoryStartInit " << m_global_time() << " " << m_global_times.size();
   m_global_times.add(m_global_time());
-  addValue(m_global_time.name(),m_global_time(),true);
+  addValue(m_global_time.name(),m_global_time(),true,false);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -605,7 +607,7 @@ timeHistoryBegin()
   else{
     //warning() << "timeHistoryBegin " << m_global_time() << " " << m_global_times.size();
     m_global_times.add(m_global_time());
-    addValue(m_global_time.name(),m_global_time(),true);
+    addValue(m_global_time.name(),m_global_time(),true,false);
   }
   
   // Regarde s'il faut imprimer les sorties temporelles
@@ -971,8 +973,8 @@ _addHistoryValue(const String& name,ConstArrayView<DataType> values,bool end_tim
   if (!end_time && iteration!=0)
     --iteration;
 
-  HistoryList::iterator hl = m_history_list.find(name);
-  TimeHistoryValue2T<DataType>* th = 0;
+  auto hl = m_history_list.find(name);
+  TimeHistoryValue2T<DataType>* th = nullptr;
   // Trouvé, on le retourne.
   if (hl!=m_history_list.end())
     th = dynamic_cast< TimeHistoryValue2T<DataType>* >(hl->second);

@@ -71,7 +71,7 @@ class SimpleGridMeshPartitioner
 
     void computeExtraCellsToSend() override
     {
-      for (auto v : m_ghost_cell_uids) {
+      for (const auto& v : m_ghost_cell_uids) {
         Int32 rank = v.first;
         Int32 nb_ghost = v.second.size();
         UniqueArray<Int32>& local_ids = m_ghost_cell_local_ids[rank];

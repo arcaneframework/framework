@@ -773,7 +773,7 @@ _buildOtf2RegionDefinition()
 	                                 OTF2_REGION_FLAG_NONE,
 	                                 m_id.m_mpi_id, 0, 0);  // 0,0 pour les numeros de lignes du src MPI.c ...
 	// Pour les points d'entree
-	for (auto i : m_id.m_ep_id_set) {
+	for (const auto& i : m_id.m_ep_id_set) {
 		OTF2_GlobalDefWriter_WriteRegion(m_global_def_writer, static_cast<uint32_t>(i.m_id),
 		                                 static_cast<uint32_t>(i.m_id), static_cast<uint32_t>(i.m_id),
 		                                 static_cast<uint32_t>(i.m_id),

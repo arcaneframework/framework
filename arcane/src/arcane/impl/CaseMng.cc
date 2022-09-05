@@ -386,7 +386,7 @@ readFunctions()
     FinderType finder(sd->application(),sd);
     const Array<FinderType::FactoryType*>& factories = finder.factories();
     info() << "NB_CASE_FUNCTION_PROVIDER_FACTORY = " << factories.size();
-    for( auto factory : factories ){
+    for( const auto& factory : factories ){
       auto cfp = factory->createServiceReference(ServiceBuildInfoBase(sd));
       if (cfp.get()){
         info() << "FOUND CASE FUNCTION PROVIDER (V2)!";
@@ -613,7 +613,7 @@ _readOneTable(const XmlNode& func_elem)
   
   String ustr_x("x");
   String ustr_y("y");
-  for( auto i : func_value_list ) {
+  for( const auto& i : func_value_list ) {
     String param_str = i.child(ustr_x).value();
     String value_str = i.child(ustr_y).value();
     param_str = String::collapseWhiteSpace(param_str);

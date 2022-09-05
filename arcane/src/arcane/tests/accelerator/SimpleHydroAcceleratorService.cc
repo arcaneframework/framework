@@ -369,7 +369,7 @@ hydroStartInit()
     bool use_multiple_queue = options()->useMultipleQueueForBoundaryConditions;
     info() << "Using multiple queue for boundary conditions ? = " << use_multiple_queue;
     m_boundary_conditions.clear();
-    for( auto bc : m_module->getBoundaryConditions() ){
+    for( const auto& bc : m_module->getBoundaryConditions() ){
       FaceGroup face_group = bc->getSurface();
       Real value = bc->getValue();
       TypesSimpleHydro::eBoundaryCondition type = bc->getType();

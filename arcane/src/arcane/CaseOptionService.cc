@@ -283,7 +283,7 @@ void CaseOptionMultiServiceImpl::
 visit(ICaseDocumentVisitor* visitor) const
 {
   Integer index = 0;
-  for( auto o : m_allocated_options ){
+  for( const auto& o : m_allocated_options ){
     visitor->beginVisit(this,index);
     o->visit(visitor);
     visitor->endVisit(this,index);

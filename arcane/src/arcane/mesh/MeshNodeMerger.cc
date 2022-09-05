@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshNodeMerger.cc                                           (C) 2000-2018 */
+/* MeshNodeMerger.cc                                           (C) 2000-2022 */
 /*                                                                           */
 /* Fusions de noeuds d'un maillage.                                          */
 /*---------------------------------------------------------------------------*/
@@ -36,8 +36,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -203,13 +203,13 @@ mergeNodes(Int32ConstArrayView nodes_local_id,
   }
 
   // Supprime toutes les faces qui doivent être fusionnées.
-  for( auto x : m_faces_correspondance ){
+  for( const auto& x : m_faces_correspondance ){
     Face face = x.first;
     m_face_family->removeFaceIfNotConnected(face.internal());
   }
 
   // Supprime tous les noeuds qui doivent être fusionnées.
-  for( auto x : m_nodes_correspondance ){
+  for( const auto& x : m_nodes_correspondance ){
     Node node = x.first;
     m_node_family->removeNodeIfNotConnected(node.internal());
   }
@@ -220,8 +220,7 @@ mergeNodes(Int32ConstArrayView nodes_local_id,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

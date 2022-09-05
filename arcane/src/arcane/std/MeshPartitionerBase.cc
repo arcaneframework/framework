@@ -673,7 +673,7 @@ _cellsProjectWeights(VariableCellArrayReal& cellWgtIn, Int32 nbWgt) const
   for( auto& ptr : m_cells_with_constraints.range() ){
     RealUniqueArray w(nbWgt);
     w.fill(0);
-    for( auto cell : ptr.range() ){
+    for( const auto& cell : ptr ){
       for (int i = 0 ; i <nbWgt ; ++i)
         w[i] += cellWgtIn[cell][i];
     }
@@ -697,7 +697,7 @@ _cellsProjectWeights(VariableCellReal& cellWgtIn) const
       cellWgtOut[m_local_id_2_local_id_compacted[icell->localId()]]
       = (float)cellWgtIn[icell];
   }
-  for( auto& ptr : m_cells_with_constraints.range() ){
+  for( auto& ptr : m_cells_with_constraints ){
     Real w = 0;
     for( Cell cell : ptr.range() ){
       w += cellWgtIn[cell];

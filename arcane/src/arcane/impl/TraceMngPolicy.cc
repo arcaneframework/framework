@@ -332,7 +332,7 @@ _setAllTraceClassConfig(ITraceMng* trace,XmlNode root_element,bool do_log)
   String ustr_print_class_name("print-class-name");
   String ustr_print_elapsed_time("print-elapsed-time");
 
-  for( auto xnode : children.range() ){
+  for( const auto& xnode : children ){
     String module_name = xnode.attrValue(ustr_name);
     String activate_str = xnode.attrValue(ustr_info);
     String parallel_activate_str = xnode.attrValue(ustr_pinfo);

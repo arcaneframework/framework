@@ -855,7 +855,7 @@ getCodeService(const String& u_file_name)
   String case_ext(fview);
 
   Ref<ICodeService> found_service;
-  for( auto code_service : services ){
+  for( const auto& code_service : services ){
     StringCollection extensions = code_service->validExtensions();
     for( StringCollection::Enumerator j(extensions); ++j; ){
       if (case_ext==(*j)){

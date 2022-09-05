@@ -553,7 +553,7 @@ dumpArcaneDatabase()
   // Liste des interfaces de services et des services les implémentant.
   {
     JSONWriter::Array jo_services_interfaces(json_writer,"service-interfaces");
-    for( auto x : interfaces_to_service ){
+    for( const auto& x : interfaces_to_service ){
       JSONWriter::Object jo_class(json_writer);
       json_writer.write(us_name,x.first);
       JSONWriter::Array ja_services(json_writer,"services");
