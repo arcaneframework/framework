@@ -888,7 +888,7 @@ _testMessageProbe(Int32 rank_to_receive,Integer nb_message,
     Integer iteration = 0;
     while (!all_msg_info.empty()){
       UniqueArray<PointToPointMessageInfo> new_messages;
-      for( auto p2p_msg : all_msg_info ){
+      for( const auto& p2p_msg : all_msg_info ){
         MessageId msg = pm->probe(p2p_msg);
         // Limite le nombre d'affichages
         bool do_print = (iteration<50 || (iteration%100)==0);

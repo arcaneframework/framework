@@ -81,7 +81,8 @@ public:
   QString host;
   QString broadcasted_cmdline;  
   int tack_toggle;
-  int fdm,fds;
+  int fdm = 0;
+  int fds = 0;
   // La structure partagée
   struct hyoda_taxi_data *data;
   QHyodaTcp *tcp;

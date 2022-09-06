@@ -129,19 +129,19 @@ readTimeLoops()
   // Liste des services singletons globaux
   XmlNodeList global_singleton_elems = root_elem.children("singleton-services");
   info() << "CHECK GLOBAL SINGLETON SERVICES";
-  for( auto i : global_singleton_elems.range() ){
+  for( const auto& i : global_singleton_elems ){
     info() << "CHECK GLOBAL SINGLETON SERVICES 2 " << i.name();
 
    for( auto j_node : i ){
-      if (j_node.name()=="service"){
-        bool is_required = (j_node.attrValue("need")=="required");
-        info() << "GLOBAL SINGLETON SERVICE name=" << j_node.attrValue(ustr_name) << " is_required?=" << is_required;
-        global_singleton_services.add(TimeLoopSingletonServiceInfo(j_node.attrValue(ustr_name),is_required));
-      }
-    }
+     if (j_node.name()=="service"){
+       bool is_required = (j_node.attrValue("need")=="required");
+       info() << "GLOBAL SINGLETON SERVICE name=" << j_node.attrValue(ustr_name) << " is_required?=" << is_required;
+       global_singleton_services.add(TimeLoopSingletonServiceInfo(j_node.attrValue(ustr_name),is_required));
+     }
+   }
   }
 
-  for( auto i : timeloops.range() ){
+  for( const auto& i : timeloops ){
     optional_modules_list.clear();
     required_modules_list.clear();
     user_classes.clear();
@@ -154,7 +154,7 @@ readTimeLoops()
     ITimeLoop* time_loop = factory->createTimeLoop(m_application, name);
     XmlNode timeloop_node = i;
     
-    for( auto j_node : timeloop_node ){
+    for( const auto& j_node : timeloop_node ){
       String elem_name = j_node.name();
       String elem_value = j_node.value();
 

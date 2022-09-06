@@ -1115,7 +1115,7 @@ _read(eItemKind ik,ItemInternalXmlMap& items_internal,XmlNode root_node,
 #endif
 
   XmlNodeList xml_items(root_node.children(lower_case_kind_name));
-  for( auto xml_node : xml_items.range() ){
+  for( const auto& xml_node : xml_items ){
     Integer uid = xml_node.attr(ustr_uid).valueAsInteger();
     ItemInternalXmlMap::iterator iixml = items_internal.find(uid);
     if (iixml!=items_internal.end()){

@@ -295,8 +295,6 @@ class MpiParallelMngUtilsFactory
     if (m_synchronizer_version == 2){
       tm->info() << "Using MpiSynchronizer V2";
       generic_factory = arcaneCreateMpiVariableSynchronizerFactory(mpi_pm);
-      //MpiVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table);
-      //vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiVariableSynchronizeDispatcher>(bi));
     }
     else if (m_synchronizer_version == 3 ){
       tm->info() << "Using MpiSynchronizer V3";
@@ -323,7 +321,7 @@ class MpiParallelMngUtilsFactory
       vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiLegacyVariableSynchronizeDispatcher>(bi));
     }
     // Si non nul on utilise la fabrique générique
-    if (generic_factory.get()){
+    if (!vd && generic_factory.get()){
       GenericVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table,generic_factory);
       vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<GenericVariableSynchronizeDispatcher>(bi));
     }

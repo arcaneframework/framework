@@ -111,7 +111,7 @@ add(const String& name, double elapsed_time, Int64 msg_size)
 void Stat::
 print(ITraceMng* msg)
 {
-  for (auto i : stats()) {
+  for (const auto& i : stats()) {
     OneStat* os = i.second;
     Real total_time = os->cumulativeTotalTime();
     Int64 div_time = static_cast<Int64>(total_time * 1000.0);
@@ -170,7 +170,7 @@ printStatsCollective(IStat* s, IParallelMng* pm)
   // communes à tout le monde.
   UniqueArray<String> input_strings;
   const auto& stat_map = s->toArccoreStat()->stats();
-  for (auto x : stat_map)
+  for (const auto& x : stat_map)
     input_strings.add(x.first);
   UniqueArray<String> common_strings;
   MessagePassing::filterCommonStrings(pm, input_strings, common_strings);

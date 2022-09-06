@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialBackup.cc                                       (C) 2000-2016 */
+/* MeshMaterialBackup.cc                                       (C) 2000-2022 */
 /*                                                                           */
 /* Sauvegarde/restauration des valeurs des matériaux et milieux.             */
 /*---------------------------------------------------------------------------*/
@@ -26,11 +26,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -57,7 +54,7 @@ MeshMaterialBackup(IMeshMaterialMng* mm,bool use_unique_ids)
 MeshMaterialBackup::
 ~MeshMaterialBackup()
 {
-  for( auto iter : m_saved_data )
+  for( const auto& iter : m_saved_data )
     delete iter.second;
 }
 
@@ -181,7 +178,7 @@ _restore()
     // Si on utilise les uniqueId(), le tableau m_unique_ids_array
     // contient les valeurs des uniqueId() des mailles. Il faut
     // ensuite le convertir en localId().
-    for( auto iter : m_unique_ids_array ){
+    for( const auto& iter : m_unique_ids_array ){
       IMeshComponent* component = iter.first;
       auto& unique_ids = m_unique_ids_array[component];
       auto& local_ids = m_ids_array[component];
@@ -207,8 +204,7 @@ _restore()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

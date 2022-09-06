@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Hdf5VariableReader.cc                                       (C) 2000-2020 */
+/* Hdf5VariableReader.cc                                       (C) 2000-2022 */
 /*                                                                           */
 /* Lecture de variables au format HDF5.                                      */
 /*---------------------------------------------------------------------------*/
@@ -42,7 +42,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -739,7 +740,7 @@ open(bool is_start)
   //m_hdf5_file_name = root_element.attrValue("file-name",true);
 
   XmlNodeList variables_elem = root_element.children("time-variable");
-  for( auto elem : variables_elem.range() ){
+  for( const auto& elem : variables_elem ){
     String var_name = elem.attrValue("name",true);
     String var_family = elem.attrValue("family",true);
     info(4) << "TIME_VARIABLE: name=" << var_name << " family=" << var_family;
@@ -757,7 +758,7 @@ open(bool is_start)
     
     XmlNodeList times_elem = elem.children("time-value");
     Real last_var_time = -1.0;
-    for( auto time_elem : times_elem.range() ){
+    for( const auto& time_elem : times_elem ){
       String var_path = time_elem.attrValue("path",true);
       XmlNode var_time_node = time_elem.attr("global-time",true);
       Real var_time = var_time_node.valueAsReal(true);
@@ -1330,7 +1331,7 @@ ARCANE_REGISTER_SERVICE(OldManualHdf5VariableReader,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

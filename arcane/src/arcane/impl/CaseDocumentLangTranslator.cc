@@ -5,17 +5,17 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CaseDocumentLangTranslator.cc                               (C) 2000-2017 */
+/* CaseDocumentLangTranslator.cc                               (C) 2000-2022 */
 /*                                                                           */
 /* Classe gérant la traduction d'un jeu de données dans une autre langue.    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
 #include "arcane/utils/Collection.h"
 #include "arcane/utils/Enumerator.h"
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/ArgumentException.h"
+#include "arcane/utils/ScopedPtr.h"
 
 #include "arcane/impl/CaseDocumentLangTranslator.h"
 
@@ -29,7 +29,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -185,7 +186,7 @@ translate(ICaseMng* cm,const String& new_lang)
 
   ICaseDocument* cd = cm->caseDocument();
   CaseNodeNames* current_cnn = cd->caseNodeNames();
-  CaseNodeNames* cnn = new CaseNodeNames(new_lang);
+  ScopedPtrT<CaseNodeNames> cnn { new CaseNodeNames(new_lang) };
 
   // NOTE: Ces conversions dépendent de CaseDocument et doivent être
   // mise à jour si ce dernier change (ainsi que CaseNodeNames)
@@ -231,7 +232,7 @@ _addConvert(XmlNode node,const String& new_name)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

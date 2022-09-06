@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Otf2LibWrapper.cc                                           (C) 2000-2019 */
+/* Otf2LibWrapper.cc                                           (C) 2000-2022 */
 /*                                                                           */
 /* Classe qui encapsule les fonctions utiles de la lib Otf2.                 */
 /*---------------------------------------------------------------------------*/
@@ -50,10 +50,6 @@ uint64_t Otf2LibWrapper::s_epoch_start = 0;
 Otf2LibWrapper::
 Otf2LibWrapper(ISubDomain* sub_domain)
 : m_sub_domain(sub_domain)
-, m_archive(nullptr)
-, m_flush_callbacks()
-, m_evt_writer(nullptr)
-, m_evt_nb(0)
 {
 }
 
@@ -773,7 +769,7 @@ _buildOtf2RegionDefinition()
 	                                 OTF2_REGION_FLAG_NONE,
 	                                 m_id.m_mpi_id, 0, 0);  // 0,0 pour les numeros de lignes du src MPI.c ...
 	// Pour les points d'entree
-	for (auto i : m_id.m_ep_id_set) {
+	for (const auto& i : m_id.m_ep_id_set) {
 		OTF2_GlobalDefWriter_WriteRegion(m_global_def_writer, static_cast<uint32_t>(i.m_id),
 		                                 static_cast<uint32_t>(i.m_id), static_cast<uint32_t>(i.m_id),
 		                                 static_cast<uint32_t>(i.m_id),

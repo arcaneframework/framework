@@ -5,13 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* LibStackTraceService.cc                                     (C) 2000-2016 */
+/* LibUnwindStackTraceService.cc                               (C) 2000-2022 */
 /*                                                                           */
 /* Service de trace des appels de fonctions utilisant 'libunwind'.           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/IStackTraceService.h"
@@ -44,7 +42,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -59,9 +58,8 @@ class LibUnwindStackTraceService
   struct ProcInfo
   {
    public:
-    ProcInfo() : m_file_name(nullptr), m_file_loaded_address(0){}
-    ProcInfo(const String& aname) : m_file_name(nullptr), m_file_loaded_address(0)
-    { m_name = aname; }
+    ProcInfo() = default;
+    explicit ProcInfo(const String& aname) : m_name(aname){}
    public:
     const String& name() const { return m_name; }
     //! Nom du fichier contenant la procédure. Peut-être nul.
@@ -70,11 +68,11 @@ class LibUnwindStackTraceService
     //! Nom (démanglé) de la procédure
     String m_name;
     //! Nom de la bibliothèque (.so ou .exe) dans laquelle se trouve la méthode
-    const char* m_file_name;
+    const char* m_file_name = nullptr;
     //! Adresse de chargement de la bibliothèque.
     //TODO: ne pas stocker cela pour chaque fonction.
-    unw_word_t m_file_loaded_address;
-    unw_word_t m_base_ip;
+    unw_word_t m_file_loaded_address = 0;
+    unw_word_t m_base_ip = 0;
   };
  public:
 
@@ -222,9 +220,11 @@ _getGDBStack()
   long pid = (long)getpid();
   sprintf(filename,"errlog.%ld",pid);
   snprintf (cmd,cmd_size,"gdb --ex 'attach %ld' --ex 'info threads' --ex 'thread apply all bt full' --batch",pid);
-  system(cmd);
+  int ret_value = system(cmd);
 
-  long unsigned int file_length = platform::getFileLength(filename);
+  long unsigned int file_length = 0;
+  if (ret_value==0)
+    file_length = platform::getFileLength(filename);
   if (file_length==0)
     return String();
 
@@ -523,7 +523,7 @@ ARCANE_REGISTER_SERVICE(LLVMSymbolizerService,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

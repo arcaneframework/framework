@@ -106,12 +106,12 @@ namespace Arcane {
 		// Ensemble des noms des points d'entree et leur id
 	};
 
-	ISubDomain* m_sub_domain;
-	OTF2_Archive* m_archive;
+	ISubDomain* m_sub_domain = nullptr;
+	OTF2_Archive* m_archive = nullptr;
 	OTF2_FlushCallbacks m_flush_callbacks;
-  OTF2_EvtWriter* m_evt_writer;
-	uint64_t m_evt_nb;
-	OTF2_GlobalDefWriter* m_global_def_writer;
+  OTF2_EvtWriter* m_evt_writer = nullptr;
+	uint64_t m_evt_nb = 0;
+	OTF2_GlobalDefWriter* m_global_def_writer = nullptr;
 	static uint64_t s_epoch_start;
 	InternalIds m_id;
 	std::vector<uint64_t> m_comm_members;

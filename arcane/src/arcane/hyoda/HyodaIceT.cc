@@ -124,8 +124,9 @@ HyodaIceT::HyodaIceT(Hyoda *hd,
     debug() << "\33[33m[HyodaIceT::HyodaIceT] m_variable is "<<var->name()<<"\33[m";
     break;
   }
+  if (!m_variable)
+    ARCANE_FATAL("\33[33m[HyodaIceT::HyodaIceT] No m_variable to draw!\33[m");
   debug()<<"\33[33m[HyodaIceT::HyodaIceT] Focusing on variable: "<<m_variable->name()<<"\33[m";
-  if (m_variable==NULL) fatal()<<"\33[33m[HyodaIceT::HyodaIceT] No m_variable to draw!\33[m";
 
   /* specify Z, stencil, accum sizes */
   osMesaContext = OSMesaCreateContextExt(OSMESA_RGBA, 8, 0, 0, NULL);

@@ -35,11 +35,11 @@ VariableFactoryRegisterer(IVariableFactory::VariableFactoryFunc func,
                           const VariableTypeInfo& var_type_info)
 : m_function(func)
 , m_variable_type_info(var_type_info)
+, m_previous(nullptr)
+, m_next(nullptr)
 {
   if (!arcaneFirstVariableFactory){
     arcaneFirstVariableFactory = this;
-    setPreviousVariableFactory(nullptr);
-    setPreviousVariableFactory(nullptr);
   }
   else{
     VariableFactoryRegisterer* next = arcaneFirstVariableFactory->nextVariableFactory();

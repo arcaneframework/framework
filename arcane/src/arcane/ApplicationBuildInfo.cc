@@ -158,7 +158,7 @@ class ApplicationBuildInfo::Impl
       if (!v.null())
         return v;
     }
-    for( auto x : env_values ){
+    for( const auto& x : env_values ){
       String ev = platform::getEnvironmentVariable(x);
       if (!ev.null())
         return ev;
@@ -226,7 +226,7 @@ class ApplicationBuildInfo::Impl
   {
     String v;
     // Une option peut être présente plusieurs fois. Prend la dernière.
-    for( auto x : m_values ){
+    for( const auto& x : m_values ){
       if (x.name==param_name)
         v = x.value;
     }

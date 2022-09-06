@@ -123,7 +123,7 @@ applyFiltering()
     ARCANE_FATAL("The following ItemGroup are not on all mesh parts: {0}",bad_groups);
 
   m_sorted_common_groups.clear();
-  for( auto x : common_groups )
+  for( const auto& x : common_groups )
     m_sorted_common_groups.add(x.second);
 }
 

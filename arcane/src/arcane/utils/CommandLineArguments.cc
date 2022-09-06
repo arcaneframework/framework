@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CommandLineArguments.cc                                     (C) 2000-2019 */
+/* CommandLineArguments.cc                                     (C) 2000-2022 */
 /*                                                                           */
 /* Arguments de la ligne de commande.                                        */
 /*---------------------------------------------------------------------------*/
@@ -104,7 +104,7 @@ class CommandLineArguments::Impl
         continue;
       UniqueArray<String> values;
       arg_value.split(values,',');
-      for( auto x : values ){
+      for( const auto& x : values ){
         m_parameter_list.addParameterLine(x);
       }
     }

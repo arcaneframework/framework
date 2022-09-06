@@ -113,8 +113,8 @@ static String connectivityName(IItemFamily* source_family, IItemFamily* target_f
    }
 
  protected:
-bool isFrontCell(ItemLocalId source_item,ItemLocalId target_item)
-{
+   bool isFrontCell(ItemLocalId source_item,ItemLocalId target_item)
+   {
   ItemInternal* face = m_face_family->itemsInternal()[source_item.localId()];
   ItemInternal* cell = m_cell_family->itemsInternal()[target_item.localId()];
   // Find if cell is front or back for given face
@@ -128,7 +128,8 @@ bool isFrontCell(ItemLocalId source_item,ItemLocalId target_item)
   // Find which local_face
   Integer face_index = -1;
   Int64UniqueArray face_node_uids;
-  for (auto node : face_nodes) face_node_uids.add(node.uniqueId().asInt64());
+  for (const auto& node : face_nodes)
+    face_node_uids.add(node.uniqueId().asInt64());
   std::set<Int64> face_nodes_set(face_node_uids.begin(),face_node_uids.end());
   Int64UniqueArray local_face_node_uids;
   for (Integer local_face_index = 0; local_face_index < cell_type_info->nbLocalFace() && face_index == -1; ++local_face_index)

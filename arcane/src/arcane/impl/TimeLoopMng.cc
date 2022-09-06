@@ -1048,7 +1048,7 @@ setUsedTimeLoop(const String& name)
 
   if (!m_used_time_loop){
     info() << "Available time loops: ";
-    for( auto tl : m_time_loop_list ){
+    for( const auto& tl : m_time_loop_list ){
       info() << "Time loop <" << tl.second->name() << ">";
     }
     ARCANE_FATAL("Unknown time loop '{0}'",name);
@@ -1069,7 +1069,7 @@ setUsedTimeLoop(const String& name)
   // Chargement des modules de la boucle en temps
   _fillModuleStateMap(m_used_time_loop);
 
-  for( auto it : m_module_state_list ){
+  for( const auto& it : m_module_state_list ){
     const ModuleState & module_state = it.second;
 
     if (!module_state.m_is_optional || module_state.m_is_active){

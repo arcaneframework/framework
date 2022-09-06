@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AlephFactory.cc                                             (C) 2010-2019 */
+/* AlephFactory.cc                                             (C) 2010-2022 */
 /*                                                                           */
 /* Fabriques pour Aleph.                                                     */
 /*---------------------------------------------------------------------------*/
@@ -70,7 +70,7 @@ AlephFactory(IApplication* app, ITraceMng* tm)
   ServiceBuilder<IAlephFactoryImpl> sb(app);
   // Pour chaque implémentation possible,
   // créé la fabrique correspondante si elle est disponible.
-  for (auto i : m_impl_map) {
+  for (const auto& i : m_impl_map) {
     FactoryImpl* implementation = i.second;
     const String& name = implementation->name();
     debug() << "\33[1;34m\t[AlephFactory] Adding " << name << " library..."
@@ -88,9 +88,7 @@ AlephFactory(IApplication* app, ITraceMng* tm)
 AlephFactory::
 ~AlephFactory()
 {
-  debug() << "\33[1;34m\t[~AlephFactory] Destruction des fabriques"
-          << "\33[0m";
-  for (auto i : m_impl_map)
+  for (const auto& i : m_impl_map)
     delete i.second;
 }
 
