@@ -13,16 +13,20 @@
 // ****************************************************************************
 // * QHyodaTcp class
 // ****************************************************************************
-QHyodaTcp::QHyodaTcp(QHyodaJob *jb):QObject(),
-                                    job(jb),
-                                    tcpServerConnection(NULL),
-                                    iceWdth((job->iceWidthHeight>>16)&0xFFFFul),
-                                    iceHght((job->iceWidthHeight)&0xFFFFul),
-                                    tcpImageBytes(iceWdth*iceHght*sizeof(uint32_t)),
-                                    image(NULL),matrix(NULL),
-                                    byteArray(NULL),
-                                    matrixArray(NULL),
-                                    state(QHyodaTcp::Sleeping){
+QHyodaTcp::
+QHyodaTcp(QHyodaJob *jb)
+: job(jb)
+, tcpServerConnection(nullptr)
+, iceWdth((job->iceWidthHeight>>16)&0xFFFFul)
+, iceHght((job->iceWidthHeight)&0xFFFFul)
+, tcpImageBytes(iceWdth*iceHght*sizeof(uint32_t))
+, image(nullptr)
+, matrix(nullptr)
+, byteArray(nullptr)
+, matrixArray(nullptr)
+, state(QHyodaTcp::Sleeping)
+, tcpPacketLength(0)
+{
   connect(&tcpServer, SIGNAL(newConnection()), this, SLOT(acceptConnection()));
   while (!tcpServer.isListening() &&
          !tcpServer.listen(QHostAddress::Any,job->tcpPort));//usleep(100);

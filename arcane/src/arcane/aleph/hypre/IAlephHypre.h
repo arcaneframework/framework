@@ -428,10 +428,10 @@ class AlephMatrixHypre
     //HYPRE_IJVectorGetObject(tmp,&object);
     //HYPRE_ParVector T = (HYPRE_ParVector)object;
 
-    if (isAlreadySolved((dynamic_cast<AlephVectorHypre*>(x->implementation())),
-                        (dynamic_cast<AlephVectorHypre*>(b->implementation())),
-                        (dynamic_cast<AlephVectorHypre*>(t->implementation())),
-                        residual_norm, solver_param)) {
+    auto* ximpl2 = ARCANE_CHECK_POINTER(dynamic_cast<AlephVectorHypre*>(x->implementation()));
+    auto* bimpl2 = ARCANE_CHECK_POINTER(dynamic_cast<AlephVectorHypre*>(b->implementation()));
+    auto* timpl2 = ARCANE_CHECK_POINTER(dynamic_cast<AlephVectorHypre*>(t->implementation()));
+    if (isAlreadySolved(ximpl2, bimpl2, timpl2, residual_norm, solver_param)) {
       ItacRegion(isAlreadySolved, AlephMatrixHypre);
       debug() << "[AlephMatrixHypre::AlephMatrixSolve] isAlreadySolved !";
       nb_iteration = 0;

@@ -765,7 +765,7 @@ printOptions()
   // nouvelles versions de Arcane.
   // TODO: vérifier que le nouvel affichage est identique à l'ancien pour
   // la plupart des options.
-  bool use_old = true;
+  const bool use_old = true;
   for( ICaseOptions* co : CaseOptionsFilterUsed(m_case_options_list)){
     if (use_old)
       co->printChildren(lang,0);

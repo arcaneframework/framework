@@ -19,23 +19,24 @@ static unsigned long long rawStringToULongLong(QString);
 /******************************************************************************
  * CONSTRUCTOR
  *****************************************************************************/
-QHyodaJob::QHyodaJob(QHyodaMachine *_machine,
-                     int _argc,char *_argv[]):
-  machine(_machine),
-  argc(_argc),
-  argv(_argv),
-  id(-1),
-  has_been_broadcasted(false),
-  tcpAdrs(0x100007Ful),
-  tcpPort(3889),
-  tcpPyld(8*1024),
-  iceWidthHeight(0x04000300ul),
-  gdb(new QHyodaGdb(this,machine,0x100007Ful,tcpPort,tcpPyld)),
-  gdbserver(new QProcess()),
-  tack_toggle(0),
-  data(NULL),
-  tcp(new QHyodaTcp(this)),
-  arcane_variables_names(new QStringList()){
+QHyodaJob::
+QHyodaJob(QHyodaMachine *_machine,int _argc,char *_argv[])
+: machine(_machine)
+, argc(_argc)
+, argv(_argv)
+, id(-1)
+, has_been_broadcasted(false)
+, tcpAdrs(0x100007Ful)
+, tcpPort(3889)
+, tcpPyld(8*1024)
+, iceWidthHeight(0x04000300ul)
+, gdb(new QHyodaGdb(this,machine,0x100007Ful,tcpPort,tcpPyld))
+, gdbserver(new QProcess())
+, tack_toggle(0)
+, data(nullptr)
+, tcp(new QHyodaTcp(this))
+, arcane_variables_names(new QStringList())
+{
   qDebug() << "\33[36m[QHyodaJob::QHyodaJob] NEW @"<<machine->localHostName<<"\33[m";
   setupUi(this);
 

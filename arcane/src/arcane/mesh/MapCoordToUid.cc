@@ -608,7 +608,7 @@ fill2()
 {
   CHECKPERF( m_perf_counter.start(PerfCounter::Fill2) )
   // Populate the nodes map
-  DynamicMesh* dmesh= dynamic_cast<DynamicMesh*>(m_mesh);
+  DynamicMesh* dmesh = ARCANE_CHECK_POINTER(dynamic_cast<DynamicMesh*>(m_mesh));
   ItemInternalMap& nodes_map = dmesh->nodesMap();
   ENUMERATE_ITEM_INTERNAL_MAP_DATA(ncd,nodes_map){
     ItemInternal* node = ncd->value();

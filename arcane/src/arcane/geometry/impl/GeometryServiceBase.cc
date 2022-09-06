@@ -334,13 +334,15 @@ GeometryServiceBase::_checkItemGroupProperty(ItemGroupImpl* group,
 {
   PropertyMap::iterator iprop = m_group_property_map.find(group);
   if (iprop == m_group_property_map.end())
-    traceMng()->fatal() << "Non declare group " << group->name();
+    ARCANE_FATAL("Non declare group {0}",group->name());
   ItemGroupGeometryProperty & properties = iprop->second;
   if ((properties.defined & property) != property)
-    traceMng()->fatal() << "Non available property [" << IGeometryProperty::name(property) << "] requested from group " << group->name();
+    ARCANE_FATAL("Non available property [{0}] requested from group {1}",
+                 IGeometryProperty::name(property),group->name());
   ItemGroupGeometryProperty::StorageInfo & storages = properties.storages[property];
   if ((storages.storageType & storage) != storage)
-    traceMng()->fatal() << "Non available storage [" << IGeometryProperty::name(storage) << "] requested for property " << IGeometryProperty::name(property) << " on group " << group->name();
+    ARCANE_FATAL("Non available storage [{0}] requested for property {1} on group {2}",
+                 IGeometryProperty::name(storage),IGeometryProperty::name(property),group->name());
   return storages;
 }
 

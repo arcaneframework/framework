@@ -45,6 +45,7 @@ FullCellInfo(Int64ConstArrayView cells_infos,Integer cell_index,
 , m_first_parent_cell(0)
 , m_parent_info(parent_info)
 , m_has_edge(has_edge)
+, m_first_hParent_cell(0)
 , m_has_amr(has_amr)
 , m_with_flags(with_flags)
 {

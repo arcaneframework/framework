@@ -40,6 +40,7 @@ class ARCANE_LAUNCHER_EXPORT DirectSubDomainExecutionContext
 
  public:
 
+  ~DirectSubDomainExecutionContext();
   DirectSubDomainExecutionContext(const DirectSubDomainExecutionContext&) = delete;
   DirectSubDomainExecutionContext& operator=(const DirectSubDomainExecutionContext&) = delete;
 

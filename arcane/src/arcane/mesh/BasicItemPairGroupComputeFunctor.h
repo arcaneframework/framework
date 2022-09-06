@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicItemPairGroupComputeFunctor.h                          (C) 2000-2016 */
+/* BasicItemPairGroupComputeFunctor.h                          (C) 2000-2022 */
 /*                                                                           */
 /* Fonctions utilitaires sur un maillage.                                    */
 /*---------------------------------------------------------------------------*/
@@ -24,7 +24,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -99,10 +100,8 @@ class BasicItemPairGroupComputeFunctor
 
  private:
 
-  IMesh* m_mesh;
+  IMesh* m_mesh = nullptr;
   std::map<AdjencyType,ComputeFunctor> m_compute_adjency_functions;
-
- private:
 
  private:
   void _addComputeAdjency(eItemKind ik,eItemKind sik,eItemKind lik,ComputeFunctor f);
@@ -125,10 +124,9 @@ class BasicItemPairGroupComputeFunctor
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #endif  
-

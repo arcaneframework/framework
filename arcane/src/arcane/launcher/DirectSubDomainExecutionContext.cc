@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DirectSubDomainExecutionContext.cc                          (C) 2000-2021 */
+/* DirectSubDomainExecutionContext.cc                          (C) 2000-2022 */
 /*                                                                           */
 /* Contexte d'exécution directe avec création d'un sous-domaine.             */
 /*---------------------------------------------------------------------------*/
@@ -34,6 +34,15 @@ DirectSubDomainExecutionContext::
 DirectSubDomainExecutionContext(ISubDomain* sd)
 : m_p(new Impl(sd))
 {
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+DirectSubDomainExecutionContext::
+~DirectSubDomainExecutionContext()
+{
+  delete m_p;
 }
 
 /*---------------------------------------------------------------------------*/

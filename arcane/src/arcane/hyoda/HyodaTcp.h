@@ -31,7 +31,7 @@ class Hyoda;
 class HyodaTcp: public TraceAccessor{
 public:
   HyodaTcp(Hyoda*, ISubDomain*, ITraceMng*, Integer, Integer, Integer,bool=false);
-  ~HyodaTcp(){}
+  ~HyodaTcp();
 public:
   void send(const void *,size_t);
   void recvPov(double*);

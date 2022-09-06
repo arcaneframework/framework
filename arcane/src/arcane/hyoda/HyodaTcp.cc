@@ -90,6 +90,12 @@ HyodaTcp(Hyoda *_hyoda,ISubDomain *sd,ITraceMng *tm,Integer adrs,
   getVariableCollectionAndSendItToHost();
 }
 
+HyodaTcp::
+~HyodaTcp()
+{
+  ::free(m_servaddr);
+  ::free(m_fds);
+}
 
 /******************************************************************************
  * disconect
@@ -441,6 +447,7 @@ int HyodaTcp::checkTcpError(int error){
   case ETIMEDOUT:
     debug() << "\33[7m" << "ETIMEDOUT" << "\33[m:"
            <<"Timeout while attempting connection.";
+    break;
   default: debug()<<"## UNKNOWN ERROR CODE error="<<error<<", errno="<<errno;
   }
   return error;
