@@ -83,6 +83,8 @@ public:
  
   ItemInternal* addOneCell(const FullCellInfo& cell_info);
 
+  // NOTE GG: A priori plus utilisé
+  ARCANE_DEPRECATED_REASON("Y2022: Use addOneItem2() instead")
   ItemInternal* addOneItem(IItemFamily* family,
                            IItemFamilyModifier* family_modifier,
                            ItemTypeId type_id,

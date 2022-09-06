@@ -52,8 +52,10 @@ class ARCANE_CORE_EXPORT IItemFamilyModifier
  public:
 
   // DEPRECATED
+  ARCANE_DEPRECATED_REASON("Y2022: Use allocOne() overload with ItemTypeId")
   ItemInternal* allocOne(Int64 uid,ItemTypeInfo* type, mesh::MeshInfos& mesh_info);
   // DEPRECATED
+  ARCANE_DEPRECATED_REASON("Y2022: Use findOrAllocOne() overload with ItemTypeId")
   ItemInternal* findOrAllocOne(Int64 uid,ItemTypeInfo* type, mesh::MeshInfos& mesh_info, bool& is_alloc);
 
   //! Alloue un élément dans la famille et met à jour le \a mesh_info correspondant
