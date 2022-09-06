@@ -437,8 +437,13 @@ class ARCANE_MESH_EXPORT ItemFamily
   UniqueArray<ItemConnectivitySelector*> m_connectivity_selector_list_by_item_kind;
   bool m_use_legacy_compact_item = false;
 
+ private:
+
+  ItemTypeMng* m_item_type_mng = nullptr;
+
  protected:
 
+  ItemTypeMng* _itemTypeMng() const { return m_item_type_mng; }
   virtual IItemInternalSortFunction* _defaultItemSortFunction();
 
   ARCANE_DEPRECATED_REASON("Y2022: This method is a now a no-operation")

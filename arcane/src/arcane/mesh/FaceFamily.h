@@ -70,12 +70,17 @@ class ARCANE_MESH_EXPORT FaceFamily
  public:
 
   // IItemFamilyModifier Interface
-  ItemInternal* allocOne(Int64 uid,ItemTypeInfo* type, MeshInfos& mesh_info) override;
-  ItemInternal* findOrAllocOne(Int64 uid,ItemTypeInfo* type,MeshInfos& mesh_info, bool& is_alloc) override;
+  Item allocOne(Int64 uid,ItemTypeId type_id, MeshInfos& mesh_info) override;
+  Item findOrAllocOne(Int64 uid,ItemTypeId type_id,MeshInfos& mesh_info, bool& is_alloc) override;
   IItemFamily* family() override { return this; }
 
+  // TODO: DEPRECATED
   ItemInternal* allocOne(Int64 uid,ItemTypeInfo* type);
+  // TODO: DEPRECATED
   ItemInternal* findOrAllocOne(Int64 uid,ItemTypeInfo* type,bool& is_alloc);
+
+  Face allocOne(Int64 uid,ItemTypeId type);
+  Face findOrAllocOne(Int64 uid,ItemTypeId type,bool& is_alloc);
 
  public:
 
@@ -169,6 +174,7 @@ class ARCANE_MESH_EXPORT FaceFamily
   inline void _removeFace(Face face);
   Real3 _computeFaceNormal(Face face, const SharedVariableNodeReal3& nodes_coord) const;
   inline void _createOne(ItemInternal* item,Int64 uid,ItemTypeInfo* type);
+  inline void _createOne(ItemInternal* item,Int64 uid,ItemTypeId type_id);
 };
 
 /*---------------------------------------------------------------------------*/

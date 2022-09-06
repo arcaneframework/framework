@@ -135,7 +135,7 @@ addCells(Integer nb_cell,Int64ConstArrayView cells_infos,
   if (add_to_cells && nb_cell!=cells.size())
     ARCANE_THROW(ArgumentException,"return array 'cells' has to have same size as number of cells");
   for( Integer i_cell=0; i_cell<nb_cell; ++i_cell ){
-    Integer item_type_id = (Integer)cells_infos[cells_infos_index];
+    ItemTypeId item_type_id { (Int16)cells_infos[cells_infos_index] };
     ++cells_infos_index;
     Int64 cell_unique_id = cells_infos[cells_infos_index];
     ++cells_infos_index;
@@ -144,7 +144,7 @@ addCells(Integer nb_cell,Int64ConstArrayView cells_infos,
     Integer current_cell_nb_node = it->nbLocalNode();
     Int64ConstArrayView current_cell_nodes_uid(current_cell_nb_node,&cells_infos[cells_infos_index]);
     
-    ItemInternal* cell = m_one_mesh_item_adder->addOneCell(it,cell_unique_id,sub_domain_id,current_cell_nodes_uid,
+    ItemInternal* cell = m_one_mesh_item_adder->addOneCell(item_type_id,cell_unique_id,sub_domain_id,current_cell_nodes_uid,
                                                            allow_build_face);
     
     if (add_to_cells)
@@ -875,7 +875,7 @@ addHChildrenCells(ItemInternal* hParent_cell,Integer nb_cell,Int64ConstArrayView
   for( Integer i_cell=0; i_cell<nb_cell; ++i_cell ){
     debug(Trace::Highest)<<"\t\t[DynamicMeshIncrementalBuilder::addHChildrenCells]cell "<<i_cell<<"/"<<nb_cell;
 
-    Integer item_type_id = (Integer)cells_infos[cells_infos_index];
+    ItemTypeId item_type_id { (Int16)cells_infos[cells_infos_index] };
     debug(Trace::Highest)<<"\t\t[DynamicMeshIncrementalBuilder::addHChildrenCells]cells_infos["<<cells_infos_index<<"]="<<cells_infos[cells_infos_index]<<", type_id="<<item_type_id;
     ++cells_infos_index;
 	 
@@ -891,7 +891,7 @@ addHChildrenCells(ItemInternal* hParent_cell,Integer nb_cell,Int64ConstArrayView
     for( Integer i=0; i<current_cell_nb_node; ++i )
       debug(Trace::Highest) << "\t\t\t[DynamicMeshIncrementalBuilder::addHChildrenCells]DM NODE uid=" << current_cell_nodes_uid[i];
 
-    ItemInternal* cell = m_one_mesh_item_adder->addOneCell(it,
+    ItemInternal* cell = m_one_mesh_item_adder->addOneCell(item_type_id,
                                                       cell_unique_id,
                                                       sub_domain_id,
                                                       current_cell_nodes_uid,
@@ -1069,7 +1069,6 @@ addFamilyItems(ItemData& item_data)
      throw ArgumentException(A_FUNCINFO,
                              "return array containing item lids has to have be of size number of items");
   // Prepare info and call OneMeshItemAdder->addOneItem
-  ItemTypeMng* itm = m_item_type_mng;
   Int64 item_uid;
   Int64ConstArrayView item_infos = item_data.itemInfos();
   Integer nb_connected_family = CheckedConvert::toInteger(item_infos[0]);
@@ -1078,10 +1077,8 @@ addFamilyItems(ItemData& item_data)
   Int64UniqueArray connectivity_info;
   Integer nb_item_info = 0;
   Integer item_index = 0;
-  ItemTypeInfo* it = nullptr;
   for (Integer info_index = 1; info_index < item_data.itemInfos().size();){
-    Integer item_type_id = (Integer)item_infos[info_index++]; // item_type
-    if (item_type_id != -1) it = itm->typeFromId(item_type_id); // todo : test needed ?
+    ItemTypeId item_type_id { (Int16)item_infos[info_index++] }; // item_type
     item_uid = item_infos[info_index++]; // item_uid
     Integer item_info_begin_index = info_index;
     for (Integer connected_family_index = 0;connected_family_index < nb_connected_family; ++connected_family_index) {
@@ -1092,7 +1089,7 @@ addFamilyItems(ItemData& item_data)
     }
     ItemInternal* item = m_one_mesh_item_adder->addOneItem2(item_data.itemFamily(),
                                                             item_data.itemFamilyModifier(),
-                                                            it,
+                                                            item_type_id,
                                                             item_uid,
                                                             item_data.itemOwners()[item_index],
                                                             item_data.subDomainId(),
@@ -1142,7 +1139,7 @@ addFaces(Integer nb_face,Int64ConstArrayView faces_infos,
   Integer faces_infos_index = 0;
   for(Integer i_face=0; i_face<nb_face; ++i_face ){
 
-    Integer item_type_id = (Integer)faces_infos[faces_infos_index];
+    ItemTypeId item_type_id { (Int16)faces_infos[faces_infos_index] };
     ++faces_infos_index;
     Int64 face_unique_id = faces_infos[faces_infos_index];
     ++faces_infos_index;
@@ -1153,7 +1150,7 @@ addFaces(Integer nb_face,Int64ConstArrayView faces_infos,
     Int64ConstArrayView nodes_uid(current_face_nb_node,&faces_infos[faces_infos_index]);
     faces_infos_index += current_face_nb_node;
 
-    ItemInternal* face = m_one_mesh_item_adder->addOneFace(it, face_unique_id, sub_domain_id, nodes_uid);
+    ItemInternal* face = m_one_mesh_item_adder->addOneFace(item_type_id, face_unique_id, sub_domain_id, nodes_uid);
     
     if (add_to_faces)
       faces[i_face] = face->localId();

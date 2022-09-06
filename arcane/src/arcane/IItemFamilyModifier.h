@@ -42,20 +42,26 @@ class ItemTypeInfo;
  * Elle n'est implémentée que dans les familles d'items du maillage (ie tout sauf
  * ParticleFamily et DoFFamily, où elle n'est pas nécessaire)
  */
-
 class ARCANE_CORE_EXPORT IItemFamilyModifier
 {
-public:
+ public:
 
   /** Destructeur de la classe */
   virtual ~IItemFamilyModifier() {}
 
-public:
+ public:
+
+  // DEPRECATED
+  ARCANE_DEPRECATED_REASON("Y2022: Use allocOne() overload with ItemTypeId")
+  ItemInternal* allocOne(Int64 uid,ItemTypeInfo* type, mesh::MeshInfos& mesh_info);
+  // DEPRECATED
+  ARCANE_DEPRECATED_REASON("Y2022: Use findOrAllocOne() overload with ItemTypeId")
+  ItemInternal* findOrAllocOne(Int64 uid,ItemTypeInfo* type, mesh::MeshInfos& mesh_info, bool& is_alloc);
 
   //! Alloue un élément dans la famille et met à jour le \a mesh_info correspondant
-  virtual ItemInternal* allocOne(Int64 uid,ItemTypeInfo* type, mesh::MeshInfos& mesh_info) =0;
-  virtual ItemInternal* findOrAllocOne(Int64 uid,ItemTypeInfo* type, mesh::MeshInfos& mesh_info, bool& is_alloc) = 0;
-  virtual IItemFamily*  family() = 0;
+  virtual Item allocOne(Int64 uid,ItemTypeId type_id, mesh::MeshInfos& mesh_info) =0;
+  virtual Item findOrAllocOne(Int64 uid,ItemTypeId type_id, mesh::MeshInfos& mesh_info, bool& is_alloc) = 0;
+  virtual IItemFamily* family() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

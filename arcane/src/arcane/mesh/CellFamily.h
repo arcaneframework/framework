@@ -63,12 +63,17 @@ class ARCANE_MESH_EXPORT CellFamily
  public:
 
   // IItemFamilyModifier interface
-  ItemInternal* allocOne(Int64 uid,ItemTypeInfo* type, MeshInfos& mesh_info) override;
-  ItemInternal* findOrAllocOne(Int64 uid,ItemTypeInfo* type,MeshInfos& mesh_info, bool& is_alloc) override;
-  IItemFamily*  family() override {return this;}
+  Item allocOne(Int64 uid,ItemTypeId type_id, MeshInfos& mesh_info) override;
+  Item findOrAllocOne(Int64 uid,ItemTypeId type_id, MeshInfos& mesh_info, bool& is_alloc) override;
+  IItemFamily* family() override {return this;}
 
+  // TODO: DEPRECATED
   ItemInternal* allocOne(Int64 uid,ItemTypeInfo* type);
+  // TODO: DEPRECATED
   ItemInternal* findOrAllocOne(Int64 uid,ItemTypeInfo* type,bool& is_alloc);
+
+  Cell allocOne(Int64 uid,ItemTypeId type);
+  Cell findOrAllocOne(Int64 uid,ItemTypeId type_id,bool& is_alloc);
   
   /**
    * Supprime la maille \a cell
@@ -159,6 +164,7 @@ class ARCANE_MESH_EXPORT CellFamily
 
   void _removeNotConnectedSubItems(Cell cell);
   inline void _createOne(ItemInternal* item,Int64 uid,ItemTypeInfo* type);
+  inline void _createOne(ItemInternal* item,Int64 uid,ItemTypeId type_id);
 };
 
 /*---------------------------------------------------------------------------*/

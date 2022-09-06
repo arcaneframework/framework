@@ -62,18 +62,18 @@ public:
                            Int64ConstArrayView a_node_list, 
                            Integer a_type);
  
-  ItemInternal* addOneFace(ItemTypeInfo* type,
+  ItemInternal* addOneFace(ItemTypeId type_id,
                            Int64 face_uid,
                            Int32 sub_domain_id,
                            Int64ConstArrayView nodes_uid);
   
   ItemInternal* addOneEdge(Int64 edge_uid,
-                           Integer sub_domain_id,
+                           Int32 sub_domain_id,
                            Int64ConstArrayView nodes_uid);
   
-  ItemInternal* addOneCell(ItemTypeInfo* type,
+  ItemInternal* addOneCell(ItemTypeId type_id,
                            Int64 cell_uid,
-                           Integer sub_domain_id,
+                           Int32 sub_domain_id,
                            Int64ConstArrayView nodes_uid,
                            bool allow_build_face);
   
@@ -83,21 +83,23 @@ public:
  
   ItemInternal* addOneCell(const FullCellInfo& cell_info);
 
+  // NOTE GG: A priori plus utilisé
+  ARCANE_DEPRECATED_REASON("Y2022: Use addOneItem2() instead")
   ItemInternal* addOneItem(IItemFamily* family,
                            IItemFamilyModifier* family_modifier,
-                           ItemTypeInfo* type,
+                           ItemTypeId type_id,
                            Int64 item_uid,
-                           Integer item_owner,
-                           Integer sub_domain_id,
+                           Int32 item_owner,
+                           Int32 sub_domain_id,
                            Integer nb_connected_family,
                            Int64ConstArrayView connectivity_info);
 
   ItemInternal* addOneItem2(IItemFamily* family,
                             IItemFamilyModifier* family_modifier,
-                            ItemTypeInfo* type,
+                            ItemTypeId type_id,
                             Int64 item_uid,
-                            Integer item_owner,
-                            Integer sub_domain_id,
+                            Int32 item_owner,
+                            Int32 sub_domain_id,
                             Integer nb_connected_family,
                             Int64ConstArrayView connectivity_info);
    

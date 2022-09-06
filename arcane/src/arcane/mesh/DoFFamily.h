@@ -90,12 +90,14 @@ private:
   //! La famille ne peut pas etre cree directement, il faut utiliser le DoFManager
   DoFFamily(IMesh* mesh, const String& name);
 
-public:
+ public:
+
   /** Destructeur de la classe */
   virtual ~DoFFamily() {}
 
-public:
-  ItemInternal* allocOne(Int64 uid,ItemTypeInfo*, MeshInfos&) override
+ public:
+
+  Item allocOne(Int64 uid,ItemTypeId, MeshInfos&) override
   {
     return _allocDoF(uid);
   }
@@ -106,7 +108,7 @@ public:
   }
 
   // IItemFamilyModifier interface
-  ItemInternal* findOrAllocOne(Int64 uid,ItemTypeInfo*,MeshInfos&, bool& is_alloc) override
+  Item findOrAllocOne(Int64 uid,ItemTypeId,MeshInfos&, bool& is_alloc) override
   {
     auto dof = _findOrAllocDoF(uid,is_alloc);
     return dof;

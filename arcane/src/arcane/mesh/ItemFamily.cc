@@ -269,6 +269,8 @@ _variableName(const String& base_name) const
 void ItemFamily::
 build()
 {
+  m_item_type_mng = m_mesh->itemTypeMng();
+
   // Créé le modificateur de topologie si cela n'a pas encore été fait par
   // la classe dérivée.
   if (!m_topology_modifier)
