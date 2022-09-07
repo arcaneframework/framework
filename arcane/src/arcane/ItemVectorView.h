@@ -92,13 +92,20 @@ class ItemVectorViewConstIterator
   }
 
   ARCANE_DEPRECATED_REASON("Y2022: This method returns a temporary. Use 'operator*' instead")
-  Item operator->() const { return m_shared_info->m_items_internal[ m_local_ids[m_index] ]; }
+  Item operator->() const { return _itemInternal(); }
 
  protected:
 
   ItemSharedInfo* m_shared_info;
   const Int32* ARCANE_RESTRICT m_local_ids;
   Integer m_index;
+
+ protected:
+
+  inline ItemInternal* _itemInternal() const
+  {
+    return m_shared_info->m_items_internal[ m_local_ids[m_index] ];
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -145,7 +152,7 @@ class ItemVectorViewConstIteratorT
  public:
 
   ARCANE_DEPRECATED_REASON("Y2022: This method returns a temporary. Use 'operator*' instead")
-  ItemType operator->() const { return m_shared_info->m_items_internal[ m_local_ids[m_index] ]; }
+  ItemType operator->() const { return this->_itemInternal(); }
 };
 
 /*---------------------------------------------------------------------------*/
