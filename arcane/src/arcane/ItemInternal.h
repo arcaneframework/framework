@@ -639,16 +639,6 @@ class ARCANE_CORE_EXPORT ItemBase
 
  public:
 
-  ItemInternal* internalNode(Int32 index) const { return _connectivity()->nodeV2(m_local_id,index); }
-  ItemInternal* internalEdge(Int32 index) const { return _connectivity()->edgeV2(m_local_id,index); }
-  ItemInternal* internalFace(Int32 index) const { return _connectivity()->faceV2(m_local_id,index); }
-  ItemInternal* internalCell(Int32 index) const { return _connectivity()->cellV2(m_local_id,index); }
-  ItemInternal* internalHParent(Int32 index) const { return _connectivity()->hParentV2(m_local_id,index); }
-  ItemInternal* internalHChild(Int32 index) const { return _connectivity()->hChildV2(m_local_id,index); }
-  ItemInternal* parent(Integer index) const { return m_shared_info->_parentV2(m_local_id,index); }
-
- public:
-
  /**
    * @returns le rang de l'enfant \p (iitem).
    * exemple: si rank = m_internal->whichChildAmI(iitem); donc
