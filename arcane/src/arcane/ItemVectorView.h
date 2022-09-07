@@ -191,7 +191,7 @@ class ARCANE_CORE_EXPORT ItemVectorView
 
   operator ItemInternalVectorView() const
   {
-    return ItemInternalVectorView(m_shared_info,m_items,m_local_ids);
+    return ItemInternalVectorView(m_shared_info,m_local_ids);
   }
 
   //! Accède au \a i-ème élément du vecteur

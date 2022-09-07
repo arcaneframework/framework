@@ -35,20 +35,19 @@ class ItemSharedInfo;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \internal
  * \brief Iterateur d'un ItemInternalVectorView.
+ * \deprecated Utiliser un itérateur à partir d'un ItemVectorView.
  */
 class ItemInternalVectorViewConstIterator
 {
   friend class ItemInternalVectorView;
   typedef ItemInternal* ItemInternalPtr;
+ private:
   ItemInternalVectorViewConstIterator(const ItemInternalPtr* items,
                                       const Int32* ARCANE_RESTRICT local_ids,
                                       Integer index)
   : m_items(items), m_local_ids(local_ids), m_index(index){}
- public:
-  // Pas directement utilisé mais est nécessaire pour ICC 17.0
-  ItemInternalVectorViewConstIterator()
-  : m_items(nullptr), m_local_ids(nullptr), m_index(0){}
  public:
   typedef ItemInternalVectorViewConstIterator ThatClass;
  public:
@@ -99,7 +98,9 @@ class ItemInternalVectorViewConstIterator
   {
     return !(lhs==rhs);
   }
+
  private:
+
   const ItemInternalPtr* m_items;
   const Int32* ARCANE_RESTRICT m_local_ids;
   Integer m_index;
@@ -109,7 +110,12 @@ class ItemInternalVectorViewConstIterator
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Vue sur un tableau indexé d'entités.
+ * \brief Vue interne sur un tableau d'entités.
+ *
+ * Celle classe n'est utile que pour construire des listes d'entités utilisées
+ * en interne de %Arcane. La version utilisateur de cette classe est
+ * ItemVectorView.
+ *
  * \see ItemVectorView
  */
 class ARCANE_CORE_EXPORT ItemInternalVectorView
@@ -127,47 +133,54 @@ class ARCANE_CORE_EXPORT ItemInternalVectorView
 
  private:
 
-  ItemInternalVectorView(ItemSharedInfo* si,ItemInternalArrayView aitems,Int32ConstArrayView local_ids)
-  : m_items(aitems), m_local_ids(local_ids), m_shared_info(si)
+  ItemInternalVectorView(ItemSharedInfo* si,Int32ConstArrayView local_ids)
+  : m_local_ids(local_ids), m_shared_info(si)
   {
     ARCANE_ASSERT(_isValid(),("Bad ItemInternalVectorView"));
   }
 
-  ItemInternalVectorView(ItemSharedInfo* si,ItemInternalArrayView aitems,const Int32* local_ids,Integer count)
-  : m_items(aitems), m_local_ids(count,local_ids), m_shared_info(si)
+  ItemInternalVectorView(ItemSharedInfo* si,const Int32* local_ids,Integer count)
+  : m_local_ids(count,local_ids), m_shared_info(si)
   {
     ARCANE_ASSERT(_isValid(),("Bad ItemInternalVectorView"));
   }
 
  public:
 
-  //! Accède au \a i-ème élément du vecteur
-  ItemInternal* operator[](Integer index) const { return m_items[ m_local_ids[index] ]; }
+  /*!
+   * \brief Accède au \a i-ème élément du vecteur.
+   *
+   * Cette méthode est obsolète. Il faut construire un 'ItemVectorView' à la place
+   * et utiliser l'opérateur 'operator[]' associé.
+   */
+  ARCANE_DEPRECATED_REASON("Y2022: Use ItemVectorView::operator[] instead")
+  ItemInternal* operator[](Integer index) const { return m_shared_info->m_items_internal[ m_local_ids[index] ]; }
 
   //! Nombre d'éléments du vecteur
   Integer size() const { return m_local_ids.size(); }
 
   //! Tableau des entités
-  ItemInternalArrayView items() const { return m_items; }
+  ItemInternalArrayView items() const { return m_shared_info->m_items_internal; }
 
   //! Tableau des numéros locaux des entités
   Int32ConstArrayView localIds() const { return m_local_ids; }
 
  public:
 
+  // TODO: Rendre obsolète car one doit plus itérer avec cette classe
   const_iterator begin() const
   {
-    return const_iterator(m_items.unguardedBasePointer(),m_local_ids.unguardedBasePointer(),0);
+    return const_iterator(items().data(),m_local_ids.data(),0);
   }
 
+  // TODO: Rendre obsolète car one doit plus itérer avec cette classe
   const_iterator end() const
   {
-    return const_iterator(m_items.unguardedBasePointer(),m_local_ids.unguardedBasePointer(),this->size());
+    return const_iterator(items().data(),m_local_ids.data(),this->size());
   }
 
  protected:
 
-  ItemInternalArrayView m_items;
   Int32ConstArrayView m_local_ids;
   ItemSharedInfo* m_shared_info = ItemSharedInfo::nullInstance();
 

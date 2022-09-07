@@ -172,7 +172,7 @@ activeCells(Int32Array& local_ids) const
       local_ids.add(local_id);
     }
   }
-  return ItemInternalVectorView(m_shared_info->m_items->m_cell_shared_info,m_shared_info->m_items->cells,local_ids);
+  return ItemInternalVectorView(m_shared_info->m_items->m_cell_shared_info,local_ids);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -196,7 +196,7 @@ activeFaces(Int32Array& local_ids) const
         local_ids.add(face.localId());
     }
   }
-  return ItemInternalVectorView(m_shared_info->m_items->m_face_shared_info,m_shared_info->m_items->faces,local_ids);
+  return ItemInternalVectorView(m_shared_info->m_items->m_face_shared_info,local_ids);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -262,12 +262,9 @@ _isValid()
   if (!m_shared_info)
     ARCANE_FATAL("Null ItemSharedInfo");
   if (!m_local_ids.empty()){
-    auto* items_data = m_items.data();
+    auto* items_data = items().data();
     if (!items_data)
       ARCANE_FATAL("Null ItemsInternal list");
-    auto* shared_info_items_data = m_shared_info->m_items_internal.data();
-    if (shared_info_items_data!=items_data)
-      ARCANE_FATAL("Incoherent ItemInternal list from_shared_info={0} from_internal={1}",shared_info_items_data,items_data);
   }
   return true;
 }
