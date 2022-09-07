@@ -714,7 +714,7 @@ initialize()
                   << " sizeof(ItemInternalConnectivityList)=" << sizeof(ItemInternalConnectivityList)
                   << " sizeof(ItemSharedInfo)=" << sizeof(ItemSharedInfo);
   m_trace->info() << "sizeof(Item)=" << sizeof(Item)
-                  << " sizeof(ItemEnumerator)=" << sizeof(Item)
+                  << " sizeof(ItemEnumerator)=" << sizeof(ItemEnumerator)
                   << " ItemEnumeratorVersion=" << ItemEnumerator::version();
 }
 
