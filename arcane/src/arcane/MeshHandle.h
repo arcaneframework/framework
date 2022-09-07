@@ -37,6 +37,7 @@ class IMeshMng;
 class ISubDomain;
 class IUserDataList;
 class IVariableMng;
+class IApplication;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -135,6 +136,9 @@ class ARCANE_CORE_EXPORT MeshHandle
 
   //! Gestionnaire de variable associé. nullptr si isNull() est vrai.
   IVariableMng* variableMng() const;
+
+  //! Application associée. nullptr si isNull() est vrai.
+  IApplication* application() const;
 
   //! Données utilisateurs associées
   IUserDataList* meshUserDataList() const { return m_ref->userDataList(); }

@@ -100,6 +100,10 @@ class ServiceBuilder
   ServiceBuilder(ISubDomain* sd)
   : m_service_finder(sd->application(),ServiceBuildInfoBase(sd))
   {}
+  //! Instantiation pour créer un service de sous-domaine associé au maillage \a mesh_handle
+  ServiceBuilder(const MeshHandle& mesh_handle)
+  : m_service_finder(mesh_handle.application(),ServiceBuildInfoBase(mesh_handle))
+  {}
   //! Instantiation pour créer un service d'une session.
   ServiceBuilder(ISession* session)
   : m_service_finder(session->application(),ServiceBuildInfoBase(session))
