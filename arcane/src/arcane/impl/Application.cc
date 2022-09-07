@@ -715,6 +715,8 @@ initialize()
                   << " sizeof(ItemSharedInfo)=" << sizeof(ItemSharedInfo);
   m_trace->info() << "sizeof(Item)=" << sizeof(Item)
                   << " sizeof(ItemEnumerator)=" << sizeof(ItemEnumerator)
+                  << " sizeof(ItemVectorView)=" << sizeof(ItemVectorView)
+                  << " sizeof(ItemVectorViewConstIterator)=" << sizeof(ItemVectorViewConstIterator)
                   << " ItemEnumeratorVersion=" << ItemEnumerator::version();
 }
 

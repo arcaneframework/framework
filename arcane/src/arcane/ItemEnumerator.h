@@ -55,22 +55,6 @@ class ItemEnumerator
   //   template<class T> friend class ItemEnumeratorBase;
   // mais cela ne fonctionne pas avec GCC 8. On fait donc la spécialisation
   // à la main
-  friend class ItemEnumeratorBaseV1T<Node>;
-  friend class ItemEnumeratorBaseV1T<ItemWithNodes>;
-  friend class ItemEnumeratorBaseV1T<Edge>;
-  friend class ItemEnumeratorBaseV1T<Face>;
-  friend class ItemEnumeratorBaseV1T<Cell>;
-  friend class ItemEnumeratorBaseV1T<Particle>;
-  friend class ItemEnumeratorBaseV1T<DoF>;
-
-  friend class ItemEnumeratorBaseV2T<Node>;
-  friend class ItemEnumeratorBaseV2T<ItemWithNodes>;
-  friend class ItemEnumeratorBaseV2T<Edge>;
-  friend class ItemEnumeratorBaseV2T<Face>;
-  friend class ItemEnumeratorBaseV2T<Cell>;
-  friend class ItemEnumeratorBaseV2T<Particle>;
-  friend class ItemEnumeratorBaseV2T<DoF>;
-
   friend class ItemEnumeratorBaseV3T<Node>;
   friend class ItemEnumeratorBaseV3T<ItemWithNodes>;
   friend class ItemEnumeratorBaseV3T<Edge>;
@@ -87,14 +71,17 @@ class ItemEnumerator
  public:
 
   ItemEnumerator() = default;
+  // TODO: make deprecated
   ItemEnumerator(const ItemInternalPtr* items,const Int32* local_ids,Integer n, const ItemGroupImpl* agroup = nullptr)
   : BaseClass(items,local_ids,n,agroup){}
+  // TODO: make deprecated
   ItemEnumerator(const ItemInternalArrayView& items,const Int32ConstArrayView& local_ids, const ItemGroupImpl* agroup = nullptr)
   : BaseClass(items,local_ids,agroup){}
   ItemEnumerator(const ItemInternalVectorView& view, const ItemGroupImpl* agroup = nullptr)
   : BaseClass(view,agroup){}
   ItemEnumerator(const ItemInternalEnumerator& rhs)
   : BaseClass(rhs,true){}
+  // TODO: make protected
   ItemEnumerator(ItemSharedInfo* s,const Int32* local_ids,Integer n)
   : BaseClass(s,local_ids,n){}
 
@@ -110,108 +97,7 @@ class ItemEnumerator
   ItemEnumerator(ItemSharedInfo* shared_info,const Int32* local_ids,Int32 index,Int32 n,
                  const ItemGroupImpl* agroup,impl::ItemBase item_base)
   : BaseClass(shared_info,local_ids,index,n,agroup,item_base){}
-
 };
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-//! Constructeur seulement utilisé par fromItemEnumerator()
-template<typename ItemType> inline ItemEnumeratorBaseV1T<ItemType>::
-ItemEnumeratorBaseV1T(const ItemEnumerator& rhs,bool)
-: m_items(rhs.unguardedItems())
-, m_local_ids(rhs.unguardedLocalIds())
-, m_index(rhs.index())
-, m_count(rhs.count())
-, m_group_impl(rhs.group())
-{
-  _init();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename ItemType> inline ItemEnumeratorBaseV1T<ItemType>::
-ItemEnumeratorBaseV1T(const ItemEnumerator& rhs)
-: m_items(rhs.unguardedItems())
-, m_local_ids(rhs.unguardedLocalIds())
-, m_index(rhs.index())
-, m_count(rhs.count())
-, m_group_impl(rhs.group())
-{
-  _init();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename ItemType> inline ItemEnumeratorBaseV1T<ItemType>::
-ItemEnumeratorBaseV1T(const ItemInternalEnumerator& rhs)
-: ItemEnumeratorBaseV1T(ItemEnumerator(rhs))
-{
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename ItemType> inline ItemEnumerator ItemEnumeratorBaseV1T<ItemType>::
-toItemEnumerator() const
-{
-  return ItemEnumerator(m_items,m_local_ids,m_index,m_count,m_group_impl,m_item);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-//! Constructeur seulement utilisé par fromItemEnumerator()
-template<typename ItemType> inline ItemEnumeratorBaseV2T<ItemType>::
-ItemEnumeratorBaseV2T(const ItemEnumerator& rhs,bool)
-: m_items(rhs.unguardedItems())
-, m_local_ids(rhs.unguardedLocalIds())
-, m_index(rhs.index())
-, m_count(rhs.count())
-, m_group_impl(rhs.group())
-{
-  _init();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename ItemType> inline ItemEnumeratorBaseV2T<ItemType>::
-ItemEnumeratorBaseV2T(const ItemEnumerator& rhs)
-: m_items(rhs.unguardedItems())
-, m_local_ids(rhs.unguardedLocalIds())
-, m_index(rhs.index())
-, m_count(rhs.count())
-, m_group_impl(rhs.group())
-{
-  _init();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename ItemType> inline ItemEnumeratorBaseV2T<ItemType>::
-ItemEnumeratorBaseV2T(const ItemInternalEnumerator& rhs)
-: ItemEnumeratorBaseV2T(ItemEnumerator(rhs))
-{
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename ItemType> inline ItemEnumerator ItemEnumeratorBaseV2T<ItemType>::
-toItemEnumerator() const
-{
-  return ItemEnumerator(m_items,m_local_ids,m_index,m_count,m_group_impl,m_base);
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -252,6 +138,9 @@ ItemEnumeratorBaseV3(const ItemEnumerator& rhs)
 , m_group_impl(rhs.group())
 {
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 template<typename ItemType> inline ItemEnumeratorBaseV3T<ItemType>::
 ItemEnumeratorBaseV3T(const ItemEnumerator& rhs)
