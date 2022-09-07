@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableBuildInfo.h                                         (C) 2000-2021 */
+/* VariableBuildInfo.h                                         (C) 2000-2022 */
 /*                                                                           */
 /* Informations pour construire une variable.                                */
 /*---------------------------------------------------------------------------*/
@@ -66,6 +66,16 @@ class ARCANE_CORE_EXPORT VariableBuildInfo
   VariableBuildInfo(ISubDomain* sub_domain,const String& name,int property=0);
 
   /*!
+   * \brief Construit un initialiseur pour une variable sans l'associer à
+   * un module.
+   *
+   * \param variable_mng gestionnaire de variable
+   * \param name nom de la variable
+   * \param property propriétés de la variable
+   */
+  VariableBuildInfo(IVariableMng* variable_mng,const String& name,int property=0);
+
+  /*!
    * \brief Construit un initialiseur pour une variable associée  à
    * un maillage autre que le maillage par défaut.
    *
@@ -121,8 +131,7 @@ class ARCANE_CORE_EXPORT VariableBuildInfo
                     const String& item_family_name,int property=0);
 
   /*!
-   * \brief Construit un initialiseur pour une variable associée  à
-   * un maillage autre que le maillage par défaut.
+   * \brief Construit un initialiseur pour une variable non associée à un maillage.
    *
    * \param sd sous-domaine
    * \param name nom de la variable
@@ -133,6 +142,17 @@ class ARCANE_CORE_EXPORT VariableBuildInfo
   VariableBuildInfo(ISubDomain* sd,const String& name, const String& mesh_name,
                     const String& item_family_name,int property=0);
 
+  /*!
+   * \brief Construit un initialiseur pour une variable non associée à un maillage.
+   *
+   * \param variable_mng gestionnaire de variable
+   * \param name nom de la variable
+   * \param mesh_name nom du maillage
+   * \param item_family_name nom de la famille d'entité
+   * \param property propriétés de la variable
+   */
+  VariableBuildInfo(IVariableMng* variable_mng,const String& name, const String& mesh_name,
+                    const String& item_family_name,int property=0);
 
   /*!
    * \brief Construit un initialiseur pour une variable associée  à
@@ -186,8 +206,7 @@ class ARCANE_CORE_EXPORT VariableBuildInfo
                     const String& item_group_name,int property=0);
 
   /*!
-   * \brief Construit un initialiseur pour une variable associée  à
-   * un maillage autre que le maillage par défaut.
+   * \brief Construit un initialiseur pour une variable non associée à un maillage
    *
    * \param sd sous-domaine
    * \param name nom de la variable
@@ -197,6 +216,21 @@ class ARCANE_CORE_EXPORT VariableBuildInfo
    * \param property propriétés de la variable
    */
   VariableBuildInfo(ISubDomain* sd,const String& name,
+                    const String& mesh_name,
+                    const String& item_family_name,
+                    const String& item_group_name,int property=0);
+
+  /*!
+   * \brief Construit un initialiseur pour une variable non associée à un maillage
+   *
+   * \param variable_mng gestionnaire de variable
+   * \param name nom de la variable
+   * \param mesh_name nom du maillage
+   * \param item_family_name nom de la famille d'entité
+   * \param group_name nom du groupe associé (pour les variables partielles)
+   * \param property propriétés de la variable
+   */
+  VariableBuildInfo(IVariableMng* variable_mng,const String& name,
                     const String& mesh_name,
                     const String& item_family_name,
                     const String& item_group_name,int property=0);

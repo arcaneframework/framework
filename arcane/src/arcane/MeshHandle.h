@@ -36,6 +36,7 @@ class IMeshBase;
 class IMeshMng;
 class ISubDomain;
 class IUserDataList;
+class IVariableMng;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -72,11 +73,11 @@ class ARCANE_CORE_EXPORT MeshHandle
     ISubDomain* subDomain() const { return m_sub_domain; }
     IMeshMng* meshMng() const { return m_mesh_mng; }
     ITraceMng* traceMng() const { return m_trace_mng; }
+    IVariableMng* variableMng() const { return m_variable_mng; }
     IUserDataList* userDataList() const { return m_user_data_list; }
    public:
     void _destroyMesh();
     void _setMesh(IMesh* mesh);
-//    void _setMesh(IMeshBase* mesh_base);
    private:
     String m_mesh_name;
     IMesh* m_mesh_ptr = nullptr;
@@ -86,6 +87,7 @@ class ARCANE_CORE_EXPORT MeshHandle
     IUserDataList* m_user_data_list = nullptr;
     IMeshMng* m_mesh_mng = nullptr;
     ITraceMng* m_trace_mng = nullptr;
+    IVariableMng* m_variable_mng = nullptr;
    private:
     bool m_is_null = true;
   };
@@ -114,23 +116,8 @@ class ARCANE_CORE_EXPORT MeshHandle
    */
   IMesh* mesh() const;
 
-  /*!
-   * \brief Interface de base du maillage associé
-   *
-   * Cette interface est temporaire, afin d'intégrer progressivement un nouveau type de maillage
-   * Il est interdit d'appeler cette méthode si le maillage n'a pas encore été
-   * créé. A terme, une exception sera levée dans ce cas.
-   *
-   * Si on n'est pas certain que le maillage existe, on peut tester son
-   * existence via hasMesh().
-   *
-   * \pre hasMesh() == true
-   */
-//  IMeshBase* meshBase() const;
-
   //! Indique si le maillage associé a déjà été créé (i.e: mesh() est valide)
   bool hasMesh() const;
-//  bool hasMeshBase() const;
 
  public:
 
@@ -146,6 +133,9 @@ class ARCANE_CORE_EXPORT MeshHandle
   //! Gestionnaire de trace associé. nullptr si isNull() est vrai.
   ITraceMng* traceMng() const;
 
+  //! Gestionnaire de variable associé. nullptr si isNull() est vrai.
+  IVariableMng* variableMng() const;
+
   //! Données utilisateurs associées
   IUserDataList* meshUserDataList() const { return m_ref->userDataList(); }
 
@@ -160,7 +150,6 @@ class ARCANE_CORE_EXPORT MeshHandle
 
   //! \internal
   void _setMesh(IMesh* mesh) { m_ref->_setMesh(mesh); }
-//  void _setMesh(IMeshBase* mesh) { m_ref->_setMesh(mesh); }
 
   //! \internal
   void _destroyMesh() { m_ref->_destroyMesh(); }
