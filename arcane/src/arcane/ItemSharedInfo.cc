@@ -246,6 +246,39 @@ typeId() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+ItemInternalVectorView ItemSharedInfo::
+nodes(Int32) const
+{
+  return ItemInternalVectorView();
+}
+
+ItemInternalVectorView ItemSharedInfo::
+edges(Int32) const
+{
+  return ItemInternalVectorView();
+}
+
+ItemInternalVectorView ItemSharedInfo::
+faces(Int32) const
+{
+  return ItemInternalVectorView();
+}
+
+ItemInternalVectorView ItemSharedInfo::
+cells(Int32) const
+{
+  return ItemInternalVectorView();
+}
+
+ItemInternalVectorView ItemSharedInfo::
+hChildren(Int32) const
+{
+  return ItemInternalVectorView();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/

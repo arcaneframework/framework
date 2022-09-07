@@ -164,15 +164,15 @@ whichChildAmI(const ItemInternal *iitem) const
 ItemInternalVectorView impl::ItemBase::
 activeCells(Int32Array& local_ids) const
 {
-	const Integer nbcell = this->nbCell();
-	for(Integer icell = 0 ; icell < nbcell ; ++icell) {
+  const Integer nbcell = this->nbCell();
+  for(Integer icell = 0 ; icell < nbcell ; ++icell) {
     ItemBase cell = this->cellBase(icell);
     if (cell.isActive()){
       const Int32 local_id = cell.localId();
       local_ids.add(local_id);
     }
-	}
-	return ItemInternalVectorView(m_shared_info,m_shared_info->m_items->cells,local_ids);
+  }
+  return ItemInternalVectorView(m_shared_info->m_items->m_cell_shared_info,local_ids);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -181,22 +181,22 @@ activeCells(Int32Array& local_ids) const
 ItemInternalVectorView impl::ItemBase::
 activeFaces(Int32Array& local_ids) const
 {
-	const Integer nbface = this->nbFace();
-	for(Integer iface = 0 ; iface < nbface ; ++iface) {
-		ItemBase face = this->faceBase(iface);
-		if (!face.isBoundary()){
-			ItemBase bcell = face.backCell();
+  const Integer nbface = this->nbFace();
+  for(Integer iface = 0 ; iface < nbface ; ++iface) {
+    ItemBase face = this->faceBase(iface);
+    if (!face.isBoundary()){
+      ItemBase bcell = face.backCell();
       ItemBase fcell = face.frontCell();
-			if ( (!bcell.null() && bcell.isActive()) && (!fcell.null() && fcell.isActive()) )
-				local_ids.add(face.localId());
-		}
-		else {
-			ItemBase bcell = face.boundaryCell();
-			if ( (!bcell.null() && bcell.isActive()) )
-				local_ids.add(face.localId());
-		}
-	}
-	return ItemInternalVectorView(m_shared_info,m_shared_info->m_items->faces,local_ids);
+      if ( (!bcell.null() && bcell.isActive()) && (!fcell.null() && fcell.isActive()) )
+        local_ids.add(face.localId());
+    }
+    else{
+      ItemBase bcell = face.boundaryCell();
+      if ( (!bcell.null() && bcell.isActive()) )
+        local_ids.add(face.localId());
+    }
+  }
+  return ItemInternalVectorView(m_shared_info->m_items->m_face_shared_info,local_ids);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -248,6 +248,25 @@ void ItemInternal::
 setDataIndex(Integer)
 {
   ARCANE_FATAL("This method is no longer valid");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool ItemInternalVectorView::
+_isValid()
+{
+  if (!m_shared_info)
+    ARCANE_FATAL("Null ItemSharedInfo");
+  if (!m_local_ids.empty()){
+    auto* items_data = items().data();
+    if (!items_data)
+      ARCANE_FATAL("Null ItemsInternal list");
+  }
+  return true;
 }
 
 /*---------------------------------------------------------------------------*/

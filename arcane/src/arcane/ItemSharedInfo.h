@@ -17,7 +17,6 @@
 #include "arcane/ArcaneTypes.h"
 #include "arcane/ItemTypes.h"
 #include "arcane/ItemTypeInfo.h"
-#include "arcane/ItemInternalVectorView.h"
 #include "arcane/MeshItemInternalList.h"
 
 /*---------------------------------------------------------------------------*/
@@ -37,6 +36,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 class ItemInternal;
+class ItemInternalVectorView;
 class ItemInternalConnectivityList;
 
 /*---------------------------------------------------------------------------*/
@@ -59,6 +59,7 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   friend class mesh::ItemFamily;
   friend class mesh::DynamicMeshKindInfos;
   friend class mesh::ItemSharedInfoWithType;
+  friend class ItemInternalVectorView;
 
  public:
 
@@ -140,19 +141,19 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
  public:
 
   ARCANE_DEPRECATED_REASON("Y2022: This list is always empty")
-  ItemInternalVectorView nodes(Int32) const { return ItemInternalVectorView(); }
+  ItemInternalVectorView nodes(Int32) const;
 
   ARCANE_DEPRECATED_REASON("Y2020: This list is always empty")
-  ItemInternalVectorView edges(Int32) const { return ItemInternalVectorView(); }
+  ItemInternalVectorView edges(Int32) const;
 
   ARCANE_DEPRECATED_REASON("Y2020: This list is always empty")
-  ItemInternalVectorView faces(Int32) const { return ItemInternalVectorView(); }
+  ItemInternalVectorView faces(Int32) const;
 
   ARCANE_DEPRECATED_REASON("Y2020: This list is always empty")
-  ItemInternalVectorView cells(Int32) const { return ItemInternalVectorView(); }
+  ItemInternalVectorView cells(Int32) const;
 
   ARCANE_DEPRECATED_REASON("Y2020: This list is always empty")
-  ItemInternalVectorView hChildren(Int32) const { return ItemInternalVectorView(); }
+  ItemInternalVectorView hChildren(Int32) const;
 
  public:
 

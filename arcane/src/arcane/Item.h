@@ -494,7 +494,7 @@ class ARCANE_CORE_EXPORT Node
   // AMR
 
   //! Enumére les mailles connectées au noeud
-  ItemVectorView activeCells(Int32Array& local_ids) const
+  CellVectorView activeCells(Int32Array& local_ids) const
   {
     return ItemBase::activeCells(local_ids);
   }
