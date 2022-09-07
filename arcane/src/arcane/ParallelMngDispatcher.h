@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelMngDispatcher.h                                     (C) 2000-2020 */
+/* ParallelMngDispatcher.h                                     (C) 2000-2022 */
 /*                                                                           */
 /* Interface du gestionnaire du parallélisme sur un domaine.                 */
 /*---------------------------------------------------------------------------*/
@@ -38,23 +38,33 @@ namespace MP = ::Arccore::MessagePassing;
 class ARCANE_CORE_EXPORT ParallelMngDispatcherBuildInfo
 {
  public:
+
+  ARCANE_DEPRECATED_REASON("Y2022: Use overload with Ref<MP::MessagePassingMng> instead")
   ParallelMngDispatcherBuildInfo(MP::Dispatchers* dispatchers,
                                  MP::MessagePassingMng* mpm);
+  ParallelMngDispatcherBuildInfo(MP::Dispatchers* dispatchers,
+                                 Ref<MP::MessagePassingMng> mpm);
   ParallelMngDispatcherBuildInfo(Int32 comm_rank, Int32 comm_size);
 
  public:
+
   Int32 commRank() const { return m_comm_rank; }
   Int32 commSize() const { return m_comm_size; }
   MP::Dispatchers* dispatchers() const { return m_dispatchers; }
+  ARCANE_DEPRECATED_REASON("Y2022: Use messagePassingMngRef() instead")
   MP::MessagePassingMng* messagePassingMng() const { return m_message_passing_mng; }
+  Ref<MP::MessagePassingMng> messagePassingMngRef() const { return m_message_passing_mng_ref; }
 
  private:
+
   Int32 m_comm_rank;
   Int32 m_comm_size;
   MP::Dispatchers* m_dispatchers;
   MP::MessagePassingMng* m_message_passing_mng;
+  Ref<MP::MessagePassingMng> m_message_passing_mng_ref;
 
  private:
+
   void _init();
 };
 
@@ -243,7 +253,7 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcher
 
  protected:
 
-  MP::MessagePassingMng* _messagePassingMng() const { return m_message_passing_mng; }
+  MP::MessagePassingMng* _messagePassingMng() const { return m_message_passing_mng_ref.get(); }
   UniqueArray<Integer> _doWaitRequests(ArrayView<Request> requests,Parallel::eWaitType wait_type);
   virtual ISerializeMessageList* _createSerializeMessageList() =0;
   virtual IParallelMng* _createSubParallelMng(Int32ConstArrayView kept_ranks) =0;
@@ -258,7 +268,7 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcher
   
   ITimeStats* m_time_stats = nullptr;
   MP::Dispatchers* m_mp_dispatchers = nullptr;
-  MP::MessagePassingMng* m_message_passing_mng = nullptr;
+  Ref<MP::MessagePassingMng> m_message_passing_mng_ref;
   MP::IControlDispatcher* m_control_dispatcher = nullptr;
   MP::ISerializeDispatcher* m_serialize_dispatcher = nullptr;
 };
