@@ -95,9 +95,9 @@ arcaneCreateMeshMaterialMng(const MeshHandle& mesh_handle,const String& name)
 MeshMaterialMng::
 MeshMaterialMng(const MeshHandle& mesh_handle,const String& name)
 // TODO: utiliser le ITraceMng du maillage. Le faire lors de l'init
-: TraceAccessor(mesh_handle.subDomain()->traceMng())
+: TraceAccessor(mesh_handle.traceMng())
 , m_mesh_handle(mesh_handle)
-, m_variable_mng(mesh_handle.subDomain()->variableMng())
+, m_variable_mng(mesh_handle.variableMng())
 , m_name(name)
 , m_is_end_create(false)
 , m_is_verbose(false)

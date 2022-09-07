@@ -5,13 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemFamilyVariableSerializer.cc                             (C) 2000-2016 */
+/* ItemFamilyVariableSerializer.cc                             (C) 2000-2022 */
 /*                                                                           */
 /* Gère la sérialisation/désérialisation des variables d'une famille.        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/HashTableMap.h"
@@ -27,6 +25,7 @@
 #include "arcane/ItemFamilySerializeArgs.h"
 #include "arcane/IParallelMng.h"
 // TODO: a supprimer
+#include "arcane/IMesh.h"
 #include "arcane/IVariableMng.h"
 #include "arcane/ISubDomain.h"
 
@@ -43,17 +42,16 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
+namespace Arcane
+{
 class ItemFamilyExchange;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 namespace
 {
@@ -90,7 +88,7 @@ initialize()
   // famille via IItemFamily::usedVariables() mais cette méthode ne garantit
   // par l'ordre alphabétique des envois. En pensant par un std::map, on
   // devrait pouvoir s'en sortir.
-  IVariableMng* vm = m_item_family->subDomain()->variableMng();
+  IVariableMng* vm = m_item_family->mesh()->variableMng();
   VariableCollection used_vars(vm->usedVariables());
 
   UniqueArray<IItemFamily*> family_to_exchange;
@@ -356,8 +354,7 @@ _serializePartialVariable(IVariable* var,ISerializer* sbuf,Int32ConstArrayView l
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
