@@ -233,7 +233,7 @@ class ARCANE_CORE_EXPORT ItemVectorView
   
   ItemInternalArrayView m_items;
   ItemIndexArrayView m_local_ids;
-  ItemSharedInfo* m_shared_info = nullptr;
+  ItemSharedInfo* m_shared_info = ItemSharedInfo::nullInstance();
 
  private:
 

@@ -23,6 +23,7 @@
 #include "arcane/ItemLocalId.h"
 #include "arcane/ItemTypeId.h"
 #include "arcane/ItemConnectivityContainerView.h"
+#include "arcane/ItemInternalVectorView.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

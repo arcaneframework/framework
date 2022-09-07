@@ -16,6 +16,7 @@
 
 #include "arcane/utils/ArrayView.h"
 #include "arcane/ItemTypes.h"
+#include "arcane/ItemSharedInfo.h"
 
 #include <iterator>
 
@@ -111,7 +112,7 @@ class ItemInternalVectorViewConstIterator
  * \brief Vue sur un tableau indexé d'entités.
  * \see ItemVectorView
  */
-class ItemInternalVectorView
+class ARCANE_CORE_EXPORT ItemInternalVectorView
 {
  public:
 
@@ -127,27 +128,30 @@ class ItemInternalVectorView
  private:
 
   ItemInternalVectorView(ItemSharedInfo* si,ItemInternalArrayView aitems,Int32ConstArrayView local_ids)
-  : m_items(aitems), m_local_ids(local_ids), m_shared_info(si) { }
+  : m_items(aitems), m_local_ids(local_ids), m_shared_info(si)
+  {
+    ARCANE_ASSERT(_isValid(),("Bad ItemInternalVectorView"));
+  }
 
   ItemInternalVectorView(ItemSharedInfo* si,ItemInternalArrayView aitems,const Int32* local_ids,Integer count)
-  : m_items(aitems), m_local_ids(count,local_ids), m_shared_info(si) { }
+  : m_items(aitems), m_local_ids(count,local_ids), m_shared_info(si)
+  {
+    ARCANE_ASSERT(_isValid(),("Bad ItemInternalVectorView"));
+  }
 
  public:
 
   //! Accède au \a i-ème élément du vecteur
-  inline ItemInternal* operator[](Integer index) const
-  {
-    return m_items[ m_local_ids[index] ];
-  }
+  ItemInternal* operator[](Integer index) const { return m_items[ m_local_ids[index] ]; }
 
   //! Nombre d'éléments du vecteur
-  inline Integer size() const { return m_local_ids.size(); }
+  Integer size() const { return m_local_ids.size(); }
 
   //! Tableau des entités
-  inline ItemInternalArrayView items() const { return m_items; }
+  ItemInternalArrayView items() const { return m_items; }
 
   //! Tableau des numéros locaux des entités
-  inline Int32ConstArrayView localIds() const { return m_local_ids; }
+  Int32ConstArrayView localIds() const { return m_local_ids; }
 
  public:
 
@@ -165,7 +169,11 @@ class ItemInternalVectorView
 
   ItemInternalArrayView m_items;
   Int32ConstArrayView m_local_ids;
-  ItemSharedInfo* m_shared_info = nullptr;
+  ItemSharedInfo* m_shared_info = ItemSharedInfo::nullInstance();
+
+ private:
+
+  bool _isValid();
 };
 
 /*---------------------------------------------------------------------------*/
