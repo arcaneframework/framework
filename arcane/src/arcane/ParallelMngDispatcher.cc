@@ -62,6 +62,21 @@ ParallelMngDispatcherBuildInfo(MP::Dispatchers* dispatchers,
 /*---------------------------------------------------------------------------*/
 
 ParallelMngDispatcherBuildInfo::
+ParallelMngDispatcherBuildInfo(MP::Dispatchers* dispatchers,
+                               Ref<MP::MessagePassingMng> mpm_ref)
+: m_comm_rank(mpm_ref->commRank())
+, m_comm_size(mpm_ref->commSize())
+, m_dispatchers(dispatchers)
+, m_message_passing_mng(mpm_ref.get())
+, m_message_passing_mng_ref(mpm_ref)
+{
+  _init();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ParallelMngDispatcherBuildInfo::
 ParallelMngDispatcherBuildInfo(Int32 comm_rank,Int32 comm_size)
 : m_comm_rank(comm_rank)
 , m_comm_size(comm_size)
@@ -79,8 +94,13 @@ _init()
 {
   if (!m_dispatchers)
     m_dispatchers = new MP::Dispatchers();
-  if (!m_message_passing_mng)
-    m_message_passing_mng = new MP::MessagePassingMng(m_comm_rank,m_comm_size,m_dispatchers);
+  if (!m_message_passing_mng){
+    auto* x = new MP::MessagePassingMng(m_comm_rank,m_comm_size,m_dispatchers);
+    m_message_passing_mng = x;
+    m_message_passing_mng_ref = makeRef(x);
+  }
+  if (!m_message_passing_mng_ref.get())
+    m_message_passing_mng_ref = makeRef(m_message_passing_mng);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -209,7 +229,7 @@ ParallelMngDispatcher(const ParallelMngDispatcherBuildInfo& bi)
 , m_hpreal(nullptr)
 , m_time_stats(nullptr)
 , m_mp_dispatchers(bi.dispatchers())
-, m_message_passing_mng(bi.messagePassingMng())
+, m_message_passing_mng_ref(bi.messagePassingMngRef())
 , m_control_dispatcher(new DefaultControlDispatcher(this))
 , m_serialize_dispatcher(new SerializeDispatcher(this))
 {
@@ -222,7 +242,6 @@ ParallelMngDispatcher::
 ~ParallelMngDispatcher()
 {
   delete m_mp_dispatchers;
-  delete m_message_passing_mng;
   delete m_serialize_dispatcher;
   delete m_control_dispatcher;
   delete m_char;
@@ -300,7 +319,7 @@ _setArccoreDispatchers()
 IMessagePassingMng* ParallelMngDispatcher::
 messagePassingMng() const
 {
-  return m_message_passing_mng;
+  return m_message_passing_mng_ref.get();
 }
 
 /*---------------------------------------------------------------------------*/
