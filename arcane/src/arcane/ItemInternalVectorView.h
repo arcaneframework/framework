@@ -125,6 +125,8 @@ class ARCANE_CORE_EXPORT ItemInternalVectorView
   friend class ItemVectorView;
   friend class ItemInternalConnectivityList;
   friend class impl::ItemBase;
+  friend class ItemEnumeratorBaseV3;
+
   using const_iterator = ItemInternalVectorViewConstIterator;
 
  public:

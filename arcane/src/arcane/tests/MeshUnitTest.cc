@@ -1015,12 +1015,8 @@ class ItemEnumerator2T
  public:
 
   ItemType operator*() const
-    {
-      return ItemType(m_items,m_local_ids[m_index]);
-    }
-  ItemType* operator->() const
   {
-    return (ItemType*)&m_items[m_local_ids[m_index]];
+    return ItemType(ItemEnumerator::operator*());
   }
 };
 

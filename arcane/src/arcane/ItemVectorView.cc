@@ -26,8 +26,7 @@ namespace Arcane
 
 ItemVectorView::
 ItemVectorView(IItemFamily* family, ConstArrayView<Int32> local_ids)
-: m_items(family->itemsInternal())
-, m_local_ids(local_ids)
+: m_local_ids(local_ids)
 {
   _init2(family);
 }
@@ -37,8 +36,7 @@ ItemVectorView(IItemFamily* family, ConstArrayView<Int32> local_ids)
 
 ItemVectorView::
 ItemVectorView(IItemFamily* family, ItemIndexArrayView indexes)
-: m_items(family->itemsInternal())
-, m_local_ids(indexes)
+: m_local_ids(indexes)
 {
  _init2(family);
 }

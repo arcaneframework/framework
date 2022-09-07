@@ -113,7 +113,7 @@ class ARCANE_CORE_EXPORT ItemInfoListView
 
  protected:
 
-  ItemSharedInfo* m_item_shared_info = nullptr;
+  ItemSharedInfo* m_item_shared_info = ItemSharedInfo::nullInstance();
   ItemInternalArrayView m_item_internal_list;
 
  protected:

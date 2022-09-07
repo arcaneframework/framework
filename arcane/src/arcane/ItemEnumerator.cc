@@ -33,6 +33,10 @@ _setSingleton(IItemEnumeratorTracer* tracer)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+// Pour tester la validité des instantiations
+
+template class ItemVectorViewConstIteratorT<Cell>;
+template class ItemVectorViewT<Cell>;
 
 template class ItemEnumeratorT<Node>;
 template class ItemEnumeratorT<Edge>;

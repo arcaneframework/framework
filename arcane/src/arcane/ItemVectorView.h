@@ -39,10 +39,9 @@ class ItemVectorViewConstIterator
   friend class ItemVectorView;
   typedef ItemInternal* ItemInternalPtr;
   ItemVectorViewConstIterator(ItemSharedInfo* shared_info,
-                              const ItemInternalPtr* items,
                               const Int32* ARCANE_RESTRICT local_ids,
                               Integer index)
-  : m_shared_info(shared_info), m_items(items), m_local_ids(local_ids), m_index(index){}
+  : m_shared_info(shared_info), m_local_ids(local_ids), m_index(index){}
  public:
   typedef ItemVectorViewConstIterator ThatClass;
  public:
@@ -72,12 +71,12 @@ class ItemVectorViewConstIterator
   friend ThatClass operator-(const ThatClass& a,difference_type v)
   {
     Integer index = a.m_index - v;
-    return ThatClass(a.m_shared_info,a.m_items,a.m_local_ids,index);
+    return ThatClass(a.m_shared_info,a.m_local_ids,index);
   }
   friend ThatClass operator+(const ThatClass& a,difference_type v)
   {
     Integer index = a.m_index + v;
-    return ThatClass(a.m_shared_info,a.m_items,a.m_local_ids,index);
+    return ThatClass(a.m_shared_info,a.m_local_ids,index);
   }
   friend bool operator<(const ThatClass& lhs,const ThatClass& rhs)
   {
@@ -85,7 +84,7 @@ class ItemVectorViewConstIterator
   }
   friend bool operator==(const ThatClass& lhs,const ThatClass& rhs)
   {
-    return lhs.m_shared_info==rhs.m_shared_info && lhs.m_items==rhs.m_items && lhs.m_local_ids==rhs.m_local_ids && lhs.m_index==rhs.m_index;
+    return lhs.m_shared_info==rhs.m_shared_info && lhs.m_local_ids==rhs.m_local_ids && lhs.m_index==rhs.m_index;
   }
   friend bool operator!=(const ThatClass& lhs,const ThatClass& rhs)
   {
@@ -93,14 +92,20 @@ class ItemVectorViewConstIterator
   }
 
   ARCANE_DEPRECATED_REASON("Y2022: This method returns a temporary. Use 'operator*' instead")
-  Item operator->() const { return m_items[ m_local_ids[m_index] ]; }
+  Item operator->() const { return _itemInternal(); }
 
  protected:
 
   ItemSharedInfo* m_shared_info;
-  const ItemInternalPtr* m_items;
   const Int32* ARCANE_RESTRICT m_local_ids;
   Integer m_index;
+
+ protected:
+
+  inline ItemInternal* _itemInternal() const
+  {
+    return m_shared_info->m_items_internal[ m_local_ids[m_index] ];
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -116,10 +121,9 @@ class ItemVectorViewConstIteratorT
 
   // Autorisé seulement par ItemVectorViewT.
   ItemVectorViewConstIteratorT(ItemSharedInfo* shared_info,
-                               const ItemInternalPtr* items,
                                const Int32* ARCANE_RESTRICT local_ids,
                                Integer index)
-  : ItemVectorViewConstIterator(shared_info,items,local_ids,index){}
+  : ItemVectorViewConstIterator(shared_info,local_ids,index){}
 
  public:
 
@@ -137,18 +141,18 @@ class ItemVectorViewConstIteratorT
   ThatClass operator-(difference_type v) const
   {
     Integer index = m_index - v;
-    return ThatClass(m_items,m_local_ids,index);
+    return ThatClass(m_shared_info,m_local_ids,index);
   }
   ThatClass operator+(difference_type v) const
   {
     Integer index = m_index + v;
-    return ThatClass(m_items,m_local_ids,index);
+    return ThatClass(m_shared_info,m_local_ids,index);
   }
 
  public:
 
   ARCANE_DEPRECATED_REASON("Y2022: This method returns a temporary. Use 'operator*' instead")
-  ItemType operator->() const { return m_items[ m_local_ids[m_index] ]; }
+  ItemType operator->() const { return this->_itemInternal(); }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -170,22 +174,27 @@ class ARCANE_CORE_EXPORT ItemVectorView
 
   // TODO: a supprimer dès qu'on n'aura plus besoin de ItemInternal
   ItemVectorView(const ItemInternalArrayView& aitems,const Int32ConstArrayView& local_ids)
-  : m_items(aitems), m_local_ids(local_ids) { _init(); }
+  : m_local_ids(local_ids) { _init(aitems); }
   // TODO: a supprimer dès qu'on n'aura plus besoin de ItemInternal
   ItemVectorView(ItemInternalArrayView aitems,ItemIndexArrayView indexes)
-  : m_items(aitems), m_local_ids(indexes) { _init(); }
+  : m_local_ids(indexes) { _init(aitems); }
 
  public:
 
   ItemVectorView() = default;
   ItemVectorView(const ItemInternalVectorView& view)
-  : m_items(view.items()), m_local_ids(view.localIds()) { _init(); }
+  : m_local_ids(view.localIds()), m_shared_info(view.m_shared_info) { }
   ItemVectorView(ItemInfoListView item_info_list_view,ConstArrayView<Int32> local_ids)
-  : m_items(item_info_list_view._itemsInternal()), m_local_ids(local_ids) { _init(); }
+  : m_local_ids(local_ids), m_shared_info(item_info_list_view.m_item_shared_info) { }
   ItemVectorView(ItemInfoListView item_info_list_view,ItemIndexArrayView indexes)
-  : m_items(item_info_list_view._itemsInternal()), m_local_ids(indexes) { _init(); }
+  : m_local_ids(indexes), m_shared_info(item_info_list_view.m_item_shared_info) { }
   ItemVectorView(IItemFamily* family,ConstArrayView<Int32> local_ids);
   ItemVectorView(IItemFamily* family,ItemIndexArrayView indexes);
+
+ private:
+
+  ItemVectorView(ItemSharedInfo* shared_info,const Int32ConstArrayView& local_ids)
+  : m_local_ids(local_ids), m_shared_info(shared_info) { }
 
  public:
 
@@ -204,7 +213,7 @@ class ARCANE_CORE_EXPORT ItemVectorView
   inline Integer size() const { return m_local_ids.size(); }
 
   //! Tableau des entités
-  inline ItemInternalArrayView items() const { return m_items; }
+  inline ItemInternalArrayView items() const { return m_shared_info->m_items_internal; }
 
   //! Tableau des numéros locaux des entités
   inline Int32ConstArrayView localIds() const { return m_local_ids; }
@@ -212,15 +221,15 @@ class ARCANE_CORE_EXPORT ItemVectorView
   //! Sous-vue à partir de l'élément \a abegin et contenant \a asize éléments
   inline ItemVectorView subView(Integer abegin,Integer asize)
   {
-    return ItemVectorView(m_items,m_local_ids.subView(abegin,asize));
+    return ItemVectorView(m_shared_info,m_local_ids.subView(abegin,asize));
   }
   inline const_iterator begin() const
   {
-    return const_iterator(m_shared_info,m_items.unguardedBasePointer(),m_local_ids.unguardedBasePointer(),0);
+    return const_iterator(m_shared_info,m_local_ids.data(),0);
   }
   inline const_iterator end() const
   {
-    return const_iterator(m_shared_info,m_items.unguardedBasePointer(),m_local_ids.unguardedBasePointer(),this->size());
+    return const_iterator(m_shared_info,m_local_ids.data(),this->size());
   }
   //! Vue sur le tableau des indices
   inline ItemIndexArrayView indexes() const { return m_local_ids; }
@@ -231,15 +240,14 @@ class ARCANE_CORE_EXPORT ItemVectorView
 
  protected:
   
-  ItemInternalArrayView m_items;
   ItemIndexArrayView m_local_ids;
   ItemSharedInfo* m_shared_info = ItemSharedInfo::nullInstance();
 
  private:
 
-  void _init()
+  void _init(ItemInternalArrayView items)
   {
-    m_shared_info = (size()>0 && !m_items.empty()) ? m_items[0]->sharedInfo() : ItemSharedInfo::nullInstance();
+    m_shared_info = (size()>0 && !items.empty()) ? items[0]->sharedInfo() : ItemSharedInfo::nullInstance();
   }
   void _init2(IItemFamily* family);
 };
@@ -294,16 +302,15 @@ class ItemVectorViewT
   
   inline ItemEnumeratorT<ItemType> enumerator() const
   {
-    return ItemEnumeratorT<ItemType>(m_items.data(),m_local_ids.localIds().data(),
-                                     m_local_ids.size());
+    return ItemEnumeratorT<ItemType>(m_shared_info,m_local_ids.localIds());
   }
   inline const_iterator begin() const
   {
-    return const_iterator(m_shared_info,m_items.unguardedBasePointer(),m_local_ids.unguardedBasePointer(),0);
+    return const_iterator(m_shared_info,m_local_ids.data(),0);
   }
   inline const_iterator end() const
   {
-    return const_iterator(m_shared_info,m_items.unguardedBasePointer(),m_local_ids.unguardedBasePointer(),this->size());
+    return const_iterator(m_shared_info,m_local_ids.data(),this->size());
   }
 };
 

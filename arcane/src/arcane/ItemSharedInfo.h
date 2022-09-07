@@ -60,6 +60,9 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   friend class mesh::DynamicMeshKindInfos;
   friend class mesh::ItemSharedInfoWithType;
   friend class ItemInternalVectorView;
+  friend class ItemVectorViewConstIterator;
+  friend class ItemVectorView;
+  friend class ItemEnumeratorBaseV3;
 
  public:
 
