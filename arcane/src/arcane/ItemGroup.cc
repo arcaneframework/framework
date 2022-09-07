@@ -540,7 +540,7 @@ ItemEnumerator ItemGroup::
 enumerator() const
 {
   if (null())
-    return ItemEnumerator(ItemSharedInfo::nullInstance(),nullptr,0);
+    return ItemEnumerator();
   m_impl->checkNeedUpdate();
   return ItemEnumerator(m_impl->itemsInternal(),m_impl->itemsLocalId(),m_impl.get());
 }

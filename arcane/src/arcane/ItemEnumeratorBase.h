@@ -49,8 +49,8 @@ class ItemEnumeratorBaseV3
   : m_local_ids(nullptr), m_index(0), m_count(0), m_group_impl(nullptr) { }
   ItemEnumeratorBaseV3(const ItemInternalPtr* items,const Int32* local_ids,Integer n, const ItemGroupImpl * agroup = nullptr)
   : m_local_ids(local_ids), m_index(0), m_count(n), m_group_impl(agroup) { _init(items); }
-  ItemEnumeratorBaseV3(ItemSharedInfo* shared_info,const Int32* local_ids,Integer n)
-  : m_shared_info(shared_info), m_local_ids(local_ids), m_index(0), m_count(n), m_group_impl(nullptr) { }
+  ItemEnumeratorBaseV3(ItemSharedInfo* shared_info,const Int32ConstArrayView& local_ids)
+  : m_shared_info(shared_info), m_local_ids(local_ids.data()), m_index(0), m_count(local_ids.size()), m_group_impl(nullptr) { }
   ItemEnumeratorBaseV3(const ItemInternalArrayView& items,const Int32ConstArrayView& local_ids, const ItemGroupImpl * agroup = nullptr)
   : m_local_ids(local_ids.data()), m_index(0), m_count(local_ids.size()), m_group_impl(agroup) { _init(items.data()); }
   ItemEnumeratorBaseV3(const ItemInternalVectorView& view, const ItemGroupImpl* agroup = nullptr)
@@ -161,8 +161,8 @@ class ItemEnumeratorBaseV3T
   : BaseClass() { }
   ItemEnumeratorBaseV3T(const ItemInternalPtr* items,const Int32* local_ids,Integer n, const ItemGroupImpl* agroup = nullptr)
   : BaseClass(items,local_ids,n,agroup) {}
-  ItemEnumeratorBaseV3T(ItemSharedInfo* shared_info,const Int32* local_ids,Integer n)
-  : BaseClass(shared_info,local_ids,n){}
+  ItemEnumeratorBaseV3T(ItemSharedInfo* shared_info,const Int32ConstArrayView& local_ids)
+  : BaseClass(shared_info,local_ids){}
   ItemEnumeratorBaseV3T(const ItemInternalArrayView& items,const Int32ConstArrayView& local_ids, const ItemGroupImpl * agroup = nullptr)
   : BaseClass(items,local_ids,agroup){}
   ItemEnumeratorBaseV3T(const ItemInternalVectorView& view, const ItemGroupImpl* agroup = nullptr)

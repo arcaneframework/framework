@@ -295,7 +295,7 @@ class ItemVectorViewT
   
   inline ItemEnumeratorT<ItemType> enumerator() const
   {
-    return ItemEnumeratorT<ItemType>(m_shared_info,m_local_ids.localIds().data(),m_local_ids.size());
+    return ItemEnumeratorT<ItemType>(m_shared_info,m_local_ids.localIds());
   }
   inline const_iterator begin() const
   {

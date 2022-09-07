@@ -51,6 +51,7 @@ class ItemEnumerator
 : public ItemEnumeratorBaseT<Item>
 {
   friend class ItemEnumeratorCS;
+  friend class ItemVectorView;
   // NOTE: Normalement il suffirait de faire cela:
   //   template<class T> friend class ItemEnumeratorBase;
   // mais cela ne fonctionne pas avec GCC 8. On fait donc la spécialisation
@@ -71,19 +72,23 @@ class ItemEnumerator
  public:
 
   ItemEnumerator() = default;
+  ItemEnumerator(const ItemInternalVectorView& view) : BaseClass(view){}
+  ItemEnumerator(const ItemInternalEnumerator& rhs) : BaseClass(rhs,true){}
+
   // TODO: make deprecated
   ItemEnumerator(const ItemInternalPtr* items,const Int32* local_ids,Integer n, const ItemGroupImpl* agroup = nullptr)
   : BaseClass(items,local_ids,n,agroup){}
   // TODO: make deprecated
   ItemEnumerator(const ItemInternalArrayView& items,const Int32ConstArrayView& local_ids, const ItemGroupImpl* agroup = nullptr)
   : BaseClass(items,local_ids,agroup){}
-  ItemEnumerator(const ItemInternalVectorView& view, const ItemGroupImpl* agroup = nullptr)
+  // TODO: make deprecated
+  ItemEnumerator(const ItemInternalVectorView& view, const ItemGroupImpl* agroup)
   : BaseClass(view,agroup){}
-  ItemEnumerator(const ItemInternalEnumerator& rhs)
-  : BaseClass(rhs,true){}
-  // TODO: make protected
-  ItemEnumerator(ItemSharedInfo* s,const Int32* local_ids,Integer n)
-  : BaseClass(s,local_ids,n){}
+
+ protected:
+
+  ItemEnumerator(ItemSharedInfo* s,const Int32ConstArrayView& local_ids)
+  : BaseClass(s,local_ids){}
 
  public:
 
@@ -183,23 +188,13 @@ class ItemEnumeratorT
   using ItemInternalPtr = ItemInternal*;
   using LocalIdType = typename ItemType::LocalIdType;
   using BaseClass = ItemEnumeratorBaseT<ItemType>;
+  friend class ItemVectorViewT<ItemType>;
 
  public:
 
-  ItemEnumeratorT()
-  : BaseClass() {}
-  ItemEnumeratorT(const ItemInternalPtr* items,const Int32* local_ids,Integer n, const ItemGroupImpl* agroup = nullptr)
-  : BaseClass(items,local_ids,n,agroup){}
-  ItemEnumeratorT(ItemSharedInfo* s,const Int32* local_ids,Integer n)
-  : BaseClass(s,local_ids,n){}
-  ItemEnumeratorT(const ItemInternalArrayView& items,const Int32ConstArrayView& local_ids, const ItemGroupImpl* agroup = nullptr)
-  : BaseClass(items,local_ids,agroup){}
-  ItemEnumeratorT(const ItemInternalVectorView& view, const ItemGroupImpl* agroup = nullptr)
-  : BaseClass(view,agroup){}
-  ItemEnumeratorT(const ItemVectorView& rhs)
-  : BaseClass(rhs){}
-  ItemEnumeratorT(const ItemVectorViewT<ItemType>& rhs)
-  : BaseClass(rhs){}
+  ItemEnumeratorT() = default;
+  ItemEnumeratorT(const ItemVectorView& rhs) : BaseClass(rhs){}
+  ItemEnumeratorT(const ItemVectorViewT<ItemType>& rhs) : BaseClass(rhs){}
 
   [[deprecated("Y2021: Use strongly typed enumerator (Node, Face, Cell, ...) instead of generic (Item) enumerator")]]
   ItemEnumeratorT(const ItemEnumerator& rhs)
@@ -208,6 +203,21 @@ class ItemEnumeratorT
   [[deprecated("Y2021: Use strongly typed enumerator (Node, Face, Cell, ...) instead of generic (Item) enumerator")]]
   ItemEnumeratorT(const ItemInternalEnumerator& rhs)
   : BaseClass(rhs){}
+
+  // TODO: rendre obsolète
+  ItemEnumeratorT(const ItemInternalPtr* items,const Int32* local_ids,Integer n, const ItemGroupImpl* agroup = nullptr)
+  : BaseClass(items,local_ids,n,agroup){}
+  // TODO: rendre obsolète
+  ItemEnumeratorT(const ItemInternalArrayView& items,const Int32ConstArrayView& local_ids, const ItemGroupImpl* agroup = nullptr)
+  : BaseClass(items,local_ids,agroup){}
+  // TODO: rendre obsolète
+  ItemEnumeratorT(const ItemInternalVectorView& view, const ItemGroupImpl* agroup = nullptr)
+  : BaseClass(view,agroup){}
+
+ private:
+
+  ItemEnumeratorT(ItemSharedInfo* s,const Int32ConstArrayView& local_ids)
+  : BaseClass(s,local_ids){}
 
  public:
 
@@ -233,7 +243,7 @@ class ItemEnumeratorT
 inline ItemEnumerator ItemVectorView::
 enumerator() const
 {
-  return ItemEnumerator(m_shared_info,m_local_ids.localIds().data(),m_local_ids.size());
+  return ItemEnumerator(m_shared_info,m_local_ids);
 }
 
 /*---------------------------------------------------------------------------*/
