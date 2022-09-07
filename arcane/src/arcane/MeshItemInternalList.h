@@ -39,6 +39,7 @@ class MeshItemInternalList
 {
   friend class mesh::DynamicMesh;
   friend class ItemInternalConnectivityList;
+  friend class impl::ItemBase;
 
  public:
 
