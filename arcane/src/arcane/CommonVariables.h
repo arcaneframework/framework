@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CommonVariables.h                                           (C) 2000-2006 */
+/* CommonVariables.h                                           (C) 2000-2022 */
 /*                                                                           */
 /* Variables communes décrivant un cas.                                      */
 /*---------------------------------------------------------------------------*/
@@ -21,7 +21,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -44,6 +45,9 @@ class ARCANE_CORE_EXPORT CommonVariables
 
   //! Construit les références des variables communes pour le module \a c
   CommonVariables(IModule* c);
+  //! Construit les références des variables communes pour le gestionnaire \a variable_mng
+  CommonVariables(IVariableMng* variable_mng);
+  // TODO: make deprecated
   //! Construit les références des variables communes pour le sous-domaine \a sd
   CommonVariables(ISubDomain* sd);
   virtual ~CommonVariables() {} //!< Libère les ressources.
@@ -88,7 +92,7 @@ class ARCANE_CORE_EXPORT CommonVariables
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

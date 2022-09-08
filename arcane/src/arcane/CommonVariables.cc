@@ -5,37 +5,28 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CommonVariables.cc                                          (C) 2000-2006 */
+/* CommonVariables.cc                                          (C) 2000-2022 */
 /*                                                                           */
 /* Variables communes décrivant un cas.                                      */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
-
 #include "arcane/CommonVariables.h"
 #include "arcane/IModule.h"
+#include "arcane/ISubDomain.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 CommonVariables::
 CommonVariables(IModule* c)
-: m_global_iteration(VariableBuildInfo(c->subDomain(),"GlobalIteration"))
-, m_global_time(VariableBuildInfo(c->subDomain(),"GlobalTime"))
-, m_global_deltat(VariableBuildInfo(c->subDomain(),"GlobalDeltaT"))
-, m_global_old_time(VariableBuildInfo(c->subDomain(),"GlobalOldTime"))
-, m_global_old_deltat(VariableBuildInfo(c->subDomain(),"GlobalOldDeltaT"))
-, m_global_final_time(VariableBuildInfo(c->subDomain(),"GlobalFinalTime"))
-, m_global_old_cpu_time(VariableBuildInfo(c->subDomain(),"GlobalOldCPUTime"))
-, m_global_cpu_time(VariableBuildInfo(c->subDomain(),"GlobalCPUTime",IVariable::PNoRestore|IVariable::PExecutionDepend))
-, m_global_old_elapsed_time(VariableBuildInfo(c->subDomain(),"GlobalOldElapsedTime"))
-, m_global_elapsed_time(VariableBuildInfo(c->subDomain(),"GlobalElapsedTime",IVariable::PNoRestore|IVariable::PExecutionDepend))
+: CommonVariables(c->subDomain()->variableMng())
 {
 }
 
@@ -44,16 +35,25 @@ CommonVariables(IModule* c)
 
 CommonVariables::
 CommonVariables(ISubDomain* sd)
-: m_global_iteration(VariableBuildInfo(sd,"GlobalIteration"))
-, m_global_time(VariableBuildInfo(sd,"GlobalTime"))
-, m_global_deltat(VariableBuildInfo(sd,"GlobalDeltaT"))
-, m_global_old_time(VariableBuildInfo(sd,"GlobalOldTime"))
-, m_global_old_deltat(VariableBuildInfo(sd,"GlobalOldDeltaT"))
-, m_global_final_time(VariableBuildInfo(sd,"GlobalFinalTime"))
-, m_global_old_cpu_time(VariableBuildInfo(sd,"GlobalOldCPUTime"))
-, m_global_cpu_time(VariableBuildInfo(sd,"GlobalCPUTime",IVariable::PNoRestore|IVariable::PExecutionDepend))
-, m_global_old_elapsed_time(VariableBuildInfo(sd,"GlobalOldElapsedTime"))
-, m_global_elapsed_time(VariableBuildInfo(sd,"GlobalElapsedTime",IVariable::PNoRestore|IVariable::PExecutionDepend))
+: CommonVariables(sd->variableMng())
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+CommonVariables::
+CommonVariables(IVariableMng* variable_mng)
+: m_global_iteration(VariableBuildInfo(variable_mng,"GlobalIteration"))
+, m_global_time(VariableBuildInfo(variable_mng,"GlobalTime"))
+, m_global_deltat(VariableBuildInfo(variable_mng,"GlobalDeltaT"))
+, m_global_old_time(VariableBuildInfo(variable_mng,"GlobalOldTime"))
+, m_global_old_deltat(VariableBuildInfo(variable_mng,"GlobalOldDeltaT"))
+, m_global_final_time(VariableBuildInfo(variable_mng,"GlobalFinalTime"))
+, m_global_old_cpu_time(VariableBuildInfo(variable_mng,"GlobalOldCPUTime"))
+, m_global_cpu_time(VariableBuildInfo(variable_mng,"GlobalCPUTime",IVariable::PNoRestore|IVariable::PExecutionDepend))
+, m_global_old_elapsed_time(VariableBuildInfo(variable_mng,"GlobalOldElapsedTime"))
+, m_global_elapsed_time(VariableBuildInfo(variable_mng,"GlobalElapsedTime",IVariable::PNoRestore|IVariable::PExecutionDepend))
 {
 }
 
@@ -117,7 +117,7 @@ globalElapsedTime() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

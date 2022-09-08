@@ -168,7 +168,7 @@ buildFromManager(bool is_continue)
     // Il s'agit juste de variables tableau.
     IVariable* var = 0;
     if (is_compat){
-      VariableBuildInfo vbi2(mesh->subDomain(),var_name,property);
+      VariableBuildInfo vbi2(mesh->variableMng(),var_name,property);
       VariableInfo vi = VariableRefType::_internalVariableInfo(vbi2);
       var = PrivatePartType::getReference(vbi2,vi);
     }

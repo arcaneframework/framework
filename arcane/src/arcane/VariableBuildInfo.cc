@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableBuildInfo.cc                                        (C) 2000-2020 */
+/* VariableBuildInfo.cc                                        (C) 2000-2022 */
 /*                                                                           */
 /* Informations pour construire une variable.                                */
 /*---------------------------------------------------------------------------*/
@@ -19,6 +19,7 @@
 #include "arcane/IItemFamily.h"
 #include "arcane/IApplication.h"
 #include "arcane/IDataFactoryMng.h"
+#include "arcane/IVariableMng.h"
 
 #include "arcane/utils/Iostream.h"
 
@@ -57,6 +58,19 @@ VariableBuildInfo(IModule* m,const String& name,int property)
 VariableBuildInfo::
 VariableBuildInfo(ISubDomain* sd,const String& name,int property)
 : m_sub_domain(sd)
+, m_module(nullptr)
+, m_name(name)
+, m_property(property)
+{
+  _init();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+VariableBuildInfo::
+VariableBuildInfo(IVariableMng* variable_mng,const String& name,int property)
+: m_sub_domain(variable_mng->_internalSubDomain())
 , m_module(nullptr)
 , m_name(name)
 , m_property(property)
@@ -149,6 +163,22 @@ VariableBuildInfo(ISubDomain* sd,const String& name,const String& mesh_name,
 /*---------------------------------------------------------------------------*/
 
 VariableBuildInfo::
+VariableBuildInfo(IVariableMng* variable_mng,const String& name,const String& mesh_name,
+                  const String& item_family_name,int property)
+: m_sub_domain(variable_mng->_internalSubDomain())
+, m_module(nullptr)
+, m_name(name)
+, m_item_family_name(item_family_name)
+, m_mesh_name(mesh_name)
+, m_property(property)
+{
+  _init();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+VariableBuildInfo::
 VariableBuildInfo(IItemFamily* family,const String& name,int property)
 : m_sub_domain(_getSubDomainDeprecated(family->mesh()->handle()))
 , m_module(nullptr)
@@ -216,6 +246,25 @@ VariableBuildInfo(ISubDomain* sd,const String& name,
                   const String& item_family_name,
                   const String& item_group_name,int property)
 : m_sub_domain(sd)
+, m_module(nullptr)
+, m_name(name)
+, m_item_family_name(item_family_name)
+, m_item_group_name(item_group_name)
+, m_mesh_name(mesh_name)
+, m_property(property)
+{
+  _init();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+VariableBuildInfo::
+VariableBuildInfo(IVariableMng* variable_mng,const String& name,
+                  const String& mesh_name,
+                  const String& item_family_name,
+                  const String& item_group_name,int property)
+: m_sub_domain(variable_mng->_internalSubDomain())
 , m_module(nullptr)
 , m_name(name)
 , m_item_family_name(item_family_name)

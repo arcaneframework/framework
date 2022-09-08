@@ -717,15 +717,13 @@ computeAdjency(ItemPairGroup adjency_array,eItemKind link_kind,Integer nb_layer)
 bool UnstructuredMeshUtilities::
 writeToFile(const String& file_name,const String& service_name)
 {
-  ISubDomain* sd = m_mesh->subDomain();
-
-  ServiceBuilder<IMeshWriter> sb(sd);
+  ServiceBuilder<IMeshWriter> sb(m_mesh->handle());
   auto mesh_writer = sb.createReference(service_name,SB_AllowNull);
   
   if (!mesh_writer){
     UniqueArray<String> available_names;
     sb.getServicesNames(available_names);
-    warning() << String::format("The speicified service '{0}' to write the mesh is not available."
+    warning() << String::format("The specified service '{0}' to write the mesh is not available."
                                 " Valid names are {1}",service_name,available_names);
     return true;
   }
