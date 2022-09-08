@@ -13,6 +13,7 @@
 #include "arcane/utils/String.h"
 #include "arcane/utils/CommandLineArguments.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/Exception.h"
 #include "arcane/Directory.h"
 
 // Standard headers
@@ -75,6 +76,31 @@ namespace
 {
 // Indique si on affiche les informations de debug
 int dotnet_verbose = 0;
+
+#ifdef _WINDOWS
+using LibHandle = HMODULE;
+#else
+using LibHandle = void*;
+#endif
+
+}
+
+namespace Arcane
+{
+struct CoreClrLibInfo
+{
+  LibHandle m_lib_handle = (LibHandle)0;
+  bool m_has_valid_lib_handle = false;
+
+  hostfxr_initialize_for_runtime_config_fn init_fptr = nullptr;
+  hostfxr_initialize_for_dotnet_command_line_fn init_command_line_fptr = nullptr;
+  hostfxr_get_runtime_delegate_fn get_delegate_fptr = nullptr;
+  hostfxr_run_app_fn run_app_fptr = nullptr;
+  hostfxr_close_fn close_fptr = nullptr;
+
+  void cleanup();
+};
+
 }
 
 #define PRINT_FORMAT(level,str,...)             \
@@ -88,17 +114,12 @@ const char* arcane_dotnet_root = ARCANE_DOTNET_ROOT;
 #else
 const char* arcane_dotnet_root = nullptr;
 #endif
+Arcane::CoreClrLibInfo lib_info;
 // Utile pour conserver la valeur de la variable d'environnement
 // DOTNET_ROOT
 std::string arcane_dotnet_root_env_variable;
 
 // Globals to hold hostfxr exports
-hostfxr_initialize_for_runtime_config_fn init_fptr;
-hostfxr_initialize_for_dotnet_command_line_fn init_command_line_fptr;
-hostfxr_get_runtime_delegate_fn get_delegate_fptr;
-hostfxr_run_app_fn run_app_fptr;
-
-hostfxr_close_fn close_fptr;
 
 // Forward declarations
 bool load_hostfxr(const string_t& assembly_name);
@@ -118,20 +139,20 @@ getDotnetLoadAssembly(const String& assembly)
   // TODO: il s'agit du chemin de l'exécutable, pas de l'assembly.
   params.host_path = assembly1.c_str(); //get_path_to_the_host_exe(); // Path to the current executable
 
-  int rc = init_fptr(assembly1.c_str(), &params, &cxt);
+  int rc = lib_info.init_fptr(assembly1.c_str(), &params, &cxt);
   if (rc != 0 || cxt == nullptr) {
     std::cerr << "Init failed: " << std::hex << std::showbase << rc << std::endl;
-    close_fptr(cxt);
+    lib_info.close_fptr(cxt);
     return nullptr;
   }
 
   // Get the load assembly function pointer
-  rc = get_delegate_fptr(cxt, hdt_load_assembly_and_get_function_pointer,
-                         &load_assembly_and_get_function_pointer);
+  rc = lib_info.get_delegate_fptr(cxt, hdt_load_assembly_and_get_function_pointer,
+                                  &load_assembly_and_get_function_pointer);
   if (rc != 0 || load_assembly_and_get_function_pointer == nullptr)
     std::cerr << "Get delegate failed: " << std::hex << std::showbase << rc << std::endl;
 
-  close_fptr(cxt);
+  lib_info.close_fptr(cxt);
   return (load_assembly_and_get_function_pointer_fn)load_assembly_and_get_function_pointer;
 }
 
@@ -163,7 +184,7 @@ _execDirect(const CommandLineArguments& cmd_args,
   argc = 1;
 
   hostfxr_handle host_context_handle;
-  int rc = init_command_line_fptr(argc, (const char_t**)argv, &params, &host_context_handle);
+  int rc = lib_info.init_command_line_fptr(argc, (const char_t**)argv, &params, &host_context_handle);
   std::cerr << "_execDirect init_command_line R = " << rc << "\n";
   if (rc!=0)
     ARCANE_FATAL("Can not initialize runtime RC={0}",rc);
@@ -176,10 +197,10 @@ _execDirect(const CommandLineArguments& cmd_args,
 #endif
 
   std::cerr << "Launching '.Net'\n";
-  int r = run_app_fptr(host_context_handle);
+  int r = lib_info.run_app_fptr(host_context_handle);
   std::cerr << "End '.Net': R=" << r << "\n";
 
-  close_fptr(host_context_handle);
+  lib_info.close_fptr(host_context_handle);
   return r;
 }
 } // namespace
@@ -189,8 +210,9 @@ _execDirect(const CommandLineArguments& cmd_args,
 /*!
  * \brief Point d'entrée de la bibliothèque appelé par 'ArcaneMain.cc'
  */
-extern "C" ARCANE_EXPORT int
-arcane_dotnet_coreclr_main(const Arcane::CommandLineArguments& cmd_args,
+
+int
+_arcaneCoreClrMainInternal(const Arcane::CommandLineArguments& cmd_args,
                            const Arcane::String& orig_assembly_name)
 {
   String verbose_str = Arcane::platform::getEnvironmentVariable("ARCANE_DEBUG_DOTNET");
@@ -225,7 +247,9 @@ arcane_dotnet_coreclr_main(const Arcane::CommandLineArguments& cmd_args,
   if (!load_hostfxr(orig_assembly_name1))
     ARCANE_FATAL("Failure: load_hostfxr()");
 
-  return _execDirect(cmd_args, orig_assembly_name);
+  const bool do_direct_exec = true;
+  if (do_direct_exec)
+    return _execDirect(cmd_args, orig_assembly_name);
 
   // NOTE: Cette partie n'est pas utilisée pour l'instant.
 
@@ -273,43 +297,83 @@ arcane_dotnet_coreclr_main(const Arcane::CommandLineArguments& cmd_args,
   return dll_entry_point_func(&args, sizeof(args));
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+// Point d'entrée appelé par ArcaneMain
+extern "C" ARCANE_EXPORT int
+arcane_dotnet_coreclr_main(const Arcane::CommandLineArguments& cmd_args,
+                           const Arcane::String& orig_assembly_name)
+{
+  int ret = 0;
+  try{
+    ret = _arcaneCoreClrMainInternal(cmd_args,orig_assembly_name);
+  }
+  catch(const Exception& ex){
+    ret = arcanePrintArcaneException(ex,nullptr);
+  }
+  catch(const std::exception& ex){
+    ret = arcanePrintStdException(ex,nullptr);
+  }
+  catch(...){
+    ret = arcanePrintAnyException(nullptr);
+  }
+  return ret;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /********************************************************************************************
  * Function used to load and activate .NET Core
  ********************************************************************************************/
 
 namespace
 {
+
 // Forward declarations
-void* load_library(const char_t*);
-void* get_export(void*, const char*);
+LibHandle load_library(const char_t*);
+void* get_export(LibHandle, const char*);
 
 #ifdef _WINDOWS
-void* load_library(const char_t* path)
+LibHandle load_library(const char_t* path)
 {
   HMODULE h = ::LoadLibraryW(path);
-  assert(h != nullptr);
-  return (void*)h;
+  if (!h)
+    ARCANE_FATAL("Can not load library '{0}'",path);
+  return h;
 }
-void* get_export(void* h, const char* name)
+void free_library(LibHandle h)
 {
-  void* f = ::GetProcAddress((HMODULE)h, name);
-  assert(f != nullptr);
+  FreeLibrary(h);
+}
+void* get_export(LibHandle h, const char* name)
+{
+  void* f = ::GetProcAddress(h, name);
+  if (!h)
+    ARCANE_FATAL("Can not get library symbol '{0}'",name);
   return f;
 }
 #else
-void* load_library(const char_t* path)
+LibHandle load_library(const char_t* path)
 {
   void* h = dlopen(path, RTLD_LAZY | RTLD_LOCAL);
-  assert(h != nullptr);
+  if (!h)
+    ARCANE_FATAL("Can not load library '{0}'",path);
   return h;
 }
-void* get_export(void* h, const char* name)
+void free_library(LibHandle h)
+{
+  ::dlclose(h);
+}
+void* get_export(LibHandle h, const char* name)
 {
   void* f = dlsym(h, name);
   PRINT_FORMAT(1,"get_export name={0} f={1}",name,f);
   if (!f)
     PRINT_FORMAT(0,"Can not load symbol '{0}'",name);
-  assert(f != nullptr);
+  if (!h)
+    ARCANE_FATAL("Can not get library symbol '{0}'",name);
   return f;
 }
 #endif
@@ -339,17 +403,34 @@ load_hostfxr(const string_t& assembly_name)
   //if (rc != 0)
   //return false;
   // Load hostfxr and get desired exports
-  void* lib = load_library(buffer);
+  LibHandle lib = load_library(buffer);
   PRINT_FORMAT(1,"LIB_PTR={0} path={1}",lib,buffer);
-  init_fptr = (hostfxr_initialize_for_runtime_config_fn)get_export(lib, "hostfxr_initialize_for_runtime_config");
-  get_delegate_fptr = (hostfxr_get_runtime_delegate_fn)get_export(lib, "hostfxr_get_runtime_delegate");
-  close_fptr = (hostfxr_close_fn)get_export(lib, "hostfxr_close");
-  init_command_line_fptr = (hostfxr_initialize_for_dotnet_command_line_fn)get_export(lib, "hostfxr_initialize_for_dotnet_command_line");
-  run_app_fptr = (hostfxr_run_app_fn)get_export(lib, "hostfxr_run_app");
-  return (init_fptr && get_delegate_fptr && close_fptr && init_command_line_fptr && run_app_fptr);
+  lib_info.m_lib_handle = lib;
+  lib_info.m_has_valid_lib_handle = true;
+  lib_info.init_fptr = (hostfxr_initialize_for_runtime_config_fn)get_export(lib, "hostfxr_initialize_for_runtime_config");
+  lib_info.get_delegate_fptr = (hostfxr_get_runtime_delegate_fn)get_export(lib, "hostfxr_get_runtime_delegate");
+  lib_info.close_fptr = (hostfxr_close_fn)get_export(lib, "hostfxr_close");
+  lib_info.init_command_line_fptr = (hostfxr_initialize_for_dotnet_command_line_fn)get_export(lib, "hostfxr_initialize_for_dotnet_command_line");
+  lib_info.run_app_fptr = (hostfxr_run_app_fn)get_export(lib, "hostfxr_run_app");
+  return (lib_info.init_fptr && lib_info.get_delegate_fptr && lib_info.close_fptr && lib_info.init_command_line_fptr && lib_info.run_app_fptr);
 }
 
 } // namespace
+
+namespace Arcane
+{
+
+void CoreClrLibInfo::
+cleanup()
+{
+  if (m_has_valid_lib_handle){
+    free_library(m_lib_handle);
+    m_lib_handle = (LibHandle)0;
+  }
+  m_has_valid_lib_handle = false;
+}
+
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
