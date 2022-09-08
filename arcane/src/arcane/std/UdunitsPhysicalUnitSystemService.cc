@@ -88,12 +88,12 @@ class UdunitsPhysicalUnitConverter
 {
  public:
 
-  UdunitsPhysicalUnitConverter(UdunitsPhysicalUnitSystem* unit_system,
+  UdunitsPhysicalUnitConverter(UdunitsPhysicalUnitSystem*,
                                UdunitsPhysicalUnit* from_unit,
                                UdunitsPhysicalUnit* to_unit,
                                ::cv_converter* converter)
-  : m_unit_system(unit_system), m_from_unit(from_unit),
-    m_to_unit(to_unit), m_is_from_owned(true), m_is_to_owned(true), m_converter(converter)
+  : m_from_unit(from_unit), m_to_unit(to_unit), m_is_from_owned(true),
+    m_is_to_owned(true), m_converter(converter)
   {
   }
 
@@ -136,7 +136,6 @@ class UdunitsPhysicalUnitConverter
  public:
 
  private:
-  UdunitsPhysicalUnitSystem* m_unit_system;
   UdunitsPhysicalUnit* m_from_unit;
   UdunitsPhysicalUnit* m_to_unit;
   bool m_is_from_owned;

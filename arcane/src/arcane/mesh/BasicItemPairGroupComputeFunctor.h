@@ -100,7 +100,6 @@ class BasicItemPairGroupComputeFunctor
 
  private:
 
-  IMesh* m_mesh = nullptr;
   std::map<AdjencyType,ComputeFunctor> m_compute_adjency_functions;
 
  private:

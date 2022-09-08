@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemFamilyNetwork.h                                         (C) 2000-2017 */
+/* ItemFamilyNetwork.h                                         (C) 2000-2022 */
 /*                                                                           */
 /* ItemFamily relations through their connectivities.                        */
 /*---------------------------------------------------------------------------*/
@@ -32,20 +32,20 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-ARCANE_MESH_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class ARCANE_MESH_EXPORT ItemFamilyNetwork : public IItemFamilyNetwork
+namespace Arcane::mesh
 {
-public:
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class ARCANE_MESH_EXPORT ItemFamilyNetwork
+: public IItemFamilyNetwork
+{
+ public:
 
   /** Constructeur de la classe */
   ItemFamilyNetwork(ITraceMng* trace_mng)
-  : m_trace_mng(trace_mng)
-  , m_relation_graph(trace_mng)
+  : m_relation_graph(trace_mng)
   , m_dependency_graph(trace_mng)
 {}
 
@@ -113,8 +113,8 @@ public:
 
   bool isDeep(IIncrementalItemConnectivity* connectivity) override;
 
-private:
-  ITraceMng* m_trace_mng = nullptr;
+ private:
+
   bool m_is_activated = false ;
   using ConnectivityGraph = GraphBaseT<IItemFamily*, IIncrementalItemConnectivity*>;
   mutable DirectedGraphT<IItemFamily*, IIncrementalItemConnectivity*> m_relation_graph;
@@ -123,7 +123,8 @@ private:
   std::map<IIncrementalItemConnectivity*,std::pair<bool,bool>> m_connectivity_status; // bool = is_stored
   std::set<IItemFamily*> m_families;
 
-private:
+ private:
+
   void _checkConnectivityName(IIncrementalItemConnectivity* connectivity, const String& name);
   std::pair<IIncrementalItemConnectivity* const, std::pair<bool,bool>>& _getConnectivityStatus(IIncrementalItemConnectivity* connectivity);
   SharedArray<IIncrementalItemConnectivity*> _getConnectivitiesFromGraph(const ConnectivityGraph::ConnectedEdgeSet& connectivity_edges);
@@ -133,8 +134,7 @@ private:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

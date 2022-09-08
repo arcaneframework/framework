@@ -187,12 +187,9 @@ protected:
   IItemFamily* m_cell_family;
 
  private:
+
   ILoadBalanceMng* m_lbMng;
 
-  // DEPRECATED
-  // Utile seulement pour la definition des poids par chronometrage,
-  // avec l'ancienne interface.
-  Integer m_nb_weight;
   Real m_maximum_computation_time;
   Real m_imbalance;
   Real m_max_imbalance;

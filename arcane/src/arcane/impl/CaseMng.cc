@@ -75,7 +75,7 @@ class CaseMng
   class OptionsReader
   {
    public:
-    OptionsReader(ICaseMng* cm) {}
+    OptionsReader(ICaseMng*) {}
     void read(bool is_phase1);
     void addOption(ICaseOptions* o) { m_options.add(o); }
    private:

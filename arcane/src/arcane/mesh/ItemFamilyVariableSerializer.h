@@ -61,7 +61,7 @@ class ARCANE_MESH_EXPORT ItemFamilyVariableSerializer
    sinon les désérialisations vont donner des résultats incorrects.
   */
   UniqueArray<IVariable*> m_variables_to_exchange;
-  bool m_is_verbose;
+
  private:
   void _serializePartialVariable(IVariable* var,ISerializer* sbuf,Int32ConstArrayView local_ids);
   void _checkSerialization(ISerializer* sbuf,Int32ConstArrayView local_ids);

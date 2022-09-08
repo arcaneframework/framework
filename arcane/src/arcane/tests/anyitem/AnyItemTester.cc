@@ -232,7 +232,8 @@ _test2()
   ENUMERATE_ANY_ITEM(iitem,  family.allItems()) {
     sum += variable[iitem];
   }
-  
+  info() << "SUM=" << sum;
+
   AnyItem::LinkFamily link_family(family);
   link_family.reserve(allFaces().size());
   
@@ -271,7 +272,8 @@ _test2()
         value_array += link_variable_array[ilink][i] + variable[ilink.back()] + variable[ilink.front()];
     }
   }
-  info() << "enumerate links = " << m_timer.lastActivationTime() << ", value = " << value;
+  info() << "enumerate links = " << m_timer.lastActivationTime()
+         << ", value = " << value << " value_array=" << value_array;
 } 
 
 /*---------------------------------------------------------------------------*/

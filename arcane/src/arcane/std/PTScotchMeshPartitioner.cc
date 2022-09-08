@@ -84,11 +84,6 @@ class PTScotchMeshPartitioner
 
   void partitionMesh(bool initial_partition) override;
   void partitionMesh(bool initial_partition,Int32 nb_part) override;
-
- private:
-
-  Integer m_nb_refine;
-  bool m_is_first_loadbalance;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -97,8 +92,6 @@ class PTScotchMeshPartitioner
 PTScotchMeshPartitioner::
 PTScotchMeshPartitioner(const ServiceBuildInfo& sbi)
 : ArcanePTScotchMeshPartitionerObject(sbi)
-, m_nb_refine(10)
-, m_is_first_loadbalance(true)
 {
 }
 

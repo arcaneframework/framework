@@ -35,7 +35,7 @@ class ARCANE_MESH_EXPORT CellMerger
  public:
 
   //! Constructeur
-  CellMerger(ITraceMng* tm) : m_trace_mng(tm) { }
+  CellMerger(ITraceMng*) { }
 
   //! Destructeur
   ~CellMerger() = default;
@@ -78,10 +78,6 @@ class ARCANE_MESH_EXPORT CellMerger
    * \a i_cell_2. Aucune allocation de mémoire n'est effectuée.
    */
   Cell getCell(Cell i_cell_1, Cell i_cell_2);
-
- private:
-
-  ITraceMng* m_trace_mng;
 
  private:
 
