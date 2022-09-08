@@ -946,6 +946,12 @@ class ARCANE_CORE_EXPORT ItemInternal
   void _setFaceBackAndFrontCells(Int32 back_cell_lid,Int32 front_cell_lid);
   //@}
 
+  //! \internal
+  typedef ItemInternal* ItemInternalPtr;
+  static ItemSharedInfo* _getSharedInfo(const ItemInternalPtr* items)
+  {
+    return ((items) ? items[0]->sharedInfo() : ItemSharedInfo::nullInstance());
+  }
 
  private:
 
@@ -992,6 +998,39 @@ parentBase(Int32 index) const
 {
   return ItemBase(m_shared_info->_parentV2(m_local_id,index));
 }
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Méthodes pour conversions entre différentes classes de gestion
+ * des entités
+ *
+ * Cette classe est temporaire et interne à Arcane. Seules les classes 'friend'
+ * peuvent l'utiliser.
+ */
+class ItemCompatibility
+{
+  friend class SimdItemBase;
+  friend class SimdItemDirectBase;
+	friend class SimdItem;
+  friend class SimdItemEnumeratorBase;
+
+ private:
+
+  //! \internal
+  typedef ItemInternal* ItemInternalPtr;
+  static ItemSharedInfo* _getSharedInfo(const ItemInternalPtr* items)
+  {
+    return ((items) ? items[0]->sharedInfo() : ItemSharedInfo::nullInstance());
+  }
+  static const ItemInternalPtr* _getItemInternalPtr(ItemSharedInfo* shared_info)
+  {
+    ARCANE_CHECK_PTR(shared_info);
+    return shared_info->m_items_internal.data();
+  }
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
