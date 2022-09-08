@@ -196,55 +196,6 @@ class ArcaneBatchMainFactory
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-static int
-_catchStd(const std::exception& ex,ITraceMng* msg)
-{
-  if (msg){
-    msg->error() << "** A standard exception occured: " << ex.what() << ".\n"
-                 << "** Can't continue with the execution.\n";
-  }
-  else{
-    cerr << "** A standard exception occured: " << ex.what() << ".\n";
-    cerr << "** Can't continue with the execution.\n";
-  }
-  return 2;
-}
-
-static int
-_catchAny(ITraceMng* msg)
-{
-  int ret_val = 1;
-  const char* msg_str = "** An unknowed error occured...\n** Can't continue with the execution.\n";
-  if (msg){
-    msg->error() << msg_str;
-  }
-  else{
-    cerr << msg_str;
-  }
-  return ret_val;
-}
-
-static int
-_catchArcane(const Exception& ex,ITraceMng* msg)
-{
-  if (msg){
-    if (!ex.isCollective() || msg->isMaster())
-      msg->error() << ex << '\n'
-                   << "** (MAIN) Can't continue with the execution.\n";
-  }
-  else{
-    cerr << ex << '\n';
-    cerr << "** (MAIN) Can't continue with the execution.\n";
-  }
-  return 3;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 class ArcaneMain::Impl
 {
  public:
@@ -386,22 +337,20 @@ initialize()
     m_exec_main->build();
     ArcaneMain::m_is_master_io = m_exec_main->application()->parallelSuperMng()->isMasterIO();
     m_exec_main->initialize();
-#ifndef ARCANE_USE_MPC
     IArcaneMain::setArcaneMain(m_exec_main);
-#endif
   }
   catch(const ArithmeticException& ex){
     cerr << "** CATCH ARITHMETIC_EXCEPTION\n";
-    return _catchArcane(ex,nullptr);
+    return arcanePrintArcaneException(ex,nullptr);
   }
   catch(const Exception& ex){
-    return _catchArcane(ex,nullptr);
+    return arcanePrintArcaneException(ex,nullptr);
   }
   catch(const std::exception& ex){
-    return _catchStd(ex,nullptr);
+    return arcanePrintStdException(ex,nullptr);
   }
   catch(...){
-    return _catchAny(nullptr);
+    return arcanePrintAnyException(nullptr);
   }
 
   // Redirige a nouveau les signaux car certaines
@@ -594,22 +543,22 @@ callFunctorWithCatchedException(IFunctor* functor,IArcaneMain* exec_main,
     }
   catch(const ArithmeticException& ex){
     cerr << "** ARITHMETIC EXCEPTION!\n";
-    ret_val = _catchArcane(ex,trace);
+    ret_val = arcanePrintArcaneException(ex,trace);
     if (ex.isCollective()){
       *clean_abort = true;
     }
   }
   catch(const Exception& ex){
-    ret_val = _catchArcane(ex,trace);
+    ret_val = arcanePrintArcaneException(ex,trace);
     if (ex.isCollective()){
       *clean_abort = true;
     }
   }
   catch(const std::exception& ex){
-    ret_val = _catchStd(ex,trace);
+    ret_val = arcanePrintStdException(ex,trace);
   }
   catch(...){
-    ret_val = _catchAny(trace);
+    ret_val = arcanePrintAnyException(trace);
   }
   return ret_val;
 }
@@ -1012,13 +961,13 @@ _runDotNet()
     my_functor = reinterpret_cast<DotNetMainFunctor>(functor_addr);
   }
   catch(const Exception& ex){
-    return _catchArcane(ex,nullptr);
+    return arcanePrintArcaneException(ex,nullptr);
   }
   catch(const std::exception& ex){
-    return _catchStd(ex,nullptr);
+    return arcanePrintStdException(ex,nullptr);
   }
   catch(...){
-    return _catchAny(nullptr);
+    return arcanePrintAnyException(nullptr);
   }
 
   if (my_functor){
@@ -1119,13 +1068,13 @@ _checkAutoDetectAccelerator()
     (*my_functor)();
   }
   catch(const Exception& ex){
-    return _catchArcane(ex,nullptr);
+    return arcanePrintArcaneException(ex,nullptr);
   }
   catch(const std::exception& ex){
-    return _catchStd(ex,nullptr);
+    return arcanePrintStdException(ex,nullptr);
   }
   catch(...){
-    return _catchAny(nullptr);
+    return arcanePrintAnyException(nullptr);
   }
   return 0;
 }

@@ -33,6 +33,8 @@ set(ARCANE_SOURCES
   Enumerator.cc
   Enumerator.h
   ExternalRef.h
+  Exception.h
+  Exception.cc
   Event.cc
   Event.h
   FloatingPointExceptionSentry.cc
@@ -195,7 +197,6 @@ set(ARCANE_SOURCES
   DefaultAllocator.h
   Deleter.h
   DualUniqueIdMng.h
-  Exception.h
   EventHandler.h
   EventHandlerList.h
   FatalErrorException.h
