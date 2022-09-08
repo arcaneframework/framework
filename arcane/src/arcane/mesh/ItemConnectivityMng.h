@@ -110,7 +110,7 @@ public:
   }
 
   // Save Connectivity
-  void registerConnectivity(IItemConnectivity* connectivity)
+  void registerConnectivity(IItemConnectivity* connectivity) override
   {
     connectivity->sourceFamily()->addSourceConnectivity(connectivity);
     connectivity->targetFamily()->addTargetConnectivity(connectivity);
@@ -120,7 +120,7 @@ public:
     _register(connectivity->name(),connectivity->sourceFamily()->fullName(),connectivity->targetFamily()->fullName());
   }
 
-  void unregisterConnectivity(IItemConnectivity* connectivity)
+  void unregisterConnectivity(IItemConnectivity* connectivity) override
   {
     connectivity->sourceFamily()->removeSourceConnectivity(connectivity);
     connectivity->targetFamily()->removeTargetConnectivity(connectivity);
@@ -132,39 +132,41 @@ public:
    *
    */
   IItemConnectivitySynchronizer* createSynchronizer(IItemConnectivity* connectivity,
-                                                    IItemConnectivityGhostPolicy* connectivity_ghost_policy);
-  IItemConnectivitySynchronizer* getSynchronizer(IItemConnectivity* connectivity)
+                                                    IItemConnectivityGhostPolicy* connectivity_ghost_policy) override;
+  IItemConnectivitySynchronizer* getSynchronizer(IItemConnectivity* connectivity) override
   {
     // TODO handle failure
     return m_synchronizers[connectivity];
   }
 
   //! Enregistrement de modifications d'une famille d'items
-  void setModifiedItems(IItemFamily* family, Int32ConstArrayView added_items,Int32ConstArrayView removed_items);
+  void setModifiedItems(IItemFamily* family, Int32ConstArrayView added_items,Int32ConstArrayView removed_items) override;
 
   //! Mise à jour des items modifiés éventuellement compactés
-  void notifyLocalIdChanged(IItemFamily* family, Int32ConstArrayView old_to_new_ids,Integer nb_item);
+  void notifyLocalIdChanged(IItemFamily* family, Int32ConstArrayView old_to_new_ids,Integer nb_item) override;
 
   //! Test si la connectivité est à jour par rapport à la famille source et à la famille target
-  bool isUpToDate(IItemConnectivity* connectivity)
+  bool isUpToDate(IItemConnectivity* connectivity) override
   {
     return (isUpToDateWithSourceFamily(connectivity) && isUpToDateWithTargetFamily(connectivity));
   }
-  bool isUpToDateWithSourceFamily(IItemConnectivity* connectivity)
+  bool isUpToDateWithSourceFamily(IItemConnectivity* connectivity) override
   {
     return (_lastUpdateSourceFamilyState(connectivity->name()) == _familyState(connectivity->sourceFamily()->fullName()));
   }
-  bool isUpToDateWithTargetFamily(IItemConnectivity* connectivity)
+  bool isUpToDateWithTargetFamily(IItemConnectivity* connectivity) override
   {
     return (_lastUpdateTargetFamilyState(connectivity->name()) == _familyState(connectivity->targetFamily()->fullName()));
   }
 
   //! Enregistre la connectivité comme mise à jour par rapport aux deux familles (source et target)
-  void setUpToDate(IItemConnectivity* connectivity);
+  void setUpToDate(IItemConnectivity* connectivity) override;
 
   //! Récupération des items modifiés pour mettre à jour une connectivité
-  void getSourceFamilyModifiedItems(IItemConnectivity* connectivity, Int32ArrayView& added_items, Int32ArrayView& removed_items);
-  void getTargetFamilyModifiedItems(IItemConnectivity* connectivity, Int32ArrayView& added_items, Int32ArrayView& removed_items);
+  void getSourceFamilyModifiedItems(IItemConnectivity* connectivity, Int32ArrayView& added_items,
+                                    Int32ArrayView& removed_items) override;
+  void getTargetFamilyModifiedItems(IItemConnectivity* connectivity, Int32ArrayView& added_items,
+                                    Int32ArrayView& removed_items) override;
 
  private:
 

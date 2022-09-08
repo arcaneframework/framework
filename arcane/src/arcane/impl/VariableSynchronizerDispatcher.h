@@ -188,8 +188,8 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
       Int64 receiveDisplacement(Int32 index) const override { return m_buffer->ghostDisplacement(index) * sizeof(SimpleType); }
       void copySend(Int32 index) override { m_buffer->copySend(index); }
       void copyReceive(Int32 index) override { m_buffer->copyReceive(index); }
-      Int64 totalSendSize() const { return  m_buffer->totalShareSize(); }
-      Int64 totalReceiveSize() const { return m_buffer->totalGhostSize(); }
+      Int64 totalSendSize() const override { return  m_buffer->totalShareSize(); }
+      Int64 totalReceiveSize() const override { return m_buffer->totalGhostSize(); }
      private:
       SyncBuffer* m_buffer;
       Span<std::byte> _toBytes(ArrayView<SimpleType> view)

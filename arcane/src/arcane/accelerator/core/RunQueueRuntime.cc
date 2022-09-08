@@ -57,7 +57,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT HostRunQueueEvent
   HostRunQueueEvent(){}
  public:
   void recordQueue(IRunQueueStream*) override {}
-  void wait() {}
+  void wait() override {}
   void waitForEvent(IRunQueueStream*) override {}
 };
 
