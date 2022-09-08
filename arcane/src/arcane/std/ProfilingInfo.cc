@@ -461,7 +461,6 @@ ProfInfos(ITraceMng* tm)
 : TraceAccessor(tm)
 , m_total_event(0)
 , m_total_stack(0)
-, m_is_running(false)
 , m_current_func_info(0)
 , m_period(0)
 , m_nb_event_before_getting_stack(5000)
@@ -1061,13 +1060,6 @@ dumpJSON(JSONWriter& writer)
   for( const auto& x : global_infos->m_addr_map ){
     Int64 nb_event = x.second.m_counters[0];
     total_event += nb_event;
-  }
-
-  Int64 total_func_event = 0;
-  for( const auto& x : global_infos->m_func_map ){
-    ProfFuncInfo* pf = x.second;
-    Int64 nb_event = pf->m_counters[0];
-    total_func_event += nb_event;
   }
 
   {

@@ -34,8 +34,6 @@ class AlephSolver
   , MeshAccessor(subDomain->defaultMesh())
   , m_sub_domain(subDomain)
   , m_aleph_number_of_resolutions_per_solvers(numberOfResolutionsPerSolvers)
-  , m_aleph_underlying_solver(underlyingSolver)
-  , m_aleph_number_of_cores(numberOfCores)
   , m_delta_t(deltaT)
   , m_aleph_params(new AlephParams())
   ,
@@ -242,8 +240,6 @@ class AlephSolver
  private:
   ISubDomain* m_sub_domain;
   Integer m_aleph_number_of_resolutions_per_solvers;
-  Integer m_aleph_underlying_solver;
-  Integer m_aleph_number_of_cores;
   Real m_delta_t;
   AlephParams* m_aleph_params;
   AlephKernel* m_aleph_kernel;

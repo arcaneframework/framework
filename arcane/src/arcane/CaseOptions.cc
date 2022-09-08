@@ -1817,8 +1817,7 @@ visit(ICaseDocumentVisitor* visitor) const
 
 CaseOptionComplexValue::
 CaseOptionComplexValue(ICaseOptionsMulti* opt,ICaseOptionList* clist,const XmlNode& parent_elem)
-: m_case_option_multi(opt)
-, m_config_list(createCaseOptionList(clist,opt->toCaseOptions(),parent_elem,clist->isOptional(),true))
+: m_config_list(createCaseOptionList(clist,opt->toCaseOptions(),parent_elem,clist->isOptional(),true))
 , m_element(parent_elem)
 {
   opt->addChild(configList());

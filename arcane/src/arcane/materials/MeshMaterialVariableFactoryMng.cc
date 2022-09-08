@@ -49,7 +49,6 @@ class MeshMaterialVariableFactoryMng
 
  private:
 
-  IMeshMaterialMng* m_material_mng;
   std::map<String, Ref<IMeshMaterialVariableFactory>> m_factories;
 };
 
@@ -59,7 +58,6 @@ class MeshMaterialVariableFactoryMng
 MeshMaterialVariableFactoryMng::
 MeshMaterialVariableFactoryMng(IMeshMaterialMng* mm)
 : TraceAccessor(mm->traceMng())
-, m_material_mng(mm)
 {
 }
 

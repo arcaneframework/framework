@@ -43,7 +43,7 @@ public:
   static void staticInitialize(ISubDomain* sd);
 
  private:
-  IMesh* m_mesh_copy;
+
   ICartesianMesh* m_cartesian_mesh;
 
  private:

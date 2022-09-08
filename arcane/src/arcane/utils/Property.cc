@@ -170,11 +170,9 @@ Integer global_arcane_nb_registerer = 0;
 }
 
 PropertySettingsRegisterer::
-PropertySettingsRegisterer(CreateFunc func,CreateBuildInfoFunc build_info_func,
-                           const char* name) ARCANE_NOEXCEPT
+PropertySettingsRegisterer(CreateFunc func,CreateBuildInfoFunc, const char* name) ARCANE_NOEXCEPT
 : m_name(name)
 , m_create_func(func)
-, m_create_build_info_func(build_info_func)
 {
   _init();
 }

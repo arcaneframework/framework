@@ -48,10 +48,6 @@ class CartesianMeshV2TestUtils
   void testAll();
 
  private:
-
-  ICartesianMesh* m_cartesian_mesh = nullptr;
-
- private:
 };
 
 /*---------------------------------------------------------------------------*/

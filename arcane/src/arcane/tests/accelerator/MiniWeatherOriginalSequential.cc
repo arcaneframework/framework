@@ -52,7 +52,6 @@ namespace MiniWeatherOriginalSequential
 {
 using namespace Arcane;
 
-const double pi = 3.14159265358979323846264338327;   //Pi
 const double grav = 9.8;                             //Gravitational acceleration (m / s^2)
 const double cp = 1004.;                             //Specific heat of dry air at constant pressure
 const double rd = 287.;                              //Dry air constant for equation of state (P=rho*rd*T)

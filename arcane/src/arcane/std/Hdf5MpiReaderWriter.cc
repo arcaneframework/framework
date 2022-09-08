@@ -94,12 +94,10 @@ Hdf5MpiReaderWriter(ISubDomain* sd,const String& filename,
 : TraceAccessor(sd->traceMng())
 , m_sub_domain(sd)
 , m_parallel_mng(sd->parallelMng())
-, m_use_parallel(false)
 , m_open_mode(open_mode)
 , m_filename(filename)
 , m_sub_group_name(sub_group_name)
 , m_is_initialized(false)
-, m_do_verif(do_verif)
 , m_io_timer(sd,"Hdf5TimerHd",Timer::TimerReal)
 , m_write_timer(sd,"Hdf5TimerWrite",Timer::TimerReal)
 , m_is_parallel(false)
@@ -108,6 +106,7 @@ Hdf5MpiReaderWriter(ISubDomain* sd,const String& filename,
 , m_last_recv_rank(m_my_rank)
 , m_fileset_size(fileset_size)
 {
+  ARCANE_UNUSED(do_verif);
   if (m_fileset_size!=1 && m_parallel_mng->isParallel()){
     m_is_parallel = true;
     Integer nb_rank = m_parallel_mng->commSize();
@@ -1100,7 +1099,7 @@ class ArcaneHdf5MpiCheckpointService2
 
   ArcaneHdf5MpiCheckpointService2(const ServiceBuildInfo& sbi)
   : ArcaneHdf5MpiReaderWriterObject(sbi), m_write_index(0), m_writer(0), m_reader(0)
-    , m_use_one_file(false), m_fileset_size(0)
+    , m_fileset_size(0)
     {
     }
   virtual IDataWriter* dataWriter() { return m_writer; }
@@ -1118,7 +1117,6 @@ class ArcaneHdf5MpiCheckpointService2
   Integer m_write_index;
   Hdf5MpiReaderWriter* m_writer;
   Hdf5MpiReaderWriter* m_reader;
-  bool m_use_one_file;
   Integer m_fileset_size;
 
  private:

@@ -90,9 +90,9 @@ class NodeUidToSubDomain
     return nrank;
   }
   Int32 modulo() const { return m_modulo; }
+
  private:
 
-  Int64 m_max_uid;
   Int32 m_nb_rank;
   Int32 m_modulo;
   Int64 m_nb_by_rank;

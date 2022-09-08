@@ -50,16 +50,16 @@ class UdunitsPhysicalUnit
 
  public:
 
-  UdunitsPhysicalUnit(UdunitsPhysicalUnitSystem* unit_system,::ut_unit* unit,
+  UdunitsPhysicalUnit(UdunitsPhysicalUnitSystem*,::ut_unit* unit,
                       const String& name)
-  : m_unit_system(unit_system), m_unit(unit)
+  : m_unit(unit)
   {
     // Pour garantir que la chaîne est allouée dynamiquement
     m_name = String::fromUtf8(name.utf8());
   }
 
   UdunitsPhysicalUnit(::ut_unit* unit)
-  : m_unit_system(nullptr), m_unit(unit)
+  : m_unit(unit)
   {
   }
 
@@ -76,7 +76,6 @@ class UdunitsPhysicalUnit
 
  private:
 
-  UdunitsPhysicalUnitSystem* m_unit_system;
   ::ut_unit* m_unit;
   String m_name;
 };

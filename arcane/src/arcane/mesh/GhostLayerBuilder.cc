@@ -691,8 +691,7 @@ addGhostChildFromParent2(Array<Int64>& ghost_cell_to_refine)
 
 NodeUidToSubDomain::
 NodeUidToSubDomain(Int64 max_uid,Int32 nb_rank)
-: m_max_uid(max_uid)
-, m_nb_rank(nb_rank)
+: m_nb_rank(nb_rank)
 , m_modulo(1)
 , m_nb_by_rank(max_uid)
 {
