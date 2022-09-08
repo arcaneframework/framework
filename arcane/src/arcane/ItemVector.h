@@ -54,7 +54,7 @@ class ItemVector
  public:
 
   //! Créé un vecteur vide associé à la famille \a family.
-  ItemVector(IItemFamily* afamily)
+  explicit ItemVector(IItemFamily* afamily)
   : m_items(afamily->itemsInternal()), m_family(afamily) {}
   //! Créé un vecteur associé à la famille \a family et contenant les entités \a local_ids.
   ItemVector(IItemFamily* afamily,Int32ConstArrayView local_ids)
@@ -211,14 +211,10 @@ class ItemVectorT
  public:
 
   //! Constructeur vide
-  ItemVectorT()
-  : ItemVector() {}
+  ItemVectorT() = default;
   //! Constructeur vide avec famille
-  ItemVectorT(IItemFamily* afamily)
+  explicit ItemVectorT(IItemFamily* afamily)
   : ItemVector(afamily) {}
-  //! Constructeur par copie
-  ItemVectorT(const ItemVectorT<ItemType>& rhs)
-  : ItemVector(rhs) {}
   //! Créé un vecteur associé à la famille \a afamily et contenant les entités \a local_ids.
   ItemVectorT(IItemFamily* afamily,Int32ConstArrayView local_ids)
   : ItemVector(afamily, local_ids) {}
