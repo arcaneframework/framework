@@ -189,6 +189,7 @@ class ItemEnumeratorT
   using LocalIdType = typename ItemType::LocalIdType;
   using BaseClass = ItemEnumeratorBaseT<ItemType>;
   friend class ItemVectorViewT<ItemType>;
+  friend class SimdItemEnumeratorT<ItemType>;
 
  public:
 

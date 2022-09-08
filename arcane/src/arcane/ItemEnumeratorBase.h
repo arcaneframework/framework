@@ -42,6 +42,7 @@ class ItemEnumeratorBaseV3
  private:
 
   using ItemInternalPtr = ItemInternal*;
+  friend class SimdItemEnumeratorBase;
 
  protected:
 

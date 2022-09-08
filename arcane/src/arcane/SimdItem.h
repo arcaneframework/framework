@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SimdItem.h                                                  (C) 2000-2018 */
+/* SimdItem.h                                                  (C) 2000-2022 */
 /*                                                                           */
 /* Types des entités et des énumérateurs des entités pour la vectorisation.  */
 /*---------------------------------------------------------------------------*/
@@ -35,7 +35,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
+
+template<typename ItemType>
+class SimdItemEnumeratorT;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -56,29 +60,42 @@ ARCANE_BEGIN_NAMESPACE
  * Cette classe conserve \a N entités du maillage, \a N étant dépendant
  * de la taille des registres SIMD et est vaut SimdInfo::Int32IndexSize.
  *
- * Il est possible de récupérer la \a i-ème entité du vecteur via
- * l'opérateur operator[]() où la méthode item().
+ * Cette classe ne s'utilise pas directement. Il faut utiliser SimdItem ou
+ * SimdItemT
  */
 class ARCANE_CORE_EXPORT SimdItemBase
 {
  protected:
   
   typedef ItemInternal* ItemInternalPtr;
+
  public:
-  typedef SimdInfo::SimdInt32IndexType SimdIndexType;
+
+ typedef SimdInfo::SimdInt32IndexType SimdIndexType;
+
  public:
-  /*!
+
+ /*!
    * \brief Construit une instance.
    * \warning \a ids doit avoir l'alignement requis pour un SimdIndexType.
    */
-  SimdItemBase(const ItemInternalPtr* items,
-               const SimdIndexType* ids)
-  : m_simd_local_ids(*ids), m_items(items) { }
+  ARCANE_DEPRECATED_REASON("Y2022: Use another constructor")
+  SimdItemBase(const ItemInternalPtr* items, const SimdIndexType* ids)
+  : m_simd_local_ids(*ids), m_shared_info(ItemCompatibility::_getSharedInfo(items)) { }
+
+ protected:
+
+  SimdItemBase(ItemSharedInfo* shared_info,const SimdIndexType* ids)
+  : m_simd_local_ids(*ids), m_shared_info(shared_info) { }
+
+ public:
 
   //! Partie interne (pour usage interne uniquement)
-  ItemInternal* item(Integer si) const { return m_items[localId(si)]; }
+  ARCANE_DEPRECATED_REASON("Y2022: Use method SimdItem::item() instead")
+  ItemInternal* item(Integer si) const { return m_shared_info->m_items_internal[localId(si)]; }
 
-  ItemInternal* operator[](Integer si) const { return m_items[localId(si)]; }
+  ARCANE_DEPRECATED_REASON("Y2022: Use method SimdItem::operator[]() instead")
+  ItemInternal* operator[](Integer si) const { return m_shared_info->m_items_internal[localId(si)]; }
 
   //! Liste des numéros locaux des entités de l'instance
   const SimdIndexType& ARCANE_RESTRICT simdLocalIds() const { return m_simd_local_ids; }
@@ -92,7 +109,7 @@ class ARCANE_CORE_EXPORT SimdItemBase
  protected:
 
   SimdIndexType m_simd_local_ids;
-  const ItemInternalPtr* m_items;
+  ItemSharedInfo* m_shared_info = ItemSharedInfo::nullInstance();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -103,11 +120,23 @@ class SimdItemDirectBase
  protected:
 
   typedef ItemInternal* ItemInternalPtr;
+
  public:
+
+  ARCANE_DEPRECATED_REASON("Y2022: Use another constructor")
   SimdItemDirectBase(const ItemInternalPtr* items,Int32 base_local_id,Integer nb_valid)
-  : m_base_local_id(base_local_id), m_nb_valid(nb_valid), m_items(items)
-  {
-  }
+  : m_base_local_id(base_local_id), m_nb_valid(nb_valid), m_shared_info(ItemCompatibility::_getSharedInfo(items)) { }
+
+ protected:
+
+  SimdItemDirectBase(ItemSharedInfo* shared_info,Int32 base_local_id,Integer nb_valid)
+  : m_base_local_id(base_local_id), m_nb_valid(nb_valid), m_shared_info(shared_info) {}
+
+  // TEMPORAIRE pour éviter le deprecated
+  SimdItemDirectBase(Int32 base_local_id,Integer nb_valid,const ItemInternalPtr* items)
+  : m_base_local_id(base_local_id), m_nb_valid(nb_valid), m_shared_info(ItemCompatibility::_getSharedInfo(items)) { }
+
+ public:
 
   //! Nombre d'entités valides de l'instance.
   inline Integer nbValid() const { return m_nb_valid; }
@@ -116,9 +145,10 @@ class SimdItemDirectBase
   inline Int32 baseLocalId() const { return m_base_local_id; }
 
  protected:
+
   Int32 m_base_local_id;
   Integer m_nb_valid;
-  const ItemInternalPtr* m_items;
+  ItemSharedInfo* m_shared_info = ItemSharedInfo::nullInstance();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -174,16 +204,22 @@ class SimdItem
 {
  public:
 
+  ARCANE_DEPRECATED_REASON("Y2022: Use another constructor")
   SimdItem(const ItemInternalPtr* items,const SimdInfo::SimdInt32IndexType* ids)
-  : SimdItemBase(items,ids) { }
+  : SimdItemBase(ItemCompatibility::_getSharedInfo(items),ids) { }
+
+ protected:
+
+  SimdItem(ItemSharedInfo* shared_info,const SimdInfo::SimdInt32IndexType* ids)
+  : SimdItemBase(shared_info,ids) { }
 
  public:
 
   //! inline \a si-ième entité de l'instance
-  inline Item item(Integer si) const { return m_items[localId(si)]; }
+  inline Item item(Int32 si) const { return Item(ItemBaseBuildInfo(localId(si),m_shared_info)); }
 
   //! inline \a si-ième entité de l'instance
-  inline Item operator[](Integer si) const { return m_items[localId(si)]; }
+  inline Item operator[](Int32 si) const { return Item(ItemBaseBuildInfo(localId(si),m_shared_info)); }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -196,32 +232,41 @@ template<typename ItemType>
 class SimdItemT
 : public SimdItem
 {
+  friend class SimdItemEnumeratorT<ItemType>;
+
  protected:
   
   typedef ItemInternal* ItemInternalPtr;
 
  public:
+
+  ARCANE_DEPRECATED_REASON("Y2022: Use another constructor")
   SimdItemT(const ItemInternalPtr* items,const SimdInfo::SimdInt32IndexType* ids)
   : SimdItem(items,ids) { }
+
+ private:
+
+  SimdItemT(ItemSharedInfo* shared_info,const SimdInfo::SimdInt32IndexType* ids)
+  : SimdItem(shared_info,ids) { }
+
+ public:
 
   //! Retourne la \a si-ième entité de l'instance
   ItemType item(Integer si) const
   {
-    return ItemType(this->m_items[this->localId(si)]);
+    return ItemType(ItemBaseBuildInfo(localId(si),m_shared_info));
   }
 
   //! Retourne la \a si-ième entité de l'instance
   ItemType operator[](Integer si) const
   {
-    return ItemType(this->m_items[this->localId(si)]);
+    return ItemType(ItemBaseBuildInfo(localId(si),m_shared_info));
   }
 
   operator SimdItemIndexT<ItemType>()
   {
     return SimdItemIndexT<ItemType>(this->simdLocalIds());
   }
-
-private:
 };
 
 /*---------------------------------------------------------------------------*/
@@ -234,22 +279,29 @@ template<typename ItemType>
 class SimdItemDirectT
 : public SimdItemDirectBase
 {
+  friend class SimdItemEnumeratorT<ItemType>;
+
  protected:
 
   typedef ItemInternal* ItemInternalPtr;
 
  public:
+
+  ARCANE_DEPRECATED_REASON("Y2022: Use another constructor")
   SimdItemDirectT(const ItemInternalPtr* items,Int32 base_local_id,Integer nb_valid)
-  : SimdItemDirectBase(items,base_local_id,nb_valid)
-  {
-  }
+  : SimdItemDirectBase(base_local_id,nb_valid,items) {}
+
+ private:
+
+  SimdItemDirectT(ItemSharedInfo* shared_info,Int32 base_local_id,Integer nb_valid)
+  : SimdItemDirectBase(shared_info,base_local_id,nb_valid) {}
+
+ public:
 
   operator SimdItemDirectIndexT<ItemType>()
   {
     return SimdItemDirectIndexT<ItemType>(this->m_base_local_id);
   }
-
-private:
 };
 
 /*---------------------------------------------------------------------------*/
@@ -328,25 +380,28 @@ class ARCANE_CORE_EXPORT SimdItemEnumeratorBase
 
  public:
 
-  SimdItemEnumeratorBase()
-  : SimdEnumeratorBase() {}
-  SimdItemEnumeratorBase(const ItemInternalPtr* items,const Int32* local_ids,Integer n)
-  : SimdEnumeratorBase(local_ids,n), m_items(items) {}
-  SimdItemEnumeratorBase(const ItemInternalArrayView& items,const Int32ConstArrayView& local_ids)
-  : SimdEnumeratorBase(local_ids), m_items(items.data()) {}
+  SimdItemEnumeratorBase() = default;
   SimdItemEnumeratorBase(const ItemInternalVectorView& view)
-  : SimdEnumeratorBase(view.localIds()), m_items(view.items().data()) {}
+  : SimdEnumeratorBase(view.localIds()), m_shared_info(view.m_shared_info) {}
   SimdItemEnumeratorBase(const ItemEnumerator& rhs)
-  : SimdEnumeratorBase(rhs.unguardedLocalIds(),rhs.count()), m_items(rhs.unguardedItems()) {}
+  : SimdEnumeratorBase(rhs.unguardedLocalIds(),rhs.count()), m_shared_info(rhs.m_shared_info) {}
+
+  // TODO: rendre obsolète
+  SimdItemEnumeratorBase(const ItemInternalPtr* items,const Int32* local_ids,Integer n)
+  : SimdEnumeratorBase(local_ids,n), m_shared_info(ItemCompatibility::_getSharedInfo(items)) { }
+  // TODO: rendre obsolète
+  SimdItemEnumeratorBase(const ItemInternalArrayView& items,const Int32ConstArrayView& local_ids)
+  : SimdEnumeratorBase(local_ids), m_shared_info(ItemCompatibility::_getSharedInfo(items.data())) { }
 
  public:
 
+  // TODO: rendre obsolète
   //! Liste des entités
-  const ItemInternalPtr* unguardedItems() const { return m_items; }
+  const ItemInternalPtr* unguardedItems() const { return m_shared_info->m_items_internal.data(); }
 
  protected:
 
-  const ItemInternalPtr* m_items;
+  ItemSharedInfo* m_shared_info = ItemSharedInfo::nullInstance();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -369,25 +424,28 @@ class SimdItemEnumeratorT
 
   SimdItemEnumeratorT()
   : SimdItemEnumeratorBase(){}
-  SimdItemEnumeratorT(const ItemInternalPtr* items,const Int32* local_ids,Integer n)
-  : SimdItemEnumeratorBase(items,local_ids,n){}
-  SimdItemEnumeratorT(const ItemInternalArrayView& items,const Int32ConstArrayView& local_ids)
-  : SimdItemEnumeratorBase(items,local_ids) {}
   SimdItemEnumeratorT(const ItemEnumerator& rhs)
   : SimdItemEnumeratorBase(rhs){}
   SimdItemEnumeratorT(const ItemVectorViewT<ItemType>& rhs)
   : SimdItemEnumeratorBase(rhs) {}
-  
+
+  // TODO: rendre obsolète
+  SimdItemEnumeratorT(const ItemInternalPtr* items,const Int32* local_ids,Integer n)
+  : SimdItemEnumeratorBase(items,local_ids,n){}
+  // TODO: rendre obsolète
+  SimdItemEnumeratorT(const ItemInternalArrayView& items,const Int32ConstArrayView& local_ids)
+  : SimdItemEnumeratorBase(items,local_ids) {}
+
  public:
 
   SimdItemType operator*() const
   {
-    return SimdItemType(m_items,_currentSimdIndex());
+    return SimdItemType(m_shared_info,_currentSimdIndex());
   }
 
   SimdItemDirectT<ItemType> direct() const
   {
-    return SimdItemDirectT<ItemType>(m_items,m_index,nbValid());
+    return SimdItemDirectT<ItemType>(m_shared_info,m_index,nbValid());
   }
 
   operator SimdItemIndexT<ItemType>()
@@ -398,7 +456,7 @@ class SimdItemEnumeratorT
 #ifndef ARCANE_SIMD_BENCH
   inline ItemEnumeratorT<ItemType> enumerator() const
   {
-    return ItemEnumeratorT<ItemType>(m_items,m_local_ids+m_index,nbValid(),0);
+    return ItemEnumeratorT<ItemType>(m_shared_info,Int32ConstArrayView(nbValid(),m_local_ids+m_index));
   }
 #endif
 
@@ -445,6 +503,9 @@ typedef SimdItemT<Cell> SimdCell;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#define ENUMERATE_SIMD_(type,iname,view)                         \
+  for( A_TRACE_ITEM_ENUMERATOR(SimdItemEnumeratorT< type >) iname((view).enumerator() A_TRACE_ENUMERATOR_WHERE); iname.hasNext(); ++iname )
+
 #define ENUMERATE_SIMD_GENERIC(type,iname,view)                         \
   for( A_TRACE_ITEM_ENUMERATOR(SimdItemEnumeratorT< type >) iname((view).enumerator() A_TRACE_ENUMERATOR_WHERE); iname.hasNext(); ++iname )
 
@@ -482,7 +543,7 @@ typedef SimdItemT<Cell> SimdCell;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

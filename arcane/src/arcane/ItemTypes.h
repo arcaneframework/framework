@@ -175,6 +175,9 @@ template<typename ItemType> using ItemEnumeratorBaseT = ItemEnumeratorBaseV3T<It
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template<typename ItemType>
+class SimdItemEnumeratorT;
+
 /*!
  * \ingroup Mesh
  * \brief Vue sur un vecteur d'entité.
