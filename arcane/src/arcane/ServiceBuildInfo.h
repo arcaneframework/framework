@@ -65,12 +65,11 @@ class ARCANE_CORE_EXPORT ServiceBuildInfoBase
   /*! Donne aussi accès à la propriété de  maillage (\a mesh()) */
   explicit ServiceBuildInfoBase(ISubDomain* sd);
   //! Constructeur à partir d'un \a IServiceInfo et d'un \a IMesh
-  ARCCORE_DEPRECATED_2020("Use ServiceBuildInfoBase(ISubDomain*,const MeshHandle&) instead")
+  ARCCORE_DEPRECATED_2020("Use ServiceBuildInfoBase(const MeshHandle&) instead")
   explicit ServiceBuildInfoBase(IMesh* mesh);
   //! Constructeur à partir d'un \a IServiceInfo et d'un \a IMesh
   ServiceBuildInfoBase(ISubDomain* sd,IMesh* mesh);
   //! Constructeur à partir d'un \a IServiceInfo et d'un maillage
-  ARCCORE_DEPRECATED_2020("Use ServiceBuildInfoBase(ISubDomain*,const MeshHandle&) instead")
   explicit ServiceBuildInfoBase(const MeshHandle& mesh_handle);
   //! Constructeur à partir d'un \a ISubDomain et d'un maillage
   explicit ServiceBuildInfoBase(ISubDomain* sd,const MeshHandle& mesh_handle);
@@ -104,6 +103,7 @@ class ARCANE_CORE_EXPORT ServiceBuildInfoBase
   eServiceType creationType() const { return m_creation_type; }
 
  protected:
+
   IApplication* m_application = nullptr;
   ISession* m_session = nullptr;
   ISubDomain* m_sub_domain = nullptr;
