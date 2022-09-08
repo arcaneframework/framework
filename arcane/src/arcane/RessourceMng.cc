@@ -35,7 +35,7 @@ class RessourceMng
 {
  public:
 
-  RessourceMng(IApplication*);
+  explicit RessourceMng(IApplication*);
 
   virtual IXmlDocumentHolder* createXmlDocument() override;
 };
