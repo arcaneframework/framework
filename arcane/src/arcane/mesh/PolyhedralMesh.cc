@@ -20,6 +20,7 @@
 #include "arcane/ItemTypeInfo.h"
 #include "arcane/ItemTypeMng.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/VariableBuildInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -371,6 +372,41 @@ namespace mesh
 
     /*---------------------------------------------------------------------------*/
 
+    void scheduleSetItemCoordinates(PolyhedralFamily* item_family, ItemLocalIds& local_ids, Real3ArrayView item_coords, VariableItemReal3& arcane_coords)
+    {
+      auto& _item_family = m_mesh.findFamily(itemKindArcaneToNeo(item_family->itemKind()), item_family->name().localstr());
+      std::vector<Neo::utils::Real3> _node_coords(item_coords.size());
+      auto node_index = 0;
+      for (auto&& node_coord : item_coords) {
+        _node_coords[node_index++] = Neo::utils::Real3{ node_coord.x, node_coord.y, node_coord.z };
+      }
+      m_mesh.scheduleSetItemCoords(_item_family, local_ids.m_future_items, _node_coords);
+      // Fill Arcane Variable
+      auto& mesh_graph = m_mesh.internalMeshGraph();
+      _item_family.addProperty <Int32>("NoOutProperty42"); // todo remove : create noOutput algo in Neo
+      mesh_graph.addAlgorithm(Neo::InProperty{_item_family, m_mesh._itemCoordPropertyName(_item_family)},
+                              Neo::OutProperty{_item_family,"NoOutProperty42"},
+                              [this,item_family,&_item_family,&arcane_coords]
+                              (Neo::Mesh::CoordPropertyType const& item_coords_property,
+                               Neo::PropertyT<Neo::utils::Int32> & ){
+                                  this->m_subdomain->traceMng()->info() << "= Update Arcane Coordinates =";
+                                  // enumerate nodes : ensure again Arcane/Neo local_ids are identicals
+                                  auto& all_items = _item_family.all();
+                                  VariableNodeReal3 node_coords{ VariableBuildInfo{ item_family->mesh(), "NodeCoord"} };
+                                  for (auto item : all_items) {
+                                    arcane_coords[ItemLocalId{item}] = { item_coords_property[item].x,
+                                                                         item_coords_property[item].y,
+                                                                         item_coords_property[item].z};
+//                                    std::cout << "x y z : " << item_coords_property[item].x << " "
+//                                                            << item_coords_property[item].y << " "
+//                                                            << item_coords_property[item].z;
+                                  }
+                                });
+
+    }
+
+    /*---------------------------------------------------------------------------*/
+
     void applyScheduledOperations() noexcept {
       m_mesh.applyScheduledOperations();
     }
@@ -435,6 +471,7 @@ PolyhedralMesh(ISubDomain* subdomain)
 , m_properties(std::make_unique<Properties>(subdomain->propertyMng(),String("ArcaneMeshProperties_")+m_name))
 , m_mesh{ std::make_unique<mesh::PolyhedralMeshImpl>(m_subdomain) }
 , m_item_type_mng(ItemTypeMng::_singleton())
+, m_arcane_node_coords(nullptr)
 {
   m_mesh_handle._setMesh(this);
   m_mesh_item_internal_list.mesh = this;
@@ -492,14 +529,17 @@ read(const String& filename)
   m_mesh->scheduleAddConnectivity(node_family,node_lids,reader.nodeNbCells(),cell_family,reader.nodeCells(),String{"NodeToCells"});
   m_mesh->scheduleAddConnectivity(node_family,node_lids,reader.nodeNbFaces(),face_family,reader.nodeFaces(),String{"NodeToFaces"});
   m_mesh->scheduleAddConnectivity(node_family,node_lids,reader.nodeNbEdges(),edge_family,reader.nodeEdges(),String{"NodeToEdges"});
-//  m_mesh->scheduleAddConnectivity(node_family,node_lids,1,cell_family,
-//                                  Int64UniqueArray{0,0,0,0,0,0},String{"NodeToCells"});
+  // Add node coordinates
+  m_arcane_node_coords = std::make_unique<VariableNodeReal3>(VariableBuildInfo(this,"NodeCoord"));
+  m_arcane_node_coords->setUsed(true);
   m_mesh->applyScheduledOperations();
   cell_family->endUpdate();
   node_family->endUpdate();
   face_family->endUpdate();
   edge_family->endUpdate();
   endUpdate();
+  m_mesh->scheduleSetItemCoordinates(node_family, node_lids, reader.nodeCoords(), *m_arcane_node_coords);
+  m_mesh->applyScheduledOperations();
   m_is_allocated = true;
 #else
   ARCANE_FATAL("Need VTKIO to read polyhedral mesh");
@@ -785,6 +825,57 @@ arcaneDefaultFamily(eItemKind ik)
 {
   return m_default_arcane_families[ik];
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+VariableNodeReal3& mesh::PolyhedralMesh::
+nodesCoordinates()
+{
+  ARCANE_ASSERT(m_arcane_node_coords,("Node coordinates not yet loaded."));
+  return *m_arcane_node_coords;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ItemGroup mesh::PolyhedralMesh::
+findGroup(const String& name)
+{
+  ItemGroup group;
+  for( auto& family : m_arcane_families ){
+    group = family->findGroup(name);
+    if (!group.null())
+      return group;
+  }
+  return group;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ItemGroupCollection mesh::PolyhedralMesh::
+groups()
+{
+  m_all_groups.clear();
+  for( auto& family : m_arcane_families ){
+    for( ItemGroupCollection::Enumerator i_group(family->groups()); ++i_group; )
+      m_all_groups.add(*i_group);
+  }
+  return m_all_groups;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void mesh::PolyhedralMesh::
+destroyGroups()
+{
+  for( auto& family : m_arcane_families ){
+    family->destroyGroups();
+  }
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

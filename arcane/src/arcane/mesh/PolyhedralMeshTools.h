@@ -88,6 +88,8 @@ namespace PolyhedralMeshTools
     Int32ConstArrayView nodeNbEdges();
     Int64ConstArrayView nodeEdges();
 
+    Real3ArrayView nodeCoords();
+
    private:
     const String& m_filename;
     vtkNew<vtkUnstructuredGridReader> m_vtk_grid_reader;
@@ -101,6 +103,7 @@ namespace PolyhedralMeshTools
     Int32UniqueArray m_node_nb_cells, m_node_nb_faces, m_node_nb_edges;
     Int32UniqueArray m_cell_nb_edges, m_face_nb_edges, m_face_uid_indexes;
     Int32UniqueArray m_cell_face_indexes;
+    Real3UniqueArray m_node_coordinates;
 
     std::pair<bool, Int32> _findFace(Int64ConstArrayView face_nodes, Int64ConstArrayView face_node_uids, Int32ConstArrayView face_nb_nodes);
     template <typename Connectivity2DArray>

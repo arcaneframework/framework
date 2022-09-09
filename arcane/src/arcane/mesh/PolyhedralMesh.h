@@ -26,6 +26,7 @@
 #include "arcane/ISubDomain.h"
 #include "arcane/Properties.h"
 #include "arcane/ArcaneTypes.h"
+#include "arcane/utils/List.h"
 
 #ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
 #include <vector>
@@ -83,6 +84,9 @@ class PolyhedralMesh
   std::vector<std::unique_ptr<PolyhedralFamily>> m_arcane_families;
   std::array<std::unique_ptr<PolyhedralFamily>,NB_ITEM_KIND> m_empty_arcane_families;
   std::array<PolyhedralFamily*,NB_ITEM_KIND> m_default_arcane_families;
+  std::unique_ptr<VariableNodeReal3> m_arcane_node_coords;
+  ItemGroupList m_all_groups;
+
 
   // IMeshBase interface
  public:
@@ -153,7 +157,17 @@ class PolyhedralMesh
 
   IItemFamily* findItemFamily(eItemKind ik,const String& name,bool create_if_needed,bool register_modifier_if_created) override;
 
+  IMesh* parentMesh() const override { return nullptr; }
+
   PolyhedralFamily* arcaneDefaultFamily(eItemKind ik);
+
+  VariableNodeReal3& nodesCoordinates() override;
+
+  ItemGroup findGroup(const String& name) override;
+
+  ItemGroupCollection groups() override;
+
+  void destroyGroups() override;
 
 #endif // ARCANE_HAS_CUSTOM_MESH_TOOLS
 
