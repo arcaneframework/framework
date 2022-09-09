@@ -235,7 +235,7 @@ _testCoordinates(Arcane::IMesh* mesh){
       auto node_coords_ref = options()->meshCoordinates[0].coords();
       ValueChecker vc{ A_FUNCINFO };
       ENUMERATE_NODE (inode,allNodes()) {
-//        vc.areEqual(node_coords[inode], node_coords_ref[0]->value[inode.index()],"check coords values");
+        vc.areEqual(node_coords[inode], node_coords_ref[0]->value[inode.index()],"check coords values");
         info() << " node coords  " << node_coords[inode];
       }
     }
@@ -267,12 +267,15 @@ void CustomMeshTestModule::
 _checkVariable(VariableRefType variable_ref, ItemGroup item_group)
 {
   variable_ref.fill(1);
-  auto variable_sum = 0;
+  auto variable_sum = 0.;
   A_ENUMERATE_ITEM (ItemEnumeratorT<typename VariableRefType::ItemType>,iitem, item_group) {
     info() << variable_ref.name() << " at item " << iitem.localId() << " " << variable_ref[iitem];
     variable_sum += variable_ref[iitem];
   }
   if (variable_sum != item_group.size()) fatal() << "Error on variable " << variable_ref.name();
+//   Check find variable
+  if (!Arcane::AbstractModule::subDomain()->variableMng()->findMeshVariable(mesh(), variable_ref.name()))
+    ARCANE_FATAL("Cannot find mesh variable {0}",variable_ref.name());
 }
 
 /*---------------------------------------------------------------------------*/
