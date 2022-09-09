@@ -27,13 +27,12 @@ if(TARGET vtkIOXML)
   message(STATUS "vtkIOXML_INCLUDE_DIRS = ${vtkIOXML_INCLUDE_DIRS}")
   # On supprime la valeur de vtkIOXML_LIBRARIES car les bibliothèques dépendantes
   # seront positionnées via add_depend_lib_to_list
-  set(vtkIOXML_LIBRARIES)
+  arcane_vtkutils_add_depend_lib_to_list(vtkIOXML)
+  message(STATUS "vtkIOXML LIBRARIES=${_ALLLIBS}")
+  set(vtkIOXML_LIBRARIES "${_ALLLIBS}")
   arccon_register_package_library(vtkIOXML vtkIOXML)
   # Pour compatibilité avec l'existant (septembre 2022)
   add_library(arcane::vtkIOXML ALIAS arcconpkg_vtkIOXML)
-  arcane_vtkutils_add_depend_lib_to_list(vtkIOXML)
-  message(STATUS "vtkIOXML LIBRARIES=${_ALLLIBS}")
-  target_link_libraries(arcanepkg_vtkIOXML INTERFACE ${_ALLLIBS})
 endif()
 
 # ----------------------------------------------------------------------------
