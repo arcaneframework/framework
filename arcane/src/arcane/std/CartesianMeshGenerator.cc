@@ -822,7 +822,6 @@ generateMesh()
   // par maille: 1 pour son unique id,
   //             1 pour son type,
   //             8 pour chaque noeud
-  Integer cell_local_id = 0;
   Int64 cell_unique_id_offset = 0;
   Int64UniqueArray cells_infos;
   if (m_mesh_dimension == 3)
@@ -870,7 +869,6 @@ generateMesh()
                  << cells_infos[cells_infos_index+4] << ", " << cells_infos[cells_infos_index+5] << ", "
                  << cells_infos[cells_infos_index+6] << ", " << cells_infos[cells_infos_index+7]<< "[0m";*/
           cells_infos_index += 8;
-          cell_local_id += 1;
         }
       }
     }
@@ -896,7 +894,6 @@ generateMesh()
                << cells_infos[cells_infos_index+0] << ", " << cells_infos[cells_infos_index+1] << ", "
                << cells_infos[cells_infos_index+2] << ", " << cells_infos[cells_infos_index+3] << "[0m";*/
         cells_infos_index += 4;
-        cell_local_id += 1;
       }
     }
   }

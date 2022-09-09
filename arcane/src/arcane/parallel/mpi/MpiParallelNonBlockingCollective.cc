@@ -30,7 +30,6 @@ MpiParallelNonBlockingCollective::
 MpiParallelNonBlockingCollective(ITraceMng* tm,IParallelMng* pm,MpiAdapter* adapter)
 : ParallelNonBlockingCollectiveDispatcher(pm)
 , m_trace_mng(tm)
-, m_parallel_mng(pm)
 , m_adapter(adapter)
 {
 }

@@ -1164,7 +1164,6 @@ readFromDump()
   else{
     // Méthode utilisée pour les protections issues des versions 3.6 et antérieure de Arcane.
     auto item_shared_infos = m_item_shared_infos->itemSharedInfos();
-    ItemInternalList items(m_infos.itemsInternal());
     for( Integer i=0; i<nb_item; ++i ){
       Integer shared_data_index = items_shared_data_index[i];
       ItemSharedInfoWithType* isi = item_shared_infos[shared_data_index];

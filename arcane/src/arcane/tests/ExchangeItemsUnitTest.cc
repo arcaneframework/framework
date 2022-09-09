@@ -114,7 +114,6 @@ _partitionCells()
 {
   // Change cells owner
   VariableItemInt32& cell_new_owners = mesh()->cellFamily()->itemsNewOwner();
-  Integer comm_size = mesh()->parallelMng()->commSize();
   ENUMERATE_CELL(icell, allCells()) {
     cell_new_owners[icell] = 0; // everybody on subdomain 0
     info() << "Cell uid " << icell->uniqueId() << " has owner "  << icell->owner();

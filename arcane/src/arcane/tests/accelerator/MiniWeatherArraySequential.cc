@@ -54,7 +54,7 @@ namespace MiniWeatherArraySequential
 using namespace Arcane;
 using namespace Arcane::Accelerator;
 
-const double pi = 3.14159265358979323846264338327;   //Pi
+//const double pi = 3.14159265358979323846264338327;   //Pi
 const double grav = 9.8;                             //Gravitational acceleration (m / s^2)
 const double cp = 1004.;                             //Specific heat of dry air at constant pressure
 const double rd = 287.;                              //Dry air constant for equation of state (P=rho*rd*T)
@@ -155,7 +155,6 @@ class MiniWeatherArraySequential
   NumArray<double,3> nstate_tmp; // Fluid state.             Dimensions: (1-hs:nx+hs,1-hs:nz+hs,NUM_VARS)
   NumArray<double,3> nflux; // Cell interface fluxes.   Dimensions: (nx+1,nz+1,NUM_VARS)
   NumArray<double,3> ntend; // Fluid state tendencies.  Dimensions: (nx,nz,NUM_VARS)
-  int num_out = 0;   // The number of outputs performed so far
   int direction_switch = 1;
 };
 

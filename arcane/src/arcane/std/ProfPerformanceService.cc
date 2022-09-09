@@ -54,28 +54,22 @@ class ProfPerformanceService
 {
  public:
 
-  ProfPerformanceService(const ServiceBuildInfo& sbi);
-  virtual ~ProfPerformanceService();
+  explicit ProfPerformanceService(const ServiceBuildInfo& sbi);
+  ~ProfPerformanceService() override;
 
  public:
 
-  virtual void initialize();
-  virtual void startProfiling();
-  virtual void switchEvent();
-  virtual void stopProfiling();
-  virtual void printInfos(bool dump_file);
-  virtual void getInfos(Int64Array&);
-  virtual void dumpJSON(JSONWriter& writer);
-  virtual void reset();
-  virtual ITimerMng* timerMng() { return 0; }
+  void initialize() override;
+  void startProfiling() override;
+  void switchEvent() override;
+  void stopProfiling() override;
+  void printInfos(bool dump_file) override;
+  void getInfos(Int64Array&) override;
+  void dumpJSON(JSONWriter& writer) override;
+  void reset() override;
+  ITimerMng* timerMng() override { return nullptr; }
 
  public:
-
- private:
-
-  int m_period;
-
- private:
 };
 
 /*---------------------------------------------------------------------------*/
@@ -91,7 +85,6 @@ ARCANE_REGISTER_APPLICATION_FACTORY(ProfPerformanceService,
 ProfPerformanceService::
 ProfPerformanceService(const ServiceBuildInfo& sbi)
 : AbstractService(sbi)
-, m_period(100)
 {
 }
 

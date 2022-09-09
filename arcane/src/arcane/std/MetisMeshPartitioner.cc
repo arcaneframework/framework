@@ -789,7 +789,8 @@ _removeEmptyPartsV2Helper(const Int32 nb_part,ArrayView<idxtype> metis_part,Int3
          << " nb_max_part=" << max_part_nbr
          << " max_part_rank=" << max_part_id
          << " max_proc_max_part_id=" << max_rank[max_part_id]
-         << " empty_part_ranks=" << empty_part_ranks;
+         << " empty_part_ranks=" << empty_part_ranks
+         << " total_nb_cell=" << total_nb_cell;
 
   if (nb_hole==0)
     return 0;

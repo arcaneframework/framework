@@ -574,7 +574,7 @@ class PapiPerformanceCounterService
  public:
   PapiPerformanceCounterService(const ServiceBuildInfo& sbi)
   : TraceAccessor(sbi.application()->traceMng()), m_nb_event(0),
-    m_event_set(PAPI_NULL), m_is_started(false), m_is_init(false)
+    m_event_set(PAPI_NULL), m_is_started(false)
   {
   }
   ~PapiPerformanceCounterService()
@@ -662,7 +662,6 @@ class PapiPerformanceCounterService
   int m_nb_event;
   int m_event_set;
   bool m_is_started;
-  bool m_is_init;
 };
 
 /*---------------------------------------------------------------------------*/

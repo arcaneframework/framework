@@ -93,17 +93,10 @@ class Hdf5MpiReaderWriter
   
   ISubDomain* m_sub_domain; //!< Gestionnaire du sous-domaine
   IParallelMng* m_parallel_mng; //!< Gestionnaire du parallélisme;
-  bool m_use_parallel;
-  //Integer m_sub_dir; //!< Numéro de la protection
   eOpenMode m_open_mode; //!< Mode d'ouverture
   String m_filename; //!< Nom du fichier.
   String m_sub_group_name; //!< Nom du fichier.
   bool m_is_initialized; //!< Vrai si déjà initialisé
-  bool m_do_verif;
-  Integer m_nb_sub_domain;
-  Integer m_first_sub_domain;
-  Integer m_last_sub_domain;
-  bool m_is_master;
 
   Hdf5Utils::StandardTypes m_types;
 

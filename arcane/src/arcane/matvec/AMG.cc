@@ -1529,7 +1529,7 @@ _buildCoarsePoints(Real alpha,
     Integer ci_tilde = -1;
     bool C_i_nonempty = false;
     for( Integer row=0; row<nb_row; ++row ){
-      if (ci_tilde_mark |= row)
+      if ( (ci_tilde_mark |= row) )
         ci_tilde = -1;
       if (m_points_type[row]==TYPE_FINE){
         for( Integer z=0, zs=depends[row].size(); z<zs; ++z ){

@@ -41,12 +41,13 @@
 #include <sys/time.h>
 #endif
 
-//#include <fenv.h>
+#define USE_SIGACTION 1
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -367,25 +368,48 @@ _MiscSigFunc(int val)
   if (g_signal_func)
     (*g_signal_func)(val);
 }
+
+extern "C" void
+_MiscSigactionFunc(int val, siginfo_t*,void*)
+{
+  if (g_signal_func)
+    (*g_signal_func)(val);
+}
+
 #endif // STD_SIGNAL_TYPE == 1
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-static fSignalFunc default_signal_func_sigsegv = 0;
-static fSignalFunc default_signal_func_sigfpe  = 0;
-static fSignalFunc default_signal_func_sigbus  = 0;
-//static fSignalFunc default_signal_func_sigsys  = 0;
-//static fSignalFunc default_signal_func_sigpipe = 0;
-static fSignalFunc default_signal_func_sigalrm = 0;
-static fSignalFunc default_signal_func_sigvtalrm = 0;
-static bool        global_already_in_signal = false;
+namespace
+{
+#ifndef USE_SIGACTION
+fSignalFunc default_signal_func_sigsegv = 0;
+fSignalFunc default_signal_func_sigfpe  = 0;
+fSignalFunc default_signal_func_sigbus  = 0;
+fSignalFunc default_signal_func_sigalrm = 0;
+fSignalFunc default_signal_func_sigvtalrm = 0;
+#endif
+bool global_already_in_signal = false;
+}
 
 extern "C++" ARCANE_UTILS_EXPORT void
 arcaneRedirectSignals(fSignalFunc sig_func)
 {
   setSignalFunc(sig_func);
-
 #if STD_SIGNAL_TYPE == 1
+
+#ifdef USE_SIGACTION
+  struct sigaction sa;
+  sa.sa_flags = SA_SIGINFO;
+  sigemptyset(&sa.sa_mask);
+  sa.sa_sigaction = _MiscSigactionFunc;
+
+  sigaction(SIGSEGV, &sa, nullptr);  // Segmentation fault.
+  sigaction(SIGFPE, &sa, nullptr);  // Floating Exception.
+  sigaction(SIGBUS, &sa, nullptr);  // Bus Error.
+  sigaction(SIGALRM, &sa, nullptr);  // Signal alarm (ITIMER_REAL)
+  sigaction(SIGVTALRM, &sa, nullptr);  // Signal alarm (ITIMER_VIRTUAL)
+#else
   default_signal_func_sigsegv = sigset(SIGSEGV,_MiscSigFunc);  // Segmentation fault.
   default_signal_func_sigfpe  = sigset(SIGFPE ,_MiscSigFunc);  // Floating Exception.
   default_signal_func_sigbus  = sigset(SIGBUS ,_MiscSigFunc);  // Bus Error.
@@ -393,6 +417,7 @@ arcaneRedirectSignals(fSignalFunc sig_func)
   //default_signal_func_sigpipe = sigset(SIGPIPE,_MiscSigFunc);  // Pipe error.
   default_signal_func_sigalrm = sigset(SIGALRM,_MiscSigFunc);  // Signal alarm (ITIMER_REAL)
   default_signal_func_sigvtalrm = sigset(SIGVTALRM,_MiscSigFunc);  // Signal alarm (ITIMER_VIRTUAL)
+#endif // USE_SIGACTION
 #endif // STD_SIGNAL_TYPE == 1
 }
 

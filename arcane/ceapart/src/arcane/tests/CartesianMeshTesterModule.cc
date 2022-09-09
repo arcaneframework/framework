@@ -95,7 +95,6 @@ class CartesianMeshTesterModule
   VariableNodeReal m_node_density; 
   ICartesianMesh* m_cartesian_mesh;
   IInitialPartitioner* m_initial_partitioner;
-  Integer m_nb_print;
   Ref<CartesianMeshTestUtils> m_utils;
   Ref<CartesianMeshV2TestUtils> m_utils_v2;
 
@@ -211,7 +210,6 @@ CartesianMeshTesterModule(const ModuleBuildInfo& mbi)
 , m_node_density(VariableBuildInfo(this,"NodeDensity"))
 , m_cartesian_mesh(nullptr)
 , m_initial_partitioner(nullptr)
-, m_nb_print(100)
 {
   // Regarde s'il faut tester le partitionnement
   if (!platform::getEnvironmentVariable("TEST_PARTITIONING").null()){
@@ -391,7 +389,10 @@ init()
     // Parcours les mailles frontières pour la direction
     ENUMERATE_CELL(icell,cdm.outerCells()){
       DirCell cc(cdm[icell]);
-      //info() << "CELL: cell=" << ItemPrinter(*icell);
+      if (icell.index()<5)
+        info() << "CELL: cell=" << ItemPrinter(*icell)
+               << " next=" << ItemPrinter(cc.next())
+               << " previous=" << ItemPrinter(cc.previous());
       // Maille au bord. J'ajoute de la densité.
       ++nb_boundary2;
       m_density[icell] += 5.0;

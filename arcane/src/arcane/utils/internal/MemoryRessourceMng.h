@@ -55,7 +55,7 @@ class ARCANE_UTILS_EXPORT MemoryRessourceMng
  public:
 
   //! Interface interne
-  virtual IMemoryRessourceMngInternal* _internal() { return this; }
+  IMemoryRessourceMngInternal* _internal() override { return this; }
 
  private:
 

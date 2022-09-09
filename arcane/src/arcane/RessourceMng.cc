@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RessourceMng.cc                                             (C) 2000-2008 */
+/* RessourceMng.cc                                             (C) 2000-2022 */
 /*                                                                           */
 /* Gestionnaire de ressources.                                               */
 /*---------------------------------------------------------------------------*/
@@ -21,7 +21,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -34,23 +35,18 @@ class RessourceMng
 {
  public:
 
-  RessourceMng(IApplication* sm);
-  virtual ~RessourceMng() {}
+  explicit RessourceMng(IApplication*);
 
-  virtual IXmlDocumentHolder* createXmlDocument();
-
- private:
-
-  IApplication* m_application;
+  virtual IXmlDocumentHolder* createXmlDocument() override;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 IRessourceMng* IRessourceMng::
-createDefault(IApplication* sm)
+createDefault(IApplication* a)
 {
-  IRessourceMng* m = new RessourceMng(sm);
+  IRessourceMng* m = new RessourceMng(a);
   return m;
 }
 
@@ -58,8 +54,7 @@ createDefault(IApplication* sm)
 /*---------------------------------------------------------------------------*/
 
 RessourceMng::
-RessourceMng(IApplication* sm)
-: m_application(sm)
+RessourceMng(IApplication*)
 {
 }
 
@@ -75,7 +70,7 @@ createXmlDocument()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

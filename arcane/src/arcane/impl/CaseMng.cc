@@ -75,11 +75,10 @@ class CaseMng
   class OptionsReader
   {
    public:
-    OptionsReader(ICaseMng* cm) : m_case_mng(cm){}
+    OptionsReader(ICaseMng*) {}
     void read(bool is_phase1);
     void addOption(ICaseOptions* o) { m_options.add(o); }
    private:
-    ICaseMng* m_case_mng;
     UniqueArray<ICaseOptions*> m_options;
     void _read(bool is_phase1);
     void _searchInvalidOptions();

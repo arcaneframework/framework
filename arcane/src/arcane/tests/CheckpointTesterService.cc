@@ -84,9 +84,7 @@ class CheckpointTesterService
   StdArrayMeshVariables<Face> m_array_faces;
   StdArrayMeshVariables<Cell> m_array_cells;
   StdArrayMeshVariables<Particle>* m_array_particles;
-  bool m_backward_done;
   Integer m_nb_iteration;
-  Integer m_backward_iteration;
   bool m_is_continue;
 
   VariableScalarReal m_variable_no_restore;
@@ -127,9 +125,7 @@ CheckpointTesterService(const ServiceBuildInfo& sbi)
 , m_array_faces(sbi.meshHandle(),"TestCheckpointArrayFaces")
 , m_array_cells(sbi.meshHandle(),"TestCheckpointArrayCells")
 , m_array_particles(0)
-, m_backward_done(false)
 , m_nb_iteration(0)
-, m_backward_iteration(0)
 , m_is_continue(false)
 , m_variable_no_restore(VariableBuildInfo(sbi.subDomain(),"VariableNoRestore",
                                           IVariable::PNoRestore))

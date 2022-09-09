@@ -149,7 +149,7 @@ class StaticAlloc
   {
   }
   
-  StaticAlloc(const StaticAlloc& __a) ARCANE_NOEXCEPT
+  StaticAlloc(const StaticAlloc&) ARCANE_NOEXCEPT
   {
   }
   
@@ -269,7 +269,6 @@ class ProfInfos
   Int64 m_total_event;
   Int64 m_total_stack;
   Int64 m_counters[MAX_COUNTER];
-  bool m_is_running;
   Int32 m_current_func_info;
   ProfFuncInfo m_func_info_buffer[MAX_FUNC];
   int m_period;

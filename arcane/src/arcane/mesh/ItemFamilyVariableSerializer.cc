@@ -64,7 +64,6 @@ ItemFamilyVariableSerializer::
 ItemFamilyVariableSerializer(IItemFamily* family)
 : TraceAccessor(family->traceMng())
 , m_item_family(family)
-, m_is_verbose(false)
 {
 }
 

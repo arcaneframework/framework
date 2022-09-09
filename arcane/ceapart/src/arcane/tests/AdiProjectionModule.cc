@@ -589,12 +589,6 @@ cartesianHydroStartInit()
   }
 }
 
-
-class ItemIndex
-{
-  Int32 m_local_id;
-};
-
 void AdiProjectionModule::
 cartesianHydroMain()
 {
@@ -616,10 +610,6 @@ cartesianHydroMain()
   computePressure();
 
   checkNodalMassConservation();
-
-  ItemIndex all[4];
-
-  info() << "SIZE=" << sizeof(ItemIndex) << " all=" << sizeof(all);
 
 }
 

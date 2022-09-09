@@ -33,7 +33,7 @@
 #include <tbb/mutex.h>
 #endif
 
-#include <glib.h>
+#include <mutex>
 #include <new>
 
 /*---------------------------------------------------------------------------*/
@@ -83,62 +83,20 @@ inline Int64 arcaneGetThisThreadId()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Avec MPC, il faut utiliser l'implementation pthread car l'implementation glib
-// ne fonctionne pas si elle n'a pas ete recompilee avec MPC.
-#ifdef ARCANE_USE_MPC
-#define USE_PTHREAD 1
-#endif
 
 class TBBMutexImpl
 {
-  // Ne pas utiliser les TBB pour l'instant car
-  // ca ne marche pas (probablement un probleme de cast chez moi)
- public:
-  TBBMutexImpl()
-  {
-	  //m_lock = new tbb::mutex::scoped_lock(m_mutex);
-#ifdef USE_PTHREAD
-	  pthread_mutex_init(&m_mutex,0);
-#else
-    m_mutex = g_mutex_new();
-#endif
-  }
-  ~TBBMutexImpl()
-  {
-	  //delete m_lock;
-#ifdef USE_PTHREAD
-    pthread_mutex_destroy(&m_mutex);
-#else
-    g_mutex_free(m_mutex);
-#endif
-  }
  public:
   void lock()
   {
-#ifdef USE_PTHREAD
-    pthread_mutex_lock(&m_mutex);
-#else
-    g_mutex_lock(m_mutex);
-#endif
-	  //m_lock.acquire(m_mutex);
+    m_mutex.lock();
   }
   void unlock()
   {
-	  //m_lock.release();
-#ifdef USE_PTHREAD
-    pthread_mutex_unlock(&m_mutex);
-#else
-    g_mutex_unlock(m_mutex);
-#endif
+    m_mutex.unlock();
   }
-
-#ifdef USE_PTHREAD
-  pthread_mutex_t m_mutex;
-#else
-  GMutex* m_mutex;
-#endif
-  /*tbb::mutex m_mutex;
-    tbb::mutex::scoped_lock m_lock;*/
+ private:
+  std::mutex m_mutex;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -312,10 +270,6 @@ class TBBThreadImplementation
   Int64 currentThread() override
   {
     Int64 v = arcaneGetThisThreadId();
-    //ThreadId* t = (ThreadId*)(&i);
-    //Int64 v = Int64(i); //t->my_id);
-    //if (v!=0)
-    //cout << "** V=" << v << '\n';
     return v;
   }
 

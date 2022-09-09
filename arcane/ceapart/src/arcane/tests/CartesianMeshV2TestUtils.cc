@@ -33,7 +33,6 @@ using namespace Arcane;
 CartesianMeshV2TestUtils::
 CartesianMeshV2TestUtils(ICartesianMesh* cm)
 : TraceAccessor(cm->traceMng())
-, m_cartesian_mesh(cm)
 {
 }
 

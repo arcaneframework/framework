@@ -350,7 +350,7 @@ void free_library(LibHandle h)
 void* get_export(LibHandle h, const char* name)
 {
   void* f = ::GetProcAddress(h, name);
-  if (!h)
+  if (!f)
     ARCANE_FATAL("Can not get library symbol '{0}'",name);
   return f;
 }
@@ -371,9 +371,7 @@ void* get_export(LibHandle h, const char* name)
   void* f = dlsym(h, name);
   PRINT_FORMAT(1,"get_export name={0} f={1}",name,f);
   if (!f)
-    PRINT_FORMAT(0,"Can not load symbol '{0}'",name);
-  if (!h)
-    ARCANE_FATAL("Can not get library symbol '{0}'",name);
+    PRINT_FORMAT(0,"Can not get library symbol '{0}'",name);
   return f;
 }
 #endif

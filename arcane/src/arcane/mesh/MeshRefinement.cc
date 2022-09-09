@@ -1819,10 +1819,10 @@ _contract()
   //
   Int32UniqueArray cell_lids(arcaneCheckArraySize(cells_to_remove_set.size()));
   std::copy(std::begin(cells_to_remove_set), std::end(cells_to_remove_set),std::begin(cell_lids));
-  bool graph_need_update = false ;
+
   if (m_mesh->parallelMng()->isParallel()){
     this->_makeFlagParallelConsistent2();
-    graph_need_update |= this->_removeGhostChildren();
+    this->_removeGhostChildren();
     this->_updateItemOwner(cell_lids);
     m_mesh->parallelMng()->barrier();
   }
@@ -1834,7 +1834,6 @@ _contract()
     const Integer ps = parent_cells.size();
     for (Integer i = 0; i < ps; i++)
       populateBackFrontCellsFromChildrenFaces(parent_cells[i]);
-    graph_need_update = true ;
   }
   else
     mesh_changed = false;

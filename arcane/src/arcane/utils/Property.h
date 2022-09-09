@@ -436,8 +436,6 @@ class ARCANE_UTILS_EXPORT PropertySettingsRegisterer
   const char* m_name;
   //! Fonction de création
   CreateFunc m_create_func;
-  //! Fonction de création des informations pour construire une instance
-  CreateBuildInfoFunc m_create_build_info_func;
 
  private:
 

@@ -128,12 +128,6 @@ _toTBBRange(const ComplexLoopRanges<4>& r)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-inline tbb::blocked_rangeNd<Int32,1>
-_toTBBRangeWithGrain(const tbb::blocked_rangeNd<Int32,1>& r,std::size_t grain_size)
-{
-  return {{r.dim(0).begin(), r.dim(0).end(), grain_size}};
-}
-
 inline tbb::blocked_rangeNd<Int32,2>
 _toTBBRangeWithGrain(const tbb::blocked_rangeNd<Int32,2>& r,std::size_t grain_size)
 {
@@ -160,15 +154,6 @@ _toTBBRangeWithGrain(const tbb::blocked_rangeNd<Int32,4>& r,std::size_t grain_si
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-inline ComplexLoopRanges<1>
-_fromTBBRange(const tbb::blocked_rangeNd<Int32,1> & r)
-{
-  ArrayBounds<1> lower_bounds(r.dim(0).begin());
-  auto s0 = static_cast<Int32>(r.dim(0).size());
-  ArrayBounds<1> sizes(s0);
-  return { lower_bounds, sizes };
-}
 
 inline ComplexLoopRanges<2>
 _fromTBBRange(const tbb::blocked_rangeNd<Int32,2>& r)
@@ -346,7 +331,7 @@ class TBBTaskImplementation
   {
    public:
     TaskInfoLockGuard(TaskThreadInfo* tti,Integer task_index)
-    : m_tti(tti), m_task_index(task_index), m_old_task_index(-1)
+    : m_tti(tti), m_old_task_index(-1)
     {
       if (tti){
         m_old_task_index = tti->taskIndex();
@@ -360,7 +345,6 @@ class TBBTaskImplementation
     }
    private:
     TaskThreadInfo* m_tti;
-    Integer m_task_index;
     Integer m_old_task_index;
   };
 

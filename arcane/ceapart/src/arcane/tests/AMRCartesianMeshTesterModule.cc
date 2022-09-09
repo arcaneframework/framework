@@ -276,7 +276,10 @@ init()
     // Parcours les mailles frontières pour la direction
     ENUMERATE_CELL(icell,cdm.outerCells()){
       DirCell cc(cdm[icell]);
-      //info() << "CELL: cell=" << ItemPrinter(*icell);
+      if (icell.index()<5)
+        info() << "CELL: cell=" << ItemPrinter(*icell)
+               << " next=" << ItemPrinter(cc.next())
+               << " previous=" << ItemPrinter(cc.previous());
       // Maille au bord. J'ajoute de la densité.
       ++nb_boundary2;
       m_density[icell] += 5.0;

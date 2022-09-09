@@ -311,7 +311,6 @@ class ARCANE_CORE_EXPORT CaseOptionComplexValue
   ICaseOptionList* _configList() { return m_config_list.get(); }
   XmlNode _element() { return m_element; }
  private:
-  ICaseOptionsMulti* m_case_option_multi;
   ReferenceCounter<ICaseOptionList> m_config_list;
   XmlNode m_element;
 };

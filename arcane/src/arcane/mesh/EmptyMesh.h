@@ -67,7 +67,8 @@ class EmptyMesh : public IMesh
   void _error() const { m_trace_mng->fatal() << "Using EmptyMesh"; }
 
  public:
-  virtual const MeshHandle& handle() const {  _error(); auto var = new MeshHandle{}; return *var; }
+
+  const MeshHandle& handle() const override {  _error(); auto var = new MeshHandle{}; return *var; }
 
  public:
 
