@@ -37,12 +37,14 @@ class CustomMeshTestModule : public ArcaneCustomMeshTestObject {
 
   void init() {
     info() << "-- INIT CUSTOM MESH MODULE";
-    auto mesh_handle = subDomain()->meshMng()->findMeshHandle(mesh::PolyhedralMesh::handleName());
+    auto mesh_handle = subDomain()->defaultMeshHandle();
     if (mesh_handle.hasMesh()) {
-      _testDimensions(mesh_handle.mesh());
-      _testEnumerationAndConnectivities(mesh_handle.mesh());
-      _testVariables(mesh_handle.mesh());
-      _testGroups(mesh_handle.mesh());
+      info() << "-- MESH NAME: " << mesh()->name();
+      _testDimensions(mesh());
+      _testCoordinates(mesh());
+      _testEnumerationAndConnectivities(mesh());
+      _testVariables(mesh());
+      _testGroups(mesh());
     }
     else info() << "No Mesh";
 
