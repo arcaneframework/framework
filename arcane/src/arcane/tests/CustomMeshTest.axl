@@ -13,4 +13,15 @@
     </complex>
   </options>
 
+  <variables>
+    <variable field-name="cell_variable" name="CellVariable"
+              data-type="real" item-kind="cell" dim="0" dump="true" need-sync="true" />
+    <variable field-name="face_variable" name="FaceVariable"
+              data-type="real" item-kind="face" dim="0" dump="true" need-sync="true" />
+    <variable field-name="node_variable" name="NodeVariable"
+              data-type="real" item-kind="node" dim="0" dump="true" need-sync="true" />
+    <variable field-name="edge_variable" name="EdgeVariable"
+              data-type="real" item-kind="edge" dim="0" dump="true" need-sync="true" />
+  </variables>
+
 </module>

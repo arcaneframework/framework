@@ -156,17 +156,13 @@ void CustomMeshTestModule::_testVariables(IMesh* mesh)
   // test variables
   info() << " -- test variables -- ";
   // cell variable
-  VariableCellInt32 cell_var{ VariableBuildInfo{ mesh, "cellvariable", mesh->cellFamily()->name() } };
-  _checkVariable(cell_var, mesh->allCells());
+  _checkVariable(m_cell_variable, mesh->allCells());
   // node variable
-  VariableNodeInt32 node_var{ VariableBuildInfo{ mesh, "nodevariable", mesh->nodeFamily()->name() } };
-  _checkVariable(node_var, mesh->allNodes());
+  _checkVariable(m_node_variable, mesh->allNodes());
   // face variable
-  VariableFaceInt32 face_var{ VariableBuildInfo{ mesh, "facevariable", mesh->faceFamily()->name() } };
-  _checkVariable(face_var, mesh->allFaces());
+  _checkVariable(m_face_variable, mesh->allFaces());
   // edge variable
-  VariableEdgeInt32 edge_var{ VariableBuildInfo{ mesh, "edgevariable", mesh->edgeFamily()->name() } };
-  _checkVariable(edge_var, mesh->allEdges());
+  _checkVariable(m_edge_variable, mesh->allEdges());
 }
 
 /*---------------------------------------------------------------------------*/
