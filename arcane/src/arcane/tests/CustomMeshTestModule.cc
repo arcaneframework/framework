@@ -56,6 +56,7 @@ class CustomMeshTestModule : public ArcaneCustomMeshTestObject {
   void _testVariables(IMesh* mesh);
   void _testGroups(IMesh* mesh);
   void _testDimensions(IMesh* mesh);
+  void _testCoordinates(IMesh* mesh);
   void _buildGroup(IItemFamily* family, String const& group_name);
   template <typename VariableRefType>
   void _checkVariable(VariableRefType variable, ItemGroup item_group);
@@ -173,26 +174,39 @@ void CustomMeshTestModule::_testVariables(IMesh* mesh)
 void CustomMeshTestModule::
 _testGroups(IMesh* mesh)
 {
+  // AllItems groups
+  ARCANE_ASSERT((!mesh->findGroup("AllCells").null()),("Group AllCells has not been created"));
+  ARCANE_ASSERT((!mesh->findGroup("AllNodes").null()),("Group AllNodes has not been created"));
+  ARCANE_ASSERT((!mesh->findGroup("AllFaces").null()),("Group AllFaces has not been created"));
+  ARCANE_ASSERT((!mesh->findGroup("AllEdges").null()),("Group AllEdges has not been created"));
   // Cell group
   String group_name = "my_cell_group";
   _buildGroup(mesh->cellFamily(),group_name);
+  ARCANE_ASSERT((!mesh->findGroup(group_name).null()),("Group my_cell_group has not been created"));
   PartialVariableCellInt32 partial_cell_var({mesh, "partial_cell_variable", mesh->cellFamily()->name(), group_name});
   _checkVariable(partial_cell_var, partial_cell_var.itemGroup());
   // Node group
   group_name = "my_node_group";
   _buildGroup(mesh->nodeFamily(),group_name);
+  ARCANE_ASSERT((!mesh->findGroup(group_name).null()),("Group my_node_group has not been created"));
   PartialVariableNodeInt32 partial_node_var({mesh, "partial_node_variable", mesh->nodeFamily()->name(), group_name});
   _checkVariable(partial_node_var, partial_node_var.itemGroup());
   // Face group
   group_name = "my_face_group";
   _buildGroup(mesh->faceFamily(),group_name);
+  ARCANE_ASSERT((!mesh->findGroup(group_name).null()),("Group my_face_group has not been created"));
   PartialVariableFaceInt32 partial_face_var({mesh, "partial_face_variable", mesh->faceFamily()->name(), group_name});
   _checkVariable(partial_face_var, partial_face_var.itemGroup());
   // Edge group
   group_name = "my_edge_group";
   _buildGroup(mesh->edgeFamily(),group_name);
+  ARCANE_ASSERT((!mesh->findGroup(group_name).null()),("Group my_edge_group has not been created"));
   PartialVariableEdgeInt32 partial_edge_var({mesh, "partial_edge_variable", mesh->edgeFamily()->name(), group_name});
   _checkVariable(partial_edge_var, partial_edge_var.itemGroup());
+
+  ValueChecker vc{A_FUNCINFO};
+  auto nb_group = 8;
+  vc.areEqual(nb_group, mesh->groups().count(), "check number of groups in the mesh");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -208,6 +222,24 @@ _testDimensions(IMesh* mesh)
   vc.areEqual(mesh->nbFace(), mesh_size[0]->getNbFaces(),"check number of faces");
   vc.areEqual(mesh->nbEdge(), mesh_size[0]->getNbEdges(),"check number of edges");
   vc.areEqual(mesh->nbNode(), mesh_size[0]->getNbNodes(),"check number of nodes");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CustomMeshTestModule::
+_testCoordinates(Arcane::IMesh* mesh){
+  if (options()->meshCoordinates.size() ==1) {
+    if (options()->meshCoordinates[0].doCheck()) {
+      auto node_coords = mesh->toPrimaryMesh()->nodesCoordinates();
+      auto node_coords_ref = options()->meshCoordinates[0].coords();
+      ValueChecker vc{ A_FUNCINFO };
+      ENUMERATE_NODE (inode,allNodes()) {
+//        vc.areEqual(node_coords[inode], node_coords_ref[0]->value[inode.index()],"check coords values");
+        info() << " node coords  " << node_coords[inode];
+      }
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/

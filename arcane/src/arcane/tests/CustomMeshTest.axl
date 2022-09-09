@@ -11,6 +11,12 @@
       <simple name="nb-edges" type="integer"/>
       <simple name="nb-nodes" type="integer"/>
     </complex>
+    <complex name="mesh-coordinates" minOccurs="0" maxOccurs="1" type="MeshCoordinatesType">
+      <simple name="do-check" type="bool"/>
+      <complex name="coords" minOccurs="0" type="CoordsType">
+        <simple name="value" minOccurs="0" maxOccurs="unbounded" type="real3"/>
+      </complex>
+    </complex>
   </options>
 
   <variables>
