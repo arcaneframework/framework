@@ -55,7 +55,7 @@ class PolyhedralMesh
 : public EmptyMesh
 {
  public :
-  String m_name = "polyhedral_mesh";
+  String m_name;
   ISubDomain* m_subdomain;
   MeshItemInternalList m_mesh_item_internal_list;
   inline static const String m_mesh_handle_name = "polyhedral_mesh_handle";

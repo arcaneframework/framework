@@ -429,8 +429,9 @@ handle() const
 mesh::PolyhedralMesh::
 PolyhedralMesh(ISubDomain* subdomain)
 : EmptyMesh{subdomain->traceMng()}
+, m_name{subdomain->defaultMeshHandle().meshName()}
 , m_subdomain{subdomain}
-, m_mesh_handle{m_subdomain->meshMng()->createMeshHandle(m_mesh_handle_name)}
+, m_mesh_handle{m_subdomain->defaultMeshHandle()}
 , m_properties(std::make_unique<Properties>(subdomain->propertyMng(),String("ArcaneMeshProperties_")+m_name))
 , m_mesh{ std::make_unique<mesh::PolyhedralMeshImpl>(m_subdomain) }
 , m_item_type_mng(ItemTypeMng::_singleton())
@@ -460,10 +461,11 @@ read(const String& filename)
   if (file_extension != "vtk")
     m_subdomain->traceMng()->fatal() << "Only vtk file format supported for polyhedral mesh";
 
-  createItemFamily(IK_Cell, "CellFamily");
-  createItemFamily(IK_Node, "NodeFamily");
-  createItemFamily(IK_Face, "FaceFamily");
-  createItemFamily(IK_Edge, "EdgeFamily");
+//  createItemFamily(IK_Cell, "CellFamily");
+  createItemFamily(IK_Cell, "Cell");
+  createItemFamily(IK_Node, "Node");
+  createItemFamily(IK_Face, "Face");
+  createItemFamily(IK_Edge, "Edge");
   [[maybe_unused]] auto cell_family = arcaneDefaultFamily(IK_Cell);
   [[maybe_unused]] auto node_family = arcaneDefaultFamily(IK_Node);
   [[maybe_unused]] auto face_family = arcaneDefaultFamily(IK_Face);
@@ -510,7 +512,7 @@ read(const String& filename)
 String Arcane::mesh::PolyhedralMesh::
 name() const
 {
-  return m_mesh->name();
+  return m_name;
 }
 
 /*---------------------------------------------------------------------------*/
