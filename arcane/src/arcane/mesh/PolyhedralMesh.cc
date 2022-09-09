@@ -541,6 +541,8 @@ read(const String& filename)
   m_mesh->scheduleSetItemCoordinates(node_family, node_lids, reader.nodeCoords(), *m_arcane_node_coords);
   m_mesh->applyScheduledOperations();
   m_is_allocated = true;
+  // indicates mesh contains general Cells
+  itemTypeMng()->setMeshWithGeneralCells(this);
 #else
   ARCANE_FATAL("Need VTKIO to read polyhedral mesh");
 #endif

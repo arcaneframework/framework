@@ -1141,6 +1141,27 @@ _legacyTypeName(Integer t)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+bool ItemTypeMng::hasGeneralCells(IMesh* mesh) const
+{
+  auto has_general_cells = false;
+  if (m_mesh_with_general_cells.find(mesh) != m_mesh_with_general_cells.end()) {
+    has_general_cells = true;
+  }
+  return has_general_cells;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemTypeMng::setMeshWithGeneralCells(IMesh* mesh) noexcept
+{
+  ARCANE_ASSERT(mesh,("Trying to indicate a null mesh contains general cells."));
+  m_mesh_with_general_cells.insert(mesh);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
