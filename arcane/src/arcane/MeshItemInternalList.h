@@ -27,6 +27,7 @@ class ItemInternalConnectivityList;
 namespace mesh
 {
 class DynamicMesh;
+class PolyhedralMesh;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -38,6 +39,7 @@ class DynamicMesh;
 class MeshItemInternalList
 {
   friend class mesh::DynamicMesh;
+  friend class mesh::PolyhedralMesh;
   friend class ItemInternalConnectivityList;
   friend class impl::ItemBase;
 
