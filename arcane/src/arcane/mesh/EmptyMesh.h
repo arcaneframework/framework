@@ -54,7 +54,7 @@ namespace Arcane::mesh {
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class EmptyMesh : public IMesh
+class EmptyMesh : public IPrimaryMesh
 {
 
  public:
@@ -70,6 +70,20 @@ class EmptyMesh : public IMesh
 
   const MeshHandle& handle() const override {  _error(); auto var = new MeshHandle{}; return *var; }
 
+  // IPrimaryMesh API
+ public:
+  virtual VariableNodeReal3& nodesCoordinates() override { _error(); auto var = new VariableNodeReal3{ nullptr }; return *var;}
+  virtual void setDimension(Integer) override {_error();}
+  virtual void reloadMesh() override {_error();}
+  virtual void allocateCells(Integer, Int64ConstArrayView, bool) override {_error();}
+  virtual void endAllocate() override {_error();}
+  virtual void deallocate() override  {_error();}
+  virtual VariableItemInt32& itemsNewOwner(eItemKind) { _error(); auto var = new VariableItemInt32{ nullptr }; return *var; };
+  virtual void exchangeItems() { _error(); }
+  virtual void setOwnersFromCells() { _error(); }
+  virtual void setMeshPartInfo(const MeshPartInfo&) { _error(); }
+
+  // IMesh API
  public:
 
   virtual String name() const override { _error(); return String{}; }
@@ -177,7 +191,6 @@ class EmptyMesh : public IMesh
 
  public:
 
-  virtual VariableNodeReal3& nodesCoordinates() override { _error(); auto var = new VariableNodeReal3{ nullptr}; return *var;}
   virtual void defineParentForBuild(IMesh *, ItemGroup) override { _error(); }
   virtual IMesh * parentMesh() const override { _error(); return nullptr; }
   virtual ItemGroup parentGroup() const override { _error(); return ItemGroup{}; }
@@ -187,7 +200,7 @@ class EmptyMesh : public IMesh
  public:
 
   virtual bool isPrimaryMesh() const override { _error(); return false; }
-  virtual IPrimaryMesh* toPrimaryMesh() override { _error(); return nullptr; }
+  virtual IPrimaryMesh* toPrimaryMesh() override { return this;}
 
  public:
 
