@@ -148,8 +148,8 @@ main(int argc,char* argv[])
 ";
 
 const string cmakelist_template_string =
-@"cmake_minimum_required(VERSION 3.16)
-project({{code_name}} LANGUAGES CXX)
+@"cmake_minimum_required(VERSION 3.18)
+project({{code_name}} LANGUAGES C CXX)
 
 find_package(Arcane REQUIRED)
 
