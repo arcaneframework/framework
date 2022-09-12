@@ -268,7 +268,8 @@ _checkVariable(VariableRefType variable_ref, ItemGroup item_group)
 {
   variable_ref.fill(1);
   auto variable_sum = 0.;
-  A_ENUMERATE_ITEM (ItemEnumeratorT<typename VariableRefType::ItemType>,iitem, item_group) {
+  using ItemType = typename VariableRefType::ItemType;
+  ENUMERATE_ (ItemType,iitem, item_group) {
     info() << variable_ref.name() << " at item " << iitem.localId() << " " << variable_ref[iitem];
     variable_sum += variable_ref[iitem];
   }

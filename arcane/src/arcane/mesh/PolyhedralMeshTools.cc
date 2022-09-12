@@ -670,15 +670,16 @@ nodeCoords()
   if (m_node_coordinates.empty()) {
     auto* vtk_grid = m_vtk_grid_reader->GetOutput();
     auto point_coords = vtk_grid->GetPoints()->GetData();
-    std::cout << "======= Point COORDS ====" << std::endl;
-    std::ostringstream oss;
-    point_coords->PrintSelf(oss, vtkIndent{ 2 });
-    std::cout << oss.str() << std::endl;
-    for (int i = 0; i < vtk_grid->GetNumberOfPoints(); ++i) {
-      std::cout << "==========current point coordinates : ( ";
-      std::cout << *(point_coords->GetTuple(i)) << " , ";
-      std::cout << *(point_coords->GetTuple(i)+1) << " , ";
-      std::cout << *(point_coords->GetTuple(i)+2) << " ) ===" << std::endl;
+//    std::cout << "======= Point COORDS ====" << std::endl;
+//    std::ostringstream oss;
+//    point_coords->PrintSelf(oss, vtkIndent{ 2 });
+//    std::cout << oss.str() << std::endl;
+    auto nb_nodes = vtk_grid->GetNumberOfPoints();
+    for (int i = 0; i < nb_nodes ; ++i) {
+//      std::cout << "==========current point coordinates : ( ";
+//      std::cout << *(point_coords->GetTuple(i)) << " , ";
+//      std::cout << *(point_coords->GetTuple(i)+1) << " , ";
+//      std::cout << *(point_coords->GetTuple(i)+2) << " ) ===" << std::endl;
       m_node_coordinates.add({ *(point_coords->GetTuple(i)),
                                *(point_coords->GetTuple(i) + 1),
                                *(point_coords->GetTuple(i) + 2) });

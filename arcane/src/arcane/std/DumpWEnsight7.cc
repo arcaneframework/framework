@@ -415,7 +415,7 @@ class DumpWEnsight7
 
     void write(ConstArrayView<Item> items) override
     {
-      for (Item e : items.range()) {
+      for (Item e : items) {
         write(e.localId());
       }
     }
@@ -465,7 +465,7 @@ class DumpWEnsight7
 
     void write(ConstArrayView<Item> items) override
     {
-      for (Item e : items.range()) {
+      for (Item e : items) {
         write(e.localId());
       }
     }
@@ -530,7 +530,7 @@ class DumpWEnsight7
 
     void write(ConstArrayView<Item> items) override
     {
-      for (Item i : items.range()) {
+      for (Item i : items) {
         write(i.localId());
       }
     }
@@ -612,7 +612,7 @@ class DumpWEnsight7
 
     void write(ConstArrayView<Item> items) override
     {
-      for (Item i : items.range()) {
+      for (Item i : items) {
         write(i.localId());
       }
     }
@@ -878,12 +878,13 @@ _computeGroupParts(ItemGroupList list_group, Integer& partid)
     // Il faut maintenant déterminer combien d'éléments de chaque type
     // ensight (tria3,hexa8,...) on a dans le groupe.
     {
+      auto nb_basic_item_types = grp.mesh()->itemTypeMng()->nbBasicItemType();
       for (Integer z = 0; z < current_grp.nbType(); ++z) {
         EnsightPart& type_info = current_grp.typeInfo(z);
         Array<Item>& items = type_info.items();
         Integer nb_of_type = 0;
         Integer type_to_seek = type_info.type();
-        if (type_to_seek < grp.mesh()->itemTypeMng()->nbBasicItemType()) { // "classical type"
+        if (type_to_seek < nb_basic_item_types) { // "classical type"
           ENUMERATE_ITEM (i2, grp) {
             const Item& e = *i2;
             if (e.type() == type_to_seek)
@@ -901,7 +902,7 @@ _computeGroupParts(ItemGroupList list_group, Integer& partid)
         debug(Trace::High) << "Group " << grp.name() << " has "
                            << nb_of_type << " items of type " << type_info.name();
         Integer index = 0;
-        if (type_to_seek < grp.mesh()->itemTypeMng()->nbBasicItemType()) { // "classical type"
+        if (type_to_seek < nb_basic_item_types) { // "classical type"
           ENUMERATE_ITEM (iz, grp) {
             Item mi = *iz;
             if (mi.type() == type_to_seek) {
@@ -1007,7 +1008,7 @@ _saveGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
         }
         else { // mesh has general items
           // All items do not have the same face number
-          for (Item mi : items.range()) {
+          for (Item mi : items) {
             writeFileInt(ofile, mi.toCell().nbFace());
           }
         }
@@ -1015,7 +1016,7 @@ _saveGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
       // 2. Sauve pour chaque elément, le nombre de noeuds de chacune
       //    de ces faces
       if (!m_mesh->itemTypeMng()->hasGeneralCells(m_mesh)) {
-        for (Item mi : items.range()) {
+        for (Item mi : items) {
           const ItemTypeInfo* item_info = mi.typeInfo();
           Integer nb_face = item_info->nbLocalFace();
           for (Integer z = 0; z < nb_face; ++z)
@@ -1023,7 +1024,7 @@ _saveGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
         }
       }
       else { // mesh has general items
-        for (Item mi : items.range()) {
+        for (Item mi : items) {
           Cell cell = mi.toCell();
           ENUMERATE_FACE (face,cell.faces()){
             writeFileInt(ofile, face->nbNode());
@@ -1033,7 +1034,7 @@ _saveGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
       // 3. Sauve pour chaque face de chaque élément la liste de ces
       //    noeuds
       if (!m_mesh->itemTypeMng()->hasGeneralCells(m_mesh)) {
-        for (Item item : items.range()) {
+        for (Item item : items) {
           Cell cell(item.internal());
           const ItemTypeInfo* item_info = cell.typeInfo();
           //Cell cell = mi.toCell();
@@ -1055,7 +1056,7 @@ _saveGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
         }
       }
       else { // mesh has general items
-        for (Item item : items.range()) {
+        for (Item item : items) {
           Cell cell = item.toCell();
           Integer nb_face = cell.nbFace();
           for (Integer z = 0; z < nb_face; ++z) {
@@ -1075,13 +1076,13 @@ _saveGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
 
       // 1. Sauve pour chaque elément, le nombre de ses noeuds
       //cerr << "** NSIDED ELEMENT\n";
-      for (Item mi : items.range()) {
+      for (Item mi : items) {
         ItemWithNodes e = mi.toItemWithNodes();
         Integer nb_node = e.nbNode();
         writeFileInt(ofile, nb_node);
       }
       // 2. Sauve pour chaque elément la liste de ces noeuds
-      for (Item mi : items.range()) {
+      for (Item mi : items) {
         ItemWithNodes e = mi.toItemWithNodes();
         Integer nb_node = e.nbNode();
         array_id.resize(nb_node);
@@ -1102,7 +1103,7 @@ _saveGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
       // Sauve la connectivité des éléments
       if (type_info.hasReindex()) {
         ConstArrayView<Integer> reindex = type_info.reindex();
-        for (Item mi : items.range()) {
+        for (Item mi : items) {
           ItemWithNodes e = mi.toItemWithNodes();
           for (Integer j = 0; j < nb_node; ++j) {
             array_id[j] = nodes_index[e.node(reindex[j]).localId()];
@@ -1111,7 +1112,7 @@ _saveGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
         }
       }
       else { // no reindex
-        for (Item mi : items.range()) {
+        for (Item mi : items) {
           ItemWithNodes e = mi.toItemWithNodes();
           for (Integer j = 0; j < nb_node; ++j) {
             array_id[j] = nodes_index[e.node(j).localId()];
@@ -1486,7 +1487,7 @@ beginWrite()
     // Récupère le nombre total d'eléments dans les groupes.
     Integer total_nb_element = 0;
     m_total_nb_group = 0;
-    for (auto i : m_parts.range()) {
+    for (auto i : m_parts) {
       total_nb_element += i->totalNbElement();
       ++m_total_nb_group;
     }
@@ -1570,7 +1571,7 @@ beginWrite()
       wf.end();
     }
 
-    for (const GroupPartInfo* part : m_parts.range())
+    for (const GroupPartInfo* part : m_parts)
       _saveGroup(dw_ofile(), *part, all_nodes_index, wf);
 
     dw_ofile.syncFile();
@@ -1930,7 +1931,7 @@ _writeRealValT(IVariable& v, ConstArrayView<T> ptr)
     }
 
     WriteDouble<T> wf(*this, ptr, idx);
-    for (const GroupPartInfo* part : m_parts.range()) {
+    for (const GroupPartInfo* part : m_parts) {
       bool need_save = false;
       if (v.isPartial())
         need_save = v.itemGroup() == part->group();
@@ -1948,7 +1949,7 @@ _writeRealValT(IVariable& v, ConstArrayView<T> ptr)
     for (Integer i = 0; i < ptr.size(); ++i)
       wf.write(i);
     wf.end();
-    for (const GroupPartInfo* part : m_parts.range()) {
+    for (const GroupPartInfo* part : m_parts) {
       writeFileString(dw_ofile(), "part");
       writeFileInt(dw_ofile(), part->partId());
       writeFileString(dw_ofile(), "coordinates");
@@ -2025,7 +2026,7 @@ _writeRealValT(IVariable& v, ConstArray2View<T> ptr)
       }
 
       WriteArrayDouble<T> wf(*this, ptr, idim2, idx);
-      for (const GroupPartInfo* part : m_parts.range()) {
+      for (const GroupPartInfo* part : m_parts) {
         bool need_save = false;
         if (v.isPartial())
           need_save = v.itemGroup() == part->group();
@@ -2043,7 +2044,7 @@ _writeRealValT(IVariable& v, ConstArray2View<T> ptr)
       for (Integer i = 0; i < ptr.dim1Size(); ++i)
         wf.write(i);
       wf.end();
-      for (const GroupPartInfo* part : m_parts.range()) {
+      for (const GroupPartInfo* part : m_parts) {
         writeFileString(dw_ofile(), "part");
         writeFileInt(dw_ofile(), part->partId());
         writeFileString(dw_ofile(), "coordinates");
@@ -2134,7 +2135,7 @@ writeVal(IVariable& v, ConstArrayView<Real3> ptr)
     }
 
     WriteReal3 wf(*this, ptr, idx);
-    for (const GroupPartInfo* part : m_parts.range()) {
+    for (const GroupPartInfo* part : m_parts) {
       bool need_save = false;
       if (v.isPartial())
         need_save = v.itemGroup() == part->group();
@@ -2152,7 +2153,7 @@ writeVal(IVariable& v, ConstArrayView<Real3> ptr)
     for (Integer i = 0; i < ptr.size(); ++i)
       wf.write(i);
     wf.end();
-    for (const GroupPartInfo* part : m_parts.range()) {
+    for (const GroupPartInfo* part : m_parts) {
       writeFileString(dw_ofile(), "part");
       writeFileInt(dw_ofile(), part->partId());
       writeFileString(dw_ofile(), "coordinates");
@@ -2223,7 +2224,7 @@ writeVal(IVariable& v, ConstArray2View<Real3> ptr)
       }
 
       WriteArrayReal3 wf(*this, ptr, idim2, idx);
-      for (const GroupPartInfo* part : m_parts.range()) {
+      for (const GroupPartInfo* part : m_parts) {
         bool need_save = false;
         if (v.isPartial())
           need_save = v.itemGroup() == part->group();
@@ -2241,7 +2242,7 @@ writeVal(IVariable& v, ConstArray2View<Real3> ptr)
       for (Integer i = 0; i < ptr.dim1Size(); ++i)
         wf.write(i);
       wf.end();
-      for (const GroupPartInfo* part : m_parts.range()) {
+      for (const GroupPartInfo* part : m_parts) {
         writeFileString(dw_ofile(), "part");
         writeFileInt(dw_ofile(), part->partId());
         writeFileString(dw_ofile(), "coordinates");
