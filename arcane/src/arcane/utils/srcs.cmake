@@ -7,6 +7,8 @@ set(ARCANE_SOURCES
   ArithmeticException.h
   Array.cc
   Array.h
+  ArrayShape.cc
+  ArrayShape.h
   Atomic.cc
   Atomic.h
   AMRCallBackMng.cc
