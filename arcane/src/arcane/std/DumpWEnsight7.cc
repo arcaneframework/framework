@@ -50,6 +50,7 @@
 #include "arcane/std/DumpW.h"
 
 #include <string.h>
+#include <memory>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -171,6 +172,7 @@ class DumpWEnsight7
     : m_group(grp)
     , m_part_id(id)
     {
+      m_general_item_types = std::make_unique<VariableItemInt32>(VariableBuildInfo{ m_group.mesh(), "GeneralItemTypesGroup" + m_group.name() }, m_group.itemKind());
       _init(use_degenerated_hexa);
     }
     Integer totalNbElement() const
@@ -184,12 +186,19 @@ class DumpWEnsight7
     EnsightPart& typeInfo(Integer i) { return m_parts[i]; }
     ItemGroup group() const { return m_group; }
     Integer partId() const { return m_part_id; }
+    Int32 generalItemTypeId(const Item& item) const {
+      ARCANE_ASSERT(m_general_item_types,("Cannot question an empty GroupPartInfo"));
+      return (*(m_general_item_types))[item]; }
 
    private:
 
     ItemGroup m_group; //!< Groupe associé
     Integer m_part_id; //!< Numéro de la partie
     UniqueArray<EnsightPart> m_parts;
+    bool m_is_polygonal_type_registration_done = false;
+    bool m_is_polyhedral_type_registration_done = false;
+    //! Variable pour stocker les types des items généraux (non typés)
+    std::unique_ptr<VariableItemInt32> m_general_item_types = nullptr;
 
    private:
 
@@ -213,6 +222,20 @@ class DumpWEnsight7
         ItemTypeInfo* type_info = item_type_mng->typeFromId(i_type);
         if (type_info->nbLocalNode() == type_info->nbLocalEdge()) { // Polygone trouvé
           m_parts.add(EnsightPart(i_type, type_info->nbLocalNode(), "nsided"));
+        }
+      }
+      // Add polygons handled in general polyhedral mesh : no types defined
+      Int32 type_id = ItemTypeMng::nbBasicItemType();
+      if (item_type_mng->hasGeneralCells(m_group.mesh())) {
+        if (!m_is_polygonal_type_registration_done) {
+          ENUMERATE_ITEM (iitem, m_group) {
+            ItemWithNodes item = iitem->toItemWithNodes();
+            if (item.nbNode() == item.internal()->nbEdge()) { // polygon found // todo do not use internal, but how ?
+              (*(m_general_item_types))[item] = type_id;
+              m_parts.add(EnsightPart(type_id++, item.nbNode(), "nsided"));
+            }
+          }
+          m_is_polygonal_type_registration_done = true;
         }
       }
       m_parts.add(EnsightPart(IT_Tetraedron4, 4, "tetra4")); // Tetra
@@ -268,6 +291,21 @@ class DumpWEnsight7
         ItemTypeInfo* type_info = item_type_mng->typeFromId(i_type);
         if (type_info->nbLocalNode() != type_info->nbLocalEdge()) { // Polyèdre trouvé
           m_parts.add(EnsightPart(i_type, type_info->nbLocalNode(), "nfaced"));
+        }
+      }
+      // Add polyhedra handled in general polyhedral mesh : no types defined
+      if (item_type_mng->hasGeneralCells(m_group.mesh())) {
+        if (!m_is_polyhedral_type_registration_done) {
+          ENUMERATE_ITEM (iitem, m_group) {
+            ItemWithNodes item = iitem->toItemWithNodes();
+            if (item.nbNode() == 1) (*(m_general_item_types))[item] = IT_Vertex;
+            else if (item.nbNode() == 2) (*(m_general_item_types))[item] = IT_Line2;
+            else if (item.nbNode() != item.internal()->nbEdge()) { // polyhedron found
+              (*(m_general_item_types))[item] = type_id;
+              m_parts.add(EnsightPart(type_id++, item.nbNode(), "nfaced"));
+            }
+          }
+          m_is_polyhedral_type_registration_done = true;
         }
       }
     }
@@ -377,7 +415,7 @@ class DumpWEnsight7
 
     void write(ConstArrayView<Item> items) override
     {
-      for (Item e : items.range()) {
+      for (Item e : items) {
         write(e.localId());
       }
     }
@@ -427,7 +465,7 @@ class DumpWEnsight7
 
     void write(ConstArrayView<Item> items) override
     {
-      for (Item e : items.range()) {
+      for (Item e : items) {
         write(e.localId());
       }
     }
@@ -492,7 +530,7 @@ class DumpWEnsight7
 
     void write(ConstArrayView<Item> items) override
     {
-      for (Item i : items.range()) {
+      for (Item i : items) {
         write(i.localId());
       }
     }
@@ -574,7 +612,7 @@ class DumpWEnsight7
 
     void write(ConstArrayView<Item> items) override
     {
-      for (Item i : items.range()) {
+      for (Item i : items) {
         write(i.localId());
       }
     }
@@ -840,26 +878,48 @@ _computeGroupParts(ItemGroupList list_group, Integer& partid)
     // Il faut maintenant déterminer combien d'éléments de chaque type
     // ensight (tria3,hexa8,...) on a dans le groupe.
     {
+      auto nb_basic_item_types = grp.mesh()->itemTypeMng()->nbBasicItemType();
       for (Integer z = 0; z < current_grp.nbType(); ++z) {
         EnsightPart& type_info = current_grp.typeInfo(z);
         Array<Item>& items = type_info.items();
         Integer nb_of_type = 0;
         Integer type_to_seek = type_info.type();
-        ENUMERATE_ITEM (i2, grp) {
-          const Item& e = *i2;
-          if (e.type() == type_to_seek)
-            ++nb_of_type;
+        if (type_to_seek < nb_basic_item_types) { // "classical type"
+          ENUMERATE_ITEM (i2, grp) {
+            const Item& e = *i2;
+            if (e.type() == type_to_seek)
+              ++nb_of_type;
+          }
+        }
+        else { // general items
+          ENUMERATE_ITEM (i2, grp) {
+            const Item& e = *i2;
+            if (current_grp.generalItemTypeId(e) == type_to_seek)
+              ++nb_of_type;
+          }
         }
         items.resize(nb_of_type);
         debug(Trace::High) << "Group " << grp.name() << " has "
                            << nb_of_type << " items of type " << type_info.name();
         Integer index = 0;
-        ENUMERATE_ITEM (iz, grp) {
-          Item mi = *iz;
-          if (mi.type() == type_to_seek) {
-            ItemWithNodes e = mi.toItemWithNodes();
-            items[index] = e;
-            ++index;
+        if (type_to_seek < nb_basic_item_types) { // "classical type"
+          ENUMERATE_ITEM (iz, grp) {
+            Item mi = *iz;
+            if (mi.type() == type_to_seek) {
+              ItemWithNodes e = mi.toItemWithNodes();
+              items[index] = e;
+              ++index;
+            }
+          }
+        }
+        else { // general items
+          ENUMERATE_ITEM (iz, grp) {
+            Item mi = *iz;
+            if (current_grp.generalItemTypeId(mi) == type_to_seek) {
+              ItemWithNodes e = mi.toItemWithNodes();
+              items[index] = e;
+              ++index;
+            }
           }
         }
       }
@@ -938,41 +998,76 @@ _saveGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
       // maille, on utilise la connectivité locale de chaque face.
       // 1. Sauve le nombre de faces de chaque élément
       {
-        // Tous les éléments ont le même nombre de faces
-        Item mi = *items.data();
-        Cell cell = mi.toCell();
-        Integer nb_face = cell.nbFace();
-        for (Integer z = 0; z < nb_sub_part; ++z)
-          writeFileInt(ofile, nb_face);
+        if (!m_mesh->itemTypeMng()->hasGeneralCells(m_mesh)) {
+          // Tous les éléments ont le même nombre de faces
+          Item mi = *items.data();
+          Cell cell = mi.toCell();
+          Integer nb_face = cell.nbFace();
+          for (Integer z = 0; z < nb_sub_part; ++z)
+            writeFileInt(ofile, nb_face);
+        }
+        else { // mesh has general items
+          // All items do not have the same face number
+          for (Item mi : items) {
+            writeFileInt(ofile, mi.toCell().nbFace());
+          }
+        }
       }
       // 2. Sauve pour chaque elément, le nombre de noeuds de chacune
       //    de ces faces
-      for (Item mi : items.range()) {
-        const ItemTypeInfo* item_info = mi.typeInfo();
-        Integer nb_face = item_info->nbLocalFace();
-        for (Integer z = 0; z < nb_face; ++z)
-          writeFileInt(ofile, item_info->localFace(z).nbNode());
+      if (!m_mesh->itemTypeMng()->hasGeneralCells(m_mesh)) {
+        for (Item mi : items) {
+          const ItemTypeInfo* item_info = mi.typeInfo();
+          Integer nb_face = item_info->nbLocalFace();
+          for (Integer z = 0; z < nb_face; ++z)
+            writeFileInt(ofile, item_info->localFace(z).nbNode());
+        }
+      }
+      else { // mesh has general items
+        for (Item mi : items) {
+          Cell cell = mi.toCell();
+          ENUMERATE_FACE (face,cell.faces()){
+            writeFileInt(ofile, face->nbNode());
+          }
+        }
       }
       // 3. Sauve pour chaque face de chaque élément la liste de ces
       //    noeuds
-      for (Item item : items.range()) {
-        Cell cell(item.internal());
-        const ItemTypeInfo* item_info = cell.typeInfo();
-        //Cell cell = mi.toCell();
-        Integer nb_face = item_info->nbLocalFace();
-        for (Integer z = 0; z < nb_face; ++z) {
-          const ItemTypeInfo::LocalFace& local_face = item_info->localFace(z);
-          Integer nb_node = local_face.nbNode();
-          array_id.resize(nb_node);
-          for (Integer y = 0; y < nb_node; ++y) {
-            // Inversion du sens des noeuds
-            // A priori, il y a un bug dans Ensight (7.4.1(g)) concernant les
-            // intersections de ce type d'éléments avec les objets
-            // Ensight (plan, sphere, ...). Quelle que soit l'orientation
-            // des faces retenues, le comportant n'est pas correcte.
-            array_id[y] = nodes_index[cell.node(local_face.node(y)).localId()];
+      if (!m_mesh->itemTypeMng()->hasGeneralCells(m_mesh)) {
+        for (Item item : items) {
+          Cell cell(item.internal());
+          const ItemTypeInfo* item_info = cell.typeInfo();
+          //Cell cell = mi.toCell();
+          Integer nb_face = item_info->nbLocalFace();
+          for (Integer z = 0; z < nb_face; ++z) {
+            const ItemTypeInfo::LocalFace& local_face = item_info->localFace(z);
+            Integer nb_node = local_face.nbNode();
+            array_id.resize(nb_node);
+            for (Integer y = 0; y < nb_node; ++y) {
+              // Inversion du sens des noeuds
+              // A priori, il y a un bug dans Ensight (7.4.1(g)) concernant les
+              // intersections de ce type d'éléments avec les objets
+              // Ensight (plan, sphere, ...). Quelle que soit l'orientation
+              // des faces retenues, le comportant n'est pas correcte.
+              array_id[y] = nodes_index[cell.node(local_face.node(y)).localId()];
+            }
+            writeFileArray(ofile, array_id);
           }
-          writeFileArray(ofile, array_id);
+        }
+      }
+      else { // mesh has general items
+        for (Item item : items) {
+          Cell cell = item.toCell();
+          Integer nb_face = cell.nbFace();
+          for (Integer z = 0; z < nb_face; ++z) {
+            const Face local_face = cell.face(z);
+            Integer nb_node = local_face.nbNode();
+            array_id.resize(nb_node);
+            for (Integer y = 0; y < nb_node; ++y) {
+              array_id[y] = nodes_index[local_face.node(y).localId()];
+            }
+            writeFileArray(ofile, array_id);
+          }
         }
       }
     }
@@ -981,13 +1076,13 @@ _saveGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
 
       // 1. Sauve pour chaque elément, le nombre de ses noeuds
       //cerr << "** NSIDED ELEMENT\n";
-      for (Item mi : items.range()) {
+      for (Item mi : items) {
         ItemWithNodes e = mi.toItemWithNodes();
         Integer nb_node = e.nbNode();
         writeFileInt(ofile, nb_node);
       }
       // 2. Sauve pour chaque elément la liste de ces noeuds
-      for (Item mi : items.range()) {
+      for (Item mi : items) {
         ItemWithNodes e = mi.toItemWithNodes();
         Integer nb_node = e.nbNode();
         array_id.resize(nb_node);
@@ -1008,7 +1103,7 @@ _saveGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
       // Sauve la connectivité des éléments
       if (type_info.hasReindex()) {
         ConstArrayView<Integer> reindex = type_info.reindex();
-        for (Item mi : items.range()) {
+        for (Item mi : items) {
           ItemWithNodes e = mi.toItemWithNodes();
           for (Integer j = 0; j < nb_node; ++j) {
             array_id[j] = nodes_index[e.node(reindex[j]).localId()];
@@ -1017,7 +1112,7 @@ _saveGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
         }
       }
       else { // no reindex
-        for (Item mi : items.range()) {
+        for (Item mi : items) {
           ItemWithNodes e = mi.toItemWithNodes();
           for (Integer j = 0; j < nb_node; ++j) {
             array_id[j] = nodes_index[e.node(j).localId()];
@@ -1392,7 +1487,7 @@ beginWrite()
     // Récupère le nombre total d'eléments dans les groupes.
     Integer total_nb_element = 0;
     m_total_nb_group = 0;
-    for (auto i : m_parts.range()) {
+    for (auto i : m_parts) {
       total_nb_element += i->totalNbElement();
       ++m_total_nb_group;
     }
@@ -1476,7 +1571,7 @@ beginWrite()
       wf.end();
     }
 
-    for (const GroupPartInfo* part : m_parts.range())
+    for (const GroupPartInfo* part : m_parts)
       _saveGroup(dw_ofile(), *part, all_nodes_index, wf);
 
     dw_ofile.syncFile();
@@ -1836,7 +1931,7 @@ _writeRealValT(IVariable& v, ConstArrayView<T> ptr)
     }
 
     WriteDouble<T> wf(*this, ptr, idx);
-    for (const GroupPartInfo* part : m_parts.range()) {
+    for (const GroupPartInfo* part : m_parts) {
       bool need_save = false;
       if (v.isPartial())
         need_save = v.itemGroup() == part->group();
@@ -1854,7 +1949,7 @@ _writeRealValT(IVariable& v, ConstArrayView<T> ptr)
     for (Integer i = 0; i < ptr.size(); ++i)
       wf.write(i);
     wf.end();
-    for (const GroupPartInfo* part : m_parts.range()) {
+    for (const GroupPartInfo* part : m_parts) {
       writeFileString(dw_ofile(), "part");
       writeFileInt(dw_ofile(), part->partId());
       writeFileString(dw_ofile(), "coordinates");
@@ -1931,7 +2026,7 @@ _writeRealValT(IVariable& v, ConstArray2View<T> ptr)
       }
 
       WriteArrayDouble<T> wf(*this, ptr, idim2, idx);
-      for (const GroupPartInfo* part : m_parts.range()) {
+      for (const GroupPartInfo* part : m_parts) {
         bool need_save = false;
         if (v.isPartial())
           need_save = v.itemGroup() == part->group();
@@ -1949,7 +2044,7 @@ _writeRealValT(IVariable& v, ConstArray2View<T> ptr)
       for (Integer i = 0; i < ptr.dim1Size(); ++i)
         wf.write(i);
       wf.end();
-      for (const GroupPartInfo* part : m_parts.range()) {
+      for (const GroupPartInfo* part : m_parts) {
         writeFileString(dw_ofile(), "part");
         writeFileInt(dw_ofile(), part->partId());
         writeFileString(dw_ofile(), "coordinates");
@@ -2040,7 +2135,7 @@ writeVal(IVariable& v, ConstArrayView<Real3> ptr)
     }
 
     WriteReal3 wf(*this, ptr, idx);
-    for (const GroupPartInfo* part : m_parts.range()) {
+    for (const GroupPartInfo* part : m_parts) {
       bool need_save = false;
       if (v.isPartial())
         need_save = v.itemGroup() == part->group();
@@ -2058,7 +2153,7 @@ writeVal(IVariable& v, ConstArrayView<Real3> ptr)
     for (Integer i = 0; i < ptr.size(); ++i)
       wf.write(i);
     wf.end();
-    for (const GroupPartInfo* part : m_parts.range()) {
+    for (const GroupPartInfo* part : m_parts) {
       writeFileString(dw_ofile(), "part");
       writeFileInt(dw_ofile(), part->partId());
       writeFileString(dw_ofile(), "coordinates");
@@ -2129,7 +2224,7 @@ writeVal(IVariable& v, ConstArray2View<Real3> ptr)
       }
 
       WriteArrayReal3 wf(*this, ptr, idim2, idx);
-      for (const GroupPartInfo* part : m_parts.range()) {
+      for (const GroupPartInfo* part : m_parts) {
         bool need_save = false;
         if (v.isPartial())
           need_save = v.itemGroup() == part->group();
@@ -2147,7 +2242,7 @@ writeVal(IVariable& v, ConstArray2View<Real3> ptr)
       for (Integer i = 0; i < ptr.dim1Size(); ++i)
         wf.write(i);
       wf.end();
-      for (const GroupPartInfo* part : m_parts.range()) {
+      for (const GroupPartInfo* part : m_parts) {
         writeFileString(dw_ofile(), "part");
         writeFileInt(dw_ofile(), part->partId());
         writeFileString(dw_ofile(), "coordinates");

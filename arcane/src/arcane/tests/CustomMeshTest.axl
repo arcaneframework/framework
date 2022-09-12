@@ -11,6 +11,23 @@
       <simple name="nb-edges" type="integer"/>
       <simple name="nb-nodes" type="integer"/>
     </complex>
+    <complex name="mesh-coordinates" minOccurs="0" maxOccurs="1" type="MeshCoordinatesType">
+      <simple name="do-check" type="bool"/>
+      <complex name="coords" minOccurs="0" type="CoordsType">
+        <simple name="value" minOccurs="0" maxOccurs="unbounded" type="real3"/>
+      </complex>
+    </complex>
   </options>
+
+  <variables>
+    <variable field-name="cell_variable" name="CellVariable"
+              data-type="real" item-kind="cell" dim="0" dump="true" need-sync="true" />
+    <variable field-name="face_variable" name="FaceVariable"
+              data-type="real" item-kind="face" dim="0" dump="true" need-sync="true" />
+    <variable field-name="node_variable" name="NodeVariable"
+              data-type="real" item-kind="node" dim="0" dump="true" need-sync="true" />
+    <variable field-name="edge_variable" name="EdgeVariable"
+              data-type="real" item-kind="edge" dim="0" dump="true" need-sync="true" />
+  </variables>
 
 </module>

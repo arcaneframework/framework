@@ -20,6 +20,8 @@
 
 #include "arcane/ItemTypes.h"
 
+#include <set>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -137,6 +139,12 @@ class ARCANE_CORE_EXPORT ItemTypeMng
   //! Affiche les infos sur les types disponibles sur le flot \a ostr
   void printTypes(std::ostream& ostr);
 
+  //! Indique si le maillage \a mesh contient des mailles génériques (en dehors des types intégrés ou additionnels)
+  bool hasGeneralCells(IMesh* mesh) const;
+
+  //! Permet au maillage d'indiquer à l'ItemTypeMng s'il a des mailles génériques
+  void setMeshWithGeneralCells(IMesh* mesh) noexcept;
+
   //! nombre de types disponibles
   static Integer nbBasicItemType();
 
@@ -175,6 +183,9 @@ class ARCANE_CORE_EXPORT ItemTypeMng
 
   //! Allocations des objets de type (il faut un pointeur pour eviter inclusion multiple)
   MultiBufferT<ItemTypeInfoBuilder>* m_types_buffer;
+
+  //! Ensemble des maillages contenant des mailles générales (sans type défini)
+  std::set<IMesh*> m_mesh_with_general_cells;
 
  public:
 
