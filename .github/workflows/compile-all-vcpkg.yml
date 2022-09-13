@@ -138,6 +138,14 @@ jobs:
         run: |
           cmake -S "${{ github.workspace }}/_common/build_all" -B "${{ env.CMAKE_BUILD_DIR }}" -DCMAKE_VERBOSE_MAKEFILE=TRUE -DVCPKG_INSTALLED_DIR="${{ env.VCPKG_BUILD_DIR }}/installed" -DBUILD_SHARED_LIBS=TRUE -DARCANE_ADD_RPATH_TO_LIBS=OFF -DARCCON_REGISTER_PACKAGE_VERSION=2 -DCMAKE_TOOLCHAIN_FILE="${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake" ${{ matrix.cmake_specific_args }} -GNinja
 
+      - name: Dump Some Generated fileskCMakeCache.txt
+        shell: bash
+        run: |
+          echo "Dump CMakeCache.txt"
+          cat "${{ env.CMAKE_BUILD_DIR }}/CMakeCache.txt"
+          echo "Dump arcane_core_config.h"
+          cat "${{ env.CMAKE_BUILD_DIR }}/arcane_core_config.h"
+
       - name: Build arcane
         shell: bash
         run: |

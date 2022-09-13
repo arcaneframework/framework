@@ -19,6 +19,7 @@ set(CMAKE_MODULE_PATH ${_SAVED_CMAKE_MODULE_PATH})
 # l'utilise directement
 if (TARGET parmetis)
   message(STATUS "Found 'parmetis' CMake configuration file")
+  set(Parmetis_FOUND TRUE)
   arccon_register_cmake_config_target(Parmetis CONFIG_TARGET_NAME parmetis PACKAGE_NAME Parmetis)
   return()
 endif()
