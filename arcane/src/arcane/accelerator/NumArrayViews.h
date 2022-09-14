@@ -34,9 +34,9 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType,int N,typename LayoutType>
+template<typename DataType,A_MDRANK_TYPE(N),typename LayoutType>
 class NumArrayViewSetter;
-template<typename Accessor,int N,typename LayoutType>
+template<typename Accessor,A_MDRANK_TYPE(N),typename LayoutType>
 class NumArrayView;
 
 /*---------------------------------------------------------------------------*/
@@ -61,13 +61,13 @@ class NumArrayViewBase
  * \brief Vue en lecture, écriture ou lecture/écriture sur un 'NumArray' 1D.
  */
 template<typename Accessor,typename LayoutType>
-class NumArrayView<Accessor,1,LayoutType>
+class NumArrayView<Accessor,MDDim1,LayoutType>
 : public NumArrayViewBase
 {
  public:
 
   using DataType = typename Accessor::ValueType;
-  using SpanType = MDSpan<DataType,1,LayoutType>;
+  using SpanType = MDSpan<DataType,MDDim1,LayoutType>;
   using AccessorReturnType = typename Accessor::AccessorReturnType;
 
  public:
@@ -107,13 +107,13 @@ class NumArrayView<Accessor,1,LayoutType>
  * \brief Vue en lecture, écriture ou lecture/écriture sur un 'NumArray' 2D.
  */
 template<typename Accessor,typename LayoutType>
-class NumArrayView<Accessor,2,LayoutType>
+class NumArrayView<Accessor,MDDim2,LayoutType>
 : public NumArrayViewBase
 {
  public:
 
   using DataType = typename Accessor::ValueType;
-  using SpanType = MDSpan<DataType,2,LayoutType>;
+  using SpanType = MDSpan<DataType,MDDim2,LayoutType>;
   using AccessorReturnType = typename Accessor::AccessorReturnType;
 
  public:
@@ -145,13 +145,13 @@ class NumArrayView<Accessor,2,LayoutType>
  * \brief Vue en lecture, écriture ou lecture/écriture sur un 'NumArray' 3D.
  */
 template<typename Accessor,typename LayoutType>
-class NumArrayView<Accessor,3,LayoutType>
+class NumArrayView<Accessor,MDDim3,LayoutType>
 : public NumArrayViewBase
 {
  public:
 
   using DataType = typename Accessor::ValueType;
-  using SpanType = MDSpan<DataType,3,LayoutType>;
+  using SpanType = MDSpan<DataType,MDDim3,LayoutType>;
   using AccessorReturnType = typename Accessor::AccessorReturnType;
 
  public:
@@ -183,13 +183,13 @@ class NumArrayView<Accessor,3,LayoutType>
  * \brief Vue en lecture, écriture ou lecture/écriture sur un 'NumArray' 4D.
  */
 template<typename Accessor,typename LayoutType>
-class NumArrayView<Accessor,4,LayoutType>
+class NumArrayView<Accessor,MDDim4,LayoutType>
 : public NumArrayViewBase
 {
  public:
 
   using DataType = typename Accessor::ValueType;
-  using SpanType = MDSpan<DataType,4,LayoutType>;
+  using SpanType = MDSpan<DataType,MDDim4,LayoutType>;
   using AccessorReturnType = typename Accessor::AccessorReturnType;
 
  public:
@@ -220,7 +220,7 @@ class NumArrayView<Accessor,4,LayoutType>
 /*!
  * \brief Vue en écriture.
  */
-template<typename DataType,int N,typename LayoutType> auto
+template<typename DataType,A_MDRANK_TYPE(N),typename LayoutType> auto
 viewOut(RunCommand& command,NumArray<DataType,N,LayoutType>& var)
 {
   using Accessor = DataViewSetter<DataType>;
@@ -233,7 +233,7 @@ viewOut(RunCommand& command,NumArray<DataType,N,LayoutType>& var)
 /*!
  * \brief Vue en lecture/écriture.
  */
-template<typename DataType,int N,typename LayoutType> auto
+template<typename DataType,A_MDRANK_TYPE(N),typename LayoutType> auto
 viewInOut(RunCommand& command,NumArray<DataType,N,LayoutType>& v)
 {
   using Accessor = DataViewGetterSetter<DataType>;
@@ -245,7 +245,7 @@ viewInOut(RunCommand& command,NumArray<DataType,N,LayoutType>& v)
 /*!
  * \brief Vue en lecture.
  */
-template<typename DataType,int N,typename LayoutType> auto
+template<typename DataType,A_MDRANK_TYPE(N),typename LayoutType> auto
 viewIn(RunCommand& command,const NumArray<DataType,N,LayoutType>& v)
 {
   using Accessor = DataViewGetter<DataType>;

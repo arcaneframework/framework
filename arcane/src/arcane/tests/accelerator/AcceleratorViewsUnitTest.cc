@@ -567,9 +567,9 @@ _executeTestMemoryCopy()
     dest_mem = eMemoryRessource::Device;
 
   const int nb_value = 100000;
-  NumArray<Int32,1> a(nb_value,source_mem);
-  NumArray<Int32,1> b(nb_value,source_mem);
-  NumArray<Int32,1> c(nb_value,source_mem);
+  NumArray<Int32,MDDim1> a(nb_value,source_mem);
+  NumArray<Int32,MDDim1> b(nb_value,source_mem);
+  NumArray<Int32,MDDim1> c(nb_value,source_mem);
 
   // Initialise les tableaux
   for( int i=0; i<nb_value; ++i ){
@@ -577,9 +577,9 @@ _executeTestMemoryCopy()
     b[i] = i + 5;
   }
 
-  NumArray<Int32,1> d_a(nb_value,dest_mem);
-  NumArray<Int32,1> d_b(nb_value,dest_mem);
-  NumArray<Int32,1> d_c(nb_value,dest_mem);
+  NumArray<Int32,MDDim1> d_a(nb_value,dest_mem);
+  NumArray<Int32,MDDim1> d_b(nb_value,dest_mem);
+  NumArray<Int32,MDDim1> d_c(nb_value,dest_mem);
 
   // Copie explicitement les données dans le device
   // Test la construction en donnant les tailles explicitement.

@@ -93,7 +93,7 @@ _applyGenericLoop(RunCommand& command,LoopBoundType<N> bounds,const Lambda& func
 
 //! Applique la lambda \a func sur l'intervalle d'itération donnée par \a bounds
 template<int N,typename Lambda> void
-run(RunCommand& command,ArrayBounds<N> bounds,const Lambda& func)
+run(RunCommand& command,ArrayBounds<A_MDDIM(N)> bounds,const Lambda& func)
 {
   impl::_applyGenericLoop(command,SimpleLoopRanges(bounds),func);
 }
@@ -134,7 +134,7 @@ class ArrayBoundRunCommand
 };
 
 template<int N> ArrayBoundRunCommand<N,SimpleLoopRanges<N>>
-operator<<(RunCommand& command,const ArrayBounds<N>& bounds)
+operator<<(RunCommand& command,const ArrayBounds<A_MDDIM(N)>& bounds)
 {
   return {command,bounds};
 }
@@ -171,23 +171,23 @@ void operator<<(ArrayBoundRunCommand<N,LoopBoundType<N>>&& nr,const Lambda& f)
 
 //! Boucle sur accélérateur
 #define RUNCOMMAND_LOOPN(iter_name, N, ...)                           \
-  A_FUNCINFO << ArrayBounds<N>(__VA_ARGS__) << [=] ARCCORE_HOST_DEVICE (ArrayBoundsIndex<N> iter_name )
+  A_FUNCINFO << ArrayBounds<A_MDDIM(N)>(__VA_ARGS__) << [=] ARCCORE_HOST_DEVICE (ArrayBoundsIndex<N> iter_name )
 
 //! Boucle sur accélérateur
 #define RUNCOMMAND_LOOP1(iter_name, x1)                             \
-  A_FUNCINFO << ArrayBounds<1>(x1) << [=] ARCCORE_HOST_DEVICE (ArrayBoundsIndex<1> iter_name )
+  A_FUNCINFO << ArrayBounds<MDDim1>(x1) << [=] ARCCORE_HOST_DEVICE (ArrayBoundsIndex<1> iter_name )
 
 //! Boucle sur accélérateur
 #define RUNCOMMAND_LOOP2(iter_name, x1, x2)                             \
-  A_FUNCINFO << ArrayBounds<2>(x1,x2) << [=] ARCCORE_HOST_DEVICE (ArrayBoundsIndex<2> iter_name )
+  A_FUNCINFO << ArrayBounds<MDDim2>(x1,x2) << [=] ARCCORE_HOST_DEVICE (ArrayBoundsIndex<2> iter_name )
 
 //! Boucle sur accélérateur
 #define RUNCOMMAND_LOOP3(iter_name, x1, x2, x3) \
-  A_FUNCINFO << ArrayBounds<3>(x1,x2,x3) << [=] ARCCORE_HOST_DEVICE (ArrayBoundsIndex<3> iter_name )
+  A_FUNCINFO << ArrayBounds<MDDim3>(x1,x2,x3) << [=] ARCCORE_HOST_DEVICE (ArrayBoundsIndex<3> iter_name )
 
 //! Boucle sur accélérateur
 #define RUNCOMMAND_LOOP4(iter_name, x1, x2, x3, x4)                        \
-  A_FUNCINFO << ArrayBounds<4>(x1,x2,x3,x4) << [=] ARCCORE_HOST_DEVICE (ArrayBoundsIndex<4> iter_name )
+  A_FUNCINFO << ArrayBounds<MDDim4>(x1,x2,x3,x4) << [=] ARCCORE_HOST_DEVICE (ArrayBoundsIndex<4> iter_name )
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

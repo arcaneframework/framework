@@ -128,7 +128,7 @@ template<typename LayoutType>
 class MiniWeatherArray
 : public MiniWeatherArrayBase
 {
-  using NumArray3Type = NumArray<double,3,LayoutType>;
+  using NumArray3Type = NumArray<double,MDDim3,LayoutType>;
 
  public:
 
@@ -186,11 +186,11 @@ class MiniWeatherArray
   double dx() const { return m_const.dx; }
   double dz() const { return m_const.dz; }
 
-  NumArray<double,1> hy_dens_cell;       // hydrostatic density (vert cell avgs).   Dimensions: (1-hs:nz+hs)
-  NumArray<double,1> hy_dens_theta_cell; // hydrostatic rho*t (vert cell avgs).     Dimensions: (1-hs:nz+hs)
-  NumArray<double,1> hy_dens_int;        // hydrostatic density (vert cell interf). Dimensions: (1:nz+1)
-  NumArray<double,1> hy_dens_theta_int;  // hydrostatic rho*t (vert cell interf).   Dimensions: (1:nz+1)
-  NumArray<double,1> hy_pressure_int;    // hydrostatic press (vert cell interf).   Dimensions: (1:nz+1)
+  NumArray<double,MDDim1> hy_dens_cell;       // hydrostatic density (vert cell avgs).   Dimensions: (1-hs:nz+hs)
+  NumArray<double,MDDim1> hy_dens_theta_cell; // hydrostatic rho*t (vert cell avgs).     Dimensions: (1-hs:nz+hs)
+  NumArray<double,MDDim1> hy_dens_int;        // hydrostatic density (vert cell interf). Dimensions: (1:nz+1)
+  NumArray<double,MDDim1> hy_dens_theta_int;  // hydrostatic rho*t (vert cell interf).   Dimensions: (1:nz+1)
+  NumArray<double,MDDim1> hy_pressure_int;    // hydrostatic press (vert cell interf).   Dimensions: (1:nz+1)
 
   ///////////////////////////////////////////////////////////////////////////////////////
   // Variables that are dynamics over the course of the simulation
@@ -507,7 +507,7 @@ compute_tendencies_z(NumArray3Type& nstate, NumArray3Type& flux, NumArray3Type& 
   // Use the fluxes to compute tendencies for each cell
   auto in_flux = ax::viewIn(command,flux);
   auto out_tend = ax::viewOut(command,tend);
-  command << RUNCOMMAND_LOOP(iter,ArrayBounds<3>(NUM_VARS,nz,nx))
+  command << RUNCOMMAND_LOOP(iter,ArrayBounds<MDDim3>(NUM_VARS,nz,nx))
   {
     auto [ll, k, i] = iter();
     Real t = -(in_flux(ll,k+1,i) - in_flux(iter)) / dz;
@@ -536,7 +536,7 @@ set_halo_values_x(NumArray3Type& nstate)
   const auto dz = this->dz();
   const auto k_beg = this->k_beg();
 
-  command << RUNCOMMAND_LOOP(iter,ArrayBounds<2>(NUM_VARS,nz))
+  command << RUNCOMMAND_LOOP(iter,ArrayBounds<MDDim2>(NUM_VARS,nz))
   {
     auto [ll, k] = iter();
     state_in_out(ll,k+hs,0) = state_in_out(ll,k+hs,nx+hs-2);
@@ -546,7 +546,7 @@ set_halo_values_x(NumArray3Type& nstate)
   };
 
   if (m_const.myrank == 0){
-    command << RUNCOMMAND_LOOP(iter,ArrayBounds<2>(nz,hs))
+    command << RUNCOMMAND_LOOP(iter,ArrayBounds<MDDim2>(nz,hs))
     {
       auto [k, i] = iter();
       double z = ((double)(k_beg + k) + 0.5) * dz;
@@ -575,7 +575,7 @@ set_halo_values_z(NumArray3Type& nstate)
 
   auto state_in_out = ax::viewInOut(command,nstate);
 
-  command << RUNCOMMAND_LOOP(iter,ArrayBounds<2>(NUM_VARS,nx+2*hs))
+  command << RUNCOMMAND_LOOP(iter,ArrayBounds<MDDim2>(NUM_VARS,nx+2*hs))
   {
     auto [ll,i] = iter();
     if (ll == ID_WMOM){
@@ -684,7 +684,7 @@ init()
     // Initialize the cell-averaged fluid state via Gauss-Legendre quadrature
     //////////////////////////////////////////////////////////////////////////
 
-    command << RUNCOMMAND_LOOP(iter,ArrayBounds<2>(nz+2*hs,nx+2*hs))
+    command << RUNCOMMAND_LOOP(iter,ArrayBounds<MDDim2>(nz+2*hs,nx+2*hs))
     {
       auto [k,i] = iter();
       double r, u, w, t, hr, ht;
@@ -865,9 +865,9 @@ class MiniWeatherArrayService
   {
     info() << "UseLeftLayout?=" << use_left_layout;
     if (use_left_layout)
-      m_p = new MiniWeatherArray<LeftLayout<3>>(am,traceMng(),nb_x,nb_z,final_time,r);
+      m_p = new MiniWeatherArray<LeftLayout<MDDim3>>(am,traceMng(),nb_x,nb_z,final_time,r);
     else
-      m_p = new MiniWeatherArray<RightLayout<3>>(am,traceMng(),nb_x,nb_z,final_time,r);
+      m_p = new MiniWeatherArray<RightLayout<MDDim3>>(am,traceMng(),nb_x,nb_z,final_time,r);
   }
   bool loop() override
   {

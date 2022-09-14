@@ -113,16 +113,16 @@ class MiniWeatherArraySequential
   void init();
   void injection(double x, double z, double &r, double &u, double &w, double &t, double &hr, double &ht);
   void hydro_const_theta(double z, double &r, double &t);
-  void output(NumArray<double,3>& state, double etime);
-  void perform_timestep(NumArray<double,3>& state, NumArray<double,3>& state_tmp,
-                        NumArray<double,3>& flux, NumArray<double,3>& tend, double dt);
-  void semi_discrete_step(NumArray<double,3>& nstate_init, NumArray<double,3>& nstate_forcing,
-                          NumArray<double,3>& nstate_out, double dt, int dir, NumArray<double,3>& flux,
-                          NumArray<double,3>& tend);
-  void compute_tendencies_x(NumArray<double,3>& nstate, NumArray<double,3>& flux, NumArray<double,3>& tend);
-  void compute_tendencies_z(NumArray<double,3>& nstate, NumArray<double,3>& flux, NumArray<double,3>& tend);
-  void set_halo_values_x(NumArray<double,3>& nstate);
-  void set_halo_values_z(NumArray<double,3>& nstate);
+  void output(NumArray<double,MDDim3>& state, double etime);
+  void perform_timestep(NumArray<double,MDDim3>& state, NumArray<double,MDDim3>& state_tmp,
+                        NumArray<double,MDDim3>& flux, NumArray<double,MDDim3>& tend, double dt);
+  void semi_discrete_step(NumArray<double,MDDim3>& nstate_init, NumArray<double,MDDim3>& nstate_forcing,
+                          NumArray<double,MDDim3>& nstate_out, double dt, int dir, NumArray<double,MDDim3>& flux,
+                          NumArray<double,MDDim3>& tend);
+  void compute_tendencies_x(NumArray<double,MDDim3>& nstate, NumArray<double,MDDim3>& flux, NumArray<double,MDDim3>& tend);
+  void compute_tendencies_z(NumArray<double,MDDim3>& nstate, NumArray<double,MDDim3>& flux, NumArray<double,MDDim3>& tend);
+  void set_halo_values_x(NumArray<double,MDDim3>& nstate);
+  void set_halo_values_z(NumArray<double,MDDim3>& nstate);
 
  private:
 
@@ -139,11 +139,11 @@ class MiniWeatherArraySequential
   int i_beg, k_beg;           // beginning index in the x- and z-directions
   int nranks, myrank;         // my rank id
   int left_rank, right_rank;  // Rank IDs that exist to my left and right in the global domain
-  NumArray<double,1> hy_dens_cell;       // hydrostatic density (vert cell avgs).   Dimensions: (1-hs:nz+hs)
-  NumArray<double,1> hy_dens_theta_cell; // hydrostatic rho*t (vert cell avgs).     Dimensions: (1-hs:nz+hs)
-  NumArray<double,1> hy_dens_int;        // hydrostatic density (vert cell interf). Dimensions: (1:nz+1)
-  NumArray<double,1> hy_dens_theta_int;  // hydrostatic rho*t (vert cell interf).   Dimensions: (1:nz+1)
-  NumArray<double,1> hy_pressure_int;    // hydrostatic press (vert cell interf).   Dimensions: (1:nz+1)
+  NumArray<double,MDDim1> hy_dens_cell;       // hydrostatic density (vert cell avgs).   Dimensions: (1-hs:nz+hs)
+  NumArray<double,MDDim1> hy_dens_theta_cell; // hydrostatic rho*t (vert cell avgs).     Dimensions: (1-hs:nz+hs)
+  NumArray<double,MDDim1> hy_dens_int;        // hydrostatic density (vert cell interf). Dimensions: (1:nz+1)
+  NumArray<double,MDDim1> hy_dens_theta_int;  // hydrostatic rho*t (vert cell interf).   Dimensions: (1:nz+1)
+  NumArray<double,MDDim1> hy_pressure_int;    // hydrostatic press (vert cell interf).   Dimensions: (1:nz+1)
 
   ///////////////////////////////////////////////////////////////////////////////////////
   // Variables that are dynamics over the course of the simulation
@@ -151,10 +151,10 @@ class MiniWeatherArraySequential
   double etime;          //Elapsed model time
   double output_counter; //Helps determine when it's time to do output
   // Runtime variable arrays
-  NumArray<double,3> nstate;     // Fluid state.             Dimensions: (1-hs:nx+hs,1-hs:nz+hs,NUM_VARS)
-  NumArray<double,3> nstate_tmp; // Fluid state.             Dimensions: (1-hs:nx+hs,1-hs:nz+hs,NUM_VARS)
-  NumArray<double,3> nflux; // Cell interface fluxes.   Dimensions: (nx+1,nz+1,NUM_VARS)
-  NumArray<double,3> ntend; // Fluid state tendencies.  Dimensions: (nx,nz,NUM_VARS)
+  NumArray<double,MDDim3> nstate;     // Fluid state.             Dimensions: (1-hs:nx+hs,1-hs:nz+hs,NUM_VARS)
+  NumArray<double,MDDim3> nstate_tmp; // Fluid state.             Dimensions: (1-hs:nx+hs,1-hs:nz+hs,NUM_VARS)
+  NumArray<double,MDDim3> nflux; // Cell interface fluxes.   Dimensions: (nx+1,nz+1,NUM_VARS)
+  NumArray<double,MDDim3> ntend; // Fluid state tendencies.  Dimensions: (nx,nz,NUM_VARS)
   int direction_switch = 1;
 };
 
@@ -244,8 +244,8 @@ doOneIteration()
 // q**    = q[n] + dt/2 * rhs(q*  )
 // q[n+1] = q[n] + dt/1 * rhs(q** )
 void MiniWeatherArraySequential::
-perform_timestep(NumArray<double,3>& state, NumArray<double,3>& state_tmp,
-                 NumArray<double,3>& flux, NumArray<double,3>& tend, double dt)
+perform_timestep(NumArray<double,MDDim3>& state, NumArray<double,MDDim3>& state_tmp,
+                 NumArray<double,MDDim3>& flux, NumArray<double,MDDim3>& tend, double dt)
 {
   if (direction_switch){
     //x-direction first
@@ -283,8 +283,8 @@ perform_timestep(NumArray<double,3>& state, NumArray<double,3>& state_tmp,
 //state_out = state_init + dt * rhs(state_forcing)
 //Meaning the step starts from state_init, computes the rhs using state_forcing, and stores the result in state_out
 void MiniWeatherArraySequential::
-semi_discrete_step(NumArray<double,3>& nstate_init, NumArray<double,3>& nstate_forcing, NumArray<double,3>& nstate_out,
-                   double dt, int dir, NumArray<double,3>& flux, NumArray<double,3>& tend)
+semi_discrete_step(NumArray<double,MDDim3>& nstate_init, NumArray<double,MDDim3>& nstate_forcing, NumArray<double,MDDim3>& nstate_out,
+                   double dt, int dir, NumArray<double,MDDim3>& flux, NumArray<double,MDDim3>& tend)
 {
   auto state_init = nstate_init.constSpan();
   auto state_out = nstate_out.span();
@@ -323,7 +323,7 @@ semi_discrete_step(NumArray<double,3>& nstate_init, NumArray<double,3>& nstate_f
 //First, compute the flux vector at each cell interface in the x-direction (including hyperviscosity)
 //Then, compute the tendencies using those fluxes
 void MiniWeatherArraySequential::
-compute_tendencies_x(NumArray<double,3>& nstate, NumArray<double,3>& flux, NumArray<double,3>& tend)
+compute_tendencies_x(NumArray<double,MDDim3>& nstate, NumArray<double,MDDim3>& flux, NumArray<double,MDDim3>& tend)
 {
   auto state = nstate.constSpan();
 
@@ -381,7 +381,7 @@ compute_tendencies_x(NumArray<double,3>& nstate, NumArray<double,3>& flux, NumAr
 //First, compute the flux vector at each cell interface in the z-direction (including hyperviscosity)
 //Then, compute the tendencies using those fluxes
 void MiniWeatherArraySequential::
-compute_tendencies_z(NumArray<double,3>& nstate, NumArray<double,3>& flux, NumArray<double,3>& tend)
+compute_tendencies_z(NumArray<double,MDDim3>& nstate, NumArray<double,MDDim3>& flux, NumArray<double,MDDim3>& tend)
 {
   auto state = nstate.constSpan();
   double r, u, w, t, p, stencil[4], d3_vals[NUM_VARS], vals[NUM_VARS], hv_coef;
@@ -436,7 +436,7 @@ compute_tendencies_z(NumArray<double,3>& nstate, NumArray<double,3>& flux, NumAr
 /*---------------------------------------------------------------------------*/
 
 void MiniWeatherArraySequential::
-set_halo_values_x(NumArray<double,3>& nstate)
+set_halo_values_x(NumArray<double,MDDim3>& nstate)
 {
   auto state_in = nstate.constSpan();
   auto state_out = nstate.span();
@@ -469,7 +469,7 @@ set_halo_values_x(NumArray<double,3>& nstate)
 //Set this task's halo values in the z-direction.
 //decomposition in the vertical direction.
 void MiniWeatherArraySequential::
-set_halo_values_z(NumArray<double,3>& nstate)
+set_halo_values_z(NumArray<double,MDDim3>& nstate)
 {
   auto state_in = nstate.constSpan();
   auto state_out = nstate.span();
@@ -661,7 +661,7 @@ hydro_const_theta(double z, double &r, double &t)
 //The file I/O uses netcdf, the only external library required for this mini-app.
 //If it's too cumbersome, you can comment the I/O out, but you'll miss out on some potentially cool graphics
 void MiniWeatherArraySequential::
-output(NumArray<double,3>& state, double etime)
+output(NumArray<double,MDDim3>& state, double etime)
 {
   ARCANE_UNUSED(state);
   ARCANE_UNUSED(etime);

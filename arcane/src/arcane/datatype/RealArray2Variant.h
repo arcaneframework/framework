@@ -45,7 +45,7 @@ class RealArray2Variant
   : RealArray2Variant(v.constView())
   {}
   template<typename LayoutType>
-  RealArray2Variant(const NumArray<Real,2,LayoutType>& v)
+  RealArray2Variant(const NumArray<Real,MDDim2,LayoutType>& v)
   : RealArray2Variant(v.span())
   {}
   RealArray2Variant(ConstArray2View<Real> v)
@@ -53,12 +53,12 @@ class RealArray2Variant
     _setValue(v.data(), v.dim1Size(), v.dim2Size());
   }
   template<typename LayoutType>
-  RealArray2Variant(MDSpan<Real,2,LayoutType> v)
+  RealArray2Variant(MDSpan<Real,MDDim2,LayoutType> v)
   {
     _setValue(v.to1DSpan().data(), v.dim1Size(), v.dim2Size());
   }
   template<typename LayoutType>
-  RealArray2Variant(MDSpan<const Real,2,LayoutType> v)
+  RealArray2Variant(MDSpan<const Real,MDDim2,LayoutType> v)
   {
     _setValue(v.to1DSpan().data(), v.dim1Size(), v.dim2Size());
   }
@@ -131,9 +131,9 @@ class RealArray2Variant
                               m_value[2][0], m_value[2][1], m_value[2][2]);
   }
   template<typename LayoutType>
-  operator NumArray<Real,2,LayoutType>() const
+  operator NumArray<Real,MDDim2,LayoutType>() const
   {
-    NumArray<Real,2> v(m_nb_dim1,m_nb_dim2);
+    NumArray<Real,MDDim2> v(m_nb_dim1,m_nb_dim2);
     for( Integer i=0, m=m_nb_dim1; i<m; ++i )
       for( Integer j=0, n=m_nb_dim2; j<n; ++j )
         v(i,j) = m_value[i][j];

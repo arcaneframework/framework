@@ -158,33 +158,33 @@ _toTBBRangeWithGrain(const tbb::blocked_rangeNd<Int32,4>& r,std::size_t grain_si
 inline ComplexLoopRanges<2>
 _fromTBBRange(const tbb::blocked_rangeNd<Int32,2>& r)
 {
-  ArrayBounds<2> lower_bounds(r.dim(0).begin(),r.dim(1).begin());
+  ArrayBounds<MDDim2> lower_bounds(r.dim(0).begin(),r.dim(1).begin());
   auto s0 = static_cast<Int32>(r.dim(0).size());
   auto s1 = static_cast<Int32>(r.dim(1).size());
-  ArrayBounds<2> sizes(s0,s1);
+  ArrayBounds<MDDim2> sizes(s0,s1);
   return { lower_bounds, sizes };
 }
 
 inline ComplexLoopRanges<3>
 _fromTBBRange(const tbb::blocked_rangeNd<Int32,3> & r)
 {
-  ArrayBounds<3> lower_bounds(r.dim(0).begin(),r.dim(1).begin(),r.dim(2).begin());
+  ArrayBounds<MDDim3> lower_bounds(r.dim(0).begin(),r.dim(1).begin(),r.dim(2).begin());
   auto s0 = static_cast<Int32>(r.dim(0).size());
   auto s1 = static_cast<Int32>(r.dim(1).size());
   auto s2 = static_cast<Int32>(r.dim(2).size());
-  ArrayBounds<3> sizes(s0,s1,s2);
+  ArrayBounds<MDDim3> sizes(s0,s1,s2);
   return { lower_bounds, sizes };
 }
 
 inline ComplexLoopRanges<4>
 _fromTBBRange(const tbb::blocked_rangeNd<Int32,4>& r)
 {
-  ArrayBounds<4> lower_bounds(r.dim(0).begin(),r.dim(1).begin(),r.dim(2).begin(),r.dim(3).begin());
+  ArrayBounds<MDDim4> lower_bounds(r.dim(0).begin(),r.dim(1).begin(),r.dim(2).begin(),r.dim(3).begin());
   auto s0 = static_cast<Int32>(r.dim(0).size());
   auto s1 = static_cast<Int32>(r.dim(1).size());
   auto s2 = static_cast<Int32>(r.dim(2).size());
   auto s3 = static_cast<Int32>(r.dim(3).size());
-  ArrayBounds<4> sizes(s0,s1,s2,s3);
+  ArrayBounds<MDDim4> sizes(s0,s1,s2,s3);
   return { lower_bounds, sizes };
 }
 

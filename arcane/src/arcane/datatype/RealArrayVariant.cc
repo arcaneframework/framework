@@ -29,7 +29,7 @@ namespace Arcane
 extern "C++" ARCANE_CORE_EXPORT
 void _arcaneTestRealArrayVariant()
 {
-  NumArray<Real,1> num_data(4, { 2.4, 5.6, 3.3, 5.4 });
+  NumArray<Real,MDDim1> num_data(4, { 2.4, 5.6, 3.3, 5.4 });
 
   UniqueArray<Real> a1_({2.4, 5.6, 3.3, 5.4});
   ConstArrayView<Real> a1 = a1_.constView();
@@ -47,7 +47,7 @@ void _arcaneTestRealArrayVariant()
   }
 
   RealArrayVariant variant2{num_data};
-  NumArray<Real,1> num_data_copy(variant2);
+  NumArray<Real,MDDim1> num_data_copy(variant2);
   if (num_data_copy.to1DSpan()!=num_data.to1DSpan())
     ARCANE_FATAL("Bad value for copy");
 }
