@@ -43,103 +43,109 @@ namespace Arcane
 namespace mesh
 {
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
 
-class PolyhedralFamily : public ItemFamily{
-  IMesh* m_mesh;
-  ItemSharedInfoWithType* m_shared_info = nullptr;
-  Int32UniqueArray m_empty_connectivity {0};
-  Int32UniqueArray m_empty_connectivity_indexes;
-  Int32UniqueArray m_empty_connectivity_nb_item;
-
- public:
-  inline static const String m_arcane_item_lids_property_name {"Arcane_Item_Lids"}; // inline used to initialize within the declaration
-
- public:
-  PolyhedralFamily(IMesh* mesh, eItemKind ik, String name)
-  : ItemFamily(mesh,ik,name)
-  , m_mesh(mesh) {
-    ItemFamily::build();
-    m_sub_domain_id = subDomain()->subDomainId();
-    ItemTypeMng* itm = m_mesh->itemTypeMng();
-    ItemTypeInfo* dof_type_info = itm->typeFromId(IT_NullType);
-    m_shared_info = _findSharedInfo(dof_type_info);
-    _updateEmptyConnectivity();
-  }
-
- public:
-
-  void preAllocate(Integer nb_item)
+  class PolyhedralFamily : public ItemFamily
   {
-    Integer nb_hash = itemsMap().buckets().size();
-    Integer wanted_size = 2*(nb_item+infos().nbItem());
-    if (nb_hash<wanted_size)
-      itemsMap().resize(wanted_size,true);
-    m_empty_connectivity_indexes.resize(nb_item + nbItem(),0);
-    m_empty_connectivity_nb_item.resize(nb_item + nbItem(), 0);
-    _updateEmptyConnectivity();
-  }
+    IMesh* m_mesh;
+    ItemSharedInfoWithType* m_shared_info = nullptr;
+    Int32UniqueArray m_empty_connectivity{ 0 };
+    Int32UniqueArray m_empty_connectivity_indexes;
+    Int32UniqueArray m_empty_connectivity_nb_item;
 
-  ItemInternal* _allocItem(const Int64 uid)
-  {
-    bool need_alloc; // given by alloc
-    ItemInternal* item_internal = ItemFamily::_allocOne(uid,need_alloc);
-    if (!need_alloc)
-      item_internal->setUniqueId(uid);
-    else{
-      _allocateInfos(item_internal,uid,m_shared_info);
-    }
-    item_internal->setOwner(m_sub_domain_id,m_sub_domain_id);
-    return item_internal;
-  }
+   public:
 
-  void addItems(Int64ConstArrayView uids, Int32ArrayView items)
-  {
-    if (uids.empty()) return ;
-    ARCANE_ASSERT((uids.size()==items.size()),("one must have items.size==uids.size()"));
-    m_mesh->traceMng()->info() << " PolyhedralFamily::ADDITEMS " ;
-    preAllocate(uids.size());
-    auto index {0};
-    for (auto uid : uids) {
-      ItemInternal* ii = _allocItem(uid);
-      items[index++] = ii->localId();
-    }
-    m_need_prepare_dump = true;
-    _updateItemInternalList();
-  }
+    inline static const String m_arcane_item_lids_property_name{ "Arcane_Item_Lids" }; // inline used to initialize within the declaration
 
-  void _updateItemInternalList()
-  {
-    switch (itemKind()) {
-    case IK_Cell:
-      m_item_internal_list->cells = _itemsInternal();
-      break;
-    case IK_Face:
-      m_item_internal_list->faces = _itemsInternal();
-      break;
-    case IK_Edge:
-      m_item_internal_list->edges = _itemsInternal();
-      break;
-    case IK_Node:
-      m_item_internal_list->nodes = _itemsInternal();
-      break;
-    case IK_DoF:
-    case IK_Particle:
-    case IK_Unknown:
-      break;
-    }
-  }
+   public:
 
-  void _updateEmptyConnectivity() {
-    auto item_internal_connectivity_list = itemInternalConnectivityList();
-    for (auto item_kind = 0 ; item_kind < ItemInternalConnectivityList::MAX_ITEM_KIND; ++item_kind){
-      item_internal_connectivity_list->setConnectivityList(item_kind,m_empty_connectivity);
-      item_internal_connectivity_list->setConnectivityIndex(item_kind, m_empty_connectivity_indexes);
-      item_internal_connectivity_list->setConnectivityNbItem(item_kind, m_empty_connectivity_nb_item);
+    PolyhedralFamily(IMesh* mesh, eItemKind ik, String name)
+    : ItemFamily(mesh, ik, name)
+    , m_mesh(mesh)
+    {
+      ItemFamily::build();
+      m_sub_domain_id = subDomain()->subDomainId();
+      ItemTypeMng* itm = m_mesh->itemTypeMng();
+      ItemTypeInfo* dof_type_info = itm->typeFromId(IT_NullType);
+      m_shared_info = _findSharedInfo(dof_type_info);
+      _updateEmptyConnectivity();
     }
-  }
-};
+
+   public:
+
+    void preAllocate(Integer nb_item)
+    {
+      Integer nb_hash = itemsMap().buckets().size();
+      Integer wanted_size = 2 * (nb_item + infos().nbItem());
+      if (nb_hash < wanted_size)
+        itemsMap().resize(wanted_size, true);
+      m_empty_connectivity_indexes.resize(nb_item + nbItem(), 0);
+      m_empty_connectivity_nb_item.resize(nb_item + nbItem(), 0);
+      _updateEmptyConnectivity();
+    }
+
+    ItemInternal* _allocItem(const Int64 uid)
+    {
+      bool need_alloc; // given by alloc
+      ItemInternal* item_internal = ItemFamily::_allocOne(uid, need_alloc);
+      if (!need_alloc)
+        item_internal->setUniqueId(uid);
+      else {
+        _allocateInfos(item_internal, uid, m_shared_info);
+      }
+      item_internal->setOwner(m_sub_domain_id, m_sub_domain_id);
+      return item_internal;
+    }
+
+    void addItems(Int64ConstArrayView uids, Int32ArrayView items)
+    {
+      if (uids.empty())
+        return;
+      ARCANE_ASSERT((uids.size() == items.size()), ("one must have items.size==uids.size()"));
+      m_mesh->traceMng()->info() << " PolyhedralFamily::ADDITEMS ";
+      preAllocate(uids.size());
+      auto index{ 0 };
+      for (auto uid : uids) {
+        ItemInternal* ii = _allocItem(uid);
+        items[index++] = ii->localId();
+      }
+      m_need_prepare_dump = true;
+      _updateItemInternalList();
+    }
+
+    void _updateItemInternalList()
+    {
+      switch (itemKind()) {
+      case IK_Cell:
+        m_item_internal_list->cells = _itemsInternal();
+        break;
+      case IK_Face:
+        m_item_internal_list->faces = _itemsInternal();
+        break;
+      case IK_Edge:
+        m_item_internal_list->edges = _itemsInternal();
+        break;
+      case IK_Node:
+        m_item_internal_list->nodes = _itemsInternal();
+        break;
+      case IK_DoF:
+      case IK_Particle:
+      case IK_Unknown:
+        break;
+      }
+    }
+
+    void _updateEmptyConnectivity()
+    {
+      auto item_internal_connectivity_list = itemInternalConnectivityList();
+      for (auto item_kind = 0; item_kind < ItemInternalConnectivityList::MAX_ITEM_KIND; ++item_kind) {
+        item_internal_connectivity_list->setConnectivityList(item_kind, m_empty_connectivity);
+        item_internal_connectivity_list->setConnectivityIndex(item_kind, m_empty_connectivity_indexes);
+        item_internal_connectivity_list->setConnectivityNbItem(item_kind, m_empty_connectivity_nb_item);
+      }
+    }
+  };
 
 } // namespace mesh
 /*---------------------------------------------------------------------------*/
@@ -149,8 +155,6 @@ class PolyhedralFamily : public ItemFamily{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-
 
 #ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
 
@@ -177,8 +181,8 @@ namespace Arcane
 namespace mesh
 {
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
+  /*---------------------------------------------------------------------------*/
 
   class PolyhedralMeshImpl
   {
@@ -186,7 +190,10 @@ namespace mesh
     Neo::Mesh m_mesh{ "Test" };
 
     template <eItemKind IK>
-    class ItemKindTraits {static const Neo::ItemKind item_kind = Neo::ItemKind::IK_None;};
+    class ItemKindTraits
+    {
+      static const Neo::ItemKind item_kind = Neo::ItemKind::IK_None;
+    };
 
     static Neo::ItemKind itemKindArcaneToNeo(eItemKind ik)
     {
@@ -209,13 +216,18 @@ namespace mesh
     }
 
    public:
-    class ItemLocalIds {
+
+    class ItemLocalIds
+    {
       Neo::FutureItemRange m_future_items;
-     public :
+
+     public:
+
       friend class PolyhedralMeshImpl;
     };
 
    public:
+
     PolyhedralMeshImpl(ISubDomain* subDomain)
     : m_subdomain(subDomain)
     {}
@@ -234,34 +246,35 @@ namespace mesh
 
     /*---------------------------------------------------------------------------*/
 
-    void addFamily(eItemKind ik, const String& name){
-      m_mesh.addFamily(itemKindArcaneToNeo(ik),name.localstr());
+    void addFamily(eItemKind ik, const String& name)
+    {
+      m_mesh.addFamily(itemKindArcaneToNeo(ik), name.localstr());
     }
 
     /*---------------------------------------------------------------------------*/
 
     void scheduleAddItems(PolyhedralFamily* arcane_item_family,
                           Int64ConstArrayView uids,
-                          ItemLocalIds& item_local_ids) {
+                          ItemLocalIds& item_local_ids)
+    {
       auto& added_items = item_local_ids.m_future_items;
       auto& item_family = m_mesh.findFamily(itemKindArcaneToNeo(arcane_item_family->itemKind()),
                                             arcane_item_family->name().localstr());
-      m_mesh.scheduleAddItems(item_family, std::vector<Int64>{uids.begin(), uids.end()}, added_items);
+      m_mesh.scheduleAddItems(item_family, std::vector<Int64>{ uids.begin(), uids.end() }, added_items);
       // add arcane items
-      auto & mesh_graph = m_mesh.internalMeshGraph();
+      auto& mesh_graph = m_mesh.internalMeshGraph();
       item_family.addProperty<Neo::utils::Int32>(PolyhedralFamily::m_arcane_item_lids_property_name.localstr());
-      mesh_graph.addAlgorithm(Neo::InProperty{item_family,item_family.lidPropName()},
-                              Neo::OutProperty{item_family,PolyhedralFamily::m_arcane_item_lids_property_name.localstr()},
-                              [arcane_item_family,uids]
-                              (Neo::ItemLidsProperty const& lids_property,
-                               Neo::PropertyT<Neo::utils::Int32> &){
+      mesh_graph.addAlgorithm(Neo::InProperty{ item_family, item_family.lidPropName() },
+                              Neo::OutProperty{ item_family, PolyhedralFamily::m_arcane_item_lids_property_name.localstr() },
+                              [arcane_item_family, uids](Neo::ItemLidsProperty const& lids_property,
+                                                         Neo::PropertyT<Neo::utils::Int32>&) {
                                 Int32UniqueArray arcane_items(uids.size());
-                                arcane_item_family->addItems(uids,arcane_items);
+                                arcane_item_family->addItems(uids, arcane_items);
                                 arcane_item_family->traceMng()->info() << arcane_items;
                                 // debug check lid matching. maybe to remove if too coostly
                                 auto neo_lids = lids_property.values();
-                                if (!std::equal(neo_lids.begin(),neo_lids.end(),arcane_items.begin()))
-                                  arcane_item_family->traceMng()->fatal()<< "Inconsistent item lids generation between Arcane and Neo.";
+                                if (!std::equal(neo_lids.begin(), neo_lids.end(), arcane_items.begin()))
+                                  arcane_item_family->traceMng()->fatal() << "Inconsistent item lids generation between Arcane and Neo.";
                               });
     }
 
@@ -298,7 +311,8 @@ namespace mesh
       auto item_index = 0;
       std::cout << "==== nb connected items ====" << std::endl;
       std::copy(nb_connected_items_per_item.begin(), nb_connected_items_per_item.end(), std::ostream_iterator<Int32>(std::cout, " "));
-      std::cout << std::endl << "==== connected items ====" << std::endl;
+      std::cout << std::endl
+                << "==== connected items ====" << std::endl;
       std::copy(target_items_uids.begin(), target_items_uids.end(), std::ostream_iterator<Int64>(std::cout, " "));
       std::cout << std::endl;
       for (auto&& nb_connected_items : nb_connected_items_per_item) {
@@ -320,11 +334,11 @@ namespace mesh
     // template to handle nb_items_per_item type (an int or an array)
     template <typename ConnectivitySizeType>
     void _scheduleAddConnectivity(PolyhedralFamily* arcane_source_item_family,
-                                 ItemLocalIds& source_items,
-                                 ConnectivitySizeType&& nb_connected_items_per_item,
-                                 PolyhedralFamily* arcane_target_item_family,
-                                 Int64ConstArrayView target_item_uids,
-                                 String const& connectivity_name)
+                                  ItemLocalIds& source_items,
+                                  ConnectivitySizeType&& nb_connected_items_per_item,
+                                  PolyhedralFamily* arcane_target_item_family,
+                                  Int64ConstArrayView target_item_uids,
+                                  String const& connectivity_name)
     {
       // add connectivity in Neo
       auto& source_family = m_mesh.findFamily(itemKindArcaneToNeo(arcane_source_item_family->itemKind()),
@@ -337,7 +351,7 @@ namespace mesh
       std::copy_if(target_item_uids.begin(),
                    target_item_uids.end(),
                    std::back_inserter(target_item_uids_filtered),
-                   [](auto uid){return uid != NULL_ITEM_UNIQUE_ID; });
+                   [](auto uid) { return uid != NULL_ITEM_UNIQUE_ID; });
       // Add connectivity (async)
       m_mesh.scheduleAddConnectivity(source_family, source_items.m_future_items, target_family,
                                      std::forward<ConnectivitySizeType>(nb_connected_items_per_item),
@@ -345,12 +359,11 @@ namespace mesh
                                      connectivity_name.localstr());
       // Register connectivity in Arcane : via un algo !! todo : quelle prop out
       auto& mesh_graph = m_mesh.internalMeshGraph();
-      source_family.addProperty <Int32>("NoOutProperty"); // todo remove : create noOutput algo in Neo
-      mesh_graph.addAlgorithm(Neo::InProperty{source_family, connectivity_name.localstr()},
-                              Neo::OutProperty{source_family,"NoOutProperty"},
-                              [arcane_source_item_family, arcane_target_item_family, &source_family, this, connectivity_name]
-                              (Neo::Mesh::ConnectivityPropertyType const& ,
-                               Neo::PropertyT<Neo::utils::Int32> & ){
+      source_family.addProperty<Int32>("NoOutProperty"); // todo remove : create noOutput algo in Neo
+      mesh_graph.addAlgorithm(Neo::InProperty{ source_family, connectivity_name.localstr() },
+                              Neo::OutProperty{ source_family, "NoOutProperty" },
+                              [arcane_source_item_family, arcane_target_item_family, &source_family, this, connectivity_name](Neo::Mesh::ConnectivityPropertyType const&,
+                                                                                                                              Neo::PropertyT<Neo::utils::Int32>&) {
                                 this->m_subdomain->traceMng()->info() << "ADD CONNECTIVITY";
                                 auto item_internal_connectivity_list = arcane_source_item_family->itemInternalConnectivityList();
                                 // todo check if families are default families
@@ -358,11 +371,11 @@ namespace mesh
                                 auto nb_item_data = connectivity_values.m_offsets.data();
                                 auto nb_item_size = connectivity_values.m_offsets.size();
                                 item_internal_connectivity_list->setConnectivityNbItem(arcane_target_item_family->itemKind(),
-                                                                                       Int32ArrayView{Integer(nb_item_size),nb_item_data});
+                                                                                       Int32ArrayView{ Integer(nb_item_size), nb_item_data });
                                 auto connectivity_values_data = connectivity_values.m_data.data();
                                 auto connectivity_values_size = connectivity_values.m_data.size();
                                 item_internal_connectivity_list->setConnectivityList(arcane_target_item_family->itemKind(),
-                                                                                     Int32ArrayView{Integer(connectivity_values_size),connectivity_values_data});
+                                                                                     Int32ArrayView{ Integer(connectivity_values_size), connectivity_values_data });
                                 auto connectivity_index_data = connectivity_values.m_indexes.data();
                                 auto connectivity_index_size = connectivity_values.m_indexes.size();
                                 item_internal_connectivity_list->setConnectivityIndex(arcane_target_item_family->itemKind(),
@@ -383,35 +396,35 @@ namespace mesh
       m_mesh.scheduleSetItemCoords(_item_family, local_ids.m_future_items, _node_coords);
       // Fill Arcane Variable
       auto& mesh_graph = m_mesh.internalMeshGraph();
-      _item_family.addProperty <Int32>("NoOutProperty42"); // todo remove : create noOutput algo in Neo
-      mesh_graph.addAlgorithm(Neo::InProperty{_item_family, m_mesh._itemCoordPropertyName(_item_family)},
-                              Neo::OutProperty{_item_family,"NoOutProperty42"},
-                              [this,item_family,&_item_family,&arcane_coords]
-                              (Neo::Mesh::CoordPropertyType const& item_coords_property,
-                               Neo::PropertyT<Neo::utils::Int32> & ){
-                                  this->m_subdomain->traceMng()->info() << "= Update Arcane Coordinates =";
-                                  // enumerate nodes : ensure again Arcane/Neo local_ids are identicals
-                                  auto& all_items = _item_family.all();
-                                  VariableNodeReal3 node_coords{ VariableBuildInfo{ item_family->mesh(), "NodeCoord"} };
-                                  for (auto item : all_items) {
-                                    arcane_coords[ItemLocalId{item}] = { item_coords_property[item].x,
+      _item_family.addProperty<Int32>("NoOutProperty42"); // todo remove : create noOutput algo in Neo
+      mesh_graph.addAlgorithm(Neo::InProperty{ _item_family, m_mesh._itemCoordPropertyName(_item_family) },
+                              Neo::OutProperty{ _item_family, "NoOutProperty42" },
+                              [this, item_family, &_item_family, &arcane_coords](Neo::Mesh::CoordPropertyType const& item_coords_property,
+                                                                                 Neo::PropertyT<Neo::utils::Int32>&) {
+                                this->m_subdomain->traceMng()->info() << "= Update Arcane Coordinates =";
+                                // enumerate nodes : ensure again Arcane/Neo local_ids are identicals
+                                auto& all_items = _item_family.all();
+                                VariableNodeReal3 node_coords{ VariableBuildInfo{ item_family->mesh(), "NodeCoord" } };
+                                for (auto item : all_items) {
+                                  arcane_coords[ItemLocalId{ item }] = { item_coords_property[item].x,
                                                                          item_coords_property[item].y,
-                                                                         item_coords_property[item].z};
-//                                    std::cout << "x y z : " << item_coords_property[item].x << " "
-//                                                            << item_coords_property[item].y << " "
-//                                                            << item_coords_property[item].z;
-                                  }
-                                });
-
+                                                                         item_coords_property[item].z };
+                                  //                                    std::cout << "x y z : " << item_coords_property[item].x << " "
+                                  //                                                            << item_coords_property[item].y << " "
+                                  //                                                            << item_coords_property[item].z;
+                                }
+                              });
     }
 
     /*---------------------------------------------------------------------------*/
 
-    void applyScheduledOperations() noexcept {
+    void applyScheduledOperations() noexcept
+    {
       m_mesh.applyScheduledOperations();
     }
 
    private:
+
     void _createSingleCellTest()
     {
       auto& cell_family = m_mesh.addFamily(Neo::ItemKind::IK_Cell, "cell_family");
@@ -424,11 +437,26 @@ namespace mesh
     }
   };
 
-  template <> class PolyhedralMeshImpl::ItemKindTraits<IK_Cell> {static const Neo::ItemKind item_kind = Neo::ItemKind::IK_Cell;};
-  template <> class PolyhedralMeshImpl::ItemKindTraits<IK_Face> {static const Neo::ItemKind item_kind = Neo::ItemKind::IK_Face;};
-  template <> class PolyhedralMeshImpl::ItemKindTraits<IK_Edge> {static const Neo::ItemKind item_kind = Neo::ItemKind::IK_Edge;};
-  template <> class PolyhedralMeshImpl::ItemKindTraits<IK_Node> {static const Neo::ItemKind item_kind = Neo::ItemKind::IK_Node;};
-  template <> class PolyhedralMeshImpl::ItemKindTraits<IK_DoF> {static const Neo::ItemKind item_kind = Neo::ItemKind::IK_Dof;};
+  template <> class PolyhedralMeshImpl::ItemKindTraits<IK_Cell>
+  {
+    static const Neo::ItemKind item_kind = Neo::ItemKind::IK_Cell;
+  };
+  template <> class PolyhedralMeshImpl::ItemKindTraits<IK_Face>
+  {
+    static const Neo::ItemKind item_kind = Neo::ItemKind::IK_Face;
+  };
+  template <> class PolyhedralMeshImpl::ItemKindTraits<IK_Edge>
+  {
+    static const Neo::ItemKind item_kind = Neo::ItemKind::IK_Edge;
+  };
+  template <> class PolyhedralMeshImpl::ItemKindTraits<IK_Node>
+  {
+    static const Neo::ItemKind item_kind = Neo::ItemKind::IK_Node;
+  };
+  template <> class PolyhedralMeshImpl::ItemKindTraits<IK_DoF>
+  {
+    static const Neo::ItemKind item_kind = Neo::ItemKind::IK_Dof;
+  };
 
 } // End namespace mesh
 
@@ -464,11 +492,11 @@ handle() const
 
 mesh::PolyhedralMesh::
 PolyhedralMesh(ISubDomain* subdomain)
-: EmptyMesh{subdomain->traceMng()}
-, m_name{subdomain->defaultMeshHandle().meshName()}
-, m_subdomain{subdomain}
-, m_mesh_handle{m_subdomain->defaultMeshHandle()}
-, m_properties(std::make_unique<Properties>(subdomain->propertyMng(),String("ArcaneMeshProperties_")+m_name))
+: EmptyMesh{ subdomain->traceMng() }
+, m_name{ subdomain->defaultMeshHandle().meshName() }
+, m_subdomain{ subdomain }
+, m_mesh_handle{ m_subdomain->defaultMeshHandle() }
+, m_properties(std::make_unique<Properties>(subdomain->propertyMng(), String("ArcaneMeshProperties_") + m_name))
 , m_mesh{ std::make_unique<mesh::PolyhedralMeshImpl>(m_subdomain) }
 , m_item_type_mng(ItemTypeMng::_singleton())
 , m_arcane_node_coords(nullptr)
@@ -485,20 +513,20 @@ void Arcane::mesh::PolyhedralMesh::
 read(const String& filename)
 {
   // First step: create manually a unit mesh
-//  ARCANE_UNUSED(filename); // temporary
-//  _createUnitMesh();
+  //  ARCANE_UNUSED(filename); // temporary
+  //  _createUnitMesh();
   // Second step read a vtk polyhedral mesh
   m_subdomain->traceMng()->info() << "--PolyhedralMesh : reading " << filename;
   // First step create a single cell
   //      _createSingleCellTest();
   // Second step : read a vtk polyhedral file
   UniqueArray<String> splitted_filename{};
-  filename.split(splitted_filename,'.');
+  filename.split(splitted_filename, '.');
   auto file_extension = splitted_filename.back();
   if (file_extension != "vtk")
     m_subdomain->traceMng()->fatal() << "Only vtk file format supported for polyhedral mesh";
 
-//  createItemFamily(IK_Cell, "CellFamily");
+  //  createItemFamily(IK_Cell, "CellFamily");
   createItemFamily(IK_Cell, "Cell");
   createItemFamily(IK_Node, "Node");
   createItemFamily(IK_Face, "Face");
@@ -508,8 +536,8 @@ read(const String& filename)
   [[maybe_unused]] auto face_family = arcaneDefaultFamily(IK_Face);
   [[maybe_unused]] auto edge_family = arcaneDefaultFamily(IK_Edge);
 #ifdef ARCANE_HAS_VTKIO
-  PolyhedralMeshTools::VtkReader reader{filename};
-  PolyhedralMeshImpl::ItemLocalIds cell_lids,node_lids, face_lids, edge_lids;
+  PolyhedralMeshTools::VtkReader reader{ filename };
+  PolyhedralMeshImpl::ItemLocalIds cell_lids, node_lids, face_lids, edge_lids;
   // todo separate Link with Arcane and link with vtk structure
   // Add items
   m_mesh->scheduleAddItems(cell_family, reader.cellUids(), cell_lids);
@@ -517,20 +545,20 @@ read(const String& filename)
   m_mesh->scheduleAddItems(face_family, reader.faceUids(), face_lids);
   m_mesh->scheduleAddItems(edge_family, reader.edgeUids(), edge_lids);
   // Add connectivities
-  m_mesh->scheduleAddConnectivity(cell_family,cell_lids,reader.cellNbNodes(),node_family,reader.cellNodes(),String{"CellToNodes"});
-  m_mesh->scheduleAddConnectivity(cell_family,cell_lids,reader.cellNbFaces(),face_family,reader.cellFaces(),String{"CellToFaces"});
-  m_mesh->scheduleAddConnectivity(face_family,face_lids,reader.faceNbNodes(),node_family,reader.faceNodes(),String{"FaceToNodes"});
-  m_mesh->scheduleAddConnectivity(edge_family,edge_lids,2,node_family,reader.edgeNodes(),String{"EdgeToNodes"});
-  m_mesh->scheduleAddConnectivity(face_family,face_lids,reader.faceNbCells(),cell_family,reader.faceCells(),String{"FaceToCells"});
-  m_mesh->scheduleAddConnectivity(edge_family,edge_lids,reader.edgeNbCells(),cell_family,reader.edgeCells(),String{"EdgeToCells"});
-  m_mesh->scheduleAddConnectivity(edge_family,edge_lids,reader.edgeNbFaces(),face_family,reader.edgeFaces(),String{"EdgeToFaces"});
-  m_mesh->scheduleAddConnectivity(face_family,face_lids,reader.faceNbEdges(),edge_family,reader.faceEdges(),String{"FaceToEdges"});
-  m_mesh->scheduleAddConnectivity(cell_family,cell_lids,reader.cellNbEdges(),edge_family,reader.cellEdges(),String{"CellToEdges"});
-  m_mesh->scheduleAddConnectivity(node_family,node_lids,reader.nodeNbCells(),cell_family,reader.nodeCells(),String{"NodeToCells"});
-  m_mesh->scheduleAddConnectivity(node_family,node_lids,reader.nodeNbFaces(),face_family,reader.nodeFaces(),String{"NodeToFaces"});
-  m_mesh->scheduleAddConnectivity(node_family,node_lids,reader.nodeNbEdges(),edge_family,reader.nodeEdges(),String{"NodeToEdges"});
+  m_mesh->scheduleAddConnectivity(cell_family, cell_lids, reader.cellNbNodes(), node_family, reader.cellNodes(), String{ "CellToNodes" });
+  m_mesh->scheduleAddConnectivity(cell_family, cell_lids, reader.cellNbFaces(), face_family, reader.cellFaces(), String{ "CellToFaces" });
+  m_mesh->scheduleAddConnectivity(face_family, face_lids, reader.faceNbNodes(), node_family, reader.faceNodes(), String{ "FaceToNodes" });
+  m_mesh->scheduleAddConnectivity(edge_family, edge_lids, 2, node_family, reader.edgeNodes(), String{ "EdgeToNodes" });
+  m_mesh->scheduleAddConnectivity(face_family, face_lids, reader.faceNbCells(), cell_family, reader.faceCells(), String{ "FaceToCells" });
+  m_mesh->scheduleAddConnectivity(edge_family, edge_lids, reader.edgeNbCells(), cell_family, reader.edgeCells(), String{ "EdgeToCells" });
+  m_mesh->scheduleAddConnectivity(edge_family, edge_lids, reader.edgeNbFaces(), face_family, reader.edgeFaces(), String{ "EdgeToFaces" });
+  m_mesh->scheduleAddConnectivity(face_family, face_lids, reader.faceNbEdges(), edge_family, reader.faceEdges(), String{ "FaceToEdges" });
+  m_mesh->scheduleAddConnectivity(cell_family, cell_lids, reader.cellNbEdges(), edge_family, reader.cellEdges(), String{ "CellToEdges" });
+  m_mesh->scheduleAddConnectivity(node_family, node_lids, reader.nodeNbCells(), cell_family, reader.nodeCells(), String{ "NodeToCells" });
+  m_mesh->scheduleAddConnectivity(node_family, node_lids, reader.nodeNbFaces(), face_family, reader.nodeFaces(), String{ "NodeToFaces" });
+  m_mesh->scheduleAddConnectivity(node_family, node_lids, reader.nodeNbEdges(), edge_family, reader.nodeEdges(), String{ "NodeToEdges" });
   // Add node coordinates
-  m_arcane_node_coords = std::make_unique<VariableNodeReal3>(VariableBuildInfo(this,"NodeCoord"));
+  m_arcane_node_coords = std::make_unique<VariableNodeReal3>(VariableBuildInfo(this, "NodeCoord"));
   m_arcane_node_coords->setUsed(true);
   m_mesh->applyScheduledOperations();
   cell_family->endUpdate();
@@ -666,7 +694,7 @@ IItemFamily* mesh::PolyhedralMesh::
 createItemFamily(eItemKind ik, const String& name)
 {
   m_mesh->addFamily(ik, name);
-  m_arcane_families.push_back(std::make_unique<PolyhedralFamily>(this,ik, name));
+  m_arcane_families.push_back(std::make_unique<PolyhedralFamily>(this, ik, name));
   auto current_family = m_arcane_families.back().get();
   if (m_default_arcane_families[ik] == nullptr) {
     m_default_arcane_families[ik] = current_family;
@@ -685,15 +713,15 @@ _createUnitMesh()
   createItemFamily(IK_Node, "NodeFamily");
   auto cell_family = m_default_arcane_families[IK_Cell];
   auto node_family = m_default_arcane_families[IK_Node];
-  Int64UniqueArray cell_uids{0},node_uids{ 0, 1, 2, 3, 4, 5 };
+  Int64UniqueArray cell_uids{ 0 }, node_uids{ 0, 1, 2, 3, 4, 5 };
   // todo add a cell_lids struct (containing future)
-  PolyhedralMeshImpl::ItemLocalIds cell_lids,node_lids;
+  PolyhedralMeshImpl::ItemLocalIds cell_lids, node_lids;
   m_mesh->scheduleAddItems(cell_family, cell_uids, cell_lids);
   m_mesh->scheduleAddItems(node_family, node_uids, node_lids);
   int nb_node = 6;
-  m_mesh->scheduleAddConnectivity(cell_family,cell_lids,nb_node,node_family,node_uids,String{"CellToNodes"});
-  m_mesh->scheduleAddConnectivity(node_family,node_lids,1,cell_family,
-                                  Int64UniqueArray{0,0,0,0,0,0},String{"NodeToCells"});
+  m_mesh->scheduleAddConnectivity(cell_family, cell_lids, nb_node, node_family, node_uids, String{ "CellToNodes" });
+  m_mesh->scheduleAddConnectivity(node_family, node_lids, 1, cell_family,
+                                  Int64UniqueArray{ 0, 0, 0, 0, 0, 0 }, String{ "NodeToCells" });
   m_mesh->applyScheduledOperations();
   cell_family->endUpdate();
   node_family->endUpdate();
@@ -711,8 +739,8 @@ endUpdate()
   // create empty default families not already created
   for (auto ik = 0; ik < NB_ITEM_KIND; ++ik) {
     if (m_default_arcane_families[ik] == nullptr && ik != eItemKind::IK_DoF) {
-      String name = String::concat(itemKindName((eItemKind)ik),"EmptyFamily" );
-      m_empty_arcane_families[ik] = std::make_unique<mesh::PolyhedralFamily>(this,(eItemKind)ik,name);
+      String name = String::concat(itemKindName((eItemKind)ik), "EmptyFamily");
+      m_empty_arcane_families[ik] = std::make_unique<mesh::PolyhedralFamily>(this, (eItemKind)ik, name);
       m_default_arcane_families[ik] = m_empty_arcane_families[ik].get();
       m_subdomain->traceMng()->info() << " Create empty family " << itemKindName((eItemKind)ik);
     }
@@ -754,7 +782,6 @@ cellFamily()
 {
   return m_default_arcane_families[IK_Cell];
 }
-
 
 void mesh::PolyhedralMesh::
 _updateMeshInternalList(eItemKind kind)
@@ -838,7 +865,7 @@ arcaneDefaultFamily(eItemKind ik)
 VariableNodeReal3& mesh::PolyhedralMesh::
 nodesCoordinates()
 {
-  ARCANE_ASSERT(m_arcane_node_coords,("Node coordinates not yet loaded."));
+  ARCANE_ASSERT(m_arcane_node_coords, ("Node coordinates not yet loaded."));
   return *m_arcane_node_coords;
 }
 
@@ -849,7 +876,7 @@ ItemGroup mesh::PolyhedralMesh::
 findGroup(const String& name)
 {
   ItemGroup group;
-  for( auto& family : m_arcane_families ){
+  for (auto& family : m_arcane_families) {
     group = family->findGroup(name);
     if (!group.null())
       return group;
@@ -864,8 +891,8 @@ ItemGroupCollection mesh::PolyhedralMesh::
 groups()
 {
   m_all_groups.clear();
-  for( auto& family : m_arcane_families ){
-    for( ItemGroupCollection::Enumerator i_group(family->groups()); ++i_group; )
+  for (auto& family : m_arcane_families) {
+    for (ItemGroupCollection::Enumerator i_group(family->groups()); ++i_group;)
       m_all_groups.add(*i_group);
   }
   return m_all_groups;
@@ -877,7 +904,7 @@ groups()
 void mesh::PolyhedralMesh::
 destroyGroups()
 {
-  for( auto& family : m_arcane_families ){
+  for (auto& family : m_arcane_families) {
     family->destroyGroups();
   }
 }
@@ -897,8 +924,9 @@ destroyGroups()
 
 namespace Arcane::mesh
 {
-class PolyhedralMeshImpl{};
-}
+class PolyhedralMeshImpl
+{};
+} // namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -911,14 +939,13 @@ Arcane::mesh::PolyhedralMesh::
 
 Arcane::mesh::PolyhedralMesh::
 PolyhedralMesh(ISubDomain* subdomain)
-: EmptyMesh{subdomain->traceMng()}
-, m_subdomain{subdomain}
-, m_mesh{nullptr}
+: EmptyMesh{ subdomain->traceMng() }
+, m_subdomain{ subdomain }
+, m_mesh{ nullptr }
 {}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 
 void Arcane::mesh::PolyhedralMesh::
 read([[maybe_unused]] const String& filename)

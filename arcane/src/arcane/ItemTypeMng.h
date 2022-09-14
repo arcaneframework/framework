@@ -29,10 +29,10 @@ namespace Arcane
 {
 namespace mesh
 {
-// TEMPORAIRE: pour que ces classes aient accès au singleton.
-class DynamicMesh;
-class PolyhedralMesh;
-}
+  // TEMPORAIRE: pour que ces classes aient accès au singleton.
+  class DynamicMesh;
+  class PolyhedralMesh;
+} // namespace mesh
 class ArcaneMain;
 
 /*---------------------------------------------------------------------------*/
@@ -41,7 +41,7 @@ class ArcaneMain;
 class ItemTypeInfo;
 class ItemTypeInfoBuilder;
 class IParallelSuperMng;
-template<class T>
+template <class T>
 class MultiBufferT;
 
 /*---------------------------------------------------------------------------*/
@@ -83,6 +83,7 @@ class ARCANE_CORE_EXPORT ItemTypeMng
   void build(IParallelSuperMng* parallel_mng, ITraceMng* trace);
 
  private:
+
   /*! \brief Instance singleton du type
    *
    * Le singleton est créé lors du premier appel à cette fonction.
@@ -121,6 +122,7 @@ class ARCANE_CORE_EXPORT ItemTypeMng
   static void destroySingleton() { _destroySingleton(); }
 
  public:
+
   //! Liste des types disponibles
   ConstArrayView<ItemTypeInfo*> types() const;
 
@@ -157,7 +159,7 @@ class ARCANE_CORE_EXPORT ItemTypeMng
  private:
 
   //! Lecture des types a partir d'un fichier de nom filename
-  void readTypes(IParallelSuperMng * parallel_mng, const String & filename);
+  void readTypes(IParallelSuperMng* parallel_mng, const String& filename);
 
  private:
 
@@ -195,10 +197,10 @@ class ARCANE_CORE_EXPORT ItemTypeMng
    * Ce champs est public en attendant d'affiner la gestion de l'accès.
    */
   UniqueArray<Integer> m_ids_buffer;
-  
+
  private:
-  
-  void _build(IParallelSuperMng * parallel_mng, ITraceMng * trace);
+
+  void _build(IParallelSuperMng* parallel_mng, ITraceMng* trace);
 };
 
 /*---------------------------------------------------------------------------*/
