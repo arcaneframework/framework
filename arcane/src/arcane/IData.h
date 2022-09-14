@@ -145,6 +145,12 @@ class ARCANE_CORE_EXPORT IData
    */
   virtual void computeHash(IHashAlgorithm* algo, ByteArray& output) const = 0;
 
+  //! Forme du tableau pour une donnée 1D ou 2D.
+  virtual ArrayShape shape() const = 0;
+
+  //! Positionne la forme du tableau.
+  virtual void setShape(const ArrayShape& new_shape) = 0;
+
  public:
 
   //! Applique le visiteur à la donnée

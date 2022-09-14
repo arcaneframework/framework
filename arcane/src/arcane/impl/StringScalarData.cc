@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* StringScalarData.cc                                         (C) 2000-2021 */
+/* StringScalarData.cc                                         (C) 2000-2022 */
 /*                                                                           */
 /* Donnée scalaire de type 'String'.                                         */
 /*---------------------------------------------------------------------------*/
@@ -19,6 +19,7 @@
 #include "arcane/utils/IHashAlgorithm.h"
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/Array.h"
+#include "arcane/utils/ArrayShape.h"
 
 #include "arcane/datatype/DataStorageTypeInfo.h"
 #include "arcane/datatype/DataStorageBuildInfo.h"
@@ -93,6 +94,8 @@ class StringScalarData
   void copy(const IData* data) override;
   void swapValues(IData* data) override;
   void computeHash(IHashAlgorithm* algo, ByteArray& output) const override;
+  ArrayShape shape() const override { return {}; }
+  void setShape(const ArrayShape&) override { }
   void visit(IScalarDataVisitor* visitor) override
   {
     visitor->applyVisitor(this);

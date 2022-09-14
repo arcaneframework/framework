@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArrayData.cc                                                (C) 2000-2021 */
+/* ArrayData.cc                                                (C) 2000-2022 */
 /*                                                                           */
 /* Donnée du type 'Array'.                                                   */
 /*---------------------------------------------------------------------------*/
@@ -26,6 +26,7 @@
 #include "arcane/utils/IndexOutOfRangeException.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/Array.h"
+#include "arcane/utils/ArrayShape.h"
 
 #include "arcane/datatype/DataStorageBuildInfo.h"
 #include "arcane/datatype/IDataOperation.h"
@@ -107,6 +108,8 @@ class ArrayDataT
   void copy(const IData* data) override;
   void swapValues(IData* data) override;
   void computeHash(IHashAlgorithm* algo,ByteArray& output) const override;
+  ArrayShape shape() const override { return m_shape; }
+  void setShape(const ArrayShape& new_shape) override { m_shape = new_shape; }
   void visit(IArrayDataVisitor* visitor) override
   {
     visitor->applyVisitor(this);
@@ -144,11 +147,15 @@ class ArrayDataT
 
   static DataStorageTypeInfo staticStorageTypeInfo();
 
+ public:
+
+
  private:
 
   UniqueArray<DataType> m_value; //!< Donnée
   ITraceMng* m_trace;
   IArrayDataInternalT<DataType>* m_internal;
+  ArrayShape m_shape;
 
  private:
 
@@ -276,7 +283,7 @@ createSerializedDataRef(bool use_basic_type) const
   UniqueArray<Int64> extents;
   extents.add(nb_element);
   auto sd = arcaneCreateSerializedDataRef(data_type,base_values.size(),1,nb_element,
-                                          nb_base_element,false,extents);
+                                          nb_base_element,false,extents,shape());
   sd->setConstBytes(base_values);
   return sd;
 }
@@ -300,7 +307,7 @@ allocateBufferForSerializedData(ISerializedData* sdata)
   //m_trace->info() << " ASSIGN DATA nb_element=" << nb_element
   //                << " this=" << this;
   m_value.resize(nb_element);
-
+  m_shape = sdata->shape();
   Byte* byte_data = reinterpret_cast<Byte*>(m_value.data());
   Span<Byte> buffer(byte_data,sdata->memorySize());
   sdata->setWritableBytes(buffer);

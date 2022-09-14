@@ -18,6 +18,7 @@
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/CommandLineArguments.h"
 #include "arcane/utils/ApplicationInfo.h"
+#include "arcane/utils/ArrayShape.h"
 
 #include "arcane/expr/Expression.h"
 #include "arcane/expr/ArrayExpressionImpl.h"

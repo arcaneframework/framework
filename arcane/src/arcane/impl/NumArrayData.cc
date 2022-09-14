@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NumArrayData.cc                                             (C) 2000-2021 */
+/* NumArrayData.cc                                             (C) 2000-2022 */
 /*                                                                           */
 /* Donnée de type 'NumArray'.                                                */
 /*---------------------------------------------------------------------------*/
@@ -26,6 +26,7 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/CheckedConvert.h"
+#include "arcane/utils/ArrayShape.h"
 
 #include "arcane/datatype/IDataOperation.h"
 #include "arcane/datatype/DataStorageTypeInfo.h"
@@ -130,6 +131,8 @@ class NumArrayDataT
   void copy(const IData* data) override;
   void swapValues(IData* data) override;
   void computeHash(IHashAlgorithm* algo, ByteArray& output) const override;
+  ArrayShape shape() const override { return m_shape; }
+  void setShape(const ArrayShape& new_shape) override { m_shape = new_shape; }
   void visit(IArray2DataVisitor*)
   {
     ARCANE_THROW(NotSupportedException, "Can not visit array2 data with NumArray data");
@@ -137,7 +140,6 @@ class NumArrayDataT
   void visit(IDataVisitor* visitor) override
   {
     ARCANE_UNUSED(visitor);
-    //visitor->applyDataVisitor(this);
     ARCANE_THROW(NotImplementedException,"visit(IDataVisitor*)");
   }
   void visitScalar(IScalarDataVisitor*) override
@@ -169,6 +171,7 @@ class NumArrayDataT
 
   NumArray<DataType,A_MDDIM(RankValue)> m_value; //!< Donnée
   ITraceMng* m_trace;
+  ArrayShape m_shape;
 
  private:
 
@@ -339,7 +342,7 @@ createSerializedDataRef(bool use_basic_type) const
   for ( Int32 i=0; i<extents.size(); ++i )
     dimensions[i] = extents[i];
   auto sd = arcaneCreateSerializedDataRef(data_type,base_values.size(),RankValue,nb_element,
-                                          nb_base_element,false,dimensions);
+                                          nb_base_element,false,dimensions,shape());
   sd->setConstBytes(base_values);
   return sd;
 }
