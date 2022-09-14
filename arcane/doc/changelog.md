@@ -5,13 +5,15 @@
 
 Cette page contient les nouveautés de chaque version de %Arcane.
 
-Arcane Version 3.7.x (... aout 2022) {#arcanedoc_version370}
+Arcane Version 3.7.x (... septembre 2022) {#arcanedoc_version370}
 ======================================
 
 WIP
 
 Nouveautés/Améliorations:
 
+- Ajoute un service de gestion de sorties au format CSV (voir
+  \ref arcanedoc_services_csv) (#277)
 - Ajoute possibilité de spécifier le mot clé `Auto` pour la variable
   CMake `ARCANE_DEFAULT_PARTITIONER`. Cela permet de choisir
   automatiquement lors de la configuration le partitionneur utilisé
@@ -20,12 +22,63 @@ Nouveautés/Améliorations:
   `MPI_Neighbor_alltoallv` (#281).
 - Réduction de l'empreinte mémoire utilisée pour la gestion des
   connectivités suite aux différentes modifications internes
+- Optimisations lors de l'initialisation (#302):
+  - Utilise `std::unordered_set` à la place de `std::set` pour les
+    vérifications de duplication des uniqueId().
+  - Lors de la création de maillage, ne Vérifie la non-duplication des
+    uniqueId() que en mode check.
+- Crée une classe Arcane::ItemInfoListView pour remplacer à terme
+  Arcane::ItemInternalList et accéder aux informations des entités à
+  partir de leur localId() (#305)
 
 Changements:
 
+- Modifie les classes associées à Arcane::NumArray
+  (Arcane::MDSpan, Arcane::ArrayBounds, ...) pour que le paramètre
+  template gérant le rang soit une classe et pas un entier. Le but à
+  terme est d'avoir les mêmes paramètres templates que les classes
+  std::mdspan et std::mdarray du C++. Il faut remplacer les dimensions
+  en dur par les mots clés Arcane::MDDim1, Arcane::MDDim2,
+  Arcane::MDDim3 ou Arcane::MDDim4 (#333)
 - Ajoute classe Arcane:ItemTypeId pour gérer le type de l'entité (#294)
 - Le type de l'entité est maintenant conservé sur un Arcane::Int16 au
   lieu d'un Arcane::Int32 (#294)
+- Supprime méthodes obsolètes de 'Concurrency.h'. Il s'agit des méthodes
+  qui se trouvaient dans le namespace 'Arcane::Parallel' et qui sont
+  maintenant dans le namespace 'Arcane' mais préfixée par
+  `arcaneParallel` (#303)
+- Supprime méthodes obsolètes de Arcane::ItemVector, `MathUtils.h`,
+  Arcane::IApplication, Arcane::Properties, Arcane::IItemFamily
+  (#304).
+- Supprime la classe de base Arcane::ItemEnumerator de
+  Arcane::ItemEnumeratorT. L'héritage est remplacé par un opérateur de
+  conversion (#308).
+- Refonte de la gestion du fichier de configuration
+  `ArcaneConfig.cmake` géneré (#318):
+  - N'exporte plus par défaut les packages externes dans
+    `ArcaneTargets.cmake`. Le fichier `ArcaneConfig.cmake` fait
+    maintenant des appels à la commande CMake `find_dependency`. La
+    variable CMake `FRAMEWORK_NO_EXPORT_PACKAGES` n'est donc plus
+    utilisé par défaut.
+  - Ajoute dans `ArcaneConfig.cmake` la variable
+    `ARCANE_USE_CONFIGURATION_PATH` pour permettre de charger les
+    chemins des packages issus de la configuration de Arcane. Cette
+    variable est positionnée à `TRUE` définie par défaut.
+- Modifie le prototype de certaines méthodes de classes implémentant
+  Arcane::IItemFamily pour utiliser Arcane::Item à la place de
+  Arcane::ItemInternal (#311)
+- Crée une classe Arcane::ItemFlags pour gérer les flags concernant
+  les propriétés des objets qui étaient avant dans
+  Arcane::ItemInternal (#312)
+- Rend obsolète l'opérateur `operator->` pour la classe Arcane::Item
+  et les classes dérivées (#313)
+- Change la valeur par défaut de la numérotation des faces dans le
+  service de génération cartésien pour utiliser la numérotation
+  cartésienne (#315)
+- Modification de la signature des méthodes de
+  Arcane::IItemFamilyModifierInterface et Arcane::OneMeshItemAdder
+  pour utiliser Arcane::ItemTypeId au lieu de Arcane::ItemTypeInfo
+  et Arcane::Item au lieu de Arcane::ItemInternal (#322)
 
 Corrections:
 
@@ -49,10 +102,15 @@ Interne:
   Arcane::Item et Arcane::ItemInternal (#298).
 - Suppression d'une indirection lorsqu'on accède aux informations des
   connectivités à partir d'une entité (par exemple
-  Arcane::Cell::node())  (#298).
+  Arcane::Cell::node()) (#298).
 - Simplification de la gestion des informations communes aux entités
   dans une famille pour qu'il n'y ait maintenant plus qu'une seule
-  instance commune de 'Arcane::ItemSharedInfo' (#290, #292, #297).
+  instance commune de Arcane::ItemSharedInfo (#290, #292, #297).
+- Supprime certains usages de Arcane::ISubDomain (#327)
+  - Ajoute possibilité de créer une instance de Arcane::ServiceBuilder
+    à partir d'un Arcane::MeshHandle.
+  - Ajoute possibilité de créer une instance de
+    Arcane::VariableBuildInfo via un Arcane::IVariableMng.
 
 Arcane Version 3.6.13 (06 juillet 2022) {#arcanedoc_version360}
 ======================================
