@@ -78,25 +78,25 @@ class ArrayLayout3
 /*---------------------------------------------------------------------------*/
 // Layout par défaut pour chaque dimension
 
-template<int RankValue> class RightLayout;
-template<int RankValue> class LeftLayout;
+template<A_MDRANK_TYPE(RankValue)> class RightLayout;
+template<A_MDRANK_TYPE(RankValue)> class LeftLayout;
 
-template<> class RightLayout<2> : public ArrayLayout2<0,1> {};
-template<> class RightLayout<3> : public ArrayLayout3<0,1,2> {};
-using RightLayout2 = RightLayout<2>;
-using RightLayout3 = RightLayout<3>;
+template<> class RightLayout<MDDim2> : public ArrayLayout2<0,1> {};
+template<> class RightLayout<MDDim3> : public ArrayLayout3<0,1,2> {};
+using RightLayout2 = RightLayout<MDDim2>;
+using RightLayout3 = RightLayout<MDDim3>;
 
-template<> class LeftLayout<2> : public ArrayLayout2<1,0> {};
-template<> class LeftLayout<3> : public ArrayLayout3<2,1,0> {};
-using LeftLayout2 = LeftLayout<2>;
-using LeftLayout3 = LeftLayout<3>;
+template<> class LeftLayout<MDDim2> : public ArrayLayout2<1,0> {};
+template<> class LeftLayout<MDDim3> : public ArrayLayout3<2,1,0> {};
+using LeftLayout2 = LeftLayout<MDDim2>;
+using LeftLayout3 = LeftLayout<MDDim3>;
 
 #ifdef ARCANE_DEFAULT_LAYOUT_IS_LEFT
-template<> class DefaultLayout<2> : public LeftLayout<2> {};
-template<> class DefaultLayout<3> : public LeftLayout<3> {};
+template<> class DefaultLayout<MDDim2> : public LeftLayout<MDDim2> {};
+template<> class DefaultLayout<MDDim3> : public LeftLayout<MDDim3> {};
 #else
-template<> class DefaultLayout<2> : public RightLayout<2> {};
-template<> class DefaultLayout<3> : public RightLayout<3> {};
+template<> class DefaultLayout<MDDim2> : public RightLayout<MDDim2> {};
+template<> class DefaultLayout<MDDim3> : public RightLayout<MDDim3> {};
 #endif
 
 /*---------------------------------------------------------------------------*/

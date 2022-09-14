@@ -22,10 +22,10 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template class MDSpan<Real, 4>;
-template class MDSpan<Real, 3>;
-template class MDSpan<Real, 2>;
-template class MDSpan<Real, 1>;
+template class MDSpan<Real, MDDim4>;
+template class MDSpan<Real, MDDim3>;
+template class MDSpan<Real, MDDim2>;
+template class MDSpan<Real, MDDim1>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

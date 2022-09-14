@@ -79,7 +79,7 @@ class NumArrayUnitTest
   }
 
   template <int Rank,typename LayoutType> double
-  _doSum(NumArray<double, Rank, LayoutType> values, ArrayBounds<Rank> bounds)
+  _doSum(NumArray<double, A_MDDIM(Rank), LayoutType> values, ArrayBounds<A_MDDIM(Rank)> bounds)
   {
     double total = 0.0;
     SimpleLoopRanges<Rank> lb(bounds);
@@ -176,13 +176,13 @@ _executeTest1(eMemoryRessource mem_kind)
   constexpr double expected_sum4 = 164736000.0;
 
   {
-    NumArray<double, 1> t1(mem_kind);
+    NumArray<double, MDDim1> t1(mem_kind);
     t1.resize(n1);
 
-    NumArray<double, 1> t2(mem_kind);
+    NumArray<double, MDDim1> t2(mem_kind);
     t2.resize(n1);
 
-    NumArray<double, 1> t3(mem_kind);
+    NumArray<double, MDDim1> t3(mem_kind);
     t3.resize(n1);
 
     {
@@ -197,7 +197,7 @@ _executeTest1(eMemoryRessource mem_kind)
         else
           out_t1[i] = _getValue(i);
       };
-      NumArray<double, 1> host_t1(eMemoryRessource::Host);
+      NumArray<double, MDDim1> host_t1(eMemoryRessource::Host);
       host_t1.copy(t1);
       double s1 = _doSum<1>(host_t1, { n1 });
       info() << "SUM1 = " << s1;
@@ -206,7 +206,7 @@ _executeTest1(eMemoryRessource mem_kind)
     {
       auto command = makeCommand(queue);
       auto in_t1 = t1.constSpan();
-      MDSpan<double,1> out_t2 = t2.span();
+      MDSpan<double,MDDim1> out_t2 = t2.span();
 
       command << RUNCOMMAND_LOOP1(iter, n1)
       {
@@ -216,7 +216,7 @@ _executeTest1(eMemoryRessource mem_kind)
         span2[i] = span1[i];
       };
 
-      NumArray<double, 1> host_t2(eMemoryRessource::Host);
+      NumArray<double, MDDim1> host_t2(eMemoryRessource::Host);
       host_t2.copy(t2);
       double s2 = _doSum<1>(host_t2, { n1 });
       info() << "SUM1_2 = " << s2;
@@ -233,7 +233,7 @@ _executeTest1(eMemoryRessource mem_kind)
         out_t3.to1DSpan()[i] = in_t1.to1DSpan()[i];
       };
 
-      NumArray<double, 1> host_t3(eMemoryRessource::Host);
+      NumArray<double, MDDim1> host_t3(eMemoryRessource::Host);
       host_t3.copy(t3);
       double s3 = _doSum<1>(host_t3, { n1 });
       info() << "SUM1_3 = " << s3;
@@ -242,7 +242,7 @@ _executeTest1(eMemoryRessource mem_kind)
   }
 
   {
-    NumArray<double, 2> t1(mem_kind);
+    NumArray<double, MDDim2> t1(mem_kind);
     t1.resize(n1, n2);
 
     auto command = makeCommand(queue);
@@ -253,7 +253,7 @@ _executeTest1(eMemoryRessource mem_kind)
       auto [i, j] = iter();
       out_t1(i, j) = _getValue(i, j);
     };
-    NumArray<double, 2> host_t1(eMemoryRessource::Host);
+    NumArray<double, MDDim2> host_t1(eMemoryRessource::Host);
     host_t1.copy(t1);
     double s2 = _doSum<2>(host_t1, { n1, n2 });
     info() << "SUM2 = " << s2;
@@ -261,7 +261,7 @@ _executeTest1(eMemoryRessource mem_kind)
   }
 
   {
-    NumArray<double, 3, LeftLayout3> t1(mem_kind);
+    NumArray<double, MDDim3, LeftLayout3> t1(mem_kind);
     t1.resize(n1, n2, n3);
 
     auto command = makeCommand(queue);
@@ -272,7 +272,7 @@ _executeTest1(eMemoryRessource mem_kind)
       auto [i, j, k] = iter();
       out_t1(i, j, k) = _getValue(i, j, k);
     };
-    NumArray<double, 3, LeftLayout3> host_t1(eMemoryRessource::Host);
+    NumArray<double, MDDim3, LeftLayout3> host_t1(eMemoryRessource::Host);
     host_t1.copy(t1);
     double s3 = _doSum<3>(host_t1, { n1, n2, n3 });
     info() << "SUM3 = " << s3;
@@ -280,7 +280,7 @@ _executeTest1(eMemoryRessource mem_kind)
   }
 
   {
-    NumArray<double, 3, RightLayout3> t1(mem_kind);
+    NumArray<double, MDDim3, RightLayout3> t1(mem_kind);
     t1.resize(n1, n2, n3);
 
     auto command = makeCommand(queue);
@@ -291,7 +291,7 @@ _executeTest1(eMemoryRessource mem_kind)
       auto [i, j, k] = iter();
       out_t1(i, j, k) = _getValue(i, j, k);
     };
-    NumArray<double, 3, RightLayout3> host_t1(eMemoryRessource::Host);
+    NumArray<double, MDDim3, RightLayout3> host_t1(eMemoryRessource::Host);
     host_t1.copy(t1);
     double s3 = _doSum<3>(host_t1, { n1, n2, n3 });
     info() << "SUM3 = " << s3;
@@ -299,7 +299,7 @@ _executeTest1(eMemoryRessource mem_kind)
   }
 
   {
-    NumArray<double, 4> t1(mem_kind);
+    NumArray<double, MDDim4> t1(mem_kind);
     t1.resize(n1, n2, n3, n4);
 
     auto command = makeCommand(queue);
@@ -310,7 +310,7 @@ _executeTest1(eMemoryRessource mem_kind)
       auto [i, j, k, l] = iter();
       out_t1(i, j, k, l) = _getValue(i, j, k, l);
     };
-    NumArray<double, 4> host_t1(eMemoryRessource::Host);
+    NumArray<double, MDDim4> host_t1(eMemoryRessource::Host);
     host_t1.copy(t1);
     double s4 = _doSum<4>(host_t1, { n1, n2, n3, n4 });
     info() << "SUM4 = " << s4;
@@ -343,7 +343,7 @@ _executeTest2()
   auto queue3 = makeQueue(m_runner);
   queue3.setAsync(true);
 
-  NumArray<double, 4> t1(n1, n2, n3, n4);
+  NumArray<double, MDDim4> t1(n1, n2, n3, n4);
 
   // NOTE: Normalement il ne devrait pas être autorisé d'accéder au
   // même tableau depuis plusieurs commandes sur des files différentes

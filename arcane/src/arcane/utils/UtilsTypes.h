@@ -183,24 +183,72 @@ class Observer;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+//! Classe pour un tableau dynamique de rang RankValue
+template<int RankValue>
+class MDDim
+{
+ public:
+  static constexpr int rank() { return RankValue; }
+};
+
+// A définir lorsqu'on voudra que le rang des classes NumArray et associées
+// soit spécifier par une classe au lieu d'un entier
+//#define ARCANE_USE_TYPE_FOR_EXTENT
+
+#ifdef ARCANE_USE_TYPE_FOR_EXTENT
+
+//! Constante pour un tableau dynamique de rang 0
+using MDDim0 = MDDim<0>;
+//! Constante pour un tableau dynamique de rang 1
+using MDDim1 = MDDim<1>;
+//! Constante pour un tableau dynamique de rang 2
+using MDDim2 = MDDim<2>;
+//! Constante pour un tableau dynamique de rang 3
+using MDDim3 = MDDim<3>;
+//! Constante pour un tableau dynamique de rang 4
+using MDDim4 = MDDim<4>;
+
+#define A_MDRANK_TYPE(rank_name) typename rank_name
+#define A_MDRANK_RANK_VALUE(rank_name) (rank_name :: rank())
+#define A_MDDIM(rank_value) MDDim< rank_value >
+
+#else
+
+//! Constante pour un tableau de rang 0
+constexpr int MDDim0 = 0;
+//! Constante pour un tableau de rang 1
+constexpr int MDDim1 = 1;
+//! Constante pour un tableau de rang 2
+constexpr int MDDim2 = 2;
+//! Constante pour un tableau de rang 3
+constexpr int MDDim3 = 3;
+//! Constante pour un tableau de rang 4
+constexpr int MDDim4 = 4;
+
+#define A_MDRANK_TYPE(rank_name) int rank_name
+#define A_MDRANK_RANK_VALUE(rank_name) (rank_name)
+#define A_MDDIM(rank_value) rank_value
+
+#endif
+
 enum class eMemoryRessource;
-template<int RankValue> class DefaultLayout;
+template<A_MDRANK_TYPE(RankValue)> class DefaultLayout;
 class IMemoryRessourceMng;
-template<typename DataType,int RankValue,typename LayoutType = DefaultLayout<RankValue> >
+template<typename DataType,A_MDRANK_TYPE(RankValue),typename LayoutType = DefaultLayout<RankValue> >
 class MDSpanBase;
-template<class DataType,int RankValue,typename LayoutType = DefaultLayout<RankValue> >
+template<class DataType,A_MDRANK_TYPE(RankValue),typename LayoutType = DefaultLayout<RankValue> >
 class MDSpan;
-template<typename DataType,int RankValue,typename LayoutType = DefaultLayout<RankValue> >
+template<typename DataType,A_MDRANK_TYPE(RankValue),typename LayoutType = DefaultLayout<RankValue> >
 class NumArrayBase;
-template<class DataType,int RankValue,typename LayoutType = DefaultLayout<RankValue> >
+template<class DataType,A_MDRANK_TYPE(RankValue),typename LayoutType = DefaultLayout<RankValue> >
 class NumArray;
-template<int RankValue> class ArrayBounds;
+template<A_MDRANK_TYPE(RankValue)> class ArrayBounds;
 template<int RankValue> class ArrayBoundsIndexBase;
 template<int RankValue> class ArrayBoundsIndex;
-template<int RankValue> class ArrayExtentsBase;
-template<int RankValue> class ArrayExtents;
+template<A_MDRANK_TYPE(RankValue)> class ArrayExtentsBase;
+template<A_MDRANK_TYPE(RankValue)> class ArrayExtents;
 template<int RankValue> class ArrayStridesBase;
-template<int RankValue,typename LayoutType> class ArrayExtentsWithOffset;
+template<A_MDRANK_TYPE(RankValue),typename LayoutType> class ArrayExtentsWithOffset;
 class LoopRange;
 template<int RankValue> class SimpleLoopRanges;
 template<int RankValue> class ComplexLoopRanges;

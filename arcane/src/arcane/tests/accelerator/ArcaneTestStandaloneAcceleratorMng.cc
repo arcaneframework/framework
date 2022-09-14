@@ -23,9 +23,9 @@ _testSum(IAcceleratorMng* acc_mng)
   // Test la somme de deux tableaux 'a' et 'b' dans un tableau 'c'.
 
   int nb_value = 10000;
-  NumArray<Int64,1> a(nb_value);
-  NumArray<Int64,1> b(nb_value);
-  NumArray<Int64,1> c(nb_value);
+  NumArray<Int64,MDDim1> a(nb_value);
+  NumArray<Int64,MDDim1> b(nb_value);
+  NumArray<Int64,MDDim1> c(nb_value);
   for( int i=0; i<nb_value; ++i ){
     a.s(i) = i+2;
     b.s(i) = i+3;

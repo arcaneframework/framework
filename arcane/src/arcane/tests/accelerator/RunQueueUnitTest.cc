@@ -126,7 +126,7 @@ _executeTest1(bool use_priority)
   Integer nb_thread = 8;
   Integer N = 1000000;
 
-  UniqueArray<NumArray<Int32, 1>> values(8);
+  UniqueArray<NumArray<Int32, MDDim1>> values(8);
   for (Integer i = 0; i < nb_thread; ++i)
     values[i].resize(N);
 
@@ -187,7 +187,7 @@ _executeTest2()
   queue2.setAsync(true);
 
   Integer nb_value = 100000;
-  NumArray<Int32, 1> values(nb_value);
+  NumArray<Int32, MDDim1> values(nb_value);
   {
     auto command1 = makeCommand(queue1);
     auto v = viewOut(command1, values);
@@ -236,7 +236,7 @@ _executeTest3()
   queue2.setAsync(true);
 
   Integer nb_value = 100000;
-  NumArray<Int32, 1> values(nb_value);
+  NumArray<Int32, MDDim1> values(nb_value);
   {
     auto command1 = makeCommand(queue1);
     auto v = viewOut(command1, values);

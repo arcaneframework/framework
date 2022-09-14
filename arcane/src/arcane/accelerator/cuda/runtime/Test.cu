@@ -77,7 +77,7 @@ __global__ void MyVecAdd2(Span<const double> a,Span<const double>b,Span<double> 
   }
 }
 
-__global__ void MyVecAdd3(MDSpan<const double,1> a,MDSpan<const double,1> b,MDSpan<double,1> out)
+__global__ void MyVecAdd3(MDSpan<const double,MDDim1> a,MDSpan<const double,MDDim1> b,MDSpan<double,MDDim1> out)
 {
   int size = a.dim1Size();
   int i = blockDim.x * blockIdx.x + threadIdx.x;
@@ -99,7 +99,7 @@ void _initArrays(Span<double> a,Span<double> b,Span<double> c,int base)
   }
 }
 
-void _initArrays(MDSpan<double,1> a,MDSpan<double,1> b,MDSpan<double,1> c,int base)
+void _initArrays(MDSpan<double,MDDim1> a,MDSpan<double,MDDim1> b,MDSpan<double,MDDim1> c,int base)
 {
   Int64 vsize = a.dim1Size();
   for( Int64 i = 0; i<vsize; ++i ){
@@ -352,10 +352,10 @@ int arcaneTestCudaNumArray()
   IMemoryAllocator* cuda_allocator2 = Arcane::platform::getAcceleratorHostMemoryAllocator();
   if (!cuda_allocator2)
     ARCANE_FATAL("platform::getAcceleratorHostMemoryAllocator() is null");
-  NumArray<double,1> d_a;
+  NumArray<double,MDDim1> d_a;
   MyTestFunc1();
-  NumArray<double,1> d_b;
-  NumArray<double,1> d_out;
+  NumArray<double,MDDim1> d_b;
+  NumArray<double,MDDim1> d_out;
   d_a.resize(vsize);
   d_b.resize(vsize);
   d_out.resize(vsize);
@@ -382,9 +382,9 @@ int arcaneTestCudaNumArray()
 
     dim3 dimGrid(threadsPerBlock, 1, 1), dimBlock(blocksPerGrid, 1, 1);
 
-    MDSpan<const double,1> d_a_span = d_a.constSpan();
-    MDSpan<const double,1> d_b_span = d_b.constSpan();
-    MDSpan<double,1> d_out_view = d_out.span();
+    MDSpan<const double,MDDim1> d_a_span = d_a.constSpan();
+    MDSpan<const double,MDDim1> d_b_span = d_b.constSpan();
+    MDSpan<double,MDDim1> d_out_view = d_out.span();
 
     void *kernelArgs[] = {
       (void*)&d_a_span,
@@ -403,9 +403,9 @@ int arcaneTestCudaNumArray()
   // Lance une lambda
   {
     _initArrays(d_a,d_b,d_out,3);
-    MDSpan<const double,1> d_a_span = d_a.constSpan();
-    MDSpan<const double,1> d_b_span = d_b.constSpan();
-    MDSpan<double,1> d_out_span = d_out.span();
+    MDSpan<const double,MDDim1> d_a_span = d_a.constSpan();
+    MDSpan<const double,MDDim1> d_b_span = d_b.constSpan();
+    MDSpan<double,MDDim1> d_out_span = d_out.span();
     auto func = [=] ARCCORE_HOST_DEVICE (int i)
                 {
                   d_out_span(i) = d_a_span(i) + d_b_span(i);
@@ -429,8 +429,8 @@ int arcaneTestCudaNumArray()
 
   // Utilise les Real3 avec un tableau multi-dimensionel
   {
-    NumArray<Real,2> d_a3(vsize,3);
-    NumArray<Real,2> d_b3(vsize,3);
+    NumArray<Real,MDDim2> d_a3(vsize,3);
+    NumArray<Real,MDDim2> d_b3(vsize,3);
     for( Integer i=0; i<vsize; ++i ){
       Real a = (Real)(i+2);
       Real b = (Real)(i*i+3);
@@ -444,9 +444,9 @@ int arcaneTestCudaNumArray()
       d_b3.s(i,2) = b + 2.0;
     }
 
-    MDSpan<const Real,2> d_a3_span = d_a3.constSpan();
-    MDSpan<const Real,2> d_b3_span = d_b3.constSpan();
-    MDSpan<double,1> d_out_span = d_out.span();
+    MDSpan<const Real,MDDim2> d_a3_span = d_a3.constSpan();
+    MDSpan<const Real,MDDim2> d_b3_span = d_b3.constSpan();
+    MDSpan<double,MDDim1> d_out_span = d_out.span();
     auto func2 = [=] ARCCORE_HOST_DEVICE (int i) {
                    Real3 xa(d_a3_span(i,0),d_a3_span(i,1),d_a3_span(i,2));
                    Real3 xb(d_b3_span(i,0),d_b3_span(i,1),d_b3_span(i,2));
@@ -506,7 +506,7 @@ void arcaneTestCudaReductionX(int vsize,ax::RunQueue& queue)
     //if (i<10)
     //printf("Do Reduce i=%d v=%d %lf\n",i,xa[i],vxa);
   };
-  run(command,ArrayBounds<1>(vsize),func2);
+  run(command,ArrayBounds<MDDim1>(vsize),func2);
   std::cout << "SumReducer v_int=" << sum_reducer.reduce()
             << " v_double=" << sum_double_reducer.reduce()
             << "\n";

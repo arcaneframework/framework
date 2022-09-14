@@ -43,7 +43,7 @@ constexpr T fastmod(T a , T b)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<int RankValue>
+template<A_MDRANK_TYPE(RankValue)>
 class ArrayBoundsBase
 : private ArrayExtents<RankValue>
 {
@@ -53,7 +53,7 @@ class ArrayBoundsBase
   constexpr ArrayBoundsBase() : m_nb_element(0) {}
  public:
   ARCCORE_HOST_DEVICE constexpr Int64 nbElement() const { return m_nb_element; }
-  ARCCORE_HOST_DEVICE constexpr std::array<Int32,RankValue> asStdArray() const { return ArrayExtents<RankValue>::asStdArray(); }
+  ARCCORE_HOST_DEVICE constexpr std::array<Int32,A_MDRANK_RANK_VALUE(RankValue)> asStdArray() const { return ArrayExtents<RankValue>::asStdArray(); }
  protected:
   constexpr void _computeNbElement()
   {
@@ -65,16 +65,16 @@ class ArrayBoundsBase
 };
 
 template<>
-class ArrayBounds<1>
-: public ArrayBoundsBase<1>
+class ArrayBounds<MDDim1>
+: public ArrayBoundsBase<MDDim1>
 {
  public:
   using IndexType = ArrayBoundsIndex<1>;
-  using ArrayBoundsBase<1>::m_extents;
+  using ArrayBoundsBase<MDDim1>::m_extents;
   // Note: le constructeur ne doit pas être explicite pour permettre la conversion
   // à partir d'un entier.
   constexpr ArrayBounds(Int32 dim1)
-  : ArrayBoundsBase<1>()
+  : ArrayBoundsBase<MDDim1>()
   {
     m_extents[0] = dim1;
     _computeNbElement();
@@ -86,14 +86,14 @@ class ArrayBounds<1>
 };
 
 template<>
-class ArrayBounds<2>
-: public ArrayBoundsBase<2>
+class ArrayBounds<MDDim2>
+: public ArrayBoundsBase<MDDim2>
 {
  public:
   using IndexType = ArrayBoundsIndex<2>;
-  using ArrayBoundsBase<2>::m_extents;
+  using ArrayBoundsBase<MDDim2>::m_extents;
   constexpr ArrayBounds(Int32 dim1,Int32 dim2)
-  : ArrayBoundsBase<2>()
+  : ArrayBoundsBase<MDDim2>()
   {
     m_extents[0] = dim1;
     m_extents[1] = dim2;
@@ -108,14 +108,14 @@ class ArrayBounds<2>
 };
 
 template<>
-class ArrayBounds<3>
-: public ArrayBoundsBase<3>
+class ArrayBounds<MDDim3>
+: public ArrayBoundsBase<MDDim3>
 {
  public:
   using IndexType = ArrayBoundsIndex<3>;
-  using ArrayBoundsBase<3>::m_extents;
+  using ArrayBoundsBase<MDDim3>::m_extents;
   constexpr ArrayBounds(Int32 dim1,Int32 dim2,Int32 dim3)
-  : ArrayBoundsBase<3>()
+  : ArrayBoundsBase<MDDim3>()
   {
     m_extents[0] = dim1;
     m_extents[1] = dim2;
@@ -134,14 +134,14 @@ class ArrayBounds<3>
 };
 
 template<>
-class ArrayBounds<4>
-: public ArrayBoundsBase<4>
+class ArrayBounds<MDDim4>
+: public ArrayBoundsBase<MDDim4>
 {
  public:
   using IndexType = ArrayBoundsIndex<4>;
-  using ArrayBoundsBase<4>::m_extents;
+  using ArrayBoundsBase<MDDim4>::m_extents;
   constexpr ArrayBounds(Int32 dim1,Int32 dim2,Int32 dim3,Int32 dim4)
-  : ArrayBoundsBase<4>()
+  : ArrayBoundsBase<MDDim4>()
   {
     m_extents[0] = dim1;
     m_extents[1] = dim2;
