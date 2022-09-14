@@ -59,4 +59,7 @@ Debug*
 /build
 /out
 
+# CMake files
 CMakeUserPresets.json
+cmake-build-debug
+cmake-build-release
