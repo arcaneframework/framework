@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SerializedData.cc                                           (C) 2000-2021 */
+/* SerializedData.cc                                           (C) 2000-2022 */
 /*                                                                           */
 /* Donnée sérialisée.                                                        */
 /*---------------------------------------------------------------------------*/
@@ -17,10 +17,12 @@
 
 #include "arcane/utils/Ref.h"
 #include "arcane/utils/NotImplementedException.h"
+#include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/IHashAlgorithm.h"
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/Array.h"
+#include "arcane/utils/ArrayShape.h"
 
 #include "arcane/ISerializer.h"
 
@@ -29,6 +31,11 @@
 
 namespace Arcane
 {
+
+namespace
+{
+  const Int64 SERIALIZE_MAGIC_NUMBER = 0x6b90ac81;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -45,9 +52,9 @@ class SerializedData
  public:
 
   SerializedData();
-  SerializedData(eDataType base_data_type,Int64 memory_size,
-                 Integer nb_dimension,Int64 nb_element,Int64 nb_base_element,
-                 bool is_multi_size,Int64ConstArrayView extents);
+  SerializedData(eDataType base_data_type, Int64 memory_size,
+                 Integer nb_dimension, Int64 nb_element, Int64 nb_base_element,
+                 bool is_multi_size, Int64ConstArrayView extents, const ArrayShape& shape);
 
  public:
 
@@ -57,6 +64,7 @@ class SerializedData
   bool isMultiSize() const override { return m_is_multi_size; }
   Int64 memorySize() const override { return m_memory_size; }
   Int64ConstArrayView extents() const override { return m_extents; }
+  ArrayShape shape() const override { return m_shape; }
   Int64 nbBaseElement() const override { return m_nb_base_element; }
   ByteConstArrayView buffer() const override { return m_const_buffer.constSmallView(); }
   ByteArrayView buffer() override { return m_buffer.smallView(); }
@@ -79,7 +87,7 @@ class SerializedData
 
  public:
 
-  void computeHash(IHashAlgorithm* algo,ByteArray& output) const override;
+  void computeHash(IHashAlgorithm* algo, ByteArray& output) const override;
 
  private:
 
@@ -98,10 +106,12 @@ class SerializedData
   Span<Byte> m_buffer;
   Span<const Byte> m_const_buffer;
   UniqueArray<Byte> m_stored_buffer;
+  ArrayShape m_shape;
 
  private:
 
   void _serialize(ISerializer* sbuf) const;
+  void _serializeRead(ISerializer* sbuf);
   void _copyExtentsToDimensions();
 };
 
@@ -124,9 +134,9 @@ SerializedData()
 /*---------------------------------------------------------------------------*/
 
 SerializedData::
-SerializedData(eDataType base_data_type,Int64 memory_size,
-               Integer nb_dimension,Int64 nb_element,Int64 nb_base_element,
-               bool is_multi_size,Int64ConstArrayView extents)
+SerializedData(eDataType base_data_type, Int64 memory_size,
+               Integer nb_dimension, Int64 nb_element, Int64 nb_base_element,
+               bool is_multi_size, Int64ConstArrayView extents, const ArrayShape& shape)
 : m_base_data_type(base_data_type)
 , m_memory_size(memory_size)
 , m_nb_dimension(nb_dimension)
@@ -135,8 +145,22 @@ SerializedData(eDataType base_data_type,Int64 memory_size,
 , m_is_multi_size(is_multi_size)
 , m_extents(extents)
 , m_element_size(dataTypeSize(m_base_data_type))
+, m_shape(shape)
 {
   _copyExtentsToDimensions();
+  if (!is_multi_size && shape.nbDimension() == 0) {
+    if (nb_dimension == 1) {
+      m_shape.setNbDimension(1);
+      m_shape.setDimension(0, 1);
+      std::cout << "BUILD SHAPE DIM1\n";
+    }
+    else if (nb_dimension > 1) {
+      m_shape.setNbDimension(nb_dimension - 1);
+      std::cout << "BUILD SHAPE DIM=" << m_nb_dimension << "\n";
+      for (Int32 i = 1; i < nb_dimension; ++i)
+        m_shape.setDimension(i - 1, CheckedConvert::toInt32(extents[i]));
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -152,7 +176,7 @@ _copyExtentsToDimensions()
   // dépasse 32 bits. Cela n'est pas très grave si les valeurs de 'm_dimensions'
   // ne sont pas valide car ce n'est plus utilisé que dans computeHash() pour
   // garder la valeur compatible.
-  for( Integer i=0; i<n; ++i )
+  for (Integer i = 0; i < n; ++i)
     m_dimensions[i] = static_cast<Int32>(m_extents[i]);
 }
 
@@ -184,7 +208,6 @@ setWritableBytes(Span<Byte> buffer)
   m_const_buffer = buffer;
   m_stored_buffer.clear();
   m_memory_size = buffer.size();
-
 }
 
 /*---------------------------------------------------------------------------*/
@@ -215,14 +238,14 @@ allocateMemory(Int64 size)
 /*---------------------------------------------------------------------------*/
 
 void SerializedData::
-computeHash(IHashAlgorithm* algo,ByteArray& output) const
+computeHash(IHashAlgorithm* algo, ByteArray& output) const
 {
   // TODO: faire avec le support 64 bits mais cela change le hash.
-  algo->computeHash(m_const_buffer.constSmallView(),output);
+  algo->computeHash(m_const_buffer.constSmallView(), output);
   const Byte* ptr = reinterpret_cast<const Byte*>(m_dimensions.data());
-  Integer msize = CheckedConvert::multiply(m_dimensions.size(),(Integer)sizeof(Integer));
-  ByteConstArrayView dim_bytes(msize,ptr);
-  algo->computeHash(dim_bytes,output);
+  Integer msize = CheckedConvert::multiply(m_dimensions.size(), (Integer)sizeof(Integer));
+  ByteConstArrayView dim_bytes(msize, ptr);
+  algo->computeHash(dim_bytes, output);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -247,7 +270,7 @@ serialize(ISerializer* sbuf)
 {
   ISerializer::eMode mode = sbuf->mode();
 
-  switch(mode){
+  switch (mode) {
   case ISerializer::ModeReserve:
     _serialize(sbuf);
     break;
@@ -255,35 +278,58 @@ serialize(ISerializer* sbuf)
     _serialize(sbuf);
     break;
   case ISerializer::ModeGet:
-    switch(sbuf->readMode()){
+    switch (sbuf->readMode()) {
     case ISerializer::ReadReplace:
-      {
-        m_base_data_type = (eDataType)sbuf->getInteger(); // Pour le m_base_data_type
-        m_memory_size = sbuf->getInt64(); // Pour le m_memory_size
-        m_nb_dimension = sbuf->getInteger(); // Pour le m_nb_dimension
-        m_nb_element = sbuf->getInt64(); // Pour le m_nb_element
-        m_nb_base_element = sbuf->getInt64(); // Pour le m_nb_base_element
-        m_is_multi_size = sbuf->getInteger(); // Pour le m_is_multi_size
-        m_element_size = sbuf->getInt64(); // Pour le m_element_size
-
-        Int64 dimensions_size = sbuf->getInt64();
-        m_extents.resize(dimensions_size);
-        sbuf->getSpan(m_extents);
-        _copyExtentsToDimensions();
-
-        Int64 buffer_size = sbuf->getInt64();
-        m_stored_buffer.resize(buffer_size);
-        sbuf->getSpan(m_stored_buffer); // Pour les données
-        m_buffer = m_stored_buffer;
-        m_const_buffer = m_buffer;
-      }
+      _serializeRead(sbuf);
       break;
     case ISerializer::ReadAdd:
-      ARCANE_THROW(NotImplementedException,"ReadAdd");
+      ARCANE_THROW(NotImplementedException, "ReadAdd");
       break;
     }
     break;
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SerializedData::
+_serializeRead(ISerializer* sbuf)
+{
+  Int64 magic_number = sbuf->getInt64(); // Valeur magique pour vérification
+  if (magic_number != SERIALIZE_MAGIC_NUMBER)
+    ARCANE_FATAL("Bad magic number for SerializedData '{0}", magic_number);
+
+  Int32 version = sbuf->getInt32(); // Pour le numéro de version
+  if (version != 1)
+    ARCANE_FATAL("Bad magic number for SerializedData '{0}", magic_number);
+
+  m_base_data_type = (eDataType)sbuf->getInteger(); // Pour le m_base_data_type
+  m_memory_size = sbuf->getInt64(); // Pour le m_memory_size
+  m_nb_dimension = sbuf->getInteger(); // Pour le m_nb_dimension
+  m_nb_element = sbuf->getInt64(); // Pour le m_nb_element
+  m_nb_base_element = sbuf->getInt64(); // Pour le m_nb_base_element
+  m_is_multi_size = sbuf->getInteger(); // Pour le m_is_multi_size
+  m_element_size = sbuf->getInt64(); // Pour le m_element_size
+
+  // Lecture des dimensions
+  Int64 dimensions_size = sbuf->getInt64();
+  m_extents.resize(dimensions_size);
+  sbuf->getSpan(m_extents);
+  _copyExtentsToDimensions();
+
+  // Lecture de 'm_shape'
+  Int32 shape_nb_dim = sbuf->getInt32(); // Pour m_shape.nbDimension()
+  Int32 shape_dims_buf[ArrayShape::MAX_NB_DIMENSION];
+  Int32ArrayView shape_dims(shape_nb_dim, shape_dims_buf);
+  sbuf->getSpan(shape_dims); // Pour les dimensions
+  m_shape = ArrayShape(shape_dims);
+
+  Int64 buffer_size = sbuf->getInt64();
+  m_stored_buffer.resize(buffer_size);
+  sbuf->getSpan(m_stored_buffer); // Pour les données
+  m_buffer = m_stored_buffer;
+  m_const_buffer = m_buffer;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -298,26 +344,34 @@ void SerializedData::
 _serialize(ISerializer* sbuf) const
 {
   ISerializer::eMode mode = sbuf->mode();
-  if (m_extents.size()!=m_dimensions.size())
+  if (m_extents.size() != m_dimensions.size())
     ARCANE_FATAL("Incoherence between extents ({0}) and dimensions ({1})",
-                 m_extents.size(),m_dimensions.size());
-  switch(mode){
+                 m_extents.size(), m_dimensions.size());
+
+  switch (mode) {
   case ISerializer::ModeReserve:
+    sbuf->reserve(DT_Int64, 1); // Valeur magique pour vérification
+    sbuf->reserve(DT_Int32, 1); // Numéro de version
     sbuf->reserveInteger(1); // Pour le m_base_data_type
-    sbuf->reserve(DT_Int64,1); // Pour le m_memory_size
+    sbuf->reserve(DT_Int64, 1); // Pour le m_memory_size
     sbuf->reserveInteger(1); // Pour le m_nb_dimension
-    sbuf->reserve(DT_Int64,1); // Pour le m_nb_element
-    sbuf->reserve(DT_Int64,1); // Pour le m_nb_base_element
+    sbuf->reserve(DT_Int64, 1); // Pour le m_nb_element
+    sbuf->reserve(DT_Int64, 1); // Pour le m_nb_base_element
     sbuf->reserveInteger(1); // Pour le m_is_multi_size
-    sbuf->reserve(DT_Int64,1); // Pour le m_element_size
+    sbuf->reserve(DT_Int64, 1); // Pour le m_element_size
 
-    sbuf->reserve(DT_Int64,1); // Pour le m_extents.size()
-    sbuf->reserveSpan(DT_Int64,m_extents.size()); // Pour les dimensions
+    sbuf->reserve(DT_Int64, 1); // Pour le m_extents.size()
+    sbuf->reserveSpan(DT_Int64, m_extents.size()); // Pour les dimensions
 
-    sbuf->reserve(DT_Int64,1); // Pour le m_const_buffer.size()
-    sbuf->reserveSpan(DT_Byte,m_const_buffer.size()); // Pour les données
+    sbuf->reserve(DT_Int32, 1); // Pour le nombre de valeur de 'm_shape'
+    sbuf->reserveSpan(DT_Int32, m_shape.nbDimension()); // Pour les données de 'm_shape'
+
+    sbuf->reserve(DT_Int64, 1); // Pour le m_const_buffer.size()
+    sbuf->reserveSpan(DT_Byte, m_const_buffer.size()); // Pour les données
     break;
   case ISerializer::ModePut:
+    sbuf->putInt64(SERIALIZE_MAGIC_NUMBER); // Valeur magique pour vérification
+    sbuf->putInt32(1); // Numéro de version
     sbuf->putInteger(m_base_data_type); // Pour le m_base_data_type
     sbuf->putInt64(m_memory_size); // Pour le m_memory_size
     sbuf->putInteger(m_nb_dimension); // Pour le m_nb_dimension
@@ -329,11 +383,14 @@ _serialize(ISerializer* sbuf) const
     sbuf->putInt64(m_extents.size()); // Pour le m_extents.size()
     sbuf->putSpan(m_extents); // Pour les dimensions
 
+    sbuf->putInt32(m_shape.nbDimension()); // Pour m_shape.nbDimension()
+    sbuf->putSpan(m_shape.dimensions()); // Pour les dimensions
+
     sbuf->putInt64(m_const_buffer.size()); // Pour le m_const_buffer.size()
     sbuf->putSpan(m_const_buffer); // Pour les données
     break;
   case ISerializer::ModeGet:
-    ARCANE_FATAL("This methode does not handle ModeGet");
+    ARCANE_THROW(NotSupportedException, "ModeGet in const method");
   }
 }
 
@@ -342,13 +399,26 @@ _serialize(ISerializer* sbuf) const
 
 extern "C++" ARCANE_CORE_EXPORT
 Ref<ISerializedData>
-arcaneCreateSerializedDataRef(eDataType data_type,Int64 memory_size,
-                              Integer nb_dim,Int64 nb_element,Int64 nb_base_element,
-                              bool is_multi_size,Int64ConstArrayView dimensions)
+arcaneCreateSerializedDataRef(eDataType data_type, Int64 memory_size,
+                              Integer nb_dim, Int64 nb_element, Int64 nb_base_element,
+                              bool is_multi_size, Int64ConstArrayView dimensions, const ArrayShape& shape)
 {
-  auto* x = new SerializedData(data_type,memory_size,nb_dim,nb_element,
-                               nb_base_element,is_multi_size,dimensions);
+  auto* x = new SerializedData(data_type, memory_size, nb_dim, nb_element,
+                               nb_base_element, is_multi_size, dimensions, shape);
   return makeRef(x);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ARCANE_CORE_EXPORT
+Ref<ISerializedData>
+arcaneCreateSerializedDataRef(eDataType data_type, Int64 memory_size,
+                              Integer nb_dim, Int64 nb_element, Int64 nb_base_element,
+                              bool is_multi_size, Int64ConstArrayView dimensions)
+{
+  return arcaneCreateSerializedDataRef(data_type, memory_size, nb_dim, nb_element,
+                                       nb_base_element, is_multi_size, dimensions, ArrayShape());
 }
 
 /*---------------------------------------------------------------------------*/
