@@ -70,15 +70,15 @@ _copy(Span<const std::byte> from, eMemoryRessource from_mem,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template class NumArray<Real, 4>;
-template class NumArray<Real, 3>;
-template class NumArray<Real, 2>;
-template class NumArray<Real, 1>;
+template class NumArray<Real, MDDim4>;
+template class NumArray<Real, MDDim3>;
+template class NumArray<Real, MDDim2>;
+template class NumArray<Real, MDDim1>;
 
-template class NumArrayBase<Real, 4>;
-template class NumArrayBase<Real, 3>;
-template class NumArrayBase<Real, 2>;
-template class NumArrayBase<Real, 1>;
+template class NumArrayBase<Real, MDDim4>;
+template class NumArrayBase<Real, MDDim3>;
+template class NumArrayBase<Real, MDDim2>;
+template class NumArrayBase<Real, MDDim1>;
 
 template class ArrayStridesBase<1>;
 template class ArrayStridesBase<2>;

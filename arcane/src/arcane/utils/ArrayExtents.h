@@ -158,7 +158,7 @@ class ArrayStridesBase
  * \brief Spécialisation de ArrayExtentsBase pour les tableaux de dimension 0 (les scalaires)
  */
 template<>
-class ArrayExtentsBase<0>
+class ArrayExtentsBase<MDDim0>
 {
  public:
   ArrayExtentsBase() = default;
@@ -166,7 +166,7 @@ class ArrayExtentsBase<0>
   ARCCORE_HOST_DEVICE SmallSpan<const Int32> asSpan() const { return {}; }
   //! Nombre total d'eléments
   ARCCORE_HOST_DEVICE Int32 totalNbElement() const { return 1; }
-  ARCCORE_HOST_DEVICE static ArrayExtentsBase<0> fromSpan([[maybe_unused]] Span<const Int32> extents)
+  ARCCORE_HOST_DEVICE static ArrayExtentsBase<MDDim0> fromSpan([[maybe_unused]] Span<const Int32> extents)
   {
     // TODO: vérifier la taille de \a extents
     return {};
@@ -178,20 +178,27 @@ class ArrayExtentsBase<0>
 /*!
  * \brief Classe pour conserver le nombre d'éléments dans chaque dimension.
  */
-template<int RankValue>
+template<A_MDRANK_TYPE(RankValue)>
 class ArrayExtentsBase
 {
+#ifdef ARCANE_USE_TYPE_FOR_EXTENT
+  using ArrayExtentsPreviousRank = ArrayExtentsBase<MDDim<RankValue::rank()-1>>;
+#else
+  using ArrayExtentsPreviousRank = ArrayExtentsBase<RankValue-1>;
+#endif
+
  public:
   ARCCORE_HOST_DEVICE constexpr ArrayExtentsBase()
-  : m_extents(detail::ArrayExtentsTraits<RankValue>::extendsInitHelper()) { }
+  : m_extents(detail::ArrayExtentsTraits<A_MDRANK_RANK_VALUE(RankValue)>::extendsInitHelper()) { }
  protected:
   explicit ARCCORE_HOST_DEVICE ArrayExtentsBase(SmallSpan<const Int32> extents)
   {
+    auto nb_rank = A_MDRANK_RANK_VALUE(RankValue);
     Integer n = extents.size();
-    Integer vn = math::min(n,RankValue);
+    Integer vn = math::min(n,nb_rank);
     for( int i=0; i<vn; ++i )
       m_extents[i] = extents[i];
-    for( int i=vn; i<RankValue; ++i )
+    for( int i=vn; i<nb_rank; ++i )
       m_extents[i] = 0;
   }
  public:
@@ -200,20 +207,20 @@ class ArrayExtentsBase
   //! Positionne à \a v le nombre d'éléments de la i-ème dimension
   ARCCORE_HOST_DEVICE void setExtent(int i,Int32 v) { m_extents[i] = v; }
   ARCCORE_HOST_DEVICE Int32 operator()(int i) const { return m_extents[i]; }
-  ARCCORE_HOST_DEVICE SmallSpan<const Int32> asSpan() const { return { m_extents.data(), RankValue }; }
-  ARCCORE_HOST_DEVICE std::array<Int32,RankValue> asStdArray() const { return m_extents; }
+  ARCCORE_HOST_DEVICE SmallSpan<const Int32> asSpan() const { return { m_extents.data(), A_MDRANK_RANK_VALUE(RankValue) }; }
+  ARCCORE_HOST_DEVICE std::array<Int32,A_MDRANK_RANK_VALUE(RankValue)> asStdArray() const { return m_extents; }
   //! Nombre total d'eléments
   ARCCORE_HOST_DEVICE constexpr Int64 totalNbElement() const
   {
     Int64 nb_element = 1;
-    for (int i=0; i<RankValue; i++)
+    for (int i=0; i<A_MDRANK_RANK_VALUE(RankValue); i++)
       nb_element *= m_extents[i];
     return nb_element;
   }
   // Instance contenant les dimensions après la première
-  ARCCORE_HOST_DEVICE ArrayExtentsBase<RankValue-1> removeFirstExtent() const
+  ARCCORE_HOST_DEVICE ArrayExtentsPreviousRank removeFirstExtent() const
   {
-    return ArrayExtentsBase<RankValue-1>::fromSpan({m_extents.data()+1,RankValue-1});
+    return ArrayExtentsPreviousRank::fromSpan({m_extents.data()+1,A_MDRANK_RANK_VALUE(RankValue)-1});
   }
   /*!
    * \brief Construit une instance à partir des valeurs données dans \a extents.
@@ -223,19 +230,19 @@ class ArrayExtentsBase
     return ArrayExtentsBase<RankValue>(extents);
   }
  protected:
-  std::array<Int32,RankValue> m_extents;
+  std::array<Int32,A_MDRANK_RANK_VALUE(RankValue)> m_extents;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 template<>
-class ArrayExtents<1>
-: public ArrayExtentsBase<1>
+class ArrayExtents<MDDim1>
+: public ArrayExtentsBase<MDDim1>
 {
  public:
 
-  using BaseClass = ArrayExtentsBase<1>;
+  using BaseClass = ArrayExtentsBase<MDDim1>;
 
  public:
 
@@ -262,12 +269,12 @@ class ArrayExtents<1>
 /*---------------------------------------------------------------------------*/
 
 template<>
-class ArrayExtents<2>
-: public ArrayExtentsBase<2>
+class ArrayExtents<MDDim2>
+: public ArrayExtentsBase<MDDim2>
 {
  public:
 
-  using BaseClass = ArrayExtentsBase<2>;
+  using BaseClass = ArrayExtentsBase<MDDim2>;
 
  public:
 
@@ -296,12 +303,12 @@ class ArrayExtents<2>
 /*---------------------------------------------------------------------------*/
 
 template<>
-class ArrayExtents<3>
-: public ArrayExtentsBase<3>
+class ArrayExtents<MDDim3>
+: public ArrayExtentsBase<MDDim3>
 {
  public:
 
-  using BaseClass = ArrayExtentsBase<3>;
+  using BaseClass = ArrayExtentsBase<MDDim3>;
 
  public:
 
@@ -332,11 +339,11 @@ class ArrayExtents<3>
 /*---------------------------------------------------------------------------*/
 
 template<>
-class ArrayExtents<4>
-: public ArrayExtentsBase<4>
+class ArrayExtents<MDDim4>
+: public ArrayExtentsBase<MDDim4>
 {
  public:
-  using BaseClass = ArrayExtentsBase<4>;
+  using BaseClass = ArrayExtentsBase<MDDim4>;
  public:
   ArrayExtents() = default;
   ArrayExtents(BaseClass rhs) : BaseClass(rhs){}
@@ -367,11 +374,11 @@ class ArrayExtents<4>
 /*---------------------------------------------------------------------------*/
 
 template<typename LayoutType>
-class ArrayExtentsWithOffset<1,LayoutType>
-: private ArrayExtents<1>
+class ArrayExtentsWithOffset<MDDim1,LayoutType>
+: private ArrayExtents<MDDim1>
 {
  public:
-  using BaseClass = ArrayExtents<1>;
+  using BaseClass = ArrayExtents<MDDim1>;
   using BaseClass::extent;
   using BaseClass::operator();
   using BaseClass::asSpan;
@@ -380,7 +387,7 @@ class ArrayExtentsWithOffset<1,LayoutType>
   using Layout = LayoutType;
  public:
   ArrayExtentsWithOffset() = default;
-  ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(ArrayExtents<1> rhs)
+  ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(ArrayExtents<MDDim1> rhs)
   : BaseClass(rhs)
   {
   }
@@ -398,7 +405,7 @@ class ArrayExtentsWithOffset<1,LayoutType>
   {
     BaseClass::setSize(dim1_size);
   }
-  ARCCORE_HOST_DEVICE void setSize(ArrayExtents<1> extents)
+  ARCCORE_HOST_DEVICE void setSize(ArrayExtents<MDDim1> extents)
   {
     BaseClass::setSize(extents(0));
   }
@@ -409,11 +416,11 @@ class ArrayExtentsWithOffset<1,LayoutType>
 /*---------------------------------------------------------------------------*/
 
 template<typename LayoutType>
-class ArrayExtentsWithOffset<2,LayoutType>
-: private ArrayExtents<2>
+class ArrayExtentsWithOffset<MDDim2,LayoutType>
+: private ArrayExtents<MDDim2>
 {
  public:
-  using BaseClass = ArrayExtents<2>;
+  using BaseClass = ArrayExtents<MDDim2>;
   using BaseClass::extent;
   using BaseClass::operator();
   using BaseClass::asSpan;
@@ -422,7 +429,7 @@ class ArrayExtentsWithOffset<2,LayoutType>
   using Layout = LayoutType;
  public:
   ArrayExtentsWithOffset() = default;
-  ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(ArrayExtents<2> rhs)
+  ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(ArrayExtents<MDDim2> rhs)
   : BaseClass(rhs)
   {
   }
@@ -439,7 +446,7 @@ class ArrayExtentsWithOffset<2,LayoutType>
   {
     BaseClass::setSize(dim1_size,dim2_size);
   }
-  ARCCORE_HOST_DEVICE void setSize(ArrayExtents<2> dims)
+  ARCCORE_HOST_DEVICE void setSize(ArrayExtents<MDDim2> dims)
   {
     this->setSize(dims(0),dims(1));
   }
@@ -450,11 +457,11 @@ class ArrayExtentsWithOffset<2,LayoutType>
 /*---------------------------------------------------------------------------*/
 
 template<typename LayoutType>
-class ArrayExtentsWithOffset<3,LayoutType>
-: private ArrayExtents<3>
+class ArrayExtentsWithOffset<MDDim3,LayoutType>
+: private ArrayExtents<MDDim3>
 {
  public:
-  using BaseClass = ArrayExtents<3>;
+  using BaseClass = ArrayExtents<MDDim3>;
   using BaseClass::extent;
   using BaseClass::operator();
   using BaseClass::asSpan;
@@ -463,7 +470,7 @@ class ArrayExtentsWithOffset<3,LayoutType>
   using Layout = LayoutType;
  public:
   ArrayExtentsWithOffset() = default;
-  ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(ArrayExtents<3> rhs)
+  ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(ArrayExtents<MDDim3> rhs)
   : BaseClass(rhs)
   {
     _computeOffsets();
@@ -482,7 +489,7 @@ class ArrayExtentsWithOffset<3,LayoutType>
     BaseClass::setSize(dim1_size,dim2_size,dim3_size);
     _computeOffsets();
   }
-  void setSize(ArrayExtents<3> dims)
+  void setSize(ArrayExtents<MDDim3> dims)
   {
     this->setSize(dims(0),dims(1),dims(2));
   }
@@ -500,11 +507,11 @@ class ArrayExtentsWithOffset<3,LayoutType>
 /*---------------------------------------------------------------------------*/
 
 template<typename LayoutType>
-class ArrayExtentsWithOffset<4,LayoutType>
-: private ArrayExtents<4>
+class ArrayExtentsWithOffset<MDDim4,LayoutType>
+: private ArrayExtents<MDDim4>
 {
  public:
-  using BaseClass = ArrayExtents<4>;
+  using BaseClass = ArrayExtents<MDDim4>;
   using BaseClass::extent;
   using BaseClass::operator();
   using BaseClass::asSpan;
@@ -513,7 +520,7 @@ class ArrayExtentsWithOffset<4,LayoutType>
   using Layout = LayoutType;
  public:
   ArrayExtentsWithOffset() = default;
-  ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(ArrayExtents<4> rhs)
+  ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(ArrayExtents<MDDim4> rhs)
   : BaseClass(rhs)
   {
     _computeOffsets();
@@ -532,7 +539,7 @@ class ArrayExtentsWithOffset<4,LayoutType>
     BaseClass::setSize(dim1_size,dim2_size,dim3_size,dim4_size);
     _computeOffsets();
   }
-  void setSize(ArrayExtents<4> dims)
+  void setSize(ArrayExtents<MDDim4> dims)
   {
     this->setSize(dims(0),dims(1),dims(2),dims(3));
   }

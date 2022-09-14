@@ -57,17 +57,20 @@ class SimpleLoopRanges
 {
   friend class ComplexLoopRanges<N>;
  public:
-  typedef typename ArrayBounds<N>::IndexType IndexType;
+  using ArrayBoundsType = ArrayBounds<A_MDDIM(N)>;
+  using ArrayBoundsIndexType = ArrayBoundsIndex<N>;
  public:
-  SimpleLoopRanges(ArrayBounds<N> b) : m_bounds(b){}
+  typedef typename ArrayBoundsType::IndexType IndexType;
+ public:
+  SimpleLoopRanges(ArrayBoundsType b) : m_bounds(b){}
  public:
   constexpr Int32 lowerBound(int) const { return 0; }
   constexpr Int32 upperBound(int i) const { return m_bounds.extent(i); }
   constexpr Int32 extent(int i) const { return m_bounds.extent(i); }
   constexpr Int64 nbElement() const { return m_bounds.nbElement(); }
-  constexpr ArrayBoundsIndex<N> getIndices(Int32 i) const { return m_bounds.getIndices(i); }
+  constexpr ArrayBoundsIndexType getIndices(Int32 i) const { return m_bounds.getIndices(i); }
  private:
-  ArrayBounds<N> m_bounds;
+  ArrayBoundsType m_bounds;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -83,9 +86,12 @@ template <int N>
 class ComplexLoopRanges
 {
  public:
-  typedef typename ArrayBounds<N>::IndexType IndexType;
+  using ArrayBoundsType = ArrayBounds<A_MDDIM(N)>;
+  using ArrayBoundsIndexType = ArrayBoundsIndex<N>;
  public:
-  ComplexLoopRanges(ArrayBounds<N> lower,ArrayBounds<N> extents)
+  typedef typename ArrayBoundsType::IndexType IndexType;
+ public:
+  ComplexLoopRanges(ArrayBoundsType lower,ArrayBoundsType extents)
   : m_lower_bounds(lower.asStdArray()), m_extents(extents){}
   ComplexLoopRanges(const SimpleLoopRanges<N>& bounds)
   : m_extents(bounds.m_bounds){}
@@ -94,15 +100,15 @@ class ComplexLoopRanges
   constexpr Int32 upperBound(int i) const { return m_lower_bounds[i]+m_extents.extent(i); }
   constexpr Int32 extent(int i) const { return m_extents.extent(i); }
   constexpr Int64 nbElement() const { return m_extents.nbElement(); }
-  constexpr ArrayBoundsIndex<N> getIndices(Int32 i) const
+  constexpr ArrayBoundsIndexType getIndices(Int32 i) const
   {
     auto x = m_extents.getIndices(i);
     x.add(m_lower_bounds);
     return x;
   }
  private:
-  ArrayBoundsIndex<N> m_lower_bounds;
-  ArrayBounds<N> m_extents;
+  ArrayBoundsIndexType m_lower_bounds;
+  ArrayBoundsType m_extents;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -111,7 +117,7 @@ class ComplexLoopRanges
 inline SimpleLoopRanges<1>
 makeLoopRanges(Int32 n1)
 {
-  ArrayBounds<1> bounds(n1);
+  SimpleLoopRanges<1>::ArrayBoundsType bounds(n1);
   return bounds;
 }
 
@@ -119,7 +125,7 @@ makeLoopRanges(Int32 n1)
 inline SimpleLoopRanges<2>
 makeLoopRanges(Int32 n1,Int32 n2)
 {
-  ArrayBounds<2> bounds(n1,n2);
+  SimpleLoopRanges<2>::ArrayBoundsType bounds(n1,n2);
   return bounds;
 }
 
@@ -127,7 +133,7 @@ makeLoopRanges(Int32 n1,Int32 n2)
 inline SimpleLoopRanges<3>
 makeLoopRanges(Int32 n1,Int32 n2,Int32 n3)
 {
-  ArrayBounds<3> bounds(n1,n2,n3);
+  SimpleLoopRanges<3>::ArrayBoundsType bounds(n1,n2,n3);
   return bounds;
 }
 
@@ -135,7 +141,7 @@ makeLoopRanges(Int32 n1,Int32 n2,Int32 n3)
 inline SimpleLoopRanges<4>
 makeLoopRanges(Int32 n1,Int32 n2,Int32 n3,Int32 n4)
 {
-  ArrayBounds<4> bounds(n1,n2,n3,n4);
+  SimpleLoopRanges<4>::ArrayBoundsType bounds(n1,n2,n3,n4);
   return bounds;
 }
 
@@ -143,8 +149,8 @@ makeLoopRanges(Int32 n1,Int32 n2,Int32 n3,Int32 n4)
 inline ComplexLoopRanges<1>
 makeLoopRanges(LoopRange n1)
 {
-  ArrayBounds<1> lower_bounds(n1.lowerBound());
-  ArrayBounds<1> sizes(n1.size());
+  ComplexLoopRanges<1>::ArrayBoundsType lower_bounds(n1.lowerBound());
+  ComplexLoopRanges<1>::ArrayBoundsType sizes(n1.size());
   return {lower_bounds,sizes};
 }
 
@@ -152,8 +158,8 @@ makeLoopRanges(LoopRange n1)
 inline ComplexLoopRanges<2>
 makeLoopRanges(LoopRange n1,LoopRange n2)
 {
-  ArrayBounds<2> lower_bounds(n1.lowerBound(),n2.lowerBound());
-  ArrayBounds<2> sizes(n1.size(),n2.size());
+  ComplexLoopRanges<2>::ArrayBoundsType lower_bounds(n1.lowerBound(),n2.lowerBound());
+  ComplexLoopRanges<2>::ArrayBoundsType sizes(n1.size(),n2.size());
   return {lower_bounds,sizes};
 }
 
@@ -161,8 +167,8 @@ makeLoopRanges(LoopRange n1,LoopRange n2)
 inline ComplexLoopRanges<3>
 makeLoopRanges(LoopRange n1,LoopRange n2,LoopRange n3)
 {
-  ArrayBounds<3> lower_bounds(n1.lowerBound(),n2.lowerBound(),n3.lowerBound());
-  ArrayBounds<3> sizes(n1.size(),n2.size(),n3.size());
+  ComplexLoopRanges<3>::ArrayBoundsType lower_bounds(n1.lowerBound(),n2.lowerBound(),n3.lowerBound());
+  ComplexLoopRanges<3>::ArrayBoundsType sizes(n1.size(),n2.size(),n3.size());
   return {lower_bounds,sizes};
 }
 
@@ -170,8 +176,8 @@ makeLoopRanges(LoopRange n1,LoopRange n2,LoopRange n3)
 inline ComplexLoopRanges<4>
 makeLoopRanges(LoopRange n1,LoopRange n2,LoopRange n3,LoopRange n4)
 {
-  ArrayBounds<4> lower_bounds(n1.lowerBound(),n2.lowerBound(),n3.lowerBound(),n4.lowerBound());
-  ArrayBounds<4> sizes(n1.size(),n2.size(),n3.size(),n4.size());
+  ComplexLoopRanges<4>::ArrayBoundsType lower_bounds(n1.lowerBound(),n2.lowerBound(),n3.lowerBound(),n4.lowerBound());
+  ComplexLoopRanges<4>::ArrayBoundsType sizes(n1.size(),n2.size(),n3.size(),n4.size());
   return {lower_bounds,sizes};
 }
 

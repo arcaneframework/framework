@@ -25,7 +25,7 @@ TEST(NumArray,Basic)
 {
   std::cout << "TEST_NUMARRAY Basic\n";
 
-  NumArray<Real,1> array1(3);
+  NumArray<Real,MDDim1> array1(3);
   array1.s(1) = 5.0;
   ASSERT_EQ(array1(1),5.0);
   std::cout << " V=" << array1(1) << "\n";
@@ -35,31 +35,31 @@ TEST(NumArray,Basic)
   array1.resize(7);
   ASSERT_EQ(array1.totalNbElement(),7);
 
-  NumArray<Real,2> array2(2,3);
+  NumArray<Real,MDDim2> array2(2,3);
   array2.s(1,2) = 5.0;
   std::cout << " V=" << array2(1,2) << "\n";
   array2.resize(7,5);
   ASSERT_EQ(array2.totalNbElement(),(7*5));
 
-  NumArray<Real,3> array3(2,3,4);
+  NumArray<Real,MDDim3> array3(2,3,4);
   array3.s(1,2,3) = 5.0;
   std::cout << " V=" << array3(1,2,3) << "\n";
   array3.resize(12,4,6);
   ASSERT_EQ(array3.totalNbElement(),(12*4*6));
 
-  NumArray<Real,4> array4(2,3,4,5);
+  NumArray<Real,MDDim4> array4(2,3,4,5);
   array4.s(1,2,3,4) = 5.0;
   std::cout << " V=" << array4(1,2,3,4) << "\n";
   array4.resize(8,3,7,5);
   ASSERT_EQ(array4.totalNbElement(),(8*3*7*5));
 
-  NumArray<Real,1> num_data1(4, { 2.4, 5.6, 3.3, 5.4 });
+  NumArray<Real,MDDim1> num_data1(4, { 2.4, 5.6, 3.3, 5.4 });
   ASSERT_EQ(num_data1[0], 2.4);
   ASSERT_EQ(num_data1[1], 5.6);
   ASSERT_EQ(num_data1[2], 3.3);
   ASSERT_EQ(num_data1[3], 5.4);
 
-  NumArray<Real,2,RightLayout<2>> num_data2(3, 2, { 1.4, 15.6, 33.3, 7.4, 4.2, 6.5 });
+  NumArray<Real,MDDim2,RightLayout<MDDim2>> num_data2(3, 2, { 1.4, 15.6, 33.3, 7.4, 4.2, 6.5 });
   ASSERT_EQ(num_data2(0,0), 1.4);
   ASSERT_EQ(num_data2(0,1), 15.6);
   ASSERT_EQ(num_data2(1,0), 33.3);
@@ -75,22 +75,22 @@ TEST(NumArray,Basic2)
 {
   std::cout << "TEST_NUMARRAY Basic2\n";
 
-  NumArray<Real,1> array1;
+  NumArray<Real,MDDim1> array1;
   array1.resize(2);
   array1.s(1) = 5.0;
   std::cout << " V=" << array1(1) << "\n";
 
-  NumArray<Real,2> array2;
+  NumArray<Real,MDDim2> array2;
   array2.resize(2,3);
   array2.s(1,2) = 5.0;
   std::cout << " V=" << array2(1,2) << "\n";
 
-  NumArray<Real,3> array3(2,3,4);
+  NumArray<Real,MDDim3> array3(2,3,4);
   array3.resize(2,3,4);
   array3.s(1,2,3) = 5.0;
   std::cout << " V=" << array3(1,2,3) << "\n";
 
-  NumArray<Real,4> array4(2,3,4,5);
+  NumArray<Real,MDDim4> array4(2,3,4,5);
   array4.resize(2,3,4,5);
   array4.s(1,2,3,4) = 5.0;
   std::cout << " V=" << array4(1,2,3,4) << "\n";
@@ -105,7 +105,7 @@ TEST(NumArray3,Misc)
   constexpr int nb_y = 4;
   constexpr int nb_z = 5;
 
-  NumArray<Int64,3> v(nb_x,nb_y,nb_z);
+  NumArray<Int64,MDDim3> v(nb_x,nb_y,nb_z);
   v.fill(0);
   // Attention, v.extents() change si 'v' est redimensionné
   auto v_extents = v.extentsWithOffset();
@@ -173,27 +173,27 @@ TEST(NumArray3,Copy)
   int nb_x = 3;
   int nb_y = 4;
   int nb_z = 5;
-  NumArray<Real,3> v(nb_x,nb_y,nb_z);
+  NumArray<Real,MDDim3> v(nb_x,nb_y,nb_z);
   v.fill(3.2);
-  NumArray<Real,3> v2(nb_x*2,nb_y/2,nb_z*3);
+  NumArray<Real,MDDim3> v2(nb_x*2,nb_y/2,nb_z*3);
 
   v.copy(v2.span());
 
   {
-    NumArray<int,1> vi0(4,{1,3,5,7});
-    NumArray<int,1> vi1(vi0);
-    NumArray<int,1> vi2;
+    NumArray<int,MDDim1> vi0(4,{1,3,5,7});
+    NumArray<int,MDDim1> vi1(vi0);
+    NumArray<int,MDDim1> vi2;
     vi2 = vi1;
     ASSERT_EQ(vi1.to1DSpan(),vi0.to1DSpan());
     ASSERT_EQ(vi2.to1DSpan(),vi1.to1DSpan());
-    NumArray<int,1> vi3(vi0.to1DSpan());
+    NumArray<int,MDDim1> vi3(vi0.to1DSpan());
     ASSERT_EQ(vi3.to1DSpan(),vi0.to1DSpan());
   }
 
   {
-    NumArray<int,1> vi0(4,{1,3,5,7});
-    NumArray<int,1> vi1(vi0);
-    NumArray<int,1> vi2;
+    NumArray<int,MDDim1> vi0(4,{1,3,5,7});
+    NumArray<int,MDDim1> vi1(vi0);
+    NumArray<int,MDDim1> vi2;
     vi2 = vi1;
     ASSERT_EQ(vi1.to1DSpan(),vi0.to1DSpan());
     ASSERT_EQ(vi2.to1DSpan(),vi1.to1DSpan());
@@ -245,7 +245,7 @@ TEST(NumArray2,Layout)
   std::cout << "TEST_NUMARRAY2 Layout\n";
 
   {
-    NumArray<Real,2,RightLayout2> a(3,5);
+    NumArray<Real,MDDim2,RightLayout2> a(3,5);
     ASSERT_EQ(a.totalNbElement(),(3*5));
     _setNumArray2Values(a);
     auto values = a.to1DSpan();
@@ -255,7 +255,7 @@ TEST(NumArray2,Layout)
   }
 
   {
-    NumArray<Real,2,LeftLayout2> a(3,5);
+    NumArray<Real,MDDim2,LeftLayout2> a(3,5);
     ASSERT_EQ(a.totalNbElement(),(3*5));
     _setNumArray2Values(a);
     auto values = a.to1DSpan();
@@ -273,7 +273,7 @@ TEST(NumArray3,Layout)
   std::cout << "TEST_NUMARRAY3 Layout\n";
 
   {
-    NumArray<Real,3,RightLayout3> a(2,3,5);
+    NumArray<Real,MDDim3,RightLayout3> a(2,3,5);
     ASSERT_EQ(a.totalNbElement(),(2*3*5));
     _setNumArray3Values(a);
     auto values = a.to1DSpan();
@@ -287,7 +287,7 @@ TEST(NumArray3,Layout)
   }
 
   {
-    NumArray<Real,3,LeftLayout3> a(2,3,5);
+    NumArray<Real,MDDim3,LeftLayout3> a(2,3,5);
     ASSERT_EQ(a.totalNbElement(),(2*3*5));
     _setNumArray3Values(a);
     auto values = a.to1DSpan();
@@ -307,14 +307,14 @@ TEST(NumArray3,Layout)
 TEST(NumArray,RealN)
 {
   {
-    NumArray<Real2,1> a(5);
+    NumArray<Real2,MDDim1> a(5);
     a(2) = Real2(0.0,3.2);
     a(3,1) = 2.0;
     ASSERT_EQ(a(3).y,2.0);
   }
 
   {
-    NumArray<Real3,1> a(5);
+    NumArray<Real3,MDDim1> a(5);
     const Real3 v(0.0,3.2,5.6);
     a(0) = v;
     a(4,1) = 4.0;
@@ -323,7 +323,7 @@ TEST(NumArray,RealN)
   }
 
   {
-    NumArray<Real2x2,1> a(5);
+    NumArray<Real2x2,MDDim1> a(5);
     const Real2 v0(1.2,1.7);
     const Real2x2 v(Real2(3.2,5.6), Real2(3.4,1.7));
     a(0) = v;
@@ -336,7 +336,7 @@ TEST(NumArray,RealN)
   }
 
   {
-    NumArray<Real3x3,1> a(5);
+    NumArray<Real3x3,MDDim1> a(5);
     const Real3 v0(1.2,3.4,1.7);
     const Real3x3 v(Real3(0.0,3.2,5.6), Real3(1.2,3.4,1.7), Real3(9.2,1.4,5.0));
     a(0) = v;
@@ -355,15 +355,15 @@ TEST(NumArray,RealN)
 
 namespace Arcane
 {
-template class NumArray<float,4,RightLayout<4>>;
-template class NumArray<float,3,RightLayout<3>>;
-template class NumArray<float,2,RightLayout<2>>;
+template class NumArray<float,MDDim4,RightLayout<MDDim4>>;
+template class NumArray<float,MDDim3,RightLayout<MDDim3>>;
+template class NumArray<float,MDDim2,RightLayout<MDDim2>>;
 
-template class NumArray<float,4,LeftLayout<4>>;
-template class NumArray<float,3,LeftLayout<3>>;
-template class NumArray<float,2,LeftLayout<2>>;
+template class NumArray<float,MDDim4,LeftLayout<MDDim4>>;
+template class NumArray<float,MDDim3,LeftLayout<MDDim3>>;
+template class NumArray<float,MDDim2,LeftLayout<MDDim2>>;
 
-template class NumArray<float,1>;
+template class NumArray<float,MDDim1>;
 }
 
 /*---------------------------------------------------------------------------*/
