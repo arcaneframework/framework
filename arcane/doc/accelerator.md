@@ -209,7 +209,9 @@ associée est terminée ou le conteneur associé est modifié.
 %Arcane propose des vues sur les variables (Arcane::IVariable) ou sur la classe Arcane::NumArray.
 
 Quel que soit le conteneur associé, la déclaration des vues est la
-même:
+même. Les constantes Arcane::MDDim1, Arcane::MDDim2, Arcane::MDDim3 et
+Arcane::MDDim4 permettent de spécifier le rang (la dimension) du
+tableau Arcane::NumArray (A partir de la version 3.7.7 de %Arcane).
 
 ~~~{.cpp}
 #include "arcane/utils/NumArray.h"
@@ -220,9 +222,9 @@ même:
 using namespace Arcane;
 using namespace Arcane::Accelerator;
 RunCommand& command = ...;
-Arcane::NumArray<Real,1> a;
-Arcane::NumArray<Real,1> b;
-Arcane::NumArray<Real,1> c;
+Arcane::NumArray<Real,MDDim1> a;
+Arcane::NumArray<Real,MDDim1> b;
+Arcane::NumArray<Real,MDDim1> c;
 VariableCellReal var_c = ...;
 auto in_a = viewIn(command,a); // Vue en entrée
 auto inout_b = viewInOut(command,b); // Vue en entrée/sortie
@@ -283,8 +285,8 @@ Arcane::Accelerator::RunQueue sont asynchrones. Par exemple:
 using namespace Arcane::Accelerator;
 RunQueue& queue = ...;
 queue.setAsync(true);
-Arcane::NumArray<Real,1> a;
-Arcane::NumArray<Real,1> b;
+Arcane::NumArray<Real,MDDim1> a;
+Arcane::NumArray<Real,MDDim1> b;
 
 RunCommand& command = makeCommand(queue);
 auto in_a = viewIn(command,a);
@@ -347,7 +349,7 @@ public:
 void A::f1()
 {
   Arcane::Accelerator::RunCommand& command = ...
-  Arcane::NumArray<int,1> a(100);
+  Arcane::NumArray<int,MDDim1> a(100);
   auto out_a = viewIn(command,a);
   command << RUNCOMMAND_LOOP1(iter,100){
     out_a(iter) = my_value+5; // BAD !!
@@ -356,7 +358,7 @@ void A::f1()
 void A::f2()
 {
   Arcane::Accelerator::RunCommand& command = ...
-  Arcane::NumArray<int,1> a(100);
+  Arcane::NumArray<int,MDDim1> a(100);
   auto out_a = viewIn(command,a);
   int v = my_value;
   command << RUNCOMMAND_LOOP1(iter,100){
@@ -389,8 +391,8 @@ main(int argc,char* argv[])
 
 
     // Définit 2 tableaux 'a' et 'b' et effectue leur initialisation.
-    NumArray<Int64,1> a(nb_value);
-    NumArray<Int64,1> b(nb_value);
+    NumArray<Int64,MDDim1> a(nb_value);
+    NumArray<Int64,MDDim1> b(nb_value);
     for( int i=0; i<nb_value; ++i ){
       a.s(i) = i+2;
       b.s(i) = i+3;

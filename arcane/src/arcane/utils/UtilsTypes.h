@@ -183,27 +183,29 @@ class Observer;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ArrayShape;
-
-namespace impl
-{
-template<int X> Int32 rankInfo();
-template<> Int32 rankInfo<1>();
-}
-
-template<int RankValue> class MDDim
+//! Classe pour un tableau dynamique de rang RankValue
+template<int RankValue>
+class MDDim
 {
  public:
   static constexpr int rank() { return RankValue; }
 };
 
+// A définir lorsqu'on voudra que le rang des classes NumArray et associées
+// soit spécifier par une classe au lieu d'un entier
 //#define ARCANE_USE_TYPE_FOR_EXTENT
+
 #ifdef ARCANE_USE_TYPE_FOR_EXTENT
 
+//! Constante pour un tableau dynamique de rang 0
 using MDDim0 = MDDim<0>;
+//! Constante pour un tableau dynamique de rang 1
 using MDDim1 = MDDim<1>;
+//! Constante pour un tableau dynamique de rang 2
 using MDDim2 = MDDim<2>;
+//! Constante pour un tableau dynamique de rang 3
 using MDDim3 = MDDim<3>;
+//! Constante pour un tableau dynamique de rang 4
 using MDDim4 = MDDim<4>;
 
 #define A_MDRANK_TYPE(rank_name) typename rank_name
@@ -212,10 +214,15 @@ using MDDim4 = MDDim<4>;
 
 #else
 
+//! Constante pour un tableau de rang 0
 constexpr int MDDim0 = 0;
+//! Constante pour un tableau de rang 1
 constexpr int MDDim1 = 1;
+//! Constante pour un tableau de rang 2
 constexpr int MDDim2 = 2;
+//! Constante pour un tableau de rang 3
 constexpr int MDDim3 = 3;
+//! Constante pour un tableau de rang 4
 constexpr int MDDim4 = 4;
 
 #define A_MDRANK_TYPE(rank_name) int rank_name
