@@ -895,6 +895,11 @@ run()
   bool is_in_dotnet = platform::hasDotNETRuntime();
   if (!is_in_dotnet && dotnet_info.isUsingDotNetRuntime()){
     r = _runDotNet();
+    // Avant la version 3.7.8 on n'appelait par arcaneFinalize() car cela pouvait
+    // poser des problèmes avec le Garbage Collector de '.Net'. Normalement ces
+    // problèmes sont corrigés mais on autorisele comportement d'avant au cas où.
+    if (platform::getEnvironmentVariable("ARCANE_DOTNET_USE_LEGACY_DESTROY")!="1")
+      arcaneFinalize();
   }
   else{
     arcaneInitialize();
