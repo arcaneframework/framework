@@ -29,9 +29,11 @@
 #include "arcane/ISubDomain.h"
 #include "arcane/Properties.h"
 #include "arcane/ServiceBuilder.h"
+#include "arcane/ObserverPool.h"
 
 #include "arcane/core/materials/IMeshMaterialVariableFactoryMng.h"
 #include "arcane/core/materials/IMeshMaterialVariable.h"
+#include "arcane/core/materials/MeshMaterialVariableRef.h"
 
 #include "arcane/materials/MeshMaterialModifierImpl.h"
 #include "arcane/materials/MeshMaterialInfo.h"
@@ -119,6 +121,8 @@ MeshMaterialMng(const MeshHandle& mesh_handle,const String& name)
   m_all_env_data = new AllEnvData(this);
   m_exchange_mng = new MeshMaterialExchangeMng(this);
   m_variable_factory_mng = arcaneCreateMeshMaterialVariableFactoryMng(this);
+  m_observer_pool = std::make_unique<ObserverPool>();
+  m_observer_pool->addObserver(this,&MeshMaterialMng::_onMeshDestroyed,mesh_handle.onDestroyObservable());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1154,6 +1158,46 @@ recreateFromDump()
   }
   
   endCreate(true);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialMng::
+_onMeshDestroyed()
+{
+  // Il faut détruire cette instance ici car elle a besoin de IItemFamily
+  // dans son destructeur et il est possible qu'il n'y ait plus de famille
+  // si le destructeur de IMeshMaterialMng est appelé après la destruction
+  // du maillage (ce qui peut arriver en C# par exemple).
+  delete m_exchange_mng;
+  m_exchange_mng = nullptr;
+
+  _unregisterAllVariables();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialMng::
+_unregisterAllVariables()
+{
+  // Recopie dans un tableau toutes les références.
+  // Il faut le faire avant les appels à unregisterVariable()
+  // car ces derniers modifient la liste chainée des références
+  UniqueArray<MeshMaterialVariableRef*> m_all_refs;
+
+  for( const auto& i : m_full_name_variable_map ){
+    IMeshMaterialVariable* var = i.second;
+
+    for( MeshMaterialVariableRef::Enumerator iref(var); iref.hasNext(); ++iref ){
+      MeshMaterialVariableRef* ref = *iref;
+      m_all_refs.add(ref);
+    }
+  }
+
+  for( MeshMaterialVariableRef* ref : m_all_refs )
+    ref->unregisterVariable();
 }
 
 /*---------------------------------------------------------------------------*/

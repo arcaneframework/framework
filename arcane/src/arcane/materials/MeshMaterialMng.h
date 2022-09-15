@@ -27,6 +27,7 @@
 #include "arcane/materials/MatItemEnumerator.h"
 
 #include <map>
+#include <memory>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -35,6 +36,7 @@ namespace Arcane
 {
 class IVariableMng;
 class Properties;
+class ObserverPool;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -253,6 +255,7 @@ class MeshMaterialMng
   Integer m_synchronize_variable_version;
   MeshMaterialExchangeMng* m_exchange_mng = nullptr;
   IMeshMaterialVariableFactoryMng* m_variable_factory_mng = nullptr;
+  std::unique_ptr<ObserverPool> m_observer_pool;
 
  private:
 
@@ -267,6 +270,8 @@ class MeshMaterialMng
   void _addVariableUnlocked(IMeshMaterialVariable* var);
   void _saveInfosInProperties();
   void _checkCreateProperties();
+  void _onMeshDestroyed();
+  void _unregisterAllVariables();
 };
 
 /*---------------------------------------------------------------------------*/
