@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshHandle.h                                                (C) 2000-2020 */
+/* MeshHandle.h                                                (C) 2000-2022 */
 /*                                                                           */
 /* Handle sur un maillage.                                                   */
 /*---------------------------------------------------------------------------*/
@@ -18,7 +18,7 @@
 #include "arccore/base/StringView.h"
 #include "arccore/base/String.h"
 
-#include "arcane/utils/ArcaneGlobal.h"
+#include "arcane/utils/UtilsTypes.h"
 
 #include <atomic>
 
@@ -56,30 +56,43 @@ class IApplication;
 class ARCANE_CORE_EXPORT MeshHandle
 {
  private:
+
   // Temporaire: pour accéder au constructeur qui utilise ISubDomain.
   friend class MeshMng;
+
  private:
+
   class MeshHandleRef
   : public Arccore::ReferenceCounterImpl
   {
    public:
-    MeshHandleRef() : m_is_null(true) {}
-    MeshHandleRef(ISubDomain* sd,const String& name);
+
+    MeshHandleRef()
+    : m_is_null(true)
+    {}
+    MeshHandleRef(ISubDomain* sd, const String& name);
     ~MeshHandleRef();
+
    public:
+
     const String& meshName() const { return m_mesh_name; }
     bool isNull() const { return m_is_null; }
     IMesh* mesh() const { return m_mesh_ptr; }
-    IMeshBase* meshBase() const {return m_mesh_base_ptr;}
+    IMeshBase* meshBase() const { return m_mesh_base_ptr; }
     ISubDomain* subDomain() const { return m_sub_domain; }
     IMeshMng* meshMng() const { return m_mesh_mng; }
     ITraceMng* traceMng() const { return m_trace_mng; }
     IVariableMng* variableMng() const { return m_variable_mng; }
     IUserDataList* userDataList() const { return m_user_data_list; }
+    Observable* onDestroyObservable() const { return m_on_destroy_observable; }
+
    public:
+
     void _destroyMesh();
     void _setMesh(IMesh* mesh);
+
    private:
+
     String m_mesh_name;
     IMesh* m_mesh_ptr = nullptr;
     IMeshBase* m_mesh_base_ptr = nullptr;
@@ -89,7 +102,10 @@ class ARCANE_CORE_EXPORT MeshHandle
     IMeshMng* m_mesh_mng = nullptr;
     ITraceMng* m_trace_mng = nullptr;
     IVariableMng* m_variable_mng = nullptr;
+    Observable* m_on_destroy_observable = nullptr;
+
    private:
+
     bool m_is_null = true;
   };
 
@@ -100,7 +116,7 @@ class ARCANE_CORE_EXPORT MeshHandle
  private:
 
   // TODO rendre accessible uniquement aux classes implémentant IMeshMng.
-  MeshHandle(ISubDomain* sd,const String& name);
+  MeshHandle(ISubDomain* sd, const String& name);
 
  public:
 
@@ -148,6 +164,10 @@ class ARCANE_CORE_EXPORT MeshHandle
   //! Indique si le handle est nul (il ne référence aucun maillage existant ou non)
   bool isNull() const { return m_ref->isNull(); }
 
+  //! Observable pour être notifié de la destruction
+  IObservable* onDestroyObservable() const;
+
+  //! \internal
   const void* reference() const { return m_ref.get(); }
 
  public:

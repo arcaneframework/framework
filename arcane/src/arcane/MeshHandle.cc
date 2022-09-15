@@ -15,6 +15,8 @@
 
 #include "arcane/utils/UserDataList.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/Observable.h"
+
 #include "arcane/ISubDomain.h"
 #include "arcane/IMesh.h"
 #include "arcane/IMeshBase.h"
@@ -41,6 +43,7 @@ MeshHandleRef(ISubDomain* sd,const String& name)
   m_trace_mng = sd->traceMng();
   m_mesh_mng = sd->meshMng();
   m_variable_mng = sd->variableMng();
+  m_on_destroy_observable = new Observable();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -50,6 +53,7 @@ MeshHandle::MeshHandleRef::
 ~MeshHandleRef()
 {
   delete m_user_data_list;
+  delete m_on_destroy_observable;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -71,6 +75,7 @@ _destroyMesh()
   IMesh* mesh = m_mesh_ptr;
   if (!mesh)
     return;
+  m_on_destroy_observable->notifyAllObservers();
   m_user_data_list->clear();
   // Attention à ne mettre à nul que à la fin de cette routine car les
   // utilisateurs de \a m_user_data peuvent avoir besoin de ce MeshHandle.
@@ -160,6 +165,15 @@ IApplication* MeshHandle::
 application() const
 {
   return m_ref->subDomain()->application();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IObservable* MeshHandle::
+onDestroyObservable() const
+{
+  return m_ref->onDestroyObservable();
 }
 
 /*---------------------------------------------------------------------------*/
