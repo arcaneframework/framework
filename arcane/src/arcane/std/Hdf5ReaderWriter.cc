@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Hdf5ReaderWriter.cc                                         (C) 2000-2020 */
+/* Hdf5ReaderWriter.cc                                         (C) 2000-2022 */
 /*                                                                           */
 /* Lecture/Ecriture au format HDF5.                                          */
 /*---------------------------------------------------------------------------*/
@@ -21,6 +21,7 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/StringImpl.h"
 #include "arcane/utils/CheckedConvert.h"
+#include "arcane/utils/ArrayShape.h"
 
 #include "arcane/Item.h"
 #include "arcane/ISubDomain.h"
@@ -58,7 +59,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -69,6 +71,11 @@ static herr_t _Hdf5ReaderWriterIterateMe(hid_t,const char*,void*);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+namespace
+{
+constexpr Int32 VARIABLE_INFO_SIZE = 10 + ArrayShape::MAX_NB_DIMENSION;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -325,7 +332,8 @@ _writeVal(const String& var_group_name,
           << " is_multi=" << sdata->isMultiSize()
           << " dimensions_size=" << sdata->extents().size()
           << " memory_size=" << sdata->memorySize()
-          << " bytes_size=" << sdata->constBytes().size();
+          << " bytes_size=" << sdata->constBytes().size()
+          << " shape=" << sdata->shape().dimensions();
 
   Integer nb_dimension = sdata->nbDimension();
   Int64ConstArrayView dimensions = sdata->extents();
@@ -357,10 +365,12 @@ _writeVal(const String& var_group_name,
   // Sauve les informations concernant les tailles et dimensions de la variable
   {
     hsize_t att_dims[1];
-    att_dims[0] = 9;
+    att_dims[0] = VARIABLE_INFO_SIZE;
     HSpace space_id;
     space_id.createSimple(1,att_dims);
-    Int64 dim_val[9];
+    Int64 dim_val_buf[VARIABLE_INFO_SIZE];
+    SmallSpan<Int64> dim_val(dim_val_buf,VARIABLE_INFO_SIZE);
+    dim_val.fill(0);
 
     dim_val[0] = nb_dimension;
     dim_val[1] = dim1_size;
@@ -371,12 +381,19 @@ _writeVal(const String& var_group_name,
     dim_val[6] = is_multi_size ? 1 : 0;
     dim_val[7] = sdata->baseDataType();
     dim_val[8] = sdata->memorySize();
-
+    {
+      ArrayShape shape = sdata->shape();
+      Int32 shape_nb_dim = shape.nbDimension();
+      auto shape_dims = shape.dimensions();
+      dim_val[9] = shape_nb_dim;
+      for (Integer i=0; i<shape_nb_dim; ++i )
+        dim_val[10+i] = shape_dims[i];
+    }
     HAttribute att_id;
     if (m_is_parallel && hits_modulo && (from_rank!=0))
       att_id.remove(group_id,"Dims");
     att_id.create(group_id,"Dims",m_types.saveType(dim1_size),space_id);
-    herr_t herr = att_id.write(m_types.nativeType(dim2_size),dim_val);
+    herr_t herr = att_id.write(m_types.nativeType(dim2_size),dim_val.data());
     if (herr<0)
       ARCANE_THROW(ReaderWriterException,"Wrong dimensions written for variable '{0}'",var_group_name);
   }
@@ -467,6 +484,8 @@ _readDim2(IVariable* var)
   Int64 dim1_size = 0;
   Int64 dim2_size = 0;
   UniqueArray<Int64> dims;
+  ArrayShape data_shape;
+
   // Récupère les informations concernant les tailles et dimensions de la variable
   {
     HAttribute att_id;
@@ -479,11 +498,13 @@ _readDim2(IVariable* var)
     hsize_t max_dims[max_dim];
     H5Sget_simple_extent_dims(space_id.id(),hdf_dims,max_dims);
 
-    Int64 dim_val[9];
-    att_id.read(m_types.nativeType(Int64()),dim_val);
-    if (hdf_dims[0]!=9)
-      ARCANE_THROW(ReaderWriterException,"Wrong dimensions for variable '{0}' (found={1} expected=9)",
-                   vname, hdf_dims[0]);
+    Int64 dim_val_buf[VARIABLE_INFO_SIZE];
+    att_id.read(m_types.nativeType(Int64()),dim_val_buf);
+    if (hdf_dims[0]!=VARIABLE_INFO_SIZE)
+      ARCANE_THROW(ReaderWriterException,"Wrong dimensions for variable '{0}' (found={1} expected={2})",
+                   vname, hdf_dims[0], VARIABLE_INFO_SIZE);
+
+    SmallSpan<const Int64> dim_val(dim_val_buf,VARIABLE_INFO_SIZE);
 
     nb_dimension = CheckedConvert::toInteger(dim_val[0]);
     dim1_size = dim_val[1];
@@ -494,6 +515,10 @@ _readDim2(IVariable* var)
     is_multi_size = dim_val[6]!=0;
     data_type = (eDataType)dim_val[7];
     memory_size = dim_val[8];
+    Int32 shape_nb_dim =  CheckedConvert::toInt32(dim_val[9]);
+    data_shape.setNbDimension(shape_nb_dim);
+    for (Integer i=0; i<shape_nb_dim; ++i )
+      data_shape.setDimension(i,CheckedConvert::toInt32(dim_val[10+i]));
   }
 
   info(4) << " READ DIM name=" << vname
@@ -501,7 +526,8 @@ _readDim2(IVariable* var)
           << " dim2_size=" << dim2_size << " nb_element=" << nb_element
           << " dimension_size=" << dimension_array_size
           << " is_multi_size=" << is_multi_size
-          << " data_type" << data_type;
+          << " data_type" << data_type
+          << " shape=" << data_shape.dimensions();
 
   if (dimension_array_size>0){
     HDataset array_id;
@@ -530,7 +556,7 @@ _readDim2(IVariable* var)
       ARCANE_THROW(ReaderWriterException,"Wrong dataset read for variable '{0}'",vname);
   }
   Ref<ISerializedData> sdata = arcaneCreateSerializedDataRef(data_type,memory_size,nb_dimension,nb_element,
-                                                             nb_base_element,is_multi_size,dims);
+                                                             nb_base_element,is_multi_size,dims,data_shape);
   return sdata;
 }
 
@@ -990,13 +1016,7 @@ ARCANE_REGISTER_SERVICE_HDF5READERWRITER(ArcaneHdf5Checkpoint2,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
