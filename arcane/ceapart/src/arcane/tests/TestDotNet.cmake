@@ -34,4 +34,5 @@ arccon_add_csharp_target(arcanecea_test_cs
   ${CSOUTPATH}/MeshMaterialCSharpUnitTest_axl.cs
   ${CSPATH}/Test1.cs
   ${CSPATH}/StiffenedGasMaterialEos.cs
+  test_material_eos_csharp
   )
