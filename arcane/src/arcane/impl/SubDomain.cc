@@ -554,8 +554,13 @@ destroy()
   // rester de références sur des services ou module. Cela est le cas
   // avec l'implémentation 'coreclr' mais pas avec 'mono'. Du coup on
   // laisse pour l'instant ce test.
+  // A partir de la version 3.7.8, les problèmes potentiels dus au GC sont
+  // réglés donc il n'est pas nécessaire de retourner directement. Néanmmoins
+  // éviter tout problème on autorise de le faire si une variable d'environnement
+  // est positionnée.
   if (m_application->hasGarbageCollector())
-    return;
+    if (platform::getEnvironmentVariable("ARCANE_DOTNET_USE_LEGACY_DESTROY")=="1")
+      return;
 
   m_module_master = nullptr;
   
