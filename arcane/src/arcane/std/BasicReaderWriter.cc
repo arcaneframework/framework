@@ -131,7 +131,7 @@ class VariableDataInfo
         UniqueArray<Int32> values;
         if (builtInGetValue(values,shape_str))
           ARCANE_FATAL("Can not read values '{0}' for attribute 'shape'",shape_str);
-        m_shape = ArrayShape(values);
+        m_shape.setDimensions(values);
       }
     }
   }
@@ -162,11 +162,11 @@ class VariableDataInfo
     _addAttribute(element,"base-data-type",(Integer)m_base_data_type);
     _addAttribute(element,"memory-size",m_memory_size);
     _addAttribute(element,"file-offset",m_file_offset);
-    _addAttribute(element,"shape-size",m_shape.values().size());
+    _addAttribute(element,"shape-size",m_shape.dimensions().size());
     {
       String s;
-      if (builtInPutValue(m_shape.values(),s))
-        ARCANE_FATAL("Can not write '{0}'",m_shape.values());
+      if (builtInPutValue(m_shape.dimensions().smallView(),s))
+        ARCANE_FATAL("Can not write '{0}'",m_shape.dimensions());
       _addAttribute(element,"shape",s);
     }
   }

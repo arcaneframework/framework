@@ -54,6 +54,7 @@
 
 #include "arcane/std/Hdf5ReaderWriter_axl.h"
 
+#include <array>
 //#define ARCANE_TEST_HDF5MPI
 
 /*---------------------------------------------------------------------------*/
@@ -368,8 +369,8 @@ _writeVal(const String& var_group_name,
     att_dims[0] = VARIABLE_INFO_SIZE;
     HSpace space_id;
     space_id.createSimple(1,att_dims);
-    Int64 dim_val_buf[VARIABLE_INFO_SIZE];
-    SmallSpan<Int64> dim_val(dim_val_buf,VARIABLE_INFO_SIZE);
+    std::array<Int64,VARIABLE_INFO_SIZE> dim_val_buf;
+    SmallSpan<Int64> dim_val(dim_val_buf);
     dim_val.fill(0);
 
     dim_val[0] = nb_dimension;
@@ -498,13 +499,14 @@ _readDim2(IVariable* var)
     hsize_t max_dims[max_dim];
     H5Sget_simple_extent_dims(space_id.id(),hdf_dims,max_dims);
 
-    Int64 dim_val_buf[VARIABLE_INFO_SIZE];
-    att_id.read(m_types.nativeType(Int64()),dim_val_buf);
     if (hdf_dims[0]!=VARIABLE_INFO_SIZE)
       ARCANE_THROW(ReaderWriterException,"Wrong dimensions for variable '{0}' (found={1} expected={2})",
                    vname, hdf_dims[0], VARIABLE_INFO_SIZE);
 
-    SmallSpan<const Int64> dim_val(dim_val_buf,VARIABLE_INFO_SIZE);
+    std::array<Int64,VARIABLE_INFO_SIZE> dim_val_buf;
+    att_id.read(m_types.nativeType(Int64()),dim_val_buf.data());
+
+    SmallSpan<const Int64> dim_val(dim_val_buf);
 
     nb_dimension = CheckedConvert::toInteger(dim_val[0]);
     dim1_size = dim_val[1];

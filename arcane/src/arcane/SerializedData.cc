@@ -320,10 +320,10 @@ _serializeRead(ISerializer* sbuf)
 
   // Lecture de 'm_shape'
   Int32 shape_nb_dim = sbuf->getInt32(); // Pour m_shape.nbDimension()
-  Int32 shape_dims_buf[ArrayShape::MAX_NB_DIMENSION];
-  Int32ArrayView shape_dims(shape_nb_dim, shape_dims_buf);
+  std::array<Int32,ArrayShape::MAX_NB_DIMENSION> shape_dims_buf;
+  Span<Int32> shape_dims(shape_dims_buf.data(),shape_nb_dim);
   sbuf->getSpan(shape_dims); // Pour les dimensions
-  m_shape = ArrayShape(shape_dims);
+  m_shape.setDimensions(shape_dims);
 
   Int64 buffer_size = sbuf->getInt64();
   m_stored_buffer.resize(buffer_size);
