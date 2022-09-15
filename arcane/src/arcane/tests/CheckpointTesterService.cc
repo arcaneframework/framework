@@ -11,8 +11,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
 #include "arcane/utils/OStringStream.h"
+#include "arcane/utils/ArrayShape.h"
 
 #include "arcane/BasicTimeLoopService.h"
 #include "arcane/tests/StdArrayMeshVariables.h"
@@ -92,6 +92,7 @@ class CheckpointTesterService
   VariableScalarString m_variable_scalar_string;
   VariableScalarString m_mesh_properties;
   VariableArrayString m_group_names;
+  VariableCellArrayReal m_variable_with_shape;
   IItemFamily* m_particle_family;
   ObserverPool m_observer_pool;
 
@@ -134,6 +135,7 @@ CheckpointTesterService(const ServiceBuildInfo& sbi)
 , m_variable_scalar_string(VariableBuildInfo(sbi.subDomain(),"VariableString"))
 , m_mesh_properties(VariableBuildInfo(sbi.meshHandle(),"TestCheckpointMeshProperties"))
 , m_group_names({sbi.meshHandle(),"TestCheckpointGroupNames"})
+, m_variable_with_shape(VariableBuildInfo(sbi.meshHandle(),"TestVariableWithShape"))
 , m_particle_family(nullptr)
 {
   // Sauve les valeurs des propriétés dans une variable pour vérifier leur
@@ -208,6 +210,12 @@ onTimeLoopStartInit()
       m_group_names[index] = g.name();
     }
   }
+
+  // Positionne la forme de la donnée.
+  m_variable_with_shape.resize(24);
+  std::array<Int32,3> dims = { 3, 2, 4 };
+  ArrayShape shape(dims);
+  m_variable_with_shape.variable()->data()->setShape(shape);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -229,16 +237,15 @@ onTimeLoopContinueInit()
   String properties = _getProperties();
 
   if (properties!=m_mesh_properties()){
-    fatal() << "Current properties and saved properties are different"
-            << " saved=\n" << m_mesh_properties()
-            << " current=\n" << properties;
+    ARCANE_FATAL("Current properties and saved properties are different"
+                 " saved={0}\n current{1}=\n",m_mesh_properties(),properties);
   }
 
   m_particle_family = mesh()->findItemFamily(IK_Particle,"CheckpointParticle",true);
   bool has_map = m_particle_family->hasUniqueIdMap();
   info() << "Checkpoint HasUniqueIdMap property";
   if (has_map)
-    fatal() << "family property 'map' is not handled";
+    ARCANE_FATAL("family property 'map' is not handled");
 
   _createParticlesVariables();
 
@@ -249,14 +256,13 @@ onTimeLoopContinueInit()
   {
     int p = m_variable_with_property.property();
     if (p!=full_property)
-      fatal() << "variable properties not handled value="
-              << p << " expected=" << full_property;
+      ARCANE_FATAL("variable properties not handled value={0} expected={1}",p, full_property);
   }
 
   {
     int p = m_variable_no_restore.property();
     if (!(p & IVariable::PNoRestore))
-      fatal() << "variable property 'PNoRestore' not handled";
+      ARCANE_FATAL("variable property 'PNoRestore' not handled");
   }
 
   // Vérifie que le maillage 'Mesh2' est bien créé en reprise
@@ -264,6 +270,14 @@ onTimeLoopContinueInit()
   IMesh* mesh2 = sd->findMesh("Mesh2");
   if (mesh2->parallelMng()!=sd->parallelMng()->sequentialParallelMng())
     ARCANE_FATAL("Mesh2 does not use sequentialParallelMng()");
+
+
+  // Vérifie la forme de la donnée.
+  ArrayShape shape = m_variable_with_shape.variable()->data()->shape();
+  std::array<Int32,3> dims = { 3, 2, 4 };
+  ArrayShape ref_shape(dims);
+  if (shape.dimensions()!=ref_shape.dimensions())
+    ARCANE_FATAL("Invalid shape={0} ref_shape={1}",shape.dimensions(),ref_shape.dimensions());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -422,7 +436,7 @@ _compareCheckpoint()
     }
   }
   if (nb_error!=0)
-    fatal() << "Errors in checkValues(): " << nb_error;
+    ARCANE_FATAL("Errors in checkValues() {0}",nb_error);
 }
 
 /*---------------------------------------------------------------------------*/

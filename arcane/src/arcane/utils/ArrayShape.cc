@@ -26,13 +26,13 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 ArrayShape::
-ArrayShape(Int32ConstArrayView v)
+ArrayShape(Span<Int32> v)
 {
-  Int32 vsize = v.size();
+  Int64 vsize = v.size();
   if (vsize >= MAX_NB_DIMENSION)
     ARCANE_FATAL("Bad size '{0}' for shape. Maximum size is {1}",vsize,MAX_NB_DIMENSION);
-  m_nb_dim = vsize;
-  for (Int32 i = 0; i < vsize; ++i)
+  m_nb_dim = CheckedConvert::toInt32(vsize);
+  for (Int64 i = 0; i < vsize; ++i)
     m_dims[i] = v[i];
 }
 

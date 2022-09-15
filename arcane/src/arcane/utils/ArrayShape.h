@@ -43,7 +43,7 @@ class ARCANE_UTILS_EXPORT ArrayShape
   static constexpr int MAX_NB_DIMENSION = 8;
 
   ArrayShape() = default;
-  explicit ArrayShape(Int32ConstArrayView v);
+  explicit ArrayShape(Span<Int32> v);
 
  public:
 
