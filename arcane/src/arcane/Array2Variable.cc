@@ -279,7 +279,7 @@ directResize(Integer s)
          << " wanted_dim1_size=" << s
          << " dim2_size=" << m_data->value().dim2Size()
          << " total=" << m_data->value().totalNbElement();*/
-  m_data->_internal()->_internalDeprecatedValue().resize(s,m_data->view().dim2Size());
+  m_data->_internal()->resizeOnlyDim1(s);
   syncReferences();
 }
 
@@ -295,7 +295,7 @@ directResize(Integer dim1_size,Integer dim2_size)
          << " total=" << m_data->value().totalNbElement()
          << " dim1_size=" << m_data->value().dim1Size()
          << " dim2_size=" << m_data->value().dim2Size();*/
-  m_data->_internal()->_internalDeprecatedValue().resize(dim1_size,dim2_size);
+  m_data->_internal()->resize(dim1_size,dim2_size);
   /*info() << "RESIZE(2) AFTER " << fullName()
          << " total=" << m_data->value().totalNbElement()
          << " dim1_size=" << m_data->value().dim1Size()

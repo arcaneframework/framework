@@ -162,6 +162,7 @@ class ArrayDataT
   void _serialize(ISerializer* sbuf,Span<const Int32> ids,IDataOperation* operation);
   IArrayDataT<DataType>* _cloneTrue() const { return new ThatClass(*this); }
   IArrayDataT<DataType>* _cloneTrueEmpty() const { return new ThatClass(m_trace); }
+  void _setShape();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -198,6 +199,7 @@ ArrayDataT(ITraceMng* trace)
 , m_trace(trace)
 , m_internal(new Impl(this))
 {
+  _setShape();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -208,6 +210,7 @@ ArrayDataT(const ArrayDataT<DataType>& rhs)
 : m_value(AlignedMemoryAllocator::Simd())
 , m_trace(rhs.m_trace)
 , m_internal(new Impl(this))
+, m_shape(rhs.m_shape)
 {
   m_value = rhs.m_value.constSpan();
 }
@@ -221,6 +224,7 @@ ArrayDataT(const DataStorageBuildInfo& dsbi)
 , m_trace(dsbi.traceMng())
 , m_internal(new Impl(this))
 {
+  _setShape();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -615,6 +619,16 @@ template<typename DataType> void ArrayDataT<DataType>::
 swapValuesDirect(ThatClass* true_data)
 {
   m_value.swap(true_data->m_value);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> void ArrayDataT<DataType>::
+_setShape()
+{
+  m_shape.setNbDimension(1);
+  m_shape.setDimension(0,1);
 }
 
 /*---------------------------------------------------------------------------*/

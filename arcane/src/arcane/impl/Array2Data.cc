@@ -173,6 +173,23 @@ class Array2DataT<DataType>::Impl
   explicit Impl(Array2DataT<DataType>* p) : m_p(p){}
  public:
   void reserve(Integer new_capacity) override { m_p->m_value.reserve(new_capacity); }
+  void resizeOnlyDim1(Int32 new_dim1_size) override
+  {
+    m_p->m_value.resize(new_dim1_size,m_p->m_value.dim2Size());
+  }
+  void resize(Int32 new_dim1_size,Int32 new_dim2_size) override
+  {
+    // Cette méthode est appelée si on modifie la deuxième dimension.
+    // Dans ce cas cela invalide l'ancienne valeur de shape.
+    bool need_reshape = false;
+    if (new_dim2_size!=m_p->m_value.dim2Size())
+      need_reshape = true;
+    m_p->m_value.resize(new_dim1_size,new_dim2_size);
+    if (need_reshape){
+      m_p->m_shape.setNbDimension(1);
+      m_p->m_shape.setDimension(0,new_dim2_size);
+    }
+  }
   Array2<DataType>& _internalDeprecatedValue() override { return m_p->m_value; }
   void shrink() const override { m_p->m_value.shrink(); }
  private:
