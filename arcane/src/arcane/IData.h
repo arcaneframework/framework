@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IData.h                                                     (C) 2000-2020 */
+/* IData.h                                                     (C) 2000-2022 */
 /*                                                                           */
 /* Interface d'une donnée.                                                   */
 /*---------------------------------------------------------------------------*/
@@ -26,6 +26,8 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Interface d'une donnée.
+ *
+ * Cette classe gère la mémoire associée à une variable.
  */
 class ARCANE_CORE_EXPORT IData
 {
@@ -43,7 +45,7 @@ class ARCANE_CORE_EXPORT IData
   //! Dimension. 0 pour un scalaire, 1 pour un tableau mono-dim, 2 pour un tableau bi-dim.
   virtual Integer dimension() const = 0;
 
-  //! Tag multiple. 0 si non multiple, 1 si multiple, 2 si multiple obsolete
+  //! Tag multiple. 0 si non multiple, 1 si multiple, 2 si multiple pour les variable MultiArray (obsolète)
   virtual Integer multiTag() const = 0;
 
   //! Clone la donnée. L'instance créée doit être détruite par l'opérateur 'delete'
@@ -63,7 +65,7 @@ class ARCANE_CORE_EXPORT IData
   //! Informations sur le type de conteneur de la donnée
   virtual DataStorageTypeInfo storageTypeInfo() const =0;
 
-  //! Serialise la donnée en appliquant l'opération \a operation
+  //! Sérialise la donnée en appliquant l'opération \a operation
   virtual void serialize(ISerializer* sbuf, IDataOperation* operation) = 0;
 
   /*!
@@ -91,16 +93,15 @@ class ARCANE_CORE_EXPORT IData
   /*!
    * \brief Sérialise la donnée.
    *
-   * L'instance retournée doit être détruite par l'opérateur delete.
    * Pour des raisons de performances, l'instance retournée peut faire
    * directement référence à la zone mémoire de cette donnée. Par
    * conséquent, elle n'est valide que tant que cette donnée n'est
    * pas modifiée. Si on souhaite modifier cette instance, il faut
-   * d'abord la cloner (IData::clone()) puis sérialiser la donnée clonée.
+   * d'abord la cloner (via IData::cloneRef()) puis sérialiser la donnée clonée.
    *
    * Si \a use_basic_type est vrai, la donnée est sérialisée pour un type
-   * de base, à savoir #DT_Byte, #DT_Int32, #DT_Int64 ou #DT_Real. Sinon,
-   * le type peut être un POD, à savoir #DT_Byte, #DT_Int32, #DT_Int64,
+   * de base, à savoir #DT_Byte, #DT_Int16, #DT_Int32, #DT_Int64 ou #DT_Real. Sinon,
+   * le type peut être un POD, à savoir #DT_Byte, #DT_Int16, #DT_Int32, #DT_Int64,
    * #DT_Real, #DT_Real2, #DT_Real3, #DT_Real2x2, #DT_Real3x3.
    */
   virtual Ref<ISerializedData> createSerializedDataRef(bool use_basic_type) const = 0;
@@ -145,6 +146,25 @@ class ARCANE_CORE_EXPORT IData
    */
   virtual void computeHash(IHashAlgorithm* algo, ByteArray& output) const = 0;
 
+  /*!
+   * \brief Forme du tableau pour une donnée 1D ou 2D.
+   *
+   * La forme n'est prise en compte que pour les dimensions supérieures à 1.
+   * Pour une donnée 1D, la forme est donc par défaut {1}. Pour un tableau 2D,
+   * la forme vaut par défaut {dim2_size}. Il est possible de changer le rang
+   * de la forme et ses valeurs tant que shape().totalNbElement()==dim2_size.
+   * Par exemple si le nombre de valeurs dim2_size vaut 12, alors il est
+   * possible d'avoir { 12 }, { 6, 2 } ou { 3, 2, 2 } comme forme.
+   *
+   * Les valeurs ne sont pas conservés lors d'une reprise et il faut donc
+   * repositionner la forme dans ce cas. C'est à l'utilisateur de s'assurer
+   * que la forme est homogène entre les sous-domaines.
+   */
+  virtual ArrayShape shape() const = 0;
+
+  //! Positionne la forme du tableau.
+  virtual void setShape(const ArrayShape& new_shape) = 0;
+
  public:
 
   //! Applique le visiteur à la donnée
@@ -179,6 +199,9 @@ class ARCANE_CORE_EXPORT IData
    *
    * Si la donnée n'est pas un tableau 2D, une exception 
    * NotSupportedException est lancée.
+   *
+   * \deprecated Ce visiteur est obsolète car il n'y a pas plus
+   * d'implémentation de IMultiArray2.
    */
   virtual void visitMultiArray2(IMultiArray2DataVisitor* visitor) = 0;
 };
@@ -309,7 +332,8 @@ class IArray2Data
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Interface d'une donnée tableau 2D.
+ * \brief Interface d'une donnée tableau multi 2D.
+ * \deprecated Cette interface n'est plus utilisée.
  */
 class IMultiArray2Data
 : public IData
@@ -369,6 +393,7 @@ class IArray2DataT
 /*!
  * \internal
  * \brief Interface d'une donnée tableau 2D à taille multiple d'un type \a T
+ * \deprecated Cette interface n'est plus utilisée.
  */
 template <class DataType>
 class IMultiArray2DataT

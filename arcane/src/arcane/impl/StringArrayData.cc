@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* StringArrayData.cc                                          (C) 2000-2021 */
+/* StringArrayData.cc                                          (C) 2000-2022 */
 /*                                                                           */
 /* Donnée de type 'UniqueArray<String>'.                                     */
 /*---------------------------------------------------------------------------*/
@@ -20,6 +20,7 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/IHashAlgorithm.h"
 #include "arcane/utils/Array.h"
+#include "arcane/utils/ArrayShape.h"
 
 #include "arcane/datatype/DataStorageTypeInfo.h"
 #include "arcane/datatype/DataStorageBuildInfo.h"
@@ -91,6 +92,8 @@ public:
   void copy(const IData* data) override;
   void swapValues(IData* data) override;
   void computeHash(IHashAlgorithm* algo, ByteArray& output) const override;
+  ArrayShape shape() const override { return {}; }
+  void setShape(const ArrayShape&) override {}
   void visit(IArrayDataVisitor* visitor) override
   {
     visitor->applyVisitor(this);

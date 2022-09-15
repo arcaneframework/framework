@@ -87,6 +87,8 @@ class ScalarDataT
   void copy(const IData* data) override;
   void swapValues(IData* data) override;
   void computeHash(IHashAlgorithm* algo, ByteArray& output) const override;
+  ArrayShape shape() const override;
+  void setShape(const ArrayShape&) override;
   void visit(IScalarDataVisitor* visitor) override
   {
     visitor->applyVisitor(this);

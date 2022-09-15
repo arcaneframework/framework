@@ -68,13 +68,19 @@ class IArray2DataInternalT
   virtual ~IArray2DataInternalT() = default;
 
   //! Réserve de la mémoire pour \a new_capacity éléments
-  virtual void reserve(Integer new_capacity) =0;
+  virtual void reserve(Integer new_capacity) = 0;
 
   //! Conteneur associé à la donnée.
   virtual Array2<DataType>& _internalDeprecatedValue() = 0;
 
+  //! Redimensionne le conteneur.
+  virtual void resizeOnlyDim1(Int32 new_dim1_size) = 0;
+
+  //! Redimensionne le conteneur.
+  virtual void resize(Int32 new_dim1_size, Int32 new_dim2_size) = 0;
+
   //! Libère la mémoire additionnelle éventuellement allouée
-  virtual void shrink() const =0;
+  virtual void shrink() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/

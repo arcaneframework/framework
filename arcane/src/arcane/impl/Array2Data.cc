@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Array2Data.cc                                               (C) 2000-2021 */
+/* Array2Data.cc                                               (C) 2000-2022 */
 /*                                                                           */
 /* Donnée du type 'Array2'.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -26,6 +26,7 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/CheckedConvert.h"
+#include "arcane/utils/ArrayShape.h"
 
 #include "arcane/datatype/IDataOperation.h"
 #include "arcane/datatype/DataStorageTypeInfo.h"
@@ -108,6 +109,9 @@ class Array2DataT
   void copy(const IData* data) override;
   void swapValues(IData* data) override;
   void computeHash(IHashAlgorithm* algo, ByteArray& output) const override;
+  ArrayShape shape() const override { return m_shape; }
+  void setShape(const ArrayShape& new_shape) override { m_shape = new_shape; }
+
   void visit(IArray2DataVisitor* visitor)
   {
     visitor->applyVisitor(this);
@@ -150,6 +154,7 @@ class Array2DataT
   UniqueArray2<DataType> m_value; //!< Donnée
   ITraceMng* m_trace;
   IArray2DataInternalT<DataType>* m_internal;
+  ArrayShape m_shape;
 
  private:
 
@@ -168,6 +173,23 @@ class Array2DataT<DataType>::Impl
   explicit Impl(Array2DataT<DataType>* p) : m_p(p){}
  public:
   void reserve(Integer new_capacity) override { m_p->m_value.reserve(new_capacity); }
+  void resizeOnlyDim1(Int32 new_dim1_size) override
+  {
+    m_p->m_value.resize(new_dim1_size,m_p->m_value.dim2Size());
+  }
+  void resize(Int32 new_dim1_size,Int32 new_dim2_size) override
+  {
+    // Cette méthode est appelée si on modifie la deuxième dimension.
+    // Dans ce cas cela invalide l'ancienne valeur de shape.
+    bool need_reshape = false;
+    if (new_dim2_size!=m_p->m_value.dim2Size())
+      need_reshape = true;
+    m_p->m_value.resize(new_dim1_size,new_dim2_size);
+    if (need_reshape){
+      m_p->m_shape.setNbDimension(1);
+      m_p->m_shape.setDimension(0,new_dim2_size);
+    }
+  }
   Array2<DataType>& _internalDeprecatedValue() override { return m_p->m_value; }
   void shrink() const override { m_p->m_value.shrink(); }
  private:
@@ -281,7 +303,7 @@ createSerializedDataRef(bool use_basic_type) const
   dimensions[1] = m_value.dim2Size();
     
   auto sd = arcaneCreateSerializedDataRef(data_type,base_values.size(),2,nb_element,
-                                          nb_base_element,false,dimensions);
+                                          nb_base_element,false,dimensions,shape());
   sd->setConstBytes(base_values);
   return sd;
 }
@@ -310,6 +332,7 @@ allocateBufferForSerializedData(ISerializedData* sdata)
   //                << " addr=" << m_value.viewAsArray().unguardedBasePointer();
 
   m_value.resize(dim1_size,dim2_size);
+  m_shape = sdata->shape();
 
   Byte* byte_data = reinterpret_cast<Byte*>(m_value.to1DSpan().data());
   Span<Byte> bytes_view(byte_data,sdata->memorySize());

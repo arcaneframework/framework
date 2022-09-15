@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicReaderWriter.cc                                        (C) 2000-2021 */
+/* BasicReaderWriter.cc                                        (C) 2000-2022 */
 /*                                                                           */
 /* Lecture/Ecriture simple.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -23,6 +23,8 @@
 #include "arcane/utils/JSONWriter.h"
 #include "arcane/utils/JSONReader.h"
 #include "arcane/utils/IDataCompressor.h"
+#include "arcane/utils/ArrayShape.h"
+#include "arcane/utils/ValueConvert.h"
 
 #include "arcane/XmlNode.h"
 #include "arcane/IXmlDocumentHolder.h"
@@ -104,6 +106,7 @@ class VariableDataInfo
     m_dimension_array_size = extents.size();
     m_base_data_type = sdata->baseDataType();
     m_memory_size = sdata->memorySize();
+    m_shape = sdata->shape();
     m_file_offset = 0;
   }
 
@@ -120,6 +123,17 @@ class VariableDataInfo
     m_base_data_type = (eDataType)_readInteger(element,"base-data-type");
     m_memory_size = _readInt64(element,"memory-size");
     m_file_offset = _readInt64(element,"file-offset");
+    // L'élément est nul si on repart d'une veille protection (avant Arcane 3.7)
+    XmlNode shape_attr = element.attr("shape");
+    if (!shape_attr.null()){
+      String shape_str = shape_attr.value();
+      if (!shape_str.empty()){
+        UniqueArray<Int32> values;
+        if (builtInGetValue(values,shape_str))
+          ARCANE_FATAL("Can not read values '{0}' for attribute 'shape'",shape_str);
+        m_shape.setDimensions(values);
+      }
+    }
   }
 
   const String& fullName() const { return m_full_name; }
@@ -132,7 +146,7 @@ class VariableDataInfo
   bool isMultiSize() const { return m_is_multi_size; }
   eDataType baseDataType() const { return m_base_data_type; }
   Int64 memorySize() const { return m_memory_size; }
-
+  const ArrayShape& shape() const { return m_shape; }
   void setFileOffset(Int64 v){ m_file_offset = v; }
   Int64 fileOffset() const { return m_file_offset; }
 
@@ -148,6 +162,13 @@ class VariableDataInfo
     _addAttribute(element,"base-data-type",(Integer)m_base_data_type);
     _addAttribute(element,"memory-size",m_memory_size);
     _addAttribute(element,"file-offset",m_file_offset);
+    _addAttribute(element,"shape-size",m_shape.dimensions().size());
+    {
+      String s;
+      if (builtInPutValue(m_shape.dimensions().smallView(),s))
+        ARCANE_FATAL("Can not write '{0}'",m_shape.dimensions());
+      _addAttribute(element,"shape",s);
+    }
   }
 
  private:
@@ -155,6 +176,11 @@ class VariableDataInfo
   void _addAttribute(XmlNode& node,const String& attr_name,Int64 value)
   {
     node.setAttrValue(attr_name,String::fromNumber(value));
+  }
+
+  void _addAttribute(XmlNode& node,const String& attr_name,const String& value)
+  {
+    node.setAttrValue(attr_name,value);
   }
 
   Integer _readInteger(const XmlNode& node,const String& attr_name)
@@ -172,6 +198,11 @@ class VariableDataInfo
     return node.attr(attr_name,true).valueAsBoolean(true);
   }
 
+  String _readString(const XmlNode& node,const String& attr_name)
+  {
+    return node.attr(attr_name,true).value();
+  }
+
  private:
 
   String m_full_name;
@@ -185,6 +216,7 @@ class VariableDataInfo
   eDataType m_base_data_type;
   Int64 m_memory_size;
   Int64 m_file_offset;
+  ArrayShape m_shape;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -472,9 +504,10 @@ readData(const String& var_full_name,IData* data)
   bool is_multi_size = vdi->isMultiSize();
   Int64UniqueArray extents(dimension_array_size);
   reader->getExtents(var_full_name,extents);
+  ArrayShape shape = vdi->shape();
 
   Ref<ISerializedData> sd(arcaneCreateSerializedDataRef(data_type,memory_size,nb_dimension,nb_element,
-                                                        nb_base_element,is_multi_size,extents));
+                                                        nb_base_element,is_multi_size,extents,shape));
 
   Int64 storage_size = sd->memorySize();
   info(4) << " READ DATA storage_size=" << storage_size << " DATA=" << data;

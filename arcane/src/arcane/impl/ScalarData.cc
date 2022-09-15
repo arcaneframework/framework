@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ScalarData.cc                                               (C) 2000-2020 */
+/* ScalarData.cc                                               (C) 2000-2022 */
 /*                                                                           */
 /* Donnée de type scalaire.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -20,6 +20,7 @@
 #include "arcane/utils/Real3.h"
 #include "arcane/utils/Real2x2.h"
 #include "arcane/utils/Real3x3.h"
+#include "arcane/utils/ArrayShape.h"
 
 #include "arcane/IDataFactory.h"
 #include "arcane/datatype/DataStorageTypeInfo.h"
@@ -260,6 +261,25 @@ void ScalarDataT<DataType>::
 visitMultiArray2(IMultiArray2DataVisitor*)
 {
   ARCANE_THROW(NotSupportedException, "Can not visit multiarray2 data with array data");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename DataType>
+ArrayShape ScalarDataT<DataType>::
+shape() const
+{
+  return {};
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename DataType>
+void ScalarDataT<DataType>::
+setShape(const ArrayShape&)
+{
 }
 
 /*---------------------------------------------------------------------------*/
