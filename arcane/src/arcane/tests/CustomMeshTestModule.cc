@@ -34,7 +34,7 @@ class CustomMeshTestModule : public ArcaneCustomMeshTestObject
 {
  public:
 
-  CustomMeshTestModule(const ModuleBuildInfo& sbi)
+  explicit CustomMeshTestModule(const ModuleBuildInfo& sbi)
   : ArcaneCustomMeshTestObject(sbi)
   {}
 
