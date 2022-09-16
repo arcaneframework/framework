@@ -59,10 +59,6 @@ jobs:
     strategy:
       fail-fast: false
     steps:
-      - name: Check permissions
-        shell: bash
-        run: id && ls -lnd /__w && ls -lnR /__w
-        continue-on-error: true
       - name: Checkout
         uses: actions/checkout@v2
         with:
@@ -97,10 +93,6 @@ jobs:
     strategy:
       fail-fast: false
     steps:
-      - name: Check permissions
-        shell: bash
-        run: id && ls -lnd /__w && ls -lnR /__w
-        continue-on-error: true
       - name: Checkout
         uses: actions/checkout@v2
         with:
@@ -161,10 +153,6 @@ jobs:
     strategy:
       fail-fast: false
     steps:
-      - name: Check permissions
-        shell: bash
-        run: id && ls -lnd /__w && ls -lnR /__w
-        continue-on-error: true
       - name: Checkout
         uses: actions/checkout@v2
         with:
@@ -209,10 +197,6 @@ jobs:
     strategy:
       fail-fast: false
     steps:
-      - name: Check permissions
-        shell: bash
-        run: id && ls -lnd /__w && ls -lnR /__w
-        continue-on-error: true
       - name: Checkout
         uses: actions/checkout@v2
         with:
@@ -264,10 +248,6 @@ jobs:
     strategy:
       fail-fast: false
     steps:
-      - name: Check permissions
-        shell: bash
-        run: id && ls -lnd /__w && ls -lnR /__w
-        continue-on-error: true
       - name: Checkout
         uses: actions/checkout@v2
         with:
@@ -350,10 +330,6 @@ jobs:
     strategy:
       fail-fast: false
     steps:
-      - name: Check permissions
-        shell: bash
-        run: id && ls -lnd /__w && ls -lnR /__w
-        continue-on-error: true
       - name: Checkout
         uses: actions/checkout@v2
         with:
@@ -386,7 +362,7 @@ jobs:
           restore-keys: ${{ env.CC_KEY_PREFIX }}-alien-${{ env.CM_BUILD_TYPE }}-
       - name: Configure
         shell: bash
-        run: cmake -S ${{ env.ALIEN_SOURCE_DIR }} -B ${{ env.ALIEN_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ALIEN_INSTALL_DIR }} -DALIENDEV_EMBEDDED=OFF -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DArccore_DIR=${{ env.ARCCORE_INSTALL_DIR }}/lib/cmake/Arccore -DCMAKE_FIND_DEBUG_MODE=1 -DVerbose=ON -DBoost_NO_BOOST_CMAKE=ON -DBUILD_SHARED_LIBS=ON -DALIEN_USE_HDF5=ON -DCMAKE_CXX_FLAGS="-L${EBROOTLIBXML2} -lxml2" ${{ env.CM_CCACHE_OPTS }}
+        run: cmake -S ${{ env.ALIEN_SOURCE_DIR }} -B ${{ env.ALIEN_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ALIEN_INSTALL_DIR }} -DALIENDEV_EMBEDDED=OFF -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DArccore_DIR=${{ env.ARCCORE_INSTALL_DIR }}/lib/cmake/Arccore -DCMAKE_FIND_DEBUG_MODE=1 -DVerbose=ON -DBoost_NO_BOOST_CMAKE=ON -DBUILD_SHARED_LIBS=ON -DALIEN_USE_HDF5=ON ${{ env.CM_CCACHE_OPTS }}
       - name: Build
         shell: bash
         run: cmake --build ${{ env.ALIEN_BUILD_DIR }} ${{ env.CM_BUILD_OPTS }}
@@ -427,10 +403,6 @@ jobs:
     strategy:
       fail-fast: false
     steps:
-      - name: Check permissions
-        shell: bash
-        run: id && ls -lnd /__w && ls -lnR /__w
-        continue-on-error: true
       - name: Checkout
         uses: actions/checkout@v2
         with:
@@ -485,7 +457,7 @@ jobs:
           restore-keys: ${{ env.CC_KEY_PREFIX }}-alienlegacy-${{ env.CM_BUILD_TYPE }}-
       - name: Configure
         shell: bash
-        run: cmake -S ${{ env.ALIENLEGACY_SOURCE_DIR }} -B ${{ env.ALIENLEGACY_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ALIENLEGACY_INSTALL_DIR }} -DBUILD_SHARED_LIBS=ON -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DArccore_ROOT=${{ env.ARCCORE_INSTALL_DIR }} -DAxlstar_ROOT=${{ env.AXLSTAR_INSTALL_DIR }} -DArcane_ROOT=${{ env.ARCANE_INSTALL_DIR }} -DAlien_ROOT=${{ env.ALIEN_INSTALL_DIR }} -DUSE_BUILDSYSTEM_GIT_SUBMODULE=ON -DALIEN_GENERATE_DOCUMENTATION=ON
+        run: cmake -S ${{ env.ALIENLEGACY_SOURCE_DIR }} -B ${{ env.ALIENLEGACY_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ALIENLEGACY_INSTALL_DIR }} -DBUILD_SHARED_LIBS=ON -DArccon_DIR=${{ env.ARCCON_INSTALL_DIR }}/share/cmake/Arccon -DArccore_ROOT=${{ env.ARCCORE_INSTALL_DIR }} -DAxlstar_ROOT=${{ env.AXLSTAR_INSTALL_DIR }} -DArcane_ROOT=${{ env.ARCANE_INSTALL_DIR }} -DAlien_ROOT=${{ env.ALIEN_INSTALL_DIR }} -DUSE_BUILDSYSTEM_GIT_SUBMODULE=ON ${{ env.CM_CCACHE_OPTS }}
       - name: Build
         shell: bash
         run: cmake --build ${{ env.ALIENLEGACY_BUILD_DIR }} ${{ env.CM_BUILD_OPTS }}
@@ -513,10 +485,6 @@ jobs:
     strategy:
       fail-fast: false
     steps:
-      - name: Check permissions
-        shell: bash
-        run: id && ls -lnd /__w && ls -lnR /__w
-        continue-on-error: true
       - name: Download arccore build artifact
         uses: actions/download-artifact@v2
         with:
@@ -549,10 +517,6 @@ jobs:
   #  strategy:
   #    fail-fast: false
   #  steps:
-  #    - name: Check permissions
-  #      shell: bash
-  #      run: id && ls -lnd /__w && ls -lnR /__w
-  #      continue-on-error: true
   #    - name: Checkout
   #      uses: actions/checkout@v2
   #      with:
@@ -601,10 +565,6 @@ jobs:
   #  strategy:
   #    fail-fast: false
   #  steps:
-  #    - name: Check permissions
-  #      shell: bash
-  #      run: id && ls -lnd /__w && ls -lnR /__w
-  #      continue-on-error: true
   #    - name: Checkout
   #      uses: actions/checkout@v2
   #      with:
@@ -648,10 +608,6 @@ jobs:
   #  strategy:
   #    fail-fast: false
   #  steps:
-  #    - name: Check permissions
-  #      shell: bash
-  #      run: id && ls -lnd /__w && ls -lnR /__w
-  #      continue-on-error: true
   #    - name: Checkout
   #      uses: actions/checkout@v2
   #      with:
