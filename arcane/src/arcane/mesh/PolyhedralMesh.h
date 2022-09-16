@@ -37,15 +37,16 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane {
+namespace Arcane
+{
 class ISubDomain;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-
-namespace Arcane::mesh {
+namespace Arcane::mesh
+{
 
 class PolyhedralMeshImpl;
 class PolyhedralFamily;
@@ -55,7 +56,8 @@ class PolyhedralFamily;
 class PolyhedralMesh
 : public EmptyMesh
 {
- public :
+ public:
+
   String m_name;
   ISubDomain* m_subdomain;
   MeshItemInternalList m_mesh_item_internal_list;
@@ -68,10 +70,12 @@ class PolyhedralMesh
   ItemTypeMng* m_item_type_mng = nullptr;
 
  public:
+
   PolyhedralMesh(ISubDomain* subDomain);
   ~PolyhedralMesh(); // for pimpl idiom
 
  public:
+
   static String handleName() { return m_mesh_handle_name; }
 
   void read(String const& filename);
@@ -81,12 +85,12 @@ class PolyhedralMesh
 #ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
 
  private:
+
   std::vector<std::unique_ptr<PolyhedralFamily>> m_arcane_families;
-  std::array<std::unique_ptr<PolyhedralFamily>,NB_ITEM_KIND> m_empty_arcane_families;
-  std::array<PolyhedralFamily*,NB_ITEM_KIND> m_default_arcane_families;
+  std::array<std::unique_ptr<PolyhedralFamily>, NB_ITEM_KIND> m_empty_arcane_families;
+  std::array<PolyhedralFamily*, NB_ITEM_KIND> m_default_arcane_families;
   std::unique_ptr<VariableNodeReal3> m_arcane_node_coords;
   ItemGroupList m_all_groups;
-
 
   // IMeshBase interface
  public:
@@ -129,7 +133,7 @@ class PolyhedralMesh
 
   FaceGroup outerFaces() override { return ItemGroup{}; }
 
-  IItemFamily* createItemFamily(eItemKind ik,const String& name) override;
+  IItemFamily* createItemFamily(eItemKind ik, const String& name) override;
 
   ISubDomain* subDomain() override { return m_subdomain; }
   MeshItemInternalList* meshItemInternalList() override { return &m_mesh_item_internal_list; }
@@ -155,7 +159,7 @@ class PolyhedralMesh
 
   ItemTypeMng* itemTypeMng() const override;
 
-  IItemFamily* findItemFamily(eItemKind ik,const String& name,bool create_if_needed,bool register_modifier_if_created) override;
+  IItemFamily* findItemFamily(eItemKind ik, const String& name, bool create_if_needed, bool register_modifier_if_created) override;
 
   IMesh* parentMesh() const override { return nullptr; }
 
@@ -171,8 +175,8 @@ class PolyhedralMesh
 
 #endif // ARCANE_HAS_CUSTOM_MESH_TOOLS
 
-
  private:
+
   [[noreturn]] void _errorEmptyMesh() const;
 
   void _createUnitMesh();
