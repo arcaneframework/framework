@@ -186,9 +186,11 @@ class DumpWEnsight7
     EnsightPart& typeInfo(Integer i) { return m_parts[i]; }
     ItemGroup group() const { return m_group; }
     Integer partId() const { return m_part_id; }
-    Int32 generalItemTypeId(const Item& item) const {
-      ARCANE_ASSERT(m_general_item_types,("Cannot question an empty GroupPartInfo"));
-      return (*(m_general_item_types))[item]; }
+    Int32 generalItemTypeId(const Item& item) const
+    {
+      ARCANE_ASSERT(m_general_item_types, ("Cannot question an empty GroupPartInfo"));
+      return (*(m_general_item_types))[item];
+    }
 
    private:
 
@@ -298,8 +300,10 @@ class DumpWEnsight7
         if (!m_is_polyhedral_type_registration_done) {
           ENUMERATE_ITEM (iitem, m_group) {
             ItemWithNodes item = iitem->toItemWithNodes();
-            if (item.nbNode() == 1) (*(m_general_item_types))[item] = IT_Vertex;
-            else if (item.nbNode() == 2) (*(m_general_item_types))[item] = IT_Line2;
+            if (item.nbNode() == 1)
+              (*(m_general_item_types))[item] = IT_Vertex;
+            else if (item.nbNode() == 2)
+              (*(m_general_item_types))[item] = IT_Line2;
             else if (item.nbNode() != item.internal()->nbEdge()) { // polyhedron found
               (*(m_general_item_types))[item] = type_id;
               m_parts.add(EnsightPart(type_id++, item.nbNode(), "nfaced"));
@@ -1026,7 +1030,7 @@ _saveGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
       else { // mesh has general items
         for (Item mi : items) {
           Cell cell = mi.toCell();
-          ENUMERATE_FACE (face,cell.faces()){
+          ENUMERATE_FACE (face, cell.faces()) {
             writeFileInt(ofile, face->nbNode());
           }
         }
