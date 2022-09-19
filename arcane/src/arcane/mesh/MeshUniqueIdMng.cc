@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshUniqueIdMng.cc                                          (C) 2000-2021 */
+/* MeshUniqueIdMng.cc                                          (C) 2000-2022 */
 /*                                                                           */
 /* Gestionnaire de couche fantômes d'un maillage.                            */
 /*---------------------------------------------------------------------------*/
@@ -69,13 +69,8 @@ _initFaceVersion()
 {
   m_face_builder_version = 1;
 
-  String face_version_str = platform::getEnvironmentVariable("ARCANE_FACE_UNIQUE_ID_BUILDER_VERSION");
-  if (!face_version_str.null()){
-    Integer v = 0;
-    if (builtInGetValue(v,face_version_str))
-      ARCANE_FATAL("Invalid value '{0}' for ARCANE_FACE_UNIQUE_ID_BUILDER_VERSION. Value has to be an Integer",
-                   face_version_str);
-    m_face_builder_version = v;
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_FACE_UNIQUE_ID_BUILDER_VERSION",true)){
+    m_face_builder_version = v.value();
     return;
   }
 
@@ -108,13 +103,8 @@ _initEdgeVersion()
 {
   m_edge_builder_version = 1;
 
-  String edge_version_str = platform::getEnvironmentVariable("ARCANE_EDGE_UNIQUE_ID_BUILDER_VERSION");
-  if (!edge_version_str.null()){
-    Integer v = 0;
-    if (builtInGetValue(v,edge_version_str))
-      ARCANE_FATAL("Invalid value '{0}' for ARCANE_EDGE_UNIQUE_ID_BUILDER_VERSION. Value has to be an Integer",
-                   edge_version_str);
-    m_edge_builder_version = v;
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_EDGE_UNIQUE_ID_BUILDER_VERSION",true)){
+    m_edge_builder_version = v.value();
     return;
   }
 }

@@ -5,19 +5,20 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Convert.cc                                                  (C) 2000-2020 */
+/* Convert.cc                                                  (C) 2000-2022 */
 /*                                                                           */
 /* Fonctions pour convertir un type en un autre.                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
-
 #include "arcane/utils/ValueConvert.h"
+
 #include "arcane/utils/Convert.h"
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/OStringStream.h"
+#include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/FatalErrorException.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -288,10 +289,10 @@ _builtInPutValue(const T& v,String& s)
   return false;
 }
 template<class T> inline bool
-_builtInPutArrayValue(ConstArrayView<T> v,String& s)
+_builtInPutArrayValue(Span<const T> v,String& s)
 {
   OStringStream ostr;
-  for( Integer i=0, n=v.size(); i<n; ++i ){
+  for( Int64 i=0, n=v.size(); i<n; ++i ){
     if (i!=0)
       ostr() << ' ';
     ostr() << v[i];
@@ -338,25 +339,25 @@ bool builtInPutValue(const Real2x2& v,String& s)
 bool builtInPutValue(const Real3x3& v,String& s)
 { return _builtInPutValue(v,s); }
 
-bool builtInPutValue(RealConstArrayView v,String& s)
+bool builtInPutValue(Span<const Real> v,String& s)
 { return _builtInPutArrayValue(v,s); }
-bool builtInPutValue(Real2ConstArrayView v,String& s)
+bool builtInPutValue(Span<const Real2> v,String& s)
 { return _builtInPutArrayValue(v,s); }
-bool builtInPutValue(Real3ConstArrayView v,String& s)
+bool builtInPutValue(Span<const Real3> v,String& s)
 { return _builtInPutArrayValue(v,s); }
-bool builtInPutValue(Real2x2ConstArrayView v,String& s)
+bool builtInPutValue(Span<const Real2x2> v,String& s)
 { return _builtInPutArrayValue(v,s); }
-bool builtInPutValue(Real3x3ConstArrayView v,String& s)
+bool builtInPutValue(Span<const Real3x3> v,String& s)
 { return _builtInPutArrayValue(v,s); }
-bool builtInPutValue(Int16ConstArrayView v,String& s)
+bool builtInPutValue(Span<const Int16> v,String& s)
 { return _builtInPutArrayValue(v,s); }
-bool builtInPutValue(Int32ConstArrayView v,String& s)
+bool builtInPutValue(Span<const Int32> v,String& s)
 { return _builtInPutArrayValue(v,s); }
-bool builtInPutValue(Int64ConstArrayView v,String& s)
+bool builtInPutValue(Span<const Int64> v,String& s)
 { return _builtInPutArrayValue(v,s); }
-bool builtInPutValue(BoolConstArrayView v,String& s)
+bool builtInPutValue(Span<const bool> v,String& s)
 { return _builtInPutArrayValue(v,s); }
-bool builtInPutValue(StringConstArrayView v,String& s)
+bool builtInPutValue(Span<const String> v,String& s)
 { return _builtInPutArrayValue(v,s); }
 //@}
 
@@ -405,6 +406,43 @@ String Convert::
 toHexaString(Real input)
 {
   return toHexaString(ByteConstArrayView(sizeof(Real),(Byte*)&input));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Convert
+{
+
+template<typename T> std::optional<T>
+ScalarType<T>::tryParse(StringView s)
+{
+  T v;
+  if (s.empty())
+    return std::nullopt;
+  bool is_bad = builtInGetValue(v,s);
+  if (is_bad)
+    return std::nullopt;
+  return v;
+}
+
+template<typename T> std::optional<T>
+ScalarType<T>::tryParseFromEnvironment(StringView s,bool throw_if_invalid)
+{
+  String env_value = platform::getEnvironmentVariable(s);
+  if (env_value.null())
+    return std::nullopt;
+  auto v = tryParse(env_value);
+  if (!v && throw_if_invalid)
+    ARCANE_FATAL("Invalid value '{0}' for environment variable {1}. Can not convert to type '{2}'",
+                 env_value,s,typeToName(T{}));
+  return v;
+}
+
+template class ScalarType<Int32>;
+template class ScalarType<Int64>;
+template class ScalarType<Real>;
+
 }
 
 /*---------------------------------------------------------------------------*/
