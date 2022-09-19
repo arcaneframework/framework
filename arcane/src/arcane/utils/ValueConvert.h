@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ValueConvert.h                                              (C) 2000-2018 */
+/* ValueConvert.h                                              (C) 2000-2022 */
 /*                                                                           */
 /* Fonctions pour convertir une chaîne de caractère en un type donné.        */
 /*---------------------------------------------------------------------------*/
@@ -25,7 +25,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -155,16 +156,16 @@ ARCANE_UTILS_EXPORT bool builtInPutValue(Real2 v,String& s);
 ARCANE_UTILS_EXPORT bool builtInPutValue(Real3 v,String& s);
 ARCANE_UTILS_EXPORT bool builtInPutValue(const Real2x2& v,String& s);
 ARCANE_UTILS_EXPORT bool builtInPutValue(const Real3x3& v,String& s);
-ARCANE_UTILS_EXPORT bool builtInPutValue(RealConstArrayView v,String& s);
-ARCANE_UTILS_EXPORT bool builtInPutValue(Real2ConstArrayView v,String& s);
-ARCANE_UTILS_EXPORT bool builtInPutValue(Real3ConstArrayView v,String& s);
-ARCANE_UTILS_EXPORT bool builtInPutValue(Real2x2ConstArrayView v,String& s);
-ARCANE_UTILS_EXPORT bool builtInPutValue(Real3x3ConstArrayView v,String& s);
-ARCANE_UTILS_EXPORT bool builtInPutValue(Int16ConstArrayView v,String& s);
-ARCANE_UTILS_EXPORT bool builtInPutValue(Int32ConstArrayView v,String& s);
-ARCANE_UTILS_EXPORT bool builtInPutValue(Int64ConstArrayView v,String& s);
-ARCANE_UTILS_EXPORT bool builtInPutValue(BoolConstArrayView v,String& s);
-ARCANE_UTILS_EXPORT bool builtInPutValue(StringConstArrayView v,String& s);
+ARCANE_UTILS_EXPORT bool builtInPutValue(Span<const Real> v,String& s);
+ARCANE_UTILS_EXPORT bool builtInPutValue(Span<const Real2> v,String& s);
+ARCANE_UTILS_EXPORT bool builtInPutValue(Span<const Real3> v,String& s);
+ARCANE_UTILS_EXPORT bool builtInPutValue(Span<const Real2x2> v,String& s);
+ARCANE_UTILS_EXPORT bool builtInPutValue(Span<const Real3x3> v,String& s);
+ARCANE_UTILS_EXPORT bool builtInPutValue(Span<const Int16> v,String& s);
+ARCANE_UTILS_EXPORT bool builtInPutValue(Span<const Int32> v,String& s);
+ARCANE_UTILS_EXPORT bool builtInPutValue(Span<const Int64> v,String& s);
+ARCANE_UTILS_EXPORT bool builtInPutValue(Span<const bool> v,String& s);
+ARCANE_UTILS_EXPORT bool builtInPutValue(Span<const String> v,String& s);
 //@}
 
 /*---------------------------------------------------------------------------*/
@@ -199,7 +200,7 @@ inline const char* typeToName(const Int64Array&) { return "Int64[]"; }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
