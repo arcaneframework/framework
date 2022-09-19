@@ -17,6 +17,8 @@
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/OStringStream.h"
+#include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/FatalErrorException.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -404,6 +406,43 @@ String Convert::
 toHexaString(Real input)
 {
   return toHexaString(ByteConstArrayView(sizeof(Real),(Byte*)&input));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Convert
+{
+
+template<typename T> std::optional<T>
+ScalarType<T>::tryParse(StringView s)
+{
+  T v;
+  if (s.empty())
+    return std::nullopt;
+  bool is_bad = builtInGetValue(v,s);
+  if (is_bad)
+    return std::nullopt;
+  return v;
+}
+
+template<typename T> std::optional<T>
+ScalarType<T>::tryParseFromEnvironment(StringView s,bool throw_if_invalid)
+{
+  String env_value = platform::getEnvironmentVariable(s);
+  if (env_value.null())
+    return std::nullopt;
+  auto v = tryParse(env_value);
+  if (!v && throw_if_invalid)
+    ARCANE_FATAL("Invalid value '{0}' for environment variable {1}. Can not convert to type '{2}'",
+                 env_value,s,typeToName(T{}));
+  return v;
+}
+
+template class ScalarType<Int32>;
+template class ScalarType<Int64>;
+template class ScalarType<Real>;
+
 }
 
 /*---------------------------------------------------------------------------*/
