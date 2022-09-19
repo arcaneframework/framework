@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GhostLayerMng.cc                                            (C) 2000-2013 */
+/* GhostLayerMng.cc                                            (C) 2000-2022 */
 /*                                                                           */
 /* Gestionnaire de couche fantômes d'un maillage.                            */
 /*---------------------------------------------------------------------------*/
@@ -18,6 +18,8 @@
 #include "arcane/utils/PlatformUtils.h"
 
 #include "arcane/mesh/GhostLayerMng.h"
+
+#include <algorithm>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -34,13 +36,8 @@ GhostLayerMng(ITraceMng* tm)
 , m_nb_ghost_layer(1)
 , m_builder_version(3)
 {
-  String nb_ghost_str = platform::getEnvironmentVariable("ARCANE_NB_GHOSTLAYER");
-  Integer nb_ghost = 1;
-  if (!nb_ghost_str.null())
-    builtInGetValue(nb_ghost,nb_ghost_str);
-  if (nb_ghost<=0)
-    nb_ghost = 1;
-  m_nb_ghost_layer = nb_ghost;
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_NB_GHOSTLAYER",true))
+    m_nb_ghost_layer = std::clamp(v.value(),1,256);
 
   _initBuilderVersion();
 }
