@@ -601,7 +601,7 @@ jobs:
   #    - arcane-install
   #    - alien-install
   #    - alienlegacy-install
-  #  runs-on: ubuntu-18.04
+  #  runs-on: ubuntu-22.04
   #  timeout-minutes: 180
   #  container:
   #    image: ghcr.io/arcaneframework/centos-foss-2018b-alienlegacy:7-latest
