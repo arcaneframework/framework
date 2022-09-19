@@ -672,9 +672,11 @@ endmacro()
 
 add_subdirectory(src/arcane/ios)
 
-add_subdirectory(src/arcane/hyoda)
-if(TARGET arcane_hyoda)
-  list(APPEND ARCANE_ADDITIONAL_COMPONENTS arcane_hyoda)
+if(NOT ARCANE_DISABLE_HYODA)
+  add_subdirectory(src/arcane/hyoda)
+  if(TARGET arcane_hyoda)
+    list(APPEND ARCANE_ADDITIONAL_COMPONENTS arcane_hyoda)
+  endif()
 endif()
 
 if (NOT MONO_EXEC_ONLY)
