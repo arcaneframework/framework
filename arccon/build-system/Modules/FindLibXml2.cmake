@@ -1,14 +1,6 @@
+﻿#
+# Find the LibXml2 includes and library
 #
-# Find the LIBICONV includes and library
-#
-# This module defines
-# LIBICONV_INCLUDE_DIR, where to find headers,
-# LIBICONV_LIBRARIES, the libraries to link against to use LIBICONV.
-# LIBICONV_FOUND, If false, do not try to use LIBICONV.
-
-# Note: pour CMake, il faut faire un find_package(LibXml2)
-# mais les variables associées sont préfixées par LIBXML2
-# au lieu de 'LibXml2'.
 include(${CMAKE_CURRENT_LIST_DIR}/../commands/commands.cmake)
 
 arccon_return_if_package_found(LibXml2)
@@ -21,6 +13,14 @@ unset(CMAKE_MODULE_PATH)
 find_package(LibXml2)
 set(CMAKE_MODULE_PATH ${_SAVED_CMAKE_MODULE_PATH})
 
+# Normalement cette cible est toujours définie depuis la version 3.12
+# de CMake si LibXml2 est trouvé
+if (TARGET LibXml2::LibXml2)
+  arccon_register_cmake_config_target(LibXml2 CONFIG_TARGET_NAME LibXml2::LibXml2)
+  return()
+endif()
+
+# Ancienne version si on ne trouve pas la cible LibXml2::LibXml2
 set(LibXml2_FOUND FALSE)
 if (LIBXML2_FOUND)
   set(LibXml2_FOUND TRUE)
@@ -28,3 +28,10 @@ if (LIBXML2_FOUND)
 endif()
 
 arccon_register_package_library(LibXml2 LIBXML2)
+
+# ----------------------------------------------------------------------------
+# Local Variables:
+# tab-width: 2
+# indent-tabs-mode: nil
+# coding: utf-8-with-signature
+# End:

@@ -1,4 +1,4 @@
-#
+﻿#
 # Find the Mpi includes and library
 #
 # This module defines
@@ -8,29 +8,28 @@
 
 # Avant d'include ce fichier, il est possible de positionner les variables suivantes:
 # - WANTED_MPI_EXEC_NAME qui est le nom du lanceur MPI.
-# - WANTED_MPI_LIBRARIES qui est le nom des biblioth�ques MPI recherch�es pour le cas
-#   ou il en faut plusieurs (par exemple via ITAC). Si cette variable est positionn�e
-#   alors on n'utilise pas MPI_C_LIBRARIES retourn� par le find_package().
+# - WANTED_MPI_LIBRARIES qui est le nom des bibliothèques MPI recherchées pour le cas
+#   ou il en faut plusieurs (par exemple via ITAC). Si cette variable est positionnée
+#   alors on n'utilise pas MPI_C_LIBRARIES retourné par le find_package().
 
-# NOTE: il faut toujours faire le find_package(MPI) m�me si la
-# cible existe d�j� car le module MPI positionne certaines variables
-# comme MPIEXEC_EXECUTABLE qui sont n�cessaires.
+# NOTE: il faut toujours faire le find_package(MPI) même si la
+# cible existe déjà car le module MPI positionne certaines variables
+# comme MPIEXEC_EXECUTABLE qui sont nécessaires.
 
 # Essaie d'utilier le 'findMPI' fourni par CMake.
-# Avec les version r�centes de CMake (3.9+), il devrait y avoir une cible
-# import�e MPI::MPI_C d�finie. Il faudrait la tester.
+# Avec les version récentes de CMake (3.9+), il devrait y avoir une cible
+# importee MPI::MPI_C définie. Il faudrait la tester.
 set(_SAVED_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
 unset(CMAKE_MODULE_PATH)
 find_package(MPI)
 set(CMAKE_MODULE_PATH ${_SAVED_CMAKE_MODULE_PATH})
 
-
 include (${CMAKE_CURRENT_LIST_DIR}/../commands/commands.cmake)
 
 # Essaie de trouver le nom du fournisseur de MPI.
-# Cela peut-�tre utile pour positionner certaines options lors de la compilation
+# Cela peut-être utile pour positionner certaines options lors de la compilation
 # ou du lancement des jobs. Par exemple, avec OpenMPI 3+, il faut ajouter
-# l'option '--oversubscribe' � 'mpiexec' si on veut utiliser plus de PE que
+# l'option '--oversubscribe' à 'mpiexec' si on veut utiliser plus de PE que
 # de coeurs disponibles sur la machine.
 if (MPI_FOUND)
   if (NOT MPI_VENDOR_NAME)
@@ -95,14 +94,14 @@ message(STATUS "MPI_CXX_ADDITIONAL_INCLUDE_DIRS = ${MPI_CXX_ADDITIONAL_INCLUDE_D
 message(STATUS "MPI_CXX_LIBRARIES    = ${MPI_CXX_LIBRARIES}")
 message(STATUS "MPI_VENDOR_NAME      = ${MPI_VENDOR_NAME}")
 
-# Si find_package() a trouv� MPI, alors MPI_CXX_INCLUDE_PATH est positionn�.
-# Cependant il n'est pas forc�ment valide si l'installation de MPI n'est pas standard.
+# Si find_package() a trouvé MPI, alors MPI_CXX_INCLUDE_PATH est positionné.
+# Cependant il n'est pas forcément valide si l'installation de MPI n'est pas standard.
 #find_path(MPI_INCLUDE_DIRS NAMES mpi.h PATHS ${MPI_CXX_INCLUDE_PATH} ${MPI_ROOT_PATH}/include)
 #message(STATUS "MPI_INCLUDE_DIRS = ${MPI_INCLUDE_DIRS}")
 set(MPI_INCLUDE_DIRS ${MPI_CXX_INCLUDE_PATH})
 
 # Sous windows, le FindMPI de CMake semble mettre dans MPI_CXX_INCLUDE_DIRS des
-# r�pertoires issus des sources (� �tudier...). Comme on n'a besoin que
+# répertoires issus des sources (à étudier...). Comme on n'a besoin que
 # de 'mpi.h', on prend juste le r�pertoire le contenant
 if (WIN32)
   if (MPI_CXX_HEADER_DIR)  
@@ -110,14 +109,14 @@ if (WIN32)
   endif()
 endif()
 
-# -- -- Support pour sp�cifier directement les biblioth�ques MPI
+# -- -- Support pour spécifier directement les bibliothèques MPI
 if(NOT WANTED_MPI_LIBRARIES)
   if(MPI_PREFIX_LIBRARIES OR MPI_ADDITIONAL_LIBRARIES)
     set(WANTED_MPI_LIBRARIES ${MPI_PREFIX_LIBRARIES} ${WANTED_MPI_LIBRARY} ${MPI_ADDITIONAL_LIBRARIES})
   endif()
 endif()
 
-# Analyse les biblioth�ques sp�cifiques �ventuelles.
+# Analyse les bibliothèques spécifiques éventuelles.
 # Toutes celles de ${WANTED_MPI_LIBRARIES} doivent exister
 set(_HAS_ALL_WANTED_MPI_LIBRARIES TRUE)
 set(ALL_MPI_LIBRARIES)
@@ -139,10 +138,10 @@ message(STATUS "ALL_MPI_LIBRARIES=${ALL_MPI_LIBRARIES} all?=${_HAS_ALL_WANTED_MP
 
 set(MPI_FOUND NO)
 if (MPI_INCLUDE_DIRS AND MPI_EXEC_NAME AND _HAS_ALL_WANTED_MPI_LIBRARIES)
-  # Si on a sp�cifi� les biblioth�ques, on prend celles l�.
-  # Sinon, on prend par d�faut les biblioth�ques C++ car m�me si on les
+  # Si on a spécifie les bibliothèques, on prend celles là.
+  # Sinon, on prend par défaut les bibliothèques C++ car même si on les
   # utilisent pas directement, elles sont des fois automatiquement prises
-  # en compte d�s qu'on inclus 'mpi.h' dans un source C++.
+  # en compte dès qu'on inclus 'mpi.h' dans un source C++.
   unset(MPI_LIBRARIES)
   if (ALL_MPI_LIBRARIES)
     set(MPI_LIBRARIES ${ALL_MPI_LIBRARIES})
@@ -167,3 +166,10 @@ if (NOT MPI_FOUND)
 endif()
 
 arccon_register_package_library(MPI MPI)
+
+# ----------------------------------------------------------------------------
+# Local Variables:
+# tab-width: 2
+# indent-tabs-mode: nil
+# coding: utf-8-with-signature
+# End:

@@ -31,6 +31,12 @@ endif()
 if (_ARCCON_HDF5_TARGET)
   message(STATUS "Found HDF5 via configuration target=${_ARCCON_HDF5_TARGET}")
 
+  # Par défaut on utilise la cible importée sauf si on demande l'ancien mécanisme
+  if (NOT ARCCON_USE_LEGACY_FIND_HDF5)
+    arccon_register_cmake_config_target(HDF5 CONFIG_TARGET_NAME ${_ARCCON_HDF5_TARGET})
+    return()
+  endif()
+
   # NOTE: il existe deux bibliothèques suivant si on
   # est en débug ou release. On les récupère via les
   # propriétés IMPORTED_LOCATION_{DEBUG|RELEASE|RELWITHDEBINFO}
@@ -88,20 +94,25 @@ endif()
 
 set(_SAVED_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
 unset(CMAKE_MODULE_PATH)
-find_package(HDF5 MODULE COMPONENTS C)
+find_package(HDF5 MODULE)
 set(CMAKE_MODULE_PATH ${_SAVED_CMAKE_MODULE_PATH})
 if (HDF5_FOUND)
-  message(STATUS "Found HDF5 with CMake FindHdf5")
-  message(STATUS "HDF5_VERSION = ${HDF5_VERSION}")
-  message(STATUS "HDF5_LIBRARIES = ${HDF5_LIBRARIES}")
-  message(STATUS "HDF5_INCLUDE_DIRS = ${HDF5_INCLUDE_DIRS}")
-  message(STATUS "HDF5_DEFINITIONS = ${HDF5_DEFINITIONS}")
-  arccon_register_package_library(HDF5 HDF5)
-  if (HDF5_DEFINITIONS)
-    set_target_properties(${_TARGET_NAME}
-      PROPERTIES
-      INTERFACE_COMPILE_DEFINITIONS "${HDF5_DEFINITIONS}"
-      )
+  if (TARGET hdf5::hdf5)
+    arccon_register_cmake_config_target(HDF5 CONFIG_TARGET_NAME hdf5::hdf5)
+    return()
+  else()
+    message(STATUS "Found HDF5 with CMake FindHdf5")
+    message(STATUS "HDF5_VERSION = ${HDF5_VERSION}")
+    message(STATUS "HDF5_LIBRARIES = ${HDF5_LIBRARIES}")
+    message(STATUS "HDF5_INCLUDE_DIRS = ${HDF5_INCLUDE_DIRS}")
+    message(STATUS "HDF5_DEFINITIONS = ${HDF5_DEFINITIONS}")
+    arccon_register_package_library(HDF5 HDF5)
+    if (HDF5_DEFINITIONS)
+      set_target_properties(${_TARGET_NAME}
+        PROPERTIES
+        INTERFACE_COMPILE_DEFINITIONS "${HDF5_DEFINITIONS}"
+        )
+    endif()
   endif()
   # Il semble que HDF5_VERSION ne soit pas toujours mis dans le cache. On le
   # force

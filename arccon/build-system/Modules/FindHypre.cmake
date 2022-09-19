@@ -1,4 +1,4 @@
-include (${CMAKE_CURRENT_LIST_DIR}/../commands/commands.cmake)
+﻿include (${CMAKE_CURRENT_LIST_DIR}/../commands/commands.cmake)
 arccon_return_if_package_found(Hypre)
 
 # Les versions récentes de Hypre permettent d'utiliser un CMakeLists.txt
@@ -9,18 +9,22 @@ set(_SAVED_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
 unset(CMAKE_MODULE_PATH)
 find_package(HYPRE CONFIG QUIET)
 set(CMAKE_MODULE_PATH ${_SAVED_CMAKE_MODULE_PATH})
+
+# Les versions de Hypre à partir de la version 2.20 utilisent toujours
+# un CMakeLists.txt et doivent avoir la cible HYPRE::HYPRE qui est définie
+# NOTE: Normalement le package devrait s'appeler HYPRE si on veut être cohérent
+# avec le fichier fournit par Hypre.
 if (TARGET HYPRE::HYPRE)
-  arccon_register_package_library(Hypre HYPRE)
-  set(ARCCON_TARGET_Hypre HYPRE::HYPRE CACHE STRING "Target for package HYPRE" FORCE)
+  arccon_register_cmake_config_target(Hypre CONFIG_TARGET_NAME HYPRE::HYPRE)
   return()
 endif()
 
 find_library(Hypre_LIBRARY
-     NAMES HYPRE)
+  NAMES HYPRE)
 
 # On debian/ubuntu, headers can be found in a /usr/include/"pkg"
 find_path(Hypre_INCLUDE_DIRS HYPRE.h
-        PATH_SUFFIXES Hypre hypre)
+  PATH_SUFFIXES Hypre hypre)
 mark_as_advanced(Hypre_INCLUDE_DIRS)
 
 set(Hypre_INCLUDE_DIRS ${Hypre_INCLUDE_DIR})
@@ -45,5 +49,9 @@ find_package_handle_standard_args(Hypre
 
 arccon_register_package_library(Hypre Hypre)
 
-# Find the Hypre includes and library
-#arccon_find_legacy_package(NAME Hypre LIBRARIES Hypre HEADERS Hypre.h)
+# ----------------------------------------------------------------------------
+# Local Variables:
+# tab-width: 2
+# indent-tabs-mode: nil
+# coding: utf-8-with-signature
+# End:
