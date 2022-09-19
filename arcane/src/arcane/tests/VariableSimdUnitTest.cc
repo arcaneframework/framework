@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableSimdUnitTest.cc                                     (C) 2000-2016 */
+/* VariableSimdUnitTest.cc                                     (C) 2000-2022 */
 /*                                                                           */
 /* Service de test des variables.                                            */
 /*---------------------------------------------------------------------------*/
@@ -39,7 +39,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_BEGIN_NAMESPACE
+namespace ArcaneTest
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -285,10 +286,11 @@ void VariableSimdUnitTest::
 _doTest( void (VariableSimdUnitTest::*functor)(), const String& name)
 {
   info() << "Begin test name=" << name;
-  Integer nb_z = 20000;
+  // Multiplier cette valeur par 40 si on veut faire des tests de performances
+  Integer nb_z = 500;
   // Réduit la taille du test en débug pour qu'il ne dure pas trop longtemps
-  if (arcaneIsDebug())
-    nb_z /= 20;
+  //if (arcaneIsDebug())
+  //nb_z /= 20;
 
   {
     Timer::Sentry ts(&m_timer);
@@ -392,7 +394,7 @@ initializeTest()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_END_NAMESPACE
+} // End namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -338,6 +338,13 @@ add_test_message_passing(broadcast_serializer)
 add_test_message_passing(all)
 add_test_message_passing(sub_all)
 
+# Pour la converture de test, lance les tests en mode hybrid mais avec uniquement
+# 4 coeurs
+if(TARGET arcane_mpithread)
+  add_test(parallelmng_all_hybrid4 ${ARCANE_TEST_DRIVER} launch -n 2 -T 2 -We,MESSAGE_PASSING_TEST,all -arcane_opt direct_test ParallelMngTest null)
+  add_test(parallelmng_sub_all_hybrid4 ${ARCANE_TEST_DRIVER} launch -n 2 -T 2 -We,MESSAGE_PASSING_TEST,sub_all -arcane_opt direct_test ParallelMngTest null)
+endif()
+
 add_test(serialize_message_list_v2_4proc
   ${ARCANE_TEST_DRIVER} launch -n 4
   -We,MESSAGE_PASSING_TEST,serialize_message_list
