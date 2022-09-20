@@ -48,6 +48,7 @@ CellDirectionMng::
 CellDirectionMng()
 : m_direction(MD_DirInvalid)
 , m_p(nullptr)
+, m_cells(nullptr)
 , m_next_face_index(-1)
 , m_previous_face_index(-1)
 , m_sub_domain_offset(-1)
@@ -104,9 +105,9 @@ _internalComputeInnerAndOuterItems(const ItemGroup& items)
   IItemFamily* family = items.itemFamily();
   ENUMERATE_ITEM(iitem,items){
     Int32 lid = iitem.itemLocalId();
-    ItemInternal* i1 = m_infos[lid].m_next_item;
-    ItemInternal* i2 = m_infos[lid].m_previous_item;
-    if (i1->null() || i2->null())
+    Int32 i1 = m_infos[lid].m_next_lid;
+    Int32 i2 = m_infos[lid].m_previous_lid;
+    if (i1==NULL_ITEM_LOCAL_ID || i2==NULL_ITEM_LOCAL_ID)
       outer_lids.add(lid);
     else
       inner_lids.add(lid);
@@ -118,7 +119,7 @@ _internalComputeInnerAndOuterItems(const ItemGroup& items)
   m_p->m_inner_all_items = family->createGroup(String("AllInner")+base_group_name,inner_lids,true);
   m_p->m_outer_all_items = family->createGroup(String("AllOuter")+base_group_name,outer_lids,true);
   m_p->m_all_items = items;
-  m_items = family->itemsInternal();
+  m_cells = CellInfoListView(family);
 }
 
 /*---------------------------------------------------------------------------*/

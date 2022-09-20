@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CellDirectionMng.cc                                         (C) 2000-2021 */
+/* CellDirectionMng.cc                                         (C) 2000-2022 */
 /*                                                                           */
 /* Infos sur les mailles d'une direction X Y ou Z d'un maillage structuré.   */
 /*---------------------------------------------------------------------------*/
@@ -215,14 +215,14 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
      * à nullptr.
      */
     ItemDirectionInfo()
-    : m_next_item(nullptr), m_previous_item(nullptr){}
-    ItemDirectionInfo(ItemInternal* next,ItemInternal* prev)
-    : m_next_item(next), m_previous_item(prev){}
+    : m_next_lid(NULL_ITEM_LOCAL_ID), m_previous_lid(NULL_ITEM_LOCAL_ID){}
+    ItemDirectionInfo(Int32 next_id,Int32 prev_id)
+    : m_next_lid(next_id), m_previous_lid(prev_id){}
    public:
     //! entité après l'entité courante dans la direction
-    ItemInternal* m_next_item;
+    Int32 m_next_lid;
     //! entité avant l'entité courante dans la direction
-    ItemInternal* m_previous_item;
+    Int32 m_previous_lid;
   };
  public:
   
@@ -250,7 +250,7 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
   //! Maille avec infos directionnelles aux noeuds correspondant à la maille \a c.
   DirCellNode cellNode(CellLocalId c) const
   {
-    return DirCellNode(m_items[c.localId()],m_nodes_indirection);
+    return DirCellNode(m_cells[c.localId()],m_nodes_indirection);
   }
 
   //! Maille avec infos directionnelles aux faces correspondant à la maille \a c.
@@ -261,7 +261,7 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
   //! Maille avec infos directionnelles aux faces correspondant à la maille \a c.
   DirCellFace cellFace(CellLocalId c) const
   {
-    return DirCellFace(m_items[c.localId()],m_next_face_index,m_previous_face_index);
+    return DirCellFace(m_cells[c.localId()],m_next_face_index,m_previous_face_index);
   }
 
   //! Groupe de toutes les mailles dans la direction.
@@ -366,8 +366,8 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
   //! Maille direction correspondant à la maille de numéro local \a local_id
   DirCell _cell(Int32 local_id) const
   {
-    Cell next = Cell(m_infos[local_id].m_next_item);
-    Cell prev = Cell(m_infos[local_id].m_previous_item);
+    Cell next = m_cells[m_infos[local_id].m_next_lid];
+    Cell prev = m_cells[m_infos[local_id].m_previous_lid];
     return DirCell(next,prev);
   }
 
@@ -417,7 +417,7 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
   SharedArray<ItemDirectionInfo> m_infos;
   eMeshDirection m_direction;
   Impl* m_p;
-  ItemInternalList m_items;
+  CellInfoListView m_cells;
   Int32 m_nodes_indirection[MAX_NB_NODE];
   Int32 m_next_face_index;
   Int32 m_previous_face_index;
