@@ -7,14 +7,14 @@ executors:
   # 4 CPU - 8Go RAM - 20c/min
   large-executor-image:
     docker:
-      - image: ghcr.io/arcaneframework/ubuntu-2204:gcc-12_clang-14_minimal
+      - image: ghcr.io/arcaneframework/ubuntu-2204:gcc-12_clang-14_minimal_20220617
     resource_class: large
     working_directory: ~/workspace
 
   # 4 CPU - 8Go RAM - 20c/min
   large-executor-image-full:
     docker:
-      - image: ghcr.io/arcaneframework/ubuntu-2204:gcc-12_clang-14_full
+      - image: ghcr.io/arcaneframework/ubuntu-2204:gcc-12_clang-14_full_20220617
     resource_class: large
     working_directory: ~/workspace
 
