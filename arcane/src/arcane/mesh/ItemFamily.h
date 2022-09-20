@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemFamily.h                                                (C) 2000-2021 */
+/* ItemFamily.h                                                (C) 2000-2022 */
 /*                                                                           */
 /* Famille d'entités.                                                        */
 /*---------------------------------------------------------------------------*/
@@ -511,6 +511,7 @@ class ARCANE_MESH_EXPORT ItemFamily
   void _computeConnectivityInfo(ItemConnectivityInfo* ici);
   void _updateItemViews();
   void _resizeItemVariables(Int32 new_size,bool force_resize);
+  void _handleOldCheckpoint();
 };
 
 /*---------------------------------------------------------------------------*/
