@@ -152,11 +152,9 @@ SerializedData(eDataType base_data_type, Int64 memory_size,
     if (nb_dimension == 1) {
       m_shape.setNbDimension(1);
       m_shape.setDimension(0, 1);
-      std::cout << "BUILD SHAPE DIM1\n";
     }
     else if (nb_dimension > 1) {
       m_shape.setNbDimension(nb_dimension - 1);
-      std::cout << "BUILD SHAPE DIM=" << m_nb_dimension << "\n";
       for (Int32 i = 1; i < nb_dimension; ++i)
         m_shape.setDimension(i - 1, CheckedConvert::toInt32(extents[i]));
     }
