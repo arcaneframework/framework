@@ -25,7 +25,7 @@ if (TBB_tbb_FOUND)
     get_target_property(_INC_DIRS ${_component} INTERFACE_INCLUDE_DIRECTORIES)
     message(STATUS "[TBB] INCLUDE_DIR: ${_component} : ${_INC_DIRS}")
   endforeach()
-  arccon_register_cmake_config_target(TBB CONFIG_TARGET_NAME ${TBB_IMPORTED_TARGETS} PACKAGE_NAME TBB)
+  arccon_register_cmake_config_target(TBB CONFIG_TARGET_NAME ${TBB_IMPORTED_TARGETS})
   return()
 endif()
 
