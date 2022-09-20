@@ -1591,7 +1591,9 @@ _checkHashFunction(const VariableMetaDataList& vmd_list)
   }
   Integer total_nb_error = pm->reduce(Parallel::ReduceSum,nb_error);
   if (total_nb_error!=0){
-    throw ParallelFatalErrorException(A_FUNCINFO,"hash functions differs");
+    bool allow_bad = !platform::getEnvironmentVariable("ARCANE_ALLOW_DIFFERENT_CHECKPOINT_HASH").null();
+    if (!allow_bad)
+      throw ParallelFatalErrorException(A_FUNCINFO,"hash functions differs");
   }
 }
 
