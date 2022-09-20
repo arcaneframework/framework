@@ -60,7 +60,7 @@ class ARCANE_CARTESIANMESH_EXPORT DirNode
   };
  private:
   // Seul NodeDirectionMng à le droit de construire un DirNode.
-  DirNode(ItemInternal* current,Node next,Node prev,DirNodeCellIndex idx)
+  DirNode(Node current,Node next,Node prev,DirNodeCellIndex idx)
   : m_current(current), m_previous(prev), m_next(next), m_cell_index(idx) {}
  public:
   //! Maille avant
@@ -88,7 +88,7 @@ class ARCANE_CARTESIANMESH_EXPORT DirNode
   CellLocalId cellId(Int32 position) const
   {
     Int32 x = cellIndex(position);
-    return (x==NULL_CELL) ? CellLocalId(NULL_ITEM_LOCAL_ID) : CellLocalId(m_current->cellLocalId(x));
+    return (x==NULL_CELL) ? CellLocalId(NULL_ITEM_LOCAL_ID) : CellLocalId(m_current.cellId(x));
   }
   /*!
    * \brief Maille en fonction de sa position par rapport à ce noeud.
@@ -99,7 +99,7 @@ class ARCANE_CARTESIANMESH_EXPORT DirNode
   Cell cell(Int32 position) const
   {
     Int32 x = cellIndex(position);
-    return (x==NULL_CELL) ? Cell() : Cell(m_current->internalCell(x));
+    return (x==NULL_CELL) ? Cell() : Cell(m_current.cell(x));
   }
 
   //! Noeud devant à gauche dans la direction
@@ -139,7 +139,8 @@ class ARCANE_CARTESIANMESH_EXPORT DirNode
   CellLocalId topPreviousLeftCellId() const { return cellId(CNP_TopPreviousLeft); }
 
  private:
-  ItemInternal* m_current;
+
+  Node m_current;
   Node m_previous;
   Node m_next;
   DirNodeCellIndex m_cell_index;
@@ -171,14 +172,14 @@ class ARCANE_CARTESIANMESH_EXPORT NodeDirectionMng
      * à nullptr.
      */
     ItemDirectionInfo()
-    : m_next_item(nullptr), m_previous_item(nullptr){}
-    ItemDirectionInfo(ItemInternal* next,ItemInternal* prev)
-    : m_next_item(next), m_previous_item(prev){}
+    : m_next_lid(NULL_ITEM_LOCAL_ID), m_previous_lid(NULL_ITEM_LOCAL_ID){}
+    ItemDirectionInfo(Int32 next_lid,Int32 prev_lid)
+    : m_next_lid(next_lid), m_previous_lid(prev_lid){}
    public:
     //! entité après l'entité courante dans la direction
-    ItemInternal* m_next_item;
+    Int32 m_next_lid;
     //! entité avant l'entité courante dans la direction
-    ItemInternal* m_previous_item;
+    Int32 m_previous_lid;
    public:
     void setCellIndexes(IndexType idx[8])
     {
@@ -278,7 +279,7 @@ class ARCANE_CARTESIANMESH_EXPORT NodeDirectionMng
 
   SharedArray<ItemDirectionInfo> m_infos;
   eMeshDirection m_direction;
-  ItemInternalList m_nodes;
+  NodeInfoListView m_nodes;
   Impl* m_p;
 
  private:
@@ -286,8 +287,8 @@ class ARCANE_CARTESIANMESH_EXPORT NodeDirectionMng
   //! Noeud direction correspondant au noeud de numéro local \a local_id
   DirNode _node(Int32 local_id) const
   {
-    Node next = Node(m_infos[local_id].m_next_item);
-    Node prev = Node(m_infos[local_id].m_previous_item);
+    Node next = m_nodes[m_infos[local_id].m_next_lid];
+    Node prev = m_nodes[m_infos[local_id].m_previous_lid];
     return DirNode(m_nodes[local_id],next,prev,m_infos[local_id].m_cell_index);
   }
 

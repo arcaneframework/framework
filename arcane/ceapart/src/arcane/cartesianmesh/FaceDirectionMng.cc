@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* FaceDirectionMng.cc                                         (C) 2000-2020 */
+/* FaceDirectionMng.cc                                         (C) 2000-2022 */
 /*                                                                           */
 /* Infos sur les faces d'une direction X Y ou Z d'un maillage structuré.     */
 /*---------------------------------------------------------------------------*/
@@ -51,6 +51,7 @@ class FaceDirectionMng::Impl
 FaceDirectionMng::
 FaceDirectionMng()
 : m_direction(MD_DirInvalid)
+, m_cells(nullptr)
 , m_p (nullptr)
 {
 }
@@ -96,7 +97,9 @@ void FaceDirectionMng::
 _internalComputeInfos(const CellDirectionMng& cell_dm,const VariableCellReal3& cells_center,
                       const VariableFaceReal3& faces_center)
 {
-  IItemFamily* face_family = m_p->m_cartesian_mesh->mesh()->faceFamily();
+  IMesh* mesh = m_p->m_cartesian_mesh->mesh();
+  IItemFamily* face_family = mesh->faceFamily();
+  IItemFamily* cell_family = mesh->cellFamily();
   int dir = (int)m_direction;
   String base_group_name = String("Direction")+dir;
   if (m_p->m_patch_index>=0)
@@ -148,6 +151,7 @@ _internalComputeInfos(const CellDirectionMng& cell_dm,const VariableCellReal3& c
   m_p->m_inner_all_items = face_family->createGroup(String("AllInner")+base_group_name,inner_lids,true);
   m_p->m_outer_all_items = face_family->createGroup(String("AllOuter")+base_group_name,outer_lids,true);
   m_p->m_all_items = all_faces;
+  m_cells = CellInfoListView(cell_family);
 
   _computeCellInfos(cell_dm,cells_center,faces_center);
 }
@@ -249,14 +253,10 @@ _computeCellInfos(const CellDirectionMng& cell_dm,const VariableCellReal3& cells
           front_cell = Cell();
       }
     }
-    ItemInternal* front_cell_i = front_cell.internal();
-    ItemInternal* back_cell_i = back_cell.internal();
-    ARCANE_CHECK_POINTER(back_cell_i);
-    ARCANE_CHECK_POINTER(front_cell_i);
     if (is_inverse)
-      m_infos[face_lid] = ItemDirectionInfo(back_cell_i,front_cell_i);
+      m_infos[face_lid] = ItemDirectionInfo(back_cell.localId(),front_cell.localId());
     else
-      m_infos[face_lid] = ItemDirectionInfo(front_cell_i,back_cell_i);
+      m_infos[face_lid] = ItemDirectionInfo(front_cell.localId(),back_cell.localId());
   }
 }
 

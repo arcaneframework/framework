@@ -79,19 +79,21 @@ class ARCANE_CARTESIANMESH_EXPORT FaceDirectionMng
      * à nullptr.
      */
     ItemDirectionInfo()
-    : m_next_item(nullptr), m_previous_item(nullptr){}
-    ItemDirectionInfo(ItemInternal* next,ItemInternal* prev)
-    : m_next_item(next), m_previous_item(prev){}
+    : m_next_lid(NULL_ITEM_LOCAL_ID), m_previous_lid(NULL_ITEM_LOCAL_ID){}
+    ItemDirectionInfo(Int32 next_lid,Int32 prev_lid)
+    : m_next_lid(next_lid), m_previous_lid(prev_lid){}
    public:
     //! entité après l'entité courante dans la direction
-    ItemInternal* m_next_item;
+    Int32 m_next_lid;
     //! entité avant l'entité courante dans la direction
-    ItemInternal* m_previous_item;
+    Int32 m_previous_lid;
   };
  public:
   
   //! Créé une instance vide. L'instance n'est pas valide tant que init() n'a pas été appelé.
   FaceDirectionMng();
+  FaceDirectionMng(const FaceDirectionMng& rhs) = default;
+  FaceDirectionMng& operator=(const FaceDirectionMng& rhs) = default;
   ~FaceDirectionMng();
 
   //! Face direction correspondant à la face \a f.
@@ -154,8 +156,8 @@ class ARCANE_CARTESIANMESH_EXPORT FaceDirectionMng
   //! Face direction correspondant à la face de numéro local \a local_id
   DirFace _face(Int32 local_id) const
   {
-    Cell next = Cell(m_infos[local_id].m_next_item);
-    Cell prev = Cell(m_infos[local_id].m_previous_item);
+    Cell next = m_cells[m_infos[local_id].m_next_lid];
+    Cell prev = m_cells[m_infos[local_id].m_previous_lid];
     return DirFace(next,prev);
   }
 
@@ -187,6 +189,7 @@ class ARCANE_CARTESIANMESH_EXPORT FaceDirectionMng
 
   SharedArray<ItemDirectionInfo> m_infos;
   eMeshDirection m_direction;
+  CellInfoListView m_cells;
   Impl* m_p;
 
   void _computeCellInfos(const CellDirectionMng& cell_dm,
