@@ -72,7 +72,10 @@ jobs:
             type_args: '-DCMAKE_BUILD_TYPE=Release
               -DARCCORE_BUILD_MODE=Check
               -DARCANE_BUILD_TYPE=Check'
-            type_excl_tests: '^.*([2-9][_]*mpithread|[1-9][0-9]+[_]*mpithread|[3-9]proc|[1-9][0-9]+proc).*$'
+            ## Désactivation des tests avec 'mpithread' dans leur nom.
+            ## Désactivation des tests avec '[>=3]proc' dans leur nom.
+            ## Désactivation des tests avec '[>=5]thread' dans leur nom.
+            type_excl_tests: '^.*(mpithread|[3-9]proc|[1-9][0-9]+proc|[5-9]thread|[1-9][0-9]+thread).*$'
 
           # - type: 'Debug'
           #   type_args: '-DCMAKE_BUILD_TYPE=Debug
@@ -188,7 +191,10 @@ jobs:
             type_args: '-DCMAKE_BUILD_TYPE=Release
               -DARCCORE_BUILD_MODE=Check
               -DARCANE_BUILD_TYPE=Check'
-            type_excl_tests: '^.*([2-9][_]*mpithread|[1-9][0-9]+[_]*mpithread|[3-9]proc|[1-9][0-9]+proc).*$'
+            ## Désactivation des tests avec 'mpithread' dans leur nom.
+            ## Désactivation des tests avec '[>=3]proc' dans leur nom.
+            ## Désactivation des tests avec '[>=5]thread' dans leur nom.
+            type_excl_tests: '^.*(mpithread|[3-9]proc|[1-9][0-9]+proc|[5-9]thread|[1-9][0-9]+thread).*$'
 
           # - type: 'Debug'
           #   type_args: '-DCMAKE_BUILD_TYPE=Debug
@@ -409,7 +415,10 @@ jobs:
             type_args: '-DCMAKE_BUILD_TYPE=Release
               -DARCCORE_BUILD_MODE=Check
               -DARCANE_BUILD_TYPE=Check'
-            type_excl_tests: '^.*([2-9][_]*mpithread|[1-9][0-9]+[_]*mpithread|[3-9]proc|[1-9][0-9]+proc).*$'
+            ## Désactivation des tests avec 'mpithread' dans leur nom.
+            ## Désactivation des tests avec '[>=3]proc' dans leur nom.
+            ## Désactivation des tests avec '[>=5]thread' dans leur nom.
+            type_excl_tests: '^.*(mpithread|[3-9]proc|[1-9][0-9]+proc|[5-9]thread|[1-9][0-9]+thread).*$'
 
           # - type: 'Debug'
           #   type_args: '-DCMAKE_BUILD_TYPE=Debug

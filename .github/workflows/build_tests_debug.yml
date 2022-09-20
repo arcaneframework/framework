@@ -74,6 +74,7 @@ jobs:
             type_args: '-DCMAKE_BUILD_TYPE=Debug
               -DARCCORE_BUILD_MODE=Debug
               -DARCANE_BUILD_TYPE=Debug'
+            ## Désactivation des tests avec '4mpithread' dans leur nom.
             type_excl_tests: '^.*_4mpithread$'
 
     name: '[${{matrix.image_short}}_${{matrix.version_short}}]_AiO_${{matrix.compilo_name}}_${{matrix.type}}'
@@ -190,6 +191,7 @@ jobs:
             type_args: '-DCMAKE_BUILD_TYPE=Debug
               -DARCCORE_BUILD_MODE=Debug
               -DARCANE_BUILD_TYPE=Debug'
+            ## Désactivation des tests avec '4mpithread' dans leur nom.
             type_excl_tests: '^.*_4mpithread$'
 
 
@@ -411,6 +413,7 @@ jobs:
             type_args: '-DCMAKE_BUILD_TYPE=Debug
               -DARCCORE_BUILD_MODE=Debug
               -DARCANE_BUILD_TYPE=Debug'
+            ## Désactivation des tests avec '4mpithread' dans leur nom.
             type_excl_tests: '^.*_4mpithread$'
         
     name: '[${{matrix.image_short}}_${{matrix.version_short}}]_Cuda_${{matrix.compilo_name}}_${{matrix.type}}'
