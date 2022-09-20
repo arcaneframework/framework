@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NodeDirectionMng.cc                                         (C) 2000-2021 */
+/* NodeDirectionMng.cc                                         (C) 2000-2022 */
 /*                                                                           */
 /* Infos sur les mailles d'une direction X Y ou Z d'un maillage structuré.   */
 /*---------------------------------------------------------------------------*/
@@ -53,6 +53,7 @@ class NodeDirectionMng::Impl
 NodeDirectionMng::
 NodeDirectionMng()
 : m_direction(MD_DirInvalid)
+, m_nodes(nullptr)
 , m_p(nullptr)
 {
 }
@@ -64,6 +65,7 @@ NodeDirectionMng::
 NodeDirectionMng(const NodeDirectionMng& rhs)
 : m_infos(rhs.m_infos)
 , m_direction(rhs.m_direction)
+, m_nodes(nullptr)
 , m_p(rhs.m_p)
 {
   _initNodes();
@@ -102,7 +104,7 @@ _initNodes()
     ICartesianMesh* cm = m_p->m_cartesian_mesh;
     if (cm){
       IMesh* mesh = cm->mesh();
-      m_nodes = mesh->nodeFamily()->itemsInternal();
+      m_nodes = NodeInfoListView(mesh->nodeFamily());
     }
   }
 }
@@ -139,7 +141,7 @@ _internalComputeInfos(const CellDirectionMng& cell_dm,const NodeGroup& all_nodes
                       const VariableCellReal3& cells_center)
 {
   Node null_node;
-  m_infos.fill(NodeDirectionMng::ItemDirectionInfo(null_node.internal(),null_node.internal()));
+  m_infos.fill(NodeDirectionMng::ItemDirectionInfo());
 
   Integer mesh_dim = m_p->m_cartesian_mesh->mesh()->dimension();
   //TODO: ne garder que les noeuds de notre patch
@@ -155,11 +157,11 @@ _internalComputeInfos(const CellDirectionMng& cell_dm,const NodeGroup& all_nodes
     Node node_previous_left = cn.previousLeft();
     Node node_previous_right = cn.previousRight();
 
-    m_infos[node_previous_left.localId()].m_next_item = node_next_left.internal();
-    m_infos[node_next_left.localId()].m_previous_item = node_previous_left.internal();
+    m_infos[node_previous_left.localId()].m_next_lid = node_next_left.localId();
+    m_infos[node_next_left.localId()].m_previous_lid = node_previous_left.localId();
 
-    m_infos[node_previous_right.localId()].m_next_item = node_next_right.internal();
-    m_infos[node_next_right.localId()].m_previous_item = node_previous_right.internal();
+    m_infos[node_previous_right.localId()].m_next_lid = node_next_right.localId();
+    m_infos[node_next_right.localId()].m_previous_lid = node_previous_right.localId();
 
     if (mesh_dim==3){
       Node top_node_next_left = cn.topNextLeft();
@@ -168,11 +170,11 @@ _internalComputeInfos(const CellDirectionMng& cell_dm,const NodeGroup& all_nodes
       Node top_node_previous_left = cn.topPreviousLeft();
       Node top_node_previous_right = cn.topPreviousRight();
 
-      m_infos[top_node_previous_left.localId()].m_next_item = top_node_next_left.internal();
-      m_infos[top_node_next_left.localId()].m_previous_item = top_node_previous_left.internal();
+      m_infos[top_node_previous_left.localId()].m_next_lid = top_node_next_left.localId();
+      m_infos[top_node_next_left.localId()].m_previous_lid = top_node_previous_left.localId();
 
-      m_infos[top_node_previous_right.localId()].m_next_item = top_node_next_right.internal();
-      m_infos[top_node_next_right.localId()].m_previous_item = top_node_previous_right.internal();
+      m_infos[top_node_previous_right.localId()].m_next_lid = top_node_next_right.localId();
+      m_infos[top_node_next_right.localId()].m_previous_lid = top_node_previous_right.localId();
     }
   }
 
@@ -181,9 +183,9 @@ _internalComputeInfos(const CellDirectionMng& cell_dm,const NodeGroup& all_nodes
   IItemFamily* family = all_nodes.itemFamily();
   ENUMERATE_ITEM(iitem,all_nodes){
     Int32 lid = iitem.itemLocalId();
-    ItemInternal* i1 = m_infos[lid].m_next_item;
-    ItemInternal* i2 = m_infos[lid].m_previous_item;
-    if (i1->null() || i2->null())
+    Int32 i1 = m_infos[lid].m_next_lid;
+    Int32 i2 = m_infos[lid].m_previous_lid;
+    if (i1==NULL_ITEM_LOCAL_ID || i2==NULL_ITEM_LOCAL_ID)
       outer_lids.add(lid);
     else
       inner_lids.add(lid);
@@ -215,20 +217,18 @@ _filterNodes()
     nodes_set.insert(NodeLocalId(inode.itemLocalId()));
   }
 
-  Node null_node;
-
   for( ItemDirectionInfo& idi : m_infos ){
     {
-      ItemInternal* next = idi.m_next_item;
-      if (!next->null())
-        if (nodes_set.find(NodeLocalId(next->localId()))==nodes_set.end())
-          idi.m_next_item = null_node.internal();
+      Int32 next_lid = idi.m_next_lid;
+      if (next_lid!=NULL_ITEM_LOCAL_ID)
+        if (nodes_set.find(NodeLocalId(next_lid))==nodes_set.end())
+          idi.m_next_lid = NULL_ITEM_LOCAL_ID;
     }
     {
-      ItemInternal* prev = idi.m_previous_item;
-      if (!prev->null())
-        if (nodes_set.find(NodeLocalId(prev->localId()))==nodes_set.end())
-          idi.m_previous_item = null_node.internal();
+      Int32 prev_lid = idi.m_previous_lid;
+      if (prev_lid!=NULL_ITEM_LOCAL_ID)
+        if (nodes_set.find(NodeLocalId(prev_lid))==nodes_set.end())
+          idi.m_previous_lid = NULL_ITEM_LOCAL_ID;
     }
   }
 }
