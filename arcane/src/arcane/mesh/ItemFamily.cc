@@ -82,7 +82,7 @@ namespace Arcane::mesh
 namespace
 {
 
-template<typename DataType> inline bool
+template<typename DataType> bool
 _checkResizeArray(Array<DataType>& array,Int32 new_size,bool force_resize)
 {
   Integer s = array.size();
@@ -99,6 +99,16 @@ _checkResizeArray(Array<DataType>& array,Int32 new_size,bool force_resize)
     return true;
   }
   return false;
+}
+
+template<typename DataType> void
+_offsetArrayByOne(Array<DataType>* array)
+{
+  Array<DataType>& v = *array;
+  _checkResizeArray(v,v.size()+1,false);
+  Int32 n = v.size();
+  for( Int32 i=(n-1); i>=1; --i )
+    v[i] = v[i-1];
 }
 
 }
@@ -319,6 +329,9 @@ build()
                                          var_parent_family_depth_name,
                                          var_child_meshes_name,
                                          var_child_families_name);
+    // Il ne faut pas utiliser ces tableaux pour accéder aux entités car il y a un décalage
+    // de 1 pour gérer l'entité nulle. Il faut passer par la vue associée
+    // qui est dans m_common_item_shared_info.
     m_items_unique_id = &m_internal_variables->m_items_unique_id._internalTrueData()->_internalDeprecatedValue();
     m_items_owner = &m_internal_variables->m_items_owner._internalTrueData()->_internalDeprecatedValue();
     m_items_flags = &m_internal_variables->m_items_flags._internalTrueData()->_internalDeprecatedValue();
@@ -1106,7 +1119,10 @@ readFromDump()
     // Avec les anciennes protections il n'y a pas la variable pour le type de l'entité.
     // Il faut donc l'allouer ici car on s'en sert lorsqu'on appelle ItemInternal::setSharedInfo().
     if (nb_item>0)
-      _checkResizeArray(*m_items_type_id,nb_item,false);
+      _checkResizeArray(*m_items_type_id,nb_item+1,false);
+    // Il n'y a pas non plus le décalage de 1 pour les flags, owner et uniqueId.
+    // On fait ce décalage ici.
+    _handleOldCheckpoint();
   }
   _updateItemViews();
 
@@ -1154,9 +1170,9 @@ readFromDump()
   if (use_type_variable){
     ItemTypeMng* type_mng = mesh()->itemTypeMng();
     for( Integer i=0; i<nb_item; ++i ){;
-      ItemTypeId type_id{(*m_items_type_id)[i]};
+      ItemTypeId type_id{m_common_item_shared_info->m_type_ids[i]};
       ItemSharedInfoWithType* isi = _findSharedInfo(type_mng->typeFromId(type_id));
-      Int64 uid = (*m_items_unique_id)[i];
+      Int64 uid = m_items_unique_id_view[i];
       ItemInternal* item = m_infos.allocOne(uid);
       item->setSharedInfo(isi->sharedInfo(),type_id);
     }
@@ -1167,7 +1183,8 @@ readFromDump()
     for( Integer i=0; i<nb_item; ++i ){
       Integer shared_data_index = items_shared_data_index[i];
       ItemSharedInfoWithType* isi = item_shared_infos[shared_data_index];
-      Int64 uid = (*m_items_unique_id)[i];
+      Int64 uid = m_items_unique_id_view[i];
+      info() << "ALLOC ONE i=" << i << " uid=" << uid;
       ItemInternal* item = m_infos.allocOne(uid);
       item->setSharedInfo(isi->sharedInfo(),isi->itemTypeId());
     }
@@ -1618,14 +1635,21 @@ _allocateInfos(ItemInternal* item,Int64 uid,ItemTypeInfo* type)
 void ItemFamily::
 _resizeItemVariables(Int32 new_size,bool force_resize)
 {
-  bool is_resize = _checkResizeArray(*m_items_unique_id,new_size,force_resize);
-  is_resize |= _checkResizeArray(*m_items_owner,new_size,force_resize);
-  is_resize |= _checkResizeArray(*m_items_flags,new_size,force_resize);
-  is_resize |= _checkResizeArray(*m_items_type_id,new_size,force_resize);
+  bool is_resize = _checkResizeArray(*m_items_unique_id,new_size+1,force_resize);
+  is_resize |= _checkResizeArray(*m_items_owner,new_size+1,force_resize);
+  is_resize |= _checkResizeArray(*m_items_flags,new_size+1,force_resize);
+  is_resize |= _checkResizeArray(*m_items_type_id,new_size+1,force_resize);
   if (m_parent_family_depth>0)
     is_resize |= _checkResizeArray(*m_items_nb_parent,new_size,force_resize);
   if (is_resize)
     _updateItemViews();
+
+  // Positionne les valeurs pour l'entité nulle.
+  // NOTE: regarder pour faire cela à l'init.
+  (*m_items_unique_id)[0] = NULL_ITEM_UNIQUE_ID;
+  (*m_items_flags)[0] = 0;
+  (*m_items_owner)[0] = A_NULL_RANK;
+  (*m_items_type_id)[0] = IT_NullType;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1640,7 +1664,7 @@ _allocateInfos(ItemInternal* item,Int64 uid,ItemSharedInfoWithType* isi)
   _resizeItemVariables(local_id+1,false);
 
   // TODO: regarder si encore utile car ItemInternal::reinitialize() doit le faire
-  (*m_items_unique_id)[local_id] = uid;
+  //(*m_items_unique_id)[local_id] = uid;
 
   ItemTypeId iti = isi->itemTypeId();
   item->setSharedInfo(isi->sharedInfo(),iti);
@@ -2418,15 +2442,43 @@ _computeConnectivityInfo(ItemConnectivityInfo* ici)
 /*---------------------------------------------------------------------------*/
 
 void ItemFamily::
+_handleOldCheckpoint()
+{
+  // Pas besoin de gérer 'm_items_type_id' car il n'est pas présent dans
+  // les anciennes protections.
+  _offsetArrayByOne(m_items_unique_id);
+  _offsetArrayByOne(m_items_flags);
+  _offsetArrayByOne(m_items_owner);
+  (*m_items_unique_id)[0] = NULL_ITEM_UNIQUE_ID;
+  (*m_items_flags)[0] = 0;
+  (*m_items_owner)[0] = A_NULL_RANK;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace
+{
+
+// Retourne une vue qui commence sur le dexuème élément du tableau.
+template<typename DataType>
+ArrayView<DataType> _getView(Array<DataType>* v)
+{
+  Int32 n = v->size();
+  return v->subView(1,n-1);
+ }
+
+}
+void ItemFamily::
 _updateItemViews()
 {
-  m_common_item_shared_info->m_unique_ids = m_items_unique_id->view();
-  m_common_item_shared_info->m_flags = m_items_flags->view();
-  m_common_item_shared_info->m_type_ids = m_items_type_id->view();
-  m_common_item_shared_info->m_owners = m_items_owner->view();
+  m_common_item_shared_info->m_unique_ids = _getView(m_items_unique_id);
+  m_common_item_shared_info->m_flags = _getView(m_items_flags);
+  m_common_item_shared_info->m_type_ids = _getView(m_items_type_id);
+  m_common_item_shared_info->m_owners = _getView(m_items_owner);
   m_common_item_shared_info->m_parent_item_ids = m_items_nb_parent->view();
 
-  m_items_unique_id_view = m_items_unique_id->view();
+  m_items_unique_id_view = _getView(m_items_unique_id);
 }
 
 /*---------------------------------------------------------------------------*/
