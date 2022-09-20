@@ -15,9 +15,11 @@ set(CMAKE_MODULE_PATH ${_SAVED_CMAKE_MODULE_PATH})
 
 # Normalement cette cible est toujours définie depuis la version 3.12
 # de CMake si LibXml2 est trouvé
-if (TARGET LibXml2::LibXml2)
-  arccon_register_cmake_config_target(LibXml2 CONFIG_TARGET_NAME LibXml2::LibXml2)
-  return()
+if (NOT ARCCON_USE_LEGACY_FIND)
+  if (TARGET LibXml2::LibXml2)
+    arccon_register_cmake_config_target(LibXml2 CONFIG_TARGET_NAME LibXml2::LibXml2)
+    return()
+  endif()
 endif()
 
 # Ancienne version si on ne trouve pas la cible LibXml2::LibXml2

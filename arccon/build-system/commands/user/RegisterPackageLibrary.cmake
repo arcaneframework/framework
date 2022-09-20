@@ -1,5 +1,5 @@
 ﻿# ----------------------------------------------------------------------------
-# Macro pour positionner la variable <pkg>_FOUND associée à un package et
+# Macro interne pour positionner la variable <pkg>_FOUND associée à un package et
 # la mettre dans le cache
 macro(arccon_internal_set_package_found package_name is_found)
   if (NOT package_name)
@@ -21,7 +21,7 @@ endmacro()
 #
 # USAGE:
 #
-#    arccon_register_package_library(NAME package_name TARGETS target1 [target2] ...)
+#    arccon_internal_set_package_name_and_targets(NAME package_name TARGETS target1 [target2] ...)
 #
 # Cette macro permet d'indiquer qu'un package est trouvé (met ${package_name}_FOUND à TRUE)
 # et associer une liste de cibles à un package. La variable ARCCON_PACKAGE_${package_name}_TARGETS
@@ -46,7 +46,7 @@ macro(arccon_internal_set_package_name_and_targets)
   set(package_name "${ARGS_NAME}")
   arccon_internal_set_package_found(${package_name} TRUE)
   set(ARCCON_PACKAGE_${package_name}_TARGETS ${ARGS_TARGETS} CACHE STRING "Targets for package ${package_name}" FORCE)
-  message(STATUS "XX Package '${ARGS_NAME}' TARGETS=${ARGS_TARGETS}")
+  message(VERBOSE "SetTargetsForPackage Package '${ARGS_NAME}' TARGETS=${ARGS_TARGETS}")
 
 endmacro()
 

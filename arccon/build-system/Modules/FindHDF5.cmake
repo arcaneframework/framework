@@ -32,7 +32,7 @@ if (_ARCCON_HDF5_TARGET)
   message(STATUS "Found HDF5 via configuration target=${_ARCCON_HDF5_TARGET}")
 
   # Par défaut on utilise la cible importée sauf si on demande l'ancien mécanisme
-  if (NOT ARCCON_USE_LEGACY_FIND_HDF5)
+  if (NOT ARCCON_USE_LEGACY_FIND)
     arccon_register_cmake_config_target(HDF5 CONFIG_TARGET_NAME ${_ARCCON_HDF5_TARGET})
     return()
   endif()

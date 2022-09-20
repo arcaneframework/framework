@@ -15,8 +15,12 @@ set(CMAKE_MODULE_PATH ${_SAVED_CMAKE_MODULE_PATH})
 # NOTE: Normalement le package devrait s'appeler HYPRE si on veut être cohérent
 # avec le fichier fournit par Hypre.
 if (TARGET HYPRE::HYPRE)
-  arccon_register_cmake_config_target(Hypre CONFIG_TARGET_NAME HYPRE::HYPRE)
-  return()
+  if (NOT ARCCON_USE_LEGACY_FIND)
+    arccon_register_cmake_config_target(Hypre CONFIG_TARGET_NAME HYPRE::HYPRE)
+    return()
+  endif()
+  arccon_register_package_library(Hypre HYPRE)
+  set(ARCCON_TARGET_Hypre HYPRE::HYPRE CACHE STRING "Target for package HYPRE" FORCE)
 endif()
 
 find_library(Hypre_LIBRARY
