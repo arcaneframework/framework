@@ -10,6 +10,7 @@ if(NOT TARGET arccon::MPI OR NOT TARGET arccon::IceT OR NOT TARGET arccon::OSMes
 endif()
 arcane_find_package(OpenGL)
 if (NOT TARGET OpenGL::GL OR NOT TARGET OpenGL::GLU)
+  message(STATUS "Disabling 'hyoda' because package OpenGL::GL or OpenGL::GLU is not available")
   return()
 endif()
 

@@ -13,7 +13,20 @@
 arccon_return_if_package_found(vtkIOXML)
 
 find_package(ParaView QUIET)
-find_package(VTK QUIET COMPONENTS vtkIOXML)
+
+find_package(VTK COMPONENTS IOXML)
+if (VTK_FOUND)
+  message(STATUS "VTK (for IOXML) version ${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}")
+endif()
+if(TARGET VTK::IOXML)
+  set(vtkIOXML_FOUND TRUE)
+  message(STATUS "FOUND TARGET VTK::IOXML")
+#  arccon_register_cmake_config_target(vtkIOXML CONFIG_TARGET_NAME "VTK::IOXML;VTK::IOLegacy" PACKAGE_NAME vktIOXML)
+  arccon_register_cmake_multiple_config_target(vtkIOXML CONFIG_TARGET_NAMES VTK::IOXML VTK::IOLegacy)
+  return()
+endif()
+
+find_package(VTK COMPONENTS vtkIOXML)
 
 if (VTK_FOUND)
   message(STATUS "VTK (for vtkIOXML) version ${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}")

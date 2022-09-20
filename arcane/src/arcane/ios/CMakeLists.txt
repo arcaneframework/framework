@@ -7,7 +7,7 @@ include(srcs.cmake)
 if(TARGET arccon::vtkIOXdmf2)
   set( ARCANE_SOURCES ${ARCANE_SOURCES} XmfMeshWriter.cc XmfMeshReader.cc)
 endif()
-if(TARGET arccon::vtkIOXML)
+if(vtkIOXML_FOUND)
   set( ARCANE_SOURCES ${ARCANE_SOURCES} VtuMeshReader.cc VtuMeshWriter.cc)
 endif()
 
