@@ -40,6 +40,10 @@ class CellDirectionMng::Impl
   ICartesianMesh* m_cartesian_mesh = nullptr;
   Integer m_patch_index = -1;
   UniqueArray<ItemDirectionInfo> m_infos;
+  Int32 m_sub_domain_offset = -1;
+  Int32 m_own_nb_cell = -1;
+  Int64 m_global_nb_cell = -1;
+  Int64 m_own_cell_offset = -1;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -47,15 +51,9 @@ class CellDirectionMng::Impl
 
 CellDirectionMng::
 CellDirectionMng()
-: m_cells(nullptr)
-, m_direction(MD_DirInvalid)
-, m_p(nullptr)
+: m_direction(MD_DirInvalid)
 , m_next_face_index(-1)
 , m_previous_face_index(-1)
-, m_sub_domain_offset(-1)
-, m_own_nb_cell(-1)
-, m_global_nb_cell(-1)
-, m_own_cell_offset(-1)
 {
   for( Integer i=0; i<MAX_NB_NODE; ++i )
     m_nodes_indirection[i] = (-1);
@@ -165,6 +163,55 @@ setNodesIndirection(Int32ConstArrayView nodes_indirection)
   for( Integer i=0; i<MAX_NB_NODE; ++i ){
     tm->info() << "Indirection i=" << i << " v=" << m_nodes_indirection[i];
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int64 CellDirectionMng::
+globalNbCell() const
+{
+  return (m_p) ? m_p->m_global_nb_cell : -1;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int32 CellDirectionMng::
+ownNbCell() const
+{
+  return (m_p) ? m_p->m_own_nb_cell : -1;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int32 CellDirectionMng::
+subDomainOffset() const
+{
+  return (m_p) ? m_p->m_sub_domain_offset : -1;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int64 CellDirectionMng::
+ownCellOffset() const
+{
+  return (m_p) ? m_p->m_own_cell_offset : -1;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CellDirectionMng::
+_internalSetOffsetAndNbCellInfos(Int64 global_nb_cell, Int32 own_nb_cell,
+                                 Int32 sub_domain_offset, Int64 own_cell_offset)
+{
+  m_p->m_global_nb_cell = global_nb_cell;
+  m_p->m_own_nb_cell = own_nb_cell;
+  m_p->m_sub_domain_offset = sub_domain_offset;
+  m_p->m_own_cell_offset = own_cell_offset;
 }
 
 /*---------------------------------------------------------------------------*/

@@ -363,10 +363,8 @@ computeDirections()
   // Positionne les informations par direction
   for( Integer idir=0, nb_dir=mesh()->dimension(); idir<nb_dir; ++idir ){
     CellDirectionMng& cdm = m_all_items_direction_info->cellDirection(idir);
-    cdm.m_global_nb_cell = cmgi->globalNbCells()[idir];
-    cdm.m_own_nb_cell = cmgi->ownNbCells()[idir];
-    cdm.m_sub_domain_offset = cmgi->subDomainOffsets()[idir];
-    cdm.m_own_cell_offset = cmgi->ownCellOffsets()[idir];
+    cdm._internalSetOffsetAndNbCellInfos(cmgi->globalNbCells()[idir], cmgi->ownNbCells()[idir],
+                                         cmgi->subDomainOffsets()[idir], cmgi->ownCellOffsets()[idir]);
   }
 
   info() << "Compute cartesian connectivity";

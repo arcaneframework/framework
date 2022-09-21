@@ -299,7 +299,7 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
    * le SodMeshGenerator ou le CartesianMeshGenerator. Si ce n'est
    * pas le cas, la valeur retournée vaut (-1)
    */
-  Int64 globalNbCell() const { return m_global_nb_cell; }
+  Int64 globalNbCell() const;
 
   /*!
    * \brief Nombre de mailles propres dans cette direction.
@@ -309,7 +309,7 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
    * le SodMeshGenerator ou le CartesianMeshGenerator. Si ce n'est
    * pas le cas, la valeur retournée vaut (-1)
    */
-  Int32 ownNbCell() const { return m_own_nb_cell; }
+  Int32 ownNbCell() const;
 
   /*!
    * \brief Offset dans cette direction du sous-domaine.
@@ -329,7 +329,7 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
    * le CartesianMeshGenerator. Si ce n'est pas le cas,
    * la valeur retournée vaut (-1)
    */
-  Int32 subDomainOffset() const { return m_sub_domain_offset; }
+  Int32 subDomainOffset() const;
 
   /*!
    * \brief Offset dans cette direction de la première maille propre de ce sous-domaine.
@@ -349,7 +349,7 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
    * le CartesianMeshGenerator. Si ce n'est pas le cas,
    * la valeur retournée vaut (-1)
    */
-  Int64 ownCellOffset() const { return m_own_cell_offset; }
+  Int64 ownCellOffset() const;
 
  private:
 
@@ -400,6 +400,9 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
    */
   void _internalResizeInfos(Int32 new_size);
 
+  void _internalSetOffsetAndNbCellInfos(Int64 global_nb_cell, Int32 own_nb_cell,
+                                        Int32 sub_domain_offset, Int64 own_cell_offset);
+
  public:
 
   //! Valeur de la direction
@@ -413,14 +416,10 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
   SmallSpan<ItemDirectionInfo> m_infos_view;
   CellInfoListView m_cells;
   eMeshDirection m_direction;
-  Impl* m_p;
-  Int32 m_nodes_indirection[MAX_NB_NODE];
   Int32 m_next_face_index;
   Int32 m_previous_face_index;
-  Int32 m_sub_domain_offset;
-  Int32 m_own_nb_cell;
-  Int64 m_global_nb_cell;
-  Int64 m_own_cell_offset;
+  Int32 m_nodes_indirection[MAX_NB_NODE];
+  Impl* m_p = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
