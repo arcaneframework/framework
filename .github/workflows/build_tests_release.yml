@@ -145,11 +145,11 @@ jobs:
         with:
           name: ${{matrix.image_short}}_${{matrix.version_short}}_${{matrix.compilo_name}}_${{matrix.type}}_aio-test-artifact
           path: ${{ env.CT_RESULT_DIR }}
-          retention-days: 1
+          retention-days: 2
 
       - name: Get ccache status
         shell: bash
-        run: ccache -s
+        run: ccache -s -v
 
   split-build:
     strategy:
@@ -369,11 +369,11 @@ jobs:
         with:
           name: ${{matrix.image_short}}_${{matrix.version_short}}_${{matrix.compilo_name}}_${{matrix.type}}_split-test-artifact
           path: ${{ env.CT_RESULT_DIR }}
-          retention-days: 1
+          retention-days: 2
 
       - name: Get ccache status
         shell: bash
-        run: ccache -s
+        run: ccache -s -v
  
   aio-cuda-build:
     strategy:
@@ -478,4 +478,4 @@ jobs:
 
       - name: Get ccache status
         shell: bash
-        run: ccache -s
+        run: ccache -s -v
