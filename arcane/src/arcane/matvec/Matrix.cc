@@ -5,13 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Matrix.cc                                                   (C) 2000-2010 */
+/* Matrix.cc                                                   (C) 2000-2022 */
 /*                                                                           */
 /* Matrix d'algèbre linéraire.                                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/Array.h"
 #include "arcane/utils/FatalErrorException.h"
@@ -27,19 +25,11 @@
 #include "arcane/matvec/Matrix.h"
 #include "arcane/matvec/Vector.h"
 
-#ifdef ARCANE_HAS_MKL
-#include <mkl_spblas.h>
-#endif
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-namespace MatVec
+namespace Arcane::MatVec
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -392,22 +382,6 @@ matrixVectorProduct(const Matrix& mat,const Vector& vec,Vector& out_vec)
     out_vec_values[i] = sum;
   }
 }
-
-void MatrixOperation::
-matrixVectorProduct2(const Matrix& mat,const Vector& vec,Vector& out_vec)
-{
-#ifdef ARCANE_HAS_MKL
-  // Attention, la matrice doit être stockée au format CSR fortran, c'est
-  // à dire que les indices des lignes et des colonnes commencent à 1
-  ::mkl_dcsrgemv("N",&size,(Real*)mat_values.begin(),(Integer*)rows_index.begin(),
-                 (Integer*)columns.begin(),(Real*)vec_values.begin(),out_vec_values.begin());
-#else
-  ARCANE_UNUSED(mat);
-  ARCANE_UNUSED(vec);
-  ARCANE_UNUSED(out_vec);
-  throw NotImplementedException(A_FUNCINFO,"mkl library not configured");
-#endif
-}
  
 Real MatrixOperation::
 dot(const Vector& vec)
@@ -729,154 +703,6 @@ _applySolverAsHypre(const Matrix& a,const Vector& b,Vector& x,Real tol,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ConjugateGradientSolver::
-_applySolver2(const Matrix& a,const Vector& b,Vector& x,Real epsilon,IPreconditioner* precond)
-{
-  MatrixOperation mat_op;
-  Integer vec_size = a.nbRow();
-  Vector r(vec_size);
-
-  bool use_two_norm = true;
-
-  m_nb_iteration = 0;
-  m_residual_norm = 0.0;
-
-  // r = b - Ax
-  mat_op.matrixVectorProduct2(a,x,r);
-  mat_op.negateVector(r);
-  mat_op.addVector(r,b);
-
-  /*cout << " R=";
-  r.dump(cout);
-  cout << '\n';*/
-
-  Vector p(r.size());
-  p.values().fill(0.0);
-
-  Real bi_prod = 0.0;
-  if (use_two_norm){
-    bi_prod = mat_op.dot(b,b);
-  }
-  else{
-    precond->apply(p,b);
-    bi_prod = mat_op.dot(p,b);
-  }
-  Real eps = epsilon*epsilon*bi_prod;
-
-  //cout << "INITIAL RESIDUAL =" << math::sqrt(bi_prod) << '\n';
-  // p = C*r
-  precond->apply(p,r);
-
-  //Vector q(r.size());
-  Vector t(r.size());
-  Vector s(r.size());
-  //Real delta_new = 0.0;
-  //Real r0=mat_op.dot(r);
-  //if (p){
-  //delta_new = mat_op.dot(r,d);
-  // }
-  //else
-  //delta_new = mat_op.dot(r);
-#if 0
-  cout << "R=";
-  r.dump(cout);
-  cout << "\n";
-  cout << "D=";
-  d.dump(cout);
-  cout << "\n";
-#endif
-  //Real delta0 = delta_new;
-  //cout << " delta0=" << delta0 << '\n';
-  //cout << " deltanew=" << delta_new << '\n';
-
-  Real i_prod = 0.0;
-
-  // gamma = <r,p>
-  Real gamma = mat_op.dot(r,p);
-  Integer nb_iter = 0;
-  Integer max_iter = m_max_iteration;
-  if (math::abs(gamma)<1.0e-200)
-    return;
-  for( nb_iter=0; nb_iter<max_iter; ++nb_iter ){
-
-    // s = A*p
-    mat_op.matrixVectorProduct2(a,p,s);
-
-    // alpha = gamma / <s,p>
-    Real dot_v = mat_op.dot(s,p);
-    if (math::abs(dot_v)<1e-200)
-      break;
-    Real alpha = gamma / dot_v;
-
-    Real gamma_old = gamma;
-
-    //cout << "PCG:: alpha=" << alpha << " sdotp=" << dot_v << " gamma_old=" << gamma_old << '\n';
-
-    // x = x + alpha*p
-    t.copy(p);
-    mat_op.scaleVector(t,alpha);
-    mat_op.addVector(x,t);
-
-    // r = r - alpha*s
-    t.copy(s);
-    mat_op.scaleVector(t,alpha);
-    mat_op.negateVector(t);
-    mat_op.addVector(r,t);
-
-    // s = C*r
-    s.values().fill(0.0);
-    precond->apply(s,r);
-    
-    // gamma = <r,s>
-    gamma = mat_op.dot(r,s);
-
-    if (use_two_norm)
-      i_prod = mat_op.dot(r,r);
-    else
-      i_prod = gamma;
-
-#if 0
-    if (nb_iter>20){
-      cout << "ITER=" << nb_iter << " epsilon=" << epsilon
-           << " eps=" << eps << " bi_prod=" << bi_prod << " i_prod=" << i_prod
-           << " norm2=" << math::sqrt(i_prod)
-           << '\n';
-    }
-#endif
-
-    // Si vrai, on a converge
-    if (i_prod<eps)
-      break;
-
-    Real beta = gamma / gamma_old;
-
-    // p = s + beta* p;
-    t.copy(p);
-    mat_op.scaleVector(t,beta);
-    mat_op.addVector(t,s);
-    p.copy(t);
-  }
-  //cout << " X=";
-  //x.dump(cout);
-  //cout << '\n';
-  //cout << "NB ITER=" << nb_iter << " epsilon=" << epsilon
-  //     << " eps=" << eps << " bi_prod=" << bi_prod << " i_prod=" << i_prod
-  //<< " delta0=" << delta0
-  //    << " delta_new=" << delta_new << " r=" << mat_op.dot(r) << " r0=" << r0 << '\n';
-  //     << '\n';
-  m_nb_iteration = nb_iter;
-  m_residual_norm = 0.0;
-  if (bi_prod>0.0){
-    Real n = i_prod / bi_prod;
-    if (n<0.0)
-      cout << "** WARNING: negative norm\n";
-    m_residual_norm = math::sqrt(math::abs(n));
-  }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 bool ConjugateGradientSolver::
 solve(const Matrix& a,const Vector& b,Vector& x,Real epsilon,IPreconditioner* p)
 {
@@ -886,41 +712,26 @@ solve(const Matrix& a,const Vector& b,Vector& x,Real epsilon,IPreconditioner* p)
   m_residual_norm = 0.0;
   //_doConjugateGradient(a,b,x,epsilon,&p);
   cout.precision(20);
-#if 0
-  cout << "A=";
-  a.dump(cout);
-  cout << '\n';
-#endif
-#if 0
-  cout << "b=";
-  b.dump(cout);
-  cout << '\n';
-#endif
+  const bool do_print = false;
+  if (do_print){
+    cout << "A=";
+    a.dump(cout);
+    cout << '\n';
+    cout << "b=";
+    b.dump(cout);
+    cout << '\n';
+  }
 
   DiagonalPreconditioner p2(a);
   if (!p)
     p = &p2;
-#ifdef ARCANE_HAS_MKL
-  {
-    Matrix a2(a.clone());
-    IntegerArrayView rows_index = a2.rowsIndex();
-    for( Integer i=0, is=rows_index.size(); i<is; ++i )
-      rows_index[i] = rows_index[i] + 1;
-    IntegerArrayView columns = a2.columns();
-    for( Integer i=0, is=columns.size(); i<is; ++i )
-      columns[i] = columns[i] + 1;
-    _applySolver2(a2,b,x,epsilon,p);
-  }
-#else
-  //_applySolverAsHypre(a,b,x,epsilon,p);
   _applySolver(a,b,x,epsilon,p);
-#endif
 
-#if 0
-  cout << "\n\nSOLUTION\nx=";
-  x.dump(cout);
-  cout << '\n';
-#endif
+  if (do_print){
+    cout << "\n\nSOLUTION\nx=";
+    x.dump(cout);
+    cout << '\n';
+  }
 
   return false;
 }
@@ -1361,8 +1172,7 @@ readHypre(const String& filename)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::MatVec
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
