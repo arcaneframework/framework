@@ -4,11 +4,18 @@ arcane_find_package(vtkIOXdmf2)
 
 include(srcs.cmake)
 
-if(TARGET arccon::vtkIOXdmf2)
-  set( ARCANE_SOURCES ${ARCANE_SOURCES} XmfMeshWriter.cc XmfMeshReader.cc)
+if(vtkIOXdmf2_FOUND)
+  list(APPEND ARCANE_SOURCES
+    XmfMeshWriter.cc
+    XmfMeshReader.cc
+    )
 endif()
-if(TARGET arccon::vtkIOXML)
-  set( ARCANE_SOURCES ${ARCANE_SOURCES} VtuMeshReader.cc VtuMeshWriter.cc)
+
+if(vtkIOXML_FOUND)
+  list(APPEND ARCANE_SOURCES
+    VtuMeshReader.cc
+    VtuMeshWriter.cc
+    )
 endif()
 
 arcane_add_library(arcane_ios
