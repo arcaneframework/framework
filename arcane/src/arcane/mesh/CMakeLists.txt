@@ -1,6 +1,6 @@
 include(srcs.cmake)
 
-if (TARGET arccon::vtkIOXML) # this dependency to vtk is temporary, will be in Neo then
+if (vtkIOXML_FOUND) # this dependency to vtk is temporary, will be in Neo then
   list(APPEND ARCANE_SOURCES
         PolyhedralMeshTools.cc
       )
@@ -25,7 +25,7 @@ if (Neo_FOUND)
   target_compile_definitions(arcane_mesh PRIVATE ARCANE_HAS_CUSTOM_MESH_TOOLS)
 endif()
 
-if (TARGET arccon::vtkIOXML) # this dependency to vtk is temporary, will be in Neo then
+if (vtkIOXML_FOUND) # this dependency to vtk is temporary, will be in Neo then
   target_compile_definitions(arcane_mesh PRIVATE ARCANE_HAS_VTKIO)
   arcane_add_arccon_packages(arcane_mesh PRIVATE vtkIOXML)
 endif()

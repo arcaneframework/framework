@@ -1,5 +1,5 @@
 ﻿arcane_find_package(HDF5)
-if (NOT TARGET arccon::HDF5)
+if (NOT HDF5_FOUND)
   message(STATUS "Disabling '.Net' wrapping of HDF5 because HDF5 is not available")
   return()
 endif()
