@@ -66,11 +66,11 @@ class ARCANE_CARTESIANMESH_EXPORT DirNode
   //! Maille avant
   Node previous() const { return m_previous; }
   //! Maille avant
-  NodeLocalId previousId() const { return NodeLocalId(m_previous.localId()); }
+  NodeLocalId previousId() const { return m_previous.itemLocalId(); }
   //! Maille après
   Node next() const { return m_next; }
   //! Maille après
-  NodeLocalId nextId() const { return NodeLocalId(m_next.localId()); }
+  NodeLocalId nextId() const { return m_next.itemLocalId(); }
   /*!
    * \brief Indice dans la liste des mailles de ce noeud d'une
    * maille en fonction de sa position.

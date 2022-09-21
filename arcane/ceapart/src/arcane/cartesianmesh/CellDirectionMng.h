@@ -89,13 +89,13 @@ class ARCANE_CARTESIANMESH_EXPORT DirCellNode
   Node previousLeft() const { return m_cell.node(m_nodes_indirection[CNP_PreviousLeft]); }
 
   //! Noeud devant à gauche dans la direction
-  NodeLocalId nextLeftId() const { return NodeLocalId(m_cell.node(m_nodes_indirection[CNP_NextLeft])); }
+  NodeLocalId nextLeftId() const { return NodeLocalId(m_cell.nodeId(m_nodes_indirection[CNP_NextLeft])); }
   //! Noeud devant à droite dans la direction
-  NodeLocalId nextRightId() const { return NodeLocalId(m_cell.node(m_nodes_indirection[CNP_NextRight])); }
+  NodeLocalId nextRightId() const { return NodeLocalId(m_cell.nodeId(m_nodes_indirection[CNP_NextRight])); }
   //! Noeud derrière à droite dans la direction
-  NodeLocalId previousRightId() const { return NodeLocalId(m_cell.node(m_nodes_indirection[CNP_PreviousRight])); }
+  NodeLocalId previousRightId() const { return NodeLocalId(m_cell.nodeId(m_nodes_indirection[CNP_PreviousRight])); }
   //! Noeud derrière à gauche dans la direction
-  NodeLocalId previousLeftId() const { return NodeLocalId(m_cell.node(m_nodes_indirection[CNP_PreviousLeft])); }
+  NodeLocalId previousLeftId() const { return NodeLocalId(m_cell.nodeId(m_nodes_indirection[CNP_PreviousLeft])); }
 
   //! Noeud devant à gauche dans la direction
   Node topNextLeft() const { return m_cell.node(m_nodes_indirection[CNP_TopNextLeft]); }
@@ -107,13 +107,13 @@ class ARCANE_CARTESIANMESH_EXPORT DirCellNode
   Node topPreviousLeft() const { return m_cell.node(m_nodes_indirection[CNP_TopPreviousLeft]); }
 
   //! Noeud devant à gauche dans la direction
-  NodeLocalId topNextLeftId() const { return NodeLocalId(m_cell.node(m_nodes_indirection[CNP_TopNextLeft])); }
+  NodeLocalId topNextLeftId() const { return NodeLocalId(m_cell.nodeId(m_nodes_indirection[CNP_TopNextLeft])); }
   //! Noeud devant à droite dans la direction
-  NodeLocalId topNextRightId() const { return NodeLocalId(m_cell.node(m_nodes_indirection[CNP_TopNextRight])); }
+  NodeLocalId topNextRightId() const { return NodeLocalId(m_cell.nodeId(m_nodes_indirection[CNP_TopNextRight])); }
   //! Noeud derrière à droite dans la direction
-  NodeLocalId topPreviousRightId() const { return NodeLocalId(m_cell.node(m_nodes_indirection[CNP_TopPreviousRight])); }
+  NodeLocalId topPreviousRightId() const { return NodeLocalId(m_cell.nodeId(m_nodes_indirection[CNP_TopPreviousRight])); }
   //! Noeud derrière à gauche dans la direction
-  NodeLocalId topPreviousLeftId() const { return NodeLocalId(m_cell.node(m_nodes_indirection[CNP_TopPreviousLeft])); }
+  NodeLocalId topPreviousLeftId() const { return NodeLocalId(m_cell.nodeId(m_nodes_indirection[CNP_TopPreviousLeft])); }
 
  private:
   
@@ -149,12 +149,12 @@ class ARCANE_CARTESIANMESH_EXPORT DirCellFace
   //! Face connectée à la maille d'après la maille courante dans la direction
   Face next() const { return m_cell.face(m_next_face_index); }
   //! Face connectée à la maille d'après la maille courante dans la direction
-  FaceLocalId nextId() const { return FaceLocalId(next().localId()); }
+  FaceLocalId nextId() const { return m_cell.faceId(m_next_face_index); }
 
   //! Face connectée à la maille d'avant la maille courante dans la direction
   Face previous() const { return m_cell.face(m_previous_face_index); }
   //! Face connectée à la maille d'avant la maille courante dans la direction
-  FaceLocalId previousId() const { return FaceLocalId(previous().localId()); }
+  FaceLocalId previousId() const { return m_cell.faceId(m_previous_face_index); }
 
   //! Indice locale dans la maille de la face next()
   Int32 nextLocalIndex() const { return m_next_face_index; }

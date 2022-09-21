@@ -51,8 +51,7 @@ class FaceDirectionMng::Impl
 
 FaceDirectionMng::
 FaceDirectionMng()
-: m_cells(nullptr)
-, m_direction(MD_DirInvalid)
+: m_direction(MD_DirInvalid)
 , m_p (nullptr)
 {
 }

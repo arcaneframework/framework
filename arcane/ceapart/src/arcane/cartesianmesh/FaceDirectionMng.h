@@ -40,18 +40,24 @@ namespace Arcane
 class ARCANE_CARTESIANMESH_EXPORT DirFace
 {
   friend FaceDirectionMng;
+
  private:
+
   DirFace(Cell n,Cell p) : m_previous(p), m_next(n){}
+
  public:
-  //! Maille avant
+
+ //! Maille avant
   Cell previousCell() const { return m_previous; }
   //! Maille avant
-  CellLocalId previousCellId() const { return CellLocalId(m_previous.localId()); }
+  CellLocalId previousCellId() const { return m_previous.itemLocalId(); }
   //! Maille après
   Cell nextCell() const { return m_next; }
   //! Maille après
-  CellLocalId nextCellId() const { return CellLocalId(m_next.localId()) ; }
+  CellLocalId nextCellId() const { return m_next.itemLocalId(); }
+
  private:
+
   Cell m_previous;
   Cell m_next;
 };

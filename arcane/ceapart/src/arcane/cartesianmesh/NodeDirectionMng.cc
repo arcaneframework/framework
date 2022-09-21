@@ -53,8 +53,7 @@ class NodeDirectionMng::Impl
 
 NodeDirectionMng::
 NodeDirectionMng()
-: m_nodes(nullptr)
-, m_direction(MD_DirInvalid)
+: m_direction(MD_DirInvalid)
 , m_p(nullptr)
 {
 }
@@ -65,7 +64,6 @@ NodeDirectionMng()
 NodeDirectionMng::
 NodeDirectionMng(const NodeDirectionMng& rhs)
 : m_infos_view(rhs.m_infos_view)
-, m_nodes(nullptr)
 , m_direction(rhs.m_direction)
 , m_p(rhs.m_p)
 {
