@@ -65,9 +65,13 @@ parameters:
     default: "--timeout 300 --output-on-failure"
 
   ## CTest avec parallélisation.
+  ## S'il y a un test qui echoue, on le recommence 10 fois
+  ## jusqu'à qu'il passe (ça devrait corriger le problème de
+  ## verouillage de fichier sans prendre beaucoup de temps
+  ## (en mode "quick")).
   CT_OPTS_QUICK:
     type: string
-    default: "-j 4 --timeout 60 --output-on-failure"
+    default: "-j 4 --repeat until-pass:10 --timeout 60 --output-on-failure"
 
   ## Désactivation des tests avec 'mpithread' dans leur nom.
   ## Désactivation des tests avec '[>=5]proc' dans leur nom.
