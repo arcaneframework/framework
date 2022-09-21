@@ -148,7 +148,7 @@ jobs:
 
       - name: Get ccache status
         shell: bash
-        run: ccache -s -v
+        run: ccache -s
 
   split-build:
     strategy:
@@ -371,7 +371,7 @@ jobs:
 
       - name: Get ccache status
         shell: bash
-        run: ccache -s -v
+        run: ccache -s
  
   aio-cuda-build:
     strategy:
@@ -475,4 +475,4 @@ jobs:
 
       - name: Get ccache status
         shell: bash
-        run: ccache -s -v
+        run: ccache -s

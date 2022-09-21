@@ -159,4 +159,4 @@ jobs:
 
       - name: Get ccache status
         shell: bash
-        run: ccache -s -v
+        run: ccache -s
