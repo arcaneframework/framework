@@ -80,9 +80,15 @@ class ARCANE_CARTESIANMESH_EXPORT FaceDirectionMng
   using ItemDirectionInfo = impl::CartesianItemDirectionInfo;
 
  public:
-  
-  //! Créé une instance vide. L'instance n'est pas valide tant que init() n'a pas été appelé.
+
+  /*!
+   * \brief Créé une instance vide.
+   *
+   * L'instance n'est pas valide tant que _internalInit() n'a pas été appelé.
+   */
   FaceDirectionMng();
+
+ public:
 
   //! Face direction correspondant à la face \a f.
   DirFace face(Face f) const
@@ -140,12 +146,12 @@ class ARCANE_CARTESIANMESH_EXPORT FaceDirectionMng
   }
 
  private:
-  
+
   //! Face direction correspondant à la face de numéro local \a local_id
   DirFace _face(Int32 local_id) const
   {
     ItemDirectionInfo d = m_infos_view[local_id];
-    return DirFace(m_cells[d.m_next_lid],m_cells[d.m_previous_lid]);
+    return DirFace(m_cells[d.m_next_lid], m_cells[d.m_previous_lid]);
   }
 
  private:
@@ -164,7 +170,7 @@ class ARCANE_CARTESIANMESH_EXPORT FaceDirectionMng
    * \internal
    * Initialise l'instance.
    */
-  void _internalInit(ICartesianMesh* cm,eMeshDirection dir,Integer patch_index);
+  void _internalInit(ICartesianMesh* cm, eMeshDirection dir, Integer patch_index);
 
   /*!
    * \internal
@@ -189,7 +195,7 @@ class ARCANE_CARTESIANMESH_EXPORT FaceDirectionMng
   void _computeCellInfos(const CellDirectionMng& cell_dm,
                          const VariableCellReal3& cells_center,
                          const VariableFaceReal3& faces_center);
-  bool _hasFace(Cell cell,Int32 face_local_id) const;
+  bool _hasFace(Cell cell, Int32 face_local_id) const;
 };
 
 /*---------------------------------------------------------------------------*/

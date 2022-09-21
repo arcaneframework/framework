@@ -61,53 +61,6 @@ NodeDirectionMng()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-NodeDirectionMng::
-NodeDirectionMng(const NodeDirectionMng& rhs)
-: m_infos_view(rhs.m_infos_view)
-, m_direction(rhs.m_direction)
-, m_p(rhs.m_p)
-{
-  _initNodes();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-NodeDirectionMng& NodeDirectionMng::
-operator=(const NodeDirectionMng& rhs)
-{
-  m_infos_view = rhs.m_infos_view;
-  m_direction = rhs.m_direction;
-  m_p = rhs.m_p;
-  _initNodes();
-  return (*this);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-NodeDirectionMng::
-~NodeDirectionMng()
-{
-  // Ne pas détruire le m_p.
-  // Le gestionnnaire le fera via destroy()
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void NodeDirectionMng::
-_initNodes()
-{
-  if (m_p){
-    ICartesianMesh* cm = m_p->m_cartesian_mesh;
-    if (cm){
-      IMesh* mesh = cm->mesh();
-      m_nodes = NodeInfoListView(mesh->nodeFamily());
-    }
-  }
-}
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -118,6 +71,7 @@ _internalInit(ICartesianMesh* cm,eMeshDirection dir,Integer patch_index)
     ARCANE_FATAL("Initialisation already done");
   m_p = new Impl();
   m_direction = dir;
+  m_nodes = NodeInfoListView(cm->mesh()->nodeFamily());
   m_p->m_cartesian_mesh = cm;
   m_p->m_patch_index = patch_index;
 }
