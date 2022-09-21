@@ -7,14 +7,14 @@ executors:
   # 4 CPU - 8Go RAM - 20c/min
   large-executor-image:
     docker:
-      - image: ghcr.io/arcaneframework/ubuntu-2204:gcc-12_clang-14_minimal
+      - image: ghcr.io/arcaneframework/ubuntu-2204:gcc-12_clang-14_minimal_20220617
     resource_class: large
     working_directory: ~/workspace
 
   # 4 CPU - 8Go RAM - 20c/min
   large-executor-image-full:
     docker:
-      - image: ghcr.io/arcaneframework/ubuntu-2204:gcc-12_clang-14_full
+      - image: ghcr.io/arcaneframework/ubuntu-2204:gcc-12_clang-14_full_20220617
     resource_class: large
     working_directory: ~/workspace
 
@@ -53,15 +53,51 @@ parameters:
     type: string
     default: "~/workspace/install"
 
+
+  # CTest
   CT_RESULT_DIR:
     type: string
     default: "~/workspace/test"
   
+  ## CTest sans parallélisation.
   CT_OPTS:
     type: string
     default: "--timeout 300 --output-on-failure"
 
+  ## CTest avec parallélisation.
+  ## S'il y a un test qui echoue, on le recommence 10 fois
+  ## jusqu'à qu'il passe (ça devrait corriger le problème de
+  ## verouillage de fichier sans prendre beaucoup de temps
+  ## (en mode "quick")).
+  CT_OPTS_QUICK:
+    type: string
+    default: "-j 4 --repeat until-pass:10 --timeout 60 --output-on-failure"
 
+  ## Désactivation des tests avec 'mpithread' dans leur nom.
+  ## Désactivation des tests avec '[>=5]proc' dans leur nom.
+  ## Désactivation des tests avec '[>=9]thread' dans leur nom.
+  CT_REGEX_NORMAL:
+    type: string
+    default: "^.*(mpithread|[5-9]proc|[1-9][0-9]+proc|[9-9]thread|[1-9][0-9]+thread).*$"
+
+  ## Désactivation des tests avec 'mpithread' dans leur nom.
+  ## Désactivation des tests avec 'proc' dans leur nom.
+  ## Désactivation des tests avec 'thread' dans leur nom.
+  ## Désactivation des tests avec 'hybrid4' dans leur nom.
+  CT_REGEX_QUICK:
+    type: string
+    default: "^.*(mpithread|proc|thread|hybrid4).*$"
+
+  ## Désactivation des tests avec 'utils1' dans leur nom.
+  ## Désactivation des tests avec 'mpithread' dans leur nom.
+  ## Désactivation des tests avec '[>=3]proc' dans leur nom.
+  ## Désactivation des tests avec '[>=5]thread' dans leur nom.
+  CT_REGEX_ARM:
+    type: string
+    default: "^utils1$|^.*(mpithread|[3-9]proc|[1-9][0-9]+proc|[5-9]thread|[1-9][0-9]+thread).*$"
+
+
+  # CMake
   CM_BUILD_TYPE:
     type: string
     default: "Release"
@@ -79,9 +115,14 @@ parameters:
     default: "-DARCANE_ACCELERATOR_MODE=CUDANVCC -DCMAKE_CUDA_COMPILER=`which nvcc`"
 
 
+  # CCache
   CC_KEY_PREFIX:
     type: string
     default: "circleci"
+
+  CC_KEY_PREFIX_QUICK:
+    type: string
+    default: "circleci_quick"
 
   CC_KEY_PREFIX_COVERAGE:
     type: string
@@ -103,7 +144,7 @@ parameters:
 # Les jobs.
 jobs:
   build-and-test:
-    executor: large-executor-image
+    executor: large-executor-image-full
     steps:
       - checkout
       - run:
@@ -114,6 +155,96 @@ jobs:
       - restore_cache:
           keys: 
             - <<pipeline.parameters.CC_KEY_PREFIX>>-arcane-<<pipeline.parameters.CM_BUILD_TYPE>>-
+
+      - run:
+          name: Create ccache directory and ccache environment variables
+          command: |
+            echo 'export CCACHE_COMPRESS=true' >> $BASH_ENV
+            echo 'export CCACHE_COMPRESSLEVEL=6' >> $BASH_ENV
+            echo 'export CCACHE_DIR=<<pipeline.parameters.CC_DIR>>' >> $BASH_ENV
+            echo 'export CCACHE_MAXSIZE=500M' >> $BASH_ENV
+            mkdir -p <<pipeline.parameters.CC_DIR>>
+
+      - run:
+          name: Configure 'framework'
+          command: |
+            cmake \
+            -S <<pipeline.parameters.SOURCE_DIR>> \
+            -B <<pipeline.parameters.BUILD_DIR>> \
+            -GNinja \
+            -DCMAKE_INSTALL_PREFIX=<<pipeline.parameters.INSTALL_DIR>> \
+            -DCMAKE_CXX_FLAGS_RELEASE="-O2" \
+            -DCMAKE_VERBOSE_MAKEFILE=TRUE \
+            -DCMAKE_BUILD_TYPE=<<pipeline.parameters.CM_BUILD_TYPE>> \
+            -DBUILD_SHARED_LIBS=TRUE \
+            -DARCANE_DEFAULT_PARTITIONER=Metis \
+            -DARCCON_REGISTER_PACKAGE_VERSION=2 \
+            <<pipeline.parameters.CM_CCACHE_OPTS>>
+
+      - run:
+          name: Build 'framework'
+          command: cmake --build <<pipeline.parameters.BUILD_DIR>>
+
+      - run:
+          name: Install 'framework'
+          command: cmake --install <<pipeline.parameters.BUILD_DIR>>
+
+      - run:
+          name: Get 'ccache' status
+          command: |
+            ccache -s
+
+      - save_cache:
+          key: <<pipeline.parameters.CC_KEY_PREFIX>>-arcane-<<pipeline.parameters.CM_BUILD_TYPE>>-{{ .BuildNum }}
+          paths:
+            - ~/workspace/ccache
+
+      - run:
+          name: Force execution of MPI in root session
+          command: |
+            echo 'export OMPI_ALLOW_RUN_AS_ROOT=1' >> $BASH_ENV
+            echo 'export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1' >> $BASH_ENV
+
+      # On ne lance pas les tests qui utilisent 'mpithread' car ils ont besoin de 12 coeurs
+      # sur les machines à 4 coeurs cela pose problème.
+      - run:
+          name: Test 'framework'
+          command: |
+            mkdir -p <<pipeline.parameters.CT_RESULT_DIR>>
+            ctest --test-dir <<pipeline.parameters.BUILD_DIR>> --output-junit <<pipeline.parameters.CT_RESULT_DIR>>/results.xml <<pipeline.parameters.CT_OPTS>> -E '<<pipeline.parameters.CT_REGEX_NORMAL>>'
+
+      # https://www.ibm.com/docs/en/developer-for-zos/9.1.1?topic=formats-junit-xml-format
+      - run:
+          name: Edit results.xml for CircleCI UI (need valid JUnit XML)
+          when: always
+          command: |
+            RESULT_ORI=<<pipeline.parameters.CT_RESULT_DIR>>/results.xml
+            RESULT_TMP=<<pipeline.parameters.CT_RESULT_DIR>>/results_ori.xml
+            mv $RESULT_ORI $RESULT_TMP
+            sed -e '/<testcase.*>/,/<\/testcase>/d' -e 's:</testsuite>::' -e 's/(empty)/CTest Arcane/' -e 's/hostname=""/hostname="CircleCI"/' $RESULT_TMP > $RESULT_ORI
+            sed -n '/<testcase.*status="fail">/,/<\/testcase>/p' $RESULT_TMP | sed -e 's:<failure message="".*/>::M' -e 's/<system-out>/<failure message="Logs Arcane:">\n/M' -e 's:</system-out>:</failure>:M' >> $RESULT_ORI
+            sed -n '/<testcase.*status="run">/,/<\/testcase>/p' $RESULT_TMP >> $RESULT_ORI
+            echo '</testsuite>' >> $RESULT_ORI
+            rm $RESULT_TMP
+
+      - store_artifacts:
+          path: <<pipeline.parameters.CT_RESULT_DIR>>
+
+      - store_test_results:
+          path: <<pipeline.parameters.CT_RESULT_DIR>>
+  
+  build-and-test-quick:
+    executor: large-executor-image
+    steps:
+      - checkout
+      - run:
+          name: "Pull Submodules"
+          command: |
+            git submodule update --init
+
+      - restore_cache:
+          keys: 
+            - <<pipeline.parameters.CC_KEY_PREFIX_QUICK>>-arcane-<<pipeline.parameters.CM_BUILD_TYPE>>-
 
       - run:
           name: Create ccache directory and ccache environment variables
@@ -149,7 +280,7 @@ jobs:
             ccache -s
 
       - save_cache:
-          key: <<pipeline.parameters.CC_KEY_PREFIX>>-arcane-<<pipeline.parameters.CM_BUILD_TYPE>>-{{ .BuildNum }}
+          key: <<pipeline.parameters.CC_KEY_PREFIX_QUICK>>-arcane-<<pipeline.parameters.CM_BUILD_TYPE>>-{{ .BuildNum }}
           paths:
             - ~/workspace/ccache
 
@@ -165,7 +296,7 @@ jobs:
           name: Test 'framework'
           command: |
             mkdir -p <<pipeline.parameters.CT_RESULT_DIR>>
-            ctest --test-dir <<pipeline.parameters.BUILD_DIR>> --output-junit <<pipeline.parameters.CT_RESULT_DIR>>/results.xml <<pipeline.parameters.CT_OPTS>> -E '^.*([3-9][_]*mpithread|[1-9][0-9]+[_]*mpithread|[5-9]proc|[1-9][0-9]+proc).*$'
+            ctest --test-dir <<pipeline.parameters.BUILD_DIR>> --output-junit <<pipeline.parameters.CT_RESULT_DIR>>/results.xml <<pipeline.parameters.CT_OPTS_QUICK>> -E '<<pipeline.parameters.CT_REGEX_QUICK>>'
 
       # https://www.ibm.com/docs/en/developer-for-zos/9.1.1?topic=formats-junit-xml-format
       - run:
@@ -186,109 +317,6 @@ jobs:
 
       - store_test_results:
           path: <<pipeline.parameters.CT_RESULT_DIR>>
-
-  build-and-coverage:
-    executor: large-executor-image-full
-    steps:
-      - checkout
-      - run:
-          name: "Pull Submodules"
-          command: |
-            git submodule update --init
-
-      - run:
-          name: Install 'codecov' requisites
-          command: |
-            apt-get update -y
-            apt-get install -y curl gpg
-
-      - restore_cache:
-          keys:
-            - <<pipeline.parameters.CC_KEY_PREFIX_COVERAGE>>-arcane-<<pipeline.parameters.CM_BUILD_TYPE>>-
-
-      - run:
-          name: Create ccache directory and ccache environment variables
-          command: |
-            echo 'export CCACHE_COMPRESS=true' >> $BASH_ENV
-            echo 'export CCACHE_COMPRESSLEVEL=6' >> $BASH_ENV
-            echo 'export CCACHE_DIR=<<pipeline.parameters.CC_DIR>>' >> $BASH_ENV
-            echo 'export CCACHE_MAXSIZE=500M' >> $BASH_ENV
-            mkdir -p <<pipeline.parameters.CC_DIR>>
-
-      # Désactive Papi car les compteurs hardware ne sont pas disponibles
-      # dans les dockers
-      - run:
-          name: Configure 'framework'
-          command: |
-            cmake --version
-            cmake \
-            -S <<pipeline.parameters.SOURCE_DIR>> \
-            -B <<pipeline.parameters.BUILD_DIR>> \
-            -GNinja \
-            -DCMAKE_CXX_FLAGS_RELEASE="-O2 -g --coverage -fprofile-abs-path" \
-            -DCMAKE_BUILD_TYPE=<<pipeline.parameters.CM_BUILD_TYPE>> \
-            -DCMAKE_DISABLE_FIND_PACKAGE_Papi=TRUE \
-            -DARCANE_DISABLE_HYODA=TRUE \
-            -DBUILD_SHARED_LIBS=TRUE \
-            -DARCCON_REGISTER_PACKAGE_VERSION=2 \
-            <<pipeline.parameters.CM_CCACHE_OPTS>>
-
-      - run:
-          name: Build 'framework'
-          command: cmake --build <<pipeline.parameters.BUILD_DIR>>
-
-      - run:
-          name: Get 'ccache' status
-          command: |
-            ccache -s
-
-      - save_cache:
-          key: <<pipeline.parameters.CC_KEY_PREFIX_COVERAGE>>-arcane-<<pipeline.parameters.CM_BUILD_TYPE>>-{{ .BuildNum }}
-          paths:
-            - ~/workspace/ccache
-
-      - run:
-          name: Force execution of MPI in root session
-          command: |
-            echo 'export OMPI_ALLOW_RUN_AS_ROOT=1' >> $BASH_ENV
-            echo 'export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1' >> $BASH_ENV
-
-      # On ne lance pas les tests qui utilisent 'mpithread' car ils ont besoin de 12 coeurs
-      # sur les machines à 4 coeurs cela pose problème.
-      - run:
-          name: Test 'framework'
-          command: |
-            mkdir -p <<pipeline.parameters.CT_RESULT_DIR>>
-            ARCANE_CHECK=1 ctest --test-dir <<pipeline.parameters.BUILD_DIR>> --output-junit <<pipeline.parameters.CT_RESULT_DIR>>/results.xml <<pipeline.parameters.CT_OPTS>> -E '^.*([3-9][_]*mpithread|[1-9][0-9]+[_]*mpithread|[5-9]proc|[1-9][0-9]+proc).*$'
-
-      # https://www.ibm.com/docs/en/developer-for-zos/9.1.1?topic=formats-junit-xml-format
-      - run:
-          name: Edit results.xml for CircleCI UI (need valid JUnit XML)
-          when: always
-          command: |
-            RESULT_ORI=<<pipeline.parameters.CT_RESULT_DIR>>/results.xml
-            RESULT_TMP=<<pipeline.parameters.CT_RESULT_DIR>>/results_ori.xml
-            mv $RESULT_ORI $RESULT_TMP
-            sed -e '/<testcase.*>/,/<\/testcase>/d' -e 's:</testsuite>::' -e 's/(empty)/CTest Arcane/' -e 's/hostname=""/hostname="CircleCI"/' $RESULT_TMP > $RESULT_ORI
-            sed -n '/<testcase.*status="fail">/,/<\/testcase>/p' $RESULT_TMP | sed -e 's:<failure message="".*/>::M' -e 's/<system-out>/<failure message="Logs Arcane:">\n/M' -e 's:</system-out>:</failure>:M' >> $RESULT_ORI
-            sed -n '/<testcase.*status="run">/,/<\/testcase>/p' $RESULT_TMP >> $RESULT_ORI
-            echo '</testsuite>' >> $RESULT_ORI
-            rm $RESULT_TMP
-
-      - run:
-          name: Apply coverage
-          when: always
-          command: |
-            find . -name "*.o" -exec gcov-12 {} \;
-            rm -f *.h.gcov
-
-      - store_artifacts:
-          path: <<pipeline.parameters.CT_RESULT_DIR>>
-
-      - store_test_results:
-          path: <<pipeline.parameters.CT_RESULT_DIR>>
-
-      - codecov/upload
 
   arm-build-and-test:
     executor: medium-executor-arm
@@ -420,7 +448,7 @@ jobs:
           # pas positionner les exceptions flottantes.
           command: |
             mkdir -p <<pipeline.parameters.CT_RESULT_DIR>>
-            ctest --test-dir <<pipeline.parameters.BUILD_DIR>> --output-junit <<pipeline.parameters.CT_RESULT_DIR>>/results.xml <<pipeline.parameters.CT_OPTS>> -E '^utils1$|^.*([1-9][_]*mpithread|[1-9][0-9]+[_]*mpithread|[3-9]proc|[1-9][0-9]+proc).*$'
+            ctest --test-dir <<pipeline.parameters.BUILD_DIR>> --output-junit <<pipeline.parameters.CT_RESULT_DIR>>/results.xml <<pipeline.parameters.CT_OPTS>> -E '<<pipeline.parameters.CT_REGEX_QUICK>>'
 
       # https://www.ibm.com/docs/en/developer-for-zos/9.1.1?topic=formats-junit-xml-format
       - run:
@@ -597,27 +625,29 @@ jobs:
 
 # Invoke jobs via workflows
 workflows:
+  # WF exécuté si push dans main ou dans
+  # une branche ayant le format suivant :
+  # dev/{initial}-highci-{nomdelabranche}
+  # Exemples :
+  # dev/gg-highci-truc
+  # dev/al-highci-truc
+  # &c
   build-and-test:
     jobs:
-      - build-and-test
-
-  # Pour test. Sinon est actif automatiquement chaque nuit
-  #build-and-coverage:
-  #  jobs:
-  #    - build-and-coverage
-
-  build-and-coverage-nightly:
-    triggers: #use the triggers key to indicate a scheduled build
-      - schedule:
-          cron: "45 0 * * *" # Tous les jours à 00:45 (du matin).
+      - build-and-test:
           filters:
             branches:
-              only:
+              only: 
                 - main
-    jobs:
-      - build-and-coverage
+                - /dev\/[a-z]+-highci-.*/
 
-  build_and_test_arm:
+  # WF exécuté à chaque push.
+  build-and-test-quick:
+    jobs:
+      - build-and-test-quick
+
+  # WFs exécutés tous les jours.
+  build_and_test_everyday:
     triggers: #use the triggers key to indicate a scheduled build
       - schedule:
           cron: "23 1 * * *" # Tous les jours à 01:23 (du matin).
@@ -627,6 +657,7 @@ workflows:
                 - main
     jobs:
       - arm-build-and-test
+      - build-and-test
 
   # build_and_test_cuda:
   #   triggers: #use the triggers key to indicate a scheduled build

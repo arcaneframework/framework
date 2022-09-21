@@ -1,6 +1,8 @@
 name: Header/Encoding checker
 
 on:
+  schedule:
+    - cron: '48 0 * * *' # Tous les jours à 00:48.
   # A executer que lorsque l'on demande.
   workflow_dispatch:
 

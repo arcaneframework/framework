@@ -1,0 +1,88 @@
+name: Codecov Scan
+
+on:
+  schedule:
+    - cron: '24 0 * * *' # Tous les jours à 00:24.
+  # A executer lorsque l'on demande.
+  workflow_dispatch:
+  
+env:
+  # On place la source à la racine pour éviter
+  # un sous-répertoire en plus dans Codecov.
+  SOURCE_DIR: '/__w/framework/framework'
+  BUILD_DIR: '/__w/framework/framework/build'
+
+  # CTest
+  CT_RESULT_DIR: '/__w/framework/framework/test'
+  CT_OPTS: "--timeout 300 --output-on-failure"
+
+  ## Désactivation des tests avec 'mpithread' dans leur nom.
+  ## Désactivation des tests avec '[>=3]proc' dans leur nom.
+  ## Désactivation des tests avec '[>=5]thread' dans leur nom.
+  CT_REGEX: "^.*(mpithread|[3-9]proc|[1-9][0-9]+proc|[5-9]thread|[1-9][0-9]+thread).*$"
+
+  # MPI
+  OMPI_ALLOW_RUN_AS_ROOT: 1
+  OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: 1
+
+jobs:
+  build:
+    name: Codecov
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/arcaneframework/ubuntu-2204:gcc-12_clang-14_full_20220617
+
+    steps:
+      - name: Checkout framework
+        uses: actions/checkout@v3
+        with:
+          path: ${{ env.SOURCE_DIR }}
+          submodules: true
+
+      - name: Configure
+        shell: 'bash'
+        run: |
+          cmake \
+          -S ${{ env.SOURCE_DIR }} \
+          -B ${{ env.BUILD_DIR }} \
+          -GNinja \
+          -DBUILD_SHARED_LIBS=TRUE \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_CXX_FLAGS_RELEASE="-O2 -g --coverage -fprofile-abs-path" \
+          -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ \
+          -DARCANE_DEFAULT_PARTITIONER=Metis \
+          -DCMAKE_DISABLE_FIND_PACKAGE_Papi=ON \
+          -DARCANE_DISABLE_HYODA=TRUE \
+          -DARCCON_REGISTER_PACKAGE_VERSION=2
+
+      - name: Build
+        shell: bash
+        run: |
+          cmake --build ${{ env.BUILD_DIR }}
+
+      - name: Test
+        shell: bash
+        run: |
+          mkdir -p ${{ env.CT_RESULT_DIR }}
+          ARCANE_CHECK=1 ctest --test-dir ${{ env.BUILD_DIR }} --output-junit ${{ env.CT_RESULT_DIR }}/results.xml ${{ env.CT_OPTS }} -E '${{ env.CT_REGEX }}'
+
+      - name: Apply coverage
+        shell: bash
+        run: find . -name "*.o" -exec gcov-12 {} \;
+
+      - name: Remove generated axl headers
+        shell: bash
+        run: rm -f *_axl.h.gcov
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          gcov: true
+      
+      - name: Upload test artifact
+        uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: codecov-test-artifact
+          path: ${{ env.CT_RESULT_DIR }}
+          retention-days: 7

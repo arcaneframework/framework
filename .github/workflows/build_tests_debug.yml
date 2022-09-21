@@ -46,10 +46,12 @@ jobs:
 
           - image_short: 'U20_G11_C13'
             image_long: 'ubuntu-2004:gcc-11_clang-13'
+            image_date: '20220617'
             image_args: '-DARCCORE_CXX_STANDARD=20'
 
           - image_short: 'U22_G12_C14'
             image_long: 'ubuntu-2204:gcc-12_clang-14'
+            image_date: '20220617'
             image_args: '-DARCCORE_CXX_STANDARD=23'
 
           # - version_short: 'M'
@@ -72,12 +74,13 @@ jobs:
             type_args: '-DCMAKE_BUILD_TYPE=Debug
               -DARCCORE_BUILD_MODE=Debug
               -DARCANE_BUILD_TYPE=Debug'
+            ## Désactivation des tests avec '4mpithread' dans leur nom.
             type_excl_tests: '^.*_4mpithread$'
 
     name: '[${{matrix.image_short}}_${{matrix.version_short}}]_AiO_${{matrix.compilo_name}}_${{matrix.type}}'
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/arcaneframework/${{matrix.image_long}}_${{matrix.version_long}}
+      image: ghcr.io/arcaneframework/${{matrix.image_long}}_${{matrix.version_long}}_${{matrix.image_date}}
 
     steps:
       - name: Checkout framework
@@ -136,7 +139,7 @@ jobs:
         with:
           name: ${{matrix.image_short}}_${{matrix.version_short}}_${{matrix.compilo_name}}_${{matrix.type}}_aio-test-artifact
           path: ${{ env.CT_RESULT_DIR }}
-          retention-days: 1
+          retention-days: 2
 
       - name: Get ccache status
         shell: bash
@@ -160,10 +163,12 @@ jobs:
 
           - image_short: 'U20_G11_C13'
             image_long: 'ubuntu-2004:gcc-11_clang-13'
+            image_date: '20220617'
             image_args: '-DARCCORE_CXX_STANDARD=20'
 
           - image_short: 'U22_G12_C14'
             image_long: 'ubuntu-2204:gcc-12_clang-14'
+            image_date: '20220617'
             image_args: '-DARCCORE_CXX_STANDARD=23'
 
           - version_short: 'M'
@@ -186,13 +191,14 @@ jobs:
             type_args: '-DCMAKE_BUILD_TYPE=Debug
               -DARCCORE_BUILD_MODE=Debug
               -DARCANE_BUILD_TYPE=Debug'
+            ## Désactivation des tests avec '4mpithread' dans leur nom.
             type_excl_tests: '^.*_4mpithread$'
 
 
     name: '[${{matrix.image_short}}_${{matrix.version_short}}]_Split_${{matrix.compilo_name}}_${{matrix.type}}'
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/arcaneframework/${{matrix.image_long}}_${{matrix.version_long}}
+      image: ghcr.io/arcaneframework/${{matrix.image_long}}_${{matrix.version_long}}_${{matrix.image_date}}
 
     steps:
       - name: Checkout framework
@@ -355,7 +361,7 @@ jobs:
         with:
           name: ${{matrix.image_short}}_${{matrix.version_short}}_${{matrix.compilo_name}}_${{matrix.type}}_split-test-artifact
           path: ${{ env.CT_RESULT_DIR }}
-          retention-days: 1
+          retention-days: 2
 
       - name: Get ccache status
         shell: bash
@@ -379,10 +385,12 @@ jobs:
 
           - image_short: 'U20_G11_C12_CU116'
             image_long: 'ubuntu-2004:gcc-11_clang-12_cuda-116'
+            image_date: '20220617'
             image_args: '-DARCCORE_CXX_STANDARD=20'
 
           - image_short: 'U22_G11_C13_CU117'
             image_long: 'ubuntu-2204:gcc-11_clang-13_cuda-117'
+            image_date: '20220617'
             image_args: '-DARCCORE_CXX_STANDARD=20'
 
           - version_short: 'M'
@@ -405,12 +413,13 @@ jobs:
             type_args: '-DCMAKE_BUILD_TYPE=Debug
               -DARCCORE_BUILD_MODE=Debug
               -DARCANE_BUILD_TYPE=Debug'
+            ## Désactivation des tests avec '4mpithread' dans leur nom.
             type_excl_tests: '^.*_4mpithread$'
         
     name: '[${{matrix.image_short}}_${{matrix.version_short}}]_Cuda_${{matrix.compilo_name}}_${{matrix.type}}'
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/arcaneframework/${{matrix.image_long}}_${{matrix.version_long}}
+      image: ghcr.io/arcaneframework/${{matrix.image_long}}_${{matrix.version_long}}_${{matrix.image_date}}
 
     steps:
       - name: Checkout framework

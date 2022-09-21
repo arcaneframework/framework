@@ -50,10 +50,12 @@ jobs:
 
           - image_short: 'U20_G11_C13'
             image_long: 'ubuntu-2004:gcc-11_clang-13'
+            image_date: '20220617'
             image_args: '-DARCCORE_CXX_STANDARD=20'
 
           - image_short: 'U22_G12_C14'
             image_long: 'ubuntu-2204:gcc-12_clang-14'
+            image_date: '20220617'
             image_args: '-DARCCORE_CXX_STANDARD=23'
 
           - version_short: 'M'
@@ -70,7 +72,10 @@ jobs:
             type_args: '-DCMAKE_BUILD_TYPE=Release
               -DARCCORE_BUILD_MODE=Check
               -DARCANE_BUILD_TYPE=Check'
-            type_excl_tests: '^.*([2-9][_]*mpithread|[1-9][0-9]+[_]*mpithread|[3-9]proc|[1-9][0-9]+proc).*$'
+            ## Désactivation des tests avec 'mpithread' dans leur nom.
+            ## Désactivation des tests avec '[>=3]proc' dans leur nom.
+            ## Désactivation des tests avec '[>=5]thread' dans leur nom.
+            type_excl_tests: '^.*(mpithread|[3-9]proc|[1-9][0-9]+proc|[5-9]thread|[1-9][0-9]+thread).*$'
 
           # - type: 'Debug'
           #   type_args: '-DCMAKE_BUILD_TYPE=Debug
@@ -81,7 +86,7 @@ jobs:
     name: '[${{matrix.image_short}}_${{matrix.version_short}}]_AiO_${{matrix.compilo_name}}_${{matrix.type}}'
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/arcaneframework/${{matrix.image_long}}_${{matrix.version_long}}
+      image: ghcr.io/arcaneframework/${{matrix.image_long}}_${{matrix.version_long}}_${{matrix.image_date}}
 
     steps:
       - name: Checkout framework
@@ -140,7 +145,7 @@ jobs:
         with:
           name: ${{matrix.image_short}}_${{matrix.version_short}}_${{matrix.compilo_name}}_${{matrix.type}}_aio-test-artifact
           path: ${{ env.CT_RESULT_DIR }}
-          retention-days: 1
+          retention-days: 2
 
       - name: Get ccache status
         shell: bash
@@ -164,10 +169,12 @@ jobs:
 
           - image_short: 'U20_G11_C13'
             image_long: 'ubuntu-2004:gcc-11_clang-13'
+            image_date: '20220617'
             image_args: '-DARCCORE_CXX_STANDARD=20'
 
           - image_short: 'U22_G12_C14'
             image_long: 'ubuntu-2204:gcc-12_clang-14'
+            image_date: '20220617'
             image_args: '-DARCCORE_CXX_STANDARD=23'
 
           # - version_short: 'M'
@@ -184,7 +191,10 @@ jobs:
             type_args: '-DCMAKE_BUILD_TYPE=Release
               -DARCCORE_BUILD_MODE=Check
               -DARCANE_BUILD_TYPE=Check'
-            type_excl_tests: '^.*([2-9][_]*mpithread|[1-9][0-9]+[_]*mpithread|[3-9]proc|[1-9][0-9]+proc).*$'
+            ## Désactivation des tests avec 'mpithread' dans leur nom.
+            ## Désactivation des tests avec '[>=3]proc' dans leur nom.
+            ## Désactivation des tests avec '[>=5]thread' dans leur nom.
+            type_excl_tests: '^.*(mpithread|[3-9]proc|[1-9][0-9]+proc|[5-9]thread|[1-9][0-9]+thread).*$'
 
           # - type: 'Debug'
           #   type_args: '-DCMAKE_BUILD_TYPE=Debug
@@ -196,7 +206,7 @@ jobs:
     name: '[${{matrix.image_short}}_${{matrix.version_short}}]_Split_${{matrix.compilo_name}}_${{matrix.type}}'
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/arcaneframework/${{matrix.image_long}}_${{matrix.version_long}}
+      image: ghcr.io/arcaneframework/${{matrix.image_long}}_${{matrix.version_long}}_${{matrix.image_date}}
 
     steps:
       - name: Checkout framework
@@ -359,7 +369,7 @@ jobs:
         with:
           name: ${{matrix.image_short}}_${{matrix.version_short}}_${{matrix.compilo_name}}_${{matrix.type}}_split-test-artifact
           path: ${{ env.CT_RESULT_DIR }}
-          retention-days: 1
+          retention-days: 2
 
       - name: Get ccache status
         shell: bash
@@ -383,10 +393,12 @@ jobs:
 
           - image_short: 'U20_G11_C12_CU116'
             image_long: 'ubuntu-2004:gcc-11_clang-12_cuda-116'
+            image_date: '20220617'
             image_args: '-DARCCORE_CXX_STANDARD=20'
 
           - image_short: 'U22_G11_C13_CU117'
             image_long: 'ubuntu-2204:gcc-11_clang-13_cuda-117'
+            image_date: '20220617'
             image_args: '-DARCCORE_CXX_STANDARD=20'
 
           - version_short: 'M'
@@ -403,7 +415,10 @@ jobs:
             type_args: '-DCMAKE_BUILD_TYPE=Release
               -DARCCORE_BUILD_MODE=Check
               -DARCANE_BUILD_TYPE=Check'
-            type_excl_tests: '^.*([2-9][_]*mpithread|[1-9][0-9]+[_]*mpithread|[3-9]proc|[1-9][0-9]+proc).*$'
+            ## Désactivation des tests avec 'mpithread' dans leur nom.
+            ## Désactivation des tests avec '[>=3]proc' dans leur nom.
+            ## Désactivation des tests avec '[>=5]thread' dans leur nom.
+            type_excl_tests: '^.*(mpithread|[3-9]proc|[1-9][0-9]+proc|[5-9]thread|[1-9][0-9]+thread).*$'
 
           # - type: 'Debug'
           #   type_args: '-DCMAKE_BUILD_TYPE=Debug
@@ -414,7 +429,7 @@ jobs:
     name: '[${{matrix.image_short}}_${{matrix.version_short}}]_Cuda_${{matrix.compilo_name}}_${{matrix.type}}'
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/arcaneframework/${{matrix.image_long}}_${{matrix.version_long}}
+      image: ghcr.io/arcaneframework/${{matrix.image_long}}_${{matrix.version_long}}_${{matrix.image_date}}
 
     steps:
       - name: Checkout framework
