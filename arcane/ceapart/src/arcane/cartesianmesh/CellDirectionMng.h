@@ -20,6 +20,7 @@
 #include "arcane/ItemEnumerator.h"
 
 #include "arcane/cartesianmesh/CartesianMeshGlobal.h"
+#include "arcane/cartesianmesh/CartesianItemDirectionInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -206,29 +207,12 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
 
  private:
 
-  struct ItemDirectionInfo
-  {
-   public:
-    /*!
-     * \brief Constructeur par défaut.
-     * \warning Les valeurs m_next_item et m_previous_item sont initialisées
-     * à nullptr.
-     */
-    ItemDirectionInfo()
-    : m_next_lid(NULL_ITEM_LOCAL_ID), m_previous_lid(NULL_ITEM_LOCAL_ID){}
-    ItemDirectionInfo(Int32 next_id,Int32 prev_id)
-    : m_next_lid(next_id), m_previous_lid(prev_id){}
-   public:
-    //! entité après l'entité courante dans la direction
-    Int32 m_next_lid;
-    //! entité avant l'entité courante dans la direction
-    Int32 m_previous_lid;
-  };
+  using ItemDirectionInfo = impl::CartesianItemDirectionInfo;
+
  public:
   
   //! Créé une instance vide. L'instance n'est pas valide tant que init() n'a pas été appelé.
   CellDirectionMng();
-  ~CellDirectionMng();
 
   //! Maille direction correspondant à la maille \a c.
   DirCell cell(Cell c) const
@@ -366,9 +350,8 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
   //! Maille direction correspondant à la maille de numéro local \a local_id
   DirCell _cell(Int32 local_id) const
   {
-    Cell next = m_cells[m_infos[local_id].m_next_lid];
-    Cell prev = m_cells[m_infos[local_id].m_previous_lid];
-    return DirCell(next,prev);
+    ItemDirectionInfo d = m_infos_view[local_id];
+    return DirCell(m_cells[d.m_next_lid],m_cells[d.m_previous_lid]);
   }
 
   void setNodesIndirection(Int32ConstArrayView nodes_indirection);
@@ -404,6 +387,13 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
     m_previous_face_index = previous_index;
   }
 
+  /*!
+   * \brief Redimensionne le conteneur contenant les \a ItemDirectionInfo.
+   *
+   * Cela invalide les instances courantes de CellDirectionMng.
+   */
+  void _internalResizeInfos(Int32 new_size);
+
  public:
 
   //! Valeur de la direction
@@ -414,10 +404,10 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
 
  private:
 
-  SharedArray<ItemDirectionInfo> m_infos;
+  SmallSpan<ItemDirectionInfo> m_infos_view;
+  CellInfoListView m_cells;
   eMeshDirection m_direction;
   Impl* m_p;
-  CellInfoListView m_cells;
   Int32 m_nodes_indirection[MAX_NB_NODE];
   Int32 m_next_face_index;
   Int32 m_previous_face_index;

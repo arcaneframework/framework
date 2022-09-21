@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NodeDirectionMng.cc                                         (C) 2000-2021 */
+/* NodeDirectionMng.cc                                         (C) 2000-2022 */
 /*                                                                           */
 /* Infos sur les noeuds d'une direction X Y ou Z d'un maillage structuré.    */
 /*---------------------------------------------------------------------------*/
@@ -15,11 +15,11 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/ArcaneTypes.h"
-#include "arcane/cartesianmesh/CartesianMeshGlobal.h"
-
 #include "arcane/Item.h"
 #include "arcane/ItemEnumerator.h"
 #include "arcane/VariableTypedef.h"
+
+#include "arcane/cartesianmesh/CartesianMeshGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -188,6 +188,7 @@ class ARCANE_CARTESIANMESH_EXPORT NodeDirectionMng
     }
     DirNodeCellIndex m_cell_index;
   };
+
  public:
   
   //! Créé une instance vide. L'instance n'est pas valide tant que init() n'a pas été appelé.
@@ -275,11 +276,18 @@ class ARCANE_CARTESIANMESH_EXPORT NodeDirectionMng
    */
   void _internalDestroy();
 
+  /*!
+   * \brief Redimensionne le conteneur contenant les \a ItemDirectionInfo.
+   *
+   * Cela invalide les instances courantes de NodeDirectionMng.
+   */
+  void _internalResizeInfos(Int32 new_size);
+
  private:
 
-  SharedArray<ItemDirectionInfo> m_infos;
-  eMeshDirection m_direction;
+  SmallSpan<ItemDirectionInfo> m_infos_view;
   NodeInfoListView m_nodes;
+  eMeshDirection m_direction;
   Impl* m_p;
 
  private:
@@ -287,9 +295,8 @@ class ARCANE_CARTESIANMESH_EXPORT NodeDirectionMng
   //! Noeud direction correspondant au noeud de numéro local \a local_id
   DirNode _node(Int32 local_id) const
   {
-    Node next = m_nodes[m_infos[local_id].m_next_lid];
-    Node prev = m_nodes[m_infos[local_id].m_previous_lid];
-    return DirNode(m_nodes[local_id],next,prev,m_infos[local_id].m_cell_index);
+    ItemDirectionInfo d = m_infos_view[local_id];
+    return DirNode(m_nodes[local_id],m_nodes[d.m_next_lid],m_nodes[d.m_previous_lid],d.m_cell_index);
   }
 
   void _computeNodeCellInfos(const CellDirectionMng& cell_dm,

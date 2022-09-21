@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* FaceDirectionMng.cc                                         (C) 2000-2021 */
+/* FaceDirectionMng.cc                                         (C) 2000-2022 */
 /*                                                                           */
 /* Infos sur les faces d'une direction X Y ou Z d'un maillage structuré.     */
 /*---------------------------------------------------------------------------*/
@@ -15,11 +15,12 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/ArcaneTypes.h"
-#include "arcane/cartesianmesh/CartesianMeshGlobal.h"
-
 #include "arcane/Item.h"
 #include "arcane/VariableTypedef.h"
 #include "arcane/ItemEnumerator.h"
+
+#include "arcane/cartesianmesh/CartesianMeshGlobal.h"
+#include "arcane/cartesianmesh/CartesianItemDirectionInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -70,31 +71,12 @@ class ARCANE_CARTESIANMESH_EXPORT FaceDirectionMng
 
  private:
 
-  struct ItemDirectionInfo
-  {
-   public:
-    /*!
-     * \brief Constructeur par défaut.
-     * \warning Les valeurs m_next_item et m_previous_item sont initialisées
-     * à nullptr.
-     */
-    ItemDirectionInfo()
-    : m_next_lid(NULL_ITEM_LOCAL_ID), m_previous_lid(NULL_ITEM_LOCAL_ID){}
-    ItemDirectionInfo(Int32 next_lid,Int32 prev_lid)
-    : m_next_lid(next_lid), m_previous_lid(prev_lid){}
-   public:
-    //! entité après l'entité courante dans la direction
-    Int32 m_next_lid;
-    //! entité avant l'entité courante dans la direction
-    Int32 m_previous_lid;
-  };
+  using ItemDirectionInfo = impl::CartesianItemDirectionInfo;
+
  public:
   
   //! Créé une instance vide. L'instance n'est pas valide tant que init() n'a pas été appelé.
   FaceDirectionMng();
-  FaceDirectionMng(const FaceDirectionMng& rhs) = default;
-  FaceDirectionMng& operator=(const FaceDirectionMng& rhs) = default;
-  ~FaceDirectionMng();
 
   //! Face direction correspondant à la face \a f.
   DirFace face(Face f) const
@@ -156,12 +138,11 @@ class ARCANE_CARTESIANMESH_EXPORT FaceDirectionMng
   //! Face direction correspondant à la face de numéro local \a local_id
   DirFace _face(Int32 local_id) const
   {
-    Cell next = m_cells[m_infos[local_id].m_next_lid];
-    Cell prev = m_cells[m_infos[local_id].m_previous_lid];
-    return DirFace(next,prev);
+    ItemDirectionInfo d = m_infos_view[local_id];
+    return DirFace(m_cells[d.m_next_lid],m_cells[d.m_previous_lid]);
   }
 
- protected:
+ private:
 
   /*!
    * \internal
@@ -185,11 +166,18 @@ class ARCANE_CARTESIANMESH_EXPORT FaceDirectionMng
    */
   void _internalDestroy();
 
+  /*!
+   * \brief Redimensionne le conteneur contenant les \a ItemDirectionInfo.
+   *
+   * Cela invalide les instances courantes de FaceDirectionMng.
+   */
+  void _internalResizeInfos(Int32 new_size);
+
  private:
 
-  SharedArray<ItemDirectionInfo> m_infos;
-  eMeshDirection m_direction;
+  SmallSpan<ItemDirectionInfo> m_infos_view;
   CellInfoListView m_cells;
+  eMeshDirection m_direction;
   Impl* m_p;
 
   void _computeCellInfos(const CellDirectionMng& cell_dm,

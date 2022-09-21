@@ -45,6 +45,7 @@ class NodeDirectionMng::Impl
   NodeGroup m_all_items;
   ICartesianMesh* m_cartesian_mesh = nullptr;
   Integer m_patch_index = -1;
+  UniqueArray<ItemDirectionInfo> m_infos;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -52,8 +53,8 @@ class NodeDirectionMng::Impl
 
 NodeDirectionMng::
 NodeDirectionMng()
-: m_direction(MD_DirInvalid)
-, m_nodes(nullptr)
+: m_nodes(nullptr)
+, m_direction(MD_DirInvalid)
 , m_p(nullptr)
 {
 }
@@ -63,9 +64,9 @@ NodeDirectionMng()
 
 NodeDirectionMng::
 NodeDirectionMng(const NodeDirectionMng& rhs)
-: m_infos(rhs.m_infos)
-, m_direction(rhs.m_direction)
+: m_infos_view(rhs.m_infos_view)
 , m_nodes(nullptr)
+, m_direction(rhs.m_direction)
 , m_p(rhs.m_p)
 {
   _initNodes();
@@ -77,7 +78,7 @@ NodeDirectionMng(const NodeDirectionMng& rhs)
 NodeDirectionMng& NodeDirectionMng::
 operator=(const NodeDirectionMng& rhs)
 {
-  m_infos = rhs.m_infos;
+  m_infos_view = rhs.m_infos_view;
   m_direction = rhs.m_direction;
   m_p = rhs.m_p;
   _initNodes();
@@ -137,11 +138,21 @@ _internalDestroy()
 /*---------------------------------------------------------------------------*/
 
 void NodeDirectionMng::
+_internalResizeInfos(Int32 new_size)
+{
+  m_p->m_infos.resize(new_size);
+  m_infos_view = m_p->m_infos.view();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void NodeDirectionMng::
 _internalComputeInfos(const CellDirectionMng& cell_dm,const NodeGroup& all_nodes,
                       const VariableCellReal3& cells_center)
 {
   Node null_node;
-  m_infos.fill(NodeDirectionMng::ItemDirectionInfo());
+  m_infos_view.fill(NodeDirectionMng::ItemDirectionInfo());
 
   Integer mesh_dim = m_p->m_cartesian_mesh->mesh()->dimension();
   //TODO: ne garder que les noeuds de notre patch
@@ -157,11 +168,11 @@ _internalComputeInfos(const CellDirectionMng& cell_dm,const NodeGroup& all_nodes
     Node node_previous_left = cn.previousLeft();
     Node node_previous_right = cn.previousRight();
 
-    m_infos[node_previous_left.localId()].m_next_lid = node_next_left.localId();
-    m_infos[node_next_left.localId()].m_previous_lid = node_previous_left.localId();
+    m_infos_view[node_previous_left.localId()].m_next_lid = node_next_left.localId();
+    m_infos_view[node_next_left.localId()].m_previous_lid = node_previous_left.localId();
 
-    m_infos[node_previous_right.localId()].m_next_lid = node_next_right.localId();
-    m_infos[node_next_right.localId()].m_previous_lid = node_previous_right.localId();
+    m_infos_view[node_previous_right.localId()].m_next_lid = node_next_right.localId();
+    m_infos_view[node_next_right.localId()].m_previous_lid = node_previous_right.localId();
 
     if (mesh_dim==3){
       Node top_node_next_left = cn.topNextLeft();
@@ -170,11 +181,11 @@ _internalComputeInfos(const CellDirectionMng& cell_dm,const NodeGroup& all_nodes
       Node top_node_previous_left = cn.topPreviousLeft();
       Node top_node_previous_right = cn.topPreviousRight();
 
-      m_infos[top_node_previous_left.localId()].m_next_lid = top_node_next_left.localId();
-      m_infos[top_node_next_left.localId()].m_previous_lid = top_node_previous_left.localId();
+      m_infos_view[top_node_previous_left.localId()].m_next_lid = top_node_next_left.localId();
+      m_infos_view[top_node_next_left.localId()].m_previous_lid = top_node_previous_left.localId();
 
-      m_infos[top_node_previous_right.localId()].m_next_lid = top_node_next_right.localId();
-      m_infos[top_node_next_right.localId()].m_previous_lid = top_node_previous_right.localId();
+      m_infos_view[top_node_previous_right.localId()].m_next_lid = top_node_next_right.localId();
+      m_infos_view[top_node_next_right.localId()].m_previous_lid = top_node_previous_right.localId();
     }
   }
 
@@ -183,8 +194,8 @@ _internalComputeInfos(const CellDirectionMng& cell_dm,const NodeGroup& all_nodes
   IItemFamily* family = all_nodes.itemFamily();
   ENUMERATE_ITEM(iitem,all_nodes){
     Int32 lid = iitem.itemLocalId();
-    Int32 i1 = m_infos[lid].m_next_lid;
-    Int32 i2 = m_infos[lid].m_previous_lid;
+    Int32 i1 = m_infos_view[lid].m_next_lid;
+    Int32 i2 = m_infos_view[lid].m_previous_lid;
     if (i1==NULL_ITEM_LOCAL_ID || i2==NULL_ITEM_LOCAL_ID)
       outer_lids.add(lid);
     else
@@ -217,7 +228,7 @@ _filterNodes()
     nodes_set.insert(NodeLocalId(inode.itemLocalId()));
   }
 
-  for( ItemDirectionInfo& idi : m_infos ){
+  for( ItemDirectionInfo& idi : m_infos_view ){
     {
       Int32 next_lid = idi.m_next_lid;
       if (next_lid!=NULL_ITEM_LOCAL_ID)
@@ -316,7 +327,7 @@ _computeNodeCellInfos(const CellDirectionMng& cell_dm,const VariableCellReal3& c
         }
       }
     }
-    m_infos[node.localId()].setCellIndexes(indexes_ptr);
+    m_infos_view[node.localId()].setCellIndexes(indexes_ptr);
   }
 }
 

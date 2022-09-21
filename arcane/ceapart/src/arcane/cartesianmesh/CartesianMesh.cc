@@ -443,13 +443,13 @@ _computeMeshDirection(CartesianMeshPatch& cdi,eMeshDirection dir,VariableCellRea
   Int32 max_node_id = node_family->maxLocalId();
 
   CellDirectionMng& cell_dm = cdi.cellDirection(dir);
-  cell_dm.m_infos.resize(max_cell_id);
+  cell_dm._internalResizeInfos(max_cell_id);
 
   FaceDirectionMng& face_dm = cdi.faceDirection(dir);
-  face_dm.m_infos.resize(max_face_id);
+  face_dm._internalResizeInfos(max_face_id);
 
   NodeDirectionMng& node_dm = cdi.nodeDirection(dir);
-  node_dm.m_infos.resize(max_node_id);
+  node_dm._internalResizeInfos(max_node_id);
 
   //TODO: attention à remettre à jour après changement de maillage.
   info(4) << "COMPUTE DIRECTION dir=" << dir;
@@ -490,7 +490,7 @@ _computeMeshDirection(CartesianMeshPatch& cdi,eMeshDirection dir,VariableCellRea
       prev_cell = Cell();
     else if (prev_cell.level()!=my_level)
       prev_cell = Cell();
-    cell_dm.m_infos[icell.itemLocalId()] = CellDirectionMng::ItemDirectionInfo(next_cell.localId(),prev_cell.localId());
+    cell_dm.m_infos_view[icell.itemLocalId()] = CellDirectionMng::ItemDirectionInfo(next_cell.localId(),prev_cell.localId());
   }
   cell_dm._internalComputeInnerAndOuterItems(all_cells);
   face_dm._internalComputeInfos(cell_dm,cells_center,faces_center);
