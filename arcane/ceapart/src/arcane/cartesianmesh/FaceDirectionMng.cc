@@ -43,6 +43,7 @@ class FaceDirectionMng::Impl
   FaceGroup m_all_items;
   ICartesianMesh* m_cartesian_mesh = nullptr;
   Integer m_patch_index = -1;
+  UniqueArray<ItemDirectionInfo> m_infos;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -51,19 +52,8 @@ class FaceDirectionMng::Impl
 FaceDirectionMng::
 FaceDirectionMng()
 : m_direction(MD_DirInvalid)
-, m_cells(nullptr)
 , m_p (nullptr)
 {
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-FaceDirectionMng::
-~FaceDirectionMng()
-{
-  // Ne pas détruire le m_p.
-  // Le gestionnnaire le fera via destroy()
 }
 
 /*---------------------------------------------------------------------------*/
@@ -88,6 +78,16 @@ _internalDestroy()
 {
   delete m_p;
   m_p = nullptr;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void FaceDirectionMng::
+_internalResizeInfos(Int32 new_size)
+{
+  m_p->m_infos.resize(new_size);
+  m_infos_view = m_p->m_infos.view();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -254,9 +254,9 @@ _computeCellInfos(const CellDirectionMng& cell_dm,const VariableCellReal3& cells
       }
     }
     if (is_inverse)
-      m_infos[face_lid] = ItemDirectionInfo(back_cell.localId(),front_cell.localId());
+      m_infos_view[face_lid] = ItemDirectionInfo(back_cell.localId(),front_cell.localId());
     else
-      m_infos[face_lid] = ItemDirectionInfo(front_cell.localId(),back_cell.localId());
+      m_infos_view[face_lid] = ItemDirectionInfo(front_cell.localId(),back_cell.localId());
   }
 }
 

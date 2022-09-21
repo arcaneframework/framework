@@ -363,10 +363,8 @@ computeDirections()
   // Positionne les informations par direction
   for( Integer idir=0, nb_dir=mesh()->dimension(); idir<nb_dir; ++idir ){
     CellDirectionMng& cdm = m_all_items_direction_info->cellDirection(idir);
-    cdm.m_global_nb_cell = cmgi->globalNbCells()[idir];
-    cdm.m_own_nb_cell = cmgi->ownNbCells()[idir];
-    cdm.m_sub_domain_offset = cmgi->subDomainOffsets()[idir];
-    cdm.m_own_cell_offset = cmgi->ownCellOffsets()[idir];
+    cdm._internalSetOffsetAndNbCellInfos(cmgi->globalNbCells()[idir], cmgi->ownNbCells()[idir],
+                                         cmgi->subDomainOffsets()[idir], cmgi->ownCellOffsets()[idir]);
   }
 
   info() << "Compute cartesian connectivity";
@@ -443,13 +441,13 @@ _computeMeshDirection(CartesianMeshPatch& cdi,eMeshDirection dir,VariableCellRea
   Int32 max_node_id = node_family->maxLocalId();
 
   CellDirectionMng& cell_dm = cdi.cellDirection(dir);
-  cell_dm.m_infos.resize(max_cell_id);
+  cell_dm._internalResizeInfos(max_cell_id);
 
   FaceDirectionMng& face_dm = cdi.faceDirection(dir);
-  face_dm.m_infos.resize(max_face_id);
+  face_dm._internalResizeInfos(max_face_id);
 
   NodeDirectionMng& node_dm = cdi.nodeDirection(dir);
-  node_dm.m_infos.resize(max_node_id);
+  node_dm._internalResizeInfos(max_node_id);
 
   //TODO: attention à remettre à jour après changement de maillage.
   info(4) << "COMPUTE DIRECTION dir=" << dir;
@@ -490,7 +488,7 @@ _computeMeshDirection(CartesianMeshPatch& cdi,eMeshDirection dir,VariableCellRea
       prev_cell = Cell();
     else if (prev_cell.level()!=my_level)
       prev_cell = Cell();
-    cell_dm.m_infos[icell.itemLocalId()] = CellDirectionMng::ItemDirectionInfo(next_cell.localId(),prev_cell.localId());
+    cell_dm.m_infos_view[icell.itemLocalId()] = CellDirectionMng::ItemDirectionInfo(next_cell.localId(),prev_cell.localId());
   }
   cell_dm._internalComputeInnerAndOuterItems(all_cells);
   face_dm._internalComputeInfos(cell_dm,cells_center,faces_center);

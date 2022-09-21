@@ -10,6 +10,7 @@ set( ARCANE_SOURCES
   NodeDirectionMng.h
   CartesianConnectivity.h
   CartesianMeshRenumberingInfo.h
+  CartesianItemDirectionInfo.h
   CellDirectionMng.h
   FaceDirectionMng.h
   NodeDirectionMng.h

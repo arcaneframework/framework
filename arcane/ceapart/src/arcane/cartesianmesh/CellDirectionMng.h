@@ -20,6 +20,7 @@
 #include "arcane/ItemEnumerator.h"
 
 #include "arcane/cartesianmesh/CartesianMeshGlobal.h"
+#include "arcane/cartesianmesh/CartesianItemDirectionInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -88,13 +89,13 @@ class ARCANE_CARTESIANMESH_EXPORT DirCellNode
   Node previousLeft() const { return m_cell.node(m_nodes_indirection[CNP_PreviousLeft]); }
 
   //! Noeud devant à gauche dans la direction
-  NodeLocalId nextLeftId() const { return NodeLocalId(m_cell.node(m_nodes_indirection[CNP_NextLeft])); }
+  NodeLocalId nextLeftId() const { return NodeLocalId(m_cell.nodeId(m_nodes_indirection[CNP_NextLeft])); }
   //! Noeud devant à droite dans la direction
-  NodeLocalId nextRightId() const { return NodeLocalId(m_cell.node(m_nodes_indirection[CNP_NextRight])); }
+  NodeLocalId nextRightId() const { return NodeLocalId(m_cell.nodeId(m_nodes_indirection[CNP_NextRight])); }
   //! Noeud derrière à droite dans la direction
-  NodeLocalId previousRightId() const { return NodeLocalId(m_cell.node(m_nodes_indirection[CNP_PreviousRight])); }
+  NodeLocalId previousRightId() const { return NodeLocalId(m_cell.nodeId(m_nodes_indirection[CNP_PreviousRight])); }
   //! Noeud derrière à gauche dans la direction
-  NodeLocalId previousLeftId() const { return NodeLocalId(m_cell.node(m_nodes_indirection[CNP_PreviousLeft])); }
+  NodeLocalId previousLeftId() const { return NodeLocalId(m_cell.nodeId(m_nodes_indirection[CNP_PreviousLeft])); }
 
   //! Noeud devant à gauche dans la direction
   Node topNextLeft() const { return m_cell.node(m_nodes_indirection[CNP_TopNextLeft]); }
@@ -106,13 +107,13 @@ class ARCANE_CARTESIANMESH_EXPORT DirCellNode
   Node topPreviousLeft() const { return m_cell.node(m_nodes_indirection[CNP_TopPreviousLeft]); }
 
   //! Noeud devant à gauche dans la direction
-  NodeLocalId topNextLeftId() const { return NodeLocalId(m_cell.node(m_nodes_indirection[CNP_TopNextLeft])); }
+  NodeLocalId topNextLeftId() const { return NodeLocalId(m_cell.nodeId(m_nodes_indirection[CNP_TopNextLeft])); }
   //! Noeud devant à droite dans la direction
-  NodeLocalId topNextRightId() const { return NodeLocalId(m_cell.node(m_nodes_indirection[CNP_TopNextRight])); }
+  NodeLocalId topNextRightId() const { return NodeLocalId(m_cell.nodeId(m_nodes_indirection[CNP_TopNextRight])); }
   //! Noeud derrière à droite dans la direction
-  NodeLocalId topPreviousRightId() const { return NodeLocalId(m_cell.node(m_nodes_indirection[CNP_TopPreviousRight])); }
+  NodeLocalId topPreviousRightId() const { return NodeLocalId(m_cell.nodeId(m_nodes_indirection[CNP_TopPreviousRight])); }
   //! Noeud derrière à gauche dans la direction
-  NodeLocalId topPreviousLeftId() const { return NodeLocalId(m_cell.node(m_nodes_indirection[CNP_TopPreviousLeft])); }
+  NodeLocalId topPreviousLeftId() const { return NodeLocalId(m_cell.nodeId(m_nodes_indirection[CNP_TopPreviousLeft])); }
 
  private:
   
@@ -148,12 +149,12 @@ class ARCANE_CARTESIANMESH_EXPORT DirCellFace
   //! Face connectée à la maille d'après la maille courante dans la direction
   Face next() const { return m_cell.face(m_next_face_index); }
   //! Face connectée à la maille d'après la maille courante dans la direction
-  FaceLocalId nextId() const { return FaceLocalId(next().localId()); }
+  FaceLocalId nextId() const { return m_cell.faceId(m_next_face_index); }
 
   //! Face connectée à la maille d'avant la maille courante dans la direction
   Face previous() const { return m_cell.face(m_previous_face_index); }
   //! Face connectée à la maille d'avant la maille courante dans la direction
-  FaceLocalId previousId() const { return FaceLocalId(previous().localId()); }
+  FaceLocalId previousId() const { return m_cell.faceId(m_previous_face_index); }
 
   //! Indice locale dans la maille de la face next()
   Int32 nextLocalIndex() const { return m_next_face_index; }
@@ -206,29 +207,18 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
 
  private:
 
-  struct ItemDirectionInfo
-  {
-   public:
-    /*!
-     * \brief Constructeur par défaut.
-     * \warning Les valeurs m_next_item et m_previous_item sont initialisées
-     * à nullptr.
-     */
-    ItemDirectionInfo()
-    : m_next_lid(NULL_ITEM_LOCAL_ID), m_previous_lid(NULL_ITEM_LOCAL_ID){}
-    ItemDirectionInfo(Int32 next_id,Int32 prev_id)
-    : m_next_lid(next_id), m_previous_lid(prev_id){}
-   public:
-    //! entité après l'entité courante dans la direction
-    Int32 m_next_lid;
-    //! entité avant l'entité courante dans la direction
-    Int32 m_previous_lid;
-  };
+  using ItemDirectionInfo = impl::CartesianItemDirectionInfo;
+
  public:
-  
-  //! Créé une instance vide. L'instance n'est pas valide tant que init() n'a pas été appelé.
+
+  /*!
+   * \brief Créé une instance vide.
+   *
+   * L'instance n'est pas valide tant que _internalInit() n'a pas été appelé.
+   */
   CellDirectionMng();
-  ~CellDirectionMng();
+
+ public:
 
   //! Maille direction correspondant à la maille \a c.
   DirCell cell(Cell c) const
@@ -244,24 +234,24 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
   //! Maille avec infos directionnelles aux noeuds correspondant à la maille \a c.
   DirCellNode cellNode(Cell c) const
   {
-    return DirCellNode(c,m_nodes_indirection);
+    return DirCellNode(c, m_nodes_indirection);
   }
 
   //! Maille avec infos directionnelles aux noeuds correspondant à la maille \a c.
   DirCellNode cellNode(CellLocalId c) const
   {
-    return DirCellNode(m_cells[c.localId()],m_nodes_indirection);
+    return DirCellNode(m_cells[c.localId()], m_nodes_indirection);
   }
 
   //! Maille avec infos directionnelles aux faces correspondant à la maille \a c.
   DirCellFace cellFace(Cell c) const
   {
-    return DirCellFace(c,m_next_face_index,m_previous_face_index);
+    return DirCellFace(c, m_next_face_index, m_previous_face_index);
   }
   //! Maille avec infos directionnelles aux faces correspondant à la maille \a c.
   DirCellFace cellFace(CellLocalId c) const
   {
-    return DirCellFace(m_cells[c.localId()],m_next_face_index,m_previous_face_index);
+    return DirCellFace(m_cells[c.localId()], m_next_face_index, m_previous_face_index);
   }
 
   //! Groupe de toutes les mailles dans la direction.
@@ -309,7 +299,7 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
    * le SodMeshGenerator ou le CartesianMeshGenerator. Si ce n'est
    * pas le cas, la valeur retournée vaut (-1)
    */
-  Int64 globalNbCell() const { return m_global_nb_cell; }
+  Int64 globalNbCell() const;
 
   /*!
    * \brief Nombre de mailles propres dans cette direction.
@@ -319,7 +309,7 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
    * le SodMeshGenerator ou le CartesianMeshGenerator. Si ce n'est
    * pas le cas, la valeur retournée vaut (-1)
    */
-  Int32 ownNbCell() const { return m_own_nb_cell; }
+  Int32 ownNbCell() const;
 
   /*!
    * \brief Offset dans cette direction du sous-domaine.
@@ -339,7 +329,7 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
    * le CartesianMeshGenerator. Si ce n'est pas le cas,
    * la valeur retournée vaut (-1)
    */
-  Int32 subDomainOffset() const { return m_sub_domain_offset; }
+  Int32 subDomainOffset() const;
 
   /*!
    * \brief Offset dans cette direction de la première maille propre de ce sous-domaine.
@@ -359,16 +349,15 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
    * le CartesianMeshGenerator. Si ce n'est pas le cas,
    * la valeur retournée vaut (-1)
    */
-  Int64 ownCellOffset() const { return m_own_cell_offset; }
+  Int64 ownCellOffset() const;
 
  private:
-  
+
   //! Maille direction correspondant à la maille de numéro local \a local_id
   DirCell _cell(Int32 local_id) const
   {
-    Cell next = m_cells[m_infos[local_id].m_next_lid];
-    Cell prev = m_cells[m_infos[local_id].m_previous_lid];
-    return DirCell(next,prev);
+    ItemDirectionInfo d = m_infos_view[local_id];
+    return DirCell(m_cells[d.m_next_lid], m_cells[d.m_previous_lid]);
   }
 
   void setNodesIndirection(Int32ConstArrayView nodes_indirection);
@@ -386,7 +375,7 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
    * \internal
    * Initialise l'instance.
    */
-  void _internalInit(ICartesianMesh* cm,eMeshDirection dir,Integer patch_index);
+  void _internalInit(ICartesianMesh* cm, eMeshDirection dir, Integer patch_index);
 
   /*!
    * \internal
@@ -398,11 +387,21 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
    * \internal
    * Positionne les indices locaux de la face vers la maille d'après et d'avant.
    */
-  void _internalSetLocalFaceIndex(Int32 next_index,Int32 previous_index)
+  void _internalSetLocalFaceIndex(Int32 next_index, Int32 previous_index)
   {
     m_next_face_index = next_index;
     m_previous_face_index = previous_index;
   }
+
+  /*!
+   * \brief Redimensionne le conteneur contenant les \a ItemDirectionInfo.
+   *
+   * Cela invalide les instances courantes de CellDirectionMng.
+   */
+  void _internalResizeInfos(Int32 new_size);
+
+  void _internalSetOffsetAndNbCellInfos(Int64 global_nb_cell, Int32 own_nb_cell,
+                                        Int32 sub_domain_offset, Int64 own_cell_offset);
 
  public:
 
@@ -414,17 +413,13 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
 
  private:
 
-  SharedArray<ItemDirectionInfo> m_infos;
-  eMeshDirection m_direction;
-  Impl* m_p;
+  SmallSpan<ItemDirectionInfo> m_infos_view;
   CellInfoListView m_cells;
-  Int32 m_nodes_indirection[MAX_NB_NODE];
+  eMeshDirection m_direction;
   Int32 m_next_face_index;
   Int32 m_previous_face_index;
-  Int32 m_sub_domain_offset;
-  Int32 m_own_nb_cell;
-  Int64 m_global_nb_cell;
-  Int64 m_own_cell_offset;
+  Int32 m_nodes_indirection[MAX_NB_NODE];
+  Impl* m_p = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

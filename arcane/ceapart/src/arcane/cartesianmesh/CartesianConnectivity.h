@@ -186,8 +186,8 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianConnectivity
 
   ArrayView<Index> m_nodes_to_cell;
   ArrayView<Index> m_cells_to_node;
-  CellInfoListView m_cells{nullptr};
-  NodeInfoListView m_nodes{nullptr};
+  CellInfoListView m_cells;
+  NodeInfoListView m_nodes;
   
   void _computeInfos2D(IMesh* mesh,VariableNodeReal3& nodes_coord,VariableCellReal3& cells_coord);
   void _computeInfos3D(IMesh* mesh,VariableNodeReal3& nodes_coord,VariableCellReal3& cells_coord);

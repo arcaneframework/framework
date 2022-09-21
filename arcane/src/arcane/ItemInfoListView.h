@@ -132,6 +132,8 @@ class ARCANE_CORE_EXPORT ItemInfoListViewT
 {
  public:
 
+  ItemInfoListViewT() = default;
+
   //! Construit une vue associée à la famille \a family.
   explicit ItemInfoListViewT(IItemFamily* family)
   : ItemInfoListView(family)
@@ -164,6 +166,8 @@ class ARCANE_CORE_EXPORT NodeInfoListView
 
  public:
 
+  NodeInfoListView() = default;
+
   //! Construit une vue associée à la famille \a family.
   explicit NodeInfoListView(IItemFamily* family)
   : BaseClass(family)
@@ -183,6 +187,8 @@ class ARCANE_CORE_EXPORT EdgeInfoListView
   using BaseClass = ItemInfoListViewT<Edge>;
 
  public:
+
+  EdgeInfoListView() = default;
 
   //! Construit une vue associée à la famille \a family.
   explicit EdgeInfoListView(IItemFamily* family)
@@ -204,6 +210,8 @@ class ARCANE_CORE_EXPORT FaceInfoListView
 
  public:
 
+  FaceInfoListView() = default;
+
   //! Construit une vue associée à la famille \a family.
   explicit FaceInfoListView(IItemFamily* family)
   : BaseClass(family)
@@ -223,6 +231,8 @@ class ARCANE_CORE_EXPORT CellInfoListView
   using BaseClass = ItemInfoListViewT<Cell>;
 
  public:
+
+  CellInfoListView() = default;
 
   //! Construit une vue associée à la famille \a family.
   explicit CellInfoListView(IItemFamily* family)
@@ -244,6 +254,8 @@ class ARCANE_CORE_EXPORT ParticleInfoListView
 
  public:
 
+  ParticleInfoListView() = default;
+
   //! Construit une vue associée à la famille \a family.
   explicit ParticleInfoListView(IItemFamily* family)
   : BaseClass(family)
@@ -263,6 +275,8 @@ class ARCANE_CORE_EXPORT DoFInfoListView
   using BaseClass = ItemInfoListViewT<DoF>;
 
  public:
+
+  DoFInfoListView() = default;
 
   //! Construit une vue associée à la famille \a family.
   explicit DoFInfoListView(IItemFamily* family)

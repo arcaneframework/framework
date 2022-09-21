@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NodeDirectionMng.cc                                         (C) 2000-2021 */
+/* NodeDirectionMng.cc                                         (C) 2000-2022 */
 /*                                                                           */
 /* Infos sur les noeuds d'une direction X Y ou Z d'un maillage structuré.    */
 /*---------------------------------------------------------------------------*/
@@ -15,11 +15,11 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/ArcaneTypes.h"
-#include "arcane/cartesianmesh/CartesianMeshGlobal.h"
-
 #include "arcane/Item.h"
 #include "arcane/ItemEnumerator.h"
 #include "arcane/VariableTypedef.h"
+
+#include "arcane/cartesianmesh/CartesianMeshGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -66,11 +66,11 @@ class ARCANE_CARTESIANMESH_EXPORT DirNode
   //! Maille avant
   Node previous() const { return m_previous; }
   //! Maille avant
-  NodeLocalId previousId() const { return NodeLocalId(m_previous.localId()); }
+  NodeLocalId previousId() const { return m_previous.itemLocalId(); }
   //! Maille après
   Node next() const { return m_next; }
   //! Maille après
-  NodeLocalId nextId() const { return NodeLocalId(m_next.localId()); }
+  NodeLocalId nextId() const { return m_next.itemLocalId(); }
   /*!
    * \brief Indice dans la liste des mailles de ce noeud d'une
    * maille en fonction de sa position.
@@ -166,35 +166,48 @@ class ARCANE_CARTESIANMESH_EXPORT NodeDirectionMng
   struct ItemDirectionInfo
   {
    public:
+
     /*!
      * \brief Constructeur par défaut.
      * \warning Les valeurs m_next_item et m_previous_item sont initialisées
      * à nullptr.
      */
     ItemDirectionInfo()
-    : m_next_lid(NULL_ITEM_LOCAL_ID), m_previous_lid(NULL_ITEM_LOCAL_ID){}
-    ItemDirectionInfo(Int32 next_lid,Int32 prev_lid)
-    : m_next_lid(next_lid), m_previous_lid(prev_lid){}
+    : m_next_lid(NULL_ITEM_LOCAL_ID)
+    , m_previous_lid(NULL_ITEM_LOCAL_ID)
+    {}
+    ItemDirectionInfo(Int32 next_lid, Int32 prev_lid)
+    : m_next_lid(next_lid)
+    , m_previous_lid(prev_lid)
+    {}
+
    public:
+
     //! entité après l'entité courante dans la direction
     Int32 m_next_lid;
     //! entité avant l'entité courante dans la direction
     Int32 m_previous_lid;
+
    public:
+
     void setCellIndexes(IndexType idx[8])
     {
-      for( int i=0; i<8; ++i )
+      for (int i = 0; i < 8; ++i)
         m_cell_index[i] = idx[i];
     }
     DirNodeCellIndex m_cell_index;
   };
+
  public:
-  
-  //! Créé une instance vide. L'instance n'est pas valide tant que init() n'a pas été appelé.
+
+  /*!
+   * \brief Créé une instance vide.
+   *
+   * L'instance n'est pas valide tant que _internalInit() n'a pas été appelé.
+   */
   NodeDirectionMng();
-  NodeDirectionMng(const NodeDirectionMng& rhs);
-  ~NodeDirectionMng();
-  NodeDirectionMng& operator=(const NodeDirectionMng& rhs);
+
+ public:
 
   //! Noeud direction correspondant au noeud \a n
   DirNode node(Node n) const
@@ -260,14 +273,14 @@ class ARCANE_CARTESIANMESH_EXPORT NodeDirectionMng
    * gérées par \a cell_dm.
    * Suppose que init() a été appelé.
    */
-  void _internalComputeInfos(const CellDirectionMng& cell_dm,const NodeGroup& all_nodes,
+  void _internalComputeInfos(const CellDirectionMng& cell_dm, const NodeGroup& all_nodes,
                              const VariableCellReal3& cells_center);
 
   /*!
    * \internal
    * Initialise l'instance.
    */
-  void _internalInit(ICartesianMesh* cm,eMeshDirection dir,Integer patch_index);
+  void _internalInit(ICartesianMesh* cm, eMeshDirection dir, Integer patch_index);
 
   /*!
    * \internal
@@ -275,27 +288,32 @@ class ARCANE_CARTESIANMESH_EXPORT NodeDirectionMng
    */
   void _internalDestroy();
 
+  /*!
+   * \brief Redimensionne le conteneur contenant les \a ItemDirectionInfo.
+   *
+   * Cela invalide les instances courantes de NodeDirectionMng.
+   */
+  void _internalResizeInfos(Int32 new_size);
+
  private:
 
-  SharedArray<ItemDirectionInfo> m_infos;
-  eMeshDirection m_direction;
+  SmallSpan<ItemDirectionInfo> m_infos_view;
   NodeInfoListView m_nodes;
+  eMeshDirection m_direction;
   Impl* m_p;
 
  private:
-  
+
   //! Noeud direction correspondant au noeud de numéro local \a local_id
   DirNode _node(Int32 local_id) const
   {
-    Node next = m_nodes[m_infos[local_id].m_next_lid];
-    Node prev = m_nodes[m_infos[local_id].m_previous_lid];
-    return DirNode(m_nodes[local_id],next,prev,m_infos[local_id].m_cell_index);
+    ItemDirectionInfo d = m_infos_view[local_id];
+    return DirNode(m_nodes[local_id], m_nodes[d.m_next_lid], m_nodes[d.m_previous_lid], d.m_cell_index);
   }
 
   void _computeNodeCellInfos(const CellDirectionMng& cell_dm,
                              const VariableCellReal3& cells_center);
   void _filterNodes();
-  void _initNodes();
 };
 
 /*---------------------------------------------------------------------------*/
