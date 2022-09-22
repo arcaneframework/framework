@@ -265,6 +265,7 @@ jobs:
             -GNinja \
             -DCMAKE_CXX_FLAGS_RELEASE="-O2" \
             -DCMAKE_VERBOSE_MAKEFILE=TRUE \
+            -DCMAKE_DISABLE_FIND_PACKAGE_Papi=TRUE \
             -DCMAKE_BUILD_TYPE=<<pipeline.parameters.CM_BUILD_TYPE>> \
             -DBUILD_SHARED_LIBS=TRUE \
             -DARCANE_DEFAULT_PARTITIONER=Metis \
@@ -449,7 +450,7 @@ jobs:
           # pas positionner les exceptions flottantes.
           command: |
             mkdir -p <<pipeline.parameters.CT_RESULT_DIR>>
-            ctest --test-dir <<pipeline.parameters.BUILD_DIR>> --output-junit <<pipeline.parameters.CT_RESULT_DIR>>/results.xml <<pipeline.parameters.CT_OPTS>> -E '<<pipeline.parameters.CT_REGEX_QUICK>>'
+            ctest --test-dir <<pipeline.parameters.BUILD_DIR>> --output-junit <<pipeline.parameters.CT_RESULT_DIR>>/results.xml <<pipeline.parameters.CT_OPTS>> -E '<<pipeline.parameters.CT_REGEX_ARM>>'
 
       # https://www.ibm.com/docs/en/developer-for-zos/9.1.1?topic=formats-junit-xml-format
       - run:
