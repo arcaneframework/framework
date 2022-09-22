@@ -70,9 +70,9 @@ jobs:
         shell: bash
         run: find . -name "*.o" -exec gcov-12 {} \;
 
-      - name: Remove generated axl headers
+      - name: Remove generated axl headers and wrap
         shell: bash
-        run: rm -f *_axl.h.gcov
+        run: rm -f *_axl.h.gcov *_wrap.*.gcov
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
