@@ -634,7 +634,7 @@ workflows:
   # dev/gg-highci-truc
   # dev/al-highci-truc
   # &c
-  push-or-pr-in-main-or-highci:
+  push-in-main-or-highci:
     jobs:
       - build-and-test:
           filters:
