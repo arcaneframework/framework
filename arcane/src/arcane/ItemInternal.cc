@@ -162,7 +162,7 @@ whichChildAmI(const ItemInternal *iitem) const
 /*---------------------------------------------------------------------------*/
 
 ItemInternalVectorView impl::ItemBase::
-activeCells(Int32Array& local_ids) const
+_internalActiveCells(Int32Array& local_ids) const
 {
   const Integer nbcell = this->nbCell();
   for(Integer icell = 0 ; icell < nbcell ; ++icell) {
@@ -173,39 +173,6 @@ activeCells(Int32Array& local_ids) const
     }
   }
   return ItemInternalVectorView(m_shared_info->m_items->m_cell_shared_info,local_ids);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ItemInternalVectorView impl::ItemBase::
-activeFaces(Int32Array& local_ids) const
-{
-  const Integer nbface = this->nbFace();
-  for(Integer iface = 0 ; iface < nbface ; ++iface) {
-    ItemBase face = this->faceBase(iface);
-    if (!face.isBoundary()){
-      ItemBase bcell = face.backCell();
-      ItemBase fcell = face.frontCell();
-      if ( (!bcell.null() && bcell.isActive()) && (!fcell.null() && fcell.isActive()) )
-        local_ids.add(face.localId());
-    }
-    else{
-      ItemBase bcell = face.boundaryCell();
-      if ( (!bcell.null() && bcell.isActive()) )
-        local_ids.add(face.localId());
-    }
-  }
-  return ItemInternalVectorView(m_shared_info->m_items->m_face_shared_info,local_ids);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ItemInternalVectorView impl::ItemBase::
-activeEdges() const
-{
-	ARCANE_THROW(NotImplementedException,"Active edges group not yet implemented");
 }
 
 /*---------------------------------------------------------------------------*/
