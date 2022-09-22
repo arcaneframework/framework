@@ -650,9 +650,7 @@ class ARCANE_CORE_EXPORT ItemBase
 
   inline ItemInternal* itemInternal() const;
 
-  ItemInternalVectorView activeCells(Int32Array& local_ids) const;
-  ItemInternalVectorView activeFaces(Int32Array& local_ids) const;
-  ItemInternalVectorView activeEdges() const;
+  ItemInternalVectorView _internalActiveCells(Int32Array& local_ids) const;
 
   ItemBase topHParentBase() const;
 

@@ -671,7 +671,7 @@ _computeMeshConnectivityInfos2(Int32ConstArrayView cells_new_owner)
 
     for( NodeEnumerator inode(cell.nodes()); inode.hasNext(); ++inode ){
       Int32UniqueArray local_ids;
-      for( CellEnumerator icell2((*inode).activeCells(local_ids)); icell2.hasNext(); ++icell2 ){
+      for( CellEnumerator icell2((*inode)._internalActiveCells(local_ids)); icell2.hasNext(); ++icell2 ){
         Integer cell2_local_id = icell2.localId();
         Integer cell2_new_owner = cells_new_owner[cell2_local_id];
         Integer cell2_owner = icell2->owner();

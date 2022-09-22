@@ -490,21 +490,9 @@ class ARCANE_CORE_EXPORT Node
   // AMR
 
   //! Enumére les mailles connectées au noeud
-  CellVectorView activeCells(Int32Array& local_ids) const
+  CellVectorView _internalActiveCells(Int32Array& local_ids) const
   {
-    return ItemBase::activeCells(local_ids);
-  }
-
-  //! Enumére les faces connectées au noeud
-  FaceVectorView activeFaces(Int32Array& local_ids) const
-  {
-    return ItemBase::activeFaces(local_ids);
-  }
-
-  //! Enumére les arêtes connectées au noeud
-  EdgeVectorView activeEdges() const
-  {
-    return ItemBase::activeEdges();
+    return ItemBase::_internalActiveCells(local_ids);
   }
 
   ARCANE_DEPRECATED_REASON("Y2022: Do not use this operator. Use operator '.' instead")
