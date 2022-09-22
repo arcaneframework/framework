@@ -634,7 +634,7 @@ workflows:
   # dev/gg-highci-truc
   # dev/al-highci-truc
   # &c
-  build-and-test:
+  push-or-pr-in-main-or-highci:
     jobs:
       - build-and-test:
           filters:
@@ -644,12 +644,12 @@ workflows:
                 - /dev\/[a-z]+-highci-.*/
 
   # WF exécuté à chaque push.
-  build-and-test-quick:
+  every-push:
     jobs:
       - build-and-test-quick
 
   # WFs exécutés tous les jours.
-  build_and_test_everyday:
+  every-day:
     triggers: #use the triggers key to indicate a scheduled build
       - schedule:
           cron: "23 1 * * *" # Tous les jours à 01:23 (du matin).
@@ -661,7 +661,7 @@ workflows:
       - arm-build-and-test
       - build-and-test
 
-  # build_and_test_cuda:
+  # cuda:
   #   triggers: #use the triggers key to indicate a scheduled build
   #     - schedule:
   #         cron: "23 1 * * *" # Tous les jours à 01:23 (du matin).
