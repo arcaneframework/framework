@@ -71,17 +71,19 @@ jobs:
             type_args: '-DCMAKE_BUILD_TYPE=Release
               -DARCCORE_BUILD_MODE=Check
               -DARCANE_BUILD_TYPE=Check'
-            ## Désactivation des tests avec 'mpithread' dans leur nom.
             ## Désactivation des tests avec '[>=3]proc' dans leur nom.
             ## Désactivation des tests avec '[>=5]thread' dans leur nom.
-            type_excl_tests: '^.*(mpithread|[3-9]proc|[1-9][0-9]+proc|[5-9]thread|[1-9][0-9]+thread).*$'
+            type_excl_tests: '^.*([3-9]proc|[1-9][0-9]+proc|[5-9]thread|[1-9][0-9]+thread).*$'
+            ## Désactivation des tests ayant le label LARGE_HYBRID.
+            type_excl_labels_tests: 'LARGE_HYBRID'
 
           - type: 'Debug'
             type_args: '-DCMAKE_BUILD_TYPE=Debug
               -DARCCORE_BUILD_MODE=Debug
               -DARCANE_BUILD_TYPE=Debug'
-            ## Désactivation des tests avec '4mpithread' dans leur nom.
-            type_excl_tests: '^.*_4mpithread$'
+            type_excl_tests: ''
+            ## Désactivation des tests ayant le label LARGE_HYBRID.
+            type_excl_labels_tests: 'LARGE_HYBRID'
 
 
     name: '[${{matrix.image_short}}_${{matrix.version_short}}]_Rand_${{matrix.compilo_name}}_${{matrix.type}}'
@@ -147,7 +149,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p ${{ env.CT_RESULT_DIR }}
-          ctest --test-dir ${{ env.BUILD_DIR }} --output-junit ${{ env.CT_RESULT_DIR }}/results.xml ${{ env.CT_OPTS }} -E '${{matrix.type_excl_tests}}'
+          ctest --test-dir ${{ env.BUILD_DIR }} --output-junit ${{ env.CT_RESULT_DIR }}/results.xml ${{ env.CT_OPTS }} -E '${{matrix.type_excl_tests}}' -LE '${{matrix.type_excl_labels_tests}}'
 
       - name: Upload test artifact
         uses: actions/upload-artifact@v2
