@@ -16,10 +16,7 @@ env:
   CT_RESULT_DIR: '/__w/framework/framework/test'
   CT_OPTS: "--timeout 300 --output-on-failure"
 
-  ## Désactivation des tests avec 'mpithread' dans leur nom.
-  ## Désactivation des tests avec '[>=3]proc' dans leur nom.
-  ## Désactivation des tests avec '[>=5]thread' dans leur nom.
-  CT_REGEX: "^.*(mpithread|[3-9]proc|[1-9][0-9]+proc|[5-9]thread|[1-9][0-9]+thread).*$"
+  CT_REGEX: "^.*_4mpithread$"
 
   # MPI
   OMPI_ALLOW_RUN_AS_ROOT: 1
@@ -70,9 +67,13 @@ jobs:
         shell: bash
         run: find . -name "*.o" -exec gcov-12 {} \;
 
-      - name: Remove generated axl headers
+      # - name: Remove generated axl headers and wrap
+      #   shell: bash
+      #   run: rm -f *_axl.h.gcov *_wrap.*.gcov
+
+      - name: Remove gcov headers
         shell: bash
-        run: rm -f *_axl.h.gcov
+        run: rm -f *.h.gcov
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
