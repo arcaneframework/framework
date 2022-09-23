@@ -136,22 +136,61 @@ macro(ARCANE_ADD_TEST_PARALLEL_THREAD test_name case_file nb_proc)
   endif()
 endmacro()
 
+# Ajoute un test message_passing en mode hybride (MPI+SHM).
+# Le test n'est ajouté que si le mode hybride est disponible.
+#
+# Usage:
+#
+# arcane_add_test_message_passing_hybrid(test_name
+#    [CASE_FILE case_file]
+#    NB_MPI nb_mpi
+#    NB_SHM nb_shm
+#    [ARGS args]
+# )
+function(arcane_add_test_message_passing_hybrid test_name)
+  set(options        )
+  set(oneValueArgs   NB_MPI NB_SHM CASE_FILE)
+  set(multiValueArgs ARGS)
+
+  cmake_parse_arguments(ARGS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  message(VERBOSE "    ADD TEST1 MessagePassing Hybrid OPT=${test_name} ${ARGS_CASE_NAME} nb_mpi=${ARGS_NB_MPI} nb_shm=${ARGS_NB_SHM}")
+
+  if (NOT ARGS_NB_MPI)
+    message(FATAL_ERROR "Missing argument 'NB_MPI'")
+  endif()
+  if (NOT ARGS_NB_SHM)
+    message(FATAL_ERROR "Missing argument 'NB_SHM'")
+  endif()
+  set(nb_proc ${ARGS_NB_MPI})
+  set(nb_thread ${ARGS_NB_SHM})
+
+  if(NOT TARGET arcane_mpithread)
+    return()
+  endif()
+  # L'argument CASE_FILE peut être nul
+  if (ARGS_CASE_FILE)
+    arcane_get_case_path(${ARGS_CASE_FILE})
+  else()
+    set(full_case_file "")
+  endif()
+  set(_arcane_test_name ${test_name}_hybrid_${nb_proc}_${nb_thread}_mpithread)
+  arcane_add_test_direct(NAME ${_arcane_test_name}
+    COMMAND ${ARCANE_TEST_LAUNCH_COMMAND} -n ${nb_proc} -T ${nb_thread} ${ARGS_ARGS} ${full_case_file}
+    WORKING_DIRECTORY ${ARCANE_TEST_WORKDIR})
+  # Calcule le nombre de coeurs pour ce test
+  math(EXPR _total_nb_proc "${nb_thread} * ${nb_proc}")
+  set_tests_properties(${_arcane_test_name} PROPERTIES PROCESSORS ${nb_proc})
+  # Ajoute un lable 'LARGE_HYBRID' si le test dépasse 4 PE. Cela permet de le désactiver
+  # Dans certains workflows du CI
+  if (${_total_nb_proc} GREATER "4")
+    set_tests_properties(${_arcane_test_name} PROPERTIES LABELS LARGE_HYBRID)
+  endif()
+endfunction()
+
 # Ajoute un test parallele avec MPI+threads
 macro(ARCANE_ADD_TEST_PARALLEL_MPITHREAD test_name case_file nb_proc nb_thread)
-  if(TARGET arcane_mpithread)
-    if(VERBOSE)
-      message(STATUS "    ADD TEST MPITHREAD OPT=${test_name} ${case_file}")
-    endif()
-    ARCANE_GET_CASE_PATH(${case_file})
-    set(_arcane_test_name ${test_name}_${nb_proc}_${nb_thread}_mpithread)
-    arcane_add_test_direct(NAME ${_arcane_test_name}
-      COMMAND ${ARCANE_TEST_LAUNCH_COMMAND} -n ${nb_proc} -T ${nb_thread} ${ARGN} ${full_case_file}
-      WORKING_DIRECTORY ${ARCANE_TEST_WORKDIR})
-    # Calcule le nombre de coeurs pour ce test
-    math(EXPR _total_nb_proc "${nb_thread} * ${nb_proc}")
-    message(STATUS "NB_PROC=${_total_nb_proc}")
-    set_tests_properties(${_arcane_test_name} PROPERTIES PROCESSORS ${nb_proc})
-  endif()
+  arcane_add_test_message_passing_hybrid(${test_name} CASE_FILE ${case_file} NB_SHM ${nb_thread} NB_MPI ${nb_proc})
 endmacro()
 
 # Ajoute un test avec tous les mécanismes d'échange de message

@@ -309,9 +309,6 @@ endif()
 
 # Macro pour tester le message_passing
 macro(add_test_message_passing test_name)
-  #if (NOT DEFINED test_name)
-  #  message(FATAL_ERROR "null test_name '${test_name}' for add_message_passing_test")
-  #endif()
   set(_OPTS -We,MESSAGE_PASSING_TEST,${test_name} -arcane_opt direct_test ParallelMngTest null)
   set(_TEST_NAME parallelmng_${test_name})
   add_test(${_TEST_NAME}_seq ${ARCANE_TEST_DRIVER} launch ${_OPTS})
@@ -319,9 +316,7 @@ macro(add_test_message_passing test_name)
     add_test(${_TEST_NAME}_4proc ${ARCANE_TEST_DRIVER} launch -n 4 ${_OPTS})
   endif()
   add_test(${_TEST_NAME}_4thread ${ARCANE_TEST_DRIVER} launch -T 4 ${_OPTS})
-  if(TARGET arcane_mpithread)
-    add_test(${_TEST_NAME}_4mpithread ${ARCANE_TEST_DRIVER} launch -n 3 -T 4 ${_OPTS})
-  endif()
+  arcane_add_test_message_passing_hybrid(${_TEST_NAME} NB_MPI 3 NB_SHM 4 ARGS ${_OPTS})
 endmacro()
 
 add_test_message_passing(serialize)
@@ -338,12 +333,9 @@ add_test_message_passing(broadcast_serializer)
 add_test_message_passing(all)
 add_test_message_passing(sub_all)
 
-# Pour la converture de test, lance les tests en mode hybrid mais avec uniquement
-# 4 coeurs
-if(TARGET arcane_mpithread)
-  add_test(parallelmng_all_hybrid4 ${ARCANE_TEST_DRIVER} launch -n 2 -T 2 -We,MESSAGE_PASSING_TEST,all -arcane_opt direct_test ParallelMngTest null)
-  add_test(parallelmng_sub_all_hybrid4 ${ARCANE_TEST_DRIVER} launch -n 2 -T 2 -We,MESSAGE_PASSING_TEST,sub_all -arcane_opt direct_test ParallelMngTest null)
-endif()
+# Pour la converture de test, lance les tests en mode hybrid mais avec uniquement 4 coeurs
+arcane_add_test_message_passing_hybrid(parallelmng_all NB_MPI 2 NB_SHM 2 ARGS -We,MESSAGE_PASSING_TEST,all -arcane_opt direct_test ParallelMngTest null)
+arcane_add_test_message_passing_hybrid(parallelmng_sub_all NB_MPI 2 NB_SHM 2 ARGS -We,MESSAGE_PASSING_TEST,all -arcane_opt direct_test ParallelMngTest null)
 
 add_test(serialize_message_list_v2_4proc
   ${ARCANE_TEST_DRIVER} launch -n 4
