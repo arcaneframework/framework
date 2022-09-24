@@ -118,6 +118,7 @@ initializeTest()
 void AcceleratorReduceUnitTest::
 executeTest()
 {
+  _executeTestDataType<Int64>();
   _executeTestDataType<Int32>();
   _executeTestDataType<double>();
 }
