@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Reduce.h                                                    (C) 2000-2021 */
+/* Reduce.h                                                    (C) 2000-2022 */
 /*                                                                           */
 /* Gestion des réductions pour les accélérateurs.                            */
 /*---------------------------------------------------------------------------*/
@@ -42,6 +42,7 @@ using namespace Arccore;
 
 namespace impl
 {
+
 template<typename DataType>
 class ReduceIdentity;
 template<>
@@ -54,17 +55,62 @@ class ReduceIdentity<double>
   ARCCORE_HOST_DEVICE static constexpr double maxValue() { return -DBL_MAX; }
 };
 template<>
-class ReduceIdentity<int>
+class ReduceIdentity<Int32>
 {
  public:
-  ARCCORE_HOST_DEVICE static constexpr int sumValue() { return 0; }
-  ARCCORE_HOST_DEVICE static constexpr int minValue() { return INT_MAX; }
-  ARCCORE_HOST_DEVICE static constexpr int maxValue() { return -INT_MAX; }
+  ARCCORE_HOST_DEVICE static constexpr Int32 sumValue() { return 0; }
+  ARCCORE_HOST_DEVICE static constexpr Int32 minValue() { return INT32_MAX; }
+  ARCCORE_HOST_DEVICE static constexpr Int32 maxValue() { return -INT32_MAX; }
+};
+template<>
+class ReduceIdentity<Int64>
+{
+ public:
+  ARCCORE_HOST_DEVICE static constexpr Int64 sumValue() { return 0; }
+  ARCCORE_HOST_DEVICE static constexpr Int64 minValue() { return INT64_MAX; }
+  ARCCORE_HOST_DEVICE static constexpr Int64 maxValue() { return -INT64_MAX; }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 // L'implémentation utilisée est définie dans 'CudaReduceImpl.h'
+
+template<typename DataType>
+class ReduceAtomicSum;
+
+template<>
+class ReduceAtomicSum<double>
+{
+ public:
+  static double apply(std::atomic<double>* ptr,double v)
+  {
+    double old = ptr->load(std::memory_order_consume);
+    double wanted = old + v;
+    while (!ptr->compare_exchange_weak(old,wanted,std::memory_order_release,std::memory_order_consume))
+      wanted = old + v;
+    return wanted;
+  }
+};
+template<>
+class ReduceAtomicSum<Int64>
+{
+ public:
+  static Int64 apply(std::atomic<Int64>* ptr,Int64 v)
+  {
+    Int64 x = std::atomic_fetch_add(ptr,v);
+    return x+v;
+  }
+};
+template<>
+class ReduceAtomicSum<Int32>
+{
+ public:
+  static Int32 apply(std::atomic<Int32>* ptr,Int32 v)
+  {
+    Int32 x = std::atomic_fetch_add(ptr,v);
+    return x+v;
+  }
+};
 
 template<typename DataType>
 class ReduceFunctorSum
@@ -78,8 +124,7 @@ class ReduceFunctorSum
   }
   static DataType apply(std::atomic<DataType>* ptr,DataType v)
   {
-    *ptr = *ptr + v;
-    return *ptr;
+    return ReduceAtomicSum<DataType>::apply(ptr,v);
   }
  public:
   ARCCORE_HOST_DEVICE static constexpr
@@ -177,6 +222,7 @@ class Reducer
   Reducer(RunCommand& command)
   : m_managed_memory_value(&m_local_value), m_command(&command)
   {
+    //std::cout << String::format("Reduce main host this={0}\n",this); std::cout.flush();
     m_is_master_instance = true;
     m_identity = ReduceFunctor::identity();
     m_local_value = m_identity;
@@ -198,10 +244,15 @@ class Reducer
     //  printf("Create ref device Id=%d parent=%p\n",threadId,&rhs);
 #else
     m_parent_value = rhs.m_parent_value;
+    m_local_value = rhs.m_identity;
+    //std::cout << String::format("Reduce copy host  this={0} parent_value={1} rhs={2}\n",this,(void*)m_parent_value,&rhs); std::cout.flush();
+    //if (!rhs.m_is_master_instance)
+    //ARCANE_FATAL("Only copy from master instance is allowed");
     //printf("Create ref host parent_value=%p this=%p rhs=%p\n",(void*)m_parent_value,(void*)this,(void*)&rhs);
 #endif
   }
-  ARCCORE_HOST_DEVICE Reducer(Reducer&& rhs)
+  ARCCORE_HOST_DEVICE Reducer(Reducer&& rhs) = delete;
+#if 0
   : m_managed_memory_value(rhs.m_managed_memory_value), m_local_value(rhs.m_local_value), m_identity(rhs.m_identity)
   {
 #ifdef ARCCORE_DEVICE_CODE
@@ -211,9 +262,13 @@ class Reducer
     //printf("Create && host = %p\n",((void*)this));
     //#if TEST_PARENT
     m_parent_value = rhs.m_parent_value;
+    rhs.m_local_value = rhs.m_identity;
     //#endif
 #endif
   }
+#endif
+
+  Reducer& operator=(const Reducer& rhs) = delete;
 
   ARCCORE_HOST_DEVICE ~Reducer()
   {
@@ -225,6 +280,8 @@ class Reducer
 #else
     //      printf("Destroy host parent_value=%p this=%p\n",(void*)m_parent_value,(void*)this);
     // Code hôte
+    //std::cout << String::format("Reduce destructor this={0} parent_value={1} v={2}\n",this,(void*)m_parent_value,m_local_value);
+    //std::cout.flush();
     if (!m_is_master_instance)
       ReduceFunctor::apply(m_parent_value,m_local_value);
 
@@ -251,9 +308,16 @@ class Reducer
     // par la mémoire unifiée, il n'est pas possible d'y accéder tant que
     // le CPU est en train de le faire.
     if (m_parent_value){
-      //std::cout << "Reduce host p=" << this << " local_value=" << m_local_value << " v=" << *m_parent_value << "\n";
+      //std::cout << String::format("Reduce host has parent this={0} local_value={1} parent_value={2}\n",
+      //                            this,m_local_value,*m_parent_value);
+      //std::cout.flush();
       ReduceFunctor::apply(m_parent_value,*m_managed_memory_value);
       *m_managed_memory_value = *m_parent_value;
+    }
+    else{
+      //std::cout << String::format("Reduce host no parent this={0} local_value={1} managed={2}\n",
+      //                            this,m_local_value,*m_managed_memory_value);
+      //std::cout.flush();
     }
     return *m_managed_memory_value;
   }
