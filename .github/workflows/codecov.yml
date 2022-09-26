@@ -16,7 +16,7 @@ env:
   CT_RESULT_DIR: '/__w/framework/framework/test'
   CT_OPTS: "--timeout 300 --output-on-failure"
 
-  CT_REGEX: "^.*_4mpithread$"
+  CT_EXCLUED_LABELS: "LARGE_HYBRID"
 
   # MPI
   OMPI_ALLOW_RUN_AS_ROOT: 1
@@ -35,6 +35,18 @@ jobs:
         with:
           path: ${{ env.SOURCE_DIR }}
           submodules: true
+
+      - name: Get date
+        id: get-date
+        shell: bash
+        run: echo "::set-output name=date::$(/bin/date -u '+%Y%m%d%H%M%S')"
+
+      - name: Get cache for ccache tool
+        uses: actions/cache@v2
+        with:
+          path: ${{env.CCACHE_DIR}}
+          key: codecov-${{ steps.get-date.outputs.date }}-${{ github.run_number }}
+          restore-keys: codecov-
 
       - name: Configure
         shell: 'bash'
@@ -61,7 +73,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p ${{ env.CT_RESULT_DIR }}
-          ARCANE_CHECK=1 ctest --test-dir ${{ env.BUILD_DIR }} --output-junit ${{ env.CT_RESULT_DIR }}/results.xml ${{ env.CT_OPTS }} -E '${{ env.CT_REGEX }}'
+          ARCANE_CHECK=1 ctest --test-dir ${{ env.BUILD_DIR }} --output-junit ${{ env.CT_RESULT_DIR }}/results.xml ${{ env.CT_OPTS }} -LE '${{ env.CT_EXCLUED_LABELS }}'
 
       - name: Apply coverage
         shell: bash
@@ -73,7 +85,7 @@ jobs:
 
       - name: Remove gcov headers
         shell: bash
-        run: rm -f *.h.gcov
+        run: rm -f *.h.gcov *_wrap.*.gcov
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
@@ -87,3 +99,7 @@ jobs:
           name: codecov-test-artifact
           path: ${{ env.CT_RESULT_DIR }}
           retention-days: 7
+
+      - name: Get ccache status
+        shell: bash
+        run: ccache -s -v

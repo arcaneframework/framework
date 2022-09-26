@@ -68,14 +68,17 @@ jobs:
           #   type_args: '-DCMAKE_BUILD_TYPE=Release
           #     -DARCCORE_BUILD_MODE=Check
           #     -DARCANE_BUILD_TYPE=Check'
-          #   type_excl_tests: '^.*([2-9][_]*mpithread|[1-9][0-9]+[_]*mpithread|[3-9]proc|[1-9][0-9]+proc).*$'
+          #   type_excl_tests: '^.*([3-9]proc|[1-9][0-9]+proc).*$'
+          ## Désactivation des tests ayant le label LARGE_HYBRID.
+          #   type_excl_labels_tests: 'LARGE_HYBRID'
 
           - type: 'Debug'
             type_args: '-DCMAKE_BUILD_TYPE=Debug
               -DARCCORE_BUILD_MODE=Debug
               -DARCANE_BUILD_TYPE=Debug'
-            ## Désactivation des tests avec '4mpithread' dans leur nom.
-            type_excl_tests: '^.*_4mpithread$'
+            type_excl_tests: ''
+            ## Désactivation des tests ayant le label LARGE_HYBRID.
+            type_excl_labels_tests: 'LARGE_HYBRID'
 
     name: '[${{matrix.image_short}}_${{matrix.version_short}}]_AiO_${{matrix.compilo_name}}_${{matrix.type}}'
     runs-on: ubuntu-latest
@@ -131,7 +134,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p ${{ env.CT_RESULT_DIR }}
-          ctest --test-dir ${{ env.BUILD_DIR }} --output-junit ${{ env.CT_RESULT_DIR }}/results.xml ${{ env.CT_OPTS }} -E '${{matrix.type_excl_tests}}'
+          ctest --test-dir ${{ env.BUILD_DIR }} --output-junit ${{ env.CT_RESULT_DIR }}/results.xml ${{ env.CT_OPTS }} -E '${{matrix.type_excl_tests}}' -LE '${{matrix.type_excl_labels_tests}}'
 
       - name: Upload test artifact
         uses: actions/upload-artifact@v2
@@ -185,14 +188,17 @@ jobs:
           #   type_args: '-DCMAKE_BUILD_TYPE=Release
           #     -DARCCORE_BUILD_MODE=Check
           #     -DARCANE_BUILD_TYPE=Check'
-          #   type_excl_tests: '^.*([2-9][_]*mpithread|[1-9][0-9]+[_]*mpithread|[3-9]proc|[1-9][0-9]+proc).*$'
+          #   type_excl_tests: '^.*([3-9]proc|[1-9][0-9]+proc).*$'
+          ## Désactivation des tests ayant le label LARGE_HYBRID.
+          #   type_excl_labels_tests: 'LARGE_HYBRID'
 
           - type: 'Debug'
             type_args: '-DCMAKE_BUILD_TYPE=Debug
               -DARCCORE_BUILD_MODE=Debug
               -DARCANE_BUILD_TYPE=Debug'
-            ## Désactivation des tests avec '4mpithread' dans leur nom.
-            type_excl_tests: '^.*_4mpithread$'
+            type_excl_tests: ''
+            ## Désactivation des tests ayant le label LARGE_HYBRID.
+            type_excl_labels_tests: 'LARGE_HYBRID'
 
 
     name: '[${{matrix.image_short}}_${{matrix.version_short}}]_Split_${{matrix.compilo_name}}_${{matrix.type}}'
@@ -349,11 +355,11 @@ jobs:
         shell: bash
         run: |
           mkdir -p ${{ env.CT_RESULT_DIR }}
-          ctest --test-dir ${{ env.BUILD_DIR }}/arccore --output-junit ${{ env.CT_RESULT_DIR }}/results_arccore.xml ${{ env.CT_OPTS }} -E '${{matrix.type_excl_tests}}'
+          ctest --test-dir ${{ env.BUILD_DIR }}/arccore --output-junit ${{ env.CT_RESULT_DIR }}/results_arccore.xml ${{ env.CT_OPTS }} -E '${{matrix.type_excl_tests}}' -LE '${{matrix.type_excl_labels_tests}}'
 
       - name: Test arcane
         shell: bash
-        run: ctest --test-dir ${{ env.BUILD_DIR }}/arcane --output-junit ${{ env.CT_RESULT_DIR }}/results_arcane.xml ${{ env.CT_OPTS }} -E '${{matrix.type_excl_tests}}'
+        run: ctest --test-dir ${{ env.BUILD_DIR }}/arcane --output-junit ${{ env.CT_RESULT_DIR }}/results_arcane.xml ${{ env.CT_OPTS }} -E '${{matrix.type_excl_tests}}' -LE '${{matrix.type_excl_labels_tests}}'
 
       - name: Upload test artifact
         uses: actions/upload-artifact@v2
@@ -407,14 +413,17 @@ jobs:
           #   type_args: '-DCMAKE_BUILD_TYPE=Release
           #     -DARCCORE_BUILD_MODE=Check
           #     -DARCANE_BUILD_TYPE=Check'
-          #   type_excl_tests: '^.*([2-9][_]*mpithread|[1-9][0-9]+[_]*mpithread|[3-9]proc|[1-9][0-9]+proc).*$'
+          #   type_excl_tests: '^.*([3-9]proc|[1-9][0-9]+proc).*$'
+          ## Désactivation des tests ayant le label LARGE_HYBRID.
+          #   type_excl_labels_tests: 'LARGE_HYBRID'
 
           - type: 'Debug'
             type_args: '-DCMAKE_BUILD_TYPE=Debug
               -DARCCORE_BUILD_MODE=Debug
               -DARCANE_BUILD_TYPE=Debug'
-            ## Désactivation des tests avec '4mpithread' dans leur nom.
-            type_excl_tests: '^.*_4mpithread$'
+            type_excl_tests: ''
+            ## Désactivation des tests ayant le label LARGE_HYBRID.
+            type_excl_labels_tests: 'LARGE_HYBRID'
         
     name: '[${{matrix.image_short}}_${{matrix.version_short}}]_Cuda_${{matrix.compilo_name}}_${{matrix.type}}'
     runs-on: ubuntu-latest
