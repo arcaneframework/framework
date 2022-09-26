@@ -29,7 +29,13 @@ Nouveautés/Améliorations:
     uniqueId() que en mode check.
 - Crée une classe Arcane::ItemInfoListView pour remplacer à terme
   Arcane::ItemInternalList et accéder aux informations des entités à
-  partir de leur localId() (#305)
+  partir de leur localId() (#305).
+- Ajoute dans l'API Accélérateur le support des réductions Min/Max/Sum
+  pour les types `Int32`, `Int64` et `double` (#353).
+- Début des développements pour pouvoir voir une variable tableau sur
+  les entités comme une variable multi-dimensionnelle (#335).
+- Ajoute un observable pour pouvoir être notifié lors de la
+  destruction d'une instance de maillage (Arcane::IMesh) (#336).
 
 Changements:
 
@@ -79,6 +85,15 @@ Changements:
   Arcane::IItemFamilyModifierInterface et Arcane::OneMeshItemAdder
   pour utiliser Arcane::ItemTypeId au lieu de Arcane::ItemTypeInfo
   et Arcane::Item au lieu de Arcane::ItemInternal (#322)
+- Supprime méthodes Arcane::Item::activeFaces() et
+  Arcane::Item::activeEdges() qui ne sont plus utilisées (#351).
+- [C#] Détruit en fin de calcul les instances des différents
+  gestionnaires comme lorsque le support de `.Net` n'est pas
+  activé. Auparavant ces gestionnaires n'étaient pas détruit pour
+  éviter des plantages potentiels lorsque le 'garbage collector' de
+  l'environnement `.Net` se déclenche. Il est possible de remettre en
+  service ce comportement en positionnant la variable d'environnement
+  `ARCANE_DOTNET_USE_LEGACY_DESTROY` à la valeur `1` (#337).
 
 Corrections:
 
@@ -111,6 +126,21 @@ Interne:
     à partir d'un Arcane::MeshHandle.
   - Ajoute possibilité de créer une instance de
     Arcane::VariableBuildInfo via un Arcane::IVariableMng.
+- Optimise les structures gérant le maillage cartésien pour ne plus
+  avoir à conserver les instances de Arcane::ItemInternal*. Cela
+  permet de réduire la consommation mémoire et potentiellement
+  d'améliorer les performances (#345).
+- Utilise des vues au lieu de Arcane::SharedArray pour les classes
+  gérant les directions cartésiennes (Arcane::CellDirectionMng,
+  Arcane::FaceDirectionMng et Arcane::NodeDirectionMng) (#347).
+- Utilise un compteur de référence pour gérer
+  Arcane::Ref<Arcane::ICaseFunction> (#329).
+
+Arccon:
+
+- Add CMake functions to unify handling of packages  arccon Arccon
+  componentbuildBuild configuration (#342).
+
 
 Arcane Version 3.6.13 (06 juillet 2022) {#arcanedoc_version360}
 ======================================
