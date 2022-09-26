@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ICaseFunction.h                                             (C) 2000-2011 */
+/* ICaseFunction.h                                             (C) 2000-2022 */
 /*                                                                           */
 /* Interface d'une fonction du jeu de données.                               */
 /*---------------------------------------------------------------------------*/
@@ -14,12 +14,13 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/UtilsTypes.h"
+#include "arcane/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -43,6 +44,7 @@ ARCANE_BEGIN_NAMESPACE
  */
 class ICaseFunction
 {
+  ARCCORE_DECLARE_REFERENCE_COUNTED_INCLASS_METHODS();
  public:
 
   /*!
@@ -69,7 +71,10 @@ class ICaseFunction
 
  public:
 	
-  virtual ~ICaseFunction(){} //!< Libère les ressources
+  // NOTE: Laisse temporairement ce destructeur publique tant
+  // qu'on appelle explicitement ce destructeur mais avec le compteur
+  // de référence cela ne sera normalement plus le cas.
+  virtual ~ICaseFunction() = default; //!< Libère les ressources
 
  public:
 
@@ -173,17 +178,14 @@ class ICaseFunction
 
   //! Valeur \a v de l'option pour le paramètre \a param.
   virtual void value(Integer param,Real3& v) const =0;
-
- public:
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif
