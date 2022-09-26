@@ -96,13 +96,16 @@ message(STATUS "MPI_VENDOR_NAME      = ${MPI_VENDOR_NAME}")
 
 # Si find_package() a trouvé MPI, alors MPI_CXX_INCLUDE_PATH est positionné.
 # Cependant il n'est pas forcément valide si l'installation de MPI n'est pas standard.
-#find_path(MPI_INCLUDE_DIRS NAMES mpi.h PATHS ${MPI_CXX_INCLUDE_PATH} ${MPI_ROOT_PATH}/include)
-#message(STATUS "MPI_INCLUDE_DIRS = ${MPI_INCLUDE_DIRS}")
+# NOTE: avec les versions récentes de CMake (3.18+), cette variable peut être remplacée
+# par MPI_CXX_INCLUDE_DIRS
 set(MPI_INCLUDE_DIRS ${MPI_CXX_INCLUDE_PATH})
+if (NOT MPI_INCLUDE_DIRS)
+  set(MPI_INCLUDE_DIRS ${MPI_CXX_INCLUDE_DIRS})
+endif()
 
 # Sous windows, le FindMPI de CMake semble mettre dans MPI_CXX_INCLUDE_DIRS des
 # répertoires issus des sources (à étudier...). Comme on n'a besoin que
-# de 'mpi.h', on prend juste le r�pertoire le contenant
+# de 'mpi.h', on prend juste le répertoire le contenant
 if (WIN32)
   if (MPI_CXX_HEADER_DIR)  
     set(MPI_INCLUDE_DIRS ${MPI_CXX_HEADER_DIR})
