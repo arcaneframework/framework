@@ -71,6 +71,37 @@ class CommonCudaHipAtomicMin<int>
   }
 };
 
+template<>
+class CommonCudaHipAtomicAdd<Int64>
+{
+ public:
+  static ARCCORE_DEVICE void apply(Int64* ptr,int v)
+  {
+    static_assert(sizeof(Int64)==sizeof(long long int),"Bad pointer size");
+    ::atomicAdd((unsigned long long int*)ptr,v);
+  }
+};
+
+template<>
+class CommonCudaHipAtomicMax<Int64>
+{
+ public:
+  static ARCCORE_DEVICE void apply(Int64* ptr,int v)
+  {
+    ::atomicMax((long long int*)ptr,v);
+  }
+};
+
+template<>
+class CommonCudaHipAtomicMin<Int64>
+{
+ public:
+  static ARCCORE_DEVICE void apply(Int64* ptr,int v)
+  {
+    ::atomicMin((long long int*)ptr,v);
+  }
+};
+
 // Les devices d'architecture inférieure à 6.0 ne supportent pas
 // les atomicAdd sur les 'double'.
 // Ce code est issu de la documentation NVIDIA (programming guide)
@@ -106,6 +137,7 @@ atomicMaxDouble(double* address, double val)
 
   return __longlong_as_double(old);
 }
+
 __device__ inline double
 atomicMinDouble(double* address, double val)
 {
@@ -208,12 +240,22 @@ ARCCORE_DEVICE inline int shfl_xor_sync(int var, int laneMask)
   return ::__shfl_xor_sync(0xffffffffu, var, laneMask);
 }
 
+ARCCORE_DEVICE inline Int64 shfl_xor_sync(Int64 var, int laneMask)
+{
+  return ::__shfl_xor_sync(0xffffffffu, var, laneMask);
+}
+
 ARCCORE_DEVICE inline double shfl_sync(double var, int laneMask)
 {
   return ::__shfl_sync(0xffffffffu, var, laneMask);
 }
 
 ARCCORE_DEVICE inline int shfl_sync(int var, int laneMask)
+{
+  return ::__shfl_sync(0xffffffffu, var, laneMask);
+}
+
+ARCCORE_DEVICE inline Int64 shfl_sync(Int64 var, int laneMask)
 {
   return ::__shfl_sync(0xffffffffu, var, laneMask);
 }
@@ -229,12 +271,22 @@ ARCCORE_DEVICE inline int shfl_xor_sync(int var, int laneMask)
   return ::__shfl_xor(var, laneMask);
 }
 
+ARCCORE_DEVICE inline Int64 shfl_xor_sync(Int64 var, int laneMask)
+{
+  return ::__shfl_xor(var, laneMask);
+}
+
 ARCCORE_DEVICE inline double shfl_sync(double var, int laneMask)
 {
   return ::__shfl(var, laneMask);
 }
 
 ARCCORE_DEVICE inline int shfl_sync(int var, int laneMask)
+{
+  return ::__shfl(var, laneMask);
+}
+
+ARCCORE_DEVICE inline Int64 shfl_sync(Int64 var, int laneMask)
 {
   return ::__shfl(var, laneMask);
 }

@@ -605,7 +605,6 @@ class ARCANE_UTILS_EXPORT TaskFactory
   static Integer m_verbose_level;
 };
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -617,9 +616,17 @@ arcaneParallelFor(const ComplexLoopRanges<RankValue>& loop_ranges,
                   const ParallelLoopOptions& options,
                   const LambdaType& lambda_function)
 {
-  auto xfunc = [=] (const ComplexLoopRanges<RankValue>& sub_bounds)
+  // Modif Arcane 3.7.9 (septembre 2022)
+  // Effectue une copie pour privatiser au thread courant les valeurs de la lambda.
+  // Cela est nécessaire pour que objets comme les reducers soient bien pris
+  // en compte.
+  // TODO: regarder si on pourrait faire la copie uniquement une fois par thread
+  // si cette copie devient couteuse.
+  auto xfunc = [&lambda_function] (const ComplexLoopRanges<RankValue>& sub_bounds)
   {
-    arcaneSequentialFor(sub_bounds,lambda_function);
+    using Type = typename std::remove_reference<LambdaType>::type;
+    Type private_lambda(lambda_function);
+    arcaneSequentialFor(sub_bounds,private_lambda);
   };
   LambdaMDRangeFunctor<RankValue,decltype(xfunc)> ipf(xfunc);
   TaskFactory::executeParallelFor(loop_ranges,options,&ipf);
