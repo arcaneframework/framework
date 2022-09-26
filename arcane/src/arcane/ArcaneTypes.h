@@ -391,8 +391,6 @@ typedef Collection<ISubDomain*> SubDomainCollection;
 typedef Collection<ISession*> SessionCollection;
 /*! \brief Collection d'options du jeu de données. */
 typedef Collection<ICaseOptions*> CaseOptionsCollection;
-/*! \brief Collection de fonctions du jeu de données. */
-typedef Collection<Ref<ICaseFunction>> CaseFunctionCollection;
 /*! \brief Collection de familles d'entités. */
 typedef Collection<IItemFamily*> IItemFamilyCollection;
 /*! \brief Collection de familles d'entités. */
@@ -422,8 +420,6 @@ typedef List<ISubDomain*> SubDomainList;
 typedef List<ISession*> SessionList;
 /*! \brief Tableau d'options du jeu de données. */
 typedef List<ICaseOptions*> CaseOptionsList;
-/*! \brief Tableau de fonctions du jeu de données. */
-typedef List<Ref<ICaseFunction>> CaseFunctionList;
 /*! \brief Tableau d'interfaces liées. */
 typedef List<ITiedInterface*> TiedInterfaceList;
 
@@ -494,6 +490,18 @@ using Accelerator::AcceleratorRuntimeInitialisationInfo;
 
 ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::IData)
 ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::ISerializedData)
+ARCCORE_DECLARE_REFERENCE_COUNTED_CLASS(Arcane::ICaseFunction)
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane
+{
+/*! \brief Collection de fonctions du jeu de données. */
+typedef Collection<Ref<ICaseFunction>> CaseFunctionCollection;
+/*! \brief Tableau de fonctions du jeu de données. */
+typedef List<Ref<ICaseFunction>> CaseFunctionList;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -840,6 +840,8 @@ removeFunction(ICaseFunction* func,bool do_free)
 void CaseMng::
 _removeFunction(ICaseFunction* func,bool do_delete)
 {
+  // Plus utilisé depuis qu'on utilise un compte de référence.
+  ARCANE_UNUSED(do_delete);
   Integer index = 0;
   bool is_found = false;
   for( auto& f : m_functions ){
@@ -850,8 +852,6 @@ _removeFunction(ICaseFunction* func,bool do_delete)
     ++index;
   }
   if (is_found){
-    if (!do_delete)
-      m_functions[index]._release();
     m_functions.removeAt(index);
   }
 }

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CaseFunction.h                                              (C) 2000-2018 */
+/* CaseFunction.h                                              (C) 2000-2022 */
 /*                                                                           */
 /* Classe gérant une fonction du jeu de données.                             */
 /*---------------------------------------------------------------------------*/
@@ -14,6 +14,9 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arccore/base/ReferenceCounterImpl.h"
+#include "arccore/base/Ref.h"
+
 #include "arcane/utils/String.h"
 
 #include "arcane/ICaseFunction.h"
@@ -21,10 +24,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane
+{
 
 class ISubDomain;
 
@@ -42,7 +43,7 @@ class ARCANE_CORE_EXPORT CaseFunctionBuildInfo
  public:
   //! \deprecated Utiliser CaseFunctionBuildInfo(ITraceMng* tm,const String& name)
   ARCANE_DEPRECATED_260 CaseFunctionBuildInfo(ISubDomain* sd,const String& name);
-  CaseFunctionBuildInfo(ITraceMng* tm)
+  explicit CaseFunctionBuildInfo(ITraceMng* tm)
   : m_trace_mng(tm),
     m_param_type(ICaseFunction::ParamUnknown),
     m_value_type(ICaseFunction::ValueUnknown),
@@ -75,15 +76,15 @@ class ARCANE_CORE_EXPORT CaseFunctionBuildInfo
  */
 class ARCANE_CORE_EXPORT CaseFunction
 : public ICaseFunction
+, private ReferenceCounterImpl
 {
- public:
-
+  ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
 
  public:
 
   //! Construit une fonction du jeu de données.
-  CaseFunction(const CaseFunctionBuildInfo& info);
-  ~CaseFunction();
+  explicit CaseFunction(const CaseFunctionBuildInfo& info);
+  ~CaseFunction() override;
 
  public:
 
@@ -107,6 +108,7 @@ class ARCANE_CORE_EXPORT CaseFunction
 
   bool checkIfValid() const override;
 
+  Ref<ICaseFunction> toReference();
   ITraceMng* traceMng() const { return m_trace; }
 
  public:
@@ -145,10 +147,9 @@ class ARCANE_CORE_EXPORT CaseFunction
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif
