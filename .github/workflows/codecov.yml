@@ -18,6 +18,15 @@ env:
 
   CT_EXCLUED_LABELS: "LARGE_HYBRID"
 
+  # ccache
+  CCACHE_COMPRESS: true
+  CCACHE_COMPRESSLEVEL: 6
+  CCACHE_DIR: '/__w/framework/framework/ccache'
+  CCACHE_MAXSIZE: 5G
+  
+  # CMake
+  CM_CCACHE_OPTS: "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
+
   # MPI
   OMPI_ALLOW_RUN_AS_ROOT: 1
   OMPI_ALLOW_RUN_AS_ROOT_CONFIRM: 1
@@ -62,7 +71,8 @@ jobs:
           -DARCANE_DEFAULT_PARTITIONER=Metis \
           -DCMAKE_DISABLE_FIND_PACKAGE_Papi=ON \
           -DARCANE_DISABLE_HYODA=TRUE \
-          -DARCCON_REGISTER_PACKAGE_VERSION=2
+          -DARCCON_REGISTER_PACKAGE_VERSION=2 \
+          ${{ env.CM_CCACHE_OPTS }}
 
       - name: Build
         shell: bash
