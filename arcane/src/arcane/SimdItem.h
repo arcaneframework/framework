@@ -216,10 +216,10 @@ class SimdItem
  public:
 
   //! inline \a si-ième entité de l'instance
-  inline Item item(Int32 si) const { return Item(ItemBaseBuildInfo(localId(si),m_shared_info)); }
+  inline Item item(Int32 si) const { return Item(localId(si),m_shared_info); }
 
   //! inline \a si-ième entité de l'instance
-  inline Item operator[](Int32 si) const { return Item(ItemBaseBuildInfo(localId(si),m_shared_info)); }
+  inline Item operator[](Int32 si) const { return Item(localId(si),m_shared_info); }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -254,13 +254,13 @@ class SimdItemT
   //! Retourne la \a si-ième entité de l'instance
   ItemType item(Integer si) const
   {
-    return ItemType(ItemBaseBuildInfo(localId(si),m_shared_info));
+    return ItemType(localId(si),m_shared_info);
   }
 
   //! Retourne la \a si-ième entité de l'instance
   ItemType operator[](Integer si) const
   {
-    return ItemType(ItemBaseBuildInfo(localId(si),m_shared_info));
+    return ItemType(localId(si),m_shared_info);
   }
 
   operator SimdItemIndexT<ItemType>()

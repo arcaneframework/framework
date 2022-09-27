@@ -59,7 +59,7 @@ class ItemVectorViewConstIterator
 
  public:
 
-  Item operator*() const { return Item(ItemBaseBuildInfo(m_local_ids[m_index],m_shared_info)); }
+  Item operator*() const { return Item(m_local_ids[m_index],m_shared_info); }
   ThatClass& operator++() { ++m_index; return (*this); }
   ThatClass& operator--() { --m_index; return (*this); }
   void operator+=(difference_type v) { m_index += v; }
@@ -131,7 +131,7 @@ class ItemVectorViewConstIteratorT
 
  public:
 
-  ItemType operator*() const { return ItemType(ItemBaseBuildInfo(m_local_ids[m_index],m_shared_info)); }
+  ItemType operator*() const { return ItemType(m_local_ids[m_index],m_shared_info); }
   ThatClass& operator++() { ++m_index; return (*this); }
   ThatClass& operator--() { --m_index; return (*this); }
   Integer operator-(const ThatClass& b) const
@@ -206,7 +206,7 @@ class ARCANE_CORE_EXPORT ItemVectorView
   //! Accède au \a i-ème élément du vecteur
   inline Item operator[](Integer index) const
   {
-    return Item(ItemBaseBuildInfo(m_local_ids[index],m_shared_info));
+    return Item(m_local_ids[index],m_shared_info);
   }
 
   //! Nombre d'éléments du vecteur
@@ -295,7 +295,7 @@ class ItemVectorViewT
 
   ItemType operator[](Integer index) const
   {
-    return ItemType(ItemBaseBuildInfo(m_local_ids[index],m_shared_info));
+    return ItemType(m_local_ids[index],m_shared_info);
   }
 
  public:

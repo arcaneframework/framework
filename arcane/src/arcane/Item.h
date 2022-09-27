@@ -70,7 +70,11 @@ namespace Arcane
 class ARCANE_CORE_EXPORT Item
 : protected impl::ItemBase
 {
+  // Pour accéder aux constructeurs privés
   friend class ItemEnumeratorBaseV3T<Item>;
+  friend class ItemVectorView;
+  friend class ItemVectorViewConstIterator;
+  friend class SimdItem;
 
  public:
 
@@ -133,6 +137,12 @@ class ARCANE_CORE_EXPORT Item
   //! Nom du type de maille \a cell_type
   ARCCORE_DEPRECATED_2021("Use ItemTypeMng::typeName() instead")
   static String typeName(Int32 type);
+
+ protected:
+
+  //! Constructeur réservé pour les énumérateurs
+  Item(Int32 local_id,ItemSharedInfo* shared_info)
+  : ItemBase(local_id,shared_info) {}
 
  public:
 
@@ -381,9 +391,14 @@ namespace Arcane
 class ARCANE_CORE_EXPORT Node
 : public Item
 {
+  // Pour accéder aux constructeurs privés
   friend class ItemEnumeratorBaseV3T<Node>;
+  friend class ItemVectorViewT<Node>;
+  friend class ItemVectorViewConstIteratorT<Node>;
+  friend class SimdItemT<Node>;
 
  public:
+
   /*!
    * \brief Index d'un Node dans une variable.
    * \deprecated
@@ -398,7 +413,15 @@ class ARCANE_CORE_EXPORT Node
     Index(Node item) : Base(item){}
     operator NodeLocalId() const { return NodeLocalId{localId()}; }
   };
+
+ protected:
+
+  //! Constructeur réservé pour les énumérateurs
+  Node(Int32 local_id,ItemSharedInfo* shared_info)
+  : Item(local_id,shared_info) {}
+
  public:
+
   //! Type du localId()
   typedef NodeLocalId LocalIdType;
 
@@ -512,7 +535,17 @@ class ARCANE_CORE_EXPORT Node
 class ARCANE_CORE_EXPORT ItemWithNodes
 : public Item
 {
+  // Pour accéder aux constructeurs privés
   friend class ItemEnumeratorBaseV3T<ItemWithNodes>;
+  friend class ItemVectorViewT<ItemWithNodes>;
+  friend class ItemVectorViewConstIteratorT<ItemWithNodes>;
+  friend class SimdItemT<ItemWithNodes>;
+
+ protected:
+
+  //! Constructeur réservé pour les énumérateurs
+  ItemWithNodes(Int32 local_id,ItemSharedInfo* shared_info)
+  : Item(local_id,shared_info) {}
 
  public:
   
@@ -586,9 +619,14 @@ class ARCANE_CORE_EXPORT ItemWithNodes
 class ARCANE_CORE_EXPORT Edge
 : public ItemWithNodes
 {
+  // Pour accéder aux constructeurs privés
   friend class ItemEnumeratorBaseV3T<Edge>;
+  friend class ItemVectorViewT<Edge>;
+  friend class ItemVectorViewConstIteratorT<Edge>;
+  friend class SimdItemT<Edge>;
 
  public:
+
   /*!
    * \brief Index d'une Edge dans une variable.
    * \deprecated
@@ -603,7 +641,15 @@ class ARCANE_CORE_EXPORT Edge
     Index(Edge item) : Base(item){}
     operator EdgeLocalId() const { return EdgeLocalId{localId()}; }
   };
+
+  private:
+
+  //! Constructeur réservé pour les énumérateurs
+  Edge(Int32 local_id,ItemSharedInfo* shared_info)
+  : ItemWithNodes(local_id,shared_info) {}
+
  public:
+
   //! Type du localId()
   typedef EdgeLocalId LocalIdType;
 
@@ -698,9 +744,14 @@ class ARCANE_CORE_EXPORT Edge
 class ARCANE_CORE_EXPORT Face
 : public ItemWithNodes
 {
+  // Pour accéder aux constructeurs privés
   friend class ItemEnumeratorBaseV3T<Face>;
+  friend class ItemVectorViewT<Face>;
+  friend class ItemVectorViewConstIteratorT<Face>;
+  friend class SimdItemT<Face>;
 
  public:
+
   /*!
    * \brief Index d'une Face dans une variable.
    * \deprecated
@@ -716,7 +767,14 @@ class ARCANE_CORE_EXPORT Face
     operator FaceLocalId() const { return FaceLocalId{localId()}; }
   };
 
+ private:
+
+  //! Constructeur réservé pour les énumérateurs
+  Face(Int32 local_id,ItemSharedInfo* shared_info)
+  : ItemWithNodes(local_id,shared_info) {}
+
  public:
+
   //! Type du localId()
   typedef FaceLocalId LocalIdType;
 
@@ -923,9 +981,14 @@ class ARCANE_CORE_EXPORT Face
 class ARCANE_CORE_EXPORT Cell
 : public ItemWithNodes
 {
+  // Pour accéder aux constructeurs privés
   friend class ItemEnumeratorBaseV3T<Cell>;
+  friend class ItemVectorViewT<Cell>;
+  friend class ItemVectorViewConstIteratorT<Cell>;
+  friend class SimdItemT<Cell>;
 
  public:
+
   /*!
    * \brief Index d'une Cell dans une variable.
    * \deprecated
@@ -940,7 +1003,15 @@ class ARCANE_CORE_EXPORT Cell
     Index(Cell item) : Base(item){}
     operator CellLocalId() const { return CellLocalId{localId()}; }
   };
+
+ private:
+
+  //! Constructeur réservé pour les énumérateurs
+  Cell(Int32 local_id,ItemSharedInfo* shared_info)
+  : ItemWithNodes(local_id,shared_info) {}
+
  public:
+
   //! Type du localId()
   typedef CellLocalId LocalIdType;
 
@@ -1093,7 +1164,18 @@ class ARCANE_CORE_EXPORT Cell
 class Particle
 : public Item
 {
+  // Pour accéder aux constructeurs privés
   friend class ItemEnumeratorBaseV3T<Particle>;
+  friend class ItemVectorViewT<Particle>;
+  friend class ItemVectorViewConstIteratorT<Particle>;
+  friend class SimdItemT<Particle>;
+
+ private:
+
+  //! Constructeur réservé pour les énumérateurs
+  Particle(Int32 local_id,ItemSharedInfo* shared_info)
+  : Item(local_id,shared_info) {}
+
 
  public:
   
@@ -1182,7 +1264,18 @@ class Particle
 class DoF
 : public Item
 {
+  // Pour accéder aux constructeurs privés
   friend class ItemEnumeratorBaseV3T<DoF>;
+  friend class ItemVectorViewT<DoF>;
+  friend class ItemVectorViewConstIteratorT<DoF>;
+  friend class SimdItemT<DoF>;
+
+ private:
+
+  //! Constructeur réservé pour les énumérateurs
+  DoF(Int32 local_id,ItemSharedInfo* shared_info)
+  : Item(local_id,shared_info) {}
+
 
  public:
 
