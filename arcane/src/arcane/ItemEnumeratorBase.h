@@ -178,7 +178,7 @@ class ItemEnumeratorBaseV3T
 
  public:
 
-  constexpr ItemType operator*() const { return ItemType(ItemBaseBuildInfo(m_local_ids[m_index],m_shared_info)); }
+  constexpr ItemType operator*() const { return ItemType(m_local_ids[m_index],m_shared_info); }
   constexpr const ItemType* operator->() const { m_item_for_operator_arrow = this->operator*(); return &m_item_for_operator_arrow; }
 
   constexpr LocalIdType asItemLocalId() const { return LocalIdType{m_local_ids[m_index]}; }

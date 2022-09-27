@@ -418,6 +418,11 @@ class ARCANE_CORE_EXPORT ItemBase
   friend class ::Arcane::ItemInternal;
   friend class ::Arcane::Item;
 
+ private:
+
+  ItemBase(Int32 local_id,ItemSharedInfo* shared_info)
+  : m_local_id(local_id), m_shared_info(shared_info) {}
+
  public:
 
   ItemBase() : m_shared_info(ItemSharedInfo::nullItemSharedInfoPointer) {}

@@ -177,6 +177,8 @@ template<typename ItemType> using ItemEnumeratorBaseT = ItemEnumeratorBaseV3T<It
 
 template<typename ItemType>
 class SimdItemEnumeratorT;
+template<typename ItemType>
+class SimdItemT;
 
 /*!
  * \ingroup Mesh
