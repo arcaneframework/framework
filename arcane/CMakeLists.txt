@@ -144,7 +144,7 @@ option(ARCANE_ADD_RPATH_TO_LIBS "True if we automatically add rpath in target_li
 # Cherche 'Arccon'
 
 find_package(Arccon REQUIRED)
-set(ARCANE_Arccon_NEEDED_VERSION "1.4.0")
+set(ARCANE_Arccon_NEEDED_VERSION "1.5.0")
 message(STATUS "Arccon_VERSION = ${Arccon_VERSION}")
 if (Arccon_VERSION VERSION_LESS ARCANE_AXLSTAR_NEEDED_VERSION)
   message(FATAL_ERROR "Arccon version '${Arccon_VERSION}' is too old."
