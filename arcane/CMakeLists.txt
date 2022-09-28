@@ -160,7 +160,7 @@ include(LoadBuildSystem)
 # Cherche 'ArcDependencies'
 
 find_package(ArcDependencies REQUIRED)
-set(ARCANE_ArcDependencies_NEEDED_VERSION "1.3.0")
+set(ARCANE_ArcDependencies_NEEDED_VERSION "1.5.0")
 message(STATUS "ArcDependencies_VERSION = ${ArcDependencies_VERSION}")
 if (ArcDependencies_VERSION VERSION_LESS ARCANE_ArcDependencies_NEEDED_VERSION)
   message(FATAL_ERROR "ArcDependencies version '${ArcDependencies_VERSION}' is too old."
