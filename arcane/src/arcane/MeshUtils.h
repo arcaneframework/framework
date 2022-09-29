@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshUtils.h                                                 (C) 2000-2015 */
+/* MeshUtils.h                                                 (C) 2000-2022 */
 /*                                                                           */
 /* Fonctions diverses sur les éléments du maillage.                          */
 /*---------------------------------------------------------------------------*/
@@ -26,17 +26,16 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
+namespace Arcane
+{
 class XmlNode;
+class IVariableSynchronizer;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace mesh_utils
+namespace Arcane::mesh_utils
 {
   ARCANE_CORE_EXPORT void
   writeMeshItemInfo(ISubDomain*,Cell cell,bool depend_info=true);
@@ -208,12 +207,20 @@ printMeshGroupsMemoryUsage(IMesh* mesh,Int32 print_level);
 //! Limite au plus juste l'usage mémoire des groupes.
 ARCANE_CORE_EXPORT void
 shrinkMeshGroups(IMesh* mesh);
-}
+
+/*!
+ * \brief Ecrit dans un fichier les informations sur la topologie d'une synchronisation
+ *
+ * Ecrit dans le fichier \a filename les informations sur la topologie de \a var_syncer.
+ * Cette méthode est collective. Seul le rang 0 écrit l'information de la topologie.
+ */
+ARCANE_CORE_EXPORT void
+dumpSynchronizerTopologyJSON(IVariableSynchronizer* var_syncer,const String& filename);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh_utils
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

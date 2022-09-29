@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshUtils.cc                                                (C) 2000-2021 */
+/* MeshUtils.cc                                                (C) 2000-2022 */
 /*                                                                           */
 /* Fonctions diverses sur les éléments du maillage.                          */
 /*---------------------------------------------------------------------------*/
@@ -18,6 +18,7 @@
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/JSONWriter.h"
 
 #include "arcane/MeshUtils.h"
 #include "arcane/IVariableMng.h"
@@ -44,6 +45,7 @@
 #include "arcane/ITiedInterface.h"
 #include "arcane/SharedVariable.h"
 #include "arcane/MeshVisitor.h"
+#include "arcane/IVariableSynchronizer.h"
 
 #include <algorithm>
 #include <map>
@@ -1590,6 +1592,60 @@ printMeshGroupsMemoryUsage(IMesh* mesh, Int32 print_level)
   tm->info() << "MeshGroupsMemoryUsage: capacity = " << total_capacity
              << " computed_capacity=" << total_computed_capacity;
   return total_capacity * sizeof(Int32);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void mesh_utils::
+dumpSynchronizerTopologyJSON(IVariableSynchronizer* var_syncer,const String& filename)
+{
+  IParallelMng* pm = var_syncer->parallelMng();
+  ITraceMng* tm = pm->traceMng();
+  Int32 nb_rank = pm->commSize();
+  Int32 my_rank = pm->commRank();
+  Int32ConstArrayView comm_ranks = var_syncer->communicatingRanks();
+
+  tm->info(4) << "Dumping VariableSynchronizerTopology filename=" << filename;
+  Int32 nb_comm_rank = comm_ranks.size();
+
+  UniqueArray<Int32> nb_items_by_rank(nb_comm_rank);
+  for( Integer i=0; i<nb_comm_rank; ++i )
+    nb_items_by_rank[i] = var_syncer->sharedItems(i).size();
+
+  JSONWriter json_writer(JSONWriter::FormatFlags::None);
+  json_writer.beginObject();
+
+  if (my_rank == 0) {
+    UniqueArray<Int32> all_nb_comm_ranks(nb_rank);
+    pm->gather(Int32ConstArrayView(1, &nb_comm_rank), all_nb_comm_ranks, 0);
+    json_writer.write("NbNeighbor",all_nb_comm_ranks);
+
+    {
+      UniqueArray<Int32> all_neighbor_ranks;
+      pm->gatherVariable(comm_ranks,all_neighbor_ranks,0);
+      json_writer.write("NeighborsRank",all_neighbor_ranks);
+    }
+    {
+      UniqueArray<Int32> all_nb_items_by_rank;
+      pm->gatherVariable(nb_items_by_rank,all_nb_items_by_rank,0);
+      json_writer.write("NeighborsSize",all_nb_items_by_rank);
+    }
+  }
+  else {
+    pm->gather(Int32ConstArrayView(1, &nb_comm_rank), {}, 0);
+    UniqueArray<Int32> empty_array;
+    pm->gatherVariable(comm_ranks,empty_array,0);
+    pm->gatherVariable(nb_items_by_rank,empty_array,0);
+  }
+
+  json_writer.endObject();
+
+  if (my_rank==0){
+    std::ofstream ofile(filename.localstr());
+    auto bytes = json_writer.getBuffer().bytes();
+    ofile.write(reinterpret_cast<const char*>(bytes.data()),bytes.size());
+  }
 }
 
 /*---------------------------------------------------------------------------*/

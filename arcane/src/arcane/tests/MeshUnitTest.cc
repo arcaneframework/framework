@@ -352,15 +352,18 @@ _dumpMesh()
     file_name = file_name + ".unf";
     mesh_io->writeMeshToFile(mesh(),file_name);
   }
+  IItemFamily* cell_family = mesh()->cellFamily();
   info() << "Local connectivity infos:";
-  _dumpConnectivityInfos(mesh()->cellFamily()->localConnectivityInfos(),
+  _dumpConnectivityInfos(cell_family->localConnectivityInfos(),
                          mesh()->faceFamily()->localConnectivityInfos(),
                          mesh()->nodeFamily()->localConnectivityInfos());
 
   info() << "Global connectivity infos:";
-  _dumpConnectivityInfos(mesh()->cellFamily()->globalConnectivityInfos(),
+  _dumpConnectivityInfos(cell_family->globalConnectivityInfos(),
                          mesh()->faceFamily()->globalConnectivityInfos(),
                          mesh()->nodeFamily()->globalConnectivityInfos());
+
+  mesh_utils::dumpSynchronizerTopologyJSON(cell_family->allItemsSynchronizer(),"sync_topology.json");
 }
 
 /*---------------------------------------------------------------------------*/
