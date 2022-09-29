@@ -5,6 +5,7 @@
 //-----------------------------------------------------------------------------
 using System;
 using System.Reflection;
+using System.Runtime.Loader;
 
 namespace Arcane.ExecDrivers.Common
 {
@@ -19,6 +20,15 @@ namespace Arcane.ExecDrivers.Common
     }
     public Assembly Load(string name)
     {
+      bool do_new = true;
+      if (do_new){
+        Console.WriteLine($"Loading assembly [.NetCore3 direct with AssemblyLoadContext] '{name}'");
+        return AssemblyLoadContext.Default.LoadFromAssemblyPath(name);
+      }
+
+      // Le code suivant n'est plus utilisé (septembre 2022) maintenant
+      // qu'on utilise le package nuget 'system.runtime.loader'.
+      // On le garde temporairement en cas de problème.
       Console.WriteLine($"Loading assembly [.NetCore3 Indirect] '{name}'");
       object default_context =  m_get_default_method.Invoke(null, new object [0]);
       if (default_context==null)
