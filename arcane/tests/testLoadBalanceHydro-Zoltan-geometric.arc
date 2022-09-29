@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml version="1.0"?>
 <case codename="ArcaneTest" xml:lang="en" codeversion="1.0">
  <arcane>
-  <title>Tube à choc de Sod</title>
+  <title>Tube a choc de Sod</title>
   <timeloop>ArcaneHydroLoop</timeloop>
   <modules>
    <module name="ArcaneLoadBalance" active='true' />
@@ -11,7 +11,6 @@
  <mesh>
 
   <meshgenerator><sod><x>100</x><y>10</y><z>10</z></sod></meshgenerator>
-  <!-- <file internal-partition="true">sod.vtk</file> -->
 
  <initialisation>
   <variable nom="Density" valeur="1." groupe="ZG" />
@@ -25,7 +24,6 @@
 
  <arcane-post-processing>
    <output-period>5</output-period>
-   <!-- <format name="EnsightHdfPostProcessor" /> -->
    <output>
     <variable>CellMass</variable>
     <variable>CellVolume</variable>
@@ -49,8 +47,7 @@
    </ensight7gold>-->
  </arcane-post-processing>
  <arcane-checkpoint>
-  <!--<period>1</period>  -->
-  <!-- <checkpoint-service name="ArcaneHdf5MultiCheckpointWriter" /> -->
+  <checkpoint-service name="ArcaneBasic2CheckpointWriter" />
   <do-dump-at-end>true</do-dump-at-end>
  </arcane-checkpoint>
 
