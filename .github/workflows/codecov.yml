@@ -3,6 +3,9 @@ name: Codecov Scan
 on:
   schedule:
     - cron: '24 0 * * *' # Tous les jours à 00:24.
+  push:
+  pull_request:
+    branches: [ main, dev/cea ]
   # A executer lorsque l'on demande.
   workflow_dispatch:
   
