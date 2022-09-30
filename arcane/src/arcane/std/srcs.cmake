@@ -17,6 +17,7 @@ set(ARCANE_SOURCES
   Hdf5ReaderWriter.h
   Hdf5MpiReaderWriter.h
   HoneyCombMeshGenerator.cc
+  HoneyCombMeshGenerator.h
   ArcaneCurveWriter.cc
   ArcaneLoadBalanceModule.cc
   DumpW.cc
