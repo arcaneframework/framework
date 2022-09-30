@@ -559,6 +559,14 @@ _computeFamilySynchronizeInfos()
   for( IItemFamily* family : m_item_families ){
     family->computeSynchronizeInfos();
   }
+
+  // Ecrit la topologie pour la synchronisation des mailles
+  if (!platform::getEnvironmentVariable("ARCANE_DUMP_VARIABLE_SYNCHRONIZER_TOPOLOGY").null()){
+    auto* var_syncer = cellFamily()->allItemsSynchronizer();
+    Int32 iteration = subDomain()->commonVariables().globalIteration();
+    String file_name = String::format("{0}_sync_topology_iter{1}.json",name(),iteration);
+    mesh_utils::dumpSynchronizerTopologyJSON(var_syncer,file_name);
+  }
 }
 
 /*--------------------------------------------------------------------------*/
