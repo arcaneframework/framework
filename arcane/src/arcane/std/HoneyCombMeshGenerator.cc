@@ -11,6 +11,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/std/HoneyCombMeshGenerator.h"
+
 #include "arcane/utils/Real2.h"
 
 #include "arcane/IMeshBuilder.h"
@@ -154,52 +156,19 @@ namespace
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class HoneyComb2DMeshGenerator
-: public TraceAccessor
+class HoneyComb2DMeshGenerator::CellLineInfo
 {
  public:
 
-  //! Infos sur une ligne d'hexagone
-  class CellLineInfo
-  {
-   public:
-
-    CellLineInfo(Real2 first_center, Int32 nb_cell)
-    : m_first_center(first_center)
+  CellLineInfo(Real2 first_center, Int32 nb_cell)
+  : m_first_center(first_center)
     , m_nb_cell(nb_cell)
-    {}
-
-   public:
-
-    Real2 m_first_center;
-    Int32 m_nb_cell;
-  };
+  {}
 
  public:
 
-  explicit HoneyComb2DMeshGenerator(IPrimaryMesh* mesh);
-
- public:
-
-  void generateMesh(Real2 origin, Real pitch, Integer nb_ring)
-  {
-    m_pitch = pitch;
-    m_nb_ring = nb_ring;
-    m_origin = origin;
-    _buildCells();
-  }
-
- private:
-
-  IPrimaryMesh* m_mesh = nullptr;
-  Real m_pitch = 0.0;
-  Integer m_nb_ring = 0;
-  Real2 m_origin;
-
- private:
-
-  void _buildCells();
-  void _buildCells2();
+  Real2 m_first_center;
+  Int32 m_nb_cell;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -287,6 +256,18 @@ _buildCells2()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+void HoneyComb2DMeshGenerator::
+generateMesh(Real2 origin, Real pitch, Integer nb_ring)
+{
+  m_pitch = pitch;
+  m_nb_ring = nb_ring;
+  m_origin = origin;
+  _buildCells();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Service de génération de maillage cartésien en 2D.
  */
@@ -332,52 +313,24 @@ ARCANE_REGISTER_SERVICE_HONEYCOMB2DMESHGENERATOR(HoneyComb2D, HoneyComb2DMeshGen
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class HoneyComb3DMeshGenerator
-: public TraceAccessor
+//! Infos sur une ligne d'hexagone
+class HoneyComb3DMeshGenerator::CellLineInfo
 {
  public:
 
-  //! Infos sur une ligne d'hexagone
-  class CellLineInfo
-  {
-   public:
-
-    CellLineInfo(Real2 first_center, Real bottom, Real top, Int32 nb_cell)
-    : m_first_center(first_center)
-    , m_bottom(bottom)
-    , m_top(top)
-    , m_nb_cell(nb_cell)
-    {}
-
-   public:
-
-    Real2 m_first_center;
-    Real m_bottom;
-    Real m_top;
-    Int32 m_nb_cell;
-  };
+  CellLineInfo(Real2 first_center, Real bottom, Real top, Int32 nb_cell)
+  : m_first_center(first_center)
+  , m_bottom(bottom)
+  , m_top(top)
+  , m_nb_cell(nb_cell)
+  {}
 
  public:
 
-  explicit HoneyComb3DMeshGenerator(IPrimaryMesh* mesh);
-
- public:
-
-  void generateMesh(Real2 origin, Real pitch, Integer nb_ring, ConstArrayView<Real> heights);
-
- private:
-
-  IPrimaryMesh* m_mesh = nullptr;
-  Real m_pitch = 0.0;
-  Integer m_nb_ring = 0;
-  Real2 m_origin;
-  UniqueArray<Real> m_heights;
-
- private:
-
-  void _buildCellNodes(Real x, Real y, Real z, ArrayView<Real3> coords);
-  void _buildCells();
-  void _buildCells2();
+  Real2 m_first_center;
+  Real m_bottom;
+  Real m_top;
+  Int32 m_nb_cell;
 };
 
 /*---------------------------------------------------------------------------*/
