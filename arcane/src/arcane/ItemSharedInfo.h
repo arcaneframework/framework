@@ -54,6 +54,7 @@ class ItemInternalConnectivityList;
 class ARCANE_CORE_EXPORT ItemSharedInfo
 {
   friend class impl::ItemBase;
+  friend class Item;
   friend class ItemInternal;
   friend class ItemInfoListView;
   friend class mesh::ItemFamily;

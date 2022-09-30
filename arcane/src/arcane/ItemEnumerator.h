@@ -100,7 +100,7 @@ class ItemEnumerator
  private:
 
   ItemEnumerator(ItemSharedInfo* shared_info,const Int32* local_ids,Int32 index,Int32 n,
-                 const ItemGroupImpl* agroup,impl::ItemBase item_base)
+                 const ItemGroupImpl* agroup,Item item_base)
   : BaseClass(shared_info,local_ids,index,n,agroup,item_base){}
 };
 
