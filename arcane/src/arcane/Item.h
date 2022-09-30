@@ -35,7 +35,9 @@ namespace Arcane
 #define ARCANE_CHECK_KIND(type)
 #endif
 
+#ifdef ARCANE_CHECK
 #define ARCANE_WANT_ITEM_STAT
+#endif
 
 #ifdef ARCANE_WANT_ITEM_STAT
 #define ARCANE_ITEM_ADD_STAT(var) ++var
@@ -381,28 +383,28 @@ class ARCANE_CORE_EXPORT Item
   Int32 _nbHChildren() const { return _connectivity()->_nbHChildrenV2(m_local_id); }
   //! Nombre de parent
   Integer _nbParent() const { return m_shared_info->nbParent(); }
-  Int32 _nodeId(Integer index) const { return _connectivity()->_nodeLocalIdV2(m_local_id,index); }
-  Int32 _edgeId(Integer index) const { return _connectivity()->_edgeLocalIdV2(m_local_id,index); }
-  Int32 _faceId(Integer index) const { return _connectivity()->_faceLocalIdV2(m_local_id,index); }
-  Int32 _cellId(Integer index) const { return _connectivity()->_cellLocalIdV2(m_local_id,index); }
+  NodeLocalId _nodeId(Int32 index) const { return NodeLocalId(_connectivity()->_nodeLocalIdV2(m_local_id,index)); }
+  EdgeLocalId _edgeId(Int32 index) const { return EdgeLocalId(_connectivity()->_edgeLocalIdV2(m_local_id,index)); }
+  FaceLocalId _faceId(Int32 index) const { return FaceLocalId(_connectivity()->_faceLocalIdV2(m_local_id,index)); }
+  CellLocalId _cellId(Int32 index) const { return CellLocalId(_connectivity()->_cellLocalIdV2(m_local_id,index)); }
   Int32 _hParentId(Int32 index) const { return _connectivity()->_hParentLocalIdV2(m_local_id,index); }
   Int32 _hChildId(Int32 index) const { return _connectivity()->_hChildLocalIdV2(m_local_id,index); }
   ItemInternalVectorView _internalNodes() const { return _connectivity()->nodesV2(m_local_id); }
   ItemInternalVectorView _internalEdges() const { return _connectivity()->edgesV2(m_local_id); }
   ItemInternalVectorView _internalFaces() const { return _connectivity()->facesV2(m_local_id); }
   ItemInternalVectorView _internalCells() const { return _connectivity()->cellsV2(m_local_id); }
-  Int32ConstArrayView _nodeIds() const { return _connectivity()->nodeLocalIdsV2(m_local_id); }
-  Int32ConstArrayView _edgeIds() const { return _connectivity()->edgeLocalIdsV2(m_local_id); }
-  Int32ConstArrayView _faceIds() const { return _connectivity()->faceLocalIdsV2(m_local_id); }
-  Int32ConstArrayView _cellIds() const { return _connectivity()->cellLocalIdsV2(m_local_id); }
-  //TODO: A remplacer par le vrai type
-  ItemBase _nodeBase(Int32 index) const { return _connectivity()->nodeBase(m_local_id,index); }
-  ItemBase _edgeBase(Int32 index) const { return _connectivity()->edgeBase(m_local_id,index); }
-  ItemBase _faceBase(Int32 index) const { return _connectivity()->faceBase(m_local_id,index); }
-  ItemBase _cellBase(Int32 index) const { return _connectivity()->cellBase(m_local_id,index); }
+  NodeLocalIdView _nodeIds() const { return NodeLocalIdView::fromIds(_connectivity()->nodeLocalIdsV2(m_local_id)); }
+  EdgeLocalIdView _edgeIds() const { return EdgeLocalIdView::fromIds(_connectivity()->edgeLocalIdsV2(m_local_id)); }
+  FaceLocalIdView _faceIds() const { return FaceLocalIdView::fromIds(_connectivity()->faceLocalIdsV2(m_local_id)); }
+  CellLocalIdView _cellIds() const { return CellLocalIdView::fromIds(_connectivity()->cellLocalIdsV2(m_local_id)); }
+
+  inline Node _node(Int32 index) const;
+  inline Edge _edge(Int32 index) const;
+  inline Face _face(Int32 index) const;
+  inline Cell _cell(Int32 index) const;
+
   ItemBase _hParentBase(Int32 index) const { return _connectivity()->hParentBase(m_local_id,index); }
   ItemBase _hChildBase(Int32 index) const { return _connectivity()->hChildBase(m_local_id,index); }
-  inline ItemBase _parentBase(Int32 index) const;
   ItemBase _toItemBase() const { return ItemBase(m_local_id,m_shared_info); }
 
  private:
@@ -583,13 +585,13 @@ class ARCANE_CORE_EXPORT Node
   inline Cell cell(Int32 i) const;
 
   //! i-ème arête du noeud
-  EdgeLocalId edgeId(Int32 i) const { return EdgeLocalId(_edgeId(i)); }
+  EdgeLocalId edgeId(Int32 i) const { return _edgeId(i); }
 
   //! i-ème face du noeud
-  FaceLocalId faceId(Int32 i) const { return FaceLocalId(_faceId(i)); }
+  FaceLocalId faceId(Int32 i) const { return _faceId(i); }
 
   //! i-ème maille du noeud
-  CellLocalId cellId(Int32 i) const { return CellLocalId(_cellId(i)); }
+  CellLocalId cellId(Int32 i) const { return _cellId(i); }
 
   //! Liste des arêtes du noeud
   EdgeVectorView edges() const { return _internalEdges(); }
@@ -601,22 +603,13 @@ class ARCANE_CORE_EXPORT Node
   CellVectorView cells() const { return _internalCells(); }
 
   //! Liste des arêtes du noeud
-  EdgeLocalIdView edgeIds() const
-  {
-    return EdgeLocalIdView::fromIds(_edgeIds());
-  }
+  EdgeLocalIdView edgeIds() const { return _edgeIds(); }
 
   //! Liste des faces du noeud
-  FaceLocalIdView faceIds() const
-  {
-    return FaceLocalIdView::fromIds(_faceIds());
-  }
+  FaceLocalIdView faceIds() const { return _faceIds(); }
 
   //! Liste des mailles du noeud
-  CellLocalIdView cellIds() const
-  {
-    return CellLocalIdView::fromIds(_cellIds());
-  }
+  CellLocalIdView cellIds() const { return _cellIds(); }
 
   // AMR
 
@@ -632,6 +625,15 @@ class ARCANE_CORE_EXPORT Node
   ARCANE_DEPRECATED_REASON("Y2022: Do not use this operator. Use operator '.' instead")
   const Node* operator->() const { return this; }
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+inline Node Item::
+_node(Int32 index) const
+{
+  return Node(_connectivity()->nodeBase(m_local_id,index));
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -690,22 +692,17 @@ class ARCANE_CORE_EXPORT ItemWithNodes
   Int32 nbNode() const { return _nbNode(); }
 
   //! i-ème noeud de l'entité
-  Node node(Int32 i) const { return Node(_nodeBase(i)); }
+  Node node(Int32 i) const { return _node(i); }
 
   //! Liste des noeuds de l'entité
   NodeVectorView nodes() const { return _internalNodes(); }
 
   //! Liste des noeuds de l'entité
-  NodeLocalIdView nodeIds() const
-  {
-    return NodeLocalIdView::fromIds(_nodeIds());
+  NodeLocalIdView nodeIds() const { return _nodeIds();
   }
 
   //! i-ème noeud de l'entité.
-  NodeLocalId nodeId(Int32 index) const
-  {
-    return NodeLocalId(_nodeId(index));
-  }
+  NodeLocalId nodeId(Int32 index) const { return _nodeId(index); }
 
   ARCANE_DEPRECATED_REASON("Y2022: Do not use this operator. Use operator '.' instead")
   ItemWithNodes* operator->() { return this; }
@@ -809,13 +806,10 @@ class ARCANE_CORE_EXPORT Edge
   CellVectorView cells() const { return _internalCells(); }
 
   //! i-ème maille de l'arête
-  CellLocalId cellId(Int32 i) const { return CellLocalId(_cellId(i)); }
+  CellLocalId cellId(Int32 i) const { return _cellId(i); }
 
   //! Liste des mailles de l'arête
-  CellLocalIdView cellIds() const
-  {
-    return CellLocalIdView::fromIds(_cellIds());
-  }
+  CellLocalIdView cellIds() const { return _cellIds(); }
 
   //! i-ème face de l'arête
   inline Face face(Int32 i) const;
@@ -824,13 +818,10 @@ class ARCANE_CORE_EXPORT Edge
   FaceVectorView faces() const { return _internalFaces(); }
 
   //! i-ème face de l'arête
-  FaceLocalId faceId(Int32 i) const { return FaceLocalId(_faceId(i)); }
+  FaceLocalId faceId(Int32 i) const { return _faceId(i); }
 
   //! Liste des faces de l'arête
-  FaceLocalIdView faceIds() const
-  {
-    return FaceLocalIdView::fromIds(_faceIds());
-  }
+  FaceLocalIdView faceIds() const { return _faceIds(); }
 
   ARCANE_DEPRECATED_REASON("Y2022: Do not use this operator. Use operator '.' instead")
   Edge* operator->() { return this; }
@@ -838,6 +829,15 @@ class ARCANE_CORE_EXPORT Edge
   ARCANE_DEPRECATED_REASON("Y2022: Do not use this operator. Use operator '.' instead")
   const Edge* operator->() const { return this; }
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+inline Edge Item::
+_edge(Int32 index) const
+{
+  return Edge(_connectivity()->edgeBase(m_local_id,index));
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -928,13 +928,10 @@ class ARCANE_CORE_EXPORT Face
   CellVectorView cells() const { return _internalCells(); }
 
   //! i-ème maille de la face
-  CellLocalId cellId(Int32 i) const { return CellLocalId(_cellId(i)); }
+  CellLocalId cellId(Int32 i) const { return _cellId(i); }
 
   //! Liste des mailles de la face
-  CellLocalIdView cellIds() const
-  {
-    return CellLocalIdView::fromIds(_cellIds());
-  }
+  CellLocalIdView cellIds() const { return _cellIds(); }
 
   /*!
    * \brief Indique si la face est au bord du sous-domaine (i.e nbCell()==1)
@@ -1036,19 +1033,16 @@ class ARCANE_CORE_EXPORT Face
   Int32 nbEdge() const { return _nbEdge(); }
 
   //! i-ème arête de la face
-  Edge edge(Int32 i) const { return Edge(_edgeBase(i)); }
+  Edge edge(Int32 i) const { return _edge(i); }
 
   //! Liste des arêtes de la face
   EdgeVectorView edges() const { return _internalEdges(); }
 
   //! i-ème arête de la face
-  EdgeLocalId edgeId(Int32 i) const { return EdgeLocalId(_edgeId(i)); }
+  EdgeLocalId edgeId(Int32 i) const { return _edgeId(i); }
 
   //! Liste des arêtes de la face
-  EdgeLocalIdView edgeIds() const
-  {
-    return EdgeLocalIdView::fromIds(_edgeIds());
-  }
+  EdgeLocalIdView edgeIds() const { return _edgeIds(); }
 
   ARCANE_DEPRECATED_REASON("Y2022: Do not use this operator. Use operator '.' instead")
   Face* operator->() { return this; }
@@ -1056,6 +1050,15 @@ class ARCANE_CORE_EXPORT Face
   ARCANE_DEPRECATED_REASON("Y2022: Do not use this operator. Use operator '.' instead")
   const Face* operator->() const { return this; }
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+inline Face Item::
+_face(Int32 index) const
+{
+  return Face(_connectivity()->faceBase(m_local_id,index));
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1159,37 +1162,31 @@ class ARCANE_CORE_EXPORT Cell
   Int32 nbFace() const { return _nbFace(); }
 
   //! i-ème face de la maille
-  Face face(Int32 i) const { return Face(_faceBase(i)); }
+  Face face(Int32 i) const { return _face(i); }
 
   //! Liste des faces de la maille
   FaceVectorView faces() const { return _internalFaces(); }
 
   //! i-ème face de la maille
-  FaceLocalId faceId(Int32 i) const { return FaceLocalId(_faceId(i)); }
+  FaceLocalId faceId(Int32 i) const { return _faceId(i); }
 
   //! Liste des faces de la maille
-  FaceLocalIdView faceIds() const
-  {
-    return FaceLocalIdView::fromIds(_faceIds());
-  }
+  FaceLocalIdView faceIds() const { return _faceIds(); }
 
   //! Nombre d'arêtes de la maille
   Int32 nbEdge() const { return _nbEdge(); }
 
   //! i-ème arête de la maille
-  Edge edge(Int32 i) const { return Edge(_edgeBase(i)); }
+  Edge edge(Int32 i) const { return _edge(i); }
 
   //! i-ème arête de la maille
-  EdgeLocalId edgeId(Int32 i) const { return EdgeLocalId(_edgeId(i)); }
+  EdgeLocalId edgeId(Int32 i) const { return _edgeId(i); }
 
   //! Liste des arêtes de la maille
   EdgeVectorView edges() const { return _internalEdges(); }
 
   //! Liste des arêtes de la maille
-  EdgeLocalIdView edgeIds() const
-  {
-    return EdgeLocalIdView::fromIds(_edgeIds());
-  }
+  EdgeLocalIdView edgeIds() const { return _edgeIds(); }
 
   //! AMR
   //! ATT: la notion de parent est utilisé à la fois dans le concept sous-maillages et AMR.
@@ -1274,6 +1271,15 @@ class ARCANE_CORE_EXPORT Cell
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+inline Cell Item::
+_cell(Int32 index) const
+{
+  return Cell(_connectivity()->cellBase(m_local_id,index));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Particule.
  * \ingroup Mesh
@@ -1336,13 +1342,13 @@ class Particle
    * Il faut appeler setCell() avant d'appeler cette fonction.
    * \precondition hasCell() doit être vrai.
    */
-  Cell cell() const { return Cell(_cellBase(0)); }
+  Cell cell() const { return _cell(0); }
 
   //! Maille connectée à la particule
-  CellLocalId cellId() const { return CellLocalId(_cellId(0)); }
+  CellLocalId cellId() const { return _cellId(0); }
 
   //! Vrai si la particule est dans une maille du maillage
-  bool hasCell() const { return (_cellId(0)!=NULL_ITEM_LOCAL_ID); }
+  bool hasCell() const { return (_cellId(0).localId()!=NULL_ITEM_LOCAL_ID); }
 
   /*!
    * \brief Maille à laquelle appartient la particule ou maille nulle.
@@ -1351,10 +1357,10 @@ class Particle
    */
   Cell cellOrNull() const
   {
-    Int32 cell_local_id = _cellId(0);
+    Int32 cell_local_id = _cellId(0).localId();
     if (cell_local_id==NULL_ITEM_LOCAL_ID)
       return Cell();
-    return Cell(_cellBase(0));
+    return _cell(0);
   }
 
   ARCANE_DEPRECATED_REASON("Y2022: Do not use this operator. Use operator '.' instead")
@@ -1442,19 +1448,19 @@ class DoF
 inline Edge Node::
 edge(Int32 i) const
 {
-  return Edge(_edgeBase(i));
+  return _edge(i);
 }
 
 inline Face Node::
 face(Int32 i) const
 {
-  return Face(_faceBase(i));
+  return _face(i);
 }
 
 inline Cell Node::
 cell(Int32 i) const
 {
-  return Cell(_cellBase(i));
+  return _cell(i);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1463,13 +1469,13 @@ cell(Int32 i) const
 inline Face Edge::
 face(Int32 i) const
 {
-  return Face(_faceBase(i));
+  return _face(i);
 }
 
 inline Cell Edge::
 cell(Int32 i) const
 {
-  return Cell(_cellBase(i));
+  return _cell(i);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1503,7 +1509,7 @@ oppositeCell(Cell cell) const
 inline Cell Face::
 cell(Int32 i) const
 {
-  return Cell(_cellBase(i));
+  return _cell(i);
 }
 
 /*---------------------------------------------------------------------------*/
