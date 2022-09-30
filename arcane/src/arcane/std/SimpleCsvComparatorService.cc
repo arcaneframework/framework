@@ -39,7 +39,7 @@ init(ISimpleTableOutput* simple_table_output_ptr)
   ARCANE_CHECK_PTR(simple_table_output_ptr);
   m_simple_table_output_ptr = simple_table_output_ptr;
 
-  if(!m_is_already_init) {
+  if (!m_is_already_init) {
     m_is_already_init = true;
 
     m_simple_table_internal_reference = makeRef(new SimpleTableInternal(mesh()->parallelMng()));
@@ -64,8 +64,8 @@ clear()
 {
   m_simple_table_internal_comparator.clearComparator();
   m_is_file_read = false;
-  
-  if(m_is_already_init) {
+
+  if (m_is_already_init) {
     m_simple_table_internal_reference->clear();
   }
 }
@@ -142,6 +142,7 @@ compareWithReference(Integer rank, bool compare_dimension_too)
   }
   // Si le fichier ne peut pas être lu.
   if (!m_is_file_read && !readReferenceFile(rank)) {
+    error() << "Error with the file reader: invalid file";
     return false;
   }
 
@@ -157,6 +158,7 @@ compareElemWithReference(const String& column_name, const String& row_name, Inte
   }
   // Si le fichier ne peut pas être lu.
   if (!m_is_file_read && !readReferenceFile(rank)) {
+    error() << "Error with the file reader: invalid file";
     return false;
   }
 
@@ -172,6 +174,7 @@ compareElemWithReference(Real elem, const String& column_name, const String& row
   }
   // Si le fichier ne peut pas être lu.
   if (!m_is_file_read && !readReferenceFile(rank)) {
+    error() << "Error with the file reader: invalid file";
     return false;
   }
 

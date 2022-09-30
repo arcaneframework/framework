@@ -67,7 +67,12 @@ readTable(const Directory& src, const String& file_name)
   {
     StringUniqueArray tmp;
     ligne.split(tmp, m_separator);
-    // Normalement, tmp[0] existe toujours (peut-être = à "" (vide)).
+
+    if (tmp.size() == 0) {
+      _closeFile(stream);
+      return false;
+    }
+
     m_simple_table_internal->m_table_name = tmp[0];
     m_simple_table_internal->m_column_names = tmp.subConstView(1, tmp.size());
   }
@@ -95,6 +100,18 @@ readTable(const Directory& src, const String& file_name)
     String ligne(line);
     ligne.split(splitted_line, m_separator);
 
+    // S'il y a une ligne vide, on l'a passe.
+    if (splitted_line.size() == 0) {
+      continue;
+    }
+
+    // Si le nombre de colonnes de la ligne ne correspond pas au nombre
+    // de nom de colonnes, il y a une erreur dans le fichier.
+    if (splitted_line.size() != m_simple_table_internal->m_column_names.size() + 1) {
+      _closeFile(stream);
+      return false;
+    }
+
     // Le premier élement est le nom de ligne.
     m_simple_table_internal->m_row_names.add(splitted_line[0]);
 
@@ -103,7 +120,7 @@ readTable(const Directory& src, const String& file_name)
       std::string std_string = splitted_line[i].localstr();
       std::size_t pos_comma = std_string.find(',');
 
-      if(pos_comma != std::string::npos) {
+      if (pos_comma != std::string::npos) {
         std_string[pos_comma] = '.';
       }
 
