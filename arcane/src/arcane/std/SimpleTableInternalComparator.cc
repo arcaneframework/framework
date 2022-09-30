@@ -57,7 +57,7 @@ compare(bool compare_dimension_too)
 
     auto search_epsilons_row = m_epsilons_row.find(row);
     Real epsilon_row = -1.0;
-    if(search_epsilons_row != m_epsilons_row.end()) {
+    if (search_epsilons_row != m_epsilons_row.end()) {
       epsilon_row = search_epsilons_row->second;
     }
 
@@ -73,28 +73,30 @@ compare(bool compare_dimension_too)
 
       auto search_epsilons_column = m_epsilons_column.find(column);
       Real epsilon_column = -1.0;
-      if(search_epsilons_column != m_epsilons_column.end()) {
+      if (search_epsilons_column != m_epsilons_column.end()) {
         epsilon_column = search_epsilons_column->second;
       }
 
       Real final_epsilon = math::max(epsilon_row, epsilon_column);
 
-      if((final_epsilon < 0 && !math::isNearlyEqual(val1, val2))
-       ||(final_epsilon >= 0 && !math::isNearlyEqualWithEpsilon(val1, val2, final_epsilon))) {
+      if ((final_epsilon < 0 && !math::isNearlyEqual(val1, val2)) || (final_epsilon >= 0 && !math::isNearlyEqualWithEpsilon(val1, val2, final_epsilon))) {
 
-        if(error_count < max_error_print){
-          m_simple_table_internal_reference->m_parallel_mng->traceMng()->warning() 
-            << std::scientific << std::setprecision(std::numeric_limits<Real>::digits10)
-            << "Values not equals -- Column name: \"" << column << "\" -- Row name: \"" << row 
-            << "\" -- Expected value: " << val1 << " -- Found value: " << val2 << " -- Epsilon: " << final_epsilon;
+        if (error_count < max_error_print) {
+          Real diff = math::abs((val1 - val2) / (math::abs(val1) + math::abs(val2)));
+
+          m_simple_table_internal_reference->m_parallel_mng->traceMng()->warning()
+          << std::scientific << std::setprecision(std::numeric_limits<Real>::digits10)
+          << "Values not equals -- Column name: \"" << column << "\" -- Row name: \"" << row
+          << "\" -- Expected value: " << val1 << " -- Found value: " << val2
+          << " -- Epsilon: " << final_epsilon << " -- Relative difference: " << diff;
         }
         error_count++;
       }
     }
   }
-  if(error_count > 0){
+  if (error_count > 0) {
     m_simple_table_internal_reference->m_parallel_mng->traceMng()->warning()
-      << "Number of errors: " << error_count;
+    << "Number of errors: " << error_count;
     return false;
   }
   return true;
@@ -103,8 +105,7 @@ compare(bool compare_dimension_too)
 bool SimpleTableInternalComparator::
 compareElem(const String& column_name, const String& row_name)
 {
-  if (m_simple_table_internal_mng_to_compare.rowPosition(row_name) == -1
-   || m_simple_table_internal_mng_to_compare.columnPosition(column_name) == -1)
+  if (m_simple_table_internal_mng_to_compare.rowPosition(row_name) == -1 || m_simple_table_internal_mng_to_compare.columnPosition(column_name) == -1)
     return false;
 
   const Real val2 = m_simple_table_internal_mng_to_compare.element(column_name, row_name, false);
@@ -115,19 +116,18 @@ compareElem(const String& column_name, const String& row_name)
 bool SimpleTableInternalComparator::
 compareElem(Real elem, const String& column_name, const String& row_name)
 {
-  if (m_simple_table_internal_mng_reference.rowPosition(row_name) == -1
-   || m_simple_table_internal_mng_reference.columnPosition(column_name) == -1)
+  if (m_simple_table_internal_mng_reference.rowPosition(row_name) == -1 || m_simple_table_internal_mng_reference.columnPosition(column_name) == -1)
     return false;
 
   auto search_epsilons_row = m_epsilons_row.find(row_name);
   Real epsilon_row = -1.0;
-  if(search_epsilons_row != m_epsilons_row.end()) {
+  if (search_epsilons_row != m_epsilons_row.end()) {
     epsilon_row = search_epsilons_row->second;
   }
 
   auto search_epsilons_column = m_epsilons_column.find(column_name);
   Real epsilon_column = -1.0;
-  if(search_epsilons_column != m_epsilons_column.end()) {
+  if (search_epsilons_column != m_epsilons_column.end()) {
     epsilon_column = search_epsilons_column->second;
   }
 
@@ -135,13 +135,11 @@ compareElem(Real elem, const String& column_name, const String& row_name)
 
   const Real val1 = m_simple_table_internal_mng_reference.element(column_name, row_name, false);
 
-  if ((final_epsilon < 0 && !math::isNearlyEqual(val1, elem))
-   || (final_epsilon >= 0 && !math::isNearlyEqualWithEpsilon(val1, elem, final_epsilon))) {
+  if ((final_epsilon < 0 && !math::isNearlyEqual(val1, elem)) || (final_epsilon >= 0 && !math::isNearlyEqualWithEpsilon(val1, elem, final_epsilon))) {
     return false;
   }
   return true;
 }
-
 
 void SimpleTableInternalComparator::
 clearComparator()
