@@ -35,6 +35,14 @@ namespace Arcane
 #define ARCANE_CHECK_KIND(type)
 #endif
 
+#define ARCANE_WANT_ITEM_STAT
+
+#ifdef ARCANE_WANT_ITEM_STAT
+#define ARCANE_ITEM_ADD_STAT(var) ++var
+#else
+#define ARCANE_ITEM_ADD_STAT(var)
+#endif
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -149,9 +157,10 @@ class ARCANE_CORE_EXPORT Item
   Item() = default;
 
   //! Construit une référence à l'entité \a internal
+  //ARCANE_DEPRECATED_REASON("Remove this overload")
   Item(ItemInternal* ainternal)
   : m_shared_info(ainternal->m_shared_info)
-  , m_local_id(ainternal->m_local_id) {}
+  , m_local_id(ainternal->m_local_id) { ARCANE_ITEM_ADD_STAT(m_nb_created_from_internal); }
 
   // NOTE: Pour le constructeur suivant; il est indispensable d'utiliser
   // const& pour éviter une ambiguité avec le constructeur par recopie
@@ -160,7 +169,7 @@ class ARCANE_CORE_EXPORT Item
 
   //! Construit une référence à l'entité \a internal
   Item(const ItemInternalPtr* internals,Int32 local_id)
-  : Item(local_id,internals[local_id]->m_shared_info) {}
+  : Item(local_id,internals[local_id]->m_shared_info) { ARCANE_ITEM_ADD_STAT(m_nb_created_from_internalptr); }
 
   //! Opérateur de copie
   Item& operator=(ItemInternal* ainternal)
@@ -351,7 +360,7 @@ class ARCANE_CORE_EXPORT Item
   }
   void _set(const Item& rhs)
   {
-    _setFromInternal(rhs);
+    _setFromItem(rhs);
   }
 
  protected:
@@ -404,19 +413,26 @@ class ARCANE_CORE_EXPORT Item
   }
   void _setFromInternal(ItemBase* rhs)
   {
+    ARCANE_ITEM_ADD_STAT(m_nb_set_from_internal);
     m_local_id = rhs->m_local_id;
     m_shared_info = rhs->m_shared_info;
   }
-  void _setFromInternal(const ItemBase& rhs)
+  void _setFromItem(const Item& rhs)
   {
     m_local_id = rhs.m_local_id;
     m_shared_info = rhs.m_shared_info;
   }
-  void _setFromInternal(const Item& rhs)
-  {
-    m_local_id = rhs.m_local_id;
-    m_shared_info = rhs.m_shared_info;
-  }
+
+ public:
+
+  static void dumpStats(ITraceMng* tm);
+  static void resetStats();
+
+ private:
+
+  static int m_nb_created_from_internal;
+  static int m_nb_created_from_internalptr;
+  static int m_nb_set_from_internal;
 };
 
 /*---------------------------------------------------------------------------*/
