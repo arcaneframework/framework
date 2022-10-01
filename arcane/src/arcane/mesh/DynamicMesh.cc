@@ -205,10 +205,10 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh, bo
   m_properties->setInt32("mesh-version",1);
 
   m_item_internal_list.mesh = this;
-  m_item_internal_list.m_node_shared_info = m_node_family->commonItemSharedInfo();
-  m_item_internal_list.m_edge_shared_info = m_edge_family->commonItemSharedInfo();
-  m_item_internal_list.m_face_shared_info = m_face_family->commonItemSharedInfo();
-  m_item_internal_list.m_cell_shared_info = m_cell_family->commonItemSharedInfo();
+  m_item_internal_list._internalSetNodeSharedInfo(m_node_family->commonItemSharedInfo());
+  m_item_internal_list._internalSetEdgeSharedInfo(m_edge_family->commonItemSharedInfo());
+  m_item_internal_list._internalSetFaceSharedInfo(m_face_family->commonItemSharedInfo());
+  m_item_internal_list._internalSetCellSharedInfo(m_cell_family->commonItemSharedInfo());
 
   info() << "Is AMR Activated? = " << m_is_amr_activated;
 

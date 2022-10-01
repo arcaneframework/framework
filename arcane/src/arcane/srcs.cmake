@@ -175,6 +175,8 @@ set( ARCANE_SOURCES
   MeshArea.h
   MeshAreaAccessor.cc
   MeshAreaAccessor.h
+  MeshItemInternalList.cc
+  MeshItemInternalList.h
   MeshHandle.h
   MeshHandle.cc
   MeshPartInfo.cc
@@ -668,7 +670,6 @@ set( ARCANE_SOURCES
   ItemLoop.h
   Dom.h
   DomDeclaration.h
-  MeshItemInternalList.h
   ModuleProperty.h
   MultiArray2Variable.h
   MultiArray2VariableRef.h

@@ -789,19 +789,19 @@ _updateMeshInternalList(eItemKind kind)
   switch (kind) {
   case IK_Cell:
     m_mesh_item_internal_list.cells = m_default_arcane_families[kind]->itemsInternal();
-    m_mesh_item_internal_list.m_cell_shared_info = m_default_arcane_families[kind]->commonItemSharedInfo();
+    m_mesh_item_internal_list._internalSetCellSharedInfo(m_default_arcane_families[kind]->commonItemSharedInfo());
     break;
   case IK_Face:
     m_mesh_item_internal_list.faces = m_default_arcane_families[kind]->itemsInternal();
-    m_mesh_item_internal_list.m_face_shared_info = m_default_arcane_families[kind]->commonItemSharedInfo();
+    m_mesh_item_internal_list._internalSetFaceSharedInfo(m_default_arcane_families[kind]->commonItemSharedInfo());
     break;
   case IK_Edge:
     m_mesh_item_internal_list.edges = m_default_arcane_families[kind]->itemsInternal();
-    m_mesh_item_internal_list.m_edge_shared_info = m_default_arcane_families[kind]->commonItemSharedInfo();
+    m_mesh_item_internal_list._internalSetEdgeSharedInfo(m_default_arcane_families[kind]->commonItemSharedInfo());
     break;
   case IK_Node:
     m_mesh_item_internal_list.nodes = m_default_arcane_families[kind]->itemsInternal();
-    m_mesh_item_internal_list.m_node_shared_info = m_default_arcane_families[kind]->commonItemSharedInfo();
+    m_mesh_item_internal_list._internalSetNodeSharedInfo(m_default_arcane_families[kind]->commonItemSharedInfo());
     break;
   case IK_DoF:
   case IK_Particle:

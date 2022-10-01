@@ -5,73 +5,46 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshItemInternalList.h                                      (C) 2000-2022 */
+/* MeshItemInternalList.cc                                     (C) 2000-2022 */
 /*                                                                           */
 /* Tableaux d'indirection sur les entités d'un maillage.                     */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_MESHITEMINTERNALLIST_H
-#define ARCANE_MESHITEMINTERNALLIST_H
-/*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArrayView.h"
-#include "arcane/ItemTypes.h"
+#include "arcane/MeshItemInternalList.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
-class ItemSharedInfo;
-class ItemInternalConnectivityList;
 
-namespace mesh
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshItemInternalList::
+_internalSetNodeSharedInfo(ItemSharedInfo* s)
 {
-class DynamicMesh;
-class PolyhedralMesh;
+  m_node_shared_info = s;
 }
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \internal
- * \brief Tableaux d'indirection sur les entités d'un maillage.
- */
-class ARCANE_CORE_EXPORT MeshItemInternalList
+void MeshItemInternalList::
+_internalSetEdgeSharedInfo(ItemSharedInfo* s)
 {
-  // Les deux classes suivantes ont besoin d'accéder aux
-  // méthodes _internalSet*().
-  friend class mesh::DynamicMesh;
-  friend class mesh::PolyhedralMesh;
+  m_edge_shared_info = s;
+}
 
-  friend class ItemInternalConnectivityList;
-  friend class impl::ItemBase;
+void MeshItemInternalList::
+_internalSetFaceSharedInfo(ItemSharedInfo* s)
+{
+  m_face_shared_info = s;
+}
 
- public:
-
-  ItemInternalArrayView nodes;
-  ItemInternalArrayView edges;
-  ItemInternalArrayView faces;
-  ItemInternalArrayView cells;
-  IMesh* mesh = nullptr;
-
- private:
-
-  void _internalSetNodeSharedInfo(ItemSharedInfo* s);
-  void _internalSetEdgeSharedInfo(ItemSharedInfo* s);
-  void _internalSetFaceSharedInfo(ItemSharedInfo* s);
-  void _internalSetCellSharedInfo(ItemSharedInfo* s);
-
- private:
-
-  // Ne pas modifier directement ces champs.
-  // Utiliser les méthodes _internalSet*() correspondantes
-
-  ItemSharedInfo* m_node_shared_info = nullptr;
-  ItemSharedInfo* m_edge_shared_info = nullptr;
-  ItemSharedInfo* m_face_shared_info = nullptr;
-  ItemSharedInfo* m_cell_shared_info = nullptr;
-};
+void MeshItemInternalList::
+_internalSetCellSharedInfo(ItemSharedInfo* s)
+{
+  m_cell_shared_info = s;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -80,6 +53,3 @@ class ARCANE_CORE_EXPORT MeshItemInternalList
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#endif  
-
