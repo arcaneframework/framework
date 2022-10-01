@@ -32,6 +32,14 @@
 #undef null
 #endif
 
+//#define ARCANE_CONNECTIVITYLIST_USE_OWN_SHAREDINFO
+
+#ifdef ARCANE_CONNECTIVITYLIST_USE_OWN_SHAREDINFO
+#define A_INTERNAL_SI(name) m_shared_infos.m_##name
+#else
+#define A_INTERNAL_SI(name) m_items->m_##name##_shared_info
+#endif
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -196,6 +204,18 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
 
  public:
 
+  void updateMeshItemInternalList()
+  {
+#ifdef ARCANE_CONNECTIVITYLIST_USE_OWN_SHAREDINFO
+    m_shared_infos.m_node = m_items->m_node_shared_info;
+    m_shared_infos.m_edge = m_items->m_edge_shared_info;
+    m_shared_infos.m_face = m_items->m_face_shared_info;
+    m_shared_infos.m_cell = m_items->m_cell_shared_info;
+#endif
+  }
+
+ public:
+
   /*!
    * \brief Liste des localId() des entités de type \a item_kind
    * connectées à l'entité de de localid() \a lid.
@@ -299,26 +319,26 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   { return m_items->cells[ _hChildLocalIdV2(lid,aindex) ]; }
 
   ItemBaseBuildInfo nodeBase(Int32 lid,Int32 aindex) const
-  { return ItemBaseBuildInfo(_nodeLocalIdV2(lid,aindex),m_items->m_node_shared_info); }
+  { return ItemBaseBuildInfo(_nodeLocalIdV2(lid,aindex),A_INTERNAL_SI(node)); }
   ItemBaseBuildInfo edgeBase(Int32 lid,Int32 aindex) const
-  { return ItemBaseBuildInfo(_edgeLocalIdV2(lid,aindex),m_items->m_edge_shared_info); }
+  { return ItemBaseBuildInfo(_edgeLocalIdV2(lid,aindex),A_INTERNAL_SI(edge)); }
   ItemBaseBuildInfo faceBase(Int32 lid,Int32 aindex) const
-  { return ItemBaseBuildInfo(_faceLocalIdV2(lid,aindex),m_items->m_face_shared_info); }
+  { return ItemBaseBuildInfo(_faceLocalIdV2(lid,aindex),A_INTERNAL_SI(face)); }
   ItemBaseBuildInfo cellBase(Int32 lid,Int32 aindex) const
-  { return ItemBaseBuildInfo(_cellLocalIdV2(lid,aindex),m_items->m_cell_shared_info); }
+  { return ItemBaseBuildInfo(_cellLocalIdV2(lid,aindex),A_INTERNAL_SI(cell)); }
   ItemBaseBuildInfo hParentBase(Int32 lid,Int32 aindex) const
-  { return ItemBaseBuildInfo(_hParentLocalIdV2(lid,aindex),m_items->m_cell_shared_info); }
+  { return ItemBaseBuildInfo(_hParentLocalIdV2(lid,aindex),A_INTERNAL_SI(cell)); }
   ItemBaseBuildInfo hChildBase(Int32 lid,Int32 aindex) const
-  { return ItemBaseBuildInfo(_hChildLocalIdV2(lid,aindex),m_items->m_cell_shared_info); }
+  { return ItemBaseBuildInfo(_hChildLocalIdV2(lid,aindex),A_INTERNAL_SI(cell)); }
 
   ItemInternalVectorView nodesV2(Int32 lid) const
-  { return ItemInternalVectorView(m_items->m_node_shared_info,_nodeLocalIdsV2(lid),_nbNodeV2(lid)); }
+  { return ItemInternalVectorView(A_INTERNAL_SI(node),_nodeLocalIdsV2(lid),_nbNodeV2(lid)); }
   ItemInternalVectorView edgesV2(Int32 lid) const
-  { return ItemInternalVectorView(m_items->m_edge_shared_info,_edgeLocalIdsV2(lid),_nbEdgeV2(lid)); }
+  { return ItemInternalVectorView(A_INTERNAL_SI(edge),_edgeLocalIdsV2(lid),_nbEdgeV2(lid)); }
   ItemInternalVectorView facesV2(Int32 lid) const
-  { return ItemInternalVectorView(m_items->m_face_shared_info,_faceLocalIdsV2(lid),_nbFaceV2(lid)); }
+  { return ItemInternalVectorView(A_INTERNAL_SI(face),_faceLocalIdsV2(lid),_nbFaceV2(lid)); }
   ItemInternalVectorView cellsV2(Int32 lid) const
-  { return ItemInternalVectorView(m_items->m_cell_shared_info,_cellLocalIdsV2(lid),_nbCellV2(lid)); }
+  { return ItemInternalVectorView(A_INTERNAL_SI(cell),_cellLocalIdsV2(lid),_nbCellV2(lid)); }
 
   Int32ConstArrayView nodeLocalIdsV2(Int32 lid) const
   { return Int32ConstArrayView(_nbNodeV2(lid),_nodeLocalIdsV2(lid)); }
@@ -375,6 +395,12 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
  public:
 
   MeshItemInternalList* m_items;
+
+ private:
+
+#ifdef ARCANE_CONNECTIVITYLIST_USE_OWN_SHAREDINFO
+ impl::MeshItemSharedInfoList m_shared_infos;
+#endif
 
  private:
 

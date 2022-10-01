@@ -24,12 +24,50 @@ namespace Arcane
 {
 class ItemSharedInfo;
 class ItemInternalConnectivityList;
+}
 
-namespace mesh
+namespace Arcane::mesh
 {
 class DynamicMesh;
 class PolyhedralMesh;
 }
+
+namespace Arcane::impl
+{
+/*!
+ * \internal
+ * \brief Liste des ItemSharedInfo associés à un maillage.
+ */
+class MeshItemSharedInfoList
+{
+  friend ItemInternalConnectivityList;
+  friend ItemBase;
+
+ private:
+
+  MeshItemSharedInfoList() = default;
+  MeshItemSharedInfoList(ItemSharedInfo* v)
+  : m_node(v)
+  , m_edge(v)
+  , m_face(v)
+  , m_cell(v)
+  {}
+
+ private:
+
+  ItemSharedInfo* m_node = nullptr;
+  ItemSharedInfo* m_edge = nullptr;
+  ItemSharedInfo* m_face = nullptr;
+  ItemSharedInfo* m_cell = nullptr;
+};
+
+} // namespace Arcane::impl
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -66,11 +104,14 @@ class ARCANE_CORE_EXPORT MeshItemInternalList
 
   // Ne pas modifier directement ces champs.
   // Utiliser les méthodes _internalSet*() correspondantes
-
   ItemSharedInfo* m_node_shared_info = nullptr;
   ItemSharedInfo* m_edge_shared_info = nullptr;
   ItemSharedInfo* m_face_shared_info = nullptr;
   ItemSharedInfo* m_cell_shared_info = nullptr;
+
+ private:
+
+  void _notifyUpdate();
 };
 
 /*---------------------------------------------------------------------------*/
