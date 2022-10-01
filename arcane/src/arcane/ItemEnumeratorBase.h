@@ -195,7 +195,7 @@ class ItemEnumeratorBaseV3T
   ItemEnumeratorBaseV3T(const ItemEnumerator& rhs,bool);
 
   ItemEnumeratorBaseV3T(ItemSharedInfo* shared_info,const Int32* local_ids,Int32 index,Int32 n,
-                        const ItemGroupImpl* agroup,impl::ItemBase item_base)
+                        const ItemGroupImpl* agroup,Item item_base)
   : ItemEnumeratorBaseV3(shared_info,local_ids,index,n,agroup), m_item_for_operator_arrow(item_base)
   {
   }

@@ -5,17 +5,19 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Item.cc                                                     (C) 2000-2021 */
+/* Item.cc                                                     (C) 2000-2022 */
 /*                                                                           */
 /* Classe de base d'un élément du maillage.                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/Item.h"
+
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/NotSupportedException.h"
+#include "arcane/utils/ITraceMng.h"
 
-#include "arcane/Item.h"
 #include "arcane/ItemCompare.h"
 #include "arcane/ItemPrinter.h"
 #include "arcane/MeshItemInternalList.h"
@@ -26,6 +28,10 @@
 
 namespace Arcane
 {
+
+int Item::m_nb_created_from_internal = 0;
+int Item::m_nb_created_from_internalptr = 0;
+int Item::m_nb_set_from_internal = 0;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -73,6 +79,28 @@ _badConversion(eItemKind k1,eItemKind k2) const
 {
   ARCANE_FATAL("Can not convert connectivity view ({0},{1}) to ({2},{3})",
                m_source_kind,m_target_kind,k1,k2);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void Item::
+dumpStats(ITraceMng* tm)
+{
+  tm->info() << "ItemStats: nb_created_from_internal = " << m_nb_created_from_internal;
+  tm->info() << "ItemStats: nb_created_from_internalptr = " << m_nb_created_from_internalptr;
+  tm->info() << "ItemStats: nb_set_from_internal = " << m_nb_set_from_internal;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void Item::
+resetStats()
+{
+  m_nb_created_from_internal = 0;
+  m_nb_created_from_internalptr = 0;
+  m_nb_set_from_internal = 0;
 }
 
 /*---------------------------------------------------------------------------*/

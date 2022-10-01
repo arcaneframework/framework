@@ -1631,6 +1631,8 @@ _dumpTimeInfos(JSONWriter& json_writer)
       ps->dumpJSON(json_writer);
     }
   }
+
+  Item::dumpStats(traceMng());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1802,6 +1804,7 @@ doComputeLoop(Integer max_loop)
   try{
     if (ps)
       ps->initialize();
+    Item::resetStats();
     // Désactive le profiling si demande spécifique
     if (want_specific_profiling)
       ps = nullptr;
