@@ -32,7 +32,18 @@ class ItemVectorView;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \internal
+ * \brief Itérateur pour la classe ItemVectorView.
+ *
+ * Cette classe est interne à Arcane. Elle s'utilise via le for-range:
+ *
+ * \code
+ * ItemVectorView view;
+ * for( Item item : view )
+ *    ;
+ * \endcode
+ */
 class ItemVectorViewConstIterator
 {
  protected:
@@ -82,9 +93,10 @@ class ItemVectorViewConstIterator
   {
     return lhs.m_index<=rhs.m_index;
   }
+  //! Compare les indices d'itération de deux instances
   friend bool operator==(const ThatClass& lhs,const ThatClass& rhs)
   {
-    return lhs.m_shared_info==rhs.m_shared_info && lhs.m_local_ids==rhs.m_local_ids && lhs.m_index==rhs.m_index;
+    return lhs.m_index==rhs.m_index;
   }
   friend bool operator!=(const ThatClass& lhs,const ThatClass& rhs)
   {
