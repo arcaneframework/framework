@@ -113,8 +113,7 @@ class ItemEnumerator
 //! Constructeur seulement utilisé par fromItemEnumerator()
 inline ItemEnumeratorBase::
 ItemEnumeratorBase(const ItemEnumerator& rhs,bool)
-: m_shared_info(rhs.m_shared_info)
-, m_local_ids(rhs.unguardedLocalIds())
+: m_local_ids(rhs.unguardedLocalIds())
 , m_index(rhs.index())
 , m_count(rhs.count())
 , m_group_impl(rhs.group())
@@ -128,6 +127,7 @@ ItemEnumeratorBase(const ItemEnumerator& rhs,bool)
 template<typename ItemType> inline ItemEnumeratorBaseT<ItemType>::
 ItemEnumeratorBaseT(const ItemEnumerator& rhs,bool v)
 : ItemEnumeratorBase(rhs,v)
+, m_shared_info(rhs.m_shared_info)
 {
 }
 
@@ -136,8 +136,7 @@ ItemEnumeratorBaseT(const ItemEnumerator& rhs,bool v)
 
 inline ItemEnumeratorBase::
 ItemEnumeratorBase(const ItemEnumerator& rhs)
-: m_shared_info(rhs.m_shared_info)
-, m_local_ids(rhs.unguardedLocalIds())
+: m_local_ids(rhs.unguardedLocalIds())
 , m_index(rhs.index())
 , m_count(rhs.count())
 , m_group_impl(rhs.group())
@@ -150,6 +149,7 @@ ItemEnumeratorBase(const ItemEnumerator& rhs)
 template<typename ItemType> inline ItemEnumeratorBaseT<ItemType>::
 ItemEnumeratorBaseT(const ItemEnumerator& rhs)
 : ItemEnumeratorBase(rhs)
+, m_shared_info(rhs.m_shared_info)
 {
 }
 

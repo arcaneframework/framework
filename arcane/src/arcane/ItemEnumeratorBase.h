@@ -42,20 +42,19 @@ class ItemEnumeratorBase
  private:
 
   using ItemInternalPtr = ItemInternal*;
-  friend class SimdItemEnumeratorBase;
 
  protected:
 
   ItemEnumeratorBase()
   : m_local_ids(nullptr), m_index(0), m_count(0), m_group_impl(nullptr) { }
-  ItemEnumeratorBase(const ItemInternalPtr* items,const Int32* local_ids,Integer n, const ItemGroupImpl * agroup = nullptr)
-  : m_local_ids(local_ids), m_index(0), m_count(n), m_group_impl(agroup) { _init(items); }
-  ItemEnumeratorBase(ItemSharedInfo* shared_info,const Int32ConstArrayView& local_ids)
-  : m_shared_info(shared_info), m_local_ids(local_ids.data()), m_index(0), m_count(local_ids.size()), m_group_impl(nullptr) { }
-  ItemEnumeratorBase(const ItemInternalArrayView& items,const Int32ConstArrayView& local_ids, const ItemGroupImpl * agroup = nullptr)
-  : m_local_ids(local_ids.data()), m_index(0), m_count(local_ids.size()), m_group_impl(agroup) { _init(items.data()); }
+  ItemEnumeratorBase(const ItemInternalPtr*,const Int32* local_ids,Integer n, const ItemGroupImpl* agroup = nullptr)
+  : m_local_ids(local_ids), m_index(0), m_count(n), m_group_impl(agroup) { }
+  explicit ItemEnumeratorBase(const Int32ConstArrayView& local_ids)
+  : m_local_ids(local_ids.data()), m_index(0), m_count(local_ids.size()), m_group_impl(nullptr) { }
+  ItemEnumeratorBase(const ItemInternalArrayView&,const Int32ConstArrayView& local_ids, const ItemGroupImpl* agroup = nullptr)
+  : m_local_ids(local_ids.data()), m_index(0), m_count(local_ids.size()), m_group_impl(agroup) { }
   ItemEnumeratorBase(const ItemInternalVectorView& view, const ItemGroupImpl* agroup = nullptr)
-  : m_shared_info(view.m_shared_info), m_local_ids(view.localIds().data()),
+  : m_local_ids(view.localIds().data()),
     m_index(0), m_count(view.size()), m_group_impl(agroup) { }
   ItemEnumeratorBase(const ItemVectorView& rhs)
   : ItemEnumeratorBase((const ItemInternalVectorView&)rhs) {}
@@ -90,17 +89,6 @@ class ItemEnumeratorBase
    */
   constexpr const Int32* unguardedLocalIds() const { return m_local_ids; }
 
-  /*!
-   * \internal
-   * \brief Liste des ItemInternal.
-   */
-  constexpr const ItemInternalPtr* unguardedItems() const { return m_shared_info->m_items_internal.data(); }
-
-  /*!
-   * \internal
-   * \brief Partie interne (pour usage interne uniquement).
-   */
-  constexpr ItemInternal* internal() const { return m_shared_info->m_items_internal[m_local_ids[m_index]]; }
 
   /*!
    * \brief Groupe sous-jacent s'il existe (nullptr sinon)
@@ -113,7 +101,6 @@ class ItemEnumeratorBase
 
  protected:
 
-  ItemSharedInfo* m_shared_info = ItemSharedInfo::nullInstance();
   const Int32* ARCANE_RESTRICT m_local_ids;
   Int32 m_index;
   Int32 m_count;
@@ -124,18 +111,15 @@ class ItemEnumeratorBase
   //! Constructeur seulement utilisé par fromItemEnumerator()
   ItemEnumeratorBase(const ItemEnumerator& rhs,bool);
 
-  ItemEnumeratorBase(ItemSharedInfo* shared_info,const Int32* local_ids,Int32 index,Int32 n,
-                       const ItemGroupImpl * agroup)
-  : m_shared_info(shared_info), m_local_ids(local_ids), m_index(index), m_count(n), m_group_impl(agroup)
+  ItemEnumeratorBase(const Int32* local_ids,Int32 index,Int32 n, const ItemGroupImpl * agroup)
+  : m_local_ids(local_ids), m_index(index), m_count(n), m_group_impl(agroup)
   {
   }
+
+  constexpr ItemInternal* _internal(ItemSharedInfo* si) const { return si->m_items_internal[m_local_ids[m_index]]; }
+  constexpr const ItemInternalPtr* _unguardedItems(ItemSharedInfo* si) const { return si->m_items_internal.data(); }
 
  private:
-
-  void _init(const ItemInternalPtr* items)
-  {
-    m_shared_info = (items) ? items[0]->sharedInfo() : ItemSharedInfo::nullInstance();
-  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -150,6 +134,8 @@ template<typename ItemType>
 class ItemEnumeratorBaseT
 : public ItemEnumeratorBase
 {
+  friend class SimdItemEnumeratorBase;
+
  private:
 
   using ItemInternalPtr = ItemInternal*;
@@ -161,13 +147,13 @@ class ItemEnumeratorBaseT
   ItemEnumeratorBaseT()
   : BaseClass() { }
   ItemEnumeratorBaseT(const ItemInternalPtr* items,const Int32* local_ids,Integer n, const ItemGroupImpl* agroup = nullptr)
-  : BaseClass(items,local_ids,n,agroup) {}
+  : BaseClass(items,local_ids,n,agroup) { _init(items); }
   ItemEnumeratorBaseT(ItemSharedInfo* shared_info,const Int32ConstArrayView& local_ids)
-  : BaseClass(shared_info,local_ids){}
-  ItemEnumeratorBaseT(const ItemInternalArrayView& items,const Int32ConstArrayView& local_ids, const ItemGroupImpl * agroup = nullptr)
-  : BaseClass(items,local_ids,agroup){}
-  ItemEnumeratorBaseT(const ItemInternalVectorView& view, const ItemGroupImpl* agroup = nullptr)
-  : BaseClass(view,agroup) {}
+  : BaseClass(local_ids), m_shared_info(shared_info) {}
+  ItemEnumeratorBaseT(const ItemInternalArrayView& items,const Int32ConstArrayView& local_ids, const ItemGroupImpl* agroup = nullptr)
+  : BaseClass(items,local_ids,agroup){ _init(items.data()); }
+  ItemEnumeratorBaseT(const ItemInternalVectorView& view, const ItemGroupImpl* agroup= nullptr)
+  : BaseClass(view,agroup), m_shared_info(view.m_shared_info) {}
   ItemEnumeratorBaseT(const ItemVectorView& rhs)
   : ItemEnumeratorBaseT((const ItemInternalVectorView&)rhs) {}
   ItemEnumeratorBaseT(const ItemVectorViewT<ItemType>& rhs)
@@ -175,6 +161,20 @@ class ItemEnumeratorBaseT
 
   ItemEnumeratorBaseT(const ItemEnumerator& rhs);
   ItemEnumeratorBaseT(const ItemInternalEnumerator& rhs);
+
+ public:
+
+  /*!
+   * \internal
+   * \brief Liste des ItemInternal.
+   */
+  constexpr const ItemInternalPtr* unguardedItems() const { return _unguardedItems(m_shared_info); }
+
+  /*!
+   * \internal
+   * \brief Partie interne (pour usage interne uniquement).
+   */
+  constexpr ItemInternal* internal() const { return _internal(m_shared_info); }
 
  public:
 
@@ -187,6 +187,7 @@ class ItemEnumeratorBaseT
 
  protected:
 
+  ItemSharedInfo* m_shared_info = ItemSharedInfo::nullInstance();
   mutable ItemType m_item_for_operator_arrow = ItemType(NULL_ITEM_LOCAL_ID,nullptr);
 
  protected:
@@ -195,9 +196,14 @@ class ItemEnumeratorBaseT
   ItemEnumeratorBaseT(const ItemEnumerator& rhs,bool);
 
   ItemEnumeratorBaseT(ItemSharedInfo* shared_info,const Int32* local_ids,Int32 index,Int32 n,
-                        const ItemGroupImpl* agroup,Item item_base)
-  : ItemEnumeratorBase(shared_info,local_ids,index,n,agroup), m_item_for_operator_arrow(item_base)
+                      const ItemGroupImpl* agroup,Item item_base)
+  : ItemEnumeratorBase(local_ids,index,n,agroup), m_shared_info(shared_info), m_item_for_operator_arrow(item_base)
   {
+  }
+
+  void _init(const ItemInternalPtr* items)
+  {
+    m_shared_info = (items) ? items[0]->sharedInfo() : ItemSharedInfo::nullInstance();
   }
 };
 
