@@ -56,13 +56,13 @@ class ItemEnumerator
   //   template<class T> friend class ItemEnumeratorBase;
   // mais cela ne fonctionne pas avec GCC 8. On fait donc la spécialisation
   // à la main
-  friend class ItemEnumeratorBaseV3T<Node>;
-  friend class ItemEnumeratorBaseV3T<ItemWithNodes>;
-  friend class ItemEnumeratorBaseV3T<Edge>;
-  friend class ItemEnumeratorBaseV3T<Face>;
-  friend class ItemEnumeratorBaseV3T<Cell>;
-  friend class ItemEnumeratorBaseV3T<Particle>;
-  friend class ItemEnumeratorBaseV3T<DoF>;
+  friend class ItemEnumeratorBaseT<Node>;
+  friend class ItemEnumeratorBaseT<ItemWithNodes>;
+  friend class ItemEnumeratorBaseT<Edge>;
+  friend class ItemEnumeratorBaseT<Face>;
+  friend class ItemEnumeratorBaseT<Cell>;
+  friend class ItemEnumeratorBaseT<Particle>;
+  friend class ItemEnumeratorBaseT<DoF>;
 
  public:
 
@@ -111,8 +111,8 @@ class ItemEnumerator
 /*---------------------------------------------------------------------------*/
 
 //! Constructeur seulement utilisé par fromItemEnumerator()
-inline ItemEnumeratorBaseV3::
-ItemEnumeratorBaseV3(const ItemEnumerator& rhs,bool)
+inline ItemEnumeratorBase::
+ItemEnumeratorBase(const ItemEnumerator& rhs,bool)
 : m_shared_info(rhs.m_shared_info)
 , m_local_ids(rhs.unguardedLocalIds())
 , m_index(rhs.index())
@@ -125,17 +125,17 @@ ItemEnumeratorBaseV3(const ItemEnumerator& rhs,bool)
 /*---------------------------------------------------------------------------*/
 
 //! Constructeur seulement utilisé par fromItemEnumerator()
-template<typename ItemType> inline ItemEnumeratorBaseV3T<ItemType>::
-ItemEnumeratorBaseV3T(const ItemEnumerator& rhs,bool v)
-: ItemEnumeratorBaseV3(rhs,v)
+template<typename ItemType> inline ItemEnumeratorBaseT<ItemType>::
+ItemEnumeratorBaseT(const ItemEnumerator& rhs,bool v)
+: ItemEnumeratorBase(rhs,v)
 {
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-inline ItemEnumeratorBaseV3::
-ItemEnumeratorBaseV3(const ItemEnumerator& rhs)
+inline ItemEnumeratorBase::
+ItemEnumeratorBase(const ItemEnumerator& rhs)
 : m_shared_info(rhs.m_shared_info)
 , m_local_ids(rhs.unguardedLocalIds())
 , m_index(rhs.index())
@@ -147,25 +147,25 @@ ItemEnumeratorBaseV3(const ItemEnumerator& rhs)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename ItemType> inline ItemEnumeratorBaseV3T<ItemType>::
-ItemEnumeratorBaseV3T(const ItemEnumerator& rhs)
-: ItemEnumeratorBaseV3(rhs)
+template<typename ItemType> inline ItemEnumeratorBaseT<ItemType>::
+ItemEnumeratorBaseT(const ItemEnumerator& rhs)
+: ItemEnumeratorBase(rhs)
 {
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename ItemType> inline ItemEnumeratorBaseV3T<ItemType>::
-ItemEnumeratorBaseV3T(const ItemInternalEnumerator& rhs)
-: ItemEnumeratorBaseV3T(ItemEnumerator(rhs))
+template<typename ItemType> inline ItemEnumeratorBaseT<ItemType>::
+ItemEnumeratorBaseT(const ItemInternalEnumerator& rhs)
+: ItemEnumeratorBaseT(ItemEnumerator(rhs))
 {
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename ItemType> inline ItemEnumerator ItemEnumeratorBaseV3T<ItemType>::
+template<typename ItemType> inline ItemEnumerator ItemEnumeratorBaseT<ItemType>::
 toItemEnumerator() const
 {
   return ItemEnumerator(m_shared_info,m_local_ids,m_index,m_count,m_group_impl,m_item_for_operator_arrow);

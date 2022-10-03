@@ -63,7 +63,7 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   friend class ItemInternalVectorView;
   friend class ItemVectorViewConstIterator;
   friend class ItemVectorView;
-  friend class ItemEnumeratorBaseV3;
+  friend class ItemEnumeratorBase;
   friend class ItemCompatibility;
   friend class SimdItemBase;
   friend class SimdItemEnumeratorBase;

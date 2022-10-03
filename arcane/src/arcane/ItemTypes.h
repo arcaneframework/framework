@@ -168,9 +168,7 @@ class ItemEnumeratorT;
 /*---------------------------------------------------------------------------*/
 
 template<typename ItemType>
-class ItemEnumeratorBaseV3T;
-
-template<typename ItemType> using ItemEnumeratorBaseT = ItemEnumeratorBaseV3T<ItemType>;
+class ItemEnumeratorBaseT;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
