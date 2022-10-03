@@ -84,6 +84,8 @@ class ARCANE_CORE_EXPORT Item
   friend class ItemVectorView;
   friend class ItemVectorViewConstIterator;
   friend class SimdItem;
+  friend class SimdItemEnumeratorBase;
+  template<typename ItemType> friend class ItemEnumeratorBaseT;
 
  public:
 

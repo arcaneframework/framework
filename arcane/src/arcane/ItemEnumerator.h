@@ -72,7 +72,7 @@ class ItemEnumerator
  public:
 
   ItemEnumerator() = default;
-  ItemEnumerator(const ItemInternalVectorView& view) : BaseClass(view){}
+  ItemEnumerator(const ItemInternalVectorView& view) : BaseClass(view,nullptr){}
   ItemEnumerator(const ItemInternalEnumerator& rhs) : BaseClass(rhs,true){}
 
   // TODO: make deprecated
@@ -99,9 +99,9 @@ class ItemEnumerator
 
  private:
 
-  ItemEnumerator(ItemSharedInfo* shared_info,const Int32* local_ids,Int32 index,Int32 n,
+  ItemEnumerator(const Int32* local_ids,Int32 index,Int32 n,
                  const ItemGroupImpl* agroup,Item item_base)
-  : BaseClass(shared_info,local_ids,index,n,agroup,item_base){}
+  : BaseClass(local_ids,index,n,agroup,item_base){}
 };
 
 /*---------------------------------------------------------------------------*/
@@ -127,7 +127,7 @@ ItemEnumeratorBase(const ItemEnumerator& rhs,bool)
 template<typename ItemType> inline ItemEnumeratorBaseT<ItemType>::
 ItemEnumeratorBaseT(const ItemEnumerator& rhs,bool v)
 : ItemEnumeratorBase(rhs,v)
-, m_shared_info(rhs.m_shared_info)
+, m_item(rhs.m_item)
 {
 }
 
@@ -149,7 +149,7 @@ ItemEnumeratorBase(const ItemEnumerator& rhs)
 template<typename ItemType> inline ItemEnumeratorBaseT<ItemType>::
 ItemEnumeratorBaseT(const ItemEnumerator& rhs)
 : ItemEnumeratorBase(rhs)
-, m_shared_info(rhs.m_shared_info)
+, m_item(rhs.m_item)
 {
 }
 
@@ -168,7 +168,7 @@ ItemEnumeratorBaseT(const ItemInternalEnumerator& rhs)
 template<typename ItemType> inline ItemEnumerator ItemEnumeratorBaseT<ItemType>::
 toItemEnumerator() const
 {
-  return ItemEnumerator(m_shared_info,m_local_ids,m_index,m_count,m_group_impl,m_item_for_operator_arrow);
+  return ItemEnumerator(m_local_ids,m_index,m_count,m_group_impl,m_item);
 }
 
 /*---------------------------------------------------------------------------*/
