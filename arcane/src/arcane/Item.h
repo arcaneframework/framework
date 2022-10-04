@@ -80,10 +80,12 @@ namespace Arcane
 class ARCANE_CORE_EXPORT Item
 {
   // Pour accéder aux constructeurs privés
-  friend class ItemEnumeratorBaseV3T<Item>;
+  friend class ItemEnumeratorBaseT<Item>;
   friend class ItemVectorView;
   friend class ItemVectorViewConstIterator;
   friend class SimdItem;
+  friend class SimdItemEnumeratorBase;
+  template<typename ItemType> friend class ItemEnumeratorBaseT;
 
  public:
 
@@ -502,7 +504,7 @@ class ARCANE_CORE_EXPORT Node
 : public Item
 {
   // Pour accéder aux constructeurs privés
-  friend class ItemEnumeratorBaseV3T<Node>;
+  friend class ItemEnumeratorBaseT<Node>;
   friend class ItemVectorViewT<Node>;
   friend class ItemVectorViewConstIteratorT<Node>;
   friend class SimdItemT<Node>;
@@ -646,7 +648,7 @@ class ARCANE_CORE_EXPORT ItemWithNodes
 : public Item
 {
   // Pour accéder aux constructeurs privés
-  friend class ItemEnumeratorBaseV3T<ItemWithNodes>;
+  friend class ItemEnumeratorBaseT<ItemWithNodes>;
   friend class ItemVectorViewT<ItemWithNodes>;
   friend class ItemVectorViewConstIteratorT<ItemWithNodes>;
   friend class SimdItemT<ItemWithNodes>;
@@ -725,7 +727,7 @@ class ARCANE_CORE_EXPORT Edge
 : public ItemWithNodes
 {
   // Pour accéder aux constructeurs privés
-  friend class ItemEnumeratorBaseV3T<Edge>;
+  friend class ItemEnumeratorBaseT<Edge>;
   friend class ItemVectorViewT<Edge>;
   friend class ItemVectorViewConstIteratorT<Edge>;
   friend class SimdItemT<Edge>;
@@ -853,7 +855,7 @@ class ARCANE_CORE_EXPORT Face
 : public ItemWithNodes
 {
   // Pour accéder aux constructeurs privés
-  friend class ItemEnumeratorBaseV3T<Face>;
+  friend class ItemEnumeratorBaseT<Face>;
   friend class ItemVectorViewT<Face>;
   friend class ItemVectorViewConstIteratorT<Face>;
   friend class SimdItemT<Face>;
@@ -1093,7 +1095,7 @@ class ARCANE_CORE_EXPORT Cell
 : public ItemWithNodes
 {
   // Pour accéder aux constructeurs privés
-  friend class ItemEnumeratorBaseV3T<Cell>;
+  friend class ItemEnumeratorBaseT<Cell>;
   friend class ItemVectorViewT<Cell>;
   friend class ItemVectorViewConstIteratorT<Cell>;
   friend class SimdItemT<Cell>;
@@ -1288,7 +1290,7 @@ class Particle
 : public Item
 {
   // Pour accéder aux constructeurs privés
-  friend class ItemEnumeratorBaseV3T<Particle>;
+  friend class ItemEnumeratorBaseT<Particle>;
   friend class ItemVectorViewT<Particle>;
   friend class ItemVectorViewConstIteratorT<Particle>;
   friend class SimdItemT<Particle>;
@@ -1388,7 +1390,7 @@ class DoF
 : public Item
 {
   // Pour accéder aux constructeurs privés
-  friend class ItemEnumeratorBaseV3T<DoF>;
+  friend class ItemEnumeratorBaseT<DoF>;
   friend class ItemVectorViewT<DoF>;
   friend class ItemVectorViewConstIteratorT<DoF>;
   friend class SimdItemT<DoF>;

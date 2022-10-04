@@ -384,7 +384,7 @@ class ARCANE_CORE_EXPORT SimdItemEnumeratorBase
   SimdItemEnumeratorBase(const ItemInternalVectorView& view)
   : SimdEnumeratorBase(view.localIds()), m_shared_info(view.m_shared_info) {}
   SimdItemEnumeratorBase(const ItemEnumerator& rhs)
-  : SimdEnumeratorBase(rhs.unguardedLocalIds(),rhs.count()), m_shared_info(rhs.m_shared_info) {}
+  : SimdEnumeratorBase(rhs.unguardedLocalIds(),rhs.count()), m_shared_info(rhs.m_item.m_shared_info) {}
 
   // TODO: rendre obsolète
   SimdItemEnumeratorBase(const ItemInternalPtr* items,const Int32* local_ids,Integer n)
