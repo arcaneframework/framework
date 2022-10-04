@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunCommandLoop.h                                            (C) 2000-2021 */
+/* RunCommandLoop.h                                            (C) 2000-2022 */
 /*                                                                           */
 /* Macros pour exécuter une boucle sur une commande.                         */
 /*---------------------------------------------------------------------------*/
@@ -40,14 +40,14 @@ _applyGenericLoop(RunCommand& command,LoopBoundType<N> bounds,const Lambda& func
   Int64 vsize = bounds.nbElement();
   if (vsize==0)
     return;
-  impl::RunCommandLaunchInfo launch_info(command);
+  impl::RunCommandLaunchInfo launch_info(command,vsize);
   const eExecutionPolicy exec_policy = launch_info.executionPolicy();
   switch(exec_policy){
   case eExecutionPolicy::CUDA:
 #if defined(ARCANE_COMPILING_CUDA)
     {
       launch_info.beginExecute();
-      auto [b,t] = launch_info.computeThreadBlockInfo(vsize);
+      auto [b,t] = launch_info.threadBlockInfo();
       cudaStream_t* s = reinterpret_cast<cudaStream_t*>(launch_info._internalStreamImpl());
       // TODO: utiliser cudaLaunchKernel() à la place.
       impl::doDirectGPULambdaArrayBounds<LoopBoundType<N>,Lambda> <<<b, t, 0, *s>>>(bounds,func);
@@ -60,7 +60,7 @@ _applyGenericLoop(RunCommand& command,LoopBoundType<N> bounds,const Lambda& func
 #if defined(ARCANE_COMPILING_HIP)
     {
       launch_info.beginExecute();
-      auto [b,t] = launch_info.computeThreadBlockInfo(vsize);
+      auto [b,t] = launch_info.threadBlockInfo();
       hipStream_t* s = reinterpret_cast<hipStream_t*>(launch_info._internalStreamImpl());
       auto& loop_func = impl::doDirectGPULambdaArrayBounds<LoopBoundType<N>,Lambda>;
       hipLaunchKernelGGL(loop_func, b, t, 0, *s, bounds, func);

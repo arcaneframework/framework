@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunCommand.cc                                               (C) 2000-2021 */
+/* RunCommand.cc                                               (C) 2000-2022 */
 /*                                                                           */
 /* Gestion d'une commande sur accélérateur.                                  */
 /*---------------------------------------------------------------------------*/
@@ -16,10 +16,13 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/IMemoryAllocator.h"
+#include "arcane/utils/CheckedConvert.h"
 
 #include "arcane/accelerator/core/RunQueueImpl.h"
 #include "arcane/accelerator/core/RunQueue.h"
 #include "arcane/accelerator/core/IReduceMemoryImpl.h"
+
+#include <set>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -48,6 +51,7 @@ class ReduceMemoryImpl
 : public IReduceMemoryImpl
 {
  public:
+
   ReduceMemoryImpl(RunCommandImpl* p)
   : m_command(p)
   {
@@ -58,26 +62,72 @@ class ReduceMemoryImpl
       ARCANE_FATAL("No HostMemory allocator available for accelerator");
     m_size = 128;
     m_managed_memory = m_allocator->allocate(m_size);
+    m_grid_memory_info.m_grid_device_count = reinterpret_cast<unsigned int*>(m_allocator->allocate(sizeof(int)));
+    (*m_grid_memory_info.m_grid_device_count) = 0;
   }
   ~ReduceMemoryImpl()
   {
     m_allocator->deallocate(m_managed_memory);
+    m_allocator->deallocate(m_grid_memory_info.m_grid_memory_value_as_bytes);
+    m_allocator->deallocate(m_grid_memory_info.m_grid_device_count);
   }
+
  public:
-  void* allocateMemory(Int64 s) override
+
+  void* allocateReduceDataMemory(Int64 data_type_size) override
   {
-    if (s>m_size){
-      m_managed_memory = m_allocator->reallocate(m_managed_memory,s);
-      m_size = s;
+    m_data_type_size = data_type_size;
+    if (data_type_size > m_size) {
+      m_managed_memory = m_allocator->reallocate(m_managed_memory, data_type_size);
+      m_size = data_type_size;
     }
     return m_managed_memory;
   }
+  void setGridSizeAndAllocate(Int32 grid_size) override
+  {
+    m_grid_size = grid_size;
+    _allocateGridDataMemory();
+  }
+  Int32 gridSize() const { return m_grid_size; }
+
+  GridMemoryInfo gridMemoryInfo() override
+  {
+    return m_grid_memory_info;
+  }
   void release() override;
+
  private:
+
   RunCommandImpl* m_command;
   IMemoryAllocator* m_allocator;
-  void* m_managed_memory = nullptr; //! Pointeur sur la mémoire allouée
+
+  //! Pointeur vers la mémoire unifiée contenant la donnée réduite
+  void* m_managed_memory = nullptr;
+
+  //! Taille allouée pour \a m_managed_memory
   Int64 m_size = 0;
+
+  //! Taille courante de la grille (nombre de blocs)
+  Int32 m_grid_size = 0;
+
+  //! Taille de la donnée actuelle
+  Int64 m_data_type_size = 0;
+
+  GridMemoryInfo m_grid_memory_info;
+
+ private:
+
+  void _allocateGridDataMemory()
+  {
+    // TODO: pouvoir utiliser un padding pour éviter que les lignes de cache
+    // entre les blocs se chevauchent
+    Int32 total_size = CheckedConvert::toInt32(m_data_type_size * m_grid_size);
+    if (total_size > m_grid_memory_info.m_grid_memory_size) {
+      void* x = m_allocator->reallocate(m_grid_memory_info.m_grid_memory_value_as_bytes, total_size);
+      m_grid_memory_info.m_grid_memory_value_as_bytes = reinterpret_cast<Byte*>(x);
+      m_grid_memory_info.m_grid_memory_size = total_size;
+    }
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -90,20 +140,48 @@ class ReduceMemoryImpl
 class RunCommandImpl
 {
   friend class RunCommand;
+
  public:
+
   RunCommandImpl(RunQueueImpl* queue);
   ~RunCommandImpl();
   RunCommandImpl(const RunCommandImpl&) = delete;
   RunCommandImpl& operator=(const RunCommandImpl&) = delete;
+
  public:
+
   static RunCommandImpl* create(RunQueueImpl* r);
+
  public:
+
   void release();
   const TraceInfo& traceInfo() const { return m_trace_info; }
   const String& kernelName() const { return m_kernel_name; }
+
  public:
+
   void reset();
   impl::IReduceMemoryImpl* getOrCreateReduceMemoryImpl()
+  {
+    ReduceMemoryImpl* p = _getOrCreateReduceMemoryImpl();
+    if (p) {
+      m_active_reduce_memory_list.insert(p);
+    }
+    return p;
+  }
+
+  void releaseReduceMemoryImpl(ReduceMemoryImpl* p)
+  {
+    auto x = m_active_reduce_memory_list.find(p);
+    if (x == m_active_reduce_memory_list.end())
+      ARCANE_FATAL("ReduceMemoryImpl in not in active list");
+    m_active_reduce_memory_list.erase(x);
+    m_reduce_memory_pool.push(p);
+  }
+
+ private:
+
+  ReduceMemoryImpl* _getOrCreateReduceMemoryImpl()
   {
     // Pas besoin d'allouer de la mémoire spécifique si on n'est pas
     // sur un accélérateur
@@ -112,18 +190,16 @@ class RunCommandImpl
 
     auto& pool = m_reduce_memory_pool;
 
-    if (!pool.empty()){
+    if (!pool.empty()) {
       ReduceMemoryImpl* p = pool.top();
       pool.pop();
       return p;
     }
     return new ReduceMemoryImpl(this);
   }
-  void releaseReduceMemoryImpl(ReduceMemoryImpl* p)
-  {
-    m_reduce_memory_pool.push(p);
-  }
+
  public:
+
   RunQueueImpl* m_queue;
   TraceInfo m_trace_info;
   String m_kernel_name;
@@ -132,7 +208,12 @@ class RunCommandImpl
   // par runtime. On peut éventuellement limiter cela si on est sur
   // qu'une commande est associée à un seul type (au sens runtime) de RunQueue.
   std::stack<ReduceMemoryImpl*> m_reduce_memory_pool;
+
+  //! Liste des réductions actives
+  std::set<ReduceMemoryImpl*> m_active_reduce_memory_list;
+
  private:
+
   void _freePools();
 };
 
@@ -160,7 +241,7 @@ RunCommandImpl::
 void RunCommandImpl::
 _freePools()
 {
-  while (!m_reduce_memory_pool.empty()){
+  while (!m_reduce_memory_pool.empty()) {
     delete m_reduce_memory_pool.top();
     m_reduce_memory_pool.pop();
   }
@@ -308,6 +389,19 @@ void RunCommand::
 _internalDestroyImpl(impl::RunCommandImpl* p)
 {
   delete p;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunCommand::
+_allocateReduceMemory(Int32 nb_grid)
+{
+  auto& mem_list = m_p->m_active_reduce_memory_list;
+  if (!mem_list.empty()) {
+    for (auto& x : mem_list)
+      x->setGridSizeAndAllocate(nb_grid);
+  }
 }
 
 /*---------------------------------------------------------------------------*/

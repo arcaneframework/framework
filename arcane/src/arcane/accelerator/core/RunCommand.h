@@ -66,6 +66,10 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunCommand
 
  private:
 
+  void _allocateReduceMemory(Int32 nb_grid);
+
+ private:
+
   RunQueue& m_run_queue;
   impl::RunCommandImpl* m_p;
 };

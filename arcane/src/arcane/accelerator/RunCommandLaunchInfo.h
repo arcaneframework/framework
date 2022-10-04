@@ -40,15 +40,17 @@ class ARCANE_ACCELERATOR_EXPORT RunCommandLaunchInfo
 {
  public:
 
- struct ThreadBlockInfo
+  struct ThreadBlockInfo
   {
-    int nb_block_per_grid;
-    int nb_thread_per_block;
+    int nb_block_per_grid = 0;
+    int nb_thread_per_block = 0;
   };
 
  public:
 
+  ARCANE_DEPRECATED_REASON("Use RunCommandLaunchInfo(RunCommand&,Int64) overload")
   RunCommandLaunchInfo(RunCommand& command);
+  RunCommandLaunchInfo(RunCommand& command, Int64 total_loop_size);
   ~RunCommandLaunchInfo();
   RunCommandLaunchInfo(const RunCommandLaunchInfo&) = delete;
   RunCommandLaunchInfo operator=(const RunCommandLaunchInfo&) = delete;
@@ -73,7 +75,14 @@ class ARCANE_ACCELERATOR_EXPORT RunCommandLaunchInfo
    */
   void endExecute();
 
+  //! Informations sur le nombre de block/thread/grille du noyau à lancer.
+  ThreadBlockInfo threadBlockInfo() const { return m_thread_block_info; }
+
+  //! Calcul le nombre de block/thread/grille du noyau en fonction de \a full_size
   ThreadBlockInfo computeThreadBlockInfo(Int64 full_size) const;
+
+ public:
+
   void* _internalStreamImpl();
 
  private:
@@ -85,10 +94,11 @@ class ARCANE_ACCELERATOR_EXPORT RunCommandLaunchInfo
   IRunQueueStream* m_queue_stream = nullptr;
   eExecutionPolicy m_exec_policy = eExecutionPolicy::Sequential;
   double m_begin_time = 0.0;
+  ThreadBlockInfo m_thread_block_info;
 
  private:
 
- void _begin();
+  void _begin();
 };
 
 /*---------------------------------------------------------------------------*/

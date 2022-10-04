@@ -34,6 +34,12 @@ __device__ __forceinline__ unsigned int getThreadId()
   return threadId;
 }
 
+__device__ __forceinline__ unsigned int getBlockId()
+{
+  int blockId = blockIdx.x + blockIdx.y * gridDim.x;
+  return blockId;
+}
+
 template<typename DataType>
 class CommonCudaHipAtomicAdd;
 template<typename DataType>
@@ -292,6 +298,8 @@ ARCCORE_DEVICE inline Int64 shfl_sync(Int64 var, int laneMask)
 }
 #endif
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 // Cette implémentation est celle de RAJA
 //! reduce values in block into thread 0
 template <typename ReduceOperator,typename T>
@@ -360,43 +368,119 @@ ARCCORE_DEVICE inline T block_reduce(T val, T identity)
   return temp;
 }
 
-template<typename DataType> ARCANE_INLINE_REDUCE ARCCORE_DEVICE
-void ReduceFunctorSum<DataType>::
-_applyDevice(DataType* ptr,DataType v,DataType identity)
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+//! reduce values in grid into thread 0 of last running block
+//  returns true if put reduced value in val
+template <typename ReduceOperator, typename T>
+ARCCORE_DEVICE inline bool
+grid_reduce(T& val,T identity,SmallSpan<T> device_mem,unsigned int* device_count)
 {
-  DataType rv = impl::block_reduce<impl::SimpleSumReduceOperator<DataType>>(v,identity);
-  // Seul le thread 0 de chaque bloc contient la valeur réduite
-  // On utilise ensuite une opération atomique pour la réduction
-  // entre les blocs.
-  // TODO: utiliser une réduction sur la grille via des valeurs temporaires
-  // allouées sur le GPU.
-  if (impl::getThreadId()==0){
-    //printf("Adding value %d\n",rv);
-    impl::CommonCudaHipAtomicAdd<DataType>::apply(ptr,rv);
+  int numBlocks = gridDim.x * gridDim.y * gridDim.z;
+  int numThreads = blockDim.x * blockDim.y * blockDim.z;
+  Int32 wrap_around = numBlocks - 1;
+
+  int blockId = blockIdx.x + gridDim.x * blockIdx.y +
+                (gridDim.x * gridDim.y) * blockIdx.z;
+
+  int threadId = threadIdx.x + blockDim.x * threadIdx.y +
+                 (blockDim.x * blockDim.y) * threadIdx.z;
+
+  T temp = block_reduce<ReduceOperator>(val, identity);
+
+  // one thread per block writes to device_mem
+  bool lastBlock = false;
+  if (threadId == 0) {
+    device_mem[blockId] = temp;
+    // ensure write visible to all threadblocks
+    __threadfence();
+    // increment counter, (wraps back to zero if old count == wrap_around)
+    unsigned int old_count = ::atomicInc(device_count, wrap_around);
+    lastBlock = (old_count == wrap_around);
+  }
+
+  // returns non-zero value if any thread passes in a non-zero value
+  lastBlock = __syncthreads_or(lastBlock);
+
+  // last block accumulates values from device_mem
+  if (lastBlock) {
+    temp = identity;
+
+    for (int i = threadId; i < numBlocks; i += numThreads) {
+      ReduceOperator::apply(temp, device_mem[i]);
+    }
+
+    temp = block_reduce<ReduceOperator>(temp, identity);
+
+    // one thread returns value
+    if (threadId == 0) {
+      val = temp;
+    }
+  }
+
+  return lastBlock && threadId == 0;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType,typename ReduceOperator> ARCANE_INLINE_REDUCE ARCCORE_DEVICE
+void _applyDeviceGeneric(const ReduceDeviceInfo<DataType>& dev_info)
+{
+  SmallSpan<DataType> grid_buffer = dev_info.m_grid_buffer;
+  DataType identity = dev_info.m_identity;
+  unsigned int* device_count = dev_info.m_device_count;
+  DataType* ptr = dev_info.m_final_ptr;
+  DataType v = dev_info.m_current_value;
+  bool do_grid_reduce = dev_info.m_use_grid_reduce;
+
+  //if (impl::getThreadId()==0){
+  //printf("BLOCK ID=%d %p s=%d ptr=%p %p\n",getBlockId(),grid_buffer.data(),grid_buffer.size(),ptr,(void*)device_count);
+  //}
+  if (do_grid_reduce){
+    bool is_done = grid_reduce<ReduceOperator>(v,identity,grid_buffer,device_count);
+    if (is_done){
+      *ptr = v;
+      // Il est important de remettre cette à zéro pour la prochaine utilisation d'un Reducer.
+      (*device_count) = 0;
+    }
+  }
+  else{
+    DataType rv = impl::block_reduce<ReduceOperator>(v,identity);
+    if (impl::getThreadId()==0){
+      CommonCudaHipAtomicMin<DataType>::apply(ptr,rv);
+    }
   }
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> ARCANE_INLINE_REDUCE ARCCORE_DEVICE
+void ReduceFunctorSum<DataType>::
+_applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
+{
+  _applyDeviceGeneric<DataType,impl::SimpleSumReduceOperator<DataType>>(dev_info);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 template<typename DataType> ARCANE_INLINE_REDUCE ARCCORE_DEVICE
 void ReduceFunctorMax<DataType>::
-_applyDevice(DataType* ptr,DataType v,DataType identity)
+_applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
 {
-  DataType rv = impl::block_reduce<impl::SimpleMaxReduceOperator<DataType>>(v,identity);
-  if (impl::getThreadId()==0){
-    impl::CommonCudaHipAtomicMax<DataType>::apply(ptr,rv);
-  }
+  _applyDeviceGeneric<DataType,impl::SimpleMaxReduceOperator<DataType>>(dev_info);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 template<typename DataType> ARCANE_INLINE_REDUCE ARCCORE_DEVICE
 void ReduceFunctorMin<DataType>::
-_applyDevice(DataType* ptr,DataType v,DataType identity)
+_applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
 {
-  //_doPrintMin(v,identity);
-  DataType rv = impl::block_reduce<impl::SimpleMinReduceOperator<DataType>>(v,identity);
-  if (impl::getThreadId()==0){
-    //_doPrintMin(rv,identity);
-    impl::CommonCudaHipAtomicMin<DataType>::apply(ptr,rv);
-    //_doPrintMin(*ptr,identity);
-  }
+  _applyDeviceGeneric<DataType,impl::SimpleMinReduceOperator<DataType>>(dev_info);
 }
 
 /*---------------------------------------------------------------------------*/

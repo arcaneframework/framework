@@ -61,7 +61,7 @@ _applyItems(RunCommand& command,ItemVectorViewT<ItemType> items,Lambda func)
   if (vsize==0)
     return;
   typedef typename ItemType::LocalIdType LocalIdType;
-  impl::RunCommandLaunchInfo launch_info(command);
+  impl::RunCommandLaunchInfo launch_info(command,vsize);
   const eExecutionPolicy exec_policy = launch_info.executionPolicy();
   switch(exec_policy){
   case eExecutionPolicy::CUDA:
@@ -69,7 +69,7 @@ _applyItems(RunCommand& command,ItemVectorViewT<ItemType> items,Lambda func)
     {
       launch_info.beginExecute();
       SmallSpan<const Int32> local_ids = items.localIds();
-      auto [b,t] = launch_info.computeThreadBlockInfo(vsize);
+      auto [b,t] = launch_info.threadBlockInfo();
       cudaStream_t* s = reinterpret_cast<cudaStream_t*>(launch_info._internalStreamImpl());
       // TODO: utiliser cudaLaunchKernel() à la place.
       impl::doIndirectGPULambda<ItemType,Lambda> <<<b,t,0,*s>>>(local_ids,std::forward<Lambda>(func));
@@ -83,7 +83,7 @@ _applyItems(RunCommand& command,ItemVectorViewT<ItemType> items,Lambda func)
     {
       launch_info.beginExecute();
       SmallSpan<const Int32> local_ids = items.localIds();
-      auto [b,t] = launch_info.computeThreadBlockInfo(vsize);
+      auto [b,t] = launch_info.threadBlockInfo();
       hipStream_t* s = reinterpret_cast<hipStream_t*>(launch_info._internalStreamImpl());
       auto& loop_func = impl::doIndirectGPULambda<ItemType,Lambda>;
       hipLaunchKernelGGL(loop_func,b,t,0,*s, local_ids,std::forward<Lambda>(func));
