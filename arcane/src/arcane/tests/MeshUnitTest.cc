@@ -64,6 +64,7 @@
 #include "arcane/IPostProcessorWriter.h"
 
 #include "arcane/ItemVectorView.h"
+#include "arcane/ItemVector.h"
 
 #include "arcane/GeometricUtilities.h"
 
@@ -200,6 +201,7 @@ public:
   void _testDeallocateMesh();
   void _testUnstructuredConnectivities();
   void _testFaces();
+  void _testItemVectorView();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -261,6 +263,7 @@ executeTest()
   if (options()->testVariableWriter())
     _testVariableWriter();
   _testItemArray();
+  _testItemVectorView();
   _testProjection();
   _testVisitors();
   _testSharedItems();
@@ -658,7 +661,8 @@ _testItemAdjency2()
     ENUMERATE_SUB_ITEM(Face,isubface,iface){
       const Face& subface = *isubface;
       total_uid += subface.uniqueId().asInt64();
-      // info() << " SUBITEM #" << isubface.index() << " : " << subface.localId() << " is_boundary=" << (boundary_set.find(subface.localId()) != boundary_set.end());
+      // info() << " SUBITEM #" << isubface.index() << " : " << subface.localId()
+      //<< " is_boundary=" << (boundary_set.find(subface.localId()) != boundary_set.end());
       if (boundary_set.find(subface.localId()) == boundary_set.end())
         fatal() << "Non boundary face [" << subface.localId() << " ] found";
     }
@@ -1060,6 +1064,47 @@ _testItemArray()
       info(7) << "NODE =" << ItemPrinter(*inode);
     }
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshUnitTest::
+_testItemVectorView()
+{
+  ValueChecker vc(A_FUNCINFO);
+  IItemFamily* cell_family = mesh()->cellFamily();
+  CellGroup cells = cell_family->allItems();
+  if (cells.size()<10)
+    return;
+  UniqueArray<Int32> local_ids;
+  ENUMERATE_(Cell,icell,cells){
+    local_ids.add(icell.itemLocalId());
+  }
+  CellVector cell_vector(cell_family,local_ids);
+  CellVectorView cell_vector_view(cell_vector);
+
+  auto cell_iter = cell_vector_view.begin();
+  auto cell_iter2 = cell_iter;
+  ++cell_iter2;
+  vc.areEqual(cell_vector[1],*cell_iter2,"SameCell1");
+  auto cell_iter3 = cell_iter + 5;
+  vc.areEqual(cell_vector[5],*cell_iter3,"SameCell2");
+  auto cell_iter4 = cell_iter3 - 2;
+  vc.areEqual(cell_vector[3],*cell_iter4,"SameCell3");
+  auto diff1 = cell_iter4 - cell_iter3;
+  CellVectorView::const_iterator::difference_type wanted_diff1 = -2;
+  vc.areEqual(wanted_diff1,diff1,"SameDiff1");
+  auto diff2 = cell_iter3 - cell_iter4;
+  CellVectorView::const_iterator::difference_type wanted_diff2 = 2;
+  vc.areEqual(wanted_diff2,diff2,"SameDiff2");
+
+  auto cell_iter5 = std::find(cell_vector_view.begin(),cell_vector_view.end(),cell_vector[12]);
+  auto diff3 = cell_iter5 - cell_vector_view.begin();
+  CellVectorView::const_iterator::difference_type wanted_diff3 = 12;
+  vc.areEqual(wanted_diff3,diff3,"SameDiff3");
+
+  vc.areEqual(cell_vector[12],*cell_iter5,"SameCell4");
 }
 
 /*---------------------------------------------------------------------------*/
