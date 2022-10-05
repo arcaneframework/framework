@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunCommandLaunchInfo.cc                                     (C) 2000-2021 */
+/* RunCommandLaunchInfo.cc                                     (C) 2000-2022 */
 /*                                                                           */
 /* Informations pour l'exécution d'une 'RunCommand'.                         */
 /*---------------------------------------------------------------------------*/
@@ -37,6 +37,17 @@ RunCommandLaunchInfo(RunCommand& command)
 /*---------------------------------------------------------------------------*/
 
 RunCommandLaunchInfo::
+RunCommandLaunchInfo(RunCommand& command,Int64 total_loop_size)
+: m_command(command)
+{
+  m_thread_block_info = computeThreadBlockInfo(total_loop_size);
+  _begin();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+RunCommandLaunchInfo::
 ~RunCommandLaunchInfo()
 {
   // Normalement ce test est toujours faux sauf s'il y a eu une exception
@@ -57,6 +68,7 @@ _begin()
   m_queue_stream = queue._internalStream();
   m_runtime = queue._internalRuntime();
   m_queue_stream->notifyBeginKernel(m_command);
+  m_command._allocateReduceMemory(m_thread_block_info.nb_block_per_grid);
 }
 
 /*---------------------------------------------------------------------------*/
