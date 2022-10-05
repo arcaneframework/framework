@@ -48,55 +48,55 @@ class ItemVectorViewConstIterator
 {
  protected:
   friend class ItemVectorView;
-  typedef ItemInternal* ItemInternalPtr;
-  ItemVectorViewConstIterator(ItemSharedInfo* shared_info,
-                              const Int32* ARCANE_RESTRICT local_ids,
-                              Integer index)
-  : m_shared_info(shared_info), m_local_ids(local_ids), m_index(index){}
+  ItemVectorViewConstIterator(ItemSharedInfo* shared_info,const Int32* local_id_ptr)
+  : m_shared_info(shared_info), m_local_id_ptr(local_id_ptr){}
  public:
+
   typedef ItemVectorViewConstIterator ThatClass;
- public:
   typedef std::random_access_iterator_tag iterator_category;
-  //! Type indexant le tableau
-  typedef const Item* pointer;
-  //! Type indexant le tableau
-  typedef const Item& reference;
   //! Type indexant le tableau
   typedef Item value_type;
   //! Type indexant le tableau
   typedef Integer size_type;
   //! Type d'une distance entre itérateur éléments du tableau
-  typedef Integer difference_type;
+  typedef std::ptrdiff_t difference_type;
 
  public:
 
-  Item operator*() const { return Item(m_local_ids[m_index],m_shared_info); }
-  ThatClass& operator++() { ++m_index; return (*this); }
-  ThatClass& operator--() { --m_index; return (*this); }
-  void operator+=(difference_type v) { m_index += v; }
-  void operator-=(difference_type v) { m_index -= v; }
-  Integer operator-(const ThatClass& b) const
+  //TODO A supprimer avec le C++20
+  typedef const Item* pointer;
+  //TODO A supprimer avec le C++20
+  typedef const Item& reference;
+
+ public:
+
+  Item operator*() const { return Item(*m_local_id_ptr,m_shared_info); }
+  ThatClass& operator++() { ++m_local_id_ptr; return (*this); }
+  ThatClass& operator--() { --m_local_id_ptr; return (*this); }
+  void operator+=(difference_type v) { m_local_id_ptr += v; }
+  void operator-=(difference_type v) { m_local_id_ptr -= v; }
+  difference_type operator-(const ThatClass& b) const
   {
-    return this->m_index - b.m_index;
+    return this->m_local_id_ptr - b.m_local_id_ptr;
   }
   friend ThatClass operator-(const ThatClass& a,difference_type v)
   {
-    Integer index = a.m_index - v;
-    return ThatClass(a.m_shared_info,a.m_local_ids,index);
+    const Int32* ptr = a.m_local_id_ptr - v;
+    return ThatClass(a.m_shared_info,ptr);
   }
   friend ThatClass operator+(const ThatClass& a,difference_type v)
   {
-    Integer index = a.m_index + v;
-    return ThatClass(a.m_shared_info,a.m_local_ids,index);
+    const Int32* ptr = a.m_local_id_ptr + v;
+    return ThatClass(a.m_shared_info,ptr);
   }
   friend bool operator<(const ThatClass& lhs,const ThatClass& rhs)
   {
-    return lhs.m_index<=rhs.m_index;
+    return lhs.m_local_id_ptr <= rhs.m_local_id_ptr;
   }
   //! Compare les indices d'itération de deux instances
   friend bool operator==(const ThatClass& lhs,const ThatClass& rhs)
   {
-    return lhs.m_index==rhs.m_index;
+    return lhs.m_local_id_ptr == rhs.m_local_id_ptr;
   }
   friend bool operator!=(const ThatClass& lhs,const ThatClass& rhs)
   {
@@ -109,14 +109,13 @@ class ItemVectorViewConstIterator
  protected:
 
   ItemSharedInfo* m_shared_info;
-  const Int32* ARCANE_RESTRICT m_local_ids;
-  Integer m_index;
+  const Int32* m_local_id_ptr;
 
  protected:
 
   inline ItemInternal* _itemInternal() const
   {
-    return m_shared_info->m_items_internal[ m_local_ids[m_index] ];
+    return m_shared_info->m_items_internal[ *m_local_id_ptr ];
   }
 };
 
@@ -131,34 +130,39 @@ class ItemVectorViewConstIteratorT
 
  private:
 
-  // Autorisé seulement par ItemVectorViewT.
-  ItemVectorViewConstIteratorT(ItemSharedInfo* shared_info,
-                               const Int32* ARCANE_RESTRICT local_ids,
-                               Integer index)
-  : ItemVectorViewConstIterator(shared_info,local_ids,index){}
+  ItemVectorViewConstIteratorT(ItemSharedInfo* shared_info,const Int32* ARCANE_RESTRICT local_id_ptr)
+  : ItemVectorViewConstIterator(shared_info,local_id_ptr){}
 
  public:
 
   typedef ItemVectorViewConstIteratorT<ItemType> ThatClass;
+  typedef ItemType value_type;
 
  public:
 
-  ItemType operator*() const { return ItemType(m_local_ids[m_index],m_shared_info); }
-  ThatClass& operator++() { ++m_index; return (*this); }
-  ThatClass& operator--() { --m_index; return (*this); }
-  Integer operator-(const ThatClass& b) const
+  //TODO A supprimer avec le C++20
+  typedef const Item* pointer;
+  //TODO A supprimer avec le C++20
+  typedef const Item& reference;
+
+ public:
+
+  ItemType operator*() const { return ItemType(*m_local_id_ptr,m_shared_info); }
+  ThatClass& operator++() { ++m_local_id_ptr; return (*this); }
+  ThatClass& operator--() { --m_local_id_ptr; return (*this); }
+  difference_type operator-(const ThatClass& b) const
   {
-    return this->m_index - b.m_index;
+    return this->m_local_id_ptr - b.m_local_id_ptr;
   }
-  ThatClass operator-(difference_type v) const
+  friend ThatClass operator-(const ThatClass& a,difference_type v)
   {
-    Integer index = m_index - v;
-    return ThatClass(m_shared_info,m_local_ids,index);
+    const Int32* ptr = a.m_local_id_ptr - v;
+    return ThatClass(a.m_shared_info,ptr);
   }
-  ThatClass operator+(difference_type v) const
+  friend ThatClass operator+(const ThatClass& a,difference_type v)
   {
-    Integer index = m_index + v;
-    return ThatClass(m_shared_info,m_local_ids,index);
+    const Int32* ptr = a.m_local_id_ptr + v;
+    return ThatClass(a.m_shared_info,ptr);
   }
 
  public:
@@ -181,6 +185,10 @@ class ARCANE_CORE_EXPORT ItemVectorView
  public:
 
   using const_iterator = ItemVectorViewConstIterator;
+  using difference_type = std::ptrdiff_t;
+  using value_type = Item;
+  using reference_type = Item&;
+  using const_reference_type = const Item&;
 
  public:
 
@@ -237,11 +245,11 @@ class ARCANE_CORE_EXPORT ItemVectorView
   }
   inline const_iterator begin() const
   {
-    return const_iterator(m_shared_info,m_local_ids.data(),0);
+    return const_iterator(m_shared_info,m_local_ids.data());
   }
   inline const_iterator end() const
   {
-    return const_iterator(m_shared_info,m_local_ids.data(),this->size());
+    return const_iterator(m_shared_info,m_local_ids.data()+this->size());
   }
   //! Vue sur le tableau des indices
   inline ItemIndexArrayView indexes() const { return m_local_ids; }
@@ -276,6 +284,10 @@ class ItemVectorViewT
  public:
 
   using const_iterator = ItemVectorViewConstIteratorT<ItemType>;
+  using difference_type = std::ptrdiff_t;
+  using value_type = ItemType;
+  using reference_type = ItemType&;
+  using const_reference_type = const ItemType&;
 
  public:
 
@@ -318,11 +330,11 @@ class ItemVectorViewT
   }
   inline const_iterator begin() const
   {
-    return const_iterator(m_shared_info,m_local_ids.data(),0);
+    return const_iterator(m_shared_info,m_local_ids.data());
   }
   inline const_iterator end() const
   {
-    return const_iterator(m_shared_info,m_local_ids.data(),this->size());
+    return const_iterator(m_shared_info,m_local_ids.data()+this->size());
   }
 };
 
