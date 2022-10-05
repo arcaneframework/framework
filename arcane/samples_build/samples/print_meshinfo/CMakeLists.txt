@@ -1,4 +1,4 @@
-project(PrintMeshInfo LANGUAGES CXX)
+project(PrintMeshInfo LANGUAGES C CXX)
 
 find_package(Arcane)
 add_executable(PrintMeshInfo main.cc)

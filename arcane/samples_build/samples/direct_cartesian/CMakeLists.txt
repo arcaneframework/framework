@@ -1,4 +1,4 @@
-project(DirectCartesian LANGUAGES CXX)
+project(DirectCartesian LANGUAGES C CXX)
 
 find_package(Arcane REQUIRED)
 add_executable(DirectCartesian main.cc)

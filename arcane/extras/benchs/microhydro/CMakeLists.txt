@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.18)
-project(MicroHydro LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.21)
+project(MicroHydro LANGUAGES C CXX)
 
 find_package(Arcane REQUIRED)
 
