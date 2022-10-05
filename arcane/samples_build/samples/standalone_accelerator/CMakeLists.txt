@@ -1,4 +1,4 @@
-project(StandaloneAccelerator LANGUAGES CXX)
+project(StandaloneAccelerator LANGUAGES C CXX)
 
 find_package(Arcane REQUIRED)
 add_executable(StandaloneAccelerator main.cc)

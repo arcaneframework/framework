@@ -1,4 +1,4 @@
-﻿cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
+﻿cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 
 message(STATUS "CMAKE_SOURCE_DIR=${CMAKE_SOURCE_DIR}")
 
@@ -32,13 +32,6 @@ endif()
 # An imported target missing its location property fails during generation.
 if(POLICY CMP0111)
   cmake_policy(SET CMP0111 NEW)
-endif()
-
-# La version 3.21 est nécessaire sous windows pour:
-# - avoir la commande configure_file() avec l'argument SOURCE_PERMISSION
-# - avoir la variable TARGET_RUNTIME_DLLS pour connaitre les DLLs nécessaires à une cible.
-if(WIN32)
-  cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 endif()
 
 # ----------------------------------------------------------------------------
@@ -859,7 +852,6 @@ endif()
 
 if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP")
   # Il faut au moins CMake 3.21 pour qu'il reconnaise langage HIP
-  cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
   enable_language(HIP)
   add_subdirectory(src/arcane/accelerator/hip)
 endif()

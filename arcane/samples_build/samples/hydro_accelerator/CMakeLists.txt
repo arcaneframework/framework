@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.17)
-project(HydroAccelerator LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.21)
+project(HydroAccelerator LANGUAGES C CXX)
 
 find_package(Arcane REQUIRED)
 

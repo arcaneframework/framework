@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.18)
-project(HoneyCombHeat LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.21)
+project(HoneyCombHeat LANGUAGES C CXX)
 
 find_package(Arcane REQUIRED)
 

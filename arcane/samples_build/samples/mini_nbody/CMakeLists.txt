@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
-project(MiniNbody LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
+project(MiniNbody LANGUAGES C CXX)
 
 find_package(Arcane REQUIRED)
 add_executable(MiniNbody main.cc)

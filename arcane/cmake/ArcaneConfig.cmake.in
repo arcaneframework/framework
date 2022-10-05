@@ -2,10 +2,7 @@ set(Arcane_VERSION @Arcane_VERSION@)
 
 @PACKAGE_INIT@
 
-cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
-if(WIN32)
-  cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
-endif()
+cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 
 # ----------------------------------------------------------------------------
 
@@ -129,7 +126,6 @@ macro(arcane_internal_enable_hip)
     message(STATUS "ArcaneHIP: CMAKE_HIP_COMPILER = ${CMAKE_HIP_COMPILER}")
 
     # Il faut au moins la version 3.21 de CMake pour HIP
-    cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
     enable_language(HIP)
     if (NOT CMAKE_HIP_ARCHITECTURES)
       set(CMAKE_HIP_ARCHITECTURES ${ARCANE_DEFAULT_HIP_ARCHITECTURES} CACHE STRING "Default architectures" FORCE)
