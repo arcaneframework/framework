@@ -168,6 +168,18 @@ TEST(NumArray3,Misc)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace
+{
+NumArray<int,MDDim1> _createNumArray(Int32 size)
+{
+  std::cout << "IN_CREATE_1\n";
+  NumArray<int,MDDim1> a(size);
+  std::cout << "IN_CREATE_2\n";
+  for(Int32 i=0; i<size; ++i )
+    a(i) = size+i+2;
+  return a;
+}
+}
 TEST(NumArray3,Copy)
 {
   int nb_x = 3;
@@ -197,6 +209,35 @@ TEST(NumArray3,Copy)
     vi2 = vi1;
     ASSERT_EQ(vi1.to1DSpan(),vi0.to1DSpan());
     ASSERT_EQ(vi2.to1DSpan(),vi1.to1DSpan());
+  }
+}
+
+TEST(NumArray3,Move)
+{
+  // Test NumArray::NumArray(NumArray&&)
+  {
+    std::cout << "PART_1\n";
+    NumArray<Int32,MDDim1> test_move(5);
+    test_move.fill(3);
+    Int32 wanted_size1 = 23;
+    test_move = _createNumArray(wanted_size1);
+    std::cout << "PART_2\n";
+    ASSERT_EQ(test_move.totalNbElement(),wanted_size1) << "Bad size (test move 1)";
+    ASSERT_EQ(test_move[6],wanted_size1+8) << "Bad size (test move 2)";
+    Int32 wanted_size2 = 17;
+    test_move = _createNumArray(wanted_size2);
+    std::cout << "PART_3\n";
+    ASSERT_EQ(test_move.totalNbElement(),wanted_size2) << "Bad size (test move 3)";
+    ASSERT_EQ(test_move[3],wanted_size2+5) << "Bad size (test move 4)";
+  }
+  // Test NumArray::operator=(NumArray&&)
+  {
+    Int32 wanted_size1 = 31;
+    std::cout << "PART_4\n";
+    NumArray<Int32,MDDim1> test_move(_createNumArray(wanted_size1));
+    std::cout << "PART_5\n";
+    ASSERT_EQ(test_move.totalNbElement(),wanted_size1) << "Bad size (test move 1)";
+    ASSERT_EQ(test_move[7],wanted_size1+9) << "Bad size (test move 2)";
   }
 }
 
