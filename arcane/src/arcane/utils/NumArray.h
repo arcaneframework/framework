@@ -53,6 +53,7 @@ namespace impl
   {
    private:
     using BaseClass = Arccore::Array<DataType>;
+    using ThatClass = NumArrayContainer<DataType>;
    public:
     using BaseClass::capacity;
     using BaseClass::fill;
@@ -61,17 +62,27 @@ namespace impl
     {
       this->_initFromAllocator(a,0);
     }
-    NumArrayContainer(const NumArrayContainer<DataType>& rhs) : BaseClass()
+    NumArrayContainer(const ThatClass& rhs) : BaseClass()
     {
       this->_initFromSpan(rhs.to1DSpan());
     }
-    NumArrayContainer<DataType>& operator=(const NumArrayContainer<DataType>& rhs)
+    NumArrayContainer(ThatClass&& rhs)
+    : BaseClass(std::move(rhs))
+    {
+    }
+    ThatClass& operator=(const ThatClass& rhs)
     {
       if (this!=&rhs){
         BaseClass::_copy(rhs.data());
       }
       return (*this);
     }
+    ThatClass& operator=(ThatClass&& rhs)
+    {
+      this->_move(rhs);
+      return (*this);
+    }
+
    public:
     void resize(Int64 new_size) { BaseClass::_resize(new_size); }
     Span<DataType> to1DSpan() { return BaseClass::span(); }
@@ -132,6 +143,7 @@ class NumArrayBase
   using SpanType = MDSpan<DataType,RankValue,LayoutType>;
   using ArrayWrapper = impl::NumArrayContainer<DataType>;
   using ArrayBoundsIndexType = typename SpanType::ArrayBoundsIndexType;
+  using ThatClass = NumArrayBase<DataType,RankValue,LayoutType>;
 
  public:
 
@@ -162,6 +174,10 @@ class NumArrayBase
   {
     resize(extents);
   }
+  NumArrayBase(const ThatClass&) = default;
+  NumArrayBase(ThatClass&&) = default;
+  ThatClass& operator=(ThatClass&&) = default;
+  ThatClass& operator=(const ThatClass&) = default;
 
  private:
   void _resize()
@@ -259,6 +275,7 @@ class NumArray<DataType,MDDim1,LayoutType>
   using BaseClass::s;
   using ConstSpanType = MDSpan<const DataType,MDDim1,LayoutType>;
   using SpanType = MDSpan<DataType,MDDim1,LayoutType>;
+  using ThatClass = NumArray<DataType,MDDim1,LayoutType>;
  private:
   using BaseClass::m_span;
  public:
@@ -286,6 +303,10 @@ class NumArray<DataType,MDDim1,LayoutType>
   : NumArray(SmallSpan<const DataType>(v.data(),arcaneCheckArraySize(v.size())))
   {
   }
+  NumArray(const ThatClass&) = default;
+  NumArray(ThatClass&&) = default;
+  ThatClass& operator=(ThatClass&&) = default;
+  ThatClass& operator=(const ThatClass&) = default;
  public:
 
   void resize(Int32 dim1_size)
@@ -350,6 +371,7 @@ class NumArray<DataType,MDDim2,LayoutType>
   using BaseClass::resize;
   using BaseClass::operator();
   using BaseClass::s;
+  using ThatClass = NumArray<DataType,MDDim2,LayoutType>;
  private:
   using BaseClass::m_span;
  public:
@@ -372,6 +394,10 @@ class NumArray<DataType,MDDim2,LayoutType>
   {
     this->m_data.copyInitializerList(alist);
   }
+  NumArray(const ThatClass&) = default;
+  NumArray(ThatClass&&) = default;
+  ThatClass& operator=(ThatClass&&) = default;
+  ThatClass& operator=(const ThatClass&) = default;
  public:
   void resize(Int32 dim1_size,Int32 dim2_size)
   {
@@ -434,6 +460,7 @@ class NumArray<DataType,MDDim3,LayoutType>
   using BaseClass::resize;
   using BaseClass::operator();
   using BaseClass::s;
+  using ThatClass = NumArray<DataType,MDDim3,LayoutType>;
  private:
   using BaseClass::m_span;
  public:
@@ -444,6 +471,10 @@ class NumArray<DataType,MDDim3,LayoutType>
   : BaseClass(ArrayExtents<MDDim3>(dim1_size,dim2_size,dim3_size)){}
   NumArray(Int32 dim1_size,Int32 dim2_size,Int32 dim3_size,eMemoryRessource r)
   : BaseClass(ArrayExtents<MDDim3>{dim1_size,dim2_size,dim3_size},r){}
+  NumArray(const ThatClass&) = default;
+  NumArray(ThatClass&&) = default;
+  ThatClass& operator=(ThatClass&&) = default;
+  ThatClass& operator=(const ThatClass&) = default;
  public:
   void resize(Int32 dim1_size,Int32 dim2_size,Int32 dim3_size)
   {
@@ -511,6 +542,7 @@ class NumArray<DataType,MDDim4,LayoutType>
   using BaseClass::resize;
   using BaseClass::operator();
   using BaseClass::s;
+  using ThatClass = NumArray<DataType,MDDim4,LayoutType>;
  private:
   using BaseClass::m_span;
  public:
@@ -523,6 +555,10 @@ class NumArray<DataType,MDDim4,LayoutType>
   NumArray(Int32 dim1_size,Int32 dim2_size,
            Int32 dim3_size,Int32 dim4_size,eMemoryRessource r)
   : BaseClass(ArrayExtents<MDDim4>{dim1_size,dim2_size,dim3_size,dim4_size},r){}
+  NumArray(const ThatClass&) = default;
+  NumArray(ThatClass&&) = default;
+  ThatClass& operator=(ThatClass&&) = default;
+  ThatClass& operator=(const ThatClass&) = default;
  public:
   void resize(Int32 dim1_size,Int32 dim2_size,Int32 dim3_size,Int32 dim4_size)
   {
