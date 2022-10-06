@@ -75,8 +75,8 @@ class ARCANE_CORE_EXPORT CaseFunctionBuildInfo
  * \ingroup CaseOption
  */
 class ARCANE_CORE_EXPORT CaseFunction
-: public ICaseFunction
-, private ReferenceCounterImpl
+: private ReferenceCounterImpl
+, public ICaseFunction
 {
   ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
 

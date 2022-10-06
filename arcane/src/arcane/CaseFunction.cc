@@ -252,7 +252,7 @@ _applyParamTransform(Integer& value) const
 Ref<ICaseFunction> CaseFunction::
 toReference()
 {
-  return Arccore::makeRef<ICaseFunction>(this);
+  return Arccore::makeRefFromInstance<ICaseFunction>(this);
 }
 
 /*---------------------------------------------------------------------------*/
