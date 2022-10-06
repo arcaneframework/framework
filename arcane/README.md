@@ -29,8 +29,8 @@ Un compilateur supportant le C++17:
 
 Les outils et bibliothèques suivants sont requis:
 
-- [CMake 3.18+](https://cmake.org) (3.21+ pour les plateformes Windows)
-- [.Net Core 3.1+](https://dotnet.microsoft.com/download) (Version `.Net 6` recommandée)
+- [CMake 3.21+](https://cmake.org)
+- [.Net Core 6+](https://dotnet.microsoft.com/download)
 - [GLib](https://www.gtk.org/)
 - [LibXml2](http://www.xmlsoft.org/)
 
@@ -114,9 +114,6 @@ Compute) via la variable `CMAKE_CUDA_ARCHITECTURES`, par exemple
 `-DCMAKE_CUDA_ARCHITECTURES=80`.
 
 ##### Compilation AMD ROCM/HIP
-
-La version 3.21 de CMake est nécessaire pour compiler pour les GPU
-AMD.
 
 Pour compiler pour les GPU AMD (comme par exemple les GPU MI100 ou
 MI250) il faut avoir auparavant installer la bibliothèque [ROCM](https://docs.amd.com/). Lors

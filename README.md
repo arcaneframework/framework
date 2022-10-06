@@ -138,6 +138,12 @@ export PATH=${MY_CMAKE_INSTALL_PATH}/bin:${PATH}
 cmake --version
 ~~~
 
+Vous pouvez aussi installer directement CMake via [snap](https://snapcraft.io/):
+~~~{sh}
+sudo snap install --classic cmake
+~~~
+
+
 ### Environnement `.Net`
 
 L'environnement `.Net` est accessible via `apt` mais vous pouvez aussi
@@ -146,10 +152,10 @@ fichiers nécessaires. Pour l'architecture `x64`, les commandes
 suivantes installent l'environnement dans le répertoire `$HOME/dotnet`.
 
 ~~~{sh}
-wget https://download.visualstudio.microsoft.com/download/pr/5e689959-c361-447f-af43-7c9da2595cc6/7cbba6786fe0c132d3c5a6053c85f80b/dotnet-sdk-6.0.103-linux-x64.tar.gz
-mkdir -p $HOME/dotnet && tar zxf dotnet-sdk-6.0.103-linux-x64.tar.gz -C $HOME/dotnet
+wget https://download.visualstudio.microsoft.com/download/pr/372b11de-1321-44f3-aad7-040842babe62/c5925f9f856c3a299e97c80283317275/dotnet-sdk-6.0.304-linux-x64.tar.gz
+mkdir -p $HOME/dotnet && tar zxf dotnet-sdk-6.0.304-linux-x64.tar.gz -C $HOME/dotnet
 export DOTNET_ROOT=$HOME/dotnet
-export PATH=$PATH:$HOME/dotnet
+export PATH=$HOME/dotnet:$PATH:
 ~~~
 
 Pour d'autres architectures, la page [Download
@@ -163,11 +169,55 @@ nécessaires pour Arcane (ainsi que les dépendances optionnelles `HDF5` et `Par
 
 ~~~{sh}
 sudo apt-get update
-sudo apt-get install -y apt-utils build-essential iputils-ping python3 git gfortran libglib2.0-dev libxml2-dev libhdf5-openmpi-dev libparmetis-dev wget
+sudo apt-get install -y apt-utils build-essential iputils-ping python3 \
+git gfortran libglib2.0-dev libxml2-dev libhdf5-openmpi-dev \
+libparmetis-dev wget
 wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
 sudo dpkg -i packages-microsoft-prod.deb
 sudo apt-get update
 sudo apt-get install -y apt-transport-https dotnet-sdk-6.0
+~~~
+
+### Ubuntu 22.04 via les packages systèmes
+
+Sur Ubuntu 22.04, les versions de CMake et de '.Net' sont suffisamment
+récentes pour pouvoir être installés via les packages système.
+
+Les commandes suivantes permettent d'installer les dépendances
+nécessaires pour Arcane (ainsi que les dépendances optionnelles `HDF5` et `ParMetis`):
+
+~~~{sh}
+sudo apt-get update
+sudo apt-get install -y apt-utils build-essential iputils-ping python3 \
+git gfortran libglib2.0-dev libxml2-dev libhdf5-openmpi-dev \
+libparmetis-dev dotnet6 cmake
+~~~
+
+Il est aussi possible d'installer les packages optionnels suivants:
+
+~~~{sh}
+# Pour google test:
+sudo apt-get install -y googletest
+# Pour Ninja:
+sudo apt-get install -y ninja-build
+# Pour le wrapper C#:
+sudo apt-get install -y swig4.0
+# Pour PETSc
+sudo apt-get install -y libpetsc-real-dev
+# Pour Trilinos
+sudo apt-get install -y libtrilinos-teuchos-dev libtrilinos-epetra-dev \
+libtrilinos-tpetra-dev libtrilinos-kokkos-dev libtrilinos-ifpack2-dev \
+libtrilinos-ifpack-dev libtrilinos-amesos-dev libtrilinos-galeri-dev \
+libtrilinos-xpetra-dev libtrilinos-epetraext-dev \
+libtrilinos-triutils-dev libtrilinos-thyra-dev \
+libtrilinos-kokkos-kernels-dev libtrilinos-rtop-dev \
+libtrilinos-isorropia-dev libtrilinos-belos-dev \
+# Pour Zoltan
+sudo apt-get install -y libtrilinos-ifpack-dev libtrilinos-anasazi-dev \
+libtrilinos-amesos2-dev libtrilinos-shards-dev libtrilinos-muelu-dev \
+libtrilinos-intrepid2-dev libtrilinos-teko-dev libtrilinos-sacado-dev \
+libtrilinos-stratimikos-dev libtrilinos-shylu-dev \
+libtrilinos-zoltan-dev libtrilinos-zoltan2-dev
 ~~~
 
 ### Arch Linux/Manjaro via Pacman/YAY
