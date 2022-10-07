@@ -135,6 +135,7 @@ class ARCANE_UTILS_EXPORT Real3
 
   //! Construit l'instance avec le triplet (v,v,v).
   constexpr ARCCORE_HOST_DEVICE explicit Real3(Real v)
+  : Real3POD()
   {
     x = y = z = v;
   }

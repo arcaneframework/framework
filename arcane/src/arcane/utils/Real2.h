@@ -121,6 +121,7 @@ class ARCANE_UTILS_EXPORT Real2
 
   //! Construit l'instance avec le triplet (v,v,v).
   constexpr ARCCORE_HOST_DEVICE explicit Real2(Real v)
+  : Real2POD()
   {
     x = y = v;
   }
