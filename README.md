@@ -124,7 +124,7 @@ nécessaires.
 
 ### CMake
 
-Il faut au moins la version 3.18 de CMake. Si elle n'est pas présente sur votre système, la commande
+Il faut au moins la version 3.21 de CMake. Si elle n'est pas présente sur votre système, la commande
 suivante permet de l'installer dans `/usr/local`. Il faudra ensuite
 ajouter le chemin correspondant dans la variable d'environnement PATH;
 
@@ -189,8 +189,8 @@ nécessaires pour Arcane (ainsi que les dépendances optionnelles `HDF5` et `Par
 ~~~{sh}
 sudo apt-get update
 sudo apt-get install -y apt-utils build-essential iputils-ping python3 \
-git gfortran libglib2.0-dev libxml2-dev libhdf5-openmpi-dev \
-libparmetis-dev dotnet6 cmake
+  git gfortran libglib2.0-dev libxml2-dev libhdf5-openmpi-dev \
+  libparmetis-dev dotnet6 cmake
 ~~~
 
 Il est aussi possible d'installer les packages optionnels suivants:
@@ -198,26 +198,31 @@ Il est aussi possible d'installer les packages optionnels suivants:
 ~~~{sh}
 # Pour google test:
 sudo apt-get install -y googletest
+
 # Pour Ninja:
 sudo apt-get install -y ninja-build
+
 # Pour le wrapper C#:
 sudo apt-get install -y swig4.0
+
 # Pour PETSc
 sudo apt-get install -y libpetsc-real-dev
+
 # Pour Trilinos
 sudo apt-get install -y libtrilinos-teuchos-dev libtrilinos-epetra-dev \
-libtrilinos-tpetra-dev libtrilinos-kokkos-dev libtrilinos-ifpack2-dev \
-libtrilinos-ifpack-dev libtrilinos-amesos-dev libtrilinos-galeri-dev \
-libtrilinos-xpetra-dev libtrilinos-epetraext-dev \
-libtrilinos-triutils-dev libtrilinos-thyra-dev \
-libtrilinos-kokkos-kernels-dev libtrilinos-rtop-dev \
-libtrilinos-isorropia-dev libtrilinos-belos-dev \
+  libtrilinos-tpetra-dev libtrilinos-kokkos-dev libtrilinos-ifpack2-dev \
+  libtrilinos-ifpack-dev libtrilinos-amesos-dev libtrilinos-galeri-dev \
+  libtrilinos-xpetra-dev libtrilinos-epetraext-dev \
+  libtrilinos-triutils-dev libtrilinos-thyra-dev \
+  libtrilinos-kokkos-kernels-dev libtrilinos-rtop-dev \
+  libtrilinos-isorropia-dev libtrilinos-belos-dev \
+
 # Pour Zoltan
 sudo apt-get install -y libtrilinos-ifpack-dev libtrilinos-anasazi-dev \
-libtrilinos-amesos2-dev libtrilinos-shards-dev libtrilinos-muelu-dev \
-libtrilinos-intrepid2-dev libtrilinos-teko-dev libtrilinos-sacado-dev \
-libtrilinos-stratimikos-dev libtrilinos-shylu-dev \
-libtrilinos-zoltan-dev libtrilinos-zoltan2-dev
+  libtrilinos-amesos2-dev libtrilinos-shards-dev libtrilinos-muelu-dev \
+  libtrilinos-intrepid2-dev libtrilinos-teko-dev libtrilinos-sacado-dev \
+  libtrilinos-stratimikos-dev libtrilinos-shylu-dev \
+  libtrilinos-zoltan-dev libtrilinos-zoltan2-dev
 ~~~
 
 ### Arch Linux/Manjaro via Pacman/YAY
