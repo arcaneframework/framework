@@ -101,6 +101,11 @@ class ARCANE_UTILS_EXPORT Real3x3
   , y(f.y)
   , z(f.z)
   {}
+  //! Construit l'instance avec le triplet (v,v,v).
+  constexpr ARCCORE_HOST_DEVICE explicit Real3x3(Real v)
+  {
+    x = y = z = v;
+  }
   //! Opérateur de recopie
   constexpr ARCCORE_HOST_DEVICE Real3x3& operator=(Real3x3 f)
   {
