@@ -2,6 +2,7 @@ arcane_add_component_test_executable(utils
   FILES
   TestNumArray.cc
   TestDependencyInjection.cc
+  TestRealN.cc
   TestValueConvert.cc
   )
 
