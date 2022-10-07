@@ -81,6 +81,11 @@ class ARCANE_UTILS_EXPORT Real2x2
   : x(f.x)
   , y(f.y)
   {}
+  //! Construit l'instance avec le triplet (v,v,v).
+  constexpr ARCCORE_HOST_DEVICE explicit Real2x2(Real v)
+  {
+    x = y = v;
+  }
   constexpr ARCCORE_HOST_DEVICE Real2x2& operator=(Real2x2 f)
   {
     x = f.x;
