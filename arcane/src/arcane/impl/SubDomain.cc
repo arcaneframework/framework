@@ -554,13 +554,21 @@ destroy()
   // rester de références sur des services ou module. Cela est le cas
   // avec l'implémentation 'coreclr' mais pas avec 'mono'. Du coup on
   // laisse pour l'instant ce test.
-  // A partir de la version 3.7.8, les problèmes potentiels dus au GC sont
+  // A partir de la version 3.7.8, la plupart des problèmes potentiels dus au GC sont
   // réglés donc il n'est pas nécessaire de retourner directement. Néanmmoins
-  // éviter tout problème on autorise de le faire si une variable d'environnement
-  // est positionnée.
-  if (m_application->hasGarbageCollector())
-    if (platform::getEnvironmentVariable("ARCANE_DOTNET_USE_LEGACY_DESTROY")=="1")
+  // il reste encore des problèmes avec l'utilisation des 'ICaseFunction'.
+  // On garde donc la possibilité de changer le comportement si une variable
+  // d'environnement est positionnée.
+  if (m_application->hasGarbageCollector()){
+    bool do_return = true;
+    String x = platform::getEnvironmentVariable("ARCANE_DOTNET_USE_LEGACY_DESTROY");
+    if (x=="1")
+      do_return = true;
+    if (x=="0")
+      do_return = false;
+    if (do_return)
       return;
+  }
 
   m_module_master = nullptr;
   

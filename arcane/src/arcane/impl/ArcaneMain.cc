@@ -898,8 +898,13 @@ run()
     // Avant la version 3.7.8 on n'appelait par arcaneFinalize() car cela pouvait
     // poser des problèmes avec le Garbage Collector de '.Net'. Normalement ces
     // problèmes sont corrigés mais on autorisele comportement d'avant au cas où.
-    if (platform::getEnvironmentVariable("ARCANE_DOTNET_USE_LEGACY_DESTROY")!="1")
-      arcaneFinalize();
+    bool do_finalize = false;
+    String  x = platform::getEnvironmentVariable("ARCANE_DOTNET_USE_LEGACY_DESTROY");
+    if (x=="1")
+      do_finalize = false;
+    if (x=="0")
+      do_finalize = true;
+    arcaneFinalize();
   }
   else{
     arcaneInitialize();
