@@ -203,6 +203,8 @@ class RunCommandImpl
   RunQueueImpl* m_queue;
   TraceInfo m_trace_info;
   String m_kernel_name;
+  Int32 m_nb_thread_per_block = 0;
+
   // NOTE: cette pile gère la mémoire associé à un seul runtime
   // Si on souhaite un jour supporté plusieurs runtimes il faudra une pile
   // par runtime. On peut éventuellement limiter cela si on est sur
@@ -273,6 +275,7 @@ reset()
 {
   m_kernel_name = String();
   m_trace_info = TraceInfo();
+  m_nb_thread_per_block = 0;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -347,6 +350,15 @@ kernelName() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+Int32 RunCommand::
+nbThreadPerBlock() const
+{
+  return m_p->m_nb_thread_per_block;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 RunCommand& RunCommand::
 addTraceInfo(const TraceInfo& ti)
 {
@@ -361,6 +373,20 @@ RunCommand& RunCommand::
 addKernelName(const String& v)
 {
   m_p->m_kernel_name = v;
+  return *this;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+RunCommand& RunCommand::
+addNbThreadPerBlock(Int32 v)
+{
+  if (v<0)
+    v = 0;
+  if (v>0 && v<32)
+    v = 32;
+  m_p->m_nb_thread_per_block = v;
   return *this;
 }
 
