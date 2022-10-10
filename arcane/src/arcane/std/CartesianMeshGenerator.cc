@@ -928,19 +928,17 @@ generateMesh()
   nodes_coord_var.synchronize();
 
   if (m_build_info.m_is_generate_sod_groups){
-    if (m_mesh_dimension==3){
-      SodStandardGroupsBuilder groups_builder(traceMng());
-      Real3 origin = m_build_info.m_origine;
-      Real3 length(m_l.x,m_l.y,m_l.z);
-      Real3 max_pos = origin + length;
-      // TODO: Comme il peut y avoir des progressions geométriques il faut définir
-      // le milieu à partir de la position de la maille d'offset le milieu
-      // et pas à partir des coordonnées
-      // Calculer middle_x comme position du milieu
-      Real middle_x = (origin.x + max_pos.x) / 2.0;
-      Real middle_height = (origin.y + max_pos.y) / 2.0;
-      groups_builder.generateGroups(mesh,origin,origin+length,middle_x,middle_height);
-    }
+    SodStandardGroupsBuilder groups_builder(traceMng());
+    Real3 origin = m_build_info.m_origine;
+    Real3 length(m_l.x,m_l.y,m_l.z);
+    Real3 max_pos = origin + length;
+    // TODO: Comme il peut y avoir des progressions geométriques il faut définir
+    // le milieu à partir de la position de la maille d'offset le milieu
+    // et pas à partir des coordonnées
+    // Calculer middle_x comme position du milieu
+    Real middle_x = (origin.x + max_pos.x) / 2.0;
+    Real middle_height = (origin.y + max_pos.y) / 2.0;
+    groups_builder.generateGroups(mesh,origin,origin+length,middle_x,middle_height);
   }
 
   return false; // false == ok

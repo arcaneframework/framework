@@ -12,14 +12,14 @@
        <nb-part-y>2</nb-part-y>
        <origin>0.0 0.0</origin>
        <generate-sod-groups>true</generate-sod-groups>
-       <x><n>2</n><length>2.0</length><progression>1.0</progression></x>
-       <x><n>3</n><length>3.0</length><progression>4.0</progression></x>
-       <x><n>3</n><length>3.0</length><progression>8.0</progression></x>
-       <x><n>4</n><length>4.0</length><progression>16.0</progression></x>
+       <x><n>2</n><length>2.0</length></x>
+       <x><n>3</n><length>3.0</length></x>
+       <x><n>3</n><length>3.0</length></x>
+       <x><n>4</n><length>4.0</length></x>
 
-       <y><n>2</n><length>2.0</length><progression>1.0</progression></y>
-       <y><n>3</n><length>3.0</length><progression>4.0</progression></y>
-       <y><n>3</n><length>3.0</length><progression>8.0</progression></y>
+       <y><n>2</n><length>2.0</length></y>
+       <y><n>3</n><length>3.0</length></y>
+       <y><n>3</n><length>3.0</length></y>
        <face-numbering-version>1</face-numbering-version>
      </generator>
    </mesh>
