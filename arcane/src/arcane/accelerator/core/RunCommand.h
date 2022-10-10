@@ -40,16 +40,49 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunCommand
  public:
 
   RunCommand(RunQueue& run_queue);
-  RunCommand(const RunCommand&) = delete;
-  RunCommand& operator=(const RunCommand&) = delete;
   ~RunCommand();
 
  public:
 
+  RunCommand(const RunCommand&) = delete;
+  RunCommand& operator=(const RunCommand&) = delete;
+
+ public:
+
+  /*!
+   * \brief Positionne le informations de trace.
+   *
+   * Ces informations sont utilisées pour les traces ou pour le débug.
+   * Les macros RUNCOMMAND_LOOP ou RUNCOMMAND_ENUMERATE appellent
+   * automatiquement cette méthode.
+   */
   RunCommand& addTraceInfo(const TraceInfo& ti);
+
+  /*!
+   * \brief Positionne le nom du noyau.
+   *
+   * Ce nom est utilisé pour les traces ou pour le débug.
+   */
   RunCommand& addKernelName(const String& v);
+
+  /*!
+   * \brief Positionne le nombre de thread par bloc pour les accélérateurs.
+   *
+   * Si la valeur \a v est nulle, le choix par défaut est utilisé.
+   * Si la valeur \a v est positive, sa valeur minimale valide dépend
+   * de l'accélérateur. En général c'est au moins 32.
+   */
+  RunCommand& addNbThreadPerBlock(Int32 v);
+
+  //! Informations pour les traces
   const TraceInfo& traceInfo() const;
+
+  //! Nom du noyau
   const String& kernelName() const;
+
+  //! Nombre de threads par bloc ou 0 pour la valeur par défaut
+  Int32 nbThreadPerBlock() const;
+
   friend ARCANE_ACCELERATOR_CORE_EXPORT RunCommand& operator<<(RunCommand& command,const TraceInfo& trace_info);
 
  private:

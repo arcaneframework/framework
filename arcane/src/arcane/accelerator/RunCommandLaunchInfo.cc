@@ -116,7 +116,9 @@ _internalStreamImpl()
 auto RunCommandLaunchInfo::
 computeThreadBlockInfo(Int64 full_size) const -> ThreadBlockInfo
 {
-  int threads_per_block = 256;
+  int threads_per_block = m_command.nbThreadPerBlock();
+  if (threads_per_block<=0)
+    threads_per_block = 256;
   Int64 big_b = (full_size + threads_per_block - 1) / threads_per_block;
   int blocks_per_grid = CheckedConvert::toInt32(big_b);
   return { blocks_per_grid, threads_per_block };

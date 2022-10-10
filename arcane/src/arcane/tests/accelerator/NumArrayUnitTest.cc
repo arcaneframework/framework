@@ -188,6 +188,9 @@ _executeTest1(eMemoryRessource mem_kind)
     {
       auto command = makeCommand(queue);
       auto out_t1 = viewOut(command, t1);
+      command.addNbThreadPerBlock(128);
+      if (command.nbThreadPerBlock()!=128)
+        ARCANE_FATAL("Bad number of thread per block (v={0} expected=128)",command.nbThreadPerBlock());
 
       command << RUNCOMMAND_LOOP1(iter, n1)
       {
