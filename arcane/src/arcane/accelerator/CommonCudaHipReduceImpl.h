@@ -19,14 +19,9 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator
+namespace Arcane::Accelerator::impl
 {
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace impl
-{
 __device__ __forceinline__ unsigned int getThreadId()
 {
   int threadId = threadIdx.x + blockDim.x * threadIdx.y +
@@ -424,7 +419,8 @@ grid_reduce(T& val,T identity,SmallSpan<T> device_mem,unsigned int* device_count
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType,typename ReduceOperator> ARCANE_INLINE_REDUCE ARCCORE_DEVICE
+template<typename DataType,typename ReduceOperator,typename AtomicReduceOperator>
+ARCANE_INLINE_REDUCE ARCCORE_DEVICE
 void _applyDeviceGeneric(const ReduceDeviceInfo<DataType>& dev_info)
 {
   SmallSpan<DataType> grid_buffer = dev_info.m_grid_buffer;
@@ -448,7 +444,7 @@ void _applyDeviceGeneric(const ReduceDeviceInfo<DataType>& dev_info)
   else{
     DataType rv = impl::block_reduce<ReduceOperator>(v,identity);
     if (impl::getThreadId()==0){
-      CommonCudaHipAtomicMin<DataType>::apply(ptr,rv);
+      AtomicReduceOperator::apply(ptr,rv);
     }
   }
 }
@@ -460,7 +456,9 @@ template<typename DataType> ARCANE_INLINE_REDUCE ARCCORE_DEVICE
 void ReduceFunctorSum<DataType>::
 _applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
 {
-  _applyDeviceGeneric<DataType,impl::SimpleSumReduceOperator<DataType>>(dev_info);
+  using ReduceOperator = impl::SimpleSumReduceOperator<DataType>;
+  using AtomicReduceOperator = impl::CommonCudaHipAtomicAdd<DataType>;
+  _applyDeviceGeneric<DataType,ReduceOperator,AtomicReduceOperator>(dev_info);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -470,7 +468,9 @@ template<typename DataType> ARCANE_INLINE_REDUCE ARCCORE_DEVICE
 void ReduceFunctorMax<DataType>::
 _applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
 {
-  _applyDeviceGeneric<DataType,impl::SimpleMaxReduceOperator<DataType>>(dev_info);
+  using ReduceOperator = impl::SimpleMaxReduceOperator<DataType>;
+  using AtomicReduceOperator = impl::CommonCudaHipAtomicMax<DataType>;
+  _applyDeviceGeneric<DataType,ReduceOperator,AtomicReduceOperator>(dev_info);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -480,18 +480,15 @@ template<typename DataType> ARCANE_INLINE_REDUCE ARCCORE_DEVICE
 void ReduceFunctorMin<DataType>::
 _applyDevice(const ReduceDeviceInfo<DataType>& dev_info)
 {
-  _applyDeviceGeneric<DataType,impl::SimpleMinReduceOperator<DataType>>(dev_info);
+  using ReduceOperator = impl::SimpleMinReduceOperator<DataType>;
+  using AtomicReduceOperator = impl::CommonCudaHipAtomicMin<DataType>;
+  _applyDeviceGeneric<DataType,ReduceOperator,AtomicReduceOperator>(dev_info);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace impl
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // End namespace Arcane::Accelerator
+} // End namespace Arcane::Accelerator::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
