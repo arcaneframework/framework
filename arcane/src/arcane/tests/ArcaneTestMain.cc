@@ -4,8 +4,10 @@
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
+
 #include <iostream>
 #include "arcane_packages.h"
+#include "arcane/utils/Exception.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/launcher/ArcaneLauncher.h"
@@ -23,7 +25,13 @@
 #include "arcane/MeshReaderMng.h"
 #include "arcane/IMesh.h"
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 using namespace Arcane;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 // Fonction d'initialisation de ApplicationInfo.
 extern "C" ARCANE_IMPORT void
@@ -47,8 +55,11 @@ extern "C++" ARCANE_EXPORT int
 arcaneTestStandaloneLauncher(const CommandLineArguments& cmd_line_args,
                              const String& standalone_method);
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 int
-main(int argc,char* argv[])
+_mainHelper(int argc,char* argv[])
 {
   CommandLineArguments cmd_line_args(&argc,&argv);
 
@@ -67,3 +78,19 @@ main(int argc,char* argv[])
   int r = ArcaneLauncher::run();
   return r;
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+int
+main(int argc,char* argv[])
+{
+  int r = 0;
+  int r2 = arcaneCallFunctionAndCatchException([&](){ r = _mainHelper(argc,argv); });
+  if (r2!=0)
+    return r2;
+  return r;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/

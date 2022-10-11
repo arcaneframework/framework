@@ -4,13 +4,16 @@
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
-#include <arcane/FactoryService.h>
-#include <arcane/CodeService.h>
-#include <arcane/impl/ArcaneMain.h>
-#include <arcane/impl/Session.h>
+/*---------------------------------------------------------------------------*/
 
-#include <arcane/utils/ApplicationInfo.h>
-#include <arcane/utils/ITraceMng.h>
+#include "arcane/utils/ApplicationInfo.h"
+#include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/Exception.h"
+
+#include "arcane/FactoryService.h"
+#include "arcane/CodeService.h"
+#include "arcane/impl/ArcaneMain.h"
+#include "arcane/impl/Session.h"
 
 using namespace Arcane;
 
@@ -23,20 +26,23 @@ class ArcaneMeshUtilsCodeService
 : public Arcane::CodeService
 {
  public:
+
   ArcaneMeshUtilsCodeService(const ServiceBuildInfo& sbi)
   : CodeService(sbi)
   {
     _addExtension("msh");
   }
+
  public:
-  virtual void build(){}
-  virtual ISession* createSession()
+
+  void build() {}
+  ISession* createSession() override
   {
     ISession* session = new Session(_application());
     _application()->addSession(session);
     return session;
   }
-  virtual bool parseArgs(StringList& args);
+  bool parseArgs(StringList& args) override;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -62,7 +68,7 @@ ARCANE_REGISTER_APPLICATION_FACTORY(ArcaneMeshUtilsCodeService,
 /*---------------------------------------------------------------------------*/
 
 int
-main(int argc,char* argv[])
+_mainHelper(int argc,char* argv[])
 {
   int r = 0;
   ArcaneMain::arcaneInitialize();
@@ -71,6 +77,19 @@ main(int argc,char* argv[])
     r = ArcaneMain::arcaneMain(app_info);
   }
   ArcaneMain::arcaneFinalize();
+  return r;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+int
+main(int argc,char* argv[])
+{
+  int r = 0;
+  int r2 = arcaneCallFunctionAndCatchException([&](){ r = _mainHelper(argc,argv); });
+  if (r2!=0)
+    return r2;
   return r;
 }
 
