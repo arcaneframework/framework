@@ -19,6 +19,8 @@
 #include "arcane/utils/UtilsTypes.h"
 #include "arcane/utils/Atomic.h"
 
+#include <functional>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -42,6 +44,31 @@ arcanePrintStdException(const std::exception& ex,ITraceMng* msg,bool is_no_conti
 
 extern "C++" ARCANE_UTILS_EXPORT Integer
 arcanePrintArcaneException(const Exception& ex,ITraceMng* msg,bool is_no_continue = true);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \ brief Appelle la fonction \a function en récupérant les éventuelles exceptions.
+ *
+ * Usage:
+ *
+ * \code
+ * arcaneCallAndCatchException([&]() { std::cout << "Hello\n"});
+ * \endcode
+ *
+ * \return 0 si aucune exception n'est récupérée et une valeur positive dans
+ * le cas contraire.
+ */
+extern "C++" ARCANE_UTILS_EXPORT Integer
+arcaneCallFunctionAndCatchException(std::function<void()> function);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \ brief Appelle la fonction \a function et en cas d'exception appelle std::terminate().
+ */
+extern "C++" ARCANE_UTILS_EXPORT void
+arcaneCallFunctionAndTerminateIfThrow(std::function<void()> function);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
