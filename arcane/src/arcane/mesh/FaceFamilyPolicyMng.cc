@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* FaceFamilyPolicyMng.cc                                      (C) 2000-2018 */
+/* FaceFamilyPolicyMng.cc                                      (C) 2000-2022 */
 /*                                                                           */
 /* Gestionnaire des politiques d'une famille de faces.                       */
 /*---------------------------------------------------------------------------*/
@@ -28,11 +28,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-ARCANE_MESH_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -55,7 +52,9 @@ class ARCANE_MESH_EXPORT FaceFamilyPolicyMng
       return nullptr;
     }
   };
+
  public:
+
   FaceFamilyPolicyMng(FaceFamily* family)
   : ItemFamilyPolicyMng(family,new StandardItemFamilyCompactPolicy(family))
   , m_family(family)
@@ -64,9 +63,11 @@ class ARCANE_MESH_EXPORT FaceFamilyPolicyMng
   }
   ~FaceFamilyPolicyMng()
   {
-    removeSerializeStep(&m_tied_interface_serialize_factory);
+    arcaneCallFunctionAndTerminateIfThrow([&]() { removeSerializeStep(&m_tied_interface_serialize_factory); });
   }
+
  public:
+
   IItemFamilySerializer* createSerializer(bool use_flags) override
   {
     if (use_flags)
@@ -96,8 +97,7 @@ createFaceFamilyPolicyMng(ItemFamily* family)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

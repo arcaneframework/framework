@@ -345,7 +345,7 @@ HybridParallelSuperMng::
   _finalize();
   delete m_datatype_list;
   if (m_mpi_adapter)
-    m_mpi_adapter->destroy();
+    arcaneCallFunctionAndTerminateIfThrow([&]() { m_mpi_adapter->destroy(); });
   delete m_mpi_lock;
   delete m_stat;
   MPI_Barrier(m_mpi_communicator);
