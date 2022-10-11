@@ -23,6 +23,7 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/HPReal.h"
 #include "arcane/utils/ValueConvert.h"
+#include "arcane/utils/Exception.h"
 
 #include "arcane/IMesh.h"
 #include "arcane/IIOMng.h"
@@ -386,7 +387,7 @@ MpiParallelMng::
   delete m_io_mng;
   if (m_is_timer_owned)
     delete m_timer_mng;
-  m_adapter->destroy();
+  arcaneCallFunctionAndTerminateIfThrow([&]() { m_adapter->destroy(); });
   delete m_datatype_list;
 }
 

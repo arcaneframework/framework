@@ -7,18 +7,23 @@
 /*---------------------------------------------------------------------------*/
 /* ArcaneDriverMain.cc                                         (C) 2000-2022 */
 /*                                                                           */
-/* À compléter.                                                              */
+/* Programme principal par défaut.                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/impl/ArcaneMain.h"
 #include "arcane/utils/CommandLineArguments.h"
 #include "arcane/utils/ApplicationInfo.h"
+#include "arcane/utils/Exception.h"
+
+#include "arcane/impl/ArcaneMain.h"
 
 using namespace Arcane;
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 int
-main(int argc,char* argv[])
+_mainHelper(int argc,char* argv[])
 {
   ApplicationInfo& app_info = ArcaneMain::defaultApplicationInfo();
   app_info.setCommandLineArguments(CommandLineArguments(&argc,&argv));
@@ -31,3 +36,19 @@ main(int argc,char* argv[])
   app_info.addDynamicLibrary("arcane_cea");
   return ArcaneMain::run();
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+int
+main(int argc,char* argv[])
+{
+  int r = 0;
+  int r2 = arcaneCallFunctionAndCatchException([&](){ r = _mainHelper(argc,argv); });
+  if (r2!=0)
+    return r2;
+  return r;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/

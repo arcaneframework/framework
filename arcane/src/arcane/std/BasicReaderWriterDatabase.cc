@@ -239,7 +239,7 @@ KeyValueTextWriter::
 ~KeyValueTextWriter()
 {
   if (m_p->m_version>=3)
-    _writeEpilog();
+    arcaneCallFunctionAndTerminateIfThrow([&]() { _writeEpilog(); });
   delete m_p;
 }
 

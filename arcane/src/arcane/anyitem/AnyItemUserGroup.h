@@ -5,16 +5,16 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AnyItemUserGroup.h                                          (C) 2000-2012 */
+/* AnyItemUserGroup.h                                          (C) 2000-2022 */
 /*                                                                           */
 /* Groupe utilisateur aggrégée de types quelconques.                         */
 /*---------------------------------------------------------------------------*/
-
 #ifndef ARCANE_ANYITEM_ANYITEMUSERGROUP_H 
 #define ARCANE_ANYITEM_ANYITEMUSERGROUP_H
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+#include "arcane/utils/Exception.h"
 
 #include "arcane/anyitem/AnyItemGlobal.h"
 #include "arcane/anyitem/AnyItemPrivate.h"
@@ -22,12 +22,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ANYITEM_BEGIN_NAMESPACE
+namespace Arcane::AnyItem
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -69,11 +65,12 @@ public:
   
   ~UserGroup()
   {
-    m_family.removeObserver(*this);
+    arcaneCallFunctionAndTerminateIfThrow([&]() { m_family.removeObserver(*this); });
   }
 
   //! Ajout d'un groupe arcane au groupe
-  inline UserGroup& operator<<(GroupBuilder builder) {
+  inline UserGroup& operator<<(GroupBuilder builder)
+  {
     ItemGroup group = builder.group();
     if (m_groups.findGroupInfo(group.internal()) != NULL)
       throw FatalErrorException(String::format("Group '{0}' in user group already registered",group.name()));
@@ -117,8 +114,7 @@ private:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ANYITEM_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::AnyItem
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

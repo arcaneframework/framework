@@ -86,6 +86,40 @@ arcanePrintArcaneException(const Exception& ex,ITraceMng* msg,bool is_no_continu
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+extern "C++" ARCANE_UTILS_EXPORT Integer
+arcaneCallFunctionAndCatchException(std::function<void()> function)
+{
+  try{
+    function();
+  }
+  catch(const Exception& ex){
+    return arcanePrintArcaneException(ex,nullptr,false);
+  }
+  catch(const std::exception& ex){
+    return arcanePrintStdException(ex,nullptr,false);
+  }
+  catch(...){
+    return arcanePrintAnyException(nullptr,false);
+  }
+  return 0;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ARCANE_UTILS_EXPORT void
+arcaneCallFunctionAndTerminateIfThrow(std::function<void()> function)
+{
+  int r = arcaneCallFunctionAndCatchException(function);
+  if (r!=0){
+    std::cerr << "Exception catched in arcaneCallFunctionAndTerminateIfThrow: calling std::terminate()\n";
+    std::terminate();
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
