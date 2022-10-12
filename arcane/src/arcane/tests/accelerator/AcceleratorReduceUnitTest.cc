@@ -74,6 +74,10 @@ class AcceleratorReduceUnitTest
     if (reduced_sum!=sum)
       ARCANE_FATAL("Bad sum reduced_sum={0} expected={1}",reduced_sum,sum);
   }
+
+ private:
+
+  void executeTest2();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -117,6 +121,17 @@ initializeTest()
 
 void AcceleratorReduceUnitTest::
 executeTest()
+{
+  info() << "UseReducePolicy = Atomic";
+  m_runner.setDeviceReducePolicy(ax::eDeviceReducePolicy::Atomic);
+  executeTest2();
+  info() << "UseReducePolicy = Grid";
+  m_runner.setDeviceReducePolicy(ax::eDeviceReducePolicy::Grid);
+  executeTest2();
+}
+
+void AcceleratorReduceUnitTest::
+executeTest2()
 {
   _executeTestDataType<Int64>();
   _executeTestDataType<Int32>();

@@ -59,7 +59,7 @@ class RunCommandLaunchInfo;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Politique d'exécution.
+ * \brief Politique d'exécution pour un Runner.
  */
 enum class eExecutionPolicy
 {
@@ -75,10 +75,22 @@ enum class eExecutionPolicy
   HIP
 };
 
-
 //! Affiche le nom de la politique d'exécution
 extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
 std::ostream& operator<<(std::ostream& o,eExecutionPolicy exec_policy);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Politique des opératations de réduction sur les accélérateurs
+ */
+enum class eDeviceReducePolicy
+{
+  //! Utilise des opérations atomiques entre les blocs
+  Atomic = 1,
+  //! Utilise un noyau de calcul avec une synchronisations entre les blocs.
+  Grid = 2
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

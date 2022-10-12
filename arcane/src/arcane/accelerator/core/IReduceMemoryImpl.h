@@ -46,6 +46,8 @@ class ARCANE_ACCELERATOR_CORE_EXPORT IReduceMemoryImpl
     Int32 m_grid_memory_size = 0;
     //! Entier utilisé pour compter le nombre de blocs ayant déjà fait leur partie de la réduction
     unsigned int* m_grid_device_count = nullptr;
+    //! Politique de réduction
+    eDeviceReducePolicy m_reduce_policy = eDeviceReducePolicy::Atomic;
   };
 
  public:
@@ -59,6 +61,8 @@ class ARCANE_ACCELERATOR_CORE_EXPORT IReduceMemoryImpl
 
   //! Positionne la taille de la grille GPU (le nombre de blocs)
   virtual void setGridSizeAndAllocate(Int32 grid_size) = 0;
+
+  //! Taille de la grille GPU (nombre de blocs)
   virtual Int32 gridSize() const = 0;
 
   //! Informations sur la mémoire utilisée par la réduction

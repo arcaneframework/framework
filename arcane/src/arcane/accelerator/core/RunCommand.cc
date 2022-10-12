@@ -21,6 +21,7 @@
 #include "arcane/accelerator/core/RunQueueImpl.h"
 #include "arcane/accelerator/core/RunQueue.h"
 #include "arcane/accelerator/core/IReduceMemoryImpl.h"
+#include "arcane/accelerator/core/Runner.h"
 
 #include <set>
 
@@ -86,6 +87,7 @@ class ReduceMemoryImpl
   void setGridSizeAndAllocate(Int32 grid_size) override
   {
     m_grid_size = grid_size;
+    _setReducePolicy();
     _allocateGridDataMemory();
   }
   Int32 gridSize() const { return m_grid_size; }
@@ -128,6 +130,7 @@ class ReduceMemoryImpl
       m_grid_memory_info.m_grid_memory_size = total_size;
     }
   }
+  void _setReducePolicy();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -285,6 +288,15 @@ void ReduceMemoryImpl::
 release()
 {
   m_command->releaseReduceMemoryImpl(this);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ReduceMemoryImpl::
+_setReducePolicy()
+{
+  m_grid_memory_info.m_reduce_policy = m_command->m_queue->runner()->deviceReducePolicy();
 }
 
 /*---------------------------------------------------------------------------*/
