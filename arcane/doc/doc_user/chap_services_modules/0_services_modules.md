@@ -5,6 +5,9 @@ Sommaire de ce chapitre :
 2. \subpage axldoc_casemainpage
 3. \subpage axldoc_interfacemainpage
 
+Un chapitre (nécessitant une mise à jour) sur le service SimpleCsvOutput
+est disponible ici : \subpage arcanedoc_services_modules_services
+
 
 ____
 

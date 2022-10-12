@@ -34,7 +34,6 @@ Les documents disponibles sont:
 - \subpage arcanedoc_wrapping
 - \subpage arcanedoc_entities
 - \subpage arcanedoc_services_modules
-- \subpage arcanedoc_doxygen
 
 - \subpage oldarcanedoc_general_codingrules : présente les règles de codage utilisées
    dans %Arcane. Pour que les modules développés sur la plate-forme aient

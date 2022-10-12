@@ -32,7 +32,7 @@ déport se fait via des appels spécifiques.
 
 ## Utilisation dans Arcane {#arcanedoc_parallel_accelerator_usage}
 
-L´ensemble des types utilisés pour la gestion des accélérateurs est
+L'ensemble des types utilisés pour la gestion des accélérateurs est
 dans l'espace de nom Arcane::Accelerator. Les classes principales
 sont:
 
@@ -52,7 +52,7 @@ Arcane:
 
 ### Utilisation dans les modules {#arcanedoc_parallel_accelerator_module}
 
-il est possible pour tout module de récupérer une implémentation de
+Il est possible pour tout module de récupérer une implémentation de
 l'interface Arcane::Accelerator::IAcceleratorMng via la méthode
 Arcane::AbstractModule::acceleratorMng(). Le code suivant permet par
 exemple d'utiliser les accélérateurs depuis un point d'entrée:
@@ -210,7 +210,9 @@ associée est terminée ou le conteneur associé est modifié.
 %Arcane propose des vues sur les variables (Arcane::IVariable) ou sur la classe Arcane::NumArray.
 
 Quel que soit le conteneur associé, la déclaration des vues est la
-même:
+même. Les constantes Arcane::MDDim1, Arcane::MDDim2, Arcane::MDDim3 et
+Arcane::MDDim4 permettent de spécifier le rang (la dimension) du
+tableau Arcane::NumArray (A partir de la version 3.7.7 de %Arcane).
 
 ```cpp
 #include "arcane/utils/NumArray.h"
@@ -221,9 +223,9 @@ même:
 using namespace Arcane;
 using namespace Arcane::Accelerator;
 RunCommand& command = ...;
-Arcane::NumArray<Real,1> a;
-Arcane::NumArray<Real,1> b;
-Arcane::NumArray<Real,1> c;
+Arcane::NumArray<Real,MDDim1> a;
+Arcane::NumArray<Real,MDDim1> b;
+Arcane::NumArray<Real,MDDim1> c;
 VariableCellReal var_c = ...;
 auto in_a = viewIn(command,a); // Vue en entrée
 auto inout_b = viewInOut(command,b); // Vue en entrée/sortie
@@ -284,8 +286,8 @@ Arcane::Accelerator::RunQueue sont asynchrones. Par exemple:
 using namespace Arcane::Accelerator;
 RunQueue& queue = ...;
 queue.setAsync(true);
-Arcane::NumArray<Real,1> a;
-Arcane::NumArray<Real,1> b;
+Arcane::NumArray<Real,MDDim1> a;
+Arcane::NumArray<Real,MDDim1> b;
 
 RunCommand& command = makeCommand(queue);
 auto in_a = viewIn(command,a);
@@ -348,7 +350,7 @@ public:
 void A::f1()
 {
   Arcane::Accelerator::RunCommand& command = ...
-  Arcane::NumArray<int,1> a(100);
+  Arcane::NumArray<int,MDDim1> a(100);
   auto out_a = viewIn(command,a);
   command << RUNCOMMAND_LOOP1(iter,100){
     out_a(iter) = my_value+5; // BAD !!
@@ -357,7 +359,7 @@ void A::f1()
 void A::f2()
 {
   Arcane::Accelerator::RunCommand& command = ...
-  Arcane::NumArray<int,1> a(100);
+  Arcane::NumArray<int,MDDim1> a(100);
   auto out_a = viewIn(command,a);
   int v = my_value;
   command << RUNCOMMAND_LOOP1(iter,100){
@@ -390,8 +392,8 @@ main(int argc,char* argv[])
 
 
     // Définit 2 tableaux 'a' et 'b' et effectue leur initialisation.
-    NumArray<Int64,1> a(nb_value);
-    NumArray<Int64,1> b(nb_value);
+    NumArray<Int64,MDDim1> a(nb_value);
+    NumArray<Int64,MDDim1> b(nb_value);
     for( int i=0; i<nb_value; ++i ){
       a.s(i) = i+2;
       b.s(i) = i+3;

@@ -1,7 +1,7 @@
 # Accélérer un code {#arcanedoc_parallel}
 
 Si vous souhaiter ajouter du parallélisme à votre code,
-ce chapitre devrait vous interesser.
+ce chapitre devrait vous intéresser.
 
 Sommaire de ce chapitre :
 1. \subpage arcanedoc_parallel_intro
