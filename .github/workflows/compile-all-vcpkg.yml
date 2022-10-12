@@ -96,7 +96,7 @@ jobs:
           dotnet-version: '6.0.x'
 
       - name: Get cache for 'ccache' tool
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ${{env.CCACHE_DIR}}
           key: framework-ccache1-${{matrix.os}}-${{ github.run_number }}
