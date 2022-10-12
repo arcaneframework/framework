@@ -58,16 +58,22 @@ namespace Arcane.AxlDoc
       ServiceInfo sinfo = info as ServiceInfo;
       if (sinfo != null) {
         StringBuilder sb = new StringBuilder ();
-        foreach (ServiceInfo.Interface ii in sinfo.Interfaces) {
-          sb.AppendFormat ("(implements \\ref axldoc_interface_{1} \"{0}\" interface)", ii.Name, DoxygenDocumentationUtils.AnchorName(ii.Name));
-        }
-        sb.Append (".<br/>");
 
+        sb.Append ("\n## Interfaces\n");
+
+        foreach (ServiceInfo.Interface ii in sinfo.Interfaces) {
+          if(m_code_info.Language == "fr"){
+            sb.AppendFormat ("- Implémente l'interface \\ref axldoc_interface_{1} \"{0}\"\n", ii.Name, DoxygenDocumentationUtils.AnchorName(ii.Name));
+          }
+          else{
+            sb.AppendFormat ("- Implements \\ref axldoc_interface_{1} \"{0}\" interface\n", ii.Name, DoxygenDocumentationUtils.AnchorName(ii.Name));
+          }
+        }
         // Write hyperlinks to module or service using the service
         CodeInterfaceInfo interface_info = null;
         if (m_code_info.Interfaces.TryGetValue (sinfo.Type, out interface_info) && interface_info.Users.Count>0) {
           sb.AppendFormat ("<dl>");
-          sb.AppendFormat ("<dt>Service used in</dt>");
+          sb.AppendFormat ("<dt>{0}</dt>", m_code_info.Translation.ServiceUsed);
           foreach (CodeInterfaceUserInfo user_info in interface_info.Users) {
             sb.AppendFormat ("<dd>\\ref axldoc_{0} \"{1}\" {2}<br/></dd>", user_info.Hyperlink, user_info.Name, (user_info.IsModule)?"module":"service");
           }
@@ -125,12 +131,25 @@ namespace Arcane.AxlDoc
           o.AcceptChildren (dv, x => m_config.private_app_pages.Filter(x));
         df.Write ();
       } else {
-        //_WriteHRw30Tag(m_full_stream);
-        _WriteOptionSeparator (o);
-        _AddBriefDescription (o, false);
-        _WriteHtmlOnly (m_full_stream, "<div class=\"ComplexOptionInfoBlock\">");
+        _WriteHtmlOnly(m_full_stream, "<div class=\"ComplexOptionInfoBlock\">");
+
+        // La partie "détail des méthodes" de doxygen se compose de trois parties :
+        // - Un titre (h2 de classe .memtitle)
+        // - Une partie "sous-titre" (div de classe .memitem.memproto)
+        // - Une partie "description" (div de classe .memitem.memdoc)
+        _WriteHtmlOnly(m_full_stream, "<h2 class=\"memtitle\" style=\"border-color: purple;\">");
+
         _WriteColoredTitle ("purple", o);
+
+        _WriteHtmlOnly(m_full_stream, "</h2>");
+        _WriteHtmlOnly(m_full_stream, "<div class=\"memitem\" style=\"border-color: purple;\">");
+        _WriteHtmlOnly(m_full_stream, "<div class=\"memproto\">");
+
+        _AddBriefDescription(o, false);
         _AddFullDescription (o);
+
+        _WriteHtmlOnly(m_full_stream, "</div>");
+        _WriteHtmlOnly(m_full_stream, "<div class=\"memdoc\">");
         if (otc.NbTotalOption > 0) {
           m_brief_stream.WriteLine ("<ul>");
           if (m_config.do_sort != SortMode.None)
@@ -139,15 +158,24 @@ namespace Arcane.AxlDoc
             o.AcceptChildren (this, x => m_config.private_app_pages.Filter(x));
           m_brief_stream.WriteLine ("</ul>");
         }
-        _WriteHtmlOnly (m_full_stream, "</div><!-- End of ComplexOptionInfoBlock -->"); // Pour ComplexOptionInfoBlock
+        _WriteCode(o);
+        _WriteHtmlOnly(m_full_stream, "</div>");
+        _WriteHtmlOnly(m_full_stream, "</div>");
+        _WriteHtmlOnly(m_full_stream, "</div><!-- End of ComplexOptionInfoBlock -->"); // Pour ComplexOptionInfoBlock
       }
     }
 
     public void VisitEnumeration (EnumerationOptionInfo o)
     {
       //_WriteHRw30Tag(m_full_stream);
-      _WriteOptionSeparator (o);
+      // La partie "détail des méthodes" de doxygen se compose de trois parties :
+      // - Un titre (h2 de classe .memtitle)
+      // - Une partie "sous-titre" (div de classe .memitem.memproto)
+      // - Une partie "description" (div de classe .memitem.memdoc)
+
+      m_full_stream.WriteLine ("<h2 class=\"memtitle\" style=\"border-color: olive;\">");
       _WriteColoredTitle ("olive", o);
+      m_full_stream.WriteLine ("</h2>");
       XmlDocument owner_doc = o.Node.OwnerDocument;
       XmlElement desc_elem = o.DescriptionElement;
       // Construit dans \a enum_list_element
@@ -193,6 +221,8 @@ namespace Arcane.AxlDoc
         tr.AppendChild (td2);
       }
       // enum_list_element.AppendChild (owner_doc.CreateElement ("br"));
+      m_full_stream.WriteLine ("<div class=\"memitem\" style=\"border-color: olive;\">");
+      m_full_stream.WriteLine ("<div class=\"memproto\">");
       _AddBriefDescription (o, false);
       if (desc_elem != null) {
         XmlElement elem_description = desc_elem.SelectSingleNode ("enum-description") as XmlElement;
@@ -206,52 +236,109 @@ namespace Arcane.AxlDoc
       }
       //m_full_stream.Write(enum_list_element.OuterXml);
       _AddFullDescription (o);
+      m_full_stream.WriteLine ("</div>");
+      m_full_stream.WriteLine ("<div class=\"memdoc\">");
+      _WriteCode(o);
+      m_full_stream.WriteLine ("</div>");
+      m_full_stream.WriteLine ("</div>");
     }
 
     public void VisitExtended (ExtendedOptionInfo o)
     {
-      //_WriteHRw30Tag(m_full_stream);
-      _WriteOptionSeparator (o);
+      // La partie "détail des méthodes" de doxygen se compose de trois parties :
+      // - Un titre (h2 de classe .memtitle)
+      // - Une partie "sous-titre" (div de classe .memitem.memproto)
+      // - Une partie "description" (div de classe .memitem.memdoc)
+      m_full_stream.WriteLine ("<h2 class=\"memtitle\" style=\"border-color: teal;\">");
       _WriteColoredTitle ("teal", o);
+      m_full_stream.WriteLine ("</h2>");
+
+      m_full_stream.WriteLine ("<div class=\"memitem\" style=\"border-color: teal;\">");
+      m_full_stream.WriteLine ("<div class=\"memproto\">");
       _AddBriefDescription (o, false);
       _AddFullDescription (o);
+      m_full_stream.WriteLine ("</div>");
+      m_full_stream.WriteLine ("<div class=\"memdoc\">");
+      _WriteCode(o);
+      m_full_stream.WriteLine ("</div>");
+      m_full_stream.WriteLine ("</div>");
     }
 
     public void VisitScript (ScriptOptionInfo o)
     {
-      //_WriteHRw30Tag(m_full_stream);
-      _WriteOptionSeparator (o);
+      // La partie "détail des méthodes" de doxygen se compose de trois parties :
+      // - Un titre (h2 de classe .memtitle)
+      // - Une partie "sous-titre" (div de classe .memitem.memproto)
+      // - Une partie "description" (div de classe .memitem.memdoc)
+      m_full_stream.WriteLine ("<h2 class=\"memtitle\" style=\"border-color: teal;\">");
       _WriteColoredTitle ("teal", o);
+      m_full_stream.WriteLine ("</h2>");
+
+      m_full_stream.WriteLine ("<div class=\"memitem\" style=\"border-color: teal;\">");
+      m_full_stream.WriteLine ("<div class=\"memproto\">");
       _AddBriefDescription (o, false);
       _AddFullDescription (o);
+      m_full_stream.WriteLine ("</div>");
+
+      m_full_stream.WriteLine ("<div class=\"memdoc\">");
+      _WriteCode(o);
+      m_full_stream.WriteLine ("</div>");
+      m_full_stream.WriteLine ("</div>");
     }
 
     public void VisitSimple (SimpleOptionInfo o)
     {
-      //_WriteHRw30Tag(m_full_stream);
-      _WriteOptionSeparator (o);
+      // La partie "détail des méthodes" de doxygen se compose de trois parties :
+      // - Un titre (h2 de classe .memtitle)
+      // - Une partie "sous-titre" (div de classe .memitem.memproto)
+      // - Une partie "description" (div de classe .memitem.memdoc)
+      m_full_stream.WriteLine ("<h2 class=\"memtitle\" style=\"border-color: green;\">");
       _WriteColoredTitle ("green", o);
-      //m_full_stream.WriteLine("<p>TYPE={0}</p>",o.Type);
-      //if (o.DefaultValue!=null)
-      //m_full_stream.WriteLine("<p>DEFAULT={0}</p>",o.DefaultValue);
+      m_full_stream.WriteLine ("</h2>");
+
+      m_full_stream.WriteLine ("<div class=\"memitem\" style=\"border-color: green;\">");
+      m_full_stream.WriteLine ("<div class=\"memproto\">");
+      // m_full_stream.WriteLine("<p>TYPE={0}</p>",o.Type);
+      // if (o.DefaultValue!=null)
+      //   m_full_stream.WriteLine("<p>DEFAULT={0}</p>",o.DefaultValue);
       _AddBriefDescription (o, false);
       _AddFullDescription (o);
+      m_full_stream.WriteLine ("</div>");
+
+      m_full_stream.WriteLine ("<div class=\"memdoc\">");
+      _WriteCode(o);
+      m_full_stream.WriteLine ("</div>");
+      m_full_stream.WriteLine ("</div>");
     }
 
     public void VisitServiceInstance (ServiceInstanceOptionInfo o)
     {
-      //_WriteHRw30Tag(m_full_stream);
-      _WriteOptionSeparator (o);
+      // La partie "détail des méthodes" de doxygen se compose de trois parties :
+      // - Un titre (h2 de classe .memtitle)
+      // - Une partie "sous-titre" (div de classe .memitem.memproto)
+      // - Une partie "description" (div de classe .memitem.memdoc)
+      m_full_stream.WriteLine ("<h2 class=\"memtitle\" style=\"border-color: green;\">");
       _WriteColoredTitle ("green", o);
       //m_full_stream.WriteLine("<p>SERVICE TYPE={0}</p>",o.Type);
+      m_full_stream.WriteLine ("</h2>");
+      m_full_stream.WriteLine ("<div class=\"memitem\" style=\"border-color: green;\">");
+      m_full_stream.WriteLine ("<div class=\"memproto\">");
       _AddBriefDescription (o, false);
+      _AddFullDescription (o);
       CodeInterfaceInfo interface_info = null;
       if (m_code_info.Interfaces.TryGetValue (o.Type, out interface_info)) {
         if (interface_info.Services.Count>0) {
           //Console.WriteLine("SERVICE TYPE FOUND={0}",o.Type);
           m_full_stream.WriteLine ("<div class=\"ServiceTable\">");
-          m_full_stream.WriteLine ("<dl><dt>Possible value{0} for tag <i>name</i>:</dt>",
-                                   (interface_info.Services.Count>1)?"s":"");
+          // TODO TRAD OK : Si traduction FR/EN : A traduire
+          if(m_code_info.Language == "fr"){
+            m_full_stream.WriteLine ("<dl><dt>Valeur{0} possible{0} pour le tag <i>name</i>:</dt>",
+                                     (interface_info.Services.Count>1)?"s":"");
+          }
+          else{
+            m_full_stream.WriteLine ("<dl><dt>Possible value{0} for tag <i>name</i>:</dt>",
+                                     (interface_info.Services.Count>1)?"s":"");
+          }
           foreach (CodeServiceInfo csi in interface_info.Services) {
             //Console.WriteLine("SERVICE TYPE FOUND={0} {1} {2}",o.Type,csi.Name,csi.FileBaseName);
             if (csi.FileBaseName != null) {
@@ -264,7 +351,11 @@ namespace Arcane.AxlDoc
           m_full_stream.WriteLine ("</div>");
         }
       }
-      _AddFullDescription (o);
+      m_full_stream.WriteLine ("</div>");
+      m_full_stream.WriteLine ("<div class=\"memdoc\">");
+      _WriteCode(o);
+      m_full_stream.WriteLine ("</div>");
+      m_full_stream.WriteLine ("</div>");
     }
 
     private void _WriteDescription (int i, Option option, XmlElement desc_elem, TextWriter stream)
@@ -273,14 +364,18 @@ namespace Arcane.AxlDoc
         foreach (XmlNode node in desc_elem) {
           if (node.NodeType == XmlNodeType.CDATA) {
             //Console.WriteLine ("** ** CDATA SECTION {0}", node.Value);
-            stream.Write (node.Value);
-          } else {
+
+            // On est dans un contexte /htmlonly, donc il faut remplacer
+            // les \n\n par des <br> (puisque doxygen ne le fera pas). 
+            stream.Write (node.Value.Replace("\n\n", "<br>"));
+          } 
+          else {
             // NOTE GG: il faut utiliser node.OuterXml et pas (2) sinon les sous balises de la
             // description ne sont pas pris en compte.
             // Par exemple: <description>Test <b>très</b> important</description>.
             // Avec la méthode 2, cela donne: 'Test important' et la valeur entre des balises <b>
             // n'est pas prise en compte.
-            stream.Write(node.OuterXml);
+            stream.Write(node.OuterXml.Replace("\n\n", "<br>"));
             // (2) stream.Write (node.Value == null ? node.Value : node.Value.Trim ()); // Rk can be rewritten with VS 2015 as: node.Value ?.Trim()
           }
         }
@@ -303,9 +398,10 @@ namespace Arcane.AxlDoc
 
     private void _AddFullDescription (int i, Option option, XmlElement desc_elem)
     {
-      m_full_stream.Write ("<div class='OptionFullDescription'>");
+      // La description est récupérée brut, en html donc passage en \htmlonly
+      m_full_stream.Write ("\\htmlonly <div class='OptionFullDescription'>");
       _WriteDescription (i, option, desc_elem, m_full_stream);
-      m_full_stream.WriteLine ("</div>");
+      m_full_stream.WriteLine ("</div> \\endhtmlonly");
     }
 
     private void _AddBriefDescription (Option o, bool use_subpage)
@@ -356,7 +452,7 @@ namespace Arcane.AxlDoc
     {
       string anchor_name = DoxygenDocumentationUtils.AnchorName (o);
       string translated_full_name = o.GetTranslatedFullName (m_code_info.Language);
-      m_full_stream.WriteLine ("\\anchor {1}\n<div class='{2}'><strong>{0}",
+      m_full_stream.WriteLine ("\\anchor {1} {0}",
                                     translated_full_name, anchor_name, o.GetType ().Name);
       if (m_dico_writer != null) {
         m_dico_writer.Write ("pagename=" + m_doc_file.PageName () + " frname=" + translated_full_name + " anchorname=" + anchor_name + "\n");
@@ -369,7 +465,6 @@ namespace Arcane.AxlDoc
         else
           m_full_stream.WriteLine ("undefined]");
       }
-      m_full_stream.WriteLine ("</strong>");
       string type_name = o.Type;
       // Affiche le type de l'option et sa valeur par dÃ©faut si prÃ©sente
       if (type_name != null && !(o is ComplexOptionInfo)) {
@@ -409,20 +504,24 @@ namespace Arcane.AxlDoc
           m_full_stream.WriteLine (v);
         }
       }
-      m_full_stream.WriteLine ("</div>\n");
+    }
+
+    private void _WriteCode (Option o)
+    {
       // Affiche un exemple de cette option (pour copier-coller)
       if (!(o is ComplexOptionInfo)) {
         string field_name = Utils.XmlGetAttributeValue (o.DescriptionElement, "field-name");
         if (field_name == null)
           field_name = "value";
-        m_full_stream.Write ("<div><pre class='OptionName'>");
+        //m_full_stream.Write ("<div><pre class='OptionName'>");
+        m_full_stream.WriteLine ("```xml");
         if (o is ServiceInstanceOptionInfo) {
-          m_full_stream.Write ("&lt;{0} name='{1}'&gt;<i>service configuration block</i>&lt;/{0}&gt;",
+          m_full_stream.Write ("<{0} name='{1}'>service configuration block</{0}>",
                                         o.GetTranslatedName (m_code_info.Language), field_name);
         } else
-          m_full_stream.Write ("&lt;{0}&gt;{1}&lt;/{0}&gt;",
+          m_full_stream.Write ("<{0}>{1}</{0}>",
                                         o.GetTranslatedName (m_code_info.Language), field_name);
-        m_full_stream.WriteLine ("</pre></div>");
+        m_full_stream.WriteLine ("```");
       }
     }
 
@@ -446,9 +545,9 @@ namespace Arcane.AxlDoc
     private void _WritePageFullDesc (Option option, XmlElement desc_elem)
     {
       TextWriter tw = m_doc_file.MainDescStream;
-      tw.Write ("<hr><div class='OptionFullDescription'>");
+      tw.Write ("<div class='OptionFullDescription'>");
       _WriteDescription (0, option, desc_elem, tw);
-      tw.WriteLine ("</div><hr>");
+      tw.WriteLine ("</div>");
     }
 
     private void _WriteOptionSeparator (Option o)
