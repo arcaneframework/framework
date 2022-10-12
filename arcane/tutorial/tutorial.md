@@ -4,8 +4,8 @@ Ce répertoire contient un didacticiel ARCANE dont l'objectif est de réaliser l
 `samples` de manière progressive. 
 
 Les exercices à réaliser sont :
-  - \subpage tutorialsample1
-  - \subpage tutorialsample2
-  - \subpage tutorialsample3
+ - \subpage tutorialsample1
+ - \subpage tutorialsample2
+ - \subpage tutorialsample3
 
 <b>Les codes sources du répertoire `samples` sont les corrigés des exercices de ce didacticiel.</b>
