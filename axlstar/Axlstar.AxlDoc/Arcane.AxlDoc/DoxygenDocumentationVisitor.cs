@@ -330,7 +330,6 @@ namespace Arcane.AxlDoc
         if (interface_info.Services.Count>0) {
           //Console.WriteLine("SERVICE TYPE FOUND={0}",o.Type);
           m_full_stream.WriteLine ("<div class=\"ServiceTable\">");
-          // TODO TRAD OK : Si traduction FR/EN : A traduire
           if(m_code_info.Language == "fr"){
             m_full_stream.WriteLine ("<dl><dt>Valeur{0} possible{0} pour le tag <i>name</i>:</dt>",
                                      (interface_info.Services.Count>1)?"s":"");
