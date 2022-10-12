@@ -90,7 +90,7 @@ jobs:
           cov-build --dir cov-int make -C build -j $(nproc)
 
       - name: Upload log artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: coverity-artifact
           path: cov-int/build-log.txt

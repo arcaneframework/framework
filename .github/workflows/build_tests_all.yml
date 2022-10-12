@@ -141,7 +141,7 @@ jobs:
           ctest --test-dir ${{ env.BUILD_DIR }} --output-junit ${{ env.CT_RESULT_DIR }}/results.xml ${{ env.CT_OPTS }} -E '${{matrix.type_excl_tests}}' -LE '${{matrix.type_excl_labels_tests}}'
 
       - name: Upload test artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         if: failure()
         with:
           name: ${{matrix.image_short}}_${{matrix.version_short}}_${{matrix.compilo_name}}_${{matrix.type}}_aio-test-artifact
@@ -366,7 +366,7 @@ jobs:
         run: ctest --test-dir ${{ env.BUILD_DIR }}/arcane --output-junit ${{ env.CT_RESULT_DIR }}/results_arcane.xml ${{ env.CT_OPTS }} -E '${{matrix.type_excl_tests}}' -LE '${{matrix.type_excl_labels_tests}}'
 
       - name: Upload test artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         if: failure()
         with:
           name: ${{matrix.image_short}}_${{matrix.version_short}}_${{matrix.compilo_name}}_${{matrix.type}}_split-test-artifact
