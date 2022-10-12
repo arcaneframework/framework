@@ -15,7 +15,7 @@ WIP
 ### Nouveautés/Améliorations:
 
 - Ajoute un service de gestion de sorties au format CSV (voir
-  \ref arcanedoc_services_csv) (#277)
+  \ref arcanedoc_services_modules_services) (#277)
 - Ajoute possibilité de spécifier le mot clé `Auto` pour la variable
   CMake `ARCANE_DEFAULT_PARTITIONER`. Cela permet de choisir
   automatiquement lors de la configuration le partitionneur utilisé

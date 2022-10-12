@@ -2,6 +2,9 @@
 
 \mainpage %Arcane
 
+\warning La documentation a été récemment mise à jour. Il peut donc rester
+des erreurs, des bugs ou des élements non finalisés.
+
 Cette page contient la documentation pour les utilisateurs de la plate-forme %Arcane.
 
 La page \subpage arcanedoc_news présente la liste des nouveautés de chaque version.
