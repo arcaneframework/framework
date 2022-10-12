@@ -106,8 +106,8 @@ namespace Arcane.AxlDoc
       if (m_config.do_examples) {
         DoxygenExampleFile.WriteAliases ();
       }
-      m_option_index_visitor.Generate (Path.Combine (m_config.output_path, "_full_index.md"));
-      _WriteCaseMainPageMarkdown (modules.Values, services.Values);
+      m_option_index_visitor.Generate (Path.Combine (m_config.output_path, "axldoc_full_index.md"));
+      _WriteCaseMainPageMarkdown(modules.Values, services.Values);
       _WriteInterfaceMainPageMarkdown (services.Values);
 
       if (m_dico_writer != null) {
@@ -214,15 +214,14 @@ namespace Arcane.AxlDoc
     private void _WriteCaseMainPageMarkdown (IList<ModuleInfo> modules, IList<ServiceInfo> services)
     {
       string out_lang = m_code_info.Language;
-      string full_name = Path.Combine (m_config.output_path, "out_casemainpage.md");
+      string full_name = Path.Combine (m_config.output_path, "axldoc_casemainpage.md");
 
       // Affiche le chemin des sources du service ou module si on demande le mode développeur.
       bool want_path = String.IsNullOrEmpty (m_config.user_class);
 
       using (TextWriter tw = new StreamWriter (full_name, false, Utils.WriteEncoding)) {
-        tw.WriteLine ("\n\\page axldoc_casemainpage_dox {0}\n", m_code_info.Translation.ModuleAndServices);
-        tw.WriteLine (m_code_info.Translation.ListOfModules);
-        tw.WriteLine ("------------\n");
+        tw.WriteLine ("# {0} {{#axldoc_casemainpage}}\n", m_code_info.Translation.ModuleAndServices);
+        tw.WriteLine ("## {0}\n", m_code_info.Translation.ListOfModules);
         tw.WriteLine ("<table>");
         tw.Write ("<tr><th>Balise XML</th><th>Nom</th>");
         if (want_path)
@@ -242,8 +241,7 @@ namespace Arcane.AxlDoc
           }
         }
         tw.WriteLine ("</table>");
-        tw.WriteLine (m_code_info.Translation.ListOfServices);
-        tw.WriteLine ("------------\n");
+        tw.WriteLine ("\n## {0}\n", m_code_info.Translation.ListOfServices);
         tw.WriteLine ("<table>");
         tw.WriteLine ("<tr><th>Nom</th><th>Interface</th>");
         if (want_path)
@@ -276,7 +274,7 @@ namespace Arcane.AxlDoc
     void _WriteInterfaceMainPageMarkdown (IList<ServiceInfo> services)
     {
       string out_lang = m_code_info.Language;
-      string full_name = Path.Combine (m_config.output_path, "out_interfacemainpage.md");
+      string full_name = Path.Combine (m_config.output_path, "axldoc_interfacemainpage.md");
       SortedList<String, SortedList<String, ServiceInfo>> interfaces = new SortedList<String, SortedList<String, ServiceInfo>> ();
 
       foreach (ServiceInfo service in services) {
@@ -294,18 +292,30 @@ namespace Arcane.AxlDoc
       }
 
       using (TextWriter tw = new StreamWriter (full_name, false, Utils.WriteEncoding)) {
-        tw.WriteLine ("\n\\page out_interfacemainpage_dox Service interfaces\n");
+        // TODO TRAD : Si traduction FR/EN : A traduire
+        // tw.WriteLine ("# Interface des services {#axldoc_interfacemainpage}\n");
+        tw.WriteLine ("# Service interfaces {#axldoc_interfacemainpage}\n");
         if (interfaces.Count > 0) {
-          tw.WriteLine ("List of interfaces");
-          tw.WriteLine ("------------------");
+          // TODO TRAD : Si traduction FR/EN : A traduire
+          // tw.WriteLine ("## Liste des interfaces\n");
+          tw.WriteLine ("## List of interfaces\n");
+          tw.WriteLine ("<table class=\"doxtable\">");
+          // TODO TRAD : Si traduction FR/EN : A traduire
+          // tw.WriteLine ("<tr><th>Interface</th><th>Implémentation(s)</th></tr>");
+          tw.WriteLine ("<tr><th>Interface</th><th>Implementation(s)</th></tr>");
+
           foreach (var intface in interfaces) {
-            tw.WriteLine ("- \\anchor axldoc_interface_{1} {0} implemented by", intface.Key, DoxygenDocumentationUtils.AnchorName (intface.Key));
+            tw.WriteLine("<tr>");
+            tw.WriteLine("<td>\\anchor axldoc_interface_{1} {0}</td>", intface.Key, DoxygenDocumentationUtils.AnchorName(intface.Key));
+            tw.WriteLine("<td>");
             foreach (var service in intface.Value.Values) {
               string service_path = _GetServiceOrModulePath (service);
-              tw.WriteLine ("  - \\ref axldoc_service_{0} \"{1}\" ({2})",
+              tw.WriteLine ("- \\ref axldoc_service_{0} \"{1}\" ({2})",
                             service.FileBaseName, service.GetTranslatedName (out_lang), service_path);
             }
+            tw.WriteLine("</td></tr>");
           }
+          tw.WriteLine("</table>");
         }
       }
     }

@@ -89,7 +89,7 @@ enum eServiceBuilderProperties
  *
  * Il est aussi possible de récupérer une instance singleton d'un service,
  * via getSingleton(). Les instances singletons qui sont disponibles
- * sont référencées dans le fichier de configuration du code (voir \ref arcanedoc_codeconfig).
+ * sont référencées dans le fichier de configuration du code (voir \ref arcanedoc_core_types_codeconfig).
  */
 template<typename InterfaceType>
 class ServiceBuilder

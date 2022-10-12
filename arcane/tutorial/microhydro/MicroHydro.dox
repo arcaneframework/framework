@@ -64,7 +64,7 @@
 
   \section tutorialsample2_service Service d'équation d'état
   \par Prérequis
-  - Lire la section \ref arcanedoc_service.
+  - Lire la section \ref arcanedoc_core_types_service.
   \par Actions à réaliser
   Faire un service capable de calculer l'équation d'état pour un groupe de mailles donné :
   - Regarder l'interface du service dans le fichier \c IEquationOfState et les implémentations

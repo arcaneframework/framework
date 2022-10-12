@@ -19,7 +19,7 @@
   \section tutorialsample2_variables Variables
   \par Prérequis
   - Avoir fait le premier exemple de ce didacticiel : \ref tutorialsample1.
-  - Lire la partie section \ref arcanedoc_variable.
+  - Lire la partie section \ref arcanedoc_core_types_variable.
   \par Actions à réaliser
   - Compléter le fichier \c Poisson.axl pour déclarer les variables \e CellTemperature et \e NodeTemperature
     représentant respectivement les températures aux mailles et aux noeuds.
@@ -29,14 +29,14 @@
 
   \section tutorialsample1_datafile Fichier de données
   \par Pré-requis
-  - Lire la section \ref arcanedoc_caseoptions.
+  - Lire la section \ref arcanedoc_core_types_caseoptions.
   \par Actions à réaliser
   - Editer le jeu de données \c Poisson.arc et observer les éléments <tt>init-temperature</tt> et <tt>boundary-condition</tt>.
   - Définir la grammaire de ces données en complétant le descripteur du module \c Poisson.axl (élément \c options)
 
   \section tutorialsample2_enumerator Parcourir les entités du maillage
   \par Pré-requis</b><br><br>
-  - Lire la section \ref arcane_overview_iteration
+  - Lire la section \ref arcanedoc_getting_started_iteration
   \par Actions à réaliser</b>
   - Compléter le fichier \c PoissonModule.cc en effectuant les calculs décrits dans l'énoncé de l'exercice
   - Compiler à l'aide des fichiers Makefile fournis

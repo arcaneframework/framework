@@ -32,7 +32,7 @@ namespace Arcane
  
  \brief Ensemble des classes gérant la concurrence.
 
- Pour plus de renseignements, se reporter à la page \ref arcanedoc_concurrency
+ Pour plus de renseignements, se reporter à la page \ref arcanedoc_parallel_concurrency
 */
 
 /*!
@@ -40,7 +40,7 @@ namespace Arcane
  
  \brief Classes, Types et macros pour gérer la concurrence.
 
- Pour plus de renseignements, se reporter à la page \ref arcanedoc_concurrency
+ Pour plus de renseignements, se reporter à la page \ref arcanedoc_parallel_concurrency
 */
 
 /*---------------------------------------------------------------------------*/

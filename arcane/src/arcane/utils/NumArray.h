@@ -130,7 +130,7 @@ namespace impl
  * \warning Cette classe utilise par défaut un allocateur spécifique qui permet de
  * rendre accessible ces valeurs à la fois sur l'hôte (CPU) et l'accélérateur.
  * Néanmoins, il faut pour cela que le runtime associé à l'accélérateur ait été
- * initialisé (\ref arcanedoc_accelerator). C'est pourquoi il ne faut pas
+ * initialisé (\ref arcanedoc_parallel_accelerator). C'est pourquoi il ne faut pas
  * utiliser de variables globales de cette classe ou d'une classe dérivée.
  */
 template<typename DataType,A_MDRANK_TYPE(RankValue),typename LayoutType>

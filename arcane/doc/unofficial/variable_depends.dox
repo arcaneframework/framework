@@ -1,7 +1,7 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 // -*- C++ -*-
 /*!
-  \page arcanedoc_variable_depends Variables et dépendances
+  \page arcanedoc_core_types_variable_depends Variables et dépendances
 	
   Arcane dispose d'un mécanisme de gestion des dépendances entre variables
   permettant de mettre automatiquement à jour une variable ci nécessaire.

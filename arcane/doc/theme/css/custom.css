@@ -1,0 +1,335 @@
+﻿/* -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+/*-----------------------------------------------------------------------------
+/* Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+/* See the top-level COPYRIGHT file for details.
+/* SPDX-License-Identifier: Apache-2.0
+/*-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* custom.css                                                  (C) 2000-2022 */
+/*                                                                           */
+/* Personnalisation des css de doxygen et du thème.                          */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/**
+ * Paramètres globaux pour la page.
+ */
+html {
+  --top-height: 230px;
+}
+
+/**
+ * Correction temporaire de font en dark mode.
+ */
+html.dark-mode {
+  --font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+  --font-family-monospace: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+}
+
+/**
+ * Table des matières.
+ */
+.toc {
+  background: var(--side-nav-background) !important;
+  border-radius: 10px !important;
+  top: 0px !important;
+  border-left: 0px !important;
+}
+
+/**
+ * Les partie note, critical, &c.
+ */
+dl.section dd,
+dl.bug dd,
+dl.deprecated dd {
+  margin-inline-start: revert;
+}
+
+/**
+ * Partie haute de la side-nav.
+ */
+#top {
+  background: linear-gradient(var(--top-side-nav), var(--side-nav-background));
+}
+
+/**
+ * Taille / Position du logo.
+ */
+#projectlogo img {
+  width: 250px;
+  height: 100px;
+  max-height: none !important;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+/**
+ * Arcane / Version.
+ */
+#projectalign {
+  text-align: center;
+}
+#titlearea table {
+  width: 100%;
+}
+
+/**
+ * Le texte principal.
+ */
+#doc-content {
+  padding-top: 0px !important;
+}
+
+/** 
+ * Pour les "Powertips" (bulles qui s'affichent quand on 
+ * passe la souris dans un code.  
+ */
+#powerTip {
+  background-color: var(--side-nav-background);
+  color: var(--side-nav-foreground);
+  box-shadow: 1px 1px 7px var(--primary-light-color);
+  border: 1px solid var(--primary-color);
+  opacity: 1;
+}
+
+/*--------------------------------------------------------*/
+/*--------------------Partie Recherche--------------------*/
+
+/**
+ * On centre le mot "Recherche" dans la recherche.
+ */
+#MSearchField {
+  height: calc(var(--searchbar-height) - 5px);
+}
+
+/*
+ * On centre la "croix" dans la recherche.
+ */
+.sm-dox a,
+.sm-dox a:focus,
+.sm-dox a:hover,
+.sm-dox a:active {
+  line-height: 30px;
+}
+
+/*--------------------------------------------------------*/
+/*------------------Partie Index keyword------------------*/
+
+.keyword_elem {
+  background-color: var(--side-nav-background);
+  text-align: center;
+  padding: 5px 0px 5px 0px;
+  margin: 3px 0px 3px 0px;
+}
+
+.keyword_elem_title {
+  display: inline-block;
+  overflow: hidden;
+  white-space: normal;
+  overflow-wrap: break-word;
+  width: inherit;
+  font-size: larger;
+  line-height: initial;
+}
+
+
+.keyword_elem_modser {
+  display: inline-block;
+  overflow: hidden;
+  white-space: normal;
+  overflow-wrap: break-word;
+  width: inherit;
+}
+
+.keyword_elem_option {
+  display: inline-block;
+  overflow: hidden;
+  white-space: normal;
+  overflow-wrap: break-word;
+  width: inherit;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/* 
+ * Début : Pour le 'corner' GitHub.
+ */
+.github-corner:hover .octo-arm {
+  animation: octocat-wave 560ms ease-in-out
+}
+
+.github-corner svg {
+  fill: var(--primary-light-color);
+  color: var(--page-background-color);
+  position: absolute;
+  top: 0;
+  border: 0;
+  left: var(--side-nav-fixed-width);
+  transform: scale(-1, 1);
+  z-index: 99;
+}
+
+@keyframes octocat-wave {
+
+  0%,
+  100% {
+    transform: rotate(0)
+  }
+
+  20%,
+  60% {
+    transform: rotate(-25deg)
+  }
+
+  40%,
+  80% {
+    transform: rotate(10deg)
+  }
+}
+
+@media (max-width:500px) {
+  .github-corner:hover .octo-arm {
+    animation: none
+  }
+
+  .github-corner .octo-arm {
+    animation: octocat-wave 560ms ease-in-out
+  }
+}
+/*
+ * Fin : Pour le 'corner' GitHub.
+ */
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+
+/* 
+ * Début : Bouton 'Prochaine page'.
+ */
+.next_section_button {
+  display: block;
+  padding: var(--spacing-large) 0 var(--spacing-small) 0;
+  color: var(--side-nav-background);
+  user-select: none;
+  float: right;
+}
+
+.next_section_button::after {
+  /* clearfix */
+  content: "";
+  clear: both;
+  display: table;
+}
+
+.next_section_button a {
+  overflow: hidden;
+  float: right;
+  border: 1px solid var(--separator-color);
+  padding: var(--spacing-medium) calc(var(--spacing-large) / 2) var(--spacing-medium) var(--spacing-large);
+  border-radius: var(--border-radius-medium);
+  color: var(--page-foreground-color) !important;
+  text-decoration: none;
+  background-color: var(--side-nav-background);
+  transition: color .08s ease-in-out, background-color .1s ease-in-out;
+}
+
+.next_section_button a:hover {
+  color: var(--page-foreground-color) !important;
+  background-color: var(--odd-color);
+}
+
+.next_section_button a::after {
+  content: '〉';
+  color: var(--page-foreground-color) !important;
+  padding-left: var(--spacing-large);
+  display: inline-block;
+  transition: color .08s ease-in-out, transform .09s ease-in-out;
+}
+
+.next_section_button a:hover::after {
+  color: var(--page-foreground-color) !important;
+  transform: translateX(6px);
+}
+/* 
+ * Fin : Bouton 'Prochaine page'.
+ */
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+
+/* 
+ * Début : Bouton 'Précedente page'.
+ */
+.back_section_button {
+  width: fit-content;
+  display: inline-block;
+  padding: var(--spacing-large) 0 var(--spacing-small) 0;
+  color: var(--side-nav-background);
+  user-select: none;
+}
+
+.back_section_button::after {
+  /* clearfix */
+  content: "";
+  clear: both;
+  display: table;
+}
+
+.back_section_button a {
+  overflow: hidden;
+  float: left;
+  border: 1px solid var(--separator-color);
+  padding: var(--spacing-medium) var(--spacing-large) var(--spacing-medium) calc(var(--spacing-large) / 2);
+  border-radius: var(--border-radius-medium);
+  color: var(--page-foreground-color) !important;
+  text-decoration: none;
+  background-color: var(--side-nav-background);
+  transition: color .08s ease-in-out, background-color .1s ease-in-out;
+}
+
+.back_section_button a:hover {
+  color: var(--page-foreground-color) !important;
+  background-color: var(--odd-color);
+}
+
+.back_section_button a::before {
+  content: '〈';
+  color: var(--page-foreground-color) !important;
+  padding-right: var(--spacing-large);
+  display: inline-block;
+  transition: color .08s ease-in-out, transform .09s ease-in-out;
+}
+
+.back_section_button a:hover::before {
+  color: var(--page-foreground-color) !important;
+  transform: translateX(-6px);
+}
+/* 
+ * Fin : Bouton 'Précedente page'.
+ */
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+
+/*
+ * Début : Div pour les boutons 'Page'.
+ */
+.section_buttons {
+  display: inline-block;
+  vertical-align: middle;
+  width: 100%;
+}
+/*
+ * Fin : Div pour les boutons 'Page'.
+ */
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/

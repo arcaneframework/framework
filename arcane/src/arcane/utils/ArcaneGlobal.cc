@@ -241,7 +241,7 @@ arcaneSizeWithPadding(Integer size)
  *
  * Les collections sont les classes %Arcane qui gèrent un ensemble d'objet.
  * En général, la collection la plus utilisée est le tableau. Pour
- * plus de renseignements, se reporter à la page \ref arcanedoc_array_usage.
+ * plus de renseignements, se reporter à la page \ref arcanedoc_core_types_array_usage.
  */
 
 /*!

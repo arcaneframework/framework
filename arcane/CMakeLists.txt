@@ -983,6 +983,28 @@ endfunction()
 
 # ----------------------------------------------------------------------------
 # Cibles pour generer la documentation
+
+# Variable permettant de choisir le thème des documentations user et dev.
+if(ARCANEDOC_LEGACY_THEME STREQUAL ON)
+  set(ARCANEDOC_HEADER_USER "header_no_theme.html")
+  set(ARCANEDOC_HEADER_DEV "header_no_theme.html")
+  message(STATUS "User and dev documentations with legacy theme")
+else()
+  if(ARCANEDOC_USER_LEGACY_THEME STREQUAL ON)
+    set(ARCANEDOC_HEADER_USER "header_no_theme.html")
+    message(STATUS "User documentation with legacy theme")
+  else()
+    set(ARCANEDOC_HEADER_USER "header.html")
+  endif()
+
+  if(ARCANEDOC_DEV_LEGACY_THEME STREQUAL ON)
+    set(ARCANEDOC_HEADER_DEV "header_no_theme.html")
+    message(STATUS "Dev documentation with legacy theme")
+  else()
+    set(ARCANEDOC_HEADER_DEV "header.html")
+  endif()
+endif()
+
 message(STATUS "DOXYGEN = ${DOXYGEN}")
 if(DOXYGEN)
   GENERATE_DOC_TARGET(devdoc)

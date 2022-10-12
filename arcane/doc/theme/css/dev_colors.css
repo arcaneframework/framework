@@ -1,0 +1,51 @@
+﻿/* -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+/*-----------------------------------------------------------------------------
+/* Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+/* See the top-level COPYRIGHT file for details.
+/* SPDX-License-Identifier: Apache-2.0
+/*-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* custom.css                                                  (C) 2000-2022 */
+/*                                                                           */
+/* Couleurs pour le thème développeur.                                       */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/**
+ * Paramètres globaux pour la page.
+ */
+html {
+  --primary-color: #aa5800;
+  --primary-dark-color: #996130;
+  --primary-light-color: #e9a970;
+  --primary-lighter-color: #ffb87a;
+  --primary-lightest-color: #ffdbbc;
+
+  --side-nav-background: #fff8ef;
+  --side-nav-foreground: var(--page-foreground-color);
+
+  --top-side-nav: #ffd8b5;
+
+  --searchbar-background: var(--page-background-color);
+  --searchbar-foreground: var(--page-foreground-color);
+
+  --link-color: #2980b9;
+  --param-color: #b71c1c;
+}
+
+/**
+ * Paramètres globaux pour la page (mode sombre).
+ */
+html.dark-mode {
+  --primary-color: #f77536;
+  --primary-dark-color: #f6b899;
+  --primary-light-color: #d26829;
+  --primary-lighter-color: #211c19;
+  --primary-lightest-color: #1c1a19;
+
+  --side-nav-background: #1f1a16;
+  --side-nav-foreground: var(--page-foreground-color);
+  
+  --top-side-nav: #4f1600;
+  --param-color: #efba9a;
+}

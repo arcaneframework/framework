@@ -42,11 +42,11 @@ namespace Arcane.AxlDoc
       if (base_info.IsModule) {
         m_page_name = "axldoc_module_" + base_info.FileBaseName;
 
-        m_page_title = left_mark + base_info.GetTranslatedName (m_language) + right_mark + " module";
+        m_page_title = "Module " + left_mark + base_info.GetTranslatedName(m_language) + right_mark;
         Console.WriteLine ("New module pageref={0}", m_page_name);
       } else {
         m_page_name = "axldoc_service_" + base_info.FileBaseName;
-        m_page_title = left_mark + base_info.Name + right_mark + " service";
+        m_page_title = "Service " + left_mark + base_info.Name + right_mark;
         Console.WriteLine ("New service pageref={0}", m_page_name);
       }
       ++m_id;
@@ -77,27 +77,29 @@ namespace Arcane.AxlDoc
 
     void _WriteMarkdown ()
     {
-      string file_name = String.Format ("out_{0}.md", m_page_name);
+      string file_name = String.Format ("{0}.md", m_page_name);
       string full_name = Path.Combine (m_output_path, file_name);
       using (TextWriter tw = new StreamWriter (full_name, false, Utils.WriteEncoding)) {
-        tw.WriteLine ("\\page {0} {1}\n", m_page_name, m_page_title);
-        if (!String.IsNullOrEmpty (m_sub_title))
-          tw.WriteLine (m_sub_title);
+        tw.WriteLine ("# {1} {{#{0}}}\n", m_page_name, m_page_title);
         string main_desc_string = m_main_desc_stream.ToString ();
         if (!string.IsNullOrEmpty (main_desc_string)) {
           tw.Write (main_desc_string);
         }
+        if (!String.IsNullOrEmpty(m_sub_title))
+          tw.WriteLine(m_sub_title);
         if (!string.IsNullOrEmpty (m_brief_stream.ToString ())) {
-          tw.WriteLine ("Summary of options");
-          tw.WriteLine ("---------------------------");
-          tw.WriteLine ("<ul>");
+          // TODO TRAD : Si traduction FR/EN : A traduire
+          // tw.WriteLine ("\n## Liste des options\n");
+          tw.WriteLine ("\n## Summary of options\n");
+          tw.WriteLine("<ul>");
           tw.Write (m_brief_stream.ToString ());
           tw.WriteLine ("</ul>");
         }
         if (!string.IsNullOrEmpty (m_full_stream.ToString ())) {
-          tw.WriteLine ("__________________");
-          tw.WriteLine ("<h2 class='case_fulldesc'>Detailed list of options</h2>");
-          tw.Write (m_full_stream.ToString ());
+          // TODO TRAD : Si traduction FR/EN : A traduire
+          // tw.WriteLine ("\n## Documentation des options\n");
+          tw.WriteLine ("\n## Detailed list of options\n");
+          tw.Write(m_full_stream.ToString());
         }
       }
     }
