@@ -59,6 +59,8 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
 
   //! Copie des informations entre deux zones mémoires
   void copyMemory(const MemoryCopyArgs& args);
+  //! Effectue un préfetching de la mémoire
+  void prefetchMemory(const MemoryPrefetchArgs& args);
 
   //! Enregistre l'état de l'instance dans \a event.
   void recordEvent(RunQueueEvent& event);

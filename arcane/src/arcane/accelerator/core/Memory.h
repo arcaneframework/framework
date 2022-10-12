@@ -14,11 +14,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
-
 #include "arcane/utils/UtilsTypes.h"
 
 #include "arccore/base/Span.h"
+
+#include "arcane/accelerator/core/DeviceId.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -33,7 +33,7 @@ namespace Arcane::Accelerator
  */
 class ARCANE_ACCELERATOR_CORE_EXPORT MemoryCopyArgs
 {
- public:
+ private:
 
   static Span<const std::byte> _toSpan(const void* ptr, Int64 length)
   {
@@ -78,6 +78,64 @@ class ARCANE_ACCELERATOR_CORE_EXPORT MemoryCopyArgs
 
   Span<const std::byte> m_source;
   Span<std::byte> m_destination;
+  bool m_is_async = false;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Arguments pour le préfetching mémoire.
+ */
+class ARCANE_ACCELERATOR_CORE_EXPORT MemoryPrefetchArgs
+{
+ private:
+
+  static Span<const std::byte> _toSpan(const void* ptr, Int64 length)
+  {
+    return { reinterpret_cast<const std::byte*>(ptr), length };
+  }
+  static Span<std::byte> _toSpan(void* ptr, Int64 length)
+  {
+    return { reinterpret_cast<std::byte*>(ptr), length };
+  }
+
+ public:
+
+  //! Copie \a length octets depuis \a source vers \a destination
+  MemoryPrefetchArgs(const void* source, Int64 length)
+  : m_source(_toSpan(source, length))
+  {}
+
+  //! Copie depuis \a source vers \a destination
+  explicit MemoryPrefetchArgs(Span<const std::byte> source)
+  : m_source(source)
+  {}
+
+ public:
+
+  MemoryPrefetchArgs& addAsync()
+  {
+    m_is_async = true;
+    return (*this);
+  }
+  MemoryPrefetchArgs& addAsync(bool v)
+  {
+    m_is_async = v;
+    return (*this);
+  }
+  MemoryPrefetchArgs& addDeviceId(DeviceId v)
+  {
+    m_device_id = v;
+    return (*this);
+  }
+  Span<const std::byte> source() const { return m_source; }
+  bool isAsync() const { return m_is_async; }
+  DeviceId deviceId() const { return m_device_id; }
+
+ private:
+
+  Span<const std::byte> m_source;
+  DeviceId m_device_id;
   bool m_is_async = false;
 };
 

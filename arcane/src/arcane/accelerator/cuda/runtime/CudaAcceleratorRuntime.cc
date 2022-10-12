@@ -25,7 +25,6 @@
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/Memory.h"
 
-//#include "arcane/accelerator/AcceleratorGlobal.h"
 #include "arcane/accelerator/core/IRunQueueRuntime.h"
 #include "arcane/accelerator/core/IRunQueueStream.h"
 #include "arcane/accelerator/core/RunCommand.h"
@@ -129,8 +128,20 @@ class CudaRunQueueStream
   }
   void copyMemory(const MemoryCopyArgs& args) override
   {
-    auto r =cudaMemcpyAsync(args.destination().data(),args.source().data(),
-                            args.source().length(),cudaMemcpyDefault,m_cuda_stream);
+    auto r = cudaMemcpyAsync(args.destination().data(),args.source().data(),
+                             args.source().length(),cudaMemcpyDefault,m_cuda_stream);
+    ARCANE_CHECK_CUDA(r);
+    if (!args.isAsync())
+      barrier();
+  }
+  void prefetchMemory(const MemoryPrefetchArgs& args) override
+  {
+    DeviceId d = args.deviceId();
+    int device = cudaCpuDeviceId;
+    if (!d.isHost())
+      device = d.asInt32();
+    //std::cout << "PREFETCH device=" << device << " host=" << cudaCpuDeviceId << " size=" << args.source().length() << "\n";
+    auto r = cudaMemPrefetchAsync(args.source().data(),args.source().length(),device,m_cuda_stream);
     ARCANE_CHECK_CUDA(r);
     if (!args.isAsync())
       barrier();

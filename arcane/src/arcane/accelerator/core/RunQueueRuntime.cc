@@ -33,17 +33,25 @@ class ARCANE_ACCELERATOR_CORE_EXPORT HostRunQueueStream
 : public IRunQueueStream
 {
  public:
-  HostRunQueueStream(IRunQueueRuntime* runtime): m_runtime(runtime){}
+
+  HostRunQueueStream(IRunQueueRuntime* runtime)
+  : m_runtime(runtime)
+  {}
+
  public:
+
   void notifyBeginKernel(RunCommand&) override { return m_runtime->notifyBeginKernel(); }
   void notifyEndKernel(RunCommand&) override { return m_runtime->notifyEndKernel(); }
   void barrier() override { return m_runtime->barrier(); }
   void copyMemory(const MemoryCopyArgs& args) override
   {
-    std::memcpy(args.destination().data(),args.source().data(),args.source().size());
+    std::memcpy(args.destination().data(), args.source().data(), args.source().size());
   }
+  void prefetchMemory(const MemoryPrefetchArgs&) override {}
   void* _internalImpl() override { return nullptr; }
+
  private:
+
   IRunQueueRuntime* m_runtime;
 };
 

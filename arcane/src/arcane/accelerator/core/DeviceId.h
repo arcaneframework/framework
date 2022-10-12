@@ -5,12 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IRunQueueStream.h                                           (C) 2000-2022 */
+/* DeviceId.h                                                  (C) 2000-2022 */
 /*                                                                           */
-/* Interface d'un flux d'exécution pour une RunQueue.                        */
+/* Identifiant d'un composant du système.                                    */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_IRUNQUEUESTREAM_H
-#define ARCANE_ACCELERATOR_IRUNQUEUESTREAM_H
+#ifndef ARCANE_ACCELERATOR_CORE_DEVICEID_H
+#define ARCANE_ACCELERATOR_CORE_DEVICEID_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -19,37 +19,53 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Accelerator
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \internal
- * \brief Interface d'un flux d'exécution pour une RunQueue.
+ * \brief Identifiant d'un composant du système.
+ *
+ * Le composant peut être un accélérateur ou l'hôte.
  */
-class ARCANE_ACCELERATOR_CORE_EXPORT IRunQueueStream
+class ARCANE_ACCELERATOR_CORE_EXPORT DeviceId
 {
+ private:
+
+  static constexpr Int32 HOST_ID = (-1);
+
  public:
 
-  virtual ~IRunQueueStream() noexcept(false) {}
+  //! Accélérateur par défaut
+  DeviceId() = default;
+
+  explicit DeviceId(Int32 id)
+  : m_device_id(id)
+  {
+  }
 
  public:
 
-  virtual void notifyBeginKernel(RunCommand& command) = 0;
-  virtual void notifyEndKernel(RunCommand& command) = 0;
-  virtual void barrier() = 0;
-  virtual void* _internalImpl() = 0;
-  virtual void copyMemory(const MemoryCopyArgs& args) = 0;
-  virtual void prefetchMemory(const MemoryPrefetchArgs& args) =0;
+  //! Device représentant l'hôte.
+  static DeviceId host() { return DeviceId(HOST_ID); }
+
+ public:
+
+  bool isHost() const { return m_device_id == HOST_ID; }
+  Int32 asInt32() const { return m_device_id; }
+
+ private:
+
+  Int32 m_device_id = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::Accelerator::impl
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif
