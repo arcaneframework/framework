@@ -48,6 +48,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueImpl
   static RunQueueImpl* create(Runner* r,eExecutionPolicy exec_policy);
  public:
   eExecutionPolicy executionPolicy() const { return m_execution_policy; }
+  Runner* runner() const { return m_runner; }
  public:
   void release();
   void reset();

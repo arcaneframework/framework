@@ -251,8 +251,6 @@ template<typename DataType,typename ReduceFunctor>
 class Reducer
 {
  public:
-  // TODO: obliger à construire une instance avec un runtime associé qui se chargera d'allouer
-  // 'm_managed_memory_value' si besoin.
   Reducer(RunCommand& command)
   : m_managed_memory_value(&m_local_value), m_command(&command)
   {
@@ -266,27 +264,22 @@ class Reducer
     m_memory_impl = impl::internalGetOrCreateReduceMemoryImpl(&command);
     if (m_memory_impl){
       m_managed_memory_value = impl::allocateReduceDataMemory<DataType>(m_memory_impl);
+      // TODO: utiliser un 'memcpy' asynchrone sur la file associée à la commande
       *m_managed_memory_value = m_identity;
-      //m_memory_impl->setDataTypeSize(sizeof(DataType));
     }
   }
   ARCCORE_HOST_DEVICE Reducer(const Reducer& rhs)
   : m_managed_memory_value(rhs.m_managed_memory_value), m_local_value(rhs.m_local_value), m_identity(rhs.m_identity)
   {
 #ifdef ARCCORE_DEVICE_CODE
-    m_grid_memory_value_as_bytes = rhs.m_grid_memory_value_as_bytes;
-    m_grid_memory_size = rhs.m_grid_memory_size;
-    m_grid_device_count = rhs.m_grid_device_count;
+    m_grid_memory_info = rhs.m_grid_memory_info;
     //int threadId = threadIdx.x + blockDim.x * threadIdx.y + (blockDim.x * blockDim.y) * threadIdx.z;
     //if (threadId==0)
     //printf("Create ref device Id=%d parent=%p\n",threadId,&rhs);
 #else
     m_memory_impl = rhs.m_memory_impl;
     if (m_memory_impl){
-      auto rx = m_memory_impl->gridMemoryInfo();
-      m_grid_memory_value_as_bytes = rx.m_grid_memory_value_as_bytes;
-      m_grid_memory_size = rx.m_grid_memory_size;
-      m_grid_device_count = rx.m_grid_device_count;
+      m_grid_memory_info = m_memory_impl->gridMemoryInfo();
     }
     //std::cout << String::format("Reduce: host copy this={0} rhs={1} mem={2} device_count={3}\n",this,&rhs,m_memory_impl,(void*)m_grid_device_count);
     m_parent_value = rhs.m_parent_value;
@@ -307,16 +300,16 @@ class Reducer
     //int threadId = threadIdx.x + blockDim.x * threadIdx.y + (blockDim.x * blockDim.y) * threadIdx.z;
     //if ((threadId%16)==0)
     //printf("Destroy device Id=%d\n",threadId);
-    DataType* buf = reinterpret_cast<DataType*>(m_grid_memory_value_as_bytes);
-    SmallSpan<DataType> grid_buffer(buf,m_grid_memory_size);
+    DataType* buf = reinterpret_cast<DataType*>(m_grid_memory_info.m_grid_memory_value_as_bytes);
+    SmallSpan<DataType> grid_buffer(buf,m_grid_memory_info.m_grid_memory_size);
 
     impl::ReduceDeviceInfo<DataType> dvi;
     dvi.m_grid_buffer = grid_buffer;
-    dvi.m_device_count = m_grid_device_count;
+    dvi.m_device_count = m_grid_memory_info.m_grid_device_count;
     dvi.m_final_ptr = m_managed_memory_value;
     dvi.m_current_value = m_local_value;
     dvi.m_identity = m_identity;
-
+    dvi.m_use_grid_reduce = m_grid_memory_info.m_reduce_policy != eDeviceReducePolicy::Atomic;
     ReduceFunctor::applyDevice(dvi); //grid_buffer,m_grid_device_count,m_managed_memory_value,m_local_value,m_identity);
 #else
     //      printf("Destroy host parent_value=%p this=%p\n",(void*)m_parent_value,(void*)this);
@@ -367,9 +360,7 @@ class Reducer
  protected:
   impl::IReduceMemoryImpl* m_memory_impl = nullptr;
   DataType* m_managed_memory_value;
-  Byte* m_grid_memory_value_as_bytes = nullptr; //! Une valeur par grille
-  Int32 m_grid_memory_size = 0;
-  unsigned int* m_grid_device_count = nullptr;
+  impl::IReduceMemoryImpl::GridMemoryInfo m_grid_memory_info;
  private:
   RunCommand* m_command;
  protected:

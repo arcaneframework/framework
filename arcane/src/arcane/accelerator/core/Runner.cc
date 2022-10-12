@@ -165,6 +165,7 @@ class Runner::Impl
   //TODO: mettre à None lorsqu'on aura supprimé Runner::setExecutionPolicy()
   eExecutionPolicy m_execution_policy = eExecutionPolicy::Sequential;
   bool m_is_init = false;
+  eDeviceReducePolicy m_reduce_policy = eDeviceReducePolicy::Atomic;
  private:
   std::map<eExecutionPolicy,RunQueueImplStack*> m_run_queue_pool_map;
   std::unique_ptr<std::mutex> m_pool_mutex;
@@ -307,6 +308,24 @@ bool Runner::
 isConcurrentQueueCreation() const
 {
   return m_p->isConcurrentQueueCreation();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void Runner::
+setDeviceReducePolicy(eDeviceReducePolicy v)
+{
+  m_p->m_reduce_policy = v;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+eDeviceReducePolicy Runner::
+deviceReducePolicy() const
+{
+  return m_p->m_reduce_policy;
 }
 
 /*---------------------------------------------------------------------------*/

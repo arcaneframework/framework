@@ -431,7 +431,9 @@ void _applyDeviceGeneric(const ReduceDeviceInfo<DataType>& dev_info)
   bool do_grid_reduce = dev_info.m_use_grid_reduce;
 
   //if (impl::getThreadId()==0){
-  //printf("BLOCK ID=%d %p s=%d ptr=%p %p\n",getBlockId(),grid_buffer.data(),grid_buffer.size(),ptr,(void*)device_count);
+  //  printf("BLOCK ID=%d %p s=%d ptr=%p %p use_grid_reduce=%d\n",
+  //         getBlockId(),grid_buffer.data(),grid_buffer.size(),ptr,
+  //         (void*)device_count,(do_grid_reduce)?1:0);
   //}
   if (do_grid_reduce){
     bool is_done = grid_reduce<ReduceOperator>(v,identity,grid_buffer,device_count);

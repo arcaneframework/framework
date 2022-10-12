@@ -79,6 +79,12 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
    */
   double cumulativeCommandTime() const;
 
+  //! Positionne la politique d'exécution des réductions
+  void setDeviceReducePolicy(eDeviceReducePolicy v);
+
+  //! politique d'exécution des réductions
+  eDeviceReducePolicy deviceReducePolicy() const;
+
  private:
 
   // TODO: a supprimer
