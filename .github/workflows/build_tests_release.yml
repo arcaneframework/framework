@@ -104,7 +104,7 @@ jobs:
         run: echo "::set-output name=date::$(/bin/date -u '+%Y%m%d%H%M%S')"
 
       - name: Get cache for ccache tool
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ${{env.CCACHE_DIR}}
           key: ${{matrix.image_short}}_${{matrix.version_short}}_${{matrix.compilo_name}}_${{matrix.type}}_aio-${{ steps.get-date.outputs.date }}-${{ github.run_number }}
@@ -227,7 +227,7 @@ jobs:
         run: echo "::set-output name=date::$(/bin/date -u '+%Y%m%d%H%M%S')"
 
       - name: Get cache for ccache tool
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ${{env.CCACHE_DIR}}
           key: ${{matrix.image_short}}_${{matrix.version_short}}_${{matrix.compilo_name}}_${{matrix.type}}_split-${{ steps.get-date.outputs.date }}-${{ github.run_number }}
@@ -453,7 +453,7 @@ jobs:
         run: echo "::set-output name=date::$(/bin/date -u '+%Y%m%d%H%M%S')"
 
       - name: Get cache for ccache tool
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ${{env.CCACHE_DIR}}
           key: ${{matrix.image_short}}_${{matrix.version_short}}_${{matrix.compilo_name}}_${{matrix.type}}_cuda-${{ steps.get-date.outputs.date }}-${{ github.run_number }}
