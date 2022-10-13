@@ -125,8 +125,20 @@ class HipRunQueueStream
   }
   void copyMemory(const MemoryCopyArgs& args) override
   {
-    auto r = hipMemcpyAsync(args.destination().data(),args.source().data(),
-                            args.source().length(),hipMemcpyDefault,m_hip_stream);
+    auto r = hipMemcpyAsync(args.destination().span().data(),args.source().span().data(),
+                            args.source().size(),hipMemcpyDefault,m_hip_stream);
+    ARCANE_CHECK_HIP(r);
+    if (!args.isAsync())
+      barrier();
+  }
+  void prefetchMemory(const MemoryPrefetchArgs& args) override
+  {
+    DeviceId d = args.deviceId();
+    int device = hipCpuDeviceId;
+    if (!d.isHost())
+      device = d.asInt32();
+    auto src = args.source().span();
+    auto r = hipMemPrefetchAsync(src.data(), src.size(), device, m_hip_stream);
     ARCANE_CHECK_HIP(r);
     if (!args.isAsync())
       barrier();

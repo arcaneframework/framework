@@ -46,7 +46,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT HostRunQueueStream
   void barrier() override { return m_runtime->barrier(); }
   void copyMemory(const MemoryCopyArgs& args) override
   {
-    std::memcpy(args.destination().data(), args.source().data(), args.source().size());
+    std::memcpy(args.destination().span().data(), args.source().span().data(), args.source().size());
   }
   void prefetchMemory(const MemoryPrefetchArgs&) override {}
   void* _internalImpl() override { return nullptr; }

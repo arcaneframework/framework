@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/UtilsTypes.h"
+#include "arcane/utils/MemoryView.h"
 
 #include "arccore/base/Span.h"
 
@@ -80,7 +81,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT MemoryCopyArgs
   {}
 
   //! Copie depuis \a source vers \a destination
-  MemoryCopyArgs(Span<std::byte> destination, Span<const std::byte> source)
+  MemoryCopyArgs(MutableMemoryView destination, MemoryView source)
   : m_source(source)
   , m_destination(destination)
   {}
@@ -97,14 +98,14 @@ class ARCANE_ACCELERATOR_CORE_EXPORT MemoryCopyArgs
     m_is_async = v;
     return (*this);
   }
-  Span<const std::byte> source() const { return m_source; }
-  Span<std::byte> destination() const { return m_destination; }
+  MemoryView source() const { return m_source; }
+  MutableMemoryView destination() const { return m_destination; }
   bool isAsync() const { return m_is_async; }
 
  private:
 
-  Span<const std::byte> m_source;
-  Span<std::byte> m_destination;
+  MemoryView m_source;
+  MutableMemoryView m_destination;
   bool m_is_async = false;
 };
 
@@ -130,11 +131,11 @@ class ARCANE_ACCELERATOR_CORE_EXPORT MemoryPrefetchArgs
 
   //! Copie \a length octets depuis \a source vers \a destination
   MemoryPrefetchArgs(const void* source, Int64 length)
-  : m_source(_toSpan(source, length))
+  : m_source(MemoryView(_toSpan(source, length)))
   {}
 
   //! Copie depuis \a source vers \a destination
-  explicit MemoryPrefetchArgs(Span<const std::byte> source)
+  explicit MemoryPrefetchArgs(MemoryView source)
   : m_source(source)
   {}
 
@@ -155,13 +156,13 @@ class ARCANE_ACCELERATOR_CORE_EXPORT MemoryPrefetchArgs
     m_device_id = v;
     return (*this);
   }
-  Span<const std::byte> source() const { return m_source; }
+  MemoryView source() const { return m_source; }
   bool isAsync() const { return m_is_async; }
   DeviceId deviceId() const { return m_device_id; }
 
  private:
 
-  Span<const std::byte> m_source;
+  MemoryView m_source;
   DeviceId m_device_id;
   bool m_is_async = false;
 };

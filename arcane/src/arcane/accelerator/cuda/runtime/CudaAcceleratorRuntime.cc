@@ -132,8 +132,8 @@ class CudaRunQueueStream
   }
   void copyMemory(const MemoryCopyArgs& args) override
   {
-    auto r = cudaMemcpyAsync(args.destination().data(), args.source().data(),
-                             args.source().length(), cudaMemcpyDefault, m_cuda_stream);
+    auto r = cudaMemcpyAsync(args.destination().span().data(), args.source().span().data(),
+                             args.source().size(), cudaMemcpyDefault, m_cuda_stream);
     ARCANE_CHECK_CUDA(r);
     if (!args.isAsync())
       barrier();
@@ -145,7 +145,8 @@ class CudaRunQueueStream
     if (!d.isHost())
       device = d.asInt32();
     //std::cout << "PREFETCH device=" << device << " host=" << cudaCpuDeviceId << " size=" << args.source().length() << "\n";
-    auto r = cudaMemPrefetchAsync(args.source().data(), args.source().length(), device, m_cuda_stream);
+    auto src = args.source().span();
+    auto r = cudaMemPrefetchAsync(src.data(), src.size(), device, m_cuda_stream);
     ARCANE_CHECK_CUDA(r);
     if (!args.isAsync())
       barrier();
