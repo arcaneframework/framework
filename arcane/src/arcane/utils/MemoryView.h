@@ -72,6 +72,10 @@ class ARCANE_UTILS_EXPORT MutableMemoryView
 
  public:
 
+   operator MemoryView() const { return MemoryView(m_bytes); }
+
+ public:
+
   //! Vue convertie en un Span
   constexpr SpanType span() const { return m_bytes; }
   constexpr Int64 size() const { return m_bytes.size(); }
@@ -80,6 +84,46 @@ class ARCANE_UTILS_EXPORT MutableMemoryView
 
   SpanType m_bytes;
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Créé une vue mémoire constante à partir d'un \a Span
+template<typename DataType> MemoryView
+makeMemoryView(Span<DataType> v)
+{
+  auto bytes = asBytes(Span<const DataType>(v));
+  return MemoryView(bytes);
+}
+
+//! Créé une vue mémoire constante sur l'adresse \a v
+template<typename DataType> MemoryView
+makeMemoryView(const DataType* v)
+{
+  const Int64 s = (Int64)(sizeof(DataType));
+  const std::byte* ptr = reinterpret_cast<const std::byte*>(v);
+  return MemoryView(Span<const std::byte>(ptr,s));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Créé une vue mémoire modifiable à partir d'un \a Span
+template<typename DataType> MutableMemoryView
+makeMutableMemoryView(Span<DataType> v)
+{
+  auto bytes = asWritableBytes(v);
+  return MutableMemoryView(bytes);
+}
+
+//! Créé une vue mémoire modifiable sur l'adresse \a v
+template<typename DataType> MutableMemoryView
+makeMutableMemoryView(DataType* v)
+{
+  const Int64 s = (Int64)(sizeof(DataType));
+  std::byte* ptr = reinterpret_cast<std::byte*>(v);
+  return MutableMemoryView(Span<std::byte>(ptr,s));
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
