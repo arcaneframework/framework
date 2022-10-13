@@ -5,51 +5,56 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IRunQueueStream.h                                           (C) 2000-2022 */
+/* Memory.cc                                                   (C) 2000-2022 */
 /*                                                                           */
-/* Interface d'un flux d'exécution pour une RunQueue.                        */
-/*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_IRUNQUEUESTREAM_H
-#define ARCANE_ACCELERATOR_IRUNQUEUESTREAM_H
+/* Classes de gestion mémoire associées aux accélérateurs.                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
+#include "arcane/accelerator/core/Memory.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Accelerator
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \internal
- * \brief Interface d'un flux d'exécution pour une RunQueue.
- */
-class ARCANE_ACCELERATOR_CORE_EXPORT IRunQueueStream
+
+namespace
 {
- public:
+  const char* _toName(eMemoryAdvice r)
+  {
+    switch (r) {
+    case eMemoryAdvice::None:
+      return "None";
+    case eMemoryAdvice::MostlyRead:
+      return "MostlyRead";
+    case eMemoryAdvice::PreferredLocationDevice:
+      return "PreferredLocationDevice";
+    case eMemoryAdvice::PreferredLocationHost:
+      return "PreferredLocationHost";
+    case eMemoryAdvice::AccessedByDevice:
+      return "AccessedByDevice";
+    case eMemoryAdvice::AccessedByHost:
+      return "AccessedByHost";
+    }
+    return "Invalid";
+  }
+} // namespace
 
-  virtual ~IRunQueueStream() noexcept(false) {}
-
- public:
-
-  virtual void notifyBeginKernel(RunCommand& command) = 0;
-  virtual void notifyEndKernel(RunCommand& command) = 0;
-  virtual void barrier() = 0;
-  virtual void* _internalImpl() = 0;
-  virtual void copyMemory(const MemoryCopyArgs& args) = 0;
-  virtual void prefetchMemory(const MemoryPrefetchArgs& args) =0;
-};
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT std::ostream&
+operator<<(std::ostream& o, eMemoryAdvice a)
+{
+  o << _toName(a);
+  return o;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::Accelerator::impl
+} // namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#endif  

@@ -5,11 +5,13 @@ set( ARCANE_SOURCES
   AcceleratorRuntimeInitialisationInfo.h
   IAcceleratorMng.h
   AcceleratorMng.cc
+  DeviceId.h
   IReduceMemoryImpl.h
   IRunQueueEventImpl.h
   IRunQueueRuntime.h
   IRunQueueStream.h
   Memory.h
+  Memory.cc
   Runner.h
   Runner.cc
   RunCommand.h

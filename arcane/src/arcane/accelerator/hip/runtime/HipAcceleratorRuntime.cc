@@ -125,8 +125,20 @@ class HipRunQueueStream
   }
   void copyMemory(const MemoryCopyArgs& args) override
   {
-    auto r = hipMemcpyAsync(args.destination().data(),args.source().data(),
-                            args.source().length(),hipMemcpyDefault,m_hip_stream);
+    auto r = hipMemcpyAsync(args.destination().span().data(),args.source().span().data(),
+                            args.source().size(),hipMemcpyDefault,m_hip_stream);
+    ARCANE_CHECK_HIP(r);
+    if (!args.isAsync())
+      barrier();
+  }
+  void prefetchMemory(const MemoryPrefetchArgs& args) override
+  {
+    DeviceId d = args.deviceId();
+    int device = hipCpuDeviceId;
+    if (!d.isHost())
+      device = d.asInt32();
+    auto src = args.source().span();
+    auto r = hipMemPrefetchAsync(src.data(), src.size(), device, m_hip_stream);
     ARCANE_CHECK_HIP(r);
     if (!args.isAsync())
       barrier();
@@ -220,6 +232,14 @@ class HipRunQueueRuntime
   {
     return new HipRunQueueEvent();
   }
+  void setMemoryAdvice(MemoryView buffer, eMemoryAdvice advice, DeviceId device_id) override
+  {
+    ARCANE_THROW(NotImplementedException, "");
+  }
+  void unsetMemoryAdvice(MemoryView buffer, eMemoryAdvice advice, DeviceId device_id) override
+  {
+    ARCANE_THROW(NotImplementedException, "");
+  }
  private:
   Int64 m_nb_kernel_launched = 0;
   bool m_is_verbose = false;
@@ -231,13 +251,13 @@ class HipRunQueueRuntime
 class HipMemoryCopier
 : public IMemoryCopier
 {
-  void copy(Span<const std::byte> from, [[maybe_unused]] eMemoryRessource from_mem,
-            Span<std::byte> to, [[maybe_unused]] eMemoryRessource to_mem) override
+  void copy(MemoryView from, [[maybe_unused]] eMemoryRessource from_mem,
+            MutableMemoryView to, [[maybe_unused]] eMemoryRessource to_mem) override
   {
     // 'hipMemcpyDefault' sait automatiquement ce qu'il faut faire en tenant
     // uniquement compte de la valeur des pointeurs. Il faudrait voir si
     // utiliser \a from_mem et \a to_mem peut améliorer les performances.
-    ARCANE_CHECK_HIP(hipMemcpy(to.data(), from.data(), from.size(), hipMemcpyDefault));
+    ARCANE_CHECK_HIP(hipMemcpy(to.span().data(), from.span().data(), from.size(), hipMemcpyDefault));
   }
 };
 

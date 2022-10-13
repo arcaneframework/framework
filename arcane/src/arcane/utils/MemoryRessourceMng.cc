@@ -16,6 +16,7 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/Array.h"
+#include "arcane/utils/MemoryView.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -43,6 +44,7 @@ namespace
     }
     return "Invalid";
   }
+
 } // namespace
 
 extern "C++" ARCANE_UTILS_EXPORT std::ostream&
@@ -118,7 +120,7 @@ namespace
 {
   inline bool _isHost(eMemoryRessource r)
   {
-    return r == eMemoryRessource::Host || r == eMemoryRessource::UnifiedMemory;
+    return r == eMemoryRessource::Host || r == eMemoryRessource::UnifiedMemory || r == eMemoryRessource::HostPinned;
   }
 } // namespace
 
@@ -126,8 +128,8 @@ namespace
 /*---------------------------------------------------------------------------*/
 
 void MemoryRessourceMng::
-copy(Span<const std::byte> from, eMemoryRessource from_mem,
-     Span<std::byte> to, eMemoryRessource to_mem)
+copy(MemoryView from, eMemoryRessource from_mem,
+     MutableMemoryView to, eMemoryRessource to_mem)
 {
   Int64 from_size = from.size();
   Int64 to_size = to.size();
@@ -151,7 +153,7 @@ copy(Span<const std::byte> from, eMemoryRessource from_mem,
     ARCANE_FATAL("Destination buffer is not accessible from host and no copier provided (localtion={0})",
                  to_mem);
 
-  memcpy(to.data(), from.data(), from.size());
+  memcpy(to.span().data(), from.span().data(), from.size());
 }
 
 /*---------------------------------------------------------------------------*/

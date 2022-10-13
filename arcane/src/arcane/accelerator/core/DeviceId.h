@@ -5,12 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IAcceleratorMng.h                                           (C) 2000-2022 */
+/* DeviceId.h                                                  (C) 2000-2022 */
 /*                                                                           */
-/* Interface du gestionnaire des accélérateurs.                              */
+/* Identifiant d'un composant du système.                                    */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_CORE_IACCELERATORMNG_H
-#define ARCANE_ACCELERATOR_CORE_IACCELERATORMNG_H
+#ifndef ARCANE_ACCELERATOR_CORE_DEVICEID_H
+#define ARCANE_ACCELERATOR_CORE_DEVICEID_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -25,46 +25,39 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Interface du gestionnaire des accélérateurs.
+ * \brief Identifiant d'un composant du système.
  *
- * Il est nécessaire d'appeler initialize() avant de pouvoir accéder aux
- * méthodes telles que defaultRunner() ou defaultQueue().
+ * Le composant peut être un accélérateur ou l'hôte.
  */
-class ARCANE_ACCELERATOR_CORE_EXPORT IAcceleratorMng
+class ARCANE_ACCELERATOR_CORE_EXPORT DeviceId
 {
+ private:
+
+  static constexpr Int32 HOST_ID = (-1);
+
  public:
 
-  virtual ~IAcceleratorMng() = default;
+  //! Accélérateur par défaut
+  DeviceId() = default;
+
+  explicit DeviceId(Int32 id)
+  : m_device_id(id)
+  {
+  }
 
  public:
 
-  /*!
-   * \brief Initialise l'instance.
-   *
-   * \pre isInitialized()==false
-   */
-  virtual void initialize(const AcceleratorRuntimeInitialisationInfo& runtime_info) =0;
+  //! Device représentant l'hôte.
+  static DeviceId host() { return DeviceId(HOST_ID); }
 
-  //! Indique si l'instance a été initialisée via l'appel à initialize()
-  virtual bool isInitialized() const =0;
+ public:
 
-  /*!
-   * \brief Exécuteur par défaut.
-   *
-   * Le pointeur retourné reste la propriété de cette instance.
-   *
-   * \pre isInitialized()==true
-   */
-  virtual Runner* defaultRunner() =0;
+  bool isHost() const { return m_device_id == HOST_ID; }
+  Int32 asInt32() const { return m_device_id; }
 
-  /*!
-   * \brief File d'exécution par défaut.
-   *
-   * Le pointeur retourné reste la propriété de cette instance.
-   *
-   * \pre isInitialized()==true
-   */
-  virtual RunQueue* defaultQueue() =0;
+ private:
+
+  Int32 m_device_id = 0;
 };
 
 /*---------------------------------------------------------------------------*/

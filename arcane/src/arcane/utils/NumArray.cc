@@ -16,6 +16,7 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/IMemoryRessourceMng.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/MemoryView.h"
 #include "arcane/utils/internal/IMemoryRessourceMngInternal.h"
 
 /*---------------------------------------------------------------------------*/
@@ -61,7 +62,7 @@ _copy(Span<const std::byte> from, eMemoryRessource from_mem,
       Span<std::byte> to, eMemoryRessource to_mem)
 {
   IMemoryRessourceMng* mrm = platform::getDataMemoryRessourceMng();
-  mrm->_internal()->copy(from, from_mem, to, to_mem);
+  mrm->_internal()->copy(MemoryView(from), from_mem, MutableMemoryView(to), to_mem);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -119,7 +119,16 @@ _getCommandImpl()
 void RunQueue::
 copyMemory(const MemoryCopyArgs& args)
 {
-  return _internalStream()->copyMemory(args);
+  _internalStream()->copyMemory(args);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunQueue::
+prefetchMemory(const MemoryPrefetchArgs& args)
+{
+  _internalStream()->prefetchMemory(args);
 }
 
 /*---------------------------------------------------------------------------*/

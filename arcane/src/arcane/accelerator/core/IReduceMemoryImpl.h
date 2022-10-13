@@ -16,6 +16,8 @@
 
 #include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
 
+#include "arcane/utils/MemoryView.h"
+
 #include <stack>
 
 /*---------------------------------------------------------------------------*/
@@ -40,10 +42,8 @@ class ARCANE_ACCELERATOR_CORE_EXPORT IReduceMemoryImpl
   {
    public:
 
-    //! Mémoire allouée pour la réduction sur une grille (nb_bloc * sizeof(T))
-    Byte* m_grid_memory_value_as_bytes = nullptr;
-    //! Taille allouée pour \a m_grid_memory_value_as_bytes
-    Int32 m_grid_memory_size = 0;
+    //! Mémoire allouée pour la réduction sur une grille (de taille nb_bloc * sizeof(T))
+    MutableMemoryView m_grid_memory_values;
     //! Entier utilisé pour compter le nombre de blocs ayant déjà fait leur partie de la réduction
     unsigned int* m_grid_device_count = nullptr;
     //! Politique de réduction
@@ -56,8 +56,11 @@ class ARCANE_ACCELERATOR_CORE_EXPORT IReduceMemoryImpl
 
  public:
 
-  //! Alloue la mémoire pour une donnée réduite dont la taille du type est \a data_size.
-  virtual void* allocateReduceDataMemory(Int64 data_size) = 0;
+  /*!
+   * \brief Alloue la mémoire pour une donnée dont on veut faire une réduction et
+   * remplit la zone avec la valeur de \a identity_view.
+   */
+  virtual void* allocateReduceDataMemory(MemoryView identity_view) = 0;
 
   //! Positionne la taille de la grille GPU (le nombre de blocs)
   virtual void setGridSizeAndAllocate(Int32 grid_size) = 0;
@@ -74,11 +77,15 @@ class ARCANE_ACCELERATOR_CORE_EXPORT IReduceMemoryImpl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Alloue la mémoire pour contenir la valeur réduite et positionne
+ * sa valeur à \a identity.
+ */
 template<typename T> T*
-allocateReduceDataMemory(IReduceMemoryImpl* p)
+allocateReduceDataMemory(IReduceMemoryImpl* p,T identity)
 {
-  return reinterpret_cast<T*>(p->allocateReduceDataMemory(sizeof(T)));
+  T* ptr = reinterpret_cast<T*>(p->allocateReduceDataMemory(makeMemoryView(&identity)));
+  return ptr;
 }
 
 /*---------------------------------------------------------------------------*/

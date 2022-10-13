@@ -17,6 +17,7 @@
 #include "arcane/accelerator/core/Memory.h"
 
 #include "arcane/utils/NotImplementedException.h"
+#include "arcane/utils/MemoryView.h"
 
 #include <cstring>
 
@@ -33,17 +34,25 @@ class ARCANE_ACCELERATOR_CORE_EXPORT HostRunQueueStream
 : public IRunQueueStream
 {
  public:
-  HostRunQueueStream(IRunQueueRuntime* runtime): m_runtime(runtime){}
+
+  HostRunQueueStream(IRunQueueRuntime* runtime)
+  : m_runtime(runtime)
+  {}
+
  public:
+
   void notifyBeginKernel(RunCommand&) override { return m_runtime->notifyBeginKernel(); }
   void notifyEndKernel(RunCommand&) override { return m_runtime->notifyEndKernel(); }
   void barrier() override { return m_runtime->barrier(); }
   void copyMemory(const MemoryCopyArgs& args) override
   {
-    std::memcpy(args.destination().data(),args.source().data(),args.source().size());
+    std::memcpy(args.destination().span().data(), args.source().span().data(), args.source().size());
   }
+  void prefetchMemory(const MemoryPrefetchArgs&) override {}
   void* _internalImpl() override { return nullptr; }
+
  private:
+
   IRunQueueRuntime* m_runtime;
 };
 
@@ -76,6 +85,8 @@ class ARCANE_ACCELERATOR_CORE_EXPORT SequentialRunQueueRuntime
   eExecutionPolicy executionPolicy() const override { return eExecutionPolicy::Sequential; }
   IRunQueueStream* createStream(const RunQueueBuildInfo&) override { return new HostRunQueueStream(this); }
   IRunQueueEventImpl* createEventImpl() override { return new HostRunQueueEvent(); }
+  void setMemoryAdvice(MemoryView, eMemoryAdvice, DeviceId) override {}
+  void unsetMemoryAdvice(MemoryView, eMemoryAdvice, DeviceId) override {}
 };
 
 /*---------------------------------------------------------------------------*/
@@ -93,6 +104,8 @@ class ARCANE_ACCELERATOR_CORE_EXPORT ThreadRunQueueRuntime
   eExecutionPolicy executionPolicy() const override { return eExecutionPolicy::Thread; }
   IRunQueueStream* createStream(const RunQueueBuildInfo&) override { return new HostRunQueueStream(this); }
   IRunQueueEventImpl* createEventImpl() override { return new HostRunQueueEvent(); }
+  void setMemoryAdvice(MemoryView, eMemoryAdvice, DeviceId) override {}
+  void unsetMemoryAdvice(MemoryView, eMemoryAdvice, DeviceId) override {}
 };
 
 namespace

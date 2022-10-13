@@ -65,6 +65,7 @@ set(ARCANE_SOURCES
   IMessagePassingProfilingService.h
   ISO88591Transcoder.cc
   ISO88591Transcoder.h
+  MemoryView.h
   Misc.cc
   MD5HashAlgorithm.cc
   MD5HashAlgorithm.h

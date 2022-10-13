@@ -36,7 +36,7 @@ namespace impl
 /*---------------------------------------------------------------------------*/
 
 template<typename ItemType,typename Lambda>
-void _doIndirectThreadLambda(ItemVectorViewT<ItemType> sub_items,Lambda func)
+void _doIndirectThreadLambda(ItemVectorViewT<ItemType> sub_items,const Lambda& func)
 {
   typedef typename ItemType::LocalIdType LocalIdType;
 
@@ -54,7 +54,7 @@ void _doIndirectThreadLambda(ItemVectorViewT<ItemType> sub_items,Lambda func)
  * \brief Applique l'enumération \a func sur la liste d'entité \a items.
  */
 template<typename ItemType,typename Lambda> void
-_applyItems(RunCommand& command,ItemVectorViewT<ItemType> items,Lambda func)
+_applyItems(RunCommand& command,ItemVectorViewT<ItemType> items,const Lambda& func)
 {
   // TODO: fusionner la partie commune avec 'applyLoop'
   Integer vsize = items.size();
@@ -72,7 +72,7 @@ _applyItems(RunCommand& command,ItemVectorViewT<ItemType> items,Lambda func)
       auto [b,t] = launch_info.threadBlockInfo();
       cudaStream_t* s = reinterpret_cast<cudaStream_t*>(launch_info._internalStreamImpl());
       // TODO: utiliser cudaLaunchKernel() à la place.
-      impl::doIndirectGPULambda<ItemType,Lambda> <<<b,t,0,*s>>>(local_ids,std::forward<Lambda>(func));
+      impl::doIndirectGPULambda<ItemType,Lambda> <<<b,t,0,*s>>>(local_ids,func);
     }
 #else
     ARCANE_FATAL("Requesting CUDA kernel execution but the kernel is not compiled with CUDA compiler");
@@ -86,7 +86,7 @@ _applyItems(RunCommand& command,ItemVectorViewT<ItemType> items,Lambda func)
       auto [b,t] = launch_info.threadBlockInfo();
       hipStream_t* s = reinterpret_cast<hipStream_t*>(launch_info._internalStreamImpl());
       auto& loop_func = impl::doIndirectGPULambda<ItemType,Lambda>;
-      hipLaunchKernelGGL(loop_func,b,t,0,*s, local_ids,std::forward<Lambda>(func));
+      hipLaunchKernelGGL(loop_func,b,t,0,*s, local_ids,func);
     }
 #else
     ARCANE_FATAL("Requesting HIP kernel execution but the kernel is not compiled with HIP compiler");
@@ -126,18 +126,18 @@ _applyItems(RunCommand& command,ItemVectorViewT<ItemType> items,Lambda func)
 
 //! Applique la lambda \a func sur l'intervalle d'itération donnée par \a bounds
 template<typename ItemType,typename Lambda> void
-run(RunCommand& command,const ItemGroupT<ItemType>& items,Lambda func)
+run(RunCommand& command,const ItemGroupT<ItemType>& items,const Lambda& func)
 {
-  impl::_applyItems<ItemType>(command,items.view(),std::forward<Lambda>(func));
+  impl::_applyItems<ItemType>(command,items.view(),func);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 template<typename ItemType,typename Lambda> void
-run(RunCommand& command,ItemVectorViewT<ItemType> items,Lambda func)
+run(RunCommand& command,ItemVectorViewT<ItemType> items,const Lambda& func)
 {
-  impl::_applyItems<ItemType>(command,items,std::forward<Lambda>(func));
+  impl::_applyItems<ItemType>(command,items,func);
 }
 
 /*---------------------------------------------------------------------------*/

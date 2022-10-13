@@ -14,13 +14,16 @@
 #include "arcane/utils/NumArray.h"
 
 #include "arcane/utils/ValueChecker.h"
+#include "arcane/utils/MemoryView.h"
 
 #include "arcane/BasicUnitTest.h"
 #include "arcane/ServiceFactory.h"
 
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
+#include "arcane/accelerator/core/Runner.h"
+#include "arcane/accelerator/core/Memory.h"
+
 #include "arcane/accelerator/Reduce.h"
-#include "arcane/accelerator/Runner.h"
 #include "arcane/accelerator/NumArrayViews.h"
 #include "arcane/accelerator/RunCommandLoop.h"
 
@@ -57,7 +60,7 @@ class AcceleratorReduceUnitTest
  public:
 
   void _executeTest1();
-  template<typename DataType> void _executeTestDataType();
+  template<typename DataType> void _executeTestDataType(Int32 nb_iteration);
 
   void _compareSum(Real reduced_sum,Real sum)
   {
@@ -77,7 +80,7 @@ class AcceleratorReduceUnitTest
 
  private:
 
-  void executeTest2();
+  void executeTest2(Int32 nb_iteration);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -124,22 +127,22 @@ executeTest()
 {
   info() << "UseReducePolicy = Atomic";
   m_runner.setDeviceReducePolicy(ax::eDeviceReducePolicy::Atomic);
-  executeTest2();
+  executeTest2(2);
   info() << "UseReducePolicy = Grid";
   m_runner.setDeviceReducePolicy(ax::eDeviceReducePolicy::Grid);
-  executeTest2();
+  executeTest2(10);
 }
 
 void AcceleratorReduceUnitTest::
-executeTest2()
+executeTest2(Int32 nb_iteration)
 {
-  _executeTestDataType<Int64>();
-  _executeTestDataType<Int32>();
-  _executeTestDataType<double>();
+  _executeTestDataType<Int64>(nb_iteration);
+  _executeTestDataType<Int32>(nb_iteration);
+  _executeTestDataType<double>(nb_iteration);
 }
 
 template<typename DataType> void AcceleratorReduceUnitTest::
-_executeTestDataType()
+_executeTestDataType(Int32 nb_iteration)
 {
   ValueChecker vc(A_FUNCINFO);
 
@@ -149,9 +152,11 @@ _executeTestDataType()
 
   constexpr int n1 = 3000000;
 
-  NumArray<DataType, MDDim1> t1;
+  NumArray<DataType, MDDim1> t1; //(eMemoryRessource::Host);
   t1.resize(n1);
-
+  MemoryView t1_mem_view(makeMemoryView(t1.to1DSpan()));
+  m_runner.setMemoryAdvice(t1_mem_view,ax::eMemoryAdvice::PreferredLocationDevice);
+  m_runner.setMemoryAdvice(t1_mem_view,ax::eMemoryAdvice::AccessedByHost);
   DataType sum = 0.0;
   DataType max_value = 0.0;
   DataType min_value = 0.0;
@@ -168,7 +173,12 @@ _executeTestDataType()
   }
   info() << "SUM=" << sum << " MIN=" << min_value << " MAX=" << max_value;
 
-  {
+  //NumArray<DataType, MDDim1> t1; //(eMemoryRessource::Device);
+  //t1.copy(host_t1);
+  m_runner.setMemoryAdvice(t1_mem_view,ax::eMemoryAdvice::MostlyRead);
+  queue.prefetchMemory(ax::MemoryPrefetchArgs(t1_mem_view).addAsync());
+
+  for( int z=0; z<nb_iteration; ++z ){
     auto command = makeCommand(queue);
     ax::ReducerSum<DataType> acc_sum(command);
     acc_sum.setValue(0.0);
@@ -181,11 +191,12 @@ _executeTestDataType()
     };
 
     DataType reduced_sum = acc_sum.reduce();
-    info() << "REDUCED_SUM=" << reduced_sum;
+    if (z==0)
+      info() << "REDUCED_SUM=" << reduced_sum;
     _compareSum(reduced_sum,sum);
   }
 
-  {
+  for( int z=0; z<nb_iteration; ++z ){
     auto command = makeCommand(queue);
     ax::ReducerMin<DataType> acc_min(command);
     auto in_t1 = viewIn(command, t1);
@@ -197,12 +208,13 @@ _executeTestDataType()
     };
 
     DataType reduced_min = acc_min.reduce();
-    info() << "REDUCED_MIN=" << reduced_min;
+    if (z==0)
+      info() << "REDUCED_MIN=" << reduced_min;
     if (reduced_min!=min_value)
       ARCANE_FATAL("Bad minimum reduced_min={0} expected={1}",reduced_min,min_value);
   }
 
-  {
+  for( int z=0; z<nb_iteration; ++z ){
     auto command = makeCommand(queue);
     ax::ReducerMax<DataType> acc_max(command);
     auto in_t1 = viewIn(command, t1);
@@ -214,7 +226,8 @@ _executeTestDataType()
     };
 
     DataType reduced_max = acc_max.reduce();
-    info() << "REDUCED_MAX=" << reduced_max;
+    if (z==0)
+      info() << "REDUCED_MAX=" << reduced_max;
     if (reduced_max!=max_value)
       ARCANE_FATAL("Bad minimum reduced_min={0} expected={1}",reduced_max,max_value);
   }
