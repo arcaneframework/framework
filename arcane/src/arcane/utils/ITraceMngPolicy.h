@@ -61,7 +61,7 @@ class ARCANE_UTILS_EXPORT ITraceMngPolicy
    * les données contenues dans \a bytes.
    *
    * \a bytes est un buffer contenant une chaîne de caractères au format
-   * XML tel que décrit dans la documentation \ref arcanedoc_traces.
+   * XML tel que décrit dans la documentation \ref arcanedoc_general_traces.
    *
    * Les instance de TraceClassConfig de \a trace déjà enregistrées avant l'appel à cette
    * méthode sont supprimées.

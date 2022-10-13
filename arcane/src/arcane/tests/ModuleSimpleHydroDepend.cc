@@ -55,7 +55,7 @@ using namespace Arcane;
  * parallèle, avec une pseudo-viscosité aux mailles.
  *
  * Ce module utilise les mécanismes de dépendances des variables
- * \ref arcanedoc_variable_depends.
+ * \ref arcanedoc_core_types_variable_depends.
  */
 class ModuleSimpleHydroDepend
 : public ArcaneSimpleHydroObject

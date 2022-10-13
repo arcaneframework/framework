@@ -28,7 +28,7 @@ ARCANE_BEGIN_NAMESPACE
  * \defgroup ArcaneSimd Vectorisation
  *
  * Ensemble des classes gérant la vectorisation.
- * Pour plus d'informations, se reporter à la page \ref arcanedoc_simd.
+ * Pour plus d'informations, se reporter à la page \ref arcanedoc_parallel_simd.
  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

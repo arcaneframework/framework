@@ -9,8 +9,8 @@
 
   \section tutorialsample1_modules Modules
   \par Prérequis
-  - Lire l'introduction du document \ref arcane_overview.
-  - Lire la section sur \ref arcanedoc_module.
+  - Lire l'introduction du document \ref arcanedoc_getting_started.
+  - Lire la section sur \ref arcanedoc_core_types_module.
   \par Actions à réaliser
   En suivant les documents précédemment référencés, vous devez : 
   - Créer la classe \c HelloWorldModule en complétant les fichiers 
@@ -27,7 +27,7 @@
 
   \section tutorialsample1_entrypoints Points d'entrée
   \par Pré-requis</b><br><br>
-  - Lire la section sur \ref arcanedoc_entrypoint
+  - Lire la section sur \ref arcanedoc_core_types_entrypoint
    \par Actions à réaliser</b>
   - Compléter le module en créant une méthode \c  HelloWorldModule::printHelloWorld qui écrive "Hello World !"
   - Compléter le fichier \c HelloWorld.axl en déclarant le point d'entrée
@@ -35,7 +35,7 @@
 
   \section tutorialsample1_timeloop Boucle en temps
   \par Pré-requis
-  - Lire le document \ref arcanedoc_timeloop "La boucle en temps".
+  - Lire le document \ref arcanedoc_core_types_timeloop "La boucle en temps".
   \par Actions à réaliser
   - Compléter le fichier \c HelloWorld.config pour définir la boucle en temps de l'application
   - Définir votre application en complétant le fichier \c main.cc
@@ -48,7 +48,7 @@
 
   \section tutorialsample1_traces Traces
   \par Pré-requis
-  - Lire le document \ref arcanedoc_traces.
+  - Lire le document \ref arcanedoc_general_traces.
   \par Actions à réaliser
   - Afficher le message "Hello World" en utilisant les traces de ARCANE.
   - Exécuter !

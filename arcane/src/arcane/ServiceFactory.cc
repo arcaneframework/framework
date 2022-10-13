@@ -56,7 +56,7 @@ namespace Arcane::Internal
  * BasicService. En règle générale, un service est défini dans un
  * fichier AXL et l'outil \a axl2cc permet de générer la classe
  * de base d'un service à partir de ce fichier AXL. Pour plus
- * d'informations se reporter à la rubrique \ref arcanedoc_service.
+ * d'informations se reporter à la rubrique \ref arcanedoc_core_types_service.
  *
  * Il est néanmoins possible d'avoir des services sans fichier
  * AXL. Dans ce cas, l'enregistrement d'un service pour qu'il soit

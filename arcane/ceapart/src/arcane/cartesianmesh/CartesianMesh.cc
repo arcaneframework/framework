@@ -44,7 +44,7 @@
  *
  * Ensemble des classes assurant la gestion des maillage cartésiens.
  *
- * Pour plus de renseignements, se reporter à la page \ref arcanedoc_cartesianmesh.
+ * Pour plus de renseignements, se reporter à la page \ref arcanedoc_entities_cartesianmesh.
  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
