@@ -11,6 +11,7 @@ set( ARCANE_SOURCES
   IRunQueueRuntime.h
   IRunQueueStream.h
   Memory.h
+  Memory.cc
   Runner.h
   Runner.cc
   RunCommand.h

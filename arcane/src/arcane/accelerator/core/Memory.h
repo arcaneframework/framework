@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* Memory.h                                                    (C) 2000-2022 */
 /*                                                                           */
-/* Classes ayant trait à la gestion mémoire.                                 */
+/* Classes de gestion mémoire associées aux accélérateurs.                   */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_ACCELERATOR_CORE_MEMORY_H
 #define ARCANE_ACCELERATOR_CORE_MEMORY_H
@@ -25,6 +25,33 @@
 
 namespace Arcane::Accelerator
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Conseils pour la gestion mémoire.
+ */
+enum class eMemoryAdvice
+{
+  //! Aucun conseil
+  None = 0,
+  //! Indique que la zone mémoire est principalement en lecture seule.
+  MostlyRead,
+  //! Privilégié le positionnement de la mémoire sur l'accélérateur
+  PreferredLocationDevice,
+  //! Privilégié le positionnement de la mémoire sur l'hôte.
+  PreferredLocationHost,
+  //! Indique que la zone mémoire est accédée par l'accélérateur.
+  AccessedByDevice,
+  //! Indique que la zone mémoire est accédée par l'hôte.
+  AccessedByHost
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT std::ostream&
+operator<<(std::ostream& o,eMemoryAdvice r);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

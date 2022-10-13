@@ -17,6 +17,7 @@
 #include "arcane/accelerator/core/Memory.h"
 
 #include "arcane/utils/NotImplementedException.h"
+#include "arcane/utils/MemoryView.h"
 
 #include <cstring>
 
@@ -84,6 +85,8 @@ class ARCANE_ACCELERATOR_CORE_EXPORT SequentialRunQueueRuntime
   eExecutionPolicy executionPolicy() const override { return eExecutionPolicy::Sequential; }
   IRunQueueStream* createStream(const RunQueueBuildInfo&) override { return new HostRunQueueStream(this); }
   IRunQueueEventImpl* createEventImpl() override { return new HostRunQueueEvent(); }
+  void setMemoryAdvice(MemoryView, eMemoryAdvice, DeviceId) override {}
+  void unsetMemoryAdvice(MemoryView, eMemoryAdvice, DeviceId) override {}
 };
 
 /*---------------------------------------------------------------------------*/
@@ -101,6 +104,8 @@ class ARCANE_ACCELERATOR_CORE_EXPORT ThreadRunQueueRuntime
   eExecutionPolicy executionPolicy() const override { return eExecutionPolicy::Thread; }
   IRunQueueStream* createStream(const RunQueueBuildInfo&) override { return new HostRunQueueStream(this); }
   IRunQueueEventImpl* createEventImpl() override { return new HostRunQueueEvent(); }
+  void setMemoryAdvice(MemoryView, eMemoryAdvice, DeviceId) override {}
+  void unsetMemoryAdvice(MemoryView, eMemoryAdvice, DeviceId) override {}
 };
 
 namespace

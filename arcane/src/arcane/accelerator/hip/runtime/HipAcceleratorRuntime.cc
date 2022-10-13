@@ -220,6 +220,14 @@ class HipRunQueueRuntime
   {
     return new HipRunQueueEvent();
   }
+  void setMemoryAdvice(MemoryView buffer, eMemoryAdvice advice, DeviceId device_id) override
+  {
+    ARCANE_THROW(NotImplementedException, "");
+  }
+  void unsetMemoryAdvice(MemoryView buffer, eMemoryAdvice advice, DeviceId device_id) override
+  {
+    ARCANE_THROW(NotImplementedException, "");
+  }
  private:
   Int64 m_nb_kernel_launched = 0;
   bool m_is_verbose = false;

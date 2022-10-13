@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/Ref.h"
+#include "arcane/utils/MemoryRessource.h"
 #include "arcane/accelerator/core/RunQueue.h"
 
 /*---------------------------------------------------------------------------*/
@@ -84,6 +85,12 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
 
   //! politique d'exécution des réductions
   eDeviceReducePolicy deviceReducePolicy() const;
+
+  //! Positionne un conseil sur la gestion d'une zone mémoire
+  void setMemoryAdvice(MemoryView buffer,eMemoryAdvice advice);
+
+  //! Supprime un conseil sur la gestion d'une zone mémoire
+  void unsetMemoryAdvice(MemoryView buffer,eMemoryAdvice advice);
 
  private:
 
