@@ -16,6 +16,8 @@
 
 #include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
 
+#include "arcane/utils/MemoryView.h"
+
 #include <stack>
 
 /*---------------------------------------------------------------------------*/
@@ -40,10 +42,8 @@ class ARCANE_ACCELERATOR_CORE_EXPORT IReduceMemoryImpl
   {
    public:
 
-    //! Mémoire allouée pour la réduction sur une grille (nb_bloc * sizeof(T))
-    std::byte* m_grid_memory_value_as_bytes = nullptr;
-    //! Taille allouée pour \a m_grid_memory_value_as_bytes
-    Int32 m_grid_memory_size = 0;
+    //! Mémoire allouée pour la réduction sur une grille (de taille nb_bloc * sizeof(T))
+    MutableMemoryView m_grid_memory_values;
     //! Entier utilisé pour compter le nombre de blocs ayant déjà fait leur partie de la réduction
     unsigned int* m_grid_device_count = nullptr;
     //! Politique de réduction
@@ -58,9 +58,9 @@ class ARCANE_ACCELERATOR_CORE_EXPORT IReduceMemoryImpl
 
   /*!
    * \brief Alloue la mémoire pour une donnée dont on veut faire une réduction et
-   * remplit la zone avec la valeur de \a identity_span.
+   * remplit la zone avec la valeur de \a identity_view.
    */
-  virtual void* allocateReduceDataMemory(SmallSpan<const std::byte> identity_span) = 0;
+  virtual void* allocateReduceDataMemory(MemoryView identity_view) = 0;
 
   //! Positionne la taille de la grille GPU (le nombre de blocs)
   virtual void setGridSizeAndAllocate(Int32 grid_size) = 0;
@@ -84,10 +84,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT IReduceMemoryImpl
 template<typename T> T*
 allocateReduceDataMemory(IReduceMemoryImpl* p,T identity)
 {
-  const Int32 s = (Int32)(sizeof(T));
-  std::byte* identity_ptr = reinterpret_cast<std::byte*>(&identity);
-  SmallSpan<const std::byte> identity_span(identity_ptr,s);
-  T* ptr = reinterpret_cast<T*>(p->allocateReduceDataMemory(identity_span));
+  T* ptr = reinterpret_cast<T*>(p->allocateReduceDataMemory(makeMemoryView(&identity)));
   return ptr;
 }
 

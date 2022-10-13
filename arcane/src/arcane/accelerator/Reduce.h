@@ -298,8 +298,9 @@ class Reducer
     //int threadId = threadIdx.x + blockDim.x * threadIdx.y + (blockDim.x * blockDim.y) * threadIdx.z;
     //if ((threadId%16)==0)
     //printf("Destroy device Id=%d\n",threadId);
-    DataType* buf = reinterpret_cast<DataType*>(m_grid_memory_info.m_grid_memory_value_as_bytes);
-    SmallSpan<DataType> grid_buffer(buf,m_grid_memory_info.m_grid_memory_size);
+    auto buf_span = m_grid_memory_info.m_grid_memory_values.span();
+    DataType* buf = reinterpret_cast<DataType*>(buf_span.data());
+    SmallSpan<DataType> grid_buffer(buf,static_cast<Int32>(buf_span.size()));
 
     impl::ReduceDeviceInfo<DataType> dvi;
     dvi.m_grid_buffer = grid_buffer;

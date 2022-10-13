@@ -76,7 +76,7 @@ class ReduceMemoryImpl
 
  public:
 
-  void* allocateReduceDataMemory(SmallSpan<const std::byte> identity_span) override;
+  void* allocateReduceDataMemory(MemoryView identity_view) override;
   void setGridSizeAndAllocate(Int32 grid_size) override
   {
     m_grid_size = grid_size;
@@ -114,18 +114,7 @@ class ReduceMemoryImpl
 
  private:
 
-  void _allocateGridDataMemory()
-  {
-    // TODO: pouvoir utiliser un padding pour éviter que les lignes de cache
-    // entre les blocs se chevauchent
-    Int32 total_size = CheckedConvert::toInt32(m_data_type_size * m_grid_size);
-    if (total_size > m_grid_memory_info.m_grid_memory_size) {
-      m_grid_buffer.resize(total_size);
-      m_grid_memory_info.m_grid_memory_value_as_bytes = reinterpret_cast<std::byte*>(m_grid_buffer.to1DSpan().data());
-      m_grid_memory_info.m_grid_memory_size = total_size;
-      //std::cout << "RESIZE GRID t=" << total_size << "\n";
-    }
-  }
+  void _allocateGridDataMemory();
   void _setReducePolicy();
   void _allocateMemoryForReduceData(Int32 new_size)
   {
@@ -306,9 +295,10 @@ _setReducePolicy()
 /*---------------------------------------------------------------------------*/
 
 void* ReduceMemoryImpl::
-allocateReduceDataMemory(SmallSpan<const std::byte> identity_span)
+allocateReduceDataMemory(MemoryView identity_view)
 {
-  Int32 data_type_size = identity_span.size();
+  auto identity_span = identity_view.span();
+  Int32 data_type_size = static_cast<Int32>(identity_span.size());
   m_data_type_size = data_type_size;
   if (data_type_size > m_size)
     _allocateMemoryForReduceData(data_type_size);
@@ -316,6 +306,26 @@ allocateReduceDataMemory(SmallSpan<const std::byte> identity_span)
   m_command->internalStream()->copyMemory(copy_args.addAsync());
   // TODO: utiliser un 'memcpy' ou 'prefetch' asynchrone sur la file associée à la commande
   return m_managed_memory;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ReduceMemoryImpl::
+_allocateGridDataMemory()
+{
+  // TODO: pouvoir utiliser un padding pour éviter que les lignes de cache
+  // entre les blocs se chevauchent
+  Int32 total_size = CheckedConvert::toInt32(m_data_type_size * m_grid_size);
+  if (total_size <= m_grid_memory_info.m_grid_memory_values.size())
+    return;
+
+  m_grid_buffer.resize(total_size);
+  auto mem_view = makeMutableMemoryView(m_grid_buffer.to1DSpan());
+  m_grid_memory_info.m_grid_memory_values = mem_view;
+  // Indique qu'on va utiliser cette zone mémoire uniquement sur le device.
+  m_command->m_queue->runner()->setMemoryAdvice(mem_view,eMemoryAdvice::PreferredLocationDevice);
+  //std::cout << "RESIZE GRID t=" << total_size << "\n";
 }
 
 /*---------------------------------------------------------------------------*/
