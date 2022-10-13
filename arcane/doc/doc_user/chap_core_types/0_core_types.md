@@ -7,14 +7,24 @@ Pour une description sommaire de ces notions, se reporter au chapitre \ref arcan
 
 Sommaire de ce chapitre :
 1. \subpage arcanedoc_core_types_module
+
 2. \subpage arcanedoc_core_types_variable
+
 3. \subpage arcanedoc_core_types_entrypoint
+
 4. \subpage arcanedoc_core_types_service
-5. \subpage arcanedoc_core_types_caseoptions
-6. \subpage arcanedoc_core_types_casefile
+
+5. \subpage arcanedoc_core_types_caseoptions : explique comment paramètrer les modules 
+avec des options utilisateurs fournies dans le jeu de données.
+
+6. \subpage arcanedoc_core_types_casefile : présente la syntaxe du jeu de données.
+
 7. \subpage arcanedoc_core_types_codeconfig
-8. \subpage arcanedoc_core_types_timeloop
-9. \subpage arcanedoc_core_types_array_usage
+
+8. \subpage arcanedoc_core_types_timeloop : décrit la notion de boucle en temps.
+
+9. \subpage arcanedoc_core_types_array_usage : décrit l'utilisation des types tableaux.
+
 ____
 
 <div class="section_buttons">

@@ -2,8 +2,10 @@
 
 Sommaire de ce chapitre :
 1. \subpage arcanedoc_news_changelog
+
 2. \subpage arcanedoc_news_37
-3. \subpage arcanedoc_news_cleanup_v2
+
+3. \subpage arcanedoc_news_cleanup_v2 : décrit les modifications à effectuer pour préparer le passage à la version 2.0.
 
 - \subpage arcanedoc_news_changelog20
 

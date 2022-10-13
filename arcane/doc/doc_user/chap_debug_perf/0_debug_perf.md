@@ -3,14 +3,16 @@
 Ce chapitre est dédié aux méthodes de débuggage et d'analyse
 de performance.
 
+
 Sommaire de ce chapitre :
-1. \subpage arcanedoc_debug_perf_check_memory
-2. \subpage arcanedoc_debug_perf_profiling
-3. \subpage arcanedoc_debug_perf_profiling_mpi
-4. \subpage arcanedoc_debug_perf_compare_bittobit
-5. \subpage arcanedoc_debug_perf_unit_tests
+1. \subpage arcanedoc_debug_perf_check_memory : détection des problèmes mémoire.
 
+2. \subpage arcanedoc_debug_perf_compare_bittobit : comparaison bit à bit de deux exécutions.
 
+3. \subpage arcanedoc_debug_perf_unit_tests : décrit comment réaliser des tests unitaires pour les modules et services.
+
+____
+<!-- TODO : Faire un sous-chapitre. -->
 
 Cette page décrit les mécanismes disponibles dans %Arcane pour
 obtenir des informations sur les performances.
@@ -25,7 +27,9 @@ prennent le plus de temps dans le code.
 
 Les différents type d'analyse de performances disponibles sont :
 
+1. \subpage arcanedoc_debug_perf_profiling
 
+2. \subpage arcanedoc_debug_perf_profiling_mpi
 
 
 
