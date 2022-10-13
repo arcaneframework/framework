@@ -1,4 +1,4 @@
-# Alien
+# [Alien][alien]
 
 All Alien world into one git repository. This repository aims at easing development by compiling together Alien's core,
 its high level dependencies and its plugins.
@@ -22,9 +22,9 @@ cmake ..
 Useful CMake options:
 
 - ALIEN_FRAMEWORK_EXTERNAL, compile each subproject separately, OFF by default
-- ALIEN_PLUGIN_GINKGO, whether Ginkgo plugin is compiled, OFF by default
-- ALIEN_PLUGIN_HYPRE, whether Hypre plugin is compiled, OFF by default
-- ALIEN_PLUGIN_TRILINOS, whether Trilinos plugin is compiled, OFF by default
+- ALIEN_PLUGIN_GINKGO, whether [Ginkgo] plugin is compiled, OFF by default
+- ALIEN_PLUGIN_HYPRE, whether [hypre] plugin is compiled, OFF by default
+- ALIEN_PLUGIN_TRILINOS, whether [Trilinos] plugin is compiled, OFF by default
 - ALIEN_USE_HDF5, whether HDF5 support is enabled, OFF by default.
 
 We can mention also other generic CMake options :
@@ -43,8 +43,8 @@ Alien requires a recent build environment:
 - boost, at least with timer and program options components enabled
 - glib2
 - BLAS
-- Arccon
-- Arccore
+- [Arccon][Arcane]
+- [Arccore][Arcane]
 - Google Tests, for unit tests
 
 On Ubuntu-20.04, installing these packages is sufficient for running hypre solvers:
@@ -66,15 +66,17 @@ cd $(mktemp -d) && cmake /usr/src/googletest && cmake --build . --target install
 This repository contains the following subdirectories:
 
 - src, the main repository for linear algebra,
-- plugins, with different plugins for Alien, to call Hypre, PETSC, Ginkgo or Trilinos external libraries.
+- plugins, with different plugins for Alien, to call [Ginkgo], [hypre], [PETSc], or [Trilinos] external libraries.
 
 For git developers, Arccore and Arccon dependencies can be built on the fly setting `ALIENDEV_EMBEDDED` to `ON`.
 
 ## Documentation generation
 
-You need a python version 3 with sphinx and breathe modules
+Documentation is available on [documentation][alien], but can be locally built.
 
-You can easily create a conda environment as following
+You need a python version 3 with sphinx and breathe modules.
+
+You can easily create a conda environment as following:
 
 ```shell script
 cd $ALIEN_ROOT/tools/python
@@ -82,7 +84,7 @@ conda env create -f alien-env.yml
 conda activate alien-env
 ```
 
-Then the CMAKE OPTIONS has to be activated in the Alien configuration step
+Then the `CMake` flag for documentation has to be activated in the Alien configuration step
 
 ```shell script
 cmake -S `pwd`/alien \
@@ -99,3 +101,15 @@ The documentation is generated in :
 ```shell script
 firefox `pwd`/build-alien/alien_doc/index.html
 ```
+
+[alien]: https://arcaneframework.github.io/alien/
+
+[Ginkgo]: https://ginkgo-project.github.io/
+
+[hypre]: https://github.com/hypre-space/hypre
+
+[PETSc]: https://petsc.org
+
+[Trilinos]: https://trilinos.github.io/
+
+[Arcane]: https://arcaneframework.github.io/
