@@ -109,12 +109,12 @@ jobs:
       - name: Get date
         id: get-date
         shell: bash
-        run: echo "::set-output name=date::$(/bin/date -u '+%Y%m%d%H%M%S')"
+        run: echo "NOW=$(/bin/date -u '+%Y%m%d%H%M%S')" >> $GITHUB_ENV
       - name: Get cache for ccache tool
         uses: actions/cache@v3
         with:
           path: ${{env.CCACHE_DIR}}
-          key: ${{ env.CC_KEY_PREFIX }}-arccore-${{ env.CM_BUILD_TYPE }}-${{ steps.get-date.outputs.date }}-${{ github.run_number }}
+          key: ${{ env.CC_KEY_PREFIX }}-arccore-${{ env.CM_BUILD_TYPE }}-${{ env.NOW }}-${{ github.run_number }}
           restore-keys: ${{ env.CC_KEY_PREFIX }}-arccore-${{ env.CM_BUILD_TYPE }}-
       - name: Configure
         shell: bash
@@ -289,12 +289,12 @@ jobs:
       - name: Get date
         id: get-date
         shell: bash
-        run: echo "::set-output name=date::$(/bin/date -u '+%Y%m%d%H%M%S')"
+        run: echo "NOW=$(/bin/date -u '+%Y%m%d%H%M%S')" >> $GITHUB_ENV
       - name: Get cache for ccache tool
         uses: actions/cache@v3
         with:
           path: ${{env.CCACHE_DIR}}
-          key: ${{ env.CC_KEY_PREFIX }}-arcane-${{ env.CM_BUILD_TYPE }}-${{ steps.get-date.outputs.date }}-${{ github.run_number }}
+          key: ${{ env.CC_KEY_PREFIX }}-arcane-${{ env.CM_BUILD_TYPE }}-${{ env.NOW }}-${{ github.run_number }}
           restore-keys: ${{ env.CC_KEY_PREFIX }}-arcane-${{ env.CM_BUILD_TYPE }}-
       - name: Configure
         shell: bash
@@ -359,12 +359,12 @@ jobs:
       - name: Get date
         id: get-date
         shell: bash
-        run: echo "::set-output name=date::$(/bin/date -u '+%Y%m%d%H%M%S')"
+        run: echo "NOW=$(/bin/date -u '+%Y%m%d%H%M%S')" >> $GITHUB_ENV
       - name: Get cache for ccache tool
         uses: actions/cache@v3
         with:
           path: ${{env.CCACHE_DIR}}
-          key: ${{ env.CC_KEY_PREFIX }}-alien-${{ env.CM_BUILD_TYPE }}-${{ steps.get-date.outputs.date }}-${{ github.run_number }}
+          key: ${{ env.CC_KEY_PREFIX }}-alien-${{ env.CM_BUILD_TYPE }}-${{ env.NOW }}-${{ github.run_number }}
           restore-keys: ${{ env.CC_KEY_PREFIX }}-alien-${{ env.CM_BUILD_TYPE }}-
       - name: Configure
         shell: bash
@@ -452,12 +452,12 @@ jobs:
       - name: Get date
         id: get-date
         shell: bash
-        run: echo "::set-output name=date::$(/bin/date -u '+%Y%m%d%H%M%S')"
+        run: echo "NOW=$(/bin/date -u '+%Y%m%d%H%M%S')" >> $GITHUB_ENV
       - name: Get cache for ccache tool
         uses: actions/cache@v3
         with:
           path: ${{env.CCACHE_DIR}}
-          key: ${{ env.CC_KEY_PREFIX }}-alienlegacy-${{ env.CM_BUILD_TYPE }}-${{ steps.get-date.outputs.date }}-${{ github.run_number }}
+          key: ${{ env.CC_KEY_PREFIX }}-alienlegacy-${{ env.CM_BUILD_TYPE }}-${{ env.NOW }}-${{ github.run_number }}
           restore-keys: ${{ env.CC_KEY_PREFIX }}-alienlegacy-${{ env.CM_BUILD_TYPE }}-
       - name: Configure
         shell: bash
