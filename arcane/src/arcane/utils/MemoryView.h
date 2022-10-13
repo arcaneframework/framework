@@ -44,6 +44,7 @@ class ARCANE_UTILS_EXPORT MemoryView
 
   //! Vue convertie en un Span
   SpanType span() const { return m_bytes; }
+  constexpr Int64 size() const { return m_bytes.size(); }
 
  public:
 
@@ -73,6 +74,7 @@ class ARCANE_UTILS_EXPORT MutableMemoryView
 
   //! Vue convertie en un Span
   constexpr SpanType span() const { return m_bytes; }
+  constexpr Int64 size() const { return m_bytes.size(); }
 
  public:
 

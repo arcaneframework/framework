@@ -44,8 +44,8 @@ class ARCANE_UTILS_EXPORT MemoryRessourceMng
 
  public:
 
-  void copy(Span<const std::byte> from, eMemoryRessource from_mem,
-            Span<std::byte> to, eMemoryRessource to_mem) override;
+  void copy(MemoryView from, eMemoryRessource from_mem,
+            MutableMemoryView to, eMemoryRessource to_mem) override;
 
  public:
 
