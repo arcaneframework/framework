@@ -263,9 +263,7 @@ class Reducer
     //printf("Create null host parent_value=%p this=%p\n",(void*)m_parent_value,(void*)this);
     m_memory_impl = impl::internalGetOrCreateReduceMemoryImpl(&command);
     if (m_memory_impl){
-      m_managed_memory_value = impl::allocateReduceDataMemory<DataType>(m_memory_impl);
-      // TODO: utiliser un 'memcpy' asynchrone sur la file associée à la commande
-      *m_managed_memory_value = m_identity;
+      m_managed_memory_value = impl::allocateReduceDataMemory<DataType>(m_memory_impl,m_identity);
     }
   }
   ARCCORE_HOST_DEVICE Reducer(const Reducer& rhs)

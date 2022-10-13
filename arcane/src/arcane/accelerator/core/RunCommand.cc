@@ -17,11 +17,14 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/IMemoryAllocator.h"
 #include "arcane/utils/CheckedConvert.h"
+#include "arcane/utils/NumArray.h"
 
 #include "arcane/accelerator/core/RunQueueImpl.h"
 #include "arcane/accelerator/core/RunQueue.h"
 #include "arcane/accelerator/core/IReduceMemoryImpl.h"
 #include "arcane/accelerator/core/Runner.h"
+#include "arcane/accelerator/core/Memory.h"
+#include "arcane/accelerator/core/IRunQueueStream.h"
 
 #include <set>
 
@@ -54,36 +57,26 @@ class ReduceMemoryImpl
  public:
 
   ReduceMemoryImpl(RunCommandImpl* p)
-  : m_command(p)
+  : m_command(p) //, m_grid_buffer(eMemoryRessource::Device)
   {
     // TODO: prendre en compte la politique d'exécution pour savoir
     // comment allouer.
     m_allocator = platform::getAcceleratorHostMemoryAllocator();
     if (!m_allocator)
       ARCANE_FATAL("No HostMemory allocator available for accelerator");
-    m_size = 128;
-    m_managed_memory = m_allocator->allocate(m_size);
+    _allocateMemoryForReduceData(128);
     m_grid_memory_info.m_grid_device_count = reinterpret_cast<unsigned int*>(m_allocator->allocate(sizeof(int)));
     (*m_grid_memory_info.m_grid_device_count) = 0;
   }
   ~ReduceMemoryImpl()
   {
     m_allocator->deallocate(m_managed_memory);
-    m_allocator->deallocate(m_grid_memory_info.m_grid_memory_value_as_bytes);
     m_allocator->deallocate(m_grid_memory_info.m_grid_device_count);
   }
 
  public:
 
-  void* allocateReduceDataMemory(Int64 data_type_size) override
-  {
-    m_data_type_size = data_type_size;
-    if (data_type_size > m_size) {
-      m_managed_memory = m_allocator->reallocate(m_managed_memory, data_type_size);
-      m_size = data_type_size;
-    }
-    return m_managed_memory;
-  }
+  void* allocateReduceDataMemory(SmallSpan<const std::byte> identity_span) override;
   void setGridSizeAndAllocate(Int32 grid_size) override
   {
     m_grid_size = grid_size;
@@ -104,7 +97,7 @@ class ReduceMemoryImpl
   IMemoryAllocator* m_allocator;
 
   //! Pointeur vers la mémoire unifiée contenant la donnée réduite
-  void* m_managed_memory = nullptr;
+  std::byte* m_managed_memory = nullptr;
 
   //! Taille allouée pour \a m_managed_memory
   Int64 m_size = 0;
@@ -117,6 +110,8 @@ class ReduceMemoryImpl
 
   GridMemoryInfo m_grid_memory_info;
 
+  NumArray<Byte,1> m_grid_buffer;
+
  private:
 
   void _allocateGridDataMemory()
@@ -125,12 +120,18 @@ class ReduceMemoryImpl
     // entre les blocs se chevauchent
     Int32 total_size = CheckedConvert::toInt32(m_data_type_size * m_grid_size);
     if (total_size > m_grid_memory_info.m_grid_memory_size) {
-      void* x = m_allocator->reallocate(m_grid_memory_info.m_grid_memory_value_as_bytes, total_size);
-      m_grid_memory_info.m_grid_memory_value_as_bytes = reinterpret_cast<Byte*>(x);
+      m_grid_buffer.resize(total_size);
+      m_grid_memory_info.m_grid_memory_value_as_bytes = reinterpret_cast<std::byte*>(m_grid_buffer.to1DSpan().data());
       m_grid_memory_info.m_grid_memory_size = total_size;
+      //std::cout << "RESIZE GRID t=" << total_size << "\n";
     }
   }
   void _setReducePolicy();
+  void _allocateMemoryForReduceData(Int32 new_size)
+  {
+    m_managed_memory = reinterpret_cast<std::byte*>(m_allocator->allocate(new_size));
+    m_size = new_size;
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -181,6 +182,8 @@ class RunCommandImpl
     m_active_reduce_memory_list.erase(x);
     m_reduce_memory_pool.push(p);
   }
+
+  IRunQueueStream* internalStream() const { return m_queue->_internalStream(); }
 
  private:
 
@@ -297,6 +300,22 @@ void ReduceMemoryImpl::
 _setReducePolicy()
 {
   m_grid_memory_info.m_reduce_policy = m_command->m_queue->runner()->deviceReducePolicy();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void* ReduceMemoryImpl::
+allocateReduceDataMemory(SmallSpan<const std::byte> identity_span)
+{
+  Int32 data_type_size = identity_span.size();
+  m_data_type_size = data_type_size;
+  if (data_type_size > m_size)
+    _allocateMemoryForReduceData(data_type_size);
+  MemoryCopyArgs copy_args(m_managed_memory,identity_span.data(),data_type_size);
+  m_command->internalStream()->copyMemory(copy_args.addAsync());
+  // TODO: utiliser un 'memcpy' ou 'prefetch' asynchrone sur la file associée à la commande
+  return m_managed_memory;
 }
 
 /*---------------------------------------------------------------------------*/
