@@ -252,11 +252,56 @@ class CudaRunQueueRuntime
   }
   void setMemoryAdvice(MemoryView buffer, eMemoryAdvice advice, DeviceId device_id) override
   {
-    ARCANE_THROW(NotImplementedException, "");
+    auto v = buffer.span();
+    const void* ptr = v.data();
+    size_t count = v.size();
+    int device = device_id.asInt32();
+    cudaMemoryAdvise cuda_advise;
+
+    if (advice == eMemoryAdvice::MostlyRead)
+      cuda_advise = cudaMemAdviseSetReadMostly;
+    else if (advice == eMemoryAdvice::PreferredLocationDevice)
+      cuda_advise = cudaMemAdviseSetPreferredLocation;
+    else if (advice == eMemoryAdvice::AccessedByDevice)
+      cuda_advise = cudaMemAdviseSetAccessedBy;
+    else if (advice == eMemoryAdvice::PreferredLocationHost) {
+      cuda_advise = cudaMemAdviseSetPreferredLocation;
+      device = cudaCpuDeviceId;
+    }
+    else if (advice == eMemoryAdvice::AccessedByHost) {
+      cuda_advise = cudaMemAdviseSetAccessedBy;
+      device = cudaCpuDeviceId;
+    }
+    else
+      return;
+    //std::cout << "MEMADVISE p=" << ptr << " size=" << count << " advise = " << cuda_advise << " id = " << device << "\n";
+    cudaMemAdvise(ptr, count, cuda_advise, device);
   }
   void unsetMemoryAdvice(MemoryView buffer, eMemoryAdvice advice, DeviceId device_id) override
   {
-    ARCANE_THROW(NotImplementedException, "");
+    auto v = buffer.span();
+    const void* ptr = v.data();
+    size_t count = v.size();
+    int device = device_id.asInt32();
+    cudaMemoryAdvise cuda_advise;
+
+    if (advice == eMemoryAdvice::MostlyRead)
+      cuda_advise = cudaMemAdviseUnsetReadMostly;
+    else if (advice == eMemoryAdvice::PreferredLocationDevice)
+      cuda_advise = cudaMemAdviseUnsetPreferredLocation;
+    else if (advice == eMemoryAdvice::AccessedByDevice)
+      cuda_advise = cudaMemAdviseUnsetAccessedBy;
+    else if (advice == eMemoryAdvice::PreferredLocationHost) {
+      cuda_advise = cudaMemAdviseUnsetPreferredLocation;
+      device = cudaCpuDeviceId;
+    }
+    else if (advice == eMemoryAdvice::AccessedByHost) {
+      cuda_advise = cudaMemAdviseUnsetAccessedBy;
+      device = cudaCpuDeviceId;
+    }
+    else
+      return;
+    cudaMemAdvise(ptr, count, cuda_advise, device);
   }
 
  private:
@@ -286,11 +331,11 @@ class CudaMemoryCopier
 
 } // End namespace Arcane::Accelerator::Cuda
 
-namespace 
+namespace
 {
 Arcane::Accelerator::Cuda::CudaRunQueueRuntime global_cuda_runtime;
 Arcane::Accelerator::Cuda::CudaMemoryCopier global_cuda_memory_copier;
-}
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
