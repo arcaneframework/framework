@@ -3,7 +3,7 @@
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
-﻿using System;
+using System;
 
 namespace Arcane.Axl
 {
@@ -16,23 +16,32 @@ namespace Arcane.Axl
 
     public string ListOfModules = "List of modules";
     public string ListOfServices = "List of services";
+    public string ListOfInterfaces = "List of interfaces";
     public string DetailedListOfOptions = "Detailed list of options";
     public string ModuleAndServices = "Modules and services";
     public string KeywordsIndex = "Keywords index";
+    public string ServiceInterfaces = "Service interfaces";
+    public string Implementations = "Implementation(s)";
+    public string ServiceUsed = "Service used in";
 
     public string Lang { get; private set; }
 
-    public Translation (string language)
+    public Translation(string language)
     {
       Lang = language;
-      if (language == "fr") {
+      if (language == "fr")
+      {
         ModuleTitle = "Module '{0}' <{1}>";
         ServiceTitle = "Service '{0}'";
         ListOfModules = "Liste des modules";
         ListOfServices = "Liste des services";
+        ListOfInterfaces = "Liste des interfaces";
         DetailedListOfOptions = "Liste détaillée des options";
         ModuleAndServices = "Liste des modules et services du jeu de données";
         KeywordsIndex = "Index des mots clés";
+        ServiceInterfaces = "Interface des services";
+        Implementations = "Implémentation(s)";
+        ServiceUsed = "Service utilisé dans";
       }
     }
   }
