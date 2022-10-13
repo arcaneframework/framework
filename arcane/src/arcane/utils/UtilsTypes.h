@@ -181,6 +181,8 @@ class Observable;
 class Observer;
 
 class ArrayShape;
+class MemoryView;
+class MutableMemoryView;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
