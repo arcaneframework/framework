@@ -17,7 +17,7 @@ jobs:
     container: "ghcr.io/arcaneframework/alien-ci-ubuntu22.04:main"
     steps:
       # Checkout v2 does not include files listed in .gitattributes
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
 
       - name: Configure CMake
         # Configure CMake in a 'build' subdirectory. `C MAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
@@ -41,7 +41,7 @@ jobs:
           COV_TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
 
       - name: restore cached files
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         # Disabled for `act`
         if: ${{ !env.ACT }}
         with:
