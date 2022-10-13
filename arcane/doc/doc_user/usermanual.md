@@ -27,6 +27,7 @@ de sous-chapitres et/ou de pages.
 **[Bientôt]** Chaque chapitre/sous-chapitre dispose d'un sommaire décrivant
 brievement son contenu et d'une liste de ces pages.
 
+<br>
 
 Les chapitres disponibles sont:
 

@@ -1,5 +1,4 @@
-﻿Le support des tests unitaires dans Arcane {#arcanedoc_debug_perf_unit_tests}
-==========================================
+﻿# Le support des tests unitaires dans Arcane {#arcanedoc_debug_perf_unit_tests}
 
 [TOC]
 
@@ -272,7 +271,7 @@ ____
 <span class="back_section_button">
 \ref arcanedoc_debug_perf_compare_bittobit
 </span>
-<!-- <span class="next_section_button">
-\ref arcanedoc_getting_started_basicstruct
-</span> -->
+<span class="next_section_button">
+\ref arcanedoc_debug_perf_profiling
+</span>
 </div>

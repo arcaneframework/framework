@@ -1,4 +1,4 @@
-﻿# Analyse de performances par échantillonage {#arcanedoc_debug_perf_profiling}
+﻿# Analyse de performances par échantillonage {#arcanedoc_debug_perf_profiling_sampling}
 
 [TOC]
 
@@ -94,7 +94,7 @@ ____
 
 <div class="section_buttons">
 <span class="back_section_button">
-\ref arcanedoc_debug_perf_check_memory
+\ref arcanedoc_debug_perf_profiling
 </span>
 <span class="next_section_button">
 \ref arcanedoc_debug_perf_profiling_mpi
