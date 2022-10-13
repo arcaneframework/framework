@@ -32,7 +32,7 @@ ___
   (en cas d'utilisation de protection/reprise) et plus seulement les
   statistiques sur l'exécution courante.
 - Simplification des différents mécanismes pour initialiser et
-  exécuter un code utilisant %Arcane (voir \ref arcanedoc_general_launcher)
+  exécuter un code utilisant %Arcane (voir \ref arcanedoc_execution_launcher)
 
 ### Corrections:
 
@@ -768,7 +768,7 @@ ___
 
 - Ajoute la possibilité de configurer les traces lors de l'exécution en
   spécifiant une chaîne de caractères au format de configuration des
-  traces (tel que dans la documentation \ref arcanedoc_general_traces). Par
+  traces (tel que dans la documentation \ref arcanedoc_execution_traces). Par
   exemple:
 ```cpp
 using namespace Arcane;

@@ -72,7 +72,7 @@ prenne un object de type \c ModuleBuildInfo en paramètre pour le transmettre
 
 \note
 Le fait de dériver de la classe ArcaneTestObject donne accés, entre autre,
-aux traces %Arcane (cf \ref arcanedoc_general_traces) et aux méthodes suivantes :  
+aux traces %Arcane (cf \ref arcanedoc_execution_traces) et aux méthodes suivantes :  
 <table>
 <tr><th>Méthode</th><th>Action</th></tr>
 <tr><td>\c allCells() </td><td> retourne le groupe de toutes les mailles </td></tr>

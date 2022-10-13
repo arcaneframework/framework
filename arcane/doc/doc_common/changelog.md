@@ -402,7 +402,7 @@ ___
   afficher la consommation mémoire associée aux groupes et
   Arcane::mesh_utils::shrinkMeshGroups() pour redimensionner au plus
   juste la mémoire utilisée par les groupes
-- Support pour punaiser les threads (voir \ref arcanedoc_general_launcher)
+- Support pour punaiser les threads (voir \ref arcanedoc_execution_launcher)
 
 ### Changements:
 

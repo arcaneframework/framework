@@ -1,4 +1,4 @@
-﻿# Variables d'environnement {#arcanedoc_general_env_variables}
+﻿# Variables d'environnement {#arcanedoc_execution_env_variables}
 
 Les variables d'environnement suivantes permettent de modifier le
 comportement à l'exécution:
@@ -13,7 +13,7 @@ comportement à l'exécution:
   Cette variable ne doit plus être utilisée car %Arcane détecte
   automatiquement le lancement avec MPI. Si on souhaite surchargé le
   service de parallélisme, il faut le spécifier dans les arguments de
-  la ligne de commande (voir \ref arcanedoc_general_launcher)
+  la ligne de commande (voir \ref arcanedoc_execution_launcher)
 
 - **ARCANE_CHECK** :
   Si définie, ajoute des tests de vérification de la validité des
@@ -138,10 +138,10 @@ ____
 
 <div class="section_buttons">
 <span class="back_section_button">
-\ref arcanedoc_general_direct_execution
+\ref arcanedoc_execution_direct_execution
 </span>
 <span class="next_section_button">
-\ref arcanedoc_general_traces
+\ref arcanedoc_execution_traces
 </span>
 </div>
 

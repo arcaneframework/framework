@@ -48,7 +48,7 @@
 
   \section tutorialsample1_traces Traces
   \par Pré-requis
-  - Lire le document \ref arcanedoc_general_traces.
+  - Lire le document \ref arcanedoc_execution_traces.
   \par Actions à réaliser
   - Afficher le message "Hello World" en utilisant les traces de ARCANE.
   - Exécuter !

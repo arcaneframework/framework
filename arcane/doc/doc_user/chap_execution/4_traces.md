@@ -1,8 +1,8 @@
-﻿# Utilisation des traces {#arcanedoc_general_traces}
+﻿# Utilisation des traces {#arcanedoc_execution_traces}
 
 [TOC]
 
-## Introduction {#arcanedoc_general_traces_intro}
+## Introduction {#arcanedoc_execution_traces_intro}
 
 ARCANE fournit une classe utilitaire (\c TraceAccessor) pour afficher des traces dans les modules.
 Cette classe permet de gérer plusieurs types de traces : informations, erreurs, ...
@@ -30,7 +30,7 @@ A noter qu'un retour chariot est effectué automatiquement entre
 chaque message. Par conséquent l'ajout d'un retour chariot en fin de trace
 provoque un saut de ligne.
 
-## Catégories de trace {#arcanedoc_general_traces_class}
+## Catégories de trace {#arcanedoc_execution_traces_class}
 
 Les méthodes de trace sont :
 - \b info pour les traces d'informations,
@@ -50,7 +50,7 @@ plus, la méthode debug() est remplacée par une méthode vide ce qui
 fait qu'elle ne prend aucune ressource CPU.
 - en mode optimisé, par défaut, les traces d'informations ne sont
 affichées que par le sous-domaine 0. Ce comportement est configurable
-(voir section \ref arcanedoc_general_traces_config).
+(voir section \ref arcanedoc_execution_traces_config).
 - en mode débug, les traces du sous-domaine 0 s'affichent sur la
 sortie standard. Les traces des autres sous-domaines sont écrites
 dans un fichier de nom 'output%n', où '%n' est le numéro du
@@ -91,7 +91,7 @@ debug()              << "Trace debug moyen"
 debug(Trace::Low)    << "Trace debug affiché dès que le mode débug est utilisé"
 ```
 
-## Configuration des traces {#arcanedoc_general_traces_config}
+## Configuration des traces {#arcanedoc_execution_traces_config}
 
 Il est possible de configurer le niveau de debug souhaité et
 l'utilisation des traces d'informations pour chaque module
@@ -155,10 +155,10 @@ ____
 
 <div class="section_buttons">
 <span class="back_section_button">
-\ref arcanedoc_general_env_variables
+\ref arcanedoc_execution_env_variables
 </span>
-<span class="next_section_button">
+<!-- <span class="next_section_button">
 \ref arcanedoc_general_codingrules
-</span>
+</span> -->
 </div>
 

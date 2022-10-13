@@ -96,11 +96,9 @@ dl.deprecated dd {
  * Permet d'ajouter des lignes de niveaux dans le nav-tree.
  */
 #nav-tree .arrow {
-  opacity: var(--side-nav-arrow-opacity);
-  padding-left: 0px !important;
-  margin-left: 0px;
   width: 65px !important;
   margin-left: -50px;
+  padding-left: 0px !important;
 }
 
 #nav-tree .children_ul {

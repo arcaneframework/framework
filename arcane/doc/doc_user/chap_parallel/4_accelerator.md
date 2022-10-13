@@ -189,7 +189,7 @@ par la ligne de commande:
   MyExec -A,AcceleratorRuntime=cuda data.arc
   ```
 - Sinon, si le multi-threading est activé via l'option `-T` (voir \ref
-  arcanedoc_general_launcher), alors les noyaux de calcul sont répartis sur
+  arcanedoc_execution_launcher), alors les noyaux de calcul sont répartis sur
   plusieurs threads,
 - Sinon, les noyaux de calcul sont exécutés en séquentiel.
 

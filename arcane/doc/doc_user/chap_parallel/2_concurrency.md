@@ -38,7 +38,7 @@ La première solution est la plus simple et doit être envisagée en priorité.
 Par défaut, le support de la concurrence est désactivé. L'activation
 se fait **avant** le lancement du code, en spécifiant le
 nombre de tâches pouvant s'exécuter de manière concurrentes lors de la
-ligne de commande (se reporter à la page \ref arcanedoc_general_launcher pour
+ligne de commande (se reporter à la page \ref arcanedoc_execution_launcher pour
 savoir comment faire cela).
  
 Il est possible de savoir dans le code si la concurrence est active en

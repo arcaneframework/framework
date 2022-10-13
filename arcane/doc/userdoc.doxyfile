@@ -941,6 +941,7 @@ INPUT                  = @ARCANE_SRC_PATH@/arcane \
                          @ARCANESRCROOT@/doc/doc_user/chap_examples \
                          @ARCANESRCROOT@/doc/doc_user/chap_examples/subchap_simple_example \
                          @ARCANESRCROOT@/doc/doc_user/chap_examples/subchap_concret_example \
+                         @ARCANESRCROOT@/doc/doc_user/chap_execution \
                          @ARCANESRCROOT@/doc/doc_user/chap_general \
                          @ARCANESRCROOT@/doc/doc_user/chap_getting_started \
                          @ARCANESRCROOT@/doc/doc_user/chap_materials \

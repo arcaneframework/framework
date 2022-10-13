@@ -36,8 +36,10 @@ Les chapitres disponibles sont:
 - \subpage arcanedoc_core_types : présente les notions clefs de %Arcane (modules,
   variables, points d'entrée, services et les différents types de fichiers).
 
-- \subpage arcanedoc_general : présente les éléments à connaitre pour faire fonctionner
-un code %Arcane (lancement d'un calcul, variables d'environnement, règles de codage).
+- \subpage arcanedoc_execution : présente les éléments à connaitre pour faire fonctionner
+un code %Arcane (lancement d'un calcul, variables d'environnement).
+
+- \subpage arcanedoc_general : présente des éléments à savoir comme les règles de codage.
 
 - \subpage arcanedoc_examples : présente des exemples %Arcane.
 

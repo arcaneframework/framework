@@ -146,7 +146,7 @@ try {
 
 Parfois la méthode ne lève pas une exception mais appelle la méthode
 TraceAccessor::fatal() du gestionnaire de traces de Arcane (cf. \ref
-arcanedoc_general_traces). Cette méthode lève une exception de type
+arcanedoc_execution_traces). Cette méthode lève une exception de type
 Arcane::FatalErrorException qu'il suffit de traiter comme dans
 l'exemple ci-dessus.
 
