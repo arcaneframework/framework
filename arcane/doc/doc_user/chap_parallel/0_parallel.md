@@ -5,10 +5,14 @@ ce chapitre devrait vous intéresser.
 
 Sommaire de ce chapitre :
 1. \subpage arcanedoc_parallel_intro
+
 2. \subpage arcanedoc_parallel_concurrency
+
 3. \subpage arcanedoc_parallel_simd
+
 4. \subpage arcanedoc_parallel_accelerator
-5. \subpage arcanedoc_parallel_loadbalance
+
+5. \subpage arcanedoc_parallel_loadbalance : décrit l'utilisation du mécanisme d'équilibrage de charge sur le maillage.
 
 
 ____

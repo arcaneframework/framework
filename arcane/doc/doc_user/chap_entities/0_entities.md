@@ -3,9 +3,14 @@
 
 Sommaire de ce chapitre :
 1. \subpage arcanedoc_entities_cartesianmesh
+
 2. \subpage arcanedoc_entities_snippet_cartesianmesh
-3. \subpage arcanedoc_entities_connectivity_internal
-4. \subpage arcanedoc_entities_itemtype
+
+3. \subpage arcanedoc_entities_connectivity_internal : décrit le nouveau mécanisme 
+(à partir de la version 2.5) de gestion des connectivités des entités.
+
+4. \subpage arcanedoc_entities_itemtype : décrit les types de maille classiques.
+
 5. \subpage arcanedoc_entities_geometric
 
 ____
