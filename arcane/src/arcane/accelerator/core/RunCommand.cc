@@ -110,7 +110,9 @@ class ReduceMemoryImpl
 
   GridMemoryInfo m_grid_memory_info;
 
-  NumArray<Byte,1> m_grid_buffer;
+  NumArray<Byte, MDDim1> m_grid_buffer;
+  //! Buffer pour conserver la valeur de l'identité
+  UniqueArray<std::byte> m_identity_buffer;
 
  private:
 
@@ -302,9 +304,11 @@ allocateReduceDataMemory(MemoryView identity_view)
   m_data_type_size = data_type_size;
   if (data_type_size > m_size)
     _allocateMemoryForReduceData(data_type_size);
-  MemoryCopyArgs copy_args(m_managed_memory,identity_span.data(),data_type_size);
+  // Recopie \a identity_view dans un buffer car on utilise l'asynchronisme
+  // et la zone pointée par \a identity_view n'est pas forcément conservée
+  m_identity_buffer.copy(identity_view.span());
+  MemoryCopyArgs copy_args(m_managed_memory, m_identity_buffer.span().data(), data_type_size);
   m_command->internalStream()->copyMemory(copy_args.addAsync());
-  // TODO: utiliser un 'memcpy' ou 'prefetch' asynchrone sur la file associée à la commande
   return m_managed_memory;
 }
 
@@ -324,7 +328,7 @@ _allocateGridDataMemory()
   auto mem_view = makeMutableMemoryView(m_grid_buffer.to1DSpan());
   m_grid_memory_info.m_grid_memory_values = mem_view;
   // Indique qu'on va utiliser cette zone mémoire uniquement sur le device.
-  m_command->m_queue->runner()->setMemoryAdvice(mem_view,eMemoryAdvice::PreferredLocationDevice);
+  m_command->m_queue->runner()->setMemoryAdvice(mem_view, eMemoryAdvice::PreferredLocationDevice);
   //std::cout << "RESIZE GRID t=" << total_size << "\n";
 }
 
