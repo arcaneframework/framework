@@ -173,6 +173,192 @@ arcaneParallelFor(Integer i0, Integer size, const LambdaType& lambda_function)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Implémentation de la concurrence.
+ *
+ * Les méthodes de ce namespace sont obsolètes et doivent être remplacées
+ * par les méthodes équivalentes dans le namespace Arcane.
+ * Par exemple Arcane::Parallel::For() doit être remplacé par Arcane::arcaneParallelFor()
+ * et Arcane::Parallel::Foreach() par Arcane::arcaneParallelForeach().
+ */
+namespace Parallel
+{
+  /*!
+   * \deprecated Use Arcane::arcaneParallelForeach() instead.
+   */
+  template<typename InstanceType,typename ItemType>
+  [[deprecated("Year2021: Use Arcane::arcaneParallelForeach() instead")]]
+  inline void
+  Foreach(const ItemVectorView& items_view,const ParallelLoopOptions& options,
+          InstanceType* instance,void (InstanceType::*function)(ItemVectorViewT<ItemType> items))
+  {
+    ItemRangeFunctorT<InstanceType,ItemType> ipf(items_view,instance,function,options.grainSize());
+    // Recopie \a options et utilise la valeur de 'grain_size' retournée par \a ifp
+    ParallelLoopOptions loop_opt(options);
+    loop_opt.setGrainSize(ipf.blockGrainSize());
+    TaskFactory::executeParallelFor(0,ipf.nbBlock(),loop_opt,&ipf);
+  }
+
+  /*!
+   * \deprecated Use Arcane::arcaneParallelForeach() instead.
+   */
+  template<typename InstanceType,typename ItemType>
+  [[deprecated("Year2021: Use Arcane::arcaneParallelForeach() instead")]]
+  inline void
+  Foreach(const ItemGroup& items,const ParallelLoopOptions& options,InstanceType* instance,
+          void (InstanceType::*function)(ItemVectorViewT<ItemType> items))
+  {
+    Foreach(items.view(),options,instance,function);
+  }
+
+  /*!
+   * \deprecated Use Arcane::arcaneParallelForeach() instead.
+   */
+  template<typename InstanceType,typename ItemType>
+  [[deprecated("Year2021: Use Arcane::arcaneParallelForeach() instead")]]
+  inline void
+  Foreach(const ItemVectorView& items_view,InstanceType* instance,void (InstanceType::*function)(ItemVectorViewT<ItemType> items))
+  {
+    ItemRangeFunctorT<InstanceType,ItemType> ipf(items_view,instance,function);
+    TaskFactory::executeParallelFor(0,ipf.nbBlock(),ipf.blockGrainSize(),&ipf);
+  }
+
+  /*!
+   * \deprecated Use Arcane::arcaneParallelForeach() instead.
+   */
+  template<typename InstanceType,typename ItemType>
+  [[deprecated("Year2021: Use Arcane::arcaneParallelForeach() instead")]]
+  inline void
+  Foreach(const ItemGroup& items,InstanceType* instance,void (InstanceType::*function)(ItemVectorViewT<ItemType> items))
+  {
+    Foreach(items.view(),instance,function);
+  }
+
+
+  /*!
+   * \deprecated Use Arcane::arcaneParallelForeach() instead.
+   */
+  template<typename LambdaType>
+  [[deprecated("Year2021: Use Arcane::arcaneParallelForeach() instead")]]
+  inline void
+  Foreach(const ItemVectorView& items_view,const ParallelLoopOptions& options,const LambdaType& lambda_function)
+  {
+    LambdaItemRangeFunctorT<LambdaType> ipf(items_view,lambda_function,options.grainSize());
+    // Recopie \a options et utilise la valeur de 'grain_size' retournée par \a ifp
+    ParallelLoopOptions loop_opt(options);
+    loop_opt.setGrainSize(ipf.blockGrainSize());
+    TaskFactory::executeParallelFor(0,ipf.nbBlock(),loop_opt,&ipf);
+  }
+
+  /*!
+   * \deprecated Use Arcane::arcaneParallelForeach() instead.
+   */
+  template<typename LambdaType>
+  [[deprecated("Year2021: Use Arcane::arcaneParallelForeach() instead")]]
+  inline void
+  Foreach(const ItemGroup& items,const ParallelLoopOptions& options,const LambdaType& lambda_function)
+  {
+    Foreach(items.view(),options,lambda_function);
+  }
+
+  /*!
+   * \deprecated Use Arcane::arcaneParallelForeach() instead.
+   */
+  template<typename LambdaType>
+  [[deprecated("Year2021: Use Arcane::arcaneParallelForeach() instead")]]
+  inline void
+  Foreach(const ItemVectorView& items_view,const LambdaType& lambda_function)
+  {
+    LambdaItemRangeFunctorT<LambdaType> ipf(items_view,lambda_function);
+    TaskFactory::executeParallelFor(0,ipf.nbBlock(),ipf.blockGrainSize(),&ipf);
+  }
+
+  /*!
+   * \deprecated Use Arcane::arcaneParallelForeach() instead.
+   */
+  template<typename LambdaType>
+  [[deprecated("Year2021: Use Arcane::arcaneParallelForeach() instead")]]
+  inline void
+  Foreach(const ItemGroup& items,const LambdaType& lambda_function)
+  {
+    Foreach(items.view(),lambda_function);
+  }
+
+  /*!
+   * \deprecated Utiliser la surcharge For avec ParallelLoopOptions en argument.
+   */
+  template<typename InstanceType> ARCANE_DEPRECATED_122 inline void
+  For(Integer i0,Integer size,Integer grain_size,InstanceType* itype,
+      void (InstanceType::*lambda_function)(Integer i0,Integer size))
+  {
+    RangeFunctorT<InstanceType> ipf(itype,lambda_function);
+    TaskFactory::executeParallelFor(i0,size,grain_size,&ipf);
+  }
+
+  /*!
+   * \deprecated Use Arcane::arcaneParallelFor() instead.
+   */
+  template<typename InstanceType>
+  [[deprecated("Year2021: Use Arcane::arcaneParallelFor() instead")]]
+  inline void
+  For(Integer i0,Integer size,const ParallelLoopOptions& options,InstanceType* itype,
+      void (InstanceType::*lambda_function)(Integer i0,Integer size))
+  {
+    RangeFunctorT<InstanceType> ipf(itype,lambda_function);
+    TaskFactory::executeParallelFor(i0,size,options,&ipf);
+  }
+
+  /*!
+   * \deprecated Utiliser la surcharge For avec ParallelLoopOptions en argument.
+   */
+  template<typename LambdaType> ARCANE_DEPRECATED_122 inline void
+  For(Integer i0,Integer size,Integer grain_size,const LambdaType& lambda_function)
+  {
+    LambdaRangeFunctorT<LambdaType> ipf(lambda_function);
+    TaskFactory::executeParallelFor(i0,size,grain_size,&ipf);
+  }
+
+  /*!
+   * \deprecated Use Arcane::arcaneParallelFor() instead.
+   */
+  template<typename InstanceType>
+  [[deprecated("Year2021: Use Arcane::arcaneParallelFor() instead")]]
+  inline void
+  For(Integer i0,Integer size,InstanceType* itype,
+      void (InstanceType::*lambda_function)(Integer i0,Integer size))
+  {
+    RangeFunctorT<InstanceType> ipf(itype,lambda_function);
+    TaskFactory::executeParallelFor(i0,size,&ipf);
+  }
+
+  /*!
+   * \deprecated Use Arcane::arcaneParallelFor() instead.
+   */
+  template<typename LambdaType>
+  [[deprecated("Year2021: Use Arcane::arcaneParallelFor() instead")]]
+  inline void
+  For(Integer i0,Integer size,const ParallelLoopOptions& options,const LambdaType& lambda_function)
+  {
+    LambdaRangeFunctorT<LambdaType> ipf(lambda_function);
+    TaskFactory::executeParallelFor(i0,size,options,&ipf);
+  }
+
+  /*!
+   * \deprecated Use Arcane::arcaneParallelFor() instead.
+   */
+  template<typename LambdaType>
+  [[deprecated("Year2021: Use Arcane::arcaneParallelFor() instead")]]
+  inline void
+  For(Integer i0,Integer size,const LambdaType& lambda_function)
+  {
+    LambdaRangeFunctorT<LambdaType> ipf(lambda_function);
+    TaskFactory::executeParallelFor(i0,size,&ipf);
+  }
+
+} // End namespace Parallel
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 } // End namespace Arcane
 
