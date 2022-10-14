@@ -58,7 +58,7 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: arcaneframework/framework
           path: ${{ env.ARCCON_SOURCE_DIR }}
@@ -76,7 +76,7 @@ jobs:
         shell: bash
         run: tar cf arccon-install-artifact.tar ${{ env.ARCCON_INSTALL_DIR }}
       - name: Upload install artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: arccon-install-artifact
           path: arccon-install-artifact.tar
@@ -94,13 +94,13 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: arcaneframework/framework
           path: ${{ env.ARCCORE_SOURCE_DIR }}
           ref: main
       - name: Download arccon install artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: arccon-install-artifact
       - name: Untar arccon install artifact
@@ -109,12 +109,12 @@ jobs:
       - name: Get date
         id: get-date
         shell: bash
-        run: echo "::set-output name=date::$(/bin/date -u '+%Y%m%d%H%M%S')"
+        run: echo "NOW=$(/bin/date -u '+%Y%m%d%H%M%S')" >> $GITHUB_ENV
       - name: Get cache for ccache tool
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ${{env.CCACHE_DIR}}
-          key: ${{ env.CC_KEY_PREFIX }}-arccore-${{ env.CM_BUILD_TYPE }}-${{ steps.get-date.outputs.date }}-${{ github.run_number }}
+          key: ${{ env.CC_KEY_PREFIX }}-arccore-${{ env.CM_BUILD_TYPE }}-${{ env.NOW }}-${{ github.run_number }}
           restore-keys: ${{ env.CC_KEY_PREFIX }}-arccore-${{ env.CM_BUILD_TYPE }}-
       - name: Configure
         shell: bash
@@ -129,7 +129,7 @@ jobs:
         shell: bash
         run: tar cf arccore-build-artifact.tar ${{ env.ARCCORE_BUILD_DIR }}
       - name: Upload build artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: arccore-build-artifact
           path: arccore-build-artifact.tar
@@ -138,7 +138,7 @@ jobs:
         shell: bash
         run: tar cf arccore-install-artifact.tar ${{ env.ARCCORE_INSTALL_DIR }}
       - name: Upload install artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: arccore-install-artifact
           path: arccore-install-artifact.tar
@@ -156,13 +156,13 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: arcaneframework/dependencies
           path: ${{ env.DEPENDENCIES_SOURCE_DIR }}
           ref: main
       - name: Download arccon install artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: arccon-install-artifact
       - name: Untar arccon install artifact
@@ -181,7 +181,7 @@ jobs:
         shell: bash
         run: tar cf dependencies-install-artifact.tar ${{ env.DEPENDENCIES_INSTALL_DIR }}
       - name: Upload install artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: dependencies-install-artifact
           path: dependencies-install-artifact.tar
@@ -200,20 +200,20 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: arcaneframework/framework
           path: ${{ env.AXLSTAR_SOURCE_DIR }}
           ref: main
       - name: Download arccon install artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: arccon-install-artifact
       - name: Untar arccon install artifact
         shell: bash
         run: tar xf arccon-install-artifact.tar -C /
       - name: Download dependencies install artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: dependencies-install-artifact
       - name: Untar dependencies install artifact
@@ -232,7 +232,7 @@ jobs:
         shell: bash
         run: tar cf axlstar-install-artifact.tar ${{ env.AXLSTAR_INSTALL_DIR }}
       - name: Upload install artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: axlstar-install-artifact
           path: axlstar-install-artifact.tar
@@ -253,34 +253,34 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: arcaneframework/framework
           path: ${{ env.ARCANE_SOURCE_DIR }}
           ref: main
       - name: Download arccon install artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: arccon-install-artifact
       - name: Untar arccon install artifact
         shell: bash
         run: tar xf arccon-install-artifact.tar -C /
       - name: Download arccore install artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: arccore-install-artifact
       - name: Untar arccore install artifact
         shell: bash
         run: tar xf arccore-install-artifact.tar -C /
       - name: Download dependencies install artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: dependencies-install-artifact
       - name: Untar dependencies install artifact
         shell: bash
         run: tar xf dependencies-install-artifact.tar -C /
       - name: Download axlstar install artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: axlstar-install-artifact
       - name: Untar axlstar install artifact
@@ -289,12 +289,12 @@ jobs:
       - name: Get date
         id: get-date
         shell: bash
-        run: echo "::set-output name=date::$(/bin/date -u '+%Y%m%d%H%M%S')"
+        run: echo "NOW=$(/bin/date -u '+%Y%m%d%H%M%S')" >> $GITHUB_ENV
       - name: Get cache for ccache tool
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ${{env.CCACHE_DIR}}
-          key: ${{ env.CC_KEY_PREFIX }}-arcane-${{ env.CM_BUILD_TYPE }}-${{ steps.get-date.outputs.date }}-${{ github.run_number }}
+          key: ${{ env.CC_KEY_PREFIX }}-arcane-${{ env.CM_BUILD_TYPE }}-${{ env.NOW }}-${{ github.run_number }}
           restore-keys: ${{ env.CC_KEY_PREFIX }}-arcane-${{ env.CM_BUILD_TYPE }}-
       - name: Configure
         shell: bash
@@ -309,7 +309,7 @@ jobs:
         shell: bash
         run: tar cf arcane-build-artifact.tar ${{ env.ARCANE_BUILD_DIR }}
       - name: Upload build artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: arcane-build-artifact
           path: arcane-build-artifact.tar
@@ -318,7 +318,7 @@ jobs:
         shell: bash
         run: tar cf arcane-install-artifact.tar ${{ env.ARCANE_INSTALL_DIR }}
       - name: Upload install artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: arcane-install-artifact
           path: arcane-install-artifact.tar
@@ -337,20 +337,20 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: arcaneframework/alien
           path: ${{ env.ALIEN_SOURCE_DIR }}
           ref: main
       - name: Download arccon install artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: arccon-install-artifact
       - name: Untar arccon install artifact
         shell: bash
         run: tar xf arccon-install-artifact.tar -C /
       - name: Download arccore install artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: arccore-install-artifact
       - name: Untar arccore install artifact
@@ -359,12 +359,12 @@ jobs:
       - name: Get date
         id: get-date
         shell: bash
-        run: echo "::set-output name=date::$(/bin/date -u '+%Y%m%d%H%M%S')"
+        run: echo "NOW=$(/bin/date -u '+%Y%m%d%H%M%S')" >> $GITHUB_ENV
       - name: Get cache for ccache tool
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ${{env.CCACHE_DIR}}
-          key: ${{ env.CC_KEY_PREFIX }}-alien-${{ env.CM_BUILD_TYPE }}-${{ steps.get-date.outputs.date }}-${{ github.run_number }}
+          key: ${{ env.CC_KEY_PREFIX }}-alien-${{ env.CM_BUILD_TYPE }}-${{ env.NOW }}-${{ github.run_number }}
           restore-keys: ${{ env.CC_KEY_PREFIX }}-alien-${{ env.CM_BUILD_TYPE }}-
       - name: Configure
         shell: bash
@@ -379,7 +379,7 @@ jobs:
         shell: bash
         run: tar cf alien-build-artifact.tar ${{ env.ALIEN_BUILD_DIR }}
       - name: Upload build artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: alien-build-artifact
           path: alien-build-artifact.tar
@@ -388,7 +388,7 @@ jobs:
         shell: bash
         run: tar cf alien-install-artifact.tar ${{ env.ALIEN_INSTALL_DIR }}
       - name: Upload install artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: alien-install-artifact
           path: alien-install-artifact.tar
@@ -410,40 +410,40 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: ${{ env.ALIENLEGACY_SOURCE_DIR }}
           submodules: true
       - name: Download arcane install artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: arcane-install-artifact
       - name: Untar arcane install artifact
         shell: bash
         run: tar xf arcane-install-artifact.tar -C /
       - name: Download arccon install artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: arccon-install-artifact
       - name: Untar arccon install artifact
         shell: bash
         run: tar xf arccon-install-artifact.tar -C /
       - name: Download arccore install artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: arccore-install-artifact
       - name: Untar arccore install artifact
         shell: bash
         run: tar xf arccore-install-artifact.tar -C /
       - name: Download alien install artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: alien-install-artifact
       - name: Untar alien install artifact
         shell: bash
         run: tar xf alien-install-artifact.tar -C /
       - name: Download axlstar install artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: axlstar-install-artifact
       - name: Untar axlstar install artifact
@@ -452,12 +452,12 @@ jobs:
       - name: Get date
         id: get-date
         shell: bash
-        run: echo "::set-output name=date::$(/bin/date -u '+%Y%m%d%H%M%S')"
+        run: echo "NOW=$(/bin/date -u '+%Y%m%d%H%M%S')" >> $GITHUB_ENV
       - name: Get cache for ccache tool
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ${{env.CCACHE_DIR}}
-          key: ${{ env.CC_KEY_PREFIX }}-alienlegacy-${{ env.CM_BUILD_TYPE }}-${{ steps.get-date.outputs.date }}-${{ github.run_number }}
+          key: ${{ env.CC_KEY_PREFIX }}-alienlegacy-${{ env.CM_BUILD_TYPE }}-${{ env.NOW }}-${{ github.run_number }}
           restore-keys: ${{ env.CC_KEY_PREFIX }}-alienlegacy-${{ env.CM_BUILD_TYPE }}-
       - name: Configure
         shell: bash
@@ -472,7 +472,7 @@ jobs:
         shell: bash
         run: tar cf alienlegacy-build-artifact.tar ${{ env.ALIENLEGACY_BUILD_DIR }}
       - name: Upload build artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: alienlegacy-build-artifact
           path: alienlegacy-build-artifact.tar
@@ -490,7 +490,7 @@ jobs:
       fail-fast: false
     steps:
       - name: Download arccore build artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: arccore-build-artifact
       - name: Untar arccore build artifact
@@ -500,7 +500,7 @@ jobs:
         shell: bash
         run: ctest --test-dir ${{ env.ARCCORE_BUILD_DIR }} ${{ env.CT_OPTS }}
       - name: Upload test artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         if: failure()
         with:
           name: arccore-test-artifact
@@ -522,27 +522,27 @@ jobs:
   #    fail-fast: false
   #  steps:
   #    - name: Checkout
-  #      uses: actions/checkout@v2
+  #      uses: actions/checkout@v3
   #      with:
   #        repository: arcaneframework/framework
   #        path: ${{ env.ARCANE_SOURCE_DIR }}
   #        ref: main
   #    - name: Download arcane build artifact
-  #      uses: actions/download-artifact@v2
+  #      uses: actions/download-artifact@v3
   #      with:
   #        name: arcane-build-artifact
   #    - name: Untar arcane build artifact
   #      shell: bash
   #      run: tar xf arcane-build-artifact.tar -C /
   #    - name: Download arccore install artifact
-  #      uses: actions/download-artifact@v2
+  #      uses: actions/download-artifact@v3
   #      with:
   #        name: arccore-install-artifact
   #    - name: Untar arccore install artifact
   #      shell: bash
   #      run: tar xf arccore-install-artifact.tar -C /
   #    - name: Download axlstar install artifact
-  #      uses: actions/download-artifact@v2
+  #      uses: actions/download-artifact@v3
   #      with:
   #        name: axlstar-install-artifact
   #    - name: Untar axlstar install artifact
@@ -552,7 +552,7 @@ jobs:
   #      shell: bash
   #      run: ctest --test-dir ${{ env.ARCANE_BUILD_DIR }} ${{ env.CT_OPTS }} -E '^hydro5_4proc_3sd_4proc$'
   #    - name: Upload test artifact
-  #      uses: actions/upload-artifact@v2
+  #      uses: actions/upload-artifact@v3
   #      if: failure()
   #      with:
   #        name: arcane-test-artifact
@@ -572,20 +572,20 @@ jobs:
   #    fail-fast: false
   #  steps:
   #    - name: Checkout
-  #      uses: actions/checkout@v2
+  #      uses: actions/checkout@v3
   #      with:
   #        repository: arcaneframework/alien
   #        path: ${{ env.ALIEN_SOURCE_DIR }}
   #        ref: main
   #    - name: Download alien build artifact
-  #      uses: actions/download-artifact@v2
+  #      uses: actions/download-artifact@v3
   #      with:
   #        name: alien-build-artifact
   #    - name: Untar alien build artifact
   #      shell: bash
   #      run: tar xf alien-build-artifact.tar -C /
   #    - name: Download arccore install artifact
-  #      uses: actions/download-artifact@v2
+  #      uses: actions/download-artifact@v3
   #      with:
   #        name: arccore-install-artifact
   #    - name: Untar arccore install artifact
@@ -595,7 +595,7 @@ jobs:
   #      shell: bash
   #      run: ctest --test-dir ${{ env.ALIEN_BUILD_DIR }} ${{ env.CT_OPTS }}
   #    - name: Upload test artifact
-  #      uses: actions/upload-artifact@v2
+  #      uses: actions/upload-artifact@v3
   #      if: failure()
   #      with:
   #        name: alien-test-artifact
@@ -617,32 +617,32 @@ jobs:
   #    fail-fast: false
   #  steps:
   #    - name: Checkout
-  #      uses: actions/checkout@v2
+  #      uses: actions/checkout@v3
   #      with:
   #        path: ${{ env.ALIENLEGACY_SOURCE_DIR }}
   #    - name: Download alienlegacy build artifact
-  #      uses: actions/download-artifact@v2
+  #      uses: actions/download-artifact@v3
   #      with:
   #        name: alienlegacy-build-artifact
   #    - name: Untar alienlegacy build artifact
   #      shell: bash
   #      run: tar xf alienlegacy-build-artifact.tar -C /
   #    - name: Download alien install artifact
-  #      uses: actions/download-artifact@v2
+  #      uses: actions/download-artifact@v3
   #      with:
   #        name: alien-install-artifact
   #    - name: Untar alien install artifact
   #      shell: bash
   #      run: tar xf alien-install-artifact.tar -C /
   #    - name: Download arcane install artifact
-  #      uses: actions/download-artifact@v2
+  #      uses: actions/download-artifact@v3
   #      with:
   #        name: arcane-install-artifact
   #    - name: Untar arcane install artifact
   #      shell: bash
   #      run: tar xf arcane-install-artifact.tar -C /
   #    - name: Download arccore install artifact
-  #      uses: actions/download-artifact@v2
+  #      uses: actions/download-artifact@v3
   #      with:
   #        name: arccore-install-artifact
   #    - name: Untar arccore install artifact
@@ -652,7 +652,7 @@ jobs:
   #      shell: bash
   #      run: ctest --test-dir ${{ env.ALIENLEGACY_BUILD_DIR }} ${{ env.CT_OPTS }}
   #    - name: Upload test artifact
-  #      uses: actions/upload-artifact@v2
+  #      uses: actions/upload-artifact@v3
   #      if: failure()
   #      with:
   #        name: alienlegacy-test-artifact
