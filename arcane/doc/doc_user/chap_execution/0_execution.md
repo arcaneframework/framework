@@ -1,16 +1,26 @@
 # Exécution, runtime {#arcanedoc_execution}
 
+Ce chapitre est dédié à l'exécution d'un calcul avec %Arcane.
+En plus de l'exécution classique d'un code de calcul avec des modules et une boucle en temps,
+il est possible de lancer %Arcane sans ces mécanismes.
+Il est aussi possible de définir des variables d'environnement avant le lancement d'%Arcane
+pour en modifier le comportement (ajouter des vérifications, du profiling, &c).
+
+<br>
 
 Sommaire de ce chapitre :
-1. \subpage arcanedoc_execution_launcher : explique l'initialisation et le lancement d'un calcul.
 
-2. \subpage arcanedoc_execution_direct_execution
+1. \subpage arcanedoc_execution_launcher <br>
+  Explique l'initialisation et le lancement d'un calcul.
 
-3. \subpage arcanedoc_execution_env_variables : liste des variables d'environnement permettant 
-de modifier le comportement de %Arcane.
+2. \subpage arcanedoc_execution_direct_execution <br>
+  Explique comment lancer un calcul directement avec %Arcane sans modules ni boucle en temps.
 
-4. \subpage arcanedoc_execution_traces : décrit comment afficher des traces pendant les
-exécutions et comment paramétrer leur affichage.
+3. \subpage arcanedoc_execution_env_variables <br>
+  Liste des variables d'environnement permettant de modifier le comportement de %Arcane.
+
+4. \subpage arcanedoc_execution_traces <br>
+  Décrit comment afficher des traces pendant les exécutions et comment paramétrer leur affichage.
 
 
 

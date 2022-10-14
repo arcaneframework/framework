@@ -1,4 +1,4 @@
-# Modifications dans la gestions des entités avec la version 3.7. {#arcanedoc_news_37}
+# Modifications dans la gestions des entités avec la version 3.7 {#arcanedoc_news_37}
 
 La version 3.7 de %Arcane apporte plusieurs modifications dans la
 gestion des entités du maillage. Ces modifications ont pour objectif:

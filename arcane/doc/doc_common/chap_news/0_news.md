@@ -11,17 +11,17 @@ Il se peut qu'il y ai de grandes modifications apportées. Dans ce cas, une page
 <br>
 
 Sommaire de ce chapitre :
-1. \subpage arcanedoc_news_changelog : récapitulatif de toutes les modifications apportées
-à %Arcane.
+1. \subpage arcanedoc_news_changelog <br>
+  Récapitulatif de toutes les modifications apportées à %Arcane.
 
-2. \subpage arcanedoc_news_37 : explication des modifications apportées avec la version 3.7
-au niveau des entités.
+2. \subpage arcanedoc_news_37 <br>
+  Explication des modifications apportées avec la version 3.7 au niveau des entités.
 
-3. \subpage arcanedoc_news_cleanup_v2 : décrit les modifications à effectuer pour préparer 
-le passage à la version 2.0.
+3. \subpage arcanedoc_news_cleanup_v2 <br>
+  Décrit les modifications à effectuer pour préparer le passage à la version 2.0.
 
-- \subpage arcanedoc_news_changelog20 : récapitulatif de toutes les modifications apportées
-à %Arcane v2.X.X.
+- \subpage arcanedoc_news_changelog20 <br>
+  Récapitulatif de toutes les modifications apportées à %Arcane v2.X.X.
 
 
 ____

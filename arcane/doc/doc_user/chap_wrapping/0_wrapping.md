@@ -1,7 +1,12 @@
 # Utilisation d'autres langages {#arcanedoc_wrapping}
 
+
+<br>
+
 Sommaire de ce chapitre :
+
 1. \subpage arcanedoc_wrapping_csharp
+
 2. \subpage arcanedoc_wrapping_python
 
 ____

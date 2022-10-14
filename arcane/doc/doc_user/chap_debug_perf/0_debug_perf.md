@@ -6,13 +6,17 @@ de performance.
 <br>
 
 Sommaire de ce chapitre :
-1. \subpage arcanedoc_debug_perf_check_memory : détection des problèmes mémoire.
+1. \subpage arcanedoc_debug_perf_check_memory <br>
+  Détection des problèmes mémoire.
 
-2. \subpage arcanedoc_debug_perf_compare_bittobit : comparaison bit à bit de deux exécutions.
+2. \subpage arcanedoc_debug_perf_compare_bittobit <br>
+  Comparaison bit à bit de deux exécutions.
 
-3. \subpage arcanedoc_debug_perf_unit_tests : décrit comment réaliser des tests unitaires pour les modules et services.
+3. \subpage arcanedoc_debug_perf_unit_tests <br>
+  Décrit comment réaliser des tests unitaires pour les modules et services.
 
-4. \subpage arcanedoc_debug_perf_profiling : décrit les mécanismes disponibles pour l'analyse de performance.
+4. \subpage arcanedoc_debug_perf_profiling <br>
+  Décrit les mécanismes disponibles pour l'analyse de performance.
 
 ____
 

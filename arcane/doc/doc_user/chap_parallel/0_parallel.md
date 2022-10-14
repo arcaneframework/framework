@@ -3,7 +3,10 @@
 Si vous souhaiter ajouter du parallélisme à votre code,
 ce chapitre devrait vous intéresser.
 
+<br>
+
 Sommaire de ce chapitre :
+
 1. \subpage arcanedoc_parallel_intro
 
 2. \subpage arcanedoc_parallel_concurrency
@@ -12,7 +15,8 @@ Sommaire de ce chapitre :
 
 4. \subpage arcanedoc_parallel_accelerator
 
-5. \subpage arcanedoc_parallel_loadbalance : décrit l'utilisation du mécanisme d'équilibrage de charge sur le maillage.
+5. \subpage arcanedoc_parallel_loadbalance <br>
+  Décrit l'utilisation du mécanisme d'équilibrage de charge sur le maillage.
 
 
 ____

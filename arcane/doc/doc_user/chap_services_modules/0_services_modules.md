@@ -1,8 +1,14 @@
 # Des services et des modules {#arcanedoc_services_modules}
 
+
+<br>
+
 Sommaire de ce chapitre :
+
 1. \subpage axldoc_full_index
+
 2. \subpage axldoc_casemainpage
+
 3. \subpage axldoc_interfacemainpage
 
 Un chapitre (nécessitant une mise à jour) sur le service SimpleCsvOutput
