@@ -101,13 +101,13 @@ jobs:
       - name: Get date
         id: get-date
         shell: bash
-        run: echo "::set-output name=date::$(/bin/date -u '+%Y%m%d%H%M%S')"
+        run: echo "m_date=$(/bin/date -u '+%Y%m%d%H%M%S')" >> $GITHUB_ENV
 
       - name: Get cache for ccache tool
         uses: actions/cache@v3
         with:
           path: ${{env.CCACHE_DIR}}
-          key: ${{matrix.image_short}}_${{matrix.version_short}}_${{matrix.compilo_name}}_${{matrix.type}}_rand-${{ steps.get-date.outputs.date }}-${{ github.run_number }}
+          key: ${{matrix.image_short}}_${{matrix.version_short}}_${{matrix.compilo_name}}_${{matrix.type}}_rand-${{ env.m_date }}-${{ github.run_number }}
           restore-keys: ${{matrix.image_short}}_${{matrix.version_short}}_${{matrix.compilo_name}}_${{matrix.type}}_rand-
 
       - name: Script Rand
@@ -115,7 +115,7 @@ jobs:
         shell: bash
         run: |
           chmod u+x ${{ env.SOURCE_DIR }}/.github/scripts/rand_pkg.sh
-          echo "::set-output name=rand::$(${{ env.SOURCE_DIR }}/.github/scripts/rand_pkg.sh)"
+          echo "m_rand=$(${{ env.SOURCE_DIR }}/.github/scripts/rand_pkg.sh)" >> $GITHUB_ENV
 
       - name: Configure
         shell: bash
@@ -129,7 +129,7 @@ jobs:
           -DBUILD_SHARED_LIBS=ON \
           -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }} \
           -DARCANE_WANT_ARCCON_EXPORT_TARGET=OFF \
-          ${{ steps.script-rand.outputs.rand }} \
+          ${{ env.m_rand }} \
           ${{ env.CM_CCACHE_OPTS }} \
           ${{ matrix.image_args }} \
           ${{ matrix.version_args }} \

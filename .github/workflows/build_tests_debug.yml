@@ -95,13 +95,13 @@ jobs:
       - name: Get date
         id: get-date
         shell: bash
-        run: echo "::set-output name=date::$(/bin/date -u '+%Y%m%d%H%M%S')"
+        run: echo "m_date=$(/bin/date -u '+%Y%m%d%H%M%S')" >> $GITHUB_ENV
 
       - name: Get cache for ccache tool
         uses: actions/cache@v3
         with:
           path: ${{env.CCACHE_DIR}}
-          key: ${{matrix.image_short}}_${{matrix.version_short}}_${{matrix.compilo_name}}_${{matrix.type}}_aio-${{ steps.get-date.outputs.date }}-${{ github.run_number }}
+          key: ${{matrix.image_short}}_${{matrix.version_short}}_${{matrix.compilo_name}}_${{matrix.type}}_aio-${{ env.m_date }}-${{ github.run_number }}
           restore-keys: ${{matrix.image_short}}_${{matrix.version_short}}_${{matrix.compilo_name}}_${{matrix.type}}_aio-
 
       - name: Configure
@@ -216,13 +216,13 @@ jobs:
       - name: Get date
         id: get-date
         shell: bash
-        run: echo "::set-output name=date::$(/bin/date -u '+%Y%m%d%H%M%S')"
+        run: echo "m_date=$(/bin/date -u '+%Y%m%d%H%M%S')" >> $GITHUB_ENV
 
       - name: Get cache for ccache tool
         uses: actions/cache@v3
         with:
           path: ${{env.CCACHE_DIR}}
-          key: ${{matrix.image_short}}_${{matrix.version_short}}_${{matrix.compilo_name}}_${{matrix.type}}_split-${{ steps.get-date.outputs.date }}-${{ github.run_number }}
+          key: ${{matrix.image_short}}_${{matrix.version_short}}_${{matrix.compilo_name}}_${{matrix.type}}_split-${{ env.m_date }}-${{ github.run_number }}
           restore-keys: ${{matrix.image_short}}_${{matrix.version_short}}_${{matrix.compilo_name}}_${{matrix.type}}_split-
 
 
@@ -440,13 +440,13 @@ jobs:
       - name: Get date
         id: get-date
         shell: bash
-        run: echo "::set-output name=date::$(/bin/date -u '+%Y%m%d%H%M%S')"
+        run: echo "m_date=$(/bin/date -u '+%Y%m%d%H%M%S')" >> $GITHUB_ENV
 
       - name: Get cache for ccache tool
         uses: actions/cache@v3
         with:
           path: ${{env.CCACHE_DIR}}
-          key: ${{matrix.image_short}}_${{matrix.version_short}}_${{matrix.compilo_name}}_${{matrix.type}}_cuda-${{ steps.get-date.outputs.date }}-${{ github.run_number }}
+          key: ${{matrix.image_short}}_${{matrix.version_short}}_${{matrix.compilo_name}}_${{matrix.type}}_cuda-${{ env.m_date }}-${{ github.run_number }}
           restore-keys: ${{matrix.image_short}}_${{matrix.version_short}}_${{matrix.compilo_name}}_${{matrix.type}}_cuda-
 
       - name: Configure
