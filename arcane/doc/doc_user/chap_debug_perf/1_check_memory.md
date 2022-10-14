@@ -47,6 +47,6 @@ ____
 \ref arcanedoc_debug_perf
 </span>
 <span class="next_section_button">
-\ref arcanedoc_debug_perf_profiling
+\ref arcanedoc_debug_perf_compare_bittobit
 </span>
 </div>

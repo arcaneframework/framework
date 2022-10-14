@@ -282,7 +282,7 @@ ENUMERATE_MAT() ou ENUMERATE_ENV().
 \note Depuis la version 2.4.0 il est possible de déclarer des
 variables uniquement sur les milieux et qui n'ont pas de valeurs sur
 les matériaux. Pour plus d'infos voir la section \ref
-arcanedoc_general_env_variables.
+arcanedoc_execution_env_variables.
 
 Les variables matériaux sont similaires aux variables de maillage
 mais possèdent en plus de la valeur aux mailles

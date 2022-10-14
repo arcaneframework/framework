@@ -104,9 +104,9 @@ ____
 
 <div class="section_buttons">
 <span class="back_section_button">
-\ref arcanedoc_debug_perf_profiling
+\ref arcanedoc_debug_perf_profiling_sampling
 </span>
-<span class="next_section_button">
+<!-- <span class="next_section_button">
 \ref arcanedoc_debug_perf_compare_bittobit
-</span>
+</span> -->
 </div>

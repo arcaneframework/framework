@@ -937,10 +937,12 @@ INPUT                  = @ARCANE_SRC_PATH@/arcane \
                          @ARCANESRCROOT@/doc/doc_user/chap_core_types \
                          @ARCANESRCROOT@/doc/doc_user/chap_core_types/subchap_caseoptions \
                          @ARCANESRCROOT@/doc/doc_user/chap_debug_perf \
+                         @ARCANESRCROOT@/doc/doc_user/chap_debug_perf/subchap_profiling \
                          @ARCANESRCROOT@/doc/doc_user/chap_entities \
                          @ARCANESRCROOT@/doc/doc_user/chap_examples \
                          @ARCANESRCROOT@/doc/doc_user/chap_examples/subchap_simple_example \
                          @ARCANESRCROOT@/doc/doc_user/chap_examples/subchap_concret_example \
+                         @ARCANESRCROOT@/doc/doc_user/chap_execution \
                          @ARCANESRCROOT@/doc/doc_user/chap_general \
                          @ARCANESRCROOT@/doc/doc_user/chap_getting_started \
                          @ARCANESRCROOT@/doc/doc_user/chap_materials \
@@ -1145,7 +1147,7 @@ FILTER_SOURCE_PATTERNS =
 # (index.html). This can be useful if you have a project on for instance GitHub
 # and want to reuse the introduction page also for the doxygen output.
 
-USE_MDFILE_AS_MAINPAGE = @ARCANESRCROOT@/doc/doc_user/usermanual.md
+USE_MDFILE_AS_MAINPAGE = @ARCANESRCROOT@/doc/doc_user/0_usermanual.md
 
 # The Fortran standard specifies that for fixed formatted Fortran code all
 # characters from position 72 are to be considered as comment. A common

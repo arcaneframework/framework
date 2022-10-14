@@ -1,8 +1,13 @@
 # C# (C Croisillon) {#arcanedoc_wrapping_csharp}
 
 
+<br>
+
 Sommaire de ce sous-chapitre :
-1. \subpage arcanedoc_wrapping_csharp_dotnet : décrit comment utiliser et étendre les fonctionnalités de %Arcane en `C#`.
+
+1. \subpage arcanedoc_wrapping_csharp_dotnet <br>
+  Décrit comment utiliser et étendre les fonctionnalités de %Arcane en `C#`.
+
 2. \subpage arcanedoc_wrapping_csharp_swig
 
 

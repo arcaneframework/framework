@@ -1,8 +1,12 @@
 # Matériaux {#arcanedoc_materials}
 
 
+<br>
+
 Sommaire de ce chapitre :
+
 1. \subpage arcanedoc_materials_manage
+
 2. \subpage arcanedoc_materials_loop
 
 

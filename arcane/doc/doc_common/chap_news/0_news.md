@@ -1,13 +1,27 @@
 # Nouveautés et changements {#arcanedoc_news}
 
+Ce chapitre est dédié aux évolutions d'%Arcane.
+
+À chaque version d'%Arcane, la page \ref arcanedoc_news_changelog liste les modifications
+apportées.
+
+Il se peut qu'il y ai de grandes modifications apportées. Dans ce cas, une page dédiée peut
+être créée et mise à disposition ici.
+
+<br>
+
 Sommaire de ce chapitre :
-1. \subpage arcanedoc_news_changelog
+1. \subpage arcanedoc_news_changelog <br>
+  Récapitulatif de toutes les modifications apportées à %Arcane.
 
-2. \subpage arcanedoc_news_37
+2. \subpage arcanedoc_news_37 <br>
+  Explication des modifications apportées avec la version 3.7 au niveau des entités.
 
-3. \subpage arcanedoc_news_cleanup_v2 : décrit les modifications à effectuer pour préparer le passage à la version 2.0.
+3. \subpage arcanedoc_news_cleanup_v2 <br>
+  Décrit les modifications à effectuer pour préparer le passage à la version 2.0.
 
-- \subpage arcanedoc_news_changelog20
+- \subpage arcanedoc_news_changelog20 <br>
+  Récapitulatif de toutes les modifications apportées à %Arcane v2.X.X.
 
 
 ____

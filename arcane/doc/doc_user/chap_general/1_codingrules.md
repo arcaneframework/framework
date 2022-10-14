@@ -230,7 +230,7 @@ ____
 
 <div class="section_buttons">
 <span class="back_section_button">
-\ref arcanedoc_general_traces
+\ref arcanedoc_general
 </span>
 <!-- <span class="next_section_button">
 \ref arcanedoc_getting_started_basicstruct

@@ -2,12 +2,20 @@
 
 Ce sous-chapitre explique comment paramètrer les modules avec des options utilisateurs fournies dans le jeu de données.
 
+<br>
+
 Sommaire de ce sous-chapitre :
+
 1. \subpage arcanedoc_core_types_caseoptions_intro
+
 2. \subpage arcanedoc_core_types_caseoptions_struct
+
 3. \subpage arcanedoc_core_types_caseoptions_common_struct
+
 4. \subpage arcanedoc_core_types_caseoptions_options
+
 5. \subpage arcanedoc_core_types_caseoptions_usage
+
 6. \subpage arcanedoc_core_types_caseoptions_default_values
 
 

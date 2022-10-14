@@ -1,4 +1,4 @@
-# Lancement d'un calcul {#arcanedoc_general_launcher}
+# Lancement d'un calcul {#arcanedoc_execution_launcher}
 
 [TOC]
 
@@ -83,7 +83,7 @@ main(int argc,char* argv[])
 }
 ```
 
-## Initialisation de MPI {#arcanedoc_general_launcher_mpi}
+## Initialisation de MPI {#arcanedoc_execution_launcher_mpi}
 
 L'utilisation de MPI nécessite de faire un appel à la méthode
 MPI_Init_thread() de la bibliothèque MPI. Si %Arcane est compilé avec le
@@ -109,7 +109,7 @@ souhaité (TODO faire doc).
 `mpiexec` qui correspond à la version de MPI avec laquelle %Arcane a
 été compilé sinon on va lancer *N* fois l'exécution séquentielle.
 
-## Exécution du code {#arcanedoc_general_exec}
+## Exécution du code {#arcanedoc_execution_launcher_exec}
 
 La méthode Arcane::ArcaneLauncher::run() permet de lancer l'exécution
 du code. Cette méthode possède trois surcharges:
@@ -118,19 +118,19 @@ du code. Cette méthode possède trois surcharges:
    en utilisant une boucle en temps (voir \ref
    arcanedoc_core_types_codeconfig). Ce mécanisme est à privilégier car elle
    permet de disposer de toutes les fonctionnalités de %Arcane. La
-   page \ref arcanedoc_general_launcher montre un exemple minimal de ce
+   page \ref arcanedoc_execution_launcher montre un exemple minimal de ce
    type d'utilisation.
 2. Arcane::ArcaneLauncher::run(std::function<int(DirectSubDomainExecutionContext&)>
    func) pour exécuter le code spécifié par la \a func après
    l'initialisation et la création des sous-domaines. La page
-   \ref arcanedoc_general_exec montre un exemple d'exécution directe.
+   \ref arcanedoc_general_direct_execution montre un exemple d'exécution directe.
 3. Arcane::ArcaneLauncher::run(std::function<int(DirectExecutionContext&)>
    func) pour exécuter uniquement en **séquentiel** le code spécifié par la \a
    func. Ce mécanisme est à utiliser si on souhaite par exemple faire des tests
    unitaires simples sans avoir de sous-domaine (Arcane::ISubDomain*).
    application sans jeu de données ni boucle en temps.
 
-## Options de la ligne de commande {#arcanedoc_general_options}
+## Options de la ligne de commande {#arcanedoc_execution_launcher_options}
 
 %Arcane interprète les options de la ligne de commande qui commencent
 par `-A`. Par exemple, pour changer le niveau de verbosité, il suffit
@@ -282,7 +282,7 @@ cas
 
 </table>
 
-## Choix du gestionnaire d'échange de message {#arcanedoc_general_exchange}
+## Choix du gestionnaire d'échange de message {#arcanedoc_execution_launcher_exchange}
 
 Le gestionnaire d'échange de message (Arcane::IParallelSuperMng) est
 choisi lors du lancement du calcul.  %Arcane fournit les gestionnaires suivants:
@@ -368,9 +368,9 @@ ____
 
 <div class="section_buttons">
 <span class="back_section_button">
-\ref arcanedoc_general
+\ref arcanedoc_execution
 </span>
 <span class="next_section_button">
-\ref arcanedoc_general_direct_execution
+\ref arcanedoc_execution_direct_execution
 </span>
 </div>
