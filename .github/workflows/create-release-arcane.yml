@@ -30,12 +30,12 @@ jobs:
 
       - name: Get the version
         id: get_tag_version
-        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\/${COMPONENT_NAME}-v/}
+        run: echo "m_VERSION=${GITHUB_REF/refs\/tags\/${COMPONENT_NAME}-v/}" >> $GITHUB_ENV
 
       - name: Export tag version
         shell: 'bash'
         run: |
-          export FRAMEWORK_TAG_VERSION=${{ steps.get_tag_version.outputs.VERSION }}
+          export FRAMEWORK_TAG_VERSION=${{ env.m_VERSION }}
           echo FRAMEWORK_TAG_VERSION = $FRAMEWORK_TAG_VERSION
           echo "FRAMEWORK_TAG_VERSION=$FRAMEWORK_TAG_VERSION" >> $GITHUB_ENV
 

@@ -51,13 +51,13 @@ jobs:
       - name: Get date
         id: get-date
         shell: bash
-        run: echo "::set-output name=date::$(/bin/date -u '+%Y%m%d%H%M%S')"
+        run: echo "m_date=$(/bin/date -u '+%Y%m%d%H%M%S')" >> $GITHUB_ENV
 
       - name: Get cache for ccache tool
         uses: actions/cache@v3
         with:
           path: ${{env.CCACHE_DIR}}
-          key: codecov-${{ steps.get-date.outputs.date }}-${{ github.run_number }}
+          key: codecov-${{ env.m_date }}-${{ github.run_number }}
           restore-keys: codecov-
 
       - name: Configure
