@@ -114,9 +114,10 @@ namespace Arcane.AxlDoc
         ServiceOrModuleInfo main_info = opt.ServiceOrModule;
         string main_type = "service";
         string main_type_name = "Service :";
-        if (main_info.IsModule)
+        if (main_info.IsModule){
           main_type = "module";
           main_type_name = "Module :";
+        }
         tw.Write ("<br><span class=\"keyword_elem_modser\">{2} \\ref axldoc_{3}_{0} \"{1}\"</span>", main_info.FileBaseName, main_info.GetTranslatedName (m_code_info.Language), main_type_name, main_type);
         if (parent != null) {
           string parent_name = parent.GetTranslatedFullName (m_lang);
