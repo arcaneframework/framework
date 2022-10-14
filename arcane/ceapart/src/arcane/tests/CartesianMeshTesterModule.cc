@@ -401,7 +401,7 @@ init()
     info() << "NB_BOUNDARY1=" << nb_boundary1 << " NB_BOUNDARY2=" << nb_boundary2;
   }
 
-  m_utils->testAll();
+  m_utils->testAll(false);
   m_utils_v2->testAll();
   _checkFaceUniqueIdsAreContiguous();
   _testXmlInfos();

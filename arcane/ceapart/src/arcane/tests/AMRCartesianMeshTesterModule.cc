@@ -92,6 +92,8 @@ class AMRCartesianMeshTesterModule
   ICartesianMesh* m_cartesian_mesh;
   Ref<CartesianMeshTestUtils> m_utils;
   UniqueArray<VariableCellReal*> m_cell_patch_variables;
+  Int32 m_nb_expected_patch = 0;
+
  private:
 
   void _compute1();
@@ -188,6 +190,13 @@ buildInit()
   cell_family->createGroup("CELL0");
   cell_family->createGroup("CELL1");
   cell_family->createGroup("CELL2");
+  cell_family->createGroup("AMRPatchCells0");
+  cell_family->createGroup("AMRPatchCells1");
+  cell_family->createGroup("AMRPatchCells2");
+  cell_family->createGroup("AMRPatchCells3");
+  cell_family->createGroup("AMRPatchCells4");
+  cell_family->createGroup("AMRPatchCells5");
+
   IItemFamily* face_family = defaultMesh()->faceFamily();
   face_family->createGroup("FACE0");
   face_family->createGroup("FACE1");
@@ -240,15 +249,24 @@ init()
 
   _computeCenters();
 
+  const Integer dimension = defaultMesh()->dimension();
+  if (dimension==2)
+    m_nb_expected_patch = 1 + options()->refinement2d().size();
+  else if (dimension==3)
+    m_nb_expected_patch = 1 + options()->refinement3d().size();
+
   if (subDomain()->isContinue())
     m_cartesian_mesh->recreateFromDump();
   else{
     m_cartesian_mesh->computeDirections();
-    CartesianMeshRenumberingInfo renumbering_info;
-    renumbering_info.setRenumberPatchMethod(1);
-    renumbering_info.setSortAfterRenumbering(true);
-    m_cartesian_mesh->renumberItemsUniqueId(renumbering_info);
-    _checkUniqueIds();
+    if (dimension==2){
+      // Pour l'instant cela est uniquement implémenté en 2D.
+      CartesianMeshRenumberingInfo renumbering_info;
+      renumbering_info.setRenumberPatchMethod(1);
+      renumbering_info.setSortAfterRenumbering(true);
+      m_cartesian_mesh->renumberItemsUniqueId(renumbering_info);
+      _checkUniqueIds();
+    }
     _processPatches();
   }
 
@@ -257,8 +275,7 @@ init()
   // et on ajoute une densité de 5.0 pour chaque direction dans les
   // mailles de bord.
   m_density.fill(1.0);
-  Integer nb_dir = defaultMesh()->dimension();
-  for( Integer idir=0; idir<nb_dir; ++idir){
+  for( Integer idir=0, nb_dir=dimension; idir<nb_dir; ++idir){
     CellDirectionMng cdm(m_cartesian_mesh->cellDirection(idir));
     Integer nb_boundary1 = 0;
     Integer nb_boundary2 = 0;
@@ -287,7 +304,8 @@ init()
 
     info() << "NB_BOUNDARY1=" << nb_boundary1 << " NB_BOUNDARY2=" << nb_boundary2;
   }
-  m_utils->testAll();
+  bool is_amr = m_nb_expected_patch!=1;
+  m_utils->testAll(is_amr);
   _writePostProcessing();
   _testDirections();
 }
@@ -339,11 +357,13 @@ _checkUniqueIds()
 void AMRCartesianMeshTesterModule::
 _processPatches()
 {
+  const Int32 dimension = defaultMesh()->dimension();
   // Vérifie qu'il y a autant de patchs que d'options raffinement dans
   // le jeu de données (en comptant le patch 0 qui es le maillage cartésien).
   // Cela permet de vérifier que les appels successifs
   // à computeDirections() n'ajoutent pas de patchs.
-  Integer nb_expected_patch = 1 + options()->refinement().size();
+  Integer nb_expected_patch = m_nb_expected_patch;
+    
   Integer nb_patch = m_cartesian_mesh->nbPatch();
   if (nb_expected_patch!=nb_patch)
     ARCANE_FATAL("Bad number of patchs expected={0} value={1}",nb_expected_patch,nb_patch);
@@ -355,6 +375,9 @@ _processPatches()
   UniqueArray<Int32> nb_cells_expected(options()->expectedNumberOfCellsInPatchs);
   if (nb_cells_expected.size()!=nb_patch)
     ARCANE_FATAL("Bad size for option '{0}'",options()->expectedNumberOfCellsInPatchs.name());
+
+  //if (dimension!=2)
+  //return;
 
   // Affiche les informations sur les patchs
   for( Integer i=0; i<nb_patch; ++i ){
@@ -393,7 +416,7 @@ _processPatches()
     }
 
     // Exporte le patch au format SVG
-    {
+    if (dimension==2){
       String filename = String::format("Patch{0}-{1}-{2}.svg",i,comm_rank,comm_size);
       Directory directory = subDomain()->exportDirectory();
       String full_filename = directory.file(filename);
@@ -448,9 +471,18 @@ _initAMR()
   // Parcours les mailles actives et ajoute dans la liste des mailles
   // à raffiner celles qui sont contenues dans le boîte englobante
   // spécifiée dans le jeu de données.
-  for( auto& x : options()->refinement() ){    
-    m_cartesian_mesh->refinePatch2D(x->position(),x->length());
-    m_cartesian_mesh->computeDirections();
+  Int32 dim = defaultMesh()->dimension();
+  if (dim==2){
+    for( auto& x : options()->refinement2d() ){    
+      m_cartesian_mesh->refinePatch2D(x->position(),x->length());
+      m_cartesian_mesh->computeDirections();
+    }
+  }
+  if (dim==3){
+    for( auto& x : options()->refinement3d() ){    
+      m_cartesian_mesh->refinePatch3D(x->position(),x->length());
+      m_cartesian_mesh->computeDirections();
+    }
   }
 }
 

@@ -8,10 +8,13 @@
   </description>
 
  <options>
-   <simple name="nb-refine" type="integer" />
-   <complex name="refinement" type="Refinement" minOccurs="0" maxOccurs="unbounded">
+   <complex name="refinement-2d" type="Refinement2D" minOccurs="0" maxOccurs="unbounded">
      <simple name="position" type="real2" />
      <simple name="length" type="real2" />
+   </complex>
+   <complex name="refinement-3d" type="Refinement3D" minOccurs="0" maxOccurs="unbounded">
+     <simple name="position" type="real3" />
+     <simple name="length" type="real3" />
    </complex>
    <service-instance name = "post-processor"
                      type = "Arcane::IPostProcessorWriter"

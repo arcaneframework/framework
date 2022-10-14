@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshTestUtils.cc                                   (C) 2000-2021 */
+/* CartesianMeshTestUtils.cc                                   (C) 2000-2022 */
 /*                                                                           */
 /* Fonctions utilitaires pour les tests de 'CartesianMesh'.                  */
 /*---------------------------------------------------------------------------*/
@@ -45,7 +45,7 @@ class CartesianMeshTestUtils
 
  public:
 
-  void testAll();
+  void testAll(bool is_amr);
 
  public:
 
@@ -61,6 +61,7 @@ class CartesianMeshTestUtils
   VariableFaceReal3 m_face_center;
   VariableNodeReal m_node_density; 
   Integer m_nb_print = 100;
+  bool m_is_amr = false;
 
  private:
 
