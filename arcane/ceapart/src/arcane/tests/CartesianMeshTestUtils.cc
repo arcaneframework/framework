@@ -71,8 +71,9 @@ CartesianMeshTestUtils::
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshTestUtils::
-testAll()
+testAll(bool is_amr)
 {
+  m_is_amr = is_amr;
   _testDirCell();
   _testDirFace();
   _testDirNode();
@@ -540,15 +541,15 @@ _testNodeToCellConnectivity3D()
   ENUMERATE_NODE(inode,m_mesh->allNodes()){
     Node node = *inode;
     Real3 node_coord = nodes_coord[inode];
-    info() << "node_uid=" << node.uniqueId()
-           << " UL=" << cc.upperLeft(node).localId()
-           << " UR=" << cc.upperRight(node).localId()
-           << " LR=" << cc.lowerRight(node).localId()
-           << " LL=" << cc.lowerLeft(node).localId()
-           << " TUL=" << cc.topZUpperLeft(node).localId()
-           << " TUR=" << cc.topZUpperRight(node).localId()
-           << " TLR=" << cc.topZLowerRight(node).localId()
-           << " TLL=" << cc.topZLowerLeft(node).localId();
+    info(4) << "node_uid=" << node.uniqueId()
+            << " UL=" << cc.upperLeftId(inode)
+            << " UR=" << cc.upperRightId(inode)
+            << " LR=" << cc.lowerRightId(inode)
+            << " LL=" << cc.lowerLeftId(inode)
+            << " TUL=" << cc.topZUpperLeftId(inode)
+            << " TUR=" << cc.topZUpperRightId(inode)
+            << " TLR=" << cc.topZLowerRightId(inode)
+            << " TLL=" << cc.topZLowerLeftId(inode);
     {
       Cell upper_left = cc.upperLeft(node);
       if (!upper_left.null()){
@@ -629,6 +630,11 @@ _testNodeToCellConnectivity2D()
   ENUMERATE_NODE(inode,mesh->allNodes()){
     Node node = *inode;
     Real3 node_coord = nodes_coord[inode];
+    info(4) << "node_uid=" << node.uniqueId()
+            << " UL=" << cc.upperLeftId(inode)
+            << " UR=" << cc.upperRightId(inode)
+            << " LR=" << cc.lowerRightId(inode)
+            << " LL=" << cc.lowerLeftId(inode);
     {
       Cell upper_left = cc.upperLeft(node);
       if (!upper_left.null()){
@@ -674,16 +680,26 @@ _testCellToNodeConnectivity3D()
   IMesh* mesh = m_mesh;
   VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
   CartesianConnectivity cc = m_cartesian_mesh->connectivity();
+  const bool is_not_amr = !m_is_amr;
   ENUMERATE_CELL(icell,m_mesh->allCells()){
     Cell cell = *icell;
     Real3 cell_coord = m_cell_center[icell];
+    info(4) << "cell_uid=" << cell.uniqueId()
+            << " UL=" << cc.upperLeftId(icell)
+            << " UR=" << cc.upperRightId(icell)
+            << " LR=" << cc.lowerRightId(icell)
+            << " LL=" << cc.lowerLeftId(icell)
+            << " TUL=" << cc.topZUpperLeftId(icell)
+            << " TUR=" << cc.topZUpperRightId(icell)
+            << " TLR=" << cc.topZLowerRightId(icell)
+            << " TLL=" << cc.topZLowerLeftId(icell);
     {
       Node upper_left = cc.upperLeft(cell);
       Cell ccell = cc.topZLowerRight(upper_left);
       Real3 n = nodes_coord[upper_left];
       if (n.y<=cell_coord.y || n.x>=cell_coord.x || n.z>=cell_coord.z)
         ARCANE_FATAL("Bad upperLeft node for cell={0}",ItemPrinter(cell));
-      if (cell!=ccell)
+      if (cell!=ccell && is_not_amr)
         ARCANE_FATAL("Bad correspondance UL -> TLR cell={0} corresponding_cell={1}",ItemPrinter(cell),ccell);
     }
     {
@@ -692,7 +708,7 @@ _testCellToNodeConnectivity3D()
       Real3 n = nodes_coord[upper_right];
       if (n.y<=cell_coord.y || n.x<=cell_coord.x || n.z>=cell_coord.z)
         ARCANE_FATAL("Bad upperRight node for cell={0}",ItemPrinter(cell));
-      if (cell!=ccell)
+      if (cell!=ccell && is_not_amr)
         ARCANE_FATAL("Bad correspondance UR -> TLL cell={0} corresponding_cell={1}",ItemPrinter(cell),ccell);
     }
     {
@@ -701,7 +717,7 @@ _testCellToNodeConnectivity3D()
       Real3 n = nodes_coord[lower_right];
       if (n.y>=cell_coord.y || n.x<=cell_coord.x || n.z>=cell_coord.z)
         ARCANE_FATAL("Bad lowerRight node for cell={0}",ItemPrinter(cell));
-      if (cell!=ccell)
+      if (cell!=ccell && is_not_amr)
         ARCANE_FATAL("Bad correspondance LR -> TUL cell={0} corresponding_cell={1}",ItemPrinter(cell),ccell);
     }
     {
@@ -710,7 +726,7 @@ _testCellToNodeConnectivity3D()
       Real3 n = nodes_coord[lower_left];
       if (n.y>=cell_coord.y || n.x>=cell_coord.x || n.z>=cell_coord.z)
         ARCANE_FATAL("Bad lowerLeft node for cell={0}",ItemPrinter(cell));
-      if (cell!=ccell)
+      if (cell!=ccell && is_not_amr)
         ARCANE_FATAL("Bad correspondance LL -> TUR cell={0} corresponding_cell={1}",ItemPrinter(cell),ccell);
     }
     {
@@ -719,7 +735,7 @@ _testCellToNodeConnectivity3D()
       Real3 n = nodes_coord[top_upper_left];
       if (n.y<=cell_coord.y || n.x>=cell_coord.x || n.z<=cell_coord.z)
         ARCANE_FATAL("Bad topZUpperLeft node for cell={0}",ItemPrinter(cell));
-      if (cell!=ccell)
+      if (cell!=ccell && is_not_amr)
         ARCANE_FATAL("Bad correspondance TUL -> LR cell={0} corresponding_cell={1}",ItemPrinter(cell),ccell);
     }
     {
@@ -728,7 +744,7 @@ _testCellToNodeConnectivity3D()
       Real3 n = nodes_coord[top_upper_right];
       if (n.y<=cell_coord.y || n.x<=cell_coord.x || n.z<=cell_coord.z)
         ARCANE_FATAL("Bad topZUpperRight node for cell={0}",ItemPrinter(cell));
-      if (cell!=ccell)
+      if (cell!=ccell && is_not_amr)
         ARCANE_FATAL("Bad correspondance TUR -> LL cell={0} corresponding_cell={1}",ItemPrinter(cell),ccell);
     }
     {
@@ -737,7 +753,7 @@ _testCellToNodeConnectivity3D()
       Real3 n = nodes_coord[top_lower_right];
       if (n.y>=cell_coord.y || n.x<=cell_coord.x || n.z<=cell_coord.z)
         ARCANE_FATAL("Bad topZLowerRight node for cell={0}",ItemPrinter(cell));
-      if (cell!=ccell)
+      if (cell!=ccell && is_not_amr)
         ARCANE_FATAL("Bad correspondance TLR -> UL cell={0} corresponding_cell={1}",ItemPrinter(cell),ccell);
     }
     {
@@ -746,7 +762,7 @@ _testCellToNodeConnectivity3D()
       Real3 n = nodes_coord[top_lower_left];
       if (n.y>=cell_coord.y || n.x>=cell_coord.x || n.z<=cell_coord.z)
         ARCANE_FATAL("Bad topZLowerLeft node for cell={0}",ItemPrinter(cell));
-      if (cell!=ccell)
+      if (cell!=ccell && is_not_amr)
         ARCANE_FATAL("Bad correspondance TLL -> UR cell={0} corresponding_cell={1}",ItemPrinter(cell),ccell);
     }
   }
@@ -762,32 +778,50 @@ _testCellToNodeConnectivity2D()
   IMesh* mesh = m_mesh;
   VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
   CartesianConnectivity cc = m_cartesian_mesh->connectivity();
+  const bool is_not_amr = !m_is_amr;
   ENUMERATE_CELL(icell,mesh->allCells()){
     Cell cell = *icell;
     Real3 cell_coord = m_cell_center[icell];
+    info(4) << "cell_uid=" << cell.uniqueId()
+            << " UL=" << cc.upperLeftId(icell)
+            << " UR=" << cc.upperRightId(icell)
+            << " LR=" << cc.lowerRightId(icell)
+            << " LL=" << cc.lowerLeftId(icell);
     {
       Node upper_left = cc.upperLeft(cell);
+      Cell ccell = cc.lowerRight(upper_left);
       Real3 n = nodes_coord[upper_left];
       if (n.y<=cell_coord.y || n.x>=cell_coord.x)
         ARCANE_FATAL("Bad upperLeft node for cell={0} c={1} n={2}",ItemPrinter(cell),cell_coord,n);
+      if (cell!=ccell && is_not_amr)
+        ARCANE_FATAL("Bad correspondance UL -> LR cell={0} corresponding_cell={1}",ItemPrinter(cell),ccell);
     }
     {
       Node upper_right = cc.upperRight(cell);
+      Cell ccell = cc.lowerLeft(upper_right);
       Real3 n = nodes_coord[upper_right];
       if (n.y<=cell_coord.y || n.x<=cell_coord.x)
         ARCANE_FATAL("Bad upperRight node for cell={0} c={1} n={2}",ItemPrinter(cell),cell_coord,n);
+      if (cell!=ccell && is_not_amr)
+        ARCANE_FATAL("Bad correspondance UR -> LF cell={0} corresponding_cell={1}",ItemPrinter(cell),ccell);
     }
     {
       Node lower_right = cc.lowerRight(cell);
+      Cell ccell = cc.upperLeft(lower_right);
       Real3 n = nodes_coord[lower_right];
       if (n.y>=cell_coord.y || n.x<=cell_coord.x)
         ARCANE_FATAL("Bad lowerRight node for cell={0} c={1} n={2}",ItemPrinter(cell),cell_coord,n);
+      if (cell!=ccell && is_not_amr)
+        ARCANE_FATAL("Bad correspondance UL -> LR cell={0} corresponding_cell={1}",ItemPrinter(cell),ccell);
     }
     {
       Node lower_left = cc.lowerLeft(cell);
+      Cell ccell = cc.upperRight(lower_left);
       Real3 n = nodes_coord[lower_left];
       if (n.y>=cell_coord.y || n.x>=cell_coord.x)
         ARCANE_FATAL("Bad lowerLeft node for cell={0} c={1} n={2}",ItemPrinter(cell),cell_coord,n);
+      if (cell!=ccell && is_not_amr)
+        ARCANE_FATAL("Bad correspondance LL -> UR cell={0} corresponding_cell={1}",ItemPrinter(cell),ccell);
     }
   }
 }

@@ -127,6 +127,20 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
   virtual void refinePatch2D(Real2 position, Real2 length) = 0;
 
   /*!
+   * \brief Raffine en 3D un bloc du maillage cartésien.
+   *
+   * Cette méthode ne peut être appelée que si le maillage est un maillage
+   * AMR (IMesh::isAmrActivated()==true).
+   *
+   * Les mailles dont les positions des centres sont comprises entre
+   * \a position et \a (position+length) sont raffinées et les informations
+   * de connectivité correspondantes sont mises à jour.
+   *
+   * Cette opération est collective.
+   */
+  virtual void refinePatch3D(Real3 position, Real3 length) = 0;
+
+  /*!
    * \brief Renumérote les uniqueId() des entités.
    *
    * Suivant les valeurs de \a v, on renumérote les uniqueId() des faces et/ou 

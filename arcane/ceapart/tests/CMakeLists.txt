@@ -106,7 +106,9 @@ if (Lima_FOUND)
 endif()
 ARCANE_ADD_TEST_SEQUENTIAL(adiadvection-1 testAdiAdvection-1.arc "-m 20")
 arcane_add_test(amr-cartesian2D-1 testAMRCartesianMesh2D-1.arc "-m 20")
+arcane_add_test(amr-cartesian3D-1 testAMRCartesianMesh3D-1.arc "-m 20")
 arcane_add_test(amr-checkpoint-cartesian2D-1 testAMRCartesianMesh2D-1.arc -c 3 -m 5)
+arcane_add_test(amr-checkpoint-cartesian3D-1 testAMRCartesianMesh3D-1.arc -c 3 -m 5)
 
 # Tests sur le renumérotation des faces en cartésien
 # L'idéal est d'avoir pas mal de sous-domaines pour être sur que le

@@ -118,6 +118,7 @@ class CartesianMeshImpl
   ICartesianMeshPatch* patch(Integer index) const override { return m_amr_patches[index].get(); }
 
   void refinePatch2D(Real2 position,Real2 length) override;
+  void refinePatch3D(Real3 position,Real3 length) override;
 
   void renumberItemsUniqueId(const CartesianMeshRenumberingInfo& v) override;
 
@@ -150,6 +151,7 @@ class CartesianMeshImpl
 
   std::tuple<CellGroup,NodeGroup>
   _buildPatchGroups(const CellGroup& cells,Integer patch_level);
+  void _refinePatch(Real3 position,Real3 length,bool is_3d);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -499,16 +501,15 @@ _computeMeshDirection(CartesianMeshPatch& cdi,eMeshDirection dir,VariableCellRea
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshImpl::
-refinePatch2D(Real2 position,Real2 length)
+_refinePatch(Real3 position,Real3 length,bool is_3d)
 {
   VariableNodeReal3& nodes_coord = m_mesh->nodesCoordinates();
   UniqueArray<Int32> cells_local_id;
   // Parcours les mailles actives et ajoute dans la liste des mailles
   // à raffiner celles qui sont contenues dans le boîte englobante
   // spécifiée dans le jeu de données.
-  info() << "REFINEMENT ..." << position << " L=" << length;
-  Real2 min_pos = position;
-  Real2 max_pos = min_pos + length;
+  Real3 min_pos = position;
+  Real3 max_pos = min_pos + length;
   cells_local_id.clear();
   ENUMERATE_CELL(icell,m_mesh->allActiveCells()){
     Cell cell = *icell;
@@ -516,11 +517,36 @@ refinePatch2D(Real2 position,Real2 length)
     for( NodeEnumerator inode(cell.nodes()); inode.hasNext(); ++inode )
       center += nodes_coord[inode];
     center /= cell.nbNode();
-    if (center.x>min_pos.x && center.x<max_pos.x && center.y>min_pos.y && center.y<max_pos.y)
+    bool is_inside_x = center.x>min_pos.x && center.x<max_pos.x;
+    bool is_inside_y = center.y>min_pos.y && center.y<max_pos.y;
+    bool is_inside_z = (center.z>min_pos.z && center.z<max_pos.z) || !is_3d;
+    if (is_inside_x && is_inside_y && is_inside_z)
       cells_local_id.add(icell.itemLocalId());
   }
   _applyRefine(cells_local_id);
   _saveInfosInProperties();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshImpl::
+refinePatch2D(Real2 position,Real2 length)
+{
+  info() << "REFINEMENT 2D position=" << position << " length=" << length;
+  Real3 position_3d(position.x,position.y,0.0);
+  Real3 length_3d(length.x,length.y,0.0);
+  _refinePatch(position_3d,length_3d,false);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshImpl::
+refinePatch3D(Real3 position,Real3 length)
+{
+  info() << "REFINEMENT 3D position=" << position << " length=" << length;
+  _refinePatch(position,length,true);
 }
 
 /*---------------------------------------------------------------------------*/
