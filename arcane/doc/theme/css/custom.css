@@ -96,11 +96,12 @@ dl.deprecated dd {
  * Permet d'ajouter des lignes de niveaux dans le nav-tree.
  */
 #nav-tree .arrow {
-  width: 65px !important;
-  margin-left: -50px;
+  /* Il est nécessaire de manipuler la marge et la largeur
+  pour que le bouton collapse soit plus grand. */
+  width: 95px !important;
+  margin-left: -80px;
   padding-left: 0px !important;
 }
-
 #nav-tree .children_ul {
   margin-left: 20px;
   border-left-color: var(--separator-color);
