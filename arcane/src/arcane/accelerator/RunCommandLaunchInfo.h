@@ -81,6 +81,9 @@ class ARCANE_ACCELERATOR_EXPORT RunCommandLaunchInfo
   //! Calcul le nombre de block/thread/grille du noyau en fonction de \a full_size
   ThreadBlockInfo computeThreadBlockInfo(Int64 full_size) const;
 
+  //! Calcul les informations pour les boucles multi-thread
+  ParallelLoopOptions computeParallelLoopOptions(Int64 full_size) const;
+
  public:
 
   void* _internalStreamImpl();

@@ -75,7 +75,7 @@ _applyGenericLoop(RunCommand& command,LoopBoundType<N> bounds,const Lambda& func
     break;
   case eExecutionPolicy::Thread:
     launch_info.beginExecute();
-    arcaneParallelFor(bounds,func);
+    arcaneParallelFor(bounds,launch_info.computeParallelLoopOptions(vsize),func);
     break;
   default:
     ARCANE_FATAL("Invalid execution policy '{0}'",exec_policy);

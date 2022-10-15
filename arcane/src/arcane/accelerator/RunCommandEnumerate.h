@@ -103,7 +103,8 @@ _applyItems(RunCommand& command,ItemVectorViewT<ItemType> items,const Lambda& fu
   case eExecutionPolicy::Thread:
     {
       launch_info.beginExecute();
-      arcaneParallelForeach(items,
+      ForLoopTraceInfo lti(command.traceInfo(),command.kernelName());
+      arcaneParallelForeach(items,launch_info.computeParallelLoopOptions(vsize),lti,
                             [&](ItemVectorViewT<ItemType> sub_items)
                             {
                               impl::_doIndirectThreadLambda(sub_items,func);

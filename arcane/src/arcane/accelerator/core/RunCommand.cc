@@ -18,6 +18,7 @@
 #include "arcane/utils/IMemoryAllocator.h"
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/NumArray.h"
+#include "arcane/utils/ConcurrencyUtils.h"
 
 #include "arcane/accelerator/core/RunQueueImpl.h"
 #include "arcane/accelerator/core/RunQueue.h"
@@ -201,6 +202,7 @@ class RunCommandImpl
   TraceInfo m_trace_info;
   String m_kernel_name;
   Int32 m_nb_thread_per_block = 0;
+  ParallelLoopOptions m_parallel_loop_options;
 
   // NOTE: cette pile gère la mémoire associé à un seul runtime
   // Si on souhaite un jour supporté plusieurs runtimes il faudra une pile
@@ -273,6 +275,7 @@ reset()
   m_kernel_name = String();
   m_trace_info = TraceInfo();
   m_nb_thread_per_block = 0;
+  m_parallel_loop_options = TaskFactory::defaultParallelLoopOptions();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -328,7 +331,9 @@ _allocateGridDataMemory()
   auto mem_view = makeMutableMemoryView(m_grid_buffer.to1DSpan());
   m_grid_memory_info.m_grid_memory_values = mem_view;
   // Indique qu'on va utiliser cette zone mémoire uniquement sur le device.
-  m_command->m_queue->runner()->setMemoryAdvice(mem_view, eMemoryAdvice::PreferredLocationDevice);
+  Runner* runner = m_command->m_queue->runner();
+  runner->setMemoryAdvice(mem_view,eMemoryAdvice::PreferredLocationDevice);
+  runner->setMemoryAdvice(mem_view,eMemoryAdvice::AccessedByHost);
   //std::cout << "RESIZE GRID t=" << total_size << "\n";
 }
 
@@ -433,6 +438,24 @@ addNbThreadPerBlock(Int32 v)
     v = 32;
   m_p->m_nb_thread_per_block = v;
   return *this;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunCommand::
+setParallelLoopOptions(const ParallelLoopOptions& opt)
+{
+  m_p->m_parallel_loop_options = opt;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+const ParallelLoopOptions& RunCommand::
+parallelLoopOptions() const
+{
+  return m_p->m_parallel_loop_options;
 }
 
 /*---------------------------------------------------------------------------*/
