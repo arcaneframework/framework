@@ -35,6 +35,7 @@
 #include "arcane/utils/Property.h"
 #include "arcane/utils/ParameterListPropertyReader.h"
 #include "arcane/utils/CommandLineArguments.h"
+#include "arcane/utils/ConcurrencyUtils.h"
 
 #include "arcane/impl/ArcaneMain.h"
 #include "arcane/impl/ParallelReplication.h"
@@ -929,9 +930,9 @@ _createAndRunSubDomain(SubInfo* sub_info,Ref<IParallelMng> pm,Ref<IParallelMng> 
     {
       Real init_time = init_timer.totalTime();
       Real loop_time = loop_timer.totalTime();
-      trace->info() << "TotalReel = " << (init_time+loop_time)
-                    << " secondes (init: "
-                    << init_time << "  loop: " << loop_time << " )";
+      trace->info(0) << "TotalReel = " << (init_time+loop_time)
+                     << " secondes (init: "
+                     << init_time << "  loop: " << loop_time << " )";
     }
     {
       Timer::Action ts_action(sub_domain,"Exit");
@@ -985,6 +986,13 @@ _printStats(ISubDomain* sub_domain,ITraceMng* trace,ITimeStats* time_stat)
   }
   Real n = ((Real)nb_cell);
   trace->info() << "NB_CELL=" << nb_cell << " nb_loop=" << nb_loop;
+  {
+    OStringStream ostr;
+    TaskFactory::printExecutionStats(ostr());
+    String str = ostr.str();
+    if (!str.empty())
+      trace->info() << "TaskStatistics:\n" << str;
+  }
   {
     bool use_elapsed_time = true;
     if (!platform::getEnvironmentVariable("ARCANE_USE_REAL_TIMER").null())

@@ -373,7 +373,14 @@ class ARCANE_UTILS_EXPORT ITaskImplementation
   //! Valeurs par défaut d'exécution d'une boucle parallèle
   virtual const ParallelLoopOptions& defaultParallelLoopOptions() =0;
 
+  //! Affiche les informations sur le runtime utilisé
   virtual void printInfos(std::ostream& o) const =0;
+
+  //! Positionne le niveau de conservation des statistiques d'exécution (0 si aucune)
+  virtual void setExecutionStatLevel(Int32 stat_level) =0;
+
+  //! Affiche sur le flot \a o les statistiques d'exécution
+  virtual void printExecutionStats(std::ostream& o) const =0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -528,17 +535,21 @@ class ARCANE_UTILS_EXPORT TaskFactory
   }
 
  public:
+
   //! Positionne les valeurs par défaut d'exécution d'une boucle parallèle
   static void setDefaultParallelLoopOptions(const ParallelLoopOptions& v)
   {
     m_impl->setDefaultParallelLoopOptions(v);
   }
+
   //! Valeurs par défaut d'exécution d'une boucle parallèle
   static const ParallelLoopOptions& defaultParallelLoopOptions()
   {
     return m_impl->defaultParallelLoopOptions();
   }
+
  public:
+
   /*!
    * \brief Indique si les tâches sont actives.
    * Les tâches sont actives si une implémentation est disponible et si le nombre
@@ -589,20 +600,47 @@ class ARCANE_UTILS_EXPORT TaskFactory
 
  public:
 
-  //! Positionne le niveau de verbosité (0 pour pas d'affichage, 1 par défaut)
+  //! Positionne le niveau de verbosité (0 pour pas d'affichage qui est le défaut)
   static void setVerboseLevel(Integer v) { m_verbose_level = v; }
 
   //! Niveau de verbosité
   static Integer verboseLevel() { return m_verbose_level; }
 
+  /*!
+   * \brief Positionne le niveau de conservation des statistiques d'exécution.
+   *
+   * Si \a stat_level vaut 0 (le défaut), alors on ne conserve aucune statistique
+   * d'exécution. Si la valeur est positive, on conserve les statistiques.
+   * La récupération des statistiques d'exécution peut avoir un impact sur les
+   * performances.
+   */
+  static void setExecutionStatLevel(Int32 stat_level)
+  {
+    m_execution_stat_level = stat_level;
+    m_impl->setExecutionStatLevel(stat_level);
+  }
+
+  //! Niveau de conservation des statistiques d'exécution
+  static Int32 executionStatLevel() { return m_execution_stat_level; }
+
+  //! Affiche sur le flot \a o les statistiques d'exécution
+  static void printExecutionStats(std::ostream& o)
+  {
+    m_impl->printExecutionStats(o);
+  }
+
  public:
+
   //! \internal
-  static void setImplementation(ITaskImplementation* task_impl);
+  static void _internalSetImplementation(ITaskImplementation* task_impl);
+
  private:
+
   static ITaskImplementation* m_impl;
   static IObservable* m_created_thread_observable;
   static IObservable* m_destroyed_thread_observable;
-  static Integer m_verbose_level;
+  static Int32 m_verbose_level;
+  static Int32 m_execution_stat_level;
 };
 
 /*---------------------------------------------------------------------------*/

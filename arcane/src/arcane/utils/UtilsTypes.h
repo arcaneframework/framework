@@ -186,6 +186,21 @@ class MutableMemoryView;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+// Dans ConcurrencyUtils.h
+
+class ParallelLoopOptions;
+class TaskContext;
+class ITaskFunctor;
+template<typename InstanceType>
+class TaskFunctor;
+template<typename InstanceType>
+class TaskFunctorWithContext;
+class ITask;
+class ITaskImplementation;
+class TaskFactory;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 //! Classe pour un tableau dynamique de rang RankValue
 template<int RankValue>
