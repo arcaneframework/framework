@@ -453,12 +453,14 @@ class TBBTaskImplementation
     return t;
   }
 
-  void executeParallelFor(Integer begin,Integer size,const ParallelLoopOptions& options,IRangeFunctor* f) final;
-  void executeParallelFor(Integer begin,Integer size,Integer grain_size,IRangeFunctor* f) final;
-  void executeParallelFor(Integer begin,Integer size,IRangeFunctor* f) final
+  void executeParallelFor(Int32 begin,Int32 size,const ParallelLoopOptions& options,IRangeFunctor* f) final;
+  void executeParallelFor(Int32 begin,Int32 size,Integer grain_size,IRangeFunctor* f) final;
+  void executeParallelFor(Int32 begin,Int32 size,IRangeFunctor* f) final
   {
     executeParallelFor(begin,size,m_default_loop_options,f);
   }
+  void executeParallelFor(const ParallelFor1DLoopInfo& loop_info) override;
+
   void executeParallelFor(const ComplexLoopRanges<1>& loop_ranges,
                           const ParallelLoopOptions& options,
                           IMDRangeFunctor<1>* functor) final
@@ -1087,8 +1089,13 @@ printInfos(std::ostream& o) const
 /*---------------------------------------------------------------------------*/
 
 void TBBTaskImplementation::
-executeParallelFor(Integer begin,Integer size,const ParallelLoopOptions& options,IRangeFunctor* f)
+executeParallelFor(const ParallelFor1DLoopInfo& loop_info)
 {
+  Int32 begin = loop_info.beginIndex();
+  Int32 size = loop_info.size();
+  ParallelLoopOptions options = loop_info.options().value_or(m_default_loop_options);
+  IRangeFunctor* f = loop_info.functor();
+
   if (TaskFactory::verboseLevel()>=1)
     std::cout << "TBB: TBBTaskImplementation executeParallelFor begin=" << begin << " size=" << size << '\n';
   Integer max_thread = options.maxThread();
@@ -1175,7 +1182,16 @@ executeParallelFor(Integer begin,Integer size,Integer grain_size,IRangeFunctor* 
 {
   ParallelLoopOptions opt(m_default_loop_options);
   opt.setGrainSize(grain_size);
-  executeParallelFor(begin,size,opt,f);
+  executeParallelFor(ParallelFor1DLoopInfo(begin,size,opt,f));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void TBBTaskImplementation::
+executeParallelFor(Integer begin,Integer size,const ParallelLoopOptions& options,IRangeFunctor* f)
+{
+  executeParallelFor(ParallelFor1DLoopInfo(begin,size,options,f));
 }
 
 /*---------------------------------------------------------------------------*/

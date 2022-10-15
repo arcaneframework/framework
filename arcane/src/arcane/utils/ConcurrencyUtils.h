@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ConcurrencyUtils.h                                          (C) 2000-2021 */
+/* ConcurrencyUtils.h                                          (C) 2000-2022 */
 /*                                                                           */
 /* Classes gérant la concurrence (tâches, boucles parallèles, ...)           */
 /*---------------------------------------------------------------------------*/
@@ -17,6 +17,9 @@
 #include "arcane/utils/UtilsTypes.h"
 #include "arcane/utils/RangeFunctor.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/ForLoopTraceInfo.h"
+
+#include <optional>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -294,6 +297,47 @@ class ARCANE_UTILS_EXPORT ITask
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \brief Caractéristiques d'un boucle 1D multi-thread.
+ *
+ * Cette classe permet de spécifier les options d'une boucle à paralléliser
+ * en mode multi-thread.
+ */
+class ARCANE_UTILS_EXPORT ParallelFor1DLoopInfo
+{
+ public:
+
+ using ThatClass = ParallelFor1DLoopInfo;
+
+ public:
+
+  ParallelFor1DLoopInfo(Int32 begin,Int32 size,IRangeFunctor* functor)
+  : m_begin(begin), m_size(size), m_functor(functor) {}
+  ParallelFor1DLoopInfo(Int32 begin,Int32 size,
+                        const ParallelLoopOptions& options,IRangeFunctor* functor)
+  : m_begin(begin), m_size(size), m_options(options), m_functor(functor) {}
+
+ public:
+
+  Int32 beginIndex() const { return m_begin; }
+  Int32 size() const { return m_size; }
+  std::optional<ParallelLoopOptions> options() const { return m_options; }
+  ThatClass& addOptions(const ParallelLoopOptions& v) { m_options = v; return (*this); }
+  const ForLoopTraceInfo& traceInfo() const { return m_trace_info; }
+  ThatClass& addTraceInfo(const ForLoopTraceInfo& v) { m_trace_info = v; return (*this); }
+  IRangeFunctor* functor() const { return m_functor; }
+
+ private:
+
+  Int32 m_begin = 0;
+  Int32 m_size = 0;
+  std::optional<ParallelLoopOptions> m_options;
+  ForLoopTraceInfo m_trace_info;
+  IRangeFunctor* m_functor = nullptr;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \internal
  * \brief Implémentation d'une fabrique de tâches.
  *
@@ -337,6 +381,9 @@ class ARCANE_UTILS_EXPORT ITaskImplementation
 
   //! Exécute le fonctor \a f en concurrence.
   virtual void executeParallelFor(Integer begin,Integer size,IRangeFunctor* f) =0;
+
+  //! Exécute la boucle \a loop_info en concurrence.
+  virtual void executeParallelFor(const ParallelFor1DLoopInfo& loop_info) =0;
 
   //! Exécute une boucle 1D en concurrence
   virtual void executeParallelFor(const ComplexLoopRanges<1>& loop_ranges,
