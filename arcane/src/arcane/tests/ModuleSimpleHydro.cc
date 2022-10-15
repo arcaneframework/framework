@@ -278,6 +278,8 @@ hydroExit()
 void ModuleSimpleHydro::
 hydroStartInit()
 {
+  TaskFactory::setExecutionStatLevel(2);
+
 #if 0
   {
     Integer index = 0;
@@ -498,7 +500,8 @@ computeVelocity()
 void ModuleSimpleHydro::
 computeViscosityWork()
 {
-  arcaneParallelForeach(allCells(),this,&ModuleSimpleHydro::_computeViscosityWork);
+  ForLoopTraceInfo fti(A_FUNCINFO,"computeViscosityWork");
+  arcaneParallelForeach(allCells(),fti,this,&ModuleSimpleHydro::_computeViscosityWork);
 }
 
 void ModuleSimpleHydro::
@@ -600,7 +603,8 @@ updateDensity()
 void ModuleSimpleHydro::
 applyEquationOfState()
 {
-  arcaneParallelForeach(allCells(),this,&ModuleSimpleHydro::_applyEquationOfState);
+  ForLoopTraceInfo fti(A_FUNCINFO,"applyEquationOfState");
+  arcaneParallelForeach(allCells(),fti,this,&ModuleSimpleHydro::_applyEquationOfState);
 }
 
 void ModuleSimpleHydro::
@@ -806,7 +810,8 @@ computeCQs(Real3 node_coord[8],Real3 face_coord[6],const Cell& cell)
 void ModuleSimpleHydro::
 computeGeometricValues()
 {
-  arcaneParallelForeach(allCells(),this,&ModuleSimpleHydro::_computeGeometricValues);
+  ForLoopTraceInfo fti(A_FUNCINFO,"computeGeometricValues");
+  arcaneParallelForeach(allCells(),fti,this,&ModuleSimpleHydro::_computeGeometricValues);
 }
 
 /*---------------------------------------------------------------------------*/

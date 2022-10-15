@@ -315,6 +315,13 @@ class ARCANE_UTILS_EXPORT ParallelFor1DLoopInfo
   ParallelFor1DLoopInfo(Int32 begin,Int32 size,
                         const ParallelLoopOptions& options,IRangeFunctor* functor)
   : m_begin(begin), m_size(size), m_options(options), m_functor(functor) {}
+  ParallelFor1DLoopInfo(Int32 begin,Int32 size, Int32 block_size,IRangeFunctor* functor)
+  : m_begin(begin), m_size(size), m_functor(functor)
+  {
+    ParallelLoopOptions opts;
+    opts.setGrainSize(block_size);
+    m_options = opts;
+  }
 
  public:
 
@@ -511,6 +518,12 @@ class ARCANE_UTILS_EXPORT TaskFactory
   static void executeParallelFor(Integer begin,Integer size,IRangeFunctor* f)
   {
     m_impl->executeParallelFor(begin,size,f);
+  }
+
+  //! Exécute la boucle \a loop_info en concurrence.
+  static void executeParallelFor(const ParallelFor1DLoopInfo& loop_info)
+  {
+    m_impl->executeParallelFor(loop_info);
   }
 
   //! Exécute une boucle simple
