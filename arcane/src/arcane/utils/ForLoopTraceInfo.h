@@ -35,17 +35,27 @@ class ARCANE_UTILS_EXPORT ForLoopTraceInfo
   ForLoopTraceInfo() = default;
   ForLoopTraceInfo(const TraceInfo& trace_info)
   : m_trace_info(trace_info)
-  {}
+  , m_is_valid(true)
+  {
+  }
   ForLoopTraceInfo(const TraceInfo& trace_info, const String& loop_name)
   : m_trace_info(trace_info)
   , m_loop_name(loop_name)
+  , m_is_valid(true)
   {
   }
+
+ public:
+
+  const TraceInfo& traceInfo() const { return m_trace_info; }
+  const String& loopName() const { return m_loop_name; }
+  bool isValid() const { return m_is_valid; }
 
  private:
 
   TraceInfo m_trace_info;
   String m_loop_name;
+  bool m_is_valid = false;
 };
 
 /*---------------------------------------------------------------------------*/

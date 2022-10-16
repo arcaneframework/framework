@@ -67,6 +67,11 @@
 
 #endif // ARCANE_USE_ONETBB
 
+// Pour les statistiques
+#include <vector>
+#include <map>
+#include <iomanip>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -96,6 +101,17 @@ bool isStatActive()
   return global_do_stat_level > 0;
 }
 
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace impl
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 struct LoopStatInfo
 {
  public:
@@ -118,11 +134,15 @@ struct LoopStatInfo
 
   void merge(const LoopStatInfo* s)
   {
-    if (s){
-      m_nb_parallel_for += s->m_nb_parallel_for;
-      m_nb_internal_parallel_for += s->m_nb_internal_parallel_for;
-      m_total_time += s->m_total_time;
-    }
+    if (s)
+      merge(*s);
+  }
+
+  void merge(const LoopStatInfo& s)
+  {
+    m_nb_parallel_for += s.m_nb_parallel_for;
+    m_nb_internal_parallel_for += s.m_nb_internal_parallel_for;
+    m_total_time += s.m_total_time;
   }
 
   void printInfos(std::ostream& o)
@@ -135,10 +155,10 @@ struct LoopStatInfo
     double x = static_cast<double>(total_time);
     double x1 = 0.0;
     if (nb_parallel_for>0)
-      x1 = x / nb_parallel_for;
+      x1 = x / static_cast<double>(nb_parallel_for);
     double x2 = 0.0;
     if (nb_internal_parallel_for>0)
-      x2 = x / nb_internal_parallel_for;
+      x2 = x / static_cast<double>(nb_internal_parallel_for);
     o << "GLOBAL_TIME (ms) =" <<  x / 1.0e6 << "\n";
     o << "GLOBAL_NB_THREAD_LOOP=" <<  nb_parallel_for << " time=" << x1 << "\n";
     o << "GLOBAL_NB_INTERNAL_THREAD_LOOP=" <<  nb_internal_parallel_for << " time=" << x2 << "\n";
@@ -154,6 +174,9 @@ struct LoopStatInfo
 };
 
 LoopStatInfo global_stat;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 struct ScopedStatLoop
 {
@@ -181,6 +204,112 @@ struct ScopedStatLoop
   double m_begin_time = 0.0;
   LoopStatInfo* m_stat_info = nullptr;
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+// TODO Utiliser un hash pour le map plutôt qu'une String pour accélérer les comparaisons
+
+class StatInfoList
+{
+ public:
+
+  void merge(const LoopStatInfo& loop_stat_info,const ForLoopTraceInfo& loop_trace_info)
+  {
+    global_stat.merge(loop_stat_info);
+    if (!loop_trace_info.isValid())
+      return;
+    String loop_name = loop_trace_info.loopName();
+    if (loop_name.empty())
+      loop_name = loop_trace_info.traceInfo().name();
+    m_stat_map[loop_name].merge(loop_stat_info);
+  }
+
+  void print(std::ostream& o)
+  {
+    o << "TaskStat\n";
+    o << std::setw(10) << "Nloop" << std::setw(10) << "Nchunk" << std::setw(11) << " T (us)\n";
+    Int64 cumulative_total = 0;
+    for(const auto& x : m_stat_map){
+      const LoopStatInfo& s = x.second;
+      o << std::setw(10) << s.m_nb_parallel_for << std::setw(10) << s.m_nb_internal_parallel_for
+        << std::setw(10) << s.m_total_time/1000 << "  " << x.first << "\n";
+      cumulative_total += s.m_total_time;
+    }
+    o << "TOTAL=" << cumulative_total / 1000000 << "\n";
+  }
+
+ private:
+
+  std::map<String,LoopStatInfo> m_stat_map;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class AllStatInfoList
+{
+ public:
+
+  StatInfoList* createStatInfoList()
+  {
+    std::lock_guard<std::mutex> lk(m_mutex);
+    std::unique_ptr<StatInfoList> x(new StatInfoList);
+    StatInfoList* ptr = x.get();
+    m_stat_info_list_vector.push_back(std::move(x));
+    return ptr;
+  }
+
+  void print(std::ostream& o)
+  {
+    for(const auto& x : m_stat_info_list_vector)
+      x->print(o);
+  }
+
+ public:
+
+  std::mutex m_mutex;
+  std::vector<std::unique_ptr<StatInfoList>> m_stat_info_list_vector;
+};
+AllStatInfoList global_all_stat_info_list;
+
+// Permet de gérer une instance de StatInfoList par thread pour éviter les verroux
+class ThreadLocalStatInfo
+{
+ public:
+  StatInfoList* statInfoList()
+  {
+    return _createOrGetStatInfoList();
+  }
+  void merge(const LoopStatInfo& stat_info,const ForLoopTraceInfo& trace_info)
+  {
+    StatInfoList* stat_list = _createOrGetStatInfoList();
+    stat_list->merge(stat_info,trace_info);
+  }
+ private:
+  StatInfoList* _createOrGetStatInfoList()
+  {
+    if (!m_stat_info_list)
+      m_stat_info_list = global_all_stat_info_list.createStatInfoList();
+    return m_stat_info_list;
+  }
+ private:
+  StatInfoList* m_stat_info_list;
+};
+thread_local ThreadLocalStatInfo thread_local_stat_info;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace impl
+
+using impl::LoopStatInfo;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace
+{
 
 inline int _currentTaskTreadIndex()
 {
@@ -531,7 +660,8 @@ class TBBTaskImplementation
 
   void printExecutionStats(std::ostream& o) const override
   {
-    global_stat.printInfos(o);
+    impl::global_stat.printInfos(o);
+    impl:: global_all_stat_info_list.print(o);
   }
 
  public:
@@ -735,7 +865,7 @@ class TBBTaskImplementation::Impl
     m_sub_arena_list[0] = m_sub_arena_list[1] = nullptr;
     for( Integer i=2; i<max_arena_size; ++i )
       m_sub_arena_list[i] = new tbb::task_arena(i);
-    global_stat.reset();
+    impl::global_stat.reset();
   }
 };
 
@@ -971,7 +1101,7 @@ class TBBTaskImplementation::ParallelForExecute
                 << " size=" << m_size << " gsize=" << gsize
                 << " partitioner=" << (int)m_options.partitioner() << '\n';
 
-    ScopedStatLoop scoped_loop(m_stat_info);
+    impl::ScopedStatLoop scoped_loop(m_stat_info);
 
     if (gsize>0)
       range = tbb::blocked_range<Integer>(m_begin,m_begin+m_size,gsize);
@@ -1007,7 +1137,7 @@ class TBBTaskImplementation::MDParallelForExecute
   MDParallelForExecute(TBBTaskImplementation* impl,
                        const ParallelLoopOptions& options,
                        const ComplexLoopRanges<RankValue>& range,
-                       IMDRangeFunctor<RankValue>* f,LoopStatInfo* stat_info)
+                       IMDRangeFunctor<RankValue>* f,[[maybe_unused]] LoopStatInfo* stat_info)
   : m_impl(impl), m_tbb_range(_toTBBRange(range)), m_functor(f), m_options(options)
   {
     // On ne peut pas modifier les valeurs d'une instance de tbb::blocked_rangeNd.
@@ -1027,7 +1157,7 @@ class TBBTaskImplementation::MDParallelForExecute
   {
     Integer nb_thread = m_options.maxThread();
     TBBMDParallelFor<RankValue> pf(m_functor,nb_thread,m_stat_info);
-    ScopedStatLoop scoped_loop(m_stat_info);
+    impl::ScopedStatLoop scoped_loop(m_stat_info);
 
     if (m_options.partitioner()==ParallelLoopOptions::Partitioner::Static){
       tbb::parallel_for(m_tbb_range,pf,tbb::static_partitioner());
@@ -1148,7 +1278,8 @@ executeParallelFor(const ParallelFor1DLoopInfo& loop_info)
   if (!used_arena)
     used_arena = &(m_p->m_main_arena);
   used_arena->execute(pfe);
-  global_stat.merge(stat_info_ptr);
+  if (stat_info_ptr)
+    impl::thread_local_stat_info.merge(*stat_info_ptr,loop_info.traceInfo());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1205,7 +1336,8 @@ _executeMDParallelFor(const ComplexLoopRanges<RankValue>& loop_ranges,
     MDParallelForExecute<RankValue> pfe(this,true_options,loop_ranges,functor,stat_info_ptr);
     used_arena->execute(pfe);
   }
-  global_stat.merge(stat_info_ptr);
+  if (stat_info_ptr)
+    impl::thread_local_stat_info.merge(*stat_info_ptr,ForLoopTraceInfo());
 }
 
 /*---------------------------------------------------------------------------*/
