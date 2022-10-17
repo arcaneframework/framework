@@ -112,6 +112,8 @@ class ARCANE_UTILS_EXPORT ParallelLoopOptions
     m_max_thread = v;
     m_flags |= SF_MaxThread;
   }
+  //! Indique si maxThread() est positionné
+  bool hasMaxThread() const { return m_flags & SF_MaxThread; }
 
   //! Taille d'un intervalle d'itération.
   Integer grainSize() const { return m_grain_size; }
@@ -121,6 +123,8 @@ class ARCANE_UTILS_EXPORT ParallelLoopOptions
     m_grain_size = v;
     m_flags |= SF_GrainSize;
   }
+  //! Indique si grainSize() est positionné
+  bool hasGrainSize() const { return m_flags & SF_GrainSize; }
 
   //! Type du partitionneur
   Partitioner partitioner() const { return m_partitioner; }
@@ -130,16 +134,19 @@ class ARCANE_UTILS_EXPORT ParallelLoopOptions
     m_partitioner = v;
     m_flags |= SF_Partitioner;
   }
+  //! Indique si grainSize() est positionné
+  bool hasPartitioner() const { return m_flags & SF_Partitioner; }
 
  public:
-  //! Fusionne les valeurs non modifiées de l'instance par celles de \a po.
+
+ //! Fusionne les valeurs non modifiées de l'instance par celles de \a po.
   void mergeUnsetValues(const ParallelLoopOptions& po)
   {
-    if (!(m_flags & SF_MaxThread))
+    if (!hasMaxThread())
       setMaxThread(po.maxThread());
-    if (!(m_flags & SF_GrainSize))
+    if (!hasGrainSize())
       setGrainSize(po.grainSize());
-    if (!(m_flags & SF_Partitioner))
+    if (!hasPartitioner())
       setPartitioner(po.partitioner());
  }
  private:
