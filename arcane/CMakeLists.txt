@@ -783,6 +783,13 @@ endif ()
 set(ARCANE_OPTIONAL_LIBRARIES)
 
 # ----------------------------------------------------------------------------
+# Regarde si les compteurs 'perf' sont disponibles
+if (UNIX)
+  try_compile(ARCANE_HAS_LINUX_PERF_COUNTERS ${CMAKE_CURRENT_BINARY_DIR} ${Arcane_SOURCE_DIR}/cmake/test_linux_perf_syscall.cc)
+  message(STATUS "Check: perf_event syscalls are available? = ${ARCANE_HAS_LINUX_PERF_COUNTERS}")
+  set(ARCANE_HAS_LINUX_PERF_COUNTERS ${ARCANE_HAS_LINUX_PERF_COUNTERS} CACHE BOOL "Is linux perf counters are availables" FORCE)
+endif()
+
 # Regarde si les 'hooks' mémoire de 'malloc.h' de la glibc sous linux
 # sont disponibles
 if (UNIX)

@@ -109,6 +109,14 @@ if(DbgHelp_FOUND)
     )
 endif()
 
+if (ARCANE_HAS_LINUX_PERF_COUNTERS)
+  list(APPEND ARCANE_SOURCES
+    LinuxPerfPerformanceCounterService.cc
+    )
+endif()
+
+# ----------------------------------------------------------------------------
+
 arcane_add_library(arcane_std
   INPUT_PATH ${Arcane_SOURCE_DIR}/src
   RELATIVE_PATH arcane/std
