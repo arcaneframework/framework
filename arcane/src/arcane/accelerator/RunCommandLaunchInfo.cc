@@ -127,6 +127,28 @@ computeThreadBlockInfo(Int64 full_size) const -> ThreadBlockInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+ParallelLoopOptions RunCommandLaunchInfo::
+computeParallelLoopOptions(Int64 full_size) const
+{
+  ParallelLoopOptions opt = m_command.parallelLoopOptions();
+  const bool use_dynamic_compute = false;
+  // Calcule une taille de grain par défaut si cela n'est pas renseigné dans
+  // les options
+  if (use_dynamic_compute && opt.grainSize()==0){
+    Int32 nb_thread = opt.maxThread();
+    if (nb_thread<=0)
+      nb_thread = TaskFactory::nbAllowedThread();
+    if (nb_thread<=0)
+      nb_thread = 1;
+    Int32 grain_size = static_cast<Int32>((double)full_size / (nb_thread * 10.0));
+    opt.setGrainSize(grain_size);
+  }
+  return opt;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/

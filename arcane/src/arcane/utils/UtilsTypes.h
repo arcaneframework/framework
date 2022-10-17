@@ -186,6 +186,22 @@ class MutableMemoryView;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+// Dans ConcurrencyUtils.h
+
+class ParallelLoopOptions;
+class ParallelFor1DLoopInfo;
+class TaskContext;
+class ITaskFunctor;
+template<typename InstanceType>
+class TaskFunctor;
+template<typename InstanceType>
+class TaskFunctorWithContext;
+class ITask;
+class ITaskImplementation;
+class TaskFactory;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 //! Classe pour un tableau dynamique de rang RankValue
 template<int RankValue>
@@ -253,10 +269,18 @@ template<A_MDRANK_TYPE(RankValue)> class ArrayExtentsBase;
 template<A_MDRANK_TYPE(RankValue)> class ArrayExtents;
 template<int RankValue> class ArrayStridesBase;
 template<A_MDRANK_TYPE(RankValue),typename LayoutType> class ArrayExtentsWithOffset;
-class LoopRange;
-template<int RankValue> class SimpleLoopRanges;
-template<int RankValue> class ComplexLoopRanges;
+class ForLoopRange;
+template<int RankValue> class SimpleForLoopRanges;
+template<int RankValue> class ComplexForLoopRanges;
 template<int RankValue> class IMDRangeFunctor;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+// Pour compatibilité avec l'existant
+using LoopRange = ForLoopRange;
+template<int RankValue> using SimpleLoopRanges = SimpleForLoopRanges<RankValue>;
+template<int RankValue> using ComplexLoopRanges = ComplexForLoopRanges<RankValue>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

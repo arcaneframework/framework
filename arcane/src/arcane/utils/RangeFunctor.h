@@ -100,7 +100,7 @@ class LambdaMDRangeFunctor
  
  public:
   
-  void executeFunctor(const ComplexLoopRanges<RankValue>& loop_range) override
+  void executeFunctor(const ComplexForLoopRanges<RankValue>& loop_range) override
   {
     m_lambda_function(loop_range);
   }

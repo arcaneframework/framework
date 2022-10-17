@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ConcurrencyUtils.h                                          (C) 2000-2021 */
+/* ConcurrencyUtils.h                                          (C) 2000-2022 */
 /*                                                                           */
 /* Classes gérant la concurrence (tâches, boucles parallèles, ...)           */
 /*---------------------------------------------------------------------------*/
@@ -17,6 +17,9 @@
 #include "arcane/utils/UtilsTypes.h"
 #include "arcane/utils/RangeFunctor.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/ForLoopTraceInfo.h"
+
+#include <optional>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -109,6 +112,8 @@ class ARCANE_UTILS_EXPORT ParallelLoopOptions
     m_max_thread = v;
     m_flags |= SF_MaxThread;
   }
+  //! Indique si maxThread() est positionné
+  bool hasMaxThread() const { return m_flags & SF_MaxThread; }
 
   //! Taille d'un intervalle d'itération.
   Integer grainSize() const { return m_grain_size; }
@@ -118,6 +123,8 @@ class ARCANE_UTILS_EXPORT ParallelLoopOptions
     m_grain_size = v;
     m_flags |= SF_GrainSize;
   }
+  //! Indique si grainSize() est positionné
+  bool hasGrainSize() const { return m_flags & SF_GrainSize; }
 
   //! Type du partitionneur
   Partitioner partitioner() const { return m_partitioner; }
@@ -127,16 +134,19 @@ class ARCANE_UTILS_EXPORT ParallelLoopOptions
     m_partitioner = v;
     m_flags |= SF_Partitioner;
   }
+  //! Indique si grainSize() est positionné
+  bool hasPartitioner() const { return m_flags & SF_Partitioner; }
 
  public:
-  //! Fusionne les valeurs non modifiées de l'instance par celles de \a po.
+
+ //! Fusionne les valeurs non modifiées de l'instance par celles de \a po.
   void mergeUnsetValues(const ParallelLoopOptions& po)
   {
-    if (!(m_flags & SF_MaxThread))
+    if (!hasMaxThread())
       setMaxThread(po.maxThread());
-    if (!(m_flags & SF_GrainSize))
+    if (!hasGrainSize())
       setGrainSize(po.grainSize());
-    if (!(m_flags & SF_Partitioner))
+    if (!hasPartitioner())
       setPartitioner(po.partitioner());
  }
  private:
@@ -338,20 +348,23 @@ class ARCANE_UTILS_EXPORT ITaskImplementation
   //! Exécute le fonctor \a f en concurrence.
   virtual void executeParallelFor(Integer begin,Integer size,IRangeFunctor* f) =0;
 
+  //! Exécute la boucle \a loop_info en concurrence.
+  virtual void executeParallelFor(const ParallelFor1DLoopInfo& loop_info) =0;
+
   //! Exécute une boucle 1D en concurrence
-  virtual void executeParallelFor(const ComplexLoopRanges<1>& loop_ranges,
+  virtual void executeParallelFor(const ComplexForLoopRanges<1>& loop_ranges,
                                   const ParallelLoopOptions& options,
                                   IMDRangeFunctor<1>* functor) =0;
   //! Exécute une boucle 2D en concurrence
-  virtual void executeParallelFor(const ComplexLoopRanges<2>& loop_ranges,
+  virtual void executeParallelFor(const ComplexForLoopRanges<2>& loop_ranges,
                                   const ParallelLoopOptions& options,
                                   IMDRangeFunctor<2>* functor) =0;
   //! Exécute une boucle 3D en concurrence
-  virtual void executeParallelFor(const ComplexLoopRanges<3>& loop_ranges,
+  virtual void executeParallelFor(const ComplexForLoopRanges<3>& loop_ranges,
                                   const ParallelLoopOptions& options,
                                   IMDRangeFunctor<3>* functor) =0;
   //! Exécute une boucle 4D en concurrence
-  virtual void executeParallelFor(const ComplexLoopRanges<4>& loop_ranges,
+  virtual void executeParallelFor(const ComplexForLoopRanges<4>& loop_ranges,
                                   const ParallelLoopOptions& options,
                                   IMDRangeFunctor<4>* functor) =0;
 
@@ -367,13 +380,14 @@ class ARCANE_UTILS_EXPORT ITaskImplementation
   //! Implémentation de TaskFactory::currentTaskIndex()
   virtual Int32 currentTaskIndex() const =0;
 
-  //! Positionne les valeurs par défaut d'exécution d'une boucle parallèle
-  virtual void setDefaultParallelLoopOptions(const ParallelLoopOptions& v) =0;
-
-  //! Valeurs par défaut d'exécution d'une boucle parallèle
-  virtual const ParallelLoopOptions& defaultParallelLoopOptions() =0;
-
+  //! Affiche les informations sur le runtime utilisé
   virtual void printInfos(std::ostream& o) const =0;
+
+  //! Positionne le niveau de conservation des statistiques d'exécution (0 si aucune)
+  virtual void setExecutionStatLevel(Int32 stat_level) =0;
+
+  //! Affiche sur le flot \a o les statistiques d'exécution
+  virtual void printExecutionStats(std::ostream& o) const =0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -459,8 +473,14 @@ class ARCANE_UTILS_EXPORT TaskFactory
     m_impl->executeParallelFor(begin,size,f);
   }
 
+  //! Exécute la boucle \a loop_info en concurrence.
+  static void executeParallelFor(const ParallelFor1DLoopInfo& loop_info)
+  {
+    m_impl->executeParallelFor(loop_info);
+  }
+
   //! Exécute une boucle simple
-  static void executeParallelFor(const ComplexLoopRanges<1>& loop_ranges,
+  static void executeParallelFor(const ComplexForLoopRanges<1>& loop_ranges,
                                  const ParallelLoopOptions& options,
                                  IMDRangeFunctor<1>* functor)
   {
@@ -468,7 +488,7 @@ class ARCANE_UTILS_EXPORT TaskFactory
   }
 
   //! Exécute une boucle 2D
-  static void executeParallelFor(const ComplexLoopRanges<2>& loop_ranges,
+  static void executeParallelFor(const ComplexForLoopRanges<2>& loop_ranges,
                                  const ParallelLoopOptions& options,
                                  IMDRangeFunctor<2>* functor)
   {
@@ -476,7 +496,7 @@ class ARCANE_UTILS_EXPORT TaskFactory
   }
 
   //! Exécute une boucle 3D
-  static void executeParallelFor(const ComplexLoopRanges<3>& loop_ranges,
+  static void executeParallelFor(const ComplexForLoopRanges<3>& loop_ranges,
                                  const ParallelLoopOptions& options,
                                  IMDRangeFunctor<3>* functor)
   {
@@ -484,7 +504,7 @@ class ARCANE_UTILS_EXPORT TaskFactory
   }
 
   //! Exécute une boucle 4D
-  static void executeParallelFor(const ComplexLoopRanges<4>& loop_ranges,
+  static void executeParallelFor(const ComplexForLoopRanges<4>& loop_ranges,
                                  const ParallelLoopOptions& options,
                                  IMDRangeFunctor<4>* functor)
   {
@@ -528,17 +548,21 @@ class ARCANE_UTILS_EXPORT TaskFactory
   }
 
  public:
+
   //! Positionne les valeurs par défaut d'exécution d'une boucle parallèle
   static void setDefaultParallelLoopOptions(const ParallelLoopOptions& v)
   {
-    m_impl->setDefaultParallelLoopOptions(v);
+    m_default_loop_options = v;
   }
+
   //! Valeurs par défaut d'exécution d'une boucle parallèle
   static const ParallelLoopOptions& defaultParallelLoopOptions()
   {
-    return m_impl->defaultParallelLoopOptions();
+    return m_default_loop_options;
   }
+
  public:
+
   /*!
    * \brief Indique si les tâches sont actives.
    * Les tâches sont actives si une implémentation est disponible et si le nombre
@@ -589,20 +613,96 @@ class ARCANE_UTILS_EXPORT TaskFactory
 
  public:
 
-  //! Positionne le niveau de verbosité (0 pour pas d'affichage, 1 par défaut)
+  //! Positionne le niveau de verbosité (0 pour pas d'affichage qui est le défaut)
   static void setVerboseLevel(Integer v) { m_verbose_level = v; }
 
   //! Niveau de verbosité
   static Integer verboseLevel() { return m_verbose_level; }
 
+  /*!
+   * \brief Positionne le niveau de conservation des statistiques d'exécution.
+   *
+   * Si \a stat_level vaut 0 (le défaut), alors on ne conserve aucune statistique
+   * d'exécution. Si la valeur est positive, on conserve les statistiques.
+   * La récupération des statistiques d'exécution peut avoir un impact sur les
+   * performances.
+   */
+  static void setExecutionStatLevel(Int32 stat_level)
+  {
+    m_execution_stat_level = stat_level;
+    m_impl->setExecutionStatLevel(stat_level);
+  }
+
+  //! Niveau de conservation des statistiques d'exécution
+  static Int32 executionStatLevel() { return m_execution_stat_level; }
+
+  //! Affiche sur le flot \a o les statistiques d'exécution
+  static void printExecutionStats(std::ostream& o)
+  {
+    m_impl->printExecutionStats(o);
+  }
+
  public:
+
   //! \internal
-  static void setImplementation(ITaskImplementation* task_impl);
+  static void _internalSetImplementation(ITaskImplementation* task_impl);
+
  private:
+
   static ITaskImplementation* m_impl;
   static IObservable* m_created_thread_observable;
   static IObservable* m_destroyed_thread_observable;
-  static Integer m_verbose_level;
+  static Int32 m_verbose_level;
+  static Int32 m_execution_stat_level;
+  static ParallelLoopOptions m_default_loop_options;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Caractéristiques d'un boucle 1D multi-thread.
+ *
+ * Cette classe permet de spécifier les options d'une boucle à paralléliser
+ * en mode multi-thread.
+ */
+class ARCANE_UTILS_EXPORT ParallelFor1DLoopInfo
+{
+ public:
+
+ using ThatClass = ParallelFor1DLoopInfo;
+
+ public:
+
+  ParallelFor1DLoopInfo(Int32 begin,Int32 size,IRangeFunctor* functor)
+  : m_begin(begin), m_size(size), m_functor(functor) {}
+  ParallelFor1DLoopInfo(Int32 begin,Int32 size,
+                        const ParallelLoopOptions& options,IRangeFunctor* functor)
+  : m_begin(begin), m_size(size), m_options(options), m_functor(functor) {}
+  ParallelFor1DLoopInfo(Int32 begin,Int32 size, Int32 block_size,IRangeFunctor* functor)
+  : m_begin(begin), m_size(size), m_functor(functor)
+  {
+    ParallelLoopOptions opts(TaskFactory::defaultParallelLoopOptions());
+    opts.setGrainSize(block_size);
+    m_options = opts;
+  }
+
+ public:
+
+  Int32 beginIndex() const { return m_begin; }
+  Int32 size() const { return m_size; }
+  std::optional<ParallelLoopOptions> options() const { return m_options; }
+  ThatClass& addOptions(const ParallelLoopOptions& v) { m_options = v; return (*this); }
+  const ForLoopTraceInfo& traceInfo() const { return m_trace_info; }
+  ThatClass& addTraceInfo(const ForLoopTraceInfo& v) { m_trace_info = v; return (*this); }
+  IRangeFunctor* functor() const { return m_functor; }
+
+ private:
+
+  Int32 m_begin = 0;
+  Int32 m_size = 0;
+  std::optional<ParallelLoopOptions> m_options;
+  ForLoopTraceInfo m_trace_info;
+  IRangeFunctor* m_functor = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -612,7 +712,7 @@ class ARCANE_UTILS_EXPORT TaskFactory
  * sur l'intervalle d'itération donné par \a loop_ranges.
  */
 template<int RankValue,typename LambdaType> inline void
-arcaneParallelFor(const ComplexLoopRanges<RankValue>& loop_ranges,
+arcaneParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
                   const ParallelLoopOptions& options,
                   const LambdaType& lambda_function)
 {
@@ -622,7 +722,7 @@ arcaneParallelFor(const ComplexLoopRanges<RankValue>& loop_ranges,
   // en compte.
   // TODO: regarder si on pourrait faire la copie uniquement une fois par thread
   // si cette copie devient couteuse.
-  auto xfunc = [&lambda_function] (const ComplexLoopRanges<RankValue>& sub_bounds)
+  auto xfunc = [&lambda_function] (const ComplexForLoopRanges<RankValue>& sub_bounds)
   {
     using Type = typename std::remove_reference<LambdaType>::type;
     Type private_lambda(lambda_function);
@@ -639,11 +739,11 @@ arcaneParallelFor(const ComplexLoopRanges<RankValue>& loop_ranges,
  * sur l'intervalle d'itération donné par \a loop_ranges.
  */
 template<int RankValue,typename LambdaType> inline void
-arcaneParallelFor(const SimpleLoopRanges<RankValue>& loop_ranges,
+arcaneParallelFor(const SimpleForLoopRanges<RankValue>& loop_ranges,
                   const ParallelLoopOptions& options,
                   const LambdaType& lambda_function)
 {
-  ComplexLoopRanges<RankValue> complex_loop_ranges{loop_ranges};
+  ComplexForLoopRanges<RankValue> complex_loop_ranges{loop_ranges};
   arcaneParallelFor(complex_loop_ranges,options,lambda_function);
 }
 
@@ -654,7 +754,7 @@ arcaneParallelFor(const SimpleLoopRanges<RankValue>& loop_ranges,
  * sur l'intervalle d'itération donné par \a loop_ranges.
  */
 template<int RankValue,typename LambdaType> inline void
-arcaneParallelFor(const ComplexLoopRanges<RankValue>& loop_ranges,
+arcaneParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
                   const LambdaType& lambda_function)
 {
   ParallelLoopOptions options;
@@ -668,11 +768,11 @@ arcaneParallelFor(const ComplexLoopRanges<RankValue>& loop_ranges,
  * sur l'intervalle d'itération donné par \a loop_ranges.
  */
 template<int RankValue,typename LambdaType> inline void
-arcaneParallelFor(const SimpleLoopRanges<RankValue>& loop_ranges,
+arcaneParallelFor(const SimpleForLoopRanges<RankValue>& loop_ranges,
                   const LambdaType& lambda_function)
 {
   ParallelLoopOptions options;
-  ComplexLoopRanges<RankValue> complex_loop_ranges{loop_ranges};
+  ComplexForLoopRanges<RankValue> complex_loop_ranges{loop_ranges};
   arcaneParallelFor(complex_loop_ranges,options,lambda_function);
 }
 

@@ -99,25 +99,29 @@ class NullTaskImplementation
   {
     f->executeFunctor(begin,size);
   }
-  void executeParallelFor(const ComplexLoopRanges<1>& loop_ranges,
+  void executeParallelFor(const ParallelFor1DLoopInfo& loop_info) override
+  {
+    loop_info.functor()->executeFunctor(loop_info.beginIndex(),loop_info.size());
+  }
+  void executeParallelFor(const ComplexForLoopRanges<1>& loop_ranges,
                           [[maybe_unused]] const ParallelLoopOptions& options,
                           IMDRangeFunctor<1>* functor) override
   {
     functor->executeFunctor(loop_ranges);
   }
-  void executeParallelFor(const ComplexLoopRanges<2>& loop_ranges,
+  void executeParallelFor(const ComplexForLoopRanges<2>& loop_ranges,
                           [[maybe_unused]] const ParallelLoopOptions& options,
                           IMDRangeFunctor<2>* functor) override
   {
     functor->executeFunctor(loop_ranges);
   }
-  void executeParallelFor(const ComplexLoopRanges<3>& loop_ranges,
+  void executeParallelFor(const ComplexForLoopRanges<3>& loop_ranges,
                           [[maybe_unused]] const ParallelLoopOptions& options,
                           IMDRangeFunctor<3>* functor) override
   {
     functor->executeFunctor(loop_ranges);
   }
-  void executeParallelFor(const ComplexLoopRanges<4>& loop_ranges,
+  void executeParallelFor(const ComplexForLoopRanges<4>& loop_ranges,
                           [[maybe_unused]] const ParallelLoopOptions& options,
                           IMDRangeFunctor<4>* functor) override
   {
@@ -139,23 +143,15 @@ class NullTaskImplementation
   {
     return 0;
   }
-  void setDefaultParallelLoopOptions(const ParallelLoopOptions& v) override
-  {
-    m_default_loop_options = v;
-  }
-
-  const ParallelLoopOptions& defaultParallelLoopOptions() override
-  {
-    return m_default_loop_options;
-  }
 
   void printInfos(std::ostream& o) const final
   {
     o << "NullTaskImplementation";
  }
 
- private:
-  ParallelLoopOptions m_default_loop_options;
+  void setExecutionStatLevel(Int32) override {}
+
+  void printExecutionStats(std::ostream&) const override {}
 };
 
 /*---------------------------------------------------------------------------*/
@@ -165,13 +161,15 @@ NullTaskImplementation NullTaskImplementation::singleton;
 ITaskImplementation* TaskFactory::m_impl = &NullTaskImplementation::singleton;
 IObservable* TaskFactory::m_created_thread_observable = 0;
 IObservable* TaskFactory::m_destroyed_thread_observable = 0;
-Integer TaskFactory::m_verbose_level = 0;
+Int32 TaskFactory::m_verbose_level = 0;
+Int32 TaskFactory::m_execution_stat_level = 0;
+ParallelLoopOptions TaskFactory::m_default_loop_options;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void TaskFactory::
-setImplementation(ITaskImplementation* task_impl)
+_internalSetImplementation(ITaskImplementation* task_impl)
 {
   if (m_impl && m_impl!=&NullTaskImplementation::singleton)
     ARCANE_FATAL("TaskFactory already has an implementation");

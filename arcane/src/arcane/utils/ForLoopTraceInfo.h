@@ -5,16 +5,17 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IRangeFunctor.h                                             (C) 2000-2021 */
+/* ForLoopTraceInfo.h                                          (C) 2000-2022 */
 /*                                                                           */
-/* Interface d'un fonctor sur un interval d'itération.                       */
+/* Informations de trace pour une boucle for.                                */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_UTILS_IRANGEFUNCTOR_H
-#define ARCANE_UTILS_IRANGEFUNCTOR_H
+#ifndef ARCANE_UTILS_FORLOOPTRACEINFO_H
+#define ARCANE_UTILS_FORLOOPTRACEINFO_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/UtilsTypes.h"
+#include "arcane/utils/String.h"
+#include "arcane/utils/TraceInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -25,47 +26,36 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Interface d'un fonctor sur un interval d'itération.
- * \ingroup Core
+ * \brief Informations de trace pour une boucle 'for'.
  */
-class ARCANE_UTILS_EXPORT IRangeFunctor
-{
- public:
-	
-  //! Libère les ressources
-  virtual ~IRangeFunctor(){}
-
- public:
-
-  /*!
-   * \brief Exécute la méthode associée.
-   * \param begin indice du début de l'itération.
-   * \param size nombre d'éléments à itérer.
-   */
-  virtual void executeFunctor(Integer begin,Integer size) =0;  
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Interface d'un fonctor sur un interval d'itération multi-dimensionnel
- * de dimension \a RankValue
- * \ingroup Core
- */
-template<int RankValue>
-class IMDRangeFunctor
+class ARCANE_UTILS_EXPORT ForLoopTraceInfo
 {
  public:
 
-  //! Libère les ressources
-  virtual ~IMDRangeFunctor() = default;
+  ForLoopTraceInfo() = default;
+  ForLoopTraceInfo(const TraceInfo& trace_info)
+  : m_trace_info(trace_info)
+  , m_is_valid(true)
+  {
+  }
+  ForLoopTraceInfo(const TraceInfo& trace_info, const String& loop_name)
+  : m_trace_info(trace_info)
+  , m_loop_name(loop_name)
+  , m_is_valid(true)
+  {
+  }
 
  public:
 
-  /*!
-   * \brief Exécute la méthode associée.
-   */
-  virtual void executeFunctor(const ComplexForLoopRanges<RankValue>& loop_range) =0;
+  const TraceInfo& traceInfo() const { return m_trace_info; }
+  const String& loopName() const { return m_loop_name; }
+  bool isValid() const { return m_is_valid; }
+
+ private:
+
+  TraceInfo m_trace_info;
+  String m_loop_name;
+  bool m_is_valid = false;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -76,4 +66,5 @@ class IMDRangeFunctor
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif
+#endif  
+

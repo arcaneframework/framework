@@ -80,9 +80,20 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunCommand
   //! Nom du noyau
   const String& kernelName() const;
 
-  //! Nombre de threads par bloc ou 0 pour la valeur par défaut
+  /*
+   * \brief Nombre de threads par bloc ou 0 pour la valeur par défaut.
+   *
+   * Cette valeur est utilisée uniquement si on s'exécute sur accélérateur.
+   */
   Int32 nbThreadPerBlock() const;
 
+  //! Positionne la configuration des boucles multi-thread
+  void setParallelLoopOptions(const ParallelLoopOptions& opt);
+
+  //! Configuration des boucles multi-thread
+  const ParallelLoopOptions& parallelLoopOptions() const;
+
+  //! Affichage des informations de la commande
   friend ARCANE_ACCELERATOR_CORE_EXPORT RunCommand& operator<<(RunCommand& command,const TraceInfo& trace_info);
 
  private:

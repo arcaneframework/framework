@@ -388,7 +388,7 @@ build()
         String found_name;
         auto sv = _tryCreateService<ITaskImplementation>(names,&found_name);
         if (sv.get()){
-          TaskFactory::setImplementation(sv.get());
+          TaskFactory::_internalSetImplementation(sv.get());
           //m_trace->info() << "Initialize task with nb_thread=" << nb_thread;
           sv->initialize(nb_task_thread);
           m_used_task_service_name = found_name;
@@ -399,6 +399,11 @@ build()
                        " Please check if Arcane is configured with Intel TBB library",
                        _stringListToArray(names));
       }
+
+      if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_TASK_VERBOSE_LEVEL",true))
+        TaskFactory::setVerboseLevel(v.value());
+      if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_TASK_EXECUTION_STAT_LEVEL",true))
+        TaskFactory::setExecutionStatLevel(v.value());
     }
 
     // Recherche le service utilisé pour le profiling
