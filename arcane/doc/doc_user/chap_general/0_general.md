@@ -1,5 +1,7 @@
 # Généralités {#arcanedoc_general}
 
+Ce chapitre présente des généralités qu'il est intéressant de connaitre
+avant de débuter l'écriture d'un code %Arcane.
 
 <br>
 

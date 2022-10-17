@@ -1,5 +1,9 @@
 # Entités, maillages et connectivités {#arcanedoc_entities}
 
+Ce chapitre présente la notion de maillage présente dans %Arcane avec
+par exemple les maillages cartésiens et les différents types de mailles disponibles.  
+Présentation aussi de la gestion des connectivités des entités et de la gestion
+de la géométrie.
 
 <br>
 
@@ -13,7 +17,7 @@ Sommaire de ce chapitre :
   des connectivités des entités.
 
 4. \subpage arcanedoc_entities_itemtype <br>
-  Décrit les types de maille classiques.
+  Décrit les types de mailles classiques.
 
 5. \subpage arcanedoc_entities_geometric
 

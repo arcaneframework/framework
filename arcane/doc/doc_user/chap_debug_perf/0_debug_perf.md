@@ -1,7 +1,14 @@
 # Debug, performance et validation {#arcanedoc_debug_perf}
 
 Ce chapitre est dédié aux méthodes de débuggage et d'analyse
-de performance.
+de performance.  
+Dans %Arcane, il est possible d'utiliser divers outils pour comprendre
+les problèmes qui peuvent survenir lors du développement d'un code 
+(plantages, optimisation).  
+Et il est aussi possible de comparer les résultats obtenus afin de valider
+un code.  
+Ce chapitre présente donc les outils mis à disposition pour effectuer
+ces tâches.
 
 <br>
 

@@ -6,11 +6,14 @@ Vous débutez sur %Arcane ? Ce chapitre devrait vous donner les notions de bases
 
 Sommaire de ce chapitre :
 
-1. \subpage arcanedoc_getting_started_about
+1. \subpage arcanedoc_getting_started_about <br>
+  Description de la plateforme %Arcane.
 
-2. \subpage arcanedoc_getting_started_basicstruct
+2. \subpage arcanedoc_getting_started_basicstruct <br>
+  Présente les structures et les types de bases de %Arcane.
 
-3. \subpage arcanedoc_getting_started_iteration
+3. \subpage arcanedoc_getting_started_iteration <br>
+  Présente les différentes façons d'itérer dans un code %Arcane.
 
 
 

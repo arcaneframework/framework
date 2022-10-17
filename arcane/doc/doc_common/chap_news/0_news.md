@@ -1,12 +1,10 @@
 # Nouveautés et changements {#arcanedoc_news}
 
-Ce chapitre est dédié aux évolutions d'%Arcane.
-
+Ce chapitre est dédié aux évolutions d'%Arcane.  
 À chaque version d'%Arcane, la page \ref arcanedoc_news_changelog liste les modifications
-apportées.
-
-Il se peut qu'il y ai de grandes modifications apportées. Dans ce cas, une page dédiée peut
-être créée et mise à disposition ici.
+apportées.  
+Il se peut qu'il y ai de grandes modifications apportées entre deux versions d'%Arcane.
+Dans ce cas, une page dédiée peut être créée et mise à disposition ici.
 
 <br>
 

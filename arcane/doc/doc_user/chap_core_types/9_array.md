@@ -76,25 +76,28 @@ d'affectation:
 - la sémantique par référence signifie que lorsqu'on fait <em>a =
 b</em>, alors \a a devient une référence sur \a b et toute modification de \a b modifie
 aussi \a a.
-\code
+
+```cpp
 SharedArray<int> a1(5);
 SharedArray<int> a2;
 a2 = a1; // a2 et a1 font référence à la même zone mémoire.
 a1[3] = 1;
 a2[3] = 2;
 std::cout << a1[3]; // affiche '2'
-\endcode
+```
+
 - la sémantique par valeur signifie que lorsqu'on fait <em>a =
 b</em>, alors \a a devient une copie des valeurs de \a b et par la suite les
 tableaux \a a et \a b sont indépendants.
-\code
+
+```cpp
 UniqueArray<int> a1(5);
 UniqueArray<int> a2;
 a2 = a1; // a2 devient une copie de a1.
 a1[3] = 1;
 a2[3] = 2;
 std::cout << a1[3]; // affiche '1'
-\endcode
+```
 
 ## Passage de tableaux en arguments {#arcanedoc_core_types_array_usage_argument}
 
@@ -111,9 +114,11 @@ Voici les règles de bonnes pratiques à respecter pour le passage de tableaux e
 <td>ConstArrayView</td>
 <td>Tableau 1D en lecture seule</td>
 <td>
-\code
+
+```cpp
 x = a[i];
-\endcode
+```
+
 </td>
 </tr>
 <tr>
@@ -121,22 +126,26 @@ x = a[i];
 <td>Tableau 1D en lecture et/ou écriture mais dont la taille n'est
 pas modifiable</td> 
 <td>
-\code
+
+```cpp
 x = a[i];
 a[i] = y;
-\endcode
+```
+
 </td>
 </tr>
 <tr>
 <td>Array&</td>
 <td>Tableau 1D modifiable et pouvant changer de nombre d'éléments</td>
 <td>
-\code
+
+```cpp
 x = a[i];
 a[i] = y;
 a.resize(u);
 a.add(v);
-\endcode
+```
+
 </td>
 </tr>
 <tr>
@@ -148,30 +157,36 @@ a.add(v);
 <td>ConstArray2View</td>
 <td>Tableau 2D en lecture seule</td>
 <td>
-\code
+
+```cpp
 x = a[i][j];
-\endcode
+```
+
 </td>
 </tr>
 <tr>
 <td>Array2View</td>
 <td>Tableau 2D en lecture et/ou écriture mais dont la taille n'est pas modifiable</td>
 <td>
-\code
+
+```cpp
 x = a[i][j];
 a[i][j] = y;
-\endcode
+```
+
 </td>
 </tr>
 <tr>
 <td>Array2&</td>
 <td>Tableau 2D modifiable et pouvant changer de nombre d'éléments</td>
 <td>
-\code
+
+```cpp
 x = a[i][j];
 a[i][j] = y;
 a.resize(u,v);
-\endcode
+```
+
 </td>
 </tr>
 <tr>

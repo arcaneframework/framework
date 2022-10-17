@@ -9,7 +9,7 @@ règles de codages.
 
 ## Général {#arcanedoc_general_codingrules_general}
 
-- le langage utilisé est le C++14
+- le langage utilisé est le C++20
 - l'encodage des fichiers est obligatoire 'UTF-8' avec le BOM au début
   du fichier. La première ligne de chaque fichier doit être comme suit:
 ```cpp

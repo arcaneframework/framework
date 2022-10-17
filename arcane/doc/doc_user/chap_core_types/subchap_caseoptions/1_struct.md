@@ -40,7 +40,7 @@ ____
 
 <div class="section_buttons">
 <span class="back_section_button">
-\ref arcanedoc_core_types_caseoptions_intro
+\ref arcanedoc_core_types_caseoptions
 </span>
 <span class="next_section_button">
 \ref arcanedoc_core_types_caseoptions_common_struct
