@@ -92,6 +92,7 @@ namespace platform
   IDynamicLibraryLoader* global_dynamic_library_loader = nullptr;
   MemoryRessourceMng global_default_data_memory_ressource_mng;
   IMemoryRessourceMng* global_data_memory_ressource_mng = nullptr;
+  IPerformanceCounterService* global_performance_counter_service = nullptr;
   bool global_has_color_console = false;
 }
 
@@ -192,6 +193,26 @@ setProcessorAffinityService(IProcessorAffinityService* service)
 {
   IProcessorAffinityService* old_service = global_processor_affinity_service;
   global_processor_affinity_service = service;
+  return old_service;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ARCANE_UTILS_EXPORT IPerformanceCounterService* platform::
+getPerformanceCounterService()
+{
+  return global_performance_counter_service;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ARCANE_UTILS_EXPORT IPerformanceCounterService* platform::
+setPerformanceCounterService(IPerformanceCounterService* service)
+{
+  auto* old_service = global_performance_counter_service;
+  global_performance_counter_service = service;
   return old_service;
 }
 
