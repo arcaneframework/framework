@@ -118,18 +118,18 @@ struct LoopStatInfo
 
   void reset()
   {
-    m_nb_parallel_for = 0;
-    m_nb_internal_parallel_for = 0;
+    m_nb_loop_parallel_for = 0;
+    m_nb_chunk_parallel_for = 0;
   }
 
-  void incrementInternalNbParallelFor()
+  void incrementNbChunkParallelFor()
   {
-    ++m_nb_internal_parallel_for;
+    ++m_nb_chunk_parallel_for;
   }
 
-  void incrementNbParallelFor()
+  void incrementNbLoopParallelFor()
   {
-    ++m_nb_parallel_for;
+    ++m_nb_loop_parallel_for;
   }
 
   void merge(const LoopStatInfo* s)
@@ -140,8 +140,8 @@ struct LoopStatInfo
 
   void merge(const LoopStatInfo& s)
   {
-    m_nb_parallel_for += s.m_nb_parallel_for;
-    m_nb_internal_parallel_for += s.m_nb_internal_parallel_for;
+    m_nb_loop_parallel_for += s.m_nb_loop_parallel_for;
+    m_nb_chunk_parallel_for += s.m_nb_chunk_parallel_for;
     m_total_time += s.m_total_time;
   }
 
@@ -149,26 +149,26 @@ struct LoopStatInfo
   {
     if (!isStatActive())
       return;
-    Int64 nb_parallel_for = m_nb_parallel_for;
-    Int64 nb_internal_parallel_for = m_nb_internal_parallel_for;
+    Int64 nb_loop_parallel_for = m_nb_loop_parallel_for;
+    Int64 nb_chunk_parallel_for = m_nb_chunk_parallel_for;
     Int64 total_time = m_total_time;
     double x = static_cast<double>(total_time);
     double x1 = 0.0;
-    if (nb_parallel_for>0)
-      x1 = x / static_cast<double>(nb_parallel_for);
+    if (nb_loop_parallel_for>0)
+      x1 = x / static_cast<double>(nb_loop_parallel_for);
     double x2 = 0.0;
-    if (nb_internal_parallel_for>0)
-      x2 = x / static_cast<double>(nb_internal_parallel_for);
-    o << "GLOBAL_TIME (ms) =" <<  x / 1.0e6 << "\n";
-    o << "GLOBAL_NB_THREAD_LOOP=" <<  nb_parallel_for << " time=" << x1 << "\n";
-    o << "GLOBAL_NB_INTERNAL_THREAD_LOOP=" <<  nb_internal_parallel_for << " time=" << x2 << "\n";
+    if (nb_chunk_parallel_for>0)
+      x2 = x / static_cast<double>(nb_chunk_parallel_for);
+    o << "TBB: global_time (ms) = " << x / 1.0e6 << "\n";
+    o << "TBB: global_nb_loop   = " << std::setw(10) << nb_loop_parallel_for << " time=" << x1 << "\n";
+    o << "TBB: global_nb_chunk  = " << std::setw(10) << nb_chunk_parallel_for << " time=" << x2 << "\n";
   }
 
  public:
 
   // Valeur indiquand le niveau de statistiques qu'on souhaite avoir (0 == aucune)
-  std::atomic<Int64> m_nb_parallel_for = 0;
-  std::atomic<Int64> m_nb_internal_parallel_for = 0;
+  std::atomic<Int64> m_nb_loop_parallel_for = 0;
+  std::atomic<Int64> m_nb_chunk_parallel_for = 0;
   // Temps total (en nano seconde)
   std::atomic<Int64> m_total_time = 0;
 };
@@ -185,7 +185,7 @@ struct ScopedStatLoop
   : m_stat_info(s)
   {
     if (m_stat_info){
-      m_stat_info->incrementNbParallelFor();
+      m_stat_info->incrementNbLoopParallelFor();
       m_begin_time = platform::getRealTime();
     }
   }
@@ -217,24 +217,30 @@ class StatInfoList
   void merge(const LoopStatInfo& loop_stat_info,const ForLoopTraceInfo& loop_trace_info)
   {
     global_stat.merge(loop_stat_info);
-    if (!loop_trace_info.isValid())
-      return;
-    String loop_name = loop_trace_info.loopName();
-    if (loop_name.empty())
-      loop_name = loop_trace_info.traceInfo().name();
+    String loop_name = "Unknown";
+    if (loop_trace_info.isValid()){
+      loop_name = loop_trace_info.loopName();
+      if (loop_name.empty())
+        loop_name = loop_trace_info.traceInfo().name();
+    }
     m_stat_map[loop_name].merge(loop_stat_info);
   }
 
   void print(std::ostream& o)
   {
     o << "TaskStat\n";
-    o << std::setw(10) << "Nloop" << std::setw(10) << "Nchunk" << std::setw(11) << " T (us)\n";
+    o << std::setw(10) << "Nloop" << std::setw(10) << "Nchunk"
+      << std::setw(10) << " T (us)" << std::setw(11) << "Tc (ns)\n";
     Int64 cumulative_total = 0;
     for(const auto& x : m_stat_map){
       const LoopStatInfo& s = x.second;
-      o << std::setw(10) << s.m_nb_parallel_for << std::setw(10) << s.m_nb_internal_parallel_for
-        << std::setw(10) << s.m_total_time/1000 << "  " << x.first << "\n";
-      cumulative_total += s.m_total_time;
+      Int64 nb_loop = s.m_nb_loop_parallel_for;
+      Int64 nb_chunk = s.m_nb_chunk_parallel_for;
+      Int64 total_time = s.m_total_time;
+      Int64 time_per_chunk = (nb_chunk==0) ? 0 : (total_time/nb_chunk);
+      o << std::setw(10) <<nb_loop << std::setw(10) << nb_chunk
+        << std::setw(10) << total_time/1000 << std::setw(10) << time_per_chunk << "  " << x.first << "\n";
+      cumulative_total += total_time;
     }
     o << "TOTAL=" << cumulative_total / 1000000 << "\n";
   }
@@ -893,7 +899,7 @@ class TBBParallelFor
 #endif
 
     if (m_stat_info)
-      m_stat_info->incrementInternalNbParallelFor();
+      m_stat_info->incrementNbChunkParallelFor();
     m_functor->executeFunctor(range.begin(),CheckedConvert::toInteger(range.size()));
   }
 
@@ -939,7 +945,7 @@ class TBBMDParallelFor
 #endif
 
     if (m_stat_info)
-      m_stat_info->incrementInternalNbParallelFor();
+      m_stat_info->incrementNbChunkParallelFor();
     m_functor->executeFunctor(_fromTBBRange(range));
   }
 
@@ -1254,6 +1260,7 @@ _executeParallelFor(const ParallelFor1DLoopInfo& loop_info,LoopStatInfo* stat_in
   if (TaskFactory::verboseLevel()>=1)
     std::cout << "TBB: TBBTaskImplementation executeParallelFor begin=" << begin
               << " size=" << size << " max_thread=" << max_thread
+              << " grain_size=" << options.grainSize()
               << " nb_allowed=" << nb_allowed_thread << '\n';
 
   // En exécution séquentielle, appelle directement la méthode \a f.
