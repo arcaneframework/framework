@@ -1,11 +1,33 @@
-# Manuel utilisateur de la plate-forme ARCANE {#arcanedoc_devmanual}
+# Manuel développeur de la plate-forme ARCANE {#arcanedoc_devmanual}
 
 \mainpage %Arcane
 
+\warning La documentation a été récemment mise à jour. Il peut donc rester
+des erreurs, des bugs ou des élements non finalisés.
 
 Cette page contient la documentation pour les développeurs de la plate-forme %Arcane.
 
 La page \subpage arcanedoc_news présente la liste des nouveautés de chaque version.
 
-- \ref arcanedoc_news
-- \subpage arcanedoc_doxygen
+La documentation accessible depuis cette page s'adresse aux développeurs de la 
+plate-forme %Arcane. Elle contient plus de documentations de classes et est plus
+exhaustive que la documentation utilisateur. Elle est aussi plus longue à générer
+et plus volumineuse.
+
+La documentation utilisateur se compose de chapitres, sous-chapitres et de pages.
+La documentation développeur est plus libre et peut être composé uniquement de pages
+(même si la disposition présentée dans la page \subpage arcanedoc_doxygen est souhaitable
+dans les deux documentations).
+
+<br>
+
+Les pages/chapitres disponibles sont:
+
+- \ref arcanedoc_doxygen <br>
+  Présente comment contribuer à la documentation %Arcane.
+
+- \subpage arcanedoc_connectivity <br>
+  Présente les connectivités entre entités.
+
+- \subpage arcanedoc_mesh_reader <br>
+  Présente comment écrire un lecteur de maillage pour %Arcane.

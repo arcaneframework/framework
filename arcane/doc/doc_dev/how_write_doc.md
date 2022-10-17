@@ -2,7 +2,6 @@
 
 [TOC]
 
-
 ## Introduction {#arcanedoc_doxygen_intro}
 
 Lors de la réécriture/restructuration de cette documentation,
