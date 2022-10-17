@@ -373,12 +373,6 @@ class ARCANE_UTILS_EXPORT ITaskImplementation
   //! Implémentation de TaskFactory::currentTaskIndex()
   virtual Int32 currentTaskIndex() const =0;
 
-  //! Positionne les valeurs par défaut d'exécution d'une boucle parallèle
-  virtual void setDefaultParallelLoopOptions(const ParallelLoopOptions& v) =0;
-
-  //! Valeurs par défaut d'exécution d'une boucle parallèle
-  virtual const ParallelLoopOptions& defaultParallelLoopOptions() =0;
-
   //! Affiche les informations sur le runtime utilisé
   virtual void printInfos(std::ostream& o) const =0;
 
@@ -551,13 +545,13 @@ class ARCANE_UTILS_EXPORT TaskFactory
   //! Positionne les valeurs par défaut d'exécution d'une boucle parallèle
   static void setDefaultParallelLoopOptions(const ParallelLoopOptions& v)
   {
-    m_impl->setDefaultParallelLoopOptions(v);
+    m_default_loop_options = v;
   }
 
   //! Valeurs par défaut d'exécution d'une boucle parallèle
   static const ParallelLoopOptions& defaultParallelLoopOptions()
   {
-    return m_impl->defaultParallelLoopOptions();
+    return m_default_loop_options;
   }
 
  public:
@@ -653,6 +647,7 @@ class ARCANE_UTILS_EXPORT TaskFactory
   static IObservable* m_destroyed_thread_observable;
   static Int32 m_verbose_level;
   static Int32 m_execution_stat_level;
+  static ParallelLoopOptions m_default_loop_options;
 };
 
 /*---------------------------------------------------------------------------*/

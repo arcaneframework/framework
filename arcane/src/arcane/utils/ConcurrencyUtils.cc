@@ -143,15 +143,6 @@ class NullTaskImplementation
   {
     return 0;
   }
-  void setDefaultParallelLoopOptions(const ParallelLoopOptions& v) override
-  {
-    m_default_loop_options = v;
-  }
-
-  const ParallelLoopOptions& defaultParallelLoopOptions() override
-  {
-    return m_default_loop_options;
-  }
 
   void printInfos(std::ostream& o) const final
   {
@@ -161,10 +152,6 @@ class NullTaskImplementation
   void setExecutionStatLevel(Int32) override {}
 
   void printExecutionStats(std::ostream&) const override {}
-
- private:
-
-  ParallelLoopOptions m_default_loop_options;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -176,6 +163,7 @@ IObservable* TaskFactory::m_created_thread_observable = 0;
 IObservable* TaskFactory::m_destroyed_thread_observable = 0;
 Int32 TaskFactory::m_verbose_level = 0;
 Int32 TaskFactory::m_execution_stat_level = 0;
+ParallelLoopOptions TaskFactory::m_default_loop_options;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

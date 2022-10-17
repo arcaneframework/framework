@@ -600,7 +600,7 @@ class TBBTaskImplementation
   void executeParallelFor(Int32 begin,Int32 size,Integer grain_size,IRangeFunctor* f) final;
   void executeParallelFor(Int32 begin,Int32 size,IRangeFunctor* f) final
   {
-    executeParallelFor(begin,size,m_default_loop_options,f);
+    executeParallelFor(begin,size,TaskFactory::defaultParallelLoopOptions(),f);
   }
   void executeParallelFor(const ParallelFor1DLoopInfo& loop_info) override;
 
@@ -642,15 +642,6 @@ class TBBTaskImplementation
   }
 
   Int32 currentTaskIndex() const final;
-  void setDefaultParallelLoopOptions(const ParallelLoopOptions& v) final
-  {
-    m_default_loop_options = v;
-  }
-
-  const ParallelLoopOptions& defaultParallelLoopOptions() final
-  {
-    return m_default_loop_options;
-  }
 
   void printInfos(std::ostream& o) const final;
   void setExecutionStatLevel(Int32 stat_level) override
@@ -678,7 +669,6 @@ class TBBTaskImplementation
 
   bool m_is_active;
   Impl* m_p;
-  ParallelLoopOptions m_default_loop_options;
 
  private:
 
@@ -686,6 +676,7 @@ class TBBTaskImplementation
   _executeMDParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
                         IMDRangeFunctor<RankValue>* functor,
                         const ParallelLoopOptions& options);
+  void _executeParallelFor(const ParallelFor1DLoopInfo& loop_info,LoopStatInfo* stat_info);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -888,7 +879,7 @@ class TBBParallelFor
       std::ostringstream o;
       o << "TBB: INDEX=" << TaskFactory::currentTaskThreadIndex()
         << " id=" << std::this_thread::get_id()
-        << " MAX_ALLOWED=" << m_nb_allowed_thread
+        << " max_allowed=" << m_nb_allowed_thread
         << " range_begin=" << range.begin() << " range_size=" << range.size()
         << "\n";
       std::cout << o.str();
@@ -934,7 +925,7 @@ class TBBMDParallelFor
       std::ostringstream o;
       o << "TBB: INDEX=" << TaskFactory::currentTaskThreadIndex()
         << " id=" << std::this_thread::get_id()
-        << " MAX_ALLOWED=" << m_nb_allowed_thread
+        << " max_allowed=" << m_nb_allowed_thread
       //<< " range_begin=" << range.begin() << " range_size=" << range.size()
         << "\n";
       std::cout << o.str();
@@ -1097,9 +1088,10 @@ class TBBTaskImplementation::ParallelForExecute
     Integer gsize = m_options.grainSize();
     tbb::blocked_range<Integer> range(m_begin,m_begin+m_size);
     if (TaskFactory::verboseLevel()>=1)
-      std::cout << "TBB: TBBTaskImplementationInit ParallelForExemple begin=" << m_begin
+      std::cout << "TBB: TBBTaskImplementationInit ParallelForExecute begin=" << m_begin
                 << " size=" << m_size << " gsize=" << gsize
-                << " partitioner=" << (int)m_options.partitioner() << '\n';
+                << " partitioner=" << (int)m_options.partitioner()
+                << " nb_thread=" << nb_thread << '\n';
 
     impl::ScopedStatLoop scoped_loop(m_stat_info);
 
@@ -1202,7 +1194,9 @@ initialize(Int32 nb_thread)
     m_p = new Impl(nb_thread);
   else
     m_p = new Impl();
-  m_default_loop_options.setMaxThread(nbAllowedThread());
+  ParallelLoopOptions opts = TaskFactory::defaultParallelLoopOptions();
+  opts.setMaxThread(nbAllowedThread());
+  TaskFactory::setDefaultParallelLoopOptions(opts);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1245,39 +1239,54 @@ printInfos(std::ostream& o) const
 /*---------------------------------------------------------------------------*/
 
 void TBBTaskImplementation::
-executeParallelFor(const ParallelFor1DLoopInfo& loop_info)
+_executeParallelFor(const ParallelFor1DLoopInfo& loop_info,LoopStatInfo* stat_info)
 {
   Int32 begin = loop_info.beginIndex();
   Int32 size = loop_info.size();
-  ParallelLoopOptions options = loop_info.options().value_or(m_default_loop_options);
+  ParallelLoopOptions options = loop_info.options().value_or(TaskFactory::defaultParallelLoopOptions());
   IRangeFunctor* f = loop_info.functor();
 
-  if (TaskFactory::verboseLevel()>=1)
-    std::cout << "TBB: TBBTaskImplementation executeParallelFor begin=" << begin << " size=" << size << '\n';
   Integer max_thread = options.maxThread();
+  Integer nb_allowed_thread = m_p->nbAllowedThread();
+  if (max_thread<0)
+    max_thread = nb_allowed_thread;
+
+  if (TaskFactory::verboseLevel()>=1)
+    std::cout << "TBB: TBBTaskImplementation executeParallelFor begin=" << begin
+              << " size=" << size << " max_thread=" << max_thread
+              << " nb_allowed=" << nb_allowed_thread << '\n';
+
   // En exécution séquentielle, appelle directement la méthode \a f.
   if (max_thread==1 || max_thread==0){
+    impl::ScopedStatLoop scoped_loop(stat_info);
     f->executeFunctor(begin,size);
     return;
   }
 
   // Remplace les valeurs non initialisées de \a options par celles de \a m_default_loop_options
   ParallelLoopOptions true_options(options);
-  true_options.mergeUnsetValues(m_default_loop_options);
+  true_options.mergeUnsetValues(TaskFactory::defaultParallelLoopOptions());
+  true_options.setMaxThread(max_thread);
 
-  LoopStatInfo stat_info;
-  LoopStatInfo* stat_info_ptr = isStatActive() ? &stat_info : nullptr;
-  ParallelForExecute pfe(this,true_options,begin,size,f,stat_info_ptr);
+  ParallelForExecute pfe(this,true_options,begin,size,f,stat_info);
 
-  Integer nb_allowed_thread = m_p->nbAllowedThread();
-  if (max_thread<0)
-    max_thread = nb_allowed_thread;
   tbb::task_arena* used_arena = nullptr;
   if (max_thread<nb_allowed_thread)
     used_arena = m_p->m_sub_arena_list[max_thread];
   if (!used_arena)
     used_arena = &(m_p->m_main_arena);
   used_arena->execute(pfe);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void TBBTaskImplementation::
+executeParallelFor(const ParallelFor1DLoopInfo& loop_info)
+{
+  LoopStatInfo stat_info;
+  LoopStatInfo* stat_info_ptr = isStatActive() ? &stat_info : nullptr;
+  _executeParallelFor(loop_info,stat_info_ptr);
   if (stat_info_ptr)
     impl::thread_local_stat_info.merge(*stat_info_ptr,loop_info.traceInfo());
 }
@@ -1305,7 +1314,7 @@ _executeMDParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
 
   // Remplace les valeurs non initialisées de \a options par celles de \a m_default_loop_options
   ParallelLoopOptions true_options(options);
-  true_options.mergeUnsetValues(m_default_loop_options);
+  true_options.mergeUnsetValues(TaskFactory::defaultParallelLoopOptions());
 
   Integer nb_allowed_thread = m_p->nbAllowedThread();
   if (max_thread<0)
@@ -1346,7 +1355,7 @@ _executeMDParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
 void TBBTaskImplementation::
 executeParallelFor(Integer begin,Integer size,Integer grain_size,IRangeFunctor* f)
 {
-  ParallelLoopOptions opt(m_default_loop_options);
+  ParallelLoopOptions opt(TaskFactory::defaultParallelLoopOptions());
   opt.setGrainSize(grain_size);
   executeParallelFor(ParallelFor1DLoopInfo(begin,size,opt,f));
 }
