@@ -295,7 +295,7 @@ TAB_SIZE               = 2
 # with the commands \{ and \} for these it is advised to use the version @{ and
 # @} or use a double escape (\\{ and \\})
 
-ALIASES                =
+ALIASES                = "arcane{1}=\ref Arcane::\1 \"\1\"" "arccore{1}=\ref Arccore::\1 \"\1\""
 
 # Set the OPTIMIZE_OUTPUT_FOR_C tag to YES if your project consists of C sources
 # only. Doxygen will then generate output that is more tailored for C. For
@@ -1054,7 +1054,7 @@ EXCLUDE_PATTERNS       =
 # Note that the wildcards are matched against the file with absolute path, so to
 # exclude all test directories use the pattern */test/*
 
-EXCLUDE_SYMBOLS        =
+EXCLUDE_SYMBOLS        = 
 
 # The EXAMPLE_PATH tag can be used to specify one or more files or directories
 # that contain example code fragments that are included (see the \include
@@ -1399,7 +1399,8 @@ HTML_EXTRA_FILES       = @ARCANESRCROOT@/doc/theme/doxygen-awesome-theme/doxygen
                          @ARCANESRCROOT@/doc/theme/doxygen-awesome-theme/doxygen-awesome-paragraph-link.js \
                          @ARCANESRCROOT@/doc/theme/doxygen-awesome-theme/doxygen-awesome-interactive-toc.js \
                          @ARCANESRCROOT@/doc/theme/js/script-resize.js \
-                         @ARCANESRCROOT@/doc/theme/js/script-num-lines-code.js
+                         @ARCANESRCROOT@/doc/theme/js/script-num-lines-code.js \
+                         @ARCANESRCROOT@/doc/theme/js/script-alternative-theme.js
 
 # The HTML_COLORSTYLE tag can be used to specify if the generated HTML output
 # should be rendered with a dark or light theme. Default setting AUTO_LIGHT

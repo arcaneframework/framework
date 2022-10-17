@@ -1,5 +1,9 @@
 # Utilisation d'autres langages {#arcanedoc_wrapping}
 
+Dans %Arcane, il est aussi possible d'utiliser d'autres
+langages pour écrire des modules et des services.  
+Par exemple, l'API d'%Arcane est (en grande partie) accessible
+en C#.
 
 <br>
 

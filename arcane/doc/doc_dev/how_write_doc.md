@@ -2,7 +2,6 @@
 
 [TOC]
 
-
 ## Introduction {#arcanedoc_doxygen_intro}
 
 Lors de la réécriture/restructuration de cette documentation,
@@ -243,3 +242,17 @@ ____
 
 Une fois votre chapitre ajouté, il faudra ajouter le ou les dossiers des chapitres
 et des sous-chapitres dans le userdoc.doxyfile, partie `INPUT`.
+
+____
+
+Deux macros ont été défini : `\arcane{}` et `\arccore{}`.
+Elles permettent de lier une classe ou une méthode sans mettre le namespace `Arcane::` ou `Arccore::`
+et sans l'afficher.
+
+Exemple :
+
+`Sans namespace : Cell -- Sans macro : Arcane::Cell -- Avec macro : \\arcane{Cell}` 
+
+donne : 
+
+Sans namespace : Cell -- Sans macro : Arcane::Cell -- Avec macro : \arcane{Cell}

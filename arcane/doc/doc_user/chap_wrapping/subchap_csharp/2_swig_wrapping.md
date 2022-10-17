@@ -161,7 +161,7 @@ Ce fichier comporte trois parties:
    pas les méthodes cela provoque une erreur lors de l'exécution. Swig
    va alors généré une exception de type `DirectorPureVirtualException`.
 
-## Compilation du code généré par `swig` {#arcanedoc_wrapping_csharp_swig_build}
+## Compilation du code généré par swig {#arcanedoc_wrapping_csharp_swig_build}
 
 `swig` va générer deux types de fichiers:
 

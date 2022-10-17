@@ -6,9 +6,9 @@
 
 %Arcane fournit un ensemble de types de base, correspondant soit à un
 type existant du C++ (comme *int*, *double*), soit à une classe (comme
- Real2). Ces types sont utilisés pour toutes les opérations courantes
+ \arcane{Real2}). Ces types sont utilisés pour toutes les opérations courantes
 mais aussi pour les variables. Par exemple, lorsqu'on souhaite
-déclarer un entier, il faut utiliser #Integer au lieu de
+déclarer un entier, il faut utiliser \arccore{Integer} au lieu de
 *int* ou *long*. Cela permet de modifier la taille de ces types
 (par exemple, utiliser des entiers sur 8 octets au lieu de 4)
 sans modifier le code source.
@@ -17,23 +17,23 @@ Les types de bases sont:
 
 <table>
 <tr><td><b>Nom de la classe</b></td><td><b>Correspondance dans les spécifications</b></td></tr>
-<tr><td>#Integer   </td><td> entier signé </td></tr>
-<tr><td>#Int16     </td><td> entier signé sur 16 bits </td></tr>
-<tr><td>#Int32     </td><td> entier signé sur 32 bits </td></tr>
-<tr><td>#Int64     </td><td> entier signé sur 64 bits </td></tr>
-<tr><td>#Byte      </td><td> représente un caractère sur 8 bits </td></tr>
-<tr><td>#Real      </td><td> réel IEEE 754 </td></tr>
-<tr><td>Real2     </td><td> coordonnée 2D, vecteur de deux réels </td></tr>
-<tr><td>Real3     </td><td> coordonnée 3D, vecteur de trois réels </td></tr>
-<tr><td>Real2x2   </td><td> tenseur 2D, vecteur de quatre réels </td></tr>
-<tr><td>Real3x3   </td><td> tenseur 3D, vecteur de neufs réels </td></tr>
-<tr><td>String    </td><td> chaîne de caractères ISO-8859-1 </td></tr>
+<tr><td>\arccore{Integer}   </td><td> entier signé </td></tr>
+<tr><td>\arccore{Int16}     </td><td> entier signé sur 16 bits </td></tr>
+<tr><td>\arccore{Int32}     </td><td> entier signé sur 32 bits </td></tr>
+<tr><td>\arccore{Int64}     </td><td> entier signé sur 64 bits </td></tr>
+<tr><td>\arcane{Byte}       </td><td> représente un caractère sur 8 bits </td></tr>
+<tr><td>\arccore{Real}      </td><td> réel IEEE 754 </td></tr>
+<tr><td>\arcane{Real2}      </td><td> coordonnée 2D, vecteur de deux réels </td></tr>
+<tr><td>\arcane{Real3}      </td><td> coordonnée 3D, vecteur de trois réels </td></tr>
+<tr><td>\arcane{Real2x2}    </td><td> tenseur 2D, vecteur de quatre réels </td></tr>
+<tr><td>\arcane{Real3x3}    </td><td> tenseur 3D, vecteur de neufs réels </td></tr>
+<tr><td>\arccore{String}    </td><td> chaîne de caractères ISO-8859-1 </td></tr>
 </table>
 
-Par défaut, les entiers (#Integer) sont stockés sur 4 octets mais il
+Par défaut, les entiers (\arccore{Integer}) sont stockés sur 4 octets mais il
 est possible de passer sur 8 octets en compilant avec la macro
-**ARCANE_64BIT**. Par défaut, les flottants (#Real, Real2, Real2x2,
-Real3, Real3x3) utilisent des réels double précision de la norme IEEE
+**ARCANE_64BIT**. Par défaut, les flottants (\arccore{Real}, \arcane{Real2}, \arcane{Real2x2},
+\arcane{Real3}, \arcane{Real3x3}) utilisent des réels double précision de la norme IEEE
 754 et sont stockés sur 8 octets.
 
 ## Entités du maillage {#arcanedoc_getting_started_basicstruct_meshitem}
@@ -43,40 +43,40 @@ arêtes, les faces et les mailles. A chacun de ces types correspond une
 classe C++ dans %Arcane. Pour chaque type d'entité, il existe un type
 *groupe* qui gère un ensemble d'entités de ce type. La classe qui gère
 un groupe d'une entité a pour nom celui de l'entité suffixé par
-*Group*. Par exemple, pour les noeuds, il s'agit de #NodeGroup.
+*Group*. Par exemple, pour les noeuds, il s'agit de \arcane{NodeGroup}.
 
 <table>
 <tr><td><b>Nom de la classe</b></td><td><b>Correspondance dans les spécifications</b></td></tr>
-<tr><td>Node      </td><td> un noeud </td></tr>
-<tr><td>Face      </td><td> une face en 3D, une arête en 2D</td></tr>
-<tr><td>Edge      </td><td> une arête en 3D</td></tr>
-<tr><td>Cell      </td><td> une maille </td></tr>
-<tr><td>#NodeGroup </td><td> un groupe de noeuds </td></tr>
-<tr><td>#EdgeGroup </td><td> un groupe d'arêtes </td></tr>
-<tr><td>#FaceGroup </td><td> un groupe de faces </td></tr>
-<tr><td>#CellGroup </td><td> un groupe de mailles </td></tr>
+<tr><td>\arcane{Node}      </td><td> un noeud </td></tr>
+<tr><td>\arcane{Face}      </td><td> une face en 3D, une arête en 2D</td></tr>
+<tr><td>\arcane{Edge}      </td><td> une arête en 3D</td></tr>
+<tr><td>\arcane{Cell}      </td><td> une maille </td></tr>
+<tr><td>\arcane{NodeGroup} </td><td> un groupe de noeuds </td></tr>
+<tr><td>\arcane{EdgeGroup} </td><td> un groupe d'arêtes </td></tr>
+<tr><td>\arcane{FaceGroup} </td><td> un groupe de faces </td></tr>
+<tr><td>\arcane{CellGroup} </td><td> un groupe de mailles </td></tr>
 </table>
 
 \note
 En dimension 2, les faces correspondent aux arêtes et en dimension 3 aux
 faces. Ceci permet aux algorithmes numériques de parcourir le maillage
-indépendamment de sa dimension. L'entité arête (Edge) n'existe que
+indépendamment de sa dimension. L'entité arête (\arcane{Edge}) n'existe que
 pour les maillages 3D et correspond alors à une arête.
 
 Chaque entité du maillage correspond à une instance d'une classe. Par
 exemple, si le maillage contient 15 mailles, il y a 15 instances du
-type Cell. Chaque classe fournit un certain nombre d'opérations
+type \arcane{Cell}. Chaque classe fournit un certain nombre d'opérations
 permettant de relier les instances entre elles. Par exemple, la méthode
-Cell::node(Integer) de la classe *Cell* permet de récupérer le ième
-noeud de cette maille. De même, la méthode Cell::nbNode() permet de
+\arcane{Cell::node}(\arccore{Integer}) de la classe \arcane{Cell} permet de récupérer le ième
+noeud de cette maille. De même, la méthode \arcane{Cell::nbNode()} permet de
 récupérer le nombre de noeuds de la maille. Pour plus de
 renseignements sur les opérations supportées, il est nécessaire de se
 reporter à la documentation en ligne des classes correspondantes
-(Node, Edge, Face, Cell).
+(\arcane{Node}, \arcane{Edge}, \arcane{Face}, \arcane{Cell}).
 
-Il existe d'autres types d'entités comme les particules (Particle),
-les liens (Link), les noeuds duaux (DualNode) ou les degrés de liberté
-(DoF).
+Il existe d'autres types d'entités comme les particules (\arcane{Particle}),
+les liens (\arcane{Link}), les noeuds duaux (\arcane{DualNode}) ou les degrés de liberté
+(\arcane{DoF}).
 
 ____
 

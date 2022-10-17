@@ -11,19 +11,16 @@ le framework %Arcane.
 
 Voici un schéma représentant la structure de Quicksilver (disponible ici : https://github.com/arcaneframework/arcane-benchs) :
 
-\image html QAMA_schema.svg
+\image html QAMA_schema.jpg
 
-On peut trouver les élements suivants :
+On peut trouver (en autres) les élements suivants :
 - 3 modules nommés "QS", "SamplingMC" et "TrackingMC".
-- 1 service nommé "RNG".
+- 1 service "singleton" nommé "RNG".
 
 Dans chaque module, nous avons les trois fichiers habituels :
 - un header (.h)
 - un fichier source (.cc)
 - un fichier contenant les options du jeu de données (.axl)
-
-Et dans chaque service, nous avons un fichier en plus :
-- une interface de service (IInterface.hh)
 
 L'interface du service RNG est une interface de service incluse
 dans le framework %Arcane. Dans Quicksilver, on utilise notre propre implémentation.
@@ -31,10 +28,8 @@ dans le framework %Arcane. Dans Quicksilver, on utilise notre propre implémenta
 \warning
 Certains services, comme `BasicParticleExchanger` implémentant l'interface 
 `Arcane::IParticleExchanger` ou `SimpleCsvOutput` implémentant l'interface
-`arcane::ISimpleTableOutput` ne sont pas présents dans le schéma alors qu'ils sont 
-utilisés dans QAMA. 
-La raison est que ce sont des services inclus directement dans le framework %Arcane.
-Certains fichiers ont aussi été omis car ils n'importent pas dans cette explication.
+`Arcane::ISimpleTableOutput` sont des services inclus directement dans le framework %Arcane (c'est pour
+cela qu'ils sont en pointillés).
 
 ____
 
