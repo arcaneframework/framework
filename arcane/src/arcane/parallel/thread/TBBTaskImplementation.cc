@@ -181,7 +181,7 @@ LoopStatInfo global_stat;
 struct ScopedStatLoop
 {
  public:
-  ScopedStatLoop(LoopStatInfo* s)
+  explicit ScopedStatLoop(LoopStatInfo* s)
   : m_stat_info(s)
   {
     if (m_stat_info){
@@ -300,7 +300,7 @@ class ThreadLocalStatInfo
     return m_stat_info_list;
   }
  private:
-  StatInfoList* m_stat_info_list;
+  StatInfoList* m_stat_info_list = nullptr;
 };
 thread_local ThreadLocalStatInfo thread_local_stat_info;
 
@@ -803,7 +803,7 @@ class TBBTaskImplementation::Impl
     }
   }
 
-  void notifyThreadDestroyed(bool is_worker)
+  void notifyThreadDestroyed([[maybe_unused]] bool is_worker)
   {
 #ifdef ARCANE_USE_ONETBB
     // Avec OneTBB, cette méthode est appelée à chaque fois qu'on sort
