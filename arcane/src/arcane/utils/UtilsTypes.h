@@ -189,6 +189,7 @@ class MutableMemoryView;
 // Dans ConcurrencyUtils.h
 
 class ParallelLoopOptions;
+class ParallelFor1DLoopInfo;
 class TaskContext;
 class ITaskFunctor;
 template<typename InstanceType>

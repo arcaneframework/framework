@@ -297,54 +297,6 @@ class ARCANE_UTILS_EXPORT ITask
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Caractéristiques d'un boucle 1D multi-thread.
- *
- * Cette classe permet de spécifier les options d'une boucle à paralléliser
- * en mode multi-thread.
- */
-class ARCANE_UTILS_EXPORT ParallelFor1DLoopInfo
-{
- public:
-
- using ThatClass = ParallelFor1DLoopInfo;
-
- public:
-
-  ParallelFor1DLoopInfo(Int32 begin,Int32 size,IRangeFunctor* functor)
-  : m_begin(begin), m_size(size), m_functor(functor) {}
-  ParallelFor1DLoopInfo(Int32 begin,Int32 size,
-                        const ParallelLoopOptions& options,IRangeFunctor* functor)
-  : m_begin(begin), m_size(size), m_options(options), m_functor(functor) {}
-  ParallelFor1DLoopInfo(Int32 begin,Int32 size, Int32 block_size,IRangeFunctor* functor)
-  : m_begin(begin), m_size(size), m_functor(functor)
-  {
-    ParallelLoopOptions opts;
-    opts.setGrainSize(block_size);
-    m_options = opts;
-  }
-
- public:
-
-  Int32 beginIndex() const { return m_begin; }
-  Int32 size() const { return m_size; }
-  std::optional<ParallelLoopOptions> options() const { return m_options; }
-  ThatClass& addOptions(const ParallelLoopOptions& v) { m_options = v; return (*this); }
-  const ForLoopTraceInfo& traceInfo() const { return m_trace_info; }
-  ThatClass& addTraceInfo(const ForLoopTraceInfo& v) { m_trace_info = v; return (*this); }
-  IRangeFunctor* functor() const { return m_functor; }
-
- private:
-
-  Int32 m_begin = 0;
-  Int32 m_size = 0;
-  std::optional<ParallelLoopOptions> m_options;
-  ForLoopTraceInfo m_trace_info;
-  IRangeFunctor* m_functor = nullptr;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
  * \internal
  * \brief Implémentation d'une fabrique de tâches.
  *
@@ -701,6 +653,54 @@ class ARCANE_UTILS_EXPORT TaskFactory
   static IObservable* m_destroyed_thread_observable;
   static Int32 m_verbose_level;
   static Int32 m_execution_stat_level;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Caractéristiques d'un boucle 1D multi-thread.
+ *
+ * Cette classe permet de spécifier les options d'une boucle à paralléliser
+ * en mode multi-thread.
+ */
+class ARCANE_UTILS_EXPORT ParallelFor1DLoopInfo
+{
+ public:
+
+ using ThatClass = ParallelFor1DLoopInfo;
+
+ public:
+
+  ParallelFor1DLoopInfo(Int32 begin,Int32 size,IRangeFunctor* functor)
+  : m_begin(begin), m_size(size), m_functor(functor) {}
+  ParallelFor1DLoopInfo(Int32 begin,Int32 size,
+                        const ParallelLoopOptions& options,IRangeFunctor* functor)
+  : m_begin(begin), m_size(size), m_options(options), m_functor(functor) {}
+  ParallelFor1DLoopInfo(Int32 begin,Int32 size, Int32 block_size,IRangeFunctor* functor)
+  : m_begin(begin), m_size(size), m_functor(functor)
+  {
+    ParallelLoopOptions opts(TaskFactory::defaultParallelLoopOptions());
+    opts.setGrainSize(block_size);
+    m_options = opts;
+  }
+
+ public:
+
+  Int32 beginIndex() const { return m_begin; }
+  Int32 size() const { return m_size; }
+  std::optional<ParallelLoopOptions> options() const { return m_options; }
+  ThatClass& addOptions(const ParallelLoopOptions& v) { m_options = v; return (*this); }
+  const ForLoopTraceInfo& traceInfo() const { return m_trace_info; }
+  ThatClass& addTraceInfo(const ForLoopTraceInfo& v) { m_trace_info = v; return (*this); }
+  IRangeFunctor* functor() const { return m_functor; }
+
+ private:
+
+  Int32 m_begin = 0;
+  Int32 m_size = 0;
+  std::optional<ParallelLoopOptions> m_options;
+  ForLoopTraceInfo m_trace_info;
+  IRangeFunctor* m_functor = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
