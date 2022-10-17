@@ -15,7 +15,7 @@
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/IFunctor.h"
 #include "arcane/utils/CheckedConvert.h"
-#include "arcane/utils/LoopRanges.h"
+#include "arcane/utils/ForLoopRanges.h"
 #include "arcane/utils/ConcurrencyUtils.h"
 #include "arcane/utils/IObservable.h"
 #include "arcane/utils/PlatformUtils.h"
@@ -321,13 +321,13 @@ inline int _currentTaskTreadIndex()
 }
 
 inline tbb::blocked_rangeNd<Int32,1>
-_toTBBRange(const ComplexLoopRanges<1>& r)
+_toTBBRange(const ComplexForLoopRanges<1>& r)
 {
   return {{r.lowerBound(0), r.upperBound(0)}};
 }
 
 inline tbb::blocked_rangeNd<Int32,2>
-_toTBBRange(const ComplexLoopRanges<2>& r)
+_toTBBRange(const ComplexForLoopRanges<2>& r)
 {
   return {{r.lowerBound(0), r.upperBound(0)},
           {r.lowerBound(1), r.upperBound(1)}};
@@ -335,7 +335,7 @@ _toTBBRange(const ComplexLoopRanges<2>& r)
 }
 
 inline tbb::blocked_rangeNd<Int32,3>
-_toTBBRange(const ComplexLoopRanges<3>& r)
+_toTBBRange(const ComplexForLoopRanges<3>& r)
 {
   return {{r.lowerBound(0), r.upperBound(0)},
           {r.lowerBound(1), r.upperBound(1)},
@@ -343,7 +343,7 @@ _toTBBRange(const ComplexLoopRanges<3>& r)
 }
 
 inline tbb::blocked_rangeNd<Int32,4>
-_toTBBRange(const ComplexLoopRanges<4>& r)
+_toTBBRange(const ComplexForLoopRanges<4>& r)
 {
   return {{r.lowerBound(0), r.upperBound(0)},
           {r.lowerBound(1), r.upperBound(1)},
@@ -381,7 +381,7 @@ _toTBBRangeWithGrain(const tbb::blocked_rangeNd<Int32,4>& r,std::size_t grain_si
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-inline ComplexLoopRanges<2>
+inline ComplexForLoopRanges<2>
 _fromTBBRange(const tbb::blocked_rangeNd<Int32,2>& r)
 {
   ArrayBounds<MDDim2> lower_bounds(r.dim(0).begin(),r.dim(1).begin());
@@ -391,7 +391,7 @@ _fromTBBRange(const tbb::blocked_rangeNd<Int32,2>& r)
   return { lower_bounds, sizes };
 }
 
-inline ComplexLoopRanges<3>
+inline ComplexForLoopRanges<3>
 _fromTBBRange(const tbb::blocked_rangeNd<Int32,3> & r)
 {
   ArrayBounds<MDDim3> lower_bounds(r.dim(0).begin(),r.dim(1).begin(),r.dim(2).begin());
@@ -402,7 +402,7 @@ _fromTBBRange(const tbb::blocked_rangeNd<Int32,3> & r)
   return { lower_bounds, sizes };
 }
 
-inline ComplexLoopRanges<4>
+inline ComplexForLoopRanges<4>
 _fromTBBRange(const tbb::blocked_rangeNd<Int32,4>& r)
 {
   ArrayBounds<MDDim4> lower_bounds(r.dim(0).begin(),r.dim(1).begin(),r.dim(2).begin(),r.dim(3).begin());
@@ -604,25 +604,25 @@ class TBBTaskImplementation
   }
   void executeParallelFor(const ParallelFor1DLoopInfo& loop_info) override;
 
-  void executeParallelFor(const ComplexLoopRanges<1>& loop_ranges,
+  void executeParallelFor(const ComplexForLoopRanges<1>& loop_ranges,
                           const ParallelLoopOptions& options,
                           IMDRangeFunctor<1>* functor) final
   {
     _executeMDParallelFor<1>(loop_ranges,functor,options);
   }
-  void executeParallelFor(const ComplexLoopRanges<2>& loop_ranges,
+  void executeParallelFor(const ComplexForLoopRanges<2>& loop_ranges,
                           const ParallelLoopOptions& options,
                           IMDRangeFunctor<2>* functor) final
   {
     _executeMDParallelFor<2>(loop_ranges,functor,options);
   }
-  void executeParallelFor(const ComplexLoopRanges<3>& loop_ranges,
+  void executeParallelFor(const ComplexForLoopRanges<3>& loop_ranges,
                           const ParallelLoopOptions& options,
                           IMDRangeFunctor<3>* functor) final
   {
     _executeMDParallelFor<3>(loop_ranges,functor,options);
   }
-  void executeParallelFor(const ComplexLoopRanges<4>& loop_ranges,
+  void executeParallelFor(const ComplexForLoopRanges<4>& loop_ranges,
                           const ParallelLoopOptions& options,
                           IMDRangeFunctor<4>* functor) final
   {
@@ -683,7 +683,7 @@ class TBBTaskImplementation
  private:
 
   template<int RankValue> void
-  _executeMDParallelFor(const ComplexLoopRanges<RankValue>& loop_ranges,
+  _executeMDParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
                         IMDRangeFunctor<RankValue>* functor,
                         const ParallelLoopOptions& options);
 };
@@ -1136,7 +1136,7 @@ class TBBTaskImplementation::MDParallelForExecute
 
   MDParallelForExecute(TBBTaskImplementation* impl,
                        const ParallelLoopOptions& options,
-                       const ComplexLoopRanges<RankValue>& range,
+                       const ComplexForLoopRanges<RankValue>& range,
                        IMDRangeFunctor<RankValue>* f,[[maybe_unused]] LoopStatInfo* stat_info)
   : m_impl(impl), m_tbb_range(_toTBBRange(range)), m_functor(f), m_options(options)
   {
@@ -1290,7 +1290,7 @@ executeParallelFor(const ParallelFor1DLoopInfo& loop_info)
  * \warning L'implémentation actuelle ne tient pas compte de \a options
  */
 template<int RankValue> void TBBTaskImplementation::
-_executeMDParallelFor(const ComplexLoopRanges<RankValue>& loop_ranges,
+_executeMDParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
                       IMDRangeFunctor<RankValue>* functor,
                       const ParallelLoopOptions& options)
 {
@@ -1324,7 +1324,7 @@ _executeMDParallelFor(const ComplexLoopRanges<RankValue>& loop_ranges,
     auto range_1d = _toTBBRange(loop_ranges);
     auto x1 = [&](Integer begin,Integer size)
               {
-                functor->executeFunctor(ComplexLoopRanges<1>(begin,size));
+                functor->executeFunctor(ComplexForLoopRanges<1>(begin,size));
               };
     LambdaRangeFunctorT<decltype(x1)> functor_1d(x1);
     Integer begin1 = CheckedConvert::toInteger(range_1d.dim(0).begin());

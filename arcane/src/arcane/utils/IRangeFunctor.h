@@ -65,7 +65,7 @@ class IMDRangeFunctor
   /*!
    * \brief Exécute la méthode associée.
    */
-  virtual void executeFunctor(const ComplexLoopRanges<RankValue>& loop_range) =0;
+  virtual void executeFunctor(const ComplexForLoopRanges<RankValue>& loop_range) =0;
 };
 
 /*---------------------------------------------------------------------------*/

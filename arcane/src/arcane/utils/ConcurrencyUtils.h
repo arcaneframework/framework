@@ -393,19 +393,19 @@ class ARCANE_UTILS_EXPORT ITaskImplementation
   virtual void executeParallelFor(const ParallelFor1DLoopInfo& loop_info) =0;
 
   //! Exécute une boucle 1D en concurrence
-  virtual void executeParallelFor(const ComplexLoopRanges<1>& loop_ranges,
+  virtual void executeParallelFor(const ComplexForLoopRanges<1>& loop_ranges,
                                   const ParallelLoopOptions& options,
                                   IMDRangeFunctor<1>* functor) =0;
   //! Exécute une boucle 2D en concurrence
-  virtual void executeParallelFor(const ComplexLoopRanges<2>& loop_ranges,
+  virtual void executeParallelFor(const ComplexForLoopRanges<2>& loop_ranges,
                                   const ParallelLoopOptions& options,
                                   IMDRangeFunctor<2>* functor) =0;
   //! Exécute une boucle 3D en concurrence
-  virtual void executeParallelFor(const ComplexLoopRanges<3>& loop_ranges,
+  virtual void executeParallelFor(const ComplexForLoopRanges<3>& loop_ranges,
                                   const ParallelLoopOptions& options,
                                   IMDRangeFunctor<3>* functor) =0;
   //! Exécute une boucle 4D en concurrence
-  virtual void executeParallelFor(const ComplexLoopRanges<4>& loop_ranges,
+  virtual void executeParallelFor(const ComplexForLoopRanges<4>& loop_ranges,
                                   const ParallelLoopOptions& options,
                                   IMDRangeFunctor<4>* functor) =0;
 
@@ -527,7 +527,7 @@ class ARCANE_UTILS_EXPORT TaskFactory
   }
 
   //! Exécute une boucle simple
-  static void executeParallelFor(const ComplexLoopRanges<1>& loop_ranges,
+  static void executeParallelFor(const ComplexForLoopRanges<1>& loop_ranges,
                                  const ParallelLoopOptions& options,
                                  IMDRangeFunctor<1>* functor)
   {
@@ -535,7 +535,7 @@ class ARCANE_UTILS_EXPORT TaskFactory
   }
 
   //! Exécute une boucle 2D
-  static void executeParallelFor(const ComplexLoopRanges<2>& loop_ranges,
+  static void executeParallelFor(const ComplexForLoopRanges<2>& loop_ranges,
                                  const ParallelLoopOptions& options,
                                  IMDRangeFunctor<2>* functor)
   {
@@ -543,7 +543,7 @@ class ARCANE_UTILS_EXPORT TaskFactory
   }
 
   //! Exécute une boucle 3D
-  static void executeParallelFor(const ComplexLoopRanges<3>& loop_ranges,
+  static void executeParallelFor(const ComplexForLoopRanges<3>& loop_ranges,
                                  const ParallelLoopOptions& options,
                                  IMDRangeFunctor<3>* functor)
   {
@@ -551,7 +551,7 @@ class ARCANE_UTILS_EXPORT TaskFactory
   }
 
   //! Exécute une boucle 4D
-  static void executeParallelFor(const ComplexLoopRanges<4>& loop_ranges,
+  static void executeParallelFor(const ComplexForLoopRanges<4>& loop_ranges,
                                  const ParallelLoopOptions& options,
                                  IMDRangeFunctor<4>* functor)
   {
@@ -710,7 +710,7 @@ class ARCANE_UTILS_EXPORT TaskFactory
  * sur l'intervalle d'itération donné par \a loop_ranges.
  */
 template<int RankValue,typename LambdaType> inline void
-arcaneParallelFor(const ComplexLoopRanges<RankValue>& loop_ranges,
+arcaneParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
                   const ParallelLoopOptions& options,
                   const LambdaType& lambda_function)
 {
@@ -720,7 +720,7 @@ arcaneParallelFor(const ComplexLoopRanges<RankValue>& loop_ranges,
   // en compte.
   // TODO: regarder si on pourrait faire la copie uniquement une fois par thread
   // si cette copie devient couteuse.
-  auto xfunc = [&lambda_function] (const ComplexLoopRanges<RankValue>& sub_bounds)
+  auto xfunc = [&lambda_function] (const ComplexForLoopRanges<RankValue>& sub_bounds)
   {
     using Type = typename std::remove_reference<LambdaType>::type;
     Type private_lambda(lambda_function);
@@ -737,11 +737,11 @@ arcaneParallelFor(const ComplexLoopRanges<RankValue>& loop_ranges,
  * sur l'intervalle d'itération donné par \a loop_ranges.
  */
 template<int RankValue,typename LambdaType> inline void
-arcaneParallelFor(const SimpleLoopRanges<RankValue>& loop_ranges,
+arcaneParallelFor(const SimpleForLoopRanges<RankValue>& loop_ranges,
                   const ParallelLoopOptions& options,
                   const LambdaType& lambda_function)
 {
-  ComplexLoopRanges<RankValue> complex_loop_ranges{loop_ranges};
+  ComplexForLoopRanges<RankValue> complex_loop_ranges{loop_ranges};
   arcaneParallelFor(complex_loop_ranges,options,lambda_function);
 }
 
@@ -752,7 +752,7 @@ arcaneParallelFor(const SimpleLoopRanges<RankValue>& loop_ranges,
  * sur l'intervalle d'itération donné par \a loop_ranges.
  */
 template<int RankValue,typename LambdaType> inline void
-arcaneParallelFor(const ComplexLoopRanges<RankValue>& loop_ranges,
+arcaneParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
                   const LambdaType& lambda_function)
 {
   ParallelLoopOptions options;
@@ -766,11 +766,11 @@ arcaneParallelFor(const ComplexLoopRanges<RankValue>& loop_ranges,
  * sur l'intervalle d'itération donné par \a loop_ranges.
  */
 template<int RankValue,typename LambdaType> inline void
-arcaneParallelFor(const SimpleLoopRanges<RankValue>& loop_ranges,
+arcaneParallelFor(const SimpleForLoopRanges<RankValue>& loop_ranges,
                   const LambdaType& lambda_function)
 {
   ParallelLoopOptions options;
-  ComplexLoopRanges<RankValue> complex_loop_ranges{loop_ranges};
+  ComplexForLoopRanges<RankValue> complex_loop_ranges{loop_ranges};
   arcaneParallelFor(complex_loop_ranges,options,lambda_function);
 }
 

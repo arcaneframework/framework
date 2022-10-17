@@ -95,7 +95,7 @@ _applyGenericLoop(RunCommand& command,LoopBoundType<N> bounds,const Lambda& func
 template<int N,typename Lambda> void
 run(RunCommand& command,ArrayBounds<A_MDDIM(N)> bounds,const Lambda& func)
 {
-  impl::_applyGenericLoop(command,SimpleLoopRanges(bounds),func);
+  impl::_applyGenericLoop(command,SimpleForLoopRanges(bounds),func);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -103,7 +103,7 @@ run(RunCommand& command,ArrayBounds<A_MDDIM(N)> bounds,const Lambda& func)
 
 //! Applique la lambda \a func sur l'intervalle d'itération donnée par \a bounds
 template<int N,typename Lambda> void
-run(RunCommand& command,SimpleLoopRanges<N> bounds,const Lambda& func)
+run(RunCommand& command,SimpleForLoopRanges<N> bounds,const Lambda& func)
 {
   impl::_applyGenericLoop(command,bounds,func);
 }
@@ -113,7 +113,7 @@ run(RunCommand& command,SimpleLoopRanges<N> bounds,const Lambda& func)
 
 //! Applique la lambda \a func sur l'intervalle d'itération donnée par \a bounds
 template<int N,typename Lambda> void
-run(RunCommand& command,ComplexLoopRanges<N> bounds,const Lambda& func)
+run(RunCommand& command,ComplexForLoopRanges<N> bounds,const Lambda& func)
 {
   impl::_applyGenericLoop(command,bounds,func);
 }
@@ -133,26 +133,26 @@ class ArrayBoundRunCommand
   LoopBoundType m_bounds;
 };
 
-template<int N> ArrayBoundRunCommand<N,SimpleLoopRanges<N>>
+template<int N> ArrayBoundRunCommand<N,SimpleForLoopRanges<N>>
 operator<<(RunCommand& command,const ArrayBounds<A_MDDIM(N)>& bounds)
 {
   return {command,bounds};
 }
 
-template<int N> ArrayBoundRunCommand<N,SimpleLoopRanges<N>>
-operator<<(RunCommand& command,const SimpleLoopRanges<N>& bounds)
+template<int N> ArrayBoundRunCommand<N,SimpleForLoopRanges<N>>
+operator<<(RunCommand& command,const SimpleForLoopRanges<N>& bounds)
 {
   return {command,bounds};
 }
 
-template<int N> ArrayBoundRunCommand<N,ComplexLoopRanges<N>>
-operator<<(RunCommand& command,const ComplexLoopRanges<N>& bounds)
+template<int N> ArrayBoundRunCommand<N,ComplexForLoopRanges<N>>
+operator<<(RunCommand& command,const ComplexForLoopRanges<N>& bounds)
 {
   return {command,bounds};
 }
 
-template<int N,template<int> class LoopBoundType,typename Lambda>
-void operator<<(ArrayBoundRunCommand<N,LoopBoundType<N>>&& nr,const Lambda& f)
+template<int N,template<int> class ForLoopBoundType,typename Lambda>
+void operator<<(ArrayBoundRunCommand<N,ForLoopBoundType<N>>&& nr,const Lambda& f)
 {
   run(nr.m_command,nr.m_bounds,f);
 }

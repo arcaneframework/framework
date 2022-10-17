@@ -82,7 +82,7 @@ class NumArrayUnitTest
   _doSum(NumArray<double, A_MDDIM(Rank), LayoutType> values, ArrayBounds<A_MDDIM(Rank)> bounds)
   {
     double total = 0.0;
-    SimpleLoopRanges<Rank> lb(bounds);
+    SimpleForLoopRanges<Rank> lb(bounds);
     arcaneSequentialFor(lb, [&](ArrayBoundsIndex<Rank> idx) { total += values(idx); });
     return total;
   }
