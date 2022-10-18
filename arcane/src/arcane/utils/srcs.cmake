@@ -101,6 +101,8 @@ set(ARCANE_SOURCES
   PlatformUtils.h
   Process.cc
   Process.h
+  Profiling.h
+  Profiling.cc
   Property.cc
   Property.h
   PropertyDeclarations.h

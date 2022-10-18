@@ -19,6 +19,7 @@
 #include "arcane/utils/ConcurrencyUtils.h"
 #include "arcane/utils/IObservable.h"
 #include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/Profiling.h"
 
 #include "arcane/FactoryService.h"
 
@@ -67,29 +68,22 @@
 
 #endif // ARCANE_USE_ONETBB
 
-// Pour les statistiques
-#include <vector>
-#include <map>
-#include <iomanip>
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
 
+using impl::LoopStatInfo;
+class TBBTaskImplementation;
+
 // TODO: utiliser un pool mémoire spécifique pour gérer les
 // OneTBBTask pour optimiser les new/delete des instances de cette classe.
 // Auparavant avec les anciennes versions de TBB cela était géré avec
 // la méthode 'tbb::task::allocate_child()'.
 
-// TODO: Les classes gérant les statistiques sont indépendantes de TBB.
-// Il faudrait les mettre dans leur propre fichier.
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-class TBBTaskImplementation;
 
 namespace
 {
@@ -101,221 +95,8 @@ bool isStatActive()
   return global_do_stat_level > 0;
 }
 
-}
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-namespace impl
-{
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-struct LoopStatInfo
-{
- public:
-
-  void reset()
-  {
-    m_nb_loop_parallel_for = 0;
-    m_nb_chunk_parallel_for = 0;
-  }
-
-  void incrementNbChunkParallelFor()
-  {
-    ++m_nb_chunk_parallel_for;
-  }
-
-  void incrementNbLoopParallelFor()
-  {
-    ++m_nb_loop_parallel_for;
-  }
-
-  void merge(const LoopStatInfo* s)
-  {
-    if (s)
-      merge(*s);
-  }
-
-  void merge(const LoopStatInfo& s)
-  {
-    m_nb_loop_parallel_for += s.m_nb_loop_parallel_for;
-    m_nb_chunk_parallel_for += s.m_nb_chunk_parallel_for;
-    m_total_time += s.m_total_time;
-  }
-
-  void printInfos(std::ostream& o)
-  {
-    if (!isStatActive())
-      return;
-    Int64 nb_loop_parallel_for = m_nb_loop_parallel_for;
-    Int64 nb_chunk_parallel_for = m_nb_chunk_parallel_for;
-    Int64 total_time = m_total_time;
-    double x = static_cast<double>(total_time);
-    double x1 = 0.0;
-    if (nb_loop_parallel_for>0)
-      x1 = x / static_cast<double>(nb_loop_parallel_for);
-    double x2 = 0.0;
-    if (nb_chunk_parallel_for>0)
-      x2 = x / static_cast<double>(nb_chunk_parallel_for);
-    o << "TBB: global_time (ms) = " << x / 1.0e6 << "\n";
-    o << "TBB: global_nb_loop   = " << std::setw(10) << nb_loop_parallel_for << " time=" << x1 << "\n";
-    o << "TBB: global_nb_chunk  = " << std::setw(10) << nb_chunk_parallel_for << " time=" << x2 << "\n";
-  }
-
- public:
-
-  // Valeur indiquand le niveau de statistiques qu'on souhaite avoir (0 == aucune)
-  std::atomic<Int64> m_nb_loop_parallel_for = 0;
-  std::atomic<Int64> m_nb_chunk_parallel_for = 0;
-  // Temps total (en nano seconde)
-  std::atomic<Int64> m_total_time = 0;
-};
-
-LoopStatInfo global_stat;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-struct ScopedStatLoop
-{
- public:
-  explicit ScopedStatLoop(LoopStatInfo* s)
-  : m_stat_info(s)
-  {
-    if (m_stat_info){
-      m_stat_info->incrementNbLoopParallelFor();
-      m_begin_time = platform::getRealTime();
-    }
-  }
-  ~ScopedStatLoop()
-  {
-    if (m_stat_info){
-      double v = platform::getRealTime() - m_begin_time;
-      Int64 v_as_int64 = static_cast<Int64>(v *1.0e9);
-      m_stat_info->m_total_time += v_as_int64;
-      //std::cout << "LoopTime=" << v_as_int64 << "\n";
-    }
-  }
-
- public:
-
-  double m_begin_time = 0.0;
-  LoopStatInfo* m_stat_info = nullptr;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-// TODO Utiliser un hash pour le map plutôt qu'une String pour accélérer les comparaisons
-
-class StatInfoList
-{
- public:
-
-  void merge(const LoopStatInfo& loop_stat_info,const ForLoopTraceInfo& loop_trace_info)
-  {
-    global_stat.merge(loop_stat_info);
-    String loop_name = "Unknown";
-    if (loop_trace_info.isValid()){
-      loop_name = loop_trace_info.loopName();
-      if (loop_name.empty())
-        loop_name = loop_trace_info.traceInfo().name();
-    }
-    m_stat_map[loop_name].merge(loop_stat_info);
-  }
-
-  void print(std::ostream& o)
-  {
-    o << "TaskStat\n";
-    o << std::setw(10) << "Nloop" << std::setw(10) << "Nchunk"
-      << std::setw(10) << " T (us)" << std::setw(11) << "Tc (ns)\n";
-    Int64 cumulative_total = 0;
-    for(const auto& x : m_stat_map){
-      const LoopStatInfo& s = x.second;
-      Int64 nb_loop = s.m_nb_loop_parallel_for;
-      Int64 nb_chunk = s.m_nb_chunk_parallel_for;
-      Int64 total_time = s.m_total_time;
-      Int64 time_per_chunk = (nb_chunk==0) ? 0 : (total_time/nb_chunk);
-      o << std::setw(10) <<nb_loop << std::setw(10) << nb_chunk
-        << std::setw(10) << total_time/1000 << std::setw(10) << time_per_chunk << "  " << x.first << "\n";
-      cumulative_total += total_time;
-    }
-    o << "TOTAL=" << cumulative_total / 1000000 << "\n";
-  }
-
- private:
-
-  std::map<String,LoopStatInfo> m_stat_map;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class AllStatInfoList
-{
- public:
-
-  StatInfoList* createStatInfoList()
-  {
-    std::lock_guard<std::mutex> lk(m_mutex);
-    std::unique_ptr<StatInfoList> x(new StatInfoList);
-    StatInfoList* ptr = x.get();
-    m_stat_info_list_vector.push_back(std::move(x));
-    return ptr;
-  }
-
-  void print(std::ostream& o)
-  {
-    for(const auto& x : m_stat_info_list_vector)
-      x->print(o);
-  }
-
- public:
-
-  std::mutex m_mutex;
-  std::vector<std::unique_ptr<StatInfoList>> m_stat_info_list_vector;
-};
-AllStatInfoList global_all_stat_info_list;
-
-// Permet de gérer une instance de StatInfoList par thread pour éviter les verroux
-class ThreadLocalStatInfo
-{
- public:
-  StatInfoList* statInfoList()
-  {
-    return _createOrGetStatInfoList();
-  }
-  void merge(const LoopStatInfo& stat_info,const ForLoopTraceInfo& trace_info)
-  {
-    StatInfoList* stat_list = _createOrGetStatInfoList();
-    stat_list->merge(stat_info,trace_info);
-  }
- private:
-  StatInfoList* _createOrGetStatInfoList()
-  {
-    if (!m_stat_info_list)
-      m_stat_info_list = global_all_stat_info_list.createStatInfoList();
-    return m_stat_info_list;
-  }
- private:
-  StatInfoList* m_stat_info_list = nullptr;
-};
-thread_local ThreadLocalStatInfo thread_local_stat_info;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // End namespace impl
-
-using impl::LoopStatInfo;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace
-{
 
 inline int _currentTaskTreadIndex()
 {
@@ -657,8 +438,7 @@ class TBBTaskImplementation
 
   void printExecutionStats(std::ostream& o) const override
   {
-    impl::global_stat.printInfos(o);
-    impl:: global_all_stat_info_list.print(o);
+    ProfilingRegistry::printExecutionStats(o);
   }
 
  public:
@@ -862,7 +642,6 @@ class TBBTaskImplementation::Impl
     m_sub_arena_list[0] = m_sub_arena_list[1] = nullptr;
     for( Integer i=2; i<max_arena_size; ++i )
       m_sub_arena_list[i] = new tbb::task_arena(i);
-    impl::global_stat.reset();
   }
 };
 
@@ -1295,7 +1074,7 @@ executeParallelFor(const ParallelFor1DLoopInfo& loop_info)
   LoopStatInfo* stat_info_ptr = isStatActive() ? &stat_info : nullptr;
   _executeParallelFor(loop_info,stat_info_ptr);
   if (stat_info_ptr)
-    impl::thread_local_stat_info.merge(*stat_info_ptr,loop_info.traceInfo());
+    ProfilingRegistry::threadLocalInstance()->merge(*stat_info_ptr,loop_info.traceInfo());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1353,7 +1132,7 @@ _executeMDParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
     used_arena->execute(pfe);
   }
   if (stat_info_ptr)
-    impl::thread_local_stat_info.merge(*stat_info_ptr,ForLoopTraceInfo());
+    ProfilingRegistry::threadLocalInstance()->merge(*stat_info_ptr,ForLoopTraceInfo());
 }
 
 /*---------------------------------------------------------------------------*/
