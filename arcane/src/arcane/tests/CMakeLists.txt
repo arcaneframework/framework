@@ -507,7 +507,12 @@ arcane_add_test_parallel_all(hydro3_meshservice testHydro-3-meshservice.arc 3 4 
 arcane_add_test_parallel_all(hydro3_checkpoint_meshservice testHydro-3-checkpoint-meshservice.arc 3 4 -c 3 -m 10)
 ARCANE_ADD_TEST(hydro5 testHydro-5.arc -m 50 -We,ARCANE_MASTER_HAS_OUTPUT_FILE,1)
 ARCANE_ADD_TEST(hydro5_message_passing_prof testHydro-5.arc -m 50 -We,ARCANE_MESSAGE_PASSING_PROFILING,JSON)
-ARCANE_ADD_TEST(hydro5_trace testHydro-5.arc -m 50 -We,ARCANE_TRACE_ENUMERATOR,1)
+if (ARCANE_HAS_LINUX_PERF_COUNTERS)
+  arcane_add_test(hydro5_perf_trace testHydro-5.arc -m 50 -We,ARCANE_TRACE_ENUMERATOR,1)
+endif()
+if (Papi_FOUND)
+  arcane_add_test(hydro5_papi_trace testHydro-5.arc -m 50 -We,ARCANE_TRACE_ENUMERATOR,1 -We,ARCANE_PERFORMANCE_COUNTER_SERVICE,Papi)
+endif()
 ARCANE_ADD_TEST(hydrosimd5 testHydroSimd-5.arc -m 50)
 ARCANE_ADD_TEST(hydrosimd5_trace testHydroSimd-5.arc -m 50 -We,ARCANE_TRACE_ENUMERATOR,1)
 
