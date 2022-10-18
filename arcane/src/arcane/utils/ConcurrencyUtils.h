@@ -671,11 +671,12 @@ class ARCANE_UTILS_EXPORT ForLoopRunInfo
  public:
 
   ForLoopRunInfo() = default;
-  // Ce constructeur doit être implicit pour autoriser les conversions
-  ForLoopRunInfo(const ParallelLoopOptions& options)
+  explicit ForLoopRunInfo(const ParallelLoopOptions& options)
   : m_options(options) {}
   ForLoopRunInfo(const ParallelLoopOptions& options,const ForLoopTraceInfo& trace_info)
   : m_options(options), m_trace_info(trace_info) {}
+  explicit ForLoopRunInfo(const ForLoopTraceInfo& trace_info)
+  : m_trace_info(trace_info) {}
 
  public:
 

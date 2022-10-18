@@ -102,15 +102,15 @@ class ScopedExecInfo
 {
  public:
 
-  ScopedExecInfo(const ForLoopTraceInfo& trace_info)
-  : m_trace_info(trace_info)
+  ScopedExecInfo(const ForLoopRunInfo& run_info)
+  : m_run_info(run_info)
   {
     m_stat_info_ptr = isStatActive() ? &m_stat_info : nullptr;
   }
   ~ScopedExecInfo()
   {
-  if (m_stat_info_ptr)
-    ProfilingRegistry::threadLocalInstance()->merge(*m_stat_info_ptr,m_trace_info);
+    if (m_stat_info_ptr)
+      ProfilingRegistry::threadLocalInstance()->merge(*m_stat_info_ptr,m_run_info.traceInfo());
   }
 
  public:
@@ -121,7 +121,7 @@ class ScopedExecInfo
 
   ForLoopOneExecInfo m_stat_info;
   ForLoopOneExecInfo* m_stat_info_ptr = nullptr;
-  const ForLoopTraceInfo& m_trace_info;
+  ForLoopRunInfo m_run_info;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -1055,7 +1055,7 @@ printInfos(std::ostream& o) const
 void TBBTaskImplementation::
 _executeParallelFor(const ParallelFor1DLoopInfo& loop_info)
 {
-  ScopedExecInfo sei(loop_info.runInfo().traceInfo());
+  ScopedExecInfo sei(loop_info.runInfo());
   ForLoopOneExecInfo* stat_info = sei.statInfo();
 
   Int32 begin = loop_info.beginIndex();
@@ -1117,7 +1117,7 @@ _executeMDParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
                        IMDRangeFunctor<RankValue>* functor,
                        const ParallelLoopOptions& options)
 {
-  ScopedExecInfo sei(ForLoopTraceInfo{});
+  ScopedExecInfo sei(ForLoopRunInfo{});
   ForLoopOneExecInfo* stat_info = sei.statInfo();
 
   if (TaskFactory::verboseLevel()>=1)
@@ -1179,7 +1179,7 @@ executeParallelFor(Integer begin,Integer size,Integer grain_size,IRangeFunctor* 
 void TBBTaskImplementation::
 executeParallelFor(Integer begin,Integer size,const ParallelLoopOptions& options,IRangeFunctor* f)
 {
-  executeParallelFor(ParallelFor1DLoopInfo(begin,size,f,options));
+  executeParallelFor(ParallelFor1DLoopInfo(begin,size,f,ForLoopRunInfo(options)));
 }
 
 /*---------------------------------------------------------------------------*/

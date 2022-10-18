@@ -500,8 +500,8 @@ computeVelocity()
 void ModuleSimpleHydro::
 computeViscosityWork()
 {
-  ForLoopTraceInfo fti(A_FUNCINFO,"computeViscosityWork");
-  arcaneParallelForeach(allCells(),fti,this,&ModuleSimpleHydro::_computeViscosityWork);
+  ForLoopRunInfo fri(ForLoopTraceInfo(A_FUNCINFO,"computeViscosityWork"));
+  arcaneParallelForeach(allCells(),fri,this,&ModuleSimpleHydro::_computeViscosityWork);
 }
 
 void ModuleSimpleHydro::
@@ -603,8 +603,8 @@ updateDensity()
 void ModuleSimpleHydro::
 applyEquationOfState()
 {
-  ForLoopTraceInfo fti(A_FUNCINFO,"applyEquationOfState");
-  arcaneParallelForeach(allCells(),fti,this,&ModuleSimpleHydro::_applyEquationOfState);
+  ForLoopRunInfo fri(ForLoopTraceInfo(A_FUNCINFO,"applyEquationOfState"));
+  arcaneParallelForeach(allCells(),fri,this,&ModuleSimpleHydro::_applyEquationOfState);
 }
 
 void ModuleSimpleHydro::
@@ -810,8 +810,8 @@ computeCQs(Real3 node_coord[8],Real3 face_coord[6],const Cell& cell)
 void ModuleSimpleHydro::
 computeGeometricValues()
 {
-  ForLoopTraceInfo fti(A_FUNCINFO,"computeGeometricValues");
-  arcaneParallelForeach(allCells(),fti,this,&ModuleSimpleHydro::_computeGeometricValues);
+  ForLoopRunInfo fri(ForLoopTraceInfo(A_FUNCINFO,"computeGeometricValues"));
+  arcaneParallelForeach(allCells(),fri,this,&ModuleSimpleHydro::_computeGeometricValues);
 }
 
 /*---------------------------------------------------------------------------*/

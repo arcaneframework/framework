@@ -23,6 +23,20 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace Arcane::impl
+{
+inline Int32
+adaptGrainSize(const ForLoopRunInfo& run_info)
+{
+  const std::optional<ParallelLoopOptions>& options = run_info.options();
+  Int32 grain_size = AbstractItemRangeFunctor::DEFAULT_GRAIN_SIZE;
+  if (options.has_value())
+    if (options.value().hasGrainSize())
+      grain_size = options.value().grainSize();
+  return grain_size;
+}
+} // namespace Arcane::impl
+
 namespace Arcane
 {
 
@@ -35,44 +49,47 @@ namespace Arcane
  * \a instance sur la vue \a items_view avec les options \a options.
  */
 template <typename InstanceType, typename ItemType> inline void
-arcaneParallelForeach(const ItemVectorView& items_view, const ParallelLoopOptions& options,
-                      const ForLoopTraceInfo& trace_info,
+arcaneParallelForeach(const ItemVectorView& items_view, const ForLoopRunInfo& run_info,
                       InstanceType* instance, void (InstanceType::*function)(ItemVectorViewT<ItemType> items))
 {
-  Int32 grain_size = options.hasGrainSize() ? options.grainSize() : AbstractItemRangeFunctor::DEFAULT_GRAIN_SIZE;
+  Int32 grain_size = impl::adaptGrainSize(run_info);
   ItemRangeFunctorT<InstanceType, ItemType> ipf(items_view, instance, function, grain_size);
-  // Recopie \a options et utilise la valeur de 'grain_size' retournée par \a ifp
-  ParallelLoopOptions loop_opt(options);
+
+  ForLoopRunInfo adapted_run_info(run_info);
+  ParallelLoopOptions loop_opt(run_info.options().value_or(TaskFactory::defaultParallelLoopOptions()));
   loop_opt.setGrainSize(ipf.blockGrainSize());
-  ForLoopRunInfo run_info(loop_opt, trace_info);
-  ParallelFor1DLoopInfo loop_info(0, ipf.nbBlock(), &ipf, run_info);
+  adapted_run_info.addOptions(loop_opt);
+
+  ParallelFor1DLoopInfo loop_info(0, ipf.nbBlock(), &ipf, adapted_run_info);
   TaskFactory::executeParallelFor(loop_info);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Applique en concurrence la fonction lambda \a lambda_function
  * \a instance sur la vue \a items_view avec les options \a options
  * \ingroup Concurrency
  */
 template <typename LambdaType> inline void
-arcaneParallelForeach(const ItemVectorView& items_view, const ParallelLoopOptions& options,
-                      const ForLoopTraceInfo& trace_info, const LambdaType& lambda_function)
+arcaneParallelForeach(const ItemVectorView& items_view, const ForLoopRunInfo& run_info,
+                      const LambdaType& lambda_function)
 {
-  Int32 grain_size = options.hasGrainSize() ? options.grainSize() : AbstractItemRangeFunctor::DEFAULT_GRAIN_SIZE;
+  Int32 grain_size = impl::adaptGrainSize(run_info);
   LambdaItemRangeFunctorT<LambdaType> ipf(items_view, lambda_function, grain_size);
-  // Recopie \a options et utilise la valeur de 'grain_size' retournée par \a ifp
-  ParallelLoopOptions loop_opt(options);
+
+  ForLoopRunInfo adapted_run_info(run_info);
+  ParallelLoopOptions loop_opt(run_info.options().value_or(TaskFactory::defaultParallelLoopOptions()));
   loop_opt.setGrainSize(ipf.blockGrainSize());
-  ForLoopRunInfo run_info(loop_opt, trace_info);
-  ParallelFor1DLoopInfo loop_info(0, ipf.nbBlock(), &ipf, run_info);
+  adapted_run_info.addOptions(loop_opt);
+
+  ParallelFor1DLoopInfo loop_info(0, ipf.nbBlock(), &ipf, adapted_run_info);
   TaskFactory::executeParallelFor(loop_info);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \ingroup Concurrency
  *
@@ -83,7 +100,7 @@ template <typename InstanceType, typename ItemType> inline void
 arcaneParallelForeach(const ItemVectorView& items_view, const ParallelLoopOptions& options,
                       InstanceType* instance, void (InstanceType::*function)(ItemVectorViewT<ItemType> items))
 {
-  arcaneParallelForeach(items_view, options, ForLoopTraceInfo(), instance, function);
+  arcaneParallelForeach(items_view, ForLoopRunInfo(options), instance, function);
 }
 
 /*!
@@ -93,25 +110,10 @@ arcaneParallelForeach(const ItemVectorView& items_view, const ParallelLoopOption
  * \a instance sur le groupe \a items avec les options \a options.
  */
 template <typename InstanceType, typename ItemType> inline void
-arcaneParallelForeach(const ItemGroup& items, const ParallelLoopOptions& options,
+arcaneParallelForeach(const ItemGroup& items, const ForLoopRunInfo& run_info,
                       InstanceType* instance, void (InstanceType::*function)(ItemVectorViewT<ItemType> items))
 {
-  arcaneParallelForeach(items.view(), options, ForLoopTraceInfo(), instance, function);
-}
-
-/*!
- * \ingroup Concurrency
- * \brief Applique en concurrence la méthode \a function de l'instance
- * \a instance sur la vue \a items_view.
- */
-template <typename InstanceType, typename ItemType> inline void
-arcaneParallelForeach(const ItemVectorView& items_view, const ForLoopTraceInfo& trace_info,
-                      InstanceType* instance, void (InstanceType::*function)(ItemVectorViewT<ItemType> items))
-{
-  ItemRangeFunctorT<InstanceType, ItemType> ipf(items_view, instance, function);
-  ParallelFor1DLoopInfo loop_info(0, ipf.nbBlock(), ipf.blockGrainSize(), &ipf);
-  loop_info.runInfo().addTraceInfo(trace_info);
-  TaskFactory::executeParallelFor(loop_info);
+  arcaneParallelForeach(items.view(), run_info, instance, function);
 }
 
 /*!
@@ -123,19 +125,7 @@ template <typename InstanceType, typename ItemType> inline void
 arcaneParallelForeach(const ItemVectorView& items_view,
                       InstanceType* instance, void (InstanceType::*function)(ItemVectorViewT<ItemType> items))
 {
-  arcaneParallelForeach(items_view, ForLoopTraceInfo(), instance, function);
-}
-
-/*!
- * \ingroup Concurrency
- * \brief Applique en concurrence la méthode \a function de l'instance
- * \a instance sur le groupe \a items.
- */
-template <typename InstanceType, typename ItemType> inline void
-arcaneParallelForeach(const ItemGroup& items, const ForLoopTraceInfo& trace_info,
-                      InstanceType* instance, void (InstanceType::*function)(ItemVectorViewT<ItemType> items))
-{
-  arcaneParallelForeach(items.view(), trace_info, instance, function);
+  arcaneParallelForeach(items_view, ForLoopRunInfo(), instance, function);
 }
 
 /*!
@@ -147,7 +137,7 @@ template <typename InstanceType, typename ItemType> inline void
 arcaneParallelForeach(const ItemGroup& items,
                       InstanceType* instance, void (InstanceType::*function)(ItemVectorViewT<ItemType> items))
 {
-  arcaneParallelForeach(items.view(), ForLoopTraceInfo(), instance, function);
+  arcaneParallelForeach(items.view(), ForLoopRunInfo(), instance, function);
 }
 
 /*!
@@ -159,7 +149,7 @@ template <typename LambdaType> inline void
 arcaneParallelForeach(const ItemVectorView& items_view, const ParallelLoopOptions& options,
                       const LambdaType& lambda_function)
 {
-  arcaneParallelForeach(items_view, options, ForLoopTraceInfo(), lambda_function);
+  arcaneParallelForeach(items_view, ForLoopRunInfo(options), lambda_function);
 }
 
 /*!
@@ -171,22 +161,7 @@ template <typename LambdaType> inline void
 arcaneParallelForeach(const ItemGroup& items, const ParallelLoopOptions& options,
                       const LambdaType& lambda_function)
 {
-  arcaneParallelForeach(items.view(), options, lambda_function);
-}
-
-/*!
- * \ingroup Concurrency
- * \brief Applique en concurrence la fonction lambda \a lambda_function
- * \a instance sur la vue \a items_view.
- */
-template <typename LambdaType> inline void
-arcaneParallelForeach(const ItemVectorView& items_view, const ForLoopTraceInfo& trace_info,
-                      const LambdaType& lambda_function)
-{
-  LambdaItemRangeFunctorT<LambdaType> ipf(items_view, lambda_function);
-  ParallelFor1DLoopInfo loop_info(0, ipf.nbBlock(), ipf.blockGrainSize(), &ipf);
-  loop_info.runInfo().addTraceInfo(trace_info);
-  TaskFactory::executeParallelFor(loop_info);
+  arcaneParallelForeach(items.view(), ForLoopRunInfo(options), lambda_function);
 }
 
 /*!
@@ -197,19 +172,7 @@ arcaneParallelForeach(const ItemVectorView& items_view, const ForLoopTraceInfo& 
 template <typename LambdaType> inline void
 arcaneParallelForeach(const ItemVectorView& items_view, const LambdaType& lambda_function)
 {
-  arcaneParallelForeach(items_view, ForLoopTraceInfo(), lambda_function);
-}
-
-/*!
- * \ingroup Concurrency
- * \brief Applique en concurrence la fonction lambda \a lambda_function
- * sur le groupe \a items.
- */
-template <typename LambdaType> inline void
-arcaneParallelForeach(const ItemGroup& items, const ForLoopTraceInfo& trace_info,
-                      const LambdaType& lambda_function)
-{
-  arcaneParallelForeach(items.view(), trace_info, lambda_function);
+  arcaneParallelForeach(items_view, ForLoopRunInfo(), lambda_function);
 }
 
 /*!
@@ -223,6 +186,8 @@ arcaneParallelForeach(const ItemGroup& items, const LambdaType& lambda_function)
   arcaneParallelForeach(items.view(), lambda_function);
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \ingroup Concurrency
  * \brief Applique en concurrence la fonction lambda \a lambda_function
@@ -247,7 +212,7 @@ arcaneParallelFor(Integer i0, Integer size, const ParallelLoopOptions& options,
                   const LambdaType& lambda_function)
 {
   LambdaRangeFunctorT<LambdaType> ipf(lambda_function);
-  ParallelFor1DLoopInfo loop_info(i0, size, &ipf, options);
+  ParallelFor1DLoopInfo loop_info(i0, size, &ipf, ForLoopRunInfo(options));
   TaskFactory::executeParallelFor(loop_info);
 }
 

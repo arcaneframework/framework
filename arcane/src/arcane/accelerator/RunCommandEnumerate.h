@@ -104,7 +104,7 @@ _applyItems(RunCommand& command,ItemVectorViewT<ItemType> items,const Lambda& fu
     {
       launch_info.beginExecute();
       ForLoopTraceInfo lti(command.traceInfo(),command.kernelName());
-      arcaneParallelForeach(items,launch_info.computeParallelLoopOptions(vsize),lti,
+      arcaneParallelForeach(items,ForLoopRunInfo(launch_info.computeParallelLoopOptions(vsize),lti),
                             [&](ItemVectorViewT<ItemType> sub_items)
                             {
                               impl::_doIndirectThreadLambda(sub_items,func);
