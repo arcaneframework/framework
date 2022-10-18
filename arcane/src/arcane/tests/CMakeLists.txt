@@ -536,10 +536,14 @@ ARCANE_ADD_TEST_PARALLEL(hydro5_4proc_3sd testHydro-5.arc 4 -m 50 -A,P=3 -arcane
 ARCANE_ADD_TEST(hydro_backward testHydro-back.arc -m 25)
 ARCANE_ADD_TEST_PARALLEL_THREAD(hydro5 testHydro-5.arc 4 -m 50)
 ARCANE_ADD_TEST_PARALLEL_MPITHREAD(hydro5 testHydro-5.arc 3 4 -m 50)
-if(PAPI_FOUND)
-  arcane_add_test_sequential(hydro5_papi testHydro-5.arc -m 50 -We,ARCANE_PROFILING,Papi)
-  arcane_add_test_sequential_task(hydro5_papi testHydro-5.arc 4 -m 50 -We,ARCANE_PROFILING,Papi)
-endif(PAPI_FOUND)
+
+if(NOT ARCANE_DISABLE_PERFCOUNTER_TESTS)
+  if(Papi_FOUND)
+    arcane_add_test_sequential(hydro5_papi testHydro-5.arc -m 50 -We,ARCANE_PROFILING,Papi)
+    arcane_add_test_sequential_task(hydro5_papi testHydro-5.arc 4 -m 50 -We,ARCANE_PROFILING,Papi)
+  endif()
+endif()
+
 if (LibUnwind_FOUND)
   arcane_add_test_sequential(hydro5_prof testHydro-5.arc -m 50 -We,ARCANE_PROFILING,Prof)
   arcane_add_test_sequential_task(hydro5_prof testHydro-5.arc 4 -m 50 -We,ARCANE_PROFILING,Prof)
