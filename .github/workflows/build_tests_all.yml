@@ -64,7 +64,7 @@ jobs:
 
           - version_short: 'F'
             version_long: 'full'
-            version_args: '-DCMAKE_DISABLE_FIND_PACKAGE_Papi=ON
+            version_args: '-DARCANE_DISABLE_PERFCOUNTER_TESTS=ON
               -DPTScotch_INCLUDE_DIR="/usr/include/scotch"
               -DMKL_INCLUDE_DIR="/usr/include/mkl"'
 
@@ -184,7 +184,7 @@ jobs:
 
           - version_short: 'F'
             version_long: 'full'
-            version_args: '-DCMAKE_DISABLE_FIND_PACKAGE_Papi=ON
+            version_args: '-DARCANE_DISABLE_PERFCOUNTER_TESTS=ON
               -DPTScotch_INCLUDE_DIR="/usr/include/scotch"
               -DMKL_INCLUDE_DIR="/usr/include/mkl"'
 
@@ -409,7 +409,7 @@ jobs:
 
           - version_short: 'F'
             version_long: 'full'
-            version_args: '-DCMAKE_DISABLE_FIND_PACKAGE_Papi=ON
+            version_args: '-DARCANE_DISABLE_PERFCOUNTER_TESTS=ON
               -DPTScotch_INCLUDE_DIR="/usr/include/scotch"
               -DMKL_INCLUDE_DIR="/usr/include/mkl"'
 
