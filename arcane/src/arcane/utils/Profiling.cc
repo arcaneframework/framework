@@ -30,20 +30,39 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class ForLoopCumulativeStat
+{
+ public:
+
+  void printInfos(std::ostream& o);
+  void merge(const ForLoopOneExecInfo& s)
+  {
+    ++m_nb_loop_parallel_for;
+    m_nb_chunk_parallel_for += s.nbChunk();
+    m_total_time += s.execTime();
+  }
+
+ public:
+
+  std::atomic<Int64> m_nb_loop_parallel_for = 0;
+  std::atomic<Int64> m_nb_chunk_parallel_for = 0;
+  std::atomic<Int64> m_total_time = 0;
+};
+
 namespace
 {
-  impl::LoopStatInfo global_stat;
+  ForLoopCumulativeStat global_stat;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 impl::ScopedStatLoop::
-ScopedStatLoop(LoopStatInfo* s)
+ScopedStatLoop(ForLoopOneExecInfo* s)
 : m_stat_info(s)
 {
   if (m_stat_info) {
-    m_stat_info->incrementNbLoopParallelFor();
+    //m_stat_info->incrementNbLoop();
     m_begin_time = platform::getRealTime();
   }
 }
@@ -57,7 +76,7 @@ impl::ScopedStatLoop::
   if (m_stat_info) {
     double v = platform::getRealTime() - m_begin_time;
     Int64 v_as_int64 = static_cast<Int64>(v * 1.0e9);
-    m_stat_info->m_total_time += v_as_int64;
+    m_stat_info->setExecTime(v_as_int64);
   }
 }
 
@@ -68,11 +87,11 @@ class AllStatInfoList
 {
  public:
 
-  StatInfoList* createStatInfoList()
+  impl::StatInfoList* createStatInfoList()
   {
     std::lock_guard<std::mutex> lk(m_mutex);
-    std::unique_ptr<StatInfoList> x(new StatInfoList);
-    StatInfoList* ptr = x.get();
+    std::unique_ptr<impl::StatInfoList> x(new impl::StatInfoList);
+    impl::StatInfoList* ptr = x.get();
     m_stat_info_list_vector.push_back(std::move(x));
     return ptr;
   }
@@ -86,7 +105,7 @@ class AllStatInfoList
  public:
 
   std::mutex m_mutex;
-  std::vector<std::unique_ptr<StatInfoList>> m_stat_info_list_vector;
+  std::vector<std::unique_ptr<impl::StatInfoList>> m_stat_info_list_vector;
 };
 AllStatInfoList global_all_stat_info_list;
 
@@ -95,19 +114,19 @@ class ThreadLocalStatInfo
 {
  public:
 
-  StatInfoList* statInfoList()
+  impl::StatInfoList* statInfoList()
   {
     return _createOrGetStatInfoList();
   }
-  void merge(const impl::LoopStatInfo& stat_info, const ForLoopTraceInfo& trace_info)
+  void merge(const ForLoopOneExecInfo& stat_info, const ForLoopTraceInfo& trace_info)
   {
-    StatInfoList* stat_list = _createOrGetStatInfoList();
+    impl::StatInfoList* stat_list = _createOrGetStatInfoList();
     stat_list->merge(stat_info, trace_info);
   }
 
  private:
 
-  StatInfoList* _createOrGetStatInfoList()
+  impl::StatInfoList* _createOrGetStatInfoList()
   {
     if (!m_stat_info_list)
       m_stat_info_list = global_all_stat_info_list.createStatInfoList();
@@ -116,18 +135,21 @@ class ThreadLocalStatInfo
 
  private:
 
-  StatInfoList* m_stat_info_list = nullptr;
+  impl::StatInfoList* m_stat_info_list = nullptr;
 };
 thread_local ThreadLocalStatInfo thread_local_stat_info;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-StatInfoList* ProfilingRegistry::
+impl::StatInfoList* ProfilingRegistry::
 threadLocalInstance()
 {
   return thread_local_stat_info.statInfoList();
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 void ProfilingRegistry::
 printExecutionStats(std::ostream& o)
@@ -139,7 +161,10 @@ printExecutionStats(std::ostream& o)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void impl::LoopStatInfo::
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ForLoopCumulativeStat::
 printInfos(std::ostream& o)
 {
   Int64 nb_loop_parallel_for = m_nb_loop_parallel_for;
@@ -162,8 +187,25 @@ printInfos(std::ostream& o)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void StatInfoList::
-merge(const impl::LoopStatInfo& loop_stat_info, const ForLoopTraceInfo& loop_trace_info)
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void impl::ForLoopProfilingStat::
+add(const ForLoopOneExecInfo& s)
+{
+  ++m_nb_call;
+  m_nb_chunk += s.nbChunk();
+  m_exec_time += s.execTime();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void impl::StatInfoList::
+merge(const ForLoopOneExecInfo& loop_stat_info, const ForLoopTraceInfo& loop_trace_info)
 {
   global_stat.merge(loop_stat_info);
   String loop_name = "Unknown";
@@ -172,24 +214,24 @@ merge(const impl::LoopStatInfo& loop_stat_info, const ForLoopTraceInfo& loop_tra
     if (loop_name.empty())
       loop_name = loop_trace_info.traceInfo().name();
   }
-  m_stat_map[loop_name].merge(loop_stat_info);
+  m_stat_map[loop_name].add(loop_stat_info);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void StatInfoList::
+void impl::StatInfoList::
 print(std::ostream& o)
 {
-  o << "TaskStat\n";
-  o << std::setw(10) << "Nloop" << std::setw(10) << "Nchunk"
+  o << "ProfilingStat\n";
+  o << std::setw(10) << "Ncall" << std::setw(10) << "Nchunk"
     << std::setw(10) << " T (us)" << std::setw(11) << "Tc (ns)\n";
   Int64 cumulative_total = 0;
   for (const auto& x : m_stat_map) {
-    const impl::LoopStatInfo& s = x.second;
-    Int64 nb_loop = s.m_nb_loop_parallel_for;
-    Int64 nb_chunk = s.m_nb_chunk_parallel_for;
-    Int64 total_time = s.m_total_time;
+    const auto& s = x.second;
+    Int64 nb_loop = s.nbCall();
+    Int64 nb_chunk = s.nbChunk();
+    Int64 total_time = s.execTime();
     Int64 time_per_chunk = (nb_chunk == 0) ? 0 : (total_time / nb_chunk);
     o << std::setw(10) << nb_loop << std::setw(10) << nb_chunk
       << std::setw(10) << total_time / 1000 << std::setw(10) << time_per_chunk << "  " << x.first << "\n";

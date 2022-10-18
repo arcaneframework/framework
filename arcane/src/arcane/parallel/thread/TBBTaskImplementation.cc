@@ -74,7 +74,6 @@
 namespace Arcane
 {
 
-using impl::LoopStatInfo;
 class TBBTaskImplementation;
 
 // TODO: utiliser un pool mémoire spécifique pour gérer les
@@ -462,7 +461,7 @@ class TBBTaskImplementation
   _executeMDParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
                         IMDRangeFunctor<RankValue>* functor,
                         const ParallelLoopOptions& options);
-  void _executeParallelFor(const ParallelFor1DLoopInfo& loop_info,LoopStatInfo* stat_info);
+  void _executeParallelFor(const ParallelFor1DLoopInfo& loop_info,ForLoopOneExecInfo* stat_info);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -653,7 +652,7 @@ class TBBTaskImplementation::Impl
 class TBBParallelFor
 {
  public:
-  TBBParallelFor(IRangeFunctor* f,Int32 nb_allowed_thread,LoopStatInfo* stat_info)
+  TBBParallelFor(IRangeFunctor* f,Int32 nb_allowed_thread,ForLoopOneExecInfo* stat_info)
   : m_functor(f), m_stat_info(stat_info), m_nb_allowed_thread(nb_allowed_thread){}
  public:
 
@@ -678,13 +677,13 @@ class TBBParallelFor
 #endif
 
     if (m_stat_info)
-      m_stat_info->incrementNbChunkParallelFor();
+      m_stat_info->incrementNbChunk();
     m_functor->executeFunctor(range.begin(),CheckedConvert::toInteger(range.size()));
   }
 
  private:
   IRangeFunctor* m_functor;
-  LoopStatInfo* m_stat_info = nullptr;
+  ForLoopOneExecInfo* m_stat_info = nullptr;
   Int32 m_nb_allowed_thread;
 };
 
@@ -698,7 +697,7 @@ class TBBMDParallelFor
 {
  public:
 
-  TBBMDParallelFor(IMDRangeFunctor<RankValue>* f,Int32 nb_allowed_thread,LoopStatInfo* stat_info)
+  TBBMDParallelFor(IMDRangeFunctor<RankValue>* f,Int32 nb_allowed_thread,ForLoopOneExecInfo* stat_info)
   : m_functor(f), m_stat_info(stat_info), m_nb_allowed_thread(nb_allowed_thread){}
 
  public:
@@ -724,14 +723,14 @@ class TBBMDParallelFor
 #endif
 
     if (m_stat_info)
-      m_stat_info->incrementNbChunkParallelFor();
+      m_stat_info->incrementNbChunk();
     m_functor->executeFunctor(_fromTBBRange(range));
   }
 
  private:
 
   IMDRangeFunctor<RankValue>* m_functor = nullptr;
-  LoopStatInfo* m_stat_info = nullptr;
+  ForLoopOneExecInfo* m_stat_info = nullptr;
   Int32 m_nb_allowed_thread;
 };
 
@@ -861,7 +860,7 @@ class TBBTaskImplementation::ParallelForExecute
  public:
 
   ParallelForExecute(TBBTaskImplementation* impl, const ParallelLoopOptions& options,
-                     Integer begin,Integer size,IRangeFunctor* f,LoopStatInfo* stat_info)
+                     Integer begin,Integer size,IRangeFunctor* f,ForLoopOneExecInfo* stat_info)
   : m_impl(impl), m_begin(begin), m_size(size), m_functor(f), m_options(options), m_stat_info(stat_info){}
 
  public:
@@ -900,7 +899,7 @@ class TBBTaskImplementation::ParallelForExecute
   Integer m_size;
   IRangeFunctor* m_functor = nullptr;
   ParallelLoopOptions m_options;
-  LoopStatInfo* m_stat_info = nullptr;
+  ForLoopOneExecInfo* m_stat_info = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -914,7 +913,7 @@ class TBBTaskImplementation::MDParallelForExecute
   MDParallelForExecute(TBBTaskImplementation* impl,
                        const ParallelLoopOptions& options,
                        const ComplexForLoopRanges<RankValue>& range,
-                       IMDRangeFunctor<RankValue>* f,[[maybe_unused]] LoopStatInfo* stat_info)
+                       IMDRangeFunctor<RankValue>* f,[[maybe_unused]] ForLoopOneExecInfo* stat_info)
   : m_impl(impl), m_tbb_range(_toTBBRange(range)), m_functor(f), m_options(options)
   {
     // On ne peut pas modifier les valeurs d'une instance de tbb::blocked_rangeNd.
@@ -954,7 +953,7 @@ class TBBTaskImplementation::MDParallelForExecute
   tbb::blocked_rangeNd<Int32,RankValue> m_tbb_range;
   IMDRangeFunctor<RankValue>* m_functor = nullptr;
   ParallelLoopOptions m_options;
-  LoopStatInfo* m_stat_info = nullptr;
+  ForLoopOneExecInfo* m_stat_info = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -1024,7 +1023,7 @@ printInfos(std::ostream& o) const
 /*---------------------------------------------------------------------------*/
 
 void TBBTaskImplementation::
-_executeParallelFor(const ParallelFor1DLoopInfo& loop_info,LoopStatInfo* stat_info)
+_executeParallelFor(const ParallelFor1DLoopInfo& loop_info,ForLoopOneExecInfo* stat_info)
 {
   Int32 begin = loop_info.beginIndex();
   Int32 size = loop_info.size();
@@ -1070,8 +1069,8 @@ _executeParallelFor(const ParallelFor1DLoopInfo& loop_info,LoopStatInfo* stat_in
 void TBBTaskImplementation::
 executeParallelFor(const ParallelFor1DLoopInfo& loop_info)
 {
-  LoopStatInfo stat_info;
-  LoopStatInfo* stat_info_ptr = isStatActive() ? &stat_info : nullptr;
+  ForLoopOneExecInfo stat_info;
+  ForLoopOneExecInfo* stat_info_ptr = isStatActive() ? &stat_info : nullptr;
   _executeParallelFor(loop_info,stat_info_ptr);
   if (stat_info_ptr)
     ProfilingRegistry::threadLocalInstance()->merge(*stat_info_ptr,loop_info.traceInfo());
@@ -1111,8 +1110,8 @@ _executeMDParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
   if (!used_arena)
     used_arena = &(m_p->m_main_arena);
 
-  LoopStatInfo stat_info;
-  LoopStatInfo* stat_info_ptr = isStatActive() ? &stat_info : nullptr;
+  ForLoopOneExecInfo stat_info;
+  ForLoopOneExecInfo* stat_info_ptr = isStatActive() ? &stat_info : nullptr;
 
   // Pour l'instant pour la dimension 1, utilise le 'ParallelForExecute' historique
   if constexpr (RankValue==1){

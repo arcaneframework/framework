@@ -27,47 +27,27 @@
 namespace Arcane::impl
 {
 
-struct ARCANE_UTILS_EXPORT LoopStatInfo
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Statistiques d'exécution d'une boucle.
+ */
+struct ARCANE_UTILS_EXPORT ForLoopProfilingStat
 {
  public:
 
-  void reset()
-  {
-    m_nb_loop_parallel_for = 0;
-    m_nb_chunk_parallel_for = 0;
-  }
+  //! Ajoute les infos de l'exécution \a s
+  void add(const ForLoopOneExecInfo& s);
 
-  void incrementNbChunkParallelFor()
-  {
-    ++m_nb_chunk_parallel_for;
-  }
+  Int64 nbCall() const { return m_nb_call; }
+  Int64 nbChunk() const { return m_nb_chunk; }
+  Int64 execTime() const { return m_exec_time; }
 
-  void incrementNbLoopParallelFor()
-  {
-    ++m_nb_loop_parallel_for;
-  }
+ private:
 
-  void merge(const LoopStatInfo* s)
-  {
-    if (s)
-      merge(*s);
-  }
-
-  void merge(const LoopStatInfo& s)
-  {
-    m_nb_loop_parallel_for += s.m_nb_loop_parallel_for;
-    m_nb_chunk_parallel_for += s.m_nb_chunk_parallel_for;
-    m_total_time += s.m_total_time;
-  }
-
-  void printInfos(std::ostream& o);
-
- public:
-
-  std::atomic<Int64> m_nb_loop_parallel_for = 0;
-  std::atomic<Int64> m_nb_chunk_parallel_for = 0;
-  // Temps total (en nano seconde)
-  std::atomic<Int64> m_total_time = 0;
+  Int64 m_nb_call = 0;
+  Int64 m_nb_chunk = 0;
+  Int64 m_exec_time = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -77,13 +57,30 @@ struct ARCANE_UTILS_EXPORT ScopedStatLoop
 {
  public:
 
-  explicit ScopedStatLoop(LoopStatInfo* s);
+  explicit ScopedStatLoop(ForLoopOneExecInfo* s);
   ~ScopedStatLoop();
 
  public:
 
   double m_begin_time = 0.0;
-  LoopStatInfo* m_stat_info = nullptr;
+  ForLoopOneExecInfo* m_stat_info = nullptr;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+// TODO Utiliser un hash pour le map plutôt qu'une String pour accélérer les comparaisons
+
+class ARCANE_UTILS_EXPORT StatInfoList
+{
+ public:
+
+  void merge(const ForLoopOneExecInfo& loop_stat_info, const ForLoopTraceInfo& loop_trace_info);
+  void print(std::ostream& o);
+
+ private:
+
+  std::map<String, impl::ForLoopProfilingStat> m_stat_map;
 };
 
 } // namespace Arcane::impl
@@ -96,19 +93,25 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-// TODO Utiliser un hash pour le map plutôt qu'une String pour accélérer les comparaisons
-
-class ARCANE_UTILS_EXPORT StatInfoList
+/*!
+ * \brief Classe pour gérer le profiling d'une seule exécution d'une boucle.
+ */
+struct ARCANE_UTILS_EXPORT ForLoopOneExecInfo
 {
  public:
 
-  void merge(const impl::LoopStatInfo& loop_stat_info, const ForLoopTraceInfo& loop_trace_info);
-  void print(std::ostream& o);
+  void incrementNbChunk() { ++m_nb_chunk; }
+  void setExecTime(Int64 v) { m_exec_time = v; }
+
+  Int64 nbChunk() const { return m_nb_chunk; }
+  Int64 execTime() const { return m_exec_time; }
 
  private:
 
-  std::map<String, impl::LoopStatInfo> m_stat_map;
+  //! Nombre de chunk de décomposition de la boucle (en multi-thread)
+  std::atomic<Int64> m_nb_chunk = 0;
+  // Temps total (en nano seconde)
+  std::atomic<Int64> m_exec_time = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -121,7 +124,7 @@ class ARCANE_UTILS_EXPORT ProfilingRegistry
  public:
 
   //! Instance locale part thread du gestionnaire des statistiques
-  static StatInfoList* threadLocalInstance();
+  static impl::StatInfoList* threadLocalInstance();
 
   //! Affiche les statistiques d'exécution de toutes les instances sur \a o
   static void printExecutionStats(std::ostream& o);
@@ -135,5 +138,4 @@ class ARCANE_UTILS_EXPORT ProfilingRegistry
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif
