@@ -59,7 +59,8 @@ class LinuxPerfPerformanceCounterService
     _checkInitialize();
   }
 
-  void _addEvent(int event_type, int event_config)
+  //! Ajoute un évènement et retourne true si cela ne fonctionne pas
+  bool _addEvent(int event_type, int event_config, bool is_optional = false)
   {
     struct perf_event_attr attr;
     memset(&attr, 0, sizeof(attr));
@@ -77,10 +78,14 @@ class LinuxPerfPerformanceCounterService
     unsigned long flags = 0;
     long long_fd = syscall(__NR_perf_event_open, &attr, m_process_id, cpu, group_fd, flags);
     info(4) << "AddEvent type=" << attr.type << " id=" << attr.config << " fd=" << long_fd;
-    if (long_fd == (-1))
+    if (long_fd == (-1)){
+      if (is_optional)
+        return true;
       ARCANE_FATAL("ERROR for event type={0} id={1} error={2}", attr.type, attr.config, strerror(errno));
+    }
     int fd = static_cast<int>(long_fd);
     m_events_file_descriptor.add(fd);
+    return false;
   }
 
   void start() override
@@ -165,20 +170,28 @@ class LinuxPerfPerformanceCounterService
 
     info() << "Initialize LinuxPerfPerformanceCounterService";
     m_process_id = ::getpid();
-    // Nombre de cycles CPU
+    // Nombre de cycles CPU. Ce compteur est indispensable.
     _addEvent(PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES);
-    // Nombre d'instructions exécutées
+    // Nombre d'instructions exécutées. Ce compteur est indispensable.
     _addEvent(PERF_TYPE_HARDWARE, PERF_COUNT_HW_INSTRUCTIONS);
-    // Nombre de défaut du dernier niveau de cache (en général le cache L3)
-    // NOTE: Ce compteur n'est pas disponible sur tous les CPU donc on
-    // ne l'active pas par défaut.
-    const bool do_cache_l3 = false;
-    if (do_cache_l3) {
+
+    // Les compteurs suivants ne sont pas indispensables et il n'est
+    // pas toujours facile de savoir ceux qui sont disponibles pour une
+    // plateforme donnée. On essaie dans l'ordre suivant:
+    // 1. Nombre de défaut du dernier niveau de cache (en général le cache L3)
+    // 2. Nombre de cycles où le CPU est en attente de quelque chose.
+    // 3. Nombre de défauts de cache (a priori pour tous les caches)
+    const bool is_optional = true;
+    bool is_bad = true;
+    {
       int cache_access = (PERF_COUNT_HW_CACHE_OP_READ << 8) | (PERF_COUNT_HW_CACHE_RESULT_MISS << 16);
-      _addEvent(PERF_TYPE_HW_CACHE, PERF_COUNT_HW_CACHE_LL | cache_access);
+      if (is_bad)
+        is_bad = _addEvent(PERF_TYPE_HW_CACHE, PERF_COUNT_HW_CACHE_LL | cache_access, is_optional);
     }
-    else
-      _addEvent(PERF_TYPE_HARDWARE, PERF_COUNT_HW_STALLED_CYCLES_FRONTEND); //PERF_COUNT_HW_CACHE_MISSES);
+    if (is_bad)
+      is_bad = _addEvent(PERF_TYPE_HARDWARE, PERF_COUNT_HW_STALLED_CYCLES_FRONTEND,is_optional);
+    if (is_bad)
+      is_bad = _addEvent(PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_MISSES,is_optional);
 
     m_is_init = true;
   }
