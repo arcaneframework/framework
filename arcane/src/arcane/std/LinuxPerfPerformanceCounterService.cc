@@ -156,11 +156,12 @@ class LinuxPerfPerformanceCounterService
   Int64 _getOneCounter(Int32 index)
   {
     int fd = m_events_file_descriptor[index];
-    uint64_t value = 0;
-    size_t nb_read = ::read(fd, &value, sizeof(uint64_t));
-    if (nb_read != sizeof(uint64_t))
+    uint64_t value[1] = { 0 };
+    const size_t s = sizeof(uint64_t);
+    size_t nb_read = ::read(fd, value, s);
+    if (nb_read != s)
       ARCANE_FATAL("Can not read counter index={0}", index);
-    return value;
+    return value[0];
   }
 
   void _checkInitialize()
@@ -185,13 +186,12 @@ class LinuxPerfPerformanceCounterService
     bool is_bad = true;
     {
       int cache_access = (PERF_COUNT_HW_CACHE_OP_READ << 8) | (PERF_COUNT_HW_CACHE_RESULT_MISS << 16);
-      if (is_bad)
-        is_bad = _addEvent(PERF_TYPE_HW_CACHE, PERF_COUNT_HW_CACHE_LL | cache_access, is_optional);
+      is_bad = _addEvent(PERF_TYPE_HW_CACHE, PERF_COUNT_HW_CACHE_LL | cache_access, is_optional);
     }
     if (is_bad)
-      is_bad = _addEvent(PERF_TYPE_HARDWARE, PERF_COUNT_HW_STALLED_CYCLES_FRONTEND,is_optional);
+      is_bad = _addEvent(PERF_TYPE_HARDWARE, PERF_COUNT_HW_STALLED_CYCLES_FRONTEND, is_optional);
     if (is_bad)
-      is_bad = _addEvent(PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_MISSES,is_optional);
+      _addEvent(PERF_TYPE_HARDWARE, PERF_COUNT_HW_CACHE_MISSES, is_optional);
 
     m_is_init = true;
   }
