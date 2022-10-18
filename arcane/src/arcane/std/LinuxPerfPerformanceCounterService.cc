@@ -116,16 +116,17 @@ class LinuxPerfPerformanceCounterService
   Integer getCounters(Int64ArrayView counters, bool do_substract) override
   {
     Int32 index = 0;
-    for (int fd : m_events_file_descriptor) {
-      uint64_t value = 0;
-      size_t nb_read = ::read(fd, &value, sizeof(uint64_t));
-      if (nb_read != sizeof(uint64_t))
-        ARCANE_FATAL("Can not read counter index={0}", index);
+    for (Int32 index = 0, n = m_events_file_descriptor.size(); index < n; ++index) {
+      Int64 value = _getOneCounter(index);
       Int64 current_value = counters[index];
       counters[index] = (do_substract) ? value - current_value : value;
-      ++index;
     }
     return index;
+  }
+
+  Int64 getCycles() override
+  {
+    return _getOneCounter(0);
   }
 
  private:
@@ -145,6 +146,16 @@ class LinuxPerfPerformanceCounterService
         ::close(fd);
     }
     m_events_file_descriptor.fill(-1);
+  }
+
+  Int64 _getOneCounter(Int32 index)
+  {
+    int fd = m_events_file_descriptor[index];
+    uint64_t value = 0;
+    size_t nb_read = ::read(fd, &value, sizeof(uint64_t));
+    if (nb_read != sizeof(uint64_t))
+      ARCANE_FATAL("Can not read counter index={0}", index);
+    return value;
   }
 
   void _checkInitialize()
