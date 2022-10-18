@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IPerformanceCounterService.h                                (C) 2000-2016 */
+/* IPerformanceCounterService.h                                (C) 2000-2022 */
 /*                                                                           */
 /* Interface d'un service d'accès aux compteurs de performance.              */
 /*---------------------------------------------------------------------------*/
@@ -19,12 +19,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class ITimerMng;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -35,29 +31,34 @@ class ARCANE_UTILS_EXPORT IPerformanceCounterService
 {
  public:
 
-  virtual ~IPerformanceCounterService() {}
+  //! Taille minimale de la vue pour getCounters()
+  static const int MIN_COUNTER_SIZE = 8;
+
+ public:
+
+  virtual ~IPerformanceCounterService() = default;
 
  public:
 
   //! Initialise le service.
-  virtual void initialize() =0;
+  virtual void initialize() = 0;
 
   /*!
    * \brief Débute le suivi des compteurs de performance.
    * \pre isStarted()==false.
    * \post isStarted()==true.
    */
-  virtual void start() =0;
+  virtual void start() = 0;
 
   /*!
    * \brief Arrête le suivi des compteurs de performance.
    * \pre isStarted()==true.
    * \post isStarted()==false.
    */
-  virtual void stop() =0;
+  virtual void stop() = 0;
 
   //! Indique si le service a démarré (start() a été appelé)
-  virtual bool isStarted() const =0;
+  virtual bool isStarted() const = 0;
 
   /*!
    * \brief Récupère les valeurs actuelles des compteurs.
@@ -79,18 +80,25 @@ class ARCANE_UTILS_EXPORT IPerformanceCounterService
    \endcode
    *
    * Le compteur d'indice 0 est toujours le nombre de cycle. \a counters
-   * doit valoir assez d'élémentts pour renseigner au moins 8 compteurs.
+   * doit valoir assez d'éléments pour renseigner au moins MIN_COUNTER_SIZE compteurs.
    *
    * \retval le nombre de compteurs renseignés.
    * \pre isStarted()==true
    */
-  virtual Integer getCounters(Int64ArrayView counters,bool do_substract) =0;
+  virtual Int32 getCounters(Int64ArrayView counters, bool do_substract) = 0;
+
+  /*!
+   * \brief Valeur du compteur pour le nombre de cycles du CPU.
+   *
+   * \pre isStarted()==true   
+   */
+  virtual Int64 getCycles() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

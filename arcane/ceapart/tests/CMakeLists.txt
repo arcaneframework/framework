@@ -92,7 +92,9 @@ ARCANE_ADD_TEST_SEQUENTIAL(material3_opt1 testMaterial-3-opt1.arc "-m 20")
 ARCANE_ADD_TEST_SEQUENTIAL(material3_opt3 testMaterial-3-opt3.arc "-m 20")
 ARCANE_ADD_TEST_SEQUENTIAL(material3_opt5 testMaterial-3-opt5.arc "-m 20")
 ARCANE_ADD_TEST_SEQUENTIAL(material3_opt7 testMaterial-3-opt7.arc "-m 20")
-ARCANE_ADD_TEST_SEQUENTIAL(material3_opt7_trace testMaterial-3-opt7.arc "-m 20" "-We,ARCANE_TRACE_ENUMERATOR,1")
+if(NOT ARCANE_DISABLE_PERFCOUNTER_TESTS)
+  arcane_add_test_sequential(material3_opt7_trace testMaterial-3-opt7.arc "-m 20" "-We,ARCANE_TRACE_ENUMERATOR,1")
+endif()
 
 ARCANE_ADD_TEST_PARALLEL(material3_opt7_lb testMaterial-3-opt7-lb.arc 4 "-m 20")
 

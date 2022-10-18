@@ -175,10 +175,10 @@ jobs:
             -DCMAKE_INSTALL_PREFIX=<<pipeline.parameters.INSTALL_DIR>> \
             -DCMAKE_CXX_FLAGS_RELEASE="-O2" \
             -DCMAKE_VERBOSE_MAKEFILE=TRUE \
-            -DCMAKE_DISABLE_FIND_PACKAGE_Papi=TRUE \
             -DCMAKE_BUILD_TYPE=<<pipeline.parameters.CM_BUILD_TYPE>> \
             -DBUILD_SHARED_LIBS=TRUE \
             -DARCANE_DEFAULT_PARTITIONER=Metis \
+            -DARCANE_DISABLE_PERFCOUNTER_TESTS=ON \
             -DARCCON_REGISTER_PACKAGE_VERSION=2 \
             <<pipeline.parameters.CM_CCACHE_OPTS>>
 
@@ -269,6 +269,7 @@ jobs:
             -DCMAKE_BUILD_TYPE=<<pipeline.parameters.CM_BUILD_TYPE>> \
             -DBUILD_SHARED_LIBS=TRUE \
             -DARCANE_DEFAULT_PARTITIONER=Metis \
+            -DARCANE_DISABLE_PERFCOUNTER_TESTS=ON \
             -DARCCON_REGISTER_PACKAGE_VERSION=2 \
             <<pipeline.parameters.CM_CCACHE_OPTS>>
 
@@ -421,6 +422,7 @@ jobs:
             -DCMAKE_INSTALL_PREFIX=<<pipeline.parameters.INSTALL_DIR>> \
             -DARCANE_DEFAULT_PARTITIONER=Metis \
             -DARCANE_WANT_ARCCON_EXPORT_TARGET=OFF \
+            -DARCANE_DISABLE_PERFCOUNTER_TESTS=ON \
             -DPTScotch_INCLUDE_DIR="/usr/include/scotch" \
             <<pipeline.parameters.CM_CCACHE_OPTS>> \
             <<pipeline.parameters.CM_COMPILER>>
@@ -576,6 +578,7 @@ jobs:
             -DCMAKE_INSTALL_PREFIX=<<pipeline.parameters.INSTALL_DIR>> \
             -DARCANE_DEFAULT_PARTITIONER=Metis \
             -DARCANE_WANT_ARCCON_EXPORT_TARGET=OFF \
+            -DARCANE_DISABLE_PERFCOUNTER_TESTS=ON \
             <<pipeline.parameters.CM_CCACHE_OPTS>> \
             <<pipeline.parameters.CM_COMPILER>>
 

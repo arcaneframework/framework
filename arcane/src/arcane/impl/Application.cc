@@ -167,6 +167,9 @@ Application::
   if (platform::getProfilingService()==m_profiling_service.get())
     platform::setProfilingService(nullptr);
 
+  if (platform::getPerformanceCounterService()==m_performance_counter_service.get())
+    platform::setPerformanceCounterService(nullptr);
+
   delete m_service_and_module_factory_mng;
   
   m_sessions.each(Deleter());
@@ -692,6 +695,23 @@ initialize()
     m_physical_unit_system_service = sv;
   }
 
+  // Recherche le service utilisé pour gérer les compteurs de performance.
+  {
+    String service_name = "LinuxPerfPerformanceCounterService";
+    String env_service_name = platform::getEnvironmentVariable("ARCANE_PERFORMANCE_COUNTER_SERVICE");
+    if (!env_service_name.null())
+      service_name = env_service_name + "PerformanceCounterService";
+    ServiceBuilder<IPerformanceCounterService> sbuilder(this);
+    auto p = sbuilder.createReference(service_name,SB_AllowNull);
+    m_performance_counter_service = p;
+    if (p.get()){
+      m_trace->info() << "PerformanceCounterService found name=" << service_name;
+    }
+    else{
+      m_trace->info() << "No performance counter service found";
+    }
+  }
+
   // Initialise le traceur des énumérateurs.
   {
     bool force_tracer = false;
@@ -699,8 +719,7 @@ initialize()
     if (!trace_str.null() || force_tracer){
       if (!TaskFactory::isActive()){
         ServiceBuilder<IPerformanceCounterService> sbuilder(this);
-        auto p = sbuilder.createReference("PapiPerformanceCounterService",SB_AllowNull);
-        m_performance_counter_service = p;
+        auto p = m_performance_counter_service;
         if (p.get()){
           m_trace->info() << "Enumerator tracing is enabled";
           IItemEnumeratorTracer::_setSingleton(arcaneCreateItemEnumeratorTracer(traceMng(),p.get()));

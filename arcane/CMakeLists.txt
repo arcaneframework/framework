@@ -783,6 +783,14 @@ endif ()
 set(ARCANE_OPTIONAL_LIBRARIES)
 
 # ----------------------------------------------------------------------------
+# Regarde si les compteurs 'perf' sont disponibles
+
+if (UNIX)
+  try_compile(ARCANE_HAS_LINUX_PERF_COUNTERS ${CMAKE_CURRENT_BINARY_DIR} ${Arcane_SOURCE_DIR}/cmake/test_linux_perf_syscall.cc)
+  message(STATUS "Check: perf_event syscalls are available? = ${ARCANE_HAS_LINUX_PERF_COUNTERS}")
+  set(ARCANE_HAS_LINUX_PERF_COUNTERS ${ARCANE_HAS_LINUX_PERF_COUNTERS} CACHE BOOL "Is linux perf counters are availables" FORCE)
+endif()
+
 # Regarde si les 'hooks' mémoire de 'malloc.h' de la glibc sous linux
 # sont disponibles
 if (UNIX)
@@ -790,6 +798,10 @@ if (UNIX)
   message(STATUS "Check: malloc hooks are available? = ${ARCANE_HAS_MALLOC_HOOKS}")
   set(ARCANE_HAS_MALLOC_HOOKS ${ARCANE_HAS_MALLOC_HOOKS} CACHE BOOL "Is glibc 'malloc hooks' are availables" FORCE)
 endif()
+
+# Ajoute option pour désactiver les tests utilisant les compteurs hardware car ils ne sont pas
+# forcément accessibles notamment dans les dockers des machines du CI
+option(ARCANE_DISABLE_PERFCOUNTER_TESTS "True if we disable tests using perf counters" OFF)
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------

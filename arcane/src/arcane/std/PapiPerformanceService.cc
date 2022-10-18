@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PapiPerformanceService.cc                                   (C) 2000-2021 */
+/* PapiPerformanceService.cc                                   (C) 2000-2022 */
 /*                                                                           */
 /* Informations de performances utilisant PAPI.                              */
 /*---------------------------------------------------------------------------*/
@@ -617,7 +617,7 @@ class PapiPerformanceCounterService
     }
     ++m_nb_event;
   }
-  void start() override
+  void start() final
   {
     if (m_is_started)
       ARCANE_FATAL("start() has alredy been called");
@@ -626,7 +626,7 @@ class PapiPerformanceCounterService
       ARCANE_FATAL("Error in 'PAPI_start' r={0}",retval);
     m_is_started = true;
   }
-  void stop() override
+  void stop() final
   {
     if (!m_is_started)
       ARCANE_FATAL("start() has not been called");
@@ -635,20 +635,20 @@ class PapiPerformanceCounterService
       ARCANE_FATAL("Error in 'PAPI_stop' r={0}",retval);
     m_is_started = false;
   }
-  bool isStarted() const override
+  bool isStarted() const final
   {
     return m_is_started;
   }
 
-  Integer getCounters(Int64ArrayView counters,bool is_end) override
+  Integer getCounters(Int64ArrayView counters,bool do_substract) final
   {
-    long_long values[8];
+    long_long values[MIN_COUNTER_SIZE];
     int retval = PAPI_read(m_event_set,values);
     if (retval!=PAPI_OK){
-      error() << "Error in 'PAPI_read' during stop() r=" << retval;
+      error() << "Error in 'PAPI_read' during getCounters() r=" << retval;
     }
     Integer n = m_nb_event;
-    if (is_end){
+    if (do_substract){
       for( int i=0; i<n; ++i )
         counters[i] = (Int64)values[i] - counters[i];
     }
@@ -658,10 +658,19 @@ class PapiPerformanceCounterService
     return n;
   }
 
+  Int64 getCycles() final
+  {
+    std::array<Int64,MIN_COUNTER_SIZE> values;
+    Int64ArrayView view(values);
+    getCounters(view,false);
+    return view[0];
+  }
+
  private:
-  int m_nb_event;
-  int m_event_set;
-  bool m_is_started;
+
+  int m_nb_event = 0;
+  int m_event_set = 0;
+  bool m_is_started = false;
 };
 
 /*---------------------------------------------------------------------------*/

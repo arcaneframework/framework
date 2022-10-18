@@ -201,6 +201,24 @@ extern "C++" ARCANE_UTILS_EXPORT IDynamicLibraryLoader*
 setDynamicLibraryLoader(IDynamicLibraryLoader* idll);
 
 /*!
+ * \brief Positionne le service utilisé pour gérer les compteurs interne du processeur.
+ *
+ * Retourne l'ancien service utilisé.
+ */
+extern "C++" ARCANE_UTILS_EXPORT IPerformanceCounterService*
+setPerformanceCounterService(IPerformanceCounterService* service);
+
+/*!
+ * \brief Service utilisé pour obtenir pour obtenir les compteurs interne du processeur.
+ *
+ * Peut retourner nul si aucun service n'est disponible.
+ */
+extern "C++" ARCANE_UTILS_EXPORT IPerformanceCounterService*
+getPerformanceCounterService();
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \brief Remet à timer d'alarme à \a nb_second.
  *
  * Le timer déclenchera un signal (SIGALRM) au bout de \a nb_second.

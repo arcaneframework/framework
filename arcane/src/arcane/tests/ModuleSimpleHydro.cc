@@ -11,6 +11,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/utils/ArcaneGlobal.h"
+
 // En mode check, ajoute les traces. Ne le fait pas en mode release
 // car cela peut géner la détection des indices de boucle du compilateur et
 // empêcher la vectorisation
@@ -18,8 +20,6 @@
 #ifdef ARCANE_CHECK
 #define ARCANE_TRACE_ENUMERATOR
 #endif
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/List.h"
 #include "arcane/utils/PlatformUtils.h"
