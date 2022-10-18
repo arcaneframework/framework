@@ -72,13 +72,13 @@ class LinuxPerfPerformanceCounterService
     attr.disabled = 1;
     attr.inherit = 1;
 
-    pid_t pid = ::getpid();
     int cpu = -1;
     int group_fd = -1;
     unsigned long flags = 0;
-    long long_fd = syscall(__NR_perf_event_open, &attr, pid, cpu, group_fd, flags);
+    long long_fd = syscall(__NR_perf_event_open, &attr, m_process_id, cpu, group_fd, flags);
+    info(4) << "AddEvent type=" << attr.type << " id=" << attr.config << " fd=" << long_fd;
     if (long_fd == (-1))
-      ARCANE_FATAL("ERROR for event x={0} error={1}", attr.config, strerror(errno));
+      ARCANE_FATAL("ERROR for event type={0} id={1} error={2}", attr.type, attr.config, strerror(errno));
     int fd = static_cast<int>(long_fd);
     m_events_file_descriptor.add(fd);
   }
@@ -88,7 +88,7 @@ class LinuxPerfPerformanceCounterService
     if (m_is_started)
       ARCANE_FATAL("start() has alredy been called");
     _checkInitialize();
-    info() << "LinuxPerf: Start";
+    info(4) << "LinuxPerf: Start";
     for (int fd : m_events_file_descriptor) {
       int r = ::ioctl(fd, PERF_EVENT_IOC_ENABLE);
       if (r != 0)
@@ -100,7 +100,7 @@ class LinuxPerfPerformanceCounterService
   {
     if (!m_is_started)
       ARCANE_FATAL("start() has not been called");
-    info() << "LinuxPerf: Stop";
+    info(4) << "LinuxPerf: Stop";
     for (int fd : m_events_file_descriptor) {
       int r = ::ioctl(fd, PERF_EVENT_IOC_DISABLE);
       if (r != 0)
@@ -159,8 +159,15 @@ class LinuxPerfPerformanceCounterService
     // Nombre d'instructions exécutées
     _addEvent(PERF_TYPE_HARDWARE, PERF_COUNT_HW_INSTRUCTIONS);
     // Nombre de défaut du dernier niveau de cache (en général le cache L3)
-    int cache_access = (PERF_COUNT_HW_CACHE_OP_READ << 8) | (PERF_COUNT_HW_CACHE_RESULT_MISS << 16);
-    _addEvent(PERF_TYPE_HW_CACHE, PERF_COUNT_HW_CACHE_LL | cache_access);
+    // NOTE: Ce compteur n'est pas disponible sur tous les CPU donc on
+    // ne l'active pas par défaut.
+    const bool do_cache_l3 = false;
+    if (do_cache_l3) {
+      int cache_access = (PERF_COUNT_HW_CACHE_OP_READ << 8) | (PERF_COUNT_HW_CACHE_RESULT_MISS << 16);
+      _addEvent(PERF_TYPE_HW_CACHE, PERF_COUNT_HW_CACHE_LL | cache_access);
+    }
+    else
+      _addEvent(PERF_TYPE_HARDWARE, PERF_COUNT_HW_STALLED_CYCLES_FRONTEND); //PERF_COUNT_HW_CACHE_MISSES);
 
     m_is_init = true;
   }
