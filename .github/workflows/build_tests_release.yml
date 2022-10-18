@@ -121,6 +121,7 @@ jobs:
           -DCMAKE_INSTALL_PREFIX=${{ env.INSTALL_DIR }} \
           -DARCANE_DEFAULT_PARTITIONER=Metis \
           -DARCANE_WANT_ARCCON_EXPORT_TARGET=OFF \
+          -DARCANE_DISABLE_PERFCOUNTER_TESTS=ON \
           ${{ env.CM_CCACHE_OPTS }} \
           ${{ matrix.image_args }} \
           ${{ matrix.version_args }} \

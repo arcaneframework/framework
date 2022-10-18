@@ -175,7 +175,6 @@ jobs:
             -DCMAKE_INSTALL_PREFIX=<<pipeline.parameters.INSTALL_DIR>> \
             -DCMAKE_CXX_FLAGS_RELEASE="-O2" \
             -DCMAKE_VERBOSE_MAKEFILE=TRUE \
-            -DCMAKE_DISABLE_FIND_PACKAGE_Papi=TRUE \
             -DCMAKE_BUILD_TYPE=<<pipeline.parameters.CM_BUILD_TYPE>> \
             -DBUILD_SHARED_LIBS=TRUE \
             -DARCANE_DEFAULT_PARTITIONER=Metis \
