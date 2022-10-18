@@ -94,6 +94,36 @@ bool isStatActive()
   return global_do_stat_level > 0;
 }
 
+/*!
+ * \brief Classe permettant de garantir qu'on enregistre les statistiques
+ * d'exécution même en cas d'exception.
+ */
+class ScopedExecInfo
+{
+ public:
+
+  ScopedExecInfo(const ForLoopTraceInfo& trace_info)
+  : m_trace_info(trace_info)
+  {
+    m_stat_info_ptr = isStatActive() ? &m_stat_info : nullptr;
+  }
+  ~ScopedExecInfo()
+  {
+  if (m_stat_info_ptr)
+    ProfilingRegistry::threadLocalInstance()->merge(*m_stat_info_ptr,m_trace_info);
+  }
+
+ public:
+
+  ForLoopOneExecInfo* statInfo() const { return m_stat_info_ptr; }
+
+ private:
+
+  ForLoopOneExecInfo m_stat_info;
+  ForLoopOneExecInfo* m_stat_info_ptr = nullptr;
+  const ForLoopTraceInfo& m_trace_info;
+};
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -461,7 +491,7 @@ class TBBTaskImplementation
   _executeMDParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
                         IMDRangeFunctor<RankValue>* functor,
                         const ParallelLoopOptions& options);
-  void _executeParallelFor(const ParallelFor1DLoopInfo& loop_info,ForLoopOneExecInfo* stat_info);
+  void _executeParallelFor(const ParallelFor1DLoopInfo& loop_info);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -1023,8 +1053,11 @@ printInfos(std::ostream& o) const
 /*---------------------------------------------------------------------------*/
 
 void TBBTaskImplementation::
-_executeParallelFor(const ParallelFor1DLoopInfo& loop_info,ForLoopOneExecInfo* stat_info)
+_executeParallelFor(const ParallelFor1DLoopInfo& loop_info)
 {
+  ScopedExecInfo sei(loop_info.traceInfo());
+  ForLoopOneExecInfo* stat_info = sei.statInfo();
+
   Int32 begin = loop_info.beginIndex();
   Int32 size = loop_info.size();
   ParallelLoopOptions options = loop_info.options().value_or(TaskFactory::defaultParallelLoopOptions());
@@ -1069,11 +1102,7 @@ _executeParallelFor(const ParallelFor1DLoopInfo& loop_info,ForLoopOneExecInfo* s
 void TBBTaskImplementation::
 executeParallelFor(const ParallelFor1DLoopInfo& loop_info)
 {
-  ForLoopOneExecInfo stat_info;
-  ForLoopOneExecInfo* stat_info_ptr = isStatActive() ? &stat_info : nullptr;
-  _executeParallelFor(loop_info,stat_info_ptr);
-  if (stat_info_ptr)
-    ProfilingRegistry::threadLocalInstance()->merge(*stat_info_ptr,loop_info.traceInfo());
+  _executeParallelFor(loop_info);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1085,9 +1114,12 @@ executeParallelFor(const ParallelFor1DLoopInfo& loop_info)
  */
 template<int RankValue> void TBBTaskImplementation::
 _executeMDParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
-                      IMDRangeFunctor<RankValue>* functor,
-                      const ParallelLoopOptions& options)
+                       IMDRangeFunctor<RankValue>* functor,
+                       const ParallelLoopOptions& options)
 {
+  ScopedExecInfo sei(ForLoopTraceInfo{});
+  ForLoopOneExecInfo* stat_info = sei.statInfo();
+
   if (TaskFactory::verboseLevel()>=1)
     std::cout << "TBB: TBBTaskImplementation executeMDParallelFor nb_dim=" << RankValue << '\n';
   Integer max_thread = options.maxThread();
@@ -1110,9 +1142,6 @@ _executeMDParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
   if (!used_arena)
     used_arena = &(m_p->m_main_arena);
 
-  ForLoopOneExecInfo stat_info;
-  ForLoopOneExecInfo* stat_info_ptr = isStatActive() ? &stat_info : nullptr;
-
   // Pour l'instant pour la dimension 1, utilise le 'ParallelForExecute' historique
   if constexpr (RankValue==1){
     auto range_1d = _toTBBRange(loop_ranges);
@@ -1123,15 +1152,13 @@ _executeMDParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
     LambdaRangeFunctorT<decltype(x1)> functor_1d(x1);
     Integer begin1 = CheckedConvert::toInteger(range_1d.dim(0).begin());
     Integer size1 = CheckedConvert::toInteger(range_1d.dim(0).size());
-    ParallelForExecute pfe(this,true_options,begin1,size1,&functor_1d,stat_info_ptr);
+    ParallelForExecute pfe(this,true_options,begin1,size1,&functor_1d,stat_info);
     used_arena->execute(pfe);
   }
   else{
-    MDParallelForExecute<RankValue> pfe(this,true_options,loop_ranges,functor,stat_info_ptr);
+    MDParallelForExecute<RankValue> pfe(this,true_options,loop_ranges,functor,stat_info);
     used_arena->execute(pfe);
   }
-  if (stat_info_ptr)
-    ProfilingRegistry::threadLocalInstance()->merge(*stat_info_ptr,ForLoopTraceInfo());
 }
 
 /*---------------------------------------------------------------------------*/
