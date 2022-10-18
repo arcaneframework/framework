@@ -660,6 +660,39 @@ class ARCANE_UTILS_EXPORT TaskFactory
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \brief Caractéristiques d'exécution d'une boucle.
+ */
+class ARCANE_UTILS_EXPORT ForLoopRunInfo
+{
+ public:
+
+  using ThatClass = ForLoopRunInfo;
+
+ public:
+
+  ForLoopRunInfo() = default;
+  // Ce constructeur doit être implicit pour autoriser les conversions
+  ForLoopRunInfo(const ParallelLoopOptions& options)
+  : m_options(options) {}
+  ForLoopRunInfo(const ParallelLoopOptions& options,const ForLoopTraceInfo& trace_info)
+  : m_options(options), m_trace_info(trace_info) {}
+
+ public:
+
+  std::optional<ParallelLoopOptions> options() const { return m_options; }
+  ThatClass& addOptions(const ParallelLoopOptions& v) { m_options = v; return (*this); }
+  const ForLoopTraceInfo& traceInfo() const { return m_trace_info; }
+  ThatClass& addTraceInfo(const ForLoopTraceInfo& v) { m_trace_info = v; return (*this); }
+
+ protected:
+
+  std::optional<ParallelLoopOptions> m_options;
+  ForLoopTraceInfo m_trace_info;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \brief Caractéristiques d'un boucle 1D multi-thread.
  *
  * Cette classe permet de spécifier les options d'une boucle à paralléliser
@@ -675,33 +708,29 @@ class ARCANE_UTILS_EXPORT ParallelFor1DLoopInfo
 
   ParallelFor1DLoopInfo(Int32 begin,Int32 size,IRangeFunctor* functor)
   : m_begin(begin), m_size(size), m_functor(functor) {}
-  ParallelFor1DLoopInfo(Int32 begin,Int32 size,
-                        const ParallelLoopOptions& options,IRangeFunctor* functor)
-  : m_begin(begin), m_size(size), m_options(options), m_functor(functor) {}
+  ParallelFor1DLoopInfo(Int32 begin,Int32 size,IRangeFunctor* functor,const ForLoopRunInfo& run_info)
+  : m_run_info(run_info), m_begin(begin), m_size(size), m_functor(functor) {}
   ParallelFor1DLoopInfo(Int32 begin,Int32 size, Int32 block_size,IRangeFunctor* functor)
   : m_begin(begin), m_size(size), m_functor(functor)
   {
     ParallelLoopOptions opts(TaskFactory::defaultParallelLoopOptions());
     opts.setGrainSize(block_size);
-    m_options = opts;
+    m_run_info.addOptions(opts);
   }
 
  public:
 
   Int32 beginIndex() const { return m_begin; }
   Int32 size() const { return m_size; }
-  std::optional<ParallelLoopOptions> options() const { return m_options; }
-  ThatClass& addOptions(const ParallelLoopOptions& v) { m_options = v; return (*this); }
-  const ForLoopTraceInfo& traceInfo() const { return m_trace_info; }
-  ThatClass& addTraceInfo(const ForLoopTraceInfo& v) { m_trace_info = v; return (*this); }
   IRangeFunctor* functor() const { return m_functor; }
+  ForLoopRunInfo& runInfo() { return m_run_info; }
+  const ForLoopRunInfo& runInfo() const { return m_run_info; }
 
  private:
 
+  ForLoopRunInfo m_run_info;
   Int32 m_begin = 0;
   Int32 m_size = 0;
-  std::optional<ParallelLoopOptions> m_options;
-  ForLoopTraceInfo m_trace_info;
   IRangeFunctor* m_functor = nullptr;
 };
 

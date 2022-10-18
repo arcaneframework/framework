@@ -1055,12 +1055,12 @@ printInfos(std::ostream& o) const
 void TBBTaskImplementation::
 _executeParallelFor(const ParallelFor1DLoopInfo& loop_info)
 {
-  ScopedExecInfo sei(loop_info.traceInfo());
+  ScopedExecInfo sei(loop_info.runInfo().traceInfo());
   ForLoopOneExecInfo* stat_info = sei.statInfo();
 
   Int32 begin = loop_info.beginIndex();
   Int32 size = loop_info.size();
-  ParallelLoopOptions options = loop_info.options().value_or(TaskFactory::defaultParallelLoopOptions());
+  ParallelLoopOptions options = loop_info.runInfo().options().value_or(TaskFactory::defaultParallelLoopOptions());
   IRangeFunctor* f = loop_info.functor();
 
   Integer max_thread = options.maxThread();
@@ -1167,9 +1167,10 @@ _executeMDParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
 void TBBTaskImplementation::
 executeParallelFor(Integer begin,Integer size,Integer grain_size,IRangeFunctor* f)
 {
-  ParallelLoopOptions opt(TaskFactory::defaultParallelLoopOptions());
-  opt.setGrainSize(grain_size);
-  executeParallelFor(ParallelFor1DLoopInfo(begin,size,opt,f));
+  ParallelLoopOptions opts(TaskFactory::defaultParallelLoopOptions());
+  opts.setGrainSize(grain_size);
+  ForLoopRunInfo run_info(opts);
+  executeParallelFor(ParallelFor1DLoopInfo(begin,size,f,run_info));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1178,7 +1179,7 @@ executeParallelFor(Integer begin,Integer size,Integer grain_size,IRangeFunctor* 
 void TBBTaskImplementation::
 executeParallelFor(Integer begin,Integer size,const ParallelLoopOptions& options,IRangeFunctor* f)
 {
-  executeParallelFor(ParallelFor1DLoopInfo(begin,size,options,f));
+  executeParallelFor(ParallelFor1DLoopInfo(begin,size,f,options));
 }
 
 /*---------------------------------------------------------------------------*/

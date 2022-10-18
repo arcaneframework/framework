@@ -44,8 +44,9 @@ arcaneParallelForeach(const ItemVectorView& items_view, const ParallelLoopOption
   // Recopie \a options et utilise la valeur de 'grain_size' retournée par \a ifp
   ParallelLoopOptions loop_opt(options);
   loop_opt.setGrainSize(ipf.blockGrainSize());
-  ParallelFor1DLoopInfo loop_info(0, ipf.nbBlock(), loop_opt, &ipf);
-  TaskFactory::executeParallelFor(loop_info.addTraceInfo(trace_info));
+  ForLoopRunInfo run_info(loop_opt, trace_info);
+  ParallelFor1DLoopInfo loop_info(0, ipf.nbBlock(), &ipf, run_info);
+  TaskFactory::executeParallelFor(loop_info);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -65,10 +66,10 @@ arcaneParallelForeach(const ItemVectorView& items_view, const ParallelLoopOption
   // Recopie \a options et utilise la valeur de 'grain_size' retournée par \a ifp
   ParallelLoopOptions loop_opt(options);
   loop_opt.setGrainSize(ipf.blockGrainSize());
-  ParallelFor1DLoopInfo loop_info(0, ipf.nbBlock(), loop_opt, &ipf);
-  TaskFactory::executeParallelFor(loop_info.addTraceInfo(trace_info));
+  ForLoopRunInfo run_info(loop_opt, trace_info);
+  ParallelFor1DLoopInfo loop_info(0, ipf.nbBlock(), &ipf, run_info);
+  TaskFactory::executeParallelFor(loop_info);
 }
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -109,7 +110,8 @@ arcaneParallelForeach(const ItemVectorView& items_view, const ForLoopTraceInfo& 
 {
   ItemRangeFunctorT<InstanceType, ItemType> ipf(items_view, instance, function);
   ParallelFor1DLoopInfo loop_info(0, ipf.nbBlock(), ipf.blockGrainSize(), &ipf);
-  TaskFactory::executeParallelFor(loop_info.addTraceInfo(trace_info));
+  loop_info.runInfo().addTraceInfo(trace_info);
+  TaskFactory::executeParallelFor(loop_info);
 }
 
 /*!
@@ -183,7 +185,8 @@ arcaneParallelForeach(const ItemVectorView& items_view, const ForLoopTraceInfo& 
 {
   LambdaItemRangeFunctorT<LambdaType> ipf(items_view, lambda_function);
   ParallelFor1DLoopInfo loop_info(0, ipf.nbBlock(), ipf.blockGrainSize(), &ipf);
-  TaskFactory::executeParallelFor(loop_info.addTraceInfo(trace_info));
+  loop_info.runInfo().addTraceInfo(trace_info);
+  TaskFactory::executeParallelFor(loop_info);
 }
 
 /*!
@@ -194,9 +197,7 @@ arcaneParallelForeach(const ItemVectorView& items_view, const ForLoopTraceInfo& 
 template <typename LambdaType> inline void
 arcaneParallelForeach(const ItemVectorView& items_view, const LambdaType& lambda_function)
 {
-  LambdaItemRangeFunctorT<LambdaType> ipf(items_view, lambda_function);
-  ParallelFor1DLoopInfo loop_info(0, ipf.nbBlock(), ipf.blockGrainSize(), &ipf);
-  TaskFactory::executeParallelFor(loop_info);
+  arcaneParallelForeach(items_view, ForLoopTraceInfo(), lambda_function);
 }
 
 /*!
@@ -246,7 +247,7 @@ arcaneParallelFor(Integer i0, Integer size, const ParallelLoopOptions& options,
                   const LambdaType& lambda_function)
 {
   LambdaRangeFunctorT<LambdaType> ipf(lambda_function);
-  ParallelFor1DLoopInfo loop_info(i0, size, options, &ipf);
+  ParallelFor1DLoopInfo loop_info(i0, size, &ipf, options);
   TaskFactory::executeParallelFor(loop_info);
 }
 
