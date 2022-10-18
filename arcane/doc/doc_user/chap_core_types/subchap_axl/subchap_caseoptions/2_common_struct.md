@@ -1,4 +1,4 @@
-﻿# Attributs et propriétés communs à toutes les options {#arcanedoc_core_types_caseoptions_common_struct}
+﻿# Attributs et propriétés communs à toutes les options {#arcanedoc_core_types_axl_caseoptions_common_struct}
 
 [TOC]
 
@@ -132,9 +132,9 @@ ____
 
 <div class="section_buttons">
 <span class="back_section_button">
-\ref arcanedoc_core_types_caseoptions_struct
+\ref arcanedoc_core_types_axl_caseoptions_struct
 </span>
 <span class="next_section_button">
-\ref arcanedoc_core_types_caseoptions_options
+\ref arcanedoc_core_types_axl_caseoptions_options
 </span>
 </div>

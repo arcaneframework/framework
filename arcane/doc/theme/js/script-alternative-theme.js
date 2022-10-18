@@ -17,11 +17,13 @@
 // F12 -> Console -> ChangeMaxWidth()
 // F12 -> Console -> ChangeTocPos()
 // F12 -> Console -> ChangeOldToc()
+// F12 -> Console -> ExpendLevel(2)
 
 var originalValue = null;
 var stepMaxWidth = false;
 var stepTocPos = false;
 var stepOldToc = false;
+var stepExpend = false;
 
 var ChangeMaxWidth = () => {
 
@@ -64,5 +66,40 @@ var ChangeOldToc = () => {
     document.getElementsByClassName("contents")[0].style.setProperty("display", "inherit");
     document.getElementsByClassName("toc interactive")[0].style.setProperty("position", "inherit");
     stepOldToc = true;
+  }
+};
+
+var nodeSaved = null;
+
+var ExpandLevel = (level) => {
+  let symbol = "►";
+  if(stepExpend){
+    symbol = "▼";
+    stepExpend = false;
+  }
+  else{
+    stepExpend = true;
+  }
+
+  let GetAllElemLevel = (level) => {
+    let str = "";
+    for(let i = 0; i < level; i++){
+      str += "ul > li > ";
+    }
+    return document.querySelectorAll("#nav-tree-contents > " + str + "div > a");
+  };
+
+  GetAllElemLevel(level).forEach(
+    (node, _) => {
+      if (node.querySelector("span").innerHTML == symbol){
+        node.onclick();
+      }
+      else if (stepExpend){
+        nodeSaved = node;
+      }
+    }
+  );
+  if (!stepExpend){
+    nodeSaved.onclick();
   }
 };

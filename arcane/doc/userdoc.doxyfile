@@ -935,7 +935,8 @@ INPUT                  = @ARCANE_SRC_PATH@/arcane \
                          @ARCANESRCROOT@/doc/doc_common/chap_news \
                          @ARCANESRCROOT@/doc/doc_user \
                          @ARCANESRCROOT@/doc/doc_user/chap_core_types \
-                         @ARCANESRCROOT@/doc/doc_user/chap_core_types/subchap_caseoptions \
+                         @ARCANESRCROOT@/doc/doc_user/chap_core_types/subchap_axl \
+                         @ARCANESRCROOT@/doc/doc_user/chap_core_types/subchap_axl/subchap_caseoptions \
                          @ARCANESRCROOT@/doc/doc_user/chap_debug_perf \
                          @ARCANESRCROOT@/doc/doc_user/chap_debug_perf/subchap_profiling \
                          @ARCANESRCROOT@/doc/doc_user/chap_entities \

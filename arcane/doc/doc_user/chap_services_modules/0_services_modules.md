@@ -1,9 +1,9 @@
-# Services et modules {#arcanedoc_services_modules}
+# Services et modules disponibles {#arcanedoc_services_modules}
 
 Ce chapitre présente les services et les modules disponibles dans %Arcane.  
 Ces modules et services peuvent être utilisé dans les codes %Arcane.  
 Il est conseillé d'avoir lu le chapitre \ref arcanedoc_core_types et plus
-précisément la partie \ref arcanedoc_core_types_caseoptions_options_service
+précisément la partie \ref arcanedoc_core_types_axl_caseoptions_options_service
 pour comprendre comment inclure un service ou un module dans votre code.
 
 <br>

@@ -7,7 +7,7 @@ sauf qu'il ne possède pas de point d'entrée. Tout comme le module,
 il peut donc posséder des variables et des options de configuration.
 
 Le service est représenté par une classe et 
-un fichier XML appelé <em>descripteur de service</em>.
+un fichier XML appelé *descripteur de service*.
 
 Les services sont généralement utilisés :
 - pour capitaliser du code entre plusieurs modules. Par exemple, 
@@ -16,13 +16,14 @@ Les services sont généralement utilisés :
 - pour paramétrer un module avec plusieurs algorithmes. Par exemple,
   on peut faire un service chargé d'appliquer une équation d'état
   pour le module d'hydrodynamique. On définit alors 2 implémentations
-  "gaz parfait" et "stiffened gaz" et on paramètre le module, via
+  `gaz parfait` et `stiffened gaz` et on paramètre le module, via
   son jeu de données, avec l'une ou l'autre des implémentations.
 
 Du point de vue de la conception, cela implique :
 - de déclarer une interface qui va être le contrat du service.
   Par exemple, voici l'interface d'un service pour la résolution d'une équation
   d'état sur un groupe de mailles passé en argument :
+
 ```cpp
 class IEquationOfState
 {
@@ -30,6 +31,7 @@ class IEquationOfState
   virtual void applyEOS(const Arcane::CellGroup& group) =0;
 };
 ```
+
 - de créer une ou plusieurs implémentations de cette interface.
 
 Une instance de service est créé lors de la lecture du jeu de données
@@ -39,7 +41,7 @@ appelées directement depuis le module.
 \note
 Les options de configuration du module, notamment celle permettant de
 référencer un service, sont présentées dans le document 
-\ref arcanedoc_core_types_caseoptions.
+\ref arcanedoc_core_types_axl_caseoptions.
   
 ## Descripteur de service {#arcanedoc_core_types_service_desc}
 
@@ -60,7 +62,7 @@ d'une équation d'état de type "gaz parfait" :
   <description>Jeu de données du service PerfectGasEOS</description>
   <interface name="IEquationOfState" />
 
-<options> ... Liste des options ... /options>
+  <options> ... Liste des options ... </options>
   <variables> ... Liste des variables ... </variables>
 </service>
 ```
@@ -74,26 +76,33 @@ d'une équation d'état de type "stiffened gaz" :
   <description>Jeu de données du service StiffenedGasEOS</description>
   <interface name="IEquationOfState" />
 
-	<options> ... Liste des options ... /options>
+	<options> ... Liste des options ... </options>
   <variables> ... Liste des variables ... </variables>
 </service>
 ```
 
+`type="caseoption"`  
 L'attribut *type* valant *caseoption* indique qu'il s'agit d'un
 service pouvant être référencé dans un jeu de données.
 
+`singleton="true"`  
 Il est aussi possible de spécifier un attribut *singleton* ayant
 comme valeur un booléen indiquant si le service peut être singleton.
 
 \note Un service utilisé en tant que singleton n'a pas d'accès direct
 aux données du jeu de données.
 
-## Classe représentant le service {#arcanedoc_core_types_module_class}
+\remark Un service utilisé en tant que singleton n'a pas à être déclaré
+dans le descripteur de module (fichier .axl) mais dans la configuration
+du code (fichier .config) étant donné que le principe du singleton est 
+d'avoir une seule instance pour tout le code.
 
-Comme pour le module, la compilation des fichiers \c PerfectGas.axl 
-et \c StiffenedGas.axl avec l'utilitaire \c axl2cc génère respectiment
-les fichiers PerfectGas_axl.h et StiffenedGas_axl.h contenant les classes 
-\c ArcanePerfectGasObject et \c ArcaneStiffenedGasObject, classes de 
+## Classe représentant le service {#arcanedoc_core_types_service_class}
+
+Comme pour le module, la compilation des fichiers \c PerfectGasEOS.axl 
+et \c StiffenedGasEOS.axl avec l'utilitaire \c axl2cc génère respectiment
+les fichiers PerfectGasEOS_axl.h et StiffenedGasEOS_axl.h contenant les classes 
+\c ArcanePerfectGasEOSObject et \c ArcaneStiffenedGasEOSObject, classes de 
 base des services.
 
 Voici les classes pour les services définis précédemment dans les
@@ -104,12 +113,14 @@ class PerfectGasEOSService
 : public ArcanePerfectGasEOSObject
 {
  public:
-   explicit PerfectGasEOSService(const Arcane::ServiceBuildInfo& sbi)
-	 : ArcanePerfectGasEOSObject(sbi) {}
+  explicit PerfectGasEOSService(const Arcane::ServiceBuildInfo& sbi)
+	: ArcanePerfectGasEOSObject(sbi) {}
 
  public:
-   void applyEOS(const Arcane::CellGroup& group) override
-   { // ... corps de la méthode }
+  void applyEOS(const Arcane::CellGroup& group) override
+  {
+    // ... corps de la méthode 
+  }
 };
 ```
 
@@ -118,12 +129,14 @@ class StiffenedGasEOSService
 : public ArcaneStiffenedGasEOSObject
 {
  public:
-   explicit StiffenedGasEOSService(const Arcane::ServiceBuildInfo& sbi)
-	 : ArcaneStiffenedGasEOSObject(sbi) {}
+  explicit StiffenedGasEOSService(const Arcane::ServiceBuildInfo& sbi)
+	: ArcaneStiffenedGasEOSObject(sbi) {}
 	
  public:
-   void applyEOS(const Arcane::CellGroup& group) override
-   { // ... corps de la méthode }
+  void applyEOS(const Arcane::CellGroup& group) override
+  { 
+    // ... corps de la méthode 
+  }
 };
 ```
 
@@ -134,7 +147,7 @@ de l'interface définissant le contrat du service.
 
 ## Connexion du service à Arcane {#arcanedoc_core_types_service_connectarcane}
 
-Une instance du service est contruite par l'architecture lorsque un module
+Une instance du service est construite par l'architecture lorsque un module
 référence le service dans son jeu de données. 
 
 L'utilisateur doit donc fournir une fonction pour créer une instance 
@@ -145,15 +158,15 @@ le fichier source où est défini le service.
 Voici cette macro pour les exemples précédents :
 
 ```cpp
-ARCANE_REGISTER_SERVICE_PERFECTGASEOS(PerfectGas, PerfectGasEOSService);
-ARCANE_REGISTER_SERVICE_STIFFENEDGASEOS(StiffenedGas, StiffenedGasEOSService);
+ARCANE_REGISTER_SERVICE_PERFECTGASEOS(PerfectGasEOS, PerfectGasEOSService);
+ARCANE_REGISTER_SERVICE_STIFFENEDGASEOS(StiffenedGasEOS, StiffenedGasEOSService);
 ```
 
-*PerfectGas* et *StiffenedGas* correspondent aux noms 
+*PerfectGasEOS* et *StiffenedGasEOS* correspondent aux noms 
 d'enregistrement dans %Arcane et donc aux noms par 
 lesquels les services seront référencés dans le jeu de données des modules.
 *PerfectGasEOSService* et *StiffenedGasEOSService* correspondent aux noms 
-des classes C++.et les noms qui suivent **ARCANE_REGISTER_SERVICE_**
+des classes C++ et les noms qui suivent **ARCANE_REGISTER_SERVICE_**
 permettent de définir la fonction de création.
 
 Il est toutefois possible d'enregistrer un service même si celui-ci ne possède pas
@@ -171,9 +184,9 @@ ____
 
 <div class="section_buttons">
 <span class="back_section_button">
-\ref arcanedoc_core_types_entrypoint
+\ref arcanedoc_core_types_module
 </span>
 <span class="next_section_button">
-\ref arcanedoc_core_types_caseoptions
+\ref arcanedoc_core_types_axl_variable
 </span>
 </div>

@@ -4,8 +4,8 @@
 
 Un code de simulation construit avec la plate-forme %Arcane
 est composé d'un ensemble de \ref arcanedoc_core_types_module "modules numériques".
-Ces modules contiennent des \ref arcanedoc_core_types_variable "variables" et 
-des \ref arcanedoc_core_types_entrypoint "points d'entrée".
+Ces modules contiennent des \ref arcanedoc_core_types_axl_variable "variables" et 
+des \ref arcanedoc_core_types_axl_entrypoint "points d'entrée".
 
 L'enchaînement des calculs du code est décrit par une succession 
 de points d'entrée, la boucle en temps. Les boucles

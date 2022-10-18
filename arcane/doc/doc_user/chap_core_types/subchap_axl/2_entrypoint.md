@@ -1,4 +1,4 @@
-# Point d'entrée {#arcanedoc_core_types_entrypoint}
+# Point d'entrée {#arcanedoc_core_types_axl_entrypoint}
 
 [TOC]
 
@@ -28,8 +28,8 @@ la boucle en temps par les noms <b>DumpConnection</b> ou <b>TestPressureSync</b>
 	<description>Descripteur du module Test</description>
 
 	<variables>
-	        <!-- .... cf chapitre sur les variables .... -->
-       </variables>
+	  <!-- .... cf chapitre sur les variables .... -->
+  </variables>
 
 	<entry-points>
 		<entry-point method-name="testPressureSync" name="TestPressureSync" where="compute-loop" property="none" />
@@ -124,7 +124,7 @@ class TestModule
 };
 ```
 	
-## Construction {#arcanedoc_core_types_entrypoint_build}
+## Construction {#arcanedoc_core_types_axl_entrypoint_build}
 
 Les points d'entrée sont définis dans le fichier de définition
 du module, dans notre cas \c TestModule.cc.
@@ -204,9 +204,9 @@ ____
 
 <div class="section_buttons">
 <span class="back_section_button">
-\ref arcanedoc_core_types_variable
+\ref arcanedoc_core_types_axl_variable
 </span>
 <span class="next_section_button">
-\ref arcanedoc_core_types_service
+\ref arcanedoc_core_types_axl_caseoptions
 </span>
 </div>

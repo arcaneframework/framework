@@ -1,4 +1,4 @@
-﻿# Utilisation dans le module {#arcanedoc_core_types_caseoptions_usage}
+﻿# Utilisation dans le module {#arcanedoc_core_types_axl_caseoptions_usage}
 
 [TOC]
 
@@ -96,9 +96,9 @@ ____
 
 <div class="section_buttons">
 <span class="back_section_button">
-\ref arcanedoc_core_types_caseoptions_options
+\ref arcanedoc_core_types_axl_caseoptions_options
 </span>
 <span class="next_section_button">
-\ref arcanedoc_core_types_caseoptions_default_values
+\ref arcanedoc_core_types_axl_caseoptions_default_values
 </span>
 </div>

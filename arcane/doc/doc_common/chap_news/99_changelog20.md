@@ -436,7 +436,7 @@ Cette version comporte les développements suivants:
   catégorie utilisée lors de l'exécution peut être positionnée pour
   chaque code via la méthode
   Arcane::ICaseDocument::setDefaultCategory(). La page
-  \ref arcanedoc_core_types_caseoptions_struct indique comment ajouter ces
+  \ref arcanedoc_core_types_axl_caseoptions_struct indique comment ajouter ces
   valeurs par défaut.
 - Possibilité de charger des services singleton dans le jeu de
   données à la manière des modules via un nouvel élément **services**
@@ -528,7 +528,7 @@ ___
 Cette version comporte les développements suivants:
 - Possiblité de changer les valeurs par défaut des options du jeu de
   données. Pour plus d'informations, se reporter à la section
-  \ref arcanedoc_core_types_caseoptions_default_values.
+  \ref arcanedoc_core_types_axl_caseoptions_default_values.
 - Ajoute méthode valueIfPresentOrArgument() pour les options
   simples, énumérées ou étendues. Cela permet de remplacer le code
   suivant:

@@ -1,4 +1,4 @@
-# Options du fichier AXL {#arcanedoc_core_types_caseoptions}
+# Options {#arcanedoc_core_types_axl_caseoptions}
 
 Ce sous-chapître décrit les options possibles pour le fichier *axl*. Ces options
 s'appliquent de manière identiques aux modules et aux services. Afin
@@ -12,7 +12,7 @@ l'utilisateur pour lancer son cas. Le document \ref arcanedoc_core_types_module
 montre que chaque module possède un fichier de configuration nommé
 *descripteur de module* composé de 3 parties : 
 les variables, les points d'entrée et les options de configuration.
-Le présent document s'intéresse à la la partie concernant les
+Le présent document s'intéresse à la partie concernant les
 options de configuration qui vont permettre de définir la grammaire
 du jeu de données du module.
 
@@ -44,19 +44,19 @@ du module *Test* sont :
 
 Sommaire de ce sous-chapitre :
 
-1. \subpage arcanedoc_core_types_caseoptions_struct <br>
+1. \subpage arcanedoc_core_types_axl_caseoptions_struct <br>
   Présente la structure d'une option d'un fichier AXL.
 
-2. \subpage arcanedoc_core_types_caseoptions_common_struct <br>
+2. \subpage arcanedoc_core_types_axl_caseoptions_common_struct <br>
   Présente les attributs et les propriétés communes aux options.
 
-3. \subpage arcanedoc_core_types_caseoptions_options <br>
+3. \subpage arcanedoc_core_types_axl_caseoptions_options <br>
   Présente tous les types d'options qu'il est possible de définir dans un fichier AXL.
 
-4. \subpage arcanedoc_core_types_caseoptions_usage <br>
+4. \subpage arcanedoc_core_types_axl_caseoptions_usage <br>
   Présente comment utiliser une option dans un module.
 
-5. \subpage arcanedoc_core_types_caseoptions_default_values <br>
+5. \subpage arcanedoc_core_types_axl_caseoptions_default_values <br>
   Présente comment gérer les valeurs par défaut des options dans le cas où
   le fichier ARC ne définisse pas de valeurs.
 
@@ -67,9 +67,9 @@ ____
 
 <div class="section_buttons">
 <span class="back_section_button">
-\ref arcanedoc_core_types_service
+\ref arcanedoc_core_types_axl
 </span>
 <span class="next_section_button">
-\ref arcanedoc_core_types_caseoptions_struct
+\ref arcanedoc_core_types_axl_caseoptions_struct
 </span>
 </div>

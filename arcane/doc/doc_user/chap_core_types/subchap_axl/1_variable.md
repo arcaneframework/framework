@@ -1,4 +1,4 @@
-# Variable {#arcanedoc_core_types_variable}
+# Variable {#arcanedoc_core_types_axl_variable}
 
 [TOC]
 
@@ -7,51 +7,52 @@ Une variable est une valeur manipulée par le code et gérée par
 sont caractérisées par un **nom**, un **type**, un **support**
 et une **dimension**.
 
-Les variables sont déclarées à l'intérieur d'un module, au sein 
-du descripteur de module. 
+Les variables sont déclarées à l'intérieur d'un module/service, au sein 
+du descripteur de module/service (pour la suite de cette page, on va dire 
+que module = service, pour alléger l'écriture).
 
 Si deux modules utilisent des variables de même nom,
 leurs valeurs seront implicitement partagées. C'est par ce moyen que les 
 modules communiquent leurs informations.
 
-## Type {#arcanedoc_core_types_variable_types}
+## Type {#arcanedoc_core_types_axl_variable_types}
 
 Les **types** des variables sont :
 
-| Nom C++      |  Type
-|--------------|-----------------------------------------------------
-| **Integer**  | entier signé (Arcane::Integer)
-| **Int16**    | entier signé sur 16 bits (Arcane::Int16)
-| **Int32**    | entier signé sur 32 bits (Arcane::Int32)
-| **Int64**    | entier signé sur 64 bits (Arcane::Int64)
-| **Byte**     | représente un caractère sur 8 bits (Arcane::Byte)
-| **Real**     | réel IEEE 754 (Arcane::Real)
-| **Real2**    | coordonnée 2D, vecteur de deux réels (Arcane::Real2)
-| **Real3**    | coordonnée 3D, vecteur de trois réels (Arcane::Real3)
-| **Real2x2**  | tenseur 2D, vecteur de quatre réels (Arcane::Real2x2)
-| **Real3x3**  | tenseur 3D, vecteur de neufs réels (Arcane::Real3x3)
-| **String**   | chaîne de caractères unicode (Arcane::String)
+| Nom C++            |  Type
+|--------------------|-----------------------------------------
+| \arccore{Integer}  | entier signé
+| \arccore{Int16}    | entier signé sur 16 bits
+| \arccore{Int32}    | entier signé sur 32 bits
+| \arccore{Int64}    | entier signé sur 64 bits
+| \arcane{Byte}      | représente un caractère sur 8 bits
+| \arccore{Real}     | réel IEEE 754
+| \arcane{Real2}     | coordonnée 2D, vecteur de deux réels
+| \arcane{Real3}     | coordonnée 3D, vecteur de trois réels
+| \arcane{Real2x2}   | tenseur 2D, vecteur de quatre réels
+| \arcane{Real3x3}   | tenseur 3D, vecteur de neufs réels
+| \arccore{String}   | chaîne de caractères unicode
 
 Par défaut, les entiers sont stockés sur 4 octets mais il est possible 
 de passer sur 8 octets en compilant avec la macro \c ARCANE_64BIT.
 Les flottants (*Real*, *Real2*, *Real2x2*, *Real3*, *Real3x3*) sont des réels double précisions (stockés
 sur 8 octets).
 
-## Support {#arcanedoc_core_types_variable_support}
+## Support {#arcanedoc_core_types_axl_variable_support}
 
 Le **support** correspond à l'entité qui porte la variable,
 sur laquelle la variable est définie. Ces variables qui s'appliquent sur des éléments du maillage
 sont appelées des **grandeurs**.
 
-| Nom C++      | Support
-|--------------|-----------------------------------------------------
-| (vide)       | variable définie globalement (ex : pas de temps)
-| **Node**     | noeud du maillage (Arcane::Node)
-| **Face**     | face du maillage (Arcane::Face)
-| **Cell**     | maille du maillage (Arcane::Cell)
-| **Particle** |  particule du maillage (Arcane::Particle)
+| Nom C++           | Support
+|-------------------|-----------------------------------------------------
+| (vide)            | variable définie globalement (ex : pas de temps)
+| \arcane{Node}     | noeud du maillage
+| \arcane{Face}     | face du maillage
+| \arcane{Cell}     | maille du maillage
+| \arcane{Particle} | particule du maillage
 
-## Dimension {#arcanedoc_core_types_variable_dim}
+## Dimension {#arcanedoc_core_types_axl_variable_dim}
 
 La **dimension** peut être:
 
@@ -61,13 +62,13 @@ La **dimension** peut être:
 | **Array**   | tableau 1D
 | **Array2**  | tableau 2D
 
-## Classe C++ {#arcanedoc_core_types_variable_cppclass}
+## Classe C++ {#arcanedoc_core_types_axl_variable_cppclass}
 
 Il est aisé d'obtenir la classe C++ correspondant à un type, un support 
 et à une dimension donnés. Le nom de la classe est construit de la 
 manière suivante :
 
-**Variable** + **support** + **dimension** + **type**
+**Variable** + \ref arcanedoc_core_types_axl_variable_support + \ref arcanedoc_core_types_axl_variable_dim + \ref arcanedoc_core_types_axl_variable_types
 
 Par exemple, pour une variable représentant un tableau d'entiers
 **VariableArrayInteger**, pour une variable représentant un 
@@ -86,24 +87,24 @@ Tous les combinaisons sont possibles aux exceptions suivantes:
 	
 Le tableau suivant donne quelques exemples de variables:
 
-Nom C++                          | Description
----------------------------------|------------
-Arcane::VariableScalarReal       | un réel
-Arcane::VariableScalarInteger    | un entier
-Arcane::VariableArrayInteger     | Tableau d'entiers
-Arcane::VariableArrayReal3       | Tableau de coordonnées 3D
-Arcane::VariableNodeReal2        | Coordonnée 2D aux noeuds
-Arcane::VariableFaceReal         | Réel aux faces
-Arcane::VariableFaceReal3        | Coordonnée 3D aux faces
-Arcane::VariableFaceArrayInteger | Tableau d'entiers aux faces
-Arcane::VariableCellArrayReal    | Tableau de réels aux mailles
-Arcane::VariableCellArrayReal3   | Tableau de coordonnées 3D aux mailles
-Arcane::VariableCellArrayReal2x2 |Tableau de tenseurs 2D aux mailles
+Nom C++                           | Description
+----------------------------------|------------
+\arcane{VariableScalarReal}       | un réel
+\arcane{VariableScalarInteger}    | un entier
+\arcane{VariableArrayInteger}     | Tableau d'entiers
+\arcane{VariableArrayReal3}       | Tableau de coordonnées 3D
+\arcane{VariableNodeReal2}        | Coordonnée 2D aux noeuds
+\arcane{VariableFaceReal}         | Réel aux faces
+\arcane{VariableFaceReal3}        | Coordonnée 3D aux faces
+\arcane{VariableFaceArrayInteger} | Tableau d'entiers aux faces
+\arcane{VariableCellArrayReal}    | Tableau de réels aux mailles
+\arcane{VariableCellArrayReal3}   | Tableau de coordonnées 3D aux mailles
+\arcane{VariableCellArrayReal2x2} | Tableau de tenseurs 2D aux mailles
 
-## Déclaration {#arcanedoc_core_types_variable_declare}
+## Déclaration {#arcanedoc_core_types_axl_variable_declare}
 
 La déclaration des variables se fait par l'intermédiaire du 
-descripteur un module.
+descripteur de module.
 
 Par exemple, on déclare dans le module \c Test une
 variable de type réel aux mailles appelée \c Pressure et
@@ -212,7 +213,7 @@ lors de vérifications.
 Lors de la compilation du descripteur de module par %Arcane (avec \c axl2cc - cf précédemment), 
 les variables sont enregistrées au sein de la base de données de l'architecture.
 
-## Utilisation {#arcanedoc_core_types_variable_use}
+## Utilisation {#arcanedoc_core_types_axl_variable_use}
 
 La manière d'utiliser une variable est identique quel que soit son
 type et ne dépend que de son genre.
@@ -220,15 +221,15 @@ type et ne dépend que de son genre.
 **Variables scalaires**
 	
 Les variables scalaires sont utilisées par l'intermédiaire de la classe template
-Arcane::VariableRefScalarT.
+\arcane{VariableRefScalarT}.
 
 Il n'y a que deux possibilités d'utilisation :
 
 - "lire la valeur" : cela se fait par
-  l'opérateur() (VariableRefScalarT::operator()()). Cet opérateur retourne une
+  l'opérateur() (\arcane{VariableRefScalarT::operator()()}). Cet opérateur retourne une
   référence constante sur la valeur stockée dans la variable. Il peut être utilisé
   partout ou l'on veut utiliser une valeur du type de la variable.
-- "changer la valeur" : cela se fait par l'opérateur = (Arcane::VariableRefScalarT::operator=())
+- "changer la valeur" : cela se fait par l'opérateur = (\arcane{VariableRefScalarT::operator=()})
 
 Par exemple, avec la variable \c m_time de type \c VariableScalarReal :
 
@@ -244,15 +245,15 @@ accéder à la valeur de la variable.
 **Variables tableaux**
 	
 Les variables tableaux sont utilisées par l'intermédiaire de la classe template
-*Arcane::VariableRefArrayT*.
+\arcane{VariableRefArrayT}.
 
 Leur fonctionnement est assez similaire à la classe \c vector
 de la STL. Le dimensionnement du tableau se fait par la méthode
-Arcane::VariableRefArrayT::resize() et chaque élément du tableau peut être accédé par l'opérateur
-Arcane::VariableRefArrayT::operator[]() qui retourne une référence sur le type des éléments du
+\arcane{VariableRefArrayT::resize()} et chaque élément du tableau peut être accédé par l'opérateur
+\arcane{VariableRefArrayT::operator[]()} qui retourne une référence sur le type des éléments du
 tableau.
 
-Par exemple, avec la variable *m_times* de type *VariableArrayReal*:
+Par exemple, avec la variable *m_times* de type \arcane{VariableArrayReal} :
 
 ```cpp
 Arcane::VariableArrayReal m_times = ...;
@@ -265,10 +266,10 @@ cout << m_times[0];        // imprime la valeur du premier élément
 	
 Il s'agit des variables sur les éléments du maillages (noeuds,
 faces ou mailles) avec une valeur par élément. Ces variables sont
-définies par la classe template Arcane::MeshVariableScalarRefT.
+définies par la classe template \arcane{MeshVariableScalarRefT}.
 
 Leur fonctionnement est assez similaire à celui d'un tableau C
-standard. On utilise l'opérateur Arcane::VariableRefArrayT::operator[]()
+standard. On utilise l'opérateur \arcane{VariableRefArrayT::operator[]()}
 pour récupérer une référence sur le type de la variable pour un
 élément du maillage donné. Cet opérateur est surchargé pour prendre
 en argument un itérateur sur un élément du maillage.
@@ -278,7 +279,7 @@ quels que soient le type d'élément du maillage. Elles sont dimensionnées
 automatiquement lors de l'initialisation au nombre d'éléments du
 maillage du genre de la variable.
 
-Par exemple, avec la variable *m_volume* de type *Arcane::VariableCellReal*:
+Par exemple, avec la variable *m_volume* de type \arcane{VariableCellReal}:
 
 ```cpp
 Arcane::VariableCellReal m_volume = ...;
@@ -298,17 +299,17 @@ ENUMERATE_CELL(i,allCells()) {
 
 Il s'agit des variables sur les éléments du maillage (noeuds,
 faces ou mailles) avec un tableau de valeurs par éléments. Ces variables sont
-définies par la classe template Arcane::MeshVariableArrayRefT.
+définies par la classe template \arcane{MeshVariableArrayRefT}.
 
 Le fonctionnement de ces variables est identique à celui des
 variables scalaires sur le maillage mais l'opérateur
-Arcane::MeshVariableArrayRefT::operator[]() retourne un tableau de valeurs
+\arcane{MeshVariableArrayRefT::operator[]()} retourne un tableau de valeurs
 du type de la variable.
 
 Il est possible de changer le nombre d'éléments de la deuxième
-dimension de ce tableau par la méthode Arcane::MeshVariableArrayRefT::resize().
+dimension de ce tableau par la méthode \arcane{MeshVariableArrayRefT::resize()}.
 
-Par exemple, avec la variable *m_temperature* de type *Arcane::VariableCellArrayReal*:
+Par exemple, avec la variable *m_temperature* de type \arcane{VariableCellArrayReal}:
 
 ```cpp
 Arcane::VariableCellArrayReal m_temperature = ...;
@@ -329,9 +330,9 @@ ____
 
 <div class="section_buttons">
 <span class="back_section_button">
-\ref arcanedoc_core_types_module
+\ref arcanedoc_core_types_axl
 </span>
 <span class="next_section_button">
-\ref arcanedoc_core_types_entrypoint
+\ref arcanedoc_core_types_axl_entrypoint
 </span>
 </div>

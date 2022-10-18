@@ -23,7 +23,7 @@
 
   On trouvera en annexe la description du format de fichier permettant
   de configurer un jeu de données et la manière de l'utiliser (section
-  \ref arcanedoc_core_types_caseoptions "Configuration du jeu de données")
+  \ref arcanedoc_core_types_axl_caseoptions "Configuration du jeu de données")
 */
 
 /*!
@@ -510,7 +510,7 @@ Afin de rendre plus souple l'utilisation du module, il est commode de
  paramétrer certaines valeurs dans un fichier externe au code qui est
  lu à l'éxécution. Dans ARCANE, ce fichier s'appelle le jeu de
  données. Les détails d'un tel fichier sont décrit dans les annexes
-\ref arcanedoc_core_types_caseoptions "configuration du jeu de données" et
+\ref arcanedoc_core_types_axl_caseoptions "configuration du jeu de données" et
 \ref simplehydro_caseoptions "jeu de données du module hydro". Pour le
 moment, il est seulement utile de savoir que l'accès au jeu de données 
 se fait par une classe, de nom <tt>CaseOptionsSimpleHydro</tt>. Pour

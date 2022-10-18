@@ -1,4 +1,4 @@
-﻿# Fichier config {#arcanedoc_core_types_codeconfig}
+﻿# Configuration du code (.CONFIG) {#arcanedoc_core_types_codeconfig}
 
 [TOC]
 
@@ -100,7 +100,13 @@ Comme pour le module, il y a deux attributs `name`
 et `need`. Si le service est optionel et qu'il n'est pas trouvé,
 il ne sera pas instantié. Dans le code, il est possible de
 récupérer un service singleton dont on connait l'interface, via
-la classe ServiceBuilder.
+la classe ServiceBuilder. Exemple :
+
+```cpp
+m_toto = ServiceBuilder<IToto>(subDomain()).getSingleton();
+```
+
+Avec Toto implémentant l'interface IToto.
 
 ### L'élément <entry-points> {#arcanedoc_core_types_codeconfig_entrypoints}
 

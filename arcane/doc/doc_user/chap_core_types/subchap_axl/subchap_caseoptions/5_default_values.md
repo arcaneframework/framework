@@ -1,4 +1,4 @@
-﻿# Gestion des valeurs par défaut {#arcanedoc_core_types_caseoptions_default_values}
+﻿# Gestion des valeurs par défaut {#arcanedoc_core_types_axl_caseoptions_default_values}
 
 [TOC]
 
@@ -30,10 +30,10 @@ Pour changer les valeurs par défaut, il existe une méthode
 
 | Classe %Arcane                                  |  Description
 |-------------------------------------------------|---------------------------------------
-| Arcane::CaseOptionSimpleT::setDefaultValue()    | options simples
-| Arcane::CaseOptionEnumT::setDefaultValue()      | options énumérées
-| Arcane::CaseOptionExtendedT::setDefaultValue()  | options étendues
-| Arcane::CaseOptionService::setDefaultValue()    | services
+| \arcane{CaseOptionSimpleT::setDefaultValue()}   | options simples
+| \arcane{CaseOptionEnumT::setDefaultValue()}     | options énumérées
+| \arcane{CaseOptionExtendedT::setDefaultValue()} | options étendues
+| \arcane{CaseOptionService::setDefaultValue()}   | services
 
 \note Il n'est pas possible de changer les valeurs par défaut des options
 possédant des occurences multiples.
@@ -87,7 +87,7 @@ Les points suivants sont à noter:
   faire lors de la partie (*1*) car ensuite les services ont déjà été
   créés.
 - si une valeur par défaut est présente dans le fichier **axl**, ce
-  sera cette valeurs qui sera utilisée tant qu'il n'y a pas eu d'appel
+  sera cette valeur qui sera utilisée tant qu'il n'y a pas eu d'appel
   à setDefaultValue(). Si on change une valeur d'une option simple
   lors de la partie (*3*) par exemple, elle ne sera pas encore prise
   en compte dans lors de l'appel des points d'entrée **Build** (qui
@@ -104,7 +104,7 @@ ____
 
 <div class="section_buttons">
 <span class="back_section_button">
-\ref arcanedoc_core_types_caseoptions_usage
+\ref arcanedoc_core_types_axl_caseoptions_usage
 </span>
 <span class="next_section_button">
 \ref arcanedoc_core_types_casefile

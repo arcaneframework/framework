@@ -1,4 +1,4 @@
-﻿# Fichier ARC {#arcanedoc_core_types_casefile}
+﻿# Jeu de données (.ARC) {#arcanedoc_core_types_casefile}
 
 [TOC]
 
@@ -56,7 +56,7 @@ fichier de maillage contient un blanc avant les caractères 'Toto'.
 \note Pour des raisons historiques, il est toléré d'avoir des
 espaces en début ou fin de texte d'une balise dans le cas des
 options simples du jeu de données (voir \ref
-arcanedoc_core_types_caseoptions_options_simple). Dans ce cas, ces espaces sont
+arcanedoc_core_types_axl_caseoptions_options_simple). Dans ce cas, ces espaces sont
 ignorés. Par exemple <deltat>  25.0  </deltat> est valide. Ces
 blancs ne sont autorisés que dans les options des modules et
 services, pas dans les balises <arcane> ou <maillage>/<mesh>.
@@ -163,7 +163,7 @@ ____
 
 <div class="section_buttons">
 <span class="back_section_button">
-\ref arcanedoc_core_types_caseoptions_default_values
+\ref arcanedoc_core_types_axl_caseoptions_default_values
 </span>
 <span class="next_section_button">
 \ref arcanedoc_core_types_codeconfig

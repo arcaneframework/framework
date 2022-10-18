@@ -1,4 +1,4 @@
-﻿# Structure du fichier {#arcanedoc_core_types_caseoptions_struct}
+﻿# Structure du fichier {#arcanedoc_core_types_axl_caseoptions_struct}
 
 [TOC]
 
@@ -40,9 +40,9 @@ ____
 
 <div class="section_buttons">
 <span class="back_section_button">
-\ref arcanedoc_core_types_caseoptions
+\ref arcanedoc_core_types_axl_caseoptions
 </span>
 <span class="next_section_button">
-\ref arcanedoc_core_types_caseoptions_common_struct
+\ref arcanedoc_core_types_axl_caseoptions_common_struct
 </span>
 </div>

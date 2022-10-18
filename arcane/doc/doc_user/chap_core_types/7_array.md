@@ -44,26 +44,26 @@ les vues associées:
 </tr>
 <tr>
 <td>Tableau 1D</td>
-<td>Array</td>
-<td>SharedArray</td>
-<td>UniqueArray</td>
-<td>ArrayView</td>
-<td>ConstArrayView</td></tr>
+<td>\arccore{Array}</td>
+<td>\arccore{SharedArray}</td>
+<td>\arccore{UniqueArray}</td>
+<td>\arccore{ArrayView}</td>
+<td>\arccore{ConstArrayView}</td></tr>
 <tr>
 <td>Tableau 2D classique</td>
-<td>Array2</td>
-<td>SharedArray2</td>
-<td>UniqueArray2</td>
-<td>Array2View</td>
-<td>ConstArray2View</td>
+<td>\arccore{Array2}</td>
+<td>\arccore{SharedArray2}</td>
+<td>\arccore{UniqueArray2}</td>
+<td>\arccore{Array2View}</td>
+<td>\arccore{ConstArray2View}</td>
 </tr>
 <tr>
 <td>Tableau 2D avec 2ème dimension variable</td>
-<td>MultiArray2</td>
-<td>SharedMultiArray2</td>
-<td>UniqueMultiArray2</td>
-<td>MultiArray2View</td>
-<td>ConstMultiArray2View</td>
+<td>\arcane{MultiArray2}</td>
+<td>\arcane{SharedMultiArray2}</td>
+<td>\arcane{UniqueMultiArray2}</td>
+<td>\arcane{MultiArray2View}</td>
+<td>\arcane{ConstMultiArray2View}</td>
 </tr>
 </table>
 
@@ -203,6 +203,6 @@ ____
 \ref arcanedoc_core_types_timeloop
 </span>
 <!-- <span class="next_section_button">
-\ref arcanedoc_core_types_caseoptions
+\ref arcanedoc_core_types_axl_caseoptions
 </span> -->
 </div>

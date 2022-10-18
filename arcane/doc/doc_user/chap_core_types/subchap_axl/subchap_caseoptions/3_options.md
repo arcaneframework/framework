@@ -1,8 +1,8 @@
-﻿# Les types d'options {#arcanedoc_core_types_caseoptions_options}
+﻿# Les types d'options {#arcanedoc_core_types_axl_caseoptions_options}
 
 [TOC]
 
-## Les options simples {#arcanedoc_core_types_caseoptions_options_simple}
+## Les options simples {#arcanedoc_core_types_axl_caseoptions_options_simple}
 
 Elles sont décrites par l'élément <tt>simple</tt> :
 
@@ -26,7 +26,7 @@ Pour l'exemple précédent, le jeu de données contient, par exemple, la ligne :
 <simple-real>3.4</simple-real>
 ```
 
-## Les options énumérées {#arcanedoc_core_types_caseoptions_options_enum}
+## Les options énumérées {#arcanedoc_core_types_axl_caseoptions_options_enum}
 
 Elles sont décrites par l'élément <tt>enumeration</tt> :
 
@@ -78,7 +78,7 @@ Si dans le jeu de données, on a la ligne :
 alors l'option associée dans la classe C++ générée par le fichier aura
 la valeur <tt>VelocityX</tt>.
 
-## Les options étendues {#arcanedoc_core_types_caseoptions_options_extended}
+## Les options étendues {#arcanedoc_core_types_axl_caseoptions_options_extended}
 
 L'interface d'utilisation de ce type d'option est en cours de définition.
 Pour l'instant, ce type d'option ne doit être utilisé qu'avec les 
@@ -121,7 +121,7 @@ le jeu de données contient, par exemple, la ligne :
 <surface>XMIN</surface>
 ```
 
-## Les options complexes {#arcanedoc_core_types_caseoptions_options_complex}
+## Les options complexes {#arcanedoc_core_types_axl_caseoptions_options_complex}
 
 Une option complexe est composée de plusieurs autres options, y compris
 d'autres options complexes. L'option complexe est décrite par l'élément <tt>complex</tt>.
@@ -145,7 +145,7 @@ Le jeu de données correspondant est :
 </pair-of-int>
 ```
 
-## Les options de type service {#arcanedoc_core_types_caseoptions_options_service}
+## Les options de type service {#arcanedoc_core_types_axl_caseoptions_options_service}
 
 La notion de service %Arcane est expliqué dans la section \ref arcanedoc_core_types_service.
 Rappelons simplement qu'un service est un composant externe utilisé par un module
@@ -222,9 +222,9 @@ ____
 
 <div class="section_buttons">
 <span class="back_section_button">
-\ref arcanedoc_core_types_caseoptions_common_struct
+\ref arcanedoc_core_types_axl_caseoptions_common_struct
 </span>
 <span class="next_section_button">
-\ref arcanedoc_core_types_caseoptions_usage
+\ref arcanedoc_core_types_axl_caseoptions_usage
 </span>
 </div>
