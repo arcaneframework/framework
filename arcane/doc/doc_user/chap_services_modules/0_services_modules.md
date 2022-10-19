@@ -10,6 +10,8 @@ pour comprendre comment inclure un service ou un module dans votre code.
 
 Sommaire de ce chapitre :
 
+<!-- Pages générées par AxlDoc. -->
+
 - \subpage axldoc_casemainpage <br>
   Présente la liste des modules/services disponibles dans %Arcane ainsi que 
   leurs descriptions.
@@ -23,13 +25,15 @@ Sommaire de ce chapitre :
 
 Des chapitres complémentaires sont disponibles pour certains modules/services :
 
-1. \subpage arcanedoc_services_modules_services
+1. \subpage arcanedoc_services_modules_simplecsvoutput <br>
+  En cours d'écriture...
+
 
 
 ____
 
 <div class="section_buttons">
 <span class="next_section_button">
-\ref axldoc_full_index
+\ref arcanedoc_services_modules_simplecsvoutput
 </span>
 </div>

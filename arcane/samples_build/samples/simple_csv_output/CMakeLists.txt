@@ -1,0 +1,54 @@
+set(PROJECT_NAME csv)
+cmake_minimum_required(VERSION 3.16)
+project(${PROJECT_NAME} LANGUAGES CXX C)
+
+set(BUILD_SHARED_LIBS TRUE)
+
+find_package(Arcane REQUIRED)
+
+add_executable(${PROJECT_NAME}
+  main.cc)
+
+add_library(SimpleTableOutputExample1 example1/SimpleTableOutputExample1Module.cc)
+target_include_directories(SimpleTableOutputExample1 PUBLIC .)
+target_link_libraries(SimpleTableOutputExample1 PUBLIC arcane_core)
+
+add_library(SimpleTableOutputExample2 example2/SimpleTableOutputExample2Module.cc)
+target_include_directories(SimpleTableOutputExample2 PUBLIC .)
+target_link_libraries(SimpleTableOutputExample2 PUBLIC arcane_core)
+
+add_library(SimpleTableOutputExample3 example3/SimpleTableOutputExample3Module.cc)
+target_include_directories(SimpleTableOutputExample3 PUBLIC .)
+target_link_libraries(SimpleTableOutputExample3 PUBLIC arcane_core)
+
+add_library(SimpleTableOutputExample4 example4/SimpleTableOutputExample4Module.cc)
+target_include_directories(SimpleTableOutputExample4 PUBLIC .)
+target_link_libraries(SimpleTableOutputExample4 PUBLIC arcane_core)
+
+add_library(SimpleTableOutputExample5 example5/SimpleTableOutputExample5Module.cc)
+target_include_directories(SimpleTableOutputExample5 PUBLIC .)
+target_link_libraries(SimpleTableOutputExample5 PUBLIC arcane_core)
+
+add_library(SimpleTableOutputExample6 example6/SimpleTableOutputExample6Module.cc)
+target_include_directories(SimpleTableOutputExample6 PUBLIC .)
+target_link_libraries(SimpleTableOutputExample6 PUBLIC arcane_core)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE SimpleTableOutputExample1 SimpleTableOutputExample2 SimpleTableOutputExample3 SimpleTableOutputExample4 SimpleTableOutputExample5 SimpleTableOutputExample6)
+
+arcane_target_add_axl(SimpleTableOutputExample1 example1/SimpleTableOutputExample1)
+arcane_target_add_axl(SimpleTableOutputExample2 example2/SimpleTableOutputExample2)
+arcane_target_add_axl(SimpleTableOutputExample3 example3/SimpleTableOutputExample3)
+arcane_target_add_axl(SimpleTableOutputExample4 example4/SimpleTableOutputExample4)
+arcane_target_add_axl(SimpleTableOutputExample5 example5/SimpleTableOutputExample5)
+arcane_target_add_axl(SimpleTableOutputExample6 example6/SimpleTableOutputExample6)
+
+arcane_add_arcane_libraries_to_target(${PROJECT_NAME})
+target_compile_options(${PROJECT_NAME} PUBLIC -Wpedantic)
+target_include_directories(${PROJECT_NAME} PUBLIC . ${CMAKE_CURRENT_BINARY_DIR})
+configure_file(${PROJECT_NAME}.config ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
+enable_testing()
+
+configure_file(data/SimpleTableOutputExample1.arc ${CMAKE_CURRENT_BINARY_DIR} @ONLY)
+configure_file(data/SimpleTableOutputExamples2_6.arc ${CMAKE_CURRENT_BINARY_DIR} @ONLY)
+add_test(NAME simple_csv_output_example_1 COMMAND csv SimpleTableOutputExample1.arc)
+add_test(NAME simple_csv_output_examples_2_6 COMMAND csv SimpleTableOutputExamples2_6.arc)
