@@ -106,6 +106,12 @@ struct ARCANE_UTILS_EXPORT ForLoopOneExecInfo
   Int64 nbChunk() const { return m_nb_chunk; }
   Int64 execTime() const { return m_exec_time; }
 
+  void reset()
+  {
+    m_nb_chunk = 0;
+    m_exec_time = 0;
+  }
+
  private:
 
   //! Nombre de chunk de décomposition de la boucle (en multi-thread)

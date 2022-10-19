@@ -99,6 +99,15 @@ endExecute()
   double end_time = platform::getRealTime();
   double diff_time = end_time - m_begin_time;
   queue._addCommandTime(diff_time);
+
+  // Statistiques d'exécution si demandé
+  ForLoopOneExecInfo* exec_info = m_loop_run_info.execInfo();
+  if (exec_info){
+    Int64 v_as_int64 = static_cast<Int64>(diff_time * 1.0e9);
+    exec_info->setExecTime(v_as_int64);
+    //std::cout << "END_EXEC exec_info=" << m_loop_run_info.traceInfo().traceInfo() << "\n";
+    ProfilingRegistry::threadLocalInstance()->merge(*exec_info,m_loop_run_info.traceInfo());
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -134,16 +143,36 @@ computeParallelLoopOptions(Int64 full_size) const
   const bool use_dynamic_compute = false;
   // Calcule une taille de grain par défaut si cela n'est pas renseigné dans
   // les options
-  if (use_dynamic_compute && opt.grainSize()==0){
+  if (use_dynamic_compute && opt.grainSize() == 0) {
     Int32 nb_thread = opt.maxThread();
-    if (nb_thread<=0)
+    if (nb_thread <= 0)
       nb_thread = TaskFactory::nbAllowedThread();
-    if (nb_thread<=0)
+    if (nb_thread <= 0)
       nb_thread = 1;
     Int32 grain_size = static_cast<Int32>((double)full_size / (nb_thread * 10.0));
     opt.setGrainSize(grain_size);
   }
   return opt;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunCommandLaunchInfo::
+computeLoopRunInfo(Int64 full_size)
+{
+  if (m_has_exec_begun)
+    ARCANE_FATAL("computeLoopRunInfo() has to be called before beginExecute()");
+  ForLoopTraceInfo lti(m_command.traceInfo(), m_command.kernelName());
+  m_loop_run_info = ForLoopRunInfo(computeParallelLoopOptions(full_size), lti);
+
+  // TODO: ne faire que si les traces sont actives
+  if (TaskFactory::executionStatLevel()>0) {
+    m_loop_one_exec_info.reset();
+    m_loop_run_info.setExecInfo(&m_loop_one_exec_info);
+  }
+  else
+    m_loop_run_info.setExecInfo(nullptr);
 }
 
 /*---------------------------------------------------------------------------*/

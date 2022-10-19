@@ -102,26 +102,38 @@ class ScopedExecInfo
 {
  public:
 
-  ScopedExecInfo(const ForLoopRunInfo& run_info)
+  explicit ScopedExecInfo(const ForLoopRunInfo& run_info)
   : m_run_info(run_info)
   {
-    m_stat_info_ptr = isStatActive() ? &m_stat_info : nullptr;
+    // Si run_info.execInfo() n'est pas nul, on l'utilise.
+    // Cela signifie que c'est l'appelant de qui va gérer les statistiques
+    // d'exécution. Sinon, on utilise \a m_stat_info si les statistiques
+    // d'exécution sont demandées.
+    ForLoopOneExecInfo* ptr = run_info.execInfo();
+    if (ptr){
+      m_stat_info_ptr = ptr;
+      m_use_own_run_info = false;
+    }
+    else
+      m_stat_info_ptr = isStatActive() ? &m_stat_info : nullptr;
   }
   ~ScopedExecInfo()
   {
-    if (m_stat_info_ptr)
+    if (m_stat_info_ptr && m_use_own_run_info)
       ProfilingRegistry::threadLocalInstance()->merge(*m_stat_info_ptr,m_run_info.traceInfo());
   }
 
  public:
 
   ForLoopOneExecInfo* statInfo() const { return m_stat_info_ptr; }
-
+  bool isOwn() const { return m_use_own_run_info; }
  private:
 
   ForLoopOneExecInfo m_stat_info;
   ForLoopOneExecInfo* m_stat_info_ptr = nullptr;
   ForLoopRunInfo m_run_info;
+  //! Indique si on utilise m_stat_info
+  bool m_use_own_run_info = true;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -907,8 +919,6 @@ class TBBTaskImplementation::ParallelForExecute
                 << " partitioner=" << (int)m_options.partitioner()
                 << " nb_thread=" << nb_thread << '\n';
 
-    impl::ScopedStatLoop scoped_loop(m_stat_info);
-
     if (gsize>0)
       range = tbb::blocked_range<Integer>(m_begin,m_begin+m_size,gsize);
 
@@ -963,7 +973,6 @@ class TBBTaskImplementation::MDParallelForExecute
   {
     Integer nb_thread = m_options.maxThread();
     TBBMDParallelFor<RankValue> pf(m_functor,nb_thread,m_stat_info);
-    impl::ScopedStatLoop scoped_loop(m_stat_info);
 
     if (m_options.partitioner()==ParallelLoopOptions::Partitioner::Static){
       tbb::parallel_for(m_tbb_range,pf,tbb::static_partitioner());
@@ -1057,6 +1066,7 @@ _executeParallelFor(const ParallelFor1DLoopInfo& loop_info)
 {
   ScopedExecInfo sei(loop_info.runInfo());
   ForLoopOneExecInfo* stat_info = sei.statInfo();
+  impl::ScopedStatLoop scoped_loop(sei.isOwn() ? stat_info : nullptr);
 
   Int32 begin = loop_info.beginIndex();
   Int32 size = loop_info.size();
@@ -1076,7 +1086,6 @@ _executeParallelFor(const ParallelFor1DLoopInfo& loop_info)
 
   // En exécution séquentielle, appelle directement la méthode \a f.
   if (max_thread==1 || max_thread==0){
-    impl::ScopedStatLoop scoped_loop(stat_info);
     f->executeFunctor(begin,size);
     return;
   }
@@ -1119,6 +1128,7 @@ _executeMDParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
 {
   ScopedExecInfo sei(ForLoopRunInfo{});
   ForLoopOneExecInfo* stat_info = sei.statInfo();
+  impl::ScopedStatLoop scoped_loop(sei.isOwn() ? stat_info : nullptr);
 
   if (TaskFactory::verboseLevel()>=1)
     std::cout << "TBB: TBBTaskImplementation executeMDParallelFor nb_dim=" << RankValue << '\n';

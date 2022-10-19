@@ -62,7 +62,6 @@ ScopedStatLoop(ForLoopOneExecInfo* s)
 : m_stat_info(s)
 {
   if (m_stat_info) {
-    //m_stat_info->incrementNbLoop();
     m_begin_time = platform::getRealTime();
   }
 }

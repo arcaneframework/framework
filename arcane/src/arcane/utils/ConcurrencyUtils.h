@@ -660,7 +660,10 @@ class ARCANE_UTILS_EXPORT TaskFactory
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Caractéristiques d'exécution d'une boucle.
+ * \brief Informations d'exécution d'une boucle.
+ *
+ * Cette classe permet de gérer les informations d'exécutions communes à toutes
+ * les boucles.
  */
 class ARCANE_UTILS_EXPORT ForLoopRunInfo
 {
@@ -685,10 +688,14 @@ class ARCANE_UTILS_EXPORT ForLoopRunInfo
   const ForLoopTraceInfo& traceInfo() const { return m_trace_info; }
   ThatClass& addTraceInfo(const ForLoopTraceInfo& v) { m_trace_info = v; return (*this); }
 
+  void setExecInfo(ForLoopOneExecInfo* v) { m_exec_info_ptr = v; }
+  ForLoopOneExecInfo* execInfo() const { return m_exec_info_ptr; }
+
  protected:
 
   std::optional<ParallelLoopOptions> m_options;
   ForLoopTraceInfo m_trace_info;
+  ForLoopOneExecInfo* m_exec_info_ptr = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

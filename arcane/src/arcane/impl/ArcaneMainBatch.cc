@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneMainBatch.cc                                          (C) 2000-2021 */
+/* ArcaneMainBatch.cc                                          (C) 2000-2022 */
 /*                                                                           */
 /* Gestion de l'exécution en mode Batch.                                     */
 /*---------------------------------------------------------------------------*/
@@ -35,7 +35,7 @@
 #include "arcane/utils/Property.h"
 #include "arcane/utils/ParameterListPropertyReader.h"
 #include "arcane/utils/CommandLineArguments.h"
-#include "arcane/utils/ConcurrencyUtils.h"
+#include "arcane/utils/Profiling.h"
 
 #include "arcane/impl/ArcaneMain.h"
 #include "arcane/impl/ParallelReplication.h"
@@ -988,7 +988,7 @@ _printStats(ISubDomain* sub_domain,ITraceMng* trace,ITimeStats* time_stat)
   trace->info() << "NB_CELL=" << nb_cell << " nb_loop=" << nb_loop;
   {
     OStringStream ostr;
-    TaskFactory::printExecutionStats(ostr());
+    ProfilingRegistry::printExecutionStats(ostr());
     String str = ostr.str();
     if (!str.empty())
       trace->info() << "TaskStatistics:\n" << str;
