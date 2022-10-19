@@ -18,6 +18,7 @@
 // F12 -> Console -> ChangeTocPos()
 // F12 -> Console -> ChangeOldToc()
 // F12 -> Console -> ExpendLevel(2)
+// F12 -> Console -> ExpendCurrent()
 
 var originalValue = null;
 var stepMaxWidth = false;
@@ -102,4 +103,8 @@ var ExpandLevel = (level) => {
   if (!stepExpend){
     nodeSaved.onclick();
   }
+};
+
+var ExpandCurrent = () => {
+  document.getElementsByClassName("item selected")[0].querySelector("a").onclick();
 };
