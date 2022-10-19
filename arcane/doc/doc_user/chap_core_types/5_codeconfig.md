@@ -60,7 +60,7 @@ se trouve dans le répertoire des exemples de ARCANE (\c samples):
 ## L'élément <time-loops>  {#arcanedoc_core_types_codeconfig_timeloop}
 
 L'ensemble des boucles en temps est décrit dans l'élément
-`<time-loops>. Chaque boucle en temps est représentée
+`<time-loops>`. Chaque boucle en temps est représentée
 par l'élément `<time-loop>` et identifiée par son nom (attribut
 `name`). Le fichier précédent décrit donc une seule boucle en temps 
 nommée <em>MicroHydroLoop</em>.

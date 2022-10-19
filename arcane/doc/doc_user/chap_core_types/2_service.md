@@ -187,6 +187,6 @@ ____
 \ref arcanedoc_core_types_module
 </span>
 <span class="next_section_button">
-\ref arcanedoc_core_types_axl_variable
+\ref arcanedoc_core_types_axl
 </span>
 </div>

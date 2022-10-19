@@ -8,13 +8,13 @@ Ces 4 types fondamentaux sont présents dans trois types de fichiers propres
 
 Pour une description sommaire de ces notions, se reporter au chapitre \ref arcanedoc_getting_started.
 
-Voici un schéma de code %Arcane simple, avec un module et deux services. Les deux services partagant
+Voici un schéma de code %Arcane simple, avec un module et deux services. Les deux services partageant
 une interface commune.
 
 \image html code_schema.svg
 
 Les différentes parties de ce chapitre devrait vous permettre de comprendre ce schéma
-(mise à part les fichiers main.cc et CMakeLists.txt qui sont expliqués dans le chapitre 
+(mis à part les fichiers main.cc et CMakeLists.txt qui sont expliqués dans le chapitre 
 \ref arcanedoc_execution).
 
 <br>

@@ -34,9 +34,10 @@ la boucle en temps par les noms <b>DumpConnection</b> ou <b>TestPressureSync</b>
 	<entry-points>
 		<entry-point method-name="testPressureSync" name="TestPressureSync" where="compute-loop" property="none" />
 		<entry-point method-name="dumpConnection" name="DumpConnection" where="compute-loop" property="none" />
-	<entry-points>
+	</entry-points>
 
-	<options/>
+	<options>
+	</options>
 </module>
 ```
 

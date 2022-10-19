@@ -135,9 +135,11 @@ une variable de type réel aux noeuds appelée \c NodePressure.
 			need-sync="true" />
    </variables>
 
-	<entry-points/>
+	<entry-points>
+	</entry-points>
 
-	<options/>
+	<options>
+	</options>
 </module>
 ```
 
