@@ -101,7 +101,7 @@ endExecute()
   queue._addCommandTime(diff_time);
 
   // Statistiques d'exécution si demandé
-  ForLoopOneExecInfo* exec_info = m_loop_run_info.execInfo();
+  ForLoopOneExecStat* exec_info = m_loop_run_info.execStat();
   if (exec_info){
     Int64 v_as_int64 = static_cast<Int64>(diff_time * 1.0e9);
     exec_info->setExecTime(v_as_int64);
@@ -168,11 +168,11 @@ computeLoopRunInfo(Int64 full_size)
 
   // TODO: ne faire que si les traces sont actives
   if (TaskFactory::executionStatLevel()>0) {
-    m_loop_one_exec_info.reset();
-    m_loop_run_info.setExecInfo(&m_loop_one_exec_info);
+    m_loop_one_exec_stat.reset();
+    m_loop_run_info.setExecStat(&m_loop_one_exec_stat);
   }
   else
-    m_loop_run_info.setExecInfo(nullptr);
+    m_loop_run_info.setExecStat(nullptr);
 }
 
 /*---------------------------------------------------------------------------*/

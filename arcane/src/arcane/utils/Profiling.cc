@@ -35,7 +35,7 @@ class ForLoopCumulativeStat
  public:
 
   void printInfos(std::ostream& o);
-  void merge(const ForLoopOneExecInfo& s)
+  void merge(const ForLoopOneExecStat& s)
   {
     ++m_nb_loop_parallel_for;
     m_nb_chunk_parallel_for += s.nbChunk();
@@ -58,7 +58,7 @@ namespace
 /*---------------------------------------------------------------------------*/
 
 impl::ScopedStatLoop::
-ScopedStatLoop(ForLoopOneExecInfo* s)
+ScopedStatLoop(ForLoopOneExecStat* s)
 : m_stat_info(s)
 {
   if (m_stat_info) {
@@ -117,7 +117,7 @@ class ThreadLocalStatInfo
   {
     return _createOrGetStatInfoList();
   }
-  void merge(const ForLoopOneExecInfo& stat_info, const ForLoopTraceInfo& trace_info)
+  void merge(const ForLoopOneExecStat& stat_info, const ForLoopTraceInfo& trace_info)
   {
     impl::StatInfoList* stat_list = _createOrGetStatInfoList();
     stat_list->merge(stat_info, trace_info);
@@ -190,7 +190,7 @@ printInfos(std::ostream& o)
 /*---------------------------------------------------------------------------*/
 
 void impl::ForLoopProfilingStat::
-add(const ForLoopOneExecInfo& s)
+add(const ForLoopOneExecStat& s)
 {
   ++m_nb_call;
   m_nb_chunk += s.nbChunk();
@@ -204,7 +204,7 @@ add(const ForLoopOneExecInfo& s)
 /*---------------------------------------------------------------------------*/
 
 void impl::StatInfoList::
-merge(const ForLoopOneExecInfo& loop_stat_info, const ForLoopTraceInfo& loop_trace_info)
+merge(const ForLoopOneExecStat& loop_stat_info, const ForLoopTraceInfo& loop_trace_info)
 {
   global_stat.merge(loop_stat_info);
   String loop_name = "Unknown";
@@ -224,7 +224,7 @@ print(std::ostream& o)
 {
   o << "ProfilingStat\n";
   o << std::setw(10) << "Ncall" << std::setw(10) << "Nchunk"
-    << std::setw(10) << " T (us)" << std::setw(11) << "Tc (ns)\n";
+    << std::setw(10) << " T (us)" << std::setw(11) << "Tck (ns)\n";
   Int64 cumulative_total = 0;
   for (const auto& x : m_stat_map) {
     const auto& s = x.second;

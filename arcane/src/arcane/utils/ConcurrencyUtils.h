@@ -688,14 +688,21 @@ class ARCANE_UTILS_EXPORT ForLoopRunInfo
   const ForLoopTraceInfo& traceInfo() const { return m_trace_info; }
   ThatClass& addTraceInfo(const ForLoopTraceInfo& v) { m_trace_info = v; return (*this); }
 
-  void setExecInfo(ForLoopOneExecInfo* v) { m_exec_info_ptr = v; }
-  ForLoopOneExecInfo* execInfo() const { return m_exec_info_ptr; }
+  /*!
+   * \brief Positionne le pointeur conservant les statistiques d'exécution.
+   *
+   * Ce pointeur \a v doit rester valide durant toute l'exécution de la boucle.
+   */
+  void setExecStat(ForLoopOneExecStat* v) { m_exec_stat = v; }
+
+  //! Pointeur contenant les statistiques d'exécution.
+  ForLoopOneExecStat* execStat() const { return m_exec_stat; }
 
  protected:
 
   std::optional<ParallelLoopOptions> m_options;
   ForLoopTraceInfo m_trace_info;
-  ForLoopOneExecInfo* m_exec_info_ptr = nullptr;
+  ForLoopOneExecStat* m_exec_stat = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/

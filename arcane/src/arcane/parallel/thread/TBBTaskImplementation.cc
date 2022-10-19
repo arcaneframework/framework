@@ -109,7 +109,7 @@ class ScopedExecInfo
     // Cela signifie que c'est l'appelant de qui va gérer les statistiques
     // d'exécution. Sinon, on utilise \a m_stat_info si les statistiques
     // d'exécution sont demandées.
-    ForLoopOneExecInfo* ptr = run_info.execInfo();
+    ForLoopOneExecStat* ptr = run_info.execStat();
     if (ptr){
       m_stat_info_ptr = ptr;
       m_use_own_run_info = false;
@@ -125,12 +125,12 @@ class ScopedExecInfo
 
  public:
 
-  ForLoopOneExecInfo* statInfo() const { return m_stat_info_ptr; }
+  ForLoopOneExecStat* statInfo() const { return m_stat_info_ptr; }
   bool isOwn() const { return m_use_own_run_info; }
  private:
 
-  ForLoopOneExecInfo m_stat_info;
-  ForLoopOneExecInfo* m_stat_info_ptr = nullptr;
+  ForLoopOneExecStat m_stat_info;
+  ForLoopOneExecStat* m_stat_info_ptr = nullptr;
   ForLoopRunInfo m_run_info;
   //! Indique si on utilise m_stat_info
   bool m_use_own_run_info = true;
@@ -694,7 +694,7 @@ class TBBTaskImplementation::Impl
 class TBBParallelFor
 {
  public:
-  TBBParallelFor(IRangeFunctor* f,Int32 nb_allowed_thread,ForLoopOneExecInfo* stat_info)
+  TBBParallelFor(IRangeFunctor* f,Int32 nb_allowed_thread,ForLoopOneExecStat* stat_info)
   : m_functor(f), m_stat_info(stat_info), m_nb_allowed_thread(nb_allowed_thread){}
  public:
 
@@ -725,7 +725,7 @@ class TBBParallelFor
 
  private:
   IRangeFunctor* m_functor;
-  ForLoopOneExecInfo* m_stat_info = nullptr;
+  ForLoopOneExecStat* m_stat_info = nullptr;
   Int32 m_nb_allowed_thread;
 };
 
@@ -739,7 +739,7 @@ class TBBMDParallelFor
 {
  public:
 
-  TBBMDParallelFor(IMDRangeFunctor<RankValue>* f,Int32 nb_allowed_thread,ForLoopOneExecInfo* stat_info)
+  TBBMDParallelFor(IMDRangeFunctor<RankValue>* f,Int32 nb_allowed_thread,ForLoopOneExecStat* stat_info)
   : m_functor(f), m_stat_info(stat_info), m_nb_allowed_thread(nb_allowed_thread){}
 
  public:
@@ -772,7 +772,7 @@ class TBBMDParallelFor
  private:
 
   IMDRangeFunctor<RankValue>* m_functor = nullptr;
-  ForLoopOneExecInfo* m_stat_info = nullptr;
+  ForLoopOneExecStat* m_stat_info = nullptr;
   Int32 m_nb_allowed_thread;
 };
 
@@ -902,7 +902,7 @@ class TBBTaskImplementation::ParallelForExecute
  public:
 
   ParallelForExecute(TBBTaskImplementation* impl, const ParallelLoopOptions& options,
-                     Integer begin,Integer size,IRangeFunctor* f,ForLoopOneExecInfo* stat_info)
+                     Integer begin,Integer size,IRangeFunctor* f,ForLoopOneExecStat* stat_info)
   : m_impl(impl), m_begin(begin), m_size(size), m_functor(f), m_options(options), m_stat_info(stat_info){}
 
  public:
@@ -939,7 +939,7 @@ class TBBTaskImplementation::ParallelForExecute
   Integer m_size;
   IRangeFunctor* m_functor = nullptr;
   ParallelLoopOptions m_options;
-  ForLoopOneExecInfo* m_stat_info = nullptr;
+  ForLoopOneExecStat* m_stat_info = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -953,7 +953,7 @@ class TBBTaskImplementation::MDParallelForExecute
   MDParallelForExecute(TBBTaskImplementation* impl,
                        const ParallelLoopOptions& options,
                        const ComplexForLoopRanges<RankValue>& range,
-                       IMDRangeFunctor<RankValue>* f,[[maybe_unused]] ForLoopOneExecInfo* stat_info)
+                       IMDRangeFunctor<RankValue>* f,[[maybe_unused]] ForLoopOneExecStat* stat_info)
   : m_impl(impl), m_tbb_range(_toTBBRange(range)), m_functor(f), m_options(options)
   {
     // On ne peut pas modifier les valeurs d'une instance de tbb::blocked_rangeNd.
@@ -992,7 +992,7 @@ class TBBTaskImplementation::MDParallelForExecute
   tbb::blocked_rangeNd<Int32,RankValue> m_tbb_range;
   IMDRangeFunctor<RankValue>* m_functor = nullptr;
   ParallelLoopOptions m_options;
-  ForLoopOneExecInfo* m_stat_info = nullptr;
+  ForLoopOneExecStat* m_stat_info = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -1065,7 +1065,7 @@ void TBBTaskImplementation::
 _executeParallelFor(const ParallelFor1DLoopInfo& loop_info)
 {
   ScopedExecInfo sei(loop_info.runInfo());
-  ForLoopOneExecInfo* stat_info = sei.statInfo();
+  ForLoopOneExecStat* stat_info = sei.statInfo();
   impl::ScopedStatLoop scoped_loop(sei.isOwn() ? stat_info : nullptr);
 
   Int32 begin = loop_info.beginIndex();
@@ -1127,7 +1127,7 @@ _executeMDParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
                        const ParallelLoopOptions& options)
 {
   ScopedExecInfo sei(ForLoopRunInfo{});
-  ForLoopOneExecInfo* stat_info = sei.statInfo();
+  ForLoopOneExecStat* stat_info = sei.statInfo();
   impl::ScopedStatLoop scoped_loop(sei.isOwn() ? stat_info : nullptr);
 
   if (TaskFactory::verboseLevel()>=1)

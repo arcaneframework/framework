@@ -105,7 +105,7 @@ class ARCANE_ACCELERATOR_EXPORT RunCommandLaunchInfo
   eExecutionPolicy m_exec_policy = eExecutionPolicy::Sequential;
   double m_begin_time = 0.0;
   ThreadBlockInfo m_thread_block_info;
-  ForLoopOneExecInfo m_loop_one_exec_info;
+  ForLoopOneExecStat m_loop_one_exec_stat;
   ForLoopRunInfo m_loop_run_info;
 
  private:

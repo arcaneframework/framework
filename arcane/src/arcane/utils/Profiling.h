@@ -37,7 +37,7 @@ struct ARCANE_UTILS_EXPORT ForLoopProfilingStat
  public:
 
   //! Ajoute les infos de l'exécution \a s
-  void add(const ForLoopOneExecInfo& s);
+  void add(const ForLoopOneExecStat& s);
 
   Int64 nbCall() const { return m_nb_call; }
   Int64 nbChunk() const { return m_nb_chunk; }
@@ -57,13 +57,13 @@ struct ARCANE_UTILS_EXPORT ScopedStatLoop
 {
  public:
 
-  explicit ScopedStatLoop(ForLoopOneExecInfo* s);
+  explicit ScopedStatLoop(ForLoopOneExecStat* s);
   ~ScopedStatLoop();
 
  public:
 
   double m_begin_time = 0.0;
-  ForLoopOneExecInfo* m_stat_info = nullptr;
+  ForLoopOneExecStat* m_stat_info = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -75,7 +75,7 @@ class ARCANE_UTILS_EXPORT StatInfoList
 {
  public:
 
-  void merge(const ForLoopOneExecInfo& loop_stat_info, const ForLoopTraceInfo& loop_trace_info);
+  void merge(const ForLoopOneExecStat& loop_stat_info, const ForLoopTraceInfo& loop_trace_info);
   void print(std::ostream& o);
 
  private:
@@ -96,14 +96,24 @@ namespace Arcane
 /*!
  * \brief Classe pour gérer le profiling d'une seule exécution d'une boucle.
  */
-struct ARCANE_UTILS_EXPORT ForLoopOneExecInfo
+struct ARCANE_UTILS_EXPORT ForLoopOneExecStat
 {
  public:
 
+  /*!
+   * \brief Incrémente le nombre de chunk utilisé.
+   *
+   * Cette méthode peut être appelée simultanément par plusieurs threads.
+   */
   void incrementNbChunk() { ++m_nb_chunk; }
+
+  //! Positionne le temps d'exécution de la boucle en nanoseconde
   void setExecTime(Int64 v) { m_exec_time = v; }
 
+  //! Nombre de chunks
   Int64 nbChunk() const { return m_nb_chunk; }
+
+  //! Temps d'exécution
   Int64 execTime() const { return m_exec_time; }
 
   void reset()
@@ -116,8 +126,9 @@ struct ARCANE_UTILS_EXPORT ForLoopOneExecInfo
 
   //! Nombre de chunk de décomposition de la boucle (en multi-thread)
   std::atomic<Int64> m_nb_chunk = 0;
+
   // Temps total (en nano seconde)
-  std::atomic<Int64> m_exec_time = 0;
+  Int64 m_exec_time = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -129,7 +140,7 @@ class ARCANE_UTILS_EXPORT ProfilingRegistry
 {
  public:
 
-  //! Instance locale part thread du gestionnaire des statistiques
+  //! Instance locale par thread du gestionnaire des statistiques
   static impl::StatInfoList* threadLocalInstance();
 
   //! Affiche les statistiques d'exécution de toutes les instances sur \a o

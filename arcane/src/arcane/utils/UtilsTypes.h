@@ -189,7 +189,7 @@ class MutableMemoryView;
 
 class IPerformanceCounterService;
 class ForLoopTraceInfo;
-class ForLoopOneExecInfo;
+class ForLoopOneExecStat;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
