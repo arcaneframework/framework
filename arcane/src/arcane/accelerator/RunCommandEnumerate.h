@@ -19,6 +19,7 @@
 
 #include "arcane/ItemTypes.h"
 #include "arcane/ItemGroup.h"
+#include "arcane/Concurrency.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -63,6 +64,7 @@ _applyItems(RunCommand& command,ItemVectorViewT<ItemType> items,const Lambda& fu
   typedef typename ItemType::LocalIdType LocalIdType;
   impl::RunCommandLaunchInfo launch_info(command,vsize);
   const eExecutionPolicy exec_policy = launch_info.executionPolicy();
+  launch_info.computeLoopRunInfo(vsize);
   switch(exec_policy){
   case eExecutionPolicy::CUDA:
 #if defined(ARCANE_COMPILING_CUDA)
@@ -103,8 +105,7 @@ _applyItems(RunCommand& command,ItemVectorViewT<ItemType> items,const Lambda& fu
   case eExecutionPolicy::Thread:
     {
       launch_info.beginExecute();
-      ForLoopTraceInfo lti(command.traceInfo(),command.kernelName());
-      arcaneParallelForeach(items,launch_info.computeParallelLoopOptions(vsize),lti,
+      arcaneParallelForeach(items,launch_info.loopRunInfo(),
                             [&](ItemVectorViewT<ItemType> sub_items)
                             {
                               impl::_doIndirectThreadLambda(sub_items,func);

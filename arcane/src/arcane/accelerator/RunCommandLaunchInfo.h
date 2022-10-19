@@ -15,13 +15,10 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/CheckedConvert.h"
+#include "arcane/utils/ConcurrencyUtils.h"
+#include "arcane/utils/Profiling.h"
 
 #include "arcane/accelerator/AcceleratorGlobal.h"
-#include "arcane/accelerator/IRunQueueRuntime.h"
-#include "arcane/accelerator/NumArray.h"
-
-#include "arcane/ItemGroup.h"
-#include "arcane/Concurrency.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -84,6 +81,12 @@ class ARCANE_ACCELERATOR_EXPORT RunCommandLaunchInfo
   //! Calcul les informations pour les boucles multi-thread
   ParallelLoopOptions computeParallelLoopOptions(Int64 full_size) const;
 
+  //! Calcule la valeur de loopRunInfo()
+  void computeLoopRunInfo(Int64 full_size);
+
+  //! Informations d'exéctution de la boucle
+  const ForLoopRunInfo& loopRunInfo() const { return m_loop_run_info; }
+
  public:
 
   void* _internalStreamImpl();
@@ -98,6 +101,8 @@ class ARCANE_ACCELERATOR_EXPORT RunCommandLaunchInfo
   eExecutionPolicy m_exec_policy = eExecutionPolicy::Sequential;
   double m_begin_time = 0.0;
   ThreadBlockInfo m_thread_block_info;
+  ForLoopOneExecStat m_loop_one_exec_stat;
+  ForLoopRunInfo m_loop_run_info;
 
  private:
 

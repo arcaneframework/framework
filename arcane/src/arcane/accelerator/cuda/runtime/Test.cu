@@ -19,14 +19,16 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/Real3.h"
+#include "arcane/utils/NumArray.h"
+
 #include "arcane/Item.h"
 #include "arcane/MathUtils.h"
 
+#include "arcane/accelerator/core/Runner.h"
+#include "arcane/accelerator/core/RunQueue.h"
+
 #include "arcane/accelerator/cuda/CudaAccelerator.h"
-#include "arcane/accelerator/Runner.h"
-#include "arcane/accelerator/RunQueue.h"
 #include "arcane/accelerator/RunCommandLoop.h"
-#include "arcane/accelerator/NumArray.h"
 
 using namespace Arccore;
 using namespace Arcane;
