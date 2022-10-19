@@ -193,6 +193,31 @@ comportement à l'exécution:
 </table>
 
 
+Les variables d'environnement suivantes peuvent être utilisées mais
+sont succeptible de provoquer des instabilitées:
+
+- ...
+
+Les autres variables suivantes sont utilisées mais à usage interne à %Arcane:
+
+- ARCANE_PARTICLE_NO_UNIQUE_ID_MAP
+- ARCANE_OLD_EXCHANGE
+- ARCANE_OLD_VARIABLE_SYNC
+- ARCANE_CHANGE_OWNER_ON_INIT
+- ARCANE_NB_EXCHANGE
+- ARCANE_CHECK_EXCHANGE
+- ARCANE_DEBUG_TIED_INTERFACE
+- ARCANE_THREAD_IMPLEMENTATION
+- ARCANE_LISTENER_TIMEOUT
+- ARCANE_VERIF_PARALLEL
+- ARCANE_FORCE_PREPARE_DUMP
+- ARCANE_SERIALIZE_USE_DERIVED_TYPE
+- ARCANE_TRACE_MPI
+- ARCANE_PARALLEL_CHECK_SYNC
+- ARCANE_TRACE_FUNCTION
+
+
+
 ____
 
 <div class="section_buttons">
