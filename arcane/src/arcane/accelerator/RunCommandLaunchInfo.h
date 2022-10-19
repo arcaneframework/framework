@@ -15,14 +15,10 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/CheckedConvert.h"
+#include "arcane/utils/ConcurrencyUtils.h"
 #include "arcane/utils/Profiling.h"
 
 #include "arcane/accelerator/AcceleratorGlobal.h"
-#include "arcane/accelerator/IRunQueueRuntime.h"
-#include "arcane/accelerator/NumArray.h"
-
-#include "arcane/ItemGroup.h"
-#include "arcane/Concurrency.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

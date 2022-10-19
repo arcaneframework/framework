@@ -42,10 +42,12 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/NumArray.h"
+
 #include "arcane/BasicService.h"
 #include "arcane/ServiceFactory.h"
+
 #include "arcane/tests/MiniWeatherTypes.h"
-#include "arcane/accelerator/NumArray.h"
 
 #include <math.h>
 

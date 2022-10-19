@@ -11,11 +11,13 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/RunQueueInternal.h"
-#include "arcane/accelerator/RunQueue.h"
-#include "arcane/accelerator/IRunQueueStream.h"
+#include "arcane/accelerator/RunCommandLaunchInfo.h"
 
 #include "arcane/utils/CheckedConvert.h"
+#include "arcane/utils/PlatformUtils.h"
+
+#include "arcane/accelerator/core/RunQueue.h"
+#include "arcane/accelerator/core/IRunQueueStream.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

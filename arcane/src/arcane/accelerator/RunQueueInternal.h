@@ -17,12 +17,10 @@
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/LoopRanges.h"
 
-#include "arcane/accelerator/AcceleratorGlobal.h"
-#include "arcane/accelerator/IRunQueueRuntime.h"
-#include "arcane/accelerator/NumArray.h"
-#include "arcane/accelerator/RunCommandLaunchInfo.h"
+#include "arcane/accelerator/core/IRunQueueRuntime.h"
 
-#include "arcane/Concurrency.h"
+#include "arcane/accelerator/AcceleratorGlobal.h"
+#include "arcane/accelerator/RunCommandLaunchInfo.h"
 
 #if defined(ARCANE_COMPILING_HIP)
 #include <hip/hip_runtime.h>
