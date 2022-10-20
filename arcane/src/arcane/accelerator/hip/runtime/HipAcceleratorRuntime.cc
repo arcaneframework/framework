@@ -162,11 +162,15 @@ class HipRunQueueEvent
 : public impl::IRunQueueEventImpl
 {
  public:
-  HipRunQueueEvent()
+
+  HipRunQueueEvent(bool has_timer)
   {
-    ARCANE_CHECK_HIP(hipEventCreateWithFlags(&m_hip_event, hipEventDisableTiming));
+    if (has_timer)
+      ARCANE_CHECK_HIP(hipEventCreate(&m_hip_event));
+    else
+      ARCANE_CHECK_HIP(hipEventCreateWithFlags(&m_hip_event, hipEventDisableTiming));
   }
-  ~HipRunQueueEvent() noexcept(false) override
+  ~HipRunQueueEvent() noexcept(false) final
   {
     ARCANE_CHECK_HIP(hipEventDestroy(m_hip_event));
   }
@@ -174,21 +178,32 @@ class HipRunQueueEvent
  public:
 
   // Enregistre l'événement au sein d'une RunQueue
-  void recordQueue(impl::IRunQueueStream* stream) override
+  void recordQueue(impl::IRunQueueStream* stream) final
   {
     auto* rq = static_cast<HipRunQueueStream*>(stream);
     ARCANE_CHECK_HIP(hipEventRecord(m_hip_event,rq->trueStream()));
   }
 
-  void wait() override
+  void wait() final
   {
     ARCANE_CHECK_HIP(hipEventSynchronize(m_hip_event));
   }
 
-  void waitForEvent(impl::IRunQueueStream* stream) override
+  void waitForEvent(impl::IRunQueueStream* stream) final
   {
     auto* rq = static_cast<HipRunQueueStream*>(stream);
     ARCANE_CHECK_HIP(hipStreamWaitEvent(rq->trueStream(), m_hip_event, 0));
+  }
+
+  Int64 elapsedTime(IRunQueueEventImpl* from_event) final
+  {
+    auto* true_from_event = static_cast<HipRunQueueEvent*>(from_event);
+    ARCANE_CHECK_POINTER(true_from_event);
+    float time_in_ms = 0.0;
+    ARCANE_CHECK_HIP(hipEventElapsedTime(&time_in_ms, true_from_event->m_hip_event, m_hip_event));
+    double x = time_in_ms * 1.0e6;
+    Int64 nano_time = static_cast<Int64>(x);
+    return nano_time;
   }
 
  private:
@@ -231,7 +246,11 @@ class HipRunQueueRuntime
   }
   impl::IRunQueueEventImpl* createEventImpl() override
   {
-    return new HipRunQueueEvent();
+    return new HipRunQueueEvent(false);
+  }
+  impl::IRunQueueEventImpl* createEventImplWithTimer() override
+  {
+    return new HipRunQueueEvent(true);
   }
   void setMemoryAdvice(MemoryView buffer, eMemoryAdvice advice, DeviceId device_id) override
   {

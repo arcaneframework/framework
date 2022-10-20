@@ -42,6 +42,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT IRunQueueRuntime
   virtual eExecutionPolicy executionPolicy() const = 0;
   virtual IRunQueueStream* createStream(const RunQueueBuildInfo& bi) = 0;
   virtual impl::IRunQueueEventImpl* createEventImpl() = 0;
+  virtual impl::IRunQueueEventImpl* createEventImplWithTimer() = 0;
   virtual void setMemoryAdvice(MemoryView buffer, eMemoryAdvice advice, DeviceId device_id) = 0;
   virtual void unsetMemoryAdvice(MemoryView buffer, eMemoryAdvice advice, DeviceId device_id) = 0;
 };

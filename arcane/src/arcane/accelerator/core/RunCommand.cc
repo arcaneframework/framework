@@ -155,8 +155,13 @@ void RunCommandImpl::
 _init()
 {
   Runner* r = runner();
-  m_start_event = r->_createEvent();
-  m_stop_event = r->_createEvent();
+  m_use_accelerator_timer_event = impl::isAcceleratorPolicy(r->executionPolicy());
+  // TODO: pouvoir désactiver l'utilisation des évènements même si on est sur
+  // accélérateur pour des tests
+  if (m_use_accelerator_timer_event){
+    m_start_event = r->_createEventWithTimer();
+    m_stop_event = r->_createEventWithTimer();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -176,7 +181,10 @@ create(RunQueueImpl* r)
 void RunCommandImpl::
 notifyBeginLaunchKernel()
 {
-  internalStream()->notifyBeginLaunchKernel(*this);
+  IRunQueueStream* stream = internalStream();
+  stream->notifyBeginLaunchKernel(*this);
+  if (m_start_event)
+    m_start_event->recordQueue(stream);
   m_begin_time = platform::getRealTime();
   if (TaskFactory::executionStatLevel()>0)
     m_loop_one_exec_stat_ptr = &m_loop_one_exec_stat;
@@ -192,7 +200,10 @@ notifyBeginLaunchKernel()
 void RunCommandImpl::
 notifyEndLaunchKernel()
 {
-  internalStream()->notifyEndLaunchKernel(*this);
+  IRunQueueStream* stream = internalStream();
+  if (m_stop_event)
+    m_stop_event->recordQueue(stream);
+  stream->notifyEndLaunchKernel(*this);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -214,8 +225,16 @@ notifyEndExecuteKernel()
   // Statistiques d'exécution si demandé
   ForLoopOneExecStat* exec_info = m_loop_one_exec_stat_ptr;
   if (exec_info){
-    Int64 v_as_int64 = static_cast<Int64>(diff_time * 1.0e9);
-    exec_info->setExecTime(v_as_int64);
+    // Sur accélérateur, récupère le temps donnée par les évènements
+    // de la carte qui prennent en compte le temps d'exécution du noyau
+    // en asynchrone.
+    if (m_use_accelerator_timer_event){
+      exec_info->setExecTime(m_stop_event->elapsedTime(m_start_event));
+    }
+    else{
+      Int64 v_as_int64 = static_cast<Int64>(diff_time * 1.0e9);
+      exec_info->setExecTime(v_as_int64);
+    }
     //std::cout << "END_EXEC exec_info=" << m_loop_run_info.traceInfo().traceInfo() << "\n";
     ProfilingRegistry::threadLocalInstance()->merge(*exec_info,traceInfo());
   }

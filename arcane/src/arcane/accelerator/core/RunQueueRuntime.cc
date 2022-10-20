@@ -63,11 +63,14 @@ class ARCANE_ACCELERATOR_CORE_EXPORT HostRunQueueEvent
 : public IRunQueueEventImpl
 {
  public:
-  HostRunQueueEvent(){}
+  HostRunQueueEvent(bool has_timer) : m_has_timer(has_timer){}
  public:
   void recordQueue(IRunQueueStream*) override {}
   void wait() override {}
   void waitForEvent(IRunQueueStream*) override {}
+  Int64 elapsedTime(IRunQueueEventImpl*) final { return 0; }
+ private:
+  bool m_has_timer;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -87,7 +90,8 @@ class ARCANE_ACCELERATOR_CORE_EXPORT SequentialRunQueueRuntime
   void barrier() final {}
   eExecutionPolicy executionPolicy() const final { return eExecutionPolicy::Sequential; }
   IRunQueueStream* createStream(const RunQueueBuildInfo&) final { return new HostRunQueueStream(this); }
-  IRunQueueEventImpl* createEventImpl() final { return new HostRunQueueEvent(); }
+  IRunQueueEventImpl* createEventImpl() final { return new HostRunQueueEvent(false); }
+  IRunQueueEventImpl* createEventImplWithTimer() final { return new HostRunQueueEvent(true); }
   void setMemoryAdvice(MemoryView, eMemoryAdvice, DeviceId) final {}
   void unsetMemoryAdvice(MemoryView, eMemoryAdvice, DeviceId) final {}
 };
@@ -109,7 +113,8 @@ class ARCANE_ACCELERATOR_CORE_EXPORT ThreadRunQueueRuntime
   void barrier() final {}
   eExecutionPolicy executionPolicy() const final { return eExecutionPolicy::Thread; }
   IRunQueueStream* createStream(const RunQueueBuildInfo&) final { return new HostRunQueueStream(this); }
-  IRunQueueEventImpl* createEventImpl() final { return new HostRunQueueEvent(); }
+  IRunQueueEventImpl* createEventImpl() final { return new HostRunQueueEvent(false); }
+  IRunQueueEventImpl* createEventImplWithTimer() final { return new HostRunQueueEvent(true); }
   void setMemoryAdvice(MemoryView, eMemoryAdvice, DeviceId) final {}
   void unsetMemoryAdvice(MemoryView, eMemoryAdvice, DeviceId) final {}
 };

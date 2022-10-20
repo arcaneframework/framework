@@ -361,12 +361,23 @@ deviceReducePolicy() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-impl::IRunQueueEventImpl*
-Runner::_createEvent()
+impl::IRunQueueEventImpl* Runner::
+_createEvent()
 {
   _checkIsInit();
   impl::IRunQueueRuntime* r = _getRuntime(executionPolicy());
   return r->createEventImpl();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+impl::IRunQueueEventImpl* Runner::
+_createEventWithTimer()
+{
+  _checkIsInit();
+  impl::IRunQueueRuntime* r = _getRuntime(executionPolicy());
+  return r->createEventImplWithTimer();
 }
 
 /*---------------------------------------------------------------------------*/

@@ -87,12 +87,16 @@ class RunCommandImpl
   //! Liste des réductions actives
   std::set<ReduceMemoryImpl*> m_active_reduce_memory_list;
 
+  //! Indique si on utilise les évènements pour calculer le temps d'exécution
+  bool m_use_accelerator_timer_event = false;
   //! Evènements pour le début et la fin de l'exécution.
   IRunQueueEventImpl* m_start_event = nullptr;
+  //! Evènements pour la fin de l'exécution.
   IRunQueueEventImpl* m_stop_event = nullptr;
 
   //! Temps au lancement de la commande
   double m_begin_time = 0.0;
+
   ForLoopOneExecStat m_loop_one_exec_stat;
   ForLoopOneExecStat* m_loop_one_exec_stat_ptr = nullptr;
 
