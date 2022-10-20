@@ -26,8 +26,7 @@
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/Memory.h"
 #include "arcane/accelerator/core/IRunQueueStream.h"
-
-#include <set>
+#include "arcane/accelerator/core/RunCommandImpl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -128,95 +127,6 @@ class ReduceMemoryImpl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \internal
- * \brief Implémentation d'une commande pour accélérateur.
- * \warning API en cours de définition.
- */
-class RunCommandImpl
-{
-  friend class RunCommand;
-
- public:
-
-  RunCommandImpl(RunQueueImpl* queue);
-  ~RunCommandImpl();
-  RunCommandImpl(const RunCommandImpl&) = delete;
-  RunCommandImpl& operator=(const RunCommandImpl&) = delete;
-
- public:
-
-  static RunCommandImpl* create(RunQueueImpl* r);
-
- public:
-
-  void release();
-  const TraceInfo& traceInfo() const { return m_trace_info; }
-  const String& kernelName() const { return m_kernel_name; }
-
- public:
-
-  void reset();
-  impl::IReduceMemoryImpl* getOrCreateReduceMemoryImpl()
-  {
-    ReduceMemoryImpl* p = _getOrCreateReduceMemoryImpl();
-    if (p) {
-      m_active_reduce_memory_list.insert(p);
-    }
-    return p;
-  }
-
-  void releaseReduceMemoryImpl(ReduceMemoryImpl* p)
-  {
-    auto x = m_active_reduce_memory_list.find(p);
-    if (x == m_active_reduce_memory_list.end())
-      ARCANE_FATAL("ReduceMemoryImpl in not in active list");
-    m_active_reduce_memory_list.erase(x);
-    m_reduce_memory_pool.push(p);
-  }
-
-  IRunQueueStream* internalStream() const { return m_queue->_internalStream(); }
-
- private:
-
-  ReduceMemoryImpl* _getOrCreateReduceMemoryImpl()
-  {
-    // Pas besoin d'allouer de la mémoire spécifique si on n'est pas
-    // sur un accélérateur
-    if (!impl::isAcceleratorPolicy(m_queue->executionPolicy()))
-      return nullptr;
-
-    auto& pool = m_reduce_memory_pool;
-
-    if (!pool.empty()) {
-      ReduceMemoryImpl* p = pool.top();
-      pool.pop();
-      return p;
-    }
-    return new ReduceMemoryImpl(this);
-  }
-
- public:
-
-  RunQueueImpl* m_queue;
-  TraceInfo m_trace_info;
-  String m_kernel_name;
-  Int32 m_nb_thread_per_block = 0;
-  ParallelLoopOptions m_parallel_loop_options;
-
-  // NOTE: cette pile gère la mémoire associé à un seul runtime
-  // Si on souhaite un jour supporté plusieurs runtimes il faudra une pile
-  // par runtime. On peut éventuellement limiter cela si on est sur
-  // qu'une commande est associée à un seul type (au sens runtime) de RunQueue.
-  std::stack<ReduceMemoryImpl*> m_reduce_memory_pool;
-
-  //! Liste des réductions actives
-  std::set<ReduceMemoryImpl*> m_active_reduce_memory_list;
-
- private:
-
-  void _freePools();
-};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -251,15 +161,6 @@ _freePools()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void RunCommandImpl::
-release()
-{
-  m_queue->_internalFreeRunCommandImpl(this);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 RunCommandImpl* RunCommandImpl::
 create(RunQueueImpl* r)
 {
@@ -281,6 +182,74 @@ reset()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+IReduceMemoryImpl* RunCommandImpl::
+getOrCreateReduceMemoryImpl()
+{
+  ReduceMemoryImpl* p = _getOrCreateReduceMemoryImpl();
+  if (p) {
+    m_active_reduce_memory_list.insert(p);
+  }
+  return p;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunCommandImpl::
+releaseReduceMemoryImpl(ReduceMemoryImpl* p)
+{
+  auto x = m_active_reduce_memory_list.find(p);
+  if (x == m_active_reduce_memory_list.end())
+    ARCANE_FATAL("ReduceMemoryImpl in not in active list");
+  m_active_reduce_memory_list.erase(x);
+  m_reduce_memory_pool.push(p);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IRunQueueStream* RunCommandImpl::
+internalStream() const
+{
+  return m_queue->_internalStream();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Runner* RunCommandImpl::
+runner() const
+{
+  return m_queue->runner();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ReduceMemoryImpl* RunCommandImpl::
+_getOrCreateReduceMemoryImpl()
+{
+  // Pas besoin d'allouer de la mémoire spécifique si on n'est pas
+  // sur un accélérateur
+  if (!impl::isAcceleratorPolicy(m_queue->executionPolicy()))
+    return nullptr;
+
+  auto& pool = m_reduce_memory_pool;
+
+  if (!pool.empty()) {
+    ReduceMemoryImpl* p = pool.top();
+    pool.pop();
+    return p;
+  }
+  return new ReduceMemoryImpl(this);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void ReduceMemoryImpl::
 release()
 {
@@ -293,7 +262,7 @@ release()
 void ReduceMemoryImpl::
 _setReducePolicy()
 {
-  m_grid_memory_info.m_reduce_policy = m_command->m_queue->runner()->deviceReducePolicy();
+  m_grid_memory_info.m_reduce_policy = m_command->runner()->deviceReducePolicy();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -331,7 +300,7 @@ _allocateGridDataMemory()
   auto mem_view = makeMutableMemoryView(m_grid_buffer.to1DSpan());
   m_grid_memory_info.m_grid_memory_values = mem_view;
   // Indique qu'on va utiliser cette zone mémoire uniquement sur le device.
-  Runner* runner = m_command->m_queue->runner();
+  Runner* runner = m_command->runner();
   runner->setMemoryAdvice(mem_view,eMemoryAdvice::PreferredLocationDevice);
   runner->setMemoryAdvice(mem_view,eMemoryAdvice::AccessedByHost);
   //std::cout << "RESIZE GRID t=" << total_size << "\n";
@@ -364,20 +333,10 @@ RunCommand(RunQueue& run_queue)
 RunCommand::
 ~RunCommand()
 {
-  m_p->release();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void RunCommand::
-_resetInfos()
-{
-  m_p->reset();
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

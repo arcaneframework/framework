@@ -19,6 +19,7 @@
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/IRunQueueRuntime.h"
 #include "arcane/accelerator/core/IRunQueueStream.h"
+#include "arcane/accelerator/core/RunCommandImpl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -108,17 +109,50 @@ _internalCreateOrGetRunCommandImpl()
   else{
     p = RunCommand::_internalCreateImpl(this);
   }
+  m_active_run_command_list.add(p);
   return p;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#if 0
 void RunQueueImpl::
 _internalFreeRunCommandImpl(RunCommandImpl* p)
 {
   // TODO: rendre thread-safe
   m_run_command_pool.push(p);
+}
+#endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Libère les commandes en cours d'exécution.
+ *
+ * Cette méthode est en général appelée après une barrière ce qui garantit
+ * que les commandes asynchrones sont terminées.
+ */
+void RunQueueImpl::
+_internalFreeRunningCommands()
+{
+  for( RunCommandImpl* p : m_active_run_command_list ){
+    p->reset();
+    m_run_command_pool.push(p);
+  }
+  m_active_run_command_list.clear();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Bloque jusqu'à ce que toutes les commandes soient terminées.
+ */
+void RunQueueImpl::
+_internalBarrier()
+{
+  _internalStream()->barrier();
+  _internalFreeRunningCommands();
 }
 
 /*---------------------------------------------------------------------------*/

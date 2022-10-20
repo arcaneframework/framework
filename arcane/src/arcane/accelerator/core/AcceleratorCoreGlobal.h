@@ -54,6 +54,7 @@ class IRunQueueRuntime;
 class IRunQueueStream;
 class RunCommandImpl;
 class IReduceMemoryImpl;
+class ReduceMemoryImpl;
 class RunQueueImpl;
 class IRunQueueEventImpl;
 class RunCommandLaunchInfo;

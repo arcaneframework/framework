@@ -56,7 +56,6 @@ RunCommandLaunchInfo::
   // pendant le lancement du noyau de calcul.
   if (!m_is_notify_end_kernel_done)
     m_queue_stream->notifyEndKernel(m_command);
-  m_command._resetInfos();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -80,14 +79,19 @@ void RunCommandLaunchInfo::
 beginExecute()
 {
   if (m_has_exec_begun)
-    ARCANE_FATAL("beginExecute() has to be called before endExecute()");
+    ARCANE_FATAL("beginExecute() has already been called");
   m_has_exec_begun = true;
   m_begin_time = platform::getRealTime();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Notifie de la fin de lancement de la commande.
+ *
+ * A noter que si la commande est asynchrone, son exécution peut continuer
+ * après l'appel à cette méthode.
+ */
 void RunCommandLaunchInfo::
 endExecute()
 {

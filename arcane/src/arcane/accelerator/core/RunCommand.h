@@ -96,11 +96,6 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunCommand
   //! Affichage des informations de la commande
   friend ARCANE_ACCELERATOR_CORE_EXPORT RunCommand& operator<<(RunCommand& command,const TraceInfo& trace_info);
 
- private:
-
-  // Uniquement pour RunCommandLaunchInfo
-  void _resetInfos();
-
  public:
 
   //! \internal
