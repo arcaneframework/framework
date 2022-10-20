@@ -96,7 +96,7 @@ namespace Arcane
 /*!
  * \brief Classe pour gérer le profiling d'une seule exécution d'une boucle.
  */
-struct ARCANE_UTILS_EXPORT ForLoopOneExecStat
+class ARCANE_UTILS_EXPORT ForLoopOneExecStat
 {
  public:
 

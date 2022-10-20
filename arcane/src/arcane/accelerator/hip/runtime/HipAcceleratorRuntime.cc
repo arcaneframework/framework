@@ -17,6 +17,7 @@
 #include "arcane/utils/Array.h"
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/IMemoryRessourceMng.h"
 #include "arcane/utils/internal/IMemoryRessourceMngInternal.h"
 
@@ -25,7 +26,7 @@
 #include "arcane/accelerator/core/IRunQueueRuntime.h"
 #include "arcane/accelerator/core/IRunQueueStream.h"
 #include "arcane/accelerator/core/IRunQueueEventImpl.h"
-#include "arcane/accelerator/core/RunCommand.h"
+#include "arcane/accelerator/core/RunCommandImpl.h"
 
 #include <iostream>
 
@@ -101,7 +102,7 @@ class HipRunQueueStream
     ARCANE_CHECK_HIP(hipStreamDestroy(m_hip_stream));
   }
  public:
-  void notifyBeginKernel([[maybe_unused]] RunCommand& c) override
+  void notifyBeginLaunchKernel([[maybe_unused]] impl::RunCommandImpl& c) override
   {
 #ifdef ARCANE_HAS_ROCTX
     auto kname = c.kernelName();
@@ -110,14 +111,14 @@ class HipRunQueueStream
     else
       roctxRangePush(kname.localstr());
 #endif
-    return m_runtime->notifyBeginKernel();
+    return m_runtime->notifyBeginLaunchKernel();
   }
-  void notifyEndKernel(RunCommand&) override
+  void notifyEndLaunchKernel(impl::RunCommandImpl&) override
   {
 #ifdef ARCANE_HAS_ROCTX
     roctxRangePop();
 #endif
-    return m_runtime->notifyEndKernel();
+    return m_runtime->notifyEndLaunchKernel();
   }
   void barrier() override
   {
@@ -204,13 +205,13 @@ class HipRunQueueRuntime
  public:
   ~HipRunQueueRuntime() override = default;
  public:
-  void notifyBeginKernel() override
+  void notifyBeginLaunchKernel() override
   {
     ++m_nb_kernel_launched;
     if (m_is_verbose)
       std::cout << "BEGIN HIP KERNEL!\n";
   }
-  void notifyEndKernel() override
+  void notifyEndLaunchKernel() override
   {
     ARCANE_CHECK_HIP(hipGetLastError());
     if (m_is_verbose)
