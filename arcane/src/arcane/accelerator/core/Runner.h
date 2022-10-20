@@ -37,6 +37,7 @@ namespace Arcane::Accelerator
 class ARCANE_ACCELERATOR_CORE_EXPORT Runner
 {
   friend impl::RunQueueImpl;
+  friend impl::RunCommandImpl;
   friend RunQueue;
   friend RunQueueEvent;
   class Impl;

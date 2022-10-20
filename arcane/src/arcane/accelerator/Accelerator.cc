@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Accelerator.cc                                              (C) 2000-2021 */
+/* Accelerator.cc                                              (C) 2000-2022 */
 /*                                                                           */
 /* Déclarations générales pour le support des accélérateurs.                 */
 /*---------------------------------------------------------------------------*/
@@ -16,6 +16,20 @@
 #include "arcane/accelerator/Reduce.h"
 
 #include "arcane/AcceleratorRuntimeInitialisationInfo.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \file RunCommandLoop.h
+ *
+ * \brief Types et macros pour gérer les boucles sur les accélérateurs
+ */
+
+/*!
+ * \file RunCommandEnumerate.h
+ *
+ * \brief Types et macros pour gérer les énumérations des entités sur les accélérateurs
+ */
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

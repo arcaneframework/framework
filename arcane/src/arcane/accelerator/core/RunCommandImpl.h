@@ -16,6 +16,7 @@
 
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/ConcurrencyUtils.h"
+#include "arcane/utils/Profiling.h"
 
 #include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
 
@@ -56,7 +57,7 @@ class RunCommandImpl
 
  public:
 
-  void reset();
+  void notifyEndExecution();
   impl::IReduceMemoryImpl* getOrCreateReduceMemoryImpl();
 
   void releaseReduceMemoryImpl(ReduceMemoryImpl* p);
@@ -84,9 +85,20 @@ class RunCommandImpl
   //! Liste des réductions actives
   std::set<ReduceMemoryImpl*> m_active_reduce_memory_list;
 
+  //! Evènements pour le début et la fin de l'exécution.
+  IRunQueueEventImpl* m_start_event = nullptr;
+  IRunQueueEventImpl* m_stop_event = nullptr;
+
+  //! Temps au lancement de la commande
+  double m_begin_time = 0.0;
+  ForLoopOneExecStat m_loop_one_exec_stat;
+  ForLoopOneExecStat* m_loop_one_exec_stat_ptr = nullptr;
+
  private:
 
   void _freePools();
+  void _reset();
+  void _init();
 };
 
 /*---------------------------------------------------------------------------*/

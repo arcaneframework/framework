@@ -27,20 +27,7 @@
 #include "arcane/accelerator/core/Memory.h"
 #include "arcane/accelerator/core/IRunQueueStream.h"
 #include "arcane/accelerator/core/RunCommandImpl.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \file RunCommandLoop.h
- *
- * \brief Types et macros pour gérer les boucles sur les accélérateurs
- */
-
-/*!
- * \file RunCommandEnumerate.h
- *
- * \brief Types et macros pour gérer les énumérations des entités sur les accélérateurs
- */
+#include "arcane/accelerator/core/IRunQueueEventImpl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -135,6 +122,7 @@ RunCommandImpl::
 RunCommandImpl(RunQueueImpl* queue)
 : m_queue(queue)
 {
+  _init();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -144,6 +132,8 @@ RunCommandImpl::
 ~RunCommandImpl()
 {
   _freePools();
+  delete m_start_event;
+  delete m_stop_event;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -161,6 +151,17 @@ _freePools()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void RunCommandImpl::
+_init()
+{
+  Runner* r = runner();
+  m_start_event = r->_createEvent();
+  m_stop_event = r->_createEvent();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 RunCommandImpl* RunCommandImpl::
 create(RunQueueImpl* r)
 {
@@ -169,14 +170,44 @@ create(RunQueueImpl* r)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Notification de la fin d'exécution.
+ *
+ * Après cet appel, on est sur que la commande a fini de s'exécuter et on
+ * peut la recycler.
+ */
+void RunCommandImpl::
+notifyEndExecution()
+{  
+  double end_time = platform::getRealTime();
+  double diff_time = end_time - m_begin_time;
+  runner()->_addCommandTime(diff_time);
+
+  // Statistiques d'exécution si demandé
+  ForLoopOneExecStat* exec_info = m_loop_one_exec_stat_ptr;
+  if (exec_info){
+    Int64 v_as_int64 = static_cast<Int64>(diff_time * 1.0e9);
+    exec_info->setExecTime(v_as_int64);
+    //std::cout << "END_EXEC exec_info=" << m_loop_run_info.traceInfo().traceInfo() << "\n";
+    ProfilingRegistry::threadLocalInstance()->merge(*exec_info,traceInfo());
+  }
+
+  _reset();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 void RunCommandImpl::
-reset()
+_reset()
 {
   m_kernel_name = String();
   m_trace_info = TraceInfo();
   m_nb_thread_per_block = 0;
   m_parallel_loop_options = TaskFactory::defaultParallelLoopOptions();
+  m_begin_time = 0.0;
+  m_loop_one_exec_stat.reset();
+  m_loop_one_exec_stat_ptr = nullptr;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -455,6 +486,39 @@ _allocateReduceMemory(Int32 nb_grid)
     for (auto& x : mem_list)
       x->setGridSizeAndAllocate(nb_grid);
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunCommand::
+_internalNotifyBeginLaunchKernel()
+{
+  m_p->internalStream()->notifyEndKernel(*this);
+  m_p->m_begin_time = platform::getRealTime();
+  if (TaskFactory::executionStatLevel()>0)
+    m_p->m_loop_one_exec_stat_ptr = &m_p->m_loop_one_exec_stat;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunCommand::
+_internalNotifyEndLaunchKernel()
+{
+  m_p->internalStream()->notifyEndKernel(*this);
+
+  if (!m_run_queue.isAsync())
+    m_run_queue.barrier();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ForLoopOneExecStat* RunCommand::
+_internalCommandExecStat()
+{
+  return m_p->m_loop_one_exec_stat_ptr;
 }
 
 /*---------------------------------------------------------------------------*/

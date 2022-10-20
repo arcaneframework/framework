@@ -55,7 +55,7 @@ RunCommandLaunchInfo::
   // Normalement ce test est toujours faux sauf s'il y a eu une exception
   // pendant le lancement du noyau de calcul.
   if (!m_is_notify_end_kernel_done)
-    m_queue_stream->notifyEndKernel(m_command);
+    m_command._internalNotifyEndLaunchKernel();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -68,7 +68,6 @@ _begin()
   m_exec_policy = queue.executionPolicy();
   m_queue_stream = queue._internalStream();
   m_runtime = queue._internalRuntime();
-  m_queue_stream->notifyBeginKernel(m_command);
   m_command._allocateReduceMemory(m_thread_block_info.nb_block_per_grid);
 }
 
@@ -81,7 +80,7 @@ beginExecute()
   if (m_has_exec_begun)
     ARCANE_FATAL("beginExecute() has already been called");
   m_has_exec_begun = true;
-  m_begin_time = platform::getRealTime();
+  m_command._internalNotifyBeginLaunchKernel();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -98,22 +97,7 @@ endExecute()
   if (!m_has_exec_begun)
     ARCANE_FATAL("beginExecute() has to be called before endExecute()");
   m_is_notify_end_kernel_done = true;
-  m_queue_stream->notifyEndKernel(m_command);
-  RunQueue& queue = m_command._internalQueue();
-  if (!queue.isAsync())
-    m_queue_stream->barrier();
-  double end_time = platform::getRealTime();
-  double diff_time = end_time - m_begin_time;
-  queue._addCommandTime(diff_time);
-
-  // Statistiques d'exécution si demandé
-  ForLoopOneExecStat* exec_info = m_loop_run_info.execStat();
-  if (exec_info){
-    Int64 v_as_int64 = static_cast<Int64>(diff_time * 1.0e9);
-    exec_info->setExecTime(v_as_int64);
-    //std::cout << "END_EXEC exec_info=" << m_loop_run_info.traceInfo().traceInfo() << "\n";
-    ProfilingRegistry::threadLocalInstance()->merge(*exec_info,m_loop_run_info.traceInfo());
-  }
+  m_command._internalNotifyEndLaunchKernel();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -171,14 +155,7 @@ computeLoopRunInfo(Int64 full_size)
     ARCANE_FATAL("computeLoopRunInfo() has to be called before beginExecute()");
   ForLoopTraceInfo lti(m_command.traceInfo(), m_command.kernelName());
   m_loop_run_info = ForLoopRunInfo(computeParallelLoopOptions(full_size), lti);
-
-  // TODO: ne faire que si les traces sont actives
-  if (TaskFactory::executionStatLevel()>0) {
-    m_loop_one_exec_stat.reset();
-    m_loop_run_info.setExecStat(&m_loop_one_exec_stat);
-  }
-  else
-    m_loop_run_info.setExecStat(nullptr);
+  m_loop_run_info.setExecStat(m_command._internalCommandExecStat());
 }
 
 /*---------------------------------------------------------------------------*/
