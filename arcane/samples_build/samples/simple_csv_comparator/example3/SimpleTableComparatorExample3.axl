@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" ?>
-<module name="SimpleTableOutputExample3" version="1.0">
-  <description>Exemple de module utilisant ISimpleTableOutput en tant que service</description>
+<module name="SimpleTableComparatorExample3" version="1.0">
+  <description>Exemple de module utilisant ISimpleTableComparator</description>
 
   <variables>
   </variables>
@@ -11,12 +11,12 @@
     <entry-point method-name="endModule" name="EndModule" where="exit" property="none" />
   </entry-points>
 
-  <!-- //! [SimpleTableOutputExample3_options]  -->
+  <!-- //! [SimpleTableComparatorExample3_options]  -->
   <options>
-    <service-instance name="st-output" type="Arcane::ISimpleTableOutput">
-      <description>ST Output</description>
+    <service-instance name="st-comparator" type="Arcane::ISimpleTableComparator">
+      <description>ST Comparator</description>
     </service-instance>
   </options>
-  <!-- //! [SimpleTableOutputExample3_options]  -->
+  <!-- //! [SimpleTableComparatorExample3_options]  -->
 
 </module>

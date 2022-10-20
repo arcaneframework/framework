@@ -41,7 +41,7 @@
   </simple-table-output-example2>
 
   <simple-table-output-example3>
-    <csv-output name="SimpleCsvOutput">
+    <st-output name="SimpleCsvOutput">
       <!-- Les noms sont utilisés directement par le service CSV. -->
       <!-- Le nom du répertoire à créer/utiliser. -->
       <tableDir>example3</tableDir>
@@ -49,28 +49,28 @@
       <tableName>Results_Example3</tableName>
 
       <!-- Au final, on aura un fichier ayant comme chemin : ./example3/Results_Example3.csv -->
-    </csv-output>
+    </st-output>
   </simple-table-output-example3>
 
   <simple-table-output-example4>
-    <csv-output name="SimpleCsvOutput">
+    <st-output name="SimpleCsvOutput">
       <tableDir>example4</tableDir>
       <tableName>Results_Example4</tableName>
-    </csv-output>
+    </st-output>
   </simple-table-output-example4>
 
   <simple-table-output-example5>
-    <csv-output name="SimpleCsvOutput">
+    <st-output name="SimpleCsvOutput">
       <tableDir>example5</tableDir>
       <tableName>Results_Example5</tableName>
-    </csv-output>
+    </st-output>
   </simple-table-output-example5>
 
   <simple-table-output-example6>
-    <csv-output name="SimpleCsvOutput">
+    <st-output name="SimpleCsvOutput">
       <tableDir>example6</tableDir>
       <tableName>Results_Example6</tableName>
-    </csv-output>
+    </st-output>
   </simple-table-output-example6>
 
 </case>

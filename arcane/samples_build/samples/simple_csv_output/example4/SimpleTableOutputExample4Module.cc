@@ -21,17 +21,12 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+//! [SimpleTableOutputExample4_init]
 void SimpleTableOutputExample4Module::
 initModule()
 {
-  // On utilise des valeurs (pseudo-)aléatoires.
   srand(1234);
-
-  // Initialisation du service.
-
-  // On initialise le tableau grâce à un des initialisateurs.
-  // Le nom du tableau sera le nom choisi dans le .arc.
-  options()->csvOutput()->init();
+  options()->stOutput()->init();
 
   // Pour cet exemple, on va définir le nom des colonnes dès l'init.
   // En effet, ajouter des colonnes au fur et à mesure prend du temps
@@ -42,63 +37,58 @@ initModule()
   for(Integer i = 0; i < NB_ITER; i++){
     columns_name[i] = "Iteration " + String::fromNumber(i+1);
   }
-  options()->csvOutput()->addColumns(columns_name);
+  options()->stOutput()->addColumns(columns_name);
 
   // On ajoute aussi les deux lignes.
   // Toujours dans un soucis d'optimisation, on peut créer les lignes et récupérer
   // leur position pour la suite, ainsi, on évite deux recherches de String dans un
   // tableau de String à chaque itération.
-  options()->csvOutput()->addRows(StringUniqueArray{"Nb de Fissions", "Nb de Collisions"});
+  options()->stOutput()->addRows(StringUniqueArray{"Nb de Fissions", "Nb de Collisions"});
 
-  pos_fis = options()->csvOutput()->rowPosition("Nb de Fissions");
-  pos_col = options()->csvOutput()->rowPosition("Nb de Collisions");
+  m_pos_fis = options()->stOutput()->rowPosition("Nb de Fissions");
+  m_pos_col = options()->stOutput()->rowPosition("Nb de Collisions");
 
-  // On print le tableau dans son état actuel (vide, avec un titre).
-  options()->csvOutput()->print();
+  options()->stOutput()->print();
 }
+//! [SimpleTableOutputExample4_init]
 
+//! [SimpleTableOutputExample4_loop]
 void SimpleTableOutputExample4Module::
 loopModule()
 {
-  // On génère deux valeurs (c'est pour l'exemple, sinon oui, ça sert à rien).
   Integer nb_fissions = rand()%99;
   Integer nb_collisions = rand()%99;
 
   // On ajoute deux valeurs à nos deux lignes.
-  options()->csvOutput()->addElementInRow(pos_fis, nb_fissions);
-  options()->csvOutput()->addElementInRow(pos_col, nb_collisions);
+  options()->stOutput()->addElementInRow(m_pos_fis, nb_fissions);
+  options()->stOutput()->addElementInRow(m_pos_col, nb_collisions);
 
-  // On print le tableau dans son état actuel.
-  options()->csvOutput()->print();
+  options()->stOutput()->print();
 
-  // On effectue trois itérations.
   if (m_global_iteration() == NB_ITER)
     subDomain()->timeLoopMng()->stopComputeLoop(true);
 }
+//! [SimpleTableOutputExample4_loop]
 
+//! [SimpleTableOutputExample4_exit]
 void SimpleTableOutputExample4Module::
 endModule()
 {
   // On peut faire la somme des valeurs des lignes si on souhaite.
-  // Dans le cas où il y a des cases vides, elle sont initialisé à 0 
-  // (TODO : mais pas lors d'une redim, alors que c'est ce qu'on voudrai).
-  for(Integer pos = 0; pos < options()->csvOutput()->numberOfRows(); pos++) {
-    RealUniqueArray row = options()->csvOutput()->row(pos);
+  // Dans le cas où il y a des cases vides, elle sont initialisé à 0.
+  for(Integer pos = 0; pos < options()->stOutput()->numberOfRows(); pos++) {
+    RealUniqueArray row = options()->stOutput()->row(pos);
     Real sum = 0.;
     for(Real elem : row) {
       sum += elem;
     }
-    options()->csvOutput()->addElementInColumn("Somme", sum);
+    options()->stOutput()->addElementInColumn("Somme", sum);
   }
 
-  // On print le tableau dans son état actuel.
-  options()->csvOutput()->print();
-  
-  // On enregistre le résultat dans le dossier choisi
-  // par l'utilisateur dans le .arc.
-  options()->csvOutput()->writeFile();
-  
+  options()->stOutput()->print();
+  options()->stOutput()->writeFile();
 }
+//! [SimpleTableOutputExample4_exit]
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

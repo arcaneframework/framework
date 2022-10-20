@@ -13,9 +13,6 @@
 
   <!-- //! [SimpleTableOutputExample2_options]  -->
   <options>
-    <!-- L'intéret de mettre 'default=""' est que si l'utilisateur
-    ne veut pas de sortie de fichier, il n'a qu'a pas spécifier de
-    nom de table ou de directory de tables. -->
     <simple name="tableName" type="string" default="">
       <description>
         Name for table file (example: Results ).

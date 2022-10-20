@@ -950,6 +950,7 @@ INPUT                  = @ARCANE_SRC_PATH@/arcane \
                          @ARCANESRCROOT@/doc/doc_user/chap_parallel \
                          @ARCANESRCROOT@/doc/doc_user/chap_services_modules \
                          @ARCANESRCROOT@/doc/doc_user/chap_services_modules/subchap_simplecsvoutput \
+                         @ARCANESRCROOT@/doc/doc_user/chap_services_modules/subchap_simplecsvcomparator \
                          @ARCANESRCROOT@/doc/doc_user/chap_wrapping \
                          @ARCANESRCROOT@/doc/doc_user/chap_wrapping/subchap_csharp \
                          @ARCANESRCROOT@/doc/doc_user/chap_wrapping/subchap_python \

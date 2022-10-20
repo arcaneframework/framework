@@ -30,10 +30,10 @@
   </meshes>
 
   <simple-table-output-example6>
-    <csv-output name="SimpleCsvOutput">
+    <st-output name="SimpleCsvOutput">
       <tableDir>example6</tableDir>
       <tableName>Results_Example6</tableName>
-    </csv-output>
+    </st-output>
   </simple-table-output-example6>
 
 </case>

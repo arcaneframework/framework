@@ -12,8 +12,8 @@
   </entry-points>
 
   <options>
-    <service-instance name="csv-output" type="Arcane::ISimpleTableOutput">
-      <description>CSV Output</description>
+    <service-instance name="st-output" type="Arcane::ISimpleTableOutput">
+      <description>ST Output</description>
     </service-instance>
   </options>
 

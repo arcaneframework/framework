@@ -84,8 +84,8 @@ endModule()
   // On print le tableau dans son état actuel.
   table->print();
   
-  // On enregistre le résultat dans le dossier par défaut "example2_default" ou le dossier choisi
-  // par l'utilisateur dans le .arc.
+  // On enregistre le résultat dans le dossier par défaut "example2_default" ou le dossier
+  // choisi par l'utilisateur dans le .arc.
   // Si l'utilisateur n'a mis ni tableName, ni tableDir dans le .arc,
   // il n'y aura aucune sortie.
   if(options()->getTableName() != "" || options()->getTableDir() != "") {

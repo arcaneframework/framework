@@ -51,7 +51,8 @@ Dans le .arc, vous pouvez configurer les options du service. Par exemple :
     <!-- Le nom du fichier à créer/écraser. -->
     <tableName>Results_Example</tableName>
 
-    <!-- Au final, on aura un fichier ayant comme chemin : ./output/csv/example_dir/Results_Example.csv -->
+    <!-- Au final, on aura un fichier ayant comme chemin : 
+    ./output/csv/example_dir/Results_Example.csv -->
   </simple-table-output>
 <!-- </mon-module> -->
 ```
@@ -70,7 +71,7 @@ options()->simpleCsvOutput()->writeFile();
 
 Vous pouvez aussi utiliser le service des deux façons en même temps, selon vos besoins.
 
-Pour un exemple plus concret, voir les pages suivantes)
+(Pour un exemple plus concret, voir les pages suivantes)
 
 
 ## Symboles de nom pour l'exécution parallèle (implémentation CSV)

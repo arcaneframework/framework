@@ -5,13 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SimpleTableOutputExample3Module.cc                          (C) 2000-2022 */
+/* SimpleTableComparatorExample2Module.cc                          (C) 2000-2022 */
 /*                                                                           */
-/* Exemple 3 de module utilisant ISimpleTableOutput en tant que service.     */
+/* Exemple 2 de module utilisant ISimpleTableOutput et ISimpleTableComparator*/
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "SimpleTableOutputExample3Module.h"
+#include "SimpleTableComparatorExample2Module.h"
+#include <arcane/impl/ArcaneMain.h>
 
 #include <iostream>
 #include <random>
@@ -19,58 +20,57 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! [SimpleTableOutputExample3_init]
-void SimpleTableOutputExample3Module::
+//! [SimpleTableComparatorExample2_init]
+void SimpleTableComparatorExample2Module::
 initModule()
 {
   srand(1234);
-
-  // On initialise le tableau grâce à un des initialisateurs.
-  // Le nom du tableau sera le nom choisi dans le .arc.
   options()->stOutput()->init();
-
-  // On print le tableau dans son état actuel (vide, avec un titre).
-  options()->stOutput()->print();
 }
-//! [SimpleTableOutputExample3_init]
+//! [SimpleTableComparatorExample2_init]
 
-//! [SimpleTableOutputExample3_loop]
-void SimpleTableOutputExample3Module::
+//! [SimpleTableComparatorExample2_loop]
+void SimpleTableComparatorExample2Module::
 loopModule()
 {
-  // On crée une colonne nommé "Iteration X" (avec X = itération actuelle).
   options()->stOutput()->addColumn("Iteration " + String::fromNumber(m_global_iteration()));
 
-  // On génère deux valeurs (c'est pour l'exemple, sinon oui, ça sert à rien).
   Integer nb_fissions = rand()%99;
   Integer nb_collisions = rand()%99;
 
-  // On ajoute deux valeurs à deux lignes (par défaut, 
-  // si les lignes n'existe pas encore, elles sont créées).
   options()->stOutput()->addElementInRow("Nb de Fissions", nb_fissions);
   options()->stOutput()->addElementInRow("Nb de Collisions", nb_collisions);
 
-  // On print le tableau dans son état actuel.
-  options()->stOutput()->print();
-
-  // On effectue trois itérations.
   if (m_global_iteration() == 3)
     subDomain()->timeLoopMng()->stopComputeLoop(true);
 }
-//! [SimpleTableOutputExample3_loop]
+//! [SimpleTableComparatorExample2_loop]
 
-//! [SimpleTableOutputExample3_exit]
-void SimpleTableOutputExample3Module::
+//! [SimpleTableComparatorExample2_exit]
+void SimpleTableComparatorExample2Module::
 endModule()
 {
-  // On print le tableau dans son état actuel.
-  options()->stOutput()->print();
-  
-  // On enregistre le résultat dans le dossier choisi
-  // par l'utilisateur dans le .arc.
+  options()->stComparator()->init(options()->stOutput());
+
+  if(!options()->stComparator()->isReferenceExist()){
+    info() << "Écriture du fichier de référence";
+    options()->stComparator()->writeReferenceFile();
+  }
+
+  else {
+    if(options()->stComparator()->compareWithReference()){
+      info() << "Mêmes valeurs !!!";
+    }
+
+    else{
+      error() << "Valeurs différentes :(";
+      IArcaneMain::arcaneMain()->setErrorCode(1);
+    }
+  }
+
   options()->stOutput()->writeFile();
 }
-//! [SimpleTableOutputExample3_exit]
+//! [SimpleTableComparatorExample2_exit]
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

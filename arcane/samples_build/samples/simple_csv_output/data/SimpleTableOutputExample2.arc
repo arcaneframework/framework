@@ -31,10 +31,10 @@
 
   <!-- //! [SimpleTableOutputExample2_arc]  -->
   <simple-table-output-example2>
-    <!-- Attention, les noms sont utilisés par le module SimpleTableOutputExample2Module,
-    pas directement par le service CSV. -->
+
     <!-- Le nom du répertoire à créer/utiliser. -->
     <tableDir>example2</tableDir>
+    
     <!-- Le nom du fichier à créer/écraser. -->
     <tableName>Results_Example2</tableName>
 

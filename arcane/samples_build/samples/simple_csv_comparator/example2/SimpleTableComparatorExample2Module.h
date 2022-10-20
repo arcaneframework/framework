@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SimpleTableOutputExample4Module.hh                          (C) 2000-2022 */
+/* SimpleTableComparatorExample2Module.hh                          (C) 2000-2022 */
 /*                                                                           */
-/* Exemple 4 de module utilisant ISimpleTableOutput en tant que service.     */
+/* Exemple 2 de module utilisant ISimpleTableOutput en tant que singleton.   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -15,22 +15,23 @@
 #include <arcane/ITimeLoopMng.h>
 #include <arcane/ServiceBuilder.h>
 #include <arcane/ISimpleTableOutput.h>
+#include <arcane/ISimpleTableComparator.h>
 
 
-#include "example4/SimpleTableOutputExample4_axl.h"
+#include "example2/SimpleTableComparatorExample2_axl.h"
 
 using namespace Arcane;
 
 /*!
-  \brief Module SimpleTableOutputExample4.
+  \brief Module SimpleTableComparatorExample2.
  */
-class SimpleTableOutputExample4Module : 
-public ArcaneSimpleTableOutputExample4Object
+class SimpleTableComparatorExample2Module : 
+public ArcaneSimpleTableComparatorExample2Object
 {
 
  public:
-  explicit SimpleTableOutputExample4Module(const ModuleBuildInfo& mbi)
-  : ArcaneSimpleTableOutputExample4Object(mbi)
+  explicit SimpleTableComparatorExample2Module(const ModuleBuildInfo& mbi)
+  : ArcaneSimpleTableComparatorExample2Object(mbi)
   {}
 
  public:
@@ -39,15 +40,12 @@ public ArcaneSimpleTableOutputExample4Object
   void endModule() override;
 
   VersionInfo versionInfo() const override { return VersionInfo(1, 0, 0); }
-
- protected:
-  Integer m_pos_fis, m_pos_col;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_MODULE_SIMPLETABLEOUTPUTEXAMPLE4(SimpleTableOutputExample4Module);
+ARCANE_REGISTER_MODULE_SIMPLETABLECOMPARATOREXAMPLE2(SimpleTableComparatorExample2Module);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

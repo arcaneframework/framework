@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
-<case codename="csv" xml:lang="en" codeversion="1.0">
+<case codename="stc" xml:lang="en" codeversion="1.0">
   <arcane>
-    <title>Examples CSV</title>
-    <timeloop>example4</timeloop>
+    <title>Examples STC</title>
+    <timeloop>example1</timeloop>
   </arcane>
 
   <meshes>
@@ -29,11 +29,7 @@
     </mesh>
   </meshes>
 
-  <simple-table-output-example4>
-    <st-output name="SimpleCsvOutput">
-      <tableDir>example4</tableDir>
-      <tableName>Results_Example4</tableName>
-    </st-output>
-  </simple-table-output-example4>
+  <simple-table-comparator-example1>
+  </simple-table-comparator-example1>
 
 </case>

@@ -29,16 +29,15 @@
     </mesh>
   </meshes>
 
+  <!-- //! [SimpleTableOutputExample3_arc]  -->
   <simple-table-output-example3>
-    <csv-output name="SimpleCsvOutput">
-      <!-- Les noms sont utilisés directement par le service CSV. -->
-      <!-- Le nom du répertoire à créer/utiliser. -->
+    <st-output name="SimpleCsvOutput">
+
       <tableDir>example3</tableDir>
-      <!-- Le nom du fichier à créer/écraser. -->
       <tableName>Results_Example3</tableName>
 
-      <!-- Au final, on aura un fichier ayant comme chemin : ./example3/Results_Example3.csv -->
-    </csv-output>
+    </st-output>
   </simple-table-output-example3>
+  <!-- //! [SimpleTableOutputExample3_arc]  -->
 
 </case>

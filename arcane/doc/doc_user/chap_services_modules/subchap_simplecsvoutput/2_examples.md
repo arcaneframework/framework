@@ -12,7 +12,7 @@ Les 6 exemples présentés dans ce sous-chapitre sont fonctionnels et se trouven
 `framework/arcane/samples_build/samples/simple_csv_output/`.
 
 À noter également que ces exemples fonctionneront quelque soit l'implémentation de \arcane{ISimpleTableOutput}
-(juste à changer l'implémentation dans `.config` (pour le mode singleton) ou dans les `.axl`).
+(juste à changer l'implémentation dans `.config` (pour le mode singleton) ou dans les `.arc`).
 
 Ces exemples ont des structures en communs : trois points d'entrée (`initModule`, `loopModule`, `endModule`) représentant
 trois types de points d'entrée (`start-init`, `compute-loop`, `exit`) (au cas où : \ref arcanedoc_core_types_axl_entrypoint)

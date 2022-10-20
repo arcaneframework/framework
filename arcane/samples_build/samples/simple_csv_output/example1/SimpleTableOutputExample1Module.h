@@ -18,7 +18,7 @@
 // On inclut juste l'interface.
 // Pour le singleton, c'est "table.config" 
 // qui fait le lien avec le bon service.
-#include "arcane/ISimpleTableOutput.h"
+#include <arcane/ISimpleTableOutput.h>
 
 #include "example1/SimpleTableOutputExample1_axl.h"
 

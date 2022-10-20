@@ -26,8 +26,13 @@ Sommaire de ce chapitre :
 Des chapitres complémentaires sont disponibles pour certains modules/services :
 
 1. \subpage arcanedoc_services_modules_simplecsvoutput <br>
-  En cours d'écriture...
+  Sous-chapitre décrivant comment utiliser le service SimpleCsvOutput
+  avec quelques explications et des exemples.
 
+2. \subpage arcanedoc_services_modules_simplecsvcomparator <br>
+  Sous-chapitre décrivant comment utiliser le service SimpleCsvComparator
+  avec quelques explications et des exemples (il est vivement conseillé
+  de lire le sous-chapitre précédent sur le service SimpleCsvOutput).
 
 
 ____
