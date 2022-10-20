@@ -105,6 +105,7 @@ class ARCANE_ACCELERATOR_EXPORT RunCommandLaunchInfo
  private:
 
   void _begin();
+  void _doEndKernelLaunch();
 };
 
 /*---------------------------------------------------------------------------*/

@@ -57,7 +57,9 @@ class RunCommandImpl
 
  public:
 
-  void notifyEndExecution();
+  void notifyBeginLaunchKernel();
+  void notifyEndLaunchKernel();
+  void notifyEndExecuteKernel();
   impl::IReduceMemoryImpl* getOrCreateReduceMemoryImpl();
 
   void releaseReduceMemoryImpl(ReduceMemoryImpl* p);

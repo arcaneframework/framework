@@ -36,8 +36,8 @@ class ARCANE_ACCELERATOR_CORE_EXPORT IRunQueueRuntime
 
  public:
 
-  virtual void notifyBeginKernel() = 0;
-  virtual void notifyEndKernel() = 0;
+  virtual void notifyBeginLaunchKernel() = 0;
+  virtual void notifyEndLaunchKernel() = 0;
   virtual void barrier() = 0;
   virtual eExecutionPolicy executionPolicy() const = 0;
   virtual IRunQueueStream* createStream(const RunQueueBuildInfo& bi) = 0;

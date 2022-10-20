@@ -171,13 +171,41 @@ create(RunQueueImpl* r)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Notification de la fin d'exécution.
- *
- * Après cet appel, on est sur que la commande a fini de s'exécuter et on
- * peut la recycler.
+ * \brief Notification du début d'exécution de la commande.
  */
 void RunCommandImpl::
-notifyEndExecution()
+notifyBeginLaunchKernel()
+{
+  internalStream()->notifyBeginLaunchKernel(*this);
+  m_begin_time = platform::getRealTime();
+  if (TaskFactory::executionStatLevel()>0)
+    m_loop_one_exec_stat_ptr = &m_loop_one_exec_stat;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Notification de la fin de lancement de la commande.
+ *
+ * La commande continue à s'exécuter en tâche de fond.
+ */
+void RunCommandImpl::
+notifyEndLaunchKernel()
+{
+  internalStream()->notifyEndLaunchKernel(*this);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Notification de la fin d'exécution du noyau.
+ *
+ * Après cet appel, on est sur que la commande a fini de s'exécuter et on
+ * peut la recycler. En asynchrone, cette méthode est appelée lors de la
+ * synchronisation d'une file.
+ */
+void RunCommandImpl::
+notifyEndExecuteKernel()
 {  
   double end_time = platform::getRealTime();
   double diff_time = end_time - m_begin_time;
@@ -494,10 +522,7 @@ _allocateReduceMemory(Int32 nb_grid)
 void RunCommand::
 _internalNotifyBeginLaunchKernel()
 {
-  m_p->internalStream()->notifyEndKernel(*this);
-  m_p->m_begin_time = platform::getRealTime();
-  if (TaskFactory::executionStatLevel()>0)
-    m_p->m_loop_one_exec_stat_ptr = &m_p->m_loop_one_exec_stat;
+  m_p->notifyBeginLaunchKernel();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -506,10 +531,7 @@ _internalNotifyBeginLaunchKernel()
 void RunCommand::
 _internalNotifyEndLaunchKernel()
 {
-  m_p->internalStream()->notifyEndKernel(*this);
-
-  if (!m_run_queue.isAsync())
-    m_run_queue.barrier();
+  m_p->notifyEndLaunchKernel();
 }
 
 /*---------------------------------------------------------------------------*/

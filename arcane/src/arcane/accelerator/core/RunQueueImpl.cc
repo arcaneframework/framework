@@ -137,7 +137,7 @@ void RunQueueImpl::
 _internalFreeRunningCommands()
 {
   for( RunCommandImpl* p : m_active_run_command_list ){
-    p->notifyEndExecution();
+    p->notifyEndExecuteKernel();
     m_run_command_pool.push(p);
   }
   m_active_run_command_list.clear();

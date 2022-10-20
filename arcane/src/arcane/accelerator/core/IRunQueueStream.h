@@ -36,12 +36,35 @@ class ARCANE_ACCELERATOR_CORE_EXPORT IRunQueueStream
 
  public:
 
-  virtual void notifyBeginKernel(RunCommand& command) = 0;
-  virtual void notifyEndKernel(RunCommand& command) = 0;
+  //! Notification avant le lancement de la commande
+  virtual void notifyBeginLaunchKernel(impl::RunCommandImpl& command) = 0;
+
+  /*!
+   * \brief Notification de fin de lancement de la commande.
+   *
+   * En mode asynchrone, la commande peut continuer à s'exécuter en tâche de fond.
+   */
+  virtual void notifyEndLaunchKernel(impl::RunCommandImpl& command) = 0;
+
+  /*!
+   * \brief Bloque jusqu'à ce que toutes les actions associées à cette file
+   * soient terminées.
+   *
+   * Cela comprend les commandes (RunCommandImpl) et les autres actions telles
+   * que les copies mémoire asynchrones.
+   */
   virtual void barrier() = 0;
-  virtual void* _internalImpl() = 0;
+
+  //! Effectue une copie entre deux zones mémoire
   virtual void copyMemory(const MemoryCopyArgs& args) = 0;
-  virtual void prefetchMemory(const MemoryPrefetchArgs& args) =0;
+
+  //! Effectue un pré-chargement d'une zone mémoire
+  virtual void prefetchMemory(const MemoryPrefetchArgs& args) = 0;
+
+ public:
+
+  //! Pointeur sur la structure interne dépendante de l'implémentation
+  virtual void* _internalImpl() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

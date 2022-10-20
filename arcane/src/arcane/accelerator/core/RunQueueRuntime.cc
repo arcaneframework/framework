@@ -41,8 +41,8 @@ class ARCANE_ACCELERATOR_CORE_EXPORT HostRunQueueStream
 
  public:
 
-  void notifyBeginKernel(RunCommand&) override { return m_runtime->notifyBeginKernel(); }
-  void notifyEndKernel(RunCommand&) override { return m_runtime->notifyEndKernel(); }
+  void notifyBeginLaunchKernel(RunCommandImpl&) override { return m_runtime->notifyBeginLaunchKernel(); }
+  void notifyEndLaunchKernel(RunCommandImpl&) override { return m_runtime->notifyEndLaunchKernel(); }
   void barrier() override { return m_runtime->barrier(); }
   void copyMemory(const MemoryCopyArgs& args) override
   {
@@ -77,16 +77,19 @@ class ARCANE_ACCELERATOR_CORE_EXPORT SequentialRunQueueRuntime
 : public IRunQueueRuntime
 {
  public:
-  ~SequentialRunQueueRuntime() override = default;
+
+  ~SequentialRunQueueRuntime() final = default;
+
  public:
-  void notifyBeginKernel() override {}
-  void notifyEndKernel() override {}
-  void barrier() override {}
-  eExecutionPolicy executionPolicy() const override { return eExecutionPolicy::Sequential; }
-  IRunQueueStream* createStream(const RunQueueBuildInfo&) override { return new HostRunQueueStream(this); }
-  IRunQueueEventImpl* createEventImpl() override { return new HostRunQueueEvent(); }
-  void setMemoryAdvice(MemoryView, eMemoryAdvice, DeviceId) override {}
-  void unsetMemoryAdvice(MemoryView, eMemoryAdvice, DeviceId) override {}
+
+  void notifyBeginLaunchKernel() final {}
+  void notifyEndLaunchKernel() final {}
+  void barrier() final {}
+  eExecutionPolicy executionPolicy() const final { return eExecutionPolicy::Sequential; }
+  IRunQueueStream* createStream(const RunQueueBuildInfo&) final { return new HostRunQueueStream(this); }
+  IRunQueueEventImpl* createEventImpl() final { return new HostRunQueueEvent(); }
+  void setMemoryAdvice(MemoryView, eMemoryAdvice, DeviceId) final {}
+  void unsetMemoryAdvice(MemoryView, eMemoryAdvice, DeviceId) final {}
 };
 
 /*---------------------------------------------------------------------------*/
@@ -96,16 +99,19 @@ class ARCANE_ACCELERATOR_CORE_EXPORT ThreadRunQueueRuntime
 : public IRunQueueRuntime
 {
  public:
-  ~ThreadRunQueueRuntime() override = default;
+
+  ~ThreadRunQueueRuntime() final = default;
+
  public:
-  void notifyBeginKernel() override {}
-  void notifyEndKernel() override {}
-  void barrier() override {}
-  eExecutionPolicy executionPolicy() const override { return eExecutionPolicy::Thread; }
-  IRunQueueStream* createStream(const RunQueueBuildInfo&) override { return new HostRunQueueStream(this); }
-  IRunQueueEventImpl* createEventImpl() override { return new HostRunQueueEvent(); }
-  void setMemoryAdvice(MemoryView, eMemoryAdvice, DeviceId) override {}
-  void unsetMemoryAdvice(MemoryView, eMemoryAdvice, DeviceId) override {}
+
+  void notifyBeginLaunchKernel() final {}
+  void notifyEndLaunchKernel() final {}
+  void barrier() final {}
+  eExecutionPolicy executionPolicy() const final { return eExecutionPolicy::Thread; }
+  IRunQueueStream* createStream(const RunQueueBuildInfo&) final { return new HostRunQueueStream(this); }
+  IRunQueueEventImpl* createEventImpl() final { return new HostRunQueueEvent(); }
+  void setMemoryAdvice(MemoryView, eMemoryAdvice, DeviceId) final {}
+  void unsetMemoryAdvice(MemoryView, eMemoryAdvice, DeviceId) final {}
 };
 
 namespace

@@ -52,10 +52,9 @@ RunCommandLaunchInfo(RunCommand& command,Int64 total_loop_size)
 RunCommandLaunchInfo::
 ~RunCommandLaunchInfo()
 {
-  // Normalement ce test est toujours faux sauf s'il y a eu une exception
-  // pendant le lancement du noyau de calcul.
-  if (!m_is_notify_end_kernel_done)
-    m_command._internalNotifyEndLaunchKernel();
+  // Notifie de la fin de lancement du noyau. Normalement cela est déjà fait
+  // s'il y a eu une exception pendant le lancement du noyau de calcul.
+  _doEndKernelLaunch();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -96,8 +95,23 @@ endExecute()
 {
   if (!m_has_exec_begun)
     ARCANE_FATAL("beginExecute() has to be called before endExecute()");
+  _doEndKernelLaunch();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunCommandLaunchInfo::
+_doEndKernelLaunch()
+{
+  if (m_is_notify_end_kernel_done)
+    return;
   m_is_notify_end_kernel_done = true;
   m_command._internalNotifyEndLaunchKernel();
+
+  RunQueue& q = m_command._internalQueue();
+  if (!q.isAsync())
+    q.barrier();
 }
 
 /*---------------------------------------------------------------------------*/

@@ -28,7 +28,7 @@
 
 #include "arcane/accelerator/core/IRunQueueRuntime.h"
 #include "arcane/accelerator/core/IRunQueueStream.h"
-#include "arcane/accelerator/core/RunCommand.h"
+#include "arcane/accelerator/core/RunCommandImpl.h"
 #include "arcane/accelerator/core/IRunQueueEventImpl.h"
 
 #include <iostream>
@@ -108,7 +108,7 @@ class CudaRunQueueStream
 
  public:
 
-  void notifyBeginKernel([[maybe_unused]] RunCommand& c) override
+  void notifyBeginLaunchKernel([[maybe_unused]] impl::RunCommandImpl& c) override
   {
 #ifdef ARCANE_HAS_CUDA_NVTOOLSEXT
     auto kname = c.kernelName();
@@ -117,14 +117,14 @@ class CudaRunQueueStream
     else
       nvtxRangePush(kname.localstr());
 #endif
-    return m_runtime->notifyBeginKernel();
+    return m_runtime->notifyBeginLaunchKernel();
   }
-  void notifyEndKernel(RunCommand&) override
+  void notifyEndLaunchKernel(impl::RunCommandImpl&) override
   {
 #ifdef ARCANE_HAS_CUDA_NVTOOLSEXT
     nvtxRangePop();
 #endif
-    return m_runtime->notifyEndKernel();
+    return m_runtime->notifyEndLaunchKernel();
   }
   void barrier() override
   {
@@ -223,13 +223,13 @@ class CudaRunQueueRuntime
 
  public:
 
-  void notifyBeginKernel() override
+  void notifyBeginLaunchKernel() override
   {
     ++m_nb_kernel_launched;
     if (m_is_verbose)
       std::cout << "BEGIN CUDA KERNEL!\n";
   }
-  void notifyEndKernel() override
+  void notifyEndLaunchKernel() override
   {
     ARCANE_CHECK_CUDA(cudaGetLastError());
     if (m_is_verbose)
