@@ -26,22 +26,8 @@
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/Memory.h"
 #include "arcane/accelerator/core/IRunQueueStream.h"
-
-#include <set>
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \file RunCommandLoop.h
- *
- * \brief Types et macros pour gérer les boucles sur les accélérateurs
- */
-
-/*!
- * \file RunCommandEnumerate.h
- *
- * \brief Types et macros pour gérer les énumérations des entités sur les accélérateurs
- */
+#include "arcane/accelerator/core/RunCommandImpl.h"
+#include "arcane/accelerator/core/IRunQueueEventImpl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -128,95 +114,6 @@ class ReduceMemoryImpl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \internal
- * \brief Implémentation d'une commande pour accélérateur.
- * \warning API en cours de définition.
- */
-class RunCommandImpl
-{
-  friend class RunCommand;
-
- public:
-
-  RunCommandImpl(RunQueueImpl* queue);
-  ~RunCommandImpl();
-  RunCommandImpl(const RunCommandImpl&) = delete;
-  RunCommandImpl& operator=(const RunCommandImpl&) = delete;
-
- public:
-
-  static RunCommandImpl* create(RunQueueImpl* r);
-
- public:
-
-  void release();
-  const TraceInfo& traceInfo() const { return m_trace_info; }
-  const String& kernelName() const { return m_kernel_name; }
-
- public:
-
-  void reset();
-  impl::IReduceMemoryImpl* getOrCreateReduceMemoryImpl()
-  {
-    ReduceMemoryImpl* p = _getOrCreateReduceMemoryImpl();
-    if (p) {
-      m_active_reduce_memory_list.insert(p);
-    }
-    return p;
-  }
-
-  void releaseReduceMemoryImpl(ReduceMemoryImpl* p)
-  {
-    auto x = m_active_reduce_memory_list.find(p);
-    if (x == m_active_reduce_memory_list.end())
-      ARCANE_FATAL("ReduceMemoryImpl in not in active list");
-    m_active_reduce_memory_list.erase(x);
-    m_reduce_memory_pool.push(p);
-  }
-
-  IRunQueueStream* internalStream() const { return m_queue->_internalStream(); }
-
- private:
-
-  ReduceMemoryImpl* _getOrCreateReduceMemoryImpl()
-  {
-    // Pas besoin d'allouer de la mémoire spécifique si on n'est pas
-    // sur un accélérateur
-    if (!impl::isAcceleratorPolicy(m_queue->executionPolicy()))
-      return nullptr;
-
-    auto& pool = m_reduce_memory_pool;
-
-    if (!pool.empty()) {
-      ReduceMemoryImpl* p = pool.top();
-      pool.pop();
-      return p;
-    }
-    return new ReduceMemoryImpl(this);
-  }
-
- public:
-
-  RunQueueImpl* m_queue;
-  TraceInfo m_trace_info;
-  String m_kernel_name;
-  Int32 m_nb_thread_per_block = 0;
-  ParallelLoopOptions m_parallel_loop_options;
-
-  // NOTE: cette pile gère la mémoire associé à un seul runtime
-  // Si on souhaite un jour supporté plusieurs runtimes il faudra une pile
-  // par runtime. On peut éventuellement limiter cela si on est sur
-  // qu'une commande est associée à un seul type (au sens runtime) de RunQueue.
-  std::stack<ReduceMemoryImpl*> m_reduce_memory_pool;
-
-  //! Liste des réductions actives
-  std::set<ReduceMemoryImpl*> m_active_reduce_memory_list;
-
- private:
-
-  void _freePools();
-};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -224,7 +121,9 @@ class RunCommandImpl
 RunCommandImpl::
 RunCommandImpl(RunQueueImpl* queue)
 : m_queue(queue)
+, m_use_accelerator(impl::isAcceleratorPolicy(queue->runner()->executionPolicy()))
 {
+  _init();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -234,6 +133,8 @@ RunCommandImpl::
 ~RunCommandImpl()
 {
   _freePools();
+  delete m_start_event;
+  delete m_stop_event;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -252,9 +153,16 @@ _freePools()
 /*---------------------------------------------------------------------------*/
 
 void RunCommandImpl::
-release()
+_init()
 {
-  m_queue->_internalFreeRunCommandImpl(this);
+  Runner* r = runner();
+  m_use_accelerator_timer_event = m_use_accelerator;
+  // TODO: pouvoir désactiver l'utilisation des évènements même si on est sur
+  // accélérateur pour des tests
+  if (m_use_accelerator_timer_event){
+    m_start_event = r->_createEventWithTimer();
+    m_stop_event = r->_createEventWithTimer();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -268,15 +176,155 @@ create(RunQueueImpl* r)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Notification du début d'exécution de la commande.
+ */
+void RunCommandImpl::
+notifyBeginLaunchKernel()
+{
+  IRunQueueStream* stream = internalStream();
+  stream->notifyBeginLaunchKernel(*this);
+  if (m_start_event)
+    m_start_event->recordQueue(stream);
+  m_begin_time = platform::getRealTime();
+  if (TaskFactory::executionStatLevel()>0)
+    m_loop_one_exec_stat_ptr = &m_loop_one_exec_stat;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Notification de la fin de lancement de la commande.
+ *
+ * La commande continue à s'exécuter en tâche de fond.
+ */
+void RunCommandImpl::
+notifyEndLaunchKernel()
+{
+  IRunQueueStream* stream = internalStream();
+  if (m_stop_event)
+    m_stop_event->recordQueue(stream);
+  stream->notifyEndLaunchKernel(*this);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Notification de la fin d'exécution du noyau.
+ *
+ * Après cet appel, on est sur que la commande a fini de s'exécuter et on
+ * peut la recycler. En asynchrone, cette méthode est appelée lors de la
+ * synchronisation d'une file.
+ */
+void RunCommandImpl::
+notifyEndExecuteKernel()
+{  
+  double end_time = platform::getRealTime();
+  double diff_time = end_time - m_begin_time;
+  runner()->_addCommandTime(diff_time);
+
+  // Statistiques d'exécution si demandé
+  ForLoopOneExecStat* exec_info = m_loop_one_exec_stat_ptr;
+  if (exec_info){
+    // Sur accélérateur, récupère le temps donnée par les évènements
+    // de la carte qui prennent en compte le temps d'exécution du noyau
+    // en asynchrone.
+    if (m_use_accelerator_timer_event){
+      exec_info->setExecTime(m_stop_event->elapsedTime(m_start_event));
+    }
+    else{
+      Int64 v_as_int64 = static_cast<Int64>(diff_time * 1.0e9);
+      exec_info->setExecTime(v_as_int64);
+    }
+    //std::cout << "END_EXEC exec_info=" << m_loop_run_info.traceInfo().traceInfo() << "\n";
+    ProfilingRegistry::threadLocalInstance()->merge(*exec_info,traceInfo());
+  }
+
+  _reset();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 void RunCommandImpl::
-reset()
+_reset()
 {
   m_kernel_name = String();
   m_trace_info = TraceInfo();
   m_nb_thread_per_block = 0;
   m_parallel_loop_options = TaskFactory::defaultParallelLoopOptions();
+  m_begin_time = 0.0;
+  m_loop_one_exec_stat.reset();
+  m_loop_one_exec_stat_ptr = nullptr;
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IReduceMemoryImpl* RunCommandImpl::
+getOrCreateReduceMemoryImpl()
+{
+  ReduceMemoryImpl* p = _getOrCreateReduceMemoryImpl();
+  if (p) {
+    m_active_reduce_memory_list.insert(p);
+  }
+  return p;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunCommandImpl::
+releaseReduceMemoryImpl(ReduceMemoryImpl* p)
+{
+  auto x = m_active_reduce_memory_list.find(p);
+  if (x == m_active_reduce_memory_list.end())
+    ARCANE_FATAL("ReduceMemoryImpl in not in active list");
+  m_active_reduce_memory_list.erase(x);
+  m_reduce_memory_pool.push(p);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IRunQueueStream* RunCommandImpl::
+internalStream() const
+{
+  return m_queue->_internalStream();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Runner* RunCommandImpl::
+runner() const
+{
+  return m_queue->runner();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ReduceMemoryImpl* RunCommandImpl::
+_getOrCreateReduceMemoryImpl()
+{
+  // Pas besoin d'allouer de la mémoire spécifique si on n'est pas
+  // sur un accélérateur
+  if (!m_use_accelerator)
+    return nullptr;
+
+  auto& pool = m_reduce_memory_pool;
+
+  if (!pool.empty()) {
+    ReduceMemoryImpl* p = pool.top();
+    pool.pop();
+    return p;
+  }
+  return new ReduceMemoryImpl(this);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -293,7 +341,7 @@ release()
 void ReduceMemoryImpl::
 _setReducePolicy()
 {
-  m_grid_memory_info.m_reduce_policy = m_command->m_queue->runner()->deviceReducePolicy();
+  m_grid_memory_info.m_reduce_policy = m_command->runner()->deviceReducePolicy();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -331,7 +379,7 @@ _allocateGridDataMemory()
   auto mem_view = makeMutableMemoryView(m_grid_buffer.to1DSpan());
   m_grid_memory_info.m_grid_memory_values = mem_view;
   // Indique qu'on va utiliser cette zone mémoire uniquement sur le device.
-  Runner* runner = m_command->m_queue->runner();
+  Runner* runner = m_command->runner();
   runner->setMemoryAdvice(mem_view,eMemoryAdvice::PreferredLocationDevice);
   runner->setMemoryAdvice(mem_view,eMemoryAdvice::AccessedByHost);
   //std::cout << "RESIZE GRID t=" << total_size << "\n";
@@ -364,20 +412,10 @@ RunCommand(RunQueue& run_queue)
 RunCommand::
 ~RunCommand()
 {
-  m_p->release();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void RunCommand::
-_resetInfos()
-{
-  m_p->reset();
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -496,6 +534,33 @@ _allocateReduceMemory(Int32 nb_grid)
     for (auto& x : mem_list)
       x->setGridSizeAndAllocate(nb_grid);
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunCommand::
+_internalNotifyBeginLaunchKernel()
+{
+  m_p->notifyBeginLaunchKernel();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void RunCommand::
+_internalNotifyEndLaunchKernel()
+{
+  m_p->notifyEndLaunchKernel();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ForLoopOneExecStat* RunCommand::
+_internalCommandExecStat()
+{
+  return m_p->m_loop_one_exec_stat_ptr;
 }
 
 /*---------------------------------------------------------------------------*/

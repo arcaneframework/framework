@@ -15,6 +15,7 @@ set( ARCANE_SOURCES
   Runner.h
   Runner.cc
   RunCommand.h
+  RunCommandImpl.h
   RunCommand.cc
   RunQueue.h
   RunQueue.cc

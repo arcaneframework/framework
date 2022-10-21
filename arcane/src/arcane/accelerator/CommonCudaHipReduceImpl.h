@@ -76,7 +76,7 @@ template<>
 class CommonCudaHipAtomicAdd<Int64>
 {
  public:
-  static ARCCORE_DEVICE void apply(Int64* ptr,int v)
+  static ARCCORE_DEVICE void apply(Int64* ptr,Int64 v)
   {
     static_assert(sizeof(Int64)==sizeof(long long int),"Bad pointer size");
     ::atomicAdd((unsigned long long int*)ptr,v);
@@ -87,9 +87,14 @@ template<>
 class CommonCudaHipAtomicMax<Int64>
 {
  public:
-  static ARCCORE_DEVICE void apply(Int64* ptr,int v)
+  static ARCCORE_DEVICE void apply(Int64* ptr,Int64 v)
   {
+#if defined(__HIP__)
+    // N'existe pas sur ROCm (5.3)
+    assert(0); // "AtomicMax<Int64> is not supported on ROCm");
+#else
     ::atomicMax((long long int*)ptr,v);
+#endif
   }
 };
 
@@ -97,9 +102,14 @@ template<>
 class CommonCudaHipAtomicMin<Int64>
 {
  public:
-  static ARCCORE_DEVICE void apply(Int64* ptr,int v)
+  static ARCCORE_DEVICE void apply(Int64* ptr,Int64 v)
   {
+#if defined(__HIP__)
+    // N'existe pas sur ROCm (5.3)
+    assert(0); // "AtomicMin<Int64> is only not supported on ROCm");
+#else
     ::atomicMin((long long int*)ptr,v);
+#endif
   }
 };
 
@@ -373,7 +383,7 @@ grid_reduce(T& val,T identity,SmallSpan<T> device_mem,unsigned int* device_count
 {
   int numBlocks = gridDim.x * gridDim.y * gridDim.z;
   int numThreads = blockDim.x * blockDim.y * blockDim.z;
-  Int32 wrap_around = numBlocks - 1;
+  int wrap_around = numBlocks - 1;
 
   int blockId = blockIdx.x + gridDim.x * blockIdx.y +
                 (gridDim.x * gridDim.y) * blockIdx.z;
@@ -391,7 +401,7 @@ grid_reduce(T& val,T identity,SmallSpan<T> device_mem,unsigned int* device_count
     __threadfence();
     // increment counter, (wraps back to zero if old count == wrap_around)
     unsigned int old_count = ::atomicInc(device_count, wrap_around);
-    lastBlock = (old_count == wrap_around);
+    lastBlock = ((int)old_count == wrap_around);
   }
 
   // returns non-zero value if any thread passes in a non-zero value

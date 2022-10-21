@@ -76,8 +76,6 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
   impl::IRunQueueRuntime* _internalRuntime() const;
   impl::IRunQueueStream* _internalStream() const;
   impl::RunCommandImpl* _getCommandImpl();
-  //! Ajoute \a v au temps passé dans l'exécution pour cette file
-  void _addCommandTime(Real v);
 
  private:
 

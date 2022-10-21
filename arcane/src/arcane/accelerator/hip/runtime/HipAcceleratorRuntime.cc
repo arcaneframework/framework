@@ -17,6 +17,7 @@
 #include "arcane/utils/Array.h"
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/IMemoryRessourceMng.h"
 #include "arcane/utils/internal/IMemoryRessourceMngInternal.h"
 
@@ -25,7 +26,7 @@
 #include "arcane/accelerator/core/IRunQueueRuntime.h"
 #include "arcane/accelerator/core/IRunQueueStream.h"
 #include "arcane/accelerator/core/IRunQueueEventImpl.h"
-#include "arcane/accelerator/core/RunCommand.h"
+#include "arcane/accelerator/core/RunCommandImpl.h"
 
 #include <iostream>
 
@@ -101,7 +102,7 @@ class HipRunQueueStream
     ARCANE_CHECK_HIP(hipStreamDestroy(m_hip_stream));
   }
  public:
-  void notifyBeginKernel([[maybe_unused]] RunCommand& c) override
+  void notifyBeginLaunchKernel([[maybe_unused]] impl::RunCommandImpl& c) override
   {
 #ifdef ARCANE_HAS_ROCTX
     auto kname = c.kernelName();
@@ -110,14 +111,14 @@ class HipRunQueueStream
     else
       roctxRangePush(kname.localstr());
 #endif
-    return m_runtime->notifyBeginKernel();
+    return m_runtime->notifyBeginLaunchKernel();
   }
-  void notifyEndKernel(RunCommand&) override
+  void notifyEndLaunchKernel(impl::RunCommandImpl&) override
   {
 #ifdef ARCANE_HAS_ROCTX
     roctxRangePop();
 #endif
-    return m_runtime->notifyEndKernel();
+    return m_runtime->notifyEndLaunchKernel();
   }
   void barrier() override
   {
@@ -161,11 +162,15 @@ class HipRunQueueEvent
 : public impl::IRunQueueEventImpl
 {
  public:
-  HipRunQueueEvent()
+
+  explicit HipRunQueueEvent(bool has_timer)
   {
-    ARCANE_CHECK_HIP(hipEventCreateWithFlags(&m_hip_event, hipEventDisableTiming));
+    if (has_timer)
+      ARCANE_CHECK_HIP(hipEventCreate(&m_hip_event));
+    else
+      ARCANE_CHECK_HIP(hipEventCreateWithFlags(&m_hip_event, hipEventDisableTiming));
   }
-  ~HipRunQueueEvent() noexcept(false) override
+  ~HipRunQueueEvent() noexcept(false) final
   {
     ARCANE_CHECK_HIP(hipEventDestroy(m_hip_event));
   }
@@ -173,21 +178,32 @@ class HipRunQueueEvent
  public:
 
   // Enregistre l'événement au sein d'une RunQueue
-  void recordQueue(impl::IRunQueueStream* stream) override
+  void recordQueue(impl::IRunQueueStream* stream) final
   {
     auto* rq = static_cast<HipRunQueueStream*>(stream);
     ARCANE_CHECK_HIP(hipEventRecord(m_hip_event,rq->trueStream()));
   }
 
-  void wait() override
+  void wait() final
   {
     ARCANE_CHECK_HIP(hipEventSynchronize(m_hip_event));
   }
 
-  void waitForEvent(impl::IRunQueueStream* stream) override
+  void waitForEvent(impl::IRunQueueStream* stream) final
   {
     auto* rq = static_cast<HipRunQueueStream*>(stream);
     ARCANE_CHECK_HIP(hipStreamWaitEvent(rq->trueStream(), m_hip_event, 0));
+  }
+
+  Int64 elapsedTime(IRunQueueEventImpl* from_event) final
+  {
+    auto* true_from_event = static_cast<HipRunQueueEvent*>(from_event);
+    ARCANE_CHECK_POINTER(true_from_event);
+    float time_in_ms = 0.0;
+    ARCANE_CHECK_HIP(hipEventElapsedTime(&time_in_ms, true_from_event->m_hip_event, m_hip_event));
+    double x = time_in_ms * 1.0e6;
+    Int64 nano_time = static_cast<Int64>(x);
+    return nano_time;
   }
 
  private:
@@ -204,13 +220,13 @@ class HipRunQueueRuntime
  public:
   ~HipRunQueueRuntime() override = default;
  public:
-  void notifyBeginKernel() override
+  void notifyBeginLaunchKernel() override
   {
     ++m_nb_kernel_launched;
     if (m_is_verbose)
       std::cout << "BEGIN HIP KERNEL!\n";
   }
-  void notifyEndKernel() override
+  void notifyEndLaunchKernel() override
   {
     ARCANE_CHECK_HIP(hipGetLastError());
     if (m_is_verbose)
@@ -230,7 +246,11 @@ class HipRunQueueRuntime
   }
   impl::IRunQueueEventImpl* createEventImpl() override
   {
-    return new HipRunQueueEvent();
+    return new HipRunQueueEvent(false);
+  }
+  impl::IRunQueueEventImpl* createEventImplWithTimer() override
+  {
+    return new HipRunQueueEvent(true);
   }
   void setMemoryAdvice(MemoryView buffer, eMemoryAdvice advice, DeviceId device_id) override
   {

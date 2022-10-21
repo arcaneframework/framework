@@ -28,7 +28,7 @@
 
 #include "arcane/accelerator/core/IRunQueueRuntime.h"
 #include "arcane/accelerator/core/IRunQueueStream.h"
-#include "arcane/accelerator/core/RunCommand.h"
+#include "arcane/accelerator/core/RunCommandImpl.h"
 #include "arcane/accelerator/core/IRunQueueEventImpl.h"
 
 #include <iostream>
@@ -108,7 +108,7 @@ class CudaRunQueueStream
 
  public:
 
-  void notifyBeginKernel([[maybe_unused]] RunCommand& c) override
+  void notifyBeginLaunchKernel([[maybe_unused]] impl::RunCommandImpl& c) override
   {
 #ifdef ARCANE_HAS_CUDA_NVTOOLSEXT
     auto kname = c.kernelName();
@@ -117,14 +117,14 @@ class CudaRunQueueStream
     else
       nvtxRangePush(kname.localstr());
 #endif
-    return m_runtime->notifyBeginKernel();
+    return m_runtime->notifyBeginLaunchKernel();
   }
-  void notifyEndKernel(RunCommand&) override
+  void notifyEndLaunchKernel(impl::RunCommandImpl&) override
   {
 #ifdef ARCANE_HAS_CUDA_NVTOOLSEXT
     nvtxRangePop();
 #endif
-    return m_runtime->notifyEndKernel();
+    return m_runtime->notifyEndLaunchKernel();
   }
   void barrier() override
   {
@@ -177,11 +177,14 @@ class CudaRunQueueEvent
 {
  public:
 
-  CudaRunQueueEvent()
+  explicit CudaRunQueueEvent(bool has_timer)
   {
-    ARCANE_CHECK_CUDA(cudaEventCreateWithFlags(&m_cuda_event, cudaEventDisableTiming));
+    if (has_timer)
+      ARCANE_CHECK_CUDA(cudaEventCreate(&m_cuda_event));
+    else
+      ARCANE_CHECK_CUDA(cudaEventCreateWithFlags(&m_cuda_event, cudaEventDisableTiming));
   }
-  ~CudaRunQueueEvent() noexcept(false) override
+  ~CudaRunQueueEvent() noexcept(false) final
   {
     ARCANE_CHECK_CUDA(cudaEventDestroy(m_cuda_event));
   }
@@ -189,21 +192,37 @@ class CudaRunQueueEvent
  public:
 
   // Enregistre l'événement au sein d'une RunQueue
-  void recordQueue(impl::IRunQueueStream* stream) override
+  void recordQueue(impl::IRunQueueStream* stream) final
   {
     auto* rq = static_cast<CudaRunQueueStream*>(stream);
     ARCANE_CHECK_CUDA(cudaEventRecord(m_cuda_event, rq->trueStream()));
   }
 
-  void wait() override
+  void wait() final
   {
     ARCANE_CHECK_CUDA(cudaEventSynchronize(m_cuda_event));
   }
 
-  void waitForEvent(impl::IRunQueueStream* stream) override
+  void waitForEvent(impl::IRunQueueStream* stream) final
   {
     auto* rq = static_cast<CudaRunQueueStream*>(stream);
     ARCANE_CHECK_CUDA(cudaStreamWaitEvent(rq->trueStream(), m_cuda_event, cudaEventWaitDefault));
+  }
+
+  Int64 elapsedTime(IRunQueueEventImpl* start_event) final
+  {
+    // NOTE: Les évènements doivent avoir été créé avec le timer actif
+    ARCANE_CHECK_POINTER(start_event);
+    auto* true_start_event = static_cast<CudaRunQueueEvent*>(start_event);
+    float time_in_ms = 0.0;
+
+    // TODO: regarder si nécessaire
+    // ARCANE_CHECK_CUDA(cudaEventSynchronize(m_cuda_event));
+
+    ARCANE_CHECK_CUDA(cudaEventElapsedTime(&time_in_ms, true_start_event->m_cuda_event, m_cuda_event));
+    double x = time_in_ms * 1.0e6;
+    Int64 nano_time = static_cast<Int64>(x);
+    return nano_time;
   }
 
  private:
@@ -223,13 +242,13 @@ class CudaRunQueueRuntime
 
  public:
 
-  void notifyBeginKernel() override
+  void notifyBeginLaunchKernel() override
   {
     ++m_nb_kernel_launched;
     if (m_is_verbose)
       std::cout << "BEGIN CUDA KERNEL!\n";
   }
-  void notifyEndKernel() override
+  void notifyEndLaunchKernel() override
   {
     ARCANE_CHECK_CUDA(cudaGetLastError());
     if (m_is_verbose)
@@ -249,7 +268,11 @@ class CudaRunQueueRuntime
   }
   impl::IRunQueueEventImpl* createEventImpl() override
   {
-    return new CudaRunQueueEvent();
+    return new CudaRunQueueEvent(false);
+  }
+  impl::IRunQueueEventImpl* createEventImplWithTimer() override
+  {
+    return new CudaRunQueueEvent(true);
   }
   void setMemoryAdvice(MemoryView buffer, eMemoryAdvice advice, DeviceId device_id) override
   {

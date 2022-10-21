@@ -36,6 +36,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunCommand
 {
   friend impl::IReduceMemoryImpl* impl::internalGetOrCreateReduceMemoryImpl(RunCommand* command);
   friend impl::RunCommandLaunchInfo;
+  friend impl::RunQueueImpl;
 
  public:
 
@@ -94,14 +95,17 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunCommand
   const ParallelLoopOptions& parallelLoopOptions() const;
 
   //! Affichage des informations de la commande
-  friend ARCANE_ACCELERATOR_CORE_EXPORT RunCommand& operator<<(RunCommand& command,const TraceInfo& trace_info);
+  friend ARCANE_ACCELERATOR_CORE_EXPORT RunCommand&
+  operator<<(RunCommand& command, const TraceInfo& trace_info);
 
  private:
 
-  // Uniquement pour RunCommandLaunchInfo
-  void _resetInfos();
+  // Pour RunCommandLaunchInfo
+  void _internalNotifyBeginLaunchKernel();
+  void _internalNotifyEndLaunchKernel();
+  ForLoopOneExecStat* _internalCommandExecStat();
 
- public:
+ private:
 
   //! \internal
   RunQueue& _internalQueue() { return m_run_queue; }

@@ -16,6 +16,8 @@
 
 #include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
 
+#include "arcane/utils/Array.h"
+
 #include <stack>
 
 /*---------------------------------------------------------------------------*/
@@ -54,16 +56,22 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueImpl
   void reset();
  private:
   RunCommandImpl* _internalCreateOrGetRunCommandImpl();
-  void _internalFreeRunCommandImpl(RunCommandImpl*);
+  //void _internalFreeRunCommandImpl(RunCommandImpl*);
   IRunQueueRuntime* _internalRuntime() const { return m_runtime; }
   IRunQueueStream* _internalStream() const { return m_queue_stream; }
+  void _internalFreeRunningCommands();
+  void _internalBarrier();
   bool _isInPool() const { return m_is_in_pool; }
  private:
   Runner* m_runner;
   eExecutionPolicy m_execution_policy;
   IRunQueueRuntime* m_runtime;
   IRunQueueStream* m_queue_stream;
+  //! Pool de commandes
   std::stack<RunCommandImpl*> m_run_command_pool;
+  //! Liste des commandes en cours d'exécution
+  UniqueArray<RunCommandImpl*> m_active_run_command_list;
+  //! Identifiant de la file
   Int32 m_id = 0;
   //! Indique si l'instance est dans un pool d'instance.
   bool m_is_in_pool = false;
