@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" ?>
+<module name="SimpleTableOutputExample3" version="1.0">
+  <description>Exemple de module utilisant ISimpleTableOutput en tant que service</description>
+
+  <variables>
+  </variables>
+
+  <entry-points>
+    <entry-point method-name="initModule" name="InitModule" where="start-init" property="none" />
+    <entry-point method-name="loopModule" name="LoopModule" where="compute-loop" property="none" />
+    <entry-point method-name="endModule" name="EndModule" where="exit" property="none" />
+  </entry-points>
+
+  <!-- //! [SimpleTableOutputExample3_options]  -->
+  <options>
+    <service-instance name="st-output" type="Arcane::ISimpleTableOutput">
+      <description>ST Output</description>
+    </service-instance>
+  </options>
+  <!-- //! [SimpleTableOutputExample3_options]  -->
+
+</module>

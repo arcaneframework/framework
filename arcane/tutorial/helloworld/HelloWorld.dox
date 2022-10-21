@@ -27,7 +27,7 @@
 
   \section tutorialsample1_entrypoints Points d'entrée
   \par Pré-requis</b><br><br>
-  - Lire la section sur \ref arcanedoc_core_types_entrypoint
+  - Lire la section sur \ref arcanedoc_core_types_axl_entrypoint
    \par Actions à réaliser</b>
   - Compléter le module en créant une méthode \c  HelloWorldModule::printHelloWorld qui écrive "Hello World !"
   - Compléter le fichier \c HelloWorld.axl en déclarant le point d'entrée

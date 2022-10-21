@@ -935,7 +935,8 @@ INPUT                  = @ARCANE_SRC_PATH@/arcane \
                          @ARCANESRCROOT@/doc/doc_common/chap_news \
                          @ARCANESRCROOT@/doc/doc_user \
                          @ARCANESRCROOT@/doc/doc_user/chap_core_types \
-                         @ARCANESRCROOT@/doc/doc_user/chap_core_types/subchap_caseoptions \
+                         @ARCANESRCROOT@/doc/doc_user/chap_core_types/subchap_axl \
+                         @ARCANESRCROOT@/doc/doc_user/chap_core_types/subchap_axl/subchap_caseoptions \
                          @ARCANESRCROOT@/doc/doc_user/chap_debug_perf \
                          @ARCANESRCROOT@/doc/doc_user/chap_debug_perf/subchap_profiling \
                          @ARCANESRCROOT@/doc/doc_user/chap_entities \
@@ -948,6 +949,8 @@ INPUT                  = @ARCANE_SRC_PATH@/arcane \
                          @ARCANESRCROOT@/doc/doc_user/chap_materials \
                          @ARCANESRCROOT@/doc/doc_user/chap_parallel \
                          @ARCANESRCROOT@/doc/doc_user/chap_services_modules \
+                         @ARCANESRCROOT@/doc/doc_user/chap_services_modules/subchap_simplecsvoutput \
+                         @ARCANESRCROOT@/doc/doc_user/chap_services_modules/subchap_simplecsvcomparator \
                          @ARCANESRCROOT@/doc/doc_user/chap_wrapping \
                          @ARCANESRCROOT@/doc/doc_user/chap_wrapping/subchap_csharp \
                          @ARCANESRCROOT@/doc/doc_user/chap_wrapping/subchap_python \
@@ -1060,7 +1063,8 @@ EXCLUDE_SYMBOLS        =
 # that contain example code fragments that are included (see the \include
 # command).
 
-EXAMPLE_PATH           = @ARCANE_CEA_SOURCE_PATH@/src/arcane/tests
+EXAMPLE_PATH           = @ARCANE_CEA_SOURCE_PATH@/src/arcane/tests \
+                         @ARCANESRCROOT@/samples_build/samples
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp and
@@ -1074,7 +1078,7 @@ EXAMPLE_PATTERNS       =
 # irrespective of the value of the RECURSIVE tag.
 # The default value is: NO.
 
-EXAMPLE_RECURSIVE      = NO
+EXAMPLE_RECURSIVE      = YES
 
 # The IMAGE_PATH tag can be used to specify one or more files or directories
 # that contain images that are to be included in the documentation (see the
@@ -1398,8 +1402,10 @@ HTML_EXTRA_FILES       = @ARCANESRCROOT@/doc/theme/doxygen-awesome-theme/doxygen
                          @ARCANESRCROOT@/doc/theme/doxygen-awesome-theme/doxygen-awesome-fragment-copy-button.js \
                          @ARCANESRCROOT@/doc/theme/doxygen-awesome-theme/doxygen-awesome-paragraph-link.js \
                          @ARCANESRCROOT@/doc/theme/doxygen-awesome-theme/doxygen-awesome-interactive-toc.js \
+                         @ARCANESRCROOT@/doc/theme/js/script-wait-elem.js \
                          @ARCANESRCROOT@/doc/theme/js/script-resize.js \
                          @ARCANESRCROOT@/doc/theme/js/script-num-lines-code.js \
+                         @ARCANESRCROOT@/doc/theme/js/script-expand-current.js \
                          @ARCANESRCROOT@/doc/theme/js/script-alternative-theme.js
 
 # The HTML_COLORSTYLE tag can be used to specify if the generated HTML output

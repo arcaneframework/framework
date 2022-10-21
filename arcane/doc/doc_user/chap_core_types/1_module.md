@@ -13,52 +13,51 @@ Un module est représenté par une classe et un fichier XML appelé
 ## Descripteur de module {#arcanedoc_core_types_module_desc}
 
 Le descripteur de module est un fichier XML ayant 
-l'extension ".axl".Il présente les caractéristiques du module :
+l'extension ".axl". Il présente les caractéristiques du module :
 - ses variables,
 - ses points d'entrée,
 - ses options de configuration.
 
 ```xml
 <?xml version="1.0"?>
-<module name="Test" version="1.0">
-	<name lang="fr">Test</name>
+<module name="Hydro" version="1.0">
+	<name lang="fr">Hydro</name>
 
-	<description>Descripteur du module Test</description>
+	<description>Descripteur du module Hydro</description>
 
-	<variables/>
+	<variables>
+	</variables>
 
-	<entry-points/>
+	<entry-points>
+	</entry-points>
 
-	<options/>
+	<options>
+    <!-- Service de type IEquationOfState. -->
+	</options>
 </module>
 ```
   
-Par exemple, le fichier \c Test.axl ci-dessus présente le module 
-nommé **Test** dont la classe de base, est \c BasicModule (cas général).
+Par exemple, le fichier \c Hydro.axl ci-dessus présente le module 
+nommé **Hydro** dont la classe de base, est \c HydroModule (cas général).
 <strong>TODO: ajouter doc référence sur les autres attributs du module.</strong>
 
-Ce module \c Test ne possède ni variable, ni point d'entrée, 
-ni option de configuration. 
-
-Les variables et les points d'entrée seront décrits dans les 
-chapitres suivants.
-Les options de configuration sont présentées dans le document 
-\ref arcanedoc_core_types_caseoptions.
+Les variables, les points d'entrée et les options seront décrits dans le 
+chapitre \ref arcanedoc_core_types_axl.
 
 ## Classe représentant le module {#arcanedoc_core_types_module_class}
 
-Grâce à l'utilitaire \c axl2cc, le fichier \c Test.axl 
-génère un fichier Test_axl.h. Ce fichier contient 
-la classe \c ArcaneTestObject, classe de base du module de Test.
+Grâce à l'utilitaire \c axl2cc, le fichier \c Hydro.axl 
+génère un fichier Hydro_axl.h. Ce fichier contient 
+la classe \c ArcaneHydroObject, classe de base du module de Hydro.
 
 ```cpp
-class TestModule
-: public ArcaneTestObject
+class HydroModule
+: public ArcaneHydroObject
 {
  public:
   // Construit un module avec les paramètres spécifiés dans \a mb
-  ModuleTest(const ModuleBuildInfo & mbi)
-  : ArcaneTestObject(mbi) {}
+  ModuleHydro(const ModuleBuildInfo & mbi)
+  : ArcaneHydroObject(mbi) {}
 
   // Retourne le numéro de version du module
   virtual VersionInfo versionInfo() const { return VersionInfo(1, 0, 0); }
@@ -71,7 +70,7 @@ prenne un object de type \c ModuleBuildInfo en paramètre pour le transmettre
 \c versionInfo() qui retourne le numéro de version de votre module.
 
 \note
-Le fait de dériver de la classe ArcaneTestObject donne accés, entre autre,
+Le fait de dériver de la classe ArcaneHydroObject donne accés, entre autre,
 aux traces %Arcane (cf \ref arcanedoc_execution_traces) et aux méthodes suivantes :  
 <table>
 <tr><th>Méthode</th><th>Action</th></tr>
@@ -85,7 +84,7 @@ aux traces %Arcane (cf \ref arcanedoc_execution_traces) et aux méthodes suivant
 
 ## Connexion du module à Arcane {#arcanedoc_core_types_module_connectarcane}
 
-Une instance du module est contruite par l'architecture lors de l'exécution. 
+Une instance du module est construite par l'architecture lors de l'exécution. 
 
 L'utilisateur doit donc fournir une fonction pour créer une instance 
 de la classe du module. %Arcane fournit une macro permettant de définir
@@ -93,10 +92,10 @@ une fonction générique de création. Cette macro doit être écrite dans
 le fichier source où est défini le module. Elle possède le prototype suivant :
 
 ```cpp
-ARCANE_REGISTER_MODULE_TEST(TestModule);
+ARCANE_REGISTER_MODULE_HYDRO(HydroModule);
 ```
 
-\c *TestModule* correspond au nom de la classe et *TEST* qui suit 
+\c *HydroModule* correspond au nom de la classe et *HYDRO* qui suit 
 **ARCANE_REGISTER_MODULE_** permet de définir la fonction de création.
 
 ____
@@ -106,6 +105,6 @@ ____
 \ref arcanedoc_core_types
 </span>
 <span class="next_section_button">
-\ref arcanedoc_core_types_variable
+\ref arcanedoc_core_types_service
 </span>
 </div>

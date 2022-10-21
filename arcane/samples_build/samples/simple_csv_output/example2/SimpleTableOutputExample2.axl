@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" ?>
+<module name="SimpleTableOutputExample2" version="1.0">
+  <description>Exemple de module utilisant ISimpleTableOutput en tant que singleton</description>
+
+  <variables>
+  </variables>
+
+  <entry-points>
+    <entry-point method-name="initModule" name="InitModule" where="start-init" property="none" />
+    <entry-point method-name="loopModule" name="LoopModule" where="compute-loop" property="none" />
+    <entry-point method-name="endModule" name="EndModule" where="exit" property="none" />
+  </entry-points>
+
+  <!-- //! [SimpleTableOutputExample2_options]  -->
+  <options>
+    <simple name="tableName" type="string" default="">
+      <description>
+        Name for table file (example: Results ).
+      </description>
+    </simple>
+
+    <simple name="tableDir" type="string" default="">
+      <description>
+        Directory for table file (example: example2 ).
+      </description>
+    </simple>
+  </options>
+  <!-- //! [SimpleTableOutputExample2_options]  -->
+
+</module>

@@ -1,6 +1,6 @@
 # Lancement d'un calcul {#arcanedoc_execution_launcher}
 
-[TOC]
+<!-- [TOC] -->
 
 Il existe deux mécanismes pour exécuter un code avec %Arcane:
 
@@ -335,7 +335,7 @@ entre les sous-domaines se fait par échange de message en mémoire partagée.
 </tr>
 
 <tr>
-<td>mpiexec -n $N ./a.out -A,S=$S ...</td>
+<td>`mpiexec -n $N ./a.out -A,S=$S ...`</td>
 <td>`HybridParallelSuperMng`</td>
 <td>$N processus, $S sous-domaines par processus
 soit au total $N * $S sous-domaines.

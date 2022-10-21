@@ -26,10 +26,10 @@ restreint aux codes de calcul ayant les propriétés suivantes:
 Chacun des termes décrit précédemment possède une terminologie propre
 à %Arcane:
 
-- une opération du code est appelée un [point d'entrée](\ref arcanedoc_core_types_entrypoint).
+- une opération du code est appelée un [point d'entrée](\ref arcanedoc_core_types_axl_entrypoint).
   La description de la suite d'opération s'appelle
   la [boucle en temps](\ref arcanedoc_core_types_timeloop)
-- les valeurs manipulées sont appelées des [variables](\ref arcanedoc_core_types_variable).
+- les valeurs manipulées sont appelées des [variables](\ref arcanedoc_core_types_axl_variable).
   Par exemple, la température, la pression sont des variables.
 
 En général, un code de calcul peut être décomposé en plusieurs parties
