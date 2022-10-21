@@ -135,16 +135,43 @@ class ARCANE_UTILS_EXPORT ForLoopOneExecStat
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Gestionnaire pour le profiling.
+ *
+ * Il est possible d'activer le profilage en appelant setProfilingLevel() avec
+ * une valeur supérieur ou égale à 1.
+ *
+ * L'ajout de statistiques se fait en récupérant une instance de
+ * impl::StatInfoList spécifique au thread en cours d'exécution.
  */
 class ARCANE_UTILS_EXPORT ProfilingRegistry
 {
  public:
 
-  //! Instance locale par thread du gestionnaire des statistiques
+  /*!
+   * \internal.
+   * Instance locale par thread du gestionnaire des statistiques
+   */
   static impl::StatInfoList* threadLocalInstance();
 
   //! Affiche les statistiques d'exécution de toutes les instances sur \a o
   static void printExecutionStats(std::ostream& o);
+
+  /*!
+   * \brief Positionne le niveau de profilage.
+   *
+   * Si 0, alors il n'y a pas de profilage. Le profilage est actif à partir
+   * du niveau 1.
+   */
+  static void setProfilingLevel(Int32 level);
+
+  //! Niveau de profilage
+  static Int32 profilingLevel() { return m_profiling_level; }
+
+  //! Indique si le profilage est actif.
+  static bool hasProfiling() { return m_profiling_level > 0; }
+
+ private:
+
+  static Int32 m_profiling_level;
 };
 
 /*---------------------------------------------------------------------------*/
