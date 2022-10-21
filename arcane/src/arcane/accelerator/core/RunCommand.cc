@@ -121,6 +121,7 @@ class ReduceMemoryImpl
 RunCommandImpl::
 RunCommandImpl(RunQueueImpl* queue)
 : m_queue(queue)
+, m_use_accelerator(impl::isAcceleratorPolicy(queue->runner()->executionPolicy()))
 {
   _init();
 }
@@ -155,7 +156,7 @@ void RunCommandImpl::
 _init()
 {
   Runner* r = runner();
-  m_use_accelerator_timer_event = impl::isAcceleratorPolicy(r->executionPolicy());
+  m_use_accelerator_timer_event = m_use_accelerator;
   // TODO: pouvoir désactiver l'utilisation des évènements même si on est sur
   // accélérateur pour des tests
   if (m_use_accelerator_timer_event){
@@ -309,7 +310,7 @@ _getOrCreateReduceMemoryImpl()
 {
   // Pas besoin d'allouer de la mémoire spécifique si on n'est pas
   // sur un accélérateur
-  if (!impl::isAcceleratorPolicy(m_queue->executionPolicy()))
+  if (!m_use_accelerator)
     return nullptr;
 
   auto& pool = m_reduce_memory_pool;

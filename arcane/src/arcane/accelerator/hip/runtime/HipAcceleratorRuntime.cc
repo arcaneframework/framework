@@ -163,7 +163,7 @@ class HipRunQueueEvent
 {
  public:
 
-  HipRunQueueEvent(bool has_timer)
+  explicit HipRunQueueEvent(bool has_timer)
   {
     if (has_timer)
       ARCANE_CHECK_HIP(hipEventCreate(&m_hip_event));

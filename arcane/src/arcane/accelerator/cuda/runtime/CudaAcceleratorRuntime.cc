@@ -95,8 +95,7 @@ class CudaRunQueueStream
   : m_runtime(runtime)
   {
     if (bi.isDefault())
-      //ARCANE_CHECK_CUDA(cudaStreamCreate(&m_cuda_stream));
-      ARCANE_CHECK_CUDA(cudaStreamCreateWithFlags(&m_cuda_stream, cudaStreamNonBlocking));
+      ARCANE_CHECK_CUDA(cudaStreamCreate(&m_cuda_stream));
     else {
       int priority = bi.priority();
       ARCANE_CHECK_CUDA(cudaStreamCreateWithPriority(&m_cuda_stream, cudaStreamDefault, priority));
@@ -178,7 +177,7 @@ class CudaRunQueueEvent
 {
  public:
 
-  CudaRunQueueEvent(bool has_timer)
+  explicit CudaRunQueueEvent(bool has_timer)
   {
     if (has_timer)
       ARCANE_CHECK_CUDA(cudaEventCreate(&m_cuda_event));

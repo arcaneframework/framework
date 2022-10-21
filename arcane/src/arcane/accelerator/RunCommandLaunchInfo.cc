@@ -53,7 +53,7 @@ RunCommandLaunchInfo::
 ~RunCommandLaunchInfo()
 {
   // Notifie de la fin de lancement du noyau. Normalement cela est déjà fait
-  // s'il y a eu une exception pendant le lancement du noyau de calcul.
+  // sauf s'il y a eu une exception pendant le lancement du noyau de calcul.
   _doEndKernelLaunch();
 }
 
