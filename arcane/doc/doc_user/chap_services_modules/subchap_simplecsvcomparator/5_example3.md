@@ -41,9 +41,10 @@ Dans ce cas, seule les lignes contenant `Fissions` dans leur nom sera comparé
 En effet, on peut choisir quelles sont les lignes et les colonnes que l'on veut
 comparer. On peut le faire via des expressions régulière mais aussi en spécifiant
 directement leur nom (via les méthodes \arcane{ISimpleTableComparator::addRowForComparing()}
-et \arcane{ISimpleTableComparator::addColumnForComparing()}).  
+et \arcane{ISimpleTableComparator::addColumnForComparing()}).
+
 Il est aussi possible de spécifier que les lignes/colonnes que l'on donne sont
-des lignes/colonnes que l'on veut exclure de la comparaison (méthodes
+des lignes/colonnes que l'on veut exclure de la comparaison (et non inclure) (méthodes
 \arcane{ISimpleTableComparator::isAnArrayExclusiveRows()},
 \arcane{ISimpleTableComparator::isAnArrayExclusiveColumns()},
 \arcane{ISimpleTableComparator::isARegexExclusiveRows()} et

@@ -16,7 +16,7 @@ Ce service peut être utilisé comme service classique à définir dans l'AXL d'
 singleton pour avoir une instance unique pour tous les modules.
 
 Il suffit de créer une ou plusieurs lignes et une ou plusieurs colonnes, puis d'attribuer des
-valeurs à chaque [ligne;colonne] et enfin d'appeler la méthode writeFile() pour générer un
+valeurs à chaque [ligne,colonne] et enfin d'appeler la méthode writeFile() pour générer un
 fichier.csv.
 
 Exemple de fichier .csv :

@@ -7,10 +7,11 @@
 /*---------------------------------------------------------------------------*/
 /* script-resize.js                                            (C) 2000-2022 */
 /*                                                                           */
-/* Petit script (sans l'utilisation de l'antique jquery) permettant de       */ 
+/* Petit script (sans l'utilisation de l'antique jquery) permettant de       */
 /* réintegrer le redimensionnement du volet de navigation.                   */
 /*                                                                           */
 /* À utiliser avec 'doxygen-awesome-sidebar-only' uniquement.                */
+/* Nécessite le script script-wait-elem.js.                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -18,9 +19,11 @@
 // doxyfile : 
 // HTML_EXTRA_STYLESHEET = doxygen-awesome.css \
 //                         doxygen-awesome-sidebar-only.css
-// HTML_EXTRA_FILES      = script-resize.js
+// HTML_EXTRA_FILES      = script-wait-elem.js \
+//                         script-resize.js
 
 // header.html :
+// <script type="text/javascript" src="$relpath^script-wait-elem.js"></script>
 // <script type="text/javascript" src="$relpath^script-resize.js"></script>
 // <script type="text/javascript">
 //   waitElemForResizeSideNav();
@@ -31,10 +34,9 @@
 let width_border_side_nav = 2;
 let min_width_side_nav = 10;
 let max_width_side_nav = 1000;
-let side_nav = document.getElementsByClassName("ui-resizable-handle ui-resizable-e")[0];
 
 // Fonction permettant de définir les nouvelles propriétés de la side nav.
-var ResizeSideNav = () => {
+var ResizeSideNav = (side_nav) => {
   // On augmente la largeur de la bordure.
   side_nav.style.setProperty('width', width_border_side_nav+"px", "important");
 
@@ -87,40 +89,13 @@ var ResizeSideNav = () => {
 
 // Pour définir les évenements, on doit attendre que la side nav soit
 // créée.
-let compt = 0;
 let waitElemForResizeSideNav = () => {
-  // Si la création n'a pas eu lieu.
-  if (side_nav == null) {
-    // On crée une fonction s'appelant elle-même
-    // toutes les 100ms pour attendre l'élement.
-    let waitElem = () => {
-      compt++;
-      side_nav = document.getElementsByClassName("ui-resizable-handle ui-resizable-e")[0];
-
-      // En cas de problème (le js, c'est pas une science exacte).
-      if(compt > 100 && side_nav == null){
-        console.log("Impossible de charger side_nav");
-      }
-      // Si l'on n'a pas encore trouvé l'élement, on ajoute un
-      // évenement 'global' que sera exécuté dans 100ms et qui relancera
-      // cette fonction.
-      else if (side_nav == null) {
-        window.setTimeout(waitElem, 100);
-      }
-
-      // Si l'élement a été trouvé.
-      else{
-        ResizeSideNav();
-      }
-    };
-    waitElem();
-  } 
-
-  // Si la création a déjà eu lieu, pas besoin d'attendre.
-  else {
-    ResizeSideNav();
-  }
+  let elem = () => { 
+    return document.getElementsByClassName("ui-resizable-handle ui-resizable-e")[0]; 
+  };
+  waitElem(elem, ResizeSideNav);
 };
+
 
 // Fonction permettant de redéfinir l'ancienne taille
 // de side bar.

@@ -1402,8 +1402,10 @@ HTML_EXTRA_FILES       = @ARCANESRCROOT@/doc/theme/doxygen-awesome-theme/doxygen
                          @ARCANESRCROOT@/doc/theme/doxygen-awesome-theme/doxygen-awesome-fragment-copy-button.js \
                          @ARCANESRCROOT@/doc/theme/doxygen-awesome-theme/doxygen-awesome-paragraph-link.js \
                          @ARCANESRCROOT@/doc/theme/doxygen-awesome-theme/doxygen-awesome-interactive-toc.js \
+                         @ARCANESRCROOT@/doc/theme/js/script-wait-elem.js \
                          @ARCANESRCROOT@/doc/theme/js/script-resize.js \
                          @ARCANESRCROOT@/doc/theme/js/script-num-lines-code.js \
+                         @ARCANESRCROOT@/doc/theme/js/script-expand-current.js \
                          @ARCANESRCROOT@/doc/theme/js/script-alternative-theme.js
 
 # The HTML_COLORSTYLE tag can be used to specify if the generated HTML output
