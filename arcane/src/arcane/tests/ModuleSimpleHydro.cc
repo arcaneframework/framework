@@ -26,6 +26,7 @@
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/GoBackwardException.h"
+#include "arcane/utils/Profiling.h"
 
 #include "arcane/BasicModule.h"
 #include "arcane/ITimeLoop.h"
@@ -278,7 +279,7 @@ hydroExit()
 void ModuleSimpleHydro::
 hydroStartInit()
 {
-  TaskFactory::setExecutionStatLevel(2);
+  ProfilingRegistry::setProfilingLevel(2);
 
 #if 0
   {

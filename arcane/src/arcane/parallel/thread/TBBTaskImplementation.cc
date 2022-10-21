@@ -88,10 +88,9 @@ namespace
 {
 
 // Positif si on récupère les statistiques d'exécution
-Int32 global_do_stat_level = 0;
 bool isStatActive()
 {
-  return global_do_stat_level > 0;
+  return ProfilingRegistry::hasProfiling();
 }
 
 /*!
@@ -472,15 +471,6 @@ class TBBTaskImplementation
   Int32 currentTaskIndex() const final;
 
   void printInfos(std::ostream& o) const final;
-  void setExecutionStatLevel(Int32 stat_level) override
-  {
-    global_do_stat_level = stat_level;
-  }
-
-  void printExecutionStats(std::ostream& o) const override
-  {
-    ProfilingRegistry::printExecutionStats(o);
-  }
 
  public:
 

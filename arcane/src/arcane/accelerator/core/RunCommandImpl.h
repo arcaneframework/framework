@@ -15,7 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/TraceInfo.h"
-#include "arcane/utils/ConcurrencyUtils.h"
+#include "arcane/utils/ParallelLoopOptions.h"
 #include "arcane/utils/Profiling.h"
 
 #include "arcane/accelerator/core/AcceleratorCoreGlobal.h"

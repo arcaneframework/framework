@@ -18,6 +18,7 @@
 #include "arcane/utils/IMemoryAllocator.h"
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/NumArray.h"
+#include "arcane/utils/ForLoopTraceInfo.h"
 #include "arcane/utils/ConcurrencyUtils.h"
 
 #include "arcane/accelerator/core/RunQueueImpl.h"
@@ -187,7 +188,7 @@ notifyBeginLaunchKernel()
   if (m_start_event)
     m_start_event->recordQueue(stream);
   m_begin_time = platform::getRealTime();
-  if (TaskFactory::executionStatLevel()>0)
+  if (ProfilingRegistry::hasProfiling())
     m_loop_one_exec_stat_ptr = &m_loop_one_exec_stat;
 }
 
@@ -237,7 +238,8 @@ notifyEndExecuteKernel()
       exec_info->setExecTime(v_as_int64);
     }
     //std::cout << "END_EXEC exec_info=" << m_loop_run_info.traceInfo().traceInfo() << "\n";
-    ProfilingRegistry::threadLocalInstance()->merge(*exec_info,traceInfo());
+    ForLoopTraceInfo flti(traceInfo(),kernelName());
+    ProfilingRegistry::threadLocalInstance()->merge(*exec_info,flti);
   }
 
   _reset();

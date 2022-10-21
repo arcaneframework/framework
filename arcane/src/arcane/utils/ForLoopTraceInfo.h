@@ -33,7 +33,7 @@ class ARCANE_UTILS_EXPORT ForLoopTraceInfo
  public:
 
   ForLoopTraceInfo() = default;
-  ForLoopTraceInfo(const TraceInfo& trace_info)
+  explicit ForLoopTraceInfo(const TraceInfo& trace_info)
   : m_trace_info(trace_info)
   , m_is_valid(true)
   {

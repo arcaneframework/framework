@@ -260,6 +260,7 @@ void SimpleHydroAcceleratorService::
 hydroBuild()
 {
   info() << "Using hydro with accelerator";
+  ProfilingRegistry::setProfilingLevel(2);
 }
 
 /*---------------------------------------------------------------------------*/
