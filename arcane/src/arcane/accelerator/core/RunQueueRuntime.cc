@@ -18,6 +18,8 @@
 
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/MemoryView.h"
+#include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/FatalErrorException.h"
 
 #include <cstring>
 
@@ -63,14 +65,30 @@ class ARCANE_ACCELERATOR_CORE_EXPORT HostRunQueueEvent
 : public IRunQueueEventImpl
 {
  public:
-  HostRunQueueEvent(bool has_timer) : m_has_timer(has_timer){}
+  explicit HostRunQueueEvent(bool has_timer) : m_has_timer(has_timer){}
  public:
-  void recordQueue(IRunQueueStream*) override {}
-  void wait() override {}
-  void waitForEvent(IRunQueueStream*) override {}
-  Int64 elapsedTime(IRunQueueEventImpl*) final { return 0; }
+  void recordQueue(IRunQueueStream*) final
+  {
+    if (m_has_timer)
+      m_recorded_time = platform::getRealTime();
+  }
+  void wait() final {}
+  void waitForEvent(IRunQueueStream*) final {}
+  Int64 elapsedTime(IRunQueueEventImpl* start_event) final
+  {
+    ARCANE_CHECK_POINTER(start_event);
+    auto* true_start_event = static_cast<HostRunQueueEvent*>(start_event);
+    if (!m_has_timer || !true_start_event->m_has_timer)
+      ARCANE_FATAL("Event has no timer support");
+    double diff_time = m_recorded_time - true_start_event->m_recorded_time;
+    Int64 diff_as_int64 = static_cast<Int64>(diff_time * 1.0e9);
+    return diff_as_int64;
+  }
+
  private:
-  bool m_has_timer;
+
+  bool m_has_timer = false;
+  double m_recorded_time = 0.0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -79,10 +97,6 @@ class ARCANE_ACCELERATOR_CORE_EXPORT HostRunQueueEvent
 class ARCANE_ACCELERATOR_CORE_EXPORT SequentialRunQueueRuntime
 : public IRunQueueRuntime
 {
- public:
-
-  ~SequentialRunQueueRuntime() final = default;
-
  public:
 
   void notifyBeginLaunchKernel() final {}
@@ -102,10 +116,6 @@ class ARCANE_ACCELERATOR_CORE_EXPORT SequentialRunQueueRuntime
 class ARCANE_ACCELERATOR_CORE_EXPORT ThreadRunQueueRuntime
 : public IRunQueueRuntime
 {
- public:
-
-  ~ThreadRunQueueRuntime() final = default;
-
  public:
 
   void notifyBeginLaunchKernel() final {}
