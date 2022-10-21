@@ -216,16 +216,3 @@ Les autres variables suivantes sont utilisées mais à usage interne à %Arcane:
 - ARCANE_PARALLEL_CHECK_SYNC
 - ARCANE_TRACE_FUNCTION
 
-
-
-____
-
-<div class="section_buttons">
-<span class="back_section_button">
-\ref arcanedoc_execution_direct_execution
-</span>
-<span class="next_section_button">
-\ref arcanedoc_execution_traces
-</span>
-</div>
-
