@@ -87,8 +87,11 @@ class RunCommandImpl
   //! Liste des réductions actives
   std::set<ReduceMemoryImpl*> m_active_reduce_memory_list;
 
-  //! Indique si on utilise les évènements pour calculer le temps d'exécution
-  bool m_use_accelerator_timer_event = false;
+  //! Indique si la commande a été lancée.
+  bool m_has_been_launched = false;
+
+  //! Indique si on utilise les évènements séquentiels pour calculer le temps d'exécution
+  bool m_use_sequential_timer_event = false;
   //! Evènements pour le début et la fin de l'exécution.
   IRunQueueEventImpl* m_start_event = nullptr;
   //! Evènements pour la fin de l'exécution.
@@ -108,6 +111,7 @@ class RunCommandImpl
   void _freePools();
   void _reset();
   void _init();
+  IRunQueueEventImpl* _createEvent();
 };
 
 /*---------------------------------------------------------------------------*/
