@@ -67,8 +67,8 @@ __global__ void MyVecAdd(double* a,double* b,double* out)
 
 __global__ void MyVecAdd2(Span<const double> a,Span<const double>b,Span<double> out)
 {
-  int size = a.size();
-  int i = blockDim.x * blockIdx.x + threadIdx.x;
+  Int64 size = a.size();
+  Int64 i = blockDim.x * blockIdx.x + threadIdx.x;
   if (i>=size)
     return;
   out[i] = a[i] + b[i];
@@ -79,8 +79,8 @@ __global__ void MyVecAdd2(Span<const double> a,Span<const double>b,Span<double> 
 
 __global__ void MyVecAdd3(MDSpan<const double,1> a,MDSpan<const double,1> b,MDSpan<double,1> out)
 {
-  int size = a.dim1Size();
-  int i = blockDim.x * blockIdx.x + threadIdx.x;
+  Int32 size = static_cast<Int32>(a.dim1Size());
+  Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
   if (i>=size)
     return;
   out(i) = a(i) + b(i);
@@ -101,8 +101,8 @@ void _initArrays(Span<double> a,Span<double> b,Span<double> c,int base)
 
 void _initArrays(MDSpan<double,1> a,MDSpan<double,1> b,MDSpan<double,1> c,int base)
 {
-  Int64 vsize = a.dim1Size();
-  for( Int64 i = 0; i<vsize; ++i ){
+  Int32 vsize = static_cast<Int32>(a.dim1Size());
+  for( Int32 i = 0; i<vsize; ++i ){
     a(i) = (double)(i+base);
     b(i) = (double)(i*i+base);
     c(i) = 0.0;
@@ -162,14 +162,14 @@ int arcaneTestHip1()
   }
   size_t mem_size = vsize*sizeof(double);
   double* d_a = nullptr;
-  hipMalloc(&d_a,mem_size);
+  ARCANE_CHECK_HIP(hipMalloc(&d_a,mem_size));
   double* d_b = nullptr;
-  hipMalloc(&d_b,mem_size);
+  ARCANE_CHECK_HIP(hipMalloc(&d_b,mem_size));
   double* d_out = nullptr;
-  hipMalloc(&d_out,mem_size);
+  ARCANE_CHECK_HIP(hipMalloc(&d_out,mem_size));
 
-  hipMemcpy(d_a, a.data(), mem_size, hipMemcpyHostToDevice);
-  hipMemcpy(d_b, b.data(), mem_size, hipMemcpyHostToDevice);
+  ARCANE_CHECK_HIP(hipMemcpy(d_a, a.data(), mem_size, hipMemcpyHostToDevice));
+  ARCANE_CHECK_HIP(hipMemcpy(d_b, b.data(), mem_size, hipMemcpyHostToDevice));
   int threadsPerBlock = 256;
   int blocksPerGrid = (vsize + threadsPerBlock - 1) / threadsPerBlock;
   std::cout << "CALLING kernel tpb=" << threadsPerBlock << " bpg=" << blocksPerGrid << "\n";
@@ -188,11 +188,11 @@ int arcaneTestHip2()
   constexpr int vsize = 2000;
   size_t mem_size = vsize*sizeof(double);
   double* d_a = nullptr;
-  hipMallocManaged(&d_a,mem_size,hipMemAttachGlobal);
+  ARCANE_CHECK_HIP(hipMallocManaged(&d_a,mem_size,hipMemAttachGlobal));
   double* d_b = nullptr;
-  hipMallocManaged(&d_b,mem_size,hipMemAttachGlobal);
+  ARCANE_CHECK_HIP(hipMallocManaged(&d_b,mem_size,hipMemAttachGlobal));
   double* d_out = nullptr;
-  hipMallocManaged(&d_out,mem_size,hipMemAttachGlobal);
+  ARCANE_CHECK_HIP(hipMallocManaged(&d_out,mem_size,hipMemAttachGlobal));
 
   //d_a = new double[vsize];
   //d_b = new double[vsize];
@@ -211,7 +211,7 @@ int arcaneTestHip2()
   int blocksPerGrid = (vsize + threadsPerBlock - 1) / threadsPerBlock;
   std::cout << "CALLING kernel2 tpb=" << threadsPerBlock << " bpg=" << blocksPerGrid << "\n";
   hipLaunchKernelGGL(MyVecAdd, blocksPerGrid, threadsPerBlock, 0, 0, d_a,d_b,d_out);
-  hipDeviceSynchronize();
+  ARCANE_CHECK_HIP(hipDeviceSynchronize());
   hipError_t e = hipGetLastError();
   std::cout << "END OF MYVEC1 e=" << e << " v=" << hipGetErrorString(e) << "\n";
   //hipDeviceSynchronize();
@@ -232,16 +232,16 @@ int arcaneTestHip2()
 extern "C"
 int arcaneTestHip3()
 {
-  std::cout << "TEST_CUDA_3\n";
+  std::cout << "TEST_HIP_3\n";
   constexpr int vsize = 2000;
-  IMemoryAllocator* cuda_allocator = Arcane::Accelerator::Hip::getHipMemoryAllocator();
-  IMemoryAllocator* cuda_allocator2 = Arcane::platform::getAcceleratorHostMemoryAllocator();
-  if (!cuda_allocator2)
+  IMemoryAllocator* hip_allocator = Arcane::Accelerator::Hip::getHipMemoryAllocator();
+  IMemoryAllocator* hip_allocator2 = Arcane::platform::getAcceleratorHostMemoryAllocator();
+  if (!hip_allocator2)
     ARCANE_FATAL("platform::getAcceleratorHostMemoryAllocator() is null");
-  UniqueArray<double> d_a(cuda_allocator,vsize);
+  UniqueArray<double> d_a(hip_allocator,vsize);
   MyTestFunc1();
-  UniqueArray<double> d_b(cuda_allocator,vsize);
-  UniqueArray<double> d_out(cuda_allocator,vsize);
+  UniqueArray<double> d_b(hip_allocator,vsize);
+  UniqueArray<double> d_out(hip_allocator,vsize);
 
   for( size_t i = 0; i<vsize; ++i ){
     d_a[i] = (double)(i+1);
@@ -254,7 +254,7 @@ int arcaneTestHip3()
   int blocksPerGrid = (vsize + threadsPerBlock - 1) / threadsPerBlock;
   std::cout << "CALLING kernel2 tpb=" << threadsPerBlock << " bpg=" << blocksPerGrid << "\n";
   hipLaunchKernelGGL(MyVecAdd2, blocksPerGrid, threadsPerBlock, 0, 0, d_a,d_b,d_out);
-  hipDeviceSynchronize();
+  ARCANE_CHECK_HIP(hipDeviceSynchronize());
   hipError_t e = hipGetLastError();
   std::cout << "END OF MYVEC1 e=" << e << " v=" << hipGetErrorString(e) << "\n";
   for( size_t i=0; i<10; ++i )
@@ -313,8 +313,8 @@ int arcaneTestHip3()
 
   // Utilise les Real3
   {
-    UniqueArray<Real3> d_a3(cuda_allocator,vsize);
-    UniqueArray<Real3> d_b3(cuda_allocator,vsize);
+    UniqueArray<Real3> d_a3(hip_allocator,vsize);
+    UniqueArray<Real3> d_b3(hip_allocator,vsize);
     for( Integer i=0; i<vsize; ++i ){
       Real a = (Real)(i+2);
       Real b = (Real)(i*i+3);
@@ -346,11 +346,11 @@ int arcaneTestHip3()
 extern "C"
 int arcaneTestHipNumArray()
 {
-  std::cout << "TEST_CUDA_NUM_ARRAY\n";
+  std::cout << "TEST_HIP_NUM_ARRAY\n";
   constexpr int vsize = 2000;
-  IMemoryAllocator* cuda_allocator = Arcane::Accelerator::Hip::getHipMemoryAllocator();
-  IMemoryAllocator* cuda_allocator2 = Arcane::platform::getAcceleratorHostMemoryAllocator();
-  if (!cuda_allocator2)
+  //IMemoryAllocator* hip_allocator = Arcane::Accelerator::Hip::getHipMemoryAllocator();
+  IMemoryAllocator* hip_allocator2 = Arcane::platform::getAcceleratorHostMemoryAllocator();
+  if (!hip_allocator2)
     ARCANE_FATAL("platform::getAcceleratorHostMemoryAllocator() is null");
   NumArray<double,1> d_a;
   MyTestFunc1();
@@ -359,7 +359,7 @@ int arcaneTestHipNumArray()
   d_a.resize(vsize);
   d_b.resize(vsize);
   d_out.resize(vsize);
-  for( size_t i = 0; i<vsize; ++i ){
+  for( int i = 0; i<vsize; ++i ){
     d_a.s(i) = (double)(i+1);
     d_b.s(i) = (double)(i*i+1);
     d_out.s(i) = 0.0; //a[i] + b[i];
@@ -370,10 +370,10 @@ int arcaneTestHipNumArray()
   int blocksPerGrid = (vsize + threadsPerBlock - 1) / threadsPerBlock;
   std::cout << "CALLING kernel2 tpb=" << threadsPerBlock << " bpg=" << blocksPerGrid << "\n";
   hipLaunchKernelGGL(MyVecAdd3, blocksPerGrid, threadsPerBlock, 0, 0, d_a,d_b,d_out);
-  hipDeviceSynchronize();
+  ARCANE_CHECK_HIP(hipDeviceSynchronize());
   hipError_t e = hipGetLastError();
   std::cout << "END OF MYVEC1 e=" << e << " v=" << hipGetErrorString(e) << "\n";
-  for( size_t i=0; i<10; ++i )
+  for( int i=0; i<10; ++i )
     std::cout << "V=" << d_out(i) << "\n";
 
   // Lance un noyau dynamiquement
@@ -396,7 +396,7 @@ int arcaneTestHipNumArray()
     ARCANE_CHECK_HIP(hipStreamCreateWithFlags(&stream, hipStreamNonBlocking));
     ARCANE_CHECK_HIP(hipLaunchKernel((void *)MyVecAdd2, dimGrid, dimBlock, kernelArgs, smemSize, stream));
     ARCANE_CHECK_HIP(hipStreamSynchronize(stream));
-    for( size_t i=0; i<10; ++i )
+    for( int i=0; i<10; ++i )
       std::cout << "V2=" << d_out(i) << "\n";
   }
 
@@ -415,7 +415,7 @@ int arcaneTestHipNumArray()
 
     hipLaunchKernelGGL(MyVecLambda, blocksPerGrid, threadsPerBlock, 0, 0, vsize,func);
     ARCANE_CHECK_HIP(hipDeviceSynchronize());
-    for( size_t i=0; i<10; ++i )
+    for( int i=0; i<10; ++i )
       std::cout << "V3=" << d_out(i) << "\n";
 
     _initArrays(d_a,d_b,d_out,4);
@@ -423,7 +423,7 @@ int arcaneTestHipNumArray()
     // Appelle la version 'hote' de la lambda
     for( int i=0; i<vsize; ++i )
       func(i);
-    for( size_t i=0; i<10; ++i )
+    for( int i=0; i<10; ++i )
       std::cout << "V4=" << d_out(i) << "\n";
   }
 
@@ -474,9 +474,9 @@ void arcaneTestHipReductionX(int vsize,ax::RunQueue& queue,const String& name)
 {
   using namespace Arcane::Accelerator;
   std::cout << "TestReduction vsize=" << vsize << "\n";
-  IMemoryAllocator* cuda_allocator2 = Arcane::platform::getAcceleratorHostMemoryAllocator();
-  UniqueArray<int> d_a(cuda_allocator2,vsize);
-  UniqueArray<int> d_out(cuda_allocator2,vsize);
+  IMemoryAllocator* hip_allocator2 = Arcane::platform::getAcceleratorHostMemoryAllocator();
+  UniqueArray<int> d_a(hip_allocator2,vsize);
+  UniqueArray<int> d_out(hip_allocator2,vsize);
   for( Integer i=0; i<vsize; ++i ){
     int a = 5 + ((i+2) % 43);
     d_a[i] = a;

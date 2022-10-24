@@ -103,8 +103,8 @@ void _initArrays(Span<double> a,Span<double> b,Span<double> c,int base)
 
 void _initArrays(MDSpan<double,MDDim1> a,MDSpan<double,MDDim1> b,MDSpan<double,MDDim1> c,int base)
 {
-  Int64 vsize = a.dim1Size();
-  for( Int64 i = 0; i<vsize; ++i ){
+  Int32 vsize = static_cast<Int32>(a.dim1Size());
+  for( Int32 i = 0; i<vsize; ++i ){
     a(i) = (double)(i+base);
     b(i) = (double)(i*i+base);
     c(i) = 0.0;
@@ -361,7 +361,7 @@ int arcaneTestCudaNumArray()
   d_a.resize(vsize);
   d_b.resize(vsize);
   d_out.resize(vsize);
-  for( size_t i = 0; i<vsize; ++i ){
+  for( int i = 0; i<vsize; ++i ){
     d_a.s(i) = (double)(i+1);
     d_b.s(i) = (double)(i*i+1);
     d_out.s(i) = 0.0; //a[i] + b[i];
@@ -375,7 +375,7 @@ int arcaneTestCudaNumArray()
   cudaDeviceSynchronize();
   cudaError_t e = cudaGetLastError();
   std::cout << "END OF MYVEC1 e=" << e << " v=" << cudaGetErrorString(e) << "\n";
-  for( size_t i=0; i<10; ++i )
+  for( int i=0; i<10; ++i )
     std::cout << "V=" << d_out(i) << "\n";
 
   // Lance un noyau dynamiquement
@@ -398,7 +398,7 @@ int arcaneTestCudaNumArray()
     ARCANE_CHECK_CUDA(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
     ARCANE_CHECK_CUDA(cudaLaunchKernel((void *)MyVecAdd2, dimGrid, dimBlock, kernelArgs, smemSize, stream));
     ARCANE_CHECK_CUDA(cudaStreamSynchronize(stream));
-    for( size_t i=0; i<10; ++i )
+    for( int i=0; i<10; ++i )
       std::cout << "V2=" << d_out(i) << "\n";
   }
 
@@ -417,7 +417,7 @@ int arcaneTestCudaNumArray()
 
     MyVecLambda<<<blocksPerGrid,threadsPerBlock>>>(vsize,func);
     ARCANE_CHECK_CUDA(cudaDeviceSynchronize());
-    for( size_t i=0; i<10; ++i )
+    for( int i=0; i<10; ++i )
       std::cout << "V3=" << d_out(i) << "\n";
 
     _initArrays(d_a,d_b,d_out,4);
@@ -425,7 +425,7 @@ int arcaneTestCudaNumArray()
     // Appelle la version 'hote' de la lambda
     for( int i=0; i<vsize; ++i )
       func(i);
-    for( size_t i=0; i<10; ++i )
+    for( int i=0; i<10; ++i )
       std::cout << "V4=" << d_out(i) << "\n";
   }
 
