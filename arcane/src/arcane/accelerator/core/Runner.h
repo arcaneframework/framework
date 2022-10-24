@@ -50,9 +50,11 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
    * Il faudra appeler initialize() avant de pouvoir utiliser l'instance
    */
   Runner();
-  //! Créé un gestionnaire pour l'accélérateur \a p
+  //! Créé et initialise un gestionnaire pour l'accélérateur \a p
   explicit Runner(eExecutionPolicy p);
   ~Runner();
+
+ public:
 
   Runner(const Runner&) = delete;
   Runner(Runner&&) = delete;
@@ -102,8 +104,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
 
  private:
 
-  // TODO: a supprimer
-  impl::RunQueueImpl* _internalCreateOrGetRunQueueImpl(eExecutionPolicy exec_policy);
+  impl::RunQueueImpl* _internalCreateOrGetRunQueueImpl();
   impl::RunQueueImpl* _internalCreateOrGetRunQueueImpl(const RunQueueBuildInfo& bi);
   void _internalFreeRunQueueImpl(impl::RunQueueImpl*);
   impl::IRunQueueEventImpl* _createEvent();

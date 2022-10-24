@@ -257,9 +257,11 @@ Runner::
 /*---------------------------------------------------------------------------*/
 
 impl::RunQueueImpl* Runner::
-_internalCreateOrGetRunQueueImpl(eExecutionPolicy exec_policy)
+_internalCreateOrGetRunQueueImpl()
 {
   _checkIsInit();
+
+  eExecutionPolicy exec_policy = executionPolicy();
 
   auto pool = m_p->getPool(exec_policy);
 
@@ -286,7 +288,7 @@ _internalCreateOrGetRunQueueImpl(const RunQueueBuildInfo& bi)
   // issue du pool.
   eExecutionPolicy p = executionPolicy();
   if (bi.isDefault())
-    return _internalCreateOrGetRunQueueImpl(p);
+    return _internalCreateOrGetRunQueueImpl();
   impl::IRunQueueRuntime* runtime = _getRuntime(p);
   ARCANE_CHECK_POINTER(runtime);
   auto* queue = new impl::RunQueueImpl(this, 0, runtime, bi);

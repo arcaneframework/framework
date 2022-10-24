@@ -31,7 +31,7 @@ namespace Arcane::Accelerator
 
 RunQueue::
 RunQueue(Runner& runner)
-: RunQueue(runner,runner.executionPolicy())
+: m_p(impl::RunQueueImpl::create(&runner))
 {
 }
 
@@ -41,15 +41,6 @@ RunQueue(Runner& runner)
 RunQueue::
 RunQueue(Runner& runner, const RunQueueBuildInfo& bi)
 : m_p(impl::RunQueueImpl::create(&runner,bi))
-{
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-RunQueue::
-RunQueue(Runner& runner,eExecutionPolicy exec_policy)
-: m_p(impl::RunQueueImpl::create(&runner,exec_policy))
 {
 }
 

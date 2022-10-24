@@ -43,11 +43,12 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueImpl
                const RunQueueBuildInfo& bi);
   ~RunQueueImpl();
   RunQueueImpl(const RunQueueImpl&) = delete;
+  RunQueueImpl(RunQueueImpl&&) = delete;
   RunQueueImpl& operator=(const RunQueueImpl&) = delete;
+  RunQueueImpl& operator=(RunQueueImpl&&) = delete;
  public:
   static RunQueueImpl* create(Runner* r,const RunQueueBuildInfo& bi);
   static RunQueueImpl* create(Runner* r);
-  static RunQueueImpl* create(Runner* r,eExecutionPolicy exec_policy);
  public:
   eExecutionPolicy executionPolicy() const { return m_execution_policy; }
   Runner* runner() const { return m_runner; }
@@ -56,7 +57,6 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueImpl
   void reset();
  private:
   RunCommandImpl* _internalCreateOrGetRunCommandImpl();
-  //void _internalFreeRunCommandImpl(RunCommandImpl*);
   IRunQueueRuntime* _internalRuntime() const { return m_runtime; }
   IRunQueueStream* _internalStream() const { return m_queue_stream; }
   void _internalFreeRunningCommands();
