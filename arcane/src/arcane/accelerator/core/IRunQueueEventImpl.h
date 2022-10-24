@@ -32,13 +32,14 @@ class ARCANE_ACCELERATOR_CORE_EXPORT IRunQueueEventImpl
 {
  public:
 
-  virtual ~IRunQueueEventImpl() noexcept(false) {}
+  virtual ~IRunQueueEventImpl() = default;
 
  public:
 
   virtual void recordQueue(IRunQueueStream* stream) = 0;
   virtual void wait() = 0;
   virtual void waitForEvent(IRunQueueStream* stream) = 0;
+
   //! Temps écoulé (en nanoseconde) entre l'évènement \a from_event et cet évènement.
   virtual Int64 elapsedTime(IRunQueueEventImpl* from_event) = 0;
 };

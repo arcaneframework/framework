@@ -43,8 +43,16 @@ namespace Arcane::Accelerator::Cuda
 extern "C++" ARCANE_CUDA_EXPORT void
 arcaneCheckCudaErrors(const TraceInfo& ti,cudaError_t e);
 
+extern "C++" ARCANE_CUDA_EXPORT void
+arcaneCheckCudaErrorsNoThrow(const TraceInfo& ti,cudaError_t e);
+
+//! Vérifie \a result et lance une exception en cas d'erreur
 #define ARCANE_CHECK_CUDA(result) \
   Arcane::Accelerator::Cuda::arcaneCheckCudaErrors(A_FUNCINFO,result)
+
+//! Verifie \a result et affiche un message d'erreur en cas d'erreur.
+#define ARCANE_CHECK_CUDA_NOTHROW(result) \
+  Arcane::Accelerator::Cuda::arcaneCheckCudaErrorsNoThrow(A_FUNCINFO,result)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

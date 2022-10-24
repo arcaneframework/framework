@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* HipAccelerator.cc                                           (C) 2000-2021 */
+/* HipAccelerator.cc                                           (C) 2000-2022 */
 /*                                                                           */
 /* Backend 'HIP' pour les accélérateurs.                                     */
 /*---------------------------------------------------------------------------*/
@@ -21,18 +21,30 @@
 
 #include <iostream>
 
-using namespace Arccore;
-
 namespace Arcane::Accelerator::Hip
 {
 
-void arcaneCheckHipErrors(const TraceInfo& ti,hipError_t e)
+using namespace Arccore;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void
+arcaneCheckHipErrors(const TraceInfo& ti,hipError_t e)
 {
-  //std::cout << "HIP TRACE: func=" << ti << "\n";
   if (e!=hipSuccess){
-    //std::cout << "END OF MYVEC1 e=" << e << " v=" << hipGetErrorString(e) << "\n";
     ARCANE_FATAL("HIP Error trace={0} e={1} str={2}",ti,e,hipGetErrorString(e));
   }
+}
+
+void
+arcaneCheckHipErrorsNoThrow(const TraceInfo& ti,hipError_t e)
+{
+  if (e==hipSuccess)
+    return;
+  String str = String::format("HIP Error trace={0} e={1} str={2}",ti,e,hipGetErrorString(e));
+  FatalErrorException ex(ti,str);
+  ex.explain(std::cerr);
 }
 
 /*---------------------------------------------------------------------------*/

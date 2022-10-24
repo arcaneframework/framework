@@ -32,7 +32,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT IRunQueueStream
 {
  public:
 
-  virtual ~IRunQueueStream() noexcept(false) {}
+  virtual ~IRunQueueStream() = default;
 
  public:
 

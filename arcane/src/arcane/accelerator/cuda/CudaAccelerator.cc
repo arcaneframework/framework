@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CudaAccelerator.cc                                          (C) 2000-2020 */
+/* CudaAccelerator.cc                                          (C) 2000-2022 */
 /*                                                                           */
 /* Backend 'CUDA' pour les accélérateurs.                                    */
 /*---------------------------------------------------------------------------*/
@@ -21,18 +21,31 @@
 
 #include <iostream>
 
-using namespace Arccore;
-
 namespace Arcane::Accelerator::Cuda
 {
+using namespace Arccore;
 
-void arcaneCheckCudaErrors(const TraceInfo& ti,cudaError_t e)
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void
+arcaneCheckCudaErrors(const TraceInfo& ti,cudaError_t e)
 {
-  //std::cout << "CUDA TRACE: func=" << ti << "\n";
-  if (e!=cudaSuccess){
-    //std::cout << "END OF MYVEC1 e=" << e << " v=" << cudaGetErrorString(e) << "\n";
+  if (e!=cudaSuccess)
     ARCANE_FATAL("CUDA Error trace={0} e={1} str={2}",ti,e,cudaGetErrorString(e));
-  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void
+arcaneCheckCudaErrorsNoThrow(const TraceInfo& ti,cudaError_t e)
+{
+  if (e==cudaSuccess)
+    return;
+  String str = String::format("CUDA Error trace={0} e={1} str={2}",ti,e,cudaGetErrorString(e));
+  FatalErrorException ex(ti,str);
+  ex.explain(std::cerr);
 }
 
 /*---------------------------------------------------------------------------*/

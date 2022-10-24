@@ -101,9 +101,9 @@ class CudaRunQueueStream
       ARCANE_CHECK_CUDA(cudaStreamCreateWithPriority(&m_cuda_stream, cudaStreamDefault, priority));
     }
   }
-  ~CudaRunQueueStream() noexcept(false) override
+  ~CudaRunQueueStream() override
   {
-    ARCANE_CHECK_CUDA(cudaStreamDestroy(m_cuda_stream));
+    ARCANE_CHECK_CUDA_NOTHROW(cudaStreamDestroy(m_cuda_stream));
   }
 
  public:
@@ -184,9 +184,9 @@ class CudaRunQueueEvent
     else
       ARCANE_CHECK_CUDA(cudaEventCreateWithFlags(&m_cuda_event, cudaEventDisableTiming));
   }
-  ~CudaRunQueueEvent() noexcept(false) final
+  ~CudaRunQueueEvent() override
   {
-    ARCANE_CHECK_CUDA(cudaEventDestroy(m_cuda_event));
+    ARCANE_CHECK_CUDA_NOTHROW(cudaEventDestroy(m_cuda_event));
   }
 
  public:

@@ -72,7 +72,7 @@ class ReduceMemoryImpl
     _setReducePolicy();
     _allocateGridDataMemory();
   }
-  Int32 gridSize() const { return m_grid_size; }
+  Int32 gridSize() const override { return m_grid_size; }
 
   GridMemoryInfo gridMemoryInfo() override
   {

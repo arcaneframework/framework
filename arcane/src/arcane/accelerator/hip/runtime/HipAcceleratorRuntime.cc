@@ -97,9 +97,9 @@ class HipRunQueueStream
       ARCANE_CHECK_HIP(hipStreamCreateWithPriority(&m_hip_stream,hipStreamDefault,priority));
     }
   }
-  ~HipRunQueueStream() noexcept(false) override
+  ~HipRunQueueStream() override
   {
-    ARCANE_CHECK_HIP(hipStreamDestroy(m_hip_stream));
+    ARCANE_CHECK_HIP_NOTHROW(hipStreamDestroy(m_hip_stream));
   }
  public:
   void notifyBeginLaunchKernel([[maybe_unused]] impl::RunCommandImpl& c) override
@@ -170,9 +170,9 @@ class HipRunQueueEvent
     else
       ARCANE_CHECK_HIP(hipEventCreateWithFlags(&m_hip_event, hipEventDisableTiming));
   }
-  ~HipRunQueueEvent() noexcept(false) final
+  ~HipRunQueueEvent() override
   {
-    ARCANE_CHECK_HIP(hipEventDestroy(m_hip_event));
+    ARCANE_CHECK_HIP_NOTHROW(hipEventDestroy(m_hip_event));
   }
 
  public:
@@ -254,10 +254,16 @@ class HipRunnerRuntime
   }
   void setMemoryAdvice(MemoryView buffer, eMemoryAdvice advice, DeviceId device_id) override
   {
+    ARCANE_UNUSED(buffer);
+    ARCANE_UNUSED(advice);
+    ARCANE_UNUSED(device_id);
     ARCANE_THROW(NotImplementedException, "");
   }
   void unsetMemoryAdvice(MemoryView buffer, eMemoryAdvice advice, DeviceId device_id) override
   {
+    ARCANE_UNUSED(buffer);
+    ARCANE_UNUSED(advice);
+    ARCANE_UNUSED(device_id);
     ARCANE_THROW(NotImplementedException, "");
   }
  private:
