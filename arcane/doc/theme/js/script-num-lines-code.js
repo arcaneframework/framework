@@ -21,7 +21,7 @@
 // <script type="text/javascript" src="$relpath^script-num-lines-code.js"></script>
 
 
-var AddLinesNumbers = () => {
+var addLinesNumbers = () => {
   // Liste de tous les class.fragment.
   let allFrag = document.getElementsByClassName("fragment");
 
@@ -50,5 +50,5 @@ var AddLinesNumbers = () => {
 
 
 window.addEventListener('load', function () {
-  AddLinesNumbers();
+  addLinesNumbers();
 });

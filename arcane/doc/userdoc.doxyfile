@@ -1359,7 +1359,7 @@ HTML_HEADER            = @ARCANESRCROOT@/doc/theme/html/@ARCANEDOC_HEADER_USER@
 # that doxygen normally uses.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_FOOTER            =
+HTML_FOOTER            = @ARCANESRCROOT@/doc/theme/html/footer.html
 
 # The HTML_STYLESHEET tag can be used to specify a user-defined cascading style
 # sheet that is used by each HTML page. It can be used to fine-tune the look of
@@ -1402,11 +1402,12 @@ HTML_EXTRA_FILES       = @ARCANESRCROOT@/doc/theme/doxygen-awesome-theme/doxygen
                          @ARCANESRCROOT@/doc/theme/doxygen-awesome-theme/doxygen-awesome-fragment-copy-button.js \
                          @ARCANESRCROOT@/doc/theme/doxygen-awesome-theme/doxygen-awesome-paragraph-link.js \
                          @ARCANESRCROOT@/doc/theme/doxygen-awesome-theme/doxygen-awesome-interactive-toc.js \
-                         @ARCANESRCROOT@/doc/theme/js/script-wait-elem.js \
+                         @ARCANESRCROOT@/doc/theme/js/script-helper.js \
                          @ARCANESRCROOT@/doc/theme/js/script-resize.js \
                          @ARCANESRCROOT@/doc/theme/js/script-num-lines-code.js \
-                         @ARCANESRCROOT@/doc/theme/js/script-expand-current.js \
-                         @ARCANESRCROOT@/doc/theme/js/script-alternative-theme.js
+                         @ARCANESRCROOT@/doc/theme/js/script-config-theme.js \
+                         @ARCANESRCROOT@/doc/theme/js/script-edit-config-theme.js \
+                         @ARCANESRCROOT@/doc/theme/js/script-apply-config-theme.js
 
 # The HTML_COLORSTYLE tag can be used to specify if the generated HTML output
 # should be rendered with a dark or light theme. Default setting AUTO_LIGHT

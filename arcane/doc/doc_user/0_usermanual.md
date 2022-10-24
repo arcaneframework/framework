@@ -27,6 +27,8 @@ de sous-chapitres et/ou de pages.
 Chaque chapitre/sous-chapitre dispose d'un sommaire décrivant
 brievement son contenu et d'une liste de ces pages.
 
+Pour configurer la documentation, c'est ici : \subpage arcanedoc_doc_config
+
 <br>
 
 Les chapitres disponibles sont:

@@ -11,7 +11,7 @@
 /* réintegrer le redimensionnement du volet de navigation.                   */
 /*                                                                           */
 /* À utiliser avec 'doxygen-awesome-sidebar-only' uniquement.                */
-/* Nécessite le script script-wait-elem.js.                                  */
+/* Nécessite le script script-helper.js.                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -19,11 +19,11 @@
 // doxyfile : 
 // HTML_EXTRA_STYLESHEET = doxygen-awesome.css \
 //                         doxygen-awesome-sidebar-only.css
-// HTML_EXTRA_FILES      = script-wait-elem.js \
+// HTML_EXTRA_FILES      = script-helper.js \
 //                         script-resize.js
 
 // header.html :
-// <script type="text/javascript" src="$relpath^script-wait-elem.js"></script>
+// <script type="text/javascript" src="$relpath^script-helper.js"></script>
 // <script type="text/javascript" src="$relpath^script-resize.js"></script>
 // <script type="text/javascript">
 //   waitElemForResizeSideNav();
@@ -36,7 +36,7 @@ let min_width_side_nav = 10;
 let max_width_side_nav = 1000;
 
 // Fonction permettant de définir les nouvelles propriétés de la side nav.
-var ResizeSideNav = (side_nav) => {
+var resizeSideNav = (side_nav) => {
   // On augmente la largeur de la bordure.
   side_nav.style.setProperty('width', width_border_side_nav+"px", "important");
 
@@ -93,7 +93,7 @@ let waitElemForResizeSideNav = () => {
   let elem = () => { 
     return document.getElementsByClassName("ui-resizable-handle ui-resizable-e")[0]; 
   };
-  waitElem(elem, ResizeSideNav);
+  waitItem(elem, resizeSideNav);
 };
 
 
@@ -101,26 +101,8 @@ let waitElemForResizeSideNav = () => {
 // de side bar.
 var setOldSize = () => {
 
-  // Fonction permettant de récupérer un cookie.
-  // (source : w3school)
-  let getCookie = (cname) => {
-    let name = cname + "=";
-    let decodedCookie = decodeURIComponent(document.cookie);
-    let ca = decodedCookie.split(';');
-    for(let i = 0; i <ca.length; i++) {
-      let c = ca[i];
-      while (c.charAt(0) == ' ') {
-        c = c.substring(1);
-      }
-      if (c.indexOf(name) == 0) {
-        return c.substring(name.length, c.length);
-      }
-    }
-    return "";
-  }
-
   // On récupère le cookie gentiment créé et mis à jour par doxygen.
-  let coo = getCookie("doxygen_width");
+  let coo = getStorage("doxygen_width");
   if(coo != ""){
     document.querySelector(':root').style.setProperty('--side-nav-fixed-width', coo+'px');
   }
