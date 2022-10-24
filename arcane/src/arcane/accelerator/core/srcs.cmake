@@ -9,6 +9,7 @@ set( ARCANE_SOURCES
   IReduceMemoryImpl.h
   IRunQueueEventImpl.h
   IRunQueueRuntime.h
+  IRunnerRuntime.h
   IRunQueueStream.h
   Memory.h
   Memory.cc

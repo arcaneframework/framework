@@ -37,10 +37,10 @@ namespace Arcane::Accelerator
 
 namespace
 {
-  inline impl::IRunQueueRuntime*
+  inline impl::IRunnerRuntime*
   _getRuntime(eExecutionPolicy p)
   {
-    impl::IRunQueueRuntime* runtime = nullptr;
+    impl::IRunnerRuntime* runtime = nullptr;
     switch (p) {
     case eExecutionPolicy::None:
       ARCANE_FATAL("No runtime for eExecutionPolicy::None");
@@ -67,7 +67,7 @@ class Runner::Impl
   {
    public:
 
-    RunQueueImplStack(Runner* runner, eExecutionPolicy exec_policy, impl::IRunQueueRuntime* runtime)
+    RunQueueImplStack(Runner* runner, eExecutionPolicy exec_policy, impl::IRunnerRuntime* runtime)
     : m_runner(runner)
     , m_exec_policy(exec_policy)
     , m_runtime(runtime)
@@ -98,7 +98,7 @@ class Runner::Impl
     std::atomic<Int32> m_nb_created = -1;
     Runner* m_runner;
     eExecutionPolicy m_exec_policy;
-    impl::IRunQueueRuntime* m_runtime;
+    impl::IRunnerRuntime* m_runtime;
   };
 
  public:
@@ -179,7 +179,7 @@ class Runner::Impl
     return static_cast<double>(x) / 1.0e9;
   }
 
-  impl::IRunQueueRuntime* runtime() const { return m_runtime; }
+  impl::IRunnerRuntime* runtime() const { return m_runtime; }
 
  public:
 
@@ -191,7 +191,7 @@ class Runner::Impl
 
  private:
 
-  impl::IRunQueueRuntime* m_runtime = nullptr;
+  impl::IRunnerRuntime* m_runtime = nullptr;
   RunQueueImplStack* m_run_queue_pool = nullptr;
   std::unique_ptr<std::mutex> m_pool_mutex;
   bool m_use_pool_mutex = false;
@@ -278,7 +278,7 @@ _internalCreateOrGetRunQueueImpl(const RunQueueBuildInfo& bi)
   // issue du pool.
   if (bi.isDefault())
     return _internalCreateOrGetRunQueueImpl();
-  impl::IRunQueueRuntime* runtime = m_p->runtime();
+  impl::IRunnerRuntime* runtime = m_p->runtime();
   ARCANE_CHECK_POINTER(runtime);
   auto* queue = new impl::RunQueueImpl(this, 0, runtime, bi);
   return queue;
@@ -415,8 +415,8 @@ cumulativeCommandTime() const
 void Runner::
 setMemoryAdvice(MemoryView buffer, eMemoryAdvice advice)
 {
-  impl::IRunQueueRuntime* r = _getRuntime(executionPolicy());
-  r->setMemoryAdvice(buffer, advice, m_p->m_device_id);
+  _checkIsInit();
+  m_p->runtime()->setMemoryAdvice(buffer, advice, m_p->m_device_id);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -425,8 +425,8 @@ setMemoryAdvice(MemoryView buffer, eMemoryAdvice advice)
 void Runner::
 unsetMemoryAdvice(MemoryView buffer, eMemoryAdvice advice)
 {
-  impl::IRunQueueRuntime* r = _getRuntime(executionPolicy());
-  r->unsetMemoryAdvice(buffer, advice, m_p->m_device_id);
+  _checkIsInit();
+  m_p->runtime()->unsetMemoryAdvice(buffer, advice, m_p->m_device_id);
 }
 
 /*---------------------------------------------------------------------------*/

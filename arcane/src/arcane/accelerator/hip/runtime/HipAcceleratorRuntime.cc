@@ -87,7 +87,7 @@ class HipRunQueueStream
 : public impl::IRunQueueStream
 {
  public:
-  HipRunQueueStream(impl::IRunQueueRuntime* runtime,const RunQueueBuildInfo& bi)
+  HipRunQueueStream(impl::IRunnerRuntime* runtime,const RunQueueBuildInfo& bi)
   : m_runtime(runtime)
   {
     if (bi.isDefault())
@@ -151,7 +151,7 @@ class HipRunQueueStream
   hipStream_t trueStream() const { return m_hip_stream; }
 
  private:
-  impl::IRunQueueRuntime* m_runtime;
+  impl::IRunnerRuntime* m_runtime;
   hipStream_t m_hip_stream;
 };
 
@@ -214,11 +214,11 @@ class HipRunQueueEvent
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class HipRunQueueRuntime
-: public impl::IRunQueueRuntime
+class HipRunnerRuntime
+: public impl::IRunnerRuntime
 {
  public:
-  ~HipRunQueueRuntime() override = default;
+  ~HipRunnerRuntime() override = default;
  public:
   void notifyBeginLaunchKernel() override
   {
@@ -288,7 +288,7 @@ class HipMemoryCopier
 
 namespace 
 {
-Arcane::Accelerator::Hip::HipRunQueueRuntime global_hip_runtime;
+Arcane::Accelerator::Hip::HipRunnerRuntime global_hip_runtime;
 Arcane::Accelerator::Hip::HipMemoryCopier global_hip_memory_copier;
 }
 

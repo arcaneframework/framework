@@ -31,7 +31,7 @@ namespace Arcane::Accelerator::impl
 /*---------------------------------------------------------------------------*/
 
 RunQueueImpl::
-RunQueueImpl(Runner* runner,Int32 id,IRunQueueRuntime* runtime,const RunQueueBuildInfo& bi)
+RunQueueImpl(Runner* runner,Int32 id,IRunnerRuntime* runtime,const RunQueueBuildInfo& bi)
 : m_runner(runner)
 , m_execution_policy(runtime->executionPolicy())
 , m_runtime(runtime)

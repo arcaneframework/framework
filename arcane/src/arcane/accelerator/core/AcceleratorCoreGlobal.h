@@ -50,7 +50,9 @@ enum class eMemoryAdvice;
 
 namespace impl
 {
-class IRunQueueRuntime;
+class IRunnerRuntime;
+// typedef pour compatibilité avec anciennes versions (octobre 2022)
+using IRunQueueRuntime = IRunnerRuntime;
 class IRunQueueStream;
 class RunCommandImpl;
 class IReduceMemoryImpl;
@@ -133,11 +135,11 @@ void setUsingCUDARuntime(bool v);
 
 //! Récupère l'implémentation CUDA de RunQueue (peut être nulle)
 extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
-IRunQueueRuntime* getCUDARunQueueRuntime();
+IRunnerRuntime* getCUDARunQueueRuntime();
 
 //! Positionne l'implémentation CUDA de RunQueue.
 extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
-void setCUDARunQueueRuntime(IRunQueueRuntime* v);
+void setCUDARunQueueRuntime(IRunnerRuntime* v);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -152,22 +154,22 @@ void setUsingHIPRuntime(bool v);
 
 //! Récupère l'implémentation HIP de RunQueue (peut être nulle)
 extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
-IRunQueueRuntime* getHIPRunQueueRuntime();
+IRunnerRuntime* getHIPRunQueueRuntime();
 
 //! Positionne l'implémentation HIP de RunQueue.
 extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
-void setHIPRunQueueRuntime(IRunQueueRuntime* v);
+void setHIPRunQueueRuntime(IRunnerRuntime* v);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! Récupère l'implémentation Séquentielle de RunQueue
 extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
-IRunQueueRuntime* getSequentialRunQueueRuntime();
+IRunnerRuntime* getSequentialRunQueueRuntime();
 
 //! Récupère l'implémentation Thread de RunQueue
 extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
-IRunQueueRuntime* getThreadRunQueueRuntime();
+IRunnerRuntime* getThreadRunQueueRuntime();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

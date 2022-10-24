@@ -96,7 +96,7 @@ class ARCANE_ACCELERATOR_EXPORT RunCommandLaunchInfo
   RunCommand& m_command;
   bool m_has_exec_begun = false;
   bool m_is_notify_end_kernel_done = false;
-  IRunQueueRuntime* m_runtime = nullptr;
+  IRunnerRuntime* m_runtime = nullptr;
   IRunQueueStream* m_queue_stream = nullptr;
   eExecutionPolicy m_exec_policy = eExecutionPolicy::Sequential;
   ThreadBlockInfo m_thread_block_info;

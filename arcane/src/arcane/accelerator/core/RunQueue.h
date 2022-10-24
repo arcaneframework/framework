@@ -77,7 +77,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
 
  private:
 
-  impl::IRunQueueRuntime* _internalRuntime() const;
+  impl::IRunnerRuntime* _internalRuntime() const;
   impl::IRunQueueStream* _internalStream() const;
   impl::RunCommandImpl* _getCommandImpl();
 
