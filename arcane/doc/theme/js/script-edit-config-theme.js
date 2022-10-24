@@ -42,27 +42,27 @@ var updateConfigWithCookies = async () => {
   // On initialise les deux items selon le cookie.
   switch (cookie_expand_current_item) {
     case "true":
-      span_expand_current_item.innerHTML = "Option activée";
-      button_apply_expand_current_item.innerHTML = "Désactiver";
+      span_expand_current_item.innerHTML = "✅ Option activée";
+      button_apply_expand_current_item.innerHTML = "Désactiver l'option";
       break;
   
     default:
-      span_expand_current_item.innerHTML = "Option désactivée";
-      button_apply_expand_current_item.innerHTML = "Activer";
+      span_expand_current_item.innerHTML = "❌ Option désactivée";
+      button_apply_expand_current_item.innerHTML = "Activer l'option";
       break;
   }
 
   // On définit une fonction dans le cas où l'utilisateur
   // clique sur le bouton de la partie.
   button_apply_expand_current_item.onclick = () => {
-    if (button_apply_expand_current_item.innerHTML == "Activer"){
-      span_expand_current_item.innerHTML = "Option activée";
-      button_apply_expand_current_item.innerHTML = "Désactiver";
+    if (button_apply_expand_current_item.innerHTML == "Activer l'option"){
+      span_expand_current_item.innerHTML = "✅ Option activée";
+      button_apply_expand_current_item.innerHTML = "Désactiver l'option";
       setStorage("expand-current-item", "true");
     }
     else{
-      span_expand_current_item.innerHTML = "Option désactivée";
-      button_apply_expand_current_item.innerHTML = "Activer";
+      span_expand_current_item.innerHTML = "❌ Option désactivée";
+      button_apply_expand_current_item.innerHTML = "Activer l'option";
       setStorage("expand-current-item", "false");
     }
   };
@@ -81,24 +81,24 @@ var updateConfigWithCookies = async () => {
 
   switch (cookie_toc_above_all) {
     case "true":
-      span_toc_above_all.innerHTML = "Option activée";
-      button_apply_toc_above_all.innerHTML = "Désactiver";
+      span_toc_above_all.innerHTML = "✅ Option activée";
+      button_apply_toc_above_all.innerHTML = "Désactiver l'option";
       break;
 
     default:
-      span_toc_above_all.innerHTML = "Option désactivée";
-      button_apply_toc_above_all.innerHTML = "Activer";
+      span_toc_above_all.innerHTML = "❌ Option désactivée";
+      button_apply_toc_above_all.innerHTML = "Activer l'option";
       break;
   }
   button_apply_toc_above_all.onclick = () => {
-    if (button_apply_toc_above_all.innerHTML == "Activer") {
-      span_toc_above_all.innerHTML = "Option activée";
-      button_apply_toc_above_all.innerHTML = "Désactiver";
+    if (button_apply_toc_above_all.innerHTML == "Activer l'option") {
+      span_toc_above_all.innerHTML = "✅ Option activée";
+      button_apply_toc_above_all.innerHTML = "Désactiver l'option";
       setStorage("toc-above-all", "true");
     }
     else {
-      span_toc_above_all.innerHTML = "Option désactivée";
-      button_apply_toc_above_all.innerHTML = "Activer";
+      span_toc_above_all.innerHTML = "❌ Option désactivée";
+      button_apply_toc_above_all.innerHTML = "Activer l'option";
       setStorage("toc-above-all", "false");
     }
   };
@@ -115,24 +115,24 @@ var updateConfigWithCookies = async () => {
 
   switch (cookie_apply_old_toc) {
     case "true":
-      span_apply_old_toc.innerHTML = "Option activée";
-      button_apply_apply_old_toc.innerHTML = "Désactiver";
+      span_apply_old_toc.innerHTML = "✅ Option activée";
+      button_apply_apply_old_toc.innerHTML = "Désactiver l'option";
       break;
 
     default:
-      span_apply_old_toc.innerHTML = "Option désactivée";
-      button_apply_apply_old_toc.innerHTML = "Activer";
+      span_apply_old_toc.innerHTML = "❌ Option désactivée";
+      button_apply_apply_old_toc.innerHTML = "Activer l'option";
       break;
   }
   button_apply_apply_old_toc.onclick = () => {
-    if (button_apply_apply_old_toc.innerHTML == "Activer") {
-      span_apply_old_toc.innerHTML = "Option activée";
-      button_apply_apply_old_toc.innerHTML = "Désactiver";
+    if (button_apply_apply_old_toc.innerHTML == "Activer l'option") {
+      span_apply_old_toc.innerHTML = "✅ Option activée";
+      button_apply_apply_old_toc.innerHTML = "Désactiver l'option";
       setStorage("apply-old-toc", "true");
     }
     else {
-      span_apply_old_toc.innerHTML = "Option désactivée";
-      button_apply_apply_old_toc.innerHTML = "Activer";
+      span_apply_old_toc.innerHTML = "❌ Option désactivée";
+      button_apply_apply_old_toc.innerHTML = "Activer l'option";
       setStorage("apply-old-toc", "false");
     }
   };
@@ -151,24 +151,24 @@ var updateConfigWithCookies = async () => {
 
   switch (cookie_expand_level_two) {
     case "true":
-      span_expand_level_two.innerHTML = "Option activée";
-      button_apply_expand_level_two.innerHTML = "Désactiver";
+      span_expand_level_two.innerHTML = "✅ Option activée";
+      button_apply_expand_level_two.innerHTML = "Désactiver l'option";
       break;
 
     default:
-      span_expand_level_two.innerHTML = "Option désactivée";
-      button_apply_expand_level_two.innerHTML = "Activer";
+      span_expand_level_two.innerHTML = "❌ Option désactivée";
+      button_apply_expand_level_two.innerHTML = "Activer l'option";
       break;
   }
   button_apply_expand_level_two.onclick = () => {
-    if (button_apply_expand_level_two.innerHTML == "Activer") {
-      span_expand_level_two.innerHTML = "Option activée";
-      button_apply_expand_level_two.innerHTML = "Désactiver";
+    if (button_apply_expand_level_two.innerHTML == "Activer l'option") {
+      span_expand_level_two.innerHTML = "✅ Option activée";
+      button_apply_expand_level_two.innerHTML = "Désactiver l'option";
       setStorage("expand-level-two", "true");
     }
     else {
-      span_expand_level_two.innerHTML = "Option désactivée";
-      button_apply_expand_level_two.innerHTML = "Activer";
+      span_expand_level_two.innerHTML = "❌ Option désactivée";
+      button_apply_expand_level_two.innerHTML = "Activer l'option";
       setStorage("expand-level-two", "false");
     }
   };
