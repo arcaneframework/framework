@@ -33,10 +33,13 @@
     <script type="text/javascript" src="$relpath^script-helper.js"></script>
     <script type="text/javascript" src="$relpath^script-resize.js"></script>
     <script type="text/javascript" src="$relpath^script-num-lines-code.js"></script>
-    <script type="text/javascript" src="$relpath^script-expand-current.js"></script>
-    <script type="text/javascript" src="$relpath^script-cookies.js"></script>
+    <script type="text/javascript" src="$relpath^script-config-theme.js"></script>
+    <script type="text/javascript" src="$relpath^script-edit-config-theme.js"></script>
     <script type="text/javascript" src="$relpath^script-alternative-theme.js"></script>
     <script type="text/javascript">
+      // On demande l'activation de la personnalisation de la page.
+      var no_custom_theme = false;
+      
       DoxygenAwesomeDarkModeToggle.title = "Thème clair/sombre";
       DoxygenAwesomeDarkModeToggle.init();
 
@@ -50,6 +53,7 @@
       setOldSize();
 
       //waitItemExpandCurrent();
+      
     </script>
   </head>
 

@@ -21,83 +21,48 @@
 // <script type="text/javascript" src="$relpath^script-helper.js"></script>
 
 
-// Fonction permettant d'attendre que 'expectedElem()' soit chargé
+// Fonction permettant d'attendre que 'expectedItem()' soit chargé
 // avant d'appeler 'functionToCall()'.
-// @param expectedElem : Fonction retournant l'element à attendre.
+// @param expectedItem : Fonction retournant l'element à attendre.
 // @param functionToCall;item : Fonction à appeler lorsque l'élément sera chargé.
 //                               item : l'élément attendu.
-var waitItem = (expectedElem, functionToCall) => {
-  let elem = expectedElem();
-  // Si la création n'a pas eu lieu.
-  if (elem == null) {
-    // On crée une fonction s'appelant elle-même
-    // toutes les 100ms pour attendre l'élement.
-    let loopWaitElem = (compt) => {
-      elem = expectedElem();
-
-      // En cas de problème (le js, c'est pas une science exacte).
-      if (compt > 100 && elem == null) {
-        console.log("Impossible de charger elem");
-      }
-      // Si l'on n'a pas encore trouvé l'élement, on ajoute un
-      // évenement 'global' que sera exécuté dans 100ms et qui relancera
-      // cette fonction.
-      else if (elem == null) {
-        window.setTimeout(loopWaitElem, 100, compt + 1);
-      }
-
-      // Si l'élement a été trouvé.
-      else {
-        functionToCall(elem);
-      }
-    };
-    loopWaitElem(0);
-  }
-
-  // Si la création a déjà eu lieu, pas besoin d'attendre.
-  else {
-    functionToCall(elem);
-  }
-};
-
-var waitItemPromise = (expectedElem, functionToCall) => {
+// @return Une promesse.
+var waitItem = (expectedItem, functionToCall) => {
   return new Promise((resolve, reject) => {
 
-    let elem = expectedElem();
+    let item = expectedItem();
 
     // Si la création n'a pas eu lieu.
-    if (elem == null) {
+    if (item == null) {
       // On crée une fonction s'appelant elle-même
       // toutes les 100ms pour attendre l'élement.
-      let loopWaitElem = (compt) => {
-        elem = expectedElem();
+      let loopWaitItem = (compt) => {
+        item = expectedItem();
 
         // En cas de problème (le js, c'est pas une science exacte).
-        if (compt > 100 && elem == null) {
-          reject("Impossible de charger elem");
+        if (compt > 100 && item == null) {
+          reject(() => {console.log("Impossible de charger item");});
         }
         // Si l'on n'a pas encore trouvé l'élement, on ajoute un
         // évenement 'global' que sera exécuté dans 100ms et qui relancera
         // cette fonction.
-        else if (elem == null) {
-          window.setTimeout(loopWaitElem, 100, compt + 1);
+        else if (item == null) {
+          window.setTimeout(loopWaitItem, 20, compt + 1);
         }
 
         // Si l'élement a été trouvé.
         else {
-          resolve(functionToCall(elem));
+          resolve(functionToCall(item));
         }
       };
-      loopWaitElem(0);
+      loopWaitItem(0);
     }
 
     // Si la création a déjà eu lieu, pas besoin d'attendre.
     else {
-      resolve(functionToCall(elem));
+      resolve(functionToCall(item));
     }
-
   });
-
 }
 
 
@@ -128,4 +93,36 @@ var setCookie = (cname, cvalue, exdays=400) => {
   d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
   let expires = "expires=" + d.toUTCString();
   document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+}
+
+var removeCookie = (cname) => {
+  setCookie(cname, "", -1);
+}
+
+
+// Fonction permettant de récupérer une valeur du stockage
+// selon le navigateur.
+var getStorage = (cname) => {
+  if (window.chrome)
+  return localStorage.getItem(cname);
+  else
+  return getCookie(cname);
+}
+
+// Fonction permettant de stocker une valeur
+// selon le navigateur.
+var setStorage = (cname, cvalue, exdays = 400) => {
+  if (window.chrome)
+    localStorage.setItem(cname, cvalue);
+  else
+    setCookie(cname, cvalue, exdays);
+}
+
+// Fonction permettant de supprimer une valeur du stockage
+// selon le navigateur.
+var removeStorage = (cname) => {
+  if (window.chrome)
+    localStorage.removeItem(cname);
+  else
+    removeCookie(cname);
 }

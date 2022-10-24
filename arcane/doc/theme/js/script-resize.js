@@ -102,7 +102,7 @@ let waitElemForResizeSideNav = () => {
 var setOldSize = () => {
 
   // On récupère le cookie gentiment créé et mis à jour par doxygen.
-  let coo = getCookie("doxygen_width");
+  let coo = getStorage("doxygen_width");
   if(coo != ""){
     document.querySelector(':root').style.setProperty('--side-nav-fixed-width', coo+'px');
   }

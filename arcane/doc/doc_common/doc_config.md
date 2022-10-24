@@ -16,55 +16,46 @@ TextText TextTextText TextTextText TextTextText TextTextText Text
 
 \htmlonly
 
-<span id="span_expand_current"></span>
-<button id="button_expand_current"></button>
-
-<button onclick="waitItemExpandCurrent()">
-Test
-</button>
+<span id="span_expand_current_item"></span>
+<button id="button_apply_expand_current_item">Pas de JS</button>
+<button id="button_test_expand_current_item">Test</button>
 
 \endhtmlonly
 
 
-## changeTocPos {#arcanedoc_doc_config_change_toc_pos}
+## tocAboveAll {#arcanedoc_doc_config_toc_above_all}
 
 \htmlonly
 
-<span id="span_change_toc_pos"></span>
-<button id="button_change_toc_pos"></button>
-
-<button onclick="waitItemChangeTocPos()">
-Test
-</button>
+<span id="span_toc_above_all"></span>
+<button id="button_apply_toc_above_all"></button>
+<button id="button_test_toc_above_all">Test</button>
 
 \endhtmlonly
 
 
-## changeOldToc {#arcanedoc_doc_config_change_old_toc}
+## applyOldToc {#arcanedoc_doc_config_apply_old_toc}
 
 \htmlonly
 
-<span id="span_change_old_toc"></span>
-<button id="button_change_old_toc"></button>
-
-<button onclick="waitItemChangeOldToc()">
-Test
-</button>
+<span id="span_apply_old_toc"></span>
+<button id="button_apply_apply_old_toc"></button>
+<button id="button_test_apply_old_toc">Test</button>
 
 \endhtmlonly
 
 
 
-## changeMaxWidth {#arcanedoc_doc_config_change_max_width}
+## changeMaxWidth {#arcanedoc_doc_config_edit_max_width}
 
 \htmlonly
 
-<span id="span_change_max_width"></span>
-<input type="range" id="range_change_max_width" min="500" max="2000" step="100">
-<button id="button_max_max_width">Max</button>
-<button id="button_test_max_width">Test</button>
-<button id="button_apply_max_width">Apply</button>
-<button id="button_default_max_width">Default</button>
+<span id="span_edit_max_width"></span>
+<input type="range" id="range_edit_max_width" min="500" max="2000" step="100">
+<button id="button_max_edit_max_width">Max</button>
+<button id="button_test_edit_max_width">Test</button>
+<button id="button_apply_edit_max_width">Apply</button>
+<button id="button_default_edit_max_width">Default</button>
 
 \endhtmlonly
 
@@ -72,16 +63,13 @@ Test
 
 
 
-## expandLevel {#arcanedoc_doc_config_expand_level}
+## expandLevelTwo {#arcanedoc_doc_config_expand_level_two}
 
 \htmlonly
 
-<span id="span_expand_level"></span>
-<button id="button_expand_level"></button>
-
-<button onclick="waitItemExpandLevel()">
-Test
-</button>
+<span id="span_expand_level_two"></span>
+<button id="button_apply_expand_level_two"></button>
+<button id="button_test_expand_level_two">Test</button>
 
 \endhtmlonly
 
@@ -91,5 +79,7 @@ Test
 \htmlonly
 <script type="text/javascript">
   updateConfigWithCookies();
+  // Dans cette page, la personnalisation est désactivée.
+  no_custom_theme = true;
 </script>
 \endhtmlonly
