@@ -67,7 +67,7 @@ class Runner::Impl
   {
    public:
 
-    RunQueueImplStack(Runner* runner)
+    explicit RunQueueImplStack(Runner* runner)
     : m_runner(runner)
     {}
 
