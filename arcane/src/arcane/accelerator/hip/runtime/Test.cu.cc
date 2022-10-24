@@ -525,10 +525,12 @@ extern "C"
 int arcaneTestHipReduction()
 {
   // TODO: tester en ne commancant pas par 0.
-  ax::Runner runner;
-  ax::RunQueue queue1{makeQueue(runner,ax::eExecutionPolicy::Sequential)};
-  ax::RunQueue queue2{makeQueue(runner,ax::eExecutionPolicy::Thread)};
-  ax::RunQueue queue3{makeQueue(runner,ax::eExecutionPolicy::HIP)};
+  ax::Runner runner_seq(ax::eExecutionPolicy::Sequential);
+  ax::Runner runner_thread(ax::eExecutionPolicy::Thread);
+  ax::Runner runner_cuda(ax::eExecutionPolicy::CUDA);
+  ax::RunQueue queue1{makeQueue(runner_seq)};
+  ax::RunQueue queue2{makeQueue(runner_thread)};
+  ax::RunQueue queue3{makeQueue(runner_cuda)};
   int sizes_to_test[] = { 56, 567, 452182 };
   for( int i=0; i<3; ++i ){
     int vsize = sizes_to_test[i];
