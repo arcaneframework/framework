@@ -31,11 +31,11 @@ namespace Arcane::Accelerator::impl
 /*---------------------------------------------------------------------------*/
 
 RunQueueImpl::
-RunQueueImpl(Runner* runner,Int32 id,IRunnerRuntime* runtime,const RunQueueBuildInfo& bi)
+RunQueueImpl(Runner* runner, Int32 id, const RunQueueBuildInfo& bi)
 : m_runner(runner)
-, m_execution_policy(runtime->executionPolicy())
-, m_runtime(runtime)
-, m_queue_stream(runtime->createStream(bi))
+, m_execution_policy(runner->executionPolicy())
+, m_runtime(runner->_internalRuntime())
+, m_queue_stream(m_runtime->createStream(bi))
 , m_id(id)
 {
 }

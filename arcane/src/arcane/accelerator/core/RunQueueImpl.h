@@ -40,8 +40,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueImpl
 
  private:
 
-  RunQueueImpl(Runner* runner, Int32 id, IRunnerRuntime* runtime,
-               const RunQueueBuildInfo& bi);
+  RunQueueImpl(Runner* runner, Int32 id, const RunQueueBuildInfo& bi);
   ~RunQueueImpl();
 
  public:

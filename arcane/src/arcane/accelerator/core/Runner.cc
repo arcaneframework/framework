@@ -67,10 +67,8 @@ class Runner::Impl
   {
    public:
 
-    RunQueueImplStack(Runner* runner, eExecutionPolicy exec_policy, impl::IRunnerRuntime* runtime)
+    RunQueueImplStack(Runner* runner)
     : m_runner(runner)
-    , m_exec_policy(exec_policy)
-    , m_runtime(runtime)
     {}
 
    public:
@@ -84,10 +82,8 @@ class Runner::Impl
 
     impl::RunQueueImpl* createRunQueue(const RunQueueBuildInfo& bi)
     {
-      if (!m_runtime)
-        ARCANE_FATAL("Runtime for execution policy '{0}' is not initialized", m_exec_policy);
       Int32 x = ++m_nb_created;
-      auto* q = new impl::RunQueueImpl(m_runner, x, m_runtime, bi);
+      auto* q = new impl::RunQueueImpl(m_runner, x, bi);
       q->m_is_in_pool = true;
       return q;
     }
@@ -97,8 +93,6 @@ class Runner::Impl
     std::stack<impl::RunQueueImpl*> m_stack;
     std::atomic<Int32> m_nb_created = -1;
     Runner* m_runner;
-    eExecutionPolicy m_exec_policy;
-    impl::IRunnerRuntime* m_runtime;
   };
 
  public:
@@ -147,8 +141,10 @@ class Runner::Impl
       ARCANE_THROW(ArgumentException, "executionPolicy should not be eExecutionPolicy::None");
     m_execution_policy = v;
     m_runtime = _getRuntime(v);
-    m_run_queue_pool = new RunQueueImplStack(runner, v, m_runtime);
     m_is_init = true;
+
+    // Il faut initialiser le pool à la fin car il a besoin d'accéder à \a m_runtime
+    m_run_queue_pool = new RunQueueImplStack(runner);
   }
 
   void setConcurrentQueueCreation(bool v)
@@ -248,6 +244,15 @@ Runner::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+impl::IRunnerRuntime* Runner::
+_internalRuntime() const
+{
+  return m_p->runtime();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 impl::RunQueueImpl* Runner::
 _internalCreateOrGetRunQueueImpl()
 {
@@ -280,7 +285,7 @@ _internalCreateOrGetRunQueueImpl(const RunQueueBuildInfo& bi)
     return _internalCreateOrGetRunQueueImpl();
   impl::IRunnerRuntime* runtime = m_p->runtime();
   ARCANE_CHECK_POINTER(runtime);
-  auto* queue = new impl::RunQueueImpl(this, 0, runtime, bi);
+  auto* queue = new impl::RunQueueImpl(this, 0, bi);
   return queue;
 }
 
