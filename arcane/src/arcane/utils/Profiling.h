@@ -18,7 +18,6 @@
 
 #include "arcane/utils/String.h"
 
-#include <map>
 #include <atomic>
 
 /*---------------------------------------------------------------------------*/
@@ -52,8 +51,11 @@ struct ARCANE_UTILS_EXPORT ForLoopProfilingStat
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-struct ARCANE_UTILS_EXPORT ScopedStatLoop
+/*!
+ * \brief Classe permettant de récupérer le temps passé entre l'appel au
+ * constructeur et au destructeur.
+ */
+class ARCANE_UTILS_EXPORT ScopedStatLoop
 {
  public:
 
@@ -69,10 +71,18 @@ struct ARCANE_UTILS_EXPORT ScopedStatLoop
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO Utiliser un hash pour le map plutôt qu'une String pour accélérer les comparaisons
-
-class ARCANE_UTILS_EXPORT StatInfoList
+/*!
+ * \brief Statistiques d'exécution d'une boucle.
+ */
+class ARCANE_UTILS_EXPORT ForLoopStatInfoList
 {
+  class Impl;
+
+ public:
+
+  ForLoopStatInfoList();
+  ~ForLoopStatInfoList();
+
  public:
 
   void merge(const ForLoopOneExecStat& loop_stat_info, const ForLoopTraceInfo& loop_trace_info);
@@ -80,7 +90,7 @@ class ARCANE_UTILS_EXPORT StatInfoList
 
  private:
 
-  std::map<String, impl::ForLoopProfilingStat> m_stat_map;
+  Impl* m_p = nullptr;
 };
 
 } // namespace Arcane::impl
@@ -150,7 +160,7 @@ class ARCANE_UTILS_EXPORT ProfilingRegistry
    * \internal.
    * Instance locale par thread du gestionnaire des statistiques
    */
-  static impl::StatInfoList* threadLocalInstance();
+  static impl::ForLoopStatInfoList* threadLocalInstance();
 
   //! Affiche les statistiques d'exécution de toutes les instances sur \a o
   static void printExecutionStats(std::ostream& o);
