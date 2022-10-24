@@ -33,6 +33,7 @@
 #include "arcane/utils/IPerformanceCounterService.h"
 #include "arcane/utils/ITraceMngPolicy.h"
 #include "arcane/utils/JSONReader.h"
+#include "arcane/utils/Profiling.h"
 
 #include "arcane/ArcaneVersion.h"
 #include "arcane/ISubDomain.h"
@@ -405,8 +406,8 @@ build()
 
       if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_TASK_VERBOSE_LEVEL",true))
         TaskFactory::setVerboseLevel(v.value());
-      if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_TASK_EXECUTION_STAT_LEVEL",true))
-        TaskFactory::setExecutionStatLevel(v.value());
+      if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_LOOP_PROFILING_LEVEL",true))
+        ProfilingRegistry::setProfilingLevel(v.value());
     }
 
     // Recherche le service utilisé pour le profiling

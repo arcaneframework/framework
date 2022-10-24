@@ -20,6 +20,35 @@
 #include <iomanip>
 #include <vector>
 #include <mutex>
+#include <map>
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::impl
+{
+
+class ForLoopStatInfoList::Impl
+{
+ public:
+
+  // TODO Utiliser un hash pour le map plutôt qu'une String pour accélérer les comparaisons
+  std::map<String, impl::ForLoopProfilingStat> m_stat_map;
+};
+
+ForLoopStatInfoList::
+ForLoopStatInfoList()
+: m_p(new Impl())
+{
+}
+
+ForLoopStatInfoList::
+~ForLoopStatInfoList()
+{
+  delete m_p;
+}
+
+} // namespace Arcane::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -82,15 +111,15 @@ impl::ScopedStatLoop::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class AllStatInfoList
+class AllForLoopStatInfoList
 {
  public:
 
-  impl::StatInfoList* createStatInfoList()
+  impl::ForLoopStatInfoList* createStatInfoList()
   {
     std::lock_guard<std::mutex> lk(m_mutex);
-    std::unique_ptr<impl::StatInfoList> x(new impl::StatInfoList);
-    impl::StatInfoList* ptr = x.get();
+    std::unique_ptr<impl::ForLoopStatInfoList> x(new impl::ForLoopStatInfoList);
+    impl::ForLoopStatInfoList* ptr = x.get();
     m_stat_info_list_vector.push_back(std::move(x));
     return ptr;
   }
@@ -104,28 +133,28 @@ class AllStatInfoList
  public:
 
   std::mutex m_mutex;
-  std::vector<std::unique_ptr<impl::StatInfoList>> m_stat_info_list_vector;
+  std::vector<std::unique_ptr<impl::ForLoopStatInfoList>> m_stat_info_list_vector;
 };
-AllStatInfoList global_all_stat_info_list;
+AllForLoopStatInfoList global_all_stat_info_list;
 
-// Permet de gérer une instance de StatInfoList par thread pour éviter les verroux
+// Permet de gérer une instance de ForLoopStatInfoList par thread pour éviter les verroux
 class ThreadLocalStatInfo
 {
  public:
 
-  impl::StatInfoList* statInfoList()
+  impl::ForLoopStatInfoList* statInfoList()
   {
     return _createOrGetStatInfoList();
   }
   void merge(const ForLoopOneExecStat& stat_info, const ForLoopTraceInfo& trace_info)
   {
-    impl::StatInfoList* stat_list = _createOrGetStatInfoList();
+    impl::ForLoopStatInfoList* stat_list = _createOrGetStatInfoList();
     stat_list->merge(stat_info, trace_info);
   }
 
  private:
 
-  impl::StatInfoList* _createOrGetStatInfoList()
+  impl::ForLoopStatInfoList* _createOrGetStatInfoList()
   {
     if (!m_stat_info_list)
       m_stat_info_list = global_all_stat_info_list.createStatInfoList();
@@ -134,14 +163,19 @@ class ThreadLocalStatInfo
 
  private:
 
-  impl::StatInfoList* m_stat_info_list = nullptr;
+  impl::ForLoopStatInfoList* m_stat_info_list = nullptr;
 };
 thread_local ThreadLocalStatInfo thread_local_stat_info;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-impl::StatInfoList* ProfilingRegistry::
+Int32 ProfilingRegistry::m_profiling_level = 0;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+impl::ForLoopStatInfoList* ProfilingRegistry::
 threadLocalInstance()
 {
   return thread_local_stat_info.statInfoList();
@@ -155,6 +189,15 @@ printExecutionStats(std::ostream& o)
 {
   global_stat.printInfos(o);
   global_all_stat_info_list.print(o);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ProfilingRegistry::
+setProfilingLevel(Int32 level)
+{
+  m_profiling_level = level;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -203,7 +246,7 @@ add(const ForLoopOneExecStat& s)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void impl::StatInfoList::
+void impl::ForLoopStatInfoList::
 merge(const ForLoopOneExecStat& loop_stat_info, const ForLoopTraceInfo& loop_trace_info)
 {
   global_stat.merge(loop_stat_info);
@@ -213,20 +256,20 @@ merge(const ForLoopOneExecStat& loop_stat_info, const ForLoopTraceInfo& loop_tra
     if (loop_name.empty())
       loop_name = loop_trace_info.traceInfo().name();
   }
-  m_stat_map[loop_name].add(loop_stat_info);
+  m_p->m_stat_map[loop_name].add(loop_stat_info);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void impl::StatInfoList::
+void impl::ForLoopStatInfoList::
 print(std::ostream& o)
 {
   o << "ProfilingStat\n";
   o << std::setw(10) << "Ncall" << std::setw(10) << "Nchunk"
     << std::setw(10) << " T (us)" << std::setw(11) << "Tck (ns)\n";
   Int64 cumulative_total = 0;
-  for (const auto& x : m_stat_map) {
+  for (const auto& x : m_p->m_stat_map) {
     const auto& s = x.second;
     Int64 nb_loop = s.nbCall();
     Int64 nb_chunk = s.nbChunk();

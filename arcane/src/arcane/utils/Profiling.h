@@ -18,7 +18,6 @@
 
 #include "arcane/utils/String.h"
 
-#include <map>
 #include <atomic>
 
 /*---------------------------------------------------------------------------*/
@@ -52,8 +51,11 @@ struct ARCANE_UTILS_EXPORT ForLoopProfilingStat
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-struct ARCANE_UTILS_EXPORT ScopedStatLoop
+/*!
+ * \brief Classe permettant de récupérer le temps passé entre l'appel au
+ * constructeur et au destructeur.
+ */
+class ARCANE_UTILS_EXPORT ScopedStatLoop
 {
  public:
 
@@ -69,10 +71,18 @@ struct ARCANE_UTILS_EXPORT ScopedStatLoop
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO Utiliser un hash pour le map plutôt qu'une String pour accélérer les comparaisons
-
-class ARCANE_UTILS_EXPORT StatInfoList
+/*!
+ * \brief Statistiques d'exécution d'une boucle.
+ */
+class ARCANE_UTILS_EXPORT ForLoopStatInfoList
 {
+  class Impl;
+
+ public:
+
+  ForLoopStatInfoList();
+  ~ForLoopStatInfoList();
+
  public:
 
   void merge(const ForLoopOneExecStat& loop_stat_info, const ForLoopTraceInfo& loop_trace_info);
@@ -80,7 +90,7 @@ class ARCANE_UTILS_EXPORT StatInfoList
 
  private:
 
-  std::map<String, impl::ForLoopProfilingStat> m_stat_map;
+  Impl* m_p = nullptr;
 };
 
 } // namespace Arcane::impl
@@ -135,16 +145,43 @@ class ARCANE_UTILS_EXPORT ForLoopOneExecStat
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Gestionnaire pour le profiling.
+ *
+ * Il est possible d'activer le profilage en appelant setProfilingLevel() avec
+ * une valeur supérieur ou égale à 1.
+ *
+ * L'ajout de statistiques se fait en récupérant une instance de
+ * impl::StatInfoList spécifique au thread en cours d'exécution.
  */
 class ARCANE_UTILS_EXPORT ProfilingRegistry
 {
  public:
 
-  //! Instance locale par thread du gestionnaire des statistiques
-  static impl::StatInfoList* threadLocalInstance();
+  /*!
+   * \internal.
+   * Instance locale par thread du gestionnaire des statistiques
+   */
+  static impl::ForLoopStatInfoList* threadLocalInstance();
 
   //! Affiche les statistiques d'exécution de toutes les instances sur \a o
   static void printExecutionStats(std::ostream& o);
+
+  /*!
+   * \brief Positionne le niveau de profilage.
+   *
+   * Si 0, alors il n'y a pas de profilage. Le profilage est actif à partir
+   * du niveau 1.
+   */
+  static void setProfilingLevel(Int32 level);
+
+  //! Niveau de profilage
+  static Int32 profilingLevel() { return m_profiling_level; }
+
+  //! Indique si le profilage est actif.
+  static bool hasProfiling() { return m_profiling_level > 0; }
+
+ private:
+
+  static Int32 m_profiling_level;
 };
 
 /*---------------------------------------------------------------------------*/

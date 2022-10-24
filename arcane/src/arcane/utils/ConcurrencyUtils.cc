@@ -148,10 +148,6 @@ class NullTaskImplementation
   {
     o << "NullTaskImplementation";
  }
-
-  void setExecutionStatLevel(Int32) override {}
-
-  void printExecutionStats(std::ostream&) const override {}
 };
 
 /*---------------------------------------------------------------------------*/
@@ -162,7 +158,6 @@ ITaskImplementation* TaskFactory::m_impl = &NullTaskImplementation::singleton;
 IObservable* TaskFactory::m_created_thread_observable = 0;
 IObservable* TaskFactory::m_destroyed_thread_observable = 0;
 Int32 TaskFactory::m_verbose_level = 0;
-Int32 TaskFactory::m_execution_stat_level = 0;
 ParallelLoopOptions TaskFactory::m_default_loop_options;
 
 /*---------------------------------------------------------------------------*/

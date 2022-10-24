@@ -18,6 +18,7 @@
 #include "arcane/utils/IMemoryAllocator.h"
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/NumArray.h"
+#include "arcane/utils/ForLoopTraceInfo.h"
 #include "arcane/utils/ConcurrencyUtils.h"
 
 #include "arcane/accelerator/core/RunQueueImpl.h"
@@ -28,6 +29,7 @@
 #include "arcane/accelerator/core/IRunQueueStream.h"
 #include "arcane/accelerator/core/RunCommandImpl.h"
 #include "arcane/accelerator/core/IRunQueueEventImpl.h"
+#include "arcane/accelerator/core/IRunQueueRuntime.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -152,17 +154,33 @@ _freePools()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+IRunQueueEventImpl* RunCommandImpl::
+_createEvent()
+{
+  if (m_use_sequential_timer_event)
+    return getSequentialRunQueueRuntime()->createEventImplWithTimer();
+  return runner()->_createEventWithTimer();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void RunCommandImpl::
 _init()
 {
-  Runner* r = runner();
-  m_use_accelerator_timer_event = m_use_accelerator;
-  // TODO: pouvoir désactiver l'utilisation des évènements même si on est sur
-  // accélérateur pour des tests
-  if (m_use_accelerator_timer_event){
-    m_start_event = r->_createEventWithTimer();
-    m_stop_event = r->_createEventWithTimer();
-  }
+  // N'utilise les timers accélérateur que si le profiling est activé.
+  // On fait cela pour éviter d'appeler les évènements accélérateurs car on
+  // ne connait pas encore leur influence sur les performances. Si elle est
+  // négligeable alors on pourra l'activer par défaut.
+
+  // TODO: il faudrait éventuellement avoir une instance séquentielle et
+  // une associée à runner() pour gérer le cas ou ProfilingRegistry::hasProfiling()
+  // change en cours d'exécution.
+  if (m_use_accelerator && !ProfilingRegistry::hasProfiling())
+    m_use_sequential_timer_event = true;
+
+  m_start_event = _createEvent();
+  m_stop_event = _createEvent();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -184,10 +202,10 @@ notifyBeginLaunchKernel()
 {
   IRunQueueStream* stream = internalStream();
   stream->notifyBeginLaunchKernel(*this);
-  if (m_start_event)
-    m_start_event->recordQueue(stream);
-  m_begin_time = platform::getRealTime();
-  if (TaskFactory::executionStatLevel()>0)
+  // TODO: utiliser la bonne stream en séquentiel
+  m_start_event->recordQueue(stream);
+  m_has_been_launched = true;
+  if (ProfilingRegistry::hasProfiling())
     m_loop_one_exec_stat_ptr = &m_loop_one_exec_stat;
 }
 
@@ -202,8 +220,8 @@ void RunCommandImpl::
 notifyEndLaunchKernel()
 {
   IRunQueueStream* stream = internalStream();
-  if (m_stop_event)
-    m_stop_event->recordQueue(stream);
+  // TODO: utiliser la bonne stream en séquentiel
+  m_stop_event->recordQueue(stream);
   stream->notifyEndLaunchKernel(*this);
 }
 
@@ -219,25 +237,20 @@ notifyEndLaunchKernel()
 void RunCommandImpl::
 notifyEndExecuteKernel()
 {  
-  double end_time = platform::getRealTime();
-  double diff_time = end_time - m_begin_time;
-  runner()->_addCommandTime(diff_time);
+  // Ne fait rien si la commande n'a pas été lancée.
+  if (!m_has_been_launched)
+    return;
 
-  // Statistiques d'exécution si demandé
+  Int64 diff_time_ns = m_stop_event->elapsedTime(m_start_event);
+
+  runner()->_addCommandTime((double)diff_time_ns / 1.0e9);
+
   ForLoopOneExecStat* exec_info = m_loop_one_exec_stat_ptr;
   if (exec_info){
-    // Sur accélérateur, récupère le temps donnée par les évènements
-    // de la carte qui prennent en compte le temps d'exécution du noyau
-    // en asynchrone.
-    if (m_use_accelerator_timer_event){
-      exec_info->setExecTime(m_stop_event->elapsedTime(m_start_event));
-    }
-    else{
-      Int64 v_as_int64 = static_cast<Int64>(diff_time * 1.0e9);
-      exec_info->setExecTime(v_as_int64);
-    }
+    exec_info->setExecTime(diff_time_ns);
     //std::cout << "END_EXEC exec_info=" << m_loop_run_info.traceInfo().traceInfo() << "\n";
-    ProfilingRegistry::threadLocalInstance()->merge(*exec_info,traceInfo());
+    ForLoopTraceInfo flti(traceInfo(),kernelName());
+    ProfilingRegistry::threadLocalInstance()->merge(*exec_info,flti);
   }
 
   _reset();
@@ -256,6 +269,7 @@ _reset()
   m_begin_time = 0.0;
   m_loop_one_exec_stat.reset();
   m_loop_one_exec_stat_ptr = nullptr;
+  m_has_been_launched = false;
 }
 
 /*---------------------------------------------------------------------------*/

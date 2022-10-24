@@ -18,6 +18,7 @@
 #include "arcane/utils/RangeFunctor.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/ForLoopTraceInfo.h"
+#include "arcane/utils/ParallelLoopOptions.h"
 
 #include <optional>
 
@@ -36,126 +37,6 @@ namespace Arcane
  * - Regarder mecanisme pour les exceptions.
  * - Surcharger les For et Foreach sans specifier le block_size
  */
-
-class ITaskImplementation;
-class ITask;
-class TaskFactory;
-class IObservable;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \ingroup Concurrency
- * \brief Options d'exécution d'une boucle parallèle en multi-thread.
- *
- * Cette classe permet de spécifier des paramètres d'exécution d'une
- * boucle parallèle.
- */
-class ARCANE_UTILS_EXPORT ParallelLoopOptions
-{
- private:
-  //! Drapeau pour indiquer quels champs ont été positionnés.
-  enum SetFlags
-  {
-    SF_MaxThread = 1,
-    SF_GrainSize = 2,
-    SF_Partitioner = 4
-  };
- public:
-  //! Type du partitionneur
-  enum class Partitioner
-  {
-    //! Laisse le partitionneur géré le partitionnement et l'ordonnancement (défaut)
-    Auto = 0,
-    /*!
-     * \brief Utilise un partitionnement statique.
-     *
-     * Dans ce mode, grainSize() n'est pas utilisé et le partitionnement ne
-     * dépend que du nombre de threads et de l'intervalle d'itération.
-     *
-     * A noter que l'ordonnencement reste dynamique et donc du exécution à
-     * l'autre ce n'est pas forcément le même thread qui va exécuter
-     * le même bloc d'itération.
-     */
-    Static = 1,
-    /*!
-     * \brief Utilise un partitionnement et un ordonnancement statique.
-     *
-     * Ce mode est similaire à Partitioner::Static mais l'ordonnancement
-     * est déterministe pour l'attribution des tâches: la valeur
-     * renvoyée par TaskFactory::currentTaskIndex() est déterministe.
-     *
-     * \note Actuellement ce mode de partitionnement n'est disponible que
-     * pour la parallélisation des boucles 1D.
-     */
-    Deterministic = 2
-  };
- public:
-
-  ParallelLoopOptions()
-  : m_grain_size(0),
-    m_max_thread(-1), m_partitioner(Partitioner::Auto), m_flags(0){}
-
- public:
-
-  //! Nombre maximal de threads autorisés.
-  Integer maxThread() const { return m_max_thread; }
-  /*!
-   * \brief Positionne le nombre maximal de threads autorisé.
-   *
-   * Si \a v vaut 0 ou 1, l'exécution sera séquentielle.
-   * Si \a v est supérieur à TaskFactory::nbAllowedThread(), c'est
-   * cette dernière valeur qui sera utilisée.
-   */
-  void setMaxThread(Integer v)
-  {
-    m_max_thread = v;
-    m_flags |= SF_MaxThread;
-  }
-  //! Indique si maxThread() est positionné
-  bool hasMaxThread() const { return m_flags & SF_MaxThread; }
-
-  //! Taille d'un intervalle d'itération.
-  Integer grainSize() const { return m_grain_size; }
-  //! Positionne la taille (approximative) d'un intervalle d'itération
-  void setGrainSize(Integer v)
-  {
-    m_grain_size = v;
-    m_flags |= SF_GrainSize;
-  }
-  //! Indique si grainSize() est positionné
-  bool hasGrainSize() const { return m_flags & SF_GrainSize; }
-
-  //! Type du partitionneur
-  Partitioner partitioner() const { return m_partitioner; }
-  //! Positionne le type du partitionneur
-  void setPartitioner(Partitioner v)
-  {
-    m_partitioner = v;
-    m_flags |= SF_Partitioner;
-  }
-  //! Indique si grainSize() est positionné
-  bool hasPartitioner() const { return m_flags & SF_Partitioner; }
-
- public:
-
- //! Fusionne les valeurs non modifiées de l'instance par celles de \a po.
-  void mergeUnsetValues(const ParallelLoopOptions& po)
-  {
-    if (!hasMaxThread())
-      setMaxThread(po.maxThread());
-    if (!hasGrainSize())
-      setGrainSize(po.grainSize());
-    if (!hasPartitioner())
-      setPartitioner(po.partitioner());
- }
- private:
-
-  Integer m_grain_size; //!< Taille d'un bloc de la boucle
-  Integer m_max_thread; //!< Nombre maximum de threads pour la boucle
-  Partitioner m_partitioner; //!< Type de partitionneur.
-  int m_flags;
-};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -382,12 +263,6 @@ class ARCANE_UTILS_EXPORT ITaskImplementation
 
   //! Affiche les informations sur le runtime utilisé
   virtual void printInfos(std::ostream& o) const =0;
-
-  //! Positionne le niveau de conservation des statistiques d'exécution (0 si aucune)
-  virtual void setExecutionStatLevel(Int32 stat_level) =0;
-
-  //! Affiche sur le flot \a o les statistiques d'exécution
-  virtual void printExecutionStats(std::ostream& o) const =0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -619,29 +494,6 @@ class ARCANE_UTILS_EXPORT TaskFactory
   //! Niveau de verbosité
   static Integer verboseLevel() { return m_verbose_level; }
 
-  /*!
-   * \brief Positionne le niveau de conservation des statistiques d'exécution.
-   *
-   * Si \a stat_level vaut 0 (le défaut), alors on ne conserve aucune statistique
-   * d'exécution. Si la valeur est positive, on conserve les statistiques.
-   * La récupération des statistiques d'exécution peut avoir un impact sur les
-   * performances.
-   */
-  static void setExecutionStatLevel(Int32 stat_level)
-  {
-    m_execution_stat_level = stat_level;
-    m_impl->setExecutionStatLevel(stat_level);
-  }
-
-  //! Niveau de conservation des statistiques d'exécution
-  static Int32 executionStatLevel() { return m_execution_stat_level; }
-
-  //! Affiche sur le flot \a o les statistiques d'exécution
-  static void printExecutionStats(std::ostream& o)
-  {
-    m_impl->printExecutionStats(o);
-  }
-
  public:
 
   //! \internal
@@ -653,7 +505,6 @@ class ARCANE_UTILS_EXPORT TaskFactory
   static IObservable* m_created_thread_observable;
   static IObservable* m_destroyed_thread_observable;
   static Int32 m_verbose_level;
-  static Int32 m_execution_stat_level;
   static ParallelLoopOptions m_default_loop_options;
 };
 

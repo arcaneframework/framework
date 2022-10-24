@@ -95,6 +95,7 @@ set(ARCANE_SOURCES
   OStringStream.h
   ParallelFatalErrorException.cc
   ParallelFatalErrorException.h
+  ParallelLoopOptions.h
   PerfCounterMng.cc
   PerfCounterMng.h
   PlatformUtils.cc
