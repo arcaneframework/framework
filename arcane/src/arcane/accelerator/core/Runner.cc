@@ -84,16 +84,8 @@ class Runner::Impl
 
     impl::RunQueueImpl* createRunQueue(const RunQueueBuildInfo& bi)
     {
-      // Si pas de runtime, essaie de le récupérer. On le fait ici et aussi
-      // lors de la création de l'instance car l'utilisateur a pu ajouter une
-      // implémentation de runtime entre-temps (par exemple si l'instance de Runner
-      // a été créée avant l'initialisation du runtime).
       if (!m_runtime)
-        m_runtime = _getRuntime(m_exec_policy);
-      if (!m_runtime)
-        ARCANE_FATAL("Can not create RunQueue for execution policy '{0}' "
-                     "because no RunQueueRuntime is available for this policy",
-                     m_exec_policy);
+        ARCANE_FATAL("Runtime for execution policy '{0}' is not initialized", m_exec_policy);
       Int32 x = ++m_nb_created;
       auto* q = new impl::RunQueueImpl(m_runner, x, m_runtime, bi);
       q->m_is_in_pool = true;
@@ -141,21 +133,24 @@ class Runner::Impl
 
   ~Impl()
   {
-    for (auto& x : m_run_queue_pool_map) {
-      _freePool(x.second);
-      delete x.second;
-    }
+    _freePool(m_run_queue_pool);
+    delete m_run_queue_pool;
   }
 
  public:
 
-  void build(Runner* runner)
+  void initialize(Runner* runner, eExecutionPolicy v)
   {
-    _add(runner, eExecutionPolicy::Sequential);
-    _add(runner, eExecutionPolicy::Thread);
-    _add(runner, eExecutionPolicy::CUDA);
-    _add(runner, eExecutionPolicy::HIP);
+    if (m_is_init)
+      ARCANE_FATAL("Runner is already initialized");
+    if (v == eExecutionPolicy::None)
+      ARCANE_THROW(ArgumentException, "executionPolicy should not be eExecutionPolicy::None");
+    m_execution_policy = v;
+    m_runtime = _getRuntime(v);
+    m_run_queue_pool = new RunQueueImplStack(runner, v, m_runtime);
+    m_is_init = true;
   }
+
   void setConcurrentQueueCreation(bool v)
   {
     m_use_pool_mutex = v;
@@ -166,12 +161,11 @@ class Runner::Impl
 
  public:
 
-  RunQueueImplStack* getPool(eExecutionPolicy exec_policy)
+  RunQueueImplStack* getPool()
   {
-    auto x = m_run_queue_pool_map.find(exec_policy);
-    if (x == m_run_queue_pool_map.end())
-      ARCANE_FATAL("No RunQueueImplStack for execution policy '{0}'", (int)exec_policy);
-    return x->second;
+    if (!m_run_queue_pool)
+      ARCANE_FATAL("Runner is not initialized");
+    return m_run_queue_pool;
   }
   void addTime(double v)
   {
@@ -185,17 +179,20 @@ class Runner::Impl
     return static_cast<double>(x) / 1.0e9;
   }
 
+  impl::IRunQueueRuntime* runtime() const { return m_runtime; }
+
  public:
 
   //TODO: mettre à None lorsqu'on aura supprimé Runner::setExecutionPolicy()
-  eExecutionPolicy m_execution_policy = eExecutionPolicy::Sequential;
+  eExecutionPolicy m_execution_policy = eExecutionPolicy::None;
   bool m_is_init = false;
   eDeviceReducePolicy m_reduce_policy = eDeviceReducePolicy::Atomic;
   DeviceId m_device_id;
 
  private:
 
-  std::map<eExecutionPolicy, RunQueueImplStack*> m_run_queue_pool_map;
+  impl::IRunQueueRuntime* m_runtime = nullptr;
+  RunQueueImplStack* m_run_queue_pool = nullptr;
   std::unique_ptr<std::mutex> m_pool_mutex;
   bool m_use_pool_mutex = false;
   /*!
@@ -208,16 +205,12 @@ class Runner::Impl
 
   void _freePool(RunQueueImplStack* s)
   {
+    if (!s)
+      return;
     while (!s->empty()) {
       delete s->top();
       s->pop();
     }
-  }
-  void _add(Runner* runner, eExecutionPolicy exec_policy)
-  {
-    impl::IRunQueueRuntime* r = _getRuntime(exec_policy);
-    auto* q = new RunQueueImplStack(runner, exec_policy, r);
-    m_run_queue_pool_map.insert(std::make_pair(exec_policy, q));
   }
 };
 
@@ -231,7 +224,6 @@ Runner::
 Runner()
 : m_p(new Impl())
 {
-  m_p->build(this);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -261,9 +253,7 @@ _internalCreateOrGetRunQueueImpl()
 {
   _checkIsInit();
 
-  eExecutionPolicy exec_policy = executionPolicy();
-
-  auto pool = m_p->getPool(exec_policy);
+  auto pool = m_p->getPool();
 
   {
     Impl::Lock my_lock(m_p);
@@ -286,10 +276,9 @@ _internalCreateOrGetRunQueueImpl(const RunQueueBuildInfo& bi)
   _checkIsInit();
   // Si on utilise les paramètres par défaut, on peut utilier une RunQueueImpl
   // issue du pool.
-  eExecutionPolicy p = executionPolicy();
   if (bi.isDefault())
     return _internalCreateOrGetRunQueueImpl();
-  impl::IRunQueueRuntime* runtime = _getRuntime(p);
+  impl::IRunQueueRuntime* runtime = m_p->runtime();
   ARCANE_CHECK_POINTER(runtime);
   auto* queue = new impl::RunQueueImpl(this, 0, runtime, bi);
   return queue;
@@ -305,7 +294,7 @@ _internalFreeRunQueueImpl(impl::RunQueueImpl* p)
   {
     Impl::Lock my_lock(m_p);
     if (p->_isInPool())
-      m_p->getPool(p->executionPolicy())->push(p);
+      m_p->getPool()->push(p);
   }
 }
 
@@ -370,8 +359,7 @@ impl::IRunQueueEventImpl* Runner::
 _createEvent()
 {
   _checkIsInit();
-  impl::IRunQueueRuntime* r = _getRuntime(executionPolicy());
-  return r->createEventImpl();
+  return m_p->runtime()->createEventImpl();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -381,8 +369,7 @@ impl::IRunQueueEventImpl* Runner::
 _createEventWithTimer()
 {
   _checkIsInit();
-  impl::IRunQueueRuntime* r = _getRuntime(executionPolicy());
-  return r->createEventImplWithTimer();
+  return m_p->runtime()->createEventImplWithTimer();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -391,12 +378,7 @@ _createEventWithTimer()
 void Runner::
 initialize(eExecutionPolicy v)
 {
-  if (m_p->m_is_init)
-    ARCANE_FATAL("Runner is already initialized");
-  if (v == eExecutionPolicy::None)
-    ARCANE_THROW(ArgumentException, "executionPolicy should not be eExecutionPolicy::None");
-  m_p->m_execution_policy = v;
-  m_p->m_is_init = true;
+  m_p->initialize(this, v);
 }
 
 /*---------------------------------------------------------------------------*/
