@@ -14,7 +14,7 @@
 #include "arcane/accelerator/core/RunQueue.h"
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/RunQueueImpl.h"
-#include "arcane/accelerator/core/IRunQueueRuntime.h"
+#include "arcane/accelerator/core/IRunnerRuntime.h"
 #include "arcane/accelerator/core/IRunQueueStream.h"
 #include "arcane/accelerator/core/RunQueueEvent.h"
 #include "arcane/accelerator/core/IRunQueueEventImpl.h"
@@ -31,7 +31,7 @@ namespace Arcane::Accelerator
 
 RunQueue::
 RunQueue(Runner& runner)
-: RunQueue(runner,runner.executionPolicy())
+: m_p(impl::RunQueueImpl::create(&runner))
 {
 }
 
@@ -41,15 +41,6 @@ RunQueue(Runner& runner)
 RunQueue::
 RunQueue(Runner& runner, const RunQueueBuildInfo& bi)
 : m_p(impl::RunQueueImpl::create(&runner,bi))
-{
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-RunQueue::
-RunQueue(Runner& runner,eExecutionPolicy exec_policy)
-: m_p(impl::RunQueueImpl::create(&runner,exec_policy))
 {
 }
 
@@ -86,7 +77,7 @@ executionPolicy() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-impl::IRunQueueRuntime* RunQueue::
+impl::IRunnerRuntime* RunQueue::
 _internalRuntime() const
 {
   return m_p->_internalRuntime();

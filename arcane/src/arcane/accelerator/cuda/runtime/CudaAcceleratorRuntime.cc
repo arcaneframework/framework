@@ -26,7 +26,7 @@
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/Memory.h"
 
-#include "arcane/accelerator/core/IRunQueueRuntime.h"
+#include "arcane/accelerator/core/IRunnerRuntime.h"
 #include "arcane/accelerator/core/IRunQueueStream.h"
 #include "arcane/accelerator/core/RunCommandImpl.h"
 #include "arcane/accelerator/core/IRunQueueEventImpl.h"
@@ -91,7 +91,7 @@ class CudaRunQueueStream
 {
  public:
 
-  CudaRunQueueStream(impl::IRunQueueRuntime* runtime, const RunQueueBuildInfo& bi)
+  CudaRunQueueStream(impl::IRunnerRuntime* runtime, const RunQueueBuildInfo& bi)
   : m_runtime(runtime)
   {
     if (bi.isDefault())
@@ -165,7 +165,7 @@ class CudaRunQueueStream
 
  private:
 
-  impl::IRunQueueRuntime* m_runtime;
+  impl::IRunnerRuntime* m_runtime;
   cudaStream_t m_cuda_stream;
 };
 
@@ -233,12 +233,12 @@ class CudaRunQueueEvent
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class CudaRunQueueRuntime
-: public impl::IRunQueueRuntime
+class CudaRunnerRuntime
+: public impl::IRunnerRuntime
 {
  public:
 
-  ~CudaRunQueueRuntime() override = default;
+  ~CudaRunnerRuntime() override = default;
 
  public:
 
@@ -357,7 +357,7 @@ class CudaMemoryCopier
 
 namespace
 {
-Arcane::Accelerator::Cuda::CudaRunQueueRuntime global_cuda_runtime;
+Arcane::Accelerator::Cuda::CudaRunnerRuntime global_cuda_runtime;
 Arcane::Accelerator::Cuda::CudaMemoryCopier global_cuda_memory_copier;
 } // namespace
 

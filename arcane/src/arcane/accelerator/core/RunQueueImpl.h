@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunQueueImpl.h                                              (C) 2000-2021 */
+/* RunQueueImpl.h                                              (C) 2000-2022 */
 /*                                                                           */
 /* Implémentation d'une 'RunQueue'.                                          */
 /*---------------------------------------------------------------------------*/
@@ -30,42 +30,55 @@ namespace Arcane::Accelerator::impl
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief File d'exécution  pour accélérateur.
- * \warning API en cours de définition.
+ * \brief File d'exécution pour accélérateur.
  */
 class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueImpl
 {
   friend class Arcane::Accelerator::Runner;
   friend class Arcane::Accelerator::RunQueue;
   friend class RunCommandImpl;
+
  private:
-  RunQueueImpl(Runner* runner,Int32 id,IRunQueueRuntime* runtime,
-               const RunQueueBuildInfo& bi);
+
+  RunQueueImpl(Runner* runner, Int32 id, const RunQueueBuildInfo& bi);
   ~RunQueueImpl();
+
+ public:
+
   RunQueueImpl(const RunQueueImpl&) = delete;
+  RunQueueImpl(RunQueueImpl&&) = delete;
   RunQueueImpl& operator=(const RunQueueImpl&) = delete;
+  RunQueueImpl& operator=(RunQueueImpl&&) = delete;
+
  public:
-  static RunQueueImpl* create(Runner* r,const RunQueueBuildInfo& bi);
+
+  static RunQueueImpl* create(Runner* r, const RunQueueBuildInfo& bi);
   static RunQueueImpl* create(Runner* r);
-  static RunQueueImpl* create(Runner* r,eExecutionPolicy exec_policy);
+
  public:
+
   eExecutionPolicy executionPolicy() const { return m_execution_policy; }
   Runner* runner() const { return m_runner; }
+
  public:
+
   void release();
   void reset();
+
  private:
+
   RunCommandImpl* _internalCreateOrGetRunCommandImpl();
-  //void _internalFreeRunCommandImpl(RunCommandImpl*);
-  IRunQueueRuntime* _internalRuntime() const { return m_runtime; }
+  IRunnerRuntime* _internalRuntime() const { return m_runtime; }
   IRunQueueStream* _internalStream() const { return m_queue_stream; }
   void _internalFreeRunningCommands();
   void _internalBarrier();
   bool _isInPool() const { return m_is_in_pool; }
+
  private:
+
   Runner* m_runner;
   eExecutionPolicy m_execution_policy;
-  IRunQueueRuntime* m_runtime;
+  IRunnerRuntime* m_runtime;
   IRunQueueStream* m_queue_stream;
   //! Pool de commandes
   std::stack<RunCommandImpl*> m_run_command_pool;
@@ -80,9 +93,9 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueImpl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane::Accelerator
+} // namespace Arcane::Accelerator::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

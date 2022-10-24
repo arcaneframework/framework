@@ -31,11 +31,11 @@ namespace Arcane::Accelerator::impl
 /*---------------------------------------------------------------------------*/
 
 RunQueueImpl::
-RunQueueImpl(Runner* runner,Int32 id,IRunQueueRuntime* runtime,const RunQueueBuildInfo& bi)
+RunQueueImpl(Runner* runner, Int32 id, const RunQueueBuildInfo& bi)
 : m_runner(runner)
-, m_execution_policy(runtime->executionPolicy())
-, m_runtime(runtime)
-, m_queue_stream(runtime->createStream(bi))
+, m_execution_policy(runner->executionPolicy())
+, m_runtime(runner->_internalRuntime())
+, m_queue_stream(m_runtime->createStream(bi))
 , m_id(id)
 {
 }
@@ -71,7 +71,7 @@ release()
 RunQueueImpl* RunQueueImpl::
 create(Runner* r)
 {
-  return r->_internalCreateOrGetRunQueueImpl(r->executionPolicy());
+  return r->_internalCreateOrGetRunQueueImpl();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -81,15 +81,6 @@ RunQueueImpl* RunQueueImpl::
 create(Runner* r,const RunQueueBuildInfo& bi)
 {
   return r->_internalCreateOrGetRunQueueImpl(bi);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-RunQueueImpl* RunQueueImpl::
-create(Runner* r,eExecutionPolicy exec_policy)
-{
-  return r->_internalCreateOrGetRunQueueImpl(exec_policy);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -112,18 +103,6 @@ _internalCreateOrGetRunCommandImpl()
   m_active_run_command_list.add(p);
   return p;
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#if 0
-void RunQueueImpl::
-_internalFreeRunCommandImpl(RunCommandImpl* p)
-{
-  // TODO: rendre thread-safe
-  m_run_command_pool.push(p);
-}
-#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

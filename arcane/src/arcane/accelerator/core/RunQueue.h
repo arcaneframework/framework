@@ -37,10 +37,14 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
 
   explicit RunQueue(Runner& runner);
   RunQueue(Runner& runner, const RunQueueBuildInfo& bi);
-  RunQueue(Runner& runner, eExecutionPolicy policy);
   ~RunQueue();
+
+ public:
+
   RunQueue(const RunQueue&) = delete;
+  RunQueue(RunQueue&&) = delete;
   RunQueue& operator=(const RunQueue&) = delete;
+  RunQueue& operator=(RunQueue&&) = delete;
 
  public:
 
@@ -73,7 +77,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueue
 
  private:
 
-  impl::IRunQueueRuntime* _internalRuntime() const;
+  impl::IRunnerRuntime* _internalRuntime() const;
   impl::IRunQueueStream* _internalStream() const;
   impl::RunCommandImpl* _getCommandImpl();
 

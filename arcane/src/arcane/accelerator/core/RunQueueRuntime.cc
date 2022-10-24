@@ -37,7 +37,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT HostRunQueueStream
 {
  public:
 
-  HostRunQueueStream(IRunQueueRuntime* runtime)
+  HostRunQueueStream(IRunnerRuntime* runtime)
   : m_runtime(runtime)
   {}
 
@@ -55,7 +55,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT HostRunQueueStream
 
  private:
 
-  IRunQueueRuntime* m_runtime;
+  IRunnerRuntime* m_runtime;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -94,8 +94,8 @@ class ARCANE_ACCELERATOR_CORE_EXPORT HostRunQueueEvent
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCANE_ACCELERATOR_CORE_EXPORT SequentialRunQueueRuntime
-: public IRunQueueRuntime
+class ARCANE_ACCELERATOR_CORE_EXPORT SequentialRunnerRuntime
+: public IRunnerRuntime
 {
  public:
 
@@ -113,8 +113,8 @@ class ARCANE_ACCELERATOR_CORE_EXPORT SequentialRunQueueRuntime
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCANE_ACCELERATOR_CORE_EXPORT ThreadRunQueueRuntime
-: public IRunQueueRuntime
+class ARCANE_ACCELERATOR_CORE_EXPORT ThreadRunnerRuntime
+: public IRunnerRuntime
 {
  public:
 
@@ -131,22 +131,22 @@ class ARCANE_ACCELERATOR_CORE_EXPORT ThreadRunQueueRuntime
 
 namespace
 {
-SequentialRunQueueRuntime global_sequential_runqueue_runtime;
-ThreadRunQueueRuntime global_thread_runqueue_runtime;
+SequentialRunnerRuntime global_sequential_runqueue_runtime;
+ThreadRunnerRuntime global_thread_runqueue_runtime;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! Récupère l'implémentation séquentielle de RunQueue
-extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT IRunQueueRuntime*
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT IRunnerRuntime*
 getSequentialRunQueueRuntime()
 {
   return &global_sequential_runqueue_runtime;
 }
 
 //! Récupère l'implémentation séquentielle de RunQueue
-extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT IRunQueueRuntime*
+extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT IRunnerRuntime*
 getThreadRunQueueRuntime()
 {
   return &global_thread_runqueue_runtime;

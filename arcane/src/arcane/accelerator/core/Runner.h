@@ -32,7 +32,7 @@ namespace Arcane::Accelerator
  *
  * Une instance de cette classe représente un backend d'exécution. Il faut
  * d'abord appelé initialize() avant de pouvoir utiliser les méthodes de
- * l'instance.
+ * l'instance ou alors il faut appeler le constructeur Runner(eExecutionPolicy).
  */
 class ARCANE_ACCELERATOR_CORE_EXPORT Runner
 {
@@ -44,18 +44,27 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
 
  public:
 
+  /*!
+   * \brief Créé un gestionnaire d'exécution non initialisé.
+   *
+   * Il faudra appeler initialize() avant de pouvoir utiliser l'instance
+   */
   Runner();
+  //! Créé et initialise un gestionnaire pour l'accélérateur \a p
+  explicit Runner(eExecutionPolicy p);
   ~Runner();
+
+ public:
+
   Runner(const Runner&) = delete;
+  Runner(Runner&&) = delete;
   Runner& operator=(const Runner&) = delete;
+  Runner& operator=(Runner&&) = delete;
 
  public:
 
   //! Politique d'exécution associée
   eExecutionPolicy executionPolicy() const;
-
-  ARCCORE_DEPRECATED_2021("Use 'initialize()' instead")
-  void setExecutionPolicy(eExecutionPolicy v);
 
   //! Initialise l'instance. Cette méthode ne doit être appelée qu'une seule fois.
   void initialize(eExecutionPolicy v);
@@ -88,20 +97,20 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
   eDeviceReducePolicy deviceReducePolicy() const;
 
   //! Positionne un conseil sur la gestion d'une zone mémoire
-  void setMemoryAdvice(MemoryView buffer,eMemoryAdvice advice);
+  void setMemoryAdvice(MemoryView buffer, eMemoryAdvice advice);
 
   //! Supprime un conseil sur la gestion d'une zone mémoire
-  void unsetMemoryAdvice(MemoryView buffer,eMemoryAdvice advice);
+  void unsetMemoryAdvice(MemoryView buffer, eMemoryAdvice advice);
 
  private:
 
-  // TODO: a supprimer
-  impl::RunQueueImpl* _internalCreateOrGetRunQueueImpl(eExecutionPolicy exec_policy);
+  impl::RunQueueImpl* _internalCreateOrGetRunQueueImpl();
   impl::RunQueueImpl* _internalCreateOrGetRunQueueImpl(const RunQueueBuildInfo& bi);
   void _internalFreeRunQueueImpl(impl::RunQueueImpl*);
   impl::IRunQueueEventImpl* _createEvent();
   impl::IRunQueueEventImpl* _createEventWithTimer();
   void _addCommandTime(double v);
+  impl::IRunnerRuntime* _internalRuntime() const;
 
  private:
 
@@ -167,17 +176,6 @@ makeQueue(Runner* runner,const RunQueueBuildInfo& bi)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Créé une file avec la politique d'exécution \a exec_policy
-ARCCORE_DEPRECATED_2021("Use a specific runner to change policy")
-inline RunQueue
-makeQueue(Runner& runner,eExecutionPolicy exec_policy)
-{
-  return RunQueue(runner,exec_policy);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 /*!
  * \brief Créé une référence sur file avec la politique d'exécution par défaut de \a runner.
  *
@@ -216,22 +214,6 @@ makeQueueRef(Runner* runner)
 {
   ARCANE_CHECK_POINTER(runner);
   return makeRef(new RunQueue(*runner));
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*!
- * \brief Créé une référence sur une file avec la politique d'exécution \a exec_policy.
- *
- * Si la file est temporaire, il est préférable d'utiliser makeQueue() à la place
- * pour éviter une allocation inutile.
- */
-ARCCORE_DEPRECATED_2021("Use a specific runner to change policy")
-inline Ref<RunQueue>
-makeQueueRef(Runner& runner,eExecutionPolicy exec_policy)
-{
-  return makeRef(new RunQueue(runner,exec_policy));
 }
 
 /*---------------------------------------------------------------------------*/
