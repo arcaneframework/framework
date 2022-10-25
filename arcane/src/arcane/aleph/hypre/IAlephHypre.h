@@ -947,16 +947,13 @@ class HypreAlephFactoryImpl
  public:
   HypreAlephFactoryImpl(const ServiceBuildInfo& sbi)
   : AbstractService(sbi)
-  , m_IAlephVectors(0)
-  , m_IAlephMatrixs(0)
   {}
   ~HypreAlephFactoryImpl()
   {
-    debug() << "\33[1;5;31m[~HypreAlephFactoryImpl]\33[0m";
-    for (Integer i = 0, iMax = m_IAlephVectors.size(); i < iMax; ++i)
-      delete m_IAlephVectors.at(i);
-    for (Integer i = 0, iMax = m_IAlephMatrixs.size(); i < iMax; ++i)
-      delete m_IAlephMatrixs.at(i);
+    for ( auto* v : m_IAlephVectors )
+      delete v;
+    for ( auto* v : m_IAlephMatrixs )
+      delete v;
   }
 
  public:

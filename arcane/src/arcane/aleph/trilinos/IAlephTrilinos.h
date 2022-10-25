@@ -526,11 +526,10 @@ class TrilinosAlephFactoryImpl : public AbstractService
   {}
   ~TrilinosAlephFactoryImpl()
   {
-    debug() << "\33[1;32m[~TrilinosAlephFactoryImpl]\33[0m";
-    for (Integer i = 0, iMax = m_IAlephVectors.size(); i < iMax; ++i)
-      delete m_IAlephVectors.at(i);
-    for (Integer i = 0, iMax = m_IAlephMatrixs.size(); i < iMax; ++i)
-      delete m_IAlephMatrixs.at(i);
+    for ( auto* v : m_IAlephVectors )
+      delete v;
+    for ( auto* v : m_IAlephMatrixs )
+      delete v;
   }
 
  public:

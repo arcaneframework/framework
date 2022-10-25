@@ -94,19 +94,15 @@ class PETScAlephFactoryImpl : public AbstractService
  public:
   PETScAlephFactoryImpl(const ServiceBuildInfo& sbi)
   : AbstractService(sbi)
-  , m_IAlephVectors(0)
-  , m_IAlephMatrixs(0)
-  , m_IAlephTopologys(0)
   {}
   ~PETScAlephFactoryImpl()
   {
-    debug() << "\33[1;32m[~PETScAlephFactoryImpl]\33[0m";
-    for (Integer i = 0, iMax = m_IAlephVectors.size(); i < iMax; ++i)
-      delete m_IAlephVectors.at(i);
-    for (Integer i = 0, iMax = m_IAlephMatrixs.size(); i < iMax; ++i)
-      delete m_IAlephMatrixs.at(i);
-    for (Integer i = 0, iMax = m_IAlephTopologys.size(); i < iMax; ++i)
-      delete m_IAlephTopologys.at(i);
+    for (auto* v : m_IAlephVectors )
+      delete v;
+    for (auto* v : m_IAlephMatrixs )
+      delete v;
+    for (auto* v : m_IAlephTopologys )
+      delete v;
   }
 
  public:

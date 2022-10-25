@@ -45,8 +45,6 @@ class LinuxPerfPerformanceCounterService
   }
   ~LinuxPerfPerformanceCounterService()
   {
-    if (m_is_started)
-      stop();
     _closeAll();
   }
 
@@ -137,7 +135,6 @@ class LinuxPerfPerformanceCounterService
  private:
 
   UniqueArray<int> m_events_file_descriptor;
-  int m_event_set = 0;
   bool m_is_started = false;
   bool m_is_init = false;
   pid_t m_process_id = -1;
@@ -150,7 +147,7 @@ class LinuxPerfPerformanceCounterService
       if (fd >= 0)
         ::close(fd);
     }
-    m_events_file_descriptor.fill(-1);
+    m_events_file_descriptor.clear();
   }
 
   Int64 _getOneCounter(Int32 index)

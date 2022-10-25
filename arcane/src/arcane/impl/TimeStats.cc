@@ -5,13 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TimeStats.cc                                                (C) 2000-2021 */
+/* TimeStats.cc                                                (C) 2000-2022 */
 /*                                                                           */
 /* Statistiques sur les temps d'exécution.                                   */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/ArrayView.h"
 #include "arcane/utils/Deleter.h"
@@ -22,6 +20,7 @@
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/JSONWriter.h"
+#include "arcane/utils/Exception.h"
 
 #include "arcane/Timer.h"
 #include "arcane/IParallelMng.h"
@@ -258,7 +257,7 @@ TimeStats::
 {
   delete m_metric_collector;
   if (m_is_gathering)
-    endGatherStats();
+    arcaneCallFunctionAndCatchException([&]() { endGatherStats(); });
   delete m_virtual_timer;
   delete m_real_timer;
   delete m_previous_action_series;

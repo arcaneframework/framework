@@ -11,8 +11,6 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
-
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/Iterator.h"
 #include "arcane/utils/ApplicationInfo.h"
@@ -518,6 +516,7 @@ class TimeHistoryMng2
   void _writeVariablesNotify();
   void _readVariables();
   void _checkOutputPath();
+  void _destroyAll();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -559,6 +558,18 @@ TimeHistoryMng2(const ModuleBuildInfo& mb, bool add_entry_points)
 TimeHistoryMng2::
 ~TimeHistoryMng2()
 {
+  arcaneCallFunctionAndCatchException([&]() { _destroyAll(); });
+
+  m_curve_writers2.clear();
+  m_history_list.clear();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void TimeHistoryMng2::
+_destroyAll()
+{
   for( ConstIterT<HistoryList> i(m_history_list); i(); ++i ){
     TimeHistoryValue2* v = i->second;
     delete v;
@@ -568,9 +579,6 @@ TimeHistoryMng2::
     auto cw = c;
     cw.destroy();
   }
-  m_curve_writers2.clear();
-
-  m_history_list.clear();
 }
 
 /*---------------------------------------------------------------------------*/

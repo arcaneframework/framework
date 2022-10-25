@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialIndirectModifier.h                              (C) 2000-2018 */
+/* MeshMaterialIndirectModifier.h                              (C) 2000-2022 */
 /*                                                                           */
 /* Objet permettant de modifier indirectement les matériaux.                 */
 /*---------------------------------------------------------------------------*/
@@ -20,21 +20,16 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
+namespace Arcane
+{
 class IMesh;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
+namespace Arcane::Materials
+{
 class IMeshMaterialMng;
 class MeshMaterialBackup;
 
@@ -49,7 +44,14 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialIndirectModifier
  public:
 
   MeshMaterialIndirectModifier(IMeshMaterialMng*);
-  ~MeshMaterialIndirectModifier();
+  ~MeshMaterialIndirectModifier() noexcept(false);
+
+ public:
+
+  MeshMaterialIndirectModifier(const MeshMaterialIndirectModifier&) = default;
+  MeshMaterialIndirectModifier(MeshMaterialIndirectModifier&&) = default;
+  MeshMaterialIndirectModifier& operator=(const MeshMaterialIndirectModifier&) = default;
+  MeshMaterialIndirectModifier& operator=(MeshMaterialIndirectModifier&&) = default;
 
  public:
 
@@ -91,8 +93,7 @@ class ARCANE_MATERIALS_EXPORT MeshMaterialIndirectModifier
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

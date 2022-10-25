@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialIndirectModifier.cc                             (C) 2000-2016 */
+/* MeshMaterialIndirectModifier.cc                             (C) 2000-2022 */
 /*                                                                           */
 /* Objet permettant de modifier indirectement les matériaux.                 */
 /*---------------------------------------------------------------------------*/
@@ -29,14 +29,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -53,7 +47,7 @@ MeshMaterialIndirectModifier(IMeshMaterialMng* mm)
 /*---------------------------------------------------------------------------*/
 
 MeshMaterialIndirectModifier::
-~MeshMaterialIndirectModifier()
+~MeshMaterialIndirectModifier() noexcept(false)
 {
   endUpdate();
   delete m_backup;
@@ -72,7 +66,7 @@ _endUpdate(bool do_sort)
     return;
 
   if (do_sort){
-    for( MeshMaterialVariableIndexer* v : m_material_mng->variablesIndexer().range() ){
+    for( MeshMaterialVariableIndexer* v : m_material_mng->variablesIndexer() ){
       CellGroup cells = v->cells();
       UniqueArray<Int32> items_lid(cells.view().localIds());
       cells.clear();
@@ -120,8 +114,7 @@ beginUpdate()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
