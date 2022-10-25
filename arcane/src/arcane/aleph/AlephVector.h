@@ -65,7 +65,7 @@ class ARCANE_ALEPH_EXPORT AlephVector : public TraceAccessor
   Integer m_index;
   ArrayView<Integer> m_ranks;
   bool m_participating_in_solver;
-  IAlephVector* m_implementation;
+  IAlephVector* m_implementation = nullptr;
 
  private:
   // Buffers utilisés dans le cas où nous sommes le solveur

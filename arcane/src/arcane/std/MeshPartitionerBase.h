@@ -178,31 +178,30 @@ protected:
 
  private:
 
-  ISubDomain* m_sub_domain;
-  IMesh* m_mesh;
-  IParallelMng* m_pm_sub; // sous communicateur pour les bibliotheques de partitionnement.
+  ISubDomain* m_sub_domain = nullptr;
+  IMesh* m_mesh = nullptr;
+  IParallelMng* m_pm_sub = nullptr; // sous communicateur pour les bibliotheques de partitionnement.
 
  protected:
 
-  IItemFamily* m_cell_family;
+  IItemFamily* m_cell_family = nullptr;
 
  private:
 
-  ILoadBalanceMng* m_lbMng;
+  ILoadBalanceMng* m_lbMng = nullptr;
 
-  Real m_maximum_computation_time;
-  Real m_imbalance;
-  Real m_max_imbalance;
+  Real m_maximum_computation_time = 0.0;
+  Real m_imbalance = 0.0;
+  Real m_max_imbalance = 0.0;
   RealUniqueArray m_computation_times;
-  //UniqueArray<VariableCellReal> m_cell_wgt;
 
   // Utile en interne pour construire le graphe/hypergraphe
   UniqueArray<SharedArray<Cell> > m_cells_with_constraints;
   std::set<std::pair<Int64, Int64> > m_cells_with_weak_constraints;
-  Integer m_nb_cells_with_constraints;
+  Integer m_nb_cells_with_constraints = 0;
   UniqueArray<eMarkCellWithConstraint> m_filter_lid_cells;
   Int32UniqueArray m_local_id_2_local_id_compacted;
-  VariableCellInt64* m_unique_id_reference;
+  VariableCellInt64* m_unique_id_reference = nullptr;
 
   void _checkCreateVar();
   Int32UniqueArray m_check;

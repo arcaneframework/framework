@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialModifierImpl.cc                                 (C) 2000-2016 */
+/* MeshMaterialModifierImpl.cc                                 (C) 2000-2022 */
 /*                                                                           */
 /* Implémentation de la modification des matériaux et milieux.               */
 /*---------------------------------------------------------------------------*/
@@ -27,11 +27,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -39,19 +36,16 @@ MATERIALS_BEGIN_NAMESPACE
 class MeshMaterialModifierImpl::Operation
 {
  public:
-  Operation()
-  : m_mat(0), m_is_add(false)
-  {
-  }
+  Operation() = default;
   Operation(IMeshMaterial* mat,Int32ConstArrayView ids,bool is_add,bool is_set=false)
   : m_mat(mat), m_is_add(is_add), m_is_set(is_set), m_ids(ids)
   {
   }
  public:
-  IMeshMaterial* m_mat;
-  bool m_is_add;
-  bool m_is_set;
-  Int32UniqueArray m_ids;
+  IMeshMaterial* m_mat = nullptr;
+  bool m_is_add = false;
+  bool m_is_set = false;
+  UniqueArray<Int32> m_ids;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -451,8 +445,7 @@ dumpStats()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

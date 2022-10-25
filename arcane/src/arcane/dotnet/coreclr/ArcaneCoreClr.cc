@@ -38,7 +38,11 @@
 
 using string_t = std::basic_string<char_t>;
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 #ifdef _WINDOWS
+
 #include <Windows.h>
 
 #define STR(s) L##s
@@ -50,8 +54,16 @@ namespace
   {
     return string_t((const char_t*)(s.utf16().data()));
   }
+  char_t* _duplicate(const char_t* x)
+  {
+    return ::_wcsdup(x);
+  }
 } // namespace
+
 #else
+
+// UNIX
+
 #include <dlfcn.h>
 #include <limits.h>
 
@@ -67,8 +79,16 @@ namespace
       return string_t();
     return string_t((const char_t*)(s.utf8().data()));
   }
+  char_t* _duplicate(const char_t* x)
+  {
+    return ::strdup(x);
+  }
 } // namespace
+
 #endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 using namespace Arcane;
 
@@ -164,6 +184,8 @@ int
 _execDirect(const CommandLineArguments& cmd_args,
             const String& orig_assembly_name)
 {
+  using const_char_t = const char_t*;
+
   int argc = *(cmd_args.commandLineArgc());
   //const char** old_argv = (const char**)*(cmd_args.commandLineArgv());
 
@@ -177,9 +199,9 @@ _execDirect(const CommandLineArguments& cmd_args,
   params.size = sizeof(params);
   params.host_path = root_path1.c_str();
   params.dotnet_root = dotnet_root.c_str();
-  typedef const char* const_char_t;
   const_char_t* argv = new const_char_t[1];
-  argv[0] = (const_char_t)orig_assembly_name1.c_str(); //strdup(orig_assembly_name.localstr());
+  char_t* argv0_str = _duplicate((const char_t*)(orig_assembly_name1.c_str()));
+  argv[0] = argv0_str;
   std::cerr << "_execDirect argv[0] =" << orig_assembly_name << "\n";
   argc = 1;
 
@@ -200,6 +222,7 @@ _execDirect(const CommandLineArguments& cmd_args,
   int r = lib_info.run_app_fptr(host_context_handle);
   std::cerr << "End '.Net': R=" << r << "\n";
 
+  ::free(argv0_str);
   lib_info.close_fptr(host_context_handle);
   return r;
 }

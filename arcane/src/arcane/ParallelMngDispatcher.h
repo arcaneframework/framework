@@ -39,10 +39,10 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcherBuildInfo
 {
  public:
 
-  ARCANE_DEPRECATED_REASON("Y2022: Use overload with Ref<MP::MessagePassingMng> instead")
+  ARCANE_DEPRECATED_REASON("Y2022: Use overload with Ref<MP::MessagePassingMng> and Ref<MP::Dispatchers> instead")
   ParallelMngDispatcherBuildInfo(MP::Dispatchers* dispatchers,
                                  MP::MessagePassingMng* mpm);
-  ParallelMngDispatcherBuildInfo(MP::Dispatchers* dispatchers,
+  ParallelMngDispatcherBuildInfo(Ref<MP::Dispatchers> dispatchers,
                                  Ref<MP::MessagePassingMng> mpm);
   ParallelMngDispatcherBuildInfo(Int32 comm_rank, Int32 comm_size);
 
@@ -50,16 +50,20 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcherBuildInfo
 
   Int32 commRank() const { return m_comm_rank; }
   Int32 commSize() const { return m_comm_size; }
-  MP::Dispatchers* dispatchers() const { return m_dispatchers; }
+  Ref<MP::Dispatchers> dispatchersRef() const { return m_dispatchers_ref; }
+  Ref<MP::MessagePassingMng> messagePassingMngRef() const { return m_message_passing_mng_ref; }
+
   ARCANE_DEPRECATED_REASON("Y2022: Use messagePassingMngRef() instead")
   MP::MessagePassingMng* messagePassingMng() const { return m_message_passing_mng; }
-  Ref<MP::MessagePassingMng> messagePassingMngRef() const { return m_message_passing_mng_ref; }
+  ARCANE_DEPRECATED_REASON("Y2022: Use dispatchersRef() instead")
+  MP::Dispatchers* dispatchers() const { return m_dispatchers; }
 
  private:
 
   Int32 m_comm_rank;
   Int32 m_comm_size;
   MP::Dispatchers* m_dispatchers;
+  Ref<MP::Dispatchers> m_dispatchers_ref;
   MP::MessagePassingMng* m_message_passing_mng;
   Ref<MP::MessagePassingMng> m_message_passing_mng_ref;
 
@@ -267,7 +271,7 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcher
  private:
   
   ITimeStats* m_time_stats = nullptr;
-  MP::Dispatchers* m_mp_dispatchers = nullptr;
+  Ref<MP::Dispatchers> m_mp_dispatchers_ref;
   Ref<MP::MessagePassingMng> m_message_passing_mng_ref;
   MP::IControlDispatcher* m_control_dispatcher = nullptr;
   MP::ISerializeDispatcher* m_serialize_dispatcher = nullptr;

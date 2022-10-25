@@ -580,7 +580,7 @@ class PapiPerformanceCounterService
   ~PapiPerformanceCounterService()
   {
     if (m_is_started)
-      stop();
+      (void)PAPI_stop(m_event_set,nullptr);
   }
  public:
 
