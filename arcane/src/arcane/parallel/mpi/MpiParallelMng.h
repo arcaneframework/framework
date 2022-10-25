@@ -48,7 +48,7 @@ struct ARCANE_MPI_EXPORT MpiParallelMngBuildInfo
   Int32 commRank() const { return comm_rank; }
   Int32 commSize() const { return comm_nb_rank; }
   MPI_Comm mpiComm() const { return mpi_comm; }
-  MP::Dispatchers* dispatchers() const { return m_dispatchers; }
+  Ref<MP::Dispatchers> dispatchersRef() const { return m_dispatchers_ref; }
   Ref<MP::MessagePassingMng> messagePassingMngRef() const { return m_message_passing_mng_ref; }
  public:
   bool is_parallel;
@@ -67,7 +67,7 @@ struct ARCANE_MPI_EXPORT MpiParallelMngBuildInfo
   bool is_mpi_comm_owned;
   MpiLock* mpi_lock = nullptr;
  private:
-  MP::Dispatchers* m_dispatchers;
+  Ref<MP::Dispatchers> m_dispatchers_ref;
   Ref<MP::MessagePassingMng> m_message_passing_mng_ref;
 };
 

@@ -62,11 +62,12 @@ ParallelMngDispatcherBuildInfo(MP::Dispatchers* dispatchers,
 /*---------------------------------------------------------------------------*/
 
 ParallelMngDispatcherBuildInfo::
-ParallelMngDispatcherBuildInfo(MP::Dispatchers* dispatchers,
+ParallelMngDispatcherBuildInfo(Ref<MP::Dispatchers> dispatchers,
                                Ref<MP::MessagePassingMng> mpm_ref)
 : m_comm_rank(mpm_ref->commRank())
 , m_comm_size(mpm_ref->commSize())
-, m_dispatchers(dispatchers)
+, m_dispatchers(dispatchers.get())
+, m_dispatchers_ref(dispatchers)
 , m_message_passing_mng(mpm_ref.get())
 , m_message_passing_mng_ref(mpm_ref)
 {
@@ -92,8 +93,10 @@ ParallelMngDispatcherBuildInfo(Int32 comm_rank,Int32 comm_size)
 void ParallelMngDispatcherBuildInfo::
 _init()
 {
-  if (!m_dispatchers)
-    m_dispatchers = new MP::Dispatchers();
+  if (!m_dispatchers){
+    m_dispatchers_ref = makeRef(new MP::Dispatchers());
+    m_dispatchers = m_dispatchers_ref.get();
+  }
   if (!m_message_passing_mng){
     auto* x = new MP::MessagePassingMng(m_comm_rank,m_comm_size,m_dispatchers);
     m_message_passing_mng = x;
@@ -228,7 +231,7 @@ ParallelMngDispatcher(const ParallelMngDispatcherBuildInfo& bi)
 , m_real3x3(nullptr)
 , m_hpreal(nullptr)
 , m_time_stats(nullptr)
-, m_mp_dispatchers(bi.dispatchers())
+, m_mp_dispatchers_ref(bi.dispatchersRef())
 , m_message_passing_mng_ref(bi.messagePassingMngRef())
 , m_control_dispatcher(new DefaultControlDispatcher(this))
 , m_serialize_dispatcher(new SerializeDispatcher(this))
@@ -241,7 +244,8 @@ ParallelMngDispatcher(const ParallelMngDispatcherBuildInfo& bi)
 ParallelMngDispatcher::
 ~ParallelMngDispatcher()
 {
-  delete m_mp_dispatchers;
+  m_mp_dispatchers_ref.reset();
+
   delete m_serialize_dispatcher;
   delete m_control_dispatcher;
   delete m_char;
@@ -292,25 +296,25 @@ _setSerializeDispatcher(MP::ISerializeDispatcher* d)
 void ParallelMngDispatcher::
 _setArccoreDispatchers()
 {
-  m_mp_dispatchers->setDispatcher(m_char->toArccoreDispatcher());
-  m_mp_dispatchers->setDispatcher(m_signed_char->toArccoreDispatcher());
-  m_mp_dispatchers->setDispatcher(m_unsigned_char->toArccoreDispatcher());
-  m_mp_dispatchers->setDispatcher(m_short->toArccoreDispatcher());
-  m_mp_dispatchers->setDispatcher(m_unsigned_short->toArccoreDispatcher());
-  m_mp_dispatchers->setDispatcher(m_int->toArccoreDispatcher());
-  m_mp_dispatchers->setDispatcher(m_unsigned_int->toArccoreDispatcher());
-  m_mp_dispatchers->setDispatcher(m_long->toArccoreDispatcher());
-  m_mp_dispatchers->setDispatcher(m_unsigned_long->toArccoreDispatcher());
-  m_mp_dispatchers->setDispatcher(m_long_long->toArccoreDispatcher());
-  m_mp_dispatchers->setDispatcher(m_unsigned_long_long->toArccoreDispatcher());
-  m_mp_dispatchers->setDispatcher(m_float->toArccoreDispatcher());
-  m_mp_dispatchers->setDispatcher(m_double->toArccoreDispatcher());
-  m_mp_dispatchers->setDispatcher(m_long_double->toArccoreDispatcher());
+  m_mp_dispatchers_ref->setDispatcher(m_char->toArccoreDispatcher());
+  m_mp_dispatchers_ref->setDispatcher(m_signed_char->toArccoreDispatcher());
+  m_mp_dispatchers_ref->setDispatcher(m_unsigned_char->toArccoreDispatcher());
+  m_mp_dispatchers_ref->setDispatcher(m_short->toArccoreDispatcher());
+  m_mp_dispatchers_ref->setDispatcher(m_unsigned_short->toArccoreDispatcher());
+  m_mp_dispatchers_ref->setDispatcher(m_int->toArccoreDispatcher());
+  m_mp_dispatchers_ref->setDispatcher(m_unsigned_int->toArccoreDispatcher());
+  m_mp_dispatchers_ref->setDispatcher(m_long->toArccoreDispatcher());
+  m_mp_dispatchers_ref->setDispatcher(m_unsigned_long->toArccoreDispatcher());
+  m_mp_dispatchers_ref->setDispatcher(m_long_long->toArccoreDispatcher());
+  m_mp_dispatchers_ref->setDispatcher(m_unsigned_long_long->toArccoreDispatcher());
+  m_mp_dispatchers_ref->setDispatcher(m_float->toArccoreDispatcher());
+  m_mp_dispatchers_ref->setDispatcher(m_double->toArccoreDispatcher());
+  m_mp_dispatchers_ref->setDispatcher(m_long_double->toArccoreDispatcher());
 
   ARCANE_CHECK_POINTER(m_control_dispatcher);
-  m_mp_dispatchers->setDispatcher(m_control_dispatcher);
+  m_mp_dispatchers_ref->setDispatcher(m_control_dispatcher);
   ARCANE_CHECK_POINTER(m_serialize_dispatcher);
-  m_mp_dispatchers->setDispatcher(m_serialize_dispatcher);
+  m_mp_dispatchers_ref->setDispatcher(m_serialize_dispatcher);
 }
 
 /*---------------------------------------------------------------------------*/

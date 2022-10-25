@@ -103,14 +103,14 @@ MpiParallelMngBuildInfo(MPI_Comm comm)
 , mpi_comm(comm)
 , is_mpi_comm_owned(true)
 , mpi_lock(nullptr)
-, m_dispatchers(nullptr)
 {
   ::MPI_Comm_rank(comm,&comm_rank);
   ::MPI_Comm_size(comm,&comm_nb_rank);
 
-  m_dispatchers = new MP::Dispatchers();
-  MP::Mpi::MpiMessagePassingMng::BuildInfo bi(comm_rank,comm_nb_rank,m_dispatchers,mpi_comm);
-  MP::MessagePassingMng* mp = new MP::Mpi::MpiMessagePassingMng(bi);
+  m_dispatchers_ref = makeRef<MP::Dispatchers>(new MP::Dispatchers());
+  MP::Mpi::MpiMessagePassingMng::BuildInfo bi(comm_rank,comm_nb_rank,m_dispatchers_ref.get(),mpi_comm);
+
+  auto* mp = new MP::Mpi::MpiMessagePassingMng(bi);
   m_message_passing_mng_ref = makeRef<MP::MessagePassingMng>(mp);
 }
 
@@ -344,7 +344,7 @@ class MpiParallelMngUtilsFactory
 
 MpiParallelMng::
 MpiParallelMng(const MpiParallelMngBuildInfo& bi)
-: ParallelMngDispatcher(ParallelMngDispatcherBuildInfo(bi.dispatchers(),bi.messagePassingMngRef()))
+: ParallelMngDispatcher(ParallelMngDispatcherBuildInfo(bi.dispatchersRef(),bi.messagePassingMngRef()))
 , m_trace(bi.trace_mng)
 , m_thread_mng(bi.thread_mng)
 , m_world_parallel_mng(bi.world_parallel_mng)
