@@ -52,7 +52,7 @@ class UnitTestCartesianMeshPatchService
 : public ArcaneUnitTestCartesianMeshPatchObject
 {
  public:
-  explicit UnitTestCartesianMeshPatchService(const Arcane::ServiceBuildInfo &sbi);
+  explicit UnitTestCartesianMeshPatchService(const ServiceBuildInfo &sbi);
   virtual ~UnitTestCartesianMeshPatchService() {}
 
   const Arcane::String getImplName() const { return serviceInfo()->localName(); }
@@ -106,9 +106,10 @@ class UnitTestCartesianMeshPatchService
    */
   void testCartesianMeshPatchCartesianConnectivity();
 
-private:
+ private:
+
   // Pointeur sur le maillage cartésien contenant les vues
-  Arcane::ICartesianMesh* m_cartesian_mesh;
+  Arcane::ICartesianMesh* m_cartesian_mesh = nullptr;
 
   // Tableaux de mailles et parents par niveau
   std::vector<std::vector<Arcane::Int64>> m_lvl_cell_uid;
@@ -327,8 +328,9 @@ inline Cell next(const DirCell& t_dir_cell, const Int32 t_lvl)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-UnitTestCartesianMeshPatchService::UnitTestCartesianMeshPatchService(const ServiceBuildInfo& sbi)
-    : ArcaneUnitTestCartesianMeshPatchObject(sbi)
+UnitTestCartesianMeshPatchService::
+UnitTestCartesianMeshPatchService(const ServiceBuildInfo& sbi)
+: ArcaneUnitTestCartesianMeshPatchObject(sbi)
 {
 }
 
@@ -338,8 +340,8 @@ UnitTestCartesianMeshPatchService::UnitTestCartesianMeshPatchService(const Servi
  * Actions a effectuer pour tous les tests
  */
 /*---------------------------------------------------------------------------*/
-void
-UnitTestCartesianMeshPatchService::setUpForClass()
+void UnitTestCartesianMeshPatchService::
+setUpForClass()
 {
   // Récupération du pointeur sur le maillage cartésien, raffinement par patch et création des vues
   m_cartesian_mesh = ICartesianMesh::getReference(this->mesh());

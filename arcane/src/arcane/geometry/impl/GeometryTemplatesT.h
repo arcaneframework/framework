@@ -26,10 +26,10 @@ NUMERICS_BEGIN_NAMESPACE
 template <typename GeometryT>
 class GenericGSInternalUpdater : public IItemOperationByBasicType
 {
-private:
-  GeometryT & m_geom;
-  ItemGroupGeometryProperty * m_group_property;
-  ITraceMng * m_trace_mng;
+ private:
+  GeometryT& m_geom;
+  ItemGroupGeometryProperty* m_group_property = nullptr;
+  ITraceMng* m_trace_mng;
 
 public:
   GenericGSInternalUpdater(GeometryT & geom, ITraceMng * traceMng) 

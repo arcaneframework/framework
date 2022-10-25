@@ -17,7 +17,8 @@
 #include "arcane/cea/FaceDirectionMng.h"
 #include "arcane/cea/NodeDirectionMng.h"
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 class AdiProjectionModule
 : public ArcaneAdiProjectionObject
@@ -25,7 +26,7 @@ class AdiProjectionModule
 
 public:
 
-  AdiProjectionModule(const ModuleBuildInfo& mb);
+  explicit AdiProjectionModule(const ModuleBuildInfo& mb);
   ~AdiProjectionModule();
   
 public:
@@ -44,7 +45,7 @@ public:
 
  private:
 
-  ICartesianMesh* m_cartesian_mesh;
+  ICartesianMesh* m_cartesian_mesh = nullptr;
 
  private:
 
@@ -67,4 +68,4 @@ public:
   void _evolvePrimalUpwindedVariablesV2(Integer direction);
 };
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane

@@ -51,6 +51,8 @@ Otf2LibWrapper::
 Otf2LibWrapper(ISubDomain* sub_domain)
 : m_sub_domain(sub_domain)
 {
+	m_flush_callbacks.otf2_pre_flush = _preFlush;
+	m_flush_callbacks.otf2_post_flush = _postFlush;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -104,8 +106,6 @@ init(const String& archive_name)
 		ARCANE_FATAL("Impossible de creer l'archive OTF2");
 
 	// Attachement des callbacks
-	m_flush_callbacks.otf2_pre_flush = _preFlush;
-	m_flush_callbacks.otf2_post_flush = _postFlush;
 	OTF2_Archive_SetFlushCallbacks(m_archive, &m_flush_callbacks, NULL);
 	if (OTF2_MPI_Archive_SetCollectiveCallbacks(m_archive, *mpi_comm, MPI_COMM_NULL) != OTF2_SUCCESS)
 		ARCANE_FATAL("Probleme lors du positionnement des callbacks MPI pour la librairie OTF2");
