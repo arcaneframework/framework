@@ -23,6 +23,7 @@
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/IRunnerRuntime.h"
 #include "arcane/accelerator/core/DeviceId.h"
+#include "arcane/accelerator/core/IDeviceInfoList.h"
 
 #include <stack>
 #include <map>
@@ -464,6 +465,44 @@ setAsCurrentDevice()
 {
   _checkIsInit();
   m_p->runtime()->setCurrentDevice(m_p->m_device_id);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+DeviceId Runner::
+deviceId() const
+{
+  return m_p->m_device_id;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+const DeviceInfo& Runner::
+deviceInfo() const
+{
+  _checkIsInit();
+  const IDeviceInfoList* dlist = deviceInfoList(executionPolicy());
+  Int32 nb_device = dlist->nbDevice();
+  if (nb_device == 0)
+    ARCANE_FATAL("Internal error: no device available");
+  Int32 device_id = deviceId().asInt32();
+  if (device_id >= nb_device)
+    device_id = 0;
+  return dlist->deviceInfo(device_id);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+const IDeviceInfoList* Runner::
+deviceInfoList(eExecutionPolicy policy)
+{
+  if (policy == eExecutionPolicy::None)
+    return nullptr;
+  impl::IRunnerRuntime* r = _getRuntime(policy);
+  return r->deviceInfoList();
 }
 
 /*---------------------------------------------------------------------------*/

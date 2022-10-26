@@ -34,6 +34,11 @@ namespace Arcane::Accelerator
  * d'abord appelé initialize() avant de pouvoir utiliser les méthodes de
  * l'instance ou alors il faut appeler l'un des constructeurs autre que le
  * constructeur par défaut.
+ *
+ * Une instance de cette classe est associée à un device qui n'est pas forcément
+ * celui utilisé par défaut pour le thread courant. Pour garantir que les
+ * kernels associés à ce runner seront bien exécutés sur le bon device il
+ * est nécessaire d'appeler la méthode setAsCurrentDevice().
  */
 class ARCANE_ACCELERATOR_CORE_EXPORT Runner
 {
@@ -54,7 +59,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
   //! Créé et initialise un gestionnaire pour l'accélérateur \a p
   explicit Runner(eExecutionPolicy p);
   //! Créé et initialise un gestionnaire pour l'accélérateur \a p et l'accélérateur \a device
-  Runner(eExecutionPolicy p,DeviceId device);
+  Runner(eExecutionPolicy p, DeviceId device);
   ~Runner();
 
  public:
@@ -73,7 +78,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
   void initialize(eExecutionPolicy v);
 
   //! Initialise l'instance. Cette méthode ne doit être appelée qu'une seule fois.
-  void initialize(eExecutionPolicy v,DeviceId device);
+  void initialize(eExecutionPolicy v, DeviceId device);
 
   //! Indique si l'instance a été initialisée
   bool isInitialized() const;
@@ -117,6 +122,18 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
    * Cet appel est équivalent à cudaSetDevice() ou hipSetDevice();
    */
   void setAsCurrentDevice();
+
+  //! Information sur le device associé à cette instance.
+  const DeviceInfo& deviceInfo() const;
+
+ public:
+
+  /*!
+   * \brief Liste des devices pour la politique d'exécution \a policy.
+   *
+   * Si le runtime associé n'a pas encore été initialisé, cette méthode retourne \a nullptr.
+   */
+  static const IDeviceInfoList* deviceInfoList(eExecutionPolicy policy);
 
  private:
 
