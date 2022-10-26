@@ -72,8 +72,8 @@ void _printUUID(std::ostream& o, char bytes[16])
   static const char hexa_chars[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
 
   for (int i = 0; i < 16; ++i) {
-    o << hexa_chars[(bytes[i * 2] >> 4) & 0xf];
-    o << hexa_chars[bytes[(i * 2) + 1] & 0xf];
+    o << hexa_chars[(bytes[i] >> 4) & 0xf];
+    o << hexa_chars[bytes[i] & 0xf];
     if (i == 4 || i == 6 || i == 8 || i == 10)
       o << '-';
   }
