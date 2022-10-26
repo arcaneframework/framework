@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 
 **News:**
 
+- \[move\]: parallel matrix-market reader
+
 **Fixed bugs:**
 
 - \[core\]: fix IndexManager bug when ghost items where first.

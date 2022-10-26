@@ -38,6 +38,19 @@ namespace Alien::Move
 
 namespace
 {
+  std::pair<size_t, size_t> partition(size_t full_size, const Arccore::MessagePassing::IMessagePassingMng* pm)
+  {
+    auto my_rank = pm->commRank();
+    auto comm_size = pm->commSize();
+    size_t line_slice = full_size / comm_size;
+    auto start = line_slice * my_rank;
+    auto stop = line_slice * (my_rank + 1);
+    if (my_rank == comm_size - 1) {
+      stop = full_size;
+    }
+    return std::make_pair(start, stop);
+  }
+
   void tolower(std::string& str)
   {
     std::transform(str.begin(), str.end(), str.begin(), ::tolower);
@@ -48,35 +61,9 @@ namespace
    public:
     MatrixDescription() = default;
 
-    explicit MatrixDescription(Arccore::Span<Arccore::Integer> src)
-    {
-      if (src.size() != 4) {
-        throw Arccore::FatalErrorException("Matrix Descriptor", "Cannot deserialize array");
-      }
-      n_rows = src[0];
-      n_cols = src[1];
-      n_nnz = src[2];
-      symmetric = (src[3] == 0);
-    }
-
-    Arccore::UniqueArray<Arccore::Integer> to_array() const
-    {
-      Arccore::UniqueArray<Arccore::Integer> array(4);
-      array[0] = n_rows;
-      array[1] = n_cols;
-      array[2] = n_nnz;
-      array[3] = symmetric ? 0 : 1;
-      return array;
-    }
-
-    static constexpr size_t serializedSize()
-    {
-      return 4;
-    }
-
     int n_rows{ 0 };
     int n_cols{ 0 };
-    int n_nnz{ 0 };
+    size_t n_nnz{ 0 };
     bool symmetric{ true };
   };
 
@@ -146,15 +133,20 @@ namespace
     return std::make_optional(out);
   }
 
-  bool readValues(std::istream& fstream, DoKDirectMatrixBuilder& builder, bool symmetric)
+  bool readValues(std::istream& fstream, DoKDirectMatrixBuilder& builder, bool symmetric, size_t start, size_t stop)
   {
-    std::string line;
-    while (std::getline(fstream, line)) {
+    for (size_t i = 0; i < start; ++i) {
+      fstream.ignore(4096, '\n');
+    }
 
+    std::string line;
+    size_t count = start;
+    while (count < stop && std::getline(fstream, line)) {
       if ('%' == line[0]) {
         continue;
       }
 
+      count++;
       int row = 0;
       int col = 0;
       double value = 0.0;
@@ -183,32 +175,22 @@ namespace
 MatrixData ALIEN_MOVESEMANTIC_EXPORT
 readFromMatrixMarket(Arccore::MessagePassing::IMessagePassingMng* pm, const std::string& filename)
 {
-  if (pm->commRank() == 0) { // Only rank 0 read the file
-    std::ifstream stream;
-    std::array<char, 1024 * 1024> buf; // Buffer for reading
-    stream.rdbuf()->pubsetbuf(buf.data(), buf.size());
-    stream.open(filename);
-    if (!stream) {
-      throw Arccore::FatalErrorException("readFromMatrixMarket", "Unable to read file");
-    }
-    auto desc = readBanner(stream);
-    if (!desc) {
-      throw Arccore::FatalErrorException("readFromMatrixMarket", "Invalid header");
-    }
-    auto ser_desc = desc.value().to_array();
-    Arccore::MessagePassing::mpBroadcast(pm, ser_desc, 0);
-    DoKDirectMatrixBuilder builder(createMatrixData(desc.value(), pm));
-    readValues(stream, builder, desc->symmetric);
-    return builder.release();
+  std::ifstream stream;
+  std::array<char, 1024 * 1024> buf; // Buffer for reading
+  stream.rdbuf()->pubsetbuf(buf.data(), buf.size());
+  stream.open(filename);
+  if (!stream) {
+    throw Arccore::FatalErrorException("readFromMatrixMarket", "Unable to matrix read file");
   }
-  else {
-    // Receive description description from rank 0
-    Arccore::UniqueArray<Arccore::Integer> ser_desc(MatrixDescription::serializedSize());
-    Arccore::MessagePassing::mpBroadcast(pm, ser_desc, 0);
-    MatrixDescription desc(ser_desc);
-    DoKDirectMatrixBuilder builder(createMatrixData(desc, pm));
-    return builder.release();
+  auto desc = readBanner(stream);
+  if (!desc) {
+    throw Arccore::FatalErrorException("readFromMatrixMarket", "Invalid header");
   }
+  DoKDirectMatrixBuilder builder(createMatrixData(desc.value(), pm));
+
+  auto [nnz_start, nnz_stop] = partition(desc.value().n_nnz, pm);
+  readValues(stream, builder, desc->symmetric, nnz_start, nnz_stop);
+  return builder.release();
 }
 
 VectorData ALIEN_MOVESEMANTIC_EXPORT
@@ -217,71 +199,76 @@ readFromMatrixMarket(const VectorDistribution& distribution, const std::string& 
   VectorData out(distribution);
   auto& v = out.impl()->template get<BackEnd::tag::DoK>(true);
 
-  if (distribution.parallelMng()->commRank() == 0) { // Only rank 0 read the file
-    std::ifstream stream;
-    std::array<char, 1024 * 1024> buf; // Buffer for reading
-    stream.rdbuf()->pubsetbuf(buf.data(), buf.size());
-    stream.open(filename);
-    if (!stream) {
-      throw Arccore::FatalErrorException("readFromMatrixMarket", "Unable to read file");
-    }
-    std::string line;
-    Arccore::Int32 row = 0;
+  std::ifstream stream;
+  std::array<char, 1024 * 1024> buf; // Buffer for reading
+  stream.rdbuf()->pubsetbuf(buf.data(), buf.size());
+  stream.open(filename);
+  if (!stream) {
+    throw Arccore::FatalErrorException("readFromMatrixMarket", "Unable to read vector file");
+  }
+  std::string line;
+  size_t rows = 0;
 
-    auto try_header = true;
-    while (std::getline(stream, line)) {
-      // get matrix kind
-      std::stringstream ss;
-      ss << line;
+  auto try_header = true;
+  while (std::getline(stream, line)) {
+    // get matrix kind
+    std::stringstream ss;
+    ss << line;
 
-      if (try_header) {
-        std::string matrix;
-        std::string _; // junk
-        std::string format; // (coordinate, array)
-        std::string scalar; // (pattern, real, complex, integer)
+    if (try_header) {
+      std::string matrix;
+      std::string _; // junk
+      std::string format; // (coordinate, array)
+      std::string scalar; // (pattern, real, complex, integer)
 
-        ss >> matrix; // skip '%%MatrixMarket
+      ss >> matrix; // skip '%%MatrixMarket
 
-        if ("%%MatrixMarket" != matrix)
-          continue;
-
-        ss >> _; // skip matrix
-        ss >> format;
-        ss >> scalar;
-        ss >> _;
-
-        tolower(format);
-        tolower(scalar);
-
-        if ("array" != format || "real" != scalar) {
-          throw Arccore::FatalErrorException("mtx vector must be in 'array' and 'real' formats.");
-        }
-        try_header = false;
-      }
-      if ('%' == line[0])
+      if ("%%MatrixMarket" != matrix)
         continue;
 
-      int rows = 0;
-      int vectors = 0;
-      ss >> rows;
-      ss >> vectors;
-      if (vectors != 1) {
-        throw Arccore::FatalErrorException("mtx vector reader does not support multiple vectors.");
-      }
-      if (distribution.globalSize() != rows) {
-        throw Arccore::FatalErrorException("mtx vector is not of correct size");
-      }
-      break;
-    }
-    while (std::getline(stream, line)) {
-      double value;
-      std::stringstream ss;
-      ss << line;
-      ss >> value;
+      ss >> _; // skip matrix
+      ss >> format;
+      ss >> scalar;
+      ss >> _;
 
-      v.contribute(row, value);
-      row++;
+      tolower(format);
+      tolower(scalar);
+
+      if ("array" != format || "real" != scalar) {
+        throw Arccore::FatalErrorException("mtx vector must be in 'array' and 'real' formats.");
+      }
+      try_header = false;
     }
+    if ('%' == line[0])
+      continue;
+
+    int vectors = 0;
+    ss >> rows;
+    ss >> vectors;
+    if (vectors != 1) {
+      throw Arccore::FatalErrorException("mtx vector reader does not support multiple vectors.");
+    }
+    if (distribution.globalSize() != rows) {
+      throw Arccore::FatalErrorException("mtx vector is not of correct size");
+    }
+    break;
+  }
+
+  auto [row_start, row_stop] = partition(rows, distribution.parallelMng());
+
+  Arccore::Int32 row = 0;
+  for (row = 0; row < row_start; ++row) {
+    stream.ignore(4096, '\n');
+  }
+
+  while (row < row_stop && std::getline(stream, line)) {
+    double value;
+    std::stringstream ss;
+    ss << line;
+    ss >> value;
+
+    v.contribute(row, value);
+    row++;
   }
   v.assemble();
 
