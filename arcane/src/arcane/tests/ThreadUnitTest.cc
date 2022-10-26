@@ -29,8 +29,6 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/Atomic.h"
 
-#include <glib.h>
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -167,43 +165,6 @@ class Test2
   Int64 m_value;
 };
 
-class Test3
-: public TraceAccessor
-{
- public:
-
-  Test3(ITraceMng* tm) : TraceAccessor(tm)
-  {
-  }
-
- public:
-
-  void exec()
-  {
-    _exec1();
-  }
-
-  void _exec1()
-  {
-    Real v1 = RealTime::get();
-    int n = 10000000;
-    GPrivate prv;
-    Int64 my_value = 1;
-    g_private_set(&prv,&my_value);
-    Int64 total = 0;
-    for( Integer i=0; i<n; ++i ){
-      Int64* v = reinterpret_cast<Int64*>(g_private_get(&prv));
-      total += *v;
-    }
-    Real v2 = RealTime::get();
-      
-    info() << "Value = " << total << " private_key=" << (v2-v1) / ((Real)n);
-  }
-
- private:
-
-};
-
 }
 
 /*---------------------------------------------------------------------------*/
@@ -263,10 +224,6 @@ executeTest()
   {
     ThreadTest::Test2 t2(traceMng());
     t2.exec();
-  }
-  {
-    ThreadTest::Test3 t3(traceMng());
-    t3.exec();
   }
 }
 
