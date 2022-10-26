@@ -13,7 +13,7 @@
 
 #include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
 
-#include "arcane/accelerator/core/DeviceId.h"
+#include "arcane/accelerator/core/DeviceInfoList.h"
 
 #include <iostream>
 

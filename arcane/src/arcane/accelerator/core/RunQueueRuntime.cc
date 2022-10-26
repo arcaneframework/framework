@@ -15,6 +15,7 @@
 #include "arcane/accelerator/core/IRunQueueStream.h"
 #include "arcane/accelerator/core/IRunQueueEventImpl.h"
 #include "arcane/accelerator/core/Memory.h"
+#include "arcane/accelerator/core/DeviceInfoList.h"
 
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/MemoryView.h"
@@ -114,6 +115,11 @@ class ARCANE_ACCELERATOR_CORE_EXPORT SequentialRunnerRuntime
   void setMemoryAdvice(MemoryView, eMemoryAdvice, DeviceId) final {}
   void unsetMemoryAdvice(MemoryView, eMemoryAdvice, DeviceId) final {}
   void setCurrentDevice(DeviceId) final {}
+  const IDeviceInfoList* deviceInfoList() final { return &m_device_info_list; }
+
+ private:
+
+  DeviceInfoList m_device_info_list;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -134,6 +140,11 @@ class ARCANE_ACCELERATOR_CORE_EXPORT ThreadRunnerRuntime
   void setMemoryAdvice(MemoryView, eMemoryAdvice, DeviceId) final {}
   void unsetMemoryAdvice(MemoryView, eMemoryAdvice, DeviceId) final {}
   void setCurrentDevice(DeviceId) final {}
+  const IDeviceInfoList* deviceInfoList() final { return &m_device_info_list; }
+
+ private:
+
+  DeviceInfoList m_device_info_list;
 };
 
 namespace

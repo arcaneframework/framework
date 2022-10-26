@@ -5,56 +5,56 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IRunnerRuntime.h                                          (C) 2000-2022 */
+/* DeviceInfo.h                                                (C) 2000-2022 */
 /*                                                                           */
-/* Interface du runtime associé à une RunQueue.                              */
+/* Information sur un device.                                                */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_IRUNQUEUERUNTIME_H
-#define ARCANE_ACCELERATOR_IRUNQUEUERUNTIME_H
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
-
+#ifndef ARCANE_ACCELERATOR_CORE_DEVICEINFO_H
+#define ARCANE_ACCELERATOR_CORE_DEVICEINFO_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+#include "arcane/utils/String.h"
+#include "arcane/accelerator/core/DeviceId.h"
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane::Accelerator
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \internal
- * \brief Interface du runtime associé à une RunQueue.
+ * \brief Information sur un device.
  */
-class ARCANE_ACCELERATOR_CORE_EXPORT IRunnerRuntime
+class ARCANE_ACCELERATOR_CORE_EXPORT DeviceInfo
 {
  public:
 
-  virtual ~IRunnerRuntime() = default;
+  //! Informations du i-ème device.
+  DeviceId id() const { return m_device_id; }
+
+  //! UUID sous forme de chaîne de caractères. Peut-être nul.
+  String uuidAsString() const { return m_uuid_as_string; }
 
  public:
 
-  virtual void notifyBeginLaunchKernel() = 0;
-  virtual void notifyEndLaunchKernel() = 0;
-  virtual void barrier() = 0;
-  virtual eExecutionPolicy executionPolicy() const = 0;
-  virtual IRunQueueStream* createStream(const RunQueueBuildInfo& bi) = 0;
-  virtual impl::IRunQueueEventImpl* createEventImpl() = 0;
-  virtual impl::IRunQueueEventImpl* createEventImplWithTimer() = 0;
-  virtual void setMemoryAdvice(MemoryView buffer, eMemoryAdvice advice, DeviceId device_id) = 0;
-  virtual void unsetMemoryAdvice(MemoryView buffer, eMemoryAdvice advice, DeviceId device_id) = 0;
-  virtual void setCurrentDevice(DeviceId device_id) = 0;
-  virtual const IDeviceInfoList* deviceInfoList() = 0;
+  void setId(DeviceId id) { m_device_id = id; }
+  void setUUIDAsString(const String& v) { m_uuid_as_string = v; }
+
+ private:
+
+  DeviceId m_device_id;
+  String m_uuid_as_string;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::Accelerator::impl
+} // namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

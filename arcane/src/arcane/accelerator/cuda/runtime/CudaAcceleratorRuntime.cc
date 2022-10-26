@@ -25,6 +25,7 @@
 
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/Memory.h"
+#include "arcane/accelerator/core/DeviceInfoList.h"
 
 #include "arcane/accelerator/core/IRunnerRuntime.h"
 #include "arcane/accelerator/core/IRunQueueStream.h"
@@ -382,10 +383,13 @@ class CudaRunnerRuntime
     ARCANE_CHECK_CUDA(cudaSetDevice(id));
   }
 
+  const IDeviceInfoList* deviceInfoList() final { return &m_device_info_list; }
+
  private:
 
   Int64 m_nb_kernel_launched = 0;
   bool m_is_verbose = false;
+  impl::DeviceInfoList m_device_info_list;
 };
 
 /*---------------------------------------------------------------------------*/

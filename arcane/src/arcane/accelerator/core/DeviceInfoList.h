@@ -5,16 +5,19 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IRunnerRuntime.h                                          (C) 2000-2022 */
+/* DeviceInfoList.h                                            (C) 2000-2022 */
 /*                                                                           */
-/* Interface du runtime associé à une RunQueue.                              */
+/* Liste de devices.                                                         */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_IRUNQUEUERUNTIME_H
-#define ARCANE_ACCELERATOR_IRUNQUEUERUNTIME_H
+#ifndef ARCANE_ACCELERATOR_CORE_DEVICEINFOLIST_H
+#define ARCANE_ACCELERATOR_CORE_DEVICEINFOLIST_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
+#include "arcane/utils/Array.h"
+
+#include "arcane/accelerator/core/IDeviceInfoList.h"
+#include "arcane/accelerator/core/DeviceInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -25,28 +28,26 @@ namespace Arcane::Accelerator::impl
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \internal
- * \brief Interface du runtime associé à une RunQueue.
+ * \brief Interface d'une liste de devices.
  */
-class ARCANE_ACCELERATOR_CORE_EXPORT IRunnerRuntime
+class ARCANE_ACCELERATOR_CORE_EXPORT DeviceInfoList
+: public IDeviceInfoList
 {
  public:
 
-  virtual ~IRunnerRuntime() = default;
+  //! Nombre de device de la liste
+  Int32 nbDevice() const override { return m_devices.size(); }
+
+  //! Informations du i-ème device.
+  const DeviceInfo& deviceInfo(Int32 i) const override { return m_devices[i]; }
 
  public:
 
-  virtual void notifyBeginLaunchKernel() = 0;
-  virtual void notifyEndLaunchKernel() = 0;
-  virtual void barrier() = 0;
-  virtual eExecutionPolicy executionPolicy() const = 0;
-  virtual IRunQueueStream* createStream(const RunQueueBuildInfo& bi) = 0;
-  virtual impl::IRunQueueEventImpl* createEventImpl() = 0;
-  virtual impl::IRunQueueEventImpl* createEventImplWithTimer() = 0;
-  virtual void setMemoryAdvice(MemoryView buffer, eMemoryAdvice advice, DeviceId device_id) = 0;
-  virtual void unsetMemoryAdvice(MemoryView buffer, eMemoryAdvice advice, DeviceId device_id) = 0;
-  virtual void setCurrentDevice(DeviceId device_id) = 0;
-  virtual const IDeviceInfoList* deviceInfoList() = 0;
+  void addDevice(const DeviceInfo& d) { m_devices.add(d); }
+
+ private:
+
+  UniqueArray<DeviceInfo> m_devices;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -57,4 +58,4 @@ class ARCANE_ACCELERATOR_CORE_EXPORT IRunnerRuntime
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

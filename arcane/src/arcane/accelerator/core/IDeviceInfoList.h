@@ -5,12 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IRunnerRuntime.h                                          (C) 2000-2022 */
+/* IDeviceInfoList.h                                           (C) 2000-2022 */
 /*                                                                           */
-/* Interface du runtime associé à une RunQueue.                              */
+/* Interface d'une liste de devices.                                         */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_ACCELERATOR_IRUNQUEUERUNTIME_H
-#define ARCANE_ACCELERATOR_IRUNQUEUERUNTIME_H
+#ifndef ARCANE_ACCELERATOR_CORE_IDEVICEINFOLIST_H
+#define ARCANE_ACCELERATOR_CORE_IDEVICEINFOLIST_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -19,42 +19,35 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Accelerator::impl
+namespace Arcane::Accelerator
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \internal
- * \brief Interface du runtime associé à une RunQueue.
+ * \brief Interface d'une liste de devices.
  */
-class ARCANE_ACCELERATOR_CORE_EXPORT IRunnerRuntime
+class ARCANE_ACCELERATOR_CORE_EXPORT IDeviceInfoList
 {
  public:
 
-  virtual ~IRunnerRuntime() = default;
+  virtual ~IDeviceInfoList() = default;
 
  public:
 
-  virtual void notifyBeginLaunchKernel() = 0;
-  virtual void notifyEndLaunchKernel() = 0;
-  virtual void barrier() = 0;
-  virtual eExecutionPolicy executionPolicy() const = 0;
-  virtual IRunQueueStream* createStream(const RunQueueBuildInfo& bi) = 0;
-  virtual impl::IRunQueueEventImpl* createEventImpl() = 0;
-  virtual impl::IRunQueueEventImpl* createEventImplWithTimer() = 0;
-  virtual void setMemoryAdvice(MemoryView buffer, eMemoryAdvice advice, DeviceId device_id) = 0;
-  virtual void unsetMemoryAdvice(MemoryView buffer, eMemoryAdvice advice, DeviceId device_id) = 0;
-  virtual void setCurrentDevice(DeviceId device_id) = 0;
-  virtual const IDeviceInfoList* deviceInfoList() = 0;
+  //! Nombre de device de la liste
+  virtual Int32 nbDevice() const = 0;
+
+  //! Informations du i-ème device.
+  virtual const DeviceInfo& deviceInfo(Int32 i) const = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // namespace Arcane::Accelerator::impl
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif
