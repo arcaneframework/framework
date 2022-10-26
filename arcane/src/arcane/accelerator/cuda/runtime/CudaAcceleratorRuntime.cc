@@ -325,7 +325,15 @@ class CudaRunnerRuntime
     }
     else
       return;
-    cudaMemAdvise(ptr, count, cuda_advise, device);
+    ARCANE_CHECK_CUDA(cudaMemAdvise(ptr, count, cuda_advise, device));
+  }
+
+  void setCurrentDevice(DeviceId device_id) final
+  {
+    Int32 id = device_id.asInt32();
+    if (!device_id.isAccelerator())
+      ARCANE_FATAL("Device {0} is not an accelerator device", id);
+    ARCANE_CHECK_CUDA(cudaSetDevice(id));
   }
 
  private:

@@ -113,6 +113,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT SequentialRunnerRuntime
   IRunQueueEventImpl* createEventImplWithTimer() final { return new HostRunQueueEvent(true); }
   void setMemoryAdvice(MemoryView, eMemoryAdvice, DeviceId) final {}
   void unsetMemoryAdvice(MemoryView, eMemoryAdvice, DeviceId) final {}
+  void setCurrentDevice(DeviceId) final {}
 };
 
 /*---------------------------------------------------------------------------*/
@@ -132,6 +133,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT ThreadRunnerRuntime
   IRunQueueEventImpl* createEventImplWithTimer() final { return new HostRunQueueEvent(true); }
   void setMemoryAdvice(MemoryView, eMemoryAdvice, DeviceId) final {}
   void unsetMemoryAdvice(MemoryView, eMemoryAdvice, DeviceId) final {}
+  void setCurrentDevice(DeviceId) final {}
 };
 
 namespace

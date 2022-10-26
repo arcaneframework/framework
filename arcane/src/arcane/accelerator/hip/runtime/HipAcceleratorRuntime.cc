@@ -266,7 +266,16 @@ class HipRunnerRuntime
     ARCANE_UNUSED(device_id);
     ARCANE_THROW(NotImplementedException, "");
   }
+  void setCurrentDevice(DeviceId device_id) final
+  {
+    Int32 id = device_id.asInt32();
+    if (!device_id.isAccelerator())
+      ARCANE_FATAL("Device {0} is not an accelerator device", id);
+    ARCANE_CHECK_HIP(hipSetDevice(id));
+  }
+
  private:
+
   Int64 m_nb_kernel_launched = 0;
   bool m_is_verbose = false;
 };

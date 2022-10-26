@@ -18,6 +18,7 @@
 #include "arcane/utils/Property.h"
 
 #include "arcane/accelerator/core/Runner.h"
+#include "arcane/accelerator/core/DeviceId.h"
 #include "arcane/utils/ConcurrencyUtils.h"
 
 /*---------------------------------------------------------------------------*/
@@ -34,6 +35,7 @@ class AcceleratorRuntimeInitialisationInfo::Impl
  public:
   bool m_is_using_accelerator_runtime = false;
   String m_accelerator_runtime;
+  DeviceId m_device_id;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -125,6 +127,38 @@ setAcceleratorRuntime(StringView v)
     setIsUsingAcceleratorRuntime(true);
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+DeviceId AcceleratorRuntimeInitialisationInfo::
+deviceId() const
+{
+  return m_p->m_device_id;
+}
+
+void AcceleratorRuntimeInitialisationInfo::
+setDeviceId(DeviceId v)
+{
+  m_p->m_device_id = v;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+eExecutionPolicy AcceleratorRuntimeInitialisationInfo::
+executionPolicy() const
+{
+  String a = acceleratorRuntime();
+  if (a=="cuda")
+    return eExecutionPolicy::CUDA;
+  if (a=="hip")
+    return eExecutionPolicy::HIP;
+  if (!a.null())
+    return eExecutionPolicy::None;
+  if (TaskFactory::isActive())
+    return eExecutionPolicy::Thread;
+  return eExecutionPolicy::Sequential;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -135,22 +169,18 @@ arcaneInitializeRunner(Accelerator::Runner& runner,ITraceMng* tm,
 {
   using namespace Accelerator;
   String accelerator_runtime = acc_info.acceleratorRuntime();
+  eExecutionPolicy policy = acc_info.executionPolicy();
+  if (policy==eExecutionPolicy::None)
+    ARCANE_FATAL("Invalid policy eExecutionPolicy::None");
   tm->info() << "AcceleratorRuntime=" << accelerator_runtime;
-  if (accelerator_runtime=="cuda"){
-    tm->info() << "Using CUDA runtime";
-    runner.initialize(eExecutionPolicy::CUDA);
-  }
-  else if (accelerator_runtime=="hip"){
-    tm->info() << "Using HIP runtime";
-    runner.initialize(eExecutionPolicy::HIP);
-  }
-  else if (TaskFactory::isActive()){
-    tm->info() << "Using Task runtime";
-    runner.initialize(eExecutionPolicy::Thread);
+  if (impl::isAcceleratorPolicy(policy)){
+    tm->info() << "Using accelerator runtime=" << policy << " device=" << acc_info.deviceId();
+    runner.initialize(policy,acc_info.deviceId());
+    runner.setAsCurrentDevice();
   }
   else{
-    tm->info() << "Using Sequential runtime";
-    runner.initialize(eExecutionPolicy::Sequential);
+    tm->info() << "Using accelerator runtime=" << policy;
+    runner.initialize(policy);
   }
 }
 

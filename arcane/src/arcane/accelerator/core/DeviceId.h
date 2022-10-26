@@ -56,9 +56,23 @@ class ARCANE_ACCELERATOR_CORE_EXPORT DeviceId
 
  public:
 
+  //! Indique si l'instance est associée à l'hôte.
   bool isHost() const { return m_device_id == HOST_ID; }
+
+  //! Indique si l'instance n'est associée à aucune device
   bool isNull() const { return m_device_id == NULL_ID; }
+
+  //! Indique si l'instance est associée à un accélérateur
+  bool isAccelerator() const { return m_device_id >= 0; }
+
+  //! Valeur numérique du device.
   Int32 asInt32() const { return m_device_id; }
+
+ public:
+
+  friend ARCANE_ACCELERATOR_CORE_EXPORT
+  std::ostream&
+  operator<<(std::ostream& o, const DeviceId& device_id);
 
  private:
 
