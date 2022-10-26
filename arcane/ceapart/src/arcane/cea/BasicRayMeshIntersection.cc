@@ -45,7 +45,7 @@
 namespace
 {
 const bool global_has_lima = GLOBAL_HAS_LIMA;
-};
+}
 
 namespace Arcane
 {

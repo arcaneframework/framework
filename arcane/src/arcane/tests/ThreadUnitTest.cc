@@ -49,7 +49,7 @@ class MyThread
   {
     create(f);
   }
-  MyThread() : m_functor(0), m_thread(0) {}
+  MyThread() : m_functor(nullptr), m_thread(nullptr) {}
   ~MyThread()
   {
     if (m_thread)
@@ -81,16 +81,17 @@ class Test1 : public TraceAccessor
   {
     for( Integer i=0; i<100; ++i ){
       FunctorT<Test1> f1(this,&Test1::_F1);
-      UniqueArray<MyThread> threads(10);
-      for( Integer j=0; j<10; ++j )
+      constexpr Integer nb = 10;
+      std::vector<MyThread> threads(nb);
+      for( Integer j=0; j<nb; ++j )
         threads[j].create(&f1);
-      for( Integer j=0; j<10; ++j )
+      for( Integer j=0; j<nb; ++j )
         threads[j].join();
     }
     if (m_count.value()!=1000)
-      fatal() << "Bad value for atomic count: v=" << m_count.value() << " expected=1000";
+      ARCANE_FATAL("Bad value for atomic count: v={0} expected=1000",m_count.value());
     if (m_count2!=10000)
-      fatal() << "Bad value for count2: v=" << m_count.value() << " expected=10000";
+      ARCANE_FATAL("Bad value for count2: v={0} expected=10000",m_count.value());
   }
   void _F1()
   {
@@ -186,12 +187,12 @@ class Test3
   {
     Real v1 = RealTime::get();
     int n = 10000000;
-    GPrivate* prv = g_private_new(0);
+    GPrivate prv;
     Int64 my_value = 1;
-    g_private_set(prv,&my_value);
+    g_private_set(&prv,&my_value);
     Int64 total = 0;
     for( Integer i=0; i<n; ++i ){
-      Int64* v = (Int64*)g_private_get(prv);
+      Int64* v = reinterpret_cast<Int64*>(g_private_get(&prv));
       total += *v;
     }
     Real v2 = RealTime::get();
