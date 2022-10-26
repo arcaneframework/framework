@@ -17,9 +17,10 @@
 
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
-#include "arcane/accelerator/core/IRunQueueRuntime.h"
+#include "arcane/accelerator/core/IRunnerRuntime.h"
 #include "arcane/accelerator/core/IRunQueueStream.h"
 #include "arcane/accelerator/core/RunCommandImpl.h"
+#include "arcane/accelerator/core/DeviceId.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -46,7 +47,7 @@ RunQueueImpl(Runner* runner, Int32 id, const RunQueueBuildInfo& bi)
 RunQueueImpl::
 ~RunQueueImpl()
 {
-  while (!m_run_command_pool.empty()){
+  while (!m_run_command_pool.empty()) {
     RunCommand::_internalDestroyImpl(m_run_command_pool.top());
     m_run_command_pool.pop();
   }
@@ -78,7 +79,7 @@ create(Runner* r)
 /*---------------------------------------------------------------------------*/
 
 RunQueueImpl* RunQueueImpl::
-create(Runner* r,const RunQueueBuildInfo& bi)
+create(Runner* r, const RunQueueBuildInfo& bi)
 {
   return r->_internalCreateOrGetRunQueueImpl(bi);
 }
@@ -93,11 +94,11 @@ _internalCreateOrGetRunCommandImpl()
   RunCommandImpl* p = nullptr;
 
   // TODO: rendre thread-safe
-  if (!pool.empty()){
+  if (!pool.empty()) {
     p = pool.top();
     pool.pop();
   }
-  else{
+  else {
     p = RunCommand::_internalCreateImpl(this);
   }
   m_active_run_command_list.add(p);
@@ -115,7 +116,7 @@ _internalCreateOrGetRunCommandImpl()
 void RunQueueImpl::
 _internalFreeRunningCommands()
 {
-  for( RunCommandImpl* p : m_active_run_command_list ){
+  for (RunCommandImpl* p : m_active_run_command_list) {
     p->notifyEndExecuteKernel();
     m_run_command_pool.push(p);
   }
@@ -137,7 +138,7 @@ _internalBarrier()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane::Accelerator
+} // namespace Arcane::Accelerator::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

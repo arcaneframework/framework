@@ -46,6 +46,8 @@ class RunQueueBuildInfo;
 class MemoryCopyArgs;
 class MemoryPrefetchArgs;
 class DeviceId;
+class DeviceInfo;
+class IDeviceInfoList;
 enum class eMemoryAdvice;
 
 namespace impl

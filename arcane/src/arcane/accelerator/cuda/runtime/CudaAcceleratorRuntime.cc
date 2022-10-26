@@ -21,10 +21,12 @@
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/IMemoryRessourceMng.h"
 #include "arcane/utils/MemoryView.h"
+#include "arcane/utils/OStringStream.h"
 #include "arcane/utils/internal/IMemoryRessourceMngInternal.h"
 
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/Memory.h"
+#include "arcane/accelerator/core/DeviceInfoList.h"
 
 #include "arcane/accelerator/core/IRunnerRuntime.h"
 #include "arcane/accelerator/core/IRunQueueStream.h"
@@ -37,6 +39,8 @@
 #include <nvToolsExt.h>
 #endif
 
+#include <cuda.h>
+
 using namespace Arccore;
 
 namespace Arcane::Accelerator::Cuda
@@ -45,41 +49,33 @@ namespace Arcane::Accelerator::Cuda
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void checkDevices()
+void arcaneCheckCudaErrors(const TraceInfo& ti, CUresult e)
 {
-  int nb_device = 0;
-  ARCANE_CHECK_CUDA(cudaGetDeviceCount(&nb_device));
-  std::ostream& o = std::cout;
-  o << "Initialize Arcane CUDA runtime\n";
-  o << "Available device = " << nb_device << "\n";
-  for (int i = 0; i < nb_device; ++i) {
-    cudaDeviceProp dp;
-    cudaGetDeviceProperties(&dp, i);
+  if (e == CUDA_SUCCESS)
+    return;
+  const char* error_name = nullptr;
+  CUresult e2 = cuGetErrorName(e, &error_name);
+  if (e2 != CUDA_SUCCESS)
+    error_name = "Unknown";
 
-    o << "\nDevice " << i << " name=" << dp.name << "\n";
-    o << " computeCapability = " << dp.major << "." << dp.minor << "\n";
-    o << " totalGlobalMem = " << dp.totalGlobalMem << "\n";
-    o << " sharedMemPerBlock = " << dp.sharedMemPerBlock << "\n";
-    o << " regsPerBlock = " << dp.regsPerBlock << "\n";
-    o << " warpSize = " << dp.warpSize << "\n";
-    o << " memPitch = " << dp.memPitch << "\n";
-    o << " maxThreadsPerBlock = " << dp.maxThreadsPerBlock << "\n";
-    o << " totalConstMem = " << dp.totalConstMem << "\n";
-    o << " clockRate = " << dp.clockRate << "\n";
-    o << " deviceOverlap = " << dp.deviceOverlap << "\n";
-    o << " multiProcessorCount = " << dp.multiProcessorCount << "\n";
-    o << " kernelExecTimeoutEnabled = " << dp.kernelExecTimeoutEnabled << "\n";
-    o << " integrated = " << dp.integrated << "\n";
-    o << " canMapHostMemory = " << dp.canMapHostMemory << "\n";
-    o << " computeMode = " << dp.computeMode << "\n";
-    o << " maxThreadsDim = " << dp.maxThreadsDim[0] << " " << dp.maxThreadsDim[1]
-      << " " << dp.maxThreadsDim[2] << "\n";
-    o << " maxGridSize = " << dp.maxGridSize[0] << " " << dp.maxGridSize[1]
-      << " " << dp.maxGridSize[2] << "\n";
-    int least_val = 0;
-    int greatest_val = 0;
-    ARCANE_CHECK_CUDA(cudaDeviceGetStreamPriorityRange(&least_val, &greatest_val));
-    o << " leastPriority = " << least_val << " greatestPriority = " << greatest_val << "\n";
+  const char* error_message = nullptr;
+  CUresult e3 = cuGetErrorString(e, &error_message);
+  if (e3 != CUDA_SUCCESS)
+    error_message = "Unknown";
+
+  ARCANE_FATAL("CUDA Error trace={0} e={1} name={2} message={3}",
+               ti, e, error_name, error_message);
+}
+
+void _printUUID(std::ostream& o, char bytes[16])
+{
+  static const char hexa_chars[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
+
+  for (int i = 0; i < 16; ++i) {
+    o << hexa_chars[(bytes[i] >> 4) & 0xf];
+    o << hexa_chars[bytes[i] & 0xf];
+    if (i == 4 || i == 6 || i == 8 || i == 10)
+      o << '-';
   }
 }
 
@@ -325,14 +321,90 @@ class CudaRunnerRuntime
     }
     else
       return;
-    cudaMemAdvise(ptr, count, cuda_advise, device);
+    ARCANE_CHECK_CUDA(cudaMemAdvise(ptr, count, cuda_advise, device));
   }
+
+  void setCurrentDevice(DeviceId device_id) final
+  {
+    Int32 id = device_id.asInt32();
+    if (!device_id.isAccelerator())
+      ARCANE_FATAL("Device {0} is not an accelerator device", id);
+    ARCANE_CHECK_CUDA(cudaSetDevice(id));
+  }
+
+  const IDeviceInfoList* deviceInfoList() final { return &m_device_info_list; }
+
+ public:
+
+  void fillDevices();
 
  private:
 
   Int64 m_nb_kernel_launched = 0;
   bool m_is_verbose = false;
+  impl::DeviceInfoList m_device_info_list;
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CudaRunnerRuntime::
+fillDevices()
+{
+  int nb_device = 0;
+  ARCANE_CHECK_CUDA(cudaGetDeviceCount(&nb_device));
+  std::ostream& omain = std::cout;
+  omain << "ArcaneCUDA: Initialize Arcane CUDA runtime nb_available_device=" << nb_device << "\n";
+  for (int i = 0; i < nb_device; ++i) {
+    cudaDeviceProp dp;
+    cudaGetDeviceProperties(&dp, i);
+    OStringStream ostr;
+    std::ostream& o = ostr.stream();
+    o << "Device " << i << " name=" << dp.name << "\n";
+    o << " computeCapability = " << dp.major << "." << dp.minor << "\n";
+    o << " totalGlobalMem = " << dp.totalGlobalMem << "\n";
+    o << " sharedMemPerBlock = " << dp.sharedMemPerBlock << "\n";
+    o << " regsPerBlock = " << dp.regsPerBlock << "\n";
+    o << " warpSize = " << dp.warpSize << "\n";
+    o << " memPitch = " << dp.memPitch << "\n";
+    o << " maxThreadsPerBlock = " << dp.maxThreadsPerBlock << "\n";
+    o << " totalConstMem = " << dp.totalConstMem << "\n";
+    o << " clockRate = " << dp.clockRate << "\n";
+    o << " deviceOverlap = " << dp.deviceOverlap << "\n";
+    o << " multiProcessorCount = " << dp.multiProcessorCount << "\n";
+    o << " kernelExecTimeoutEnabled = " << dp.kernelExecTimeoutEnabled << "\n";
+    o << " integrated = " << dp.integrated << "\n";
+    o << " canMapHostMemory = " << dp.canMapHostMemory << "\n";
+    o << " computeMode = " << dp.computeMode << "\n";
+    o << " maxThreadsDim = " << dp.maxThreadsDim[0] << " " << dp.maxThreadsDim[1]
+      << " " << dp.maxThreadsDim[2] << "\n";
+    o << " maxGridSize = " << dp.maxGridSize[0] << " " << dp.maxGridSize[1]
+      << " " << dp.maxGridSize[2] << "\n";
+    {
+      int least_val = 0;
+      int greatest_val = 0;
+      ARCANE_CHECK_CUDA(cudaDeviceGetStreamPriorityRange(&least_val, &greatest_val));
+      o << " leastPriority = " << least_val << " greatestPriority = " << greatest_val << "\n";
+    }
+    {
+      CUdevice device;
+      ARCANE_CHECK_CUDA(cuDeviceGet(&device, i));
+      CUuuid device_uuid;
+      ARCANE_CHECK_CUDA(cuDeviceGetUuid(&device_uuid, device));
+      o << " deviceUuid=";
+      _printUUID(o, device_uuid.bytes);
+      o << "\n";
+    }
+    String description(ostr.str());
+    omain << description;
+
+    DeviceInfo device_info;
+    device_info.setDescription(description);
+    device_info.setDeviceId(DeviceId(i));
+    device_info.setName(dp.name);
+    m_device_info_list.addDevice(device_info);
+  }
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -375,11 +447,11 @@ arcaneRegisterAcceleratorRuntimecuda()
   Arcane::Accelerator::impl::setCUDARunQueueRuntime(&global_cuda_runtime);
   Arcane::platform::setAcceleratorHostMemoryAllocator(getCudaMemoryAllocator());
   IMemoryRessourceMngInternal* mrm = platform::getDataMemoryRessourceMng()->_internal();
-  mrm->setAllocator(eMemoryRessource::UnifiedMemory,getCudaUnifiedMemoryAllocator());
-  mrm->setAllocator(eMemoryRessource::HostPinned,getCudaHostPinnedMemoryAllocator());
-  mrm->setAllocator(eMemoryRessource::Device,getCudaDeviceMemoryAllocator());
+  mrm->setAllocator(eMemoryRessource::UnifiedMemory, getCudaUnifiedMemoryAllocator());
+  mrm->setAllocator(eMemoryRessource::HostPinned, getCudaHostPinnedMemoryAllocator());
+  mrm->setAllocator(eMemoryRessource::Device, getCudaDeviceMemoryAllocator());
   mrm->setCopier(&global_cuda_memory_copier);
-  checkDevices();
+  global_cuda_runtime.fillDevices();
 }
 
 /*---------------------------------------------------------------------------*/

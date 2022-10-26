@@ -11,10 +11,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/core/IRunQueueRuntime.h"
+#include "arcane/accelerator/core/IRunnerRuntime.h"
 #include "arcane/accelerator/core/IRunQueueStream.h"
 #include "arcane/accelerator/core/IRunQueueEventImpl.h"
 #include "arcane/accelerator/core/Memory.h"
+#include "arcane/accelerator/core/DeviceInfoList.h"
 
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/MemoryView.h"
@@ -65,8 +66,13 @@ class ARCANE_ACCELERATOR_CORE_EXPORT HostRunQueueEvent
 : public IRunQueueEventImpl
 {
  public:
-  explicit HostRunQueueEvent(bool has_timer) : m_has_timer(has_timer){}
+
+  explicit HostRunQueueEvent(bool has_timer)
+  : m_has_timer(has_timer)
+  {}
+
  public:
+
   void recordQueue(IRunQueueStream*) final
   {
     if (m_has_timer)
@@ -94,46 +100,62 @@ class ARCANE_ACCELERATOR_CORE_EXPORT HostRunQueueEvent
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCANE_ACCELERATOR_CORE_EXPORT SequentialRunnerRuntime
+class ARCANE_ACCELERATOR_CORE_EXPORT CommonRunnerRuntime
 : public IRunnerRuntime
 {
+ public:
+
+  CommonRunnerRuntime()
+  {
+    DeviceInfo d;
+    d.setDeviceId(DeviceId());
+    d.setName("HostDevice");
+    m_device_info_list.addDevice(d);
+  }
+
  public:
 
   void notifyBeginLaunchKernel() final {}
   void notifyEndLaunchKernel() final {}
   void barrier() final {}
-  eExecutionPolicy executionPolicy() const final { return eExecutionPolicy::Sequential; }
   IRunQueueStream* createStream(const RunQueueBuildInfo&) final { return new HostRunQueueStream(this); }
   IRunQueueEventImpl* createEventImpl() final { return new HostRunQueueEvent(false); }
   IRunQueueEventImpl* createEventImplWithTimer() final { return new HostRunQueueEvent(true); }
   void setMemoryAdvice(MemoryView, eMemoryAdvice, DeviceId) final {}
   void unsetMemoryAdvice(MemoryView, eMemoryAdvice, DeviceId) final {}
+  void setCurrentDevice(DeviceId) final {}
+  const IDeviceInfoList* deviceInfoList() final { return &m_device_info_list; }
+
+ private:
+
+  DeviceInfoList m_device_info_list;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class ARCANE_ACCELERATOR_CORE_EXPORT SequentialRunnerRuntime
+: public CommonRunnerRuntime
+{
+  eExecutionPolicy executionPolicy() const final { return eExecutionPolicy::Sequential; }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 class ARCANE_ACCELERATOR_CORE_EXPORT ThreadRunnerRuntime
-: public IRunnerRuntime
+: public CommonRunnerRuntime
 {
  public:
 
-  void notifyBeginLaunchKernel() final {}
-  void notifyEndLaunchKernel() final {}
-  void barrier() final {}
   eExecutionPolicy executionPolicy() const final { return eExecutionPolicy::Thread; }
-  IRunQueueStream* createStream(const RunQueueBuildInfo&) final { return new HostRunQueueStream(this); }
-  IRunQueueEventImpl* createEventImpl() final { return new HostRunQueueEvent(false); }
-  IRunQueueEventImpl* createEventImplWithTimer() final { return new HostRunQueueEvent(true); }
-  void setMemoryAdvice(MemoryView, eMemoryAdvice, DeviceId) final {}
-  void unsetMemoryAdvice(MemoryView, eMemoryAdvice, DeviceId) final {}
 };
 
 namespace
 {
-SequentialRunnerRuntime global_sequential_runqueue_runtime;
-ThreadRunnerRuntime global_thread_runqueue_runtime;
-}
+  SequentialRunnerRuntime global_sequential_runqueue_runtime;
+  ThreadRunnerRuntime global_thread_runqueue_runtime;
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -15,10 +15,14 @@ arcane_add_library(arcane_accelerator_cuda_runtime
   )
 
 target_link_libraries(arcane_accelerator_cuda_runtime PUBLIC
-  arcane_accelerator arcane_cuda_compile_flags CUDA::cudart
+  arcane_accelerator arcane_cuda_compile_flags CUDA::cudart CUDA::cuda_driver
   )
 
-if (TARGET CUDA::nvToolsExt)
+# Note: à partir de CMake 3.25 'nvToolsExt' devient 'nvtx3'
+if (TARGET CUDA::nvtx3)
+  target_compile_definitions(arcane_accelerator_cuda_runtime PRIVATE ARCANE_HAS_CUDA_NVTOOLSEXT)
+  target_link_libraries(arcane_accelerator_cuda_runtime PRIVATE CUDA::nvtx3)
+elseif (TARGET CUDA::nvToolsExt)
   target_compile_definitions(arcane_accelerator_cuda_runtime PRIVATE ARCANE_HAS_CUDA_NVTOOLSEXT)
   target_link_libraries(arcane_accelerator_cuda_runtime PRIVATE CUDA::nvToolsExt)
 endif()

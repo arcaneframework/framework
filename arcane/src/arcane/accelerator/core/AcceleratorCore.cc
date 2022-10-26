@@ -5,13 +5,15 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorCore.cc                                          (C) 2000-2021 */
+/* AcceleratorCore.cc                                          (C) 2000-2022 */
 /*                                                                           */
 /* Déclarations générales pour le support des accélérateurs.                 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
+
+#include "arcane/accelerator/core/DeviceInfoList.h"
 
 #include <iostream>
 
@@ -38,11 +40,11 @@ namespace Arcane::Accelerator
 
 namespace
 {
-bool global_is_using_cuda_runtime = false;
-impl::IRunnerRuntime* global_cuda_runqueue_runtime = nullptr;
-bool global_is_using_hip_runtime = false;
-impl::IRunnerRuntime* global_hip_runqueue_runtime = nullptr;
-}
+  bool global_is_using_cuda_runtime = false;
+  impl::IRunnerRuntime* global_cuda_runqueue_runtime = nullptr;
+  bool global_is_using_hip_runtime = false;
+  impl::IRunnerRuntime* global_hip_runqueue_runtime = nullptr;
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -113,14 +115,25 @@ setHIPRunQueueRuntime(impl::IRunnerRuntime* v)
 
 //! Affiche le nom de la politique d'exécution
 extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT
-std::ostream& operator<<(std::ostream& o,eExecutionPolicy exec_policy)
+std::ostream&
+operator<<(std::ostream& o, eExecutionPolicy exec_policy)
 {
-  switch(exec_policy){
-  case eExecutionPolicy::None: o << "None"; break;
-  case eExecutionPolicy::Sequential: o << "Sequential"; break;
-  case eExecutionPolicy::Thread: o << "Thread"; break;
-  case eExecutionPolicy::CUDA: o << "CUDA"; break;
-  case eExecutionPolicy::HIP: o << "HIP"; break;
+  switch (exec_policy) {
+  case eExecutionPolicy::None:
+    o << "None";
+    break;
+  case eExecutionPolicy::Sequential:
+    o << "Sequential";
+    break;
+  case eExecutionPolicy::Thread:
+    o << "Thread";
+    break;
+  case eExecutionPolicy::CUDA:
+    o << "CUDA";
+    break;
+  case eExecutionPolicy::HIP:
+    o << "HIP";
+    break;
   }
   return o;
 }
@@ -128,7 +141,17 @@ std::ostream& operator<<(std::ostream& o,eExecutionPolicy exec_policy)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+ARCANE_ACCELERATOR_CORE_EXPORT
+std::ostream& operator<<(std::ostream& o, const DeviceId& device_id)
+{
+  o << device_id.asInt32();
+  return o;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

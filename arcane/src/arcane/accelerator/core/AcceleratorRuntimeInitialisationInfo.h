@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AcceleratorRuntimeInitialisationInfo.h                      (C) 2000-2021 */
+/* AcceleratorRuntimeInitialisationInfo.h                      (C) 2000-2022 */
 /*                                                                           */
 /* Informations pour l'initialisation du runtime des accélérateurs.          */
 /*---------------------------------------------------------------------------*/
@@ -33,8 +33,11 @@ namespace Arcane::Accelerator
 class ARCANE_ACCELERATOR_CORE_EXPORT AcceleratorRuntimeInitialisationInfo
 {
   ARCANE_DECLARE_PROPERTY_CLASS(AcceleratorRuntimeInitialisationInfo);
+
  private:
+
   class Impl;
+
  public:
 
   AcceleratorRuntimeInitialisationInfo();
@@ -51,6 +54,14 @@ class ARCANE_ACCELERATOR_CORE_EXPORT AcceleratorRuntimeInitialisationInfo
   void setAcceleratorRuntime(StringView name);
   String acceleratorRuntime() const;
 
+  //! Positionne le device associé au Runner associé.
+  void setDeviceId(DeviceId name);
+  //! Device associé au Runner associé
+  DeviceId deviceId() const;
+
+  //! Politique d'exécution associée à acceleratorRuntime()
+  eExecutionPolicy executionPolicy() const;
+
  private:
 
   Impl* m_p;
@@ -58,9 +69,14 @@ class ARCANE_ACCELERATOR_CORE_EXPORT AcceleratorRuntimeInitialisationInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Initialise \a runner avec les informations de \a acc_info.
+ *
+ * Cette fonction appelle Accelerator::Runner::setAsCurrentDevice() après
+ * l'initialisation.
+ */
 extern "C++" ARCANE_ACCELERATOR_CORE_EXPORT void
-arcaneInitializeRunner(Accelerator::Runner& runner,ITraceMng* tm,
+arcaneInitializeRunner(Accelerator::Runner& runner, ITraceMng* tm,
                        const AcceleratorRuntimeInitialisationInfo& acc_info);
 
 /*---------------------------------------------------------------------------*/

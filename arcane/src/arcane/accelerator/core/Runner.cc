@@ -21,8 +21,9 @@
 
 #include "arcane/accelerator/core/RunQueueImpl.h"
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
-#include "arcane/accelerator/core/IRunQueueRuntime.h"
+#include "arcane/accelerator/core/IRunnerRuntime.h"
 #include "arcane/accelerator/core/DeviceId.h"
+#include "arcane/accelerator/core/IDeviceInfoList.h"
 
 #include <stack>
 #include <map>
@@ -52,7 +53,6 @@ namespace
       return impl::getSequentialRunQueueRuntime();
     case eExecutionPolicy::Thread:
       return impl::getThreadRunQueueRuntime();
-      ;
     }
     return runtime;
   }
@@ -133,13 +133,17 @@ class Runner::Impl
 
  public:
 
-  void initialize(Runner* runner, eExecutionPolicy v)
+  void initialize(Runner* runner, eExecutionPolicy v, DeviceId device)
   {
     if (m_is_init)
       ARCANE_FATAL("Runner is already initialized");
     if (v == eExecutionPolicy::None)
       ARCANE_THROW(ArgumentException, "executionPolicy should not be eExecutionPolicy::None");
+    if (device.isHost() || device.isNull())
+      ARCANE_THROW(ArgumentException, "device should not be Device::hostDevice() or Device::nullDevice()");
+
     m_execution_policy = v;
+    m_device_id = device;
     m_runtime = _getRuntime(v);
     m_is_init = true;
 
@@ -230,6 +234,16 @@ Runner(eExecutionPolicy p)
 : Runner()
 {
   initialize(p);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Runner::
+Runner(eExecutionPolicy p, DeviceId device_id)
+: Runner()
+{
+  initialize(p, device_id);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -383,7 +397,16 @@ _createEventWithTimer()
 void Runner::
 initialize(eExecutionPolicy v)
 {
-  m_p->initialize(this, v);
+  m_p->initialize(this, v, DeviceId());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void Runner::
+initialize(eExecutionPolicy v, DeviceId device_id)
+{
+  m_p->initialize(this, v, device_id);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -432,6 +455,54 @@ unsetMemoryAdvice(MemoryView buffer, eMemoryAdvice advice)
 {
   _checkIsInit();
   m_p->runtime()->unsetMemoryAdvice(buffer, advice, m_p->m_device_id);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void Runner::
+setAsCurrentDevice()
+{
+  _checkIsInit();
+  m_p->runtime()->setCurrentDevice(m_p->m_device_id);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+DeviceId Runner::
+deviceId() const
+{
+  return m_p->m_device_id;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+const DeviceInfo& Runner::
+deviceInfo() const
+{
+  _checkIsInit();
+  const IDeviceInfoList* dlist = deviceInfoList(executionPolicy());
+  Int32 nb_device = dlist->nbDevice();
+  if (nb_device == 0)
+    ARCANE_FATAL("Internal error: no device available");
+  Int32 device_id = deviceId().asInt32();
+  if (device_id >= nb_device)
+    device_id = 0;
+  return dlist->deviceInfo(device_id);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+const IDeviceInfoList* Runner::
+deviceInfoList(eExecutionPolicy policy)
+{
+  if (policy == eExecutionPolicy::None)
+    return nullptr;
+  impl::IRunnerRuntime* r = _getRuntime(policy);
+  return r->deviceInfoList();
 }
 
 /*---------------------------------------------------------------------------*/
