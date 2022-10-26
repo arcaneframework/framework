@@ -97,8 +97,9 @@
 #include "arcane/CaseOptionBuildInfo.h"
 
 #include "arcane/accelerator/core/IAcceleratorMng.h"
-#include "arcane/accelerator/core/DeviceId.h"
-#include "arcane/AcceleratorRuntimeInitialisationInfo.h"
+#include "arcane/accelerator/core/DeviceInfo.h"
+#include "arcane/accelerator/core/Runner.h"
+#include "arcane/accelerator/core/AcceleratorRuntimeInitialisationInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -479,6 +480,9 @@ initialize()
       config.setDeviceId(ax::DeviceId(device_rank));
     }
     m_accelerator_mng->initialize(config);
+    auto device_info = m_accelerator_mng->defaultRunner()->deviceInfo();
+    info() << "DeviceInfo: name=" << device_info.name();
+    info() << "DeviceInfo: description=" << device_info.description();
   }
 
   IMainFactory* mf = m_application->mainFactory();
