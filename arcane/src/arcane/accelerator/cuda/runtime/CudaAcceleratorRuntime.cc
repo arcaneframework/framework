@@ -37,10 +37,45 @@
 #include <nvToolsExt.h>
 #endif
 
+#include <cuda.h>
+
 using namespace Arccore;
 
 namespace Arcane::Accelerator::Cuda
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void arcaneCheckCudaErrors(const TraceInfo& ti, CUresult e)
+{
+  if (e == CUDA_SUCCESS)
+    return;
+  const char* error_name = nullptr;
+  CUresult e2 = cuGetErrorName(e, &error_name);
+  if (e2 != CUDA_SUCCESS)
+    error_name = "Unknown";
+
+  const char* error_message = nullptr;
+  CUresult e3 = cuGetErrorString(e, &error_message);
+  if (e3 != CUDA_SUCCESS)
+    error_message = "Unknown";
+
+  ARCANE_FATAL("CUDA Error trace={0} e={1} name={2} message={3}",
+               ti, e, error_name, error_message);
+}
+
+void _printUUID(std::ostream& o, char bytes[16])
+{
+  static const char hexa_chars[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
+
+  for (int i = 0; i < 16; ++i) {
+    o << hexa_chars[(bytes[i * 2] >> 4) & 0xf];
+    o << hexa_chars[bytes[(i * 2) + 1] & 0xf];
+    if (i == 4 || i == 6 || i == 8 || i == 10)
+      o << '-';
+  }
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -76,10 +111,21 @@ void checkDevices()
       << " " << dp.maxThreadsDim[2] << "\n";
     o << " maxGridSize = " << dp.maxGridSize[0] << " " << dp.maxGridSize[1]
       << " " << dp.maxGridSize[2] << "\n";
-    int least_val = 0;
-    int greatest_val = 0;
-    ARCANE_CHECK_CUDA(cudaDeviceGetStreamPriorityRange(&least_val, &greatest_val));
-    o << " leastPriority = " << least_val << " greatestPriority = " << greatest_val << "\n";
+    {
+      int least_val = 0;
+      int greatest_val = 0;
+      ARCANE_CHECK_CUDA(cudaDeviceGetStreamPriorityRange(&least_val, &greatest_val));
+      o << " leastPriority = " << least_val << " greatestPriority = " << greatest_val << "\n";
+    }
+    {
+      CUdevice device;
+      ARCANE_CHECK_CUDA(cuDeviceGet(&device, i));
+      CUuuid device_uuid;
+      ARCANE_CHECK_CUDA(cuDeviceGetUuid(&device_uuid, device));
+      o << " deviceUuid=";
+      _printUUID(o, device_uuid.bytes);
+      o << "\n";
+    }
   }
 }
 
