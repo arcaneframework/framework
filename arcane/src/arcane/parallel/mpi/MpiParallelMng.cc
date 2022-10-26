@@ -293,22 +293,29 @@ class MpiParallelMngUtilsFactory
     VariableSynchronizerDispatcher* vd = nullptr;
     ITraceMng* tm = pm->traceMng();
     Ref<IGenericVariableSynchronizerDispatcherFactory> generic_factory;
+    // N'affiche les informations que pour le groupe de toutes les mailles pour éviter d'afficher
+    // plusieurs fois le même message.
+    bool do_print = (group.isAllItems() && group.itemKind()==IK_Cell);
     if (m_synchronizer_version == 2){
-      tm->info() << "Using MpiSynchronizer V2";
+      if (do_print)
+        tm->info() << "Using MpiSynchronizer V2";
       generic_factory = arcaneCreateMpiVariableSynchronizerFactory(mpi_pm);
     }
     else if (m_synchronizer_version == 3 ){
-      tm->info() << "Using MpiSynchronizer V3";
+      if (do_print)
+        tm->info() << "Using MpiSynchronizer V3";
       MpiDirectSendrecvVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table);
       vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiDirectSendrecvVariableSynchronizeDispatcher>(bi));
     }
     else if (m_synchronizer_version == 4){
-      tm->info() << "Using MpiSynchronizer V4 block_size=" << m_synchronize_block_size
-                 << " nb_sequence=" << m_synchronize_nb_sequence;
+      if (do_print)
+        tm->info() << "Using MpiSynchronizer V4 block_size=" << m_synchronize_block_size
+                   << " nb_sequence=" << m_synchronize_nb_sequence;
       generic_factory = arcaneCreateMpiBlockVariableSynchronizerFactory(mpi_pm,m_synchronize_block_size,m_synchronize_nb_sequence);
     }
     else if (m_synchronizer_version == 5){
-      tm->info() << "Using MpiSynchronizer V5";
+      if (do_print)
+        tm->info() << "Using MpiSynchronizer V5";
       topology_info = makeRef<IVariableSynchronizerMpiCommunicator>(new VariableSynchronizerMpiCommunicator(mpi_pm));
 #if defined(ARCANE_HAS_MPI_NEIGHBOR)
       generic_factory = arcaneCreateMpiNeighborVariableSynchronizerFactory(mpi_pm,topology_info);
@@ -317,7 +324,8 @@ class MpiParallelMngUtilsFactory
 #endif
     }
     else{
-      tm->info() << "Using MpiSynchronizer V1";
+      if (do_print)
+        tm->info() << "Using MpiSynchronizer V1";
       MpiLegacyVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table);
       vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiLegacyVariableSynchronizeDispatcher>(bi));
     }

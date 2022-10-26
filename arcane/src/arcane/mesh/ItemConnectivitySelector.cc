@@ -53,8 +53,8 @@ build()
     return;
 
   _createCustomConnectivity(m_connectivity_name);
-  info() << "Family: " << m_source_family->fullName()
-         << " create new connectivity: " << m_connectivity_name;
+  info(4) << "Family: " << m_source_family->fullName()
+          << " create new connectivity: " << m_connectivity_name;
 
   _buildCustomConnectivity();
   m_is_built = true;

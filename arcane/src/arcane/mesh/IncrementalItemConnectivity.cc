@@ -310,7 +310,6 @@ setItemConnectivityList(ItemInternalConnectivityList* ilist,Int32 index)
 {
   m_item_connectivity_list = ilist;
   m_item_connectivity_index = index;
-  info() << "Connectivity name=" << name() << " modifying ItemInternal accessor index=" << index;
   _notifyConnectivityListChanged();
   _notifyConnectivityIndexChanged();
 }

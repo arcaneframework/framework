@@ -314,7 +314,7 @@ build()
 {
   Trace::Setter mci(traceMng(),_className());
 
-  info() << "BUILDING DYNAMIC_MESH=" << this << " name=" << name() << '\n';
+  info() << "Building DynamicMesh=" << this << " name=" << name();
 
   m_tied_interface_mng = new TiedInterfaceMng(this);
 
