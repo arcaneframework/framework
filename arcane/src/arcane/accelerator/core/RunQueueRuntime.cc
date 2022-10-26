@@ -100,15 +100,24 @@ class ARCANE_ACCELERATOR_CORE_EXPORT HostRunQueueEvent
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ARCANE_ACCELERATOR_CORE_EXPORT SequentialRunnerRuntime
+class ARCANE_ACCELERATOR_CORE_EXPORT CommonRunnerRuntime
 : public IRunnerRuntime
 {
+ public:
+
+  CommonRunnerRuntime()
+  {
+    DeviceInfo d;
+    d.setDeviceId(DeviceId());
+    d.setName("HostDevice");
+    m_device_info_list.addDevice(d);
+  }
+
  public:
 
   void notifyBeginLaunchKernel() final {}
   void notifyEndLaunchKernel() final {}
   void barrier() final {}
-  eExecutionPolicy executionPolicy() const final { return eExecutionPolicy::Sequential; }
   IRunQueueStream* createStream(const RunQueueBuildInfo&) final { return new HostRunQueueStream(this); }
   IRunQueueEventImpl* createEventImpl() final { return new HostRunQueueEvent(false); }
   IRunQueueEventImpl* createEventImplWithTimer() final { return new HostRunQueueEvent(true); }
@@ -125,26 +134,21 @@ class ARCANE_ACCELERATOR_CORE_EXPORT SequentialRunnerRuntime
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class ARCANE_ACCELERATOR_CORE_EXPORT SequentialRunnerRuntime
+: public CommonRunnerRuntime
+{
+  eExecutionPolicy executionPolicy() const final { return eExecutionPolicy::Sequential; }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 class ARCANE_ACCELERATOR_CORE_EXPORT ThreadRunnerRuntime
-: public IRunnerRuntime
+: public CommonRunnerRuntime
 {
  public:
 
-  void notifyBeginLaunchKernel() final {}
-  void notifyEndLaunchKernel() final {}
-  void barrier() final {}
   eExecutionPolicy executionPolicy() const final { return eExecutionPolicy::Thread; }
-  IRunQueueStream* createStream(const RunQueueBuildInfo&) final { return new HostRunQueueStream(this); }
-  IRunQueueEventImpl* createEventImpl() final { return new HostRunQueueEvent(false); }
-  IRunQueueEventImpl* createEventImplWithTimer() final { return new HostRunQueueEvent(true); }
-  void setMemoryAdvice(MemoryView, eMemoryAdvice, DeviceId) final {}
-  void unsetMemoryAdvice(MemoryView, eMemoryAdvice, DeviceId) final {}
-  void setCurrentDevice(DeviceId) final {}
-  const IDeviceInfoList* deviceInfoList() final { return &m_device_info_list; }
-
- private:
-
-  DeviceInfoList m_device_info_list;
 };
 
 namespace

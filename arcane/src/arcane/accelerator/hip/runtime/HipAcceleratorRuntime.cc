@@ -19,6 +19,7 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/IMemoryRessourceMng.h"
+#include "arcane/utils/OStringStream.h"
 #include "arcane/utils/internal/IMemoryRessourceMngInternal.h"
 
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
@@ -39,47 +40,6 @@ using namespace Arccore;
 
 namespace Arcane::Accelerator::Hip
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void checkDevices()
-{
-  int nb_device = 0;
-  ARCANE_CHECK_HIP(hipGetDeviceCount(&nb_device));
-  std::ostream& o = std::cout;
-  o << "Initialize Arcane CUDA runtime\n";
-  o << "Available device = " << nb_device << "\n";
-  for (int i = 0; i < nb_device; ++i) {
-    hipDeviceProp_t dp;
-    ARCANE_CHECK_HIP(hipGetDeviceProperties(&dp, i));
-
-    int has_managed_memory = 0;
-    ARCANE_CHECK_HIP(hipDeviceGetAttribute(&has_managed_memory, hipDeviceAttributeManagedMemory, i));
-
-    o << "\nDevice " << i << " name=" << dp.name << "\n";
-    o << " computeCapability = " << dp.major << "." << dp.minor << "\n";
-    o << " totalGlobalMem = " << dp.totalGlobalMem << "\n";
-    o << " sharedMemPerBlock = " << dp.sharedMemPerBlock << "\n";
-    o << " regsPerBlock = " << dp.regsPerBlock << "\n";
-    o << " warpSize = " << dp.warpSize << "\n";
-    o << " memPitch = " << dp.memPitch << "\n";
-    o << " maxThreadsPerBlock = " << dp.maxThreadsPerBlock << "\n";
-    o << " totalConstMem = " << dp.totalConstMem << "\n";
-    o << " clockRate = " << dp.clockRate << "\n";
-    //o << " deviceOverlap = " << dp.deviceOverlap<< "\n";
-    o << " multiProcessorCount = " << dp.multiProcessorCount << "\n";
-    o << " kernelExecTimeoutEnabled = " << dp.kernelExecTimeoutEnabled << "\n";
-    o << " integrated = " << dp.integrated << "\n";
-    o << " canMapHostMemory = " << dp.canMapHostMemory << "\n";
-    o << " computeMode = " << dp.computeMode << "\n";
-    o << " maxThreadsDim = " << dp.maxThreadsDim[0] << " " << dp.maxThreadsDim[1]
-      << " " << dp.maxThreadsDim[2] << "\n";
-    o << " maxGridSize = " << dp.maxGridSize[0] << " " << dp.maxGridSize[1]
-      << " " << dp.maxGridSize[2] << "\n";
-    o << " hasManagedMemory = " << has_managed_memory << "\n";
-  }
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -289,12 +249,67 @@ class HipRunnerRuntime
   }
   const IDeviceInfoList* deviceInfoList() override { return &m_device_info_list; }
 
+  void fillDevices();
+
  private:
 
   Int64 m_nb_kernel_launched = 0;
   bool m_is_verbose = false;
   impl::DeviceInfoList m_device_info_list;
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void HipRunnerRuntime::
+fillDevices()
+{
+  int nb_device = 0;
+  ARCANE_CHECK_HIP(hipGetDeviceCount(&nb_device));
+  std::ostream& omain = std::cout;
+  omain << "ArcaneHIP: Initialize Arcane HIP runtime nb_available_device=" << nb_device << "\n";
+  for (int i = 0; i < nb_device; ++i) {
+    OStringStream ostr;
+    std::ostream& o = ostr.stream();
+
+    hipDeviceProp_t dp;
+    ARCANE_CHECK_HIP(hipGetDeviceProperties(&dp, i));
+
+    int has_managed_memory = 0;
+    ARCANE_CHECK_HIP(hipDeviceGetAttribute(&has_managed_memory, hipDeviceAttributeManagedMemory, i));
+
+    o << "\nDevice " << i << " name=" << dp.name << "\n";
+    o << " computeCapability = " << dp.major << "." << dp.minor << "\n";
+    o << " totalGlobalMem = " << dp.totalGlobalMem << "\n";
+    o << " sharedMemPerBlock = " << dp.sharedMemPerBlock << "\n";
+    o << " regsPerBlock = " << dp.regsPerBlock << "\n";
+    o << " warpSize = " << dp.warpSize << "\n";
+    o << " memPitch = " << dp.memPitch << "\n";
+    o << " maxThreadsPerBlock = " << dp.maxThreadsPerBlock << "\n";
+    o << " totalConstMem = " << dp.totalConstMem << "\n";
+    o << " clockRate = " << dp.clockRate << "\n";
+    //o << " deviceOverlap = " << dp.deviceOverlap<< "\n";
+    o << " multiProcessorCount = " << dp.multiProcessorCount << "\n";
+    o << " kernelExecTimeoutEnabled = " << dp.kernelExecTimeoutEnabled << "\n";
+    o << " integrated = " << dp.integrated << "\n";
+    o << " canMapHostMemory = " << dp.canMapHostMemory << "\n";
+    o << " computeMode = " << dp.computeMode << "\n";
+    o << " maxThreadsDim = " << dp.maxThreadsDim[0] << " " << dp.maxThreadsDim[1]
+      << " " << dp.maxThreadsDim[2] << "\n";
+    o << " maxGridSize = " << dp.maxGridSize[0] << " " << dp.maxGridSize[1]
+      << " " << dp.maxGridSize[2] << "\n";
+    o << " hasManagedMemory = " << has_managed_memory << "\n";
+
+    String description(ostr.str());
+    omain << description;
+
+    DeviceInfo device_info;
+    device_info.setDescription(description);
+    device_info.setDeviceId(DeviceId(i));
+    device_info.setName(dp.name);
+    m_device_info_list.addDevice(device_info);
+  }
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -337,11 +352,11 @@ arcaneRegisterAcceleratorRuntimehip()
   Arcane::Accelerator::impl::setHIPRunQueueRuntime(&global_hip_runtime);
   Arcane::platform::setAcceleratorHostMemoryAllocator(getHipMemoryAllocator());
   IMemoryRessourceMngInternal* mrm = platform::getDataMemoryRessourceMng()->_internal();
-  mrm->setAllocator(eMemoryRessource::UnifiedMemory,getHipUnifiedMemoryAllocator());
-  mrm->setAllocator(eMemoryRessource::HostPinned,getHipHostPinnedMemoryAllocator());
-  mrm->setAllocator(eMemoryRessource::Device,getHipDeviceMemoryAllocator());
+  mrm->setAllocator(eMemoryRessource::UnifiedMemory, getHipUnifiedMemoryAllocator());
+  mrm->setAllocator(eMemoryRessource::HostPinned, getHipHostPinnedMemoryAllocator());
+  mrm->setAllocator(eMemoryRessource::Device, getHipDeviceMemoryAllocator());
   mrm->setCopier(&global_hip_memory_copier);
-  checkDevices();
+  global_hip_runtime.fillDevices();
 }
 
 /*---------------------------------------------------------------------------*/

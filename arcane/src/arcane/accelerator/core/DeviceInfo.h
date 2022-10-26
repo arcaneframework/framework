@@ -33,20 +33,30 @@ class ARCANE_ACCELERATOR_CORE_EXPORT DeviceInfo
  public:
 
   //! Informations du i-ème device.
-  DeviceId id() const { return m_device_id; }
+  DeviceId deviceId() const { return m_device_id; }
+
+  //! Nom du device
+  String name() const { return m_name; }
 
   //! UUID sous forme de chaîne de caractères. Peut-être nul.
   String uuidAsString() const { return m_uuid_as_string; }
 
+  //! Description du device.
+  String description() const { return m_description; }
+
  public:
 
-  void setId(DeviceId id) { m_device_id = id; }
+  void setDeviceId(DeviceId id) { m_device_id = id; }
   void setUUIDAsString(const String& v) { m_uuid_as_string = v; }
+  void setDescription(const String& v) { m_description = v; }
+  void setName(const String& v) { m_name = v; }
 
  private:
 
   DeviceId m_device_id;
+  String m_name;
   String m_uuid_as_string;
+  String m_description;
 };
 
 /*---------------------------------------------------------------------------*/
