@@ -34,10 +34,11 @@ class ARCANE_ACCELERATOR_CORE_EXPORT DeviceId
  private:
 
   static constexpr Int32 HOST_ID = (-1);
+  static constexpr Int32 NULL_ID = (-2);
 
  public:
 
-  //! Accélérateur par défaut
+  //! Accélérateur par défaut (Device de numéro 0)
   DeviceId() = default;
 
   explicit DeviceId(Int32 id)
@@ -48,11 +49,15 @@ class ARCANE_ACCELERATOR_CORE_EXPORT DeviceId
  public:
 
   //! Device représentant l'hôte.
-  static DeviceId host() { return DeviceId(HOST_ID); }
+  static DeviceId hostDevice() { return DeviceId(HOST_ID); }
+
+  //! Device nulle ou invalide.
+  static DeviceId nullDevice() { return DeviceId(NULL_ID); }
 
  public:
 
   bool isHost() const { return m_device_id == HOST_ID; }
+  bool isNull() const { return m_device_id == NULL_ID; }
   Int32 asInt32() const { return m_device_id; }
 
  private:

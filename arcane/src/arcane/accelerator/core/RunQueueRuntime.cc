@@ -11,7 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/core/IRunQueueRuntime.h"
+#include "arcane/accelerator/core/IRunnerRuntime.h"
 #include "arcane/accelerator/core/IRunQueueStream.h"
 #include "arcane/accelerator/core/IRunQueueEventImpl.h"
 #include "arcane/accelerator/core/Memory.h"
@@ -65,8 +65,13 @@ class ARCANE_ACCELERATOR_CORE_EXPORT HostRunQueueEvent
 : public IRunQueueEventImpl
 {
  public:
-  explicit HostRunQueueEvent(bool has_timer) : m_has_timer(has_timer){}
+
+  explicit HostRunQueueEvent(bool has_timer)
+  : m_has_timer(has_timer)
+  {}
+
  public:
+
   void recordQueue(IRunQueueStream*) final
   {
     if (m_has_timer)
@@ -131,9 +136,9 @@ class ARCANE_ACCELERATOR_CORE_EXPORT ThreadRunnerRuntime
 
 namespace
 {
-SequentialRunnerRuntime global_sequential_runqueue_runtime;
-ThreadRunnerRuntime global_thread_runqueue_runtime;
-}
+  SequentialRunnerRuntime global_sequential_runqueue_runtime;
+  ThreadRunnerRuntime global_thread_runqueue_runtime;
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

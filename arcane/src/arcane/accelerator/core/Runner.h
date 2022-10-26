@@ -32,7 +32,8 @@ namespace Arcane::Accelerator
  *
  * Une instance de cette classe représente un backend d'exécution. Il faut
  * d'abord appelé initialize() avant de pouvoir utiliser les méthodes de
- * l'instance ou alors il faut appeler le constructeur Runner(eExecutionPolicy).
+ * l'instance ou alors il faut appeler l'un des constructeurs autre que le
+ * constructeur par défaut.
  */
 class ARCANE_ACCELERATOR_CORE_EXPORT Runner
 {
@@ -52,6 +53,8 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
   Runner();
   //! Créé et initialise un gestionnaire pour l'accélérateur \a p
   explicit Runner(eExecutionPolicy p);
+  //! Créé et initialise un gestionnaire pour l'accélérateur \a p et l'accélérateur \a device
+  Runner(eExecutionPolicy p,DeviceId device);
   ~Runner();
 
  public:
@@ -68,6 +71,9 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
 
   //! Initialise l'instance. Cette méthode ne doit être appelée qu'une seule fois.
   void initialize(eExecutionPolicy v);
+
+  //! Initialise l'instance. Cette méthode ne doit être appelée qu'une seule fois.
+  void initialize(eExecutionPolicy v,DeviceId device);
 
   //! Indique si l'instance a été initialisée
   bool isInitialized() const;
@@ -101,6 +107,9 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
 
   //! Supprime un conseil sur la gestion d'une zone mémoire
   void unsetMemoryAdvice(MemoryView buffer, eMemoryAdvice advice);
+
+  //! device associé à cette instance.
+  DeviceId deviceId() const;
 
  private:
 

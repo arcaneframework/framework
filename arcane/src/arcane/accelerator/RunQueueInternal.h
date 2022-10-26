@@ -17,7 +17,7 @@
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/LoopRanges.h"
 
-#include "arcane/accelerator/core/IRunQueueRuntime.h"
+#include "arcane/accelerator/core/IRunnerRuntime.h"
 
 #include "arcane/accelerator/AcceleratorGlobal.h"
 #include "arcane/accelerator/RunCommandLaunchInfo.h"
