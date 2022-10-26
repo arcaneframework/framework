@@ -118,7 +118,8 @@
 #include "arcane/MeshReaderMng.h"
 #include "arcane/DotNetRuntimeInitialisationInfo.h"
 #include "arcane/utils/ExternalRef.h"
-#include "arcane/AcceleratorRuntimeInitialisationInfo.h"
+#include "arcane/accelerator/core/AcceleratorRuntimeInitialisationInfo.h"
+#include "arcane/accelerator/core/DeviceId.h"
 
 #include "ArcaneSwigUtils.h"
 

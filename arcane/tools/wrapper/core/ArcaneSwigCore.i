@@ -18,6 +18,9 @@ SWIG_CSBODY_TYPEWRAPPER([System.ComponentModel.EditorBrowsable(System.ComponentM
 
 %{
 #include "core/ArcaneSwigCoreInclude.h"
+
+using namespace Arcane;
+using namespace Arcane::Accelerator;
 %}
 
 #define ARCANE_RESTRICT
