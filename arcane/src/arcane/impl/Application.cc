@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Application.cc                                              (C) 2000-2021 */
+/* Application.cc                                              (C) 2000-2022 */
 /*                                                                           */
 /* Superviseur.                                                              */
 /*---------------------------------------------------------------------------*/
@@ -406,9 +406,10 @@ build()
 
       if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_TASK_VERBOSE_LEVEL",true))
         TaskFactory::setVerboseLevel(v.value());
-      if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_LOOP_PROFILING_LEVEL",true))
-        ProfilingRegistry::setProfilingLevel(v.value());
     }
+
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_LOOP_PROFILING_LEVEL",true))
+      ProfilingRegistry::setProfilingLevel(v.value());
 
     // Recherche le service utilisé pour le profiling
     {
