@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SubDomain.cc                                                (C) 2000-2021 */
+/* SubDomain.cc                                                (C) 2000-2022 */
 /*                                                                           */
 /* Gestionnaire du sous-domaine.                                             */
 /*---------------------------------------------------------------------------*/
@@ -25,6 +25,7 @@
 #include "arcane/utils/List.h"
 #include "arcane/utils/Property.h"
 #include "arcane/utils/TraceAccessor2.h"
+#include "arcane/utils/ValueConvert.h"
 
 #include "arcane/ISubDomain.h"
 #include "arcane/IVariableMng.h"
@@ -96,6 +97,7 @@
 #include "arcane/CaseOptionBuildInfo.h"
 
 #include "arcane/accelerator/core/IAcceleratorMng.h"
+#include "arcane/accelerator/core/DeviceId.h"
 #include "arcane/AcceleratorRuntimeInitialisationInfo.h"
 
 /*---------------------------------------------------------------------------*/
@@ -457,15 +459,26 @@ build()
 void SubDomain::
 initialize()
 {
+  namespace ax = Arcane::Accelerator;
   // Initialisation du module parallèle
   // TODO: a supprimer car plus utile
   m_parallel_mng->initialize();
 
   {
-    // Initialise le runner par défaut en fonction des paramètres donnés par
-    // l'utilisateur.
+    // Initialise le runner par défaut en fonction des paramètres
+    // donnés par l'utilisateur.
     IApplication* app = application();
-    m_accelerator_mng->initialize(app->acceleratorRuntimeInitialisationInfo());
+    ax::AcceleratorRuntimeInitialisationInfo config = app->acceleratorRuntimeInitialisationInfo();
+    // TODO: faire cela ailleurs
+    if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_ACCELERATOR_PARALLELMNG_RANK_FOR_DEVICE",true)){
+      Int32 modulo = v.value();
+      if (modulo==0)
+        modulo = 1;
+      info() << "Use commRank() to choose accelerator device with modulo=" << modulo;
+      Int32 device_rank = m_parallel_mng->commRank() % modulo;
+      config.setDeviceId(ax::DeviceId(device_rank));
+    }
+    m_accelerator_mng->initialize(config);
   }
 
   IMainFactory* mf = m_application->mainFactory();
