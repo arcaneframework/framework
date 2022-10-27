@@ -4,18 +4,21 @@
 
 Cette page contient les nouveautés de chaque version de %Arcane v3.X.X.
 
-Les nouveautés successives apportées par %Arcane v2.X.X sont listées ici : \ref arcanedoc_news_changelog20
-
+Les nouveautés successives apportées par les versions de %Arcane
+antérieures à la version 3 sont listées ici : \ref arcanedoc_news_changelog20
 
 ___
-## Arcane Version 3.7.x (... septembre 2022) {#arcanedoc_version370}
+## Arcane Version 3.7.x (... octobre 2022) {#arcanedoc_version370}
 
 WIP
 
 ### Nouveautés/Améliorations:
 
+- Refonte complète de la documentation afin qu'elle soit plus
+  cohérente et visuellement plus agréable (#378, #380, #382, #384,
+  #388, #390, #393, #396)
 - Ajoute un service de gestion de sorties au format CSV (voir
-  \ref arcanedoc_services_modules_services) (#277)
+  \ref arcanedoc_services_modules_simplecsvoutput) (#277, #362)
 - Ajoute possibilité de spécifier le mot clé `Auto` pour la variable
   CMake `ARCANE_DEFAULT_PARTITIONER`. Cela permet de choisir
   automatiquement lors de la configuration le partitionneur utilisé
@@ -32,12 +35,33 @@ WIP
 - Crée une classe Arcane::ItemInfoListView pour remplacer à terme
   Arcane::ItemInternalList et accéder aux informations des entités à
   partir de leur localId() (#305).
-- Ajoute dans l'API Accélérateur le support des réductions Min/Max/Sum
+- [accelerator] Ajoute le support des réductions Min/Max/Sum atomiques
   pour les types `Int32`, `Int64` et `double` (#353).
+- [accelerator] Ajoute nouvel algorithme de réduction sans passer par
+  des opérations atomiques. Cet algorithme n'est pas utilisé par
+  défaut. Il faut l'activer en appelant
+  Arcane::Accelerator::Runner::setDeviceReducePolicy() (#365, #379)
+- [accelerator] Ajoute possibilité de changer le nombre de threads par
+  bloc lors du lancement d'une commande via
+  Arcane::Accelerator::RunCommand::addNbThreadPerBlock() (#374)
+- [accelerator] Ajoute support pour le pre-chargement (prefetching) de
+  conseils (advice) de zones mémoire (#381)
+- [accelerator] Ajoute support pour récupérer les informations sur les
+  accélérateurs disponibles et associer un accélérateur à une instance
+  de Arcane::Accelerator::Runner (#399).
 - Début des développements pour pouvoir voir une variable tableau sur
   les entités comme une variable multi-dimensionnelle (#335).
 - Ajoute un observable pour pouvoir être notifié lors de la
   destruction d'une instance de maillage (Arcane::IMesh) (#336).
+- Ajoute méthode Arcane::mesh_utils::dumpSynchronizerTopologyJSON()
+  pour sauver au format JSON la topologie de communication pour les
+  synchronisation (#360).
+- Ajoute méthode Arcane::ICartesianMesh::refinePatch3D() pour raffiner
+  un maillage 3D en plusieurs patchs AMR (#386).
+- Ajoute implémentation de lecture de compteurs hardware via l'API
+  perf de Linux (#391).
+- Ajoute support pour le profiling automatiquement des commandes
+  lancées via RUNCOMMAND_ENUMERATE (#392, #394, #395)
 
 ### Changements:
 
@@ -51,16 +75,16 @@ WIP
 - Ajoute classe Arcane:ItemTypeId pour gérer le type de l'entité (#294)
 - Le type de l'entité est maintenant conservé sur un Arcane::Int16 au
   lieu d'un Arcane::Int32 (#294)
-- Supprime méthodes obsolètes de 'Concurrency.h'. Il s'agit des méthodes
-  qui se trouvaient dans le namespace 'Arcane::Parallel' et qui sont
-  maintenant dans le namespace 'Arcane' mais préfixée par
-  `arcaneParallel` (#303)
 - Supprime méthodes obsolètes de Arcane::ItemVector, `MathUtils.h`,
   Arcane::IApplication, Arcane::Properties, Arcane::IItemFamily
   (#304).
-- Supprime la classe de base Arcane::ItemEnumerator de
-  Arcane::ItemEnumeratorT. L'héritage est remplacé par un opérateur de
-  conversion (#308).
+- Refonte des classes gérant l'énumération des entités (#308, #364, #366).
+  - Supprime la classe de base Arcane::ItemEnumerator de
+    Arcane::ItemEnumeratorT. L'héritage est remplacé par un opérateur
+    de conversion.
+  - Simplifie Arcane::ItemVectorViewConstIterator
+  - Simplifie la gestion interne de l'opérateur `operator*` pour ne
+    pas utiliser Arcane::ItemInternal.
 - Refonte de la gestion du fichier de configuration
   `ArcaneConfig.cmake` géneré (#318):
   - N'exporte plus par défaut les packages externes dans
@@ -89,13 +113,21 @@ WIP
   et Arcane::Item au lieu de Arcane::ItemInternal (#322)
 - Supprime méthodes Arcane::Item::activeFaces() et
   Arcane::Item::activeEdges() qui ne sont plus utilisées (#351).
-- [C#] Détruit en fin de calcul les instances des différents
-  gestionnaires comme lorsque le support de `.Net` n'est pas
-  activé. Auparavant ces gestionnaires n'étaient pas détruit pour
-  éviter des plantages potentiels lorsque le 'garbage collector' de
-  l'environnement `.Net` se déclenche. Il est possible de remettre en
-  service ce comportement en positionnant la variable d'environnement
-  `ARCANE_DOTNET_USE_LEGACY_DESTROY` à la valeur `1` (#337).
+- [C#] Ajoute la possibilité en fin de calcul de détruire les
+  instances des différents gestionnaires comme lorsque le support de
+  `.Net` n'est pas activé. Auparavant ces gestionnaires n'étaient
+  jamais détruit pour éviter des plantages potentiels lorsque le
+  'garbage collector' de l'environnement `.Net` se déclenche. Il est
+  possible d'activer cette destruction en positionnant la variable
+  d'environnement `ARCANE_DOTNET_USE_LEGACY_DESTROY` à la valeur
+  `0`. Cela n'est pas actif par défaut car il peut rester des
+  problèmes avec certains services utilisateurs (#337).
+- [configuration] Il est maintenant nécessaire d'utiliser au moins la
+  version 3.21 de CMake pour compiler ou utiliser Arcane (#367).
+- Ajoute constructeur par déplacement (std::move) pour
+  Arcane::NumArray (#372).
+- [accelerator] Supprim les méthodes obsolètes de création de
+  Arcane::Accelerator::RunQueue et Arcane::Accelerator::Runner (#397).
 
 ### Corrections:
 
@@ -116,7 +148,7 @@ WIP
   permettra à terme de rendre ces informations accessibles sur
   accélérateurs (#284, #285, #292, #295)
 - Ajout d'une classe Arcane::ItemBase servant de classe de base pour
-  Arcane::Item et Arcane::ItemInternal (#298).
+  Arcane::Item et Arcane::ItemInternal (#298, #363).
 - Suppression d'une indirection lorsqu'on accède aux informations des
   connectivités à partir d'une entité (par exemple
   Arcane::Cell::node()) (#298).
@@ -136,7 +168,16 @@ WIP
   gérant les directions cartésiennes (Arcane::CellDirectionMng,
   Arcane::FaceDirectionMng et Arcane::NodeDirectionMng) (#347).
 - Utilise un compteur de référence pour gérer
-  Arcane::Ref<Arcane::ICaseFunction> (#329).
+  Arcane::Ref<Arcane::ICaseFunction> (#329, #356).
+- Ajoute constructeur pour la classe Arcane::Item et ses classes
+  dérivées à partir d'un localId() et d'un Arcane::ItemSharedInfo (#357).
+- Mise à jour des références des projets C# pour utiliser les
+  dernières version des packages (#359).
+- Nettoyage des classes Arcane::Real2, Arcane::Real3, Arcane::Real2x2
+  et Arcane::Real3x3 et ajoute constructeurs à partir d'un
+  Arcane::Real (#370, #373).
+- Refonte partiel de la gestion de la concurrence pour mutualiser
+  certaines fonctionnalités (#389).
 
 Arccon:
 
