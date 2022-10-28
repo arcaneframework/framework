@@ -33,14 +33,20 @@ namespace Arccore
  *
  * Il faut appeler initialize() avant d'utiliser les méthodes setValue()/getValue().
  * Cette méthode initialize() peut être appelée plusieurs fois.
+ *
+ * \deprecated Utiliser 'thread_local' du C++11.
  */
 class ARCCORE_CONCURRENCY_EXPORT ThreadPrivateStorage
 {
  public:
+
+  ARCCORE_DEPRECATED_REASON("Y2022; This class is deprecated. Use 'thread_local' specifier.")
   ThreadPrivateStorage();
   ~ThreadPrivateStorage();
+
  public:
-  /*!
+
+ /*!
    * \brief Initialise la clé contenant les valeurs par thread.
    * Cette méthode peut être appelée plusieurs fois et ne fait rien si
    * la clé a déjà été initialisée.
@@ -59,6 +65,8 @@ class ARCCORE_CONCURRENCY_EXPORT ThreadPrivateStorage
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Classe de base permettant de conserveur une instance d'un objet par thread.
+ *
+ * \deprecated Utiliser 'thread_local' du C++11.
  */
 class ARCCORE_CONCURRENCY_EXPORT ThreadPrivateBase
 {
@@ -69,7 +77,10 @@ class ARCCORE_CONCURRENCY_EXPORT ThreadPrivateBase
     virtual ~ICreateFunctor(){}
     virtual void* createInstance() =0;
   };
+
  public:
+
+  ARCCORE_DEPRECATED_REASON("Y2022; This class is deprecated. Use 'thread_local' specifier.")
   ThreadPrivateBase(ThreadPrivateStorage* key,ICreateFunctor* create_functor)
   : m_key(key), m_create_functor(create_functor) 
   {
@@ -80,6 +91,7 @@ class ARCCORE_CONCURRENCY_EXPORT ThreadPrivateBase
   }
 
  public:
+
   /*!
    * \brief Récupère l'instance spécifique au thread courant.
    *
@@ -90,8 +102,10 @@ class ARCCORE_CONCURRENCY_EXPORT ThreadPrivateBase
    * la clé associée (ThreadPrivateStorage) n'a pas été initialisée
    * par l'apple à ThreadPrivateStorage::initialize().
    */
-  void* item();
+ void* item();
+
  private:
+
   ThreadPrivateStorage* m_key;
   GlibMutex m_mutex;
   ICreateFunctor* m_create_functor;
@@ -113,12 +127,16 @@ class ARCCORE_CONCURRENCY_EXPORT ThreadPrivateBase
  * Le type \a T doit avoir un constructeur par défaut
  * et doit avoir une méthode \a build().
  * \threadsafeclass
+ *
+ * \deprecated Utiliser 'thread_local' du C++11.
  */
 template<typename T>
 class ThreadPrivate
 : private ThreadPrivateBase::ICreateFunctor
 {
  public:
+
+  ARCCORE_DEPRECATED_REASON("Y2022; This class is deprecated. Use 'thread_local' specifier.")
   ThreadPrivate(ThreadPrivateStorage* key)
   : m_storage(key,this)
   {
