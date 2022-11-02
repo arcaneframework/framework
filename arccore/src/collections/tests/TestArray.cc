@@ -25,6 +25,20 @@ class IntSubClass
   bool operator==(Integer iv) const { return m_v==iv; }
   bool operator==(const IntSubClass& v) const { return m_v==v.m_v; }
 };
+class IntSubClassNoPod
+{
+ public:
+  explicit IntSubClassNoPod(Integer v) : m_v(v) {}
+  IntSubClassNoPod() : m_v(0) {}
+  Integer m_v;
+  friend bool operator==(const IntSubClassNoPod& v,Integer iv) { return v.m_v == iv; }
+  friend bool operator==(const IntSubClassNoPod& v1,const IntSubClassNoPod& v2) { return v1.m_v==v2.m_v; }
+  friend std::ostream& operator<<(std::ostream& o,IntSubClassNoPod c)
+  {
+    o << c.m_v;
+    return o;
+  }
+};
 }
 namespace Arccore
 {
@@ -535,6 +549,50 @@ TEST(Array2, Misc)
     bool is_ok = c[2,1]==c(2,1);
     ASSERT_TRUE(is_ok);
 #endif
+  }
+}
+
+template<typename DataType>
+class MyArrayTest
+: public Arccore::Array<DataType>
+{
+ public:
+
+  using BaseClass = Arccore::Array<DataType>;
+  using BaseClass::_resizeNoInit;
+
+ public:
+
+  void resizeNoInit(Int64 new_size)
+  {
+    _resizeNoInit(new_size);
+  }
+};
+
+TEST(Array, Misc3)
+{
+  using namespace Arccore;
+
+  {
+    MyArrayTest<IntSubClassNoPod> c;
+    const Int32 ref_value1 = 12;
+    const Int32 ref_value2 = 7;
+
+    c.resize(9,IntSubClassNoPod(ref_value1));
+    std::cout << "C1=" << c << "\n";
+    for(IntSubClassNoPod x : c )
+      ASSERT_EQ(x,ref_value1);
+
+    c.resize(21,IntSubClassNoPod(ref_value2));
+    ASSERT_EQ(c.size(),21);
+    std::cout << "C2=" << c << "\n";
+
+    // Redimensionne sans initialiser. Les valeurs pour les éléments
+    // de 9 à 18 doivent valoir \a ref_value2
+    c.resizeNoInit(18);
+    std::cout << "C4=" << c << "\n";
+    for( Int32 i=9, s=c.size(); i<s; ++i )
+      ASSERT_EQ(c[i],ref_value2);
   }
 }
 
