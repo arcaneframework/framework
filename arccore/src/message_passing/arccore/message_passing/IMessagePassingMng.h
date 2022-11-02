@@ -46,6 +46,7 @@ mpDelete(IMessagePassingMng* p);
 class ARCCORE_MESSAGEPASSING_EXPORT IMessagePassingMng
 {
   friend void mpDelete(IMessagePassingMng*);
+  ARCCORE_DECLARE_REFERENCE_COUNTED_INCLASS_METHODS();
 
  public:
 

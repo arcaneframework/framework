@@ -14,6 +14,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arccore/base/ReferenceCounterImpl.h"
+
 #include "arccore/message_passing/IMessagePassingMng.h"
 
 /*---------------------------------------------------------------------------*/
@@ -31,8 +33,11 @@ namespace Arccore::MessagePassing
  * mpDelete().
  */
 class ARCCORE_MESSAGEPASSING_EXPORT MessagePassingMng
-: public IMessagePassingMng
+: public ReferenceCounterImpl
+, public IMessagePassingMng
 {
+  ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
+
  public:
 
   MessagePassingMng(Int32 comm_rank,Int32 comm_size,IDispatchers* d);
