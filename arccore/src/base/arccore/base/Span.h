@@ -733,7 +733,7 @@ sampleSpan(Span<const DataType> values,Span<const Int32> indexes,Span<DataType> 
  * \brief Converti la vue en un tableau d'octets non modifiables.
  */
 template<typename DataType,typename SizeType> inline Span<const std::byte>
-asBytes(SpanImpl<const DataType,SizeType> s)
+asBytes(SpanImpl<DataType,SizeType> s)
 {
   return {reinterpret_cast<const std::byte*>(s.data()), s.sizeBytes()};
 }
@@ -757,29 +757,9 @@ asWritableBytes(SpanImpl<DataType,SizeType> s)
 /*---------------------------------------------------------------------------*/
 
 template<typename T> inline std::ostream&
-operator<<(std::ostream& o, Span<const T> val)
-{
-  dumpArray(o,val,500);
-  return o;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename T> inline std::ostream&
 operator<<(std::ostream& o, Span<T> val)
 {
-  o << Span<const T>(val);
-  return o;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename T> inline std::ostream&
-operator<<(std::ostream& o, SmallSpan<const T> val)
-{
-  o << Span<const T>(val);
+  dumpArray(o,Span<const T>(val),500);
   return o;
 }
 
@@ -789,7 +769,7 @@ operator<<(std::ostream& o, SmallSpan<const T> val)
 template<typename T> inline std::ostream&
 operator<<(std::ostream& o, SmallSpan<T> val)
 {
-  o << Span<const T>(val);
+  o << Span<T>(val);
   return o;
 }
 

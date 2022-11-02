@@ -189,7 +189,10 @@ TEST(Span,Convert)
   Span<Int64> a_span(vector_values.data(),vector_values.size());
   ByteConstSpan a_const_bytes = asBytes(a_const_span);
   ByteSpan a_bytes = asWritableBytes(a_span);
+  ByteConstSpan a_const_bytes2 = asBytes(a_span);
+  //ByteSpan a_bytes2 = asWritableBytes(a_const_span);
   ASSERT_EQ(a_const_bytes.size(),24) << "Bad a_const_bytes_size (1)";
+  ASSERT_EQ(a_const_bytes2.size(),24) << "Bad a_const_bytes2_size (1)";
   ASSERT_EQ(a_bytes.size(),24) << "Bad a_bytes_size (2)";
   Span<Int64> span2(a_view);
   Span<const Int64> span3(a_view);
