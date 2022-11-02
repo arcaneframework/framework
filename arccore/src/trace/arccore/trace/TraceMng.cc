@@ -562,7 +562,7 @@ TraceMng()
 TraceMng::
 ~TraceMng()
 {
-  for( auto i : m_trace_class_config_map )
+  for( const auto& i : m_trace_class_config_map )
     delete i.second;
   delete m_listeners;
   delete m_trace_mutex;
@@ -1271,7 +1271,7 @@ visitClassConfigs(IFunctorWithArgumentT<std::pair<String,TraceClassConfig>>* fun
 {
   if (!functor)
     return;
-  for( auto i : m_trace_class_config_map ){
+  for( const auto& i : m_trace_class_config_map ){
     std::pair<String,TraceClassConfig> x(i.first,*(i.second));
     functor->executeFunctor(x);
   }

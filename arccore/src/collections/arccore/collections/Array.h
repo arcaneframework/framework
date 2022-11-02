@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Array.h                                                     (C) 2000-2021 */
+/* Array.h                                                     (C) 2000-2022 */
 /*                                                                           */
 /* Tableau 1D.                                                               */
 /*---------------------------------------------------------------------------*/
@@ -172,6 +172,7 @@ ARCCORE_DEFINE_ARRAY_PODTYPE(unsigned long);
 ARCCORE_DEFINE_ARRAY_PODTYPE(float);
 ARCCORE_DEFINE_ARRAY_PODTYPE(double);
 ARCCORE_DEFINE_ARRAY_PODTYPE(long double);
+ARCCORE_DEFINE_ARRAY_PODTYPE(std::byte);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -652,24 +653,35 @@ class AbstractArray
     m_md->dim2_size = orig_array.m_md->dim2_size;
     _createRange(0,that_size,orig_array.m_ptr);
   }
-  void _resize(Int64 s)
+  template<typename PodType>
+  void _resizeHelper(Int64 s,PodType pod_type)
   {
     if (s<0)
       s = 0;
     if (s>m_md->size) {
       this->_internalRealloc(s,false);
-      this->_createRangeDefault(m_md->size,s,IsPODType());
+      this->_createRangeDefault(m_md->size,s,pod_type);
     }
     else{
-      this->_destroyRange(s,m_md->size,IsPODType());
+      this->_destroyRange(s,m_md->size,pod_type);
     }
     m_md->size = s;
+  }
+  void _resize(Int64 s)
+  {
+    _resizeHelper(s,IsPODType());
+  }
+  //! Redimensionne sans initialiser les nouvelles valeurs
+  void _resizeNoInit(Int64 s)
+  {
+    _resizeHelper(s,TrueType{});
   }
   void _clear()
   {
     this->_destroyRange(0,m_md->size,IsPODType());
     m_md->size = 0;
   }
+  //! Redimensionne et remplit les nouvelles valeurs avec \a value
   void _resize(Int64 s,ConstReferenceType value)
   {
     if (s<0)
@@ -863,7 +875,7 @@ class Array
   {
     Int64 nsize = arccoreCheckArraySize(alist.size());
     this->_reserve(nsize);
-    for( auto x : alist )
+    for( const auto& x : alist )
       this->add(x);
   }
  private:
