@@ -57,7 +57,7 @@ Stat::
 ~Stat()
 {
   // TODO(FL): A enlever quand on aura supprimer m_list (gestion du DEPRECATED)
-  for( auto i : m_list ){
+  for( const auto& i : m_list ){
     OneStat* os = i.second;
     delete os;
   }
@@ -86,7 +86,7 @@ void Stat::
 print(std::ostream& o)
 {
   // TODO(FL): A enlever quand on aura supprimer m_list (gestion du DEPRECATED)
-  for( auto i : m_list ){
+  for( const auto& i : m_list ){
     OneStat* os = i.second;
     os->print(o);
   }

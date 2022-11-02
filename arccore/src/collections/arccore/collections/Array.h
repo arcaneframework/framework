@@ -875,7 +875,7 @@ class Array
   {
     Int64 nsize = arccoreCheckArraySize(alist.size());
     this->_reserve(nsize);
-    for( auto x : alist )
+    for( const auto& x : alist )
       this->add(x);
   }
  private:
