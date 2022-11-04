@@ -187,7 +187,7 @@ class NumArrayBase
     // TODO: vérifier débordement.
     for (int i=1; i< A_MDRANK_RANK_VALUE(RankValue) ; ++i )
       dim2_size *= extent(i);
-    m_total_nb_element = dim1_size * dim2_size;
+    m_total_nb_element = static_cast<Int64>(dim1_size) * static_cast<Int64>(dim2_size);
     m_data.resize(m_total_nb_element);
     m_span.m_ptr = m_data.to1DSpan().data();
   }

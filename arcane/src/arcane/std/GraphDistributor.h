@@ -103,7 +103,8 @@ class GraphDistributor
     if (m_pm_ini->commRank() < targetSize) { // At this time, no duplication
       m_contribute = 1;
     }
-    Int64 x = m_pm_ini->commRank() * m_targetSize;
+    Int64 my_rank = m_pm_ini->commRank();
+    Int64 x = my_rank * m_targetSize;
     m_targetRank = CheckedConvert::toInt32(x / m_pm_ini->commSize());
 
     Int32UniqueArray keepProc(m_targetSize);
