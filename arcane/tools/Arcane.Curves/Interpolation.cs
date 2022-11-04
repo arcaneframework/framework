@@ -179,24 +179,30 @@ namespace Arcane.Curves
       RealArray result_y = new RealArray();
 
       // boucle sur les elements de la grille choisie
-      int i = 1;
-      Trace.WriteLine(String.Format("Curve nb_point={0} grid_size={1}", curve.NbPoint, grid.Length));
-      foreach (double x in grid){
-        SubGrid result = sousGrille(x, type, curve, i);  // intervalle ou l'on va interpoler
-        double cx = result.x;
-        double cy = result.y;
-        i = result.i;
+      try{
+        int i = 1;
+        Trace.WriteLine(String.Format("Curve nb_point={0} grid_size={1}", curve.NbPoint, grid.Length));
+        foreach (double x in grid){
+          SubGrid result = sousGrille(x, type, curve, i);  // intervalle ou l'on va interpoler
+          double cx = result.x;
+          double cy = result.y;
+          i = result.i;
 
-        if (i < 0)
-          Trace.WriteLine(String.Format(" x= {0} n'appartient pas a la grille de la fonction", x));
-        else{
-          result_x.Add(cx);
-          result_y.Add(cy);
+          if (i < 0)
+            Trace.WriteLine(String.Format(" x= {0} n'appartient pas a la grille de la fonction", x));
+          else{
+            result_x.Add(cx);
+            result_y.Add(cy);
+          } 
         }
+
+        return new BasicCurve("ComparedCurve",result_x, result_y);
       }
-
-      return new BasicCurve("ComparedCurve",result_x, result_y);
-
+      catch(Exception){
+        result_x.Dispose();
+        result_y.Dispose();
+        throw;
+      }
     }
   }
 }
