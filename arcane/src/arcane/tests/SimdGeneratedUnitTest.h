@@ -11,17 +11,17 @@ class SimdTestBinarySub
     return (a - b);
   }
 
-  static SimdRealType apply(SimdRealType a,SimdRealType b)
+  static SimdRealType apply(const SimdRealType& a,const SimdRealType& b)
   {
     return (a - b);
   }
 
-  static SimdRealType apply(SimdRealType a,Real b)
+  static SimdRealType apply(const SimdRealType& a,Real b)
   {
     return (a - b);
   }
 
-  static SimdRealType apply(Real a,SimdRealType b)
+  static SimdRealType apply(Real a,const SimdRealType& b)
   {
     return (a - b);
   }
@@ -31,7 +31,7 @@ template<typename RealNType>
 class SimdTestBinaryRealNSub
 {
  public:
-  static RealNType apply(RealNType a,RealNType b)
+  static RealNType apply(const RealNType& a,const RealNType& b)
   {
     return (a - b);
   }
@@ -47,17 +47,17 @@ class SimdTestBinaryAdd
     return (a + b);
   }
 
-  static SimdRealType apply(SimdRealType a,SimdRealType b)
+  static SimdRealType apply(const SimdRealType& a,const SimdRealType& b)
   {
     return (a + b);
   }
 
-  static SimdRealType apply(SimdRealType a,Real b)
+  static SimdRealType apply(const SimdRealType& a,Real b)
   {
     return (a + b);
   }
 
-  static SimdRealType apply(Real a,SimdRealType b)
+  static SimdRealType apply(Real a,const SimdRealType& b)
   {
     return (a + b);
   }
@@ -67,7 +67,7 @@ template<typename RealNType>
 class SimdTestBinaryRealNAdd
 {
  public:
-  static RealNType apply(RealNType a,RealNType b)
+  static RealNType apply(const RealNType& a,const RealNType& b)
   {
     return (a + b);
   }
@@ -83,17 +83,17 @@ class SimdTestBinaryMul
     return (a * b);
   }
 
-  static SimdRealType apply(SimdRealType a,SimdRealType b)
+  static SimdRealType apply(const SimdRealType& a,const SimdRealType& b)
   {
     return (a * b);
   }
 
-  static SimdRealType apply(SimdRealType a,Real b)
+  static SimdRealType apply(const SimdRealType& a,Real b)
   {
     return (a * b);
   }
 
-  static SimdRealType apply(Real a,SimdRealType b)
+  static SimdRealType apply(Real a,const SimdRealType& b)
   {
     return (a * b);
   }
@@ -103,7 +103,7 @@ template<typename RealNType>
 class SimdTestBinaryRealNMul
 {
  public:
-  static RealNType apply(RealNType a,RealNType b)
+  static RealNType apply(const RealNType& a,const RealNType& b)
   {
     return (a * b);
   }
@@ -119,17 +119,17 @@ class SimdTestBinaryDiv
     return (a / b);
   }
 
-  static SimdRealType apply(SimdRealType a,SimdRealType b)
+  static SimdRealType apply(const SimdRealType& a,const SimdRealType& b)
   {
     return (a / b);
   }
 
-  static SimdRealType apply(SimdRealType a,Real b)
+  static SimdRealType apply(const SimdRealType& a,Real b)
   {
     return (a / b);
   }
 
-  static SimdRealType apply(Real a,SimdRealType b)
+  static SimdRealType apply(Real a,const SimdRealType& b)
   {
     return (a / b);
   }
@@ -139,7 +139,7 @@ template<typename RealNType>
 class SimdTestBinaryRealNDiv
 {
  public:
-  static RealNType apply(RealNType a,RealNType b)
+  static RealNType apply(const RealNType& a,const RealNType& b)
   {
     return (a / b);
   }
@@ -155,17 +155,17 @@ class SimdTestBinaryMin
     return (math::min(a,b));
   }
 
-  static SimdRealType apply(SimdRealType a,SimdRealType b)
+  static SimdRealType apply(const SimdRealType& a,const SimdRealType& b)
   {
     return (math::min(a,b));
   }
 
-  static SimdRealType apply(SimdRealType a,Real b)
+  static SimdRealType apply(const SimdRealType& a,Real b)
   {
     return (math::min(a,b));
   }
 
-  static SimdRealType apply(Real a,SimdRealType b)
+  static SimdRealType apply(Real a,const SimdRealType& b)
   {
     return (math::min(a,b));
   }
@@ -175,7 +175,7 @@ template<typename RealNType>
 class SimdTestBinaryRealNMin
 {
  public:
-  static RealNType apply(RealNType a,RealNType b)
+  static RealNType apply(const RealNType& a,const RealNType& b)
   {
     return (math::min(a,b));
   }
@@ -191,17 +191,17 @@ class SimdTestBinaryMax
     return (math::max(a,b));
   }
 
-  static SimdRealType apply(SimdRealType a,SimdRealType b)
+  static SimdRealType apply(const SimdRealType& a,const SimdRealType& b)
   {
     return (math::max(a,b));
   }
 
-  static SimdRealType apply(SimdRealType a,Real b)
+  static SimdRealType apply(const SimdRealType& a,Real b)
   {
     return (math::max(a,b));
   }
 
-  static SimdRealType apply(Real a,SimdRealType b)
+  static SimdRealType apply(Real a,const SimdRealType& b)
   {
     return (math::max(a,b));
   }
@@ -211,7 +211,7 @@ template<typename RealNType>
 class SimdTestBinaryRealNMax
 {
  public:
-  static RealNType apply(RealNType a,RealNType b)
+  static RealNType apply(const RealNType& a,const RealNType& b)
   {
     return (math::max(a,b));
   }
@@ -241,7 +241,7 @@ class SimdTestUnarySquareRoot
     return math::sqrt(a);
   }
 
-  static SimdRealType apply(SimdRealType a)
+  static SimdRealType apply(const SimdRealType& a)
   {
     return math::sqrt(a);
   }
@@ -258,7 +258,7 @@ class SimdTestUnaryExponential
     return math::exp(a);
   }
 
-  static SimdRealType apply(SimdRealType a)
+  static SimdRealType apply(const SimdRealType& a)
   {
     return math::exp(a);
   }
@@ -275,7 +275,7 @@ class SimdTestUnaryLog10
     return math::log10(a);
   }
 
-  static SimdRealType apply(SimdRealType a)
+  static SimdRealType apply(const SimdRealType& a)
   {
     return math::log10(a);
   }
@@ -292,7 +292,7 @@ class SimdTestUnaryUnaryMinus
     return -(a);
   }
 
-  static SimdRealType apply(SimdRealType a)
+  static SimdRealType apply(const SimdRealType& a)
   {
     return -(a);
   }

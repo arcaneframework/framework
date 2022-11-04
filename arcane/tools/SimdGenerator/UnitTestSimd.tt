@@ -19,17 +19,17 @@ class SimdTestBinary<#=op_name#>
     return (<#=CppHelper.GenTest(op)#>);
   }
 
-  static <#=simd_name#> apply(<#=simd_name#> a,<#=simd_name#> b)
+  static <#=simd_name#> apply(const <#=simd_name#>& a,const <#=simd_name#>& b)
   {
     return (<#=CppHelper.GenTest(op)#>);
   }
 
-  static <#=simd_name#> apply(<#=simd_name#> a,Real b)
+  static <#=simd_name#> apply(const <#=simd_name#>& a,Real b)
   {
     return (<#=CppHelper.GenTest(op)#>);
   }
 
-  static <#=simd_name#> apply(Real a,<#=simd_name#> b)
+  static <#=simd_name#> apply(Real a,const <#=simd_name#>& b)
   {
     return (<#=CppHelper.GenTest(op)#>);
   }
@@ -39,7 +39,7 @@ template<typename RealNType>
 class SimdTestBinaryRealN<#=op_name#>
 {
  public:
-  static RealNType apply(RealNType a,RealNType b)
+  static RealNType apply(const RealNType& a,const RealNType& b)
   {
     return (<#=CppHelper.GenTest(op)#>);
   }
@@ -71,7 +71,7 @@ class SimdTestUnary<#=op_name#>
     return <#=cpp_qualified_func_name#>(a);
   }
 
-  static <#=simd_name#> apply(<#=simd_name#> a)
+  static <#=simd_name#> apply(const <#=simd_name#>& a)
   {
     return <#=cpp_qualified_func_name#>(a);
   }

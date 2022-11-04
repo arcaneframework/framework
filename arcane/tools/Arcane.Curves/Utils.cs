@@ -25,7 +25,7 @@ namespace Arcane.Curves
     /// </returns>
     public static RealArray Intersection(RealConstArrayView grille1,RealConstArrayView grille2)
     {
-      bool verbose = false;
+      const bool verbose = false;
       RealArray grilleRes = new RealArray();
       //List<double> grilleRes = new List<double>();
       //CurveGrid res = new CurveGrid();

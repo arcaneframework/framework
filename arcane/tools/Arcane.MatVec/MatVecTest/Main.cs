@@ -13,7 +13,7 @@ namespace MatVecTest
   {
     internal void Test1()
     {
-      Matrix m = new Matrix(5,4);
+      using Matrix m = new Matrix(5,4);
       double ref_v1 = 1.0;
       double ref_v2 = 2.0;
       m.SetValue(0,2,ref_v1);
@@ -39,7 +39,6 @@ namespace MatVecTest
           v_out.Dump(Console.Out);
         }
       }
-      m.Dispose();
     }
 
   internal void Test2()

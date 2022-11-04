@@ -18,7 +18,7 @@ namespace Tests
     public static void Main(string[] args)
     {
       Console.WriteLine("Hello World!");
-      Int32Array a = new Int32Array();
+      using Int32Array a = new Int32Array();
       a.Add(5);
       a.Add(23);
       a.Add(7);
@@ -33,7 +33,6 @@ namespace Tests
       for( Integer i=0, n=a.Size; i<n; ++i )
         if (a[i] != view[i])
           throw new ApplicationException();
-      a.Dispose();
       _Test1();
     }
 

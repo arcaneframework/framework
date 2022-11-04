@@ -20,7 +20,7 @@ namespace Arcane.ExecDrivers.Common
     }
     public Assembly Load(string name)
     {
-      bool do_new = true;
+      const bool do_new = true;
       if (do_new){
         Console.WriteLine($"Loading assembly [.NetCore3 direct with AssemblyLoadContext] '{name}'");
         return AssemblyLoadContext.Default.LoadFromAssemblyPath(name);
