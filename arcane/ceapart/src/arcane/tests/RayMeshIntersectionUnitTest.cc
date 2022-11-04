@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshIntersectionUnitTest.cc                                 (C) 2000-2013 */
+/* MeshIntersectionUnitTest.cc                                 (C) 2000-2022 */
 /*                                                                           */
 /* Service de test des variables.                                            */
 /*---------------------------------------------------------------------------*/
@@ -30,11 +30,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
+namespace ArcaneTest
+{
 using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
@@ -47,13 +44,12 @@ class RayMeshIntersectionUnitTest
 {
  public:
 
-  RayMeshIntersectionUnitTest(const ServiceBuildInfo& cb);
-  ~RayMeshIntersectionUnitTest();
+  explicit RayMeshIntersectionUnitTest(const ServiceBuildInfo& cb);
 
  public:
 
-  virtual void initializeTest();
-  virtual void executeTest();
+  void initializeTest() override;
+  void executeTest() override;
 
  private:
 
@@ -79,14 +75,6 @@ RayMeshIntersectionUnitTest(const ServiceBuildInfo& mb)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-RayMeshIntersectionUnitTest::
-~RayMeshIntersectionUnitTest()
-{
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 void RayMeshIntersectionUnitTest::
 executeTest()
 {
@@ -105,8 +93,10 @@ executeTest()
   Int32UniqueArray segments_orig_face(nb_segment,NULL_ITEM_LOCAL_ID);
   for( Integer i=0; i<nb_segment; ++i ){
     Integer index = i +  nb_segment*my_rank;
-    Real px = (Real)(index / n0);
-    Real py = (Real)(index % n0);
+    const Int32 ipx = index / n0;
+    const Int32 ipy = index % n0;
+    Real px = static_cast<Real>(ipx);
+    Real py = static_cast<Real>(ipy);
     segments_position[i] = Real3(7.0,py/10.0-py/5.0,px/10.0-px/5.0);
     segments_direction[i] = Real3(-1.0-(px/5.0),(py/20.0)-(py/10.0),0.5-(px/10.0));
     info() << " SEGMENT: pos=" << segments_position[i] << " dir=" << segments_direction[i];
@@ -186,16 +176,7 @@ initializeTest()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANETEST_END_NAMESPACE
+} // namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

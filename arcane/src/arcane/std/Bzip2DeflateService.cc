@@ -83,7 +83,9 @@ class Bzip2DeflateService
     if (r!=BZ_OK)
       throw IOException(A_FUNCINFO,String::format("io error during compression r={0}",r));
     // Attention overflow des Int32;
-    Real ratio = (dest_len * 100 ) / source_len;
+    Real ratio = 0.0;
+    if (source_len>0)
+      ratio = ((double)dest_len * 100.0 ) / (double)source_len;
     info() << "Bzip2 compress r=" << r << " source_len=" << source_len
            << " dest_len=" << dest_len << " ratio=" << ratio;
     compressed_values.resize(dest_len);
