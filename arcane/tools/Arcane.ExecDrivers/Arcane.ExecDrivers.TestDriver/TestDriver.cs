@@ -21,7 +21,7 @@ namespace Arcane.ExecDrivers.TestDriver
         Console.WriteLine("Usage: program (launch|compare) [options]");
         return 0;
       }
-      bool print_var = false;
+      const bool print_var = false;
       if (print_var){
         Console.WriteLine();
         Console.WriteLine("GetEnvironmentVariables: ");
