@@ -230,7 +230,7 @@ _findInternalFace(Integer i_face, const CellInfoProxy& cell_info, bool& is_add)
   ItemInternal* face_internal = ItemTools::findFaceInNode(nbi,lf.typeId(),m_work_face_sorted_nodes);
   if (!face_internal) {
     if (!cell_info.allowBuildFace())
-      fatal() << "On the fly face allocation is not allowed here";
+      ARCANE_FATAL("On the fly face allocation is not allowed here");
     ItemTypeInfo* face_type = m_item_type_mng->typeFromId(lf.typeId());
     const Int64 face_unique_id = m_next_face_uid++;
     is_add = true;
@@ -270,7 +270,7 @@ _findInternalEdge(Integer i_edge, const CellInfoProxy& cell_info, Int64 first_no
   ItemInternal* edge_internal = ItemTools::findEdgeInNode(nbi,first_node,second_node);
   if (!edge_internal){
     if (!cell_info.allowBuildEdge())
-      fatal() << "On the fly edge allocation is not allowed here";
+      ARCANE_FATAL("On the fly edge allocation is not allowed here");
     const Int64 edge_unique_id = m_next_edge_uid++;
     is_add = true;
     return m_edge_family.allocOne(edge_unique_id);
@@ -423,7 +423,7 @@ addOneItem2(IItemFamily* family,
     bool is_dependency = false;
     IIncrementalItemConnectivity* family_to_connected_family = m_mesh->itemFamilyNetwork()->getConnectivity(family,connected_family,connectivity_name,is_dependency);
     if (!family_to_connected_family)
-      fatal() << "Cannot find connectivity " << connectivity_name;
+      ARCANE_FATAL("Cannot find connectivity name={0}",connectivity_name);
     bool is_deep_connectivity = m_mesh->itemFamilyNetwork()->isDeep(family_to_connected_family) ;
     bool is_relation = !(is_dependency && is_deep_connectivity);
     // Build connection
@@ -952,7 +952,8 @@ addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fat
       }
     }
 
-    if (parent_item == NULL) fatal() << "Cannot find parent face";
+    if (!parent_item)
+      ARCANE_FATAL("Cannot find parent face");
     Int64 new_face_uid = parent_item->uniqueId();
     ItemTypeInfo* face_type = itm->typeFromId(lf.typeId());
 

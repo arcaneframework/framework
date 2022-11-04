@@ -5,14 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcanePostProcessingModule.cc                               (C) 2000-2009 */
+/* ArcanePostProcessingModule.cc                               (C) 2000-2022 */
 /*                                                                           */
 /* Module de post-traitement.                                                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/Ptr.h"
 #include "arcane/utils/List.h"
@@ -49,7 +46,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -65,16 +63,16 @@ ARCANE_BEGIN_NAMESPACE
 class ArcanePostProcessingModule
 : public ArcaneArcanePostProcessingObject
 {
-public:
+ public:
 
-  ArcanePostProcessingModule(const ModuleBuilder& cb);
+  explicit ArcanePostProcessingModule(const ModuleBuilder& cb);
   ~ArcanePostProcessingModule();
 
-public:
+ public:
 
   virtual VersionInfo versionInfo() const { return VersionInfo(0,1,2); }
 
-public:
+ public:
 
   virtual void exportData();
   virtual void exportDataStart();
@@ -84,7 +82,7 @@ public:
   virtual void postProcessingExit();
   
 
-private:
+ private:
 
   OutputChecker m_output_checker;
   OutputChecker m_history_output_checker;
@@ -96,7 +94,7 @@ private:
   ItemGroupList m_groups; //!< Liste des groupes à exporter
   Timer* m_post_processor_timer; //!< Timer pour le temps passé à écrire
 
-private:
+ private:
 
   void _readConfig();
   void _saveAtTime(Real);
@@ -159,12 +157,12 @@ _readConfig()
       String varname(options()->output().variable[i]);
       IVariable* var = var_mng->findMeshVariable(defaultMesh(),varname);
       if (!var)
-        fatal() << "PostTreatment: no variable with name '" << varname
-                << "' exists";
+        ARCANE_FATAL("PostTreatment: no variable with name '{0}' exists",varname);
       eItemKind ik = var->itemKind();
       if (ik!=IK_Node && ik!=IK_Edge && ik!=IK_Face && ik!=IK_Cell)
-        fatal() << "PostTreatment: variable (" << varname << ") must"
-                << " be a mesh variable (node, edge, face or cell)";
+        ARCANE_FATAL("PostTreatment: variable ({0}) must"
+                     " be a mesh variable (node, edge, face or cell)",varname);
+
       if (used_variables.find(varname)==used_variables.end()){
         info() << "Variable <" << varname << ">";
         m_variables.add(var);
@@ -395,7 +393,7 @@ _saveAtTime(Real saved_time)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
