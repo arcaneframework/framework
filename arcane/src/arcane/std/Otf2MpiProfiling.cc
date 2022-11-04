@@ -350,7 +350,7 @@ scan(const void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, MPI_O
 
 	int type_size;
 	MPI_Type_size(datatype, &type_size);
-	const uint64_t size(type_size * count);
+	const uint64_t size = static_cast<uint64_t>(type_size) * static_cast<uint64_t>(count);
 	OTF2_EvtWriter_MpiCollectiveEnd(m_otf2_wrapper->getEventWriter(), NULL, Otf2LibWrapper::getTime(),
 	                                OTF2_COLLECTIVE_OP_SCAN, 0 /* comm region */, OTF2_UNDEFINED_UINT32 /* root */,
 	                                size /* bytes provided */, size /* bytes obtained */);

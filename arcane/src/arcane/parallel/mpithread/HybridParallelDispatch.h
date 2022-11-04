@@ -124,11 +124,11 @@ class HybridParallelDispatch
   class MinMaxSumInfo
   {
    public:
-    Int32 m_min_rank;
-    Int32 m_max_rank;
-    Type m_min_value;
-    Type m_max_value;
-    Type m_sum_value;
+    Int32 m_min_rank = A_NULL_RANK;
+    Int32 m_max_rank = A_NULL_RANK;
+    Type m_min_value = Type();
+    Type m_max_value = Type();
+    Type m_sum_value = Type();
   };
  public:
   HybridParallelDispatch(ITraceMng* tm,HybridParallelMng* parallel_mng,HybridMessageQueue* message_queue,

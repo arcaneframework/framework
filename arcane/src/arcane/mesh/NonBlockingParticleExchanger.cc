@@ -799,6 +799,7 @@ _addFinishExchangeParticle(Int64 nb_particle_finish_exchange)
 {
   m_nb_total_particle_finish_exchange += nb_particle_finish_exchange;
   Int32 nb_rank = m_parallel_mng->commSize();
+  Int64 nb_rank_as_int64 = nb_rank;
   //#ifdef ARCANE_DEBUG_EXCHANGE_ITEMS
   info(4) << "** RECEIVING FINISH EXCHANGE n=" << nb_particle_finish_exchange
          << " totalfinish=" << m_nb_total_particle_finish_exchange
@@ -812,7 +813,7 @@ _addFinishExchangeParticle(Int64 nb_particle_finish_exchange)
            << " (Date=" << platform::getCurrentDateTime() << ")";
     _sendFinishExchangeParticle();
   }
-  else if (remaining_particle<(m_nb_blocking_size*nb_rank)){
+  else if (remaining_particle<(m_nb_blocking_size*nb_rank_as_int64)){
     //Integer nb_rank = subDomain()->nbSubDomain();
     //m_nb_blocking_size /= 100;
     m_nb_blocking_size = 0;
@@ -824,7 +825,7 @@ _addFinishExchangeParticle(Int64 nb_particle_finish_exchange)
     // maintenant les envoyer
     if (m_waiting_local_ids.size()>0)
       _generateSendItemsMessages(Int32ConstArrayView(),Int32ConstArrayView());
-    for( Integer i=0; i<nb_rank; ++i ){
+    for( Int32 i=0; i<nb_rank; ++i ){
       if (i==m_master_proc)
         continue;
       SerializeMessage* sm = new SerializeMessage(m_rank,i,ISerializeMessage::MT_Send);

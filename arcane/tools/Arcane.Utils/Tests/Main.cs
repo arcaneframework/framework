@@ -28,15 +28,15 @@ namespace Tests
         throw new ApplicationException();
       Console.WriteLine("CAPACITY = {0}",a.Capacity);
       Int32ConstArrayView view = a.ConstView;
-      
+
       Console.WriteLine("Values: {0} {1} {2}",view[0],view[1],view[2]);
       for( Integer i=0, n=a.Size; i<n; ++i )
         if (a[i] != view[i])
           throw new ApplicationException();
-      
+      a.Dispose();
       _Test1();
     }
-    
+
     private static void _Test1()
     {
       for( int i=0; i<10000; ++i ){

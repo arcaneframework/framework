@@ -620,7 +620,7 @@ class Test6
       m_value += i;
     }
   }
-  Int64 m_value;
+  Int64 m_value = 0;
   Int32 m_first_value;
   Int32 m_nb_value;
   Int32 m_step_size;

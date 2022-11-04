@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SharedReference.h                                           (C) 2000-2008 */
+/* SharedReference.h                                           (C) 2000-2022 */
 /*                                                                           */
 /* Classe de base d'un compteur de référence.                                */
 /*---------------------------------------------------------------------------*/
@@ -14,19 +14,21 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/Atomic.h"
 #include "arcane/ISharedReference.h"
 
+#include <atomic>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup Core
- * \brief Implémentation d'un compteur de référence.
+ * \brief Implémentation d'un compteur de référence utilisant std::atomic.
  */
 class ARCANE_CORE_EXPORT SharedReference
 : public ISharedReference
@@ -37,22 +39,22 @@ class ARCANE_CORE_EXPORT SharedReference
 	
  public:
 	
-  virtual void addRef();
-  virtual void removeRef();
-  virtual Int32 refCount() const;
-	
+  void addRef() override;
+  void removeRef() override;
+  Int32 refCount() const override { return m_ref_count; }
+
   //! Détruit l'objet référencé
   virtual void deleteMe() =0;
 
  private:
 
-  AtomicInt32 m_ref_count; //!< Nombre de références sur l'objet.
+  std::atomic<Int32> m_ref_count; //!< Nombre de références sur l'objet.
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

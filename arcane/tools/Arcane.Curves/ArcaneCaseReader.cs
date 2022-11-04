@@ -222,6 +222,7 @@ namespace Arcane.Curves
           int sub_size = m_sub_size;
           for (int i = 0; i < data2_len; ++i)
             data2 [i] = data [(i * sub_size) + sub_index];
+          data.Dispose();
           data = data2;
           curve_name = curve_name + "_" + m_sub_index.ToString();
         }
@@ -516,7 +517,7 @@ namespace Arcane.Curves
           switch(m_settings.MultiCurveBehavior){
           case MultiCurveBehaviour.Ignore:
             break;
-          case MultiCurveBehaviour.ReadAsSeveralMonoValue:            
+          case MultiCurveBehaviour.ReadAsSeveralMonoValue:
           // Les courbes multi-valeurs sont gérées en considérant qu'il s'agit de N courbes scalaires.
             int nb_sub_size = ci.SubSize;
             for (int i = 0; i < nb_sub_size; ++i) {
@@ -533,6 +534,8 @@ namespace Arcane.Curves
 
       if (do_print)
         Console.WriteLine("NB_CURVE={0}",m_case_curves.Curves.Count);
+      if (times!=null)
+        times.Dispose();
     }
   }
 }

@@ -23,6 +23,7 @@
 #include "arcane/std/ProfilingInfo.h"
 
 #include <set>
+#include <array>
 
 #include "arcane_packages.h"
 
@@ -234,8 +235,8 @@ class ProfInfos::BacktraceStackInfo
   }
  private:
   // TODO: vérifier taille
-  Dl_info m_dl_infos[256];
-  intptr_t m_proc_start[256];
+  std::array<Dl_info,256> m_dl_infos;
+  std::array<intptr_t,256> m_proc_start;
   Integer m_nb_index;
   BacktraceFuncInfos* m_func_infos;
 };

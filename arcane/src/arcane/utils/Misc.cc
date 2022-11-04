@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Misc.cc                                                     (C) 2000-2016 */
+/* Misc.cc                                                     (C) 2000-2022 */
 /*                                                                           */
 /* Diverses fonctions                                                        */
 /*---------------------------------------------------------------------------*/
@@ -248,17 +248,37 @@ arcaneNullPointerError(const void* ptr)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Message pour le cas où on essaie d'accèder à un objet plus référence.
- */
-extern "C++" ARCANE_UTILS_EXPORT void
-arcaneNoReferenceError(const void* ptr)
+
+namespace
+{
+void _doNoReferenceError(const void* ptr)
 {
   cerr << "** FATAL: Null reference.\n";
   cerr << "** FATAL: Trying to use an item not referenced.\n";
   cerr << "** FATAL: Item is located at memory address " << ptr << ".\n";
   arcaneDebugPause("arcaneNoReferenceError");
   throw FatalErrorException(A_FUNCINFO);
+}
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ARCANE_UTILS_EXPORT void
+arcaneNoReferenceError(const void* ptr)
+{
+  _doNoReferenceError(ptr);
+  throw FatalErrorException(A_FUNCINFO);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ARCANE_UTILS_EXPORT void
+arcaneNoReferenceErrorCallTerminate(const void* ptr)
+{
+  _doNoReferenceError(ptr);
+  std::terminate();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -536,7 +556,7 @@ operator<<(std::ostream& o,const HexaPrint& hp)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

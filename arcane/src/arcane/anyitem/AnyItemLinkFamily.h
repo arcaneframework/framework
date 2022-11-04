@@ -272,7 +272,7 @@ public:
 
   ~LinkFamilyInternal() 
   {
-    m_family.removeObserver(*this);
+    arcaneCallFunctionAndTerminateIfThrow([&]() { m_family.removeObserver(*this);});
   }
   
   //! Création d'un nouveau lien vide

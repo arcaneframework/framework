@@ -45,7 +45,7 @@ namespace Arcane.Curves
 
       double a = Math.Max(grille1[0],grille2[0]);
       double b = Math.Min(grille1[long1],grille2[long2]);
-           
+
       if (b<a){
         Console.WriteLine("erreur dans l'intersection des 2 grilles: intersection vide");
         return grilleRes;
@@ -117,22 +117,23 @@ namespace Arcane.Curves
       RealConstArrayView gr1 = ref_curve.X;
       RealConstArrayView gr2 = target_curve.X;
 
-      RealArray igr1 = Utils.Intersection(gr1,gr2);
-      RealArray igr2 = Utils.Intersection(gr2,gr1);
+      using(RealArray igr1 = Utils.Intersection(gr1,gr2))
+      using(RealArray igr2 = Utils.Intersection(gr2,gr1)){
 
-      RealArray pgr = Utils.Intersection(igr1.ConstView, igr2.ConstView);
+        RealArray pgr = Utils.Intersection(igr1.ConstView, igr2.ConstView);
 
-      // Pour utiliser la methode p2, il faut au moins 3 points sur la courbe
-      string pmethod = "p2";
-      if (pgr.Size==2)
-        pmethod = "p1";
+        // Pour utiliser la methode p2, il faut au moins 3 points sur la courbe
+        string pmethod = "p2";
+        if (pgr.Size==2)
+          pmethod = "p1";
 
-      ICurve pcrb1 = Utils.Projection(ref_curve,pgr.ConstView, pmethod);
-      ICurve pcrb2 = Utils.Projection(target_curve,pgr.ConstView, pmethod);
+        ICurve pcrb1 = Utils.Projection(ref_curve,pgr.ConstView, pmethod);
+        ICurve pcrb2 = Utils.Projection(target_curve,pgr.ConstView, pmethod);
 
-      ref_projection = pcrb1;
-      target_projection = pcrb2;
-      grid = pgr;
+        ref_projection = pcrb1;
+        target_projection = pcrb2;
+        grid = pgr;
+      }
     }
 
     public static double NormeInf(ICurve curve)
@@ -154,7 +155,7 @@ namespace Arcane.Curves
       TimeSpan diff = t2 - t1;
       Console.WriteLine("TIME_TO_WRITE={0} (in s)",diff.TotalSeconds);
     }
-    
+
     public static ICurve CreateCurve(string name,Int32ConstArrayView iterations,RealArray values,RealConstArrayView times)
     {
       int nb_value = values.Length;

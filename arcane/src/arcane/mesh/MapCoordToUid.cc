@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MapCoordToUid.cc                                            (C) 2000-2017 */
+/* MapCoordToUid.cc                                            (C) 2000-2022 */
 /*                                                                           */
 /* Recherche d'entités à partir de ses coordonnées.                          */
 /*---------------------------------------------------------------------------*/
@@ -21,25 +21,19 @@
 #include "arcane/SharedVariable.h"
 #include "arcane/IParallelMng.h"
 
-// C++ Includes -----------------------------------
+#include "arcane/mesh/DynamicMesh.h"
+#include "arcane/mesh/MapCoordToUid.h"
+
 #include <limits>
 #include <utility>
 #include <cmath>
 #include <set>
 
-// Local Includes -----------------------------------
-#include "arcane/mesh/DynamicMesh.h"
-#include "arcane/mesh/MapCoordToUid.h"
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -115,7 +109,7 @@ init2(IMesh* mesh)
   m_upper_bound = -std::numeric_limits<Real>::max();
 
   SharedVariableNodeReal3 nodes_coords(mesh->sharedNodesCoordinates());
-  DynamicMesh* dmesh= dynamic_cast<DynamicMesh*>(mesh);
+  DynamicMesh* dmesh = ARCANE_CHECK_POINTER(dynamic_cast<DynamicMesh*>(mesh));
   ItemInternalMap& nodes_map = dmesh->nodesMap();
 
   ENUMERATE_ITEM_INTERNAL_MAP_DATA(ncd,nodes_map){
@@ -627,7 +621,7 @@ void NodeMapCoordToUid::
 check2()
 {
   // Populate the nodes map
-  DynamicMesh* dmesh= dynamic_cast<DynamicMesh*>(m_mesh);
+  DynamicMesh* dmesh = ARCANE_CHECK_POINTER(dynamic_cast<DynamicMesh*>(m_mesh));
   ItemInternalMap& nodes_map = dmesh->nodesMap();
   ENUMERATE_ITEM_INTERNAL_MAP_DATA(ncd,nodes_map){
     ItemInternal* node = ncd->value();
@@ -645,7 +639,7 @@ void FaceMapCoordToUid::
 fill2()
 {
   CHECKPERF( m_perf_counter.stop(PerfCounter::Fill2) )
-  DynamicMesh* dmesh= dynamic_cast<DynamicMesh*>(m_mesh);
+  DynamicMesh* dmesh = ARCANE_CHECK_POINTER(dynamic_cast<DynamicMesh*>(m_mesh));
   ItemInternalMap& faces_map = dmesh->facesMap();
   ENUMERATE_ITEM_INTERNAL_MAP_DATA(ncd,faces_map){
     ItemInternal* face = ncd->value();
@@ -663,7 +657,7 @@ fill2()
 void FaceMapCoordToUid::
 check2()
 {
-  DynamicMesh* dmesh= dynamic_cast<DynamicMesh*>(m_mesh);
+  DynamicMesh* dmesh = ARCANE_CHECK_POINTER(dynamic_cast<DynamicMesh*>(m_mesh));
   ItemInternalMap& faces_map = dmesh->facesMap();
   ENUMERATE_ITEM_INTERNAL_MAP_DATA(ncd,faces_map){
     ItemInternal* face = ncd->value();
@@ -713,12 +707,7 @@ updateFaceCenter(ArrayView<ItemInternal*> refine_cells)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::mesh
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

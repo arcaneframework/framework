@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NormalDistribution.h                                        (C) 2000-2014 */
+/* NormalDistribution.h                                        (C) 2000-2022 */
 /*                                                                           */
 /* Randomiser 'NormalDistribution'.                                          */
 /*---------------------------------------------------------------------------*/
@@ -23,12 +23,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-RANDOM_BEGIN_NAMESPACE
+namespace Arcane::random
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -63,49 +59,48 @@ class NormalDistribution
 
   typedef UniformRandomNumberGenerator base_type;
 
-  explicit NormalDistribution(base_type & rng,Real mean = 0.,Real sigma = 1.)
+  explicit NormalDistribution(base_type & rng,Real mean = 0.0,Real sigma = 1.0)
   : _rng(rng), _mean(mean), _sigma(sigma), _valid(false)
-    {
-    }
+  {
+  }
 
   // compiler-generated copy constructor is NOT fine, need to purge cache
   NormalDistribution(const NormalDistribution& other)
   : _rng(other._rng), _mean(other._mean), _sigma(other._sigma), _valid(false)
-    {
+  {
   }
   // uniform_01 cannot be assigned, neither can this class
 
   Real operator()()
   {
-    if(!_valid) {
+    if (!_valid) {
       _r1 = _rng();
       _r2 = _rng();
       _cached_rho = math::sqrt(-2 * math::log(1.0-_r2));
       _valid = true;
-    } else {
-      _valid = false;
     }
+    else
+      _valid = false;
     // Can we have a boost::mathconst please?
     const double pi = 3.14159265358979323846;
     
-    return _cached_rho * (_valid ? cos(2*pi*_r1) : sin(2*pi*_r1)) * _sigma +
-      _mean;
+    return _cached_rho * (_valid ? cos(2*pi*_r1) : sin(2*pi*_r1)) * _sigma + _mean;
   }
+
  private:
+
   Uniform01<base_type> _rng;
   const Real _mean, _sigma;
-  Real _r1, _r2, _cached_rho;
+  Real _r1 = 0.0;
+  Real _r2 = 0.0;
+  Real _cached_rho = 0.0;
   bool _valid;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-RANDOM_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::random
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
