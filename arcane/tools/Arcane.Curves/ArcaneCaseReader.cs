@@ -231,19 +231,24 @@ namespace Arcane.Curves
         if (x_offset != 0) {
           // Contient directement la liste des valeurs des abscisses
           RealArray x_data = new RealArray(data_len);
-          ArraySegment<Byte> x_data_segment = m_reader.GetView(x_offset, data_len * sizeof(double));
-          x_data.View.ReadBytes(x_data_segment.Array, x_data_segment.Offset);
-          return new BasicCurve(curve_name, x_data, data);
+          try{
+            ArraySegment<Byte> x_data_segment = m_reader.GetView(x_offset, data_len * sizeof(double));
+            x_data.View.ReadBytes(x_data_segment.Array, x_data_segment.Offset);
+            return new BasicCurve(curve_name, x_data, data);
+          }
+          catch(Exception){
+            x_data.Dispose();
+            data.Dispose();
+          }
         }
 
         Int32 iteration_len = ci.IterationLength;
         Int64 iteration_offset = ci.IterationOffset;
-        Int32Array iterations = new Int32Array(iteration_len);
+        using Int32Array iterations = new Int32Array(iteration_len);
         ArraySegment<Byte> iteration_segment = m_reader.GetView(iteration_offset, iteration_len * sizeof(int));
         iterations.View.ReadBytes(iteration_segment.Array, iteration_segment.Offset);
 
         ICurve cv = Utils.CreateCurve(curve_name, iterations.ConstView, data, m_times.ConstView);
-        iterations.Dispose();
         return cv;
       }
     }
@@ -327,7 +332,7 @@ namespace Arcane.Curves
       {
         string xml_string = doc.ToString();
         Byte [] xml_bytes = System.Text.Encoding.UTF8.GetBytes(xml_string);
-        FileStream new_file = new FileStream(path, FileMode.Open, FileAccess.Write, FileShare.ReadWrite);
+        using FileStream new_file = new FileStream(path, FileMode.Open, FileAccess.Write, FileShare.ReadWrite);
         new_file.Seek(doc_info.XOffset, SeekOrigin.Begin);
         new_file.Write(xml_bytes, 0, xml_bytes.Length);
         long buf_length = xml_bytes.Length;
@@ -480,6 +485,7 @@ namespace Arcane.Curves
       var doc_info = new CaseXmlInfos(doc, xml_offset, xml_length);
       return doc_info;
     }
+
     void _Read(ReaderAdapter reader)
     {
       XDocument doc = _ReadXmlInfos(reader).Document;
@@ -491,9 +497,16 @@ namespace Arcane.Curves
       //Console.WriteLine("CURVE_FILE: time_offset={0} time_len={1}",times_offset,times_len);
       RealArray times = null;
       if (times_len>0){
-        times = new RealArray((int)times_len);
-        ArraySegment<Byte> times_segment = reader.GetView(times_offset,times_len*sizeof(double));
-        times.View.ReadBytes(times_segment.Array,times_segment.Offset);
+        try{
+          times = new RealArray((int)times_len);
+          ArraySegment<Byte> times_segment = reader.GetView(times_offset,times_len*sizeof(double));
+          times.View.ReadBytes(times_segment.Array,times_segment.Offset);
+        }
+        catch(Exception){
+          if (times!=null)
+            times.Dispose();
+          throw;
+        }
       }
 
       m_case_curves = new CaseCurves();
@@ -534,8 +547,6 @@ namespace Arcane.Curves
 
       if (do_print)
         Console.WriteLine("NB_CURVE={0}",m_case_curves.Curves.Count);
-      if (times!=null)
-        times.Dispose();
     }
   }
 }
