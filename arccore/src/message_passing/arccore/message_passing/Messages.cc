@@ -78,7 +78,7 @@ void
 mpTestSome(IMessagePassingMng* pm, ArrayView<Request> requests, ArrayView<bool> indexes)
 {
   auto d = pm->dispatchers()->controlDispatcher();
-  d->waitSomeRequests(requests, indexes, false);
+  d->waitSomeRequests(requests, indexes, true);
 }
 
 /*---------------------------------------------------------------------------*/
