@@ -27,5 +27,7 @@
     <RestorePackagesPath>$(PackagesDir)</RestorePackagesPath>
 
     <RestoreOutputPath>$(BaseIntermediateOutputPath)</RestoreOutputPath>
+
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
 </Project>
