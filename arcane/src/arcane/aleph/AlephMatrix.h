@@ -70,7 +70,7 @@ class ARCANE_ALEPH_EXPORT AlephMatrix
   AlephKernel* m_kernel = nullptr;
   Integer m_index;
   ArrayView<Integer> m_ranks;
-  bool m_participating_in_solver;
+  bool m_participating_in_solver = false;
   IAlephMatrix* m_implementation = nullptr;
 
  private:
