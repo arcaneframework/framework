@@ -377,12 +377,25 @@ arcaneDeprecated(const char* file,const char* func,unsigned long line,const char
  * \brief Utilisation d'un objet non référencé.
  *
  * Signale une tentative d'utilisation d'un objet qui ne devrait plus être
- * référencé. Affiche un message et appelle arcaneDebugPause().
+ * référencé. Affiche un message et appelle arcaneDebugPause() si demandé et
+ * ensuite lance une exception FatalErrorException.
  *
  * \param ptr adresse de l'objet
  */
 extern "C++" ARCANE_UTILS_EXPORT void
 arcaneNoReferenceError(const void* ptr);
+
+/*!
+ * \brief Utilisation d'un objet non référencé.
+ *
+ * Signale une tentative d'utilisation d'un objet qui ne devrait plus être
+ * référencé. Affiche un message et appelle arcaneDebugPause() si demandé et
+ * ensuite appelle std::terminate().
+ *
+ * \param ptr adresse de l'objet
+ */
+extern "C++" ARCANE_UTILS_EXPORT void
+arcaneNoReferenceErrorCallTerminate(const void* ptr);
 
 /*!
  * \brief Vérifie que \a size peut être converti dans un 'Integer' pour servir
