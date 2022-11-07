@@ -458,8 +458,8 @@ set(ARCANE_LIBRARIES)
 # Cette liste permet de faire automatiquement dans le fichier de configuration
 # un Alias entre les noms sans namespace et avec namespace
 # (par exemple 'arcane_utils' et 'Arcane::arcane_utils')
-set(ARCANE_EXPORTED_TARGETS)
 set(ARCANE_EXPORTED_TARGETS "" CACHE STRING "List of exported targets" FORCE)
+
 set(ARCANE_PUBLIC_FOUND_PACKAGES)
 set(ARCANE_PUBLIC_FOUND_PACKAGES "" CACHE STRING "List of public external packages founds" FORCE)
 
