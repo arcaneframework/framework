@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshUnitTest.cc                                             (C) 2000-2021 */
+/* MeshUnitTest.cc                                             (C) 2000-2022 */
 /*                                                                           */
 /* Service du test du maillage.                                              */
 /*---------------------------------------------------------------------------*/
@@ -323,6 +323,12 @@ _testNullItem()
          << " nb_edge=" << null_node.nbEdge()
          << " nb_face=" << null_node.nbFace()
          << " nb_cell=" << null_node.nbCell();
+
+  NodeGroup null_node_group;
+  ENUMERATE_(Node,inode,null_node_group){
+    Node node = *inode;
+    info() << "NODE FOR null group: " << node.localId();
+  }
 }
 
 /*---------------------------------------------------------------------------*/

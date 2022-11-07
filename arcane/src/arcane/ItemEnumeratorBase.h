@@ -144,7 +144,7 @@ class ItemEnumeratorBaseT
  protected:
 
   ItemEnumeratorBaseT()
-  : BaseClass() { }
+  : BaseClass(), m_item(NULL_ITEM_LOCAL_ID,ItemSharedInfo::nullInstance()){}
   ItemEnumeratorBaseT(const ItemInternalPtr* items,const Int32* local_ids,Integer n,const ItemGroupImpl* agroup)
   : BaseClass(items,local_ids,n,agroup) { _init(items); }
   ItemEnumeratorBaseT(ItemSharedInfo* shared_info,const Int32ConstArrayView& local_ids)
