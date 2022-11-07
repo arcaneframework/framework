@@ -118,7 +118,7 @@ mixteMul(const SimdReal3& u,const SimdReal3& v,const SimdReal3& w)
 /*---------------------------------------------------------------------------*/
 
 inline SimdReal3x3
-prodTens(SimdReal3 u,SimdReal3 v)
+prodTens(const SimdReal3& u,const SimdReal3& v)
 {
   return SimdReal3x3(u.x*v,u.y*v,u.z*v);
 }
@@ -130,7 +130,7 @@ prodTens(SimdReal3 u,SimdReal3 v)
  * \brief Produit matrice matrice entre deux tenseurs.
  */
 inline SimdReal3x3
-matrixProduct(SimdReal3x3 t,SimdReal3x3 v)
+matrixProduct(const SimdReal3x3& t,const SimdReal3x3& v)
 {
   return SimdReal3x3(SimdReal3(t.x.x*v.x.x+t.x.y*v.y.x+t.x.z*v.z.x,
                                t.x.x*v.x.y+t.x.y*v.y.y+t.x.z*v.z.y,
@@ -150,7 +150,7 @@ matrixProduct(SimdReal3x3 t,SimdReal3x3 v)
  * \brief Transpose la matrice.
  */
 inline SimdReal3x3
-matrixTranspose(SimdReal3x3 t)
+matrixTranspose(const SimdReal3x3& t)
 {
   return SimdReal3x3(SimdReal3(t.x.x, t.y.x, t.z.x),
                      SimdReal3(t.x.y, t.y.y, t.z.y),
@@ -165,7 +165,7 @@ matrixTranspose(SimdReal3x3 t)
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline SimdReal2
-min(SimdReal2 a,SimdReal2 b)
+min(const SimdReal2& a,const SimdReal2& b)
 {
   return SimdReal2( math::min(a.x,b.x), math::min(a.y,b.y) );
 }
@@ -174,7 +174,7 @@ min(SimdReal2 a,SimdReal2 b)
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline SimdReal3
-min(SimdReal3 a,SimdReal3 b)
+min(const SimdReal3& a,const SimdReal3& b)
 {
   return SimdReal3( math::min(a.x,b.x), math::min(a.y,b.y), math::min(a.z,b.z) );
 }
@@ -183,7 +183,7 @@ min(SimdReal3 a,SimdReal3 b)
  * \ingroup GroupMathUtils
  */
 inline SimdReal2x2
-min(SimdReal2x2 a,SimdReal2x2 b)
+min(const SimdReal2x2& a,const SimdReal2x2& b)
 {
   return SimdReal2x2( math::min(a.x,b.x), math::min(a.y,b.y) );
 }
@@ -192,7 +192,7 @@ min(SimdReal2x2 a,SimdReal2x2 b)
  * \ingroup GroupMathUtils
  */
 inline SimdReal3x3
-min(SimdReal3x3 a,SimdReal3x3 b)
+min(const SimdReal3x3& a,const SimdReal3x3& b)
 {
   return SimdReal3x3( math::min(a.x,b.x), math::min(a.y,b.y), math::min(a.z,b.z) );
 }
@@ -205,7 +205,7 @@ min(SimdReal3x3 a,SimdReal3x3 b)
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline SimdReal2
-max(SimdReal2 a,SimdReal2 b)
+max(const SimdReal2& a,const SimdReal2& b)
 {
   return SimdReal2( math::max(a.x,b.x), math::max(a.y,b.y) );
 }
@@ -214,7 +214,7 @@ max(SimdReal2 a,SimdReal2 b)
  * \ingroup GroupMathUtils
  */
 ARCCORE_HOST_DEVICE inline SimdReal3
-max(SimdReal3 a,SimdReal3 b)
+max(const SimdReal3& a,const SimdReal3& b)
 {
   return SimdReal3( math::max(a.x,b.x), math::max(a.y,b.y), math::max(a.z,b.z) );
 }
@@ -223,7 +223,7 @@ max(SimdReal3 a,SimdReal3 b)
  * \ingroup GroupMathUtils
  */
 inline SimdReal2x2
-max(SimdReal2x2 a,SimdReal2x2 b)
+max(const SimdReal2x2& a,const SimdReal2x2& b)
 {
   return SimdReal2x2( math::max(a.x,b.x), math::max(a.y,b.y) );
 }
@@ -232,7 +232,7 @@ max(SimdReal2x2 a,SimdReal2x2 b)
  * \ingroup GroupMathUtils
  */
 inline SimdReal3x3
-max(SimdReal3x3 a,SimdReal3x3 b)
+max(const SimdReal3x3& a,const SimdReal3x3& b)
 {
   return SimdReal3x3( math::max(a.x,b.x), math::max(a.y,b.y), math::max(a.z,b.z) );
 }

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* LitteralExpressionImpl.h                                    (C) 2000-2004 */
+/* LitteralExpressionImpl.h                                    (C) 2000-2022 */
 /*                                                                           */
 /* Implémentation d'une expression littérale contenant un scalaire.          */
 /*---------------------------------------------------------------------------*/
@@ -24,7 +24,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -41,7 +42,7 @@ class LitteralExpressionImpl
 {
  public:
 
-  LitteralExpressionImpl (ScalarVariant value);
+  explicit LitteralExpressionImpl (const ScalarVariant& value);
 
  public:
 
@@ -79,8 +80,8 @@ class LitteralOperatorT
 : public LitteralOperator
 {
  public:
-  virtual ~LitteralOperatorT() {}
-  virtual void evaluate(ExpressionResult* res, ScalarVariant& a)
+
+  void evaluate(ExpressionResult* res, ScalarVariant& a) override
   {
     // allocation du résultat en fonction du type du variant
     res->allocate(a.type());
@@ -100,7 +101,7 @@ class LitteralOperatorT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

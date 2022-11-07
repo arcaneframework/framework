@@ -365,7 +365,7 @@ _addItemsToIndexer(const VariableCellInt32& nb_env_per_cell,
   // Maintenant que les nouveaux MatVar sont créés, il faut les
   // initialiser avec les bonnes valeurs.
   functor::apply(m_material_mng,&IMeshMaterialMng::visitVariables,
-                 [=](IMeshMaterialVariable* mv) { mv->_initializeNewItems(list_builder); }
+                 [&](IMeshMaterialVariable* mv) { mv->_initializeNewItems(list_builder); }
                  );
 }
 

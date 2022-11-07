@@ -170,14 +170,14 @@ operator<<(RunCommand& command,const ItemVectorViewT<ItemType>& items)
 }
 
 template<typename ItemType,typename Lambda>
-void operator<<(ItemRunCommand<ItemType>&& nr,Lambda f)
+void operator<<(ItemRunCommand<ItemType>&& nr,const Lambda& f)
 {
-  run(nr.m_command,nr.m_items,std::forward<Lambda>(f));
+  run(nr.m_command,nr.m_items,f);
 }
 template<typename ItemType,typename Lambda>
-void operator<<(ItemRunCommand<ItemType>& nr,Lambda f)
+void operator<<(ItemRunCommand<ItemType>& nr,const Lambda& f)
 {
-  run(nr.m_command,nr.m_items,std::forward<Lambda>(f));
+  run(nr.m_command,nr.m_items,f);
 }
 
 /*---------------------------------------------------------------------------*/
