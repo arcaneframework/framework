@@ -132,13 +132,13 @@ readTimeLoops()
   for( const auto& i : global_singleton_elems ){
     info() << "CHECK GLOBAL SINGLETON SERVICES 2 " << i.name();
 
-   for( auto j_node : i ){
-     if (j_node.name()=="service"){
-       bool is_required = (j_node.attrValue("need")=="required");
-       info() << "GLOBAL SINGLETON SERVICE name=" << j_node.attrValue(ustr_name) << " is_required?=" << is_required;
-       global_singleton_services.add(TimeLoopSingletonServiceInfo(j_node.attrValue(ustr_name),is_required));
-     }
-   }
+    for( const auto& j_node : i ){
+      if (j_node.name()=="service"){
+        bool is_required = (j_node.attrValue("need")=="required");
+        info() << "GLOBAL SINGLETON SERVICE name=" << j_node.attrValue(ustr_name) << " is_required?=" << is_required;
+        global_singleton_services.add(TimeLoopSingletonServiceInfo(j_node.attrValue(ustr_name),is_required));
+      }
+    }
   }
 
   for( const auto& i : timeloops ){

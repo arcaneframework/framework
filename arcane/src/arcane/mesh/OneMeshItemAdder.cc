@@ -478,11 +478,11 @@ void OneMeshItemAdder::
 _printRelations(ItemInternal* item)
 {
   debug(Trace::Highest) << "[addItems] RELATIONS for " << ItemPrinter(item) << " in " << item->family()->name();
-  for (auto relation : m_mesh->itemFamilyNetwork()->getChildRelations(item->family())) {
+  for (const auto& relation : m_mesh->itemFamilyNetwork()->getChildRelations(item->family())) {
 //    debug(Trace::Highest) << " Relation " << relation->name();
 //    debug(Trace::Highest) << " Relation " << relation->nbConnectedItem(ItemLocalId(item));
     ConnectivityItemVector connected_items(relation);
-    for (auto connected_item : connected_items.connectedItems(ItemLocalId(item))) {
+    for (const auto& connected_item : connected_items.connectedItems(ItemLocalId(item))) {
       debug(Trace::Highest) << ItemPrinter(connected_item);
     }
   }
