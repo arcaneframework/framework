@@ -568,7 +568,8 @@ applyBoundaryCondition()
   // Repositionne les vues si les groupes associés ont été modifiés
   for( auto& bc : m_boundary_conditions )
     bc.view = bc.nodes.view();
-  for( auto bc : m_boundary_conditions ){
+
+  for( const auto& bc : m_boundary_conditions ){
     Real value = bc.value;
     TypesSimpleHydro::eBoundaryCondition type = bc.type;
     NodeVectorView view = bc.view;

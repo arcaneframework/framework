@@ -115,7 +115,7 @@ _save()
   // Stocke dans \a vars la liste des variables pour accès plus simple qu'avec la map
   Integer max_nb_var = arcaneCheckArraySize(mm->m_full_name_variable_map.size());
   m_vars.reserve(max_nb_var);
-  for( auto i : mm->m_full_name_variable_map){
+  for( const auto& i : mm->m_full_name_variable_map){
     IMeshMaterialVariable* mv = i.second;
     if (mv->keepOnChange() && mv->globalVariable()->isUsed())
       m_vars.add(mv);

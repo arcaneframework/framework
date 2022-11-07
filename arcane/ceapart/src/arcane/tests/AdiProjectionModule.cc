@@ -487,7 +487,7 @@ _evolveDualUpwindedVariables1()
     
     const Integer nb_cells = node.nbCell();
     if (nb_cells==0)
-      fatal() << "No cell attached to the node";
+      ARCANE_FATAL("No cell attached to the node");
 
 
     // Densités nodales.

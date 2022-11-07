@@ -1137,22 +1137,15 @@ _writeVariables(IDataWriter* writer,const VariableCollection& vars,bool use_hash
     }
     catch(const Exception& ex)
     {
-      if (var)
-        error() << "Exception Arcane while VariableMng::writeVariables()"
-                << " var=" << var->fullName()
-                << " exception=" << ex;
-      else
-        error() << "Exception while VariableMng::writeVariables() " << ex.what()
-                << " stack=" << ex.stackTrace();
+      error() << "Exception Arcane while VariableMng::writeVariables()"
+              << " var=" << var->fullName()
+              << " exception=" << ex;
       throw;
     }
     catch(const std::exception& ex){
-      if (var)
-        error() << "Exception while VariableMng::writeVariables()"
-                << " var=" << var->fullName()
-                << " exception=" << ex.what();
-      else
-        error() << "Exception while VariableMng::writeVariables() " << ex.what();
+      error() << "Exception while VariableMng::writeVariables()"
+              << " var=" << var->fullName()
+              << " exception=" << ex.what();
       throw;
     }
   }
