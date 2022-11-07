@@ -785,6 +785,8 @@ _removeEmptyPartsV2Helper(const Int32 nb_part,ArrayView<idxtype> metis_part,Int3
       max_part_id = i;
     }
   }
+  if (max_part_id<0)
+    ARCANE_FATAL("Bad value max_part_id ({0})",max_part_id);
   info() << "Parmetis: check empty parts: (" << algo_iteration << ") nb_empty_parts=" << nb_hole
          << " nb_max_part=" << max_part_nbr
          << " max_part_rank=" << max_part_id
