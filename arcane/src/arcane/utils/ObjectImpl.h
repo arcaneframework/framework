@@ -14,7 +14,9 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/Atomic.h"
+#include "arcane/utils/UtilsTypes.h"
+
+#include <atomic>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -37,31 +39,25 @@ class ARCANE_UTILS_EXPORT ObjectImpl
   ObjectImpl()
   : m_ref_count(0)
   {}
-  ObjectImpl(const ObjectImpl& rhs)
-  : m_ref_count(rhs.m_ref_count)
-  {}
+  ObjectImpl(const ObjectImpl& rhs) = delete;
   virtual ~ObjectImpl() {}
-  ObjectImpl& operator=(const ObjectImpl& rhs)
-  {
-    m_ref_count = rhs.m_ref_count;
-    return *this;
-  }
+  ObjectImpl& operator=(const ObjectImpl& rhs) = delete;
 
  public:
 
   //! Incrémente le compteur de référence
-  inline void addRef() { ++m_ref_count; }
+  void addRef() { ++m_ref_count; }
   //! Décrémente le compteur de référence
-  inline void removeRef()
+  void removeRef()
   {
     Int32 r = --m_ref_count;
     if (r < 0)
-      arcaneNoReferenceError(this);
+      arcaneNoReferenceErrorCallTerminate(this);
     if (r == 0)
       deleteMe();
   }
   //! Retourne la valeur du compteur de référence
-  Int32 refCount() const { return m_ref_count.value(); }
+  Int32 refCount() const { return m_ref_count.load(); }
 
  public:
 
@@ -70,7 +66,7 @@ class ARCANE_UTILS_EXPORT ObjectImpl
 
  private:
 
-  AtomicInt32 m_ref_count; //!< Nombre de références sur l'objet.
+  std::atomic<Int32> m_ref_count; //!< Nombre de références sur l'objet.
 };
 
 /*---------------------------------------------------------------------------*/

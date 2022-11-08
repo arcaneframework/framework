@@ -16,8 +16,6 @@
 
 #include "arcane/utils/ObjectImpl.h"
 #include "arcane/utils/Iostream.h"
-// TODO: supprimer ce .h qui n'est pas utilisé.
-#include "arcane/utils/Deleter.h"
 #include "arcane/utils/Event.h"
 
 #include <algorithm>
@@ -131,20 +129,17 @@ class CollectionImplBase
  public:
 
   //! Construit une collection vide
-  CollectionImplBase()
-  : m_count(0)
-  {}
+  CollectionImplBase() = default;
   //! Construit une collection avec \a acount éléments
-  CollectionImplBase(Integer acount)
+  explicit CollectionImplBase(Integer acount)
   : m_count(acount)
   {}
   /*!\brief Opérateur de recopie.
    * les handlers d'évènements ne sont pas recopiés. */
-  CollectionImplBase(const CollectionImplBase& from)
-  : ObjectImpl(from)
-  , m_count(from.count())
-  {}
-  virtual ~CollectionImplBase() {}
+  CollectionImplBase(const CollectionImplBase& from) = delete;
+  //: ObjectImpl(from)
+  //, m_count(from.count())
+  //{}
 
  public:
 
@@ -203,7 +198,7 @@ class CollectionImplBase
 
  private:
 
-  Integer m_count;
+  Integer m_count = 0;
   CollectionChangeEventHandler m_collection_handlers;
 
  private:

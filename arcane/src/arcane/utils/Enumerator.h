@@ -25,11 +25,6 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-template <typename T> class Collection;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
  * \internal
  * \brief Interface d'un énumérateur.
@@ -45,12 +40,6 @@ template <typename T> class Collection;
 class ARCANE_UTILS_EXPORT EnumeratorImplBase
 : public ObjectImpl
 {
- public:
-
-  EnumeratorImplBase()
-  : ObjectImpl()
-  {}
-
  public:
 
   /*! \brief Remet à zéro l'énumérateur.
@@ -99,33 +88,34 @@ class ARCANE_UTILS_EXPORT EnumeratorBase
  public:
 
   //! Contruit un énumérateur nul.
-  EnumeratorBase()
-  : m_impl(0)
-  {}
-  /*! \brief Contruit un énumérateur associé à l'implémentation \a impl.
+  EnumeratorBase() = default;
+
+  /*!
+   * \brief Contruit un énumérateur associé à l'implémentation \a impl.
+   *
    * L'instance devient propriétaire de l'implémentation qui est détruite
    * lorsque l'instance est détruite.
    */
-  EnumeratorBase(EnumeratorImplBase* impl)
+  explicit EnumeratorBase(EnumeratorImplBase* impl)
   : m_impl(impl)
   {}
 
  public:
 
-  inline void reset() { m_impl->reset(); }
-  inline bool moveNext() { return m_impl->moveNext(); }
-  inline void* current() { return m_impl->current(); }
-  inline const void* current() const { return m_impl->current(); }
+  void reset() { m_impl->reset(); }
+  bool moveNext() { return m_impl->moveNext(); }
+  void* current() { return m_impl->current(); }
+  const void* current() const { return m_impl->current(); }
 
  public:
 
   //! Avance l'énumérateur sur l'élément suivant.
-  inline bool operator++() { return moveNext(); }
+  bool operator++() { return moveNext(); }
 
  protected:
 
-  inline EnumeratorImplBase* _impl() { return m_impl.get(); }
-  inline const EnumeratorImplBase* _impl() const { return m_impl.get(); }
+  EnumeratorImplBase* _impl() { return m_impl.get(); }
+  const EnumeratorImplBase* _impl() const { return m_impl.get(); }
 
  private:
 
@@ -146,49 +136,31 @@ class EnumeratorT
 {
  public:
 
-  EnumeratorT() {}
-  EnumeratorT(EnumeratorImplBase* impl)
+  EnumeratorT() = default;
+  EnumeratorT(const Collection<T>& collection);
+  explicit EnumeratorT(EnumeratorImplBase* impl)
   : EnumeratorBase(impl)
   {}
-  EnumeratorT(const Collection<T>& collection);
 
  public:
 
-  inline const T& current() const
-  {
-    return *_currentPtr();
-  }
-  inline T& current()
-  {
-    return *_currentPtr();
-  }
+  const T& current() const { return *_currentPtr(); }
+  T& current() { return *_currentPtr(); }
 
  public:
 
-  inline const T& operator*() const
-  {
-    return current();
-  }
-  inline T& operator*()
-  {
-    return current();
-  }
-  inline const T* operator->() const
-  {
-    return _currentPtr();
-  }
-  inline T* operator->()
-  {
-    return _currentPtr();
-  }
+  const T& operator*() const { return current(); }
+  T& operator*() { return current(); }
+  const T* operator->() const { return _currentPtr(); }
+  T* operator->() { return _currentPtr(); }
 
  private:
 
-  inline T* _currentPtr()
+  T* _currentPtr()
   {
     return reinterpret_cast<T*>(_impl()->current());
   }
-  inline const T* _currentPtr() const
+  const T* _currentPtr() const
   {
     return reinterpret_cast<const T*>(_impl()->current());
   }

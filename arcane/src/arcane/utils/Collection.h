@@ -25,16 +25,6 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-template <typename T> class Collection;
-template <typename T> class EnumeratorT;
-class EnumeratorBase;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
  * \brief Classe de base d'une collection.
  * \ingroup Collection
@@ -59,10 +49,8 @@ class ARCANE_UTILS_EXPORT CollectionBase
    * L'instance n'est pas utilisable tant qu'elle n'a pas été affectée
    * à une collection non nulle (par exemple un vecteur).
    */
-  CollectionBase()
-  : m_ref(0)
-  {}
-  const CollectionBase& operator=(const CollectionBase& rhs)
+  CollectionBase() = default;
+  CollectionBase& operator=(const CollectionBase& rhs)
   {
     m_ref = rhs.m_ref;
     return *this;
@@ -70,7 +58,7 @@ class ARCANE_UTILS_EXPORT CollectionBase
 
  protected:
 
-  CollectionBase(Impl* vb)
+  explicit CollectionBase(Impl* vb)
   : m_ref(vb)
   {}
 
@@ -110,16 +98,6 @@ class ARCANE_UTILS_EXPORT CollectionBase
     m_ref = new_impl;
   }
 
- protected:
-
-  /*template<typename InputIterator,typename Function> inline Function
-  _each(InputIterator first,InputIterator last,Function f)
-    {
-      while (first != last)
-        f(*first++);
-      return f;
-      }*/
-
  private:
 
   AutoRefT<Impl> m_ref;
@@ -158,13 +136,11 @@ class Collection
    * L'instance n'est pas utilisable tant qu'elle n'a pas été affectée
    * à une collection non nulle.
    */
-  Collection()
-  : CollectionBase()
-  {}
+  Collection() = default;
 
  protected:
 
-  Collection(Impl* vb)
+  explicit Collection(Impl* vb)
   : CollectionBase(vb)
   {}
 

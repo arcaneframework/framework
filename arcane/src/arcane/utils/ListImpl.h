@@ -82,7 +82,7 @@ class ListImplBase
   {}
 
   //! Libère les éléments du tableau.
-  virtual ~ListImplBase() ARCANE_NOEXCEPT
+  ~ListImplBase() override
   {
     _deallocate(_ptr());
     m_allocator->destroy();
@@ -168,6 +168,7 @@ class ListImplBase
   {
     return m_ptr;
   }
+
   //! Retourne un iterateur sur le premier élément après la fin du tableau
   T* end2() const
   {
@@ -213,7 +214,7 @@ class ListImplBase
   }
 
   //! Ajoute l'élément \a elem à la fin du tableau
-  virtual void add(ObjectRef elem)
+  void add(ObjectRef elem) override
   {
     this->onInsert();
     Integer s = this->count();
@@ -226,7 +227,7 @@ class ListImplBase
     this->onInsertComplete(_ptr() + s, s);
   }
 
-  virtual bool remove(ObjectRef element)
+  bool remove(ObjectRef element) override
   {
     Integer i = 0;
     Integer s = this->count();
@@ -239,7 +240,7 @@ class ListImplBase
     return false;
   }
 
-  virtual void removeAt(Integer index)
+  void removeAt(Integer index) override
   {
     Integer s = this->count();
     if (index >= s)
@@ -247,7 +248,7 @@ class ListImplBase
     _removeAt(index);
   }
 
-  virtual iterator find(ObjectRef element)
+  iterator find(ObjectRef element) override
   {
     Integer i = 0;
     Integer s = this->count();
@@ -257,7 +258,7 @@ class ListImplBase
     return end();
   }
 
-  virtual const_iterator find(ObjectRef element) const
+  const_iterator find(ObjectRef element) const override
   {
     Integer i = 0;
     Integer s = this->count();
@@ -267,13 +268,13 @@ class ListImplBase
     return end();
   }
 
-  virtual bool contains(ObjectRef element) const
+  bool contains(ObjectRef element) const override
   {
     const_iterator i = find(element);
     return (i != end());
   }
 
-  virtual EnumeratorImplBase* enumerator() const;
+  EnumeratorImplBase* enumerator() const override;
 
  protected:
 
@@ -407,7 +408,9 @@ class ListImplBase
 
  private:
 
-  /*! \brief Modifie la taille du tableau.
+  /*!
+   * \brief Modifie la taille du tableau.
+   *
    * Cette méthode doit retourner un pointeur sur un tableau alloué par la classe
    * dérivée et ce tableau doit avoir une taille au moins égale à \a new_size.
    * La gestion mémoire est à la charge de la classe dérivée.
@@ -466,12 +469,12 @@ class ListImplT
  public:
 
   ListImplT() { _setAllocator(); }
-  ListImplT(const ConstArrayView<T>& array)
+  explicit ListImplT(const ConstArrayView<T>& array)
   {
     _setAllocator();
     this->_arrayCopy(array);
   }
-  ListImplT(const ArrayView<T>& array)
+  explicit ListImplT(const ArrayView<T>& array)
   {
     _setAllocator();
     this->_arrayCopy(array);
@@ -482,7 +485,7 @@ class ListImplT
     _setAllocator();
     _arrayCopy(array);
   }
-  ListImplT(const Collection<T>& array)
+  explicit ListImplT(const Collection<T>& array)
   : BaseClass()
   {
     _setAllocator();
@@ -490,7 +493,7 @@ class ListImplT
       BaseClass::add(*i);
     }
   }
-  ListImplT(const EnumeratorT<T>& enumerator)
+  explicit ListImplT(const EnumeratorT<T>& enumerator)
   : BaseClass()
   {
     _setAllocator();
@@ -498,7 +501,6 @@ class ListImplT
       BaseClass::add(*i);
     }
   }
-  virtual ~ListImplT() ARCANE_NOEXCEPT {}
 
   void assign(const Collection<T>& array)
   {
@@ -515,7 +517,6 @@ class ListImplT
     }
   }
 
- protected:
  private:
 
   void _setAllocator()
@@ -545,18 +546,17 @@ class ListEnumeratorImplT
   , m_current(begin - 1)
   , m_end(end)
   {}
-  virtual ~ListEnumeratorImplT() {}
 
  public:
 
-  virtual void reset() { m_current = m_begin - 1; }
-  virtual bool moveNext()
+  void reset() override { m_current = m_begin - 1; }
+  bool moveNext() override
   {
     ++m_current;
     return m_current < m_end;
   }
-  virtual void* current() { return m_current; }
-  virtual const void* current() const { return m_current; }
+  void* current() override { return m_current; }
+  const void* current() const override { return m_current; }
 
  private:
 
