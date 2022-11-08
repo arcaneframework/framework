@@ -16,11 +16,11 @@
 
 #include "arcane/utils/UtilsTypes.h"
 #include "arcane/utils/Array.h"
-#include "arcane/utils/Atomic.h"
 
 #include "arcane/ItemTypes.h"
 
 #include <set>
+#include <atomic>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -172,7 +172,7 @@ class ARCANE_CORE_EXPORT ItemTypeMng
   //! Flag d'initialisation
   bool m_initialized;
 
-  AtomicInt32 m_initialized_counter;
+  std::atomic<Int32> m_initialized_counter;
 
   //! Nombre de types disponibles
   Integer m_nb_basic_item_type;

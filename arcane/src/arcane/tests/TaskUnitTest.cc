@@ -74,7 +74,7 @@ class Test2
     ITask* master_task = TaskFactory::createTask(this,&Test2::_createSubTasks);
     m_wanted_nb_task = 100;
     master_task->launchAndWait();
-    Int32 val = m_nb.value();
+    Int32 val = m_nb.load();
     info() << "** END_MY TEST2 n=" << val;
     if (val!=m_wanted_nb_task)
       ARCANE_FATAL("Bad value v={0} expected={1}",val,m_wanted_nb_task);
@@ -99,7 +99,7 @@ class Test2
   {
     ++m_nb;
   }
-  AtomicInt32 m_nb;
+  std::atomic<Int32> m_nb;
   Integer m_wanted_nb_task;
 };
 
@@ -375,13 +375,13 @@ class Test4
   {
    public:
     DoAtomic() { m_nb = 0; }
-    Int32 value() { return m_nb.value(); }
+    Int32 value() { return m_nb.load(); }
     void loop(Integer nb_loop)
     {
       for( int i=0; i<nb_loop; ++i )
         ++m_nb;
     }
-    AtomicInt32 m_nb;
+    std::atomic<Int32> m_nb;
   };
 
   class DoSpinLock : public IAction
@@ -539,9 +539,9 @@ class Test5Fibonnaci
     return sum;
   }
  public:
-  static AtomicInt32 m_nb_exec;
+  static std::atomic<Int32> m_nb_exec;
 };
-AtomicInt32 Test5Fibonnaci::m_nb_exec;
+std::atomic<Int32> Test5Fibonnaci::m_nb_exec(0);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -717,7 +717,7 @@ executeTest()
       long z3 = TaskTest::Test5Fibonnaci::ParallelFib(40);
       info() << "F[40] =" << z3;
       vc.areEqual(z3,102334155L,"F[45]");
-      info() << "NB_EXEC=" << TaskTest::Test5Fibonnaci::m_nb_exec.value();
+      info() << "NB_EXEC=" << TaskTest::Test5Fibonnaci::m_nb_exec.load();
     }
     Real v2 = platform::getRealTime();
     info() << "TIME=" << (v2-v1);
