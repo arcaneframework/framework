@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TimeLoopEntryPointInfo.h                                    (C) 2000-2016 */
+/* TimeLoopEntryPointInfo.h                                    (C) 2000-2022 */
 /*                                                                           */
 /* Informations sur un point d'entrée de la boucle en temps.                 */
 /*---------------------------------------------------------------------------*/
@@ -20,10 +20,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -36,7 +34,7 @@ class TimeLoopEntryPointInfo
  public:
 
   TimeLoopEntryPointInfo() {}
-  TimeLoopEntryPointInfo(const String& aname)
+  explicit TimeLoopEntryPointInfo(const String& aname)
   : m_name(aname) { }
   TimeLoopEntryPointInfo(const String& aname,const StringList& modules_depend)
   : m_name(aname), m_modules_depend(modules_depend)
@@ -44,12 +42,10 @@ class TimeLoopEntryPointInfo
 
  public:
 
-  const String& name() const
-  { return m_name; }
-  const StringList& modulesDepend() const
-  { return m_modules_depend; }
+  const String& name() const { return m_name; }
+  const StringList& modulesDepend() const { return m_modules_depend; }
 
-  bool operator==(const TimeLoopEntryPointInfo& rhs)
+  bool operator==(const TimeLoopEntryPointInfo& rhs) const
   {
     if (m_name!=rhs.m_name)
       return false;
@@ -70,7 +66,7 @@ class TimeLoopEntryPointInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
