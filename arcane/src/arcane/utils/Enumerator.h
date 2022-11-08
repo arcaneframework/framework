@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Enumerator.h                                                (C) 2000-2017 */
+/* Enumerator.h                                                (C) 2000-2022 */
 /*                                                                           */
 /* Enumérateurs.                                                             */
 /*---------------------------------------------------------------------------*/
@@ -20,12 +20,13 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> class Collection;
+template <typename T> class Collection;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -45,14 +46,19 @@ class ARCANE_UTILS_EXPORT EnumeratorImplBase
 : public ObjectImpl
 {
  public:
-  EnumeratorImplBase() : ObjectImpl() {}
+
+  EnumeratorImplBase()
+  : ObjectImpl()
+  {}
+
  public:
+
   /*! \brief Remet à zéro l'énumérateur.
   *
   * Positionne l'énumérateur juste avant le premier élément de la collection.
    * Il faut faire un moveNext() pour le rendre valide.
    */
-  virtual void reset() =0;
+  virtual void reset() = 0;
   /*! \brief Avance l'énumérateur sur l'élément suivant de la collection.
    *
    * \retval true si l'énumérateur n'a pas dépassé le dernier élément. Dans
@@ -61,11 +67,12 @@ class ARCANE_UTILS_EXPORT EnumeratorImplBase
    * cas tout appel suivant à cette méthode retourne \a false et l'appel
    * à current() n'est pas valide.
    */
-  virtual bool moveNext() =0;
-  //! Objet courant de l'énumérateur.  
-  virtual void* current() =0;
-  //! Objet courant de l'énumérateur.  
-  virtual const void* current() const =0;
+  virtual bool moveNext() = 0;
+  //! Objet courant de l'énumérateur.
+  virtual void* current() = 0;
+  //! Objet courant de l'énumérateur.
+  virtual const void* current() const = 0;
+
  private:
 };
 
@@ -90,29 +97,38 @@ class ARCANE_UTILS_EXPORT EnumeratorImplBase
 class ARCANE_UTILS_EXPORT EnumeratorBase
 {
  public:
+
   //! Contruit un énumérateur nul.
-  EnumeratorBase() : m_impl(0) {}
+  EnumeratorBase()
+  : m_impl(0)
+  {}
   /*! \brief Contruit un énumérateur associé à l'implémentation \a impl.
    * L'instance devient propriétaire de l'implémentation qui est détruite
    * lorsque l'instance est détruite.
    */
-  EnumeratorBase(EnumeratorImplBase* impl) : m_impl(impl) {}
+  EnumeratorBase(EnumeratorImplBase* impl)
+  : m_impl(impl)
+  {}
+
  public:
-  inline void reset()
-    { m_impl->reset(); }
-  inline bool moveNext()
-    { return m_impl->moveNext(); }
-  inline void* current()
-    { return m_impl->current(); }
-  inline const void* current() const
-    { return m_impl->current(); } 
+
+  inline void reset() { m_impl->reset(); }
+  inline bool moveNext() { return m_impl->moveNext(); }
+  inline void* current() { return m_impl->current(); }
+  inline const void* current() const { return m_impl->current(); }
+
  public:
+
   //! Avance l'énumérateur sur l'élément suivant.
   inline bool operator++() { return moveNext(); }
+
  protected:
+
   inline EnumeratorImplBase* _impl() { return m_impl.get(); }
   inline const EnumeratorImplBase* _impl() const { return m_impl.get(); }
+
  private:
+
   AutoRefT<EnumeratorImplBase> m_impl; //!< Implémentation
 };
 
@@ -124,39 +140,64 @@ class ARCANE_UTILS_EXPORT EnumeratorBase
  *
  * \todo utiliser des traits pour les types références, pointeur et valeur
  */
-template<class T>
+template <class T>
 class EnumeratorT
 : public EnumeratorBase
 {
  public:
+
   EnumeratorT() {}
-  EnumeratorT(EnumeratorImplBase* impl) : EnumeratorBase(impl) {}
+  EnumeratorT(EnumeratorImplBase* impl)
+  : EnumeratorBase(impl)
+  {}
   EnumeratorT(const Collection<T>& collection);
+
  public:
+
   inline const T& current() const
-    { return *_currentPtr(); }
+  {
+    return *_currentPtr();
+  }
   inline T& current()
-    { return *_currentPtr(); }
+  {
+    return *_currentPtr();
+  }
+
  public:
+
   inline const T& operator*() const
-    { return current(); }
+  {
+    return current();
+  }
   inline T& operator*()
-    { return current(); }
+  {
+    return current();
+  }
   inline const T* operator->() const
-    { return _currentPtr(); }
+  {
+    return _currentPtr();
+  }
   inline T* operator->()
-    { return _currentPtr(); }
+  {
+    return _currentPtr();
+  }
+
  private:
+
   inline T* _currentPtr()
-    { return reinterpret_cast<T*>(_impl()->current()); }
+  {
+    return reinterpret_cast<T*>(_impl()->current());
+  }
   inline const T* _currentPtr() const
-    { return reinterpret_cast<const T*>(_impl()->current()); }
+  {
+    return reinterpret_cast<const T*>(_impl()->current());
+  }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class T> inline EnumeratorT<T>::
+template <class T> inline EnumeratorT<T>::
 EnumeratorT(const Collection<T>& collection)
 : EnumeratorBase(collection.enumerator())
 {
@@ -165,9 +206,9 @@ EnumeratorT(const Collection<T>& collection)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif
