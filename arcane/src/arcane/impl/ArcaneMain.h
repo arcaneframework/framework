@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneMain.h                                                (C) 2000-2021 */
+/* ArcaneMain.h                                                (C) 2000-2022 */
 /*                                                                           */
 /* Classe gérant l'exécution.                                                */
 /*---------------------------------------------------------------------------*/
@@ -17,6 +17,8 @@
 #include "arcane/utils/List.h"
 #include "arcane/utils/IFunctor.h"
 #include "arcane/IArcaneMain.h"
+
+#include <atomic>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -338,9 +340,9 @@ class ARCANE_IMPL_EXPORT ArcaneMain
   void _dumpHelp();
   void _parseApplicationBuildInfoArgs();
   //! Nombre de fois que arcaneInitialize() a été appelé
-  static Int32 m_nb_arcane_init;
+  static std::atomic<Int32> m_nb_arcane_init;
   //! 1 si init terminé, 0 sinon
-  static Int32 m_is_init_done;
+  static std::atomic<Int32> m_is_init_done;
   static void _launchMissingInitException();
   static void _checkHasInit();
   static void _checkCreateDynamicLibraryLoader();

@@ -174,8 +174,8 @@ createGlibDynamicLibraryLoader();
 extern "C++" ARCANE_IMPL_EXPORT ICodeService*
 createArcaneCodeService(IApplication* app);
 
-Int32 ArcaneMain::m_nb_arcane_init = 0;
-Int32 ArcaneMain::m_is_init_done = 0;
+std::atomic<Int32> ArcaneMain::m_nb_arcane_init(0);
+std::atomic<Int32> ArcaneMain::m_is_init_done(0);
 bool ArcaneMain::m_has_garbage_collector = false;
 bool ArcaneMain::m_is_master_io = true;
 
@@ -673,7 +673,7 @@ arcaneInitialize()
 {
   // Le premier thread qui arrive ici fait l'init.
   // Les autres doivent attendre que l'init soit terminée.
-  if (AtomicInt32::increment(&m_nb_arcane_init)==1){
+  if (m_nb_arcane_init.fetch_add(1)==0){
     (void)_staticInfo();
     Exception::staticInit();
     dom::DOMImplementation::initialize();
@@ -685,11 +685,11 @@ arcaneInitialize()
     // Initialise le singleton du groupe vide et garde une référence dessus.
     ItemGroupImpl::_buildSharedNull();
     _checkCreateDynamicLibraryLoader();
-    AtomicInt32::setValue(&m_is_init_done,1);
+    m_is_init_done = 1;
   }
   else
     // Attend que le thread qui fait l'init ait terminé
-    while (AtomicInt32::getValue(&m_is_init_done)==0)
+    while (m_is_init_done.load()==0)
       ;
 }
 
@@ -701,7 +701,7 @@ arcaneFinalize()
 {
   _checkHasInit();
 
-  if (AtomicInt32::decrement(&m_nb_arcane_init)==0){
+  if (m_nb_arcane_init.fetch_sub(1)==1){
     _deleteStaticInfo();
 
     //! Supprime notre référence sur ItemGroupImpl::shared_null.
@@ -724,7 +724,7 @@ arcaneFinalize()
       FlexLMMng::instance()->releaseAllLicenses();
     }
 #endif
-    AtomicInt32::setValue(&m_is_init_done,0);
+    m_is_init_done = 0;
   }
 }
 

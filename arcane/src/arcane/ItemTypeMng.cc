@@ -87,7 +87,7 @@ build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     // Ceux qui ne font pas l'init doivent attendre que cette derniere
     // soit faite.
     while (init_counter < max_rank)
-      init_counter = m_initialized_counter.value();
+      init_counter = m_initialized_counter.load();
 }
 
 /*---------------------------------------------------------------------------*/

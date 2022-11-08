@@ -29,6 +29,8 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/Atomic.h"
 
+#include <atomic>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -86,10 +88,10 @@ class Test1 : public TraceAccessor
       for( Integer j=0; j<nb; ++j )
         threads[j].join();
     }
-    if (m_count.value()!=1000)
-      ARCANE_FATAL("Bad value for atomic count: v={0} expected=1000",m_count.value());
+    if (m_count.load()!=1000)
+      ARCANE_FATAL("Bad value for atomic count: v={0} expected=1000",m_count.load());
     if (m_count2!=10000)
-      ARCANE_FATAL("Bad value for count2: v={0} expected=10000",m_count.value());
+      ARCANE_FATAL("Bad value for count2: v={0} expected=10000",m_count2);
   }
   void _F1()
   {
@@ -100,7 +102,7 @@ class Test1 : public TraceAccessor
     }
   }
   SpinLock m_lock;
-  AtomicInt32 m_count;
+  std::atomic<Int32> m_count;
   Int32 m_count2;
 };
 
