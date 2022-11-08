@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* List.h                                                      (C) 2000-2006 */
+/* List.h                                                      (C) 2000-2022 */
 /*                                                                           */
 /* Classe collection tableau.                                                */
 /*---------------------------------------------------------------------------*/
@@ -23,22 +23,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class IRessourceMng;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename T> class Collection;
-template<typename T> class List;
-template<typename T> class EnumeratorT;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -53,13 +39,21 @@ class ARCANE_UTILS_EXPORT ListEnumeratorBase
 
  public:
 
-  ListEnumeratorBase(VoidPtr begin,VoidPtr end,Integer elem_size)
-  : m_begin(begin), m_end(end), m_current(begin), m_elem_size(elem_size) {}
+  ListEnumeratorBase(VoidPtr begin, VoidPtr end, Integer elem_size)
+  : m_begin(begin)
+  , m_end(end)
+  , m_current(begin)
+  , m_elem_size(elem_size)
+  {}
 
  public:
 
   void reset() { m_current = m_begin; }
-  bool moveNext() { m_current = (char*)m_current + m_elem_size; return m_current<m_end; }
+  bool moveNext()
+  {
+    m_current = (char*)m_current + m_elem_size;
+    return m_current < m_end;
+  }
   VoidPtr current() { return m_current; }
 
   bool operator++() { return moveNext(); }
@@ -86,13 +80,21 @@ class ARCANE_UTILS_EXPORT ListConstEnumeratorBase
 
  public:
 
-  ListConstEnumeratorBase(VoidPtr begin,VoidPtr end,Integer elem_size)
-  : m_begin(begin), m_end(end), m_current(begin), m_elem_size(elem_size) {}
+  ListConstEnumeratorBase(VoidPtr begin, VoidPtr end, Integer elem_size)
+  : m_begin(begin)
+  , m_end(end)
+  , m_current(begin)
+  , m_elem_size(elem_size)
+  {}
 
  public:
 
   void reset() { m_current = m_begin; }
-  bool moveNext() { m_current = (const char*)m_current + m_elem_size; return m_current<m_end; }
+  bool moveNext()
+  {
+    m_current = (const char*)m_current + m_elem_size;
+    return m_current < m_end;
+  }
   VoidPtr current() { return m_current; }
 
   bool operator++() { return moveNext(); }
@@ -109,14 +111,14 @@ class ARCANE_UTILS_EXPORT ListConstEnumeratorBase
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> class List;
+template <typename T> class List;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Enumérateur typé pour un tableau
  */
-template<typename T>
+template <typename T>
 class ListEnumeratorT
 : public ListEnumeratorBase
 {
@@ -127,22 +129,36 @@ class ListEnumeratorT
 
  public:
 
-  ListEnumeratorT(Ptr begin,Ptr end)
-  : ListEnumeratorBase(begin-1,end,sizeof(T)) {}
+  ListEnumeratorT(Ptr begin, Ptr end)
+  : ListEnumeratorBase(begin - 1, end, sizeof(T))
+  {}
   ListEnumeratorT(const List<T>& collection);
 
  public:
 
   inline bool moveNext()
-    { Ptr v = reinterpret_cast<Ptr>(m_current); ++v; m_current = v; return m_current<m_end; }
+  {
+    Ptr v = reinterpret_cast<Ptr>(m_current);
+    ++v;
+    m_current = v;
+    return m_current < m_end;
+  }
   inline Ptr current()
-    { return reinterpret_cast<Ptr>(m_current); }
+  {
+    return reinterpret_cast<Ptr>(m_current);
+  }
   inline bool operator++()
-    { return moveNext(); }
+  {
+    return moveNext();
+  }
   inline Ref operator*()
-    { return *current(); }
+  {
+    return *current();
+  }
   inline Ptr operator->()
-    { return current(); }
+  {
+    return current();
+  }
 
  private:
 };
@@ -150,7 +166,7 @@ class ListEnumeratorT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T>
+template <typename T>
 class ListConstEnumeratorT
 : public ListConstEnumeratorBase
 {
@@ -161,22 +177,36 @@ class ListConstEnumeratorT
 
  public:
 
-  ListConstEnumeratorT(Ptr begin,Ptr end)
-  : ListConstEnumeratorBase(begin-1,end,sizeof(T)) {}
+  ListConstEnumeratorT(Ptr begin, Ptr end)
+  : ListConstEnumeratorBase(begin - 1, end, sizeof(T))
+  {}
   ListConstEnumeratorT(const List<T>& collection);
 
  public:
 
   inline bool moveNext()
-    { Ptr v = reinterpret_cast<Ptr>(m_current); ++v; m_current = v; return m_current<m_end; }
+  {
+    Ptr v = reinterpret_cast<Ptr>(m_current);
+    ++v;
+    m_current = v;
+    return m_current < m_end;
+  }
   inline Ptr current()
-    { return reinterpret_cast<Ptr>(m_current); }
+  {
+    return reinterpret_cast<Ptr>(m_current);
+  }
   inline bool operator++()
-    { return moveNext(); }
+  {
+    return moveNext();
+  }
   inline Ref operator*()
-    { return *current(); }
+  {
+    return *current();
+  }
   inline Ptr operator->()
-    { return current(); }
+  {
+    return current();
+  }
 
  private:
 };
@@ -186,7 +216,7 @@ class ListConstEnumeratorT
 /*!
  * \brief Implémentation d'une collection d'éléments sous forme de vecteur.
  */
-template<typename T>
+template <typename T>
 class List
 : public Collection<T>
 {
@@ -195,9 +225,9 @@ class List
   typedef Collection<T> BaseClass;
 
  private:
-  
+
   typedef ListImplT<T> Impl;
-  
+
  public:
 
   typedef Impl Vec;
@@ -212,39 +242,53 @@ class List
   //! Type d'un itérateur constant sur tout le tableau
   typedef ListEnumeratorT<T> Enumerator;
 
-  typedef ConstIterT< List<T> > const_iter;
+  typedef ConstIterT<List<T>> const_iter;
 
  public:
 
-  List() : BaseClass(new Impl()) {}
-  List(const ConstArrayView<T>& from) : BaseClass(new Impl(from)) {}
-  List(const ArrayView<T>& from) : BaseClass(new Impl(from)) {}
-  explicit List(const EnumeratorT<T>& from) : BaseClass(new Impl(from)) {}
+  List()
+  : BaseClass(new Impl())
+  {}
+  List(const ConstArrayView<T>& from)
+  : BaseClass(new Impl(from))
+  {}
+  List(const ArrayView<T>& from)
+  : BaseClass(new Impl(from))
+  {}
+  explicit List(const EnumeratorT<T>& from)
+  : BaseClass(new Impl(from))
+  {}
 
  public:
 
   void resize(Integer new_size)
-    { _cast().resize(new_size); }
+  {
+    _cast().resize(new_size);
+  }
 
   T& operator[](Integer i)
-    { return _cast()[i]; }
+  {
+    return _cast()[i];
+  }
 
   const T& operator[](Integer i) const
-    { return _cast()[i]; }
+  {
+    return _cast()[i];
+  }
 
   //! Clone la collection \a base
   void clone(const Collection<T>& base)
-    {
-      //Impl* n = new Impl(base);
-      //BaseClass::_setRef(n);
-      _cast().assign(base);
-    }
+  {
+    //Impl* n = new Impl(base);
+    //BaseClass::_setRef(n);
+    _cast().assign(base);
+  }
 
   //! Clone la collection
   List<T> clone() const
-    {
-      return List<T>(new Impl(*this));
-    }
+  {
+    return List<T>(new Impl(*this));
+  }
 
  public:
 
@@ -255,35 +299,37 @@ class List
   T* end2() const { return _cast().end2(); }
 
   //! Applique le fonctor \a f à tous les éléments du tableau
-  template<typename Function> Function
+  template <typename Function> Function
   each(Function f)
-    {
-      return _cast().each(f);
-    }
+  {
+    return _cast().each(f);
+  }
 
-  template<typename Function> iterator
+  template <typename Function> iterator
   find_if(Function f)
-    {
-      iterator _end = end2();
-      iterator i = std::find_if(begin2(),_end,f);
-      if (i!=_end)
-        return i;
-      return _end;
-    }
+  {
+    iterator _end = end2();
+    iterator i = std::find_if(begin2(), _end, f);
+    if (i != _end)
+      return i;
+    return _end;
+  }
 
-  template<typename Function> const_iterator
+  template <typename Function> const_iterator
   find_if(Function f) const
-    {
-      const_iterator _end = end();
-      const_iterator i = std::find_if(begin(),_end,f);
-      if (i!=_end)
-        return i;
-      return _end;
-    }
+  {
+    const_iterator _end = end();
+    const_iterator i = std::find_if(begin(), _end, f);
+    if (i != _end)
+      return i;
+    return _end;
+  }
 
  protected:
 
-  List(Impl* from) : BaseClass(from) {}
+  List(Impl* from)
+  : BaseClass(from)
+  {}
 
  private:
 
@@ -294,27 +340,27 @@ class List
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> inline ListEnumeratorT<T>::
+template <typename T> inline ListEnumeratorT<T>::
 ListEnumeratorT(const List<T>& collection)
-: ListEnumeratorBase(collection.begin2()-1,collection.end2(),sizeof(T))
+: ListEnumeratorBase(collection.begin2() - 1, collection.end2(), sizeof(T))
 {
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename T> inline ListConstEnumeratorT<T>::
+template <typename T> inline ListConstEnumeratorT<T>::
 ListConstEnumeratorT(const List<T>& collection)
-: ListConstEnumeratorBase(collection.begin2()-1,collection.end2(),sizeof(T))
+: ListConstEnumeratorBase(collection.begin2() - 1, collection.end2(), sizeof(T))
 {
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

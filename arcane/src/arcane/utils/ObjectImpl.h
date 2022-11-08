@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ObjectImpl.h                                                (C) 2000-2017 */
+/* ObjectImpl.h                                                (C) 2000-2022 */
 /*                                                                           */
 /* Classe de base de l'implémentation d'un objet d'Arcane.                   */
 /*---------------------------------------------------------------------------*/
@@ -14,12 +14,15 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/Atomic.h"
+#include "arcane/utils/UtilsTypes.h"
+
+#include <atomic>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -32,54 +35,46 @@ ARCANE_BEGIN_NAMESPACE
 class ARCANE_UTILS_EXPORT ObjectImpl
 {
  public:
-  ObjectImpl() : m_ref_count(0) {}
-  ObjectImpl(const ObjectImpl& rhs) : m_ref_count(rhs.m_ref_count){}
-  virtual ~ObjectImpl(){}
-  ObjectImpl& operator=(const ObjectImpl& rhs)
-  {
-    m_ref_count = rhs.m_ref_count;
-    return *this;
-  }
+
+  ObjectImpl()
+  : m_ref_count(0)
+  {}
+  ObjectImpl(const ObjectImpl& rhs) = delete;
+  virtual ~ObjectImpl() {}
+  ObjectImpl& operator=(const ObjectImpl& rhs) = delete;
+
  public:
+
   //! Incrémente le compteur de référence
-  inline void addRef()
-  {
-    ++m_ref_count;
-  }
+  void addRef() { ++m_ref_count; }
   //! Décrémente le compteur de référence
-  inline void removeRef()
+  void removeRef()
   {
     Int32 r = --m_ref_count;
-    if (r<0)
-      arcaneNoReferenceError(this);
-    if (r==0)
+    if (r < 0)
+      arcaneNoReferenceErrorCallTerminate(this);
+    if (r == 0)
       deleteMe();
   }
   //! Retourne la valeur du compteur de référence
-  Int32 refCount() const
-  {
-    return m_ref_count.value();
-  }
+  Int32 refCount() const { return m_ref_count.load(); }
 
  public:
-  
+
   //! Détruit cet objet
-  virtual void deleteMe()
-  {
-    delete this;
-  }
+  virtual void deleteMe() { delete this; }
 
  private:
 
-  AtomicInt32 m_ref_count; //!< Nombre de références sur l'objet.
+  std::atomic<Int32> m_ref_count; //!< Nombre de références sur l'objet.
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

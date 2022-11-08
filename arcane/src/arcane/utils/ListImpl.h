@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ListImpl.h                                                  (C) 2000-2018 */
+/* ListImpl.h                                                  (C) 2000-2022 */
 /*                                                                           */
 /* Implémentation de la classe Tableau.                                      */
 /*---------------------------------------------------------------------------*/
@@ -17,19 +17,19 @@
 #include "arcane/utils/CollectionImpl.h"
 #include "arcane/utils/Enumerator.h"
 #include "arcane/utils/DefaultAllocator.h"
+#include "arcane/utils/UniqueArray.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 extern "C" ARCANE_UTILS_EXPORT void throwOutOfRangeException();
 extern "C" ARCANE_UTILS_EXPORT void throwNullReference();
-
-class IRessourceMng;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -40,7 +40,7 @@ class IRessourceMng;
  * C'est à la classe virtuelle de détruire les objets dans le
  * destructeur virtuel.
  */
-template<class T>
+template <class T>
 class ListImplBase
 : public CollectionImplT<T>
 {
@@ -49,7 +49,7 @@ class ListImplBase
   typedef CollectionImplT<T> BaseClass;
 
  public:
-  
+
   typedef const T& ObjectRef;
 
   //! Type des éléments du tableau
@@ -68,34 +68,32 @@ class ListImplBase
   typedef const value_type& const_reference;
 
   //! Type d'un itérateur sur tout le tableau
-  typedef IterT< ListImplBase<T> > iter;
+  typedef IterT<ListImplBase<T>> iter;
   //! Type d'un itérateur constant sur tout le tableau
-  typedef ConstIterT< ListImplBase<T> > const_iter;
+  typedef ConstIterT<ListImplBase<T>> const_iter;
 
  public:
 
   //! Construit un tableau vide.
-  ListImplBase() : BaseClass(), m_capacity(0), m_ptr(0), m_allocator(0) {}
-
-  //! Libère les éléments du tableau.
-  virtual ~ListImplBase() ARCANE_NOEXCEPT { _deallocate(_ptr()); m_allocator->destroy(); }
+  ListImplBase() = default;
 
  public:
 
   //! Recopie le tableau \a s.
   void assign(const ListImplBase<T>& s)
-    { _arrayCopy(s); }
+  {
+    _arrayCopy(s);
+  }
   //! Recopie le tableau \a s.
   void assign(const ConstArrayView<T>& s)
-    { _arrayCopy(s); }
+  {
+    _arrayCopy(s);
+  }
   //! Recopie le tableau \a s.
   void assign(const ArrayView<T>& s)
-    { _arrayCopy(s); }
-
- public:
-
-  void setList(const ListImplBase<T>& v)
-    { m_ptr = v.m_ptr; _setCount(v.count()); }
+  {
+    _arrayCopy(s);
+  }
 
  public:
 
@@ -105,96 +103,109 @@ class ListImplBase
    * En mode \a check, vérifie les débordements.
    */
   T& operator[](Integer i)
-    {
-#ifdef ARCANE_CHECK
-      Arcane::arcaneCheckAt(i,this->count());
-#endif
-      return m_ptr[i];
-    }
+  {
+    return m_array[i];
+  }
 
   /*!
    * \brief i-ème élément du tableau.
    *
    * En mode \a check, vérifie les débordements.
    */
-  const T&  operator[](Integer i) const
-    {
-#ifdef ARCANE_CHECK
-      Arcane::arcaneCheckAt(i,this->count());
-#endif
-      return m_ptr[i];
-    }
+  const T& operator[](Integer i) const
+  {
+    return m_array[i];
+  }
 
   //! Retourne un iterateur sur le premier élément du tableau
-  iterator begin() { return m_ptr; }
+  iterator begin() override
+  {
+    return m_array.data();
+  }
   //! Retourne un iterateur sur le premier élément après la fin du tableau
-  iterator end() { return m_ptr+this->count(); }
+  iterator end() override
+  {
+    return m_array.data() + this->count();
+  }
   //! Retourne un iterateur constant sur le premier élément du tableau
-  const_iterator begin() const { return m_ptr; }
+  const_iterator begin() const override
+  {
+    return m_array.data();
+  }
   //! Retourne un iterateur constant sur le premier élément après la fin du tableau
-  const_iterator end() const { return m_ptr+this->count(); }
+  const_iterator end() const override
+  {
+    return m_array.data() + this->count();
+  }
 
   //! Retourne un iterateur sur le premier élément du tableau
-  T* begin2() const { return m_ptr; }
+  T* begin2() const override
+  {
+    return const_cast<T*>(m_array.data());
+  }
+
   //! Retourne un iterateur sur le premier élément après la fin du tableau
-  T* end2() const { return m_ptr+this->count(); }
+  T* end2() const override
+  {
+    return begin2() + this->count();
+  }
 
  public:
-  
+
   //! Applique le fonctor \a f à tous les éléments du tableau
-  template<class Function> Function
+  template <class Function> Function
   each(Function f)
   {
-    std::for_each(begin(),end(),f);
+    std::for_each(begin(), end(), f);
     return f;
   }
 
  public:
 
-  void setAllocator(IAllocatorT<T>* allocator)
-  {
-    m_allocator = allocator;
-  }
-
- public:
-  
   /*! \brief Signale qu'il faut réserver de la mémoire pour \a new_capacity éléments
    * Il s'agit juste d'une indication. La classe dérivée est libre de ne
    * pas en tenir compte.
    */
   void reserve(Integer new_capacity)
   {
-    T* new_ptr = _allocate(new_capacity);
-    _setPtr(new_ptr);
+    m_array.reserve(new_capacity);
   }
 
-  /*! \brief Retourne le nombre d'éléments alloués du tableau.
+  /*!
+   * \brief Retourne le nombre d'éléments alloués du tableau.
+   *
    * Il s'agit juste d'une indication. La classe dérivée est libre de ne
    * pas en tenir compte.
    */
   Integer capacity() const
-  { return m_capacity; }
+  {
+    return m_array.capacity();
+  }
+
+  void clear() override
+  {
+    this->onClear();
+    m_array.clear();
+    this->_setCount(0);
+    this->onClearComplete();
+  }
 
   //! Ajoute l'élément \a elem à la fin du tableau
-  virtual void add(ObjectRef elem)
+  void add(ObjectRef elem) override
   {
     this->onInsert();
     Integer s = this->count();
-    if (s>=m_capacity){
-      _resize(_ptr(),s+1);
-    }
-    else
-      this->_setCount(s+1);
-    _ptr()[s] = elem;
-    this->onInsertComplete(_ptr()+s,s);
+    m_array.add(elem);
+    this->_setCount(s + 1);
+    this->onInsertComplete(_ptr() + s, s);
   }
 
-  virtual bool remove(ObjectRef element)
+  bool remove(ObjectRef element) override
   {
     Integer i = 0;
     Integer s = this->count();
-    for( ; i<s; ++i )
-      if (_ptr()[i]==element){
+    for (; i < s; ++i)
+      if (m_array[i] == element) {
         _removeAt(i);
         return true;
       }
@@ -202,41 +213,30 @@ class ListImplBase
     return false;
   }
 
-  virtual void removeAt(Integer index)
+  void removeAt(Integer index) override
   {
     Integer s = this->count();
-    if (index>=s)
+    if (index >= s)
       throwOutOfRangeException();
     _removeAt(index);
   }
 
-  virtual iterator find(ObjectRef element)
+  const_iterator find(ObjectRef element) const
   {
-    Integer i = 0;
     Integer s = this->count();
-    for( ; i<s; ++i )
-      if (_ptr()[i]==element)
-        return begin()+i;
+    for (Int32 i = 0; i < s; ++i)
+      if (m_array[i] == element)
+        return begin() + i;
     return end();
   }
 
-  virtual const_iterator find(ObjectRef element) const
-  {
-    Integer i = 0;
-    Integer s = this->count();
-    for( ; i<s; ++i )
-      if (_ptr()[i]==element)
-        return begin()+i;
-    return end();
-  }
-
-  virtual bool contains(ObjectRef element) const
+  bool contains(ObjectRef element) const override
   {
     const_iterator i = find(element);
-    return (i!=end());
+    return (i != end());
   }
 
-  virtual EnumeratorImplBase* enumerator() const;
+  EnumeratorImplBase* enumerator() const override;
 
  protected:
 
@@ -244,12 +244,12 @@ class ListImplBase
   {
     Integer s = this->count();
     T* ptr = _ptr();
-    T* remove_ob = ptr+index;
+    T* remove_ob = ptr + index;
     this->onRemove();
-    for( Integer i=index+1; i<s; ++i )
-      ptr[i-1] = ptr[i];
-    resize(s-1);
-    this->onRemoveComplete(remove_ob,index);
+    m_array.remove(index);
+    this->_setCount(s - 1);
+    // TODO: supprimer utilisation de 'remove_ob' car ce n'est pas le bon objet
+    this->onRemoveComplete(remove_ob, index);
   }
 
  public:
@@ -259,45 +259,39 @@ class ListImplBase
    */
   void resize(Integer new_size)
   {
-    _resize(_ptr(),new_size);
+    m_array.resize(new_size);
+    this->_setCount(new_size);
   }
 
  protected:
 
-  void _setCapacity(Integer v) { m_capacity = v; }
-  Integer _capacity() const { return m_capacity; }
+  Integer _capacity() const
+  {
+    return m_array.capacity();
+  }
 
  protected:
 
   void _arrayCopy(const ListImplBase<T>& array)
   {
-    _arrayCopy(array.data(),array.count());
+    _arrayCopy(array.begin2(), array.count());
   }
-  
   void _arrayCopy(const ConstArrayView<T>& array)
   {
-    _arrayCopy(array.data(),array.size());
+    _arrayCopy(array.data(), array.size());
   }
-
   void _arrayCopy(const ArrayView<T>& array)
   {
-    _arrayCopy(array.data(),array.size());
+    _arrayCopy(array.data(), array.size());
   }
-  void _arrayCopy(const T* from_ptr,Integer from_size)
+  void _arrayCopy(const T* from_ptr, Integer from_size)
   {
-    if (from_size==0){
-      this->clear();
+    if (from_size == 0) {
+      clear();
+      return;
     }
-    else{
-      if (from_size<capacity()){
-        this->_unguardedCopy(_ptr(),from_ptr,from_size);
-        this->_setCount(from_size);
-      }
-      else{
-        T* new_ptr = _resize(from_ptr,from_size);
-        this->_setList(new_ptr,from_size);
-      }
-    }
+    m_array.copy(ConstArrayView<T>(from_size, from_ptr));
+    this->_setCount(from_size);
   }
 
  protected:
@@ -311,85 +305,21 @@ class ListImplBase
    * De plus, accéder aux éléments du tableau par ce pointeur ne permet
    * aucune vérification de dépassement, même en mode DEBUG.
    */
-  inline T* _ptr() { return m_ptr; }
-
-  inline T* _ptr() const { return m_ptr; }
-
-  /*!
-   * \brief Modifie le pointeur et la taille du tableau.
-   *
-   * C'est à la classe dérivée de vérifier la cohérence entre le pointeur
-   * alloué et la dimension donnée.
-   */
-  inline void _setList(T* v,Integer s){ m_ptr = v; this->_setCount(s); }
-
-  /*!
-   * \brief Modifie le pointeur du début du tableau.
-   *
-   * C'est à la classe dérivée de vérifier la cohérence entre le pointeur
-   * alloué et la dimension donnée.
-   */
-  inline void _setPtr(T* v)
-    { m_ptr = v; }
-
- protected:
-
-  void _unguardedCopy(T* to_ptr,const T* from_ptr,Integer s)
+  inline T* _ptr()
   {
-    T* p = to_ptr;
-    _setPtr(to_ptr);
-    Integer z = s;
-    const T* optr = from_ptr;
-    while (z--)
-      *p++ = *optr++;
+    return m_array.data();
+  }
+
+  inline const T* _ptr() const
+  {
+    return m_array.data();
   }
 
  private:
-  
-  Integer m_capacity;
-  T* m_ptr;  //!< Pointeur sur le tableau
-  IAllocatorT<T>* m_allocator;
+
+  UniqueArray<T> m_array;
 
  private:
-
- private:
-	
-  /*! \brief Modifie la taille du tableau.
-   * Cette méthode doit retourner un pointeur sur un tableau alloué par la classe
-   * dérivée et ce tableau doit avoir une taille au moins égale à \a new_size.
-   * La gestion mémoire est à la charge de la classe dérivée.
-   * Il est permis de renvoyer le même pointeur que le pointeur actuel.
-   * Il n'est pas permis de retourner un pointeur nul.
-   * \param new_size nouvelle taille du tableau.
-   * \return le pointeur alloué.
-   */
-  T* _resize(const T* from_ptr,Integer new_size)
-  {
-    Integer c = _capacity();
-    while(new_size>c)
-      c = (c==0) ? 4 : (c*2);
-    _setCapacity(c);
-    T* old_ptr = _ptr();
-    T* new_ptr = _allocate(c);
-    if (from_ptr){
-      this->_unguardedCopy(new_ptr,from_ptr,this->count());
-      this->_setCount(new_size);
-      if (from_ptr==old_ptr)
-        _deallocate(old_ptr);
-    }
-    else
-      _setList(new_ptr,new_size);
-    return new_ptr;
-  }
-  
-  /*! \brief Signale qu'il faut libérer la mémoire associée au pointeur.
-   * \param s le pointeur sur le tableau à libèrer. Il est identique à _ptr().
-   */
-  void _deallocate(T* ptr)
-    { m_allocator->deallocate(ptr,m_capacity); }
-
-  T* _allocate(Integer new_capacity)
-    { return m_allocator->allocate(new_capacity); }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -398,7 +328,7 @@ class ListImplBase
 /*!
  * \internal
  */
-template<class T>
+template <class T>
 class ListImplT
 : public ListImplBase<T>
 {
@@ -408,53 +338,51 @@ class ListImplT
 
  public:
 
-  ListImplT() { _setAllocator(); }
-  ListImplT(const ConstArrayView<T>& array)
-    { _setAllocator(); this->_arrayCopy(array); }
-  ListImplT(const ArrayView<T>& array)
-    { _setAllocator(); this->_arrayCopy(array); }
+  ListImplT() {}
+  explicit ListImplT(const ConstArrayView<T>& array)
+  {
+    this->_arrayCopy(array);
+  }
+  explicit ListImplT(const ArrayView<T>& array)
+  {
+    this->_arrayCopy(array);
+  }
   ListImplT(const ListImplT<T>& array)
-  : BaseClass() { _setAllocator(); _arrayCopy(array); }
-  ListImplT(const Collection<T>& array)
   : BaseClass()
   {
-    _setAllocator();
-    for( typename Collection<T>::Enumerator i(array); ++i; ){
+    this->_arrayCopy(array);
+  }
+  explicit ListImplT(const Collection<T>& array)
+  : BaseClass()
+  {
+    for (typename Collection<T>::Enumerator i(array); ++i;) {
       BaseClass::add(*i);
     }
   }
-  ListImplT(const EnumeratorT<T>& enumerator)
+  explicit ListImplT(const EnumeratorT<T>& enumerator)
   : BaseClass()
   {
-    _setAllocator();
-    for( EnumeratorT<T> i(enumerator); ++i; ){
+    for (EnumeratorT<T> i(enumerator); ++i;) {
       BaseClass::add(*i);
     }
   }
-  virtual ~ListImplT() ARCANE_NOEXCEPT {}
 
   void assign(const Collection<T>& array)
   {
     this->clear();
-    for( typename Collection<T>::Enumerator i(array); ++i; ){
+    for (typename Collection<T>::Enumerator i(array); ++i;) {
       this->add(*i);
     }
   }
   void assign(const EnumeratorT<T>& enumerator)
   {
     this->clear();
-    for( EnumeratorT<T> i(enumerator); ++i; ){
+    for (EnumeratorT<T> i(enumerator); ++i;) {
       this->add(*i);
     }
   }
- protected:
-  
- private:
 
-  void _setAllocator()
-  {
-    this->setAllocator(new DefaultAllocatorT<T>());
-  }
+ private:
 };
 
 /*---------------------------------------------------------------------------*/
@@ -463,7 +391,7 @@ class ListImplT
 /*!
  * \internal
  */
-template<class T>
+template <class T>
 class ListEnumeratorImplT
 : public EnumeratorImplBase
 {
@@ -473,16 +401,22 @@ class ListEnumeratorImplT
 
  public:
 
-  ListEnumeratorImplT(Ptr begin,Ptr end)
-  : m_begin(begin), m_current(begin-1), m_end(end) {}
-  virtual ~ListEnumeratorImplT() {}
+  ListEnumeratorImplT(Ptr begin, Ptr end)
+  : m_begin(begin)
+  , m_current(begin - 1)
+  , m_end(end)
+  {}
 
  public:
 
-  virtual void reset() { m_current = m_begin-1; }
-  virtual bool moveNext() { ++m_current; return m_current<m_end; }
-  virtual void* current() { return m_current; }
-  virtual const void* current() const { return m_current; }
+  void reset() override { m_current = m_begin - 1; }
+  bool moveNext() override
+  {
+    ++m_current;
+    return m_current < m_end;
+  }
+  void* current() override { return m_current; }
+  const void* current() const override { return m_current; }
 
  private:
 
@@ -494,18 +428,18 @@ class ListEnumeratorImplT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class T> EnumeratorImplBase* ListImplBase<T>::
+template <class T> EnumeratorImplBase* ListImplBase<T>::
 enumerator() const
 {
-  return new ListEnumeratorImplT<T>(begin2(),end2());
+  return new ListEnumeratorImplT<T>(begin2(), end2());
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

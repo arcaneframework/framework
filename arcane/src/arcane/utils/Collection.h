@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Collection.h                                                (C) 2000-2017 */
+/* Collection.h                                                (C) 2000-2022 */
 /*                                                                           */
 /* Classe de base d'une collection.                                          */
 /*---------------------------------------------------------------------------*/
@@ -20,22 +20,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class IRessourceMng;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename T> class Collection;
-template<typename T> class EnumeratorT;
-class EnumeratorBase;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -52,42 +38,40 @@ class ARCANE_UTILS_EXPORT CollectionBase
  public:
 
   CollectionBase(const CollectionBase& rhs)
-  : m_ref(rhs.m_ref) {}
+  : m_ref(rhs.m_ref)
+  {}
   ~CollectionBase() {}
+
  public:
-  
+
   /*! \brief Créé une collection nulle.
    *
    * L'instance n'est pas utilisable tant qu'elle n'a pas été affectée
    * à une collection non nulle (par exemple un vecteur).
    */
-  CollectionBase() : m_ref(0) {}
-  const CollectionBase& operator=(const CollectionBase& rhs)
-    {
-      m_ref = rhs.m_ref;
-      return *this;
-    }
+  CollectionBase() = default;
+  CollectionBase& operator=(const CollectionBase& rhs)
+  {
+    m_ref = rhs.m_ref;
+    return *this;
+  }
 
  protected:
 
-  CollectionBase(Impl* vb) : m_ref(vb) {}
+  explicit CollectionBase(Impl* vb)
+  : m_ref(vb)
+  {}
 
  public:
 
   //! Supprime tous les éléments de la collection
-  void clear()
-  { m_ref->clear(); }
+  void clear() { m_ref->clear(); }
   //! Nombre d'éléments de la collection
-  Integer count() const
-  { return m_ref->count(); }
+  Integer count() const { return m_ref->count(); }
   //! True si la collection est vide
-  bool empty() const
-  { return count()==0; }
+  bool empty() const { return count() == 0; }
   //! Evènement invoqués lorsque la collection change
-  CollectionChangeEventHandler& change()
-  { return m_ref->change(); }
-
- public:
+  CollectionChangeEventHandler& change() { return m_ref->change(); }
 
  protected:
 
@@ -95,31 +79,24 @@ class ARCANE_UTILS_EXPORT CollectionBase
   const Impl* _ref() const { return m_ref.get(); }
 
   Impl* _noNullRef()
-    {
+  {
 #ifdef ARCANE_CHECK
-      Arcane::arcaneCheckNull(m_ref.get());
-#endif
-      return m_ref.get();
-    }
-  const Impl* _noNullRef() const
-    {
-#ifdef ARCANE_CHECK
-      Arcane::arcaneCheckNull(m_ref.get());
+    Arcane::arcaneCheckNull(m_ref.get());
 #endif
     return m_ref.get();
-    }
+  }
+  const Impl* _noNullRef() const
+  {
+#ifdef ARCANE_CHECK
+    Arcane::arcaneCheckNull(m_ref.get());
+#endif
+    return m_ref.get();
+  }
 
-  void _setRef(Impl* new_impl){ m_ref = new_impl; }
-
- protected:
-  
-  /*template<typename InputIterator,typename Function> inline Function
-  _each(InputIterator first,InputIterator last,Function f)
-    {
-      while (first != last)
-        f(*first++);
-      return f;
-      }*/
+  void _setRef(Impl* new_impl)
+  {
+    m_ref = new_impl;
+  }
 
  private:
 
@@ -132,22 +109,22 @@ class ARCANE_UTILS_EXPORT CollectionBase
  * \brief Classe de base d'une collection fortement typée.
  * \ingroup Collection
  */
-template<typename T>
+template <typename T>
 class Collection
 : public CollectionBase
 {
  private:
-  
+
   typedef CollectionImplT<T> Impl;
 
  public:
-  
+
   typedef const T& ObjectRef;
   typedef T& Ref;
   typedef T* Iterator;
 
  public:
-  
+
   //! Type d'un itérateur sur toute la collection
   typedef EnumeratorT<T> Enumerator;
 
@@ -159,40 +136,37 @@ class Collection
    * L'instance n'est pas utilisable tant qu'elle n'a pas été affectée
    * à une collection non nulle.
    */
-  Collection() : CollectionBase() {}
+  Collection() = default;
 
  protected:
-  
-  Collection(Impl* vb) : CollectionBase(vb) {}
+
+  explicit Collection(Impl* vb)
+  : CollectionBase(vb)
+  {}
 
  public:
 
   Enumerator enumerator() const
-    { return Enumerator(_cast().enumerator()); }
+  {
+    return Enumerator(_cast().enumerator());
+  }
 
-  Iterator begin(){ return _cast().begin(); }
-  Iterator end(){ return _cast().end(); }
-  Ref front(){ return *begin(); }
-  
- public:
-
-  bool remove(ObjectRef value)
-    { return _cast().remove(value); }
-  void removeAt(Integer index)
-    { return _cast().removeAt(index); }
-  void add(ObjectRef value)
-    { _cast().add(value); }
-  bool contains(ObjectRef value) const
-    { return _cast().contains(value); }
+  Iterator begin() { return _cast().begin(); }
+  Iterator end() { return _cast().end(); }
+  Ref front() { return *begin(); }
 
  public:
-  
+
+  bool remove(ObjectRef value) { return _cast().remove(value); }
+  void removeAt(Integer index) { return _cast().removeAt(index); }
+  void add(ObjectRef value) { _cast().add(value); }
+  bool contains(ObjectRef value) const { return _cast().contains(value); }
+
+ public:
+
   //! Applique le fonctor \a f à tous les éléments de la collection
-  template<class Function> Function
-  each(Function f)
-    {
-      return _cast().each(f);
-    }
+  template <class Function> Function
+  each(Function f) { return _cast().each(f); }
 
  private:
 
@@ -203,9 +177,9 @@ class Collection
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif
