@@ -962,7 +962,7 @@ saveTimeValues(Properties* p)
   Action::AllActionsInfo action_save_info;
   ActionSeries cumulative_series(*m_previous_action_series,*m_current_action_series);
   cumulative_series.save(action_save_info);
-  bool is_verbose = false;
+  const bool is_verbose = false;
   if (is_verbose) {
     info() << "Saved " << action_save_info;
   }
@@ -1000,7 +1000,7 @@ mergeTimeValues(Properties* p)
   p->get("NbChildren",action_save_info.m_nb_child);
   p->get("TimeList",action_save_info.m_time_list);
 
-  bool is_verbose = false;
+  const bool is_verbose = false;
   if (is_verbose) {
     info() << "MergedSeries=" << action_save_info;
   }

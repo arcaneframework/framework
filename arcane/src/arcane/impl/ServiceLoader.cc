@@ -184,7 +184,7 @@ loadSingletonService(ISubDomain* sd,const String& name)
   // autorise le chargement en mode singleton de tous les services et on
   // affiche un avertissement. A terme, do_all sera faux et il faudra spécifier
   // que le service est singleton
-  bool do_all = true;
+  const bool do_all = true;
   ITraceMng* trace = sd->traceMng();
   IServiceMng* service_mng = sd->serviceMng();
 

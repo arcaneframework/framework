@@ -221,7 +221,7 @@ private:
     //      On peut donc avoir une front_cell qui n'est pas dans cette connectivite. C'est donc legal et de plus
     //      le check va planter puisque connectedItemLocalId(ItemLocalId(face),1) va retourner -1...
     //      Dans le nouveau mode les check devront etre faits via des proprietes.
-    bool check_orientation = false; // SDC cf. ci-dessus
+    const bool check_orientation = false; // SDC cf. ci-dessus
     if (check_orientation){
       if (face->flags() & ItemFlags::II_HasFrontCell){
         ItemInternal* current_cell = m_cell_family->itemsInternal()[connectedItemLocalId(ItemLocalId(face),1)]; // FrontCell is the second connected cell
@@ -256,7 +256,7 @@ private:
     //      On peut donc avoir une back_cell qui n'est pas dans cette connectivite. C'est donc legal et de plus
     //      le check va planter puisque connectedItemLocalId(ItemLocalId(face),0) va retourner -1.
     //      Dans le nouveau mode les check devront etre faits via des proprietes.
-    bool check_orientation = false; // SDC cf. ci-dessus
+    const bool check_orientation = false; // SDC cf. ci-dessus
     if (check_orientation){
       if (face->flags() & ItemFlags::II_HasBackCell){
         ItemInternal* current_cell = m_cell_family->itemsInternal()[connectedItemLocalId(ItemLocalId(face),0)]; // BackCell is the first connected cell

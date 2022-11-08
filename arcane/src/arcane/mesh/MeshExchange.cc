@@ -623,7 +623,7 @@ _computeItemsToSend(bool send_dof)
   for( const auto& iter : m_items_to_send )
     (*(iter.second))[m_rank].clear();
 
-  bool is_print = false;
+  const bool is_print = false;
   if (is_print){
     debug() << "PRINT ITEM TO SEND V1";
     _printItemToSend(node_family);

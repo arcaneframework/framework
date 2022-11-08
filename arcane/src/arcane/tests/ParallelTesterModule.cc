@@ -1216,7 +1216,7 @@ _testGhostItemsReduceOperation()
   family->reduceFromGhostItems(m_cells_nb_shared_array.variable(),Parallel::ReduceSum);
 
   ValueChecker vc(A_FUNCINFO);
-  bool is_debug = false;
+  const bool is_debug = false;
   ENUMERATE_CELL(icell,allCells()){
     Real shared_value = m_cells_nb_shared[icell];
     Real nb_shared = shared_value / v;

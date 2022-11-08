@@ -564,7 +564,7 @@ _applySolverAsHypre(const Matrix& a,const Vector& b,Vector& x,Real tol,
   Vector r(vec_size);
   Vector p(vec_size);
 
-  bool is_two_norm = true;
+  const bool is_two_norm = true;
   Real bi_prod = 0.0;
   if (is_two_norm){
     bi_prod = mat_op.dot(b,b);

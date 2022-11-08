@@ -516,7 +516,7 @@ readData(const String& var_full_name,IData* data)
 
   void* ptr = sd->writableBytes().data();
 
-  bool print_values = false;
+  const bool print_values = false;
   String key_name = var_full_name;
   if (storage_size!=0){
     eDataType base_data_type = sd->baseDataType();
