@@ -137,21 +137,13 @@ class CollectionImplBase
   /*!\brief Opérateur de recopie.
    * les handlers d'évènements ne sont pas recopiés. */
   CollectionImplBase(const CollectionImplBase& from) = delete;
-  //: ObjectImpl(from)
-  //, m_count(from.count())
-  //{}
 
  public:
 
   //! Retourne le nombre d'éléments de la collection
   Integer count() const { return m_count; }
   //! Supprime tous les éléments de la collection
-  virtual void clear()
-  {
-    onClear();
-    _setCount(0);
-    onClearComplete();
-  }
+  virtual void clear() = 0;
 
  public:
 
@@ -262,8 +254,6 @@ class CollectionImplT
   virtual bool remove(ObjectRef value) = 0;
   virtual void removeAt(Integer index) = 0;
   virtual bool contains(ObjectRef value) const = 0;
-  virtual ConstObjectIterator find(ObjectRef value) const = 0;
-  virtual ObjectIterator find(ObjectRef value) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

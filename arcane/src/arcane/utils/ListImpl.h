@@ -17,6 +17,7 @@
 #include "arcane/utils/CollectionImpl.h"
 #include "arcane/utils/Enumerator.h"
 #include "arcane/utils/DefaultAllocator.h"
+#include "arcane/utils/UniqueArray.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -74,19 +75,7 @@ class ListImplBase
  public:
 
   //! Construit un tableau vide.
-  ListImplBase()
-  : BaseClass()
-  , m_capacity(0)
-  , m_ptr(0)
-  , m_allocator(0)
-  {}
-
-  //! Libère les éléments du tableau.
-  ~ListImplBase() override
-  {
-    _deallocate(_ptr());
-    m_allocator->destroy();
-  }
+  ListImplBase() = default;
 
  public:
 
@@ -108,14 +97,6 @@ class ListImplBase
 
  public:
 
-  void setList(const ListImplBase<T>& v)
-  {
-    m_ptr = v.m_ptr;
-    _setCount(v.count());
-  }
-
- public:
-
   /*!
    * \brief i-ème élément du tableau.
    *
@@ -123,10 +104,7 @@ class ListImplBase
    */
   T& operator[](Integer i)
   {
-#ifdef ARCANE_CHECK
-    Arcane::arcaneCheckAt(i, this->count());
-#endif
-    return m_ptr[i];
+    return m_array[i];
   }
 
   /*!
@@ -136,43 +114,40 @@ class ListImplBase
    */
   const T& operator[](Integer i) const
   {
-#ifdef ARCANE_CHECK
-    Arcane::arcaneCheckAt(i, this->count());
-#endif
-    return m_ptr[i];
+    return m_array[i];
   }
 
   //! Retourne un iterateur sur le premier élément du tableau
-  iterator begin()
+  iterator begin() override
   {
-    return m_ptr;
+    return m_array.data();
   }
   //! Retourne un iterateur sur le premier élément après la fin du tableau
-  iterator end()
+  iterator end() override
   {
-    return m_ptr + this->count();
+    return m_array.data() + this->count();
   }
   //! Retourne un iterateur constant sur le premier élément du tableau
-  const_iterator begin() const
+  const_iterator begin() const override
   {
-    return m_ptr;
+    return m_array.data();
   }
   //! Retourne un iterateur constant sur le premier élément après la fin du tableau
-  const_iterator end() const
+  const_iterator end() const override
   {
-    return m_ptr + this->count();
+    return m_array.data() + this->count();
   }
 
   //! Retourne un iterateur sur le premier élément du tableau
-  T* begin2() const
+  T* begin2() const override
   {
-    return m_ptr;
+    return const_cast<T*>(m_array.data());
   }
 
   //! Retourne un iterateur sur le premier élément après la fin du tableau
-  T* end2() const
+  T* end2() const override
   {
-    return m_ptr + this->count();
+    return begin2() + this->count();
   }
 
  public:
@@ -187,30 +162,32 @@ class ListImplBase
 
  public:
 
-  void setAllocator(IAllocatorT<T>* allocator)
-  {
-    m_allocator = allocator;
-  }
-
- public:
-
   /*! \brief Signale qu'il faut réserver de la mémoire pour \a new_capacity éléments
    * Il s'agit juste d'une indication. La classe dérivée est libre de ne
    * pas en tenir compte.
    */
   void reserve(Integer new_capacity)
   {
-    T* new_ptr = _allocate(new_capacity);
-    _setPtr(new_ptr);
+    m_array.reserve(new_capacity);
   }
 
-  /*! \brief Retourne le nombre d'éléments alloués du tableau.
+  /*!
+   * \brief Retourne le nombre d'éléments alloués du tableau.
+   *
    * Il s'agit juste d'une indication. La classe dérivée est libre de ne
    * pas en tenir compte.
    */
   Integer capacity() const
   {
-    return m_capacity;
+    return m_array.capacity();
+  }
+
+  void clear() override
+  {
+    this->onClear();
+    m_array.clear();
+    this->_setCount(0);
+    this->onClearComplete();
   }
 
   //! Ajoute l'élément \a elem à la fin du tableau
@@ -218,12 +195,8 @@ class ListImplBase
   {
     this->onInsert();
     Integer s = this->count();
-    if (s >= m_capacity) {
-      _resize(_ptr(), s + 1);
-    }
-    else
-      this->_setCount(s + 1);
-    _ptr()[s] = elem;
+    m_array.add(elem);
+    this->_setCount(s + 1);
     this->onInsertComplete(_ptr() + s, s);
   }
 
@@ -232,7 +205,7 @@ class ListImplBase
     Integer i = 0;
     Integer s = this->count();
     for (; i < s; ++i)
-      if (_ptr()[i] == element) {
+      if (m_array[i] == element) {
         _removeAt(i);
         return true;
       }
@@ -248,22 +221,11 @@ class ListImplBase
     _removeAt(index);
   }
 
-  iterator find(ObjectRef element) override
+  const_iterator find(ObjectRef element) const
   {
-    Integer i = 0;
     Integer s = this->count();
-    for (; i < s; ++i)
-      if (_ptr()[i] == element)
-        return begin() + i;
-    return end();
-  }
-
-  const_iterator find(ObjectRef element) const override
-  {
-    Integer i = 0;
-    Integer s = this->count();
-    for (; i < s; ++i)
-      if (_ptr()[i] == element)
+    for (Int32 i = 0; i < s; ++i)
+      if (m_array[i] == element)
         return begin() + i;
     return end();
   }
@@ -284,9 +246,9 @@ class ListImplBase
     T* ptr = _ptr();
     T* remove_ob = ptr + index;
     this->onRemove();
-    for (Integer i = index + 1; i < s; ++i)
-      ptr[i - 1] = ptr[i];
-    resize(s - 1);
+    m_array.remove(index);
+    this->_setCount(s - 1);
+    // TODO: supprimer utilisation de 'remove_ob' car ce n'est pas le bon objet
     this->onRemoveComplete(remove_ob, index);
   }
 
@@ -297,32 +259,27 @@ class ListImplBase
    */
   void resize(Integer new_size)
   {
-    _resize(_ptr(), new_size);
+    m_array.resize(new_size);
+    this->_setCount(new_size);
   }
 
  protected:
 
-  void _setCapacity(Integer v)
-  {
-    m_capacity = v;
-  }
   Integer _capacity() const
   {
-    return m_capacity;
+    return m_array.capacity();
   }
 
  protected:
 
   void _arrayCopy(const ListImplBase<T>& array)
   {
-    _arrayCopy(array.data(), array.count());
+    _arrayCopy(array.begin2(), array.count());
   }
-
   void _arrayCopy(const ConstArrayView<T>& array)
   {
     _arrayCopy(array.data(), array.size());
   }
-
   void _arrayCopy(const ArrayView<T>& array)
   {
     _arrayCopy(array.data(), array.size());
@@ -330,18 +287,11 @@ class ListImplBase
   void _arrayCopy(const T* from_ptr, Integer from_size)
   {
     if (from_size == 0) {
-      this->clear();
+      clear();
+      return;
     }
-    else {
-      if (from_size < capacity()) {
-        this->_unguardedCopy(_ptr(), from_ptr, from_size);
-        this->_setCount(from_size);
-      }
-      else {
-        T* new_ptr = _resize(from_ptr, from_size);
-        this->_setList(new_ptr, from_size);
-      }
-    }
+    m_array.copy(ConstArrayView<T>(from_size, from_ptr));
+    this->_setCount(from_size);
   }
 
  protected:
@@ -357,99 +307,19 @@ class ListImplBase
    */
   inline T* _ptr()
   {
-    return m_ptr;
+    return m_array.data();
   }
 
-  inline T* _ptr() const
+  inline const T* _ptr() const
   {
-    return m_ptr;
-  }
-
-  /*!
-   * \brief Modifie le pointeur et la taille du tableau.
-   *
-   * C'est à la classe dérivée de vérifier la cohérence entre le pointeur
-   * alloué et la dimension donnée.
-   */
-  inline void _setList(T* v, Integer s)
-  {
-    m_ptr = v;
-    this->_setCount(s);
-  }
-
-  /*!
-   * \brief Modifie le pointeur du début du tableau.
-   *
-   * C'est à la classe dérivée de vérifier la cohérence entre le pointeur
-   * alloué et la dimension donnée.
-   */
-  inline void _setPtr(T* v)
-  {
-    m_ptr = v;
-  }
-
- protected:
-
-  void _unguardedCopy(T* to_ptr, const T* from_ptr, Integer s)
-  {
-    T* p = to_ptr;
-    _setPtr(to_ptr);
-    Integer z = s;
-    const T* optr = from_ptr;
-    while (z--)
-      *p++ = *optr++;
+    return m_array.data();
   }
 
  private:
 
-  Integer m_capacity;
-  T* m_ptr; //!< Pointeur sur le tableau
-  IAllocatorT<T>* m_allocator;
+  UniqueArray<T> m_array;
 
  private:
-
-  /*!
-   * \brief Modifie la taille du tableau.
-   *
-   * Cette méthode doit retourner un pointeur sur un tableau alloué par la classe
-   * dérivée et ce tableau doit avoir une taille au moins égale à \a new_size.
-   * La gestion mémoire est à la charge de la classe dérivée.
-   * Il est permis de renvoyer le même pointeur que le pointeur actuel.
-   * Il n'est pas permis de retourner un pointeur nul.
-   * \param new_size nouvelle taille du tableau.
-   * \return le pointeur alloué.
-   */
-  T* _resize(const T* from_ptr, Integer new_size)
-  {
-    Integer c = _capacity();
-    while (new_size > c)
-      c = (c == 0) ? 4 : (c * 2);
-    _setCapacity(c);
-    T* old_ptr = _ptr();
-    T* new_ptr = _allocate(c);
-    if (from_ptr) {
-      this->_unguardedCopy(new_ptr, from_ptr, this->count());
-      this->_setCount(new_size);
-      if (from_ptr == old_ptr)
-        _deallocate(old_ptr);
-    }
-    else
-      _setList(new_ptr, new_size);
-    return new_ptr;
-  }
-
-  /*! \brief Signale qu'il faut libérer la mémoire associée au pointeur.
-   * \param s le pointeur sur le tableau à libèrer. Il est identique à _ptr().
-   */
-  void _deallocate(T* ptr)
-  {
-    m_allocator->deallocate(ptr, m_capacity);
-  }
-
-  T* _allocate(Integer new_capacity)
-  {
-    return m_allocator->allocate(new_capacity);
-  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -468,27 +338,23 @@ class ListImplT
 
  public:
 
-  ListImplT() { _setAllocator(); }
+  ListImplT() {}
   explicit ListImplT(const ConstArrayView<T>& array)
   {
-    _setAllocator();
     this->_arrayCopy(array);
   }
   explicit ListImplT(const ArrayView<T>& array)
   {
-    _setAllocator();
     this->_arrayCopy(array);
   }
   ListImplT(const ListImplT<T>& array)
   : BaseClass()
   {
-    _setAllocator();
-    _arrayCopy(array);
+    this->_arrayCopy(array);
   }
   explicit ListImplT(const Collection<T>& array)
   : BaseClass()
   {
-    _setAllocator();
     for (typename Collection<T>::Enumerator i(array); ++i;) {
       BaseClass::add(*i);
     }
@@ -496,7 +362,6 @@ class ListImplT
   explicit ListImplT(const EnumeratorT<T>& enumerator)
   : BaseClass()
   {
-    _setAllocator();
     for (EnumeratorT<T> i(enumerator); ++i;) {
       BaseClass::add(*i);
     }
@@ -518,11 +383,6 @@ class ListImplT
   }
 
  private:
-
-  void _setAllocator()
-  {
-    this->setAllocator(new DefaultAllocatorT<T>());
-  }
 };
 
 /*---------------------------------------------------------------------------*/
