@@ -577,7 +577,7 @@ _addOneCell(const CellInfo& cell_info)
     }
   }
 
-  bool is_verbose = false;
+  const bool is_verbose = false;
 
   Cell new_cell(inew_cell);
 

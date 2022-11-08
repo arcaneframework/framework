@@ -91,9 +91,10 @@ applyOperation(IDataOperation* operation)
   if (m_variables.empty())
     return;
 
-  bool is_debug_print = false;
 #ifdef ARCANE_DEBUG
-  is_debug_print = true;
+  const bool is_debug_print = true;
+#else
+  const bool is_debug_print = false;
 #endif
   IParallelMng* pm = m_parallel_mng;
   Integer nb_rank = pm->commSize();

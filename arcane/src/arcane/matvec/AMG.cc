@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AMG.cc                                                      (C) 2000-2018 */
+/* AMG.cc                                                      (C) 2000-2022 */
 /*                                                                           */
 /* Multi-grille algébrique.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -27,8 +27,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-namespace math
+namespace Arcane::math
 {
 Real divide(Real a,Real b)
 {
@@ -37,10 +36,8 @@ Real divide(Real a,Real b)
   return a / b;
 }
 }
-ARCANE_END_NAMESPACE
 
-ARCANE_BEGIN_NAMESPACE
-namespace MatVec
+namespace Arcane::MatVec
 {
 
 /*---------------------------------------------------------------------------*/
@@ -1037,7 +1034,7 @@ _solve(const Vector& vector_b,Vector& vector_x,Integer level)
 
   bool is_final_level = (level+1) == m_levels.size();
 
-  bool use_gauss_seidel = false;
+  const bool use_gauss_seidel = false;
   Integer nb_relax1 = 2;
   Real jacobi_weight = 2.0 / 3.0;
   if (use_gauss_seidel){
@@ -1288,7 +1285,7 @@ _buildCoarsePoints(Real alpha,
   weak_depends.resize(mat_values.size());
   weak_depends.fill(0);
 
-  bool type_hypre = true;
+  const bool type_hypre = true;
   // Valeurs de chaque ligne qui influence
   rows_max_val.resize(nb_row);
   for( Integer row=0; row<nb_row; ++row ){
@@ -1915,7 +1912,7 @@ _buildInterpolationMatrix(RealConstArrayView rows_max_val,
   //info() << " ** TOTAL SUM=" << total_sum;
   // Calcule la matrice grossiere Ak+1 = I * Ak * tI
   //MatrixOperation mat_op;
-  bool old = false;
+  const bool old = false;
   if (old){
     Matrix n1 = mat_op2.matrixMatrixProductFast(m_fine_matrix,m_prolongation_matrix);
     if (m_is_verbose){
@@ -1998,8 +1995,7 @@ solve(const Vector& vector_b,Vector& vector_x)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::MatVec
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

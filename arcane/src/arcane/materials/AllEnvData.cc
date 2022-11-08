@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AllEnvData.cc                                               (C) 2000-2016 */
+/* AllEnvData.cc                                               (C) 2000-2022 */
 /*                                                                           */
 /* Informations sur les valeurs des milieux.                                 */
 /*---------------------------------------------------------------------------*/
@@ -31,14 +31,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -116,7 +110,7 @@ forceRecompute(bool compute_all)
           << " compute_all?=" << compute_all;
 
   //TODO: Utiliser celui de MeshMaterialMng
-  bool m_is_verbose = false;
+  const bool is_verbose = false;
 
   // Il faut compter le nombre total de mailles par milieu et par matériau
 
@@ -295,11 +289,11 @@ forceRecompute(bool compute_all)
   }
 
 
-  if (m_is_verbose){
+  if (is_verbose){
     printAllEnvCells(all_cells.view().localIds());
   }
 
-  if (m_is_verbose){
+  if (is_verbose){
     for( IMeshMaterial* material : m_material_mng->materials().range() ){
       //Integer nb_mat = m_materials.size();
       //for( Integer i=0; i<nb_mat; ++i ){
@@ -322,7 +316,7 @@ forceRecompute(bool compute_all)
 
   m_material_mng->syncVariablesReferences();
 
-  if (m_is_verbose){
+  if (is_verbose){
     OStringStream ostr;
     m_material_mng->dumpInfos2(ostr());
     info() << ostr.str();
@@ -765,8 +759,7 @@ _updateMaterialDirect(IMeshMaterial* mat,Int32ConstArrayView ids,eOperation oper
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

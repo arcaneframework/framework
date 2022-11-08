@@ -659,7 +659,7 @@ startInit()
       }
     }
 
-    bool test_depend = false;
+    const bool test_depend = false;
     // Ne doit pas être exécuté mais juste compilé pour vérifier la syntaxe
     if (test_depend){
       m_mat_density.addDependCurrentTime(m_density);

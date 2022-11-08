@@ -198,9 +198,10 @@ _addOneGhostLayerV2()
     debug() << "NOT PARALLEL";
     return;
   }
-  bool is_verbose = false;
 #ifdef ARCANE_DEBUG_DYNAMIC_MESH
-  is_verbose = true;
+  const bool is_verbose = true;
+#else
+  const bool is_verbose = false;
 #endif
 
   OStringStream ostr;

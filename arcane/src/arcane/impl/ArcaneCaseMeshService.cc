@@ -241,7 +241,7 @@ _doInitialPartition()
   // N'utilise plus le service de partitionnement de test pour garantir
   // avec ParMetis qu'on n'a pas de partitions vides car cela est maintenant
   // normalement supporté.
-  bool use_partitioner_tester = false;
+  const bool use_partitioner_tester = false;
   String test_service = "MeshPartitionerTester";
   if (use_partitioner_tester) {
     Int64 nb_cell = m_mesh->nbCell();
