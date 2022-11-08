@@ -192,7 +192,7 @@ class ItemGroupImplPrivate
 
   UniqueArray<ItemGroupImpl*> m_children_by_type; //!< Liste des fils de ce groupe par type d'entité
   //@}
-  std::map<String,ItemGroupImpl*> m_sub_groups; //!< Ensemble de tous les sous-groupes
+  std::map<String,AutoRefT<ItemGroupImpl>> m_sub_groups; //!< Ensemble de tous les sous-groupes
   bool m_need_recompute = false; //!< Vrai si le groupe doit être recalculé
   bool m_need_invalidate_on_recompute = false; //!< Vrai si l'on doit activer les invalidate observers en cas de recalcul
   bool m_transaction_mode = false; //!< Vrai si le groupe est en mode de transaction directe
@@ -1001,9 +1001,9 @@ ItemGroupImpl* ItemGroupImpl::
 findSubGroup(const String& suffix)
 {
   String sub_name = name() + "_" + suffix;
-  std::map<String,ItemGroupImpl*>::const_iterator finder = m_p->m_sub_groups.find(sub_name);
+  auto finder = m_p->m_sub_groups.find(sub_name);
   if (finder != m_p->m_sub_groups.end()) {
-    return finder->second;
+    return finder->second.get();
   }
   else {
     // ou bien erreur ?
@@ -1695,8 +1695,7 @@ clear()
     m_p->updateTimestamp();
   items_lid.clear();
   m_p->m_need_recompute = false;
-  std::map<String,ItemGroupImpl*> & sub_groups = m_p->m_sub_groups;
-  for( const auto& i : sub_groups )
+  for( const auto& i : m_p->m_sub_groups )
     i.second->clear();
   m_p->notifyInvalidateObservers();
 }
@@ -1996,8 +1995,7 @@ _forceInvalidate(const bool self_invalidate)
     m_p->m_need_invalidate_on_recompute = true;
   }
 
-  std::map<String,ItemGroupImpl*> & sub_groups = m_p->m_sub_groups;
-  for( const auto& i : sub_groups )
+  for( const auto& i :  m_p->m_sub_groups )
     i.second->_forceInvalidate(true);
 }
 
