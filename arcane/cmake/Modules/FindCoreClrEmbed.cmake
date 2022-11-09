@@ -12,12 +12,14 @@ endif()
 # On essaie par la suite de détecter automatiquement cette valeur mais c'est plus prudent
 # de mettre une valeur par défaut au cas où.
 set(CORECLR_ARCH "linux-x64")
+set(CORECLR_SUBARCH "x64")
 if (WIN32)
   set(CORECLR_ARCH "win-x64")
 endif()
 if (UNIX)
   if (CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
     set(CORECLR_ARCH "linux-arm64")
+    set(CORECLR_SUBARCH "arm64")
   endif()
 endif()
 
@@ -86,9 +88,11 @@ if (CORECLR_RUNTIME_ROOT_PATH)
 endif()
 set(CoreClrEmbed_ROOT_PATH "${CORECLR_RUNTIME_ROOT_PATH}")
 
-message(STATUS "[.Net]: CORECLR_RUNTIME_VERSION ${CORECLR_RUNTIME_VERSION}")
-message(STATUS "[.Net]: CORECLR_RUNTIME_VERSION_FULL ${CORECLR_RUNTIME_VERSION_FULL}")
-message(STATUS "[.Net]: CORECLR_RUNTIME_ROOT_PATH ${CORECLR_RUNTIME_ROOT_PATH}")
+message(STATUS "[.Net]: CORECLR_RUNTIME_VERSION = '${CORECLR_RUNTIME_VERSION}'")
+message(STATUS "[.Net]: CORECLR_RUNTIME_VERSION_FULL = '${CORECLR_RUNTIME_VERSION_FULL}'")
+message(STATUS "[.Net]: CORECLR_RUNTIME_ROOT_PATH = '${CORECLR_RUNTIME_ROOT_PATH}'")
+
+message(STATUS "[.Net]: CORECLR_SUBARCH = '${CORECLR_SUBARCH}'")
 
 # ----------------------------------------------------------------------------
 # Détermine l'architecture associé au runtime
@@ -97,7 +101,7 @@ message(STATUS "[.Net]: CORECLR_RUNTIME_ROOT_PATH ${CORECLR_RUNTIME_ROOT_PATH}")
 # Cependant il peut y avoir d'autres valeurs. Notamment sur ubuntu lorsqu'on utiliser
 # le package 'dotnet6', l'architecture est alors 'ubuntu.22.04-x64'.
 # On essaie donc de détecter automatiquement l'architecture si possible.
-file(GLOB _CORECLR_HOST_ARCH_PATH "${CORECLR_RUNTIME_ROOT_PATH}/packs/Microsoft.NETCore.App.Host.*")
+file(GLOB _CORECLR_HOST_ARCH_PATH "${CORECLR_RUNTIME_ROOT_PATH}/packs/Microsoft.NETCore.App.Host.*-${CORECLR_SUBARCH}")
 message(STATUS "[CoreClrEmbed] _CORECLR_HOST_ARCH_PATH = '${_CORECLR_HOST_ARCH_PATH}'")
 if (_CORECLR_HOST_ARCH_PATH)
   get_filename_component(_CORECLR_HOST_ARCH_FILENAME ${_CORECLR_HOST_ARCH_PATH} NAME)
