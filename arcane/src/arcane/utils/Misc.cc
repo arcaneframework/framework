@@ -257,7 +257,6 @@ void _doNoReferenceError(const void* ptr)
   cerr << "** FATAL: Trying to use an item not referenced.\n";
   cerr << "** FATAL: Item is located at memory address " << ptr << ".\n";
   arcaneDebugPause("arcaneNoReferenceError");
-  throw FatalErrorException(A_FUNCINFO);
 }
 }
 

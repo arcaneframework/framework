@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelDataReader.cc                                       (C) 2000-2021 */
+/* ParallelDataReader.cc                                       (C) 2000-2022 */
 /*                                                                           */
 /* Lecteur de IData en parallèle.                                            */
 /*---------------------------------------------------------------------------*/
@@ -14,6 +14,8 @@
 #include "arcane/std/ParallelDataReader.h"
 
 #include "arcane/utils/ScopedPtr.h"
+#include "arcane/utils/FatalErrorException.h"
+
 #include "arcane/IParallelMng.h"
 #include "arcane/IParallelExchanger.h"
 #include "arcane/ISerializer.h"
@@ -206,7 +208,7 @@ sort()
         }
       }
       if (rank==(-1))
-        fatal() << "Bad rank uid=" << uid;
+        ARCANE_FATAL("Bad rank uid={0} uid_index={1}",uid,i);
 
       // Il est inutile de s'envoyer les valeurs
       if (rank!=my_rank){
@@ -389,14 +391,15 @@ _searchUniqueIdIndexes(Int64ConstArrayView recv_uids,
     Integer my_index = Bissection<Int64>::locate(written_unique_ids,my_uid);
     //info() << "MY_INDEX=" << my_index << " my_uid=" << my_uid;
     if (my_index==(-1))
-      fatal() << "Can not find uid uid=" << my_uid << " (index=" << my_index << ")";
+      ARCANE_FATAL("Can not find uid uid={0} (index={1})",my_uid,my_index);
     //info() << "MY_INDEX2=" << my_index << " my_uid=" << my_uid;
     // Teste si la dichotomie est correcte
     if (written_unique_ids[my_index]!=my_uid)
-      fatal() << "INTERNAL: bad index for bissection "
-              << "Index=" << my_index << " uid=" << my_uid
-              << " wuid=" << written_unique_ids[my_index]
-              << " n=" << nb_written_uid;
+      ARCANE_FATAL("INTERNAL: bad index for bissection "
+                   "Index={0} uid={1} wuid={2} n={3}",
+                   my_index,my_uid,written_unique_ids[my_index],nb_written_uid);
+
+
     //info() << "Index=" << my_index << " uid=" << my_uid << " n=" << nb_written_uid;
     indexes[irecv] = my_index;
   }

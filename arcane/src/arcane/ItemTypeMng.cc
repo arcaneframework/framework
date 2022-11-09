@@ -5,13 +5,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemTypeMng.cc                                              (C) 2000-2019 */
+/* ItemTypeMng.cc                                              (C) 2000-2022 */
 /*                                                                           */
 /* Gestionnaire des types d'entite du maillage.                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
+#include "arcane/ItemTypeMng.h"
+
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/String.h"
 #include "arcane/utils/PlatformUtils.h"
@@ -24,7 +25,6 @@
 #include "arcane/utils/MultiBuffer.h"
 
 #include "arcane/ItemTypeInfoBuilder.h"
-#include "arcane/ItemTypeMng.h"
 #include "arcane/IParallelSuperMng.h"
 #include "arcane/ItemTypeInfoBuilder.h"
 

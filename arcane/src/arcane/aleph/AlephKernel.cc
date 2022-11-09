@@ -5,22 +5,19 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AlephKernel.cc                                              (C) 2000-2019 */
+/* AlephKernel.cc                                              (C) 2000-2022 */
 /*                                                                           */
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "AlephArcane.h"
+#include "arcane/aleph/AlephArcane.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -44,15 +41,10 @@ AlephKernel(IParallelMng* wpm,
 , m_i_am_an_other(true)
 , m_parallel(wpm)
 , m_world_parallel(wpm)
-, m_configured(false)
 , m_factory(factory)
-, m_topology(NULL)
-, m_ordering(NULL)
-, m_indexing(NULL)
 , m_aleph_vector_idx(0)
-,
 // Pour l'instant, on met Sloop par défaut
-m_underlying_solver((alephUnderlyingSolver == 0 ? 1 : alephUnderlyingSolver))
+, m_underlying_solver((alephUnderlyingSolver == 0 ? 1 : alephUnderlyingSolver))
 , m_reorder(alephOrdering)
 , m_solver_index(0)
 , m_solver_size(alephNumberOfCores)
@@ -90,15 +82,10 @@ AlephKernel(ITraceMng* tm,
 , m_i_am_an_other(sd->parallelMng()->worldParallelMng()->commRank() > m_size)
 , m_parallel(sd->parallelMng())
 , m_world_parallel(sd->parallelMng()->worldParallelMng())
-, m_configured(false)
 , m_factory(factory)
-, m_topology(NULL)
-, m_ordering(NULL)
-, m_indexing(NULL)
 , m_aleph_vector_idx(0)
-,
 // Pour l'instant, on met Sloop par défaut
-m_underlying_solver((alephUnderlyingSolver == 0 ? 1 : alephUnderlyingSolver))
+, m_underlying_solver((alephUnderlyingSolver == 0 ? 1 : alephUnderlyingSolver))
 , m_reorder(alephOrdering)
 , m_solver_index(0)
 , m_solver_size(alephNumberOfCores)
@@ -130,7 +117,6 @@ AlephKernel(ISubDomain* sd,
 , m_i_am_an_other(sd->parallelMng()->worldParallelMng()->commRank() > m_size)
 , m_parallel(sd->parallelMng())
 , m_world_parallel(sd->parallelMng()->worldParallelMng())
-, m_configured(false)
 , m_factory(new AlephFactory(sd->application(), sd->parallelMng()->traceMng()))
 , m_topology(new AlephTopology(this))
 , m_ordering(new AlephOrdering(this))
@@ -203,6 +189,7 @@ AlephKernel::
   info(4) << "Destroying ~AlephKernel";
 
   delete m_topology;
+  delete m_indexing;
   delete m_ordering;
 
   for ( AlephKernelResults* rq : m_results_queue )

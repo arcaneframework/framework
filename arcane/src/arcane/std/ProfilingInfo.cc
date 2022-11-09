@@ -235,8 +235,8 @@ class ProfInfos::BacktraceStackInfo
   }
  private:
   // TODO: vérifier taille
-  std::array<Dl_info,256> m_dl_infos;
-  std::array<intptr_t,256> m_proc_start;
+  std::array<Dl_info,256> m_dl_infos = { };
+  std::array<intptr_t,256> m_proc_start = { };
   Integer m_nb_index;
   BacktraceFuncInfos* m_func_infos;
 };
