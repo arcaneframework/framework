@@ -306,4 +306,5 @@ set(ARCANE_SOURCES
   DirectedAcyclicGraphT.h
   internal/MemoryRessourceMng.h
   internal/IMemoryRessourceMngInternal.h
+  internal/ProfilingInternal.h
   )

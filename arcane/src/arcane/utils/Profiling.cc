@@ -16,6 +16,8 @@
 #include "arcane/utils/ForLoopTraceInfo.h"
 #include "arcane/utils/PlatformUtils.h"
 
+#include "arcane/utils/internal/ProfilingInternal.h"
+
 #include <iostream>
 #include <iomanip>
 #include <vector>
@@ -25,36 +27,26 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::impl
+namespace Arcane
 {
 
-class ForLoopStatInfoList::Impl
-{
- public:
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-  // TODO Utiliser un hash pour le map plutôt qu'une String pour accélérer les comparaisons
-  std::map<String, impl::ForLoopProfilingStat> m_stat_map;
-};
-
-ForLoopStatInfoList::
+impl::ForLoopStatInfoList::
 ForLoopStatInfoList()
-: m_p(new Impl())
+: m_p(new ForLoopStatInfoListImpl())
 {
 }
 
-ForLoopStatInfoList::
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+impl::ForLoopStatInfoList::
 ~ForLoopStatInfoList()
 {
   delete m_p;
 }
-
-} // namespace Arcane::impl
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace Arcane
-{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -127,7 +119,7 @@ class AllForLoopStatInfoList
   void print(std::ostream& o)
   {
     for (const auto& x : m_stat_info_list_vector)
-      x->print(o);
+      x->_internalImpl()->print(o);
   }
 
  public:
@@ -262,14 +254,14 @@ merge(const ForLoopOneExecStat& loop_stat_info, const ForLoopTraceInfo& loop_tra
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void impl::ForLoopStatInfoList::
+void impl::ForLoopStatInfoListImpl::
 print(std::ostream& o)
 {
   o << "ProfilingStat\n";
   o << std::setw(10) << "Ncall" << std::setw(10) << "Nchunk"
     << std::setw(10) << " T (us)" << std::setw(11) << "Tck (ns)\n";
   Int64 cumulative_total = 0;
-  for (const auto& x : m_p->m_stat_map) {
+  for (const auto& x : m_stat_map) {
     const auto& s = x.second;
     Int64 nb_loop = s.nbCall();
     Int64 nb_chunk = s.nbChunk();
