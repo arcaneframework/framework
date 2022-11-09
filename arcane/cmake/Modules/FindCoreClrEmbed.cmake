@@ -7,10 +7,10 @@ if (NOT DOTNET_EXEC)
   return()
 endif()
 
-#get_filename_component(DOTNET_ROOT ${DOTNET_EXEC} DIRECTORY)
-#message(STATUS "[CoreClrEmbed] DOTNET_ROOT = ${DOTNET_ROOT}")
-
-# TODO: rechercher le pack en fonction de l'architecture (ARM64 ou x64) et de la version de dotnet
+# ----------------------------------------------------------------------------
+# Positionne une architecture par défaut.
+# On essaie par la suite de détecter automatiquement cette valeur mais c'est plus prudent
+# de mettre une valeur par défaut au cas où.
 set(CORECLR_ARCH "linux-x64")
 if (WIN32)
   set(CORECLR_ARCH "win-x64")
@@ -24,7 +24,7 @@ endif()
 # ----------------------------------------------------------------------------
 # On recherche la bibliothèque 'nethost' qui se trouve dans le répertoire suivant:
 #
-#  ${DOTNET_ROOT}/packs/Microsoft.NETCore.App.Host.${CORECLR_ARCH}.${VERSION}/runtimes/${CORECLR_ARCH}/native
+#  ${DOTNET_ROOT}/packs/Microsoft.NETCore.App.Host.${CORECLR_ARCH}/${VERSION}/runtimes/${CORECLR_ARCH}/native
 #
 # Cela pose plusieurs problèmes:
 # - tout d'abord, on ne connait pas forcément DOTNET_ROOT car il est possible que
@@ -91,6 +91,24 @@ message(STATUS "[.Net]: CORECLR_RUNTIME_VERSION_FULL ${CORECLR_RUNTIME_VERSION_F
 message(STATUS "[.Net]: CORECLR_RUNTIME_ROOT_PATH ${CORECLR_RUNTIME_ROOT_PATH}")
 
 # ----------------------------------------------------------------------------
+# Détermine l'architecture associé au runtime
+#
+# En général, il s'agit d'une chaîne de caractère comme 'linux-x64' ou 'win-x64'.
+# Cependant il peut y avoir d'autres valeurs. Notamment sur ubuntu lorsqu'on utiliser
+# le package 'dotnet6', l'architecture est alors 'ubuntu.22.04-x64'.
+# On essaie donc de détecter automatiquement l'architecture si possible.
+file(GLOB _CORECLR_HOST_ARCH_PATH "${CORECLR_RUNTIME_ROOT_PATH}/packs/Microsoft.NETCore.App.Host.*")
+message(STATUS "[CoreClrEmbed] _CORECLR_HOST_ARCH_PATH = '${_CORECLR_HOST_ARCH_PATH}'")
+if (_CORECLR_HOST_ARCH_PATH)
+  get_filename_component(_CORECLR_HOST_ARCH_FILENAME ${_CORECLR_HOST_ARCH_PATH} NAME)
+  message(STATUS "[CoreClrEmbed] _CORECLR_HOST_ARCH_FILENAME = '${_CORECLR_HOST_ARCH_FILENAME}'")
+  string(REPLACE "Microsoft.NETCore.App.Host." "" _CORECLR_COMPUTED_ARCH "${_CORECLR_HOST_ARCH_FILENAME}")
+  message(STATUS "[CoreClrEmbed] _CORECLR_COMPUTED_ARCH = '${_CORECLR_COMPUTED_ARCH}'")
+  if (_CORECLR_COMPUTED_ARCH)
+    set(CORECLR_ARCH "${_CORECLR_COMPUTED_ARCH}")
+    message(STATUS "[CoreClrEmbed] Set CORECLR_ARCH to '${_CORECLR_COMPUTED_ARCH}'")
+  endif()
+endif()
 
 set(CORECLR_HOST_BASE_PATH ${CORECLR_RUNTIME_ROOT_PATH}/packs/Microsoft.NETCore.App.Host.${CORECLR_ARCH}/${CORECLR_RUNTIME_VERSION_FULL})
 message(STATUS "[CoreClrEmbed] searching runtime path '${CORECLR_HOST_BASE_PATH}'")

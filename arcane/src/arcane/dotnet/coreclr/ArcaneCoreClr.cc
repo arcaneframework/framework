@@ -161,7 +161,9 @@ getDotnetLoadAssembly(const String& assembly)
 
   int rc = lib_info.init_fptr(assembly1.c_str(), &params, &cxt);
   if (rc != 0 || cxt == nullptr) {
+    auto flags = std::cerr.flags();
     std::cerr << "Init failed: " << std::hex << std::showbase << rc << std::endl;
+    std::cerr.setf(flags);
     lib_info.close_fptr(cxt);
     return nullptr;
   }
