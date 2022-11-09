@@ -35,7 +35,6 @@
 #include "arcane/utils/Property.h"
 #include "arcane/utils/ParameterListPropertyReader.h"
 #include "arcane/utils/CommandLineArguments.h"
-#include "arcane/utils/Profiling.h"
 
 #include "arcane/impl/ArcaneMain.h"
 #include "arcane/impl/ParallelReplication.h"
@@ -49,10 +48,8 @@
 #include "arcane/ITimeLoopMng.h"
 #include "arcane/ITimeStats.h"
 #include "arcane/SequentialSection.h"
-#include "arcane/IVariableMng.h"
 #include "arcane/IParallelSuperMng.h"
 #include "arcane/ITimeHistoryMng.h"
-#include "arcane/IMesh.h"
 #include "arcane/IDirectExecution.h"
 #include "arcane/IDirectSubDomainExecuteFunctor.h"
 #include "arcane/ICaseMng.h"
@@ -60,12 +57,12 @@
 #include "arcane/SubDomainBuildInfo.h"
 #include "arcane/IParallelMng.h"
 #include "arcane/IMainFactory.h"
-#include "arcane/IPropertyMng.h"
 #include "arcane/ApplicationBuildInfo.h"
 #include "arcane/CaseDatasetSource.h"
 
 #include "arcane/ServiceUtils.h"
 
+#include "arcane/impl/ExecutionStatsDumper.h"
 #include "arcane/impl/TimeLoopReader.h"
 
 #include <thread>
@@ -948,65 +945,8 @@ _createAndRunSubDomain(SubInfo* sub_info,Ref<IParallelMng> pm,Ref<IParallelMng> 
 void ArcaneMainBatch::SessionExec::
 _printStats(ISubDomain* sub_domain,ITraceMng* trace,ITimeStats* time_stat)
 {
-  {
-    // Statistiques sur la mémoire
-    double mem = platform::getMemoryUsed();
-    trace->info() << "Memory consumption (Mo): " << mem / 1.e6;
-  }
-  if (sub_domain){
-    {
-      // Affiche les valeurs des propriétés
-      OStringStream postr;
-      postr() << "Properties:\n";
-      sub_domain->propertyMng()->print(postr());
-      trace->plog() << postr.str();
-    }
-    // Affiche les statistiques sur les variables
-    IVariableMng* vm = sub_domain->variableMng();
-    OStringStream ostr_full;
-    vm->dumpStats(ostr_full(),true);
-    OStringStream ostr;
-    vm->dumpStats(ostr(),false);
-    trace->plog() << ostr_full.str();
-    trace->info() << ostr.str();
-  }
-  {
-    // Affiche les statistiques sur les variables
-    IMemoryInfo* mem_info = arcaneGlobalMemoryInfo();
-    OStringStream ostr;
-    mem_info->printInfos(ostr());
-    trace->info() << ostr.str();
-  }
-  // Affiche les statistiques sur les temps d'exécution
-  Integer nb_loop = 1;
-  Integer nb_cell = 1;
-  if (sub_domain){
-    nb_loop = sub_domain->timeLoopMng()->nbLoop();
-    if (sub_domain->defaultMesh()) nb_cell = sub_domain->defaultMesh()->nbCell();
-  }
-  Real n = ((Real)nb_cell);
-  trace->info() << "NB_CELL=" << nb_cell << " nb_loop=" << nb_loop;
-  {
-    OStringStream ostr;
-    ProfilingRegistry::printExecutionStats(ostr());
-    String str = ostr.str();
-    if (!str.empty())
-      trace->info() << "TaskStatistics:\n" << str;
-  }
-  {
-    bool use_elapsed_time = true;
-    if (!platform::getEnvironmentVariable("ARCANE_USE_REAL_TIMER").null())
-      use_elapsed_time = true;
-    if (!platform::getEnvironmentVariable("ARCANE_USE_VIRTUAL_TIMER").null())
-      use_elapsed_time = false;
-    OStringStream ostr_full;
-    time_stat->dumpStats(ostr_full(),true,n,"cell",use_elapsed_time);
-    OStringStream ostr;
-    time_stat->dumpStats(ostr(),false,n,"cell",use_elapsed_time);
-    trace->info() << ostr.str();
-    trace->plog() << ostr_full.str();
-    trace->flush();
-  }
+  ExecutionStatsDumper exec_dumper(trace);
+  exec_dumper.dumpStats(sub_domain,time_stat);
 }
 
 /*---------------------------------------------------------------------------*/

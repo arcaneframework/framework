@@ -58,6 +58,7 @@ class IArcaneMain;
 class ApplicationInfo;
 class IMainFactory;
 class VersionInfo;
+class ITimeStats;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
