@@ -19,13 +19,13 @@
 #include "arcane/utils/String.h"
 
 #include <atomic>
+#include <functional>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane::impl
 {
-class ForLoopStatInfoListImpl;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -68,7 +68,7 @@ class ARCANE_UTILS_EXPORT ForLoopStatInfoList
    * \internal
    * \brief Type opaque pour l'implémentation interne.
    */
-  ForLoopStatInfoListImpl* _internalImpl() { return m_p; }
+  ForLoopStatInfoListImpl* _internalImpl() const { return m_p; }
 
  private:
 
@@ -144,9 +144,6 @@ class ARCANE_UTILS_EXPORT ProfilingRegistry
    */
   static impl::ForLoopStatInfoList* threadLocalInstance();
 
-  //! Affiche les statistiques d'exécution de toutes les instances sur \a o
-  static void printExecutionStats(std::ostream& o);
-
   /*!
    * \brief Positionne le niveau de profilage.
    *
@@ -160,6 +157,18 @@ class ARCANE_UTILS_EXPORT ProfilingRegistry
 
   //! Indique si le profilage est actif.
   static bool hasProfiling() { return m_profiling_level > 0; }
+
+  /*!
+   * \brief Visite la liste des statistiques.
+   *
+   * Il y a une instance de impl::ForLoopStatInfoList par thread qui a
+   * exécuté une boucle.
+   *
+   * Cette méthode ne doit pas être appelée s'il y a des boucles en cours d'exécution.
+   */
+  static void visitLoopStat(const std::function<void(const impl::ForLoopStatInfoList&)>& f);
+
+  static const impl::ForLoopCumulativeStat& globalLoopStat();
 
  private:
 

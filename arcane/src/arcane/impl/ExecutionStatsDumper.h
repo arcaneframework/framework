@@ -44,6 +44,12 @@ class ExecutionStatsDumper
  public:
 
   void dumpStats(ISubDomain* sd, ITimeStats* time_stats);
+
+ private:
+
+  void _dumpProfiling(std::ostream& o);
+  void _dumpOneLoopListStat(std::ostream& o, const impl::ForLoopStatInfoList& stat_list);
+  void _printGlobalLoopInfos(std::ostream& o, const impl::ForLoopCumulativeStat& cumulative_stat);
 };
 
 /*---------------------------------------------------------------------------*/

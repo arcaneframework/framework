@@ -51,28 +51,9 @@ impl::ForLoopStatInfoList::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ForLoopCumulativeStat
-{
- public:
-
-  void printInfos(std::ostream& o);
-  void merge(const ForLoopOneExecStat& s)
-  {
-    ++m_nb_loop_parallel_for;
-    m_nb_chunk_parallel_for += s.nbChunk();
-    m_total_time += s.execTime();
-  }
-
- public:
-
-  std::atomic<Int64> m_nb_loop_parallel_for = 0;
-  std::atomic<Int64> m_nb_chunk_parallel_for = 0;
-  std::atomic<Int64> m_total_time = 0;
-};
-
 namespace
 {
-  ForLoopCumulativeStat global_stat;
+  impl::ForLoopCumulativeStat global_stat;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -116,13 +97,13 @@ class AllForLoopStatInfoList
     return ptr;
   }
 
-  void print(std::ostream& o)
+  void visit(const std::function<void(const impl::ForLoopStatInfoList&)>& f)
   {
     for (const auto& x : m_stat_info_list_vector)
-      x->_internalImpl()->print(o);
+      f(*x);
   }
 
- public:
+  public :
 
   std::mutex m_mutex;
   std::vector<std::unique_ptr<impl::ForLoopStatInfoList>> m_stat_info_list_vector;
@@ -177,10 +158,9 @@ threadLocalInstance()
 /*---------------------------------------------------------------------------*/
 
 void ProfilingRegistry::
-printExecutionStats(std::ostream& o)
+visitLoopStat(const std::function<void(const impl::ForLoopStatInfoList&)>& f)
 {
-  global_stat.printInfos(o);
-  global_all_stat_info_list.print(o);
+  global_all_stat_info_list.visit(f);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -195,27 +175,10 @@ setProfilingLevel(Int32 level)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void ForLoopCumulativeStat::
-printInfos(std::ostream& o)
+const impl::ForLoopCumulativeStat& ProfilingRegistry::
+globalLoopStat()
 {
-  Int64 nb_loop_parallel_for = m_nb_loop_parallel_for;
-  if (nb_loop_parallel_for == 0)
-    return;
-  Int64 nb_chunk_parallel_for = m_nb_chunk_parallel_for;
-  Int64 total_time = m_total_time;
-  double x = static_cast<double>(total_time);
-  double x1 = 0.0;
-  if (nb_loop_parallel_for > 0)
-    x1 = x / static_cast<double>(nb_loop_parallel_for);
-  double x2 = 0.0;
-  if (nb_chunk_parallel_for > 0)
-    x2 = x / static_cast<double>(nb_chunk_parallel_for);
-  o << "LoopStat: global_time (ms) = " << x / 1.0e6 << "\n";
-  o << "LoopStat: global_nb_loop   = " << std::setw(10) << nb_loop_parallel_for << " time=" << x1 << "\n";
-  o << "LoopStat: global_nb_chunk  = " << std::setw(10) << nb_chunk_parallel_for << " time=" << x2 << "\n";
+  return global_stat;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -249,29 +212,6 @@ merge(const ForLoopOneExecStat& loop_stat_info, const ForLoopTraceInfo& loop_tra
       loop_name = loop_trace_info.traceInfo().name();
   }
   m_p->m_stat_map[loop_name].add(loop_stat_info);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void impl::ForLoopStatInfoListImpl::
-print(std::ostream& o)
-{
-  o << "ProfilingStat\n";
-  o << std::setw(10) << "Ncall" << std::setw(10) << "Nchunk"
-    << std::setw(10) << " T (us)" << std::setw(11) << "Tck (ns)\n";
-  Int64 cumulative_total = 0;
-  for (const auto& x : m_stat_map) {
-    const auto& s = x.second;
-    Int64 nb_loop = s.nbCall();
-    Int64 nb_chunk = s.nbChunk();
-    Int64 total_time = s.execTime();
-    Int64 time_per_chunk = (nb_chunk == 0) ? 0 : (total_time / nb_chunk);
-    o << std::setw(10) << nb_loop << std::setw(10) << nb_chunk
-      << std::setw(10) << total_time / 1000 << std::setw(10) << time_per_chunk << "  " << x.first << "\n";
-    cumulative_total += total_time;
-  }
-  o << "TOTAL=" << cumulative_total / 1000000 << "\n";
 }
 
 /*---------------------------------------------------------------------------*/

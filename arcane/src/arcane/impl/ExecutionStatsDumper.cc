@@ -19,6 +19,8 @@
 #include "arcane/utils/Profiling.h"
 #include "arcane/utils/ITraceMng.h"
 
+#include "arcane/utils/internal/ProfilingInternal.h"
+
 #include "arcane/ISubDomain.h"
 #include "arcane/IVariableMng.h"
 #include "arcane/IPropertyMng.h"
@@ -26,11 +28,73 @@
 #include "arcane/IMesh.h"
 #include "arcane/ITimeStats.h"
 
+#include <iostream>
+#include <iomanip>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ExecutionStatsDumper::
+_dumpProfiling(std::ostream& o)
+{
+  _printGlobalLoopInfos(o,ProfilingRegistry::globalLoopStat());
+  auto f = [&](const impl::ForLoopStatInfoList& stat_list){
+    _dumpOneLoopListStat(o,stat_list);
+  };
+  ProfilingRegistry::visitLoopStat(f);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ExecutionStatsDumper::
+_dumpOneLoopListStat(std::ostream& o,const impl::ForLoopStatInfoList& stat_list)
+{
+  o << "ProfilingStat\n";
+  o << std::setw(10) << "Ncall" << std::setw(10) << "Nchunk"
+    << std::setw(10) << " T (us)" << std::setw(11) << "Tck (ns)\n";
+  Int64 cumulative_total = 0;
+  for (const auto& x : stat_list._internalImpl()->m_stat_map) {
+    const auto& s = x.second;
+    Int64 nb_loop = s.nbCall();
+    Int64 nb_chunk = s.nbChunk();
+    Int64 total_time = s.execTime();
+    Int64 time_per_chunk = (nb_chunk == 0) ? 0 : (total_time / nb_chunk);
+    o << std::setw(10) << nb_loop << std::setw(10) << nb_chunk
+      << std::setw(10) << total_time / 1000 << std::setw(10) << time_per_chunk << "  " << x.first << "\n";
+    cumulative_total += total_time;
+  }
+  o << "TOTAL=" << cumulative_total / 1000000 << "\n";
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ExecutionStatsDumper::
+_printGlobalLoopInfos(std::ostream& o,const impl::ForLoopCumulativeStat& cumulative_stat)
+{
+  Int64 nb_loop_parallel_for = cumulative_stat.nbLoopParallelFor();
+  if (nb_loop_parallel_for == 0)
+    return;
+  Int64 nb_chunk_parallel_for = cumulative_stat.nbChunkParallelFor();
+  Int64 total_time = cumulative_stat.totalTime();
+  double x = static_cast<double>(total_time);
+  double x1 = 0.0;
+  if (nb_loop_parallel_for > 0)
+    x1 = x / static_cast<double>(nb_loop_parallel_for);
+  double x2 = 0.0;
+  if (nb_chunk_parallel_for > 0)
+    x2 = x / static_cast<double>(nb_chunk_parallel_for);
+  o << "LoopStat: global_time (ms) = " << x / 1.0e6 << "\n";
+  o << "LoopStat: global_nb_loop   = " << std::setw(10) << nb_loop_parallel_for << " time=" << x1 << "\n";
+  o << "LoopStat: global_nb_chunk  = " << std::setw(10) << nb_chunk_parallel_for << " time=" << x2 << "\n";
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -77,12 +141,14 @@ dumpStats(ISubDomain* sd, ITimeStats* time_stat)
   }
   Real n = ((Real)nb_cell);
   info() << "NB_CELL=" << nb_cell << " nb_loop=" << nb_loop;
+
+  // Informations de profiling des boucles
   {
     OStringStream ostr;
-    ProfilingRegistry::printExecutionStats(ostr());
+    _dumpProfiling(ostr());
     String str = ostr.str();
     if (!str.empty())
-      info() << "TaskStatistics:\n"
+      info() << "LoopStatistics:\n"
              << str;
   }
   {

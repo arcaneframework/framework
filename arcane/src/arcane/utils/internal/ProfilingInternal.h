@@ -20,6 +20,7 @@
 #include "arcane/utils/String.h"
 
 #include <map>
+#include <atomic>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -63,6 +64,36 @@ class ForLoopStatInfoListImpl
 
   // TODO Utiliser un hash pour le map plutôt qu'une String pour accélérer les comparaisons
   std::map<String, ForLoopProfilingStat> m_stat_map;
+};
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Statistiques cumulées sur le nombre de boucles exécutées.
+ */
+class ForLoopCumulativeStat
+{
+ public:
+
+  void merge(const ForLoopOneExecStat& s)
+  {
+    ++m_nb_loop_parallel_for;
+    m_nb_chunk_parallel_for += s.nbChunk();
+    m_total_time += s.execTime();
+  }
+
+ public:
+
+  Int64 nbLoopParallelFor() const { return m_nb_loop_parallel_for.load(); }
+  Int64 nbChunkParallelFor() const { return m_nb_chunk_parallel_for.load(); }
+  Int64 totalTime() const { return m_total_time.load(); }
+
+ private:
+
+  std::atomic<Int64> m_nb_loop_parallel_for = 0;
+  std::atomic<Int64> m_nb_chunk_parallel_for = 0;
+  std::atomic<Int64> m_total_time = 0;
 };
 
 /*---------------------------------------------------------------------------*/
