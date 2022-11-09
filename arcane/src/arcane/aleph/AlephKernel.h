@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AlephKernel.h                                                    (C) 2010 */
+/* AlephKernel.h                                               (C) 2000-2022 */
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_ALEPH_KERNEL_H
@@ -25,20 +25,6 @@
 
 namespace Arcane
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class IAlephFactory;
-class IAlephTopology;
-class AlephTopology;
-class AlephMatrix;
-class AlephOrdering;
-class AlephIndexing;
-class AlephVector;
-class IParallelMng;
-class ISubDomain;
-class AlephParams;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -137,9 +123,11 @@ class ARCANE_ALEPH_EXPORT AlephKernel
   }
 
  private:
+
   Ref<IParallelMng> _createUnderlyingParallelMng(Integer);
 
  private:
+
   ISubDomain* m_sub_domain;
   bool m_isParallel;
   Integer m_rank;
@@ -151,11 +139,12 @@ class ARCANE_ALEPH_EXPORT AlephKernel
   IParallelMng* m_world_parallel;
 
  private:
-  bool m_configured;
-  IAlephFactory* m_factory;
-  AlephTopology* m_topology;
-  AlephOrdering* m_ordering;
-  AlephIndexing* m_indexing;
+
+  bool m_configured = false;
+  IAlephFactory* m_factory = nullptr;
+  AlephTopology* m_topology = nullptr;
+  AlephOrdering* m_ordering = nullptr;
+  AlephIndexing* m_indexing = nullptr;
   Integer m_aleph_vector_idx;
   const Integer m_underlying_solver;
   const bool m_reorder;
@@ -165,6 +154,7 @@ class ARCANE_ALEPH_EXPORT AlephKernel
   bool m_has_been_initialized;
 
  private:
+
   UniqueArray<SharedArray<Integer>> m_solver_ranks;
   UniqueArray<Ref<IParallelMng>> m_sub_parallel_mng_queue;
   UniqueArray<AlephMatrix*> m_matrix_queue;
