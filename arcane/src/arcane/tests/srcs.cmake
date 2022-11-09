@@ -22,6 +22,8 @@ set(ARCANE_SOURCES
   VariableUnitTest.cc
   VariableSimdUnitTest.cc
   AMRTestModule.cc
+  AMR/ErrorEstimate.cc
+  AMR/ErrorEstimate.h
   MatVecUnitTest.cc
   MiniWeatherTypes.h
   MiniWeatherModule.cc

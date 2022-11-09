@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AMRUnitTest.cc                                              (C) 2000-2020 */
+/* AMRUnitTest.cc                                              (C) 2000-2022 */
 /*                                                                           */
 /* Service de test du raffinement/dérafinnement facon AMR.                   */
 /*---------------------------------------------------------------------------*/
@@ -45,10 +45,12 @@
 
 #include "arcane/tests/AMR/ExactSolution.h"
 #include "arcane/tests/AMR/ErrorEstimate.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_BEGIN_NAMESPACE
+namespace ArcaneTest
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -91,12 +93,12 @@ class AMRTestModule
 
  private:
 
-  IMesh* new_mesh;
+  IMesh* new_mesh = nullptr;
   // Post-processing
   RealUniqueArray times;
   RealUniqueArray m_error;
-  VariableCellReal* new_data;
-  VariableCellReal* old_data;
+  VariableCellReal* new_data = nullptr;
+  VariableCellReal* old_data = nullptr;
   Directory m_output_directory;
   bool m_output_dir_created;
 };
@@ -104,7 +106,6 @@ class AMRTestModule
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//ARCANE_REGISTER_SERVICE_AMRUNITTEST2(AMRUnitTest2,AMRUnitTest2);
 ARCANE_DEFINE_STANDARD_MODULE(AMRTestModule,AMRTest);
 
 /*---------------------------------------------------------------------------*/
@@ -117,8 +118,6 @@ ARCANE_DEFINE_STANDARD_MODULE(AMRTestModule,AMRTest);
 AMRTestModule::
 AMRTestModule(const ModuleBuildInfo& mb)
 : ArcaneAMRTestObject(mb)
-, new_data(nullptr)
-, old_data(nullptr)
 , m_output_dir_created(false)
 {
 	addEntryPoint(this,"Init",
@@ -523,7 +522,7 @@ _checkParents()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_END_NAMESPACE
+} // End namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
