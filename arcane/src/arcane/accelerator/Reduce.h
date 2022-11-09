@@ -282,6 +282,7 @@ class Reducer
     //std::cout << String::format("Reduce: host copy this={0} rhs={1} mem={2} device_count={3}\n",this,&rhs,m_memory_impl,(void*)m_grid_device_count);
     m_parent_value = rhs.m_parent_value;
     m_local_value = rhs.m_identity;
+    m_atomic_value = m_identity;
     //std::cout << String::format("Reduce copy host  this={0} parent_value={1} rhs={2}\n",this,(void*)m_parent_value,&rhs); std::cout.flush();
     //if (!rhs.m_is_master_instance)
     //ARCANE_FATAL("Only copy from master instance is allowed");

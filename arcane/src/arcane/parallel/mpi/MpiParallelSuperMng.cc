@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiParallelSuperMng.cc                                      (C) 2000-2020 */
+/* MpiParallelSuperMng.cc                                      (C) 2000-2022 */
 /*                                                                           */
 /* Gestionnaire de parallélisme utilisant MPI.                               */
 /*---------------------------------------------------------------------------*/
@@ -81,9 +81,9 @@ class MpiParallelSuperMng
   IThreadMng* m_thread_mng;
   Parallel::IStat* m_stat; //! Statistiques
   bool m_is_parallel;  //!< \a true si on est en mode parallèle
-  Integer m_rank; //!< Rang MPI dans le communicateur global de ce processus
-  Integer m_nb_rank; //!< Nombre de processus MPI dans le communicateur global
-  Integer m_nb_local_sub_domain; //!< Nombre de sous-domaines locaux
+  Int32 m_rank; //!< Rang MPI dans le communicateur global de ce processus
+  Int32 m_nb_rank; //!< Nombre de processus MPI dans le communicateur global
+  Int32 m_nb_local_sub_domain; //!< Nombre de sous-domaines locaux
   MPI_Comm m_mpi_main_communicator; //!< Communicateur MPI
   MP::Communicator m_main_communicator; //!< Communicateur MPI
   MpiErrorHandler m_error_handler;
@@ -108,6 +108,7 @@ MpiParallelSuperMng(const ServiceBuildInfo& sbi)
 , m_rank(0)
 , m_nb_rank(0)
 , m_nb_local_sub_domain(1)
+, m_mpi_main_communicator(MPI_COMM_NULL)
 , m_main_communicator(MPI_COMM_NULL)
 , m_adapter(nullptr)
 , m_datatype_list(nullptr)

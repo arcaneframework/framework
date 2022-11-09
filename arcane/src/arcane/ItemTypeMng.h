@@ -170,21 +170,18 @@ class ARCANE_CORE_EXPORT ItemTypeMng
   static const Integer m_nb_builtin_item_type;
 
   //! Flag d'initialisation
-  bool m_initialized;
+  bool m_initialized = false;
 
   std::atomic<Int32> m_initialized_counter;
 
-  //! Nombre de types disponibles
-  Integer m_nb_basic_item_type;
-
   //! Gestionnaire de traces
-  ITraceMng* m_trace;
+  ITraceMng* m_trace = nullptr;
 
   //! Liste des types
   UniqueArray<ItemTypeInfo*> m_types;
 
   //! Allocations des objets de type (il faut un pointeur pour eviter inclusion multiple)
-  MultiBufferT<ItemTypeInfoBuilder>* m_types_buffer;
+  MultiBufferT<ItemTypeInfoBuilder>* m_types_buffer = nullptr;
 
   //! Ensemble des maillages contenant des mailles générales (sans type défini)
   std::set<IMesh*> m_mesh_with_general_cells;
