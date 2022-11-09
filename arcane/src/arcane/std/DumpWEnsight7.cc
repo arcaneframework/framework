@@ -52,6 +52,8 @@
 #include <string.h>
 #include <memory>
 
+// TODO: Ajouter test avec des variables partielles
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -344,7 +346,10 @@ class DumpWEnsight7
   {
    public:
 
-    WriteBase(DumpWEnsight7& dw, SharedPtrT<GroupIndexTable> idx = SharedPtrT<GroupIndexTable>())
+    explicit WriteBase(DumpWEnsight7& dw)
+    : m_dw(dw)
+    {}
+    WriteBase(DumpWEnsight7& dw, GroupIndexTable* idx)
     : m_dw(dw)
     , m_idx(idx)
     {}
@@ -352,7 +357,7 @@ class DumpWEnsight7
     : m_dw(wb.m_dw)
     , m_idx(wb.m_idx)
     {}
-    virtual ~WriteBase() { ; }
+    virtual ~WriteBase() {}
 
    public:
 
@@ -376,7 +381,7 @@ class DumpWEnsight7
 
     DumpWEnsight7& m_dw;
     std::ostringstream m_ofile;
-    SharedPtrT<GroupIndexTable> m_idx;
+    GroupIndexTable* m_idx = nullptr;
   };
 
   /*!
@@ -388,7 +393,7 @@ class DumpWEnsight7
   {
    public:
 
-    WriteDouble(DumpWEnsight7& dw, ConstArrayView<FromType> ptr, SharedPtrT<GroupIndexTable> idx = SharedPtrT<GroupIndexTable>())
+    WriteDouble(DumpWEnsight7& dw, ConstArrayView<FromType> ptr, GroupIndexTable* idx = nullptr)
     : WriteBase(dw, idx)
     , m_ptr(ptr)
     {}
@@ -407,7 +412,7 @@ class DumpWEnsight7
 
     inline void write(Integer index)
     {
-      if (m_idx.isUsed()) {
+      if (m_idx) {
         int reindex = (*m_idx)[index];
         if (reindex < 0)
           ARCANE_FATAL("Invalid index");
@@ -435,7 +440,7 @@ class DumpWEnsight7
    public:
 
     WriteArrayDouble(DumpWEnsight7& dw, ConstArray2View<FromType> ptr, const Integer idim2,
-                     SharedPtrT<GroupIndexTable> idx = SharedPtrT<GroupIndexTable>())
+                     GroupIndexTable* idx = nullptr)
     : WriteBase(dw, idx)
     , m_ptr(ptr)
     , m_idim2(idim2)
@@ -457,7 +462,7 @@ class DumpWEnsight7
 
     void write(Integer index)
     {
-      if (m_idx.isUsed()) {
+      if (m_idx) {
         int reindex = (*m_idx)[index];
         if (reindex < 0)
           ARCANE_FATAL("Invalid index");
@@ -487,7 +492,7 @@ class DumpWEnsight7
   {
    public:
 
-    WriteReal3(DumpWEnsight7& dw, ConstArrayView<Real3> ptr, SharedPtrT<GroupIndexTable> idx = SharedPtrT<GroupIndexTable>())
+    WriteReal3(DumpWEnsight7& dw, ConstArrayView<Real3> ptr, GroupIndexTable* idx = nullptr)
     : WriteBase(dw, idx)
     , m_ptr(ptr)
     {}
@@ -517,7 +522,7 @@ class DumpWEnsight7
 
     void write(Integer index)
     {
-      if (m_idx.isUsed()) {
+      if (m_idx) {
         int reindex = (*m_idx)[index];
         if (reindex < 0)
           ARCANE_FATAL("Invalid index");
@@ -568,7 +573,8 @@ class DumpWEnsight7
   {
    public:
 
-    WriteArrayReal3(DumpWEnsight7& dw, ConstArray2View<Real3> ptr, const Integer idim2, SharedPtrT<GroupIndexTable> idx = SharedPtrT<GroupIndexTable>())
+    WriteArrayReal3(DumpWEnsight7& dw, ConstArray2View<Real3> ptr,
+                    Integer idim2, GroupIndexTable* idx = nullptr)
     : WriteBase(dw, idx)
     , m_ptr(ptr)
     , m_idim2(idim2)
@@ -601,7 +607,7 @@ class DumpWEnsight7
 
     inline void write(Integer index)
     {
-      if (m_idx.isUsed()) {
+      if (m_idx) {
         int reindex = (*m_idx)[index];
         m_dw.writeFileDouble(xostr, Convert::toDouble(m_ptr[reindex][m_idim2].x));
         m_dw.writeFileDouble(yostr, Convert::toDouble(m_ptr[reindex][m_idim2].y));
@@ -1597,7 +1603,8 @@ endWrite()
     IVariable* cell_uid_var = cell_uids.variable();
     m_save_variables.add(cell_uid_var);
     cell_uid_var->setUsed(true);
-    cell_uid_var->write(this);
+    cell_uid_var->notifyBeginWrite();
+    write(cell_uid_var, cell_uid_var->data());
 
     // GG: NOTE: je ne suis pas sur que cela fonctionne bien.
     //TODO: supprimer l'utilisation de deux variables
@@ -1928,10 +1935,10 @@ _writeRealValT(IVariable& v, ConstArrayView<T> ptr)
   case IK_Cell:
   case IK_Face:
   case IK_Edge: {
-    SharedPtrT<GroupIndexTable> idx = SharedPtrT<GroupIndexTable>();
+    GroupIndexTable* idx = nullptr;
 
     if (v.isPartial()) {
-      idx = v.itemGroup().localIdToIndex();
+      idx = v.itemGroup().localIdToIndex().get();
     }
 
     WriteDouble<T> wf(*this, ptr, idx);
@@ -2023,10 +2030,10 @@ _writeRealValT(IVariable& v, ConstArray2View<T> ptr)
     case IK_Cell:
     case IK_Face:
     case IK_Edge: {
-      SharedPtrT<GroupIndexTable> idx = SharedPtrT<GroupIndexTable>();
+      GroupIndexTable* idx = nullptr;
 
       if (v.isPartial()) {
-        idx = v.itemGroup().localIdToIndex();
+        idx = v.itemGroup().localIdToIndex().get();
       }
 
       WriteArrayDouble<T> wf(*this, ptr, idim2, idx);
@@ -2132,10 +2139,10 @@ writeVal(IVariable& v, ConstArrayView<Real3> ptr)
   case IK_Cell:
   case IK_Face:
   case IK_Edge: {
-    SharedPtrT<GroupIndexTable> idx = SharedPtrT<GroupIndexTable>();
+    GroupIndexTable* idx = nullptr;
 
     if (v.isPartial()) {
-      idx = v.itemGroup().localIdToIndex();
+      idx = v.itemGroup().localIdToIndex().get();
     }
 
     WriteReal3 wf(*this, ptr, idx);
@@ -2221,10 +2228,10 @@ writeVal(IVariable& v, ConstArray2View<Real3> ptr)
     case IK_Cell:
     case IK_Face:
     case IK_Edge: {
-      SharedPtrT<GroupIndexTable> idx = SharedPtrT<GroupIndexTable>();
+      GroupIndexTable* idx = nullptr;
 
       if (v.isPartial()) {
-        idx = v.itemGroup().localIdToIndex();
+        idx = v.itemGroup().localIdToIndex().get();
       }
 
       WriteArrayReal3 wf(*this, ptr, idim2, idx);
