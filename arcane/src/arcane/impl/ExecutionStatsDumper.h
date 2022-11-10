@@ -50,6 +50,8 @@ class ExecutionStatsDumper
   void _dumpProfiling(std::ostream& o);
   void _dumpOneLoopListStat(std::ostream& o, const impl::ForLoopStatInfoList& stat_list);
   void _printGlobalLoopInfos(std::ostream& o, const impl::ForLoopCumulativeStat& cumulative_stat);
+  void _dumpProfilingJSON(const String& filename);
+  void _dumpProfilingJSON(JSONWriter& json_writer);
 };
 
 /*---------------------------------------------------------------------------*/

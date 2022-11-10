@@ -18,6 +18,7 @@
 #include "arcane/utils/IMemoryInfo.h"
 #include "arcane/utils/Profiling.h"
 #include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/JSONWriter.h"
 
 #include "arcane/utils/internal/ProfilingInternal.h"
 
@@ -27,9 +28,12 @@
 #include "arcane/ITimeLoopMng.h"
 #include "arcane/IMesh.h"
 #include "arcane/ITimeStats.h"
+#include "arcane/Directory.h"
+#include "arcane/IParallelMng.h"
 
 #include <iostream>
 #include <iomanip>
+#include <fstream>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -41,8 +45,54 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 void ExecutionStatsDumper::
+_dumpProfilingJSON(JSONWriter& json_writer)
+{
+  json_writer.write("Version","1");
+  auto f = [&](const impl::ForLoopStatInfoList& stat_list){
+    JSONWriter::Object jo(json_writer);
+    json_writer.writeKey("Loops");
+    json_writer.beginArray();
+    for (const auto& x : stat_list._internalImpl()->m_stat_map) {
+      JSONWriter::Object jo2(json_writer);
+      const auto& s = x.second;
+      json_writer.write("Name",x.first);
+      json_writer.write("TotalTime",s.execTime());
+      json_writer.write("NbLoop",s.nbCall());
+      json_writer.write("NbChunk",s.nbChunk());
+    }
+    json_writer.endArray();
+  };
+
+  json_writer.writeKey("AllLoops");
+  json_writer.beginArray();
+  ProfilingRegistry::visitLoopStat(f);
+  json_writer.endArray();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ExecutionStatsDumper::
+_dumpProfilingJSON(const String& filename)
+{
+  JSONWriter json_writer; //(JSONWriter::FormatFlags::None);
+  {
+    JSONWriter::Object jo(json_writer);
+    _dumpProfilingJSON(json_writer);
+  }
+  {
+    ofstream ofile(filename.localstr());
+    ofile << json_writer.getBuffer();
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ExecutionStatsDumper::
 _dumpProfiling(std::ostream& o)
 {
+  // Affiche les informations de profiling sur \a o
   _printGlobalLoopInfos(o,ProfilingRegistry::globalLoopStat());
   auto f = [&](const impl::ForLoopStatInfoList& stat_list){
     _dumpOneLoopListStat(o,stat_list);
@@ -147,9 +197,17 @@ dumpStats(ISubDomain* sd, ITimeStats* time_stat)
     OStringStream ostr;
     _dumpProfiling(ostr());
     String str = ostr.str();
-    if (!str.empty())
-      info() << "LoopStatistics:\n"
-             << str;
+    if (!str.empty()){
+      info() << "LoopStatistics:\n" << str;
+      if (sd){
+        Directory dir = sd->listingDirectory();
+        String filename = String::format("loop_profiling.{0}.json",sd->parallelMng()->commRank());
+        String full_filename(dir.file(filename));
+        _dumpProfilingJSON(full_filename);
+      }
+      else
+        _dumpProfilingJSON("loop_profiling.json");
+    }
   }
   {
     bool use_elapsed_time = true;
