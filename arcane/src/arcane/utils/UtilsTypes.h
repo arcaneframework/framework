@@ -190,6 +190,12 @@ class MutableMemoryView;
 class IPerformanceCounterService;
 class ForLoopTraceInfo;
 class ForLoopOneExecStat;
+namespace impl
+{
+class ForLoopStatInfoList;
+class ForLoopStatInfoListImpl;
+class ForLoopCumulativeStat;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

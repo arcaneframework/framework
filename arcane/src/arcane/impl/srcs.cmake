@@ -30,6 +30,8 @@ set( ARCANE_SOURCES
   DataFactoryMng.h
   DataStorageFactory.h
   EntryPointMng.cc
+  ExecutionStatsDumper.h
+  ExecutionStatsDumper.cc
   FlexLMTools.h
   IOMng.cc
   InternalInfosDumper.h
