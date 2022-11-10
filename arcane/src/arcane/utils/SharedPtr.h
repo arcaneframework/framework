@@ -18,6 +18,7 @@
 #include "arcane/utils/Atomic.h"
 
 #include <iostream>
+#include <atomic>
 
 /*
  * Différent de AutoRef où le pointeur doit référencer un objet satisfaisant
