@@ -122,8 +122,8 @@ macro(arcane_add_test_sequential_task test_name case_file nb_task)
   endif()
 endmacro()
 
-# Ajoute un test parallele avec les threads
-macro(ARCANE_ADD_TEST_PARALLEL_THREAD test_name case_file nb_proc)
+# Ajoute un test parallele en mode mémoire partagée
+macro(arcane_add_test_parallel_thread test_name case_file nb_proc)
   if(NOT ARCANE_USE_MPC)
     if(VERBOSE)
       message(STATUS "    ADD TEST THREAD OPT=${test_name} ${case_file}")
@@ -376,6 +376,15 @@ macro(arcane_add_accelerator_test_parallel_thread test_name case_file nb_proc)
     arcane_add_test_parallel_thread(${test_name}_${ARCANE_ACCELERATOR_RUNTIME_NAME} ${case_file} ${nb_proc}
       "-A,AcceleratorRuntime=${ARCANE_ACCELERATOR_RUNTIME_NAME}" ${ARGN}
       )
+  endif()
+endmacro()
+
+# Ajoute un test parallèle 'hybride' pour accélerateur si disponible
+macro(arcane_add_accelerator_test_message_passing_hybrid test_name)
+  if (ARCANE_ACCELERATOR_RUNTIME_NAME)
+    arcane_add_test_message_passing_hybrid(${test_name}_${ARCANE_ACCELERATOR_RUNTIME_NAME} ${ARGN}
+      "-A,AcceleratorRuntime=${ARCANE_ACCELERATOR_RUNTIME_NAME}"
+    )
   endif()
 endmacro()
 
