@@ -526,10 +526,8 @@ class TBBTaskImplementation::Impl
 
  public:
   Impl() :
-#ifdef ARCANE_USE_ONETBB
-  m_task_scheduler_handle(tbb::task_scheduler_handle::get()),
-#endif
-  m_task_observer(this), m_thread_task_infos(AlignedMemoryAllocator::CacheLine())
+  m_task_observer(this),
+  m_thread_task_infos(AlignedMemoryAllocator::CacheLine())
   {
 #ifdef ARCANE_USE_ONETBB
     m_nb_allowed_thread = tbb::info::default_concurrency();
@@ -540,13 +538,12 @@ class TBBTaskImplementation::Impl
   }
   Impl(Int32 nb_thread)
   :
-#ifdef ARCANE_USE_ONETBB
-  m_task_scheduler_handle(tbb::task_scheduler_handle::get()),
-#else
+#ifndef ARCANE_USE_ONETBB
   m_scheduler_init(nb_thread),
 #endif
   m_main_arena(nb_thread),
-  m_task_observer(this), m_thread_task_infos(AlignedMemoryAllocator::CacheLine())
+  m_task_observer(this),
+  m_thread_task_infos(AlignedMemoryAllocator::CacheLine())
   {
     m_nb_allowed_thread = nb_thread;
     _init();
@@ -639,7 +636,11 @@ class TBBTaskImplementation::Impl
   }
  private:
 #ifdef ARCANE_USE_ONETBB
-  oneapi::tbb::task_scheduler_handle m_task_scheduler_handle;
+#if TBB_VERSION_MAJOR>2021 || (TBB_VERSION_MAJOR==2021 && TBB_VERSION_MINOR>5)
+  oneapi::tbb::task_scheduler_handle m_task_scheduler_handle = oneapi::tbb::attach();
+#else
+  oneapi::tbb::task_scheduler_handle m_task_scheduler_handle = tbb::task_scheduler_handle::get();
+#endif
 #else
   tbb::task_scheduler_init m_scheduler_init;
 #endif
