@@ -27,15 +27,15 @@ _testStandaloneLauncher()
   // Teste la somme de deux tableaux 'a' et 'b' dans un tableau 'c'.
 
   // Définit 2 tableaux 'a' et 'b' et effectue leur initialisation.
-  NumArray<Int64,1> a(nb_value);
-  NumArray<Int64,1> b(nb_value);
+  NumArray<Int64,MDDim1> a(nb_value);
+  NumArray<Int64,MDDim1> b(nb_value);
   for( int i=0; i<nb_value; ++i ){
     a.s(i) = i+2;
     b.s(i) = i+3;
   }
 
   // Defínit le tableau 'c' qui contiendra la somme de 'a' et 'b'
-  NumArray<Int64,1> c(nb_value);
+  NumArray<Int64,MDDim1> c(nb_value);
 
   {
     // Noyau de calcul déporté sur accélérateur.

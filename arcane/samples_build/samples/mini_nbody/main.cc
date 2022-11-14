@@ -40,7 +40,7 @@ class NBody
   {
   }
 
-  void initWithRandom(NumArray<RealType,1>& data);
+  void initWithRandom(NumArray<RealType,MDDim1>& data);
   void computeForces();
   void execute();
 
@@ -49,19 +49,19 @@ class NBody
   IAcceleratorMng* m_accelerator_mng;
   Int32 m_nb_body;
   RealType m_dt = 0.01f;
-  NumArray<RealType,1> m_x;
-  NumArray<RealType,1> m_y;
-  NumArray<RealType,1> m_z;
-  NumArray<RealType,1> m_vx;
-  NumArray<RealType,1> m_vy;
-  NumArray<RealType,1> m_vz;
+  NumArray<RealType,MDDim1> m_x;
+  NumArray<RealType,MDDim1> m_y;
+  NumArray<RealType,MDDim1> m_z;
+  NumArray<RealType,MDDim1> m_vx;
+  NumArray<RealType,MDDim1> m_vy;
+  NumArray<RealType,MDDim1> m_vz;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void NBody::
-initWithRandom(NumArray<RealType,1>& data)
+initWithRandom(NumArray<RealType,MDDim1>& data)
 {
   data.resize(m_nb_body);
   for (Int32 i = 0, n = m_nb_body; i < n; i++) {
