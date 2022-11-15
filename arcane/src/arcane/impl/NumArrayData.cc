@@ -337,10 +337,11 @@ createSerializedDataRef(bool use_basic_type) const
   Int64 full_size = nb_base_element * type_size;
   const Byte* bt = reinterpret_cast<const Byte*>(m_value.to1DSpan().data());
   Span<const Byte> base_values(bt,full_size);
-  auto extents = m_value.extents().asSpan();
-  UniqueArray<Int64> dimensions(extents.size());
-  for ( Int32 i=0; i<extents.size(); ++i )
-    dimensions[i] = extents[i];
+  auto extents = m_value.extents();
+  const Int32 nb_extent = extents.asSpan().size();
+  UniqueArray<Int64> dimensions(nb_extent);
+  for ( Int32 i=0; i<nb_extent; ++i )
+    dimensions[i] = extents(i);
   auto sd = arcaneCreateSerializedDataRef(data_type,base_values.size(),RankValue,nb_element,
                                           nb_base_element,false,dimensions,shape());
   sd->setConstBytes(base_values);
