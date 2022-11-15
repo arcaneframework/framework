@@ -165,10 +165,9 @@ class SubDomain
    public:
     void init()
     {
-      IVariableMng* vm = m_sub_domain->variableMng();
       m_observers.addObserver(this,
                               &PropertyMngCheckpoint::_notifyWrite,
-                              vm->writeObservable());
+                              m_property_values.variable()->writeObservable());
       m_observers.addObserver(this,
                               &PropertyMngCheckpoint::_notifyRead,
                               m_property_values.variable()->readObservable());
