@@ -84,7 +84,7 @@ namespace impl
     }
 
    public:
-    void resize(Int64 new_size) { BaseClass::_resize(new_size); }
+    void resize(Int64 new_size) { BaseClass::_resizeNoInit(new_size); }
     Span<DataType> to1DSpan() { return BaseClass::span(); }
     Span<const DataType> to1DSpan() const { return BaseClass::constSpan(); }
     Span<std::byte> bytes() { return asWritableBytes(BaseClass::span()); }
