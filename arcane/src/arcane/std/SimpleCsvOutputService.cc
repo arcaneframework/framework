@@ -87,6 +87,10 @@ writeFile(const String& directory, Integer rank)
 
 ARCANE_REGISTER_SERVICE_SIMPLECSVOUTPUT(SimpleCsvOutput, SimpleCsvOutputService);
 
+ARCANE_REGISTER_SERVICE(SimpleCsvOutputService,
+                        ServiceProperty("SimpleCsvOutput", ST_SubDomain),
+                        ARCANE_SERVICE_INTERFACE(ISimpleTableOutput));
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
