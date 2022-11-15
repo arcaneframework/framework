@@ -1125,14 +1125,25 @@ _writeVariables(IDataWriter* writer,const VariableCollection& vars,bool use_hash
 
   m_write_observable->notifyAllObservers();
   writer->beginWrite(vars);
+
+  // Appelle la notification de l'écriture des variables
+  // Il faut le faire avant de positionner les méta-données
+  // car cela autorise de changer la valeur de la variable
+  // lors de cet appel.
+  for( VariableCollection::Enumerator i(vars); ++i; ){
+    IVariable* var = *i;
+    if (var->isUsed())
+      var->notifyBeginWrite();
+  }
+
   String meta_data = _generateMetaData(vars,use_hash);
   writer->setMetaData(meta_data);
+
   for( VariableCollection::Enumerator i(vars); ++i; ){
     IVariable* var = *i;
     if (!var->isUsed())
       continue;
     try{
-      var->notifyBeginWrite();
       writer->write(var,var->data());
     }
     catch(const Exception& ex)
