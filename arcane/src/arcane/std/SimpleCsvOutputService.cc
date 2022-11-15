@@ -31,6 +31,9 @@ init()
   return init("Table_P@proc_id@");
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 bool SimpleCsvOutputService::
 init(const String& table_name)
 {
@@ -40,10 +43,13 @@ init(const String& table_name)
   return init(table_name, "");
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 bool SimpleCsvOutputService::
 init(const String& table_name, const String& directory_name)
 {
-  if(!m_is_already_init) {
+  if (!m_is_already_init) {
     m_is_already_init = true;
 
     m_internal = makeRef(new SimpleTableInternal(mesh()->parallelMng()));
@@ -54,10 +60,14 @@ init(const String& table_name, const String& directory_name)
   }
   return m_simple_table_output_mng.init(subDomain()->exportDirectory(), table_name, directory_name);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void SimpleCsvOutputService::
-clear() 
+clear()
 {
-  if(m_is_already_init) {
+  if (m_is_already_init) {
     m_simple_table_internal_mng.clearInternal();
   }
 }
@@ -71,6 +81,11 @@ writeFile(const String& directory, Integer rank)
   m_simple_table_output_mng.setOutputDirectory(directory);
   return m_simple_table_output_mng.writeFile(rank);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ARCANE_REGISTER_SERVICE_SIMPLECSVOUTPUT(SimpleCsvOutput, SimpleCsvOutputService);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

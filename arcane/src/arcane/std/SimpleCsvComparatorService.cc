@@ -59,6 +59,9 @@ init(ISimpleTableOutput* simple_table_output_ptr)
   m_file_name = m_table_name + "." + m_simple_table_output_ptr->fileType();
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void SimpleCsvComparatorService::
 clear()
 {
@@ -70,12 +73,18 @@ clear()
   }
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void SimpleCsvComparatorService::
 editRootDirectory(const Directory& root_directory)
 {
   m_root_path = root_directory;
   m_reference_path = Directory(m_root_path, m_output_directory);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 void SimpleCsvComparatorService::
 print(Integer rank)
@@ -85,6 +94,8 @@ print(Integer rank)
   m_simple_csv_reader_writer.print();
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /**
  * Méthode effectuant des opérations collectives.
  */
@@ -113,6 +124,9 @@ writeReferenceFile(Integer rank)
   return fin;
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 bool SimpleCsvComparatorService::
 readReferenceFile(Integer rank)
 {
@@ -124,6 +138,9 @@ readReferenceFile(Integer rank)
   return m_is_file_read;
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 bool SimpleCsvComparatorService::
 isReferenceExist(Integer rank)
 {
@@ -132,6 +149,9 @@ isReferenceExist(Integer rank)
 
   return SimpleTableReaderWriterUtils::isFileExist(m_reference_path, m_file_name);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 bool SimpleCsvComparatorService::
 compareWithReference(Integer rank, bool compare_dimension_too)
@@ -149,6 +169,9 @@ compareWithReference(Integer rank, bool compare_dimension_too)
   return m_simple_table_internal_comparator.compare(compare_dimension_too);
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 bool SimpleCsvComparatorService::
 compareElemWithReference(const String& column_name, const String& row_name, Integer rank)
 {
@@ -164,6 +187,9 @@ compareElemWithReference(const String& column_name, const String& row_name, Inte
 
   return m_simple_table_internal_comparator.compareElem(column_name, row_name);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 bool SimpleCsvComparatorService::
 compareElemWithReference(Real elem, const String& column_name, const String& row_name, Integer rank)
@@ -181,60 +207,100 @@ compareElemWithReference(Real elem, const String& column_name, const String& row
   return m_simple_table_internal_comparator.compareElem(elem, column_name, row_name);
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 bool SimpleCsvComparatorService::
 addColumnForComparing(const String& column_name)
 {
   return m_simple_table_internal_comparator.addColumnForComparing(column_name);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 bool SimpleCsvComparatorService::
 addRowForComparing(const String& row_name)
 {
   return m_simple_table_internal_comparator.addRowForComparing(row_name);
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void SimpleCsvComparatorService::
 isAnArrayExclusiveColumns(bool is_exclusive)
 {
   m_simple_table_internal_comparator.isAnArrayExclusiveColumns(is_exclusive);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void SimpleCsvComparatorService::
 isAnArrayExclusiveRows(bool is_exclusive)
 {
   m_simple_table_internal_comparator.isAnArrayExclusiveRows(is_exclusive);
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void SimpleCsvComparatorService::
 editRegexColumns(const String& regex_column)
 {
   m_simple_table_internal_comparator.editRegexColumns(regex_column);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void SimpleCsvComparatorService::
 editRegexRows(const String& regex_row)
 {
   m_simple_table_internal_comparator.editRegexRows(regex_row);
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void SimpleCsvComparatorService::
 isARegexExclusiveColumns(bool is_exclusive)
 {
   m_simple_table_internal_comparator.isARegexExclusiveColumns(is_exclusive);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void SimpleCsvComparatorService::
 isARegexExclusiveRows(bool is_exclusive)
 {
   m_simple_table_internal_comparator.isARegexExclusiveRows(is_exclusive);
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 bool SimpleCsvComparatorService::
 addEpsilonColumn(const String& column_name, Real epsilon)
 {
   return m_simple_table_internal_comparator.addEpsilonColumn(column_name, epsilon);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 bool SimpleCsvComparatorService::
 addEpsilonRow(const String& row_name, Real epsilon)
 {
   return m_simple_table_internal_comparator.addEpsilonRow(row_name, epsilon);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ARCANE_REGISTER_SERVICE_SIMPLECSVCOMPARATOR(SimpleCsvComparator, SimpleCsvComparatorService);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
