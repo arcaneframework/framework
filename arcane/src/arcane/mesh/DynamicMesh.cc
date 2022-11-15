@@ -336,13 +336,6 @@ build()
   m_observer_pool.addObserver(this,
                               &DynamicMesh::_readFromDump,
                               vm->readObservable());
-  IPropertyMng* pm = subDomain()->propertyMng();
-  m_observer_pool.addObserver(this,
-                              &DynamicMesh::_saveProperties,
-                              pm->writeObservable());
-  m_observer_pool.addObserver(this,
-                              &DynamicMesh::_loadProperties,
-                              pm->readObservable());
 
   m_mesh_builder = new DynamicMeshIncrementalBuilder(this);
   m_mesh_checker = new DynamicMeshChecker(this);
@@ -1319,6 +1312,8 @@ _prepareForDump()
   info(4) << "DynamicMesh::prepareForDump() name=" << name()
           << " need_compact?=" << m_need_compact
           << " want_dump?=" << want_dump;
+
+  _saveProperties();
 
   // Si le maillage n'est pas sauvé, ne fait rien. Cela évite de compacter
   // et trier le maillage ce qui n'est pas souhaitable si les propriétés
@@ -2574,6 +2569,8 @@ setEstimatedCells(Integer nb_cell0)
 void DynamicMesh::
 _readFromDump()
 {
+  _loadProperties();
+
   // Ne fais rien sur un maillage pas encore alloué.
   if (m_mesh_dimension()<0)
     return;
