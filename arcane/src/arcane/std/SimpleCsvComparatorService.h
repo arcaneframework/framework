@@ -10,11 +10,8 @@
 /* Service permettant de comparer un ISimpleTableOutput avec un fichier de   */
 /* référence en format csv.                                                  */
 /*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 #ifndef ARCANE_STD_SIMPLECSVCOMPARATORSERVICE_H
 #define ARCANE_STD_SIMPLECSVCOMPARATORSERVICE_H
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -43,6 +40,7 @@ class SimpleCsvComparatorService
 : public ArcaneSimpleCsvComparatorObject
 {
  public:
+
   explicit SimpleCsvComparatorService(const ServiceBuildInfo& sbi)
   : ArcaneSimpleCsvComparatorObject(sbi)
   , m_simple_table_output_ptr(nullptr)
@@ -60,6 +58,7 @@ class SimpleCsvComparatorService
   virtual ~SimpleCsvComparatorService() = default;
 
  public:
+
   void init(ISimpleTableOutput* simple_table_output_ptr) override;
   void clear() override;
   void editRootDirectory(const Directory& root_directory) override;
@@ -88,10 +87,12 @@ class SimpleCsvComparatorService
   bool addEpsilonRow(const String& row_name, Real epsilon) override;
 
  private:
+
   bool _exploreColumn(Integer position);
   bool _exploreRows(Integer position);
 
  private:
+
   ISimpleTableOutput* m_simple_table_output_ptr;
 
   Directory m_reference_path;
@@ -113,11 +114,6 @@ class SimpleCsvComparatorService
 
   bool m_is_already_init;
 };
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_REGISTER_SERVICE_SIMPLECSVCOMPARATOR(SimpleCsvComparator, SimpleCsvComparatorService);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -30,6 +30,8 @@
 #include "arcane/ITimeStats.h"
 #include "arcane/Directory.h"
 #include "arcane/IParallelMng.h"
+#include "arcane/ServiceBuilder.h"
+#include "arcane/ISimpleTableOutput.h"
 
 #include <iostream>
 #include <iomanip>
@@ -47,18 +49,18 @@ namespace Arcane
 void ExecutionStatsDumper::
 _dumpProfilingJSON(JSONWriter& json_writer)
 {
-  json_writer.write("Version","1");
-  auto f = [&](const impl::ForLoopStatInfoList& stat_list){
+  json_writer.write("Version", "1");
+  auto f = [&](const impl::ForLoopStatInfoList& stat_list) {
     JSONWriter::Object jo(json_writer);
     json_writer.writeKey("Loops");
     json_writer.beginArray();
     for (const auto& x : stat_list._internalImpl()->m_stat_map) {
       JSONWriter::Object jo2(json_writer);
       const auto& s = x.second;
-      json_writer.write("Name",x.first);
-      json_writer.write("TotalTime",s.execTime());
-      json_writer.write("NbLoop",s.nbCall());
-      json_writer.write("NbChunk",s.nbChunk());
+      json_writer.write("Name", x.first);
+      json_writer.write("TotalTime", s.execTime());
+      json_writer.write("NbLoop", s.nbCall());
+      json_writer.write("NbChunk", s.nbChunk());
     }
     json_writer.endArray();
   };
@@ -75,7 +77,7 @@ _dumpProfilingJSON(JSONWriter& json_writer)
 void ExecutionStatsDumper::
 _dumpProfilingJSON(const String& filename)
 {
-  JSONWriter json_writer; //(JSONWriter::FormatFlags::None);
+  JSONWriter json_writer;
   {
     JSONWriter::Object jo(json_writer);
     _dumpProfilingJSON(json_writer);
@@ -90,12 +92,42 @@ _dumpProfilingJSON(const String& filename)
 /*---------------------------------------------------------------------------*/
 
 void ExecutionStatsDumper::
+_dumpProfilingTable(ISimpleTableOutput* table)
+{
+  table->init("Profiling");
+
+  table->addColumn("TotalTime");
+  table->addColumn("NbLoop");
+  table->addColumn("NbChunk");
+
+  Integer list_index = 0;
+  auto f = [&](const impl::ForLoopStatInfoList& stat_list) {
+    for (const auto& x : stat_list._internalImpl()->m_stat_map) {
+      const auto& s = x.second;
+      String row_name = x.first;
+      if (list_index > 0)
+        row_name = String::format("{0}_{1}", x.first, list_index);
+      Integer row = table->addRow(row_name);
+      table->addElementInRow(row, static_cast<Real>(s.execTime()));
+      table->addElementInRow(row, static_cast<Real>(s.nbCall()));
+      table->addElementInRow(row, static_cast<Real>(s.nbChunk()));
+    }
+    ++list_index;
+  };
+
+  ProfilingRegistry::visitLoopStat(f);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ExecutionStatsDumper::
 _dumpProfiling(std::ostream& o)
 {
   // Affiche les informations de profiling sur \a o
-  _printGlobalLoopInfos(o,ProfilingRegistry::globalLoopStat());
-  auto f = [&](const impl::ForLoopStatInfoList& stat_list){
-    _dumpOneLoopListStat(o,stat_list);
+  _printGlobalLoopInfos(o, ProfilingRegistry::globalLoopStat());
+  auto f = [&](const impl::ForLoopStatInfoList& stat_list) {
+    _dumpOneLoopListStat(o, stat_list);
   };
   ProfilingRegistry::visitLoopStat(f);
 }
@@ -104,7 +136,7 @@ _dumpProfiling(std::ostream& o)
 /*---------------------------------------------------------------------------*/
 
 void ExecutionStatsDumper::
-_dumpOneLoopListStat(std::ostream& o,const impl::ForLoopStatInfoList& stat_list)
+_dumpOneLoopListStat(std::ostream& o, const impl::ForLoopStatInfoList& stat_list)
 {
   o << "ProfilingStat\n";
   o << std::setw(10) << "Ncall" << std::setw(10) << "Nchunk"
@@ -127,7 +159,7 @@ _dumpOneLoopListStat(std::ostream& o,const impl::ForLoopStatInfoList& stat_list)
 /*---------------------------------------------------------------------------*/
 
 void ExecutionStatsDumper::
-_printGlobalLoopInfos(std::ostream& o,const impl::ForLoopCumulativeStat& cumulative_stat)
+_printGlobalLoopInfos(std::ostream& o, const impl::ForLoopCumulativeStat& cumulative_stat)
 {
   Int64 nb_loop_parallel_for = cumulative_stat.nbLoopParallelFor();
   if (nb_loop_parallel_for == 0)
@@ -197,13 +229,23 @@ dumpStats(ISubDomain* sd, ITimeStats* time_stat)
     OStringStream ostr;
     _dumpProfiling(ostr());
     String str = ostr.str();
-    if (!str.empty()){
-      info() << "LoopStatistics:\n" << str;
-      if (sd){
+    if (!str.empty()) {
+      info() << "LoopStatistics:\n"
+             << str;
+      if (sd) {
         Directory dir = sd->listingDirectory();
-        String filename = String::format("loop_profiling.{0}.json",sd->parallelMng()->commRank());
-        String full_filename(dir.file(filename));
-        _dumpProfilingJSON(full_filename);
+        Int32 rank = sd->parallelMng()->commRank();
+        {
+          String filename = String::format("loop_profiling.{0}.json", rank);
+          String full_filename(dir.file(filename));
+          _dumpProfilingJSON(full_filename);
+        }
+        {
+          ServiceBuilder<ISimpleTableOutput> sb(sd);
+          Ref<ISimpleTableOutput> table(sb.createReference("SimpleCsvOutput"));
+          _dumpProfilingTable(table.get());
+          table->writeFile(0);
+        }
       }
       else
         _dumpProfilingJSON("loop_profiling.json");
