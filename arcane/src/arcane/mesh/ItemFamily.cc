@@ -943,7 +943,7 @@ _checkNeedEndUpdate() const
 void ItemFamily::
 prepareForDump()
 {
-  info(4) << "ItemFamily::prepareFromDump(): " << fullName()
+  info(4) << "ItemFamily::prepareForDump(): " << fullName()
           << " need=" << m_need_prepare_dump
           << " item-need=" << m_item_need_prepare_dump
           << " m_item_shared_infos->hasChanged()=" << m_item_shared_infos->hasChanged()
@@ -953,6 +953,7 @@ prepareForDump()
     auto* p = m_properties;
     p->setInt32("dump-version",0x0307);
     p->setInt32("nb-item",m_infos.nbItem());
+    p->setInt32("current-change-id",m_current_id);
   }
 
   // TODO: ajoute flag vérification si nécessaire
@@ -1080,6 +1081,11 @@ readFromDump()
     if (dump_version>=0x0307){
       use_type_variable = true;
       nb_item = p->getInt32("nb-item");
+      Int32 cid = p->getInt32("current-change-id");
+      Int32 expected_cid = m_internal_variables->m_current_id();
+      if (cid!=expected_cid)
+        ARCANE_FATAL("Bad value for current id mesh={0} id={1} expected={2}",
+                     fullName(),cid,expected_cid);
     }
   }
 
@@ -1184,7 +1190,6 @@ readFromDump()
       Integer shared_data_index = items_shared_data_index[i];
       ItemSharedInfoWithType* isi = item_shared_infos[shared_data_index];
       Int64 uid = m_items_unique_id_view[i];
-      info() << "ALLOC ONE i=" << i << " uid=" << uid;
       ItemInternal* item = m_infos.allocOne(uid);
       item->setSharedInfo(isi->sharedInfo(),isi->itemTypeId());
     }
