@@ -8,9 +8,7 @@ Les nouveautés successives apportées par les versions de %Arcane
 antérieures à la version 3 sont listées ici : \ref arcanedoc_news_changelog20
 
 ___
-## Arcane Version 3.7.x (... octobre 2022) {#arcanedoc_version370}
-
-WIP
+## Arcane Version 3.7.23 (novembre 2022) {#arcanedoc_version370}
 
 ### Nouveautés/Améliorations:
 
@@ -30,7 +28,7 @@ WIP
 - Optimisations lors de l'initialisation (#302):
   - Utilise `std::unordered_set` à la place de `std::set` pour les
     vérifications de duplication des uniqueId().
-  - Lors de la création de maillage, ne Vérifie la non-duplication des
+  - Lors de la création de maillage, ne vérifie la non-duplication des
     uniqueId() que en mode check.
 - Crée une classe Arcane::ItemInfoListView pour remplacer à terme
   Arcane::ItemInternalList et accéder aux informations des entités à
@@ -51,8 +49,9 @@ WIP
   de Arcane::Accelerator::Runner (#399).
 - Début des développements pour pouvoir voir une variable tableau sur
   les entités comme une variable multi-dimensionnelle (#335).
-- Ajoute un observable pour pouvoir être notifié lors de la
-  destruction d'une instance de maillage (Arcane::IMesh) (#336).
+- Ajoute un observable Arcane::MeshHandle::onDestroyObservable() pour
+  pouvoir être notifié lors de la destruction d'une instance de
+  maillage Arcane::IMesh (#336).
 - Ajoute méthode Arcane::mesh_utils::dumpSynchronizerTopologyJSON()
   pour sauver au format JSON la topologie de communication pour les
   synchronisation (#360).
@@ -69,10 +68,16 @@ WIP
   (Arcane::MDSpan, Arcane::ArrayBounds, ...) pour que le paramètre
   template gérant le rang soit une classe et pas un entier. Le but à
   terme est d'avoir les mêmes paramètres templates que les classes
-  std::mdspan et std::mdarray du C++. Il faut remplacer les dimensions
-  en dur par les mots clés Arcane::MDDim1, Arcane::MDDim2,
-  Arcane::MDDim3 ou Arcane::MDDim4 (#333)
-- Ajoute classe Arcane:ItemTypeId pour gérer le type de l'entité (#294)
+  `std::mdspan` et `std::mdarray` prévues pour les normes 2023 et 2026
+  du C++. Il faut donc maintenant remplacer les dimensions en dur par
+  les mots clés Arcane::MDDim1, Arcane::MDDim2, Arcane::MDDim3 ou
+  Arcane::MDDim4 (#333)
+- La méthode Arcane::NumArray::resize() n'appelle plus le constructeur
+  par défaut pour les éléments du tableau. C'était déjà le cas pour
+  les types simples (Arcane::Real, Arcane::Real3, ...) mais maintenant
+  c'est le cas aussi pour les types utilisateurs. Cela permet
+  d'appeler cette méthode lorsque la mémoire est allouée sur l'accélérateur.
+- Ajoute classe Arcane::ItemTypeId pour gérer le type de l'entité (#294)
 - Le type de l'entité est maintenant conservé sur un Arcane::Int16 au
   lieu d'un Arcane::Int32 (#294)
 - Supprime méthodes obsolètes de Arcane::ItemVector, `MathUtils.h`,
@@ -108,7 +113,7 @@ WIP
   service de génération cartésien pour utiliser la numérotation
   cartésienne (#315)
 - Modification de la signature des méthodes de
-  Arcane::IItemFamilyModifierInterface et Arcane::OneMeshItemAdder
+  Arcane::IItemFamilyModifier et Arcane::mesh::OneMeshItemAdder
   pour utiliser Arcane::ItemTypeId au lieu de Arcane::ItemTypeInfo
   et Arcane::Item au lieu de Arcane::ItemInternal (#322)
 - Supprime méthodes Arcane::Item::activeFaces() et
@@ -123,11 +128,13 @@ WIP
   `0`. Cela n'est pas actif par défaut car il peut rester des
   problèmes avec certains services utilisateurs (#337).
 - [configuration] Il est maintenant nécessaire d'utiliser au moins la
-  version 3.21 de CMake pour compiler ou utiliser Arcane (#367).
-- Ajoute constructeur par déplacement (std::move) pour
+  version 3.21 de CMake pour compiler ou utiliser #Arcane (#367).
+- Ajoute constructeur par déplacement (`std::move`) pour
   Arcane::NumArray (#372).
-- [accelerator] Supprim les méthodes obsolètes de création de
+- [accelerator] Supprime les méthodes obsolètes de création de
   Arcane::Accelerator::RunQueue et Arcane::Accelerator::Runner (#397).
+- Rend obsolète la classe Arcane::AtomicInt32. Il faut utiliser
+  la classe std::atomic<Int32> à la place (#408).
 
 ### Corrections:
 
@@ -144,7 +151,7 @@ WIP
 - Simplifie l'implémentation des synchronisations fournissant un
   mécanisme indépendant du type de la donnée (#282).
 - Utilise des variables pour gérer certaines données sur les entités
-  telles que Arcane::Item::owner(), Arcane::Item::typeId(). Cela
+  telles que Arcane::Item::owner(), Arcane::Item::itemTypeId(). Cela
   permettra à terme de rendre ces informations accessibles sur
   accélérateurs (#284, #285, #292, #295)
 - Ajout d'une classe Arcane::ItemBase servant de classe de base pour
@@ -164,11 +171,11 @@ WIP
   avoir à conserver les instances de Arcane::ItemInternal*. Cela
   permet de réduire la consommation mémoire et potentiellement
   d'améliorer les performances (#345).
-- Utilise des vues au lieu de Arcane::SharedArray pour les classes
+- Utilise des vues au lieu de Arccore::SharedArray pour les classes
   gérant les directions cartésiennes (Arcane::CellDirectionMng,
   Arcane::FaceDirectionMng et Arcane::NodeDirectionMng) (#347).
 - Utilise un compteur de référence pour gérer
-  Arcane::Ref<Arcane::ICaseFunction> (#329, #356).
+  Arccore::Ref<Arcane::ICaseFunction> (#329, #356).
 - Ajoute constructeur pour la classe Arcane::Item et ses classes
   dérivées à partir d'un localId() et d'un Arcane::ItemSharedInfo (#357).
 - Mise à jour des références des projets C# pour utiliser les
@@ -178,12 +185,33 @@ WIP
   Arcane::Real (#370, #373).
 - Refonte partiel de la gestion de la concurrence pour mutualiser
   certaines fonctionnalités (#389).
+- Utilise un Arccore::UniqueArray pour conteneur de
+  Arcane::ListImplT. Auparavant le conteneur était un simple tableau C
+  (#407).
+- Dans Arcane::ItemGroupImpl, utilise Arcane::AutoRefT pour conserver
+  des référence aux sous-groupes à la place d'un simple
+  pointeur. Cela permet de garantir que les sous-groupes ne seront pas
+  détruits tant que le parent associé existe.
+- Corrige divers avertissements signalés par coverity (#402, #403,
+  #405, #409, #410 )
+- [C#] Indique qu'il faut au moins la version 8.0 du langage.
 
-Arccon:
+### Arccon:
+
+Utilise la version 1.5.0:
 
 - Add CMake functions to unify handling of packages  arccon Arccon
   componentbuildBuild configuration (#342).
 
+### Arccore:
+
+Utilise la version 2.0.12.0:
+
+- Remove some coverity warnings (#400)
+- Use a reference counter for IMessagePassingMng (#400)
+- Fix method asBytes() with non-const types (#400)
+- Add a method in AbstractArray to resize without initializing (#400)
+- Make class ThreadPrivateStorage deprecated (#400)
 
 ___
 ## Arcane Version 3.6.13 (06 juillet 2022) {#arcanedoc_news_changelog_version360}
