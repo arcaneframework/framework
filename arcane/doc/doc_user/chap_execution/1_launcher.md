@@ -280,6 +280,28 @@ cas
 </td>
 </tr>
 
+<tr>
+<td>ParallelLoopGrainSize</td>
+<td></td>
+<td>Int32</td>
+<td></td>
+<td>Taille de grain pour les boucles parallèles multi-threadées. Si
+positionné, indique le nombre d'élément de chaque bloc qui décompose une boucle
+multi-threadée (à partir de la version 3.8).
+</td>
+</tr>
+
+<tr>
+<td>ParallelLoopGrainPartitioner</td>
+<td></td>
+<td>String/td>
+<td></td>
+<td>Choix du partitionneur pour les boucles parallèles
+multi-threadées. Les valeurs possibles sont `auto`, `static` ou
+`deterministic` (à partir de la version 3.8).
+</td>
+</tr>
+
 </table>
 
 ## Choix du gestionnaire d'échange de message {#arcanedoc_execution_launcher_exchange}
