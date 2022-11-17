@@ -5,8 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 
-#include "arcane/launcher/ArcaneLauncher.h"
 #include "arcane/utils/PlatformUtils.h"
+
+#include "arcane/launcher/ArcaneLauncher.h"
+
+#include "arcane/impl/ArcaneMain.h"
 
 // Pour forcer enregistrement de 'arcane_std'
 #include "arcane/std/ArcaneStdRegisterer.h"
@@ -38,6 +41,7 @@ arcaneTestSetApplicationInfo()
   String test_name = platform::getEnvironmentVariable("ARCANE_TEST_NAME");
   if (!test_name.empty())
     app_build_info.setOutputDirectory(String("test_output_")+test_name);
+  ArcaneMain::setUseTestLogger(true);
 }
 
 extern "C++" ARCANE_EXPORT void

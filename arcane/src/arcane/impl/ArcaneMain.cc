@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneMain.cc                                               (C) 2000-2021 */
+/* ArcaneMain.cc                                               (C) 2000-2022 */
 /*                                                                           */
 /* Classe gérant l'exécution.                                                */
 /*---------------------------------------------------------------------------*/
@@ -35,6 +35,7 @@
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/CommandLineArguments.h"
 #include "arcane/utils/ApplicationInfo.h"
+#include "arcane/utils/TestLogger.h"
 
 #include "arcane/ArcaneException.h"
 #include "arcane/IMainFactory.h"
@@ -178,6 +179,7 @@ std::atomic<Int32> ArcaneMain::m_nb_arcane_init(0);
 std::atomic<Int32> ArcaneMain::m_is_init_done(0);
 bool ArcaneMain::m_has_garbage_collector = false;
 bool ArcaneMain::m_is_master_io = true;
+bool ArcaneMain::m_is_use_test_logger = false;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -234,6 +236,15 @@ redirectSignals()
   if (redirect_signals){
     arcaneRedirectSignals(arcaneSignalHandler);
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ArcaneMain::
+setUseTestLogger(bool v)
+{
+  m_is_use_test_logger = v;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -872,6 +883,19 @@ _internalRun(IDirectSubDomainExecuteFunctor* func)
 /*---------------------------------------------------------------------------*/
 
 int ArcaneMain::
+_checkTestLoggerResult()
+{
+  if (!m_is_use_test_logger)
+    return 0;
+  if (!m_is_master_io)
+    return 0;
+  return TestLogger::compare();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+int ArcaneMain::
 _initRuntimes()
 {
   ArcaneMainAutoDetectRuntimeHelper auto_detect_helper;
@@ -911,7 +935,9 @@ run()
     r = arcaneMain(defaultApplicationInfo(),nullptr);
     arcaneFinalize();
   }
-  return r;
+  if (r!=0)
+    return r;
+  return _checkTestLoggerResult();
 }
 
 /*---------------------------------------------------------------------------*/

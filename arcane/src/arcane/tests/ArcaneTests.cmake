@@ -52,7 +52,12 @@ function(arcane_add_test_direct)
   add_test(NAME ${ARGS_NAME}
     COMMAND ${ARGS_COMMAND}
     WORKING_DIRECTORY ${ARGS_WORKING_DIRECTORY})
-  set_tests_properties(${ARGS_NAME} PROPERTIES ENVIRONMENT "ARCANE_TEST_NAME=${ARGS_NAME}")
+  set(RESULT_FILE "${Arcane_SOURCE_DIR}/tests/results/${ARGS_NAME}.txt")
+  if (EXISTS "${RESULT_FILE}")
+    message(VERBOSE "ADD_TEST_RESULT_FILE name=${ARGS_NAME} path=${RESULT_FILE}")
+    set_property(TEST ${ARGS_NAME} APPEND PROPERTY ENVIRONMENT "ARCANE_TEST_RESULT_FILE=${RESULT_FILE}")
+  endif()
+  set_property(TEST ${ARGS_NAME} APPEND PROPERTY ENVIRONMENT "ARCANE_TEST_NAME=${ARGS_NAME}")
 endfunction()
 
 # ----------------------------------------------------------------------------
