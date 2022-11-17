@@ -122,6 +122,8 @@ set(ARCANE_SOURCES
   SignalException.h
   Simd.cc
   Simd.h
+  TestLogger.h
+  TestLogger.cc
   TraceAccessor2.h
   TraceAccessor2.cc
   TraceMng.cc
