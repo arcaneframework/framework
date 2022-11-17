@@ -96,6 +96,7 @@ set(ARCANE_SOURCES
   ParallelFatalErrorException.cc
   ParallelFatalErrorException.h
   ParallelLoopOptions.h
+  ParallelLoopOptions.cc
   PerfCounterMng.cc
   PerfCounterMng.h
   PlatformUtils.cc

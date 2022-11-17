@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/UtilsTypes.h"
+#include "arcane/utils/PropertyDeclarations.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -33,6 +34,8 @@ namespace Arcane
  */
 class ARCANE_UTILS_EXPORT ParallelLoopOptions
 {
+  ARCANE_DECLARE_PROPERTY_CLASS(ParallelLoopOptions);
+
  private:
 
   //! Drapeau pour indiquer quels champs ont été positionnés.
