@@ -141,6 +141,8 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   ARCCORE_DEPRECATED_2021("This method always return 'false'")
   constexpr bool hasLegacyConnectivity() const { return false; }
 
+  void updateMeshItemInternalList();
+
  public:
 
   void print(std::ostream& o) const;
