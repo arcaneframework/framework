@@ -1458,35 +1458,29 @@ _dumpTimeInfos(JSONWriter& json_writer)
   Real total_exec_time = cpuTimeUsed();
 
   {
-    Real total_cpu_time = 0.0;
     Real total_real_time = 0.0;
-    Real compute_cpu_time = 0.0;
     Real compute_real_time = 0.0;
     json_writer.writeKey("EntryPoints");
     json_writer.beginArray();
     for( EntryPointCollection::Enumerator i(entry_points); ++i; ){
       IEntryPoint* ep = *i;
-      Real s1 = ep->totalCPUTime();
       Real s2 = ep->totalElapsedTime();
       {
         JSONWriter::Object jo(json_writer);
         json_writer.write("Name",ep->name());
-        json_writer.write("TotalCpuTime",s1);
+        json_writer.write("TotalCpuTime",s2);
         json_writer.write("TotalElapsedTime",s2);
         json_writer.write("NbCall",(Int64)ep->nbCall());
         json_writer.write("Where",ep->where());
       }
-      info(5) << "CPU_TIME where=" << ep->where() << " name=" << ep->name() << " S=" << s1 << " S2=" << s2;
-      total_cpu_time += s1;
+      info(5) << "CPU_TIME where=" << ep->where() << " name=" << ep->name() << " S=" << s2;
       total_real_time += s2;
       if (ep->where()==IEntryPoint::WComputeLoop){
-        compute_cpu_time += s1;
         compute_real_time += s2;
       }
     }
     json_writer.endArray();
-    info(4) << "TOTAL_CPU=" << total_cpu_time << " REAL=" << total_real_time;
-    info(4) << "TOTAL_COMPUTE_CPU=" << compute_cpu_time << " REAL=" << compute_real_time;
+    info(4) << "TOTAL_REAL_TIME COMPUTE=" << compute_real_time << " TOTAL=" << total_real_time;
   }
 
 
@@ -1500,9 +1494,7 @@ _dumpTimeInfos(JSONWriter& json_writer)
              << runner->cumulativeCommandTime() << " seconds";
     }
   }
-  info() << " TotalCPU  = " << total_exec_time << " seconds";
-  info() << " CumulativeCPU  = " << scv.globalCPUTime()
-         << " seconds (" << platform::timeToHourMinuteSecond(scv.globalCPUTime()) << ")";
+  info() << " TotalElapsed  = " << total_exec_time << " seconds";
   info() << " CumulativeElapsed = " << scv.globalElapsedTime()
          << " seconds (" << platform::timeToHourMinuteSecond(scv.globalElapsedTime()) << ")";
   info() << " T   = Total time spent in the function or in the module (s)";
@@ -1510,19 +1502,7 @@ _dumpTimeInfos(JSONWriter& json_writer)
   info() << " TCC = Total time spent per call and per cell (ns)";
   info() << " N   = Number of time the function was called";
 
-  // Par défaut, utilise le timer CPU en temps réel (elapsed)
-  Timer::eTimerType timer_type = Timer::TimerReal;
-  if (!platform::getEnvironmentVariable("ARCANE_USE_REAL_TIMER").null()){
-    timer_type = Timer::TimerReal;
-  }
-  if (!platform::getEnvironmentVariable("ARCANE_USE_VIRTUAL_TIMER").null()){
-    timer_type = Timer::TimerVirtual;
-  }
-
-  if (timer_type==Timer::TimerVirtual)
-    info() << " Use CPU time for the statistics";
-  else if (timer_type==Timer::TimerReal)
-    info() << " Use the clock time (elapsed) for the statistics";
+  info() << " Use the clock time (elapsed) for the statistics";
 
   std::ostringstream o;
   std::ios_base::fmtflags f = o.flags(std::ios::right);
@@ -1546,7 +1526,7 @@ _dumpTimeInfos(JSONWriter& json_writer)
       Integer nb_call = ic->nbCall();
       if (nb_call==0)
         continue;
-      Real total_time = ic->totalTime(timer_type);
+      Real total_time = ic->totalElapsedTime();
       //if (math::isZero(total_time))
       //continue;
       const String& ep_name = ic->name();
@@ -1642,12 +1622,12 @@ Real TimeLoopMng::
 cpuTimeUsed() const
 {
   EntryPointCollection entry_points = m_entry_point_mng->entryPoints();
-  Real total_cpu_time = 0.0;
+  Real total_elapsed_time = 0.0;
   for( EntryPointCollection::Enumerator i(entry_points); ++i; ){
-    Real s1 = (*i)->totalCPUTime();
-    total_cpu_time += s1;
+    Real s1 = (*i)->totalElapsedTime();
+    total_elapsed_time += s1;
   }
-  return total_cpu_time;
+  return total_elapsed_time;
 }
 
 /*---------------------------------------------------------------------------*/
