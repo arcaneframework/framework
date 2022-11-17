@@ -290,6 +290,7 @@ class ARCANE_IMPL_EXPORT ArcaneMain
   
   static void redirectSignals();
   static bool isMasterIO() { return m_is_master_io; }
+  static void setUseTestLogger(bool v);
 
  public:
 
@@ -331,6 +332,7 @@ class ARCANE_IMPL_EXPORT ArcaneMain
   IDirectSubDomainExecuteFunctor* m_direct_sub_domain_execute_functor = nullptr;
   static bool m_has_garbage_collector;
   static bool m_is_master_io;
+  static bool m_is_use_test_logger;
   static IMainFactory* m_default_main_factory;
   static ArcaneMainExecutionOverrideFunctor* m_exec_override_functor;
 
@@ -351,6 +353,7 @@ class ARCANE_IMPL_EXPORT ArcaneMain
   static int _checkAutoDetectAccelerator();
   static void _setArcaneLibraryPath();
   static int _initRuntimes();
+  static int _checkTestLoggerResult();
 };
 
 /*---------------------------------------------------------------------------*/
