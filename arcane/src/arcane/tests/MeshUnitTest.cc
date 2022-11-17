@@ -18,6 +18,7 @@
 #include "arcane/utils/MD5HashAlgorithm.h"
 #include "arcane/utils/ArithmeticException.h"
 #include "arcane/utils/ValueChecker.h"
+#include "arcane/utils/TestLogger.h"
 
 #include "arcane/BasicUnitTest.h"
 
@@ -202,6 +203,7 @@ public:
   void _testUnstructuredConnectivities();
   void _testFaces();
   void _testItemVectorView();
+  void _logMeshInfos();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -240,6 +242,7 @@ executeTest()
   allFaces().applyOperation(&op);
   info() << "Infos sur AllNodes:";
   allNodes().applyOperation(&op);
+  _logMeshInfos();
   if (options()->writeMesh())
     _dumpMesh();
   _testNullItem();
@@ -335,6 +338,18 @@ _testNullItem()
 /*---------------------------------------------------------------------------*/
 
 void MeshUnitTest::
+_logMeshInfos()
+{
+  TestLogger::stream() << "NbNode=" << mesh()->nodeFamily()->nbItem() << "\n";
+  TestLogger::stream() << "NbEdge=" << mesh()->edgeFamily()->nbItem() << "\n";
+  TestLogger::stream() << "NbFace=" << mesh()->faceFamily()->nbItem() << "\n";
+  TestLogger::stream() << "NbCell=" << mesh()->cellFamily()->nbItem() << "\n";
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshUnitTest::
 _dumpMesh()
 {
   ServiceBuilder<IMeshWriter> sbu(subDomain());
@@ -380,7 +395,7 @@ _dumpMesh()
 
 void MeshUnitTest::
 _dumpConnectivityInfos(IItemConnectivityInfo* cell_family,IItemConnectivityInfo* face_family,
-                   IItemConnectivityInfo* node_family)
+                       IItemConnectivityInfo* node_family)
 {
   info() << "max node per cell = " << cell_family->maxNodePerItem();
   info() << "max edge per cell = " << cell_family->maxEdgePerItem();
@@ -1225,7 +1240,8 @@ _testSharedItems()
       ARCANE_FATAL("Item marked shared item={0} counter={1} is_shared={2}",
                    ItemPrinter(item),counter,item.isShared());
   }
-  info() << "NbSharedItesm=" << nb_shared;
+  info() << "NbSharedItems=" << nb_shared;
+  TestLogger::stream() << "NbSharedItems=" << nb_shared << "\n";
 }
 
 /*---------------------------------------------------------------------------*/

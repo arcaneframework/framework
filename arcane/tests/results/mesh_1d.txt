@@ -1,0 +1,5 @@
+NbNode=101
+NbEdge=0
+NbFace=101
+NbCell=100
+NbSharedItems=0
