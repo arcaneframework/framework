@@ -28,8 +28,6 @@ set(ARCANE_SOURCES
   ConcurrencyUtils.h
   CStringUtils.cc
   CStringUtils.h
-  DataVector1D.cc
-  DataVector1D.h
   DependencyInjection.h
   DependencyInjection.cc
   Enumerator.cc
@@ -150,7 +148,6 @@ set(ARCANE_SOURCES
   Collection.h
   Convert.h
   CStringUtils.h
-  DataVector1D.h
   Enumerator.h
   FloatingPointExceptionSentry.h
   FileContent.h
@@ -206,7 +203,6 @@ set(ARCANE_SOURCES
   UtilsTypes.h
   CollectionImpl.h
   CriticalSection.h
-  DefaultAllocator.h
   Deleter.h
   DualUniqueIdMng.h
   EventHandler.h
@@ -226,7 +222,6 @@ set(ARCANE_SOURCES
   IMathFunctor.h
   IFunctorWithArgument.h
   IHashAlgorithm.h
-  IAllocator.h
   IObserver.h
   IObservable.h
   Iterator.h
@@ -289,7 +284,6 @@ set(ARCANE_SOURCES
   ValueConvert.h
   ScopedPtr.h
   SharedPtr.h
-  DataVectorCommon1D.h
   EventHandlerListImpl.h
   HashTableSet.h
   NameComparer.h
