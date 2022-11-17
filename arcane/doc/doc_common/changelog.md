@@ -8,7 +8,7 @@ Les nouveautés successives apportées par les versions de %Arcane
 antérieures à la version 3 sont listées ici : \ref arcanedoc_news_changelog20
 
 ___
-## Arcane Version 3.7.23 (novembre 2022) {#arcanedoc_version370}
+## Arcane Version 3.7.23 (17 novembre 2022) {#arcanedoc_version370}
 
 ### Nouveautés/Améliorations:
 
