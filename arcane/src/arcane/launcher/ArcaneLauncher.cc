@@ -25,6 +25,7 @@
 #include "arcane/utils/Exception.h"
 #include "arcane/utils/ParameterList.h"
 #include "arcane/utils/Ref.h"
+#include "arcane/utils/ConcurrencyUtils.h"
 
 #include "arcane/impl/ArcaneMain.h"
 #include "arcane/impl/ArcaneSimpleExecutor.h"
@@ -332,6 +333,9 @@ init(const CommandLineArguments& args)
     properties::readFromParameterList(args.parameters(),dotnet_info);
     auto& accelerator_info = ArcaneLauncher::acceleratorRuntimeInitialisationInfo();
     properties::readFromParameterList(args.parameters(),accelerator_info);
+    ParallelLoopOptions loop_options;
+    properties::readFromParameterList(args.parameters(),loop_options);
+    TaskFactory::setDefaultParallelLoopOptions(loop_options);
   }
   catch(const Exception& ex){
     cerr << ex << '\n';

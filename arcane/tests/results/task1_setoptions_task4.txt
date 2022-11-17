@@ -1,0 +1,2 @@
+DefaultParallelLoopGrainSize=4
+DefaultParallelLoopPartitioner=1

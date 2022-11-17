@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TaskUnitTest.cc                                             (C) 2000-2021 */
+/* TaskUnitTest.cc                                             (C) 2000-2022 */
 /*                                                                           */
 /* Service de test des tâches.                                               */
 /*---------------------------------------------------------------------------*/
@@ -16,6 +16,7 @@
 #include "arcane/utils/SpinLock.h"
 #include "arcane/utils/Mutex.h"
 #include "arcane/utils/ValueChecker.h"
+#include "arcane/utils/TestLogger.h"
 
 #include "arcane/BasicUnitTest.h"
 #include "arcane/IMesh.h"
@@ -749,6 +750,13 @@ class Func
 void TaskUnitTest::
 initializeTest()
 {
+  ParallelLoopOptions default_options = TaskFactory::defaultParallelLoopOptions();
+  info() << "InitializeTest: DefaultOptions GrainSize=" << default_options.grainSize()
+         << " partitioner=" << (int)default_options.partitioner();
+
+  TestLogger::stream() << "DefaultParallelLoopGrainSize=" << default_options.grainSize() << "\n";
+  TestLogger::stream() << "DefaultParallelLoopPartitioner=" << (int)default_options.partitioner() << "\n";
+
   info() << "InitializeTest: THREAD_IDX=" << TaskFactory::currentTaskThreadIndex()
          << " TASK_IDX=" << TaskFactory::currentTaskIndex();
 
