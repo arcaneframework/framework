@@ -1297,7 +1297,7 @@ configure_package_config_file(cmake/ArcaneConfig.cmake.in
   PATH_VARS ARCANE_INSTALL_INCLUDE_DIR ARCANE_INSTALL_LIB_DIR)
 write_basic_package_version_file(
   ${generated_config_dir}/ArcaneConfigVersion.cmake
-  COMPATIBILITY ExactVersion )
+  COMPATIBILITY AnyNewerVersion)
 install(FILES
   ${generated_config_dir}/ArcaneConfig.cmake
   ${generated_config_dir}/ArcaneConfigCache.cmake
