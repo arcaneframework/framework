@@ -165,68 +165,78 @@ SET(REFMV_SCALAR_REDISTRIBUTION_TEST_LIST
         pair
         unique)
 
+SET(REFMV_SCALAR_REDISTRIBUTION_METHOD_LIST
+        dok
+        csr)
+
 foreach (STRATEGY IN LISTS REFMV_SCALAR_REDISTRIBUTION_TEST_LIST)
-    alien_test(
-            BENCH refmvhandlers.scalar
-            NAME RedistributorAlgebra.${STRATEGY}
-            PROCS 4
-            COMMAND refmvhandlers.ScalarRedistributorAlgebra
-            OPTIONS
-            --size=100
-            --redist-strategy=${STRATEGY}
-    )
-
-    if (TARGET petsc)
+    foreach (METHOD IN LISTS REFMV_SCALAR_REDISTRIBUTION_METHOD_LIST)
         alien_test(
                 BENCH refmvhandlers.scalar
-                NAME Redistributor.petsc.${STRATEGY}
+                NAME RedistributorAlgebra.${STRATEGY}.${METHOD}
                 PROCS 4
-                COMMAND refmvhandlers.ScalarRedistributor
+                COMMAND refmvhandlers.ScalarRedistributorAlgebra
                 OPTIONS
                 --size=100
-                --solver-package=petsc
-                --solver=bicgs
-                --precond=bjacobi
-                --tol=1.e-10
-                --max-iter=100
                 --redist-strategy=${STRATEGY}
+                --redist-method=${METHOD}
         )
-    endif (TARGET petsc)
 
-    if (TARGET hypre)
-        alien_test(
-                BENCH refmvhandlers.scalar
-                NAME Redistributor.hypre.${STRATEGY}
-                PROCS 4
-                COMMAND refmvhandlers.ScalarRedistributor
-                OPTIONS
-                --size=100
-                --solver-package=hypre
-                --solver=gmres
-                --precond=euclid
-                --tol=1.e-10
-                --max-iter=100
-                --redist-strategy=${STRATEGY}
-        )
-    endif ()
+        if (TARGET petsc)
+            alien_test(
+                    BENCH refmvhandlers.scalar
+                    NAME Redistributor.petsc.${STRATEGY}.${METHOD}
+                    PROCS 4
+                    COMMAND refmvhandlers.ScalarRedistributor
+                    OPTIONS
+                    --size=100
+                    --solver-package=petsc
+                    --solver=bicgs
+                    --precond=bjacobi
+                    --tol=1.e-10
+                    --max-iter=100
+                    --redist-strategy=${STRATEGY}
+                    --redist-method=${METHOD}
+            )
+        endif (TARGET petsc)
 
-    if (TARGET ifpsolver)
-        alien_test(
-                BENCH refmvhandlers.scalar
-                NAME Redistributor.ifpsolver.${STRATEGY}
-                PROCS 4
-                COMMAND refmvhandlers.ScalarRedistributor
-                OPTIONS
-                --size=100
-                --solver-package=ifpsolver
-                --solver=bicgs
-                --precond=ilu0
-                --tol=1.e-10
-                --max-iter=100
-                --output-level=1
-                --redist-strategy=${STRATEGY}
-        )
-    endif ()
+        if (TARGET hypre)
+            alien_test(
+                    BENCH refmvhandlers.scalar
+                    NAME Redistributor.hypre.${STRATEGY}.${METHOD}
+                    PROCS 4
+                    COMMAND refmvhandlers.ScalarRedistributor
+                    OPTIONS
+                    --size=100
+                    --solver-package=hypre
+                    --solver=gmres
+                    --precond=euclid
+                    --tol=1.e-10
+                    --max-iter=100
+                    --redist-strategy=${STRATEGY}
+                    --redist-method=${METHOD}
+            )
+        endif ()
+
+        if (TARGET ifpsolver)
+            alien_test(
+                    BENCH refmvhandlers.scalar
+                    NAME Redistributor.ifpsolver.${STRATEGY}.${METHOD}
+                    PROCS 4
+                    COMMAND refmvhandlers.ScalarRedistributor
+                    OPTIONS
+                    --size=100
+                    --solver-package=ifpsolver
+                    --solver=bicgs
+                    --precond=ilu0
+                    --tol=1.e-10
+                    --max-iter=100
+                    --output-level=1
+                    --redist-strategy=${STRATEGY}
+                    --redist-method=${METHOD}
+            )
+        endif ()
+    endforeach ()
 endforeach ()
 
 compile_test(ReaderWriter)
