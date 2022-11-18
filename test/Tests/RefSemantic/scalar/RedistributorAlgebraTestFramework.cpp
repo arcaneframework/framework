@@ -108,12 +108,14 @@ main(int argc, char** argv)
     // On récupère les options (+ celles de la configuration des solveurs)
     auto arguments = Environment::options(argc, argv, options);
 
-    std::string redist_strategy = arguments["redist-strategy"].as<std::string>();
-
     if (arguments.count("help")) {
       tm->info() << "Usage :\n" << options;
       return 1;
     }
+
+    std::string redist_strategy = arguments["redist-strategy"].as<std::string>();
+
+    std::string redist_method = arguments["redist-method"].as<std::string>();
 
     int size = arguments["size"].as<int>();
 
@@ -157,10 +159,15 @@ main(int argc, char** argv)
         keep_proc = true;
     }
 
+    Alien::Redistributor::Method method = Alien::Redistributor::dok;
+    if(redist_method.compare("csr") == 0) {
+      method = Alien::Redistributor::csr;
+    }
+
     auto small_comm = Arccore::MessagePassing::mpSplit(Environment::parallelMng(), keep_proc);
 
     Alien::Redistributor redist(
-        A.distribution().globalRowSize(), Environment::parallelMng(), small_comm);
+        A.distribution().globalRowSize(), Environment::parallelMng(), small_comm, method);
 
     Alien::RedistributedMatrix Aa(A, redist);
     Alien::RedistributedVector bb(b, redist);
