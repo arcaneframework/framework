@@ -1411,10 +1411,19 @@ waitSomeRequestsMPI(ArrayView<Request> requests,ArrayView<bool> indexes,
   UniqueArray<MPI_Request> saved_mpi_request(size);
   UniqueArray<int> completed_requests(size);
   int nb_completed_request = 0;
-  for( Integer i=0; i<size; ++i ){
-    // Sauve la requete pour la desallouer dans m_allocated_requests,
-    // car sa valeur ne sera plus valide après appel à MPI_Wait*
-    saved_mpi_request[i] = static_cast<MPI_Request>(requests[i]);
+
+  // Sauve la requete pour la desallouer dans m_allocated_requests,
+  // car sa valeur ne sera plus valide après appel à MPI_Wait*
+  for (Integer i = 0; i < size; ++i) {
+    // Dans le cas où l'on appelle cette méthode plusieurs fois
+    // avec le même tableau de requests, il se peut qu'il y ai des
+    // requests invalides qui feront planter l'appel à MPI.
+    if (!requests[i].isValid()) {
+      saved_mpi_request[i] = MPI_REQUEST_NULL;
+    }
+    else {
+      saved_mpi_request[i] = static_cast<MPI_Request>(requests[i]);
+    }
   }
 
   debug() << "WaitRequestBegin is_non_blocking=" << is_non_blocking << " n=" << size;
