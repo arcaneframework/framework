@@ -63,6 +63,21 @@ TEST(TestRedistributor, RedistributorMatrix)
   // mat.updateTargetPM(Environment::parallelMng());
 }
 
+TEST(TestRedistributor, NoDokRedistributorMatrix)
+{
+  Int32 rows = 3;
+  Int32 cols = 3;
+  Alien::MatrixDistribution mdist(rows, cols, AlienTest::Environment::parallelMng());
+  Alien::Space row_space(mdist.globalRowSize(), "Space");
+  Alien::Space col_space(mdist.globalColSize(), "Space");
+
+  std::unique_ptr<Alien::MultiMatrixImpl> multimat(
+  new Alien::MultiMatrixImpl(row_space.clone(), col_space.clone(), mdist.clone()));
+
+  Alien::RedistributorMatrix mat(multimat.get(), false);
+  // mat.updateTargetPM(Environment::parallelMng());
+}
+
 // This test requires RefSemantic API.
 #if 0
 TEST(TestRedistributor, Redistributor)

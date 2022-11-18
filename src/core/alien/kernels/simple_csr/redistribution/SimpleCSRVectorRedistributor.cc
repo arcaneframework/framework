@@ -26,8 +26,7 @@ namespace Alien
 
 using namespace Arccore;
 
-SimpleCSRVectorRedistributor::SimpleCSRVectorRedistributor(
-const RedistributorCommPlan* commPlan, const VectorDistribution& src_dist)
+SimpleCSRVectorRedistributor::SimpleCSRVectorRedistributor(const RedistributorCommPlan* commPlan, const VectorDistribution& src_dist)
 : m_comm_plan(commPlan)
 , m_pm_super(m_comm_plan->superParallelMng())
 , m_pm_dst(m_comm_plan->tgtParallelMng().get())

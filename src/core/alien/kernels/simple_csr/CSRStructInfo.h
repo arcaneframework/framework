@@ -46,6 +46,9 @@ class CSRStructInfo
   typedef TimerType::Sentry SentryType;
 
  public:
+  // Remark: variable block should not be taken into account in profile
+  // variable block is a matrix property.
+
   CSRStructInfo(bool is_variable_block = false)
   : m_is_variable_block(is_variable_block)
   , m_nrow(0)

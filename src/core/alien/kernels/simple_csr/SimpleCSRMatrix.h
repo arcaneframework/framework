@@ -172,7 +172,7 @@ class SimpleCSRMatrix : public IMatrixImpl
       m_matrix_dist_info.m_local_row_size[i] = offset[i + 1] - offset[i];
   }
 
-  void parallelStart(ArrayView<Integer> offset, IMessagePassingMng* parallel_mng,
+  void parallelStart(ConstArrayView<Integer> offset, IMessagePassingMng* parallel_mng,
                      bool need_sort_ghost_col = false)
   {
     m_local_size = getCSRProfile().getNRows();
@@ -211,7 +211,7 @@ class SimpleCSRMatrix : public IMatrixImpl
     }
   }
 
-  void sortGhostCols(ArrayView<Integer> offset)
+  void sortGhostCols(ConstArrayView<Integer> offset)
   {
     IsLocal isLocal(offset, m_myrank);
     UniqueArray<ValueType>& values = m_matrix.getValues();

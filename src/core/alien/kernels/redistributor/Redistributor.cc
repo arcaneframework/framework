@@ -43,9 +43,10 @@ namespace Alien
 {
 
 Redistributor::Redistributor(
-int globalSize, Arccore::MessagePassing::IMessagePassingMng* super, Arccore::MessagePassing::IMessagePassingMng* target)
+int globalSize, Arccore::MessagePassing::IMessagePassingMng* super, Arccore::MessagePassing::IMessagePassingMng* target, Method method)
 : m_super_pm(super)
 , m_distributor(std::make_unique<RedistributorCommPlan>(globalSize, m_super_pm, target))
+, m_method(method)
 {
 }
 
@@ -53,6 +54,9 @@ std::shared_ptr<MultiMatrixImpl>
 Redistributor::redistribute(MultiMatrixImpl* mat)
 {
   auto& red_mat = mat->get<BackEnd::tag::redistributor>(true);
+  if (m_method == csr) {
+    red_mat.useCSRRedistributor();
+  }
   return red_mat.updateTargetPM(m_distributor.get());
 }
 

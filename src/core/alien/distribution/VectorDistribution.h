@@ -206,6 +206,13 @@ class ALIEN_EXPORT VectorDistribution
   Arccore::Integer offset(Arccore::Integer p) const;
 
   /*!
+   * \brief Get all the offsets
+   * \returns Offsets array
+   */
+
+  Arccore::ConstArrayView<Integer> offsets() const;
+
+  /*!
    * \brief Get the owner of an entry
    * \param[in] i The global id of the element
    * \returns The proc owner
@@ -218,7 +225,6 @@ class ALIEN_EXPORT VectorDistribution
    */
   std::shared_ptr<VectorDistribution> clone() const;
 
- private:
   /*!
    * \brief Get the local id of an elements with its global id
    * \param[in] i The global id of the element
@@ -226,6 +232,7 @@ class ALIEN_EXPORT VectorDistribution
    */
   Arccore::Integer globalToLocal(Arccore::Integer i) const;
 
+ private:
   /*!
    * \brief Get the local id of a non local element with its global id
    * \param[in] i The global id of the non local element

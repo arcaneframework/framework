@@ -38,7 +38,7 @@ class MatrixInternal
 
  public:
   MatrixInternal(bool is_variable_block = false)
-  : m_profile(is_variable_block)
+  : m_profile(new ProfileType(is_variable_block))
   {}
 
   ~MatrixInternal() {}
@@ -51,11 +51,12 @@ class MatrixInternal
 
   ValueType const* getDataPtr() const { return m_values.data(); }
 
-  CSRStructInfo& getCSRProfile() { return m_profile; }
+  // Remark: once a profile is associated to a matrix he should not allow profile change
+  CSRStructInfo& getCSRProfile() { return *m_profile; }
 
-  const CSRStructInfo& getCSRProfile() const { return m_profile; }
+  const CSRStructInfo& getCSRProfile() const { return *m_profile; }
 
-  Integer getRowSize(Integer row) const { return m_profile.getRowSize(row); }
+  Integer getRowSize(Integer row) const { return m_profile->getRowSize(row); }
 
   void clear() { m_values.resize(0); }
 
@@ -65,7 +66,7 @@ class MatrixInternal
   void copy(const MatrixInternal<T>& internal)
   {
     m_values.copy(internal.getValues());
-    m_profile.copy(internal.getCSRProfile());
+    m_profile->copy(internal.getCSRProfile());
   }
 
   bool needUpdate()
@@ -85,7 +86,7 @@ class MatrixInternal
 
   bool m_is_update = false;
   UniqueArray<ValueType> m_values;
-  CSRStructInfo m_profile;
+  std::shared_ptr<CSRStructInfo> m_profile;
 };
 
 /*---------------------------------------------------------------------------*/

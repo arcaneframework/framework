@@ -351,6 +351,7 @@ bool VectorDistribution::Internal::isParallel() const
 Integer
 VectorDistribution::Internal::owner(Integer i) const
 {
+  // TODO: use a dichotomous search to accelerate search
   // on the proc
   if (i >= m_offset && i < m_offsets[m_rank + 1]) {
     return m_rank;
@@ -594,6 +595,15 @@ Integer
 VectorDistribution::offset(Integer p) const
 {
   return m_internal->m_offsets[p];
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ConstArrayView<Integer>
+VectorDistribution::offsets() const
+{
+  return m_internal->m_offsets.constView();
 }
 
 /*---------------------------------------------------------------------------*/

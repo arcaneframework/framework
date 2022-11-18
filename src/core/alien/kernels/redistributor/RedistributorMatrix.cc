@@ -41,10 +41,11 @@ namespace Alien
 using namespace Arccore;
 using namespace Arccore::MessagePassing;
 
-RedistributorMatrix::RedistributorMatrix(const MultiMatrixImpl* src_impl)
+RedistributorMatrix::RedistributorMatrix(const MultiMatrixImpl* src_impl, bool use_dok)
 : IMatrixImpl(src_impl, AlgebraTraits<BackEnd::tag::redistributor>::name())
 , m_super_pm(nullptr)
 , m_tgt_impl(nullptr)
+, m_use_dok(use_dok)
 {
   // Cannot call our "distribution()" from a constructor.
   m_super_pm = IMatrixImpl::distribution().parallelMng();
@@ -61,6 +62,11 @@ void RedistributorMatrix::setSuperPM(IMessagePassingMng* pm)
   m_super_pm = pm;
 }
 
+void RedistributorMatrix::useCSRRedistributor()
+{
+  m_use_dok = false;
+}
+
 std::shared_ptr<MultiMatrixImpl>
 RedistributorMatrix::updateTargetPM(const RedistributorCommPlan* commPlan)
 {
@@ -74,16 +80,29 @@ RedistributorMatrix::updateTargetPM(const RedistributorCommPlan* commPlan)
   new MultiMatrixImpl(rowSpace().clone(), colSpace().clone(), m_tgt_dist));
 
   // Now, we have to exchange data, using DoK representation.
-  m_distributor.reset(new DoKDistributor(commPlan));
+  if (m_use_dok)
+    m_distributor.reset(new DoKDistributor(commPlan));
+  else {
+    const VectorDistribution& row_src_dist = distribution().rowDistribution();
+    const auto& mat_src = m_multi_impl->get<BackEnd::tag::simplecsr>();
+    m_simple_csr_distibutor = std::make_unique<SimpleCSRDistributor>(commPlan, row_src_dist, &mat_src.getProfile());
+  }
   return redistribute();
 }
 
 std::shared_ptr<MultiMatrixImpl>
 RedistributorMatrix::redistribute()
 {
-  auto& mat_src = m_multi_impl->get<BackEnd::tag::DoK>();
-  auto& mat_tgt = m_tgt_impl->get<BackEnd::tag::DoK>(true);
-  m_distributor->distribute(mat_src, mat_tgt);
+  if (m_use_dok) {
+    auto& mat_src = m_multi_impl->get<BackEnd::tag::DoK>();
+    auto& mat_tgt = m_tgt_impl->get<BackEnd::tag::DoK>(true);
+    m_distributor->distribute(mat_src, mat_tgt);
+  }
+  else {
+    auto& mat_src = m_multi_impl->get<BackEnd::tag::simplecsr>();
+    auto& mat_tgt = m_tgt_impl->get<BackEnd::tag::simplecsr>(true);
+    m_simple_csr_distibutor->distribute(mat_src, mat_tgt);
+  }
   return m_tgt_impl;
 }
 
