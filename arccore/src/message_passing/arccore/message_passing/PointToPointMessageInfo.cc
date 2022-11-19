@@ -30,7 +30,7 @@ print(std::ostream& o) const
   if (m_type==Type::T_Null)
     o << "(null)";
   else if (m_type==Type::T_RankTag)
-    o << "(destination=" << m_dest_rank << ",source=" << m_source_rank
+    o << "(destination=" << m_destination_rank << ",emiter=" << m_emiter_rank
       << ",tag=" << m_tag << ")";
   else
     o << m_message_id;

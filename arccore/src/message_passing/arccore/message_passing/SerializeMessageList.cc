@@ -181,7 +181,7 @@ buildMessageInfo(ISerializeMessage* sm)
   MessageId message_id(sm->_internalMessageId());
   if (message_id.isValid()){
     PointToPointMessageInfo message_info(message_id,NonBlocking);
-    message_info.setSourceRank(sm->source());
+    message_info.setEmiterRank(sm->source());
     return message_info;
   }
   return { sm->source(), sm->destination(), sm->internalTag(), NonBlocking }; 
