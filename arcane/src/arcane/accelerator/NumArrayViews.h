@@ -34,9 +34,9 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType,A_MDRANK_TYPE(N),typename LayoutType>
+template<typename DataType,typename ExtentType,typename LayoutType>
 class NumArrayViewSetter;
-template<typename Accessor,A_MDRANK_TYPE(N),typename LayoutType>
+template<typename Accessor,typename ExtentType,typename LayoutType>
 class NumArrayView;
 
 /*---------------------------------------------------------------------------*/
@@ -220,11 +220,11 @@ class NumArrayView<Accessor,MDDim4,LayoutType>
 /*!
  * \brief Vue en écriture.
  */
-template<typename DataType,A_MDRANK_TYPE(N),typename LayoutType> auto
-viewOut(RunCommand& command,NumArray<DataType,N,LayoutType>& var)
+template<typename DataType,typename ExtentType,typename LayoutType> auto
+viewOut(RunCommand& command,NumArray<DataType,ExtentType,LayoutType>& var)
 {
   using Accessor = DataViewSetter<DataType>;
-  return NumArrayView<Accessor,N,LayoutType>(command,var.span());
+  return NumArrayView<Accessor,ExtentType,LayoutType>(command,var.span());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -233,11 +233,11 @@ viewOut(RunCommand& command,NumArray<DataType,N,LayoutType>& var)
 /*!
  * \brief Vue en lecture/écriture.
  */
-template<typename DataType,A_MDRANK_TYPE(N),typename LayoutType> auto
-viewInOut(RunCommand& command,NumArray<DataType,N,LayoutType>& v)
+template<typename DataType,typename ExtentType,typename LayoutType> auto
+viewInOut(RunCommand& command,NumArray<DataType,ExtentType,LayoutType>& v)
 {
   using Accessor = DataViewGetterSetter<DataType>;
-  return NumArrayView<Accessor,N,LayoutType>(command,v.span());
+  return NumArrayView<Accessor,ExtentType,LayoutType>(command,v.span());
 }
 
 /*----------------------------------------------1-----------------------------*/
@@ -245,11 +245,11 @@ viewInOut(RunCommand& command,NumArray<DataType,N,LayoutType>& v)
 /*!
  * \brief Vue en lecture.
  */
-template<typename DataType,A_MDRANK_TYPE(N),typename LayoutType> auto
-viewIn(RunCommand& command,const NumArray<DataType,N,LayoutType>& v)
+template<typename DataType,typename ExtentType,typename LayoutType> auto
+viewIn(RunCommand& command,const NumArray<DataType,ExtentType,LayoutType>& v)
 {
   using Accessor = DataViewGetter<DataType>;
-  return NumArrayView<Accessor,N,LayoutType>(command,v.constSpan());
+  return NumArrayView<Accessor,ExtentType,LayoutType>(command,v.constSpan());
 }
 
 /*---------------------------------------------------------------------------*/

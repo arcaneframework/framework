@@ -57,7 +57,7 @@ class SimpleForLoopRanges
 {
   friend class ComplexForLoopRanges<N>;
  public:
-  using ArrayBoundsType = ArrayBounds<A_MDDIM(N)>;
+  using ArrayBoundsType = ArrayBounds<MDDim<N>>;
   using ArrayBoundsIndexType = ArrayBoundsIndex<N>;
  public:
   typedef typename ArrayBoundsType::IndexType IndexType;
@@ -86,7 +86,7 @@ template <int N>
 class ComplexForLoopRanges
 {
  public:
-  using ArrayBoundsType = ArrayBounds<A_MDDIM(N)>;
+  using ArrayBoundsType = ArrayBounds<MDDim<N>>;
   using ArrayBoundsIndexType = ArrayBoundsIndex<N>;
  public:
   typedef typename ArrayBoundsType::IndexType IndexType;

@@ -178,22 +178,18 @@ class ArrayExtentsBase<MDDim0>
 /*!
  * \brief Classe pour conserver le nombre d'éléments dans chaque dimension.
  */
-template<A_MDRANK_TYPE(RankValue)>
+template<typename ExtentType>
 class ArrayExtentsBase
 {
-#ifdef ARCANE_USE_TYPE_FOR_EXTENT
-  using ArrayExtentsPreviousRank = ArrayExtentsBase<MDDim<RankValue::rank()-1>>;
-#else
-  using ArrayExtentsPreviousRank = ArrayExtentsBase<RankValue-1>;
-#endif
+  using ArrayExtentsPreviousRank = ArrayExtentsBase<MDDim<ExtentType::rank()-1>>;
 
  public:
   ARCCORE_HOST_DEVICE constexpr ArrayExtentsBase()
-  : m_extents(detail::ArrayExtentsTraits<A_MDRANK_RANK_VALUE(RankValue)>::extendsInitHelper()) { }
+  : m_extents(detail::ArrayExtentsTraits<ExtentType::rank()>::extendsInitHelper()) { }
  protected:
   explicit ARCCORE_HOST_DEVICE ArrayExtentsBase(SmallSpan<const Int32> extents)
   {
-    auto nb_rank = A_MDRANK_RANK_VALUE(RankValue);
+    auto nb_rank = ExtentType::rank();
     Integer n = extents.size();
     Integer vn = math::min(n,nb_rank);
     for( int i=0; i<vn; ++i )
@@ -207,30 +203,30 @@ class ArrayExtentsBase
   //! Positionne à \a v le nombre d'éléments de la i-ème dimension
   ARCCORE_HOST_DEVICE void setExtent(int i,Int32 v) { m_extents[i] = v; }
   ARCCORE_HOST_DEVICE Int32 operator()(int i) const { return m_extents[i]; }
-  ARCCORE_HOST_DEVICE SmallSpan<const Int32> asSpan() const { return { m_extents.data(), A_MDRANK_RANK_VALUE(RankValue) }; }
-  ARCCORE_HOST_DEVICE std::array<Int32,A_MDRANK_RANK_VALUE(RankValue)> asStdArray() const { return m_extents; }
+  ARCCORE_HOST_DEVICE SmallSpan<const Int32> asSpan() const { return { m_extents.data(), ExtentType::rank() }; }
+  ARCCORE_HOST_DEVICE std::array<Int32,ExtentType::rank()> asStdArray() const { return m_extents; }
   //! Nombre total d'eléments
   ARCCORE_HOST_DEVICE constexpr Int64 totalNbElement() const
   {
     Int64 nb_element = 1;
-    for (int i=0; i<A_MDRANK_RANK_VALUE(RankValue); i++)
+    for (int i=0; i<ExtentType::rank(); i++)
       nb_element *= m_extents[i];
     return nb_element;
   }
   // Instance contenant les dimensions après la première
   ARCCORE_HOST_DEVICE ArrayExtentsPreviousRank removeFirstExtent() const
   {
-    return ArrayExtentsPreviousRank::fromSpan({m_extents.data()+1,A_MDRANK_RANK_VALUE(RankValue)-1});
+    return ArrayExtentsPreviousRank::fromSpan({m_extents.data()+1,ExtentType::rank()-1});
   }
   /*!
    * \brief Construit une instance à partir des valeurs données dans \a extents.
    */
-  ARCCORE_HOST_DEVICE static ArrayExtentsBase<RankValue> fromSpan(SmallSpan<const Int32> extents)
+  ARCCORE_HOST_DEVICE static ArrayExtentsBase<ExtentType> fromSpan(SmallSpan<const Int32> extents)
   {
-    return ArrayExtentsBase<RankValue>(extents);
+    return ArrayExtentsBase<ExtentType>(extents);
   }
  protected:
-  std::array<Int32,A_MDRANK_RANK_VALUE(RankValue)> m_extents;
+  std::array<Int32,ExtentType::rank()> m_extents;
 };
 
 /*---------------------------------------------------------------------------*/

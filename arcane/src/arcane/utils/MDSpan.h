@@ -52,34 +52,34 @@ namespace Arcane
  * d'une de ses spécialisations suivant le rang comme MDSpan<DataType,1>,
  * MDSpan<DataType,2>, MDSpan<DataType,3> ou MDSpan<DataType,4>.
  */
-template<typename DataType,A_MDRANK_TYPE(RankValue),typename LayoutType>
+template<typename DataType,typename ExtentType,typename LayoutType>
 class MDSpanBase
 {
   using UnqualifiedValueType = std::remove_cv_t<DataType>;
-  friend class NumArrayBase<UnqualifiedValueType,RankValue,LayoutType>;
+  friend class NumArrayBase<UnqualifiedValueType,ExtentType,LayoutType>;
   // Pour que MDSpan<const T> ait accès à MDSpan<T>
-  friend class MDSpanBase<const UnqualifiedValueType,RankValue,LayoutType>;
+  friend class MDSpanBase<const UnqualifiedValueType,ExtentType,LayoutType>;
  public:
-  using ArrayBoundsIndexType = ArrayBoundsIndex<A_MDRANK_RANK_VALUE(RankValue)>;
+  using ArrayBoundsIndexType = ArrayBoundsIndex<ExtentType::rank()>;
  public:
   MDSpanBase() = default;
-  ARCCORE_HOST_DEVICE MDSpanBase(DataType* ptr,ArrayExtentsWithOffset<RankValue,LayoutType> extents)
+  ARCCORE_HOST_DEVICE MDSpanBase(DataType* ptr,ArrayExtentsWithOffset<ExtentType,LayoutType> extents)
   : m_ptr(ptr), m_extents(extents)
   {
   }
   // Constructeur MDSpan<const T> à partir d'un MDSpan<T>
   template<typename X,typename = std::enable_if_t<std::is_same_v<X,UnqualifiedValueType>>>
-  ARCCORE_HOST_DEVICE MDSpanBase(const MDSpanBase<X,RankValue>& rhs)
+  ARCCORE_HOST_DEVICE MDSpanBase(const MDSpanBase<X,ExtentType>& rhs)
   : m_ptr(rhs.m_ptr), m_extents(rhs.m_extents){}
  public:
   ARCCORE_HOST_DEVICE DataType* _internalData() { return m_ptr; }
   ARCCORE_HOST_DEVICE const DataType* _internalData() const { return m_ptr; }
  public:
-  ArrayExtents<RankValue> extents() const
+  ArrayExtents<ExtentType> extents() const
   {
     return m_extents.extents();
   }
-  ArrayExtentsWithOffset<RankValue,LayoutType> extentsWithOffset() const
+  ArrayExtentsWithOffset<ExtentType,LayoutType> extentsWithOffset() const
   {
     return m_extents;
   }
@@ -100,8 +100,8 @@ class MDSpanBase
     return m_ptr+offset(idx);
   }
  public:
-  ARCCORE_HOST_DEVICE MDSpanBase<const DataType,RankValue> constSpan() const
-  { return MDSpanBase<const DataType,RankValue>(m_ptr,m_extents); }
+  ARCCORE_HOST_DEVICE MDSpanBase<const DataType,ExtentType> constSpan() const
+  { return MDSpanBase<const DataType,ExtentType>(m_ptr,m_extents); }
   ARCCORE_HOST_DEVICE Span<DataType> to1DSpan() const { return { m_ptr, m_extents.totalNbElement() }; }
  private:
   // Utilisé uniquement par NumArrayBase pour la copie
@@ -109,13 +109,13 @@ class MDSpanBase
   {
     Int64 dim1_size = m_extents(0);
     Int64 dim2_size = 1;
-    for (int i=1; i<A_MDRANK_RANK_VALUE(RankValue); ++i )
+    for (int i=1; i<ExtentType::rank(); ++i )
       dim2_size *= m_extents(i);
     return { m_ptr, dim1_size, dim2_size };
   }
  protected:
   DataType* m_ptr = nullptr;
-  ArrayExtentsWithOffset<RankValue,LayoutType> m_extents;
+  ArrayExtentsWithOffset<ExtentType,LayoutType> m_extents;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -193,7 +193,7 @@ class MDSpan<DataType,MDDim2,LayoutType>
   using BaseClass::operator();
  public:
   //! Construit un tableau vide
-  MDSpan() : MDSpan(nullptr,0,0){}
+  MDSpan() = default;
   //! Construit une vue
   ARCCORE_HOST_DEVICE MDSpan(DataType* ptr,Int32 dim1_size,Int32 dim2_size)
   {
