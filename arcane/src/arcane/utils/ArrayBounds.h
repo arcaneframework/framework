@@ -30,11 +30,6 @@ namespace Arcane
 
 namespace impl
 {
-template <class T> ARCCORE_HOST_DEVICE
-constexpr T fastmod(T a , T b)
-{
-  return a < b ? a : a-b*(a/b);
-}
 }
 
 /*---------------------------------------------------------------------------*/
@@ -49,7 +44,12 @@ class ArrayBoundsBase
 {
  public:
 
-  using ArrayExtents<ExtentType>::extent;
+  using BaseClass = ArrayExtents<ExtentType>;
+  using BaseClass::m_extents;
+  using BaseClass::extent;
+  using BaseClass::getIndices;
+  using BaseClass::asStdArray;
+  using IndexType = typename BaseClass::IndexType;
 
  public:
 
@@ -63,11 +63,9 @@ class ArrayBoundsBase
  public:
 
   ARCCORE_HOST_DEVICE constexpr Int64 nbElement() const { return m_nb_element; }
-  ARCCORE_HOST_DEVICE constexpr std::array<Int32,ExtentType::rank()> asStdArray() const { return ArrayExtents<ExtentType>::asStdArray(); }
 
- protected:
+ private:
 
-  using ArrayExtents<ExtentType>::m_extents;
   Int64 m_nb_element;
 };
 
@@ -79,17 +77,11 @@ class ArrayBounds<MDDim1>
 : public ArrayBoundsBase<MDDim1>
 {
  public:
-  using IndexType = ArrayBoundsIndex<1>;
-  using ArrayBoundsBase<MDDim1>::m_extents;
   // Note: le constructeur ne doit pas être explicite pour permettre la conversion
   // à partir d'un entier.
   constexpr ArrayBounds(Int32 dim1)
   : ArrayBoundsBase<MDDim1>(ArrayExtents<MDDim1>(dim1))
   {
-  }
-  ARCCORE_HOST_DEVICE constexpr IndexType getIndices(Int32 i) const
-  {
-    return { i };
   }
 };
 
@@ -101,17 +93,9 @@ class ArrayBounds<MDDim2>
 : public ArrayBoundsBase<MDDim2>
 {
  public:
-  using IndexType = ArrayBoundsIndex<2>;
-  using ArrayBoundsBase<MDDim2>::m_extents;
   constexpr ArrayBounds(Int32 dim1,Int32 dim2)
   : ArrayBoundsBase<MDDim2>(ArrayExtents<MDDim2>(dim1,dim2))
   {
-  }
-  ARCCORE_HOST_DEVICE constexpr IndexType getIndices(Int32 i) const
-  {
-    Int32 i1 = impl::fastmod(i,m_extents[1]);
-    Int32 i0 = i / m_extents[1];
-    return { i0, i1 };
   }
 };
 
@@ -123,20 +107,9 @@ class ArrayBounds<MDDim3>
 : public ArrayBoundsBase<MDDim3>
 {
  public:
-  using IndexType = ArrayBoundsIndex<3>;
-  using ArrayBoundsBase<MDDim3>::m_extents;
   constexpr ArrayBounds(Int32 dim1,Int32 dim2,Int32 dim3)
   : ArrayBoundsBase<MDDim3>(ArrayExtents<MDDim3>(dim1,dim2,dim3))
   {
-  }
-  ARCCORE_HOST_DEVICE constexpr IndexType getIndices(Int32 i) const
-  {
-    Int32 i2 = impl::fastmod(i,m_extents[2]);
-    Int32 fac = m_extents[2];
-    Int32 i1 = impl::fastmod(i / fac,m_extents[1]);
-    fac *= m_extents[1];
-    Int32 i0 = i / fac;
-    return { i0, i1, i2 };
   }
 };
 
@@ -148,28 +121,11 @@ class ArrayBounds<MDDim4>
 : public ArrayBoundsBase<MDDim4>
 {
  public:
-  using IndexType = ArrayBoundsIndex<4>;
-  using ArrayBoundsBase<MDDim4>::m_extents;
   constexpr ArrayBounds(Int32 dim1,Int32 dim2,Int32 dim3,Int32 dim4)
   : ArrayBoundsBase<MDDim4>(ArrayExtents<MDDim4>(dim1,dim2,dim3,dim4))
   {
   }
-  ARCCORE_HOST_DEVICE constexpr IndexType getIndices(Int32 i) const
-  {
-    // Compute base indices
-    Int32 i3 = impl::fastmod(i,m_extents[3]);
-    Int32 fac = m_extents[3];
-    Int32 i2 = impl::fastmod(i/fac,m_extents[2]);
-    fac *= m_extents[2];
-    Int32 i1 = impl::fastmod(i/fac,m_extents[1]);
-    fac *= m_extents[1];
-    Int32 i0 = i /fac;
-    return { i0, i1, i2, i3 };
-  }
 };
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

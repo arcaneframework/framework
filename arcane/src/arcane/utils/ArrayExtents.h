@@ -32,7 +32,7 @@
 namespace Arcane
 {
 
-namespace detail
+namespace impl
 {
 template<int RankValue>
 class ArrayExtentsTraits;
@@ -115,7 +115,7 @@ class ArrayStridesBase
 {
  public:
   ARCCORE_HOST_DEVICE ArrayStridesBase()
-  : m_strides(detail::ArrayExtentsTraits<RankValue>::extendsInitHelper()) { }
+  : m_strides(impl::ArrayExtentsTraits<RankValue>::extendsInitHelper()) { }
   //! Valeur du pas de la \a i-ème dimension.
   ARCCORE_HOST_DEVICE Int32 stride(int i) const { return m_strides[i]; }
   ARCCORE_HOST_DEVICE Int32 operator()(int i) const { return m_strides[i]; }
@@ -154,6 +154,12 @@ class ArrayStridesBase
 
 namespace impl
 {
+template <class T> constexpr ARCCORE_HOST_DEVICE
+T fastmod(T a , T b)
+{
+  return a < b ? a : a-b*(a/b);
+}
+
 template<Int32 Size>
 class ExtentValue
 {
@@ -189,6 +195,8 @@ class ArrayExtentsValue<x0>
 {
  public:
 
+  using IndexType = ArrayBoundsIndex<1>;
+
   ArrayExtentsValue() = default;
 
   template<Int32 I> constexpr ARCCORE_HOST_DEVICE Int32 constExtent() const
@@ -205,6 +213,11 @@ class ArrayExtentsValue<x0>
   constexpr ARCCORE_HOST_DEVICE Int64 totalNbElement() const
   {
     return m_extent0.v;
+  }
+
+  constexpr ARCCORE_HOST_DEVICE IndexType getIndices(Int32 i) const
+  {
+    return { i };
   }
 
  protected:
@@ -232,6 +245,8 @@ class ArrayExtentsValue<x0,x1>
 {
  public:
 
+  using IndexType = ArrayBoundsIndex<2>;
+
   ArrayExtentsValue() = default;
 
   template<Int32 I> constexpr ARCCORE_HOST_DEVICE Int32 constExtent() const
@@ -250,6 +265,13 @@ class ArrayExtentsValue<x0,x1>
   constexpr ARCCORE_HOST_DEVICE Int64 totalNbElement() const
   {
     return m_extent0.size() * m_extent1.size();
+  }
+
+  constexpr ARCCORE_HOST_DEVICE IndexType getIndices(Int32 i) const
+  {
+    Int32 i1 = impl::fastmod(i,m_extent1.v);
+    Int32 i0 = i / m_extent1.v;
+    return { i0, i1 };
   }
 
  protected:
@@ -280,6 +302,8 @@ class ArrayExtentsValue<x0,x1,x2>
 {
  public:
 
+  using IndexType = ArrayBoundsIndex<3>;
+
   ArrayExtentsValue() = default;
 
   template<Int32 I> constexpr ARCCORE_HOST_DEVICE Int32 constExtent() const
@@ -300,6 +324,16 @@ class ArrayExtentsValue<x0,x1,x2>
   constexpr ARCCORE_HOST_DEVICE Int64 totalNbElement() const
   {
     return m_extent0.size() * m_extent1.size() * m_extent2.size();
+  }
+
+  constexpr ARCCORE_HOST_DEVICE IndexType getIndices(Int32 i) const
+  {
+    Int32 i2 = impl::fastmod(i,m_extent2.v);
+    Int32 fac = m_extent2.v;
+    Int32 i1 = impl::fastmod(i / fac,m_extent1.v);
+    fac *= m_extent1.v;
+    Int32 i0 = i / fac;
+    return { i0, i1, i2 };
   }
 
  protected:
@@ -333,6 +367,8 @@ class ArrayExtentsValue<x0,x1,x2,x3>
 {
  public:
 
+  using IndexType = ArrayBoundsIndex<4>;
+
   ArrayExtentsValue() = default;
 
   template<Int32 I> constexpr ARCCORE_HOST_DEVICE Int32 constExtent() const
@@ -355,6 +391,19 @@ class ArrayExtentsValue<x0,x1,x2,x3>
   constexpr ARCCORE_HOST_DEVICE Int64 totalNbElement() const
   {
     return m_extent0.size() * m_extent1.size() * m_extent2.size() * m_extent3.size();
+  }
+
+  constexpr ARCCORE_HOST_DEVICE IndexType getIndices(Int32 i) const
+  {
+    // Compute base indices
+    Int32 i3 = impl::fastmod(i,m_extent3.v);
+    Int32 fac = m_extent3.v;
+    Int32 i2 = impl::fastmod(i/fac,m_extent2.v);
+    fac *= m_extent2.v;
+    Int32 i1 = impl::fastmod(i/fac,m_extent1.v);
+    fac *= m_extent1.v;
+    Int32 i0 = i /fac;
+    return { i0, i1, i2, i3 };
   }
 
  protected:
@@ -492,11 +541,12 @@ class ArrayExtentsBase
  public:
 
   using BaseClass::totalNbElement;
+  using BaseClass::getIndices;
 
  public:
 
   ARCCORE_HOST_DEVICE constexpr ArrayExtentsBase()
-  : BaseClass(), m_extents(detail::ArrayExtentsTraits<ExtentType::rank()>::extendsInitHelper()) { }
+  : BaseClass(), m_extents(impl::ArrayExtentsTraits<ExtentType::rank()>::extendsInitHelper()) { }
 
  protected:
 
@@ -654,6 +704,7 @@ class ArrayExtentsWithOffset<MDDim1,LayoutType>
   using BaseClass::operator();
   using BaseClass::asStdArray;
   using BaseClass::totalNbElement;
+  using BaseClass::getIndices;
   using Layout = LayoutType;
  public:
   ArrayExtentsWithOffset() = default;
@@ -687,6 +738,7 @@ class ArrayExtentsWithOffset<MDDim2,LayoutType>
   using BaseClass::operator();
   using BaseClass::asStdArray;
   using BaseClass::totalNbElement;
+  using BaseClass::getIndices;
   using Layout = LayoutType;
  public:
   ArrayExtentsWithOffset() = default;
@@ -719,6 +771,7 @@ class ArrayExtentsWithOffset<MDDim3,LayoutType>
   using BaseClass::operator();
   using BaseClass::asStdArray;
   using BaseClass::totalNbElement;
+  using BaseClass::getIndices;
   using Layout = LayoutType;
  public:
   ArrayExtentsWithOffset() = default;
@@ -759,6 +812,7 @@ class ArrayExtentsWithOffset<MDDim4,LayoutType>
   using BaseClass::operator();
   using BaseClass::asStdArray;
   using BaseClass::totalNbElement;
+  using BaseClass::getIndices;
   using Layout = LayoutType;
  public:
   ArrayExtentsWithOffset() = default;
