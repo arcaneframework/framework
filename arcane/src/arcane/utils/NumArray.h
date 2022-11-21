@@ -133,17 +133,17 @@ namespace impl
  * initialisé (\ref arcanedoc_parallel_accelerator). C'est pourquoi il ne faut pas
  * utiliser de variables globales de cette classe ou d'une classe dérivée.
  */
-template<typename DataType,A_MDRANK_TYPE(RankValue),typename LayoutType>
+template<typename DataType,typename ExtentType,typename LayoutType>
 class NumArrayBase
 : public NumArrayBaseCommon
 {
  public:
 
-  using ConstSpanType = MDSpan<const DataType,RankValue,LayoutType>;
-  using SpanType = MDSpan<DataType,RankValue,LayoutType>;
+  using ConstSpanType = MDSpan<const DataType,ExtentType,LayoutType>;
+  using SpanType = MDSpan<DataType,ExtentType,LayoutType>;
   using ArrayWrapper = impl::NumArrayContainer<DataType>;
   using ArrayBoundsIndexType = typename SpanType::ArrayBoundsIndexType;
-  using ThatClass = NumArrayBase<DataType,RankValue,LayoutType>;
+  using ThatClass = NumArrayBase<DataType,ExtentType,LayoutType>;
 
  public:
 
@@ -153,9 +153,9 @@ class NumArrayBase
   Int32 extent(int i) const { return m_span.extent(i); }
   /*!
    * \brief Modifie la taille du tableau.
-   * \warning Les valeurs actuelles ne sont pas conservées lors de cette opération
+   * \warning Les valeurs actuelles ne sont pas conservées lors de cette opération.
    */
-  void resize(ArrayExtents<RankValue> extents)
+  void resize(ArrayExtents<ExtentType> extents)
   {
     m_span.m_extents.setSize(extents);
     _resize();
@@ -164,12 +164,12 @@ class NumArrayBase
 
   NumArrayBase() : m_data(_getDefaultAllocator()){}
   explicit NumArrayBase(eMemoryRessource r) : m_data(_getDefaultAllocator(r)), m_memory_ressource(r){}
-  explicit NumArrayBase(ArrayExtents<RankValue> extents)
+  explicit NumArrayBase(ArrayExtents<ExtentType> extents)
   : m_data(_getDefaultAllocator()), m_memory_ressource(eMemoryRessource::UnifiedMemory)
   {
     resize(extents);
   }
-  NumArrayBase(ArrayExtents<RankValue> extents,eMemoryRessource r)
+  NumArrayBase(ArrayExtents<ExtentType> extents,eMemoryRessource r)
   : m_data(_getDefaultAllocator(r)), m_memory_ressource(r)
   {
     resize(extents);
@@ -185,7 +185,7 @@ class NumArrayBase
     Int32 dim1_size = extent(0);
     Int32 dim2_size = 1;
     // TODO: vérifier débordement.
-    for (int i=1; i< A_MDRANK_RANK_VALUE(RankValue) ; ++i )
+    for (int i=1; i< ExtentType::rank() ; ++i )
       dim2_size *= extent(i);
     m_total_nb_element = static_cast<Int64>(dim1_size) * static_cast<Int64>(dim2_size);
     m_data.resize(m_total_nb_element);
@@ -193,9 +193,9 @@ class NumArrayBase
   }
  public:
   void fill(const DataType& v) { m_data.fill(v); }
-  constexpr Int32 nbDimension() const { return A_MDRANK_RANK_VALUE(RankValue); }
-  ArrayExtents<RankValue> extents() const { return m_span.extents(); }
-  ArrayExtentsWithOffset<RankValue,LayoutType> extentsWithOffset() const
+  constexpr Int32 nbDimension() const { return ExtentType::rank(); }
+  ArrayExtents<ExtentType> extents() const { return m_span.extents(); }
+  ArrayExtentsWithOffset<ExtentType,LayoutType> extentsWithOffset() const
   {
     return m_span.extentsWithOffset();
   }
@@ -211,7 +211,7 @@ class NumArrayBase
     _checkHost(m_memory_ressource);
     m_data.copy(rhs.to1DSpan());
   }
-  void copy(const NumArrayBase<DataType,RankValue,LayoutType>& rhs)
+  void copy(const NumArrayBase<DataType,ExtentType,LayoutType>& rhs)
   {
     this->resize(rhs.extents());
     _copy(asBytes(rhs.to1DSpan()),rhs.m_memory_ressource,
@@ -229,7 +229,7 @@ class NumArrayBase
   {
     return m_span(idx);
   }
-  void swap(NumArrayBase<DataType,RankValue>& rhs)
+  void swap(NumArrayBase<DataType,ExtentType>& rhs)
   {
     m_data.swap(rhs.m_data);
     std::swap(m_span,rhs.m_span);
@@ -307,8 +307,14 @@ class NumArray<DataType,MDDim1,LayoutType>
   NumArray(ThatClass&&) = default;
   ThatClass& operator=(ThatClass&&) = default;
   ThatClass& operator=(const ThatClass&) = default;
+
  public:
 
+  /*!
+   * \brief Modifie la taille du tableau.
+   * \warning Les valeurs actuelles ne sont pas conservées lors de cette opération
+   * et les nouvelles valeurs ne sont pas initialisées.
+   */
   void resize(Int32 dim1_size)
   {
     this->resize(ArrayExtents<MDDim1>(dim1_size));

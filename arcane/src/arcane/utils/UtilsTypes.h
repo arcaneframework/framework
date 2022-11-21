@@ -244,25 +244,24 @@ using MDDim3 = MDDim<3>;
 //! Constante pour un tableau dynamique de rang 4
 using MDDim4 = MDDim<4>;
 
-
 enum class eMemoryRessource;
-template<A_MDRANK_TYPE(RankValue)> class DefaultLayout;
+template<typename ExtentType> class DefaultLayout;
 class IMemoryRessourceMng;
-template<typename DataType,A_MDRANK_TYPE(RankValue),typename LayoutType = DefaultLayout<RankValue> >
+template<typename DataType,typename ExtentType,typename LayoutType = DefaultLayout<ExtentType> >
 class MDSpanBase;
-template<class DataType,A_MDRANK_TYPE(RankValue),typename LayoutType = DefaultLayout<RankValue> >
+template<class DataType,typename ExtentType,typename LayoutType = DefaultLayout<ExtentType> >
 class MDSpan;
-template<typename DataType,A_MDRANK_TYPE(RankValue),typename LayoutType = DefaultLayout<RankValue> >
+template<typename DataType,typename ExtentType,typename LayoutType = DefaultLayout<ExtentType> >
 class NumArrayBase;
-template<class DataType,A_MDRANK_TYPE(RankValue),typename LayoutType = DefaultLayout<RankValue> >
+template<class DataType,typename ExtentType,typename LayoutType = DefaultLayout<ExtentType> >
 class NumArray;
-template<A_MDRANK_TYPE(RankValue)> class ArrayBounds;
+template<typename ExtentType> class ArrayBounds;
 template<int RankValue> class ArrayBoundsIndexBase;
 template<int RankValue> class ArrayBoundsIndex;
-template<A_MDRANK_TYPE(RankValue)> class ArrayExtentsBase;
-template<A_MDRANK_TYPE(RankValue)> class ArrayExtents;
+template<typename ExtentType> class ArrayExtentsBase;
+template<typename ExtentType> class ArrayExtents;
 template<int RankValue> class ArrayStridesBase;
-template<A_MDRANK_TYPE(RankValue),typename LayoutType> class ArrayExtentsWithOffset;
+template<typename ExtentType,typename LayoutType> class ArrayExtentsWithOffset;
 class ForLoopRange;
 template<int RankValue> class SimpleForLoopRanges;
 template<int RankValue> class ComplexForLoopRanges;

@@ -78,8 +78,8 @@ class ArrayLayout3
 /*---------------------------------------------------------------------------*/
 // Layout par défaut pour chaque dimension
 
-template<A_MDRANK_TYPE(RankValue)> class RightLayout;
-template<A_MDRANK_TYPE(RankValue)> class LeftLayout;
+template<typename ExtentType> class RightLayout;
+template<typename ExtentType> class LeftLayout;
 
 template<> class RightLayout<MDDim2> : public ArrayLayout2<0,1> {};
 template<> class RightLayout<MDDim3> : public ArrayLayout3<0,1,2> {};

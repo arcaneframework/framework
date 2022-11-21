@@ -93,7 +93,7 @@ _applyGenericLoop(RunCommand& command,LoopBoundType<N> bounds,const Lambda& func
 
 //! Applique la lambda \a func sur l'intervalle d'itération donnée par \a bounds
 template<int N,typename Lambda> void
-run(RunCommand& command,ArrayBounds<A_MDDIM(N)> bounds,const Lambda& func)
+run(RunCommand& command,ArrayBounds<MDDim<N>> bounds,const Lambda& func)
 {
   impl::_applyGenericLoop(command,SimpleForLoopRanges(bounds),func);
 }
@@ -134,7 +134,7 @@ class ArrayBoundRunCommand
 };
 
 template<int N> ArrayBoundRunCommand<N,SimpleForLoopRanges<N>>
-operator<<(RunCommand& command,const ArrayBounds<A_MDDIM(N)>& bounds)
+operator<<(RunCommand& command,const ArrayBounds<MDDim<N>>& bounds)
 {
   return {command,bounds};
 }
@@ -171,7 +171,7 @@ void operator<<(ArrayBoundRunCommand<N,ForLoopBoundType<N>>&& nr,const Lambda& f
 
 //! Boucle sur accélérateur
 #define RUNCOMMAND_LOOPN(iter_name, N, ...)                           \
-  A_FUNCINFO << ArrayBounds<A_MDDIM(N)>(__VA_ARGS__) << [=] ARCCORE_HOST_DEVICE (ArrayBoundsIndex<N> iter_name )
+  A_FUNCINFO << ArrayBounds<MDDim<N>>(__VA_ARGS__) << [=] ARCCORE_HOST_DEVICE (ArrayBoundsIndex<N> iter_name )
 
 //! Boucle sur accélérateur
 #define RUNCOMMAND_LOOP1(iter_name, x1)                             \

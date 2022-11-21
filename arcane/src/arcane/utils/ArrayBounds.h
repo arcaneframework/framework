@@ -43,24 +43,24 @@ constexpr T fastmod(T a , T b)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<A_MDRANK_TYPE(RankValue)>
+template<typename ExtentType>
 class ArrayBoundsBase
-: private ArrayExtents<RankValue>
+: private ArrayExtents<ExtentType>
 {
  public:
-  using ArrayExtents<RankValue>::extent;
+  using ArrayExtents<ExtentType>::extent;
  public:
   constexpr ArrayBoundsBase() : m_nb_element(0) {}
  public:
   ARCCORE_HOST_DEVICE constexpr Int64 nbElement() const { return m_nb_element; }
-  ARCCORE_HOST_DEVICE constexpr std::array<Int32,A_MDRANK_RANK_VALUE(RankValue)> asStdArray() const { return ArrayExtents<RankValue>::asStdArray(); }
+  ARCCORE_HOST_DEVICE constexpr std::array<Int32,ExtentType::rank()> asStdArray() const { return ArrayExtents<ExtentType>::asStdArray(); }
  protected:
   constexpr void _computeNbElement()
   {
     m_nb_element = this->totalNbElement();
   }
  protected:
-  using ArrayExtents<RankValue>::m_extents;
+  using ArrayExtents<ExtentType>::m_extents;
   Int64 m_nb_element;
 };
 
