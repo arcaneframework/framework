@@ -59,7 +59,7 @@ class View2TypeT<const T>
  * type utilisé pour conserver le nombre d'éléments du tableau. Cela peut
  * être 'Int32' ou 'Int64'.
  */
-template<typename T,typename SizeType>
+template<typename T,typename SizeType,SizeType Extent1,SizeType Extent2>
 class Span2Impl
 {
  public:
@@ -198,16 +198,16 @@ class Span2Impl
  * Comme toute vue, une instance de cette classe n'est valide que tant
  * que le conteneur dont elle est issue ne change pas de nombre d'éléments.
  */
-template<class T>
+template<class T,Int32 Extent1,Int32 Extent2>
 class SmallSpan2
-: public Span2Impl<T,Int32>
+: public Span2Impl<T,Int32,Extent1,Extent2>
 {
   friend class Span2<T>;
 
  public:
 
-  using ThatClass = SmallSpan2<T>;
-  using BaseClass = Span2Impl<T,Int32>;
+  using ThatClass = SmallSpan2<T,Extent1,Extent2>;
+  using BaseClass = Span2Impl<T,Int32,Extent1,Extent2>;
   using size_type = Int32;
   using value_type = typename BaseClass::value_type;
   using pointer = typename BaseClass::pointer;
@@ -266,14 +266,14 @@ class SmallSpan2
  * Comme toute vue, une instance de cette classe n'est valide que tant
  * que le conteneur dont elle est issue ne change pas de nombre d'éléments.
  */
-template<class T>
+template<class T,Int64 Extent1,Int64 Extent2>
 class Span2
-: public Span2Impl<T,Int64>
+: public Span2Impl<T,Int64,Extent1,Extent2>
 {
  public:
 
-  using ThatClass = Span2<T>;
-  using BaseClass = Span2Impl<T,Int64>;
+  using ThatClass = Span2<T,Extent1,Extent2>;
+  using BaseClass = Span2Impl<T,Int64,Extent1,Extent2>;
   using size_type = Int64;
   using value_type = typename BaseClass::value_type;
   using pointer = typename BaseClass::pointer;

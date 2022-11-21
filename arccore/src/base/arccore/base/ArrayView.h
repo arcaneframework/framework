@@ -16,6 +16,7 @@
 
 #include "arccore/base/ArrayRange.h"
 #include "arccore/base/ArrayViewCommon.h"
+#include "arccore/base/BaseTypes.h"
 
 #include <cstddef>
 #include <array>
@@ -32,9 +33,6 @@ namespace Arccore
 template<typename T> class ConstArrayView;
 template<typename T> class ConstIterT;
 template<typename T> class IterT;
-template<typename T> class Span;
-template<typename T> class SmallSpan;
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
