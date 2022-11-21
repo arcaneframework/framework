@@ -142,12 +142,6 @@ class MDSpan<DataType,MDDim1,LayoutType>
  public:
   //! Construit un tableau vide
   MDSpan() = default;
-  //! Construit un tableau
-  ARCCORE_HOST_DEVICE MDSpan(DataType* ptr,Int32 dim1_size)
-  {
-    m_extents.setSize(dim1_size);
-    m_ptr = ptr;
-  }
   ARCCORE_HOST_DEVICE MDSpan(DataType* ptr,ArrayExtentsWithOffset<MDDim1,LayoutType> extents_and_offset)
   : BaseClass(ptr,extents_and_offset) {}
 
@@ -194,12 +188,6 @@ class MDSpan<DataType,MDDim2,LayoutType>
  public:
   //! Construit un tableau vide
   MDSpan() = default;
-  //! Construit une vue
-  ARCCORE_HOST_DEVICE MDSpan(DataType* ptr,Int32 dim1_size,Int32 dim2_size)
-  {
-    m_extents.setSize(dim1_size,dim2_size);
-    m_ptr = ptr;
-  }
   ARCCORE_HOST_DEVICE MDSpan(DataType* ptr,ArrayExtentsWithOffset<MDDim2,LayoutType> extents_and_offset)
   : BaseClass(ptr,extents_and_offset) {}
 
@@ -249,21 +237,10 @@ class MDSpan<DataType,MDDim3,LayoutType>
  public:
   //! Construit un tableau vide
   MDSpan() = default;
-  //! Construit une vue
-  ARCCORE_HOST_DEVICE MDSpan(DataType* ptr,Int32 dim1_size,Int32 dim2_size,Int32 dim3_size)
-  {
-    _setSize(ptr,dim1_size,dim2_size,dim3_size);
-  }
   ARCCORE_HOST_DEVICE MDSpan(DataType* ptr,ArrayExtentsWithOffset<MDDim3,LayoutType> extents_and_offset)
   : BaseClass(ptr,extents_and_offset) {}
   template<typename X,typename = std::enable_if_t<std::is_same_v<X,UnqualifiedValueType>>>
   ARCCORE_HOST_DEVICE MDSpan(const MDSpan<X,MDDim3>& rhs) : BaseClass(rhs){}
- private:
-  void _setSize(DataType* ptr,Int32 dim1_size,Int32 dim2_size,Int32 dim3_size)
-  {
-    m_extents.setSize(dim1_size,dim2_size,dim3_size);
-    m_ptr = ptr;
-  }
  public:
   //! Valeur de la première dimension
   ARCCORE_HOST_DEVICE Int32 dim1Size() const { return m_extents(0); }
@@ -315,22 +292,11 @@ class MDSpan<DataType,MDDim4,LayoutType>
   using BaseClass::ptrAt;
   using BaseClass::operator();
  public:
+
   //! Construit un tableau vide
   MDSpan() = default;
-  //! Construit une vue
-  ARCCORE_HOST_DEVICE MDSpan(DataType* ptr,Int32 dim1_size,Int32 dim2_size,
-                             Int32 dim3_size,Int32 dim4_size)
-  {
-    _setSize(ptr,dim1_size,dim2_size,dim3_size,dim4_size);
-  }
   ARCCORE_HOST_DEVICE MDSpan(DataType* ptr,ArrayExtentsWithOffset<MDDim4,LayoutType> extents_and_offset)
   : BaseClass(ptr,extents_and_offset) {}
- private:
-  void _setSize(DataType* ptr,Int32 dim1_size,Int32 dim2_size,Int32 dim3_size,Int32 dim4_size)
-  {
-    m_extents.setSize(dim1_size,dim2_size,dim3_size,dim4_size);
-    m_ptr = ptr;
-  }
 
  public:
   //! Valeur de la première dimension

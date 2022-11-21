@@ -157,7 +157,7 @@ class NumArrayBase
    */
   void resize(ArrayExtents<ExtentType> extents)
   {
-    m_span.m_extents.setSize(extents);
+    m_span.m_extents = extents;
     _resize();
   }
  protected:

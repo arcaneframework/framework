@@ -336,7 +336,7 @@ createSerializedDataRef(bool use_basic_type) const
   const Byte* bt = reinterpret_cast<const Byte*>(m_value.to1DSpan().data());
   Span<const Byte> base_values(bt,full_size);
   auto extents = m_value.extents();
-  const Int32 nb_extent = extents.asSpan().size();
+  const Int32 nb_extent = CheckedConvert::toInt32(extents.asStdArray().size());
   UniqueArray<Int64> dimensions(nb_extent);
   for ( Int32 i=0; i<nb_extent; ++i )
     dimensions[i] = extents(i);
@@ -416,7 +416,10 @@ serialize(ISerializer* sbuf,IDataOperation* operation)
     n[0] = SERIALIZE2_MAGIC_NUMBER;
     n[1] = total;
     sbuf->putSpan(Span<const Int64>(n,2));
-    sbuf->putSpan(m_value.extents().asSpan());
+    {
+      auto ext = m_value.extents().asStdArray();
+      sbuf->putSpan(Span<const Int32>(ext));
+    }
     sbuf->putSpan(m_value.to1DSpan());
   }
   else if (mode==ISerializer::ModeGet){
@@ -506,7 +509,10 @@ serialize(ISerializer* sbuf,Int32ConstArrayView ids,IDataOperation* operation)
                     << " this=" << this;*/
     sbuf->putSpan(Span<const Int64>(n,3));
 
-    sbuf->putSpan(m_value.extents().asSpan());
+    {
+      auto ext = m_value.extents().asStdArray();
+      sbuf->putSpan(Span<const Int32>(ext));
+    }
 
     UniqueArray<BasicType> v(total*nb_count);
     Span2<const DataType> value_as_span2(_valueAsConstSpan2());
@@ -646,7 +652,8 @@ computeHash(IHashAlgorithm* algo,ByteArray& output) const
 
   {
     // Calcule la fonction de hashage pour les nombres d'éléments
-    auto input = asBytes(m_value.extents().asSpan());
+    auto ext = m_value.extents().asStdArray();
+    auto input = asBytes(Span<const Int32>(ext));
     algo->computeHash64(input,output);
   }
 }

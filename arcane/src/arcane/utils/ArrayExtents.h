@@ -203,7 +203,6 @@ class ArrayExtentsBase
   //! Positionne à \a v le nombre d'éléments de la i-ème dimension
   ARCCORE_HOST_DEVICE void setExtent(int i,Int32 v) { m_extents[i] = v; }
   ARCCORE_HOST_DEVICE Int32 operator()(int i) const { return m_extents[i]; }
-  ARCCORE_HOST_DEVICE SmallSpan<const Int32> asSpan() const { return { m_extents.data(), ExtentType::rank() }; }
   ARCCORE_HOST_DEVICE std::array<Int32,ExtentType::rank()> asStdArray() const { return m_extents; }
   //! Nombre total d'eléments
   ARCCORE_HOST_DEVICE constexpr Int64 totalNbElement() const
@@ -246,10 +245,6 @@ class ArrayExtents<MDDim1>
   ArrayExtents(BaseClass rhs) : BaseClass(rhs){}
   ARCCORE_HOST_DEVICE explicit ArrayExtents(Int32 dim1_size)
   {
-    setSize(dim1_size);
-  }
-  ARCCORE_HOST_DEVICE void setSize(Int32 dim1_size)
-  {
     m_extents[0] = dim1_size;
   }
 
@@ -277,10 +272,6 @@ class ArrayExtents<MDDim2>
   ArrayExtents() = default;
   ArrayExtents(BaseClass rhs) : BaseClass(rhs){}
   ARCCORE_HOST_DEVICE ArrayExtents(Int32 dim1_size,Int32 dim2_size)
-  {
-    setSize(dim1_size,dim2_size);
-  }
-  ARCCORE_HOST_DEVICE void setSize(Int32 dim1_size,Int32 dim2_size)
   {
     m_extents[0] = dim1_size;
     m_extents[1] = dim2_size;
@@ -312,10 +303,6 @@ class ArrayExtents<MDDim3>
   ArrayExtents(BaseClass rhs) : BaseClass(rhs){}
   ARCCORE_HOST_DEVICE ArrayExtents(Int32 dim1_size,Int32 dim2_size,Int32 dim3_size)
   {
-    setSize(dim1_size,dim2_size,dim3_size);
-  }
-  ARCCORE_HOST_DEVICE void setSize(Int32 dim1_size,Int32 dim2_size,Int32 dim3_size)
-  {
     m_extents[0] = dim1_size;
     m_extents[1] = dim2_size;
     m_extents[2] = dim3_size;
@@ -345,10 +332,6 @@ class ArrayExtents<MDDim4>
   ArrayExtents(BaseClass rhs) : BaseClass(rhs){}
   ARCCORE_HOST_DEVICE ArrayExtents(Int32 dim1_size,Int32 dim2_size,Int32 dim3_size,Int32 dim4_size)
   {
-    setSize(dim1_size,dim2_size,dim3_size,dim4_size);
-  }
-  ARCCORE_HOST_DEVICE void setSize(Int32 dim1_size,Int32 dim2_size,Int32 dim3_size,Int32 dim4_size)
-  {
     m_extents[0] = dim1_size;
     m_extents[1] = dim2_size;
     m_extents[2] = dim3_size;
@@ -377,7 +360,6 @@ class ArrayExtentsWithOffset<MDDim1,LayoutType>
   using BaseClass = ArrayExtents<MDDim1>;
   using BaseClass::extent;
   using BaseClass::operator();
-  using BaseClass::asSpan;
   using BaseClass::asStdArray;
   using BaseClass::totalNbElement;
   using Layout = LayoutType;
@@ -397,14 +379,6 @@ class ArrayExtentsWithOffset<MDDim1,LayoutType>
     BaseClass::_checkIndex(idx.id0());
     return idx.id0();
   }
-  ARCCORE_HOST_DEVICE void setSize(Int32 dim1_size)
-  {
-    BaseClass::setSize(dim1_size);
-  }
-  ARCCORE_HOST_DEVICE void setSize(ArrayExtents<MDDim1> extents)
-  {
-    BaseClass::setSize(extents(0));
-  }
   BaseClass extents() const { const BaseClass* b = this; return *b; }
 };
 
@@ -419,7 +393,6 @@ class ArrayExtentsWithOffset<MDDim2,LayoutType>
   using BaseClass = ArrayExtents<MDDim2>;
   using BaseClass::extent;
   using BaseClass::operator();
-  using BaseClass::asSpan;
   using BaseClass::asStdArray;
   using BaseClass::totalNbElement;
   using Layout = LayoutType;
@@ -438,14 +411,6 @@ class ArrayExtentsWithOffset<MDDim2,LayoutType>
     BaseClass::_checkIndex(idx);
     return Layout::offset(idx,m_extents[Layout::LastExtent]);
   }
-  ARCCORE_HOST_DEVICE void setSize(Int32 dim1_size,Int32 dim2_size)
-  {
-    BaseClass::setSize(dim1_size,dim2_size);
-  }
-  ARCCORE_HOST_DEVICE void setSize(ArrayExtents<MDDim2> dims)
-  {
-    this->setSize(dims(0),dims(1));
-  }
   BaseClass extents() const { const BaseClass* b = this; return *b; }
 };
 
@@ -460,7 +425,6 @@ class ArrayExtentsWithOffset<MDDim3,LayoutType>
   using BaseClass = ArrayExtents<MDDim3>;
   using BaseClass::extent;
   using BaseClass::operator();
-  using BaseClass::asSpan;
   using BaseClass::asStdArray;
   using BaseClass::totalNbElement;
   using Layout = LayoutType;
@@ -479,15 +443,6 @@ class ArrayExtentsWithOffset<MDDim3,LayoutType>
   {
     this->_checkIndex(idx);
     return Layout::offset(idx,m_extents[Layout::LastExtent],m_dim23_size);
-  }
-  void setSize(Int32 dim1_size,Int32 dim2_size,Int32 dim3_size)
-  {
-    BaseClass::setSize(dim1_size,dim2_size,dim3_size);
-    _computeOffsets();
-  }
-  void setSize(ArrayExtents<MDDim3> dims)
-  {
-    this->setSize(dims(0),dims(1),dims(2));
   }
   BaseClass extents() const { const BaseClass* b = this; return *b; }
  protected:
@@ -510,7 +465,6 @@ class ArrayExtentsWithOffset<MDDim4,LayoutType>
   using BaseClass = ArrayExtents<MDDim4>;
   using BaseClass::extent;
   using BaseClass::operator();
-  using BaseClass::asSpan;
   using BaseClass::asStdArray;
   using BaseClass::totalNbElement;
   using Layout = LayoutType;
@@ -529,15 +483,6 @@ class ArrayExtentsWithOffset<MDDim4,LayoutType>
   {
     this->_checkIndex(idx);
     return (m_dim234_size*idx.largeId0()) + m_dim34_size*idx.largeId1() + m_extents[3]*idx.largeId2() + idx.largeId3();
-  }
-  void setSize(Int32 dim1_size,Int32 dim2_size,Int32 dim3_size,Int32 dim4_size)
-  {
-    BaseClass::setSize(dim1_size,dim2_size,dim3_size,dim4_size);
-    _computeOffsets();
-  }
-  void setSize(ArrayExtents<MDDim4> dims)
-  {
-    this->setSize(dims(0),dims(1),dims(2),dims(3));
   }
   BaseClass extents() const { const BaseClass* b = this; return *b; }
  protected:
