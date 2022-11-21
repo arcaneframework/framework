@@ -200,8 +200,8 @@ class ArrayExtentsBase
  public:
   //! Nombre d'élément de la \a i-ème dimension.
   ARCCORE_HOST_DEVICE Int32 extent(int i) const { return m_extents[i]; }
-  //! Positionne à \a v le nombre d'éléments de la i-ème dimension
-  ARCCORE_HOST_DEVICE void setExtent(int i,Int32 v) { m_extents[i] = v; }
+  //! TEMPORARY: Positionne à \a v le nombre d'éléments de la dimension 0.
+  ARCCORE_HOST_DEVICE void setExtent0(Int32 v) { m_extents[0] = v; }
   ARCCORE_HOST_DEVICE Int32 operator()(int i) const { return m_extents[i]; }
   ARCCORE_HOST_DEVICE std::array<Int32,ExtentType::rank()> asStdArray() const { return m_extents; }
   //! Nombre total d'eléments

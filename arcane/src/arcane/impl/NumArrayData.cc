@@ -252,7 +252,7 @@ _resizeDim1(Int32 dim1_size)
 {
   // Récupère les dimensions du 'NumArray' et ne modifie que la première
   auto extents = m_value.extents();
-  extents.setExtent(0,dim1_size);
+  extents.setExtent0(dim1_size);
   m_value.resize(extents);
 }
 
