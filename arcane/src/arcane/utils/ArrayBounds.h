@@ -48,21 +48,31 @@ class ArrayBoundsBase
 : private ArrayExtents<ExtentType>
 {
  public:
+
   using ArrayExtents<ExtentType>::extent;
+
  public:
+
   constexpr ArrayBoundsBase() : m_nb_element(0) {}
- public:
-  ARCCORE_HOST_DEVICE constexpr Int64 nbElement() const { return m_nb_element; }
-  ARCCORE_HOST_DEVICE constexpr std::array<Int32,ExtentType::rank()> asStdArray() const { return ArrayExtents<ExtentType>::asStdArray(); }
- protected:
-  constexpr void _computeNbElement()
+  constexpr explicit ArrayBoundsBase(const ArrayExtents<ExtentType>& rhs)
+  : ArrayExtents<ExtentType>(rhs)
   {
     m_nb_element = this->totalNbElement();
   }
+
+ public:
+
+  ARCCORE_HOST_DEVICE constexpr Int64 nbElement() const { return m_nb_element; }
+  ARCCORE_HOST_DEVICE constexpr std::array<Int32,ExtentType::rank()> asStdArray() const { return ArrayExtents<ExtentType>::asStdArray(); }
+
  protected:
+
   using ArrayExtents<ExtentType>::m_extents;
   Int64 m_nb_element;
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 template<>
 class ArrayBounds<MDDim1>
@@ -74,16 +84,17 @@ class ArrayBounds<MDDim1>
   // Note: le constructeur ne doit pas être explicite pour permettre la conversion
   // à partir d'un entier.
   constexpr ArrayBounds(Int32 dim1)
-  : ArrayBoundsBase<MDDim1>()
+  : ArrayBoundsBase<MDDim1>(ArrayExtents<MDDim1>(dim1))
   {
-    m_extents[0] = dim1;
-    _computeNbElement();
   }
   ARCCORE_HOST_DEVICE constexpr IndexType getIndices(Int32 i) const
   {
     return { i };
   }
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 template<>
 class ArrayBounds<MDDim2>
@@ -93,11 +104,8 @@ class ArrayBounds<MDDim2>
   using IndexType = ArrayBoundsIndex<2>;
   using ArrayBoundsBase<MDDim2>::m_extents;
   constexpr ArrayBounds(Int32 dim1,Int32 dim2)
-  : ArrayBoundsBase<MDDim2>()
+  : ArrayBoundsBase<MDDim2>(ArrayExtents<MDDim2>(dim1,dim2))
   {
-    m_extents[0] = dim1;
-    m_extents[1] = dim2;
-    _computeNbElement();
   }
   ARCCORE_HOST_DEVICE constexpr IndexType getIndices(Int32 i) const
   {
@@ -107,6 +115,9 @@ class ArrayBounds<MDDim2>
   }
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template<>
 class ArrayBounds<MDDim3>
 : public ArrayBoundsBase<MDDim3>
@@ -115,12 +126,8 @@ class ArrayBounds<MDDim3>
   using IndexType = ArrayBoundsIndex<3>;
   using ArrayBoundsBase<MDDim3>::m_extents;
   constexpr ArrayBounds(Int32 dim1,Int32 dim2,Int32 dim3)
-  : ArrayBoundsBase<MDDim3>()
+  : ArrayBoundsBase<MDDim3>(ArrayExtents<MDDim3>(dim1,dim2,dim3))
   {
-    m_extents[0] = dim1;
-    m_extents[1] = dim2;
-    m_extents[2] = dim3;
-    _computeNbElement();
   }
   ARCCORE_HOST_DEVICE constexpr IndexType getIndices(Int32 i) const
   {
@@ -133,6 +140,9 @@ class ArrayBounds<MDDim3>
   }
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template<>
 class ArrayBounds<MDDim4>
 : public ArrayBoundsBase<MDDim4>
@@ -141,13 +151,8 @@ class ArrayBounds<MDDim4>
   using IndexType = ArrayBoundsIndex<4>;
   using ArrayBoundsBase<MDDim4>::m_extents;
   constexpr ArrayBounds(Int32 dim1,Int32 dim2,Int32 dim3,Int32 dim4)
-  : ArrayBoundsBase<MDDim4>()
+  : ArrayBoundsBase<MDDim4>(ArrayExtents<MDDim4>(dim1,dim2,dim3,dim4))
   {
-    m_extents[0] = dim1;
-    m_extents[1] = dim2;
-    m_extents[2] = dim3;
-    m_extents[3] = dim4;
-    _computeNbElement();
   }
   ARCCORE_HOST_DEVICE constexpr IndexType getIndices(Int32 i) const
   {
