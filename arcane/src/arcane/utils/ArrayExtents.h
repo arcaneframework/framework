@@ -152,6 +152,231 @@ class ArrayStridesBase
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace impl
+{
+template<int Size>
+class ExtentValue
+{
+ public:
+  static constexpr Int32 size() { return Size; };
+  static constexpr Int32 v = Size;
+};
+
+template<>
+class ExtentValue<-1>
+{
+ public:
+  Int32 size() const { return v; }
+ public:
+  int v = 0;
+};
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<Int32... RankSize>
+class ArrayExtentsValue;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<Int32 x0>
+class ArrayExtentsValue<x0>
+{
+ public:
+
+  ArrayExtentsValue() = default;
+
+ protected:
+
+  explicit ARCCORE_HOST_DEVICE ArrayExtentsValue(SmallSpan<const Int32> extents)
+  {
+    m_extent0.v = extents[0];
+  }
+
+  ARCCORE_HOST_DEVICE void _checkIndex([[maybe_unused]] ArrayBoundsIndex<1> idx) const
+  {
+    ARCCORE_CHECK_AT(idx.id0(),m_extent0.v);
+  }
+
+ protected:
+
+  impl::ExtentValue<x0> m_extent0;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<Int32 x0,Int32 x1>
+class ArrayExtentsValue<x0,x1>
+{
+ public:
+
+  ArrayExtentsValue() = default;
+
+ protected:
+
+  explicit ARCCORE_HOST_DEVICE ArrayExtentsValue(SmallSpan<const Int32> extents)
+  {
+    m_extent0.v = extents[0];
+    m_extent1.v = extents[1];
+  }
+
+  ARCCORE_HOST_DEVICE void _checkIndex([[maybe_unused]] ArrayBoundsIndex<2> idx) const
+  {
+    ARCCORE_CHECK_AT(idx.id0(),m_extent0.v);
+    ARCCORE_CHECK_AT(idx.id1(),m_extent1.v);
+  }
+
+ protected:
+
+  impl::ExtentValue<x0> m_extent0;
+  impl::ExtentValue<x1> m_extent1;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<Int32 x0,Int32 x1,Int32 x2>
+class ArrayExtentsValue<x0,x1,x2>
+{
+ public:
+
+  ArrayExtentsValue() = default;
+
+ protected:
+
+  explicit ARCCORE_HOST_DEVICE ArrayExtentsValue(SmallSpan<const Int32> extents)
+  {
+    m_extent0.v = extents[0];
+    m_extent1.v = extents[1];
+    m_extent2.v = extents[2];
+  }
+
+  ARCCORE_HOST_DEVICE void _checkIndex([[maybe_unused]] ArrayBoundsIndex<3> idx) const
+  {
+    ARCCORE_CHECK_AT(idx.id0(),m_extent0.v);
+    ARCCORE_CHECK_AT(idx.id1(),m_extent1.v);
+    ARCCORE_CHECK_AT(idx.id2(),m_extent2.v);
+  }
+
+ protected:
+
+  impl::ExtentValue<x0> m_extent0;
+  impl::ExtentValue<x1> m_extent1;
+  impl::ExtentValue<x2> m_extent2;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<Int32 x0,Int32 x1,Int32 x2,Int32 x3>
+class ArrayExtentsValue<x0,x1,x2,x3>
+{
+ public:
+
+  ArrayExtentsValue() = default;
+
+ protected:
+
+  explicit ARCCORE_HOST_DEVICE ArrayExtentsValue(SmallSpan<const Int32> extents)
+  {
+    m_extent0.v = extents[0];
+    m_extent1.v = extents[1];
+    m_extent2.v = extents[2];
+    m_extent3.v = extents[3];
+  }
+
+  ARCCORE_HOST_DEVICE void _checkIndex([[maybe_unused]] ArrayBoundsIndex<4> idx) const
+  {
+    ARCCORE_CHECK_AT(idx.id0(),m_extent0.v);
+    ARCCORE_CHECK_AT(idx.id1(),m_extent1.v);
+    ARCCORE_CHECK_AT(idx.id2(),m_extent2.v);
+    ARCCORE_CHECK_AT(idx.id3(),m_extent3.v);
+  }
+
+ protected:
+
+  impl::ExtentValue<x0> m_extent0;
+  impl::ExtentValue<x1> m_extent1;
+  impl::ExtentValue<x2> m_extent2;
+  impl::ExtentValue<x3> m_extent3;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<int RankValue>
+class ArrayExtentsValueDynamic;
+
+template<>
+class ArrayExtentsValueDynamic<1>
+: public ArrayExtentsValue<-1>
+{
+  using BaseClass = ArrayExtentsValue<-1>;
+
+ public:
+
+  ArrayExtentsValueDynamic() = default;
+
+ protected:
+
+  explicit ARCCORE_HOST_DEVICE ArrayExtentsValueDynamic(SmallSpan<const Int32> extents)
+  : BaseClass(extents){}
+};
+
+template<>
+class ArrayExtentsValueDynamic<2>
+: public ArrayExtentsValue<-1,-1>
+{
+  using BaseClass = ArrayExtentsValue<-1,-1>;
+
+ public:
+
+  ArrayExtentsValueDynamic() = default;
+
+ protected:
+
+  explicit ARCCORE_HOST_DEVICE ArrayExtentsValueDynamic(SmallSpan<const Int32> extents)
+  : BaseClass(extents){}
+};
+
+template<>
+class ArrayExtentsValueDynamic<3>
+: public ArrayExtentsValue<-1,-1,-1>
+{
+  using BaseClass = ArrayExtentsValue<-1,-1,-1>;
+
+ public:
+
+  ArrayExtentsValueDynamic() = default;
+
+ protected:
+
+  explicit ARCCORE_HOST_DEVICE ArrayExtentsValueDynamic(SmallSpan<const Int32> extents)
+  : BaseClass(extents){}
+};
+
+template<>
+class ArrayExtentsValueDynamic<4>
+: public ArrayExtentsValue<-1,-1,-1,-1>
+{
+  using BaseClass = ArrayExtentsValue<-1,-1,-1,-1>;
+
+ public:
+
+  ArrayExtentsValueDynamic() = default;
+
+ protected:
+
+  explicit ARCCORE_HOST_DEVICE ArrayExtentsValueDynamic(SmallSpan<const Int32> extents)
+  : BaseClass(extents){}
+};
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -180,14 +405,20 @@ class ArrayExtentsBase<MDDim0>
  */
 template<typename ExtentType>
 class ArrayExtentsBase
+: public ArrayExtentsValueDynamic<ExtentType::rank()>
 {
+  using BaseClass = ArrayExtentsValueDynamic<ExtentType::rank()>;
   using ArrayExtentsPreviousRank = ArrayExtentsBase<MDDim<ExtentType::rank()-1>>;
 
  public:
+
   ARCCORE_HOST_DEVICE constexpr ArrayExtentsBase()
-  : m_extents(detail::ArrayExtentsTraits<ExtentType::rank()>::extendsInitHelper()) { }
+  : BaseClass(), m_extents(detail::ArrayExtentsTraits<ExtentType::rank()>::extendsInitHelper()) { }
+
  protected:
+
   explicit ARCCORE_HOST_DEVICE ArrayExtentsBase(SmallSpan<const Int32> extents)
+  : BaseClass(extents)
   {
     auto nb_rank = ExtentType::rank();
     Integer n = extents.size();
@@ -197,11 +428,13 @@ class ArrayExtentsBase
     for( int i=vn; i<nb_rank; ++i )
       m_extents[i] = 0;
   }
+
  public:
+
   //! Nombre d'élément de la \a i-ème dimension.
   ARCCORE_HOST_DEVICE Int32 extent(int i) const { return m_extents[i]; }
   //! TEMPORARY: Positionne à \a v le nombre d'éléments de la dimension 0.
-  ARCCORE_HOST_DEVICE void setExtent0(Int32 v) { m_extents[0] = v; }
+  ARCCORE_HOST_DEVICE void setExtent0(Int32 v) { m_extents[0] = v; this->m_extent0.v = v; }
   ARCCORE_HOST_DEVICE Int32 operator()(int i) const { return m_extents[i]; }
   ARCCORE_HOST_DEVICE std::array<Int32,ExtentType::rank()> asStdArray() const { return m_extents; }
   //! Nombre total d'eléments
@@ -246,13 +479,8 @@ class ArrayExtents<MDDim1>
   ARCCORE_HOST_DEVICE explicit ArrayExtents(Int32 dim1_size)
   {
     m_extents[0] = dim1_size;
-  }
 
- protected:
-
-  ARCCORE_HOST_DEVICE void _checkIndex([[maybe_unused]] ArrayBoundsIndex<1> idx) const
-  {
-    ARCCORE_CHECK_AT(idx.id0(),m_extents[0]);
+    this->m_extent0.v = dim1_size;
   }
 };
 
@@ -275,14 +503,9 @@ class ArrayExtents<MDDim2>
   {
     m_extents[0] = dim1_size;
     m_extents[1] = dim2_size;
-  }
 
- protected:
-
-  ARCCORE_HOST_DEVICE void _checkIndex([[maybe_unused]] ArrayBoundsIndex<2> idx) const
-  {
-    ARCCORE_CHECK_AT(idx.id0(),m_extents[0]);
-    ARCCORE_CHECK_AT(idx.id1(),m_extents[1]);
+    this->m_extent0.v = dim1_size;
+    this->m_extent1.v = dim2_size;
   }
 };
 
@@ -301,20 +524,16 @@ class ArrayExtents<MDDim3>
 
   ArrayExtents() = default;
   ArrayExtents(BaseClass rhs) : BaseClass(rhs){}
+
   ARCCORE_HOST_DEVICE ArrayExtents(Int32 dim1_size,Int32 dim2_size,Int32 dim3_size)
   {
     m_extents[0] = dim1_size;
     m_extents[1] = dim2_size;
     m_extents[2] = dim3_size;
-  }
 
- protected:
-
-  ARCCORE_HOST_DEVICE void _checkIndex([[maybe_unused]] ArrayBoundsIndex<3> idx) const
-  {
-    ARCCORE_CHECK_AT(idx.id0(),m_extents[0]);
-    ARCCORE_CHECK_AT(idx.id1(),m_extents[1]);
-    ARCCORE_CHECK_AT(idx.id2(),m_extents[2]);
+    this->m_extent0.v = dim1_size;
+    this->m_extent1.v = dim2_size;
+    this->m_extent2.v = dim3_size;
   }
 };
 
@@ -325,7 +544,6 @@ template<>
 class ArrayExtents<MDDim4>
 : public ArrayExtentsBase<MDDim4>
 {
- public:
   using BaseClass = ArrayExtentsBase<MDDim4>;
  public:
   ArrayExtents() = default;
@@ -336,16 +554,11 @@ class ArrayExtents<MDDim4>
     m_extents[1] = dim2_size;
     m_extents[2] = dim3_size;
     m_extents[3] = dim4_size;
-  }
 
- protected:
-
-  ARCCORE_HOST_DEVICE void _checkIndex([[maybe_unused]] ArrayBoundsIndex<4> idx) const
-  {
-    ARCCORE_CHECK_AT(idx.id0(),m_extents[0]);
-    ARCCORE_CHECK_AT(idx.id1(),m_extents[1]);
-    ARCCORE_CHECK_AT(idx.id2(),m_extents[2]);
-    ARCCORE_CHECK_AT(idx.id3(),m_extents[3]);
+    this->m_extent0.v = dim1_size;
+    this->m_extent1.v = dim2_size;
+    this->m_extent2.v = dim3_size;
+    this->m_extent3.v = dim4_size;
   }
 };
 
