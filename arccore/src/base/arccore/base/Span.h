@@ -57,12 +57,12 @@ class ViewTypeT<const T>
  * type utilisé pour conserver le nombre d'éléments du tableau. Cela peut
  * être 'Int32' ou 'Int64'.
 */
-template<typename T,typename SizeType>
+template<typename T,typename SizeType,SizeType Extent>
 class SpanImpl
 {
  public:
 
-  using ThatClass = SpanImpl<T,SizeType>;
+  using ThatClass = SpanImpl<T,SizeType,Extent>;
   using size_type = SizeType;
   using ElementType = T;
   using element_type = ElementType;
@@ -402,14 +402,14 @@ class SpanImpl
  peut donc dépasser 2Go. Elle est concue pour être similaire à la classe
  std::span du C++20.
 */
-template<typename T>
+template<typename T,Int64 Extent>
 class Span
-: public SpanImpl<T,Int64>
+: public SpanImpl<T,Int64,Extent>
 {
  public:
 
-  using ThatClass = Span<T>;
-  using BaseClass = SpanImpl<T,Int64>;
+  using ThatClass = Span<T,Extent>;
+  using BaseClass = SpanImpl<T,Int64,Extent>;
   using size_type = Int64;
   using value_type = typename BaseClass::value_type;
   using pointer = typename BaseClass::pointer;
@@ -508,14 +508,14 @@ class Span
  * type \a T de la même manière qu'un tableau C standard. Elle est similaire à
  * Span à ceci près que le nombre d'éléments est stocké sur un 'Int32'.
  */
-template<typename T>
+template<typename T,Int32 Extent>
 class SmallSpan
-: public SpanImpl<T,Int32>
+: public SpanImpl<T,Int32,Extent>
 {
  public:
 
-  using ThatClass = SmallSpan<T>;
-  using BaseClass = SpanImpl<T,Int32>;
+  using ThatClass = SmallSpan<T,Extent>;
+  using BaseClass = SpanImpl<T,Int32,Extent>;
   using size_type = Int32;
   using value_type = typename BaseClass::value_type;
   using pointer = typename BaseClass::pointer;

@@ -50,6 +50,9 @@ typedef unsigned short UInt16;
 //! Type d'un réel simple précision
 typedef float Single;
 
+//! Indique que la dimension d'un tableau est dynamique
+inline constexpr Int32 DynExtent = -1;
+
 template<typename T> class ConstArrayView;
 template<typename T> class ArrayView;
 template<typename T> class ConstArray2View;
@@ -59,12 +62,12 @@ template<typename T> class Array3View;
 template<typename T> class ConstArray4View;
 template<typename T> class Array4View;
 template<class DataType> class CoreArray;
-template<typename T,typename SizeType> class SpanImpl;
-template<typename T> class Span;
-template<typename T> class SmallSpan;
-template<typename T,typename SizeType> class Span2Impl;
-template<typename T> class Span2;
-template<typename T> class SmallSpan2;
+template<typename T,typename SizeType,SizeType Extent = -1> class SpanImpl;
+template<typename T,Int64 Extent = DynExtent> class Span;
+template<typename T,Int32 Extent = DynExtent> class SmallSpan;
+template<typename T,typename SizeType, SizeType Extent1 = DynExtent, SizeType Extent2= DynExtent> class Span2Impl;
+template<typename T, Int64 Extent1 = DynExtent, Int64 Extent2 = DynExtent> class Span2;
+template<typename T, Int32 Extent1 = DynExtent, Int32 Extent2 = DynExtent> class SmallSpan2;
 
 class StringImpl;
 class String;
