@@ -39,6 +39,7 @@ namespace Arcane
 class ARCANE_UTILS_EXPORT NumArrayBaseCommon
 {
  protected:
+
   static IMemoryAllocator* _getDefaultAllocator();
   static IMemoryAllocator* _getDefaultAllocator(eMemoryRessource r);
   static void _checkHost(eMemoryRessource r);
@@ -49,22 +50,28 @@ class ARCANE_UTILS_EXPORT NumArrayBaseCommon
 namespace impl
 {
   // Wrapper de Arccore::Array pour la classe NumArray
-  template<typename DataType>
+  template <typename DataType>
   class NumArrayContainer
   : private Arccore::Array<DataType>
   {
    private:
+
     using BaseClass = Arccore::Array<DataType>;
     using ThatClass = NumArrayContainer<DataType>;
+
    public:
+
     using BaseClass::capacity;
     using BaseClass::fill;
+
    public:
+
     explicit NumArrayContainer(IMemoryAllocator* a)
     {
-      this->_initFromAllocator(a,0);
+      this->_initFromAllocator(a, 0);
     }
-    NumArrayContainer(const ThatClass& rhs) : BaseClass()
+    NumArrayContainer(const ThatClass& rhs)
+    : BaseClass()
     {
       this->_initFromSpan(rhs.to1DSpan());
     }
@@ -74,7 +81,7 @@ namespace impl
     }
     ThatClass& operator=(const ThatClass& rhs)
     {
-      if (this!=&rhs){
+      if (this != &rhs) {
         BaseClass::_copy(rhs.data());
       }
       return (*this);
@@ -86,6 +93,7 @@ namespace impl
     }
 
    public:
+
     void resize(Int64 new_size) { BaseClass::_resizeNoInit(new_size); }
     Span<DataType> to1DSpan() { return BaseClass::span(); }
     Span<const DataType> to1DSpan() const { return BaseClass::constSpan(); }
@@ -98,16 +106,16 @@ namespace impl
       Span<DataType> s = to1DSpan();
       Int64 s1 = s.size();
       Int32 index = 0;
-      for( auto x : alist ){
+      for (auto x : alist) {
         s[index] = x;
         ++index;
         // S'assure qu'on ne déborde pas
-        if (index>=s1)
+        if (index >= s1)
           break;
       }
     }
   };
-}
+} // namespace impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -118,8 +126,8 @@ namespace impl
  * \warning API en cours de définition.
  *
  * En général cette classe n'est pas utilisée directement mais par l'intermédiaire
- * d'une de ses spécialisations suivant le rang comme NumArray<DataType,1>,
- * NumArray<DataType,2>, NumArray<DataType,3> ou NumArray<DataType,4>.
+ * d'une de ses spécialisations suivant le rang comme NumArray<DataType,MDDim1>,
+ * NumArray<DataType,MDDim2>, NumArray<DataType,MDDim3> ou NumArray<DataType,MDDim4>.
  *
  * Cette classe contient un nombre minimal de méthodes. Notamment, l'accès aux
  * valeurs du tableau se fait normalement via des vues (MDSpanBase).
@@ -135,24 +143,22 @@ namespace impl
  * initialisé (\ref arcanedoc_parallel_accelerator). C'est pourquoi il ne faut pas
  * utiliser de variables globales de cette classe ou d'une classe dérivée.
  */
-template<typename DataType,typename ExtentType,typename LayoutType>
+template <typename DataType, typename ExtentType, typename LayoutType>
 class NumArrayBase
 : public NumArrayBaseCommon
 {
  public:
 
-  using ConstSpanType = MDSpan<const DataType,ExtentType,LayoutType>;
-  using SpanType = MDSpan<DataType,ExtentType,LayoutType>;
+  using ConstSpanType = MDSpan<const DataType, ExtentType, LayoutType>;
+  using SpanType = MDSpan<DataType, ExtentType, LayoutType>;
   using ArrayWrapper = impl::NumArrayContainer<DataType>;
   using ArrayBoundsIndexType = typename SpanType::ArrayBoundsIndexType;
-  using ThatClass = NumArrayBase<DataType,ExtentType,LayoutType>;
+  using ThatClass = NumArrayBase<DataType, ExtentType, LayoutType>;
 
  public:
 
   //! Nombre total d'éléments du tableau
   Int64 totalNbElement() const { return m_total_nb_element; }
-  //! Nombre d'éléments du rang \a i
-  //Int32 extent(int i) const { return m_span.extent(i); }
   /*!
    * \brief Modifie la taille du tableau.
    * \warning Les valeurs actuelles ne sont pas conservées lors de cette opération.
@@ -162,17 +168,25 @@ class NumArrayBase
     m_span.m_extents = extents;
     _resize();
   }
+
  protected:
 
-  NumArrayBase() : m_data(_getDefaultAllocator()){}
-  explicit NumArrayBase(eMemoryRessource r) : m_data(_getDefaultAllocator(r)), m_memory_ressource(r){}
+  NumArrayBase()
+  : m_data(_getDefaultAllocator())
+  {}
+  explicit NumArrayBase(eMemoryRessource r)
+  : m_data(_getDefaultAllocator(r))
+  , m_memory_ressource(r)
+  {}
   explicit NumArrayBase(ArrayExtents<ExtentType> extents)
-  : m_data(_getDefaultAllocator()), m_memory_ressource(eMemoryRessource::UnifiedMemory)
+  : m_data(_getDefaultAllocator())
+  , m_memory_ressource(eMemoryRessource::UnifiedMemory)
   {
     resize(extents);
   }
-  NumArrayBase(ArrayExtents<ExtentType> extents,eMemoryRessource r)
-  : m_data(_getDefaultAllocator(r)), m_memory_ressource(r)
+  NumArrayBase(ArrayExtents<ExtentType> extents, eMemoryRessource r)
+  : m_data(_getDefaultAllocator(r))
+  , m_memory_ressource(r)
   {
     resize(extents);
   }
@@ -182,32 +196,32 @@ class NumArrayBase
   ThatClass& operator=(const ThatClass&) = default;
 
  private:
+
   void _resize()
   {
-    //Int32 dim1_size = m_span.dim1Size();
-    //Int32 dim2_size = 1;
-#if 0
-    // TODO: vérifier débordement.
-    for (int i=1; i< ExtentType::rank() ; ++i )
-      dim2_size *= extent(i);
-#endif
-    m_total_nb_element = m_span.extents().totalNbElement(); //static_cast<Int64>(dim1_size) * static_cast<Int64>(dim2_size);
+    m_total_nb_element = m_span.extents().totalNbElement();
     m_data.resize(m_total_nb_element);
     m_span.m_ptr = m_data.to1DSpan().data();
   }
+
  public:
+
   void fill(const DataType& v) { m_data.fill(v); }
   constexpr Int32 nbDimension() const { return ExtentType::rank(); }
   ArrayExtents<ExtentType> extents() const { return m_span.extents(); }
-  ArrayExtentsWithOffset<ExtentType,LayoutType> extentsWithOffset() const
+  ArrayExtentsWithOffset<ExtentType, LayoutType> extentsWithOffset() const
   {
     return m_span.extentsWithOffset();
   }
+
  public:
+
   SpanType span() { return m_span; }
   ConstSpanType span() const { return m_span.constSpan(); }
   ConstSpanType constSpan() const { return m_span.constSpan(); }
+
  public:
+
   Span<const DataType> to1DSpan() const { return m_span.to1DSpan(); }
   Span<DataType> to1DSpan() { return m_span.to1DSpan(); }
   void copy(ConstSpanType rhs)
@@ -215,11 +229,11 @@ class NumArrayBase
     _checkHost(m_memory_ressource);
     m_data.copy(rhs.to1DSpan());
   }
-  void copy(const NumArrayBase<DataType,ExtentType,LayoutType>& rhs)
+  void copy(const NumArrayBase<DataType, ExtentType, LayoutType>& rhs)
   {
     this->resize(rhs.extents());
-    _copy(asBytes(rhs.to1DSpan()),rhs.m_memory_ressource,
-          asWritableBytes(to1DSpan()),m_memory_ressource);
+    _copy(asBytes(rhs.to1DSpan()), rhs.m_memory_ressource,
+          asWritableBytes(to1DSpan()), m_memory_ressource);
   }
   const DataType& operator()(ArrayBoundsIndexType idx) const
   {
@@ -233,21 +247,25 @@ class NumArrayBase
   {
     return m_span(idx);
   }
-  void swap(NumArrayBase<DataType,ExtentType>& rhs)
+  void swap(NumArrayBase<DataType, ExtentType>& rhs)
   {
     m_data.swap(rhs.m_data);
-    std::swap(m_span,rhs.m_span);
-    std::swap(m_total_nb_element,rhs.m_total_nb_element);
-    std::swap(m_memory_ressource,rhs.m_memory_ressource);
+    std::swap(m_span, rhs.m_span);
+    std::swap(m_total_nb_element, rhs.m_total_nb_element);
+    std::swap(m_memory_ressource, rhs.m_memory_ressource);
   }
   Int64 capacity() const { return m_data.capacity(); }
   eMemoryRessource memoryRessource() const { return m_memory_ressource; }
   Span<std::byte> bytes() { return asWritableBytes(to1DSpan()); }
   Span<const std::byte> bytes() const { return asBytes(to1DSpan()); }
+
  public:
+
   //! \internal
   DataType* _internalData() { return m_span._internalData(); }
+
  protected:
+
   SpanType m_span;
   ArrayWrapper m_data;
   Int64 m_total_nb_element = 0;
@@ -267,44 +285,56 @@ class NumArrayBase
  *
  * \sa NumArrayBase
  */
-template<int X0,class DataType,typename LayoutType>
-class NumArray<DataType,ExtentsV<X0>,LayoutType>
-: public NumArrayBase<DataType,ExtentsV<X0>,LayoutType>
+template <int X0, class DataType, typename LayoutType>
+class NumArray<DataType, ExtentsV<X0>, LayoutType>
+: public NumArrayBase<DataType, ExtentsV<X0>, LayoutType>
 {
  public:
+
   using ExtentsType = ExtentsV<X0>;
-  using BaseClass = NumArrayBase<DataType,ExtentsType,LayoutType>;
+  using BaseClass = NumArrayBase<DataType, ExtentsType, LayoutType>;
   using BaseClass::resize;
   using BaseClass::operator();
   using BaseClass::s;
-  using ConstSpanType = MDSpan<const DataType,ExtentsType,LayoutType>;
-  using SpanType = MDSpan<DataType,ExtentsType,LayoutType>;
-  using ThatClass = NumArray<DataType,ExtentsType,LayoutType>;
+  using ConstSpanType = MDSpan<const DataType, ExtentsType, LayoutType>;
+  using SpanType = MDSpan<DataType, ExtentsType, LayoutType>;
+  using ThatClass = NumArray<DataType, ExtentsType, LayoutType>;
+
  private:
+
   using BaseClass::m_span;
+
  public:
+
   //! Construit un tableau vide
-  NumArray() : NumArray(0){}
-  explicit NumArray(eMemoryRessource r) : BaseClass(r){}
+  NumArray()
+  : NumArray(0)
+  {}
+  explicit NumArray(eMemoryRessource r)
+  : BaseClass(r)
+  {}
   //! Construit un tableau
   explicit NumArray(Int32 dim1_size)
-  : BaseClass(ArrayExtents<ExtentsType>(dim1_size)){}
-  NumArray(Int32 dim1_size,eMemoryRessource r)
-  : BaseClass(ArrayExtents<ExtentsType>{dim1_size},r){}
+  : BaseClass(ArrayExtents<ExtentsType>(dim1_size))
+  {}
+  NumArray(Int32 dim1_size, eMemoryRessource r)
+  : BaseClass(ArrayExtents<ExtentsType>{ dim1_size }, r)
+  {}
   //! Construit un tableau à partir de valeurs prédéfinies
-  NumArray(Int32 dim1_size,std::initializer_list<DataType> alist)
+  NumArray(Int32 dim1_size, std::initializer_list<DataType> alist)
   : NumArray(dim1_size)
   {
     this->m_data.copyInitializerList(alist);
   }
   //! Construit une instance à partir d'une vue
-  NumArray(SmallSpan<const DataType> v) : NumArray(v.size())
+  NumArray(SmallSpan<const DataType> v)
+  : NumArray(v.size())
   {
     this->m_data.copy(v);
   }
   //! Construit une instance à partir d'une vue
   NumArray(Span<const DataType> v)
-  : NumArray(SmallSpan<const DataType>(v.data(),arcaneCheckArraySize(v.size())))
+  : NumArray(SmallSpan<const DataType>(v.data(), arcaneCheckArraySize(v.size())))
   {
   }
   NumArray(const ThatClass&) = default;
@@ -348,23 +378,23 @@ class NumArray<DataType,ExtentsV<X0>,LayoutType>
  public:
 
   //! Valeur pour l'élément \a i et la composante \a a
-  template<typename X = DataType,typename SubConstType = typename NumericTraitsT<X>::SubscriptConstType >
-  SubConstType operator()(Int32 i,Int32 a) const { return m_span(i,a); }
+  template <typename X = DataType, typename SubConstType = typename NumericTraitsT<X>::SubscriptConstType>
+  SubConstType operator()(Int32 i, Int32 a) const { return m_span(i, a); }
   //! Valeur pour l'élément \a i et la composante \a [a][b]
-  template<typename X = DataType,typename SubType = typename NumericTraitsT<X>::SubscriptType >
-  SubType operator()(Int32 i,Int32 a) { return m_span(i,a); }
+  template <typename X = DataType, typename SubType = typename NumericTraitsT<X>::SubscriptType>
+  SubType operator()(Int32 i, Int32 a) { return m_span(i, a); }
 
   //! Valeur pour l'élément \a i et la composante \a a
-  template<typename X = DataType,typename Sub2ConstType = typename NumericTraitsT<X>::Subscript2ConstType >
-  Sub2ConstType operator()(Int32 i,Int32 a,Int32 b) const { return m_span(i,a,b); }
+  template <typename X = DataType, typename Sub2ConstType = typename NumericTraitsT<X>::Subscript2ConstType>
+  Sub2ConstType operator()(Int32 i, Int32 a, Int32 b) const { return m_span(i, a, b); }
   //! Valeur pour l'élément \a i et la composante \a [a][b]
-  template<typename X = DataType,typename Sub2Type = typename NumericTraitsT<X>::Subscript2Type >
-  Sub2Type operator()(Int32 i,Int32 a,Int32 b) { return m_span(i,a,b); }
+  template <typename X = DataType, typename Sub2Type = typename NumericTraitsT<X>::Subscript2Type>
+  Sub2Type operator()(Int32 i, Int32 a, Int32 b) { return m_span(i, a, b); }
 
  public:
 
-  constexpr operator SpanType () { return this->span(); }
-  constexpr operator ConstSpanType () const { return this->constSpan(); }
+  constexpr operator SpanType() { return this->span(); }
+  constexpr operator ConstSpanType() const { return this->constSpan(); }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -374,36 +404,45 @@ class NumArray<DataType,ExtentsV<X0>,LayoutType>
  *
  * \sa NumArrayBase
  */
-template<int X0,int X1,class DataType,typename LayoutType>
-class NumArray<DataType,ExtentsV<X0,X1>,LayoutType>
-: public NumArrayBase<DataType,ExtentsV<X0,X1>,LayoutType>
+template <int X0, int X1, class DataType, typename LayoutType>
+class NumArray<DataType, ExtentsV<X0, X1>, LayoutType>
+: public NumArrayBase<DataType, ExtentsV<X0, X1>, LayoutType>
 {
  public:
-  using ExtentsType = ExtentsV<X0,X1>;
-  using BaseClass = NumArrayBase<DataType,ExtentsType,LayoutType>;
+
+  using ExtentsType = ExtentsV<X0, X1>;
+  using BaseClass = NumArrayBase<DataType, ExtentsType, LayoutType>;
   using BaseClass::resize;
   using BaseClass::operator();
   using BaseClass::s;
-  using ThatClass = NumArray<DataType,ExtentsType,LayoutType>;
+  using ThatClass = NumArray<DataType, ExtentsType, LayoutType>;
+
  private:
+
   using BaseClass::m_span;
+
  public:
+
   //! Construit un tableau vide
   NumArray() = default;
-  explicit NumArray(eMemoryRessource r) : BaseClass(r){}
+  explicit NumArray(eMemoryRessource r)
+  : BaseClass(r)
+  {}
   //! Construit une vue
-  NumArray(Int32 dim1_size,Int32 dim2_size)
-  : BaseClass(ArrayExtents<ExtentsType>{dim1_size,dim2_size}){}
-  NumArray(Int32 dim1_size,Int32 dim2_size,eMemoryRessource r)
-  : BaseClass(ArrayExtents<ExtentsType>{dim1_size,dim2_size},r){}
+  NumArray(Int32 dim1_size, Int32 dim2_size)
+  : BaseClass(ArrayExtents<ExtentsType>{ dim1_size, dim2_size })
+  {}
+  NumArray(Int32 dim1_size, Int32 dim2_size, eMemoryRessource r)
+  : BaseClass(ArrayExtents<ExtentsType>{ dim1_size, dim2_size }, r)
+  {}
   /*!
    * \brief Construit un tableau à partir de valeurs prédéfinies.
    *
    * Les valeurs sont rangées de manière contigues en mémoire donc
    * la liste \a alist doit avoir un layout qui correspond à celui de cette classe.
    */
-  NumArray(Int32 dim1_size,Int32 dim2_size,std::initializer_list<DataType> alist)
-  : NumArray(dim1_size,dim2_size)
+  NumArray(Int32 dim1_size, Int32 dim2_size, std::initializer_list<DataType> alist)
+  : NumArray(dim1_size, dim2_size)
   {
     this->m_data.copyInitializerList(alist);
   }
@@ -411,11 +450,12 @@ class NumArray<DataType,ExtentsV<X0,X1>,LayoutType>
   NumArray(ThatClass&&) = default;
   ThatClass& operator=(ThatClass&&) = default;
   ThatClass& operator=(const ThatClass&) = default;
+
  public:
 
-  void resize(Int32 dim1_size,Int32 dim2_size)
+  void resize(Int32 dim1_size, Int32 dim2_size)
   {
-    this->resize(ArrayExtents<ExtentsType>(dim1_size,dim2_size));
+    this->resize(ArrayExtents<ExtentsType>(dim1_size, dim2_size));
   }
 
  public:
@@ -433,36 +473,36 @@ class NumArray<DataType,ExtentsV<X0,X1>,LayoutType>
  public:
 
   //! Valeur pour l'élément \a i,j
-  DataType operator()(Int32 i,Int32 j) const
+  DataType operator()(Int32 i, Int32 j) const
   {
-    return m_span(i,j);
+    return m_span(i, j);
   }
   //! Positionne la valeur pour l'élément \a i,j
-  DataType& operator()(Int32 i,Int32 j)
+  DataType& operator()(Int32 i, Int32 j)
   {
-    return m_span(i,j);
+    return m_span(i, j);
   }
   //! Positionne la valeur pour l'élément \a i,j
-  DataType& s(Int32 i,Int32 j)
+  DataType& s(Int32 i, Int32 j)
   {
-    return m_span(i,j);
+    return m_span(i, j);
   }
 
  public:
 
   //! Valeur pour l'élément \a i et la composante \a a
-  template<typename X = DataType,typename SubConstType = typename NumericTraitsT<X>::SubscriptConstType >
-  SubConstType operator()(Int32 i,Int32 j,Int32 a) const { return m_span(i,j,a); }
+  template <typename X = DataType, typename SubConstType = typename NumericTraitsT<X>::SubscriptConstType>
+  SubConstType operator()(Int32 i, Int32 j, Int32 a) const { return m_span(i, j, a); }
   //! Valeur pour l'élément \a i et la composante \a [a][b]
-  template<typename X = DataType,typename SubType = typename NumericTraitsT<X>::SubscriptType >
-  SubType operator()(Int32 i,Int32 j,Int32 a) { return m_span(i,j,a); }
+  template <typename X = DataType, typename SubType = typename NumericTraitsT<X>::SubscriptType>
+  SubType operator()(Int32 i, Int32 j, Int32 a) { return m_span(i, j, a); }
 
   //! Valeur pour l'élément \a i et la composante \a a
-  template<typename X = DataType,typename Sub2ConstType = typename NumericTraitsT<X>::Subscript2ConstType >
-  Sub2ConstType operator()(Int32 i,Int32 j,Int32 a,Int32 b) const { return m_span(i,j,a,b); }
+  template <typename X = DataType, typename Sub2ConstType = typename NumericTraitsT<X>::Subscript2ConstType>
+  Sub2ConstType operator()(Int32 i, Int32 j, Int32 a, Int32 b) const { return m_span(i, j, a, b); }
   //! Valeur pour l'élément \a i et la composante \a [a][b]
-  template<typename X = DataType,typename Sub2Type = typename NumericTraitsT<X>::Subscript2Type >
-  Sub2Type operator()(Int32 i,Int32 j,Int32 a,Int32 b) { return m_span(i,j,a,b); }
+  template <typename X = DataType, typename Sub2Type = typename NumericTraitsT<X>::Subscript2Type>
+  Sub2Type operator()(Int32 i, Int32 j, Int32 a, Int32 b) { return m_span(i, j, a, b); }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -472,18 +512,18 @@ class NumArray<DataType,ExtentsV<X0,X1>,LayoutType>
  *
  * \sa NumArrayBase
  */
-template<int X0,int X1,int X2,class DataType,typename LayoutType>
-class NumArray<DataType,ExtentsV<X0,X1,X2>,LayoutType>
-: public NumArrayBase<DataType,ExtentsV<X0,X1,X2>,LayoutType>
+template <int X0, int X1, int X2, class DataType, typename LayoutType>
+class NumArray<DataType, ExtentsV<X0, X1, X2>, LayoutType>
+: public NumArrayBase<DataType, ExtentsV<X0, X1, X2>, LayoutType>
 {
  public:
 
-  using ExtentsType = ExtentsV<X0,X1,X2>;
-  using BaseClass = NumArrayBase<DataType,ExtentsType,LayoutType>;
+  using ExtentsType = ExtentsV<X0, X1, X2>;
+  using BaseClass = NumArrayBase<DataType, ExtentsType, LayoutType>;
   using BaseClass::resize;
   using BaseClass::operator();
   using BaseClass::s;
-  using ThatClass = NumArray<DataType,ExtentsType,LayoutType>;
+  using ThatClass = NumArray<DataType, ExtentsType, LayoutType>;
 
  private:
 
@@ -493,11 +533,15 @@ class NumArray<DataType,ExtentsV<X0,X1,X2>,LayoutType>
 
   //! Construit un tableau vide
   NumArray() = default;
-  explicit NumArray(eMemoryRessource r) : BaseClass(r){}
-  NumArray(Int32 dim1_size,Int32 dim2_size,Int32 dim3_size)
-  : BaseClass(ArrayExtents<ExtentsType>(dim1_size,dim2_size,dim3_size)){}
-  NumArray(Int32 dim1_size,Int32 dim2_size,Int32 dim3_size,eMemoryRessource r)
-  : BaseClass(ArrayExtents<ExtentsType>{dim1_size,dim2_size,dim3_size},r){}
+  explicit NumArray(eMemoryRessource r)
+  : BaseClass(r)
+  {}
+  NumArray(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size)
+  : BaseClass(ArrayExtents<ExtentsType>(dim1_size, dim2_size, dim3_size))
+  {}
+  NumArray(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size, eMemoryRessource r)
+  : BaseClass(ArrayExtents<ExtentsType>{ dim1_size, dim2_size, dim3_size }, r)
+  {}
   NumArray(const ThatClass&) = default;
   NumArray(ThatClass&&) = default;
   ThatClass& operator=(ThatClass&&) = default;
@@ -505,9 +549,9 @@ class NumArray<DataType,ExtentsV<X0,X1,X2>,LayoutType>
 
  public:
 
-  void resize(Int32 dim1_size,Int32 dim2_size,Int32 dim3_size)
+  void resize(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size)
   {
-    this->resize(ArrayExtents<ExtentsType>(dim1_size,dim2_size,dim3_size));
+    this->resize(ArrayExtents<ExtentsType>(dim1_size, dim2_size, dim3_size));
   }
 
  public:
@@ -529,36 +573,36 @@ class NumArray<DataType,ExtentsV<X0,X1,X2>,LayoutType>
  public:
 
   //! Valeur pour l'élément \a i,j,k
-  DataType operator()(Int32 i,Int32 j,Int32 k) const
+  DataType operator()(Int32 i, Int32 j, Int32 k) const
   {
-    return m_span(i,j,k);
+    return m_span(i, j, k);
   }
   //! Positionne la valeur pour l'élément \a i,j,k
-  DataType& operator()(Int32 i,Int32 j,Int32 k)
+  DataType& operator()(Int32 i, Int32 j, Int32 k)
   {
-    return m_span(i,j,k);
+    return m_span(i, j, k);
   }
   //! Positionne la valeur pour l'élément \a i,j,k
-  DataType& s(Int32 i,Int32 j,Int32 k)
+  DataType& s(Int32 i, Int32 j, Int32 k)
   {
-    return m_span(i,j,k);
+    return m_span(i, j, k);
   }
 
  public:
 
   //! Valeur pour l'élément \a i et la composante \a a
-  template<typename X = DataType,typename SubConstType = typename NumericTraitsT<X>::SubscriptConstType >
-  SubConstType operator()(Int32 i,Int32 j,Int32 k,Int32 a) const { return m_span(i,j,k,a); }
+  template <typename X = DataType, typename SubConstType = typename NumericTraitsT<X>::SubscriptConstType>
+  SubConstType operator()(Int32 i, Int32 j, Int32 k, Int32 a) const { return m_span(i, j, k, a); }
   //! Valeur pour l'élément \a i et la composante \a [a][b]
-  template<typename X = DataType,typename SubType = typename NumericTraitsT<X>::SubscriptType >
-  SubType operator()(Int32 i,Int32 j,Int32 k,Int32 a) { return m_span(i,j,k,a); }
+  template <typename X = DataType, typename SubType = typename NumericTraitsT<X>::SubscriptType>
+  SubType operator()(Int32 i, Int32 j, Int32 k, Int32 a) { return m_span(i, j, k, a); }
 
   //! Valeur pour l'élément \a i et la composante \a a
-  template<typename X = DataType,typename Sub2ConstType = typename NumericTraitsT<X>::Subscript2ConstType >
-  Sub2ConstType operator()(Int32 i,Int32 j,Int32 k,Int32 a,Int32 b) const { return m_span(i,j,k,a,b); }
+  template <typename X = DataType, typename Sub2ConstType = typename NumericTraitsT<X>::Subscript2ConstType>
+  Sub2ConstType operator()(Int32 i, Int32 j, Int32 k, Int32 a, Int32 b) const { return m_span(i, j, k, a, b); }
   //! Valeur pour l'élément \a i et la composante \a [a][b]
-  template<typename X = DataType,typename Sub2Type = typename NumericTraitsT<X>::Subscript2Type >
-  Sub2Type operator()(Int32 i,Int32 j,Int32 k,Int32 a,Int32 b) { return m_span(i,j,k,a,b); }
+  template <typename X = DataType, typename Sub2Type = typename NumericTraitsT<X>::Subscript2Type>
+  Sub2Type operator()(Int32 i, Int32 j, Int32 k, Int32 a, Int32 b) { return m_span(i, j, k, a, b); }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -568,29 +612,38 @@ class NumArray<DataType,ExtentsV<X0,X1,X2>,LayoutType>
  *
  * \sa NumArrayBase
  */
-template<int X0,int X1,int X2,int X3,class DataType,typename LayoutType>
-class NumArray<DataType,ExtentsV<X0,X1,X2,X3>,LayoutType>
-: public NumArrayBase<DataType,ExtentsV<X0,X1,X2,X3>,LayoutType>
+template <int X0, int X1, int X2, int X3, class DataType, typename LayoutType>
+class NumArray<DataType, ExtentsV<X0, X1, X2, X3>, LayoutType>
+: public NumArrayBase<DataType, ExtentsV<X0, X1, X2, X3>, LayoutType>
 {
  public:
-  using ExtentsType = ExtentsV<X0,X1,X2,X3>;
-  using BaseClass = NumArrayBase<DataType,ExtentsType,LayoutType>;
+
+  using ExtentsType = ExtentsV<X0, X1, X2, X3>;
+  using BaseClass = NumArrayBase<DataType, ExtentsType, LayoutType>;
   using BaseClass::resize;
   using BaseClass::operator();
   using BaseClass::s;
-  using ThatClass = NumArray<DataType,ExtentsType,LayoutType>;
+  using ThatClass = NumArray<DataType, ExtentsType, LayoutType>;
+
  private:
+
   using BaseClass::m_span;
+
  public:
+
   //! Construit un tableau vide
   NumArray() = default;
-  explicit NumArray(eMemoryRessource r) : BaseClass(r){}
-  NumArray(Int32 dim1_size,Int32 dim2_size,
-           Int32 dim3_size,Int32 dim4_size)
-  : BaseClass(ArrayExtents<ExtentsType>(dim1_size,dim2_size,dim3_size,dim4_size)){}
-  NumArray(Int32 dim1_size,Int32 dim2_size,
-           Int32 dim3_size,Int32 dim4_size,eMemoryRessource r)
-  : BaseClass(ArrayExtents<ExtentsType>{dim1_size,dim2_size,dim3_size,dim4_size},r){}
+  explicit NumArray(eMemoryRessource r)
+  : BaseClass(r)
+  {}
+  NumArray(Int32 dim1_size, Int32 dim2_size,
+           Int32 dim3_size, Int32 dim4_size)
+  : BaseClass(ArrayExtents<ExtentsType>(dim1_size, dim2_size, dim3_size, dim4_size))
+  {}
+  NumArray(Int32 dim1_size, Int32 dim2_size,
+           Int32 dim3_size, Int32 dim4_size, eMemoryRessource r)
+  : BaseClass(ArrayExtents<ExtentsType>{ dim1_size, dim2_size, dim3_size, dim4_size }, r)
+  {}
   NumArray(const ThatClass&) = default;
   NumArray(ThatClass&&) = default;
   ThatClass& operator=(ThatClass&&) = default;
@@ -598,9 +651,9 @@ class NumArray<DataType,ExtentsV<X0,X1,X2,X3>,LayoutType>
 
  public:
 
-  void resize(Int32 dim1_size,Int32 dim2_size,Int32 dim3_size,Int32 dim4_size)
+  void resize(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size, Int32 dim4_size)
   {
-    this->resize(ArrayExtents<ExtentsType>(dim1_size,dim2_size,dim3_size,dim4_size));
+    this->resize(ArrayExtents<ExtentsType>(dim1_size, dim2_size, dim3_size, dim4_size));
   }
 
  public:
@@ -626,35 +679,36 @@ class NumArray<DataType,ExtentsV<X0,X1,X2,X3>,LayoutType>
  public:
 
   //! Valeur pour l'élément \a i,j,k,l
-  DataType operator()(Int32 i,Int32 j,Int32 k,Int32 l) const
+  DataType operator()(Int32 i, Int32 j, Int32 k, Int32 l) const
   {
-    return m_span(i,j,k,l);
+    return m_span(i, j, k, l);
   }
   //! Positionne la valeur pour l'élément \a i,j,k,l
-  DataType& operator()(Int32 i,Int32 j,Int32 k,Int32 l)
+  DataType& operator()(Int32 i, Int32 j, Int32 k, Int32 l)
   {
-    return m_span(i,j,k,l);
+    return m_span(i, j, k, l);
   }
   //! Positionne la valeur pour l'élément \a i,j,k,l
-  DataType& s(Int32 i,Int32 j,Int32 k,Int32 l)
+  DataType& s(Int32 i, Int32 j, Int32 k, Int32 l)
   {
-    return m_span(i,j,k,l);
+    return m_span(i, j, k, l);
   }
+
  public:
 
   //! Valeur pour l'élément \a i et la composante \a a
-  template<typename X = DataType,typename SubConstType = typename NumericTraitsT<X>::SubscriptConstType >
-  SubConstType operator()(Int32 i,Int32 j,Int32 k,Int32 l,Int32 a) const { return m_span(i,j,k,l,a); }
+  template <typename X = DataType, typename SubConstType = typename NumericTraitsT<X>::SubscriptConstType>
+  SubConstType operator()(Int32 i, Int32 j, Int32 k, Int32 l, Int32 a) const { return m_span(i, j, k, l, a); }
   //! Valeur pour l'élément \a i et la composante \a [a][b]
-  template<typename X = DataType,typename SubType = typename NumericTraitsT<X>::SubscriptType >
-  SubType operator()(Int32 i,Int32 j,Int32 k,Int32 l,Int32 a) { return m_span(i,j,k,l,a); }
+  template <typename X = DataType, typename SubType = typename NumericTraitsT<X>::SubscriptType>
+  SubType operator()(Int32 i, Int32 j, Int32 k, Int32 l, Int32 a) { return m_span(i, j, k, l, a); }
 
   //! Valeur pour l'élément \a i et la composante \a a
-  template<typename X = DataType,typename Sub2ConstType = typename NumericTraitsT<X>::Subscript2ConstType >
-  Sub2ConstType operator()(Int32 i,Int32 j,Int32 k,Int32 l,Int32 a,Int32 b) const { return m_span(i,j,k,l,a,b); }
+  template <typename X = DataType, typename Sub2ConstType = typename NumericTraitsT<X>::Subscript2ConstType>
+  Sub2ConstType operator()(Int32 i, Int32 j, Int32 k, Int32 l, Int32 a, Int32 b) const { return m_span(i, j, k, l, a, b); }
   //! Valeur pour l'élément \a i et la composante \a [a][b]
-  template<typename X = DataType,typename Sub2Type = typename NumericTraitsT<X>::Subscript2Type >
-  Sub2Type operator()(Int32 i,Int32 j,Int32 k,Int32 l,Int32 a,Int32 b) { return m_span(i,j,k,l,a,b); }
+  template <typename X = DataType, typename Sub2Type = typename NumericTraitsT<X>::Subscript2Type>
+  Sub2Type operator()(Int32 i, Int32 j, Int32 k, Int32 l, Int32 a, Int32 b) { return m_span(i, j, k, l, a, b); }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -665,4 +719,4 @@ class NumArray<DataType,ExtentsV<X0,X1,X2,X3>,LayoutType>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif
