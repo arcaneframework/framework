@@ -45,10 +45,9 @@ class ArrayBoundsBase
  public:
 
   using BaseClass = ArrayExtents<ExtentType>;
-  using BaseClass::m_extents;
-  using BaseClass::extent;
   using BaseClass::getIndices;
   using BaseClass::asStdArray;
+  using BaseClass::constExtent;
   using IndexType = typename BaseClass::IndexType;
 
  public:

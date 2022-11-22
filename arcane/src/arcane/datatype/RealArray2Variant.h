@@ -55,12 +55,12 @@ class RealArray2Variant
   template<typename LayoutType>
   RealArray2Variant(MDSpan<Real,MDDim2,LayoutType> v)
   {
-    _setValue(v.to1DSpan().data(), v.dim1Size(), v.dim2Size());
+    _setValue(v.to1DSpan().data(), v.extent0(), v.extent1());
   }
   template<typename LayoutType>
   RealArray2Variant(MDSpan<const Real,MDDim2,LayoutType> v)
   {
-    _setValue(v.to1DSpan().data(), v.dim1Size(), v.dim2Size());
+    _setValue(v.to1DSpan().data(), v.extent0(), v.extent1());
   }
   RealArray2Variant(Real2x2 r)
   {

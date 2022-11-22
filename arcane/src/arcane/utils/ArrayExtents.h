@@ -220,6 +220,8 @@ class ArrayExtentsValue<x0>
     return { i };
   }
 
+  constexpr ARCCORE_HOST_DEVICE Int32 extent0() const { return m_extent0.v; };
+
  protected:
 
   explicit ARCCORE_HOST_DEVICE ArrayExtentsValue(SmallSpan<const Int32> extents)
@@ -273,6 +275,9 @@ class ArrayExtentsValue<x0,x1>
     Int32 i0 = i / m_extent1.v;
     return { i0, i1 };
   }
+
+  constexpr ARCCORE_HOST_DEVICE Int32 extent0() const { return m_extent0.v; };
+  constexpr ARCCORE_HOST_DEVICE Int32 extent1() const { return m_extent1.v; };
 
  protected:
 
@@ -335,6 +340,10 @@ class ArrayExtentsValue<x0,x1,x2>
     Int32 i0 = i / fac;
     return { i0, i1, i2 };
   }
+
+  constexpr ARCCORE_HOST_DEVICE Int32 extent0() const { return m_extent0.v; };
+  constexpr ARCCORE_HOST_DEVICE Int32 extent1() const { return m_extent1.v; };
+  constexpr ARCCORE_HOST_DEVICE Int32 extent2() const { return m_extent2.v; };
 
  protected:
 
@@ -405,6 +414,11 @@ class ArrayExtentsValue<x0,x1,x2,x3>
     Int32 i0 = i /fac;
     return { i0, i1, i2, i3 };
   }
+
+  constexpr ARCCORE_HOST_DEVICE Int32 extent0() const { return m_extent0.v; };
+  constexpr ARCCORE_HOST_DEVICE Int32 extent1() const { return m_extent1.v; };
+  constexpr ARCCORE_HOST_DEVICE Int32 extent2() const { return m_extent2.v; };
+  constexpr ARCCORE_HOST_DEVICE Int32 extent3() const { return m_extent3.v; };
 
  protected:
 
@@ -564,11 +578,8 @@ class ArrayExtentsBase
 
  public:
 
-  //! Nombre d'élément de la \a i-ème dimension.
-  constexpr ARCCORE_HOST_DEVICE Int32 extent(int i) const { return m_extents[i]; }
   //! TEMPORARY: Positionne à \a v le nombre d'éléments de la dimension 0.
   ARCCORE_HOST_DEVICE void setExtent0(Int32 v) { m_extents[0] = v; this->m_extent0.v = v; }
-  constexpr ARCCORE_HOST_DEVICE Int32 operator()(int i) const { return m_extents[i]; }
 
   // Instance contenant les dimensions après la première
   ARCCORE_HOST_DEVICE ArrayExtentsPreviousRank removeFirstExtent() const
@@ -582,7 +593,9 @@ class ArrayExtentsBase
   {
     return ArrayExtentsBase<ExtentType>(extents);
   }
+
  protected:
+
   std::array<Int32,ExtentType::rank()> m_extents;
 };
 
@@ -700,8 +713,7 @@ class ArrayExtentsWithOffset<MDDim1,LayoutType>
 {
  public:
   using BaseClass = ArrayExtents<MDDim1>;
-  using BaseClass::extent;
-  using BaseClass::operator();
+  using BaseClass::extent0;
   using BaseClass::asStdArray;
   using BaseClass::totalNbElement;
   using BaseClass::getIndices;
@@ -734,8 +746,8 @@ class ArrayExtentsWithOffset<MDDim2,LayoutType>
 {
  public:
   using BaseClass = ArrayExtents<MDDim2>;
-  using BaseClass::extent;
-  using BaseClass::operator();
+  using BaseClass::extent0;
+  using BaseClass::extent1;
   using BaseClass::asStdArray;
   using BaseClass::totalNbElement;
   using BaseClass::getIndices;
@@ -767,8 +779,9 @@ class ArrayExtentsWithOffset<MDDim3,LayoutType>
 {
  public:
   using BaseClass = ArrayExtents<MDDim3>;
-  using BaseClass::extent;
-  using BaseClass::operator();
+  using BaseClass::extent0;
+  using BaseClass::extent1;
+  using BaseClass::extent2;
   using BaseClass::asStdArray;
   using BaseClass::totalNbElement;
   using BaseClass::getIndices;
@@ -808,8 +821,10 @@ class ArrayExtentsWithOffset<MDDim4,LayoutType>
 {
  public:
   using BaseClass = ArrayExtents<MDDim4>;
-  using BaseClass::extent;
-  using BaseClass::operator();
+  using BaseClass::extent0;
+  using BaseClass::extent1;
+  using BaseClass::extent2;
+  using BaseClass::extent3;
   using BaseClass::asStdArray;
   using BaseClass::totalNbElement;
   using BaseClass::getIndices;

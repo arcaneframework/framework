@@ -150,7 +150,7 @@ class NumArrayBase
   //! Nombre total d'éléments du tableau
   Int64 totalNbElement() const { return m_total_nb_element; }
   //! Nombre d'éléments du rang \a i
-  Int32 extent(int i) const { return m_span.extent(i); }
+  //Int32 extent(int i) const { return m_span.extent(i); }
   /*!
    * \brief Modifie la taille du tableau.
    * \warning Les valeurs actuelles ne sont pas conservées lors de cette opération.
@@ -182,12 +182,14 @@ class NumArrayBase
  private:
   void _resize()
   {
-    Int32 dim1_size = extent(0);
-    Int32 dim2_size = 1;
+    //Int32 dim1_size = m_span.dim1Size();
+    //Int32 dim2_size = 1;
+#if 0
     // TODO: vérifier débordement.
     for (int i=1; i< ExtentType::rank() ; ++i )
       dim2_size *= extent(i);
-    m_total_nb_element = static_cast<Int64>(dim1_size) * static_cast<Int64>(dim2_size);
+#endif
+    m_total_nb_element = m_span.extents().totalNbElement(); //static_cast<Int64>(dim1_size) * static_cast<Int64>(dim2_size);
     m_data.resize(m_total_nb_element);
     m_span.m_ptr = m_data.to1DSpan().data();
   }
@@ -269,7 +271,6 @@ class NumArray<DataType,MDDim1,LayoutType>
 {
  public:
   using BaseClass = NumArrayBase<DataType,MDDim1,LayoutType>;
-  using BaseClass::extent;
   using BaseClass::resize;
   using BaseClass::operator();
   using BaseClass::s;
@@ -323,7 +324,10 @@ class NumArray<DataType,MDDim1,LayoutType>
  public:
 
   //! Valeur de la première dimension
-  constexpr Int32 dim1Size() const { return this->extent(0); }
+  constexpr Int32 dim1Size() const { return m_span.extent0(); }
+
+  //! Valeur de la première dimension
+  constexpr Int32 extent0() const { return m_span.extent0(); }
 
  public:
 
@@ -373,7 +377,7 @@ class NumArray<DataType,MDDim2,LayoutType>
 {
  public:
   using BaseClass = NumArrayBase<DataType,MDDim2,LayoutType>;
-  using BaseClass::extent;
+  //using BaseClass::extent;
   using BaseClass::resize;
   using BaseClass::operator();
   using BaseClass::s;
@@ -405,17 +409,26 @@ class NumArray<DataType,MDDim2,LayoutType>
   ThatClass& operator=(ThatClass&&) = default;
   ThatClass& operator=(const ThatClass&) = default;
  public:
+
   void resize(Int32 dim1_size,Int32 dim2_size)
   {
     this->resize(ArrayExtents<MDDim2>(dim1_size,dim2_size));
   }
 
  public:
+
   //! Valeur de la première dimension
-  constexpr Int32 dim1Size() const { return extent(0); }
+  constexpr Int32 dim1Size() const { return m_span.extent0(); }
   //! Valeur de la deuxième dimension
-  constexpr Int32 dim2Size() const { return extent(1); }
+  constexpr Int32 dim2Size() const { return m_span.extent1(); }
+
+  //! Valeur de la première dimension
+  constexpr Int32 extent0() const { return m_span.extent0(); }
+  //! Valeur de la deuxième dimension
+  constexpr Int32 extent1() const { return m_span.extent1(); }
+
  public:
+
   //! Valeur pour l'élément \a i,j
   DataType operator()(Int32 i,Int32 j) const
   {
@@ -461,15 +474,19 @@ class NumArray<DataType,MDDim3,LayoutType>
 : public NumArrayBase<DataType,MDDim3,LayoutType>
 {
  public:
+
   using BaseClass = NumArrayBase<DataType,MDDim3,LayoutType>;
-  using BaseClass::extent;
   using BaseClass::resize;
   using BaseClass::operator();
   using BaseClass::s;
   using ThatClass = NumArray<DataType,MDDim3,LayoutType>;
+
  private:
+
   using BaseClass::m_span;
+
  public:
+
   //! Construit un tableau vide
   NumArray() = default;
   explicit NumArray(eMemoryRessource r) : BaseClass(r){}
@@ -481,7 +498,9 @@ class NumArray<DataType,MDDim3,LayoutType>
   NumArray(ThatClass&&) = default;
   ThatClass& operator=(ThatClass&&) = default;
   ThatClass& operator=(const ThatClass&) = default;
+
  public:
+
   void resize(Int32 dim1_size,Int32 dim2_size,Int32 dim3_size)
   {
     this->resize(ArrayExtents<MDDim3>(dim1_size,dim2_size,dim3_size));
@@ -490,11 +509,18 @@ class NumArray<DataType,MDDim3,LayoutType>
  public:
 
   //! Valeur de la première dimension
-  constexpr Int32 dim1Size() const { return extent(0); }
+  constexpr Int32 dim1Size() const { return m_span.extent0(); }
   //! Valeur de la deuxième dimension
-  constexpr Int32 dim2Size() const { return extent(1); }
+  constexpr Int32 dim2Size() const { return m_span.extent1(); }
   //! Valeur de la troisième dimension
-  constexpr Int32 dim3Size() const { return extent(2); }
+  constexpr Int32 dim3Size() const { return m_span.extent2(); }
+
+  //! Valeur de la première dimension
+  constexpr Int32 extent0() const { return m_span.extent0(); }
+  //! Valeur de la deuxième dimension
+  constexpr Int32 extent1() const { return m_span.extent1(); }
+  //! Valeur de la troisième dimension
+  constexpr Int32 extent2() const { return m_span.extent2(); }
 
  public:
 
@@ -544,7 +570,6 @@ class NumArray<DataType,MDDim4,LayoutType>
 {
  public:
   using BaseClass = NumArrayBase<DataType,MDDim4,LayoutType>;
-  using BaseClass::extent;
   using BaseClass::resize;
   using BaseClass::operator();
   using BaseClass::s;
@@ -572,15 +597,27 @@ class NumArray<DataType,MDDim4,LayoutType>
   }
 
  public:
+
   //! Valeur de la première dimension
-  constexpr Int32 dim1Size() const { return extent(0); }
+  constexpr Int32 dim1Size() const { return m_span.extent0(); }
   //! Valeur de la deuxième dimension
-  constexpr Int32 dim2Size() const { return extent(1); }
+  constexpr Int32 dim2Size() const { return m_span.extent1(); }
   //! Valeur de la troisième dimension
-  constexpr Int32 dim3Size() const { return extent(2); }
+  constexpr Int32 dim3Size() const { return m_span.extent2(); }
   //! Valeur de la quatrième dimension
-  constexpr Int32 dim4Size() const { return extent(3); }
+  constexpr Int32 dim4Size() const { return m_span.extent3(); }
+
+  //! Valeur de la première dimension
+  constexpr Int32 extent0() const { return m_span.extent0(); }
+  //! Valeur de la deuxième dimension
+  constexpr Int32 extent1() const { return m_span.extent1(); }
+  //! Valeur de la troisième dimension
+  constexpr Int32 extent2() const { return m_span.extent2(); }
+  //! Valeur de la quatrième dimension
+  constexpr Int32 extent3() const { return m_span.extent3(); }
+
  public:
+
   //! Valeur pour l'élément \a i,j,k,l
   DataType operator()(Int32 i,Int32 j,Int32 k,Int32 l) const
   {

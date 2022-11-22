@@ -266,9 +266,10 @@ _getDim2Size() const
   // Récupère les dimensions du 'NumArray' et considère que 'dim2_size' est
   // le produits du nombre d'éléments des dimensions après la première.
   auto extents = m_value.extents();
+  auto std_extents = extents.asStdArray();
   Int64 dim2_size = 1;
   for( Integer i=0; i<RankValue; ++i )
-    dim2_size *= extents(i);
+    dim2_size *= std_extents[i];
   return dim2_size;
 }
 
@@ -280,7 +281,7 @@ template<typename DataType,int RankValue> Span2<DataType>
 NumArrayDataT<DataType,RankValue>::
 _valueAsSpan2()
 {
-  Int64 dim1_size = m_value.extent(0);
+  Int64 dim1_size = m_value.dim1Size();
   Int64 dim2_size = _getDim2Size();
   Span2<DataType> value_as_span2(m_value.to1DSpan().data(),dim1_size,dim2_size);
   return value_as_span2;
@@ -296,7 +297,7 @@ template<typename DataType,int RankValue> Span2<const DataType>
 NumArrayDataT<DataType,RankValue>::
 _valueAsConstSpan2()
 {
-  Int64 dim1_size = m_value.extent(0);
+  Int64 dim1_size = m_value.dim1Size();
   Int64 dim2_size = _getDim2Size();
   Span2<const DataType> value_as_span2(m_value.to1DSpan().data(),dim1_size,dim2_size);
   return value_as_span2;
@@ -336,10 +337,11 @@ createSerializedDataRef(bool use_basic_type) const
   const Byte* bt = reinterpret_cast<const Byte*>(m_value.to1DSpan().data());
   Span<const Byte> base_values(bt,full_size);
   auto extents = m_value.extents();
-  const Int32 nb_extent = CheckedConvert::toInt32(extents.asStdArray().size());
+  auto std_extents = extents.asStdArray();
+  const Int32 nb_extent = CheckedConvert::toInt32(std_extents.size());
   UniqueArray<Int64> dimensions(nb_extent);
   for ( Int32 i=0; i<nb_extent; ++i )
-    dimensions[i] = extents(i);
+    dimensions[i] = std_extents[i];
   auto sd = arcaneCreateSerializedDataRef(data_type,base_values.size(),RankValue,nb_element,
                                           nb_base_element,false,dimensions,shape());
   sd->setConstBytes(base_values);
@@ -446,7 +448,7 @@ serialize(ISerializer* sbuf,IDataOperation* operation)
       break;
     case ISerializer::ReadAdd:
       {
-        Int32 current_size = m_value.extent(0);
+        Int32 current_size = m_value.dim1Size();
         // TODO: vérifier que dim2_size a la même valeur qu'en entrée.
         // Int64 dim2_size = _getDim2Size();
         Int64 current_total = m_value.totalNbElement();

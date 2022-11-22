@@ -56,20 +56,26 @@ template <int N>
 class SimpleForLoopRanges
 {
   friend class ComplexForLoopRanges<N>;
+
  public:
+
   using ArrayBoundsType = ArrayBounds<MDDim<N>>;
   using ArrayBoundsIndexType = ArrayBoundsIndex<N>;
+  using IndexType = typename ArrayBoundsType::IndexType;
+
  public:
-  typedef typename ArrayBoundsType::IndexType IndexType;
- public:
+
   SimpleForLoopRanges(ArrayBoundsType b) : m_bounds(b){}
+
  public:
-  constexpr Int32 lowerBound(int) const { return 0; }
-  constexpr Int32 upperBound(int i) const { return m_bounds.extent(i); }
-  constexpr Int32 extent(int i) const { return m_bounds.extent(i); }
+
+  template<Int32 I> constexpr Int32 lowerBound() const { return 0; }
+  template<Int32 I> constexpr Int32 upperBound() const { return m_bounds.template constExtent<I>(); }
   constexpr Int64 nbElement() const { return m_bounds.nbElement(); }
   constexpr ArrayBoundsIndexType getIndices(Int32 i) const { return m_bounds.getIndices(i); }
+
  private:
+
   ArrayBoundsType m_bounds;
 };
 
@@ -86,19 +92,22 @@ template <int N>
 class ComplexForLoopRanges
 {
  public:
+
   using ArrayBoundsType = ArrayBounds<MDDim<N>>;
   using ArrayBoundsIndexType = ArrayBoundsIndex<N>;
+  using IndexType = typename ArrayBoundsType::IndexType;
+
  public:
-  typedef typename ArrayBoundsType::IndexType IndexType;
- public:
+
   ComplexForLoopRanges(ArrayBoundsType lower,ArrayBoundsType extents)
   : m_lower_bounds(lower.asStdArray()), m_extents(extents){}
   ComplexForLoopRanges(const SimpleForLoopRanges<N>& bounds)
   : m_extents(bounds.m_bounds){}
+
  public:
-  constexpr Int32 lowerBound(int i) const { return m_lower_bounds[i]; }
-  constexpr Int32 upperBound(int i) const { return m_lower_bounds[i]+m_extents.extent(i); }
-  constexpr Int32 extent(int i) const { return m_extents.extent(i); }
+
+  template<Int32 I> constexpr Int32 lowerBound() const { return m_lower_bounds[I]; }
+  template<Int32 I> constexpr Int32 upperBound() const { return m_lower_bounds[I]+m_extents.template constExtent<I>(); }
   constexpr Int64 nbElement() const { return m_extents.nbElement(); }
   constexpr ArrayBoundsIndexType getIndices(Int32 i) const
   {
@@ -107,6 +116,7 @@ class ComplexForLoopRanges
     return x;
   }
  private:
+
   ArrayBoundsIndexType m_lower_bounds;
   ArrayBoundsType m_extents;
 };
@@ -187,7 +197,7 @@ makeLoopRanges(ForLoopRange n1,ForLoopRange n2,ForLoopRange n3,ForLoopRange n4)
 template<template<int T> class LoopBoundType,typename Lambda> inline void
 arcaneSequentialFor(LoopBoundType<1> bounds,const Lambda& func)
 {
-  for( Int32 i0 = bounds.lowerBound(0); i0 < bounds.upperBound(0); ++i0 )
+  for( Int32 i0 = bounds.template lowerBound<0>(); i0 < bounds.template upperBound<0>(); ++i0 )
     func(ArrayBoundsIndex<1>(i0));
 }
 
@@ -195,8 +205,8 @@ arcaneSequentialFor(LoopBoundType<1> bounds,const Lambda& func)
 template<template<int T> class LoopBoundType,typename Lambda> inline void
 arcaneSequentialFor(LoopBoundType<2> bounds,const Lambda& func)
 {
-  for( Int32 i0 = bounds.lowerBound(0); i0 < bounds.upperBound(0); ++i0 )
-    for( Int32 i1 = bounds.lowerBound(1); i1 < bounds.upperBound(1); ++i1 )
+  for( Int32 i0 = bounds.template lowerBound<0>(); i0 < bounds.template upperBound<0>(); ++i0 )
+    for( Int32 i1 = bounds.template lowerBound<1>(); i1 < bounds.template upperBound<1>(); ++i1 )
       func(ArrayBoundsIndex<2>(i0,i1));
 }
 
@@ -204,9 +214,9 @@ arcaneSequentialFor(LoopBoundType<2> bounds,const Lambda& func)
 template<template<int T> class LoopBoundType,typename Lambda> inline void
 arcaneSequentialFor(LoopBoundType<3> bounds,const Lambda& func)
 {
-  for( Int32 i0 = bounds.lowerBound(0); i0 < bounds.upperBound(0); ++i0 )
-    for( Int32 i1 = bounds.lowerBound(1); i1 < bounds.upperBound(1); ++i1 )
-      for( Int32 i2 = bounds.lowerBound(2); i2 < bounds.upperBound(2); ++i2 )
+  for( Int32 i0 = bounds.template lowerBound<0>(); i0 < bounds.template upperBound<0>(); ++i0 )
+    for( Int32 i1 = bounds.template lowerBound<1>(); i1 < bounds.template upperBound<1>(); ++i1 )
+      for( Int32 i2 = bounds.template lowerBound<2>(); i2 < bounds.template upperBound<2>(); ++i2 )
         func(ArrayBoundsIndex<3>(i0,i1,i2));
 }
 
@@ -214,10 +224,10 @@ arcaneSequentialFor(LoopBoundType<3> bounds,const Lambda& func)
 template<template<int> class LoopBoundType,typename Lambda> inline void
 arcaneSequentialFor(LoopBoundType<4> bounds,const Lambda& func)
 {
-  for( Int32 i0 = bounds.lowerBound(0); i0 < bounds.upperBound(0); ++i0 )
-    for( Int32 i1 = bounds.lowerBound(1); i1 < bounds.upperBound(1); ++i1 )
-      for( Int32 i2 = bounds.lowerBound(2); i2 < bounds.upperBound(2); ++i2 )
-        for( Int32 i3 = bounds.lowerBound(3); i3 < bounds.upperBound(3); ++i3 )
+  for( Int32 i0 = bounds.template lowerBound<0>(); i0 < bounds.template upperBound<0>(); ++i0 )
+    for( Int32 i1 = bounds.template lowerBound<1>(); i1 < bounds.template upperBound<1>(); ++i1 )
+      for( Int32 i2 = bounds.template lowerBound<2>(); i2 < bounds.template upperBound<2>(); ++i2 )
+        for( Int32 i3 = bounds.template lowerBound<3>(); i3 < bounds.template upperBound<3>(); ++i3 )
           func(ArrayBoundsIndex<4>(i0,i1,i2,i3));
 }
 

@@ -59,9 +59,13 @@ class MDSpanBase
   friend class NumArrayBase<UnqualifiedValueType,ExtentType,LayoutType>;
   // Pour que MDSpan<const T> ait accès à MDSpan<T>
   friend class MDSpanBase<const UnqualifiedValueType,ExtentType,LayoutType>;
+
  public:
+
   using ArrayBoundsIndexType = ArrayBoundsIndex<ExtentType::rank()>;
+
  public:
+
   MDSpanBase() = default;
   ARCCORE_HOST_DEVICE MDSpanBase(DataType* ptr,ArrayExtentsWithOffset<ExtentType,LayoutType> extents)
   : m_ptr(ptr), m_extents(extents)
@@ -71,10 +75,14 @@ class MDSpanBase
   template<typename X,typename = std::enable_if_t<std::is_same_v<X,UnqualifiedValueType>>>
   ARCCORE_HOST_DEVICE MDSpanBase(const MDSpanBase<X,ExtentType>& rhs)
   : m_ptr(rhs.m_ptr), m_extents(rhs.m_extents){}
+
  public:
+
   ARCCORE_HOST_DEVICE DataType* _internalData() { return m_ptr; }
   ARCCORE_HOST_DEVICE const DataType* _internalData() const { return m_ptr; }
+
  public:
+
   ArrayExtents<ExtentType> extents() const
   {
     return m_extents.extents();
@@ -83,8 +91,9 @@ class MDSpanBase
   {
     return m_extents;
   }
-  Int32 extent(int i) const { return m_extents(i); }
+
  public:
+
   ARCCORE_HOST_DEVICE Int64 offset(ArrayBoundsIndexType idx) const
   {
     return m_extents.offset(idx);
@@ -99,21 +108,15 @@ class MDSpanBase
   {
     return m_ptr+offset(idx);
   }
+
  public:
+
   ARCCORE_HOST_DEVICE MDSpanBase<const DataType,ExtentType> constSpan() const
   { return MDSpanBase<const DataType,ExtentType>(m_ptr,m_extents); }
   ARCCORE_HOST_DEVICE Span<DataType> to1DSpan() const { return { m_ptr, m_extents.totalNbElement() }; }
- private:
-  // Utilisé uniquement par NumArrayBase pour la copie
-  Span2<const DataType> _internalTo2DSpan() const
-  {
-    Int64 dim1_size = m_extents(0);
-    Int64 dim2_size = 1;
-    for (int i=1; i<ExtentType::rank(); ++i )
-      dim2_size *= m_extents(i);
-    return { m_ptr, dim1_size, dim2_size };
-  }
+
  protected:
+
   DataType* m_ptr = nullptr;
   ArrayExtentsWithOffset<ExtentType,LayoutType> m_extents;
 };
@@ -135,20 +138,27 @@ class MDSpan<DataType,MDDim1,LayoutType>
   using BaseClass = MDSpanBase<DataType,MDDim1,LayoutType>;
   using BaseClass::m_extents;
   using BaseClass::m_ptr;
+
  public:
+
   using BaseClass::offset;
   using BaseClass::ptrAt;
   using BaseClass::operator();
+
  public:
-  //! Construit un tableau vide
+
+  //! Construit une vue vide
   MDSpan() = default;
   ARCCORE_HOST_DEVICE MDSpan(DataType* ptr,ArrayExtentsWithOffset<MDDim1,LayoutType> extents_and_offset)
   : BaseClass(ptr,extents_and_offset) {}
 
  public:
+
   //! Valeur de la première dimension
-  ARCCORE_HOST_DEVICE Int64 dim1Size() const { return m_extents(0); }
+  constexpr ARCCORE_HOST_DEVICE Int32 extent0() const { return m_extents.extent0(); }
+
  public:
+
   ARCCORE_HOST_DEVICE Int64 offset(Int32 i) const { return m_extents.offset(i); }
   //! Valeur pour l'élément \a i
   ARCCORE_HOST_DEVICE DataType& operator()(Int32 i) const { return m_ptr[offset(i)]; }
@@ -162,7 +172,9 @@ class MDSpan<DataType,MDDim1,LayoutType>
   //! Valeur pour l'élément \a i et la composante \a [a][b]
   template<typename X = DataType,typename Sub2Type = typename NumericTraitsT<X>::Subscript2Type >
   ARCCORE_HOST_DEVICE Sub2Type operator()(Int32 i,Int32 a,Int32 b) const { return m_ptr[offset(i)][a][b]; }
+
  public:
+
   ARCCORE_HOST_DEVICE MDSpan<const DataType,MDDim1,LayoutType> constSpan() const
   { return MDSpan<const DataType,MDDim1,LayoutType>(m_ptr,m_extents); }
 };
@@ -181,22 +193,29 @@ class MDSpan<DataType,MDDim2,LayoutType>
   using BaseClass = MDSpanBase<DataType,MDDim2,LayoutType>;
   using BaseClass::m_extents;
   using BaseClass::m_ptr;
+
  public:
+
   using BaseClass::offset;
   using BaseClass::ptrAt;
   using BaseClass::operator();
+
  public:
+
   //! Construit un tableau vide
   MDSpan() = default;
   ARCCORE_HOST_DEVICE MDSpan(DataType* ptr,ArrayExtentsWithOffset<MDDim2,LayoutType> extents_and_offset)
   : BaseClass(ptr,extents_and_offset) {}
 
  public:
+
   //! Valeur de la première dimension
-  ARCCORE_HOST_DEVICE Int32 dim1Size() const { return m_extents(0); }
+  constexpr ARCCORE_HOST_DEVICE Int32 extent0() const { return m_extents.extent0(); }
   //! Valeur de la deuxième dimension
-  ARCCORE_HOST_DEVICE Int32 dim2Size() const { return m_extents(1); }
+  constexpr ARCCORE_HOST_DEVICE Int32 extent1() const { return m_extents.extent1(); }
+
  public:
+
   ARCCORE_HOST_DEVICE Int64 offset(Int32 i,Int32 j) const { return m_extents.offset(i,j); }
   //! Valeur pour l'élément \a i,j
   ARCCORE_HOST_DEVICE DataType& operator()(Int32 i,Int32 j) const { return m_ptr[offset(i,j)]; }
@@ -208,7 +227,9 @@ class MDSpan<DataType,MDDim2,LayoutType>
   //! Valeur pour l'élément \a i et la composante \a [a][b]
   template<typename X = DataType,typename Sub2Type = typename NumericTraitsT<X>::Subscript2Type >
   ARCCORE_HOST_DEVICE Sub2Type operator()(Int32 i,Int32 j,Int32 a,Int32 b) const { return m_ptr[offset(i,j)][a][b]; }
+
  public:
+
   ARCCORE_HOST_DEVICE MDSpan<const DataType,MDDim2,LayoutType> constSpan() const
   {
     return MDSpan<const DataType,MDDim2,LayoutType>(m_ptr,m_extents);
@@ -230,25 +251,33 @@ class MDSpan<DataType,MDDim3,LayoutType>
   using BaseClass::m_extents;
   using BaseClass::m_ptr;
   using value_type = typename std::remove_cv<DataType>::type;
+
  public:
+
   using BaseClass::offset;
   using BaseClass::ptrAt;
   using BaseClass::operator();
+
  public:
-  //! Construit un tableau vide
+
+  //! Construit une vue vide
   MDSpan() = default;
   ARCCORE_HOST_DEVICE MDSpan(DataType* ptr,ArrayExtentsWithOffset<MDDim3,LayoutType> extents_and_offset)
   : BaseClass(ptr,extents_and_offset) {}
   template<typename X,typename = std::enable_if_t<std::is_same_v<X,UnqualifiedValueType>>>
   ARCCORE_HOST_DEVICE MDSpan(const MDSpan<X,MDDim3>& rhs) : BaseClass(rhs){}
+
  public:
+
   //! Valeur de la première dimension
-  ARCCORE_HOST_DEVICE Int32 dim1Size() const { return m_extents(0); }
+  constexpr ARCCORE_HOST_DEVICE Int32 extent0() const { return m_extents.extent0(); }
   //! Valeur de la deuxième dimension
-  ARCCORE_HOST_DEVICE Int32 dim2Size() const { return m_extents(1); }
+  constexpr ARCCORE_HOST_DEVICE Int32 extent1() const { return m_extents.extent1(); }
   //! Valeur de la troisième dimension
-  ARCCORE_HOST_DEVICE Int32 dim3Size() const { return m_extents(2); }
+  constexpr ARCCORE_HOST_DEVICE Int32 extent2() const { return m_extents.extent2(); }
+
  public:
+
   ARCCORE_HOST_DEVICE Int64 offset(Int32 i,Int32 j,Int32 k) const { return m_extents.offset(i,j,k); }
   //! Valeur pour l'élément \a i,j,k
   ARCCORE_HOST_DEVICE DataType& operator()(Int32 i,Int32 j,Int32 k) const { return m_ptr[offset(i,j,k)]; }
@@ -293,26 +322,31 @@ class MDSpan<DataType,MDDim4,LayoutType>
   using BaseClass::operator();
  public:
 
-  //! Construit un tableau vide
+  //! Construit une vue vide
   MDSpan() = default;
   ARCCORE_HOST_DEVICE MDSpan(DataType* ptr,ArrayExtentsWithOffset<MDDim4,LayoutType> extents_and_offset)
   : BaseClass(ptr,extents_and_offset) {}
 
  public:
+
   //! Valeur de la première dimension
-  Int32 dim1Size() const { return m_extents(0); }
+  constexpr ARCCORE_HOST_DEVICE Int32 extent0() const { return m_extents.extent0(); }
   //! Valeur de la deuxième dimension
-  Int32 dim2Size() const { return m_extents(1); }
+  constexpr ARCCORE_HOST_DEVICE Int32 extent1() const { return m_extents.extent1(); }
   //! Valeur de la troisième dimension
-  Int32 dim3Size() const { return m_extents(2); }
+  constexpr ARCCORE_HOST_DEVICE Int32 extent2() const { return m_extents.extent2(); }
   //! Valeur de la quatrième dimension
-  Int32 dim4Size() const { return m_extents(3); }
+  constexpr ARCCORE_HOST_DEVICE Int32 extent3() const { return m_extents.extent3(); }
+
  public:
+
   ARCCORE_HOST_DEVICE Int64 offset(Int32 i,Int32 j,Int32 k,Int32 l) const
   {
     return m_extents.offset(i,j,k,l);
   }
+
  public:
+
   //! Valeur pour l'élément \a i,j,k,l
   ARCCORE_HOST_DEVICE DataType& operator()(Int32 i,Int32 j,Int32 k,Int32 l) const
   {

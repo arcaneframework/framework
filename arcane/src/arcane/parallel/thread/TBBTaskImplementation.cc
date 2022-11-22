@@ -150,32 +150,32 @@ inline int _currentTaskTreadIndex()
 inline tbb::blocked_rangeNd<Int32,1>
 _toTBBRange(const ComplexForLoopRanges<1>& r)
 {
-  return {{r.lowerBound(0), r.upperBound(0)}};
+  return {{r.lowerBound<0>(), r.upperBound<0>()}};
 }
 
 inline tbb::blocked_rangeNd<Int32,2>
 _toTBBRange(const ComplexForLoopRanges<2>& r)
 {
-  return {{r.lowerBound(0), r.upperBound(0)},
-          {r.lowerBound(1), r.upperBound(1)}};
+  return {{r.lowerBound<0>(), r.upperBound<0>()},
+          {r.lowerBound<1>(), r.upperBound<1>()}};
 
 }
 
 inline tbb::blocked_rangeNd<Int32,3>
 _toTBBRange(const ComplexForLoopRanges<3>& r)
 {
-  return {{r.lowerBound(0), r.upperBound(0)},
-          {r.lowerBound(1), r.upperBound(1)},
-          {r.lowerBound(2), r.upperBound(2)}};
+  return {{r.lowerBound<0>(), r.upperBound<0>()},
+          {r.lowerBound<1>(), r.upperBound<1>()},
+          {r.lowerBound<2>(), r.upperBound<2>()}};
 }
 
 inline tbb::blocked_rangeNd<Int32,4>
 _toTBBRange(const ComplexForLoopRanges<4>& r)
 {
-  return {{r.lowerBound(0), r.upperBound(0)},
-          {r.lowerBound(1), r.upperBound(1)},
-          {r.lowerBound(2), r.upperBound(2)},
-          {r.lowerBound(3), r.upperBound(3)}};
+  return {{r.lowerBound<0>(), r.upperBound<0>()},
+          {r.lowerBound<1>(), r.upperBound<1>()},
+          {r.lowerBound<2>(), r.upperBound<2>()},
+          {r.lowerBound<3>(), r.upperBound<3>()}};
 }
 
 /*---------------------------------------------------------------------------*/
