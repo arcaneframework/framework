@@ -286,7 +286,10 @@ MpiAdapter(ITraceMng* trace,IStat* stat,MPI_Comm comm,
 
   MPI_Isend(m_send_buffer_for_empty_request, 1, MPI_CHAR, m_comm_rank,
             50505, m_communicator, &m_empty_request2);
-  
+
+  MPI_Recv(m_send_buffer_for_empty_request, 1, MPI_CHAR, m_comm_rank,
+            50505, m_communicator, MPI_STATUS_IGNORE);
+
   m_request_set->setEmptyRequests(m_empty_request1,m_empty_request2);
 }
 
