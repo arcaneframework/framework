@@ -154,73 +154,6 @@ class ArrayStridesBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-template<>
-class ArrayExtentsValueDynamic<1>
-: public ArrayExtentsValue<-1>
-{
-  using BaseClass = ArrayExtentsValue<-1>;
-
- public:
-
-  ArrayExtentsValueDynamic() = default;
-
- protected:
-
-  explicit ARCCORE_HOST_DEVICE ArrayExtentsValueDynamic(SmallSpan<const Int32> extents)
-  : BaseClass(extents){}
-};
-
-template<>
-class ArrayExtentsValueDynamic<2>
-: public ArrayExtentsValue<-1,-1>
-{
-  using BaseClass = ArrayExtentsValue<-1,-1>;
-
- public:
-
-  ArrayExtentsValueDynamic() = default;
-
- protected:
-
-  explicit ARCCORE_HOST_DEVICE ArrayExtentsValueDynamic(SmallSpan<const Int32> extents)
-  : BaseClass(extents){}
-};
-
-template<>
-class ArrayExtentsValueDynamic<3>
-: public ArrayExtentsValue<-1,-1,-1>
-{
-  using BaseClass = ArrayExtentsValue<-1,-1,-1>;
-
- public:
-
-  ArrayExtentsValueDynamic() = default;
-
- protected:
-
-  explicit ARCCORE_HOST_DEVICE ArrayExtentsValueDynamic(SmallSpan<const Int32> extents)
-  : BaseClass(extents){}
-};
-
-template<>
-class ArrayExtentsValueDynamic<4>
-: public ArrayExtentsValue<-1,-1,-1,-1>
-{
-  using BaseClass = ArrayExtentsValue<-1,-1,-1,-1>;
-
- public:
-
-  ArrayExtentsValueDynamic() = default;
-
- protected:
-
-  explicit ARCCORE_HOST_DEVICE ArrayExtentsValueDynamic(SmallSpan<const Int32> extents)
-  : BaseClass(extents){}
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
  * \brief Spécialisation de ArrayExtentsBase pour les tableaux de dimension 0 (les scalaires)
  */
@@ -247,10 +180,10 @@ class ArrayExtentsBase<MDDim0>
  */
 template<typename ExtentType>
 class ArrayExtentsBase
-: public ArrayExtentsValueDynamic<ExtentType::rank()>
+: public ExtentType::ArrayExtentsValueType
 {
-  using BaseClass = ArrayExtentsValueDynamic<ExtentType::rank()>;
-  using ArrayExtentsPreviousRank = ArrayExtentsBase<typename ExtentType::PreviousRankType>;
+  using BaseClass = typename ExtentType::ArrayExtentsValueType;
+  using ArrayExtentsPreviousRank = ArrayExtentsBase<typename MDDimType<ExtentType::rank()>::PreviousRankType>;
 
  public:
 

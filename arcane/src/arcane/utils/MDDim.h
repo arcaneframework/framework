@@ -28,6 +28,66 @@
 namespace Arcane
 {
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<Int32... RankSize> class ExtentsV;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<Int32 X0>
+class ExtentsV<X0>
+{
+ public:
+
+  using IndexType = ArrayBoundsIndex<1>;
+  using ArrayExtentsValueType = ArrayExtentsValue<X0>;
+  static constexpr int rank() { return 1; }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<Int32 X0,Int32 X1>
+class ExtentsV<X0,X1>
+{
+ public:
+
+  using IndexType = ArrayBoundsIndex<2>;
+  using ArrayExtentsValueType = ArrayExtentsValue<X0,X1>;
+  static constexpr int rank() { return 2; }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<Int32 X0,Int32 X1,Int32 X2>
+class ExtentsV<X0,X1,X2>
+{
+ public:
+
+  using IndexType = ArrayBoundsIndex<3>;
+  using ArrayExtentsValueType = ArrayExtentsValue<X0,X1,X2>;
+  static constexpr int rank() { return 3; }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<Int32 X0,Int32 X1,Int32 X2,Int32 X3>
+class ExtentsV<X0,X1,X2,X3>
+{
+ public:
+
+  using IndexType = ArrayBoundsIndex<4>;
+  using ArrayExtentsValueType = ArrayExtentsValue<X0,X1,X2,X3>;
+  static constexpr int rank() { return 4; }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 //! Constante pour un tableau dynamique de rang 0
 class MDDim0
 {
@@ -36,36 +96,19 @@ class MDDim0
 };
 
 //! Constante pour un tableau dynamique de rang 1
-class MDDim1
-{
- public:
-  using PreviousRankType = MDDim0;
-  static constexpr int rank() { return 1; }
-};
+using MDDim1 = ExtentsV<-1>;
 
 //! Constante pour un tableau dynamique de rang 2
-class MDDim2
-{
- public:
-  using PreviousRankType = MDDim1;
-  static constexpr int rank() { return 2; }
-};
+using MDDim2 = ExtentsV<-1,-1>;
 
 //! Constante pour un tableau dynamique de rang 3
-class MDDim3
-{
- public:
-  using PreviousRankType = MDDim2;
-  static constexpr int rank() { return 3; }
-};
+using MDDim3 = ExtentsV<-1,-1,-1>;
 
 //! Constante pour un tableau dynamique de rang 4
-class MDDim4
-{
- public:
-  using PreviousRankType = MDDim3;
-  static constexpr int rank() { return 4; }
-};
+using MDDim4 = ExtentsV<-1,-1,-1,-1>;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 template<int RankValue>
 class MDDimType;
@@ -80,24 +123,28 @@ template<>
 class MDDimType<1>
 {
  public:
+  using PreviousRankType = MDDim0;
   using DimType = MDDim1;
 };
 template<>
 class MDDimType<2>
 {
  public:
+  using PreviousRankType = MDDim1;
   using DimType = MDDim2;
 };
 template<>
 class MDDimType<3>
 {
  public:
+  using PreviousRankType = MDDim2;
   using DimType = MDDim3;
 };
 template<>
 class MDDimType<4>
 {
  public:
+  using PreviousRankType = MDDim3;
   using DimType = MDDim4;
 };
 
