@@ -14,10 +14,12 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/Array2.h"
+#include "arcane/utils/Array.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/MemoryRessource.h"
 #include "arcane/utils/MDSpan.h"
+
+#include "arccore/base/Span2.h"
 
 /*
  * ATTENTION:
@@ -265,18 +267,19 @@ class NumArrayBase
  *
  * \sa NumArrayBase
  */
-template<class DataType,typename LayoutType>
-class NumArray<DataType,MDDim1,LayoutType>
-: public NumArrayBase<DataType,MDDim1,LayoutType>
+template<int X0,class DataType,typename LayoutType>
+class NumArray<DataType,ExtentsV<X0>,LayoutType>
+: public NumArrayBase<DataType,ExtentsV<X0>,LayoutType>
 {
  public:
-  using BaseClass = NumArrayBase<DataType,MDDim1,LayoutType>;
+  using ExtentsType = ExtentsV<X0>;
+  using BaseClass = NumArrayBase<DataType,ExtentsType,LayoutType>;
   using BaseClass::resize;
   using BaseClass::operator();
   using BaseClass::s;
-  using ConstSpanType = MDSpan<const DataType,MDDim1,LayoutType>;
-  using SpanType = MDSpan<DataType,MDDim1,LayoutType>;
-  using ThatClass = NumArray<DataType,MDDim1,LayoutType>;
+  using ConstSpanType = MDSpan<const DataType,ExtentsType,LayoutType>;
+  using SpanType = MDSpan<DataType,ExtentsType,LayoutType>;
+  using ThatClass = NumArray<DataType,ExtentsType,LayoutType>;
  private:
   using BaseClass::m_span;
  public:
@@ -285,9 +288,9 @@ class NumArray<DataType,MDDim1,LayoutType>
   explicit NumArray(eMemoryRessource r) : BaseClass(r){}
   //! Construit un tableau
   explicit NumArray(Int32 dim1_size)
-  : BaseClass(ArrayExtents<MDDim1>(dim1_size)){}
+  : BaseClass(ArrayExtents<ExtentsType>(dim1_size)){}
   NumArray(Int32 dim1_size,eMemoryRessource r)
-  : BaseClass(ArrayExtents<MDDim1>{dim1_size},r){}
+  : BaseClass(ArrayExtents<ExtentsType>{dim1_size},r){}
   //! Construit un tableau à partir de valeurs prédéfinies
   NumArray(Int32 dim1_size,std::initializer_list<DataType> alist)
   : NumArray(dim1_size)
@@ -318,7 +321,7 @@ class NumArray<DataType,MDDim1,LayoutType>
    */
   void resize(Int32 dim1_size)
   {
-    this->resize(ArrayExtents<MDDim1>(dim1_size));
+    this->resize(ArrayExtents<ExtentsType>(dim1_size));
   }
 
  public:
@@ -371,17 +374,17 @@ class NumArray<DataType,MDDim1,LayoutType>
  *
  * \sa NumArrayBase
  */
-template<class DataType,typename LayoutType>
-class NumArray<DataType,MDDim2,LayoutType>
-: public NumArrayBase<DataType,MDDim2,LayoutType>
+template<int X0,int X1,class DataType,typename LayoutType>
+class NumArray<DataType,ExtentsV<X0,X1>,LayoutType>
+: public NumArrayBase<DataType,ExtentsV<X0,X1>,LayoutType>
 {
  public:
-  using BaseClass = NumArrayBase<DataType,MDDim2,LayoutType>;
-  //using BaseClass::extent;
+  using ExtentsType = ExtentsV<X0,X1>;
+  using BaseClass = NumArrayBase<DataType,ExtentsType,LayoutType>;
   using BaseClass::resize;
   using BaseClass::operator();
   using BaseClass::s;
-  using ThatClass = NumArray<DataType,MDDim2,LayoutType>;
+  using ThatClass = NumArray<DataType,ExtentsType,LayoutType>;
  private:
   using BaseClass::m_span;
  public:
@@ -390,9 +393,9 @@ class NumArray<DataType,MDDim2,LayoutType>
   explicit NumArray(eMemoryRessource r) : BaseClass(r){}
   //! Construit une vue
   NumArray(Int32 dim1_size,Int32 dim2_size)
-  : BaseClass(ArrayExtents<MDDim2>{dim1_size,dim2_size}){}
+  : BaseClass(ArrayExtents<ExtentsType>{dim1_size,dim2_size}){}
   NumArray(Int32 dim1_size,Int32 dim2_size,eMemoryRessource r)
-  : BaseClass(ArrayExtents<MDDim2>{dim1_size,dim2_size},r){}
+  : BaseClass(ArrayExtents<ExtentsType>{dim1_size,dim2_size},r){}
   /*!
    * \brief Construit un tableau à partir de valeurs prédéfinies.
    *
@@ -412,7 +415,7 @@ class NumArray<DataType,MDDim2,LayoutType>
 
   void resize(Int32 dim1_size,Int32 dim2_size)
   {
-    this->resize(ArrayExtents<MDDim2>(dim1_size,dim2_size));
+    this->resize(ArrayExtents<ExtentsType>(dim1_size,dim2_size));
   }
 
  public:
@@ -469,17 +472,18 @@ class NumArray<DataType,MDDim2,LayoutType>
  *
  * \sa NumArrayBase
  */
-template<class DataType,typename LayoutType>
-class NumArray<DataType,MDDim3,LayoutType>
-: public NumArrayBase<DataType,MDDim3,LayoutType>
+template<int X0,int X1,int X2,class DataType,typename LayoutType>
+class NumArray<DataType,ExtentsV<X0,X1,X2>,LayoutType>
+: public NumArrayBase<DataType,ExtentsV<X0,X1,X2>,LayoutType>
 {
  public:
 
-  using BaseClass = NumArrayBase<DataType,MDDim3,LayoutType>;
+  using ExtentsType = ExtentsV<X0,X1,X2>;
+  using BaseClass = NumArrayBase<DataType,ExtentsType,LayoutType>;
   using BaseClass::resize;
   using BaseClass::operator();
   using BaseClass::s;
-  using ThatClass = NumArray<DataType,MDDim3,LayoutType>;
+  using ThatClass = NumArray<DataType,ExtentsType,LayoutType>;
 
  private:
 
@@ -491,9 +495,9 @@ class NumArray<DataType,MDDim3,LayoutType>
   NumArray() = default;
   explicit NumArray(eMemoryRessource r) : BaseClass(r){}
   NumArray(Int32 dim1_size,Int32 dim2_size,Int32 dim3_size)
-  : BaseClass(ArrayExtents<MDDim3>(dim1_size,dim2_size,dim3_size)){}
+  : BaseClass(ArrayExtents<ExtentsType>(dim1_size,dim2_size,dim3_size)){}
   NumArray(Int32 dim1_size,Int32 dim2_size,Int32 dim3_size,eMemoryRessource r)
-  : BaseClass(ArrayExtents<MDDim3>{dim1_size,dim2_size,dim3_size},r){}
+  : BaseClass(ArrayExtents<ExtentsType>{dim1_size,dim2_size,dim3_size},r){}
   NumArray(const ThatClass&) = default;
   NumArray(ThatClass&&) = default;
   ThatClass& operator=(ThatClass&&) = default;
@@ -503,7 +507,7 @@ class NumArray<DataType,MDDim3,LayoutType>
 
   void resize(Int32 dim1_size,Int32 dim2_size,Int32 dim3_size)
   {
-    this->resize(ArrayExtents<MDDim3>(dim1_size,dim2_size,dim3_size));
+    this->resize(ArrayExtents<ExtentsType>(dim1_size,dim2_size,dim3_size));
   }
 
  public:
@@ -564,16 +568,17 @@ class NumArray<DataType,MDDim3,LayoutType>
  *
  * \sa NumArrayBase
  */
-template<class DataType,typename LayoutType>
-class NumArray<DataType,MDDim4,LayoutType>
-: public NumArrayBase<DataType,MDDim4,LayoutType>
+template<int X0,int X1,int X2,int X3,class DataType,typename LayoutType>
+class NumArray<DataType,ExtentsV<X0,X1,X2,X3>,LayoutType>
+: public NumArrayBase<DataType,ExtentsV<X0,X1,X2,X3>,LayoutType>
 {
  public:
-  using BaseClass = NumArrayBase<DataType,MDDim4,LayoutType>;
+  using ExtentsType = ExtentsV<X0,X1,X2,X3>;
+  using BaseClass = NumArrayBase<DataType,ExtentsType,LayoutType>;
   using BaseClass::resize;
   using BaseClass::operator();
   using BaseClass::s;
-  using ThatClass = NumArray<DataType,MDDim4,LayoutType>;
+  using ThatClass = NumArray<DataType,ExtentsType,LayoutType>;
  private:
   using BaseClass::m_span;
  public:
@@ -582,18 +587,20 @@ class NumArray<DataType,MDDim4,LayoutType>
   explicit NumArray(eMemoryRessource r) : BaseClass(r){}
   NumArray(Int32 dim1_size,Int32 dim2_size,
            Int32 dim3_size,Int32 dim4_size)
-  : BaseClass(ArrayExtents<MDDim4>(dim1_size,dim2_size,dim3_size,dim4_size)){}
+  : BaseClass(ArrayExtents<ExtentsType>(dim1_size,dim2_size,dim3_size,dim4_size)){}
   NumArray(Int32 dim1_size,Int32 dim2_size,
            Int32 dim3_size,Int32 dim4_size,eMemoryRessource r)
-  : BaseClass(ArrayExtents<MDDim4>{dim1_size,dim2_size,dim3_size,dim4_size},r){}
+  : BaseClass(ArrayExtents<ExtentsType>{dim1_size,dim2_size,dim3_size,dim4_size},r){}
   NumArray(const ThatClass&) = default;
   NumArray(ThatClass&&) = default;
   ThatClass& operator=(ThatClass&&) = default;
   ThatClass& operator=(const ThatClass&) = default;
+
  public:
+
   void resize(Int32 dim1_size,Int32 dim2_size,Int32 dim3_size,Int32 dim4_size)
   {
-    this->resize(ArrayExtents<MDDim4>(dim1_size,dim2_size,dim3_size,dim4_size));
+    this->resize(ArrayExtents<ExtentsType>(dim1_size,dim2_size,dim3_size,dim4_size));
   }
 
  public:
