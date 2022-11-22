@@ -158,7 +158,7 @@ class ArrayStridesBase
  * \brief Spécialisation de ArrayExtentsBase pour les tableaux de dimension 0 (les scalaires)
  */
 template<>
-class ArrayExtentsBase<MDDim0>
+class ArrayExtentsBase<ExtentsV<>>
 {
  public:
   ArrayExtentsBase() = default;
@@ -166,7 +166,7 @@ class ArrayExtentsBase<MDDim0>
   constexpr ARCCORE_HOST_DEVICE SmallSpan<const Int32> asSpan() const { return {}; }
   //! Nombre total d'eléments
   constexpr ARCCORE_HOST_DEVICE Int32 totalNbElement() const { return 1; }
-  ARCCORE_HOST_DEVICE static ArrayExtentsBase<MDDim0> fromSpan([[maybe_unused]] Span<const Int32> extents)
+  ARCCORE_HOST_DEVICE static ArrayExtentsBase<ExtentsV<>> fromSpan([[maybe_unused]] Span<const Int32> extents)
   {
     // TODO: vérifier la taille de \a extents
     return {};
@@ -183,7 +183,7 @@ class ArrayExtentsBase
 : public ExtentType::ArrayExtentsValueType
 {
   using BaseClass = typename ExtentType::ArrayExtentsValueType;
-  using ArrayExtentsPreviousRank = ArrayExtentsBase<typename MDDimType<ExtentType::rank()>::PreviousRankType>;
+  using ArrayExtentsPreviousRank = ArrayExtentsBase<typename ExtentType::RemovedFirstExtentType>;
 
  public:
 

@@ -36,6 +36,19 @@ template<Int32... RankSize> class ExtentsV;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template<>
+class ExtentsV<>
+{
+ public:
+
+  using ArrayExtentsValueType = ArrayExtentsValue<>;
+
+  static constexpr int rank() { return 0; }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template<Int32 X0>
 class ExtentsV<X0>
 {
@@ -43,6 +56,8 @@ class ExtentsV<X0>
 
   using IndexType = ArrayBoundsIndex<1>;
   using ArrayExtentsValueType = ArrayExtentsValue<X0>;
+  using RemovedFirstExtentType = ExtentsV<>;
+
   static constexpr int rank() { return 1; }
 };
 
@@ -56,6 +71,8 @@ class ExtentsV<X0,X1>
 
   using IndexType = ArrayBoundsIndex<2>;
   using ArrayExtentsValueType = ArrayExtentsValue<X0,X1>;
+  using RemovedFirstExtentType = ExtentsV<X1>;
+
   static constexpr int rank() { return 2; }
 };
 
@@ -69,6 +86,8 @@ class ExtentsV<X0,X1,X2>
 
   using IndexType = ArrayBoundsIndex<3>;
   using ArrayExtentsValueType = ArrayExtentsValue<X0,X1,X2>;
+  using RemovedFirstExtentType = ExtentsV<X1,X2>;
+
   static constexpr int rank() { return 3; }
 };
 
@@ -82,6 +101,8 @@ class ExtentsV<X0,X1,X2,X3>
 
   using IndexType = ArrayBoundsIndex<4>;
   using ArrayExtentsValueType = ArrayExtentsValue<X0,X1,X2,X3>;
+  using RemovedFirstExtentType = ExtentsV<X1,X2,X3>;
+
   static constexpr int rank() { return 4; }
 };
 
@@ -89,11 +110,7 @@ class ExtentsV<X0,X1,X2,X3>
 /*---------------------------------------------------------------------------*/
 
 //! Constante pour un tableau dynamique de rang 0
-class MDDim0
-{
- public:
-  static constexpr int rank() { return 0; }
-};
+using MDDim0 = ExtentsV<>;
 
 //! Constante pour un tableau dynamique de rang 1
 using MDDim1 = ExtentsV<-1>;
@@ -123,28 +140,24 @@ template<>
 class MDDimType<1>
 {
  public:
-  using PreviousRankType = MDDim0;
   using DimType = MDDim1;
 };
 template<>
 class MDDimType<2>
 {
  public:
-  using PreviousRankType = MDDim1;
   using DimType = MDDim2;
 };
 template<>
 class MDDimType<3>
 {
  public:
-  using PreviousRankType = MDDim2;
   using DimType = MDDim3;
 };
 template<>
 class MDDimType<4>
 {
  public:
-  using PreviousRankType = MDDim3;
   using DimType = MDDim4;
 };
 
