@@ -79,7 +79,8 @@ class NumArrayUnitTest
   }
 
   template <int Rank,typename LayoutType> double
-  _doSum(const NumArray<double, MDDim<Rank>, LayoutType>& values, ArrayBounds<MDDim<Rank>> bounds)
+  _doSum(const NumArray<double, typename MDDimType<Rank>::DimType, LayoutType>& values,
+         ArrayBounds<typename MDDimType<Rank>::DimType> bounds)
   {
     double total = 0.0;
     SimpleForLoopRanges<Rank> lb(bounds);

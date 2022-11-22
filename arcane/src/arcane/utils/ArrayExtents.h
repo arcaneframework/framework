@@ -250,7 +250,7 @@ class ArrayExtentsBase
 : public ArrayExtentsValueDynamic<ExtentType::rank()>
 {
   using BaseClass = ArrayExtentsValueDynamic<ExtentType::rank()>;
-  using ArrayExtentsPreviousRank = ArrayExtentsBase<MDDim<ExtentType::rank()-1>>;
+  using ArrayExtentsPreviousRank = ArrayExtentsBase<typename ExtentType::PreviousRankType>;
 
  public:
 

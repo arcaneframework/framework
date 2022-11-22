@@ -16,6 +16,7 @@
 
 #include "arcane/utils/ArrayBoundsIndex.h"
 #include "arcane/utils/ArrayExtentsValue.h"
+#include "arcane/utils/MDDim.h"
 
 #include <array>
 

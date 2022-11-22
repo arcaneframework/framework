@@ -70,6 +70,7 @@ set(ARCANE_SOURCES
   Misc.cc
   MD5HashAlgorithm.cc
   MD5HashAlgorithm.h
+  MDDim.h
   MDSpan.cc
   MDSpan.h
   Math.cc
