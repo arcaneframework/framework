@@ -171,7 +171,6 @@ class MDDimType<4>
 #define ARCANE_USE_TYPE_FOR_EXTENT
 #define A_MDRANK_TYPE(rank_name) typename rank_name
 #define A_MDRANK_RANK_VALUE(rank_name) (rank_name :: rank())
-#define A_MDDIM(rank_value) MDDim< rank_value >
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

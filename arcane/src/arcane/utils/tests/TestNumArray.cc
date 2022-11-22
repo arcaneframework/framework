@@ -59,7 +59,7 @@ TEST(NumArray,Basic)
   ASSERT_EQ(num_data1[2], 3.3);
   ASSERT_EQ(num_data1[3], 5.4);
 
-  NumArray<Real,MDDim2,RightLayout<MDDim2>> num_data2(3, 2, { 1.4, 15.6, 33.3, 7.4, 4.2, 6.5 });
+  NumArray<Real,MDDim2,RightLayout<2>> num_data2(3, 2, { 1.4, 15.6, 33.3, 7.4, 4.2, 6.5 });
   ASSERT_EQ(num_data2(0,0), 1.4);
   ASSERT_EQ(num_data2(0,1), 15.6);
   ASSERT_EQ(num_data2(1,0), 33.3);
@@ -396,13 +396,13 @@ TEST(NumArray,RealN)
 
 namespace Arcane
 {
-template class NumArray<float,MDDim4,RightLayout<MDDim4>>;
-template class NumArray<float,MDDim3,RightLayout<MDDim3>>;
-template class NumArray<float,MDDim2,RightLayout<MDDim2>>;
+template class NumArray<float,MDDim4,RightLayout<4>>;
+template class NumArray<float,MDDim3,RightLayout<3>>;
+template class NumArray<float,MDDim2,RightLayout<2>>;
 
-template class NumArray<float,MDDim4,LeftLayout<MDDim4>>;
-template class NumArray<float,MDDim3,LeftLayout<MDDim3>>;
-template class NumArray<float,MDDim2,LeftLayout<MDDim2>>;
+template class NumArray<float,MDDim4,LeftLayout<4>>;
+template class NumArray<float,MDDim3,LeftLayout<3>>;
+template class NumArray<float,MDDim2,LeftLayout<2>>;
 
 template class NumArray<float,MDDim1>;
 }

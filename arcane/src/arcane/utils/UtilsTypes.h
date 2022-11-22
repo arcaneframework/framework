@@ -217,15 +217,15 @@ class TaskFactory;
 /*---------------------------------------------------------------------------*/
 
 enum class eMemoryRessource;
-template<typename ExtentType> class DefaultLayout;
+template<int RankValue> class DefaultLayout;
 class IMemoryRessourceMng;
-template<typename DataType,typename ExtentType,typename LayoutType = DefaultLayout<ExtentType> >
+template<typename DataType,typename ExtentType,typename LayoutType = DefaultLayout<ExtentType::rank()> >
 class MDSpanBase;
-template<class DataType,typename ExtentType,typename LayoutType = DefaultLayout<ExtentType> >
+template<class DataType,typename ExtentType,typename LayoutType = DefaultLayout<ExtentType::rank()> >
 class MDSpan;
-template<typename DataType,typename ExtentType,typename LayoutType = DefaultLayout<ExtentType> >
+template<typename DataType,typename ExtentType,typename LayoutType = DefaultLayout<ExtentType::rank()> >
 class NumArrayBase;
-template<class DataType,typename ExtentType,typename LayoutType = DefaultLayout<ExtentType> >
+template<class DataType,typename ExtentType,typename LayoutType = DefaultLayout<ExtentType::rank()> >
 class NumArray;
 template<typename ExtentType> class ArrayBounds;
 template<int RankValue> class ArrayBoundsIndexBase;
