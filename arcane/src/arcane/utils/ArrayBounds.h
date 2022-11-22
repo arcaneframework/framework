@@ -28,32 +28,28 @@
 namespace Arcane
 {
 
-namespace impl
-{
-}
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename ExtentType>
+template <typename ExtentType>
 class ArrayBoundsBase
 : private ArrayExtents<ExtentType>
 {
  public:
 
   using BaseClass = ArrayExtents<ExtentType>;
-  using BaseClass::getIndices;
   using BaseClass::asStdArray;
   using BaseClass::constExtent;
+  using BaseClass::getIndices;
   using IndexType = typename BaseClass::IndexType;
+  using ArrayExtentType = Arcane::ArrayExtents<ExtentType>;
 
  public:
 
-  constexpr ArrayBoundsBase() : m_nb_element(0) {}
-  constexpr explicit ArrayBoundsBase(const ArrayExtents<ExtentType>& rhs)
+  constexpr ArrayBoundsBase()
+  : m_nb_element(0)
+  {}
+  constexpr explicit ArrayBoundsBase(const BaseClass& rhs)
   : ArrayExtents<ExtentType>(rhs)
   {
     m_nb_element = this->totalNbElement();
@@ -61,7 +57,7 @@ class ArrayBoundsBase
 
  public:
 
-  ARCCORE_HOST_DEVICE constexpr Int64 nbElement() const { return m_nb_element; }
+  constexpr ARCCORE_HOST_DEVICE Int64 nbElement() const { return m_nb_element; }
 
  private:
 
@@ -71,15 +67,21 @@ class ArrayBoundsBase
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<>
+template <>
 class ArrayBounds<MDDim1>
 : public ArrayBoundsBase<MDDim1>
 {
  public:
+
   // Note: le constructeur ne doit pas être explicite pour permettre la conversion
   // à partir d'un entier.
   constexpr ArrayBounds(Int32 dim1)
-  : ArrayBoundsBase<MDDim1>(ArrayExtents<MDDim1>(dim1))
+  : ArrayBoundsBase<MDDim1>(ArrayExtentType(dim1))
+  {
+  }
+
+  constexpr explicit ArrayBounds(const ArrayExtentType& v)
+  : ArrayBoundsBase<MDDim1>(v)
   {
   }
 };
@@ -87,13 +89,19 @@ class ArrayBounds<MDDim1>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<>
+template <>
 class ArrayBounds<MDDim2>
 : public ArrayBoundsBase<MDDim2>
 {
  public:
-  constexpr ArrayBounds(Int32 dim1,Int32 dim2)
-  : ArrayBoundsBase<MDDim2>(ArrayExtents<MDDim2>(dim1,dim2))
+
+  constexpr ArrayBounds(Int32 dim1, Int32 dim2)
+  : ArrayBoundsBase<MDDim2>(ArrayExtentType(dim1, dim2))
+  {
+  }
+
+  constexpr explicit ArrayBounds(const ArrayExtentType& v)
+  : ArrayBoundsBase<MDDim2>(v)
   {
   }
 };
@@ -101,13 +109,19 @@ class ArrayBounds<MDDim2>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<>
+template <>
 class ArrayBounds<MDDim3>
 : public ArrayBoundsBase<MDDim3>
 {
  public:
-  constexpr ArrayBounds(Int32 dim1,Int32 dim2,Int32 dim3)
-  : ArrayBoundsBase<MDDim3>(ArrayExtents<MDDim3>(dim1,dim2,dim3))
+
+  constexpr ArrayBounds(Int32 dim1, Int32 dim2, Int32 dim3)
+  : ArrayBoundsBase<MDDim3>(ArrayExtentType(dim1, dim2, dim3))
+  {
+  }
+
+  constexpr explicit ArrayBounds(const ArrayExtentType& v)
+  : ArrayBoundsBase<MDDim3>(v)
   {
   }
 };
@@ -115,13 +129,19 @@ class ArrayBounds<MDDim3>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<>
+template <>
 class ArrayBounds<MDDim4>
 : public ArrayBoundsBase<MDDim4>
 {
  public:
-  constexpr ArrayBounds(Int32 dim1,Int32 dim2,Int32 dim3,Int32 dim4)
-  : ArrayBoundsBase<MDDim4>(ArrayExtents<MDDim4>(dim1,dim2,dim3,dim4))
+
+  constexpr ArrayBounds(Int32 dim1, Int32 dim2, Int32 dim3, Int32 dim4)
+  : ArrayBoundsBase<MDDim4>(ArrayExtentType(dim1, dim2, dim3, dim4))
+  {
+  }
+
+  constexpr explicit ArrayBounds(const ArrayExtentType& v)
+  : ArrayBoundsBase<MDDim4>(v)
   {
   }
 };

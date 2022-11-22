@@ -127,40 +127,51 @@ class ComplexForLoopRanges
 inline SimpleForLoopRanges<1>
 makeLoopRanges(Int32 n1)
 {
-  SimpleForLoopRanges<1>::ArrayBoundsType bounds(n1);
-  return bounds;
+  using BoundsType = SimpleForLoopRanges<1>::ArrayBoundsType;
+  using ArrayExtentType = typename BoundsType::ArrayExtentType;
+
+  return BoundsType(ArrayExtentType(n1));
 }
 
 //! Créé un intervalle d'itération [0,n1[,[0,n2[
 inline SimpleForLoopRanges<2>
 makeLoopRanges(Int32 n1,Int32 n2)
 {
-  SimpleForLoopRanges<2>::ArrayBoundsType bounds(n1,n2);
-  return bounds;
+  using BoundsType = SimpleForLoopRanges<2>::ArrayBoundsType;
+  using ArrayExtentType = typename BoundsType::ArrayExtentType;
+
+  return BoundsType(ArrayExtentType(n1,n2));
 }
 
 //! Créé un intervalle d'itération [0,n1[,[0,n2[,[0,n3[
 inline SimpleForLoopRanges<3>
 makeLoopRanges(Int32 n1,Int32 n2,Int32 n3)
 {
-  SimpleForLoopRanges<3>::ArrayBoundsType bounds(n1,n2,n3);
-  return bounds;
+  using BoundsType = SimpleForLoopRanges<3>::ArrayBoundsType;
+  using ArrayExtentType = typename BoundsType::ArrayExtentType;
+
+  return BoundsType(ArrayExtentType(n1,n2,n3));
 }
 
 //! Créé un intervalle d'itération [0,n1[,[0,n2[,[0,n3[,[0,n4[
 inline SimpleForLoopRanges<4>
 makeLoopRanges(Int32 n1,Int32 n2,Int32 n3,Int32 n4)
 {
-  SimpleForLoopRanges<4>::ArrayBoundsType bounds(n1,n2,n3,n4);
-  return bounds;
+  using BoundsType = SimpleForLoopRanges<4>::ArrayBoundsType;
+  using ArrayExtentType = typename BoundsType::ArrayExtentType;
+
+  return BoundsType(ArrayExtentType(n1,n2,n3,n4));
 }
 
 //! Créé un intervalle d'itération dans ℕ.
 inline ComplexForLoopRanges<1>
 makeLoopRanges(ForLoopRange n1)
 {
-  ComplexForLoopRanges<1>::ArrayBoundsType lower_bounds(n1.lowerBound());
-  ComplexForLoopRanges<1>::ArrayBoundsType sizes(n1.size());
+  using BoundsType = ComplexForLoopRanges<1>::ArrayBoundsType;
+  using ArrayExtentType = typename BoundsType::ArrayExtentType;
+
+  BoundsType lower_bounds(ArrayExtentType(n1.lowerBound()));
+  BoundsType sizes(ArrayExtentType(n1.size()));
   return {lower_bounds,sizes};
 }
 
@@ -168,8 +179,11 @@ makeLoopRanges(ForLoopRange n1)
 inline ComplexForLoopRanges<2>
 makeLoopRanges(ForLoopRange n1,ForLoopRange n2)
 {
-  ComplexForLoopRanges<2>::ArrayBoundsType lower_bounds(n1.lowerBound(),n2.lowerBound());
-  ComplexForLoopRanges<2>::ArrayBoundsType sizes(n1.size(),n2.size());
+  using BoundsType = ComplexForLoopRanges<2>::ArrayBoundsType;
+  using ArrayExtentType = typename BoundsType::ArrayExtentType;
+
+  BoundsType lower_bounds(ArrayExtentType(n1.lowerBound(),n2.lowerBound()));
+  BoundsType sizes(ArrayExtentType(n1.size(),n2.size()));
   return {lower_bounds,sizes};
 }
 
@@ -177,8 +191,11 @@ makeLoopRanges(ForLoopRange n1,ForLoopRange n2)
 inline ComplexForLoopRanges<3>
 makeLoopRanges(ForLoopRange n1,ForLoopRange n2,ForLoopRange n3)
 {
-  ComplexForLoopRanges<3>::ArrayBoundsType lower_bounds(n1.lowerBound(),n2.lowerBound(),n3.lowerBound());
-  ComplexForLoopRanges<3>::ArrayBoundsType sizes(n1.size(),n2.size(),n3.size());
+  using BoundsType = ComplexForLoopRanges<3>::ArrayBoundsType;
+  using ArrayExtentType = typename BoundsType::ArrayExtentType;
+
+  BoundsType lower_bounds(ArrayExtentType(n1.lowerBound(),n2.lowerBound(),n3.lowerBound()));
+  BoundsType sizes(ArrayExtentType(n1.size(),n2.size(),n3.size()));
   return {lower_bounds,sizes};
 }
 
@@ -186,8 +203,11 @@ makeLoopRanges(ForLoopRange n1,ForLoopRange n2,ForLoopRange n3)
 inline ComplexForLoopRanges<4>
 makeLoopRanges(ForLoopRange n1,ForLoopRange n2,ForLoopRange n3,ForLoopRange n4)
 {
-  ComplexForLoopRanges<4>::ArrayBoundsType lower_bounds(n1.lowerBound(),n2.lowerBound(),n3.lowerBound(),n4.lowerBound());
-  ComplexForLoopRanges<4>::ArrayBoundsType sizes(n1.size(),n2.size(),n3.size(),n4.size());
+  using BoundsType = ComplexForLoopRanges<4>::ArrayBoundsType;
+  using ArrayExtentType = typename BoundsType::ArrayExtentType;
+
+  BoundsType lower_bounds(ArrayExtentType(n1.lowerBound(),n2.lowerBound(),n3.lowerBound(),n4.lowerBound()));
+  BoundsType sizes(ArrayExtentType(n1.size(),n2.size(),n3.size(),n4.size()));
   return {lower_bounds,sizes};
 }
 
