@@ -81,7 +81,7 @@ __global__ void MyVecAdd2(Span<const double> a,Span<const double>b,Span<double> 
 
 __global__ void MyVecAdd3(MDSpan<const double,MDDim1> a,MDSpan<const double,MDDim1> b,MDSpan<double,MDDim1> out)
 {
-  int size = a.dim1Size();
+  int size = a.extent0();
   int i = blockDim.x * blockIdx.x + threadIdx.x;
   if (i>=size)
     return;
@@ -103,7 +103,7 @@ void _initArrays(Span<double> a,Span<double> b,Span<double> c,int base)
 
 void _initArrays(MDSpan<double,MDDim1> a,MDSpan<double,MDDim1> b,MDSpan<double,MDDim1> c,int base)
 {
-  Int32 vsize = static_cast<Int32>(a.dim1Size());
+  Int32 vsize = a.extent0();
   for( Int32 i = 0; i<vsize; ++i ){
     a(i) = (double)(i+base);
     b(i) = (double)(i*i+base);

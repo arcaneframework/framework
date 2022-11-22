@@ -136,6 +136,7 @@ set(ARCANE_SOURCES
   ArcaneGlobal.h
   ArrayBoundsIndex.h
   ArrayExtents.h
+  ArrayExtentsValue.h
   ArrayBounds.h
   ArrayLayout.h
   LoopRanges.h

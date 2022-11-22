@@ -17,6 +17,7 @@
 #include "arcane/utils/ArrayView.h"
 #include "arcane/utils/ArrayBoundsIndex.h"
 #include "arcane/utils/ArrayLayout.h"
+#include "arcane/utils/ArrayExtentsValue.h"
 
 #include "arccore/base/Span.h"
 
@@ -32,7 +33,7 @@
 namespace Arcane
 {
 
-namespace detail
+namespace impl
 {
 template<int RankValue>
 class ArrayExtentsTraits;
@@ -76,7 +77,6 @@ class ArrayExtentsTraits<4>
   static constexpr ARCCORE_HOST_DEVICE std::array<Int32,4>
   extendsInitHelper() { return { 0, 0, 0, 0 }; }
 };
-
 }
 
 /*---------------------------------------------------------------------------*/
@@ -115,7 +115,7 @@ class ArrayStridesBase
 {
  public:
   ARCCORE_HOST_DEVICE ArrayStridesBase()
-  : m_strides(detail::ArrayExtentsTraits<RankValue>::extendsInitHelper()) { }
+  : m_strides(impl::ArrayExtentsTraits<RankValue>::extendsInitHelper()) { }
   //! Valeur du pas de la \a i-ème dimension.
   ARCCORE_HOST_DEVICE Int32 stride(int i) const { return m_strides[i]; }
   ARCCORE_HOST_DEVICE Int32 operator()(int i) const { return m_strides[i]; }
@@ -154,6 +154,73 @@ class ArrayStridesBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+template<>
+class ArrayExtentsValueDynamic<1>
+: public ArrayExtentsValue<-1>
+{
+  using BaseClass = ArrayExtentsValue<-1>;
+
+ public:
+
+  ArrayExtentsValueDynamic() = default;
+
+ protected:
+
+  explicit ARCCORE_HOST_DEVICE ArrayExtentsValueDynamic(SmallSpan<const Int32> extents)
+  : BaseClass(extents){}
+};
+
+template<>
+class ArrayExtentsValueDynamic<2>
+: public ArrayExtentsValue<-1,-1>
+{
+  using BaseClass = ArrayExtentsValue<-1,-1>;
+
+ public:
+
+  ArrayExtentsValueDynamic() = default;
+
+ protected:
+
+  explicit ARCCORE_HOST_DEVICE ArrayExtentsValueDynamic(SmallSpan<const Int32> extents)
+  : BaseClass(extents){}
+};
+
+template<>
+class ArrayExtentsValueDynamic<3>
+: public ArrayExtentsValue<-1,-1,-1>
+{
+  using BaseClass = ArrayExtentsValue<-1,-1,-1>;
+
+ public:
+
+  ArrayExtentsValueDynamic() = default;
+
+ protected:
+
+  explicit ARCCORE_HOST_DEVICE ArrayExtentsValueDynamic(SmallSpan<const Int32> extents)
+  : BaseClass(extents){}
+};
+
+template<>
+class ArrayExtentsValueDynamic<4>
+: public ArrayExtentsValue<-1,-1,-1,-1>
+{
+  using BaseClass = ArrayExtentsValue<-1,-1,-1,-1>;
+
+ public:
+
+  ArrayExtentsValueDynamic() = default;
+
+ protected:
+
+  explicit ARCCORE_HOST_DEVICE ArrayExtentsValueDynamic(SmallSpan<const Int32> extents)
+  : BaseClass(extents){}
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Spécialisation de ArrayExtentsBase pour les tableaux de dimension 0 (les scalaires)
  */
@@ -163,9 +230,9 @@ class ArrayExtentsBase<MDDim0>
  public:
   ArrayExtentsBase() = default;
   //! Nombre d'élément de la \a i-ème dimension.
-  ARCCORE_HOST_DEVICE SmallSpan<const Int32> asSpan() const { return {}; }
+  constexpr ARCCORE_HOST_DEVICE SmallSpan<const Int32> asSpan() const { return {}; }
   //! Nombre total d'eléments
-  ARCCORE_HOST_DEVICE Int32 totalNbElement() const { return 1; }
+  constexpr ARCCORE_HOST_DEVICE Int32 totalNbElement() const { return 1; }
   ARCCORE_HOST_DEVICE static ArrayExtentsBase<MDDim0> fromSpan([[maybe_unused]] Span<const Int32> extents)
   {
     // TODO: vérifier la taille de \a extents
@@ -180,44 +247,40 @@ class ArrayExtentsBase<MDDim0>
  */
 template<typename ExtentType>
 class ArrayExtentsBase
+: public ArrayExtentsValueDynamic<ExtentType::rank()>
 {
+  using BaseClass = ArrayExtentsValueDynamic<ExtentType::rank()>;
   using ArrayExtentsPreviousRank = ArrayExtentsBase<MDDim<ExtentType::rank()-1>>;
 
  public:
-  ARCCORE_HOST_DEVICE constexpr ArrayExtentsBase()
-  : m_extents(detail::ArrayExtentsTraits<ExtentType::rank()>::extendsInitHelper()) { }
- protected:
-  explicit ARCCORE_HOST_DEVICE ArrayExtentsBase(SmallSpan<const Int32> extents)
-  {
-    auto nb_rank = ExtentType::rank();
-    Integer n = extents.size();
-    Integer vn = math::min(n,nb_rank);
-    for( int i=0; i<vn; ++i )
-      m_extents[i] = extents[i];
-    for( int i=vn; i<nb_rank; ++i )
-      m_extents[i] = 0;
-  }
+
+  using BaseClass::totalNbElement;
+  using BaseClass::getIndices;
+
  public:
-  //! Nombre d'élément de la \a i-ème dimension.
-  ARCCORE_HOST_DEVICE Int32 extent(int i) const { return m_extents[i]; }
-  //! Positionne à \a v le nombre d'éléments de la i-ème dimension
-  ARCCORE_HOST_DEVICE void setExtent(int i,Int32 v) { m_extents[i] = v; }
-  ARCCORE_HOST_DEVICE Int32 operator()(int i) const { return m_extents[i]; }
-  ARCCORE_HOST_DEVICE SmallSpan<const Int32> asSpan() const { return { m_extents.data(), ExtentType::rank() }; }
-  ARCCORE_HOST_DEVICE std::array<Int32,ExtentType::rank()> asStdArray() const { return m_extents; }
-  //! Nombre total d'eléments
-  ARCCORE_HOST_DEVICE constexpr Int64 totalNbElement() const
+
+  ARCCORE_HOST_DEVICE constexpr ArrayExtentsBase()
+  : BaseClass() { }
+
+ protected:
+
+  explicit ARCCORE_HOST_DEVICE ArrayExtentsBase(SmallSpan<const Int32> extents)
+  : BaseClass(extents)
   {
-    Int64 nb_element = 1;
-    for (int i=0; i<ExtentType::rank(); i++)
-      nb_element *= m_extents[i];
-    return nb_element;
   }
+
+ public:
+
+  //! TEMPORARY: Positionne à \a v le nombre d'éléments de la dimension 0.
+  ARCCORE_HOST_DEVICE void setExtent0(Int32 v) { this->m_extent0.v = v; }
+
   // Instance contenant les dimensions après la première
   ARCCORE_HOST_DEVICE ArrayExtentsPreviousRank removeFirstExtent() const
   {
-    return ArrayExtentsPreviousRank::fromSpan({m_extents.data()+1,ExtentType::rank()-1});
+    auto x = BaseClass::_removeFirstExtent();
+    return ArrayExtentsPreviousRank::fromSpan(x);
   }
+
   /*!
    * \brief Construit une instance à partir des valeurs données dans \a extents.
    */
@@ -225,8 +288,6 @@ class ArrayExtentsBase
   {
     return ArrayExtentsBase<ExtentType>(extents);
   }
- protected:
-  std::array<Int32,ExtentType::rank()> m_extents;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -239,25 +300,15 @@ class ArrayExtents<MDDim1>
  public:
 
   using BaseClass = ArrayExtentsBase<MDDim1>;
+  using BaseClass::totalNbElement;
 
  public:
 
   ArrayExtents() = default;
-  ArrayExtents(BaseClass rhs) : BaseClass(rhs){}
-  ARCCORE_HOST_DEVICE explicit ArrayExtents(Int32 dim1_size)
+  constexpr ARCCORE_HOST_DEVICE ArrayExtents(const BaseClass&rhs) : BaseClass(rhs) {}
+  constexpr ARCCORE_HOST_DEVICE explicit ArrayExtents(Int32 dim1_size)
   {
-    setSize(dim1_size);
-  }
-  ARCCORE_HOST_DEVICE void setSize(Int32 dim1_size)
-  {
-    m_extents[0] = dim1_size;
-  }
-
- protected:
-
-  ARCCORE_HOST_DEVICE void _checkIndex([[maybe_unused]] ArrayBoundsIndex<1> idx) const
-  {
-    ARCCORE_CHECK_AT(idx.id0(),m_extents[0]);
+    this->m_extent0.v = dim1_size;
   }
 };
 
@@ -271,27 +322,16 @@ class ArrayExtents<MDDim2>
  public:
 
   using BaseClass = ArrayExtentsBase<MDDim2>;
+  using BaseClass::totalNbElement;
 
  public:
 
   ArrayExtents() = default;
-  ArrayExtents(BaseClass rhs) : BaseClass(rhs){}
-  ARCCORE_HOST_DEVICE ArrayExtents(Int32 dim1_size,Int32 dim2_size)
+  constexpr ARCCORE_HOST_DEVICE ArrayExtents(const BaseClass& rhs) : BaseClass(rhs){}
+  constexpr ARCCORE_HOST_DEVICE ArrayExtents(Int32 dim1_size,Int32 dim2_size)
   {
-    setSize(dim1_size,dim2_size);
-  }
-  ARCCORE_HOST_DEVICE void setSize(Int32 dim1_size,Int32 dim2_size)
-  {
-    m_extents[0] = dim1_size;
-    m_extents[1] = dim2_size;
-  }
-
- protected:
-
-  ARCCORE_HOST_DEVICE void _checkIndex([[maybe_unused]] ArrayBoundsIndex<2> idx) const
-  {
-    ARCCORE_CHECK_AT(idx.id0(),m_extents[0]);
-    ARCCORE_CHECK_AT(idx.id1(),m_extents[1]);
+    this->m_extent0.v = dim1_size;
+    this->m_extent1.v = dim2_size;
   }
 };
 
@@ -305,29 +345,17 @@ class ArrayExtents<MDDim3>
  public:
 
   using BaseClass = ArrayExtentsBase<MDDim3>;
+  using BaseClass::totalNbElement;
 
  public:
 
   ArrayExtents() = default;
-  ArrayExtents(BaseClass rhs) : BaseClass(rhs){}
-  ARCCORE_HOST_DEVICE ArrayExtents(Int32 dim1_size,Int32 dim2_size,Int32 dim3_size)
+  constexpr ARCCORE_HOST_DEVICE ArrayExtents(const BaseClass& rhs) : BaseClass(rhs){}
+  constexpr ARCCORE_HOST_DEVICE ArrayExtents(Int32 dim1_size,Int32 dim2_size,Int32 dim3_size)
   {
-    setSize(dim1_size,dim2_size,dim3_size);
-  }
-  ARCCORE_HOST_DEVICE void setSize(Int32 dim1_size,Int32 dim2_size,Int32 dim3_size)
-  {
-    m_extents[0] = dim1_size;
-    m_extents[1] = dim2_size;
-    m_extents[2] = dim3_size;
-  }
-
- protected:
-
-  ARCCORE_HOST_DEVICE void _checkIndex([[maybe_unused]] ArrayBoundsIndex<3> idx) const
-  {
-    ARCCORE_CHECK_AT(idx.id0(),m_extents[0]);
-    ARCCORE_CHECK_AT(idx.id1(),m_extents[1]);
-    ARCCORE_CHECK_AT(idx.id2(),m_extents[2]);
+    this->m_extent0.v = dim1_size;
+    this->m_extent1.v = dim2_size;
+    this->m_extent2.v = dim3_size;
   }
 };
 
@@ -340,29 +368,16 @@ class ArrayExtents<MDDim4>
 {
  public:
   using BaseClass = ArrayExtentsBase<MDDim4>;
+  using BaseClass::totalNbElement;
  public:
   ArrayExtents() = default;
-  ArrayExtents(BaseClass rhs) : BaseClass(rhs){}
-  ARCCORE_HOST_DEVICE ArrayExtents(Int32 dim1_size,Int32 dim2_size,Int32 dim3_size,Int32 dim4_size)
+  constexpr ARCCORE_HOST_DEVICE ArrayExtents(const BaseClass& rhs) : BaseClass(rhs){}
+  constexpr ARCCORE_HOST_DEVICE ArrayExtents(Int32 dim1_size,Int32 dim2_size,Int32 dim3_size,Int32 dim4_size)
   {
-    setSize(dim1_size,dim2_size,dim3_size,dim4_size);
-  }
-  ARCCORE_HOST_DEVICE void setSize(Int32 dim1_size,Int32 dim2_size,Int32 dim3_size,Int32 dim4_size)
-  {
-    m_extents[0] = dim1_size;
-    m_extents[1] = dim2_size;
-    m_extents[2] = dim3_size;
-    m_extents[3] = dim4_size;
-  }
-
- protected:
-
-  ARCCORE_HOST_DEVICE void _checkIndex([[maybe_unused]] ArrayBoundsIndex<4> idx) const
-  {
-    ARCCORE_CHECK_AT(idx.id0(),m_extents[0]);
-    ARCCORE_CHECK_AT(idx.id1(),m_extents[1]);
-    ARCCORE_CHECK_AT(idx.id2(),m_extents[2]);
-    ARCCORE_CHECK_AT(idx.id3(),m_extents[3]);
+    this->m_extent0.v = dim1_size;
+    this->m_extent1.v = dim2_size;
+    this->m_extent2.v = dim3_size;
+    this->m_extent3.v = dim4_size;
   }
 };
 
@@ -375,37 +390,28 @@ class ArrayExtentsWithOffset<MDDim1,LayoutType>
 {
  public:
   using BaseClass = ArrayExtents<MDDim1>;
-  using BaseClass::extent;
-  using BaseClass::operator();
-  using BaseClass::asSpan;
+  using BaseClass::extent0;
   using BaseClass::asStdArray;
   using BaseClass::totalNbElement;
+  using BaseClass::getIndices;
   using Layout = LayoutType;
  public:
   ArrayExtentsWithOffset() = default;
-  ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(ArrayExtents<MDDim1> rhs)
+  ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(const ArrayExtents<MDDim1>& rhs)
   : BaseClass(rhs)
   {
   }
-  ARCCORE_HOST_DEVICE Int64 offset(Int32 i) const
+  constexpr ARCCORE_HOST_DEVICE Int64 offset(Int32 i) const
   {
     BaseClass::_checkIndex(i);
     return i;
   }
-  ARCCORE_HOST_DEVICE Int64 offset(ArrayBoundsIndex<1> idx) const
+  constexpr ARCCORE_HOST_DEVICE Int64 offset(ArrayBoundsIndex<1> idx) const
   {
     BaseClass::_checkIndex(idx.id0());
     return idx.id0();
   }
-  ARCCORE_HOST_DEVICE void setSize(Int32 dim1_size)
-  {
-    BaseClass::setSize(dim1_size);
-  }
-  ARCCORE_HOST_DEVICE void setSize(ArrayExtents<MDDim1> extents)
-  {
-    BaseClass::setSize(extents(0));
-  }
-  BaseClass extents() const { const BaseClass* b = this; return *b; }
+  constexpr BaseClass extents() const { const BaseClass* b = this; return *b; }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -417,36 +423,28 @@ class ArrayExtentsWithOffset<MDDim2,LayoutType>
 {
  public:
   using BaseClass = ArrayExtents<MDDim2>;
-  using BaseClass::extent;
-  using BaseClass::operator();
-  using BaseClass::asSpan;
+  using BaseClass::extent0;
+  using BaseClass::extent1;
   using BaseClass::asStdArray;
   using BaseClass::totalNbElement;
+  using BaseClass::getIndices;
   using Layout = LayoutType;
  public:
   ArrayExtentsWithOffset() = default;
-  ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(ArrayExtents<MDDim2> rhs)
+  constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(ArrayExtents<MDDim2> rhs)
   : BaseClass(rhs)
   {
   }
-  ARCCORE_HOST_DEVICE Int64 offset(Int32 i,Int32 j) const
+  constexpr ARCCORE_HOST_DEVICE Int64 offset(Int32 i,Int32 j) const
   {
     return offset({i,j});
   }
-  ARCCORE_HOST_DEVICE Int64 offset(ArrayBoundsIndex<2> idx) const
+  constexpr ARCCORE_HOST_DEVICE Int64 offset(ArrayBoundsIndex<2> idx) const
   {
     BaseClass::_checkIndex(idx);
-    return Layout::offset(idx,m_extents[Layout::LastExtent]);
+    return Layout::offset(idx,this->constExtent<Layout::LastExtent>());
   }
-  ARCCORE_HOST_DEVICE void setSize(Int32 dim1_size,Int32 dim2_size)
-  {
-    BaseClass::setSize(dim1_size,dim2_size);
-  }
-  ARCCORE_HOST_DEVICE void setSize(ArrayExtents<MDDim2> dims)
-  {
-    this->setSize(dims(0),dims(1));
-  }
-  BaseClass extents() const { const BaseClass* b = this; return *b; }
+  constexpr BaseClass extents() const { const BaseClass* b = this; return *b; }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -458,42 +456,35 @@ class ArrayExtentsWithOffset<MDDim3,LayoutType>
 {
  public:
   using BaseClass = ArrayExtents<MDDim3>;
-  using BaseClass::extent;
-  using BaseClass::operator();
-  using BaseClass::asSpan;
+  using BaseClass::extent0;
+  using BaseClass::extent1;
+  using BaseClass::extent2;
   using BaseClass::asStdArray;
   using BaseClass::totalNbElement;
+  using BaseClass::getIndices;
   using Layout = LayoutType;
  public:
   ArrayExtentsWithOffset() = default;
-  ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(ArrayExtents<MDDim3> rhs)
+  constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(ArrayExtents<MDDim3> rhs)
   : BaseClass(rhs)
   {
     _computeOffsets();
   }
-  ARCCORE_HOST_DEVICE Int64 offset(Int32 i,Int32 j,Int32 k) const
+  constexpr ARCCORE_HOST_DEVICE Int64 offset(Int32 i,Int32 j,Int32 k) const
   {
     return offset({i,j,k});
   }
-  ARCCORE_HOST_DEVICE Int64 offset(ArrayBoundsIndex<3> idx) const
+  constexpr ARCCORE_HOST_DEVICE Int64 offset(ArrayBoundsIndex<3> idx) const
   {
     this->_checkIndex(idx);
-    return Layout::offset(idx,m_extents[Layout::LastExtent],m_dim23_size);
+    return Layout::offset(idx,this->constExtent<Layout::LastExtent>(),m_dim23_size);
   }
-  void setSize(Int32 dim1_size,Int32 dim2_size,Int32 dim3_size)
-  {
-    BaseClass::setSize(dim1_size,dim2_size,dim3_size);
-    _computeOffsets();
-  }
-  void setSize(ArrayExtents<MDDim3> dims)
-  {
-    this->setSize(dims(0),dims(1),dims(2));
-  }
-  BaseClass extents() const { const BaseClass* b = this; return *b; }
+  constexpr BaseClass extents() const { const BaseClass* b = this; return *b; }
  protected:
   ARCCORE_HOST_DEVICE void _computeOffsets()
   {
-    m_dim23_size = Layout::computeOffsetIndexes(m_extents);
+    const BaseClass& b = *this;
+    m_dim23_size = Layout::computeOffsetIndexes(b);
   }
  private:
   Int64 m_dim23_size = 0;
@@ -508,43 +499,36 @@ class ArrayExtentsWithOffset<MDDim4,LayoutType>
 {
  public:
   using BaseClass = ArrayExtents<MDDim4>;
-  using BaseClass::extent;
-  using BaseClass::operator();
-  using BaseClass::asSpan;
+  using BaseClass::extent0;
+  using BaseClass::extent1;
+  using BaseClass::extent2;
+  using BaseClass::extent3;
   using BaseClass::asStdArray;
   using BaseClass::totalNbElement;
+  using BaseClass::getIndices;
   using Layout = LayoutType;
  public:
   ArrayExtentsWithOffset() = default;
-  ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(ArrayExtents<MDDim4> rhs)
+  constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(ArrayExtents<MDDim4> rhs)
   : BaseClass(rhs)
   {
     _computeOffsets();
   }
-  ARCCORE_HOST_DEVICE Int64 offset(Int32 i,Int32 j,Int32 k,Int32 l) const
+  constexpr ARCCORE_HOST_DEVICE Int64 offset(Int32 i,Int32 j,Int32 k,Int32 l) const
   {
     return offset({i,j,k,l});
   }
-  ARCCORE_HOST_DEVICE Int64 offset(ArrayBoundsIndex<4> idx) const
+  constexpr ARCCORE_HOST_DEVICE Int64 offset(ArrayBoundsIndex<4> idx) const
   {
     this->_checkIndex(idx);
-    return (m_dim234_size*idx.largeId0()) + m_dim34_size*idx.largeId1() + m_extents[3]*idx.largeId2() + idx.largeId3();
-  }
-  void setSize(Int32 dim1_size,Int32 dim2_size,Int32 dim3_size,Int32 dim4_size)
-  {
-    BaseClass::setSize(dim1_size,dim2_size,dim3_size,dim4_size);
-    _computeOffsets();
-  }
-  void setSize(ArrayExtents<MDDim4> dims)
-  {
-    this->setSize(dims(0),dims(1),dims(2),dims(3));
+    return (m_dim234_size*idx.largeId0()) + m_dim34_size*idx.largeId1() + this->m_extent3.v*idx.largeId2() + idx.largeId3();
   }
   BaseClass extents() const { const BaseClass* b = this; return *b; }
  protected:
   ARCCORE_HOST_DEVICE void _computeOffsets()
   {
-    m_dim34_size = Int64(m_extents[2]) * Int64(m_extents[3]);
-    m_dim234_size = Int64(m_dim34_size) * Int64(m_extents[1]);
+    m_dim34_size = Int64(this->m_extent2.v) * Int64(this->m_extent3.v);
+    m_dim234_size = Int64(m_dim34_size) * Int64(this->m_extent1.v);
   }
  private:
   Int64 m_dim34_size = 0; //!< dim3 * dim4

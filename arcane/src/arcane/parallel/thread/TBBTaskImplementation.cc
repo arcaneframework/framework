@@ -150,32 +150,32 @@ inline int _currentTaskTreadIndex()
 inline tbb::blocked_rangeNd<Int32,1>
 _toTBBRange(const ComplexForLoopRanges<1>& r)
 {
-  return {{r.lowerBound(0), r.upperBound(0)}};
+  return {{r.lowerBound<0>(), r.upperBound<0>()}};
 }
 
 inline tbb::blocked_rangeNd<Int32,2>
 _toTBBRange(const ComplexForLoopRanges<2>& r)
 {
-  return {{r.lowerBound(0), r.upperBound(0)},
-          {r.lowerBound(1), r.upperBound(1)}};
+  return {{r.lowerBound<0>(), r.upperBound<0>()},
+          {r.lowerBound<1>(), r.upperBound<1>()}};
 
 }
 
 inline tbb::blocked_rangeNd<Int32,3>
 _toTBBRange(const ComplexForLoopRanges<3>& r)
 {
-  return {{r.lowerBound(0), r.upperBound(0)},
-          {r.lowerBound(1), r.upperBound(1)},
-          {r.lowerBound(2), r.upperBound(2)}};
+  return {{r.lowerBound<0>(), r.upperBound<0>()},
+          {r.lowerBound<1>(), r.upperBound<1>()},
+          {r.lowerBound<2>(), r.upperBound<2>()}};
 }
 
 inline tbb::blocked_rangeNd<Int32,4>
 _toTBBRange(const ComplexForLoopRanges<4>& r)
 {
-  return {{r.lowerBound(0), r.upperBound(0)},
-          {r.lowerBound(1), r.upperBound(1)},
-          {r.lowerBound(2), r.upperBound(2)},
-          {r.lowerBound(3), r.upperBound(3)}};
+  return {{r.lowerBound<0>(), r.upperBound<0>()},
+          {r.lowerBound<1>(), r.upperBound<1>()},
+          {r.lowerBound<2>(), r.upperBound<2>()},
+          {r.lowerBound<3>(), r.upperBound<3>()}};
 }
 
 /*---------------------------------------------------------------------------*/
@@ -211,33 +211,42 @@ _toTBBRangeWithGrain(const tbb::blocked_rangeNd<Int32,4>& r,std::size_t grain_si
 inline ComplexForLoopRanges<2>
 _fromTBBRange(const tbb::blocked_rangeNd<Int32,2>& r)
 {
-  ArrayBounds<MDDim2> lower_bounds(r.dim(0).begin(),r.dim(1).begin());
+  using BoundsType = ArrayBounds<MDDim2>;
+  using ArrayExtentType = typename BoundsType::ArrayExtentType;
+
+  BoundsType lower_bounds(ArrayExtentType(r.dim(0).begin(),r.dim(1).begin()));
   auto s0 = static_cast<Int32>(r.dim(0).size());
   auto s1 = static_cast<Int32>(r.dim(1).size());
-  ArrayBounds<MDDim2> sizes(s0,s1);
+  BoundsType sizes(ArrayExtentType(s0,s1));
   return { lower_bounds, sizes };
 }
 
 inline ComplexForLoopRanges<3>
 _fromTBBRange(const tbb::blocked_rangeNd<Int32,3> & r)
 {
-  ArrayBounds<MDDim3> lower_bounds(r.dim(0).begin(),r.dim(1).begin(),r.dim(2).begin());
+  using BoundsType = ArrayBounds<MDDim3>;
+  using ArrayExtentType = typename BoundsType::ArrayExtentType;
+
+  BoundsType lower_bounds(ArrayExtentType(r.dim(0).begin(),r.dim(1).begin(),r.dim(2).begin()));
   auto s0 = static_cast<Int32>(r.dim(0).size());
   auto s1 = static_cast<Int32>(r.dim(1).size());
   auto s2 = static_cast<Int32>(r.dim(2).size());
-  ArrayBounds<MDDim3> sizes(s0,s1,s2);
+  BoundsType sizes(ArrayExtentType(s0,s1,s2));
   return { lower_bounds, sizes };
 }
 
 inline ComplexForLoopRanges<4>
 _fromTBBRange(const tbb::blocked_rangeNd<Int32,4>& r)
 {
-  ArrayBounds<MDDim4> lower_bounds(r.dim(0).begin(),r.dim(1).begin(),r.dim(2).begin(),r.dim(3).begin());
+  using BoundsType = ArrayBounds<MDDim4>;
+  using ArrayExtentType = typename BoundsType::ArrayExtentType;
+
+  BoundsType lower_bounds(ArrayExtentType(r.dim(0).begin(),r.dim(1).begin(),r.dim(2).begin(),r.dim(3).begin()));
   auto s0 = static_cast<Int32>(r.dim(0).size());
   auto s1 = static_cast<Int32>(r.dim(1).size());
   auto s2 = static_cast<Int32>(r.dim(2).size());
   auto s3 = static_cast<Int32>(r.dim(3).size());
-  ArrayBounds<MDDim4> sizes(s0,s1,s2,s3);
+  BoundsType sizes(ArrayExtentType(s0,s1,s2,s3));
   return { lower_bounds, sizes };
 }
 
@@ -1148,7 +1157,8 @@ _executeMDParallelFor(const ComplexForLoopRanges<RankValue>& loop_ranges,
     auto range_1d = _toTBBRange(loop_ranges);
     auto x1 = [&](Integer begin,Integer size)
               {
-                functor->executeFunctor(ComplexForLoopRanges<1>(begin,size));
+                functor->executeFunctor(makeLoopRanges(ForLoopRange(begin,size)));
+                //functor->executeFunctor(ComplexForLoopRanges<1>(begin,size));
               };
     LambdaRangeFunctorT<decltype(x1)> functor_1d(x1);
     Integer begin1 = CheckedConvert::toInteger(range_1d.dim(0).begin());
