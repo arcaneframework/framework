@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ArrayBoundsIndex.h"
+#include "arcane/utils/ArrayExtentsValue.h"
 
 #include <array>
 
@@ -65,10 +66,10 @@ class ArrayLayout3
     return (extent2 * idx[I]) + (extent1*idx[J]) + idx.asInt64(K);
   }
 
-  static ARCCORE_HOST_DEVICE constexpr Int64
-  computeOffsetIndexes(std::array<Int32,3> extents)
+  template<typename ExtentType> static ARCCORE_HOST_DEVICE constexpr Int64
+  computeOffsetIndexes(const ExtentType& extents)
   {
-    return extents[J] * extents[K];
+    return extents.template constExtent<J>() * extents.template constExtent<K>();
   }
 
   static std::array<Int32,3> layoutInfo() { return { I, J, K }; }

@@ -266,6 +266,8 @@ class ForLoopRange;
 template<int RankValue> class SimpleForLoopRanges;
 template<int RankValue> class ComplexForLoopRanges;
 template<int RankValue> class IMDRangeFunctor;
+template<int RankValue> class ArrayExtentsValueDynamic;
+template<Int32... RankSize> class ArrayExtentsValue;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
