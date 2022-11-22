@@ -190,8 +190,8 @@ class ArrayExtentsValue;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<Int32 x0>
-class ArrayExtentsValue<x0>
+template<Int32 X0>
+class ArrayExtentsValue<X0>
 {
  public:
 
@@ -229,6 +229,16 @@ class ArrayExtentsValue<x0>
     m_extent0.v = extents[0];
   }
 
+  explicit constexpr ARCCORE_HOST_DEVICE ArrayExtentsValue(Int32 x0)
+  {
+    m_extent0.v = x0;
+  }
+
+  constexpr std::array<Int32,0> _removeFirstExtent() const
+  {
+    return { };
+  }
+
   ARCCORE_HOST_DEVICE void _checkIndex([[maybe_unused]] ArrayBoundsIndex<1> idx) const
   {
     ARCCORE_CHECK_AT(idx.id0(),m_extent0.v);
@@ -236,14 +246,14 @@ class ArrayExtentsValue<x0>
 
  protected:
 
-  impl::ExtentValue<x0> m_extent0;
+  impl::ExtentValue<X0> m_extent0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<Int32 x0,Int32 x1>
-class ArrayExtentsValue<x0,x1>
+template<Int32 X0,Int32 X1>
+class ArrayExtentsValue<X0,X1>
 {
  public:
 
@@ -287,6 +297,17 @@ class ArrayExtentsValue<x0,x1>
     m_extent1.v = extents[1];
   }
 
+  constexpr ARCCORE_HOST_DEVICE ArrayExtentsValue(Int32 x0,Int32 x1)
+  {
+    m_extent0.v = x0;
+    m_extent1.v = x1;
+  }
+
+  constexpr std::array<Int32,1> _removeFirstExtent() const
+  {
+    return { m_extent1.v };
+  }
+
   ARCCORE_HOST_DEVICE void _checkIndex([[maybe_unused]] ArrayBoundsIndex<2> idx) const
   {
     ARCCORE_CHECK_AT(idx.id0(),m_extent0.v);
@@ -295,15 +316,15 @@ class ArrayExtentsValue<x0,x1>
 
  protected:
 
-  impl::ExtentValue<x0> m_extent0;
-  impl::ExtentValue<x1> m_extent1;
+  impl::ExtentValue<X0> m_extent0;
+  impl::ExtentValue<X1> m_extent1;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<Int32 x0,Int32 x1,Int32 x2>
-class ArrayExtentsValue<x0,x1,x2>
+template<Int32 X0,Int32 X1,Int32 X2>
+class ArrayExtentsValue<X0,X1,X2>
 {
  public:
 
@@ -354,6 +375,18 @@ class ArrayExtentsValue<x0,x1,x2>
     m_extent2.v = extents[2];
   }
 
+  constexpr ARCCORE_HOST_DEVICE ArrayExtentsValue(Int32 x0,Int32 x1,Int32 x2)
+  {
+    m_extent0.v = x0;
+    m_extent1.v = x1;
+    m_extent2.v = x2;
+  }
+
+  constexpr std::array<Int32,2> _removeFirstExtent() const
+  {
+    return { m_extent1.v,m_extent2.v };
+  }
+
   ARCCORE_HOST_DEVICE void _checkIndex([[maybe_unused]] ArrayBoundsIndex<3> idx) const
   {
     ARCCORE_CHECK_AT(idx.id0(),m_extent0.v);
@@ -363,16 +396,16 @@ class ArrayExtentsValue<x0,x1,x2>
 
  protected:
 
-  impl::ExtentValue<x0> m_extent0;
-  impl::ExtentValue<x1> m_extent1;
-  impl::ExtentValue<x2> m_extent2;
+  impl::ExtentValue<X0> m_extent0;
+  impl::ExtentValue<X1> m_extent1;
+  impl::ExtentValue<X2> m_extent2;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<Int32 x0,Int32 x1,Int32 x2,Int32 x3>
-class ArrayExtentsValue<x0,x1,x2,x3>
+template<Int32 X0,Int32 X1,Int32 X2,Int32 X3>
+class ArrayExtentsValue<X0,X1,X2,X3>
 {
  public:
 
@@ -430,6 +463,19 @@ class ArrayExtentsValue<x0,x1,x2,x3>
     m_extent3.v = extents[3];
   }
 
+  constexpr ARCCORE_HOST_DEVICE ArrayExtentsValue(Int32 x0,Int32 x1,Int32 x2,Int32 x3)
+  {
+    m_extent0.v = x0;
+    m_extent1.v = x1;
+    m_extent2.v = x2;
+    m_extent3.v = x3;
+  }
+
+  constexpr std::array<Int32,3> _removeFirstExtent() const
+  {
+    return { m_extent1.v, m_extent2.v, m_extent3.v };
+  }
+
   ARCCORE_HOST_DEVICE void _checkIndex([[maybe_unused]] ArrayBoundsIndex<4> idx) const
   {
     ARCCORE_CHECK_AT(idx.id0(),m_extent0.v);
@@ -440,10 +486,10 @@ class ArrayExtentsValue<x0,x1,x2,x3>
 
  protected:
 
-  impl::ExtentValue<x0> m_extent0;
-  impl::ExtentValue<x1> m_extent1;
-  impl::ExtentValue<x2> m_extent2;
-  impl::ExtentValue<x3> m_extent3;
+  impl::ExtentValue<X0> m_extent0;
+  impl::ExtentValue<X1> m_extent1;
+  impl::ExtentValue<X2> m_extent2;
+  impl::ExtentValue<X3> m_extent3;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -584,8 +630,10 @@ class ArrayExtentsBase
   // Instance contenant les dimensions après la première
   ARCCORE_HOST_DEVICE ArrayExtentsPreviousRank removeFirstExtent() const
   {
-    return ArrayExtentsPreviousRank::fromSpan({m_extents.data()+1,ExtentType::rank()-1});
+    auto x = BaseClass::_removeFirstExtent();
+    return ArrayExtentsPreviousRank::fromSpan(x);
   }
+
   /*!
    * \brief Construit une instance à partir des valeurs données dans \a extents.
    */
