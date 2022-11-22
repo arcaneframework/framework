@@ -67,21 +67,24 @@ class ArrayBoundsBase
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <>
-class ArrayBounds<MDDim1>
-: public ArrayBoundsBase<MDDim1>
+template <int X0>
+class ArrayBounds<ExtentsV<X0>>
+: public ArrayBoundsBase<ExtentsV<X0>>
 {
+  using ExtentsType = ExtentsV<X0>;
+  using BaseClass = ArrayBoundsBase<ExtentsType>;
+
  public:
 
   // Note: le constructeur ne doit pas être explicite pour permettre la conversion
   // à partir d'un entier.
   constexpr ArrayBounds(Int32 dim1)
-  : ArrayBoundsBase<MDDim1>(ArrayExtentType(dim1))
+  : BaseClass(ArrayExtents<ExtentsType>(dim1))
   {
   }
 
-  constexpr explicit ArrayBounds(const ArrayExtentType& v)
-  : ArrayBoundsBase<MDDim1>(v)
+  constexpr explicit ArrayBounds(const ArrayExtents<ExtentsType>& v)
+  : BaseClass(v)
   {
   }
 };
@@ -89,19 +92,22 @@ class ArrayBounds<MDDim1>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <>
-class ArrayBounds<MDDim2>
-: public ArrayBoundsBase<MDDim2>
+template<int X0,int X1>
+class ArrayBounds<ExtentsV<X0,X1>>
+: public ArrayBoundsBase<ExtentsV<X0,X1>>
 {
+  using ExtentsType = ExtentsV<X0,X1>;
+  using BaseClass = ArrayBoundsBase<ExtentsType>;
+
  public:
 
   constexpr ArrayBounds(Int32 dim1, Int32 dim2)
-  : ArrayBoundsBase<MDDim2>(ArrayExtentType(dim1, dim2))
+  : BaseClass(ArrayExtents<ExtentsType>(dim1, dim2))
   {
   }
 
-  constexpr explicit ArrayBounds(const ArrayExtentType& v)
-  : ArrayBoundsBase<MDDim2>(v)
+  constexpr explicit ArrayBounds(const ArrayExtents<ExtentsType>& v)
+  : BaseClass(v)
   {
   }
 };
@@ -109,19 +115,22 @@ class ArrayBounds<MDDim2>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <>
-class ArrayBounds<MDDim3>
-: public ArrayBoundsBase<MDDim3>
+template<int X0,int X1,int X2>
+class ArrayBounds<ExtentsV<X0,X1,X2>>
+: public ArrayBoundsBase<ExtentsV<X0,X1,X2>>
 {
+  using ExtentsType = ExtentsV<X0,X1,X2>;
+  using BaseClass = ArrayBoundsBase<ExtentsType>;
+
  public:
 
   constexpr ArrayBounds(Int32 dim1, Int32 dim2, Int32 dim3)
-  : ArrayBoundsBase<MDDim3>(ArrayExtentType(dim1, dim2, dim3))
+  : BaseClass(ArrayExtents<ExtentsType>(dim1, dim2, dim3))
   {
   }
 
-  constexpr explicit ArrayBounds(const ArrayExtentType& v)
-  : ArrayBoundsBase<MDDim3>(v)
+  constexpr explicit ArrayBounds(const ArrayExtents<ExtentsType>& v)
+  : BaseClass(v)
   {
   }
 };
@@ -129,19 +138,22 @@ class ArrayBounds<MDDim3>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <>
-class ArrayBounds<MDDim4>
-: public ArrayBoundsBase<MDDim4>
+template<int X0,int X1,int X2,int X3>
+class ArrayBounds<ExtentsV<X0,X1,X2,X3>>
+: public ArrayBoundsBase<ExtentsV<X0,X1,X2,X3>>
 {
+  using ExtentsType = ExtentsV<X0,X1,X2,X3>;
+  using BaseClass = ArrayBoundsBase<ExtentsType>;
+
  public:
 
   constexpr ArrayBounds(Int32 dim1, Int32 dim2, Int32 dim3, Int32 dim4)
-  : ArrayBoundsBase<MDDim4>(ArrayExtentType(dim1, dim2, dim3, dim4))
+  : BaseClass(ArrayExtents<ExtentsType>(dim1, dim2, dim3, dim4))
   {
   }
 
-  constexpr explicit ArrayBounds(const ArrayExtentType& v)
-  : ArrayBoundsBase<MDDim4>(v)
+  constexpr explicit ArrayBounds(const ArrayExtents<ExtentsType>& v)
+  : BaseClass(v)
   {
   }
 };
