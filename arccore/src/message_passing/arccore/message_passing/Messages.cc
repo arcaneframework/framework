@@ -16,6 +16,9 @@
 #include "arccore/message_passing/ISerializeDispatcher.h"
 #include "arccore/message_passing/IControlDispatcher.h"
 #include "arccore/message_passing/MessageId.h"
+#include "arccore/message_passing/PointToPointMessageInfo.h"
+
+#include "arccore/base/NotSupportedException.h"
 
 /*!
  * \file Messages.h
@@ -115,6 +118,16 @@ mpProbe(IMessagePassingMng* pm, const PointToPointMessageInfo& message)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+MessageSourceInfo
+mpLegacyProbe(IMessagePassingMng* pm, const PointToPointMessageInfo& message)
+{
+  auto d = pm->dispatchers()->controlDispatcher();
+  return d->legacyProbe(message);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 IMessagePassingMng*
 mpSplit(IMessagePassingMng* pm, bool keep)
 {
@@ -172,6 +185,15 @@ mpReceive(IMessagePassingMng* pm, ISerializer* values,
 {
   auto d = pm->dispatchers()->serializeDispatcher();
   return d->receiveSerializer(values,message);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MessageSourceInfo IControlDispatcher::
+legacyProbe(const PointToPointMessageInfo&)
+{
+  ARCCORE_THROW(NotSupportedException,"pure virtual call to legacyProbe()");
 }
 
 /*---------------------------------------------------------------------------*/

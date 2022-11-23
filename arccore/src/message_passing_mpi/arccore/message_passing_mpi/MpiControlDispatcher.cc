@@ -90,6 +90,15 @@ probe(const PointToPointMessageInfo& message)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+MessageSourceInfo MpiControlDispatcher::
+legacyProbe(const PointToPointMessageInfo& message)
+{
+  return m_adapter->legacyProbeMessage(message);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 IProfiler* MpiControlDispatcher::
 profiler() const
 {

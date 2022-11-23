@@ -239,9 +239,36 @@ mpWait(IMessagePassingMng* pm, ArrayView<Request> requests,
  *
  * En mode non bloquant, si aucun message n'est disponible, alors
  * MessageId::isValid() vaut \a false pour l'instance retournée.
+ *
+ * La sémantique est identique à celle de MPI_Mprobe. Le message retourné est enlevé
+ * de la liste des messages et donc un appel ultérieur à cette méthode avec les mêmes
+ * paramètres retournera un autre message ou un message nul. Si on souhaite un
+ * comportement identique à MPI_Iprobe()/MPI_Probe() alors il faut utiliser mpLegacyProbe().
  */
 ARCCORE_MESSAGEPASSING_EXPORT MessageId
 mpProbe(IMessagePassingMng* pm, const PointToPointMessageInfo& message);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Teste si un message est disponible.
+ *
+ * Cette fonction permet de savoir si un message issu du couple (rang,tag)
+ * est disponible. \a message doit avoir été initialisé avec un couple (rang,tag)
+ * (message.isRankTag() doit être vrai).
+ *
+ * Retourne une instance de \a MessageSourceInfo. En mode non bloquant, si aucun message
+ * n'est disponible, alors MessageSourceInfo::isValid() vaut \a false pour
+ * l'instance retournée.
+ *
+ * La sémantique est identique à celle de MPI_Probe. Il est donc possible
+ * si on appelle plusieurs fois cette fonction de retourner le même message.
+ * Il n'est pas garanti non plus si on fait un mpReceive() avec l'instance retournée
+ * d'avoir le même message. Pour toutes ces raisons il est préférable d'utiliser
+ * la fonction mpProbe().
+ */
+ARCCORE_MESSAGEPASSING_EXPORT MessageSourceInfo
+mpLegacyProbe(IMessagePassingMng* pm, const PointToPointMessageInfo& message);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

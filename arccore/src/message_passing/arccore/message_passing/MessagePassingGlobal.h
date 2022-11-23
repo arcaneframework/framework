@@ -54,6 +54,7 @@ class Request;
 class MessageId;
 class MessageTag;
 class MessageRank;
+class MessageSourceInfo;
 class PointToPointMessageInfo;
 class IStat;
 class IMessagePassingMng;

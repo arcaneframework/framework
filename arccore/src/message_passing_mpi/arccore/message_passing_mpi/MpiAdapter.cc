@@ -1097,6 +1097,20 @@ probeRecvPack(UniqueArray<Byte>& recv_buffer,Int32 proc)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+MessageSourceInfo MpiAdapter::
+_buildSourceInfoFromStatus(const MPI_Status& mpi_status)
+{
+  // Récupère la taille en octet du message.
+  MPI_Count message_size = 0;
+  MPI_Get_elements_x(&mpi_status,MPI_BYTE,&message_size);
+  MessageTag tag(mpi_status.MPI_TAG);
+  MessageRank rank(mpi_status.MPI_SOURCE);
+  return MessageSourceInfo(rank,tag,message_size);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 MessageId MpiAdapter::
 _probeMessage(MessageRank source,MessageTag tag,bool is_blocking)
 {
@@ -1120,12 +1134,7 @@ _probeMessage(MessageRank source,MessageTag tag,bool is_blocking)
     ARCCORE_FATAL("Error during call to MPI_Mprobe r={0}",ret);
   MessageId ret_message;
   if (has_message!=0){
-    // Récupère la taille en octet du message.
-    MPI_Count message_size = 0;
-    MPI_Get_elements_x(&mpi_status,MPI_BYTE,&message_size);
-    MessageTag tag(mpi_status.MPI_TAG);
-    MessageRank rank(mpi_status.MPI_SOURCE);
-    MessageId::SourceInfo si(rank,tag,message_size);
+    MessageSourceInfo si(_buildSourceInfoFromStatus(mpi_status));
     ret_message = MessageId(si,message);
   }
   return ret_message;
@@ -1145,6 +1154,51 @@ probeMessage(PointToPointMessageInfo message)
     ARCCORE_FATAL("Invalid message_info: message.isRankTag() is false");
 
   return _probeMessage(message.destinationRank(),message.tag(),message.isBlocking());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MessageSourceInfo MpiAdapter::
+_legacyProbeMessage(MessageRank source,MessageTag tag,bool is_blocking)
+{
+  MPI_Status mpi_status;
+  int has_message = 0;
+  MPI_Message message;
+  int ret = 0;
+  int mpi_source = source.value();
+  if (source.isNull())
+    mpi_source = MPI_ANY_SOURCE;
+  int mpi_tag = tag.value();
+  if (tag.isNull())
+    mpi_tag = MPI_ANY_TAG;
+  if (is_blocking){
+    ret = MPI_Probe(mpi_source,mpi_tag,m_communicator,&mpi_status);
+    has_message = true;
+  }
+  else
+    ret = MPI_Iprobe(mpi_source,mpi_tag,m_communicator,&has_message,&mpi_status);
+  if (ret!=0)
+    ARCCORE_FATAL("Error during call to MPI_Mprobe r={0}",ret);
+  if (has_message!=0)
+    return _buildSourceInfoFromStatus(mpi_status);
+  return {};
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MessageSourceInfo MpiAdapter::
+legacyProbeMessage(PointToPointMessageInfo message)
+{
+  if (!message.isValid())
+    return {};
+
+  // Il faut avoir initialisé le message avec un couple (rang/tag).
+  if (!message.isRankTag())
+    ARCCORE_FATAL("Invalid message_info: message.isRankTag() is false");
+
+  return _legacyProbeMessage(message.destinationRank(),message.tag(),message.isBlocking());
 }
 
 /*---------------------------------------------------------------------------*/
