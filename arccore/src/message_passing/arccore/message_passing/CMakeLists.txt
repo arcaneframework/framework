@@ -13,6 +13,7 @@ set(SOURCES
   MessageTag.cc
   MessageRank.h
   MessageRank.cc
+  MessageSourceInfo.h
   PointToPointMessageInfo.h
   PointToPointMessageInfo.cc
   PointToPointSerializerMng.h

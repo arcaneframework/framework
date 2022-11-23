@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiControlDispatcher.h                                      (C) 2000-2020 */
+/* MpiControlDispatcher.h                                      (C) 2000-2022 */
 /*                                                                           */
 /* Manage Control/Utility parallel messages for MPI.                         */
 /*---------------------------------------------------------------------------*/
@@ -23,13 +23,19 @@
 
 namespace Arccore::MessagePassing::Mpi
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiControlDispatcher
 : public IControlDispatcher
 {
  public:
+
   MpiControlDispatcher(MpiAdapter* adapter);
 
  public:
+
   void waitAllRequests(ArrayView<Request> requests) override;
   void waitSomeRequests(ArrayView<Request> requests, ArrayView<bool> indexes,
                         bool is_non_blocking) override;
@@ -37,6 +43,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiControlDispatcher
   void barrier() override;
   Request nonBlockingBarrier() override;
   MessageId probe(const PointToPointMessageInfo& message) override;
+  MessageSourceInfo legacyProbe(const PointToPointMessageInfo& message) override;
   Ref<IRequestList> createRequestListRef() override
   {
     ARCCORE_THROW(NotImplementedException,"");
@@ -49,6 +56,7 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiControlDispatcher
   MpiAdapter* adapter() const { return m_adapter; }
 
  private:
+
   MpiAdapter* m_adapter;
 };
 

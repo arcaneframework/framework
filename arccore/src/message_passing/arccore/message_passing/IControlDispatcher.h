@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IControlDispatcher.h                                        (C) 2000-2020 */
+/* IControlDispatcher.h                                        (C) 2000-2022 */
 /*                                                                           */
 /* Manage Control/Utility parallel messages.                                 */
 /*---------------------------------------------------------------------------*/
@@ -30,7 +30,7 @@ namespace Arccore::MessagePassing
  * \internal
  * \brief Manage control streams for parallel messages.
  */
-class IControlDispatcher
+class ARCCORE_MESSAGEPASSING_EXPORT IControlDispatcher
 {
  public:
   virtual ~IControlDispatcher() = default;
@@ -48,6 +48,11 @@ class IControlDispatcher
   virtual Request nonBlockingBarrier() =0;
 
   virtual MessageId probe(const PointToPointMessageInfo& message) =0;
+
+  // NOTE novembre 2022
+  // Pour l'instant pas encore virtual pure pour rester compatible avec le code
+  // existant. L'implémentation lève une exception NotSupportedException
+  virtual MessageSourceInfo legacyProbe(const PointToPointMessageInfo& message);
 
   //! Création d'une liste de requêtes associé à ce gestionnaire
   virtual Ref<IRequestList> createRequestListRef() =0;

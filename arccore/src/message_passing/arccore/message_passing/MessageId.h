@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MessageId.h                                                 (C) 2000-2020 */
+/* MessageId.h                                                 (C) 2000-2022 */
 /*                                                                           */
 /* Identifiant d'un message point à point.                                   */
 /*---------------------------------------------------------------------------*/
@@ -16,6 +16,7 @@
 
 #include "arccore/message_passing/MessageTag.h"
 #include "arccore/message_passing/MessageRank.h"
+#include "arccore/message_passing/MessageSourceInfo.h"
 
 #include <cstddef>
 #include <iosfwd>
@@ -30,7 +31,7 @@ namespace Arccore::MessagePassing
  *
  * Ces informations sont utilisées pour récupérer les informations d'un
  * message suite à un appel à mpProbe(). L'instance retournée peut-être
- * utilisée pour faire une réception via mpiReceive().
+ * utilisée pour faire une réception via mpReceive().
  *
  * Une fois l'appel à mpProbe() effectué, il est possible de récupérer les
  * informations sur la source du message via sourceInfo().
@@ -56,59 +57,42 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessageId
     T_Ptr,
     T_Null
   };
- public:
-  class SourceInfo
-  {
-   public:
-    SourceInfo() : m_rank(A_NULL_RANK), m_size(0){}
-    SourceInfo(MessageRank rank,MessageTag tag,Int64 size)
-    : m_rank(rank), m_tag(tag), m_size(size){}
-   public:
-    MessageRank rank() const { return m_rank; }
-    void setRank(MessageRank rank) { m_rank = rank; }
-    MessageTag tag() const { return m_tag; }
-    void setTag(MessageTag tag) { m_tag = tag; }
-    Int64 size() const { return m_size; }
-    void setSize(Int64 size) { m_size = size; }
 
-   private:
-    MessageRank m_rank;
-    MessageTag m_tag;
-    Int64 m_size;
-  };
  public:
+
+  using SourceInfo = MessageSourceInfo;
 
   MessageId() : m_message(null_message){}
 
-  MessageId(SourceInfo source_info,void* amessage)
+  MessageId(MessageSourceInfo source_info,void* amessage)
   : m_source_info(source_info)
   {
     m_type = T_Ptr;
     m_message.v = amessage;
   }
 
-  MessageId(SourceInfo source_info,const void* amessage)
+  MessageId(MessageSourceInfo source_info,const void* amessage)
   : m_source_info(source_info)
   {
     m_type = T_Ptr;
     m_message.cv = amessage;
   }
 
-  MessageId(SourceInfo source_info,int amessage)
+  MessageId(MessageSourceInfo source_info,int amessage)
   : m_source_info(source_info)
   {
     m_type = T_Int;
     m_message.i = amessage;
   }
 
-  MessageId(SourceInfo source_info,long amessage)
+  MessageId(MessageSourceInfo source_info,long amessage)
   : m_source_info(source_info)
   {
     m_type = T_Long;
     m_message.l = amessage;
   }
 
-  MessageId(SourceInfo source_info,std::size_t amessage)
+  MessageId(MessageSourceInfo source_info,std::size_t amessage)
   : m_source_info(source_info)
   {
     m_type = T_SizeT;
@@ -166,14 +150,14 @@ class ARCCORE_MESSAGEPASSING_EXPORT MessageId
   void print(std::ostream& o) const;
 
   //! Informations sur la source du message;
-  SourceInfo sourceInfo() const { return m_source_info; }
+  MessageSourceInfo sourceInfo() const { return m_source_info; }
 
   //! Positionne les informations sur la source du message;
-  void setSourceInfo(SourceInfo si) { m_source_info = si; }
+  void setSourceInfo(MessageSourceInfo si) { m_source_info = si; }
 
  private:
 
-  SourceInfo m_source_info;
+  MessageSourceInfo m_source_info;
   int m_type = T_Null;
   _Message m_message;
   static _Message null_message;
