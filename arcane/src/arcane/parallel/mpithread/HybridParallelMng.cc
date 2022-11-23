@@ -439,7 +439,7 @@ MessageId HybridParallelMng::
 probe(const PointToPointMessageInfo& message)
 {
   PointToPointMessageInfo p2p_message(message);
-  p2p_message.setSourceRank(MessageRank(m_global_rank));
+  p2p_message.setEmiterRank(MessageRank(m_global_rank));
   return m_message_queue->probe(p2p_message);
 }
 
@@ -450,7 +450,7 @@ MessageSourceInfo HybridParallelMng::
 legacyProbe(const PointToPointMessageInfo& message)
 {
   PointToPointMessageInfo p2p_message(message);
-  p2p_message.setSourceRank(MessageRank(m_global_rank));
+  p2p_message.setEmiterRank(MessageRank(m_global_rank));
   return m_message_queue->legacyProbe(p2p_message);
 }
 
@@ -648,7 +648,7 @@ PointToPointMessageInfo HybridParallelMng::
 buildMessage(const PointToPointMessageInfo& message)
 {
   PointToPointMessageInfo p2p_message(message);
-  p2p_message.setSourceRank(MessageRank(m_global_rank));
+  p2p_message.setEmiterRank(MessageRank(m_global_rank));
   return p2p_message;
 }
 

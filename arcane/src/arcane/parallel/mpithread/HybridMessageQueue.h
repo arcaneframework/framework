@@ -230,7 +230,7 @@ class HybridMessageQueue
   void _checkValidSource(const PointToPointMessageInfo& message);
   SourceDestinationFullRankInfo _getFullRankInfo(const PointToPointMessageInfo& message)
   {
-    return m_rank_tag_builder.rank(message.sourceRank(),message.destinationRank());
+    return m_rank_tag_builder.rank(message.emiterRank(),message.destinationRank());
   }
   PointToPointMessageInfo
   _buildSharedMemoryMessage(const PointToPointMessageInfo& message,

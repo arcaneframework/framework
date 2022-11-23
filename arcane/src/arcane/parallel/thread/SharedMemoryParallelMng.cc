@@ -372,7 +372,7 @@ MessageId SharedMemoryParallelMng::
 probe(const PointToPointMessageInfo& message)
 {
   PointToPointMessageInfo p2p_message(message);
-  p2p_message.setSourceRank(MessageRank(m_rank));
+  p2p_message.setEmiterRank(MessageRank(m_rank));
   return m_message_queue->probe(p2p_message);
 }
 
@@ -383,7 +383,7 @@ MessageSourceInfo SharedMemoryParallelMng::
 legacyProbe(const PointToPointMessageInfo& message)
 {
   PointToPointMessageInfo p2p_message(message);
-  p2p_message.setSourceRank(MessageRank(m_rank));
+  p2p_message.setEmiterRank(MessageRank(m_rank));
   return m_message_queue->legacyProbe(p2p_message);
 }
 
@@ -552,7 +552,7 @@ PointToPointMessageInfo SharedMemoryParallelMng::
 buildMessage(const PointToPointMessageInfo& orig_message)
 {
   PointToPointMessageInfo p2p_message{orig_message};
-  p2p_message.setSourceRank(MessageRank(m_rank));
+  p2p_message.setEmiterRank(MessageRank(m_rank));
   return p2p_message;
 }
 

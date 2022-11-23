@@ -73,7 +73,7 @@ _checkValidRank(MessageRank rank)
 void HybridMessageQueue::
 _checkValidSource(const PointToPointMessageInfo& message)
 {
-  MessageRank source = message.sourceRank();
+  MessageRank source = message.emiterRank();
   if (source.isNull())
     ARCANE_THROW(ArgumentException,"null source");
 }
@@ -86,7 +86,7 @@ _buildSharedMemoryMessage(const PointToPointMessageInfo& message,
                           const SourceDestinationFullRankInfo& fri)
 {
   PointToPointMessageInfo p2p_message(message);
-  p2p_message.setSourceRank(fri.source().localRank());
+  p2p_message.setEmiterRank(fri.source().localRank());
   p2p_message.setDestinationRank(fri.destination().localRank());
   return p2p_message;
 }
@@ -99,7 +99,7 @@ _buildMPIMessage(const PointToPointMessageInfo& message,
                  const SourceDestinationFullRankInfo& fri)
 {
   PointToPointMessageInfo p2p_message(message);
-  p2p_message.setSourceRank(fri.source().mpiRank());
+  p2p_message.setEmiterRank(fri.source().mpiRank());
   p2p_message.setDestinationRank(fri.destination().mpiRank());
   return p2p_message;
 }
@@ -425,7 +425,7 @@ probe(const MP::PointToPointMessageInfo& message)
   TRACE_DEBUG(1,"Probe msg='{0}' queue={1} is_valid={2}",
               message,this,message.isValid());
 
-  MessageRank orig = message.sourceRank();
+  MessageRank orig = message.emiterRank();
   if (orig.isNull())
     ARCANE_THROW(ArgumentException,"null sender");
 
@@ -451,7 +451,7 @@ probe(const MP::PointToPointMessageInfo& message)
     // Comme on ne sait pas de qui on va recevoir, il faut tester à la
     // fois la file de thread et via MPI.
     MP::PointToPointMessageInfo p2p_message(message);
-    p2p_message.setSourceRank(orig_fri.localRank());
+    p2p_message.setEmiterRank(orig_fri.localRank());
     message_id = m_thread_queue->probe(p2p_message);
     if (message_id.isValid()){
       // On a trouvé un message dans la liste de thread.
@@ -493,7 +493,7 @@ probe(const MP::PointToPointMessageInfo& message)
     if (orig_fri.mpiRank()==dest_fri.mpiRank()){
       MP::PointToPointMessageInfo p2p_message(message);
       p2p_message.setDestinationRank(MP::MessageRank(dest_fri.localRank()));
-      p2p_message.setSourceRank(MessageRank(orig_fri.localRank()));
+      p2p_message.setEmiterRank(MessageRank(orig_fri.localRank()));
       message_id = m_thread_queue->probe(p2p_message);
     }
     else{
@@ -524,7 +524,7 @@ legacyProbe(const MP::PointToPointMessageInfo& message)
   TRACE_DEBUG(1,"LegacyProbe msg='{0}' queue={1} is_valid={2}",
               message,this,message.isValid());
 
-  MessageRank orig = message.sourceRank();
+  MessageRank orig = message.emiterRank();
   if (orig.isNull())
     ARCANE_THROW(ArgumentException,"null sender");
 
@@ -550,7 +550,7 @@ legacyProbe(const MP::PointToPointMessageInfo& message)
     // Comme on ne sait pas de qui on va recevoir, il faut tester à la
     // fois la file de thread et via MPI.
     MP::PointToPointMessageInfo p2p_message(message);
-    p2p_message.setSourceRank(orig_fri.localRank());
+    p2p_message.setEmiterRank(orig_fri.localRank());
     message_source_info = m_thread_queue->legacyProbe(p2p_message);
     if (message_source_info.isValid()){
       // On a trouvé un message dans la liste de thread.
@@ -594,7 +594,7 @@ legacyProbe(const MP::PointToPointMessageInfo& message)
     if (orig_fri.mpiRank()==dest_fri.mpiRank()){
       MP::PointToPointMessageInfo p2p_message(message);
       p2p_message.setDestinationRank(MP::MessageRank(dest_fri.localRank()));
-      p2p_message.setSourceRank(MessageRank(orig_fri.localRank()));
+      p2p_message.setEmiterRank(MessageRank(orig_fri.localRank()));
       TRACE_DEBUG(2,"LegacyProbe SHM orig={0} dest={1} tag={2}",orig,dest,user_tag);
       message_source_info = m_thread_queue->legacyProbe(p2p_message);
     }

@@ -427,7 +427,7 @@ template<class Type> Request SharedMemoryParallelDispatch<Type>::
 send(Span<const Type> send_buffer,const PointToPointMessageInfo& message2)
 {
   PointToPointMessageInfo message(message2);
-  message.setSourceRank(MessageRank(m_rank));
+  message.setEmiterRank(MessageRank(m_rank));
   bool is_blocking = message.isBlocking();
   if (message.isRankTag()){
     Request r = m_message_queue->addSend(message,SendBufferInfo(asBytes(send_buffer)));
@@ -452,7 +452,7 @@ receive(Span<Type> recv_buffer,const PointToPointMessageInfo& message2)
 {
   PointToPointMessageInfo message(message2);
   bool is_blocking = message.isBlocking();
-  message.setSourceRank(MessageRank(m_rank));
+  message.setEmiterRank(MessageRank(m_rank));
   ReceiveBufferInfo buf(asWritableBytes(recv_buffer));
   Request r = m_message_queue->addReceive(message,buf);
   if (is_blocking){

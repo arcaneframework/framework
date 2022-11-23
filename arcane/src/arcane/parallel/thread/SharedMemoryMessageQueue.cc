@@ -290,7 +290,7 @@ addSend(Int64 request_id,const PointToPointMessageInfo& message,SendBufferInfo b
   MessageTag tag = message.tag();
   if (tag.isNull())
     ARCANE_THROW(ArgumentException,"null tag");
-  MessageRank orig = message.sourceRank();
+  MessageRank orig = message.emiterRank();
   auto* tmr = _createSendRequest(request_id,orig,tag,buf);
   m_async_message_queue.push(tmr);
   TRACE_DEBUG("** ADD SEND queue={0} ORIG={1} DEST={2} tag={3} size={4} tmr={5} serializer={6}",
@@ -639,7 +639,7 @@ init(Integer nb_thread)
 SharedMemoryMessageQueue::SubQueue* SharedMemoryMessageQueue::
 _getSourceSubQueue(const MP::PointToPointMessageInfo& message)
 {
-  MessageRank orig = message.sourceRank();
+  MessageRank orig = message.emiterRank();
   if (orig.isNull())
     ARCANE_THROW(ArgumentException,"null message.sourceRank()");
   return _getSubQueue(orig);

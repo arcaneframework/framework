@@ -685,7 +685,7 @@ send(Span<const Type> send_buffer,const PointToPointMessageInfo& message2)
 {
   PointToPointMessageInfo message(message2);
   bool is_blocking = message.isBlocking();
-  message.setSourceRank(MessageRank(m_global_rank));
+  message.setEmiterRank(MessageRank(m_global_rank));
   Request r = m_message_queue->addSend(message,asBytes(send_buffer));
   if (is_blocking){
     m_message_queue->waitAll(ArrayView<MP::Request>(1,&r));
@@ -701,7 +701,7 @@ template<class Type> Request HybridParallelDispatch<Type>::
 receive(Span<Type> recv_buffer,const PointToPointMessageInfo& message2)
 {
   PointToPointMessageInfo message(message2);
-  message.setSourceRank(MessageRank(m_global_rank));
+  message.setEmiterRank(MessageRank(m_global_rank));
   bool is_blocking = message.isBlocking();
   Request r = m_message_queue->addReceive(message,ReceiveBufferInfo(asWritableBytes(recv_buffer)));
   if (is_blocking){
