@@ -216,9 +216,17 @@ class TaskFactory;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+//! Constante pour indiquer que la dimension d'un tableau est dynamique
+inline constexpr Int32 DynExtent = -1;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 enum class eMemoryRessource;
 template<int RankValue> class DefaultLayout;
+template<int RankValue> class MDDimType;
 class IMemoryRessourceMng;
+template<Int32... RankSize> class ExtentsV;
 template<typename DataType,typename ExtentType,typename LayoutType = DefaultLayout<ExtentType::rank()> >
 class MDSpanBase;
 template<class DataType,typename ExtentType,typename LayoutType = DefaultLayout<ExtentType::rank()> >
@@ -239,12 +247,15 @@ template<int RankValue> class SimpleForLoopRanges;
 template<int RankValue> class ComplexForLoopRanges;
 template<int RankValue> class IMDRangeFunctor;
 template<int RankValue> class ArrayExtentsValueDynamic;
+namespace impl
+{
 template<Int32... RankSize> class ArrayExtentsValue;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Pour compatibilité avec l'existant
+// Pour compatibilité avec l'existant (à supprimer après la version 3.8)
 using LoopRange = ForLoopRange;
 template<int RankValue> using SimpleLoopRanges = SimpleForLoopRanges<RankValue>;
 template<int RankValue> using ComplexLoopRanges = ComplexForLoopRanges<RankValue>;

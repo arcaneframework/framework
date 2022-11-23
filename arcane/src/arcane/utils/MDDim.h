@@ -30,32 +30,31 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-template<Int32... RankSize> class ExtentsV;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Spécialisation pour les dimensions des tableaux à 0 dimensions.
+ */
 template<>
 class ExtentsV<>
 {
  public:
 
-  using ArrayExtentsValueType = ArrayExtentsValue<>;
+  using ArrayExtentsValueType = impl::ArrayExtentsValue<>;
 
   static constexpr int rank() { return 0; }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Spécialisation pour les dimensions des tableaux à 1 dimension.
+ */
 template<Int32 X0>
 class ExtentsV<X0>
 {
  public:
 
   using IndexType = ArrayBoundsIndex<1>;
-  using ArrayExtentsValueType = ArrayExtentsValue<X0>;
+  using ArrayExtentsValueType = impl::ArrayExtentsValue<X0>;
   using RemovedFirstExtentType = ExtentsV<>;
 
   static constexpr int rank() { return 1; }
@@ -63,14 +62,16 @@ class ExtentsV<X0>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Spécialisation pour les dimensions des tableaux à 2 dimensions.
+ */
 template<Int32 X0,Int32 X1>
 class ExtentsV<X0,X1>
 {
  public:
 
   using IndexType = ArrayBoundsIndex<2>;
-  using ArrayExtentsValueType = ArrayExtentsValue<X0,X1>;
+  using ArrayExtentsValueType = impl::ArrayExtentsValue<X0,X1>;
   using RemovedFirstExtentType = ExtentsV<X1>;
 
   static constexpr int rank() { return 2; }
@@ -78,14 +79,16 @@ class ExtentsV<X0,X1>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Spécialisation pour les dimensions des tableaux à 3 dimensions.
+ */
 template<Int32 X0,Int32 X1,Int32 X2>
 class ExtentsV<X0,X1,X2>
 {
  public:
 
   using IndexType = ArrayBoundsIndex<3>;
-  using ArrayExtentsValueType = ArrayExtentsValue<X0,X1,X2>;
+  using ArrayExtentsValueType = impl::ArrayExtentsValue<X0,X1,X2>;
   using RemovedFirstExtentType = ExtentsV<X1,X2>;
 
   static constexpr int rank() { return 3; }
@@ -93,14 +96,16 @@ class ExtentsV<X0,X1,X2>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Spécialisation pour les dimensions des tableaux à 4 dimensions.
+ */
 template<Int32 X0,Int32 X1,Int32 X2,Int32 X3>
 class ExtentsV<X0,X1,X2,X3>
 {
  public:
 
   using IndexType = ArrayBoundsIndex<4>;
-  using ArrayExtentsValueType = ArrayExtentsValue<X0,X1,X2,X3>;
+  using ArrayExtentsValueType = impl::ArrayExtentsValue<X0,X1,X2,X3>;
   using RemovedFirstExtentType = ExtentsV<X1,X2,X3>;
 
   static constexpr int rank() { return 4; }
@@ -113,22 +118,19 @@ class ExtentsV<X0,X1,X2,X3>
 using MDDim0 = ExtentsV<>;
 
 //! Constante pour un tableau dynamique de rang 1
-using MDDim1 = ExtentsV<-1>;
+using MDDim1 = ExtentsV<DynExtent>;
 
 //! Constante pour un tableau dynamique de rang 2
-using MDDim2 = ExtentsV<-1,-1>;
+using MDDim2 = ExtentsV<DynExtent,DynExtent>;
 
 //! Constante pour un tableau dynamique de rang 3
-using MDDim3 = ExtentsV<-1,-1,-1>;
+using MDDim3 = ExtentsV<DynExtent,DynExtent,DynExtent>;
 
 //! Constante pour un tableau dynamique de rang 4
-using MDDim4 = ExtentsV<-1,-1,-1,-1>;
+using MDDim4 = ExtentsV<DynExtent,DynExtent,DynExtent,DynExtent>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-template<int RankValue>
-class MDDimType;
 
 template<>
 class MDDimType<0>
@@ -164,10 +166,10 @@ class MDDimType<4>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Ces quatres macros pourront être supprimées après la 3.8
+// Ces trois macros pourront être supprimées après la 3.8
 
 // A définir lorsqu'on voudra que le rang des classes NumArray et associées
-// soit spécifier par une classe au lieu d'un entier
+// soit spécifié par une classe au lieu d'un entier
 #define ARCANE_USE_TYPE_FOR_EXTENT
 #define A_MDRANK_TYPE(rank_name) typename rank_name
 #define A_MDRANK_RANK_VALUE(rank_name) (rank_name :: rank())

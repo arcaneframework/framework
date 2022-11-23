@@ -180,7 +180,7 @@ class ArrayExtentsBase<ExtentsV<>>
  */
 template<typename ExtentType>
 class ArrayExtentsBase
-: public ExtentType::ArrayExtentsValueType
+: protected ExtentType::ArrayExtentsValueType
 {
   using BaseClass = typename ExtentType::ArrayExtentsValueType;
   using ArrayExtentsPreviousRank = ArrayExtentsBase<typename ExtentType::RemovedFirstExtentType>;
@@ -189,6 +189,8 @@ class ArrayExtentsBase
 
   using BaseClass::totalNbElement;
   using BaseClass::getIndices;
+  using BaseClass::asStdArray;
+  using BaseClass::constExtent;
 
  public:
 
@@ -212,6 +214,12 @@ class ArrayExtentsBase
   {
     auto x = BaseClass::_removeFirstExtent();
     return ArrayExtentsPreviousRank::fromSpan(x);
+  }
+
+  // Nombre d'éléments de la \a I-éme dimension convertie en un 'Int64'.
+  template<Int32 I> constexpr ARCCORE_HOST_DEVICE Int64 constLargeExtent() const
+  {
+    return BaseClass::template constExtent<I>();
   }
 
   /*!

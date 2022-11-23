@@ -70,7 +70,7 @@ class ArrayLayout3
   template<typename ExtentType> static ARCCORE_HOST_DEVICE constexpr Int64
   computeOffsetIndexes(const ExtentType& extents)
   {
-    return extents.template constExtent<J>() * extents.template constExtent<K>();
+    return extents.template constLargeExtent<J>() * extents.template constLargeExtent<K>();
   }
 
   static std::array<Int32,3> layoutInfo() { return { I, J, K }; }
