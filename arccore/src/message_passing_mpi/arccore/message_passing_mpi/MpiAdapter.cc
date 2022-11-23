@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiAdapter.cc                                               (C) 2000-2021 */
+/* MpiAdapter.cc                                               (C) 2000-2022 */
 /*                                                                           */
 /* Gestionnaire de parallélisme utilisant MPI.                               */
 /*---------------------------------------------------------------------------*/
@@ -277,17 +277,22 @@ MpiAdapter(ITraceMng* trace,IStat* stat,MPI_Comm comm,
    * mais l'implémentation 1.8 de openmpi retourne cette requête lorsqu'on
    * appelle un IRecv avec une source MPI_PROC_NULL. On récupère donc la valeur
    * comme cela.
-   * A partir de la version 4 de openmpi, il semble aussi que les send avec
-   * de petits buffers génèrent toujours la même requête. Il faut donc aussi
-   * la supprimer des requêtes à tester.
    */
   MPI_Irecv(m_recv_buffer_for_empty_request, 1, MPI_CHAR, MPI_PROC_NULL,
             50505, m_communicator, &m_empty_request1);
 
-  MPI_Isend(m_send_buffer_for_empty_request, 1, MPI_CHAR, m_comm_rank,
+  /*
+   * A partir de la version 4 de openmpi, il semble aussi que les send avec
+   * de petits buffers génèrent toujours la même requête. Il faut donc aussi
+   * la supprimer des requêtes à tester. On poste aussi le MPI_Recv correspondant
+   * pour éviter que le MPI_ISend puisse involontairement être utilisé dans un
+   * MPI_Recv de l'utilisateur (via par exemple un MPI_Recv(MPI_ANY_TAG).
+   */
+  m_send_buffer_for_empty_request2[0] = 0;
+  MPI_Isend(m_send_buffer_for_empty_request2, 1, MPI_CHAR, m_comm_rank,
             50505, m_communicator, &m_empty_request2);
 
-  MPI_Recv(m_send_buffer_for_empty_request, 1, MPI_CHAR, m_comm_rank,
+  MPI_Recv(m_recv_buffer_for_empty_request2, 1, MPI_CHAR, m_comm_rank,
             50505, m_communicator, MPI_STATUS_IGNORE);
 
   m_request_set->setEmptyRequests(m_empty_request1,m_empty_request2);
