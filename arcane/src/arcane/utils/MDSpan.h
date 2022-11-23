@@ -129,13 +129,14 @@ class MDSpanBase
 /*!
  * \brief Vue multi-dimensionnelle à 1 dimension.
  */
-template<class DataType,typename LayoutType>
-class MDSpan<DataType,MDDim1,LayoutType>
-: public MDSpanBase<DataType,MDDim1,LayoutType>
+template<int X0,class DataType,typename LayoutType>
+class MDSpan<DataType,ExtentsV<X0>,LayoutType>
+: public MDSpanBase<DataType,ExtentsV<X0>,LayoutType>
 {
+  using ExtentsType = ExtentsV<X0>;
   using UnqualifiedValueType = std::remove_cv_t<DataType>;
-  friend class NumArrayBase<UnqualifiedValueType,MDDim1,LayoutType>;
-  using BaseClass = MDSpanBase<DataType,MDDim1,LayoutType>;
+  friend class NumArrayBase<UnqualifiedValueType,ExtentsType,LayoutType>;
+  using BaseClass = MDSpanBase<DataType,ExtentsType,LayoutType>;
   using BaseClass::m_extents;
   using BaseClass::m_ptr;
 
@@ -149,7 +150,7 @@ class MDSpan<DataType,MDDim1,LayoutType>
 
   //! Construit une vue vide
   MDSpan() = default;
-  ARCCORE_HOST_DEVICE MDSpan(DataType* ptr,ArrayExtentsWithOffset<MDDim1,LayoutType> extents_and_offset)
+  ARCCORE_HOST_DEVICE MDSpan(DataType* ptr,ArrayExtentsWithOffset<ExtentsType,LayoutType> extents_and_offset)
   : BaseClass(ptr,extents_and_offset) {}
 
  public:
@@ -175,8 +176,8 @@ class MDSpan<DataType,MDDim1,LayoutType>
 
  public:
 
-  ARCCORE_HOST_DEVICE MDSpan<const DataType,MDDim1,LayoutType> constSpan() const
-  { return MDSpan<const DataType,MDDim1,LayoutType>(m_ptr,m_extents); }
+  ARCCORE_HOST_DEVICE MDSpan<const DataType,ExtentsType,LayoutType> constSpan() const
+  { return MDSpan<const DataType,ExtentsType,LayoutType>(m_ptr,m_extents); }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -184,13 +185,14 @@ class MDSpan<DataType,MDDim1,LayoutType>
 /*!
  * \brief Vue multi-dimensionnelle à 2 dimensions.
  */
-template<class DataType,typename LayoutType>
-class MDSpan<DataType,MDDim2,LayoutType>
-: public MDSpanBase<DataType,MDDim2,LayoutType>
+template<int X0,int X1,class DataType,typename LayoutType>
+class MDSpan<DataType,ExtentsV<X0,X1>,LayoutType>
+: public MDSpanBase<DataType,ExtentsV<X0,X1>,LayoutType>
 {
+  using ExtentsType = ExtentsV<X0,X1>;
   using UnqualifiedValueType = std::remove_cv_t<DataType>;
-  friend class NumArrayBase<UnqualifiedValueType,MDDim2,LayoutType>;
-  using BaseClass = MDSpanBase<DataType,MDDim2,LayoutType>;
+  friend class NumArrayBase<UnqualifiedValueType,ExtentsType,LayoutType>;
+  using BaseClass = MDSpanBase<DataType,ExtentsType,LayoutType>;
   using BaseClass::m_extents;
   using BaseClass::m_ptr;
 
@@ -204,7 +206,7 @@ class MDSpan<DataType,MDDim2,LayoutType>
 
   //! Construit un tableau vide
   MDSpan() = default;
-  ARCCORE_HOST_DEVICE MDSpan(DataType* ptr,ArrayExtentsWithOffset<MDDim2,LayoutType> extents_and_offset)
+  ARCCORE_HOST_DEVICE MDSpan(DataType* ptr,ArrayExtentsWithOffset<ExtentsType,LayoutType> extents_and_offset)
   : BaseClass(ptr,extents_and_offset) {}
 
  public:
@@ -230,9 +232,9 @@ class MDSpan<DataType,MDDim2,LayoutType>
 
  public:
 
-  ARCCORE_HOST_DEVICE MDSpan<const DataType,MDDim2,LayoutType> constSpan() const
+  ARCCORE_HOST_DEVICE MDSpan<const DataType,ExtentsType,LayoutType> constSpan() const
   {
-    return MDSpan<const DataType,MDDim2,LayoutType>(m_ptr,m_extents);
+    return MDSpan<const DataType,ExtentsType,LayoutType>(m_ptr,m_extents);
   }
 };
 
@@ -241,13 +243,14 @@ class MDSpan<DataType,MDDim2,LayoutType>
 /*!
  * \brief Vue multi-dimensionnelle à 3 dimensions.
  */
-template<class DataType,typename LayoutType>
-class MDSpan<DataType,MDDim3,LayoutType>
-: public MDSpanBase<DataType,MDDim3,LayoutType>
+template<int X0,int X1,int X2,class DataType,typename LayoutType>
+class MDSpan<DataType,ExtentsV<X0,X1,X2>,LayoutType>
+: public MDSpanBase<DataType,ExtentsV<X0,X1,X2>,LayoutType>
 {
+  using ExtentsType = ExtentsV<X0,X1,X2>;
   using UnqualifiedValueType = std::remove_cv_t<DataType>;
-  friend class NumArrayBase<UnqualifiedValueType,MDDim3,LayoutType>;
-  using BaseClass = MDSpanBase<DataType,MDDim3,LayoutType>;
+  friend class NumArrayBase<UnqualifiedValueType,ExtentsType,LayoutType>;
+  using BaseClass = MDSpanBase<DataType,ExtentsType,LayoutType>;
   using BaseClass::m_extents;
   using BaseClass::m_ptr;
   using value_type = typename std::remove_cv<DataType>::type;
@@ -262,10 +265,10 @@ class MDSpan<DataType,MDDim3,LayoutType>
 
   //! Construit une vue vide
   MDSpan() = default;
-  ARCCORE_HOST_DEVICE MDSpan(DataType* ptr,ArrayExtentsWithOffset<MDDim3,LayoutType> extents_and_offset)
+  ARCCORE_HOST_DEVICE MDSpan(DataType* ptr,ArrayExtentsWithOffset<ExtentsType,LayoutType> extents_and_offset)
   : BaseClass(ptr,extents_and_offset) {}
   template<typename X,typename = std::enable_if_t<std::is_same_v<X,UnqualifiedValueType>>>
-  ARCCORE_HOST_DEVICE MDSpan(const MDSpan<X,MDDim3>& rhs) : BaseClass(rhs){}
+  ARCCORE_HOST_DEVICE MDSpan(const MDSpan<X,ExtentsType>& rhs) : BaseClass(rhs){}
 
  public:
 
@@ -296,9 +299,9 @@ class MDSpan<DataType,MDDim3,LayoutType>
     return m_ptr[offset(i,j,k)][a][b];
   }
  public:
-  ARCCORE_HOST_DEVICE MDSpan<const DataType,MDDim3,LayoutType> constSpan() const
+  ARCCORE_HOST_DEVICE MDSpan<const DataType,ExtentsType,LayoutType> constSpan() const
   {
-    return MDSpan<const DataType,MDDim3,LayoutType>(m_ptr,m_extents);
+    return MDSpan<const DataType,ExtentsType,LayoutType>(m_ptr,m_extents);
   }
 };
 
@@ -307,13 +310,14 @@ class MDSpan<DataType,MDDim3,LayoutType>
 /*!
  * \brief Vue multi-dimensionnelle à 4 dimensions.
  */
-template<class DataType,typename LayoutType>
-class MDSpan<DataType,MDDim4,LayoutType>
-: public MDSpanBase<DataType,MDDim4,LayoutType>
+template<int X0,int X1,int X2,int X3,class DataType,typename LayoutType>
+class MDSpan<DataType,ExtentsV<X0,X1,X2,X3>,LayoutType>
+: public MDSpanBase<DataType,ExtentsV<X0,X1,X2,X3>,LayoutType>
 {
+  using ExtentsType = ExtentsV<X0,X1,X2,X3>;
   using UnqualifiedValueType = std::remove_cv_t<DataType>;
-  friend class NumArrayBase<UnqualifiedValueType,MDDim4,LayoutType>;
-  using BaseClass = MDSpanBase<DataType,MDDim4,LayoutType>;
+  friend class NumArrayBase<UnqualifiedValueType,ExtentsType,LayoutType>;
+  using BaseClass = MDSpanBase<DataType,ExtentsType,LayoutType>;
   using BaseClass::m_extents;
   using BaseClass::m_ptr;
  public:
@@ -324,7 +328,7 @@ class MDSpan<DataType,MDDim4,LayoutType>
 
   //! Construit une vue vide
   MDSpan() = default;
-  ARCCORE_HOST_DEVICE MDSpan(DataType* ptr,ArrayExtentsWithOffset<MDDim4,LayoutType> extents_and_offset)
+  ARCCORE_HOST_DEVICE MDSpan(DataType* ptr,ArrayExtentsWithOffset<ExtentsType,LayoutType> extents_and_offset)
   : BaseClass(ptr,extents_and_offset) {}
 
  public:
@@ -369,10 +373,12 @@ class MDSpan<DataType,MDDim4,LayoutType>
   {
     return m_ptr[offset(i,j,k,l)][a][b];
   }
+
  public:
-  ARCCORE_HOST_DEVICE MDSpan<const DataType,MDDim4,LayoutType> constSpan() const
+
+  ARCCORE_HOST_DEVICE MDSpan<const DataType,ExtentsType,LayoutType> constSpan() const
   {
-    return MDSpan<const DataType,MDDim4,LayoutType>(m_ptr,m_extents);
+    return MDSpan<const DataType,ExtentsType,LayoutType>(m_ptr,m_extents);
   }
 };
 

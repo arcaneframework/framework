@@ -62,14 +62,15 @@ class INumArrayDataT
  public:
 
   typedef INumArrayDataT<DataType,RankValue> ThatClass;
+  using ExtentType = typename MDDimType<RankValue>::DimType;
 
  public:
 
   //! Vue constante sur la donnée
-  virtual MDSpan<const DataType,MDDim<RankValue>> view() const = 0;
+  virtual MDSpan<const DataType,ExtentType> view() const = 0;
 
   //! Vue sur la donnée
-  virtual MDSpan<DataType,MDDim<RankValue>> view() = 0;
+  virtual MDSpan<DataType,ExtentType> view() = 0;
 
   //! Clone la donnée
   virtual Ref<ThatClass> cloneTrueRef() = 0;
@@ -96,6 +97,7 @@ class NumArrayDataT
 
   typedef NumArrayDataT<DataType,RankValue> ThatClass;
   typedef INumArrayDataT<DataType,RankValue> DataInterfaceType;
+  using ExtentType = typename MDDimType<RankValue>::DimType;
 
  public:
 
@@ -111,8 +113,8 @@ class NumArrayDataT
   eDataType dataType() const override { return DataTypeTraitsT<DataType>::type(); }
   void serialize(ISerializer* sbuf, IDataOperation* operation) override;
   void serialize(ISerializer* sbuf, Int32ConstArrayView ids, IDataOperation* operation) override;
-  MDSpan<DataType,MDDim<RankValue>> view() override { return m_value.span(); }
-  MDSpan<const DataType,MDDim<RankValue>> view() const override { return m_value.span(); }
+  MDSpan<DataType,ExtentType> view() override { return m_value.span(); }
+  MDSpan<const DataType,ExtentType> view() const override { return m_value.span(); }
   void resize(Integer new_size) override;
   IData* clone() override { return _cloneTrue(); }
   IData* cloneEmpty() override { return _cloneTrueEmpty(); };
@@ -167,7 +169,7 @@ class NumArrayDataT
 
  private:
 
-  NumArray<DataType,MDDim<RankValue>> m_value; //!< Donnée
+  NumArray<DataType,ExtentType> m_value; //!< Donnée
   ITraceMng* m_trace;
   ArrayShape m_shape;
 
@@ -371,7 +373,7 @@ allocateBufferForSerializedData(ISerializedData* sdata)
   std::array<Int32,RankValue> numarray_extents;
   for( Int32 i=0; i<RankValue; ++i )
     numarray_extents[i] = CheckedConvert::toInt32(sdata_extents[i]);
-  auto extents = ArrayExtents<MDDim<RankValue>>::fromSpan(numarray_extents);
+  auto extents = ArrayExtents<ExtentType>::fromSpan(numarray_extents);
   m_value.resize(extents);
 
   Byte* byte_data = reinterpret_cast<Byte*>(m_value.to1DSpan().data());
@@ -438,7 +440,7 @@ serialize(ISerializer* sbuf,IDataOperation* operation)
     case ISerializer::ReadReplace:
       {
         //m_trace->info() << "READ REPLACE count=" << count << " dim2_size=" << dim2_size;
-        m_value.resize(ArrayExtents<MDDim<RankValue>>::fromSpan(extents_span));
+        m_value.resize(ArrayExtents<ExtentType>::fromSpan(extents_span));
         if (operation)
           ARCANE_THROW(NotImplementedException,"serialize(ReadReplace) with IDataOperation");
         BasicType* bt = reinterpret_cast<BasicType*>(m_value.to1DSpan().data());

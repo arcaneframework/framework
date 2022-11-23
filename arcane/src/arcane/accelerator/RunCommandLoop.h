@@ -92,10 +92,10 @@ _applyGenericLoop(RunCommand& command,LoopBoundType<N> bounds,const Lambda& func
 /*---------------------------------------------------------------------------*/
 
 //! Applique la lambda \a func sur l'intervalle d'itération donnée par \a bounds
-template<int N,typename Lambda> void
-run(RunCommand& command,ArrayBounds<MDDim<N>> bounds,const Lambda& func)
+template<typename ExtentType,typename Lambda> void
+run(RunCommand& command,ArrayBounds<ExtentType> bounds,const Lambda& func)
 {
-  impl::_applyGenericLoop(command,SimpleForLoopRanges(bounds),func);
+  impl::_applyGenericLoop(command,SimpleForLoopRanges<ExtentType::rank()>(bounds),func);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -133,8 +133,9 @@ class ArrayBoundRunCommand
   LoopBoundType m_bounds;
 };
 
-template<int N> ArrayBoundRunCommand<N,SimpleForLoopRanges<N>>
-operator<<(RunCommand& command,const ArrayBounds<MDDim<N>>& bounds)
+template<typename ExtentType> auto
+operator<<(RunCommand& command,const ArrayBounds<ExtentType>& bounds)
+  -> ArrayBoundRunCommand<ExtentType::rank(),SimpleForLoopRanges<ExtentType::rank()>>
 {
   return {command,bounds};
 }
@@ -171,7 +172,7 @@ void operator<<(ArrayBoundRunCommand<N,ForLoopBoundType<N>>&& nr,const Lambda& f
 
 //! Boucle sur accélérateur
 #define RUNCOMMAND_LOOPN(iter_name, N, ...)                           \
-  A_FUNCINFO << ArrayBounds<MDDim<N>>(__VA_ARGS__) << [=] ARCCORE_HOST_DEVICE (ArrayBoundsIndex<N> iter_name )
+  A_FUNCINFO << ArrayBounds<typename MDDimType<N>::DimType>(__VA_ARGS__) << [=] ARCCORE_HOST_DEVICE (ArrayBoundsIndex<N> iter_name )
 
 //! Boucle sur accélérateur
 #define RUNCOMMAND_LOOP1(iter_name, x1)                             \

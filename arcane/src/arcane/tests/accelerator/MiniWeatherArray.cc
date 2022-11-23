@@ -865,9 +865,9 @@ class MiniWeatherArrayService
   {
     info() << "UseLeftLayout?=" << use_left_layout;
     if (use_left_layout)
-      m_p = new MiniWeatherArray<LeftLayout<MDDim3>>(am,traceMng(),nb_x,nb_z,final_time,r);
+      m_p = new MiniWeatherArray<LeftLayout<3>>(am,traceMng(),nb_x,nb_z,final_time,r);
     else
-      m_p = new MiniWeatherArray<RightLayout<MDDim3>>(am,traceMng(),nb_x,nb_z,final_time,r);
+      m_p = new MiniWeatherArray<RightLayout<3>>(am,traceMng(),nb_x,nb_z,final_time,r);
   }
   bool loop() override
   {

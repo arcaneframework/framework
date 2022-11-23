@@ -154,78 +154,11 @@ class ArrayStridesBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-template<>
-class ArrayExtentsValueDynamic<1>
-: public ArrayExtentsValue<-1>
-{
-  using BaseClass = ArrayExtentsValue<-1>;
-
- public:
-
-  ArrayExtentsValueDynamic() = default;
-
- protected:
-
-  explicit ARCCORE_HOST_DEVICE ArrayExtentsValueDynamic(SmallSpan<const Int32> extents)
-  : BaseClass(extents){}
-};
-
-template<>
-class ArrayExtentsValueDynamic<2>
-: public ArrayExtentsValue<-1,-1>
-{
-  using BaseClass = ArrayExtentsValue<-1,-1>;
-
- public:
-
-  ArrayExtentsValueDynamic() = default;
-
- protected:
-
-  explicit ARCCORE_HOST_DEVICE ArrayExtentsValueDynamic(SmallSpan<const Int32> extents)
-  : BaseClass(extents){}
-};
-
-template<>
-class ArrayExtentsValueDynamic<3>
-: public ArrayExtentsValue<-1,-1,-1>
-{
-  using BaseClass = ArrayExtentsValue<-1,-1,-1>;
-
- public:
-
-  ArrayExtentsValueDynamic() = default;
-
- protected:
-
-  explicit ARCCORE_HOST_DEVICE ArrayExtentsValueDynamic(SmallSpan<const Int32> extents)
-  : BaseClass(extents){}
-};
-
-template<>
-class ArrayExtentsValueDynamic<4>
-: public ArrayExtentsValue<-1,-1,-1,-1>
-{
-  using BaseClass = ArrayExtentsValue<-1,-1,-1,-1>;
-
- public:
-
-  ArrayExtentsValueDynamic() = default;
-
- protected:
-
-  explicit ARCCORE_HOST_DEVICE ArrayExtentsValueDynamic(SmallSpan<const Int32> extents)
-  : BaseClass(extents){}
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
  * \brief Spécialisation de ArrayExtentsBase pour les tableaux de dimension 0 (les scalaires)
  */
 template<>
-class ArrayExtentsBase<MDDim0>
+class ArrayExtentsBase<ExtentsV<>>
 {
  public:
   ArrayExtentsBase() = default;
@@ -233,7 +166,7 @@ class ArrayExtentsBase<MDDim0>
   constexpr ARCCORE_HOST_DEVICE SmallSpan<const Int32> asSpan() const { return {}; }
   //! Nombre total d'eléments
   constexpr ARCCORE_HOST_DEVICE Int32 totalNbElement() const { return 1; }
-  ARCCORE_HOST_DEVICE static ArrayExtentsBase<MDDim0> fromSpan([[maybe_unused]] Span<const Int32> extents)
+  ARCCORE_HOST_DEVICE static ArrayExtentsBase<ExtentsV<>> fromSpan([[maybe_unused]] Span<const Int32> extents)
   {
     // TODO: vérifier la taille de \a extents
     return {};
@@ -247,15 +180,17 @@ class ArrayExtentsBase<MDDim0>
  */
 template<typename ExtentType>
 class ArrayExtentsBase
-: public ArrayExtentsValueDynamic<ExtentType::rank()>
+: protected ExtentType::ArrayExtentsValueType
 {
-  using BaseClass = ArrayExtentsValueDynamic<ExtentType::rank()>;
-  using ArrayExtentsPreviousRank = ArrayExtentsBase<MDDim<ExtentType::rank()-1>>;
+  using BaseClass = typename ExtentType::ArrayExtentsValueType;
+  using ArrayExtentsPreviousRank = ArrayExtentsBase<typename ExtentType::RemovedFirstExtentType>;
 
  public:
 
   using BaseClass::totalNbElement;
   using BaseClass::getIndices;
+  using BaseClass::asStdArray;
+  using BaseClass::constExtent;
 
  public:
 
@@ -281,6 +216,12 @@ class ArrayExtentsBase
     return ArrayExtentsPreviousRank::fromSpan(x);
   }
 
+  // Nombre d'éléments de la \a I-éme dimension convertie en un 'Int64'.
+  template<Int32 I> constexpr ARCCORE_HOST_DEVICE Int64 constLargeExtent() const
+  {
+    return BaseClass::template constExtent<I>();
+  }
+
   /*!
    * \brief Construit une instance à partir des valeurs données dans \a extents.
    */
@@ -292,14 +233,16 @@ class ArrayExtentsBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-template<>
-class ArrayExtents<MDDim1>
-: public ArrayExtentsBase<MDDim1>
+/*!
+ * \brief Extent pour les tableaux à 1 dimension.
+ */
+template<int X0>
+class ArrayExtents<ExtentsV<X0>>
+: public ArrayExtentsBase<ExtentsV<X0>>
 {
  public:
 
-  using BaseClass = ArrayExtentsBase<MDDim1>;
+  using BaseClass = ArrayExtentsBase<ExtentsV<X0>>;
   using BaseClass::totalNbElement;
 
  public:
@@ -314,14 +257,16 @@ class ArrayExtents<MDDim1>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-template<>
-class ArrayExtents<MDDim2>
-: public ArrayExtentsBase<MDDim2>
+/*!
+ * \brief Extent pour les tableaux à 2 dimensions.
+ */
+template<int X0,int X1>
+class ArrayExtents<ExtentsV<X0,X1>>
+: public ArrayExtentsBase<ExtentsV<X0,X1>>
 {
  public:
 
-  using BaseClass = ArrayExtentsBase<MDDim2>;
+  using BaseClass = ArrayExtentsBase<ExtentsV<X0,X1>>;
   using BaseClass::totalNbElement;
 
  public:
@@ -337,14 +282,16 @@ class ArrayExtents<MDDim2>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-template<>
-class ArrayExtents<MDDim3>
-: public ArrayExtentsBase<MDDim3>
+/*!
+ * \brief Extent pour les tableaux à 3 dimensions.
+ */
+template<int X0,int X1,int X2>
+class ArrayExtents<ExtentsV<X0,X1,X2>>
+: public ArrayExtentsBase<ExtentsV<X0,X1,X2>>
 {
  public:
 
-  using BaseClass = ArrayExtentsBase<MDDim3>;
+  using BaseClass = ArrayExtentsBase<ExtentsV<X0,X1,X2>>;
   using BaseClass::totalNbElement;
 
  public:
@@ -361,13 +308,15 @@ class ArrayExtents<MDDim3>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-template<>
-class ArrayExtents<MDDim4>
-: public ArrayExtentsBase<MDDim4>
+/*!
+ * \brief Extent pour les tableaux à 4 dimensions.
+ */
+template<int X0,int X1,int X2,int X3>
+class ArrayExtents<ExtentsV<X0,X1,X2,X3>>
+: public ArrayExtentsBase<ExtentsV<X0,X1,X2,X3>>
 {
  public:
-  using BaseClass = ArrayExtentsBase<MDDim4>;
+  using BaseClass = ArrayExtentsBase<ExtentsV<X0,X1,X2,X3>>;
   using BaseClass::totalNbElement;
  public:
   ArrayExtents() = default;
@@ -384,12 +333,18 @@ class ArrayExtents<MDDim4>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename LayoutType>
-class ArrayExtentsWithOffset<MDDim1,LayoutType>
-: private ArrayExtents<MDDim1>
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Extent et Offset pour les tableaux à 1 dimension.
+ */
+template<int X0,typename LayoutType>
+class ArrayExtentsWithOffset<ExtentsV<X0>,LayoutType>
+: private ArrayExtents<ExtentsV<X0>>
 {
  public:
-  using BaseClass = ArrayExtents<MDDim1>;
+  using ExtentsType = ExtentsV<X0>;
+  using BaseClass = ArrayExtents<ExtentsType>;
   using BaseClass::extent0;
   using BaseClass::asStdArray;
   using BaseClass::totalNbElement;
@@ -397,7 +352,7 @@ class ArrayExtentsWithOffset<MDDim1,LayoutType>
   using Layout = LayoutType;
  public:
   ArrayExtentsWithOffset() = default;
-  ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(const ArrayExtents<MDDim1>& rhs)
+  ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(const ArrayExtents<ExtentsType>& rhs)
   : BaseClass(rhs)
   {
   }
@@ -416,13 +371,16 @@ class ArrayExtentsWithOffset<MDDim1,LayoutType>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-template<typename LayoutType>
-class ArrayExtentsWithOffset<MDDim2,LayoutType>
-: private ArrayExtents<MDDim2>
+/*!
+ * \brief Extent et Offset pour les tableaux à 2 dimensions.
+ */
+template<int X0,int X1,typename LayoutType>
+class ArrayExtentsWithOffset<ExtentsV<X0,X1>,LayoutType>
+: private ArrayExtents<ExtentsV<X0,X1>>
 {
  public:
-  using BaseClass = ArrayExtents<MDDim2>;
+  using ExtentsType = ExtentsV<X0,X1>;
+  using BaseClass = ArrayExtents<ExtentsType>;
   using BaseClass::extent0;
   using BaseClass::extent1;
   using BaseClass::asStdArray;
@@ -431,7 +389,7 @@ class ArrayExtentsWithOffset<MDDim2,LayoutType>
   using Layout = LayoutType;
  public:
   ArrayExtentsWithOffset() = default;
-  constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(ArrayExtents<MDDim2> rhs)
+  constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(ArrayExtents<ExtentsType> rhs)
   : BaseClass(rhs)
   {
   }
@@ -442,20 +400,23 @@ class ArrayExtentsWithOffset<MDDim2,LayoutType>
   constexpr ARCCORE_HOST_DEVICE Int64 offset(ArrayBoundsIndex<2> idx) const
   {
     BaseClass::_checkIndex(idx);
-    return Layout::offset(idx,this->constExtent<Layout::LastExtent>());
+    return Layout::offset(idx,this->template constExtent<Layout::LastExtent>());
   }
   constexpr BaseClass extents() const { const BaseClass* b = this; return *b; }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-template<typename LayoutType>
-class ArrayExtentsWithOffset<MDDim3,LayoutType>
-: private ArrayExtents<MDDim3>
+/*!
+ * \brief Extent et Offset pour les tableaux à 3 dimensions.
+ */
+template<int X0,int X1,int X2,typename LayoutType>
+class ArrayExtentsWithOffset<ExtentsV<X0,X1,X2>,LayoutType>
+: private ArrayExtents<ExtentsV<X0,X1,X2>>
 {
  public:
-  using BaseClass = ArrayExtents<MDDim3>;
+  using ExtentsType = ExtentsV<X0,X1,X2>;
+  using BaseClass = ArrayExtents<ExtentsType>;
   using BaseClass::extent0;
   using BaseClass::extent1;
   using BaseClass::extent2;
@@ -465,7 +426,7 @@ class ArrayExtentsWithOffset<MDDim3,LayoutType>
   using Layout = LayoutType;
  public:
   ArrayExtentsWithOffset() = default;
-  constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(ArrayExtents<MDDim3> rhs)
+  constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(ArrayExtents<ExtentsType> rhs)
   : BaseClass(rhs)
   {
     _computeOffsets();
@@ -477,7 +438,7 @@ class ArrayExtentsWithOffset<MDDim3,LayoutType>
   constexpr ARCCORE_HOST_DEVICE Int64 offset(ArrayBoundsIndex<3> idx) const
   {
     this->_checkIndex(idx);
-    return Layout::offset(idx,this->constExtent<Layout::LastExtent>(),m_dim23_size);
+    return Layout::offset(idx,this->template constExtent<Layout::LastExtent>(),m_dim23_size);
   }
   constexpr BaseClass extents() const { const BaseClass* b = this; return *b; }
  protected:
@@ -492,13 +453,16 @@ class ArrayExtentsWithOffset<MDDim3,LayoutType>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-template<typename LayoutType>
-class ArrayExtentsWithOffset<MDDim4,LayoutType>
-: private ArrayExtents<MDDim4>
+/*!
+ * \brief Extent et Offset pour les tableaux à 4 dimensions.
+ */
+template<int X0,int X1,int X2,int X3,typename LayoutType>
+class ArrayExtentsWithOffset<ExtentsV<X0,X1,X2,X3>,LayoutType>
+: private ArrayExtents<ExtentsV<X0,X1,X2,X3>>
 {
  public:
-  using BaseClass = ArrayExtents<MDDim4>;
+  using ExtentsType = ExtentsV<X0,X1,X2,X3>;
+  using BaseClass = ArrayExtents<ExtentsType>;
   using BaseClass::extent0;
   using BaseClass::extent1;
   using BaseClass::extent2;
@@ -509,7 +473,7 @@ class ArrayExtentsWithOffset<MDDim4,LayoutType>
   using Layout = LayoutType;
  public:
   ArrayExtentsWithOffset() = default;
-  constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(ArrayExtents<MDDim4> rhs)
+  constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(ArrayExtents<ExtentsType> rhs)
   : BaseClass(rhs)
   {
     _computeOffsets();

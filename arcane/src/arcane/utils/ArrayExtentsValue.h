@@ -29,20 +29,23 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane
+namespace Arcane::impl
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace impl
-{
 template <class T> constexpr ARCCORE_HOST_DEVICE
 T fastmod(T a , T b)
 {
   return a < b ? a : a-b*(a/b);
 }
 
+/*!
+ * \brief Informations pour une dimension fixe connue à la compilation.
+ *
+ * La valeur de la dimension est donnée en paramètre template
+ */
 template<Int32 Size>
 class ExtentValue
 {
@@ -51,8 +54,13 @@ class ExtentValue
   static constexpr Int32 v = Size;
 };
 
+/*!
+ * \brief Spécialisation pour une dimension dynamique.
+ *
+ * La valeur de la dimension est conservée dans \a v.
+ */
 template<>
-class ExtentValue<-1>
+class ExtentValue<DynExtent>
 {
  public:
 
@@ -62,11 +70,12 @@ class ExtentValue<-1>
 
   Int32 v = 0;
 };
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Spécialisation pour contenir les dimensions d'un tableau à 1 dimension.
+ */
 template<Int32 X0>
 class ArrayExtentsValue<X0>
 {
@@ -128,7 +137,9 @@ class ArrayExtentsValue<X0>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Spécialisation pour contenir les dimensions d'un tableau à 2 dimensions.
+ */
 template<Int32 X0,Int32 X1>
 class ArrayExtentsValue<X0,X1>
 {
@@ -199,7 +210,9 @@ class ArrayExtentsValue<X0,X1>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Spécialisation pour contenir les dimensions d'un tableau à 3 dimensions.
+ */
 template<Int32 X0,Int32 X1,Int32 X2>
 class ArrayExtentsValue<X0,X1,X2>
 {
@@ -280,7 +293,9 @@ class ArrayExtentsValue<X0,X1,X2>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Spécialisation pour contenir les dimensions d'un tableau à 4 dimensions.
+ */
 template<Int32 X0,Int32 X1,Int32 X2,Int32 X3>
 class ArrayExtentsValue<X0,X1,X2,X3>
 {
@@ -372,7 +387,7 @@ class ArrayExtentsValue<X0,X1,X2,X3>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // End namespace Arcane::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

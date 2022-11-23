@@ -216,44 +216,24 @@ class TaskFactory;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Classe pour un tableau dynamique de rang RankValue
-template<int RankValue>
-class MDDim
-{
- public:
-  static constexpr int rank() { return RankValue; }
-};
+//! Constante pour indiquer que la dimension d'un tableau est dynamique
+inline constexpr Int32 DynExtent = -1;
 
-// Ces quatres macros pourront être supprimées après la 3.8
-
-// A définir lorsqu'on voudra que le rang des classes NumArray et associées
-// soit spécifier par une classe au lieu d'un entier
-#define ARCANE_USE_TYPE_FOR_EXTENT
-#define A_MDRANK_TYPE(rank_name) typename rank_name
-#define A_MDRANK_RANK_VALUE(rank_name) (rank_name :: rank())
-#define A_MDDIM(rank_value) MDDim< rank_value >
-
-//! Constante pour un tableau dynamique de rang 0
-using MDDim0 = MDDim<0>;
-//! Constante pour un tableau dynamique de rang 1
-using MDDim1 = MDDim<1>;
-//! Constante pour un tableau dynamique de rang 2
-using MDDim2 = MDDim<2>;
-//! Constante pour un tableau dynamique de rang 3
-using MDDim3 = MDDim<3>;
-//! Constante pour un tableau dynamique de rang 4
-using MDDim4 = MDDim<4>;
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 enum class eMemoryRessource;
-template<typename ExtentType> class DefaultLayout;
+template<int RankValue> class DefaultLayout;
+template<int RankValue> class MDDimType;
 class IMemoryRessourceMng;
-template<typename DataType,typename ExtentType,typename LayoutType = DefaultLayout<ExtentType> >
+template<Int32... RankSize> class ExtentsV;
+template<typename DataType,typename ExtentType,typename LayoutType = DefaultLayout<ExtentType::rank()> >
 class MDSpanBase;
-template<class DataType,typename ExtentType,typename LayoutType = DefaultLayout<ExtentType> >
+template<class DataType,typename ExtentType,typename LayoutType = DefaultLayout<ExtentType::rank()> >
 class MDSpan;
-template<typename DataType,typename ExtentType,typename LayoutType = DefaultLayout<ExtentType> >
+template<typename DataType,typename ExtentType,typename LayoutType = DefaultLayout<ExtentType::rank()> >
 class NumArrayBase;
-template<class DataType,typename ExtentType,typename LayoutType = DefaultLayout<ExtentType> >
+template<class DataType,typename ExtentType,typename LayoutType = DefaultLayout<ExtentType::rank()> >
 class NumArray;
 template<typename ExtentType> class ArrayBounds;
 template<int RankValue> class ArrayBoundsIndexBase;
@@ -267,12 +247,15 @@ template<int RankValue> class SimpleForLoopRanges;
 template<int RankValue> class ComplexForLoopRanges;
 template<int RankValue> class IMDRangeFunctor;
 template<int RankValue> class ArrayExtentsValueDynamic;
+namespace impl
+{
 template<Int32... RankSize> class ArrayExtentsValue;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Pour compatibilité avec l'existant
+// Pour compatibilité avec l'existant (à supprimer après la version 3.8)
 using LoopRange = ForLoopRange;
 template<int RankValue> using SimpleLoopRanges = SimpleForLoopRanges<RankValue>;
 template<int RankValue> using ComplexLoopRanges = ComplexForLoopRanges<RankValue>;
