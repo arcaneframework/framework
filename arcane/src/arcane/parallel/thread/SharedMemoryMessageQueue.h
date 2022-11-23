@@ -48,26 +48,40 @@ class ARCANE_THREAD_EXPORT SharedMemoryMessageQueue
 : public ISharedMemoryMessageQueue
 {
  public:
+
   class SubQueue;
+
  public:
+
   SharedMemoryMessageQueue() : m_nb_thread(0), m_atomic_request_id(0){}
   ~SharedMemoryMessageQueue() override;
+
  public:
+
   void init(Int32 nb_thread) override;
   void waitAll(ArrayView<Request> requests) override;
   void waitSome(Int32 rank,ArrayView<Request> requests,ArrayView<bool> requests_done,
                 bool is_non_blockign) override;
   void setTraceMng(Int32 rank,ITraceMng* tm) override;
+
  public:
+
   Request addReceive(const PointToPointMessageInfo& message,ReceiveBufferInfo buf) override;
   Request addSend(const PointToPointMessageInfo& message,SendBufferInfo buf) override;
+
  public:
+
   MessageId probe(const PointToPointMessageInfo& message) override;
+  MessageSourceInfo legacyProbe(const PointToPointMessageInfo& message) override;
+
  private:
+
   Int32 m_nb_thread;
   UniqueArray<SubQueue*> m_sub_queues;
   std::atomic<Int64> m_atomic_request_id;
+
  private:
+
   SubQueue* _getSubQueue(MessageRank rank)
   {
     return m_sub_queues[rank.value()];

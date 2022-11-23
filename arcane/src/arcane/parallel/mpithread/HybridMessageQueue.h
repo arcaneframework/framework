@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* HybridMessageQueue.h                                        (C) 2000-2020 */
+/* HybridMessageQueue.h                                        (C) 2000-2022 */
 /*                                                                           */
 /* File de messages pour une implémentation hybride MPI/Mémoire partagée.    */
 /*---------------------------------------------------------------------------*/
@@ -196,25 +196,34 @@ class HybridMessageQueue
 : public TraceAccessor
 {
  public:
+
   HybridMessageQueue(ISharedMemoryMessageQueue* thread_queue,MpiParallelMng* mpi_pm,
                      Int32 local_nb_rank);
+
  public:
+
   void waitAll(ArrayView<Request> requests);
   void waitSome(Int32 rank,ArrayView<Request> requests,
                 ArrayView<bool> requests_done,bool is_non_blocking);
  public:
+
   Request addReceive(const PointToPointMessageInfo& message,ReceiveBufferInfo buf);
   Request addSend(const PointToPointMessageInfo& message,SendBufferInfo buf);
   MessageId probe(const MP::PointToPointMessageInfo& message);
+  MP::MessageSourceInfo legacyProbe(const MP::PointToPointMessageInfo& message);
   const RankTagBuilder& rankTagBuilder() const { return m_rank_tag_builder; }
+
  private:
+
   ISharedMemoryMessageQueue* m_thread_queue;
   MpiParallelMng* m_mpi_parallel_mng;
   MpiAdapter* m_mpi_adapter;
   Int32 m_local_nb_rank;
   RankTagBuilder m_rank_tag_builder;
   Int32 m_debug_level = 0;
+
  private:
+
   Request _addReceiveRankTag(const PointToPointMessageInfo& message,ReceiveBufferInfo buf_info);
   Request _addReceiveMessageId(const PointToPointMessageInfo& message,ReceiveBufferInfo buf_info);
   void _checkValidRank(MessageRank rank);
@@ -231,6 +240,7 @@ class HybridMessageQueue
                    const SourceDestinationFullRankInfo& fri);
   Integer _testOrWaitSome(Int32 rank,ArrayView<Request> requests,
                           ArrayView<bool> requests_done);
+  MessageId _probe(const MP::PointToPointMessageInfo& message, bool use_message_id);
 };
 
 /*---------------------------------------------------------------------------*/

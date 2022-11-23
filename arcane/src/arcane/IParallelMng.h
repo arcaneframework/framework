@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IParallelMng.h                                              (C) 2000-2020 */
+/* IParallelMng.h                                              (C) 2000-2022 */
 /*                                                                           */
 /* Interface du gestionnaire du parallélisme sur un sous-domaine.            */
 /*---------------------------------------------------------------------------*/
@@ -85,6 +85,7 @@ class ARCANE_CORE_EXPORT IParallelMng
   typedef Parallel::Request Request;
   using PointToPointMessageInfo = Parallel::PointToPointMessageInfo;
   using MessageId = Parallel::MessageId;
+  using MessageSourceInfo = Parallel::MessageSourceInfo;
   typedef Parallel::eReduceType eReduceType;
   typedef Parallel::IStat IStat;
   
@@ -878,6 +879,13 @@ class ARCANE_CORE_EXPORT IParallelMng
    * \sa Arccore::MessagePassing::mpProbe().
    */
   virtual MessageId probe(const PointToPointMessageInfo& message) =0;
+
+  /*!
+   * \brief Sonde si des messages sont disponibles.
+   *
+   * \sa Arccore::MessagePassing::mpLegacyProbe().
+   */
+  virtual MessageSourceInfo legacyProbe(const PointToPointMessageInfo& message) =0;
 
   virtual void sendRecv(ConstArrayView<char> send_buf,
                         ArrayView<char> recv_buf,Int32 rank) =0;

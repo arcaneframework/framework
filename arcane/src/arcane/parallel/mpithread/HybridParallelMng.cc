@@ -446,6 +446,17 @@ probe(const PointToPointMessageInfo& message)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+MessageSourceInfo HybridParallelMng::
+legacyProbe(const PointToPointMessageInfo& message)
+{
+  PointToPointMessageInfo p2p_message(message);
+  p2p_message.setSourceRank(MessageRank(m_global_rank));
+  return m_message_queue->legacyProbe(p2p_message);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 Request HybridParallelMng::
 sendSerializer(const ISerializer* s,const PointToPointMessageInfo& message)
 {

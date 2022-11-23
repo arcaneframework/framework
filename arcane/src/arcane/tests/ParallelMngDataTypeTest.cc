@@ -404,9 +404,12 @@ class ParallelMngDataTypeTest
   void _testSendRecvNonBlocking();
   void _testSendRecvNonBlocking2();
   void _testSendRecvNonBlocking(Integer nb_message,Integer message_size,bool use_generic);
-  void _testMessageProbe(Int32 rank_to_receive,Integer nb_message,
-                         Integer message_size,bool use_any_source);
+  void _testMessageProbe(Int32 rank_to_receive,Int32 nb_message,
+                         Int32 message_size,bool use_any_source);
   void _testMessageProbe2();
+  void _testMessageLegacyProbe(Int32 rank_to_receive,Int32 nb_message,
+                                Int32 message_size,bool use_any_source);
+  void _testMessageLegacyProbe2();
 
   MinMaxSumInfo _computeArrayMinMaxSum(ConstArrayView<DataType> values);
   void _checkMinMaxSumFull(const MinMaxSumInfo& expected,const MinMaxSumInfo& current);
@@ -428,6 +431,7 @@ doTests()
 {
   info() << "Beginning tests for type '" << m_datatype_name << "'";
   _launchTest("MessageProbe",&ThatClass::_testMessageProbe2);
+  _launchTest("MessageLegacyProbe",&ThatClass::_testMessageLegacyProbe2);
   _launchTest("AllReduce",&ThatClass::_testAllReduce);
   _launchTest("AllReduce array",&ThatClass::_testAllReduceArray);
   // Le ComputeMinMaxSum n'est pas encore disponible pour les threads avec les Real*
@@ -765,6 +769,7 @@ template<typename DataType> void
 ParallelMngDataTypeTest<DataType>::
 _testMessageProbe2()
 {
+  // TODO Ajouter un test avec MPI_ANY_TAG
   IParallelMng* pm = m_parallel_mng;
   Int32 comm_size = pm->commSize();
   bool use_any_source = false;
@@ -776,6 +781,27 @@ _testMessageProbe2()
   use_any_source = true;
   for( Int32 i=0; i<comm_size; ++i )
     _testMessageProbe(i,4,9023,use_any_source);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> void
+ParallelMngDataTypeTest<DataType>::
+_testMessageLegacyProbe2()
+{
+  // TODO Ajouter un test avec MPI_ANY_TAG
+  IParallelMng* pm = m_parallel_mng;
+  Int32 comm_size = pm->commSize();
+  bool use_any_source = false;
+  for( Int32 i=0; i<comm_size; ++i )
+    _testMessageLegacyProbe(i,5,4082,use_any_source);
+  _testMessageLegacyProbe(0,3,125,use_any_source);
+  _testMessageLegacyProbe(1,7,12895,use_any_source);
+
+  use_any_source = true;
+  for( Int32 i=0; i<comm_size; ++i )
+    _testMessageLegacyProbe(i,4,9023,use_any_source);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -908,6 +934,109 @@ _testMessageProbe(Int32 rank_to_receive,Integer nb_message,
         UniqueArray<DataType> recv_buf(si.size() / sizeof(DataType));
         // Poste une réception et vérifie les valeurs
         PointToPointMessageInfo msg_info(msg);
+        pm->receive(recv_buf,msg_info);
+        Int32 msg_number = ranks_message_number[orig_rank];
+        ++ranks_message_number[orig_rank];
+        for( Integer i=0, n=recv_buf.size(); i<n; ++i ){
+          DataType expected = Generator::generateBiValue(orig_rank*(nb_message+1),msg_number + i);
+          DataType current  = recv_buf[i];
+          if (current!=expected)
+            ARCANE_FATAL("Bad value expected={0} v={1} orig_rank={2}, message_number={3} i={4}",
+                         expected,current,orig_rank,msg_number,i);
+        }
+      }
+      ++iteration;
+      // Fait une petit pause de 1ms pour éviter une boucle trop rapide.
+      std::this_thread::sleep_for(std::chrono::milliseconds(2));
+      if (iteration>25000)
+        ARCANE_FATAL("Too many iteration. probably a deadlock");
+      all_msg_info = new_messages;
+    }
+    info() << "END_PROBING";
+  }
+  else{
+    // La taille du message dépend de mon rang. Cela permet de vérifier que
+    // IParallelMng::probe() permet bien de récupérer cela.
+    message_size += (((message_size / 10) + 1) * pm->commRank()) + 100;
+    UniqueArray2<DataType> all_bufs(nb_message,message_size);
+    UniqueArray<Parallel::Request> requests;
+    PointToPointMessageInfo send_info(MessageRank(rank_to_receive),Parallel::NonBlocking);
+    for( Integer z=0; z<nb_message; ++z ){
+      for( Integer i=0; i<message_size; ++i ){
+        all_bufs[z][i] = Generator::generateBiValue(rank*(nb_message+1),z + i);
+      }
+      if (m_verbose)
+        tm->info() << "SEND orig=" << rank << " msg=" << z << " v=" << all_bufs[z];
+      requests.add(pm->send(all_bufs[z],send_info));
+    }
+
+    pm->waitAllRequests(requests);
+  }
+
+  pm->barrier();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> void
+ParallelMngDataTypeTest<DataType>::
+_testMessageLegacyProbe(Int32 rank_to_receive,Int32 nb_message,
+                        Int32 message_size,bool use_any_source)
+{
+  using Parallel::PointToPointMessageInfo;
+  using Parallel::MessageSourceInfo;
+
+  info() << "Test MessageLegacyProbe: rank_to_receive=" << rank_to_receive
+         << " nb_message=" << nb_message << " size=" << message_size
+         << " use_any_source=" << use_any_source;
+
+  IParallelMng* pm = m_parallel_mng;
+  Int32 rank = pm->commRank();
+  Int32 comm_size = pm->commSize();
+  ITraceMng* tm = pm->traceMng();
+
+  if (rank==rank_to_receive){
+    // Je dois recevoir \a nb_message de chaque PE (sauf moi)
+    UniqueArray<PointToPointMessageInfo> all_msg_info;
+
+    // Nombre de messages déjà recu. Comme les valeurs des éléments du message
+    // dépend du nombre de message envoyé par chaque PE, il faut le conserver
+    UniqueArray<Int32> ranks_message_number(comm_size,0);
+
+    UniqueArray<Parallel::Request> requests;
+
+    for( Integer orig=0; orig<comm_size; ++orig ){
+      if (orig!=rank_to_receive)
+        for( Integer z=0; z<nb_message; ++z ){
+          MessageRank source_rank( (use_any_source) ? A_NULL_RANK : orig );
+          all_msg_info.add({source_rank, Parallel::NonBlocking});
+        }
+    }
+    Integer iteration = 0;
+    while (!all_msg_info.empty()){
+      UniqueArray<PointToPointMessageInfo> new_messages;
+      for( const auto& p2p_msg : all_msg_info ){
+        MessageSourceInfo msg = pm->legacyProbe(p2p_msg);
+        // Limite le nombre d'affichages
+        bool do_print = (iteration<50 || (iteration%100)==0);
+        if (do_print)
+          info() << "I=" << iteration << " MSG=" << p2p_msg << " MSG_ID?=" << msg.isValid();
+        if (!msg.isValid()){
+          //new_messages.add(PointToPointMessageInfo(msg.rank(),msg.tag(),Parallel::NonBlocking));
+          new_messages.add(p2p_msg);
+          continue;
+        }
+        // Effectue un `receive` pour le message sondé.
+        // TODO: tester avec des receives non bloquants
+        MessageSourceInfo si = msg;
+        Int32 orig_rank = si.rank().value();
+        if (do_print)
+          info() << "I=" << iteration << " VALID_MSG: "
+                 << " rank=" << orig_rank << " tag=" << si.tag() << " size=" << si.size();
+        UniqueArray<DataType> recv_buf(si.size() / sizeof(DataType));
+        // Poste une réception et vérifie les valeurs
+        PointToPointMessageInfo msg_info(msg.rank(),msg.tag());
         pm->receive(recv_buf,msg_info);
         Int32 msg_number = ranks_message_number[orig_rank];
         ++ranks_message_number[orig_rank];

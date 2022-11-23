@@ -376,6 +376,16 @@ probe(const PointToPointMessageInfo& message)
   return m_message_queue->probe(p2p_message);
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MessageSourceInfo SharedMemoryParallelMng::
+legacyProbe(const PointToPointMessageInfo& message)
+{
+  PointToPointMessageInfo p2p_message(message);
+  p2p_message.setSourceRank(MessageRank(m_rank));
+  return m_message_queue->legacyProbe(p2p_message);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -90,6 +90,7 @@ using Arccore::MessagePassing::ISubRequest;
 using Arccore::MessagePassing::MessageId;
 using Arccore::MessagePassing::MessageTag;
 using Arccore::MessagePassing::MessageRank;
+using Arccore::MessagePassing::MessageSourceInfo;
 using Arccore::MessagePassing::PointToPointMessageInfo;
 
 using Arccore::MessagePassing::Communicator;

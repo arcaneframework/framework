@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiParallelMng.h                                            (C) 2000-2021 */
+/* MpiParallelMng.h                                            (C) 2000-2022 */
 /*                                                                           */
 /* Implémentation des messages avec MPI.                                     */
 /*---------------------------------------------------------------------------*/
@@ -118,6 +118,7 @@ class ARCANE_MPI_EXPORT MpiParallelMng
 
   void broadcastSerializer(ISerializer* values,Int32 rank) override;
   MessageId probe(const PointToPointMessageInfo& message) override;
+  MessageSourceInfo legacyProbe(const PointToPointMessageInfo& message) override;
   Request sendSerializer(const ISerializer* values,const PointToPointMessageInfo& message) override;
   Request receiveSerializer(ISerializer* values,const PointToPointMessageInfo& message) override;
 
