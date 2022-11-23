@@ -136,10 +136,14 @@ class RequestAsyncQueue
 class SharedMemoryMessageQueue::SubQueue
 {
   static MessageTag SERIALIZER_TAG() { return MessageTag(125); }
+
  public:
+
   SubQueue(SharedMemoryMessageQueue* master_queue,MessageRank rank);
   ~SubQueue();
+
  public:
+
   MessageRank rank() const { return m_rank; }
   void setTraceMng(ITraceMng* tm) { m_trace_mng = tm; }
   void wait(SharedMemoryMessageRequest* tmr);
@@ -148,12 +152,17 @@ class SharedMemoryMessageQueue::SubQueue
   void checkRequestAvailable();
   void waitSome(ArrayView<Request> requests,ArrayView<bool> requests_done,bool is_non_blocking);
   MessageId probe(const PointToPointMessageInfo& message);
+  MessageSourceInfo legacyProbe(const PointToPointMessageInfo& message);
+
  public:
+
   SharedMemoryMessageRequest*
   addReceive(Int64 request_id,const PointToPointMessageInfo& message,ReceiveBufferInfo buf);
   SharedMemoryMessageRequest*
   addSend(Int64 request_id,const PointToPointMessageInfo& message,SendBufferInfo buf);
+
  private:
+
   SharedMemoryMessageQueue* m_master_queue;
   MessageRank m_rank;
   UniqueArray<SharedMemoryMessageRequest*> m_send_requests;
@@ -162,7 +171,9 @@ class SharedMemoryMessageQueue::SubQueue
   RequestAsyncQueue m_async_message_queue;
   ITraceMng* m_trace_mng;
   bool m_is_debug;
+
  private:
+
   void _removeRequest(SharedMemoryMessageRequest* tmr,Array<SharedMemoryMessageRequest*>& requests);
   bool _checkSendDone(SharedMemoryMessageRequest* tmr_send);
   bool _checkRecvDone(SharedMemoryMessageRequest* tmr_recv);
@@ -558,6 +569,10 @@ probe(const MP::PointToPointMessageInfo& message)
     ARCANE_THROW(NotImplementedException,"blocking probe");
 
   // TODO: regarder pour mettre une sécurité anti-bouclage
+  // TODO: il faudrait vérifier que si on appelle deux fois cette
+  // méthode avec les mêmes informations on ne récupère pas le même message.
+  // Lorsque ce sera aussi le cas il faudra modifier legacyProbe() en
+  // conséquence.
   for(;;){
     _testOrWaitRequestAvailable(is_blocking);
     auto* req = _getMatchingSendRequest(rank,m_rank,tag);
@@ -572,6 +587,21 @@ probe(const MP::PointToPointMessageInfo& message)
       // En non bloquant, sort de la boucle même si on n'a pas de requête.
       break;
   }
+  return {};
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MP::MessageSourceInfo SharedMemoryMessageQueue::SubQueue::
+legacyProbe(const MP::PointToPointMessageInfo& message)
+{
+  // Fait un probe normal mais ne conserve pas l'information du message.
+  // NOTE: cela fonctionne car probe() peut retourner plusieurs fois le même
+  // message. Lorsque ce ne sera plus le cas il faudra modifier cela.
+  MP::MessageId message_id = probe(message);
+  if (message_id.isValid())
+    return message_id.sourceInfo();
   return {};
 }
 
@@ -703,6 +733,16 @@ probe(const MP::PointToPointMessageInfo& message) -> MessageId
 {
   auto* sq = _getSourceSubQueue(message);
   return sq->probe(message);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+auto SharedMemoryMessageQueue::
+legacyProbe(const MP::PointToPointMessageInfo& message) -> MessageSourceInfo
+{
+  auto* sq = _getSourceSubQueue(message);
+  return sq->legacyProbe(message);
 }
 
 /*---------------------------------------------------------------------------*/

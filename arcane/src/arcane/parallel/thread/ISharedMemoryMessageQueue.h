@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ISharedMemoryMessageQueue.h                                 (C) 2000-2020 */
+/* ISharedMemoryMessageQueue.h                                 (C) 2000-2022 */
 /*                                                                           */
 /* Interface d'une file de messages en mémoire partagée.                     */
 /*---------------------------------------------------------------------------*/
@@ -83,17 +83,27 @@ class ARCANE_THREAD_EXPORT ISharedMemoryMessageQueue
 : public IRequestCreator
 {
  public:
-  virtual ~ISharedMemoryMessageQueue() = default;
+
+  using MessageSourceInfo = Parallel::MessageSourceInfo;
+
  public:
+
+  virtual ~ISharedMemoryMessageQueue() = default;
+
+ public:
+
   virtual void init(Integer nb_thread) =0;
   virtual void waitAll(ArrayView<Request> requests) =0;
   virtual void waitSome(Int32 rank,ArrayView<Request> requests,
                         ArrayView<bool> requests_done,bool is_non_blocking) =0;
   virtual void setTraceMng(Int32 rank,ITraceMng* tm) =0;
+
  public:
+
   virtual Request addReceive(const PointToPointMessageInfo& message,ReceiveBufferInfo buf) =0;
   virtual Request addSend(const PointToPointMessageInfo& message,SendBufferInfo buf) =0;
   virtual MessageId probe(const PointToPointMessageInfo& message) =0;
+  virtual MessageSourceInfo legacyProbe(const PointToPointMessageInfo& message) =0;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -382,7 +382,9 @@ probe(const PointToPointMessageInfo& message)
 MessageSourceInfo SharedMemoryParallelMng::
 legacyProbe(const PointToPointMessageInfo& message)
 {
-  ARCANE_THROW(NotImplementedException,"");
+  PointToPointMessageInfo p2p_message(message);
+  p2p_message.setSourceRank(MessageRank(m_rank));
+  return m_message_queue->legacyProbe(p2p_message);
 }
 
 /*---------------------------------------------------------------------------*/
