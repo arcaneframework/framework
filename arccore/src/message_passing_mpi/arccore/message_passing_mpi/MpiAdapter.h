@@ -220,7 +220,8 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
   MPI_Request m_empty_request1;
   MPI_Request m_empty_request2;
   int m_recv_buffer_for_empty_request[1];
-  int m_send_buffer_for_empty_request[1];
+  int m_send_buffer_for_empty_request2[1];
+  int m_recv_buffer_for_empty_request2[1];
 
  private:
   
