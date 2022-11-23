@@ -98,6 +98,7 @@ class ARCANE_CORE_EXPORT ParallelMngDispatcher
     void barrier() override;
     Request nonBlockingBarrier() override;
     MessageId probe(const PointToPointMessageInfo& message) override;
+    MP::MessageSourceInfo legacyProbe(const PointToPointMessageInfo& message) override;
     Ref<Parallel::IRequestList> createRequestListRef() override;
     MP::IProfiler* profiler() const override { return nullptr; }
     void setProfiler(MP::IProfiler* p) override;

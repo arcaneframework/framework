@@ -161,6 +161,12 @@ probe(const PointToPointMessageInfo& message)
   return m_parallel_mng->probe(message);
 }
 
+MessageSourceInfo ParallelMngDispatcher::DefaultControlDispatcher::
+legacyProbe(const PointToPointMessageInfo& message)
+{
+  return m_parallel_mng->legacyProbe(message);
+}
+
 Ref<Parallel::IRequestList> ParallelMngDispatcher::DefaultControlDispatcher::
 createRequestListRef()
 {

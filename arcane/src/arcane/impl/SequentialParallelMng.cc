@@ -451,6 +451,11 @@ class SequentialParallelMng
     ARCANE_UNUSED(message);
     return MessageId();
   }
+  MessageSourceInfo legacyProbe(const PointToPointMessageInfo& message) override
+  {
+    ARCANE_UNUSED(message);
+    return MessageSourceInfo();
+  }
   Request sendSerializer(const ISerializer* values,const PointToPointMessageInfo& message) override
   {
     ARCANE_UNUSED(values);

@@ -105,6 +105,7 @@ class ARCANE_THREAD_EXPORT SharedMemoryParallelMng
 
   void broadcastSerializer(ISerializer* values,Int32 rank) override;
   MessageId probe(const PointToPointMessageInfo& message) override;
+  MessageSourceInfo legacyProbe(const PointToPointMessageInfo& message) override;
   Request sendSerializer(const ISerializer* values,const PointToPointMessageInfo& message) override;
   Request receiveSerializer(ISerializer* values,const PointToPointMessageInfo& message) override;
 

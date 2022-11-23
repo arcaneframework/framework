@@ -647,6 +647,15 @@ probe(const PointToPointMessageInfo& message) -> MessageId
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+auto MpiParallelMng::
+legacyProbe(const PointToPointMessageInfo& message) -> MessageSourceInfo
+{
+  return m_adapter->legacyProbeMessage(message);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 Request MpiParallelMng::
 sendSerializer(const ISerializer* s,const PointToPointMessageInfo& message)
 {

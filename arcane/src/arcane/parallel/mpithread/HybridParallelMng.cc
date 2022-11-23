@@ -446,6 +446,15 @@ probe(const PointToPointMessageInfo& message)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+MessageSourceInfo HybridParallelMng::
+legacyProbe(const PointToPointMessageInfo& message)
+{
+  ARCANE_THROW(NotImplementedException,"");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 Request HybridParallelMng::
 sendSerializer(const ISerializer* s,const PointToPointMessageInfo& message)
 {
