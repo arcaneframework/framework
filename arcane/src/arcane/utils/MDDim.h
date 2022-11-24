@@ -27,6 +27,23 @@
 
 namespace Arcane
 {
+namespace impl::extent
+{
+  template <class... Int32> constexpr int doSum(Int32... x)
+  {
+    return (x + ...);
+  }
+  constexpr int oneIfDynamic(Int32 x)
+  {
+    return ((x == DynExtent) ? 1 : 0);
+  }
+  // Nombre de valeurs dynamiques dans la liste des arguments
+  // Un argument est dynamique s'il vaut Arcane::DynExtent
+  template <class... Int32> constexpr int nbDynamic(Int32... args)
+  {
+    return doSum(oneIfDynamic(args)...);
+  }
+} // namespace impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -41,6 +58,7 @@ class ExtentsV<>
   using ArrayExtentsValueType = impl::ArrayExtentsValue<>;
 
   static constexpr int rank() { return 0; }
+  static constexpr int nb_dynamic = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -53,11 +71,14 @@ class ExtentsV<X0>
 {
  public:
 
+  static constexpr int rank() { return 1; }
+  static constexpr int nb_dynamic = impl::extent::nbDynamic(X0);
+  static constexpr bool is_full_dynamic() { return (nb_dynamic == 1); }
+
   using IndexType = ArrayBoundsIndex<1>;
   using ArrayExtentsValueType = impl::ArrayExtentsValue<X0>;
   using RemovedFirstExtentType = ExtentsV<>;
-
-  static constexpr int rank() { return 1; }
+  using DimsType = ArrayBoundsIndex<nb_dynamic>;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -70,11 +91,14 @@ class ExtentsV<X0,X1>
 {
  public:
 
+  static constexpr int rank() { return 2; }
+  static constexpr int nb_dynamic = impl::extent::nbDynamic(X0, X1);
+  static constexpr bool is_full_dynamic() { return (nb_dynamic == 2); }
+
   using IndexType = ArrayBoundsIndex<2>;
   using ArrayExtentsValueType = impl::ArrayExtentsValue<X0,X1>;
   using RemovedFirstExtentType = ExtentsV<X1>;
-
-  static constexpr int rank() { return 2; }
+  using DimsType = ArrayBoundsIndex<nb_dynamic>;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -87,11 +111,14 @@ class ExtentsV<X0,X1,X2>
 {
  public:
 
-  using IndexType = ArrayBoundsIndex<3>;
-  using ArrayExtentsValueType = impl::ArrayExtentsValue<X0,X1,X2>;
-  using RemovedFirstExtentType = ExtentsV<X1,X2>;
-
   static constexpr int rank() { return 3; }
+  static constexpr int nb_dynamic = impl::extent::nbDynamic(X0, X1, X2);
+  static constexpr bool is_full_dynamic() { return (nb_dynamic == 3); }
+
+  using IndexType = ArrayBoundsIndex<3>;
+  using ArrayExtentsValueType = impl::ArrayExtentsValue<X0, X1, X2>;
+  using RemovedFirstExtentType = ExtentsV<X1, X2>;
+  using DimsType = ArrayBoundsIndex<nb_dynamic>;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -99,16 +126,19 @@ class ExtentsV<X0,X1,X2>
 /*!
  * \brief Spécialisation pour les dimensions des tableaux à 4 dimensions.
  */
-template<Int32 X0,Int32 X1,Int32 X2,Int32 X3>
-class ExtentsV<X0,X1,X2,X3>
+template <Int32 X0, Int32 X1, Int32 X2, Int32 X3>
+class ExtentsV<X0, X1, X2, X3>
 {
  public:
 
-  using IndexType = ArrayBoundsIndex<4>;
-  using ArrayExtentsValueType = impl::ArrayExtentsValue<X0,X1,X2,X3>;
-  using RemovedFirstExtentType = ExtentsV<X1,X2,X3>;
-
   static constexpr int rank() { return 4; }
+  static constexpr int nb_dynamic = impl::extent::nbDynamic(X0, X1, X2, X3);
+  static constexpr bool is_full_dynamic() { return (nb_dynamic == 4); }
+
+  using IndexType = ArrayBoundsIndex<4>;
+  using ArrayExtentsValueType = impl::ArrayExtentsValue<X0, X1, X2, X3>;
+  using RemovedFirstExtentType = ExtentsV<X1, X2, X3>;
+  using DimsType = ArrayBoundsIndex<nb_dynamic>;
 };
 
 /*---------------------------------------------------------------------------*/

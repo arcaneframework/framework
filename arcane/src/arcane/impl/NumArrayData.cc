@@ -255,7 +255,7 @@ _resizeDim1(Int32 dim1_size)
   // Récupère les dimensions du 'NumArray' et ne modifie que la première
   auto extents = m_value.extents();
   extents.setExtent0(dim1_size);
-  m_value.resize(extents);
+  m_value.resize(extents.dynamicExtents());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -374,7 +374,7 @@ allocateBufferForSerializedData(ISerializedData* sdata)
   for( Int32 i=0; i<RankValue; ++i )
     numarray_extents[i] = CheckedConvert::toInt32(sdata_extents[i]);
   auto extents = ArrayExtents<ExtentType>::fromSpan(numarray_extents);
-  m_value.resize(extents);
+  m_value.resize(extents.dynamicExtents());
 
   Byte* byte_data = reinterpret_cast<Byte*>(m_value.to1DSpan().data());
   Span<Byte> bytes_view(byte_data,sdata->memorySize());
@@ -440,7 +440,7 @@ serialize(ISerializer* sbuf,IDataOperation* operation)
     case ISerializer::ReadReplace:
       {
         //m_trace->info() << "READ REPLACE count=" << count << " dim2_size=" << dim2_size;
-        m_value.resize(ArrayExtents<ExtentType>::fromSpan(extents_span));
+        m_value.resize(ArrayExtents<ExtentType>::fromSpan(extents_span).dynamicExtents());
         if (operation)
           ARCANE_THROW(NotImplementedException,"serialize(ReadReplace) with IDataOperation");
         BasicType* bt = reinterpret_cast<BasicType*>(m_value.to1DSpan().data());

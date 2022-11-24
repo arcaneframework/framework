@@ -154,18 +154,24 @@ class NumArrayBase
   using ArrayWrapper = impl::NumArrayContainer<DataType>;
   using ArrayBoundsIndexType = typename SpanType::ArrayBoundsIndexType;
   using ThatClass = NumArrayBase<DataType, ExtentType, LayoutType>;
+  using ExtentsType = ExtentType;
+  using DimsType = typename ExtentsType::DimsType;
 
  public:
 
   //! Nombre total d'éléments du tableau
   Int64 totalNbElement() const { return m_total_nb_element; }
+
   /*!
    * \brief Modifie la taille du tableau.
+   *
+   * Seules les dimensions dynamiques doivent être spécifiées.
+   *
    * \warning Les valeurs actuelles ne sont pas conservées lors de cette opération.
    */
-  void resize(ArrayExtents<ExtentType> extents)
+  void resize(const DimsType& dims)
   {
-    m_span.m_extents = extents;
+    m_span.m_extents = dims;
     _resize();
   }
 
@@ -173,23 +179,28 @@ class NumArrayBase
 
   NumArrayBase()
   : m_data(_getDefaultAllocator())
-  {}
+  {
+    _resizeInit();
+  }
   explicit NumArrayBase(eMemoryRessource r)
   : m_data(_getDefaultAllocator(r))
   , m_memory_ressource(r)
-  {}
-  explicit NumArrayBase(ArrayExtents<ExtentType> extents)
+  {
+    _resizeInit();
+  }
+  explicit NumArrayBase(const DimsType& extents)
   : m_data(_getDefaultAllocator())
   , m_memory_ressource(eMemoryRessource::UnifiedMemory)
   {
     resize(extents);
   }
-  NumArrayBase(ArrayExtents<ExtentType> extents, eMemoryRessource r)
+  NumArrayBase(const DimsType& extents, eMemoryRessource r)
   : m_data(_getDefaultAllocator(r))
   , m_memory_ressource(r)
   {
     resize(extents);
   }
+
   NumArrayBase(const ThatClass&) = default;
   NumArrayBase(ThatClass&&) = default;
   ThatClass& operator=(ThatClass&&) = default;
@@ -202,6 +213,21 @@ class NumArrayBase
     m_total_nb_element = m_span.extents().totalNbElement();
     m_data.resize(m_total_nb_element);
     m_span.m_ptr = m_data.to1DSpan().data();
+  }
+  /*!
+   * \brief Allocation éventuelle lors de l'initialisation.
+   *
+   * Il y a besoin de faire une allocation lors de l'initialisation
+   * avec le constructeur par défaut dans le cas où toutes les
+   * dimensions sont statiques.
+   */
+  void _resizeInit()
+  {
+    if constexpr (ExtentsType::nb_dynamic == 0) {
+      if (m_memory_ressource == eMemoryRessource::Unknown)
+        m_memory_ressource = eMemoryRessource::UnifiedMemory;
+      resize(DimsType());
+    }
   }
 
  public:
@@ -231,7 +257,7 @@ class NumArrayBase
   }
   void copy(const NumArrayBase<DataType, ExtentType, LayoutType>& rhs)
   {
-    this->resize(rhs.extents());
+    this->resize(rhs.extents().dynamicExtents());
     _copy(asBytes(rhs.to1DSpan()), rhs.m_memory_ressource,
           asWritableBytes(to1DSpan()), m_memory_ressource);
   }
@@ -299,43 +325,59 @@ class NumArray<DataType, ExtentsV<X0>, LayoutType>
   using ConstSpanType = MDSpan<const DataType, ExtentsType, LayoutType>;
   using SpanType = MDSpan<DataType, ExtentsType, LayoutType>;
   using ThatClass = NumArray<DataType, ExtentsType, LayoutType>;
+  using DimsType = typename ExtentsType::DimsType;
 
  private:
 
   using BaseClass::m_span;
+  template <typename X>
+  using is_fully_dynamic = std::enable_if_t<X::is_full_dynamic(), int>;
 
  public:
 
   //! Construit un tableau vide
-  NumArray()
-  : NumArray(0)
-  {}
+  NumArray() = default;
   explicit NumArray(eMemoryRessource r)
   : BaseClass(r)
   {}
+  explicit NumArray(const DimsType& extents)
+  : BaseClass(extents)
+  {}
+  NumArray(const DimsType& extents, eMemoryRessource r)
+  : BaseClass(extents, r)
+  {
+  }
   //! Construit un tableau
+  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
   explicit NumArray(Int32 dim1_size)
-  : BaseClass(ArrayExtents<ExtentsType>(dim1_size))
-  {}
+  : BaseClass(DimsType(dim1_size))
+  {
+  }
+  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
   NumArray(Int32 dim1_size, eMemoryRessource r)
-  : BaseClass(ArrayExtents<ExtentsType>{ dim1_size }, r)
-  {}
+  : BaseClass(DimsType(dim1_size), r)
+  {
+  }
   //! Construit un tableau à partir de valeurs prédéfinies
+  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
   NumArray(Int32 dim1_size, std::initializer_list<DataType> alist)
   : NumArray(dim1_size)
   {
     this->m_data.copyInitializerList(alist);
   }
   //! Construit une instance à partir d'une vue
+  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
   NumArray(SmallSpan<const DataType> v)
   : NumArray(v.size())
   {
     this->m_data.copy(v);
   }
   //! Construit une instance à partir d'une vue
+  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
   NumArray(Span<const DataType> v)
-  : NumArray(SmallSpan<const DataType>(v.data(), arcaneCheckArraySize(v.size())))
+  : NumArray(arcaneCheckArraySize(v.size()))
   {
+    this->m_data.copy(v);
   }
   NumArray(const ThatClass&) = default;
   NumArray(ThatClass&&) = default;
@@ -349,9 +391,10 @@ class NumArray<DataType, ExtentsV<X0>, LayoutType>
    * \warning Les valeurs actuelles ne sont pas conservées lors de cette opération
    * et les nouvelles valeurs ne sont pas initialisées.
    */
+  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
   void resize(Int32 dim1_size)
   {
-    this->resize(ArrayExtents<ExtentsType>(dim1_size));
+    this->resize(DimsType(dim1_size));
   }
 
  public:
@@ -416,10 +459,14 @@ class NumArray<DataType, ExtentsV<X0, X1>, LayoutType>
   using BaseClass::operator();
   using BaseClass::s;
   using ThatClass = NumArray<DataType, ExtentsType, LayoutType>;
+  using DimsType = typename ExtentsType::DimsType;
 
  private:
 
   using BaseClass::m_span;
+
+  template <typename X>
+  using is_fully_dynamic = std::enable_if_t<X::is_full_dynamic(), int>;
 
  public:
 
@@ -428,19 +475,32 @@ class NumArray<DataType, ExtentsV<X0, X1>, LayoutType>
   explicit NumArray(eMemoryRessource r)
   : BaseClass(r)
   {}
-  //! Construit une vue
+  explicit NumArray(const DimsType& extents)
+  : BaseClass(extents)
+  {}
+  NumArray(const DimsType& extents, eMemoryRessource r)
+  : BaseClass(extents, r)
+  {
+  }
+
+  //! Construit un tableau
+  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
   NumArray(Int32 dim1_size, Int32 dim2_size)
-  : BaseClass(ArrayExtents<ExtentsType>{ dim1_size, dim2_size })
-  {}
+  : BaseClass(DimsType(dim1_size, dim2_size))
+  {
+  }
+  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
   NumArray(Int32 dim1_size, Int32 dim2_size, eMemoryRessource r)
-  : BaseClass(ArrayExtents<ExtentsType>{ dim1_size, dim2_size }, r)
-  {}
+  : BaseClass(DimsType(dim1_size, dim2_size), r)
+  {
+  }
   /*!
    * \brief Construit un tableau à partir de valeurs prédéfinies.
    *
    * Les valeurs sont rangées de manière contigues en mémoire donc
    * la liste \a alist doit avoir un layout qui correspond à celui de cette classe.
    */
+  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
   NumArray(Int32 dim1_size, Int32 dim2_size, std::initializer_list<DataType> alist)
   : NumArray(dim1_size, dim2_size)
   {
@@ -453,9 +513,10 @@ class NumArray<DataType, ExtentsV<X0, X1>, LayoutType>
 
  public:
 
+  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
   void resize(Int32 dim1_size, Int32 dim2_size)
   {
-    this->resize(ArrayExtents<ExtentsType>(dim1_size, dim2_size));
+    this->resize(DimsType(dim1_size, dim2_size));
   }
 
  public:
@@ -524,24 +585,40 @@ class NumArray<DataType, ExtentsV<X0, X1, X2>, LayoutType>
   using BaseClass::operator();
   using BaseClass::s;
   using ThatClass = NumArray<DataType, ExtentsType, LayoutType>;
+  using DimsType = typename ExtentsType::DimsType;
 
  private:
 
   using BaseClass::m_span;
 
+  template <typename X>
+  using is_fully_dynamic = std::enable_if_t<X::is_full_dynamic(), int>;
+
  public:
 
   //! Construit un tableau vide
   NumArray() = default;
+  explicit NumArray(const DimsType& extents)
+  : BaseClass(extents)
+  {}
+  NumArray(const DimsType& extents, eMemoryRessource r)
+  : BaseClass(extents, r)
+  {
+  }
   explicit NumArray(eMemoryRessource r)
   : BaseClass(r)
   {}
+  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
   NumArray(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size)
-  : BaseClass(ArrayExtents<ExtentsType>(dim1_size, dim2_size, dim3_size))
-  {}
+  : BaseClass(DimsType(dim1_size, dim2_size, dim3_size))
+  {
+  }
+  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
   NumArray(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size, eMemoryRessource r)
-  : BaseClass(ArrayExtents<ExtentsType>{ dim1_size, dim2_size, dim3_size }, r)
-  {}
+  : BaseClass(DimsType(dim1_size, dim2_size, dim3_size), r)
+  {
+  }
+
   NumArray(const ThatClass&) = default;
   NumArray(ThatClass&&) = default;
   ThatClass& operator=(ThatClass&&) = default;
@@ -549,9 +626,10 @@ class NumArray<DataType, ExtentsV<X0, X1, X2>, LayoutType>
 
  public:
 
+  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
   void resize(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size)
   {
-    this->resize(ArrayExtents<ExtentsType>(dim1_size, dim2_size, dim3_size));
+    this->resize(DimsType(dim1_size, dim2_size, dim3_size));
   }
 
  public:
@@ -624,26 +702,44 @@ class NumArray<DataType, ExtentsV<X0, X1, X2, X3>, LayoutType>
   using BaseClass::operator();
   using BaseClass::s;
   using ThatClass = NumArray<DataType, ExtentsType, LayoutType>;
+  using DimsType = typename ExtentsType::DimsType;
 
  private:
 
   using BaseClass::m_span;
 
+  template <typename X>
+  using is_fully_dynamic = std::enable_if_t<X::is_full_dynamic(), int>;
+
  public:
 
   //! Construit un tableau vide
   NumArray() = default;
+  explicit NumArray(const DimsType& extents)
+  : BaseClass(extents)
+  {}
+  NumArray(const DimsType& extents, eMemoryRessource r)
+  : BaseClass(extents, r)
+  {
+  }
   explicit NumArray(eMemoryRessource r)
   : BaseClass(r)
   {}
+
+  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
   NumArray(Int32 dim1_size, Int32 dim2_size,
            Int32 dim3_size, Int32 dim4_size)
-  : BaseClass(ArrayExtents<ExtentsType>(dim1_size, dim2_size, dim3_size, dim4_size))
-  {}
+  : BaseClass(DimsType(dim1_size, dim2_size, dim3_size, dim4_size))
+  {
+  }
+
+  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
   NumArray(Int32 dim1_size, Int32 dim2_size,
            Int32 dim3_size, Int32 dim4_size, eMemoryRessource r)
-  : BaseClass(ArrayExtents<ExtentsType>{ dim1_size, dim2_size, dim3_size, dim4_size }, r)
-  {}
+  : BaseClass(DimsType(dim1_size, dim2_size, dim3_size, dim4_size), r)
+  {
+  }
+
   NumArray(const ThatClass&) = default;
   NumArray(ThatClass&&) = default;
   ThatClass& operator=(ThatClass&&) = default;
@@ -651,9 +747,10 @@ class NumArray<DataType, ExtentsV<X0, X1, X2, X3>, LayoutType>
 
  public:
 
+  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
   void resize(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size, Int32 dim4_size)
   {
-    this->resize(ArrayExtents<ExtentsType>(dim1_size, dim2_size, dim3_size, dim4_size));
+    this->resize(DimsType(dim1_size, dim2_size, dim3_size, dim4_size));
   }
 
  public:
