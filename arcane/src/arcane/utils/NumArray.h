@@ -179,11 +179,15 @@ class NumArrayBase
 
   NumArrayBase()
   : m_data(_getDefaultAllocator())
-  {}
+  {
+    _resizeInit();
+  }
   explicit NumArrayBase(eMemoryRessource r)
   : m_data(_getDefaultAllocator(r))
   , m_memory_ressource(r)
-  {}
+  {
+    _resizeInit();
+  }
   explicit NumArrayBase(const DimsType& extents)
   : m_data(_getDefaultAllocator())
   , m_memory_ressource(eMemoryRessource::UnifiedMemory)
@@ -209,6 +213,21 @@ class NumArrayBase
     m_total_nb_element = m_span.extents().totalNbElement();
     m_data.resize(m_total_nb_element);
     m_span.m_ptr = m_data.to1DSpan().data();
+  }
+  /*!
+   * \brief Allocation éventuelle lors de l'initialisation.
+   *
+   * Il y a besoin de faire une allocation lors de l'initialisation
+   * avec le constructeur par défaut dans le cas où toutes les
+   * dimensions sont statiques.
+   */
+  void _resizeInit()
+  {
+    if constexpr (ExtentsType::nb_dynamic == 0) {
+      if (m_memory_ressource == eMemoryRessource::Unknown)
+        m_memory_ressource = eMemoryRessource::UnifiedMemory;
+      resize(DimsType());
+    }
   }
 
  public:

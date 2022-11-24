@@ -69,6 +69,19 @@ class ArrayBoundsIndexBase
 /*---------------------------------------------------------------------------*/
 
 template<>
+class ArrayBoundsIndex<0>
+: public ArrayBoundsIndexBase<0>
+{
+ public:
+  ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndex() : ArrayBoundsIndexBase<0>(){}
+  ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndex(std::array<Int32,0> _id)
+  : ArrayBoundsIndexBase<0>(_id) {}
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<>
 class ArrayBoundsIndex<1>
 : public ArrayBoundsIndexBase<1>
 {
