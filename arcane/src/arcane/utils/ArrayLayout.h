@@ -48,7 +48,9 @@ class ArrayLayout2
     return (extent1 * idx[I]) + Int64(idx[J]);
   }
 
-  static std::array<Int32,2> layoutInfo() { return { I, J }; }
+  static constexpr std::array<Int32,2> layoutInfo() { return { I, J }; }
+  static constexpr ARCCORE_HOST_DEVICE Int32 layout0() { return I; }
+  static constexpr ARCCORE_HOST_DEVICE Int32 layout1() { return J; }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -73,7 +75,11 @@ class ArrayLayout3
     return extents.template constLargeExtent<J>() * extents.template constLargeExtent<K>();
   }
 
-  static std::array<Int32,3> layoutInfo() { return { I, J, K }; }
+  static constexpr std::array<Int32,3> layoutInfo() { return { I, J, K }; }
+
+  static constexpr ARCCORE_HOST_DEVICE Int32 layout0() { return I; }
+  static constexpr ARCCORE_HOST_DEVICE Int32 layout1() { return J; }
+  static constexpr ARCCORE_HOST_DEVICE Int32 layout2() { return K; }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -83,12 +89,8 @@ class ArrayLayout3
 template<int N> class RightLayout;
 template<int N> class LeftLayout;
 
-template<> class RightLayout<2>
-: public ArrayLayout2<0,1> {};
-
-template<> class RightLayout<3>
-: public ArrayLayout3<0,1,2> {};
-
+template<> class RightLayout<2> : public ArrayLayout2<0,1> {};
+template<> class RightLayout<3> : public ArrayLayout3<0,1,2> {};
 using RightLayout2 = RightLayout<2>;
 using RightLayout3 = RightLayout<3>;
 
@@ -97,13 +99,10 @@ template<> class LeftLayout<3> : public ArrayLayout3<2,1,0> {};
 using LeftLayout2 = LeftLayout<2>;
 using LeftLayout3 = LeftLayout<3>;
 
-#ifdef ARCANE_DEFAULT_LAYOUT_IS_LEFT
-template<> class DefaultLayout<2> : public LeftLayout<2> {};
-template<> class DefaultLayout<3> : public LeftLayout<3> {};
-#else
+//! Le layout par défaut est toujours RightLayout
 template<> class DefaultLayout<2> : public RightLayout<2> {};
+//! Le layout par défaut est toujours RightLayout
 template<> class DefaultLayout<3> : public RightLayout<3> {};
-#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
