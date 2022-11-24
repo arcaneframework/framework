@@ -113,7 +113,7 @@ class ArrayExtentsValue<X0>
   //! Liste des dimensions dynamiques
   constexpr DimsType dynamicExtents() const
   {
-    std::array<Int32, ExtentsType::nb_dynamic> x;
+    std::array<Int32, ExtentsType::nb_dynamic> x = {};
     Int32 i = 0;
     if constexpr (X0 == DynExtent)
       x[i++] = m_extent0.v;
@@ -124,7 +124,8 @@ class ArrayExtentsValue<X0>
 
   explicit ARCCORE_HOST_DEVICE ArrayExtentsValue(SmallSpan<const Int32> extents)
   {
-    m_extent0.v = extents[0];
+    if constexpr (X0 == DynExtent)
+      m_extent0.v = extents[0];
   }
 
   //! Construit une instance avec les N valeurs dynamiques.
@@ -197,7 +198,7 @@ class ArrayExtentsValue<X0,X1>
   //! Liste des dimensions dynamiques
   constexpr DimsType dynamicExtents() const
   {
-    std::array<Int32, ExtentsType::nb_dynamic> x;
+    std::array<Int32, ExtentsType::nb_dynamic> x = {};
     Int32 i = 0;
     if constexpr (X0 == DynExtent)
       x[i++] = m_extent0.v;
@@ -210,8 +211,10 @@ class ArrayExtentsValue<X0,X1>
 
   explicit ARCCORE_HOST_DEVICE ArrayExtentsValue(SmallSpan<const Int32> extents)
   {
-    m_extent0.v = extents[0];
-    m_extent1.v = extents[1];
+    if constexpr (X0 == DynExtent)
+      m_extent0.v = extents[0];
+    if constexpr (X1 == DynExtent)
+      m_extent1.v = extents[1];
   }
 
   //! Construit une instance avec les N valeurs dynamiques.
@@ -294,7 +297,7 @@ class ArrayExtentsValue<X0,X1,X2>
   //! Liste des dimensions dynamiques
   constexpr DimsType dynamicExtents() const
   {
-    std::array<Int32, ExtentsType::nb_dynamic> x;
+    std::array<Int32, ExtentsType::nb_dynamic> x = {};
     Int32 i = 0;
     if constexpr (X0 == DynExtent)
       x[i++] = m_extent0.v;
@@ -309,9 +312,12 @@ class ArrayExtentsValue<X0,X1,X2>
 
   explicit ARCCORE_HOST_DEVICE ArrayExtentsValue(SmallSpan<const Int32> extents)
   {
-    m_extent0.v = extents[0];
-    m_extent1.v = extents[1];
-    m_extent2.v = extents[2];
+    if constexpr (X0 == DynExtent)
+      m_extent0.v = extents[0];
+    if constexpr (X1 == DynExtent)
+      m_extent1.v = extents[1];
+    if constexpr (X2 == DynExtent)
+      m_extent2.v = extents[2];
   }
 
   //! Construit une instance avec les N valeurs dynamiques.
@@ -404,7 +410,7 @@ class ArrayExtentsValue<X0,X1,X2,X3>
   //! Liste des dimensions dynamiques
   constexpr DimsType dynamicExtents() const
   {
-    std::array<Int32, ExtentsType::nb_dynamic> x;
+    std::array<Int32, ExtentsType::nb_dynamic> x = {};
     Int32 i = 0;
     if constexpr (X0 == DynExtent)
       x[i++] = m_extent0.v;
@@ -421,10 +427,14 @@ class ArrayExtentsValue<X0,X1,X2,X3>
 
   explicit ARCCORE_HOST_DEVICE ArrayExtentsValue(SmallSpan<const Int32> extents)
   {
-    m_extent0.v = extents[0];
-    m_extent1.v = extents[1];
-    m_extent2.v = extents[2];
-    m_extent3.v = extents[3];
+    if constexpr (X0 == DynExtent)
+      m_extent0.v = extents[0];
+    if constexpr (X1 == DynExtent)
+      m_extent1.v = extents[1];
+    if constexpr (X2 == DynExtent)
+      m_extent2.v = extents[2];
+    if constexpr (X3 == DynExtent)
+      m_extent3.v = extents[3];
   }
 
   //! Construit une instance avec les N valeurs dynamiques.

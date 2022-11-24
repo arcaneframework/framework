@@ -42,7 +42,7 @@ namespace impl::extent
   template <class... Int32> constexpr int nbDynamic(Int32... args)
   {
     return doSum(oneIfDynamic(args)...);
-  };
+  }
 } // namespace impl
 
 /*---------------------------------------------------------------------------*/
