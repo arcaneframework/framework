@@ -330,13 +330,13 @@ class NumArray<DataType, ExtentsV<X0>, LayoutType>
  private:
 
   using BaseClass::m_span;
+  template <typename X>
+  using is_fully_dynamic = std::enable_if_t<X::is_full_dynamic(), int>;
 
  public:
 
   //! Construit un tableau vide
-  NumArray()
-  : NumArray(0)
-  {}
+  NumArray() = default;
   explicit NumArray(eMemoryRessource r)
   : BaseClass(r)
   {}
@@ -348,32 +348,36 @@ class NumArray<DataType, ExtentsV<X0>, LayoutType>
   {
   }
   //! Construit un tableau
+  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
   explicit NumArray(Int32 dim1_size)
   : BaseClass(DimsType(dim1_size))
   {
-    static_assert(ExtentsType::nb_dynamic == 1, "This method is only allowed for full dynamic extents");
   }
+  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
   NumArray(Int32 dim1_size, eMemoryRessource r)
   : BaseClass(DimsType(dim1_size), r)
   {
-    static_assert(ExtentsType::nb_dynamic == 1, "This method is only allowed for full dynamic extents");
   }
   //! Construit un tableau à partir de valeurs prédéfinies
+  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
   NumArray(Int32 dim1_size, std::initializer_list<DataType> alist)
   : NumArray(dim1_size)
   {
     this->m_data.copyInitializerList(alist);
   }
   //! Construit une instance à partir d'une vue
+  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
   NumArray(SmallSpan<const DataType> v)
   : NumArray(v.size())
   {
     this->m_data.copy(v);
   }
   //! Construit une instance à partir d'une vue
+  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
   NumArray(Span<const DataType> v)
-  : NumArray(SmallSpan<const DataType>(v.data(), arcaneCheckArraySize(v.size())))
+  : NumArray(arcaneCheckArraySize(v.size()))
   {
+    this->m_data.copy(v);
   }
   NumArray(const ThatClass&) = default;
   NumArray(ThatClass&&) = default;
@@ -387,9 +391,9 @@ class NumArray<DataType, ExtentsV<X0>, LayoutType>
    * \warning Les valeurs actuelles ne sont pas conservées lors de cette opération
    * et les nouvelles valeurs ne sont pas initialisées.
    */
+  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
   void resize(Int32 dim1_size)
   {
-    static_assert(ExtentsType::nb_dynamic == 1, "This method is only allowed for full dynamic extents");
     this->resize(DimsType(dim1_size));
   }
 
@@ -461,6 +465,9 @@ class NumArray<DataType, ExtentsV<X0, X1>, LayoutType>
 
   using BaseClass::m_span;
 
+  template <typename X>
+  using is_fully_dynamic = std::enable_if_t<X::is_full_dynamic(), int>;
+
  public:
 
   //! Construit un tableau vide
@@ -475,16 +482,17 @@ class NumArray<DataType, ExtentsV<X0, X1>, LayoutType>
   : BaseClass(extents, r)
   {
   }
+
   //! Construit un tableau
+  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
   NumArray(Int32 dim1_size, Int32 dim2_size)
   : BaseClass(DimsType(dim1_size, dim2_size))
   {
-    static_assert(ExtentsType::nb_dynamic == 2, "This method is only allowed for full dynamic extents");
   }
+  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
   NumArray(Int32 dim1_size, Int32 dim2_size, eMemoryRessource r)
   : BaseClass(DimsType(dim1_size, dim2_size), r)
   {
-    static_assert(ExtentsType::nb_dynamic == 2, "This method is only allowed for full dynamic extents");
   }
   /*!
    * \brief Construit un tableau à partir de valeurs prédéfinies.
@@ -492,6 +500,7 @@ class NumArray<DataType, ExtentsV<X0, X1>, LayoutType>
    * Les valeurs sont rangées de manière contigues en mémoire donc
    * la liste \a alist doit avoir un layout qui correspond à celui de cette classe.
    */
+  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
   NumArray(Int32 dim1_size, Int32 dim2_size, std::initializer_list<DataType> alist)
   : NumArray(dim1_size, dim2_size)
   {
@@ -504,9 +513,9 @@ class NumArray<DataType, ExtentsV<X0, X1>, LayoutType>
 
  public:
 
+  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
   void resize(Int32 dim1_size, Int32 dim2_size)
   {
-    static_assert(ExtentsType::nb_dynamic == 2, "This method is only allowed for full dynamic extents");
     this->resize(DimsType(dim1_size, dim2_size));
   }
 
@@ -582,6 +591,9 @@ class NumArray<DataType, ExtentsV<X0, X1, X2>, LayoutType>
 
   using BaseClass::m_span;
 
+  template <typename X>
+  using is_fully_dynamic = std::enable_if_t<X::is_full_dynamic(), int>;
+
  public:
 
   //! Construit un tableau vide
@@ -596,15 +608,15 @@ class NumArray<DataType, ExtentsV<X0, X1, X2>, LayoutType>
   explicit NumArray(eMemoryRessource r)
   : BaseClass(r)
   {}
+  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
   NumArray(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size)
   : BaseClass(DimsType(dim1_size, dim2_size, dim3_size))
   {
-    static_assert(ExtentsType::nb_dynamic == 3, "This method is only allowed for full dynamic extents");
   }
+  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
   NumArray(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size, eMemoryRessource r)
   : BaseClass(DimsType(dim1_size, dim2_size, dim3_size), r)
   {
-    static_assert(ExtentsType::nb_dynamic == 3, "This method is only allowed for full dynamic extents");
   }
 
   NumArray(const ThatClass&) = default;
@@ -614,9 +626,9 @@ class NumArray<DataType, ExtentsV<X0, X1, X2>, LayoutType>
 
  public:
 
+  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
   void resize(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size)
   {
-    static_assert(ExtentsType::nb_dynamic == 3, "This method is only allowed for full dynamic extents");
     this->resize(DimsType(dim1_size, dim2_size, dim3_size));
   }
 
@@ -696,6 +708,9 @@ class NumArray<DataType, ExtentsV<X0, X1, X2, X3>, LayoutType>
 
   using BaseClass::m_span;
 
+  template <typename X>
+  using is_fully_dynamic = std::enable_if_t<X::is_full_dynamic(), int>;
+
  public:
 
   //! Construit un tableau vide
@@ -710,18 +725,21 @@ class NumArray<DataType, ExtentsV<X0, X1, X2, X3>, LayoutType>
   explicit NumArray(eMemoryRessource r)
   : BaseClass(r)
   {}
+
+  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
   NumArray(Int32 dim1_size, Int32 dim2_size,
            Int32 dim3_size, Int32 dim4_size)
   : BaseClass(DimsType(dim1_size, dim2_size, dim3_size, dim4_size))
   {
-    static_assert(ExtentsType::nb_dynamic == 4, "This method is only allowed for full dynamic extents");
   }
+
+  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
   NumArray(Int32 dim1_size, Int32 dim2_size,
            Int32 dim3_size, Int32 dim4_size, eMemoryRessource r)
   : BaseClass(DimsType(dim1_size, dim2_size, dim3_size, dim4_size), r)
   {
-    static_assert(ExtentsType::nb_dynamic == 4, "This method is only allowed for full dynamic extents");
   }
+
   NumArray(const ThatClass&) = default;
   NumArray(ThatClass&&) = default;
   ThatClass& operator=(ThatClass&&) = default;
@@ -729,9 +747,9 @@ class NumArray<DataType, ExtentsV<X0, X1, X2, X3>, LayoutType>
 
  public:
 
+  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
   void resize(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size, Int32 dim4_size)
   {
-    static_assert(ExtentsType::nb_dynamic == 4, "This method is only allowed for full dynamic extents");
     this->resize(DimsType(dim1_size, dim2_size, dim3_size, dim4_size));
   }
 
