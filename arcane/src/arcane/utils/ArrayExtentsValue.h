@@ -129,8 +129,9 @@ class ArrayExtentsValue<X0>
   }
 
   //! Construit une instance avec les N valeurs dynamiques.
-  constexpr ARCCORE_HOST_DEVICE ArrayExtentsValue([[maybe_unused]] DimsType dims)
+  constexpr ARCCORE_HOST_DEVICE ArrayExtentsValue(DimsType dims)
   {
+    ARCANE_UNUSED(dims);
     Int32 i = 0;
     if constexpr (X0 == DynExtent)
       m_extent0.v = dims[i++];
@@ -141,8 +142,9 @@ class ArrayExtentsValue<X0>
     return {};
   }
 
-  ARCCORE_HOST_DEVICE void _checkIndex([[maybe_unused]] IndexType idx) const
+  ARCCORE_HOST_DEVICE void _checkIndex(IndexType idx) const
   {
+    ARCANE_UNUSED(idx);
     ARCCORE_CHECK_AT(idx.id0(), m_extent0.v);
   }
 
@@ -218,8 +220,9 @@ class ArrayExtentsValue<X0,X1>
   }
 
   //! Construit une instance avec les N valeurs dynamiques.
-  constexpr ARCCORE_HOST_DEVICE ArrayExtentsValue([[maybe_unused]] DimsType dims)
+  constexpr ARCCORE_HOST_DEVICE ArrayExtentsValue(DimsType dims)
   {
+    ARCANE_UNUSED(dims);
     Int32 i = 0;
     if constexpr (X0 == DynExtent)
       m_extent0.v = dims[i++];
@@ -232,8 +235,9 @@ class ArrayExtentsValue<X0,X1>
     return { m_extent1.v };
   }
 
-  ARCCORE_HOST_DEVICE void _checkIndex([[maybe_unused]] IndexType idx) const
+  ARCCORE_HOST_DEVICE void _checkIndex(IndexType idx) const
   {
+    ARCANE_UNUSED(idx);
     ARCCORE_CHECK_AT(idx.id0(), m_extent0.v);
     ARCCORE_CHECK_AT(idx.id1(), m_extent1.v);
   }
@@ -321,8 +325,9 @@ class ArrayExtentsValue<X0,X1,X2>
   }
 
   //! Construit une instance avec les N valeurs dynamiques.
-  constexpr ARCCORE_HOST_DEVICE ArrayExtentsValue([[maybe_unused]] DimsType dims)
+  constexpr ARCCORE_HOST_DEVICE ArrayExtentsValue(DimsType dims)
   {
+    ARCANE_UNUSED(dims);
     Int32 i = 0;
     if constexpr (X0 == DynExtent)
       m_extent0.v = dims[i++];
@@ -337,8 +342,9 @@ class ArrayExtentsValue<X0,X1,X2>
     return { m_extent1.v, m_extent2.v };
   }
 
-  ARCCORE_HOST_DEVICE void _checkIndex([[maybe_unused]] IndexType idx) const
+  ARCCORE_HOST_DEVICE void _checkIndex(IndexType idx) const
   {
+    ARCANE_UNUSED(idx);
     ARCCORE_CHECK_AT(idx.id0(), m_extent0.v);
     ARCCORE_CHECK_AT(idx.id1(), m_extent1.v);
     ARCCORE_CHECK_AT(idx.id2(), m_extent2.v);
@@ -438,8 +444,9 @@ class ArrayExtentsValue<X0,X1,X2,X3>
   }
 
   //! Construit une instance avec les N valeurs dynamiques.
-  constexpr ARCCORE_HOST_DEVICE ArrayExtentsValue([[maybe_unused]] DimsType dims)
+  ARCCORE_HOST_DEVICE ArrayExtentsValue(DimsType dims)
   {
+    ARCANE_UNUSED(dims);
     Int32 i = 0;
     if constexpr (X0 == DynExtent)
       m_extent0.v = dims[i++];
@@ -456,8 +463,9 @@ class ArrayExtentsValue<X0,X1,X2,X3>
     return { m_extent1.v, m_extent2.v, m_extent3.v };
   }
 
-  ARCCORE_HOST_DEVICE void _checkIndex([[maybe_unused]] IndexType idx) const
+  ARCCORE_HOST_DEVICE void _checkIndex(IndexType idx) const
   {
+    ARCANE_UNUSED(idx);
     ARCCORE_CHECK_AT(idx.id0(), m_extent0.v);
     ARCCORE_CHECK_AT(idx.id1(), m_extent1.v);
     ARCCORE_CHECK_AT(idx.id2(), m_extent2.v);
