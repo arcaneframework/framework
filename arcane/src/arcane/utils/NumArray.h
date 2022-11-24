@@ -682,6 +682,9 @@ class NumArray<DataType, ExtentsV<X0>, LayoutType>
   template <typename X>
   using is_fully_dynamic = std::enable_if_t<X::is_full_dynamic(), int>;
 
+  template <typename X>
+  using is_full_dynamic_and_rank1 = std::enable_if_t<X::is_full_dynamic() && (X::rank() == 1), int>;
+
  public:
 
   //! Construit un tableau vide
@@ -697,32 +700,32 @@ class NumArray<DataType, ExtentsV<X0>, LayoutType>
   {
   }
   //! Construit un tableau
-  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
+  template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 1, void>>
   explicit NumArray(Int32 dim1_size)
   : BaseClass(DimsType(dim1_size))
   {
   }
-  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
+  template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 1, void>>
   NumArray(Int32 dim1_size, eMemoryRessource r)
   : BaseClass(DimsType(dim1_size), r)
   {
   }
   //! Construit un tableau à partir de valeurs prédéfinies
-  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
+  template <typename X = ExtentsType, typename = is_full_dynamic_and_rank1<X>>
   NumArray(Int32 dim1_size, std::initializer_list<DataType> alist)
   : NumArray(dim1_size)
   {
     this->m_data.copyInitializerList(alist);
   }
   //! Construit une instance à partir d'une vue
-  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
+  template <typename X = ExtentsType, typename = is_full_dynamic_and_rank1<X>>
   NumArray(SmallSpan<const DataType> v)
   : NumArray(v.size())
   {
     this->m_data.copy(v);
   }
   //! Construit une instance à partir d'une vue
-  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
+  template <typename X = ExtentsType, typename = is_full_dynamic_and_rank1<X>>
   NumArray(Span<const DataType> v)
   : NumArray(arcaneCheckArraySize(v.size()))
   {
@@ -740,7 +743,7 @@ class NumArray<DataType, ExtentsV<X0>, LayoutType>
    * \warning Les valeurs actuelles ne sont pas conservées lors de cette opération
    * et les nouvelles valeurs ne sont pas initialisées.
    */
-  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
+  template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 1, void>>
   void resize(Int32 dim1_size)
   {
     this->resize(DimsType(dim1_size));
@@ -773,7 +776,7 @@ class NumArray<DataType, ExtentsV<X0, X1>, LayoutType>
   using BaseClass::m_span;
 
   template <typename X>
-  using is_fully_dynamic = std::enable_if_t<X::is_full_dynamic(), int>;
+  using is_full_dynamic_and_rank2 = std::enable_if_t<X::is_full_dynamic() && (X::rank() == 2), int>;
 
  public:
 
@@ -791,12 +794,12 @@ class NumArray<DataType, ExtentsV<X0, X1>, LayoutType>
   }
 
   //! Construit un tableau
-  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
+  template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 2, void>>
   NumArray(Int32 dim1_size, Int32 dim2_size)
   : BaseClass(DimsType(dim1_size, dim2_size))
   {
   }
-  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
+  template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 2, void>>
   NumArray(Int32 dim1_size, Int32 dim2_size, eMemoryRessource r)
   : BaseClass(DimsType(dim1_size, dim2_size), r)
   {
@@ -807,7 +810,7 @@ class NumArray<DataType, ExtentsV<X0, X1>, LayoutType>
    * Les valeurs sont rangées de manière contigues en mémoire donc
    * la liste \a alist doit avoir un layout qui correspond à celui de cette classe.
    */
-  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
+  template <typename X = ExtentsType, typename = is_full_dynamic_and_rank2<X>>
   NumArray(Int32 dim1_size, Int32 dim2_size, std::initializer_list<DataType> alist)
   : NumArray(dim1_size, dim2_size)
   {
@@ -820,7 +823,7 @@ class NumArray<DataType, ExtentsV<X0, X1>, LayoutType>
 
  public:
 
-  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
+  template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 2, void>>
   void resize(Int32 dim1_size, Int32 dim2_size)
   {
     this->resize(DimsType(dim1_size, dim2_size));
@@ -871,12 +874,12 @@ class NumArray<DataType, ExtentsV<X0, X1, X2>, LayoutType>
   explicit NumArray(eMemoryRessource r)
   : BaseClass(r)
   {}
-  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
+  template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 3, void>>
   NumArray(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size)
   : BaseClass(DimsType(dim1_size, dim2_size, dim3_size))
   {
   }
-  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
+  template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 3, void>>
   NumArray(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size, eMemoryRessource r)
   : BaseClass(DimsType(dim1_size, dim2_size, dim3_size), r)
   {
@@ -889,7 +892,7 @@ class NumArray<DataType, ExtentsV<X0, X1, X2>, LayoutType>
 
  public:
 
-  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
+  template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 3, void>>
   void resize(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size)
   {
     this->resize(DimsType(dim1_size, dim2_size, dim3_size));
@@ -939,14 +942,14 @@ class NumArray<DataType, ExtentsV<X0, X1, X2, X3>, LayoutType>
   : BaseClass(r)
   {}
 
-  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
+  template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 4, void>>
   NumArray(Int32 dim1_size, Int32 dim2_size,
            Int32 dim3_size, Int32 dim4_size)
   : BaseClass(DimsType(dim1_size, dim2_size, dim3_size, dim4_size))
   {
   }
 
-  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
+  template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 4, void>>
   NumArray(Int32 dim1_size, Int32 dim2_size,
            Int32 dim3_size, Int32 dim4_size, eMemoryRessource r)
   : BaseClass(DimsType(dim1_size, dim2_size, dim3_size, dim4_size), r)
@@ -960,7 +963,7 @@ class NumArray<DataType, ExtentsV<X0, X1, X2, X3>, LayoutType>
 
  public:
 
-  template <typename X = ExtentsType, typename = is_fully_dynamic<X>>
+  template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 4, void>>
   void resize(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size, Int32 dim4_size)
   {
     this->resize(DimsType(dim1_size, dim2_size, dim3_size, dim4_size));
