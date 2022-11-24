@@ -163,6 +163,7 @@ class NumArrayBase
    * \brief Modifie la taille du tableau.
    * \warning Les valeurs actuelles ne sont pas conservées lors de cette opération.
    */
+  // TODO: a supprimer
   void resize(ArrayExtents<ExtentType> extents)
   {
     m_span.m_extents = extents;

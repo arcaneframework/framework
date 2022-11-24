@@ -35,59 +35,65 @@ namespace Arcane
 
 namespace impl
 {
-template<int RankValue>
-class ArrayExtentsTraits;
+  template <int RankValue>
+  class ArrayExtentsTraits;
 
-template<>
-class ArrayExtentsTraits<0>
-{
- public:
-  static constexpr ARCCORE_HOST_DEVICE std::array<Int32,0>
-  extendsInitHelper() { return {}; }
-};
+  template <>
+  class ArrayExtentsTraits<0>
+  {
+   public:
 
-template<>
-class ArrayExtentsTraits<1>
-{
- public:
-  static constexpr ARCCORE_HOST_DEVICE std::array<Int32,1>
-  extendsInitHelper() { return { 0 }; }
-};
+    static constexpr ARCCORE_HOST_DEVICE std::array<Int32, 0>
+    extendsInitHelper() { return {}; }
+  };
 
-template<>
-class ArrayExtentsTraits<2>
-{
- public:
-  static constexpr ARCCORE_HOST_DEVICE std::array<Int32,2>
-  extendsInitHelper() { return { 0, 0 }; }
-};
+  template <>
+  class ArrayExtentsTraits<1>
+  {
+   public:
 
-template<>
-class ArrayExtentsTraits<3>
-{
- public:
-  static constexpr ARCCORE_HOST_DEVICE std::array<Int32,3>
-  extendsInitHelper() { return { 0, 0, 0 }; }
-};
+    static constexpr ARCCORE_HOST_DEVICE std::array<Int32, 1>
+    extendsInitHelper() { return { 0 }; }
+  };
 
-template<>
-class ArrayExtentsTraits<4>
-{
- public:
-  static constexpr ARCCORE_HOST_DEVICE std::array<Int32,4>
-  extendsInitHelper() { return { 0, 0, 0, 0 }; }
-};
-}
+  template <>
+  class ArrayExtentsTraits<2>
+  {
+   public:
+
+    static constexpr ARCCORE_HOST_DEVICE std::array<Int32, 2>
+    extendsInitHelper() { return { 0, 0 }; }
+  };
+
+  template <>
+  class ArrayExtentsTraits<3>
+  {
+   public:
+
+    static constexpr ARCCORE_HOST_DEVICE std::array<Int32, 3>
+    extendsInitHelper() { return { 0, 0, 0 }; }
+  };
+
+  template <>
+  class ArrayExtentsTraits<4>
+  {
+   public:
+
+    static constexpr ARCCORE_HOST_DEVICE std::array<Int32, 4>
+    extendsInitHelper() { return { 0, 0, 0, 0 }; }
+  };
+} // namespace impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Spécialisation de ArrayStrideBase pour les tableaux de dimension 0 (les scalaires)
  */
-template<>
+template <>
 class ArrayStridesBase<0>
 {
  public:
+
   ArrayStridesBase() = default;
   //! Valeur du pas de la \a i-ème dimension.
   ARCCORE_HOST_DEVICE SmallSpan<const Int32> asSpan() const { return {}; }
@@ -110,12 +116,14 @@ class ArrayStridesBase<0>
  * d'éléments dans la dimension sauf si on utilise des marges (padding) par
  * exemple pour aligner certaines dimensions.
  */
-template<int RankValue>
+template <int RankValue>
 class ArrayStridesBase
 {
  public:
+
   ARCCORE_HOST_DEVICE ArrayStridesBase()
-  : m_strides(impl::ArrayExtentsTraits<RankValue>::extendsInitHelper()) { }
+  : m_strides(impl::ArrayExtentsTraits<RankValue>::extendsInitHelper())
+  {}
   //! Valeur du pas de la \a i-ème dimension.
   ARCCORE_HOST_DEVICE Int32 stride(int i) const { return m_strides[i]; }
   ARCCORE_HOST_DEVICE Int32 operator()(int i) const { return m_strides[i]; }
@@ -124,14 +132,14 @@ class ArrayStridesBase
   ARCCORE_HOST_DEVICE Int64 totalStride() const
   {
     Int64 nb_element = 1;
-    for (int i=0; i<RankValue; i++)
+    for (int i = 0; i < RankValue; i++)
       nb_element *= m_strides[i];
     return nb_element;
   }
   // Instance contenant les dimensions après la première
-  ARCCORE_HOST_DEVICE ArrayStridesBase<RankValue-1> removeFirstStride() const
+  ARCCORE_HOST_DEVICE ArrayStridesBase<RankValue - 1> removeFirstStride() const
   {
-    return ArrayStridesBase<RankValue-1>::fromSpan({m_strides.data()+1,RankValue-1});
+    return ArrayStridesBase<RankValue - 1>::fromSpan({ m_strides.data() + 1, RankValue - 1 });
   }
   /*!
    * \brief Construit une instance à partir des valeurs données dans \a stride.
@@ -141,12 +149,14 @@ class ArrayStridesBase
   {
     ArrayStridesBase<RankValue> v;
     // TODO: vérifier la taille
-    for( int i=0; i<RankValue; ++i )
+    for (int i = 0; i < RankValue; ++i)
       v.m_strides[i] = strides[i];
     return v;
   }
+
  protected:
-  std::array<Int32,RankValue> m_strides;
+
+  std::array<Int32, RankValue> m_strides;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -157,10 +167,11 @@ class ArrayStridesBase
 /*!
  * \brief Spécialisation de ArrayExtentsBase pour les tableaux de dimension 0 (les scalaires)
  */
-template<>
+template <>
 class ArrayExtentsBase<ExtentsV<>>
 {
  public:
+
   ArrayExtentsBase() = default;
   //! Nombre d'élément de la \a i-ème dimension.
   constexpr ARCCORE_HOST_DEVICE SmallSpan<const Int32> asSpan() const { return {}; }
@@ -178,28 +189,37 @@ class ArrayExtentsBase<ExtentsV<>>
 /*!
  * \brief Classe pour conserver le nombre d'éléments dans chaque dimension.
  */
-template<typename ExtentType>
+template <typename ExtentType>
 class ArrayExtentsBase
 : protected ExtentType::ArrayExtentsValueType
 {
+ protected:
+
   using BaseClass = typename ExtentType::ArrayExtentsValueType;
   using ArrayExtentsPreviousRank = ArrayExtentsBase<typename ExtentType::RemovedFirstExtentType>;
+  using DimsType = typename BaseClass::DimsType;
 
  public:
 
-  using BaseClass::totalNbElement;
-  using BaseClass::getIndices;
   using BaseClass::asStdArray;
   using BaseClass::constExtent;
+  using BaseClass::getIndices;
+  using BaseClass::totalNbElement;
 
  public:
 
   ARCCORE_HOST_DEVICE constexpr ArrayExtentsBase()
-  : BaseClass() { }
+  : BaseClass()
+  {}
 
  protected:
 
-  explicit ARCCORE_HOST_DEVICE ArrayExtentsBase(SmallSpan<const Int32> extents)
+  explicit constexpr ARCCORE_HOST_DEVICE ArrayExtentsBase(SmallSpan<const Int32> extents)
+  : BaseClass(extents)
+  {
+  }
+
+  explicit constexpr ARCCORE_HOST_DEVICE ArrayExtentsBase(DimsType extents)
   : BaseClass(extents)
   {
   }
@@ -217,7 +237,7 @@ class ArrayExtentsBase
   }
 
   // Nombre d'éléments de la \a I-éme dimension convertie en un 'Int64'.
-  template<Int32 I> constexpr ARCCORE_HOST_DEVICE Int64 constLargeExtent() const
+  template <Int32 I> constexpr ARCCORE_HOST_DEVICE Int64 constLargeExtent() const
   {
     return BaseClass::template constExtent<I>();
   }
@@ -236,21 +256,31 @@ class ArrayExtentsBase
 /*!
  * \brief Extent pour les tableaux à 1 dimension.
  */
-template<int X0>
+template <int X0>
 class ArrayExtents<ExtentsV<X0>>
 : public ArrayExtentsBase<ExtentsV<X0>>
 {
  public:
 
-  using BaseClass = ArrayExtentsBase<ExtentsV<X0>>;
+  using ExtentsType = ExtentsV<X0>;
+  using BaseClass = ArrayExtentsBase<ExtentsType>;
   using BaseClass::totalNbElement;
+  using DimsType = typename ExtentsType::DimsType;
 
  public:
 
   ArrayExtents() = default;
-  constexpr ARCCORE_HOST_DEVICE ArrayExtents(const BaseClass&rhs) : BaseClass(rhs) {}
+  constexpr ARCCORE_HOST_DEVICE ArrayExtents(const BaseClass& rhs)
+  : BaseClass(rhs)
+  {}
+  constexpr ARCCORE_HOST_DEVICE ArrayExtents(const DimsType& extents)
+  : BaseClass(extents)
+  {
+  }
+  // TODO: A supprimer
   constexpr ARCCORE_HOST_DEVICE explicit ArrayExtents(Int32 dim1_size)
   {
+    static_assert(ExtentsType::nb_dynamic == 1, "This method is only allowed for full dynamic extents");
     this->m_extent0.v = dim1_size;
   }
 };
@@ -260,21 +290,31 @@ class ArrayExtents<ExtentsV<X0>>
 /*!
  * \brief Extent pour les tableaux à 2 dimensions.
  */
-template<int X0,int X1>
-class ArrayExtents<ExtentsV<X0,X1>>
-: public ArrayExtentsBase<ExtentsV<X0,X1>>
+template <int X0, int X1>
+class ArrayExtents<ExtentsV<X0, X1>>
+: public ArrayExtentsBase<ExtentsV<X0, X1>>
 {
  public:
 
-  using BaseClass = ArrayExtentsBase<ExtentsV<X0,X1>>;
+  using ExtentsType = ExtentsV<X0, X1>;
+  using BaseClass = ArrayExtentsBase<ExtentsType>;
   using BaseClass::totalNbElement;
+  using DimsType = typename ExtentsType::DimsType;
 
  public:
 
   ArrayExtents() = default;
-  constexpr ARCCORE_HOST_DEVICE ArrayExtents(const BaseClass& rhs) : BaseClass(rhs){}
-  constexpr ARCCORE_HOST_DEVICE ArrayExtents(Int32 dim1_size,Int32 dim2_size)
+  constexpr ARCCORE_HOST_DEVICE ArrayExtents(const BaseClass& rhs)
+  : BaseClass(rhs)
+  {}
+  constexpr ARCCORE_HOST_DEVICE ArrayExtents(const DimsType& extents)
+  : BaseClass(extents)
   {
+  }
+  // TODO: A supprimer
+  constexpr ARCCORE_HOST_DEVICE ArrayExtents(Int32 dim1_size, Int32 dim2_size)
+  {
+    static_assert(ExtentsType::nb_dynamic == 2, "This method is only allowed for full dynamic extents");
     this->m_extent0.v = dim1_size;
     this->m_extent1.v = dim2_size;
   }
@@ -285,21 +325,31 @@ class ArrayExtents<ExtentsV<X0,X1>>
 /*!
  * \brief Extent pour les tableaux à 3 dimensions.
  */
-template<int X0,int X1,int X2>
-class ArrayExtents<ExtentsV<X0,X1,X2>>
-: public ArrayExtentsBase<ExtentsV<X0,X1,X2>>
+template <int X0, int X1, int X2>
+class ArrayExtents<ExtentsV<X0, X1, X2>>
+: public ArrayExtentsBase<ExtentsV<X0, X1, X2>>
 {
  public:
 
-  using BaseClass = ArrayExtentsBase<ExtentsV<X0,X1,X2>>;
+  using ExtentsType = ExtentsV<X0, X1, X2>;
+  using BaseClass = ArrayExtentsBase<ExtentsType>;
   using BaseClass::totalNbElement;
+  using DimsType = typename BaseClass::DimsType;
 
  public:
 
   ArrayExtents() = default;
-  constexpr ARCCORE_HOST_DEVICE ArrayExtents(const BaseClass& rhs) : BaseClass(rhs){}
-  constexpr ARCCORE_HOST_DEVICE ArrayExtents(Int32 dim1_size,Int32 dim2_size,Int32 dim3_size)
+  constexpr ARCCORE_HOST_DEVICE ArrayExtents(const BaseClass& rhs)
+  : BaseClass(rhs)
+  {}
+  constexpr ARCCORE_HOST_DEVICE ArrayExtents(const DimsType& extents)
+  : BaseClass(extents)
   {
+  }
+  // TODO: A supprimer
+  constexpr ARCCORE_HOST_DEVICE ArrayExtents(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size)
+  {
+    static_assert(ExtentsType::nb_dynamic == 3, "This method is only allowed for full dynamic extents");
     this->m_extent0.v = dim1_size;
     this->m_extent1.v = dim2_size;
     this->m_extent2.v = dim3_size;
@@ -311,18 +361,31 @@ class ArrayExtents<ExtentsV<X0,X1,X2>>
 /*!
  * \brief Extent pour les tableaux à 4 dimensions.
  */
-template<int X0,int X1,int X2,int X3>
-class ArrayExtents<ExtentsV<X0,X1,X2,X3>>
-: public ArrayExtentsBase<ExtentsV<X0,X1,X2,X3>>
+template <int X0, int X1, int X2, int X3>
+class ArrayExtents<ExtentsV<X0, X1, X2, X3>>
+: public ArrayExtentsBase<ExtentsV<X0, X1, X2, X3>>
 {
  public:
-  using BaseClass = ArrayExtentsBase<ExtentsV<X0,X1,X2,X3>>;
+
+  using ExtentsType = ExtentsV<X0, X1, X2, X3>;
+  using BaseClass = ArrayExtentsBase<ExtentsType>;
   using BaseClass::totalNbElement;
+  using DimsType = typename BaseClass::DimsType;
+
  public:
+
   ArrayExtents() = default;
-  constexpr ARCCORE_HOST_DEVICE ArrayExtents(const BaseClass& rhs) : BaseClass(rhs){}
-  constexpr ARCCORE_HOST_DEVICE ArrayExtents(Int32 dim1_size,Int32 dim2_size,Int32 dim3_size,Int32 dim4_size)
+  constexpr ARCCORE_HOST_DEVICE ArrayExtents(const BaseClass& rhs)
+  : BaseClass(rhs)
+  {}
+  constexpr ARCCORE_HOST_DEVICE ArrayExtents(const DimsType& extents)
+  : BaseClass(extents)
   {
+  }
+  // TODO: A supprimer
+  constexpr ARCCORE_HOST_DEVICE ArrayExtents(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size, Int32 dim4_size)
+  {
+    static_assert(ExtentsType::nb_dynamic == 4, "This method is only allowed for full dynamic extents");
     this->m_extent0.v = dim1_size;
     this->m_extent1.v = dim2_size;
     this->m_extent2.v = dim3_size;
@@ -338,21 +401,31 @@ class ArrayExtents<ExtentsV<X0,X1,X2,X3>>
 /*!
  * \brief Extent et Offset pour les tableaux à 1 dimension.
  */
-template<int X0,typename LayoutType>
-class ArrayExtentsWithOffset<ExtentsV<X0>,LayoutType>
+template <int X0, typename LayoutType>
+class ArrayExtentsWithOffset<ExtentsV<X0>, LayoutType>
 : private ArrayExtents<ExtentsV<X0>>
 {
  public:
+
   using ExtentsType = ExtentsV<X0>;
   using BaseClass = ArrayExtents<ExtentsType>;
-  using BaseClass::extent0;
   using BaseClass::asStdArray;
-  using BaseClass::totalNbElement;
+  using BaseClass::extent0;
   using BaseClass::getIndices;
+  using BaseClass::totalNbElement;
   using Layout = LayoutType;
+  using DimsType = typename BaseClass::DimsType;
+  using IndexType = typename BaseClass::IndexType;
+
  public:
+
   ArrayExtentsWithOffset() = default;
-  ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(const ArrayExtents<ExtentsType>& rhs)
+  // TODO: a supprimer
+  constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(const ArrayExtents<ExtentsType>& rhs)
+  : BaseClass(rhs)
+  {
+  }
+  constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(const DimsType& rhs)
   : BaseClass(rhs)
   {
   }
@@ -361,12 +434,16 @@ class ArrayExtentsWithOffset<ExtentsV<X0>,LayoutType>
     BaseClass::_checkIndex(i);
     return i;
   }
-  constexpr ARCCORE_HOST_DEVICE Int64 offset(ArrayBoundsIndex<1> idx) const
+  constexpr ARCCORE_HOST_DEVICE Int64 offset(IndexType idx) const
   {
     BaseClass::_checkIndex(idx.id0());
     return idx.id0();
   }
-  constexpr BaseClass extents() const { const BaseClass* b = this; return *b; }
+  constexpr BaseClass extents() const
+  {
+    const BaseClass* b = this;
+    return *b;
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -374,35 +451,49 @@ class ArrayExtentsWithOffset<ExtentsV<X0>,LayoutType>
 /*!
  * \brief Extent et Offset pour les tableaux à 2 dimensions.
  */
-template<int X0,int X1,typename LayoutType>
-class ArrayExtentsWithOffset<ExtentsV<X0,X1>,LayoutType>
-: private ArrayExtents<ExtentsV<X0,X1>>
+template <int X0, int X1, typename LayoutType>
+class ArrayExtentsWithOffset<ExtentsV<X0, X1>, LayoutType>
+: private ArrayExtents<ExtentsV<X0, X1>>
 {
  public:
-  using ExtentsType = ExtentsV<X0,X1>;
+
+  using ExtentsType = ExtentsV<X0, X1>;
   using BaseClass = ArrayExtents<ExtentsType>;
+  using BaseClass::asStdArray;
   using BaseClass::extent0;
   using BaseClass::extent1;
-  using BaseClass::asStdArray;
-  using BaseClass::totalNbElement;
   using BaseClass::getIndices;
+  using BaseClass::totalNbElement;
   using Layout = LayoutType;
+  using DimsType = typename BaseClass::DimsType;
+  using IndexType = typename BaseClass::IndexType;
+
  public:
+
   ArrayExtentsWithOffset() = default;
+  // TODO: a supprimer
   constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(ArrayExtents<ExtentsType> rhs)
   : BaseClass(rhs)
   {
   }
-  constexpr ARCCORE_HOST_DEVICE Int64 offset(Int32 i,Int32 j) const
+  constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(const DimsType& rhs)
+  : BaseClass(rhs)
   {
-    return offset({i,j});
   }
-  constexpr ARCCORE_HOST_DEVICE Int64 offset(ArrayBoundsIndex<2> idx) const
+  constexpr ARCCORE_HOST_DEVICE Int64 offset(Int32 i, Int32 j) const
+  {
+    return offset({ i, j });
+  }
+  constexpr ARCCORE_HOST_DEVICE Int64 offset(IndexType idx) const
   {
     BaseClass::_checkIndex(idx);
-    return Layout::offset(idx,this->template constExtent<Layout::LastExtent>());
+    return Layout::offset(idx, this->template constExtent<Layout::LastExtent>());
   }
-  constexpr BaseClass extents() const { const BaseClass* b = this; return *b; }
+  constexpr BaseClass extents() const
+  {
+    const BaseClass* b = this;
+    return *b;
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -410,44 +501,63 @@ class ArrayExtentsWithOffset<ExtentsV<X0,X1>,LayoutType>
 /*!
  * \brief Extent et Offset pour les tableaux à 3 dimensions.
  */
-template<int X0,int X1,int X2,typename LayoutType>
-class ArrayExtentsWithOffset<ExtentsV<X0,X1,X2>,LayoutType>
-: private ArrayExtents<ExtentsV<X0,X1,X2>>
+template <int X0, int X1, int X2, typename LayoutType>
+class ArrayExtentsWithOffset<ExtentsV<X0, X1, X2>, LayoutType>
+: private ArrayExtents<ExtentsV<X0, X1, X2>>
 {
  public:
-  using ExtentsType = ExtentsV<X0,X1,X2>;
+
+  using ExtentsType = ExtentsV<X0, X1, X2>;
   using BaseClass = ArrayExtents<ExtentsType>;
+  using BaseClass::asStdArray;
   using BaseClass::extent0;
   using BaseClass::extent1;
   using BaseClass::extent2;
-  using BaseClass::asStdArray;
-  using BaseClass::totalNbElement;
   using BaseClass::getIndices;
+  using BaseClass::totalNbElement;
   using Layout = LayoutType;
+  using DimsType = typename BaseClass::DimsType;
+  using IndexType = typename BaseClass::IndexType;
+
  public:
+
   ArrayExtentsWithOffset() = default;
+  // TODO: a supprimer
   constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(ArrayExtents<ExtentsType> rhs)
   : BaseClass(rhs)
   {
     _computeOffsets();
   }
-  constexpr ARCCORE_HOST_DEVICE Int64 offset(Int32 i,Int32 j,Int32 k) const
+  constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(const DimsType& rhs)
+  : BaseClass(rhs)
   {
-    return offset({i,j,k});
+    _computeOffsets();
   }
-  constexpr ARCCORE_HOST_DEVICE Int64 offset(ArrayBoundsIndex<3> idx) const
+  constexpr ARCCORE_HOST_DEVICE Int64 offset(Int32 i, Int32 j, Int32 k) const
+  {
+    return offset({ i, j, k });
+  }
+  constexpr ARCCORE_HOST_DEVICE Int64 offset(IndexType idx) const
   {
     this->_checkIndex(idx);
-    return Layout::offset(idx,this->template constExtent<Layout::LastExtent>(),m_dim23_size);
+    return Layout::offset(idx, this->template constExtent<Layout::LastExtent>(), m_dim23_size);
   }
-  constexpr BaseClass extents() const { const BaseClass* b = this; return *b; }
+  constexpr BaseClass extents() const
+  {
+    const BaseClass* b = this;
+    return *b;
+  }
+
  protected:
+
   ARCCORE_HOST_DEVICE void _computeOffsets()
   {
     const BaseClass& b = *this;
     m_dim23_size = Layout::computeOffsetIndexes(b);
   }
+
  private:
+
   Int64 m_dim23_size = 0;
 };
 
@@ -456,45 +566,64 @@ class ArrayExtentsWithOffset<ExtentsV<X0,X1,X2>,LayoutType>
 /*!
  * \brief Extent et Offset pour les tableaux à 4 dimensions.
  */
-template<int X0,int X1,int X2,int X3,typename LayoutType>
-class ArrayExtentsWithOffset<ExtentsV<X0,X1,X2,X3>,LayoutType>
-: private ArrayExtents<ExtentsV<X0,X1,X2,X3>>
+template <int X0, int X1, int X2, int X3, typename LayoutType>
+class ArrayExtentsWithOffset<ExtentsV<X0, X1, X2, X3>, LayoutType>
+: private ArrayExtents<ExtentsV<X0, X1, X2, X3>>
 {
  public:
-  using ExtentsType = ExtentsV<X0,X1,X2,X3>;
+
+  using ExtentsType = ExtentsV<X0, X1, X2, X3>;
   using BaseClass = ArrayExtents<ExtentsType>;
+  using BaseClass::asStdArray;
   using BaseClass::extent0;
   using BaseClass::extent1;
   using BaseClass::extent2;
   using BaseClass::extent3;
-  using BaseClass::asStdArray;
-  using BaseClass::totalNbElement;
   using BaseClass::getIndices;
+  using BaseClass::totalNbElement;
   using Layout = LayoutType;
+  using DimsType = typename BaseClass::DimsType;
+  using IndexType = typename BaseClass::IndexType;
+
  public:
+
   ArrayExtentsWithOffset() = default;
+  // TODO: a supprimer
   constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(ArrayExtents<ExtentsType> rhs)
   : BaseClass(rhs)
   {
     _computeOffsets();
   }
-  constexpr ARCCORE_HOST_DEVICE Int64 offset(Int32 i,Int32 j,Int32 k,Int32 l) const
+  constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(const DimsType& rhs)
+  : BaseClass(rhs)
   {
-    return offset({i,j,k,l});
+    _computeOffsets();
   }
-  constexpr ARCCORE_HOST_DEVICE Int64 offset(ArrayBoundsIndex<4> idx) const
+  constexpr ARCCORE_HOST_DEVICE Int64 offset(Int32 i, Int32 j, Int32 k, Int32 l) const
+  {
+    return offset({ i, j, k, l });
+  }
+  constexpr ARCCORE_HOST_DEVICE Int64 offset(IndexType idx) const
   {
     this->_checkIndex(idx);
-    return (m_dim234_size*idx.largeId0()) + m_dim34_size*idx.largeId1() + this->m_extent3.v*idx.largeId2() + idx.largeId3();
+    return (m_dim234_size * idx.largeId0()) + m_dim34_size * idx.largeId1() + this->m_extent3.v * idx.largeId2() + idx.largeId3();
   }
-  BaseClass extents() const { const BaseClass* b = this; return *b; }
+  BaseClass extents() const
+  {
+    const BaseClass* b = this;
+    return *b;
+  }
+
  protected:
+
   ARCCORE_HOST_DEVICE void _computeOffsets()
   {
     m_dim34_size = Int64(this->m_extent2.v) * Int64(this->m_extent3.v);
     m_dim234_size = Int64(m_dim34_size) * Int64(this->m_extent1.v);
   }
+
  private:
+
   Int64 m_dim34_size = 0; //!< dim3 * dim4
   Int64 m_dim234_size = 0; //!< dim2 * dim3 * dim4
 };
@@ -502,9 +631,9 @@ class ArrayExtentsWithOffset<ExtentsV<X0,X1,X2,X3>,LayoutType>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

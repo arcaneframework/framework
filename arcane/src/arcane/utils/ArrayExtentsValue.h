@@ -81,7 +81,9 @@ class ArrayExtentsValue<X0>
 {
  public:
 
+  using ExtentsType = ExtentsV<X0>;
   using IndexType = ArrayBoundsIndex<1>;
+  using DimsType = typename ExtentsType::DimsType;
 
   ArrayExtentsValue() = default;
 
@@ -115,19 +117,22 @@ class ArrayExtentsValue<X0>
     m_extent0.v = extents[0];
   }
 
-  explicit constexpr ARCCORE_HOST_DEVICE ArrayExtentsValue(Int32 x0)
+  //! Construit une instance avec les N valeurs dynamiques.
+  constexpr ARCCORE_HOST_DEVICE ArrayExtentsValue(DimsType dims)
   {
-    m_extent0.v = x0;
+    Int32 i = 0;
+    if constexpr (X0 == DynExtent)
+      m_extent0.v = dims[i++];
   }
 
-  constexpr std::array<Int32,0> _removeFirstExtent() const
+  constexpr std::array<Int32, 0> _removeFirstExtent() const
   {
-    return { };
+    return {};
   }
 
-  ARCCORE_HOST_DEVICE void _checkIndex([[maybe_unused]] ArrayBoundsIndex<1> idx) const
+  ARCCORE_HOST_DEVICE void _checkIndex([[maybe_unused]] IndexType idx) const
   {
-    ARCCORE_CHECK_AT(idx.id0(),m_extent0.v);
+    ARCCORE_CHECK_AT(idx.id0(), m_extent0.v);
   }
 
  protected:
@@ -145,7 +150,9 @@ class ArrayExtentsValue<X0,X1>
 {
  public:
 
+  using ExtentsType = ExtentsV<X0,X1>;
   using IndexType = ArrayBoundsIndex<2>;
+  using DimsType = typename ExtentsType::DimsType;
 
   ArrayExtentsValue() = default;
 
@@ -185,21 +192,25 @@ class ArrayExtentsValue<X0,X1>
     m_extent1.v = extents[1];
   }
 
-  constexpr ARCCORE_HOST_DEVICE ArrayExtentsValue(Int32 x0,Int32 x1)
+  //! Construit une instance avec les N valeurs dynamiques.
+  constexpr ARCCORE_HOST_DEVICE ArrayExtentsValue(DimsType dims)
   {
-    m_extent0.v = x0;
-    m_extent1.v = x1;
+    Int32 i = 0;
+    if constexpr (X0 == DynExtent)
+      m_extent0.v = dims[i++];
+    if constexpr (X1 == DynExtent)
+      m_extent1.v = dims[i++];
   }
 
-  constexpr std::array<Int32,1> _removeFirstExtent() const
+  constexpr std::array<Int32, 1> _removeFirstExtent() const
   {
     return { m_extent1.v };
   }
 
-  ARCCORE_HOST_DEVICE void _checkIndex([[maybe_unused]] ArrayBoundsIndex<2> idx) const
+  ARCCORE_HOST_DEVICE void _checkIndex([[maybe_unused]] IndexType idx) const
   {
-    ARCCORE_CHECK_AT(idx.id0(),m_extent0.v);
-    ARCCORE_CHECK_AT(idx.id1(),m_extent1.v);
+    ARCCORE_CHECK_AT(idx.id0(), m_extent0.v);
+    ARCCORE_CHECK_AT(idx.id1(), m_extent1.v);
   }
 
  protected:
@@ -218,7 +229,9 @@ class ArrayExtentsValue<X0,X1,X2>
 {
  public:
 
+  using ExtentsType = ExtentsV<X0,X1,X2>;
   using IndexType = ArrayBoundsIndex<3>;
+  using DimsType = typename ExtentsType::DimsType;
 
   ArrayExtentsValue() = default;
 
@@ -265,23 +278,28 @@ class ArrayExtentsValue<X0,X1,X2>
     m_extent2.v = extents[2];
   }
 
-  constexpr ARCCORE_HOST_DEVICE ArrayExtentsValue(Int32 x0,Int32 x1,Int32 x2)
+  //! Construit une instance avec les N valeurs dynamiques.
+  constexpr ARCCORE_HOST_DEVICE ArrayExtentsValue(DimsType dims)
   {
-    m_extent0.v = x0;
-    m_extent1.v = x1;
-    m_extent2.v = x2;
+    Int32 i = 0;
+    if constexpr (X0 == DynExtent)
+      m_extent0.v = dims[i++];
+    if constexpr (X1 == DynExtent)
+      m_extent1.v = dims[i++];
+    if constexpr (X2 == DynExtent)
+      m_extent2.v = dims[i++];
   }
 
-  constexpr std::array<Int32,2> _removeFirstExtent() const
+  constexpr std::array<Int32, 2> _removeFirstExtent() const
   {
-    return { m_extent1.v,m_extent2.v };
+    return { m_extent1.v, m_extent2.v };
   }
 
-  ARCCORE_HOST_DEVICE void _checkIndex([[maybe_unused]] ArrayBoundsIndex<3> idx) const
+  ARCCORE_HOST_DEVICE void _checkIndex([[maybe_unused]] IndexType idx) const
   {
-    ARCCORE_CHECK_AT(idx.id0(),m_extent0.v);
-    ARCCORE_CHECK_AT(idx.id1(),m_extent1.v);
-    ARCCORE_CHECK_AT(idx.id2(),m_extent2.v);
+    ARCCORE_CHECK_AT(idx.id0(), m_extent0.v);
+    ARCCORE_CHECK_AT(idx.id1(), m_extent1.v);
+    ARCCORE_CHECK_AT(idx.id2(), m_extent2.v);
   }
 
  protected:
@@ -301,7 +319,9 @@ class ArrayExtentsValue<X0,X1,X2,X3>
 {
  public:
 
+  using ExtentsType = ExtentsV<X0,X1,X2,X3>;
   using IndexType = ArrayBoundsIndex<4>;
+  using DimsType = typename ExtentsType::DimsType;
 
   ArrayExtentsValue() = default;
 
@@ -355,25 +375,31 @@ class ArrayExtentsValue<X0,X1,X2,X3>
     m_extent3.v = extents[3];
   }
 
-  constexpr ARCCORE_HOST_DEVICE ArrayExtentsValue(Int32 x0,Int32 x1,Int32 x2,Int32 x3)
+  //! Construit une instance avec les N valeurs dynamiques.
+  constexpr ARCCORE_HOST_DEVICE ArrayExtentsValue(DimsType dims)
   {
-    m_extent0.v = x0;
-    m_extent1.v = x1;
-    m_extent2.v = x2;
-    m_extent3.v = x3;
+    Int32 i = 0;
+    if constexpr (X0 == DynExtent)
+      m_extent0.v = dims[i++];
+    if constexpr (X1 == DynExtent)
+      m_extent1.v = dims[i++];
+    if constexpr (X2 == DynExtent)
+      m_extent2.v = dims[i++];
+    if constexpr (X3 == DynExtent)
+      m_extent3.v = dims[i++];
   }
 
-  constexpr std::array<Int32,3> _removeFirstExtent() const
+  constexpr std::array<Int32, 3> _removeFirstExtent() const
   {
     return { m_extent1.v, m_extent2.v, m_extent3.v };
   }
 
-  ARCCORE_HOST_DEVICE void _checkIndex([[maybe_unused]] ArrayBoundsIndex<4> idx) const
+  ARCCORE_HOST_DEVICE void _checkIndex([[maybe_unused]] IndexType idx) const
   {
-    ARCCORE_CHECK_AT(idx.id0(),m_extent0.v);
-    ARCCORE_CHECK_AT(idx.id1(),m_extent1.v);
-    ARCCORE_CHECK_AT(idx.id2(),m_extent2.v);
-    ARCCORE_CHECK_AT(idx.id3(),m_extent3.v);
+    ARCCORE_CHECK_AT(idx.id0(), m_extent0.v);
+    ARCCORE_CHECK_AT(idx.id1(), m_extent1.v);
+    ARCCORE_CHECK_AT(idx.id2(), m_extent2.v);
+    ARCCORE_CHECK_AT(idx.id3(), m_extent3.v);
   }
 
  protected:
