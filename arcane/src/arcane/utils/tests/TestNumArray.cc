@@ -506,6 +506,22 @@ template class NumArray<float,ExtentsV<DynExtent,2,3>,RightLayout<3>>;
 template class NumArray<float,ExtentsV<2,3>>;
 template class NumArray<float,ExtentsV<2>>;
 template class NumArray<float,ExtentsV<3,DynExtent>>;
+
+template class MDSpan<float,MDDim4,RightLayout<4>>;
+template class MDSpan<float,MDDim3,RightLayout<3>>;
+template class MDSpan<float,MDDim2,RightLayout<2>>;
+
+template class MDSpan<float,MDDim4,LeftLayout<4>>;
+template class MDSpan<float,MDDim3,LeftLayout<3>>;
+template class MDSpan<float,MDDim2,LeftLayout<2>>;
+
+template class MDSpan<float,MDDim1>;
+
+template class MDSpan<float,ExtentsV<7,DynExtent,2,3>,RightLayout<4>>;
+template class MDSpan<float,ExtentsV<DynExtent,2,3>,RightLayout<3>>;
+template class MDSpan<float,ExtentsV<2,3>>;
+template class MDSpan<float,ExtentsV<2>>;
+template class MDSpan<float,ExtentsV<3,DynExtent>>;
 }
 
 /*---------------------------------------------------------------------------*/

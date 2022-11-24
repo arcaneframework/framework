@@ -63,6 +63,7 @@ class MDSpanBase
   using ExtentsType = ExtentType;
   using IndexType = typename ExtentsType::IndexType;
   using ArrayExtentsWithOffsetType = ArrayExtentsWithOffset<ExtentType, LayoutType>;
+  using DimsType = typename ExtentType::DimsType;
   // Pour compatibilité. A supprimer pour cohérence avec les autres 'using'
   using ArrayBoundsIndexType = typename ExtentsType::IndexType;
 
@@ -74,6 +75,10 @@ class MDSpanBase
   , m_extents(extents)
   {
   }
+  constexpr ARCCORE_HOST_DEVICE MDSpanBase(DataType* ptr, const DimsType& dims)
+  : m_ptr(ptr)
+  , m_extents(dims)
+  {}
   // Constructeur MDSpan<const T> à partir d'un MDSpan<T>
   template <typename X, typename = std::enable_if_t<std::is_same_v<X, UnqualifiedValueType>>>
   constexpr ARCCORE_HOST_DEVICE MDSpanBase(const MDSpanBase<X, ExtentType>& rhs)
@@ -158,6 +163,7 @@ class MDSpanIntermediate<DataType, 1, ExtentType, LayoutType>
   using BaseClass::ptrAt;
   using BaseClass::operator();
   using ArrayExtentsWithOffsetType = typename BaseClass::ArrayExtentsWithOffsetType;
+  using DimsType = typename ExtentType::DimsType;
 
  public:
 
@@ -165,6 +171,14 @@ class MDSpanIntermediate<DataType, 1, ExtentType, LayoutType>
   MDSpanIntermediate() = default;
   constexpr ARCCORE_HOST_DEVICE MDSpanIntermediate(DataType* ptr, ArrayExtentsWithOffsetType extents_and_offset)
   : BaseClass(ptr, extents_and_offset)
+  {}
+  constexpr ARCCORE_HOST_DEVICE MDSpanIntermediate(DataType* ptr, const DimsType& dims)
+  : BaseClass(ptr, dims)
+  {
+  }
+  template <typename X, typename = std::enable_if_t<std::is_same_v<X, UnqualifiedValueType>>>
+  constexpr ARCCORE_HOST_DEVICE MDSpanIntermediate(const MDSpan<X, ExtentsType>& rhs)
+  : BaseClass(rhs)
   {}
 
  public:
@@ -213,6 +227,7 @@ class MDSpanIntermediate<DataType, 2, ExtentType, LayoutType>
   using BaseClass::ptrAt;
   using BaseClass::operator();
   using ArrayExtentsWithOffsetType = typename BaseClass::ArrayExtentsWithOffsetType;
+  using DimsType = typename ExtentType::DimsType;
 
  protected:
 
@@ -220,6 +235,14 @@ class MDSpanIntermediate<DataType, 2, ExtentType, LayoutType>
   MDSpanIntermediate() = default;
   constexpr ARCCORE_HOST_DEVICE MDSpanIntermediate(DataType* ptr, ArrayExtentsWithOffsetType extents_and_offset)
   : BaseClass(ptr, extents_and_offset)
+  {}
+  constexpr ARCCORE_HOST_DEVICE MDSpanIntermediate(DataType* ptr, const DimsType& dims)
+  : BaseClass(ptr, dims)
+  {
+  }
+  template <typename X, typename = std::enable_if_t<std::is_same_v<X, UnqualifiedValueType>>>
+  constexpr ARCCORE_HOST_DEVICE MDSpanIntermediate(const MDSpan<X, ExtentsType>& rhs)
+  : BaseClass(rhs)
   {}
 
  public:
@@ -275,16 +298,21 @@ class MDSpanIntermediate<DataType, 3, ExtentType, LayoutType>
   using BaseClass::ptrAt;
   using BaseClass::operator();
   using ArrayExtentsWithOffsetType = typename BaseClass::ArrayExtentsWithOffsetType;
+  using DimsType = typename ExtentType::DimsType;
 
  protected:
 
   //! Construit une vue vide
   MDSpanIntermediate() = default;
-  ARCCORE_HOST_DEVICE MDSpanIntermediate(DataType* ptr, ArrayExtentsWithOffsetType extents_and_offset)
+  constexpr ARCCORE_HOST_DEVICE MDSpanIntermediate(DataType* ptr, ArrayExtentsWithOffsetType extents_and_offset)
   : BaseClass(ptr, extents_and_offset)
   {}
+  constexpr ARCCORE_HOST_DEVICE MDSpanIntermediate(DataType* ptr, const DimsType& dims)
+  : BaseClass(ptr, dims)
+  {
+  }
   template <typename X, typename = std::enable_if_t<std::is_same_v<X, UnqualifiedValueType>>>
-  ARCCORE_HOST_DEVICE MDSpanIntermediate(const MDSpan<X, ExtentsType>& rhs)
+  constexpr ARCCORE_HOST_DEVICE MDSpanIntermediate(const MDSpan<X, ExtentsType>& rhs)
   : BaseClass(rhs)
   {}
 
@@ -340,6 +368,7 @@ class MDSpanIntermediate<DataType, 4, ExtentType, LayoutType>
   using BaseClass::ptrAt;
   using BaseClass::operator();
   using ArrayExtentsWithOffsetType = typename BaseClass::ArrayExtentsWithOffsetType;
+  using DimsType = typename ExtentType::DimsType;
 
  protected:
 
@@ -348,6 +377,10 @@ class MDSpanIntermediate<DataType, 4, ExtentType, LayoutType>
   constexpr ARCCORE_HOST_DEVICE MDSpanIntermediate(DataType* ptr, ArrayExtentsWithOffsetType extents_and_offset)
   : BaseClass(ptr, extents_and_offset)
   {}
+  constexpr ARCCORE_HOST_DEVICE MDSpanIntermediate(DataType* ptr, const DimsType& dims)
+  : BaseClass(ptr, dims)
+  {
+  }
   template <typename X, typename = std::enable_if_t<std::is_same_v<X, UnqualifiedValueType>>>
   constexpr ARCCORE_HOST_DEVICE MDSpanIntermediate(const MDSpan<X, ExtentType>& rhs)
   : BaseClass(rhs)
@@ -431,6 +464,7 @@ class MDSpan
   using BaseClass::ptrAt;
   using BaseClass::operator();
   using ArrayExtentsWithOffsetType = typename BaseClass::ArrayExtentsWithOffsetType;
+  using DimsType = typename ExtentType::DimsType;
 
  public:
 
@@ -439,6 +473,10 @@ class MDSpan
   constexpr ARCCORE_HOST_DEVICE MDSpan(DataType* ptr, ArrayExtentsWithOffsetType extents_and_offset)
   : BaseClass(ptr, extents_and_offset)
   {}
+  constexpr ARCCORE_HOST_DEVICE MDSpan(DataType* ptr, const DimsType& dims)
+  : BaseClass(ptr, dims)
+  {
+  }
   template <typename X, typename = std::enable_if_t<std::is_same_v<X, UnqualifiedValueType>>>
   constexpr ARCCORE_HOST_DEVICE MDSpan(const MDSpan<X, ExtentsType>& rhs)
   : BaseClass(rhs)
