@@ -123,7 +123,7 @@ TEST(NumArray,Extents)
   }
   {
     NumArray<int,ExtentsV<2,3,DynExtent>> x1;
-    x1.resize({6});
+    x1.resize(6);
     ASSERT_EQ(x1.extent0(),2);
     ASSERT_EQ(x1.extent1(),3);
     ASSERT_EQ(x1.extent2(),6);
@@ -343,36 +343,96 @@ TEST(NumArray2,Layout)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template<typename NumArray3>
+void _checkRightLayoutDim3(NumArray3& a)
+{
+  // Le tableau doit avoir les dimensions (2,3,5);
+  ASSERT_EQ(a.totalNbElement(),(2*3*5));
+  ASSERT_EQ(a.extent0(),2);
+  ASSERT_EQ(a.extent1(),3);
+  ASSERT_EQ(a.extent2(),5);
+  _setNumArray3Values(a);
+  auto values = a.to1DSpan();
+  std::cout << "V=" << values << "\n";
+  UniqueArray<Real> ref_value =
+  {
+    0, 1, 2, 3, 4, 27, 28, 29, 30, 31, 54, 55, 56, 57, 58,
+    253, 254, 255, 256, 257, 280, 281, 282, 283, 284, 307, 308, 309, 310, 311
+  };
+  ASSERT_EQ(values.smallView(),ref_value.view());
+}
+
+template<typename NumArray3>
+void _checkLeftLayoutDim3(NumArray3& a)
+{
+  // Le tableau doit avoir les dimensions (2,3,5);
+  //NumArray<Real,MDDim3,LeftLayout3> a(2,3,5);
+  ASSERT_EQ(a.totalNbElement(),(2*3*5));
+  _setNumArray3Values(a);
+  auto values = a.to1DSpan();
+  std::cout << "V=" << values << "\n";
+  UniqueArray<Real> ref_value =
+  {
+    0, 253, 27, 280, 54, 307, 1, 254, 28, 281, 55, 308, 2, 255, 29,
+    282, 56, 309, 3, 256, 30, 283, 57, 310, 4, 257, 31, 284, 58, 311
+  };
+  ASSERT_EQ(values.smallView(),ref_value.view());
+}
+
 TEST(NumArray3,Layout)
 {
   std::cout << "TEST_NUMARRAY3 Layout\n";
 
   {
     NumArray<Real,MDDim3,RightLayout3> a(2,3,5);
-    ASSERT_EQ(a.totalNbElement(),(2*3*5));
-    _setNumArray3Values(a);
-    auto values = a.to1DSpan();
-    std::cout << "V=" << values << "\n";
-    UniqueArray<Real> ref_value =
-    {
-      0, 1, 2, 3, 4, 27, 28, 29, 30, 31, 54, 55, 56, 57, 58,
-      253, 254, 255, 256, 257, 280, 281, 282, 283, 284, 307, 308, 309, 310, 311
-    };
-    ASSERT_EQ(values.smallView(),ref_value.view());
+    std::cout << "TEST_NUMARRAY3 RightLayout 1\n";
+    _checkRightLayoutDim3(a);
+  }
+  {
+    NumArray<Real,ExtentsV<DynExtent,3,5>,RightLayout3> a(2);
+    std::cout << "TEST_NUMARRAY3 RightLayout 2\n";
+    _checkRightLayoutDim3(a);
+  }
+  {
+    NumArray<Real,ExtentsV<2,DynExtent,5>,RightLayout3> a(3);
+    std::cout << "TEST_NUMARRAY3 RightLayout 3\n";
+    _checkRightLayoutDim3(a);
+  }
+  {
+    NumArray<Real,ExtentsV<2,3,5>,RightLayout3> a;
+    std::cout << "TEST_NUMARRAY3 RightLayout 4\n";
+    _checkRightLayoutDim3(a);
+  }
+  {
+    NumArray<Real,ExtentsV<DynExtent,3,DynExtent>,RightLayout3> a({2,5});
+    std::cout << "TEST_NUMARRAY3 RightLayout 5\n";
+    _checkRightLayoutDim3(a);
   }
 
   {
     NumArray<Real,MDDim3,LeftLayout3> a(2,3,5);
-    ASSERT_EQ(a.totalNbElement(),(2*3*5));
-    _setNumArray3Values(a);
-    auto values = a.to1DSpan();
-    std::cout << "V=" << values << "\n";
-    UniqueArray<Real> ref_value =
-    {
-      0, 253, 27, 280, 54, 307, 1, 254, 28, 281, 55, 308, 2, 255, 29,
-      282, 56, 309, 3, 256, 30, 283, 57, 310, 4, 257, 31, 284, 58, 311
-    };
-    ASSERT_EQ(values.smallView(),ref_value.view());
+    std::cout << "TEST_NUMARRAY3 LeftLayout 1\n";
+    _checkLeftLayoutDim3(a);
+  }
+  {
+    NumArray<Real,ExtentsV<DynExtent,3,5>,LeftLayout3> a(2);
+    std::cout << "TEST_NUMARRAY3 LeftLayout 2\n";
+    _checkLeftLayoutDim3(a);
+  }
+  {
+    NumArray<Real,ExtentsV<2,DynExtent,5>,LeftLayout3> a(3);
+    std::cout << "TEST_NUMARRAY3 LeftLayout 3\n";
+    _checkLeftLayoutDim3(a);
+  }
+  {
+    NumArray<Real,ExtentsV<2,3,5>,LeftLayout3> a;
+    std::cout << "TEST_NUMARRAY3 LeftLayout 4\n";
+    _checkLeftLayoutDim3(a);
+  }
+  {
+    NumArray<Real,ExtentsV<DynExtent,3,DynExtent>,LeftLayout3> a({2,5});
+    std::cout << "TEST_NUMARRAY3 LeftLayout 5\n";
+    _checkLeftLayoutDim3(a);
   }
 }
 
@@ -430,6 +490,7 @@ TEST(NumArray,RealN)
 
 namespace Arcane
 {
+// On instantie explicitement pour tester que toutes les méthodes templates sont valides
 template class NumArray<float,MDDim4,RightLayout<4>>;
 template class NumArray<float,MDDim3,RightLayout<3>>;
 template class NumArray<float,MDDim2,RightLayout<2>>;
@@ -439,6 +500,12 @@ template class NumArray<float,MDDim3,LeftLayout<3>>;
 template class NumArray<float,MDDim2,LeftLayout<2>>;
 
 template class NumArray<float,MDDim1>;
+
+template class NumArray<float,ExtentsV<7,DynExtent,2,3>,RightLayout<4>>;
+template class NumArray<float,ExtentsV<DynExtent,2,3>,RightLayout<3>>;
+template class NumArray<float,ExtentsV<2,3>>;
+template class NumArray<float,ExtentsV<2>>;
+template class NumArray<float,ExtentsV<3,DynExtent>>;
 }
 
 /*---------------------------------------------------------------------------*/
