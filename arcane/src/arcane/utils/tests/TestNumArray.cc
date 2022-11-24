@@ -404,7 +404,7 @@ TEST(NumArray3,Layout)
     _checkRightLayoutDim3(a);
   }
   {
-    NumArray<Real,ExtentsV<DynExtent,3,DynExtent>,RightLayout3> a({2,5});
+    NumArray<Real,ExtentsV<DynExtent,3,DynExtent>,RightLayout3> a(2,5);
     std::cout << "TEST_NUMARRAY3 RightLayout 5\n";
     _checkRightLayoutDim3(a);
   }
@@ -430,7 +430,7 @@ TEST(NumArray3,Layout)
     _checkLeftLayoutDim3(a);
   }
   {
-    NumArray<Real,ExtentsV<DynExtent,3,DynExtent>,LeftLayout3> a({2,5});
+    NumArray<Real,ExtentsV<DynExtent,3,DynExtent>,LeftLayout3> a(2,5);
     std::cout << "TEST_NUMARRAY3 LeftLayout 5\n";
     _checkLeftLayoutDim3(a);
   }
@@ -506,6 +506,22 @@ template class NumArray<float,ExtentsV<DynExtent,2,3>,RightLayout<3>>;
 template class NumArray<float,ExtentsV<2,3>>;
 template class NumArray<float,ExtentsV<2>>;
 template class NumArray<float,ExtentsV<3,DynExtent>>;
+
+template class MDSpan<float,MDDim4,RightLayout<4>>;
+template class MDSpan<float,MDDim3,RightLayout<3>>;
+template class MDSpan<float,MDDim2,RightLayout<2>>;
+
+template class MDSpan<float,MDDim4,LeftLayout<4>>;
+template class MDSpan<float,MDDim3,LeftLayout<3>>;
+template class MDSpan<float,MDDim2,LeftLayout<2>>;
+
+template class MDSpan<float,MDDim1>;
+
+template class MDSpan<float,ExtentsV<7,DynExtent,2,3>,RightLayout<4>>;
+template class MDSpan<float,ExtentsV<DynExtent,2,3>,RightLayout<3>>;
+template class MDSpan<float,ExtentsV<2,3>>;
+template class MDSpan<float,ExtentsV<2>>;
+template class MDSpan<float,ExtentsV<3,DynExtent>>;
 }
 
 /*---------------------------------------------------------------------------*/
