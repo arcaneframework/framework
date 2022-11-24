@@ -128,23 +128,13 @@ namespace impl
  *
  * \warning API en cours de définition.
  *
- * En général cette classe n'est pas utilisée directement mais par l'intermédiaire
- * d'une de ses spécialisations suivant le rang comme NumArray<DataType,MDDim1>,
- * NumArray<DataType,MDDim2>, NumArray<DataType,MDDim3> ou NumArray<DataType,MDDim4>.
+ * Il ne faut pas utiliser cette classe directement mais utiliser la classe NumArray.
  *
  * Cette classe contient un nombre minimal de méthodes. Notamment, l'accès aux
  * valeurs du tableau se fait normalement via des vues (MDSpanBase).
  * Afin de faciliter l'utilisation sur CPU, l'opérateur 'operator()'
  * permet de retourner la valeur en lecture d'un élément. Pour modifier un élément,
  * il faut utiliser la méthode s().
- *
- * \warning Le redimensionnement via resize() ne conserve pas les valeurs existantes
- *
- * \warning Cette classe utilise par défaut un allocateur spécifique qui permet de
- * rendre accessible ces valeurs à la fois sur l'hôte (CPU) et l'accélérateur.
- * Néanmoins, il faut pour cela que le runtime associé à l'accélérateur ait été
- * initialisé (\ref arcanedoc_parallel_accelerator). C'est pourquoi il ne faut pas
- * utiliser de variables globales de cette classe ou d'une classe dérivée.
  */
 template <typename DataType, typename ExtentType, typename LayoutType>
 class NumArrayBase
@@ -308,6 +298,9 @@ class NumArrayBase
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Spécialisation pour les tableaux à 1 dimension.
+ *
+ * Les tableaux à une dimension possèdent l'opérateur 'operator[]' pour
+ * compatibilité avec les tableaux classiques du C++.
  */
 template <typename DataType, typename ExtentType, typename LayoutType>
 class NumArrayIntermediate<DataType, 1, ExtentType, LayoutType>
@@ -653,84 +646,165 @@ class NumArrayIntermediate<DataType, 4, ExtentType, LayoutType>
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Tableau à 1 dimension pour les types numériques.
+ * \brief Tableaux multi-dimensionnels pour les types numériques accessible
+ * sur accélérateurs.
  *
- * Les tableaux à une dimension possèdent l'opérateur 'operator[]' pour
- * compatibilité avec les tableaux classiques du C++.
+ * \warning API en cours de définition.
  *
+ * L'implémentation actuelle supporte des tableaux jusqu'à 4 dimensions. L'accès
+ * aux éléments se fait via l'opérateur 'operator()'. Ces opérateurs d'accès spécifiques
+ * dépendent du rang sont fournis par les spécialisations de la classe NumArrayIntermediate.
+ *
+ * \warning Le redimensionnement via resize() ne conserve pas les valeurs existantes
+ *
+ * \warning Cette classe utilise par défaut un allocateur spécifique qui permet de
+ * rendre accessible ces valeurs à la fois sur l'hôte (CPU) et l'accélérateur.
+ * Néanmoins, il faut pour cela que le runtime associé à l'accélérateur ait été
+ * initialisé (\ref arcanedoc_parallel_accelerator). C'est pourquoi il ne faut pas
+ * utiliser de variables globales de cette classe ou d'une classe dérivée.
+ *
+ * \sa NumArrayIntermediate
  * \sa NumArrayBase
  */
-template <int X0, class DataType, typename LayoutType>
-class NumArray<DataType, ExtentsV<X0>, LayoutType>
-: public NumArrayIntermediate<DataType, 1, ExtentsV<X0>, LayoutType>
+template <typename DataType, typename ExtentType, typename LayoutType>
+class NumArray
+: public NumArrayIntermediate<DataType, ExtentType::rank(), ExtentType, LayoutType>
 {
  public:
 
-  using ExtentsType = ExtentsV<X0>;
-  using BaseClass = NumArrayIntermediate<DataType, 1, ExtentsType, LayoutType>;
+  using ExtentsType = ExtentType;
+  using BaseClass = NumArrayIntermediate<DataType, ExtentType::rank(), ExtentsType, LayoutType>;
   using BaseClass::resize;
   using BaseClass::operator();
   using BaseClass::s;
-  using ConstSpanType = MDSpan<const DataType, ExtentsType, LayoutType>;
-  using SpanType = MDSpan<DataType, ExtentsType, LayoutType>;
   using ThatClass = NumArray<DataType, ExtentsType, LayoutType>;
   using DimsType = typename ExtentsType::DimsType;
 
  private:
 
   using BaseClass::m_span;
-  template <typename X>
-  using is_fully_dynamic = std::enable_if_t<X::is_full_dynamic(), int>;
 
+  //! Vrai s'il y a un seul rang et qu'il est dynamique
   template <typename X>
   using is_full_dynamic_and_rank1 = std::enable_if_t<X::is_full_dynamic() && (X::rank() == 1), int>;
+
+  //! Vrai s'il y a deux rangs et qu'ils sont dynamiques
+  template <typename X>
+  using is_full_dynamic_and_rank2 = std::enable_if_t<X::is_full_dynamic() && (X::rank() == 2), int>;
 
  public:
 
   //! Construit un tableau vide
   NumArray() = default;
-  explicit NumArray(eMemoryRessource r)
-  : BaseClass(r)
-  {}
-  explicit NumArray(const DimsType& extents)
+
+  //! Construit un tableau en spécifiant directement la liste des dimensions
+  explicit NumArray(DimsType extents)
   : BaseClass(extents)
   {}
+
+  //! Construit un tableau en spécifiant directement la liste des dimensions
   NumArray(const DimsType& extents, eMemoryRessource r)
   : BaseClass(extents, r)
   {
   }
-  //! Construit un tableau
+  explicit NumArray(eMemoryRessource r)
+  : BaseClass(r)
+  {}
+
+  //! Construit un tableau avec 4 valeurs dynamiques
+  template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 4, void>>
+  NumArray(Int32 dim1_size, Int32 dim2_size,
+           Int32 dim3_size, Int32 dim4_size)
+  : BaseClass(DimsType(dim1_size, dim2_size, dim3_size, dim4_size))
+  {
+  }
+
+  //! Construit un tableau avec 4 valeurs dynamiques
+  template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 4, void>>
+  NumArray(Int32 dim1_size, Int32 dim2_size,
+           Int32 dim3_size, Int32 dim4_size, eMemoryRessource r)
+  : BaseClass(DimsType(dim1_size, dim2_size, dim3_size, dim4_size), r)
+  {
+  }
+
+  //! Construit un tableau avec 3 valeurs dynamiques
+  template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 3, void>>
+  NumArray(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size)
+  : BaseClass(DimsType(dim1_size, dim2_size, dim3_size))
+  {
+  }
+  //! Construit un tableau avec 3 valeurs dynamiques
+  template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 3, void>>
+  NumArray(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size, eMemoryRessource r)
+  : BaseClass(DimsType(dim1_size, dim2_size, dim3_size), r)
+  {
+  }
+
+  //! Construit un tableau avec 2 valeurs dynamiques
+  template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 2, void>>
+  NumArray(Int32 dim1_size, Int32 dim2_size)
+  : BaseClass(DimsType(dim1_size, dim2_size))
+  {
+  }
+  //! Construit un tableau avec 2 valeurs dynamiques
+  template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 2, void>>
+  NumArray(Int32 dim1_size, Int32 dim2_size, eMemoryRessource r)
+  : BaseClass(DimsType(dim1_size, dim2_size), r)
+  {
+  }
+
+  //! Construit un tableau avec 1 valeur dynamique
   template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 1, void>>
   explicit NumArray(Int32 dim1_size)
   : BaseClass(DimsType(dim1_size))
   {
   }
+  //! Construit un tableau avec 1 valeur dynamique
   template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 1, void>>
   NumArray(Int32 dim1_size, eMemoryRessource r)
   : BaseClass(DimsType(dim1_size), r)
   {
   }
-  //! Construit un tableau à partir de valeurs prédéfinies
+
+  /*!
+   * \brief Construit un tableau à partir de valeurs prédéfinies (tableaux 2D dynamiques).
+   *
+   * Les valeurs sont rangées de manière contigues en mémoire donc
+   * la liste \a alist doit avoir un layout qui correspond à celui de cette classe.
+   */
+  template <typename X = ExtentsType, typename = is_full_dynamic_and_rank2<X>>
+  NumArray(Int32 dim1_size, Int32 dim2_size, std::initializer_list<DataType> alist)
+  : NumArray(dim1_size, dim2_size)
+  {
+    this->m_data.copyInitializerList(alist);
+  }
+
+  //! Construit un tableau à partir de valeurs prédéfinies (uniquement tableaux 1D dynamiques)
   template <typename X = ExtentsType, typename = is_full_dynamic_and_rank1<X>>
   NumArray(Int32 dim1_size, std::initializer_list<DataType> alist)
   : NumArray(dim1_size)
   {
     this->m_data.copyInitializerList(alist);
   }
-  //! Construit une instance à partir d'une vue
+
+  //! Construit une instance à partir d'une vue (uniquement tableaux 1D dynamiques)
   template <typename X = ExtentsType, typename = is_full_dynamic_and_rank1<X>>
   NumArray(SmallSpan<const DataType> v)
   : NumArray(v.size())
   {
     this->m_data.copy(v);
   }
-  //! Construit une instance à partir d'une vue
+
+  //! Construit une instance à partir d'une vue (uniquement tableaux 1D dynamiques)
   template <typename X = ExtentsType, typename = is_full_dynamic_and_rank1<X>>
   NumArray(Span<const DataType> v)
   : NumArray(arcaneCheckArraySize(v.size()))
   {
     this->m_data.copy(v);
   }
+
+ public:
+
   NumArray(const ThatClass&) = default;
   NumArray(ThatClass&&) = default;
   ThatClass& operator=(ThatClass&&) = default;
@@ -743,85 +817,18 @@ class NumArray<DataType, ExtentsV<X0>, LayoutType>
    * \warning Les valeurs actuelles ne sont pas conservées lors de cette opération
    * et les nouvelles valeurs ne sont pas initialisées.
    */
-  template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 1, void>>
-  void resize(Int32 dim1_size)
+  //@{
+  template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 4, void>>
+  void resize(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size, Int32 dim4_size)
   {
-    this->resize(DimsType(dim1_size));
-  }
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Tableau à 2 dimensions pour les types numériques.
- *
- * \sa NumArrayBase
- */
-template <int X0, int X1, class DataType, typename LayoutType>
-class NumArray<DataType, ExtentsV<X0, X1>, LayoutType>
-: public NumArrayIntermediate<DataType, 2, ExtentsV<X0, X1>, LayoutType>
-{
- public:
-
-  using ExtentsType = ExtentsV<X0, X1>;
-  using BaseClass = NumArrayIntermediate<DataType, 2, ExtentsType, LayoutType>;
-  using BaseClass::resize;
-  using BaseClass::operator();
-  using BaseClass::s;
-  using ThatClass = NumArray<DataType, ExtentsType, LayoutType>;
-  using DimsType = typename ExtentsType::DimsType;
-
- private:
-
-  using BaseClass::m_span;
-
-  template <typename X>
-  using is_full_dynamic_and_rank2 = std::enable_if_t<X::is_full_dynamic() && (X::rank() == 2), int>;
-
- public:
-
-  //! Construit un tableau vide
-  NumArray() = default;
-  explicit NumArray(eMemoryRessource r)
-  : BaseClass(r)
-  {}
-  explicit NumArray(const DimsType& extents)
-  : BaseClass(extents)
-  {}
-  NumArray(const DimsType& extents, eMemoryRessource r)
-  : BaseClass(extents, r)
-  {
+    this->resize(DimsType(dim1_size, dim2_size, dim3_size, dim4_size));
   }
 
-  //! Construit un tableau
-  template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 2, void>>
-  NumArray(Int32 dim1_size, Int32 dim2_size)
-  : BaseClass(DimsType(dim1_size, dim2_size))
+  template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 3, void>>
+  void resize(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size)
   {
+    this->resize(DimsType(dim1_size, dim2_size, dim3_size));
   }
-  template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 2, void>>
-  NumArray(Int32 dim1_size, Int32 dim2_size, eMemoryRessource r)
-  : BaseClass(DimsType(dim1_size, dim2_size), r)
-  {
-  }
-  /*!
-   * \brief Construit un tableau à partir de valeurs prédéfinies.
-   *
-   * Les valeurs sont rangées de manière contigues en mémoire donc
-   * la liste \a alist doit avoir un layout qui correspond à celui de cette classe.
-   */
-  template <typename X = ExtentsType, typename = is_full_dynamic_and_rank2<X>>
-  NumArray(Int32 dim1_size, Int32 dim2_size, std::initializer_list<DataType> alist)
-  : NumArray(dim1_size, dim2_size)
-  {
-    this->m_data.copyInitializerList(alist);
-  }
-  NumArray(const ThatClass&) = default;
-  NumArray(ThatClass&&) = default;
-  ThatClass& operator=(ThatClass&&) = default;
-  ThatClass& operator=(const ThatClass&) = default;
-
- public:
 
   template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 2, void>>
   void resize(Int32 dim1_size, Int32 dim2_size)
@@ -829,145 +836,12 @@ class NumArray<DataType, ExtentsV<X0, X1>, LayoutType>
     this->resize(DimsType(dim1_size, dim2_size));
   }
 
- public:
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Tableau à 3 dimensions pour les types numériques.
- *
- * \sa NumArrayBase
- */
-template <int X0, int X1, int X2, class DataType, typename LayoutType>
-class NumArray<DataType, ExtentsV<X0, X1, X2>, LayoutType>
-: public NumArrayIntermediate<DataType, 3, ExtentsV<X0, X1, X2>, LayoutType>
-{
- public:
-
-  using ExtentsType = ExtentsV<X0, X1, X2>;
-  using BaseClass = NumArrayIntermediate<DataType, 3, ExtentsType, LayoutType>;
-  using BaseClass::resize;
-  using BaseClass::operator();
-  using BaseClass::s;
-  using ThatClass = NumArray<DataType, ExtentsType, LayoutType>;
-  using DimsType = typename ExtentsType::DimsType;
-
- private:
-
-  using BaseClass::m_span;
-
-  template <typename X>
-  using is_fully_dynamic = std::enable_if_t<X::is_full_dynamic(), int>;
-
- public:
-
-  //! Construit un tableau vide
-  NumArray() = default;
-  explicit NumArray(const DimsType& extents)
-  : BaseClass(extents)
-  {}
-  NumArray(const DimsType& extents, eMemoryRessource r)
-  : BaseClass(extents, r)
+  template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 1, void>>
+  void resize(Int32 dim1_size)
   {
+    this->resize(DimsType(dim1_size));
   }
-  explicit NumArray(eMemoryRessource r)
-  : BaseClass(r)
-  {}
-  template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 3, void>>
-  NumArray(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size)
-  : BaseClass(DimsType(dim1_size, dim2_size, dim3_size))
-  {
-  }
-  template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 3, void>>
-  NumArray(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size, eMemoryRessource r)
-  : BaseClass(DimsType(dim1_size, dim2_size, dim3_size), r)
-  {
-  }
-
-  NumArray(const ThatClass&) = default;
-  NumArray(ThatClass&&) = default;
-  ThatClass& operator=(ThatClass&&) = default;
-  ThatClass& operator=(const ThatClass&) = default;
-
- public:
-
-  template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 3, void>>
-  void resize(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size)
-  {
-    this->resize(DimsType(dim1_size, dim2_size, dim3_size));
-  }
-};
-
-  /*---------------------------------------------------------------------------*/
-  /*---------------------------------------------------------------------------*/
-  /*!
- * \brief Tableau à 4 dimensions pour les types numériques.
- *
- * \sa NumArrayBase
- */
-template <int X0, int X1, int X2, int X3, class DataType, typename LayoutType>
-class NumArray<DataType, ExtentsV<X0, X1, X2, X3>, LayoutType>
-: public NumArrayIntermediate<DataType, 4, ExtentsV<X0, X1, X2, X3>, LayoutType>
-{
- public:
-
-  using ExtentsType = ExtentsV<X0, X1, X2, X3>;
-  using BaseClass = NumArrayIntermediate<DataType, 4, ExtentsType, LayoutType>;
-  using BaseClass::resize;
-  using BaseClass::operator();
-  using BaseClass::s;
-  using ThatClass = NumArray<DataType, ExtentsType, LayoutType>;
-  using DimsType = typename ExtentsType::DimsType;
-
- private:
-
-  using BaseClass::m_span;
-
-  template <typename X>
-  using is_fully_dynamic = std::enable_if_t<X::is_full_dynamic(), int>;
-
- public:
-
-  //! Construit un tableau vide
-  NumArray() = default;
-  explicit NumArray(const DimsType& extents)
-  : BaseClass(extents)
-  {}
-  NumArray(const DimsType& extents, eMemoryRessource r)
-  : BaseClass(extents, r)
-  {
-  }
-  explicit NumArray(eMemoryRessource r)
-  : BaseClass(r)
-  {}
-
-  template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 4, void>>
-  NumArray(Int32 dim1_size, Int32 dim2_size,
-           Int32 dim3_size, Int32 dim4_size)
-  : BaseClass(DimsType(dim1_size, dim2_size, dim3_size, dim4_size))
-  {
-  }
-
-  template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 4, void>>
-  NumArray(Int32 dim1_size, Int32 dim2_size,
-           Int32 dim3_size, Int32 dim4_size, eMemoryRessource r)
-  : BaseClass(DimsType(dim1_size, dim2_size, dim3_size, dim4_size), r)
-  {
-  }
-
-  NumArray(const ThatClass&) = default;
-  NumArray(ThatClass&&) = default;
-  ThatClass& operator=(ThatClass&&) = default;
-  ThatClass& operator=(const ThatClass&) = default;
-
- public:
-
-  template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 4, void>>
-  void resize(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size, Int32 dim4_size)
-  {
-    this->resize(DimsType(dim1_size, dim2_size, dim3_size, dim4_size));
-  }
+  //@}
 };
 
 /*---------------------------------------------------------------------------*/

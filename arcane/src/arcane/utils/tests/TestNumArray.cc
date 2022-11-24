@@ -404,7 +404,7 @@ TEST(NumArray3,Layout)
     _checkRightLayoutDim3(a);
   }
   {
-    NumArray<Real,ExtentsV<DynExtent,3,DynExtent>,RightLayout3> a({2,5});
+    NumArray<Real,ExtentsV<DynExtent,3,DynExtent>,RightLayout3> a(2,5);
     std::cout << "TEST_NUMARRAY3 RightLayout 5\n";
     _checkRightLayoutDim3(a);
   }
@@ -430,7 +430,7 @@ TEST(NumArray3,Layout)
     _checkLeftLayoutDim3(a);
   }
   {
-    NumArray<Real,ExtentsV<DynExtent,3,DynExtent>,LeftLayout3> a({2,5});
+    NumArray<Real,ExtentsV<DynExtent,3,DynExtent>,LeftLayout3> a(2,5);
     std::cout << "TEST_NUMARRAY3 LeftLayout 5\n";
     _checkLeftLayoutDim3(a);
   }
