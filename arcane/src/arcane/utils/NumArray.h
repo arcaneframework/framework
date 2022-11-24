@@ -653,7 +653,7 @@ class NumArrayIntermediate<DataType, 4, ExtentType, LayoutType>
  *
  * L'implémentation actuelle supporte des tableaux jusqu'à 4 dimensions. L'accès
  * aux éléments se fait via l'opérateur 'operator()'. Ces opérateurs d'accès spécifiques
- * dépendent du rang sont fournis par les spécialisations de la classe NumArrayIntermediate.
+ * dépendent du rang et sont fournis par les spécialisations de la classe NumArrayIntermediate.
  *
  * \warning Le redimensionnement via resize() ne conserve pas les valeurs existantes
  *

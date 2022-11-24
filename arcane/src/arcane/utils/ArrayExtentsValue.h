@@ -129,7 +129,7 @@ class ArrayExtentsValue<X0>
   }
 
   //! Construit une instance avec les N valeurs dynamiques.
-  constexpr ARCCORE_HOST_DEVICE ArrayExtentsValue(DimsType dims)
+  constexpr ARCCORE_HOST_DEVICE ArrayExtentsValue([[maybe_unused]] DimsType dims)
   {
     Int32 i = 0;
     if constexpr (X0 == DynExtent)
@@ -218,7 +218,7 @@ class ArrayExtentsValue<X0,X1>
   }
 
   //! Construit une instance avec les N valeurs dynamiques.
-  constexpr ARCCORE_HOST_DEVICE ArrayExtentsValue(DimsType dims)
+  constexpr ARCCORE_HOST_DEVICE ArrayExtentsValue([[maybe_unused]] DimsType dims)
   {
     Int32 i = 0;
     if constexpr (X0 == DynExtent)
@@ -321,7 +321,7 @@ class ArrayExtentsValue<X0,X1,X2>
   }
 
   //! Construit une instance avec les N valeurs dynamiques.
-  constexpr ARCCORE_HOST_DEVICE ArrayExtentsValue(DimsType dims)
+  constexpr ARCCORE_HOST_DEVICE ArrayExtentsValue([[maybe_unused]] DimsType dims)
   {
     Int32 i = 0;
     if constexpr (X0 == DynExtent)
@@ -438,7 +438,7 @@ class ArrayExtentsValue<X0,X1,X2,X3>
   }
 
   //! Construit une instance avec les N valeurs dynamiques.
-  constexpr ARCCORE_HOST_DEVICE ArrayExtentsValue(DimsType dims)
+  constexpr ARCCORE_HOST_DEVICE ArrayExtentsValue([[maybe_unused]] DimsType dims)
   {
     Int32 i = 0;
     if constexpr (X0 == DynExtent)
