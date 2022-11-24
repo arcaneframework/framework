@@ -99,6 +99,40 @@ TEST(NumArray,Basic2)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+TEST(NumArray,Extents)
+{
+  std::cout << "TEST_NUMARRAY Extents\n";
+
+  ASSERT_EQ(1,(ExtentsV<-1,1,1,1>::nb_dynamic));
+  ASSERT_EQ(2,(ExtentsV<-1,DynExtent,2>::nb_dynamic));
+  ASSERT_EQ(1,(ExtentsV<DynExtent,1>::nb_dynamic));
+  ASSERT_EQ(1,(ExtentsV<-1>::nb_dynamic));
+  ASSERT_EQ(2,(ExtentsV<DynExtent,DynExtent,1>::nb_dynamic));
+  ASSERT_EQ(1,MDDim1::nb_dynamic);
+  ASSERT_EQ(2,MDDim2::nb_dynamic);
+  ASSERT_EQ(3,MDDim3::nb_dynamic);;
+  ASSERT_EQ(4,MDDim4::nb_dynamic);
+
+  {
+    NumArray<int,ExtentsV<2,DynExtent,3,DynExtent>> x1;
+    x1.resize({6,7});
+    ASSERT_EQ(x1.extent0(),2);
+    ASSERT_EQ(x1.extent1(),6);
+    ASSERT_EQ(x1.extent2(),3);
+    ASSERT_EQ(x1.extent3(),7);
+  }
+  {
+    NumArray<int,ExtentsV<2,3,DynExtent>> x1;
+    x1.resize({6});
+    ASSERT_EQ(x1.extent0(),2);
+    ASSERT_EQ(x1.extent1(),3);
+    ASSERT_EQ(x1.extent2(),6);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 TEST(NumArray3,Misc)
 {
   constexpr int nb_x = 3;
