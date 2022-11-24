@@ -203,6 +203,7 @@ class ArrayExtentsBase
 
   using BaseClass::asStdArray;
   using BaseClass::constExtent;
+  using BaseClass::dynamicExtents;
   using BaseClass::getIndices;
   using BaseClass::totalNbElement;
 

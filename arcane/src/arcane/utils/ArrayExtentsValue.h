@@ -110,6 +110,16 @@ class ArrayExtentsValue<X0>
 
   constexpr ARCCORE_HOST_DEVICE Int32 extent0() const { return m_extent0.v; };
 
+  //! Liste des dimensions dynamiques
+  constexpr DimsType dynamicExtents() const
+  {
+    std::array<Int32, ExtentsType::nb_dynamic> x;
+    Int32 i = 0;
+    if constexpr (X0 == DynExtent)
+      x[i++] = m_extent0.v;
+    return DimsType(x);
+  }
+
  protected:
 
   explicit ARCCORE_HOST_DEVICE ArrayExtentsValue(SmallSpan<const Int32> extents)
@@ -183,6 +193,18 @@ class ArrayExtentsValue<X0,X1>
 
   constexpr ARCCORE_HOST_DEVICE Int32 extent0() const { return m_extent0.v; };
   constexpr ARCCORE_HOST_DEVICE Int32 extent1() const { return m_extent1.v; };
+
+  //! Liste des dimensions dynamiques
+  constexpr DimsType dynamicExtents() const
+  {
+    std::array<Int32, ExtentsType::nb_dynamic> x;
+    Int32 i = 0;
+    if constexpr (X0 == DynExtent)
+      x[i++] = m_extent0.v;
+    if constexpr (X1 == DynExtent)
+      x[i++] = m_extent1.v;
+    return DimsType(x);
+  }
 
  protected:
 
@@ -268,6 +290,20 @@ class ArrayExtentsValue<X0,X1,X2>
   constexpr ARCCORE_HOST_DEVICE Int32 extent0() const { return m_extent0.v; };
   constexpr ARCCORE_HOST_DEVICE Int32 extent1() const { return m_extent1.v; };
   constexpr ARCCORE_HOST_DEVICE Int32 extent2() const { return m_extent2.v; };
+
+  //! Liste des dimensions dynamiques
+  constexpr DimsType dynamicExtents() const
+  {
+    std::array<Int32, ExtentsType::nb_dynamic> x;
+    Int32 i = 0;
+    if constexpr (X0 == DynExtent)
+      x[i++] = m_extent0.v;
+    if constexpr (X1 == DynExtent)
+      x[i++] = m_extent1.v;
+    if constexpr (X2 == DynExtent)
+      x[i++] = m_extent2.v;
+    return DimsType(x);
+  }
 
  protected:
 
@@ -364,6 +400,22 @@ class ArrayExtentsValue<X0,X1,X2,X3>
   constexpr ARCCORE_HOST_DEVICE Int32 extent1() const { return m_extent1.v; };
   constexpr ARCCORE_HOST_DEVICE Int32 extent2() const { return m_extent2.v; };
   constexpr ARCCORE_HOST_DEVICE Int32 extent3() const { return m_extent3.v; };
+
+  //! Liste des dimensions dynamiques
+  constexpr DimsType dynamicExtents() const
+  {
+    std::array<Int32, ExtentsType::nb_dynamic> x;
+    Int32 i = 0;
+    if constexpr (X0 == DynExtent)
+      x[i++] = m_extent0.v;
+    if constexpr (X1 == DynExtent)
+      x[i++] = m_extent1.v;
+    if constexpr (X2 == DynExtent)
+      x[i++] = m_extent2.v;
+    if constexpr (X3 == DynExtent)
+      x[i++] = m_extent3.v;
+    return DimsType(x);
+  }
 
  protected:
 
