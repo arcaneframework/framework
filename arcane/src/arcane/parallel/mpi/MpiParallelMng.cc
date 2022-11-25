@@ -245,8 +245,10 @@ class MpiParallelMngUtilsFactory
 {
  public:
   MpiParallelMngUtilsFactory()
-    : m_synchronizer_version(1)
+    : m_synchronizer_version(2)
   {
+    if (platform::getEnvironmentVariable("ARCANE_SYNCHRONIZE_VERSION")=="1")
+      m_synchronizer_version = 1;
     if (platform::getEnvironmentVariable("ARCANE_SYNCHRONIZE_VERSION")=="2")
       m_synchronizer_version = 2;
     if (platform::getEnvironmentVariable("ARCANE_SYNCHRONIZE_VERSION")=="3")
