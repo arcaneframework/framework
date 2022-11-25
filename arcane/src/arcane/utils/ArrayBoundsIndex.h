@@ -33,36 +33,40 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<int RankValue>
+template <int RankValue>
 class ArrayBoundsIndexBase
 {
  public:
-  ARCCORE_HOST_DEVICE std::array<Int32,RankValue> operator()() const { return m_indexes; }
  protected:
-  ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndexBase()
-  {
-    for( int i=0; i<RankValue; ++i )
-      m_indexes[i] = 0;
-  }
-  ARCCORE_HOST_DEVICE constexpr ArrayBoundsIndexBase(std::array<Int32,RankValue> _id) : m_indexes(_id){}
+
+  constexpr ARCCORE_HOST_DEVICE ArrayBoundsIndexBase() = default;
+  constexpr ARCCORE_HOST_DEVICE ArrayBoundsIndexBase(std::array<Int32, RankValue> _id)
+  : m_indexes(_id)
+  {}
+
  public:
-  ARCCORE_HOST_DEVICE constexpr Int32 operator[](int i) const
+
+  constexpr std::array<Int32, RankValue> operator()() const { return m_indexes; }
+
+  constexpr ARCCORE_HOST_DEVICE Int32 operator[](int i) const
   {
-    ARCCORE_CHECK_AT(i,RankValue);
+    ARCCORE_CHECK_AT(i, RankValue);
     return m_indexes[i];
   }
-  ARCCORE_HOST_DEVICE constexpr Int64 asInt64(int i) const
+  constexpr ARCCORE_HOST_DEVICE Int64 asInt64(int i) const
   {
-    ARCCORE_CHECK_AT(i,RankValue);
+    ARCCORE_CHECK_AT(i, RankValue);
     return m_indexes[i];
   }
-  ARCCORE_HOST_DEVICE constexpr void add(const ArrayBoundsIndexBase<RankValue>& rhs)
+  constexpr ARCCORE_HOST_DEVICE void add(const ArrayBoundsIndexBase<RankValue>& rhs)
   {
-    for( int i=0; i<RankValue; ++i )
+    for (int i = 0; i < RankValue; ++i)
       m_indexes[i] += rhs[i];
   }
+
  protected:
-  std::array<Int32,RankValue> m_indexes;
+
+  std::array<Int32,RankValue> m_indexes = { };
 };
 
 /*---------------------------------------------------------------------------*/
