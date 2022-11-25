@@ -236,8 +236,10 @@ class NumArrayBase;
 template<class DataType,typename ExtentType,typename LayoutType = DefaultLayout<ExtentType::rank()> >
 class NumArray;
 template<typename ExtentType> class ArrayBounds;
-template<int RankValue> class ArrayBoundsIndexBase;
-template<int RankValue> class ArrayBoundsIndex;
+template<int RankValue> class ArrayIndexBase;
+template<int RankValue> class ArrayIndex;
+template<int RankValue> using ArrayBoundsIndexBase = ArrayIndexBase<RankValue>;
+template<int RankValue> using ArrayBoundsIndex = ArrayIndex<RankValue>;
 template<typename ExtentType> class ArrayExtentsBase;
 template<typename ExtentType> class ArrayExtents;
 template<int RankValue> class ArrayStridesBase;
