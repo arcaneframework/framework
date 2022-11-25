@@ -228,8 +228,15 @@ _createBuilderFromFile(const CaseMeshReaderReadInfo& read_info)
     if (!builder.isNull())
       return builder;
   }
-  ARCANE_FATAL("The mesh reader required for format '{0}' is not available",
-               read_info.format());
+
+  // Pas de service trouvé pour ce format de fichier.
+  // Affiche la liste des services disponibles et fait un fatal.
+  StringUniqueArray valid_names;
+  builder.getServicesNames(valid_names);
+  String available_readers = String::join(", ",valid_names);
+  ARCANE_FATAL("The mesh reader required for format '{0}' is not available."
+               "The following reader services are available: {1}",
+               read_info.format(),available_readers);
 }
 
 /*---------------------------------------------------------------------------*/
