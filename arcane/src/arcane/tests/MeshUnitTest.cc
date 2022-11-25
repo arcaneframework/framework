@@ -1323,6 +1323,14 @@ _testAdditionnalConnectivity()
       vc.areEqual(cn_view.faceId(icell,i),cn_view.faces(icell)[i],"SameItem");
   }
   info() << "TOTAL_NB_FACE = " << total_face_lid;
+
+  auto idx_cn2 = mesh()->indexedConnectivityMng()->findOrCreateConnectivity(cell_family,face_family,"CellNoBoundaryFace");
+  auto idx_cn3 = mesh()->indexedConnectivityMng()->findConnectivity("CellNoBoundaryFace");
+
+  if (idx_cn2->connectivity()!=cn)
+    ARCANE_FATAL("Bad findOrCreateConnectivity");
+  if (idx_cn3->connectivity()!=cn)
+    ARCANE_FATAL("Bad findConnectivity");
 }
 
 /*---------------------------------------------------------------------------*/
