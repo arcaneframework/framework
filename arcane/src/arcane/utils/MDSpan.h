@@ -364,6 +364,7 @@ class MDSpanIntermediate<DataType, 4, ExtentType, LayoutType>
 
  public:
 
+  using ExtentsType = ExtentType;
   using BaseClass::offset;
   using BaseClass::ptrAt;
   using BaseClass::operator();
@@ -475,6 +476,11 @@ class MDSpan
   {}
   constexpr ARCCORE_HOST_DEVICE MDSpan(DataType* ptr, const DimsType& dims)
   : BaseClass(ptr, dims)
+  {
+  }
+  template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 0, void>>
+  explicit constexpr ARCCORE_HOST_DEVICE MDSpan(DataType* ptr)
+  : BaseClass(ptr, DimsType())
   {
   }
   template <typename X, typename = std::enable_if_t<std::is_same_v<X, UnqualifiedValueType>>>
