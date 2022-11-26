@@ -231,7 +231,8 @@ MiniWeatherArray(IAcceleratorMng* am,ITraceMng* tm,int nb_cell_x,int nb_cell_z,
   m_const.dz = zlen / m_const.nz_glob;
 
   info() << "Using 'MiniWeather' with accelerator";
-  auto layout_info = LayoutType::layoutInfo();
+  using Layout3Type = typename LayoutType::Layout3Type;
+  auto layout_info = Layout3Type::layoutInfo();
   info() << "NumArrayLayout = " << layout_info[0] << " " << layout_info[1] << " " << layout_info[2];
 
   m_const.sim_time = final_time;   //How many seconds to run the simulation
@@ -865,9 +866,9 @@ class MiniWeatherArrayService
   {
     info() << "UseLeftLayout?=" << use_left_layout;
     if (use_left_layout)
-      m_p = new MiniWeatherArray<LeftLayout<3>>(am,traceMng(),nb_x,nb_z,final_time,r);
+      m_p = new MiniWeatherArray<LeftLayout>(am,traceMng(),nb_x,nb_z,final_time,r);
     else
-      m_p = new MiniWeatherArray<RightLayout<3>>(am,traceMng(),nb_x,nb_z,final_time,r);
+      m_p = new MiniWeatherArray<RightLayout>(am,traceMng(),nb_x,nb_z,final_time,r);
   }
   bool loop() override
   {

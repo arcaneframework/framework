@@ -59,7 +59,7 @@ TEST(NumArray,Basic)
   ASSERT_EQ(num_data1[2], 3.3);
   ASSERT_EQ(num_data1[3], 5.4);
 
-  NumArray<Real,MDDim2,RightLayout<2>> num_data2(3, 2, { 1.4, 15.6, 33.3, 7.4, 4.2, 6.5 });
+  NumArray<Real,MDDim2,RightLayout> num_data2(3, 2, { 1.4, 15.6, 33.3, 7.4, 4.2, 6.5 });
   ASSERT_EQ(num_data2(0,0), 1.4);
   ASSERT_EQ(num_data2(0,1), 15.6);
   ASSERT_EQ(num_data2(1,0), 33.3);
@@ -320,7 +320,7 @@ TEST(NumArray2,Layout)
   std::cout << "TEST_NUMARRAY2 Layout\n";
 
   {
-    NumArray<Real,MDDim2,RightLayout2> a(3,5);
+    NumArray<Real,MDDim2,RightLayout> a(3,5);
     ASSERT_EQ(a.totalNbElement(),(3*5));
     _setNumArray2Values(a);
     auto values = a.to1DSpan();
@@ -491,34 +491,34 @@ TEST(NumArray,RealN)
 namespace Arcane
 {
 // On instantie explicitement pour tester que toutes les méthodes templates sont valides
-template class NumArray<float,MDDim4,RightLayout<4>>;
-template class NumArray<float,MDDim3,RightLayout<3>>;
-template class NumArray<float,MDDim2,RightLayout<2>>;
+template class NumArray<float,MDDim4,RightLayout>;
+template class NumArray<float,MDDim3,RightLayout>;
+template class NumArray<float,MDDim2,RightLayout>;
 
-template class NumArray<float,MDDim4,LeftLayout<4>>;
-template class NumArray<float,MDDim3,LeftLayout<3>>;
-template class NumArray<float,MDDim2,LeftLayout<2>>;
+template class NumArray<float,MDDim4,LeftLayout>;
+template class NumArray<float,MDDim3,LeftLayout>;
+template class NumArray<float,MDDim2,LeftLayout>;
 
 template class NumArray<float,MDDim1>;
 
-template class NumArray<float,ExtentsV<7,DynExtent,2,3>,RightLayout<4>>;
-template class NumArray<float,ExtentsV<DynExtent,2,3>,RightLayout<3>>;
+template class NumArray<float,ExtentsV<7,DynExtent,2,3>,RightLayout>;
+template class NumArray<float,ExtentsV<DynExtent,2,3>,RightLayout>;
 template class NumArray<float,ExtentsV<2,3>>;
 template class NumArray<float,ExtentsV<2>>;
 template class NumArray<float,ExtentsV<3,DynExtent>>;
 
-template class MDSpan<float,MDDim4,RightLayout<4>>;
-template class MDSpan<float,MDDim3,RightLayout<3>>;
-template class MDSpan<float,MDDim2,RightLayout<2>>;
+template class MDSpan<float,MDDim4,RightLayout>;
+template class MDSpan<float,MDDim3,RightLayout>;
+template class MDSpan<float,MDDim2,RightLayout>;
 
-template class MDSpan<float,MDDim4,LeftLayout<4>>;
-template class MDSpan<float,MDDim3,LeftLayout<3>>;
-template class MDSpan<float,MDDim2,LeftLayout<2>>;
+template class MDSpan<float,MDDim4,LeftLayout>;
+template class MDSpan<float,MDDim3,LeftLayout>;
+template class MDSpan<float,MDDim2,LeftLayout>;
 
 template class MDSpan<float,MDDim1>;
 
-template class MDSpan<float,ExtentsV<7,DynExtent,2,3>,RightLayout<4>>;
-template class MDSpan<float,ExtentsV<DynExtent,2,3>,RightLayout<3>>;
+template class MDSpan<float,ExtentsV<7,DynExtent,2,3>,RightLayout>;
+template class MDSpan<float,ExtentsV<DynExtent,2,3>,RightLayout>;
 template class MDSpan<float,ExtentsV<2,3>>;
 template class MDSpan<float,ExtentsV<2>>;
 template class MDSpan<float,ExtentsV<3,DynExtent>>;

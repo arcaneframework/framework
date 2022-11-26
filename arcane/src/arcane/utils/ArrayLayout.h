@@ -86,23 +86,44 @@ class ArrayLayout3
 /*---------------------------------------------------------------------------*/
 // Layout par défaut pour chaque dimension
 
-template<int N> class RightLayout;
-template<int N> class LeftLayout;
+template<int N> class RightLayoutN;
+template<int N> class LeftLayoutN;
 
-template<> class RightLayout<2> : public ArrayLayout2<0,1> {};
-template<> class RightLayout<3> : public ArrayLayout3<0,1,2> {};
-using RightLayout2 = RightLayout<2>;
-using RightLayout3 = RightLayout<3>;
+class RightLayout
+{
+ public:
+  //! Implémentation pour le rang N
+  template <int Rank> using LayoutType = RightLayoutN<Rank>;
+  using Layout1Type = LayoutType<1>;
+  using Layout2Type = LayoutType<2>;
+  using Layout3Type = LayoutType<3>;
+  using Layout4Type = LayoutType<4>;
+};
 
-template<> class LeftLayout<2> : public ArrayLayout2<1,0> {};
-template<> class LeftLayout<3> : public ArrayLayout3<2,1,0> {};
-using LeftLayout2 = LeftLayout<2>;
-using LeftLayout3 = LeftLayout<3>;
+class LeftLayout
+{
+ public:
+  template <int Rank> using LayoutType = LeftLayoutN<Rank>;
+  using Layout1Type = LayoutType<1>;
+  using Layout2Type = LayoutType<2>;
+  using Layout3Type = LayoutType<3>;
+  using Layout4Type = LayoutType<4>;
+};
+
+template<> class RightLayoutN<2> : public ArrayLayout2<0,1> {};
+template<> class RightLayoutN<3> : public ArrayLayout3<0,1,2> {};
+
+template<> class LeftLayoutN<2> : public ArrayLayout2<1,0> {};
+template<> class LeftLayoutN<3> : public ArrayLayout3<2,1,0> {};
+
+// Les 4 using suivants sont pour compatibilité. A supprimer dans la 3.9
+using LeftLayout2 = LeftLayout;
+using LeftLayout3 = LeftLayout;
+using RightLayout2 = RightLayout;
+using RightLayout3 = RightLayout;
 
 //! Le layout par défaut est toujours RightLayout
-template<> class DefaultLayout<2> : public RightLayout<2> {};
-//! Le layout par défaut est toujours RightLayout
-template<> class DefaultLayout<3> : public RightLayout<3> {};
+class DefaultLayout : public RightLayout {};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
