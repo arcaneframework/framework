@@ -34,7 +34,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 //! Spécialisation intérmédiaire
-template <typename DataType, int Rank, typename ExtentType, typename LayoutType>
+template <typename DataType, int Rank, typename Extents, typename LayoutPolicy>
 class MDSpanIntermediate;
 
 /*---------------------------------------------------------------------------*/
@@ -50,22 +50,22 @@ class MDSpanIntermediate;
  * Cette classe ne doit pas être utilisée directement. Il faut utiliser MDSpan
  * à la place.
  */
-template <typename DataType, typename ExtentType, typename LayoutType>
+template <typename DataType, typename Extents, typename LayoutPolicy>
 class MDSpanBase
 {
   using UnqualifiedValueType = std::remove_cv_t<DataType>;
-  friend class NumArrayBase<UnqualifiedValueType, ExtentType, LayoutType>;
+  friend class NumArrayBase<UnqualifiedValueType, Extents, LayoutPolicy>;
   // Pour que MDSpan<const T> ait accès à MDSpan<T>
-  friend class MDSpanBase<const UnqualifiedValueType, ExtentType, LayoutType>;
+  friend class MDSpanBase<const UnqualifiedValueType, Extents, LayoutPolicy>;
 
  public:
 
-  using ExtentsType = ExtentType;
-  using IndexType = typename ExtentsType::IndexType;
-  using ArrayExtentsWithOffsetType = ArrayExtentsWithOffset<ExtentType, LayoutType>;
-  using DimsType = typename ExtentType::DimsType;
+  using ExtentsType = Extents;
+  using IndexType = typename Extents::IndexType;
+  using ArrayExtentsWithOffsetType = ArrayExtentsWithOffset<Extents, LayoutPolicy>;
+  using DimsType = typename Extents::DimsType;
   // Pour compatibilité. A supprimer pour cohérence avec les autres 'using'
-  using ArrayBoundsIndexType = typename ExtentsType::IndexType;
+  using ArrayBoundsIndexType = typename Extents::IndexType;
 
  public:
 
@@ -81,7 +81,7 @@ class MDSpanBase
   {}
   // Constructeur MDSpan<const T> à partir d'un MDSpan<T>
   template <typename X, typename = std::enable_if_t<std::is_same_v<X, UnqualifiedValueType>>>
-  constexpr ARCCORE_HOST_DEVICE MDSpanBase(const MDSpanBase<X, ExtentType>& rhs)
+  constexpr ARCCORE_HOST_DEVICE MDSpanBase(const MDSpanBase<X, Extents>& rhs)
   : m_ptr(rhs.m_ptr)
   , m_extents(rhs.m_extents)
   {}
@@ -93,7 +93,7 @@ class MDSpanBase
 
  public:
 
-  ArrayExtents<ExtentType> extents() const
+  ArrayExtents<Extents> extents() const
   {
     return m_extents.extents();
   }
@@ -121,9 +121,9 @@ class MDSpanBase
 
  public:
 
-  constexpr ARCCORE_HOST_DEVICE MDSpanBase<const DataType, ExtentType> constSpan() const
+  constexpr ARCCORE_HOST_DEVICE MDSpanBase<const DataType, Extents> constSpan() const
   {
-    return MDSpanBase<const DataType, ExtentType>(m_ptr, m_extents);
+    return MDSpanBase<const DataType, Extents>(m_ptr, m_extents);
   }
   constexpr ARCCORE_HOST_DEVICE Span<DataType> to1DSpan() const
   {
@@ -144,16 +144,16 @@ class MDSpanBase
 /*!
  * \brief Spécialisation d'une vue multi-dimensionnelle à 1 dimension.
  */
-template <typename DataType, typename ExtentType, typename LayoutType>
-class MDSpanIntermediate<DataType, 1, ExtentType, LayoutType>
-: public MDSpanBase<DataType, ExtentType, LayoutType>
+template <typename DataType, typename Extents, typename LayoutPolicy>
+class MDSpanIntermediate<DataType, 1, Extents, LayoutPolicy>
+: public MDSpanBase<DataType, Extents, LayoutPolicy>
 {
  protected:
 
-  using ExtentsType = ExtentType;
+  using ExtentsType = Extents;
   using UnqualifiedValueType = std::remove_cv_t<DataType>;
-  friend class NumArrayBase<UnqualifiedValueType, ExtentsType, LayoutType>;
-  using BaseClass = MDSpanBase<DataType, ExtentsType, LayoutType>;
+  friend class NumArrayBase<UnqualifiedValueType, Extents, LayoutPolicy>;
+  using BaseClass = MDSpanBase<DataType, Extents, LayoutPolicy>;
   using BaseClass::m_extents;
   using BaseClass::m_ptr;
 
@@ -163,7 +163,7 @@ class MDSpanIntermediate<DataType, 1, ExtentType, LayoutType>
   using BaseClass::ptrAt;
   using BaseClass::operator();
   using ArrayExtentsWithOffsetType = typename BaseClass::ArrayExtentsWithOffsetType;
-  using DimsType = typename ExtentType::DimsType;
+  using DimsType = typename Extents::DimsType;
 
  public:
 
@@ -208,16 +208,16 @@ class MDSpanIntermediate<DataType, 1, ExtentType, LayoutType>
 /*!
  * \brief Spécialisation d'une vue multi-dimensionnelle à 2 dimensions.
  */
-template <typename DataType, typename ExtentType, typename LayoutType>
-class MDSpanIntermediate<DataType, 2, ExtentType, LayoutType>
-: public MDSpanBase<DataType, ExtentType, LayoutType>
+template <typename DataType, typename Extents, typename LayoutPolicy>
+class MDSpanIntermediate<DataType, 2, Extents, LayoutPolicy>
+: public MDSpanBase<DataType, Extents, LayoutPolicy>
 {
  protected:
 
-  using ExtentsType = ExtentType;
+  using ExtentsType = Extents;
   using UnqualifiedValueType = std::remove_cv_t<DataType>;
-  friend class NumArrayBase<UnqualifiedValueType, ExtentsType, LayoutType>;
-  using BaseClass = MDSpanBase<DataType, ExtentsType, LayoutType>;
+  friend class NumArrayBase<UnqualifiedValueType, Extents, LayoutPolicy>;
+  using BaseClass = MDSpanBase<DataType, Extents, LayoutPolicy>;
   using BaseClass::m_extents;
   using BaseClass::m_ptr;
 
@@ -227,7 +227,7 @@ class MDSpanIntermediate<DataType, 2, ExtentType, LayoutType>
   using BaseClass::ptrAt;
   using BaseClass::operator();
   using ArrayExtentsWithOffsetType = typename BaseClass::ArrayExtentsWithOffsetType;
-  using DimsType = typename ExtentType::DimsType;
+  using DimsType = typename Extents::DimsType;
 
  protected:
 
@@ -278,16 +278,16 @@ class MDSpanIntermediate<DataType, 2, ExtentType, LayoutType>
 /*!
  * \brief Spécialisation d'une vue multi-dimensionnelle à 3 dimensions.
  */
-template <typename DataType, typename ExtentType, typename LayoutType>
-class MDSpanIntermediate<DataType, 3, ExtentType, LayoutType>
-: public MDSpanBase<DataType, ExtentType, LayoutType>
+template <typename DataType, typename Extents, typename LayoutPolicy>
+class MDSpanIntermediate<DataType, 3, Extents, LayoutPolicy>
+: public MDSpanBase<DataType, Extents, LayoutPolicy>
 {
  protected:
 
-  using ExtentsType = ExtentType;
+  using ExtentsType = Extents;
   using UnqualifiedValueType = std::remove_cv_t<DataType>;
-  friend class NumArrayBase<UnqualifiedValueType, ExtentsType, LayoutType>;
-  using BaseClass = MDSpanBase<DataType, ExtentsType, LayoutType>;
+  friend class NumArrayBase<UnqualifiedValueType, Extents, LayoutPolicy>;
+  using BaseClass = MDSpanBase<DataType, Extents, LayoutPolicy>;
   using BaseClass::m_extents;
   using BaseClass::m_ptr;
   using value_type = typename std::remove_cv<DataType>::type;
@@ -298,7 +298,7 @@ class MDSpanIntermediate<DataType, 3, ExtentType, LayoutType>
   using BaseClass::ptrAt;
   using BaseClass::operator();
   using ArrayExtentsWithOffsetType = typename BaseClass::ArrayExtentsWithOffsetType;
-  using DimsType = typename ExtentType::DimsType;
+  using DimsType = typename Extents::DimsType;
 
  protected:
 
@@ -351,25 +351,25 @@ class MDSpanIntermediate<DataType, 3, ExtentType, LayoutType>
 /*!
  * \brief Vue multi-dimensionnelle à 4 dimensions.
  */
-template <typename DataType, typename ExtentType, typename LayoutType>
-class MDSpanIntermediate<DataType, 4, ExtentType, LayoutType>
-: public MDSpanBase<DataType, ExtentType, LayoutType>
+template <typename DataType, typename Extents, typename LayoutPolicy>
+class MDSpanIntermediate<DataType, 4, Extents, LayoutPolicy>
+: public MDSpanBase<DataType, Extents, LayoutPolicy>
 {
  protected:
 
-  using BaseClass = MDSpanBase<DataType, ExtentType, LayoutType>;
+  using BaseClass = MDSpanBase<DataType, Extents, LayoutPolicy>;
   using BaseClass::m_extents;
   using BaseClass::m_ptr;
   using UnqualifiedValueType = std::remove_cv_t<DataType>;
 
  public:
 
-  using ExtentsType = ExtentType;
+  using ExtentsType = Extents;
   using BaseClass::offset;
   using BaseClass::ptrAt;
   using BaseClass::operator();
   using ArrayExtentsWithOffsetType = typename BaseClass::ArrayExtentsWithOffsetType;
-  using DimsType = typename ExtentType::DimsType;
+  using DimsType = typename Extents::DimsType;
 
  protected:
 
@@ -383,7 +383,7 @@ class MDSpanIntermediate<DataType, 4, ExtentType, LayoutType>
   {
   }
   template <typename X, typename = std::enable_if_t<std::is_same_v<X, UnqualifiedValueType>>>
-  constexpr ARCCORE_HOST_DEVICE MDSpanIntermediate(const MDSpan<X, ExtentType>& rhs)
+  constexpr ARCCORE_HOST_DEVICE MDSpanIntermediate(const MDSpan<X, Extents>& rhs)
   : BaseClass(rhs)
   {}
 
@@ -448,14 +448,14 @@ class MDSpanIntermediate<DataType, 4, ExtentType, LayoutType>
  * NumArray. Les méthodes de cette classe sont accessibles sur accélérateur.
  *
  */
-template <typename DataType, typename ExtentType, typename LayoutType>
+template <typename DataType, typename Extents, typename LayoutPolicy>
 class MDSpan
-: public MDSpanIntermediate<DataType, ExtentType::rank(), ExtentType, LayoutType>
+: public MDSpanIntermediate<DataType, Extents::rank(), Extents, LayoutPolicy>
 {
-  using ExtentsType = ExtentType;
+  using ExtentsType = Extents;
   using UnqualifiedValueType = std::remove_cv_t<DataType>;
-  friend class NumArrayBase<UnqualifiedValueType, ExtentsType, LayoutType>;
-  using BaseClass = MDSpanIntermediate<DataType, ExtentType::rank(), ExtentsType, LayoutType>;
+  friend class NumArrayBase<UnqualifiedValueType, Extents, LayoutPolicy>;
+  using BaseClass = MDSpanIntermediate<DataType, Extents::rank(), Extents, LayoutPolicy>;
   using BaseClass::m_extents;
   using BaseClass::m_ptr;
 
@@ -465,7 +465,7 @@ class MDSpan
   using BaseClass::ptrAt;
   using BaseClass::operator();
   using ArrayExtentsWithOffsetType = typename BaseClass::ArrayExtentsWithOffsetType;
-  using DimsType = typename ExtentType::DimsType;
+  using DimsType = typename Extents::DimsType;
 
  public:
 
@@ -490,9 +490,9 @@ class MDSpan
 
  public:
 
-  ARCCORE_HOST_DEVICE MDSpan<const DataType, ExtentsType, LayoutType> constSpan() const
+  ARCCORE_HOST_DEVICE MDSpan<const DataType, Extents, LayoutPolicy> constSpan() const
   {
-    return MDSpan<const DataType, ExtentsType, LayoutType>(m_ptr, m_extents);
+    return MDSpan<const DataType, Extents, LayoutPolicy>(m_ptr, m_extents);
   }
 };
 

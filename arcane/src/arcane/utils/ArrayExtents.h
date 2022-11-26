@@ -189,14 +189,14 @@ class ArrayExtentsBase<ExtentsV<>>
 /*!
  * \brief Classe pour conserver le nombre d'éléments dans chaque dimension.
  */
-template <typename ExtentType>
+template <typename Extents>
 class ArrayExtentsBase
-: protected ExtentType::ArrayExtentsValueType
+: protected Extents::ArrayExtentsValueType
 {
  protected:
 
-  using BaseClass = typename ExtentType::ArrayExtentsValueType;
-  using ArrayExtentsPreviousRank = ArrayExtentsBase<typename ExtentType::RemovedFirstExtentType>;
+  using BaseClass = typename Extents::ArrayExtentsValueType;
+  using ArrayExtentsPreviousRank = ArrayExtentsBase<typename Extents::RemovedFirstExtentType>;
   using DimsType = typename BaseClass::DimsType;
 
  public:
@@ -246,9 +246,9 @@ class ArrayExtentsBase
   /*!
    * \brief Construit une instance à partir des valeurs données dans \a extents.
    */
-  ARCCORE_HOST_DEVICE static ArrayExtentsBase<ExtentType> fromSpan(SmallSpan<const Int32> extents)
+  ARCCORE_HOST_DEVICE static ArrayExtentsBase<Extents> fromSpan(SmallSpan<const Int32> extents)
   {
-    return ArrayExtentsBase<ExtentType>(extents);
+    return ArrayExtentsBase<Extents>(extents);
   }
 };
 

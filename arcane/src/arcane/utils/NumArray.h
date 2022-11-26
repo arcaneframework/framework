@@ -33,12 +33,19 @@
 namespace Arcane
 {
 
-template <typename DataType, int Rank, typename ExtentType, typename LayoutType>
+template <typename DataType, int Rank, typename Extents, typename LayoutPolicy>
 class NumArrayIntermediate;
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+}
 
+namespace Arcane::impl
+{
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Implémentation commune à pour NumArray.
+ */
 class ARCANE_UTILS_EXPORT NumArrayBaseCommon
 {
  protected:
@@ -50,75 +57,80 @@ class ARCANE_UTILS_EXPORT NumArrayBaseCommon
                     Span<std::byte> to, eMemoryRessource to_mem);
 };
 
-namespace impl
+// Wrapper de Arccore::Array pour la classe NumArray
+template <typename DataType>
+class NumArrayContainer
+: private Arccore::Array<DataType>
 {
-  // Wrapper de Arccore::Array pour la classe NumArray
-  template <typename DataType>
-  class NumArrayContainer
-  : private Arccore::Array<DataType>
+ private:
+
+  using BaseClass = Arccore::Array<DataType>;
+  using ThatClass = NumArrayContainer<DataType>;
+
+ public:
+
+  using BaseClass::capacity;
+  using BaseClass::fill;
+
+ public:
+
+  explicit NumArrayContainer(IMemoryAllocator* a)
   {
-   private:
-
-    using BaseClass = Arccore::Array<DataType>;
-    using ThatClass = NumArrayContainer<DataType>;
-
-   public:
-
-    using BaseClass::capacity;
-    using BaseClass::fill;
-
-   public:
-
-    explicit NumArrayContainer(IMemoryAllocator* a)
-    {
-      this->_initFromAllocator(a, 0);
+    this->_initFromAllocator(a, 0);
+  }
+  NumArrayContainer(const ThatClass& rhs)
+  : BaseClass()
+  {
+    this->_initFromSpan(rhs.to1DSpan());
+  }
+  NumArrayContainer(ThatClass&& rhs)
+  : BaseClass(std::move(rhs))
+  {
+  }
+  ThatClass& operator=(const ThatClass& rhs)
+  {
+    if (this != &rhs) {
+      BaseClass::_copy(rhs.data());
     }
-    NumArrayContainer(const ThatClass& rhs)
-    : BaseClass()
-    {
-      this->_initFromSpan(rhs.to1DSpan());
-    }
-    NumArrayContainer(ThatClass&& rhs)
-    : BaseClass(std::move(rhs))
-    {
-    }
-    ThatClass& operator=(const ThatClass& rhs)
-    {
-      if (this != &rhs) {
-        BaseClass::_copy(rhs.data());
-      }
-      return (*this);
-    }
-    ThatClass& operator=(ThatClass&& rhs)
-    {
-      this->_move(rhs);
-      return (*this);
-    }
+    return (*this);
+  }
+  ThatClass& operator=(ThatClass&& rhs)
+  {
+    this->_move(rhs);
+    return (*this);
+  }
 
-   public:
+ public:
 
-    void resize(Int64 new_size) { BaseClass::_resizeNoInit(new_size); }
-    Span<DataType> to1DSpan() { return BaseClass::span(); }
-    Span<const DataType> to1DSpan() const { return BaseClass::constSpan(); }
-    Span<std::byte> bytes() { return asWritableBytes(BaseClass::span()); }
-    Span<const std::byte> bytes() const { return asBytes(BaseClass::constSpan()); }
-    void swap(NumArrayContainer<DataType>& rhs) { BaseClass::_swap(rhs); }
-    void copy(Span<const DataType> rhs) { BaseClass::_copy(rhs.data()); }
-    void copyInitializerList(std::initializer_list<DataType> alist)
-    {
-      Span<DataType> s = to1DSpan();
-      Int64 s1 = s.size();
-      Int32 index = 0;
-      for (auto x : alist) {
-        s[index] = x;
-        ++index;
-        // S'assure qu'on ne déborde pas
-        if (index >= s1)
-          break;
-      }
+  void resize(Int64 new_size) { BaseClass::_resizeNoInit(new_size); }
+  Span<DataType> to1DSpan() { return BaseClass::span(); }
+  Span<const DataType> to1DSpan() const { return BaseClass::constSpan(); }
+  Span<std::byte> bytes() { return asWritableBytes(BaseClass::span()); }
+  Span<const std::byte> bytes() const { return asBytes(BaseClass::constSpan()); }
+  void swap(NumArrayContainer<DataType>& rhs) { BaseClass::_swap(rhs); }
+  void copy(Span<const DataType> rhs) { BaseClass::_copy(rhs.data()); }
+  void copyInitializerList(std::initializer_list<DataType> alist)
+  {
+    Span<DataType> s = to1DSpan();
+    Int64 s1 = s.size();
+    Int32 index = 0;
+    for (auto x : alist) {
+      s[index] = x;
+      ++index;
+      // S'assure qu'on ne déborde pas
+      if (index >= s1)
+        break;
     }
-  };
-} // namespace impl
+  }
+};
+
+} // namespace Arcane::impl
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -136,17 +148,17 @@ namespace impl
  * permet de retourner la valeur en lecture d'un élément. Pour modifier un élément,
  * il faut utiliser la méthode s().
  */
-template <typename DataType, typename ExtentType, typename LayoutType>
+template <typename DataType, typename ExtentType, typename LayoutPolicy>
 class NumArrayBase
-: public NumArrayBaseCommon
+: public impl::NumArrayBaseCommon
 {
  public:
 
-  using ConstSpanType = MDSpan<const DataType, ExtentType, LayoutType>;
-  using SpanType = MDSpan<DataType, ExtentType, LayoutType>;
+  using ConstSpanType = MDSpan<const DataType, ExtentType, LayoutPolicy>;
+  using SpanType = MDSpan<DataType, ExtentType, LayoutPolicy>;
   using ArrayWrapper = impl::NumArrayContainer<DataType>;
   using ArrayBoundsIndexType = typename SpanType::ArrayBoundsIndexType;
-  using ThatClass = NumArrayBase<DataType, ExtentType, LayoutType>;
+  using ThatClass = NumArrayBase<DataType, ExtentType, LayoutPolicy>;
   using ExtentsType = ExtentType;
   using DimsType = typename ExtentsType::DimsType;
 
@@ -228,7 +240,7 @@ class NumArrayBase
   void fill(const DataType& v) { m_data.fill(v); }
   constexpr Int32 nbDimension() const { return ExtentType::rank(); }
   ArrayExtents<ExtentType> extents() const { return m_span.extents(); }
-  ArrayExtentsWithOffset<ExtentType, LayoutType> extentsWithOffset() const
+  ArrayExtentsWithOffset<ExtentType, LayoutPolicy> extentsWithOffset() const
   {
     return m_span.extentsWithOffset();
   }
@@ -248,7 +260,7 @@ class NumArrayBase
     _checkHost(m_memory_ressource);
     m_data.copy(rhs.to1DSpan());
   }
-  void copy(const NumArrayBase<DataType, ExtentType, LayoutType>& rhs)
+  void copy(const NumArrayBase<DataType, ExtentType, LayoutPolicy>& rhs)
   {
     this->resize(rhs.extents().dynamicExtents());
     _copy(asBytes(rhs.to1DSpan()), rhs.m_memory_ressource,
@@ -302,19 +314,19 @@ class NumArrayBase
  * Les tableaux à une dimension possèdent l'opérateur 'operator[]' pour
  * compatibilité avec les tableaux classiques du C++.
  */
-template <typename DataType, typename ExtentType, typename LayoutType>
-class NumArrayIntermediate<DataType, 1, ExtentType, LayoutType>
-: public NumArrayBase<DataType, ExtentType, LayoutType>
+template <typename DataType, typename ExtentType, typename LayoutPolicy>
+class NumArrayIntermediate<DataType, 1, ExtentType, LayoutPolicy>
+: public NumArrayBase<DataType, ExtentType, LayoutPolicy>
 {
  public:
 
-  using BaseClass = NumArrayBase<DataType, ExtentType, LayoutType>;
+  using BaseClass = NumArrayBase<DataType, ExtentType, LayoutPolicy>;
   using DimsType = typename ExtentType::DimsType;
   using BaseClass::resize;
   using BaseClass::operator();
   using BaseClass::s;
-  using ConstSpanType = MDSpan<const DataType, ExtentType, LayoutType>;
-  using SpanType = MDSpan<DataType, ExtentType, LayoutType>;
+  using ConstSpanType = MDSpan<const DataType, ExtentType, LayoutPolicy>;
+  using SpanType = MDSpan<DataType, ExtentType, LayoutPolicy>;
 
  protected:
 
@@ -383,13 +395,13 @@ class NumArrayIntermediate<DataType, 1, ExtentType, LayoutType>
 /*!
  * \brief Spécialisation pour les tableaux à 2 dimensions.
  */
-template <typename DataType, typename ExtentType, typename LayoutType>
-class NumArrayIntermediate<DataType, 2, ExtentType, LayoutType>
-: public NumArrayBase<DataType, ExtentType, LayoutType>
+template <typename DataType, typename ExtentType, typename LayoutPolicy>
+class NumArrayIntermediate<DataType, 2, ExtentType, LayoutPolicy>
+: public NumArrayBase<DataType, ExtentType, LayoutPolicy>
 {
  public:
 
-  using BaseClass = NumArrayBase<DataType, ExtentType, LayoutType>;
+  using BaseClass = NumArrayBase<DataType, ExtentType, LayoutPolicy>;
   using DimsType = typename ExtentType::DimsType;
   using BaseClass::resize;
   using BaseClass::operator();
@@ -466,13 +478,13 @@ class NumArrayIntermediate<DataType, 2, ExtentType, LayoutType>
 /*!
  * \brief Spécialisation pour les tableaux à 3 dimensions.
  */
-template <typename DataType, typename ExtentType, typename LayoutType>
-class NumArrayIntermediate<DataType, 3, ExtentType, LayoutType>
-: public NumArrayBase<DataType, ExtentType, LayoutType>
+template <typename DataType, typename ExtentType, typename LayoutPolicy>
+class NumArrayIntermediate<DataType, 3, ExtentType, LayoutPolicy>
+: public NumArrayBase<DataType, ExtentType, LayoutPolicy>
 {
  public:
 
-  using BaseClass = NumArrayBase<DataType, ExtentType, LayoutType>;
+  using BaseClass = NumArrayBase<DataType, ExtentType, LayoutPolicy>;
   using DimsType = typename ExtentType::DimsType;
   using BaseClass::resize;
   using BaseClass::operator();
@@ -553,14 +565,14 @@ class NumArrayIntermediate<DataType, 3, ExtentType, LayoutType>
 /*!
  * \brief Spécialisation pour les tableaux à 4 dimensions.
  */
-template <typename DataType, typename ExtentType, typename LayoutType>
-class NumArrayIntermediate<DataType, 4, ExtentType, LayoutType>
-: public NumArrayBase<DataType, ExtentType, LayoutType>
+template <typename DataType, typename Extents, typename LayoutPolicy>
+class NumArrayIntermediate<DataType, 4, Extents, LayoutPolicy>
+: public NumArrayBase<DataType, Extents, LayoutPolicy>
 {
  public:
 
-  using BaseClass = NumArrayBase<DataType, ExtentType, LayoutType>;
-  using DimsType = typename ExtentType::DimsType;
+  using BaseClass = NumArrayBase<DataType, Extents, LayoutPolicy>;
+  using DimsType = typename Extents::DimsType;
   using BaseClass::resize;
   using BaseClass::operator();
   using BaseClass::s;
@@ -666,18 +678,18 @@ class NumArrayIntermediate<DataType, 4, ExtentType, LayoutType>
  * \sa NumArrayIntermediate
  * \sa NumArrayBase
  */
-template <typename DataType, typename ExtentType, typename LayoutType>
+template <typename DataType, typename Extents, typename LayoutPolicy>
 class NumArray
-: public NumArrayIntermediate<DataType, ExtentType::rank(), ExtentType, LayoutType>
+: public NumArrayIntermediate<DataType, Extents::rank(), Extents, LayoutPolicy>
 {
  public:
 
-  using ExtentsType = ExtentType;
-  using BaseClass = NumArrayIntermediate<DataType, ExtentType::rank(), ExtentsType, LayoutType>;
+  using ExtentsType = Extents;
+  using BaseClass = NumArrayIntermediate<DataType, Extents::rank(), Extents, LayoutPolicy>;
   using BaseClass::resize;
   using BaseClass::operator();
   using BaseClass::s;
-  using ThatClass = NumArray<DataType, ExtentsType, LayoutType>;
+  using ThatClass = NumArray<DataType, Extents, LayoutPolicy>;
   using DimsType = typename ExtentsType::DimsType;
 
  private:
