@@ -414,7 +414,7 @@ class ArrayExtentsWithOffset<ExtentsV<X0>, LayoutType>
   using BaseClass::extent0;
   using BaseClass::getIndices;
   using BaseClass::totalNbElement;
-  using Layout = LayoutType;
+  using Layout = typename LayoutType::Layout1Type;
   using DimsType = typename BaseClass::DimsType;
   using IndexType = typename BaseClass::IndexType;
 
@@ -465,7 +465,7 @@ class ArrayExtentsWithOffset<ExtentsV<X0, X1>, LayoutType>
   using BaseClass::extent1;
   using BaseClass::getIndices;
   using BaseClass::totalNbElement;
-  using Layout = LayoutType;
+  using Layout = typename LayoutType::Layout2Type;
   using DimsType = typename BaseClass::DimsType;
   using IndexType = typename BaseClass::IndexType;
 
@@ -516,7 +516,7 @@ class ArrayExtentsWithOffset<ExtentsV<X0, X1, X2>, LayoutType>
   using BaseClass::extent2;
   using BaseClass::getIndices;
   using BaseClass::totalNbElement;
-  using Layout = LayoutType;
+  using Layout = typename LayoutType::Layout3Type;
   using DimsType = typename BaseClass::DimsType;
   using IndexType = typename BaseClass::IndexType;
 
@@ -582,7 +582,7 @@ class ArrayExtentsWithOffset<ExtentsV<X0, X1, X2, X3>, LayoutType>
   using BaseClass::extent3;
   using BaseClass::getIndices;
   using BaseClass::totalNbElement;
-  using Layout = LayoutType;
+  using Layout = typename LayoutType::Layout4Type;
   using DimsType = typename BaseClass::DimsType;
   using IndexType = typename BaseClass::IndexType;
 
