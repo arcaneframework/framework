@@ -223,17 +223,19 @@ inline constexpr Int32 DynExtent = -1;
 /*---------------------------------------------------------------------------*/
 
 enum class eMemoryRessource;
-template<int RankValue> class DefaultLayout;
+class DefaultLayout;
+template<int RankValue> class RightLayoutN;
+template<int RankValue> class LeftLayoutN;
 template<int RankValue> class MDDimType;
 class IMemoryRessourceMng;
 template<Int32... RankSize> class ExtentsV;
-template<typename DataType,typename ExtentType,typename LayoutType = DefaultLayout<ExtentType::rank()> >
+template<typename DataType,typename ExtentType,typename LayoutType = DefaultLayout >
 class MDSpanBase;
-template<class DataType,typename ExtentType,typename LayoutType = DefaultLayout<ExtentType::rank()> >
+template<class DataType,typename ExtentType,typename LayoutType = DefaultLayout >
 class MDSpan;
-template<typename DataType,typename ExtentType,typename LayoutType = DefaultLayout<ExtentType::rank()> >
+template<typename DataType,typename ExtentType,typename LayoutType = DefaultLayout >
 class NumArrayBase;
-template<class DataType,typename ExtentType,typename LayoutType = DefaultLayout<ExtentType::rank()> >
+template<class DataType,typename ExtentType,typename LayoutType = DefaultLayout >
 class NumArray;
 template<typename ExtentType> class ArrayBounds;
 template<int RankValue> class ArrayIndexBase;
