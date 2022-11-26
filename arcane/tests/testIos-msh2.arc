@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml version="1.0"?>
 <cas codename="ArcaneTest" xml:lang="fr" codeversion="1.0">
  <arcane>
   <titre>Test IOS Reader/Writer MSH</titre>
@@ -6,9 +6,11 @@
   <boucle-en-temps>UnitTest</boucle-en-temps>
  </arcane>
 
- <maillage>
-  <fichier>square_v41.msh</fichier>
- </maillage>
+ <meshes>
+   <mesh>
+     <filename>square_v41.msh</filename>
+   </mesh>
+ </meshes>
 
  <module-test-unitaire>
   <test name="IosUnitTest">
