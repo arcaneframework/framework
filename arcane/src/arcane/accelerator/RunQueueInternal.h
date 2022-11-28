@@ -29,6 +29,21 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#if defined(ARCANE_COMPILING_CUDA)
+#define ARCANE_KERNEL_CUDA_FUNC(a) a
+#else
+#define ARCANE_KERNEL_CUDA_FUNC(a) Arcane::Accelerator::impl::invalidKernel
+#endif
+
+#if defined(ARCANE_COMPILING_HIP)
+#define ARCANE_KERNEL_HIP_FUNC(a) a
+#else
+#define ARCANE_KERNEL_HIP_FUNC(a) Arcane::Accelerator::impl::invalidKernel
+#endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 namespace Arcane::Accelerator::impl
 {
 
@@ -119,7 +134,17 @@ void doDirectThreadLambda(Integer begin,Integer size,Lambda func)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#if defined(ARCANE_COMPILING_CUDA)
+// Fonction vide pour simuler un noyau invalide car non compilé avec
+// le compilateur adéquant. Ne devrait normalement pas être appelé.
+template<typename Lambda,typename LambdaArgs>
+inline void invalidKernel(const LambdaArgs&,const Lambda&)
+{
+  ARCANE_FATAL("Invalid kernel");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Fonction générique pour exécuter un kernel CUDA.
  *
@@ -130,18 +155,24 @@ void doDirectThreadLambda(Integer begin,Integer size,Lambda func)
 template<typename CudaKernel,typename Lambda,typename LambdaArgs> void
 _applyKernelCUDA(impl::RunCommandLaunchInfo& launch_info,const CudaKernel& kernel, Lambda& func,const LambdaArgs& args)
 {
-  launch_info.beginExecute();
+#if defined(ARCANE_COMPILING_CUDA)
   auto [b,t] = launch_info.threadBlockInfo();
   cudaStream_t* s = reinterpret_cast<cudaStream_t*>(launch_info._internalStreamImpl());
   // TODO: utiliser cudaLaunchKernel() à la place.
   kernel <<<b, t, 0, *s>>>(args,func);
-}
+#else
+  ARCANE_UNUSED(launch_info);
+  ARCANE_UNUSED(kernel);
+  ARCANE_UNUSED(func);
+  ARCANE_UNUSED(args);
+  ARCANE_FATAL("Requesting CUDA kernel execution but the kernel is not compiled with CUDA."
+               " You need to compile the file containing this kernel with CUDA compiler.");
 #endif
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#if defined(ARCANE_COMPILING_HIP)
 /*!
  * \brief Fonction générique pour exécuter un kernel CUDA.
  *
@@ -152,12 +183,19 @@ _applyKernelCUDA(impl::RunCommandLaunchInfo& launch_info,const CudaKernel& kerne
 template<typename HipKernel,typename Lambda,typename LambdaArgs> void
 _applyKernelHIP(impl::RunCommandLaunchInfo& launch_info,const HipKernel& kernel, Lambda& func,const LambdaArgs& args)
 {
-  launch_info.beginExecute();
+#if defined(ARCANE_COMPILING_HIP)
   auto [b,t] = launch_info.threadBlockInfo();
   hipStream_t* s = reinterpret_cast<hipStream_t*>(launch_info._internalStreamImpl());
   hipLaunchKernelGGL(kernel, b, t, 0, *s, args, func);
-}
+#else
+  ARCANE_UNUSED(launch_info);
+  ARCANE_UNUSED(kernel);
+  ARCANE_UNUSED(func);
+  ARCANE_UNUSED(args);
+  ARCANE_FATAL("Requesting HIP kernel execution but the kernel is not compiled with HIP."
+               " You need to compile the file containing this kernel with HIP compiler.");
 #endif
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

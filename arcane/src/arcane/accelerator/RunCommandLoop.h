@@ -42,27 +42,18 @@ _applyGenericLoop(RunCommand& command,LoopBoundType<N> bounds,const Lambda& func
     return;
   impl::RunCommandLaunchInfo launch_info(command,vsize);
   const eExecutionPolicy exec_policy = launch_info.executionPolicy();
+  launch_info.beginExecute();
   switch(exec_policy){
   case eExecutionPolicy::CUDA:
-#if defined(ARCANE_COMPILING_CUDA)
-    _applyKernelCUDA(launch_info,impl::doDirectGPULambdaArrayBounds<LoopBoundType<N>,Lambda>,func,bounds);
-#else
-    ARCANE_FATAL("Requesting CUDA kernel execution but the kernel is not compiled with CUDA compiler");
-#endif
+    _applyKernelCUDA(launch_info,ARCANE_KERNEL_CUDA_FUNC(impl::doDirectGPULambdaArrayBounds)<LoopBoundType<N>,Lambda>,func,bounds);
     break;
   case eExecutionPolicy::HIP:
-#if defined(ARCANE_COMPILING_HIP)
-    _applyKernelHIP(launch_info,impl::doDirectGPULambdaArrayBounds<LoopBoundType<N>,Lambda>,func,bounds);
-#else
-    ARCANE_FATAL("Requesting HIP kernel execution but the kernel is not compiled with HIP compiler");
-#endif
+    _applyKernelHIP(launch_info,ARCANE_KERNEL_HIP_FUNC(impl::doDirectGPULambdaArrayBounds)<LoopBoundType<N>,Lambda>,func,bounds);
     break;
   case eExecutionPolicy::Sequential:
-    launch_info.beginExecute();
     arcaneSequentialFor(bounds,func);
     break;
   case eExecutionPolicy::Thread:
-    launch_info.beginExecute();
     arcaneParallelFor(bounds,launch_info.computeParallelLoopOptions(vsize),func);
     break;
   default:

@@ -65,38 +65,25 @@ _applyItems(RunCommand& command,ItemVectorViewT<ItemType> items,const Lambda& fu
   impl::RunCommandLaunchInfo launch_info(command,vsize);
   const eExecutionPolicy exec_policy = launch_info.executionPolicy();
   launch_info.computeLoopRunInfo(vsize);
+  launch_info.beginExecute();
   switch(exec_policy){
   case eExecutionPolicy::CUDA:
-#if defined(ARCANE_COMPILING_CUDA)
-    _applyKernelCUDA(launch_info,impl::doIndirectGPULambda<ItemType,Lambda>,func,items.localIds());
-#else
-    ARCANE_FATAL("Requesting CUDA kernel execution but the kernel is not compiled with CUDA compiler");
-#endif
+    _applyKernelCUDA(launch_info,ARCANE_KERNEL_CUDA_FUNC(doIndirectGPULambda)<ItemType,Lambda>,func,items.localIds());
     break;
   case eExecutionPolicy::HIP:
-#if defined(ARCANE_COMPILING_HIP)
-    _applyKernelHIP(launch_info,impl::doIndirectGPULambda<ItemType,Lambda>,func,items.localIds());
-#else
-    ARCANE_FATAL("Requesting HIP kernel execution but the kernel is not compiled with HIP compiler");
-#endif
+    _applyKernelHIP(launch_info,ARCANE_KERNEL_HIP_FUNC(doIndirectGPULambda)<ItemType,Lambda>,func,items.localIds());
     break;
   case eExecutionPolicy::Sequential:
-    {
-      launch_info.beginExecute();
-      ENUMERATE_ITEM(iitem,items){
-        func(LocalIdType(iitem.itemLocalId()));
-      }
+    ENUMERATE_ITEM(iitem,items){
+      func(LocalIdType(iitem.itemLocalId()));
     }
     break;
   case eExecutionPolicy::Thread:
-    {
-      launch_info.beginExecute();
-      arcaneParallelForeach(items,launch_info.loopRunInfo(),
-                            [&](ItemVectorViewT<ItemType> sub_items)
-                            {
-                              impl::_doIndirectThreadLambda(sub_items,func);
-                            });
-    }
+    arcaneParallelForeach(items,launch_info.loopRunInfo(),
+                          [&](ItemVectorViewT<ItemType> sub_items)
+                          {
+                            impl::_doIndirectThreadLambda(sub_items,func);
+                          });
     break;
   default:
     ARCANE_FATAL("Invalid execution policy '{0}'",exec_policy);
