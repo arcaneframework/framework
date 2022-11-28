@@ -52,6 +52,8 @@
 #include "arcane/IMeshWriter.h"
 #include "arcane/AbstractService.h"
 #include "arcane/ICaseDocument.h"
+#include "arcane/ICaseMeshReader.h"
+#include "arcane/IMeshBuilder.h"
 
 #include "arcane/cea/LimaCutInfosReader.h"
 
@@ -486,7 +488,8 @@ readMesh(IPrimaryMesh* mesh,const String& filename,const String& dir_name,
 	LimaMeshBase* lm = 0;
   ICaseDocument* case_doc = sd->caseDocument();
 
-  info() << "Use length unit: " << use_length_unit;
+  info() << "Lima: use_length_unit=" << use_length_unit
+         << " use_internal_partition=" << use_internal_partition;
   Real length_multiplier = 0.0;
   if (use_length_unit){
     String code_system;
@@ -1154,6 +1157,80 @@ _getProcList(UniqueArray<Integer>& proc_list,const String& dir_name)
     }
   }
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class LimaCaseMeshReader
+: public AbstractService
+, public ICaseMeshReader
+{
+ public:
+
+  class Builder
+  : public IMeshBuilder
+  {
+   public:
+
+    explicit Builder(ISubDomain* sd, const CaseMeshReaderReadInfo& read_info)
+    : m_sub_domain(sd)
+    , m_trace_mng(sd->traceMng())
+    , m_read_info(read_info)
+    {}
+
+   public:
+
+    void fillMeshBuildInfo(MeshBuildInfo& build_info) override
+    {
+      ARCANE_UNUSED(build_info);
+    }
+    void allocateMeshItems(IPrimaryMesh* pm) override
+    {
+      LimaMeshReader reader(m_sub_domain);
+      String fname = m_read_info.fileName();
+      m_trace_mng->info() << "Lima Reader (ICaseMeshReader) file_name=" << fname;
+      bool use_length_unit = true; // Avec le ICaseMeshReader on utilise toujours le système d'unité.
+      String directory_name = m_read_info.directoryName();
+      IMeshReader::eReturnType ret = reader.readMesh(pm, fname, directory_name, m_read_info.isParallelRead(), use_length_unit);
+      if (ret != IMeshReader::RTOk)
+        ARCANE_FATAL("Can not read MSH File");
+    }
+
+   private:
+
+    ISubDomain* m_sub_domain;
+    ITraceMng* m_trace_mng;
+    CaseMeshReaderReadInfo m_read_info;
+  };
+
+ public:
+
+  explicit LimaCaseMeshReader(const ServiceBuildInfo& sbi)
+  : AbstractService(sbi), m_sub_domain(sbi.subDomain())
+  {}
+
+ public:
+
+  Ref<IMeshBuilder> createBuilder(const CaseMeshReaderReadInfo& read_info) const override
+  {
+    IMeshBuilder* builder = nullptr;
+    String str = read_info.format();
+    if (str=="unf" || str=="mli" || str=="mli2" || str=="ice" || str=="uns" || str=="unv")
+      builder = new Builder(m_sub_domain, read_info);
+    return makeRef(builder);
+  }
+
+ private:
+
+  ISubDomain* m_sub_domain = nullptr;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ARCANE_REGISTER_SERVICE(LimaCaseMeshReader,
+                        ServiceProperty("LimaCaseMeshReader", ST_SubDomain),
+                        ARCANE_SERVICE_INTERFACE(ICaseMeshReader));
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
