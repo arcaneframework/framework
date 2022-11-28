@@ -141,6 +141,27 @@ _applyKernelCUDA(impl::RunCommandLaunchInfo& launch_info,const CudaKernel& kerne
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#if defined(ARCANE_COMPILING_HIP)
+/*!
+ * \brief Fonction générique pour exécuter un kernel CUDA.
+ *
+ * \param kernel noyau CUDA
+ * \param func fonction à exécuter par le noyau
+ * \param args arguments de la fonction lambda
+ */
+template<typename HipKernel,typename Lambda,typename LambdaArgs> void
+_applyKernelHIP(impl::RunCommandLaunchInfo& launch_info,const HipKernel& kernel, Lambda& func,const LambdaArgs& args)
+{
+  launch_info.beginExecute();
+  auto [b,t] = launch_info.threadBlockInfo();
+  hipStream_t* s = reinterpret_cast<hipStream_t*>(launch_info._internalStreamImpl());
+  hipLaunchKernelGGL(kernel, b, t, 0, *s, args, func);
+}
+#endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace Arcane::Accelerator::impl
 
 /*---------------------------------------------------------------------------*/

@@ -75,14 +75,7 @@ _applyItems(RunCommand& command,ItemVectorViewT<ItemType> items,const Lambda& fu
     break;
   case eExecutionPolicy::HIP:
 #if defined(ARCANE_COMPILING_HIP)
-    {
-      launch_info.beginExecute();
-      SmallSpan<const Int32> local_ids = items.localIds();
-      auto [b,t] = launch_info.threadBlockInfo();
-      hipStream_t* s = reinterpret_cast<hipStream_t*>(launch_info._internalStreamImpl());
-      auto& loop_func = impl::doIndirectGPULambda<ItemType,Lambda>;
-      hipLaunchKernelGGL(loop_func,b,t,0,*s, local_ids,func);
-    }
+    _applyKernelHIP(launch_info,impl::doIndirectGPULambda<ItemType,Lambda>,func,items.localIds());
 #else
     ARCANE_FATAL("Requesting HIP kernel execution but the kernel is not compiled with HIP compiler");
 #endif

@@ -52,13 +52,7 @@ _applyGenericLoop(RunCommand& command,LoopBoundType<N> bounds,const Lambda& func
     break;
   case eExecutionPolicy::HIP:
 #if defined(ARCANE_COMPILING_HIP)
-    {
-      launch_info.beginExecute();
-      auto [b,t] = launch_info.threadBlockInfo();
-      hipStream_t* s = reinterpret_cast<hipStream_t*>(launch_info._internalStreamImpl());
-      auto& loop_func = impl::doDirectGPULambdaArrayBounds<LoopBoundType<N>,Lambda>;
-      hipLaunchKernelGGL(loop_func, b, t, 0, *s, bounds, func);
-    }
+    _applyKernelHIP(launch_info,impl::doDirectGPULambdaArrayBounds<LoopBoundType<N>,Lambda>,func,bounds);
 #else
     ARCANE_FATAL("Requesting HIP kernel execution but the kernel is not compiled with HIP compiler");
 #endif
