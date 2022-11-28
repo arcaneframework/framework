@@ -26,6 +26,7 @@ if (Lima_FOUND)
   ARCANE_ADD_TEST(lima_mesh_mli lima-1.arc "-m 10")
   ARCANE_ADD_TEST(lima_mesh_unf lima-2.arc "-m 10")
   ARCANE_ADD_TEST(lima_hydro lima-hydro.arc "-m 10")
+  ARCANE_ADD_TEST(lima_hydro_meshservice lima-hydro-meshservice.arc "-m 10")
 
   ARCANE_ADD_TEST_PARALLEL(lima_mesh_mli_1proc_rep4 lima-1.arc 4 -m 10 -R 4)
   ARCANE_ADD_TEST_PARALLEL(lima_mesh_mli_3proc_rep4 lima-1.arc 12 -m 10 -R 4)
