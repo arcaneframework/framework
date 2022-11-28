@@ -65,52 +65,25 @@ _applyItems(RunCommand& command,ItemVectorViewT<ItemType> items,const Lambda& fu
   impl::RunCommandLaunchInfo launch_info(command,vsize);
   const eExecutionPolicy exec_policy = launch_info.executionPolicy();
   launch_info.computeLoopRunInfo(vsize);
+  launch_info.beginExecute();
   switch(exec_policy){
   case eExecutionPolicy::CUDA:
-#if defined(ARCANE_COMPILING_CUDA)
-    {
-      launch_info.beginExecute();
-      SmallSpan<const Int32> local_ids = items.localIds();
-      auto [b,t] = launch_info.threadBlockInfo();
-      cudaStream_t* s = reinterpret_cast<cudaStream_t*>(launch_info._internalStreamImpl());
-      // TODO: utiliser cudaLaunchKernel() à la place.
-      impl::doIndirectGPULambda<ItemType,Lambda> <<<b,t,0,*s>>>(local_ids,func);
-    }
-#else
-    ARCANE_FATAL("Requesting CUDA kernel execution but the kernel is not compiled with CUDA compiler");
-#endif
+    _applyKernelCUDA(launch_info,ARCANE_KERNEL_CUDA_FUNC(doIndirectGPULambda)<ItemType,Lambda>,func,items.localIds());
     break;
   case eExecutionPolicy::HIP:
-#if defined(ARCANE_COMPILING_HIP)
-    {
-      launch_info.beginExecute();
-      SmallSpan<const Int32> local_ids = items.localIds();
-      auto [b,t] = launch_info.threadBlockInfo();
-      hipStream_t* s = reinterpret_cast<hipStream_t*>(launch_info._internalStreamImpl());
-      auto& loop_func = impl::doIndirectGPULambda<ItemType,Lambda>;
-      hipLaunchKernelGGL(loop_func,b,t,0,*s, local_ids,func);
-    }
-#else
-    ARCANE_FATAL("Requesting HIP kernel execution but the kernel is not compiled with HIP compiler");
-#endif
+    _applyKernelHIP(launch_info,ARCANE_KERNEL_HIP_FUNC(doIndirectGPULambda)<ItemType,Lambda>,func,items.localIds());
     break;
   case eExecutionPolicy::Sequential:
-    {
-      launch_info.beginExecute();
-      ENUMERATE_ITEM(iitem,items){
-        func(LocalIdType(iitem.itemLocalId()));
-      }
+    ENUMERATE_ITEM(iitem,items){
+      func(LocalIdType(iitem.itemLocalId()));
     }
     break;
   case eExecutionPolicy::Thread:
-    {
-      launch_info.beginExecute();
-      arcaneParallelForeach(items,launch_info.loopRunInfo(),
-                            [&](ItemVectorViewT<ItemType> sub_items)
-                            {
-                              impl::_doIndirectThreadLambda(sub_items,func);
-                            });
-    }
+    arcaneParallelForeach(items,launch_info.loopRunInfo(),
+                          [&](ItemVectorViewT<ItemType> sub_items)
+                          {
+                            impl::_doIndirectThreadLambda(sub_items,func);
+                          });
     break;
   default:
     ARCANE_FATAL("Invalid execution policy '{0}'",exec_policy);
