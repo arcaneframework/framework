@@ -68,14 +68,7 @@ _applyItems(RunCommand& command,ItemVectorViewT<ItemType> items,const Lambda& fu
   switch(exec_policy){
   case eExecutionPolicy::CUDA:
 #if defined(ARCANE_COMPILING_CUDA)
-    {
-      launch_info.beginExecute();
-      SmallSpan<const Int32> local_ids = items.localIds();
-      auto [b,t] = launch_info.threadBlockInfo();
-      cudaStream_t* s = reinterpret_cast<cudaStream_t*>(launch_info._internalStreamImpl());
-      // TODO: utiliser cudaLaunchKernel() à la place.
-      impl::doIndirectGPULambda<ItemType,Lambda> <<<b,t,0,*s>>>(local_ids,func);
-    }
+    _applyKernelCUDA(launch_info,impl::doIndirectGPULambda<ItemType,Lambda>,func,items.localIds());
 #else
     ARCANE_FATAL("Requesting CUDA kernel execution but the kernel is not compiled with CUDA compiler");
 #endif

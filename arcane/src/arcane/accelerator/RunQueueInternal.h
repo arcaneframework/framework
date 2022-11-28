@@ -100,7 +100,7 @@ void doDirectGPULambdaArrayBounds(LoopBoundType bounds,Lambda func)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif // ARCANE_COMPILING_CUDA
+#endif // ARCANE_COMPILING_CUDA || ARCANE_COMPILING_HIP
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -115,6 +115,28 @@ void doDirectThreadLambda(Integer begin,Integer size,Lambda func)
     func(begin+i);
   }
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#if defined(ARCANE_COMPILING_CUDA)
+/*!
+ * \brief Fonction générique pour exécuter un kernel CUDA.
+ *
+ * \param kernel noyau CUDA
+ * \param func fonction à exécuter par le noyau
+ * \param args arguments de la fonction lambda
+ */
+template<typename CudaKernel,typename Lambda,typename LambdaArgs> void
+_applyKernelCUDA(impl::RunCommandLaunchInfo& launch_info,const CudaKernel& kernel, Lambda& func,const LambdaArgs& args)
+{
+  launch_info.beginExecute();
+  auto [b,t] = launch_info.threadBlockInfo();
+  cudaStream_t* s = reinterpret_cast<cudaStream_t*>(launch_info._internalStreamImpl());
+  // TODO: utiliser cudaLaunchKernel() à la place.
+  kernel <<<b, t, 0, *s>>>(args,func);
+}
+#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

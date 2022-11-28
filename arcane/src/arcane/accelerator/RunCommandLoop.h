@@ -45,13 +45,7 @@ _applyGenericLoop(RunCommand& command,LoopBoundType<N> bounds,const Lambda& func
   switch(exec_policy){
   case eExecutionPolicy::CUDA:
 #if defined(ARCANE_COMPILING_CUDA)
-    {
-      launch_info.beginExecute();
-      auto [b,t] = launch_info.threadBlockInfo();
-      cudaStream_t* s = reinterpret_cast<cudaStream_t*>(launch_info._internalStreamImpl());
-      // TODO: utiliser cudaLaunchKernel() à la place.
-      impl::doDirectGPULambdaArrayBounds<LoopBoundType<N>,Lambda> <<<b, t, 0, *s>>>(bounds,func);
-    }
+    _applyKernelCUDA(launch_info,impl::doDirectGPULambdaArrayBounds<LoopBoundType<N>,Lambda>,func,bounds);
 #else
     ARCANE_FATAL("Requesting CUDA kernel execution but the kernel is not compiled with CUDA compiler");
 #endif
@@ -172,23 +166,23 @@ void operator<<(ArrayBoundRunCommand<N,ForLoopBoundType<N>>&& nr,const Lambda& f
 
 //! Boucle sur accélérateur
 #define RUNCOMMAND_LOOPN(iter_name, N, ...)                           \
-  A_FUNCINFO << ArrayBounds<typename MDDimType<N>::DimType>(__VA_ARGS__) << [=] ARCCORE_HOST_DEVICE (ArrayBoundsIndex<N> iter_name )
+  A_FUNCINFO << Arcane::ArrayBounds<typename Arcane::MDDimType<N>::DimType>(__VA_ARGS__) << [=] ARCCORE_HOST_DEVICE (Arcane::ArrayIndex<N> iter_name )
 
 //! Boucle sur accélérateur
 #define RUNCOMMAND_LOOP1(iter_name, x1)                             \
-  A_FUNCINFO << ArrayBounds<MDDim1>(x1) << [=] ARCCORE_HOST_DEVICE (ArrayBoundsIndex<1> iter_name )
+  A_FUNCINFO << Arcane::ArrayBounds<MDDim1>(x1) << [=] ARCCORE_HOST_DEVICE (Arcane::ArrayIndex<1> iter_name )
 
 //! Boucle sur accélérateur
 #define RUNCOMMAND_LOOP2(iter_name, x1, x2)                             \
-  A_FUNCINFO << ArrayBounds<MDDim2>(x1,x2) << [=] ARCCORE_HOST_DEVICE (ArrayBoundsIndex<2> iter_name )
+  A_FUNCINFO << Arcane::ArrayBounds<MDDim2>(x1,x2) << [=] ARCCORE_HOST_DEVICE (Arcane::ArrayIndex<2> iter_name )
 
 //! Boucle sur accélérateur
 #define RUNCOMMAND_LOOP3(iter_name, x1, x2, x3) \
-  A_FUNCINFO << ArrayBounds<MDDim3>(x1,x2,x3) << [=] ARCCORE_HOST_DEVICE (ArrayBoundsIndex<3> iter_name )
+  A_FUNCINFO << Arcane::ArrayBounds<MDDim3>(x1,x2,x3) << [=] ARCCORE_HOST_DEVICE (Arcane::ArrayIndex<3> iter_name )
 
 //! Boucle sur accélérateur
 #define RUNCOMMAND_LOOP4(iter_name, x1, x2, x3, x4)                        \
-  A_FUNCINFO << ArrayBounds<MDDim4>(x1,x2,x3,x4) << [=] ARCCORE_HOST_DEVICE (ArrayBoundsIndex<4> iter_name )
+  A_FUNCINFO << Arcane::ArrayBounds<MDDim4>(x1,x2,x3,x4) << [=] ARCCORE_HOST_DEVICE (Arcane::ArrayIndex<4> iter_name )
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
