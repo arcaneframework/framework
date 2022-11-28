@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Lima.cc                                                     (C) 2000-2020 */
+/* Lima.cc                                                     (C) 2000-2022 */
 /*                                                                           */
 /* Lecture/Ecriture d'un fichier au format Lima.                             */
 /*---------------------------------------------------------------------------*/
@@ -52,6 +52,8 @@
 #include "arcane/IMeshWriter.h"
 #include "arcane/AbstractService.h"
 #include "arcane/ICaseDocument.h"
+#include "arcane/ICaseMeshReader.h"
+#include "arcane/IMeshBuilder.h"
 
 #include "arcane/cea/LimaCutInfosReader.h"
 
@@ -89,9 +91,7 @@ class LimaMeshBase
   virtual ~LimaMeshBase() {}
 
  public:
-	
- public:
-	
+
   virtual bool readMesh(Lima::Maillage& lima,IPrimaryMesh* mesh,const String& filename,
                         const String& dir_name,bool use_internal_partition,Real length_multiplier) =0;
 
@@ -121,18 +121,15 @@ class LimaWrapper
  public:
 
   LimaWrapper(ISubDomain* sub_domain)
-  : LimaMeshBase(sub_domain),
-    m_cut_infos_reader(new LimaCutInfosReader(sub_domain->parallelMng())) {}
+  : LimaMeshBase(sub_domain), m_cut_infos_reader(new LimaCutInfosReader(sub_domain->parallelMng())) {}
 
   ~LimaWrapper()
-    {
-      delete m_cut_infos_reader;
-    }
+  {
+    delete m_cut_infos_reader;
+  }
 
  public:
-	
- public:
-	
+
   virtual bool readMesh(Lima::Maillage& lima,IPrimaryMesh* mesh,const String& filename,
 												const String& dir_name,bool use_internal_partition,Real length_multiplier);
 
@@ -152,13 +149,16 @@ class LimaWrapper
 
 class LimaMeshReaderWrapper
 {
-public:
-	void setLima(const Lima::Maillage& lima_mesh)
+ public:
+
+  void setLima(const Lima::Maillage& lima_mesh)
 	{
 		m_lima_mesh = lima_mesh;
 	}
-protected:
-	Lima::Maillage m_lima_mesh;
+
+ protected:
+
+  Lima::Maillage m_lima_mesh;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -333,27 +333,51 @@ class Lima3DReaderWrapper
  * \brief Lecteur des fichiers de maillage via la bibliothèque LIMA.
  */
 class LimaMeshReader
+: public TraceAccessor
+{
+ public:
+
+  LimaMeshReader(ISubDomain* sd)
+  : TraceAccessor(sd->traceMng()), m_sub_domain(sd){}
+
+ public:
+
+  auto readMesh(IPrimaryMesh* mesh, const String& file_name,
+                const String& dir_name,bool use_internal_partition,
+                bool use_length_unit) -> IMeshReader::eReturnType;
+
+ private:
+
+  ISubDomain* m_sub_domain;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Lecteur des fichiers de maillage via la bibliothèque LIMA.
+ */
+class LimaMeshReaderService
 : public AbstractService
 , public IMeshReader
 {
  public:
 
-  LimaMeshReader(const ServiceBuildInfo& sbi);
+  explicit LimaMeshReaderService(const ServiceBuildInfo& sbi);
 
  public:
 	
-	virtual void build() {}
+	void build() {}
 
  public:
 	
-	virtual bool allowExtension(const String& str)
+	bool allowExtension(const String& str) override
 	{
     return str=="unf" || str=="mli" || str=="mli2" || str=="ice" || str=="uns" || str=="unv";
 	}
 
-  virtual eReturnType readMeshFromFile(IPrimaryMesh* mesh,const XmlNode& mesh_node,
-                                       const String& file_name,
-                                       const String& dir_name,bool use_internal_partition);
+  eReturnType readMeshFromFile(IPrimaryMesh* mesh,const XmlNode& mesh_node,
+                               const String& file_name,
+                               const String& dir_name,bool use_internal_partition) override;
   ISubDomain* subDomain() { return m_sub_domain; }
 
  private:
@@ -366,13 +390,15 @@ class LimaMeshReader
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SUB_DOMAIN_FACTORY(LimaMeshReader,IMeshReader,Lima);
+ARCANE_REGISTER_SERVICE(LimaMeshReaderService,
+                        ServiceProperty("Lima",ST_SubDomain),
+                        ARCANE_SERVICE_INTERFACE(IMeshReader));
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-LimaMeshReader::
-LimaMeshReader(const ServiceBuildInfo& sbi)
+LimaMeshReaderService::
+LimaMeshReaderService(const ServiceBuildInfo& sbi)
 : AbstractService(sbi)
 , m_sub_domain(sbi.subDomain())
 {
@@ -396,22 +422,18 @@ _directLimaPartitionMalipp2(ITimerMng* timer_mng,IPrimaryMesh* mesh,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IMeshReader::eReturnType LimaMeshReader::
+IMeshReader::eReturnType LimaMeshReaderService::
 readMeshFromFile(IPrimaryMesh* mesh,const XmlNode& mesh_node,
                  const String& filename,const String& dir_name,
-								 bool use_internal_partition)
+                 bool use_internal_partition)
 {
-  if (filename.null() || filename.empty())
-    return RTIrrelevant;
-  
   ISubDomain* sd = subDomain();
-  ITraceMng* trace = mesh->traceMng();
-  ITimerMng* timer_mng = sd->timerMng();
-	LimaMeshBase* lm = 0;
+
   String case_doc_lang = "en";
   ICaseDocument* case_doc = sd->caseDocument();
   if (case_doc)
     case_doc_lang = case_doc->language();
+
   // Regarde si on souhaite utiliser l'unité de longueur dans le fichier de maillage.
   String use_unit_attr_name = "utilise-unite";
   String use_unit_str = mesh_node.attrValue(use_unit_attr_name);
@@ -446,6 +468,28 @@ readMeshFromFile(IPrimaryMesh* mesh,const XmlNode& mesh_node,
   }
 
   info() << "Utilise l'unité de longueur de Lima: " << use_length_unit << " (lang=" << case_doc_lang << ")";
+
+  LimaMeshReader reader(sd);
+  return reader.readMesh(mesh,filename,dir_name,use_internal_partition,use_length_unit);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IMeshReader::eReturnType LimaMeshReader::
+readMesh(IPrimaryMesh* mesh,const String& filename,const String& dir_name,
+         bool use_internal_partition, bool use_length_unit)
+{
+  if (filename.null() || filename.empty())
+    return IMeshReader::RTIrrelevant;
+
+  ISubDomain* sd = m_sub_domain;
+  ITimerMng* timer_mng = sd->timerMng();
+	LimaMeshBase* lm = 0;
+  ICaseDocument* case_doc = sd->caseDocument();
+
+  info() << "Lima: use_length_unit=" << use_length_unit
+         << " use_internal_partition=" << use_internal_partition;
   Real length_multiplier = 0.0;
   if (use_length_unit){
     String code_system;
@@ -477,7 +521,7 @@ readMeshFromFile(IPrimaryMesh* mesh,const XmlNode& mesh_node,
   bool has_thread = false; //arcaneHasThread();
   // On ne peut pas utiliser l'api mali pp avec les threads
   if (!has_thread && use_internal_partition && ((rpos+4)==loc_file_name.length())){
-    trace->info() << "Use direct partitioning with mli";
+    info() << "Use direct partitioning with mli";
 #ifdef ARCANE_LIMA_HAS_MLI
     return _directLimaPartitionMalipp(timer_mng,mesh,filename,length_multiplier);
 #else
@@ -485,7 +529,7 @@ readMeshFromFile(IPrimaryMesh* mesh,const XmlNode& mesh_node,
 #endif
   }
   else if (!has_thread && use_internal_partition && ((rpos2+5)==loc_file_name.length())){
-    trace->info() << "Use direct partitioning with mli2";
+    info() << "Use direct partitioning with mli2";
 #ifdef ARCANE_LIMA_HAS_MLI2
     return _directLimaPartitionMalipp2(timer_mng,mesh,filename,length_multiplier);
 #else
@@ -493,24 +537,24 @@ readMeshFromFile(IPrimaryMesh* mesh,const XmlNode& mesh_node,
 #endif
   }
   else {
-    trace->info() << "Chargement Lima du fichier '" << filename << "'";
+    info() << "Chargement Lima du fichier '" << filename << "'";
 
     const char* version = Lima::lima_version();
-    trace->info() << "Utilisation de la version " << version << " de Lima";
+    info() << "Utilisation de la version " << version << " de Lima";
 
-    Timer time_to_read(subDomain(),"ReadLima",Timer::TimerReal);
+    Timer time_to_read(sd,"ReadLima",Timer::TimerReal);
 
     // Aucune préparation spécifique à faire
     LM_TYPEMASQUE preparation = LM_ORIENTATION | LM_COMPACTE;
 
-    trace->log() << "Début lecture fichier " << filename;
+    log() << "Début lecture fichier " << filename;
   
     Lima::Maillage lima(filename.localstr());
 
     try{
       {
         Timer::Sentry sentry(&time_to_read);
-        Timer::Phase t_action(subDomain(),TP_InputOutput);
+        Timer::Phase t_action(sd,TP_InputOutput);
         lima.lire(filename.localstr(),Lima::SUFFIXE,true);
         //warning() << "Preparation lima supprimée";
         lima.preparation_parametrable(preparation);
@@ -523,38 +567,35 @@ readMeshFromFile(IPrimaryMesh* mesh,const XmlNode& mesh_node,
       ARCANE_FATAL("Can not read lima file '{0}'",filename);
     }
     
-    trace->info() << "Temps de lecture et préparation du maillage (unité: seconde): "
-                  << time_to_read.lastActivationTime();
+    info() << "Temps de lecture et préparation du maillage (unité: seconde): "
+           << time_to_read.lastActivationTime();
     // Si la dimension n'est pas encore positionnée, utilise celle
     // donnée par Lima.
     if (mesh->dimension()<=0){
       if (lima.dimension()==Lima::D3){
         mesh->setDimension(3);
-        trace->info() << "Maillage 3D";
+        info() << "Maillage 3D";
       }
       else if (lima.dimension()==Lima::D2){
         mesh->setDimension(2);
-        trace->info() << "Maillage 2D";
+        info() << "Maillage 2D";
       }
     }
 
     if (mesh->dimension()==3){
-      lm = new LimaWrapper<Lima3DReaderWrapper>(subDomain());
+      lm = new LimaWrapper<Lima3DReaderWrapper>(sd);
     }
     else if (mesh->dimension()==2){
-      lm = new LimaWrapper<Lima2DReaderWrapper>(subDomain());
+      lm = new LimaWrapper<Lima2DReaderWrapper>(sd);
     }
     if (!lm){
-      trace->log() << "Dimension du maillage non reconnue par lima";
-      return RTIrrelevant;
+      log() << "Dimension du maillage non reconnue par lima";
+      return IMeshReader::RTIrrelevant;
     }
     
     bool ret = lm->readMesh(lima,mesh,filename,dir_name,use_internal_partition,length_multiplier);
     if (ret)
-      return RTError;
-
-    {
-    }
+      return IMeshReader::RTError;
 
     // A faire si plusieurs couches de mailles fantomes
     {
@@ -566,7 +607,7 @@ readMeshFromFile(IPrimaryMesh* mesh,const XmlNode& mesh_node,
     delete lm;
   }
 
-  return RTOk;
+  return IMeshReader::RTOk;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1116,6 +1157,80 @@ _getProcList(UniqueArray<Integer>& proc_list,const String& dir_name)
     }
   }
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class LimaCaseMeshReader
+: public AbstractService
+, public ICaseMeshReader
+{
+ public:
+
+  class Builder
+  : public IMeshBuilder
+  {
+   public:
+
+    explicit Builder(ISubDomain* sd, const CaseMeshReaderReadInfo& read_info)
+    : m_sub_domain(sd)
+    , m_trace_mng(sd->traceMng())
+    , m_read_info(read_info)
+    {}
+
+   public:
+
+    void fillMeshBuildInfo(MeshBuildInfo& build_info) override
+    {
+      ARCANE_UNUSED(build_info);
+    }
+    void allocateMeshItems(IPrimaryMesh* pm) override
+    {
+      LimaMeshReader reader(m_sub_domain);
+      String fname = m_read_info.fileName();
+      m_trace_mng->info() << "Lima Reader (ICaseMeshReader) file_name=" << fname;
+      bool use_length_unit = true; // Avec le ICaseMeshReader on utilise toujours le système d'unité.
+      String directory_name = m_read_info.directoryName();
+      IMeshReader::eReturnType ret = reader.readMesh(pm, fname, directory_name, m_read_info.isParallelRead(), use_length_unit);
+      if (ret != IMeshReader::RTOk)
+        ARCANE_FATAL("Can not read MSH File");
+    }
+
+   private:
+
+    ISubDomain* m_sub_domain;
+    ITraceMng* m_trace_mng;
+    CaseMeshReaderReadInfo m_read_info;
+  };
+
+ public:
+
+  explicit LimaCaseMeshReader(const ServiceBuildInfo& sbi)
+  : AbstractService(sbi), m_sub_domain(sbi.subDomain())
+  {}
+
+ public:
+
+  Ref<IMeshBuilder> createBuilder(const CaseMeshReaderReadInfo& read_info) const override
+  {
+    IMeshBuilder* builder = nullptr;
+    String str = read_info.format();
+    if (str=="unf" || str=="mli" || str=="mli2" || str=="ice" || str=="uns" || str=="unv")
+      builder = new Builder(m_sub_domain, read_info);
+    return makeRef(builder);
+  }
+
+ private:
+
+  ISubDomain* m_sub_domain = nullptr;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ARCANE_REGISTER_SERVICE(LimaCaseMeshReader,
+                        ServiceProperty("LimaCaseMeshReader", ST_SubDomain),
+                        ARCANE_SERVICE_INTERFACE(ICaseMeshReader));
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
