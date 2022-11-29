@@ -78,15 +78,26 @@ class NumArrayUnitTest
     return static_cast<double>(i * 2 + j * 3 + k * 4 + l * 8);
   }
 
-  template <int Rank,typename LayoutType> double
-  _doSum(const NumArray<double, typename MDDimType<Rank>::DimType, LayoutType>& values,
-         ArrayBounds<typename MDDimType<Rank>::DimType> bounds)
+  template <typename NumArrayType> double
+  _doSum(const NumArrayType& values, std::array<Int32,NumArrayType::rank()> bounds)
   {
+    constexpr int Rank = NumArrayType::rank();
     double total = 0.0;
     SimpleForLoopRanges<Rank> lb(bounds);
-    arcaneSequentialFor(lb, [&](ArrayBoundsIndex<Rank> idx) { total += values(idx); });
+    arcaneSequentialFor(lb, [&](ArrayIndex<Rank> idx) { total += values(idx); });
     return total;
   }
+
+ public:
+
+  template<typename NumArrayType> void
+  _doRank1(RunQueue& queue,NumArrayType& t1,Real expected_sum);
+  template<typename NumArrayType> void
+  _doRank2(RunQueue& queue,NumArrayType& t1,Real expected_sum);
+  template<typename NumArrayType> void
+  _doRank3(RunQueue& queue,NumArrayType& t1,Real expected_sum);
+  template<typename NumArrayType> void
+  _doRank4(RunQueue& queue,NumArrayType& t1,Real expected_sum);
 
  public:
 
@@ -155,6 +166,87 @@ executeTest()
   _executeTest3();
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename NumArrayType> void NumArrayUnitTest::
+_doRank2(RunQueue& queue,NumArrayType& t1,Real expected_sum)
+{
+  ValueChecker vc(A_FUNCINFO);
+
+  auto command = makeCommand(queue);
+  auto out_t1 = viewOut(command, t1);
+  Int32 n1 = t1.extent0();
+  Int32 n2 = t1.extent1();
+  command << RUNCOMMAND_LOOP2(iter, n1, n2)
+  {
+    auto [i, j] = iter();
+    out_t1(i, j) = _getValue(i, j);
+  };
+  NumArrayType host_t1(eMemoryRessource::Host);
+  host_t1.copy(t1);
+  double s2 = _doSum(host_t1, { n1, n2 });
+  info() << "SUM2 = " << s2;
+  vc.areEqual(s2, expected_sum, "SUM2");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename NumArrayType> void NumArrayUnitTest::
+_doRank3(RunQueue& queue,NumArrayType& t1,Real expected_sum)
+{
+  ValueChecker vc(A_FUNCINFO);
+
+  auto command = makeCommand(queue);
+  auto out_t1 = viewOut(command, t1);
+  Int32 n1 = t1.extent0();
+  Int32 n2 = t1.extent1();
+  Int32 n3 = t1.extent2();
+
+  command << RUNCOMMAND_LOOP3(iter, n1, n2, n3)
+  {
+    auto [i, j, k] = iter();
+    out_t1(i, j, k) = _getValue(i, j, k);
+  };
+  NumArrayType host_t1(eMemoryRessource::Host);
+  host_t1.copy(t1);
+  double s3 = _doSum(host_t1, { n1, n2, n3 });
+  info() << "SUM3 = " << s3;
+  vc.areEqual(s3, expected_sum, "SUM3");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename NumArrayType> void NumArrayUnitTest::
+_doRank4(RunQueue& queue,NumArrayType& t1,Real expected_sum)
+{
+  ValueChecker vc(A_FUNCINFO);
+
+  auto command = makeCommand(queue);
+  auto out_t1 = viewOut(command, t1);
+  Int32 n1 = t1.extent0();
+  Int32 n2 = t1.extent1();
+  Int32 n3 = t1.extent2();
+  Int32 n4 = t1.extent3();
+  info() << "SIZE = " << n1 << " " << n2 << " " << n3 << " " << n4;
+
+  command << RUNCOMMAND_LOOP4(iter, n1, n2, n3, n4)
+  {
+    auto [i, j, k, l] = iter();
+    out_t1(i, j, k, l) = _getValue(i, j, k, l);
+  };
+  NumArrayType host_t1(eMemoryRessource::Host);
+  host_t1.copy(t1);
+  double s4 = _doSum(host_t1, { n1, n2, n3, n4 });
+  info() << "SUM4 = " << s4;
+  vc.areEqual(s4, expected_sum, "SUM4");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void NumArrayUnitTest::
 _executeTest1(eMemoryRessource mem_kind)
 {
@@ -203,7 +295,7 @@ _executeTest1(eMemoryRessource mem_kind)
       };
       NumArray<double, MDDim1> host_t1(eMemoryRessource::Host);
       host_t1.copy(t1);
-      double s1 = _doSum<1>(host_t1, { n1 });
+      double s1 = _doSum(host_t1, { n1 });
       info() << "SUM1 = " << s1;
       vc.areEqual(s1, expected_sum1, "SUM1");
     }
@@ -222,7 +314,7 @@ _executeTest1(eMemoryRessource mem_kind)
 
       NumArray<double, MDDim1> host_t2(eMemoryRessource::Host);
       host_t2.copy(t2);
-      double s2 = _doSum<1>(host_t2, { n1 });
+      double s2 = _doSum(host_t2, { n1 });
       info() << "SUM1_2 = " << s2;
       vc.areEqual(s2, expected_sum1, "SUM1_2");
     }
@@ -239,86 +331,78 @@ _executeTest1(eMemoryRessource mem_kind)
 
       NumArray<double, MDDim1> host_t3(eMemoryRessource::Host);
       host_t3.copy(t3);
-      double s3 = _doSum<1>(host_t3, { n1 });
+      double s3 = _doSum(host_t3, { n1 });
       info() << "SUM1_3 = " << s3;
       vc.areEqual(s3, expected_sum1, "SUM1_3");
     }
   }
 
+  // Tableaux 2D
   {
     NumArray<double, MDDim2> t1(mem_kind);
     t1.resize(n1, n2);
-
-    auto command = makeCommand(queue);
-    auto out_t1 = viewOut(command, t1);
-
-    command << RUNCOMMAND_LOOP2(iter, n1, n2)
-    {
-      auto [i, j] = iter();
-      out_t1(i, j) = _getValue(i, j);
-    };
-    NumArray<double, MDDim2> host_t1(eMemoryRessource::Host);
-    host_t1.copy(t1);
-    double s2 = _doSum<2>(host_t1, { n1, n2 });
-    info() << "SUM2 = " << s2;
-    vc.areEqual(s2, expected_sum2, "SUM2");
+    _doRank2(queue,t1,expected_sum2);
   }
-
   {
-    NumArray<double, MDDim3, LeftLayout3> t1(mem_kind);
-    t1.resize(n1, n2, n3);
-
-    auto command = makeCommand(queue);
-    auto out_t1 = viewOut(command, t1);
-
-    command << RUNCOMMAND_LOOP3(iter, n1, n2, n3)
-    {
-      auto [i, j, k] = iter();
-      out_t1(i, j, k) = _getValue(i, j, k);
-    };
-    NumArray<double, MDDim3, LeftLayout3> host_t1(eMemoryRessource::Host);
-    host_t1.copy(t1);
-    double s3 = _doSum<3>(host_t1, { n1, n2, n3 });
-    info() << "SUM3 = " << s3;
-    vc.areEqual(s3, expected_sum3, "SUM3");
+    NumArray<double, ExtentsV<n1,n2>> t1(mem_kind);
+    _doRank2(queue,t1,expected_sum2);
   }
-
   {
-    NumArray<double, MDDim3, RightLayout3> t1(mem_kind);
-    t1.resize(n1, n2, n3);
-
-    auto command = makeCommand(queue);
-    auto out_t1 = viewOut(command, t1);
-
-    command << RUNCOMMAND_LOOP3(iter, n1, n2, n3)
-    {
-      auto [i, j, k] = iter();
-      out_t1(i, j, k) = _getValue(i, j, k);
-    };
-    NumArray<double, MDDim3, RightLayout3> host_t1(eMemoryRessource::Host);
-    host_t1.copy(t1);
-    double s3 = _doSum<3>(host_t1, { n1, n2, n3 });
-    info() << "SUM3 = " << s3;
-    vc.areEqual(s3, expected_sum3, "SUM3");
+    NumArray<double, ExtentsV<DynExtent,n2>> t1(mem_kind);
+    t1.resize(n1);
+    _doRank2(queue,t1,expected_sum2);
+  }
+  {
+    NumArray<double, ExtentsV<n1,DynExtent>> t1(mem_kind);
+    t1.resize(n2);
+    _doRank2(queue,t1,expected_sum2);
   }
 
+  // Tableaux 3D
+  {
+    NumArray<double, MDDim3, LeftLayout> t1(mem_kind);
+    t1.resize(n1, n2, n3);
+    _doRank3(queue,t1,expected_sum3);
+  }
+  {
+    NumArray<double, MDDim3, RightLayout> t1(mem_kind);
+    t1.resize(n1, n2, n3);
+    _doRank3(queue,t1,expected_sum3);
+  }
+  {
+    NumArray<double, ExtentsV<DynExtent,n2,n3>, LeftLayout> t1(mem_kind);
+    t1.resize(n1);
+    _doRank3(queue,t1,expected_sum3);
+  }
+  {
+    NumArray<double, ExtentsV<n1,n2,n3>, LeftLayout> t1(mem_kind);
+    _doRank3(queue,t1,expected_sum3);
+  }
+  {
+    NumArray<double, ExtentsV<DynExtent,n2,DynExtent>, LeftLayout> t1(mem_kind);
+    t1.resize(n1,n3);
+    _doRank3(queue,t1,expected_sum3);
+  }
+
+  // Tableaux 4D
   {
     NumArray<double, MDDim4> t1(mem_kind);
     t1.resize(n1, n2, n3, n4);
-
-    auto command = makeCommand(queue);
-    auto out_t1 = viewOut(command, t1);
-
-    command << RUNCOMMAND_LOOP4(iter, n1, n2, n3, n4)
-    {
-      auto [i, j, k, l] = iter();
-      out_t1(i, j, k, l) = _getValue(i, j, k, l);
-    };
-    NumArray<double, MDDim4> host_t1(eMemoryRessource::Host);
-    host_t1.copy(t1);
-    double s4 = _doSum<4>(host_t1, { n1, n2, n3, n4 });
-    info() << "SUM4 = " << s4;
-    vc.areEqual(s4, expected_sum4, "SUM4");
+    _doRank4(queue,t1,expected_sum4);
+  }
+  {
+    NumArray<double, ExtentsV<n1,DynExtent,DynExtent,n4>> t1(mem_kind);
+    t1.resize(n2,n3);
+    _doRank4(queue,t1,expected_sum4);
+  }
+  {
+    NumArray<double, ExtentsV<DynExtent,DynExtent,n3,n4>, LeftLayout> t1(mem_kind);
+    t1.resize(n1, n2);
+    _doRank4(queue,t1,expected_sum4);
+  }
+  {
+    NumArray<double, ExtentsV<n1,n2,n3,n4>> t1(mem_kind);
+    _doRank4(queue,t1,expected_sum4);
   }
 }
 
@@ -394,7 +478,7 @@ _executeTest2()
   queue2.barrier();
   queue3.barrier();
 
-  double s4 = _doSum<4>(t1, { n1, n2, n3, n4 });
+  double s4 = _doSum(t1, { n1, n2, n3, n4 });
   info() << "SUM4_ASYNC = " << s4;
   vc.areEqual(s4, expected_sum4, "SUM4_ASYNC");
 }
