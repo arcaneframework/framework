@@ -10,10 +10,13 @@
 /* Variant pouvant contenir les types ConstArrayView, Real2 et Real3.        */
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/datatype/RealArrayVariant.h"
+
 #include "arcane/utils/Array.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/NumVec.h"
 
-#include "arcane/datatype/RealArrayVariant.h"
+#include "arcane/MathUtils.h"
 
 #include <iostream>
 
@@ -50,6 +53,19 @@ void _arcaneTestRealArrayVariant()
   NumArray<Real,MDDim1> num_data_copy(variant2);
   if (num_data_copy.to1DSpan()!=num_data.to1DSpan())
     ARCANE_FATAL("Bad value for copy");
+
+  RealN2 b2{ 2.0, 3.1 };
+  RealN3 b3{ 4.0, 7.2, 3.6 };
+  NumVec<Real,3> b4{ 2.0, 1.2, 4.6 };
+  RealArrayVariant b2_variant(b2);
+  RealArrayVariant b3_variant(b3);
+  NumVec<Real,2> c2(b2_variant);
+  NumVec<Real,3> c3(b3_variant);
+  auto z = c3 + b4;
+  std::cout << "Z=" << z.x() << "\n";
+  std::cout << "NORM=" << math::normalizedCrossProduct3(c3,b4).normL2();
+  for (Integer i=0 ; i<3 ; ++i)
+    std::cout << "V=" << i << " v=" << z(i) << "\n"; 
 }
 
 /*---------------------------------------------------------------------------*/
