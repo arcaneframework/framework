@@ -148,19 +148,20 @@ namespace Arcane
  * permet de retourner la valeur en lecture d'un élément. Pour modifier un élément,
  * il faut utiliser la méthode s().
  */
-template <typename DataType, typename ExtentType, typename LayoutPolicy>
+template <typename DataType, typename Extents, typename LayoutPolicy>
 class NumArrayBase
 : public impl::NumArrayBaseCommon
 {
  public:
 
-  using ConstSpanType = MDSpan<const DataType, ExtentType, LayoutPolicy>;
-  using SpanType = MDSpan<DataType, ExtentType, LayoutPolicy>;
+  using ConstSpanType = MDSpan<const DataType, Extents, LayoutPolicy>;
+  using SpanType = MDSpan<DataType, Extents, LayoutPolicy>;
   using ArrayWrapper = impl::NumArrayContainer<DataType>;
   using ArrayBoundsIndexType = typename SpanType::ArrayBoundsIndexType;
-  using ThatClass = NumArrayBase<DataType, ExtentType, LayoutPolicy>;
-  using ExtentsType = ExtentType;
+  using ThatClass = NumArrayBase<DataType, Extents, LayoutPolicy>;
+  using ExtentsType = Extents;
   using DimsType = typename ExtentsType::DimsType;
+  static constexpr int rank() { return Extents::rank(); }
 
  public:
 
@@ -238,9 +239,9 @@ class NumArrayBase
  public:
 
   void fill(const DataType& v) { m_data.fill(v); }
-  constexpr Int32 nbDimension() const { return ExtentType::rank(); }
-  ArrayExtents<ExtentType> extents() const { return m_span.extents(); }
-  ArrayExtentsWithOffset<ExtentType, LayoutPolicy> extentsWithOffset() const
+  static constexpr Int32 nbDimension() { return Extents::rank(); }
+  ArrayExtents<Extents> extents() const { return m_span.extents(); }
+  ArrayExtentsWithOffset<Extents, LayoutPolicy> extentsWithOffset() const
   {
     return m_span.extentsWithOffset();
   }
@@ -260,7 +261,7 @@ class NumArrayBase
     _checkHost(m_memory_ressource);
     m_data.copy(rhs.to1DSpan());
   }
-  void copy(const NumArrayBase<DataType, ExtentType, LayoutPolicy>& rhs)
+  void copy(const NumArrayBase<DataType, Extents, LayoutPolicy>& rhs)
   {
     this->resize(rhs.extents().dynamicExtents());
     _copy(asBytes(rhs.to1DSpan()), rhs.m_memory_ressource,
@@ -278,7 +279,7 @@ class NumArrayBase
   {
     return m_span(idx);
   }
-  void swap(NumArrayBase<DataType, ExtentType>& rhs)
+  void swap(NumArrayBase<DataType, Extents>& rhs)
   {
     m_data.swap(rhs.m_data);
     std::swap(m_span, rhs.m_span);
