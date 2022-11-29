@@ -452,7 +452,6 @@ template <typename DataType, typename Extents, typename LayoutPolicy>
 class MDSpan
 : public MDSpanIntermediate<DataType, Extents::rank(), Extents, LayoutPolicy>
 {
-  using ExtentsType = Extents;
   using UnqualifiedValueType = std::remove_cv_t<DataType>;
   friend class NumArrayBase<UnqualifiedValueType, Extents, LayoutPolicy>;
   using BaseClass = MDSpanIntermediate<DataType, Extents::rank(), Extents, LayoutPolicy>;
@@ -466,6 +465,7 @@ class MDSpan
   using BaseClass::operator();
   using ArrayExtentsWithOffsetType = typename BaseClass::ArrayExtentsWithOffsetType;
   using DimsType = typename Extents::DimsType;
+  using ExtentsType = Extents;
 
  public:
 

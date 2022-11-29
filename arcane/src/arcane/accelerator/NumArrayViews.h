@@ -34,9 +34,9 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename DataType,typename ExtentType,typename LayoutType>
+template <typename DataType, typename Extents, typename LayoutPolicy>
 class NumArrayViewSetter;
-template<typename Accessor,typename ExtentType,typename LayoutType>
+template <typename Accessor, typename Extents, typename LayoutPolicy>
 class NumArrayView;
 
 /*---------------------------------------------------------------------------*/
@@ -46,166 +46,107 @@ class NumArrayView;
  */
 class NumArrayViewBase
 {
- public:
+ protected:
+
   // Pour l'instant n'utilise pas encore \a command
   // mais il ne faut pas le supprimer
   explicit NumArrayViewBase(RunCommand&)
   {
   }
+
  private:
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Vue en lecture, écriture ou lecture/écriture sur un 'NumArray' 1D.
+ * \brief Vue en lecture, écriture ou lecture/écriture sur un 'NumArray'.
+ *
+ * Les vues fonctionnent jusqu'à des tableaux de rang 4.
  */
-template<typename Accessor,typename LayoutType>
-class NumArrayView<Accessor,MDDim1,LayoutType>
+template <typename Accessor, typename Extents, typename LayoutType>
+class NumArrayView
 : public NumArrayViewBase
 {
  public:
 
   using DataType = typename Accessor::ValueType;
-  using SpanType = MDSpan<DataType,MDDim1,LayoutType>;
+  using SpanType = MDSpan<DataType, Extents, LayoutType>;
   using AccessorReturnType = typename Accessor::AccessorReturnType;
 
  public:
 
-  NumArrayView(RunCommand& command,SpanType v)
-  : NumArrayViewBase(command), m_values(v){}
+  NumArrayView(RunCommand& command, SpanType v)
+  : NumArrayViewBase(command)
+  , m_values(v)
+  {}
 
-  ARCCORE_HOST_DEVICE AccessorReturnType operator()(Int32 i) const
+  //! Accesseur pour un tableau de rang 1
+  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 1, void>>
+  constexpr ARCCORE_HOST_DEVICE AccessorReturnType operator()(Int32 i) const
   {
     return Accessor::build(m_values.ptrAt(i));
   }
-  ARCCORE_HOST_DEVICE AccessorReturnType operator()(ArrayBoundsIndex<1> idx) const
+  //! Accesseur pour un tableau de rang 1
+  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 1, void>>
+  constexpr ARCCORE_HOST_DEVICE AccessorReturnType operator()(ArrayBoundsIndex<1> idx) const
   {
     return Accessor::build(m_values.ptrAt(idx));
   }
-  ARCCORE_HOST_DEVICE AccessorReturnType operator[](Int32 i) const
+  //! Accesseur pour un tableau de rang 1
+  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 1, void>>
+  constexpr ARCCORE_HOST_DEVICE AccessorReturnType operator[](Int32 i) const
   {
     return Accessor::build(m_values.ptrAt(i));
   }
-  ARCCORE_HOST_DEVICE AccessorReturnType operator[](ArrayBoundsIndex<1> idx) const
+  //! Accesseur pour un tableau de rang 1
+  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 1, void>>
+  constexpr ARCCORE_HOST_DEVICE AccessorReturnType operator[](ArrayBoundsIndex<1> idx) const
   {
     return Accessor::build(m_values.ptrAt(idx));
   }
-  ARCCORE_HOST_DEVICE Span<DataType> to1DSpan() const
+
+  //! Accesseur pour un tableau de rang 2
+  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 2, void>>
+  constexpr ARCCORE_HOST_DEVICE AccessorReturnType operator()(Int32 i, Int32 j) const
   {
-    return m_values.to1DSpan();
+    return Accessor::build(m_values.ptrAt(i, j));
   }
-
- private:
-
-  SpanType m_values;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Vue en lecture, écriture ou lecture/écriture sur un 'NumArray' 2D.
- */
-template<typename Accessor,typename LayoutType>
-class NumArrayView<Accessor,MDDim2,LayoutType>
-: public NumArrayViewBase
-{
- public:
-
-  using DataType = typename Accessor::ValueType;
-  using SpanType = MDSpan<DataType,MDDim2,LayoutType>;
-  using AccessorReturnType = typename Accessor::AccessorReturnType;
-
- public:
-
-  NumArrayView(RunCommand& command,SpanType v)
-  : NumArrayViewBase(command), m_values(v){}
-
-  ARCCORE_HOST_DEVICE AccessorReturnType operator()(Int32 i,Int32 j) const
-  {
-    return Accessor::build(m_values.ptrAt(i,j));
-  }
-  ARCCORE_HOST_DEVICE AccessorReturnType operator()(ArrayBoundsIndex<2> idx) const
+  //! Accesseur pour un tableau de rang 2
+  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 2, void>>
+  constexpr ARCCORE_HOST_DEVICE AccessorReturnType operator()(ArrayBoundsIndex<2> idx) const
   {
     return Accessor::build(m_values.ptrAt(idx));
   }
-  ARCCORE_HOST_DEVICE Span<DataType> to1DSpan() const
+
+  //! Accesseur pour un tableau de rang 3
+  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 3, void>>
+  constexpr ARCCORE_HOST_DEVICE AccessorReturnType operator()(Int32 i, Int32 j, Int32 k) const
   {
-    return m_values.to1DSpan();
+    return Accessor::build(m_values.ptrAt(i, j, k));
   }
-
- private:
-
-  SpanType m_values;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Vue en lecture, écriture ou lecture/écriture sur un 'NumArray' 3D.
- */
-template<typename Accessor,typename LayoutType>
-class NumArrayView<Accessor,MDDim3,LayoutType>
-: public NumArrayViewBase
-{
- public:
-
-  using DataType = typename Accessor::ValueType;
-  using SpanType = MDSpan<DataType,MDDim3,LayoutType>;
-  using AccessorReturnType = typename Accessor::AccessorReturnType;
-
- public:
-
-  NumArrayView(RunCommand& command,SpanType v)
-  : NumArrayViewBase(command), m_values(v){}
-
-  ARCCORE_HOST_DEVICE AccessorReturnType operator()(Int32 i,Int32 j,Int32 k) const
-  {
-    return Accessor::build(m_values.ptrAt(i,j,k));
-  }
-  ARCCORE_HOST_DEVICE AccessorReturnType operator()(ArrayBoundsIndex<3> idx) const
+  //! Accesseur pour un tableau de rang 3
+  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 3, void>>
+  constexpr ARCCORE_HOST_DEVICE AccessorReturnType operator()(ArrayBoundsIndex<3> idx) const
   {
     return Accessor::build(m_values.ptrAt(idx));
   }
-  ARCCORE_HOST_DEVICE Span<DataType> to1DSpan() const
+
+  //! Accesseur pour un tableau de rang 4
+  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 4, void>>
+  constexpr ARCCORE_HOST_DEVICE AccessorReturnType operator()(Int32 i, Int32 j, Int32 k, Int32 l) const
   {
-    return m_values.to1DSpan();
+    return Accessor::build(m_values.ptrAt(i, j, k, l));
   }
-
- private:
-
-  SpanType m_values;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Vue en lecture, écriture ou lecture/écriture sur un 'NumArray' 4D.
- */
-template<typename Accessor,typename LayoutType>
-class NumArrayView<Accessor,MDDim4,LayoutType>
-: public NumArrayViewBase
-{
- public:
-
-  using DataType = typename Accessor::ValueType;
-  using SpanType = MDSpan<DataType,MDDim4,LayoutType>;
-  using AccessorReturnType = typename Accessor::AccessorReturnType;
-
- public:
-
-  NumArrayView(RunCommand& command,SpanType v)
-  : NumArrayViewBase(command), m_values(v){}
-
-  ARCCORE_HOST_DEVICE AccessorReturnType operator()(Int32 i,Int32 j,Int32 k,Int32 l) const
-  {
-    return Accessor::build(m_values.ptrAt(i,j,k,l));
-  }
-  ARCCORE_HOST_DEVICE AccessorReturnType operator()(ArrayBoundsIndex<4> idx) const
+  //! Accesseur pour un tableau de rang 4
+  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 4, void>>
+  constexpr ARCCORE_HOST_DEVICE AccessorReturnType operator()(ArrayBoundsIndex<4> idx) const
   {
     return Accessor::build(m_values.ptrAt(idx));
   }
-  ARCCORE_HOST_DEVICE Span<DataType> to1DSpan() const
+
+  //! Converti en une vue 1D.
+  constexpr ARCCORE_HOST_DEVICE Span<DataType> to1DSpan() const
   {
     return m_values.to1DSpan();
   }
@@ -220,11 +161,11 @@ class NumArrayView<Accessor,MDDim4,LayoutType>
 /*!
  * \brief Vue en écriture.
  */
-template<typename DataType,typename ExtentType,typename LayoutType> auto
-viewOut(RunCommand& command,NumArray<DataType,ExtentType,LayoutType>& var)
+template <typename DataType, typename Extents, typename LayoutPolicy> auto
+viewOut(RunCommand& command, NumArray<DataType, Extents, LayoutPolicy>& var)
 {
   using Accessor = DataViewSetter<DataType>;
-  return NumArrayView<Accessor,ExtentType,LayoutType>(command,var.span());
+  return NumArrayView<Accessor, Extents, LayoutPolicy>(command, var.span());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -233,11 +174,11 @@ viewOut(RunCommand& command,NumArray<DataType,ExtentType,LayoutType>& var)
 /*!
  * \brief Vue en lecture/écriture.
  */
-template<typename DataType,typename ExtentType,typename LayoutType> auto
-viewInOut(RunCommand& command,NumArray<DataType,ExtentType,LayoutType>& v)
+template <typename DataType, typename Extents, typename LayoutPolicy> auto
+viewInOut(RunCommand& command, NumArray<DataType, Extents, LayoutPolicy>& v)
 {
   using Accessor = DataViewGetterSetter<DataType>;
-  return NumArrayView<Accessor,ExtentType,LayoutType>(command,v.span());
+  return NumArrayView<Accessor, Extents, LayoutPolicy>(command, v.span());
 }
 
 /*----------------------------------------------1-----------------------------*/
@@ -245,11 +186,11 @@ viewInOut(RunCommand& command,NumArray<DataType,ExtentType,LayoutType>& v)
 /*!
  * \brief Vue en lecture.
  */
-template<typename DataType,typename ExtentType,typename LayoutType> auto
-viewIn(RunCommand& command,const NumArray<DataType,ExtentType,LayoutType>& v)
+template <typename DataType, typename Extents, typename LayoutType> auto
+viewIn(RunCommand& command, const NumArray<DataType, Extents, LayoutType>& v)
 {
   using Accessor = DataViewGetter<DataType>;
-  return NumArrayView<Accessor,ExtentType,LayoutType>(command,v.constSpan());
+  return NumArrayView<Accessor, Extents, LayoutType>(command, v.constSpan());
 }
 
 /*---------------------------------------------------------------------------*/
