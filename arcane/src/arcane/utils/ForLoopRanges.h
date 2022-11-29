@@ -65,6 +65,7 @@ class SimpleForLoopRanges
 
  public:
 
+  explicit SimpleForLoopRanges(std::array<Int32,N> b) : m_bounds(b){}
   SimpleForLoopRanges(ArrayBoundsType b) : m_bounds(b){}
 
  public:

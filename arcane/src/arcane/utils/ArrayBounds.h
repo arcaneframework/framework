@@ -31,18 +31,18 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename ExtentType>
+template <typename Extents>
 class ArrayBoundsBase
-: private ArrayExtents<ExtentType>
+: private ArrayExtents<Extents>
 {
  public:
 
-  using BaseClass = ArrayExtents<ExtentType>;
+  using BaseClass = ArrayExtents<Extents>;
   using BaseClass::asStdArray;
   using BaseClass::constExtent;
   using BaseClass::getIndices;
   using IndexType = typename BaseClass::IndexType;
-  using ArrayExtentType = Arcane::ArrayExtents<ExtentType>;
+  using ArrayExtentType = Arcane::ArrayExtents<Extents>;
 
  public:
 
@@ -50,9 +50,14 @@ class ArrayBoundsBase
   : m_nb_element(0)
   {}
   constexpr explicit ArrayBoundsBase(const BaseClass& rhs)
-  : ArrayExtents<ExtentType>(rhs)
+  : ArrayExtents<Extents>(rhs)
   {
     m_nb_element = this->totalNbElement();
+  }
+
+  constexpr explicit ArrayBoundsBase(const std::array<Int32, Extents::nb_dynamic>& v)
+  : BaseClass(v)
+  {
   }
 
  public:
@@ -67,92 +72,46 @@ class ArrayBoundsBase
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <int X0>
-class ArrayBounds<ExtentsV<X0>>
-: public ArrayBoundsBase<ExtentsV<X0>>
+template <typename Extents>
+class ArrayBounds
+: public ArrayBoundsBase<Extents>
 {
-  using ExtentsType = ExtentsV<X0>;
+  using ExtentsType = Extents;
   using BaseClass = ArrayBoundsBase<ExtentsType>;
+  using ArrayExtentsType = ArrayExtents<ExtentsType>;
 
  public:
 
-  // Note: le constructeur ne doit pas être explicite pour permettre la conversion
-  // à partir d'un entier.
-  constexpr ArrayBounds(Int32 dim1)
-  : BaseClass(ArrayExtents<ExtentsType>(dim1))
-  {
-  }
-
-  constexpr explicit ArrayBounds(const ArrayExtents<ExtentsType>& v)
-  : BaseClass(v)
-  {
-  }
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<int X0,int X1>
-class ArrayBounds<ExtentsV<X0,X1>>
-: public ArrayBoundsBase<ExtentsV<X0,X1>>
-{
-  using ExtentsType = ExtentsV<X0,X1>;
-  using BaseClass = ArrayBoundsBase<ExtentsType>;
-
- public:
-
-  constexpr ArrayBounds(Int32 dim1, Int32 dim2)
-  : BaseClass(ArrayExtents<ExtentsType>(dim1, dim2))
-  {
-  }
-
-  constexpr explicit ArrayBounds(const ArrayExtents<ExtentsType>& v)
-  : BaseClass(v)
-  {
-  }
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<int X0,int X1,int X2>
-class ArrayBounds<ExtentsV<X0,X1,X2>>
-: public ArrayBoundsBase<ExtentsV<X0,X1,X2>>
-{
-  using ExtentsType = ExtentsV<X0,X1,X2>;
-  using BaseClass = ArrayBoundsBase<ExtentsType>;
-
- public:
-
-  constexpr ArrayBounds(Int32 dim1, Int32 dim2, Int32 dim3)
-  : BaseClass(ArrayExtents<ExtentsType>(dim1, dim2, dim3))
-  {
-  }
-
-  constexpr explicit ArrayBounds(const ArrayExtents<ExtentsType>& v)
-  : BaseClass(v)
-  {
-  }
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<int X0,int X1,int X2,int X3>
-class ArrayBounds<ExtentsV<X0,X1,X2,X3>>
-: public ArrayBoundsBase<ExtentsV<X0,X1,X2,X3>>
-{
-  using ExtentsType = ExtentsV<X0,X1,X2,X3>;
-  using BaseClass = ArrayBoundsBase<ExtentsType>;
-
- public:
-
+  template <typename X = Extents, typename = std::enable_if_t<X::nb_dynamic == 4, void>>
   constexpr ArrayBounds(Int32 dim1, Int32 dim2, Int32 dim3, Int32 dim4)
-  : BaseClass(ArrayExtents<ExtentsType>(dim1, dim2, dim3, dim4))
+  : BaseClass(ArrayExtentsType(dim1, dim2, dim3, dim4))
   {
   }
 
-  constexpr explicit ArrayBounds(const ArrayExtents<ExtentsType>& v)
+  template <typename X = Extents, typename = std::enable_if_t<X::nb_dynamic == 3, void>>
+  constexpr ArrayBounds(Int32 dim1, Int32 dim2, Int32 dim3)
+  : BaseClass(ArrayExtentsType(dim1, dim2, dim3))
+  {
+  }
+
+  template <typename X = Extents, typename = std::enable_if_t<X::nb_dynamic == 2, void>>
+  constexpr ArrayBounds(Int32 dim1, Int32 dim2)
+  : BaseClass(ArrayExtentsType(dim1, dim2))
+  {
+  }
+
+  template <typename X = Extents, typename = std::enable_if_t<X::nb_dynamic == 1, void>>
+  constexpr ArrayBounds(Int32 dim1)
+  : BaseClass(ArrayExtentsType(dim1))
+  {
+  }
+
+  constexpr explicit ArrayBounds(const ArrayExtentsType& v)
+  : BaseClass(v)
+  {
+  }
+
+  constexpr explicit ArrayBounds(std::array<Int32, Extents::nb_dynamic>& v)
   : BaseClass(v)
   {
   }
