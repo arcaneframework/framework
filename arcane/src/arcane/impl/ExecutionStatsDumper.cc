@@ -138,19 +138,51 @@ _dumpProfiling(std::ostream& o)
 void ExecutionStatsDumper::
 _dumpOneLoopListStat(std::ostream& o, const impl::ForLoopStatInfoList& stat_list)
 {
-  o << "ProfilingStat\n";
-  o << std::setw(10) << "Ncall" << std::setw(10) << "Nchunk"
-    << std::setw(10) << " T (us)" << std::setw(11) << "Tck (ns)\n";
-  Int64 cumulative_total = 0;
+  struct SortedStatInfo
+  {
+    bool operator<(const SortedStatInfo& rhs) const
+    {
+      return m_stat.execTime() > rhs.m_stat.execTime();
+    }
+    String m_name;
+    impl::ForLoopProfilingStat m_stat;
+  };
+
+  // Met 1 pour éviter de diviser par zéro.
+  Int64 cumulative_total = 1;
+
+  // Tri les fonctions par temps d'exécution décroissant
+  std::set<SortedStatInfo> sorted_set;
   for (const auto& x : stat_list._internalImpl()->m_stat_map) {
     const auto& s = x.second;
+    sorted_set.insert({ x.first, s });
+    cumulative_total += s.execTime();
+  }
+
+  o << "ProfilingStat\n";
+  o << std::setw(10) << "Ncall" << std::setw(10) << "Nchunk"
+    << std::setw(11) << " T (ms)" << std::setw(10) << "Tck (ns)"
+    << "     %  name\n";
+
+  char old_filler = o.fill();
+  for (const auto& x : sorted_set) {
+    const impl::ForLoopProfilingStat& s = x.m_stat;
     Int64 nb_loop = s.nbCall();
     Int64 nb_chunk = s.nbChunk();
-    Int64 total_time = s.execTime();
-    Int64 time_per_chunk = (nb_chunk == 0) ? 0 : (total_time / nb_chunk);
+    Int64 total_time_ns = s.execTime();
+    Int64 total_time_us = total_time_ns / 1000;
+    Int64 total_time_ms = total_time_us / 1000;
+    Int64 total_time_remaining_us = total_time_us % 1000;
+    Int64 time_per_chunk = (nb_chunk == 0) ? 0 : (total_time_ns / nb_chunk);
+    Int64 per_mil = (total_time_ns * 1000) / cumulative_total;
+    Int64 percent = per_mil / 10;
+    Int64 percent_digit = per_mil % 10;
+
     o << std::setw(10) << nb_loop << std::setw(10) << nb_chunk
-      << std::setw(10) << total_time / 1000 << std::setw(10) << time_per_chunk << "  " << x.first << "\n";
-    cumulative_total += total_time;
+      << std::setw(7) << total_time_ms << ".";
+    o << std::setfill('0') << std::setw(3) << total_time_remaining_us << std::setfill(old_filler);
+    o << std::setw(10) << time_per_chunk
+      << std::setw(4) << percent << "." << percent_digit << "  " << x.m_name << "\n";
   }
   o << "TOTAL=" << cumulative_total / 1000000 << "\n";
 }
