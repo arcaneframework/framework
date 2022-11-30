@@ -92,10 +92,12 @@ extern "C++" IConfigurationMng*
 arcaneCreateConfigurationMng(ITraceMng* tm);
 extern "C++" ARCANE_IMPL_EXPORT IServiceAndModuleFactoryMng*
 arcaneCreateServiceAndModuleFactoryMng(ITraceMng* tm);
-extern "C++" ARCANE_IMPL_EXPORT IItemEnumeratorTracer*
+extern "C++" ARCANE_IMPL_EXPORT Ref<IItemEnumeratorTracer>
 arcaneCreateItemEnumeratorTracer(ITraceMng* tm,IPerformanceCounterService* perf_counter);
 extern "C++" ARCANE_IMPL_EXPORT Ref<ICodeService>
 createArcaneCodeService(IApplication* app);
+extern "C++" ARCANE_CORE_EXPORT void
+arcaneSetSingletonItemEnumeratorTracer(Ref<IItemEnumeratorTracer> tracer);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -724,7 +726,8 @@ initialize()
         auto p = m_performance_counter_service;
         if (p.get()){
           m_trace->info() << "Enumerator tracing is enabled";
-          IItemEnumeratorTracer::_setSingleton(arcaneCreateItemEnumeratorTracer(traceMng(),p.get()));
+          Ref<IItemEnumeratorTracer> tracer(arcaneCreateItemEnumeratorTracer(traceMng(),p.get()));
+          arcaneSetSingletonItemEnumeratorTracer(tracer);
           p->initialize();
           p->start();
         }

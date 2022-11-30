@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemEnumeratorTracer.cc                                     (C) 2000-2016 */
+/* ItemEnumeratorTracer.cc                                     (C) 2000-2022 */
 /*                                                                           */
 /* Trace les appels aux énumérateur sur les entités.                         */
 /*---------------------------------------------------------------------------*/
@@ -21,15 +21,16 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCANE_IMPL_EXPORT IItemEnumeratorTracer*
+extern "C++" ARCANE_IMPL_EXPORT Ref<IItemEnumeratorTracer>
 arcaneCreateItemEnumeratorTracer(ITraceMng* tm,IPerformanceCounterService* perf_counter)
 {
-  return new ItemEnumeratorTracer(tm,perf_counter);
+  return Arccore::makeRef<IItemEnumeratorTracer>(new ItemEnumeratorTracer(tm,perf_counter));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -116,7 +117,7 @@ dumpStats()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

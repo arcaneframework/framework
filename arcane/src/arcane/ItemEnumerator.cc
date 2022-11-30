@@ -12,6 +12,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/ItemEnumerator.h"
+#include "arcane/utils/Ref.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -22,13 +23,27 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IItemEnumeratorTracer* IItemEnumeratorTracer::m_singleton = nullptr;
-
-void IItemEnumeratorTracer::
-_setSingleton(IItemEnumeratorTracer* tracer)
+namespace
 {
-  delete m_singleton;
-  m_singleton = tracer;
+Ref<IItemEnumeratorTracer> m_singleton_tracer;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IItemEnumeratorTracer* IItemEnumeratorTracer::
+singleton()
+{
+  return m_singleton_tracer.get();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ARCANE_CORE_EXPORT void
+arcaneSetSingletonItemEnumeratorTracer(Ref<IItemEnumeratorTracer> tracer)
+{
+  m_singleton_tracer = tracer;
 }
 
 /*---------------------------------------------------------------------------*/
