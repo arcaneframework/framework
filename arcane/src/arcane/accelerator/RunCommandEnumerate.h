@@ -74,7 +74,7 @@ _applyItems(RunCommand& command,ItemVectorViewT<ItemType> items,const Lambda& fu
     _applyKernelHIP(launch_info,ARCANE_KERNEL_HIP_FUNC(doIndirectGPULambda)<ItemType,Lambda>,func,items.localIds());
     break;
   case eExecutionPolicy::Sequential:
-    ENUMERATE_ITEM(iitem,items){
+    ENUMERATE_NO_TRACE_(ItemType,iitem,items){
       func(LocalIdType(iitem.itemLocalId()));
     }
     break;
