@@ -205,8 +205,11 @@ notifyBeginLaunchKernel()
   // TODO: utiliser la bonne stream en séquentiel
   m_start_event->recordQueue(stream);
   m_has_been_launched = true;
-  if (ProfilingRegistry::hasProfiling())
+  if (ProfilingRegistry::hasProfiling()){
+    m_begin_time = platform::getRealTimeNS();
     m_loop_one_exec_stat_ptr = &m_loop_one_exec_stat;
+    m_loop_one_exec_stat.setBeginTime(m_begin_time);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -247,7 +250,7 @@ notifyEndExecuteKernel()
 
   ForLoopOneExecStat* exec_info = m_loop_one_exec_stat_ptr;
   if (exec_info){
-    exec_info->setExecTime(diff_time_ns);
+    exec_info->setEndTime(m_begin_time+diff_time_ns);
     //std::cout << "END_EXEC exec_info=" << m_loop_run_info.traceInfo().traceInfo() << "\n";
     ForLoopTraceInfo flti(traceInfo(),kernelName());
     ProfilingRegistry::threadLocalInstance()->merge(*exec_info,flti);
@@ -266,7 +269,7 @@ _reset()
   m_trace_info = TraceInfo();
   m_nb_thread_per_block = 0;
   m_parallel_loop_options = TaskFactory::defaultParallelLoopOptions();
-  m_begin_time = 0.0;
+  m_begin_time = 0;
   m_loop_one_exec_stat.reset();
   m_loop_one_exec_stat_ptr = nullptr;
   m_has_been_launched = false;

@@ -72,7 +72,8 @@ _endLoop(EnumeratorTraceInfo& eti)
   if (ti)
     loop_trace_info = ForLoopTraceInfo(*ti);
   ForLoopOneExecStat exec_stat;
-  exec_stat.setExecTime(platform::getRealTimeNS() - eti.beginTime());
+  exec_stat.setBeginTime(eti.beginTime());
+  exec_stat.setEndTime(platform::getRealTimeNS());
   ProfilingRegistry::threadLocalInstance()->merge(exec_stat, loop_trace_info);
 }
 

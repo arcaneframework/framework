@@ -64,7 +64,7 @@ ScopedStatLoop(ForLoopOneExecStat* s)
 : m_stat_info(s)
 {
   if (m_stat_info) {
-    m_begin_time = platform::getRealTime();
+    m_begin_time = platform::getRealTimeNS();
   }
 }
 
@@ -75,9 +75,9 @@ impl::ScopedStatLoop::
 ~ScopedStatLoop()
 {
   if (m_stat_info) {
-    double v = platform::getRealTime() - m_begin_time;
-    Int64 v_as_int64 = static_cast<Int64>(v * 1.0e9);
-    m_stat_info->setExecTime(v_as_int64);
+    Int64 end_time = platform::getRealTimeNS();
+    m_stat_info->setBeginTime(m_begin_time);
+    m_stat_info->setEndTime(end_time);
   }
 }
 

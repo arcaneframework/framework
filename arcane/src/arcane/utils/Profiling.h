@@ -42,7 +42,7 @@ class ARCANE_UTILS_EXPORT ScopedStatLoop
 
  public:
 
-  double m_begin_time = 0.0;
+  Int64 m_begin_time = 0.0;
   ForLoopOneExecStat* m_stat_info = nullptr;
 };
 
@@ -99,19 +99,28 @@ class ARCANE_UTILS_EXPORT ForLoopOneExecStat
    */
   void incrementNbChunk() { ++m_nb_chunk; }
 
-  //! Positionne le temps d'exécution de la boucle en nanoseconde
-  void setExecTime(Int64 v) { m_exec_time = v; }
+  //! Positionne le temps de début de la boucle (en nanoseconde)
+  void setBeginTime(Int64 v) { m_begin_time = v; }
+
+  //! Positionne le temps de fin de la boucle en nanoseconde
+  void setEndTime(Int64 v) { m_end_time = v; }
 
   //! Nombre de chunks
   Int64 nbChunk() const { return m_nb_chunk; }
 
-  //! Temps d'exécution
-  Int64 execTime() const { return m_exec_time; }
+  /*!
+   * \brief Temps d'exécution (en nanoseconde).
+   *
+   * La valeur retournée n'est valide que si setBeginTime() et setEndTime()
+   * ont été appelés avant.
+   */
+  Int64 execTime() const { return m_end_time - m_begin_time; }
 
   void reset()
   {
     m_nb_chunk = 0;
-    m_exec_time = 0;
+    m_begin_time = 0;
+    m_end_time = 0;
   }
 
  private:
@@ -119,8 +128,11 @@ class ARCANE_UTILS_EXPORT ForLoopOneExecStat
   //! Nombre de chunk de décomposition de la boucle (en multi-thread)
   std::atomic<Int64> m_nb_chunk = 0;
 
-  // Temps total (en nano seconde)
-  Int64 m_exec_time = 0;
+  // Temps de début d'exécution
+  Int64 m_begin_time = 0;
+
+  // Temps de fin d'exécution
+  Int64 m_end_time = 0;
 };
 
 /*---------------------------------------------------------------------------*/
