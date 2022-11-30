@@ -46,13 +46,10 @@ class ArrayBoundsBase
 
  public:
 
-  constexpr ArrayBoundsBase()
-  : m_nb_element(0)
-  {}
+  ArrayBoundsBase() = default;
   constexpr explicit ArrayBoundsBase(const BaseClass& rhs)
   : ArrayExtents<Extents>(rhs)
   {
-    m_nb_element = this->totalNbElement();
   }
 
   constexpr explicit ArrayBoundsBase(const std::array<Int32, Extents::nb_dynamic>& v)
@@ -62,11 +59,7 @@ class ArrayBoundsBase
 
  public:
 
-  constexpr ARCCORE_HOST_DEVICE Int64 nbElement() const { return m_nb_element; }
-
- private:
-
-  Int64 m_nb_element;
+  constexpr ARCCORE_HOST_DEVICE Int64 nbElement() const { return this->totalNbElement(); }
 };
 
 /*---------------------------------------------------------------------------*/
