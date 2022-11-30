@@ -43,8 +43,6 @@ arcaneCreateItemEnumeratorTracer(ITraceMng* tm,IPerformanceCounterService* perf_
 ItemEnumeratorTracer::
 ItemEnumeratorTracer(ITraceMng* tm,IPerformanceCounterService* perf_counter)
 : TraceAccessor(tm)
-, m_nb_call(0)
-, m_nb_loop(0)
 , m_perf_counter(perf_counter)
 {
 }
@@ -94,7 +92,7 @@ enterEnumerator(const ItemEnumerator& e, EnumeratorTraceInfo& eti)
   m_nb_loop += e.count();
   Int64 begin_time = platform::getRealTimeNS();
   const TraceInfo* ti = eti.traceInfo();
-  if (ti)
+  if (ti && m_is_verbose)
     info() << "Loop:" << (*ti) << " count=" << e.count() << " begin_time=" << begin_time;
   _beginLoop(eti);
 }
@@ -106,8 +104,9 @@ void ItemEnumeratorTracer::
 exitEnumerator(const ItemEnumerator&, EnumeratorTraceInfo& eti)
 {
   _endLoop(eti);
-  info() << "EndLoop: cycle=" << eti.counters()[0] << " fp=" << eti.counters()[1]
-         << " L2DCM=" << eti.counters()[2];
+  if (m_is_verbose)
+    info() << "EndLoop: cycle=" << eti.counters()[0] << " fp=" << eti.counters()[1]
+           << " L2DCM=" << eti.counters()[2];
 }
 
 /*---------------------------------------------------------------------------*/
@@ -117,7 +116,7 @@ void ItemEnumeratorTracer::
 enterEnumerator(const SimdItemEnumeratorBase& e, EnumeratorTraceInfo& eti)
 {
   const TraceInfo* ti = eti.traceInfo();
-  if (ti)
+  if (ti && m_is_verbose)
     info() << "SimdLoop:" << (*ti) << " count=" << e.count();
   _beginLoop(eti);
 }
@@ -129,6 +128,7 @@ void ItemEnumeratorTracer::
 exitEnumerator(const SimdItemEnumeratorBase&, EnumeratorTraceInfo& eti)
 {
   _endLoop(eti);
+  if (m_is_verbose)
   info() << "EndSimdLoop: cycle=" << eti.counters()[0] << " fp=" << eti.counters()[1]
          << " L2DCM=" << eti.counters()[2];
 }

@@ -80,11 +80,11 @@ _endLoop(EnumeratorTraceInfo& eti)
 /*---------------------------------------------------------------------------*/
 
 void EnumeratorTracer::
-enterEnumerator(const ComponentEnumerator& e,EnumeratorTraceInfo& eti)
+enterEnumerator(const ComponentEnumerator& e, EnumeratorTraceInfo& eti)
 {
   _beginLoop(eti);
   const TraceInfo* ti = eti.traceInfo();
-  if (ti)
+  if (ti && m_is_verbose)
     info() << "Enum size=" << e.m_size << " where=" << *ti;
 }
 
@@ -92,10 +92,11 @@ enterEnumerator(const ComponentEnumerator& e,EnumeratorTraceInfo& eti)
 /*---------------------------------------------------------------------------*/
 
 void EnumeratorTracer::
-exitEnumerator(const ComponentEnumerator&,EnumeratorTraceInfo& eti)
+exitEnumerator(const ComponentEnumerator&, EnumeratorTraceInfo& eti)
 {
   _endLoop(eti);
-  info() << "EndLoop: Component counters=" << eti.counters();
+  if (m_is_verbose)
+    info() << "EndLoop: Component counters=" << eti.counters();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -143,7 +144,7 @@ enterEnumerator(const ComponentCellEnumerator& e,EnumeratorTraceInfo& eti)
   ++m_nb_call_component_cell;
   m_nb_loop_component_cell += e.m_size;
   const TraceInfo* ti = eti.traceInfo();
-  if (ti)
+  if (ti && m_is_verbose)
     info() << "ComponentCell size=" << e.m_size << " where=" << *ti;
   _beginLoop(eti);
 }
@@ -152,10 +153,11 @@ enterEnumerator(const ComponentCellEnumerator& e,EnumeratorTraceInfo& eti)
 /*---------------------------------------------------------------------------*/
 
 void EnumeratorTracer::
-exitEnumerator(const ComponentCellEnumerator&,EnumeratorTraceInfo& eti)
+exitEnumerator(const ComponentCellEnumerator&, EnumeratorTraceInfo& eti)
 {
   _endLoop(eti);
-  info() << "EndLoop: ComponentCell counters=" << eti.counters();
+  if (m_is_verbose)
+    info() << "EndLoop: ComponentCell counters=" << eti.counters();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -168,7 +170,7 @@ enterEnumerator(const AllEnvCellEnumerator& e,EnumeratorTraceInfo& eti)
   m_nb_loop_all_env_cell += e.m_size;
 
   const TraceInfo* ti = eti.traceInfo();
-  if (ti)
+  if (ti && m_is_verbose)
     info() << "ComponentCell size=" << e.m_size << " where=" << *ti;
   _beginLoop(eti);
 }
@@ -180,7 +182,8 @@ void EnumeratorTracer::
 exitEnumerator(const AllEnvCellEnumerator&,EnumeratorTraceInfo& eti)
 {
   _endLoop(eti);
-  info() << "EndLoop: AllEnvCell counters=" << eti.counters();
+  if (m_is_verbose)
+    info() << "EndLoop: AllEnvCell counters=" << eti.counters();
 }
 
 /*---------------------------------------------------------------------------*/

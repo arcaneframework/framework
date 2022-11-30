@@ -53,9 +53,10 @@ class ARCANE_IMPL_EXPORT ItemEnumeratorTracer
 
  private:
 
-  Int64 m_nb_call;
-  Int64 m_nb_loop;
-  IPerformanceCounterService* m_perf_counter;
+  Int64 m_nb_call = 0;
+  Int64 m_nb_loop = 0;
+  IPerformanceCounterService* m_perf_counter = nullptr;
+  bool m_is_verbose = false;
 
  private:
 

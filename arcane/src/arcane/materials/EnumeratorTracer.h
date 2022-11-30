@@ -80,6 +80,7 @@ class ARCANE_MATERIALS_EXPORT EnumeratorTracer
   Int64 m_nb_call_all_env_cell = 0;
 
   IPerformanceCounterService* m_perf_counter;
+  bool m_is_verbose = false;
 
  private:
 
