@@ -34,6 +34,10 @@ namespace Arcane
  * type Real.
  *
  * \warning API en cours de définition. Ne pas utiliser en dehors de Arcane
+ *
+ * Il est possible d'accéder à chaque composante du vecteur par 'operator[]'
+ * ou 'operator()' ou par les méthodes vx(), vy(), vz() si la dimension est
+ * suffisante (par exemple vz() est uniquement accessible si la Size>=3.
  */
 template <typename T, int Size>
 class ARCANE_UTILS_EXPORT NumMatrix
@@ -275,6 +279,16 @@ class ARCANE_UTILS_EXPORT NumMatrix
     ARCCORE_CHECK_AT(i, Size);
     return m_values[i];
   }
+  constexpr ARCCORE_HOST_DEVICE VectorType& operator[](Int32 i)
+  {
+    ARCCORE_CHECK_AT(i, Size);
+    return m_values[i];
+  }
+  constexpr ARCCORE_HOST_DEVICE VectorType operator[](Int32 i) const
+  {
+    ARCCORE_CHECK_AT(i, Size);
+    return m_values[i];
+  }
   constexpr ARCCORE_HOST_DEVICE T& operator()(Int32 i, Int32 j)
   {
     ARCCORE_CHECK_AT(i, Size);
@@ -291,34 +305,34 @@ class ARCANE_UTILS_EXPORT NumMatrix
  public:
 
   template <int S = Size, typename = std::enable_if_t<S >= 1, void>>
-  VectorType& x()
+  VectorType& vx()
   {
     return m_values[0];
   }
   template <int S = Size, typename = std::enable_if_t<S >= 1, void>>
-  VectorType x() const
+  VectorType vx() const
   {
     return m_values[0];
   }
 
   template <int S = Size, typename = std::enable_if_t<S >= 2, void>>
-  VectorType& y()
+  VectorType& vy()
   {
     return m_values[1];
   }
   template <int S = Size, typename = std::enable_if_t<S >= 2, void>>
-  VectorType y() const
+  VectorType vy() const
   {
     return m_values[1];
   }
 
   template <int S = Size, typename = std::enable_if_t<S >= 3, void>>
-  VectorType& z()
+  VectorType& vz()
   {
     return m_values[2];
   }
   template <int S = Size, typename = std::enable_if_t<S >= 3, void>>
-  VectorType z() const
+  VectorType vz() const
   {
     return m_values[2];
   }

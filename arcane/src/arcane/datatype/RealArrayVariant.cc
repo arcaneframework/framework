@@ -62,7 +62,7 @@ void _arcaneTestRealArrayVariant()
   NumVector<Real,2> c2(b2_variant);
   NumVector<Real,3> c3(b3_variant);
   auto z = c3 + b4;
-  std::cout << "Z=" << z.x() << "\n";
+  std::cout << "Z=" << z.vx() << "\n";
   std::cout << "NORM=" << math::normalizedCrossProduct3(c3,b4).normL2();
   for (Integer i=0 ; i<3 ; ++i)
     std::cout << "V=" << i << " v=" << z(i) << "\n"; 

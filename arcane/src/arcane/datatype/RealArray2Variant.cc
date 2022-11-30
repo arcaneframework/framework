@@ -71,7 +71,7 @@ _arcaneTestRealArray2Variant()
   RealN3x3 c33(n33_variant);
 
   auto z = m33 + c33;
-  std::cout << "Z=" << z.x().x() << "\n";
+  std::cout << "Z=" << z.vx().vx() << "\n";
   std::cout << "NORM=" << math::matrixDeterminant(math::matrix3x3Prod(z,c33));
   for (Integer i=0 ; i<3 ; ++i)
     for (Integer j=0 ; j<3 ; ++j)

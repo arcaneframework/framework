@@ -32,7 +32,11 @@ namespace Arcane
  * \note Actuellement uniquement implémenté pour 2 ou 3 valeurs et pour le
  * type Real.
  *
- * \warning API en cours de définition. Ne pas utiliser en dehors de Arcane
+ * \warning API en cours de définition. Ne pas utiliser en dehors de Arcane.
+ *
+ * Il est possible d'accéder à chaque composante du vecteur par 'operator[]'
+ * ou 'operator()' ou par les méthodes vx(), vy(), vz() si la dimension est
+ * suffisante (par exemple vz() est uniquement accessible si la Size>=3.
  */
 template <typename T, int Size>
 class NumVector
@@ -151,10 +155,6 @@ class NumVector
       v.m_values[i] = math::abs(m_values[i]);
     return v;
   }
-
-  //std::ostream& print(std::ostream& o) const;
-  //! Ecrit le triplet sur le flot \a o sous la forme (x,y,z)
-  //std::ostream& printXyz(std::ostream& o) const;
 
   //! Ajoute \a b à chaque composante de l'instance
   constexpr ARCCORE_HOST_DEVICE ThatClass& operator+=(T b)
@@ -281,36 +281,52 @@ class NumVector
     ARCCORE_CHECK_AT(i, Size);
     return m_values[i];
   }
+  constexpr ARCCORE_HOST_DEVICE T& operator[](Int32 i)
+  {
+    ARCCORE_CHECK_AT(i, Size);
+    return m_values[i];
+  }
+  constexpr ARCCORE_HOST_DEVICE T operator[](Int32 i) const
+  {
+    ARCCORE_CHECK_AT(i, Size);
+    return m_values[i];
+  }
 
+  //! Valeur de la première composante
   template <int S = Size, typename = std::enable_if_t<S >= 1, void>>
-  T& x()
+  T& vx()
   {
     return m_values[0];
   }
+  //! Valeur de la première composante
   template <int S = Size, typename = std::enable_if_t<S >= 1, void>>
-  T x() const
+  T vx() const
   {
     return m_values[0];
   }
 
+  //! Valeur de la deuxième composante
   template <int S = Size, typename = std::enable_if_t<S >= 2, void>>
-  T& y()
+  T& vy()
   {
     return m_values[1];
   }
+  //! Valeur de la deuxième composante
   template <int S = Size, typename = std::enable_if_t<S >= 2, void>>
-  T y() const
+  T vy() const
   {
     return m_values[1];
   }
 
+  //! Valeur de la troisième composante
   template <int S = Size, typename = std::enable_if_t<S >= 3, void>>
-  T& z()
+  T& vz()
   {
     return m_values[2];
   }
+  //! Valeur de la troisième composante
   template <int S = Size, typename = std::enable_if_t<S >= 3, void>>
-  T z() const
+  T vz() const
   {
     return m_values[2];
   }
