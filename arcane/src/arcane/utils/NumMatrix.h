@@ -5,17 +5,18 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NumVec.h                                                    (C) 2000-2022 */
+/* NumMatrix.h                                                 (C) 2000-2022 */
 /*                                                                           */
-/* Vecteur de taille fixe de types numériques.                               */
+/* Matrice carrée de taille fixe de types numériques.                        */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_UTILS_NUMVEC_H
-#define ARCANE_UTILS_NUMVEC_H
+#ifndef ARCANE_UTILS_NUMMATRIX_H
+#define ARCANE_UTILS_NUMMATRIX_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/Real2.h"
-#include "arcane/utils/Real3.h"
+#include "arcane/utils/NumVector.h"
+#include "arcane/utils/Real2x2.h"
+#include "arcane/utils/Real3x3.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -27,70 +28,65 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Petit vecteur de taille fixe de N données numériques.
+ * \brief Petite matrice carrée de taille fixe de N données numériques.
  *
- * \note Actuellement uniquement implémenté pour 2 ou 3 valeurs.
+ * \note Actuellement uniquement implémenté pour 2 ou 3 valeurs et pour le
+ * type Real.
  *
  * \warning API en cours de définition. Ne pas utiliser en dehors de Arcane
  */
 template <typename T, int Size>
-class NumVec
+class ARCANE_UTILS_EXPORT NumMatrix
 {
   static_assert(Size == 2 || Size == 3, "Valid values for Size are 2 or 3");
 
  public:
 
-  using ThatClass = NumVec<T, Size>;
+  using VectorType = NumVector<T, Size>;
+  using ThatClass = NumMatrix<T, Size>;
   using DataType = T;
 
  public:
 
-  //! Construit le vecteur nul.
-  NumVec() = default;
+  //! Construit la matrice avec tous les coefficiants nuls.
+  NumMatrix() = default;
 
-  //! Construit avec le couple (ax,ay)
-  template <int S = Size, typename = std::enable_if_t<S == 2, void>>
-  constexpr ARCCORE_HOST_DEVICE NumVec(T ax, T ay)
-  {
-    m_values[0] = ax;
-    m_values[1] = ay;
-  }
-
-  //! Construit avec le triplet (ax,ay,az)
+  //! Construit la matrice avec les lignes (ax,ay,az)
   template <int S = Size, typename = std::enable_if_t<S == 3, void>>
-  constexpr ARCCORE_HOST_DEVICE NumVec(T ax, T ay, T az)
+  constexpr ARCCORE_HOST_DEVICE NumMatrix(const VectorType& ax, const VectorType& ay, const VectorType& az)
   {
     m_values[0] = ax;
     m_values[1] = ay;
     m_values[2] = az;
   }
 
-  //! Construit l'instance avec pour chaque composante la valeur \a v
-  explicit constexpr ARCCORE_HOST_DEVICE NumVec(std::array<T, Size> v)
+  //! Construit la matrice avec les lignes (ax,ay)
+  template <int S = Size, typename = std::enable_if_t<S == 2, void>>
+  constexpr ARCCORE_HOST_DEVICE NumMatrix(const VectorType& ax, const VectorType& ay)
   {
-    for (int i = 0; i < Size; ++i)
-      m_values[i] = v[i];
+    m_values[0] = ax;
+    m_values[1] = ay;
   }
 
-  //! Construit l'instance avec pour chaque composante la valeur \a v
-  explicit constexpr ARCCORE_HOST_DEVICE NumVec(T v)
+  //! Construit l'instance avec le triplet (v,v,v).
+  constexpr ARCCORE_HOST_DEVICE explicit NumMatrix(T v)
   {
     for (int i = 0; i < Size; ++i)
       m_values[i] = v;
   }
 
   template <int S = Size, typename = std::enable_if_t<S == 2, void>>
-  explicit constexpr ARCCORE_HOST_DEVICE NumVec(Real2 v)
-  : NumVec(v.x, v.y)
+  explicit constexpr ARCCORE_HOST_DEVICE NumMatrix(Real2x2 v)
+  : NumMatrix(VectorType(v.x), VectorType(v.y))
   {}
 
   template <int S = Size, typename = std::enable_if_t<S == 3, void>>
-  explicit constexpr ARCCORE_HOST_DEVICE NumVec(Real3 v)
-  : NumVec(v.x, v.y, v.z)
+  explicit constexpr ARCCORE_HOST_DEVICE NumMatrix(Real3x3 v)
+  : NumMatrix(VectorType(v.x), VectorType(v.y), VectorType(v.z))
   {}
 
   //! Affecte à l'instance le triplet (v,v,v).
-  constexpr ARCCORE_HOST_DEVICE ThatClass& operator=(Real v)
+  constexpr ARCCORE_HOST_DEVICE ThatClass& operator=(T v)
   {
     for (int i = 0; i < Size; ++i)
       m_values[i] = v;
@@ -98,31 +94,64 @@ class NumVec
   }
 
   template <int S = Size, typename = std::enable_if_t<S == 2, void>>
-  constexpr ARCCORE_HOST_DEVICE ThatClass& operator=(const Real2& v)
+  constexpr ARCCORE_HOST_DEVICE ThatClass& operator=(const Real2x2& v)
   {
     *this = ThatClass(v);
     return (*this);
   }
 
   template <int S = Size, typename = std::enable_if_t<S == 3, void>>
-  constexpr ARCCORE_HOST_DEVICE ThatClass& operator=(const Real3& v)
+  constexpr ARCCORE_HOST_DEVICE ThatClass& operator=(const Real3x3& v)
   {
     *this = ThatClass(v);
     return (*this);
   }
 
   template <int S = Size, typename = std::enable_if_t<S == 2, void>>
-  operator Real2() const { return Real2(m_values[0], m_values[1]); }
+  operator Real2x2() const { return Real2x2(m_values[0], m_values[1]); }
 
   template <int S = Size, typename = std::enable_if_t<S == 3, void>>
-  operator Real3() const { return Real3(m_values[0], m_values[1], m_values[2]); }
+  operator Real3x3() const { return Real3x3(m_values[0], m_values[1], m_values[2]); }
 
  public:
 
+  //! Construit la matrice nulle
   constexpr ARCCORE_HOST_DEVICE static ThatClass zero() { return ThatClass(); }
 
+  //! Construit la matrice identité
+  template <int S = Size, typename = std::enable_if_t<S == 3, void>>
+  constexpr ARCCORE_HOST_DEVICE static ThatClass identity()
+  {
+    return ThatClass(VectorType(1.0, 0.0, 0.0), VectorType(0.0, 1.0, 0.0), VectorType(0.0, 0.0, 1.0));
+  }
+
+  //! Construit la matrice ((ax,bx,cx),(ay,by,cy),(az,bz,cz)).
+  template <int S = Size, typename = std::enable_if_t<S == 3, void>>
+  constexpr ARCCORE_HOST_DEVICE static ThatClass fromColumns(T ax, T ay, T az, T bx, T by, T bz, T cx, T cy, T cz)
+  {
+    return ThatClass(VectorType(ax, bx, cx), VectorType(ay, by, cy), VectorType(az, bz, cz));
+  }
+
+  //! Construit la matrice ((ax,bx,cx),(ay,by,cy),(az,bz,cz)).
+  template <int S = Size, typename = std::enable_if_t<S == 3, void>>
+  constexpr ARCCORE_HOST_DEVICE static ThatClass fromLines(T ax, T bx, T cx, T ay, T by, T cy, T az, T bz, T cz)
+  {
+    return ThatClass(VectorType(ax, bx, cx), VectorType(ay, by, cy), VectorType(az, bz, cz));
+  }
+
  public:
 
+  /*!
+   * \brief Compare la matrice avec la matrice nulle.
+   *
+   * La matrice est nulle si et seulement si chacune de ses composantes
+   * est inférieure à un espilon donné. La valeur de l'epsilon utilisée est celle
+   * de float_info<value_type>::nearlyEpsilon():
+   * \f[A=0 \Leftrightarrow |A.x|<\epsilon,|A.y|<\epsilon,|A.z|<\epsilon \f]
+   *
+   * \retval true si la matrice est égale à la matrice nulle,
+   * \retval false sinon.
+   */
   constexpr ARCCORE_HOST_DEVICE bool isNearlyZero() const
   {
     bool is_nearly_zero = true;
@@ -131,71 +160,32 @@ class NumVec
     return is_nearly_zero;
   }
 
-  //! Retourne la norme L2 au carré du triplet \f$x^2+y^2+z^2\f$
-  constexpr ARCCORE_HOST_DEVICE Real squareNormL2() const
-  {
-    T v = T();
-    for (int i = 0; i < Size; ++i)
-      v += m_values[i] * m_values[i];
-    return v;
-  }
-  //! Retourne la norme L2 du triplet \f$\sqrt{x^2+y^2+z^2}\f$
-  ARCCORE_HOST_DEVICE Real normL2() const { return _sqrt(squareNormL2()); }
-
-  //! Valeur absolue composante par composante.
-  ARCCORE_HOST_DEVICE ThatClass absolute() const
-  {
-    ThatClass v;
-    for (int i = 0; i < Size; ++i)
-      v.m_values[i] = math::abs(m_values[i]);
-    return v;
-  }
-
-  //std::ostream& print(std::ostream& o) const;
-  //! Ecrit le triplet sur le flot \a o sous la forme (x,y,z)
-  //std::ostream& printXyz(std::ostream& o) const;
-
-  //! Ajoute \a b à chaque composante de l'instance
-  constexpr ARCCORE_HOST_DEVICE ThatClass& operator+=(T b)
-  {
-    for (int i = 0; i < Size; ++i)
-      m_values[i] += b;
-    return (*this);
-  }
-
-  //! Ajoute \a b à l'instance
+  //! Ajoute \a b au triplet.
   constexpr ARCCORE_HOST_DEVICE ThatClass& operator+=(const ThatClass& b)
   {
     for (int i = 0; i < Size; ++i)
       m_values[i] += b.m_values[i];
     return (*this);
   }
-  //! Soustrait \a b à chaque composante de l'instance
-  constexpr ARCCORE_HOST_DEVICE ThatClass& operator-=(T b)
-  {
-    for (int i = 0; i < Size; ++i)
-      m_values[i] -= b;
-    return (*this);
-  }
-  //! Soustrait \a b à l'instance
+  //! Soustrait \a b au triplet
   constexpr ARCCORE_HOST_DEVICE ThatClass& operator-=(const ThatClass& b)
   {
     for (int i = 0; i < Size; ++i)
       m_values[i] -= b.m_values[i];
     return (*this);
   }
-  //! Multiple chaque composante par \a b
+  //! Multiple chaque composante de la matrice par le réel \a b
   constexpr ARCCORE_HOST_DEVICE ThatClass& operator*=(T b)
   {
     for (int i = 0; i < Size; ++i)
       m_values[i] *= b;
     return (*this);
   }
-  //! Divise chaque composante par \a b
+  //! Divise chaque composante de la matrice par le réel \a b
   constexpr ARCCORE_HOST_DEVICE ThatClass& operator/=(T b)
   {
     for (int i = 0; i < Size; ++i)
-      m_values[i] /= b;
+      m_values[i] *= b;
     return (*this);
   }
   //! Créé un triplet qui vaut ce triplet ajouté à \a b
@@ -214,7 +204,7 @@ class NumVec
       v.m_values[i] = a.m_values[i] - b.m_values[i];
     return v;
   }
-  //! Créé un triplet opposé au triplet actuel
+  //! Créé un tenseur opposé au tenseur actuel
   constexpr ARCCORE_HOST_DEVICE ThatClass operator-() const
   {
     ThatClass v;
@@ -222,28 +212,29 @@ class NumVec
       v.m_values[i] = -m_values[i];
     return v;
   }
+
   //! Multiplication par un scalaire.
-  friend constexpr ARCCORE_HOST_DEVICE ThatClass operator*(T a, const ThatClass& vec)
+  friend constexpr ARCCORE_HOST_DEVICE ThatClass operator*(DataType a, const ThatClass& mat)
   {
     ThatClass v;
     for (int i = 0; i < Size; ++i)
-      v.m_values[i] = a * vec.m_values[i];
+      v.m_values[i] = a * mat.m_values[i];
     return v;
   }
   //! Multiplication par un scalaire.
-  friend constexpr ARCCORE_HOST_DEVICE ThatClass operator*(const ThatClass& vec, T b)
+  friend constexpr ARCCORE_HOST_DEVICE ThatClass operator*(const ThatClass& mat, DataType b)
   {
     ThatClass v;
     for (int i = 0; i < Size; ++i)
-      v.m_values[i] = vec.m_values[i] * b;
+      v.m_values[i] = mat.m_values[i] * b;
     return v;
   }
   //! Division par un scalaire.
-  friend constexpr ARCCORE_HOST_DEVICE ThatClass operator/(const ThatClass& vec, T b)
+  friend constexpr ARCCORE_HOST_DEVICE ThatClass operator/(const ThatClass& mat, DataType b)
   {
     ThatClass v;
     for (int i = 0; i < Size; ++i)
-      v.m_values[i] = vec.m_values[i] / b;
+      v.m_values[i] = mat.m_values[i] / b;
     return v;
   }
 
@@ -256,68 +247,85 @@ class NumVec
   friend constexpr ARCCORE_HOST_DEVICE bool operator==(const ThatClass& a, const ThatClass& b)
   {
     for (int i = 0; i < Size; ++i)
-      if (!_eq(a.m_values[i], b.m_values[i]))
+      if (a.m_values[i] != b.m_values[i])
         return false;
     return true;
   }
 
   /*!
-   * \brief Compare deux vecteurs
+   * \brief Compare deux triplets.
    * Pour la notion d'égalité, voir operator==()
+   * \retval true si les deux triplets sont différents,
+   * \retval false sinon.
    */
   friend constexpr ARCCORE_HOST_DEVICE bool operator!=(const ThatClass& a, const ThatClass& b)
   {
-    return !(a == b);
+    return !operator==(b);
   }
 
-  constexpr ARCCORE_HOST_DEVICE T& operator()(Int32 i)
+ public:
+
+  constexpr ARCCORE_HOST_DEVICE VectorType& operator()(Int32 i)
   {
     ARCCORE_CHECK_AT(i, Size);
     return m_values[i];
   }
-  constexpr ARCCORE_HOST_DEVICE T operator()(Int32 i) const
+  constexpr ARCCORE_HOST_DEVICE VectorType operator()(Int32 i) const
   {
     ARCCORE_CHECK_AT(i, Size);
     return m_values[i];
   }
+  constexpr ARCCORE_HOST_DEVICE T& operator()(Int32 i, Int32 j)
+  {
+    ARCCORE_CHECK_AT(i, Size);
+    ARCCORE_CHECK_AT(j, Size);
+    return m_values[i](j);
+  }
+  constexpr ARCCORE_HOST_DEVICE T operator()(Int32 i, Int32 j) const
+  {
+    ARCCORE_CHECK_AT(i, Size);
+    ARCCORE_CHECK_AT(j, Size);
+    return m_values[i](j);
+  }
+
+ public:
 
   template <int S = Size, typename = std::enable_if_t<S >= 1, void>>
-  T& x()
+  VectorType& x()
   {
     return m_values[0];
   }
   template <int S = Size, typename = std::enable_if_t<S >= 1, void>>
-  T x() const
+  VectorType x() const
   {
     return m_values[0];
   }
 
   template <int S = Size, typename = std::enable_if_t<S >= 2, void>>
-  T& y()
+  VectorType& y()
   {
     return m_values[1];
   }
   template <int S = Size, typename = std::enable_if_t<S >= 2, void>>
-  T y() const
+  VectorType y() const
   {
     return m_values[1];
   }
 
   template <int S = Size, typename = std::enable_if_t<S >= 3, void>>
-  T& z()
+  VectorType& z()
   {
     return m_values[2];
   }
   template <int S = Size, typename = std::enable_if_t<S >= 3, void>>
-  T z() const
+  VectorType z() const
   {
     return m_values[2];
   }
 
  private:
 
-  //! Valeurs du vecteur
-  T m_values[Size] = {};
+  VectorType m_values[Size] = {};
 
  private:
 
@@ -326,15 +334,9 @@ class NumVec
    * \retval true si \a a et \a b sont égaux,
    * \retval false sinon.
    */
-  constexpr ARCCORE_HOST_DEVICE static bool
-  _eq(T a, T b)
+  constexpr ARCCORE_HOST_DEVICE static bool _eq(T a, T b)
   {
-    return math::isEqual(a, b);
-  }
-  //! Retourne la racine carrée de \a a
-  ARCCORE_HOST_DEVICE static T _sqrt(T a)
-  {
-    return math::sqrt(a);
+    return TypeEqualT<T>::isEqual(a, b);
   }
 };
 

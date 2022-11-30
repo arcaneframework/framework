@@ -14,7 +14,7 @@
 
 #include "arcane/utils/Array.h"
 #include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/NumVec.h"
+#include "arcane/utils/NumVector.h"
 
 #include "arcane/MathUtils.h"
 
@@ -56,11 +56,11 @@ void _arcaneTestRealArrayVariant()
 
   RealN2 b2{ 2.0, 3.1 };
   RealN3 b3{ 4.0, 7.2, 3.6 };
-  NumVec<Real,3> b4{ 2.0, 1.2, 4.6 };
+  NumVector<Real,3> b4{ 2.0, 1.2, 4.6 };
   RealArrayVariant b2_variant(b2);
   RealArrayVariant b3_variant(b3);
-  NumVec<Real,2> c2(b2_variant);
-  NumVec<Real,3> c3(b3_variant);
+  NumVector<Real,2> c2(b2_variant);
+  NumVector<Real,3> c3(b3_variant);
   auto z = c3 + b4;
   std::cout << "Z=" << z.x() << "\n";
   std::cout << "NORM=" << math::normalizedCrossProduct3(c3,b4).normL2();

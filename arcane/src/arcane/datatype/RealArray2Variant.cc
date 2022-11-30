@@ -14,7 +14,7 @@
 #include "arcane/datatype/RealArray2Variant.h"
 
 #include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/NumMat.h"
+#include "arcane/utils/NumMatrix.h"
 
 #include "arcane/MathUtils.h"
 
@@ -64,7 +64,7 @@ _arcaneTestRealArray2Variant()
 
   RealN2x2 n22(a22);
   RealN3x3 n33(a33);
-  NumMat<Real,3> m33(Real3x3( Real3{ 1.1, 2.9, 3.5 }, Real3{ 2.2, 4.4, 6.1 }, Real3{ -1.1, 2.5, 1.2 } ));
+  NumMatrix<Real,3> m33(Real3x3( Real3{ 1.1, 2.9, 3.5 }, Real3{ 2.2, 4.4, 6.1 }, Real3{ -1.1, 2.5, 1.2 } ));
   RealArray2Variant n22_variant(n22);
   RealArray2Variant n33_variant(n33);
   RealN2x2 c22(n22_variant);

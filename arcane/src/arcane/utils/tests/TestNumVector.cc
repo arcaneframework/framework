@@ -8,27 +8,22 @@
 #include <gtest/gtest.h>
 
 #include "arcane/utils/ValueConvert.h"
-#include "arcane/utils/NumVec.h"
-#include "arcane/utils/NumMat.h"
+#include "arcane/utils/NumVector.h"
+#include "arcane/utils/NumMatrix.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 using namespace Arcane;
 
-using RealN2 = NumVec<Real,2>;
-using RealN3 = NumVec<Real,3>;
-using RealN2x2 = NumMat<Real,2>;
-using RealN3x3 = NumMat<Real,3>;
-
-TEST(TestNumVec,RealN2)
+TEST(TestNumVector,RealN2)
 {
-  std::cout << "   sizeof(NumVec<double,2>) = " << sizeof(NumVec<double,2>) << "\n";
-  std::cout << "   sizeof(NumVec<double,3>) = " << sizeof(NumVec<double,3>) << "\n";
-  std::cout << "   sizeof(NumVec<float,2>) = " << sizeof(NumVec<float,2>) << "\n";
-  std::cout << "   sizeof(NumVec<float,3>) = " << sizeof(NumVec<float,3>) << "\n";
-  std::cout << "   sizeof(NumVec<short,2>) = " << sizeof(NumVec<short,2>) << "\n";
-  std::cout << "   sizeof(NumVec<short,3>) = " << sizeof(NumVec<short,3>) << "\n";
+  std::cout << "   sizeof(NumVector<double,2>) = " << sizeof(NumVector<double,2>) << "\n";
+  std::cout << "   sizeof(NumVector<double,3>) = " << sizeof(NumVector<double,3>) << "\n";
+  std::cout << "   sizeof(NumVector<float,2>) = " << sizeof(NumVector<float,2>) << "\n";
+  std::cout << "   sizeof(NumVector<float,3>) = " << sizeof(NumVector<float,3>) << "\n";
+  std::cout << "   sizeof(NumVector<short,2>) = " << sizeof(NumVector<short,2>) << "\n";
+  std::cout << "   sizeof(NumVector<short,3>) = " << sizeof(NumVector<short,3>) << "\n";
   {
     RealN2 v1;
     ASSERT_EQ(v1.x(),0.0);
@@ -82,7 +77,7 @@ TEST(TestNumVec,RealN2)
   }
 }
 
-TEST(TestNumVec,Real3)
+TEST(TestNumVector,Real3)
 {
   {
     RealN3 v1;
@@ -139,7 +134,7 @@ TEST(TestNumMat,Real2x2)
   }
 }
 
-TEST(TestNumVec,Real3x3)
+TEST(TestNumVector,Real3x3)
 {
   RealN3 zero;
   {
@@ -178,8 +173,8 @@ TEST(TestNumVec,Real3x3)
 
 namespace Arcane
 {
-template class NumVec<Real,2>;
-template class NumVec<Real,3>;
+template class NumVector<Real,2>;
+template class NumVector<Real,3>;
 }
 
 /*---------------------------------------------------------------------------*/
