@@ -162,10 +162,23 @@ template<typename T> class List;
 template<typename... Args> class EventObservable;
 template<typename... Args> class EventObserver;
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 class Real2;
 class Real3;
 class Real2x2;
 class Real3x3;
+template<typename T,int Size> class NumVector;
+template<typename T,int Size> class NumMatrix;
+using RealN2 = NumVector<Real,2>;
+using RealN3 = NumVector<Real,3>;
+using RealN2x2 = NumMatrix<Real,2>;
+using RealN3x3 = NumMatrix<Real,3>;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 class HPReal;
 class JSONWriter;
 class JSONValue;

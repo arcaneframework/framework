@@ -12,7 +12,11 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/datatype/RealArray2Variant.h"
+
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/NumMatrix.h"
+
+#include "arcane/MathUtils.h"
 
 #include <iostream>
 
@@ -57,6 +61,26 @@ _arcaneTestRealArray2Variant()
   std::cout << "NUM_DATA_COPY=" << num_data_copy.to1DSpan() << "\n";
   if (num_data_copy.to1DSpan()!=num_data.to1DSpan())
     ARCANE_FATAL("Bad value for copy");
+
+  RealN2x2 n22(a22);
+  RealN3x3 n33(a33);
+  NumMatrix<Real,3> m33(Real3x3( Real3{ 1.1, 2.9, 3.5 }, Real3{ 2.2, 4.4, 6.1 }, Real3{ -1.1, 2.5, 1.2 } ));
+  RealArray2Variant n22_variant(n22);
+  RealArray2Variant n33_variant(n33);
+  RealN2x2 c22(n22_variant);
+  RealN3x3 c33(n33_variant);
+
+  auto z = m33 + c33;
+  std::cout << "Z=" << z.vx().vx() << "\n";
+  std::cout << "NORM=" << math::matrixDeterminant(math::matrix3x3Prod(z,c33));
+  for (Integer i=0 ; i<3 ; ++i)
+    for (Integer j=0 ; j<3 ; ++j)
+      std::cout << "V1=" << i << " "  << j << " v=" << m33(i,j) << "\n"; 
+  for (Integer i=0 ; i<3 ; ++i){
+    auto lc = m33(i);
+    for (Integer j=0 ; j<3 ; ++j)
+      std::cout << "V2=" << i << " "  << j << " v=" << lc(j) << "\n";
+  }
 }
 
 /*---------------------------------------------------------------------------*/

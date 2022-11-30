@@ -3,6 +3,7 @@ arcane_add_component_test_executable(utils
   TestNumArray.cc
   TestDependencyInjection.cc
   TestRealN.cc
+  TestNumVector.cc
   TestValueConvert.cc
   TestCollections.cc
   )

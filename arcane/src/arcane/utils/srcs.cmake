@@ -86,6 +86,8 @@ set(ARCANE_SOURCES
   NumericTraits.h
   NumArray.h
   NumArray.cc
+  NumMatrix.h
+  NumVector.h
   Observable.cc
   Observer.cc
   Observable.h
