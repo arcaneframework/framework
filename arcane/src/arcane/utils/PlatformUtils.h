@@ -349,6 +349,14 @@ getExeFullPath();
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \brief Temps horloge en nano-secondes.
+ */
+extern "C++" ARCANE_UTILS_EXPORT Int64
+getRealTimeNS();
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \brief Retourne le chemin complet d'une bibliothèque dynamique chargée.
  *
  * Retourne le chemin complet de la bibliothèque dynamique de nom
