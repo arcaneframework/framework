@@ -49,13 +49,13 @@ class ARCANE_CORE_EXPORT IItemEnumeratorTracer
  public:
 
   //! Méthode appelée lors avant d'exécuter un ENUMERATE_
-  virtual void enterEnumerator(const ItemEnumerator& e, EnumeratorTraceInfo& eti, const TraceInfo* ti) = 0;
+  virtual void enterEnumerator(const ItemEnumerator& e, EnumeratorTraceInfo& eti) = 0;
 
   //! Méthode appelée lors après l'exécution d'un ENUMERATE_
   virtual void exitEnumerator(const ItemEnumerator& e, EnumeratorTraceInfo& eti) = 0;
 
   //! Méthode appelée lors avant d'exécuter un ENUMERATE_SIMD_
-  virtual void enterEnumerator(const SimdItemEnumeratorBase& e, EnumeratorTraceInfo& eti, const TraceInfo* ti) = 0;
+  virtual void enterEnumerator(const SimdItemEnumeratorBase& e, EnumeratorTraceInfo& eti) = 0;
 
   //! Méthode appelée lors après l'exécution d'un ENUMERATE_SIMD_
   virtual void exitEnumerator(const SimdItemEnumeratorBase& e, EnumeratorTraceInfo& eti) = 0;

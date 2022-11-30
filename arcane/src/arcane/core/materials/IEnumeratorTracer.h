@@ -45,41 +45,48 @@ class ComponentPartCellEnumerator;
 class ARCANE_CORE_EXPORT IEnumeratorTracer
 {
  private:
+
   static IEnumeratorTracer* m_singleton;
+
  public:
+
   static IEnumeratorTracer* singleton() { return m_singleton; }
   //! Internal
   static void _setSingleton(IEnumeratorTracer* tracer);
- public:
-  virtual ~IEnumeratorTracer(){}
- public:
-  virtual void enterEnumerator(const ComponentEnumerator& e,EnumeratorTraceInfo& eti,const TraceInfo* ti) =0;
-  virtual void exitEnumerator(const ComponentEnumerator& e,EnumeratorTraceInfo& eti) =0;
-
-  virtual void enterEnumerator(const MatEnumerator& e,EnumeratorTraceInfo& eti,const TraceInfo* ti) =0;
-  virtual void exitEnumerator(const MatEnumerator& e,EnumeratorTraceInfo& eti) =0;
-
-  virtual void enterEnumerator(const EnvEnumerator& e,EnumeratorTraceInfo& eti,const TraceInfo* ti) =0;
-  virtual void exitEnumerator(const EnvEnumerator& e,EnumeratorTraceInfo& eti) =0;
-
-  virtual void enterEnumerator(const ComponentCellEnumerator& e,EnumeratorTraceInfo& eti,const TraceInfo* ti) =0;
-  virtual void exitEnumerator(const ComponentCellEnumerator& e,EnumeratorTraceInfo& eti) =0;
-
-  virtual void enterEnumerator(const AllEnvCellEnumerator& e,EnumeratorTraceInfo& eti,const TraceInfo* ti) =0;
-  virtual void exitEnumerator(const AllEnvCellEnumerator& e,EnumeratorTraceInfo& eti) =0;
-
-  virtual void enterEnumerator(const CellComponentCellEnumerator& e,EnumeratorTraceInfo& eti,const TraceInfo* ti) =0;
-  virtual void exitEnumerator(const CellComponentCellEnumerator& e,EnumeratorTraceInfo& eti) =0;
-
-  virtual void enterEnumerator(const ComponentPartSimdCellEnumerator& e,EnumeratorTraceInfo& eti,const TraceInfo* ti) =0;
-  virtual void exitEnumerator(const ComponentPartSimdCellEnumerator& e,EnumeratorTraceInfo& eti) =0;
-
-  virtual void enterEnumerator(const ComponentPartCellEnumerator& e,EnumeratorTraceInfo& eti,const TraceInfo* ti) =0;
-  virtual void exitEnumerator(const ComponentPartCellEnumerator& e,EnumeratorTraceInfo& eti) =0;
 
  public:
 
-  virtual void dumpStats() =0;
+  virtual ~IEnumeratorTracer() {}
+
+ public:
+
+  virtual void enterEnumerator(const ComponentEnumerator& e, EnumeratorTraceInfo& eti) = 0;
+  virtual void exitEnumerator(const ComponentEnumerator& e, EnumeratorTraceInfo& eti) = 0;
+
+  virtual void enterEnumerator(const MatEnumerator& e, EnumeratorTraceInfo& eti) = 0;
+  virtual void exitEnumerator(const MatEnumerator& e, EnumeratorTraceInfo& eti) = 0;
+
+  virtual void enterEnumerator(const EnvEnumerator& e, EnumeratorTraceInfo& eti) = 0;
+  virtual void exitEnumerator(const EnvEnumerator& e, EnumeratorTraceInfo& eti) = 0;
+
+  virtual void enterEnumerator(const ComponentCellEnumerator& e, EnumeratorTraceInfo& eti) = 0;
+  virtual void exitEnumerator(const ComponentCellEnumerator& e, EnumeratorTraceInfo& eti) = 0;
+
+  virtual void enterEnumerator(const AllEnvCellEnumerator& e, EnumeratorTraceInfo& eti) = 0;
+  virtual void exitEnumerator(const AllEnvCellEnumerator& e, EnumeratorTraceInfo& eti) = 0;
+
+  virtual void enterEnumerator(const CellComponentCellEnumerator& e, EnumeratorTraceInfo& eti) = 0;
+  virtual void exitEnumerator(const CellComponentCellEnumerator& e, EnumeratorTraceInfo& eti) = 0;
+
+  virtual void enterEnumerator(const ComponentPartSimdCellEnumerator& e, EnumeratorTraceInfo& eti) = 0;
+  virtual void exitEnumerator(const ComponentPartSimdCellEnumerator& e, EnumeratorTraceInfo& eti) = 0;
+
+  virtual void enterEnumerator(const ComponentPartCellEnumerator& e, EnumeratorTraceInfo& eti) = 0;
+  virtual void exitEnumerator(const ComponentPartCellEnumerator& e, EnumeratorTraceInfo& eti) = 0;
+
+ public:
+
+  virtual void dumpStats() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

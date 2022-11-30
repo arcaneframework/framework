@@ -99,15 +99,15 @@ class EnumeratorTraceWrapper
   , m_tracer(TracerInterface::singleton())
   {
     if (m_tracer)
-      m_tracer->enterEnumerator(*this, m_infos, nullptr);
+      m_tracer->enterEnumerator(*this, m_infos);
   }
   EnumeratorTraceWrapper(TrueEnumerator&& tenum, const TraceInfo& ti)
   : TrueEnumerator(tenum)
   , m_tracer(TracerInterface::singleton())
   {
     if (m_tracer) {
-      m_tracer->enterEnumerator(*this, m_infos, &ti);
       m_infos.setTraceInfo(&ti);
+      m_tracer->enterEnumerator(*this, m_infos);
     }
   }
   ~EnumeratorTraceWrapper() ARCANE_NOEXCEPT_FALSE

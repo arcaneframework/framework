@@ -15,7 +15,10 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/TraceAccessor.h"
-#include "arcane/materials/IEnumeratorTracer.h"
+
+#include "arcane/core/materials/IEnumeratorTracer.h"
+
+#include "arcane/materials/MaterialsGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -37,28 +40,28 @@ class ARCANE_MATERIALS_EXPORT EnumeratorTracer
 
  public:
 
-  void enterEnumerator(const ComponentEnumerator& e, EnumeratorTraceInfo& eti, const TraceInfo* ti) override;
+  void enterEnumerator(const ComponentEnumerator& e, EnumeratorTraceInfo& eti) override;
   void exitEnumerator(const ComponentEnumerator& e, EnumeratorTraceInfo& eti) override;
 
-  void enterEnumerator(const MatEnumerator& e, EnumeratorTraceInfo& eti, const TraceInfo* ti) override;
+  void enterEnumerator(const MatEnumerator& e, EnumeratorTraceInfo& eti) override;
   void exitEnumerator(const MatEnumerator& e, EnumeratorTraceInfo& eti) override;
 
-  void enterEnumerator(const EnvEnumerator& e, EnumeratorTraceInfo& eti, const TraceInfo* ti) override;
+  void enterEnumerator(const EnvEnumerator& e, EnumeratorTraceInfo& eti) override;
   void exitEnumerator(const EnvEnumerator& e, EnumeratorTraceInfo& eti) override;
 
-  void enterEnumerator(const ComponentCellEnumerator& e, EnumeratorTraceInfo& eti, const TraceInfo* ti) override;
+  void enterEnumerator(const ComponentCellEnumerator& e, EnumeratorTraceInfo& eti) override;
   void exitEnumerator(const ComponentCellEnumerator& e, EnumeratorTraceInfo& eti) override;
 
-  void enterEnumerator(const AllEnvCellEnumerator& e, EnumeratorTraceInfo& eti, const TraceInfo* ti) override;
+  void enterEnumerator(const AllEnvCellEnumerator& e, EnumeratorTraceInfo& eti) override;
   void exitEnumerator(const AllEnvCellEnumerator& e, EnumeratorTraceInfo& eti) override;
 
-  void enterEnumerator(const CellComponentCellEnumerator& e, EnumeratorTraceInfo& eti, const TraceInfo* ti) override;
+  void enterEnumerator(const CellComponentCellEnumerator& e, EnumeratorTraceInfo& eti) override;
   void exitEnumerator(const CellComponentCellEnumerator& e, EnumeratorTraceInfo& eti) override;
 
-  void enterEnumerator(const ComponentPartSimdCellEnumerator& e, EnumeratorTraceInfo& eti, const TraceInfo* ti) override;
+  void enterEnumerator(const ComponentPartSimdCellEnumerator& e, EnumeratorTraceInfo& eti) override;
   void exitEnumerator(const ComponentPartSimdCellEnumerator& e, EnumeratorTraceInfo& eti) override;
 
-  void enterEnumerator(const ComponentPartCellEnumerator& e, EnumeratorTraceInfo& eti, const TraceInfo* ti) override;
+  void enterEnumerator(const ComponentPartCellEnumerator& e, EnumeratorTraceInfo& eti) override;
   void exitEnumerator(const ComponentPartCellEnumerator& e, EnumeratorTraceInfo& eti) override;
 
  public:

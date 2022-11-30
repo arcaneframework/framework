@@ -41,9 +41,9 @@ class ARCANE_IMPL_EXPORT ItemEnumeratorTracer
 
  public:
 
-  void enterEnumerator(const ItemEnumerator& e, EnumeratorTraceInfo& eti, const TraceInfo* ti) override;
+  void enterEnumerator(const ItemEnumerator& e, EnumeratorTraceInfo& eti) override;
   void exitEnumerator(const ItemEnumerator& e, EnumeratorTraceInfo& eti) override;
-  void enterEnumerator(const SimdItemEnumeratorBase& e, EnumeratorTraceInfo& eti, const TraceInfo* ti) override;
+  void enterEnumerator(const SimdItemEnumeratorBase& e, EnumeratorTraceInfo& eti) override;
   void exitEnumerator(const SimdItemEnumeratorBase& e, EnumeratorTraceInfo& eti) override;
 
  public:

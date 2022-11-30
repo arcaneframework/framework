@@ -89,10 +89,11 @@ _endLoop(EnumeratorTraceInfo& eti)
 /*---------------------------------------------------------------------------*/
 
 void ItemEnumeratorTracer::
-enterEnumerator(const ItemEnumerator& e, EnumeratorTraceInfo& eti, const TraceInfo* ti)
+enterEnumerator(const ItemEnumerator& e, EnumeratorTraceInfo& eti)
 {
   m_nb_loop += e.count();
   Int64 begin_time = platform::getRealTimeNS();
+  const TraceInfo* ti = eti.traceInfo();
   if (ti)
     info() << "Loop:" << (*ti) << " count=" << e.count() << " begin_time=" << begin_time;
   _beginLoop(eti);
@@ -113,8 +114,9 @@ exitEnumerator(const ItemEnumerator&, EnumeratorTraceInfo& eti)
 /*---------------------------------------------------------------------------*/
 
 void ItemEnumeratorTracer::
-enterEnumerator(const SimdItemEnumeratorBase& e, EnumeratorTraceInfo& eti, const TraceInfo* ti)
+enterEnumerator(const SimdItemEnumeratorBase& e, EnumeratorTraceInfo& eti)
 {
+  const TraceInfo* ti = eti.traceInfo();
   if (ti)
     info() << "SimdLoop:" << (*ti) << " count=" << e.count();
   _beginLoop(eti);
