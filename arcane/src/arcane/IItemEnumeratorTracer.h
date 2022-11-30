@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IItemEnumeratorTracer.h                                     (C) 2000-2018 */
+/* IItemEnumeratorTracer.h                                     (C) 2000-2022 */
 /*                                                                           */
 /* Interface de trace des appels aux énumérateur sur les entités.            */
 /*---------------------------------------------------------------------------*/
@@ -14,51 +14,64 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcaneGlobal.h"
+#include "arcane/ItemTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class ItemEnumerator;
-class EnumeratorTraceInfo;
-class SimdItemEnumeratorBase;
-class IPerformanceCounterService;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Interface d'un traceur d'énumérateur sur les entités.
+ *
+ * Cette interface fournit des méthodes qui sont appelées automatiquement
+ * lors de l'utilisation des macros permettant d'itérer sur les entités
+ * comme ENUMERATE_CELL ou ENUMERATE_SIMD_CELL. Pour des raisons de performance,
+ * ces macros ne sont tracées  que si le fichier source qui les utilise est
+ * compilé avec la macro ARCANE_TRACE_ENUMERATOR.
+ *
+ * La méthode singleton() permet de récupérer l'implémentation actuelle.
+ *
  */
 class ARCANE_CORE_EXPORT IItemEnumeratorTracer
 {
- private:
-  static IItemEnumeratorTracer* m_singleton;
  public:
-  static IItemEnumeratorTracer* singleton() { return m_singleton; }
-  //! Internal
-  static void _setSingleton(IItemEnumeratorTracer* tracer);
+
+  static IItemEnumeratorTracer* singleton();
+
  public:
-  virtual ~IItemEnumeratorTracer(){}
+
+  virtual ~IItemEnumeratorTracer() = default;
+
  public:
-  virtual void enterEnumerator(const ItemEnumerator& e,EnumeratorTraceInfo& eti,const TraceInfo* ti) =0;
-  virtual void exitEnumerator(const ItemEnumerator& e,EnumeratorTraceInfo& eti) =0;
-  virtual void enterEnumerator(const SimdItemEnumeratorBase& e,EnumeratorTraceInfo& eti,const TraceInfo* ti) =0;
-  virtual void exitEnumerator(const SimdItemEnumeratorBase& e,EnumeratorTraceInfo& eti) =0;
+
+  //! Méthode appelée lors avant d'exécuter un ENUMERATE_
+  virtual void enterEnumerator(const ItemEnumerator& e, EnumeratorTraceInfo& eti) = 0;
+
+  //! Méthode appelée lors après l'exécution d'un ENUMERATE_
+  virtual void exitEnumerator(const ItemEnumerator& e, EnumeratorTraceInfo& eti) = 0;
+
+  //! Méthode appelée lors avant d'exécuter un ENUMERATE_SIMD_
+  virtual void enterEnumerator(const SimdItemEnumeratorBase& e, EnumeratorTraceInfo& eti) = 0;
+
+  //! Méthode appelée lors après l'exécution d'un ENUMERATE_SIMD_
+  virtual void exitEnumerator(const SimdItemEnumeratorBase& e, EnumeratorTraceInfo& eti) = 0;
+
  public:
-  virtual void dumpStats() =0;
-  virtual IPerformanceCounterService* perfCounter() =0;
+
+  virtual void dumpStats() = 0;
+  virtual IPerformanceCounterService* perfCounter() = 0;
+
  public:
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

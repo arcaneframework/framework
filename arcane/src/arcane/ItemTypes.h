@@ -167,11 +167,11 @@ class ItemEnumeratorT;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class EnumeratorTraceInfo;
+class SimdItemEnumeratorBase;
+
 template<typename ItemType>
 class ItemEnumeratorBaseT;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 template<typename ItemType>
 class SimdItemEnumeratorT;

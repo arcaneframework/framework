@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* PlatformUtils.cc                                            (C) 2000-2020 */
+/* PlatformUtils.cc                                            (C) 2000-2022 */
 /*                                                                           */
 /* Fonctions utilitaires dépendant de la plateforme.                         */
 /*---------------------------------------------------------------------------*/
@@ -466,6 +466,19 @@ getLoadedSharedLibraryFullPath(const String& dll_name)
   return full_path;
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+// TODO: mettre ensuite dans 'Arccore'
+
+extern "C++" ARCANE_UTILS_EXPORT Int64 platform::
+getRealTimeNS()
+{
+  auto x = std::chrono::high_resolution_clock::now();
+  // Converti la valeur en nanosecondes.
+  auto y = std::chrono::time_point_cast<std::chrono::nanoseconds>(x);
+  // Retourne le temps en nano-secondes.
+  return static_cast<Int64>(y.time_since_epoch().count());
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

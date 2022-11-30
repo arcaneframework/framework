@@ -11,8 +11,13 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/IPerformanceCounterService.h"
 #include "arcane/materials/EnumeratorTracer.h"
+
+#include "arcane/utils/IPerformanceCounterService.h"
+#include "arcane/utils/Profiling.h"
+#include "arcane/utils/PlatformUtils.h"
+#include "arcane/utils/ForLoopTraceInfo.h"
+
 #include "arcane/materials/MatItemEnumerator.h"
 
 #include <iostream>
@@ -48,136 +53,197 @@ EnumeratorTracer::
 /*---------------------------------------------------------------------------*/
 
 void EnumeratorTracer::
-enterEnumerator(const ComponentEnumerator& e,EnumeratorTraceInfo& eti,const TraceInfo* ti)
+_beginLoop(EnumeratorTraceInfo& eti)
 {
-  ARCANE_UNUSED(e);
+  ++m_nb_call;
+  m_perf_counter->getCounters(eti.counters(), false);
+  eti.setBeginTime(platform::getRealTimeNS());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void EnumeratorTracer::
+_endLoop(EnumeratorTraceInfo& eti)
+{
+  m_perf_counter->getCounters(eti.counters(), true);
+  const TraceInfo* ti = eti.traceInfo();
+  ForLoopTraceInfo loop_trace_info;
   if (ti)
+    loop_trace_info = ForLoopTraceInfo(*ti);
+  ForLoopOneExecStat exec_stat;
+  exec_stat.setExecTime(platform::getRealTimeNS() - eti.beginTime());
+  ProfilingRegistry::threadLocalInstance()->merge(exec_stat, loop_trace_info);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void EnumeratorTracer::
+enterEnumerator(const ComponentEnumerator& e, EnumeratorTraceInfo& eti)
+{
+  _beginLoop(eti);
+  const TraceInfo* ti = eti.traceInfo();
+  if (ti && m_is_verbose)
     info() << "Enum size=" << e.m_size << " where=" << *ti;
-  ++m_nb_call;
-  m_perf_counter->getCounters(eti.counters(),false);
-}
-void EnumeratorTracer::
-exitEnumerator(const ComponentEnumerator& e,EnumeratorTraceInfo& eti)
-{
-  ARCANE_UNUSED(e);
-  m_perf_counter->getCounters(eti.counters(),true);
-  info() << "EndLoop: Component counters=" << eti.counters();
 }
 
-void EnumeratorTracer::
-enterEnumerator(const MatEnumerator& e,EnumeratorTraceInfo& eti,const TraceInfo* ti)
-{
-  ARCANE_UNUSED(e);
-  ARCANE_UNUSED(ti);
-  ARCANE_UNUSED(eti);
-  ++m_nb_call;
-}
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 void EnumeratorTracer::
-exitEnumerator(const MatEnumerator& e,EnumeratorTraceInfo& eti)
+exitEnumerator(const ComponentEnumerator&, EnumeratorTraceInfo& eti)
 {
-  ARCANE_UNUSED(e);
-  ARCANE_UNUSED(eti);
+  _endLoop(eti);
+  if (m_is_verbose)
+    info() << "EndLoop: Component counters=" << eti.counters();
 }
 
-void EnumeratorTracer::
-enterEnumerator(const EnvEnumerator& e,EnumeratorTraceInfo& eti,const TraceInfo* ti)
-{
-  ARCANE_UNUSED(e);
-  ARCANE_UNUSED(ti);
-  ARCANE_UNUSED(eti);
-  ++m_nb_call;
-}
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 void EnumeratorTracer::
-exitEnumerator(const EnvEnumerator& e,EnumeratorTraceInfo& eti)
+enterEnumerator(const MatEnumerator&,EnumeratorTraceInfo& eti)
 {
-  ARCANE_UNUSED(e);
-  ARCANE_UNUSED(eti);
+  _beginLoop(eti);
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void EnumeratorTracer::
-enterEnumerator(const ComponentCellEnumerator& e,EnumeratorTraceInfo& eti,const TraceInfo* ti)
+exitEnumerator(const MatEnumerator&,EnumeratorTraceInfo& eti)
+{
+  _endLoop(eti);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void EnumeratorTracer::
+enterEnumerator(const EnvEnumerator&,EnumeratorTraceInfo& eti)
+{
+  _beginLoop(eti);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void EnumeratorTracer::
+exitEnumerator(const EnvEnumerator&,EnumeratorTraceInfo& eti)
+{
+  _endLoop(eti);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void EnumeratorTracer::
+enterEnumerator(const ComponentCellEnumerator& e,EnumeratorTraceInfo& eti)
 {
   ++m_nb_call_component_cell;
   m_nb_loop_component_cell += e.m_size;
-  if (ti)
+  const TraceInfo* ti = eti.traceInfo();
+  if (ti && m_is_verbose)
     info() << "ComponentCell size=" << e.m_size << " where=" << *ti;
-  m_perf_counter->getCounters(eti.counters(),false);
+  _beginLoop(eti);
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void EnumeratorTracer::
-exitEnumerator(const ComponentCellEnumerator& e,EnumeratorTraceInfo& eti)
+exitEnumerator(const ComponentCellEnumerator&, EnumeratorTraceInfo& eti)
 {
-  ARCANE_UNUSED(e);
-  m_perf_counter->getCounters(eti.counters(),true);
-  info() << "EndLoop: ComponentCell counters=" << eti.counters();
+  _endLoop(eti);
+  if (m_is_verbose)
+    info() << "EndLoop: ComponentCell counters=" << eti.counters();
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void EnumeratorTracer::
-enterEnumerator(const AllEnvCellEnumerator& e,EnumeratorTraceInfo& eti,const TraceInfo* ti)
+enterEnumerator(const AllEnvCellEnumerator& e,EnumeratorTraceInfo& eti)
 {
   ++m_nb_call_all_env_cell;
   m_nb_loop_all_env_cell += e.m_size;
 
-  if (ti)
+  const TraceInfo* ti = eti.traceInfo();
+  if (ti && m_is_verbose)
     info() << "ComponentCell size=" << e.m_size << " where=" << *ti;
-  m_perf_counter->getCounters(eti.counters(),false);
+  _beginLoop(eti);
 }
 
-void EnumeratorTracer::
-exitEnumerator(const AllEnvCellEnumerator& e,EnumeratorTraceInfo& eti)
-{
-  ARCANE_UNUSED(e);
-  m_perf_counter->getCounters(eti.counters(),true);
-  info() << "EndLoop: AllEnvCell counters=" << eti.counters();
-}
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 void EnumeratorTracer::
-enterEnumerator(const CellComponentCellEnumerator& e,EnumeratorTraceInfo& eti,const TraceInfo* ti)
+exitEnumerator(const AllEnvCellEnumerator&,EnumeratorTraceInfo& eti)
 {
-  ARCANE_UNUSED(ti);
-  ARCANE_UNUSED(eti);
+  _endLoop(eti);
+  if (m_is_verbose)
+    info() << "EndLoop: AllEnvCell counters=" << eti.counters();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void EnumeratorTracer::
+enterEnumerator(const CellComponentCellEnumerator& e,EnumeratorTraceInfo& eti)
+{
   ++m_nb_call_cell_component_cell;
   m_nb_loop_cell_component_cell += e.m_size;
+  _beginLoop(eti);
 }
 
-void EnumeratorTracer::
-exitEnumerator(const CellComponentCellEnumerator& e,EnumeratorTraceInfo& eti)
-{
-  ARCANE_UNUSED(e);
-  ARCANE_UNUSED(eti);
-}
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 void EnumeratorTracer::
-enterEnumerator(const ComponentPartSimdCellEnumerator& e,EnumeratorTraceInfo& eti,const TraceInfo* ti)
+exitEnumerator(const CellComponentCellEnumerator&,EnumeratorTraceInfo& eti)
 {
-  ARCANE_UNUSED(e);
-  ARCANE_UNUSED(eti);
-  ARCANE_UNUSED(ti);
+  _endLoop(eti);
 }
 
-void EnumeratorTracer::
-exitEnumerator(const ComponentPartSimdCellEnumerator& e,EnumeratorTraceInfo& eti)
-{
-  ARCANE_UNUSED(e);
-  ARCANE_UNUSED(eti);
-}
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 void EnumeratorTracer::
-enterEnumerator(const ComponentPartCellEnumerator& e,EnumeratorTraceInfo& eti,const TraceInfo* ti)
+enterEnumerator(const ComponentPartSimdCellEnumerator&,EnumeratorTraceInfo& eti)
 {
-  ARCANE_UNUSED(e);
-  ARCANE_UNUSED(eti);
-  ARCANE_UNUSED(ti);
+  _beginLoop(eti);
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void EnumeratorTracer::
-exitEnumerator(const ComponentPartCellEnumerator& e,EnumeratorTraceInfo& eti)
+exitEnumerator(const ComponentPartSimdCellEnumerator&,EnumeratorTraceInfo& eti)
 {
-  ARCANE_UNUSED(e);
-  ARCANE_UNUSED(eti);
+  _endLoop(eti);
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void EnumeratorTracer::
+enterEnumerator(const ComponentPartCellEnumerator&,EnumeratorTraceInfo& eti)
+{
+  _beginLoop(eti);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void EnumeratorTracer::
+exitEnumerator(const ComponentPartCellEnumerator&,EnumeratorTraceInfo& eti)
+{
+  _endLoop(eti);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 void EnumeratorTracer::
 dumpStats()

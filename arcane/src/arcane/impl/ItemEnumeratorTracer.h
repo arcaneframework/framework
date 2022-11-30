@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemEnumeratorTracer.h                                      (C) 2000-2016 */
+/* ItemEnumeratorTracer.h                                      (C) 2000-2022 */
 /*                                                                           */
 /* Trace les appels aux énumérateur sur les entités.                         */
 /*---------------------------------------------------------------------------*/
@@ -19,10 +19,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -34,27 +32,42 @@ class ARCANE_IMPL_EXPORT ItemEnumeratorTracer
 , public IItemEnumeratorTracer
 {
  public:
-  ItemEnumeratorTracer(ITraceMng* tm,IPerformanceCounterService* perf_counter);
+
+  ItemEnumeratorTracer(ITraceMng* tm, IPerformanceCounterService* perf_counter);
+
  public:
+
   virtual ~ItemEnumeratorTracer();
+
  public:
-  void enterEnumerator(const ItemEnumerator& e,EnumeratorTraceInfo& eti,const TraceInfo* ti) override;
-  void exitEnumerator(const ItemEnumerator& e,EnumeratorTraceInfo& eti) override;
-  void enterEnumerator(const SimdItemEnumeratorBase& e,EnumeratorTraceInfo& eti,const TraceInfo* ti) override;
-  void exitEnumerator(const SimdItemEnumeratorBase& e,EnumeratorTraceInfo& eti) override;
+
+  void enterEnumerator(const ItemEnumerator& e, EnumeratorTraceInfo& eti) override;
+  void exitEnumerator(const ItemEnumerator& e, EnumeratorTraceInfo& eti) override;
+  void enterEnumerator(const SimdItemEnumeratorBase& e, EnumeratorTraceInfo& eti) override;
+  void exitEnumerator(const SimdItemEnumeratorBase& e, EnumeratorTraceInfo& eti) override;
+
  public:
+
   void dumpStats() override;
   IPerformanceCounterService* perfCounter() override { return m_perf_counter; }
+
  private:
-  Int64 m_nb_call;
-  Int64 m_nb_loop;
-  IPerformanceCounterService* m_perf_counter;
+
+  Int64 m_nb_call = 0;
+  Int64 m_nb_loop = 0;
+  IPerformanceCounterService* m_perf_counter = nullptr;
+  bool m_is_verbose = false;
+
+ private:
+
+  void _beginLoop(EnumeratorTraceInfo& eti);
+  void _endLoop(EnumeratorTraceInfo& eti);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
