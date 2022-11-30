@@ -98,7 +98,7 @@ class RunCommandImpl
   IRunQueueEventImpl* m_stop_event = nullptr;
 
   //! Temps au lancement de la commande
-  double m_begin_time = 0.0;
+  Int64 m_begin_time = 0;
 
   ForLoopOneExecStat m_loop_one_exec_stat;
   ForLoopOneExecStat* m_loop_one_exec_stat_ptr = nullptr;

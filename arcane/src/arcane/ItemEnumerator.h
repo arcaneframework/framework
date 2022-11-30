@@ -56,6 +56,7 @@ class ItemEnumerator
   //   template<class T> friend class ItemEnumeratorBase;
   // mais cela ne fonctionne pas avec GCC 8. On fait donc la spécialisation
   // à la main
+  friend class ItemEnumeratorBaseT<Item>;
   friend class ItemEnumeratorBaseT<Node>;
   friend class ItemEnumeratorBaseT<ItemWithNodes>;
   friend class ItemEnumeratorBaseT<Edge>;
@@ -301,8 +302,14 @@ ItemLocalIdT(ItemEnumeratorT<ItemType> enumerator)
 #define A_ENUMERATE_ITEM(_EnumeratorClassName,iname,view)               \
   for( A_TRACE_ITEM_ENUMERATOR(_EnumeratorClassName) iname(_EnumeratorClassName :: fromItemEnumerator((view).enumerator()) A_TRACE_ENUMERATOR_WHERE); iname.hasNext(); ++iname )
 
+#define A_ENUMERATE_ITEM_NO_TRACE(_EnumeratorClassName,iname,view)               \
+  for( _EnumeratorClassName iname(_EnumeratorClassName :: fromItemEnumerator((view).enumerator())); iname.hasNext(); ++iname )
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+//! Enumérateur générique d'un groupe d'entité
+#define ENUMERATE_NO_TRACE_(type,name,group) A_ENUMERATE_ITEM_NO_TRACE(::Arcane::ItemEnumeratorT< type >,name,group)
 
 //! Enumérateur générique d'un groupe d'entité
 #define ENUMERATE_(type,name,group) A_ENUMERATE_ITEM(::Arcane::ItemEnumeratorT< type >,name,group)
