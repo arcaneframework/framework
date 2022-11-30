@@ -56,6 +56,7 @@ class ItemEnumerator
   //   template<class T> friend class ItemEnumeratorBase;
   // mais cela ne fonctionne pas avec GCC 8. On fait donc la spécialisation
   // à la main
+  friend class ItemEnumeratorBaseT<Item>;
   friend class ItemEnumeratorBaseT<Node>;
   friend class ItemEnumeratorBaseT<ItemWithNodes>;
   friend class ItemEnumeratorBaseT<Edge>;

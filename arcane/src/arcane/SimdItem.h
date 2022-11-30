@@ -426,6 +426,8 @@ class SimdItemEnumeratorT
   : SimdItemEnumeratorBase(){}
   SimdItemEnumeratorT(const ItemEnumerator& rhs)
   : SimdItemEnumeratorBase(rhs){}
+  SimdItemEnumeratorT(const ItemEnumeratorT<ItemType>& rhs)
+  : SimdItemEnumeratorBase(rhs){}
   SimdItemEnumeratorT(const ItemVectorViewT<ItemType>& rhs)
   : SimdItemEnumeratorBase(rhs) {}
 
