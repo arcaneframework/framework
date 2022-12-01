@@ -196,7 +196,6 @@ class NumArrayBase
   }
   explicit NumArrayBase(const DimsType& extents)
   : m_data(_getDefaultAllocator())
-  , m_memory_ressource(eMemoryRessource::UnifiedMemory)
   {
     resize(extents);
   }
@@ -230,8 +229,6 @@ class NumArrayBase
   void _resizeInit()
   {
     if constexpr (ExtentsType::nb_dynamic == 0) {
-      if (m_memory_ressource == eMemoryRessource::Unknown)
-        m_memory_ressource = eMemoryRessource::UnifiedMemory;
       resize(DimsType());
     }
   }
@@ -301,7 +298,7 @@ class NumArrayBase
   SpanType m_span;
   ArrayWrapper m_data;
   Int64 m_total_nb_element = 0;
-  eMemoryRessource m_memory_ressource = eMemoryRessource::Unknown;
+  eMemoryRessource m_memory_ressource = eMemoryRessource::UnifiedMemory;
 };
 
 /*---------------------------------------------------------------------------*/
