@@ -51,7 +51,7 @@ _checkHost(eMemoryRessource r)
 {
   if (r == eMemoryRessource::Host || r == eMemoryRessource::UnifiedMemory)
     return;
-  ARCANE_FATAL("Invalid access from '{0}' ressource memory to host memory");
+  ARCANE_FATAL("Invalid access from '{0}' ressource memory to host memory",(int)r);
 }
 
 /*---------------------------------------------------------------------------*/

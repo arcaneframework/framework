@@ -88,6 +88,8 @@ set(ARCANE_SOURCES
   NumArray.cc
   NumMatrix.h
   NumVector.h
+  NumArrayUtils.h
+  NumArrayUtils.cc
   Observable.cc
   Observer.cc
   Observable.h
@@ -309,4 +311,5 @@ set(ARCANE_SOURCES
   internal/MemoryRessourceMng.h
   internal/IMemoryRessourceMngInternal.h
   internal/ProfilingInternal.h
+  internal/ValueConvertInternal.h
   )
