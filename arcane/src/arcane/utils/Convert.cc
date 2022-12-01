@@ -19,6 +19,7 @@
 #include "arcane/utils/OStringStream.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/internal/ValueConvertInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -63,23 +64,6 @@ builtInGetValue(String& v,const String& s)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-template<typename T> bool
-builtInGetArrayValue(Array<T>& v,const String& s)
-{
-  T read_val = T();
-  std::istringstream sbuf(s.localstr());
-  if (!sbuf.eof())
-    sbuf >> ws;
-  while(!sbuf.eof()){
-    sbuf >> read_val;
-    if (sbuf.fail() || sbuf.bad())
-      return true;
-    v.add(read_val);
-    sbuf >> ws;
-  }
-  return false;
-}
 
 namespace{
 bool _builtInGetBoolArrayValue(BoolArray& v,const String& s)

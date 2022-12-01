@@ -309,4 +309,5 @@ set(ARCANE_SOURCES
   internal/MemoryRessourceMng.h
   internal/IMemoryRessourceMngInternal.h
   internal/ProfilingInternal.h
+  internal/ValueConvertInternal.h
   )
