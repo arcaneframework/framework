@@ -15,6 +15,8 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/TraceAccessor.h"
+#include "arcane/utils/Ref.h"
+#include "arcane/utils/IPerformanceCounterService.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -33,7 +35,7 @@ class ARCANE_IMPL_EXPORT ItemEnumeratorTracer
 {
  public:
 
-  ItemEnumeratorTracer(ITraceMng* tm, IPerformanceCounterService* perf_counter);
+  ItemEnumeratorTracer(ITraceMng* tm, Ref<IPerformanceCounterService> perf_counter);
 
  public:
 
@@ -49,13 +51,14 @@ class ARCANE_IMPL_EXPORT ItemEnumeratorTracer
  public:
 
   void dumpStats() override;
-  IPerformanceCounterService* perfCounter() override { return m_perf_counter; }
+  IPerformanceCounterService* perfCounter() override { return m_perf_counter.get(); }
+  Ref<IPerformanceCounterService> perfCounterRef() override { return m_perf_counter; }
 
  private:
 
   Int64 m_nb_call = 0;
   Int64 m_nb_loop = 0;
-  IPerformanceCounterService* m_perf_counter = nullptr;
+  Ref<IPerformanceCounterService> m_perf_counter;
   bool m_is_verbose = false;
 
  private:

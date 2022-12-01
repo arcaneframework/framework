@@ -35,7 +35,7 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 
 EnumeratorTracer::
-EnumeratorTracer(IPerformanceCounterService* perf_service,ITraceMng* tm)
+EnumeratorTracer(ITraceMng* tm, Ref<IPerformanceCounterService> perf_service)
 : TraceAccessor(tm)
 , m_perf_counter(perf_service)
 {

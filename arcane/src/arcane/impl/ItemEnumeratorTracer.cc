@@ -32,7 +32,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ARCANE_IMPL_EXPORT Ref<IItemEnumeratorTracer>
-arcaneCreateItemEnumeratorTracer(ITraceMng* tm,IPerformanceCounterService* perf_counter)
+arcaneCreateItemEnumeratorTracer(ITraceMng* tm,Ref<IPerformanceCounterService> perf_counter)
 {
   return Arccore::makeRef<IItemEnumeratorTracer>(new ItemEnumeratorTracer(tm,perf_counter));
 }
@@ -41,7 +41,7 @@ arcaneCreateItemEnumeratorTracer(ITraceMng* tm,IPerformanceCounterService* perf_
 /*---------------------------------------------------------------------------*/
 
 ItemEnumeratorTracer::
-ItemEnumeratorTracer(ITraceMng* tm,IPerformanceCounterService* perf_counter)
+ItemEnumeratorTracer(ITraceMng* tm,Ref<IPerformanceCounterService> perf_counter)
 : TraceAccessor(tm)
 , m_perf_counter(perf_counter)
 {
@@ -53,7 +53,6 @@ ItemEnumeratorTracer(ITraceMng* tm,IPerformanceCounterService* perf_counter)
 ItemEnumeratorTracer::
 ~ItemEnumeratorTracer()
 {
-  delete m_perf_counter;
 }
 
 /*---------------------------------------------------------------------------*/

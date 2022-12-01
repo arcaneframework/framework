@@ -232,7 +232,7 @@ build()
   IItemEnumeratorTracer* item_tracer = IItemEnumeratorTracer::singleton();
   if (item_tracer){
     info() << "Adding material enumerator tracing";
-    EnumeratorTracer::_setSingleton(new EnumeratorTracer(item_tracer->perfCounter(),traceMng()));
+    EnumeratorTracer::_setSingleton(new EnumeratorTracer(traceMng(),item_tracer->perfCounterRef()));
   }
 }
 

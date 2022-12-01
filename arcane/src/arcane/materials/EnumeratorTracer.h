@@ -15,6 +15,8 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/TraceAccessor.h"
+#include "arcane/utils/Ref.h"
+#include "arcane/utils/IPerformanceCounterService.h"
 
 #include "arcane/core/materials/IEnumeratorTracer.h"
 
@@ -35,7 +37,7 @@ class ARCANE_MATERIALS_EXPORT EnumeratorTracer
 {
  public:
 
-  EnumeratorTracer(IPerformanceCounterService* perf_service, ITraceMng* tm);
+  EnumeratorTracer(ITraceMng* tm,Ref<IPerformanceCounterService> perf_service);
   ~EnumeratorTracer();
 
  public:
@@ -79,7 +81,7 @@ class ARCANE_MATERIALS_EXPORT EnumeratorTracer
   Int64 m_nb_call_cell_component_cell = 0;
   Int64 m_nb_call_all_env_cell = 0;
 
-  IPerformanceCounterService* m_perf_counter;
+  Ref<IPerformanceCounterService> m_perf_counter;
   bool m_is_verbose = false;
 
  private:

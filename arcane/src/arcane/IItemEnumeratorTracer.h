@@ -25,6 +25,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \internal
  * \brief Interface d'un traceur d'énumérateur sur les entités.
  *
  * Cette interface fournit des méthodes qui sont appelées automatiquement
@@ -64,6 +65,7 @@ class ARCANE_CORE_EXPORT IItemEnumeratorTracer
 
   virtual void dumpStats() = 0;
   virtual IPerformanceCounterService* perfCounter() = 0;
+  virtual Ref<IPerformanceCounterService> perfCounterRef() = 0;
 
  public:
 };
