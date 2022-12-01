@@ -88,6 +88,8 @@ set(ARCANE_SOURCES
   NumArray.cc
   NumMatrix.h
   NumVector.h
+  NumArrayUtils.h
+  NumArrayUtils.cc
   Observable.cc
   Observer.cc
   Observable.h
