@@ -14,6 +14,8 @@
 #include "arcane/utils/Real2x2.h"
 #include "arcane/utils/Real3x3.h"
 
+#include "arcane/utils/NumArrayUtils.h"
+
 #include <vector>
 
 /*---------------------------------------------------------------------------*/
@@ -21,51 +23,51 @@
 
 using namespace Arcane;
 
-TEST(NumArray,Basic)
+TEST(NumArray, Basic)
 {
   std::cout << "TEST_NUMARRAY Basic\n";
 
-  NumArray<Real,MDDim1> array1(3);
+  NumArray<Real, MDDim1> array1(3);
   array1.s(1) = 5.0;
-  ASSERT_EQ(array1(1),5.0);
+  ASSERT_EQ(array1(1), 5.0);
   std::cout << " V=" << array1(1) << "\n";
   array1[2] = 3.0;
-  ASSERT_EQ(array1[2],3.0);
+  ASSERT_EQ(array1[2], 3.0);
   std::cout << " V=" << array1(1) << "\n";
   array1.resize(7);
-  ASSERT_EQ(array1.totalNbElement(),7);
+  ASSERT_EQ(array1.totalNbElement(), 7);
 
-  NumArray<Real,MDDim2> array2(2,3);
-  array2.s(1,2) = 5.0;
-  std::cout << " V=" << array2(1,2) << "\n";
-  array2.resize(7,5);
-  ASSERT_EQ(array2.totalNbElement(),(7*5));
+  NumArray<Real, MDDim2> array2(2, 3);
+  array2.s(1, 2) = 5.0;
+  std::cout << " V=" << array2(1, 2) << "\n";
+  array2.resize(7, 5);
+  ASSERT_EQ(array2.totalNbElement(), (7 * 5));
 
-  NumArray<Real,MDDim3> array3(2,3,4);
-  array3.s(1,2,3) = 5.0;
-  std::cout << " V=" << array3(1,2,3) << "\n";
-  array3.resize(12,4,6);
-  ASSERT_EQ(array3.totalNbElement(),(12*4*6));
+  NumArray<Real, MDDim3> array3(2, 3, 4);
+  array3.s(1, 2, 3) = 5.0;
+  std::cout << " V=" << array3(1, 2, 3) << "\n";
+  array3.resize(12, 4, 6);
+  ASSERT_EQ(array3.totalNbElement(), (12 * 4 * 6));
 
-  NumArray<Real,MDDim4> array4(2,3,4,5);
-  array4.s(1,2,3,4) = 5.0;
-  std::cout << " V=" << array4(1,2,3,4) << "\n";
-  array4.resize(8,3,7,5);
-  ASSERT_EQ(array4.totalNbElement(),(8*3*7*5));
+  NumArray<Real, MDDim4> array4(2, 3, 4, 5);
+  array4.s(1, 2, 3, 4) = 5.0;
+  std::cout << " V=" << array4(1, 2, 3, 4) << "\n";
+  array4.resize(8, 3, 7, 5);
+  ASSERT_EQ(array4.totalNbElement(), (8 * 3 * 7 * 5));
 
-  NumArray<Real,MDDim1> num_data1(4, { 2.4, 5.6, 3.3, 5.4 });
+  NumArray<Real, MDDim1> num_data1(4, { 2.4, 5.6, 3.3, 5.4 });
   ASSERT_EQ(num_data1[0], 2.4);
   ASSERT_EQ(num_data1[1], 5.6);
   ASSERT_EQ(num_data1[2], 3.3);
   ASSERT_EQ(num_data1[3], 5.4);
 
-  NumArray<Real,MDDim2,RightLayout> num_data2(3, 2, { 1.4, 15.6, 33.3, 7.4, 4.2, 6.5 });
-  ASSERT_EQ(num_data2(0,0), 1.4);
-  ASSERT_EQ(num_data2(0,1), 15.6);
-  ASSERT_EQ(num_data2(1,0), 33.3);
-  ASSERT_EQ(num_data2(1,1), 7.4);
-  ASSERT_EQ(num_data2(2,0), 4.2);
-  ASSERT_EQ(num_data2(2,1), 6.5);
+  NumArray<Real, MDDim2, RightLayout> num_data2(3, 2, { 1.4, 15.6, 33.3, 7.4, 4.2, 6.5 });
+  ASSERT_EQ(num_data2(0, 0), 1.4);
+  ASSERT_EQ(num_data2(0, 1), 15.6);
+  ASSERT_EQ(num_data2(1, 0), 33.3);
+  ASSERT_EQ(num_data2(1, 1), 7.4);
+  ASSERT_EQ(num_data2(2, 0), 4.2);
+  ASSERT_EQ(num_data2(2, 1), 6.5);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -482,6 +484,31 @@ TEST(NumArray,RealN)
     ASSERT_EQ(a(4).y.z,4.0);
     ASSERT_EQ(a(0),v);
     ASSERT_EQ(a(3,1),v0);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+TEST(NumArray, ReadFromText)
+{
+  {
+    const char* values1_str = "1 3 -2 \n -7 -5 12 \n 3 9 11\n";
+    NumArray<Int32, MDDim1> ref_value(9, { 1, 3, -2, -7, -5, 12, 3, 9, 11 });
+    std::istringstream istr1(values1_str);
+    NumArray<Int32, MDDim1> int32_values;
+    NumArrayUtils::readFromText(int32_values, istr1);
+    ASSERT_EQ(int32_values.extent0(), 9);
+    ASSERT_EQ(int32_values.to1DSpan(), ref_value.to1DSpan());
+  }
+  {
+    const char* values1_str = "1.1 3.3 -2.5 \n \n 2.1 4.99 12.23 \n 23 \n 45.1 11.9e2 -12.6e4\n";
+    NumArray<Real, MDDim1> ref_value(10, { 1.1, 3.3, -2.5, 2.1, 4.99, 12.23, 23, 45.1, 11.9e2, -12.6e4 });
+    std::istringstream istr1(values1_str);
+    NumArray<Real, MDDim1> real_values;
+    NumArrayUtils::readFromText(real_values, istr1);
+    ASSERT_EQ(real_values.extent0(), 10);
+    ASSERT_EQ(real_values.to1DSpan(), ref_value.to1DSpan());
   }
 }
 
