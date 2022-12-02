@@ -82,7 +82,7 @@ class ArrayExtentsValue<X0>
  public:
 
   using ExtentsType = ExtentsV<X0>;
-  using IndexType = ArrayBoundsIndex<1>;
+  using IndexType = ArrayIndex<1>;
   using DimsType = typename ExtentsType::DimsType;
 
   ArrayExtentsValue() = default;
@@ -164,7 +164,7 @@ class ArrayExtentsValue<X0,X1>
  public:
 
   using ExtentsType = ExtentsV<X0,X1>;
-  using IndexType = ArrayBoundsIndex<2>;
+  using IndexType = ArrayIndex<2>;
   using DimsType = typename ExtentsType::DimsType;
 
   ArrayExtentsValue() = default;
@@ -259,7 +259,7 @@ class ArrayExtentsValue<X0,X1,X2>
  public:
 
   using ExtentsType = ExtentsV<X0,X1,X2>;
-  using IndexType = ArrayBoundsIndex<3>;
+  using IndexType = ArrayIndex<3>;
   using DimsType = typename ExtentsType::DimsType;
 
   ArrayExtentsValue() = default;
@@ -368,7 +368,7 @@ class ArrayExtentsValue<X0,X1,X2,X3>
  public:
 
   using ExtentsType = ExtentsV<X0,X1,X2,X3>;
-  using IndexType = ArrayBoundsIndex<4>;
+  using IndexType = ArrayIndex<4>;
   using DimsType = typename ExtentsType::DimsType;
 
   ArrayExtentsValue() = default;

@@ -28,6 +28,8 @@
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/ArrayShape.h"
 
+#include "arccore/base/Span2.h"
+
 #include "arcane/datatype/IDataOperation.h"
 #include "arcane/datatype/DataStorageTypeInfo.h"
 #include "arcane/datatype/DataStorageBuildInfo.h"

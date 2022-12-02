@@ -89,7 +89,7 @@ class NumArrayView
   }
   //! Accesseur pour un tableau de rang 1
   template <typename X = Extents, typename = std::enable_if_t<X::rank() == 1, void>>
-  constexpr ARCCORE_HOST_DEVICE AccessorReturnType operator()(ArrayBoundsIndex<1> idx) const
+  constexpr ARCCORE_HOST_DEVICE AccessorReturnType operator()(ArrayIndex<1> idx) const
   {
     return Accessor::build(m_values.ptrAt(idx));
   }
@@ -101,7 +101,7 @@ class NumArrayView
   }
   //! Accesseur pour un tableau de rang 1
   template <typename X = Extents, typename = std::enable_if_t<X::rank() == 1, void>>
-  constexpr ARCCORE_HOST_DEVICE AccessorReturnType operator[](ArrayBoundsIndex<1> idx) const
+  constexpr ARCCORE_HOST_DEVICE AccessorReturnType operator[](ArrayIndex<1> idx) const
   {
     return Accessor::build(m_values.ptrAt(idx));
   }
@@ -114,7 +114,7 @@ class NumArrayView
   }
   //! Accesseur pour un tableau de rang 2
   template <typename X = Extents, typename = std::enable_if_t<X::rank() == 2, void>>
-  constexpr ARCCORE_HOST_DEVICE AccessorReturnType operator()(ArrayBoundsIndex<2> idx) const
+  constexpr ARCCORE_HOST_DEVICE AccessorReturnType operator()(ArrayIndex<2> idx) const
   {
     return Accessor::build(m_values.ptrAt(idx));
   }
@@ -127,7 +127,7 @@ class NumArrayView
   }
   //! Accesseur pour un tableau de rang 3
   template <typename X = Extents, typename = std::enable_if_t<X::rank() == 3, void>>
-  constexpr ARCCORE_HOST_DEVICE AccessorReturnType operator()(ArrayBoundsIndex<3> idx) const
+  constexpr ARCCORE_HOST_DEVICE AccessorReturnType operator()(ArrayIndex<3> idx) const
   {
     return Accessor::build(m_values.ptrAt(idx));
   }
@@ -140,7 +140,7 @@ class NumArrayView
   }
   //! Accesseur pour un tableau de rang 4
   template <typename X = Extents, typename = std::enable_if_t<X::rank() == 4, void>>
-  constexpr ARCCORE_HOST_DEVICE AccessorReturnType operator()(ArrayBoundsIndex<4> idx) const
+  constexpr ARCCORE_HOST_DEVICE AccessorReturnType operator()(ArrayIndex<4> idx) const
   {
     return Accessor::build(m_values.ptrAt(idx));
   }

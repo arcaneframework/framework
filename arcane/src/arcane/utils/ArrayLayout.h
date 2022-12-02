@@ -43,7 +43,7 @@ class ArrayLayout2
   static constexpr Int64 LastExtent = J;
 
   static ARCCORE_HOST_DEVICE constexpr Int64
-  offset(ArrayBoundsIndex<2> idx,Int64 extent1)
+  offset(ArrayIndex<2> idx,Int64 extent1)
   {
     return (extent1 * idx[I]) + Int64(idx[J]);
   }
@@ -64,7 +64,7 @@ class ArrayLayout3
   static constexpr Int64 LastExtent = K;
 
   static ARCCORE_HOST_DEVICE constexpr Int64
-  offset(ArrayBoundsIndex<3> idx,Int64 extent1,Int64 extent2)
+  offset(ArrayIndex<3> idx,Int64 extent1,Int64 extent2)
   {
     return (extent2 * idx[I]) + (extent1*idx[J]) + idx.asInt64(K);
   }

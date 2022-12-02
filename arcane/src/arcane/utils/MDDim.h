@@ -75,10 +75,10 @@ class ExtentsV<X0>
   static constexpr int nb_dynamic = impl::extent::nbDynamic(X0);
   static constexpr bool is_full_dynamic() { return (nb_dynamic == 1); }
 
-  using IndexType = ArrayBoundsIndex<1>;
+  using IndexType = ArrayIndex<1>;
   using ArrayExtentsValueType = impl::ArrayExtentsValue<X0>;
   using RemovedFirstExtentType = ExtentsV<>;
-  using DimsType = ArrayBoundsIndex<nb_dynamic>;
+  using DimsType = ArrayIndex<nb_dynamic>;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -95,10 +95,10 @@ class ExtentsV<X0,X1>
   static constexpr int nb_dynamic = impl::extent::nbDynamic(X0, X1);
   static constexpr bool is_full_dynamic() { return (nb_dynamic == 2); }
 
-  using IndexType = ArrayBoundsIndex<2>;
+  using IndexType = ArrayIndex<2>;
   using ArrayExtentsValueType = impl::ArrayExtentsValue<X0,X1>;
   using RemovedFirstExtentType = ExtentsV<X1>;
-  using DimsType = ArrayBoundsIndex<nb_dynamic>;
+  using DimsType = ArrayIndex<nb_dynamic>;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -115,10 +115,10 @@ class ExtentsV<X0,X1,X2>
   static constexpr int nb_dynamic = impl::extent::nbDynamic(X0, X1, X2);
   static constexpr bool is_full_dynamic() { return (nb_dynamic == 3); }
 
-  using IndexType = ArrayBoundsIndex<3>;
+  using IndexType = ArrayIndex<3>;
   using ArrayExtentsValueType = impl::ArrayExtentsValue<X0, X1, X2>;
   using RemovedFirstExtentType = ExtentsV<X1, X2>;
-  using DimsType = ArrayBoundsIndex<nb_dynamic>;
+  using DimsType = ArrayIndex<nb_dynamic>;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -135,10 +135,10 @@ class ExtentsV<X0, X1, X2, X3>
   static constexpr int nb_dynamic = impl::extent::nbDynamic(X0, X1, X2, X3);
   static constexpr bool is_full_dynamic() { return (nb_dynamic == 4); }
 
-  using IndexType = ArrayBoundsIndex<4>;
+  using IndexType = ArrayIndex<4>;
   using ArrayExtentsValueType = impl::ArrayExtentsValue<X0, X1, X2, X3>;
   using RemovedFirstExtentType = ExtentsV<X1, X2, X3>;
-  using DimsType = ArrayBoundsIndex<nb_dynamic>;
+  using DimsType = ArrayIndex<nb_dynamic>;
 };
 
 /*---------------------------------------------------------------------------*/

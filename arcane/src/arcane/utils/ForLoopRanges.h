@@ -60,8 +60,8 @@ class SimpleForLoopRanges
  public:
 
   using ArrayBoundsType = ArrayBounds<typename MDDimType<N>::DimType>;
-  using ArrayBoundsIndexType = ArrayBoundsIndex<N>;
-  using IndexType = typename ArrayBoundsType::IndexType;
+  using ArrayIndexType = typename ArrayBoundsType::IndexType;
+  using IndexType = ArrayIndexType;
 
  public:
 
@@ -73,7 +73,7 @@ class SimpleForLoopRanges
   template<Int32 I> constexpr Int32 lowerBound() const { return 0; }
   template<Int32 I> constexpr Int32 upperBound() const { return m_bounds.template constExtent<I>(); }
   constexpr Int64 nbElement() const { return m_bounds.nbElement(); }
-  constexpr ArrayBoundsIndexType getIndices(Int32 i) const { return m_bounds.getIndices(i); }
+  constexpr ArrayIndexType getIndices(Int32 i) const { return m_bounds.getIndices(i); }
 
  private:
 
@@ -95,8 +95,8 @@ class ComplexForLoopRanges
  public:
 
   using ArrayBoundsType = ArrayBounds<typename MDDimType<N>::DimType>;
-  using ArrayBoundsIndexType = ArrayBoundsIndex<N>;
-  using IndexType = typename ArrayBoundsType::IndexType;
+  using ArrayIndexType = typename ArrayBoundsType::IndexType;
+  using IndexType = ArrayIndexType;
 
  public:
 
@@ -110,7 +110,7 @@ class ComplexForLoopRanges
   template<Int32 I> constexpr Int32 lowerBound() const { return m_lower_bounds[I]; }
   template<Int32 I> constexpr Int32 upperBound() const { return m_lower_bounds[I]+m_extents.template constExtent<I>(); }
   constexpr Int64 nbElement() const { return m_extents.nbElement(); }
-  constexpr ArrayBoundsIndexType getIndices(Int32 i) const
+  constexpr ArrayIndexType getIndices(Int32 i) const
   {
     auto x = m_extents.getIndices(i);
     x.add(m_lower_bounds);
@@ -118,7 +118,7 @@ class ComplexForLoopRanges
   }
  private:
 
-  ArrayBoundsIndexType m_lower_bounds;
+  ArrayIndexType m_lower_bounds;
   ArrayBoundsType m_extents;
 };
 
@@ -238,7 +238,7 @@ arcaneSequentialFor(LoopBoundType<3> bounds,const Lambda& func)
   for( Int32 i0 = bounds.template lowerBound<0>(); i0 < bounds.template upperBound<0>(); ++i0 )
     for( Int32 i1 = bounds.template lowerBound<1>(); i1 < bounds.template upperBound<1>(); ++i1 )
       for( Int32 i2 = bounds.template lowerBound<2>(); i2 < bounds.template upperBound<2>(); ++i2 )
-        func(ArrayBoundsIndex<3>(i0,i1,i2));
+        func(ArrayIndex<3>(i0,i1,i2));
 }
 
 //! Applique le fonctor \a func sur une boucle 4D.
@@ -249,7 +249,7 @@ arcaneSequentialFor(LoopBoundType<4> bounds,const Lambda& func)
     for( Int32 i1 = bounds.template lowerBound<1>(); i1 < bounds.template upperBound<1>(); ++i1 )
       for( Int32 i2 = bounds.template lowerBound<2>(); i2 < bounds.template upperBound<2>(); ++i2 )
         for( Int32 i3 = bounds.template lowerBound<3>(); i3 < bounds.template upperBound<3>(); ++i3 )
-          func(ArrayBoundsIndex<4>(i0,i1,i2,i3));
+          func(ArrayIndex<4>(i0,i1,i2,i3));
 }
 
 /*---------------------------------------------------------------------------*/

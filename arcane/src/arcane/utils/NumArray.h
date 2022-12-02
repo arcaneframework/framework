@@ -18,8 +18,7 @@
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/MemoryRessource.h"
 #include "arcane/utils/MDSpan.h"
-
-#include "arccore/base/Span2.h"
+#include "arcane/utils/MDDim.h"
 
 /*
  * ATTENTION:
