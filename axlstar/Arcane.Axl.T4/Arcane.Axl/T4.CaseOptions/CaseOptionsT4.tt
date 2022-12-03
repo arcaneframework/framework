@@ -256,6 +256,7 @@ public:
   {
 <#  GenerateTranslationCalls(Xml); #>
 <# GenerateTranslationAndDefaultValues(Base,String.Empty); #>
+<# GenerateServiceConstructorAdditionalArguments(Xml); #>
   }
 
 public:
@@ -563,4 +564,18 @@ ARCANE_END_NAMESPACE
           /* default value    */ Arcane::String("<#= ee.Value #>"));
       <#+ }
    // End of GenerateTranslationAndDefaultValues() #>
+<#+ } #>
+<#+
+ /*---------------------------------------------------------------------------*/
+ /*---------------------------------------------------------------------------*/
+ /* Fonction pour générer les informations supplémentaires pour la construction
+    des service */
+ void GenerateServiceConstructorAdditionalArguments(OptionHandler opt) {
+#>
+<#+  foreach(var e in opt.ServiceInstance) {
+       if (!String.IsNullOrEmpty(e.meshname)){ #>
+         <#= e.Name.ToFuncName () #>.setMeshName(Arcane::String("<#= e.meshname #>"));
+<#+    } #>
+<#+  } #>
+<#+ // End of GenerateServiceConstructorAdditionalArguments() #>
 <#+ } #>

@@ -712,6 +712,8 @@ namespace Arcane.Axl.Xsd {
         
         private string typeField;
         
+        private string meshnameField;
+        
         /// <remarks/>
         [System.Xml.Serialization.XmlAttributeAttribute()]
         public string type {
@@ -720,6 +722,17 @@ namespace Arcane.Axl.Xsd {
             }
             set {
                 this.typeField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute("mesh-name")]
+        public string meshname {
+            get {
+                return this.meshnameField;
+            }
+            set {
+                this.meshnameField = value;
             }
         }
     }
@@ -1286,7 +1299,7 @@ namespace Arcane.Axl.Xsd {
         
         /// <remarks/>
         @bool,
-
+        
         /// <remarks/>
         @byte,
         

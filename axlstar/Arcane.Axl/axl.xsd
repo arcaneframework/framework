@@ -80,7 +80,8 @@
   <xs:complexType name="ServiceInstance">
     <xs:complexContent>
       <xs:extension base="Option">
-        <xs:attribute name="type" type="xs:string" use="optional" />
+        <xs:attribute name="type" type="xs:string" use="required" />
+        <xs:attribute name="mesh-name" type="xs:string" use="optional" />
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
