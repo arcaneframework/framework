@@ -90,20 +90,8 @@ class MEDMeshReader
 
  public:
 
-  //void build() override {}
-  //bool allowExtension(const String& str) override
-  // /{
-  //  return str == "med";
-  //}
-  //eReturnType readMeshFromFile(IPrimaryMesh* mesh,
-  //                             const XmlNode& mesh_element,
-  //                             const String& file_name,
-  //                             const String& dir_name,
-  //                             bool use_internal_partition) override;
-
-  IMeshReader::eReturnType readMesh(IPrimaryMesh* mesh,
-                                    const String& file_name,
-                                    bool use_internal_partition);
+  [[nodiscard]] IMeshReader::eReturnType
+  readMesh(IPrimaryMesh* mesh, const String& file_name, bool use_internal_partition);
 
  private:
 
@@ -143,6 +131,11 @@ class MEDMeshReader
     MEDToArcaneItemInfo t(dimension, nb_node, med_type, arcane_type, indirection);
     m_med_to_arcane_types.add(t);
   }
+  void _readAndAllocateCells(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const char* meshname);
+
+  [[nodiscard]] IMeshReader::eReturnType
+  _readNodesCoordinates(IPrimaryMesh* mesh, Int64 nb_node, Int32 spacedim,
+                        med_idt fid, const char* meshname);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -225,7 +218,7 @@ readMesh(IPrimaryMesh* mesh, const String& file_name, bool use_internal_partitio
 IMeshReader::eReturnType MEDMeshReader::
 _readMesh(IPrimaryMesh* mesh, const String& filename)
 {
-  med_idt fid = MEDfileOpen(filename.localstr(), MED_ACC_RDONLY);
+  const med_idt fid = MEDfileOpen(filename.localstr(), MED_ACC_RDONLY);
   if (fid < 0) {
     MESSAGE("ERROR: can not open MED file ");
     error() << "ERROR: can not open MED file '" << filename << "'";
@@ -315,7 +308,18 @@ _readMesh(IPrimaryMesh* mesh, const String& filename)
   info() << "MED: nb_node=" << nb_node;
 
   mesh->setDimension(mesh_dimension);
+  _readAndAllocateCells(mesh, mesh_dimension, fid, meshname);
+  mesh->endAllocate();
 
+  return _readNodesCoordinates(mesh, nb_node, spacedim, fid, meshname);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MEDMeshReader::
+_readAndAllocateCells(IPrimaryMesh* mesh, Int32 mesh_dimension, med_idt fid, const char* meshname)
+{
   Int64 cell_unique_id = 0;
   Int32 cell_local_id = 0;
   // Alloue les entités types par type.
@@ -367,14 +371,21 @@ _readMesh(IPrimaryMesh* mesh, const String& filename)
     }
     mesh->allocateCells(nb_item, cells_infos, false);
   }
-  mesh->endAllocate();
+}
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IMeshReader::eReturnType MEDMeshReader::
+_readNodesCoordinates(IPrimaryMesh* mesh, Int64 nb_node, Int32 spacedim,
+                      med_idt fid, const char* meshname)
+{
   // Lit les coordonnées des noeuds et positionne les coordonnées dans Arcane
   UniqueArray<Real3> nodes_coordinates(nb_node);
   {
     UniqueArray<med_float> coordinates(nb_node * spacedim);
-    err = MEDmeshNodeCoordinateRd(fid, meshname, MED_NO_DT, MED_NO_IT, MED_FULL_INTERLACE,
-                                  coordinates.data());
+    int err = MEDmeshNodeCoordinateRd(fid, meshname, MED_NO_DT, MED_NO_IT, MED_FULL_INTERLACE,
+                                      coordinates.data());
     if (err < 0) {
       error() << "Can not read nodes coordinates err=" << err;
       return IMeshReader::RTError;
