@@ -1064,6 +1064,7 @@ EXCLUDE_SYMBOLS        =
 # command).
 
 EXAMPLE_PATH           = @ARCANE_CEA_SOURCE_PATH@/src/arcane/tests \
+                         @Arcane_SOURCE_DIR@/src/arcane/tests/accelerator \
                          @ARCANESRCROOT@/samples_build/samples
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the

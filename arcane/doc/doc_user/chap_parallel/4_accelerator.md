@@ -214,6 +214,9 @@ même. Les constantes Arcane::MDDim1, Arcane::MDDim2, Arcane::MDDim3 et
 Arcane::MDDim4 permettent de spécifier le rang (la dimension) du
 tableau Arcane::NumArray (A partir de la version 3.7.7 de %Arcane).
 
+La page \ref arcanedoc_core_types_numarray décrit plus précisément
+l'utilisation de la classe Arcane::NumArray
+
 ```cpp
 #include "arcane/utils/NumArray.h"
 // Pour avoir les vues sur les variables
@@ -222,7 +225,7 @@ tableau Arcane::NumArray (A partir de la version 3.7.7 de %Arcane).
 #include "arcane/accelerator/NumArrayViews.h"
 using namespace Arcane;
 using namespace Arcane::Accelerator;
-RunCommand& command = ...;
+Arcane::Accelerator::RunCommand& command = ...;
 Arcane::NumArray<Real,MDDim1> a;
 Arcane::NumArray<Real,MDDim1> b;
 Arcane::NumArray<Real,MDDim1> c;
@@ -284,12 +287,12 @@ Arcane::Accelerator::RunQueue sont asynchrones. Par exemple:
 ```cpp
 #include "arcane/accelerator/Views.h"
 using namespace Arcane::Accelerator;
-RunQueue& queue = ...;
+Arcane::Accelerator::RunQueue& queue = ...;
 queue.setAsync(true);
 Arcane::NumArray<Real,MDDim1> a;
 Arcane::NumArray<Real,MDDim1> b;
 
-RunCommand& command = makeCommand(queue);
+Arcane::Accelerator::RunCommand& command = makeCommand(queue);
 auto in_a = viewIn(command,a);
 auto out_b = viewOut(command,b);
 // Copie A dans B
@@ -385,22 +388,22 @@ main(int argc,char* argv[])
   // Teste la somme de deux tableaux 'a' et 'b' dans un tableau 'c'.
   try{
     ArcaneLauncher::init(CommandLineArguments(&argc,&argv));
-    StandaloneAcceleratorMng launcher(ArcaneLauncher::createStandaloneAcceleratorMng());
+    Arcane::StandaloneAcceleratorMng launcher(ArcaneLauncher::createStandaloneAcceleratorMng());
     IAcceleratorMng* acc_mng = launcher.acceleratorMng();
 
     constexpr int nb_value = 10000;
 
 
     // Définit 2 tableaux 'a' et 'b' et effectue leur initialisation.
-    NumArray<Int64,MDDim1> a(nb_value);
-    NumArray<Int64,MDDim1> b(nb_value);
+    Arcane::Accelerator::NumArray<Int64,MDDim1> a(nb_value);
+    Arcane::Accelerator::NumArray<Int64,MDDim1> b(nb_value);
     for( int i=0; i<nb_value; ++i ){
       a.s(i) = i+2;
       b.s(i) = i+3;
     }
 
     // Defínit le tableau 'c' qui contiendra la somme de 'a' et 'b'
-    NumArray<Int64,1> c(nb_value);
+    Arcane::Accelerator::NumArray<Int64,1> c(nb_value);
 
     // Noyau de calcul déporté sur accélérateur.
     {
@@ -416,7 +419,7 @@ main(int argc,char* argv[])
       };
     }
   }
-  catch(const Exception& ex){
+  catch(const Arcane::Accelerator::Exception& ex){
     std::cerr << "EXCEPTION: " << ex << "\n";
     return 1;
   }

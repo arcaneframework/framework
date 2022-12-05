@@ -672,6 +672,8 @@ class NumArrayIntermediate<DataType, 4, Extents, LayoutPolicy>
  * initialisé (\ref arcanedoc_parallel_accelerator). C'est pourquoi il ne faut pas
  * utiliser de variables globales de cette classe ou d'une classe dérivée.
  *
+ * Pour plus d'informations, se reporter à la page \ref arcanedoc_core_types_numarray.
+ *
  * \sa NumArrayIntermediate
  * \sa NumArrayBase
  */

@@ -447,6 +447,7 @@ class MDSpanIntermediate<DataType, 4, Extents, LayoutPolicy>
  * Cette classe est utilisée pour gérer les vues sur les tableaux tels que
  * NumArray. Les méthodes de cette classe sont accessibles sur accélérateur.
  *
+ * Pour plus d'informations, se reporter à la page \ref arcanedoc_core_types_numarray.
  */
 template <typename DataType, typename Extents, typename LayoutPolicy>
 class MDSpan

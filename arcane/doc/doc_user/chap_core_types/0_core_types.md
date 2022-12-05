@@ -45,6 +45,9 @@ Sommaire de ce chapitre :
 7. \subpage arcanedoc_core_types_array_usage <br>
   Décrit l'utilisation des types tableaux.
 
+8. \subpage arcanedoc_core_types_numarray <br>
+  Décrit l'utilisation de la classe NumArray et des types associés.
+
 ____
 
 <div class="section_buttons">
