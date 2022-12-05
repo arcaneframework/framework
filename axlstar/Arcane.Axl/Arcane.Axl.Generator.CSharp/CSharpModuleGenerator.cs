@@ -82,7 +82,7 @@ namespace Arcane.Axl
 
         if (m_co_generator!=null) {
           file_stream.Write("  m_options = new " + m_co_generator.getClassName()
-                            + "(mb.m_sub_domain.CaseMng());\n");
+                            + "(mb.SubDomain().CaseMng());\n");
           file_stream.Write("  m_options.SetCaseModule(this);\n");
         }
 
