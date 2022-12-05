@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MEDMeshReaderService.cc                                     (C) 2000-2018 */
+/* MEDMeshReaderService.cc                                     (C) 2000-2022 */
 /*                                                                           */
 /* Lecture d'un maillage au format MED.                                      */
 /*---------------------------------------------------------------------------*/
@@ -40,6 +40,7 @@ class MEDMeshReaderService
 , public IMeshReader
 {
  public:
+
   /*!
    * \brief Informations pour passer des types MED aux types Arcane pour les entités.
    *
@@ -49,24 +50,35 @@ class MEDMeshReaderService
   struct MEDToArcaneItemInfo
   {
    public:
-    MEDToArcaneItemInfo(int dimension,int nb_node,med_int med_type,
-                        Integer arcane_type,const Int32* indirection)
-    : m_dimension(dimension), m_nb_node(nb_node), m_med_type(med_type),
-      m_arcane_type(arcane_type), m_indirection(indirection){}
+
+    MEDToArcaneItemInfo(int dimension, int nb_node, med_int med_type,
+                        Integer arcane_type, const Int32* indirection)
+    : m_dimension(dimension)
+    , m_nb_node(nb_node)
+    , m_med_type(med_type)
+    , m_arcane_type(arcane_type)
+    , m_indirection(indirection)
+    {}
+
    public:
+
     int dimension() const { return m_dimension; }
     int nbNode() const { return m_nb_node; }
     med_int medType() const { return m_med_type; }
     Integer arcaneType() const { return m_arcane_type; }
     const Int32* indirection() const { return m_indirection; }
+
    private:
+
     int m_dimension;
     int m_nb_node;
     med_int m_med_type;
     Integer m_arcane_type;
     const Int32* m_indirection;
   };
+
  public:
+
   explicit MEDMeshReaderService(const ServiceBuildInfo& sbi)
   : BasicService(sbi)
   {
@@ -79,42 +91,50 @@ class MEDMeshReaderService
   void build() override {}
   bool allowExtension(const String& str) override
   {
-    return str=="med";
+    return str == "med";
   }
   eReturnType readMeshFromFile(IPrimaryMesh* mesh,
                                const XmlNode& mesh_element,
                                const String& file_name,
                                const String& dir_name,
                                bool use_internal_partition) override;
+
  private:
-  eReturnType _readMesh(IPrimaryMesh* mesh,const String& filename);
+
+  eReturnType _readMesh(IPrimaryMesh* mesh, const String& filename);
+
  private:
+
   // Structure pour fermer automatiquement les fichiers MED ouverts
   struct AutoCloseMED
   {
-    AutoCloseMED(med_idt id) : fid(id){}
+    AutoCloseMED(med_idt id)
+    : fid(id)
+    {}
     ~AutoCloseMED()
     {
-      if (fid>=0)
+      if (fid >= 0)
         ::MEDfileClose(fid);
     }
-    
+
     med_idt fid;
   };
   UniqueArray<MEDToArcaneItemInfo> m_med_to_arcane_types;
+
  private:
-  Int32 _readItems(med_idt fid,const char* meshnane,const MEDToArcaneItemInfo& iinfo,
+
+  Int32 _readItems(med_idt fid, const char* meshnane, const MEDToArcaneItemInfo& iinfo,
                    Array<med_int>& connectivity);
   void _initMEDToArcaneTypes();
-  void _addTypeInfo(int dimension,int nb_node,med_int med_type,Integer arcane_type)
+  void _addTypeInfo(int dimension, int nb_node, med_int med_type, Integer arcane_type)
   {
-    MEDToArcaneItemInfo t(dimension,nb_node,med_type,arcane_type,nullptr);
+    MEDToArcaneItemInfo t(dimension, nb_node, med_type, arcane_type, nullptr);
     m_med_to_arcane_types.add(t);
   }
-  void _addTypeInfo(int dimension,int nb_node,med_int med_type,Integer arcane_type,
+  void _addTypeInfo(int dimension, int nb_node, med_int med_type, Integer arcane_type,
                     const Int32* indirection)
   {
-    MEDToArcaneItemInfo t(dimension,nb_node,med_type,arcane_type,indirection);
+    MEDToArcaneItemInfo t(dimension, nb_node, med_type, arcane_type, indirection);
     m_med_to_arcane_types.add(t);
   }
 };
@@ -124,13 +144,13 @@ class MEDMeshReaderService
 
 namespace
 {
-const Int32 Hexaedron8_indirection[] = { 1, 0, 3, 2, 5, 4, 7, 6 };
-const Int32 Pyramid5_indirection[] = { 1, 0, 3, 2, 4 };
-const Int32 Quad4_indirection[] = { 1, 0, 3, 2 };
-const Int32 Triangle3_indirection[] = { 1, 0, 2 };
-// PAS utilisé pour l'instant. A tester.
-const Int32 Tetraedron4_indirection[] = { 1, 0, 2, 3 };
-}
+  const Int32 Hexaedron8_indirection[] = { 1, 0, 3, 2, 5, 4, 7, 6 };
+  const Int32 Pyramid5_indirection[] = { 1, 0, 3, 2, 4 };
+  const Int32 Quad4_indirection[] = { 1, 0, 3, 2 };
+  const Int32 Triangle3_indirection[] = { 1, 0, 2 };
+  // PAS utilisé pour l'instant. A tester.
+  const Int32 Tetraedron4_indirection[] = { 1, 0, 2, 3 };
+} // namespace
 
 void MEDMeshReaderService::
 _initMEDToArcaneTypes()
@@ -140,30 +160,30 @@ _initMEDToArcaneTypes()
   // TODO: regarder la correspondance de connectivité entre
   // Arcane et MED pour les éléments quadratiques
   // Types 1D
-  _addTypeInfo(1,2,MED_SEG2,IT_Line2);
-  _addTypeInfo(1,3,MED_SEG3,IT_Line3); // Non supporté
-  _addTypeInfo(1,4,MED_SEG4,IT_NullType); // Non supporté
+  _addTypeInfo(1, 2, MED_SEG2, IT_Line2);
+  _addTypeInfo(1, 3, MED_SEG3, IT_Line3); // Non supporté
+  _addTypeInfo(1, 4, MED_SEG4, IT_NullType); // Non supporté
 
   // Types 2D.
-  _addTypeInfo(2,3,MED_TRIA3,IT_Triangle3, Triangle3_indirection);
-  _addTypeInfo(2,4,MED_QUAD4,IT_Quad4, Quad4_indirection);
-  _addTypeInfo(2,6,MED_TRIA6,IT_NullType); // Non supporté
-  _addTypeInfo(2,7,MED_TRIA7,IT_NullType); // Non supporté
-  _addTypeInfo(2,8,MED_QUAD8,IT_Quad8); // Non supporté
-  _addTypeInfo(2,9,MED_QUAD9,IT_NullType); // Non supporté
+  _addTypeInfo(2, 3, MED_TRIA3, IT_Triangle3, Triangle3_indirection);
+  _addTypeInfo(2, 4, MED_QUAD4, IT_Quad4, Quad4_indirection);
+  _addTypeInfo(2, 6, MED_TRIA6, IT_NullType); // Non supporté
+  _addTypeInfo(2, 7, MED_TRIA7, IT_NullType); // Non supporté
+  _addTypeInfo(2, 8, MED_QUAD8, IT_Quad8); // Non supporté
+  _addTypeInfo(2, 9, MED_QUAD9, IT_NullType); // Non supporté
 
   // Types 3D
-  _addTypeInfo(3, 4,MED_TETRA4,IT_Tetraedron4);
-  _addTypeInfo(3, 5,MED_PYRA5,IT_Pyramid5, Pyramid5_indirection);
-  _addTypeInfo(3, 6,MED_PENTA6,IT_Pentaedron6);
-  _addTypeInfo(3, 8,MED_HEXA8,IT_Hexaedron8, Hexaedron8_indirection);
-  _addTypeInfo(3,10,MED_TETRA10,IT_Tetraedron10);
-  _addTypeInfo(3,12,MED_OCTA12,IT_Octaedron12);
-  _addTypeInfo(3,13,MED_PYRA13,IT_NullType); // Non supporté
-  _addTypeInfo(3,15,MED_PENTA15,IT_NullType); // Non supporté
-  _addTypeInfo(3,18,MED_PENTA18,IT_NullType); // Non supporté
-  _addTypeInfo(3,20,MED_HEXA20,IT_Hexaedron20);
-  _addTypeInfo(3,27,MED_HEXA27,IT_NullType); // Non supporté
+  _addTypeInfo(3, 4, MED_TETRA4, IT_Tetraedron4);
+  _addTypeInfo(3, 5, MED_PYRA5, IT_Pyramid5, Pyramid5_indirection);
+  _addTypeInfo(3, 6, MED_PENTA6, IT_Pentaedron6);
+  _addTypeInfo(3, 8, MED_HEXA8, IT_Hexaedron8, Hexaedron8_indirection);
+  _addTypeInfo(3, 10, MED_TETRA10, IT_Tetraedron10);
+  _addTypeInfo(3, 12, MED_OCTA12, IT_Octaedron12);
+  _addTypeInfo(3, 13, MED_PYRA13, IT_NullType); // Non supporté
+  _addTypeInfo(3, 15, MED_PENTA15, IT_NullType); // Non supporté
+  _addTypeInfo(3, 18, MED_PENTA18, IT_NullType); // Non supporté
+  _addTypeInfo(3, 20, MED_HEXA20, IT_Hexaedron20);
+  _addTypeInfo(3, 27, MED_HEXA27, IT_NullType); // Non supporté
 
   // Mailles dont la géométrie à une connectivité variable.
   // Pour l'instant on ne supporte aucun de ces types dans Arcane.
@@ -171,9 +191,9 @@ _initMEDToArcaneTypes()
   // présents dans le maillage. En mettant la valeur (0) pour le nombre
   // de noeuds on signale à _readItems() qu'on ne sait pas traiter ces éléments.
   ///
-  _addTypeInfo(2,0,MED_POLYGON,IT_NullType);
-  _addTypeInfo(2,0,MED_POLYGON2,IT_NullType);
-  _addTypeInfo(3,0,MED_POLYHEDRON,IT_NullType);
+  _addTypeInfo(2, 0, MED_POLYGON, IT_NullType);
+  _addTypeInfo(2, 0, MED_POLYGON2, IT_NullType);
+  _addTypeInfo(3, 0, MED_POLYHEDRON, IT_NullType);
 
   // Mailles dont la géométrie est dynamique (découverte du modèle dans le fichier)
   // TODO: regarder comment les traiter
@@ -194,19 +214,19 @@ readMeshFromFile(IPrimaryMesh* mesh,
   ARCANE_UNUSED(mesh_element);
   ARCANE_UNUSED(dir_name);
   if (use_internal_partition)
-    ARCANE_THROW(NotImplementedException,"Internal partitioning with MED files");
+    ARCANE_THROW(NotImplementedException, "Internal partitioning with MED files");
   info() << "Trying to read MED File name=" << file_name << " dir=" << dir_name;
-  return _readMesh(mesh,file_name);
+  return _readMesh(mesh, file_name);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 IMeshReader::eReturnType MEDMeshReaderService::
-_readMesh(IPrimaryMesh* mesh,const String& filename)
+_readMesh(IPrimaryMesh* mesh, const String& filename)
 {
-  med_idt fid = MEDfileOpen(filename.localstr(),MED_ACC_RDONLY);
-  if (fid<0){
+  med_idt fid = MEDfileOpen(filename.localstr(), MED_ACC_RDONLY);
+  if (fid < 0) {
     MESSAGE("ERROR: can not open MED file ");
     error() << "ERROR: can not open MED file '" << filename << "'";
     return RTError;
@@ -215,12 +235,12 @@ _readMesh(IPrimaryMesh* mesh,const String& filename)
   AutoCloseMED auto_close_med(fid);
 
   int nb_mesh = MEDnMesh(fid);
-  if (nb_mesh<0){
+  if (nb_mesh < 0) {
     error() << "Error reading number of meshes";
     return RTError;
   }
   info() << "MED: nb_mesh=" << nb_mesh;
-  if (nb_mesh==0){
+  if (nb_mesh == 0) {
     error() << "No mesh is present";
     return RTError;
   }
@@ -229,21 +249,21 @@ _readMesh(IPrimaryMesh* mesh,const String& filename)
   int mesh_index = 1;
 
   // Récupère la dimension d'espace. Cela est nécessaire pour dimensionner axisname eet unitname
-  int nb_axis = MEDmeshnAxis(fid,mesh_index);
-  if (nb_axis<0){
+  int nb_axis = MEDmeshnAxis(fid, mesh_index);
+  if (nb_axis < 0) {
     error() << "Can not read number of axis (MEDmeshnAxis)";
     return RTError;
   }
   info() << "MED: nb_axis=" << nb_axis;
 
-  UniqueArray<char> axisname(MED_SNAME_SIZE*nb_axis+1,'\0');
-  UniqueArray<char> unitname(MED_SNAME_SIZE*nb_axis+1,'\0');
+  UniqueArray<char> axisname(MED_SNAME_SIZE * nb_axis + 1, '\0');
+  UniqueArray<char> unitname(MED_SNAME_SIZE * nb_axis + 1, '\0');
 
-  char meshname[MED_NAME_SIZE+1];
+  char meshname[MED_NAME_SIZE + 1];
   meshname[0] = '\0';
-  char meshdescription[MED_COMMENT_SIZE+1];
+  char meshdescription[MED_COMMENT_SIZE + 1];
   meshdescription[0] = '\0';
-  char dtunit[MED_SNAME_SIZE+1];
+  char dtunit[MED_SNAME_SIZE + 1];
   dtunit[0] = '\0';
   med_int spacedim = 0;
   med_int meshdim = 0;
@@ -252,18 +272,18 @@ _readMesh(IPrimaryMesh* mesh,const String& filename)
   med_int nstep = 0;
   med_axis_type axistype = MED_UNDEF_AXIS_TYPE;
   int err = 0;
-  err = MEDmeshInfo(fid, mesh_index, meshname, &spacedim, &meshdim, &meshtype, meshdescription, 
+  err = MEDmeshInfo(fid, mesh_index, meshname, &spacedim, &meshdim, &meshtype, meshdescription,
                     dtunit, &sortingtype, &nstep, &axistype, axisname.data(), unitname.data());
   if (err < 0) {
     error() << "Can not read mesh info (MEDmeshInfo) r=" << err;
     return RTError;
   }
-  if (meshtype!=MED_UNSTRUCTURED_MESH){
+  if (meshtype != MED_UNSTRUCTURED_MESH) {
     error() << "Arcane handle only MED unstructured mesh (MED_UNSTRUCTURED_MESH) type=" << meshtype;
-    return RTError;    
+    return RTError;
   }
   Integer mesh_dimension = meshdim;
-  if (mesh_dimension!=2 && mesh_dimension!=3)
+  if (mesh_dimension != 2 && mesh_dimension != 3)
     ARCANE_FATAL("MED reader handles only 2D or 3D meshes");
 
   info() << "MED: name=" << meshname;
@@ -284,9 +304,9 @@ _readMesh(IPrimaryMesh* mesh,const String& filename)
     // TODO: traiter les informations telles que coordinatechangement
     // et geotransformation si besoin
     med_int med_nb_node = MEDmeshnEntity(fid, meshname, MED_NO_DT, MED_NO_IT, MED_NODE, MED_NO_GEOTYPE,
-                                         MED_COORDINATE, MED_NO_CMODE,&coordinatechangement,
+                                         MED_COORDINATE, MED_NO_CMODE, &coordinatechangement,
                                          &geotransformation);
-    if (med_nb_node<0) {
+    if (med_nb_node < 0) {
       error() << "Can not read number of nodes (MEDmeshnEntity) err=" << med_nb_node;
       return RTError;
     }
@@ -299,28 +319,28 @@ _readMesh(IPrimaryMesh* mesh,const String& filename)
   Int64 cell_unique_id = 0;
   Int32 cell_local_id = 0;
   // Alloue les entités types par type.
-  for( const auto& iinfo : m_med_to_arcane_types ){
+  for (const auto& iinfo : m_med_to_arcane_types) {
     Integer item_dimension = iinfo.dimension();
     // On ne traite que les entités de la dimension du maillage.
-    if (item_dimension!=mesh_dimension)
+    if (item_dimension != mesh_dimension)
       continue;
     UniqueArray<med_int> med_connectivity;
-    Int32 nb_item = _readItems(fid,meshname,iinfo,med_connectivity);
-    if (nb_item==0)
+    Int32 nb_item = _readItems(fid, meshname, iinfo, med_connectivity);
+    if (nb_item == 0)
       continue;
     Integer arcane_type = iinfo.arcaneType();
     Integer nb_item_node = iinfo.nbNode();
-    if (arcane_type==IT_NullType){
+    if (arcane_type == IT_NullType) {
       // Indique un type supporté par MED mais pas par Arcane
-      ARCANE_FATAL("MED type '{0}' is not supported by Arcane",iinfo.medType());
+      ARCANE_FATAL("MED type '{0}' is not supported by Arcane", iinfo.medType());
     }
     Int64 cells_infos_index = 0;
     Int64 med_connectivity_index = 0;
-    UniqueArray<Int64> cells_infos((2+nb_item_node)*nb_item);
+    UniqueArray<Int64> cells_infos((2 + nb_item_node) * nb_item);
     info() << "CELL_INFOS size=" << cells_infos.size() << " nb_item=" << nb_item
            << " type=" << arcane_type;
     const Int32* indirection = iinfo.indirection();
-    for( Int32 i=0; i<nb_item; ++i ){
+    for (Int32 i = 0; i < nb_item; ++i) {
       cells_infos[cells_infos_index] = arcane_type;
       ++cells_infos_index;
       cells_infos[cells_infos_index] = cell_unique_id;
@@ -328,15 +348,15 @@ _readMesh(IPrimaryMesh* mesh,const String& filename)
       ++cell_unique_id;
       // La connectivité dans MED commence à 1 et Arcane à 0.
       // Il faut donc retrancher 1 de la connectivité donnée par MED.
-      Span<Int64> cinfo_span(cells_infos.span().subspan(cells_infos_index,nb_item_node));
-      Span<med_int> med_cinfo_span(med_connectivity.span().subspan(med_connectivity_index,nb_item_node));
-      if (indirection){
-        for( Integer k=0; k<nb_item_node; ++k ){
+      Span<Int64> cinfo_span(cells_infos.span().subspan(cells_infos_index, nb_item_node));
+      Span<med_int> med_cinfo_span(med_connectivity.span().subspan(med_connectivity_index, nb_item_node));
+      if (indirection) {
+        for (Integer k = 0; k < nb_item_node; ++k) {
           cinfo_span[k] = med_cinfo_span[indirection[k]] - 1;
         }
       }
-      else{
-        for( Integer k=0; k<nb_item_node; ++k )
+      else {
+        for (Integer k = 0; k < nb_item_node; ++k)
           cinfo_span[k] = med_cinfo_span[k] - 1;
       }
 
@@ -345,43 +365,43 @@ _readMesh(IPrimaryMesh* mesh,const String& filename)
 
       ++cell_local_id;
     }
-    mesh->allocateCells(nb_item,cells_infos,false);
+    mesh->allocateCells(nb_item, cells_infos, false);
   }
   mesh->endAllocate();
 
   // Lit les coordonnées des noeuds et positionne les coordonnées dans Arcane
   UniqueArray<Real3> nodes_coordinates(nb_node);
   {
-    UniqueArray<med_float> coordinates(nb_node*spacedim);
+    UniqueArray<med_float> coordinates(nb_node * spacedim);
     err = MEDmeshNodeCoordinateRd(fid, meshname, MED_NO_DT, MED_NO_IT, MED_FULL_INTERLACE,
                                   coordinates.data());
-    if (err<0){
+    if (err < 0) {
       error() << "Can not read nodes coordinates err=" << err;
       return RTError;
     }
 
-    if (spacedim==3){
-      for( Int64 i=0; i<nb_node; ++i ){
-        Real3 xyz(coordinates[i*3],coordinates[(i*3)+1],coordinates[(i*3)+2]);
+    if (spacedim == 3) {
+      for (Int64 i = 0; i < nb_node; ++i) {
+        Real3 xyz(coordinates[i * 3], coordinates[(i * 3) + 1], coordinates[(i * 3) + 2]);
         info() << "I=" << i << " XYZ=" << xyz;
         nodes_coordinates[i] = xyz;
       }
     }
-    else if (spacedim==2){
-      for( Int64 i=0; i<nb_node; ++i ){
-        Real3 xyz(coordinates[i*2],coordinates[(i*2)+1],0.0);
+    else if (spacedim == 2) {
+      for (Int64 i = 0; i < nb_node; ++i) {
+        Real3 xyz(coordinates[i * 2], coordinates[(i * 2) + 1], 0.0);
         info() << "I=" << i << " XYZ=" << xyz;
         nodes_coordinates[i] = xyz;
       }
     }
     else
-      ARCANE_THROW(NotImplementedException,"spacedim!=2 && spacedim!=3");
+      ARCANE_THROW(NotImplementedException, "spacedim!=2 && spacedim!=3");
   }
 
   // Positionne les coordonnées
   {
     VariableNodeReal3& nodes_coord_var(mesh->nodesCoordinates());
-    ENUMERATE_NODE(inode,mesh->allNodes()){
+    ENUMERATE_NODE (inode, mesh->allNodes()) {
       Node node = *inode;
       nodes_coord_var[inode] = nodes_coordinates[node.uniqueId()];
     }
@@ -393,33 +413,33 @@ _readMesh(IPrimaryMesh* mesh,const String& filename)
 /*---------------------------------------------------------------------------*/
 
 Int32 MEDMeshReaderService::
-_readItems(med_idt fid,const char* meshname,const MEDToArcaneItemInfo& iinfo,
+_readItems(med_idt fid, const char* meshname, const MEDToArcaneItemInfo& iinfo,
            Array<med_int>& connectivity)
 {
   int med_item_type = iinfo.medType();
   med_bool coordinatechangement;
   med_bool geotransformation;
-  med_int nb_med_item = ::MEDmeshnEntity(fid, meshname, MED_NO_DT, MED_NO_IT, MED_CELL,med_item_type,
+  med_int nb_med_item = ::MEDmeshnEntity(fid, meshname, MED_NO_DT, MED_NO_IT, MED_CELL, med_item_type,
                                          MED_CONNECTIVITY, MED_NODAL, &coordinatechangement,
                                          &geotransformation);
   if (nb_med_item < 0) {
-    ARCANE_FATAL("Can not read MED med_item_type '{0}' error={1}",med_item_type,nb_med_item);
+    ARCANE_FATAL("Can not read MED med_item_type '{0}' error={1}", med_item_type, nb_med_item);
   }
   info() << "MED: type=" << med_item_type << " nb_item=" << nb_med_item;
-  if (nb_med_item==0)
+  if (nb_med_item == 0)
     return 0;
   Int64 nb_node = iinfo.nbNode();
-  if (nb_node==0)
+  if (nb_node == 0)
     // Indique un élément qu'on ne sais pas traiter.
-    ARCANE_THROW(NotImplementedException,"Reading items with MED type '{0}'",med_item_type);
+    ARCANE_THROW(NotImplementedException, "Reading items with MED type '{0}'", med_item_type);
 
-  connectivity.resize(nb_node*nb_med_item);
+  connectivity.resize(nb_node * nb_med_item);
   int err = MEDmeshElementConnectivityRd(fid, meshname, MED_NO_DT, MED_NO_IT, MED_CELL,
                                          med_item_type, MED_NODAL, MED_FULL_INTERLACE,
                                          connectivity.data());
-  if (err<0){
+  if (err < 0) {
     ARCANE_FATAL("Can not read connectivity MED med_item_type '{0}' error={1}",
-                 med_item_type,err);
+                 med_item_type, err);
   }
   info() << "CON: " << connectivity;
   return nb_med_item;
@@ -429,13 +449,13 @@ _readItems(med_idt fid,const char* meshname,const MEDToArcaneItemInfo& iinfo,
 /*---------------------------------------------------------------------------*/
 
 ARCANE_REGISTER_SERVICE(MEDMeshReaderService,
-                        ServiceProperty("MEDMeshReader",ST_SubDomain),
+                        ServiceProperty("MEDMeshReader", ST_SubDomain),
                         ARCANE_SERVICE_INTERFACE(IMeshReader));
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane
 
 // ----------------------------------------------------------------------------
 // Local Variables:
