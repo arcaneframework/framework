@@ -35,9 +35,8 @@ namespace Arcane
  * Première version d'un lecteur MED gérant uniquement les maillages 2D, 3D et
  * non structurés.
  */
-class MEDMeshReaderService
-: public BasicService
-, public IMeshReader
+class MEDMeshReader
+: public TraceAccessor
 {
  public:
 
@@ -79,29 +78,32 @@ class MEDMeshReaderService
 
  public:
 
-  explicit MEDMeshReaderService(const ServiceBuildInfo& sbi)
-  : BasicService(sbi)
+  explicit MEDMeshReader(ITraceMng* tm)
+  : TraceAccessor(tm)
   {
     _initMEDToArcaneTypes();
   }
-  ~MEDMeshReaderService() override {}
 
  public:
 
-  void build() override {}
-  bool allowExtension(const String& str) override
-  {
-    return str == "med";
-  }
-  eReturnType readMeshFromFile(IPrimaryMesh* mesh,
-                               const XmlNode& mesh_element,
-                               const String& file_name,
-                               const String& dir_name,
-                               bool use_internal_partition) override;
+  //void build() override {}
+  //bool allowExtension(const String& str) override
+  // /{
+  //  return str == "med";
+  //}
+  //eReturnType readMeshFromFile(IPrimaryMesh* mesh,
+  //                             const XmlNode& mesh_element,
+  //                             const String& file_name,
+  //                             const String& dir_name,
+  //                             bool use_internal_partition) override;
+
+  IMeshReader::eReturnType readMesh(IPrimaryMesh* mesh,
+                                    const String& file_name,
+                                    bool use_internal_partition);
 
  private:
 
-  eReturnType _readMesh(IPrimaryMesh* mesh, const String& filename);
+  IMeshReader::eReturnType _readMesh(IPrimaryMesh* mesh, const String& filename);
 
  private:
 
@@ -152,7 +154,7 @@ namespace
   const Int32 Tetraedron4_indirection[] = { 1, 0, 2, 3 };
 } // namespace
 
-void MEDMeshReaderService::
+void MEDMeshReader::
 _initMEDToArcaneTypes()
 {
   m_med_to_arcane_types.clear();
@@ -204,32 +206,26 @@ _initMEDToArcaneTypes()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IMeshReader::eReturnType MEDMeshReaderService::
-readMeshFromFile(IPrimaryMesh* mesh,
-                 const XmlNode& mesh_element,
-                 const String& file_name,
-                 const String& dir_name,
-                 bool use_internal_partition)
+IMeshReader::eReturnType MEDMeshReader::
+readMesh(IPrimaryMesh* mesh, const String& file_name, bool use_internal_partition)
 {
-  ARCANE_UNUSED(mesh_element);
-  ARCANE_UNUSED(dir_name);
   if (use_internal_partition)
     ARCANE_THROW(NotImplementedException, "Internal partitioning with MED files");
-  info() << "Trying to read MED File name=" << file_name << " dir=" << dir_name;
+  info() << "Trying to read MED File name=" << file_name;
   return _readMesh(mesh, file_name);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IMeshReader::eReturnType MEDMeshReaderService::
+IMeshReader::eReturnType MEDMeshReader::
 _readMesh(IPrimaryMesh* mesh, const String& filename)
 {
   med_idt fid = MEDfileOpen(filename.localstr(), MED_ACC_RDONLY);
   if (fid < 0) {
     MESSAGE("ERROR: can not open MED file ");
     error() << "ERROR: can not open MED file '" << filename << "'";
-    return RTError;
+    return IMeshReader::RTError;
   }
   // Pour garantir la fermeture du fichier.
   AutoCloseMED auto_close_med(fid);
@@ -237,12 +233,12 @@ _readMesh(IPrimaryMesh* mesh, const String& filename)
   int nb_mesh = MEDnMesh(fid);
   if (nb_mesh < 0) {
     error() << "Error reading number of meshes";
-    return RTError;
+    return IMeshReader::RTError;
   }
   info() << "MED: nb_mesh=" << nb_mesh;
   if (nb_mesh == 0) {
     error() << "No mesh is present";
-    return RTError;
+    return IMeshReader::RTError;
   }
 
   // Le maillage qu'on lit est toujours le premier
@@ -252,7 +248,7 @@ _readMesh(IPrimaryMesh* mesh, const String& filename)
   int nb_axis = MEDmeshnAxis(fid, mesh_index);
   if (nb_axis < 0) {
     error() << "Can not read number of axis (MEDmeshnAxis)";
-    return RTError;
+    return IMeshReader::RTError;
   }
   info() << "MED: nb_axis=" << nb_axis;
 
@@ -276,11 +272,11 @@ _readMesh(IPrimaryMesh* mesh, const String& filename)
                     dtunit, &sortingtype, &nstep, &axistype, axisname.data(), unitname.data());
   if (err < 0) {
     error() << "Can not read mesh info (MEDmeshInfo) r=" << err;
-    return RTError;
+    return IMeshReader::RTError;
   }
   if (meshtype != MED_UNSTRUCTURED_MESH) {
     error() << "Arcane handle only MED unstructured mesh (MED_UNSTRUCTURED_MESH) type=" << meshtype;
-    return RTError;
+    return IMeshReader::RTError;
   }
   Integer mesh_dimension = meshdim;
   if (mesh_dimension != 2 && mesh_dimension != 3)
@@ -308,7 +304,7 @@ _readMesh(IPrimaryMesh* mesh, const String& filename)
                                          &geotransformation);
     if (med_nb_node < 0) {
       error() << "Can not read number of nodes (MEDmeshnEntity) err=" << med_nb_node;
-      return RTError;
+      return IMeshReader::RTError;
     }
     nb_node = med_nb_node;
   }
@@ -377,7 +373,7 @@ _readMesh(IPrimaryMesh* mesh, const String& filename)
                                   coordinates.data());
     if (err < 0) {
       error() << "Can not read nodes coordinates err=" << err;
-      return RTError;
+      return IMeshReader::RTError;
     }
 
     if (spacedim == 3) {
@@ -406,13 +402,13 @@ _readMesh(IPrimaryMesh* mesh, const String& filename)
       nodes_coord_var[inode] = nodes_coordinates[node.uniqueId()];
     }
   }
-  return RTOk;
+  return IMeshReader::RTOk;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Int32 MEDMeshReaderService::
+Int32 MEDMeshReader::
 _readItems(med_idt fid, const char* meshname, const MEDToArcaneItemInfo& iinfo,
            Array<med_int>& connectivity)
 {
@@ -448,6 +444,39 @@ _readItems(med_idt fid, const char* meshname, const MEDToArcaneItemInfo& iinfo,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class MEDMeshReaderService
+: public BasicService
+, public IMeshReader
+{
+ public:
+
+  explicit MEDMeshReaderService(const ServiceBuildInfo& sbi)
+  : BasicService(sbi)
+  {}
+
+ public:
+
+  void build() override {}
+  bool allowExtension(const String& str) override
+  {
+    return str == "med";
+  }
+  eReturnType readMeshFromFile(IPrimaryMesh* mesh,
+                               const XmlNode& mesh_element,
+                               const String& file_name,
+                               const String& dir_name,
+                               bool use_internal_partition) override
+  {
+    ARCANE_UNUSED(mesh_element);
+    ARCANE_UNUSED(dir_name);
+    MEDMeshReader reader(traceMng());
+    return reader.readMesh(mesh, file_name, use_internal_partition);
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 ARCANE_REGISTER_SERVICE(MEDMeshReaderService,
                         ServiceProperty("MEDMeshReader", ST_SubDomain),
                         ARCANE_SERVICE_INTERFACE(IMeshReader));
@@ -456,10 +485,3 @@ ARCANE_REGISTER_SERVICE(MEDMeshReaderService,
 /*---------------------------------------------------------------------------*/
 
 } // namespace Arcane
-
-// ----------------------------------------------------------------------------
-// Local Variables:
-// tab-width: 2
-// indent-tabs-mode: nil
-// coding: utf-8-with-signature
-// End:
