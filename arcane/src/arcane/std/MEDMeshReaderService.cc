@@ -19,6 +19,8 @@
 #include "arcane/IPrimaryMesh.h"
 #include "arcane/ICaseMeshReader.h"
 #include "arcane/IMeshBuilder.h"
+#include "arcane/IParallelMng.h"
+#include "arcane/MeshPartInfo.h"
 
 #include <med.h>
 #define MESGERR 1
@@ -91,7 +93,7 @@ class MEDMeshReader
  public:
 
   [[nodiscard]] IMeshReader::eReturnType
-  readMesh(IPrimaryMesh* mesh, const String& file_name, bool use_internal_partition);
+  readMesh(IPrimaryMesh* mesh, const String& file_name);
 
  private:
 
@@ -204,10 +206,8 @@ _initMEDToArcaneTypes()
 /*---------------------------------------------------------------------------*/
 
 IMeshReader::eReturnType MEDMeshReader::
-readMesh(IPrimaryMesh* mesh, const String& file_name, bool use_internal_partition)
+readMesh(IPrimaryMesh* mesh, const String& file_name)
 {
-  if (use_internal_partition)
-    ARCANE_THROW(NotImplementedException, "Internal partitioning with MED files");
   info() << "Trying to read MED File name=" << file_name;
   return _readMesh(mesh, file_name);
 }
@@ -308,10 +308,22 @@ _readMesh(IPrimaryMesh* mesh, const String& filename)
   info() << "MED: nb_node=" << nb_node;
 
   mesh->setDimension(mesh_dimension);
-  _readAndAllocateCells(mesh, mesh_dimension, fid, meshname);
-  mesh->endAllocate();
 
-  return _readNodesCoordinates(mesh, nb_node, spacedim, fid, meshname);
+  IParallelMng* pm = mesh->parallelMng();
+  bool is_parallel = pm->isParallel();
+  Int32 rank = mesh->meshPartInfo().partRank();
+  // En parallèle, seul le rang 0 lit le maillage
+  bool is_read_items = !(is_parallel && rank != 0);
+  if (is_read_items) {
+    _readAndAllocateCells(mesh, mesh_dimension, fid, meshname);
+    mesh->endAllocate();
+    return _readNodesCoordinates(mesh, nb_node, spacedim, fid, meshname);
+  }
+  // Appelle la méthode d'allocation avec zéro mailles.
+  // Cela est nécessaire car IPrimaryMesh::allocateCells() est collective.
+  mesh->allocateCells(0, {}, true);
+
+  return IMeshReader::RTOk;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -380,6 +392,7 @@ IMeshReader::eReturnType MEDMeshReader::
 _readNodesCoordinates(IPrimaryMesh* mesh, Int64 nb_node, Int32 spacedim,
                       med_idt fid, const char* meshname)
 {
+  const bool do_verbose = false;
   // Lit les coordonnées des noeuds et positionne les coordonnées dans Arcane
   UniqueArray<Real3> nodes_coordinates(nb_node);
   {
@@ -394,14 +407,16 @@ _readNodesCoordinates(IPrimaryMesh* mesh, Int64 nb_node, Int32 spacedim,
     if (spacedim == 3) {
       for (Int64 i = 0; i < nb_node; ++i) {
         Real3 xyz(coordinates[i * 3], coordinates[(i * 3) + 1], coordinates[(i * 3) + 2]);
-        info() << "I=" << i << " XYZ=" << xyz;
+        if (do_verbose)
+          info() << "I=" << i << " XYZ=" << xyz;
         nodes_coordinates[i] = xyz;
       }
     }
     else if (spacedim == 2) {
       for (Int64 i = 0; i < nb_node; ++i) {
         Real3 xyz(coordinates[i * 2], coordinates[(i * 2) + 1], 0.0);
-        info() << "I=" << i << " XYZ=" << xyz;
+        if (do_verbose)
+          info() << "I=" << i << " XYZ=" << xyz;
         nodes_coordinates[i] = xyz;
       }
     }
@@ -484,8 +499,9 @@ class MEDMeshReaderService
   {
     ARCANE_UNUSED(mesh_element);
     ARCANE_UNUSED(dir_name);
+    ARCANE_UNUSED(use_internal_partition);
     MEDMeshReader reader(traceMng());
-    return reader.readMesh(mesh, file_name, use_internal_partition);
+    return reader.readMesh(mesh, file_name);
   }
 };
 
@@ -526,7 +542,7 @@ class MEDCaseMeshReader
       MEDMeshReader reader(m_trace_mng);
       String fname = m_read_info.fileName();
       m_trace_mng->info() << "MED Reader (ICaseMeshReader) file_name=" << fname;
-      IMeshReader::eReturnType ret = reader.readMesh(pm, fname, false);
+      IMeshReader::eReturnType ret = reader.readMesh(pm, fname);
       if (ret != IMeshReader::RTOk)
         ARCANE_FATAL("Can not read MED File");
     }
