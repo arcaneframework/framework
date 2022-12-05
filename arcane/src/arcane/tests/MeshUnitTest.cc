@@ -1096,7 +1096,7 @@ _testItemVectorView()
   ValueChecker vc(A_FUNCINFO);
   IItemFamily* cell_family = mesh()->cellFamily();
   CellGroup cells = cell_family->allItems();
-  if (cells.size()<10)
+  if (cells.size()<13)
     return;
   UniqueArray<Int32> local_ids;
   ENUMERATE_(Cell,icell,cells){
