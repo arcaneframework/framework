@@ -11,10 +11,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/utils/ITraceMng.h"
+
 #include "arcane/IMeshReader.h"
 #include "arcane/BasicService.h"
 #include "arcane/ServiceFactory.h"
 #include "arcane/IPrimaryMesh.h"
+#include "arcane/ICaseMeshReader.h"
+#include "arcane/IMeshBuilder.h"
 
 #include <med.h>
 #define MESGERR 1
@@ -484,4 +488,72 @@ ARCANE_REGISTER_SERVICE(MEDMeshReaderService,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class MEDCaseMeshReader
+: public AbstractService
+, public ICaseMeshReader
+{
+ public:
+
+  class Builder
+  : public IMeshBuilder
+  {
+   public:
+
+    explicit Builder(ITraceMng* tm, const CaseMeshReaderReadInfo& read_info)
+    : m_trace_mng(tm)
+    , m_read_info(read_info)
+    {}
+
+   public:
+
+    void fillMeshBuildInfo(MeshBuildInfo& build_info) override
+    {
+      ARCANE_UNUSED(build_info);
+    }
+    void allocateMeshItems(IPrimaryMesh* pm) override
+    {
+      MEDMeshReader reader(m_trace_mng);
+      String fname = m_read_info.fileName();
+      m_trace_mng->info() << "MED Reader (ICaseMeshReader) file_name=" << fname;
+      IMeshReader::eReturnType ret = reader.readMesh(pm, fname, false);
+      if (ret != IMeshReader::RTOk)
+        ARCANE_FATAL("Can not read MED File");
+    }
+
+   private:
+
+    ITraceMng* m_trace_mng;
+    CaseMeshReaderReadInfo m_read_info;
+  };
+
+ public:
+
+  explicit MEDCaseMeshReader(const ServiceBuildInfo& sbi)
+  : AbstractService(sbi)
+  {}
+
+ public:
+
+  Ref<IMeshBuilder> createBuilder(const CaseMeshReaderReadInfo& read_info) const override
+  {
+    IMeshBuilder* builder = nullptr;
+    if (read_info.format() == "med")
+      builder = new Builder(traceMng(), read_info);
+    return makeRef(builder);
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ARCANE_REGISTER_SERVICE(MEDCaseMeshReader,
+                        ServiceProperty("MEDCaseMeshReader", ST_SubDomain),
+                        ARCANE_SERVICE_INTERFACE(ICaseMeshReader));
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
