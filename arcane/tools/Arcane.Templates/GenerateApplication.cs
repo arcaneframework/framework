@@ -40,7 +40,7 @@ namespace Arcane.Templates
 const string moduleaxl_template_string =
 @"<?xml version=""1.0"" ?>
 <module name=""{{module_name}}"" version=""1.0"">
-  <description>Descripteur du module {{module_name}}</description>
+  <description>Description of the module {{module_name}}</description>
   <entry-points>
     <entry-point method-name=""compute"" name=""Compute"" where=""compute-loop"" property=""none"" />
     <entry-point method-name=""startInit"" name=""StartInit"" where=""start-init"" property=""none"" />
@@ -58,6 +58,8 @@ const string casefile_template_string =
 
   <meshes>
     <mesh>
+      <!-- You can use a file instead of a generator using the element
+           <filename>/path/to/the/file</filename> instead of <generator/> --> 
       <generator name=""Cartesian2D"" >
         <nb-part-x>1</nb-part-x> 
         <nb-part-y>1</nb-part-y>
@@ -78,27 +80,24 @@ const string modulecpp_template_string =
 
 using namespace Arcane;
 
-/*!
- * \brief Module {{module_name}}.
- */
+//! Module {{module_name}}.
 class {{module_name}}Module
 : public Arcane{{module_name}}Object
 {
  public:
+
   explicit {{module_name}}Module(const ModuleBuildInfo& mbi) 
   : Arcane{{module_name}}Object(mbi) { }
 
  public:
-  /*!
-   * \brief Méthode appelée à chaque itération.
-   */
+
+  //! Method called at each iteration
   void compute() override;
-  /*!
-   * \brief Méthode appelée lors de l'initialisation.
-   */
+
+  //! Method called at the beginning of the execution
   void startInit() override;
 
-  /** Retourne le numéro de version du module */
+  //! Version of the module
   VersionInfo versionInfo() const override { return VersionInfo(1, 0, 0); }
 };
 
@@ -148,7 +147,7 @@ main(int argc,char* argv[])
 ";
 
 const string cmakelist_template_string =
-@"cmake_minimum_required(VERSION 3.18)
+@"cmake_minimum_required(VERSION 3.21)
 project({{code_name}} LANGUAGES C CXX)
 
 find_package(Arcane REQUIRED)
