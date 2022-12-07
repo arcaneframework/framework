@@ -81,6 +81,7 @@ class HybridParallelMng
   void* getMPICommunicator() override;
   MP::Communicator communicator() const override;
   bool isThreadImplementation() const override { return true; }
+  bool isHybridImplementation() const override { return true; }
   ITraceMng* traceMng() const override { return m_trace; }
   IThreadMng* threadMng() const override { return m_thread_mng; }
   IParallelMng* worldParallelMng() const override { return m_world_parallel_mng; }
