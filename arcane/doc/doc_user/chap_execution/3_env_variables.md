@@ -87,6 +87,21 @@ comportement à l'exécution:
 </tr>
 <tr>
   <td>
+    ARCANE_LOOP_PROFILING_LEVEL
+  </td>
+  <td>
+    (version 3.8+). Entier indiquant le niveau de profiling des
+    boucles. Positionner avec une valeur supérieure ou égale 1 active
+    les traces des boucles basées sur les macros fournies par %Arcane
+    telles que les ENUMERATE_() (ENUMERATE_CELL(), ENUMERATE_NODE(), ...),
+    et les RUNCOMMAND (RUNCOMMAND_LOOP(), RUNCOMMAND_ENUMERATE()). En fin
+    de calcul le temps passé dans chaque boucle sera écrit dans le
+    listing et dans des fichiers.
+  </td>
+</tr>
+
+<tr>
+  <td>
     ARCANE_MESSAGE_PASSING_PROFILING
   </td>
   <td>
@@ -152,7 +167,12 @@ comportement à l'exécution:
     ARCANE_CHECK_MEMORY, ARCANE_CHECK_MEMORY_BLOCK_SIZE
   </td>
   <td>
-    Voir la rubrique \ref arcanedoc_debug_perf_check_memory
+    Voir la rubrique \ref arcanedoc_debug_perf_check_memory.
+    Cela ne fonctionne qu'avec certaines versions de Linux et la
+    glibc. Ce mécanisme utilise des fonctionnalités obsolètes de la
+    glibc et n'est donc pas disponible avec des versions récentes
+    (>2021) de la glibc. Notamment, ubuntu 22.04 ne supporte pas ce
+    mécanisme.
   </td>
 </tr>
 <tr>

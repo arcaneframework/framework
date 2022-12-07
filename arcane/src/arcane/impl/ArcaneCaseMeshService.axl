@@ -2,10 +2,13 @@
 <service name="ArcaneCaseMeshService" parent-name="AbstractService" type="caseoption">
   <userclass>User</userclass>
   <description>
-    Service Arcane gérant un maillage du jeu de données.
+    Service %Arcane permettant de lire ou créer un maillage.
 
-    Le maillage peut être soit lu à partir d'un fichier (élément
-    'filename'), soit généré dynamiquement (élément 'generator')
+    Une seule des deux balises `&lt;filename&gt;` ou `&lt;generator&gt;` doit être
+    spécifiée. Si `&lt;filename&gt;` est spécifié, alors le maillage sera lu
+    à partir du fichier spécifié. Si c'est `&lt;generator&gt;`, alors le
+    maillage sera généré directement en ligne à partir d'un des
+    générateurs disponible dans %Arcane.
   </description>
     
   <interface name="Arcane::ICaseMeshService" />

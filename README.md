@@ -205,6 +205,9 @@ sudo apt-get install -y ninja-build
 # Pour le wrapper C#:
 sudo apt-get install -y swig4.0
 
+# Pour Hypre
+sudo apt-get install -y libhypre-dev
+
 # Pour PETSc
 sudo apt-get install -y libpetsc-real-dev
 

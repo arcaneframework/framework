@@ -14,7 +14,7 @@ pour initialiser %Arcane. Une fois ceci fait, il faut spécifier une fonction la
 sera exécutée après l'initialisation de %Arcane. Cette lambda est
 donnée en paramètre à la méthode Arcane::ArcaneLauncher::run(). Cette
 fonction lambda doit retourner un `int` et prendre en paramètre une
-référence à `Arcane::DirectSubDomainExecutionContext`. L'exemple suivant montre
+référence à Arcane::DirectSubDomainExecutionContext. L'exemple suivant montre
 une lambda qui affiche juste `Hello World`:
 
 ```cpp
@@ -25,9 +25,9 @@ using namespace Arcane;
 
 int main(int argc,char* argv[])
 {
-  ArcaneLauncher::init(CommandLineArguments(&argc,&argv));
+  ArcaneLauncher::init(Arcane::CommandLineArguments(&argc,&argv));
   // Déclare la fonction qui sera exécutée par l'appel à run()
-  auto f = [=](DirectSubDomainExecutionContext& ctx) -> int
+  auto f = [=](Arcane::DirectSubDomainExecutionContext& ctx) -> int
   {
     std::cout << "Hello World\n";
     return 0;
@@ -45,8 +45,6 @@ Par défaut, le nom du fichier du jeu de données est le dernier argument de la 
 
 Il est possible de spécifier directement le nom du fichier du jeu de
 données via l'option `CaseDatasetFileName`.
-
-
 
 ____
 

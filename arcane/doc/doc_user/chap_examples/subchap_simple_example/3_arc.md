@@ -69,11 +69,28 @@ ____
   </mesh>
 </meshes>
 ```
+
 Cette partie permet d'appeler le service `Cartesian2DMeshGenerator` (documentation développeur uniquement) 
 qui permet de créer un maillage cartesien 2D. Dans cet exemple, on génère un maillage de 20x20 mailles, de
 taille totale de 2.0x2.0 (donc chaque maille fait une taille de (0.5, 0.5)) avec une origine à (0.0, 0.0)
 et un découpage en sous-domaine de 1x1 (donc il y a 1x1=1 sous-domaine).
 
+Il est possible de spécifier un fichier de maillage dont le format est
+reconnu par %Arcane. Dans ce cas il faut remplacer la balise
+`<generator>` par `<filename>nom_du_fichier</filename>`:
+
+____
+
+```xml
+<meshes>
+  <mesh>
+    <filename>sod.msh</filename>
+  </mesh>
+</meshes>
+```
+
+Pour plus d'informations sur les valeurs possibles pour les maillages,
+se reporter à la page \ref axldoc_service_ArcaneCaseMeshMasterService_arcane_impl
 ____
 
 ```xml

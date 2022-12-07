@@ -2,7 +2,17 @@
 <service name="ArcaneCaseMeshMasterService" parent-name="AbstractService" type="caseoption">
   <userclass>User</userclass>
   <description>
-    Service Arcane gérant les maillages du jeu de données.
+    Service %Arcane gérant les maillages du jeu de données.
+
+    Ce service est particulier dans le sens où ses options sont lues
+    avant celles des autres services et modules car il est utilisé
+    pour créer les maillages donc les modules et services ont
+    besoin. A cause de cela, les options de ce service sont toujours
+    en anglais.
+
+    Il est possible de spécifier plusieurs maillages si l'élément
+    \a mesh est présent plusieurs fois. En général c'est le service
+    \ref axldoc_service_ArcaneCaseMeshService_arcane_impl qui sera utilisé
   </description>
     
   <interface name="Arcane::ICaseMeshMasterService" />

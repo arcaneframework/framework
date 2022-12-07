@@ -26,7 +26,7 @@ using namespace Arcane;
 int
 main(int argc,char* argv[])
 {
-  ArcaneLauncher::init(CommandLineArguments(&argc,&argv));
+  ArcaneLauncher::init(Arcane::CommandLineArguments(&argc,&argv));
   ...
 }
 ```
@@ -54,8 +54,8 @@ using namespace Arcane;
 int
 main(int argc,char* argv[])
 {
-  ArcaneLauncher::init(CommandLineArguments(&argc,&argv));
-  ApplicationBuildInfo& app_build_info = ArcaneLauncher::applicationBuildInfo();
+  ArcaneLauncher::init(Arcane::CommandLineArguments(&argc,&argv));
+  Arcane::ApplicationBuildInfo& app_build_info = ArcaneLauncher::applicationBuildInfo();
   app_build_info.setCodeName("ArcaneTest");
   app_build_info.setCodeVersion(VersionInfo(1,0,0));
   app_build_info.setOutputDirectory("test_output");
@@ -74,8 +74,8 @@ using namespace Arcane;
 int
 main(int argc,char* argv[])
 {
-  ArcaneLauncher::init(CommandLineArguments(&argc,&argv));
-  ApplicationBuildInfo& app_build_info = ArcaneLauncher::applicationBuildInfo();
+  ArcaneLauncher::init(Arcane::CommandLineArguments(&argc,&argv));
+  Arcane::ApplicationBuildInfo& app_build_info = ArcaneLauncher::applicationBuildInfo();
   app_build_info.setCodeName("ArcaneTest");
   app_build_info.setCodeVersion(VersionInfo(1,0,0));
   app_build_info.setOutputDirectory("test_output");
@@ -86,15 +86,15 @@ main(int argc,char* argv[])
 ## Initialisation de MPI {#arcanedoc_execution_launcher_mpi}
 
 L'utilisation de MPI nécessite de faire un appel à la méthode
-MPI_Init_thread() de la bibliothèque MPI. Si %Arcane est compilé avec le
-support de MPI, alors la détection de MPI et l'appel à MPI_Init_thread() est
+`MPI_Init_thread()` de la bibliothèque MPI. Si %Arcane est compilé avec le
+support de MPI, alors la détection de MPI et l'appel à `MPI_Init_thread()` est
 fait automatiquement par %Arcane. Le niveau de support des threads
-utilisé pour l'appel à MPI_Init_thread() dépend des options telles que
+utilisé pour l'appel à `MPI_Init_thread()` dépend des options telles que
 le nombre de tâches ou de sous-domaines locaux en mode hybride qu'on
 souhaite utiliser.
 
 Il est néanmoins possible pour le code d'initialiser lui même MPI s'il
-le souhaite. Pour cela, il doit appeler la méthode MPI_Init_thread()
+le souhaite. Pour cela, il doit appeler la méthode `MPI_Init_thread()`
 avant l'appel à Arcane::ArcaneLauncher::run().
 
 \note Même si l'exécutable est utilisé en séquentiel (c'est à dire

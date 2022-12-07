@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ApplicationBuildInfo.h                                      (C) 2000-2021 */
+/* ApplicationBuildInfo.h                                      (C) 2000-2022 */
 /*                                                                           */
 /* Informations pour construire une instance de IApplication.                */
 /*---------------------------------------------------------------------------*/
@@ -81,11 +81,19 @@ class ARCANE_CORE_EXPORT ApplicationBuildInfo
    */
   String configFileName() const;
 
-  Int32 outputLevel() const;
+  /*!
+   * \brief Positionne le niveau de verbosité des messages
+   * sur la sortie standard.
+   */
   void setOutputLevel(Int32 v);
+  Int32 outputLevel() const;
 
-  Int32 verbosityLevel() const;
+  /*!
+   * \brief Positionne le niveau de verbosité des messages
+   * des fichiers listings réduits.
+   */
   void setVerbosityLevel(Int32 v);
+  Int32 verbosityLevel() const;
 
   Int32 minimalVerbosityLevel() const;
   void setMinimalVerbosityLevel(Int32 v);
@@ -93,6 +101,13 @@ class ARCANE_CORE_EXPORT ApplicationBuildInfo
   bool isMasterHasOutputFile() const;
   void setIsMasterHasOutputFile(bool v);
 
+  /*!
+   * \brief Positionne le répertoire contenant les différentes sorties
+   * de la simulation.
+   *
+   * Parmi ces sorties on trouve le dépouillement, les traces de profilage,
+   * les sorties listings, ...
+   */
   void setOutputDirectory(const String& name);
   String outputDirectory() const;
 

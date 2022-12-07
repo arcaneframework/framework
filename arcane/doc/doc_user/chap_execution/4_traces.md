@@ -4,11 +4,13 @@
 
 ## Introduction {#arcanedoc_execution_traces_intro}
 
-ARCANE fournit une classe utilitaire (\c TraceAccessor) pour afficher des traces dans les modules.
-Cette classe permet de gérer plusieurs types de traces : informations, erreurs, ...
+%Arcane fournit une classe utilitaire (Arcane::TraceAccessor) pour
+afficher des traces dans les modules. Cette classe permet de gérer
+plusieurs types de traces : informations, erreurs, ...
 
-Si dans le descripteur de module, l'attribut \c parent-name de l'élément
-\c module vaut \c BasicModule (le défaut), les traces sont automatiquement disponibles.
+Si dans le descripteur de module, l'attribut `parent-name` de l'élément
+`module` vaut `Arcane::BasicModule` (le défaut), les traces sont
+automatiquement disponibles.
 
 Les traces s'utilisent comme des flots classiques en C++, grâce à
 l'operateur <<.
@@ -16,14 +18,15 @@ l'operateur <<.
 Par exemple, pour afficher une trace d'information :
 
 ```cpp
-info() << "Ceci est un message d'information";
+Arcane::TraceAccessor::info() << "Ceci est un message d'information";
 ```
 
-Tous les types C++ qui disposent de l'opérateur << peuvent être tracés. Par exemple :
+Tous les types C++ qui disposent de l'opérateur `operator<<()` peuvent
+être tracés. Par exemple :
 
 ```cpp
 int z = 3;
-info() << "z vaut " << z;
+Arcane::TraceAccessor::info() << "z vaut " << z;
 ```
 
 A noter qu'un retour chariot est effectué automatiquement entre
@@ -33,20 +36,27 @@ provoque un saut de ligne.
 ## Catégories de trace {#arcanedoc_execution_traces_class}
 
 Les méthodes de trace sont :
-- \b info pour les traces d'informations,
-- \b debug pour les traces de debug,
-- \b log pour les traces de log,
-- \b warning pour les traces d'avertissement,
-- \b error pour les traces d'erreur,
-- \b fatal pour les traces d'erreur fatale, ce qui arrête l'exécution.
+- \b Arcane::TraceAccessor::info() pour les traces d'informations,
+- \b Arcane::TraceAccessor::debug() pour les traces de debug,
+- \b Arcane::TraceAccessor::log() pour les traces de log,
+- \b Arcane::TraceAccessor::warning() pour les traces d'avertissement,
+- \b Arcane::TraceAccessor::error() pour les traces d'erreur,
+- \b Arcane::TraceAccessor::fatal() pour les traces d'erreur fatale,
+  ce qui arrête l'exécution. Il est aussi possible d'utiliser la macro
+  ARCANE_FATAL() pour obtenir le même comportement. L'avantage de la
+  macro est qu'elle indique explictement au compilateur qu'on lance
+  une exception de type Arcane::FatalErrorException() ce qui peut
+  permettre d'éviter des avertissements de compilation.
 
-Les traces d'avertissement ou d'erreur (warning(), error() et
-fatal()) sont toujours affichées. Pour les traces d'informations
-(info()) et de débug (debug()), le comportement dépend de l'exécution
-séquentielle ou parallèle et si ARCANE est compilée en mode débug ou
-optimisé:
+Les traces d'avertissement ou d'erreur
+(Arcane::TraceAccessor::warning(), Arcane::TraceAccessor::error() et
+Arcane::TraceAccessor::fatal()) sont toujours affichées. Pour les
+traces d'informations (Arcane::TraceAccessor::info()) et de débug
+(Arcane::TraceAccessor::debug()), le comportement dépend de
+l'exécution séquentielle ou parallèle et si ARCANE est compilée en
+mode débug ou optimisé:
 - en mode optimisé, les traces de débug ne sont jamais actives. De
-plus, la méthode debug() est remplacée par une méthode vide ce qui
+plus, la méthode `debug()` est remplacée par une méthode vide ce qui
 fait qu'elle ne prend aucune ressource CPU.
 - en mode optimisé, par défaut, les traces d'informations ne sont
 affichées que par le sous-domaine 0. Ce comportement est configurable
@@ -61,34 +71,35 @@ Les traces de log sont écrites dans un fichier dans le répertoire
 sous-domaine.
 
 Il existe 4 méthodes pour la gestion parallèle des traces:
-- \b pinfo pour les traces d'informations,
-- \b pwarning pour les traces d'avertissement,
-- \b perror pour les traces d'erreur,
-- \b pfatal pour les traces d'erreur fatale, ce qui arrête l'exécution.
+- \b Arcane::TraceAccessor::pinfo() pour les traces d'informations,
+- \b Arcane::TraceAccessor::pwarning() pour les traces d'avertissement,
+- \b Arcane::TraceAccessor::perror() pour les traces d'erreur,
+- \b Arcane::TraceAccessor::pfatal() pour les traces d'erreur fatale, ce qui arrête l'exécution.
 
 Pour pinfo(), chaque sous-domaine affiche le message. Pour les
-autres (pwarning(), perror() et pfatal()), cela signifie que chaque
-sous-domaine appelle cette méthode (opération collective), et donc
-une seule trace sera  affichée. Ces traces parallèles peuvent par
-exemple être utiles lorsqu'on est certain que l'erreur produite le
-sera par tous les processeurs, par exemple, une erreur dans le jeu
-de données. Il faut prendre soin que tous les sous-domaines
-appellent les méthodes parallèle, car cela peut conduire à un
+autres (Arcane::TraceAccessor::pwarning(),
+Arcane::TraceAccessor::perror() et Arcane::TraceAccessor::pfatal()),
+cela signifie que chaque sous-domaine appelle cette méthode (opération
+collective), et donc une seule trace sera  affichée. Ces traces
+parallèles peuvent par exemple être utiles lorsqu'on est certain que
+l'erreur produite le sera par tous les processeurs, par exemple, une
+erreur dans le jeu de données. Il faut prendre soin que tous les
+sous-domaines appellent les méthodes collectives, car cela peut conduire à un
 blocage du code dans le cas contraire.
 
-Il faut noter qu'en cas d'appel à la méthode fatal() en parallèle,
-les processus sont en général tués sans ménagement. Avec pfatal(),
+Il faut noter qu'en cas d'appel à la méthode Arcane::TraceAccessor::fatal() en parallèle,
+les processus sont en général tués sans ménagement. Avec Arcane::TraceAccessor::pfatal(),
 il est possible d'arrêter le code proprement puisque chaque
 sous-domaine génère l'erreur.
 
-Il existe trois niveaux de traces pour la catégorie \c debug : \a
-Trace::Low, \a Trace::Medium et \a Trace::High. Le niveau par défaut
-est \a Trace::Medium.
+Il existe trois niveaux de traces pour la catégorie \c debug : 
+Arccore::Trace::Low, \a Arccore::Trace::Medium et Arccore::Trace::High. Le niveau par défaut
+est \a Arccore::Trace::Medium.
 
 ```cpp
-debug(Trace::Medium) << "Trace debug moyen"
-debug()              << "Trace debug moyen"
-debug(Trace::Low)    << "Trace debug affiché dès que le mode débug est utilisé"
+Arcane::TraceAccessor::debug(Arccore::Trace::Medium) << "Trace debug moyen"
+Arcane::TraceAccessor::debug() << "Trace debug moyen"
+Arcane::TraceAccessor::debug(Arccore::Trace::Low)    << "Trace debug affiché dès que le mode débug est utilisé"
 ```
 
 ## Configuration des traces {#arcanedoc_execution_traces_config}
@@ -143,8 +154,8 @@ changer le niveau de verbosité et d'afficher le temps écoulé
 mais pas le nom de la classe de de message:
 
 ```cpp
-ITraceMng* tm = traceMng();
-TraceClassConfig tcc = tm->classConfig("MyTest");
+Arcane::ITraceMng* tm = traceMng();
+Arcane::TraceClassConfig tcc = tm->classConfig("MyTest");
 tcc.setFlags(Trace::PF_ElapsedTime|Trace::PF_NoClassName);
 tcc.setVerboseLevel(4);
 tm->setClassConfig("MyTest",tcc);
