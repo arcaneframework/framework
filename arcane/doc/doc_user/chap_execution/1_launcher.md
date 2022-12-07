@@ -292,9 +292,9 @@ multi-threadée (à partir de la version 3.8).
 </tr>
 
 <tr>
-<td>ParallelLoopGrainPartitioner</td>
+<td>ParallelLoopPartitioner</td>
 <td></td>
-<td>String/td>
+<td>String</td>
 <td></td>
 <td>Choix du partitionneur pour les boucles parallèles
 multi-threadées. Les valeurs possibles sont `auto`, `static` ou

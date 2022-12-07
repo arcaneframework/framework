@@ -8,7 +8,93 @@ Les nouveautés successives apportées par les versions de %Arcane
 antérieures à la version 3 sont listées ici : \ref arcanedoc_news_changelog20
 
 ___
-## Arcane Version 3.7.23 (novembre 2022) {#arcanedoc_version370}
+
+## Arcane Version 3.8... (décembre 2022) {#arcanedoc_version380}
+
+Work In Progress...
+
+### Nouveautés/Améliorations:
+
+- Ajoute support pour spécifier en ligne de commandes les valeurs
+  par défaut de Arcane::ParallelLoopOptions en mode multi-thread
+  (#420).
+- Ajoute support des fichiers Lima, des fichiers MED et des fichiers
+  au format `msh` avec les services de maillage (#435, #439, #449).
+- Ajoute fonction Arcane::NumArrayUtils::readFromText() pour remplir une
+  instance de Arcane::NumArray à partir d'un fichier au format ASCII (#444).
+- Ajoute support de la lecture des en parallèle des fichiers au format
+  MED (#449).
+
+### Changements:
+
+- Utilise toujours une classe à la place d'un entier pour spécifier
+  les dimensions (extents) dans les classes Arcane::NumArray et
+  Arcane::MDSpan. Cela permet de se rapprocher de l'implémentation
+  prévue dans le norme C++23 et d'avoir des dimensions statiques
+  (connues à la compilation) (#419, #425, #428).
+- Supprime les timers utilisant le temps CPU au lieu du temps écoulé. Le
+  type Arcane::Timer::TimerVirtual existe toujours mais se comporte
+  maintenant comme le type Arcane::Timer::TimerReal (#421).
+- Supprime paramètre template avec le rang du tableau dans les classes
+  Arcane::DefaultLayout, Arcane::RightLayout et Arcane::LefLayout
+  (#436).
+
+### Corrections:
+
+### Interne:
+
+- Supprime classes internes obsolètes Arcane::IAllocator,
+  Arcane::DefaultAllocator, Arcane::DataVector1D,
+  Arcane::DataVectorCommond1D et Arcane::Dictionary. Ces classes ne
+  sont plus utilisées depuis longtemps (#422).
+- Ajoute classe Arcane::TestLogger pour comparer les résultats des
+  tests par rapport à un fichier listing de référence (#418).
+- Ajoute possibilité de conserver les instances de
+  Arcane::ItemSharedInfo' dans
+  Arcane::ItemInternalConnectivityList'. Cela permettra de supprimer
+  une indirection lors des accès aux connectivités. Cette option est
+  pour l'instant uniquement utilisée en phase de test (#371)
+- Ajoute support pour l'appel Arccore::MessagePassing::mpLegacyProbe()
+  pour les différents modes d'échange de message disponibles (#431)
+- Refactorisation des classes Arcane::NumArray, Arcane::MDSpan,
+  Arcane::ArrayExtents et Arcane::ArrayBounds pour unifier le code
+  et supporter des dimensions à la fois statiques et dynamiques. La
+  page \ref arcanedoc_core_types_numarray explique l'utilisation de
+  ces classes (#426, #428, #433, #437, #440).
+- Utilise par défaut la Version 2 des synchronisations avec
+  MPI. Cette version est la même que la version 1 utilisée auparavant
+  mais sans le support des types dérivés (#434).
+- [accelerator] Unifie le lancement des noyaux de calcul créés par les
+  macros RUNCOMMAND_LOOP et RUNCOMMAND_ENUMERATE (#438).
+- Unifie l'API de profiling entre les commandes
+  (Arcane::Accelerator::RunCommand) et les énumérateurs classiques (via
+  Arcane::IItemEnumeratorTracer). En fin de calcul l'affichage est trié
+  par ordre décroissant du temps passé dans chaque boucle (#442, #443).
+- Commence le développement des classes Arcane::NumVector and
+  Arcane::NumMatrix pour généraliser les types Arcane::Real2,
+  Arcane::Real3, Arcane::Real2x2 et Arcane::Real3x3. Ces classes sont
+  pour l'instant à usage interne de %Arcane (#441).
+
+### Arccore:
+
+- Corrige bug si la méthode
+  Arccore::MessagePassing::Mpi::MpiAdapter::waitSomeRequestsMPI() est
+  appelée avec des requêtes déjà terminées (#423).
+- Ajoute dans Arccore::Span et Arccore::Span un paramètre template
+  indiquant le nombre d'éléments de la vue. Cela permettra de gérer
+  des vues avec un nombre d'éléments connus à la compilation comme
+  cela est possible avec `std::span` (#424).
+- Ajoute fonctions Arccore::MessagePassing::mpLegacyProbe() dont la
+  sémantique est similaire à `MPI_Iprobe` and `MPI_Probe` (#430).
+- Corrige détection de la requête vide (#427, #429).
+
+### Axlstar
+
+- Add support for using a specific mesh in service instance (#451)
+
+___
+
+## Arcane Version 3.7.23 (17 novembre 2022) {#arcanedoc_version370}
 
 ### Nouveautés/Améliorations:
 
