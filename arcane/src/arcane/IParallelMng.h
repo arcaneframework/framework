@@ -157,6 +157,12 @@ class ARCANE_CORE_EXPORT IParallelMng
    * thread pure, soit en mode mixte MPI/thread.
    */
   virtual bool isThreadImplementation() const =0;
+
+  /*!
+   * \brief Indique si l'implémentation utilise le mode hybride.
+   *
+   * L'implémentation utilise le mode mixte MPI/thread.
+   */
   virtual bool isHybridImplementation() const =0;
 
   //! Positionne le gestionnaire de statistiques
