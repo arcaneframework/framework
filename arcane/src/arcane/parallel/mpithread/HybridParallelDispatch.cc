@@ -415,13 +415,53 @@ gatherVariable(Span<const Type> send_buf,Array<Type>& recv_buf,Int32 root_rank)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> void HybridParallelDispatch<Type>::
-scatterVariable(Span<const Type> send_buf,Span<Type> recv_buf,Int32 root)
+template <class Type>
+void HybridParallelDispatch<Type>::
+scatterVariable(Span<const Type> send_buf, Span<Type> recv_buf, Int32 root)
 {
-  ARCANE_UNUSED(send_buf);
-  ARCANE_UNUSED(recv_buf);
-  ARCANE_UNUSED(root);
-  throw NotImplementedException(A_FUNCINFO);
+  m_const_view = send_buf;
+  m_recv_view = recv_buf;
+
+  _collectiveBarrier();
+
+  // On calcule le nombre d'élément que veut tous les threads de notre processus.
+  Int64 total_size = 0;
+  for (Integer i = 0; i < m_local_nb_rank; ++i) {
+    total_size += m_all_dispatchs[i]->m_recv_view.size();
+  }
+
+  _collectiveBarrier();
+
+  // Les échanges MPI s'effectuent uniquement par les threads leaders des processus.
+  if (m_local_rank == 0) {
+    FullRankInfo fri(FullRankInfo::compute(MessageRank(root), m_local_nb_rank));
+
+    UniqueArray<Type> local_recv_buf(total_size);
+
+    // Si le thread "root" est dans notre processus.
+    if (m_mpi_rank == fri.mpiRankValue()) {
+      // Le thread leader s'occupe de l'échange.
+      m_parallel_mng->mpiParallelMng()->scatterVariable(m_all_dispatchs[fri.localRankValue()]->m_const_view.smallView(),
+                                                        local_recv_buf, fri.mpiRankValue());
+    }
+    // Les autres threads leaders mettent leurs buffers d'envoi (qu'importe ce
+    // qu'ils contiennent, c'est un scatter).
+    else {
+      m_parallel_mng->mpiParallelMng()->scatterVariable(m_const_view.smallView(), local_recv_buf, fri.mpiRankValue());
+    }
+
+    // On a plus qu'à répartir les données reçues entre les threads.
+    Integer compt = 0;
+    for (Integer i = 0; i < m_local_nb_rank; ++i) {
+      Int64 size = m_all_dispatchs[i]->m_recv_view.size();
+      for (Integer j = 0; j < size; ++j) {
+        m_all_dispatchs[i]->m_recv_view[j] = local_recv_buf[compt++];
+      }
+    }
+  }
+  _collectiveBarrier();
+  recv_buf.copy(m_recv_view);
+  _collectiveBarrier();
 }
 
 /*---------------------------------------------------------------------------*/
