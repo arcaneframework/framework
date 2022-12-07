@@ -95,6 +95,7 @@ class ARCANE_MPI_EXPORT MpiParallelMng
   Int32 commSize() const override { return m_comm_size; }
   void* getMPICommunicator() override { return &m_communicator; }
   bool isThreadImplementation() const override { return false; }
+  bool isHybridImplementation() const override { return false; }
   ITraceMng* traceMng() const override { return m_trace; }
   IThreadMng* threadMng() const override { return m_thread_mng; }
   IParallelMng* worldParallelMng() const override { return m_world_parallel_mng; }

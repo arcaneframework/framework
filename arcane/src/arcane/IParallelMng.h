@@ -157,6 +157,7 @@ class ARCANE_CORE_EXPORT IParallelMng
    * thread pure, soit en mode mixte MPI/thread.
    */
   virtual bool isThreadImplementation() const =0;
+  virtual bool isHybridImplementation() const =0;
 
   //! Positionne le gestionnaire de statistiques
   virtual void setTimeStats(ITimeStats* time_stats) =0;

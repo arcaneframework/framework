@@ -82,6 +82,7 @@ class ARCANE_THREAD_EXPORT SharedMemoryParallelMng
   void* getMPICommunicator() override { return m_mpi_communicator.communicatorAddress(); }
   MP::Communicator communicator() const override { return m_mpi_communicator; }
   bool isThreadImplementation() const override { return true; }
+  bool isHybridImplementation() const override { return false; }
   ITraceMng* traceMng() const override { return m_trace.get(); }
   IThreadMng* threadMng() const override { return m_thread_mng; }
   void initialize() override;

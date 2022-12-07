@@ -386,6 +386,7 @@ class SequentialParallelMng
   void* getMPICommunicator() override { return m_communicator.communicatorAddress(); }
   Parallel::Communicator communicator() const override { return m_communicator; }
   bool isThreadImplementation() const override { return false; }
+  bool isHybridImplementation() const override { return false; }
   void setBaseObject(IBase* m);
   ITraceMng* traceMng() const override { return m_trace.get(); }
   IThreadMng* threadMng() const override { return m_thread_mng; }
