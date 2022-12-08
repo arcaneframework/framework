@@ -17,17 +17,17 @@ namespace Arcane.Axl.Xsd
 
     public bool HasTests { get { return tests != null && Tests.Count () > 0; } }
 
-    public string ParentName 
+    public string ParentName
     {
-      get { 
-        if (String.IsNullOrEmpty(parentname)) 
+      get {
+        if (String.IsNullOrEmpty(parentname))
         {
-          if (type == ServiceTypeList.caseoption || type == ServiceTypeList.subdomain) 
+          if (type == ServiceTypeList.caseoption || type == ServiceTypeList.subdomain)
             return "Arcane::BasicService";
           else
             return "Arcane::AbstractService";
         }
-        return parentname; 
+        return parentname;
       }
     }
 
@@ -35,18 +35,18 @@ namespace Arcane.Axl.Xsd
 
     public IEnumerable<@interface> InheritedInterfaces
     {
-      get { 
-        return Interfaces.Where(p => p.inheritedSpecified ? p.inherited: true);
-      }
-    } 
-
-    public bool IsNotCaseOption {
       get {
-        return type != ServiceTypeList.caseoption; 
+        return Interfaces.Where(p => p.inheritedSpecified ? p.inherited: true);
       }
     }
 
-    public IEnumerable<Xsd.variablesVariable> Variables { 
+    public bool IsNotCaseOption {
+      get {
+        return type != ServiceTypeList.caseoption;
+      }
+    }
+
+    public IEnumerable<Xsd.variablesVariable> Variables {
       get {
         if (variables == null)
           return new List<Xsd.variablesVariable> ();
@@ -62,7 +62,7 @@ namespace Arcane.Axl.Xsd
     public void CheckValid ()
     {
       foreach (var v in Variables)
-        v.CheckValid ();
+        v.InitializeAndValidate ();
     }
   }
 }
