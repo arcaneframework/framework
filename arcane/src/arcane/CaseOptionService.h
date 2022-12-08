@@ -143,8 +143,15 @@ class ARCANE_CORE_EXPORT CaseOptionService
 
  public:
 
+  ARCANE_DEPRECATED_REASON("Y2022: Use toICaseOptions() instead")
   operator CaseOptions& () { return *_impl(); }
+
+  ARCANE_DEPRECATED_REASON("Y2022: Use toICaseOptions() instead")
   operator const CaseOptions& () const { return *_impl(); }
+
+ public:
+
+   const ICaseOptions* toICaseOptions() { return _impl(); }
 
  public:
 
