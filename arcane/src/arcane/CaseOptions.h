@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CaseOptions.h                                               (C) 2000-2019 */
+/* CaseOptions.h                                               (C) 2000-2022 */
 /*                                                                           */
 /* Options du jeu de données.                                                */
 /*---------------------------------------------------------------------------*/
@@ -95,14 +95,25 @@ class ARCANE_CORE_EXPORT CaseOptionSimple
 : public CaseOptionBase
 {
  public:
-  CaseOptionSimple(const CaseOptionBuildInfo& cob);
+
+  explicit CaseOptionSimple(const CaseOptionBuildInfo& cob);
   CaseOptionSimple(const CaseOptionBuildInfo& cob,const String& physical_unit);
   ~CaseOptionSimple();
+
  public:
+
   //! Retourne \a true si l'option est présente
   bool isPresent() const { return !m_element.null(); }
-  //! Retourne l'élément de l'option
+
+  /*!
+   * \brief Retourne l'élément de l'option.
+   *
+   * \deprecated L'implémentation interne ne doit pas être utilisée pour permettre
+   * à terme d'utiliser un autre format que le XML.
+   */
+  ARCANE_DEPRECATED_REASON("Y2022: Do not access XML item from option")
   XmlNode element() const { return m_element; }
+
   /*!
    * \brief Fonction associée à cette option (0 si aucune).
    *
@@ -161,13 +172,17 @@ class ARCANE_CORE_EXPORT CaseOptionSimple
   void visit(ICaseDocumentVisitor* visitor) const override;
 
  protected:
+
   void _search(bool is_phase1) override;
   virtual bool _allowPhysicalUnit() =0;
   void _setChangedSinceLastIteration(bool has_changed);
   void _searchFunction(XmlNode& velem);
   void _setPhysicalUnit(const String& value);
   void _setHasValidValue(bool v) { m_has_valid_value = v; }
+  XmlNode _element() const { return m_element; }
+
  private:
+
   XmlNode m_element; //!< Element de l'option
   ICaseFunction* m_function; //!< Fonction associée (ou 0)
   IStandardFunction* m_standard_function; //!< Fonction standard associée (ou 0)
@@ -300,17 +315,30 @@ class CaseOptionSimpleT
 class ARCANE_CORE_EXPORT CaseOptionComplexValue
 {
  public:
+
   CaseOptionComplexValue(ICaseOptionsMulti* opt,ICaseOptionList* clist,const XmlNode& parent_elem);
-  ~CaseOptionComplexValue();
+  virtual ~CaseOptionComplexValue();
+
  public:
+
+  ARCANE_DEPRECATED_REASON("Y2022: Do not access XML item from option")
   XmlNode element() const { return m_element; }
+
+  ARCANE_DEPRECATED_REASON("Y2022: This method is internal to Arcane. Do not use it")
   ICaseOptionList* configList() const { return m_config_list.get(); }
+
+  //! Nom complet au format donné par la norme XPath.
+  String xpathFullName() const { return m_element.xpathFullName(); }
+
  protected:
+
   // Les deux méthodes suivantes sont utilisés par le générateur 'axl2cc' et
-  // ne doivent pas être modifiées
+  // ne doivent pas être modifiées.
   ICaseOptionList* _configList() { return m_config_list.get(); }
   XmlNode _element() { return m_element; }
+
  private:
+
   ReferenceCounter<ICaseOptionList> m_config_list;
   XmlNode m_element;
 };
@@ -690,7 +718,6 @@ class CaseOptionEnumT
  */
 class ARCANE_CORE_EXPORT CaseOptionMultiEnum
 : public CaseOptionBase
-//, public CaseOptionEnumValues
 {
  public:
 
@@ -953,7 +980,7 @@ class CaseOptionMultiExtendedT
 
  protected:
 
-  virtual bool _tryToConvert(const String& s,Integer pos)
+  bool _tryToConvert(const String& s,Integer pos) override
   {
     // La fonction _caseOptionConvert() doit être déclarée avant
     // l'instantiation de cette template. Normalement le générateur automatique
@@ -961,14 +988,14 @@ class CaseOptionMultiExtendedT
     T& value = this->operator[](pos);
     return _caseOptionConvert(*this,s,value);
   }
-  virtual void _allocate(Integer size)
+  void _allocate(Integer size) override
   {
     m_values.resize(size);
     ArrayView<T>* view = this;
     *view = m_values.view();
   }
   //virtual const void* _elemPtr(Integer i) const { return this->begin()+i; }
-  virtual Integer _nbElem() const { return m_values.size(); }
+  virtual Integer _nbElem() const override { return m_values.size(); }
 
  private:
 
@@ -1015,14 +1042,8 @@ class ARCANE_CORE_EXPORT CaseOptions
 
  private:
  
-  /*!
-   * \brief Constructeur de copie.
-   *
-   * Le constructeur par copie est privée car l'option ne doit pas être
-   * copiée.
-   */  
   CaseOptions(const CaseOptions& rhs) = delete;
-  void operator=(const CaseOptions& rhs) = delete;
+  CaseOptions& operator=(const CaseOptions& rhs) = delete;
 
  public:
 

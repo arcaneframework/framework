@@ -224,7 +224,7 @@ class CaseOptionList
 
  public:
 
-  void disable()
+  void disable() override
   {
     info(5) << "INTERNAL REMOVE CHILDREN root=" << m_root_element.xpathFullName() << " this=" << this;
     // TODO regarder éventuelles fuites mémoire

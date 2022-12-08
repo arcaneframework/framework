@@ -453,8 +453,8 @@ init()
   info() << " Complex1/SimpleReal3-2   = " << options()->complex1.simpleReal32;
   info() << " Complex1/SimpleInteger-2 = " << options()->complex1.simpleInteger2;
   info() << " Complex1/SimpleReal2-Multi = " << options()->complex1.getSimpleReal2Multi();
-  info() << " Complex2[2]/Complex3[1]  = " << options()->complex2[1].complex3[0].element().xpathFullName();
-  info() << " Complex2[2]/Complex3[2]  = " << options()->complex2[1].complex3[1].element().xpathFullName();
+  info() << " Complex2[2]/Complex3[1]  = " << options()->complex2[1].complex3[0].xpathFullName();
+  info() << " Complex2[2]/Complex3[2]  = " << options()->complex2[1].complex3[1].xpathFullName();
   info() << " Complex4/simple-real     = " << options()->complex4.simpleReal();
   info() << " Complex5/simple-real     = " << options()->complex5.simpleReal();
   

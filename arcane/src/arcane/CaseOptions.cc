@@ -1065,7 +1065,7 @@ _search(bool is_phase1)
 
   // Si l'option n'est pas présente dans le jeu de données, on prend
   // l'option par défaut, sauf si l'option est facultative
-  String str_val = (element().null()) ? _defaultValue() : element().value();
+  String str_val = (_element().null()) ? _defaultValue() : _element().value();
   bool has_valid_value = true;
   if (str_val.null()){
     if (!isOptional()){
@@ -1488,7 +1488,7 @@ _search(bool is_phase1)
     return;
   // Si l'option n'est pas présente dans le jeu de donnée, on prend
   // l'option par défaut.
-  String str_val = (element().null()) ? _defaultValue() : element().value();
+  String str_val = (_element().null()) ? _defaultValue() : _element().value();
   bool has_valid_value = true;
   if (str_val.null()) {
     m_value = String();
@@ -1661,8 +1661,8 @@ _search(bool is_phase1)
   CaseOptionSimple::_search(is_phase1);
   if (!is_phase1)
     return;
-  bool is_default = element().null();
-  String str_val = (is_default) ? _defaultValue() : element().value();
+  bool is_default = _element().null();
+  String str_val = (is_default) ? _defaultValue() : _element().value();
   bool has_valid_value = true;
   if (str_val.null()) {
     if (!isOptional()){
@@ -1878,7 +1878,7 @@ CaseOptionComplexValue(ICaseOptionsMulti* opt,ICaseOptionList* clist,const XmlNo
 : m_config_list(createCaseOptionList(clist,opt->toCaseOptions(),parent_elem,clist->isOptional(),true))
 , m_element(parent_elem)
 {
-  opt->addChild(configList());
+  opt->addChild(_configList());
 }
 
 /*---------------------------------------------------------------------------*/

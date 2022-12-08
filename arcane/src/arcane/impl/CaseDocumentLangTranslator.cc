@@ -118,17 +118,16 @@ class CaseDocumentLangTranslatorVisitor
   }
   void _manageEnum(const CaseOptionEnum* opt)
   {
-    XmlNode enum_elem = opt->element();
     // Rien à convertir si aucune élément associé à l'option
     // ou si valeur invalide.
-    if (enum_elem.null())
+    if (!opt->isPresent())
       return;
     if (!opt->hasValidValue())
       return;
 
     int v = opt->enumValueAsInt();
     String new_name = opt->enumValues()->nameOfValue(v,m_new_lang);
-    m_stream() << enum_elem.xpathFullName() << ":text#" << new_name << '\n';
+    m_stream() << opt->xpathFullName() << ":text#" << new_name << '\n';
   }
  public:
   void printAll()
