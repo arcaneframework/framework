@@ -206,6 +206,8 @@ namespace Arcane.Axl.Xsd
 
     string _ComputeQualifiedClassName()
     {
+      if (!String.IsNullOrEmpty(internalcpptypename))
+        return internalcpptypename;
       string ns = NamespaceName;
       string n = ClassName;
       if (!string.IsNullOrEmpty (ns))

@@ -386,6 +386,8 @@
             <xs:attribute name="no-exchange" type="xs:boolean" use="optional" />
             <xs:attribute name="persistant" type="xs:boolean" use="optional" />
             <xs:attribute name="no-replica-sync" type="xs:boolean" use="optional" />
+            <!-- Nom de la classe C++ générée. Uniquement pour test pour l'instant -->
+            <xs:attribute name="internal-cpp-typename" type="xs:string" use="optional" />
           </xs:complexType>
         </xs:element>
       </xs:sequence>
