@@ -13,8 +13,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Axlstar.AxlDoc", "Axlstar.A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Axlstar.AxlCopy", "Axlstar.AxlCopy\Axlstar.AxlCopy.csproj", "{F2CEEB08-5355-4BD0-BCEE-C7FE68690D79}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Axlstar.Axl2cc.Tests", "Axlstar.Axl2cc.Tests\Axlstar.Axl2cc.Tests.csproj", "{BB366198-8C70-46AB-93B1-1D08E461117B}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Axlstar.Driver", "Axlstar.Driver\Axlstar.Driver.csproj", "{17EF1CB5-1CF9-4694-AEF9-6FA3D91BE9DA}"
 EndProject
 Global
@@ -47,8 +45,6 @@ Global
 		{F2CEEB08-5355-4BD0-BCEE-C7FE68690D79}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F2CEEB08-5355-4BD0-BCEE-C7FE68690D79}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F2CEEB08-5355-4BD0-BCEE-C7FE68690D79}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BB366198-8C70-46AB-93B1-1D08E461117B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BB366198-8C70-46AB-93B1-1D08E461117B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{17EF1CB5-1CF9-4694-AEF9-6FA3D91BE9DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{17EF1CB5-1CF9-4694-AEF9-6FA3D91BE9DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{17EF1CB5-1CF9-4694-AEF9-6FA3D91BE9DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
