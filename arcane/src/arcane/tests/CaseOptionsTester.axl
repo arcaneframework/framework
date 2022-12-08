@@ -60,6 +60,7 @@
   >
     <defaultvalue category="X1">25.1 12.3 1.0</defaultvalue>
     <defaultvalue category="X2">3.5 2.3 -1.0e3</defaultvalue>
+    <defaultvalue category="X3">-2.1 -1.5 +1.0e5</defaultvalue>
    <description>SimpleReal3</description>
   </simple>
 
@@ -163,6 +164,7 @@
    type = "int32[]"
   >
     <defaultvalue category="X1">3 -4 5 -6 7</defaultvalue>
+    <defaultvalue category="X3">-1 0 23 42</defaultvalue>
    <description>SimpleInt32Array</description>
   </simple>
 
@@ -231,6 +233,7 @@
    type     = "TypesCaseOptionsTester::eSimpleEnum"
   >
     <defaultvalue category="X1">enum2</defaultvalue>
+    <defaultvalue category="X3">enum1</defaultvalue>
    <description>SimpleEnum</description>
    <enumvalue genvalue="TypesCaseOptionsTester::SEEnum1" name="enum1"/>
    <enumvalue genvalue="TypesCaseOptionsTester::SEEnum2" name="enum2"/>
@@ -369,6 +372,7 @@
   >
     <defaultvalue category="X1">enum3</defaultvalue>
     <defaultvalue category="X2">enum4</defaultvalue>
+    <defaultvalue category="X3">enum4</defaultvalue>
    <name lang='fr'>simple-enum-avec-defaut</name>
    <description>SimpleEnumWithDefault</description>
    <enumvalue genvalue="TypesCaseOptionsTester::SEEnum1" name="enum1"/>
@@ -379,10 +383,10 @@
 
   <!-- - - - - - post-processor1 - - - - -->
   <service-instance
-   name = "post-processor1"
-   type = "Arcane::IPostProcessorWriter"
-   minOccurs = "0"
-   maxOccurs = "unbounded"
+    name = "post-processor1"
+    type = "Arcane::IPostProcessorWriter"
+    minOccurs = "0"
+    maxOccurs = "unbounded"
   >
    <name lang='fr'>post-processor1-fr</name>
    <description>Liste des services de protection</description>
@@ -402,6 +406,7 @@
   <service-instance
    name = "post-processor3"
    type = "Arcane::IPostProcessorWriter"
+    mesh-name="Mesh1"
   >
    <name lang='fr'>post-processor3-fr</name>
    <description>Un service de post-traitement</description>
@@ -428,6 +433,7 @@
     name = "service-instance-test1"
     type = "ArcaneTest::IServiceInterface1"
     default = "ServiceTestImpl4"
+    mesh-name="Mesh1"
   >
     <defaultvalue category="X1">ServiceTestImpl2</defaultvalue>
     <defaultvalue category="X2">ServiceTestImpl3</defaultvalue>

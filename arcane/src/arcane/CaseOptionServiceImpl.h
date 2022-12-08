@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CaseOptionServiceImpl.h                                     (C) 2000-2020 */
+/* CaseOptionServiceImpl.h                                     (C) 2000-2022 */
 /*                                                                           */
 /* Implémentation d'une option du jeu de données utilisant un service.       */
 /*---------------------------------------------------------------------------*/
@@ -63,6 +63,7 @@ class ARCANE_CORE_EXPORT CaseOptionServiceImpl
 : public CaseOptions
 {
  public:
+
   CaseOptionServiceImpl(const CaseOptionBuildInfo& cob,bool allow_null,bool is_optional);
 
  public:
@@ -86,6 +87,9 @@ class ARCANE_CORE_EXPORT CaseOptionServiceImpl
    */
   void setContainer(ICaseOptionServiceContainer* container);
 
+  void setMeshName(const String& mesh_name) { m_mesh_name = mesh_name; }
+  String meshName() const { return m_mesh_name; }
+
  protected:
 
   virtual void print(const String& lang,std::ostream& o) const;
@@ -99,6 +103,7 @@ class ARCANE_CORE_EXPORT CaseOptionServiceImpl
   String m_name;
   String m_default_value;
   String m_service_name;
+  String m_mesh_name;
   XmlNode m_element; //!< Element de l'option
   bool m_allow_null;
   bool m_is_optional;
@@ -149,6 +154,9 @@ class ARCANE_CORE_EXPORT CaseOptionMultiServiceImpl
    */
   void setContainer(ICaseOptionServiceContainer* container);
 
+  void setMeshName(const String& mesh_name) { m_mesh_name = mesh_name; }
+  String meshName() const { return m_mesh_name; }
+
  public:
 
   void _setNotifyAllocateFunctor(IFunctor* f)
@@ -164,6 +172,7 @@ class ARCANE_CORE_EXPORT CaseOptionMultiServiceImpl
 
   bool m_allow_null;
   String m_default_value;
+  String m_mesh_name;
   IFunctor* m_notify_functor;
   ICaseOptionServiceContainer* m_container;
   //! Liste des options allouées qu'il faudra supprimer.

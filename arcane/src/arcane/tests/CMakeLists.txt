@@ -274,6 +274,7 @@ endif()
 ARCANE_ADD_TEST_SEQUENTIAL(caseoptions_opt testCaseOptions-3.arc)
 ARCANE_ADD_TEST_SEQUENTIAL(caseoptions_default testCaseOptions-4.arc)
 ARCANE_ADD_TEST_SEQUENTIAL(caseoptions_category testCaseOptions-5.arc -We,ARCANE_DEFAULT_CATEGORY,X1)
+arcane_add_test_sequential(caseoptions_multiplemesh testCaseOptions-multiple-mesh.arc -We,ARCANE_DEFAULT_CATEGORY,X3)
 
 ARCANE_ADD_TEST(timehistory testTimeHistory-1.arc)
 
