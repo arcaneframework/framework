@@ -21,7 +21,7 @@
   }
 %typemap(out) Arcane::ItemVectorView
 %{
-   Arcane::ItemVectorView& result_ref = ($1);
+   Arcane::ItemVectorView result_ref = ($1);
    $result . m_local_ids.m_local_ids.m_size = result_ref.localIds().size();
    $result . m_local_ids.m_local_ids.m_ptr = result_ref.localIds().unguardedBasePointer();
    $result . m_local_ids.m_flags = result_ref.indexes().flags();
@@ -102,7 +102,7 @@
   }
 %typemap(out) Arcane::ItemEnumerator
 %{
-  Arcane::ItemEnumerator& result_ref = ($1);
+  Arcane::ItemEnumerator result_ref = ($1);
   $result . m_items = result_ref.unguardedItems();
   $result . m_local_ids = result_ref.unguardedLocalIds();
   $result . m_index = result_ref.index();
