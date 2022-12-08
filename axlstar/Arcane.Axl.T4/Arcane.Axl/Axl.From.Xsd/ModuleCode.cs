@@ -43,7 +43,7 @@ namespace Arcane.Axl.Xsd
       }
     }
 
-    public IEnumerable<Xsd.variablesVariable> Variables { 
+    public IEnumerable<Xsd.variablesVariable> Variables {
       get {
         if (variables == null)
           return new List<Xsd.variablesVariable> ();
@@ -55,7 +55,7 @@ namespace Arcane.Axl.Xsd
     public void CheckValid ()
     {
       foreach (var v in Variables)
-        v.CheckValid ();
+        v.InitializeAndValidate ();
     }
   }
 }

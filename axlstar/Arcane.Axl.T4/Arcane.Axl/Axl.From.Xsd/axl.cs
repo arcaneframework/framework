@@ -937,6 +937,8 @@ namespace Arcane.Axl.Xsd {
         
         private bool noreplicasyncFieldSpecified;
         
+        private string internalcpptypenameField;
+        
         public variablesVariable() {
             this.flowField = Flow.inout;
         }
@@ -1258,6 +1260,17 @@ namespace Arcane.Axl.Xsd {
             }
             set {
                 this.noreplicasyncFieldSpecified = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute("internal-cpp-typename")]
+        public string internalcpptypename {
+            get {
+                return this.internalcpptypenameField;
+            }
+            set {
+                this.internalcpptypenameField = value;
             }
         }
     }
