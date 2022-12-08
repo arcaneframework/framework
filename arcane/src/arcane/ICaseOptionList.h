@@ -74,9 +74,20 @@ class ARCANE_CORE_EXPORT ICaseOptionList
   virtual void visit(ICaseDocumentVisitor* visitor) =0;
   //! Nom complet au format XPath correspondant à rootElement()
   virtual String xpathFullName() const =0;
-
+  //! Handle du maillage associé
+  virtual MeshHandle meshHandle() const =0;
+  //! Ajoute une référence
   virtual void addReference() =0;
+  //! Supprime une référence
   virtual void removeReference() =0;
+
+  /*!
+   * \brief Désactive l'option comme si elle était absente.
+   *
+   * Cela est utilisé par exemple si l'option est associée à un maillage
+   * qui n'est pas défini.
+   */
+  virtual void disable() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

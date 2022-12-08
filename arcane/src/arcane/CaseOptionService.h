@@ -125,20 +125,29 @@ class CaseOptionServiceContainer
  *
  * Les instances de cette classe ne sont pas copiables.
  */
-class CaseOptionService
+class ARCANE_CORE_EXPORT CaseOptionService
 {
  public:
-  CaseOptionService(const CaseOptionBuildInfo& cob,bool allow_null,bool is_optional)
+
+ CaseOptionService(const CaseOptionBuildInfo& cob,bool allow_null,bool is_optional)
   : m_impl(new CaseOptionServiceImpl(cob,allow_null,is_optional))
   {
   }
+
   virtual ~CaseOptionService() = default;
+
+ public:
+
   CaseOptionService(const CaseOptionService&) = delete;
   const CaseOptionService& operator=(const CaseOptionService&) = delete;
+
  public:
+
   operator CaseOptions& () { return *_impl(); }
   operator const CaseOptions& () const { return *_impl(); }
+
  public:
+
   String rootTagName() const { return m_impl->rootTagName(); }
   String name() const { return m_impl->name(); }
   String serviceName() const { return m_impl->serviceName(); }
@@ -172,10 +181,32 @@ class CaseOptionService
   {
     m_impl->addDefaultValue(category,value);
   }
+  /*!
+   * \brief Positionne le nom du maillage auquel le service sera associé.
+   *
+   * Si nul, le service est associé au maillage par défaut du sous-domaine
+   * (ISubDomain::defaultMeshHandle()). L'association réelle se fait lors de la
+   * lecture des options. Appeler cette méthode après lecture des options n'aura
+   * aucun impact.
+   */
+  void setMeshName(const String& mesh_name);
+
+  /*!
+   * \brief Nom du maillage auquel le service est associé.
+   *
+   * Il s'agit du nom du maillage tel que spécifié dans le descripteur de service
+   * (le fichier 'axl'). Pour obtenir le maillage associé après lecture des options
+   * il faut utiliser ICaseOptions::meshHandle().
+   */
+  String meshName() const;
+
  protected:
+
   CaseOptionServiceImpl* _impl() { return m_impl.get(); }
   const CaseOptionServiceImpl* _impl() const { return m_impl.get(); }
+
  private:
+
   ReferenceCounter<CaseOptionServiceImpl> m_impl;
 };
 
@@ -220,7 +251,7 @@ class CaseOptionServiceT
  * \ingroup CaseOption
  * \brief Classe de base d'une option service pouvant être présente plusieurs fois.
  */
-class CaseOptionMultiService
+class ARCANE_CORE_EXPORT CaseOptionMultiService
 {
  public:
   CaseOptionMultiService(const CaseOptionBuildInfo& cob,bool allow_null)
@@ -248,10 +279,27 @@ class CaseOptionMultiService
   {
     m_impl->addAlternativeNodeName(lang,name);
   }
+  /*!
+   * \brief Positionne le nom du maillage auquel le service sera associé.
+   *
+   * \sa CaseOptionService::setMeshName()
+   */
+  void setMeshName(const String& mesh_name);
+
+  /*!
+   * \brief Nom du maillage auquel le service est associé.
+   *
+   * \sa CaseOptionService::axlMeshName();
+   */
+  String meshName() const;
+
  protected:
+
   CaseOptionMultiServiceImpl* _impl() { return m_impl.get(); }
   const CaseOptionMultiServiceImpl* _impl() const { return m_impl.get(); }
+
  private:
+
   ReferenceCounter<CaseOptionMultiServiceImpl> m_impl;
 };
 

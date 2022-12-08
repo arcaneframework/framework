@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CaseOptions.cc                                              (C) 2000-2018 */
+/* CaseOptions.cc                                              (C) 2000-2022 */
 /*                                                                           */
 /* Gestion des options du jeu de données.                                    */
 /*---------------------------------------------------------------------------*/
@@ -78,6 +78,45 @@ _tryCreateService(ICaseOptionServiceContainer* container,IApplication* app,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void CaseOptionService::
+setMeshName(const String& mesh_name)
+{
+  m_impl->setMeshName(mesh_name);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+String CaseOptionService::
+meshName() const
+{
+  return m_impl->meshName();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CaseOptionMultiService::
+setMeshName(const String& mesh_name)
+{
+  m_impl->setMeshName(mesh_name);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+String CaseOptionMultiService::
+meshName() const
+{
+  return m_impl->meshName();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 CaseOptionServiceImpl::
 CaseOptionServiceImpl(const CaseOptionBuildInfo& cob,bool allow_null,bool is_optional)
 : CaseOptions(cob.caseOptionList(),cob.name())
@@ -146,21 +185,27 @@ _readPhase1()
   }
 
   XmlNode element = col->rootElement();
+  String mesh_name = meshName();
   tm->info(5) << "** CaseOptionService::read() ELEMENT <" << rootTagName() << "> " << col->rootElement().name()
               << " full=" << col->rootElement().xpathFullName()
               << " is_present=" << col->isPresent()
               << " is_optional=" << isOptional()
               << " allow_null=" << m_allow_null
+              << " mesh-name=" << mesh_name
               << "\n";
+
+
+  if (_setMeshHandleAndCheckDisabled(mesh_name))
+    return;
 
   String str_val = element.attrValue("name");
   //cerr << "** STR_VAL <" << str_val << " - " << m_default_value << ">\n";
         
   if (str_val.null()){
-    // Utilise la valeur par défaut.
-    // Si elle a été spécifiée par l´utilisateur, utilise celle. Sinon
-    // utilise celle de la categorie associée aux défaut. Sinon, la valeur
-    // par défaut classique.
+    // Utilise la valeur par défaut:
+    // - si elle a été spécifiée par l´utilisateur, utilise celle-ci.
+    // - sinon utilise celle de la categorie associée aux défauts.
+    // - sinon, la valeur par défaut classique.
     if (!m_is_override_default){
       String category = caseDocument()->defaultCategory();
       if (!category.null()){
@@ -313,6 +358,11 @@ multiAllocate(const XmlNodeList& elem_list)
   m_allocated_options.resize(size);
   IApplication* app = caseMng()->application();
   XmlNode parent_element = configList()->parentElement();
+
+  String mesh_name = meshName();
+  if (_setMeshHandleAndCheckDisabled(mesh_name))
+    return;
+
   for( Integer index=0; index<size; ++index ){
     XmlNode element = elem_list[index];
       
@@ -321,7 +371,8 @@ multiAllocate(const XmlNodeList& elem_list)
     tm->info(5) << "CaseOptionMultiServiceImpl name=" << name()
                 << " index=" << index
                 << " v=" << str_val
-                << " default_value=" << _defaultValue() << ">";
+                << " default_value='" << _defaultValue() << "'"
+                << " mesh=" << meshHandle().meshName();
         
     if (str_val.null())
       str_val = _defaultValue();

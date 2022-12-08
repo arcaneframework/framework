@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CaseOptionList.cc                                           (C) 2000-2019 */
+/* CaseOptionList.cc                                           (C) 2000-2022 */
 /*                                                                           */
 /* Liste d'options de configuration d'un service ou module.                  */
 /*---------------------------------------------------------------------------*/
@@ -24,6 +24,7 @@
 #include "arcane/ICaseDocumentVisitor.h"
 #include "arcane/CaseOptionException.h"
 #include "arcane/ICaseDocument.h"
+#include "arcane/MeshHandle.h"
 
 // TODO: a supprimer
 #include "arcane/IServiceInfo.h"
@@ -206,6 +207,8 @@ class CaseOptionList
 
   String xpathFullName() const override { return m_root_element.xpathFullName(); }
 
+  MeshHandle meshHandle() const override { return m_ref_opt->meshHandle(); }
+
  public:
 
   void addReference() override { ++m_nb_ref; }
@@ -217,6 +220,16 @@ class CaseOptionList
     Int32 v = std::atomic_fetch_add(&m_nb_ref,-1);
     if (v==1)
       delete this;
+  }
+
+ public:
+
+  void disable()
+  {
+    info(5) << "INTERNAL REMOVE CHILDREN root=" << m_root_element.xpathFullName() << " this=" << this;
+    // TODO regarder éventuelles fuites mémoire
+    m_case_options.clear();
+    m_is_disabled = true;
   }
 
  protected:
@@ -240,6 +253,7 @@ class CaseOptionList
   bool m_is_present;
   bool m_is_multi;
   bool m_is_optional;
+  bool m_is_disabled = false;
   std::atomic<Int32> m_nb_ref = 0;
 };
 
@@ -287,10 +301,15 @@ printChildren(const String& lang,int indent)
   _strIndent(str_indent,indent,127);
 
   String service_name = "";
+  String mesh_name = "";
   IServiceInfo* service = m_ref_opt->caseServiceInfo();
-  if (service)
+  if (service){
     service_name = " name=\""+ service->localName() + "\"";
-  info() << str_indent << "<" << rootTagName() << service_name << ">";
+    String mesh_handle_name = m_ref_opt->meshHandle().meshName();
+    if (mesh_handle_name!="Mesh0")
+      mesh_name = " mesh=\"" + m_ref_opt->meshHandle().meshName() + "\"";
+  }
+  info() << str_indent << "<" << rootTagName() << service_name << mesh_name << ">";
   for( ConstIterT<CaseOptionBasePairList> i(m_config_list); i(); ++i ){
     _printOption(lang,indent,i->first,info().file());
   }
@@ -328,6 +347,8 @@ addInvalidChildren(XmlNodeList& nlist)
   info(5) << "CHECK INVALID CHILDREN root=" << m_root_element.xpathFullName()
           << " parent=" << m_parent_element.xpathFullName()
           << " this=" << this;
+  if (m_is_disabled)
+    return;
 
   if (!m_root_element.null())
     _addInvalidChildren(m_root_element,nlist);

@@ -1110,8 +1110,15 @@ class ARCANE_CORE_EXPORT CaseOptions
  protected:
 
   void _setTranslatedName();
+  bool _setMeshHandleAndCheckDisabled(const String& mesh_name);
+
+ protected:
 
   CaseOptionsPrivate* m_p; //!< Implémentation
+
+ private:
+
+  void _setMeshHandle(const MeshHandle& handle);
 };
 
 /*---------------------------------------------------------------------------*/

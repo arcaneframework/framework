@@ -5,13 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CaseOptions.cc                                              (C) 2000-2019 */
+/* CaseOptions.cc                                              (C) 2000-2022 */
 /*                                                                           */
 /* Gestion des options du jeu de données.                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/Iostream.h"
@@ -51,6 +49,7 @@
 #include "arcane/IStandardFunction.h"
 #include "arcane/ICaseDocumentVisitor.h"
 #include "arcane/MeshHandle.h"
+#include "arcane/IMeshMng.h"
 
 #include <memory>
 #include <vector>
@@ -211,30 +210,38 @@ CaseOptionEnumValue::
 class CaseOptionsPrivate
 {
  public:
+
   CaseOptionsPrivate(ICaseMng* cm,const String& name)
-  : m_parent(nullptr), m_case_mng(cm), m_config_list(nullptr), m_module(nullptr),
-    m_service_info(0), m_name(name), m_true_name(name), m_is_multi(false),
-    m_is_translated_name_set(false), m_is_phase1_read(false), m_activate_function(nullptr)
+  : m_case_mng(cm), m_name(name), m_true_name(name)
+  , m_mesh_handle(cm->subDomain()->defaultMeshHandle())
   {
   }
-  ~CaseOptionsPrivate()
+
+  CaseOptionsPrivate(ICaseOptionList* co_list,const String& name)
+  : m_case_mng(co_list->caseMng()), m_name(name), m_true_name(name),
+    m_mesh_handle(co_list->meshHandle())
   {
+    if (m_mesh_handle.isNull())
+      m_mesh_handle = m_case_mng->subDomain()->defaultMeshHandle();
   }
+
  public:
-  ICaseOptionList* m_parent;
+
+  ICaseOptionList* m_parent = nullptr;
   ICaseMng* m_case_mng;
   ReferenceCounter<ICaseOptionList> m_config_list;
-  IModule* m_module;  //!< Module associé ou 0 s'il n'y en a pas.
-  IServiceInfo* m_service_info;  //!< Service associé ou 0 s'il n'y en a pas.
+  IModule* m_module = nullptr;  //!< Module associé ou 0 s'il n'y en a pas.
+  IServiceInfo* m_service_info = nullptr;  //!< Service associé ou 0 s'il n'y en a pas.
   String m_name;
   String m_true_name;
-  bool m_is_multi;
-  bool m_is_translated_name_set;
-  bool m_is_phase1_read;
+  bool m_is_multi = false;
+  bool m_is_translated_name_set = false;
+  bool m_is_phase1_read = false;
   StringDictionary m_name_translations;
-  ICaseFunction* m_activate_function; //!< Fonction indiquand l'état d'activation
+  ICaseFunction* m_activate_function = nullptr; //!< Fonction indiquand l'état d'activation
   std::atomic<Int32> m_nb_ref = 0;
   bool m_is_case_mng_registered = false;
+  MeshHandle m_mesh_handle;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -254,7 +261,7 @@ CaseOptions(ICaseMng* cm,const String& name)
 
 CaseOptions::
 CaseOptions(ICaseOptionList* parent,const String& aname)
-: m_p(new CaseOptionsPrivate(parent->caseMng(),aname))
+: m_p(new CaseOptionsPrivate(parent,aname))
 {
   m_p->m_config_list = createCaseOptionList(parent,this,XmlNode());
   parent->addChild(this);
@@ -279,7 +286,7 @@ CaseOptions(ICaseMng* cm,const String& aname,const XmlNode& parent_elem)
 CaseOptions::
 CaseOptions(ICaseOptionList* parent,const String& aname,
             const XmlNode& parent_elem,bool is_optional,bool is_multi)
-: m_p(new CaseOptionsPrivate(parent->caseMng(),aname))
+: m_p(new CaseOptionsPrivate(parent,aname))
 {
   ICaseOptionList* col = createCaseOptionList(parent,this,parent_elem,is_optional,is_multi);
   m_p->m_config_list = col;
@@ -497,7 +504,7 @@ subDomain() const
 MeshHandle CaseOptions::
 meshHandle() const
 {
-  return m_p->m_case_mng->subDomain()->defaultMeshHandle();
+  return m_p->m_mesh_handle;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -516,6 +523,57 @@ ICaseDocument* CaseOptions::
 caseDocument() const
 {
   return caseMng()->caseDocument();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CaseOptions::
+_setMeshHandle(const MeshHandle& handle)
+{
+  traceMng()->info(5) << "SetMeshHandle for " << m_p->m_name << " mesh_name=" << handle.meshName();
+  m_p->m_mesh_handle = handle;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Positionne le maillage associé à cette option.
+ *
+ * Si \a mesh_name est nul ou vide alors le maillage associé à cette
+ * option est celui de l'option parente. Si l'option n'a pas de parent alors
+ * c'est le maillage par défaut.
+ *
+ * Si \a mesh_name n'est pas nul, il y a deux possibilités:
+ * - si le maillage spécifié existe alors l'option sera associée à ce maillage
+ * - s'il n'existe pas, alors l'option est désactivée et les éventuelles options
+ * filles ne seront pas lues. Ce dernier cas arrive par exemple si un service
+ * est associé à un maillage supplémentaire mais que ce dernier est optionnel.
+ * Dans ce cas l'option ne doit pas être lue.
+ *
+ * \retval true si l'option est désactivée suite à cet appel.
+ */
+bool CaseOptions::
+_setMeshHandleAndCheckDisabled(const String& mesh_name)
+{
+  if (mesh_name.empty()){
+    // Mon maillage est celui de mon parent
+    if (m_p->m_parent)
+      _setMeshHandle(m_p->m_parent->meshHandle());
+  }
+  else{
+    // Un maillage différent du maillage par défaut est associé à l'option.
+    // Récupère le MeshHandle associé s'il n'existe. S'il n'y en a pas on
+    // désactive l'option.
+    // Si aucun maillage du nom de celui qu'on cherche n'existe, n'alloue pas le service
+    MeshHandle* handle = subDomain()->meshMng()->findMeshHandle(mesh_name,false);
+    if (!handle){
+      m_p->m_config_list->disable();
+      return true;
+    }
+    _setMeshHandle(*handle);
+  }
+  return false;
 }
 
 /*---------------------------------------------------------------------------*/
