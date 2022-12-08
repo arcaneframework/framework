@@ -2,7 +2,7 @@
 // Wrapper Arcane vers le C#
 %text %{
 %}
-%module(directors="1") ArcaneDotNet
+%module(directors="1", allprotected="1") ArcaneDotNet
 
 // Ces deux macros permettent que les constructeurs des
 // classes générées par SWIG et qui prennent le pointeur C++
