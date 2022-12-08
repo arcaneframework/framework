@@ -50,6 +50,7 @@ class SingletonService
   void* getPointer1() override { return this; }
   void* getPointer2() override { return this; }
   String implementationName() const override { return "SingletonService"; }
+  String meshName() const override { return String(); }
 };
 
 /*---------------------------------------------------------------------------*/

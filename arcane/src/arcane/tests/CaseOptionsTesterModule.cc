@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CaseOptionsTesterModule.cc                                  (C) 2000-2018 */
+/* CaseOptionsTesterModule.cc                                  (C) 2000-2022 */
 /*                                                                           */
 /* Module de test des options du jeu de données.                             */
 /*---------------------------------------------------------------------------*/
@@ -41,6 +41,7 @@
 #include "arcane/AbstractService.h"
 #include "arcane/ServiceFactory.h"
 #include "arcane/ICaseDocument.h"
+#include "arcane/ICaseMeshService.h"
 
 #include "arcane/tests/TypesCaseOptionsTester.h"
 
@@ -68,17 +69,20 @@ class IComplex2Interface {public: virtual ~IComplex2Interface(){}};
 class IComplex3Interface {public: virtual ~IComplex3Interface(){}};
 class IComplex4Interface {public: virtual ~IComplex4Interface(){}};
 
-ARCANETEST_BEGIN_NAMESPACE
+namespace ArcaneTest
+{
 class ICaseOptionTestInterface { public: virtual ~ICaseOptionTestInterface(){} };
-ARCANETEST_END_NAMESPACE
+}
 
 #include "arcane/tests/IServiceInterface.h"
 #include "arcane/tests/CaseOptionsTester_axl.h"
+#include "arcane/tests/ServiceInterface1ImplTest_axl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 extern "C++" bool
 _caseOptionConvert(const CaseOptionBase& co,const String& str,
                    ArcaneTest::TestRealInt& value)
@@ -88,15 +92,13 @@ _caseOptionConvert(const CaseOptionBase& co,const String& str,
   ARCANE_UNUSED(value);
   return false;
 }
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace ArcaneTest
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -383,6 +385,10 @@ arcaneLoop()
     Real v = sf->getFunctorRealReal3ToReal()->apply(r,Real3(1.0,r,3.0));
     info() << "V=" << v;
   }
+  IServiceInterface1* sii = options()->serviceInstanceTest1();
+  if (sii){
+    info() << "service-instance-test1 implementation name=" << sii->implementationName();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -498,9 +504,20 @@ init()
                 "service with dynamic default");
   }
   if (options()->testId()==5){
-    vc.areEqual(options()->simpleReal3(),Real3(25.1,12.3,1.0),"TestId5 - simple-real3 (with default category");
+    vc.areEqual(options()->simpleReal3(),Real3(25.1,12.3,1.0),"TestId5 - simple-real3 (with default category)");
     UniqueArray<Int32> x = { 3, -4, 5, -6, 7 };   
-    vc.areEqual(options()->simpleInt32Array().constView(),x.constView(),"TestId5 - simple-int32-array (with default category");
+    vc.areEqual(options()->simpleInt32Array().constView(),x.constView(),"TestId5 - simple-int32-array (with default category)");
+  }
+  if (options()->testId()==6){
+    vc.areEqual(options()->simpleReal3(),Real3(-2.1,-1.5,1.0e5),"TestId5 - simple-real3 (with default category)");
+    UniqueArray<Int32> x = { -1, 0, 23, 42 };   
+    vc.areEqual(options()->simpleInt32Array().constView(),x.constView(),"TestId5 - simple-int32-array (with default category)");
+    IServiceInterface1* opt = options()->serviceInstanceTest1();
+    if (!opt)
+      ARCANE_FATAL("options()->serviceInstanceTest1() should not be nul");
+    vc.areEqual(opt->implementationName(),String("ServiceInterface1ImplTest"),"TestId6 - implementation name");
+    vc.areEqual(opt->meshName(),String("Mesh1"),"TestId6 - mesh name");
+    opt->checkSubMesh("Mesh1");
   }
   _applyVisitor();
 }
@@ -537,13 +554,16 @@ class ServiceTestImplInterface1
   ServiceTestImplInterface1(const ServiceBuildInfo& sbi)
   : AbstractService(sbi)
   {
-    info() << "Create ServiceTestImplInterface1 name=" << serviceInfo()->localName();
+    info() << "Create ServiceTestImplInterface1 name=" << serviceInfo()->localName()
+           << " mesh=" << sbi.mesh()->name();
   }
 
  public:
+
   Integer value() override { return 0; }
   void* getPointer1() override { return this; }
-  Arccore::String implementationName() const override { return serviceInfo()->localName(); }
+  String implementationName() const override { return serviceInfo()->localName(); }
+  String meshName() const override { return String(); }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -588,8 +608,46 @@ class ServiceTestImplInterface4
   void* getPointer2() override { return this; }
   void* getPointer3() override { return this; }
   void* getPointer4() override { return this; }
-  Arccore::Integer value() override { return 3; }
-  Arccore::String implementationName() const override { return "ServiceTestImplInterface4"; }
+  Integer value() override { return 3; }
+  String implementationName() const override { return "ServiceTestImplInterface4"; }
+  String meshName() const { return String(); }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class ServiceInterface1ImplTestService
+: public ArcaneServiceInterface1ImplTestObject
+{
+ public:
+  explicit ServiceInterface1ImplTestService(const ServiceBuildInfo& sbi)
+  : ArcaneServiceInterface1ImplTestObject(sbi){}
+ public:
+  Integer value() override { return 2; }
+  void* getPointer1() override { return this; }
+  String implementationName() const override { return serviceInfo()->localName(); }
+  String meshName() const { return mesh()->name(); }
+  void checkSubMesh(const String& mesh_name) override
+  {
+    // Vérifie que les sous-services sont bien associés au maillage \a mesh_name
+    info() << "CHECK_SUB_MESH";
+    IPostProcessorWriter* w = options()->postProcessor1();
+    ARCANE_CHECK_POINTER(w);
+    auto* s = ARCANE_CHECK_POINTER(dynamic_cast<BasicService*>(w));
+    if (s->mesh()->name()!=mesh_name)
+      ARCANE_FATAL("Bad mesh expected={0} value={1}",mesh_name,s->mesh()->name());
+    const auto& multi_opt = options()->multiPostProcessor;
+    if (multi_opt.size()!=2)
+      ARCANE_FATAL("Bad number of option multi-post-processor: v={0} expected=2",multi_opt.size());
+    for( const auto& x : multi_opt ){
+      info() << "Check multi opt";
+      IPostProcessorWriter* w2 = x;
+      auto* s2 = ARCANE_CHECK_POINTER(dynamic_cast<BasicService*>(w2));
+      info() << "Check multi opt mesh_name=" << s2->mesh()->name();
+      if (s2->mesh()->name()!=mesh_name)
+        ARCANE_FATAL("Bad mesh expected={0} value={1}",mesh_name,s2->mesh()->name());
+    }
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -626,10 +684,13 @@ ARCANE_REGISTER_SERVICE(ServiceTestImplInterface4,
                         ARCANE_SERVICE_INTERFACE(IServiceInterface3),
                         ARCANE_SERVICE_INTERFACE(IServiceInterface4));
 
+ARCANE_REGISTER_SERVICE_SERVICEINTERFACE1IMPLTEST(ServiceInterface1ImplTest,
+                                                  ServiceInterface1ImplTestService);
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_END_NAMESPACE
+} // End namespace ArcaneTest
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

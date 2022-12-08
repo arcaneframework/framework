@@ -108,7 +108,9 @@ set(AXL_FILES
   accelerator/SimpleHydroAccelerator
   PDESRandomNumberGeneratorUnitTest
   RandomNumberGeneratorUnitTest
+  ServiceInterface1ImplTest
   SimpleTableOutputUnitTest
   SimpleTableComparatorUnitTest
+  SimpleTableOutputUnitTest
 )
 

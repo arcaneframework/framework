@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IServiceInterface.h                                         (C) 2000-2018 */
+/* IServiceInterface.h                                         (C) 2000-2022 */
 /*                                                                           */
 /* Interfaces pour les tests des services.                                   */
 /*---------------------------------------------------------------------------*/
@@ -33,6 +33,8 @@ class IServiceInterface1
   virtual Arccore::Integer value() =0;
   virtual void* getPointer1() =0;
   virtual Arccore::String implementationName() const =0;
+  virtual Arccore::String meshName() const =0;
+  virtual void checkSubMesh(const Arccore::String&) {}
 };
 
 /*---------------------------------------------------------------------------*/
