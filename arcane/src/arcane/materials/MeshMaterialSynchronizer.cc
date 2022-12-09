@@ -5,19 +5,19 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialSynchronizer.cc                                 (C) 2000-2016 */
+/* MeshMaterialSynchronizer.cc                                 (C) 2000-2022 */
 /*                                                                           */
 /* Synchronisation des entités des matériaux.                                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/IMesh.h"
+#include "arcane/materials/MeshMaterialSynchronizer.h"
 
 #include "arcane/VariableTypes.h"
 #include "arcane/IParallelMng.h"
 #include "arcane/ItemPrinter.h"
+#include "arcane/IMesh.h"
 
-#include "arcane/materials/MeshMaterialSynchronizer.h"
 #include "arcane/materials/CellToAllEnvCellConverter.h"
 #include "arcane/materials/MatItemEnumerator.h"
 #include "arcane/materials/MeshMaterialModifier.h"
@@ -25,11 +25,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -86,7 +83,7 @@ _fillPresence(AllEnvCell all_env_cell,ByteArrayView presence)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MeshMaterialSynchronizer::
+bool MeshMaterialSynchronizer::
 synchronizeMaterialsInCells()
 {
   /*
@@ -106,7 +103,7 @@ synchronizeMaterialsInCells()
   */
   IMesh* mesh = m_material_mng->mesh();
   if (!mesh->parallelMng()->isParallel())
-    return;
+    return false;
 
   ConstArrayView<IMeshMaterial*> materials = m_material_mng->materials();
   Integer nb_mat = materials.size();
@@ -123,6 +120,8 @@ synchronizeMaterialsInCells()
     AllEnvCell all_env_cell = cell_converter[*icell];
     _fillPresence(all_env_cell,presence);
   }
+
+  bool has_changed = false;
 
   mat_presence.synchronize();
   {
@@ -153,12 +152,18 @@ synchronizeMaterialsInCells()
 
     MeshMaterialModifier modifier(m_material_mng);
     for( Integer i=0; i<nb_mat; ++i ){
-      if (!to_add[i].empty())
+      if (!to_add[i].empty()){
         modifier.addCells(materials[i],to_add[i]);
-      if (!to_remove[i].empty())
+        has_changed = true;
+      }
+      if (!to_remove[i].empty()){
         modifier.removeCells(materials[i],to_remove[i]);
+        has_changed = true;
+      }
     }
   }
+
+  return has_changed;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -242,8 +247,7 @@ _checkComponents(VariableCellInt32& indexes,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+} // End namespace Arcane::Materials
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
