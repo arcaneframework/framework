@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableRef.h                                               (C) 2000-2020 */
+/* VariableRef.h                                               (C) 2000-2022 */
 /*                                                                           */
 /* Classe gérant une référence sur une variable.                             */
 /*---------------------------------------------------------------------------*/
@@ -56,46 +56,49 @@ class ARCANE_CORE_EXPORT VariableRef
 {
  public:
 
-	class UpdateNotifyFunctorList;
-	friend class UpdateNotifyFunctorList;
+  class UpdateNotifyFunctorList;
+  friend class UpdateNotifyFunctorList;
 
  protected:
 
   //! Construit une référence sur une variable avec les infos \a vbi
-  VariableRef(const VariableBuildInfo& vbi);
+  explicit VariableRef(const VariableBuildInfo& vbi);
   //! Constructeur de copie
-  VariableRef(const VariableRef& from);
+  explicit VariableRef(const VariableRef& from);
   //! Construit une référence sur une variable \a var
   explicit VariableRef(IVariable* var);
   //! Opérateur de recopie
-  void operator=(const VariableRef& from);
+  VariableRef& operator=(const VariableRef& from);
   //! Constructeur vide
   VariableRef();
 
  public:
-  
+
   //! Libère les ressources
   virtual ~VariableRef();
-
- private:
 
  public:
 
   //! Sous-domaine associé à la variable
-  virtual ISubDomain* subDomain() const;
+  ISubDomain* subDomain() const;
 
   //! Nom de la variable
-  virtual const String& name() const;
+  const String& name() const;
 
+ public:
+
+  //TODO Supprimer virtual
   //! Type de la variable (Real, Integer, ...)
   virtual eDataType dataType() const;
 
   //! Affiche la valeur de la variable
   virtual void print(std::ostream& o) const;
 
-  //! Module associé à la variable (ou 0, s'il n'y en a pas)
+  //TODO Supprimer virtual
+  //! Module associé à la variable (ou nullptr, s'il n'y en a pas)
   virtual IModule* module() const { return m_module; }
 
+  //TODO Supprimer virtual
   //! Propriétés de la variable
   virtual int property() const;
 
@@ -120,13 +123,13 @@ class ARCANE_CORE_EXPORT VariableRef
   /*! \brief Vérifie si la variable est bien synchronisée.
    * \sa IVariable::checkIfSync()
    */
-  virtual Integer checkIfSync(int max_print =0);
+  virtual Integer checkIfSync(int max_print = 0);
 
   /*!
    * \brief Vérifie si la variable a les mêmes valeurs sur tous les réplicas.
    * \sa IVariable::checkIfSameOnAllReplica()
    */
-  virtual Integer checkIfSameOnAllReplica(int max_print =0);
+  virtual Integer checkIfSameOnAllReplica(int max_print = 0);
 
   //! Mise à jour à partir de la partie interne
   virtual void updateFromInternal();
@@ -139,28 +142,27 @@ class ARCANE_CORE_EXPORT VariableRef
   void setUsed(bool v) { m_variable->setUsed(v); }
   bool isUsed() const { return m_variable->isUsed(); }
 
-  virtual void internalSetUsed(bool /*v*/) { }
+  virtual void internalSetUsed(bool /*v*/) {}
 
  public:
- 
+
   /*!
    * \brief Pile d'appel au moment de l'assignation de cette instance.
    *
    * La pile n'est accessible qu'en mode vérification ou débug. Si
    * ce n'est pas le cas, retourne une chaîne nulle.
    */
-  const String& assignmentStackTrace() const
-    { return m_assignment_stack_trace; }
+  const String& assignmentStackTrace() const { return m_assignment_stack_trace; }
 
  public:
 
   //@{ @name Gestion des tags
   //! Ajoute le tag \a tagname avev la valeur \a tagvalue
-  void addTag(const String& tagname,const String& tagvalue);
+  void addTag(const String& tagname, const String& tagvalue);
   /*! \brief Supprime le tag \a tagname
    *
    * Si le tag \a tagname n'est pas dans la liste, rien ne se passe.
-   */  
+   */
   void removeTag(const String& tagname);
   //! \a true si la variable possède le tag \a tagname
   bool hasTag(const String& tagname) const;
@@ -170,7 +172,8 @@ class ARCANE_CORE_EXPORT VariableRef
 
  public:
 
-  /*! @name Gestion des dépendances
+  /*!
+   * \name Gestion des dépendances
    *
    * Opérations liées à la gestion des dépendances des variables.
    */
@@ -199,13 +202,13 @@ class ARCANE_CORE_EXPORT VariableRef
   void addDependCurrentTime(const VariableRef& var);
 
   //! Ajoute \a var à la liste des dépendances au temps courant avec les infos de trace \a tinfo
-  void addDependCurrentTime(const VariableRef& var,const TraceInfo& tinfo);
+  void addDependCurrentTime(const VariableRef& var, const TraceInfo& tinfo);
 
   //! Ajoute \a var à la liste des dépendances au temps précédent
   void addDependPreviousTime(const VariableRef& var);
 
   //! Ajoute \a var à la liste des dépendances au temps précédent avec les infos de trace \a tinfo
-  void addDependPreviousTime(const VariableRef& var,const TraceInfo& tinfo);
+  void addDependPreviousTime(const VariableRef& var, const TraceInfo& tinfo);
 
   /*! \brief Supprime \a var de la liste des dépendances
    */
@@ -217,10 +220,10 @@ class ARCANE_CORE_EXPORT VariableRef
    * Si une fonction de recalcule existait déjà, elle est détruite
    * et remplacée par celle-ci.
    */
-  template<typename ClassType> void
-  setComputeFunction(ClassType* instance,void (ClassType::*func)())
+  template <typename ClassType> void
+  setComputeFunction(ClassType* instance, void (ClassType::*func)())
   {
-    _setComputeFunction(new VariableComputeFunction(instance,func));
+    _setComputeFunction(new VariableComputeFunction(instance, func));
   }
 
   /*!
@@ -230,10 +233,10 @@ class ARCANE_CORE_EXPORT VariableRef
    * et remplacée par celle-ci.
    * \a tinfo contient les infos permettant de savoir où est défini la fonction (pour le débug)
    */
-  template<typename ClassType> void
-  setComputeFunction(ClassType* instance,void (ClassType::*func)(),const TraceInfo& tinfo)
+  template <typename ClassType> void
+  setComputeFunction(ClassType* instance, void (ClassType::*func)(), const TraceInfo& tinfo)
   {
-    _setComputeFunction(new VariableComputeFunction(instance,func,tinfo));
+    _setComputeFunction(new VariableComputeFunction(instance, func, tinfo));
   }
   //@}
 
@@ -279,15 +282,16 @@ class ARCANE_CORE_EXPORT VariableRef
    */
   void _internalInit(IVariable*);
 
-  /*! \brief Variable référencée.
+  /*!
+   * \brief Variable référencée.
    *
    * Cette méthode vérifie qu'une variable est bien référencée.
    */
   IVariable* _variable() const
-    {
-      _checkValid();
-      return m_variable;
-    }
+  {
+    _checkValid();
+    return m_variable;
+  }
 
  private:
 
@@ -296,7 +300,7 @@ class ARCANE_CORE_EXPORT VariableRef
 
   //! Module associé (ou 0 si aucun)
   IModule* m_module;
-  
+
   //! \a true si la variable a été enregistrée
   bool m_is_registered;
 
@@ -313,10 +317,8 @@ class ARCANE_CORE_EXPORT VariableRef
    * \brief Pile d'appel lors de l'assignation de la variable.
    *
    * Utilisé uniquement lorsque les traces sont actives.
-   */    
+   */
   String m_assignment_stack_trace;
-
- public:
 
  protected:
 
@@ -327,7 +329,7 @@ class ARCANE_CORE_EXPORT VariableRef
  private:
 
   void _checkValid() const
- {
+  {
 #ifdef ARCANE_CHECK
     if (!m_variable)
       _throwInvalid();
@@ -336,6 +338,10 @@ class ARCANE_CORE_EXPORT VariableRef
   void _throwInvalid() const;
   bool _checkValidPropertyChanged(int property);
   void _setAssignmentStackTrace();
+
+ protected:
+
+  void _internalAssignVariable(const VariableRef& var);
 
  private:
 

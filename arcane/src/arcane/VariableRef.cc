@@ -204,24 +204,12 @@ VariableRef(const VariableRef& from)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void VariableRef::
+VariableRef& VariableRef::
 operator=(const VariableRef& rhs)
 {
-  if (rhs.m_variable==m_variable)
-    return;
-  _setAssignmentStackTrace();
-  if (m_is_registered)
-    unregisterVariable();
-  m_module = rhs.m_module;
-  m_variable = rhs.m_variable;
-  m_reference_property = rhs.m_reference_property;
-  m_has_trace = false;
-  // NE PAS TOUCHER A: m_notify_functor_list
-  //NOTE:
-  // C'est la variable qui met à jour m_previous_reference et m_next_reference
-  // dans registerVariable.
-  //cout << "** TODO: check variable operator= with linked list\n";
-  registerVariable();
+  if (rhs.m_variable!=m_variable)
+    _internalAssignVariable(rhs);
+  return (*this);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -630,6 +618,27 @@ _executeUpdateFunctors()
 {
   if (m_notify_functor_list)
     m_notify_functor_list->execute();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VariableRef::
+_internalAssignVariable(const VariableRef& var)
+{
+  _setAssignmentStackTrace();
+  if (m_is_registered)
+    unregisterVariable();
+  m_module = var.m_module;
+  m_variable = var.m_variable;
+  m_reference_property = var.m_reference_property;
+  m_has_trace = false;
+  // NE PAS TOUCHER A: m_notify_functor_list
+  //NOTE:
+  // C'est la variable qui met à jour m_previous_reference et m_next_reference
+  // dans registerVariable.
+  //cout << "** TODO: check variable operator= with linked list\n";
+  registerVariable();
 }
 
 /*---------------------------------------------------------------------------*/
