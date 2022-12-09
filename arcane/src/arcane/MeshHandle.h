@@ -19,6 +19,7 @@
 #include "arccore/base/String.h"
 
 #include "arcane/utils/UtilsTypes.h"
+#include "arcane/ArcaneTypes.h"
 
 #include <atomic>
 
@@ -27,17 +28,6 @@
 
 namespace Arcane
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class IMesh;
-class IMeshBase;
-class IMeshMng;
-class ISubDomain;
-class IUserDataList;
-class IVariableMng;
-class IApplication;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -85,6 +75,7 @@ class ARCANE_CORE_EXPORT MeshHandle
     IVariableMng* variableMng() const { return m_variable_mng; }
     IUserDataList* userDataList() const { return m_user_data_list; }
     Observable* onDestroyObservable() const { return m_on_destroy_observable; }
+    bool isDoFatalInMeshMethod() const { return m_do_fatal_in_mesh_method; }
 
    public:
 
@@ -103,10 +94,8 @@ class ARCANE_CORE_EXPORT MeshHandle
     ITraceMng* m_trace_mng = nullptr;
     IVariableMng* m_variable_mng = nullptr;
     Observable* m_on_destroy_observable = nullptr;
-
-   private:
-
     bool m_is_null = true;
+    bool m_do_fatal_in_mesh_method = false;
   };
 
  public:
@@ -135,6 +124,14 @@ class ARCANE_CORE_EXPORT MeshHandle
 
   //! Indique si le maillage associé a déjà été créé (i.e: mesh() est valide)
   bool hasMesh() const;
+
+  /*!
+   * \brief Retourne le maillage associé à cette instance.
+   *
+   * Contrairement à mesh(), cette peut-être appelée si le maillage associé n'a pas
+   * encore été créé. Dans ce cas on retourne un pointeur nul.
+   */
+  IMesh* meshOrNull() const;
 
  public:
 

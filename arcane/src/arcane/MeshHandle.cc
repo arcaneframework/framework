@@ -16,6 +16,7 @@
 #include "arcane/utils/UserDataList.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/Observable.h"
+#include "arcane/utils/ValueConvert.h"
 
 #include "arcane/ISubDomain.h"
 #include "arcane/IMesh.h"
@@ -44,6 +45,8 @@ MeshHandleRef(ISubDomain* sd,const String& name)
   m_mesh_mng = sd->meshMng();
   m_variable_mng = sd->variableMng();
   m_on_destroy_observable = new Observable();
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_DO_FATAL_IN_MESHHANDLE",true))
+    m_do_fatal_in_mesh_method = v.value()!=0;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -134,10 +137,19 @@ mesh() const
     return m;
   // A terme, faire un fatal si le maillage est nul. Pour des raisons de
   // compatibilité avec l'existant, on retourne 'nullptr'.
-  bool do_fatal = false;
+  bool do_fatal = true; //m_ref->isDoFatalInMeshMethod();
   if (do_fatal)
     ARCANE_FATAL("Invalid call for null mesh. Call MeshHandle::hasMesh() before to make sure mesh is valid");
   return nullptr;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IMesh* MeshHandle::
+meshOrNull() const
+{
+  return m_ref->mesh();
 }
 
 /*---------------------------------------------------------------------------*/
