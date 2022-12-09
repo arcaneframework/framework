@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Array2Variable.cc                                           (C) 2000-2021 */
+/* Array2Variable.cc                                           (C) 2000-2022 */
 /*                                                                           */
 /* Variable tableau 2D.                                                      */
 /*---------------------------------------------------------------------------*/
@@ -18,6 +18,8 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/Ref.h"
+#include "arcane/utils/CheckedConvert.h"
+#include "arcane/utils/ArrayShape.h"
 
 #include "arcane/datatype/DataTypeTraits.h"
 #include "arcane/datatype/DataStorageBuildInfo.h"
@@ -301,6 +303,21 @@ directResize(Integer dim1_size,Integer dim2_size)
          << " dim1_size=" << m_data->value().dim1Size()
          << " dim2_size=" << m_data->value().dim2Size()
          << " addr=" << m_data->value().view().unguardedBasePointer();*/
+  syncReferences();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename DataType> void Array2VariableT<DataType>::
+directResizeAndReshape(const ArrayShape& shape)
+{
+  Int32 dim1_size = valueView().dim1Size();
+  Int32 dim2_size = CheckedConvert::toInt32(shape.totalNbElement());
+
+  m_data->_internal()->resize(dim1_size,dim2_size);
+  m_data->setShape(shape);
+
   syncReferences();
 }
 

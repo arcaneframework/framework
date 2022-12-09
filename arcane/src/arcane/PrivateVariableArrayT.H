@@ -94,6 +94,17 @@ resize(Integer dim2_size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template<class DataType> void
+PrivateVariableArrayT<DataType>::
+resizeAndReshape(const ArrayShape& shape)
+{
+  m_private_part->directResizeAndReshape(shape);
+  updateFromInternal();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template<class DataType> ItemGroup
 PrivateVariableArrayT<DataType>::
 itemGroup() const
