@@ -28,10 +28,10 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Petite matrice carrée de taille fixe de N données numériques.
+ * \brief Petite matrice de taille fixe contenant RowSize lignes et ColumnSize colonnes.
  *
- * \note Actuellement uniquement implémenté pour 2 ou 3 valeurs et pour le
- * type Real.
+ * \note Actuellement uniquement implémenté pour des matrices carrées avec
+ * 2 ou 3 valeurs et pour le type Real.
  *
  * \warning API en cours de définition. Ne pas utiliser en dehors de Arcane
  *
@@ -39,15 +39,18 @@ namespace Arcane
  * ou 'operator()' ou par les méthodes vx(), vy(), vz() si la dimension est
  * suffisante (par exemple vz() est uniquement accessible si la Size>=3.
  */
-template <typename T, int Size>
+template <typename T, int RowSize, int ColumnSize>
 class ARCANE_UTILS_EXPORT NumMatrix
 {
-  static_assert(Size == 2 || Size == 3, "Valid values for Size are 2 or 3");
+  static_assert(RowSize == 2 || RowSize == 3, "Valid values for RowSize are 2 or 3");
+  static_assert(RowSize == ColumnSize, "Only square matrix are allowed (ColumnSize==RowSize)");
+  static constexpr int Size = RowSize;
+  static constexpr bool isSquare() { return RowSize == ColumnSize; }
 
  public:
 
-  using VectorType = NumVector<T, Size>;
-  using ThatClass = NumMatrix<T, Size>;
+  using VectorType = NumVector<T, ColumnSize>;
+  using ThatClass = NumMatrix<T, RowSize, ColumnSize>;
   using DataType = T;
 
  public:
@@ -56,7 +59,7 @@ class ARCANE_UTILS_EXPORT NumMatrix
   NumMatrix() = default;
 
   //! Construit la matrice avec les lignes (ax,ay,az)
-  template <int S = Size, typename = std::enable_if_t<S == 3, void>>
+  template <int S = RowSize, typename = std::enable_if_t<S == 3, void>>
   constexpr ARCCORE_HOST_DEVICE NumMatrix(const VectorType& ax, const VectorType& ay, const VectorType& az)
   {
     m_values[0] = ax;
@@ -65,7 +68,7 @@ class ARCANE_UTILS_EXPORT NumMatrix
   }
 
   //! Construit la matrice avec les lignes (ax,ay)
-  template <int S = Size, typename = std::enable_if_t<S == 2, void>>
+  template <int S = RowSize, typename = std::enable_if_t<S == 2, void>>
   constexpr ARCCORE_HOST_DEVICE NumMatrix(const VectorType& ax, const VectorType& ay)
   {
     m_values[0] = ax;
@@ -122,11 +125,14 @@ class ARCANE_UTILS_EXPORT NumMatrix
   //! Construit la matrice nulle
   constexpr ARCCORE_HOST_DEVICE static ThatClass zero() { return ThatClass(); }
 
-  //! Construit la matrice identité
-  template <int S = Size, typename = std::enable_if_t<S == 3, void>>
+  //! Construit la matrice identité (uniquement pour les matrices carrées)
+  template <typename X = ThatClass, typename = std::enable_if_t<X::isSquare(), void>>
   constexpr ARCCORE_HOST_DEVICE static ThatClass identity()
   {
-    return ThatClass(VectorType(1.0, 0.0, 0.0), VectorType(0.0, 1.0, 0.0), VectorType(0.0, 0.0, 1.0));
+    ThatClass v(T());
+    for (Int32 i = 0; i < Size; ++i)
+      v(i, i) = 1.0;
+    return v;
   }
 
   //! Construit la matrice ((ax,bx,cx),(ay,by,cy),(az,bz,cz)).
@@ -269,69 +275,70 @@ class ARCANE_UTILS_EXPORT NumMatrix
 
  public:
 
-  constexpr ARCCORE_HOST_DEVICE VectorType& operator()(Int32 i)
-  {
-    ARCCORE_CHECK_AT(i, Size);
-    return m_values[i];
-  }
+  // Récupère la \a i-ème ligne
   constexpr ARCCORE_HOST_DEVICE VectorType operator()(Int32 i) const
   {
-    ARCCORE_CHECK_AT(i, Size);
+    ARCCORE_CHECK_AT(i, RowSize);
     return m_values[i];
   }
-  constexpr ARCCORE_HOST_DEVICE VectorType& operator[](Int32 i)
-  {
-    ARCCORE_CHECK_AT(i, Size);
-    return m_values[i];
-  }
+  // Récupère la \a i-ème ligne
   constexpr ARCCORE_HOST_DEVICE VectorType operator[](Int32 i) const
   {
-    ARCCORE_CHECK_AT(i, Size);
+    ARCCORE_CHECK_AT(i, RowSize);
     return m_values[i];
   }
+  // Récupère une référence sur la valeur de \a i-ème ligne et \a j-ème colonne
   constexpr ARCCORE_HOST_DEVICE T& operator()(Int32 i, Int32 j)
   {
-    ARCCORE_CHECK_AT(i, Size);
-    ARCCORE_CHECK_AT(j, Size);
+    ARCCORE_CHECK_AT(i, RowSize);
+    ARCCORE_CHECK_AT(j, ColumnSize);
     return m_values[i](j);
   }
+  // Récupère la valeur de \a i-ème ligne et \a j-ème colonne
   constexpr ARCCORE_HOST_DEVICE T operator()(Int32 i, Int32 j) const
   {
-    ARCCORE_CHECK_AT(i, Size);
-    ARCCORE_CHECK_AT(j, Size);
+    ARCCORE_CHECK_AT(i, RowSize);
+    ARCCORE_CHECK_AT(j, ColumnSize);
     return m_values[i](j);
+  }
+
+  //! Positionne à \a v la valeur de la \a i-ème ligne
+  constexpr ARCCORE_HOST_DEVICE void setLine(Int32 i, const VectorType& v)
+  {
+    ARCCORE_CHECK_AT(i, RowSize);
+    m_values[i] = v;
   }
 
  public:
 
-  template <int S = Size, typename = std::enable_if_t<S >= 1, void>>
+  template <int S = RowSize, typename = std::enable_if_t<S >= 1, void>>
   VectorType& vx()
   {
     return m_values[0];
   }
-  template <int S = Size, typename = std::enable_if_t<S >= 1, void>>
+  template <int S = RowSize, typename = std::enable_if_t<S >= 1, void>>
   VectorType vx() const
   {
     return m_values[0];
   }
 
-  template <int S = Size, typename = std::enable_if_t<S >= 2, void>>
+  template <int S = RowSize, typename = std::enable_if_t<S >= 2, void>>
   VectorType& vy()
   {
     return m_values[1];
   }
-  template <int S = Size, typename = std::enable_if_t<S >= 2, void>>
+  template <int S = RowSize, typename = std::enable_if_t<S >= 2, void>>
   VectorType vy() const
   {
     return m_values[1];
   }
 
-  template <int S = Size, typename = std::enable_if_t<S >= 3, void>>
+  template <int S = RowSize, typename = std::enable_if_t<S >= 3, void>>
   VectorType& vz()
   {
     return m_values[2];
   }
-  template <int S = Size, typename = std::enable_if_t<S >= 3, void>>
+  template <int S = RowSize, typename = std::enable_if_t<S >= 3, void>>
   VectorType vz() const
   {
     return m_values[2];
@@ -339,7 +346,7 @@ class ARCANE_UTILS_EXPORT NumMatrix
 
  private:
 
-  VectorType m_values[Size] = {};
+  VectorType m_values[RowSize] = {};
 
  private:
 
