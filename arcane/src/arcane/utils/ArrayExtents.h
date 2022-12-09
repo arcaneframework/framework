@@ -196,8 +196,8 @@ class ArrayExtentsBase
  protected:
 
   using BaseClass = typename Extents::ArrayExtentsValueType;
-  using ArrayExtentsPreviousRank = ArrayExtentsBase<typename Extents::RemovedFirstExtentType>;
-  using DimsType = typename BaseClass::DimsType;
+  using ArrayExtentsPreviousRank = ArrayExtentsBase<typename Extents::RemovedFirstExtentsType>;
+  using DynamicDimsType = typename Extents::DynamicDimsType;
 
  public:
 
@@ -220,7 +220,7 @@ class ArrayExtentsBase
   {
   }
 
-  explicit constexpr ARCCORE_HOST_DEVICE ArrayExtentsBase(DimsType extents)
+  explicit constexpr ARCCORE_HOST_DEVICE ArrayExtentsBase(DynamicDimsType extents)
   : BaseClass(extents)
   {
   }
@@ -266,7 +266,7 @@ class ArrayExtents<ExtentsV<X0>>
   using ExtentsType = ExtentsV<X0>;
   using BaseClass = ArrayExtentsBase<ExtentsType>;
   using BaseClass::totalNbElement;
-  using DimsType = typename ExtentsType::DimsType;
+  using DynamicDimsType = typename ExtentsType::DynamicDimsType;
 
  public:
 
@@ -274,7 +274,7 @@ class ArrayExtents<ExtentsV<X0>>
   constexpr ARCCORE_HOST_DEVICE ArrayExtents(const BaseClass& rhs)
   : BaseClass(rhs)
   {}
-  constexpr ARCCORE_HOST_DEVICE ArrayExtents(const DimsType& extents)
+  constexpr ARCCORE_HOST_DEVICE ArrayExtents(const DynamicDimsType& extents)
   : BaseClass(extents)
   {
   }
@@ -300,7 +300,7 @@ class ArrayExtents<ExtentsV<X0, X1>>
   using ExtentsType = ExtentsV<X0, X1>;
   using BaseClass = ArrayExtentsBase<ExtentsType>;
   using BaseClass::totalNbElement;
-  using DimsType = typename ExtentsType::DimsType;
+  using DynamicDimsType = typename ExtentsType::DynamicDimsType;
 
  public:
 
@@ -308,7 +308,7 @@ class ArrayExtents<ExtentsV<X0, X1>>
   constexpr ARCCORE_HOST_DEVICE ArrayExtents(const BaseClass& rhs)
   : BaseClass(rhs)
   {}
-  constexpr ARCCORE_HOST_DEVICE ArrayExtents(const DimsType& extents)
+  constexpr ARCCORE_HOST_DEVICE ArrayExtents(const DynamicDimsType& extents)
   : BaseClass(extents)
   {
   }
@@ -335,7 +335,7 @@ class ArrayExtents<ExtentsV<X0, X1, X2>>
   using ExtentsType = ExtentsV<X0, X1, X2>;
   using BaseClass = ArrayExtentsBase<ExtentsType>;
   using BaseClass::totalNbElement;
-  using DimsType = typename BaseClass::DimsType;
+  using DynamicDimsType = typename BaseClass::DynamicDimsType;
 
  public:
 
@@ -343,7 +343,7 @@ class ArrayExtents<ExtentsV<X0, X1, X2>>
   constexpr ARCCORE_HOST_DEVICE ArrayExtents(const BaseClass& rhs)
   : BaseClass(rhs)
   {}
-  constexpr ARCCORE_HOST_DEVICE ArrayExtents(const DimsType& extents)
+  constexpr ARCCORE_HOST_DEVICE ArrayExtents(const DynamicDimsType& extents)
   : BaseClass(extents)
   {
   }
@@ -371,7 +371,7 @@ class ArrayExtents<ExtentsV<X0, X1, X2, X3>>
   using ExtentsType = ExtentsV<X0, X1, X2, X3>;
   using BaseClass = ArrayExtentsBase<ExtentsType>;
   using BaseClass::totalNbElement;
-  using DimsType = typename BaseClass::DimsType;
+  using DynamicDimsType = typename BaseClass::DynamicDimsType;
 
  public:
 
@@ -379,7 +379,7 @@ class ArrayExtents<ExtentsV<X0, X1, X2, X3>>
   constexpr ARCCORE_HOST_DEVICE ArrayExtents(const BaseClass& rhs)
   : BaseClass(rhs)
   {}
-  constexpr ARCCORE_HOST_DEVICE ArrayExtents(const DimsType& extents)
+  constexpr ARCCORE_HOST_DEVICE ArrayExtents(const DynamicDimsType& extents)
   : BaseClass(extents)
   {
   }
@@ -415,7 +415,7 @@ class ArrayExtentsWithOffset<ExtentsV<X0>, LayoutType>
   using BaseClass::getIndices;
   using BaseClass::totalNbElement;
   using Layout = typename LayoutType::Layout1Type;
-  using DimsType = typename BaseClass::DimsType;
+  using DynamicDimsType = typename BaseClass::DynamicDimsType;
   using IndexType = typename BaseClass::IndexType;
 
  public:
@@ -426,7 +426,7 @@ class ArrayExtentsWithOffset<ExtentsV<X0>, LayoutType>
   : BaseClass(rhs)
   {
   }
-  constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(const DimsType& rhs)
+  constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(const DynamicDimsType& rhs)
   : BaseClass(rhs)
   {
   }
@@ -466,7 +466,7 @@ class ArrayExtentsWithOffset<ExtentsV<X0, X1>, LayoutType>
   using BaseClass::getIndices;
   using BaseClass::totalNbElement;
   using Layout = typename LayoutType::Layout2Type;
-  using DimsType = typename BaseClass::DimsType;
+  using DynamicDimsType = typename BaseClass::DynamicDimsType;
   using IndexType = typename BaseClass::IndexType;
 
  public:
@@ -477,7 +477,7 @@ class ArrayExtentsWithOffset<ExtentsV<X0, X1>, LayoutType>
   : BaseClass(rhs)
   {
   }
-  constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(const DimsType& rhs)
+  constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(const DynamicDimsType& rhs)
   : BaseClass(rhs)
   {
   }
@@ -517,7 +517,7 @@ class ArrayExtentsWithOffset<ExtentsV<X0, X1, X2>, LayoutType>
   using BaseClass::getIndices;
   using BaseClass::totalNbElement;
   using Layout = typename LayoutType::Layout3Type;
-  using DimsType = typename BaseClass::DimsType;
+  using DynamicDimsType = typename BaseClass::DynamicDimsType;
   using IndexType = typename BaseClass::IndexType;
 
  public:
@@ -529,7 +529,7 @@ class ArrayExtentsWithOffset<ExtentsV<X0, X1, X2>, LayoutType>
   {
     _computeOffsets();
   }
-  constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(const DimsType& rhs)
+  constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(const DynamicDimsType& rhs)
   : BaseClass(rhs)
   {
     _computeOffsets();
@@ -583,7 +583,7 @@ class ArrayExtentsWithOffset<ExtentsV<X0, X1, X2, X3>, LayoutType>
   using BaseClass::getIndices;
   using BaseClass::totalNbElement;
   using Layout = typename LayoutType::Layout4Type;
-  using DimsType = typename BaseClass::DimsType;
+  using DynamicDimsType = typename BaseClass::DynamicDimsType;
   using IndexType = typename BaseClass::IndexType;
 
  public:
@@ -595,7 +595,7 @@ class ArrayExtentsWithOffset<ExtentsV<X0, X1, X2, X3>, LayoutType>
   {
     _computeOffsets();
   }
-  constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(const DimsType& rhs)
+  constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(const DynamicDimsType& rhs)
   : BaseClass(rhs)
   {
     _computeOffsets();

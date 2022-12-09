@@ -59,6 +59,8 @@ class ExtentsV<>
 
   static constexpr int rank() { return 0; }
   static constexpr int nb_dynamic = 0;
+
+  template<int X> using AddedFirstExtentsType = ExtentsV<X>;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -77,8 +79,9 @@ class ExtentsV<X0>
 
   using IndexType = ArrayIndex<1>;
   using ArrayExtentsValueType = impl::ArrayExtentsValue<X0>;
-  using RemovedFirstExtentType = ExtentsV<>;
-  using DimsType = ArrayIndex<nb_dynamic>;
+  using RemovedFirstExtentsType = ExtentsV<>;
+  using DynamicDimsType = ArrayIndex<nb_dynamic>;
+  template<int X> using AddedFirstExtentsType = ExtentsV<X,X0>;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -97,8 +100,9 @@ class ExtentsV<X0,X1>
 
   using IndexType = ArrayIndex<2>;
   using ArrayExtentsValueType = impl::ArrayExtentsValue<X0,X1>;
-  using RemovedFirstExtentType = ExtentsV<X1>;
-  using DimsType = ArrayIndex<nb_dynamic>;
+  using RemovedFirstExtentsType = ExtentsV<X1>;
+  using DynamicDimsType = ArrayIndex<nb_dynamic>;
+  template<int X> using AddedFirstExtentsType = ExtentsV<X,X0,X1>;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -117,8 +121,9 @@ class ExtentsV<X0,X1,X2>
 
   using IndexType = ArrayIndex<3>;
   using ArrayExtentsValueType = impl::ArrayExtentsValue<X0, X1, X2>;
-  using RemovedFirstExtentType = ExtentsV<X1, X2>;
-  using DimsType = ArrayIndex<nb_dynamic>;
+  using RemovedFirstExtentsType = ExtentsV<X1, X2>;
+  using DynamicDimsType = ArrayIndex<nb_dynamic>;
+  template<int X> using AddedFirstExtentsType = ExtentsV<X,X0,X1,X2>;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -137,8 +142,9 @@ class ExtentsV<X0, X1, X2, X3>
 
   using IndexType = ArrayIndex<4>;
   using ArrayExtentsValueType = impl::ArrayExtentsValue<X0, X1, X2, X3>;
-  using RemovedFirstExtentType = ExtentsV<X1, X2, X3>;
-  using DimsType = ArrayIndex<nb_dynamic>;
+  using RemovedFirstExtentsType = ExtentsV<X1, X2, X3>;
+  using DynamicDimsType = ArrayIndex<nb_dynamic>;
+  template<int X> using AddedFirstExtentsType = ExtentsV<X,X0,X1,X2,X3>;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -107,11 +107,13 @@ class ItemVariableArrayAsMDRefDynamicBaseT
 
 template <typename ItemType, typename DataType>
 class ItemVariableArrayAsMDRefT<ItemType, DataType, MDDim2>
-: public ItemVariableArrayAsMDRefDynamicBaseT<ItemType, DataType, MDDim3>
+: public ItemVariableArrayAsMDRefDynamicBaseT<ItemType, DataType, typename MDDim2::AddedFirstExtentsType<DynExtent>>
 {
+  using AddedFirstExtentsType = typename MDDim2::AddedFirstExtentsType<DynExtent>;
+
  public:
 
-  using BaseClass = ItemVariableArrayAsMDRefDynamicBaseT<ItemType, DataType, MDDim3>;
+  using BaseClass = ItemVariableArrayAsMDRefDynamicBaseT<ItemType, DataType, AddedFirstExtentsType>;
   using ItemLocalIdType = typename ItemType::LocalIdType;
   using MDSpanType = typename BaseClass::MDSpanType;
 

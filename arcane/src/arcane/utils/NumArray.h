@@ -159,7 +159,7 @@ class NumArrayBase
   using ArrayBoundsIndexType = typename SpanType::ArrayBoundsIndexType;
   using ThatClass = NumArrayBase<DataType, Extents, LayoutPolicy>;
   using ExtentsType = Extents;
-  using DimsType = typename ExtentsType::DimsType;
+  using DynamicDimsType = typename ExtentsType::DynamicDimsType;
   static constexpr int rank() { return Extents::rank(); }
 
  public:
@@ -174,7 +174,7 @@ class NumArrayBase
    *
    * \warning Les valeurs actuelles ne sont pas conservées lors de cette opération.
    */
-  void resize(const DimsType& dims)
+  void resize(const DynamicDimsType& dims)
   {
     m_span.m_extents = dims;
     _resize();
@@ -193,12 +193,12 @@ class NumArrayBase
   {
     _resizeInit();
   }
-  explicit NumArrayBase(const DimsType& extents)
+  explicit NumArrayBase(const DynamicDimsType& extents)
   : m_data(_getDefaultAllocator())
   {
     resize(extents);
   }
-  NumArrayBase(const DimsType& extents, eMemoryRessource r)
+  NumArrayBase(const DynamicDimsType& extents, eMemoryRessource r)
   : m_data(_getDefaultAllocator(r))
   , m_memory_ressource(r)
   {
@@ -228,7 +228,7 @@ class NumArrayBase
   void _resizeInit()
   {
     if constexpr (ExtentsType::nb_dynamic == 0) {
-      resize(DimsType());
+      resize(DynamicDimsType());
     }
   }
 
@@ -318,7 +318,7 @@ class NumArrayIntermediate<DataType, 1, ExtentType, LayoutPolicy>
  public:
 
   using BaseClass = NumArrayBase<DataType, ExtentType, LayoutPolicy>;
-  using DimsType = typename ExtentType::DimsType;
+  using DynamicDimsType = typename ExtentType::DynamicDimsType;
   using BaseClass::resize;
   using BaseClass::operator();
   using BaseClass::s;
@@ -333,10 +333,10 @@ class NumArrayIntermediate<DataType, 1, ExtentType, LayoutPolicy>
 
   //! Construit un tableau vide
   NumArrayIntermediate() = default;
-  explicit NumArrayIntermediate(const DimsType& extents)
+  explicit NumArrayIntermediate(const DynamicDimsType& extents)
   : BaseClass(extents)
   {}
-  NumArrayIntermediate(const DimsType& extents, eMemoryRessource r)
+  NumArrayIntermediate(const DynamicDimsType& extents, eMemoryRessource r)
   : BaseClass(extents, r)
   {
   }
@@ -399,7 +399,7 @@ class NumArrayIntermediate<DataType, 2, ExtentType, LayoutPolicy>
  public:
 
   using BaseClass = NumArrayBase<DataType, ExtentType, LayoutPolicy>;
-  using DimsType = typename ExtentType::DimsType;
+  using DynamicDimsType = typename ExtentType::DynamicDimsType;
   using BaseClass::resize;
   using BaseClass::operator();
   using BaseClass::s;
@@ -412,10 +412,10 @@ class NumArrayIntermediate<DataType, 2, ExtentType, LayoutPolicy>
 
   //! Construit un tableau vide
   NumArrayIntermediate() = default;
-  explicit NumArrayIntermediate(const DimsType& extents)
+  explicit NumArrayIntermediate(const DynamicDimsType& extents)
   : BaseClass(extents)
   {}
-  NumArrayIntermediate(const DimsType& extents, eMemoryRessource r)
+  NumArrayIntermediate(const DynamicDimsType& extents, eMemoryRessource r)
   : BaseClass(extents, r)
   {
   }
@@ -482,7 +482,7 @@ class NumArrayIntermediate<DataType, 3, ExtentType, LayoutPolicy>
  public:
 
   using BaseClass = NumArrayBase<DataType, ExtentType, LayoutPolicy>;
-  using DimsType = typename ExtentType::DimsType;
+  using DynamicDimsType = typename ExtentType::DynamicDimsType;
   using BaseClass::resize;
   using BaseClass::operator();
   using BaseClass::s;
@@ -495,10 +495,10 @@ class NumArrayIntermediate<DataType, 3, ExtentType, LayoutPolicy>
 
   //! Construit un tableau vide
   NumArrayIntermediate() = default;
-  explicit NumArrayIntermediate(const DimsType& extents)
+  explicit NumArrayIntermediate(const DynamicDimsType& extents)
   : BaseClass(extents)
   {}
-  NumArrayIntermediate(const DimsType& extents, eMemoryRessource r)
+  NumArrayIntermediate(const DynamicDimsType& extents, eMemoryRessource r)
   : BaseClass(extents, r)
   {
   }
@@ -569,7 +569,7 @@ class NumArrayIntermediate<DataType, 4, Extents, LayoutPolicy>
  public:
 
   using BaseClass = NumArrayBase<DataType, Extents, LayoutPolicy>;
-  using DimsType = typename Extents::DimsType;
+  using DynamicDimsType = typename Extents::DynamicDimsType;
   using BaseClass::resize;
   using BaseClass::operator();
   using BaseClass::s;
@@ -582,10 +582,10 @@ class NumArrayIntermediate<DataType, 4, Extents, LayoutPolicy>
 
   //! Construit un tableau vide
   NumArrayIntermediate() = default;
-  explicit NumArrayIntermediate(const DimsType& extents)
+  explicit NumArrayIntermediate(const DynamicDimsType& extents)
   : BaseClass(extents)
   {}
-  NumArrayIntermediate(const DimsType& extents, eMemoryRessource r)
+  NumArrayIntermediate(const DynamicDimsType& extents, eMemoryRessource r)
   : BaseClass(extents, r)
   {
   }
@@ -689,7 +689,7 @@ class NumArray
   using BaseClass::operator();
   using BaseClass::s;
   using ThatClass = NumArray<DataType, Extents, LayoutPolicy>;
-  using DimsType = typename ExtentsType::DimsType;
+  using DynamicDimsType = typename ExtentsType::DynamicDimsType;
 
  private:
 
@@ -709,12 +709,12 @@ class NumArray
   NumArray() = default;
 
   //! Construit un tableau en spécifiant directement la liste des dimensions
-  explicit NumArray(DimsType extents)
+  explicit NumArray(DynamicDimsType extents)
   : BaseClass(extents)
   {}
 
   //! Construit un tableau en spécifiant directement la liste des dimensions
-  NumArray(const DimsType& extents, eMemoryRessource r)
+  NumArray(const DynamicDimsType& extents, eMemoryRessource r)
   : BaseClass(extents, r)
   {
   }
@@ -726,7 +726,7 @@ class NumArray
   template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 4, void>>
   NumArray(Int32 dim1_size, Int32 dim2_size,
            Int32 dim3_size, Int32 dim4_size)
-  : BaseClass(DimsType(dim1_size, dim2_size, dim3_size, dim4_size))
+  : BaseClass(DynamicDimsType(dim1_size, dim2_size, dim3_size, dim4_size))
   {
   }
 
@@ -734,46 +734,46 @@ class NumArray
   template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 4, void>>
   NumArray(Int32 dim1_size, Int32 dim2_size,
            Int32 dim3_size, Int32 dim4_size, eMemoryRessource r)
-  : BaseClass(DimsType(dim1_size, dim2_size, dim3_size, dim4_size), r)
+  : BaseClass(DynamicDimsType(dim1_size, dim2_size, dim3_size, dim4_size), r)
   {
   }
 
   //! Construit un tableau avec 3 valeurs dynamiques
   template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 3, void>>
   NumArray(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size)
-  : BaseClass(DimsType(dim1_size, dim2_size, dim3_size))
+  : BaseClass(DynamicDimsType(dim1_size, dim2_size, dim3_size))
   {
   }
   //! Construit un tableau avec 3 valeurs dynamiques
   template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 3, void>>
   NumArray(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size, eMemoryRessource r)
-  : BaseClass(DimsType(dim1_size, dim2_size, dim3_size), r)
+  : BaseClass(DynamicDimsType(dim1_size, dim2_size, dim3_size), r)
   {
   }
 
   //! Construit un tableau avec 2 valeurs dynamiques
   template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 2, void>>
   NumArray(Int32 dim1_size, Int32 dim2_size)
-  : BaseClass(DimsType(dim1_size, dim2_size))
+  : BaseClass(DynamicDimsType(dim1_size, dim2_size))
   {
   }
   //! Construit un tableau avec 2 valeurs dynamiques
   template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 2, void>>
   NumArray(Int32 dim1_size, Int32 dim2_size, eMemoryRessource r)
-  : BaseClass(DimsType(dim1_size, dim2_size), r)
+  : BaseClass(DynamicDimsType(dim1_size, dim2_size), r)
   {
   }
 
   //! Construit un tableau avec 1 valeur dynamique
   template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 1, void>>
   explicit NumArray(Int32 dim1_size)
-  : BaseClass(DimsType(dim1_size))
+  : BaseClass(DynamicDimsType(dim1_size))
   {
   }
   //! Construit un tableau avec 1 valeur dynamique
   template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 1, void>>
   NumArray(Int32 dim1_size, eMemoryRessource r)
-  : BaseClass(DimsType(dim1_size), r)
+  : BaseClass(DynamicDimsType(dim1_size), r)
   {
   }
 
@@ -832,25 +832,25 @@ class NumArray
   template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 4, void>>
   void resize(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size, Int32 dim4_size)
   {
-    this->resize(DimsType(dim1_size, dim2_size, dim3_size, dim4_size));
+    this->resize(DynamicDimsType(dim1_size, dim2_size, dim3_size, dim4_size));
   }
 
   template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 3, void>>
   void resize(Int32 dim1_size, Int32 dim2_size, Int32 dim3_size)
   {
-    this->resize(DimsType(dim1_size, dim2_size, dim3_size));
+    this->resize(DynamicDimsType(dim1_size, dim2_size, dim3_size));
   }
 
   template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 2, void>>
   void resize(Int32 dim1_size, Int32 dim2_size)
   {
-    this->resize(DimsType(dim1_size, dim2_size));
+    this->resize(DynamicDimsType(dim1_size, dim2_size));
   }
 
   template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 1, void>>
   void resize(Int32 dim1_size)
   {
-    this->resize(DimsType(dim1_size));
+    this->resize(DynamicDimsType(dim1_size));
   }
   //@}
 };
