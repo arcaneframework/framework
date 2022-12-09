@@ -62,13 +62,22 @@ class PrivateVariableArrayT
 
   ARCANE_CORE_EXPORT ItemGroup itemGroup() const;
 
-  /* \brief Redimensionne le nombre d'éléments du tableau.
+  /*
+   * \brief Redimensionne le nombre d'éléments du tableau.
+   *
    * La première dimension reste toujours égale au nombre d'éléments du maillage.
    * Seule la deuxième composante est retaillée.
    * \warning le redimensionnement ne conserve pas les valeurs précédentes...
    */
-  ARCANE_CORE_EXPORT void resize(Integer dim2_size);
+  ARCANE_CORE_EXPORT void resize(Int32 dim2_size);
  
+  /*
+   * \brief Redimensionne le nombre d'éléments du tableau.
+   *
+   * \sa resize(Int32)
+   */
+  ARCANE_CORE_EXPORT void resizeAndReshape(const ArrayShape& shape);
+
  protected:
   
   void _internalInit() { MeshVariableRef::_internalInit(m_private_part); }

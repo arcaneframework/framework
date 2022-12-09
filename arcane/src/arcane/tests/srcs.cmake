@@ -19,6 +19,7 @@ set(ARCANE_SOURCES
   ThreadUnitTest.cc
   TaskUnitTestCS.cc
   IosUnitTest.cc
+  MDVariableUnitTest.cc
   VariableUnitTest.cc
   VariableSimdUnitTest.cc
   AMRTestModule.cc
