@@ -113,8 +113,8 @@ ARCANE_REGISTER_MODULE_ARCANEPOSTPROCESSING(ArcanePostProcessingModule);
 ArcanePostProcessingModule::
 ArcanePostProcessingModule(const ModuleBuildInfo& mbi)
 : ArcaneArcanePostProcessingObject(mbi)
-, m_output_checker(mbi.m_sub_domain,"PostProcessing")
-, m_history_output_checker(mbi.m_sub_domain,"PostProcessingHistory")
+, m_output_checker(mbi.subDomain(),"PostProcessing")
+, m_history_output_checker(mbi.subDomain(),"PostProcessingHistory")
 , m_times(VariableBuilder(this,"ExportTimes"))
 , m_do_output(true)
 , m_output_dir_created(false)
@@ -124,7 +124,7 @@ ArcanePostProcessingModule(const ModuleBuildInfo& mbi)
   m_output_checker.assignGlobalTime(&m_next_global_time,&options()->outputFrequency);
 
   m_history_output_checker.assignIteration(&m_history_next_iteration,&options()->outputHistoryPeriod);
-  m_post_processor_timer = new Timer(mbi.m_sub_domain,"PostProcessorTimer",Timer::TimerReal);
+  m_post_processor_timer = new Timer(mbi.subDomain(),"PostProcessorTimer",Timer::TimerReal);
 }
 
 /*---------------------------------------------------------------------------*/

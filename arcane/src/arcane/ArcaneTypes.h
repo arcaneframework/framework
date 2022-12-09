@@ -103,6 +103,8 @@ class IVariableMng;
 class IMeshFactoryMng;
 class IMeshMng;
 class IMesh;
+class IMeshBase;
+class IUserDataList;
 class IMeshBuilder;
 class MeshHandle;
 class MeshBuildInfo;

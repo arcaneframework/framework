@@ -71,7 +71,7 @@ ModuleMaster(const ModuleBuildInfo& mb)
 , m_thm_global_time(0.0)
 , m_has_thm_dump_at_iteration(false)
 {
-  m_case_options_main = new CaseOptionsMain(mb.m_sub_domain->caseMng());
+  m_case_options_main = new CaseOptionsMain(mb.subDomain()->caseMng());
 
   addEntryPoint(this,"ArcaneTimeLoopBegin",
                 &ModuleMaster::timeLoopBegin,

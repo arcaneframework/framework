@@ -88,12 +88,12 @@ ARCANE_REGISTER_MODULE_ARCANECHECKPOINT(ArcaneCheckpointModule);
 ArcaneCheckpointModule::
 ArcaneCheckpointModule(const ModuleBuildInfo& mb)
 : ArcaneArcaneCheckpointObject(mb)
-, m_output_checker(mb.m_sub_domain,"CheckpointRestart")
+, m_output_checker(mb.subDomain(),"CheckpointRestart")
 , m_checkpoint_timer(0)
 , m_checkpoint_writer(0)
 , m_checkpoint_dirname(".")
 {
-  m_checkpoint_timer = new Timer(mb.m_sub_domain,"Checkpoint",Timer::TimerReal);
+  m_checkpoint_timer = new Timer(mb.subDomain(),"Checkpoint",Timer::TimerReal);
   m_output_checker.assignIteration(&m_next_iteration,&options()->period);
   m_output_checker.assignGlobalTime(&m_next_global_time,&options()->frequency);
   m_output_checker.assignCPUTime(&m_next_cpu_time,&options()->frequencyCpu);

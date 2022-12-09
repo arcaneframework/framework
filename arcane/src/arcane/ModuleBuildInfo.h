@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ModuleBuildInfo.h                                           (C) 2000-2019 */
+/* ModuleBuildInfo.h                                           (C) 2000-2022 */
 /*                                                                           */
 /* Paramètres pour construire un module.                                     */
 /*---------------------------------------------------------------------------*/
@@ -25,12 +25,6 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-class ISubDomain;
-class IMesh;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
  * \brief Informations pour construire un module.
  *
@@ -43,37 +37,63 @@ class IMesh;
 class ARCANE_CORE_EXPORT ModuleBuildInfo
 {
  public:
-  //! Constructeur à partir d'un sous-domaine, un maillage et un nom d'implémentation de module
-  ModuleBuildInfo(ISubDomain* sd,IMesh* mesh,const String& name);
-  //! Constructeur à partir d'un sous-domaine, un maillage et un nom d'implémentation de module
-  ModuleBuildInfo(ISubDomain* sd,const MeshHandle& mesh_handle,const String& name);
-  //! Constructeur à partir d'un sous-domaine et un nom d'implémentation de module
-  /*! Le maillage considéré est alors le maillage par défaut \a defautMesh() */
-  ModuleBuildInfo(ISubDomain* sd,const String& name);
 
-  //! Destructeur
-  virtual ~ModuleBuildInfo() { }
+  /*!
+  * \brief Constructeur à partir d'un sous-domaine, un maillage et un
+  * nom d'implémentation de module.
+  *
+  * \deprecated Utiliser la surcharge qui prend un MeshHandle à la place.
+  */
+  ARCANE_DEPRECATED_REASON("Y2022: use overload with meshHandle() instead of mesh")
+  ModuleBuildInfo(ISubDomain* sd, IMesh* mesh, const String& name);
 
  public:
+
+  //! Constructeur à partir d'un sous-domaine, un maillage et un nom d'implémentation de module
+  ModuleBuildInfo(ISubDomain* sd, const MeshHandle& mesh_handle, const String& name);
+
+  /*!
+   * \brief Constructeur à partir d'un sous-domaine et un nom d'implémentation de module
+   *
+   * Le maillage considéré est alors le maillage par défaut \a ISubDomain::defautMesh()
+   */
+  ModuleBuildInfo(ISubDomain* sd, const String& name);
+
+  //! Destructeur
+  virtual ~ModuleBuildInfo() {}
+
+ public:
+
   //! Accès au sous-domaine associé
   ISubDomain* subDomain() const { return m_sub_domain; }
-  /*!
-   * \brief Accès au maillage associé.
-   *
-   * Le maillage n'existe pas toujours si le jeu de donnée n'a pas
-   * encore été lu. Il est préférable d'utilise meshHandle() à la place
-   */
-  IMesh* mesh() const { return m_mesh_handle.mesh(); }
+
   //! Accès au maillage associé
   const MeshHandle& meshHandle() const { return m_mesh_handle; }
+
   //! Nom de l'implémentation recherchée
   const String& name() const { return m_name; }
 
  public:
+
+  /*!
+   * \brief Accès au maillage associé.
+   *
+   * Le maillage n'existe pas toujours si le jeu de donnée n'a pas
+   * encore été lu.
+   *
+   * \deprecated Il faut utiliser meshHandle() à la place.
+   */
+  ARCANE_DEPRECATED_REASON("Y2022: use meshHandle() instead")
+  IMesh* mesh() const { return m_mesh_handle.mesh(); }
+
+ private:
+
   //! Sous-domaine associé
   ISubDomain* m_sub_domain;
+
   //! Maillage associé
   MeshHandle m_mesh_handle;
+
   //! Nom de l'implémentation recherchée
   String m_name;
 };
