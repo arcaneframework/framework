@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ServiceProperty.h                                           (C) 2000-2014 */
+/* ServiceProperty.h                                           (C) 2000-2022 */
 /*                                                                           */
 /* Propriétés d'un service.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -19,10 +19,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -47,13 +45,13 @@ enum eServiceFactoryProperties
  * \brief Type du service.
  *
  * Cette énumération permet de connaitre à quel endroit peut
- * être créés un services.
+ * être créé un service.
  *
  * Il s'agit de drapeaux qui s'utilisent avec l'opérateur ou binaire (|).
  * Un service peut donc être disponible à plusieurs endroits. Par exemple,
- * il peut être présent comme option du jeu de données (ST_CaseOption) et aussi
- * au niveau du sous-domaine (ST_SubDomain). Dans ce dernier cas,
- * il peut être créer via la classe ServiceBuilder.
+ * il peut être présent comme option du jeu de données (#ST_CaseOption) et aussi
+ * au niveau du sous-domaine (#ST_SubDomain). Dans ce dernier cas,
+ * il peut être créé via la classe ServiceBuilder.
  *
  * \note Ce type doit correspondre avec le type C# correspondant
  */
@@ -75,21 +73,22 @@ enum eServiceType
 /*!
  * \brief Propriétés de création d'un service.
  *
- * Cette classe est utilisé dans les macros d'enregistrement des services
+ * Cette classe est utilisée dans les macros d'enregistrement des services
  * et peut donc être instantiée en tant que variable globale avant d'entrer
  * dans le main() du code. Elle ne doit donc contenir que des champs de type
  * Plain Object Data (POD).
  *
- * En général, lest instances de cette classes sont utilisés lors
+ * En général, les instances de cette classe sont utilisés lors
  * de l'enregistrement d'un service via la macro ARCANE_REGISTER_SERVICE().
  *
  * Dans le constructeur, les paramètres \a type et \a properties
  * peuvent utiliser une combinaison de valeur énumérées. Par exemple,
  * pour spécifier un service pouvant être utilisé à la fois dans le
  * jeu de données et au niveau du sous-domaine, on peut faire comme suit:
- \code
- ServiceProperty("ServiceName",ST_SubDomain|ST_CaseOption);
- \endcode
+ *
+ * \code
+ * ServiceProperty("ServiceName",ST_SubDomain|ST_CaseOption);
+ * \endcode
  */
 class ARCANE_CORE_EXPORT ServiceProperty
 {
@@ -99,18 +98,26 @@ class ARCANE_CORE_EXPORT ServiceProperty
    * \brief Construit une instance pour un service de nom \a aname  et de type \a atype
    * avec les propriétés \a properties.
    */
-  ServiceProperty(const char* aname,int atype,eServiceFactoryProperties aproperties) ARCANE_NOEXCEPT
-  : m_name(aname), m_type(atype), m_properties(aproperties)
+  ServiceProperty(const char* aname, int atype, eServiceFactoryProperties aproperties) ARCANE_NOEXCEPT
+  : m_name(aname)
+  , m_type(atype)
+  , m_properties(aproperties)
   {
   }
+
   //! Construit une instance pour un service de nom \a aname et de type \a atype
-  ServiceProperty(const char* aname,int atype) ARCANE_NOEXCEPT
-  : m_name(aname), m_type(atype), m_properties(SFP_None)
+  ServiceProperty(const char* aname, int atype) ARCANE_NOEXCEPT
+  : m_name(aname)
+  , m_type(atype)
+  , m_properties(SFP_None)
   {
   }
+
   //! Construit une instance pour un service de nom \a aname et de type \a atype
-  ServiceProperty(const char* aname,eServiceType atype) ARCANE_NOEXCEPT
-  : m_name(aname), m_type((int)atype), m_properties(SFP_None)
+  ServiceProperty(const char* aname, eServiceType atype) ARCANE_NOEXCEPT
+  : m_name(aname)
+  , m_type((int)atype)
+  , m_properties(SFP_None)
   {
   }
 
@@ -118,11 +125,13 @@ class ARCANE_CORE_EXPORT ServiceProperty
 
   //! Nom du service.
   const char* name() const { return m_name; }
+
   //! Type du service (combinaison de eServiceType)
   int type() const { return m_type; }
-  //! Propriéteés du service (combinaison de eServiceFactoryProperties)
+
+  //! Propriétés du service (combinaison de eServiceFactoryProperties)
   eServiceFactoryProperties properties() const { return m_properties; }
-  
+
  private:
 
   const char* m_name;
@@ -130,14 +139,12 @@ class ARCANE_CORE_EXPORT ServiceProperty
   eServiceFactoryProperties m_properties;
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#endif  
-
+#endif
