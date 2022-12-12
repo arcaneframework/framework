@@ -184,10 +184,10 @@ class ARCANE_CORE_EXPORT CaseOptionSimple
  private:
 
   XmlNode m_element; //!< Element de l'option
-  ICaseFunction* m_function; //!< Fonction associée (ou 0)
-  IStandardFunction* m_standard_function; //!< Fonction standard associée (ou 0)
-  //! Convertisseur d'unité (0 si pas besoin). Valide uniquement pour les options 'Real'
-  IPhysicalUnitConverter* m_unit_converter;
+  ICaseFunction* m_function = nullptr; //!< Fonction associée (ou nullptr)
+  IStandardFunction* m_standard_function = nullptr; //!< Fonction standard associée (ou nullpt)
+  //! Convertisseur d'unité (nullptr si pas besoin). Valide uniquement pour les options 'Real'
+  IPhysicalUnitConverter* m_unit_converter = nullptr;
   bool m_changed_since_last_iteration;
   bool m_is_optional;
   bool m_has_valid_value;

@@ -5,13 +5,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CaseMng.cc                                                  (C) 2000-2020 */
+/* CaseMng.cc                                                  (C) 2000-2022 */
 /*                                                                           */
 /* Classe gérant les options du jeu de données.                              */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/List.h"
@@ -133,8 +131,10 @@ class CaseMng
  public:
 	
   ITraceMng* traceMng() override { return TraceAccessor::traceMng(); }
+  IMeshMng* meshMng() const override { return m_sub_domain->meshMng(); }
   ISubDomain* subDomain() override { return m_sub_domain; }
   IApplication* application() override { return m_sub_domain->application(); }
+  IPhysicalUnitSystem* physicalUnitSystem() const override { return m_sub_domain->physicalUnitSystem(); }
   ICaseDocument* caseDocument() override { return m_case_document.get(); }
   ICaseDocument* readCaseDocument(const String& filename,ByteConstArrayView bytes) override;
 
