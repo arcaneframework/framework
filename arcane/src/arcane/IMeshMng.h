@@ -40,18 +40,19 @@ class ARCANE_CORE_EXPORT IMeshMng
 {
  public:
 
-  virtual ~IMeshMng() {} //!< Libère les ressources.
+  //! Libère les ressources.
+  virtual ~IMeshMng() = default;
 
  public:
 
   //! Gestionnaire de trace associé à ce gestionnaire
-  virtual ITraceMng* traceMng() const =0;
+  virtual ITraceMng* traceMng() const = 0;
 
   //! Fabrique de maillages associée à ce gestionnaire
-  virtual IMeshFactoryMng* meshFactoryMng() const =0;
+  virtual IMeshFactoryMng* meshFactoryMng() const = 0;
 
   //! Gestionnaire de variables associé à ce gestionnaire
-  virtual IVariableMng* variableMng() const =0;
+  virtual IVariableMng* variableMng() const = 0;
 
  public:
 
@@ -62,21 +63,21 @@ class ARCANE_CORE_EXPORT IMeshMng
    * si \a throw_exception vaut \a true ou retourne *nullptr* si \a throw_exception
    * vaut \a false.
    */
-  virtual MeshHandle* findMeshHandle(const String& name,bool throw_exception) =0;
+  virtual MeshHandle* findMeshHandle(const String& name, bool throw_exception) = 0;
 
   /*!
    * \brief Recherche le maillage de nom \a name.
    *
    * Si le maillage n'est pas trouvé, la méthode lance une exception.
    */
-  virtual MeshHandle findMeshHandle(const String& name) =0;
+  virtual MeshHandle findMeshHandle(const String& name) = 0;
 
   /*!
    * \brief Créé et retourne un handle pour un maillage de nom \a name.
    *
    * Lève une exception si un handle associé à ce nom existe déjà.
    */
-  virtual MeshHandle createMeshHandle(const String& name) =0;
+  virtual MeshHandle createMeshHandle(const String& name) = 0;
 
   /*!
    * \brief Détruit le maillage associé à \a handle.
@@ -87,7 +88,10 @@ class ARCANE_CORE_EXPORT IMeshMng
    * et le maillage associé non plus. S'il reste des références à ces deux
    * objets, le comportement est indéfini.
    */
-  virtual void destroyMesh(MeshHandle handle) =0;
+  virtual void destroyMesh(MeshHandle handle) = 0;
+
+  //! Handle pour le maillage par défaut.
+  virtual MeshHandle defaultMeshHandle() const = 0;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -30,6 +30,7 @@ class ICaseOptions;
 class ICaseDocument;
 class IApplication;
 class IObservable;
+class IPhysicalUnitSystem;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -67,11 +68,17 @@ class ICaseMng
   //! Gestionnaire de traces
   virtual ITraceMng* traceMng() =0;
 
+  //! Gestionnaire de maillage associé
+  virtual IMeshMng* meshMng() const =0;
+
   //! Gestionnaire de sous-domaine.
   virtual ISubDomain* subDomain() =0;
 
   //! Document XML du jeu de données.
   virtual ICaseDocument* caseDocument() =0;
+
+  //! Système d'unité associé.
+  virtual IPhysicalUnitSystem* physicalUnitSystem() const =0;
 
   //! Lit le document XML du jeu de données.
   virtual ICaseDocument* readCaseDocument(const String& filename,ByteConstArrayView bytes) =0;
@@ -98,7 +105,7 @@ class ICaseMng
 
  public:
   
-  //! Retourne la fonction de nom \a name ou 0 s'il n'y en a pas.
+  //! Retourne la fonction de nom \a name ou \a nullptr s'il n'y en a pas.
   virtual ICaseFunction* findFunction(const String& name) const =0;
 
   /*!

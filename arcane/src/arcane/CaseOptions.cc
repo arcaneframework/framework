@@ -213,7 +213,7 @@ class CaseOptionsPrivate
 
   CaseOptionsPrivate(ICaseMng* cm,const String& name)
   : m_case_mng(cm), m_name(name), m_true_name(name)
-  , m_mesh_handle(cm->subDomain()->defaultMeshHandle())
+  , m_mesh_handle(cm->meshMng()->defaultMeshHandle())
   {
   }
 
@@ -222,7 +222,7 @@ class CaseOptionsPrivate
     m_mesh_handle(co_list->meshHandle())
   {
     if (m_mesh_handle.isNull())
-      m_mesh_handle = m_case_mng->subDomain()->defaultMeshHandle();
+      m_mesh_handle = m_case_mng->meshMng()->defaultMeshHandle();
   }
 
  public:
@@ -566,7 +566,7 @@ _setMeshHandleAndCheckDisabled(const String& mesh_name)
     // Récupère le MeshHandle associé s'il n'existe. S'il n'y en a pas on
     // désactive l'option.
     // Si aucun maillage du nom de celui qu'on cherche n'existe, n'alloue pas le service
-    MeshHandle* handle = subDomain()->meshMng()->findMeshHandle(mesh_name,false);
+    MeshHandle* handle = caseMng()->meshMng()->findMeshHandle(mesh_name,false);
     if (!handle){
       m_p->m_config_list->disable();
       return true;
@@ -750,9 +750,6 @@ CaseOptionsMulti(ICaseOptionList* parent,const String& aname,
 CaseOptionSimple::
 CaseOptionSimple(const CaseOptionBuildInfo& cob)
 : CaseOptionBase(cob)
-, m_function(0)
-, m_standard_function(0)
-, m_unit_converter(0)
 , m_changed_since_last_iteration(false)
 , m_is_optional(cob.isOptional())
 , m_has_valid_value(true)
@@ -766,9 +763,6 @@ CaseOptionSimple::
 CaseOptionSimple(const CaseOptionBuildInfo& cob,const String& physical_unit)
 : CaseOptionBase(cob)
 , m_function(nullptr)
-, m_standard_function(nullptr)
-, m_unit_converter(nullptr)
-, m_changed_since_last_iteration(false)
 , m_is_optional(cob.isOptional())
 , m_has_valid_value(true)
 , m_default_physical_unit(physical_unit)
@@ -818,7 +812,7 @@ _search(bool is_phase1)
     _setPhysicalUnit(physical_unit);
     if (_allowPhysicalUnit()){
       //TODO: VERIFIER QU'IL Y A UNE DEFAULT_PHYSICAL_UNIT.
-      m_unit_converter = subDomain()->physicalUnitSystem()->createConverter(physical_unit,defaultPhysicalUnit());
+      m_unit_converter = caseMng()->physicalUnitSystem()->createConverter(physical_unit,defaultPhysicalUnit());
     }
     else
       CaseOptionError::addError(doc,A_FUNCINFO,velem.xpathFullName(),
