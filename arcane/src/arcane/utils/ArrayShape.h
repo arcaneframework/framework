@@ -77,7 +77,7 @@ class ARCANE_UTILS_EXPORT ArrayShape
  private:
 
   Int32 m_nb_dim = 0;
-  std::array<Int32, MAX_NB_DIMENSION> m_dims;
+  std::array<Int32, MAX_NB_DIMENSION> m_dims = { };
 
  private:
 

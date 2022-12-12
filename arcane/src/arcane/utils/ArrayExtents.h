@@ -33,57 +33,6 @@
 namespace Arcane
 {
 
-namespace impl
-{
-  template <int RankValue>
-  class ArrayExtentsTraits;
-
-  template <>
-  class ArrayExtentsTraits<0>
-  {
-   public:
-
-    static constexpr ARCCORE_HOST_DEVICE std::array<Int32, 0>
-    extendsInitHelper() { return {}; }
-  };
-
-  template <>
-  class ArrayExtentsTraits<1>
-  {
-   public:
-
-    static constexpr ARCCORE_HOST_DEVICE std::array<Int32, 1>
-    extendsInitHelper() { return { 0 }; }
-  };
-
-  template <>
-  class ArrayExtentsTraits<2>
-  {
-   public:
-
-    static constexpr ARCCORE_HOST_DEVICE std::array<Int32, 2>
-    extendsInitHelper() { return { 0, 0 }; }
-  };
-
-  template <>
-  class ArrayExtentsTraits<3>
-  {
-   public:
-
-    static constexpr ARCCORE_HOST_DEVICE std::array<Int32, 3>
-    extendsInitHelper() { return { 0, 0, 0 }; }
-  };
-
-  template <>
-  class ArrayExtentsTraits<4>
-  {
-   public:
-
-    static constexpr ARCCORE_HOST_DEVICE std::array<Int32, 4>
-    extendsInitHelper() { return { 0, 0, 0, 0 }; }
-  };
-} // namespace impl
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -121,9 +70,7 @@ class ArrayStridesBase
 {
  public:
 
-  ARCCORE_HOST_DEVICE ArrayStridesBase()
-  : m_strides(impl::ArrayExtentsTraits<RankValue>::extendsInitHelper())
-  {}
+  ArrayStridesBase() = default;
   //! Valeur du pas de la \a i-ème dimension.
   ARCCORE_HOST_DEVICE Int32 stride(int i) const { return m_strides[i]; }
   ARCCORE_HOST_DEVICE Int32 operator()(int i) const { return m_strides[i]; }
@@ -156,7 +103,7 @@ class ArrayStridesBase
 
  protected:
 
-  std::array<Int32, RankValue> m_strides;
+  std::array<Int32, RankValue> m_strides = {};
 };
 
 /*---------------------------------------------------------------------------*/
