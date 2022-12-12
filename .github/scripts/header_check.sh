@@ -6,6 +6,7 @@ REGEX_EXCLUDE_FILES="/arcane/extras/\
 |/arcane/tutorial/\
 |/arcane/src/arcane/packages/\
 |/arcane/cmake/test_glibc_malloc_hooks\.cc\
+|/arcane/cmake/test_linux_perf_syscall\.cc\
 |/arcane/src/arcane/dotnet/coreclr/hostfxr\.h\
 |/arcane/src/arcane/dotnet/coreclr/coreclr_delegates\.h\
 |/arcane/src/arcane/hyoda/HyodaDbg\.h\
