@@ -441,7 +441,7 @@ build()
   m_io_mng = mf->createIOMng(parallelMng());
   m_variable_mng = mf->createVariableMng(this);
   m_mesh_mng = new MeshMng(m_application,m_variable_mng.get());
-  m_default_mesh_handle = m_mesh_mng->createMeshHandle("Mesh0");
+  m_default_mesh_handle = m_mesh_mng->createDefaultMeshHandle("Mesh0");
   m_service_mng = mf->createServiceMng(this);
   m_checkpoint_mng = mf->createCheckpointMng(this);
   m_module_mng = mf->createModuleMng(this);
@@ -636,24 +636,6 @@ allocateMeshes()
 {
   Timer::Action ts_action2(this,"AllocateMesh");
   Trace::Setter mci(traceMng(),_msgClassName());
-
-  // Vérifie que personne n'a fait d'appel à addMesh() avant cette méthode
-  // car les maillages seront déréférencés.
-  // NOTE: on garde cela pour des raisons de compatibilité mais il serait
-  // préférable d'empêcher les appels à addMesh() avant d'avoir alloué
-  // les maillages.
-  // NOTE (2): depuis l'utilisation des MeshHandle (juin 2019), les maillages
-  // déjà créés ne sont plus supprimés lors de l'appel à cette fonction
-  // donc il n'y a pas besoin de faire un fatal si des maillages existent déjà.
-  // On laisse le code en cas de problème mais si tout est OK on le supprimera
-  // prochainement.
-#if 0
-  for( IMesh* mesh : m_mesh_mng->meshes() ){
-    if (mesh!=m_default_mesh_handle.mesh())
-      ARCANE_FATAL("Mesh named '{0}' created before call to SubDomain::allocateMeshes()",
-                   mesh->name());
-  }
-#endif
 
   if (m_has_mesh_service){
     info() << "** Reading mesh from mesh service";
