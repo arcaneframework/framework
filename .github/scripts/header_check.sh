@@ -15,9 +15,9 @@ REGEX_EXCLUDE_FILES="/arcane/extras/\
 |.*Licensed.*\
 "
 
-CC_H_FILES=$(find $SOURCE -name '*.cc')
+CC_H_FILES=$(find "$SOURCE" -name '*.cc')
 CC_H_FILES+=" "
-CC_H_FILES+=$(find $SOURCE -name '*.h')
+CC_H_FILES+=$(find "$SOURCE" -name '*.h')
 
 NUM_FILES_ERROR=0
 
@@ -27,7 +27,7 @@ for FILE in $CC_H_FILES;
 do
 
   # On retire les fichiers qui font moins de 10 lignes.
-  NB_LINES=$(wc -l < $FILE)
+  NB_LINES=$(wc -l < "$FILE")
   if (( $NB_LINES < 10 ))
   then
     continue
@@ -46,7 +46,7 @@ do
 
 
   # Vérification du formatage du fichier.
-  COMPT=$(file $FILE | grep "UTF-8 (with BOM)" | wc -l)
+  COMPT=$(file "$FILE" | grep "UTF-8 (with BOM)" | wc -l)
   if (( $COMPT == 0 ))
   then
     OUTPUT_LOG_FILE+="  Bad encoding (need UTF-8 with BOM)\n"
@@ -56,7 +56,7 @@ do
 
 
   # Vérification du header Emacs.
-  COMPT=$(head -1 $FILE | grep -e "-*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-" | wc -l)
+  COMPT=$(head -1 "$FILE" | grep -e "-*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-" | wc -l)
   if (( $COMPT == 0 ))
   then
     OUTPUT_LOG_FILE+="  Missing or bad Emacs Header\n"
@@ -66,7 +66,7 @@ do
 
 
   # On collecte les lignes avec "copyright".
-  TEMPO=$(head -30 $FILE | grep -iF "copyright")
+  TEMPO=$(head -30 "$FILE" | grep -iF "copyright")
 
   COMPT=$(echo "$TEMPO" | wc -l)
   if (( $COMPT == 0 ))
@@ -78,14 +78,14 @@ do
 
 
     # Année de la dernière modification du fichier.
-    DATE_FILE=$(git log -1 --pretty="format:%cs" $FILE)
+    DATE_FILE=$(git log -1 --pretty="format:%cs" "$FILE")
     DATE_FILE=${DATE_FILE:0:4}
 
     # Année d'aujourd'hui.
     DATE_TODAY=$(date +"%Y")
 
     # Récupération des années après "2000-"
-    DATE_CR=$(head -30 $FILE | grep --color=never -wEo "2000-[0-9]+" | grep --color=never -wEo "[0-9]+$")
+    DATE_CR=$(head -30 "$FILE" | grep --color=never -wEo "2000-[0-9]+" | grep --color=never -wEo "[0-9]+$")
 
     COMPT=$(echo "$DATE_CR" | wc -l)
 
@@ -169,7 +169,7 @@ do
 
 
   # On vérifie si la licence Apache est précisée.
-  COMPT=$(head -30 $FILE | grep "SPDX-License-Identifier: Apache-2.0" | wc -l)
+  COMPT=$(head -30 "$FILE" | grep "SPDX-License-Identifier: Apache-2.0" | wc -l)
   if (( $COMPT == 0 ))
   then
     OUTPUT_LOG_FILE+="  Missing or bad licence\n"
