@@ -45,7 +45,7 @@ do
 
 
   # Vérification du formatage du fichier.
-  COMPT=$(file $FILE | grep "UTF-8 Unicode (with BOM)" | wc -l)
+  COMPT=$(file $FILE | grep "UTF-8 (with BOM)" | wc -l)
   if (( $COMPT == 0 ))
   then
     OUTPUT_LOG_FILE+="  Bad encoding (need UTF-8 with BOM)\n"
