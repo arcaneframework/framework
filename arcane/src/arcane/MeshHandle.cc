@@ -137,7 +137,7 @@ mesh() const
     return m;
   // A terme, faire un fatal si le maillage est nul. Pour des raisons de
   // compatibilité avec l'existant, on retourne 'nullptr'.
-  bool do_fatal = true; //m_ref->isDoFatalInMeshMethod();
+  bool do_fatal = m_ref->isDoFatalInMeshMethod();
   if (do_fatal)
     ARCANE_FATAL("Invalid call for null mesh. Call MeshHandle::hasMesh() before to make sure mesh is valid");
   return nullptr;
