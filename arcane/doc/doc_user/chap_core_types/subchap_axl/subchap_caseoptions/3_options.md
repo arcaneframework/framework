@@ -204,6 +204,7 @@ if (!eos)
 ```
 </td>
 </tr>
+
 <tr>
 <td>optional</td>
 <td>bool</td>
@@ -214,9 +215,26 @@ true et que l'élément n'est pas présent dans le jeu de données,
 aucun service n'est créé.
 </td>
 </tr>
+
+<tr>
+<td>mesh-name</td>
+<td>string</td>
+<td>Nom du maillage auquel le service sera associé. Lors de la
+construction du service, la valeur de Arcane::ServiceBuildInfo::mesh()
+sera le maillage de nom \a mesh-name. Si aucune valeur n'est spécifiée pour ce
+champ, alors c'est le maillage du service parent qui sera
+utilisé. S'il n'y a pas de service parent, alors c'est le maillage par
+défaut (Arcane::ISubDomain::defaultMesh()) qui sera utilisé.
+
+Si le maillage associé à ce service n'existe pas, alors l'option est
+ignorée ainsi que les sous-options éventuelles.
+
+Cette option est disponible à partir de la version 2.0.7 de %Axlstar
+et 3.8.4 de %Arcane.
+</td>
+</tr>
+
 </table>
-
-
 
 ____
 
