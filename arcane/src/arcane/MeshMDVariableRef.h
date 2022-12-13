@@ -136,9 +136,9 @@ class MeshMDVariableRefBaseT
  */
 template <typename ItemType, typename DataType, typename Extents>
 class MeshMDVariableRefT
-: public MeshMDVariableRefBaseT<ItemType, DataType, typename Extents::AddedFirstExtentsType<DynExtent>>
+: public MeshMDVariableRefBaseT<ItemType, DataType, typename Extents::template AddedFirstExtentsType<DynExtent>>
 {
-  using AddedFirstExtentsType = typename Extents::AddedFirstExtentsType<DynExtent>;
+  using AddedFirstExtentsType = typename Extents::template AddedFirstExtentsType<DynExtent>;
   static_assert(Extents::rank() >= 2 && Extents::rank() <= 3, "Only Extents of rank 2 or 3 are implemented");
 
  public:
