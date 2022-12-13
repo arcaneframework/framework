@@ -125,16 +125,6 @@ class ARCANE_UTILS_EXPORT NumMatrix
   //! Construit la matrice nulle
   constexpr ARCCORE_HOST_DEVICE static ThatClass zero() { return ThatClass(); }
 
-  //! Construit la matrice identité (uniquement pour les matrices carrées)
-  template <typename X = ThatClass, typename = std::enable_if_t<X::isSquare(), void>>
-  constexpr ARCCORE_HOST_DEVICE static ThatClass identity()
-  {
-    ThatClass v(T());
-    for (Int32 i = 0; i < Size; ++i)
-      v(i, i) = 1.0;
-    return v;
-  }
-
   //! Construit la matrice ((ax,bx,cx),(ay,by,cy),(az,bz,cz)).
   template <int S = Size, typename = std::enable_if_t<S == 3, void>>
   constexpr ARCCORE_HOST_DEVICE static ThatClass fromColumns(T ax, T ay, T az, T bx, T by, T bz, T cx, T cy, T cz)
