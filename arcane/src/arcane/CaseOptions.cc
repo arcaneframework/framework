@@ -750,7 +750,6 @@ CaseOptionsMulti(ICaseOptionList* parent,const String& aname,
 CaseOptionSimple::
 CaseOptionSimple(const CaseOptionBuildInfo& cob)
 : CaseOptionBase(cob)
-, m_changed_since_last_iteration(false)
 , m_is_optional(cob.isOptional())
 , m_has_valid_value(true)
 {
@@ -762,7 +761,6 @@ CaseOptionSimple(const CaseOptionBuildInfo& cob)
 CaseOptionSimple::
 CaseOptionSimple(const CaseOptionBuildInfo& cob,const String& physical_unit)
 : CaseOptionBase(cob)
-, m_function(nullptr)
 , m_is_optional(cob.isOptional())
 , m_has_valid_value(true)
 , m_default_physical_unit(physical_unit)

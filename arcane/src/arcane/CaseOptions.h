@@ -188,9 +188,9 @@ class ARCANE_CORE_EXPORT CaseOptionSimple
   IStandardFunction* m_standard_function = nullptr; //!< Fonction standard associée (ou nullpt)
   //! Convertisseur d'unité (nullptr si pas besoin). Valide uniquement pour les options 'Real'
   IPhysicalUnitConverter* m_unit_converter = nullptr;
-  bool m_changed_since_last_iteration;
-  bool m_is_optional;
-  bool m_has_valid_value;
+  bool m_changed_since_last_iteration = false;
+  bool m_is_optional = false;
+  bool m_has_valid_value = false;
   String m_default_physical_unit;
   String m_physical_unit;
 };
