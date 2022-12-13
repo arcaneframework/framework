@@ -344,6 +344,14 @@ class SharedItemVariableScalarRefT;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template <typename ItemType, typename DataType, typename Extents>
+class MeshMDVariableRefBaseT;
+template <typename ItemType, typename DataType, typename Extents>
+class MeshMDVariableRefT;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 class CollectionBase;
 class IItemFamily;
 class IMesh;

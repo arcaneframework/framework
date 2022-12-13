@@ -21,6 +21,7 @@
 #include "arcane/IVariableMng.h"
 #include "arcane/VariableTypes.h"
 #include "arcane/ServiceFactory.h"
+#include "arcane/MeshMDVariableRef.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 
@@ -30,143 +31,6 @@
 namespace ArcaneTest
 {
 using namespace Arcane;
-
-template <typename ItemType, typename DataType, typename Extents>
-class MeshMDVariableRefBaseT;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <typename ItemType, typename DataType>
-class CustomVariableRef
-: public MeshVariableArrayRefT<ItemType, DataType>
-{
-  template <typename _ItemType, typename _DataType, typename _Extents>
-  friend class MeshMDVariableRefBaseT;
-
- public:
-
-  using BaseClass = MeshVariableArrayRefT<ItemType, DataType>;
-  using VariableType = typename BaseClass::PrivatePartType;
-  using ValueDataType = typename VariableType::ValueDataType;
-
- private:
-
-  explicit CustomVariableRef(const VariableBuildInfo& vbi)
-  : BaseClass(vbi)
-  {
-  }
-
- private:
-
-  ValueDataType* trueData() { return this->m_private_part->trueData(); }
-
-  void fillShape(ArrayShape& shape_with_item)
-  {
-    this->m_private_part->fillShape(shape_with_item);
-  }
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <typename ItemType, typename DataType, typename Extents>
-class MeshMDVariableRefBaseT
-: public MeshVariableRef
-{
- public:
-
-  using UnderlyingVariableType = MeshVariableArrayRefT<ItemType, DataType>;
-  using MDSpanType = MDSpan<DataType, Extents, RightLayout>;
-  using ItemLocalIdType = typename ItemType::LocalIdType;
-
- public:
-
-  explicit MeshMDVariableRefBaseT(const VariableBuildInfo& b)
-  : MeshVariableRef()
-  , m_underlying_var(b)
-  {
-    _internalInit(m_underlying_var.variable());
-  }
-
-  UnderlyingVariableType& underlyingVariable() { return m_underlying_var; }
-
- protected:
-
-  void updateFromInternal() override
-  {
-    const Int32 nb_rank = Extents::rank();
-    ArrayShape shape_with_item;
-    shape_with_item.setNbDimension(nb_rank);
-    m_underlying_var.fillShape(shape_with_item);
-
-    ArrayExtents<Extents> new_extents = ArrayExtentsBase<Extents>::fromSpan(shape_with_item.dimensions());
-    m_mdspan = MDSpanType(m_underlying_var.trueData()->view().data(), new_extents);
-  }
-
- protected:
-
-  CustomVariableRef<ItemType, DataType> m_underlying_var;
-  MDSpanType m_mdspan;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <typename ItemType, typename DataType, typename Extents>
-class MeshMDVariableRefT
-: public MeshMDVariableRefBaseT<ItemType, DataType, typename Extents::AddedFirstExtentsType<DynExtent>>
-{
-  using AddedFirstExtentsType = typename Extents::AddedFirstExtentsType<DynExtent>;
-
- public:
-
-  using BaseClass = MeshMDVariableRefBaseT<ItemType, DataType, AddedFirstExtentsType>;
-  using ItemLocalIdType = typename ItemType::LocalIdType;
-  using MDSpanType = typename BaseClass::MDSpanType;
-
- public:
-
-  explicit MeshMDVariableRefT(const VariableBuildInfo& b)
-  : BaseClass(b)
-  {}
-
- public:
-
-  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 2, void>>
-  DataType& operator()(ItemLocalIdType id, Int32 i1, Int32 i2)
-  {
-    return this->m_mdspan(id.localId(), i1, i2);
-  }
-
-  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 2, void>>
-  const DataType& operator()(ItemLocalIdType id, Int32 i1, Int32 i2) const
-  {
-    return this->m_mdspan(id.localId(), i1, i2);
-  }
-
-  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 3, void>>
-  DataType& operator()(ItemLocalIdType id, Int32 i, Int32 j, Int32 k)
-  {
-    return this->m_mdspan(id.localId(), i, j, k);
-  }
-
-  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 3, void>>
-  const DataType& operator()(ItemLocalIdType id, Int32 i, Int32 j, Int32 k) const
-  {
-    return this->m_mdspan(id.localId(), i, j, k);
-  }
-
-  template <typename X = Extents, typename = std::enable_if_t<X::nb_dynamic == 2, void>>
-  void reshape(Int32 dim1, Int32 dim2)
-  {
-    ArrayShape shape;
-    shape.setNbDimension(2);
-    shape.setDimension(0, dim1);
-    shape.setDimension(1, dim2);
-    this->m_underlying_var.resizeAndReshape(shape);
-  }
-};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -239,7 +103,7 @@ _testCustomVariable()
   using MyVariableRef3 = MeshMDVariableRefT<Cell, Real, MDDim3>;
 
   MyVariableRef2 my_var(VariableBuildInfo(mesh(), "TestCustomVar"));
-  my_var.reshape(3, 4);
+  my_var.reshape({ 3, 4 });
   info() << "MyCustomVar=" << my_var.name();
   ENUMERATE_ (Cell, icell, allCells()) {
     my_var(icell, 1, 2) = 3.0;
