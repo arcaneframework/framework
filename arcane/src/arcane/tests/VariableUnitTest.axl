@@ -1,9 +1,9 @@
-<?xml version="1.0" encoding="ISO-8859-1" ?><!-- -*- SGML -*- -->
+<?xml version="1.0" ?><!-- -*- SGML -*- -->
 
 <!-- ###################################################################### -->
 <!-- ###################################################################### -->
 
-<!-- Options du jeu de données pour le service de test des variables -->
+<!-- Options du jeu de donnÃ©es pour le service de test des variables -->
 
 <service name="VariableUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest" namespace-name="ArcaneTest">
  <interface name="Arcane::IUnitTest" inherited="false" />
@@ -17,7 +17,7 @@
   >
    <name lang='fr'>nb-reference</name>
    <description>
-Nombre de reférences à créer pour le test des références.
+Nombre de refÃ©rences Ã  crÃ©er pour le test des rÃ©fÃ©rences.
    </description>
   </simple>
 

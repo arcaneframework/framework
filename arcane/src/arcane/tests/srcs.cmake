@@ -89,6 +89,7 @@ set(AXL_FILES
   ThreadUnitTest
   TaskUnitTest
   IosUnitTest
+  MDVariableUnitTest
   VariableUnitTest
   AMRTest
   MatVecUnitTest
