@@ -15,7 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/ArrayView.h"
-#include "arcane/utils/ArrayBoundsIndex.h"
+#include "arcane/utils/ArrayIndex.h"
 #include "arcane/utils/ArrayLayout.h"
 #include "arcane/utils/ArrayExtentsValue.h"
 

@@ -50,7 +50,7 @@ namespace impl::extent
 /*!
  * \brief Spécialisation pour les dimensions des tableaux à 0 dimensions.
  */
-template<>
+template <>
 class ExtentsV<>
 {
  public:
@@ -60,7 +60,9 @@ class ExtentsV<>
   static constexpr int rank() { return 0; }
   static constexpr int nb_dynamic = 0;
 
-  template<int X> using AddedFirstExtentsType = ExtentsV<X>;
+  template <int X> using AddedFirstExtentsType = ExtentsV<X>;
+  template <int X, int Last> using AddedFirstLastExtentsType = ExtentsV<X, Last>;
+  template <int X, int Last1, int Last2> using AddedFirstLastLastExtentsType = ExtentsV<X, Last1, Last2>;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -68,7 +70,7 @@ class ExtentsV<>
 /*!
  * \brief Spécialisation pour les dimensions des tableaux à 1 dimension.
  */
-template<Int32 X0>
+template <Int32 X0>
 class ExtentsV<X0>
 {
  public:
@@ -81,7 +83,9 @@ class ExtentsV<X0>
   using ArrayExtentsValueType = impl::ArrayExtentsValue<X0>;
   using RemovedFirstExtentsType = ExtentsV<>;
   using DynamicDimsType = ArrayIndex<nb_dynamic>;
-  template<int X> using AddedFirstExtentsType = ExtentsV<X,X0>;
+  template <int X> using AddedFirstExtentsType = ExtentsV<X, X0>;
+  template <int X, int Last> using AddedFirstLastExtentsType = ExtentsV<X, X0, Last>;
+  template <int X, int Last1, int Last2> using AddedFirstLastLastExtentsType = ExtentsV<X, X0, Last1, Last2>;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -89,8 +93,8 @@ class ExtentsV<X0>
 /*!
  * \brief Spécialisation pour les dimensions des tableaux à 2 dimensions.
  */
-template<Int32 X0,Int32 X1>
-class ExtentsV<X0,X1>
+template <Int32 X0, Int32 X1>
+class ExtentsV<X0, X1>
 {
  public:
 
@@ -99,10 +103,11 @@ class ExtentsV<X0,X1>
   static constexpr bool is_full_dynamic() { return (nb_dynamic == 2); }
 
   using IndexType = ArrayIndex<2>;
-  using ArrayExtentsValueType = impl::ArrayExtentsValue<X0,X1>;
+  using ArrayExtentsValueType = impl::ArrayExtentsValue<X0, X1>;
   using RemovedFirstExtentsType = ExtentsV<X1>;
   using DynamicDimsType = ArrayIndex<nb_dynamic>;
-  template<int X> using AddedFirstExtentsType = ExtentsV<X,X0,X1>;
+  template <int X> using AddedFirstExtentsType = ExtentsV<X, X0, X1>;
+  template <int X, int Last> using AddedFirstLastExtentsType = ExtentsV<X, X0, X1, Last>;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -110,8 +115,8 @@ class ExtentsV<X0,X1>
 /*!
  * \brief Spécialisation pour les dimensions des tableaux à 3 dimensions.
  */
-template<Int32 X0,Int32 X1,Int32 X2>
-class ExtentsV<X0,X1,X2>
+template <Int32 X0, Int32 X1, Int32 X2>
+class ExtentsV<X0, X1, X2>
 {
  public:
 
@@ -123,7 +128,7 @@ class ExtentsV<X0,X1,X2>
   using ArrayExtentsValueType = impl::ArrayExtentsValue<X0, X1, X2>;
   using RemovedFirstExtentsType = ExtentsV<X1, X2>;
   using DynamicDimsType = ArrayIndex<nb_dynamic>;
-  template<int X> using AddedFirstExtentsType = ExtentsV<X,X0,X1,X2>;
+  template <int X> using AddedFirstExtentsType = ExtentsV<X, X0, X1, X2>;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -144,7 +149,6 @@ class ExtentsV<X0, X1, X2, X3>
   using ArrayExtentsValueType = impl::ArrayExtentsValue<X0, X1, X2, X3>;
   using RemovedFirstExtentsType = ExtentsV<X1, X2, X3>;
   using DynamicDimsType = ArrayIndex<nb_dynamic>;
-  template<int X> using AddedFirstExtentsType = ExtentsV<X,X0,X1,X2,X3>;
 };
 
 /*---------------------------------------------------------------------------*/

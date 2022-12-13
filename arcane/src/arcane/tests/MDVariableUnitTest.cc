@@ -16,6 +16,8 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/ArrayShape.h"
 #include "arcane/utils/MDSpan.h"
+#include "arcane/utils/NumVector.h"
+#include "arcane/utils/NumMatrix.h"
 
 #include "arcane/BasicUnitTest.h"
 #include "arcane/IVariableMng.h"
@@ -24,6 +26,7 @@
 #include "arcane/MeshMDVariableRef.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
+#include "arcane/tests/MDVariableUnitTest_axl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -34,16 +37,11 @@ using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-using namespace Arcane;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
  * \brief Module de test des variables
  */
 class MDVariableUnitTest
-: public BasicUnitTest
+: public ArcaneMDVariableUnitTestObject
 {
  public:
 
@@ -57,6 +55,8 @@ class MDVariableUnitTest
  private:
 
   void _testCustomVariable();
+  void _testVectorMDVariable();
+  void _testMatrixMDVariable();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -71,7 +71,7 @@ ARCANE_REGISTER_SERVICE(MDVariableUnitTest,
 
 MDVariableUnitTest::
 MDVariableUnitTest(const ServiceBuildInfo& sbi)
-: BasicUnitTest(sbi)
+: ArcaneMDVariableUnitTestObject(sbi)
 {
 }
 
@@ -82,6 +82,8 @@ void MDVariableUnitTest::
 executeTest()
 {
   _testCustomVariable();
+  _testVectorMDVariable();
+  _testMatrixMDVariable();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -99,23 +101,101 @@ void MDVariableUnitTest::
 _testCustomVariable()
 {
   info() << "TEST CUSTOM VARIABLE";
-  using MyVariableRef2 = MeshMDVariableRefT<Cell, Real, MDDim2>;
-  using MyVariableRef3 = MeshMDVariableRefT<Cell, Real, MDDim3>;
 
-  MyVariableRef2 my_var(VariableBuildInfo(mesh(), "TestCustomVar"));
-  my_var.reshape({ 3, 4 });
-  info() << "MyCustomVar=" << my_var.name();
-  ENUMERATE_ (Cell, icell, allCells()) {
-    my_var(icell, 1, 2) = 3.0;
-    Real x = my_var(icell, 1, 2);
-    if (x != 3.0)
-      ARCANE_FATAL("Bad value (2)");
+  {
+    // Teste variable 2D
+    m_scalar_var2d.reshape({ 3, 4 });
+    info() << "MyCustomVar=" << m_scalar_var2d.name();
+    ENUMERATE_ (Cell, icell, allCells()) {
+      m_scalar_var2d(icell, 1, 2) = 3.0;
+      Real x = m_scalar_var2d(icell, 1, 2);
+      if (x != 3.0)
+        ARCANE_FATAL("Bad value (2)");
+    }
+
+    // Teste vue 3D d'une variable avec shape 2D
+    ENUMERATE_ (Cell, icell, allCells()) {
+      Real x = m_scalar_var2d_as_3d(icell, 1, 2, 0);
+      if (x != 3.0)
+        ARCANE_FATAL("Bad value (3)");
+    }
   }
-  MyVariableRef3 my_var3(VariableBuildInfo(mesh(), "TestCustomVar"));
-  ENUMERATE_ (Cell, icell, allCells()) {
-    Real x = my_var3(icell, 1, 2, 0);
-    if (x != 3.0)
-      ARCANE_FATAL("Bad value (3)");
+  {
+    // Teste variable 1D
+    const Int32 size2 = 12;
+    m_scalar_var1d.reshape({ size2 });
+    ENUMERATE_ (Cell, icell, allCells()) {
+      for (Int32 i = 0; i < size2; ++i)
+        m_scalar_var1d(icell, i) = static_cast<Real>(i + 1);
+    }
+    ENUMERATE_ (Cell, icell, allCells()) {
+      for (Int32 i = 0; i < size2; ++i) {
+        Real ref_value = static_cast<Real>(i + 1);
+        Real r = m_scalar_var1d(icell, i);
+        if (r != ref_value)
+          ARCANE_FATAL("Bad value (4)");
+      }
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MDVariableUnitTest::
+_testVectorMDVariable()
+{
+  info() << "TEST VECTOR VARIABLE";
+
+  {
+    const Int32 size2 = 12;
+    m_vector_var1d.reshape({ size2 });
+    ENUMERATE_ (Cell, icell, allCells()) {
+      for (Int32 i = 0; i < size2; ++i) {
+        Real r0 = static_cast<Real>(i + 1);
+        RealN3 x(r0, r0 + 1.5, r0 + 2.3);
+        m_vector_var1d(icell, i) = x;
+      }
+    }
+    ENUMERATE_ (Cell, icell, allCells()) {
+      for (Int32 i = 0; i < size2; ++i) {
+        Real r0 = static_cast<Real>(i + 1);
+        RealN3 ref_value(r0, r0 + 1.5, r0 + 2.3);
+        RealN3 r = m_vector_var1d(icell, i);
+        if (r != ref_value)
+          ARCANE_FATAL("Bad value (4)");
+      }
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MDVariableUnitTest::
+_testMatrixMDVariable()
+{
+  info() << "TEST MATRIX VARIABLE";
+
+  {
+    const Int32 size2 = 7;
+    m_matrix_var1d.reshape({ size2 });
+    ENUMERATE_ (Cell, icell, allCells()) {
+      for (Int32 i = 0; i < size2; ++i) {
+        Real r0 = static_cast<Real>(i + 1);
+        RealN2x2 x({ r0, r0 + 1.5 }, { r0 + 2.3, r0 - 4.3 });
+        m_matrix_var1d(icell, i) = x;
+      }
+    }
+    ENUMERATE_ (Cell, icell, allCells()) {
+      for (Int32 i = 0; i < size2; ++i) {
+        Real r0 = static_cast<Real>(i + 1);
+        RealN2x2 ref_value({ r0, r0 + 1.5 }, { r0 + 2.3, r0 - 4.3 });
+        RealN2x2 r = m_matrix_var1d(icell, i);
+        if (r != ref_value)
+          ARCANE_FATAL("Bad value (5)");
+      }
+    }
   }
 }
 
