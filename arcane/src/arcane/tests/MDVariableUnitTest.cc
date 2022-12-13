@@ -99,23 +99,45 @@ void MDVariableUnitTest::
 _testCustomVariable()
 {
   info() << "TEST CUSTOM VARIABLE";
+  using MyVariableRef1 = MeshMDVariableRefT<Cell, Real, MDDim1>;
   using MyVariableRef2 = MeshMDVariableRefT<Cell, Real, MDDim2>;
   using MyVariableRef3 = MeshMDVariableRefT<Cell, Real, MDDim3>;
 
-  MyVariableRef2 my_var(VariableBuildInfo(mesh(), "TestCustomVar"));
-  my_var.reshape({ 3, 4 });
-  info() << "MyCustomVar=" << my_var.name();
-  ENUMERATE_ (Cell, icell, allCells()) {
-    my_var(icell, 1, 2) = 3.0;
-    Real x = my_var(icell, 1, 2);
-    if (x != 3.0)
-      ARCANE_FATAL("Bad value (2)");
+  {
+    MyVariableRef2 my_var(VariableBuildInfo(mesh(), "TestCustomVar2D"));
+    my_var.reshape({ 3, 4 });
+    info() << "MyCustomVar=" << my_var.name();
+    ENUMERATE_ (Cell, icell, allCells()) {
+      my_var(icell, 1, 2) = 3.0;
+      Real x = my_var(icell, 1, 2);
+      if (x != 3.0)
+        ARCANE_FATAL("Bad value (2)");
+    }
+
+    // Teste vue 3D d'une variable avec shape 2D
+    MyVariableRef3 my_var3(VariableBuildInfo(mesh(), "TestCustomVar2D"));
+    ENUMERATE_ (Cell, icell, allCells()) {
+      Real x = my_var3(icell, 1, 2, 0);
+      if (x != 3.0)
+        ARCANE_FATAL("Bad value (3)");
+    }
   }
-  MyVariableRef3 my_var3(VariableBuildInfo(mesh(), "TestCustomVar"));
-  ENUMERATE_ (Cell, icell, allCells()) {
-    Real x = my_var3(icell, 1, 2, 0);
-    if (x != 3.0)
-      ARCANE_FATAL("Bad value (3)");
+  {
+    MyVariableRef1 my_var1(VariableBuildInfo(mesh(), "TestCustomVar1D"));
+    const Int32 size2 = 12;
+    my_var1.reshape({ size2 });
+    ENUMERATE_ (Cell, icell, allCells()) {
+      for (Int32 i = 0; i < size2; ++i)
+        my_var1(icell, i) = static_cast<Real>(i + 1);
+    }
+    ENUMERATE_ (Cell, icell, allCells()) {
+      for (Int32 i = 0; i < size2; ++i) {
+        Real ref_value = static_cast<Real>(i + 1);
+        Real r = my_var1(icell, i);
+        if (r != ref_value)
+          ARCANE_FATAL("Bad value (4)");
+      }
+    }
   }
 }
 

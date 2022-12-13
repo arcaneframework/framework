@@ -139,13 +139,12 @@ class MeshMDVariableRefT
 : public MeshMDVariableRefBaseT<ItemType, DataType, typename Extents::template AddedFirstExtentsType<DynExtent>>
 {
   using AddedFirstExtentsType = typename Extents::template AddedFirstExtentsType<DynExtent>;
-  static_assert(Extents::rank() >= 2 && Extents::rank() <= 3, "Only Extents of rank 2 or 3 are implemented");
+  static_assert(Extents::rank() >= 1 && Extents::rank() <= 3, "Only Extents of rank 1, 2 or 3 are implemented");
 
  public:
 
   using BaseClass = MeshMDVariableRefBaseT<ItemType, DataType, AddedFirstExtentsType>;
   using ItemLocalIdType = typename ItemType::LocalIdType;
-  using MDSpanType = typename BaseClass::MDSpanType;
 
  public:
 
@@ -154,6 +153,18 @@ class MeshMDVariableRefT
   {}
 
  public:
+
+  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 1, void>>
+  DataType& operator()(ItemLocalIdType id, Int32 i1)
+  {
+    return this->m_mdspan(id.localId(), i1);
+  }
+
+  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 1, void>>
+  const DataType& operator()(ItemLocalIdType id, Int32 i1) const
+  {
+    return this->m_mdspan(id.localId(), i1);
+  }
 
   template <typename X = Extents, typename = std::enable_if_t<X::rank() == 2, void>>
   DataType& operator()(ItemLocalIdType id, Int32 i1, Int32 i2)
