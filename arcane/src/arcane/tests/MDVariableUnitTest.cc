@@ -16,6 +16,7 @@
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/ArrayShape.h"
 #include "arcane/utils/MDSpan.h"
+#include "arcane/utils/NumVector.h"
 
 #include "arcane/BasicUnitTest.h"
 #include "arcane/IVariableMng.h"
@@ -28,13 +29,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 namespace ArcaneTest
 {
-using namespace Arcane;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 using namespace Arcane;
 
 /*---------------------------------------------------------------------------*/
@@ -57,6 +56,7 @@ class MDVariableUnitTest
  private:
 
   void _testCustomVariable();
+  void _testVectorMDVariable();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -82,6 +82,7 @@ void MDVariableUnitTest::
 executeTest()
 {
   _testCustomVariable();
+  _testVectorMDVariable();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -134,6 +135,39 @@ _testCustomVariable()
       for (Int32 i = 0; i < size2; ++i) {
         Real ref_value = static_cast<Real>(i + 1);
         Real r = my_var1(icell, i);
+        if (r != ref_value)
+          ARCANE_FATAL("Bad value (4)");
+      }
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MDVariableUnitTest::
+_testVectorMDVariable()
+{
+  info() << "TEST VECTOR VARIABLE";
+  using MyVariableRef1 = MeshVectorMDVariableRefT<Cell, Real, 3, MDDim1>;
+
+  {
+    MyVariableRef1 my_var1(VariableBuildInfo(mesh(), "TestCustomVectorVar1D"));
+
+    const Int32 size2 = 12;
+    my_var1.reshape({ size2 });
+    ENUMERATE_ (Cell, icell, allCells()) {
+      for (Int32 i = 0; i < size2; ++i) {
+        Real r0 = static_cast<Real>(i + 1);
+        RealN3 x(r0, r0 + 1.5, r0 + 2.3);
+        my_var1(icell, i) = x;
+      }
+    }
+    ENUMERATE_ (Cell, icell, allCells()) {
+      for (Int32 i = 0; i < size2; ++i) {
+        Real r0 = static_cast<Real>(i + 1);
+        RealN3 ref_value(r0, r0 + 1.5, r0 + 2.3);
+        RealN3 r = my_var1(icell, i);
         if (r != ref_value)
           ARCANE_FATAL("Bad value (4)");
       }
