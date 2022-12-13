@@ -149,7 +149,7 @@ TEST(NumArray3,Misc)
     for( Int32 x=0, xn=v.dim1Size(); x<xn; ++x ){
       for( Int32 y=0, yn=v.dim2Size(); y<yn; ++y ){
         for( Int32 z=0, zn=v.dim3Size(); z<zn; ++z ){
-          ArrayBoundsIndex<3> idx{x,y,z};
+          ArrayIndex<3> idx{x,y,z};
           Int64 offset = v_extents.offset(idx);
           v.s(x,y,z) = offset;
           v.s({x,y,z}) = offset;
@@ -282,7 +282,7 @@ TEST(NumArray3,Move)
 
 TEST(NumArray3,Index)
 {
-  ArrayBoundsIndex<3> index(1,4,2);
+  ArrayIndex<3> index(1,4,2);
   auto [i, j, k] = index();
 
   ASSERT_TRUE(i==1);
