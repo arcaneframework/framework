@@ -80,6 +80,7 @@ class Array2VariableT
   ARCANE_CORE_EXPORT void directResize(Integer dim1,Integer dim2);
   ARCANE_CORE_EXPORT void directResizeAndReshape(const ArrayShape& shape);
   ARCANE_CORE_EXPORT void swapValues(ThatClass& rhs);
+  ARCANE_CORE_EXPORT void fillShape(ArrayShape& shape);
   ValueDataType* trueData() { return m_data; }
 
  protected:

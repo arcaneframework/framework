@@ -644,6 +644,34 @@ value() -> ValueType&
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template<typename DataType> void
+Array2VariableT<DataType>::
+fillShape(ArrayShape& shape_with_item)
+{
+  // TODO: Cette méthode est indépendante du type de donnée.
+  // Il faudrait pouvoir en faire une seule version.
+  ArrayShape shape = m_data->shape();
+  const Int32 nb_rank = shape_with_item.nbDimension();
+  std::cout << "SHAPE=" << shape.dimensions() << " internal_rank=" << nb_rank << "\n";
+  auto array_view = m_data->view();
+  Int32 dim0_size = array_view.dim1Size();
+
+  shape_with_item.setDimension(0, dim0_size);
+  Int32 nb_orig_shape = shape.nbDimension();
+  for (Int32 i = 0; i < nb_orig_shape; ++i) {
+    shape_with_item.setDimension(i + 1, shape.dimension(i));
+  }
+
+  // Si la forme est plus petite que notre rang, remplit les dimensions
+  // supplémentaires par la valeur 1.
+  for (Int32 i = (nb_orig_shape + 1); i < nb_rank; ++i) {
+    shape_with_item.setDimension(i, 1);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

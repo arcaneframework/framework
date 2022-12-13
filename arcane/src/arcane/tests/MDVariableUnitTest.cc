@@ -31,39 +31,49 @@ namespace ArcaneTest
 {
 using namespace Arcane;
 
-template <typename ItemType, typename DataType, typename ExtentType>
-class ItemVariableArrayAsMDRefT;
+template <typename ItemType, typename DataType, typename Extents>
+class MeshMDVariableRefBaseT;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename ItemType, typename DataType>
+class CustomVariableRef
+: public MeshVariableArrayRefT<ItemType, DataType>
+{
+  template <typename _ItemType, typename _DataType, typename _Extents>
+  friend class MeshMDVariableRefBaseT;
+
+ public:
+
+  using BaseClass = MeshVariableArrayRefT<ItemType, DataType>;
+  using VariableType = typename BaseClass::PrivatePartType;
+  using ValueDataType = typename VariableType::ValueDataType;
+
+ private:
+
+  explicit CustomVariableRef(const VariableBuildInfo& vbi)
+  : BaseClass(vbi)
+  {
+  }
+
+ private:
+
+  ValueDataType* trueData() { return this->m_private_part->trueData(); }
+
+  void fillShape(ArrayShape& shape_with_item)
+  {
+    this->m_private_part->fillShape(shape_with_item);
+  }
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 template <typename ItemType, typename DataType, typename Extents>
-class ItemVariableArrayAsMDRefDynamicBaseT
+class MeshMDVariableRefBaseT
 : public MeshVariableRef
 {
- private:
-
-  class CustomVariableRef
-  : public MeshVariableArrayRefT<ItemType, DataType>
-  {
-   public:
-
-    using BaseClass = MeshVariableArrayRefT<ItemType, DataType>;
-    using VariableType = typename BaseClass::PrivatePartType;
-    using ValueDataType = typename VariableType::ValueDataType;
-
-   public:
-
-    explicit CustomVariableRef(const VariableBuildInfo& vbi)
-    : BaseClass(vbi)
-    {
-    }
-
-   public:
-
-    ValueDataType* trueData() { return this->m_private_part->trueData(); }
-  };
-
  public:
 
   using UnderlyingVariableType = MeshVariableArrayRefT<ItemType, DataType>;
@@ -72,7 +82,7 @@ class ItemVariableArrayAsMDRefDynamicBaseT
 
  public:
 
-  explicit ItemVariableArrayAsMDRefDynamicBaseT(const VariableBuildInfo& b)
+  explicit MeshMDVariableRefBaseT(const VariableBuildInfo& b)
   : MeshVariableRef()
   , m_underlying_var(b)
   {
@@ -82,43 +92,21 @@ class ItemVariableArrayAsMDRefDynamicBaseT
   UnderlyingVariableType& underlyingVariable() { return m_underlying_var; }
 
  protected:
- public:
 
   void updateFromInternal() override
   {
-    // ATTENTION à ne pas utiliser underlying_var directement car la vue
-    // associée sur les entités n'est pas forcément remise à jour.
-    IData* data = this->m_underlying_var.variable()->data();
-    ArrayShape shape = data->shape();
     const Int32 nb_rank = Extents::rank();
-    //std::cout << "SHAPE=" << shape.dimensions() << " internal_rank=" << nb_rank << "\n";
-    auto* true_data = m_underlying_var.trueData();
-    auto array_view = true_data->view();
-    Int32 dim0_size = array_view.dim1Size();
-
     ArrayShape shape_with_item;
     shape_with_item.setNbDimension(nb_rank);
-    shape_with_item.setDimension(0, dim0_size);
-    Int32 nb_orig_shape = shape.nbDimension();
-    for (Int32 i = 0; i < nb_orig_shape; ++i) {
-      shape_with_item.setDimension(i + 1, shape.dimension(i));
-    }
-    // Si la forme est plus petite que notre rang, remplit les dimensions
-    // supplémentaires par la valeur 1.
-    for (Int32 i = (nb_orig_shape + 1); i < nb_rank; ++i) {
-      shape_with_item.setDimension(i, 1);
-    }
+    m_underlying_var.fillShape(shape_with_item);
 
-    //new_extents = ArrayExtentsBase<Extents>::fromSpan(shape.dimensions());
     ArrayExtents<Extents> new_extents = ArrayExtentsBase<Extents>::fromSpan(shape_with_item.dimensions());
-    //m_mdspan = impl::_buildSpan<Rank, MDSpanType>(array_view.data(), dim0_size, shape);
-    // MDSpanType(array_view.data(), { dim0_size, shape.dimension(0), shape.dimension(1) });
-    m_mdspan = MDSpanType(array_view.data(), new_extents);
+    m_mdspan = MDSpanType(m_underlying_var.trueData()->view().data(), new_extents);
   }
 
  protected:
 
-  CustomVariableRef m_underlying_var;
+  CustomVariableRef<ItemType, DataType> m_underlying_var;
   MDSpanType m_mdspan;
 };
 
@@ -126,20 +114,20 @@ class ItemVariableArrayAsMDRefDynamicBaseT
 /*---------------------------------------------------------------------------*/
 
 template <typename ItemType, typename DataType, typename Extents>
-class ItemVariableArrayAsMDRefT
-: public ItemVariableArrayAsMDRefDynamicBaseT<ItemType, DataType, typename Extents::AddedFirstExtentsType<DynExtent>>
+class MeshMDVariableRefT
+: public MeshMDVariableRefBaseT<ItemType, DataType, typename Extents::AddedFirstExtentsType<DynExtent>>
 {
   using AddedFirstExtentsType = typename Extents::AddedFirstExtentsType<DynExtent>;
 
  public:
 
-  using BaseClass = ItemVariableArrayAsMDRefDynamicBaseT<ItemType, DataType, AddedFirstExtentsType>;
+  using BaseClass = MeshMDVariableRefBaseT<ItemType, DataType, AddedFirstExtentsType>;
   using ItemLocalIdType = typename ItemType::LocalIdType;
   using MDSpanType = typename BaseClass::MDSpanType;
 
  public:
 
-  explicit ItemVariableArrayAsMDRefT(const VariableBuildInfo& b)
+  explicit MeshMDVariableRefT(const VariableBuildInfo& b)
   : BaseClass(b)
   {}
 
@@ -247,8 +235,8 @@ void MDVariableUnitTest::
 _testCustomVariable()
 {
   info() << "TEST CUSTOM VARIABLE";
-  using MyVariableRef2 = ItemVariableArrayAsMDRefT<Cell, Real, MDDim2>;
-  using MyVariableRef3 = ItemVariableArrayAsMDRefT<Cell, Real, MDDim3>;
+  using MyVariableRef2 = MeshMDVariableRefT<Cell, Real, MDDim2>;
+  using MyVariableRef3 = MeshMDVariableRefT<Cell, Real, MDDim3>;
 
   MyVariableRef2 my_var(VariableBuildInfo(mesh(), "TestCustomVar"));
   my_var.reshape(3, 4);
