@@ -63,7 +63,7 @@ class MDSpanBase
   using ExtentsType = Extents;
   using IndexType = typename Extents::IndexType;
   using ArrayExtentsWithOffsetType = ArrayExtentsWithOffset<Extents, LayoutPolicy>;
-  using DimsType = typename Extents::DimsType;
+  using DynamicDimsType = typename Extents::DynamicDimsType;
   // Pour compatibilité. A supprimer pour cohérence avec les autres 'using'
   using ArrayBoundsIndexType = typename Extents::IndexType;
 
@@ -75,7 +75,7 @@ class MDSpanBase
   , m_extents(extents)
   {
   }
-  constexpr ARCCORE_HOST_DEVICE MDSpanBase(DataType* ptr, const DimsType& dims)
+  constexpr ARCCORE_HOST_DEVICE MDSpanBase(DataType* ptr, const DynamicDimsType& dims)
   : m_ptr(ptr)
   , m_extents(dims)
   {}
@@ -163,7 +163,7 @@ class MDSpanIntermediate<DataType, 1, Extents, LayoutPolicy>
   using BaseClass::ptrAt;
   using BaseClass::operator();
   using ArrayExtentsWithOffsetType = typename BaseClass::ArrayExtentsWithOffsetType;
-  using DimsType = typename Extents::DimsType;
+  using DynamicDimsType = typename Extents::DynamicDimsType;
 
  public:
 
@@ -172,7 +172,7 @@ class MDSpanIntermediate<DataType, 1, Extents, LayoutPolicy>
   constexpr ARCCORE_HOST_DEVICE MDSpanIntermediate(DataType* ptr, ArrayExtentsWithOffsetType extents_and_offset)
   : BaseClass(ptr, extents_and_offset)
   {}
-  constexpr ARCCORE_HOST_DEVICE MDSpanIntermediate(DataType* ptr, const DimsType& dims)
+  constexpr ARCCORE_HOST_DEVICE MDSpanIntermediate(DataType* ptr, const DynamicDimsType& dims)
   : BaseClass(ptr, dims)
   {
   }
@@ -227,7 +227,7 @@ class MDSpanIntermediate<DataType, 2, Extents, LayoutPolicy>
   using BaseClass::ptrAt;
   using BaseClass::operator();
   using ArrayExtentsWithOffsetType = typename BaseClass::ArrayExtentsWithOffsetType;
-  using DimsType = typename Extents::DimsType;
+  using DynamicDimsType = typename Extents::DynamicDimsType;
 
  protected:
 
@@ -236,7 +236,7 @@ class MDSpanIntermediate<DataType, 2, Extents, LayoutPolicy>
   constexpr ARCCORE_HOST_DEVICE MDSpanIntermediate(DataType* ptr, ArrayExtentsWithOffsetType extents_and_offset)
   : BaseClass(ptr, extents_and_offset)
   {}
-  constexpr ARCCORE_HOST_DEVICE MDSpanIntermediate(DataType* ptr, const DimsType& dims)
+  constexpr ARCCORE_HOST_DEVICE MDSpanIntermediate(DataType* ptr, const DynamicDimsType& dims)
   : BaseClass(ptr, dims)
   {
   }
@@ -298,7 +298,7 @@ class MDSpanIntermediate<DataType, 3, Extents, LayoutPolicy>
   using BaseClass::ptrAt;
   using BaseClass::operator();
   using ArrayExtentsWithOffsetType = typename BaseClass::ArrayExtentsWithOffsetType;
-  using DimsType = typename Extents::DimsType;
+  using DynamicDimsType = typename Extents::DynamicDimsType;
 
  protected:
 
@@ -307,7 +307,7 @@ class MDSpanIntermediate<DataType, 3, Extents, LayoutPolicy>
   constexpr ARCCORE_HOST_DEVICE MDSpanIntermediate(DataType* ptr, ArrayExtentsWithOffsetType extents_and_offset)
   : BaseClass(ptr, extents_and_offset)
   {}
-  constexpr ARCCORE_HOST_DEVICE MDSpanIntermediate(DataType* ptr, const DimsType& dims)
+  constexpr ARCCORE_HOST_DEVICE MDSpanIntermediate(DataType* ptr, const DynamicDimsType& dims)
   : BaseClass(ptr, dims)
   {
   }
@@ -369,7 +369,7 @@ class MDSpanIntermediate<DataType, 4, Extents, LayoutPolicy>
   using BaseClass::ptrAt;
   using BaseClass::operator();
   using ArrayExtentsWithOffsetType = typename BaseClass::ArrayExtentsWithOffsetType;
-  using DimsType = typename Extents::DimsType;
+  using DynamicDimsType = typename Extents::DynamicDimsType;
 
  protected:
 
@@ -378,7 +378,7 @@ class MDSpanIntermediate<DataType, 4, Extents, LayoutPolicy>
   constexpr ARCCORE_HOST_DEVICE MDSpanIntermediate(DataType* ptr, ArrayExtentsWithOffsetType extents_and_offset)
   : BaseClass(ptr, extents_and_offset)
   {}
-  constexpr ARCCORE_HOST_DEVICE MDSpanIntermediate(DataType* ptr, const DimsType& dims)
+  constexpr ARCCORE_HOST_DEVICE MDSpanIntermediate(DataType* ptr, const DynamicDimsType& dims)
   : BaseClass(ptr, dims)
   {
   }
@@ -465,7 +465,7 @@ class MDSpan
   using BaseClass::ptrAt;
   using BaseClass::operator();
   using ArrayExtentsWithOffsetType = typename BaseClass::ArrayExtentsWithOffsetType;
-  using DimsType = typename Extents::DimsType;
+  using DynamicDimsType = typename Extents::DynamicDimsType;
   using ExtentsType = Extents;
 
  public:
@@ -475,13 +475,13 @@ class MDSpan
   constexpr ARCCORE_HOST_DEVICE MDSpan(DataType* ptr, ArrayExtentsWithOffsetType extents_and_offset)
   : BaseClass(ptr, extents_and_offset)
   {}
-  constexpr ARCCORE_HOST_DEVICE MDSpan(DataType* ptr, const DimsType& dims)
+  constexpr ARCCORE_HOST_DEVICE MDSpan(DataType* ptr, const DynamicDimsType& dims)
   : BaseClass(ptr, dims)
   {
   }
   template <typename X = ExtentsType, typename = std::enable_if_t<X::nb_dynamic == 0, void>>
   explicit constexpr ARCCORE_HOST_DEVICE MDSpan(DataType* ptr)
-  : BaseClass(ptr, DimsType())
+  : BaseClass(ptr, DynamicDimsType{})
   {
   }
   template <typename X, typename = std::enable_if_t<std::is_same_v<X, UnqualifiedValueType>>>

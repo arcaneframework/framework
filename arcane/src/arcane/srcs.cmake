@@ -277,6 +277,8 @@ set( ARCANE_SOURCES
   MeshUtils.cc
   MeshUtils.h
   MeshVariableRef.cc
+  MeshMDVariableRef.cc
+  MeshMDVariableRef.h
   MeshVariableRef.h
   ParallelExchangerOptions.h
   PrivateVariableScalarTpl.cc

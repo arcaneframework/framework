@@ -33,57 +33,6 @@
 namespace Arcane
 {
 
-namespace impl
-{
-  template <int RankValue>
-  class ArrayExtentsTraits;
-
-  template <>
-  class ArrayExtentsTraits<0>
-  {
-   public:
-
-    static constexpr ARCCORE_HOST_DEVICE std::array<Int32, 0>
-    extendsInitHelper() { return {}; }
-  };
-
-  template <>
-  class ArrayExtentsTraits<1>
-  {
-   public:
-
-    static constexpr ARCCORE_HOST_DEVICE std::array<Int32, 1>
-    extendsInitHelper() { return { 0 }; }
-  };
-
-  template <>
-  class ArrayExtentsTraits<2>
-  {
-   public:
-
-    static constexpr ARCCORE_HOST_DEVICE std::array<Int32, 2>
-    extendsInitHelper() { return { 0, 0 }; }
-  };
-
-  template <>
-  class ArrayExtentsTraits<3>
-  {
-   public:
-
-    static constexpr ARCCORE_HOST_DEVICE std::array<Int32, 3>
-    extendsInitHelper() { return { 0, 0, 0 }; }
-  };
-
-  template <>
-  class ArrayExtentsTraits<4>
-  {
-   public:
-
-    static constexpr ARCCORE_HOST_DEVICE std::array<Int32, 4>
-    extendsInitHelper() { return { 0, 0, 0, 0 }; }
-  };
-} // namespace impl
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -121,9 +70,7 @@ class ArrayStridesBase
 {
  public:
 
-  ARCCORE_HOST_DEVICE ArrayStridesBase()
-  : m_strides(impl::ArrayExtentsTraits<RankValue>::extendsInitHelper())
-  {}
+  ArrayStridesBase() = default;
   //! Valeur du pas de la \a i-ème dimension.
   ARCCORE_HOST_DEVICE Int32 stride(int i) const { return m_strides[i]; }
   ARCCORE_HOST_DEVICE Int32 operator()(int i) const { return m_strides[i]; }
@@ -156,7 +103,7 @@ class ArrayStridesBase
 
  protected:
 
-  std::array<Int32, RankValue> m_strides;
+  std::array<Int32, RankValue> m_strides = {};
 };
 
 /*---------------------------------------------------------------------------*/
@@ -196,8 +143,8 @@ class ArrayExtentsBase
  protected:
 
   using BaseClass = typename Extents::ArrayExtentsValueType;
-  using ArrayExtentsPreviousRank = ArrayExtentsBase<typename Extents::RemovedFirstExtentType>;
-  using DimsType = typename BaseClass::DimsType;
+  using ArrayExtentsPreviousRank = ArrayExtentsBase<typename Extents::RemovedFirstExtentsType>;
+  using DynamicDimsType = typename Extents::DynamicDimsType;
 
  public:
 
@@ -220,7 +167,7 @@ class ArrayExtentsBase
   {
   }
 
-  explicit constexpr ARCCORE_HOST_DEVICE ArrayExtentsBase(DimsType extents)
+  explicit constexpr ARCCORE_HOST_DEVICE ArrayExtentsBase(DynamicDimsType extents)
   : BaseClass(extents)
   {
   }
@@ -266,7 +213,7 @@ class ArrayExtents<ExtentsV<X0>>
   using ExtentsType = ExtentsV<X0>;
   using BaseClass = ArrayExtentsBase<ExtentsType>;
   using BaseClass::totalNbElement;
-  using DimsType = typename ExtentsType::DimsType;
+  using DynamicDimsType = typename ExtentsType::DynamicDimsType;
 
  public:
 
@@ -274,7 +221,7 @@ class ArrayExtents<ExtentsV<X0>>
   constexpr ARCCORE_HOST_DEVICE ArrayExtents(const BaseClass& rhs)
   : BaseClass(rhs)
   {}
-  constexpr ARCCORE_HOST_DEVICE ArrayExtents(const DimsType& extents)
+  constexpr ARCCORE_HOST_DEVICE ArrayExtents(const DynamicDimsType& extents)
   : BaseClass(extents)
   {
   }
@@ -300,7 +247,7 @@ class ArrayExtents<ExtentsV<X0, X1>>
   using ExtentsType = ExtentsV<X0, X1>;
   using BaseClass = ArrayExtentsBase<ExtentsType>;
   using BaseClass::totalNbElement;
-  using DimsType = typename ExtentsType::DimsType;
+  using DynamicDimsType = typename ExtentsType::DynamicDimsType;
 
  public:
 
@@ -308,7 +255,7 @@ class ArrayExtents<ExtentsV<X0, X1>>
   constexpr ARCCORE_HOST_DEVICE ArrayExtents(const BaseClass& rhs)
   : BaseClass(rhs)
   {}
-  constexpr ARCCORE_HOST_DEVICE ArrayExtents(const DimsType& extents)
+  constexpr ARCCORE_HOST_DEVICE ArrayExtents(const DynamicDimsType& extents)
   : BaseClass(extents)
   {
   }
@@ -335,7 +282,7 @@ class ArrayExtents<ExtentsV<X0, X1, X2>>
   using ExtentsType = ExtentsV<X0, X1, X2>;
   using BaseClass = ArrayExtentsBase<ExtentsType>;
   using BaseClass::totalNbElement;
-  using DimsType = typename BaseClass::DimsType;
+  using DynamicDimsType = typename BaseClass::DynamicDimsType;
 
  public:
 
@@ -343,7 +290,7 @@ class ArrayExtents<ExtentsV<X0, X1, X2>>
   constexpr ARCCORE_HOST_DEVICE ArrayExtents(const BaseClass& rhs)
   : BaseClass(rhs)
   {}
-  constexpr ARCCORE_HOST_DEVICE ArrayExtents(const DimsType& extents)
+  constexpr ARCCORE_HOST_DEVICE ArrayExtents(const DynamicDimsType& extents)
   : BaseClass(extents)
   {
   }
@@ -371,7 +318,7 @@ class ArrayExtents<ExtentsV<X0, X1, X2, X3>>
   using ExtentsType = ExtentsV<X0, X1, X2, X3>;
   using BaseClass = ArrayExtentsBase<ExtentsType>;
   using BaseClass::totalNbElement;
-  using DimsType = typename BaseClass::DimsType;
+  using DynamicDimsType = typename BaseClass::DynamicDimsType;
 
  public:
 
@@ -379,7 +326,7 @@ class ArrayExtents<ExtentsV<X0, X1, X2, X3>>
   constexpr ARCCORE_HOST_DEVICE ArrayExtents(const BaseClass& rhs)
   : BaseClass(rhs)
   {}
-  constexpr ARCCORE_HOST_DEVICE ArrayExtents(const DimsType& extents)
+  constexpr ARCCORE_HOST_DEVICE ArrayExtents(const DynamicDimsType& extents)
   : BaseClass(extents)
   {
   }
@@ -415,7 +362,7 @@ class ArrayExtentsWithOffset<ExtentsV<X0>, LayoutType>
   using BaseClass::getIndices;
   using BaseClass::totalNbElement;
   using Layout = typename LayoutType::Layout1Type;
-  using DimsType = typename BaseClass::DimsType;
+  using DynamicDimsType = typename BaseClass::DynamicDimsType;
   using IndexType = typename BaseClass::IndexType;
 
  public:
@@ -426,7 +373,7 @@ class ArrayExtentsWithOffset<ExtentsV<X0>, LayoutType>
   : BaseClass(rhs)
   {
   }
-  constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(const DimsType& rhs)
+  constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(const DynamicDimsType& rhs)
   : BaseClass(rhs)
   {
   }
@@ -466,7 +413,7 @@ class ArrayExtentsWithOffset<ExtentsV<X0, X1>, LayoutType>
   using BaseClass::getIndices;
   using BaseClass::totalNbElement;
   using Layout = typename LayoutType::Layout2Type;
-  using DimsType = typename BaseClass::DimsType;
+  using DynamicDimsType = typename BaseClass::DynamicDimsType;
   using IndexType = typename BaseClass::IndexType;
 
  public:
@@ -477,7 +424,7 @@ class ArrayExtentsWithOffset<ExtentsV<X0, X1>, LayoutType>
   : BaseClass(rhs)
   {
   }
-  constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(const DimsType& rhs)
+  constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(const DynamicDimsType& rhs)
   : BaseClass(rhs)
   {
   }
@@ -517,7 +464,7 @@ class ArrayExtentsWithOffset<ExtentsV<X0, X1, X2>, LayoutType>
   using BaseClass::getIndices;
   using BaseClass::totalNbElement;
   using Layout = typename LayoutType::Layout3Type;
-  using DimsType = typename BaseClass::DimsType;
+  using DynamicDimsType = typename BaseClass::DynamicDimsType;
   using IndexType = typename BaseClass::IndexType;
 
  public:
@@ -529,7 +476,7 @@ class ArrayExtentsWithOffset<ExtentsV<X0, X1, X2>, LayoutType>
   {
     _computeOffsets();
   }
-  constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(const DimsType& rhs)
+  constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(const DynamicDimsType& rhs)
   : BaseClass(rhs)
   {
     _computeOffsets();
@@ -583,7 +530,7 @@ class ArrayExtentsWithOffset<ExtentsV<X0, X1, X2, X3>, LayoutType>
   using BaseClass::getIndices;
   using BaseClass::totalNbElement;
   using Layout = typename LayoutType::Layout4Type;
-  using DimsType = typename BaseClass::DimsType;
+  using DynamicDimsType = typename BaseClass::DynamicDimsType;
   using IndexType = typename BaseClass::IndexType;
 
  public:
@@ -595,7 +542,7 @@ class ArrayExtentsWithOffset<ExtentsV<X0, X1, X2, X3>, LayoutType>
   {
     _computeOffsets();
   }
-  constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(const DimsType& rhs)
+  constexpr ARCCORE_HOST_DEVICE ArrayExtentsWithOffset(const DynamicDimsType& rhs)
   : BaseClass(rhs)
   {
     _computeOffsets();

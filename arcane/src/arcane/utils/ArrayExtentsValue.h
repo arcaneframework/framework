@@ -83,7 +83,7 @@ class ArrayExtentsValue<X0>
 
   using ExtentsType = ExtentsV<X0>;
   using IndexType = ArrayIndex<1>;
-  using DimsType = typename ExtentsType::DimsType;
+  using DynamicDimsType = typename ExtentsType::DynamicDimsType;
 
   ArrayExtentsValue() = default;
 
@@ -111,13 +111,13 @@ class ArrayExtentsValue<X0>
   constexpr ARCCORE_HOST_DEVICE Int32 extent0() const { return m_extent0.v; };
 
   //! Liste des dimensions dynamiques
-  constexpr DimsType dynamicExtents() const
+  constexpr DynamicDimsType dynamicExtents() const
   {
     std::array<Int32, ExtentsType::nb_dynamic> x = {};
     Int32 i = 0;
     if constexpr (X0 == DynExtent)
       x[i++] = m_extent0.v;
-    return DimsType(x);
+    return DynamicDimsType(x);
   }
 
  protected:
@@ -129,7 +129,7 @@ class ArrayExtentsValue<X0>
   }
 
   //! Construit une instance avec les N valeurs dynamiques.
-  constexpr ARCCORE_HOST_DEVICE ArrayExtentsValue(DimsType dims)
+  constexpr ARCCORE_HOST_DEVICE ArrayExtentsValue(DynamicDimsType dims)
   {
     ARCANE_UNUSED(dims);
     Int32 i = 0;
@@ -165,7 +165,7 @@ class ArrayExtentsValue<X0,X1>
 
   using ExtentsType = ExtentsV<X0,X1>;
   using IndexType = ArrayIndex<2>;
-  using DimsType = typename ExtentsType::DimsType;
+  using DynamicDimsType = typename ExtentsType::DynamicDimsType;
 
   ArrayExtentsValue() = default;
 
@@ -198,7 +198,7 @@ class ArrayExtentsValue<X0,X1>
   constexpr ARCCORE_HOST_DEVICE Int32 extent1() const { return m_extent1.v; };
 
   //! Liste des dimensions dynamiques
-  constexpr DimsType dynamicExtents() const
+  constexpr DynamicDimsType dynamicExtents() const
   {
     std::array<Int32, ExtentsType::nb_dynamic> x = {};
     Int32 i = 0;
@@ -206,7 +206,7 @@ class ArrayExtentsValue<X0,X1>
       x[i++] = m_extent0.v;
     if constexpr (X1 == DynExtent)
       x[i++] = m_extent1.v;
-    return DimsType(x);
+    return DynamicDimsType(x);
   }
 
  protected:
@@ -220,7 +220,7 @@ class ArrayExtentsValue<X0,X1>
   }
 
   //! Construit une instance avec les N valeurs dynamiques.
-  constexpr ARCCORE_HOST_DEVICE ArrayExtentsValue(DimsType dims)
+  constexpr ARCCORE_HOST_DEVICE ArrayExtentsValue(DynamicDimsType dims)
   {
     ARCANE_UNUSED(dims);
     Int32 i = 0;
@@ -260,8 +260,7 @@ class ArrayExtentsValue<X0,X1,X2>
 
   using ExtentsType = ExtentsV<X0,X1,X2>;
   using IndexType = ArrayIndex<3>;
-  using DimsType = typename ExtentsType::DimsType;
-
+  using DynamicDimsType = typename ExtentsType::DynamicDimsType;
   ArrayExtentsValue() = default;
 
   template<Int32 I> constexpr ARCCORE_HOST_DEVICE Int32 constExtent() const
@@ -299,7 +298,7 @@ class ArrayExtentsValue<X0,X1,X2>
   constexpr ARCCORE_HOST_DEVICE Int32 extent2() const { return m_extent2.v; };
 
   //! Liste des dimensions dynamiques
-  constexpr DimsType dynamicExtents() const
+  constexpr DynamicDimsType dynamicExtents() const
   {
     std::array<Int32, ExtentsType::nb_dynamic> x = {};
     Int32 i = 0;
@@ -309,7 +308,7 @@ class ArrayExtentsValue<X0,X1,X2>
       x[i++] = m_extent1.v;
     if constexpr (X2 == DynExtent)
       x[i++] = m_extent2.v;
-    return DimsType(x);
+    return DynamicDimsType(x);
   }
 
  protected:
@@ -325,7 +324,7 @@ class ArrayExtentsValue<X0,X1,X2>
   }
 
   //! Construit une instance avec les N valeurs dynamiques.
-  constexpr ARCCORE_HOST_DEVICE ArrayExtentsValue(DimsType dims)
+  constexpr ARCCORE_HOST_DEVICE ArrayExtentsValue(DynamicDimsType dims)
   {
     ARCANE_UNUSED(dims);
     Int32 i = 0;
@@ -369,7 +368,7 @@ class ArrayExtentsValue<X0,X1,X2,X3>
 
   using ExtentsType = ExtentsV<X0,X1,X2,X3>;
   using IndexType = ArrayIndex<4>;
-  using DimsType = typename ExtentsType::DimsType;
+  using DynamicDimsType = typename ExtentsType::DynamicDimsType;
 
   ArrayExtentsValue() = default;
 
@@ -414,7 +413,7 @@ class ArrayExtentsValue<X0,X1,X2,X3>
   constexpr ARCCORE_HOST_DEVICE Int32 extent3() const { return m_extent3.v; };
 
   //! Liste des dimensions dynamiques
-  constexpr DimsType dynamicExtents() const
+  constexpr DynamicDimsType dynamicExtents() const
   {
     std::array<Int32, ExtentsType::nb_dynamic> x = {};
     Int32 i = 0;
@@ -426,7 +425,7 @@ class ArrayExtentsValue<X0,X1,X2,X3>
       x[i++] = m_extent2.v;
     if constexpr (X3 == DynExtent)
       x[i++] = m_extent3.v;
-    return DimsType(x);
+    return DynamicDimsType(x);
   }
 
  protected:
@@ -444,7 +443,7 @@ class ArrayExtentsValue<X0,X1,X2,X3>
   }
 
   //! Construit une instance avec les N valeurs dynamiques.
-  ARCCORE_HOST_DEVICE ArrayExtentsValue(DimsType dims)
+  ARCCORE_HOST_DEVICE ArrayExtentsValue(DynamicDimsType dims)
   {
     ARCANE_UNUSED(dims);
     Int32 i = 0;

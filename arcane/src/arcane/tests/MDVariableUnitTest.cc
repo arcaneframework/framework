@@ -21,6 +21,7 @@
 #include "arcane/IVariableMng.h"
 #include "arcane/VariableTypes.h"
 #include "arcane/ServiceFactory.h"
+#include "arcane/MeshMDVariableRef.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 
@@ -30,118 +31,6 @@
 namespace ArcaneTest
 {
 using namespace Arcane;
-
-template <typename ItemType, typename DataType, typename ExtentType>
-class ItemVariableArrayAsMDRefT;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <typename ItemType, typename DataType, typename MDDimType>
-class ItemVariableArrayAsMDRefDynamicBaseT
-: public VariableRef
-{
- private:
-
-  class CustomVariableRef
-  : public MeshVariableArrayRefT<ItemType, DataType>
-  {
-   public:
-
-    using BaseClass = MeshVariableArrayRefT<ItemType, DataType>;
-    using VariableType = typename BaseClass::PrivatePartType;
-    using ValueDataType = typename VariableType::ValueDataType;
-
-   public:
-
-    explicit CustomVariableRef(const VariableBuildInfo& vbi)
-    : BaseClass(vbi)
-    {
-    }
-
-   public:
-
-    ValueDataType* trueData() { return this->m_private_part->trueData(); }
-  };
-
- public:
-
-  using UnderlyingVariableType = MeshVariableArrayRefT<ItemType, DataType>;
-  using MDSpanType = MDSpan<DataType, MDDimType, RightLayout>;
-  using ItemLocalIdType = typename ItemType::LocalIdType;
-
- public:
-
-  explicit ItemVariableArrayAsMDRefDynamicBaseT(const VariableBuildInfo& b)
-  : VariableRef()
-  , m_underlying_var(b)
-  {
-    _internalAssignVariable(m_underlying_var);
-  }
-
-  UnderlyingVariableType& underlyingVariable() { return m_underlying_var; }
-
- protected:
-
-  void updateFromInternal() override
-  {
-    // ATTENTION à ne pas utiliser underlying_var directement car la vue
-    // associée sur les entités n'est pas forcément remise à jour.
-    IData* data = this->m_underlying_var.variable()->data();
-    ArrayShape shape = data->shape();
-    //std::cout << "SHAPE=" << shape.dimensions() << "\n";
-    auto* true_data = m_underlying_var.trueData();
-    auto array_view = true_data->view();
-    Int32 dim0_size = array_view.dim1Size();
-    m_mdspan = MDSpanType(array_view.data(), { dim0_size, shape.dimension(0), shape.dimension(1) });
-  }
-
- protected:
-
-  CustomVariableRef m_underlying_var;
-  MDSpanType m_mdspan;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <typename ItemType, typename DataType>
-class ItemVariableArrayAsMDRefT<ItemType, DataType, MDDim2>
-: public ItemVariableArrayAsMDRefDynamicBaseT<ItemType, DataType, MDDim3>
-{
- public:
-
-  using BaseClass = ItemVariableArrayAsMDRefDynamicBaseT<ItemType, DataType, MDDim3>;
-  using ItemLocalIdType = typename ItemType::LocalIdType;
-  using MDSpanType = typename BaseClass::MDSpanType;
-
- public:
-
-  explicit ItemVariableArrayAsMDRefT(const VariableBuildInfo& b)
-  : BaseClass(b)
-  {}
-
- public:
-
-  DataType& operator()(ItemLocalIdType id, Int32 i1, Int32 i2)
-  {
-    return this->m_mdspan(id.localId(), i1, i2);
-  }
-  const DataType& operator()(ItemLocalIdType id, Int32 i1, Int32 i2) const
-  {
-    return this->m_mdspan(id.localId(), i1, i2);
-  }
-
-  void reshape(Int32 dim1, Int32 dim2)
-  {
-    ArrayShape shape;
-    shape.setNbDimension(2);
-    shape.setDimension(0, dim1);
-    shape.setDimension(1, dim2);
-    //this->m_underlying_var.variable()->data()->setShape(shape);
-    this->m_underlying_var.resizeAndReshape(shape);
-  }
-};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -210,16 +99,23 @@ void MDVariableUnitTest::
 _testCustomVariable()
 {
   info() << "TEST CUSTOM VARIABLE";
-  using MyVariableRef2 = ItemVariableArrayAsMDRefT<Cell, Real, MDDim2>;
+  using MyVariableRef2 = MeshMDVariableRefT<Cell, Real, MDDim2>;
+  using MyVariableRef3 = MeshMDVariableRefT<Cell, Real, MDDim3>;
 
   MyVariableRef2 my_var(VariableBuildInfo(mesh(), "TestCustomVar"));
-  my_var.reshape(3, 4);
+  my_var.reshape({ 3, 4 });
   info() << "MyCustomVar=" << my_var.name();
   ENUMERATE_ (Cell, icell, allCells()) {
     my_var(icell, 1, 2) = 3.0;
     Real x = my_var(icell, 1, 2);
     if (x != 3.0)
-      ARCANE_FATAL("Bad value");
+      ARCANE_FATAL("Bad value (2)");
+  }
+  MyVariableRef3 my_var3(VariableBuildInfo(mesh(), "TestCustomVar"));
+  ENUMERATE_ (Cell, icell, allCells()) {
+    Real x = my_var3(icell, 1, 2, 0);
+    if (x != 3.0)
+      ARCANE_FATAL("Bad value (3)");
   }
 }
 
