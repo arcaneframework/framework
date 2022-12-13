@@ -296,6 +296,86 @@ class MeshVectorMDVariableRefT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe gérant une variable multi-dimension de type 'NumMatrix' sur une entité du maillage.
+ *
+ * \warning API en cours de définition. Ne pas utiliser en dehors de Arcane.
+ */
+template <typename ItemType, typename DataType, int Row, int Column, typename Extents>
+class MeshMatrixMDVariableRefT
+: public MeshMDVariableRefBaseT<ItemType, DataType, typename Extents::template AddedFirstLastLastExtentsType<DynExtent, Row, Column>>
+{
+  using NumMatrixType = NumMatrix<DataType, Row, Column>;
+  using AddedFirstLastLastExtentsType = typename Extents::template AddedFirstLastLastExtentsType<DynExtent, Row, Column>;
+  using AddedFirstExtentsType = typename Extents::template AddedFirstExtentsType<DynExtent>;
+  static_assert(Extents::rank() == 1, "Only Extents of rank 1 is implemented");
+
+ public:
+
+  using BaseClass = MeshMDVariableRefBaseT<ItemType, DataType, AddedFirstLastLastExtentsType>;
+  using ItemLocalIdType = typename ItemType::LocalIdType;
+  using MDSpanType = MDSpan<NumMatrixType, AddedFirstExtentsType, RightLayout>;
+  static constexpr int nb_dynamic = Extents::nb_dynamic;
+
+ public:
+
+  explicit MeshMatrixMDVariableRefT(const VariableBuildInfo& b)
+  : BaseClass(b)
+  {}
+
+ public:
+
+  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 1, void>>
+  NumMatrixType& operator()(ItemLocalIdType id, Int32 i1)
+  {
+    return m_matrix_mdspan(id.localId(), i1);
+  }
+
+  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 1, void>>
+  const NumMatrixType& operator()(ItemLocalIdType id, Int32 i1) const
+  {
+    return m_matrix_mdspan(id.localId(), i1);
+  }
+
+  /*!
+   * \brief Change la forme de la donnée.
+   *
+   * Le nombre d'éléments de \a dims doit correspondre aux nombre de valeurs
+   * dynamiques de \a Extents.
+   */
+  void reshape(std::array<Int32, Extents::nb_dynamic> dims)
+  {
+    std::array<Int32, nb_dynamic + 2> full_dims;
+    // On ajoute 'Row' et 'Column' à la fin des dimensions.
+    for (int i = 0; i < nb_dynamic; ++i)
+      full_dims[i] = dims[i];
+    full_dims[nb_dynamic] = Row;
+    full_dims[nb_dynamic + 1] = Column;
+    ArrayShape shape(full_dims);
+    this->m_underlying_var.resizeAndReshape(shape);
+  }
+
+ protected:
+
+  void updateFromInternal() override
+  {
+    BaseClass::updateFromInternal();
+    // Positionne la valeur de m_vector_mdspan.
+    // Il aura les mêmes dimensions que m_mdspan sauf qu'on
+    // enlève la dernière dimension et qu'on change le type
+    // de 'DataType' en 'NumMatrix<DataType,Row,Column>.
+    DataType* v = this->m_mdspan.to1DSpan().data();
+    NumMatrixType* nv = reinterpret_cast<NumMatrixType*>(v);
+    m_matrix_mdspan = MDSpanType(nv, this->m_mdspan.extents().dynamicExtents());
+  }
+
+ private:
+
+  MDSpanType m_matrix_mdspan;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 } // namespace Arcane
 
