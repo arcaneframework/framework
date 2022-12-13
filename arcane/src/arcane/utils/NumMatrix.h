@@ -260,7 +260,7 @@ class ARCANE_UTILS_EXPORT NumMatrix
    */
   friend constexpr ARCCORE_HOST_DEVICE bool operator!=(const ThatClass& a, const ThatClass& b)
   {
-    return !operator==(b);
+    return !(a == b);
   }
 
  public:
