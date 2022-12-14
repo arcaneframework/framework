@@ -1,9 +1,4 @@
-﻿cmake_minimum_required(VERSION 3.12.0)
-
-# pour VERSION dans la commande project
-cmake_policy(SET CMP0048 NEW)
-cmake_policy(SET CMP0023 NEW)
-cmake_policy(SET CMP0074 NEW)
+﻿cmake_minimum_required(VERSION 3.21.0)
 
 file(READ "version" AXLSTAR_VERSION_STR_FULL)
 string(REPLACE "_dev" "" AXLSTAR_VERSION ${AXLSTAR_VERSION_STR_FULL})
@@ -18,7 +13,7 @@ project(Axlstar
 # TODO: a supprimer, utiliser éventuellement 'Axlstar_ROOT'
 set(AXLSTAR_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 
-find_package(Arccon REQUIRED)
+find_package(Arccon "1.5.0" REQUIRED)
 list(APPEND CMAKE_MODULE_PATH ${ARCCON_MODULE_PATH})
 include(${ARCCON_CMAKE_COMMANDS})
 
@@ -30,26 +25,15 @@ find_package(ArcDependencies "1.5.0" REQUIRED)
 message(STATUS "ARCDEPENDENCIES_NUGET_SOURCES_DIR = '${ARCDEPENDENCIES_NUGET_SOURCES_DIR}'")
 
 # ----------------------------------------------------------------------------
-# Pour le support de .NET, on peut utiliser soit 'mono', doit 'coreclr' ('dotnet')
+# Pour le support de .NET, on ne supporte maintenant que 'coreclr' et plus 'mono'.
 # Si non spécifié, on prend 'coreclr' par défaut.
-# TODO: détecter en fonction de ce qui est disponible
-# TODO: utiliser ce qui est dans Arccon
 if (NOT AXLSTAR_DOTNET_RUNNER)
   set(AXLSTAR_DOTNET_RUNNER coreclr)
 endif()
 message(STATUS "AXLSTAR_DOTNET_RUNNER is '${AXLSTAR_DOTNET_RUNNER}'")
 
 if (AXLSTAR_DOTNET_RUNNER STREQUAL mono)
-  get_filename_component(MONO_EXEC_PATH ${MONO_EXEC} PATH)
-  set(DOTNET_RUNNER_EXEC ${MONO_EXEC})
-  set(DOTNET_BUILDER_EXEC ${MONO_EXEC_PATH}/msbuild)
-  set(DOTNET_RUNNER_ARGS --debug)
-  set(DLL_EXE_EXTENSION .exe)
-  if (NOT EXISTS ${DOTNET_BUILDER_EXEC})
-    message(FATAL_ERROR
-      "No exec named 'msbuild' found in mono directory '${MONO_EXEC_PATH}'."
-      "'msbuild is required to build with mono")
-  endif()
+  message(FATAL_ERROR "Building with 'mono' is no longer supported. Only 'coreclr' is supported")
 elseif (AXLSTAR_DOTNET_RUNNER STREQUAL coreclr)
   # Fichier pour rechercher .NetCore.
   include(CMake/FindDotNetCore.cmake)
@@ -57,7 +41,7 @@ elseif (AXLSTAR_DOTNET_RUNNER STREQUAL coreclr)
   set(DOTNET_BUILDER_EXEC ${DOTNET_EXEC})
   set(DLL_EXE_EXTENSION .dll)
 else()
-  message(FATAL_ERROR "Invalid value '${AXLSTAR_DOTNET_RUNNER}' for AXLSTAR_DOTNET_RUNNER. Only 'mono' or 'coreclr' is supported")
+  message(FATAL_ERROR "Invalid value '${AXLSTAR_DOTNET_RUNNER}' for AXLSTAR_DOTNET_RUNNER. Only 'coreclr' is supported")
 endif()
 
 # ----------------------------------------------------------------------------
@@ -100,7 +84,7 @@ endif()
 
 set(AXLSTAR_MSBUILD_COMMON_COMMAND_ARGS /p:Configuration=Debug /p:Platform=\"Any CPU\" /p:RestoreNoCache=true ${_RESTORE_SOURCE_ARGS} /p:BinDir=${CMAKE_BINARY_DIR}/axlstar_obj/ ${AXLSTAR_MSBUILD_RESTORE_ARGS})
 
-# Avec 'dotnet', la version du framework utilisée est 'netcoreapp2.2'
+# Avec 'dotnet', la version du framework utilisée est 'netcoreapp6' (ou 'net6' c'est la même chose)
 if (AXLSTAR_DOTNET_RUNNER STREQUAL coreclr)
   # Il semble que cette commande peut potentiellement bloquer (ne pas rendre la main à la fin de l'exécution)
   # Cela semble le cas uniquement si on utiliser 'publish' (avec 'build' cela ne pose pas de problèmes)
@@ -111,9 +95,6 @@ if (AXLSTAR_DOTNET_RUNNER STREQUAL coreclr)
   # La méthode 1. évite de laisser des processus tourner et n'ajoute pas de temps à la compilation
   # donc on l'utilise par défaut.
   set(AXLSTAR_BUILD_COMMAND_ARGS publish /nodeReuse:false /v:Normal /p:UseSharedCompilation=false ${AXL_SOLUTION_FILE} /p:AxlToolsExeFramework=netcoreapp${CORECLR_VERSION} -o ${AXLSTAR_PUBLISH_DIR}/)
-endif()
-if (AXLSTAR_DOTNET_RUNNER STREQUAL mono)
-  set(AXLSTAR_BUILD_COMMAND_ARGS /v:Normal /Restore /p:AxlToolsExeFramework=net461 /p:OutputPath=${AXLSTAR_PUBLISH_DIR}/)
 endif()
 set(AXLSTAR_BUILD_COMMAND_ARGS ${AXLSTAR_BUILD_COMMAND_ARGS} ${AXLSTAR_MSBUILD_COMMON_COMMAND_ARGS})
 
@@ -148,7 +129,7 @@ arccon_dotnet_install_publish_directory(DIRECTORY ${AXLSTAR_PUBLISH_DIR}
 
 # ----------------------------------------------------------------------------
 # Function pour configurer un script permettant de lancer une commande C#.
-# Le script préfixe la commande par le lanceur utilisé (coreclr ou mono)
+# Le script préfixe la commande par le lanceur utilisé
 function(axlstar_configure_runner_script file_name command_name)
   set(DLL_NAME Axlstar.Driver${DLL_EXE_EXTENSION})
   set(COMMAND_NAME ${command_name})
