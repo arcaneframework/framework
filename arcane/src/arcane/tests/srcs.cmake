@@ -54,6 +54,7 @@ set(ARCANE_SOURCES
   ExchangeItemsUnitTest.cc
   anyitem/AnyItemTester.cc
   dof/DoFTester.cc
+  dof/DoFNodeTestService.cc
   graph/GraphUnitTest.cc
   inout/InOutTester.cc
   geometry/GeometryUnitTest.cc
