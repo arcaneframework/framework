@@ -139,7 +139,7 @@ class MeshMDVariableRefT
 : public MeshMDVariableRefBaseT<ItemType, DataType, typename Extents::template AddedFirstExtentsType<DynExtent>>
 {
   using AddedFirstExtentsType = typename Extents::template AddedFirstExtentsType<DynExtent>;
-  static_assert(Extents::rank() >= 1 && Extents::rank() <= 3, "Only Extents of rank 1, 2 or 3 are implemented");
+  static_assert(Extents::rank() >= 0 && Extents::rank() <= 3, "Only Extents of rank 0, 1, 2 or 3 are implemented");
 
  public:
 
@@ -153,6 +153,19 @@ class MeshMDVariableRefT
   {}
 
  public:
+
+  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 0, void>>
+  DataType& operator()(ItemLocalIdType id)
+  {
+    return this->m_mdspan(id.localId());
+  }
+
+  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 0, void>>
+  const DataType& operator()(ItemLocalIdType id) const
+  {
+    return this->m_mdspan(id.localId());
+  }
+
 
   template <typename X = Extents, typename = std::enable_if_t<X::rank() == 1, void>>
   DataType& operator()(ItemLocalIdType id, Int32 i1)
@@ -217,7 +230,7 @@ class MeshVectorMDVariableRefT
   using NumVectorType = NumVector<DataType, Size>;
   using AddedFirstLastExtentsType = typename Extents::template AddedFirstLastExtentsType<DynExtent, Size>;
   using AddedFirstExtentsType = typename Extents::template AddedFirstExtentsType<DynExtent>;
-  static_assert(Extents::rank() >= 1 && Extents::rank() <= 2, "Only Extents of rank 1 or 2 are implemented");
+  static_assert(Extents::rank() >= 0 && Extents::rank() <= 2, "Only Extents of rank 0, 1 or 2 are implemented");
 
  public:
 
@@ -233,6 +246,18 @@ class MeshVectorMDVariableRefT
   {}
 
  public:
+
+  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 0, void>>
+  NumVectorType& operator()(ItemLocalIdType id)
+  {
+    return m_vector_mdspan(id.localId());
+  }
+
+  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 0, void>>
+  const NumVectorType& operator()(ItemLocalIdType id) const
+  {
+    return m_vector_mdspan(id.localId());
+  }
 
   template <typename X = Extents, typename = std::enable_if_t<X::rank() == 1, void>>
   NumVectorType& operator()(ItemLocalIdType id, Int32 i1)
@@ -308,7 +333,7 @@ class MeshMatrixMDVariableRefT
   using NumMatrixType = NumMatrix<DataType, Row, Column>;
   using AddedFirstLastLastExtentsType = typename Extents::template AddedFirstLastLastExtentsType<DynExtent, Row, Column>;
   using AddedFirstExtentsType = typename Extents::template AddedFirstExtentsType<DynExtent>;
-  static_assert(Extents::rank() == 1, "Only Extents of rank 1 is implemented");
+  static_assert(Extents::rank() >= 0 && Extents::rank() <= 1, "Only Extents of rank 0 or 1 are implemented");
 
  public:
 
@@ -324,6 +349,18 @@ class MeshMatrixMDVariableRefT
   {}
 
  public:
+
+  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 0, void>>
+  NumMatrixType& operator()(ItemLocalIdType id)
+  {
+    return m_matrix_mdspan(id.localId());
+  }
+
+  template <typename X = Extents, typename = std::enable_if_t<X::rank() == 0, void>>
+  const NumMatrixType& operator()(ItemLocalIdType id) const
+  {
+    return m_matrix_mdspan(id.localId());
+  }
 
   template <typename X = Extents, typename = std::enable_if_t<X::rank() == 1, void>>
   NumMatrixType& operator()(ItemLocalIdType id, Int32 i1)

@@ -137,6 +137,19 @@ _testCustomVariable()
       }
     }
   }
+  {
+    // Teste variable 0D
+    m_scalar_var1d.reshape({});
+    ENUMERATE_ (Cell, icell, allCells()) {
+      m_scalar_var0d(icell) = static_cast<Real>(icell.itemLocalId() + 1);
+    }
+    ENUMERATE_ (Cell, icell, allCells()) {
+      Real ref_value = static_cast<Real>(icell.itemLocalId() + 1);
+      Real r = m_scalar_var0d(icell);
+      if (r != ref_value)
+        ARCANE_FATAL("Bad value (4)");
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -147,6 +160,24 @@ _testVectorMDVariable()
 {
   info() << "TEST VECTOR VARIABLE";
 
+  // Variable 0D
+  {
+    m_vector_var0d.reshape({});
+    ENUMERATE_ (Cell, icell, allCells()) {
+      Real r0 = static_cast<Real>(icell.itemLocalId() + 1);
+      RealN3 x(r0, r0 + 1.5, r0 + 2.3);
+      m_vector_var0d(icell) = x;
+    }
+    ENUMERATE_ (Cell, icell, allCells()) {
+      Real r0 = static_cast<Real>(icell.itemLocalId() + 1);
+      RealN3 ref_value(r0, r0 + 1.5, r0 + 2.3);
+      RealN3 r = m_vector_var0d(icell);
+      if (r != ref_value)
+        ARCANE_FATAL("Bad value (1)");
+    }
+  }
+
+  // Variable 1D
   {
     const Int32 size2 = 12;
     m_vector_var1d.reshape({ size2 });
@@ -163,7 +194,7 @@ _testVectorMDVariable()
         RealN3 ref_value(r0, r0 + 1.5, r0 + 2.3);
         RealN3 r = m_vector_var1d(icell, i);
         if (r != ref_value)
-          ARCANE_FATAL("Bad value (4)");
+          ARCANE_FATAL("Bad value (2)");
       }
     }
   }
@@ -177,6 +208,24 @@ _testMatrixMDVariable()
 {
   info() << "TEST MATRIX VARIABLE";
 
+  // Variable 0D
+  {
+    m_matrix_var0d.reshape({});
+    ENUMERATE_ (Cell, icell, allCells()) {
+      Real r0 = static_cast<Real>(icell.itemLocalId() + 1);
+      RealN2x2 x({ r0, r0 + 1.5 }, { r0 + 2.3, r0 - 4.3 });
+      m_matrix_var0d(icell) = x;
+    }
+    ENUMERATE_ (Cell, icell, allCells()) {
+      Real r0 = static_cast<Real>(icell.itemLocalId() + 1);
+      RealN2x2 ref_value({ r0, r0 + 1.5 }, { r0 + 2.3, r0 - 4.3 });
+      RealN2x2 r = m_matrix_var0d(icell);
+      if (r != ref_value)
+        ARCANE_FATAL("Bad value (5)");
+    }
+  }
+
+  // Variable 1D
   {
     const Int32 size2 = 7;
     m_matrix_var1d.reshape({ size2 });

@@ -9,6 +9,10 @@
   <interface name="Arcane::IUnitTest" inherited="false" />
   <variables>
 
+    <!-- Variable multi-dim 0D de 'Real' -->
+    <variable field-name="scalar_var0d" name="TestCustomVar0D" data-type="real" item-kind="cell" dim="1"
+              internal-cpp-typename="Arcane::MeshMDVariableRefT &lt; Arcane::Cell, Arcane::Real, Arcane::MDDim0 &gt;" />
+
     <!-- Variable multi-dim 1D de 'Real' -->
     <variable field-name="scalar_var1d" name="TestCustomVar1D" data-type="real" item-kind="cell" dim="1"
               internal-cpp-typename="Arcane::MeshMDVariableRefT &lt; Arcane::Cell, Arcane::Real, Arcane::MDDim1 &gt;" />
@@ -21,11 +25,19 @@
     <variable field-name="scalar_var2d_as_3d" name="TestCustomVar2D" data-type="real" item-kind="cell" dim="1"
               internal-cpp-typename="Arcane::MeshMDVariableRefT &lt; Arcane::Cell, Arcane::Real, Arcane::MDDim3 &gt;" />
 
-    <!-- Variable NumVector<Real,3> -->
+    <!-- Variable multi-dim 0D de NumVector<Real,3> -->
+    <variable field-name="vector_var0d" name="TestCustomVectorVar0D" data-type="real" item-kind="cell" dim="1"
+              internal-cpp-typename="Arcane::MeshVectorMDVariableRefT &lt; Arcane::Cell, Arcane::Real, 3, Arcane::MDDim0 &gt;" />
+
+    <!-- Variable multi-dim 1D de NumVector<Real,3> -->
     <variable field-name="vector_var1d" name="TestCustomVectorVar1D" data-type="real" item-kind="cell" dim="1"
               internal-cpp-typename="Arcane::MeshVectorMDVariableRefT &lt; Arcane::Cell, Arcane::Real, 3, Arcane::MDDim1 &gt;" />
 
-    <!-- Variable NumMatrix<Real,2,2> -->
+    <!-- Variable multi-dim 0D de NumMatrix<Real,2,2> -->
+    <variable field-name="matrix_var0d" name="TestCustomMatrixVar0D" data-type="real" item-kind="cell" dim="1"
+              internal-cpp-typename="Arcane::MeshMatrixMDVariableRefT &lt; Arcane::Cell, Arcane::Real, 2, 2, Arcane::MDDim0 &gt;" />
+
+    <!-- Variable multi-dim 1D de NumMatrix<Real,2,2> -->
     <variable field-name="matrix_var1d" name="TestCustomMatrixVar1D" data-type="real" item-kind="cell" dim="1"
               internal-cpp-typename="Arcane::MeshMatrixMDVariableRefT &lt; Arcane::Cell, Arcane::Real, 2, 2, Arcane::MDDim1 &gt;" />
   </variables>
