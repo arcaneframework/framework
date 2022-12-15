@@ -613,7 +613,7 @@ class ItemTraitsT<Particle>
   static eItemKind kind() { return IK_Particle; }
 
   //! Nom de la famille par défaut associée
-  static const char* defaultFamilyName() { return 0; }
+  static const char* defaultFamilyName() { return nullptr; }
 };
 
 
@@ -634,12 +634,15 @@ class ItemTraitsT<DoF>
   typedef DoF ItemType;
   //! Type du groupe de l'entité
   typedef DoFGroup ItemGroupType;
+  //! Type du localId()
+  using LocalIdType = ItemLocalIdT<DoF>;
 
  public:
 
   //! Genre de l'entité
   static eItemKind kind() { return IK_DoF; }
 
+  // NOTE: GG: devrait être nullptr car pas de défaut pour la famille de DoF ?
   //! Nom de la famille par défaut associée
   static const char* defaultFamilyName() { return "DoF"; }
 };
@@ -653,6 +656,7 @@ template<typename ItemType>
 class ItemLocalIdTraitsT
 {
  public:
+
   //! Type du localId()
   using LocalIdType = typename ItemTraitsT<ItemType>::LocalIdType;
 };

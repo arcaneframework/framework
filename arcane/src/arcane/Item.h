@@ -1404,6 +1404,8 @@ class DoF
 
  public:
 
+  using LocalIdType = DoFLocalId;
+
   //! Constructeur d'une maille non connectée
   DoF() = default;
 
