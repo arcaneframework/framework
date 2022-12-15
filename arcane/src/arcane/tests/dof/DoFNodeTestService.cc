@@ -134,15 +134,17 @@ _buildDoFs()
   }
   info() << "End build Dofs";
 
+  // Remplit les 3 DoF par les coordonnées des noeuds
+  info() << "Fill DoFs";
   VariableDoFReal dof_var(VariableBuildInfo(dof_family, "DofValues"));
+  VariableNodeReal3& node_coords(mesh()->nodesCoordinates());
   IndexedNodeDoFConnectivityView node_dof(m_node_dof_connectivity->view());
-  ENUMERATE_ (Node, inode, allNodes()) {
+  ENUMERATE_ (Node, inode, ownNodes()) {
     Node node = *inode;
-    Int32 index = 0;
-    for (DoFLocalId dof : node_dof.dofs(node)) {
-      dof_var[dof] = index;
-      ++index;
-    }
+    Real3 coord = node_coords[node];
+    dof_var[node_dof.dofId(node,0)] = coord.x;
+    dof_var[node_dof.dofId(node,1)] = coord.y;
+    dof_var[node_dof.dofId(node,2)] = coord.z;
   }
 }
 
