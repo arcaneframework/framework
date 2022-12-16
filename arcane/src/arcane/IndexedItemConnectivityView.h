@@ -312,7 +312,7 @@ using IndexedNodeFaceConnectivityView = IndexedItemConnectivityViewT<Node,Face>;
 using IndexedNodeCellConnectivityView = IndexedItemConnectivityViewT<Node,Cell>;
 using IndexedNodeDoFConnectivityView = IndexedItemConnectivityViewT<Node,DoF>;
 
-using IndexedDoFDoFConnectivityView = IndexedItemConnectivityViewT<DoF,DoF>;
+using IndexedDoFNodeConnectivityView = IndexedItemConnectivityViewT<DoF,Node>;
 using IndexedDoFEdgeConnectivityView = IndexedItemConnectivityViewT<DoF,Edge>;
 using IndexedDoFFaceConnectivityView = IndexedItemConnectivityViewT<DoF,Face>;
 using IndexedDoFCellConnectivityView = IndexedItemConnectivityViewT<DoF,Cell>;

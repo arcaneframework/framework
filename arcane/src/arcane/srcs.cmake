@@ -132,6 +132,7 @@ set( ARCANE_SOURCES
   GroupIndexTable.h
   InterfaceImpl.cc
   IndexedItemConnectivityView.h
+  IndexedItemConnectivityView.cc
   Item.cc
   Item.h
   ItemConnectivityContainerView.h
