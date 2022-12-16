@@ -80,6 +80,11 @@ Int32 AlephIndexing::
 findWhichLidFromMapMap(IVariable* var,
                        const Item& itm)
 {
+#ifdef ARCANE_CHECK
+  if (itm.null())
+    ARCANE_FATAL("Null item");
+#endif
+
   VarMapIdx::const_iterator iVarMap = m_var_map_idx.find(var);
   // Si la variable n'est même pas encore connue
   // On rajoute une entrée map(map(m_current_idx))
@@ -89,7 +94,7 @@ findWhichLidFromMapMap(IVariable* var,
     String var_idx_name(var->name());
     var_idx_name = var_idx_name + String("_idx");
     VariableItemInt32* var_idx =
-    new VariableItemInt32(VariableBuildInfo(var->meshHandle(),
+    new VariableItemInt32(VariableBuildInfo(var->itemFamily(),
                                             var_idx_name),
                           var->itemKind());
     // On rajoute à notre map la variable '_idx' de cette variable
