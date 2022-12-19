@@ -229,6 +229,18 @@ class DataViewGetterSetter
   {
     return DataViewGetterSetter<typename DataTypeTraitsT<X>::SubscriptType>(&m_ptr->operator[](index));
   }
+
+  template <typename X = DataType> constexpr ARCCORE_HOST_DEVICE auto
+  operator()(Int32 i0) -> DataViewGetterSetter<typename DataTypeTraitsT<X>::FunctionCall1ReturnType>
+  {
+    return DataViewGetterSetter<typename DataTypeTraitsT<X>::FunctionCall1ReturnType>(&m_ptr->operator()(i0));
+  }
+
+  template <typename X = DataType> constexpr ARCCORE_HOST_DEVICE auto
+  operator()(Int32 i0, Int32 i1) -> DataViewGetterSetter<typename DataTypeTraitsT<X>::FunctionCall2ReturnType>
+  {
+    return DataViewGetterSetter<typename DataTypeTraitsT<X>::FunctionCall2ReturnType>(&m_ptr->operator()(i0, i1));
+  }
 };
 
 /*---------------------------------------------------------------------------*/

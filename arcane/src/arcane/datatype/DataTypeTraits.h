@@ -531,6 +531,60 @@ class DataTypeTraitsT<Real3x3>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Spécialisation de DataTypeTraitsT pour le type <tt>NumVector<Real,Size></tt>.
+ */
+template<int Size>
+class DataTypeTraitsT<NumVector<Real,Size>>
+{
+ public:
+
+  //! Type de donnée
+  typedef Real Type;
+
+  //! Type de donnée de base de ce type de donnée
+  typedef Real BasicType;
+
+  //! Type de retour de operator()(Int32) pour ce type
+  using FunctionCall1ReturnType = Real;
+
+  //! Nombre d'éléments du type de base
+  static constexpr int nbBasicType() { return Size; }
+
+  //! Type de donnée de base.
+  static constexpr eBasicDataType basicDataType() { return DataTypeTraitsT<Real>::basicDataType(); }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Spécialisation de DataTypeTraitsT pour le type <tt>NumMatrix<Real,RowSize,ColumnSize></tt>.
+ */
+template<int RowSize,int ColumnSize>
+class DataTypeTraitsT<NumMatrix<Real,RowSize,ColumnSize>>
+{
+ public:
+
+  //! Type de donnée
+  typedef Real Type;
+
+  //! Type de donnée de base de ce type de donnée
+  typedef Real BasicType;
+
+  //! Type de retour de operator()(Int32,Int32) pour ce type
+  using FunctionCall2ReturnType = Real;
+
+  //! Nombre d'éléments du type de base
+  static constexpr int nbBasicType() { return RowSize * ColumnSize; }
+
+  //! Type de donnée de base.
+  static constexpr eBasicDataType basicDataType() { return DataTypeTraitsT<Real>::basicDataType(); }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 } // End namespace Arcane
 
