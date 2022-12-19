@@ -1983,7 +1983,9 @@ addGhostItems(Int64ConstArrayView unique_ids, Int32ArrayView items, Int32ConstAr
 void ItemFamily::
 removeItems2(ItemDataList& item_data_list)
 {
-  ARCANE_ASSERT((m_mesh->itemFamilyNetwork()),("Cannot call ItemFamily::removeItems2 if no ItemFamilyNetwork available."))
+  if (!m_mesh->itemFamilyNetwork())
+    ARCANE_FATAL("Family name='{0}': IMesh::itemFamilyNetwork() is null",name());
+
   ItemData& item_data = item_data_list[itemKind()];
   // 1-Prepare : Get child connectivities and families
   SharedArray<IIncrementalItemConnectivity*> child_connectivities = m_mesh->itemFamilyNetwork()->getChildDependencies(this); // TODO : change return type ? (List to Array ?)
@@ -2137,14 +2139,21 @@ _detachCells2(Int32ConstArrayView local_ids)
 void ItemFamily::
 removeNeedRemoveMarkedItems()
 {
-  if (!m_mesh->itemFamilyNetwork() || !IItemFamilyNetwork::plug_serializer)
-    fatal() << "ItemFamily::removeNeedMarkedItems cannot be called if ItemFamilyNetwork is unplugged.";
+  ItemInternalMap& item_map = itemsMap();
+  if (item_map.count()==0)
+    return;
+
+  if (!m_mesh->itemFamilyNetwork())
+    ARCANE_FATAL("Family name='{0}': IMesh::itemFamilyNetwork() is null",name());
+  if (!IItemFamilyNetwork::plug_serializer)
+    ARCANE_FATAL("family name='{0}': removeNeedMarkedItems() cannot be called if ItemFamilyNetwork is unplugged.");
+  ARCANE_FATAL("FAMILY name={0}",name());
+
   UniqueArray<ItemInternal*> items_to_remove;
   UniqueArray<Int32> items_to_remove_lids;
   items_to_remove.reserve(1000);
   items_to_remove_lids.reserve(1000);
 
-  ItemInternalMap& item_map = itemsMap();
   ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,item_map){
     ItemInternal* item = nbid->value();
     Integer f = item->flags();
