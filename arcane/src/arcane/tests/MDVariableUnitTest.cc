@@ -172,6 +172,15 @@ _testVectorMDVariable()
       Real r0 = static_cast<Real>(icell.itemLocalId() + 1);
       RealN3 ref_value(r0, r0 + 1.5, r0 + 2.3);
       RealN3 r = m_vector_var0d(icell);
+      Real rr0 = m_vector_var0d(icell)(0);
+      Real rr1 = m_vector_var0d(icell)(1);
+      Real rr2 = m_vector_var0d(icell)(2);
+      if (rr0 != ref_value(0))
+        ARCANE_FATAL("Bad valueX (1)");
+      if (rr1 != ref_value(1))
+        ARCANE_FATAL("Bad valueY (1)");
+      if (rr2 != ref_value(2))
+        ARCANE_FATAL("Bad valueZ (1)");
       if (r != ref_value)
         ARCANE_FATAL("Bad value (1)");
     }
@@ -220,6 +229,22 @@ _testMatrixMDVariable()
       Real r0 = static_cast<Real>(icell.itemLocalId() + 1);
       RealN2x2 ref_value({ r0, r0 + 1.5 }, { r0 + 2.3, r0 - 4.3 });
       RealN2x2 r = m_matrix_var0d(icell);
+
+      Real rr00 = m_matrix_var0d(icell)(0, 0);
+      Real rr01 = m_matrix_var0d(icell)(0, 1);
+
+      Real rr10 = m_matrix_var0d(icell)(1, 0);
+      Real rr11 = m_matrix_var0d(icell)(1, 1);
+
+      if (rr00 != ref_value(0, 0))
+        ARCANE_FATAL("Bad valueXX (1)");
+      if (rr01 != ref_value(0, 1))
+        ARCANE_FATAL("Bad valueXY (1)");
+      if (rr10 != ref_value(1, 0))
+        ARCANE_FATAL("Bad valueYX (1)");
+      if (rr11 != ref_value(1, 1))
+        ARCANE_FATAL("Bad valueYY (1)");
+
       if (r != ref_value)
         ARCANE_FATAL("Bad value (5)");
     }
