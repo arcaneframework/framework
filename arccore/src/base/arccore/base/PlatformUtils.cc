@@ -41,9 +41,6 @@
 #include <sys/time.h>
 #endif
 
-// SD: Useless ? Bug with MacOS
-//#include <malloc.h>
-
 #if !defined(ARCCORE_OS_CYGWIN) && !defined(ARCCORE_OS_WIN32)
 #if defined(__i386__)
 #define ARCCORE_HAS_I386_FPU_CONTROL_H
@@ -62,7 +59,7 @@
 // feenableexcept(), fedisableexcept() et fegetexcept()
 // - sous Win32, cela se fait via la méthode _controlfp() mais pour
 // l'instant ce n'est pas utilisé dans Arccore.
-#if defined(ARCCORE_OS_LINUX) && defined(__USE_GNU)
+#if __has_include (<fenv.h>)
 #  include <fenv.h>
 #  define ARCCORE_GLIBC_FENV
 #endif
