@@ -118,6 +118,7 @@ set( ARCANE_SOURCES
   core/materials/IMeshMaterialVariableComputeFunction.h
 
   Data.cc
+  DataView.h
   DataTypeDispatchingDataVisitor.cc
   DataTypeDispatchingDataVisitor.h
   DotNetRuntimeInitialisationInfo.cc

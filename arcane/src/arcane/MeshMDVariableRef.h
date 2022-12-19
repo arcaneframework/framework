@@ -18,7 +18,7 @@
 #include "arcane/utils/ArrayShape.h"
 #include "arcane/utils/MDSpan.h"
 
-#include "arcane/datatype/DataTypeTraits.h"
+#include "arcane/DataView.h"
 
 #include "arcane/MeshVariableArrayRef.h"
 
@@ -231,17 +231,24 @@ template <typename ItemType, typename DataType, int Size, typename Extents>
 class MeshVectorMDVariableRefT
 : public MeshMDVariableRefBaseT<ItemType, DataType, typename Extents::template AddedFirstLastExtentsType<DynExtent, Size>>
 {
+ public:
+
   using NumVectorType = NumVector<DataType, Size>;
+
+ private:
+
   using BasicType = typename DataTypeTraitsT<DataType>::BasicType;
   using AddedFirstLastExtentsType = typename Extents::template AddedFirstLastExtentsType<DynExtent, Size>;
   using AddedFirstExtentsType = typename Extents::template AddedFirstExtentsType<DynExtent>;
+  using BaseClass = MeshMDVariableRefBaseT<ItemType, DataType, AddedFirstLastExtentsType>;
   static_assert(Extents::rank() >= 0 && Extents::rank() <= 2, "Only Extents of rank 0, 1 or 2 are implemented");
-  static_assert(std::is_same_v<DataType,BasicType>,"DataType should be a basic type (Real, Int32, Int64, ... )");
+  static_assert(std::is_same_v<DataType, BasicType>, "DataType should be a basic type (Real, Int32, Int64, ... )");
 
  public:
 
-  using BaseClass = MeshMDVariableRefBaseT<ItemType, DataType, AddedFirstLastExtentsType>;
   using ItemLocalIdType = typename ItemType::LocalIdType;
+  using ReferenceType = DataViewGetterSetter<NumVectorType>;
+  using ConstReferenceType = DataViewGetter<NumVectorType>;
   using MDSpanType = MDSpan<NumVectorType, AddedFirstExtentsType, RightLayout>;
   static constexpr int nb_dynamic = Extents::nb_dynamic;
 
@@ -253,40 +260,46 @@ class MeshVectorMDVariableRefT
 
  public:
 
+  //! Accède à la donnée en lecture/écriture
   template <typename X = Extents, typename = std::enable_if_t<X::rank() == 0, void>>
-  NumVectorType& operator()(ItemLocalIdType id)
+  ReferenceType operator()(ItemLocalIdType id)
   {
-    return m_vector_mdspan(id.localId());
+    return ReferenceType(m_vector_mdspan.ptrAt(id.localId()));
   }
 
+  //! Accède à la donnée en lecture
   template <typename X = Extents, typename = std::enable_if_t<X::rank() == 0, void>>
-  const NumVectorType& operator()(ItemLocalIdType id) const
+  ConstReferenceType operator()(ItemLocalIdType id) const
   {
-    return m_vector_mdspan(id.localId());
+    return ConstReferenceType(m_vector_mdspan.ptrAt(id.localId()));
   }
 
+  //! Accède à la donnée en lecture/écriture
   template <typename X = Extents, typename = std::enable_if_t<X::rank() == 1, void>>
-  NumVectorType& operator()(ItemLocalIdType id, Int32 i1)
+  ReferenceType operator()(ItemLocalIdType id, Int32 i1)
   {
-    return m_vector_mdspan(id.localId(), i1);
+    return ReferenceType(m_vector_mdspan.ptrAt(id.localId(), i1));
   }
 
+  //! Accède à la donnée en lecture
   template <typename X = Extents, typename = std::enable_if_t<X::rank() == 1, void>>
-  const NumVectorType& operator()(ItemLocalIdType id, Int32 i1) const
+  ConstReferenceType operator()(ItemLocalIdType id, Int32 i1) const
   {
-    return m_vector_mdspan(id.localId(), i1);
+    return ConstReferenceType(m_vector_mdspan.ptrAt(id.localId(), i1));
   }
 
+  //! Accède à la donnée en lecture/écriture
   template <typename X = Extents, typename = std::enable_if_t<X::rank() == 2, void>>
-  NumVectorType& operator()(ItemLocalIdType id, Int32 i1, Int32 i2)
+  ReferenceType operator()(ItemLocalIdType id, Int32 i1, Int32 i2)
   {
-    return m_vector_mdspan(id.localId(), i1, i2);
+    return ReferenceType(m_vector_mdspan.ptrAt(id.localId(), i1, i2));
   }
 
+  //! Accède à la donnée en lecture
   template <typename X = Extents, typename = std::enable_if_t<X::rank() == 2, void>>
-  const NumVectorType& operator()(ItemLocalIdType id, Int32 i1, Int32 i2) const
+  ConstReferenceType operator()(ItemLocalIdType id, Int32 i1, Int32 i2) const
   {
-    return m_vector_mdspan(id.localId(), i1, i2);
+    return ConstReferenceType(m_vector_mdspan.ptrAt(id.localId(), i1, i2));
   }
 
   /*!
@@ -336,17 +349,24 @@ template <typename ItemType, typename DataType, int Row, int Column, typename Ex
 class MeshMatrixMDVariableRefT
 : public MeshMDVariableRefBaseT<ItemType, DataType, typename Extents::template AddedFirstLastLastExtentsType<DynExtent, Row, Column>>
 {
+ public:
+
   using NumMatrixType = NumMatrix<DataType, Row, Column>;
+
+ private:
+
   using BasicType = typename DataTypeTraitsT<DataType>::BasicType;
   using AddedFirstLastLastExtentsType = typename Extents::template AddedFirstLastLastExtentsType<DynExtent, Row, Column>;
   using AddedFirstExtentsType = typename Extents::template AddedFirstExtentsType<DynExtent>;
+  using BaseClass = MeshMDVariableRefBaseT<ItemType, DataType, AddedFirstLastLastExtentsType>;
   static_assert(Extents::rank() >= 0 && Extents::rank() <= 1, "Only Extents of rank 0 or 1 are implemented");
-  static_assert(std::is_same_v<DataType,BasicType>,"DataType should be a basic type (Real, Int32, Int64, ... )");
+  static_assert(std::is_same_v<DataType, BasicType>, "DataType should be a basic type (Real, Int32, Int64, ... )");
 
  public:
 
-  using BaseClass = MeshMDVariableRefBaseT<ItemType, DataType, AddedFirstLastLastExtentsType>;
   using ItemLocalIdType = typename ItemType::LocalIdType;
+  using ReferenceType = DataViewGetterSetter<NumMatrixType>;
+  using ConstReferenceType = DataViewGetter<NumMatrixType>;
   using MDSpanType = MDSpan<NumMatrixType, AddedFirstExtentsType, RightLayout>;
   static constexpr int nb_dynamic = Extents::nb_dynamic;
 
@@ -359,27 +379,27 @@ class MeshMatrixMDVariableRefT
  public:
 
   template <typename X = Extents, typename = std::enable_if_t<X::rank() == 0, void>>
-  NumMatrixType& operator()(ItemLocalIdType id)
+  ReferenceType operator()(ItemLocalIdType id)
   {
-    return m_matrix_mdspan(id.localId());
+    return ReferenceType(m_matrix_mdspan.ptrAt(id.localId()));
   }
 
   template <typename X = Extents, typename = std::enable_if_t<X::rank() == 0, void>>
-  const NumMatrixType& operator()(ItemLocalIdType id) const
+  ConstReferenceType operator()(ItemLocalIdType id) const
   {
-    return m_matrix_mdspan(id.localId());
+    return ReferenceType(m_matrix_mdspan.ptrAt(id.localId()));
   }
 
   template <typename X = Extents, typename = std::enable_if_t<X::rank() == 1, void>>
-  NumMatrixType& operator()(ItemLocalIdType id, Int32 i1)
+  ReferenceType operator()(ItemLocalIdType id, Int32 i1)
   {
-    return m_matrix_mdspan(id.localId(), i1);
+    return ReferenceType(m_matrix_mdspan.ptrAt(id.localId(), i1));
   }
 
   template <typename X = Extents, typename = std::enable_if_t<X::rank() == 1, void>>
-  const NumMatrixType& operator()(ItemLocalIdType id, Int32 i1) const
+  ConstReferenceType operator()(ItemLocalIdType id, Int32 i1) const
   {
-    return m_matrix_mdspan(id.localId(), i1);
+    return ReferenceType(m_matrix_mdspan.ptrAt(id.localId(), i1));
   }
 
   /*!
