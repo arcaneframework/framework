@@ -644,7 +644,7 @@ class ItemTraitsT<DoF>
 
   // NOTE: GG: devrait être nullptr car pas de défaut pour la famille de DoF ?
   //! Nom de la famille par défaut associée
-  static const char* defaultFamilyName() { return "DoF"; }
+  static const char* defaultFamilyName() { return nullptr; }
 };
 
 /*---------------------------------------------------------------------------*/
