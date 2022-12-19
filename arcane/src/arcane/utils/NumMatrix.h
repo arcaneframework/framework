@@ -44,6 +44,7 @@ class ARCANE_UTILS_EXPORT NumMatrix
 {
   static_assert(RowSize == 2 || RowSize == 3, "Valid values for RowSize are 2 or 3");
   static_assert(RowSize == ColumnSize, "Only square matrix are allowed (ColumnSize==RowSize)");
+  static_assert(std::is_same_v<T,Real>,"Only type 'Real' is allowed");
   static constexpr int Size = RowSize;
   static constexpr bool isSquare() { return RowSize == ColumnSize; }
 

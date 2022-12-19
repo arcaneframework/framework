@@ -17,6 +17,8 @@
 #include "arcane/utils/Real2.h"
 #include "arcane/utils/Real3.h"
 
+#include <type_traits>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -42,6 +44,7 @@ template <typename T, int Size>
 class NumVector
 {
   static_assert(Size == 2 || Size == 3, "Valid values for Size are 2 or 3");
+  static_assert(std::is_same_v<T,Real>,"Only type 'Real' is allowed");
 
  public:
 

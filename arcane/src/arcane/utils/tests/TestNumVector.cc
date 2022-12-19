@@ -20,10 +20,6 @@ TEST(TestNumVector,RealN2)
 {
   std::cout << "   sizeof(NumVector<double,2>) = " << sizeof(NumVector<double,2>) << "\n";
   std::cout << "   sizeof(NumVector<double,3>) = " << sizeof(NumVector<double,3>) << "\n";
-  std::cout << "   sizeof(NumVector<float,2>) = " << sizeof(NumVector<float,2>) << "\n";
-  std::cout << "   sizeof(NumVector<float,3>) = " << sizeof(NumVector<float,3>) << "\n";
-  std::cout << "   sizeof(NumVector<short,2>) = " << sizeof(NumVector<short,2>) << "\n";
-  std::cout << "   sizeof(NumVector<short,3>) = " << sizeof(NumVector<short,3>) << "\n";
   {
     RealN2 v1;
     ASSERT_EQ(v1.vx(),0.0);
