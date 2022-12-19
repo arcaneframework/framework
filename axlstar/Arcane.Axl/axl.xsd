@@ -291,6 +291,7 @@
       <xs:enumeration value="application" />
       <xs:enumeration value="session" />
       <xs:enumeration value="subdomain" />
+      <xs:enumeration value="mesh" />
     </xs:restriction>
   </xs:simpleType>
   

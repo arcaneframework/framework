@@ -20,6 +20,8 @@ namespace Arcane.Axl
         return "Session";
       case Xsd.ServiceTypeList.subdomain:
         return "SubDomain";
+      case Xsd.ServiceTypeList.mesh:
+        return "Mesh";
       default:
         throw new TypeUnloadedException (); 
       }
