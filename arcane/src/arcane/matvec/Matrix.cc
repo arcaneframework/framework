@@ -324,9 +324,15 @@ DiagonalPreconditioner(const Matrix& matrix)
   m_inverse_diagonal.dump(cout);
   cout << "\n";
 #endif
+  const double epsilon = std::numeric_limits<Real>::min();
 
-  for( Integer i=0; i<size; ++i )
-    vec_values[i] = (vec_values[i] != 0.0) ? (1.0 / vec_values[i]) : 1.0;
+  // Inverse la diagonale si la valeur n'est pas inférieure à l'epsilon de Real
+  // (sinon cela génère un FPE)
+  for( Integer i=0; i<size; ++i ){
+    Real v = vec_values[i];
+    bool is_zero  = v>-epsilon && v<epsilon;
+    vec_values[i] = (is_zero) ? 1.0 : (1.0 / v);
+  }
 
 #if 0
   cout << "DIAG2=";

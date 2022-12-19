@@ -43,62 +43,60 @@ namespace Arcane::MatVec
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class DirectSolver
+void DirectSolver::
+solve(const Matrix& matrix,const Vector& vector_b,Vector& vector_x)
 {
- public:
-  void solve(const Matrix& matrix,const Vector& vector_b,Vector& vector_x)
-  {
-    IntegerConstArrayView rows = matrix.rowsIndex();
-    IntegerConstArrayView columns = matrix.columns();
-    RealConstArrayView mat_values = matrix.values();
+  IntegerConstArrayView rows = matrix.rowsIndex();
+  IntegerConstArrayView columns = matrix.columns();
+  RealConstArrayView mat_values = matrix.values();
 
-    Integer nb_row = matrix.nbRow();
-    RealUniqueArray solution_values(nb_row);
-    RealUniqueArray full_matrix_values(nb_row*nb_row);
-    full_matrix_values.fill(0.0);
-    solution_values.copy(vector_b.values());
-    for( Integer row=0; row<nb_row; ++row ){
-      for( Integer j=rows[row]; j<rows[row+1]; ++j ){
-        full_matrix_values[row*nb_row + columns[j]] = mat_values[j];
-      }
+  Integer nb_row = matrix.nbRow();
+  RealUniqueArray solution_values(nb_row);
+  RealUniqueArray full_matrix_values(nb_row*nb_row);
+  full_matrix_values.fill(0.0);
+  solution_values.copy(vector_b.values());
+  for( Integer row=0; row<nb_row; ++row ){
+    for( Integer j=rows[row]; j<rows[row+1]; ++j ){
+      full_matrix_values[row*nb_row + columns[j]] = mat_values[j];
     }
-    _solve(full_matrix_values,solution_values,nb_row);
-    vector_x.values().copy(solution_values);
   }
- private:
-  void _solve(RealArrayView mat_values,RealArrayView vec_values,Integer size)
-  {
-    if (size==1){
-      if (math::isZero(mat_values[0]))
-        throw FatalErrorException("DirectSolver","Null matrix");
-      vec_values[0] /= mat_values[0];
-      return;
-    }
+  _solve(full_matrix_values,solution_values,nb_row);
+  vector_x.values().copy(solution_values);
+}
 
-    for( Integer k=0; k<size-1; ++k ){
-      if (!math::isZero(mat_values[k*size+k])){
-        for( Integer j=k+1; j<size; ++j ){
-          if (!math::isZero(mat_values[j*size+k])){
-            Real factor = mat_values[j*size+k] / mat_values[k*size+k];
-            for( Integer m=k+1; m<size; ++m )
-              mat_values[j*size+m] -= factor * mat_values[k*size+m];
-            vec_values[j] -= factor * vec_values[k];
-          }
+void DirectSolver::
+_solve(RealArrayView mat_values,RealArrayView vec_values,Integer size)
+{
+  if (size==1){
+    if (math::isZero(mat_values[0]))
+      throw FatalErrorException("DirectSolver","Null matrix");
+    vec_values[0] /= mat_values[0];
+    return;
+  }
+
+  for( Integer k=0; k<size-1; ++k ){
+    if (!math::isZero(mat_values[k*size+k])){
+      for( Integer j=k+1; j<size; ++j ){
+        if (!math::isZero(mat_values[j*size+k])){
+          Real factor = mat_values[j*size+k] / mat_values[k*size+k];
+          for( Integer m=k+1; m<size; ++m )
+            mat_values[j*size+m] -= factor * mat_values[k*size+m];
+          vec_values[j] -= factor * vec_values[k];
         }
       }
     }
-
-    for( Integer k=(size-1); k>0; --k ){
-      vec_values[k] /= mat_values[k*size+k];
-      for( Integer j=0; j<k; ++j ){
-        if (!math::isZero(mat_values[j*size+k]))
-          vec_values[j] -= vec_values[k] * mat_values[j*size+k];
-      }
-    }
-
-    vec_values[0] /= mat_values[0];
   }
-};
+
+  for( Integer k=(size-1); k>0; --k ){
+    vec_values[k] /= mat_values[k*size+k];
+    for( Integer j=0; j<k; ++j ){
+      if (!math::isZero(mat_values[j*size+k]))
+        vec_values[j] -= vec_values[k] * mat_values[j*size+k];
+    }
+  }
+
+  vec_values[0] /= mat_values[0];
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
