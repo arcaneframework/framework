@@ -18,6 +18,8 @@
 #include "arcane/utils/ArrayShape.h"
 #include "arcane/utils/MDSpan.h"
 
+#include "arcane/datatype/DataTypeTraits.h"
+
 #include "arcane/MeshVariableArrayRef.h"
 
 /*---------------------------------------------------------------------------*/
@@ -139,7 +141,9 @@ class MeshMDVariableRefT
 : public MeshMDVariableRefBaseT<ItemType, DataType, typename Extents::template AddedFirstExtentsType<DynExtent>>
 {
   using AddedFirstExtentsType = typename Extents::template AddedFirstExtentsType<DynExtent>;
+  using BasicType = typename DataTypeTraitsT<DataType>::BasicType;
   static_assert(Extents::rank() >= 0 && Extents::rank() <= 3, "Only Extents of rank 0, 1, 2 or 3 are implemented");
+  static_assert(std::is_same_v<DataType,BasicType>,"DataType should be a basic type (Real, Int32, Int64, ... )");
 
  public:
 
@@ -228,9 +232,11 @@ class MeshVectorMDVariableRefT
 : public MeshMDVariableRefBaseT<ItemType, DataType, typename Extents::template AddedFirstLastExtentsType<DynExtent, Size>>
 {
   using NumVectorType = NumVector<DataType, Size>;
+  using BasicType = typename DataTypeTraitsT<DataType>::BasicType;
   using AddedFirstLastExtentsType = typename Extents::template AddedFirstLastExtentsType<DynExtent, Size>;
   using AddedFirstExtentsType = typename Extents::template AddedFirstExtentsType<DynExtent>;
   static_assert(Extents::rank() >= 0 && Extents::rank() <= 2, "Only Extents of rank 0, 1 or 2 are implemented");
+  static_assert(std::is_same_v<DataType,BasicType>,"DataType should be a basic type (Real, Int32, Int64, ... )");
 
  public:
 
@@ -331,9 +337,11 @@ class MeshMatrixMDVariableRefT
 : public MeshMDVariableRefBaseT<ItemType, DataType, typename Extents::template AddedFirstLastLastExtentsType<DynExtent, Row, Column>>
 {
   using NumMatrixType = NumMatrix<DataType, Row, Column>;
+  using BasicType = typename DataTypeTraitsT<DataType>::BasicType;
   using AddedFirstLastLastExtentsType = typename Extents::template AddedFirstLastLastExtentsType<DynExtent, Row, Column>;
   using AddedFirstExtentsType = typename Extents::template AddedFirstExtentsType<DynExtent>;
   static_assert(Extents::rank() >= 0 && Extents::rank() <= 1, "Only Extents of rank 0 or 1 are implemented");
+  static_assert(std::is_same_v<DataType,BasicType>,"DataType should be a basic type (Real, Int32, Int64, ... )");
 
  public:
 
