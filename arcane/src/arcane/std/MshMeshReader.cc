@@ -206,6 +206,14 @@ class MshMeshReader
       return nullptr;
     }
 
+    MeshV4EntitiesNodes* findNodeEntities(Int32 tag)
+    {
+      for (auto& x : entities_nodes_list)
+        if (x.tag == tag)
+          return &x;
+      return nullptr;
+    }
+
    public:
 
     Integer nb_elements = 0;
@@ -244,6 +252,7 @@ class MshMeshReader
   void _allocateGroups(IMesh* mesh, MeshInfo& mesh_info, bool is_read_items);
   void _addFaceGroup(IMesh* mesh, MeshV4ElementsBlock& block, const String& group_name);
   void _addCellGroup(IMesh* mesh, MeshV4ElementsBlock& block, const String& group_name);
+  void _addNodeGroup(IMesh* mesh, MeshV4ElementsBlock& block, const String& group_name);
   Integer _switchMshType(Integer, Integer&);
   void _readPhysicalNames(IosFile& ios_file, MeshInfo& mesh_info);
   void _readEntitiesV4(IosFile& ios_file, MeshInfo& mesh_info);
@@ -686,20 +695,28 @@ _allocateGroups(IMesh* mesh, MeshInfo& mesh_info, bool is_read_items)
       info(5) << "[Groups] Skipping block index=" << block_index << " because it has no entity";
       continue;
     }
+    MeshPhysicalName physical_name;
     // Pour l'instant on ne traite pas les nuages
     if (block_dim == 0) {
-      info(5) << "[Groups] Skipping block index=" << block_index
-              << " because NodeGroup is not yet supported for this format";
-      continue;
+      MeshV4EntitiesNodes* entity = mesh_info.findNodeEntities(block_entity_tag);
+      if (!entity) {
+        info(5) << "[Groups] Skipping block index=" << block_index
+                << " because entity tag is invalid";
+        continue;
+      }
+      Int32 entity_physical_tag = entity->physical_tag;
+      physical_name = mesh_info.physical_name_list.find(block_dim, entity_physical_tag);
     }
-    MeshV4EntitiesWithNodes* entity = mesh_info.findEntities(block_dim, block_entity_tag);
-    if (!entity) {
-      info(5) << "[Groups] Skipping block index=" << block_index
-              << " because entity tag is invalid";
-      continue;
+    else{
+      MeshV4EntitiesWithNodes* entity = mesh_info.findEntities(block_dim, block_entity_tag);
+      if (!entity) {
+        info(5) << "[Groups] Skipping block index=" << block_index
+                << " because entity tag is invalid";
+        continue;
+      }
+      Int32 entity_physical_tag = entity->physical_tag;
+      physical_name = mesh_info.physical_name_list.find(block_dim, entity_physical_tag);
     }
-    Int32 entity_physical_tag = entity->physical_tag;
-    MeshPhysicalName physical_name = mesh_info.physical_name_list.find(block_dim, entity_physical_tag);
     if (physical_name.isNull()) {
       info(5) << "[Groups] Skipping block index=" << block_index
               << " because entity physical tag is invalid";
@@ -720,8 +737,10 @@ _allocateGroups(IMesh* mesh, MeshInfo& mesh_info, bool is_read_items)
         mesh->faceFamily()->findGroup(physical_name.name, true);
     }
     else {
-      info(4) << "[Groups] Skipping block index=" << block_index
-              << " because its dimension is not yet supported";
+      if (is_read_items)
+        _addNodeGroup(mesh, block, physical_name.name);
+      else
+        mesh->nodeFamily()->findGroup(physical_name.name, true);
     }
   }
 }
@@ -814,6 +833,28 @@ _addCellGroup(IMesh* mesh, MeshV4ElementsBlock& block, const String& group_name)
   info(4) << "Adding " << cells_id.size() << " cells from block index=" << block.index
           << " to group '" << cell_group.name() << "'";
   cell_group.addItems(cells_id);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MshMeshReader::
+_addNodeGroup(IMesh* mesh, MeshV4ElementsBlock& block, const String& group_name)
+{
+  const Int32 nb_entity = block.nb_entity;
+
+  // Il peut y avoir plusieurs blocs pour le même groupe.
+  // On récupère le groupe s'il existe déjà.
+  IItemFamily* node_family = mesh->nodeFamily();
+  NodeGroup node_group = node_family->findGroup(group_name, true);
+
+  UniqueArray<Int32> nodes_id(nb_entity);
+
+  node_family->itemsUniqueIdToLocalId(nodes_id, block.uids);
+
+  info(4) << "Adding " << nodes_id.size() << " nodes from block index=" << block.index
+          << " to group '" << node_group.name() << "'";
+  node_group.addItems(nodes_id);
 }
 
 /*---------------------------------------------------------------------------*/
