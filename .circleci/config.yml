@@ -1,20 +1,17 @@
 version: 2.1
 
-orbs:
-  codecov: codecov/codecov@3.1.1
-
 executors:
   # 4 CPU - 8Go RAM - 20c/min
   large-executor-image:
     docker:
-      - image: ghcr.io/arcaneframework/ubuntu-2204:gcc-12_clang-14_minimal_20220617
+      - image: ghcr.io/arcaneframework/ubuntu-2204:gcc-12_clang-15_minimal_20221214
     resource_class: large
     working_directory: ~/workspace
 
   # 4 CPU - 8Go RAM - 20c/min
   large-executor-image-full:
     docker:
-      - image: ghcr.io/arcaneframework/ubuntu-2204:gcc-12_clang-14_full_20220617
+      - image: ghcr.io/arcaneframework/ubuntu-2204:gcc-12_clang-15_full_20221214
     resource_class: large
     working_directory: ~/workspace
 
@@ -28,14 +25,14 @@ executors:
   # 2 CPU - 8Go RAM - 10c/min
   medium-executor-arm:
     machine:
-      image: ubuntu-2004:2022.04.1
+      image: ubuntu-2204:2022.10.2
     resource_class: arm.medium
     working_directory: ~/workspace
 
   # 4 CPU - 15Go RAM - 20c/min
   large-executor-empty:
     machine:
-      image: ubuntu-2204:2022.04.1
+      image: ubuntu-2204:2022.10.2
     resource_class: large
     working_directory: ~/workspace
 
@@ -336,16 +333,13 @@ jobs:
           name: Install all packages to build Arcane
           command: |
             sudo apt-get update -y
-            sudo apt-get install -y software-properties-common
-            sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-            sudo apt-get update -y
             sudo apt-get install -y --no-install-recommends \
             apt-utils \
             wget \
             rsync \
             build-essential \
-            gcc-11 \
-            g++-11 \
+            gcc-12 \
+            g++-12 \
             make \
             cmake \
             ccache \
@@ -369,33 +363,15 @@ jobs:
             libbz2-dev \
             liblz4-dev \
             libhypre-dev \
-            ca-certificates
-            sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 100
-            sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 100
-            sudo update-alternatives --install /usr/bin/cpp cpp-bin /usr/bin/cpp-11 100
-            sudo update-alternatives --set g++ /usr/bin/g++-11
-            sudo update-alternatives --set gcc /usr/bin/gcc-11
-            sudo update-alternatives --set cpp-bin /usr/bin/cpp-11
-
-      - run:
-          name: Install Dotnet 6
-          command: |
-            wget https://dot.net/v1/dotnet-install.sh
-            sudo chmod u+x dotnet-install.sh
-            ./dotnet-install.sh
-            echo 'export PATH=/home/circleci/.dotnet:${PATH}' >> $BASH_ENV
-            PATH=/home/circleci/.dotnet:${PATH}
-
-      - run:
-          name: Install CMake 3.21
-          command: |
-            MY_CMAKE_INSTALL_PATH=/usr/local/cmake-3.21.3
-            wget https://github.com/Kitware/CMake/releases/download/v3.21.3/cmake-3.21.3-linux-aarch64.tar.gz
-            sudo mkdir ${MY_CMAKE_INSTALL_PATH}
-            sudo tar -C ${MY_CMAKE_INSTALL_PATH} -x --strip-components 1 -f cmake-3.21.3-linux-aarch64.tar.gz
-            echo 'export PATH=/usr/local/cmake-3.21.3/bin:${PATH}' >> $BASH_ENV
-            PATH=${MY_CMAKE_INSTALL_PATH}/bin:${PATH}
-            cmake --version
+            ca-certificates \
+            dotnet6 \
+            software-properties-common
+            sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-12 100
+            sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 100
+            sudo update-alternatives --install /usr/bin/cpp cpp-bin /usr/bin/cpp-12 100
+            sudo update-alternatives --set g++ /usr/bin/g++-12
+            sudo update-alternatives --set gcc /usr/bin/gcc-12
+            sudo update-alternatives --set cpp-bin /usr/bin/cpp-12
       
       - restore_cache:
           keys: 

@@ -69,7 +69,7 @@ jobs:
           -GNinja \
           -DBUILD_SHARED_LIBS=TRUE \
           -DCMAKE_BUILD_TYPE=Release \
-          -DCMAKE_CXX_FLAGS_RELEASE="-O2 -g --coverage -fprofile-abs-path" \
+          -DCMAKE_CXX_FLAGS_RELEASE="-O2 -g --coverage -fprofile-abs-path -ftest-coverage" \
           -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ \
           -DARCANE_DEFAULT_PARTITIONER=Metis \
           -DARCANE_DISABLE_PERFCOUNTER_TESTS=ON \
@@ -92,13 +92,21 @@ jobs:
         shell: bash
         run: find . -name "*.o" -exec gcov-12 {} \;
 
-      # - name: Remove generated axl headers and wrap
-      #   shell: bash
-      #   run: rm -f *_axl.h.gcov *_wrap.*.gcov
-
       - name: Remove gcov headers
         shell: bash
         run: rm -f *.h.gcov *_wrap.*.gcov
+
+
+      # --- Version à tester ---
+      # - name: Apply coverage
+      #   shell: bash
+      #   run: gcov-12 $(find . -name "*.o" | xargs echo)
+
+      # - name: Remove generated axl headers and wrap
+      #   shell: bash
+      #   run: rm -f *_axl.h.gcov *_wrap.*.gcov
+      # ---   ---
+
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
