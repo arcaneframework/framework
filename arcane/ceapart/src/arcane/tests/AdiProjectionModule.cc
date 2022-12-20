@@ -27,6 +27,11 @@
 
 #include "arcane/IMesh.h"
 
+#include "arcane/accelerator/Runner.h"
+#include "arcane/accelerator/RunCommandEnumerate.h"
+#include "arcane/accelerator/VariableViews.h"
+#include "arcane/accelerator/core/IAcceleratorMng.h"
+
 #include "arcane/tests/AdiProjection_axl.h"
 
 /*---------------------------------------------------------------------------*/
@@ -34,6 +39,7 @@
 
 namespace Arcane
 {
+namespace ax = Arcane::Accelerator;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -74,7 +80,6 @@ class AdiProjectionModule
   void copyCurrentVariablesToOldVariables();
 
   void computePrimalMassFluxInner(Integer direction);
-  void computePrimalMassFluxBoundary(Integer direction);
 
   void computeDualMassFluxInner(Integer direction);
   void computeDualMassFluxBoundary(Integer direction);
@@ -83,6 +88,11 @@ class AdiProjectionModule
 
   void _evolveDualUpwindedVariables1();
   void _evolvePrimalUpwindedVariablesV2(Integer direction);
+
+ public:
+
+  // Fonctions publiques pour CUDA
+  void computePrimalMassFluxBoundary(Integer direction);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -94,7 +104,7 @@ ARCANE_REGISTER_MODULE_ADIPROJECTION(AdiProjectionModule);
 /*---------------------------------------------------------------------------*/
 
 AdiProjectionModule::
-AdiProjectionModule(Arcane::ModuleBuildInfo const& mb)
+AdiProjectionModule(const ModuleBuildInfo& mb)
 : ArcaneAdiProjectionObject(mb)
 {
 }
@@ -176,33 +186,38 @@ computePrimalMassFluxInner(Integer direction)
 void AdiProjectionModule::
 computePrimalMassFluxBoundary(Integer direction)
 {
+  info() << A_FUNCINFO;
+
+  auto queue = makeQueue(acceleratorMng()->defaultRunner());
+  auto command = makeCommand(queue);
+
+  auto inout_mass_flux_right = viewInOut(command, m_mass_flux_right);
+  auto inout_mass_flux_left = viewInOut(command, m_mass_flux_left);
+
   CellDirectionMng cdm(m_cartesian_mesh->cellDirection(direction));
 
   // Calcul des flux de masse pour les mailles de bord dans la direction de calcul.
-  ENUMERATE_CELL (current_cell, cdm.outerCells()) {
-
+  command << RUNCOMMAND_ENUMERATE(Cell, current_cell, cdm.outerCells())
+  {
     // Pour maille gauche/maille droite.
-    DirCell cc(cdm.cell(*current_cell));
+    DirCellLocalId cc(cdm.cellLocalId(current_cell));
 
-    Cell right_cell = cc.next();
-    Cell left_cell = cc.previous();
+    CellLocalId right_cell = cc.next();
+    CellLocalId left_cell = cc.previous();
 
-    if (left_cell.null()) {
+    if (left_cell.isNull()) {
       // Frontière gauche.
 
-      m_mass_flux_right[current_cell] = m_mass_flux_left[right_cell];
-      m_mass_flux_left[current_cell] = m_mass_flux_right[current_cell];
+      inout_mass_flux_right[current_cell] = inout_mass_flux_left[right_cell];
+      inout_mass_flux_left[current_cell] = inout_mass_flux_right[current_cell];
     }
-    else if (right_cell.null()) {
+    else if (right_cell.isNull()) {
       // Frontière droite.
 
-      m_mass_flux_left[current_cell] = m_mass_flux_right[left_cell];
-      m_mass_flux_right[current_cell] = m_mass_flux_left[current_cell];
+      inout_mass_flux_left[current_cell] = inout_mass_flux_right[left_cell];
+      inout_mass_flux_right[current_cell] = inout_mass_flux_left[current_cell];
     }
-    else {
-      ARCANE_FATAL("Internal error");
-    }
-  }
+  };
 }
 
 /*---------------------------------------------------------------------------*/

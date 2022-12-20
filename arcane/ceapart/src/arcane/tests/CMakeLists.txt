@@ -1,5 +1,15 @@
 ﻿include(srcs.cmake)
 
+set(ARCANE_ACCELERATOR_SOURCES
+  AdiProjectionModule.cc
+)
+if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDANVCC" )
+  set_source_files_properties(${ARCANE_ACCELERATOR_SOURCES} PROPERTIES LANGUAGE CUDA)
+endif()
+if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP" )
+  set_source_files_properties(${ARCANE_ACCELERATOR_SOURCES} PROPERTIES LANGUAGE HIP)
+endif()
+
 arcane_add_library(arcane_cea_tests
   INPUT_PATH ${ARCANECEA_SRC_PATH}
   RELATIVE_PATH arcane/tests
@@ -21,6 +31,7 @@ endif()
 if(TARGET arcane_aleph_sloop)
   target_link_libraries(arcane_cea_tests PUBLIC arcane_aleph_sloop)
 endif()
+target_link_libraries(arcane_cea_tests PRIVATE arcane_accelerator)
 
 # ----------------------------------------------------------------------------
 # Test wrapping C#
