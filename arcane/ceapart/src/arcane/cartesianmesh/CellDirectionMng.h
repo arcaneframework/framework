@@ -18,6 +18,7 @@
 
 #include "arcane/Item.h"
 #include "arcane/ItemEnumerator.h"
+#include "arcane/IndexedItemConnectivityView.h"
 
 #include "arcane/cartesianmesh/CartesianMeshGlobal.h"
 #include "arcane/cartesianmesh/CartesianItemDirectionInfo.h"
@@ -40,8 +41,14 @@ namespace Arcane
 class ARCANE_CARTESIANMESH_EXPORT DirCell
 {
  public:
-  DirCell(Cell n,Cell p) : m_previous(p), m_next(n){}
+
+  DirCell(Cell n, Cell p)
+  : m_previous(p)
+  , m_next(n)
+  {}
+
  public:
+
   //! Maille avant
   Cell previous() const { return m_previous; }
   //! Maille avant
@@ -50,9 +57,46 @@ class ARCANE_CARTESIANMESH_EXPORT DirCell
   Cell next() const { return m_next; }
   //! Maille après
   CellLocalId nextId() const { return CellLocalId(m_next.localId()); }
+
  private:
+
   Cell m_previous;
   Cell m_next;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \ingroup ArcaneCartesianMesh
+ * \brief Maille avant et après une maille suivant une direction.
+ *
+ * Les instances de cette classe sont temporaires et construites via
+ * CellDirectionMng::cellLocalId().
+ */
+class ARCANE_CARTESIANMESH_EXPORT DirCellLocalId
+{
+ public:
+
+  constexpr ARCCORE_HOST_DEVICE DirCellLocalId(CellLocalId n, CellLocalId p)
+  : m_previous(p)
+  , m_next(n)
+  {}
+
+ public:
+
+  //! Maille avant
+  constexpr ARCCORE_HOST_DEVICE CellLocalId previous() const { return m_previous; }
+  //! Maille avant
+  constexpr ARCCORE_HOST_DEVICE CellLocalId previousId() const { return m_previous; }
+  //! Maille après
+  constexpr ARCCORE_HOST_DEVICE CellLocalId next() const { return m_next; }
+  //! Maille après
+  constexpr ARCCORE_HOST_DEVICE CellLocalId nextId() const { return m_next; }
+
+ private:
+
+  CellLocalId m_previous;
+  CellLocalId m_next;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -67,10 +111,13 @@ class ARCANE_CARTESIANMESH_EXPORT DirCell
 class ARCANE_CARTESIANMESH_EXPORT DirCellNode
 {
   friend CellDirectionMng;
+
  private:
 
-  DirCellNode(Cell c,const Int32* nodes_indirection)
-  : m_cell(c), m_nodes_indirection(nodes_indirection){}
+  DirCellNode(Cell c, const Int32* nodes_indirection)
+  : m_cell(c)
+  , m_nodes_indirection(nodes_indirection)
+  {}
 
  public:
 
@@ -116,9 +163,60 @@ class ARCANE_CARTESIANMESH_EXPORT DirCellNode
   NodeLocalId topPreviousLeftId() const { return NodeLocalId(m_cell.nodeId(m_nodes_indirection[CNP_TopPreviousLeft])); }
 
  private:
-  
+
   Cell m_cell;
   const Int32* m_nodes_indirection;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \ingroup ArcaneCartesianMesh
+ * \brief Maille avec info directionnelle des noeuds.
+ *
+ * Les instances de cette classe sont temporaires et construites via
+ * CellDirectionMng::cellNode().
+ */
+class ARCANE_CARTESIANMESH_EXPORT DirCellNodeLocalId
+{
+  friend CellDirectionMng;
+
+ private:
+
+  ARCCORE_HOST_DEVICE DirCellNodeLocalId(CellLocalId c, const Int32* nodes_indirection, IndexedCellNodeConnectivityView view)
+  : m_cell(c)
+  , m_nodes_indirection(nodes_indirection)
+  , m_view(view)
+  {}
+
+ public:
+
+  //! Maille associée
+  ARCCORE_HOST_DEVICE CellLocalId cellId() const { return m_cell; }
+
+  //! Noeud devant à gauche dans la direction
+  ARCCORE_HOST_DEVICE NodeLocalId nextLeftId() const { return m_view.nodeId(m_cell, m_nodes_indirection[CNP_NextLeft]); }
+  //! Noeud devant à droite dans la direction
+  ARCCORE_HOST_DEVICE NodeLocalId nextRightId() const { return m_view.nodeId(m_cell, m_nodes_indirection[CNP_NextRight]); }
+  //! Noeud derrière à droite dans la direction
+  ARCCORE_HOST_DEVICE NodeLocalId previousRightId() const { return m_view.nodeId(m_cell, m_nodes_indirection[CNP_PreviousRight]); }
+  //! Noeud derrière à gauche dans la direction
+  ARCCORE_HOST_DEVICE NodeLocalId previousLeftId() const { return m_view.nodeId(m_cell, m_nodes_indirection[CNP_PreviousLeft]); }
+
+  //! Noeud devant à gauche dans la direction
+  ARCCORE_HOST_DEVICE NodeLocalId topNextLeftId() const { return m_view.nodeId(m_cell, m_nodes_indirection[CNP_TopNextLeft]); }
+  //! Noeud devant à droite dans la direction
+  ARCCORE_HOST_DEVICE NodeLocalId topNextRightId() const { return m_view.nodeId(m_cell, m_nodes_indirection[CNP_TopNextRight]); }
+  //! Noeud derrière à droite dans la direction
+  ARCCORE_HOST_DEVICE NodeLocalId topPreviousRightId() const { return m_view.nodeId(m_cell, m_nodes_indirection[CNP_TopPreviousRight]); }
+  //! Noeud derrière à gauche dans la direction
+  ARCCORE_HOST_DEVICE NodeLocalId topPreviousLeftId() const { return m_view.nodeId(m_cell, m_nodes_indirection[CNP_TopPreviousLeft]); }
+
+ private:
+
+  CellLocalId m_cell;
+  const Int32* m_nodes_indirection;
+  IndexedCellNodeConnectivityView m_view;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -133,9 +231,13 @@ class ARCANE_CARTESIANMESH_EXPORT DirCellNode
 class ARCANE_CARTESIANMESH_EXPORT DirCellFace
 {
   friend CellDirectionMng;
+
  private:
-  DirCellFace(Cell c,Int32 next_face_index,Int32 previous_face_index)
-  : m_cell(c), m_next_face_index(next_face_index), m_previous_face_index(previous_face_index)
+
+  DirCellFace(Cell c, Int32 next_face_index, Int32 previous_face_index)
+  : m_cell(c)
+  , m_next_face_index(next_face_index)
+  , m_previous_face_index(previous_face_index)
   {
   }
 
@@ -163,7 +265,7 @@ class ARCANE_CARTESIANMESH_EXPORT DirCellFace
   Int32 previousLocalIndex() const { return m_previous_face_index; }
 
  private:
-  
+
   Cell m_cell;
   Int32 m_next_face_index;
   Int32 m_previous_face_index;
@@ -230,6 +332,16 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
   {
     return _cell(c.localId());
   }
+  //! Maille direction correspondant à la maille \a c.
+  ARCCORE_HOST_DEVICE DirCellLocalId cellLocalId(CellLocalId c) const
+  {
+    return _dirCellLocalId(c);
+  }
+  //! Maille direction correspondant à la maille \a c.
+  ARCCORE_HOST_DEVICE DirCellLocalId dirCellLocalId(CellLocalId c) const
+  {
+    return _dirCellLocalId(c);
+  }
 
   //! Maille avec infos directionnelles aux noeuds correspondant à la maille \a c.
   DirCellNode cellNode(Cell c) const
@@ -241,6 +353,12 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
   DirCellNode cellNode(CellLocalId c) const
   {
     return DirCellNode(m_cells[c.localId()], m_nodes_indirection);
+  }
+
+  //! Maille avec infos directionnelles aux noeuds correspondant à la maille \a c.
+  ARCCORE_HOST_DEVICE DirCellNodeLocalId cellNodeLocalId(CellLocalId c) const
+  {
+    return DirCellNodeLocalId(c, m_nodes_indirection, m_cell_node_view);
   }
 
   //! Maille avec infos directionnelles aux faces correspondant à la maille \a c.
@@ -360,6 +478,13 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
     return DirCell(m_cells[d.m_next_lid], m_cells[d.m_previous_lid]);
   }
 
+  //! Maille direction correspondant à la maille de numéro local \a local_id
+  ARCCORE_HOST_DEVICE DirCellLocalId _dirCellLocalId(Int32 local_id) const
+  {
+    ItemDirectionInfo d = m_infos_view[local_id];
+    return DirCellLocalId(CellLocalId(d.m_next_lid), CellLocalId(d.m_previous_lid));
+  }
+
   void setNodesIndirection(Int32ConstArrayView nodes_indirection);
 
  protected:
@@ -420,6 +545,7 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
   Int32 m_previous_face_index;
   Int32 m_nodes_indirection[MAX_NB_NODE];
   Impl* m_p = nullptr;
+  IndexedCellNodeConnectivityView m_cell_node_view;
 };
 
 /*---------------------------------------------------------------------------*/

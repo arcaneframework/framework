@@ -14,10 +14,12 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/PlatformUtils.h"
 
 #include "arcane/IItemFamily.h"
 #include "arcane/ItemGroup.h"
 #include "arcane/IMesh.h"
+#include "arcane/UnstructuredMeshConnectivity.h"
 
 #include "arcane/cartesianmesh/CellDirectionMng.h"
 #include "arcane/cartesianmesh/ICartesianMesh.h"
@@ -34,6 +36,11 @@ namespace Arcane
 class CellDirectionMng::Impl
 {
  public:
+
+  Impl() : m_infos(platform::getDefaultDataAllocator()){}
+
+ public:
+
   CellGroup m_inner_all_items;
   CellGroup m_outer_all_items;
   CellGroup m_all_items;
@@ -119,6 +126,10 @@ _internalComputeInnerAndOuterItems(const ItemGroup& items)
   m_p->m_outer_all_items = family->createGroup(String("AllOuter")+base_group_name,outer_lids,true);
   m_p->m_all_items = items;
   m_cells = CellInfoListView(family);
+
+  UnstructuredMeshConnectivityView mesh_connectivity;
+  mesh_connectivity.setMesh(m_p->m_cartesian_mesh->mesh());
+  m_cell_node_view = mesh_connectivity.cellNode();
 }
 
 /*---------------------------------------------------------------------------*/
