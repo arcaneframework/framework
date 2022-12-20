@@ -23,7 +23,7 @@ La documentation en ligne est accessible depuis internet :
 
 ### Changelog
 
-Les dernières modifications sont dans le fichier suivant: [Changelog](arcane/doc/changelog.md)
+Les dernières modifications sont dans le fichier suivant: [Changelog](arcane/doc/doc_common/changelog.md)
 
 ## Compilation
 
