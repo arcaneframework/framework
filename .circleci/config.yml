@@ -631,6 +631,7 @@ workflows:
   every-push:
     jobs:
       - build-and-test-quick
+      - arm-build-and-test
 
   # WFs exécutés tous les jours.
   every-day:
