@@ -27,6 +27,17 @@
 #include "arcane/UnitTestServiceAdapter.h"
 <#  } #>
 
+#ifndef ARCANE_HAS_SPECIFIC_BASIC_SERVICE
+// Code pour les versions de Arcane avant la 3.8 qui ne possèdent pas les
+// classes de base spécifiques pour les services
+namespace Arcane
+{
+using BasicCaseOptionService = BasicService;
+using BasicSubDomainService = BasicService;
+using BasicMeshService = BasicService;
+}
+#endif
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 <#  if (Xml.LesserThanVersionOne) { #>
