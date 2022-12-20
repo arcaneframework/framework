@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AXLGlobal.cs                                                (C) 2000-2007 */
+/* AXLGlobal.cs                                                (C) 2000-2022 */
 /*                                                                           */
 /* Déclarations générales pour le package AXL.                               */
 /*---------------------------------------------------------------------------*/
@@ -19,6 +19,7 @@ namespace Arcane.Axl
     ST_Application,
     ST_Session,
     ST_SubDomain,
+    ST_Mesh,
     ST_CaseOption,
     ST_Unknown
   }

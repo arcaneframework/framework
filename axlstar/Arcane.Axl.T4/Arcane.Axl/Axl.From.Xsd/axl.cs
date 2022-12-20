@@ -1829,6 +1829,9 @@ namespace Arcane.Axl.Xsd {
         
         /// <remarks/>
         subdomain,
+        
+        /// <remarks/>
+        mesh,
     }
     
     /// <remarks/>

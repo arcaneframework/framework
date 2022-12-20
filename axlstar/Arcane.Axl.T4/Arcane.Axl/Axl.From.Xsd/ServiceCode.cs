@@ -22,8 +22,12 @@ namespace Arcane.Axl.Xsd
       get {
         if (String.IsNullOrEmpty(parentname))
         {
-          if (type == ServiceTypeList.caseoption || type == ServiceTypeList.subdomain)
-            return "Arcane::BasicService";
+          if (type == ServiceTypeList.mesh)
+            return "Arcane::BasicMeshService";
+          else if (type == ServiceTypeList.caseoption)
+            return "Arcane::BasicCaseOptionService";
+          else if (type == ServiceTypeList.subdomain)
+            return "Arcane::BasicSubDomainService";
           else
             return "Arcane::AbstractService";
         }
