@@ -2147,7 +2147,6 @@ removeNeedRemoveMarkedItems()
     ARCANE_FATAL("Family name='{0}': IMesh::itemFamilyNetwork() is null",name());
   if (!IItemFamilyNetwork::plug_serializer)
     ARCANE_FATAL("family name='{0}': removeNeedMarkedItems() cannot be called if ItemFamilyNetwork is unplugged.");
-  ARCANE_FATAL("FAMILY name={0}",name());
 
   UniqueArray<ItemInternal*> items_to_remove;
   UniqueArray<Int32> items_to_remove_lids;
