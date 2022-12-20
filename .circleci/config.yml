@@ -330,6 +330,11 @@ jobs:
             git submodule update --init
             
       - run:
+          name: "Set 'needrestart' to auto mode"
+          command: |
+            sudo sed -i "/#\$nrconf{restart} = 'i';/s/.*/\$nrconf{restart} = 'a';/" /etc/needrestart/needrestart.conf
+
+      - run:
           name: Install all packages to build Arcane
           command: |
             sudo apt-get update -y
@@ -626,7 +631,6 @@ workflows:
   every-push:
     jobs:
       - build-and-test-quick
-      - arm-build-and-test
 
   # WFs exécutés tous les jours.
   every-day:
