@@ -83,14 +83,15 @@ testAll(bool is_amr)
   _testDirCell();
   _testDirCellAccelerator();
   _testDirFace();
+  _testDirFaceAccelerator();
   _testDirNode();
   _testDirCellNode();
   _testDirCellFace();
-  if (m_mesh->dimension()==3){
+  if (m_mesh->dimension() == 3) {
     _testNodeToCellConnectivity3D();
     _testCellToNodeConnectivity3D();
   }
-  else{
+  else {
     _testNodeToCellConnectivity2D();
     _testCellToNodeConnectivity2D();
     _saveSVG();
@@ -307,6 +308,18 @@ _testDirFace()
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshTestUtils::
+_testDirFaceAccelerator()
+{
+  IMesh* mesh = m_mesh;
+  Integer nb_dir = mesh->dimension();
+  for (Integer idir = 0; idir < nb_dir; ++idir)
+    _testDirFaceAccelerator(idir);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshTestUtils::
 _testDirFace(int idir)
 {
   // Teste l'utilisation de DirFace et vérifie que
@@ -325,7 +338,7 @@ _testDirFace(int idir)
   eMeshDirection md = fdm.direction();
   info() << "TEST_DIR_FACE for direction=" << idir << " -> " << (eMeshDirection)idir;
   _checkItemGroupIsSorted(fdm.allFaces());
-  ENUMERATE_FACE(iface,fdm.allFaces()){
+  ENUMERATE_FACE (iface, fdm.allFaces()) {
     Face face = *iface;
     DirFace dir_face(fdm[iface]);
     DirFace dir_face2(fdm2[iface]);
@@ -334,17 +347,17 @@ _testDirFace(int idir)
     Cell next_cell = dir_face.nextCell();
     Cell prev_cell2 = dir_face2.previousCell();
     Cell next_cell2 = dir_face2.nextCell();
-    _checkSameId(prev_cell,prev_cell2);
-    _checkSameId(next_cell,next_cell2);
-    _checkSameId(prev_cell,dir_face.previousCellId());
-    _checkSameId(next_cell,dir_face.nextCellId());
-    bool is_print = (nb_print<0 || iprint<nb_print);
+    _checkSameId(prev_cell, prev_cell2);
+    _checkSameId(next_cell, next_cell2);
+    _checkSameId(prev_cell, dir_face.previousCellId());
+    _checkSameId(next_cell, dir_face.nextCellId());
+    bool is_print = (nb_print < 0 || iprint < nb_print);
     ++iprint;
     Real face_coord = m_face_center[iface][idir];
-    if (!prev_cell.null() && !next_cell.null()){
+    if (!prev_cell.null() && !next_cell.null()) {
       Real next_coord = m_cell_center[next_cell][idir];
       Real prev_coord = m_cell_center[prev_cell][idir];
-      if (next_coord<prev_coord){
+      if (next_coord < prev_coord) {
         info() << "Bad ordering for face";
         is_print = true;
         ++nb_error;
@@ -354,10 +367,10 @@ _testDirFace(int idir)
                << " prev=" << prev_cell.uniqueId() << " xyz=" << m_cell_center[prev_cell]
                << " next=" << next_cell.uniqueId() << " xyz=" << m_cell_center[next_cell];
     }
-    else{
-      if (!prev_cell.null()){
+    else {
+      if (!prev_cell.null()) {
         Real prev_coord = m_cell_center[prev_cell][idir];
-        if (face_coord<prev_coord){
+        if (face_coord < prev_coord) {
           info() << "Bad ordering for face";
           is_print = true;
           ++nb_error;
@@ -366,9 +379,9 @@ _testDirFace(int idir)
           info() << "Face uid=" << ItemPrinter(face) << " dir=" << md << " xyz=" << m_face_center[iface]
                  << " prev=" << prev_cell.uniqueId() << " xyz=" << m_cell_center[prev_cell];
       }
-      if (!next_cell.null()){
+      if (!next_cell.null()) {
         Real next_coord = m_cell_center[next_cell][idir];
-        if (next_coord<face_coord){
+        if (next_coord < face_coord) {
           info() << "Bad ordering for face";
           is_print = true;
           ++nb_error;
@@ -379,8 +392,88 @@ _testDirFace(int idir)
       }
     }
   }
-  if (nb_error!=0)
-    ARCANE_FATAL("Bad connectivity for DirFace nb_error={0}",nb_error);
+  if (nb_error != 0)
+    ARCANE_FATAL("Bad connectivity for DirFace nb_error={0}", nb_error);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshTestUtils::
+_testDirFaceAccelerator(int idir)
+{
+  // Teste l'utilisation de DirFace et vérifie que
+  // les valeurs sont correctes: pour une face donnée,
+  // il faut que selon la direction choisie, la coordonnée du centre
+  // de la maille avant (previousCell()) soit inférieure à celle
+  // de la maille après (nextCell()) et aussi celle de la maille avant
+  // soit inférieure à ce
+
+  FaceDirectionMng fdm2;
+  FaceDirectionMng fdm(m_cartesian_mesh->faceDirection(idir));
+  fdm2 = fdm;
+  info() << "TEST_DIR_FACE_ACCELERATOR for direction=" << idir << " -> " << (eMeshDirection)idir;
+
+  auto queue = m_accelerator_mng->defaultQueue();
+  auto command = makeCommand(*queue);
+
+  VariableFaceInt32 dummy_var(VariableBuildInfo(m_mesh, "DummyFaceVariable"));
+  dummy_var.fill(0);
+  auto inout_dummy_var = viewInOut(command, dummy_var);
+  auto in_face_center = viewIn(command, m_face_center);
+  auto in_cell_center = viewIn(command, m_cell_center);
+
+  command << RUNCOMMAND_ENUMERATE(Face, iface, fdm.allFaces())
+  {
+    DirFaceLocalId dir_face(fdm.dirFaceId(iface));
+    DirFaceLocalId dir_face2(fdm2.dirFaceId(iface));
+    //Integer nb_node = cell.nbNode();
+    CellLocalId prev_cell = dir_face.previousCell();
+    CellLocalId next_cell = dir_face.nextCell();
+    CellLocalId prev_cell2 = dir_face2.previousCell();
+    CellLocalId next_cell2 = dir_face2.nextCell();
+    if (prev_cell != prev_cell2)
+      inout_dummy_var[iface] = -10;
+    if (next_cell != next_cell2)
+      inout_dummy_var[iface] = -11;
+    if (prev_cell != dir_face.previousCellId())
+      inout_dummy_var[iface] = -12;
+    if (next_cell != dir_face.nextCellId())
+      inout_dummy_var[iface] = -13;
+    if (inout_dummy_var[iface] < 0)
+      return;
+
+    Real face_coord = in_face_center[iface][idir];
+    if (!prev_cell.isNull() && !next_cell.isNull()) {
+      Real next_coord = in_cell_center[next_cell][idir];
+      Real prev_coord = in_cell_center[prev_cell][idir];
+      if (next_coord < prev_coord) {
+        inout_dummy_var[iface] = -20;
+        return;
+      }
+    }
+    else {
+      if (!prev_cell.isNull()) {
+        Real prev_coord = in_cell_center[prev_cell][idir];
+        if (face_coord < prev_coord) {
+          inout_dummy_var[iface] = -21;
+          return;
+        }
+      }
+      if (!next_cell.isNull()) {
+        Real next_coord = in_cell_center[next_cell][idir];
+        if (next_coord < face_coord) {
+          inout_dummy_var[iface] = -22;
+          return;
+        }
+      }
+    }
+  };
+
+  ENUMERATE_ (Face, iface, fdm.allFaces()) {
+    if (dummy_var[iface] < 0)
+      ARCANE_FATAL("Bad value for dummy_var id={0} v={1}", ItemPrinter(*iface), dummy_var[iface]);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -400,7 +493,7 @@ _testDirNode()
   // Pour tester l'opérateur 'operator='
   NodeDirectionMng node_dm2;
   NodeDirectionMng node_dm3;
-  for( Integer idir=0; idir<nb_dir; ++idir){
+  for (Integer idir = 0; idir < nb_dir; ++idir) {
     NodeDirectionMng node_dm(m_cartesian_mesh->nodeDirection(idir));
     node_dm2 = m_cartesian_mesh->nodeDirection(idir);
     node_dm3 = node_dm;
@@ -409,7 +502,7 @@ _testDirNode()
     info() << "DIRECTION=" << idir;
     NodeGroup dm_all_nodes = node_dm.allNodes();
     _checkItemGroupIsSorted(dm_all_nodes);
-    ENUMERATE_NODE(inode,dm_all_nodes){
+    ENUMERATE_NODE (inode, dm_all_nodes) {
       Node node = *inode;
       m_node_density[inode] += 1.0;
       DirNode dir_node(node_dm[inode]);
@@ -421,28 +514,28 @@ _testDirNode()
       Node next_node2 = dir_node2.next();
       Node prev_node3 = dir_node3.previous();
       Node next_node3 = dir_node3.next();
-      _checkSameId(prev_node,prev_node2);
-      _checkSameId(next_node,next_node2);
-      _checkSameId(prev_node,prev_node3);
-      _checkSameId(next_node,next_node3);
-      _checkSameId(prev_node,dir_node.previousId());
-      _checkSameId(next_node,dir_node.nextId());
+      _checkSameId(prev_node, prev_node2);
+      _checkSameId(next_node, next_node2);
+      _checkSameId(prev_node, prev_node3);
+      _checkSameId(next_node, next_node3);
+      _checkSameId(prev_node, dir_node.previousId());
+      _checkSameId(next_node, dir_node.nextId());
       Real my_coord = nodes_coord[inode][idir];
-      bool is_print = (nb_print<0 || iprint<nb_print);
+      bool is_print = (nb_print < 0 || iprint < nb_print);
       ++iprint;
-      if (is_print){
+      if (is_print) {
         Int32 node_nb_cell = node.nbCell();
         info() << "DirNode node= " << ItemPrinter(node) << " nb_cell=" << node_nb_cell << " pos=" << nodes_coord[node];
-        for( Integer k=0; k<node_nb_cell; ++k ){
+        for (Integer k = 0; k < node_nb_cell; ++k) {
           Real3 cell_pos = m_cell_center[node.cell(k)];
           info() << "Node k=" << k << " cell_pos=" << cell_pos << " cell=" << ItemPrinter(node.cell(k));
         }
-        for( Integer k=0; k<8; ++k ){
+        for (Integer k = 0; k < 8; ++k) {
           Int32 cell_index = dir_node.cellIndex(k);
           Real3 cell_pos;
-          if (cell_index!=(-1)){
-            if ((1+cell_index)>node_nb_cell)
-              ARCANE_FATAL("Bad value for cell_index '{0}' node_nb_cell={1}",cell_index,node_nb_cell);
+          if (cell_index != (-1)) {
+            if ((1 + cell_index) > node_nb_cell)
+              ARCANE_FATAL("Bad value for cell_index '{0}' node_nb_cell={1}", cell_index, node_nb_cell);
             cell_pos = m_cell_center[node.cell(cell_index)];
           }
           info() << "DirNode cellIndex k=" << k << " index=" << cell_index << " pos=" << cell_pos
@@ -469,12 +562,12 @@ _testDirNode()
                << " " << ItemPrinter(dir_node.topPreviousLeftCell());
       }
       if (prev_node.null() && next_node.null())
-        ARCANE_FATAL("Null previous and next node for node {0}",ItemPrinter(node));
+        ARCANE_FATAL("Null previous and next node for node {0}", ItemPrinter(node));
       //TODO: Vérifier que les coordonnées autres que celle de idir sont bien les mêmes pour next,prev et my_coord.
-      if (!prev_node.null() && !next_node.null()){
+      if (!prev_node.null() && !next_node.null()) {
         Real next_coord = nodes_coord[next_node][idir];
         Real prev_coord = nodes_coord[prev_node][idir];
-        if (next_coord<prev_coord){
+        if (next_coord < prev_coord) {
           info() << "Bad ordering for node";
           is_print = true;
           ++nb_error;
@@ -484,10 +577,10 @@ _testDirNode()
                  << " prev=" << ItemPrinter(prev_node) << " xyz=" << prev_coord
                  << " next=" << ItemPrinter(next_node) << " xyz=" << next_coord;
       }
-      else{
-        if (!prev_node.null()){
+      else {
+        if (!prev_node.null()) {
           Real prev_coord = nodes_coord[prev_node][idir];
-          if (my_coord<prev_coord){
+          if (my_coord < prev_coord) {
             info() << "Bad ordering for node";
             is_print = true;
             ++nb_error;
@@ -496,9 +589,9 @@ _testDirNode()
             info() << "Node uid=" << ItemPrinter(node) << " dir=" << md
                    << " prev=" << ItemPrinter(prev_node) << " xyz=" << nodes_coord[prev_node];
         }
-        if (!next_node.null()){
+        if (!next_node.null()) {
           Real next_coord = nodes_coord[next_node][idir];
-          if (next_coord<my_coord){
+          if (next_coord < my_coord) {
             info() << "Bad ordering for node";
             is_print = true;
             ++nb_error;
@@ -511,20 +604,20 @@ _testDirNode()
     }
   }
 
-  if (nb_error!=0)
+  if (nb_error != 0)
     ARCANE_FATAL("Bad connectivity for DirNode");
 
   // Vérifie qu'on a parcouru tous les noeuds
-  ENUMERATE_NODE(inode,m_mesh->allNodes()){
+  ENUMERATE_NODE (inode, m_mesh->allNodes()) {
     Node node = *inode;
-    if (node.cell(0).level()!=0)
+    if (node.cell(0).level() != 0)
       continue;
-    if (m_node_density[inode]==0.0){
+    if (m_node_density[inode] == 0.0) {
       ++nb_error;
       info() << "Bad value for node " << ItemPrinter(node);
     }
   }
-  if (nb_error!=0)
+  if (nb_error != 0)
     ARCANE_FATAL("Bad values for DirNode");
 }
 
