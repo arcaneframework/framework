@@ -87,6 +87,7 @@ set(AXL_FILES
   TestUnitTest
   MeshMergeNodesUnitTest
   MeshUnitTest
+  MeshPrinterService
   ThreadUnitTest
   TaskUnitTest
   IosUnitTest

@@ -72,11 +72,14 @@ class IComplex4Interface {public: virtual ~IComplex4Interface(){}};
 namespace ArcaneTest
 {
 class ICaseOptionTestInterface { public: virtual ~ICaseOptionTestInterface(){} };
+class IMeshPrinter { public: virtual ~IMeshPrinter()=default; };
+
 }
 
 #include "arcane/tests/IServiceInterface.h"
 #include "arcane/tests/CaseOptionsTester_axl.h"
 #include "arcane/tests/ServiceInterface1ImplTest_axl.h"
+#include "arcane/tests/MeshPrinterService_axl.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
