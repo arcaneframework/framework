@@ -17,7 +17,7 @@ jobs:
     name: ubuntu coverity
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/arcaneframework/ubuntu-2004:gcc-11_clang-12_cuda-116_full_20220617
+      image: ghcr.io/arcaneframework/ubuntu-2204:gcc-12_clang-15_full_20221214
     steps:
       # Checkout v2 does not include files listed in .gitattributes
       - name: Checkout

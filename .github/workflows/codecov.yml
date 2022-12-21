@@ -39,7 +39,7 @@ jobs:
     name: Codecov
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/arcaneframework/ubuntu-2204:gcc-12_clang-14_full_20220617
+      image: ghcr.io/arcaneframework/ubuntu-2204:gcc-12_full_latest
 
     steps:
       - name: Checkout framework
@@ -69,7 +69,7 @@ jobs:
           -GNinja \
           -DBUILD_SHARED_LIBS=TRUE \
           -DCMAKE_BUILD_TYPE=Release \
-          -DCMAKE_CXX_FLAGS_RELEASE="-O2 -g --coverage -fprofile-abs-path" \
+          -DCMAKE_CXX_FLAGS_RELEASE="-O2 -g --coverage -fprofile-abs-path -ftest-coverage" \
           -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ \
           -DARCANE_DEFAULT_PARTITIONER=Metis \
           -DARCANE_DISABLE_PERFCOUNTER_TESTS=ON \
@@ -87,18 +87,30 @@ jobs:
         run: |
           mkdir -p ${{ env.CT_RESULT_DIR }}
           ARCANE_CHECK=1 ctest --test-dir ${{ env.BUILD_DIR }} --output-junit ${{ env.CT_RESULT_DIR }}/results.xml ${{ env.CT_OPTS }} -LE '${{ env.CT_EXCLUED_LABELS }}'
+          
+      # mkdir tests
+      # export OMPI_ALLOW_RUN_AS_ROOT=1
+      # export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+      # export ARCANE_CHECK=1
+      # ctest --test-dir ./build/ --output-junit ./tests/results.xml -LE 'LARGE_HYBRID' -j 4 --repeat until-pass:10 --timeout 60
+      # gcov-12 $(find . -name "*.gcno" -o -name "*.gcda")
+
+      # - name: Apply coverage
+      #   shell: bash
+      #   run: find . -name "*.o" -exec gcov-12 {} \;
+
+      # - name: Remove gcov headers
+      #   shell: bash
+      #   run: rm -f *.h.gcov *_wrap.*.gcov
 
       - name: Apply coverage
         shell: bash
-        run: find . -name "*.o" -exec gcov-12 {} \;
+        continue-on-error: true
+        run: gcov-12 $(find . -name "*.gcno" -o -name "*.gcda")
 
-      # - name: Remove generated axl headers and wrap
-      #   shell: bash
-      #   run: rm -f *_axl.h.gcov *_wrap.*.gcov
-
-      - name: Remove gcov headers
+      - name: Remove generated axl headers and wrap
         shell: bash
-        run: rm -f *.h.gcov *_wrap.*.gcov
+        run: rm -f *_axl.h.gcov *_wrap.*.gcov
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
