@@ -86,6 +86,7 @@ testAll(bool is_amr)
   _testDirFaceAccelerator();
   _testDirNode();
   _testDirCellNode();
+  _testDirCellNodeAccelerator();
   _testDirCellFace();
   if (m_mesh->dimension() == 3) {
     _testNodeToCellConnectivity3D();
@@ -667,27 +668,91 @@ _testDirCellNode()
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshTestUtils::
+_testDirCellNodeAccelerator()
+{
+  IMesh* mesh = m_mesh;
+  VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
+  Integer nb_dir = mesh->dimension();
+
+  auto queue = m_accelerator_mng->defaultQueue();
+  auto command = makeCommand(*queue);
+
+  VariableCellInt32 dummy_var(VariableBuildInfo(mesh, "DummyCellVariable"));
+  VariableCellReal3 computed_center(VariableBuildInfo(mesh, "CellComputedCenter"));
+
+  for (Integer idir = 0; idir < nb_dir; ++idir) {
+    CellDirectionMng cdm(m_cartesian_mesh->cellDirection(idir));
+    info() << "TEST_DIR_CELL_NODE_ACCELERATOR_DIRECTION=" << idir;
+
+    auto inout_dummy_var = viewInOut(command, dummy_var);
+    auto in_nodes_coord = viewIn(command, nodes_coord);
+    auto out_computed_center = viewOut(command, computed_center);
+    command << RUNCOMMAND_ENUMERATE(Cell, cell, cdm.allCells())
+    {
+      inout_dummy_var[cell] = 0;
+      DirCellNodeLocalId cn(cdm.dirCellNodeId(cell));
+      DirCellNodeLocalId cn2(cdm.dirCellNodeId(cell));
+      if (cn.cellId() != cn2.cellId()) {
+        inout_dummy_var[cell] = -10;
+        return;
+      }
+
+      Real3 n1 = in_nodes_coord[cn.nextLeftId()];
+      Real3 n2 = in_nodes_coord[cn.nextRightId()];
+      Real3 n3 = in_nodes_coord[cn.previousRightId()];
+      Real3 n4 = in_nodes_coord[cn.previousLeftId()];
+      Real3 center = n1 + n2 + n3 + n4;
+      if (nb_dir == 3) {
+        Real3 n5 = in_nodes_coord[cn.topNextLeftId()];
+        Real3 n6 = in_nodes_coord[cn.topNextRightId()];
+        Real3 n7 = in_nodes_coord[cn.topPreviousRightId()];
+        Real3 n8 = in_nodes_coord[cn.topPreviousLeftId()];
+        center += n5 + n6 + n7 + n8;
+        center /= 8.0;
+      }
+      else
+        center /= 4.0;
+      out_computed_center[cell] = center;
+    };
+    ENUMERATE_ (Cell, icell, cdm.allCells()) {
+      if (dummy_var[icell] < 0) {
+        ARCANE_FATAL("Bad value for dummy_var id={0} v={1}", ItemPrinter(*icell), dummy_var[icell]);
+      }
+      Real3 c1 = m_cell_center[icell];
+      Real3 c2 = computed_center[icell];
+      bool is_nearly_equal = math::isNearlyEqual(c1.x, c2.x) && math::isNearlyEqual(c1.y, c2.y) && math::isNearlyEqual(c1.z, c2.z);
+      if (!is_nearly_equal)
+        ARCANE_FATAL("Bad value for computed center id={0} center={1} computed={2}",
+                     ItemPrinter(*icell), c1, c2);
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshTestUtils::
 _testDirCellFace()
 {
   IMesh* mesh = m_mesh;
   //VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
   Integer nb_dir = mesh->dimension();
   Integer nb_print = m_nb_print;
-  for( Integer idir=0; idir<nb_dir; ++idir){
+  for (Integer idir = 0; idir < nb_dir; ++idir) {
     CellDirectionMng cdm(m_cartesian_mesh->cellDirection(idir));
     eMeshDirection md = cdm.direction();
     info() << "DIRECTION=" << idir;
     Integer iprint = 0;
-    ENUMERATE_CELL(icell,cdm.allCells()){
+    ENUMERATE_CELL (icell, cdm.allCells()) {
       Cell cell = *icell;
       CellLocalId cell_id(cell.localId());
       DirCellFace cf(cdm.cellFace(cell));
       DirCellFace cf2(cdm.cellFace(cell_id));
-      if (cf.cellId()!=cf2.cellId())
+      if (cf.cellId() != cf2.cellId())
         ARCANE_FATAL("Bad DirCellFace");
-      bool is_print = (nb_print<0 || iprint<nb_print);
+      bool is_print = (nb_print < 0 || iprint < nb_print);
       ++iprint;
-      if (is_print){
+      if (is_print) {
         info() << "CellFace uid=" << ItemPrinter(cell) << " dir=" << md;
         info() << "CellFace nextFace =" << ItemPrinter(cf.next()) << " xyz=" << m_face_center[cf.next()];
         info() << "CellFace prevFace=" << ItemPrinter(cf.previous()) << " xyz=" << m_face_center[cf.previous()];

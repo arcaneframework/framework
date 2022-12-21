@@ -95,6 +95,7 @@ class CartesianMeshTestUtils
   //! Méthodes publiques car accessibles sur accélérateur
   void _testDirCellAccelerator();
   void _testDirFaceAccelerator(int idir);
+  void _testDirCellNodeAccelerator();
 };
 
 /*---------------------------------------------------------------------------*/
