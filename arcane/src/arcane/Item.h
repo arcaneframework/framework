@@ -185,13 +185,13 @@ class ARCANE_CORE_EXPORT Item
  public:
 
   //! \a true si l'entité est nul (i.e. non connecté au maillage)
-  bool null() const { return m_local_id==NULL_ITEM_ID; }
+  constexpr bool null() const { return m_local_id==NULL_ITEM_ID; }
 
   //! Identifiant local de l'entité dans le sous-domaine du processeur
-  Int32 localId() const { return m_local_id; }
+  constexpr Int32 localId() const { return m_local_id; }
 
   //! Identifiant local de l'entité dans le sous-domaine du processeur
-  ItemLocalId itemLocalId() const { return ItemLocalId{ m_local_id }; }
+  constexpr ItemLocalId itemLocalId() const { return ItemLocalId{ m_local_id }; }
 
   //! Identifiant unique sur tous les domaines
   ItemUniqueId uniqueId() const

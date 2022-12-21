@@ -66,6 +66,43 @@ class ARCANE_CARTESIANMESH_EXPORT DirFace
 /*---------------------------------------------------------------------------*/
 /*!
  * \ingroup ArcaneCartesianMesh
+ * \brief Infos sur maille avant et après une face suivant une direction.
+ *
+ * Les instances de cette classe sont temporaires et construites via
+ * FaceDirectionMng::face().
+ */
+class ARCANE_CARTESIANMESH_EXPORT DirFaceLocalId
+{
+  friend FaceDirectionMng;
+
+ private:
+
+  ARCCORE_HOST_DEVICE DirFaceLocalId(CellLocalId n, CellLocalId p)
+  : m_previous(p)
+  , m_next(n)
+  {}
+
+ public:
+
+  //! Maille avant
+  ARCCORE_HOST_DEVICE CellLocalId previousCell() const { return m_previous; }
+  //! Maille avant
+  ARCCORE_HOST_DEVICE CellLocalId previousCellId() const { return m_previous; }
+  //! Maille après
+  ARCCORE_HOST_DEVICE CellLocalId nextCell() const { return m_next; }
+  //! Maille après
+  ARCCORE_HOST_DEVICE CellLocalId nextCellId() const { return m_next; }
+
+ private:
+
+  CellLocalId m_previous;
+  CellLocalId m_next;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \ingroup ArcaneCartesianMesh
  * \brief Infos sur les face d'une direction spécifique X,Y ou Z
  * d'un maillage structuré.
  */
@@ -99,6 +136,12 @@ class ARCANE_CARTESIANMESH_EXPORT FaceDirectionMng
   DirFace face(FaceLocalId f) const
   {
     return _face(f.localId());
+  }
+
+  //! Face direction correspondant à la face \a f.
+  ARCCORE_HOST_DEVICE DirFaceLocalId dirFaceId(FaceLocalId f) const
+  {
+    return _dirFaceId(f);
   }
 
   //! Groupe de toutes les faces dans la direction.
@@ -152,6 +195,13 @@ class ARCANE_CARTESIANMESH_EXPORT FaceDirectionMng
   {
     ItemDirectionInfo d = m_infos_view[local_id];
     return DirFace(m_cells[d.m_next_lid], m_cells[d.m_previous_lid]);
+  }
+
+  //! Face direction correspondant à la face de numéro local \a local_id
+  ARCCORE_HOST_DEVICE DirFaceLocalId _dirFaceId(FaceLocalId local_id) const
+  {
+    ItemDirectionInfo d = m_infos_view[local_id];
+    return DirFaceLocalId(CellLocalId(d.m_next_lid), CellLocalId(d.m_previous_lid));
   }
 
  private:
