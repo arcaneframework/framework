@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshTestUtils.cc                                   (C) 2000-2021 */
+/* CartesianMeshTestUtils.cc                                   (C) 2000-2022 */
 /*                                                                           */
 /* Fonctions utilitaires pour les tests de 'CartesianMesh'.                  */
 /*---------------------------------------------------------------------------*/
@@ -30,6 +30,11 @@
 #include "arcane/IMeshUtilities.h"
 #include "arcane/SimpleSVGMeshExporter.h"
 
+#include "arcane/accelerator/Runner.h"
+#include "arcane/accelerator/RunCommandEnumerate.h"
+#include "arcane/accelerator/VariableViews.h"
+#include "arcane/accelerator/core/IAcceleratorMng.h"
+
 #include "arcane/cea/ICartesianMesh.h"
 #include "arcane/cea/CellDirectionMng.h"
 #include "arcane/cea/FaceDirectionMng.h"
@@ -43,16 +48,17 @@ namespace ArcaneTest
 {
 
 using namespace Arcane;
-
+using namespace Arcane::Accelerator;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 CartesianMeshTestUtils::
-CartesianMeshTestUtils(ICartesianMesh* cm)
+CartesianMeshTestUtils(ICartesianMesh* cm,IAcceleratorMng* am)
 : TraceAccessor(cm->traceMng())
 , m_cartesian_mesh(cm)
 , m_mesh(cm->mesh())
+, m_accelerator_mng(am)
 , m_cell_center(VariableBuildInfo(m_mesh,"CellCenter"))
 , m_face_center(VariableBuildInfo(m_mesh,"FaceCenter"))
 , m_node_density(VariableBuildInfo(m_mesh,"NodeDensity"))
@@ -75,6 +81,7 @@ testAll(bool is_amr)
 {
   m_is_amr = is_amr;
   _testDirCell();
+  _testDirCellAccelerator();
   _testDirFace();
   _testDirNode();
   _testDirCellNode();
@@ -129,24 +136,24 @@ _computeCenters()
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshTestUtils::
-_checkSameId(Face item,FaceLocalId local_id)
+_checkSameId(FaceLocalId item,FaceLocalId local_id)
 {
-  if (item.localId()!=local_id)
-    ARCANE_FATAL("Bad FaceLocalId item={0} local_id={1}",item.localId(),local_id);
+  if (item!=local_id)
+    ARCANE_FATAL("Bad FaceLocalId item={0} local_id={1}",item,local_id);
 }
 
 void CartesianMeshTestUtils::
-_checkSameId(Cell item,CellLocalId local_id)
+_checkSameId(CellLocalId item,CellLocalId local_id)
 {
-  if (item.localId()!=local_id)
-    ARCANE_FATAL("Bad CellLocalId item={0} local_id={1}",item.localId(),local_id);
+  if (item!=local_id)
+    ARCANE_FATAL("Bad CellLocalId item={0} local_id={1}",item,local_id);
 }
 
 void CartesianMeshTestUtils::
-_checkSameId(Node item,NodeLocalId local_id)
+_checkSameId(NodeLocalId item,NodeLocalId local_id)
 {
   if (item.localId()!=local_id)
-    ARCANE_FATAL("Bad NodeLocalId item={0} local_id={1}",item.localId(),local_id);
+    ARCANE_FATAL("Bad NodeLocalId item={0} local_id={1}",item,local_id);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -212,6 +219,74 @@ _testDirCell()
             info() << " next=" << ItemPrinter(next_cell) << " xyz=" << m_cell_center[next_cell];
         }
       }
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshTestUtils::
+_testDirCellAccelerator()
+{
+  info() << "TEST_DIR_CELL_ACCELERATOR";
+
+  IMesh* mesh = m_mesh;
+  Integer nb_dir = mesh->dimension();
+  CellDirectionMng cdm2;
+  CellDirectionMng cdm3;
+
+  auto queue = m_accelerator_mng->defaultQueue();
+  auto command = makeCommand(*queue);
+
+  VariableCellInt32 dummy_var(VariableBuildInfo(mesh, "DummyCellVariable"));
+  dummy_var.fill(0);
+  auto inout_dummy_var = viewInOut(command, dummy_var);
+
+  for (Integer idir = 0; idir < nb_dir; ++idir) {
+    CellDirectionMng cdm(m_cartesian_mesh->cellDirection(idir));
+    cdm2 = m_cartesian_mesh->cellDirection(idir);
+    cdm3 = cdm;
+    info() << "ACCELERATOR_DIRECTION=" << idir << " Cells=" << cdm.allCells().name();
+    _checkItemGroupIsSorted(cdm.allCells());
+    command << RUNCOMMAND_ENUMERATE(Cell, icell, cdm.allCells())
+    {
+      DirCellLocalId dir_cell(cdm.dirCellLocalId(icell));
+      CellLocalId prev_cell = dir_cell.previous();
+      CellLocalId next_cell = dir_cell.next();
+      if (prev_cell.isNull() && next_cell.isNull()) {
+        inout_dummy_var[icell] = -5;
+        return;
+      }
+
+      DirCellLocalId dir_cell2(cdm2.dirCellLocalId(icell));
+      CellLocalId prev_cell2 = dir_cell2.previous();
+      CellLocalId next_cell2 = dir_cell2.next();
+      DirCellLocalId dir_cell3(cdm3.dirCellLocalId(icell));
+      CellLocalId prev_cell3 = dir_cell3.previous();
+      CellLocalId next_cell3 = dir_cell3.next();
+      if (prev_cell != prev_cell2)
+        inout_dummy_var[icell] = -10;
+      if (next_cell != next_cell2)
+        inout_dummy_var[icell] = -11;
+      if (prev_cell != prev_cell3)
+        inout_dummy_var[icell] = -12;
+      if (next_cell != next_cell3)
+        inout_dummy_var[icell] = -13;
+
+      if (!prev_cell.isNull() && !next_cell.isNull()) {
+        inout_dummy_var[icell] = 2;
+      }
+      else {
+        if (!prev_cell.isNull())
+          inout_dummy_var[icell] = inout_dummy_var[icell] + 1;
+        if (!next_cell.isNull())
+          inout_dummy_var[icell] = inout_dummy_var[icell] + 1;
+      }
+    };
+    ENUMERATE_ (Cell, icell, cdm.allCells()) {
+      if (dummy_var[icell] < 0)
+        ARCANE_FATAL("Bad value for dummy_var id={0} v={1}", ItemPrinter(*icell), dummy_var[icell]);
     }
   }
 }

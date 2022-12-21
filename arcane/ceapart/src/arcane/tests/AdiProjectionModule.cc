@@ -18,7 +18,6 @@
 
 #include "arcane/cea/ICartesianMesh.h"
 #include "arcane/cea/CellDirectionMng.h"
-#include "arcane/cea/FaceDirectionMng.h"
 #include "arcane/cea/NodeDirectionMng.h"
 
 #include "arcane/MeshAreaAccessor.h"

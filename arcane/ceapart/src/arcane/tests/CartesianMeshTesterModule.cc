@@ -46,7 +46,6 @@
 
 #include "arcane/cea/ICartesianMesh.h"
 #include "arcane/cea/CellDirectionMng.h"
-#include "arcane/cea/FaceDirectionMng.h"
 #include "arcane/cea/NodeDirectionMng.h"
 #include "arcane/cea/CartesianConnectivity.h"
 
@@ -362,7 +361,7 @@ init()
   m_cartesian_mesh = ICartesianMesh::getReference(mesh);
   m_cartesian_mesh->computeDirections();
 
-  m_utils = makeRef(new CartesianMeshTestUtils(m_cartesian_mesh));
+  m_utils = makeRef(new CartesianMeshTestUtils(m_cartesian_mesh,acceleratorMng()));
   m_utils_v2 = makeRef(new CartesianMeshV2TestUtils(m_cartesian_mesh));
 
   // Initialise la densité.

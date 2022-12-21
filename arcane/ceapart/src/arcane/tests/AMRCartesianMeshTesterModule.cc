@@ -242,7 +242,7 @@ init()
   face_family->createGroup("FACE5",ids,true);
 
   m_cartesian_mesh = ICartesianMesh::getReference(mesh);
-  m_utils = makeRef(new CartesianMeshTestUtils(m_cartesian_mesh));
+  m_utils = makeRef(new CartesianMeshTestUtils(m_cartesian_mesh,acceleratorMng()));
 
   if (!subDomain()->isContinue())
     _initAMR();

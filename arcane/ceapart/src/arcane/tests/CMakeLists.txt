@@ -2,6 +2,7 @@
 
 set(ARCANE_ACCELERATOR_SOURCES
   AdiProjectionModule.cc
+  CartesianMeshTestUtils.cc
 )
 if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDANVCC" )
   set_source_files_properties(${ARCANE_ACCELERATOR_SOURCES} PROPERTIES LANGUAGE CUDA)

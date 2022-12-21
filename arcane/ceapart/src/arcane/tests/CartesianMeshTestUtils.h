@@ -18,6 +18,8 @@
 #include "arcane/ArcaneTypes.h"
 #include "arcane/VariableTypes.h"
 
+#include "arcane/accelerator/core/AcceleratorCoreGlobal.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -40,7 +42,7 @@ class CartesianMeshTestUtils
 {
  public:
 
-  explicit CartesianMeshTestUtils(ICartesianMesh* cm);
+  explicit CartesianMeshTestUtils(ICartesianMesh* cm, Accelerator::IAcceleratorMng* am);
   ~CartesianMeshTestUtils();
 
  public:
@@ -49,14 +51,15 @@ class CartesianMeshTestUtils
 
  public:
 
-  void checkSameId(Face item,FaceLocalId local_id) { _checkSameId(item,local_id); }
-  void checkSameId(Cell item,CellLocalId local_id) { _checkSameId(item,local_id); }
+  void checkSameId(Face item, FaceLocalId local_id) { _checkSameId(item, local_id); }
+  void checkSameId(Cell item, CellLocalId local_id) { _checkSameId(item, local_id); }
   void checkSameId(Node item,NodeLocalId local_id) { _checkSameId(item,local_id); }
 
  private:
 
   ICartesianMesh* m_cartesian_mesh = nullptr;
   IMesh* m_mesh = nullptr;
+  Accelerator::IAcceleratorMng* m_accelerator_mng = nullptr;
   VariableCellReal3 m_cell_center;
   VariableFaceReal3 m_face_center;
   VariableNodeReal m_node_density; 
@@ -81,10 +84,15 @@ class CartesianMeshTestUtils
  private:
 
   void _sample(ICartesianMesh* cartesian_mesh);
-  void _checkSameId(Face item,FaceLocalId local_id);
-  void _checkSameId(Cell item,CellLocalId local_id);
-  void _checkSameId(Node item,NodeLocalId local_id);
+  void _checkSameId(FaceLocalId item, FaceLocalId local_id);
+  void _checkSameId(CellLocalId item, CellLocalId local_id);
+  void _checkSameId(NodeLocalId item, NodeLocalId local_id);
   void _saveSVG();
+
+ public:
+
+  //! Méthodes publiques car accessibles sur accélérateur
+  void _testDirCellAccelerator();
 };
 
 /*---------------------------------------------------------------------------*/
