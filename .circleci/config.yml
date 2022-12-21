@@ -86,12 +86,13 @@ parameters:
     default: "^.*(mpithread|proc|thread|hybrid4).*$"
 
   ## Désactivation des tests avec 'utils1' dans leur nom.
+  ## Désactivation des tests avec 'hydro5_papi_backtrace' dans leur nom.
   ## Désactivation des tests avec 'mpithread' dans leur nom.
   ## Désactivation des tests avec '[>=3]proc' dans leur nom.
   ## Désactivation des tests avec '[>=5]thread' dans leur nom.
   CT_REGEX_ARM:
     type: string
-    default: "^utils1$|^.*(mpithread|[3-9]proc|[1-9][0-9]+proc|[5-9]thread|[1-9][0-9]+thread).*$"
+    default: "^utils1$|^hydro5_papi_backtrace$|^.*(mpithread|[3-9]proc|[1-9][0-9]+proc|[5-9]thread|[1-9][0-9]+thread).*$"
 
 
   # CMake
