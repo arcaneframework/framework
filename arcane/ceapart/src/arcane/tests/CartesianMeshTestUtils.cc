@@ -252,7 +252,7 @@ _testDirCellAccelerator()
     _checkItemGroupIsSorted(cdm.allCells());
     command << RUNCOMMAND_ENUMERATE(Cell, icell, cdm.allCells())
     {
-      DirCellLocalId dir_cell(cdm.dirCellLocalId(icell));
+      DirCellLocalId dir_cell(cdm.dirCellId(icell));
       CellLocalId prev_cell = dir_cell.previous();
       CellLocalId next_cell = dir_cell.next();
       if (prev_cell.isNull() && next_cell.isNull()) {
@@ -260,10 +260,10 @@ _testDirCellAccelerator()
         return;
       }
 
-      DirCellLocalId dir_cell2(cdm2.dirCellLocalId(icell));
+      DirCellLocalId dir_cell2(cdm2.dirCellId(icell));
       CellLocalId prev_cell2 = dir_cell2.previous();
       CellLocalId next_cell2 = dir_cell2.next();
-      DirCellLocalId dir_cell3(cdm3.dirCellLocalId(icell));
+      DirCellLocalId dir_cell3(cdm3.dirCellId(icell));
       CellLocalId prev_cell3 = dir_cell3.previous();
       CellLocalId next_cell3 = dir_cell3.next();
       if (prev_cell != prev_cell2)

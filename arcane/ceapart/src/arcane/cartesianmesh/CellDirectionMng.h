@@ -333,14 +333,14 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
     return _cell(c.localId());
   }
   //! Maille direction correspondant à la maille \a c.
-  ARCCORE_HOST_DEVICE DirCellLocalId cellLocalId(CellLocalId c) const
+  DirCell dirCell(CellLocalId c) const
   {
-    return _dirCellLocalId(c);
+    return _cell(c.localId());
   }
   //! Maille direction correspondant à la maille \a c.
-  ARCCORE_HOST_DEVICE DirCellLocalId dirCellLocalId(CellLocalId c) const
+  ARCCORE_HOST_DEVICE DirCellLocalId dirCellId(CellLocalId c) const
   {
-    return _dirCellLocalId(c);
+    return _dirCellId(c);
   }
 
   //! Maille avec infos directionnelles aux noeuds correspondant à la maille \a c.
@@ -356,7 +356,13 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
   }
 
   //! Maille avec infos directionnelles aux noeuds correspondant à la maille \a c.
-  ARCCORE_HOST_DEVICE DirCellNodeLocalId cellNodeLocalId(CellLocalId c) const
+  DirCellNode dirCellNode(CellLocalId c) const
+  {
+    return DirCellNode(m_cells[c.localId()], m_nodes_indirection);
+  }
+
+  //! Maille avec infos directionnelles aux noeuds correspondant à la maille \a c.
+  ARCCORE_HOST_DEVICE DirCellNodeLocalId dirCellNodeId(CellLocalId c) const
   {
     return DirCellNodeLocalId(c, m_nodes_indirection, m_cell_node_view);
   }
@@ -479,7 +485,7 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
   }
 
   //! Maille direction correspondant à la maille de numéro local \a local_id
-  ARCCORE_HOST_DEVICE DirCellLocalId _dirCellLocalId(Int32 local_id) const
+  ARCCORE_HOST_DEVICE DirCellLocalId _dirCellId(Int32 local_id) const
   {
     ItemDirectionInfo d = m_infos_view[local_id];
     return DirCellLocalId(CellLocalId(d.m_next_lid), CellLocalId(d.m_previous_lid));

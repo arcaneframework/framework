@@ -199,7 +199,7 @@ computePrimalMassFluxBoundary(Integer direction)
   command << RUNCOMMAND_ENUMERATE(Cell, current_cell, cdm.outerCells())
   {
     // Pour maille gauche/maille droite.
-    DirCellLocalId cc(cdm.cellLocalId(current_cell));
+    DirCellLocalId cc(cdm.dirCellId(current_cell));
 
     CellLocalId right_cell = cc.next();
     CellLocalId left_cell = cc.previous();
@@ -246,7 +246,7 @@ computeDualMassFluxBoundary(Integer direction)
   command << RUNCOMMAND_ENUMERATE(Node, current_node, ndm.outerNodes())
   {
     // Pour maille gauche/maille droite.
-    DirNodeLocalId cc(ndm.dirNodeLocalId(current_node));
+    DirNodeLocalId cc(ndm.dirNodeId(current_node));
 
     NodeLocalId right_node = cc.next();
     NodeLocalId left_node = cc.previous();

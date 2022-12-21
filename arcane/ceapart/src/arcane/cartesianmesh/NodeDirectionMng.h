@@ -326,15 +326,15 @@ class ARCANE_CARTESIANMESH_EXPORT NodeDirectionMng
   }
 
   //! Noeud direction correspondant au noeud \a n
-  ARCCORE_HOST_DEVICE DirNodeLocalId nodeLocalId(NodeLocalId n) const
+  DirNode dirNode(NodeLocalId n) const
   {
-    return _dirNodeLocalId(n);
+    return _node(n.localId());
   }
 
   //! Noeud direction correspondant au noeud \a n
-  ARCCORE_HOST_DEVICE DirNodeLocalId dirNodeLocalId(NodeLocalId n) const
+  ARCCORE_HOST_DEVICE DirNodeLocalId dirNodeId(NodeLocalId n) const
   {
-    return _dirNodeLocalId(n);
+    return _dirNodeId(n);
   }
 
   //! Groupe de tous les noeuds dans la direction.
@@ -429,7 +429,7 @@ class ARCANE_CARTESIANMESH_EXPORT NodeDirectionMng
   }
 
   //! Noeud direction correspondant au noeud de numéro local \a local_id
-  ARCCORE_HOST_DEVICE DirNodeLocalId _dirNodeLocalId(NodeLocalId local_id) const
+  ARCCORE_HOST_DEVICE DirNodeLocalId _dirNodeId(NodeLocalId local_id) const
   {
     ItemDirectionInfo d = m_infos_view[local_id.localId()];
     return DirNodeLocalId(local_id, NodeLocalId(d.m_next_lid), NodeLocalId(d.m_previous_lid), d.m_cell_index, m_node_cell_view);
