@@ -346,7 +346,6 @@ jobs:
             gcc-12 \
             g++-12 \
             make \
-            cmake \
             ccache \
             ninja-build \
             iputils-ping \
@@ -358,19 +357,22 @@ jobs:
             libxml2-dev \
             libhdf5-dev libhdf5-openmpi-dev \
             libparmetis-dev \
+            ca-certificates \
+            dotnet6 \
+            cmake \
+            software-properties-common \
             swig4.0 \
             petsc-dev \
-            libtbb-dev \
+            trilinos-all-dev \
+            libtbb2-dev \
             libhypre-dev \
             libosmesa6-dev \
+            libunwind-dev \
             libptscotch-dev \
             libudunits2-dev \
             libbz2-dev \
             liblz4-dev \
-            libhypre-dev \
-            ca-certificates \
-            dotnet6 \
-            software-properties-common
+            libhypre-dev
             sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-12 100
             sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 100
             sudo update-alternatives --install /usr/bin/cpp cpp-bin /usr/bin/cpp-12 100
