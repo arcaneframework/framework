@@ -15,6 +15,7 @@
 
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/Real3.h"
+#include "arcane/utils/PlatformUtils.h"
 
 #include "arcane/IItemFamily.h"
 #include "arcane/ItemGroup.h"
@@ -37,6 +38,8 @@ namespace Arcane
 
 class FaceDirectionMng::Impl
 {
+ public:
+  Impl() : m_infos(platform::getDefaultDataAllocator()){}
  public:
   FaceGroup m_inner_all_items;
   FaceGroup m_outer_all_items;
