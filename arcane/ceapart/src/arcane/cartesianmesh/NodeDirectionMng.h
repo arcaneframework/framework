@@ -18,6 +18,7 @@
 #include "arcane/Item.h"
 #include "arcane/ItemEnumerator.h"
 #include "arcane/VariableTypedef.h"
+#include "arcane/IndexedItemConnectivityView.h"
 
 #include "arcane/cartesianmesh/CartesianMeshGlobal.h"
 
@@ -39,30 +40,45 @@ namespace Arcane
 class ARCANE_CARTESIANMESH_EXPORT DirNode
 {
   friend NodeDirectionMng;
+  friend class DirNodeLocalId;
+
  private:
+
   typedef signed char IndexType;
   static constexpr IndexType NULL_CELL = -1;
+
   struct DirNodeCellIndex
   {
    public:
-    IndexType operator[](Int32 i) const
+
+    ARCCORE_HOST_DEVICE IndexType operator[](Int32 i) const
     {
-      ARCANE_CHECK_AT(i,8);
+      ARCANE_CHECK_AT(i, 8);
       return m_indexes[i];
     }
-    IndexType& operator[](Int32 i)
+    ARCCORE_HOST_DEVICE IndexType& operator[](Int32 i)
     {
-      ARCANE_CHECK_AT(i,8);
+      ARCANE_CHECK_AT(i, 8);
       return m_indexes[i];
     }
+
    public:
+
     IndexType m_indexes[8];
   };
+
  private:
+
   // Seul NodeDirectionMng à le droit de construire un DirNode.
-  DirNode(Node current,Node next,Node prev,DirNodeCellIndex idx)
-  : m_current(current), m_previous(prev), m_next(next), m_cell_index(idx) {}
+  DirNode(Node current, Node next, Node prev, DirNodeCellIndex idx)
+  : m_current(current)
+  , m_previous(prev)
+  , m_next(next)
+  , m_cell_index(idx)
+  {}
+
  public:
+
   //! Maille avant
   Node previous() const { return m_previous; }
   //! Maille avant
@@ -88,7 +104,7 @@ class ARCANE_CARTESIANMESH_EXPORT DirNode
   CellLocalId cellId(Int32 position) const
   {
     Int32 x = cellIndex(position);
-    return (x==NULL_CELL) ? CellLocalId(NULL_ITEM_LOCAL_ID) : CellLocalId(m_current.cellId(x));
+    return (x == NULL_CELL) ? CellLocalId(NULL_ITEM_LOCAL_ID) : CellLocalId(m_current.cellId(x));
   }
   /*!
    * \brief Maille en fonction de sa position par rapport à ce noeud.
@@ -99,7 +115,7 @@ class ARCANE_CARTESIANMESH_EXPORT DirNode
   Cell cell(Int32 position) const
   {
     Int32 x = cellIndex(position);
-    return (x==NULL_CELL) ? Cell() : Cell(m_current.cell(x));
+    return (x == NULL_CELL) ? Cell() : Cell(m_current.cell(x));
   }
 
   //! Noeud devant à gauche dans la direction
@@ -144,6 +160,94 @@ class ARCANE_CARTESIANMESH_EXPORT DirNode
   Node m_previous;
   Node m_next;
   DirNodeCellIndex m_cell_index;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \ingroup ArcaneCartesianMesh
+ * \brief Noeud avant et après un noeud suivant une direction.
+ *
+ * Les instances de cette classe sont temporaires et construites via
+ * NodeDirectionMng::node().
+ */
+class ARCANE_CARTESIANMESH_EXPORT DirNodeLocalId
+{
+  friend NodeDirectionMng;
+
+ private:
+
+  typedef signed char IndexType;
+  static constexpr IndexType NULL_CELL = -1;
+
+ private:
+
+  // Seul NodeDirectionMng à le droit de construire un DirNode.
+  ARCCORE_HOST_DEVICE DirNodeLocalId(NodeLocalId current, NodeLocalId next, NodeLocalId prev,
+                                     DirNode::DirNodeCellIndex idx,
+                                     IndexedNodeCellConnectivityView view)
+  : m_current(current)
+  , m_previous(prev)
+  , m_next(next)
+  , m_cell_index(idx)
+  , m_view(view)
+  {}
+
+ public:
+
+  //! Maille avant
+  ARCCORE_HOST_DEVICE NodeLocalId previous() const { return m_previous; }
+  //! Maille avant
+  ARCCORE_HOST_DEVICE NodeLocalId previousId() const { return m_previous; }
+  //! Maille après
+  ARCCORE_HOST_DEVICE NodeLocalId next() const { return m_next; }
+  //! Maille après
+  ARCCORE_HOST_DEVICE NodeLocalId nextId() const { return m_next; }
+  /*!
+   * \brief Indice dans la liste des mailles de ce noeud d'une
+   * maille en fonction de sa position.
+   *
+   * Les valeurs possibles pour \a position sont données par l'énumération
+   * eCellNodePosition.
+   */
+  ARCCORE_HOST_DEVICE Int32 cellIndex(Int32 position) const { return m_cell_index[position]; }
+  /*!
+   * \brief Indice local d'une maille en fonction de sa position par rapport à ce noeud.
+   *
+   * Les valeurs possibles pour \a position sont données par l'énumération
+   * eCellNodePosition.
+   */
+  ARCCORE_HOST_DEVICE CellLocalId cellId(Int32 position) const
+  {
+    Int32 x = cellIndex(position);
+    return (x == NULL_CELL) ? CellLocalId(NULL_ITEM_LOCAL_ID) : m_view.cellId(m_current, x);
+  }
+
+  //! Noeud devant à gauche dans la direction
+  ARCCORE_HOST_DEVICE CellLocalId nextLeftCellId() const { return cellId(CNP_NextLeft); }
+  //! Noeud devant à droite dans la direction
+  ARCCORE_HOST_DEVICE CellLocalId nextRightCellId() const { return cellId(CNP_NextRight); }
+  //! Noeud derrière à droite dans la direction
+  ARCCORE_HOST_DEVICE CellLocalId previousRightCellId() const { return cellId(CNP_PreviousRight); }
+  //! Noeud derrière à gauche dans la direction
+  ARCCORE_HOST_DEVICE CellLocalId previousLeftCellId() const { return cellId(CNP_PreviousLeft); }
+
+  //! Noeud devant à gauche dans la direction
+  ARCCORE_HOST_DEVICE CellLocalId topNextLeftCellId() const { return cellId(CNP_TopNextLeft); }
+  //! Noeud devant à droite dans la direction
+  ARCCORE_HOST_DEVICE CellLocalId topNextRightCellId() const { return cellId(CNP_TopNextRight); }
+  //! Noeud derrière à droite dans la direction
+  ARCCORE_HOST_DEVICE CellLocalId topPreviousRightCellId() const { return cellId(CNP_TopPreviousRight); }
+  //! Noeud derrière à gauche dans la direction
+  ARCCORE_HOST_DEVICE CellLocalId topPreviousLeftCellId() const { return cellId(CNP_TopPreviousLeft); }
+
+ private:
+
+  NodeLocalId m_current;
+  NodeLocalId m_previous;
+  NodeLocalId m_next;
+  DirNode::DirNodeCellIndex m_cell_index;
+  IndexedNodeCellConnectivityView m_view;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -219,6 +323,18 @@ class ARCANE_CARTESIANMESH_EXPORT NodeDirectionMng
   DirNode node(NodeLocalId n) const
   {
     return _node(n.localId());
+  }
+
+  //! Noeud direction correspondant au noeud \a n
+  ARCCORE_HOST_DEVICE DirNodeLocalId nodeLocalId(NodeLocalId n) const
+  {
+    return _dirNodeLocalId(n);
+  }
+
+  //! Noeud direction correspondant au noeud \a n
+  ARCCORE_HOST_DEVICE DirNodeLocalId dirNodeLocalId(NodeLocalId n) const
+  {
+    return _dirNodeLocalId(n);
   }
 
   //! Groupe de tous les noeuds dans la direction.
@@ -300,6 +416,7 @@ class ARCANE_CARTESIANMESH_EXPORT NodeDirectionMng
   SmallSpan<ItemDirectionInfo> m_infos_view;
   NodeInfoListView m_nodes;
   eMeshDirection m_direction;
+  IndexedNodeCellConnectivityView m_node_cell_view;
   Impl* m_p;
 
  private:
@@ -309,6 +426,13 @@ class ARCANE_CARTESIANMESH_EXPORT NodeDirectionMng
   {
     ItemDirectionInfo d = m_infos_view[local_id];
     return DirNode(m_nodes[local_id], m_nodes[d.m_next_lid], m_nodes[d.m_previous_lid], d.m_cell_index);
+  }
+
+  //! Noeud direction correspondant au noeud de numéro local \a local_id
+  ARCCORE_HOST_DEVICE DirNodeLocalId _dirNodeLocalId(NodeLocalId local_id) const
+  {
+    ItemDirectionInfo d = m_infos_view[local_id.localId()];
+    return DirNodeLocalId(local_id, NodeLocalId(d.m_next_lid), NodeLocalId(d.m_previous_lid), d.m_cell_index, m_node_cell_view);
   }
 
   void _computeNodeCellInfos(const CellDirectionMng& cell_dm,

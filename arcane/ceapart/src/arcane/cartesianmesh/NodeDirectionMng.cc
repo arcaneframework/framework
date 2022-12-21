@@ -17,11 +17,13 @@
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/Real3.h"
+#include "arcane/utils/PlatformUtils.h"
 
 #include "arcane/IItemFamily.h"
 #include "arcane/ItemGroup.h"
 #include "arcane/IMesh.h"
 #include "arcane/VariableTypes.h"
+#include "arcane/UnstructuredMeshConnectivity.h"
 
 #include "arcane/cartesianmesh/ICartesianMesh.h"
 #include "arcane/cartesianmesh/CellDirectionMng.h"
@@ -40,6 +42,11 @@ namespace Arcane
 class NodeDirectionMng::Impl
 {
  public:
+
+  Impl() : m_infos(platform::getDefaultDataAllocator()){}
+
+ public:
+
   NodeGroup m_inner_all_items;
   NodeGroup m_outer_all_items;
   NodeGroup m_all_items;
@@ -163,6 +170,12 @@ _internalComputeInfos(const CellDirectionMng& cell_dm,const NodeGroup& all_nodes
 
   _filterNodes();
   _computeNodeCellInfos(cell_dm,cells_center);
+
+  {
+    UnstructuredMeshConnectivityView mesh_connectivity;
+    mesh_connectivity.setMesh(m_p->m_cartesian_mesh->mesh());
+    m_node_cell_view = mesh_connectivity.nodeCell();
+  }
 }
 
 /*---------------------------------------------------------------------------*/

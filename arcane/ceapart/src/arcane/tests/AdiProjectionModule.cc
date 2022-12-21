@@ -82,7 +82,6 @@ class AdiProjectionModule
   void computePrimalMassFluxInner(Integer direction);
 
   void computeDualMassFluxInner(Integer direction);
-  void computeDualMassFluxBoundary(Integer direction);
   void prepareLagrangianVariables();
   void checkLagrangianVariablesConsistency();
 
@@ -93,6 +92,7 @@ class AdiProjectionModule
 
   // Fonctions publiques pour CUDA
   void computePrimalMassFluxBoundary(Integer direction);
+  void computeDualMassFluxBoundary(Integer direction);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -237,32 +237,34 @@ computeDualMassFluxBoundary(Integer direction)
 {
   NodeDirectionMng ndm(m_cartesian_mesh->nodeDirection(direction));
 
+  auto queue = makeQueue(acceleratorMng()->defaultRunner());
+  auto command = makeCommand(queue);
+
+  auto inout_nodal_mass_flux_right = viewInOut(command, m_nodal_mass_flux_right);
+  auto inout_nodal_mass_flux_left = viewInOut(command, m_nodal_mass_flux_left);
+
   // Calcul des flux de masse pour les mailles de bord dans la direction de calcul.
-  ENUMERATE_ (Node, current_node, ndm.outerNodes()) {
-
+  command << RUNCOMMAND_ENUMERATE(Node, current_node, ndm.outerNodes())
+  {
     // Pour maille gauche/maille droite.
-    DirNode cc(ndm.node(*current_node));
+    DirNodeLocalId cc(ndm.dirNodeLocalId(current_node));
 
-    Node right_node = cc.next();
-    Node left_node = cc.previous();
+    NodeLocalId right_node = cc.next();
+    NodeLocalId left_node = cc.previous();
 
-    if (left_node.null()) {
+    if (left_node.isNull()) {
       // Frontière gauche.
 
-      m_nodal_mass_flux_left[current_node] = m_nodal_mass_flux_left[right_node];
-      m_nodal_mass_flux_right[current_node] = m_nodal_mass_flux_right[right_node];
+      inout_nodal_mass_flux_left[current_node] = inout_nodal_mass_flux_left[right_node];
+      inout_nodal_mass_flux_right[current_node] = inout_nodal_mass_flux_right[right_node];
     }
-    else if (right_node.null()) {
+    else if (right_node.isNull()) {
       // Frontière droite.
 
-      m_nodal_mass_flux_left[current_node] = m_nodal_mass_flux_left[left_node];
-      m_nodal_mass_flux_right[current_node] = m_nodal_mass_flux_right[left_node];
+      inout_nodal_mass_flux_left[current_node] = inout_nodal_mass_flux_left[left_node];
+      inout_nodal_mass_flux_right[current_node] = inout_nodal_mass_flux_right[left_node];
     }
-    else {
-
-      ARCANE_FATAL("Internal error");
-    }
-  }
+  };
 }
 
 /*---------------------------------------------------------------------------*/
