@@ -20,7 +20,8 @@ namespace Arcane
     ST_Application = 1,
     ST_Session     = 2,
     ST_SubDomain   = 4,
-    ST_CaseOption  = 8
+    ST_Mesh        = 8,
+    ST_CaseOption  = 16
   }
 
   /*!

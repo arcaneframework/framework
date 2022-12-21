@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicService.h                                              (C) 2000-2021 */
+/* BasicService.h                                              (C) 2000-2022 */
 /*                                                                           */
 /* Classe de base d'un service lié à un sous-domaine.                        */
 /*---------------------------------------------------------------------------*/
@@ -18,16 +18,16 @@
 #include "arcane/AbstractService.h"
 #include "arcane/CommonVariables.h"
 
+// Pour indiquer qu'on a une classe de base spécifique pour chaque type de
+// service. Utilisé seulement par 'axlstar' pour la version 3.8 de Arcane.
+// Par la suite on pourra supprimer cela
+#define ARCANE_HAS_SPECIFIC_BASIC_SERVICE
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class ServiceBuildInfo;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -46,7 +46,7 @@ class ARCANE_CORE_EXPORT BasicService
   explicit BasicService(const ServiceBuildInfo&);
 
  public:
-	
+
   ~BasicService() override; //!< Libère les ressources.
 
  public:
@@ -60,11 +60,69 @@ class ARCANE_CORE_EXPORT BasicService
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe de base de service lié à une option du jeu de données.
+ *
+ * \ingroup Service.
+ *
+ * Pour l'instant (décembre 2022) cette classe dérive de 'BasicService' pour
+ * des raisons de compatibilité avec l'existant mais à terme ce ne sera plus
+ * le cas.
+ */
+class ARCANE_CORE_EXPORT BasicCaseOptionService
+: public BasicService
+{
+ protected:
 
-} // End namespace Arcane
+  explicit BasicCaseOptionService(const ServiceBuildInfo& s)
+  : BasicService(s)
+  {}
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe de base de service lié à un maillage.
+ *
+ * \ingroup Service.
+ *
+ * Pour l'instant (décembre 2022) cette classe dérive de 'BasicService' pour
+ * des raisons de compatibilité avec l'existant mais à terme ce ne sera plus
+ * le cas.
+ */
+class ARCANE_CORE_EXPORT BasicMeshService
+: public BasicService
+{
+ protected:
+
+  explicit BasicMeshService(const ServiceBuildInfo& s)
+  : BasicService(s)
+  {}
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe de base de service lié à un sous-domaine.
+ *
+ * \ingroup Service.
+ */
+class ARCANE_CORE_EXPORT BasicSubDomainService
+: public BasicService
+{
+ protected:
+
+  explicit BasicSubDomainService(const ServiceBuildInfo& s)
+  : BasicService(s)
+  {}
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+} // namespace Arcane
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#endif

@@ -64,8 +64,10 @@ enum eServiceType
   ST_Session = 2,
   //! Le service s'utilise au niveau du sous-domaine
   ST_SubDomain = 4,
-  //! Le service s'utilise au niveau du jeu de données.
-  ST_CaseOption = 8
+  //! Le service s'utilise au niveau du maillage
+  ST_Mesh = 8,
+  //! Le service s'utilise au niveau du jeu de données
+  ST_CaseOption = 16
 };
 
 /*---------------------------------------------------------------------------*/
