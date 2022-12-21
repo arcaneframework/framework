@@ -88,25 +88,21 @@ jobs:
           mkdir -p ${{ env.CT_RESULT_DIR }}
           ARCANE_CHECK=1 ctest --test-dir ${{ env.BUILD_DIR }} --output-junit ${{ env.CT_RESULT_DIR }}/results.xml ${{ env.CT_OPTS }} -LE '${{ env.CT_EXCLUED_LABELS }}'
 
-      - name: Apply coverage
-        shell: bash
-        run: find . -name "*.o" -exec gcov-12 {} \;
-
-      - name: Remove gcov headers
-        shell: bash
-        run: rm -f *.h.gcov *_wrap.*.gcov
-
-
-      # --- Version à tester ---
       # - name: Apply coverage
       #   shell: bash
-      #   run: gcov-12 $(find . -name "*.o" | xargs echo)
+      #   run: find . -name "*.o" -exec gcov-12 {} \;
 
-      # - name: Remove generated axl headers and wrap
+      # - name: Remove gcov headers
       #   shell: bash
-      #   run: rm -f *_axl.h.gcov *_wrap.*.gcov
-      # ---   ---
+      #   run: rm -f *.h.gcov *_wrap.*.gcov
 
+      - name: Apply coverage
+        shell: bash
+        run: gcov-12 $(find . -name "*.o" | xargs echo)
+
+      - name: Remove generated axl headers and wrap
+        shell: bash
+        run: rm -f *_axl.h.gcov *_wrap.*.gcov
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
