@@ -33,21 +33,28 @@ namespace Arcane
 class ARCANE_CORE_EXPORT ItemLocalId
 {
  public:
-  constexpr ARCCORE_HOST_DEVICE ItemLocalId() : m_local_id(NULL_ITEM_LOCAL_ID){}
-  constexpr ARCCORE_HOST_DEVICE explicit ItemLocalId(Int32 id) : m_local_id(id){}
+
+  ItemLocalId() = default;
+  constexpr ARCCORE_HOST_DEVICE explicit ItemLocalId(Int32 id)
+  : m_local_id(id)
+  {}
   // La définition de ce constructeur est dans ItemInternal.h
   inline ItemLocalId(ItemInternal* item);
   inline ItemLocalId(ItemEnumerator enumerator);
-  template<typename ItemType> inline ItemLocalId(ItemEnumeratorT<ItemType> enumerator);
+  template <typename ItemType> inline ItemLocalId(ItemEnumeratorT<ItemType> enumerator);
   inline ItemLocalId(Item item);
   constexpr ARCCORE_HOST_DEVICE operator Int32() const { return m_local_id; }
   constexpr ARCCORE_HOST_DEVICE Int32 asInt32() const { return m_local_id; }
   constexpr ARCCORE_HOST_DEVICE Int32 asInteger() const { return m_local_id; }
+
  public:
+
   constexpr ARCCORE_HOST_DEVICE Int32 localId() const { return m_local_id; }
-  constexpr ARCCORE_HOST_DEVICE bool isNull() const { return m_local_id==NULL_ITEM_LOCAL_ID; }
+  constexpr ARCCORE_HOST_DEVICE bool isNull() const { return m_local_id == NULL_ITEM_LOCAL_ID; }
+
  private:
-  Int32 m_local_id;
+
+  Int32 m_local_id = NULL_ITEM_LOCAL_ID;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -56,15 +63,21 @@ class ARCANE_CORE_EXPORT ItemLocalId
  * \ingroup Mesh
  * \brief Index d'une entité \a ItemType dans une variable.
  */
-template<typename ItemType> class ItemLocalIdT
+template <typename ItemType> class ItemLocalIdT
 : public ItemLocalId
 {
  public:
-  constexpr ARCCORE_HOST_DEVICE explicit ItemLocalIdT(Int32 id) : ItemLocalId(id){}
+
+  ItemLocalIdT() = default;
+  constexpr ARCCORE_HOST_DEVICE explicit ItemLocalIdT(Int32 id)
+  : ItemLocalId(id)
+  {}
   inline ItemLocalIdT(ItemInternal* item);
   inline ItemLocalIdT(ItemEnumeratorT<ItemType> enumerator);
   inline ItemLocalIdT(ItemType item);
+
  public:
+
   ARCANE_DEPRECATED_REASON("Y2022: Use strongly typed 'ItemEnumeratorT<ItemType>' or 'ItemType'")
   inline ItemLocalIdT(ItemEnumerator enumerator);
 };
@@ -98,12 +111,15 @@ class ItemLocalIdViewT
  public:
   constexpr ARCCORE_HOST_DEVICE const LocalIdType* data() const { return m_ids.data(); }
  public:
-  static constexpr ARCCORE_HOST_DEVICE ItemLocalIdViewT<ItemType>
+
+  static ARCCORE_HOST_DEVICE ItemLocalIdViewT<ItemType>
   fromIds(SmallSpan<const Int32> v)
   {
-    return ItemLocalIdViewT<ItemType>(reinterpret_cast<const LocalIdType*>(v.data()),v.size());
+    return ItemLocalIdViewT<ItemType>(reinterpret_cast<const LocalIdType*>(v.data()), v.size());
   }
+
  private:
+
   SpanType m_ids;
 };
 
