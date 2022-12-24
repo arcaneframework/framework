@@ -69,7 +69,7 @@ class ARCANE_CARTESIANMESH_EXPORT DirFace
  * \brief Infos sur maille avant et après une face suivant une direction.
  *
  * Les instances de cette classe sont temporaires et construites via
- * FaceDirectionMng::face().
+ * FaceDirectionMng::dirFaceId().
  */
 class ARCANE_CARTESIANMESH_EXPORT DirFaceLocalId
 {

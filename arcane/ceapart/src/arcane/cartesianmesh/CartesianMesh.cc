@@ -490,7 +490,7 @@ _computeMeshDirection(CartesianMeshPatch& cdi,eMeshDirection dir,VariableCellRea
       prev_cell = Cell();
     else if (prev_cell.level()!=my_level)
       prev_cell = Cell();
-    cell_dm.m_infos_view[icell.itemLocalId()] = CellDirectionMng::ItemDirectionInfo(next_cell.localId(),prev_cell.localId());
+    cell_dm.m_infos_view[icell.itemLocalId()] = CellDirectionMng::ItemDirectionInfo(next_cell,prev_cell);
   }
   cell_dm._internalComputeInnerAndOuterItems(all_cells);
   face_dm._internalComputeInfos(cell_dm,cells_center,faces_center);

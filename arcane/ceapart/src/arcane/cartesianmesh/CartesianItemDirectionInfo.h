@@ -42,7 +42,7 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianItemDirectionInfo
 
  private:
 
-  CartesianItemDirectionInfo(Int32 next_id, Int32 prev_id)
+  CartesianItemDirectionInfo(ItemLocalId next_id, ItemLocalId prev_id)
   : m_next_lid(next_id)
   , m_previous_lid(prev_id)
   {}
@@ -50,9 +50,9 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianItemDirectionInfo
  private:
 
   //! entité après l'entité courante dans la direction
-  Int32 m_next_lid = NULL_ITEM_LOCAL_ID;
+  ItemLocalId m_next_lid;
   //! entité avant l'entité courante dans la direction
-  Int32 m_previous_lid = NULL_ITEM_LOCAL_ID;
+  ItemLocalId m_previous_lid;
 };
 
 /*---------------------------------------------------------------------------*/

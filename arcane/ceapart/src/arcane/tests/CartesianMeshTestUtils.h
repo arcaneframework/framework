@@ -97,6 +97,7 @@ class CartesianMeshTestUtils
   void _testDirFaceAccelerator(int idir);
   void _testDirCellNodeAccelerator();
   void _testDirNodeAccelerator();
+  void _testDirCellFaceAccelerator();
 };
 
 /*---------------------------------------------------------------------------*/

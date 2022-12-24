@@ -90,6 +90,7 @@ testAll(bool is_amr)
   _testDirCellNode();
   _testDirCellNodeAccelerator();
   _testDirCellFace();
+  _testDirCellFaceAccelerator();
   if (m_mesh->dimension() == 3) {
     _testNodeToCellConnectivity3D();
     _testCellToNodeConnectivity3D();
@@ -635,7 +636,6 @@ _testDirNodeAccelerator()
 
   IMesh* mesh = m_mesh;
   Integer nb_dir = mesh->dimension();
-  Integer nb_error = 0;
   VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
   // Pour tester l'opérateur 'operator='
   NodeDirectionMng node_dm2;
@@ -648,14 +648,12 @@ _testDirNodeAccelerator()
 
   UnstructuredMeshConnectivityView m_connectivity_view;
   m_connectivity_view.setMesh(mesh);
-
   auto cnc = m_connectivity_view.nodeCell();
 
   for (Integer idir = 0; idir < nb_dir; ++idir) {
     NodeDirectionMng node_dm(m_cartesian_mesh->nodeDirection(idir));
     node_dm2 = m_cartesian_mesh->nodeDirection(idir);
     node_dm3 = node_dm;
-    eMeshDirection md = node_dm.direction();
     info() << "DIRECTION=" << idir;
     NodeGroup dm_all_nodes = node_dm.allNodes();
     _checkItemGroupIsSorted(dm_all_nodes);
@@ -806,15 +804,15 @@ _testDirCellNodeAccelerator()
   VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
   Integer nb_dir = mesh->dimension();
 
-  auto queue = m_accelerator_mng->defaultQueue();
-  auto command = makeCommand(*queue);
-
   VariableCellInt32 dummy_var(VariableBuildInfo(mesh, "DummyCellVariable"));
   VariableCellReal3 computed_center(VariableBuildInfo(mesh, "CellComputedCenter"));
 
   for (Integer idir = 0; idir < nb_dir; ++idir) {
     CellDirectionMng cdm(m_cartesian_mesh->cellDirection(idir));
     info() << "TEST_DIR_CELL_NODE_ACCELERATOR_DIRECTION=" << idir;
+
+    auto queue = m_accelerator_mng->defaultQueue();
+    auto command = makeCommand(*queue);
 
     auto inout_dummy_var = viewInOut(command, dummy_var);
     auto in_nodes_coord = viewIn(command, nodes_coord);
@@ -888,6 +886,65 @@ _testDirCellFace()
         info() << "CellFace uid=" << ItemPrinter(cell) << " dir=" << md;
         info() << "CellFace nextFace =" << ItemPrinter(cf.next()) << " xyz=" << m_face_center[cf.next()];
         info() << "CellFace prevFace=" << ItemPrinter(cf.previous()) << " xyz=" << m_face_center[cf.previous()];
+      }
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshTestUtils::
+_testDirCellFaceAccelerator()
+{
+  IMesh* mesh = m_mesh;
+  //VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
+  Integer nb_dir = mesh->dimension();
+
+  UnstructuredMeshConnectivityView m_connectivity_view;
+  m_connectivity_view.setMesh(mesh);
+  auto cfc = m_connectivity_view.cellFace();
+
+  VariableCellInt32 dummy_var(VariableBuildInfo(mesh, "DummyCellVariable"));
+
+  for (Integer idir = 0; idir < nb_dir; ++idir) {
+    CellDirectionMng cdm(m_cartesian_mesh->cellDirection(idir));
+
+    auto queue = m_accelerator_mng->defaultQueue();
+    auto command = makeCommand(*queue);
+
+    auto inout_dummy_var = viewInOut(command, dummy_var);
+
+    info() << "DIRECTION=" << idir;
+
+    command << RUNCOMMAND_ENUMERATE(Cell, cell, cdm.allCells())
+    {
+      inout_dummy_var[cell] = 0;
+
+      CellLocalId cell_id(cell.localId());
+      DirCellFaceLocalId cf(cdm.dirCellFaceId(cell));
+      DirCellFaceLocalId cf2(cdm.dirCellFaceId(cell_id));
+      if (cf.cellId() != cf2.cellId()) {
+        inout_dummy_var[cell] = -10;
+        return;
+      }
+
+      Int32 next_index = cf.nextLocalIndex();
+      Int32 previous_index = cf.previousLocalIndex();
+
+      FaceLocalId next_face1 = cf.nextId();
+      FaceLocalId next_face2 = cfc.faceId(cell, next_index);
+      if (next_face1 != next_face2)
+        inout_dummy_var[cell] = -11;
+
+      FaceLocalId previous_face1 = cf.previousId();
+      FaceLocalId previous_face2 = cfc.faceId(cell, previous_index);
+      if (previous_face1 != previous_face2)
+        inout_dummy_var[cell] = -12;
+    };
+    ENUMERATE_ (Cell, icell, cdm.allCells()) {
+      if (dummy_var[icell] < 0) {
+        ARCANE_FATAL("Bad value for dummy_var id={0} v={1}", ItemPrinter(*icell), dummy_var[icell]);
       }
     }
   }

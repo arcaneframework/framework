@@ -130,6 +130,7 @@ _internalComputeInnerAndOuterItems(const ItemGroup& items)
   UnstructuredMeshConnectivityView mesh_connectivity;
   mesh_connectivity.setMesh(m_p->m_cartesian_mesh->mesh());
   m_cell_node_view = mesh_connectivity.cellNode();
+  m_cell_face_view = mesh_connectivity.cellFace();
 }
 
 /*---------------------------------------------------------------------------*/
