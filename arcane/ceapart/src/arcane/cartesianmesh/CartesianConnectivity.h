@@ -27,13 +27,6 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-class CellDirectionMng;
-class FaceDirectionMng;
-class NodeDirectionMng;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
  * \ingroup ArcaneCartesianMesh
  * \brief Informations de connectivité d'un maillage cartésien.
@@ -62,6 +55,7 @@ class NodeDirectionMng;
  */
 class ARCANE_CARTESIANMESH_EXPORT CartesianConnectivity
 {
+  friend class CartesianConnectivityLocalId;
   /*!
    * \brief Type énuméré indiquant la position.
    * \warning Les valeurs exactes ne doivent pas être utilisées car elles sont
@@ -81,13 +75,17 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianConnectivity
   };
 
  public:
-  
+
   struct Index
   {
    public:
+
     friend class CartesianConnectivity;
+    friend class CartesianConnectivityLocalId;
+
    private:
-    void fill(Int32 i){ v[0] = v[1] = v[2] = v[3] = v[4] = v[5] = v[6] = v[7] = i; }
+
+    void fill(Int32 i) { v[0] = v[1] = v[2] = v[3] = v[4] = v[5] = v[6] = v[7] = i; }
     Int32 v[8];
   };
 
@@ -172,13 +170,13 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianConnectivity
   */
   //@{
   //! Calcule les infos de connectivité.
-  void computeInfos(IMesh* mesh,VariableNodeReal3& nodes_coord,VariableCellReal3& cells_coord);
+  void computeInfos(IMesh* mesh, VariableNodeReal3& nodes_coord, VariableCellReal3& cells_coord);
   //! Positionne les tableaux contenant les infos de connectivité
-  void setStorage(ArrayView<Index> nodes_to_cell,ArrayView<Index> cells_to_node);
+  void setStorage(ArrayView<Index> nodes_to_cell, ArrayView<Index> cells_to_node);
   //@}
 
  private:
-  
+
   Index& _index(Node n) { return m_nodes_to_cell[n.localId()]; }
   Index& _index(Cell c) { return m_cells_to_node[c.localId()]; }
 
@@ -188,9 +186,91 @@ class ARCANE_CARTESIANMESH_EXPORT CartesianConnectivity
   ArrayView<Index> m_cells_to_node;
   CellInfoListView m_cells;
   NodeInfoListView m_nodes;
-  
-  void _computeInfos2D(IMesh* mesh,VariableNodeReal3& nodes_coord,VariableCellReal3& cells_coord);
-  void _computeInfos3D(IMesh* mesh,VariableNodeReal3& nodes_coord,VariableCellReal3& cells_coord);
+
+  void _computeInfos2D(IMesh* mesh, VariableNodeReal3& nodes_coord, VariableCellReal3& cells_coord);
+  void _computeInfos3D(IMesh* mesh, VariableNodeReal3& nodes_coord, VariableCellReal3& cells_coord);
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe d'accès aux connectivités cartésiennes.
+ *
+ * \sa CartesianConnectivity.
+ */
+class ARCANE_CARTESIANMESH_EXPORT CartesianConnectivityLocalId
+{
+ private:
+
+  using Index = CartesianConnectivity::Index;
+
+  enum ePosition
+  {
+    P_UpperLeft = 0,
+    P_UpperRight = 1,
+    P_LowerRight = 2,
+    P_LowerLeft = 3,
+
+    P_TopZUpperLeft = 4,
+    P_TopZUpperRight = 5,
+    P_TopZLowerRight = 6,
+    P_TopZLowerLeft = 7
+  };
+
+ public:
+
+  CartesianConnectivityLocalId(const CartesianConnectivity& c)
+  : m_nodes_to_cell(c.m_nodes_to_cell)
+  , m_cells_to_node(c.m_cells_to_node)
+  , m_cells(c.m_cells)
+  , m_nodes(c.m_nodes)
+  {
+  }
+
+ public:
+
+  //! Maille en haut à gauche du noeud \a n
+  ARCCORE_HOST_DEVICE CellLocalId upperLeftId(NodeLocalId n) const { return CellLocalId(m_nodes_to_cell[n.localId()].v[P_UpperLeft]); }
+  //! Maille en haut à droite du noeud \a n
+  ARCCORE_HOST_DEVICE CellLocalId upperRightId(NodeLocalId n) const { return CellLocalId(m_nodes_to_cell[n.localId()].v[P_UpperRight]); }
+  //! Maille en bas à droite du noeud \a n
+  ARCCORE_HOST_DEVICE CellLocalId lowerRightId(NodeLocalId n) const { return CellLocalId(m_nodes_to_cell[n.localId()].v[P_LowerRight]); }
+  //! Maille en bas à gauche du noeud \a n
+  ARCCORE_HOST_DEVICE CellLocalId lowerLeftId(NodeLocalId n) const { return CellLocalId(m_nodes_to_cell[n.localId()].v[P_LowerLeft]); }
+
+  //! En 3D, maille en haut à gauche du noeud \a n
+  ARCCORE_HOST_DEVICE CellLocalId topZUpperLeftId(NodeLocalId n) const { return CellLocalId(m_nodes_to_cell[n.localId()].v[P_TopZUpperLeft]); }
+  //! En 3D, maille en haut à droite du noeud \a n
+  ARCCORE_HOST_DEVICE CellLocalId topZUpperRightId(NodeLocalId n) const { return CellLocalId(m_nodes_to_cell[n.localId()].v[P_TopZUpperRight]); }
+  //! En 3D, maille en bas à droite du noeud \a n
+  ARCCORE_HOST_DEVICE CellLocalId topZLowerRightId(NodeLocalId n) const { return CellLocalId(m_nodes_to_cell[n.localId()].v[P_TopZLowerRight]); }
+  //! En 3D, maille en bas à gauche du noeud \a n
+  ARCCORE_HOST_DEVICE CellLocalId topZLowerLeftId(NodeLocalId n) const { return CellLocalId(m_nodes_to_cell[n.localId()].v[P_TopZLowerLeft]); }
+
+  //! Noeud en haut à gauche de la maille \a c
+  ARCCORE_HOST_DEVICE NodeLocalId upperLeftId(CellLocalId c) const { return NodeLocalId(m_cells_to_node[c.localId()].v[P_UpperLeft]); }
+  //! Noeud en haut à droite de la maille \a c
+  ARCCORE_HOST_DEVICE NodeLocalId upperRightId(CellLocalId c) const { return NodeLocalId(m_cells_to_node[c.localId()].v[P_UpperRight]); }
+  //! Noeud en bas à droite de la maille \a c
+  ARCCORE_HOST_DEVICE NodeLocalId lowerRightId(CellLocalId c) const { return NodeLocalId(m_cells_to_node[c.localId()].v[P_LowerRight]); }
+  //! Noeud en bad à gauche de la maille \a c
+  ARCCORE_HOST_DEVICE NodeLocalId lowerLeftId(CellLocalId c) const { return NodeLocalId(m_cells_to_node[c.localId()].v[P_LowerLeft]); }
+
+  //! En 3D, noeud au dessus en haut à gauche de la maille \a c
+  ARCCORE_HOST_DEVICE NodeLocalId topZUpperLeftId(CellLocalId c) const { return NodeLocalId(m_cells_to_node[c.localId()].v[P_TopZUpperLeft]); }
+  //! En 3D, noeud au dessus en haut à droite de la maille \a c
+  ARCCORE_HOST_DEVICE NodeLocalId topZUpperRightId(CellLocalId c) const { return NodeLocalId(m_cells_to_node[c.localId()].v[P_TopZUpperRight]); }
+  //! En 3D, noeud au dessus en bas à droite de la maille \a c
+  ARCCORE_HOST_DEVICE NodeLocalId topZLowerRightId(CellLocalId c) const { return NodeLocalId(m_cells_to_node[c.localId()].v[P_TopZLowerRight]); }
+  //! En 3D, noeud au dessus en bas à gauche de la maille \a c
+  ARCCORE_HOST_DEVICE NodeLocalId topZLowerLeftId(CellLocalId c) const { return NodeLocalId(m_cells_to_node[c.localId()].v[P_TopZLowerLeft]); }
+
+ private:
+
+  ArrayView<Index> m_nodes_to_cell;
+  ArrayView<Index> m_cells_to_node;
+  CellInfoListView m_cells;
+  NodeInfoListView m_nodes;
 };
 
 /*---------------------------------------------------------------------------*/

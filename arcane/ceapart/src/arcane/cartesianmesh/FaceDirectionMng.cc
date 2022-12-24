@@ -257,9 +257,9 @@ _computeCellInfos(const CellDirectionMng& cell_dm,const VariableCellReal3& cells
       }
     }
     if (is_inverse)
-      m_infos_view[face_lid] = ItemDirectionInfo(back_cell.localId(),front_cell.localId());
+      m_infos_view[face_lid] = ItemDirectionInfo(back_cell,front_cell);
     else
-      m_infos_view[face_lid] = ItemDirectionInfo(front_cell.localId(),back_cell.localId());
+      m_infos_view[face_lid] = ItemDirectionInfo(front_cell,back_cell);
   }
 }
 

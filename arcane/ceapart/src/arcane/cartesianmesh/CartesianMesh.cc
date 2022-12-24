@@ -17,6 +17,7 @@
 #include "arcane/utils/IUserDataList.h"
 #include "arcane/utils/Ref.h"
 #include "arcane/utils/ScopedPtr.h"
+#include "arcane/utils/PlatformUtils.h"
 
 #include "arcane/IMesh.h"
 #include "arcane/ItemPrinter.h"
@@ -172,6 +173,8 @@ CartesianMeshImpl::
 CartesianMeshImpl(IMesh* mesh)
 : TraceAccessor(mesh->traceMng())
 , m_mesh(mesh)
+, m_nodes_to_cell_storage(platform::getDefaultDataAllocator())
+, m_cells_to_node_storage(platform::getDefaultDataAllocator())
 {
   m_all_items_direction_info = makeRef(new CartesianMeshPatch(this,-1));
   m_amr_patches.add(m_all_items_direction_info);
@@ -490,7 +493,7 @@ _computeMeshDirection(CartesianMeshPatch& cdi,eMeshDirection dir,VariableCellRea
       prev_cell = Cell();
     else if (prev_cell.level()!=my_level)
       prev_cell = Cell();
-    cell_dm.m_infos_view[icell.itemLocalId()] = CellDirectionMng::ItemDirectionInfo(next_cell.localId(),prev_cell.localId());
+    cell_dm.m_infos_view[icell.itemLocalId()] = CellDirectionMng::ItemDirectionInfo(next_cell,prev_cell);
   }
   cell_dm._internalComputeInnerAndOuterItems(all_cells);
   face_dm._internalComputeInfos(cell_dm,cells_center,faces_center);

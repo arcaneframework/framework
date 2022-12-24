@@ -127,7 +127,7 @@ class ARCANE_CORE_EXPORT ItemInfoListView
  * \brief Classe de base des vues spécialisées des informations sur les entités.
  */
 template <typename ItemType>
-class ARCANE_CORE_EXPORT ItemInfoListViewT
+class ItemInfoListViewT
 : public ItemInfoListView
 {
  public:
@@ -157,7 +157,7 @@ class ARCANE_CORE_EXPORT ItemInfoListViewT
 /*!
  * \brief Vue sur les informations des noeuds.
  */
-class ARCANE_CORE_EXPORT NodeInfoListView
+class NodeInfoListView
 : public ItemInfoListViewT<Node>
 {
  public:
@@ -179,7 +179,7 @@ class ARCANE_CORE_EXPORT NodeInfoListView
 /*!
  * \brief Vue sur les informations des arêtes.
  */
-class ARCANE_CORE_EXPORT EdgeInfoListView
+class EdgeInfoListView
 : public ItemInfoListViewT<Edge>
 {
  public:
@@ -201,7 +201,7 @@ class ARCANE_CORE_EXPORT EdgeInfoListView
 /*!
  * \brief Vue sur les informations des faces.
  */
-class ARCANE_CORE_EXPORT FaceInfoListView
+class FaceInfoListView
 : public ItemInfoListViewT<Face>
 {
  public:
@@ -223,7 +223,7 @@ class ARCANE_CORE_EXPORT FaceInfoListView
 /*!
  * \brief Vue sur les informations des mailles.
  */
-class ARCANE_CORE_EXPORT CellInfoListView
+class CellInfoListView
 : public ItemInfoListViewT<Cell>
 {
  public:
@@ -245,7 +245,7 @@ class ARCANE_CORE_EXPORT CellInfoListView
 /*!
  * \brief Vue sur les informations des particules.
  */
-class ARCANE_CORE_EXPORT ParticleInfoListView
+class ParticleInfoListView
 : public ItemInfoListViewT<Particle>
 {
  public:
@@ -267,7 +267,7 @@ class ARCANE_CORE_EXPORT ParticleInfoListView
 /*!
  * \brief Vue sur les informations des DoFs.
  */
-class ARCANE_CORE_EXPORT DoFInfoListView
+class DoFInfoListView
 : public ItemInfoListViewT<DoF>
 {
  public:
