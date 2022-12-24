@@ -93,7 +93,9 @@ testAll(bool is_amr)
   _testDirCellFaceAccelerator();
   if (m_mesh->dimension() == 3) {
     _testNodeToCellConnectivity3D();
+    _testNodeToCellConnectivity3DAccelerator();
     _testCellToNodeConnectivity3D();
+    _testCellToNodeConnectivity3DAccelerator();
   }
   else {
     _testNodeToCellConnectivity2D();
@@ -1043,6 +1045,99 @@ _testNodeToCellConnectivity3D()
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshTestUtils::
+_testNodeToCellConnectivity3DAccelerator()
+{
+  info() << "Test NodeToCell Connectivity3D";
+  IMesh* mesh = m_mesh;
+  VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
+  VariableNodeInt32 dummy_var(VariableBuildInfo(mesh, "DummyNodeVariable"));
+  CartesianConnectivityLocalId cc = m_cartesian_mesh->connectivity();
+
+  auto queue = m_accelerator_mng->defaultQueue();
+  auto command = makeCommand(*queue);
+
+  auto in_cell_center = viewIn(command, m_cell_center);
+  auto in_node_coord = viewIn(command, nodes_coord);
+  auto inout_dummy_var = viewInOut(command, dummy_var);
+  command << RUNCOMMAND_ENUMERATE(Node, node, m_mesh->allNodes())
+  {
+    Real3 node_coord = in_node_coord[node];
+    {
+      CellLocalId upper_left = cc.upperLeftId(node);
+      if (!upper_left.isNull()) {
+        Real3 c = in_cell_center[upper_left];
+        if (c.y <= node_coord.y || c.x >= node_coord.x || c.z >= node_coord.z)
+          inout_dummy_var[node] = -10;
+      }
+    }
+    {
+      CellLocalId upper_right = cc.upperRightId(node);
+      if (!upper_right.isNull()) {
+        Real3 c = in_cell_center[upper_right];
+        if (c.y <= node_coord.y || c.x <= node_coord.x || c.z >= node_coord.z)
+          inout_dummy_var[node] = -11;
+      }
+    }
+    {
+      CellLocalId lower_right = cc.lowerRightId(node);
+      if (!lower_right.isNull()) {
+        Real3 c = in_cell_center[lower_right];
+        if (c.y >= node_coord.y || c.x <= node_coord.x || c.z >= node_coord.z)
+          inout_dummy_var[node] = -12;
+      }
+    }
+    {
+      CellLocalId lower_left = cc.lowerLeftId(node);
+      if (!lower_left.isNull()) {
+        Real3 c = in_cell_center[lower_left];
+        if (c.y >= node_coord.y || c.x >= node_coord.x || c.z >= node_coord.z)
+          inout_dummy_var[node] = -13;
+      }
+    }
+    {
+      CellLocalId top_upper_left = cc.topZUpperLeftId(node);
+      if (!top_upper_left.isNull()) {
+        Real3 c = in_cell_center[top_upper_left];
+        if (c.y <= node_coord.y || c.x >= node_coord.x || c.z <= node_coord.z)
+          inout_dummy_var[node] = -14;
+      }
+    }
+    {
+      CellLocalId top_upper_right = cc.topZUpperRightId(node);
+      if (!top_upper_right.isNull()) {
+        Real3 c = in_cell_center[top_upper_right];
+        if (c.y <= node_coord.y || c.x <= node_coord.x || c.z <= node_coord.z)
+          inout_dummy_var[node] = -15;
+      }
+    }
+    {
+      CellLocalId top_lower_right = cc.topZLowerRightId(node);
+      if (!top_lower_right.isNull()) {
+        Real3 c = in_cell_center[top_lower_right];
+        if (c.y >= node_coord.y || c.x <= node_coord.x || c.z <= node_coord.z)
+          inout_dummy_var[node] = -16;
+      }
+    }
+    {
+      CellLocalId top_lower_left = cc.topZLowerLeftId(node);
+      if (!top_lower_left.isNull()) {
+        Real3 c = in_cell_center[top_lower_left];
+        if (c.y >= node_coord.y || c.x >= node_coord.x || c.z <= node_coord.z)
+          inout_dummy_var[node] = -17;
+      }
+    }
+  };
+  ENUMERATE_ (Node, inode, m_mesh->allNodes()) {
+    if (dummy_var[inode] < 0) {
+      ARCANE_FATAL("Bad value for dummy_var id={0} v={1}", ItemPrinter(*inode), dummy_var[inode]);
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshTestUtils::
 _testNodeToCellConnectivity2D()
 {
   info() << "Test NodeToCell Connectivity 2D";
@@ -1186,6 +1281,110 @@ _testCellToNodeConnectivity3D()
         ARCANE_FATAL("Bad topZLowerLeft node for cell={0}", ItemPrinter(cell));
       if (cell != ccell && is_not_amr)
         ARCANE_FATAL("Bad correspondance TLL -> UR cell={0} corresponding_cell={1}", ItemPrinter(cell), ccell);
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshTestUtils::
+_testCellToNodeConnectivity3DAccelerator()
+{
+  info() << "Test CellToNode Connectivity3D Accelerator";
+  IMesh* mesh = m_mesh;
+  VariableCellInt32 dummy_var(VariableBuildInfo(mesh, "DummyCellVariable"));
+  VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
+  CartesianConnectivityLocalId cc = m_cartesian_mesh->connectivity();
+  const bool is_not_amr = !m_is_amr;
+
+  auto queue = m_accelerator_mng->defaultQueue();
+  auto command = makeCommand(*queue);
+
+  auto in_cell_center = viewIn(command, m_cell_center);
+  auto in_node_coord = viewIn(command, nodes_coord);
+  auto inout_dummy_var = viewInOut(command, dummy_var);
+
+  command << RUNCOMMAND_ENUMERATE(Cell, cell, m_mesh->allCells())
+  {
+    Real3 cell_coord = in_cell_center[cell];
+    inout_dummy_var[cell] = 0;
+    {
+      NodeLocalId upper_left = cc.upperLeftId(cell);
+      CellLocalId ccell = cc.topZLowerRightId(upper_left);
+      Real3 n = in_node_coord[upper_left];
+      if (n.y <= cell_coord.y || n.x >= cell_coord.x || n.z >= cell_coord.z)
+        inout_dummy_var[cell] = -10;
+      if (cell != ccell && is_not_amr)
+        inout_dummy_var[cell] = -20;
+    }
+    {
+      NodeLocalId upper_right = cc.upperRightId(cell);
+      CellLocalId ccell = cc.topZLowerLeftId(upper_right);
+      Real3 n = in_node_coord[upper_right];
+      if (n.y <= cell_coord.y || n.x <= cell_coord.x || n.z >= cell_coord.z)
+        inout_dummy_var[cell] = -11;
+      if (cell != ccell && is_not_amr)
+        inout_dummy_var[cell] = -21;
+    }
+    {
+      NodeLocalId lower_right = cc.lowerRightId(cell);
+      CellLocalId ccell = cc.topZUpperLeftId(lower_right);
+      Real3 n = in_node_coord[lower_right];
+      if (n.y >= cell_coord.y || n.x <= cell_coord.x || n.z >= cell_coord.z)
+        inout_dummy_var[cell] = -12;
+      if (cell != ccell && is_not_amr)
+        inout_dummy_var[cell] = -22;
+    }
+    {
+      NodeLocalId lower_left = cc.lowerLeftId(cell);
+      CellLocalId ccell = cc.topZUpperRightId(lower_left);
+      Real3 n = in_node_coord[lower_left];
+      if (n.y >= cell_coord.y || n.x >= cell_coord.x || n.z >= cell_coord.z)
+        inout_dummy_var[cell] = -13;
+      if (cell != ccell && is_not_amr)
+        inout_dummy_var[cell] = -23;
+    }
+    {
+      NodeLocalId top_upper_left = cc.topZUpperLeftId(cell);
+      CellLocalId ccell = cc.lowerRightId(top_upper_left);
+      Real3 n = in_node_coord[top_upper_left];
+      if (n.y <= cell_coord.y || n.x >= cell_coord.x || n.z <= cell_coord.z)
+        inout_dummy_var[cell] = -14;
+      if (cell != ccell && is_not_amr)
+        inout_dummy_var[cell] = -24;
+    }
+    {
+      NodeLocalId top_upper_right = cc.topZUpperRightId(cell);
+      CellLocalId ccell = cc.lowerLeftId(top_upper_right);
+      Real3 n = in_node_coord[top_upper_right];
+      if (n.y <= cell_coord.y || n.x <= cell_coord.x || n.z <= cell_coord.z)
+        inout_dummy_var[cell] = -15;
+      if (cell != ccell && is_not_amr)
+        inout_dummy_var[cell] = -25;
+    }
+    {
+      NodeLocalId top_lower_right = cc.topZLowerRightId(cell);
+      CellLocalId ccell = cc.upperLeftId(top_lower_right);
+      Real3 n = in_node_coord[top_lower_right];
+      if (n.y >= cell_coord.y || n.x <= cell_coord.x || n.z <= cell_coord.z)
+        inout_dummy_var[cell] = -16;
+      if (cell != ccell && is_not_amr)
+        inout_dummy_var[cell] = -26;
+    }
+    {
+      NodeLocalId top_lower_left = cc.topZLowerLeftId(cell);
+      CellLocalId ccell = cc.upperRightId(top_lower_left);
+      Real3 n = in_node_coord[top_lower_left];
+      if (n.y >= cell_coord.y || n.x >= cell_coord.x || n.z <= cell_coord.z)
+        inout_dummy_var[cell] = -17;
+      if (cell != ccell && is_not_amr)
+        inout_dummy_var[cell] = -27;
+    }
+  };
+  ENUMERATE_ (Cell, icell, m_mesh->allCells()) {
+    if (dummy_var[icell] < 0) {
+      ARCANE_FATAL("Bad value for dummy_var id={0} v={1}", ItemPrinter(*icell), dummy_var[icell]);
     }
   }
 }

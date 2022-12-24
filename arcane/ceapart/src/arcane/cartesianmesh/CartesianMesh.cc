@@ -17,6 +17,7 @@
 #include "arcane/utils/IUserDataList.h"
 #include "arcane/utils/Ref.h"
 #include "arcane/utils/ScopedPtr.h"
+#include "arcane/utils/PlatformUtils.h"
 
 #include "arcane/IMesh.h"
 #include "arcane/ItemPrinter.h"
@@ -172,6 +173,8 @@ CartesianMeshImpl::
 CartesianMeshImpl(IMesh* mesh)
 : TraceAccessor(mesh->traceMng())
 , m_mesh(mesh)
+, m_nodes_to_cell_storage(platform::getDefaultDataAllocator())
+, m_cells_to_node_storage(platform::getDefaultDataAllocator())
 {
   m_all_items_direction_info = makeRef(new CartesianMeshPatch(this,-1));
   m_amr_patches.add(m_all_items_direction_info);
