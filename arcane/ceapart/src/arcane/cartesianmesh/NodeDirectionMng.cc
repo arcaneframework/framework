@@ -121,30 +121,30 @@ _internalComputeInfos(const CellDirectionMng& cell_dm,const NodeGroup& all_nodes
     Cell cell = *icell;
     DirCellNode cn(cell_dm.cellNode(cell));
 
-    Node node_next_left = cn.nextLeft();
-    Node node_next_right = cn.nextRight();
+    NodeLocalId node_next_left = cn.nextLeftId();
+    NodeLocalId node_next_right = cn.nextRightId();
 
-    Node node_previous_left = cn.previousLeft();
-    Node node_previous_right = cn.previousRight();
+    NodeLocalId node_previous_left = cn.previousLeftId();
+    NodeLocalId node_previous_right = cn.previousRightId();
 
-    m_infos_view[node_previous_left.localId()].m_next_lid = node_next_left.localId();
-    m_infos_view[node_next_left.localId()].m_previous_lid = node_previous_left.localId();
+    m_infos_view[node_previous_left].m_next_lid = node_next_left;
+    m_infos_view[node_next_left].m_previous_lid = node_previous_left;
 
-    m_infos_view[node_previous_right.localId()].m_next_lid = node_next_right.localId();
-    m_infos_view[node_next_right.localId()].m_previous_lid = node_previous_right.localId();
+    m_infos_view[node_previous_right].m_next_lid = node_next_right;
+    m_infos_view[node_next_right].m_previous_lid = node_previous_right;
 
     if (mesh_dim==3){
-      Node top_node_next_left = cn.topNextLeft();
-      Node top_node_next_right = cn.topNextRight();
+      NodeLocalId top_node_next_left = cn.topNextLeftId();
+      NodeLocalId top_node_next_right = cn.topNextRightId();
 
-      Node top_node_previous_left = cn.topPreviousLeft();
-      Node top_node_previous_right = cn.topPreviousRight();
+      NodeLocalId top_node_previous_left = cn.topPreviousLeftId();
+      NodeLocalId top_node_previous_right = cn.topPreviousRightId();
 
-      m_infos_view[top_node_previous_left.localId()].m_next_lid = top_node_next_left.localId();
-      m_infos_view[top_node_next_left.localId()].m_previous_lid = top_node_previous_left.localId();
+      m_infos_view[top_node_previous_left].m_next_lid = top_node_next_left;
+      m_infos_view[top_node_next_left].m_previous_lid = top_node_previous_left;
 
-      m_infos_view[top_node_previous_right.localId()].m_next_lid = top_node_next_right.localId();
-      m_infos_view[top_node_next_right.localId()].m_previous_lid = top_node_previous_right.localId();
+      m_infos_view[top_node_previous_right].m_next_lid = top_node_next_right;
+      m_infos_view[top_node_next_right].m_previous_lid = top_node_previous_right;
     }
   }
 
@@ -198,13 +198,13 @@ _filterNodes()
       Int32 next_lid = idi.m_next_lid;
       if (next_lid!=NULL_ITEM_LOCAL_ID)
         if (nodes_set.find(NodeLocalId(next_lid))==nodes_set.end())
-          idi.m_next_lid = NULL_ITEM_LOCAL_ID;
+          idi.m_next_lid = NodeLocalId{};
     }
     {
       Int32 prev_lid = idi.m_previous_lid;
       if (prev_lid!=NULL_ITEM_LOCAL_ID)
         if (nodes_set.find(NodeLocalId(prev_lid))==nodes_set.end())
-          idi.m_previous_lid = NULL_ITEM_LOCAL_ID;
+          idi.m_previous_lid = NodeLocalId{};
     }
   }
 }

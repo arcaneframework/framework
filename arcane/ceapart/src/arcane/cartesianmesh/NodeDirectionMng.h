@@ -56,11 +56,6 @@ class ARCANE_CARTESIANMESH_EXPORT DirNode
       ARCANE_CHECK_AT(i, 8);
       return m_indexes[i];
     }
-    ARCCORE_HOST_DEVICE IndexType& operator[](Int32 i)
-    {
-      ARCANE_CHECK_AT(i, 8);
-      return m_indexes[i];
-    }
 
    public:
 
@@ -169,7 +164,7 @@ class ARCANE_CARTESIANMESH_EXPORT DirNode
  * \brief Noeud avant et après un noeud suivant une direction.
  *
  * Les instances de cette classe sont temporaires et construites via
- * NodeDirectionMng::node().
+ * NodeDirectionMng::dirNodeId().
  */
 class ARCANE_CARTESIANMESH_EXPORT DirNodeLocalId
 {
@@ -276,10 +271,7 @@ class ARCANE_CARTESIANMESH_EXPORT NodeDirectionMng
      * \warning Les valeurs m_next_item et m_previous_item sont initialisées
      * à nullptr.
      */
-    ItemDirectionInfo()
-    : m_next_lid(NULL_ITEM_LOCAL_ID)
-    , m_previous_lid(NULL_ITEM_LOCAL_ID)
-    {}
+    ItemDirectionInfo() = default;
     ItemDirectionInfo(Int32 next_lid, Int32 prev_lid)
     : m_next_lid(next_lid)
     , m_previous_lid(prev_lid)
@@ -288,16 +280,16 @@ class ARCANE_CARTESIANMESH_EXPORT NodeDirectionMng
    public:
 
     //! entité après l'entité courante dans la direction
-    Int32 m_next_lid;
+    NodeLocalId m_next_lid;
     //! entité avant l'entité courante dans la direction
-    Int32 m_previous_lid;
+    NodeLocalId m_previous_lid;
 
    public:
 
     void setCellIndexes(IndexType idx[8])
     {
       for (int i = 0; i < 8; ++i)
-        m_cell_index[i] = idx[i];
+        m_cell_index.m_indexes[i] = idx[i];
     }
     DirNodeCellIndex m_cell_index;
   };
@@ -432,7 +424,7 @@ class ARCANE_CARTESIANMESH_EXPORT NodeDirectionMng
   ARCCORE_HOST_DEVICE DirNodeLocalId _dirNodeId(NodeLocalId local_id) const
   {
     ItemDirectionInfo d = m_infos_view[local_id.localId()];
-    return DirNodeLocalId(local_id, NodeLocalId(d.m_next_lid), NodeLocalId(d.m_previous_lid), d.m_cell_index, m_node_cell_view);
+    return DirNodeLocalId(local_id, d.m_next_lid, d.m_previous_lid, d.m_cell_index, m_node_cell_view);
   }
 
   void _computeNodeCellInfos(const CellDirectionMng& cell_dm,
