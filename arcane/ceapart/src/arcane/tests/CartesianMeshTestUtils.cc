@@ -29,6 +29,7 @@
 #include "arcane/IMeshModifier.h"
 #include "arcane/IMeshUtilities.h"
 #include "arcane/SimpleSVGMeshExporter.h"
+#include "arcane/UnstructuredMeshConnectivity.h"
 
 #include "arcane/accelerator/Runner.h"
 #include "arcane/accelerator/RunCommandEnumerate.h"
@@ -54,14 +55,14 @@ using namespace Arcane::Accelerator;
 /*---------------------------------------------------------------------------*/
 
 CartesianMeshTestUtils::
-CartesianMeshTestUtils(ICartesianMesh* cm,IAcceleratorMng* am)
+CartesianMeshTestUtils(ICartesianMesh* cm, IAcceleratorMng* am)
 : TraceAccessor(cm->traceMng())
 , m_cartesian_mesh(cm)
 , m_mesh(cm->mesh())
 , m_accelerator_mng(am)
-, m_cell_center(VariableBuildInfo(m_mesh,"CellCenter"))
-, m_face_center(VariableBuildInfo(m_mesh,"FaceCenter"))
-, m_node_density(VariableBuildInfo(m_mesh,"NodeDensity"))
+, m_cell_center(VariableBuildInfo(m_mesh, "CellCenter"))
+, m_face_center(VariableBuildInfo(m_mesh, "FaceCenter"))
+, m_node_density(VariableBuildInfo(m_mesh, "NodeDensity"))
 {
 }
 
@@ -85,6 +86,7 @@ testAll(bool is_amr)
   _testDirFace();
   _testDirFaceAccelerator();
   _testDirNode();
+  _testDirNodeAccelerator();
   _testDirCellNode();
   _testDirCellNodeAccelerator();
   _testDirCellFace();
@@ -110,10 +112,10 @@ _computeCenters()
   // Calcule le centre des mailles
   {
     VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
-    ENUMERATE_CELL(icell,m_mesh->allCells()){
+    ENUMERATE_CELL (icell, m_mesh->allCells()) {
       Cell cell = *icell;
       Real3 center;
-      for( NodeEnumerator inode(cell.nodes()); inode.hasNext(); ++inode )
+      for (NodeEnumerator inode(cell.nodes()); inode.hasNext(); ++inode)
         center += nodes_coord[inode];
       center /= cell.nbNode();
       m_cell_center[icell] = center;
@@ -123,10 +125,10 @@ _computeCenters()
   // Calcule le centre des faces
   {
     VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
-    ENUMERATE_FACE(iface,m_mesh->allFaces()){
+    ENUMERATE_FACE (iface, m_mesh->allFaces()) {
       Face face = *iface;
       Real3 center;
-      for( NodeEnumerator inode(face.nodes()); inode.hasNext(); ++inode )
+      for (NodeEnumerator inode(face.nodes()); inode.hasNext(); ++inode)
         center += nodes_coord[inode];
       center /= face.nbNode();
       m_face_center[iface] = center;
@@ -138,24 +140,24 @@ _computeCenters()
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshTestUtils::
-_checkSameId(FaceLocalId item,FaceLocalId local_id)
+_checkSameId(FaceLocalId item, FaceLocalId local_id)
 {
-  if (item!=local_id)
-    ARCANE_FATAL("Bad FaceLocalId item={0} local_id={1}",item,local_id);
+  if (item != local_id)
+    ARCANE_FATAL("Bad FaceLocalId item={0} local_id={1}", item, local_id);
 }
 
 void CartesianMeshTestUtils::
-_checkSameId(CellLocalId item,CellLocalId local_id)
+_checkSameId(CellLocalId item, CellLocalId local_id)
 {
-  if (item!=local_id)
-    ARCANE_FATAL("Bad CellLocalId item={0} local_id={1}",item,local_id);
+  if (item != local_id)
+    ARCANE_FATAL("Bad CellLocalId item={0} local_id={1}", item, local_id);
 }
 
 void CartesianMeshTestUtils::
-_checkSameId(NodeLocalId item,NodeLocalId local_id)
+_checkSameId(NodeLocalId item, NodeLocalId local_id)
 {
-  if (item.localId()!=local_id)
-    ARCANE_FATAL("Bad NodeLocalId item={0} local_id={1}",item,local_id);
+  if (item.localId() != local_id)
+    ARCANE_FATAL("Bad NodeLocalId item={0} local_id={1}", item, local_id);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -165,7 +167,7 @@ void CartesianMeshTestUtils::
 _checkItemGroupIsSorted(const ItemGroup& group)
 {
   if (!group.checkIsSorted())
-    ARCANE_FATAL("Node direction group '{0}' is not sorted",group.name());
+    ARCANE_FATAL("Node direction group '{0}' is not sorted", group.name());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -181,7 +183,7 @@ _testDirCell()
   Integer nb_print = m_nb_print;
   CellDirectionMng cdm2;
   CellDirectionMng cdm3;
-  for( Integer idir=0; idir<nb_dir; ++idir){
+  for (Integer idir = 0; idir < nb_dir; ++idir) {
     CellDirectionMng cdm(m_cartesian_mesh->cellDirection(idir));
     cdm2 = m_cartesian_mesh->cellDirection(idir);
     cdm3 = cdm;
@@ -189,7 +191,7 @@ _testDirCell()
     Integer iprint = 0;
     info() << "DIRECTION=" << idir << " Cells=" << cdm.allCells().name();
     _checkItemGroupIsSorted(cdm.allCells());
-    ENUMERATE_CELL(icell,cdm.allCells()){
+    ENUMERATE_CELL (icell, cdm.allCells()) {
       Cell cell = *icell;
       DirCell dir_cell(cdm[icell]);
       Cell prev_cell = dir_cell.previous();
@@ -202,18 +204,18 @@ _testDirCell()
       DirCell dir_cell3(cdm3[icell]);
       Cell prev_cell3 = dir_cell3.previous();
       Cell next_cell3 = dir_cell3.next();
-      _checkSameId(prev_cell,prev_cell2);
-      _checkSameId(next_cell,next_cell2);
-      _checkSameId(prev_cell,prev_cell3);
-      _checkSameId(next_cell,next_cell3);
-      if (nb_print<0 || iprint<nb_print){
+      _checkSameId(prev_cell, prev_cell2);
+      _checkSameId(next_cell, next_cell2);
+      _checkSameId(prev_cell, prev_cell3);
+      _checkSameId(next_cell, next_cell3);
+      if (nb_print < 0 || iprint < nb_print) {
         ++iprint;
-        if (!prev_cell.null() && !next_cell.null()){
+        if (!prev_cell.null() && !next_cell.null()) {
           info() << "Cell uid=" << ItemPrinter(cell) << " dir=" << md
                  << " prev=" << ItemPrinter(prev_cell) << " xyz=" << m_cell_center[prev_cell]
                  << " next=" << ItemPrinter(next_cell) << " xyz=" << m_cell_center[next_cell];
         }
-        else{
+        else {
           info() << "Cell uid=" << ItemPrinter(cell) << " dir=" << md;
           if (!prev_cell.null())
             info() << " prev=" << ItemPrinter(prev_cell) << " xyz=" << m_cell_center[prev_cell];
@@ -301,7 +303,7 @@ _testDirFace()
 {
   IMesh* mesh = m_mesh;
   Integer nb_dir = mesh->dimension();
-  for( Integer idir=0; idir<nb_dir; ++idir)
+  for (Integer idir = 0; idir < nb_dir; ++idir)
     _testDirFace(idir);
 }
 
@@ -626,6 +628,136 @@ _testDirNode()
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshTestUtils::
+_testDirNodeAccelerator()
+{
+  info() << "TEST_DIR_NODE Accelerator";
+  m_node_density.fill(0.0);
+
+  IMesh* mesh = m_mesh;
+  Integer nb_dir = mesh->dimension();
+  Integer nb_error = 0;
+  VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
+  // Pour tester l'opérateur 'operator='
+  NodeDirectionMng node_dm2;
+  NodeDirectionMng node_dm3;
+
+  //auto in_face_center = viewIn(command, m_face_center);
+  //auto in_cell_center = viewIn(command, m_cell_center);
+
+  VariableNodeInt32 dummy_var(VariableBuildInfo(m_mesh, "DummyNodeVariable"));
+
+  UnstructuredMeshConnectivityView m_connectivity_view;
+  m_connectivity_view.setMesh(mesh);
+
+  auto cnc = m_connectivity_view.nodeCell();
+
+  for (Integer idir = 0; idir < nb_dir; ++idir) {
+    NodeDirectionMng node_dm(m_cartesian_mesh->nodeDirection(idir));
+    node_dm2 = m_cartesian_mesh->nodeDirection(idir);
+    node_dm3 = node_dm;
+    eMeshDirection md = node_dm.direction();
+    info() << "DIRECTION=" << idir;
+    NodeGroup dm_all_nodes = node_dm.allNodes();
+    _checkItemGroupIsSorted(dm_all_nodes);
+
+    auto queue = m_accelerator_mng->defaultQueue();
+    auto command = makeCommand(*queue);
+
+    dummy_var.fill(0);
+    auto inout_dummy_var = viewInOut(command, dummy_var);
+    auto in_nodes_coord = viewInOut(command, nodes_coord);
+
+    command << RUNCOMMAND_ENUMERATE(Node, node, dm_all_nodes)
+    {
+      DirNodeLocalId dir_node(node_dm.dirNodeId(node));
+      DirNodeLocalId dir_node2(node_dm2.dirNodeId(node));
+      DirNodeLocalId dir_node3(node_dm3.dirNodeId(node));
+      NodeLocalId prev_node = dir_node.previous();
+      NodeLocalId next_node = dir_node.next();
+      NodeLocalId prev_node2 = dir_node2.previous();
+      NodeLocalId next_node2 = dir_node2.next();
+      NodeLocalId prev_node3 = dir_node3.previous();
+      NodeLocalId next_node3 = dir_node3.next();
+      Int32 vx = 0;
+      if (prev_node != prev_node2)
+        vx = -10;
+      if (next_node != next_node2)
+        vx = -11;
+      if (prev_node != prev_node3)
+        vx = -12;
+      if (next_node != next_node3)
+        vx = -13;
+      if (prev_node != dir_node.previousId())
+        vx = -14;
+      if (next_node != dir_node.nextId())
+        vx = -15;
+      inout_dummy_var[node] = vx;
+      if (vx < 0)
+        return;
+      Real my_coord = in_nodes_coord[node][idir];
+      {
+        Int32 node_nb_cell = cnc.nbCell(node);
+        for (Integer k = 0; k < 8; ++k) {
+          Int32 cell_index = dir_node.cellIndex(k);
+          if (cell_index != (-1)) {
+            if ((1 + cell_index) > node_nb_cell) {
+              inout_dummy_var[node] = -40 - k;
+              return;
+            }
+          }
+        }
+        Int32 sum_id = 20 + dir_node.nextLeftCellId() +
+        dir_node.nextRightCellId() +
+        dir_node.previousRightCellId() +
+        dir_node.previousLeftCellId() +
+        dir_node.topNextLeftCellId() +
+        dir_node.topNextRightCellId() +
+        dir_node.topPreviousRightCellId() +
+        dir_node.topPreviousLeftCellId();
+        inout_dummy_var[node] = sum_id;
+      }
+      if (prev_node.isNull() && next_node.isNull()) {
+        inout_dummy_var[node] = -20;
+        return;
+      }
+      //TODO: Vérifier que les coordonnées autres que celle de idir sont bien les mêmes pour next,prev et my_coord.
+      if (!prev_node.isNull() && !next_node.isNull()) {
+        Real next_coord = in_nodes_coord[next_node][idir];
+        Real prev_coord = in_nodes_coord[prev_node][idir];
+        if (next_coord < prev_coord) {
+          inout_dummy_var[node] = -30;
+          return;
+        }
+      }
+      else {
+        if (!prev_node.isNull()) {
+          Real prev_coord = in_nodes_coord[prev_node][idir];
+          if (my_coord < prev_coord) {
+            inout_dummy_var[node] = -31;
+            return;
+          }
+        }
+        if (!next_node.isNull()) {
+          Real next_coord = in_nodes_coord[next_node][idir];
+          if (next_coord < my_coord) {
+            inout_dummy_var[node] = -32;
+            return;
+          }
+        }
+      }
+    };
+
+    ENUMERATE_ (Node, inode, node_dm.allNodes()) {
+      if (dummy_var[inode] < 0)
+        ARCANE_FATAL("Bad value for dummy_var id={0} v={1}", ItemPrinter(*inode), dummy_var[inode]);
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshTestUtils::
 _testDirCellNode()
 {
   IMesh* mesh = m_mesh;
@@ -633,27 +765,27 @@ _testDirCellNode()
   Integer nb_dir = mesh->dimension();
 
   Integer nb_print = m_nb_print;
-  for( Integer idir=0; idir<nb_dir; ++idir){
+  for (Integer idir = 0; idir < nb_dir; ++idir) {
     CellDirectionMng cdm(m_cartesian_mesh->cellDirection(idir));
     eMeshDirection md = cdm.direction();
     info() << "DIRECTION=" << idir;
     Integer iprint = 0;
-    ENUMERATE_CELL(icell,cdm.allCells()){
+    ENUMERATE_CELL (icell, cdm.allCells()) {
       Cell cell = *icell;
       CellLocalId cell_id(cell.localId());
       DirCellNode cn(cdm.cellNode(cell));
       DirCellNode cn2(cdm.cellNode(cell_id));
-      if (cn.cellId()!=cn2.cellId())
+      if (cn.cellId() != cn2.cellId())
         ARCANE_FATAL("Bad DirCellNode");
-      bool is_print = (nb_print<0 || iprint<nb_print);
+      bool is_print = (nb_print < 0 || iprint < nb_print);
       ++iprint;
-      if (is_print){
+      if (is_print) {
         info() << "Cell uid=" << ItemPrinter(cell) << " dir=" << md;
         info() << "Cell nextLeft =" << ItemPrinter(cn.nextLeft()) << " xyz=" << nodes_coord[cn.nextLeft()];
         info() << "Cell nextRight=" << ItemPrinter(cn.nextRight()) << " xyz=" << nodes_coord[cn.nextRight()];
         info() << "Cell prevRight=" << ItemPrinter(cn.previousRight()) << " xyz=" << nodes_coord[cn.previousRight()];
         info() << "Cell prevLeft =" << ItemPrinter(cn.previousLeft()) << " xyz=" << nodes_coord[cn.previousLeft()];
-        if (nb_dir==3){
+        if (nb_dir == 3) {
           info() << "Cell topNextLeft =" << ItemPrinter(cn.topNextLeft()) << " xyz=" << nodes_coord[cn.topNextLeft()];
           info() << "Cell topNextRight=" << ItemPrinter(cn.topNextRight()) << " xyz=" << nodes_coord[cn.topNextRight()];
           info() << "Cell topPrevRight=" << ItemPrinter(cn.topPreviousRight()) << " xyz=" << nodes_coord[cn.topPreviousRight()];
@@ -771,7 +903,7 @@ _testNodeToCellConnectivity3D()
   IMesh* mesh = m_mesh;
   VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
   CartesianConnectivity cc = m_cartesian_mesh->connectivity();
-  ENUMERATE_NODE(inode,m_mesh->allNodes()){
+  ENUMERATE_NODE (inode, m_mesh->allNodes()) {
     Node node = *inode;
     Real3 node_coord = nodes_coord[inode];
     info(4) << "node_uid=" << node.uniqueId()
@@ -785,66 +917,66 @@ _testNodeToCellConnectivity3D()
             << " TLL=" << cc.topZLowerLeftId(inode);
     {
       Cell upper_left = cc.upperLeft(node);
-      if (!upper_left.null()){
+      if (!upper_left.null()) {
         Real3 c = m_cell_center[upper_left];
-        if (c.y<=node_coord.y || c.x>=node_coord.x || c.z>=node_coord.z)
-          ARCANE_FATAL("Bad upperLeft cell for node={0} c={1} n={2}",ItemPrinter(node),c,node_coord);
+        if (c.y <= node_coord.y || c.x >= node_coord.x || c.z >= node_coord.z)
+          ARCANE_FATAL("Bad upperLeft cell for node={0} c={1} n={2}", ItemPrinter(node), c, node_coord);
       }
     }
     {
       Cell upper_right = cc.upperRight(node);
-      if (!upper_right.null()){
+      if (!upper_right.null()) {
         Real3 c = m_cell_center[upper_right];
-        if (c.y<=node_coord.y || c.x<=node_coord.x || c.z>=node_coord.z)
-          ARCANE_FATAL("Bad upperRight cell for node={0} c={1} n={2}",ItemPrinter(node),c,node_coord);
+        if (c.y <= node_coord.y || c.x <= node_coord.x || c.z >= node_coord.z)
+          ARCANE_FATAL("Bad upperRight cell for node={0} c={1} n={2}", ItemPrinter(node), c, node_coord);
       }
     }
     {
       Cell lower_right = cc.lowerRight(node);
-      if (!lower_right.null()){
+      if (!lower_right.null()) {
         Real3 c = m_cell_center[lower_right];
-        if (c.y>=node_coord.y || c.x<=node_coord.x || c.z>=node_coord.z)
-          ARCANE_FATAL("Bad lowerRight cell for node={0} c={1} n={2}",ItemPrinter(node),c,node_coord);
+        if (c.y >= node_coord.y || c.x <= node_coord.x || c.z >= node_coord.z)
+          ARCANE_FATAL("Bad lowerRight cell for node={0} c={1} n={2}", ItemPrinter(node), c, node_coord);
       }
     }
     {
       Cell lower_left = cc.lowerLeft(node);
-      if (!lower_left.null()){
+      if (!lower_left.null()) {
         Real3 c = m_cell_center[lower_left];
-        if (c.y>=node_coord.y || c.x>=node_coord.x || c.z>=node_coord.z)
-          ARCANE_FATAL("Bad lowerLeft cell for node={0} c={1} n={2}",ItemPrinter(node),c,node_coord);
+        if (c.y >= node_coord.y || c.x >= node_coord.x || c.z >= node_coord.z)
+          ARCANE_FATAL("Bad lowerLeft cell for node={0} c={1} n={2}", ItemPrinter(node), c, node_coord);
       }
     }
     {
       Cell top_upper_left = cc.topZUpperLeft(node);
-      if (!top_upper_left.null()){
+      if (!top_upper_left.null()) {
         Real3 c = m_cell_center[top_upper_left];
-        if (c.y<=node_coord.y || c.x>=node_coord.x || c.z<=node_coord.z)
-          ARCANE_FATAL("Bad topZUpperLeft cell for node={0} c={1} n={2}",ItemPrinter(node),c,node_coord);
+        if (c.y <= node_coord.y || c.x >= node_coord.x || c.z <= node_coord.z)
+          ARCANE_FATAL("Bad topZUpperLeft cell for node={0} c={1} n={2}", ItemPrinter(node), c, node_coord);
       }
     }
     {
       Cell top_upper_right = cc.topZUpperRight(node);
-      if (!top_upper_right.null()){
+      if (!top_upper_right.null()) {
         Real3 c = m_cell_center[top_upper_right];
-        if (c.y<=node_coord.y || c.x<=node_coord.x || c.z<=node_coord.z)
-          ARCANE_FATAL("Bad topZUpperRight cell for node={0} c={1} n={2}",ItemPrinter(node),c,node_coord);
+        if (c.y <= node_coord.y || c.x <= node_coord.x || c.z <= node_coord.z)
+          ARCANE_FATAL("Bad topZUpperRight cell for node={0} c={1} n={2}", ItemPrinter(node), c, node_coord);
       }
     }
     {
       Cell top_lower_right = cc.topZLowerRight(node);
-      if (!top_lower_right.null()){
+      if (!top_lower_right.null()) {
         Real3 c = m_cell_center[top_lower_right];
-        if (c.y>=node_coord.y || c.x<=node_coord.x || c.z<=node_coord.z)
-          ARCANE_FATAL("Bad topZLowerRight cell for node={0} c={1} n={2}",ItemPrinter(node),c,node_coord);
+        if (c.y >= node_coord.y || c.x <= node_coord.x || c.z <= node_coord.z)
+          ARCANE_FATAL("Bad topZLowerRight cell for node={0} c={1} n={2}", ItemPrinter(node), c, node_coord);
       }
     }
     {
       Cell top_lower_left = cc.topZLowerLeft(node);
-      if (!top_lower_left.null()){
+      if (!top_lower_left.null()) {
         Real3 c = m_cell_center[top_lower_left];
-        if (c.y>=node_coord.y || c.x>=node_coord.x || c.z<=node_coord.z)
-          ARCANE_FATAL("Bad topZLowerLeft cell for node={0} c={1} n={2}",ItemPrinter(node),c,node_coord);
+        if (c.y >= node_coord.y || c.x >= node_coord.x || c.z <= node_coord.z)
+          ARCANE_FATAL("Bad topZLowerLeft cell for node={0} c={1} n={2}", ItemPrinter(node), c, node_coord);
       }
     }
   }
@@ -860,7 +992,7 @@ _testNodeToCellConnectivity2D()
   IMesh* mesh = m_mesh;
   VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
   CartesianConnectivity cc = m_cartesian_mesh->connectivity();
-  ENUMERATE_NODE(inode,mesh->allNodes()){
+  ENUMERATE_NODE (inode, mesh->allNodes()) {
     Node node = *inode;
     Real3 node_coord = nodes_coord[inode];
     info(4) << "node_uid=" << node.uniqueId()
@@ -870,34 +1002,34 @@ _testNodeToCellConnectivity2D()
             << " LL=" << cc.lowerLeftId(inode);
     {
       Cell upper_left = cc.upperLeft(node);
-      if (!upper_left.null()){
+      if (!upper_left.null()) {
         Real3 c = m_cell_center[upper_left];
-        if (c.y<=node_coord.y || c.x>=node_coord.x)
-          ARCANE_FATAL("Bad upperLeft cell for node={0} c={1} n={2}",ItemPrinter(node),c,node_coord);
+        if (c.y <= node_coord.y || c.x >= node_coord.x)
+          ARCANE_FATAL("Bad upperLeft cell for node={0} c={1} n={2}", ItemPrinter(node), c, node_coord);
       }
     }
     {
       Cell upper_right = cc.upperRight(node);
-      if (!upper_right.null()){
+      if (!upper_right.null()) {
         Real3 c = m_cell_center[upper_right];
-        if (c.y<=node_coord.y || c.x<=node_coord.x)
-          ARCANE_FATAL("Bad upperRight cell for node={0} c={1} n={2}",ItemPrinter(node),c,node_coord);
+        if (c.y <= node_coord.y || c.x <= node_coord.x)
+          ARCANE_FATAL("Bad upperRight cell for node={0} c={1} n={2}", ItemPrinter(node), c, node_coord);
       }
     }
     {
       Cell lower_right = cc.lowerRight(node);
-      if (!lower_right.null()){
+      if (!lower_right.null()) {
         Real3 c = m_cell_center[lower_right];
-        if (c.y>=node_coord.y || c.x<=node_coord.x)
-          ARCANE_FATAL("Bad lowerRight cell for node={0} c={1} n={2}",ItemPrinter(node),c,node_coord);
+        if (c.y >= node_coord.y || c.x <= node_coord.x)
+          ARCANE_FATAL("Bad lowerRight cell for node={0} c={1} n={2}", ItemPrinter(node), c, node_coord);
       }
     }
     {
       Cell lower_left = cc.lowerLeft(node);
-      if (!lower_left.null()){
+      if (!lower_left.null()) {
         Real3 c = m_cell_center[lower_left];
-        if (c.y>=node_coord.y || c.x>=node_coord.x)
-          ARCANE_FATAL("Bad lowerLeft cell for node={0} c={1} n={2}",ItemPrinter(node),c,node_coord);
+        if (c.y >= node_coord.y || c.x >= node_coord.x)
+          ARCANE_FATAL("Bad lowerLeft cell for node={0} c={1} n={2}", ItemPrinter(node), c, node_coord);
       }
     }
   }
@@ -914,7 +1046,7 @@ _testCellToNodeConnectivity3D()
   VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
   CartesianConnectivity cc = m_cartesian_mesh->connectivity();
   const bool is_not_amr = !m_is_amr;
-  ENUMERATE_CELL(icell,m_mesh->allCells()){
+  ENUMERATE_CELL (icell, m_mesh->allCells()) {
     Cell cell = *icell;
     Real3 cell_coord = m_cell_center[icell];
     info(4) << "cell_uid=" << cell.uniqueId()
@@ -930,73 +1062,73 @@ _testCellToNodeConnectivity3D()
       Node upper_left = cc.upperLeft(cell);
       Cell ccell = cc.topZLowerRight(upper_left);
       Real3 n = nodes_coord[upper_left];
-      if (n.y<=cell_coord.y || n.x>=cell_coord.x || n.z>=cell_coord.z)
-        ARCANE_FATAL("Bad upperLeft node for cell={0}",ItemPrinter(cell));
-      if (cell!=ccell && is_not_amr)
-        ARCANE_FATAL("Bad correspondance UL -> TLR cell={0} corresponding_cell={1}",ItemPrinter(cell),ccell);
+      if (n.y <= cell_coord.y || n.x >= cell_coord.x || n.z >= cell_coord.z)
+        ARCANE_FATAL("Bad upperLeft node for cell={0}", ItemPrinter(cell));
+      if (cell != ccell && is_not_amr)
+        ARCANE_FATAL("Bad correspondance UL -> TLR cell={0} corresponding_cell={1}", ItemPrinter(cell), ccell);
     }
     {
       Node upper_right = cc.upperRight(cell);
       Cell ccell = cc.topZLowerLeft(upper_right);
       Real3 n = nodes_coord[upper_right];
-      if (n.y<=cell_coord.y || n.x<=cell_coord.x || n.z>=cell_coord.z)
-        ARCANE_FATAL("Bad upperRight node for cell={0}",ItemPrinter(cell));
-      if (cell!=ccell && is_not_amr)
-        ARCANE_FATAL("Bad correspondance UR -> TLL cell={0} corresponding_cell={1}",ItemPrinter(cell),ccell);
+      if (n.y <= cell_coord.y || n.x <= cell_coord.x || n.z >= cell_coord.z)
+        ARCANE_FATAL("Bad upperRight node for cell={0}", ItemPrinter(cell));
+      if (cell != ccell && is_not_amr)
+        ARCANE_FATAL("Bad correspondance UR -> TLL cell={0} corresponding_cell={1}", ItemPrinter(cell), ccell);
     }
     {
       Node lower_right = cc.lowerRight(cell);
       Cell ccell = cc.topZUpperLeft(lower_right);
       Real3 n = nodes_coord[lower_right];
-      if (n.y>=cell_coord.y || n.x<=cell_coord.x || n.z>=cell_coord.z)
-        ARCANE_FATAL("Bad lowerRight node for cell={0}",ItemPrinter(cell));
-      if (cell!=ccell && is_not_amr)
-        ARCANE_FATAL("Bad correspondance LR -> TUL cell={0} corresponding_cell={1}",ItemPrinter(cell),ccell);
+      if (n.y >= cell_coord.y || n.x <= cell_coord.x || n.z >= cell_coord.z)
+        ARCANE_FATAL("Bad lowerRight node for cell={0}", ItemPrinter(cell));
+      if (cell != ccell && is_not_amr)
+        ARCANE_FATAL("Bad correspondance LR -> TUL cell={0} corresponding_cell={1}", ItemPrinter(cell), ccell);
     }
     {
       Node lower_left = cc.lowerLeft(cell);
       Cell ccell = cc.topZUpperRight(lower_left);
       Real3 n = nodes_coord[lower_left];
-      if (n.y>=cell_coord.y || n.x>=cell_coord.x || n.z>=cell_coord.z)
-        ARCANE_FATAL("Bad lowerLeft node for cell={0}",ItemPrinter(cell));
-      if (cell!=ccell && is_not_amr)
-        ARCANE_FATAL("Bad correspondance LL -> TUR cell={0} corresponding_cell={1}",ItemPrinter(cell),ccell);
+      if (n.y >= cell_coord.y || n.x >= cell_coord.x || n.z >= cell_coord.z)
+        ARCANE_FATAL("Bad lowerLeft node for cell={0}", ItemPrinter(cell));
+      if (cell != ccell && is_not_amr)
+        ARCANE_FATAL("Bad correspondance LL -> TUR cell={0} corresponding_cell={1}", ItemPrinter(cell), ccell);
     }
     {
       Node top_upper_left = cc.topZUpperLeft(cell);
       Cell ccell = cc.lowerRight(top_upper_left);
       Real3 n = nodes_coord[top_upper_left];
-      if (n.y<=cell_coord.y || n.x>=cell_coord.x || n.z<=cell_coord.z)
-        ARCANE_FATAL("Bad topZUpperLeft node for cell={0}",ItemPrinter(cell));
-      if (cell!=ccell && is_not_amr)
-        ARCANE_FATAL("Bad correspondance TUL -> LR cell={0} corresponding_cell={1}",ItemPrinter(cell),ccell);
+      if (n.y <= cell_coord.y || n.x >= cell_coord.x || n.z <= cell_coord.z)
+        ARCANE_FATAL("Bad topZUpperLeft node for cell={0}", ItemPrinter(cell));
+      if (cell != ccell && is_not_amr)
+        ARCANE_FATAL("Bad correspondance TUL -> LR cell={0} corresponding_cell={1}", ItemPrinter(cell), ccell);
     }
     {
       Node top_upper_right = cc.topZUpperRight(cell);
       Cell ccell = cc.lowerLeft(top_upper_right);
       Real3 n = nodes_coord[top_upper_right];
-      if (n.y<=cell_coord.y || n.x<=cell_coord.x || n.z<=cell_coord.z)
-        ARCANE_FATAL("Bad topZUpperRight node for cell={0}",ItemPrinter(cell));
-      if (cell!=ccell && is_not_amr)
-        ARCANE_FATAL("Bad correspondance TUR -> LL cell={0} corresponding_cell={1}",ItemPrinter(cell),ccell);
+      if (n.y <= cell_coord.y || n.x <= cell_coord.x || n.z <= cell_coord.z)
+        ARCANE_FATAL("Bad topZUpperRight node for cell={0}", ItemPrinter(cell));
+      if (cell != ccell && is_not_amr)
+        ARCANE_FATAL("Bad correspondance TUR -> LL cell={0} corresponding_cell={1}", ItemPrinter(cell), ccell);
     }
     {
       Node top_lower_right = cc.topZLowerRight(cell);
       Cell ccell = cc.upperLeft(top_lower_right);
       Real3 n = nodes_coord[top_lower_right];
-      if (n.y>=cell_coord.y || n.x<=cell_coord.x || n.z<=cell_coord.z)
-        ARCANE_FATAL("Bad topZLowerRight node for cell={0}",ItemPrinter(cell));
-      if (cell!=ccell && is_not_amr)
-        ARCANE_FATAL("Bad correspondance TLR -> UL cell={0} corresponding_cell={1}",ItemPrinter(cell),ccell);
+      if (n.y >= cell_coord.y || n.x <= cell_coord.x || n.z <= cell_coord.z)
+        ARCANE_FATAL("Bad topZLowerRight node for cell={0}", ItemPrinter(cell));
+      if (cell != ccell && is_not_amr)
+        ARCANE_FATAL("Bad correspondance TLR -> UL cell={0} corresponding_cell={1}", ItemPrinter(cell), ccell);
     }
     {
       Node top_lower_left = cc.topZLowerLeft(cell);
       Cell ccell = cc.upperRight(top_lower_left);
       Real3 n = nodes_coord[top_lower_left];
-      if (n.y>=cell_coord.y || n.x>=cell_coord.x || n.z<=cell_coord.z)
-        ARCANE_FATAL("Bad topZLowerLeft node for cell={0}",ItemPrinter(cell));
-      if (cell!=ccell && is_not_amr)
-        ARCANE_FATAL("Bad correspondance TLL -> UR cell={0} corresponding_cell={1}",ItemPrinter(cell),ccell);
+      if (n.y >= cell_coord.y || n.x >= cell_coord.x || n.z <= cell_coord.z)
+        ARCANE_FATAL("Bad topZLowerLeft node for cell={0}", ItemPrinter(cell));
+      if (cell != ccell && is_not_amr)
+        ARCANE_FATAL("Bad correspondance TLL -> UR cell={0} corresponding_cell={1}", ItemPrinter(cell), ccell);
     }
   }
 }
@@ -1012,7 +1144,7 @@ _testCellToNodeConnectivity2D()
   VariableNodeReal3& nodes_coord = mesh->nodesCoordinates();
   CartesianConnectivity cc = m_cartesian_mesh->connectivity();
   const bool is_not_amr = !m_is_amr;
-  ENUMERATE_CELL(icell,mesh->allCells()){
+  ENUMERATE_CELL (icell, mesh->allCells()) {
     Cell cell = *icell;
     Real3 cell_coord = m_cell_center[icell];
     info(4) << "cell_uid=" << cell.uniqueId()
@@ -1024,37 +1156,37 @@ _testCellToNodeConnectivity2D()
       Node upper_left = cc.upperLeft(cell);
       Cell ccell = cc.lowerRight(upper_left);
       Real3 n = nodes_coord[upper_left];
-      if (n.y<=cell_coord.y || n.x>=cell_coord.x)
-        ARCANE_FATAL("Bad upperLeft node for cell={0} c={1} n={2}",ItemPrinter(cell),cell_coord,n);
-      if (cell!=ccell && is_not_amr)
-        ARCANE_FATAL("Bad correspondance UL -> LR cell={0} corresponding_cell={1}",ItemPrinter(cell),ccell);
+      if (n.y <= cell_coord.y || n.x >= cell_coord.x)
+        ARCANE_FATAL("Bad upperLeft node for cell={0} c={1} n={2}", ItemPrinter(cell), cell_coord, n);
+      if (cell != ccell && is_not_amr)
+        ARCANE_FATAL("Bad correspondance UL -> LR cell={0} corresponding_cell={1}", ItemPrinter(cell), ccell);
     }
     {
       Node upper_right = cc.upperRight(cell);
       Cell ccell = cc.lowerLeft(upper_right);
       Real3 n = nodes_coord[upper_right];
-      if (n.y<=cell_coord.y || n.x<=cell_coord.x)
-        ARCANE_FATAL("Bad upperRight node for cell={0} c={1} n={2}",ItemPrinter(cell),cell_coord,n);
-      if (cell!=ccell && is_not_amr)
-        ARCANE_FATAL("Bad correspondance UR -> LF cell={0} corresponding_cell={1}",ItemPrinter(cell),ccell);
+      if (n.y <= cell_coord.y || n.x <= cell_coord.x)
+        ARCANE_FATAL("Bad upperRight node for cell={0} c={1} n={2}", ItemPrinter(cell), cell_coord, n);
+      if (cell != ccell && is_not_amr)
+        ARCANE_FATAL("Bad correspondance UR -> LF cell={0} corresponding_cell={1}", ItemPrinter(cell), ccell);
     }
     {
       Node lower_right = cc.lowerRight(cell);
       Cell ccell = cc.upperLeft(lower_right);
       Real3 n = nodes_coord[lower_right];
-      if (n.y>=cell_coord.y || n.x<=cell_coord.x)
-        ARCANE_FATAL("Bad lowerRight node for cell={0} c={1} n={2}",ItemPrinter(cell),cell_coord,n);
-      if (cell!=ccell && is_not_amr)
-        ARCANE_FATAL("Bad correspondance UL -> LR cell={0} corresponding_cell={1}",ItemPrinter(cell),ccell);
+      if (n.y >= cell_coord.y || n.x <= cell_coord.x)
+        ARCANE_FATAL("Bad lowerRight node for cell={0} c={1} n={2}", ItemPrinter(cell), cell_coord, n);
+      if (cell != ccell && is_not_amr)
+        ARCANE_FATAL("Bad correspondance UL -> LR cell={0} corresponding_cell={1}", ItemPrinter(cell), ccell);
     }
     {
       Node lower_left = cc.lowerLeft(cell);
       Cell ccell = cc.upperRight(lower_left);
       Real3 n = nodes_coord[lower_left];
-      if (n.y>=cell_coord.y || n.x>=cell_coord.x)
-        ARCANE_FATAL("Bad lowerLeft node for cell={0} c={1} n={2}",ItemPrinter(cell),cell_coord,n);
-      if (cell!=ccell && is_not_amr)
-        ARCANE_FATAL("Bad correspondance LL -> UR cell={0} corresponding_cell={1}",ItemPrinter(cell),ccell);
+      if (n.y >= cell_coord.y || n.x >= cell_coord.x)
+        ARCANE_FATAL("Bad lowerLeft node for cell={0} c={1} n={2}", ItemPrinter(cell), cell_coord, n);
+      if (cell != ccell && is_not_amr)
+        ARCANE_FATAL("Bad correspondance LL -> UR cell={0} corresponding_cell={1}", ItemPrinter(cell), ccell);
     }
   }
 }
@@ -1067,7 +1199,7 @@ _sample(ICartesianMesh* cartesian_mesh)
 {
   //! [SampleNodeToCell]
   CartesianConnectivity cc = cartesian_mesh->connectivity();
-  ENUMERATE_NODE(inode,m_mesh->allNodes()){
+  ENUMERATE_NODE (inode, m_mesh->allNodes()) {
     Node n = *inode;
     Cell c1 = cc.upperLeft(n); // Maille en haut à gauche
     Cell c2 = cc.upperRight(n); // Maille en haut à droite
