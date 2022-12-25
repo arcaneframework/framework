@@ -301,13 +301,9 @@ ADD_TEST(dump_database ${ARCANE_TEST_DRIVER} launch -We,STDENV_CODE_NAME,Arcane 
 
 # ----------------------------------------------------------------------------
 
-add_test(standalone_accelerator_testsum ${ARCANE_TEST_DRIVER} launch -A,StandaloneAcceleratorMethod=TestSum)
-if (ARCANE_WANT_CUDA)
-  add_test(standalone_accelerator_testsum_cuda ${ARCANE_TEST_DRIVER} launch -A,StandaloneAcceleratorMethod=TestSum -A,AcceleratorRuntime=cuda)
-endif()
-if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP" )
-  add_test(standalone_accelerator_testsum_hip ${ARCANE_TEST_DRIVER} launch -A,StandaloneAcceleratorMethod=TestSum -A,AcceleratorRuntime=hip)
-endif()
+arcane_add_test_sequential(standalone_accelerator_testsum dummy.arc "-A,StandaloneAcceleratorMethod=TestSum")
+arcane_add_accelerator_test_sequential(standalone_accelerator_testsum dummy.arc "-A,StandaloneAcceleratorMethod=TestSum")
+arcane_add_accelerator_test_sequential(standalone_accelerator_testemptykernel dummy.arc "-A,StandaloneAcceleratorMethod=TestEmptyKernel")
 
 # ----------------------------------------------------------------------------
 

@@ -20,6 +20,8 @@ int arcaneTestCuda2();
 extern "C"
 int arcaneTestCuda3();
 extern "C"
+int arcaneTestCuda4();
+extern "C"
 int arcaneTestCudaNumArray();
 extern "C"
 int arcaneTestCudaReduction();
@@ -30,5 +32,6 @@ int func0()
   arcaneTestCuda3();
   arcaneTestCudaNumArray();
   arcaneTestCudaReduction();
+  arcaneTestCuda4();
   return 0;
 }

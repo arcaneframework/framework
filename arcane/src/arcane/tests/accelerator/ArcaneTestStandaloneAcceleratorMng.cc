@@ -4,6 +4,8 @@
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #include "arcane/launcher/ArcaneLauncher.h"
 #include "arcane/utils/NumArray.h"
@@ -11,9 +13,16 @@
 
 #include "arcane/accelerator/NumArrayViews.h"
 #include "arcane/accelerator/RunQueue.h"
+#include "arcane/accelerator/Runner.h"
 #include "arcane/accelerator/RunCommandLoop.h"
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 using namespace Arcane;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 namespace
 {
@@ -52,6 +61,34 @@ _testSum(IAcceleratorMng* acc_mng)
     ARCANE_FATAL("Bad value for sum={0} (expected={1})",total,expected_total);
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void
+_testEmptyKernel(IAcceleratorMng* acc_mng)
+{
+  // Test la somme de deux tableaux 'a' et 'b' dans un tableau 'c'.
+  int nb_value = 2000;
+  int nb_iteration = 10000;
+
+  auto queue = Accelerator::makeQueue(acc_mng->defaultRunner());
+  queue.setAsync(true);
+  Int64 xbegin = platform::getRealTimeNS();
+  for(int i=0; i<nb_iteration; ++i ){
+    auto command = makeCommand(queue);
+    command << RUNCOMMAND_LOOP1(iter,nb_value)
+    {
+    };
+  }
+  Int64 xend = platform::getRealTimeNS();
+  queue.barrier();
+  Int64 xend2 = platform::getRealTimeNS();
+  std::cout << "Time1 = " << (xend-xbegin)/nb_iteration << " Time2=" << (xend2-xbegin)/nb_iteration << "\n";
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 int
 _testStandaloneLauncher(const CommandLineArguments& cmd_line_args,
                         const String& method_name)
@@ -62,11 +99,16 @@ _testStandaloneLauncher(const CommandLineArguments& cmd_line_args,
   IAcceleratorMng* acc_mng = launcher.acceleratorMng();
   if (method_name=="TestSum")
     _testSum(acc_mng);
+  else if (method_name=="TestEmptyKernel")
+    _testEmptyKernel(acc_mng);
   else
     ARCANE_FATAL("Unknown method to test");
   return 0;
 }
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 extern "C++" ARCANE_EXPORT int
 arcaneTestStandaloneLauncher(const CommandLineArguments& cmd_line_args,
@@ -82,3 +124,6 @@ arcaneTestStandaloneLauncher(const CommandLineArguments& cmd_line_args,
   }
   return r;
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
