@@ -18,6 +18,7 @@
 
 #include "arcane/ArcaneTypes.h"
 #include "arcane/ItemTypes.h"
+#include "arcane/ItemLocalId.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -46,27 +47,49 @@ class ARCANE_CORE_EXPORT ItemConnectivityContainerView
   friend ItemInternalConnectivityList;
   friend IndexedItemConnectivityViewBase;
   friend mesh::IncrementalItemConnectivityBase;
-  template<typename ItemType1,typename ItemType2>
+  template <typename ItemType1, typename ItemType2>
   friend class IndexedItemConnectivityGenericViewT;
 
  private:
 
- ItemConnectivityContainerView() = default;
- ItemConnectivityContainerView(SmallSpan<const ItemLocalId> _list,
-                               SmallSpan<const Int32> _indexes,
-                               SmallSpan<const Int32> _nb_item)
-  : m_list_data(_list), m_indexes(_indexes), m_nb_item(_nb_item)
+  ItemConnectivityContainerView() = default;
+  ItemConnectivityContainerView(SmallSpan<const ItemLocalId> _list,
+                                SmallSpan<const Int32> _indexes,
+                                SmallSpan<const Int32> _nb_item)
+  : m_list_data(_list)
+  , m_indexes(_indexes)
+  , m_nb_item(_nb_item)
   {
   }
 
  public:
 
- /*!
+  /*!
    * \brief Vérifie que les deux instances \a this et \a rhs ont les mêmes valeurs.
    *
    * Lance un FatalErrorException si ce n'est pas le cas.
    */
   void checkSame(ItemConnectivityContainerView rhs) const;
+
+ private:
+
+  //! Liste des entités connectées à l'entité de localId() \a lid
+  template <typename ItemType> constexpr ARCCORE_HOST_DEVICE
+  ItemLocalIdViewT<ItemType>
+  itemsIds(ItemLocalId lid) const
+  {
+    using LocalIdType = typename ItemLocalIdViewT<ItemType>::LocalIdType;
+    auto* p = static_cast<const LocalIdType*>(&m_list_data[m_indexes[lid]]);
+    return { p, m_nb_item[lid] };
+  }
+
+  //! \a index-ème entité connectée à l'entité de localId() \a lid
+  template <typename ItemLocalIdType> constexpr ARCCORE_HOST_DEVICE
+  ItemLocalIdType
+  itemId(ItemLocalId lid, Int32 index) const
+  {
+    return ItemLocalIdType(m_list_data[m_indexes[lid] + index]);
+  }
 
  private:
 
