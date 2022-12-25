@@ -27,8 +27,8 @@ namespace Arcane
 void ItemConnectivityContainerView::
 checkSame(ItemConnectivityContainerView rhs) const
 {
-  auto current_list = m_list;
-  auto ref_list = rhs.m_list;
+  auto current_list = m_list_data;
+  auto ref_list = rhs.m_list_data;
   auto current_indexes = m_indexes;
   auto ref_indexes = rhs.m_indexes;
   auto* current_list_ptr = current_list.data();

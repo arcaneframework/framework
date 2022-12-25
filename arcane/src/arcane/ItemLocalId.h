@@ -149,6 +149,14 @@ class ItemLocalIdViewT
   {
     return ItemLocalIdViewT<ItemType>(reinterpret_cast<const LocalIdType*>(v.data()), v.size());
   }
+  ConstArrayView<Int32> toViewInt32() const
+  {
+    return { size(), reinterpret_cast<const Int32*>(data()) };
+  }
+  ARCCORE_HOST_DEVICE SmallSpan<const Int32> toSpanInt32() const
+  {
+    return { reinterpret_cast<const Int32*>(data()), size() };
+  }
 
  private:
 

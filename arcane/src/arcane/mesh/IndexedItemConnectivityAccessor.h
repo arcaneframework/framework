@@ -43,9 +43,8 @@ class ARCANE_MESH_EXPORT IndexedItemConnectivityAccessor
 
   ItemVectorView operator()(ItemLocalId lid) const
   {
-    auto* ptr = reinterpret_cast<const Int32*>(&m_list_data[m_indexes[lid]]);
-    Int32ConstArrayView v(m_nb_item[lid], ptr);
-    return const_cast<IItemFamily*>(m_target_item_family)->view(v);
+    ItemLocalIdViewT<Item> x = this->items(lid);
+    return const_cast<IItemFamily*>(m_target_item_family)->view(x.toViewInt32());
   }
 
  private:

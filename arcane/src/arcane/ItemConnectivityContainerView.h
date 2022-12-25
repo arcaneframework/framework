@@ -46,13 +46,16 @@ class ARCANE_CORE_EXPORT ItemConnectivityContainerView
   friend ItemInternalConnectivityList;
   friend IndexedItemConnectivityViewBase;
   friend mesh::IncrementalItemConnectivityBase;
+  template<typename ItemType1,typename ItemType2>
+  friend class IndexedItemConnectivityGenericViewT;
 
  private:
 
+ ItemConnectivityContainerView() = default;
  ItemConnectivityContainerView(SmallSpan<const ItemLocalId> _list,
                                SmallSpan<const Int32> _indexes,
                                SmallSpan<const Int32> _nb_item)
-  : m_list(_list), m_indexes(_indexes), m_nb_item(_nb_item)
+  : m_list_data(_list), m_indexes(_indexes), m_nb_item(_nb_item)
   {
   }
 
@@ -67,7 +70,7 @@ class ARCANE_CORE_EXPORT ItemConnectivityContainerView
 
  private:
 
-  SmallSpan<const ItemLocalId> m_list;
+  SmallSpan<const ItemLocalId> m_list_data;
   SmallSpan<const Int32> m_indexes;
   SmallSpan<const Int32> m_nb_item;
 };
