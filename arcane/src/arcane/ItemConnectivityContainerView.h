@@ -49,7 +49,7 @@ class ARCANE_CORE_EXPORT ItemConnectivityContainerView
 
  private:
 
- ItemConnectivityContainerView(SmallSpan<const Int32> _list,
+ ItemConnectivityContainerView(SmallSpan<const ItemLocalId> _list,
                                SmallSpan<const Int32> _indexes,
                                SmallSpan<const Int32> _nb_item)
   : m_list(_list), m_indexes(_indexes), m_nb_item(_nb_item)
@@ -67,7 +67,7 @@ class ARCANE_CORE_EXPORT ItemConnectivityContainerView
 
  private:
 
-  SmallSpan<const Int32> m_list;
+  SmallSpan<const ItemLocalId> m_list;
   SmallSpan<const Int32> m_indexes;
   SmallSpan<const Int32> m_nb_item;
 };

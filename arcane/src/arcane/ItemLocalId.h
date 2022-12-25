@@ -52,6 +52,19 @@ class ARCANE_CORE_EXPORT ItemLocalId
   constexpr ARCCORE_HOST_DEVICE Int32 localId() const { return m_local_id; }
   constexpr ARCCORE_HOST_DEVICE bool isNull() const { return m_local_id == NULL_ITEM_LOCAL_ID; }
 
+ public:
+
+  static SmallSpan<const ItemLocalId> fromSpanInt32(SmallSpan<const Int32> v)
+  {
+    auto* ptr = reinterpret_cast<const ItemLocalId*>(v.data());
+    return { ptr, v.size() };
+  }
+  static SmallSpan<const Int32> toSpanInt32(SmallSpan<const ItemLocalId> v)
+  {
+    auto* ptr = reinterpret_cast<const Int32*>(v.data());
+    return { ptr, v.size() };
+  }
+
  private:
 
   Int32 m_local_id = NULL_ITEM_LOCAL_ID;
@@ -63,9 +76,14 @@ class ARCANE_CORE_EXPORT ItemLocalId
  * \ingroup Mesh
  * \brief Index d'une entité \a ItemType dans une variable.
  */
-template <typename ItemType> class ItemLocalIdT
+template <typename ItemType>
+class ItemLocalIdT
 : public ItemLocalId
 {
+ public:
+
+  using ThatClass = ItemLocalIdT<ItemType>;
+
  public:
 
   ItemLocalIdT() = default;
@@ -75,6 +93,20 @@ template <typename ItemType> class ItemLocalIdT
   inline ItemLocalIdT(ItemInternal* item);
   inline ItemLocalIdT(ItemEnumeratorT<ItemType> enumerator);
   inline ItemLocalIdT(ItemType item);
+
+ public:
+
+  static SmallSpan<const ItemLocalId> fromSpanInt32(SmallSpan<const Int32> v)
+  {
+    auto* ptr = reinterpret_cast<const ThatClass*>(v.data());
+    return { ptr, v.size() };
+  }
+
+  static SmallSpan<const Int32> toSpanInt32(SmallSpan<const ThatClass> v)
+  {
+    auto* ptr = reinterpret_cast<const Int32*>(v.data());
+    return { ptr, v.size() };
+  }
 
  public:
 

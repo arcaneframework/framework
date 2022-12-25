@@ -37,9 +37,12 @@ class ARCANE_CORE_EXPORT IndexedItemConnectivityViewBase
 
   IndexedItemConnectivityViewBase() = default;
   IndexedItemConnectivityViewBase(ItemConnectivityContainerView container_view,
-                                  eItemKind source_kind,eItemKind target_kind)
-  : m_nb_item(container_view.m_nb_item), m_indexes(container_view.m_indexes), m_list_data(container_view.m_list)
-  , m_source_kind(source_kind), m_target_kind(target_kind)
+                                  eItemKind source_kind, eItemKind target_kind)
+  : m_nb_item(container_view.m_nb_item)
+  , m_indexes(container_view.m_indexes)
+  , m_list_data(container_view.m_list)
+  , m_source_kind(source_kind)
+  , m_target_kind(target_kind)
   {
   }
 
@@ -52,20 +55,19 @@ class ARCANE_CORE_EXPORT IndexedItemConnectivityViewBase
   //! Liste des entités connectées à l'entité \a lid
   ARCCORE_HOST_DEVICE ItemLocalIdViewT<Item> items(ItemLocalId lid) const
   {
-    const Int32* ptr = & m_list_data[m_indexes[lid]];
-    return { reinterpret_cast<const ItemLocalId*>(ptr), m_nb_item[lid] };
+    return { &m_list_data[m_indexes[lid]], m_nb_item[lid] };
   }
   eItemKind sourceItemKind() const { return m_source_kind; }
   eItemKind targetItemKind() const { return m_target_kind; }
 
   //! Initialise la vue
-  ARCANE_DEPRECATED_REASON("Y2022: This method is internal to Arcane and should be replaced by _init()")
-  void init(SmallSpan<const Int32> nb_item,SmallSpan<const Int32> indexes,
-            SmallSpan<const Int32> list_data,eItemKind source_kind,eItemKind target_kind)
+  ARCANE_DEPRECATED_REASON("Y2022: This method is internal to Arcane and should be replaced by call to constructor")
+  void init(SmallSpan<const Int32> nb_item, SmallSpan<const Int32> indexes,
+            SmallSpan<const Int32> list_data, eItemKind source_kind, eItemKind target_kind)
   {
     m_indexes = indexes;
     m_nb_item = nb_item;
-    m_list_data = list_data;
+    m_list_data = ItemLocalId::fromSpanInt32(list_data);
     m_source_kind = source_kind;
     m_target_kind = target_kind;
   }
@@ -85,17 +87,17 @@ class ARCANE_CORE_EXPORT IndexedItemConnectivityViewBase
 
   SmallSpan<const Int32> m_nb_item;
   SmallSpan<const Int32> m_indexes;
-  SmallSpan<const Int32> m_list_data;
+  SmallSpan<const ItemLocalId> m_list_data;
   eItemKind m_source_kind = IK_Unknown;
   eItemKind m_target_kind = IK_Unknown;
 
  protected:
 
-  [[noreturn]] void _badConversion(eItemKind k1,eItemKind k2) const;
-  inline void _checkValid(eItemKind k1,eItemKind k2) const
+  [[noreturn]] void _badConversion(eItemKind k1, eItemKind k2) const;
+  inline void _checkValid(eItemKind k1, eItemKind k2) const
   {
-    if (k1!=m_source_kind || k2!=m_target_kind)
-      _badConversion(k1,k2);
+    if (k1 != m_source_kind || k2 != m_target_kind)
+      _badConversion(k1, k2);
   }
 };
 
@@ -126,17 +128,18 @@ class IndexedItemConnectivityGenericViewT
   }
   IndexedItemConnectivityGenericViewT() = default;
  public:
+
   //! Liste des entités connectées à l'entité \a lid
-  ARCCORE_HOST_DEVICE ItemLocalIdViewType items(ItemLocalId1 lid) const
+  constexpr ARCCORE_HOST_DEVICE ItemLocalIdViewType items(ItemLocalId1 lid) const
   {
-    const Int32* ptr = & m_list_data[m_indexes[lid]];
-    return { reinterpret_cast<const ItemLocalId2*>(ptr), m_nb_item[lid] };
+    const ItemLocalId* ptr = & m_list_data[m_indexes[lid]];
+    return { static_cast<const ItemLocalId2*>(ptr), m_nb_item[lid] };
   }
   //! Liste des entités connectées à l'entité \a lid
-  ARCCORE_HOST_DEVICE ItemLocalIdViewType itemIds(ItemLocalId1 lid) const
+  constexpr ARCCORE_HOST_DEVICE ItemLocalIdViewType itemIds(ItemLocalId1 lid) const
   {
-    const Int32* ptr = & m_list_data[m_indexes[lid]];
-    return { reinterpret_cast<const ItemLocalId2*>(ptr), m_nb_item[lid] };
+    const ItemLocalId* ptr = & m_list_data[m_indexes[lid]];
+    return { static_cast<const ItemLocalId2*>(ptr), m_nb_item[lid] };
   }
   //! i-ème entitée connectée à l'entité \a lid
   ARCCORE_HOST_DEVICE ItemLocalId2 itemId(ItemLocalId1 lid,Int32 index) const

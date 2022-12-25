@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Connectivité incrémentale des entités.                                    */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_DOF_INCREMENTALITEMCONNECTIVITY_H
-#define ARCANE_DOF_INCREMENTALITEMCONNECTIVITY_H
+#ifndef ARCANE_INCREMENTALITEMCONNECTIVITY_H
+#define ARCANE_INCREMENTALITEMCONNECTIVITY_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
