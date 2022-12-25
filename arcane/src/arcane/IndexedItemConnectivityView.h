@@ -47,9 +47,9 @@ class ARCANE_CORE_EXPORT IndexedItemConnectivityViewBase
  public:
 
   //! Nombre d'entités source
-  constexpr ARCCORE_HOST_DEVICE Int32 nbSourceItem() const { return m_container_view.m_nb_item.size(); }
+  constexpr ARCCORE_HOST_DEVICE Int32 nbSourceItem() const { return m_container_view.nbItem(); }
   //! Nombre d'entités connectées à l'entité \a lid
-  ARCCORE_HOST_DEVICE Int32 nbItem(ItemLocalId lid) const { return m_container_view.m_nb_item[lid]; }
+  ARCCORE_HOST_DEVICE Int32 nbItem(ItemLocalId lid) const { return m_container_view.m_nb_connected_items[lid]; }
   //! Liste des entités connectées à l'entité \a lid
   ARCCORE_HOST_DEVICE ItemLocalIdViewT<Item> items(ItemLocalId lid) const
   {
