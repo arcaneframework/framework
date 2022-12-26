@@ -91,6 +91,11 @@ __global__ void MyVecAdd3(MDSpan<const double,MDDim1> a,MDSpan<const double,MDDi
   }
 }
 
+__global__ void
+MyEmptyKernel()
+{
+}
+
 void _initArrays(Span<double> a,Span<double> b,Span<double> c,int base)
 {
   Int64 vsize = a.size();
@@ -339,6 +344,28 @@ int arcaneTestCuda3()
     std::cout << "TEST WITH REAL3\n";
   }
 
+  return 0;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C"
+int arcaneTestCuda4()
+{
+  constexpr int vsize = 2000;
+  int threadsPerBlock = 256;
+  int blocksPerGrid = (vsize + threadsPerBlock - 1) / threadsPerBlock;
+  int nb_iteration = 10000;
+  Int64 xbegin = platform::getRealTimeNS();
+  for(int i=0; i<nb_iteration; ++i )
+    MyEmptyKernel<<<blocksPerGrid, threadsPerBlock>>>();
+  Int64 xend = platform::getRealTimeNS();
+  cudaDeviceSynchronize();
+  Int64 xend2 = platform::getRealTimeNS();
+  cudaError_t e = cudaGetLastError();
+  std::cout << "END OF MyEmptyKernel e=" << e << " v=" << cudaGetErrorString(e) << "\n";
+  std::cout << "Time1 = " << (xend-xbegin)/nb_iteration << " Time2=" << (xend2-xbegin)/nb_iteration << "\n";
   return 0;
 }
 
