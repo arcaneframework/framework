@@ -165,6 +165,7 @@ class ARCANE_MESH_EXPORT IncrementalItemConnectivityBase
   void _notifyConnectivityNbItemChangedFromObservable();
   void _computeMaxNbConnectedItem();
   void _setNewMaxNbConnectedItems(Int32 new_max);
+  void _setMaxNbConnectedItemsInConnectivityList();
 };
 
 /*---------------------------------------------------------------------------*/
