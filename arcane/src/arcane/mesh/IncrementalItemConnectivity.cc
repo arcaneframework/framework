@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IncrementalItemConnectivity.cc                              (C) 2000-2021 */
+/* IncrementalItemConnectivity.cc                              (C) 2000-2022 */
 /*                                                                           */
 /* Connectivité incrémentale des entités.                                    */
 /*---------------------------------------------------------------------------*/
@@ -248,6 +248,16 @@ _notifyConnectivityNbItemChanged()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+void IncrementalItemConnectivityBase::
+_setMaxNbConnectedItemsInConnectivityList()
+{
+  if (m_item_connectivity_list)
+    m_item_connectivity_list->setMaxNbConnectedItem(m_item_connectivity_index,m_p->m_max_nb_item);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * Méthode appelée lorsque la le nombre d'entité est modifié de manière externe,
  * par exemple en reprise ou après un retour-arrière.
@@ -267,8 +277,7 @@ _setNewMaxNbConnectedItems(Int32 new_max)
 {
   if (new_max > m_p->m_max_nb_item){
     m_p->m_max_nb_item = new_max;
-    if (m_item_connectivity_list)
-      m_item_connectivity_list->setMaxNbConnectedItem(m_item_connectivity_index,new_max);
+    _setMaxNbConnectedItemsInConnectivityList();
   }
 }
 
@@ -308,10 +317,13 @@ maxNbConnectedItem() const
 void IncrementalItemConnectivityBase::
 setItemConnectivityList(ItemInternalConnectivityList* ilist,Int32 index)
 {
+  info(4) << "setItemConnectivityList name=" << name() << " ilist=" << ilist << " index=" << index;
   m_item_connectivity_list = ilist;
   m_item_connectivity_index = index;
   _notifyConnectivityListChanged();
   _notifyConnectivityIndexChanged();
+  _notifyConnectivityNbItemChanged();
+  _setMaxNbConnectedItemsInConnectivityList();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -795,10 +807,10 @@ compactConnectivityList()
 
 OneItemIncrementalItemConnectivity::
 OneItemIncrementalItemConnectivity(IItemFamily* source_family,IItemFamily* target_family,
-                            const String& aname)
+                                   const String& aname)
 : IncrementalItemConnectivityBase(source_family,target_family,aname)
 {
-  info() << "Using fixed OneItem connectivity for name=" << name();
+  info(4) << "Using fixed OneItem connectivity for name=" << name();
 }
 
 /*---------------------------------------------------------------------------*/
