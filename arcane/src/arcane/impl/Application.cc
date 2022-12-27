@@ -67,6 +67,8 @@
 
 #include "arcane/ItemEnumerator.h"
 #include "arcane/Item.h"
+#include "arcane/IndexedItemConnectivityView.h"
+#include "arcane/UnstructuredMeshConnectivity.h"
 
 #include "arccore_version.h"
 
@@ -742,11 +744,16 @@ initialize()
   m_trace->info() << "sizeof(ItemInternal)=" << sizeof(ItemInternal)
                   << " sizeof(ItemInternalConnectivityList)=" << sizeof(ItemInternalConnectivityList)
                   << " sizeof(ItemSharedInfo)=" << sizeof(ItemSharedInfo);
+  m_trace->info() << "sizeof(ItemLocalId)=" << sizeof(ItemLocalId)
+                  << " sizeof(ItemConnectivityContainerView)=" << sizeof(ItemConnectivityContainerView)
+                  << " sizeof(UnstructuredMeshConnectivityView)=" << sizeof(UnstructuredMeshConnectivityView);
   m_trace->info() << "sizeof(Item)=" << sizeof(Item)
                   << " sizeof(ItemEnumerator)=" << sizeof(ItemEnumerator)
                   << " sizeof(ItemVectorView)=" << sizeof(ItemVectorView)
                   << " sizeof(ItemVectorViewConstIterator)=" << sizeof(ItemVectorViewConstIterator)
                   << " ItemEnumeratorVersion=" << ItemEnumerator::version();
+  m_trace->info() << "sizeof(eItemKind)=" << sizeof(eItemKind)
+                  << " sizeof(IndexedItemConnectivityViewBase)=" << sizeof(IndexedItemConnectivityViewBase);
 }
 
 /*---------------------------------------------------------------------------*/

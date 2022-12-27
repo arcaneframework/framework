@@ -222,26 +222,22 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
    */
   const Int32* itemLocalIds(Int32 item_kind,Int32 lid) const
   {
-#ifdef ARCANE_CHECK
-    ++m_nb_access_all;
-#endif
-    return &(m_list[item_kind][ m_indexes[item_kind][lid] ]);
+    const ItemLocalId* ptr =  &(m_list[item_kind][ m_indexes[item_kind][lid] ]);
+    return reinterpret_cast<const Int32*>(ptr);
   }
+
   /*!
    * \brief localId() de la \a index-ème entité de type \a item_kind
    * connectés à l'entité de de localid() \a lid.
    */
   Int32 itemLocalId(Int32 item_kind,Int32 lid,Integer index) const
   {
-#ifdef ARCANE_CHECK
-    ++m_nb_access;
-#endif
     return m_list[item_kind][ m_indexes[item_kind][lid] + index];
   }
   //! Nombre d'appel à itemLocalId()
-  Int64 nbAccess() const { return m_nb_access; }
+  Int64 nbAccess() const { return 0; }
   //! Nombre d'appel à itemLocalIds()
-  Int64 nbAccessAll() const { return m_nb_access_all; }
+  Int64 nbAccessAll() const { return 0; }
 
  public:
 
@@ -252,6 +248,12 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   }
   //! Positionne le tableau contenant la liste des connectivités
   void setConnectivityList(Int32 item_kind,ConstArrayView<Int32> v)
+  {
+    auto* ids = reinterpret_cast<const ItemLocalId*>(v.data());
+    m_list[item_kind] = ConstArrayView<ItemLocalId>(v.size(),ids);
+  }
+  //! Positionne le tableau contenant la liste des connectivités
+  void setConnectivityList(Int32 item_kind,ConstArrayView<ItemLocalId> v)
   {
     m_list[item_kind] = v;
   }
@@ -281,7 +283,8 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   ARCANE_DEPRECATED_REASON("Y2022: Use containerView() instead")
   Int32ConstArrayView connectivityList(Int32 item_kind) const
   {
-    return m_list[item_kind];
+    auto* ids = reinterpret_cast<const Int32*>(m_list[item_kind].data());
+    return { m_list[item_kind].size(), ids };
   }
   //! Tableau contenant le nombre d'entités connectées pour les entités de genre \a item_kind
   ARCANE_DEPRECATED_REASON("Y2022: Use containerView() instead")
@@ -389,7 +392,7 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
 
   ConstArrayView<Int32> m_indexes[MAX_ITEM_KIND];
   Int32View m_nb_item[MAX_ITEM_KIND];
-  ConstArrayView<Int32> m_list[MAX_ITEM_KIND];
+  ConstArrayView<ItemLocalId> m_list[MAX_ITEM_KIND];
   Int32 m_max_nb_item[MAX_ITEM_KIND];
 
  public:

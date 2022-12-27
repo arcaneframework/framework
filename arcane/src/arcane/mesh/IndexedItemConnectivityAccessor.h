@@ -5,11 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IndexedItemConnectivityAccessor.h                               (C) 2000-2021 */
+/* IndexedItemConnectivityAccessor.h                           (C) 2000-2022 */
 /*                                                                           */
 /* Connectivité incrémentale des entités.                                    */
 /*---------------------------------------------------------------------------*/
-#pragma once
+#ifndef ARCANE_MESH_INDEXEDITEMCONNECTIVITYACCESSOR_H
+#define ARCANE_MESH_INDEXEDITEMCONNECTIVITYACCESSOR_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -18,13 +19,13 @@
 #include "arcane/IItemFamily.h"
 #include "arcane/ItemVector.h"
 #include "arcane/VariableTypes.h"
-//#include "arcane/ItemInternal.h"
 #include "arcane/IIncrementalItemConnectivity.h"
 
 #include "arcane/mesh/MeshGlobal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 namespace Arcane::mesh
 {
 
@@ -36,15 +37,14 @@ class ARCANE_MESH_EXPORT IndexedItemConnectivityAccessor
 {
  public:
 
-  IndexedItemConnectivityAccessor(IndexedItemConnectivityViewBase view, IItemFamily* target_item_family) ;
+  IndexedItemConnectivityAccessor(IndexedItemConnectivityViewBase view, IItemFamily* target_item_family);
   IndexedItemConnectivityAccessor(IIncrementalItemConnectivity* connectivity);
   IndexedItemConnectivityAccessor() = default;
 
   ItemVectorView operator()(ItemLocalId lid) const
   {
-    //assert(m_target_item_family) ;
-    const Integer* ptr = & m_list_data[m_indexes[lid]];
-    return const_cast<IItemFamily*>(m_target_item_family)->view(ConstArrayView<Integer>( m_nb_item[lid], ptr )) ;
+    ItemLocalIdViewT<Item> x = this->items(lid);
+    return const_cast<IItemFamily*>(m_target_item_family)->view(x.toViewInt32());
   }
 
  private:
@@ -60,3 +60,4 @@ class ARCANE_MESH_EXPORT IndexedItemConnectivityAccessor
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#endif

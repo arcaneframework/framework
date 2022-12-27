@@ -18,6 +18,7 @@
 
 #include "arcane/ArcaneTypes.h"
 #include "arcane/ItemTypes.h"
+#include "arcane/ItemLocalId.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -46,19 +47,29 @@ class ARCANE_CORE_EXPORT ItemConnectivityContainerView
   friend ItemInternalConnectivityList;
   friend IndexedItemConnectivityViewBase;
   friend mesh::IncrementalItemConnectivityBase;
+  template <typename ItemType1, typename ItemType2>
+  friend class IndexedItemConnectivityGenericViewT;
 
  private:
 
- ItemConnectivityContainerView(SmallSpan<const Int32> _list,
-                               SmallSpan<const Int32> _indexes,
-                               SmallSpan<const Int32> _nb_item)
-  : m_list(_list), m_indexes(_indexes), m_nb_item(_nb_item)
+  ItemConnectivityContainerView() = default;
+  ItemConnectivityContainerView(SmallSpan<const ItemLocalId> _list,
+                                SmallSpan<const Int32> _indexes,
+                                SmallSpan<const Int32> _nb_connected_item)
+  : m_list_data(_list.data())
+  , m_indexes(_indexes.data())
+  , m_nb_connected_items(_nb_connected_item.data())
+  , m_list_data_size(_list.size())
+  , m_nb_item(_nb_connected_item.size())
   {
+#ifdef ARCANE_CHECK
+    _checkSize( _indexes.size(), _nb_connected_item.size());
+#endif
   }
 
  public:
 
- /*!
+  /*!
    * \brief Vérifie que les deux instances \a this et \a rhs ont les mêmes valeurs.
    *
    * Lance un FatalErrorException si ce n'est pas le cas.
@@ -67,9 +78,56 @@ class ARCANE_CORE_EXPORT ItemConnectivityContainerView
 
  private:
 
-  SmallSpan<const Int32> m_list;
-  SmallSpan<const Int32> m_indexes;
-  SmallSpan<const Int32> m_nb_item;
+  //! Liste des entités connectées à l'entité de localId() \a lid
+  template <typename ItemType> constexpr ARCCORE_HOST_DEVICE
+  ItemLocalIdViewT<ItemType>
+  itemsIds(ItemLocalId lid) const
+  {
+    using LocalIdType = typename ItemLocalIdViewT<ItemType>::LocalIdType;
+    ARCANE_CHECK_AT(lid.localId(), m_nb_item);
+    Int32 x = m_indexes[lid];
+    ARCANE_CHECK_AT(x, m_list_data_size);
+    auto* p = static_cast<const LocalIdType*>(&m_list_data[x]);
+    return { p, m_nb_connected_items[lid] };
+  }
+
+  //! \a index-ème entité connectée à l'entité de localId() \a lid
+  template <typename ItemLocalIdType> constexpr ARCCORE_HOST_DEVICE
+  ItemLocalIdType
+  itemId(ItemLocalId lid, Int32 index) const
+  {
+    ARCANE_CHECK_AT(lid.localId(), m_nb_item);
+    Int32 x = m_indexes[lid] + index;
+    ARCANE_CHECK_AT(x, m_list_data_size);
+    return ItemLocalIdType(m_list_data[x]);
+  }
+
+  //! Tableau des connectivités
+  constexpr ARCCORE_HOST_DEVICE SmallSpan<const ItemLocalId>
+  listData() const { return { m_list_data, m_list_data_size }; }
+
+  //! Tableau des indices dans la table de connectivités
+  constexpr ARCCORE_HOST_DEVICE SmallSpan<const Int32>
+  indexes() const { return { m_indexes, m_nb_item }; }
+
+  //! Tableau du nombre d'entités connectées à une autre entité.
+  constexpr ARCCORE_HOST_DEVICE SmallSpan<const Int32>
+  nbConnectedItems() const { return { m_nb_connected_items,m_nb_item }; }
+
+  //! Nombre d'entités
+  constexpr ARCCORE_HOST_DEVICE Int32 nbItem() const { return m_nb_item; }
+
+ private:
+
+  const ItemLocalId* m_list_data = nullptr;
+  const Int32* m_indexes = nullptr;
+  const Int32* m_nb_connected_items = nullptr;
+  Int32 m_list_data_size = 0;
+  Int32 m_nb_item = 0;
+
+ private:
+
+  void _checkSize(Int32 indexes_size, Int32 nb_connected_item_size);
 };
 
 /*---------------------------------------------------------------------------*/
