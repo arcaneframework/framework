@@ -50,7 +50,8 @@ EmptyLineBeforeAccessModifier: LogicalBlock
 EmptyLineAfterAccessModifier: Always
 FixNamespaceComments: true
 ForEachMacros:   [ foreach, Q_FOREACH, BOOST_FOREACH, ENUMERATE_CELL,
-                 ENUMERATE_ITEM, ENUMERATE_NODE, ENUMERATE_FACE, ENUMERATE_PARTICLE, ENUMERATE_EDGE, ENUMERATE_DOF, ENUMERATE_ ]
+                 ENUMERATE_ITEM, ENUMERATE_NODE, ENUMERATE_FACE, ENUMERATE_PARTICLE, ENUMERATE_EDGE, ENUMERATE_DOF, ENUMERATE_,
+                 RUNCOMMAND_ENUMERATE, RUNCOMMAND_LOOP ]
 IndentCaseLabels: false
 IndentWidth:     2
 # IndentWrappedFunctionNames: true
