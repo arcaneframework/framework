@@ -110,7 +110,7 @@ private:
  void _enumerateDoF(const DoFGroup& dof_group);
  void _printVariable(VariableDoFReal& dof_variable, bool do_check);
  void _printArrayVariable(VariableDoFArrayReal& dof_variable, bool do_check);
- void _removeGhost(mesh::DoFFamily& dof_family);
+ void _removeGhost(IDoFFamily* dof_family);
  void _addNodes(Int32Array2View new_nodes_lids, Int64Array2View new_nodes_uids);
  void _removeNodes(Int32ConstArray2View new_nodes_lids,
                    const Integer nb_removed_nodes,
@@ -168,19 +168,19 @@ addDoF(const Integer size, const Integer begin_index)
   Int64UniqueArray dof_uids(size);
   for (Integer i = 0; i < size; ++i) dof_uids[i] = i+begin_index;
 
-  mesh::DoFFamily& dof_family = dofMng().family(m_dof_family_name); // Lazy
-  info() << "=== add items to family " << dof_family.name();
+  IDoFFamily* dof_family = dofMng().getFamily(m_dof_family_name); // Lazy
+  info() << "=== add items to family " << dof_family->name();
 
   Int32UniqueArray dof_lids(size);
 
-  DoFVectorView dofs = dof_family.addDoFs(dof_uids,dof_lids);
-  dof_family.endUpdate();
+  DoFVectorView dofs = dof_family->addDoFs(dof_uids,dof_lids);
+  dof_family->endUpdate();
 
   // CHECK
   info() << "=== mesh()->findItemFamily(IK_DoF,m_dof_family_name) " << mesh()->findItemFamily(IK_DoF,m_dof_family_name)->name();
-  info() << "=== dof_family nbItem " << dof_family.nbItem();
-  info() << "=== dof family uniqueIds " << Int64UniqueArray(*dof_family.uniqueIds());
-  info() << "=== dof family localIds " <<  Int32UniqueArray(dof_family.view().localIds());
+  info() << "=== dof_family nbItem " << dof_family->nbItem();
+  //info() << "=== dof family uniqueIds " << Int64UniqueArray(*dof_family.uniqueIds());
+  info() << "=== dof family localIds " <<  Int32UniqueArray(dof_family->itemFamily()->view().localIds());
 
 
   info() << "=== dofs.size = " << dofs.size();
@@ -188,8 +188,7 @@ addDoF(const Integer size, const Integer begin_index)
   // Enumerate DoF
   Int64 dof_id;
 
-  ENUMERATE_DOF(idof,dofs)
-  {
+  ENUMERATE_DOF(idof,dofs) {
     dof_id = idof->uniqueId().asInt64();
     info() << "= Dof id : " << dof_id;
   }
@@ -198,23 +197,21 @@ addDoF(const Integer size, const Integer begin_index)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-DoFTester::
+void DoFTester::
 removeDoF()
 {
-  mesh::DoFFamily& dof_family = dofMng().family(m_dof_family_name);
-  info() << "=== remove items from family " << dof_family.name();
+  IDoFFamily* dof_family = dofMng().getFamily(m_dof_family_name);
+  info() << "=== remove items from family " << dof_family->name();
 
-  Int32ConstArrayView dof_lids = dof_family.view().localIds();
-  dof_family.removeDoFs(dof_lids.subConstView(3,2));
-  dof_family.endUpdate();
+  Int32ConstArrayView dof_lids = dof_family->itemFamily()->view().localIds();
+  dof_family->removeDoFs(dof_lids.subConstView(3,2));
+  dof_family->endUpdate();
 
-  info() << "=== dofs.size = " << dof_family.nbItem();
+  info() << "=== dofs.size = " << dof_family->nbItem();
 
   // Enumerate DoF
   Int64 dof_id;
-  ENUMERATE_DOF(idof,dof_family.view())
-  {
+  ENUMERATE_DOF(idof,dof_family->itemFamily()->view()) {
     dof_id = idof->uniqueId().asInt64();
     info() << "= Dof id : " << dof_id;
   }
@@ -223,39 +220,37 @@ removeDoF()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-DoFTester::
+void DoFTester::
 doFGroups()
 {
-  mesh::DoFFamily& dof_family = dofMng().family(m_dof_family_name);
-  info() << "=== Test groups and goup creation in family " << dof_family.name();
+  IDoFFamily* dof_family = dofMng().getFamily(m_dof_family_name);
+  IItemFamily* item_family = dof_family->itemFamily();
+
+  info() << "=== Test groups and goup creation in family " << dof_family->name();
 
   // CREATE NEW GROUP; try ArcGeoSim ItemGroupBuilder
-  dof_family.createGroup("EmptyDoFGroup");
-  Int32ConstArrayView lids = dof_family.view().localIds().subConstView(0,dof_family.nbItem()-1);
+  item_family->createGroup("EmptyDoFGroup");
+  Int32ConstArrayView lids = item_family->view().localIds().subConstView(0,dof_family->nbItem()-1);
   String test_dof_group_name("TestDoFGroup");
-  dof_family.createGroup(test_dof_group_name,lids);
-  ItemGroup test_dof_group = dof_family.findGroup(test_dof_group_name);
-  dof_family.createGroup("TestDoFGroupFromParent",test_dof_group);
+  item_family->createGroup(test_dof_group_name,lids);
+  ItemGroup test_dof_group = item_family->findGroup(test_dof_group_name);
+  item_family->createGroup("TestDoFGroupFromParent",test_dof_group);
 
-  for (ItemGroupCollection::Iterator ite = dof_family.groups().begin(); ite != dof_family.groups().end();++ite)
-    {
-      _enumerateDoF(*ite);
-    }
+  for (ItemGroupCollection::Iterator ite = item_family->groups().begin(); ite != item_family->groups().end();++ite) {
+    _enumerateDoF(*ite);
+  }
 
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-DoFTester::
+void DoFTester::
 _enumerateDoF(const DoFGroup& dof_group)
 {
   Int64 dof_id;
   info() << "=== Enumerate dof group " << dof_group.name();
-  ENUMERATE_DOF(idof,dof_group)
-  {
+  ENUMERATE_DOF(idof,dof_group) {
     dof_id = idof->uniqueId().asInt64();
     info() << "= Dof id : " << dof_id;
   }
@@ -264,8 +259,7 @@ _enumerateDoF(const DoFGroup& dof_group)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-DoFTester::
+void DoFTester::
 doFConnectivity()
 {
   info() << "================================";
@@ -287,44 +281,41 @@ doFConnectivity()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-DoFTester::
+void DoFTester::
 _testItemProperty()
 {
   ItemScalarProperty<Integer> item_property;
   item_property.resize(mesh()->cellFamily(),NULL_ITEM_LOCAL_ID);
-  ENUMERATE_CELL(icell,ownCells())
-  {
+  ENUMERATE_CELL(icell,ownCells()) {
     item_property[icell] = icell.localId();
   }
-  ENUMERATE_CELL(icell,ownCells())
-  {
-    if (item_property[icell] != icell.localId()) fatal() << "Error on item property";
+  ENUMERATE_CELL(icell,ownCells()) {
+    if (item_property[icell] != icell.localId())
+      ARCANE_FATAL("Error on item property");
   }
+
   // Test resize
   ItemMultiArrayProperty<Integer> item_multi_array_property;
   Integer nb_elements = mesh()->cellFamily()->maxLocalId();
   IntegerUniqueArray dim2_sizes(nb_elements);
-  for (Arcane::Integer i = 0; i < nb_elements; ++i)
-    {
-      dim2_sizes[i] = Integer(math::pow(double(2),double(i%2))); // 1 or 2 elements per item.
-    }
+  for (Arcane::Integer i = 0; i < nb_elements; ++i) {
+    dim2_sizes[i] = Integer(math::pow(double(2),double(i%2))); // 1 or 2 elements per item.
+  }
   item_multi_array_property.resize(mesh()->cellFamily(),dim2_sizes,NULL_ITEM_LOCAL_ID);
+
   // Check initialization
-  ENUMERATE_CELL(icell,allCells())
-  {
-    for (Arcane::Integer j = 0; j < dim2_sizes[icell.index()]; ++j)
-      {
-        if (item_multi_array_property[icell][j] != NULL_ITEM_LOCAL_ID) fatal() << "Error in ItemMultiArrayProperty resize";
-      }
+  ENUMERATE_CELL(icell,allCells()) {
+    for ( Integer j = 0; j < dim2_sizes[icell.index()]; ++j) {
+      if (item_multi_array_property[icell][j] != NULL_ITEM_LOCAL_ID)
+        ARCANE_FATAL("Error in ItemMultiArrayProperty resize");
+    }
   }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-DoFTester::
+void DoFTester::
 _node2DoFConnectivity()
 {
   info() << "================================";
@@ -332,18 +323,20 @@ _node2DoFConnectivity()
   info() << "================================";
 
   // Create a DoF Family to link with mesh nodes
-  mesh::DoFFamily& dof_on_node_family = dofMng().family(m_dof_on_node_family_name);
+  IDoFFamily* dof_on_node_family = dofMng().getFamily(m_dof_on_node_family_name);
   IItemFamily* node_family = mesh()->nodeFamily();
   // Generation des uids : proposition d'un utilitaire (basique) dans les outils des dof
   Int64UniqueArray uids;
   // Create dof on own node only. Ghost handled in the following by GhostDoFManager
-  ENUMERATE_NODE(inode,ownNodes()) { uids.add(mesh::DoFUids::uid(inode->uniqueId().asInt64()));}
+  ENUMERATE_NODE(inode,ownNodes()) {
+    uids.add(mesh::DoFUids::uid(inode->uniqueId().asInt64()));
+  }
   Int32UniqueArray lids(uids.size());
-  dof_on_node_family.addDoFs(uids,lids);
-  dof_on_node_family.endUpdate();
+  dof_on_node_family->addDoFs(uids,lids);
+  dof_on_node_family->endUpdate();
 
   // Create connectivity
-  NodeToDoFConnectivity node2dof(node_family,&dof_on_node_family,"NodeToDoF");
+  NodeToDoFConnectivity node2dof(node_family,dof_on_node_family->itemFamily(),"NodeToDoF");
 
   info() << "== Create connectivity " << node2dof.name();
 
@@ -392,8 +385,9 @@ _node2DoFConnectivity()
   _removeGhost(dof_on_node_family);
 
   // Test constructor by item_property
-  NodeToDoFConnectivity node2dof_2(node_family,&dof_on_node_family,node2dof.itemProperty(),"NodeToDoF2");
-  if (!_checkIsSame(&node2dof,&node2dof_2)) fatal() << "Error in connectivity construction from ItemProperty";
+  NodeToDoFConnectivity node2dof_2(node_family,dof_on_node_family->itemFamily(),node2dof.itemProperty(),"NodeToDoF2");
+  if (!_checkIsSame(&node2dof,&node2dof_2))
+    ARCANE_FATAL("Error in connectivity construction from ItemProperty");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1045,17 +1039,15 @@ _node2DoFsMultiConnectivityRegistered()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-DoFTester::
-_removeGhost(mesh::DoFFamily& dof_family)
+void DoFTester::
+_removeGhost(IDoFFamily* dof_family)
 {
   Int32SharedArray removed_items;
-  ENUMERATE_DOF(idof,dof_family.ghostDoFs())
-  {
+  ENUMERATE_DOF(idof,dof_family->allItems().ghost()) {
     removed_items.add(idof->localId());
   }
-  dof_family.removeDoFs(removed_items);
-  dof_family.endUpdate();
+  dof_family->removeDoFs(removed_items);
+  dof_family->endUpdate();
 }
 
 /*---------------------------------------------------------------------------*/

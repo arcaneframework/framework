@@ -70,6 +70,7 @@
 #include "arcane/IItemFamilyModifier.h"
 #include "arcane/IItemFamilyPolicyMng.h"
 #include "arcane/IItemFamilyTopologyModifier.h"
+#include "arcane/IDoFFamily.h"
 #include "arcane/ItemFamilySerializeArgs.h"
 #include "arcane/ITimeStats.h"
 #include "arcane/ITimerMng.h"

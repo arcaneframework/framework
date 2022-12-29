@@ -96,15 +96,16 @@ initializeTest()
 void DoFNodeTestService::
 _buildDoFs()
 {
-  IItemFamily* dof_family_interface = mesh()->findItemFamily(Arcane::IK_DoF, "DoFNode", true);
-  mesh::DoFFamily* dof_family = ARCANE_CHECK_POINTER(dynamic_cast<mesh::DoFFamily*>(dof_family_interface));
+  IItemFamily* dof_item_family = mesh()->findItemFamily(Arcane::IK_DoF, "DoFNode", true);
+  IDoFFamily* dof_family = dof_item_family->toDoFFamily();
+  ARCANE_CHECK_POINTER(dof_family);
 
   Int32 nb_dof_per_node = 3;
 
   // Create the DoFs
   Int64UniqueArray uids(ownNodes().size() * nb_dof_per_node);
   Int64 max_node_uid = mesh::DoFUids::getMaxItemUid(mesh()->nodeFamily());
-  Int64 max_dof_uid = mesh::DoFUids::getMaxItemUid(dof_family);
+  Int64 max_dof_uid = mesh::DoFUids::getMaxItemUid(dof_item_family);
   {
     Integer dof_index = 0;
     ENUMERATE_NODE (inode, ownNodes()) {
@@ -120,7 +121,7 @@ _buildDoFs()
   info() << "NB_DOF=" << dof_family->allItems().size();
 
   // Création d'une connectivité Node->DoF
-  m_node_dof_connectivity = mesh()->indexedConnectivityMng()->findOrCreateConnectivity(mesh()->nodeFamily(), dof_family, "DoFNode");
+  m_node_dof_connectivity = mesh()->indexedConnectivityMng()->findOrCreateConnectivity(mesh()->nodeFamily(), dof_item_family, "DoFNode");
   auto* cn = m_node_dof_connectivity->connectivity();
   {
     Integer dof_index = 0;
@@ -136,7 +137,7 @@ _buildDoFs()
 
   // Remplit les 3 DoF par les coordonnées des noeuds
   info() << "Fill DoFs";
-  VariableDoFReal dof_var(VariableBuildInfo(dof_family, "DofValues"));
+  VariableDoFReal dof_var(VariableBuildInfo(dof_item_family, "DofValues"));
   VariableNodeReal3& node_coords(mesh()->nodesCoordinates());
   IndexedNodeDoFConnectivityView node_dof(m_node_dof_connectivity->view());
   ENUMERATE_ (Node, inode, ownNodes()) {

@@ -36,9 +36,7 @@ class Node;
 class Cell;
 class Edge;
 class Face;
-
 class Particle;
-
 class DoF;
 
 class Item;
@@ -53,6 +51,8 @@ class ItemBase;
 class IMesh;
 class IPrimaryMesh;
 class IItemFamily;
+class IParticleFamily;
+class IDoFFamily;
 
 class ItemLocalId;
 class ItemTypeId;
