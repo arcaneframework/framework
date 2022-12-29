@@ -5,23 +5,24 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DoFManager.h                                                (C) 2000-2015 */
+/* DoFManager.h                                                (C) 2000-2022 */
 /*                                                                           */
 /* Comment on file content.                                                  */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_DOFMANAGER_H
-#define ARCANE_DOFMANAGER_H
+#ifndef ARCANE_MESH_DOFMANAGER_H
+#define ARCANE_MESH_DOFMANAGER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcaneGlobal.h"
 #include "arcane/IMesh.h"
 #include "arcane/mesh/DoFFamily.h"
 
-ARCANE_BEGIN_NAMESPACE
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+// TODO: mettre dans Arcane::mesh
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -31,34 +32,48 @@ class DoFManager
 {
  public:
 
-  /** Constructeur de la classe */
+  //! Constructeur de la classe
   DoFManager(IMesh* mesh, IItemConnectivityMng* connectivity_mng)
-  : m_mesh(mesh) , m_connectivity_mng(connectivity_mng){}
-
-  /** Destructeur de la classe */
-  virtual ~DoFManager() {}
+  : m_mesh(mesh)
+  , m_connectivity_mng(connectivity_mng)
+  {}
 
  public:
 
-  mesh::DoFFamily & family(const Arcane::String& family_name,bool register_modifier_if_created=false)
+  // TODO: a supprimer. Utiliser getFamily() à la place
+  mesh::DoFFamily& family(const String& family_name, bool register_modifier_if_created = false)
   {
-    bool create_if_needed = true;
-    Arcane::IItemFamily* item_family = m_mesh->findItemFamily(Arcane::IK_DoF,family_name,create_if_needed,register_modifier_if_created);
-    mesh::DoFFamily* dof_family = static_cast<mesh::DoFFamily*>(item_family);
-    return *dof_family;
+    return _getFamily(family_name, register_modifier_if_created);
   }
+
+  IDoFFamily* getFamily(const String& family_name, bool register_modifier_if_created = false)
+  {
+    mesh::DoFFamily& dof_family = _getFamily(family_name, register_modifier_if_created);
+    return &dof_family;
+  }
+
   IItemConnectivityMng* connectivityMng() const { return m_connectivity_mng; }
 
  private:
 
   Arcane::IMesh* m_mesh;
   IItemConnectivityMng* m_connectivity_mng;
+
+ private:
+
+  mesh::DoFFamily& _getFamily(const String& family_name, bool register_modifier_if_created = false)
+  {
+    bool create_if_needed = true;
+    IItemFamily* item_family = m_mesh->findItemFamily(Arcane::IK_DoF, family_name, create_if_needed, register_modifier_if_created);
+    mesh::DoFFamily* dof_family = static_cast<mesh::DoFFamily*>(item_family);
+    return *dof_family;
+  }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

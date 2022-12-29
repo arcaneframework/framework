@@ -636,6 +636,15 @@ class IItemFamily
   virtual IParticleFamily* toParticleFamily() =0;
 
   /*!
+   * \brief Retourne l'interface de la famille de particule de cette famille.
+   *
+   * L'interface IParticleFamily n'existe que si cette famille est
+   * une famille de particules (itemKind()==IK_Particle). Pour les
+   * autres genres de famille, 0 est retourné.
+   */
+  virtual IDoFFamily* toDoFFamily() { return nullptr; }
+
+  /*!
    * \internal
    * \brief Supprime les entités donnés par \a local_ids.
    *

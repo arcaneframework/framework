@@ -556,6 +556,7 @@ set( ARCANE_SOURCES
   IDumpR.h
   IDumpW.h
   IDirectory.h
+  IDoFFamily.h
   ILoadBalanceMng.h
   ItemFamilyCompactInfos.h
   ItemTypes.h
