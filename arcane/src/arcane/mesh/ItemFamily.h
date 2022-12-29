@@ -122,8 +122,8 @@ class ARCANE_MESH_EXPORT ItemFamily
 
  public:
 
-  const String& name() const override { return m_name; }
-  const String& fullName() const override { return m_full_name; }
+  String name() const override { return m_name; }
+  String fullName() const override { return m_full_name; }
   eItemKind itemKind() const override { return m_infos.kind(); }
   Integer nbItem() const override;
   Int32 maxLocalId() const override;

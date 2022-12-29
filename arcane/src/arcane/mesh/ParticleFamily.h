@@ -66,31 +66,31 @@ class ARCANE_MESH_EXPORT ParticleFamily
   }
 
   //! Nom de la famille
-  virtual const String& name() const override { return BaseClass::name(); }
-  virtual const String& fullName() const override { return BaseClass::fullName(); }
-  virtual Integer nbItem() const override { return BaseClass::nbItem(); }
-  virtual ItemGroup allItems() const override { return BaseClass::allItems(); }
+  String name() const override { return BaseClass::name(); }
+  String fullName() const override { return BaseClass::fullName(); }
+  Integer nbItem() const override { return BaseClass::nbItem(); }
+  ItemGroup allItems() const override { return BaseClass::allItems(); }
 
-  virtual ParticleVectorView addParticles(Int64ConstArrayView unique_ids,
-                                          Int32ArrayView items) override;
-  virtual ParticleVectorView addParticles2(Int64ConstArrayView unique_ids,
-                                          Int32ConstArrayView owners,
-                                          Int32ArrayView items) override;
+  ParticleVectorView addParticles(Int64ConstArrayView unique_ids,
+                                  Int32ArrayView items) override;
+  ParticleVectorView addParticles2(Int64ConstArrayView unique_ids,
+                                   Int32ConstArrayView owners,
+                                   Int32ArrayView items) override;
 
-  virtual ParticleVectorView addParticles(Int64ConstArrayView unique_ids,
-                                          Int32ConstArrayView cells_local_id,
-                                          Int32ArrayView items_local_id) override;
-  virtual void removeParticles(Int32ConstArrayView items_local_id) override;
+  ParticleVectorView addParticles(Int64ConstArrayView unique_ids,
+                                  Int32ConstArrayView cells_local_id,
+                                  Int32ArrayView items_local_id) override;
+  void removeParticles(Int32ConstArrayView items_local_id) override;
 
   void addItems(Int64ConstArrayView unique_ids,Int32ConstArrayView owners,Int32ArrayView items);
 
-  virtual void internalRemoveItems(Int32ConstArrayView local_ids,bool keep_ghost) override;
-  virtual void exchangeParticles() override;
+  void internalRemoveItems(Int32ConstArrayView local_ids,bool keep_ghost) override;
+  void exchangeParticles() override;
 
-  virtual void setParticleCell(Particle particle,Cell new_cell) override;
-  virtual void setParticlesCell(ParticleVectorView particles,CellVectorView new_cells) override;
+  void setParticleCell(Particle particle,Cell new_cell) override;
+  void setParticlesCell(ParticleVectorView particles,CellVectorView new_cells) override;
 
-  virtual void endUpdate() override { ItemFamily::endUpdate(); }
+  void endUpdate() override { ItemFamily::endUpdate(); }
 
  public:
   
@@ -98,29 +98,26 @@ class ARCANE_MESH_EXPORT ParticleFamily
 
  public:
   
-  virtual void prepareForDump() override;
-  virtual void readFromDump() override;
+  void prepareForDump() override;
+  void readFromDump() override;
 
  public:
 
-  virtual void setHasUniqueIdMap(bool v) override;
-  virtual bool hasUniqueIdMap() const override;
+  void setHasUniqueIdMap(bool v) override;
+  bool hasUniqueIdMap() const override;
 
  public:
 
-  virtual void computeSynchronizeInfos() override
+  void computeSynchronizeInfos() override
   {
     if(m_enable_ghost_items)
       ItemFamily::computeSynchronizeInfos() ;
   }
-  virtual IItemFamily* itemFamily() override { return this; }
-  virtual IParticleFamily* toParticleFamily() override { return this; }
+  IItemFamily* itemFamily() override { return this; }
+  IParticleFamily* toParticleFamily() override { return this; }
 
-  virtual void checkValidConnectivity() override;
-
-  virtual void removeNeedRemoveMarkedItems() override;
-
- protected:
+  void checkValidConnectivity() override;
+  void removeNeedRemoveMarkedItems() override;
 
  private:
   

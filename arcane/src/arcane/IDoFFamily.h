@@ -42,10 +42,10 @@ class ARCANE_CORE_EXPORT IDoFFamily
  public:
 
   //! Nom de la famille
-  virtual const String& name() const = 0;
+  virtual String name() const = 0;
 
   //! Nom complet de la famille (avec celui du maillage)
-  virtual const String& fullName() const = 0;
+  virtual String fullName() const = 0;
 
   //! Nombre d'entités
   virtual Integer nbItem() const = 0;

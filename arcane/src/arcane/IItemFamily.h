@@ -116,10 +116,10 @@ class IItemFamily
  public:
 
   //! Nom de la famille
-  virtual const String& name() const =0;
+  virtual String name() const =0;
 
   //! Nom complet de la famille (avec celui du maillage)
-  virtual const String& fullName() const =0;
+  virtual String fullName() const =0;
 
   //! Genre des entités
   virtual eItemKind itemKind() const =0;

@@ -87,8 +87,8 @@ class ARCANE_MESH_EXPORT DoFFamily
  public:
 
   // Implémentation de IDoFFamily
-  const String& name() const override { return ItemFamily::name(); }
-  const String& fullName() const override { return ItemFamily::fullName(); }
+  String name() const override { return ItemFamily::name(); }
+  String fullName() const override { return ItemFamily::fullName(); }
   Integer nbItem() const override { return ItemFamily::nbItem(); }
   ItemGroup allItems() const override { return ItemFamily::allItems(); }
   void endUpdate() override { return ItemFamily::endUpdate(); }

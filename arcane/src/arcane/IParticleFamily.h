@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IParticleFamily.h                                           (C) 2000-2010 */
+/* IParticleFamily.h                                           (C) 2000-2022 */
 /*                                                                           */
 /* Interface d'une famille de particules.                                    */
 /*---------------------------------------------------------------------------*/
@@ -20,10 +20,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -41,7 +39,7 @@ ARCANE_BEGIN_NAMESPACE
  * les particules peuvent être créées directement.
  *
  */
-class IParticleFamily
+class ARCANE_CORE_EXPORT IParticleFamily
 {
  public:
 
@@ -49,27 +47,27 @@ class IParticleFamily
 
  public:
 
-  virtual void build() =0;
+  virtual void build() = 0;
 
- //! set le flag pour gérer les particules ghost de la famille
-  virtual void setEnableGhostItems(bool value) = 0 ;
-  
+  //! set le flag pour gérer les particules ghost de la famille
+  virtual void setEnableGhostItems(bool value) = 0;
+
   //! récupère le flag pour gérer les particules ghost de la famille
-  virtual bool getEnableGhostItems() const = 0 ;
+  virtual bool getEnableGhostItems() const = 0;
 
  public:
 
   //! Nom de la famille
-  virtual const String& name() const =0;
+  virtual String name() const = 0;
 
   //! Nom complet de la famille (avec celui du maillage)
-  virtual const String& fullName() const =0;
-  
+  virtual String fullName() const = 0;
+
   //! Nombre d'entités
-  virtual Integer nbItem() const =0;
+  virtual Integer nbItem() const = 0;
 
   //! Groupe de toutes les particules
-  virtual ItemGroup allItems() const =0;
+  virtual ItemGroup allItems() const = 0;
 
  public:
 
@@ -86,10 +84,10 @@ class IParticleFamily
    * \a items_local_id doit avoir le même nombre d'éléments que unique_ids.
    */
   virtual ParticleVectorView addParticles(Int64ConstArrayView unique_ids,
-                                          Int32ArrayView items_local_id) =0;
+                                          Int32ArrayView items_local_id) = 0;
   virtual ParticleVectorView addParticles2(Int64ConstArrayView unique_ids,
                                            Int32ConstArrayView owners,
-                                           Int32ArrayView items)=0;
+                                           Int32ArrayView items) = 0;
 
   /*!
    * \brief Alloue des particules dans des mailles.
@@ -99,24 +97,24 @@ class IParticleFamily
    */
   virtual ParticleVectorView addParticles(Int64ConstArrayView unique_ids,
                                           Int32ConstArrayView cells_local_id,
-                                          Int32ArrayView items_local_id) =0;
+                                          Int32ArrayView items_local_id) = 0;
 
-  virtual void removeParticles(Int32ConstArrayView items_local_id) =0;
+  virtual void removeParticles(Int32ConstArrayView items_local_id) = 0;
 
   /*!
    * \sa IItemFamily::endUpdate().
    */
-  virtual void endUpdate() =0;
+  virtual void endUpdate() = 0;
 
   /*!
    * \brief Déplace la particule \a particle dans la maille \a new_cell.
    */
-  virtual void setParticleCell(Particle particle,Cell new_cell) =0;
+  virtual void setParticleCell(Particle particle, Cell new_cell) = 0;
 
   /*!
    * \brief Déplace la list de particules \a particles dans les nouvelles mailles \a new_cells.
    */
-  virtual void setParticlesCell(ParticleVectorView particles,CellVectorView new_cells) =0;
+  virtual void setParticlesCell(ParticleVectorView particles, CellVectorView new_cells) = 0;
 
  public:
 
@@ -130,19 +128,18 @@ class IParticleFamily
    *
    * Cette opération est bloquante et collective.
    */
-  virtual void exchangeParticles() =0;
+  virtual void exchangeParticles() = 0;
 
  public:
-  
-  virtual IItemFamily* itemFamily() =0;
 
- public:
+  //! Interface sur la famille
+  virtual IItemFamily* itemFamily() = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -71,6 +71,7 @@
 #include "arcane/IItemFamilyPolicyMng.h"
 #include "arcane/IItemFamilyTopologyModifier.h"
 #include "arcane/IDoFFamily.h"
+#include "arcane/IParticleFamily.h"
 #include "arcane/ItemFamilySerializeArgs.h"
 #include "arcane/ITimeStats.h"
 #include "arcane/ITimerMng.h"
