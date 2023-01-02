@@ -1,13 +1,15 @@
-//
-// Created by dechaiss on 4/21/20.
-//
-/*-------------------------
- * Neo library
- * Mesh view test
- * sdc (C)-2020
- *
- *-------------------------
- */
+// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+/*---------------------------------------------------------------------------*/
+/* MeshViewPocTest.h                               (C) 2000-2020             */
+/*                                                                           */
+/* A POC for a mesh view API                                                 */
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #include <iostream>
 #include <string>
