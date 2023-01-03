@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Item.h                                                      (C) 2000-2022 */
+/* Item.h                                                      (C) 2000-2023 */
 /*                                                                           */
 /* Informations sur les éléments du maillage.                                */
 /*---------------------------------------------------------------------------*/
@@ -85,6 +85,7 @@ class ARCANE_CORE_EXPORT Item
   friend class ItemVectorViewConstIterator;
   friend class SimdItem;
   friend class SimdItemEnumeratorBase;
+  friend class ItemInfoListView;
   template<typename ItemType> friend class ItemEnumeratorBaseT;
 
  public:
@@ -508,6 +509,7 @@ class ARCANE_CORE_EXPORT Node
   friend class ItemVectorViewT<Node>;
   friend class ItemVectorViewConstIteratorT<Node>;
   friend class SimdItemT<Node>;
+  friend class ItemInfoListViewT<Node>;
 
  public:
 
@@ -652,6 +654,7 @@ class ARCANE_CORE_EXPORT ItemWithNodes
   friend class ItemVectorViewT<ItemWithNodes>;
   friend class ItemVectorViewConstIteratorT<ItemWithNodes>;
   friend class SimdItemT<ItemWithNodes>;
+  friend class ItemInfoListViewT<ItemWithNodes>;
 
  protected:
 
@@ -731,6 +734,7 @@ class ARCANE_CORE_EXPORT Edge
   friend class ItemVectorViewT<Edge>;
   friend class ItemVectorViewConstIteratorT<Edge>;
   friend class SimdItemT<Edge>;
+  friend class ItemInfoListViewT<Edge>;
 
  public:
 
@@ -859,6 +863,7 @@ class ARCANE_CORE_EXPORT Face
   friend class ItemVectorViewT<Face>;
   friend class ItemVectorViewConstIteratorT<Face>;
   friend class SimdItemT<Face>;
+  friend class ItemInfoListViewT<Face>;
 
  public:
 
@@ -1099,6 +1104,7 @@ class ARCANE_CORE_EXPORT Cell
   friend class ItemVectorViewT<Cell>;
   friend class ItemVectorViewConstIteratorT<Cell>;
   friend class SimdItemT<Cell>;
+  friend class ItemInfoListViewT<Cell>;
 
  public:
 
@@ -1294,6 +1300,7 @@ class Particle
   friend class ItemVectorViewT<Particle>;
   friend class ItemVectorViewConstIteratorT<Particle>;
   friend class SimdItemT<Particle>;
+  friend class ItemInfoListViewT<Particle>;
 
  private:
 
@@ -1394,6 +1401,7 @@ class DoF
   friend class ItemVectorViewT<DoF>;
   friend class ItemVectorViewConstIteratorT<DoF>;
   friend class SimdItemT<DoF>;
+  friend class ItemInfoListViewT<DoF>;
 
  private:
 
@@ -1589,7 +1597,7 @@ ItemLocalIdT(ItemType item)
 inline Item ItemInfoListView::
 operator[](ItemLocalId local_id) const
 {
-  return Item(impl::ItemBase(ItemBaseBuildInfo(local_id.localId(), m_item_shared_info)));
+  return Item(local_id.localId(), m_item_shared_info);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1598,7 +1606,7 @@ operator[](ItemLocalId local_id) const
 inline Item ItemInfoListView::
 operator[](Int32 local_id) const
 {
-  return Item(impl::ItemBase(ItemBaseBuildInfo(local_id, m_item_shared_info)));
+  return Item(local_id, m_item_shared_info);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1607,7 +1615,7 @@ operator[](Int32 local_id) const
 template<typename ItemType> inline ItemType ItemInfoListViewT<ItemType>::
 operator[](ItemLocalId local_id) const
 {
-  return ItemType(impl::ItemBase(ItemBaseBuildInfo(local_id.localId(), m_item_shared_info)));
+  return ItemType(local_id.localId(), m_item_shared_info);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1616,7 +1624,7 @@ operator[](ItemLocalId local_id) const
 template<typename ItemType> inline ItemType ItemInfoListViewT<ItemType>::
 operator[](Int32 local_id) const
 {
-  return ItemType(impl::ItemBase(ItemBaseBuildInfo(local_id, m_item_shared_info)));
+  return ItemType(local_id, m_item_shared_info);
 }
 
 /*---------------------------------------------------------------------------*/
