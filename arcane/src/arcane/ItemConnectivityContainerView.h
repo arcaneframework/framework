@@ -46,6 +46,7 @@ class ARCANE_CORE_EXPORT ItemConnectivityContainerView
   // des instances de cette classe
   friend ItemInternalConnectivityList;
   friend IndexedItemConnectivityViewBase;
+  friend IndexedItemConnectivityViewBase2;
   friend mesh::IncrementalItemConnectivityBase;
   template <typename ItemType1, typename ItemType2>
   friend class IndexedItemConnectivityGenericViewT;

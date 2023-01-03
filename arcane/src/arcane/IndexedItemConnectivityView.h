@@ -33,6 +33,8 @@ namespace Arcane
  */
 class ARCANE_CORE_EXPORT IndexedItemConnectivityViewBase
 {
+  friend class IndexedItemConnectivityViewBase2;
+
  public:
 
   IndexedItemConnectivityViewBase() = default;
@@ -86,6 +88,9 @@ class ARCANE_CORE_EXPORT IndexedItemConnectivityViewBase
  protected:
 
   [[noreturn]] void _badConversion(eItemKind k1, eItemKind k2) const;
+
+ public:
+
   inline void _checkValid(eItemKind k1, eItemKind k2) const
   {
     if (k1 != m_source_kind || k2 != m_target_kind)
@@ -96,29 +101,71 @@ class ARCANE_CORE_EXPORT IndexedItemConnectivityViewBase
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \brief Classe de base d'une vue sur une connectivité non structurée.
+ *
+ * Comme toute les vues, les instances de cette classe sont temporaires et
+ * ne doivent pas être conservées entre deux évolutions du maillage.
+ */
+class ARCANE_CORE_EXPORT IndexedItemConnectivityViewBase2
+{
+ public:
+
+  IndexedItemConnectivityViewBase2() = default;
+
+ protected:
+
+  explicit IndexedItemConnectivityViewBase2(IndexedItemConnectivityViewBase view)
+  : m_container_view(view.m_container_view)
+  {
+  }
+
+ public:
+
+  //! Nombre d'entités source
+  constexpr ARCCORE_HOST_DEVICE Int32 nbSourceItem() const { return m_container_view.nbItem(); }
+  //! Nombre d'entités connectées à l'entité \a lid
+  ARCCORE_HOST_DEVICE Int32 nbItem(ItemLocalId lid) const { return m_container_view.m_nb_connected_items[lid]; }
+  //! Liste des entités connectées à l'entité \a lid
+  ARCCORE_HOST_DEVICE ItemLocalIdViewT<Item> items(ItemLocalId lid) const
+  {
+    return m_container_view.itemsIds<Item>(lid);
+  }
+
+ protected:
+
+  ItemConnectivityContainerView m_container_view;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \brief Vue spécialisée sur une connectivité non structurée entre deux entités.
  */
 template<typename ItemType1,typename ItemType2>
 class IndexedItemConnectivityGenericViewT
-: public IndexedItemConnectivityViewBase
+: public IndexedItemConnectivityViewBase2
 {
  public:
+
   using ItemType1Type = ItemType1;
   using ItemType2Type = ItemType2;
   using ItemLocalId1 = typename ItemType1::LocalIdType;
   using ItemLocalId2 = typename ItemType2::LocalIdType;
   using ItemLocalIdViewType = ItemLocalIdViewT<ItemType2>;
+
  public:
+
   IndexedItemConnectivityGenericViewT(IndexedItemConnectivityViewBase view)
-  : IndexedItemConnectivityViewBase(view)
+  : IndexedItemConnectivityViewBase2(view)
   {
 #ifdef ARCANE_CHECK
     eItemKind k1 = ItemTraitsT<ItemType1>::kind();
     eItemKind k2 = ItemTraitsT<ItemType2>::kind();
-    _checkValid(k1,k2);
+    view._checkValid(k1,k2);
 #endif
   }
   IndexedItemConnectivityGenericViewT() = default;
+
  public:
 
   //! Liste des entités connectées à l'entité \a lid
