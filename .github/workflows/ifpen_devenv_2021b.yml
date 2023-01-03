@@ -59,42 +59,42 @@ jobs:
         config:
           #- {
           #  name: "foss/2021b el7 without arcane",
-          #  image: "ghcr.io/cedricga91/arcane-ifpen-devenv-foss-2021b:el7",
+          #  image: "ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2021b:el7",
           #  with_arcane: "0",
           #}
           - {
             name: "foss/2021b el7 with arcane",
-            image: "ghcr.io/cedricga91/arcane-ifpen-devenv-foss-2021b:el7",
+            image: "ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2021b:el7",
             with_arcane: "1",
           }
           #- {
           #  name: "foss/2021b el8 without arcane",
-          #  image: "ghcr.io/cedricga91/arcane-ifpen-devenv-foss-2021b:el8",
+          #  image: "ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2021b:el8",
           #  with_arcane: "0",
           #}
           - {
             name: "foss/2021b el8 with arcane",
-            image: "ghcr.io/cedricga91/arcane-ifpen-devenv-foss-2021b:el8",
+            image: "ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2021b:el8",
             with_arcane: "1",
           }
           #- {
           #  name: "gimkl/2021b el7 without arcane",
-          #  image: "ghcr.io/cedricga91/arcane-ifpen-devenv-gimkl-2021b:el7",
+          #  image: "ghcr.io/arcaneframework/arcane-ifpen-devenv-gimkl-2021b:el7",
           #  with_arcane: "0",
           #}
           - {
             name: "gimkl/2021b el7 with arcane",
-            image: "ghcr.io/cedricga91/arcane-ifpen-devenv-gimkl-2021b:el7",
+            image: "ghcr.io/arcaneframework/arcane-ifpen-devenv-gimkl-2021b:el7",
             with_arcane: "1",
           }
           #- {
           #  name: "gimkl/2021b el8 without arcane",
-          #  image: "ghcr.io/cedricga91/arcane-ifpen-devenv-gimkl-2021b:el8",
+          #  image: "ghcr.io/arcaneframework/arcane-ifpen-devenv-gimkl-2021b:el8",
           #  with_arcane: "0",
           #}
           - {
             name: "gimkl/2021b el8 with arcane",
-            image: "ghcr.io/cedricga91/arcane-ifpen-devenv-gimkl-2021b:el8",
+            image: "ghcr.io/arcaneframework/arcane-ifpen-devenv-gimkl-2021b:el8",
             with_arcane: "1",
           }
     steps:
