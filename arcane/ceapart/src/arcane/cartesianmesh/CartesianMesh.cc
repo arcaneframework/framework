@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMesh.cc                                            (C) 2000-2021 */
+/* CartesianMesh.cc                                            (C) 2000-2023 */
 /*                                                                           */
 /* Maillage cartésien.                                                       */
 /*---------------------------------------------------------------------------*/
@@ -287,6 +287,11 @@ computeDirections()
   Integer nb_node = cell0.nbNode();
   Real3 cell_center = cells_center[cell0];
 
+  info() << "sizeof(CellDirectionMng)=" << sizeof(CellDirectionMng)
+         << " sizeof(FaceDirectionMng)=" << sizeof(FaceDirectionMng)
+         << " sizeof(NodelDirectionMng)=" << sizeof(NodeDirectionMng);
+  info() << "sizeof(IndexedItemConnectivityViewBase)=" << sizeof(IndexedItemConnectivityViewBase)
+         << " sizeof(CellInfoListView)=" << sizeof(CellInfoListView);
   info(4) << "Cartesian mesh compute directions is_amr=" << m_is_amr;
 
   for( Integer i=0; i<nb_node; ++i ){

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshPatch.cc                                       (C) 2000-2020 */
+/* CartesianMeshPatch.cc                                       (C) 2000-2023 */
 /*                                                                           */
 /* Informations sur un patch AMR d'un maillage cartésien.                    */
 /*---------------------------------------------------------------------------*/
@@ -80,9 +80,13 @@ cells()
 void CartesianMeshPatch::
 _computeNodeCellInformations2D(Cell cell0,Real3 cell0_coord,VariableNodeReal3& nodes_coord)
 {
-  Int32 nodes_indirection_i[CellDirectionMng::MAX_NB_NODE];
-  Int32ArrayView nodes_indirection(CellDirectionMng::MAX_NB_NODE,nodes_indirection_i);
-  Integer nb_node = cell0.nbNode();
+  using Int8 = std::int8_t;
+  Int8 nodes_indirection_i[CellDirectionMng::MAX_NB_NODE];
+  ArrayView<Int8> nodes_indirection(CellDirectionMng::MAX_NB_NODE,nodes_indirection_i);
+  Int32 nb_node = cell0.nbNode();
+  if (nb_node!=4)
+    ARCANE_FATAL("Number of nodes should be '4' (v={0})",nb_node);
+  Int8 i8_nb_node = 4;
   Real3 cell_coord = cell0_coord;
   bool is_2d = m_mesh->mesh()->dimension()==2;
   if (!is_2d)
@@ -90,7 +94,7 @@ _computeNodeCellInformations2D(Cell cell0,Real3 cell0_coord,VariableNodeReal3& n
 
   // Direction X
   nodes_indirection.fill(-1);
-  for( Integer i=0; i<nb_node; ++i ){
+  for( Int8 i=0; i<i8_nb_node; ++i ){
     Node node = cell0.node(i);
     Real3 node_coord = nodes_coord[node];
     if (node_coord.x>cell_coord.x){
@@ -110,7 +114,7 @@ _computeNodeCellInformations2D(Cell cell0,Real3 cell0_coord,VariableNodeReal3& n
 
   // Direction Y
   nodes_indirection.fill(-1);
-  for( Integer i=0; i<nb_node; ++i ){
+  for( Int8 i=0; i<i8_nb_node; ++i ){
     Node node = cell0.node(i);
     Real3 node_coord = nodes_coord[node];
     if (node_coord.y>cell_coord.y){
@@ -138,9 +142,13 @@ _computeNodeCellInformations2D(Cell cell0,Real3 cell0_coord,VariableNodeReal3& n
 void CartesianMeshPatch::
 _computeNodeCellInformations3D(Cell cell0,Real3 cell0_coord,VariableNodeReal3& nodes_coord)
 {
-  Int32 nodes_indirection_i[CellDirectionMng::MAX_NB_NODE];
-  Int32ArrayView nodes_indirection(CellDirectionMng::MAX_NB_NODE,nodes_indirection_i);
+  using Int8 = std::int8_t;
+  Int8 nodes_indirection_i[CellDirectionMng::MAX_NB_NODE];
+  ArrayView<Int8> nodes_indirection(CellDirectionMng::MAX_NB_NODE,nodes_indirection_i);
   Integer nb_node = cell0.nbNode();
+  if (nb_node!=8)
+    ARCANE_FATAL("Number of nodes should be '8' (v={0})",nb_node);
+  Int8 i8_nb_node = 8;
   Real3 cell_coord = cell0_coord;
   bool is_3d = m_mesh->mesh()->dimension()==3;
   if (!is_3d)
@@ -148,7 +156,7 @@ _computeNodeCellInformations3D(Cell cell0,Real3 cell0_coord,VariableNodeReal3& n
 
   // Direction X
   nodes_indirection.fill(-1);
-  for( Integer i=0; i<nb_node; ++i ){
+  for( Int8 i=0; i<i8_nb_node; ++i ){
     Node node = cell0.node(i);
     Real3 node_coord = nodes_coord[node];
     if (node_coord.z>cell_coord.z){
@@ -184,7 +192,7 @@ _computeNodeCellInformations3D(Cell cell0,Real3 cell0_coord,VariableNodeReal3& n
 
   // Direction Y
   nodes_indirection.fill(-1);
-  for( Integer i=0; i<nb_node; ++i ){
+  for( Int8 i=0; i<i8_nb_node; ++i ){
     Node node = cell0.node(i);
     Real3 node_coord = nodes_coord[node];
     if (node_coord.z<cell_coord.z){
@@ -219,7 +227,7 @@ _computeNodeCellInformations3D(Cell cell0,Real3 cell0_coord,VariableNodeReal3& n
   cellDirection(MD_DirY).setNodesIndirection(nodes_indirection);
 
   nodes_indirection.fill(-1);
-  for( Integer i=0; i<nb_node; ++i ){
+  for( Int8 i=0; i<i8_nb_node; ++i ){
     Node node = cell0.node(i);
     Real3 node_coord = nodes_coord[node];
     if (node_coord.y>cell_coord.y){

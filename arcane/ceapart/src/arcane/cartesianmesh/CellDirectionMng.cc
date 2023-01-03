@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CellDirectionMng.cc                                         (C) 2000-2022 */
+/* CellDirectionMng.cc                                         (C) 2000-2023 */
 /*                                                                           */
 /* Infos sur les mailles d'une direction X Y ou Z d'un maillage structuré.   */
 /*---------------------------------------------------------------------------*/
@@ -164,7 +164,7 @@ outerCells() const
 /*---------------------------------------------------------------------------*/
 
 void CellDirectionMng::
-setNodesIndirection(Int32ConstArrayView nodes_indirection)
+setNodesIndirection(ConstArrayView<Int8> nodes_indirection)
 {
   for( Integer i=0; i<MAX_NB_NODE; ++i )
     m_nodes_indirection[i] = nodes_indirection[i];
@@ -173,7 +173,7 @@ setNodesIndirection(Int32ConstArrayView nodes_indirection)
 
   tm->info() << "Set computed indirection dir=" << (int)m_direction;
   for( Integer i=0; i<MAX_NB_NODE; ++i ){
-    tm->info() << "Indirection i=" << i << " v=" << m_nodes_indirection[i];
+    tm->info() << "Indirection i=" << i << " v=" << (int)m_nodes_indirection[i];
   }
 }
 

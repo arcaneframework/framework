@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CellDirectionMng.cc                                         (C) 2000-2022 */
+/* CellDirectionMng.cc                                         (C) 2000-2023 */
 /*                                                                           */
 /* Infos sur les mailles d'une direction X Y ou Z d'un maillage structuré.   */
 /*---------------------------------------------------------------------------*/
@@ -111,10 +111,11 @@ class ARCANE_CARTESIANMESH_EXPORT DirCellLocalId
 class ARCANE_CARTESIANMESH_EXPORT DirCellNode
 {
   friend CellDirectionMng;
+  using Int8 = std::int8_t;
 
  private:
 
-  DirCellNode(Cell c, const Int32* nodes_indirection)
+  DirCellNode(Cell c, const Int8* nodes_indirection)
   : m_cell(c)
   , m_nodes_indirection(nodes_indirection)
   {}
@@ -165,7 +166,7 @@ class ARCANE_CARTESIANMESH_EXPORT DirCellNode
  private:
 
   Cell m_cell;
-  const Int32* m_nodes_indirection;
+  const Int8* m_nodes_indirection;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -180,10 +181,11 @@ class ARCANE_CARTESIANMESH_EXPORT DirCellNode
 class ARCANE_CARTESIANMESH_EXPORT DirCellNodeLocalId
 {
   friend CellDirectionMng;
+  using Int8 = std::int8_t;
 
  private:
 
-  ARCCORE_HOST_DEVICE DirCellNodeLocalId(CellLocalId c, const Int32* nodes_indirection, IndexedCellNodeConnectivityView view)
+  ARCCORE_HOST_DEVICE DirCellNodeLocalId(CellLocalId c, const Int8* nodes_indirection, IndexedCellNodeConnectivityView view)
   : m_cell(c)
   , m_nodes_indirection(nodes_indirection)
   , m_view(view)
@@ -215,7 +217,7 @@ class ARCANE_CARTESIANMESH_EXPORT DirCellNodeLocalId
  private:
 
   CellLocalId m_cell;
-  const Int32* m_nodes_indirection;
+  const Int8* m_nodes_indirection;
   IndexedCellNodeConnectivityView m_view;
 };
 
@@ -362,6 +364,7 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
   friend CartesianMeshPatch;
   class Impl;
   static const int MAX_NB_NODE = 8;
+  using Int8 = std::int8_t;
 
  private:
 
@@ -553,7 +556,7 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
     return DirCellLocalId(CellLocalId(d.m_next_lid), CellLocalId(d.m_previous_lid));
   }
 
-  void setNodesIndirection(Int32ConstArrayView nodes_indirection);
+  void setNodesIndirection(ConstArrayView<Int8> nodes_indirection);
 
  protected:
 
@@ -611,7 +614,7 @@ class ARCANE_CARTESIANMESH_EXPORT CellDirectionMng
   eMeshDirection m_direction;
   Int32 m_next_face_index;
   Int32 m_previous_face_index;
-  Int32 m_nodes_indirection[MAX_NB_NODE];
+  Int8 m_nodes_indirection[MAX_NB_NODE];
   Impl* m_p = nullptr;
   IndexedCellNodeConnectivityView m_cell_node_view;
   IndexedCellFaceConnectivityView m_cell_face_view;
