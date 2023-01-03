@@ -386,7 +386,7 @@ itemsInternal()
 ItemInfoListView ItemFamily::
 itemInfoListView()
 {
-  return ItemInfoListView(this,m_common_item_shared_info,itemsInternal());
+  return ItemInfoListView(m_common_item_shared_info);
 }
 
 /*---------------------------------------------------------------------------*/
