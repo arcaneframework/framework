@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemInfoListView.cc                                         (C) 2000-2022 */
+/* ItemInfoListView.cc                                         (C) 2000-2023 */
 /*                                                                           */
 /* Vue sur une liste pour obtenir des informations sur les entités.          */
 /*---------------------------------------------------------------------------*/
@@ -40,12 +40,13 @@ ItemInfoListView(IItemFamily* family)
 void ItemInfoListView::
 _checkValid(eItemKind expected_kind)
 {
-  if (!m_family)
+  IItemFamily* family = itemFamily();
+  if (!family)
     return;
-  eItemKind my_kind = m_family->itemKind();
+  eItemKind my_kind = family->itemKind();
   if (my_kind != expected_kind)
     ARCANE_FATAL("Bad kind family={0} kind={1} expected_kind={2}",
-                 m_family->fullName(), my_kind, expected_kind);
+                 family->fullName(), my_kind, expected_kind);
 }
 
 /*---------------------------------------------------------------------------*/

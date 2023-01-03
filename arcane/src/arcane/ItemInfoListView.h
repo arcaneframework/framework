@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemInfoListView.h                                          (C) 2000-2022 */
+/* ItemInfoListView.h                                          (C) 2000-2023 */
 /*                                                                           */
 /* Vue sur une liste pour obtenir des informations sur les entités.          */
 /*---------------------------------------------------------------------------*/
@@ -62,7 +62,7 @@ class ARCANE_CORE_EXPORT ItemInfoListView
  public:
 
   //! Famille associée
-  IItemFamily* itemFamily() const { return m_family; }
+  IItemFamily* itemFamily() const { return m_item_shared_info->itemFamily(); }
 
   // NOTE: Les définitions des deux méthodes operator[] sont dans Item.h
 
@@ -99,22 +99,13 @@ class ARCANE_CORE_EXPORT ItemInfoListView
  private:
 
   // Seule ItemFamily peut créer des instances via ce constructeur
-  ItemInfoListView(IItemFamily* family, ItemSharedInfo* shared_info, ItemInternalArrayView items_internal)
-  : m_family(family)
-  , m_item_shared_info(shared_info)
-  , m_item_internal_list(items_internal)
+  explicit ItemInfoListView(ItemSharedInfo* shared_info)
+  : m_item_shared_info(shared_info)
   {}
-
-  ItemInternalArrayView _itemsInternal() const { return m_item_internal_list; }
-
- private:
-
-  IItemFamily* m_family = nullptr;
 
  protected:
 
   ItemSharedInfo* m_item_shared_info = ItemSharedInfo::nullInstance();
-  ItemInternalArrayView m_item_internal_list;
 
  protected:
 
