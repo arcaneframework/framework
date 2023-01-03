@@ -64,6 +64,7 @@ using CellLocalId = ItemLocalIdT<Cell>;
 using ParticleLocalId = ItemLocalIdT<Particle>;
 using DoFLocalId = ItemLocalIdT<DoF>;
 class IndexedItemConnectivityViewBase;
+class IndexedItemConnectivityViewBase2;
 class IndexedItemConnectivityAccessor;
 
 class ItemGroup;
