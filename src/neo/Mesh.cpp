@@ -67,7 +67,7 @@ void Neo::Mesh::scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::In
                                  std::cout << "Algorithm: create items in family " << family.name() << std::endl;
                                  added_items = lids_property.append(uids);
                                  lids_property.debugPrint();
-                                 std::cout << "Inserted item range : " << added_items;
+                                 Neo::print() << "Inserted item range : " << added_items;
                                });
   // register their uids
   m_mesh_graph->addAlgorithm(

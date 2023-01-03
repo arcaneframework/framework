@@ -748,6 +748,7 @@ public:
   }
 
   void debugPrint() const {
+    if constexpr (ndebug) return;
     std::cout << "= Print property " << m_name << " =" << std::endl;
     for (auto uid : m_uid2lid){
       if (uid.second != Neo::utils::NULL_ITEM_LID)

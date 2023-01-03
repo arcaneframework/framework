@@ -31,6 +31,9 @@
 #endif
 
 namespace Neo {
+  struct NeoOutputStream{};
+  inline NeoOutputStream print() {return NeoOutputStream{};}
+
 namespace utils {
   using Int64 = std::int64_t;
   using Int32 = std::int32_t;
@@ -188,6 +191,12 @@ std::ostream& operator<<(std::ostream& oss, Neo::utils::ConstArrayView<T> const&
   return Neo::utils::_printContainer(container, oss);
 }
 
+template <typename T>
+std::ostream& operator<<(Neo::NeoOutputStream oss, T const& printable)
+{
+  if constexpr (ndebug) return std::cout;
+  else return std::cout << printable;
+}
 
 
 #endif // NEO_UTILS_H
