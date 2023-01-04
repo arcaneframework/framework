@@ -182,6 +182,8 @@ class ItemVectorViewConstIteratorT
  */
 class ARCANE_CORE_EXPORT ItemVectorView
 {
+  friend class ItemVector;
+
  public:
 
   using const_iterator = ItemVectorViewConstIterator;
@@ -211,9 +213,9 @@ class ARCANE_CORE_EXPORT ItemVectorView
   ItemVectorView(IItemFamily* family,ConstArrayView<Int32> local_ids);
   ItemVectorView(IItemFamily* family,ItemIndexArrayView indexes);
 
- private:
+ protected:
 
-  ItemVectorView(ItemSharedInfo* shared_info,const Int32ConstArrayView& local_ids)
+  ItemVectorView(ItemSharedInfo* shared_info,ConstArrayView<Int32> local_ids)
   : m_local_ids(local_ids), m_shared_info(shared_info) { }
 
  public:
@@ -281,6 +283,8 @@ template<typename ItemType>
 class ItemVectorViewT
 : public ItemVectorView
 {
+  friend class ItemVectorT<ItemType>;
+
  public:
 
   using const_iterator = ItemVectorViewConstIteratorT<ItemType>;
@@ -314,6 +318,11 @@ class ItemVectorViewT
   : ItemVectorView(family,local_ids) {}
   ItemVectorViewT(IItemFamily* family,ItemIndexArrayView indexes)
   : ItemVectorView(family,indexes) {}
+
+ protected:
+
+  ItemVectorViewT(ItemSharedInfo* shared_info,ConstArrayView<Int32> local_ids)
+  : ItemVectorView(shared_info,local_ids) { }
 
  public:
 

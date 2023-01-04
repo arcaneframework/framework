@@ -51,6 +51,7 @@ class ItemEnumerator
 : public ItemEnumeratorBaseT<Item>
 {
   friend class ItemEnumeratorCS;
+  friend class ItemVector;
   friend class ItemVectorView;
   // NOTE: Normalement il suffirait de faire cela:
   //   template<class T> friend class ItemEnumeratorBase;
@@ -189,6 +190,7 @@ class ItemEnumeratorT
   using ItemInternalPtr = ItemInternal*;
   using LocalIdType = typename ItemType::LocalIdType;
   using BaseClass = ItemEnumeratorBaseT<ItemType>;
+  friend class ItemVectorT<ItemType>;
   friend class ItemVectorViewT<ItemType>;
   friend class SimdItemEnumeratorT<ItemType>;
 
