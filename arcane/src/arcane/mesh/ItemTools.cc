@@ -26,11 +26,11 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 
 bool ItemTools::
-isSameFace(ItemInternal* face, Int64ConstArrayView face_nodes_uid)
+isSameFace(Face face, Int64ConstArrayView face_nodes_uid)
 {
   Integer index = 0;
-  for( ItemInternal* i_node : face->internalNodes() ){
-    if (i_node->uniqueId()!=face_nodes_uid[index])
+  for( Node node : face.nodes() ){
+    if (node.uniqueId()!=face_nodes_uid[index])
       return false;
     ++index;
   }
@@ -41,14 +41,14 @@ isSameFace(ItemInternal* face, Int64ConstArrayView face_nodes_uid)
 /*---------------------------------------------------------------------------*/
 
 ItemInternal* ItemTools::
-findFaceInNode(ItemInternal* node,Integer face_type_id,
+findFaceInNode(Node node,Integer face_type_id,
                Int64ConstArrayView face_nodes_uid)
 {
-  for( ItemInternal* current_face : node->internalFaces() ){
-    if (current_face->typeId()!=face_type_id)
+  for( Face current_face : node.faces() ){
+    if (current_face.type()!=face_type_id)
       continue;
     if (isSameFace(current_face,face_nodes_uid))
-      return current_face;
+      return current_face.internal();
   }
   return nullptr;
 }
@@ -57,9 +57,8 @@ findFaceInNode(ItemInternal* node,Integer face_type_id,
 /*---------------------------------------------------------------------------*/
 
 ItemInternal* ItemTools::
-findEdgeInNode(ItemInternal* inode,Int64 begin_node,Int64 end_node)
+findEdgeInNode(Node node,Int64 begin_node,Int64 end_node)
 {
-  Node node(inode);
   for( Edge edge : node.edges() )
     if (edge.node(0).uniqueId()==begin_node && edge.node(1).uniqueId()==end_node)
       return edge.internal();

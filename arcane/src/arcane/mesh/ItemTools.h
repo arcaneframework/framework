@@ -1,49 +1,38 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemTools.h                                                 (C) 2011-     */
+/* ItemTools.h                                                 (C) 2000-2023 */
 /*                                                                           */
 /* Utilitaires aidant à retrouver des items à partir d'autres                */
 /*---------------------------------------------------------------------------*/
-
 #ifndef ARCANE_MESH_ITEMTOOLS_H
 #define ARCANE_MESH_ITEMTOOLS_H
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/mesh/MeshGlobal.h"
-#include "arcane/ItemInternal.h"
+
+#include "arcane/Item.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-ARCANE_MESH_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/**
- * @file   ItemTools.h
- * @author Sylvain Desroziers
- * @date   lun oct 24 16:37:18 CEST 2011
- *
- * @brief  Utilitaires aidant à retrouver des items à partir d'autres
- *
+/*!
+ * \brief  Utilitaires aidant à retrouver des items à partir d'autres
  */
-
 class ItemTools
 {
-public:
-  /**
+ public:
+  /*!
    * Vérifie si la liste des noeuds d'une face correspond à une liste fournie
    * On compare les uids des noeuds. L'ordre doit être le même.
    *
@@ -51,9 +40,9 @@ public:
    * @param face_nodes_uid : une liste de uids de noeuds
    *
    */
-  static bool isSameFace(ItemInternal* face, Int64ConstArrayView face_nodes_uid);
+  static bool isSameFace(Face face, Int64ConstArrayView face_nodes_uid);
 
-  /**
+  /*!
    * Recherche une face connectée au noeud \a node correspondant à la liste de 
    * noeuds \a  face_nodes_uid.
    *
@@ -62,11 +51,11 @@ public:
    * @param face_nodes_uid : une liste de uids de noeuds
    *
    */
-  static ItemInternal* findFaceInNode(ItemInternal* node,
+  static ItemInternal* findFaceInNode(Node node,
                                       Integer face_type_id,
                                       Int64ConstArrayView face_nodes_uid);
 
-  /**
+  /*!
    * Recherche une arête connectée à un noeud \a node et connectant les noeuds 
    * d'uids \a begin_node et \a end_node
    *
@@ -75,20 +64,14 @@ public:
    * @param end_node : uid du second noeud de l'arête recherchée
    *
    */
-  static ItemInternal* findEdgeInNode(ItemInternal* node,Int64 begin_node,Int64 end_node);
+  static ItemInternal* findEdgeInNode(Node node,Int64 begin_node,Int64 end_node);
 };
 
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

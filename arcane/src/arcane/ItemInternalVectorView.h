@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemInternalVectorView.h                                    (C) 2000-2022 */
+/* ItemInternalVectorView.h                                    (C) 2000-2023 */
 /*                                                                           */
 /* Vue sur un vecteur (tableau indirect) d'entités.                          */
 /*---------------------------------------------------------------------------*/
@@ -25,12 +25,6 @@
 
 namespace Arcane
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class ItemInternal;
-class ItemSharedInfo;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -170,13 +164,13 @@ class ARCANE_CORE_EXPORT ItemInternalVectorView
 
  public:
 
-  // TODO: Rendre obsolète car one doit plus itérer avec cette classe
+  ARCANE_DEPRECATED_REASON("Y2022: Use ItemVectorView to iterate")
   const_iterator begin() const
   {
     return const_iterator(items().data(),m_local_ids.data(),0);
   }
 
-  // TODO: Rendre obsolète car one doit plus itérer avec cette classe
+  ARCANE_DEPRECATED_REASON("Y2022: Use ItemVectorView to iterate")
   const_iterator end() const
   {
     return const_iterator(items().data(),m_local_ids.data(),this->size());

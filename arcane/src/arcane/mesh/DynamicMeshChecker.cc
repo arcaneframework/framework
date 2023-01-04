@@ -549,9 +549,9 @@ _checkValidItemOwner(IItemFamily* family)
       ItemInternal* item = (*iitem).internal();
       Int32 owner = item->owner();
       bool is_ok = false;
-      ItemInternalVectorView cells = item->internalCells();
-      for( ItemInternal* cell : cells ){
-        if (cell->owner()==owner){
+      ItemVectorView cells = item->internalCells();
+      for( Item cell : cells ){
+        if (cell.owner()==owner){
           is_ok = true;
           break;
         }
@@ -559,7 +559,7 @@ _checkValidItemOwner(IItemFamily* family)
       if (!is_ok) {
         OStringStream ostr;
         Integer index = 0;
-        for( ItemInternal* cell : cells ){
+        for( Item cell : cells ){
           ostr() << " SubCell i=" << index << " cell=" << ItemPrinter(cell);
           ++index;
         }
