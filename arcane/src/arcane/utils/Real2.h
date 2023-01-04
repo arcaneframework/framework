@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Real2.h                                                     (C) 2000-2022 */
+/* Real2.h                                                     (C) 2000-2023 */
 /*                                                                           */
 /* Vecteur à 2 dimensions de 'Real'.                                         */
 /*---------------------------------------------------------------------------*/
@@ -33,10 +33,11 @@ struct Real2POD
 
   Real x; //!< première composante du couple
   Real y; //!< deuxième composante du couple
-  /**
+
+  /*!
    * Accès en lecture seule à la @a i eme composante du Real2POD
    *
-   * @note ne fonctionne que pour x, y  ordonnées dans le POD
+   * @note ne fonctionne que pour x, y ordonnées dans le POD
    *
    * @param i numéro de la composante à retourner
    *
@@ -48,7 +49,22 @@ struct Real2POD
     return (&x)[i];
   }
 
-  /**
+  /*!
+   * Accès en lecture seule à la @a i eme composante du Real2POD
+   *
+   * @note ne fonctionne que pour x, y ordonnées dans le POD
+   *
+   * @param i numéro de la composante à retourner
+   *
+   * @return (&x)[i]
+   */
+  ARCCORE_HOST_DEVICE Real operator()(Integer i) const
+  {
+    ARCCORE_CHECK_AT(i, 2);
+    return (&x)[i];
+  }
+
+  /*!
    * Accès à la @a i eme composante du Real2POD
    *
    * @note ne fonctionne que pour x, y ordonnées dans le POD
@@ -58,6 +74,21 @@ struct Real2POD
    * @return (&x)[i]
    */
   ARCCORE_HOST_DEVICE Real& operator[](Integer i)
+  {
+    ARCCORE_CHECK_AT(i, 2);
+    return (&x)[i];
+  }
+
+  /*!
+   * Accès à la @a i eme composante du Real2POD
+   *
+   * @note ne fonctionne que pour x, y ordonnées dans le POD
+   *
+   * @param i numéro de la composante à retourner
+   *
+   * @return (&x)[i]
+   */
+  ARCCORE_HOST_DEVICE Real& operator()(Integer i)
   {
     ARCCORE_CHECK_AT(i, 2);
     return (&x)[i];

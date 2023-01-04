@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Real3x3.h                                                   (C) 2000-2022 */
+/* Real3x3.h                                                   (C) 2000-2023 */
 /*                                                                           */
 /* Matrice 3x3 de 'Real'.                                                    */
 /*---------------------------------------------------------------------------*/
@@ -38,7 +38,7 @@ struct Real3x3POD
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/**
+/*!
  * \brief Classe gérant une matrice de réel de dimension 3x3.
 
  La matrice comprend trois composantes \a x, \a y et \a z qui sont du
@@ -296,6 +296,28 @@ class ARCANE_UTILS_EXPORT Real3x3
   }
 
   /*!
+   * \brief Accès en lecture seule à la \a i-ème (entre 0 et 2 inclus) ligne de l'instance.
+   * \param i numéro de la ligne à retourner
+   */
+  ARCCORE_HOST_DEVICE Real3 operator()(Integer i) const
+  {
+    ARCCORE_CHECK_AT(i, 3);
+    return (&x)[i];
+  }
+
+  /*!
+   * \brief Accès en lecture seule à la \a i-ème ligne et \a j-ème colonne.
+   * \param i numéro de la ligne à retourner
+   * \param j numéro de la colonne à retourner
+   */
+  ARCCORE_HOST_DEVICE Real operator()(Integer i, Integer j) const
+  {
+    ARCCORE_CHECK_AT(i, 3);
+    ARCCORE_CHECK_AT(j, 3);
+    return (&x)[i][j];
+  }
+
+  /*!
    * \brief Accès à la \a i-ème ligne (entre 0 et 2 inclus) de l'instance.
    * \param i numéro de la ligne à retourner
    */
@@ -303,6 +325,28 @@ class ARCANE_UTILS_EXPORT Real3x3
   {
     ARCCORE_CHECK_AT(i, 3);
     return (&x)[i];
+  }
+
+  /*!
+   * \brief Accès à la \a i-ème ligne (entre 0 et 2 inclus) de l'instance.
+   * \param i numéro de la ligne à retourner
+   */
+  ARCCORE_HOST_DEVICE Real3& operator()(Integer i)
+  {
+    ARCCORE_CHECK_AT(i, 3);
+    return (&x)[i];
+  }
+
+  /*!
+   * \brief Accès à la \a i-ème ligne et \a j-ème colonne.
+   * \param i numéro de la ligne à retourner
+   * \param j numéro de la colonne à retourner
+   */
+  ARCCORE_HOST_DEVICE Real& operator()(Integer i, Integer j)
+  {
+    ARCCORE_CHECK_AT(i, 3);
+    ARCCORE_CHECK_AT(j, 3);
+    return (&x)[i][j];
   }
 
   //! Déterminant de la matrice
