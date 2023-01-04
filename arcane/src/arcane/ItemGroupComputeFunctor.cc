@@ -1,17 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemGroupComputeFunctor.cc                                  (C) 2000-2016 */
+/* ItemGroupComputeFunctor.cc                                  (C) 2000-2023 */
 /*                                                                           */
 /* Functors de calcul des éléments d'un groupe en fonction d'un autre groupe */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/FatalErrorException.h"
 
@@ -26,10 +25,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -159,7 +156,7 @@ executeFunctor()
   ItemType* null_type = 0;
   ENUMERATE_ITEM(iitem,parent){
     ItemInternal* i = (*iitem).internal();
-    for( ItemInternalEnumerator iitem2(i->internalItems(null_type)); iitem2.hasNext(); ++iitem2 ){
+    for( ItemEnumerator iitem2(i->internalItems(null_type)); iitem2.hasNext(); ++iitem2 ){
       Int32 lid = iitem2.localId();
       if (markers[lid]==0){
         markers[lid] = 1;
@@ -638,7 +635,7 @@ template class ItemItemGroupComputeFunctor<Cell>;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
