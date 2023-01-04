@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Real3.h                                                     (C) 2000-2022 */
+/* Real3.h                                                     (C) 2000-2023 */
 /*                                                                           */
 /* Vecteur à 3 dimensions.                                                   */
 /*---------------------------------------------------------------------------*/
@@ -35,13 +35,13 @@ struct Real3POD
   Real y; //!< deuxième composante du triplet
   Real z; //!< troisième composante du triplet
 
-  /** 
+  /*!
    * Accès en lecture seule à la @a i eme composante du Real3POD
-   * 
+   *
    * @note ne fonctionne que pour x, y et z ordonnées dans le POD
-   * 
+   *
    * @param i numéro de la composante à retourner
-   * 
+   *
    * @return (&x)[i]
    */
   ARCCORE_HOST_DEVICE Real operator[](Integer i) const
@@ -50,13 +50,28 @@ struct Real3POD
     return (&x)[i];
   }
 
-  /** 
-   * Accès à la @a i eme composante du Real3POD
-   * 
+  /*!
+   * Accès en lecture seule à la @a i eme composante du Real3POD
+   *
    * @note ne fonctionne que pour x, y et z ordonnées dans le POD
-   * 
+   *
    * @param i numéro de la composante à retourner
-   * 
+   *
+   * @return (&x)[i]
+   */
+  ARCCORE_HOST_DEVICE Real operator()(Integer i) const
+  {
+    ARCCORE_CHECK_AT(i, 3);
+    return (&x)[i];
+  }
+
+  /*!
+   * Accès à la @a i eme composante du Real3POD
+   *
+   * @note ne fonctionne que pour x, y et z ordonnées dans le POD
+   *
+   * @param i numéro de la composante à retourner
+   *
    * @return (&x)[i]
    */
   ARCCORE_HOST_DEVICE Real& operator[](Integer i)
@@ -64,6 +79,22 @@ struct Real3POD
     ARCCORE_CHECK_AT(i,3);
     return (&x)[i];
   }
+
+  /*!
+   * Accès à la @a i eme composante du Real3POD
+   *
+   * @note ne fonctionne que pour x, y et z ordonnées dans le POD
+   *
+   * @param i numéro de la composante à retourner
+   *
+   * @return (&x)[i]
+   */
+  ARCCORE_HOST_DEVICE Real& operator()(Integer i)
+  {
+    ARCCORE_CHECK_AT(i,3);
+    return (&x)[i];
+  }
+
   //! Positionne la \a i-ème composante à \a value
   ARCCORE_HOST_DEVICE void setComponent(Integer i, Real value)
   {

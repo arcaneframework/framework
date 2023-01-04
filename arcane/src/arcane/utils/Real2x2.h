@@ -279,7 +279,29 @@ class ARCANE_UTILS_EXPORT Real2x2
     return (&x)[i];
   }
 
-  /*! 
+  /*!
+   * \brief Accès en lecture seule à la \a i-ème (entre 0 et 1 inclus) ligne de l'instance.
+   * \param i numéro de la ligne à retourner
+   */
+  ARCCORE_HOST_DEVICE Real2 operator()(Integer i) const
+  {
+    ARCCORE_CHECK_AT(i, 2);
+    return (&x)[i];
+  }
+
+  /*!
+   * \brief Accès en lecture seule à la \a i-ème ligne et \a j-ème colonne.
+   * \param i numéro de la ligne à retourner
+   * \param j numéro de la colonne à retourner
+   */
+  ARCCORE_HOST_DEVICE Real operator()(Integer i, Integer j) const
+  {
+    ARCCORE_CHECK_AT(i, 2);
+    ARCCORE_CHECK_AT(j, 2);
+    return (&x)[i][j];
+  }
+
+  /*!
    * \brief  Accès à la \a i-ème ligne (entre 0 et 1 inclus) de l'instance.
    * \param i numéro de la ligne à retourner
    */
@@ -287,6 +309,28 @@ class ARCANE_UTILS_EXPORT Real2x2
   {
     ARCCORE_CHECK_AT(i, 2);
     return (&x)[i];
+  }
+
+  /*!
+   * \brief  Accès à la \a i-ème ligne (entre 0 et 1 inclus) de l'instance.
+   * \param i numéro de la ligne à retourner
+   */
+  ARCCORE_HOST_DEVICE Real2& operator()(Integer i)
+  {
+    ARCCORE_CHECK_AT(i, 2);
+    return (&x)[i];
+  }
+
+  /*!
+   * \brief Accès à la \a i-ème ligne et \a j-ème colonne.
+   * \param i numéro de la ligne à retourner
+   * \param j numéro de la colonne à retourner
+   */
+  ARCCORE_HOST_DEVICE Real& operator()(Integer i, Integer j)
+  {
+    ARCCORE_CHECK_AT(i, 2);
+    ARCCORE_CHECK_AT(j, 2);
+    return (&x)[i][j];
   }
 
  public:
