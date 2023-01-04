@@ -26,8 +26,7 @@ namespace Arcane
 
 ItemVector::
 ItemVector(IItemFamily* afamily)
-: m_items(afamily->itemsInternal())
-, m_family(afamily)
+: m_family(afamily)
 {
   _init();
 }
@@ -37,8 +36,7 @@ ItemVector(IItemFamily* afamily)
 
 ItemVector::
 ItemVector(IItemFamily* afamily, Int32ConstArrayView local_ids)
-: m_items(afamily->itemsInternal())
-, m_local_ids(local_ids)
+: m_local_ids(local_ids)
 , m_family(afamily)
 {
   _init();
@@ -49,8 +47,7 @@ ItemVector(IItemFamily* afamily, Int32ConstArrayView local_ids)
 
 ItemVector::
 ItemVector(IItemFamily* afamily, Integer asize)
-: m_items(afamily->itemsInternal())
-, m_family(afamily)
+: m_family(afamily)
 {
   m_local_ids.resize(asize);
   _init();

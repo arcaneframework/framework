@@ -134,7 +134,6 @@ class ARCANE_CORE_EXPORT ItemVector
 
  protected:
 
-  ItemInternalList m_items;
   SharedArray<Int32> m_local_ids;
   IItemFamily* m_family = nullptr;
   ItemSharedInfo* m_shared_info = ItemSharedInfo::nullInstance();
