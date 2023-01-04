@@ -1,26 +1,23 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemFunctor.cc                                              (C) 2000-2016 */
+/* ItemFunctor.cc                                              (C) 2000-2023 */
 /*                                                                           */
 /* Fonctor sur les entités.                                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
-
-#include "arcane/Item.h"
-#include "arcane/ItemVectorView.h"
 #include "arcane/ItemFunctor.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -49,21 +46,20 @@ AbstractItemRangeFunctor(ItemVectorView items_view,Integer grain_size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ItemIndexArrayView AbstractItemRangeFunctor::
+ItemVectorView AbstractItemRangeFunctor::
 _view(Integer begin_block,Integer nb_block) const
 {
   // Converti (begin_block,nb_block) en (begin,size) correspondant à m_items.
   Integer begin = begin_block * m_block_size;
   Integer nb_item = m_items.size();
   Integer size = math::min(nb_block * m_block_size,nb_item-begin);
-  return m_items.indexes().subView(begin,size);
+  return m_items.subView(begin,size);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemFamily.cc                                               (C) 2000-2022 */
+/* ItemFamily.cc                                               (C) 2000-2023 */
 /*                                                                           */
 /* Infos de maillage pour un genre d'entité donnée.                          */
 /*---------------------------------------------------------------------------*/
@@ -1879,7 +1879,7 @@ hasUniqueIdMap() const
 ItemVectorView ItemFamily::
 view(Int32ConstArrayView local_ids)
 {
-  return ItemVectorView(m_infos.itemsInternal(),local_ids);
+  return ItemVectorView(itemInfoListView(),local_ids);
 }
 
 /*---------------------------------------------------------------------------*/

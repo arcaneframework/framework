@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemsExchangeInfo2.cc                                       (C) 2000-2021 */
+/* ItemsExchangeInfo2.cc                                       (C) 2000-2023 */
 /*                                                                           */
 /* Echange des entités et leurs variables.                                   */
 /*---------------------------------------------------------------------------*/
@@ -240,7 +240,7 @@ prepareToSend()
   }
 
   // Génère les infos pour chaque processeur à qui on va envoyer des entités
-  ItemInternalList items_internal(itemFamily()->itemsInternal());
+  ItemInfoListView items_internal(itemFamily());
   IItemFamilyCollection child_families = itemFamily()->childFamilies();
 
   const Integer nb_send = m_exchanger->nbSender();
@@ -369,7 +369,6 @@ readAndAllocItems()
 void ItemsExchangeInfo2::
 readAndAllocSubMeshItems()
 {
-  ItemInternalList items_internal(itemFamily()->itemsInternal());
   IItemFamilyCollection child_families = itemFamily()->childFamilies();
   for( Integer i=0, is=m_exchanger->nbReceiver(); i<is; ++i ){
     ISerializeMessage* comm = m_exchanger->messageToReceive(i);
@@ -382,7 +381,7 @@ readAndAllocSubMeshItems()
       sbuf->getSpan(sub_dest_uids);
       IntegerUniqueArray parent_sub_dest_lids(sub_dest_item_count);
       itemFamily()->itemsUniqueIdToLocalId(parent_sub_dest_lids,sub_dest_uids,true);
-      ItemVectorView parent_sub_dest_items(items_internal, parent_sub_dest_lids);
+      ItemVectorView parent_sub_dest_items(itemFamily()->view(parent_sub_dest_lids));
       // Hack temporaire pour trouver le sous-maillage associé
       DynamicMesh* dn = dynamic_cast<DynamicMesh*>(child_family->mesh());
       ARCANE_CHECK_POINTER(dn);

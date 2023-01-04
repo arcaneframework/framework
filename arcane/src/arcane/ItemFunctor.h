@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemFunctor.h                                               (C) 2000-2016 */
+/* ItemFunctor.h                                               (C) 2000-2023 */
 /*                                                                           */
 /* Fonctor sur les entités.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -17,17 +17,14 @@
 #include "arcane/utils/RangeFunctor.h"
 #include "arcane/utils/Functor.h"
 
+#include "arcane/Item.h"
 #include "arcane/ItemVectorView.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class ItemGroupImpl;
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -65,7 +62,7 @@ class ARCANE_CORE_EXPORT AbstractItemRangeFunctor
 
  protected:
 
-  ItemIndexArrayView _view(Integer begin_block,Integer nb_block) const;
+  ItemVectorView _view(Integer begin_block,Integer nb_block) const;
 
  private:
 };
@@ -102,7 +99,7 @@ class ItemRangeFunctorT
   {
     //cout << "** BLOCKED RANGE! range=" << range.begin() << " end=" << range.end() << " size=" << range.size() << "\n";
     //CellVectorView sub_view = m_cells.subView(range.begin(),range.size());
-    ItemVectorViewT<ItemType> sub_view(m_items.items(),this->_view(begin,size));
+    ItemVectorViewT<ItemType> sub_view(this->_view(begin,size));
     //cout << "** SUB_VIEW v=" << sub_view.size();
     (m_instance->*m_function)(sub_view);
   }
@@ -128,9 +125,9 @@ class LambdaItemRangeFunctorT
  
  public:
   
-  virtual void executeFunctor(Integer begin,Integer size)
+  void executeFunctor(Integer begin,Integer size) override
   {
-    ItemVectorView sub_view(m_items.items(),this->_view(begin,size));
+    ItemVectorView sub_view(this->_view(begin,size));
     m_lambda_function(sub_view);
   }
  
@@ -159,7 +156,7 @@ class ItemGroupComputeFunctor
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
