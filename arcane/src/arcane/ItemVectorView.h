@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemVectorView.h                                            (C) 2000-2022 */
+/* ItemVectorView.h                                            (C) 2000-2023 */
 /*                                                                           */
 /* Vue sur un vecteur (tableau indirect) d'entités.                          */
 /*---------------------------------------------------------------------------*/
@@ -23,12 +23,6 @@
 
 namespace Arcane
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class ItemEnumerator;
-class ItemVectorView;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -194,10 +188,11 @@ class ARCANE_CORE_EXPORT ItemVectorView
 
  public:
 
-  // TODO: a supprimer dès qu'on n'aura plus besoin de ItemInternal
+  ARCANE_DEPRECATED_REASON("Y2022: Use constructor with ItemInfoListView instead")
   ItemVectorView(const ItemInternalArrayView& aitems,const Int32ConstArrayView& local_ids)
   : m_local_ids(local_ids) { _init(aitems); }
-  // TODO: a supprimer dès qu'on n'aura plus besoin de ItemInternal
+
+  ARCANE_DEPRECATED_REASON("Y2022: Use constructor with ItemInfoListView instead")
   ItemVectorView(ItemInternalArrayView aitems,ItemIndexArrayView indexes)
   : m_local_ids(indexes) { _init(aitems); }
 
@@ -217,6 +212,16 @@ class ARCANE_CORE_EXPORT ItemVectorView
 
   ItemVectorView(ItemSharedInfo* shared_info,ConstArrayView<Int32> local_ids)
   : m_local_ids(local_ids), m_shared_info(shared_info) { }
+
+  // Temporaire pour éviter un avertissement de compilation lorsqu'on utilise le
+  // constructeur obsolète de ItemVectorViewT
+  ItemVectorView(const ItemInternalArrayView& aitems,const Int32ConstArrayView& local_ids,bool)
+  : m_local_ids(local_ids) { _init(aitems); }
+
+  // Temporaire pour éviter un avertissement de compilation lorsqu'on utilise le
+  // constructeur obsolète de ItemVectorViewT
+  ItemVectorView(ItemInternalArrayView aitems,ItemIndexArrayView indexes,bool)
+  : m_local_ids(indexes) { _init(aitems); }
 
  public:
 
@@ -241,7 +246,7 @@ class ARCANE_CORE_EXPORT ItemVectorView
   inline Int32ConstArrayView localIds() const { return m_local_ids; }
 
   //! Sous-vue à partir de l'élément \a abegin et contenant \a asize éléments
-  inline ItemVectorView subView(Integer abegin,Integer asize)
+  inline ItemVectorView subView(Integer abegin,Integer asize) const
   {
     return ItemVectorView(m_shared_info,m_local_ids.subView(abegin,asize));
   }
@@ -295,12 +300,13 @@ class ItemVectorViewT
 
  public:
 
-  // TODO: a supprimer dès qu'on n'aura plus besoin de ItemInternal
+  ARCANE_DEPRECATED_REASON("Y2022: Use constructor with ItemInfoListView instead")
   ItemVectorViewT(const ItemInternalArrayView& aitems,const Int32ConstArrayView& local_ids)
-  : ItemVectorView(aitems,local_ids) {}
-  // TODO: a supprimer dès qu'on n'aura plus besoin de ItemInternal
+  : ItemVectorView(aitems,local_ids,true) {}
+
+  ARCANE_DEPRECATED_REASON("Y2022: Use constructor with ItemInfoListView instead")
   ItemVectorViewT(ItemInternalArrayView aitems,ItemIndexArrayView indexes)
-  : ItemVectorView(aitems,indexes) {}
+  : ItemVectorView(aitems,indexes,true) {}
 
  public:
 

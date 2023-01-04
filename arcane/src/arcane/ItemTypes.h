@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemTypes.h                                                 (C) 2000-2022 */
+/* ItemTypes.h                                                 (C) 2000-2023 */
 /*                                                                           */
 /* Déclaration des types liés aux entités de maillage.                       */
 /*---------------------------------------------------------------------------*/
@@ -68,6 +68,7 @@ class IndexedItemConnectivityViewBase2;
 class IndexedItemConnectivityAccessor;
 
 class ItemGroup;
+class ItemGroupImpl;
 template<typename T> class ItemGroupT;
 
 class ItemPairGroup;
@@ -75,6 +76,10 @@ template<typename ItemKind,typename SubItemKind> class ItemPairGroupT;
 
 class ItemVector;
 template<typename T> class ItemVectorT;
+
+class ItemVectorViewConstIterator;
+template<typename ItemType>
+class ItemVectorViewConstIteratorT;
 
 template <typename ItemType>
 class ItemLocalIdViewT;
@@ -162,6 +167,7 @@ typedef ItemGroupT<DoF> DoFGroup;
  * \brief Enumerateur sur la partie interne d'une entité.
  */
 class ItemInternalEnumerator;
+class ItemEnumerator;
 template<typename ItemType>
 class ItemEnumeratorT;
 
@@ -186,10 +192,6 @@ class SimdItemT;
 class ItemVectorView;
 template<typename ItemType>
 class ItemVectorViewT;
-
-class ItemEnumerator;
-template<typename ItemType>
-class ItemEnumeratorT;
 
 /*!
  * \ingroup Mesh
