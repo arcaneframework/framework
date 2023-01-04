@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemVector.h                                                (C) 2000-2022 */
+/* ItemVector.h                                                (C) 2000-2023 */
 /*                                                                           */
-/* Vue sur un vecteur (tableau indirect) d'entités.                          */
+/* Vecteur (tableau indirect) d'entités.                                     */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_ITEMVECTOR_H
 #define ARCANE_ITEMVECTOR_H
@@ -45,7 +45,7 @@ namespace Arcane
  * Un vecteur doit nécessairement être associée à une famille (setFamily())
  * avant d'être utilisé.
  */
-class ItemVector
+class ARCANE_CORE_EXPORT ItemVector
 {
  public:
 
@@ -54,24 +54,21 @@ class ItemVector
  public:
 
   //! Créé un vecteur vide associé à la famille \a family.
-  explicit ItemVector(IItemFamily* afamily)
-  : m_items(afamily->itemsInternal()), m_family(afamily) {}
+  explicit ItemVector(IItemFamily* afamily);
+
   //! Créé un vecteur associé à la famille \a family et contenant les entités \a local_ids.
-  ItemVector(IItemFamily* afamily,Int32ConstArrayView local_ids)
-  : m_items(afamily->itemsInternal()), m_local_ids(local_ids), m_family(afamily) {}
+  ItemVector(IItemFamily* afamily, Int32ConstArrayView local_ids);
 
   //! Créé un vecteur pour \a size éléments associé à la famille \a family.
-  ItemVector(IItemFamily* afamily,Integer asize)
-  : m_items(afamily->itemsInternal()), m_family(afamily)
-  {
-    m_local_ids.resize(asize);
-  }
-
-  //! Operateur de cast vers ItemVectorView
-  operator ItemVectorView() const { return ItemVectorView(m_items,m_local_ids); }
+  ItemVector(IItemFamily* afamily, Integer asize);
 
   //! Créé un vecteur nul. Il faudra ensuite appeler setFamily() pour l'utiliser
-  ItemVector() : m_family(nullptr) { }
+  ItemVector() = default;
+
+ public:
+
+  //! Operateur de cast vers ItemVectorView
+  operator ItemVectorView() const { return view(); }
 
  public:
 
@@ -80,75 +77,40 @@ class ItemVector
    *
    * Le vecteur est vidé de ses éléments
    */
-  void setFamily(IItemFamily* afamily)
-  {
-    m_local_ids.clear();
-    m_family = afamily;
-    m_items = afamily->itemsInternal();
-  }
+  void setFamily(IItemFamily* afamily);
 
   //! Ajoute une entité de numéro local \a local_id à la fin du vecteur
-  void add(Int32 local_id)
-  {
-    m_local_ids.add(local_id);
-  }
+  void add(Int32 local_id) { m_local_ids.add(local_id); }
 
   //! Ajoute une liste d'entité de numéros locaux \a local_ids à la fin du vecteur
-  void add(Int32ConstArrayView local_ids)
-  {
-    m_local_ids.addRange(local_ids);
-  }
+  void add(ConstArrayView<Int32> local_ids) { m_local_ids.addRange(local_ids); }
+
+  //! Ajoute une entité de numéro local \a local_id à la fin du vecteur
+  void addItem(ItemLocalId local_id) { m_local_ids.add(local_id); }
 
   //! Ajoute une entité à la fin du vecteur
-  void addItem(Item item)
-  {
-    m_local_ids.add(item.localId());
-  }
+  void addItem(Item item) { m_local_ids.add(item.localId()); }
+
   //! Nombre d'éléments du vecteur
-  Integer size() const
-  {
-    return m_local_ids.size();
-  }
+  Int32 size() const { return m_local_ids.size(); }
 
   //! Réserve la mémoire pour \a capacity entités
-  void reserve(Integer capacity)
-  {
-    m_local_ids.reserve(capacity);
-  }
+  void reserve(Integer capacity) { m_local_ids.reserve(capacity); }
 
   //! Supprime toutes les entités du vecteur.
-  void clear()
-  {
-    m_local_ids.clear();
-  }
+  void clear() { m_local_ids.clear(); }
 
-  //! Vue sur le tableau entier
-  ItemVectorView view()
-  {
-    return ItemVectorView(m_items,m_local_ids);
-  }
+  //! Vue sur le vecteur
+  ItemVectorView view() const { return ItemVectorView(m_shared_info, m_local_ids); }
 
-  //! Vue sur le tableau entier
-  ItemVectorView view() const
-  {
-    return ItemVectorView(m_items,m_local_ids);
-  }
+  //! Vue sur les numéros locaux
+  ArrayView<Int32> viewAsArray() { return m_local_ids.view(); }
 
-  Int32ArrayView viewAsArray()
-  {
-    return m_local_ids.view();
-  }
-
-  Int32ConstArrayView viewAsArray() const
-  {
-    return m_local_ids.constView();
-  }
+  //! Vue constante sur les numéros locaux
+  ConstArrayView<Int32> viewAsArray() const { return m_local_ids.constView(); }
 
   //! Supprime l'entité à l'index \a index
-  void removeAt(Int32 index)
-  {
-    m_local_ids.remove(index);
-  }
+  void removeAt(Int32 index) { m_local_ids.remove(index); }
 
   /*!
    * \brief Positionne le nombre d'éléments du tableau.
@@ -156,41 +118,29 @@ class ItemVector
    * Si la nouvelle taille est supérieure à l'ancienne, les
    * éléments ajoutés sont indéfinis.
    */
-  void resize(Integer new_size)
-  {
-    m_local_ids.resize(new_size);
-  }
+  void resize(Integer new_size) { m_local_ids.resize(new_size); }
 
   //! Clone ce vecteur
-  ItemVector clone()
-  {
-    return ItemVector(m_family,m_local_ids.constView());
-  }
+  ItemVector clone() { return ItemVector(m_family, m_local_ids.constView()); }
 
   //! Entité à la position \a index du vecteur
-  Item operator[](Integer index) const
-  {
-    return m_items[m_local_ids[index]];
-  }
+  Item operator[](Int32 index) const { return Item(m_local_ids[index], m_shared_info); }
 
   //! Famille associée au vecteur
-  IItemFamily* family() const
-  {
-    return m_family;
-  }
+  IItemFamily* family() const { return m_family; }
 
   //! Enumérateur
-  inline ItemEnumerator enumerator() const
-  {
-    return ItemEnumerator(m_items.unguardedBasePointer(),m_local_ids.unguardedBasePointer(),
-                          m_local_ids.size());
-  }
+  ItemEnumerator enumerator() const { return ItemEnumerator(m_shared_info, m_local_ids); }
 
  protected:
 
-  ItemInternalList m_items;
   SharedArray<Int32> m_local_ids;
-  IItemFamily* m_family;
+  IItemFamily* m_family = nullptr;
+  ItemSharedInfo* m_shared_info = ItemSharedInfo::nullInstance();
+
+ private:
+
+  void _init();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -200,86 +150,84 @@ class ItemVector
  *
  * Pour plus d'infos, voir ItemVector.
  */
-template<typename VectorItemType>
+template <typename VectorItemType>
 class ItemVectorT
 : public ItemVector
 {
  public:
 
-  typedef VectorItemType ItemType;
+  using ItemType = VectorItemType;
 
  public:
 
   //! Constructeur vide
   ItemVectorT() = default;
+
   //! Constructeur vide avec famille
   explicit ItemVectorT(IItemFamily* afamily)
-  : ItemVector(afamily) {}
+  : ItemVector(afamily)
+  {}
+
   //! Créé un vecteur associé à la famille \a afamily et contenant les entités \a local_ids.
-  ItemVectorT(IItemFamily* afamily,Int32ConstArrayView local_ids)
-  : ItemVector(afamily, local_ids) {}
+  ItemVectorT(IItemFamily* afamily, ConstArrayView<Int32> local_ids)
+  : ItemVector(afamily, local_ids)
+  {}
+
   //! Constructeur par copie
-  ItemVectorT(const ItemVector &rhs)
-  : ItemVector(rhs) {}
+  ItemVectorT(const ItemVector& rhs)
+  : ItemVector(rhs)
+  {}
+
   //! Constructeur pour \a asize élément pour la familly \a afamily
-  ItemVectorT(IItemFamily* afamily,Integer asize)
-  : ItemVector(afamily,asize) {}
+  ItemVectorT(IItemFamily* afamily, Integer asize)
+  : ItemVector(afamily, asize)
+  {}
 
  public:
 
   //! Operateur de cast vers ItemVectorView
-  operator ItemVectorViewT<VectorItemType>() const { return ItemVectorViewT<VectorItemType>(m_items,m_local_ids); }
+  operator ItemVectorViewT<VectorItemType>() const { return view(); }
 
  public:
 
   //! Entité à la position \a index du vecteur
-  ItemType operator[](Integer index) const
+  ItemType operator[](Int32 index) const
   {
-    return m_items[m_local_ids[index]];
-    // return ItemType(m_items.begin(),m_local_ids[index]); // version IFP
+    return ItemType(m_local_ids[index], m_shared_info);
   }
 
   //! Ajoute une entité à la fin du vecteur
-  void addItem(ItemType item)
-  {
-    m_local_ids.add(item.localId());
-  }
+  void addItem(ItemType item) { m_local_ids.add(item.localId()); }
 
-  //! Vue sur le tableau entier
-  ItemVectorViewT<ItemType> view()
-  {
-    return ItemVectorViewT<ItemType>(m_items,m_local_ids);
-  }
+  //! Ajoute une entité à la fin du vecteur
+  void addItem(ItemLocalIdT<ItemType> local_id) { m_local_ids.add(local_id); }
 
   //! Vue sur le tableau entier
   ItemVectorViewT<ItemType> view() const
   {
-    return ItemVectorViewT<ItemType>(m_items,m_local_ids);
+    return ItemVectorViewT<ItemType>(m_shared_info, m_local_ids.constView());
   }
 
   //! Enumérateur
-  ItemEnumeratorT<ItemType>	enumerator() const
+  ItemEnumeratorT<ItemType> enumerator() const
   {
-    return ItemEnumeratorT<ItemType>(m_items.data(),m_local_ids.data(),
-                                     m_local_ids.size());
+    return ItemEnumeratorT<ItemType>(m_shared_info, m_local_ids.data());
   }
-
- public:
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename ItemType> inline ItemVectorViewT<ItemType>::
+template <typename ItemType> inline ItemVectorViewT<ItemType>::
 ItemVectorViewT(const ItemVectorT<ItemType>& rhs)
 : ItemVectorView(rhs.view())
-{  
+{
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
