@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -31,12 +31,12 @@ void ItemGroupDynamicMeshObserver::
 executeExtend(const Int32ConstArrayView * new_items_info)
 {
   IItemFamily * parent_family = m_mesh->parentGroup().itemFamily();
-  ItemInternalArrayView parent_internals = parent_family->itemsInternal();
+
   // Les familles parents ont déjà été branchées.
   ARCANE_ASSERT((m_mesh->cellFamily()->parentFamily()->itemKind() == parent_family->itemKind()),
                 ("Bad Face parent family %s",m_mesh->cellFamily()->parentFamily()->name().localstr()));
 
-  ItemVectorView all_group(parent_internals,*new_items_info);
+  ItemVectorView all_group(parent_family->view(*new_items_info));
   
   m_mesh->incrementalBuilder()->addParentItems(all_group,IK_Cell);
 }

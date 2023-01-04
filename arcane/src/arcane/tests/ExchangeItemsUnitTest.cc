@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshModificationTester.cc                                   (C) 2000-2018 */
+/* ExchangeItemsUnitTest.cc                                    (C) 2000-2023 */
 /*                                                                           */
 /* Service du test de l'échange d'items.                                     */
 /*---------------------------------------------------------------------------*/
@@ -22,12 +22,10 @@
 #include "arcane/IMeshUtilities.h"
 #include "arcane/IVariableSynchronizer.h"
 
-
-
-//enum class TestOperation {
-enum TestOperation {
-  GatherBroadcastCells, ExchangeCellOwners
-
+enum TestOperation
+{
+  GatherBroadcastCells,
+  ExchangeCellOwners
 };
 
 #include "arcane/tests/ExchangeItemsUnitTest_axl.h"
@@ -181,7 +179,7 @@ _computeGhostPPVariable()
   for(Integer i=0;i<ranks.size();++i)
     {
       const Integer rank = ranks[i];
-      CellVectorView ghost_items(mesh()->cellFamily()->itemsInternal(), synchronizer->sharedItems(i));
+      CellVectorView ghost_items(mesh()->cellFamily()->view(synchronizer->sharedItems(i)));
       ENUMERATE_CELL(icell, ghost_items)
         {
           m_ghostpp[icell][rank] = 2; // ou bien mettre un identifiant du propriï¿½taire
@@ -200,7 +198,7 @@ _computeGhostPPVariable()
   for(Integer i=0;i<ranks.size();++i)
     {
       const Integer rank = ranks[i];
-      NodeVectorView ghost_items(mesh()->nodeFamily()->itemsInternal(), node_synchronizer->sharedItems(i));
+      NodeVectorView ghost_items(mesh()->nodeFamily()->view(node_synchronizer->sharedItems(i)));
       ENUMERATE_NODE(inode, ghost_items)
         {
           m_node_ghostpp[inode][rank] = 2; // ou bien mettre un identifiant du propriétaire
@@ -226,7 +224,7 @@ _computeGhostPPVariable()
   for(Integer i=0;i<ranks.size();++i)
     {
       const Integer rank = ranks[i];
-      FaceVectorView ghost_items(mesh()->faceFamily()->itemsInternal(), face_synchronizer->sharedItems(i));
+      FaceVectorView ghost_items(mesh()->faceFamily()->view(face_synchronizer->sharedItems(i)));
       ENUMERATE_FACE(iface, ghost_items)
         {
           m_face_ghostpp[iface][rank] = 2; // ou bien mettre un identifiant du propriétaire

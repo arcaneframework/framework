@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SubMeshTools.cc                                             (C) 2000-2017 */
+/* SubMeshTools.cc                                             (C) 2000-2023 */
 /*                                                                           */
 /* Algorithmes spécifiques aux sous-maillages.                               */
 /*---------------------------------------------------------------------------*/
@@ -41,15 +41,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -346,7 +339,7 @@ updateGhostFamily(IItemFamily * family)
     debug(Trace::High) << "Has " << kind << " comm with " << rank << " : " << i << " / " << ranks.size() << " ranks";
 
     // Les shared sont forcément own => consistence des requêtes
-    ItemVectorView shared_items(parent_family->itemsInternal(), synchronizer->sharedItems(i));
+    ItemVectorView shared_items(parent_family->view(synchronizer->sharedItems(i)));
     ItemVector shared_submesh_items = MeshToMeshTransposer::transpose(parent_family, family, shared_items);
     SharedArray<Int64> current_to_send_items;
 
@@ -494,8 +487,7 @@ _checkFloatingItems()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
