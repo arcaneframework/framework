@@ -47,6 +47,7 @@ class ARCANE_CORE_EXPORT ItemInfoListView
   // A supprimer lorqu'on n'aura plus besoin de _itemsInternal()
   friend class ItemVectorView;
   friend class ItemVector;
+  friend class ItemPairEnumerator;
 
  public:
 

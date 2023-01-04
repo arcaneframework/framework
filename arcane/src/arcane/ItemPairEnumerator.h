@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemPairEnumerator.h                                        (C) 2000-2021 */
+/* ItemPairEnumerator.h                                        (C) 2000-2023 */
 /*                                                                           */
 /* Enumérateur sur un tableau de tableau d'entités du maillage.              */
 /*---------------------------------------------------------------------------*/
@@ -14,8 +14,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ItemInternalEnumerator.h"
 #include "arcane/Item.h"
+#include "arcane/ItemEnumerator.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -37,13 +37,16 @@ class ItemItemArray;
 class ARCANE_CORE_EXPORT ItemPairEnumerator
 {
  public:
+
   typedef ItemInternal* ItemInternalPtr;
 
  public:
+
   ItemPairEnumerator(const ItemPairGroup& array);
-  ItemPairEnumerator();
+  ItemPairEnumerator() = default;
 
  public:
+
   inline void operator++()
   {
     ++m_current;
@@ -60,15 +63,14 @@ class ARCANE_CORE_EXPORT ItemPairEnumerator
   {
     return m_current;
   }
-  inline ItemInternalEnumerator subItems() const
+  inline ItemEnumerator subItems() const
   {
-    return { m_sub_items_internal.data(),
-             m_sub_items_local_id.data() + m_indexes[m_current],
-             static_cast<Int32>(m_indexes[m_current + 1] - m_indexes[m_current]) };
+    ConstArrayView<Int32> v(nbSubItem(), m_sub_items_local_id.data() + m_indexes[m_current]);
+    return { m_sub_items_shared_info, v };
   }
   inline Item operator*() const
   {
-    return Item(m_items_internal.data(), m_items_local_id[m_current]);
+    return Item(m_items_local_id[m_current], m_items_shared_info);
   }
   inline Integer nbSubItem() const
   {
@@ -76,16 +78,24 @@ class ARCANE_CORE_EXPORT ItemPairEnumerator
   }
 
   //! Conversion vers un ItemLocalIdT<ItemType>
-  operator ItemLocalId () const { return ItemLocalId{ itemLocalId() }; }
+  operator ItemLocalId() const { return ItemLocalId{ itemLocalId() }; }
 
-  protected:
-  Int32 m_current;
-  Int32 m_end;
+ protected:
+
+  Int32 m_current = 0;
+  Int32 m_end = 0;
   Int64ConstArrayView m_indexes;
   Int32ConstArrayView m_items_local_id;
   Span<const Int32> m_sub_items_local_id;
-  ItemInternalList m_items_internal;
-  ItemInternalList m_sub_items_internal;
+  ItemSharedInfo* m_items_shared_info = ItemSharedInfo::nullInstance();
+  ItemSharedInfo* m_sub_items_shared_info = ItemSharedInfo::nullInstance();
+
+ protected:
+
+  Item _currentItem() const
+  {
+    return Item(m_items_local_id[m_current], m_items_shared_info);
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -99,18 +109,20 @@ class ItemPairEnumeratorSubT
 : public ItemPairEnumerator
 {
  public:
+
   ItemPairEnumeratorSubT(const ItemPairGroup& array)
   : ItemPairEnumerator(array)
   {
   }
 
  public:
+
   inline ItemType operator*() const
   {
-    return ItemType(m_items_internal.data(), m_items_local_id[m_current]);
+    return ItemType(this->_currentItem());
   }
   //! Conversion vers un ItemLocalIdT<ItemType>
-  operator ItemLocalIdT<ItemType> () const { return ItemLocalIdT<ItemType>{ this->itemLocalId() }; }
+  operator ItemLocalIdT<ItemType>() const { return ItemLocalIdT<ItemType>{ this->itemLocalId() }; }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -123,16 +135,18 @@ template <typename ItemType, typename SubItemType>
 class ItemPairEnumeratorT
 : public ItemPairEnumeratorSubT<ItemType>
 {
+  using BaseClass = ItemPairEnumeratorSubT<ItemType>;
+
  public:
+
   ItemPairEnumeratorT(const ItemPairGroupT<ItemType, SubItemType>& array)
   : ItemPairEnumeratorSubT<ItemType>(array)
   {
   }
-  inline ItemEnumeratorT<SubItemType> subItems() const
+
+  ItemEnumeratorT<SubItemType> subItems() const
   {
-    return { this->m_sub_items_internal.data(),
-             this->m_sub_items_local_id.data() + this->m_indexes[this->m_current],
-             static_cast<Int32>(this->m_indexes[this->m_current + 1] - this->m_indexes[this->m_current]) };
+    return { BaseClass::subItems() };
   }
 };
 

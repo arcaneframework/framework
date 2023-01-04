@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -87,6 +87,7 @@ class ARCANE_CORE_EXPORT Item
   friend class SimdItem;
   friend class SimdItemEnumeratorBase;
   friend class ItemInfoListView;
+  friend class ItemPairEnumerator;
   template<typename ItemType> friend class ItemEnumeratorBaseT;
 
  public:

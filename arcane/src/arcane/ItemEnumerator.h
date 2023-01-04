@@ -53,6 +53,7 @@ class ItemEnumerator
   friend class ItemEnumeratorCS;
   friend class ItemVector;
   friend class ItemVectorView;
+  friend class ItemPairEnumerator;
   // NOTE: Normalement il suffirait de faire cela:
   //   template<class T> friend class ItemEnumeratorBase;
   // mais cela ne fonctionne pas avec GCC 8. On fait donc la spécialisation
