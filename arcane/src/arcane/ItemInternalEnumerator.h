@@ -56,7 +56,7 @@ class ItemInternalEnumerator
 
   ARCANE_DEPRECATED_REASON("Y2022: This class is deprecated. Use ItemEnumerator instead")
   ItemInternalEnumerator(const ItemInternalVectorView& view)
-  : m_items(view.items().data())
+  : m_items(view._items().data())
   , m_local_ids(view.localIds().data())
   , m_index(0)
   , m_count(view.size())

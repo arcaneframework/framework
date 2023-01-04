@@ -231,35 +231,33 @@ class ARCANE_CORE_EXPORT ItemVectorView
   }
 
   //! Accède au \a i-ème élément du vecteur
-  inline Item operator[](Integer index) const
-  {
-    return Item(m_local_ids[index],m_shared_info);
-  }
+  Item operator[](Integer index) const { return Item(m_local_ids[index],m_shared_info); }
 
   //! Nombre d'éléments du vecteur
-  inline Integer size() const { return m_local_ids.size(); }
+  Int32 size() const { return m_local_ids.size(); }
 
   //! Tableau des entités
-  inline ItemInternalArrayView items() const { return m_shared_info->m_items_internal; }
+  ARCANE_DEPRECATED_REASON("Y2022: Do not use this method")
+  ItemInternalArrayView items() const { return m_shared_info->m_items_internal; }
 
   //! Tableau des numéros locaux des entités
-  inline Int32ConstArrayView localIds() const { return m_local_ids; }
+  Int32ConstArrayView localIds() const { return m_local_ids; }
 
   //! Sous-vue à partir de l'élément \a abegin et contenant \a asize éléments
-  inline ItemVectorView subView(Integer abegin,Integer asize) const
+  ItemVectorView subView(Integer abegin,Integer asize) const
   {
     return ItemVectorView(m_shared_info,m_local_ids.subView(abegin,asize));
   }
-  inline const_iterator begin() const
+  const_iterator begin() const
   {
     return const_iterator(m_shared_info,m_local_ids.data());
   }
-  inline const_iterator end() const
+  const_iterator end() const
   {
     return const_iterator(m_shared_info,m_local_ids.data()+this->size());
   }
   //! Vue sur le tableau des indices
-  inline ItemIndexArrayView indexes() const { return m_local_ids; }
+  ItemIndexArrayView indexes() const { return m_local_ids; }
 
  public:
 
@@ -295,7 +293,9 @@ class ItemVectorViewT
   using const_iterator = ItemVectorViewConstIteratorT<ItemType>;
   using difference_type = std::ptrdiff_t;
   using value_type = ItemType;
+  //TODO a supprimer avec le C++20
   using reference_type = ItemType&;
+  //TODO a supprimer avec le C++20
   using const_reference_type = const ItemType&;
 
  public:

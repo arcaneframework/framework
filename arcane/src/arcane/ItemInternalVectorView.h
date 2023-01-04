@@ -110,7 +110,7 @@ class ItemInternalVectorViewConstIterator
  * en interne de %Arcane. La version utilisateur de cette classe est
  * ItemVectorView.
  *
- * \see ItemVectorView
+ * \sa ItemVectorView
  */
 class ARCANE_CORE_EXPORT ItemInternalVectorView
 {
@@ -121,7 +121,8 @@ class ARCANE_CORE_EXPORT ItemInternalVectorView
   friend class impl::ItemBase;
   friend class ItemEnumeratorBase;
   friend class SimdItemEnumeratorBase;
-  template<typename T> friend class ItemEnumeratorBaseT;
+  friend class ItemInternalEnumerator;
+  template <typename T> friend class ItemEnumeratorBaseT;
   using const_iterator = ItemInternalVectorViewConstIterator;
 
  public:
@@ -130,17 +131,27 @@ class ARCANE_CORE_EXPORT ItemInternalVectorView
 
  private:
 
-  ItemInternalVectorView(ItemSharedInfo* si,Int32ConstArrayView local_ids)
-  : m_local_ids(local_ids), m_shared_info(si)
+  ItemInternalVectorView(ItemSharedInfo* si, Int32ConstArrayView local_ids)
+  : m_local_ids(local_ids)
+  , m_shared_info(si)
   {
-    ARCANE_ASSERT(_isValid(),("Bad ItemInternalVectorView"));
+    ARCANE_ASSERT(_isValid(), ("Bad ItemInternalVectorView"));
   }
 
-  ItemInternalVectorView(ItemSharedInfo* si,const Int32* local_ids,Integer count)
-  : m_local_ids(count,local_ids), m_shared_info(si)
+  ItemInternalVectorView(ItemSharedInfo* si, const Int32* local_ids, Integer count)
+  : m_local_ids(count, local_ids)
+  , m_shared_info(si)
   {
-    ARCANE_ASSERT(_isValid(),("Bad ItemInternalVectorView"));
+    ARCANE_ASSERT(_isValid(), ("Bad ItemInternalVectorView"));
   }
+
+ public:
+
+  //! Nombre d'éléments du vecteur
+  Integer size() const { return m_local_ids.size(); }
+
+  //! Tableau des numéros locaux des entités
+  Int32ConstArrayView localIds() const { return m_local_ids; }
 
  public:
 
@@ -151,29 +162,22 @@ class ARCANE_CORE_EXPORT ItemInternalVectorView
    * et utiliser l'opérateur 'operator[]' associé.
    */
   ARCANE_DEPRECATED_REASON("Y2022: Use ItemVectorView::operator[] instead")
-  ItemInternal* operator[](Integer index) const { return m_shared_info->m_items_internal[ m_local_ids[index] ]; }
-
-  //! Nombre d'éléments du vecteur
-  Integer size() const { return m_local_ids.size(); }
+  ItemInternal* operator[](Integer index) const { return m_shared_info->m_items_internal[m_local_ids[index]]; }
 
   //! Tableau des entités
+  ARCANE_DEPRECATED_REASON("Y2022: Do not use this method")
   ItemInternalArrayView items() const { return m_shared_info->m_items_internal; }
-
-  //! Tableau des numéros locaux des entités
-  Int32ConstArrayView localIds() const { return m_local_ids; }
-
- public:
 
   ARCANE_DEPRECATED_REASON("Y2022: Use ItemVectorView to iterate")
   const_iterator begin() const
   {
-    return const_iterator(items().data(),m_local_ids.data(),0);
+    return const_iterator(_items().data(), m_local_ids.data(), 0);
   }
 
   ARCANE_DEPRECATED_REASON("Y2022: Use ItemVectorView to iterate")
   const_iterator end() const
   {
-    return const_iterator(items().data(),m_local_ids.data(),this->size());
+    return const_iterator(_items().data(), m_local_ids.data(), this->size());
   }
 
  protected:
@@ -184,6 +188,7 @@ class ARCANE_CORE_EXPORT ItemInternalVectorView
  private:
 
   bool _isValid();
+  ItemInternalArrayView _items() const { return m_shared_info->m_items_internal; }
 };
 
 /*---------------------------------------------------------------------------*/
