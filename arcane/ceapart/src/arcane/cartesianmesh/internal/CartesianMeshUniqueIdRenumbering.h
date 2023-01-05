@@ -50,10 +50,14 @@ class CartesianMeshUniqueIdRenumbering
   ICartesianMeshGenerationInfo* m_generation_info = nullptr;
   bool m_is_verbose = false;
  private:
-  void _applyChildrenCell(Cell cell,VariableNodeInt64& nodes_new_uid,VariableFaceInt64& faces_new_uid,
-                          VariableCellInt64& cells_new_uid,
-                          Int64 coord_i,Int64 coord_j,
-                          Int64 nb_cell_x,Int64 nb_cell_y,Int32 level);
+  void _applyChildrenCell2D(Cell cell,VariableNodeInt64& nodes_new_uid,VariableFaceInt64& faces_new_uid,
+                            VariableCellInt64& cells_new_uid,
+                            Int64 coord_i,Int64 coord_j,
+                            Int64 nb_cell_x,Int64 nb_cell_y,Int32 level);
+  void _applyChildrenCell3D(Cell cell,VariableNodeInt64& nodes_new_uid,VariableFaceInt64& faces_new_uid,
+                            VariableCellInt64& cells_new_uid,
+                            Int64 coord_i,Int64 coord_j,Int64 coord_k,
+                            Int64 nb_cell_x,Int64 nb_cell_y,Int64 nb_cell_z,Int32 level);
   void _applyFamilyRenumbering(IItemFamily* family,VariableItemInt64& items_new_uid);
 };
 

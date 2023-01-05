@@ -51,13 +51,14 @@ void CartesianMeshUniqueIdRenumbering::
 renumber()
 {
   IMesh* mesh = m_cartesian_mesh->mesh();
+  Int32 dimension = mesh->dimension();
   Int64 cartesian_global_nb_cell = m_generation_info->globalNbCell();
   info() << "Apply UniqueId renumbering to mesh '" << mesh->name() << "'"
          << " global_nb_cell=" << cartesian_global_nb_cell
          << " global_nb_cell_by_dim=" << m_generation_info->globalNbCells();
 
-  if (mesh->dimension() != 2)
-    ARCANE_THROW(NotImplementedException, "Renumbering is only implemented for 2D mesh");
+  //if (dimension != 2)
+  //  ARCANE_THROW(NotImplementedException, "Renumbering is only implemented for 2D mesh");
 
   VariableCellInt64 cells_new_uid(VariableBuildInfo(mesh, "ArcaneRenumberCellsNewUid"));
   VariableNodeInt64 nodes_new_uid(VariableBuildInfo(mesh, "ArcaneRenumberNodesNewUid"));
@@ -96,17 +97,40 @@ renumber()
   if (nb_cell_y <= 0)
     ARCANE_FATAL("Bad value '{0}' for globalNbCells()[MD_DirY] (should be >0)", nb_cell_y);
 
-  ENUMERATE_ (Cell, icell, patch0->cells()) {
-    Cell cell{ *icell };
-    Int64 uid = cell.uniqueId();
-    Int64 coord_i = uid % nb_cell_x;
-    Int64 coord_j = uid / nb_cell_x;
-    if (m_is_verbose)
-      info() << "Renumbering: PARENT: cell_uid=" << cell.uniqueId() << " I=" << coord_i
-             << " J=" << coord_j << " nb_cell_x=" << nb_cell_x;
-    _applyChildrenCell(cell, nodes_new_uid, faces_new_uid, cells_new_uid, coord_i, coord_j, nb_cell_x, nb_cell_y, 1);
+  Int64 nb_cell_z = global_nb_cells_by_direction[MD_DirZ];
+  if (nb_cell_z <= 0)
+    ARCANE_FATAL("Bad value '{0}' for globalNbCells()[MD_DirZ] (should be >0)", nb_cell_z);
+
+  if(dimension == 2){
+    ENUMERATE_ (Cell, icell, patch0->cells()) {
+      Cell cell{ *icell };
+      Int64 uid = cell.uniqueId();
+      Int64 coord_i = uid % nb_cell_x;
+      Int64 coord_j = uid / nb_cell_x;
+      if (m_is_verbose)
+        info() << "Renumbering: PARENT: cell_uid=" << cell.uniqueId() << " I=" << coord_i
+               << " J=" << coord_j << " nb_cell_x=" << nb_cell_x;
+      _applyChildrenCell2D(cell, nodes_new_uid, faces_new_uid, cells_new_uid, coord_i, coord_j, nb_cell_x, nb_cell_y, 1);
+    }
   }
 
+  else if(dimension == 3){
+    ENUMERATE_ (Cell, icell, patch0->cells()) {
+      Cell cell{ *icell };
+      Int64 uid = cell.uniqueId();
+      Int64 to2d = uid % (nb_cell_x * nb_cell_y);
+      Int64 coord_i = to2d % nb_cell_x;
+      Int64 coord_j = to2d / nb_cell_x;
+      Int64 coord_k = uid / (nb_cell_x * nb_cell_y);
+      if (m_is_verbose)
+        info() << "Renumbering: PARENT: cell_uid=" << cell.uniqueId() << " I=" << coord_i
+               << " J=" << coord_j << " K=" << coord_k
+               << " nb_cell_x=" << nb_cell_x << " nb_cell_y=" << nb_cell_y;
+      _applyChildrenCell3D(cell, nodes_new_uid, faces_new_uid, cells_new_uid, coord_i, coord_j, coord_k, nb_cell_x, nb_cell_y, nb_cell_z, 1);
+    }
+  }
+
+  
   // TODO: faire une classe pour cela.
   //info() << "Change CellFamily";
   //mesh->cellFamily()->notifyItemsUniqueIdChanged();
@@ -142,7 +166,7 @@ _applyFamilyRenumbering(IItemFamily* family, VariableItemInt64& items_new_uid)
 /*---------------------------------------------------------------------------*/
 
 void CartesianMeshUniqueIdRenumbering::
-_applyChildrenCell(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceInt64& faces_new_uid,
+_applyChildrenCell2D(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceInt64& faces_new_uid,
                    VariableCellInt64& cells_new_uid,
                    Int64 coord_i, Int64 coord_j,
                    Int64 nb_cell_x, Int64 nb_cell_y, Int32 level)
@@ -151,16 +175,16 @@ _applyChildrenCell(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceInt6
   // il faudrait prendre le max des nbHChildren()
 
   // Suppose qu'on a un pattern 2x2
-  coord_i *= 2;
-  coord_j *= 2;
-  nb_cell_x *= 2;
-  nb_cell_y *= 2;
-  const Int64 nb_node_x = nb_cell_x + 1;
-  const Int64 nb_node_y = nb_cell_y + 1;
-  const Int64 cell_adder = nb_cell_x * nb_cell_y * level;
-  const Int64 nb_face_x = nb_cell_x + 1;
-  const Int64 node_adder = nb_node_x * nb_node_y * level;
-  const Int64 face_adder = node_adder * 2;
+  coord_i *= 2; // 2
+  coord_j *= 2; // 0
+  nb_cell_x *= 2;// 4
+  nb_cell_y *= 2;// 4
+  const Int64 nb_node_x = nb_cell_x + 1;// 5
+  const Int64 nb_node_y = nb_cell_y + 1;// 5
+  const Int64 cell_adder = nb_cell_x * nb_cell_y * level;// 16
+  const Int64 nb_face_x = nb_cell_x + 1;// 5
+  const Int64 node_adder = nb_node_x * nb_node_y * level;// 25
+  const Int64 face_adder = node_adder * 2;// 50
 
   // Renumérote les noeuds de la maille courante.
   // Suppose qu'on a 4 noeuds
@@ -171,10 +195,10 @@ _applyChildrenCell(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceInt6
     if (cell.nbNode() != 4)
       ARCANE_FATAL("Invalid number of nodes N={0}, expected=4", cell.nbNode());
     std::array<Int64, 4> new_uids;
-    new_uids[0] = (coord_i + 0) + ((coord_j + 0) * nb_node_x);
-    new_uids[1] = (coord_i + 1) + ((coord_j + 0) * nb_node_x);
-    new_uids[2] = (coord_i + 1) + ((coord_j + 1) * nb_node_x);
-    new_uids[3] = (coord_i + 0) + ((coord_j + 1) * nb_node_x);
+    new_uids[0] = (coord_i + 0) + ((coord_j + 0) * nb_node_x);//2
+    new_uids[1] = (coord_i + 1) + ((coord_j + 0) * nb_node_x);//3
+    new_uids[2] = (coord_i + 1) + ((coord_j + 1) * nb_node_x);//8
+    new_uids[3] = (coord_i + 0) + ((coord_j + 1) * nb_node_x);//7
     for (Integer z = 0; z < 4; ++z) {
       Node node = cell.node(z);
       if (nodes_new_uid[node] < 0) {
@@ -192,10 +216,10 @@ _applyChildrenCell(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceInt6
     if (cell.nbFace() != 4)
       ARCANE_FATAL("Invalid number of faces N={0}, expected=4", cell.nbFace());
     std::array<Int64, 4> new_uids;
-    new_uids[0] = (coord_i + 0) + ((coord_j + 0) * nb_face_x);
-    new_uids[1] = (coord_i + 1) + ((coord_j + 0) * nb_face_x);
-    new_uids[2] = (coord_i + 1) + ((coord_j + 1) * nb_face_x);
-    new_uids[3] = (coord_i + 0) + ((coord_j + 1) * nb_face_x);
+    new_uids[0] = (coord_i + 0) + ((coord_j + 0) * nb_face_x);//2
+    new_uids[1] = (coord_i + 1) + ((coord_j + 0) * nb_face_x);//3
+    new_uids[2] = (coord_i + 1) + ((coord_j + 1) * nb_face_x);//8
+    new_uids[3] = (coord_i + 0) + ((coord_j + 1) * nb_face_x);//7
     for (Integer z = 0; z < 4; ++z) {
       Face face = cell.face(z);
       if (faces_new_uid[face] < 0) {
@@ -224,8 +248,118 @@ _applyChildrenCell(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceInt6
       info() << "APPLY_CELL_CHILD: uid=" << sub_cell.uniqueId() << " I=" << my_coord_i << " J=" << my_coord_j
              << " level=" << level << " new_uid=" << new_uid << " NodeAdder=" << node_adder;
 
-    _applyChildrenCell(sub_cell, nodes_new_uid, faces_new_uid, cells_new_uid, my_coord_i, my_coord_j,
-                       nb_cell_x, nb_cell_y, level + 1);
+      _applyChildrenCell2D(sub_cell, nodes_new_uid, faces_new_uid, cells_new_uid, my_coord_i, my_coord_j,
+                           nb_cell_x, nb_cell_y, level + 1);
+    if (cells_new_uid[sub_cell] < 0)
+      cells_new_uid[sub_cell] = new_uid;
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CartesianMeshUniqueIdRenumbering::
+_applyChildrenCell3D(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceInt64& faces_new_uid,
+                   VariableCellInt64& cells_new_uid,
+                   Int64 coord_i, Int64 coord_j, Int64 coord_k,
+                   Int64 nb_cell_x, Int64 nb_cell_y, Int64 nb_cell_z, Int32 level)
+{
+  // TODO: pour pouvoir s'adapter à tous les raffinements, au lieu de 4,
+  // il faudrait prendre le max des nbHChildren()
+
+  // Suppose qu'on a un pattern 2x2x2
+  coord_i *= 2; // 2
+  coord_j *= 2; // 0
+  coord_k *= 2; // 0
+  nb_cell_x *= 2;// 4
+  nb_cell_y *= 2;// 4
+  nb_cell_z *= 2;// 2
+  const Int64 nb_node_x = nb_cell_x + 1;// 5
+  const Int64 nb_node_y = nb_cell_y + 1;// 5
+  const Int64 nb_node_z = nb_cell_z + 1;// 5
+  const Int64 cell_adder = nb_cell_x * nb_cell_y * nb_cell_z * level;// 16
+  const Int64 nb_face_x = nb_cell_x + 1;// 5
+  const Int64 nb_face_y = nb_cell_y + 1;// 5
+  const Int64 node_adder = nb_node_x * nb_node_y * nb_node_z * level;// 25
+  const Int64 face_adder = node_adder * 2;// 50
+
+  // Renumérote les noeuds de la maille courante.
+  // Suppose qu'on a 4 noeuds
+  // ATTENTION a priori on ne peut pas conserver facilement l'ordre
+  // des uniqueId() entre l'ancienne et la nouvelle numérotation.
+  // Cela invalide l'orientation des faces qu'il faudra refaire.
+  {
+    if (cell.nbNode() != 8)
+      ARCANE_FATAL("Invalid number of nodes N={0}, expected=8", cell.nbNode());
+    std::array<Int64, 8> new_uids;
+    new_uids[0] = (coord_i + 0) + ((coord_j + 0) * nb_node_x) + ((coord_k + 0) * nb_node_x * nb_node_y);//2
+    new_uids[1] = (coord_i + 1) + ((coord_j + 0) * nb_node_x) + ((coord_k + 0) * nb_node_x * nb_node_y);//3
+    new_uids[2] = (coord_i + 1) + ((coord_j + 1) * nb_node_x) + ((coord_k + 0) * nb_node_x * nb_node_y);//8
+    new_uids[3] = (coord_i + 0) + ((coord_j + 1) * nb_node_x) + ((coord_k + 0) * nb_node_x * nb_node_y);//7
+
+    new_uids[4] = (coord_i + 0) + ((coord_j + 0) * nb_node_x) + ((coord_k + 1) * nb_node_x * nb_node_y);//2
+    new_uids[5] = (coord_i + 1) + ((coord_j + 0) * nb_node_x) + ((coord_k + 1) * nb_node_x * nb_node_y);//3
+    new_uids[6] = (coord_i + 1) + ((coord_j + 1) * nb_node_x) + ((coord_k + 1) * nb_node_x * nb_node_y);//8
+    new_uids[7] = (coord_i + 0) + ((coord_j + 1) * nb_node_x) + ((coord_k + 1) * nb_node_x * nb_node_y);//7
+
+    for (Integer z = 0; z < 8; ++z) {
+      Node node = cell.node(z);
+      if (nodes_new_uid[node] < 0) {
+        new_uids[z] += node_adder;
+        if (m_is_verbose)
+          info() << "APPLY_NODE_CHILD: uid=" << node.uniqueId() << " parent_cell=" << cell.uniqueId()
+                 << " I=" << z << " new_uid=" << new_uids[z];
+        nodes_new_uid[node] = new_uids[z];
+      }
+    }
+  }
+  // Renumérote les faces
+  // TODO: Vérifier la validité de cette méthode.
+  {
+    if (cell.nbFace() != 8)
+      ARCANE_FATAL("Invalid number of faces N={0}, expected=8", cell.nbFace());
+    std::array<Int64, 8> new_uids;
+    new_uids[0] = (coord_i + 0) + ((coord_j + 0) * nb_face_x) + ((coord_k + 0) * nb_face_x * nb_face_y);//2
+    new_uids[1] = (coord_i + 1) + ((coord_j + 0) * nb_face_x) + ((coord_k + 0) * nb_face_x * nb_face_y);//3
+    new_uids[2] = (coord_i + 1) + ((coord_j + 1) * nb_face_x) + ((coord_k + 0) * nb_face_x * nb_face_y);//8
+    new_uids[3] = (coord_i + 0) + ((coord_j + 1) * nb_face_x) + ((coord_k + 0) * nb_face_x * nb_face_y);//7
+
+    new_uids[4] = (coord_i + 0) + ((coord_j + 0) * nb_face_x) + ((coord_k + 1) * nb_face_x * nb_face_y);//2
+    new_uids[5] = (coord_i + 1) + ((coord_j + 0) * nb_face_x) + ((coord_k + 1) * nb_face_x * nb_face_y);//3
+    new_uids[6] = (coord_i + 1) + ((coord_j + 1) * nb_face_x) + ((coord_k + 1) * nb_face_x * nb_face_y);//8
+    new_uids[7] = (coord_i + 0) + ((coord_j + 1) * nb_face_x) + ((coord_k + 1) * nb_face_x * nb_face_y);//7
+
+    for (Integer z = 0; z < 8; ++z) {
+      Face face = cell.face(z);
+      if (faces_new_uid[face] < 0) {
+        new_uids[z] += face_adder;
+        if (m_is_verbose)
+          info() << "APPLY_FACE_CHILD: uid=" << face.uniqueId() << " parent_cell=" << cell.uniqueId()
+                 << " I=" << z << " new_uid=" << new_uids[z];
+        faces_new_uid[face] = new_uids[z];
+      }
+    }
+  }
+  // Renumérote les sous-mailles
+  // Suppose qu'on a 8 mailles enfants comme suit par mailles
+  // -------
+  // | 2| 3|
+  // -------
+  // | 0| 1|
+  // -------
+  Int32 nb_child = cell.nbHChildren();
+  for (Int32 icell = 0; icell < nb_child; ++icell) {
+    Cell sub_cell = cell.hChild(icell);
+    Int64 my_coord_i = coord_i + icell % 2;
+    Int64 my_coord_j = coord_j + icell / 2;
+    Int64 my_coord_k = coord_k + icell / 4;
+    Int64 new_uid = (my_coord_i + my_coord_j * nb_cell_x + my_coord_k * nb_cell_y) + cell_adder;
+    if (m_is_verbose)
+      info() << "APPLY_CELL_CHILD: uid=" << sub_cell.uniqueId() << " I=" << my_coord_i << " J=" << my_coord_j << " K=" << my_coord_k
+             << " level=" << level << " new_uid=" << new_uid << " NodeAdder=" << node_adder;
+
+      _applyChildrenCell3D(sub_cell, nodes_new_uid, faces_new_uid, cells_new_uid, my_coord_i, my_coord_j, my_coord_k,
+                           nb_cell_x, nb_cell_y, nb_cell_z, level + 1);
     if (cells_new_uid[sub_cell] < 0)
       cells_new_uid[sub_cell] = new_uid;
   }

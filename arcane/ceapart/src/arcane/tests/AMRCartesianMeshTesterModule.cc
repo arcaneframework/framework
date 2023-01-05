@@ -259,14 +259,14 @@ init()
     m_cartesian_mesh->recreateFromDump();
   else{
     m_cartesian_mesh->computeDirections();
-    if (dimension==2){
+    //if (dimension==2){
       // Pour l'instant cela est uniquement implémenté en 2D.
       CartesianMeshRenumberingInfo renumbering_info;
       renumbering_info.setRenumberPatchMethod(1);
       renumbering_info.setSortAfterRenumbering(true);
       m_cartesian_mesh->renumberItemsUniqueId(renumbering_info);
-      _checkUniqueIds();
-    }
+      //_checkUniqueIds();
+    //}
     _processPatches();
   }
 
