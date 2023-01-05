@@ -72,11 +72,10 @@ class EmptyMesh : public IPrimaryMesh
 
  public:
 
-  const MeshHandle& handle() const override
+  MeshHandle handle() const override
   {
     _error();
-    auto var = new MeshHandle{};
-    return *var;
+    return MeshHandle();
   }
 
   // IPrimaryMesh API

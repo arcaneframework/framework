@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMesh.h                                               (C) 2000-2022 */
+/* DynamicMesh.h                                               (C) 2000-2023 */
 /*                                                                           */
 /* Classe de gestion d'un maillage évolutif.                                 */
 /*---------------------------------------------------------------------------*/
@@ -141,7 +141,7 @@ class ARCANE_MESH_EXPORT DynamicMesh
 
  public:
   
-  const MeshHandle& handle() const override { return m_mesh_handle; }
+  MeshHandle handle() const override { return m_mesh_handle; }
   String name() const override { return m_name; }
   String factoryName() const override { return m_factory_name; }
 
