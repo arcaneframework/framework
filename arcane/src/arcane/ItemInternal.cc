@@ -229,7 +229,7 @@ _isValid()
   if (!m_shared_info)
     ARCANE_FATAL("Null ItemSharedInfo");
   if (!m_local_ids.empty()){
-    auto* items_data = items().data();
+    auto* items_data = _items().data();
     if (!items_data)
       ARCANE_FATAL("Null ItemsInternal list");
   }

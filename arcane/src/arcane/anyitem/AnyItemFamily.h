@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AnyItemFamily.h                                             (C) 2000-2016 */
+/* AnyItemFamily.h                                             (C) 2000-2023 */
 /*                                                                           */
 /* Famille d'items de types quelconques.                                     */
 /*---------------------------------------------------------------------------*/
@@ -31,12 +31,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ANYITEM_BEGIN_NAMESPACE
+namespace Arcane::AnyItem
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -114,21 +110,25 @@ public:
   }
 
   //! Position dans la famille du premier localId de ce groupe
-  inline Integer firstLocalId(const ItemGroup& group) const {
+  inline Integer firstLocalId(const ItemGroup& group) const
+  {
     const Private::GroupIndexInfo * info = m_groups.findGroupInfo(group.internal());
-    if (info == NULL)
-      throw FatalErrorException(String::format("Group '{0}' not registered",group.name()));
+    if (!info)
+      ARCANE_FATAL("Group '{0}' not registered",group.name());
     return info->local_id_offset;
   }
   
   //! Retoune l'item concret associé à ce AnyItem
   template<typename AnyItemT>
-  Item item(const AnyItemT & any_item) const {
+  Item item(const AnyItemT & any_item) const
+  {
+    // NOTE GG: la valeur de group.itemInfoListView() ne change pas au cours
+    // du calcul donc il est possible de la conserver comme champ de la classe.
     const Integer group_index = any_item.groupIndex();
     const Private::GroupIndexInfo & info = m_groups[group_index];
     const ItemGroupImpl & group = *(info.group);
     Integer index_in_group = any_item.localId() - info.local_id_offset;
-    ItemInternal * item = group.itemsInternal()[group.itemsLocalId()[index_in_group]];
+    Item item = group.itemInfoListView()[group.itemsLocalId()[index_in_group]];
     // ARCANE_ASSERT((!info.is_partial || (item->localId() == any_item.varIndex())),("Inconsistent concrete item"));
     // ARCANE_ASSERT((item->isOwn() == any_item.m_is_own),("Inconsistent concrete item isOwn"));
     return item;
@@ -328,8 +328,7 @@ private:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ANYITEM_END_NAMESPACE
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

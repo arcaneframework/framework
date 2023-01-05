@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemGroupRangeIterator.h                                    (C) 2000-2006 */
+/* ItemGroupRangeIterator.h                                    (C) 2000-2023 */
 /*                                                                           */
 /* Intervalle d'itération sur les entités d'un groupe du maillage.           */
 /*---------------------------------------------------------------------------*/
@@ -14,12 +14,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
+#include "arcane/ItemInfoListView.h"
+#include "arcane/Item.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -40,27 +42,37 @@ class ARCANE_CORE_EXPORT ItemGroupRangeIterator
 
   ItemGroupRangeIterator(const ItemGroup& group);
   ItemGroupRangeIterator();
-  
+
  public:
 
   inline void operator++()
-    { ++m_current; }
+  {
+    ++m_current;
+  }
   inline bool hasNext() const
-    { return m_current<m_end; }
+  {
+    return m_current < m_end;
+  }
   inline Integer itemLocalId() const
-    { return m_items_local_ids[m_current]; }
+  {
+    return m_items_local_ids[m_current];
+  }
   inline Integer index() const
-    { return m_current; }
-  inline eItemKind kind() const 
-    { return m_kind; }
-  
+  {
+    return m_current;
+  }
+  inline eItemKind kind() const
+  {
+    return m_kind;
+  }
+
  protected:
 
   eItemKind m_kind;
   Integer m_current;
   Integer m_end;
   const Int32* ARCANE_RESTRICT m_items_local_ids;
-  const ItemPtr* m_items;
+  ItemInfoListView m_items;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -68,7 +80,7 @@ class ARCANE_CORE_EXPORT ItemGroupRangeIterator
 /*!
  * \brief Intervalle d'itération sur un groupe d'entités de maillage.
  */
-template<typename T>
+template <typename T>
 class ItemGroupRangeIteratorT
 : public ItemGroupRangeIterator
 {
@@ -76,27 +88,27 @@ class ItemGroupRangeIteratorT
 
   inline ItemGroupRangeIteratorT(const ItemGroup& group)
   : ItemGroupRangeIterator(group)
-    {
-    }
+  {
+  }
   inline ItemGroupRangeIteratorT()
   : ItemGroupRangeIterator()
-    {
-    }
-  
+  {
+  }
+
  public:
 
-  inline T operator*() const
-    {
-      return T(m_items,m_items_local_ids[m_current]);
-    }
+  T operator*() const
+  {
+    return T(m_items[m_items_local_ids[m_current]]);
+  }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshUtils.cc                                                (C) 2000-2022 */
+/* MeshUtils.cc                                                (C) 2000-2023 */
 /*                                                                           */
 /* Fonctions diverses sur les éléments du maillage.                          */
 /*---------------------------------------------------------------------------*/
@@ -911,7 +911,7 @@ writeMeshConnectivity(IMesh* mesh,const String& file_name)
       }
       {
         ofile << "<faces count='" << item_nb_face << "'>";
-        for( ItemInternalEnumerator i_face(item.faces()); i_face(); ++i_face )
+        for( FaceEnumerator i_face(item.faces()); i_face(); ++i_face )
           ofile << ' ' << i_face->uniqueId();
         ofile << "</faces>";
       }

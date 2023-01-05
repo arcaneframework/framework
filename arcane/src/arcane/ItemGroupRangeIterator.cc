@@ -33,8 +33,7 @@ ItemGroupRangeIterator(const ItemGroup& group)
   if (group.null()){
     m_kind = IK_Unknown;
     m_end = 0;
-    m_items_local_ids = 0;
-    m_items = 0;
+    m_items_local_ids = nullptr;
     return;
   }
   m_kind = group.itemKind();
@@ -43,7 +42,7 @@ ItemGroupRangeIterator(const ItemGroup& group)
   Int32ConstArrayView local_ids(igi->itemsLocalId());
   m_end = local_ids.size();
   m_items_local_ids = local_ids.data();
-  m_items = igi->itemsInternal().data();
+  m_items = igi->itemInfoListView();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -54,8 +53,7 @@ ItemGroupRangeIterator()
 : m_kind(IK_Unknown)
 , m_current(0)
 , m_end(0)
-, m_items_local_ids(0)
-, m_items(0)
+, m_items_local_ids(nullptr)
 {
 }
 

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshRefinement.cc                                           (C) 2000-2022 */
+/* MeshRefinement.cc                                           (C) 2000-2023 */
 /*                                                                           */
 /* Manipulation d'un maillage AMR.                                           */
 /*---------------------------------------------------------------------------*/
@@ -250,7 +250,7 @@ _updateMaxUid(ArrayView<ItemInternal*> cells)
         max_nb_hChildren = nb_hChildren;
 
         //UPDATE MAX NODE UID
-        for( ItemInternalEnumerator inode(child->internalNodes()); inode(); ++inode ){
+        for( ItemEnumerator inode(child->internalNodes()); inode(); ++inode ){
           const Int64 uid = inode->uniqueId();
           insert_return_type value = node_list.insert(uid) ;
           if(value.second)
@@ -262,7 +262,7 @@ _updateMaxUid(ArrayView<ItemInternal*> cells)
 
 
         //UPDATE MAX FACE UID
-        for( ItemInternalEnumerator iface(child->internalFaces()); iface(); ++iface ){
+        for( ItemEnumerator iface(child->internalFaces()); iface(); ++iface ){
           const Int64 uid = iface->uniqueId();
           insert_return_type value = face_list.insert(uid) ;
           if(value.second)
@@ -1945,8 +1945,8 @@ _updateItemOwner(Int32ArrayView cell_to_remove_lids)
 
   for (Integer i = 0, is = cell_to_remove_lids.size(); i < is; i++){
     ItemInternal* item = cells_list[cell_to_remove_lids[i]];
-    for (ItemInternalEnumerator inode(item->internalNodes()); inode(); ++inode){
-      ItemInternal* node = *inode;
+    for (ItemEnumerator inode(item->internalNodes()); inode(); ++inode){
+      ItemInternal* node = inode->internal();
 
       if (marker.find(node->localId()) != marker.end())
         continue;
@@ -1958,10 +1958,9 @@ _updateItemOwner(Int32ArrayView cell_to_remove_lids)
       bool is_ok = false;
       Integer count = 0;
       const Integer node_cs = node->internalCells().size();
-      for (ItemInternalEnumerator icell(node->internalCells()); icell.hasNext(); ++icell){
-        ItemInternal* cell = *icell;
-        if (cell_to_remove_lids.contains(cell->localId()))
-        {
+      for ( CellEnumerator icell(node->internalCells()); icell.hasNext(); ++icell){
+        Cell cell = *icell;
+        if (cell_to_remove_lids.contains(cell.localId())){
           count++;
           if (count == node_cs)
             is_ok = true;
@@ -1975,44 +1974,45 @@ _updateItemOwner(Int32ArrayView cell_to_remove_lids)
 //        }
       }
       if (!is_ok){
-        ItemInternal* cell = nullptr;
-        for (ItemInternalEnumerator icell(node->internalCells()); icell.hasNext(); ++icell){
-          ItemInternal* cell2 = *icell;
-          if (cell_to_remove_lids.contains(cell2->localId()))
+        Cell cell;
+        for ( CellEnumerator icell(node->internalCells()); icell.hasNext(); ++icell){
+          Cell cell2 = *icell;
+          if (cell_to_remove_lids.contains(cell2.localId()))
             continue;
-          if (!cell || cell2->uniqueId() < cell->uniqueId())
+          if (cell.null() || cell2.uniqueId() < cell.uniqueId())
             cell = cell2;
         }
-        ARCANE_CHECK_POINTER2(cell,"Inconsistent null cell owner reference");
-        const Integer new_owner = cell->owner();
+        if (cell.null())
+          ARCANE_FATAL("Inconsistent null cell owner reference");
+        const Integer new_owner = cell.owner();
         nodes_owner[node] = new_owner;
         node->setOwner(new_owner, sid);
         //debug() << " NODE CHANGED OWNER " << node->uniqueId();
         node_owner_changed = true;
       }
     }
-    for (ItemInternalEnumerator iface(item->internalFaces()); iface.hasNext(); ++iface){
-      ItemInternal* face = *iface;
-      if (face->nbCell() != 2)
+    for ( FaceEnumerator iface(item->internalFaces()); iface.hasNext(); ++iface){
+      Face face = *iface;
+      if (face.nbCell() != 2)
         continue;
-      const Int32 owner = face->owner();
+      const Int32 owner = face.owner();
       bool is_ok = false;
-      for (ItemInternalEnumerator icell(face->internalCells()); icell.hasNext(); ++icell){
-        ItemInternal* cell = *icell;
-        if ((item->uniqueId() == cell->uniqueId()) || !(item->level() == cell->level()))
+      for (CellEnumerator icell(face.cells()); icell.hasNext(); ++icell){
+        Cell cell = *icell;
+        if ((item->uniqueId() == cell.uniqueId()) || !(item->level() == cell.level()))
           continue;
-        if (cell->owner() == owner){
+        if (cell.owner() == owner){
           is_ok = true;
           break;
         }
       }
       if (!is_ok){
-        for (ItemInternalEnumerator icell(face->internalCells()); icell.hasNext(); ++icell){
-          ItemInternal* cell2 = *icell;
-          if (item->uniqueId() == cell2->uniqueId())
+        for (CellEnumerator icell(face.cells()); icell.hasNext(); ++icell){
+          Cell cell2 = *icell;
+          if (item->uniqueId() == cell2.uniqueId())
             continue;
-          faces_owner[face] = cell2->owner();
-          face->setOwner(cell2->owner(), sid);
+          faces_owner[face] = cell2.owner();
+          face.internal()->setOwner(cell2.owner(), sid);
           //debug() << " FACE CHANGED OWNER " << FullItemPrinter(face);
           face_owner_changed = true;
         }

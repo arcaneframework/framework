@@ -48,7 +48,7 @@ struct ARCANE_CORE_EXPORT ItemPrinter::Internal
   //! Ecrit les infos sur les parents
   static void _printErrors(std::ostream& o, ItemInternal* item);
   //! Ecrit les informations d'une énumération d'items
-  static void _printItemSubItems(std::ostream& ostr, String name,const ItemInternalVectorView& enumerator);
+  static void _printItemSubItems(std::ostream& ostr, String name,const ItemVectorView& enumerator);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -119,10 +119,10 @@ print(std::ostream& ostr) const
 
 void NeighborItemPrinter::
 _printSubItems(std::ostream& ostr,Integer level, Integer levelmax,
-               ItemInternalVectorView sub_items,const char* name)
+               ItemVectorView sub_items,const char* name)
 {
   indent(ostr,levelmax-level) << String::plural(sub_items.size(),name) << ":\n";
-  for( ItemInternal* sub_item : sub_items){
+  for( Item sub_item : sub_items){
     indent(ostr,levelmax-level) << "\t" << name;
     print(ostr,sub_item,level-1,levelmax);
     ostr << "\n";
@@ -133,12 +133,10 @@ _printSubItems(std::ostream& ostr,Integer level, Integer levelmax,
 /*---------------------------------------------------------------------------*/
 
 void NeighborItemPrinter::
-print(std::ostream& ostr, ItemInternal* item, Integer level, Integer levelmax)
+print(std::ostream& ostr, Item xitem, Integer level, Integer levelmax)
 {
-  if (!item) {
-    ostr << "(null pointer)";
-  }
-  else if (item->null()) {
+  ItemInternal* item = xitem.internal();
+  if (xitem.null()) {
     ostr << "(null Item)";
   }
   else {
@@ -285,38 +283,30 @@ _printErrors(std::ostream& o, ItemInternal * item)
 /*---------------------------------------------------------------------------*/
 
 void ItemPrinter::Internal::
-_printItemSubItems(std::ostream& ostr, String name,const ItemInternalVectorView& enumerator)
+_printItemSubItems(std::ostream& ostr, String name,const ItemVectorView& enumerator)
 {
   ostr << " " << name << " count=" << enumerator.size();
   ostr << " (uids=";
-  for( ItemInternal* item : enumerator){
-    if (item){
-      if (item->localId() != NULL_ITEM_ID) {
-        if (item && !item->null())
-          ostr << " " << item->uniqueId();
-        else
-          ostr << " (null)";
-      }
+  for( Item item : enumerator){
+    if (item.localId() != NULL_ITEM_ID) {
+      if (!item.null())
+        ostr << " " << item.uniqueId();
       else
         ostr << " (null)";
     }
     else
-      ostr << " (nullptr)";
+      ostr << " (null)";
   }
   ostr << ", lids=";
-  for( ItemInternal* item : enumerator){
-    if (item){
-      if (item->localId() != NULL_ITEM_ID) {
-        if (item && !item->null())
-          ostr << " " << item->localId();
-        else
-          ostr << " (null)";
-      }
+  for( Item item : enumerator){
+    if (item.localId() != NULL_ITEM_ID) {
+      if (!item.null())
+        ostr << " " << item.localId();
       else
         ostr << " (null)";
     }
     else
-      ostr << " (nullptr)";
+      ostr << " (null)";
   }
   ostr << ")";
 }

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemGroupImpl.h                                             (C) 2000-2020 */
+/* ItemGroupImpl.h                                             (C) 2000-2023 */
 /*                                                                           */
 /* Implémentation d'un groupe d'entités du maillage.                         */
 /*---------------------------------------------------------------------------*/
@@ -71,7 +71,9 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
 : public SharedReference
 {
  private:
+
   class ItemSorter;
+
  public:
 
   //! Construit un groupe nul
@@ -325,8 +327,12 @@ class ARCANE_CORE_EXPORT ItemGroupImpl
    */
   Int32Array& unguardedItemsLocalId(const bool self_invalidate = true);
 
+  ARCANE_DEPRECATED_REASON("Y2022: Use itemInfoListView() instead")
   //! Liste des entités sur lesquelles s'appuie le groupe
   ItemInternalList itemsInternal() const;
+
+  //! Liste des entités sur lesquelles s'appuie le groupe
+  ItemInfoListView itemInfoListView() const;
 
   /*!
    * \internal

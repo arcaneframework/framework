@@ -111,9 +111,9 @@ class ARCANE_CORE_EXPORT NeighborItemPrinter
    ItemInternal* m_item;
    Integer m_level_max;
    static std::ostream& indent(std::ostream& o, Integer n);
-   static void print(std::ostream& o, ItemInternal * item, Integer level, Integer levelmax);
+   static void print(std::ostream& o, Item item, Integer level, Integer levelmax);
    static void _printSubItems(std::ostream& ostr,Integer level, Integer levelmax,
-                              ItemInternalVectorView sub_items,const char* name);
+                              ItemVectorView sub_items,const char* name);
 };
 
 /*---------------------------------------------------------------------------*/
