@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemGroupImpl.cc                                            (C) 2000-2022 */
+/* ItemGroupImpl.cc                                            (C) 2000-2023 */
 /*                                                                           */
 /* Implémentation d'un groupe d'entités de maillage.                         */
 /*---------------------------------------------------------------------------*/
@@ -115,18 +115,25 @@ class ItemGroupImplPrivate
 
  public:
 
-  inline const String& name() const { return m_name; }
-  inline const String& fullName() const { return m_full_name; }
-  inline bool null() const { return m_is_null; }
-  inline IMesh* mesh() const { return m_mesh; }
-  inline eItemKind kind() const { return m_kind; }
-  inline Integer maxLocalId() const { return m_item_family->maxLocalId(); }
-  inline ItemInternalList items() const
+  const String& name() const { return m_name; }
+  const String& fullName() const { return m_full_name; }
+  bool null() const { return m_is_null; }
+  IMesh* mesh() const { return m_mesh; }
+  eItemKind kind() const { return m_kind; }
+  Integer maxLocalId() const { return m_item_family->maxLocalId(); }
+  ItemInternalList items() const
   {
     if (m_item_family)
       return m_item_family->itemsInternal();
     return m_mesh->itemsInternal(m_kind);
   }
+  ItemInfoListView itemInfoListView() const
+  {
+    if (m_item_family)
+      return m_item_family->itemInfoListView();
+    return m_mesh->itemFamily(m_kind)->itemInfoListView();
+  }
+
   Int32ArrayView itemsLocalId() { return *m_items_local_id; }
   Int32ConstArrayView itemsLocalId() const { return *m_items_local_id; }
   Int32Array& mutableItemsLocalId() { return *m_items_local_id; }
@@ -1097,6 +1104,15 @@ ItemInternalList ItemGroupImpl::
 itemsInternal() const
 {
   return m_p->items();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ItemInfoListView ItemGroupImpl::
+itemInfoListView() const
+{
+  return m_p->itemInfoListView();
 }
 
 /*---------------------------------------------------------------------------*/
