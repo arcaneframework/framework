@@ -1,17 +1,18 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AnyItemGroup.h                                              (C) 2000-2012 */
+/* AnyItemGroup.h                                              (C) 2000-2023 */
 /*                                                                           */
 /* Groupe aggrégée de types quelconques.                                     */
 /*---------------------------------------------------------------------------*/
-
 #ifndef ARCANE_ANYITEM_ANYITEMGROUP_H
 #define ARCANE_ANYITEM_ANYITEMGROUP_H
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 #include <map>
 
@@ -19,18 +20,15 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/ItemGroup.h"
+#include "arcane/ItemInfoListView.h"
 #include "arcane/anyitem/AnyItemGlobal.h"
 #include "arcane/anyitem/AnyItemPrivate.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ANYITEM_BEGIN_NAMESPACE
+namespace Arcane::AnyItem
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -94,7 +92,7 @@ public:
   public:
     BlockItemEnumerator(const Private::GroupIndexInfo & info)
       : m_info(info)
-      , m_items(m_info.group->itemsInternal().data()), m_local_ids(m_info.group->itemsLocalId().data())
+      , m_items(m_info.group->itemInfoListView()), m_local_ids(m_info.group->itemsLocalId().data())
       , m_index(0), m_count(m_info.group->size()), m_is_partial(info.is_partial) { }
 
     BlockItemEnumerator(const BlockItemEnumerator& e) 
@@ -105,7 +103,7 @@ public:
     //! Déréférencement vers l'item Arcane associé
     Item operator*() const { return m_items[ m_local_ids[m_index] ]; }
     //! Déréférencement indirect vers l'item Arcane associé
-    ItemInternal* operator->() const { return (ItemInternal*)m_items[ m_local_ids[m_index] ]; }    
+    ItemInternal* operator->() const { return m_items[ m_local_ids[m_index] ].internal(); }
     //! Avancement de l'énumérateur
     inline void operator++() { ++m_index; }
     //! Test de fin de l'énumérateur
@@ -128,7 +126,7 @@ public:
   private:
     const Private::GroupIndexInfo & m_info;
 
-    const ItemInternalPtr* m_items;
+    ItemInfoListView m_items;
     const Int32* ARCANE_RESTRICT m_local_ids;
     Integer m_index;
     Integer m_count;
@@ -186,8 +184,7 @@ public:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ANYITEM_END_NAMESPACE
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
