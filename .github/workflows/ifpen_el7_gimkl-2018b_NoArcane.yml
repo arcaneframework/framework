@@ -49,7 +49,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     container:
-      image: ghcr.io/arcaneframework/centos-gimkl-2018b-alienlegacy:7-latest
+      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-gimkl-2018b:el7
     strategy:
       fail-fast: false
     steps:
@@ -85,7 +85,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     container:
-      image: ghcr.io/arcaneframework/centos-gimkl-2018b-alienlegacy:7-latest
+      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-gimkl-2018b:el7
     strategy:
       fail-fast: false
     steps:
@@ -147,7 +147,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     container:
-      image: ghcr.io/arcaneframework/centos-gimkl-2018b-alienlegacy:7-latest
+      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-gimkl-2018b:el7
     strategy:
       fail-fast: false
     steps:
@@ -191,7 +191,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     container:
-      image: ghcr.io/arcaneframework/centos-gimkl-2018b-alienlegacy:7-latest
+      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-gimkl-2018b:el7
     strategy:
       fail-fast: false
     steps:
@@ -242,7 +242,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     container:
-      image: ghcr.io/arcaneframework/centos-gimkl-2018b-alienlegacy:7-latest
+      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-gimkl-2018b:el7
     strategy:
       fail-fast: false
     steps:
@@ -314,7 +314,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     container:
-      image: ghcr.io/arcaneframework/centos-gimkl-2018b-alienlegacy:7-latest
+      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-gimkl-2018b:el7
     strategy:
       fail-fast: false
     steps:
@@ -387,7 +387,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     container:
-      image: ghcr.io/arcaneframework/centos-gimkl-2018b-alienlegacy:7-latest
+      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-gimkl-2018b:el7
     strategy:
       fail-fast: false
     steps:
@@ -417,7 +417,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 180
     container:
-      image: ghcr.io/arcaneframework/centos-gimkl-2018b-alienlegacy:7-latest
+      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-gimkl-2018b:el7
     strategy:
       fail-fast: false
     steps:
@@ -461,7 +461,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 180
     container:
-      image: ghcr.io/arcaneframework/centos-gimkl-2018b-alienlegacy:7-latest
+      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-gimkl-2018b:el7
     strategy:
       fail-fast: false
     steps:
