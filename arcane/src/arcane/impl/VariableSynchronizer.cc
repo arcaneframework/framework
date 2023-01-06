@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableSynchronizer.cc                                     (C) 2000-2021 */
+/* VariableSynchronizer.cc                                     (C) 2000-2023 */
 /*                                                                           */
 /* Service de synchronisation des variables.                                 */
 /*---------------------------------------------------------------------------*/
@@ -209,9 +209,9 @@ _createList(UniqueArray<SharedArray<Int32> >& boundary_items)
       continue;
     communicating_ghost_ranks.add(i);
     if (global_debug_sync){
-      ItemInternalList items_internal = item_family->itemsInternal();
+      ItemInfoListView items_internal(item_family);
       for( Integer z=0, zs=boundary_items[i].size(); z<zs; ++z ){
-        const Item& item = items_internal[boundary_items[i][z]];
+        Item item = items_internal[boundary_items[i][z]];
         info() << "Item uid=" << item.uniqueId() << ",lid=" << item.localId();
       }
     }
@@ -300,7 +300,7 @@ _createList(UniqueArray<SharedArray<Int32> >& boundary_items)
     }
   }
   //pm->barrier();
-  ItemInternalList items_internal = item_family->itemsInternal();
+  ItemInfoListView items_internal(item_family);
   {
     {
       // Réciprocité des communications
@@ -488,7 +488,7 @@ _checkValid(ArrayView<GhostRankInfo> ghost_rank_info,
   const Integer max_error = 10; // Nombre max d'erreurs affichées.
   Int32 my_rank = m_parallel_mng->commRank();
   IItemFamily* item_family = m_item_group.itemFamily();
-  ItemInternalList items_internal = item_family->itemsInternal();
+  ItemInfoListView items_internal(item_family);
 
   // Tableau servant à marquer les éléments qui sont soit
   // propres au sous-domaine, soit fantômes.
@@ -582,22 +582,22 @@ _printSyncList()
   info() << "SYNC LIST FOR GROUP : " << m_item_group.fullName() << " N=" << nb_comm;
   OStringStream ostr;
   IItemFamily* item_family = m_item_group.itemFamily();
-  ItemInternalList items_internal = item_family->itemsInternal();
+  ItemInfoListView items_internal(item_family);
   for( Integer i=0; i<nb_comm; ++i ){
     const VariableSyncInfo& vsi = m_sync_list[i];
     ostr() << " TARGET=" << vsi.targetRank() << '\n';
     Int32ConstArrayView share_ids = vsi.shareIds();
     ostr() << "\t\tSHARE(lid,uid) n=" << share_ids.size() << " :";
     for( Integer z=0, zs=share_ids.size(); z<zs; ++z ){
-      ItemInternal* item = items_internal[share_ids[z]];
-      ostr() << " (" << item->localId() << "," << item->uniqueId() << ")";
+      Item item = items_internal[share_ids[z]];
+      ostr() << " (" << item.localId() << "," << item.uniqueId() << ")";
     }
     ostr() << "\n";
     Int32ConstArrayView ghost_ids = vsi.ghostIds();
     ostr() << "\t\tGHOST(lid,uid) n=" << ghost_ids.size() << " :";
     for( Integer z=0, zs=ghost_ids.size(); z<zs; ++z ){
-      ItemInternal* item = items_internal[ghost_ids[z]];
-      ostr() << " (" << item->localId() << "," << item->uniqueId() << ")";
+      Item item = items_internal[ghost_ids[z]];
+      ostr() << " (" << item.localId() << "," << item.uniqueId() << ")";
     }
     ostr() << "\n";
   }

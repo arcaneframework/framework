@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NodeFamily.cc                                               (C) 2000-2017 */
+/* NodeFamily.cc                                               (C) 2000-2023 */
 /*                                                                           */
 /* Famille de noeuds.                                                        */
 /*---------------------------------------------------------------------------*/
@@ -321,11 +321,11 @@ setConnectivity(const Integer c)
 class NodeFamily::ItemCompare2
 {
  public:
-  ItemInternalArrayView m_items;
+  ItemInfoListView m_items;
  public:
-  bool operator()(Integer item1,Integer item2) const
+  bool operator()(Int32 item1,Int32 item2) const
   {
-    return m_items[item1]->uniqueId() < m_items[item2]->uniqueId();
+    return m_items.uniqueId(item1) < m_items.uniqueId(item2);
   }
 };
 
@@ -362,7 +362,7 @@ sortInternalReferences()
   // des noeuds identique quel que soit le découpage et ainsi améliorer
   // la reproductibilité.
   ItemCompare2 ic_cell;
-  ic_cell.m_items = mesh()->cellFamily()->itemsInternal();
+  ic_cell.m_items = mesh()->cellFamily()->itemInfoListView();
   auto new_connectivity = m_cell_connectivity->trueCustomConnectivity();
   if (new_connectivity){
     ENUMERATE_ITEM(iitem,allItems()){

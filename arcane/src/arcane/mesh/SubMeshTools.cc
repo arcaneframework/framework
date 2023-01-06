@@ -413,16 +413,17 @@ display(IMesh* mesh, const String msg)
   eItemKind kinds[] = { IK_Cell, IK_Face, IK_Edge, IK_Node  };
   Integer nb_kind = sizeof(kinds)/sizeof(eItemKind);
   for(Integer i_kind=0;i_kind<nb_kind;++i_kind){      
-    IItemFamily * family = mesh->itemFamily(kinds[i_kind]);
-    ItemInternalArrayView items(family->itemsInternal());
+    IItemFamily* family = mesh->itemFamily(kinds[i_kind]);
+    ItemInfoListView items(family);
     Integer count = 0;
-    for( Integer z=0, zs=items.size(); z<zs; ++z )
-      if (!items[z]->isSuppressed()) ++count;
+    for( Integer z=0, zs=family->maxLocalId(); z<zs; ++z )
+      if (!items[z].internal()->isSuppressed())
+        ++count;
     traceMng->info() << "\t" << family->itemKind() << " " << count;
 
-    for( Integer z=0, zs=items.size(); z<zs; ++z ){
-      ItemInternal* item = items[z];
-      if (!item->isSuppressed()){
+    for( Integer z=0, zs=family->maxLocalId(); z<zs; ++z ){
+      Item item = items[z];
+      if (!item.internal()->isSuppressed()){
         traceMng->info() << ItemPrinter(item);
       }
     }
@@ -443,12 +444,12 @@ _checkValidItemOwner()
   for(Integer i_kind=0;i_kind<nb_kind;++i_kind){
     IItemFamily * family = m_mesh->itemFamily(kinds[i_kind]);
     IItemFamily * parent_family = family->parentFamily();
-    ItemInternalArrayView items(family->itemsInternal());
-    for( Integer z=0, zs=items.size(); z<zs; ++z ){
-      ItemInternal* item = items[z];
-      if (!item->isSuppressed()){
-        if (item->uniqueId() != item->parent(0)->uniqueId()){
-          Int64UniqueArray uids; uids.add(item->uniqueId());
+    ItemInfoListView items(family);
+    for( Integer z=0, zs=family->maxLocalId(); z<zs; ++z ){
+      Item item = items[z];
+      if (!item.internal()->isSuppressed()){
+        if (item.uniqueId() != item.internal()->parent(0)->uniqueId()){
+          Int64UniqueArray uids; uids.add(item.uniqueId());
           Int32UniqueArray lids(1);
           parent_family->itemsUniqueIdToLocalId(lids,uids,false);
           ARCANE_FATAL("Inconsistent parent uid '{0}' now located in '{1}'",
@@ -471,9 +472,9 @@ _checkFloatingItems()
   for(Integer i_kind=0;i_kind<nb_kind;++i_kind){
     IItemFamily * family = m_mesh->itemFamily(kinds[i_kind]);
     // Calcul des items orphelins de cellules
-    ItemInternalArrayView items(family->itemsInternal());
-    for( Integer z=0, zs=items.size(); z<zs; ++z ){
-      ItemInternal* item = items[z];
+    ItemInfoListView items(family);
+    for( Integer z=0, zs=family->maxLocalId(); z<zs; ++z ){
+      ItemInternal* item = items[z].internal();
       if (!item->isSuppressed() && item->nbCell() == 0) {
         error() << "Floating item detected : " << ItemPrinter(item);
         ++nerror;

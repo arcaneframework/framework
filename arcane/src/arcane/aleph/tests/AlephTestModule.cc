@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AlephUnitTest.cc                                            (C) 2000-2015 */
+/* AlephUnitTest.cc                                            (C) 2000-2023 */
 /*                                                                           */
 /* Service du test du service Aleph.                                         */
 /*---------------------------------------------------------------------------*/
@@ -15,7 +15,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_BEGIN_NAMESPACE
+namespace ArcaneTest
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -370,7 +371,7 @@ initAmrRefineMesh(Integer nb_to_refine)
   //MESH_MODIFIER_REFINE_ITEMS(mesh());
 
   // Now callBack the values
-  ItemInternalList cells = mesh()->cellFamily()->itemsInternal();
+  CellInfoListView cells(mesh()->cellFamily());
   //ItemInternalList faces = mesh()->faceFamily()->itemsInternal();
   for (Integer i = 0, is = cells_local_id.size(); i < is; ++i) {
     Int32 lid = cells_local_id[i];
@@ -402,7 +403,7 @@ ARCANE_DEFINE_STANDARD_MODULE(AlephTestModule, AlephTest);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

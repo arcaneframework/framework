@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SodStandardGroupsBuilder.cc                                 (C) 2000-2020 */
+/* SodStandardGroupsBuilder.cc                                 (C) 2000-2023 */
 /*                                                                           */
 /* Création des groupes pour les cas test de tube à choc de Sod.             */
 /*---------------------------------------------------------------------------*/
@@ -40,7 +40,7 @@ _createFaceGroup(IMesh* mesh,const String& name, Int32ConstArrayView faces_lid)
 
   IItemFamily* face_family = mesh->faceFamily();
   if (arcaneIsDebug()){
-    ItemInternalList mesh_faces(face_family->itemsInternal());
+    FaceInfoListView mesh_faces(face_family);
     VariableNodeReal3& var_nodes(mesh->nodesCoordinates());
     for( Integer z=0, zs=faces_lid.size(); z<zs; ++ z){
       Face face(mesh_faces[faces_lid[z]]);

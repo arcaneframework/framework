@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshComponentData.cc                                        (C) 2000-2017 */
+/* MeshComponentData.cc                                        (C) 2000-2023 */
 /*                                                                           */
 /* Données d'un constituant (matériau ou milieu) d'un maillage.              */
 /*---------------------------------------------------------------------------*/
@@ -24,14 +24,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -121,7 +115,7 @@ buildPartData()
 void MeshComponentData::
 changeLocalIdsForInternalList(Int32ConstArrayView old_to_new_ids)
 {
-  ItemInternalList global_item_list = items().itemFamily()->itemsInternal();
+  ItemInfoListView global_item_list = items().itemFamily()->itemInfoListView();
 
   // TODO: regarder s'il est possible de supprimer le tableau temporaire
   // new_internals (c'est à peu près sur que c'est possible).
@@ -201,7 +195,7 @@ checkValid()
     Int32ConstArrayView indexer_local_ids = m_variable_indexer->localIds();
     for( Integer i=0, n=indexer_local_ids.size(); i<n; ++i )
       presence[indexer_local_ids[i]] += 2;
-    ItemInternalList items_internal = family->itemsInternal();
+    ItemInfoListView items_internal = family->itemInfoListView();
     Integer nb_error = 0;
     for( Integer i=0, n=presence.size(); i<n; ++i ){
       Int32 v = presence[i];
@@ -241,8 +235,7 @@ checkValid()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

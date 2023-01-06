@@ -1,17 +1,15 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GetVariablesValuesParallelOperation.cc                      (C) 2000-2020 */
+/* GetVariablesValuesParallelOperation.cc                      (C) 2000-2023 */
 /*                                                                           */
 /* Opérations pour accéder aux valeurs de variables d'un autre sous-domaine. */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/Array.h"
 #include "arcane/utils/ITraceMng.h"
@@ -167,7 +165,7 @@ getVariableValues(VariableItemReal& variable,
   RealUniqueArray tmp_values;
 
   UniqueArray<ISerializeMessage*> values_messages;
-  ItemInternalList items_internal(item_family->itemsInternal());
+  ItemInfoListView items_internal(item_family);
   for( Integer i=0, is=messages.size(); i<is; ++i ){
     ISerializeMessage* sm = messages[i];
     ISerializeMessage* new_sm = 0;
@@ -393,14 +391,14 @@ _getVariableValues(ItemVariableScalarRefT<Type>& variable,
   // Remplit le tableau des valeurs avec la valeur maximale possible
   // pour le type. Il suffit ensuite de faire un ReduceMin
   Type max_value = std::numeric_limits<Type>::max();
-  ItemInternalList internal_items(item_family->itemsInternal());
+  ItemInfoListView internal_items(item_family);
 
   for( Integer i=0; i<all_size; ++i ){
     Integer lid = all_local_ids[i];
     if (lid==NULL_ITEM_ID)
       all_values[i] = max_value;
     else{
-      all_values[i] = (internal_items[lid]->isOwn()) ? variable_a[lid] : max_value;
+      all_values[i] = (internal_items[lid].isOwn()) ? variable_a[lid] : max_value;
     }
   }
 

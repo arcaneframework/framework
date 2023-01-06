@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicParticleExchanger.cc                                   (C) 2000-2020 */
+/* BasicParticleExchanger.cc                                   (C) 2000-2023 */
 /*                                                                           */
 /* Echangeur de particules.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -311,7 +311,7 @@ _addItemsToSend(Int32ConstArrayView local_ids,
   if ((debug_exchange_items_level>=1 && m_print_info) || debug_exchange_items_level>=2){
     IParallelMng* pm = m_parallel_mng;
     Int32 rank = pm->commRank();
-    ItemInternalArrayView items = m_item_family->itemsInternal();
+    ParticleInfoListView items(m_item_family);
     Integer nb_print = math::min(5,id_size);
     for( Integer i=0; i<nb_print; ++i ){
       Particle part(items[local_ids[i]]);
@@ -453,7 +453,7 @@ _serializeMessage(ISerializeMessage* sm,
                   Int64Array& items_to_send_uid,
                   Int64Array& items_to_send_cells_uid)
 {
-  ItemInternalList internal_items(m_item_family->itemsInternal());
+  ParticleInfoListView internal_items(m_item_family);
 
   ISerializer* sbuf = sm->serializer();
   sbuf->setMode(ISerializer::ModeReserve);
@@ -571,7 +571,7 @@ _deserializeMessage(ISerializeMessage* message,
     
     // Converti les uniqueId() récupérée en localId() et pour les particules
     // renseigne la maille correspondante
-    ItemInternalList internal_items(m_item_family->itemsInternal());
+    ParticleInfoListView internal_items(m_item_family);
       
     for( Integer z=0; z<nb_item; ++z ){
       Particle item = internal_items[items_to_create_local_id[z]];

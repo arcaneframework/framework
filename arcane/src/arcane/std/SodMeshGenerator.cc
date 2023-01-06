@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SodMeshGenerator.cc                                         (C) 2000-2020 */
+/* SodMeshGenerator.cc                                         (C) 2000-2023 */
 /*                                                                           */
 /* Service de génération d'un maillage à-la 'sod'.                           */
 /*---------------------------------------------------------------------------*/
@@ -545,9 +545,9 @@ generateMesh(IPrimaryMesh* mesh)
     Int32UniqueArray nodes_local_id(nodes_unique_id.size());
     IItemFamily* family = mesh->itemFamily(IK_Node);
     family->itemsUniqueIdToLocalId(nodes_local_id,nodes_unique_id);
-    ItemInternalList nodes_internal(family->itemsInternal());
+    NodeInfoListView nodes_internal(family);
     for( Integer i=0; i<nb_node_local_id; ++i ){
-      const Node& node = nodes_internal[nodes_local_id[i]];
+      Node node = nodes_internal[nodes_local_id[i]];
       Int64 unique_id = nodes_unique_id[i];
       nodes_coord_var[node] = nodes_infos.lookupValue(unique_id).m_coord;
       //info() << "Set coord " << ItemPrinter(node) << " coord=" << nodes_coord_var[node]

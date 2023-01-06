@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshEnvironment.cc                                          (C) 2000-2022 */
+/* MeshEnvironment.cc                                          (C) 2000-2023 */
 /*                                                                           */
 /* Milieu d'un maillage.                                                     */
 /*---------------------------------------------------------------------------*/
@@ -255,7 +255,7 @@ computeMaterialIndexes()
   }
   {
     Integer nb_mat = m_true_materials.size();
-    ItemInternalList items_internal(cell_family->itemsInternal());
+    ItemInfoListView items_internal(cell_family->itemInfoListView());
     for( Integer i=0; i<nb_mat; ++i ){
       MeshMaterial* mat = m_true_materials[i];
       Int32 mat_id = mat->id();
@@ -338,7 +338,7 @@ _addItemsToIndexer(const VariableCellInt32& nb_env_per_cell,
                    Int32ConstArrayView local_ids)
 {
   IItemFamily* cell_family = cells().itemFamily();
-  ItemInternalList items_internal(cell_family->itemsInternal());
+  CellInfoListView items_internal(cell_family);
 
   ComponentItemListBuilder list_builder(var_indexer,var_indexer->maxIndexInMultipleArray());
 
@@ -387,7 +387,7 @@ _addItemsDirect(const VariableCellInt32& nb_env_per_cell,MeshMaterial* mat,
           << " mat=" << mat->name();
 
   IItemFamily* cell_family = cells().itemFamily();
-  ItemInternalList items_internal(cell_family->itemsInternal());
+  CellInfoListView items_internal(cell_family);
 
   MeshMaterialVariableIndexer* var_indexer = mat->variableIndexer();
   Integer nb_to_add = local_ids.size();
@@ -433,7 +433,7 @@ _removeItemsDirect(MeshMaterial* mat,Int32ConstArrayView local_ids,
   info(4) << "MeshEnvironment::removeItemsDirect mat=" << mat->name();
 
   IItemFamily* cell_family = cells().itemFamily();
-  ItemInternalList items_internal(cell_family->itemsInternal());
+  CellInfoListView items_internal(cell_family);
 
   Integer nb_to_remove = local_ids.size();
 

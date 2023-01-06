@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshModificationTester.cc                                   (C) 2000-2013 */
+/* MeshModificationTester.cc                                   (C) 2000-2023 */
 /*                                                                           */
 /* Service du test de la modification du maillage.                           */
 /*---------------------------------------------------------------------------*/
@@ -23,7 +23,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_BEGIN_NAMESPACE
+namespace ArcaneTest
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -261,8 +262,7 @@ _refineCells()
     modifier->addNodes(nodes_to_add.constView(),new_nodes_local_id.view());
     mesh()->nodeFamily()->endUpdate();
     info() << String::format("NODES ADDED = {0}",nb_node_added);
-    ItemInternalArrayView new_nodes = mesh()->nodeFamily()->itemsInternal();
-    info() << String::format("NB TOTAL NODE = {0}",new_nodes.size());
+    NodeInfoListView new_nodes(mesh()->nodeFamily());
     for(int i=0; i<nb_node_added; ++i){
       Int32 new_local_id = new_nodes_local_id[i];
       Item new_node = new_nodes[new_local_id];
@@ -305,7 +305,7 @@ _searchMaxUniqueId(ItemGroup group)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

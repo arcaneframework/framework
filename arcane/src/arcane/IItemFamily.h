@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IItemFamily.h                                               (C) 2000-2022 */
+/* IItemFamily.h                                               (C) 2000-2023 */
 /*                                                                           */
 /* Interface d'une famille d'entités.                                        */
 /*---------------------------------------------------------------------------*/
@@ -44,8 +44,11 @@ class IItemFamilyPolicyMng;
 class IItemFamilyTopologyModifier;
 class ItemInternalConnectivityList;
 class Properties;
-namespace mesh{
+namespace mesh
+{
   class ItemDataList;
+  class DynamicMesh;
+  class ItemFamily;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -105,6 +108,10 @@ namespace mesh{
  */
 class IItemFamily
 {
+  friend class ItemGroupImplPrivate;
+  friend class mesh::DynamicMesh;
+  friend class mesh::ItemFamily;
+
  public:
 
   virtual ~IItemFamily() {} //<! Libère les ressources
@@ -134,8 +141,13 @@ class IItemFamily
    */
   virtual Int32 maxLocalId() const =0;
 
+ public:
+
+  // TODO: a supprimer. Utiliser itemInfoListView à la place
   //! Tableau interne des entités
   virtual ItemInternalArrayView itemsInternal() =0;
+
+ public:
 
   //! Vue sur la liste d'informations sur les entités
   virtual ItemInfoListView itemInfoListView() =0;

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* BasicRayMeshIntersection.cc                                 (C) 2000-2022 */
+/* BasicRayMeshIntersection.cc                                 (C) 2000-2023 */
 /*                                                                           */
 /* Service basique de calcul d'intersection entre segments et maillage.      */
 /*---------------------------------------------------------------------------*/
@@ -762,7 +762,7 @@ compute(IItemFamily* ray_family,
       Integer gfi_byte_size = arcaneCheckArraySize(global_founds_info_bytes.size()/sizeof(FoundInfo));
       ConstArrayView<FoundInfo> global_founds_info(gfi_byte_size,(const FoundInfo*)global_founds_info_bytes.data());
       Integer nb_total_found = global_founds_info.size();
-      ItemInternalList rays = ray_family->itemsInternal();
+      ParticleInfoListView rays(ray_family);
       rays_face.fill(NULL_ITEM_LOCAL_ID);
       distances.fill(0.0);
       VariableItemInt32& rays_new_owner = ray_family->itemsNewOwner();

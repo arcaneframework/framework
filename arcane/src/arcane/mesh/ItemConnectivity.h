@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemConnectivity.h                                          (C) 2000-2016 */
+/* ItemConnectivity.h                                          (C) 2000-2023 */
 /*                                                                           */
 /* External connectivities. First version with DoF                           */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_DOF_CONNECTIVITY_H
-#define ARCANE_DOF_CONNECTIVITY_H
+#ifndef ARCANE_MESH_ITEMCONNECTIVITY_H
+#define ARCANE_MESH_ITEMCONNECTIVITY_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -30,7 +30,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -139,8 +140,8 @@ public:
     */
     // Needed for IFPEN applicative test: eventually returns a null item (reasonable for perf ?)
     if (m_item_property[item] != NULL_ITEM_LOCAL_ID)
-      return Item(_targetFamily()->itemsInternal()[m_item_property[item]]);
-    else return Item();
+      return _targetFamily()->itemInfoListView()[m_item_property[item]];
+    return Item();
   }
 
   ItemScalarProperty<Int32>& itemProperty() {return m_item_property;}
@@ -441,8 +442,7 @@ class ItemMultiArrayConnectivityT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

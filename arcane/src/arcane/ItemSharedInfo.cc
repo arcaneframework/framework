@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemSharedInfo.cc                                           (C) 2000-2022 */
+/* ItemSharedInfo.cc                                           (C) 2000-2023 */
 /*                                                                           */
 /* Informations communes à plusieurs entités.                                */
 /*---------------------------------------------------------------------------*/
@@ -19,6 +19,8 @@
 #include "arcane/IMesh.h"
 #include "arcane/IItemFamily.h"
 #include "arcane/ItemInternal.h"
+#include "arcane/ItemInfoListView.h"
+#include "arcane/Item.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -117,11 +119,12 @@ _init(eItemKind ik)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ItemInternalArrayView ItemSharedInfo::
-_parents() const
+ItemInternal* ItemSharedInfo::
+_parent(Int32 id) const
 {
   // En pointant vers le bon champ du MeshItemInternalList dans le maillage parent
-  return m_items->mesh->itemFamily(m_item_kind)->parentFamily()->itemsInternal();
+  // TODO GG: on pourrait conserver une fois pour toute l'instance de 'ItemInfoListView'
+  return m_items->mesh->itemFamily(m_item_kind)->parentFamily()->itemInfoListView()[id].internal();
 }
 
 /*---------------------------------------------------------------------------*/

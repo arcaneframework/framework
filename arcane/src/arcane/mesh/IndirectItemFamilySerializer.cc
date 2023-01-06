@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IndirectItemFamilySerializer.cc                             (C) 2000-2016 */
+/* IndirectItemFamilySerializer.cc                             (C) 2000-2023 */
 /*                                                                           */
 /* Sérialisation/Désérialisation indirecte des familles d'entités.           */
 /*---------------------------------------------------------------------------*/
@@ -13,15 +13,16 @@
 
 #include "arcane/ISerializer.h"
 #include "arcane/IItemFamily.h"
-#include "arcane/ItemInternal.h"
+#include "arcane/ItemInfoListView.h"
+#include "arcane/Item.h"
 
 #include "arcane/mesh/IndirectItemFamilySerializer.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -40,7 +41,7 @@ void IndirectItemFamilySerializer::
 serializeItems(ISerializer* sbuf,Int32ConstArrayView local_ids)
 {
   const Integer nb_item = local_ids.size();
-  ItemInternalList items_internal(m_family->itemsInternal());
+  ItemInfoListView items_internal(m_family);
 
   switch(sbuf->mode()){
   case ISerializer::ModeReserve:
@@ -52,8 +53,8 @@ serializeItems(ISerializer* sbuf,Int32ConstArrayView local_ids)
     {
       Int64UniqueArray particle_unique_ids(nb_item);
       for( Integer z=0; z<nb_item; ++z ){
-        ItemInternal* item = items_internal[ local_ids[z] ];
-        particle_unique_ids[z] = item->uniqueId().asInt64();
+        Item item = items_internal[ local_ids[z] ];
+        particle_unique_ids[z] = item.uniqueId().asInt64();
       }
       sbuf->putSpan(particle_unique_ids);
     }
@@ -95,8 +96,7 @@ family() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

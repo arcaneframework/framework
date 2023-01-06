@@ -1403,7 +1403,7 @@ setItems(Int32ConstArrayView items_local_id)
 class ItemGroupImpl::ItemSorter
 {
  public:
-  ItemSorter(ItemInternalList items) : m_items(items){}
+  ItemSorter(ItemInfoListView items) : m_items(items){}
  public:
   void sort(Int32ArrayView local_ids) const
   {
@@ -1414,7 +1414,7 @@ class ItemGroupImpl::ItemSorter
     return m_items[lid1]->uniqueId() < m_items[lid2]->uniqueId();
   }
  private:
-  ItemInternalList m_items;
+  ItemInfoListView m_items;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -1428,7 +1428,7 @@ setItems(Int32ConstArrayView items_local_id,bool do_sort)
     return;
   }
   UniqueArray<Int32> sorted_lid(items_local_id);
-  ItemSorter sorter(itemFamily()->itemsInternal());
+  ItemSorter sorter(itemFamily()->itemInfoListView());
   sorter.sort(sorted_lid);
   setItems(sorted_lid);
 }

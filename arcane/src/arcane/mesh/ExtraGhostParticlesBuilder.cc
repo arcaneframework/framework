@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ExtraGhostParticlesBuilder.cc                               (C) 2000-2022 */
+/* ExtraGhostParticlesBuilder.cc                               (C) 2000-2023 */
 /*                                                                           */
 /* Construction des mailles fantômes supplémentaires.                        */
 /*---------------------------------------------------------------------------*/
@@ -182,7 +182,7 @@ _computeForFamily(ParticleFamily* particle_family)
   Int32UniqueArray cells_local_id;
   Int32UniqueArray particles_owner;
   IItemFamily* cell_family = m_mesh->cellFamily();
-  ItemInternalList internal_cells(cell_family->itemsInternal());
+  CellInfoListView internal_cells(cell_family);
 
   // Réception des particules
   for( Integer i=0, ns=exchanger->nbReceiver(); i<ns; ++i ){

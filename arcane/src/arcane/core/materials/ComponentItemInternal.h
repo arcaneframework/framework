@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ComponentItemInternal.h                                     (C) 2000-2022 */
+/* ComponentItemInternal.h                                     (C) 2000-2023 */
 /*                                                                           */
 /* Partie interne d'une maille multi-matériau.                               */
 /*---------------------------------------------------------------------------*/
@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/ItemInternal.h"
+#include "arcane/Item.h"
 #include "arcane/core/materials/MatVarIndex.h"
 
 /*---------------------------------------------------------------------------*/
@@ -99,15 +100,15 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
   //! Composant supérieur (0 si aucun)
   ComponentItemInternal* superItem() const { return m_super_component_item; }
 
-  void setSuperAndGlobalItem(ComponentItemInternal* cii,ItemInternal* ii)
+  void setSuperAndGlobalItem(ComponentItemInternal* cii,Item ii)
   {
     m_super_component_item = cii;
-    m_global_item = ii;
+    m_global_item = ii.internal();
   }
 
-  void setGlobalItem(ItemInternal* ii)
+  void setGlobalItem(Item ii)
   {
-    m_global_item = ii;
+    m_global_item = ii.internal();
   }
 
   //! Nombre de sous-composants.

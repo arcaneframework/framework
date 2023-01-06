@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -14,7 +14,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_BEGIN_NAMESPACE
+namespace ArcaneTest
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -167,7 +168,7 @@ amrRefine(RealArray& values, const Real trigRefine)
   mesh()->modifier()->endUpdate();
 
   // Now callBack the values
-  ItemInternalList cells = mesh()->cellFamily()->itemsInternal();
+  CellInfoListView cells(mesh()->cellFamily());
   //ItemInternalList faces = mesh()->faceFamily()->itemsInternal();
   for (Integer i = 0, is = cells_lid.size(); i < is; ++i) {
     Int32 lid = cells_lid[i];
@@ -210,7 +211,7 @@ amrCoarsen(RealArray& values, const Real trigCoarsen)
   Int32UniqueArray children_to_coarsen_lid;
   mesh::FaceReorienter faceReorienter(mesh());
   mesh::DynamicMesh* dynMesh = dynamic_cast<mesh::DynamicMesh*>(mesh());
-  ItemInternalList cells = mesh()->cellFamily()->itemsInternal();
+  CellInfoListView cells(mesh()->cellFamily());
   Int32UniqueArray faces_to_attach;
   Int32UniqueArray lids_to_be_attached;
 
@@ -352,11 +353,14 @@ amrCoarsen(RealArray& values, const Real trigCoarsen)
   if (parents_to_coarsen_lid.size() == 0)
     return false;
 
+  CellInfoListView cells_view(mesh()->cellFamily());
+  FaceInfoListView faces_view(mesh()->faceFamily());
+
   // On remove les mailles
   for (Integer j = 0, js = children_to_coarsen_lid.size(); j < js; ++j) {
     //const Cell &cell=cellFamily()->itemsInternal()[children_to_coarsen_lid[j]];
     //debug()<<"\t\t[FaceAmrCoarsen] REMOVING CELL_"<<children_to_coarsen_lid[j];
-    dynMesh->trueCellFamily().removeCell(mesh()->cellFamily()->itemsInternal()[children_to_coarsen_lid[j]]);
+    dynMesh->trueCellFamily().removeCell(cells_view[children_to_coarsen_lid[j]].internal());
     //dynMesh->trueCellFamily().detachCell(cellFamily()->itemsInternal()[children_to_coarsen_lid[j]]);
     /* ENUMERATE_FACE(iFace, cell.faces()){
 		dynMesh->trueFaceFamily().populateBackFrontCellsFromParentFaces(cell.internal());
@@ -367,16 +371,16 @@ amrCoarsen(RealArray& values, const Real trigCoarsen)
 
   // On ré-attache les faces
   for (Integer j = 0, js = faces_to_attach.size(); j < js; ++j) {
-    const Face& face = mesh()->faceFamily()->itemsInternal()[faces_to_attach[j]];
+    Face face = faces_view[faces_to_attach[j]];
     if (face.internal()->flags() & ItemInternal::II_HasBackCell) {
       debug() << "\t\t[FaceAmrCoarsen] NOW patch face_" << faces_to_attach[j] << ": " << face.backCell().localId() << "->" << lids_to_be_attached[j];
       //dynMesh->trueFaceFamily().replaceFrontCellToFace(face.internal(),cellFamily()->itemsInternal()[lids_to_be_attached[j]]);
-      dynMesh->trueFaceFamily().addFrontCellToFace(face.internal(), mesh()->cellFamily()->itemsInternal()[lids_to_be_attached[j]]);
+      dynMesh->trueFaceFamily().addFrontCellToFace(face.internal(), cells_view[lids_to_be_attached[j]]);
     }
     else {
       debug() << "\t\t[FaceAmrCoarsen] NOW patch face_" << faces_to_attach[j] << ": " << face.frontCell().localId() << "->" << lids_to_be_attached[j];
       //dynMesh->trueFaceFamily().replaceBackCellToFace(face.internal(),cellFamily()->itemsInternal()[lids_to_be_attached[j]]);
-      dynMesh->trueFaceFamily().addBackCellToFace(face.internal(), mesh()->cellFamily()->itemsInternal()[lids_to_be_attached[j]]);
+      dynMesh->trueFaceFamily().addBackCellToFace(face.internal(), cells_view[lids_to_be_attached[j]]);
     }
     faceReorienter.checkAndChangeOrientation(face);
   }
@@ -416,7 +420,7 @@ amrCoarsen(RealArray& values, const Real trigCoarsen)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

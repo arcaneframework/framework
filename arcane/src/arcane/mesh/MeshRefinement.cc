@@ -323,14 +323,13 @@ MeshRefinement::update()
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-void
-MeshRefinement::
+
+void MeshRefinement::
 flagCellToRefine(Int32ConstArrayView lids)
 {
-  ItemInternalList cells = m_mesh->cellFamily()->itemsInternal();
-  for (Integer i = 0, is = lids.size(); i < is; i++)
-  {
-    ItemInternal* item = cells[lids[i]];
+  ItemInfoListView cells(m_mesh->cellFamily());
+  for (Integer i = 0, is = lids.size(); i < is; i++) {
+    ItemInternal* item = cells[lids[i]].internal();
     //ARCANE_ASSERT((item->type() ==IT_Hexaedron8),(""));
     Integer f = item->flags();
     f |= ItemFlags::II_Refine;
@@ -341,14 +340,12 @@ flagCellToRefine(Int32ConstArrayView lids)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-MeshRefinement::
+void MeshRefinement::
 flagCellToCoarsen(Int32ConstArrayView lids)
 {
-  ItemInternalList cells = m_mesh->cellFamily()->itemsInternal();
-  for (Integer i = 0, is = lids.size(); i < is; i++)
-  {
-    ItemInternal* item = cells[lids[i]];
+  ItemInfoListView cells(m_mesh->cellFamily());
+  for (Integer i = 0, is = lids.size(); i < is; i++) {
+    ItemInternal* item = cells[lids[i]].internal();
     //ARCANE_ASSERT((item->type() ==IT_Hexaedron8),(""));
     Integer f = item->flags();
     f |= ItemFlags::II_Coarsen;
@@ -1865,28 +1862,27 @@ _interpolateData(const Int64Array& cells_to_refine)
   const Int32 nb_cells = cells_to_refine.size();
   Int32UniqueArray lids(nb_cells);
   m_mesh->cellFamily()->itemsUniqueIdToLocalId(lids.view(), cells_to_refine.constView());
-  ItemInternalList internals = m_mesh->cellFamily()->itemsInternal();
+  ItemInfoListView internals(m_mesh->cellFamily());
 
   UniqueArray<ItemInternal*> cells_to_refine_internals(nb_cells);
-  for (Integer i = 0; i < nb_cells; i++)
-  {
-    cells_to_refine_internals[i] = (internals[lids[i]]);
+  for (Integer i = 0; i < nb_cells; i++) {
+    cells_to_refine_internals[i] = internals[lids[i]].internal();
   }
   m_call_back_mng->callCallBacks(cells_to_refine_internals, Prolongation);
   _update(cells_to_refine_internals) ;
 }
 
-void MeshRefinement::_update(ArrayView<Int64> cells_to_refine_uids)
+void MeshRefinement::
+_update(ArrayView<Int64> cells_to_refine_uids)
 {
   CHECKPERF( m_perf_counter.start(PerfCounter::UPDATEMAP) )
   const Int32 nb_cells = cells_to_refine_uids.size();
   Int32UniqueArray lids(nb_cells);
   m_mesh->cellFamily()->itemsUniqueIdToLocalId(lids, cells_to_refine_uids);
-  ItemInternalList internals = m_mesh->cellFamily()->itemsInternal();
+  ItemInfoListView internals(m_mesh->cellFamily());
   UniqueArray<ItemInternal*> cells_to_refine(nb_cells);
-  for (Integer i = 0; i < nb_cells; i++)
-  {
-    cells_to_refine[i] = (internals[lids[i]]);
+  for (Integer i = 0; i < nb_cells; i++) {
+    cells_to_refine[i] = internals[lids[i]].internal();
   }
   m_node_finder.updateData(cells_to_refine) ;
   m_face_finder.updateData(cells_to_refine) ;
@@ -1896,7 +1892,8 @@ void MeshRefinement::_update(ArrayView<Int64> cells_to_refine_uids)
   CHECKPERF( m_perf_counter.stop(PerfCounter::UPDATEMAP) )
 }
 
-void MeshRefinement::_update(ArrayView<ItemInternal*> cells_to_refine)
+void MeshRefinement::
+_update(ArrayView<ItemInternal*> cells_to_refine)
 {
   CHECKPERF( m_perf_counter.start(PerfCounter::UPDATEMAP) )
   m_node_finder.updateData(cells_to_refine) ;
@@ -1931,7 +1928,7 @@ void MeshRefinement::
 _updateItemOwner(Int32ArrayView cell_to_remove_lids)
 {
   IItemFamily* cell_family = m_mesh->cellFamily();
-  ItemInternalList cells_list = cell_family->itemsInternal();
+  ItemInfoListView cells_list(cell_family);
 
   VariableItemInt32& nodes_owner(m_mesh->nodeFamily()->itemsNewOwner());
   VariableItemInt32& faces_owner(m_mesh->faceFamily()->itemsNewOwner());
@@ -1944,7 +1941,7 @@ _updateItemOwner(Int32ArrayView cell_to_remove_lids)
   std::map<Int32, bool> marker;
 
   for (Integer i = 0, is = cell_to_remove_lids.size(); i < is; i++){
-    ItemInternal* item = cells_list[cell_to_remove_lids[i]];
+    ItemInternal* item = cells_list[cell_to_remove_lids[i]].internal();
     for (ItemEnumerator inode(item->internalNodes()); inode(); ++inode){
       ItemInternal* node = inode->internal();
 
