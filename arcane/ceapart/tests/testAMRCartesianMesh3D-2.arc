@@ -32,19 +32,47 @@
      <cartesian>
        <nsd>2 2 2</nsd>
        <origine>0.0 0.0 0.0</origine>
-       <lx nx='2'>2.0</lx>
-       <ly ny='2'>2.0</ly>
-       <lz nz='2'>2.0</lz>
+       <lx nx='2'>4.0</lx>
+       <ly ny='2'>4.0</ly>
+       <lz nz='2'>4.0</lz>
      </cartesian>
    </meshgenerator>
  </maillage>
 
  <a-m-r-cartesian-mesh-tester>
    <refinement-3d>
+     <position>0.0 0.0 0.0</position>
+     <length>2.0 2.0 2.0</length>
+   </refinement-3d>
+    <refinement-3d>
+     <position>0.0 0.0 2.0</position>
+     <length>2.0 2.0 2.0</length>
+   </refinement-3d>
+    <refinement-3d>
+     <position>0.0 2.0 0.0</position>
+     <length>2.0 2.0 2.0</length>
+   </refinement-3d>
+    <refinement-3d>
+     <position>0.0 2.0 2.0</position>
+     <length>2.0 2.0 2.0</length>
+   </refinement-3d>
+    <refinement-3d>
      <position>2.0 0.0 0.0</position>
      <length>2.0 2.0 2.0</length>
    </refinement-3d>
-   <expected-number-of-cells-in-patchs>8</expected-number-of-cells-in-patchs>
+    <refinement-3d>
+     <position>2.0 0.0 2.0</position>
+     <length>2.0 2.0 2.0</length>
+   </refinement-3d>
+    <refinement-3d>
+     <position>2.0 2.0 0.0</position>
+     <length>2.0 2.0 2.0</length>
+   </refinement-3d>
+    <refinement-3d>
+     <position>2.0 2.0 2.0</position>
+     <length>2.0 2.0 2.0</length>
+   </refinement-3d>
+   <expected-number-of-cells-in-patchs>8 8 8 8 8 8 8 8 8</expected-number-of-cells-in-patchs>
    <nodes-uid-hash></nodes-uid-hash>
    <faces-uid-hash></faces-uid-hash>
    <cells-uid-hash></cells-uid-hash>
