@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NumArray.h                                                  (C) 2000-2022 */
+/* NumArray.h                                                  (C) 2000-2023 */
 /*                                                                           */
 /* Tableaux multi-dimensionnel pour les types numériques.                    */
 /*---------------------------------------------------------------------------*/
@@ -367,22 +367,6 @@ class NumArrayIntermediate<DataType, 1, ExtentType, LayoutPolicy>
 
  public:
 
-  //! Valeur pour l'élément \a i et la composante \a a
-  template <typename X = DataType, typename SubConstType = typename NumericTraitsT<X>::SubscriptConstType>
-  SubConstType operator()(Int32 i, Int32 a) const { return m_span(i, a); }
-  //! Valeur pour l'élément \a i et la composante \a [a][b]
-  template <typename X = DataType, typename SubType = typename NumericTraitsT<X>::SubscriptType>
-  SubType operator()(Int32 i, Int32 a) { return m_span(i, a); }
-
-  //! Valeur pour l'élément \a i et la composante \a a
-  template <typename X = DataType, typename Sub2ConstType = typename NumericTraitsT<X>::Subscript2ConstType>
-  Sub2ConstType operator()(Int32 i, Int32 a, Int32 b) const { return m_span(i, a, b); }
-  //! Valeur pour l'élément \a i et la composante \a [a][b]
-  template <typename X = DataType, typename Sub2Type = typename NumericTraitsT<X>::Subscript2Type>
-  Sub2Type operator()(Int32 i, Int32 a, Int32 b) { return m_span(i, a, b); }
-
- public:
-
   constexpr operator SpanType() { return this->span(); }
   constexpr operator ConstSpanType() const { return this->constSpan(); }
 };
@@ -452,22 +436,6 @@ class NumArrayIntermediate<DataType, 2, ExtentType, LayoutPolicy>
   {
     return m_span(i, j);
   }
-
- public:
-
-  //! Valeur pour l'élément \a i et la composante \a a
-  template <typename X = DataType, typename SubConstType = typename NumericTraitsT<X>::SubscriptConstType>
-  SubConstType operator()(Int32 i, Int32 j, Int32 a) const { return m_span(i, j, a); }
-  //! Valeur pour l'élément \a i et la composante \a [a][b]
-  template <typename X = DataType, typename SubType = typename NumericTraitsT<X>::SubscriptType>
-  SubType operator()(Int32 i, Int32 j, Int32 a) { return m_span(i, j, a); }
-
-  //! Valeur pour l'élément \a i et la composante \a a
-  template <typename X = DataType, typename Sub2ConstType = typename NumericTraitsT<X>::Subscript2ConstType>
-  Sub2ConstType operator()(Int32 i, Int32 j, Int32 a, Int32 b) const { return m_span(i, j, a, b); }
-  //! Valeur pour l'élément \a i et la composante \a [a][b]
-  template <typename X = DataType, typename Sub2Type = typename NumericTraitsT<X>::Subscript2Type>
-  Sub2Type operator()(Int32 i, Int32 j, Int32 a, Int32 b) { return m_span(i, j, a, b); }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -539,22 +507,6 @@ class NumArrayIntermediate<DataType, 3, ExtentType, LayoutPolicy>
   {
     return m_span(i, j, k);
   }
-
- public:
-
-  //! Valeur pour l'élément \a i et la composante \a a
-  template <typename X = DataType, typename SubConstType = typename NumericTraitsT<X>::SubscriptConstType>
-  SubConstType operator()(Int32 i, Int32 j, Int32 k, Int32 a) const { return m_span(i, j, k, a); }
-  //! Valeur pour l'élément \a i et la composante \a [a][b]
-  template <typename X = DataType, typename SubType = typename NumericTraitsT<X>::SubscriptType>
-  SubType operator()(Int32 i, Int32 j, Int32 k, Int32 a) { return m_span(i, j, k, a); }
-
-  //! Valeur pour l'élément \a i et la composante \a a
-  template <typename X = DataType, typename Sub2ConstType = typename NumericTraitsT<X>::Subscript2ConstType>
-  Sub2ConstType operator()(Int32 i, Int32 j, Int32 k, Int32 a, Int32 b) const { return m_span(i, j, k, a, b); }
-  //! Valeur pour l'élément \a i et la composante \a [a][b]
-  template <typename X = DataType, typename Sub2Type = typename NumericTraitsT<X>::Subscript2Type>
-  Sub2Type operator()(Int32 i, Int32 j, Int32 k, Int32 a, Int32 b) { return m_span(i, j, k, a, b); }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -631,22 +583,6 @@ class NumArrayIntermediate<DataType, 4, Extents, LayoutPolicy>
   {
     return m_span(i, j, k, l);
   }
-
- public:
-
-  //! Valeur pour l'élément \a i et la composante \a a
-  template <typename X = DataType, typename SubConstType = typename NumericTraitsT<X>::SubscriptConstType>
-  SubConstType operator()(Int32 i, Int32 j, Int32 k, Int32 l, Int32 a) const { return m_span(i, j, k, l, a); }
-  //! Valeur pour l'élément \a i et la composante \a [a][b]
-  template <typename X = DataType, typename SubType = typename NumericTraitsT<X>::SubscriptType>
-  SubType operator()(Int32 i, Int32 j, Int32 k, Int32 l, Int32 a) { return m_span(i, j, k, l, a); }
-
-  //! Valeur pour l'élément \a i et la composante \a a
-  template <typename X = DataType, typename Sub2ConstType = typename NumericTraitsT<X>::Subscript2ConstType>
-  Sub2ConstType operator()(Int32 i, Int32 j, Int32 k, Int32 l, Int32 a, Int32 b) const { return m_span(i, j, k, l, a, b); }
-  //! Valeur pour l'élément \a i et la composante \a [a][b]
-  template <typename X = DataType, typename Sub2Type = typename NumericTraitsT<X>::Subscript2Type>
-  Sub2Type operator()(Int32 i, Int32 j, Int32 k, Int32 l, Int32 a, Int32 b) { return m_span(i, j, k, l, a, b); }
 };
 
 /*---------------------------------------------------------------------------*/
