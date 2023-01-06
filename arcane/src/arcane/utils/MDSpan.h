@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MDSpan.h                                                    (C) 2000-2022 */
+/* MDSpan.h                                                    (C) 2000-2023 */
 /*                                                                           */
 /* Vue sur un tableaux multi-dimensionnel pour les types numériques.         */
 /*---------------------------------------------------------------------------*/
@@ -195,12 +195,6 @@ class MDSpanIntermediate<DataType, 1, Extents, LayoutPolicy>
   constexpr ARCCORE_HOST_DEVICE DataType* ptrAt(Int32 i) const { return m_ptr + offset(i); }
   //! Valeur pour l'élément \a i
   constexpr ARCCORE_HOST_DEVICE DataType operator[](Int32 i) const { return m_ptr[offset(i)]; }
-  //! Valeur pour l'élément \a i et la composante \a a
-  template <typename X = DataType, typename SubType = typename NumericTraitsT<X>::SubscriptType>
-  constexpr ARCCORE_HOST_DEVICE SubType operator()(Int32 i, Int32 a) const { return m_ptr[offset(i)][a]; }
-  //! Valeur pour l'élément \a i et la composante \a [a][b]
-  template <typename X = DataType, typename Sub2Type = typename NumericTraitsT<X>::Subscript2Type>
-  constexpr ARCCORE_HOST_DEVICE Sub2Type operator()(Int32 i, Int32 a, Int32 b) const { return m_ptr[offset(i)][a][b]; }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -259,18 +253,6 @@ class MDSpanIntermediate<DataType, 2, Extents, LayoutPolicy>
   constexpr ARCCORE_HOST_DEVICE DataType& operator()(Int32 i, Int32 j) const { return m_ptr[offset(i, j)]; }
   //! Pointeur sur la valeur pour l'élément \a i,j
   constexpr ARCCORE_HOST_DEVICE DataType* ptrAt(Int32 i, Int32 j) const { return m_ptr + offset(i, j); }
-  //! Valeur pour l'élément \a i et la composante \a a
-  template <typename X = DataType, typename SubType = typename NumericTraitsT<X>::SubscriptType>
-  constexpr ARCCORE_HOST_DEVICE SubType operator()(Int32 i, Int32 j, Int32 a) const
-  {
-    return m_ptr[offset(i, j)][a];
-  }
-  //! Valeur pour l'élément \a i et la composante \a [a][b]
-  template <typename X = DataType, typename Sub2Type = typename NumericTraitsT<X>::Subscript2Type>
-  constexpr ARCCORE_HOST_DEVICE Sub2Type operator()(Int32 i, Int32 j, Int32 a, Int32 b) const
-  {
-    return m_ptr[offset(i, j)][a][b];
-  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -332,18 +314,6 @@ class MDSpanIntermediate<DataType, 3, Extents, LayoutPolicy>
   ARCCORE_HOST_DEVICE DataType& operator()(Int32 i, Int32 j, Int32 k) const { return m_ptr[offset(i, j, k)]; }
   //! Pointeur sur la valeur pour l'élément \a i,j,k
   ARCCORE_HOST_DEVICE DataType* ptrAt(Int32 i, Int32 j, Int32 k) const { return m_ptr + offset(i, j, k); }
-  //! Valeur pour l'élément \a i et la composante \a a
-  template <typename X = DataType, typename SubType = typename NumericTraitsT<X>::SubscriptType>
-  ARCCORE_HOST_DEVICE SubType operator()(Int32 i, Int32 j, Int32 k, Int32 a) const
-  {
-    return m_ptr[offset(i, j, k)][a];
-  }
-  //! Valeur pour l'élément \a i et la composante \a [a][b]
-  template <typename X = DataType, typename Sub2Type = typename NumericTraitsT<X>::Subscript2Type>
-  ARCCORE_HOST_DEVICE Sub2Type operator()(Int32 i, Int32 j, Int32 k, Int32 a, Int32 b) const
-  {
-    return m_ptr[offset(i, j, k)][a][b];
-  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -416,18 +386,6 @@ class MDSpanIntermediate<DataType, 4, Extents, LayoutPolicy>
   constexpr ARCCORE_HOST_DEVICE DataType* ptrAt(Int32 i, Int32 j, Int32 k, Int32 l) const
   {
     return m_ptr + offset(i, j, k, l);
-  }
-  //! Valeur pour l'élément \a i et la composante \a a
-  template <typename X = DataType, typename SubType = typename NumericTraitsT<X>::SubscriptType>
-  constexpr ARCCORE_HOST_DEVICE SubType operator()(Int32 i, Int32 j, Int32 k, Int32 l, Int32 a) const
-  {
-    return m_ptr[offset(i, j, k, l)][a];
-  }
-  //! Valeur pour l'élément \a i et la composante \a [a][b]
-  template <typename X = DataType, typename Sub2Type = typename NumericTraitsT<X>::Subscript2Type>
-  constexpr ARCCORE_HOST_DEVICE Sub2Type operator()(Int32 i, Int32 j, Int32 k, Int32 l, Int32 a, Int32 b) const
-  {
-    return m_ptr[offset(i, j, k, l)][a][b];
   }
 };
 

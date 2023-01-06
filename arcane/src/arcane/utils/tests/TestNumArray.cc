@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -446,7 +446,7 @@ TEST(NumArray,RealN)
   {
     NumArray<Real2,MDDim1> a(5);
     a(2) = Real2(0.0,3.2);
-    a(3,1) = 2.0;
+    a(3)(1) = 2.0;
     ASSERT_EQ(a(3).y,2.0);
   }
 
@@ -454,7 +454,7 @@ TEST(NumArray,RealN)
     NumArray<Real3,MDDim1> a(5);
     const Real3 v(0.0,3.2,5.6);
     a(0) = v;
-    a(4,1) = 4.0;
+    a(4)(1) = 4.0;
     ASSERT_EQ(a(4).y,4.0);
     ASSERT_EQ(a(0),v);
   }
@@ -464,12 +464,12 @@ TEST(NumArray,RealN)
     const Real2 v0(1.2,1.7);
     const Real2x2 v(Real2(3.2,5.6), Real2(3.4,1.7));
     a(0) = v;
-    a(3,1,0) = v0.x;
-    a(3,1,1) = v0.y;
-    a(4,1,0) = 4.0;
+    a(3)(1,0) = v0.x;
+    a(3)(1,1) = v0.y;
+    a(4)(1,0) = 4.0;
     ASSERT_EQ(a(4).y.x,4.0);
     ASSERT_EQ(a(0),v);
-    ASSERT_EQ(a(3,1),v0);
+    ASSERT_EQ(a(3)(1),v0);
   }
 
   {
@@ -477,13 +477,13 @@ TEST(NumArray,RealN)
     const Real3 v0(1.2,3.4,1.7);
     const Real3x3 v(Real3(0.0,3.2,5.6), Real3(1.2,3.4,1.7), Real3(9.2,1.4,5.0));
     a(0) = v;
-    a(3,1,0) = v0.x;
-    a(3,1,1) = v0.y;
-    a(3,1,2) = v0.z;
-    a(4,1,2) = 4.0;
+    a(3)(1)(0) = v0.x;
+    a(3)(1)(1) = v0.y;
+    a(3)(1)(2) = v0.z;
+    a(4)(1)(2) = 4.0;
     ASSERT_EQ(a(4).y.z,4.0);
     ASSERT_EQ(a(0),v);
-    ASSERT_EQ(a(3,1),v0);
+    ASSERT_EQ(a(3)(1),v0);
   }
 }
 
