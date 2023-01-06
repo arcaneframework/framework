@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DoFTester.cc                                                (C) 2000-2016 */
+/* DoFTester.cc                                                (C) 2000-2023 */
 /*                                                                           */
 /* Comment on file content                                                   */
 /*---------------------------------------------------------------------------*/
@@ -45,7 +45,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_BEGIN_NAMESPACE
+namespace ArcaneTest
+{
 
 using namespace Arcane;
 
@@ -373,7 +374,8 @@ _node2DoFConnectivity()
     }
   }
   // Outside an enumerate, for a one-shot use
-  Node my_node(mesh()->nodeFamily()->itemsInternal()[0]);
+  NodeInfoListView nodes_view(mesh()->nodeFamily());
+  Node my_node(nodes_view[0]);
   ConnectivityItemVector dof_vec2 = node2dof._connectedItems(my_node);
   ENUMERATE_DOF(idof,dof_vec2){
     dof_uid = idof->uniqueId().asInt64();
@@ -460,7 +462,8 @@ _cell2DoFsConnectivity()
     }
   }
   // For one-shot use
-  Cell my_cell(mesh()->cellFamily()->itemsInternal()[0]);
+  CellInfoListView cells_view(mesh()->cellFamily());
+  Cell my_cell(cells_view[0]);
   ConnectivityItemVector dof_vec2 = cell2dofs(my_cell);
   ENUMERATE_DOF(idof,dof_vec2){
     dof_uid = idof->uniqueId().asInt64();
@@ -541,7 +544,8 @@ _Face2DoFsMultiConnectivity()
       }
     }
   // For one-shot use
-   Face my_face(mesh()->faceFamily()->itemsInternal()[0]);
+   FaceInfoListView faces_view(mesh()->faceFamily());
+   Face my_face(faces_view[0]);
    ConnectivityItemVector dof_vec2 = face2dofs(my_face);
    ENUMERATE_DOF(idof,dof_vec2){
      dof_uid = idof->uniqueId().asInt64();
@@ -1397,7 +1401,7 @@ ARCANE_REGISTER_SERVICE_DOFTESTER(DoFTester,DoFTester);
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

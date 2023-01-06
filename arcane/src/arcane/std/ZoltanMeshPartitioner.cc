@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ZoltanMeshPartitioner.cc                                    (C) 2000-2021 */
+/* ZoltanMeshPartitioner.cc                                    (C) 2000-2023 */
 /*                                                                           */
 /* Partitioneur de maillage utilisant la bibliotheque Zoltan.                */
 /*---------------------------------------------------------------------------*/
@@ -830,7 +830,7 @@ partitionMesh(bool initial_partition,Int32 nb_part)
   invertArrayLid2LidCompacted();
 
   {
-    ItemInternalList items_internal = m_cell_family->itemsInternal();
+    CellInfoListView items_internal(m_cell_family);
     Integer nb_export = numExport;
     info() <<"numExport = "<<numExport;
     for( Integer i=0; i<nb_export; ++i ){

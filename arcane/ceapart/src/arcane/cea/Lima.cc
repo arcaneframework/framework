@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Lima.cc                                                     (C) 2000-2022 */
+/* Lima.cc                                                     (C) 2000-2023 */
 /*                                                                           */
 /* Lecture/Ecriture d'un fichier au format Lima.                             */
 /*---------------------------------------------------------------------------*/
@@ -1367,10 +1367,10 @@ writeMeshToFile(IMesh* mesh,const String& file_name)
   Integer mesh_nb_face = face_family->nbItem();
   Integer mesh_nb_cell = cell_family->nbItem();
 
-  ItemInternalList nodes(node_family->itemsInternal());
-  ItemInternalList edges(edge_family->itemsInternal());
-  ItemInternalList faces(face_family->itemsInternal());
-  ItemInternalList cells(cell_family->itemsInternal());
+  NodeInfoListView nodes(node_family);
+  EdgeInfoListView edges(edge_family);
+  FaceInfoListView faces(face_family);
+  CellInfoListView cells(cell_family);
 
   UniqueArray<Lima::Noeud> lm_nodes(mesh_nb_node);
 

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemSharedInfo.h                                            (C) 2000-2022 */
+/* ItemSharedInfo.h                                            (C) 2000-2023 */
 /*                                                                           */
 /* Informations communes à plusieurs entités.                                */
 /*---------------------------------------------------------------------------*/
@@ -175,7 +175,7 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   {
     // Actuellement un seul parent est supporté donc \a aindex doit valoir 0.
     ARCANE_ASSERT((aindex==0),("Only one parent access implemented"));
-    return _parents()[m_parent_item_ids[local_id]];
+    return _parent(m_parent_item_ids[local_id]);
   }
   Int32 _parentLocalIdV2(Int32 local_id,[[maybe_unused]] Integer aindex) const
   {
@@ -306,7 +306,7 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
 
   void _init(eItemKind ik);
   //! Version non optimisée mais robuste d'accès à l'ItemInternalArrayView parent
-  ItemInternalArrayView _parents() const;
+  ItemInternal* _parent(Int32 id) const;
 };
 
 /*---------------------------------------------------------------------------*/

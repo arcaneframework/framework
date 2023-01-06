@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshExchange.h                                              (C) 2000-2020 */
+/* MeshExchange.h                                              (C) 2000-2023 */
 /*                                                                           */
 /* Echange des entités de maillages entre entre sous-domaines.               */
 /*---------------------------------------------------------------------------*/
@@ -87,8 +87,8 @@ class MeshExchange
   //! AMR
   void _computeMeshConnectivityInfos2(Int32ConstArrayView cells_new_owner);
   void _addTreeCellToSend(ArrayView< std::set<Int32> > items_to_send,
-                          Int32 local_id,Int32 cell_local_id,const ItemInternalArrayView& cells);
-  void _addTreeItemToSend(Int32 cell_local_id,const ItemInternalArrayView& cells);
+                          Int32 local_id,Int32 cell_local_id,CellInfoListView cells);
+  void _addTreeItemToSend(Int32 cell_local_id, CellInfoListView cells);
   void _addItemToSend2(ArrayView< std::set<Int32> > items_to_send,
                       Int32 item_local_id,Int32 cell_local_id); 
   void _familyTree (Int32Array& family,Cell item, const bool reset=true) const;

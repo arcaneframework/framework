@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshIntersectionUnitTest.cc                                 (C) 2000-2022 */
+/* MeshIntersectionUnitTest.cc                                 (C) 2000-2023 */
 /*                                                                           */
 /* Service de test des variables.                                            */
 /*---------------------------------------------------------------------------*/
@@ -150,7 +150,7 @@ executeTest()
   mi->compute(ray_family,rays_position,rays_direction,rays_orig_face,user_values,
               rays_intersection,rays_distance,rays_face);
   info() << "Print rays infos";
-  ItemInternalList faces_internal(mesh()->faceFamily()->itemsInternal());
+  FaceInfoListView faces_internal(mesh()->faceFamily());
   ENUMERATE_PARTICLE(ipart,ray_family->allItems()){
     Particle ray = *ipart;
     Int32 face_lid = rays_face[ipart];

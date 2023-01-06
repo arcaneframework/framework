@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MshMeshReader.cc                                            (C) 2000-2022 */
+/* MshMeshReader.cc                                            (C) 2000-2023 */
 /*                                                                           */
 /* Lecture/Ecriture d'un fichier au format MSH.				                       */
 /*---------------------------------------------------------------------------*/
@@ -771,7 +771,7 @@ _addFaceGroup(IMesh* mesh, MeshV4ElementsBlock& block, const String& group_name)
   UniqueArray<Integer> face_nodes_index(item_nb_node);
 
   IItemFamily* node_family = mesh->nodeFamily();
-  ItemInternalList mesh_nodes(node_family->itemsInternal());
+  NodeInfoListView mesh_nodes(node_family);
 
   // Réordonne les identifiants des faces pour se conformer à Arcane et retrouver
   // la face dans le maillage

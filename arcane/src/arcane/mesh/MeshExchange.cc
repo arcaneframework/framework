@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshExchange.cc                                             (C) 2000-2022 */
+/* MeshExchange.cc                                             (C) 2000-2023 */
 /*                                                                           */
 /* Echange un maillage entre entre sous-domaines.                            */
 /*---------------------------------------------------------------------------*/
@@ -695,10 +695,11 @@ _computeMeshConnectivityInfos2(Int32ConstArrayView cells_new_owner)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-inline void MeshExchange::
+
+void MeshExchange::
 _addTreeCellToSend(ArrayView< std::set<Int32> > items_to_send,
                    Int32 local_id,Int32 cell_local_id,
-                   const ItemInternalArrayView& cells)
+                   CellInfoListView cells)
 {
   Int32ConstArrayView new_owners = m_neighbour_cells_new_owner->at(cell_local_id);
   
@@ -726,7 +727,7 @@ _addTreeCellToSend(ArrayView< std::set<Int32> > items_to_send,
 /*---------------------------------------------------------------------------*/
 
 void MeshExchange::
-_addTreeItemToSend(Int32 cell_local_id,const ItemInternalArrayView& cells)
+_addTreeItemToSend(Int32 cell_local_id,CellInfoListView cells)
 {
   Int32UniqueArray tree_cells_lid;
   
@@ -805,9 +806,9 @@ _computeItemsToSend2()
   Int32ConstArrayView cells_new_owner(m_cell_family->itemsNewOwner().asArray());
   Int32ConstArrayView faces_new_owner(face_family->itemsNewOwner().asArray());
 
-  ItemInternalArrayView cells = m_cell_family->itemsInternal();
+  CellInfoListView cells(m_cell_family);
   ENUMERATE_CELL(icell,m_cell_family->allItems().ownActiveCellGroup()){
-	  const Cell& cell = *icell;
+	  Cell cell = *icell;
 	  _addTreeCellToSend(cells_to_send,icell.itemLocalId(),icell.itemLocalId(),cells);
     
     if(cell.level() == 0){

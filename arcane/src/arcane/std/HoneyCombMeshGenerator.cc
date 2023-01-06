@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* HoneyCombMeshGenerator.cc                                   (C) 2000-2022 */
+/* HoneyCombMeshGenerator.cc                                   (C) 2000-2023 */
 /*                                                                           */
 /* Service de génération de maillage hexagonal.                              */
 /*---------------------------------------------------------------------------*/
@@ -110,7 +110,7 @@ class SimpleSequentialMeshBuilder
     node_family->itemsUniqueIdToLocalId(local_ids, unique_ids);
 
     VariableNodeReal3& mesh_nodes_coordinates(m_mesh->nodesCoordinates());
-    ItemInternalList nodes(node_family->itemsInternal());
+    NodeInfoListView nodes(node_family);
 
     for (Integer i = 0; i < nb_node; ++i) {
       Node node{ nodes[local_ids[i]] };

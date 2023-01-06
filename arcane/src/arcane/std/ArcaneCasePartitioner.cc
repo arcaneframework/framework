@@ -1,17 +1,15 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneCasePartitioner.cc                                    (C) 2000-2016 */
+/* ArcaneCasePartitioner.cc                                    (C) 2000-2023 */
 /*                                                                           */
 /* Service de partitionnement externe du maillage.                           */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/StringBuilder.h"
@@ -52,7 +50,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -544,13 +543,13 @@ _partitionMesh(Int32 nb_part)
       Int64UniqueArray nodesUniqueId(taillesTab[0]);
       Int64UniqueArray cellsUniqueId(taillesTab[1]);
 
-      ItemInternalList nodes = new_mesh->nodeFamily()->itemsInternal();
+      NodeInfoListView nodes(new_mesh->nodeFamily());
       for( int j=0; j<taillesTab[0]; ++j ){
         Node node = nodes[j];
         nodesUniqueId[j] = node.uniqueId();
       }
 
-      ItemInternalList cells = new_mesh->cellFamily()->itemsInternal();
+      CellInfoListView cells(new_mesh->cellFamily());
       for( int j=0; j<taillesTab[1]; ++j ){
         Cell cell = cells[j];
         cellsUniqueId[j] = cell.uniqueId();
@@ -821,11 +820,11 @@ _addGhostGroups(IMesh* new_mesh, Array<Cell>& cells_selected_for_new_mesh, Varia
     Int32UniqueArray liste_lid;
     Integer nbnodes = new_mesh->nodeFamily()->nbItem();
     liste_lid.reserve(nbnodes);
-    ItemInternalList nodes = new_mesh->nodeFamily()->itemsInternal();
+    NodeInfoListView nodes(new_mesh->nodeFamily());
     for (int j= 0 ; j < nbnodes ; ++j) {
       Node node= nodes[j];
       if (true_nodes_owner[node] == id_loc)
-	liste_lid.add(node.localId());
+        liste_lid.add(node.localId());
     }
 
     ItemGroup groupe_loc = new_mesh->nodeFamily()->findGroup("LOCALN", true);
@@ -846,7 +845,7 @@ ARCANE_REGISTER_SERVICE_ARCANECASEPARTITIONER(ArcaneCasePartitioner,ArcaneCasePa
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemRefinement.cc                                           (C) 2000-2022 */
+/* ItemRefinement.cc                                           (C) 2000-2023 */
 /*                                                                           */
 /* liste de méthodes de manipulation d'un maillage AMR.                      */
 /*---------------------------------------------------------------------------*/
@@ -177,7 +177,7 @@ refineOneCell(Cell item, MeshRefinement& mesh_refinement)
       m_nodes_lid.resize(m_nb_node_to_add);
       m_mesh->modifier()->addNodes(m_nodes_unique_id, m_nodes_lid);
       m_mesh->nodeFamily()->endUpdate();
-      ItemInternalList nodes(m_mesh->nodeFamily()->itemsInternal());
+      NodeInfoListView nodes(m_mesh->nodeFamily());
       for (Integer i = 0; i < m_nb_node_to_add; ++i) {
         m_orig_nodes_coords[nodes[m_nodes_lid[i]]] = m_nodes_to_create_coords[i];
       }
@@ -194,9 +194,9 @@ refineOneCell(Cell item, MeshRefinement& mesh_refinement)
       m_cells_lid.resize(m_nb_cell_to_add);
       m_mesh->modifier()->addHChildrenCells(item.internal(), m_nb_cell_to_add, m_cells_infos, m_cells_lid);
       //! \todo vérfier l'ordre des enfants après leurs création
-      ItemInternalList cells(m_mesh->cellFamily()->itemsInternal());
+      ItemInfoListView cells(m_mesh->cellFamily());
       for (Integer i = 0; i < m_nb_cell_to_add; ++i){
-        ItemInternal* child = cells[m_cells_lid[i]];
+        ItemInternal* child = cells[m_cells_lid[i]].internal();
         Integer cf = child->flags();
         cf |= ItemFlags::II_JustAdded;
         child->setFlags(cf);

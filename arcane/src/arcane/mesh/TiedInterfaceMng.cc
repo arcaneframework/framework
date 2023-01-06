@@ -1,17 +1,15 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TiedInterfaceMng.cc                                         (C) 2000-2016 */
+/* TiedInterfaceMng.cc                                         (C) 2000-2023 */
 /*                                                                           */
 /* Gestionnaire des interfaces liées.                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/mesh/TiedInterfaceMng.h"
 #include "arcane/mesh/DynamicMesh.h"
@@ -32,12 +30,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -297,8 +291,8 @@ readTiedInterfacesFromDump()
 
   IItemFamily* node_family = m_mesh->nodeFamily();
   FaceFamily& face_family = m_mesh->trueFaceFamily();
-  ItemInternalList nodes_internal(node_family->itemsInternal());
-  ItemInternalList faces_internal(face_family.itemsInternal());
+  NodeInfoListView nodes_internal(node_family);
+  FaceInfoListView faces_internal(&face_family);
   UniqueArray<TiedNode> nodes;
   UniqueArray<TiedFace> faces;
 
@@ -432,8 +426,7 @@ _deleteTiedInterfaces()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

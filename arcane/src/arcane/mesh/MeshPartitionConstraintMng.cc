@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshPartitionConstraintMng.cc                               (C) 2000-2022 */
+/* MeshPartitionConstraintMng.cc                               (C) 2000-2023 */
 /*                                                                           */
 /* Gestionnaire de contraintes de partitionnement de maillage.               */
 /*---------------------------------------------------------------------------*/
@@ -317,7 +317,7 @@ changeOwners()
   IItemFamily* cell_family = m_mesh->cellFamily();
   cell_family->itemsUniqueIdToLocalId(cells_local_id,cells_uid,false);
   VariableItemInt32& cells_new_owner = cell_family->itemsNewOwner();
-  ItemInternalList cells_internal = cell_family->itemsInternal();
+  CellInfoListView cells_internal(cell_family);
   for( Integer i=0; i<nb_cell; ++i ){
     Int32 lid = cells_local_id[i];
     if (lid!=NULL_ITEM_LOCAL_ID){

@@ -1,17 +1,15 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TiedInterface.cc                                            (C) 2000-2020 */
+/* TiedInterface.cc                                            (C) 2000-2023 */
 /*                                                                           */
 /* Informations sur les semi-conformitées du maillage.                       */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/String.h"
 #include "arcane/utils/HashTableMap.h"
@@ -1865,11 +1863,11 @@ build(const FaceGroup& slave_interface,bool is_structured)
 
     Int32UniqueArray slave_nodes_lid(infos.m_slave_nodes_uid.size());
     node_family->itemsUniqueIdToLocalId(slave_nodes_lid,infos.m_slave_nodes_uid);
-    ItemInternalList nodes(node_family->itemsInternal());
+    NodeInfoListView nodes(node_family);
 
     Int32UniqueArray slave_faces_lid(infos.m_slave_faces_uid.size());
     face_family->itemsUniqueIdToLocalId(slave_faces_lid,infos.m_slave_faces_uid);
-    ItemInternalList faces(face_family->itemsInternal());
+    FaceInfoListView faces(face_family);
 
     for( Integer i_master=0; i_master<nb_master_face; ++i_master ){
       Integer nb_slave_node = infos.m_master_faces_nb_slave_node[i_master];
@@ -1946,8 +1944,8 @@ rebuild(ITiedInterfaceRebuilder* rebuilder,
   IItemFamily* node_family = m_mesh->itemFamily(IK_Node);
   IItemFamily* face_family = m_mesh->itemFamily(IK_Face);
 
-  ItemInternalList nodes(node_family->itemsInternal());
-  ItemInternalList faces(face_family->itemsInternal());
+  NodeInfoListView nodes(node_family);
+  FaceInfoListView faces(face_family);
 
   Integer master_index = 0;
   Int32UniqueArray work_nodes_local_id;

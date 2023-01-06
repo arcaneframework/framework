@@ -48,7 +48,7 @@ executeReduce(const Int32ConstArrayView * info)
 {
   IItemFamily * family = m_mesh->cellFamily();
   IItemFamily * parent_family = m_mesh->parentGroup().itemFamily();
-  ItemInternalArrayView parent_internals = parent_family->itemsInternal();
+  ItemInfoListView parent_internals(parent_family);
 
   // info contient les localIds supprimés de l'ancien groupe,
   const Int32ConstArrayView & parent_deleted_lids = *info;
@@ -73,7 +73,7 @@ executeReduce(const Int32ConstArrayView * info)
 
 #ifdef ARCANE_DEBUG
   ITraceMng * traceMng = m_mesh->traceMng();
-  ItemInternalArrayView internals = family->itemsInternal();
+  ItemInfoListView internals(family);
   for(Integer i=0;i<parent_uids.size();++i) {
     traceMng->debug(Trace::High) << "Reduce with item " 
                                  << ItemPrinter(internals[to_delete_lids[i]])
