@@ -7,7 +7,7 @@
 
 Written by CEA/IFPEN and Contributors
 
-(C) Copyright 2000-2021- CEA/IFPEN. All rights reserved.
+(C) Copyright 2000-2023 CEA/IFPEN. All rights reserved.
 
 All content is the property of the respective authors or their employers.
 
