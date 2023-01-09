@@ -74,6 +74,9 @@ endfunction()
 
 # Ajoute un test sequentiel avec reprise
 function(ARCANE_ADD_TEST_CHECKPOINT_SEQUENTIAL test_name case_file nb_continue nb_iteration)
+  if(VERBOSE)
+    message(STATUS "    ADD TEST CHECKPOINT SEQUENTIEL OPT=${ARCANE_TEST_CASEPATH} ${case_file}")
+  endif()
   ARCANE_GET_CASE_PATH(${case_file})
   arcane_add_test_direct(NAME ${test_name}
     COMMAND ${ARCANE_TEST_LAUNCH_COMMAND} -c ${nb_continue} -m ${nb_iteration} ${ARGN} ${full_case_file}
@@ -206,11 +209,16 @@ macro(arcane_add_test_parallel_all test_name case_file nb_proc1 nb_proc2)
 endmacro()
 
 # Ajoute un test parallele avec reprise
-function(ARCANE_ADD_TEST_CHECKPOINT_PARALLEL test_name case_file)
+function(ARCANE_ADD_TEST_CHECKPOINT_PARALLEL test_name case_file nb_proc nb_continue nb_iteration)
   if(TARGET arcane_mpi)
-    arcane_add_test_direct(NAME ${test_name}_4proc
-      COMMAND ${ARCANE_TEST_LAUNCH_COMMAND} -c ${nb_continue} -m ${nb_iteration} -n 4 ${ARGN} ${ARCANE_TEST_CASEPATH}/${case_file}
+    if(VERBOSE)
+      MESSAGE(STATUS "    ADD TEST CHECKPOINT PARALLEL MPI OPT=${test_name} ${case_file}")
+    endif()
+    ARCANE_GET_CASE_PATH(${case_file})
+    arcane_add_test_direct(NAME ${test_name}_${nb_proc}proc
+      COMMAND ${ARCANE_TEST_LAUNCH_COMMAND} -c ${nb_continue} -m ${nb_iteration} -n ${nb_proc} ${ARGN} ${full_case_file}
       WORKING_DIRECTORY ${ARCANE_TEST_WORKDIR})
+    set_tests_properties(${test_name}_${nb_proc}proc PROPERTIES PROCESSORS ${nb_proc})
   endif()
 endfunction()
 
@@ -239,7 +247,7 @@ endmacro()
 # nb_iteration: nombre d'iteration pour chaque execution
 macro(ARCANE_ADD_TEST_CHECKPOINT test_name case_file nb_continue nb_iteration)
   ARCANE_ADD_TEST_CHECKPOINT_SEQUENTIAL(${test_name} ${case_file} ${nb_continue} ${nb_iteration} ${ARGN})
-  ARCANE_ADD_TEST_CHECKPOINT_PARALLEL(${test_name} ${case_file} ${nb_iteration} ${nb_continue} ${ARGN})
+  ARCANE_ADD_TEST_CHECKPOINT_PARALLEL(${test_name} ${case_file} 4 ${nb_continue} ${nb_iteration} ${ARGN})
 endmacro()
 
 macro(arcane_add_test_script test_name script_file)
