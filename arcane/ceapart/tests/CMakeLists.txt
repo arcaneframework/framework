@@ -112,9 +112,16 @@ endif()
 arcane_add_test_sequential(adiadvection-1 testAdiAdvection-1.arc "-m 20")
 arcane_add_accelerator_test_sequential(adiadvection-1 testAdiAdvection-1.arc "-m 20")
 arcane_add_test(amr-cartesian2D-1 testAMRCartesianMesh2D-1.arc "-m 20")
+arcane_add_test(amr-cartesian2D-2 testAMRCartesianMesh2D-2.arc "-m 20")
 arcane_add_test(amr-cartesian3D-1 testAMRCartesianMesh3D-1.arc "-m 20")
-arcane_add_test(amr-checkpoint-cartesian2D-1 testAMRCartesianMesh2D-1.arc -c 3 -m 5)
-arcane_add_test(amr-checkpoint-cartesian3D-1 testAMRCartesianMesh3D-1.arc -c 3 -m 5)
+arcane_add_test_sequential(amr-cartesian3D-2 testAMRCartesianMesh3D-2.arc "-m 20")
+arcane_add_test_parallel(amr-cartesian3D-2 testAMRCartesianMesh3D-2.arc 8 "-m 20")
+
+arcane_add_test_checkpoint(amr-checkpoint-cartesian2D-1 testAMRCartesianMesh2D-1.arc 3 5)
+arcane_add_test_checkpoint(amr-checkpoint-cartesian2D-2 testAMRCartesianMesh2D-2.arc 3 5)
+arcane_add_test_checkpoint(amr-checkpoint-cartesian3D-1 testAMRCartesianMesh3D-1.arc 3 5)
+arcane_add_test_checkpoint_sequential(amr-checkpoint-cartesian3D-2 testAMRCartesianMesh3D-2.arc 3 5)
+arcane_add_test_checkpoint_parallel(amr-checkpoint-cartesian3D-2 testAMRCartesianMesh3D-2.arc 8 3 5)
 
 # Tests sur le renumérotation des faces en cartésien
 # L'idéal est d'avoir pas mal de sous-domaines pour être sur que le

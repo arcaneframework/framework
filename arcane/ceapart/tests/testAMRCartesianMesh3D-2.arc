@@ -30,39 +30,48 @@
  <maillage amr="true">
    <meshgenerator>
      <cartesian>
-       <nsd>2 2 1</nsd>
+       <nsd>2 2 2</nsd>
        <origine>0.0 0.0 0.0</origine>
-       <lx nx='2' prx='1.0'>2.0</lx>
-       <lx nx='4' prx='1.2'>3.0</lx>
-       <lx nx='5' prx='1.3'>3.0</lx>
-       <lx nx='6' prx='1.4'>4.0</lx>
-
-       <ly ny='2' pry='1.0'>2.0</ly>
-       <ly ny='3' pry='1.1'>4.0</ly>
-       <ly ny='4' pry='1.3'>5.0</ly>
-
-       <lz nz='8' prz='1.0'>2.0</lz>
+       <lx nx='2'>4.0</lx>
+       <ly ny='2'>4.0</ly>
+       <lz nz='2'>4.0</lz>
      </cartesian>
    </meshgenerator>
  </maillage>
 
  <a-m-r-cartesian-mesh-tester>
    <refinement-3d>
-     <position>1.0 2.0 -0.1</position>
-     <length>2.0 4.0 0.5</length>
+     <position>0.0 0.0 0.0</position>
+     <length>2.0 2.0 2.0</length>
    </refinement-3d>
-   <refinement-3d>
-     <position>1.4 3.0 0.3</position>
-     <length>0.5 1.0 1.0</length>
+    <refinement-3d>
+     <position>0.0 0.0 2.0</position>
+     <length>2.0 2.0 2.0</length>
    </refinement-3d>
-   <!-- <refinement-3d>
-     <position>4.0 5.0 0.2</position>
-     <length>3.0 4.0 0.8</length>
-   </refinement-3d> -->
-   <expected-number-of-cells-in-patchs>1224 144 40</expected-number-of-cells-in-patchs>
-   <nodes-uid-hash>175b353632c1d63ac14a4362598afbc0</nodes-uid-hash>
-   <faces-uid-hash>a295b25dbf1e29280b0b1c0d64e071dd</faces-uid-hash>
-   <cells-uid-hash>bf5ab5f9a9d86816397e022417641d1a</cells-uid-hash>
+    <refinement-3d>
+     <position>0.0 2.0 0.0</position>
+     <length>2.0 2.0 2.0</length>
+   </refinement-3d>
+    <refinement-3d>
+     <position>0.0 2.0 2.0</position>
+     <length>2.0 2.0 2.0</length>
+   </refinement-3d>
+    <refinement-3d>
+     <position>2.0 0.0 0.0</position>
+     <length>2.0 2.0 2.0</length>
+   </refinement-3d>
+    <refinement-3d>
+     <position>2.0 0.0 2.0</position>
+     <length>2.0 2.0 2.0</length>
+   </refinement-3d>
+    <refinement-3d>
+     <position>2.0 2.0 0.0</position>
+     <length>2.0 2.0 2.0</length>
+   </refinement-3d>
+   <expected-number-of-cells-in-patchs>8 8 8 8 8 8 8 8</expected-number-of-cells-in-patchs>
+   <nodes-uid-hash>4924c41673a98fa2b7ca257f84c75dd2</nodes-uid-hash>
+   <faces-uid-hash>3098df318d2f128195062aed3f8e3118</faces-uid-hash>
+   <cells-uid-hash>e8b1b15951e58e18300ba9395f316418</cells-uid-hash>
  </a-m-r-cartesian-mesh-tester>
 
  <arcane-protections-reprises>
