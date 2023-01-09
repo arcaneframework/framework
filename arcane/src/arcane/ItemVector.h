@@ -211,7 +211,7 @@ class ItemVectorT
   //! Enumérateur
   ItemEnumeratorT<ItemType> enumerator() const
   {
-    return ItemEnumeratorT<ItemType>(m_shared_info, m_local_ids.data());
+    return ItemEnumeratorT<ItemType>(m_shared_info, m_local_ids);
   }
 };
 

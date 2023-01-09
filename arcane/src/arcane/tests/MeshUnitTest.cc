@@ -1099,11 +1099,27 @@ _testItemVectorView()
   if (cells.size()<13)
     return;
   UniqueArray<Int32> local_ids;
+  Int64 total_ref_uid = 0;
   ENUMERATE_(Cell,icell,cells){
     local_ids.add(icell.itemLocalId());
+    total_ref_uid += icell.itemLocalId();
   }
   CellVector cell_vector(cell_family,local_ids);
   CellVectorView cell_vector_view(cell_vector);
+  {
+    Int64 total_uid_cell_vector = 0;
+    ENUMERATE_(Cell,icell,cell_vector){
+      total_uid_cell_vector += icell.itemLocalId();
+    }
+    vc.areEqual(total_ref_uid,total_uid_cell_vector,"SameCellVector");
+  }
+  {
+    Int64 total_uid_cell_vector_view = 0;
+    ENUMERATE_(Cell,icell,cell_vector_view){
+      total_uid_cell_vector_view += icell.itemLocalId();
+    }
+    vc.areEqual(total_ref_uid,total_uid_cell_vector_view,"SameCellVectorView");
+  }
 
   auto cell_iter = cell_vector_view.begin();
   auto cell_iter2 = cell_iter;

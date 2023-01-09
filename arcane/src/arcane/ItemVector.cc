@@ -88,6 +88,13 @@ template class ItemVectorViewT<Cell>;
 template class ItemVectorViewT<Particle>;
 template class ItemVectorViewT<DoF>;
 
+template class ItemVectorT<Node>;
+template class ItemVectorT<Edge>;
+template class ItemVectorT<Face>;
+template class ItemVectorT<Cell>;
+template class ItemVectorT<Particle>;
+template class ItemVectorT<DoF>;
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
