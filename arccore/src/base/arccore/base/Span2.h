@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Span2.h                                                     (C) 2000-2022 */
+/* Span2.h                                                     (C) 2000-2023 */
 /*                                                                           */
 /* Vue d'un tableau 2D dont les dimensions utilisent des Int64.              */
 /*---------------------------------------------------------------------------*/
@@ -346,7 +346,7 @@ operator==(Span2<const T> rhs, Span2<const T> lhs)
 {
   Span2Impl<const T,Int64> a = rhs;
   Span2Impl<const T,Int64> b = lhs;
-  return a==b;
+  return impl::areEqual2D(a,b);
 }
 
 template<typename T> inline bool

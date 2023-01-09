@@ -40,7 +40,9 @@ class ArrayIndexBase
 {
  protected:
 
-  ArrayIndexBase() = default;
+  // Note: on pourrait utiliser '= default' mais cela ne passe pas
+  // avec VS2017 car pour lui le constructeur n'est pas 'constexpr'
+  constexpr ArrayIndexBase() {}
   constexpr ArrayIndexBase(std::array<Int32, RankValue> _id)
   : m_indexes(_id)
   {}
