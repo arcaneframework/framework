@@ -199,11 +199,11 @@ void Neo::Mesh::scheduleSetItemCoords(Neo::Family& item_family, Neo::FutureItemR
   item_family.addProperty<Neo::utils::Real3>(coord_prop_name);
   ItemRange& added_items = future_added_item_range;
   m_mesh_graph->addAlgorithm(
-          Neo::InProperty{item_family, item_family.lidPropName()},
+          Neo::InProperty{item_family, item_family.lidPropName(), Neo::PropertyStatus::ExistingProperty}, // TODO handle property status in Property Holder constructor
           Neo::OutProperty{item_family,coord_prop_name},
           [item_coords{std::move(item_coords)},&added_items]
           (Neo::ItemLidsProperty const& item_lids_property,
-                                     Neo::PropertyT<Neo::utils::Real3>& item_coords_property){
+           Neo::PropertyT<Neo::utils::Real3>& item_coords_property){
             std::cout << "Algorithm: register item coords" << std::endl;
             if (item_coords_property.isInitializableFrom(added_items)) {
               item_coords_property.init(

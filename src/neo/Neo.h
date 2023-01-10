@@ -919,7 +919,7 @@ public:
     return _lidProp().size();
   }
 
-  ItemRange& all() {
+  ItemRange& all() const {
     auto& lid_prop = _lidProp();
 //      if (m_all.isEmpty() || lid_prop.hasChanged()) // todo hasChanged ??? possible ? voir le cycle de modif des propriétés
     m_all = lid_prop.values();

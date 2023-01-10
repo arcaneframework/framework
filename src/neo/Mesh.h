@@ -339,7 +339,7 @@ public:
    */
   Neo::MeshBase& internalMeshGraph() noexcept { return *m_mesh_graph;}
 
-private:
+  public:
 
   [[nodiscard]] std::string _itemCoordPropertyName(Family const& item_family) const {return item_family.name()+"_item_coordinates";}
 };
