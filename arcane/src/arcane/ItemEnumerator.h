@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemEnumerator.h                                            (C) 2000-2022 */
+/* ItemEnumerator.h                                            (C) 2000-2023 */
 /*                                                                           */
 /* Enumérateur sur des groupes d'entités du maillage.                        */
 /*---------------------------------------------------------------------------*/
@@ -77,6 +77,7 @@ class ItemEnumerator
   ItemEnumerator() = default;
   ItemEnumerator(const ItemInternalVectorView& view) : BaseClass(view,nullptr){}
   ItemEnumerator(const ItemInternalEnumerator& rhs) : BaseClass(rhs,true){}
+  ItemEnumerator(const impl::ItemIndexedListView<DynExtent>& rhs) : BaseClass(rhs){}
 
   // TODO: make deprecated
   ItemEnumerator(const ItemInternalPtr* items,const Int32* local_ids,Integer n, const ItemGroupImpl* agroup = nullptr)

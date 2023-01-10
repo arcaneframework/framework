@@ -566,6 +566,7 @@ set( ARCANE_SOURCES
   ItemVector.h
   ItemVector.cc
   ItemInternalVectorView.h
+  ItemIndexedListView.h
   ISharedReference.h
   ITimeStats.h
   IInitialPartitioner.h

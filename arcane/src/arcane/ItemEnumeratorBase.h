@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemEnumeratorBase.h                                        (C) 2000-2022 */
+/* ItemEnumeratorBase.h                                        (C) 2000-2023 */
 /*                                                                           */
 /* Classe de base des énumérateurs sur les entités du maillage.              */
 /*---------------------------------------------------------------------------*/
@@ -103,7 +103,7 @@ class ItemEnumeratorBase
   const Int32* ARCANE_RESTRICT m_local_ids;
   Int32 m_index;
   Int32 m_count;
-  const ItemGroupImpl* m_group_impl; // pourrait être retiré en mode release si nécessaire
+  const ItemGroupImpl* m_group_impl = nullptr; // pourrait être retiré en mode release si nécessaire
 
  protected:
 
@@ -160,6 +160,8 @@ class ItemEnumeratorBaseT
 
   ItemEnumeratorBaseT(const ItemEnumerator& rhs);
   ItemEnumeratorBaseT(const ItemInternalEnumerator& rhs);
+  ItemEnumeratorBaseT(const impl::ItemIndexedListView<DynExtent>& view)
+  : ItemEnumeratorBaseT(view.m_shared_info, view.constLocalIds()){}
 
  public:
 

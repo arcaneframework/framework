@@ -156,7 +156,7 @@ executeFunctor()
   ItemType* null_type = 0;
   ENUMERATE_ITEM(iitem,parent){
     ItemInternal* i = (*iitem).internal();
-    for( ItemEnumerator iitem2(i->internalItems(null_type)); iitem2.hasNext(); ++iitem2 ){
+    for( ItemEnumerator iitem2(i->itemList(null_type)); iitem2.hasNext(); ++iitem2 ){
       Int32 lid = iitem2.localId();
       if (markers[lid]==0){
         markers[lid] = 1;

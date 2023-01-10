@@ -299,10 +299,10 @@ _computeEdgesUniqueIdsParallel3()
 
   // Marque tous les noeuds frontieres car ce sont ceux qu'il faudra envoyer
   ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,faces_map){
-    ItemInternal* face = nbid->value();
-    Integer face_nb_cell = face->nbCell();
+    Face face = nbid->value();
+    Integer face_nb_cell = face.nbCell();
     if (face_nb_cell==1){
-      for( Int32 ilid : face->internalNodes().localIds() )
+      for( Int32 ilid : face.nodeIds() )
         is_boundary_nodes[ilid] = true;
     }
   }

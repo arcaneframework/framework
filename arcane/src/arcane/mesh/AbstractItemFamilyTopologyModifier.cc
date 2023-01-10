@@ -64,7 +64,7 @@ _getItemIndex(const Int32* items,Integer nb_item,Int32 local_id)
 /*---------------------------------------------------------------------------*/
 
 inline Integer AbstractItemFamilyTopologyModifier::
-_getItemIndex(ItemInternalVectorView items,Int32 local_id)
+_getItemIndex(ItemVectorView items,Int32 local_id)
 {
   return _getItemIndex(items.localIds().data(),items.size(),local_id);
 }
@@ -159,7 +159,7 @@ findAndReplaceNode(ItemLocalId item_lid,ItemLocalId old_node_lid,
                   ItemLocalId new_node_lid)
 {
   ItemInternal* ii = m_family->itemInfoListView()[item_lid].internal();
-  Int32 index = _getItemIndex(ii->internalNodes(),old_node_lid);
+  Int32 index = _getItemIndex(ii->nodeList(),old_node_lid);
   this->replaceNode(ItemLocalId(ii->localId()),index,new_node_lid);
 }
 
@@ -171,7 +171,7 @@ findAndReplaceEdge(ItemLocalId item_lid,ItemLocalId old_edge_lid,
                    ItemLocalId new_edge_lid)
 {
   ItemInternal* ii = m_family->itemInfoListView()[item_lid].internal();
-  Int32 index = _getItemIndex(ii->internalEdges(),old_edge_lid);
+  Int32 index = _getItemIndex(ii->edgeList(),old_edge_lid);
   this->replaceEdge(ItemLocalId(ii->localId()),index,new_edge_lid);
 }
 
@@ -183,7 +183,7 @@ findAndReplaceFace(ItemLocalId item_lid,ItemLocalId old_face_lid,
                    ItemLocalId new_face_lid)
 {
   ItemInternal* ii = m_family->itemInfoListView()[item_lid].internal();
-  Int32 index = _getItemIndex(ii->internalFaces(),old_face_lid);
+  Int32 index = _getItemIndex(ii->faceList(),old_face_lid);
   this->replaceFace(ItemLocalId(ii->localId()),index,new_face_lid);
 }
 
@@ -195,7 +195,7 @@ findAndReplaceCell(ItemLocalId item_lid,ItemLocalId old_cell_lid,
                    ItemLocalId new_cell_lid)
 {
   ItemInternal* ii = m_family->itemInfoListView()[item_lid].internal();
-  Int32 index = _getItemIndex(ii->internalCells(),old_cell_lid);
+  Int32 index = _getItemIndex(ii->cellList(),old_cell_lid);
   this->replaceCell(ItemLocalId(ii->localId()),index,new_cell_lid);
 }
 

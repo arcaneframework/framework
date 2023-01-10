@@ -394,10 +394,10 @@ class ARCANE_CORE_EXPORT Item
   CellLocalId _cellId(Int32 index) const { return CellLocalId(_connectivity()->_cellLocalIdV2(m_local_id,index)); }
   Int32 _hParentId(Int32 index) const { return _connectivity()->_hParentLocalIdV2(m_local_id,index); }
   Int32 _hChildId(Int32 index) const { return _connectivity()->_hChildLocalIdV2(m_local_id,index); }
-  ItemInternalVectorView _internalNodes() const { return _connectivity()->nodesV2(m_local_id); }
-  ItemInternalVectorView _internalEdges() const { return _connectivity()->edgesV2(m_local_id); }
-  ItemInternalVectorView _internalFaces() const { return _connectivity()->facesV2(m_local_id); }
-  ItemInternalVectorView _internalCells() const { return _connectivity()->cellsV2(m_local_id); }
+  impl::ItemIndexedListView<DynExtent> _nodeList() const { return _connectivity()->nodeList(m_local_id); }
+  impl::ItemIndexedListView<DynExtent> _edgeList() const { return _connectivity()->edgeList(m_local_id); }
+  impl::ItemIndexedListView<DynExtent> _faceList() const { return _connectivity()->faceList(m_local_id); }
+  impl::ItemIndexedListView<DynExtent> _cellList() const { return _connectivity()->cellList(m_local_id); }
   NodeLocalIdView _nodeIds() const { return NodeLocalIdView::fromIds(_connectivity()->nodeLocalIdsV2(m_local_id)); }
   EdgeLocalIdView _edgeIds() const { return EdgeLocalIdView::fromIds(_connectivity()->edgeLocalIdsV2(m_local_id)); }
   FaceLocalIdView _faceIds() const { return FaceLocalIdView::fromIds(_connectivity()->faceLocalIdsV2(m_local_id)); }
@@ -601,13 +601,13 @@ class ARCANE_CORE_EXPORT Node
   CellLocalId cellId(Int32 i) const { return _cellId(i); }
 
   //! Liste des arêtes du noeud
-  EdgeVectorView edges() const { return _internalEdges(); }
+  EdgeVectorView edges() const { return _edgeList(); }
 
   //! Liste des faces du noeud
-  FaceVectorView faces() const { return _internalFaces(); }
+  FaceVectorView faces() const { return _faceList(); }
 
   //! Liste des mailles du noeud
-  CellVectorView cells() const { return _internalCells(); }
+  CellVectorView cells() const { return _cellList(); }
 
   //! Liste des arêtes du noeud
   EdgeLocalIdView edgeIds() const { return _edgeIds(); }
@@ -704,7 +704,7 @@ class ARCANE_CORE_EXPORT ItemWithNodes
   Node node(Int32 i) const { return _node(i); }
 
   //! Liste des noeuds de l'entité
-  NodeVectorView nodes() const { return _internalNodes(); }
+  NodeVectorView nodes() const { return _nodeList(); }
 
   //! Liste des noeuds de l'entité
   NodeLocalIdView nodeIds() const { return _nodeIds();
@@ -814,7 +814,7 @@ class ARCANE_CORE_EXPORT Edge
   inline Cell cell(Int32 i) const;
 
   //! Liste des mailles de l'arête
-  CellVectorView cells() const { return _internalCells(); }
+  CellVectorView cells() const { return _cellList(); }
 
   //! i-ème maille de l'arête
   CellLocalId cellId(Int32 i) const { return _cellId(i); }
@@ -826,7 +826,7 @@ class ARCANE_CORE_EXPORT Edge
   inline Face face(Int32 i) const;
 
   //! Liste des faces de l'arête
-  FaceVectorView faces() const { return _internalFaces(); }
+  FaceVectorView faces() const { return _faceList(); }
 
   //! i-ème face de l'arête
   FaceLocalId faceId(Int32 i) const { return _faceId(i); }
@@ -938,7 +938,7 @@ class ARCANE_CORE_EXPORT Face
   inline Cell cell(Int32 i) const;
 
   //! Liste des mailles de la face
-  CellVectorView cells() const { return _internalCells(); }
+  CellVectorView cells() const { return _cellList(); }
 
   //! i-ème maille de la face
   CellLocalId cellId(Int32 i) const { return _cellId(i); }
@@ -1036,7 +1036,7 @@ class ARCANE_CORE_EXPORT Face
   FaceVectorView slaveFaces() const
   {
     if (_toItemBase().isMasterFace())
-      return _internalFaces();
+      return _faceList();
     return FaceVectorView();
   }
 
@@ -1049,7 +1049,7 @@ class ARCANE_CORE_EXPORT Face
   Edge edge(Int32 i) const { return _edge(i); }
 
   //! Liste des arêtes de la face
-  EdgeVectorView edges() const { return _internalEdges(); }
+  EdgeVectorView edges() const { return _edgeList(); }
 
   //! i-ème arête de la face
   EdgeLocalId edgeId(Int32 i) const { return _edgeId(i); }
@@ -1180,7 +1180,7 @@ class ARCANE_CORE_EXPORT Cell
   Face face(Int32 i) const { return _face(i); }
 
   //! Liste des faces de la maille
-  FaceVectorView faces() const { return _internalFaces(); }
+  FaceVectorView faces() const { return _faceList(); }
 
   //! i-ème face de la maille
   FaceLocalId faceId(Int32 i) const { return _faceId(i); }
@@ -1198,7 +1198,7 @@ class ARCANE_CORE_EXPORT Cell
   EdgeLocalId edgeId(Int32 i) const { return _edgeId(i); }
 
   //! Liste des arêtes de la maille
-  EdgeVectorView edges() const { return _internalEdges(); }
+  EdgeVectorView edges() const { return _edgeList(); }
 
   //! Liste des arêtes de la maille
   EdgeLocalIdView edgeIds() const { return _edgeIds(); }
