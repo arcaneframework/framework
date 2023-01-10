@@ -1223,15 +1223,29 @@ if (_NOT_FOUND_PACKAGE_LIST)
 endif()
 
 # ----------------------------------------------------------------------------
+# Gestion des DLLs pour Windows:
+# 1. Ajoute une commande et une cible pour copier les DLLs dans le répertoire 'lib'
+# 2. Si on utilise IntelMPI, copie 'libfabric.dll' dans ce même répertoire. Cette
+# bibliothèque n'est pas utilisée lors de l'édition de lien mais est nécessaire
+# lors de l'exécution pour ne pas planter lors de l'appel à MPI_Init()
 #
 # TODO: ne pas mettre en dur l'exécutable de test mais laisser aux sous-répertoires
-# la possibilité d'ajouter des exécutables
+# la possibilité d'ajouter des exécutables.
+#
+# TODO: pour 'libfabric.dll', plutôt modifier le package 'intel-mpi' de 'vcpkg' pour
+# indiquer explicitement où se trouve cette DLL.
 #
 file(APPEND ${ARCANE_COPY_DLLS_CONFIG_FILE} "list(APPEND EXE_LIST \"$<TARGET_FILE:arcane_tests_exec>\")\n")
 set(ARCANE_COPY_DLL_GENERATED_FILE ${CMAKE_CURRENT_BINARY_DIR}/copy_dlls_config.$<CONFIG>.cmake)
 file(GENERATE OUTPUT ${ARCANE_COPY_DLL_GENERATED_FILE} INPUT ${ARCANE_COPY_DLLS_CONFIG_FILE})
 add_custom_target(copy_dlls
   COMMAND ${CMAKE_COMMAND} -D CONFIG_INCLUDE_FILE=${ARCANE_COPY_DLL_GENERATED_FILE} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/ArcaneCopyDLLs.cmake )
+
+find_path(INTEL_LIBFABRIC NAMES "libfabric.dll" PATH_SUFFIXES bin)
+if (INTEL_LIBFABRIC)
+  message (STATUS "Found 'libfabric.dll' in = '${INTEL_LIBFABRIC}'")
+  file(COPY ${INTEL_LIBFABRIC}/libfabric.dll DESTINATION "${LIBRARY_OUTPUT_PATH}")
+endif()
 
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
