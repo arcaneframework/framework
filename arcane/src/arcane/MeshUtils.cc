@@ -993,8 +993,8 @@ class MeshUtilsCheckConnectivity
   class ItemInternalXml
   {
    public:
-    ItemInternalXml() : m_item(0) {}
-    ItemInternalXml(Item item) : m_item(item) {}
+    ItemInternalXml() {}
+    explicit ItemInternalXml(Item item) : m_item(item) {}
    public:
     bool operator<(const ItemInternalXml& i2) const
       {
