@@ -397,6 +397,7 @@ public:
   }
 
   void debugPrint() const {
+    if constexpr (ndebug) return;
     std::cout << "= Print property " << m_name << " =" << std::endl;
     for (auto &val : m_data) {
       std::cout << "\"" << val << "\" ";
@@ -853,7 +854,7 @@ public:
   std::string m_name;
   std::string m_prop_lid_name;
   std::map<std::string, Property> m_properties;
-  ItemRange m_all;
+  mutable ItemRange m_all;
 
   Family(ItemKind ik, std::string name) : m_ik(ik), m_name(std::move(name)), m_prop_lid_name(name) {
     m_prop_lid_name.append("_lids");

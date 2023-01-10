@@ -31,7 +31,10 @@
 #endif
 
 namespace Neo {
-  struct NeoOutputStream{};
+  struct NullOstream : public std::ostream {};
+  struct NeoOutputStream{
+    mutable NullOstream m_null_ostream;
+  };
   inline NeoOutputStream print() {return NeoOutputStream{};}
 
 namespace utils {
@@ -192,9 +195,9 @@ std::ostream& operator<<(std::ostream& oss, Neo::utils::ConstArrayView<T> const&
 }
 
 template <typename T>
-std::ostream& operator<<(Neo::NeoOutputStream oss, T const& printable)
+std::ostream& operator<<(Neo::NeoOutputStream const& oss, T const& printable)
 {
-  if constexpr (ndebug) return std::cout;
+  if constexpr (ndebug) return oss.m_null_ostream;
   else return std::cout << printable;
 }
 

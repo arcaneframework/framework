@@ -14,7 +14,7 @@
 #include <gtest/gtest.h>
 #include <numeric>
 
-#include "Neo/Mesh.h"
+#include "neo/Mesh.h"
 
 TEST(PerformanceTests,MeshReadingPerformanceTest){
   auto nb_cells = 100;
