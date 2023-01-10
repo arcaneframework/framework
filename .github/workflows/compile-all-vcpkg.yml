@@ -12,32 +12,48 @@ on:
 
 jobs:
   job:
-    name: ${{ matrix.os }}-ci-direct
+    name: ${{ matrix.full_name }}-ci-direct
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
           - os: ubuntu-20.04
+            full_name: 'ubuntu-20.04'
             triplet: x64-linux
             vcpkg_os: ubuntu-20.04
             cmake_specific_args : '-DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER_LAUNCHER=ccache'
-            ctest_specific_args : '-I 1,50'
+            ctest_specific_args : '-I 1,60'
           - os: ubuntu-22.04
+            full_name: 'ubuntu-22.04'
             triplet: x64-linux
             vcpkg_os: ubuntu-22.04
             cmake_specific_args : '-DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER_LAUNCHER=ccache'
-            ctest_specific_args : '-I 1,50'
+            ctest_specific_args : '-I 1,60'
           - os: 'windows-2019'
+            full_name: 'windows-2019-msmpi'
             triplet: x64-windows
             vcpkg_os: windows-2019
             cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER="ccache"'
-            ctest_specific_args : '-I 1,60'
+            ctest_specific_args : '-I 1,75'
           - os: 'windows-2022'
+            full_name: 'windows-2022-msmpi'
             triplet: x64-windows
             vcpkg_os: windows-2022
             cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER="ccache"'
-            ctest_specific_args : '-I 1,60'
+            ctest_specific_args : '-I 1,75'
+          - os: 'windows-2019'
+            full_name: 'windows-2019-intelmpi'
+            triplet: x64-windows
+            vcpkg_os: windows-2019
+            cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER="ccache"'
+            ctest_specific_args : '-I 1,75'
+          - os: 'windows-2022'
+            full_name: 'windows-2022-intelmpi'
+            triplet: x64-windows
+            vcpkg_os: windows-2022
+            cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER="ccache"'
+            ctest_specific_args : '-I 1,75'
 
     env:
       CCACHE_BASEDIR: ${{github.workspace}}
@@ -52,7 +68,7 @@ jobs:
       VCPKG_ROOT: '${{ github.workspace }}/../../build_base/framework-ci/vcpkg'
       VCPKG_BUILD_DIR: '${{ github.workspace }}/../../build_base/framework-ci/vcpkg'
       BUILD_COMMANDS_ROOT: '${{ github.workspace }}/../../build_base/framework-ci/_build'
-      VCPKG_INSTALL_HASH_PACKAGE_NAME: '1.0.16-${{ matrix.vcpkg_os }}-${{ matrix.triplet }}'
+      VCPKG_INSTALL_HASH_PACKAGE_NAME: '1.1.0-${{ matrix.full_name }}-${{ matrix.triplet }}'
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
       DOTNET_CLI_TELEMETRY_OPTOUT: true
       FRAMEWORKCI_BRANCH: main
@@ -99,9 +115,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ${{env.CCACHE_DIR}}
-          key: framework-ccache1-${{matrix.os}}-${{ github.run_number }}
+          key: framework-ccache1-${{matrix.full_name}}-${{ github.run_number }}
           restore-keys: |
-            framework-ccache1-${{matrix.os}}
+            framework-ccache1-${{matrix.full_name}}
 
       - name: 'Display environment after setup'
         shell: 'bash'
@@ -150,6 +166,7 @@ jobs:
         shell: bash
         run: |
           cmake --build "${{ env.CMAKE_BUILD_DIR }}"
+          cmake --build "${{ env.CMAKE_BUILD_DIR }}" --target copy_dlls
 
       - name: Get 'ccache' status
         run: ccache -s -v

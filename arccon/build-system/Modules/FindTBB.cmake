@@ -18,7 +18,12 @@ unset(CMAKE_MODULE_PATH)
 find_package(TBB CONFIG QUIET COMPONENTS tbb)
 set(CMAKE_MODULE_PATH ${_SAVED_CMAKE_MODULE_PATH})
 
-if (TBB_tbb_FOUND)
+# vcpkg ne positionne ni TBB_tbb_found ni TBB_IMPORTED_TARGETS
+# On utilise donc direction 'TBB::tbb'
+if (TBB_tbb_FOUND OR TARGET TBB::tbb)
+  if (NOT TBB_IMPORTED_TARGETS)
+    set(TBB_IMPORTED_TARGETS TBB::tbb)
+  endif()
   message(STATUS "[TBB] TBB_DIR = ${TBB_DIR}")
   message(STATUS "[TBB] TBB_IMPORTED_TARGETS = ${TBB_IMPORTED_TARGETS}")
   foreach(_component ${TBB_IMPORTED_TARGETS})
