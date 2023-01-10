@@ -701,7 +701,7 @@ class ARCANE_CORE_EXPORT ItemBase
 
  public:
 
- /**
+ /*!
    * @returns le rang de l'enfant \p (iitem).
    * exemple: si rank = m_internal->whichChildAmI(iitem); donc
    * m_internal->hChild(rank) serait iitem;
@@ -710,11 +710,20 @@ class ARCANE_CORE_EXPORT ItemBase
 
  public:
 
+  ItemBase topHParentBase() const;
+
+ public:
+
+  //! Interface modifiable de cette entité
+  inline MutableItemBase toMutable();
+
+ public:
+
+  // TODO: rendre obsolète
   inline ItemInternal* itemInternal() const;
 
+  // TODO rendre obsolète
   ItemInternalVectorView _internalActiveCells(Int32Array& local_ids) const;
-
-  ItemBase topHParentBase() const;
 
  private:
 
@@ -753,11 +762,27 @@ class ARCANE_CORE_EXPORT ItemBase
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Méthodes permettant de modifier ItemBase
+ * \brief Méthodes permettant de modifier ItemBase.
+ *
+ * Ces méthodes sont internes à Arcane.
  */
 class ARCANE_CORE_EXPORT MutableItemBase
-: public impl::ItemBase
+: public ItemBase
 {
+  friend class ::Arcane::Item;
+  friend ItemBase;
+
+ private:
+
+  MutableItemBase(Int32 local_id,ItemSharedInfo* shared_info)
+  : ItemBase(local_id, shared_info) {}
+
+ public:
+
+  MutableItemBase() = default;
+  MutableItemBase(ItemBase* x) : ItemBase(x) {}
+  MutableItemBase(ItemBaseBuildInfo x) : ItemBase(x) {}
+
  public:
 
   void setUniqueId(Int64 uid)
@@ -1076,6 +1101,14 @@ parentBase(Int32 index) const
   return ItemBase(m_shared_info->_parentV2(m_local_id,index));
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+inline impl::MutableItemBase impl::ItemBase::
+toMutable()
+{
+  return MutableItemBase(m_local_id,m_shared_info);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

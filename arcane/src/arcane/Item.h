@@ -313,12 +313,37 @@ class ARCANE_CORE_EXPORT Item
    *
    * \warning La partie interne de l'entité ne doit être modifiée que
    * par ceux qui savent ce qu'ils font.
+   * \deprecated Utiliser itemBase() ou mutableItemBase() à la place
    */
   ItemInternal* internal() const
   {
     if (m_local_id!=NULL_ITEM_LOCAL_ID)
       return m_shared_info->m_items_internal[m_local_id];
     return ItemInternal::nullItem();
+  }
+
+ public:
+
+  /*!
+   * \brief Partie interne de l'entité.
+   *
+   * \warning La partie interne de l'entité ne doit être modifiée que
+   * par ceux qui savent ce qu'ils font.
+   */
+  impl::ItemBase itemBase() const
+  {
+    return impl::ItemBase(m_local_id,m_shared_info);
+  }
+
+  /*!
+   * \brief Partie interne modifiable de l'entité.
+   *
+   * \warning La partie interne de l'entité ne doit être modifiée que
+   * par ceux qui savent ce qu'ils font.
+   */
+  impl::MutableItemBase mutableItemBase() const
+  {
+    return impl::MutableItemBase(m_local_id,m_shared_info);
   }
 
   /*!
