@@ -37,7 +37,7 @@ ItemInternalConnectivityList ItemInternalConnectivityList::nullInstance;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ItemInternal::
+void impl::MutableItemBase::
 _checkUniqueId(Int64 new_uid) const
 {
   if (new_uid<0){
@@ -49,7 +49,7 @@ _checkUniqueId(Int64 new_uid) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ItemInternal::
+void impl::MutableItemBase::
 unsetUniqueId()
 {
 #ifdef ARCANE_CHECK
@@ -178,7 +178,7 @@ _internalActiveCells(Int32Array& local_ids) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ItemInternal::
+void impl::MutableItemBase::
 _setFaceInfos(Int32 mod_flags)
 {
   Int32 face_flags = flags();
@@ -190,7 +190,7 @@ _setFaceInfos(Int32 mod_flags)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ItemInternal::
+void impl::MutableItemBase::
 _setFaceBackAndFrontCells(Int32 back_cell_lid,Int32 front_cell_lid)
 {
   if (front_cell_lid==NULL_ITEM_LOCAL_ID){
