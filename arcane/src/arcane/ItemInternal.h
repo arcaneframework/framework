@@ -942,26 +942,6 @@ class ARCANE_CORE_EXPORT ItemInternal
  public:
 
   /*!
-   * \brief Méthodes utilisant les nouvelles connectivités pour accéder
-   * aux informations de connectivité. A ne pas utiliser en dehors de Arcane.
-   *
-   * \warning Ces méthodes ne doivent être appelées que sur les entités
-   * qui possèdent la connectivité associée ET qui sont au nouveau format.
-   * Par exemple, cela ne fonctionne pas sur Cell->Cell car il n'y a pas de
-   * connectivité maille/maille. En cas de mauvaise utilisation, cela
-   * se traduit par un débordement de tableau.
-   * 
-   */
-  //@{
-  ItemInternalVectorView internalNodes() const { return _connectivity()->nodesV2(m_local_id); }
-  ItemInternalVectorView internalEdges() const { return _connectivity()->edgesV2(m_local_id); }
-  ItemInternalVectorView internalFaces() const { return _connectivity()->facesV2(m_local_id); }
-  ItemInternalVectorView internalCells() const { return _connectivity()->cellsV2(m_local_id); }
-  //@}
-
- public:
-
-  /*!
    * \brief Méthodes temporaires pour passer des connectivités historiques
    * aux nouvelles. A ne pas utiliser en dehors de Arcane.
    */
