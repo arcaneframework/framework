@@ -894,6 +894,9 @@ class ARCANE_CORE_EXPORT MutableItemBase
 class ARCANE_CORE_EXPORT ItemInternal
 : public impl::MutableItemBase
 {
+  // Pour accès à _setSharedInfo()
+  friend class mesh::DynamicMeshKindInfos;
+  friend class mesh::ItemFamily;
 
  public:
 
@@ -926,8 +929,8 @@ class ARCANE_CORE_EXPORT ItemInternal
     return nullItem();
   }
 
-  // TODO Rendre obsolète
   //! Infos partagées de l'entité.
+  ARCANE_DEPRECATED_REASON("Y2022: This method is internal to Arcane and should not be used.")
   ItemSharedInfo* sharedInfo() const { return m_shared_info; }
 
  public:
@@ -1007,22 +1010,30 @@ class ARCANE_CORE_EXPORT ItemInternal
   ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception.")
   void setDataIndex(Integer);
 
-  //! \internal
+  ARCANE_DEPRECATED_REASON("Y2022: This method is internal to Arcane and should not be used.")
   void setSharedInfo(ItemSharedInfo* shared_infos,ItemTypeId type_id)
   {
-    m_shared_info = shared_infos;
-    shared_infos->_setTypeId(m_local_id,type_id.typeId());
+    _setSharedInfo(shared_infos,type_id);
   }
 
  public:
 
   //! \internal
   typedef ItemInternal* ItemInternalPtr;
-  // TODO: a supprimer
+
   //! \internal
+  ARCANE_DEPRECATED_REASON("Y2022: This method is internal to Arcane and should not be used.")
   static ItemSharedInfo* _getSharedInfo(const ItemInternalPtr* items)
   {
     return ((items) ? items[0]->m_shared_info : ItemSharedInfo::nullInstance());
+  }
+
+ private:
+
+  void _setSharedInfo(ItemSharedInfo* shared_infos,ItemTypeId type_id)
+  {
+    m_shared_info = shared_infos;
+    shared_infos->_setTypeId(m_local_id,type_id.typeId());
   }
 };
 
@@ -1084,12 +1095,14 @@ class ItemCompatibility
   friend class SimdItemEnumeratorBase;
   friend class ItemVectorView;
   template<typename T> friend class ItemEnumeratorBaseT;
+  friend class mesh::DynamicMeshKindInfos;
+  friend class TotalviewAdapter;
 
  private:
 
   //! \internal
   typedef ItemInternal* ItemInternalPtr;
-  static ItemSharedInfo* _getSharedInfo(ItemInternal* item)
+  static ItemSharedInfo* _getSharedInfo(const ItemInternal* item)
   {
     return item->m_shared_info;
   }

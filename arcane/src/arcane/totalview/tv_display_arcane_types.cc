@@ -51,6 +51,18 @@
 #define ATTR_USED
 #endif
 
+namespace Arcane
+{
+class TotalviewAdapter
+{
+ public:
+  static ItemSharedInfo* getItemSharedInfo(const ItemInternal* v)
+  {
+    return ItemCompatibility::_getSharedInfo(v);
+  }
+};
+}
+
 namespace
 {
 // Pour savoir si on affiche un message dans totalview indiquant qu'on utilise
@@ -227,7 +239,7 @@ TV_ttf_display_type(const Arcane::ItemInternal * obj)
 
   arcane_ttf_header();
   TV_ttf_add_row("local_id","Integer",reinterpret_cast<const int*>(obj));
-  _ItemSharedInfo * shared_info = reinterpret_cast<_ItemSharedInfo*>(obj->sharedInfo());
+  _ItemSharedInfo* shared_info = reinterpret_cast<_ItemSharedInfo*>(Arcane::TotalviewAdapter::getItemSharedInfo(obj));
   const Integer local_id = obj->localId();
 
   TV_ttf_add_row("unique_id","Int64",shared_info->m_unique_ids.ptrAt(local_id));

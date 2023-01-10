@@ -1180,7 +1180,7 @@ readFromDump()
       ItemSharedInfoWithType* isi = _findSharedInfo(type_mng->typeFromId(type_id));
       Int64 uid = m_items_unique_id_view[i];
       ItemInternal* item = m_infos.allocOne(uid);
-      item->setSharedInfo(isi->sharedInfo(),type_id);
+      item->_setSharedInfo(isi->sharedInfo(),type_id);
     }
   }
   else{
@@ -1191,7 +1191,7 @@ readFromDump()
       ItemSharedInfoWithType* isi = item_shared_infos[shared_data_index];
       Int64 uid = m_items_unique_id_view[i];
       ItemInternal* item = m_infos.allocOne(uid);
-      item->setSharedInfo(isi->sharedInfo(),isi->itemTypeId());
+      item->_setSharedInfo(isi->sharedInfo(),isi->itemTypeId());
     }
   }
 
@@ -1672,7 +1672,7 @@ _allocateInfos(ItemInternal* item,Int64 uid,ItemSharedInfoWithType* isi)
   //(*m_items_unique_id)[local_id] = uid;
 
   ItemTypeId iti = isi->itemTypeId();
-  item->setSharedInfo(isi->sharedInfo(),iti);
+  item->_setSharedInfo(isi->sharedInfo(),iti);
   
   item->reinitialize(uid,m_default_sub_domain_owner,m_sub_domain_id);
   ++m_nb_allocate_info;
