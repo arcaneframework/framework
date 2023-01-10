@@ -23,37 +23,37 @@ jobs:
             triplet: x64-linux
             vcpkg_os: ubuntu-20.04
             cmake_specific_args : '-DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER_LAUNCHER=ccache'
-            ctest_specific_args : '-I 1,50'
+            ctest_specific_args : '-I 1,60'
           - os: ubuntu-22.04
             full_name: 'ubuntu-22.04'
             triplet: x64-linux
             vcpkg_os: ubuntu-22.04
             cmake_specific_args : '-DARCCORE_BUILD_MODE=Debug -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER_LAUNCHER=ccache'
-            ctest_specific_args : '-I 1,50'
+            ctest_specific_args : '-I 1,60'
           - os: 'windows-2019'
             full_name: 'windows-2019-msmpi'
             triplet: x64-windows
             vcpkg_os: windows-2019
             cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER="ccache"'
-            ctest_specific_args : '-I 1,60'
+            ctest_specific_args : '-I 1,75'
           - os: 'windows-2022'
             full_name: 'windows-2022-msmpi'
             triplet: x64-windows
             vcpkg_os: windows-2022
             cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER="ccache"'
-            ctest_specific_args : '-I 1,60'
+            ctest_specific_args : '-I 1,75'
           - os: 'windows-2019'
             full_name: 'windows-2019-intelmpi'
             triplet: x64-windows
             vcpkg_os: windows-2019
             cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER="ccache"'
-            ctest_specific_args : '-I 1,60'
+            ctest_specific_args : '-I 1,75'
           - os: 'windows-2022'
             full_name: 'windows-2022-intelmpi'
             triplet: x64-windows
             vcpkg_os: windows-2022
             cmake_specific_args : '-DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER_LAUNCHER="ccache"'
-            ctest_specific_args : '-I 1,60'
+            ctest_specific_args : '-I 1,75'
 
     env:
       CCACHE_BASEDIR: ${{github.workspace}}
