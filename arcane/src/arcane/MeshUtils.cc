@@ -55,6 +55,7 @@
 
 namespace Arcane
 {
+using impl::ItemBase;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -442,62 +443,62 @@ class IItemFiller
  public:
   virtual ~IItemFiller(){}
  public:
-  virtual Integer nbItem(ItemInternal* item) const =0;
-  virtual void fillLocalIds(ItemInternal* item,Int32ArrayView ids) const =0;
+  virtual Integer nbItem(ItemBase item) const =0;
+  virtual void fillLocalIds(ItemBase item,Int32ArrayView ids) const =0;
 };
 
 class EdgeFiller
 : public IItemFiller
 {
-  virtual Integer nbItem(ItemInternal* item) const { return item->nbEdge(); }
-  virtual void fillLocalIds(ItemInternal* item,Int32ArrayView ids) const
+  Integer nbItem(ItemBase item) const  override { return item.nbEdge(); }
+  void fillLocalIds(ItemBase item,Int32ArrayView ids) const override
   {
     Integer nb_edge = ids.size();
     for( Integer i=0; i<nb_edge; ++i )
-      ids[i] = item->edgeLocalId(i);
+      ids[i] = item.edgeId(i);
   }
 };
 
 class CellFiller
 : public IItemFiller
 {
-  virtual Integer nbItem(ItemInternal* item) const { return item->nbCell(); }
-  virtual void fillLocalIds(ItemInternal* item,Int32ArrayView ids) const
+  Int32 nbItem(ItemBase item) const override { return item.nbCell(); }
+  void fillLocalIds(ItemBase item,Int32ArrayView ids) const override
   {
     Integer nb_cell = ids.size();
     for( Integer i=0; i<nb_cell; ++i )
-      ids[i] = item->cellLocalId(i);
+      ids[i] = item.cellId(i);
   }
 };
 
 class FaceFiller
 : public IItemFiller
 {
-  virtual Integer nbItem(ItemInternal* item) const { return item->nbFace(); }
-  virtual void fillLocalIds(ItemInternal* item,Int32ArrayView ids) const
+  Int32 nbItem(ItemBase item) const override { return item.nbFace(); }
+  void fillLocalIds(ItemBase item,Int32ArrayView ids) const override
   {
     Integer nb_face = ids.size();
     for( Integer i=0; i<nb_face; ++i )
-      ids[i] = item->faceLocalId(i);
+      ids[i] = item.faceId(i);
   }
 };
 
 class NodeFiller
 : public IItemFiller
 {
-  virtual Integer nbItem(ItemInternal* item) const { return item->nbNode(); }
-  virtual void fillLocalIds(ItemInternal* item,Int32ArrayView ids) const
+  virtual Int32 nbItem(ItemBase item) const { return item.nbNode(); }
+  virtual void fillLocalIds(ItemBase item,Int32ArrayView ids) const
   {
     Integer nb_node = ids.size();
     for( Integer i=0; i<nb_node; ++i )
-      ids[i] = item->nodeLocalId(i);
+      ids[i] = item.nodeId(i);
   }
 };
 
 void
 _fillSorted(Item titem,Int32Array& local_ids,Int32ConstArrayView sorted_ids,const IItemFiller& filler)
 {
-  ItemInternal* item = titem.internal();
+  ItemBase item = titem.itemBase();
   Integer n = filler.nbItem(item);
   local_ids.resize(n);
   filler.fillLocalIds(item,local_ids);
@@ -770,7 +771,7 @@ writeMeshInfos(IMesh* mesh,const String& file_name)
 namespace
 {
 void
-_sortByUniqueIds(IMesh* mesh,eItemKind ik,Array<ItemInternal*>& items_internal)
+_sortByUniqueIds(IMesh* mesh,eItemKind ik,Array<Item>& items_internal)
 {
   ItemGroup all_items(mesh->itemFamily(ik)->allItems());
   items_internal.resize(all_items.size());
@@ -778,7 +779,7 @@ _sortByUniqueIds(IMesh* mesh,eItemKind ik,Array<ItemInternal*>& items_internal)
   Integer index = 0;
   ENUMERATE_ITEM(i,all_items){
     Item item = *i;
-    items_internal[index] = item.internal();
+    items_internal[index] = item;
     ++index;
   }
   std::sort(std::begin(items_internal),std::end(items_internal),ItemCompare());
@@ -814,10 +815,10 @@ writeMeshConnectivity(IMesh* mesh,const String& file_name)
 
   ofile << "<?xml version='1.0' ?>\n";
   ofile << "<mesh-connectivity>\n";
-  UniqueArray<ItemInternal*> nodes_internal;
-  UniqueArray<ItemInternal*> edges_internal;
-  UniqueArray<ItemInternal*> faces_internal;
-  UniqueArray<ItemInternal*> cells_internal;
+  UniqueArray<Item> nodes_internal;
+  UniqueArray<Item> edges_internal;
+  UniqueArray<Item> faces_internal;
+  UniqueArray<Item> cells_internal;
 
   _sortByUniqueIds(mesh,IK_Node,nodes_internal);
   _sortByUniqueIds(mesh,IK_Edge,edges_internal);
@@ -993,18 +994,18 @@ class MeshUtilsCheckConnectivity
   {
    public:
     ItemInternalXml() : m_item(0) {}
-    ItemInternalXml(ItemInternal* item) : m_item(item) {}
+    ItemInternalXml(Item item) : m_item(item) {}
    public:
     bool operator<(const ItemInternalXml& i2) const
       {
-        return m_item->uniqueId() < i2.m_item->uniqueId();
+        return m_item.uniqueId() < i2.m_item.uniqueId();
       }
-    bool operator<(Integer uid) const
+    bool operator<(Int64 uid) const
       {
-        return m_item->uniqueId() < uid;
+        return m_item.uniqueId() < uid;
       }
    public:
-    ItemInternal* m_item;
+    Item m_item;
     XmlNode m_element;
   };
   typedef std::map<Int64,ItemInternalXml> ItemInternalXmlMap;
@@ -1103,8 +1104,8 @@ _read(eItemKind ik,ItemInternalXmlMap& items_internal,XmlNode root_node,
   String kind_name(itemKindName(ik));
 
   ENUMERATE_ITEM(iitem,m_mesh->itemFamily(ik)->allItems()){
-    const Item& item = *iitem;
-    ItemInternalXml ixml(item.internal());
+    Item item = *iitem;
+    ItemInternalXml ixml(item);
     items_internal.insert(ItemInternalXmlMap::value_type(item.uniqueId().asInt64(),ixml));
   }
 
@@ -1143,10 +1144,10 @@ _read(eItemKind ik,ItemInternalXmlMap& items_internal,XmlNode root_node,
   local_ids.reserve(100);
   for( ItemInternalXmlMap::const_iterator i(items_internal.begin()); i!=items_internal.end(); ++i ){
     const ItemInternalXml& item_xml = i->second;
-    ItemInternal* item = item_xml.m_item;
+    Item item = item_xml.m_item;
     const XmlNode& xitem = item_xml.m_element;
     if (xitem.null()){
-      trace->error() << "Item " << kind_name << ":" << item->uniqueId()
+      trace->error() << "Item " << kind_name << ":" << item.uniqueId()
                    << "unknown in reference mesh";
       m_has_error = true;
       continue;
@@ -1157,7 +1158,7 @@ _read(eItemKind ik,ItemInternalXmlMap& items_internal,XmlNode root_node,
       Integer ref_nb_node = xitem_node.attr(ustr_count).valueAsInteger();
       Integer nb_node = item_with_node.nbNode();
       if (ref_nb_node!=nb_node){
-        trace->error() << "Item " << kind_name << ":" << item->uniqueId()
+        trace->error() << "Item " << kind_name << ":" << item.uniqueId()
                      << ": number of nodes (" << nb_node << ") "
                      << "different than reference (" << ref_nb_node << ")";
         m_has_error = true;
@@ -1177,7 +1178,7 @@ _read(eItemKind ik,ItemInternalXmlMap& items_internal,XmlNode root_node,
       if (is_bad){
         m_has_error = true;
         OStringStream ostr;
-        ostr() << "Item " << kind_name << ":" << item->uniqueId()
+        ostr() << "Item " << kind_name << ":" << item.uniqueId()
                << ": nodes (";
         for( NodeEnumerator i_node(item_with_node.nodes()); i_node(); ++i_node ){
           ostr() << ' ' << i_node->uniqueId();
@@ -1186,7 +1187,7 @@ _read(eItemKind ik,ItemInternalXmlMap& items_internal,XmlNode root_node,
         trace->error() << ostr.str();
       }
     }
-    if (item->isOwn()){
+    if (item.isOwn()){
       // Si c'est une maille, recherche si les mailles qui doivent être
       // fantômes sont bien présentes dans le maillage.
       // Si c'est un noeud, recherche si les mailles autour de ce noeud
@@ -1313,23 +1314,22 @@ checkMeshProperties(IMesh* mesh,bool is_sorted,bool has_no_hole,bool check_faces
         continue;
       //ItemGroup all_items = mesh->itemFamily(ik)->allItems();
       ItemGroup all_items = (*i)->allItems();
-      ItemInternal* last_item = 0;
+      Item last_item;
       ENUMERATE_ITEM(iitem,all_items){
         Item item = *iitem;
         
-        if (last_item && (last_item->uniqueId()>=item.uniqueId() ||
-                          last_item->localId()>=item.localId())){
+        if (!last_item.null() && (last_item.uniqueId()>=item.uniqueId() ||
+                                  last_item.localId()>=item.localId())){
           trace->error() << "Item not sorted " << ItemPrinter(item,ik)
                          << " Last item " << ItemPrinter(last_item,ik);
           has_error = true;
         }
-        last_item = item.internal();
+        last_item = item;
       }
     }
   }
   if (has_error){
-    trace->fatal() << "Missing required mesh properties "
-                 << "(sorted and/or no hole)";
+    ARCANE_FATAL("Missing required mesh properties (sorted and/or no hole)");
   }
 }
 
@@ -1341,7 +1341,7 @@ printItems(std::ostream& ostr,const String& name,ItemGroup item_group)
 {
   ostr << " ------- " << name << '\n';
   ENUMERATE_ITEM(iitem,item_group){
-    ostr << FullItemPrinter((*iitem).internal()) << "\n";
+    ostr << FullItemPrinter((*iitem)) << "\n";
   }
 }
 

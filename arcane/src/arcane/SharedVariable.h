@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SharedVariable.h                                            (C) 2000-2009 */
+/* SharedVariable.h                                            (C) 2000-2023 */
 /*                                                                           */
 /* Classe gérant une vue partagée d'une variable.                            */
 /*---------------------------------------------------------------------------*/
@@ -26,7 +26,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -102,21 +103,21 @@ public:
 
   DataTypeReturnReference operator[](const ItemType & i) 
   {
-    ARCANE_ASSERT((m_family!=m_parent_family || i.internal()==i.internal()->parent(m_family_depth)),("Confusion: item parent differs from item"));
-    return m_true_variable.asArray()[(m_direct_access)?i.localId():i.internal()->parentId(m_family_depth)];
+    ARCANE_ASSERT((m_family!=m_parent_family || i.itemBase()==i.itemBase().parentBase(m_family_depth)),("Confusion: item parent differs from item"));
+    return m_true_variable.asArray()[(m_direct_access)?i.localId():i.itemBase().parentId(m_family_depth)];
   }
 
   DataType operator[](const ItemType & i) const
   { 
-    ARCANE_ASSERT((m_family!=m_parent_family || i.internal()==i.internal()->parent(m_family_depth)),("Confusion: item parent differs from item"));
-    return m_true_variable.asArray()[(m_direct_access)?i.localId():i.internal()->parentId(m_family_depth)];
+    ARCANE_ASSERT((m_family!=m_parent_family || i.itemBase()==i.itemBase().parentBase(m_family_depth)),("Confusion: item parent differs from item"));
+    return m_true_variable.asArray()[(m_direct_access)?i.localId():i.itemBase().parentId(m_family_depth)];
   }
 
   
   DataTypeReturnReference operator[](const ItemEnumeratorT<ItemType> & i) 
   {
-    ARCANE_ASSERT((m_family!=m_parent_family || (*i).internal()==i->parent(m_family_depth)),("Confusion: item parent differs from item"));
-    return m_true_variable.asArray()[(m_direct_access)?i.localId():i->internal()->parentId(m_family_depth)];
+    ARCANE_ASSERT((m_family!=m_parent_family || (*i).itemBase()==i->parent(m_family_depth)),("Confusion: item parent differs from item"));
+    return m_true_variable.asArray()[(m_direct_access)?i.localId():i->itemBase().parentId(m_family_depth)];
   }
 
   DataType operator[](const ItemEnumeratorT<ItemType> & i) const
@@ -212,27 +213,27 @@ public:
 
   DataTypeReturnReference operator[](const Item & i) 
   {
-    ARCANE_ASSERT((m_family!=m_parent_family || i.internal()==i.internal()->parent(m_family_depth)),("Confusion: item parent differs from item"));
-    return m_true_variable.asArray()[(m_direct_access)?i.localId():i.internal()->parentId(m_family_depth)];
+    ARCANE_ASSERT((m_family!=m_parent_family || i.itemBase()==i.itemBase().parentBase(m_family_depth)),("Confusion: item parent differs from item"));
+    return m_true_variable.asArray()[(m_direct_access)?i.localId():i.itemBase().parentId(m_family_depth)];
   }
 
   DataType operator[](const Item & i) const
   { 
-    ARCANE_ASSERT((m_family!=m_parent_family || i.internal()==i.internal()->parent(m_family_depth)),("Confusion: item parent differs from item"));
-    return m_true_variable.asArray()[(m_direct_access)?i.localId():i.internal()->parentId(m_family_depth)];
+    ARCANE_ASSERT((m_family!=m_parent_family || i.itemBase()==i.itemBase().parentBase(m_family_depth)),("Confusion: item parent differs from item"));
+    return m_true_variable.asArray()[(m_direct_access)?i.localId():i.itemBase().parentId(m_family_depth)];
   }
 
   
   DataTypeReturnReference operator[](const ItemEnumerator & i) 
   {
-    ARCANE_ASSERT((m_family!=m_parent_family || (*i).internal()==i->parent(m_family_depth)),("Confusion: item parent differs from item"));
-    return m_true_variable.asArray()[(m_direct_access)?i.localId():i->internal()->parentId(m_family_depth)];
+    ARCANE_ASSERT((m_family!=m_parent_family || (*i).itemBase()==i->parent(m_family_depth)),("Confusion: item parent differs from item"));
+    return m_true_variable.asArray()[(m_direct_access)?i.localId():i->itemBase().parentId(m_family_depth)];
   }
 
   DataType operator[](const ItemEnumerator & i) const
   { 
-    ARCANE_ASSERT((m_family!=m_parent_family || (*i).internal()==i->parent(m_family_depth)),("Confusion: item parent differs from item"));
-    return m_true_variable.asArray()[(m_direct_access)?i.localId():i->internal()->parentId(m_family_depth)];
+    ARCANE_ASSERT((m_family!=m_parent_family || (*i).itemBase()==i->parent(m_family_depth)),("Confusion: item parent differs from item"));
+    return m_true_variable.asArray()[(m_direct_access)?i.localId():i->itemBase().parentId(m_family_depth)];
   }
 
   TrueVariable & trueVariable() 
@@ -265,7 +266,7 @@ protected:
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
