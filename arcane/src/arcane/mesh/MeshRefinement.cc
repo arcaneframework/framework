@@ -1993,7 +1993,7 @@ _updateItemOwner(Int32ArrayView cell_to_remove_lids)
       bool is_ok = false;
       for (CellEnumerator icell(face.cells()); icell.hasNext(); ++icell){
         Cell cell = *icell;
-        if ((item->uniqueId() == cell.uniqueId()) || !(item->level() == cell.level()))
+        if ((item.uniqueId() == cell.uniqueId()) || !(item.level() == cell.level()))
           continue;
         if (cell.owner() == owner){
           is_ok = true;
@@ -2003,7 +2003,7 @@ _updateItemOwner(Int32ArrayView cell_to_remove_lids)
       if (!is_ok){
         for (CellEnumerator icell(face.cells()); icell.hasNext(); ++icell){
           Cell cell2 = *icell;
-          if (item->uniqueId() == cell2.uniqueId())
+          if (item.uniqueId() == cell2.uniqueId())
             continue;
           faces_owner[face] = cell2.owner();
           face.internal()->setOwner(cell2.owner(), sid);
