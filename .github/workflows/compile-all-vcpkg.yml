@@ -166,11 +166,12 @@ jobs:
         shell: bash
         run: |
           cmake --build "${{ env.CMAKE_BUILD_DIR }}"
+          cmake --build "${{ env.CMAKE_BUILD_DIR }}" --target copy_dlls
 
       - name: Get 'ccache' status
         run: ccache -s -v
 
-      # - name: Test arcane
-      #   shell: bash
-      #   run: |
-      #     cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure ${{ matrix.ctest_specific_args }}
+      - name: Test arcane
+        shell: bash
+        run: |
+          cd "${{ env.CMAKE_BUILD_DIR }}" && ctest --output-on-failure ${{ matrix.ctest_specific_args }}
