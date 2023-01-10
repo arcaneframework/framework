@@ -207,6 +207,8 @@ class ARCANE_CORE_EXPORT ItemVectorView
   : m_local_ids(indexes), m_shared_info(item_info_list_view.m_item_shared_info) { }
   ItemVectorView(IItemFamily* family,ConstArrayView<Int32> local_ids);
   ItemVectorView(IItemFamily* family,ItemIndexArrayView indexes);
+  ItemVectorView(const impl::ItemIndexedListView<DynExtent>& view)
+  : m_local_ids(view.constLocalIds()), m_shared_info(view.m_shared_info) { }
 
  protected:
 
@@ -315,6 +317,8 @@ class ItemVectorViewT
   : ItemVectorView(rhs) {}
   inline ItemVectorViewT(const ItemVectorT<ItemType>& rhs);
   ItemVectorViewT(const ItemInternalVectorView& rhs)
+  : ItemVectorView(rhs) {}
+  ItemVectorViewT(const impl::ItemIndexedListView<DynExtent>& rhs)
   : ItemVectorView(rhs) {}
   ItemVectorViewT(ItemInfoListView item_info_list_view,ConstArrayView<Int32> local_ids)
   : ItemVectorView(item_info_list_view,local_ids) {}

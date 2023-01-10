@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemInternal.h                                              (C) 2000-2022 */
+/* ItemInternal.h                                              (C) 2000-2023 */
 /*                                                                           */
 /* Partie interne d'une entité.                                              */
 /*---------------------------------------------------------------------------*/
@@ -16,8 +16,8 @@
 
 #include "arcane/utils/Array.h"
 
-#include "arcane/ArcaneTypes.h"
 #include "arcane/ItemTypes.h"
+#include "arcane/ItemIndexedListView.h"
 #include "arcane/ItemSharedInfo.h"
 #include "arcane/ItemUniqueId.h"
 #include "arcane/ItemLocalId.h"
@@ -45,8 +45,6 @@
 
 namespace Arcane
 {
-class ItemInternal;
-class Item;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -342,6 +340,15 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
   { return ItemInternalVectorView(A_INTERNAL_SI(face),_faceLocalIdsV2(lid),_nbFaceV2(lid)); }
   ItemInternalVectorView cellsV2(Int32 lid) const
   { return ItemInternalVectorView(A_INTERNAL_SI(cell),_cellLocalIdsV2(lid),_nbCellV2(lid)); }
+
+  auto nodeList(Int32 lid) const
+  { return impl::ItemIndexedListView(A_INTERNAL_SI(node),_nodeLocalIdsV2(lid),_nbNodeV2(lid)); }
+  auto edgeList(Int32 lid) const
+  { return impl::ItemIndexedListView(A_INTERNAL_SI(edge),_edgeLocalIdsV2(lid),_nbEdgeV2(lid)); }
+  auto faceList(Int32 lid) const
+  { return impl::ItemIndexedListView(A_INTERNAL_SI(face),_faceLocalIdsV2(lid),_nbFaceV2(lid)); }
+  auto cellList(Int32 lid) const
+  { return impl::ItemIndexedListView(A_INTERNAL_SI(cell),_cellLocalIdsV2(lid),_nbCellV2(lid)); }
 
   Int32ConstArrayView nodeLocalIdsV2(Int32 lid) const
   { return Int32ConstArrayView(_nbNodeV2(lid),_nodeLocalIdsV2(lid)); }
@@ -656,6 +663,22 @@ class ARCANE_CORE_EXPORT ItemBase
   ItemInternalVectorView internalEdges() const { return _connectivity()->edgesV2(m_local_id); }
   ItemInternalVectorView internalFaces() const { return _connectivity()->facesV2(m_local_id); }
   ItemInternalVectorView internalCells() const { return _connectivity()->cellsV2(m_local_id); }
+
+  /*!
+   * \brief Méthodes utilisant les nouvelles connectivités pour accéder
+   * aux informations de connectivité. A ne pas utiliser en dehors de Arcane.
+   *
+   * \warning Ces méthodes ne doivent être appelées que sur les entités
+   * qui possèdent la connectivité associée.
+   * Par exemple, cela ne fonctionne pas sur Cell->Cell car il n'y a pas de
+   * connectivité maille/maille. En cas de mauvaise utilisation, cela
+   * se traduit par un débordement de tableau.
+   */
+  //@{
+  ItemIndexedListView<DynExtent> nodeList() const { return _connectivity()->nodeList(m_local_id); }
+  ItemIndexedListView<DynExtent> edgeList() const { return _connectivity()->edgeList(m_local_id); }
+  ItemIndexedListView<DynExtent> faceList() const { return _connectivity()->faceList(m_local_id); }
+  ItemIndexedListView<DynExtent> cellList() const { return _connectivity()->cellList(m_local_id); }
 
   Int32ConstArrayView nodeIds() const { return _connectivity()->nodeLocalIdsV2(m_local_id); }
   Int32ConstArrayView edgeIds() const { return _connectivity()->edgeLocalIdsV2(m_local_id); }
