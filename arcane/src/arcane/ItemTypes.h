@@ -45,6 +45,7 @@ class ItemInternal;
 namespace impl
 {
 class ItemBase;
+class MutableItemBase;
 template<int Extent = DynExtent> class ItemIndexedListView;
 }
 

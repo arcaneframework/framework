@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GeomShapeView.h                                             (C) 2000-2016 */
+/* GeomShapeView.h                                             (C) 2000-2023 */
 /*                                                                           */
 /* Gestion des formes géométriques 2D et 3D.                                 */
 /*---------------------------------------------------------------------------*/
@@ -28,8 +28,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-GEOMETRIC_BEGIN_NAMESPACE
+namespace Arcane::geometric
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -240,7 +240,7 @@ class ARCANE_CEA_GEOMETRIC_EXPORT GeomShapeView
   void _setItem(Item item)
   {
     m_cell_connectivity = global_cell_connectivity[item.type()];
-    m_item_internal = item.internal();
+    m_item_internal = item._internal();
   }
 
   void _setNullItem(int item_type)
@@ -293,8 +293,7 @@ class GeomShape3DView
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-GEOMETRIC_END_NAMESPACE
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -45,6 +45,7 @@
 
 namespace Arcane
 {
+class ItemCompatibility;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -422,7 +423,6 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
 
 namespace impl
 {
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -447,6 +447,8 @@ class ARCANE_CORE_EXPORT ItemBase
 {
   friend class ::Arcane::ItemInternal;
   friend class ::Arcane::Item;
+  friend class ::Arcane::ItemCompatibility;
+  friend MutableItemBase;
 
  private:
 
@@ -678,6 +680,11 @@ class ARCANE_CORE_EXPORT ItemBase
   ItemIndexedListView<DynExtent> faceList() const { return _connectivity()->faceList(m_local_id); }
   ItemIndexedListView<DynExtent> cellList() const { return _connectivity()->cellList(m_local_id); }
 
+  ItemIndexedListView<DynExtent> itemList(Node*) const { return nodeList(); }
+  ItemIndexedListView<DynExtent> itemList(Edge*) const { return edgeList(); }
+  ItemIndexedListView<DynExtent> itemList(Face*) const { return faceList(); }
+  ItemIndexedListView<DynExtent> itemList(Cell*) const { return cellList(); }
+
   Int32ConstArrayView nodeIds() const { return _connectivity()->nodeLocalIdsV2(m_local_id); }
   Int32ConstArrayView edgeIds() const { return _connectivity()->edgeLocalIdsV2(m_local_id); }
   Int32ConstArrayView faceIds() const { return _connectivity()->faceLocalIdsV2(m_local_id); }
@@ -694,7 +701,7 @@ class ARCANE_CORE_EXPORT ItemBase
 
  public:
 
- /**
+ /*!
    * @returns le rang de l'enfant \p (iitem).
    * exemple: si rank = m_internal->whichChildAmI(iitem); donc
    * m_internal->hChild(rank) serait iitem;
@@ -703,11 +710,20 @@ class ARCANE_CORE_EXPORT ItemBase
 
  public:
 
+  ItemBase topHParentBase() const;
+
+ public:
+
+  //! Interface modifiable de cette entité
+  inline MutableItemBase toMutable();
+
+ public:
+
+  // TODO: rendre obsolète
   inline ItemInternal* itemInternal() const;
 
+  // TODO rendre obsolète
   ItemInternalVectorView _internalActiveCells(Int32Array& local_ids) const;
-
-  ItemBase topHParentBase() const;
 
  private:
 
@@ -745,64 +761,27 @@ class ARCANE_CORE_EXPORT ItemBase
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-} // End namespace impl
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
- * \internal
- * \brief Structure interne d'une entité de maillage.
-
- Cette instance contient la structure interne d'une entité de maillage.
- Elle ne doit être manipulée que par ceux qui savent ce qu'il font...
-
- Pour utiliser une entité, il faut utiliser la classe Item ou l'une
- de ces classes dérivées.
-
- En règle général, le maillage (IMesh) auquel l'entité appartient maintient
- différentes structures permettant de manipuler le maillage. Ces structures
- sont souvent recalculés dynamiquement lorsque cela est nécessaire (lazy
- evaluation). C'est le cas par exemple des groupes d'entités propres
- au sous-domaine ou de la table de conversion des numéros globaux en
- numéros locaux. C'est pourquoi il est primordial lorqu'on effectue
- une série de modifications d'instances de cette classe de notifier
- le maillage des changements effectués.
+ * \brief Méthodes permettant de modifier ItemBase.
+ *
+ * Ces méthodes sont internes à Arcane.
  */
-class ARCANE_CORE_EXPORT ItemInternal
-: public impl::ItemBase
+class ARCANE_CORE_EXPORT MutableItemBase
+: public ItemBase
 {
+  friend class ::Arcane::Item;
+  friend ItemBase;
+
+ private:
+
+  MutableItemBase(Int32 local_id,ItemSharedInfo* shared_info)
+  : ItemBase(local_id, shared_info) {}
 
  public:
 
-  //! Entité nulle
-  static ItemInternal nullItemInternal;
-  static ItemInternal* nullItem() { return &nullItemInternal; }
-
- public:
-
-  //! Maille connectée à l'entité si l'entité est une entité sur la frontière (0 si aucune)
-  ItemInternal* boundaryCell() const { return (flags() & II_Boundary) ? internalCell(0) : nullItem(); }
-  //! Maille derrière l'entité (nullItem() si aucune)
-  ItemInternal* backCell() const
-  {
-    if (flags() & II_HasBackCell)
-      return internalCell((flags() & II_BackCellIsFirst) ? 0 : 1);
-    return nullItem();
-  }
-  //! Maille devant l'entité (nullItem() si aucune)
-  ItemInternal* frontCell() const
-  {
-    if (flags() & II_HasFrontCell)
-      return internalCell((flags() & II_FrontCellIsFirst) ? 0 : 1);
-    return nullItem();
-  }
-  ItemInternal* masterFace() const
-  {
-    if (flags() & II_SlaveFace)
-      return internalFace(0);
-    return nullItem();
-  }
+  MutableItemBase() = default;
+  MutableItemBase(ItemBase* x) : ItemBase(x) {}
+  MutableItemBase(ItemBaseBuildInfo x) : ItemBase(x) {}
 
  public:
 
@@ -856,8 +835,6 @@ class ARCANE_CORE_EXPORT ItemInternal
     this->setFlags(f);
   }
 
-  //! Infos partagées de l'entité.
-  ItemSharedInfo* sharedInfo() const { return m_shared_info; }
   //! Positionne l'état détachée de l'entité
   void setDetached(bool v)
   {
@@ -876,6 +853,111 @@ class ARCANE_CORE_EXPORT ItemInternal
     setOwner(aowner,owner_rank);
   }
 
+  void setLocalId(Int32 local_id)
+  {
+    m_local_id = local_id;
+  }
+ 
+  //! Positionne le \a i-ème parent (actuellement aindex doit valoir 0)
+  void setParent(Int32 aindex,Int32 parent_local_id)
+  {
+    m_shared_info->_setParentV2(m_local_id,aindex,parent_local_id);
+  }
+
+ public:
+
+  /*!
+   * \brief Méthodes temporaires pour passer des connectivités historiques
+   * aux nouvelles. A ne pas utiliser en dehors de Arcane.
+   */
+  //@{
+  /*!
+   * \internal
+   * \brief Pour une face, positionne à la fois la back cell et la front cell.
+   *
+   * \a back_cell_lid et/ou \a front_cell_lid peuvent valoir NULL_ITEM_LOCAL_ID
+   * ce qui signifie que l'entité n'a pas de back cell ou front cell. Si les
+   * deux valeurs sont nulles, alors la face est considérée comme n'ayant
+   * plus de mailles connectées.
+   */
+  void _setFaceBackAndFrontCells(Int32 back_cell_lid,Int32 front_cell_lid);
+  //@}
+
+ private:
+
+  void _checkUniqueId(Int64 new_uid) const;
+
+  inline void _setFaceInfos(Int32 mod_flags);
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace impl
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Structure interne d'une entité de maillage.
+
+ Cette instance contient la structure interne d'une entité de maillage.
+ Elle ne doit être manipulée que par ceux qui savent ce qu'il font...
+
+ Pour utiliser une entité, il faut utiliser la classe Item ou l'une
+ de ces classes dérivées.
+
+ En règle général, le maillage (IMesh) auquel l'entité appartient maintient
+ différentes structures permettant de manipuler le maillage. Ces structures
+ sont souvent recalculés dynamiquement lorsque cela est nécessaire (lazy
+ evaluation). C'est le cas par exemple des groupes d'entités propres
+ au sous-domaine ou de la table de conversion des numéros globaux en
+ numéros locaux. C'est pourquoi il est primordial lorqu'on effectue
+ une série de modifications d'instances de cette classe de notifier
+ le maillage des changements effectués.
+ */
+class ARCANE_CORE_EXPORT ItemInternal
+: public impl::MutableItemBase
+{
+  // Pour accès à _setSharedInfo()
+  friend class mesh::DynamicMeshKindInfos;
+  friend class mesh::ItemFamily;
+
+ public:
+
+  //! Entité nulle
+  static ItemInternal nullItemInternal;
+  static ItemInternal* nullItem() { return &nullItemInternal; }
+
+ public:
+
+  //! Maille connectée à l'entité si l'entité est une entité sur la frontière (0 si aucune)
+  ItemInternal* boundaryCell() const { return (flags() & II_Boundary) ? internalCell(0) : nullItem(); }
+  //! Maille derrière l'entité (nullItem() si aucune)
+  ItemInternal* backCell() const
+  {
+    if (flags() & II_HasBackCell)
+      return internalCell((flags() & II_BackCellIsFirst) ? 0 : 1);
+    return nullItem();
+  }
+  //! Maille devant l'entité (nullItem() si aucune)
+  ItemInternal* frontCell() const
+  {
+    if (flags() & II_HasFrontCell)
+      return internalCell((flags() & II_FrontCellIsFirst) ? 0 : 1);
+    return nullItem();
+  }
+  ItemInternal* masterFace() const
+  {
+    if (flags() & II_SlaveFace)
+      return internalFace(0);
+    return nullItem();
+  }
+
+  //! Infos partagées de l'entité.
+  ARCANE_DEPRECATED_REASON("Y2022: This method is internal to Arcane and should not be used.")
+  ItemSharedInfo* sharedInfo() const { return m_shared_info; }
+
  public:
 
   // TODO rendre obsolète après la version 3.8 (utiliser itemList() à la place)
@@ -886,11 +968,6 @@ class ARCANE_CORE_EXPORT ItemInternal
   ItemInternalVectorView internalItems(Face*) const { return faceList(); }
   // TODO rendre obsolète après la version 3.8
   ItemInternalVectorView internalItems(Cell*) const { return cellList(); }
-
-  impl::ItemIndexedListView<DynExtent> itemList(Node*) const { return nodeList(); }
-  impl::ItemIndexedListView<DynExtent> itemList(Edge*) const { return edgeList(); }
-  impl::ItemIndexedListView<DynExtent> itemList(Face*) const { return faceList(); }
-  impl::ItemIndexedListView<DynExtent> itemList(Cell*) const { return cellList(); }
 
  public:
 
@@ -937,12 +1014,6 @@ class ARCANE_CORE_EXPORT ItemInternal
 
  public:
 
-  //! Positionne le \a i-ème parent (actuellement aindex doit valoir 0)
-  void setParent(Integer aindex,Int32 parent_local_id)
-  {
-    m_shared_info->_setParentV2(m_local_id,aindex,parent_local_id);
-  }
-
   //! Mémoire nécessaire pour stocker les infos de l'entité
   ARCANE_DEPRECATED_REASON("Y2022: This method always return 0")
   constexpr Integer neededMemory() const { return 0; }
@@ -961,47 +1032,34 @@ class ARCANE_CORE_EXPORT ItemInternal
 
  public:
 
-  void setLocalId(Int32 local_id) { m_local_id = local_id; }
   ARCANE_DEPRECATED_REASON("Y2022: This method always throws an exception.")
   void setDataIndex(Integer);
-  //! \internal
+
+  ARCANE_DEPRECATED_REASON("Y2022: This method is internal to Arcane and should not be used.")
   void setSharedInfo(ItemSharedInfo* shared_infos,ItemTypeId type_id)
   {
-    m_shared_info = shared_infos;
-    shared_infos->_setTypeId(m_local_id,type_id.typeId());
+    _setSharedInfo(shared_infos,type_id);
   }
 
  public:
 
-  /*!
-   * \brief Méthodes temporaires pour passer des connectivités historiques
-   * aux nouvelles. A ne pas utiliser en dehors de Arcane.
-   */
-  //@{
-  /*!
-   * \internal
-   * \brief Pour une face, positionne à la fois la back cell et la front cell.
-   *
-   * \a back_cell_lid et/ou \a front_cell_lid peuvent valoir NULL_ITEM_LOCAL_ID
-   * ce qui signifie que l'entité n'a pas de back cell ou front cell. Si les
-   * deux valeurs sont nulles, alors la face est considérée comme n'ayant
-   * plus de mailles connectées.
-   */
-  void _setFaceBackAndFrontCells(Int32 back_cell_lid,Int32 front_cell_lid);
-  //@}
-
   //! \internal
   typedef ItemInternal* ItemInternalPtr;
+
+  //! \internal
+  ARCANE_DEPRECATED_REASON("Y2022: This method is internal to Arcane and should not be used.")
   static ItemSharedInfo* _getSharedInfo(const ItemInternalPtr* items)
   {
-    return ((items) ? items[0]->sharedInfo() : ItemSharedInfo::nullInstance());
+    return ((items) ? items[0]->m_shared_info : ItemSharedInfo::nullInstance());
   }
 
  private:
 
-  void _checkUniqueId(Int64 new_uid) const;
-
-  inline void _setFaceInfos(Int32 mod_flags);
+  void _setSharedInfo(ItemSharedInfo* shared_infos,ItemTypeId type_id)
+  {
+    m_shared_info = shared_infos;
+    shared_infos->_setTypeId(m_local_id,type_id.typeId());
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -1043,6 +1101,14 @@ parentBase(Int32 index) const
   return ItemBase(m_shared_info->_parentV2(m_local_id,index));
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+inline impl::MutableItemBase impl::ItemBase::
+toMutable()
+{
+  return MutableItemBase(m_local_id,m_shared_info);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1060,14 +1126,22 @@ class ItemCompatibility
   friend class SimdItemDirectBase;
 	friend class SimdItem;
   friend class SimdItemEnumeratorBase;
+  friend class ItemVectorView;
+  template<typename T> friend class ItemEnumeratorBaseT;
+  friend class mesh::DynamicMeshKindInfos;
+  friend class TotalviewAdapter;
 
  private:
 
   //! \internal
   typedef ItemInternal* ItemInternalPtr;
+  static ItemSharedInfo* _getSharedInfo(const ItemInternal* item)
+  {
+    return item->m_shared_info;
+  }
   static ItemSharedInfo* _getSharedInfo(const ItemInternalPtr* items)
   {
-    return ((items) ? items[0]->sharedInfo() : ItemSharedInfo::nullInstance());
+    return ((items) ? items[0]->m_shared_info : ItemSharedInfo::nullInstance());
   }
   static const ItemInternalPtr* _getItemInternalPtr(ItemSharedInfo* shared_info)
   {
