@@ -70,7 +70,7 @@ class ARCANE_MESH_EXPORT AbstractItemFamilyTopologyModifier
 
   void _throwNotSupported();
   inline Int32 _getItemIndex(const Int32* items,Integer nb_item,Int32 local_id);
-  inline Int32 _getItemIndex(ItemInternalVectorView items,Int32 local_id);
+  inline Int32 _getItemIndex(ItemVectorView items,Int32 local_id);
 };
 
 /*---------------------------------------------------------------------------*/

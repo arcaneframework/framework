@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemVectorUnitTest.cc                                       (C) 2000-2010 */
+/* ItemVectorUnitTest.cc                                       (C) 2000-2023 */
 /*                                                                           */
 /* Service de test des tableaux.                                             */
 /*---------------------------------------------------------------------------*/
@@ -28,7 +28,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_BEGIN_NAMESPACE
+namespace ArcaneTest
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -238,14 +239,14 @@ print(std::ostream& o) const
     o << '\n';
     if (ik!=IK_Node)
       if (m_item->nbNode()!=0)
-        _print(o,ivp,m_item->internalNodes(),"Nodes");
+        _print(o,ivp,m_item->nodeList(),"Nodes");
     if (m_item->nbEdge()!=0)
-      _print(o,ivp,m_item->internalEdges(),"Edges");
+      _print(o,ivp,m_item->edgeList(),"Edges");
     if (m_item->nbFace()!=0)
-      _print(o,ivp,m_item->internalFaces(),"Faces");
+      _print(o,ivp,m_item->faceList(),"Faces");
     if (ik!=IK_Cell)
       if (m_item->nbCell()!=0)
-        _print(o,ivp,m_item->internalCells(),"Cells");
+        _print(o,ivp,m_item->cellList(),"Cells");
     if (ik==IK_Face){
       o << "BackCell " << ItemPrinter2(m_item->backCell()) << ' ';
       o << "FrontCell " << ItemPrinter2(m_item->frontCell()) << ' ';
@@ -276,7 +277,7 @@ class ItemVectorUnitTest
 {
  public:
 
-  ItemVectorUnitTest(const ServiceBuildInfo& cb);
+  explicit ItemVectorUnitTest(const ServiceBuildInfo& cb);
   ~ItemVectorUnitTest();
 
  public:
@@ -438,7 +439,7 @@ _executeTest(IItemFamily* item_family)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

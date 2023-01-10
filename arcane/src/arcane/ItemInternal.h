@@ -653,9 +653,13 @@ class ARCANE_CORE_EXPORT ItemBase
    * se traduit par un débordement de tableau.
    */
   //@{
+  // TODO rendre obsolète après la version 3.8 (utiliser nodeList() à la place)
   ItemInternalVectorView internalNodes() const { return _connectivity()->nodesV2(m_local_id); }
+  // TODO rendre obsolète après la version 3.8
   ItemInternalVectorView internalEdges() const { return _connectivity()->edgesV2(m_local_id); }
+  // TODO rendre obsolète après la version 3.8
   ItemInternalVectorView internalFaces() const { return _connectivity()->facesV2(m_local_id); }
+  // TODO rendre obsolète après la version 3.8
   ItemInternalVectorView internalCells() const { return _connectivity()->cellsV2(m_local_id); }
 
   /*!
@@ -812,7 +816,8 @@ class ARCANE_CORE_EXPORT ItemInternal
   /*! Controle que la valeur à annuler est valid en mode ARCANE_CHECK */
   void unsetUniqueId();
 
-  /*! \brief Positionne le numéro du sous-domaine propriétaire de l'entité.
+  /*!
+   * \brief Positionne le numéro du sous-domaine propriétaire de l'entité.
 
     \a current_sub_domain est le numéro du sous-domaine appelant cette opération.
 
@@ -873,10 +878,19 @@ class ARCANE_CORE_EXPORT ItemInternal
 
  public:
 
-  ItemInternalVectorView internalItems(Node*) const { return internalNodes(); }
-  ItemInternalVectorView internalItems(Edge*) const { return internalEdges(); }
-  ItemInternalVectorView internalItems(Face*) const { return internalFaces(); }
-  ItemInternalVectorView internalItems(Cell*) const { return internalCells(); }
+  // TODO rendre obsolète après la version 3.8 (utiliser itemList() à la place)
+  ItemInternalVectorView internalItems(Node*) const { return nodeList(); }
+  // TODO rendre obsolète après la version 3.8
+  ItemInternalVectorView internalItems(Edge*) const { return edgeList(); }
+  // TODO rendre obsolète après la version 3.8
+  ItemInternalVectorView internalItems(Face*) const { return faceList(); }
+  // TODO rendre obsolète après la version 3.8
+  ItemInternalVectorView internalItems(Cell*) const { return cellList(); }
+
+  impl::ItemIndexedListView<DynExtent> itemList(Node*) const { return nodeList(); }
+  impl::ItemIndexedListView<DynExtent> itemList(Edge*) const { return edgeList(); }
+  impl::ItemIndexedListView<DynExtent> itemList(Face*) const { return faceList(); }
+  impl::ItemIndexedListView<DynExtent> itemList(Cell*) const { return cellList(); }
 
  public:
 
@@ -914,7 +928,7 @@ class ARCANE_CORE_EXPORT ItemInternal
   ARCANE_DEPRECATED_REASON("Y2022: Use parentId() or setParent() instead")
   Int32* parentPtr() { return m_shared_info->_parentPtr(m_local_id); }
 
-  /**
+  /*!
    * @returns le rang de l'enfant \p (iitem).
    * exemple: si rank = m_internal->whichChildAmI(iitem); donc
    * m_internal->hChild(rank) serait iitem;
@@ -938,7 +952,8 @@ class ARCANE_CORE_EXPORT ItemInternal
 
  public:
 
-  // TODO: rendre obsolète les 4 méthodes suivantes
+  // TODO: rendre obsolète après la version 3.8 les 4 méthodes suivantes
+  // car il faut utiliser nodeId(), edgeId(), ...
   Int32 nodeLocalId(Integer index) { return _connectivity()->_nodeLocalIdV2(m_local_id,index); }
   Int32 edgeLocalId(Integer index) { return _connectivity()->_edgeLocalIdV2(m_local_id,index); }
   Int32 faceLocalId(Integer index) { return _connectivity()->_faceLocalIdV2(m_local_id,index); }

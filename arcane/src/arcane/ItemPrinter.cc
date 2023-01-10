@@ -100,17 +100,17 @@ print(std::ostream& ostr) const
     ostr << "\n\t";
     if (ik!=IK_Node)
       if (m_item->nbNode()!=0)
-        ItemPrinter::Internal::_printItemSubItems(ostr,"Nodes",m_item->internalNodes());
+        ItemPrinter::Internal::_printItemSubItems(ostr,"Nodes",m_item->nodeList());
     ostr << "\n\t";
     if (m_item->nbEdge()!=0)
-      ItemPrinter::Internal::_printItemSubItems(ostr,"Edges",m_item->internalEdges());
+      ItemPrinter::Internal::_printItemSubItems(ostr,"Edges",m_item->edgeList());
     ostr << "\n\t";
     if (m_item->nbFace()!=0)
-      ItemPrinter::Internal::_printItemSubItems(ostr,"Faces",m_item->internalFaces());
+      ItemPrinter::Internal::_printItemSubItems(ostr,"Faces",m_item->faceList());
     ostr << "\n\t";
     if (ik!=IK_Cell)
       if (m_item->nbCell()!=0)
-        ItemPrinter::Internal::_printItemSubItems(ostr,"Cells",m_item->internalCells());
+        ItemPrinter::Internal::_printItemSubItems(ostr,"Cells",m_item->cellList());
   }
 }
 
@@ -151,14 +151,14 @@ print(std::ostream& ostr, Item xitem, Integer level, Integer levelmax)
       ostr << "\n";
       if (ik!=IK_Node)
         if (item->nbNode()!=0)
-          _printSubItems(ostr,level,levelmax,item->internalNodes(),"node");
+          _printSubItems(ostr,level,levelmax,item->nodeList(),"node");
       if (item->nbEdge()!=0)
-        _printSubItems(ostr,level,levelmax,item->internalEdges(),"edge");
+        _printSubItems(ostr,level,levelmax,item->edgeList(),"edge");
       if (item->nbFace()!=0)
-        _printSubItems(ostr,level,levelmax,item->internalFaces(),"face");
+        _printSubItems(ostr,level,levelmax,item->faceList(),"face");
       if (ik!=IK_Cell)
         if (item->nbCell()!=0)
-          _printSubItems(ostr,level,levelmax,item->internalCells(),"cell");
+          _printSubItems(ostr,level,levelmax,item->cellList(),"cell");
     }
   }
 }

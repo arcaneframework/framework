@@ -17,6 +17,7 @@
 #include "arcane/utils/ArrayView.h"
 #include "arcane/ItemTypes.h"
 #include "arcane/ItemSharedInfo.h"
+#include "arcane/ItemIndexedListView.h"
 
 #include <iterator>
 
@@ -122,6 +123,7 @@ class ARCANE_CORE_EXPORT ItemInternalVectorView
   friend class ItemEnumeratorBase;
   friend class SimdItemEnumeratorBase;
   friend class ItemInternalEnumerator;
+  friend ItemInternal;
   template <typename T> friend class ItemEnumeratorBaseT;
   using const_iterator = ItemInternalVectorViewConstIterator;
 
@@ -144,6 +146,11 @@ class ARCANE_CORE_EXPORT ItemInternalVectorView
   {
     ARCANE_ASSERT(_isValid(), ("Bad ItemInternalVectorView"));
   }
+
+  ItemInternalVectorView(const impl::ItemIndexedListView<DynExtent>& view)
+  : m_local_ids(view.constLocalIds())
+  , m_shared_info(view.m_shared_info)
+  {}
 
  public:
 

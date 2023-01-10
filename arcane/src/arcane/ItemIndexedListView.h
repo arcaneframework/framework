@@ -44,6 +44,8 @@ class ARCANE_CORE_EXPORT ItemIndexedListView
   friend ItemInternalConnectivityList;
   friend ItemBase;
   friend ItemVectorView;
+  friend ItemInternalVectorView;
+  template <typename T> friend class Arcane::ItemEnumeratorBaseT;
 
  public:
 
