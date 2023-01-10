@@ -190,7 +190,7 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
  public:
 
   ItemInternalConnectivityList()
-  : m_items(nullptr), m_nb_access_all(0), m_nb_access(0)
+  : m_items(nullptr)
   {
     for( Integer i=0; i<MAX_ITEM_KIND; ++i ){
       m_nb_item_null_data[i][0] = 0;
@@ -411,12 +411,6 @@ class ARCANE_CORE_EXPORT ItemInternalConnectivityList
 #ifdef ARCANE_CONNECTIVITYLIST_USE_OWN_SHAREDINFO
  impl::MeshItemSharedInfoList m_shared_infos;
 #endif
-
- private:
-
-  // Compte le nombre d'accès pour vérification. A supprimer par la suite.
-  mutable Int64 m_nb_access_all;
-  mutable Int64 m_nb_access;
 
  private:
 
