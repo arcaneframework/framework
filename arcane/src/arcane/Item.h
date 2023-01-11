@@ -169,8 +169,12 @@ class ARCANE_CORE_EXPORT Item
   //! Construit une référence à l'entité \a internal
   //ARCANE_DEPRECATED_REASON("Remove this overload")
   Item(ItemInternal* ainternal)
-  : m_shared_info(ainternal->m_shared_info)
-  , m_local_id(ainternal->m_local_id) { ARCANE_ITEM_ADD_STAT(m_nb_created_from_internal); }
+  {
+    ARCANE_CHECK_PTR(ainternal);
+    m_shared_info = ainternal->m_shared_info;
+    m_local_id  = ainternal->m_local_id;
+    ARCANE_ITEM_ADD_STAT(m_nb_created_from_internal);
+  }
 
   // NOTE: Pour le constructeur suivant; il est indispensable d'utiliser
   // const& pour éviter une ambiguité avec le constructeur par recopie
