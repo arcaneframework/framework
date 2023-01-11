@@ -192,14 +192,12 @@ refineOneCell(Cell item, MeshRefinement& mesh_refinement)
     // Créé les mailles
     {
       m_cells_lid.resize(m_nb_cell_to_add);
-      m_mesh->modifier()->addHChildrenCells(item.internal(), m_nb_cell_to_add, m_cells_infos, m_cells_lid);
+      m_mesh->modifier()->addHChildrenCells(item, m_nb_cell_to_add, m_cells_infos, m_cells_lid);
       //! \todo vérfier l'ordre des enfants après leurs création
       ItemInfoListView cells(m_mesh->cellFamily());
       for (Integer i = 0; i < m_nb_cell_to_add; ++i){
-        ItemInternal* child = cells[m_cells_lid[i]].internal();
-        Integer cf = child->flags();
-        cf |= ItemFlags::II_JustAdded;
-        child->setFlags(cf);
+        Item child = cells[m_cells_lid[i]];
+        child.mutableItemBase().addFlags(ItemFlags::II_JustAdded);
       }
     }
   }
@@ -208,20 +206,20 @@ refineOneCell(Cell item, MeshRefinement& mesh_refinement)
       Cell child = item.hChild(c);
       //debug() << "[refineOneCell] child #"<<child->localId();
       ARCANE_ASSERT((child.isSubactive()), ("child must be a sub active item!"));
-      Integer f = child.internal()->flags();
+      Integer f = child.mutableItemBase().flags();
       f |= ItemFlags::II_JustAdded;
       f &= ~ItemFlags::II_Inactive;
-      child.internal()->setFlags(f);
+      child.mutableItemBase().setFlags(f);
     }
   }
 
   // Maintenant, Unset le flag de raffinement de l'item
   //debug(Trace::High) << "[refineOneCell] et on flush le flag";
-  Integer f = item.internal()->flags();
+  Integer f = item.itemBase().flags();
   f &= ~ItemFlags::II_Refine;
   f |= ItemFlags::II_Inactive;
   f |= ItemFlags::II_JustRefined;
-  item.internal()->setFlags(f);
+  item.mutableItemBase().setFlags(f);
 #if defined(ARCANE_DEBUG_ASSERT)
   for (Integer c = 0; c < nb_hChildren; c++){
     Cell hParent = item.hChild(c).hParent();
@@ -242,7 +240,7 @@ coarsenOneCell(Cell item, const ItemRefinementPatternT<typeID>& rp)
   //! HexEmbeddingMatrix hex_em;
   //! refine(hex_em,item)
 
-  ARCANE_ASSERT ( (item.internal()->flags() & ItemFlags::II_CoarsenInactive), ("Item is not for coarsening!"));
+  ARCANE_ASSERT ( (item.itemBase().flags() & ItemFlags::II_CoarsenInactive), ("Item is not for coarsening!"));
   ARCANE_ASSERT ( (!item.isActive()), ("Item is active!"));
   //debug(Trace::High) << "[coarsenOneCell] "<<item_internal->uniqueId();
   // ATT: Nous ne supprimons pas les enfants jusqu'à contraction via MeshRefinement::contract()
@@ -258,19 +256,19 @@ coarsenOneCell(Cell item, const ItemRefinementPatternT<typeID>& rp)
 
     if (mychild.owner() != sid)
       continue;
-    Integer f = mychild.internal()->flags();
+    Integer f = mychild.itemBase().flags();
     ARCANE_ASSERT ((f & ItemFlags::II_Coarsen),("Item is not flagged for coarsening"));
     f &= ~ItemFlags::II_Coarsen;
     f |= ItemFlags::II_Inactive;
     //      f |= ItemFlags::II_NeedRemove; // TODO activer le flag de suppression
-    mychild.internal()->setFlags(f);
+    mychild.mutableItemBase().setFlags(f);
   }
-  Integer f = item.internal()->flags();
+  Integer f = item.itemBase().flags();
   f &= ~ItemFlags::II_Inactive; // TODO verify if this condition is needed
   f &= ~ItemFlags::II_CoarsenInactive;
   f |= ItemFlags::II_JustCoarsened;
   //debug(Trace::High) << "[coarsenOneCell] item_internal->flags()="<<f;
-  item.internal()->setFlags(f);
+  item.mutableItemBase().setFlags(f);
 
   ARCANE_ASSERT ( (item.isActive()), ("item must be active!"));
   //debug() << "[coarsenOneCell] done";

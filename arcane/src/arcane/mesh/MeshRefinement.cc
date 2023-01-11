@@ -329,11 +329,9 @@ flagCellToRefine(Int32ConstArrayView lids)
 {
   ItemInfoListView cells(m_mesh->cellFamily());
   for (Integer i = 0, is = lids.size(); i < is; i++) {
-    ItemInternal* item = cells[lids[i]].internal();
+    Item item = cells[lids[i]];
     //ARCANE_ASSERT((item->type() ==IT_Hexaedron8),(""));
-    Integer f = item->flags();
-    f |= ItemFlags::II_Refine;
-    item->setFlags(f);
+    item.mutableItemBase().addFlags(ItemFlags::II_Refine);
   }
 }
 
@@ -345,11 +343,9 @@ flagCellToCoarsen(Int32ConstArrayView lids)
 {
   ItemInfoListView cells(m_mesh->cellFamily());
   for (Integer i = 0, is = lids.size(); i < is; i++) {
-    ItemInternal* item = cells[lids[i]].internal();
+    Item item = cells[lids[i]];
     //ARCANE_ASSERT((item->type() ==IT_Hexaedron8),(""));
-    Integer f = item->flags();
-    f |= ItemFlags::II_Coarsen;
-    item->setFlags(f);
+    item.mutableItemBase().addFlags(ItemFlags::II_Coarsen);
   }
 }
 /*---------------------------------------------------------------------------*/
