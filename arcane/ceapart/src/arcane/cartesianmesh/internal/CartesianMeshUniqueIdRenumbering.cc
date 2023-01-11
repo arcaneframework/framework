@@ -182,15 +182,25 @@ _applyChildrenCell2D(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceIn
   const Int64 parent_level_nb_cell_y = current_level_nb_cell_y/2;
 
   const Int64 cell_adder = parent_level_nb_cell_x * parent_level_nb_cell_y * current_level;
-  const Int64 nb_node_x = current_level_nb_cell_x + 1;
-  const Int64 nb_node_y = current_level_nb_cell_y + 1;
+  const Int64 current_level_nb_node_x = current_level_nb_cell_x + 1;
+  const Int64 current_level_nb_node_y = current_level_nb_cell_y + 1;
   const Int64 node_adder = (parent_level_nb_cell_x+1) * (parent_level_nb_cell_y+1) * current_level;
-  current_level_nb_cell_x *= 2;
-  current_level_nb_cell_y *= 2;
-  //coord_i *= 2;
-  //coord_j *= 2;
-  const Int64 nb_face_x = current_level_nb_cell_x + 1;
-  const Int64 face_adder = node_adder * 2;
+  const Int64 current_level_nb_face_x = current_level_nb_cell_x + 1;
+
+  const Int64 face_adder = (current_level == 0 ? 0 : (parent_level_nb_cell_x * parent_level_nb_cell_y) * 2 + parent_level_nb_cell_x + parent_level_nb_cell_y + parent_level_nb_cell_x);
+
+
+  // Renumérote la maille.
+  {
+    Int64 new_uid = (coord_i + coord_j * current_level_nb_cell_x) + cell_adder;
+    //if (cells_new_uid[cell] < 0){
+      cells_new_uid[cell] = new_uid;
+      if (m_is_verbose)
+        info() << "APPLY_CELL_CHILD: uid=" << cell.uniqueId() << " I=" << coord_i << " J=" << coord_j
+               << " current_level=" << current_level << " new_uid=" << new_uid << " NodeAdder=" << node_adder;
+    //}
+  }
+
 
   // Renumérote les noeuds de la maille courante.
   // Suppose qu'on a 4 noeuds
@@ -202,10 +212,10 @@ _applyChildrenCell2D(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceIn
       ARCANE_FATAL("Invalid number of nodes N={0}, expected=4", cell.nbNode());
     std::array<Int64, 4> new_uids;
 
-    new_uids[0] = (coord_i + 0) + ((coord_j + 0) * nb_node_x);
-    new_uids[1] = (coord_i + 1) + ((coord_j + 0) * nb_node_x);
-    new_uids[2] = (coord_i + 1) + ((coord_j + 1) * nb_node_x);
-    new_uids[3] = (coord_i + 0) + ((coord_j + 1) * nb_node_x);
+    new_uids[0] = (coord_i + 0) + ((coord_j + 0) * current_level_nb_node_x);
+    new_uids[1] = (coord_i + 1) + ((coord_j + 0) * current_level_nb_node_x);
+    new_uids[2] = (coord_i + 1) + ((coord_j + 1) * current_level_nb_node_x);
+    new_uids[3] = (coord_i + 0) + ((coord_j + 1) * current_level_nb_node_x);
 
     for (Integer z = 0; z < 4; ++z) {
       Node node = cell.node(z);
@@ -218,27 +228,55 @@ _applyChildrenCell2D(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceIn
       //}
     }
   }
+
   // Renumérote les faces
-  // TODO: Vérifier la validité de cette méthode.
+  //  |-0--|--2-|
+  // 4|   6|   8|
+  //  |-5--|-7--|
+  // 9|  11|  13|
+  //  |-10-|-12-|
+  //
+  // Avec cette numérotation, HAUT < GAUCHE < BAS < DROITE
+  // Mis à part les uniqueIds de la première ligne de face, tous
+  // les uniqueIds sont contigües.
+  // A partir de 
   {
     if (cell.nbFace() != 4)
       ARCANE_FATAL("Invalid number of faces N={0}, expected=4", cell.nbFace());
     std::array<Int64, 4> new_uids;
-    new_uids[0] = (coord_i + 0) + ((coord_j + 0) * nb_face_x);
-    new_uids[1] = (coord_i + 1) + ((coord_j + 0) * nb_face_x);
-    new_uids[2] = (coord_i + 1) + ((coord_j + 1) * nb_face_x);
-    new_uids[3] = (coord_i + 0) + ((coord_j + 1) * nb_face_x);
+
+    // HAUT
+    // - "(current_level_nb_face_x + current_level_nb_cell_x)" :
+    //   le nombre de faces GAUCHE BAS DROITE au dessus.
+    // - "coord_j * (current_level_nb_face_x + current_level_nb_cell_x)" : 
+    //   le nombre total de faces GAUCHE BAS DROITE au dessus.
+    // - "coord_i * 2"
+    //   on avance deux à deux sur les faces d'un même "coté".
+    new_uids[0] = coord_i * 2 + coord_j * (current_level_nb_face_x + current_level_nb_cell_x);
+
+    // GAUCHE
+    // TODO DOC
+    new_uids[3] = new_uids[0] + (current_level_nb_face_x + current_level_nb_cell_x) - 1;
+    // BAS
+    // TODO DOC
+    new_uids[2] = new_uids[0] + (current_level_nb_face_x + current_level_nb_cell_x);
+    // DROITE
+    // TODO DOC
+    new_uids[1] = new_uids[0] + (current_level_nb_face_x + current_level_nb_cell_x) + 1;
+
     for (Integer z = 0; z < 4; ++z) {
       Face face = cell.face(z);
-      if (faces_new_uid[face] < 0) {
+      //if (faces_new_uid[face] < 0) {
         new_uids[z] += face_adder;
         if (m_is_verbose)
           info() << "APPLY_FACE_CHILD: uid=" << face.uniqueId() << " parent_cell=" << cell.uniqueId()
                  << " I=" << z << " new_uid=" << new_uids[z];
         faces_new_uid[face] = new_uids[z];
-      }
+      //}
     }
   }
+
+
   // Renumérote les sous-mailles
   // Suppose qu'on a 4 mailles enfants comme suit par mailles
   // -------
@@ -251,15 +289,10 @@ _applyChildrenCell2D(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceIn
     Cell sub_cell = cell.hChild(icell);
     Int64 my_coord_i = coord_i*2 + icell % 2;
     Int64 my_coord_j = coord_j*2 + icell / 2;
-    Int64 new_uid = (my_coord_i + my_coord_j * current_level_nb_cell_x) + cell_adder;
-    if (m_is_verbose)
-      info() << "APPLY_CELL_CHILD: uid=" << sub_cell.uniqueId() << " I=" << my_coord_i << " J=" << my_coord_j
-             << " current_level=" << current_level << " new_uid=" << new_uid << " NodeAdder=" << node_adder;
 
     _applyChildrenCell2D(sub_cell, nodes_new_uid, faces_new_uid, cells_new_uid, my_coord_i, my_coord_j,
-                         current_level_nb_cell_x, current_level_nb_cell_y, current_level + 1);
-    if (cells_new_uid[sub_cell] < 0)
-      cells_new_uid[sub_cell] = new_uid;
+                         current_level_nb_cell_x*2, current_level_nb_cell_y*2, current_level + 1);
+
   }
 }
 
