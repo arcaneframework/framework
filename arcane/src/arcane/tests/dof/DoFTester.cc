@@ -1076,7 +1076,7 @@ _addNodes(Int32Array2View new_nodes_lids, Int64Array2View new_nodes_uids)
       added_items[rank] = mesh()->nodeFamily()->view(new_nodes_lids[rank]);
       ENUMERATE_NODE(inode,added_items[rank])
       {
-        inode->internal()->setOwner(rank,local_rank);
+        inode->mutableItemBase().setOwner(rank,local_rank);
         info() << "== Add item " << inode->localId() << " on rank " << local_rank << " with owner " << rank;
       }
     }
@@ -1212,7 +1212,7 @@ _removeNodes(Int32ConstArray2View new_nodes_lids,
       Int32 i = 0;
       ENUMERATE_NODE(inode,removed_nodes[rank])
       {
-        node_family->removeNodeIfNotConnected(inode->internal());
+        node_family->removeNodeIfNotConnected(*inode);
         removed_node_uids[rank][i++] = inode->uniqueId().asInt64();
       }
       i = 0;

@@ -263,7 +263,6 @@ errorToFlagConverter(RealArray& error_per_cell, const Real& refine_frac,
   i = 0;
   ENUMERATE_CELL (icell, mesh->ownActiveCells()) { // active cells
     Cell cell = *icell;
-    ItemInternal* iitem = cell.internal();
     const Integer id = cell.localId();
     ARCANE_ASSERT((id < error_per_cell.size()), ("cell_lid < error_per_cell.size()"));
 
@@ -272,18 +271,14 @@ errorToFlagConverter(RealArray& error_per_cell, const Real& refine_frac,
     // Flag pour deraffinement si error <= coarsen_fraction*delta + error_min
     if (cell_error <= coarsen_cutoff && cell.level() > 0) {
       if (cell.type() == IT_Hexaedron8) {
-        Integer f = iitem->flags();
-        f |= ItemInternal::II_Coarsen;
-        iitem->setFlags(f);
+        cell.mutableItemBase().addFlags(ItemInternal::II_Coarsen);
       }
     }
 
     // Flag pour raffinement  si error >= refinement_cutoff.
     if (cell_error >= refine_cutoff && cell.level() < max_level)
       if (cell.type() == IT_Hexaedron8) {
-        Integer f = iitem->flags();
-        f |= ItemInternal::II_Refine;
-        iitem->setFlags(f);
+        cell.mutableItemBase().addFlags(ItemInternal::II_Refine);
       }
   }
 }

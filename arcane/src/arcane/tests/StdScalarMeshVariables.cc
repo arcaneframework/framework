@@ -99,7 +99,7 @@ template<class ItemType> void StdScalarMeshVariables<ItemType>::
 setValues(Integer iteration, const GroupType& group)
 {
   ENUMERATE_ITEM(iter,group){
-    ItemType item = (*iter).internal();
+    ItemType item = (*iter).itemBase();
     setItemValues(iteration,item);
   }
 }
@@ -123,7 +123,7 @@ setValuesWithViews(Integer seed, const GroupType& group)
   MultiScalarValue sv;
 
   ENUMERATE_ITEM(iter,group){
-    ItemType item = (*iter).internal();
+    ItemType item = (*iter).itemBase();
     Int64 n = 1 + (item.uniqueId().asInt64() + seed*7);
     _setReferenceValue(n,sv);
 
@@ -212,7 +212,7 @@ checkValues (Integer iteration, const GroupType& group)
   MultiScalarValue current_sv;
   m_nb_displayed_error = 0;
   ENUMERATE_ITEM(iter,group){
-    ItemType item = (*iter).internal();
+    ItemType item = (*iter).itemBase();
 
     current_sv.m_byte = this->m_byte[item];
     current_sv.m_real = this->m_real[item];
@@ -252,7 +252,7 @@ checkValuesWithViews(Integer seed, const GroupType& group)
 
   Integer nb_error = 0;
   ENUMERATE_ITEM(iter,group){
-    ItemType item = (*iter).internal();
+    ItemType item = (*iter).itemBase();
 
     current_sv.m_byte = in_byte[item];
     current_sv.m_real = in_real[item];
