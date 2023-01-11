@@ -237,7 +237,7 @@ class ARCANE_MESH_EXPORT DynamicMesh
   bool adapt() override;
   void registerCallBack(IAMRTransportFunctor* f) override;
   void unRegisterCallBack(IAMRTransportFunctor* f) override;
-  void addHChildrenCells(ItemInternal* parent_cell,Integer nb_cell,
+  void addHChildrenCells(Cell parent_cell,Integer nb_cell,
                          Int64ConstArrayView cells_infos,Int32ArrayView cells) override;
 
   void endUpdate() override;
