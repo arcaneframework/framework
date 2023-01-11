@@ -86,9 +86,8 @@ checkAndChangeOrientationAMR(ItemInternal* face)
 void FaceReorienter::
 checkAndChangeOrientation(Face face)
 {
-  ItemInternal* iface = face.internal();
   if (!m_face_family)
-    m_face_family = ARCANE_CHECK_POINTER(dynamic_cast<FaceFamily*>(iface->family()));
+    m_face_family = ARCANE_CHECK_POINTER(dynamic_cast<FaceFamily*>(face.itemFamily()));
   Integer face_nb_node = face.nbNode();
 
   m_nodes_unique_id.resize(face_nb_node);
@@ -154,7 +153,7 @@ checkAndChangeOrientation(Face face)
     // Si on arrive ici c'est que la maille 0 est la back_cell
     std::swap(face_cells.first,face_cells.second);
   }
-  m_face_family->setBackAndFrontCells(iface,face_cells.first,face_cells.second);
+  m_face_family->setBackAndFrontCells(face,face_cells.first,face_cells.second);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -163,9 +162,8 @@ checkAndChangeOrientation(Face face)
 void FaceReorienter::
 checkAndChangeOrientationAMR(Face face)
 {
-  ItemInternal* iface = face.internal();
   if (!m_face_family)
-    m_face_family = ARCANE_CHECK_POINTER(dynamic_cast<FaceFamily*>(iface->family()));
+    m_face_family = ARCANE_CHECK_POINTER(dynamic_cast<FaceFamily*>(face.itemFamily()));
 
   m_nodes_unique_id.resize(face.nbNode());
   m_nodes_local_id.resize(face.nbNode());
@@ -274,7 +272,7 @@ checkAndChangeOrientationAMR(Face face)
       face_cells.second = (face_has_two_cell) ? face.cell(1).localId() : NULL_ITEM_LOCAL_ID;
     }
   }
-  m_face_family->setBackAndFrontCells(iface,face_cells.first,face_cells.second);
+  m_face_family->setBackAndFrontCells(face,face_cells.first,face_cells.second);
 }
 
 /*---------------------------------------------------------------------------*/

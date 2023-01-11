@@ -696,7 +696,7 @@ finishCompactItems(ItemFamilyCompactInfos& compact_infos)
     ii->setFlags(new_flags[i]);
     ii->setOwner(new_owners[i],sid);
     ii->setUniqueId(new_uids[i]);
-    ItemSharedInfo* isi = ItemCompatibility::_getSharedInfo(ii);
+    ItemSharedInfo* isi = ItemInternalCompatibility::_getSharedInfo(ii);
     ii->_setSharedInfo(isi,ItemTypeId(new_typeids[i]));
     // L'entité est marqué comme créée
     //_setAdded(ii);

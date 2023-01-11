@@ -289,7 +289,7 @@ class ARCANE_MESH_EXPORT ItemFamily
    *  à partir des données du DynamicMeshKindInfos */
   void compactVariablesAndGroups(const ItemFamilyCompactInfos& compact_infos);
   void finishCompactItems(ItemFamilyCompactInfos& compact_infos);
-  void removeItem(ItemInternal* item)
+  void removeItem(Item item)
   {
     _removeOne(item);
   }
@@ -301,15 +301,15 @@ class ARCANE_MESH_EXPORT ItemFamily
 
  protected:
 
-  void _removeOne(ItemInternal* item)
+  void _removeOne(Item item)
   {
     // TODO: vérifier en mode check avec les nouvelles connectivités que l'entité supprimée
     // n'a pas d'objets connectés.
-    m_infos.removeOne(item);
+    m_infos.removeOne(ItemCompatibility::_itemInternal(item));
   }
-  void _detachOne(ItemInternal* item)
+  void _detachOne(Item item)
   {
-    m_infos.detachOne(item);
+    m_infos.detachOne(ItemCompatibility::_itemInternal(item));
   }
   ItemInternalList _itemsInternal()
   {
@@ -339,9 +339,9 @@ class ARCANE_MESH_EXPORT ItemFamily
   {
     m_infos.removeMany(local_ids);
   }
-  void _removeDetachedOne(ItemInternal* item)
+  void _removeDetachedOne(Item item)
   {
-    m_infos.removeDetachedOne(item);
+    m_infos.removeDetachedOne(ItemCompatibility::_itemInternal(item));
   }
 
   void _detachCells2(Int32ConstArrayView local_ids);
@@ -497,11 +497,11 @@ class ARCANE_MESH_EXPORT ItemFamily
     ARCANE_UNUSED(target);
 #endif
   }
-  void _checkValidItem(Item item) { _checkValidItem(item.internal()); }
+  void _checkValidItem(Item item) { _checkValidItem(ItemCompatibility::_itemInternal(item)); }
   void _checkValidSourceTargetItems(Item source,Item target)
   {
-    _checkValidItem(source.internal());
-    _checkValidItem(target.internal());
+    _checkValidItem(ItemCompatibility::_itemInternal(source));
+    _checkValidItem(ItemCompatibility::_itemInternal(target));
   }
 
  private:

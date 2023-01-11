@@ -203,7 +203,7 @@ class ItemEnumeratorBaseT
 
   void _init(const ItemInternalPtr* items)
   {
-    m_item.m_shared_info = ItemCompatibility::_getSharedInfo(items);
+    m_item.m_shared_info = ItemInternalCompatibility::_getSharedInfo(items);
   }
 };
 

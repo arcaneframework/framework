@@ -150,7 +150,7 @@ class ARCANE_MESH_EXPORT NodeFamily
   FaceConnectivity* m_face_connectivity = nullptr;
   CellConnectivity* m_cell_connectivity = nullptr;
   FaceFamily* m_face_family = nullptr;
-  inline void _removeNode(ItemInternal* node);
+  inline void _removeNode(Node node);
 };
 
 /*---------------------------------------------------------------------------*/

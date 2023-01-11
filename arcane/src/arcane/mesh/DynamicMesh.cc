@@ -953,7 +953,7 @@ addParentCells(ItemVectorView & items)
 
 //! AMR
 void DynamicMesh::
-addHChildrenCells(ItemInternal* parent_cell,Integer nb_cell,Int64ConstArrayView cells_infos,Int32ArrayView cells)
+addHChildrenCells(Cell parent_cell,Integer nb_cell,Int64ConstArrayView cells_infos,Int32ArrayView cells)
 {
   Trace::Setter mci(traceMng(),_className());
   _checkDimension();

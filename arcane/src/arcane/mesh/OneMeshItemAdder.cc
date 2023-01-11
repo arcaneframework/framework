@@ -155,21 +155,20 @@ addOneFace(ItemTypeId type_id, Int64 face_uid, Int32 sub_domain_id, Int64ConstAr
   mesh_utils::reorderNodesOfFace(m_work_face_orig_nodes_uid,m_work_face_sorted_nodes);
   
   bool is_add_face = false;
-  Face xface = m_face_family.findOrAllocOne(face_uid,type_id,is_add_face);
-  ItemInternal* face = xface.internal();
+  Face face = m_face_family.findOrAllocOne(face_uid,type_id,is_add_face);
   
   // La face n'existe pas
   if (is_add_face) { 
     ++m_mesh_info.nbFace();
-    face->setOwner(sub_domain_id,sub_domain_id);
+    face.mutableItemBase().setOwner(sub_domain_id,sub_domain_id);
     for(Integer i_node=0; i_node<face_nb_node; ++i_node ){
-      ItemInternal* node_internal = addOneNode(m_work_face_sorted_nodes[i_node], m_mesh_info.rank());
-      m_face_family.replaceNode(ItemLocalId(face),i_node,ItemLocalId(node_internal));
-      m_node_family.addFaceToNode(node_internal, face);
+      Node node = addOneNode(m_work_face_sorted_nodes[i_node], m_mesh_info.rank());
+      m_face_family.replaceNode(face,i_node,node);
+      m_node_family.addFaceToNode(node, face);
     }
   }
   
-  return face;
+  return ItemCompatibility::_itemInternal(face);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -206,7 +205,7 @@ addOneEdge(Int64 edge_uid, Integer sub_domain_id, Int64ConstArrayView nodes_uid)
 /*---------------------------------------------------------------------------*/
 
 template<>
-ItemInternal* OneMeshItemAdder::
+Face OneMeshItemAdder::
 _findInternalFace(Integer i_face, const FullCellInfo& cell_info, bool& is_add)
 {
   const Int64 face_unique_id = cell_info.faceUniqueId(i_face);
@@ -220,22 +219,23 @@ _findInternalFace(Integer i_face, const FullCellInfo& cell_info, bool& is_add)
 /*---------------------------------------------------------------------------*/
 
 template<>
-ItemInternal* OneMeshItemAdder::
+Face OneMeshItemAdder::
 _findInternalFace(Integer i_face, const CellInfoProxy& cell_info, bool& is_add)
 {
   DynamicMeshIncrementalBuilder::ItemInternalMap& nodes_map = m_mesh->nodesMap();
   ItemTypeInfo* cell_type_info = cell_info.typeInfo();
   const ItemTypeInfo::LocalFace& lf = cell_type_info->localFace(i_face);
   ItemInternal* nbi = nodes_map.lookupValue(m_work_face_sorted_nodes[0]);
-  ItemInternal* face_internal = ItemTools::findFaceInNode(nbi,lf.typeId(),m_work_face_sorted_nodes);
-  if (!face_internal) {
+  Face face_internal = ItemTools::findFaceInNode2(nbi,lf.typeId(),m_work_face_sorted_nodes);
+  if (face_internal.null()) {
     if (!cell_info.allowBuildFace())
       ARCANE_FATAL("On the fly face allocation is not allowed here");
     ItemTypeInfo* face_type = m_item_type_mng->typeFromId(lf.typeId());
     const Int64 face_unique_id = m_next_face_uid++;
     is_add = true;
     return m_face_family.allocOne(face_unique_id,face_type);
-  } else {
+  }
+  else {
     is_add = false;
     return face_internal;
   }  
@@ -245,7 +245,7 @@ _findInternalFace(Integer i_face, const CellInfoProxy& cell_info, bool& is_add)
 /*---------------------------------------------------------------------------*/
 
 template<>
-ItemInternal* OneMeshItemAdder::
+Edge OneMeshItemAdder::
 _findInternalEdge(Integer i_edge, const FullCellInfo& cell_info,
                   Int64 first_node, Int64 second_node, bool& is_add)
 {
@@ -260,21 +260,22 @@ _findInternalEdge(Integer i_edge, const FullCellInfo& cell_info,
 /*---------------------------------------------------------------------------*/
 
 template<>
-ItemInternal* OneMeshItemAdder::
+Edge OneMeshItemAdder::
 _findInternalEdge(Integer i_edge, const CellInfoProxy& cell_info, Int64 first_node, Int64 second_node, bool& is_add)
 {
   ARCANE_UNUSED(i_edge);
 
   DynamicMeshIncrementalBuilder::ItemInternalMap& nodes_map = m_mesh->nodesMap();
   ItemInternal* nbi = nodes_map.lookupValue(first_node);
-  ItemInternal* edge_internal = ItemTools::findEdgeInNode(nbi,first_node,second_node);
-  if (!edge_internal){
+  Edge edge_internal = ItemTools::findEdgeInNode2(nbi,first_node,second_node);
+  if (edge_internal.null()){
     if (!cell_info.allowBuildEdge())
       ARCANE_FATAL("On the fly edge allocation is not allowed here");
     const Int64 edge_unique_id = m_next_edge_uid++;
     is_add = true;
     return m_edge_family.allocOne(edge_unique_id);
-  } else {
+  }
+  else {
     is_add = false;
     return edge_internal;
   }
@@ -338,9 +339,8 @@ addOneItem(IItemFamily* family,
 {
   ARCANE_ASSERT(m_mesh->itemFamilyNetwork(),("ItemFamilyNetwork is required to call OneMeshItemAdder::addOneItem"));
   bool is_alloc = true;
-  Item xitem = family_modifier->findOrAllocOne(item_uid,type_id,m_mesh_info,is_alloc); // don't forget to add print in the class method
-  ItemInternal* item = xitem.internal();
-  item->setOwner(item_owner,sub_domain_id);
+  Item item = family_modifier->findOrAllocOne(item_uid,type_id,m_mesh_info,is_alloc); // don't forget to add print in the class method
+  item.mutableItemBase().setOwner(item_owner,sub_domain_id);
   // Add connectivities if needed
   Integer info_index = 0;
   for (Integer family_index = 0; family_index < nb_connected_family; ++family_index){
@@ -375,7 +375,7 @@ addOneItem(IItemFamily* family,
     }
 //  debug(Trace::Highest) << "[addItems] ADD_ITEM " << ItemPrinter(item) << " in " << family->name();
   debug(Trace::Highest) << "[addItems] ADD_ITEM " << ItemPrinter(item) << " in " << family->name();
-  return item;
+  return ItemCompatibility::_itemInternal(item);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -392,9 +392,8 @@ addOneItem2(IItemFamily* family,
 {
   ARCANE_ASSERT(m_mesh->itemFamilyNetwork(),("ItemFamilyNetwork is required to call OneMeshItemAdder::addOneItem"));
   bool is_alloc = true;
-  Item xitem = family_modifier->findOrAllocOne(item_uid,type_id,m_mesh_info,is_alloc); // don't forget to add print in the class method
-  ItemInternal* item = xitem.internal();
-  item->setOwner(item_owner,sub_domain_id);
+  Item item = family_modifier->findOrAllocOne(item_uid,type_id,m_mesh_info,is_alloc); // don't forget to add print in the class method
+  item.mutableItemBase().setOwner(item_owner,sub_domain_id);
   // Add connectivities if needed
   Integer info_index = 0;
   for (Integer family_index = 0; family_index < nb_connected_family; ++family_index) {
@@ -469,7 +468,7 @@ addOneItem2(IItemFamily* family,
     debug(Trace::Highest) << "[addItems] ADD_ITEM " << ItemPrinter(item) << " in " << family->name();
   //  debug(Trace::Highest) << "[addItems] DEPENDENCIES for " << family->name() << FullItemPrinter(item) ; // debug info
   //  _printRelations(item); // debug info
-  return item;
+  return ItemCompatibility::_itemInternal(item);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -516,9 +515,8 @@ _clearReverseConnectivity(ItemLocalId item, IIncrementalItemConnectivity* connec
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<>
-void OneMeshItemAdder::
-_AMR_Patch(ItemInternal* new_cell, const FullCellInfo& cell_info)
+template<> void OneMeshItemAdder::
+_AMR_Patch(Cell new_cell, const FullCellInfo& cell_info)
 {
   //! AMR
   if(m_mesh->isAmrActivated()){
@@ -527,18 +525,17 @@ _AMR_Patch(ItemInternal* new_cell, const FullCellInfo& cell_info)
     if(cell_info.level() != 0){
       Integer child_rank = cell_info.whichChildAmI();
       Int64 hParent_uid = cell_info.hParentCellUniqueId();
-      ItemTypeInfo* cell_type_info = cell_info.typeInfo();
+      ItemTypeId cell_type = ItemTypeId::fromInteger(cell_info.typeId());
       bool is_add;
-      ItemInternal* hParent_cell= m_cell_family.findOrAllocOne(hParent_uid,cell_type_info,is_add);
+      Cell hParent_cell= m_cell_family.findOrAllocOne(hParent_uid,cell_type,is_add);
       m_cell_family._addParentCellToCell(new_cell,hParent_cell);  
       m_cell_family._addChildCellToCell(hParent_cell,child_rank,new_cell);
     }
   }
 }
 
-template<>
-void OneMeshItemAdder::
-_AMR_Patch(ItemInternal* cell, const CellInfoProxy& cell_info)
+template<> void OneMeshItemAdder::
+_AMR_Patch(Cell cell, const CellInfoProxy& cell_info)
 {
   ARCANE_UNUSED(cell);
   ARCANE_UNUSED(cell_info);
@@ -558,11 +555,11 @@ _addOneCell(const CellInfo& cell_info)
   bool is_check = arcaneIsCheck();
 
   // Regarde si la maille existe déjà (auquel cas on ne fait rien)
-  ItemInternal* inew_cell = nullptr;
+  Cell inew_cell;
   {
     bool is_add; // ce flag est toujours correctement positionné via les findOrAllocOne
     inew_cell = m_cell_family.findOrAllocOne(cell_info.uniqueId(),
-                                             cell_info.typeInfo(),
+                                             cell_info.typeInfo()->itemTypeId(),
                                              is_add);
     if (!is_add){
       if (is_check){
@@ -573,7 +570,7 @@ _addOneCell(const CellInfo& cell_info)
             ARCANE_FATAL("trying to add existing cell (uid={0}) with different nodes",
                          cell_info.uniqueId());
       }
-      return inew_cell;
+      return ItemCompatibility::_itemInternal(inew_cell);
     }
   }
 
@@ -586,13 +583,13 @@ _addOneCell(const CellInfo& cell_info)
 
   ++m_mesh_info.nbCell();
 
-  inew_cell->setOwner(cell_info.owner(), m_mesh_info.rank());
+  inew_cell.mutableItemBase().setOwner(cell_info.owner(), m_mesh_info.rank());
   // Vérifie la cohérence entre le type local et la maille créée.
   if (is_check){
-    if (cell_info.nbNode()!=inew_cell->nbNode())
-      ARCANE_FATAL("Incoherent number of nodes v={0} expected={1}",inew_cell->nbNode(),cell_info.nbNode());
-    if (cell_nb_face!=inew_cell->nbFace())
-      ARCANE_FATAL("Incoherent number of faces v={0} expected={1}",inew_cell->nbFace(),cell_nb_face);
+    if (cell_info.nbNode()!=inew_cell.nbNode())
+      ARCANE_FATAL("Incoherent number of nodes v={0} expected={1}",inew_cell.nbNode(),cell_info.nbNode());
+    if (cell_nb_face!=inew_cell.nbFace())
+      ARCANE_FATAL("Incoherent number of faces v={0} expected={1}",inew_cell.nbFace(),cell_nb_face);
   }
 
   //! Type la table de hashage uniqueId()->ItemInternal*
@@ -612,12 +609,12 @@ _addOneCell(const CellInfo& cell_info)
         std::swap(first_node,second_node);
     
       bool is_add = false;
-      ItemInternal* edge_internal = _findInternalEdge(i_edge, cell_info, first_node, second_node, is_add);
+      Edge edge_internal = _findInternalEdge(i_edge, cell_info, first_node, second_node, is_add);
       if (is_add){
         if (is_verbose)
-          info() << "Create edge " << edge_internal->uniqueId() << ' ' << edge_internal->localId();
+          info() << "Create edge " << edge_internal.uniqueId() << ' ' << edge_internal.localId();
         
-        edge_internal->setOwner(cell_info.edgeOwner(i_edge),m_mesh_info.rank());
+        edge_internal.mutableItemBase().setOwner(cell_info.edgeOwner(i_edge),m_mesh_info.rank());
         {
           ItemInternal* current_node_internal = nodes_map.lookupValue(first_node);
           m_edge_family.replaceNode(ItemLocalId(edge_internal),0,ItemLocalId(current_node_internal));
@@ -644,59 +641,58 @@ _addOneCell(const CellInfo& cell_info)
     // en effet de bord, _isReorder construit aussi m_work_face_sorted_nodes
     
     bool is_add = false;
-    ItemInternal* face_internal = _findInternalFace(i_face, cell_info, is_add);
-    Face face(face_internal);
+    Face face = _findInternalFace(i_face, cell_info, is_add);
     if (is_add){
       if (is_verbose){
-        info() << "Create face " << face_internal->uniqueId() << ' ' << face_internal->localId();
+        info() << "Create face " << face.uniqueId() << ' ' << face.localId();
         info() << "AddCell (uid=" << new_cell.uniqueId() << ": Create face (index=" << i_face
-               << ") uid=" << face_internal->uniqueId()
-               << " lid=" << face_internal->localId();
+               << ") uid=" << face.uniqueId()
+               << " lid=" << face.localId();
       }
-      face_internal->setOwner(cell_info.faceOwner(i_face),m_mesh_info.rank());
+      face.mutableItemBase().setOwner(cell_info.faceOwner(i_face),m_mesh_info.rank());
       
       for( Integer i_node=0; i_node<face_nb_node; ++i_node ){
         ItemInternal* current_node_internal = nodes_map.lookupValue(m_work_face_sorted_nodes[i_node]);
-        m_face_family.replaceNode(ItemLocalId(face_internal),i_node,ItemLocalId(current_node_internal));
-        m_node_family.addFaceToNode(current_node_internal,face_internal);
+        m_face_family.replaceNode(face,i_node,ItemLocalId(current_node_internal));
+        m_node_family.addFaceToNode(current_node_internal,face);
       }
 
       if (m_mesh_builder->hasEdge()) {
         Integer face_nb_edge = lf.nbEdge();
         for( Integer i_edge=0; i_edge<face_nb_edge; ++i_edge ){
           Edge current_edge = new_cell.edge( lf.edge(i_edge) );
-          m_face_family.addEdgeToFace(face_internal,current_edge.internal());
-          m_edge_family.addFaceToEdge(current_edge.internal(),face_internal);
+          m_face_family.addEdgeToFace(face,current_edge);
+          m_edge_family.addFaceToEdge(current_edge,face);
         }
       }
       ++m_mesh_info.nbFace();
     }
-    m_cell_family.replaceFace(new_cell,i_face,ItemLocalId(face_internal));
+    m_cell_family.replaceFace(new_cell,i_face,face);
 
     //! AMR
     if(m_mesh->isAmrActivated()){
       if (is_reorder){
-        if(face_internal->nbCell() == 2)
+        if(face.nbCell() == 2)
           m_face_family.replaceFrontCellToFace(face,new_cell);
         else
-          m_face_family.addFrontCellToFace(face_internal,inew_cell);
+          m_face_family.addFrontCellToFace(face,inew_cell);
       } else{
-        if(face_internal->nbCell() == 2)
+        if(face.nbCell() == 2)
           m_face_family.replaceBackCellToFace(face,new_cell);
         else
-          m_face_family.addBackCellToFace(face_internal,inew_cell);
+          m_face_family.addBackCellToFace(face,inew_cell);
       }
     } else {
       if (is_reorder){
-        m_face_family.addFrontCellToFace(face_internal,inew_cell);
+        m_face_family.addFrontCellToFace(face,inew_cell);
       } else{
-        m_face_family.addBackCellToFace(face_internal,inew_cell);
+        m_face_family.addBackCellToFace(face,inew_cell);
       }
     }
   }
 
   _AMR_Patch(inew_cell, cell_info);
-  return inew_cell;
+  return ItemCompatibility::_itemInternal(inew_cell);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -723,19 +719,19 @@ addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fat
   //bool is_check = arcaneIsCheck();
   ItemTypeMng* itm = m_mesh->itemTypeMng();
   eItemKind kind = item.kind();
+  ItemTypeId type_id = ItemTypeId::fromInteger(item.type());
   ItemTypeInfo * type = itm->typeFromId(item.type());
   if (item.type() == IT_Line2 && submesh_kind == IK_Cell)
     type = itm->typeFromId(IT_CellLine2);
   if (item.type() == IT_Vertex && submesh_kind == IK_Face)
     type = itm->typeFromId(IT_FaceVertex);
-  ItemInternal * item_internal = item.internal();
 
   if (MeshToMeshTransposer::kindTranspose(submesh_kind, m_mesh, m_mesh->parentMesh()) != kind)
     ARCANE_FATAL("Incompatible kind/sub-kind");
 
   // Regarde si la maille existe déjà
   bool is_add; // ce flag est toujours correctement positionné via les findOrAllocOne
-  ItemInternal* new_item = nullptr;
+  Item new_item;
 
   switch (submesh_kind) {
   case IK_Node:
@@ -751,9 +747,9 @@ addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fat
     ++m_mesh_info.nbFace();
     break;
   case IK_Cell:
-    if (kind == IK_Face && !Face(item_internal).isSubDomainBoundary())
+    if (kind == IK_Face && !(item.toFace().isSubDomainBoundary()))
       ARCANE_FATAL("Bad boundary face");
-    new_item = m_cell_family.findOrAllocOne(item.uniqueId(),type,is_add);
+    new_item = m_cell_family.findOrAllocOne(item.uniqueId(),type_id,is_add);
     ++m_mesh_info.nbCell();
    break;
   default:
@@ -764,11 +760,11 @@ addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fat
     if (fatal_on_existing_item)
       ARCANE_FATAL("Cannot add already existing parent item in submesh");
     else
-      return new_item;
+      return ItemCompatibility::_itemInternal(new_item);
   }
 
-  new_item->setParent(0,item.localId());
-  new_item->setOwner(item.owner(),m_mesh_info.rank());
+  new_item.mutableItemBase().setParent(0,item.localId());
+  new_item.mutableItemBase().setOwner(item.owner(),m_mesh_info.rank());
   
   // Localise vis-à-vis de l'item à insérer ces sous-items
   // Par défaut tout à 0, qui correspond aussi au cas submesh_kind==IK_Node
@@ -819,7 +815,7 @@ addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fat
   const bool direct_node_order = 
     !(submesh_kind == IK_Cell 
       && kind == IK_Face 
-      && !Face(item_internal).isSubDomainBoundaryOutside());
+      && !(item.toFace().isSubDomainBoundaryOutside()));
 
   Int64UniqueArray nodes_uid(item_nb_node,NULL_ITEM_UNIQUE_ID);
   for( Integer i_node=0; i_node<item_nb_node; ++i_node ){
@@ -848,15 +844,15 @@ addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fat
     switch (submesh_kind) {
     case IK_Cell:
       m_cell_family.replaceNode(new_item_lid,i_node, node_lid);
-      m_node_family.addCellToNode(node_internal, new_item);
+      m_node_family.addCellToNode(node_internal, new_item.toCell());
       break;
     case IK_Face:
       m_face_family.replaceNode(new_item_lid,i_node, node_lid);
-      m_node_family.addFaceToNode(node_internal, new_item);
+      m_node_family.addFaceToNode(node_internal, new_item.toFace());
       break;
     case IK_Edge:
       m_edge_family.replaceNode(new_item_lid,i_node, node_lid);
-      m_node_family.addEdgeToNode(node_internal, new_item);
+      m_node_family.addEdgeToNode(node_internal, new_item.toEdge());
       break;
     default: // les autres sont déjà filtrés avant
       break;
@@ -872,7 +868,7 @@ addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fat
     if (first_node > second_node)
       std::swap(first_node,second_node);
 
-    Edge parent_item = item_internal->internalEdge(i_edge);
+    Edge parent_item = item.itemBase().edgeBase(i_edge);
     if (parent_item.null())
       ARCANE_FATAL("Cannot find parent edge");
 
@@ -905,11 +901,11 @@ addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fat
     switch (submesh_kind) {
     case IK_Cell: {
       m_cell_family.replaceEdge(ItemLocalId(new_item),i_edge,ItemLocalId(edge_internal));
-      m_edge_family.addCellToEdge(edge_internal, new_item);
+      m_edge_family.addCellToEdge(edge_internal, new_item.toCell());
     } break;
     case IK_Face: {
       m_face_family.replaceEdge(ItemLocalId(new_item),i_edge,ItemLocalId(edge_internal));
-      m_edge_family.addFaceToEdge(edge_internal, new_item);
+      m_edge_family.addFaceToEdge(edge_internal, new_item.toFace());
     } break;
     default: // les autres sont déjà filtrés avant
       break;
@@ -935,10 +931,11 @@ addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fat
       is_reorder = mesh_utils::reorderNodesOfFace(m_work_face_orig_nodes_uid,m_work_face_sorted_nodes);
 
     // find parent item
-    ItemInternal * parent_item = NULL;
+    Item parent_item;
     if (kind==IK_Cell) {
-      parent_item = Cell(item_internal).face(i_face).internal();
-    } else if (kind==IK_Face) {
+      parent_item = item.toCell().face(i_face);
+    }
+    else if (kind==IK_Face) {
       if (m_mesh->dimension() == 1) { // is 1d mesh
         parent_item = parent_nodes_map.lookupValue(m_work_face_sorted_nodes[0]);
       } else {
@@ -948,13 +945,13 @@ addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fat
         if (first_node > second_node)
           std::swap(first_node,second_node);
         ItemInternal* nbi = parent_nodes_map.lookupValue(first_node);
-        parent_item = ItemTools::findEdgeInNode(nbi,first_node,second_node);
+        parent_item = ItemTools::findEdgeInNode2(nbi,first_node,second_node);
       }
     }
 
-    if (!parent_item)
+    if (parent_item.null())
       ARCANE_FATAL("Cannot find parent face");
-    Int64 new_face_uid = parent_item->uniqueId();
+    Int64 new_face_uid = parent_item.uniqueId();
     ItemTypeInfo* face_type = itm->typeFromId(lf.typeId());
 
     ItemInternal* face_internal = m_face_family.findOrAllocOne(new_face_uid,face_type,is_add);
@@ -963,8 +960,8 @@ addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fat
       info() << "Création face " << new_face_uid << ' '
              << face_internal->uniqueId() << ' ' << face_internal->localId();
 #endif /* ARCANE_DEBUG_DYNAMIC_MESH */
-      face_internal->setParent(0,parent_item->localId());
-      face_internal->setOwner(parent_item->owner(),m_mesh_info.rank());
+      face_internal->setParent(0,parent_item.localId());
+      face_internal->setOwner(parent_item.owner(),m_mesh_info.rank());
 
       for( Integer i_node=0; i_node<face_nb_node; ++i_node ){
         ItemInternal* current_node_internal = nodes_map.lookupValue(m_work_face_sorted_nodes[i_node]);
@@ -976,22 +973,22 @@ addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fat
         Integer face_nb_edge = lf.nbEdge();
         for( Integer i_edge=0; i_edge<face_nb_edge; ++i_edge ){
           Int32 edge_idx = lf.edge(i_edge);
-          Edge current_edge = new_item->internalEdge(edge_idx);
-          m_face_family.addEdgeToFace(face_internal,current_edge.internal());
-          m_edge_family.addFaceToEdge(current_edge.internal(),face_internal);
+          Edge current_edge = new_item.itemBase().edgeBase(edge_idx);
+          m_face_family.addEdgeToFace(face_internal,current_edge);
+          m_edge_family.addFaceToEdge(current_edge,face_internal);
         }
       }
       ++m_mesh_info.nbFace();
     }
     m_cell_family.replaceFace(ItemLocalId(new_item),i_face,ItemLocalId(face_internal));
     if (is_reorder){
-      m_face_family.addFrontCellToFace(face_internal,new_item);
+      m_face_family.addFrontCellToFace(face_internal,new_item.toCell());
     } else{
-      m_face_family.addBackCellToFace(face_internal,new_item);
+      m_face_family.addBackCellToFace(face_internal,new_item.toCell());
     }
   }
 
-  return new_item;
+  return new_item.internal();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1001,7 +998,7 @@ addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fat
  */
 template<typename CellInfo>
 inline void OneMeshItemAdder::
-_addNodesToCell(ItemInternal* cell, const CellInfo& cell_info)
+_addNodesToCell(Cell cell, const CellInfo& cell_info)
 {
   Integer cell_nb_node = cell_info.nbNode();
   
@@ -1015,7 +1012,7 @@ _addNodesToCell(ItemInternal* cell, const CellInfo& cell_info)
       node_internal->setOwner(cell_info.nodeOwner(i_node),m_mesh_info.rank());
     }
     m_node_family.addCellToNode(node_internal,cell);
-    m_cell_family.replaceNode(ItemLocalId(cell),i_node,ItemLocalId(node_internal));
+    m_cell_family.replaceNode(cell,i_node,ItemLocalId(node_internal));
   }
 }
 

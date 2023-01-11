@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableParallelOperationBase.cc                            (C) 2000-2021 */
+/* VariableParallelOperationBase.cc                            (C) 2000-2023 */
 /*                                                                           */
 /* Classe de base des opérations parallèles sur des variables.               */
 /*---------------------------------------------------------------------------*/
@@ -115,11 +115,12 @@ applyOperation(IDataOperation* operation)
   if (no_exchange)
     return;  
 
+  ItemInfoListView item_list(m_item_family);
   // Génère les infos pour chaque processeur à qui on va envoyer des entités
   for( Integer i=0, is=exchanger->nbSender(); i<is; ++i ){
     ISerializeMessage* comm = exchanger->messageToSend(i);
     Int32 dest_sub_domain = comm->destination().value();
-    ConstArrayView<ItemInternal*> dest_items_internal = m_items_to_send[dest_sub_domain];
+    ConstArrayView<ItemLocalId> dest_items_internal = m_items_to_send[dest_sub_domain];
 
     Integer nb_item = dest_items_internal.size();
     debug() << "Number of items to serialize: " << nb_item << " subdomain=" << dest_sub_domain;
@@ -127,9 +128,9 @@ applyOperation(IDataOperation* operation)
     UniqueArray<Int32> dest_items_local_id(nb_item);
     UniqueArray<Int64> dest_items_unique_id(nb_item);
     for( Integer z=0; z<nb_item; ++z ){
-      ItemInternal* item = dest_items_internal[z];
-      dest_items_local_id[z] = item->localId();
-      dest_items_unique_id[z] = item->uniqueId().asInt64();
+      Item item = item_list[dest_items_internal[z]];
+      dest_items_local_id[z] = item.localId();
+      dest_items_unique_id[z] = item.uniqueId().asInt64();
     }
     ISerializer* sbuf = comm->serializer();
 

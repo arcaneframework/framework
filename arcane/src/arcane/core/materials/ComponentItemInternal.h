@@ -103,12 +103,12 @@ class ARCANE_CORE_EXPORT ComponentItemInternal
   void setSuperAndGlobalItem(ComponentItemInternal* cii,Item ii)
   {
     m_super_component_item = cii;
-    m_global_item = ii._internal();
+    m_global_item = ItemCompatibility::_itemInternal(ii);
   }
 
   void setGlobalItem(Item ii)
   {
-    m_global_item = ii._internal();
+    m_global_item = ItemCompatibility::_itemInternal(ii);
   }
 
   //! Nombre de sous-composants.

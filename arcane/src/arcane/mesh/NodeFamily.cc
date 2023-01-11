@@ -228,11 +228,10 @@ void NodeFamily::
 removeNodeIfNotConnected(Node node)
 {
 	_checkValidItem(node);
-  ItemInternal* iinode = node.internal();
-	if (!iinode->isSuppressed()){
-		Integer nb_cell = iinode->nbCell();
+	if (!node.itemBase().isSuppressed()){
+		Integer nb_cell = node.nbCell();
 		if (nb_cell == 0)
-			_removeNode(iinode);
+			_removeNode(node);
 	}
 }
 
@@ -250,7 +249,7 @@ computeSynchronizeInfos()
 /*---------------------------------------------------------------------------*/
 
 inline void NodeFamily::
-_removeNode(ItemInternal* node)
+_removeNode(Node node)
 {
   _removeOne(node);
   // On ne supprime pas ici les autres relations (edge->node, face->node)

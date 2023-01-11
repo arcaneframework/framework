@@ -113,8 +113,8 @@ class DynamicMeshIncrementalBuilder
   void addParentItems(const ItemVectorView & items, const eItemKind submesh_kind);
   //! AMR
   //! Ajout au maillage courant des mailles enfants de la maille mère \p hParent_cell
-  void addHChildrenCells(ItemInternal* hParent_cell,Integer nb_cell,Int64ConstArrayView cells_infos,
-           Integer sub_domain_id,Int32ArrayView cells,
+  void addHChildrenCells(Cell hParent_cell,Integer nb_cell,Int64ConstArrayView cells_infos,
+           Int32 sub_domain_id,Int32ArrayView cells,
            bool allow_build_face);
   void computeFacesUniqueIds();
   void addGhostLayers(bool is_allocate);

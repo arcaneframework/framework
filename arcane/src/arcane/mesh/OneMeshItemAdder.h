@@ -123,8 +123,7 @@ public:
   ItemInternal* _addOneCell(const CellInfo& cell_info);
 
   template<typename CellInfo>
-  void _addNodesToCell(ItemInternal* cell,
-                       const CellInfo& cell_info);
+  void _addNodesToCell(Cell cell, const CellInfo& cell_info);
   
   template<typename CellInfo>
   bool _isReorder(Integer i_face, 
@@ -132,18 +131,18 @@ public:
                   const CellInfo& cell_info);
 
   template<typename CellInfo>
-  ItemInternal* _findInternalFace(Integer i_face, 
-                                  const CellInfo& cell_info, 
-                                  bool& is_add);
+  Face _findInternalFace(Integer i_face,
+                         const CellInfo& cell_info,
+                         bool& is_add);
 
   template<typename CellInfo>
-  ItemInternal* _findInternalEdge(Integer i_edge, 
-                                  const CellInfo& cell_info, 
-                                  Int64 first_node, 
-                                  Int64 second_node, 
-                                  bool& is_add);
+  Edge _findInternalEdge(Integer i_edge,
+                         const CellInfo& cell_info,
+                         Int64 first_node,
+                         Int64 second_node,
+                         bool& is_add);
   template<typename CellInfo>
-  void _AMR_Patch(ItemInternal* cell, const CellInfo& cell_info);
+  void _AMR_Patch(Cell cell, const CellInfo& cell_info);
 
   void _clearConnectivity(ItemLocalId item, IIncrementalItemConnectivity* connectivity);
   void _clearReverseConnectivity(ItemLocalId item, IIncrementalItemConnectivity* connectivity, IIncrementalItemConnectivity* reverse_connectivity);

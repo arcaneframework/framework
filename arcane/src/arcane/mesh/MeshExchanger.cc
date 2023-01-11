@@ -269,9 +269,8 @@ computeExchangeInfos()
     VariableItemInt32& owners(family->itemsNewOwner());
     ENUMERATE_ITEM(i,family->allItems()){
       Item item = *i;
-      ItemInternal* internal = item.internal();
       Integer new_owner = owners[item];
-      internal->setOwner(new_owner,rank);
+      item.mutableItemBase().setOwner(new_owner,rank);
     }
     family->notifyItemsOwnerChanged();
   }

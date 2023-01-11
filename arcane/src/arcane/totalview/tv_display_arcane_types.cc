@@ -58,7 +58,11 @@ class TotalviewAdapter
  public:
   static ItemSharedInfo* getItemSharedInfo(const ItemInternal* v)
   {
-    return ItemCompatibility::_getSharedInfo(v);
+    return ItemInternalCompatibility::_getSharedInfo(v);
+  }
+  static ItemInternal* getInternal(const Item* v)
+  {
+    return ItemCompatibility::_itemInternal(*v);
   }
 };
 }
@@ -382,7 +386,7 @@ TV_ttf_display_type(const Arcane::ItemEnumerator* obj)
 int
 TV_ttf_display_type(const Arcane::Item* obj)
 {
-  TV_ttf_add_row("item","Arcane::ItemInternal",obj->internal());
+  TV_ttf_add_row("item","Arcane::ItemInternal",Arcane::TotalviewAdapter::getInternal(obj));
   return TV_ttf_format_ok_elide;
 }
 

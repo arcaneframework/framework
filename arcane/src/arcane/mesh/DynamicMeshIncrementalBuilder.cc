@@ -859,7 +859,7 @@ addParentCells(const ItemVectorView & items)
  * \param cells en retour, si non vide, contient les mailles créées.
  */
 void DynamicMeshIncrementalBuilder::
-addHChildrenCells(ItemInternal* hParent_cell,Integer nb_cell,Int64ConstArrayView cells_infos,
+addHChildrenCells(Cell hParent_cell,Integer nb_cell,Int64ConstArrayView cells_infos,
                   Integer sub_domain_id,Int32ArrayView cells,
                   bool allow_build_face)
 {

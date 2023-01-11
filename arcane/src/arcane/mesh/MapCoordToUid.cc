@@ -184,8 +184,8 @@ init2()
 bool NodeMapCoordToUid::
 isItemToSuppress(Node node, const Int64 parent_uid) const
 {
-  for( Item cell : node.cells() )
-    if (cell.internal()->isActive() || cell.uniqueId()==parent_uid)
+  for( Cell cell : node.cells() )
+    if (cell.isActive() || cell.uniqueId()==parent_uid)
       return false;
   return true;
 }
@@ -222,16 +222,16 @@ isItemToSuppress(Face face) const
   if (face.nbCell()==1)
     return ! face.cell(0).isActive() ;
   else{
-    ItemInternal* cell0 = face.cell(0).internal();
-    ItemInternal* cell1 = face.cell(1).internal() ;
-    Integer level0 = cell0->level();
-    Integer level1 = cell1->level();
+    Cell cell0 = face.cell(0);
+    Cell cell1 = face.cell(1);
+    Integer level0 = cell0.level();
+    Integer level1 = cell1.level();
     if(level0==level1)
-      return ! (cell0->isActive() || cell1->isActive()) ;
+      return ! (cell0.isActive() || cell1.isActive()) ;
     if(level0>level1)
-      return ! cell0->isActive() ;
+      return ! cell0.isActive() ;
     else
-      return ! cell1->isActive() ;
+      return ! cell1.isActive() ;
   }
 }
 
@@ -675,7 +675,7 @@ void FaceMapCoordToUid::
 initFaceCenter()
 {
   ENUMERATE_FACE(iface,m_mesh->allFaces()){
-    m_face_center[iface] = faceCenter(iface->internal());
+    m_face_center[iface] = faceCenter(*iface);
   }
 }
 

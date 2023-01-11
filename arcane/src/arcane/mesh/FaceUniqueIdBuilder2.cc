@@ -536,7 +536,7 @@ _computeSequential()
     ENUMERATE_FACE(iface,cell.faces()){
       Face face = *iface;
       if (face.uniqueId()==NULL_ITEM_UNIQUE_ID){
-        face.internal()->setUniqueId(face_unique_id_counter);
+        face.mutableItemBase().setUniqueId(face_unique_id_counter);
         ++face_unique_id_counter;
       }
     }
@@ -1010,8 +1010,8 @@ _resendCellsAndComputeFacesUniqueId(ConstArrayView<AnyFaceInfo> all_csi)
         Cell cell(cell_data->value());
         Face face = cell.face(face_local_index);
         Int64 face_uid = all_first_face_uid[rank] + rci.m_index_in_rank_list;
-        face.internal()->setUniqueId(face_uid);
-        face.internal()->setOwner(owner_rank,my_rank);
+        face.mutableItemBase().setUniqueId(face_uid);
+        face.mutableItemBase().setOwner(owner_rank,my_rank);
       }
     }
   }

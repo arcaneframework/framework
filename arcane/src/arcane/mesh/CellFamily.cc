@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CellFamily.cc                                               (C) 2000-2022 */
+/* CellFamily.cc                                               (C) 2000-2023 */
 /*                                                                           */
 /* Famille de mailles.                                                       */
 /*---------------------------------------------------------------------------*/
@@ -34,8 +34,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-ARCANE_MESH_BEGIN_NAMESPACE
+namespace Arcane::mesh
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -268,33 +268,32 @@ _removeSubItems(Cell cell)
   // fixe car ces méthodes ne suppriment pas les entités. La destruction
   // est faire lors de l'appel à removeNotConnectedSubItems().
   for( Face face : cell.faces() )
-    m_face_family->removeCellFromFace(face.internal(),cell_lid);
+    m_face_family->removeCellFromFace(face,cell_lid);
   for( Edge edge : cell.edges() )
-    m_edge_family->removeCellFromEdge(edge.internal(),cell_lid);
+    m_edge_family->removeCellFromEdge(edge,cell_lid);
   for( Node node : cell.nodes() )
-    m_node_family->removeCellFromNode(node.internal(),cell_lid);
+    m_node_family->removeCellFromNode(node,cell_lid);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void CellFamily::
-removeCell(ItemInternal* icell)
+removeCell(Cell icell)
 {
 #ifdef ARCANE_CHECK
   _checkValidItem(icell);
-  if (icell->isSuppressed())
-    ARCANE_FATAL("Cell '{0}' is already removed",icell->uniqueId());
+  if (icell.itemBase().isSuppressed())
+    ARCANE_FATAL("Cell '{0}' is already removed",icell.uniqueId());
 #endif
   // TODO: supprimer les faces et arêtes connectées.
   _removeSubItems(icell);
   _removeNotConnectedSubItems(icell);
   //! AMR
-   if (icell->level() >0){
+   if (icell.level() >0){
      _removeParentCellToCell(icell);
-     Cell cell(icell);
-     Cell parent_cell= cell.hParent();
-     _removeChildCellToCell(parent_cell.internal(),icell);
+     Cell parent_cell= icell.hParent();
+     _removeChildCellToCell(parent_cell,icell);
    }
   _removeOne(icell);
 }
@@ -303,21 +302,20 @@ removeCell(ItemInternal* icell)
 /*---------------------------------------------------------------------------*/
 
 void CellFamily::
-detachCell(ItemInternal* icell)
+detachCell(Cell icell)
 {
 #ifdef ARCANE_CHECK
   _checkValidItem(icell);
-  if (icell->isSuppressed())
-    ARCANE_FATAL("Cell '{0}' is already removed",icell->uniqueId());
+  if (icell.itemBase().isSuppressed())
+    ARCANE_FATAL("Cell '{0}' is already removed",icell.uniqueId());
 #endif /* ARCANE_CHECK */
 
   _removeSubItems(icell);
   //! AMR
-  if (icell->level() >0){
+  if (icell.level() >0){
     _removeParentCellToCell(icell);
-    Cell cell(icell);
-    Cell parent_cell= cell.hParent();
-    _removeChildCellToCell(parent_cell.internal(),icell);
+    Cell parent_cell= icell.hParent();
+    _removeChildCellToCell(parent_cell,icell);
   }
   _detachOne(icell);
 }
@@ -347,22 +345,22 @@ _removeNotConnectedSubItems(Cell cell)
 
   // Supprime les faces de la maille qui ne sont plus connectées
   for( Face face : cell.faces() )
-    m_face_family->removeFaceIfNotConnected(face.internal());
+    m_face_family->removeFaceIfNotConnected(face);
 
   // Supprime les arêtes de la maille qui ne sont plus connectées
   for( Edge edge : cell.edges() )
-    m_edge_family->removeEdgeIfNotConnected(edge.internal());
+    m_edge_family->removeEdgeIfNotConnected(edge);
 
   // on supprime les noeuds de la maille qui ne sont plus connectés
   for( Node node : cell.nodes() )
-    m_node_family->removeNodeIfNotConnected(node.internal());
+    m_node_family->removeNodeIfNotConnected(node);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void CellFamily::
-removeDetachedCell(ItemInternal* cell)
+removeDetachedCell(Cell cell)
 {
   _removeNotConnectedSubItems(cell);
 
@@ -475,15 +473,14 @@ _addParentCellToCell(Cell cell,Cell parent_cell)
 void CellFamily::
 _addChildCellToCell(Cell iparent_cell,Integer rank,Cell child_cell)
 {
-  ItemInternal* iparent = iparent_cell.internal();
   Cell parent_cell(iparent_cell);
   // NOTE GG: Cette méthode ne semble fonctionner que si \a rank
   // correspond parent_cell->nbHChildren().
   // Et dans ce cas il n'est pas nécessaire de faire 2 appels.
   m_hchild_connectivity->addConnectedItem(parent_cell,ItemLocalId(NULL_ITEM_LOCAL_ID));
   auto x = _topologyModifier();
-  x->replaceHChild(ItemLocalId(iparent_cell),rank,ItemLocalId(child_cell));
-  iparent->addFlags(ItemFlags::II_Inactive);
+  x->replaceHChild(ItemLocalId(iparent_cell),rank,child_cell);
+  parent_cell.mutableItemBase().addFlags(ItemFlags::II_Inactive);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -504,7 +501,7 @@ _addChildrenCellsToCell(Cell parent_cell,Int32ConstArrayView children_cells_lid)
   for( Integer i=0; i<nb_children; ++i )
     x->replaceHChild(ItemLocalId(parent_cell),i,ItemLocalId(children_cells_lid[i]));
 
-  parent_cell.internal()->addFlags(ItemFlags::II_Inactive);
+  parent_cell.mutableItemBase().addFlags(ItemFlags::II_Inactive);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -522,9 +519,8 @@ _removeParentCellToCell(Cell cell)
 void CellFamily::
 _removeChildCellToCell(Cell parent_cell,Cell cell)
 {
-  //_updateSharedInfoRemoved(parent_cell,0,0,0,0,1);
   m_hchild_connectivity->removeConnectedItem(ItemLocalId(parent_cell),ItemLocalId(cell));
-  parent_cell.internal()->removeFlags(ItemFlags::II_Inactive);
+  parent_cell.mutableItemBase().removeFlags(ItemFlags::II_Inactive);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -534,16 +530,13 @@ void CellFamily::
 _removeChildrenCellsToCell(Cell parent_cell)
 {
   m_hchild_connectivity->removeConnectedItems(ItemLocalId(parent_cell));
-  //Integer nb_children = parent_cell->nbHChildren();
-  //_updateSharedInfoRemoved(parent_cell,0,0,0,0,nb_children);
-  parent_cell.internal()->removeFlags(ItemFlags::II_Inactive);
+  parent_cell.mutableItemBase().removeFlags(ItemFlags::II_Inactive);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_MESH_END_NAMESPACE
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

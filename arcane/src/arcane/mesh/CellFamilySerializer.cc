@@ -194,17 +194,17 @@ deserializeItems(ISerializer* buf,Int32Array* cells_local_id)
       // est fait lors de la désérialisation des mailles.
       Integer node_index = 0;
       for( Node node : cell.nodes() ){
-        node.internal()->setOwner(current_cell.nodeOwner(node_index),my_rank);
+        node.mutableItemBase().setOwner(current_cell.nodeOwner(node_index),my_rank);
         ++node_index;
       }
       Integer edge_index = 0;
       for( Edge edge : cell.edges() ){
-        edge.internal()->setOwner(current_cell.edgeOwner(edge_index),my_rank);
+        edge.mutableItemBase().setOwner(current_cell.edgeOwner(edge_index),my_rank);
         ++edge_index;
       }
       Integer face_index = 0;
       for( Face face : cell.faces() ){
-        face.internal()->setOwner(current_cell.faceOwner(face_index),my_rank);
+        face.mutableItemBase().setOwner(current_cell.faceOwner(face_index),my_rank);
         ++face_index;
       }
     }

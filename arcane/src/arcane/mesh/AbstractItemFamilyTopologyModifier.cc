@@ -155,48 +155,48 @@ replaceHChild(ItemLocalId item_lid,Integer index,ItemLocalId new_hchild_lid)
 /*---------------------------------------------------------------------------*/
 
 void AbstractItemFamilyTopologyModifier::
-findAndReplaceNode(ItemLocalId item_lid,ItemLocalId old_node_lid,
-                  ItemLocalId new_node_lid)
+findAndReplaceNode(ItemLocalId item_lid, ItemLocalId old_node_lid,
+                   ItemLocalId new_node_lid)
 {
-  ItemInternal* ii = m_family->itemInfoListView()[item_lid].internal();
-  Int32 index = _getItemIndex(ii->nodeList(),old_node_lid);
-  this->replaceNode(ItemLocalId(ii->localId()),index,new_node_lid);
+  impl::ItemBase ii = m_family->itemInfoListView()[item_lid].itemBase();
+  Int32 index = _getItemIndex(ii.nodeList(), old_node_lid);
+  this->replaceNode(ii.itemLocalId(), index, new_node_lid);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void AbstractItemFamilyTopologyModifier::
-findAndReplaceEdge(ItemLocalId item_lid,ItemLocalId old_edge_lid,
+findAndReplaceEdge(ItemLocalId item_lid, ItemLocalId old_edge_lid,
                    ItemLocalId new_edge_lid)
 {
-  ItemInternal* ii = m_family->itemInfoListView()[item_lid].internal();
-  Int32 index = _getItemIndex(ii->edgeList(),old_edge_lid);
-  this->replaceEdge(ItemLocalId(ii->localId()),index,new_edge_lid);
+  impl::ItemBase ii = m_family->itemInfoListView()[item_lid].itemBase();
+  Int32 index = _getItemIndex(ii.edgeList(), old_edge_lid);
+  this->replaceEdge(ii.itemLocalId(), index, new_edge_lid);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void AbstractItemFamilyTopologyModifier::
-findAndReplaceFace(ItemLocalId item_lid,ItemLocalId old_face_lid,
+findAndReplaceFace(ItemLocalId item_lid, ItemLocalId old_face_lid,
                    ItemLocalId new_face_lid)
 {
-  ItemInternal* ii = m_family->itemInfoListView()[item_lid].internal();
-  Int32 index = _getItemIndex(ii->faceList(),old_face_lid);
-  this->replaceFace(ItemLocalId(ii->localId()),index,new_face_lid);
+  impl::ItemBase ii = m_family->itemInfoListView()[item_lid].itemBase();
+  Int32 index = _getItemIndex(ii.faceList(), old_face_lid);
+  this->replaceFace(ii.itemLocalId(), index, new_face_lid);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void AbstractItemFamilyTopologyModifier::
-findAndReplaceCell(ItemLocalId item_lid,ItemLocalId old_cell_lid,
+findAndReplaceCell(ItemLocalId item_lid, ItemLocalId old_cell_lid,
                    ItemLocalId new_cell_lid)
 {
-  ItemInternal* ii = m_family->itemInfoListView()[item_lid].internal();
-  Int32 index = _getItemIndex(ii->cellList(),old_cell_lid);
-  this->replaceCell(ItemLocalId(ii->localId()),index,new_cell_lid);
+  impl::ItemBase ii = m_family->itemInfoListView()[item_lid].itemBase();
+  Int32 index = _getItemIndex(ii.cellList(), old_cell_lid);
+  this->replaceCell(ii.itemLocalId(), index, new_cell_lid);
 }
 
 /*---------------------------------------------------------------------------*/

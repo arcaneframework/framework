@@ -2315,11 +2315,11 @@ _checkValidConnectivity()
     // Vérifie la cohérence de la partie interne
     ENUMERATE_ITEM(i,allItems()){
       Item item = *i;
-      ItemInternal* i1 = item.internal();
-      ItemInternal* i2 = m_common_item_shared_info->m_items_internal[item.localId()];
+      Item i1 = item;
+      Item i2 = m_common_item_shared_info->m_items_internal[item.localId()];
       if (i1!=i2)
         ARCANE_FATAL("family={0}: incoherent item internal lid={1} i1={2} i2={3}",
-                     fullName(),item.localId(),i1,i2);
+                     fullName(),item.localId(),ItemPrinter(i1),ItemPrinter(i2));
     }
   }
   constexpr Int32 MAX_KIND = ItemInternalConnectivityList::MAX_ITEM_KIND;

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CellMerger.cc                                               (C) 2000-2022 */
+/* CellMerger.cc                                               (C) 2000-2023 */
 /*                                                                           */
 /* Fusionne deux mailles.                                                    */
 /*---------------------------------------------------------------------------*/
@@ -1123,12 +1123,10 @@ _promoteType(const _Type& t1,const _Type& t2) const
 /*---------------------------------------------------------------------------*/
 
 void CellMerger::
-merge(Cell cell_1,Cell cell_2)
+merge(Cell i_cell_1,Cell i_cell_2)
 {
-  ItemInternal* i_cell_1 = cell_1.internal();
-  ItemInternal* i_cell_2 = cell_2.internal();
-  _Type cell_1_type = _getCellType(i_cell_1->typeId());
-  IMesh* mesh = i_cell_1->family()->mesh();
+  _Type cell_1_type = _getCellType(i_cell_1.type());
+  IMesh* mesh = i_cell_1.itemFamily()->mesh();
   ItemSwapperUtils swap_utils(mesh);
 
   switch (cell_1_type) {
@@ -1159,17 +1157,8 @@ merge(Cell cell_1,Cell cell_2)
 Cell CellMerger::
 getCell(Cell i_cell_1,Cell i_cell_2)
 {
-  return Cell(getItemInternal(i_cell_1.internal(),i_cell_2.internal()));
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ItemInternal* CellMerger::
-getItemInternal(ItemInternal* i_cell_1,ItemInternal* i_cell_2)
-{
-  _Type cell_1_type = _getCellType(i_cell_1->typeId());
-  _Type cell_2_type = _getCellType(i_cell_2->typeId());
+  _Type cell_1_type = _getCellType(i_cell_1.type());
+  _Type cell_2_type = _getCellType(i_cell_2.type());
 
   _Type merged_cell_type = _promoteType(cell_1_type, cell_2_type);
     
@@ -1202,6 +1191,15 @@ getItemInternal(ItemInternal* i_cell_1,ItemInternal* i_cell_2)
     ARCANE_FATAL("Merge for this kind of cell not implemented\n");
   }
   return 0;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ItemInternal* CellMerger::
+getItemInternal(ItemInternal* i_cell_1, ItemInternal* i_cell_2)
+{
+  return ItemCompatibility::_itemInternal(getCell(i_cell_1,i_cell_2));
 }
 
 /*---------------------------------------------------------------------------*/

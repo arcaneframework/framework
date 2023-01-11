@@ -147,12 +147,12 @@ _removeCell(Cell cell)
 
   ItemLocalId cell_lid(cell);
   for( Face face : cell.faces() )
-    face_family.removeCellFromFace(face.internal(),cell_lid);
+    face_family.removeCellFromFace(face,cell_lid);
   for( Edge edge : cell.edges() )
-    edge_family.removeCellFromEdge(edge.internal(),cell_lid);
+    edge_family.removeCellFromEdge(edge,cell_lid);
   for( Node node : cell.nodes() )
-    node_family.removeCellFromNode(node.internal(),cell_lid);
-  cell_family.removeItem(cell.internal());
+    node_family.removeCellFromNode(node,cell_lid);
+  cell_family.removeItem(cell);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -417,13 +417,13 @@ display(IMesh* mesh, const String msg)
     ItemInfoListView items(family);
     Integer count = 0;
     for( Integer z=0, zs=family->maxLocalId(); z<zs; ++z )
-      if (!items[z].internal()->isSuppressed())
+      if (!items[z].itemBase().isSuppressed())
         ++count;
     traceMng->info() << "\t" << family->itemKind() << " " << count;
 
     for( Integer z=0, zs=family->maxLocalId(); z<zs; ++z ){
       Item item = items[z];
-      if (!item.internal()->isSuppressed()){
+      if (!item.itemBase().isSuppressed()){
         traceMng->info() << ItemPrinter(item);
       }
     }
@@ -447,8 +447,8 @@ _checkValidItemOwner()
     ItemInfoListView items(family);
     for( Integer z=0, zs=family->maxLocalId(); z<zs; ++z ){
       Item item = items[z];
-      if (!item.internal()->isSuppressed()){
-        if (item.uniqueId() != item.internal()->parent(0)->uniqueId()){
+      if (!item.itemBase().isSuppressed()){
+        if (item.uniqueId() != item.itemBase().parentBase(0).uniqueId()){
           Int64UniqueArray uids; uids.add(item.uniqueId());
           Int32UniqueArray lids(1);
           parent_family->itemsUniqueIdToLocalId(lids,uids,false);
@@ -474,8 +474,8 @@ _checkFloatingItems()
     // Calcul des items orphelins de cellules
     ItemInfoListView items(family);
     for( Integer z=0, zs=family->maxLocalId(); z<zs; ++z ){
-      ItemInternal* item = items[z].internal();
-      if (!item->isSuppressed() && item->nbCell() == 0) {
+      Item item = items[z];
+      if (!item.itemBase().isSuppressed() && item.itemBase().nbCell() == 0) {
         error() << "Floating item detected : " << ItemPrinter(item);
         ++nerror;
       }

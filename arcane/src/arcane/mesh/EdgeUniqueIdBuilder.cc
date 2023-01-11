@@ -532,7 +532,7 @@ _computeEdgesUniqueIdsSequential()
     Integer nb_num_back_edge = 0;
     Integer nb_true_boundary_edge = 0;
     for( Edge edge : cell.edges()){
-      if (edge.internal()->backCell()==cell)
+      if (edge.itemBase().backCell()==cell)
         ++nb_num_back_edge;
       else if (edge.nbCell()==1){
         ++nb_true_boundary_edge;
@@ -565,7 +565,7 @@ _computeEdgesUniqueIdsSequential()
     for( Edge edge : cell.edges() ){
       Int64 edge_new_uid = NULL_ITEM_UNIQUE_ID;
       //info() << "CHECK CELLUID=" << cell_uid << " EDGELID=" << edge->localId();
-      if (edge.internal()->backCell()==cell){
+      if (edge.itemBase().backCell()==cell){
         edge_new_uid = cell_first_edge_uid[cell_uid] + nb_num_back_edge;
         ++nb_num_back_edge;
       }
@@ -576,7 +576,7 @@ _computeEdgesUniqueIdsSequential()
       if (edge_new_uid!=NULL_ITEM_UNIQUE_ID){
         //info() << "NEW EDGE UID: LID=" << edge->localId() << " OLDUID=" << edge->uniqueId()
         //<< " NEWUID=" << edge_new_uid << " THIS=" << edge;
-        edge.internal()->setUniqueId(edge_new_uid);
+        edge.mutableItemBase().setUniqueId(edge_new_uid);
       }
     }
   }
@@ -591,14 +591,14 @@ _computeEdgesUniqueIdsSequential()
         Int64 opposite_cell_uid = NULL_ITEM_UNIQUE_ID;
         bool true_boundary = false;
         bool internal_other = false;
-        if (edge.internal()->backCell()==cell){
+        if (edge.itemBase().backCell()==cell){
         }
         else if (edge.nbCell()==1){
           true_boundary = true;
         }
         else{
           internal_other = true;
-          opposite_cell_uid = edge.internal()->backCell()->uniqueId().asInt64();
+          opposite_cell_uid = edge.itemBase().backCell().uniqueId().asInt64();
         }
         ostr() << "NEW LOCAL ID FOR CELLEDGE " << cell_uid << ' '
                << index << ' ' << edge.uniqueId() << " (";
@@ -654,7 +654,7 @@ _computeEdgesUniqueIdsParallelV2()
     Node node0{edge.node(0)};
     Node node1{edge.node(1)};
     Int64 new_uid = (node0.uniqueId().asInt64() * total_max_uid) + node1.uniqueId().asInt64();
-    edge.internal()->setUniqueId(new_uid);
+    edge.mutableItemBase().setUniqueId(new_uid);
   }
 }
 

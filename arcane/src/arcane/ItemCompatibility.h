@@ -5,50 +5,81 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GhostItemsVariableParallelOperation.h                       (C) 2000-2023 */
+/* ItemCompatibility.h                                         (C) 2000-2023 */
 /*                                                                           */
-/* Opérations parallèles sur les entités fantômes.                           */
+/* Méthodes assurant la compatibilité entre versions de Item.                */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_PARALLEL_GHOSTITEMSVARIABLEPARALLELOPERATION_H
-#define ARCANE_PARALLEL_GHOSTITEMSVARIABLEPARALLELOPERATION_H
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#include "arcane/parallel/VariableParallelOperationBase.h"
-
+#ifndef ARCANE_ITEMCOMPATIBILITY_H
+#define ARCANE_ITEMCOMPATIBILITY_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Parallel
+// NOTE: Ce fichier est inclus directement par 'Item.h' et ne doit pas
+// être inclus directement par d'autres fichiers.
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane
 {
+
+namespace Materials
+{
+  class ComponentItemInternal;
+}
+namespace geometric
+{
+  class GeomShapeView;
+}
+namespace mesh
+{
+  class CellMerger;
+  class ItemFamily;
+  class ItemTools;
+  class FaceFamily;
+  class OneMeshItemAdder;
+  class ParallelAMRConsistency;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Opérations parallèle sur les entités fantômes.
+ * \internal
+ * \brief Méthodes pour conversions entre différentes classes de gestion
+ * des entités
+ *
+ * Cette classe est temporaire et interne à Arcane. Seules les classes 'friend'
+ * peuvent l'utiliser.
  */
-class ARCANE_CORE_EXPORT GhostItemsVariableParallelOperation
-: public VariableParallelOperationBase
+class ItemCompatibility
 {
- public:
+  // Pour accéder à _internal()
+  friend Materials::ComponentItemInternal;
+  friend class ItemSharedInfo;
+  friend class IItemFamilyModifier;
+  friend geometric::GeomShapeView;
+  friend class TotalviewAdapter;
+  friend mesh::CellMerger;
+  friend mesh::ItemFamily;
+  friend mesh::ItemTools;
+  friend mesh::FaceFamily;
+  friend mesh::ParallelAMRConsistency;
+  friend mesh::OneMeshItemAdder;
 
-  explicit GhostItemsVariableParallelOperation(IItemFamily* family);
-  virtual ~GhostItemsVariableParallelOperation() {} //!< Libère les ressources.
+ private:
 
- public:
-
- protected:
-
-  virtual void _buildItemsToSend();
+  static ItemInternal* _itemInternal(const Item& item)
+  {
+    return item._internal();
+  }
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #endif
-

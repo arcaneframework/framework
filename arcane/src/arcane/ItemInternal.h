@@ -45,7 +45,7 @@
 
 namespace Arcane
 {
-class ItemCompatibility;
+class ItemInternalCompatibility;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -447,7 +447,7 @@ class ARCANE_CORE_EXPORT ItemBase
 {
   friend class ::Arcane::ItemInternal;
   friend class ::Arcane::Item;
-  friend class ::Arcane::ItemCompatibility;
+  friend class ::Arcane::ItemInternalCompatibility;
   friend MutableItemBase;
 
  private:
@@ -465,6 +465,8 @@ class ARCANE_CORE_EXPORT ItemBase
 
   //! Numéro local (au sous-domaine) de l'entité
   Int32 localId() const { return m_local_id; }
+  //! Numéro local (au sous-domaine) de l'entité
+  inline ItemLocalId itemLocalId() const;
   //! Numéro unique de l'entité
   ItemUniqueId uniqueId() const
   {
@@ -1112,6 +1114,15 @@ toMutable()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+inline ItemLocalId impl::ItemBase::
+itemLocalId() const
+{
+  return ItemLocalId(m_local_id);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \internal
  * \brief Méthodes pour conversions entre différentes classes de gestion
@@ -1120,7 +1131,7 @@ toMutable()
  * Cette classe est temporaire et interne à Arcane. Seules les classes 'friend'
  * peuvent l'utiliser.
  */
-class ItemCompatibility
+class ItemInternalCompatibility
 {
   friend class SimdItemBase;
   friend class SimdItemDirectBase;

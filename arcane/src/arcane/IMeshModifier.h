@@ -190,7 +190,7 @@ class IMeshModifier
   virtual bool adapt() =0;
   virtual void registerCallBack(IAMRTransportFunctor* f) =0;
   virtual void unRegisterCallBack(IAMRTransportFunctor* f) =0;
-  virtual void addHChildrenCells(ItemInternal* parent_cell,Integer nb_cell,
+  virtual void addHChildrenCells(Cell parent_cell,Integer nb_cell,
                                  Int64ConstArrayView cells_infos,Int32ArrayView cells_lid = Int32ArrayView()) =0;
 
   //! Supprime toutes les entitées de toutes les familles de ce maillage.

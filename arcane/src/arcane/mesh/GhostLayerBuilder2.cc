@@ -368,11 +368,11 @@ _markBoundaryNodes(ArrayView<Int32> node_layer)
       face_internal->addFlags(shared_and_boundary_flags);
       //++nb_sub_domain_boundary_face;
       for( Item inode : face.nodes() ){
-        inode.internal()->addFlags(shared_and_boundary_flags);
+        inode.mutableItemBase().addFlags(shared_and_boundary_flags);
         node_layer[inode.localId()] = 1;
       }
       for( Item iedge : face.edges() )
-        iedge.internal()->addFlags(shared_and_boundary_flags);
+        iedge.mutableItemBase().addFlags(shared_and_boundary_flags);
     }
   }
 }
@@ -831,9 +831,8 @@ _markBoundaryItems()
   // Parcours les faces et marque les noeuds, arêtes et faces frontieres
   ENUMERATE_ITEM_INTERNAL_MAP_DATA(iid,faces_map){
     Face face = iid->value();
-    ItemInternal* face_internal = face.internal();
     bool is_sub_domain_boundary_face = false;
-    if (face_internal->flags() & ItemFlags::II_Boundary){
+    if (face.itemBase().flags() & ItemFlags::II_Boundary){
       is_sub_domain_boundary_face = true;
     }
     else{
@@ -841,11 +840,11 @@ _markBoundaryItems()
         is_sub_domain_boundary_face = true;
     }
     if (is_sub_domain_boundary_face){
-      face_internal->addFlags(shared_and_boundary_flags);
+      face.mutableItemBase().addFlags(shared_and_boundary_flags);
       for( Item inode : face.nodes() )
-        inode.internal()->addFlags(shared_and_boundary_flags);
+        inode.mutableItemBase().addFlags(shared_and_boundary_flags);
       for( Item iedge : face.edges() )
-        iedge.internal()->addFlags(shared_and_boundary_flags);
+        iedge.mutableItemBase().addFlags(shared_and_boundary_flags);
     }
   }
 }

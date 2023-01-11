@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CellMerger.h                                                (C) 2000-2022 */
+/* CellMerger.h                                                (C) 2000-2023 */
 /*                                                                           */
 /* Fusionne deux mailles.                                                    */
 /*---------------------------------------------------------------------------*/
@@ -35,7 +35,7 @@ class ARCANE_MESH_EXPORT CellMerger
  public:
 
   //! Constructeur
-  CellMerger(ITraceMng*) { }
+  CellMerger(ITraceMng*) {}
 
   //! Destructeur
   ~CellMerger() = default;
@@ -51,7 +51,7 @@ class ARCANE_MESH_EXPORT CellMerger
    * \note la fusion est \b toujours effectuée dans \a i_cell_1, \a i_cell_2
    * devient une maille applatie qui sera détruite par la suite.
    */
-  void merge(Cell i_cell_1,Cell i_cell_2);
+  void merge(Cell i_cell_1, Cell i_cell_2);
 
   /*!
    * \brief Retourne l'ItemInteral utilisé par la maille après fusion
@@ -64,35 +64,36 @@ class ARCANE_MESH_EXPORT CellMerger
    * \note le nouveau pointeur est toujours soit \a i_cell_1 soit
    * \a i_cell_2. Aucune allocation de mémoire n'est effectuée.
    */
+  ARCANE_DEPRECATED_REASON("Y2022: Use getCell() instead")
   ItemInternal* getItemInternal(ItemInternal* i_cell_1, ItemInternal* i_cell_2);
 
   /*!
-   * \brief Retourne l'ItemInteral utilisé par la maille après fusion
+   * \brief Retourne la maille utilisé par la maille après fusion
    * 
    * \param i_cell_1 un pointeur sur la premiere maille
    * \param i_cell_2 un pointeur sur la deuxième maille
    * 
-   * \return un pointeur sur la nouvelle maille.
+   * \return la nouvelle maille.
    * 
-   * \note le nouveau pointeur est toujours soit \a i_cell_1 soit
+   * \note la nouvelle maille est toujours soit \a i_cell_1 soit
    * \a i_cell_2. Aucune allocation de mémoire n'est effectuée.
    */
   Cell getCell(Cell i_cell_1, Cell i_cell_2);
 
  private:
 
- /*!
+  /*!
    * On se donne un type énuméré local afin de pouvoir effectuer des
    * operations arithmétiques (voir \see _promoteType)
    */
   enum _Type
   {
-    NotMergeable  = 0,
-    Hexahedron    = 1,
-    Pyramid       = 2,
-    Pentahedron   = 3,
+    NotMergeable = 0,
+    Hexahedron = 1,
+    Pyramid = 2,
+    Pentahedron = 3,
     Quadrilateral = 10,
-    Triangle      = 11
+    Triangle = 11
   };
 
   /*!

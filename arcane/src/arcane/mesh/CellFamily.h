@@ -67,29 +67,24 @@ class ARCANE_MESH_EXPORT CellFamily
   Item findOrAllocOne(Int64 uid,ItemTypeId type_id, MeshInfos& mesh_info, bool& is_alloc) override;
   IItemFamily* family() override {return this;}
 
-  // TODO: DEPRECATED
-  ItemInternal* allocOne(Int64 uid,ItemTypeInfo* type);
-  // TODO: DEPRECATED
-  ItemInternal* findOrAllocOne(Int64 uid,ItemTypeInfo* type,bool& is_alloc);
-
   Cell allocOne(Int64 uid,ItemTypeId type);
   Cell findOrAllocOne(Int64 uid,ItemTypeId type_id,bool& is_alloc);
   
-  /**
+  /*!
    * Supprime la maille \a cell
    *
    * @param cell la maille à supprimer
    */
-  void removeCell(ItemInternal* cell);
+  void removeCell(Cell cell);
 
-  /**
+  /*!
    * Detache la maille \a cell du maillage sans la supprimer
    *
    * @param cell la maille à détacher
    */
-  void detachCell(ItemInternal* cell);
+  void detachCell(Cell cell);
 
-  /**
+  /*!
    * Detache les mailles d'identifiants locaux \a cell_local_ids du maillage sans les supprimer.
    * Basé sur le graphe de dépendances des familles ItemFamilyNetwork.
    *
@@ -97,14 +92,14 @@ class ARCANE_MESH_EXPORT CellFamily
    */
   void detachCells2(Int32ConstArrayView cell_local_ids);
 
-  /**
+  /*!
    * Detruit la maille \a cell ayant deja ete detachée du maillage
    *
    * @param cell la maille détachée à detruire
    */
-  void removeDetachedCell(ItemInternal* cell);
+  void removeDetachedCell(Cell cell);
 
-  /**
+  /*!
    * Supprime le groupe d'entités \a local_ids
    *
    * @param local_ids le groupe de mailles à supprimer
@@ -137,6 +132,14 @@ class ARCANE_MESH_EXPORT CellFamily
  public:
 
   virtual void computeSynchronizeInfos() override;
+
+ public:
+
+  ARCANE_DEPRECATED_REASON("Y2022: Use allocOne(Int64 uid,ItemTypeId type) instead")
+  ItemInternal* allocOne(Int64 uid,ItemTypeInfo* type);
+
+  ARCANE_DEPRECATED_REASON("Y2022: Use findOrAllocOne(Int64 uid,ItemTypeId type_id,bool& is_alloc) instead")
+  ItemInternal* findOrAllocOne(Int64 uid,ItemTypeInfo* type,bool& is_alloc);
 
  protected:
 
