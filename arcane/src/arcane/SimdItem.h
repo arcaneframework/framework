@@ -81,7 +81,7 @@ class ARCANE_CORE_EXPORT SimdItemBase
    */
   ARCANE_DEPRECATED_REASON("Y2022: Use another constructor")
   SimdItemBase(const ItemInternalPtr* items, const SimdIndexType* ids)
-  : m_simd_local_ids(*ids), m_shared_info(ItemCompatibility::_getSharedInfo(items)) { }
+  : m_simd_local_ids(*ids), m_shared_info(ItemInternalCompatibility::_getSharedInfo(items)) { }
 
  protected:
 
@@ -125,7 +125,8 @@ class SimdItemDirectBase
 
   ARCANE_DEPRECATED_REASON("Y2022: Use another constructor")
   SimdItemDirectBase(const ItemInternalPtr* items,Int32 base_local_id,Integer nb_valid)
-  : m_base_local_id(base_local_id), m_nb_valid(nb_valid), m_shared_info(ItemCompatibility::_getSharedInfo(items)) { }
+  : m_base_local_id(base_local_id), m_nb_valid(nb_valid),
+    m_shared_info(ItemInternalCompatibility::_getSharedInfo(items)) { }
 
  protected:
 
@@ -134,7 +135,8 @@ class SimdItemDirectBase
 
   // TEMPORAIRE pour éviter le deprecated
   SimdItemDirectBase(Int32 base_local_id,Integer nb_valid,const ItemInternalPtr* items)
-  : m_base_local_id(base_local_id), m_nb_valid(nb_valid), m_shared_info(ItemCompatibility::_getSharedInfo(items)) { }
+  : m_base_local_id(base_local_id), m_nb_valid(nb_valid),
+    m_shared_info(ItemInternalCompatibility::_getSharedInfo(items)) { }
 
  public:
 
@@ -206,7 +208,7 @@ class SimdItem
 
   ARCANE_DEPRECATED_REASON("Y2022: Use another constructor")
   SimdItem(const ItemInternalPtr* items,const SimdInfo::SimdInt32IndexType* ids)
-  : SimdItemBase(ItemCompatibility::_getSharedInfo(items),ids) { }
+  : SimdItemBase(ItemInternalCompatibility::_getSharedInfo(items),ids) { }
 
  protected:
 
@@ -388,10 +390,10 @@ class ARCANE_CORE_EXPORT SimdItemEnumeratorBase
 
   // TODO: rendre obsolète
   SimdItemEnumeratorBase(const ItemInternalPtr* items,const Int32* local_ids,Integer n)
-  : SimdEnumeratorBase(local_ids,n), m_shared_info(ItemCompatibility::_getSharedInfo(items)) { }
+  : SimdEnumeratorBase(local_ids,n), m_shared_info(ItemInternalCompatibility::_getSharedInfo(items)) { }
   // TODO: rendre obsolète
   SimdItemEnumeratorBase(const ItemInternalArrayView& items,const Int32ConstArrayView& local_ids)
-  : SimdEnumeratorBase(local_ids), m_shared_info(ItemCompatibility::_getSharedInfo(items.data())) { }
+  : SimdEnumeratorBase(local_ids), m_shared_info(ItemInternalCompatibility::_getSharedInfo(items.data())) { }
 
  public:
 

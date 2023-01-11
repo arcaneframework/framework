@@ -58,7 +58,7 @@ class TotalviewAdapter
  public:
   static ItemSharedInfo* getItemSharedInfo(const ItemInternal* v)
   {
-    return ItemCompatibility::_getSharedInfo(v);
+    return ItemInternalCompatibility::_getSharedInfo(v);
   }
 };
 }

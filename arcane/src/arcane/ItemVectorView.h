@@ -274,7 +274,7 @@ class ARCANE_CORE_EXPORT ItemVectorView
 
   void _init(ItemInternalArrayView items)
   {
-    m_shared_info = (size()>0 && !items.empty()) ? ItemCompatibility::_getSharedInfo(items[0]) : ItemSharedInfo::nullInstance();
+    m_shared_info = (size()>0 && !items.empty()) ? ItemInternalCompatibility::_getSharedInfo(items[0]) : ItemSharedInfo::nullInstance();
   }
   void _init2(IItemFamily* family);
 };
