@@ -9,7 +9,7 @@ antérieures à la version 3 sont listées ici : \ref arcanedoc_news_changelog20
 
 ___
 
-## Arcane Version 3.8... (décembre 2022) {#arcanedoc_version380}
+## Arcane Version 3.8... (janvier 2023) {#arcanedoc_version380}
 
 Work In Progress...
 
@@ -24,6 +24,27 @@ Work In Progress...
   instance de Arcane::NumArray à partir d'un fichier au format ASCII (#444).
 - Ajoute support de la lecture des en parallèle des fichiers au format
   MED (#449).
+- Ajoute support pour la lecture des groupes de noeuds
+  (Arcane::NodeGroup) dans les maillages au format MSH (#475).
+- Ajoute support pour la renumérotation des maillages AMR en 3D. Cela
+  permet d'avoir la même numérotation en quel que soit le découpage (#495).
+- Ajoute accès à Arcane::IMeshMng dans Arcane::ICaseMng et
+  Arcane::IPhysicalUnitSystem (#461).
+- Ajoute support des accélérateurs pour les classes gérant le
+  maillage cartésien (Arcane::CellDirectionMng,
+  Arcane::FaceDirectionMng et Arcane::NodeDirectionMng) (#474)
+- Ajoute classe Arcane::impl::MutableItemBase pour remplacer
+  l'utilisation de Arcane::ItemInternal (#499).
+- Ajoute possibilité d'indexer les composantes de Arcane::Real2,
+  Arcane::Real3, Arcane::Real2x2 et Arcane::Real3x3 par l'opérateur
+  `operator()` (#485).
+- Développements préliminaires pour les variables du maillage à
+  plusieurs dimensions (#459, #463, #464, #466, #471).
+- Ajoute interface Arcane::IDoFFamily pour gérer les
+  Arcane::DoF. Auparavant il fallait utiliser directement
+  l'implémentation Arcane::mesh::DoFFamily (#480)
+- Ajoute support dans `Aleph` des variables qui n'ont pas de familles
+  par défaut (comme les Arcane::DoF par exemple) (#468).
 
 ### Changements:
 
@@ -38,8 +59,19 @@ Work In Progress...
 - Supprime paramètre template avec le rang du tableau dans les classes
   Arcane::DefaultLayout, Arcane::RightLayout et Arcane::LefLayout
   (#436).
+- Rend obsolète les méthodes de Arcane::ModuleBuildInfo qui utilisent
+  Arcane::IMesh. Il faut utiliser les méthodes qui utilisent
+  Arcane::MeshHandle. (#460).
+- Change le type de retour de Arcane::IMeshBase::handle() pour ne pas
+  retourner de référence mais une valeur (#489).
+- Utilise des classes de base spécifiques par type de service lors de
+  la génération des fichiers `axl` (#472).
 
 ### Corrections:
+
+- Corrige inconsistence possible entre les connectivités conservées
+  dans Arcane::ItemConnectivityList et
+  Arcane::mesh::IncrementalItemConnectivity (#478).
 
 ### Interne:
 
@@ -74,6 +106,18 @@ Work In Progress...
   Arcane::NumMatrix pour généraliser les types Arcane::Real2,
   Arcane::Real3, Arcane::Real2x2 et Arcane::Real3x3. Ces classes sont
   pour l'instant à usage interne de %Arcane (#441).
+- Diverses optimisations dans les classes internes gérant la
+  connectivités et les itérateurs pour réduire leur taille (#479, #482,
+  #483, #484)
+- Supprime utilisation de Arcane::ItemInternalList dans
+  Arcane::ItemVector et Arcane::ItemVectorView (#486, #487).
+- Supprime utilisation de Arcane::ItemInternalVectorView (#498)
+- Supprime utilisation de Arcane::ItemInternal dans de nombreuses
+  classes internes (#488, #492, #500, #501)
+- Supprime dans Arcane::MDSpan et Arcane::NumArray les indexeurs
+  supplémentaires pour les classes Arcane::Real2, Arcane::Real3,
+  Arcane::Real2x2 et Arcane::Real3x3. Ces indexeurs avaient été
+  ajoutés à des fin de test mais n'étaient pas utilisés (#490).
 
 ### Arccore:
 
@@ -91,6 +135,7 @@ Work In Progress...
 ### Axlstar
 
 - Add support for using a specific mesh in service instance (#451)
+- Remove support to build with `mono` (#465).
 
 ___
 
