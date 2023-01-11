@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableParallelOperationBase.h                             (C) 2000-2009 */
+/* VariableParallelOperationBase.h                             (C) 2000-2023 */
 /*                                                                           */
 /* Classe de base des opérations parallèle sur des variables.                */
 /*---------------------------------------------------------------------------*/
@@ -27,18 +27,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class IParallelMng;
-class ItemInternal;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE_PARALLEL
+namespace Arcane::Parallel
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -58,21 +48,20 @@ class ARCANE_CORE_EXPORT VariableParallelOperationBase
 
  public:
 
-  virtual void build() {}
+  void build() override {}
 
  public:
 
-  virtual void setItemFamily(IItemFamily* family);
-  virtual IItemFamily* itemFamily();
-  virtual void addVariable(IVariable* variable);
-  virtual void applyOperation(IDataOperation* operation);
+  void setItemFamily(IItemFamily* family) override;
+  IItemFamily* itemFamily() override;
+  void addVariable(IVariable* variable) override;
+  void applyOperation(IDataOperation* operation) override;
 
  protected:
 
-  UniqueArray< SharedArray<ItemInternal*> >& _itemsToSend()
-  { return m_items_to_send; }
+  Array<SharedArray<ItemLocalId>>& _itemsToSend() { return m_items_to_send; }
 
-  virtual void _buildItemsToSend() =0;
+  virtual void _buildItemsToSend() = 0;
 
  private:
 
@@ -80,14 +69,13 @@ class ARCANE_CORE_EXPORT VariableParallelOperationBase
   IItemFamily* m_item_family;
   VariableList m_variables;
   //! Liste des entités à envoyer à chaque processeur
-  UniqueArray< SharedArray<ItemInternal*> > m_items_to_send;
+  UniqueArray<SharedArray<ItemLocalId>> m_items_to_send;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE_PARALLEL
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

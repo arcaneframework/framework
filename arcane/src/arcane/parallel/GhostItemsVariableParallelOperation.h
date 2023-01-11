@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GhostItemsVariableParallelOperation.h                       (C) 2000-2008 */
+/* GhostItemsVariableParallelOperation.h                       (C) 2000-2023 */
 /*                                                                           */
 /* Opérations parallèles sur les entités fantômes.                           */
 /*---------------------------------------------------------------------------*/
@@ -19,12 +19,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE_PARALLEL
+namespace Arcane::Parallel
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -36,10 +32,8 @@ class ARCANE_CORE_EXPORT GhostItemsVariableParallelOperation
 {
  public:
 
-  GhostItemsVariableParallelOperation(IItemFamily* family);
+  explicit GhostItemsVariableParallelOperation(IItemFamily* family);
   virtual ~GhostItemsVariableParallelOperation() {} //!< Libère les ressources.
-
- public:
 
  public:
 
@@ -51,8 +45,7 @@ class ARCANE_CORE_EXPORT GhostItemsVariableParallelOperation
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE_PARALLEL
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
