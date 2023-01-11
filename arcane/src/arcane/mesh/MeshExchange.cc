@@ -766,10 +766,9 @@ _addTreeItemToSend(Int32 cell_local_id,CellInfoListView cells)
 /*---------------------------------------------------------------------------*/
 
 void MeshExchange::
-_familyTree (Int32Array& family,Cell item,
-             const bool reset) const
+_familyTree (Int32Array& family,Cell item, const bool reset) const
 {
-	ARCANE_ASSERT((!item.internal()->isSubactive()),("The family tree doesn't include subactive items"));
+	ARCANE_ASSERT((!item.itemBase().isSubactive()),("The family tree doesn't include subactive items"));
 	// Clear the array if the flag reset tells us to.
 	if (reset)
 		family.clear();
@@ -781,7 +780,7 @@ _familyTree (Int32Array& family,Cell item,
 		for (Integer c=0, cs=item.nbHChildren(); c<cs; c++){
 			Item ichild = item.hChild(c);
 			if (ichild.isOwn())
-				_familyTree (family,ichild.internal(), false);
+				_familyTree (family,ichild.toCell(), false);
 		}
 }
 
@@ -1297,7 +1296,8 @@ _printItemToRemove(IItemFamily* family)
   // SDC DEBUG PRINT
   debug() << "= ITEM TO REMOVE FOR FAMILY " << family->name();
   ENUMERATE_ITEM(item, family->allItems()) {
-    if (item->internal()->flags() & ItemFlags::II_NeedRemove) debug() << "== TO REMOVE ITEM " << item->uniqueId()   << " kind " << item->kind();
+    if (item->itemBase().flags() & ItemFlags::II_NeedRemove)
+      debug() << "== TO REMOVE ITEM " << item->uniqueId()   << " kind " << item->kind();
   }
 }
 
@@ -1407,7 +1407,7 @@ _markRemovableCells(Int32ConstArrayView cells_new_owner,bool  use_active_cells)
     }
     if (!keep_cell)
     {
-      cell.internal()->setFlags(cell.internal()->flags() | ItemFlags::II_NeedRemove);
+      cell.mutableItemBase().addFlags(ItemFlags::II_NeedRemove);
     }
   }
 }

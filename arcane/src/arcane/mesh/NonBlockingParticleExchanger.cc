@@ -656,7 +656,7 @@ _deserializeMessage(ISerializeMessage* message,
         Particle item = internal_items[items_to_create_local_id[z]];
         //item.setCell( internal_cells[cells_lid[z]] );
         // Je suis le nouveau propriétaire (TODO: ne pas faire ici)
-        item.internal()->setOwner(m_rank,m_rank);
+        item.mutableItemBase().setOwner(m_rank,m_rank);
       }
       if (!item_group.null())
         item_group.addItems(items_to_create_local_id,false);

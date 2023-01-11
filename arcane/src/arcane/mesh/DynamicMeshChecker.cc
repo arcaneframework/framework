@@ -353,7 +353,7 @@ checkValidConnectivity()
         ENUMERATE_ITEM(iitem,family->allItems()){
           const Item & item = *iitem;
           const Item & parent_item = item.parent();
-          if (parent_item.internal()->isSuppressed()){
+          if (parent_item.itemBase().isSuppressed()){
             error() << "Mesh " << m_mesh->name() << " : Inconsistent suppresssed parent item uid : " 
                     << ItemPrinter(item) << " / " << ItemPrinter(parent_item);
             ++nerror;
@@ -546,10 +546,10 @@ _checkValidItemOwner(IItemFamily* family)
     
     ItemGroup own_items = family->allItems().own();
     ENUMERATE_ITEM(iitem,own_items){
-      ItemInternal* item = (*iitem).internal();
-      Int32 owner = item->owner();
+      Item item = *iitem;
+      Int32 owner = item.owner();
       bool is_ok = false;
-      ItemVectorView cells = item->cellList();
+      ItemVectorView cells = item.itemBase().cellList();
       for( Item cell : cells ){
         if (cell.owner()==owner){
           is_ok = true;

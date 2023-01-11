@@ -152,7 +152,7 @@ refineOneCell(Cell item, MeshRefinement& mesh_refinement)
   ItemTypeMng* itm = m_mesh->itemTypeMng();
   const Int32 nb_hChildren = itm->nbHChildrenByItemType(item.type());
   const Int32 nb_nodes = item.nbNode();
-  ARCANE_ASSERT((item.internal()->flags() & ItemFlags::II_Refine), ("Item is not flagged for refinement"));
+  ARCANE_ASSERT((item.itemBase().flags() & ItemFlags::II_Refine), ("Item is not flagged for refinement"));
   ARCANE_ASSERT((item.isActive()), ("Refine non-active item is forbidden!"));
 
   debug(Trace::High) << "[refineOneCell] nb_hChildren=" << nb_hChildren;

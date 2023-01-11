@@ -164,12 +164,12 @@ class MergeMeshExchanger
         ItemGroup all_items = family->allItems();
         // Change les propriétaires pour correspondre au nouveau découpage.
         ENUMERATE_ITEM(iitem,all_items){
-          ItemInternal* ii = iitem->internal();
+          Item ii = *iitem;
           items_to_send[0].insert(iitem.itemLocalId());
           // Les entités transférées seront supprimées.
           // NOTE: il serait possible de rendre cela optionnel si on
           // ne souhaite pas modifier le maillage qui est fusionné.
-          ii->addFlags(ItemFlags::II_NeedRemove);
+          ii.mutableItemBase().addFlags(ItemFlags::II_NeedRemove);
         }
         family_exchanger->setExchangeItems(items_to_send);
       }

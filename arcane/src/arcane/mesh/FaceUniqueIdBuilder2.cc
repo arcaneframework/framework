@@ -536,7 +536,7 @@ _computeSequential()
     ENUMERATE_FACE(iface,cell.faces()){
       Face face = *iface;
       if (face.uniqueId()==NULL_ITEM_UNIQUE_ID){
-        face.internal()->setUniqueId(face_unique_id_counter);
+        face.mutableItemBase().setUniqueId(face_unique_id_counter);
         ++face_unique_id_counter;
       }
     }

@@ -126,7 +126,7 @@ mergeNodes(Int32ConstArrayView nodes_local_id,
         info(4) << " OLD_node=" << (*inode).uniqueId() << " new=" << new_node.uniqueId();
       }
       mesh_utils::reorderNodesOfFace(face_new_nodes_uid,face_new_nodes_sorted_uid);
-      Face new_face = ItemTools::findFaceInNode2(new_face_first_node.internal(),face.type(),face_new_nodes_sorted_uid);
+      Face new_face = ItemTools::findFaceInNode2(new_face_first_node,face.type(),face_new_nodes_sorted_uid);
       if (new_face.null())
         ARCANE_FATAL("Can not find corresponding face nodes_uid={0}",face_new_nodes_sorted_uid);
       info(4) << "NEW FACE=" << new_face.uniqueId() << " nb_cell=" << new_face.nbCell();
@@ -156,8 +156,8 @@ mergeNodes(Int32ConstArrayView nodes_local_id,
       if (x!=m_nodes_correspondance.end()){
         Node new_node = x->second;
         info(4) << "REMOVE node=" << ItemPrinter(node) << " from cell=" << ItemPrinter(cell);
-        m_node_family->removeCellFromNode(node.internal(),cell_local_id);
-        m_node_family->addCellToNode(new_node.internal(),cell.internal());
+        m_node_family->removeCellFromNode(node,cell_local_id);
+        m_node_family->addCellToNode(new_node,cell);
         m_cell_family->replaceNode(cell,inode.index(),new_node);
       }
     }
@@ -166,11 +166,11 @@ mergeNodes(Int32ConstArrayView nodes_local_id,
       auto x = m_faces_correspondance.find(face);
       if (x!=m_faces_correspondance.end()){
         Face new_face = x->second;
-        m_face_family->removeCellFromFace(face.internal(),cell_local_id);
+        m_face_family->removeCellFromFace(face,cell_local_id);
         if (new_face.backCell().null())
-          m_face_family->addBackCellToFace(new_face.internal(),cell.internal());
+          m_face_family->addBackCellToFace(new_face,cell);
         else
-          m_face_family->addFrontCellToFace(new_face.internal(),cell.internal());
+          m_face_family->addFrontCellToFace(new_face,cell);
         m_cell_family->replaceFace(cell,iface.index(),new_face);
       }
     }
@@ -185,7 +185,7 @@ mergeNodes(Int32ConstArrayView nodes_local_id,
       if (x!=m_nodes_correspondance.end()){
         Node new_node = x->second;
         m_node_family->removeFaceFromNode(node,face);
-        m_node_family->addFaceToNode(new_node.internal(),face.internal());
+        m_node_family->addFaceToNode(new_node,face);
         m_face_family->replaceNode(face,inode.index(),new_node);
       }
     }
@@ -203,13 +203,13 @@ mergeNodes(Int32ConstArrayView nodes_local_id,
   // Supprime toutes les faces qui doivent être fusionnées.
   for( const auto& x : m_faces_correspondance ){
     Face face = x.first;
-    m_face_family->removeFaceIfNotConnected(face.internal());
+    m_face_family->removeFaceIfNotConnected(face);
   }
 
   // Supprime tous les noeuds qui doivent être fusionnées.
   for( const auto& x : m_nodes_correspondance ){
     Node node = x.first;
-    m_node_family->removeNodeIfNotConnected(node.internal());
+    m_node_family->removeNodeIfNotConnected(node);
   }
 
   m_mesh->modifier()->endUpdate();

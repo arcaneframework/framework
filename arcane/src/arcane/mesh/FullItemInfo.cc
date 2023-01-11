@@ -192,7 +192,7 @@ _dumpCellInfo(Cell cell,Adapter buf, Integer parent_info,
     }
   }
   if (with_flags)
-    buf.put(cell.internal()->flags());
+    buf.put(cell.itemBase().flags());
 }
 
 }
