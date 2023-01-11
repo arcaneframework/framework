@@ -56,13 +56,13 @@ class ItemPrinter2
   : m_item(item), m_item_kind(IK_Unknown), m_has_item_kind(false)
   { _init(); }
   ItemPrinter2(const Item& item)
-  : m_item(item.internal()), m_item_kind(IK_Unknown), m_has_item_kind(false)
+  : m_item(item), m_item_kind(IK_Unknown), m_has_item_kind(false)
   { _init(); }
   ItemPrinter2(const Item& item,eItemKind ik)
-  : m_item(item.internal()), m_item_kind(ik), m_has_item_kind(true)
+  : m_item(item), m_item_kind(ik), m_has_item_kind(true)
   { _init(); }
   ItemPrinter2()
-  : m_item(0), m_item_kind(IK_Unknown), m_has_item_kind(false)
+  : m_item_kind(IK_Unknown), m_has_item_kind(false)
   { _init(); }
 
  public:
@@ -71,7 +71,7 @@ class ItemPrinter2
 
   ItemPrinter2& assign(Item item)
   {
-    m_item = item.internal();
+    m_item = item;
     return (*this);
   }
 
@@ -113,7 +113,7 @@ class ItemPrinter2
 
  private:
 
-  ItemInternal* m_item;
+  Item m_item;
   eItemKind m_item_kind;
   bool m_has_item_kind;
   Int32 m_flags;
@@ -214,42 +214,43 @@ operator<<(std::ostream& o,const ItemVectorPrinter& ip)
 void ItemPrinter2::
 print(std::ostream& o) const
 {
-  if (!m_item || m_item->localId()==NULL_ITEM_LOCAL_ID){
+  if (m_item.localId()==NULL_ITEM_LOCAL_ID){
     o << "(null_item)";
     return;
   }
       
   if (m_flags & ONLY_UID){
-    o << m_item->uniqueId();
+    o << m_item.uniqueId();
     return;
   }
 
-  o << "{id=" << m_item->uniqueId()
-    << ':' << m_item->localId()
-    << ",o=" << m_item->owner();
+  o << "{id=" << m_item.uniqueId()
+    << ':' << m_item.localId()
+    << ",o=" << m_item.owner();
   if (m_has_item_kind){
     o << ",k=" << itemKindName(m_item_kind);
   }
   
   if (m_flags & CONNECTIVITY){
-    eItemKind ik = m_item->kind();
+    eItemKind ik = m_item.kind();
     ItemVectorPrinter ivp;
     ivp.setIndentLevel(-1);
     std::cout << "KIND=" << ik << '\n';
+    auto item_base = m_item.itemBase();
     o << '\n';
     if (ik!=IK_Node)
-      if (m_item->nbNode()!=0)
-        _print(o,ivp,m_item->nodeList(),"Nodes");
-    if (m_item->nbEdge()!=0)
-      _print(o,ivp,m_item->edgeList(),"Edges");
-    if (m_item->nbFace()!=0)
-      _print(o,ivp,m_item->faceList(),"Faces");
+      if (item_base.nbNode()!=0)
+        _print(o,ivp,item_base.nodeList(),"Nodes");
+    if (item_base.nbEdge()!=0)
+      _print(o,ivp,item_base.edgeList(),"Edges");
+    if (item_base.nbFace()!=0)
+      _print(o,ivp,item_base.faceList(),"Faces");
     if (ik!=IK_Cell)
-      if (m_item->nbCell()!=0)
-        _print(o,ivp,m_item->cellList(),"Cells");
+      if (item_base.nbCell()!=0)
+        _print(o,ivp,item_base.cellList(),"Cells");
     if (ik==IK_Face){
-      o << "BackCell " << ItemPrinter2(m_item->backCell()) << ' ';
-      o << "FrontCell " << ItemPrinter2(m_item->frontCell()) << ' ';
+      o << "BackCell " << ItemPrinter2(item_base.backCell()) << ' ';
+      o << "FrontCell " << ItemPrinter2(item_base.frontCell()) << ' ';
       o << '\n';
     }
     _printIndent(o);

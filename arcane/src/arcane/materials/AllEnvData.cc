@@ -279,7 +279,7 @@ forceRecompute(bool compute_all)
       Int32 lid = icell.itemLocalId();
       Int32 nb_env = m_nb_env_per_cell[icell];
       ComponentItemInternal& ref_ii = m_all_env_items_internal[lid];
-      ref_ii.setSuperAndGlobalItem(0,c.internal());
+      ref_ii.setSuperAndGlobalItem(0,c);
       ref_ii.setVariableIndex(MatVarIndex(0,lid));
       ref_ii.setNbSubItem(nb_env);
       ref_ii.setLevel(LEVEL_ALLENVIRONMENT);

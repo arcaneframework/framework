@@ -150,12 +150,12 @@ amrRefine(RealArray& values, const Real trigRefine)
     const Real T0 = m_cell_temperature[iCell];
     const Real T1 = values[m_cell_matrix_idx[iCell]];
     const Real ecart_relatif = ECART_RELATIF(T0, T1);
-    ItemInternal* iItem = (*iCell).internal();
+    Cell iItem = (*iCell);
 
     if (ecart_relatif > trigRefine) {
       //debug()<< "[AlephTestModule::_amrRefine] HIT ecart_relatif="<<ecart_relatif<<", cell_"<<(*iCell).localId();
       cells_lid.add((*iCell).localId());
-      iItem->setFlags(iItem->flags() | ItemInternal::II_Refine);
+      iItem.mutableItemBase().addFlags(ItemInternal::II_Refine);
     }
   }
 
@@ -260,10 +260,7 @@ amrCoarsen(RealArray& values, const Real trigCoarsen)
     parents_to_coarsen_lid.add((*iCell).localId());
 
     // Et on la tag comme Active
-    Integer f = (*iCell).internal()->flags();
-    //f |= ItemInternal::II_CoarsenInactive; //!<  L'entité est inactive et a des enfants tagués pour déraffinement
-    f &= ~ItemInternal::II_Inactive;
-    (*iCell).internal()->setFlags(f);
+    (*iCell).mutableItemBase().removeFlags(ItemInternal::II_CoarsenInactive);
     ARCANE_ASSERT(((*iCell).isActive()), ("Parent not active!"));
 
     // On set la nouvell valeure de la maille
@@ -272,7 +269,7 @@ amrCoarsen(RealArray& values, const Real trigCoarsen)
     // On rajoute les lids des enfants pour les remover par la suite
     for (Integer j = 0, js = CELL_NB_H_CHILDREN(cell); j < js; ++j) {
       children_to_coarsen_lid.add(CELL_H_CHILD(cell, j).localId());
-      CELL_H_CHILD(cell, j).internal()->setFlags(CELL_H_CHILD(cell, j).internal()->flags() | ItemInternal::II_Inactive); //II_Coarsen
+      CELL_H_CHILD(cell, j).mutableItemBase().setFlags(CELL_H_CHILD(cell, j).itemBase().flags() | ItemInternal::II_Inactive); //II_Coarsen
     }
 
     // Now stare at the children to set up new faces' values
@@ -360,7 +357,7 @@ amrCoarsen(RealArray& values, const Real trigCoarsen)
   for (Integer j = 0, js = children_to_coarsen_lid.size(); j < js; ++j) {
     //const Cell &cell=cellFamily()->itemsInternal()[children_to_coarsen_lid[j]];
     //debug()<<"\t\t[FaceAmrCoarsen] REMOVING CELL_"<<children_to_coarsen_lid[j];
-    dynMesh->trueCellFamily().removeCell(cells_view[children_to_coarsen_lid[j]].internal());
+    dynMesh->trueCellFamily().removeCell(cells_view[children_to_coarsen_lid[j]]);
     //dynMesh->trueCellFamily().detachCell(cellFamily()->itemsInternal()[children_to_coarsen_lid[j]]);
     /* ENUMERATE_FACE(iFace, cell.faces()){
 		dynMesh->trueFaceFamily().populateBackFrontCellsFromParentFaces(cell.internal());
@@ -372,15 +369,15 @@ amrCoarsen(RealArray& values, const Real trigCoarsen)
   // On ré-attache les faces
   for (Integer j = 0, js = faces_to_attach.size(); j < js; ++j) {
     Face face = faces_view[faces_to_attach[j]];
-    if (face.internal()->flags() & ItemInternal::II_HasBackCell) {
+    if (face.itemBase().flags() & ItemInternal::II_HasBackCell) {
       debug() << "\t\t[FaceAmrCoarsen] NOW patch face_" << faces_to_attach[j] << ": " << face.backCell().localId() << "->" << lids_to_be_attached[j];
       //dynMesh->trueFaceFamily().replaceFrontCellToFace(face.internal(),cellFamily()->itemsInternal()[lids_to_be_attached[j]]);
-      dynMesh->trueFaceFamily().addFrontCellToFace(face.internal(), cells_view[lids_to_be_attached[j]]);
+      dynMesh->trueFaceFamily().addFrontCellToFace(face, cells_view[lids_to_be_attached[j]]);
     }
     else {
       debug() << "\t\t[FaceAmrCoarsen] NOW patch face_" << faces_to_attach[j] << ": " << face.frontCell().localId() << "->" << lids_to_be_attached[j];
       //dynMesh->trueFaceFamily().replaceBackCellToFace(face.internal(),cellFamily()->itemsInternal()[lids_to_be_attached[j]]);
-      dynMesh->trueFaceFamily().addBackCellToFace(face.internal(), cells_view[lids_to_be_attached[j]]);
+      dynMesh->trueFaceFamily().addBackCellToFace(face, cells_view[lids_to_be_attached[j]]);
     }
     faceReorienter.checkAndChangeOrientation(face);
   }

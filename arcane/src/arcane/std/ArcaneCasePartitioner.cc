@@ -417,7 +417,7 @@ _partitionMesh(Int32 nb_part)
   // new_mesh utilise un parallelMng() séquentiel.
   for( IItemFamily* family : mesh()->itemFamilies() ){
     ENUMERATE_ITEM(iitem,family->allItems()){
-      iitem->internal()->setOwner(0,0);
+      iitem->mutableItemBase().setOwner(0,0);
     }
   }
 
@@ -496,7 +496,7 @@ _partitionMesh(Int32 nb_part)
 	//                << " orig_node=" << ItemPrinter(current_cell.node(z2));
         new_coordinates[new_cell.node(z2)] = coord;
         // Positionne le propriétaire final du noeud
-        new_cell.node(z2).internal()->setOwner(true_nodes_owner[current_cell.node(z2)],0);
+        new_cell.node(z2).mutableItemBase().setOwner(true_nodes_owner[current_cell.node(z2)],0);
       }
     }
     // Maintenant, il faut recopier les groupes

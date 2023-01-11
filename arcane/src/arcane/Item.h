@@ -169,8 +169,12 @@ class ARCANE_CORE_EXPORT Item
   //! Construit une référence à l'entité \a internal
   //ARCANE_DEPRECATED_REASON("Remove this overload")
   Item(ItemInternal* ainternal)
-  : m_shared_info(ainternal->m_shared_info)
-  , m_local_id(ainternal->m_local_id) { ARCANE_ITEM_ADD_STAT(m_nb_created_from_internal); }
+  {
+    ARCANE_CHECK_PTR(ainternal);
+    m_shared_info = ainternal->m_shared_info;
+    m_local_id  = ainternal->m_local_id;
+    ARCANE_ITEM_ADD_STAT(m_nb_created_from_internal);
+  }
 
   // NOTE: Pour le constructeur suivant; il est indispensable d'utiliser
   // const& pour éviter une ambiguité avec le constructeur par recopie
@@ -257,13 +261,13 @@ class ARCANE_CORE_EXPORT Item
   //! Converti l'entité en le genre \a DoF.
   inline DoF toDoF() const;
 
-  //! Nombre de parents
+  //! Nombre de parents pour les sous-maillages
   Int32 nbParent() const { return _nbParent(); }
 
-  //! i-ème parent
+  //! i-ème parent pour les sous-maillages
   Item parent(Int32 i) const { return m_shared_info->_parentV2(m_local_id,i); }
 
-  //! premier parent
+  //! premier parent pour les sous-maillages
   Item parent() const { return m_shared_info->_parentV2(m_local_id,0); }
 
  public:
@@ -319,7 +323,8 @@ class ARCANE_CORE_EXPORT Item
    *
    * \warning La partie interne de l'entité ne doit être modifiée que
    * par ceux qui savent ce qu'ils font.
-   * \deprecated Utiliser itemBase() ou mutableItemBase() à la place
+   * \deprecated Utiliser itemBase() ou mutableItemBase() à la place pour
+   * les cas l'instance retournée n'est pas conservée.
    */
   ItemInternal* internal() const
   {
@@ -413,11 +418,11 @@ class ARCANE_CORE_EXPORT Item
   Integer _nbFace() const { return _connectivity()->_nbFaceV2(m_local_id); }
   //! Nombre de mailles connectées à l'entité (pour les noeuds, arêtes et faces)
   Integer _nbCell() const { return _connectivity()->_nbCellV2(m_local_id); }
-  //! Nombre de parent
+  //! Nombre de parent pour l'AMR
   Int32 _nbHParent() const { return _connectivity()->_nbHParentV2(m_local_id); }
-  //! Nombre d' enfants
+  //! Nombre d' enfants pour l'AMR
   Int32 _nbHChildren() const { return _connectivity()->_nbHChildrenV2(m_local_id); }
-  //! Nombre de parent
+  //! Nombre de parent pour les sous-maillages
   Integer _nbParent() const { return m_shared_info->nbParent(); }
   NodeLocalId _nodeId(Int32 index) const { return NodeLocalId(_connectivity()->_nodeLocalIdV2(m_local_id,index)); }
   EdgeLocalId _edgeId(Int32 index) const { return EdgeLocalId(_connectivity()->_edgeLocalIdV2(m_local_id,index)); }
@@ -1251,12 +1256,16 @@ class ARCANE_CORE_EXPORT Cell
   //! un seul parent
   Cell hParent() const { return Cell(_hParentBase(0)); }
 
+  //! Nombre de parent pour l'AMR
+  Int32 nbHParent() const { return _nbHParent(); }
+
+  //! Nombre d'enfants pour l'AMR
   Int32 nbHChildren() const { return _nbHChildren(); }
 
-  //! i-ème enfant
+  //! i-ème enfant AMR
   Cell hChild(Int32 i) const { return Cell(_hChildBase(i)); }
 
-  //! parent de niveau 0
+  //! parent de niveau 0 pour l'AMR
   Cell topHParent() const { return Cell(_toItemBase().topHParentBase()); }
 
   /*!

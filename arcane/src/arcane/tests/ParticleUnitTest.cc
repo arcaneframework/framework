@@ -244,7 +244,7 @@ _doTest2(Integer iteration,bool allow_no_cell_particle)
       Integer nb_created_particle = uids.size();
       while (particle_index<nb_created_particle){
         for( Integer icell=0; icell<nb_boundary_cell; ++icell ){
-          Particle p = Particle(particles[particle_index].internal());
+          Particle p = Particle(particles[particle_index]);
           // Si on n'autorise les particules sans maille, indique qu'une
           // particule sur 4 est sans maille.
           if (allow_no_cell_particle && (icell%4)==0)

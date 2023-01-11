@@ -55,6 +55,26 @@
 
 namespace Arcane::mesh
 {
+
+namespace
+{
+void _setRefineFlags(Item v)
+{
+  Integer f = v.itemBase().flags();
+  f &= ~ItemFlags::II_Coarsen;
+  f |= ItemFlags::II_Refine;
+  v.mutableItemBase().setFlags(f);
+}
+void _setCoarseFlags(Item v)
+{
+  Integer f = v.itemBase().flags();
+  f &= ~ItemFlags::II_Refine;
+  f |= ItemFlags::II_Coarsen;
+  v.mutableItemBase().setFlags(f);
+}
+
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -237,9 +257,9 @@ _updateMaxUid(ArrayView<ItemInternal*> cells)
     set_type node_list ;
     set_type face_list ;
     for(Integer icell=0;icell<cells.size();++icell){
-      ItemInternal* cell = cells[icell] ;
-      for (UInt32 i = 0, nc = cell->nbHChildren(); i < nc; i++){
-        Cell child = cell->internalHChild(i) ;
+      Cell cell = cells[icell];
+      for (UInt32 i = 0, nc = cell.nbHChildren(); i < nc; i++){
+        Cell child = cell.hChild(i);
 
         //UPDATE MAX CELL UID
         const Int64 cell_uid = child.uniqueId();
@@ -649,8 +669,7 @@ refineItems(const bool maintain_level_one)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-MeshRefinement::
+void MeshRefinement::
 uniformlyRefine(Integer n)
 {
   // Raffine n fois
@@ -662,14 +681,9 @@ uniformlyRefine(Integer n)
 
     // itérer seulement sur les mailles actives
     // Flag tous les items actifs pour raffinement
-    ENUMERATE_CELL(icell,m_mesh->ownActiveCells())
-    {
-      const Cell& cell = *icell;
-      ItemInternal* iitem = cell.internal();
-      Integer f = iitem->flags();
-      f &= ~ItemFlags::II_Coarsen;
-      f |= ItemFlags::II_Refine;
-      iitem->setFlags(f);
+    ENUMERATE_CELL(icell,m_mesh->ownActiveCells()){
+      Cell cell = *icell;
+      _setRefineFlags(cell);
     }
     // Raffine tous les items que nous avons flaggés.
     Int64UniqueArray cells_to_refine;
@@ -698,16 +712,10 @@ uniformlyCoarsen(Integer n)
     // itérer seulement sur les mailles actives
     // Flag tous les items actifs pour déraffinement
     ENUMERATE_CELL(icell,m_mesh->ownActiveCells()){
-      const Cell cell = *icell;
-      ItemInternal* iitem = cell.internal();
-      Integer f = iitem->flags();
-      f &= ~ItemFlags::II_Refine;
-      f |= ItemFlags::II_Coarsen;
-      iitem->setFlags(f);
-      if (iitem->nbHParent() != 0){
-        f = iitem->internalHParent(0)->flags();
-        f |= ItemFlags::II_CoarsenInactive;
-        iitem->internalHParent(0)->setFlags(f);
+      Cell cell = *icell;
+      _setCoarseFlags(cell);
+      if (cell.nbHParent() != 0){
+        cell.hParent().mutableItemBase().addFlags(ItemFlags::II_CoarsenInactive);
       }
     }
     // Déraffine tous les items que nous venons de flagger.
@@ -828,8 +836,7 @@ _checkLevelOne(bool arcane_assert_pass)
   ENUMERATE_CELL(icell,m_mesh->allActiveCells())
   {
     Cell cell = *icell;
-    for( FaceEnumerator iface(cell.faces()); iface.hasNext(); ++iface )
-    {
+    for( FaceEnumerator iface(cell.faces()); iface.hasNext(); ++iface ) {
       Face face = *iface;
       if (face.nbCell()!=2)
         continue;
@@ -838,11 +845,10 @@ _checkLevelOne(bool arcane_assert_pass)
 
       // On choisit l'autre cellule du cote de la face
       Cell neighbor = (back_cell==cell)?front_cell:back_cell;
-      ItemInternal* ineighbor = neighbor.internal();
-      if (!ineighbor || !ineighbor->isActive() || !(ineighbor->owner()==sid))
+      if (neighbor.null() || !neighbor.isActive() || !(neighbor.owner()==sid))
         continue;
       //debug() << "#### " << ineighbor->uniqueId() << " " << ineighbor->level() << " " << cell.level();
-      if ((ineighbor->level() + 1 < cell.level())){
+      if ((neighbor.level() + 1 < cell.level())){
         failure = true;
         break;
       }
@@ -874,7 +880,7 @@ _checkUnflagged(bool arcane_assert_pass)
   // itérer seulement sur les mailles actives
   ENUMERATE_CELL(icell,m_mesh->ownActiveCells()){
     const Cell cell = *icell;
-    const Integer f = cell.internal()->flags();
+    const Integer f = cell.itemBase().flags();
     if ( (f & ItemFlags::II_Refine) | (f & ItemFlags::II_Coarsen))
     {
       found_flag = true;
@@ -906,23 +912,22 @@ _makeFlagParallelConsistent()
   debug() << "makeFlagsParallelConsistent() begin";
   bool parallel_consistent = true;
   VariableCellInteger flag_cells_consistent(VariableBuildInfo(m_mesh, "FlagCellsConsistent"));
-  UniqueArray<ItemInternal*> ghost_cells;
+  UniqueArray<Item> ghost_cells;
   ghost_cells.reserve(m_mesh->allCells().size()-m_mesh->ownCells().size()) ;
   ENUMERATE_CELL(icell,m_mesh->allCells()){
-    if(icell->isOwn()) {
-      Integer f = icell->internal()->flags(); // TODO getAMRFlags()
+    Cell cell = *icell;
+    if(cell.isOwn()) {
+      Integer f = cell.itemBase().flags(); // TODO getAMRFlags()
       flag_cells_consistent[icell] = f;
     }
     else
-      ghost_cells.add(icell->internal()) ;
+      ghost_cells.add(cell);
   }
   flag_cells_consistent.synchronize();
   //ENUMERATE_CELL(icell,m_mesh->allCells())
   for(Integer icell=0, nb_cell=ghost_cells.size();icell<nb_cell;++icell) {
-    //const Cell& cell = *icell;
-    //ItemInternal * iitem = cell.internal();
-    ItemInternal * iitem = ghost_cells[icell] ;
-    Integer f = iitem->flags();
+    Item iitem = ghost_cells[icell];
+    Integer f = iitem.itemBase().flags();
 
     //if(iitem->owner() != sid)
     {
@@ -933,25 +938,25 @@ _makeFlagParallelConsistent()
       if((g & ItemFlags::II_Refine) && !(f & ItemFlags::II_Refine))
       {
         f |= ItemFlags::II_Refine;
-        iitem->setFlags(f);
+        iitem.mutableItemBase().setFlags(f);
         parallel_consistent = false;
       }
       else if ((g & ItemFlags::II_Coarsen) && !(f & ItemFlags::II_Coarsen))
       {
         f |= ItemFlags::II_Coarsen;
-        iitem->setFlags(f);
+        iitem.mutableItemBase().setFlags(f);
         parallel_consistent = false;
       }
       else if ((g & ItemFlags::II_JustCoarsened) && !(f & ItemFlags::II_JustCoarsened))
       {
         f |= ItemFlags::II_JustCoarsened;
-        iitem->setFlags(f);
+        iitem.mutableItemBase().setFlags(f);
         parallel_consistent = false;
       }
       else if ((g & ItemFlags::II_JustRefined) && !(f & ItemFlags::II_JustRefined))
       {
         f |= ItemFlags::II_JustRefined;
-        iitem->setFlags(f);
+        iitem.mutableItemBase().setFlags(f);
         parallel_consistent = false;
       }
       /*
@@ -997,28 +1002,26 @@ _makeFlagParallelConsistent2()
   debug() << "makeFlagsParallelConsistent2() begin";
   bool parallel_consistent = true;
   VariableCellInteger flag_cells_consistent(VariableBuildInfo(m_mesh, "FlagCellsConsistent"));
-  UniqueArray<ItemInternal*> ghost_cells;
+  UniqueArray<Item> ghost_cells;
   ghost_cells.reserve(m_mesh->allCells().size()-m_mesh->ownCells().size()) ;
   ENUMERATE_CELL(icell,m_mesh->allCells())
   {
-    //const Cell& cell = *icell;
-    if(icell->isOwn())
-    {
-      Integer f = icell->internal()->flags(); // TODO getAMRFlags()
+    Cell cell = *icell;
+    if (cell.isOwn()) {
+      Integer f = cell.itemBase().flags(); // TODO getAMRFlags()
       flag_cells_consistent[icell] = f;
     }
     else
-      ghost_cells.add(icell->internal()) ;
+      ghost_cells.add(cell);
   }
   flag_cells_consistent.synchronize();
   //ENUMERATE_CELL(icell,m_mesh->allCells())
-  for(Integer icell=0, nb_cell=ghost_cells.size();icell<nb_cell;++icell)
-  {
+  for(Integer icell=0, nb_cell=ghost_cells.size();icell<nb_cell;++icell) {
     //const Cell& cell = *icell;
     //ItemInternal * iitem = cell.internal();
     //Integer f = iitem->flags();
-    ItemInternal * iitem = ghost_cells[icell] ;
-    Integer f = iitem->flags();
+    Item iitem = ghost_cells[icell];
+    Integer f = iitem.itemBase().flags();
 
     //if(iitem->owner() != sid)
     {
@@ -1026,19 +1029,19 @@ _makeFlagParallelConsistent2()
       if ((g & ItemFlags::II_JustCoarsened) && !(f & ItemFlags::II_JustCoarsened))
       {
         f |= ItemFlags::II_JustCoarsened;
-        iitem->setFlags(f);
+        iitem.mutableItemBase().setFlags(f);
         parallel_consistent = false;
       }
       else if ((g & ItemFlags::II_JustRefined) && !(f & ItemFlags::II_JustRefined))
       {
         f |= ItemFlags::II_JustRefined;
-        iitem->setFlags(f);
+        iitem.mutableItemBase().setFlags(f);
         parallel_consistent = false;
       }
       else if ((g & ItemFlags::II_Inactive) && !(f & ItemFlags::II_Inactive))
       {
         f |= ItemFlags::II_Inactive;
-        iitem->setFlags(f);
+        iitem.mutableItemBase().setFlags(f);
         parallel_consistent = false;
       }
       /*else if ((f & ItemFlags::II_JustRefined) && !(g & ItemFlags::II_JustRefined)){
@@ -1092,15 +1095,13 @@ _makeCoarseningCompatible(const bool maintain_level_one)
   // itérer seulement sur les mailles actives
   ENUMERATE_CELL(icell,m_mesh->allActiveCells()){
     const Cell cell = *icell;
-    ItemInternal* iitem = cell.internal();
-    max_level = std::max(max_level, iitem->level());
+    max_level = std::max(max_level, cell.level());
 
-    Integer f = iitem->flags();
-    if ((iitem->level() == 0) && (f & ItemFlags::II_Coarsen))
-    {
+    Integer f = cell.itemBase().flags();
+    if ((cell.level() == 0) && (f & ItemFlags::II_Coarsen)) {
       f &= ~ItemFlags::II_Coarsen;
       f |= ItemFlags::II_DoNothing;
-      iitem->setFlags(f);
+      cell.mutableItemBase().setFlags(f);
     }
   }
   // Si il n'y a pas d'items à raffiner sur ce processeur alors
@@ -1131,34 +1132,32 @@ _makeCoarseningCompatible(const bool maintain_level_one)
       level_one_satisfied = true;
       // itérer seulement sur les mailles actives
       ENUMERATE_CELL(icell,m_mesh->ownActiveCells()){
-        const Cell& cell = *icell;
-        ItemInternal* iitem = cell.internal();
+        Cell cell = *icell;
+        //ItemInternal* iitem = cell.internal();
         bool my_flag_changed = false;
-        Integer f = iitem->flags();
+        Integer f = cell.itemBase().flags();
         if (f & ItemFlags::II_Coarsen){ // Si l'item est actif et le flag de déraffinement est placé
-          const Int32 my_level = iitem->level();
-          for( FaceEnumerator iface(cell.faces()); iface.hasNext(); ++iface )
-          {
-            const Face& face = *iface;
+          const Int32 my_level = cell.level();
+          for( FaceEnumerator iface(cell.faces()); iface.hasNext(); ++iface ) {
+            Face face = *iface;
             if (face.nbCell()!=2)
               continue;
-            const Cell& back_cell = face.backCell();
-            const Cell& front_cell = face.frontCell();
+            Cell back_cell = face.backCell();
+            Cell front_cell = face.frontCell();
 
             // On choisit l'autre cellule du cote de la face
-            const Cell& neighbor = (back_cell==cell)?front_cell:back_cell;
-            const ItemInternal* ineighbor = neighbor.internal();
+            Cell neighbor = (back_cell==cell)?front_cell:back_cell;
+            //const ItemInternal* ineighbor = neighbor.internal();
             //if (ineighbor->owner() == sub_domain_id)   // J'ai un voisin ici
 
             {
-              if (ineighbor->isActive()) // et est actif
-
+              if (neighbor.isActive()) // et est actif
               {
-                if ((ineighbor->level() == my_level) &&
-                    (ineighbor->flags() & ItemFlags::II_Refine)){ // le voisin est à mon niveau et veut être raffiné
+                if ((neighbor.level() == my_level) &&
+                    (neighbor.itemBase().flags() & ItemFlags::II_Refine)){ // le voisin est à mon niveau et veut être raffiné
                   f &= ~ItemFlags::II_Coarsen;
                   f |= ItemFlags::II_DoNothing;
-                  iitem->setFlags(f);
+                  cell.mutableItemBase().setFlags(f);
                   my_flag_changed = true;
                   break;
                 }
@@ -1170,7 +1169,7 @@ _makeCoarseningCompatible(const bool maintain_level_one)
                 // On l'oublie pour le moment. Ceci peut être réalisé dans deux étapes.
                 f &= ~ItemFlags::II_Coarsen;
                 f |= ItemFlags::II_DoNothing;
-                iitem->setFlags(f);
+                cell.mutableItemBase().setFlags(f);
                 my_flag_changed = true;
                 break;
               }
@@ -1190,25 +1189,25 @@ _makeCoarseningCompatible(const bool maintain_level_one)
         if (my_flag_changed && m_mesh->parallelMng()->isParallel())
           for( FaceEnumerator iface(cell.faces()); iface.hasNext(); ++iface )
           {
-            const Face& face = *iface;
+            Face face = *iface;
             if (face.nbCell()!=2)
               continue;
-            const Cell& back_cell = face.backCell();
-            const Cell& front_cell = face.frontCell();
+            Cell back_cell = face.backCell();
+            Cell front_cell = face.frontCell();
 
             // On choisit l'autre cellule du cote de la face
-            const Cell& neighbor = (back_cell==cell)?front_cell:back_cell;
-            ItemInternal* ineighbor = neighbor.internal();
-            if (ineighbor->owner() != sid) // J'ai un voisin ici
+            Cell neighbor = (back_cell==cell)?front_cell:back_cell;
+            //ItemInternal* ineighbor = neighbor.internal();
+            if (neighbor.owner() != sid) // J'ai un voisin ici
             {
               compatible_with_refinement = false;
               break;
             }
             // TODO FIXME - pour les maillages non niveau-1 nous devons
             // tester tous les descendants
-            if (ineighbor->hasHChildren())
-              for (Integer c=0; c != ineighbor->nbHChildren(); ++c)
-                if (ineighbor->internalHChild(c)->owner() != sid){
+            if (neighbor.hasHChildren())
+              for (Integer c=0; c != neighbor.nbHChildren(); ++c)
+                if (neighbor.hChild(c).owner() != sid){
                   compatible_with_refinement = false;
                   break;
                 }
@@ -1230,36 +1229,33 @@ _makeCoarseningCompatible(const bool maintain_level_one)
     // itérer sur les mailles niveau par niveau
     ENUMERATE_CELL(icell,m_mesh->ownLevelCells(level)){
       const Cell cell = *icell;
-      ItemInternal* iitem = cell.internal();
-      if(iitem->isAncestor()){
+      //ItemInternal* iitem = cell.internal();
+      if(cell.isAncestor()){
         // à ce moment là l'item n'a pas été éliminé
         // en tant que candidat pour le déraffinement
         bool is_a_candidate = true;
         bool found_remote_child = false;
 
-        for (Integer c=0; c<iitem->nbHChildren(); c++){
-          ItemInternal *child = iitem->internalHChild(c);
-          if (child->owner() != sid)
+        for (Integer c=0; c<cell.nbHChildren(); c++){
+          Cell child = cell.hChild(c);
+          if (child.owner() != sid)
             found_remote_child = true;
-          else if (!(child->flags() & ItemFlags::II_Coarsen) || !child->isActive() )
+          else if (!(child.itemBase().flags() & ItemFlags::II_Coarsen) || !child.isActive() )
             is_a_candidate = false;
         }
 
         if (!is_a_candidate && !found_remote_child){
-          Integer f = iitem->flags();
-          f |= ItemFlags::II_Inactive;
-          iitem->setFlags(f);
-
-          for (Integer c=0; c<iitem->nbHChildren(); c++){
-            ItemInternal *child = iitem->internalHChild(c);
-            if (child->owner() != sid)
+          cell.mutableItemBase().addFlags(ItemFlags::II_Inactive);
+          for (Integer c=0; c<cell.nbHChildren(); c++){
+            Cell child = cell.hChild(c);
+            if (child.owner() != sid)
               continue;
-            if (child->flags() & ItemFlags::II_Coarsen){
+            if (child.itemBase().flags() & ItemFlags::II_Coarsen){
               level_one_satisfied = false;
-              f = child->flags();
+              Int32 f = child.itemBase().flags();
               f &= ~ItemFlags::II_Coarsen;
               f |= ItemFlags::II_DoNothing;
-              child->setFlags(f);
+              child.mutableItemBase().setFlags(f);
             }
           }
         }
@@ -1272,31 +1268,31 @@ _makeCoarseningCompatible(const bool maintain_level_one)
   // Alors marque le parent à ce qu'il puisse tuer ses enfants.
   ENUMERATE_CELL(icell,m_mesh->ownCells()){
     const Cell cell = *icell;
-    ItemInternal* iitem = cell.internal();
-    if(iitem->isAncestor()){
+    //ItemInternal* iitem = cell.internal();
+    if(cell.isAncestor()){
       // Supposons que tous les enfants sont locaux et marqués pour
       // déraffinement et donc cherche pour une contradiction
       bool all_children_flagged_for_coarsening = true;
       bool found_remote_child = false;
 
-      for (Integer c=0; c<iitem->nbHChildren(); c++){
-        ItemInternal *child = iitem->internalHChild(c);
-        if (child->owner() != sid)
+      for (Integer c=0; c<cell.nbHChildren(); c++){
+        Cell child = cell.hChild(c);
+        if (child.owner() != sid)
           found_remote_child = true;
-        else if (!(child->flags() & ItemFlags::II_Coarsen))
+        else if (!(child.itemBase().flags() & ItemFlags::II_Coarsen))
           all_children_flagged_for_coarsening = false;
       }
-      Integer f = iitem->flags();
+      Integer f = cell.itemBase().flags();
       f &= ~ItemFlags::II_CoarsenInactive;
       if (!found_remote_child && all_children_flagged_for_coarsening)
       {
         f |= ItemFlags::II_CoarsenInactive;
-        iitem->setFlags(f);
+        cell.mutableItemBase().setFlags(f);
       }
       else if (!found_remote_child)
       {
         f |= ItemFlags::II_Inactive;
-        iitem->setFlags(f);
+        cell.mutableItemBase().setFlags(f);
       }
     }
   }
@@ -1345,69 +1341,66 @@ _makeRefinementCompatible(const bool maintain_level_one)
       // itérer seulement sur les mailles actives
       ENUMERATE_CELL(icell,m_mesh->allActiveCells()){
         const Cell cell = *icell;
-        ItemInternal* iitem = cell.internal();
-        if (iitem->flags() & ItemFlags::II_Refine){ // Si l'item est actif et le flag de
+        //ItemInternal* iitem = cell.internal();
+        if (cell.itemBase().flags() & ItemFlags::II_Refine){ // Si l'item est actif et le flag de
           // raffinement est placé
-          const Int32 my_level = iitem->level();
+          const Int32 my_level = cell.level();
           bool refinable = true;
           //check if refinable
           for( FaceEnumerator iface(cell.faces()); iface.hasNext(); ++iface ){
-            const Face& face = *iface;
+            Face face = *iface;
             if (face.nbCell()!=2)
               continue;
-            const Cell& back_cell = face.backCell();
-            const Cell& front_cell = face.frontCell();
+            Cell back_cell = face.backCell();
+            Cell front_cell = face.frontCell();
 
             // On choisit l'autre cellule du cote de la face
-            const Cell& neighbor = (back_cell==cell)?front_cell:back_cell;
-            ItemInternal* ineighbor = neighbor.internal();
+            Cell neighbor = (back_cell==cell)?front_cell:back_cell;
+            //ItemInternal* ineighbor = neighbor.internal();
             //if (ineighbor->isActive() && ineighbor->owner() == sid)// J'ai un voisin ici et est actif
-            if (ineighbor->isActive() ){// J'ai un voisin ici et est actif
+            if (neighbor.isActive() ){// J'ai un voisin ici et est actif
               // Cas 2: Le voisin est inférieur de un niveau que le mien.
               //         Le voisin doit être raffiné pour satisfaire
               //         la règle de niveau-1, indépendamment de s'il
               //         a été à l'origine marqué pour raffinement. S'il
               //         n'était pas flaggé déjà nous devons répéter
               //         ce processus.
-              Integer f = ineighbor->flags();
-              if ( ( (ineighbor->level()+1) == my_level) &&
-                  ( f&ItemFlags::II_UserMark1) ){
+              Integer f = neighbor.itemBase().flags();
+              if ( ( (neighbor.level()+1) == my_level) &&
+                  ( f & ItemFlags::II_UserMark1) ){
                 refinable = false;
-                Integer my_f = iitem->flags() ;
+                Integer my_f = cell.itemBase().flags();
                 my_f &= ~ItemFlags::II_Refine;
-                iitem->setFlags(my_f);
+                cell.mutableItemBase().setFlags(my_f);
                 break;
               }
             }
           }
           if(refinable)
             for( FaceEnumerator iface(cell.faces()); iface.hasNext(); ++iface ){
-              const Face& face = *iface;
+              Face face = *iface;
               if (face.nbCell()!=2)
                 continue;
-              const Cell& back_cell = face.backCell();
-              const Cell& front_cell = face.frontCell();
+              Cell back_cell = face.backCell();
+              Cell front_cell = face.frontCell();
 
               // On choisit l'autre cellule du cote de la face
-              const Cell& neighbor = (back_cell==cell)?front_cell:back_cell;
-              ItemInternal* ineighbor = neighbor.internal();
-              if (ineighbor->isActive() && ineighbor->owner() == sid){ // J'ai un voisin ici et est actif
+              Cell neighbor = (back_cell==cell)?front_cell:back_cell;
+              //ItemInternal* ineighbor = neighbor.internal();
+              if (neighbor.isActive() && neighbor.owner() == sid){ // J'ai un voisin ici et est actif
 
                 // Cas 1:  Le voisin est au même niveau que moi.
                 //        1a: Le voisin  sera raffiné           -> NO PROBLEM
                 //        1b: Le voisin ne va pas être raffiné  -> NO PROBLEM
                 //        1c: Le voisin veut être déjà raffiné     -> PROBLEM
                 if (neighbor.level() == my_level){
-                  Integer f = ineighbor->flags();
-                  if (f & ItemFlags::II_Coarsen)
-                  {
+                  Integer f = neighbor.itemBase().flags();
+                  if (f & ItemFlags::II_Coarsen) {
                     f &= ~ItemFlags::II_Coarsen;
                     f |= ItemFlags::II_DoNothing;
-                    ineighbor->setFlags(f);
-                    if (ineighbor->nbHParent() != 0){
-                      f = ineighbor->internalHParent(0)->flags();
-                      f |= ItemFlags::II_Inactive;
-                      ineighbor->internalHParent(0)->setFlags(f);
+                    neighbor.mutableItemBase().setFlags(f);
+                    if (neighbor.nbHParent() != 0){
+                      neighbor.hParent().mutableItemBase().addFlags(ItemFlags::II_Inactive);
                     }
                     compatible_with_coarsening = false;
                     level_one_satisfied = false;
@@ -1421,18 +1414,14 @@ _makeRefinementCompatible(const bool maintain_level_one)
                 //         n'était pas flaggé déjà nous devons répéter
                 //         ce processus.
 
-                else if ((ineighbor->level()+1) == my_level)
-                {
-                  Integer f = ineighbor->flags();
-                  if (!(f & ItemFlags::II_Refine))
-                  {
+                else if ((neighbor.level()+1) == my_level) {
+                  Integer f = neighbor.itemBase().flags();
+                  if (!(f & ItemFlags::II_Refine)) {
                     f &= ~ItemFlags::II_Coarsen;
                     f |= ItemFlags::II_Refine;
-                    ineighbor->setFlags(f);
-                    if (ineighbor->nbHParent() != 0){
-                      f = ineighbor->internalHParent(0)->flags();
-                      f |= ItemFlags::II_Inactive;
-                      ineighbor->internalHParent(0)->setFlags(f);
+                    neighbor.mutableItemBase().setFlags(f);
+                    if (neighbor.nbHParent() != 0){
+                      neighbor.hParent().mutableItemBase().addFlags(ItemFlags::II_Inactive);
                     }
                     compatible_with_coarsening = false;
                     level_one_satisfied = false;
@@ -1442,7 +1431,7 @@ _makeRefinementCompatible(const bool maintain_level_one)
                 // Contrôle. Nous ne devrions jamais entrer dans un
                 // cas ou notre voisin est distancé de plus d'un niveau.
 
-                else if ((ineighbor->level()+1) < my_level)
+                else if ((neighbor.level()+1) < my_level)
                 {
                   fatal() << "a neighbor is more than one level away";
                 }
@@ -1485,17 +1474,16 @@ _coarsenItems()
 
   // itérer sur toutes les mailles
   // Int32UniqueArray cell_to_detach;
-  ENUMERATE_CELL(icell,m_mesh->ownCells())
-  {
-    const Cell& cell = *icell;
-    ItemInternal* iitem = cell.internal();
+  ENUMERATE_CELL(icell,m_mesh->ownCells()){
+    Cell cell = *icell;
+    Cell iitem = cell;
     // items actifs flaggés prour déraffinement ne seront
     // pas supprimés jusqu'à contraction via MeshRefinement::contract()
 
-    if(iitem->flags() & ItemFlags::II_Coarsen){
+    if (cell.itemBase().flags() & ItemFlags::II_Coarsen){
       // Houups?  aucun item de niveau-0 ne doit être a la fois actif
       // et flaggé pour déraffinement.
-      ARCANE_ASSERT ( (iitem->level() != 0), ("no level-0 element should be active and flagged for coarsening"));
+      ARCANE_ASSERT ( (cell.level() != 0), ("no level-0 element should be active and flagged for coarsening"));
 
       // TODO Supprimer cet item de toute liste de voisinage
       // pointant vers lui.
@@ -1514,9 +1502,9 @@ _coarsenItems()
       // Le maillage a certainement changé
       mesh_changed = true;
     }
-    else if (iitem->flags() & ItemFlags::II_CoarsenInactive)
+    else if (cell.itemBase().flags() & ItemFlags::II_CoarsenInactive)
     {
-      switch (iitem->typeId())
+      switch (cell.type())
       {
         case IT_Quad4:
           m_item_refinement->coarsenOneCell<IT_Quad4>(iitem, getRefinementPattern<IT_Quad4>());
@@ -1552,9 +1540,9 @@ _coarsenItems()
           m_item_refinement->coarsenOneCell<IT_DiTetra5>(iitem, getRefinementPattern<IT_DiTetra5>());
           break;
         default:
-          ARCANE_FATAL("Not supported refinement Item Type type={0}",iitem->typeId());
+          ARCANE_FATAL("Not supported refinement Item Type type={0}",iitem.type());
       }
-      ARCANE_ASSERT(iitem->isActive(), ("cell_active failed"));
+      ARCANE_ASSERT(cell.isActive(), ("cell_active failed"));
 
       // le maillage a certainement changé
       mesh_changed = true;
@@ -1596,15 +1584,12 @@ _refineItems(Int64Array& cell_to_refine_uids)
   // Iterer sur les items, compter les items
   // flaggés pour le raffinement.
   //Integer nb_cell_flagged = 0;
-  UniqueArray<ItemInternal*> cell_to_refine_internals;
-  ENUMERATE_CELL(icell,m_mesh->ownCells())
-  {
-    const Cell& cell = *icell;
-    ItemInternal* iitem = cell.internal();
-    if(iitem->flags() & ItemFlags::II_Refine)
-    {
+  UniqueArray<Cell> cell_to_refine_internals;
+  ENUMERATE_CELL(icell,m_mesh->ownCells()) {
+    Cell cell = *icell;
+    if (cell.itemBase().flags() & ItemFlags::II_Refine) {
       cell_to_refine_uids.add(cell.uniqueId());
-      cell_to_refine_internals.add(cell.internal());
+      cell_to_refine_internals.add(cell);
     }
   }
   debug() << "[MeshRefinement::_refineItems] " << cell_to_refine_uids.size() << " flagged cells for refinement";
@@ -1623,11 +1608,10 @@ _refineItems(Int64Array& cell_to_refine_uids)
    */
   // Maintenant, itere sur les copies locales et raffine chaque item.
   const Int32 i_size = cell_to_refine_internals.size();
-  for (Integer e = 0; e != i_size; ++e)
-  {
-    ItemInternal* iitem = cell_to_refine_internals[e];
+  for (Integer e = 0; e != i_size; ++e) {
+    Cell iitem = cell_to_refine_internals[e];
     //debug()<<"\t[MeshRefinement::_refineItems] focus on cell "<<iitem->uniqueId();
-    switch (iitem->typeId())
+    switch (iitem.type())
     {
       case IT_Quad4:
         m_item_refinement->refineOneCell<IT_Quad4>(iitem,*this);
@@ -1663,7 +1647,7 @@ _refineItems(Int64Array& cell_to_refine_uids)
         m_item_refinement->refineOneCell<IT_DiTetra5>(iitem,*this);
         break;
       default:
-        ARCANE_FATAL("Not supported refinement Item Type type={0}",iitem->typeId());
+        ARCANE_FATAL("Not supported refinement Item Type type={0}",iitem.type());
     }
   }
 
@@ -1676,7 +1660,7 @@ _refineItems(Int64Array& cell_to_refine_uids)
   // Et nous avons besoin de mettre à jour le nombre des ids
   if (mesh_changed){
     for (Integer e = 0; e != i_size; ++e){
-      ItemInternal* i_hParent_cell = cell_to_refine_internals[e];
+      Cell i_hParent_cell = cell_to_refine_internals[e];
       populateBackFrontCellsFromParentFaces(i_hParent_cell);
     }
   }
@@ -1702,43 +1686,42 @@ _refineItems(Int64Array& cell_to_refine_uids)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-
 void MeshRefinement::
 _cleanRefinementFlags()
 {
   //Nettoyage des flags de raffinement d'une étape précédente
   ENUMERATE_CELL(icell,m_mesh->allCells()){
     Cell cell = *icell;
-    ItemInternal* iitem = cell.internal();
-    Integer f = iitem->flags();
-    if (iitem->isActive()){
+    auto mutable_cell = cell.mutableItemBase();
+    Integer f = mutable_cell.flags();
+    if (cell.isActive()){
       f |= ItemFlags::II_DoNothing;
-      iitem->setFlags(f);
+      mutable_cell.setFlags(f);
     }
     else{
       f |= ItemFlags::II_Inactive;
-      iitem->setFlags(f);
+      mutable_cell.setFlags(f);
     }
     // Ceci pourrait être laissé de la derniè étape
     if (f & ItemFlags::II_JustRefined){
       f &= ~ItemFlags::II_JustRefined;
       f |= ItemFlags::II_DoNothing;
-      iitem->setFlags(f);
+      mutable_cell.setFlags(f);
     }
     if (f & ItemFlags::II_JustCoarsened){
       f &= ~ItemFlags::II_JustCoarsened;
       f |= ItemFlags::II_DoNothing;
-      iitem->setFlags(f);
+      mutable_cell.setFlags(f);
     }
     if (f & ItemFlags::II_JustAdded){
       f &= ~ItemFlags::II_JustAdded;
       f |= ItemFlags::II_DoNothing;
-      iitem->setFlags(f);
+      mutable_cell.setFlags(f);
     }
     if (f & ItemFlags::II_CoarsenInactive){
       f &= ~ItemFlags::II_CoarsenInactive;
       f |= ItemFlags::II_DoNothing;
-      iitem->setFlags(f);
+      mutable_cell.setFlags(f);
     }
   }
 }
@@ -1858,14 +1841,14 @@ _interpolateData(const Int64Array& cells_to_refine)
   const Int32 nb_cells = cells_to_refine.size();
   Int32UniqueArray lids(nb_cells);
   m_mesh->cellFamily()->itemsUniqueIdToLocalId(lids.view(), cells_to_refine.constView());
-  ItemInfoListView internals(m_mesh->cellFamily());
+  CellInfoListView internals(m_mesh->cellFamily());
 
   UniqueArray<ItemInternal*> cells_to_refine_internals(nb_cells);
   for (Integer i = 0; i < nb_cells; i++) {
-    cells_to_refine_internals[i] = internals[lids[i]].internal();
+    cells_to_refine_internals[i] = ItemCompatibility::_itemInternal(internals[lids[i]]);
   }
   m_call_back_mng->callCallBacks(cells_to_refine_internals, Prolongation);
-  _update(cells_to_refine_internals) ;
+  _update(cells_to_refine_internals);
 }
 
 void MeshRefinement::
@@ -1875,14 +1858,14 @@ _update(ArrayView<Int64> cells_to_refine_uids)
   const Int32 nb_cells = cells_to_refine_uids.size();
   Int32UniqueArray lids(nb_cells);
   m_mesh->cellFamily()->itemsUniqueIdToLocalId(lids, cells_to_refine_uids);
-  ItemInfoListView internals(m_mesh->cellFamily());
+  CellInfoListView internals(m_mesh->cellFamily());
   UniqueArray<ItemInternal*> cells_to_refine(nb_cells);
   for (Integer i = 0; i < nb_cells; i++) {
-    cells_to_refine[i] = internals[lids[i]].internal();
+    cells_to_refine[i] = ItemCompatibility::_itemInternal(internals[lids[i]]);
   }
-  m_node_finder.updateData(cells_to_refine) ;
-  m_face_finder.updateData(cells_to_refine) ;
-  _updateMaxUid(cells_to_refine) ;
+  m_node_finder.updateData(cells_to_refine);
+  m_face_finder.updateData(cells_to_refine);
+  _updateMaxUid(cells_to_refine);
   m_item_refinement->updateChildHMin(cells_to_refine) ;
   //m_face_finder.updateFaceCenter(cells_to_refine);
   CHECKPERF( m_perf_counter.stop(PerfCounter::UPDATEMAP) )
@@ -1900,7 +1883,8 @@ _update(ArrayView<ItemInternal*> cells_to_refine)
   CHECKPERF( m_perf_counter.stop(PerfCounter::UPDATEMAP) )
 }
 
-void MeshRefinement::_invalidate(ArrayView<ItemInternal*> coarsen_cells)
+void MeshRefinement::
+_invalidate(ArrayView<ItemInternal*> coarsen_cells)
 {
   CHECKPERF( m_perf_counter.start(PerfCounter::CLEAR) )
   m_node_finder.clearData(coarsen_cells) ;
@@ -1938,8 +1922,8 @@ _updateItemOwner(Int32ArrayView cell_to_remove_lids)
 
   for (Integer i = 0, is = cell_to_remove_lids.size(); i < is; i++){
     Cell item = cells_list[cell_to_remove_lids[i]];
-    for (ItemEnumerator inode(item.nodes()); inode(); ++inode){
-      Node node = inode->internal();
+    for (NodeEnumerator inode(item.nodes()); inode(); ++inode){
+      Node node = *inode;
 
       if (marker.find(node.localId()) != marker.end())
         continue;
@@ -1977,7 +1961,7 @@ _updateItemOwner(Int32ArrayView cell_to_remove_lids)
           ARCANE_FATAL("Inconsistent null cell owner reference");
         const Int32 new_owner = cell.owner();
         nodes_owner[node] = new_owner;
-        node.internal()->setOwner(new_owner, sid);
+        node.mutableItemBase().setOwner(new_owner, sid);
         //debug() << " NODE CHANGED OWNER " << node->uniqueId();
         node_owner_changed = true;
       }
@@ -2002,7 +1986,7 @@ _updateItemOwner(Int32ArrayView cell_to_remove_lids)
           if (item.uniqueId() == cell2.uniqueId())
             continue;
           faces_owner[face] = cell2.owner();
-          face.internal()->setOwner(cell2.owner(), sid);
+          face.mutableItemBase().setOwner(cell2.owner(), sid);
           //debug() << " FACE CHANGED OWNER " << FullItemPrinter(face);
           face_owner_changed = true;
         }
@@ -2047,11 +2031,11 @@ _updateItemOwner2()
   NodeGroup own_nodes = m_mesh->ownNodes();
   bool owner_changed = false;
   ENUMERATE_NODE(inode,own_nodes){
-    Node node = (*inode).internal();
+    Node node = (*inode);
     Int32 owner = node.owner();
     bool is_ok = false;
     for( CellEnumerator icell(node.cells()); icell(); ++icell ){
-      const Cell& cell = *icell;
+      Cell cell = *icell;
       if (cell.owner()==owner){
         is_ok = true;
         break;
@@ -2082,7 +2066,7 @@ _updateItemOwner2()
   FaceGroup own_faces = m_mesh->ownFaces();
   owner_changed = false;
   ENUMERATE_FACE(iface,own_faces){
-    const Face face = (*iface).internal();
+    Face face = (*iface);
     Int32 owner = face.owner();
     bool is_ok = false;
     for( CellEnumerator icell(face.cells()); icell(); ++icell ){
@@ -2155,9 +2139,9 @@ _removeGhostChildren()
 /*---------------------------------------------------------------------------*/
 
 void MeshRefinement::
-populateBackFrontCellsFromParentFaces(ItemInternal* parent_cell)
+populateBackFrontCellsFromParentFaces(Cell parent_cell)
 {
-  switch (parent_cell->typeId())
+  switch (parent_cell.type())
   {
     case IT_Quad4:
       _populateBackFrontCellsFromParentFaces<IT_Quad4>(parent_cell);
@@ -2193,45 +2177,44 @@ populateBackFrontCellsFromParentFaces(ItemInternal* parent_cell)
       _populateBackFrontCellsFromParentFaces<IT_DiTetra5>(parent_cell);
       break;
     default:
-      ARCANE_FATAL("Not supported refinement Item Type type={0}",parent_cell->typeId());
+      ARCANE_FATAL("Not supported refinement Item Type type={0}",parent_cell.type());
   }
 }
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <int typeID>
-void MeshRefinement::
-_populateBackFrontCellsFromParentFaces(ItemInternal* parent_cell)
+template <int typeID> void MeshRefinement::
+_populateBackFrontCellsFromParentFaces(Cell parent_cell)
 {
-  Integer nb_children = parent_cell->nbHChildren();
+  Integer nb_children = parent_cell.nbHChildren();
   const ItemRefinementPatternT<typeID>& rp = getRefinementPattern<typeID>();
   for (Integer c = 0; c < nb_children; c++){
-    ItemInternal* child = parent_cell->internalHChild(c);
-    Integer nb_child_faces = child->nbFace();
+    Cell child = parent_cell.hChild(c);
+    Integer nb_child_faces = child.nbFace();
     for (Integer fc = 0; fc < nb_child_faces; fc++){
       if (rp.face_mapping_topo(c, fc) == 0)
         continue;
       const Integer f = rp.face_mapping(c, fc);
-      ItemInternal* face = parent_cell->internalFace(f);
-      Integer nb_cell_face = face->nbCell();
+      Face face = parent_cell.face(f);
+      Integer nb_cell_face = face.nbCell();
       if (nb_cell_face == 1)
         continue;
-      ItemInternal* subface = child->internalFace(fc);
-      Integer nb_cell_subface = subface->nbCell();
+      Face subface = child.face(fc);
+      Integer nb_cell_subface = subface.nbCell();
       if (nb_cell_subface == 1){
         m_face_family->addBackFrontCellsFromParentFace(subface, face);
       }
       else{
-        if (face->backCell()->isOwn() != face->frontCell()->isOwn()){
+        if (face.backCell().isOwn() != face.frontCell().isOwn()){
           m_face_family->replaceBackFrontCellsFromParentFace(child, subface, parent_cell, face);
         }
         else{
-          if (!face->backCell()->isOwn() && !face->frontCell()->isOwn()){
+          if (!face.backCell().isOwn() && !face.frontCell().isOwn()){
             m_face_family->replaceBackFrontCellsFromParentFace(child, subface, parent_cell, face);
           }
         }
       }
-      ARCANE_ASSERT((subface->backCell() != parent_cell && subface->frontCell() != parent_cell),
+      ARCANE_ASSERT((subface.backCell() != parent_cell && subface.frontCell() != parent_cell),
           ("back front cells error"));
     }
   }
@@ -2241,19 +2224,19 @@ _populateBackFrontCellsFromParentFaces(ItemInternal* parent_cell)
 /*---------------------------------------------------------------------------*/
 
 void MeshRefinement::
-populateBackFrontCellsFromChildrenFaces(ItemInternal* parent_cell)
+populateBackFrontCellsFromChildrenFaces(Cell parent_cell)
 {
-  ARCANE_ASSERT((parent_cell->isActive()), (""));
-  Integer nb_faces = parent_cell->nbFace();
+  ARCANE_ASSERT((parent_cell.isActive()), (""));
+  Integer nb_faces = parent_cell.nbFace();
   for (Integer f = 0; f < nb_faces; f++){
-    ItemInternal* face = parent_cell->internalFace(f);
-    Integer nb_cell_face = face->nbCell();
+    Face face = parent_cell.face(f);
+    Integer nb_cell_face = face.nbCell();
     if (nb_cell_face == 1)
       continue;
-    ItemInternal* neighbor_cell = (face->internalCell(0) == parent_cell) ? face->internalCell(1) : face->internalCell(0);
-    if (neighbor_cell->isActive())
+    Cell neighbor_cell = (face.cell(0) == parent_cell) ? face.cell(1) : face.cell(0);
+    if (neighbor_cell.isActive())
       continue;
-    switch (neighbor_cell->typeId()){
+    switch (neighbor_cell.type()){
       case IT_Quad4:
         _populateBackFrontCellsFromChildrenFaces<IT_Quad4>(face, parent_cell, neighbor_cell);
         break;
@@ -2288,34 +2271,35 @@ populateBackFrontCellsFromChildrenFaces(ItemInternal* parent_cell)
         _populateBackFrontCellsFromChildrenFaces<IT_DiTetra5>(face, parent_cell, neighbor_cell);
         break;
       default:
-        ARCANE_FATAL("Not supported refinement Item Type type={0}",neighbor_cell->typeId());
+        ARCANE_FATAL("Not supported refinement Item Type type={0}",neighbor_cell.type());
     }
   }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 template <int typeID> void MeshRefinement::
-_populateBackFrontCellsFromChildrenFaces(ItemInternal* face, ItemInternal* parent_cell,
-                                         ItemInternal* neighbor_cell)
+_populateBackFrontCellsFromChildrenFaces(Face face, Cell parent_cell,
+                                         Cell neighbor_cell)
 {
   const ItemRefinementPatternT<typeID>& rp = getRefinementPattern<typeID>();
-  for(Integer f=0;f<neighbor_cell->nbFace();f++){
-    if (neighbor_cell->internalFace(f) == face){
-      Integer nb_children = neighbor_cell->nbHChildren();
+  for(Integer f=0;f<neighbor_cell.nbFace();f++){
+    if (neighbor_cell.face(f) == face){
+      Integer nb_children = neighbor_cell.nbHChildren();
       for (Integer c = 0; c < nb_children; c++){
-        ItemInternal* child = neighbor_cell->internalHChild(c);
-        Integer nb_child_faces = child->nbFace();
+        Cell child = neighbor_cell.hChild(c);
+        Integer nb_child_faces = child.nbFace();
         for (Integer fc = 0; fc < nb_child_faces; fc++){
           if (f == rp.face_mapping(c, fc) && (rp.face_mapping_topo(c, fc))){
-            ItemInternal* subface = child->internalFace(fc);
-            if (subface->flags() & ItemFlags::II_HasBackCell){
+            Face subface = child.face(fc);
+            if (subface.itemBase().flags() & ItemFlags::II_HasBackCell){
               m_face_family->addFrontCellToFace(subface, parent_cell);
             }
-            else if (subface->flags() & ItemFlags::II_HasFrontCell){
+            else if (subface.itemBase().flags() & ItemFlags::II_HasFrontCell){
               m_face_family->addBackCellToFace(subface, parent_cell);
             }
-            ARCANE_ASSERT((subface->backCell() != subface->frontCell()), ("back front cells error"));
+            ARCANE_ASSERT((subface.backCell() != subface.frontCell()), ("back front cells error"));
           }
         }
       }
@@ -2368,13 +2352,13 @@ _checkOwner(const String& msg)
   m_mesh->parallelMng()->allGatherVariable(desync_node_uids.view(),desync_node_uids_gather);
   Int32UniqueArray desync_node_lids_gather(desync_node_uids_gather.size());
   m_mesh->nodeFamily()->itemsUniqueIdToLocalId(desync_node_lids_gather,desync_node_uids_gather,false);
-  for (auto lid : desync_node_lids_gather)
-    {
-      if (lid == NULL_ITEM_LOCAL_ID) continue;
-      if (std::find(desync_nodes.viewAsArray().begin(), desync_nodes.viewAsArray().end(),lid) == desync_nodes.viewAsArray().end()){
-          desync_nodes.add(lid);
-      }
+  for (auto lid : desync_node_lids_gather) {
+    if (lid == NULL_ITEM_LOCAL_ID)
+      continue;
+    if (std::find(desync_nodes.viewAsArray().begin(), desync_nodes.viewAsArray().end(),lid) == desync_nodes.viewAsArray().end()){
+      desync_nodes.add(lid);
     }
+  }
   // 1.2 Exchange the owners of the desynchronized nodes
   // each process fill an array [node1_uid, node1_owner,...nodei_uid, nodei_owner,...]
   Int64UniqueArray desync_node_owners(2*desync_nodes.size());
@@ -2400,7 +2384,7 @@ _checkOwner(const String& msg)
       if (owner < new_owner && owner != m_node_owner_memory[inode]) new_owner = owner;
     }
     debug(Trace::Highest) << "------ Change owner for node " << inode->uniqueId() << " from " << inode->owner() << " to " << new_owner;
-    inode->internal()->setOwner(new_owner, m_mesh->parallelMng()->commRank());
+    inode->mutableItemBase().setOwner(new_owner, m_mesh->parallelMng()->commRank());
     new_owner  = m_mesh->parallelMng()->commSize()+1;
   }
   // Update family if owners have changed

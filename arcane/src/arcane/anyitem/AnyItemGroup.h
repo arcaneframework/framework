@@ -75,7 +75,12 @@ public:
  * Construction dans les familles AnyItem
  */
 class Group
-{  
+{
+  static ItemInternal* _toInternal(const Item& v)
+  {
+    return ItemCompatibility::_itemInternal(v);
+  }
+
 public:
 
   /*!
@@ -102,8 +107,9 @@ public:
 
     //! Déréférencement vers l'item Arcane associé
     Item operator*() const { return m_items[ m_local_ids[m_index] ]; }
+    // TODO: retourner un 'Item*' de manière similaire à ItemEnumerator. 
     //! Déréférencement indirect vers l'item Arcane associé
-    ItemInternal* operator->() const { return m_items[ m_local_ids[m_index] ].internal(); }
+    ItemInternal* operator->() const { return Group::_toInternal(m_items[ m_local_ids[m_index] ]); }
     //! Avancement de l'énumérateur
     inline void operator++() { ++m_index; }
     //! Test de fin de l'énumérateur

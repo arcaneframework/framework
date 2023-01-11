@@ -159,7 +159,7 @@ _applyFamilyRenumbering(IItemFamily* family, VariableItemInt64& items_new_uid)
     if (new_uid >= 0 && new_uid != current_uid) {
       if (m_is_verbose)
         info() << "Change ItemUID old=" << current_uid << " new=" << new_uid;
-      item.internal()->setUniqueId(new_uid);
+      item.mutableItemBase().setUniqueId(new_uid);
     }
   }
   family->notifyItemsUniqueIdChanged();

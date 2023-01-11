@@ -143,12 +143,12 @@ compute()
     Integer nb_error = 0;
     Int64UniqueArray bad_items_uid;
     ENUMERATE_ITEM(i,m_item_group){
-      const Item& item = *i;
-      ItemInternal* item_internal = item.internal();
-      Integer owner = item_internal->owner();
+      Item item = *i;
+      impl::ItemBase item_internal = item.itemBase();
+      Int32 owner = item_internal.owner();
       if (owner==my_rank)
         continue;
-      Int64 uid = item_internal->uniqueId().asInt64();
+      Int64 uid = item_internal.uniqueId().asInt64();
       if (owner==A_NULL_RANK || owner>=nb_rank){
         ++nb_error;
         if (nb_error<10)
@@ -157,9 +157,9 @@ compute()
       }
       if (global_debug_sync){
         info() << "Add entity uid=" << uid
-               << " lid=" << item_internal->localId() << " to the subdomain " << owner;
+               << " lid=" << item_internal.localId() << " to the subdomain " << owner;
       }
-      boundary_items[owner].add(item_internal->localId());
+      boundary_items[owner].add(item_internal.localId());
     }
     if (nb_error!=0){
       for( Integer i=0, is=bad_items_uid.size(); i<is; ++i ){

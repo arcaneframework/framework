@@ -104,7 +104,7 @@ checkValues (Integer iteration, const GroupType& group)
   ITraceMng* tm = this->m_mesh_handle.mesh()->traceMng();
   Integer nb_display_error = 10;
   ENUMERATE_ITEM(iter,group){
-    const ItemType& item = (*iter).internal();
+    const ItemType& item = (*iter).itemBase();
     Int64 n = 1 + (item.uniqueId().asInt64() + iteration*7);
     Real r = Convert::toReal(n);
 
@@ -177,7 +177,7 @@ template<class ItemType> void StdArrayMeshVariables<ItemType>::
 setValues(Integer iteration, const GroupType& group)
 {
   ENUMERATE_ITEM(iter,group){
-    const ItemType& item = (*iter).internal();
+    ItemType item = (*iter).itemBase();
     Int64 n = 1 + (item.uniqueId().asInt64() + iteration*7);
     Real r = Convert::toReal(n);
     Integer i = (Integer)(n);

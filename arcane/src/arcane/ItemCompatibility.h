@@ -39,8 +39,12 @@ namespace mesh
   class FaceFamily;
   class OneMeshItemAdder;
   class ParallelAMRConsistency;
+  class MeshRefinement;
 }
-
+namespace AnyItem
+{
+  class Group;
+}
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -65,6 +69,8 @@ class ItemCompatibility
   friend mesh::FaceFamily;
   friend mesh::ParallelAMRConsistency;
   friend mesh::OneMeshItemAdder;
+  friend mesh::MeshRefinement;
+  friend AnyItem::Group;
 
  private:
 

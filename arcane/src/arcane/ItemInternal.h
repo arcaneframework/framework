@@ -494,11 +494,11 @@ class ARCANE_CORE_EXPORT ItemBase
   Integer nbFace() const { return _connectivity()->_nbFaceV2(m_local_id); }
   //! Nombre de mailles connectées à l'entité (pour les noeuds, arêtes et faces)
   Integer nbCell() const { return _connectivity()->_nbCellV2(m_local_id); }
-  //! Nombre de parent
+  //! Nombre de parents pour l'AMR
   Int32 nbHParent() const { return _connectivity()->_nbHParentV2(m_local_id); }
-  //! Nombre d' enfants
+  //! Nombre d'enfants pour l'AMR
   Int32 nbHChildren() const { return _connectivity()->_nbHChildrenV2(m_local_id); }
-  //! Nombre de parent
+  //! Nombre de parent pour les sous-maillages
   Integer nbParent() const { return m_shared_info->nbParent(); }
 
  public:
