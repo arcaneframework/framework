@@ -631,7 +631,7 @@ checkValid()
     if (all_env_cell.level()!=LEVEL_ALLENVIRONMENT)
       ARCANE_FATAL("Bad level for all_env_item");
 
-    if (all_env_cell.globalCell().internal()!=cell.internal())
+    if (all_env_cell.globalCell()!=cell)
       ARCANE_FATAL("Bad corresponding globalCell() in all_env_item");
     if (cell_nb_env!=nb_env_per_cell[cell])
       ARCANE_FATAL("Bad value for nb_env direct='{0}' var='{1}'",
@@ -643,7 +643,7 @@ checkValid()
       ComponentItemInternal* eii = ec.internal();
       if (all_env_cell.internal()!=eii->superItem())
         ARCANE_FATAL("Bad corresponding allEnvItem() in env_item uid={0}",cell_uid);
-      if (eii->globalItem()!=cell.internal())
+      if (eii->globalItem2()!=cell)
         ARCANE_FATAL("Bad corresponding globalItem() in env_item");
       if (eii->level()!=LEVEL_ENVIRONMENT)
         ARCANE_FATAL("Bad level '{0}' for in env_item",eii->level());
@@ -657,7 +657,7 @@ checkValid()
         ComponentItemInternal* mci = mc.internal();
         if (eii!=mci->superItem())
           ARCANE_FATAL("Bad corresponding env_item in mat_item");
-        if (mci->globalItem()!=cell.internal())
+        if (mci->globalItem2()!=cell)
           ARCANE_FATAL("Bad corresponding globalItem() in mat_item");
         if (mci->level()!=LEVEL_MATERIAL)
           ARCANE_FATAL("Bad level '{0}' for in mat_item",mci->level());

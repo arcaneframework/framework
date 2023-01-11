@@ -41,7 +41,10 @@ namespace mesh
   class ParallelAMRConsistency;
   class MeshRefinement;
 }
-
+namespace AnyItem
+{
+  class Group;
+}
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -67,6 +70,7 @@ class ItemCompatibility
   friend mesh::ParallelAMRConsistency;
   friend mesh::OneMeshItemAdder;
   friend mesh::MeshRefinement;
+  friend AnyItem::Group;
 
  private:
 

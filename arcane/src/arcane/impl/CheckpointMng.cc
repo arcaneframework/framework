@@ -529,7 +529,7 @@ _changeItemsOwner(IMesh* mesh,Int32ConstArrayView old_ranks_to_new_ranks)
     ENUMERATE_ITEM(iitem,all_items){
       Item item = *iitem;
       Int32 owner = item.owner();
-      item.internal()->setOwner(old_ranks_to_new_ranks[owner],mesh_rank);
+      item.mutableItemBase().setOwner(old_ranks_to_new_ranks[owner],mesh_rank);
     }
     family->notifyItemsOwnerChanged();
   }

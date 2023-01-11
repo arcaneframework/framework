@@ -234,7 +234,7 @@ class DumpWEnsight7
         if (!m_is_polygonal_type_registration_done) {
           ENUMERATE_ITEM (iitem, m_group) {
             ItemWithNodes item = iitem->toItemWithNodes();
-            if (item.nbNode() == item.internal()->nbEdge()) { // polygon found // todo do not use internal, but how ?
+            if (item.nbNode() == item.itemBase().nbEdge()) { // polygon found // todo do not use internal, but how ?
               (*(m_general_item_types))[item] = type_id;
               m_parts.add(EnsightPart(type_id++, item.nbNode(), "nsided"));
             }
@@ -306,7 +306,7 @@ class DumpWEnsight7
               (*(m_general_item_types))[item] = IT_Vertex;
             else if (item.nbNode() == 2)
               (*(m_general_item_types))[item] = IT_Line2;
-            else if (item.nbNode() != item.internal()->nbEdge()) { // polyhedron found
+            else if (item.nbNode() != item.itemBase().nbEdge()) { // polyhedron found
               (*(m_general_item_types))[item] = type_id;
               m_parts.add(EnsightPart(type_id++, item.nbNode(), "nfaced"));
             }
@@ -1045,7 +1045,7 @@ _saveGroup(std::ostream& ofile, const GroupPartInfo& ensight_grp,
       //    noeuds
       if (!m_mesh->itemTypeMng()->hasGeneralCells(m_mesh)) {
         for (Item item : items) {
-          Cell cell(item.internal());
+          Cell cell(item.toCell());
           const ItemTypeInfo* item_info = cell.typeInfo();
           //Cell cell = mi.toCell();
           Integer nb_face = item_info->nbLocalFace();

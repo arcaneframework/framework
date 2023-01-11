@@ -202,7 +202,7 @@ class ItemConnectivityT
 
   const ToItemType operator()(FromLocalIdType item) const
   {
-    return ItemConnectivity::operator ()(item).internal();
+    return ItemConnectivity::operator ()(item).itemBase();
   }
 };
 
