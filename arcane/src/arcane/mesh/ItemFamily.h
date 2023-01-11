@@ -289,7 +289,7 @@ class ARCANE_MESH_EXPORT ItemFamily
    *  à partir des données du DynamicMeshKindInfos */
   void compactVariablesAndGroups(const ItemFamilyCompactInfos& compact_infos);
   void finishCompactItems(ItemFamilyCompactInfos& compact_infos);
-  void removeItem(ItemInternal* item)
+  void removeItem(Item item)
   {
     _removeOne(item);
   }
@@ -339,9 +339,9 @@ class ARCANE_MESH_EXPORT ItemFamily
   {
     m_infos.removeMany(local_ids);
   }
-  void _removeDetachedOne(ItemInternal* item)
+  void _removeDetachedOne(Item item)
   {
-    m_infos.removeDetachedOne(item);
+    m_infos.removeDetachedOne(ItemCompatibility::_itemInternal(item));
   }
 
   void _detachCells2(Int32ConstArrayView local_ids);

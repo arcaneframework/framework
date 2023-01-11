@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* FaceFamily.cc                                               (C) 2000-2022 */
+/* FaceFamily.cc                                               (C) 2000-2023 */
 /*                                                                           */
 /* Famille de faces.                                                         */
 /*---------------------------------------------------------------------------*/
@@ -331,8 +331,7 @@ replaceCell(ItemLocalId face,Integer index,ItemLocalId cell)
 void FaceFamily::
 setBackAndFrontCells(Face face,Int32 iback_cell_lid,Int32 ifront_cell_lid)
 {
-  ItemInternal* iface = face.internal();
-  iface->_setFaceBackAndFrontCells(iback_cell_lid,ifront_cell_lid);
+  face.mutableItemBase()._setFaceBackAndFrontCells(iback_cell_lid,ifront_cell_lid);
   ItemLocalId back_cell_lid(iback_cell_lid);
   ItemLocalId front_cell_lid(ifront_cell_lid);
   auto c = m_cell_connectivity->trueCustomConnectivity();
@@ -375,8 +374,8 @@ addBackCellToFace(Face face,Cell new_cell)
   // SDP: les tests suivants sont imcompatibles avec le raffinement
   // par couches
   if (m_check_orientation){
-    ItemInternal* current_cell = face.internal()->backCell();
-    if (face.internal()->flags() & ItemFlags::II_HasBackCell){
+    Cell current_cell = face.backCell();
+    if (face.itemBase().flags() & ItemFlags::II_HasBackCell){
       ARCANE_FATAL("Face already having a back cell."
                    " This is most probably due to the fact that the face"
                    " is connected to a reverse cell with a negative volume."
@@ -409,7 +408,7 @@ addFrontCellToFace(Face face,Cell new_cell)
   // par couches
   if (m_check_orientation){
     Cell current_cell = face.frontCell();
-    if (face.internal()->flags() & ItemFlags::II_HasFrontCell){
+    if (face.itemBase().flags() & ItemFlags::II_HasFrontCell){
       ARCANE_FATAL("Face already having a front cell."
                    " This is most probably due to the fact that the face"
                    " is connected to a reverse cell with a negative volume."
@@ -457,24 +456,24 @@ replaceFrontCellToFace(Face face,ItemLocalId new_cell)
 /*---------------------------------------------------------------------------*/
 
 void FaceFamily::
-addBackFrontCellsFromParentFace(ItemInternal* subface,ItemInternal* face)
+addBackFrontCellsFromParentFace(Face subface,Face face)
 {
-	Cell fcell= face->frontCell();
-	Cell bcell= face->backCell();
+	Cell fcell= face.frontCell();
+	Cell bcell= face.backCell();
 
-	if (subface->flags() & ItemFlags::II_HasBackCell){
+	if (subface.itemBase().flags() & ItemFlags::II_HasBackCell){
     if(fcell.isActive()) 
-      addFrontCellToFace(subface,face->frontCell());
+      addFrontCellToFace(subface,face.frontCell());
     else if(bcell.isActive())
-      addFrontCellToFace(subface,face->backCell());
+      addFrontCellToFace(subface,face.backCell());
 	}
-	else if (subface->flags() & ItemFlags::II_HasFrontCell){
+	else if (subface.itemBase().flags() & ItemFlags::II_HasFrontCell){
     if(bcell.isActive()) 
-      addBackCellToFace(subface,face->backCell());
+      addBackCellToFace(subface,face.backCell());
     else if (fcell.isActive())
-      addBackCellToFace(subface,face->frontCell());
+      addBackCellToFace(subface,face.frontCell());
 	}
-	ARCANE_ASSERT((subface->backCell() != subface->frontCell()),("back front cells error"));
+	ARCANE_ASSERT((subface.backCell() != subface.frontCell()),("back front cells error"));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -583,7 +582,7 @@ subFaces(Face face,Array<ItemInternal*>& subfaces)
 			//<< "\n";
 			for( Face subface : child.faces() ){
 				if(isSubFaceInFace(subface,face)){
-          subfaces.add(subface.internal());
+          subfaces.add(ItemCompatibility::_itemInternal(subface));
 				}
 			}
 		}
@@ -597,7 +596,7 @@ subFaces(Face face,Array<ItemInternal*>& subfaces)
 void FaceFamily::
 allSubFaces(Face face,Array<ItemInternal*>& subfaces)
 {
-  subfaces.add(face.internal());
+  subfaces.add(ItemCompatibility::_itemInternal(face));
 
   Cell cell;
   const Integer nb_cell= face.nbCell();
@@ -660,7 +659,7 @@ activeSubFaces(Face face,Array<ItemInternal*>& subfaces)
 			//<< "\n";
 			for( Face subface : child.faces() ){
 				if(isSubFaceInFace(subface,face)){
-          subfaces.add(subface.internal());
+          subfaces.add(ItemCompatibility::_itemInternal(subface));
 				}
 			}
 		}
@@ -680,7 +679,7 @@ familyTree(Array<ItemInternal*>& family,Cell item,
 	if (reset)
 		family.clear();
 	// Add this item to the family tree.
-	family.add(item.internal());
+	family.add(ItemCompatibility::_itemInternal(item));
 	// Recurse into the items children, if it has them.
 	// Do not clear the array any more.
 	if (!item.isActive())
@@ -702,7 +701,7 @@ activeFamilyTree(Array<ItemInternal*>& family,Cell item,const bool reset) const
 		family.clear();
 	// Add this item to the family tree.
 	if(item.isActive())
-		family.add(item.internal());
+		family.add(ItemCompatibility::_itemInternal(item));
 	else
 		for (Integer c=0, cs=item.nbHChildren(); c<cs; c++){
 			Cell ichild= item.hChild(c);
@@ -751,7 +750,7 @@ _removeFace(Face face)
     m_edge_family->removeFaceFromEdge(ItemLocalId(edge),face_lid);
   for( Int32 node : face.nodes().localIds().range() )
     m_node_family->removeFaceFromNode(ItemLocalId(node),face_lid);
-  _removeOne(face.internal());
+  _removeOne(face);
   // On ne supprime pas ici les autres relations (ici aucune)
   // Car l'autre de suppression doit toujours être cell, face, edge, node
   // donc node est en dernier et tout est déjà fait
@@ -804,19 +803,18 @@ _computeFaceNormal(Face face, const SharedVariableNodeReal3& nodes_coord) const
 /*---------------------------------------------------------------------------*/
 
 void FaceFamily::
-removeCellFromFace(Face xface,ItemLocalId cell_to_remove_lid)
+removeCellFromFace(Face face,ItemLocalId cell_to_remove_lid)
 {
-  _checkValidItem(xface);
-  ItemInternal* face = xface.internal();
+  _checkValidItem(face);
 
-  Integer nb_cell = face->nbCell();
+  Integer nb_cell = face.nbCell();
 
 #ifdef ARCANE_CHECK
-  if (face->isSuppressed())
+  if (face.itemBase().isSuppressed())
     ARCANE_FATAL("Can not remove cell from destroyed face={0}",ItemPrinter(face));
   if (nb_cell==0)
     ARCANE_FATAL("Can not remove cell lid={0} from face uid={1} with no cell connected",
-                 cell_to_remove_lid, face->uniqueId());
+                 cell_to_remove_lid, face.uniqueId());
 #endif /* ARCANE_CHECK */
 
   Integer nb_cell_after = nb_cell-1;
@@ -825,9 +823,9 @@ removeCellFromFace(Face xface,ItemLocalId cell_to_remove_lid)
   // forcer la suppression d'une face entre deux mailles de niveaux differents
   // car cette face n'est topologiquement attachée a la maille de niveau inferieur
   if (nb_cell == 2){
-    if(face->backCell()->level() != face->frontCell()->level())
+    if(face.backCell().level() != face.frontCell().level())
 	  nb_cell_after = 0;
-    else if (! (face->backCell()->isActive() && face->frontCell()->isActive())){
+    else if (! (face.backCell().isActive() && face.frontCell().isActive())){
       // TODO: GG: pour des raisons de performance, il est préférable d'éviter
       // les allocations dans cette méthode car elle est appelée très souvent.
       UniqueArray<ItemInternal*> subfaces;
@@ -852,8 +850,8 @@ removeCellFromFace(Face xface,ItemLocalId cell_to_remove_lid)
   }
   // OFF AMR
   if (nb_cell_after!=0){
-    Int32 cell0 = face->cellLocalId(0);
-    Int32 cell1 = face->cellLocalId(1);
+    Int32 cell0 = face.cellId(0);
+    Int32 cell1 = face.cellId(1);
     // On avait obligatoirement deux mailles connectées avant,
     // donc la back_cell est la maille 0, la front cell la maille 1
     if (cell0==cell_to_remove_lid){
@@ -876,13 +874,11 @@ removeCellFromFace(Face xface,ItemLocalId cell_to_remove_lid)
 /*---------------------------------------------------------------------------*/
 
 void FaceFamily::
-removeFaceIfNotConnected(Face xface)
+removeFaceIfNotConnected(Face face)
 {
-  ItemInternal* face = xface.internal();
-
 	_checkValidItem(face);
 
-	if (!face->isSuppressed() && face->nbCell()==0){
+	if (!face.itemBase().isSuppressed() && face.nbCell()==0){
     _removeFace(face);
 	}
 }
@@ -891,42 +887,42 @@ removeFaceIfNotConnected(Face xface)
 /*---------------------------------------------------------------------------*/
 
 void FaceFamily::
-_addMasterFaceToFace(ItemInternal* face,ItemInternal* master_face)
+_addMasterFaceToFace(Face face,Face master_face)
 {
-  m_face_connectivity->addConnectedItem(ItemLocalId(face),ItemLocalId(master_face));
-  face->addFlags(ItemFlags::II_SlaveFace);
+  m_face_connectivity->addConnectedItem(face,master_face);
+  face.mutableItemBase().addFlags(ItemFlags::II_SlaveFace);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void FaceFamily::
-_addSlaveFacesToFace(ItemInternal* master_face,Int32ConstArrayView slave_faces_lid)
+_addSlaveFacesToFace(Face master_face,Int32ConstArrayView slave_faces_lid)
 {
   Integer nb_slave = slave_faces_lid.size();
   for( Integer i=0; i<nb_slave; ++i )
-    m_face_connectivity->addConnectedItem(ItemLocalId(master_face),ItemLocalId(slave_faces_lid[i]));
-  master_face->addFlags(ItemFlags::II_MasterFace);
+    m_face_connectivity->addConnectedItem(master_face,ItemLocalId(slave_faces_lid[i]));
+  master_face.mutableItemBase().addFlags(ItemFlags::II_MasterFace);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void FaceFamily::
-_removeMasterFaceToFace(ItemInternal* face)
+_removeMasterFaceToFace(Face face)
 {
-  m_face_connectivity->removeConnectedItems(ItemLocalId(face));
-  face->removeFlags(ItemFlags::II_SlaveFace);
+  m_face_connectivity->removeConnectedItems(face);
+  face.mutableItemBase().removeFlags(ItemFlags::II_SlaveFace);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void FaceFamily::
-_removeSlaveFacesToFace(ItemInternal* master_face)
+_removeSlaveFacesToFace(Face master_face)
 {
-  m_face_connectivity->removeConnectedItems(ItemLocalId(master_face));
-  master_face->removeFlags(ItemFlags::II_MasterFace);
+  m_face_connectivity->removeConnectedItems(master_face);
+  master_face.mutableItemBase().removeFlags(ItemFlags::II_MasterFace);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -939,8 +935,7 @@ applyTiedInterface(ITiedInterface* interface)
   Int32UniqueArray slave_faces;
 
   ENUMERATE_FACE(imaster_face,interface->masterInterface()){
-    const Face& master_face = *imaster_face;
-    ItemInternal* master_face_internal = master_face.internal();
+    Face master_face = *imaster_face;
     Integer index = imaster_face.index();
     ConstArrayView<TiedFace> slave_tied_faces(tied_faces[index]);
     Integer nb_slave = slave_tied_faces.size();
@@ -949,9 +944,9 @@ applyTiedInterface(ITiedInterface* interface)
       const TiedFace& tn = tied_faces[index][zz];
       Face slave_face = tn.face();
       slave_faces.add(slave_face.localId());
-      _addMasterFaceToFace(slave_face.internal(),master_face_internal);
+      _addMasterFaceToFace(slave_face,master_face);
     }
-    _addSlaveFacesToFace(master_face_internal,slave_faces);
+    _addSlaveFacesToFace(master_face,slave_faces);
   }
 }
 
@@ -964,17 +959,16 @@ removeTiedInterface(ITiedInterface* interface)
   TiedInterfaceFaceList tied_faces(interface->tiedFaces());
 
   ENUMERATE_FACE(imaster_face,interface->masterInterface()){
-    const Face& master_face = *imaster_face;
-    ItemInternal* master_face_internal = master_face.internal();
+    Face master_face = *imaster_face;
     Integer index = imaster_face.index();
     ConstArrayView<TiedFace> slave_tied_faces(tied_faces[index]);
     Integer nb_slave = slave_tied_faces.size();
     for( Integer zz=0; zz<nb_slave; ++zz ){
       const TiedFace& tn = tied_faces[index][zz];
       Face slave_face = tn.face();
-      _removeMasterFaceToFace(slave_face.internal());
+      _removeMasterFaceToFace(slave_face);
     }
-    _removeSlaveFacesToFace(master_face_internal);
+    _removeSlaveFacesToFace(master_face);
   }
 }
 

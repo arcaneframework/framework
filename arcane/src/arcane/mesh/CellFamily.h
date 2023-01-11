@@ -75,19 +75,19 @@ class ARCANE_MESH_EXPORT CellFamily
   Cell allocOne(Int64 uid,ItemTypeId type);
   Cell findOrAllocOne(Int64 uid,ItemTypeId type_id,bool& is_alloc);
   
-  /**
+  /*!
    * Supprime la maille \a cell
    *
    * @param cell la maille à supprimer
    */
-  void removeCell(ItemInternal* cell);
+  void removeCell(Cell cell);
 
-  /**
+  /*!
    * Detache la maille \a cell du maillage sans la supprimer
    *
    * @param cell la maille à détacher
    */
-  void detachCell(ItemInternal* cell);
+  void detachCell(Cell cell);
 
   /**
    * Detache les mailles d'identifiants locaux \a cell_local_ids du maillage sans les supprimer.
@@ -97,14 +97,14 @@ class ARCANE_MESH_EXPORT CellFamily
    */
   void detachCells2(Int32ConstArrayView cell_local_ids);
 
-  /**
+  /*!
    * Detruit la maille \a cell ayant deja ete detachée du maillage
    *
    * @param cell la maille détachée à detruire
    */
-  void removeDetachedCell(ItemInternal* cell);
+  void removeDetachedCell(Cell cell);
 
-  /**
+  /*!
    * Supprime le groupe d'entités \a local_ids
    *
    * @param local_ids le groupe de mailles à supprimer

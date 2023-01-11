@@ -258,7 +258,7 @@ _removeEdge(Edge edge)
 {
   for( Node node : edge.nodes() )
     m_node_family->removeEdgeFromNode(node,edge);
-  _removeOne(edge.internal());
+  _removeOne(edge);
   // On ne supprime pas ici les autres relations (face->edge,cell->edge)
   // Car l'ordre de suppression doit toujours être cell, face, edge, node
   // donc node est en dernier et tout est déjà fait
@@ -294,10 +294,9 @@ removeFaceFromEdge(ItemLocalId edge,ItemLocalId face_to_remove)
 void EdgeFamily::
 removeEdgeIfNotConnected(Edge edge)
 {
-  ItemInternal* iedge = edge.internal();
-	_checkValidItem(iedge);
-	if (!iedge->isSuppressed() && iedge->nbCell()==0){
-    _removeEdge(iedge);
+	_checkValidItem(edge);
+	if (!edge.itemBase().isSuppressed() && edge.nbCell()==0){
+    _removeEdge(edge);
   }
 }
 

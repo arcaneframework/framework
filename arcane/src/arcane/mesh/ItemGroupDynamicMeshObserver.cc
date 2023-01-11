@@ -58,7 +58,7 @@ executeReduce(const Int32ConstArrayView * info)
   parent_uids.reserve(parent_deleted_lids.size());
   for(Integer i=0;i<parent_deleted_lids.size();++i)
   {
-    Int64 parent_uid = parent_internals[parent_deleted_lids[i]]->uniqueId();
+    Int64 parent_uid = parent_internals[parent_deleted_lids[i]].uniqueId();
     if (parent_uid != NULL_ITEM_UNIQUE_ID) // prevent from completly detached items
     {
       parent_uids.add(parent_uid);

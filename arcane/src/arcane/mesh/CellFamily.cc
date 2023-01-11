@@ -279,21 +279,20 @@ _removeSubItems(Cell cell)
 /*---------------------------------------------------------------------------*/
 
 void CellFamily::
-removeCell(ItemInternal* icell)
+removeCell(Cell icell)
 {
 #ifdef ARCANE_CHECK
   _checkValidItem(icell);
-  if (icell->isSuppressed())
-    ARCANE_FATAL("Cell '{0}' is already removed",icell->uniqueId());
+  if (icell.itemBase().isSuppressed())
+    ARCANE_FATAL("Cell '{0}' is already removed",icell.uniqueId());
 #endif
   // TODO: supprimer les faces et arêtes connectées.
   _removeSubItems(icell);
   _removeNotConnectedSubItems(icell);
   //! AMR
-   if (icell->level() >0){
+   if (icell.level() >0){
      _removeParentCellToCell(icell);
-     Cell cell(icell);
-     Cell parent_cell= cell.hParent();
+     Cell parent_cell= icell.hParent();
      _removeChildCellToCell(parent_cell,icell);
    }
   _removeOne(icell);
@@ -303,20 +302,19 @@ removeCell(ItemInternal* icell)
 /*---------------------------------------------------------------------------*/
 
 void CellFamily::
-detachCell(ItemInternal* icell)
+detachCell(Cell icell)
 {
 #ifdef ARCANE_CHECK
   _checkValidItem(icell);
-  if (icell->isSuppressed())
-    ARCANE_FATAL("Cell '{0}' is already removed",icell->uniqueId());
+  if (icell.itemBase().isSuppressed())
+    ARCANE_FATAL("Cell '{0}' is already removed",icell.uniqueId());
 #endif /* ARCANE_CHECK */
 
   _removeSubItems(icell);
   //! AMR
-  if (icell->level() >0){
+  if (icell.level() >0){
     _removeParentCellToCell(icell);
-    Cell cell(icell);
-    Cell parent_cell= cell.hParent();
+    Cell parent_cell= icell.hParent();
     _removeChildCellToCell(parent_cell,icell);
   }
   _detachOne(icell);
@@ -362,7 +360,7 @@ _removeNotConnectedSubItems(Cell cell)
 /*---------------------------------------------------------------------------*/
 
 void CellFamily::
-removeDetachedCell(ItemInternal* cell)
+removeDetachedCell(Cell cell)
 {
   _removeNotConnectedSubItems(cell);
 

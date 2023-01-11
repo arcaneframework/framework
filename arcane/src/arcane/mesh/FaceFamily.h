@@ -108,7 +108,7 @@ class ARCANE_MESH_EXPORT FaceFamily
   //! AMR
   void replaceBackCellToFace(Face face,ItemLocalId new_cell);
   void replaceFrontCellToFace(Face face,ItemLocalId new_cell);
-  void addBackFrontCellsFromParentFace(ItemInternal* subface,ItemInternal* face);
+  void addBackFrontCellsFromParentFace(Face subface,Face face);
   void replaceBackFrontCellsFromParentFace(Cell subcell,Face subface,Cell cell,Face face);
   bool isSubFaceInFace(Face subface,Face face) const;
   bool isChildOnFace(ItemWithNodes child,Face face) const;
@@ -166,10 +166,10 @@ class ARCANE_MESH_EXPORT FaceFamily
 
  private:
 
-  void _addMasterFaceToFace(ItemInternal* face,ItemInternal* master_face);
-  void _addSlaveFacesToFace(ItemInternal* face,Int32ConstArrayView slave_faces_lid);
-  void _removeMasterFaceToFace(ItemInternal* face);
-  void _removeSlaveFacesToFace(ItemInternal* face);
+  void _addMasterFaceToFace(Face face,Face master_face);
+  void _addSlaveFacesToFace(Face face,Int32ConstArrayView slave_faces_lid);
+  void _removeMasterFaceToFace(Face face);
+  void _removeSlaveFacesToFace(Face face);
 
   inline void _removeFace(Face face);
   Real3 _computeFaceNormal(Face face, const SharedVariableNodeReal3& nodes_coord) const;
