@@ -31,6 +31,12 @@ namespace geometric
 {
   class GeomShapeView;
 }
+namespace mesh
+{
+  class CellMerger;
+  class ItemFamily;
+  class ItemTools;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -45,10 +51,14 @@ namespace geometric
 class ItemCompatibility
 {
   // Pour accéder à _internal()
-  friend class Materials::ComponentItemInternal;
+  friend Materials::ComponentItemInternal;
   friend class ItemSharedInfo;
   friend class IItemFamilyModifier;
-  friend class geometric::GeomShapeView;
+  friend geometric::GeomShapeView;
+  friend class TotalviewAdapter;
+  friend mesh::CellMerger;
+  friend mesh::ItemFamily;
+  friend mesh::ItemTools;
 
  private:
 

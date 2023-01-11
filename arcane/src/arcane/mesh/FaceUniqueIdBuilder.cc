@@ -366,13 +366,13 @@ _computeFacesUniqueIdsParallelV1()
           // Si la face n'existe pas dans mon sous-domaine, elle ne m'intéresse pas
           if (!data)
             continue;
-          ItemInternal* face = ItemTools::findFaceInNode(data->value(),face_type,faces_nodes_uid);
-          if (!face)
+          Face face = ItemTools::findFaceInNode2(data->value(),face_type,faces_nodes_uid);
+          if (face.null())
             continue;
           ++nb_recv_sub_domain_boundary_face;
-          faces_opposite_cell_uid[face->localId()] = cell_uid;
-          faces_opposite_cell_index[face->localId()] = cell_face_index;
-          faces_opposite_cell_owner[face->localId()] = cell_owner;
+          faces_opposite_cell_uid[face.localId()] = cell_uid;
+          faces_opposite_cell_index[face.localId()] = cell_face_index;
+          faces_opposite_cell_owner[face.localId()] = cell_owner;
           cells_first_face_uid.add(cell_uid,-1);
         }
       }

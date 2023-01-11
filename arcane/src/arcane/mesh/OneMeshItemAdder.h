@@ -132,16 +132,16 @@ public:
                   const CellInfo& cell_info);
 
   template<typename CellInfo>
-  ItemInternal* _findInternalFace(Integer i_face, 
-                                  const CellInfo& cell_info, 
-                                  bool& is_add);
+  Face _findInternalFace(Integer i_face,
+                         const CellInfo& cell_info,
+                         bool& is_add);
 
   template<typename CellInfo>
-  ItemInternal* _findInternalEdge(Integer i_edge, 
-                                  const CellInfo& cell_info, 
-                                  Int64 first_node, 
-                                  Int64 second_node, 
-                                  bool& is_add);
+  Edge _findInternalEdge(Integer i_edge,
+                         const CellInfo& cell_info,
+                         Int64 first_node,
+                         Int64 second_node,
+                         bool& is_add);
   template<typename CellInfo>
   void _AMR_Patch(ItemInternal* cell, const CellInfo& cell_info);
 

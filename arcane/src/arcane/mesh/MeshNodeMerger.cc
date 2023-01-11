@@ -1,17 +1,15 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshNodeMerger.cc                                           (C) 2000-2022 */
+/* MeshNodeMerger.cc                                           (C) 2000-2023 */
 /*                                                                           */
 /* Fusions de noeuds d'un maillage.                                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/NotImplementedException.h"
@@ -128,10 +126,10 @@ mergeNodes(Int32ConstArrayView nodes_local_id,
         info(4) << " OLD_node=" << (*inode).uniqueId() << " new=" << new_node.uniqueId();
       }
       mesh_utils::reorderNodesOfFace(face_new_nodes_uid,face_new_nodes_sorted_uid);
-      ItemInternal* new_face = ItemTools::findFaceInNode(new_face_first_node.internal(),face.type(),face_new_nodes_sorted_uid);
-      if (!new_face)
+      Face new_face = ItemTools::findFaceInNode2(new_face_first_node.internal(),face.type(),face_new_nodes_sorted_uid);
+      if (new_face.null())
         ARCANE_FATAL("Can not find corresponding face nodes_uid={0}",face_new_nodes_sorted_uid);
-      info(4) << "NEW FACE=" << new_face->uniqueId() << " nb_cell=" << new_face->nbCell();
+      info(4) << "NEW FACE=" << new_face.uniqueId() << " nb_cell=" << new_face.nbCell();
       m_faces_correspondance.insert(std::make_pair(face,new_face));
       // Comme cette face est fusionnée, on la retire de la liste des faces
       // marquées.

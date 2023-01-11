@@ -40,29 +40,54 @@ isSameFace(Face face, Int64ConstArrayView face_nodes_uid)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ItemInternal* ItemTools::
-findFaceInNode(Node node,Integer face_type_id,
+Face ItemTools::
+findFaceInNode2(Node node,Integer face_type_id,
                Int64ConstArrayView face_nodes_uid)
 {
   for( Face current_face : node.faces() ){
     if (current_face.type()!=face_type_id)
       continue;
     if (isSameFace(current_face,face_nodes_uid))
-      return current_face.internal();
+      return current_face;
   }
-  return nullptr;
+  return Face();
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 ItemInternal* ItemTools::
-findEdgeInNode(Node node,Int64 begin_node,Int64 end_node)
+findFaceInNode(Node node, Integer face_type_id,
+               Int64ConstArrayView face_nodes_uid)
+{
+  Face face = findFaceInNode2(node, face_type_id, face_nodes_uid);
+  if (face.null())
+    return nullptr;
+  return ItemCompatibility::_itemInternal(face);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Edge ItemTools::
+findEdgeInNode2(Node node,Int64 begin_node,Int64 end_node)
 {
   for( Edge edge : node.edges() )
     if (edge.node(0).uniqueId()==begin_node && edge.node(1).uniqueId()==end_node)
-      return edge.internal();
-  return nullptr;
+      return edge;
+  return Edge();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ItemInternal* ItemTools::
+findEdgeInNode(Node node, Int64 begin_node, Int64 end_node)
+{
+  Edge edge = findEdgeInNode2(node, begin_node, end_node);
+  if (edge.null())
+    return nullptr;
+  return ItemCompatibility::_itemInternal(edge);
 }
 
 /*---------------------------------------------------------------------------*/
