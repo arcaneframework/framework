@@ -1,17 +1,15 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/*  ParallelAMRConsistency.cc                                  (C) 2000-2022 */
+/*  ParallelAMRConsistency.cc                                  (C) 2000-2023 */
 /*                                                                           */
 /* Consistence parallèle des uid des noeuds/faces dans le cas AMR            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/String.h"
 #include "arcane/utils/HashTableMap.h"
@@ -102,7 +100,7 @@ init()
   ENUMERATE_FACE(iface,m_mesh->allFaces()){
     Face face = *iface;
     ItemUniqueId face_uid = face.uniqueId();
-    int face_flags = face.internal()->flags();
+    int face_flags = face.itemBase().flags();
     if (face.nbCell()==2 && (face.cell(0).level()==0 && face.cell(1).level()==0)){
       if ( (face.cell(0).owner()!=sid || face.cell(1).owner()!= sid) ||
            (face_flags & ItemFlags::II_Shared) ||
@@ -157,7 +155,7 @@ _hasSharedNodes(Face face)
 {
   //CHECK that one edge is connected to a ghost cell
   for ( Node node : face.nodes() ){
-    if (node.internal()->flags() &  ItemFlags::II_Shared)
+    if (node.itemBase().flags() &  ItemFlags::II_Shared)
       return true;
   }
   return false;
@@ -223,21 +221,21 @@ makeNewItemsConsistent(NodeMapCoordToUid& node_finder, FaceMapCoordToUid& face_f
       if (subfaces.size() != 1){
         for (Integer s = 0; s < subfaces.size(); s++){
           Face face2 = subfaces[s];
-          face2.internal()->addFlags(ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary);
+          face2.mutableItemBase().addFlags(ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary);
           Int64 uid = face2.uniqueId() ;
           bool face_to_send = face_finder.isNewUid(uid);
           if(face_to_send){
             _addFaceToList(face2, m_active_faces);
 
             //active_faces.add(face2);
-            active_faces.insert(ItemMapValue(uid,face2.internal()));
+            active_faces.insert(ItemMapValue(uid,face2));
             active_faces_to_send.add(ItemUniqueId(uid));
             for ( Node node : face2.nodes() ){
-              node.internal()->addFlags(ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary);
-              active_nodes.insert(ItemMapValue(node.uniqueId(),node.internal())) ;
+              node.mutableItemBase().addFlags(ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary);
+              active_nodes.insert(ItemMapValue(node.uniqueId(),node));
             }
             for ( Edge edge : face2.edges() ){
-              edge.internal()->addFlags(ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary);
+              edge.mutableItemBase().addFlags(ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary);
             }
           }
         }
@@ -257,8 +255,8 @@ makeNewItemsConsistent(NodeMapCoordToUid& node_finder, FaceMapCoordToUid& face_f
         Integer next = i==nb_node-1?0:i+1;
         Node node1 = face.node(i) ;
         Node node2 = face.node(next) ;
-        if( (node1.internal()->flags() & (ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary)) &&
-            (node2.internal()->flags() & (ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary) ) ){
+        if( (node1.itemBase().flags() & (ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary)) &&
+            (node2.itemBase().flags() & (ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary) ) ){
           edges.add(Edge(m_nodes_coord[node1],m_nodes_coord[node2]-m_nodes_coord[node1])) ;
         }
       }
@@ -277,9 +275,9 @@ makeNewItemsConsistent(NodeMapCoordToUid& node_finder, FaceMapCoordToUid& face_f
               Real3 n = Xi-edges[j].first ;
               Real sinteta = math::cross(edges[j].second,n).squareNormL2() ;
               if (math::isZero(sinteta)){
-                node_i.internal()->addFlags(ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary);
+                node_i.mutableItemBase().addFlags(ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary);
                 //active_nodes_set.insert(node_i);
-                active_nodes.insert(ItemMapValue(node_i.uniqueId(),node_i.internal())) ;
+                active_nodes.insert(ItemMapValue(node_i.uniqueId(),node_i));
                 _addNodeToList(node_i, m_active_nodes);
               }
             }
@@ -292,8 +290,8 @@ makeNewItemsConsistent(NodeMapCoordToUid& node_finder, FaceMapCoordToUid& face_f
   UniqueArray<ItemUniqueId> active_nodes_to_send(arcaneCheckArraySize(active_nodes.size()));
   ItemMap::const_iterator nit(active_nodes.begin()), nend(active_nodes.end());
   for (int i=0; nit != nend; ++nit,++i){
-    ItemInternal *node = nit->second;
-    active_nodes_to_send[i]= node->uniqueId();
+    Item node = nit->second;
+    active_nodes_to_send[i]= node.uniqueId();
     //active_nodes.insert(ItemMapValue(uid,node)) ;
   }
   CHECKPERF( m_perf_counter.stop(PerfCounter::COMPUTE) )
@@ -311,17 +309,17 @@ makeNewItemsConsistent(NodeMapCoordToUid& node_finder, FaceMapCoordToUid& face_f
   //for (Integer index = 0; index < active_faces.size(); index++)
   for(ItemUidSet::iterator iter = update_face_uids.begin();iter!=update_face_uids.end();++iter){
     Int64 face_uid = *iter ;
-    ItemInternal* face = active_faces[face_uid];
+    Item face = active_faces[face_uid];
     //const Int64 current_uid = face->uniqueId();
-    FaceInfo& fi = m_active_faces[face->uniqueId()];
+    FaceInfo& fi = m_active_faces[face.uniqueId()];
     Int64 new_uid = fi.uniqueId() ;
     faces_map.remove(face_uid) ;
     //if (current_uid != fi.uniqueId())
     ARCANE_ASSERT((face_uid != new_uid),("AMR CONSISTENCY UPDATE FACE ERROR")) ;
-    face->setUniqueId(fi.uniqueId());
-    face->setOwner(fi.owner(), sid);
+    face.mutableItemBase().setUniqueId(fi.uniqueId());
+    face.mutableItemBase().setOwner(fi.owner(), sid);
     //debug() << "[\t ParallelAMRConsistency] NEW FACE BEFORE " << face->uniqueId()<<" new uid "<<fi.uniqueId() << " " << fi.owner();
-    faces_map.add(new_uid,face) ;
+    faces_map.add(new_uid,ItemCompatibility::_itemInternal(face));
   }
 
   //UPDATE NODES
@@ -330,21 +328,20 @@ makeNewItemsConsistent(NodeMapCoordToUid& node_finder, FaceMapCoordToUid& face_f
   for(ItemUidSet::iterator iter = update_node_uids.begin();iter!=update_node_uids.end();++iter){
     //ItemInternal* node = i_item->internal() ;
     Int64 node_uid = *iter ;
-    ItemInternal* node = active_nodes[node_uid] ;
-    ARCANE_ASSERT((node!=NULL),("AMR CONSISTENCY NULL NODE ERROR")) ;
+    Item node = active_nodes[node_uid];
+    if (node.null())
+      ARCANE_FATAL("AMR CONSISTENCY NULL NODE ERROR");
     //const Int64 node_uid = node->uniqueId();
-    NodeInfo ni = m_nodes_info[node->uniqueId()];
+    NodeInfo ni = m_nodes_info[node.uniqueId()];
     Int64 new_uid = ni.uniqueId() ;
     //if (node_uid != ni.uniqueId())
     ARCANE_ASSERT((node_uid != new_uid),("AMR CONSISTENCY UPDATE NODE ERROR")) ;
     //debug() << "[\t ParallelAMRConsistency] OLD NEW NODE " << node_uid << " " << ni.uniqueId()<<" owner "<<ni.owner();
     nodes_map.remove(node_uid) ;
-    node->setUniqueId(ni.uniqueId());
-    node->setOwner(ni.owner(), sid);
-    int f = node->flags();
-    f |= ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary;
-    node->setFlags(f);
-    nodes_map.add(new_uid,node) ;
+    node.mutableItemBase().setUniqueId(ni.uniqueId());
+    node.mutableItemBase().setOwner(ni.owner(), sid);
+    node.mutableItemBase().addFlags(ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary);
+    nodes_map.add(new_uid,ItemCompatibility::_itemInternal(node));
   }
   CHECKPERF( m_perf_counter.stop(PerfCounter::UPDATE) )
 
@@ -609,7 +606,7 @@ makeNewItemsConsistent2(MapCoordToUid& node_finder, MapCoordToUid& face_finder)
   ENUMERATE_ITEM_INTERNAL_MAP_DATA(nbid,faces_map){
     Face face(nbid->value());
     bool is_sub_domain_boundary_face = false;
-    if (face.internal()->flags() & ItemFlags::II_SubDomainBoundary){
+    if (face.itemBase().flags() & ItemFlags::II_SubDomainBoundary){
       is_sub_domain_boundary_face = true; // true is not needed
     }
     else{
@@ -624,17 +621,17 @@ makeNewItemsConsistent2(MapCoordToUid& node_finder, MapCoordToUid& face_finder)
       true_face_family->allSubFaces(face, subfaces);
       for (Integer s = 0; s < subfaces.size(); s++){
         Face face2 = subfaces[s];
-        face2.internal()->addFlags(ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary);
+        face2.mutableItemBase().addFlags(ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary);
         _addFaceToList2(face2, m_active_faces2);
         active_faces_set.insert(face2.internal());
         ++nb_sub_domain_boundary_face;
         for ( Node node : face2.nodes() ){
-          node.internal()->addFlags(ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary);
+          node.mutableItemBase().addFlags(ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary);
           active_nodes_set.insert(node.internal());
           _addNodeToList(node, m_active_nodes);
         }
         for ( Edge edge : face2.edges() )
-          edge.internal()->addFlags(ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary);
+          edge.mutableItemBase().addFlags(ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary);
       }
     }
   }

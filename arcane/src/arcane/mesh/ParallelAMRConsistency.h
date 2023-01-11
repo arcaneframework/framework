@@ -226,7 +226,8 @@ class FaceInfo2
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ParallelAMRConsistency: public TraceAccessor
+class ParallelAMRConsistency
+: public TraceAccessor
 {
 public:
   //! Type la table de hashage uniqueId()->ItemInternal*
@@ -241,8 +242,8 @@ public:
 
 
   typedef std::unordered_set<Int64> ItemUidSet;
-  typedef std::unordered_map<Int64,ItemInternal*> ItemMap;
-  typedef std::pair<Int64,ItemInternal*> ItemMapValue ;
+  typedef std::unordered_map<Int64,Item> ItemMap;
+  typedef std::pair<Int64,Item> ItemMapValue;
 
 
 #ifdef ACTIVATE_PERF_COUNTER

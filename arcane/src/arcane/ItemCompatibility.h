@@ -37,6 +37,8 @@ namespace mesh
   class ItemFamily;
   class ItemTools;
   class FaceFamily;
+  class OneMeshItemAdder;
+  class ParallelAMRConsistency;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -61,6 +63,8 @@ class ItemCompatibility
   friend mesh::ItemFamily;
   friend mesh::ItemTools;
   friend mesh::FaceFamily;
+  friend mesh::ParallelAMRConsistency;
+  friend mesh::OneMeshItemAdder;
 
  private:
 

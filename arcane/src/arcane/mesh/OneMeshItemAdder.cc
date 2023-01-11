@@ -155,21 +155,20 @@ addOneFace(ItemTypeId type_id, Int64 face_uid, Int32 sub_domain_id, Int64ConstAr
   mesh_utils::reorderNodesOfFace(m_work_face_orig_nodes_uid,m_work_face_sorted_nodes);
   
   bool is_add_face = false;
-  Face xface = m_face_family.findOrAllocOne(face_uid,type_id,is_add_face);
-  ItemInternal* face = xface.internal();
+  Face face = m_face_family.findOrAllocOne(face_uid,type_id,is_add_face);
   
   // La face n'existe pas
   if (is_add_face) { 
     ++m_mesh_info.nbFace();
-    face->setOwner(sub_domain_id,sub_domain_id);
+    face.mutableItemBase().setOwner(sub_domain_id,sub_domain_id);
     for(Integer i_node=0; i_node<face_nb_node; ++i_node ){
-      ItemInternal* node_internal = addOneNode(m_work_face_sorted_nodes[i_node], m_mesh_info.rank());
-      m_face_family.replaceNode(ItemLocalId(face),i_node,ItemLocalId(node_internal));
-      m_node_family.addFaceToNode(node_internal, face);
+      Node node = addOneNode(m_work_face_sorted_nodes[i_node], m_mesh_info.rank());
+      m_face_family.replaceNode(face,i_node,node);
+      m_node_family.addFaceToNode(node, face);
     }
   }
   
-  return face;
+  return ItemCompatibility::_itemInternal(face);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -340,9 +339,8 @@ addOneItem(IItemFamily* family,
 {
   ARCANE_ASSERT(m_mesh->itemFamilyNetwork(),("ItemFamilyNetwork is required to call OneMeshItemAdder::addOneItem"));
   bool is_alloc = true;
-  Item xitem = family_modifier->findOrAllocOne(item_uid,type_id,m_mesh_info,is_alloc); // don't forget to add print in the class method
-  ItemInternal* item = xitem.internal();
-  item->setOwner(item_owner,sub_domain_id);
+  Item item = family_modifier->findOrAllocOne(item_uid,type_id,m_mesh_info,is_alloc); // don't forget to add print in the class method
+  item.mutableItemBase().setOwner(item_owner,sub_domain_id);
   // Add connectivities if needed
   Integer info_index = 0;
   for (Integer family_index = 0; family_index < nb_connected_family; ++family_index){
@@ -377,7 +375,7 @@ addOneItem(IItemFamily* family,
     }
 //  debug(Trace::Highest) << "[addItems] ADD_ITEM " << ItemPrinter(item) << " in " << family->name();
   debug(Trace::Highest) << "[addItems] ADD_ITEM " << ItemPrinter(item) << " in " << family->name();
-  return item;
+  return ItemCompatibility::_itemInternal(item);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -394,9 +392,8 @@ addOneItem2(IItemFamily* family,
 {
   ARCANE_ASSERT(m_mesh->itemFamilyNetwork(),("ItemFamilyNetwork is required to call OneMeshItemAdder::addOneItem"));
   bool is_alloc = true;
-  Item xitem = family_modifier->findOrAllocOne(item_uid,type_id,m_mesh_info,is_alloc); // don't forget to add print in the class method
-  ItemInternal* item = xitem.internal();
-  item->setOwner(item_owner,sub_domain_id);
+  Item item = family_modifier->findOrAllocOne(item_uid,type_id,m_mesh_info,is_alloc); // don't forget to add print in the class method
+  item.mutableItemBase().setOwner(item_owner,sub_domain_id);
   // Add connectivities if needed
   Integer info_index = 0;
   for (Integer family_index = 0; family_index < nb_connected_family; ++family_index) {
@@ -471,7 +468,7 @@ addOneItem2(IItemFamily* family,
     debug(Trace::Highest) << "[addItems] ADD_ITEM " << ItemPrinter(item) << " in " << family->name();
   //  debug(Trace::Highest) << "[addItems] DEPENDENCIES for " << family->name() << FullItemPrinter(item) ; // debug info
   //  _printRelations(item); // debug info
-  return item;
+  return ItemCompatibility::_itemInternal(item);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -573,7 +570,7 @@ _addOneCell(const CellInfo& cell_info)
             ARCANE_FATAL("trying to add existing cell (uid={0}) with different nodes",
                          cell_info.uniqueId());
       }
-      return inew_cell.internal();
+      return ItemCompatibility::_itemInternal(inew_cell);
     }
   }
 
@@ -664,8 +661,8 @@ _addOneCell(const CellInfo& cell_info)
         Integer face_nb_edge = lf.nbEdge();
         for( Integer i_edge=0; i_edge<face_nb_edge; ++i_edge ){
           Edge current_edge = new_cell.edge( lf.edge(i_edge) );
-          m_face_family.addEdgeToFace(face,current_edge.internal());
-          m_edge_family.addFaceToEdge(current_edge.internal(),face);
+          m_face_family.addEdgeToFace(face,current_edge);
+          m_edge_family.addFaceToEdge(current_edge,face);
         }
       }
       ++m_mesh_info.nbFace();
@@ -695,7 +692,7 @@ _addOneCell(const CellInfo& cell_info)
   }
 
   _AMR_Patch(inew_cell, cell_info);
-  return inew_cell.internal();
+  return ItemCompatibility::_itemInternal(inew_cell);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -728,7 +725,6 @@ addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fat
     type = itm->typeFromId(IT_CellLine2);
   if (item.type() == IT_Vertex && submesh_kind == IK_Face)
     type = itm->typeFromId(IT_FaceVertex);
-  ItemInternal * item_internal = item.internal();
 
   if (MeshToMeshTransposer::kindTranspose(submesh_kind, m_mesh, m_mesh->parentMesh()) != kind)
     ARCANE_FATAL("Incompatible kind/sub-kind");
@@ -751,7 +747,7 @@ addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fat
     ++m_mesh_info.nbFace();
     break;
   case IK_Cell:
-    if (kind == IK_Face && !Face(item_internal).isSubDomainBoundary())
+    if (kind == IK_Face && !(item.toFace().isSubDomainBoundary()))
       ARCANE_FATAL("Bad boundary face");
     new_item = m_cell_family.findOrAllocOne(item.uniqueId(),type_id,is_add);
     ++m_mesh_info.nbCell();
@@ -764,7 +760,7 @@ addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fat
     if (fatal_on_existing_item)
       ARCANE_FATAL("Cannot add already existing parent item in submesh");
     else
-      return new_item.internal();
+      return ItemCompatibility::_itemInternal(new_item);
   }
 
   new_item.mutableItemBase().setParent(0,item.localId());
@@ -819,7 +815,7 @@ addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fat
   const bool direct_node_order = 
     !(submesh_kind == IK_Cell 
       && kind == IK_Face 
-      && !Face(item_internal).isSubDomainBoundaryOutside());
+      && !(item.toFace().isSubDomainBoundaryOutside()));
 
   Int64UniqueArray nodes_uid(item_nb_node,NULL_ITEM_UNIQUE_ID);
   for( Integer i_node=0; i_node<item_nb_node; ++i_node ){
@@ -872,7 +868,7 @@ addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fat
     if (first_node > second_node)
       std::swap(first_node,second_node);
 
-    Edge parent_item = item_internal->internalEdge(i_edge);
+    Edge parent_item = item.itemBase().edgeBase(i_edge);
     if (parent_item.null())
       ARCANE_FATAL("Cannot find parent edge");
 
@@ -937,7 +933,7 @@ addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fat
     // find parent item
     Item parent_item;
     if (kind==IK_Cell) {
-      parent_item = Cell(item_internal).face(i_face);
+      parent_item = item.toCell().face(i_face);
     }
     else if (kind==IK_Face) {
       if (m_mesh->dimension() == 1) { // is 1d mesh
