@@ -21,15 +21,6 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arcane::Materials
-{
-class ComponentItemInternal;
-}
-namespace Arcane::geometric
-{
-class GeomShapeView;
-}
-
 namespace Arcane
 {
 
@@ -100,10 +91,7 @@ class ARCANE_CORE_EXPORT Item
   template<typename ItemType> friend class ItemEnumeratorBaseT;
 
   // Pour accéder à _internal()
-  friend class Materials::ComponentItemInternal;
-  friend class ItemSharedInfo;
-  friend class IItemFamilyModifier;
-  friend class geometric::GeomShapeView;
+  friend class ItemCompatibility;
 
  public:
 
@@ -232,6 +220,9 @@ class ARCANE_CORE_EXPORT Item
 
   //! Type de l'entité
   ItemTypeId itemTypeId() const { return ItemTypeId(type()); }
+
+  //! Famille dont est issue l'entité
+  IItemFamily* itemFamily() const { return m_shared_info->m_item_family; }
 
   //! Genre de l'entité
   eItemKind kind() const { return m_shared_info->m_item_kind; }
@@ -1689,6 +1680,11 @@ operator[](Int32 local_id) const
 /*---------------------------------------------------------------------------*/
 
 } // End namespace Arcane
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#include "arcane/ItemCompatibility.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

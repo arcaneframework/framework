@@ -671,6 +671,7 @@ set( ARCANE_SOURCES
   ItemInternalEnumerator.h
   ItemInternal.h
   ItemArrayEnumerator.h
+  ItemCompatibility.h
   ItemGroupRangeIterator.h
   ItemLocalId.h
   ItemTypeId.h

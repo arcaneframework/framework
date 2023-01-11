@@ -124,7 +124,7 @@ _parent(Int32 id) const
 {
   // En pointant vers le bon champ du MeshItemInternalList dans le maillage parent
   // TODO GG: on pourrait conserver une fois pour toute l'instance de 'ItemInfoListView'
-  return m_items->mesh->itemFamily(m_item_kind)->parentFamily()->itemInfoListView()[id]._internal();
+  return ItemCompatibility::_itemInternal(m_items->mesh->itemFamily(m_item_kind)->parentFamily()->itemInfoListView()[id]);
 }
 
 /*---------------------------------------------------------------------------*/

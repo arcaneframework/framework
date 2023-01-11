@@ -240,7 +240,7 @@ class ARCANE_CEA_GEOMETRIC_EXPORT GeomShapeView
   void _setItem(Item item)
   {
     m_cell_connectivity = global_cell_connectivity[item.type()];
-    m_item_internal = item._internal();
+    m_item_internal = ItemCompatibility::_itemInternal(item);
   }
 
   void _setNullItem(int item_type)
