@@ -1425,7 +1425,7 @@ _markRemovableParticles()
       ENUMERATE_PARTICLE(iparticle,particle_family->allItems()){
         Particle particle = *iparticle;
         Cell cell = owner_builder.connectedCellOfItem(particle);
-        particle.internal()->setFlags(cell.internal()->flags());
+        particle.mutableItemBase().setFlags(cell.itemBase().flags());
       }
     }
   }

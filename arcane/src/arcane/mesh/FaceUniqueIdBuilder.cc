@@ -298,8 +298,8 @@ _computeFacesUniqueIdsParallelV1()
       faces_infos2.clear();
       for( Integer i_face=first_face_to_send; i_face<first_face_to_send+real_nb_face_to_send; ++i_face ){
         Face face(faces[i_face]);
-        face.internal()->addFlags(ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary);
-        bool has_back_cell = face.internal()->flags() & ItemFlags::II_HasBackCell;
+        face.mutableItemBase().addFlags(ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary);
+        bool has_back_cell = face.itemBase().flags() & ItemFlags::II_HasBackCell;
         faces_infos2.add(face.type());
         for( Node node : face.nodes() )
           faces_infos2.add(node.uniqueId().asInt64());
@@ -495,7 +495,7 @@ _computeFacesUniqueIdsParallelV1()
         if (!cells_first_face_uid.hasKey(cell_uid))
           fatal() << "NO KEY 0 for cell_uid=" << cell_uid;
         face_new_uid = cells_first_face_uid[cell_uid]+num_local_face;
-        face.internal()->setOwner(my_rank,my_rank);
+        face.mutableItemBase().setOwner(my_rank,my_rank);
         ++num_local_face;
       }
       else if (face.nbCell()==1){
@@ -505,18 +505,18 @@ _computeFacesUniqueIdsParallelV1()
             fatal() << "NO KEY 1 for cell_uid=" << cell_uid;
           face_new_uid = cells_first_face_uid[cell_uid] + my_cells_nb_back_face[cell_local_id] + num_true_boundary_face;
           ++num_true_boundary_face;
-          face.internal()->setOwner(my_rank,my_rank);
+          face.mutableItemBase().setOwner(my_rank,my_rank);
         }
         else{
           if (!cells_first_face_uid.hasKey(opposite_cell_uid))
             fatal() << "NO KEY 1 for cell_uid=" << cell_uid << " opoosite=" << opposite_cell_uid;
           face_new_uid = cells_first_face_uid[opposite_cell_uid]+faces_opposite_cell_index[face.localId()];
-          face.internal()->setOwner(faces_opposite_cell_owner[face.localId()],my_rank);
+          face.mutableItemBase().setOwner(faces_opposite_cell_owner[face.localId()],my_rank);
         }
       }
       if (face_new_uid!=NULL_ITEM_UNIQUE_ID){
         faces_new_uid[face.localId()] = face_new_uid;
-        face.internal()->setUniqueId(face_new_uid);
+        face.mutableItemBase().setUniqueId(face_new_uid);
       }
     }
   }
@@ -986,7 +986,7 @@ _computeFacesUniqueIdsSequential()
         ++nb_true_boundary_face;
       }
       if (face_new_uid!=NULL_ITEM_UNIQUE_ID){
-        face.internal()->setUniqueId(face_new_uid);
+        face.mutableItemBase().setUniqueId(face_new_uid);
       }
     }
   }

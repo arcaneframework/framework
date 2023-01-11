@@ -236,9 +236,9 @@ _addOneGhostLayerV2()
       face_internal->addFlags(shared_and_boundary_flags);
       ++nb_sub_domain_boundary_face;
       for( Item inode : face.nodes() )
-        inode.internal()->addFlags(shared_and_boundary_flags);
+        inode.mutableItemBase().addFlags(shared_and_boundary_flags);
       for( Item iedge : face.edges() )
-        iedge.internal()->addFlags(shared_and_boundary_flags);
+        iedge.mutableItemBase().addFlags(shared_and_boundary_flags);
     }
   }
 
@@ -282,7 +282,7 @@ _addOneGhostLayerV2()
     //bool add_cell = false;
     for( Node inode : cell.nodes() ){
       //info() << "** CHECK NODE node=" << i_node->uniqueId() << " cell=" << cell->uniqueId();
-      if (inode.internal()->flags() & ItemFlags::II_Shared){
+      if (inode.itemBase().flags() & ItemFlags::II_Shared){
         Int64 node_uid = inode.uniqueId();
         //info() << "** ADD BOUNDARY CELL node=" << node_uid << " cell=" << cell->uniqueId();
         Int32 dest_rank = uid_to_subdomain_converter.uidToRank(node_uid);
