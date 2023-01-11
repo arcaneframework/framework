@@ -301,15 +301,15 @@ class ARCANE_MESH_EXPORT ItemFamily
 
  protected:
 
-  void _removeOne(ItemInternal* item)
+  void _removeOne(Item item)
   {
     // TODO: vérifier en mode check avec les nouvelles connectivités que l'entité supprimée
     // n'a pas d'objets connectés.
-    m_infos.removeOne(item);
+    m_infos.removeOne(ItemCompatibility::_itemInternal(item));
   }
-  void _detachOne(ItemInternal* item)
+  void _detachOne(Item item)
   {
-    m_infos.detachOne(item);
+    m_infos.detachOne(ItemCompatibility::_itemInternal(item));
   }
   ItemInternalList _itemsInternal()
   {

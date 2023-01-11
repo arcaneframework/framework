@@ -36,6 +36,7 @@ namespace mesh
   class CellMerger;
   class ItemFamily;
   class ItemTools;
+  class FaceFamily;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -59,6 +60,7 @@ class ItemCompatibility
   friend mesh::CellMerger;
   friend mesh::ItemFamily;
   friend mesh::ItemTools;
+  friend mesh::FaceFamily;
 
  private:
 

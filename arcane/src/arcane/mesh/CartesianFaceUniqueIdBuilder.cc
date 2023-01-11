@@ -174,14 +174,14 @@ computeFacesUniqueIdAndOwner()
                  << " N0=" << face.node(0).uniqueId()
                  << " N1=" << face.node(1).uniqueId();
 
-        face.internal()->setUniqueId(face_uids[i]);
+        face.mutableItemBase().setUniqueId(face_uids[i]);
       }
       // Positionne le propriétaire de la face inférieure en X
       if (x==own_cell_offset_x && previous_rank_x!=my_rank)
-        cell.face(3).internal()->setOwner(previous_rank_x,my_rank);
+        cell.face(3).mutableItemBase().setOwner(previous_rank_x,my_rank);
       // Positionne le propriétaire de la face inférieure en Y
       if (y==own_cell_offset_y && previous_rank_y!=my_rank)
-        cell.face(0).internal()->setOwner(previous_rank_y,my_rank);
+        cell.face(0).mutableItemBase().setOwner(previous_rank_y,my_rank);
     }
   }
   else if (dimension==3){
@@ -233,18 +233,18 @@ computeFacesUniqueIdAndOwner()
                  << " N1=" << face.node(1).uniqueId()
                  << " N2=" << face.node(2).uniqueId()
                  << " N3=" << face.node(3).uniqueId();
-        face.internal()->setUniqueId(face_uids[i]);
+        face.mutableItemBase().setUniqueId(face_uids[i]);
       }
 
       // Positionne le propriétaire de la face inférieure en X
       if (x==own_cell_offset_x && previous_rank_x!=my_rank)
-        cell.face(1).internal()->setOwner(previous_rank_x,my_rank);
+        cell.face(1).mutableItemBase().setOwner(previous_rank_x,my_rank);
       // Positionne le propriétaire de la face inférieure en Y
       if (y==own_cell_offset_y && previous_rank_y!=my_rank)
-        cell.face(2).internal()->setOwner(previous_rank_y,my_rank);
+        cell.face(2).mutableItemBase().setOwner(previous_rank_y,my_rank);
       // Positionne le propriétaire de la face inférieure en Z
       if (z==own_cell_offset_z && previous_rank_z!=my_rank)
-        cell.face(0).internal()->setOwner(previous_rank_z,my_rank);
+        cell.face(0).mutableItemBase().setOwner(previous_rank_z,my_rank);
     }
   }
   else
