@@ -67,11 +67,6 @@ class ARCANE_MESH_EXPORT CellFamily
   Item findOrAllocOne(Int64 uid,ItemTypeId type_id, MeshInfos& mesh_info, bool& is_alloc) override;
   IItemFamily* family() override {return this;}
 
-  // TODO: DEPRECATED
-  ItemInternal* allocOne(Int64 uid,ItemTypeInfo* type);
-  // TODO: DEPRECATED
-  ItemInternal* findOrAllocOne(Int64 uid,ItemTypeInfo* type,bool& is_alloc);
-
   Cell allocOne(Int64 uid,ItemTypeId type);
   Cell findOrAllocOne(Int64 uid,ItemTypeId type_id,bool& is_alloc);
   
@@ -89,7 +84,7 @@ class ARCANE_MESH_EXPORT CellFamily
    */
   void detachCell(Cell cell);
 
-  /**
+  /*!
    * Detache les mailles d'identifiants locaux \a cell_local_ids du maillage sans les supprimer.
    * Basé sur le graphe de dépendances des familles ItemFamilyNetwork.
    *
@@ -137,6 +132,14 @@ class ARCANE_MESH_EXPORT CellFamily
  public:
 
   virtual void computeSynchronizeInfos() override;
+
+ public:
+
+  ARCANE_DEPRECATED_REASON("Y2022: Use allocOne(Int64 uid,ItemTypeId type) instead")
+  ItemInternal* allocOne(Int64 uid,ItemTypeInfo* type);
+
+  ARCANE_DEPRECATED_REASON("Y2022: Use findOrAllocOne(Int64 uid,ItemTypeId type_id,bool& is_alloc) instead")
+  ItemInternal* findOrAllocOne(Int64 uid,ItemTypeInfo* type,bool& is_alloc);
 
  protected:
 
