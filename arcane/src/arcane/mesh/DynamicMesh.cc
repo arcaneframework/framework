@@ -2005,7 +2005,7 @@ _removeGhostChildItems2(Array<Int64>& cells_to_coarsen)
   cells_to_coarsen.reserve(1000);
 
   // Suppression des mailles
-  UniqueArray<ItemInternal*> cells_to_remove;
+  UniqueArray<Cell> cells_to_remove;
   cells_to_remove.reserve(1000);
 
   ItemInternalMap& cells_map = m_cell_family->itemsMap();
@@ -2017,7 +2017,7 @@ _removeGhostChildItems2(Array<Int64>& cells_to_coarsen)
       if (icell->flags() & ItemFlags::II_JustCoarsened){
         cells_to_coarsen.add(cell.uniqueId()) ;
         for(Integer c=0,cs=cell.nbHChildren();c<cs;c++){
-          cells_to_remove.add(cell.hChild(c).internal());
+          cells_to_remove.add(cell.hChild(c));
           counter++;
         }
       }
@@ -2103,7 +2103,7 @@ updateGhostLayerFromParent(Array<Int64>& ghost_cell_to_refine_uid,
   ItemInternalList cells = m_cell_family->itemsInternal() ;
   for (Integer e = 0, i_size=ghost_cell_to_refine_lid.size(); e != i_size; ++e){
     Cell i_hParent_cell(cells[ghost_cell_to_refine_lid[e]]);
-    m_mesh_refinement->populateBackFrontCellsFromParentFaces(i_hParent_cell.internal());
+    m_mesh_refinement->populateBackFrontCellsFromParentFaces(i_hParent_cell);
 
     //need to populate also the new own cell connected to the new ghost
     Integer nb_face = i_hParent_cell.nbFace();
@@ -2831,7 +2831,7 @@ _setOwnersFromCells()
 
   ENUMERATE_NODE(i_node,allNodes()){
     Node node = *i_node;
-    node.internal()->setOwner(nodes_owner[node],sid);
+    node.mutableItemBase().setOwner(nodes_owner[node],sid);
   }
 
   // Détermine les nouveaux propriétaires des arêtes
@@ -2845,7 +2845,7 @@ _setOwnersFromCells()
 
   ENUMERATE_EDGE(i_edge,allEdges()){
     Edge edge = *i_edge;
-    edge.internal()->setOwner(edges_owner[edge],sid);
+    edge.mutableItemBase().setOwner(edges_owner[edge],sid);
   }
 
   // Détermine les nouveaux propriétaires des faces
@@ -2859,7 +2859,7 @@ _setOwnersFromCells()
 
   ENUMERATE_FACE(i_face,allFaces()){
     Face face = *i_face;
-    face.internal()->setOwner(faces_owner[face],sid);
+    face.mutableItemBase().setOwner(faces_owner[face],sid);
   }
 
   nodeFamily()->notifyItemsOwnerChanged();

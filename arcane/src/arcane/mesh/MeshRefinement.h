@@ -1,17 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshRefinement.h                                            (C) 2000-2020 */
+/* MeshRefinement.h                                            (C) 2000-2023 */
 /*                                                                           */
 /* Gestion de l'adaptation de maillages non-structurés par raffinement       */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_MESH_MESHREFINEMENT_H
 #define ARCANE_MESH_MESHREFINEMENT_H
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -128,7 +127,9 @@ public:
   void flagItems(const Int32Array& flag_per_cell,
                  const Integer max_level = -1);
 
-  /** passage de l'erreur commise par maille au flag de raffinement
+  /*!
+   * \brief Passage de l'erreur commise par maille au flag de raffinement.
+   *
    * Cette métthode pourrait être condée de manières différentes:
    * 1- implémentation actuelle: l'uilisateur fait la transformation lui-même
    * dans ce cas, il modifie l'objet itemInternal en settant le flag de raffinement
@@ -140,7 +141,7 @@ public:
   virtual void flagCellToRefine(Int32ConstArrayView cells_lids);
   virtual void flagCellToCoarsen(Int32ConstArrayView cells_lids);
 
-  /**
+  /*!
    * Raffine et déraffine les items demandés par l'utilisateur. également
    * raffine/déraffine des items complémentaires pour satisfaire la règle de niveau-un.
    * Il est possible que pour un ensemble donné de flags qu'il
@@ -153,7 +154,7 @@ public:
    */
   bool refineAndCoarsenItems(const bool maintain_level_one=true);
 
-  /**
+  /*!
    * Dérffine seulement les items demandés par l'utilisateur. Quelques items
    * ne seront pas déraffinés pour satisfaire la régle de niveau un.
    * Il est possible que pour un ensemble donné de flags qu'il
@@ -166,7 +167,7 @@ public:
    */
   bool coarsenItems(const bool maintain_level_one=true);
 
-  /**
+  /*!
    * raffine seulement les items demandés par l'utilisateur.
    * Il est possible que pour un ensemble donné de flags qu'il
    * n'est réellement aucun changement en appelant cette méthode.  En conséquence,
@@ -178,17 +179,17 @@ public:
    */
   bool refineItems(const bool maintain_level_one=true);
 
-  /**
+  /*!
    * Raffine uniformement le maillage \p n fois.
    */
   void uniformlyRefine(Integer n=1);
 
-  /**
+  /*!
    * déraffine uniformement le maillage \p n fois.
    */
   void uniformlyCoarsen(Integer n=1);
 
-  /**
+  /*!
    * \p max_level est le plus grand niveau de raffinement
    * qu'un item peut atteindre.
    *
@@ -206,41 +207,41 @@ public:
   void registerCallBack(IAMRTransportFunctor* f);
   //!
   void unRegisterCallBack(IAMRTransportFunctor* f);
-  /**
+  /*!
    * Ajout d'un nouveau uid associé au point \p p.
    * si p existe déjà, on garde l'ancien uid.
    * La tolerance \p tol donne le perimetre de recherche autour de p.
    */
   Int64 findOrAddNodeUid(const Real3& p,const Real& tol);
-  /**
+  /*!
    * Ajout d'un nouveau uid associé au centre de la face \p face_center.
    * si p existe déjà, on garde l'ancien uid.
    * La tolerance \p tol donne le perimetre de recherche autour de face_center.
    */
   Int64 findOrAddFaceUid(const Real3& face_center,const Real& tol,bool& is_added);
-  /**
+  /*!
    * genere un nouveau uid pour les enfants.
    */
   Int64 getFirstChildNewUid();
 
-  void _update(ArrayView<ItemInternal*> cells_to_refine) ;
-  void _update(ArrayView<Int64> cells_to_refine) ;
-  void _invalidate(ArrayView<ItemInternal*> cells_to_coarsen) ;
-  void _updateMaxUid(ArrayView<ItemInternal*> cells_to_refine) ;
+  void _update(ArrayView<ItemInternal*> cells_to_refine);
+  void _update(ArrayView<Int64> cells_to_refine);
+  void _invalidate(ArrayView<ItemInternal*> cells_to_coarsen);
+  void _updateMaxUid(ArrayView<ItemInternal*> cells_to_refine);
 
-  /**
+  /*!
    * return le pattern de raffinement associe au type de maille.
    */
   template <int typeID> const ItemRefinementPatternT<typeID>& getRefinementPattern() const ;
-  /**
+  /*!
    * Determination des connexions non conformes des mailles raffinees.
    */
-  void populateBackFrontCellsFromChildrenFaces(ItemInternal* parent_cell);
-  void populateBackFrontCellsFromParentFaces(ItemInternal* parent_cell);
+  void populateBackFrontCellsFromChildrenFaces(Cell parent_cell);
+  void populateBackFrontCellsFromParentFaces(Cell parent_cell);
 
  private:
 
-  /**
+  /*!
    * Retourne true si et seulement si le maillage satisfait la règle de niveau un
    * Retourne false sinon
    * Arrète l'exècution si arcane_assert_yes est true et si
@@ -248,7 +249,7 @@ public:
    */
   bool _checkLevelOne(bool arcane_assert_yes = false);
 
-  /**
+  /*!
    * Retourne true si et seulement si le maillage n'a pas d'items
    * flaggès pour déraffinement ou raffinement
    * Retourne false autrement
@@ -257,9 +258,7 @@ public:
    */
   bool _checkUnflagged(bool arcane_assert_yes = false);
 
-
-
-  /**
+  /*!
    * Si \p coarsen_by_parents est true,
    * les items avec le même parent seront flaggés pour déraffinement
    * Ceci devrait produire un déraffinement plus proche à ce qui a été demandé.
@@ -269,7 +268,7 @@ public:
   bool& coarsenByParents();
 
 
-  /**
+  /*!
    * Si Face_level_mismatch_limit est mise à une valeur non nulle, alors
    * le raffinement et déraffinement produiront des maillages dans lesquels
    * le niveau de raffinement de deux mailles voisines par face ne différera pas plus que
@@ -281,7 +280,7 @@ public:
    */
   unsigned char& faceLevelMismatchLimit();
 
-  /**
+  /*!
    * Supprime les enfants subactifs du maillage
    * Contracte un item actif, i.e. supprimer les pointers vers chaque
    * enfant subactif.  Ceci devrait seulement ètre appelè après restriction des variables
@@ -293,9 +292,9 @@ public:
   void _interpolateData(const Int64Array& cells_to_refine);
 
   //! restriction des données sur les mailles parents
-  void _upscaleData(Array<ItemInternal* > & parent_cells);
+  void _upscaleData(Array<ItemInternal*>& parent_cells);
 
-private:
+ private:
 
   /**
    * Déraffine les items demandés par l'utilisateur. Les deux méthodes _coarsenItems()
@@ -364,10 +363,10 @@ private:
    * Determination des connexions non conformes des mailles raffinées
    */
   template <int typeID>
-  void _populateBackFrontCellsFromParentFaces(ItemInternal* parent_cell) ;
+  void _populateBackFrontCellsFromParentFaces(Cell parent_cell) ;
   template <int typeID>
-  void _populateBackFrontCellsFromChildrenFaces(ItemInternal* face,ItemInternal* parent_cell,
-                                                ItemInternal* neighbor_cell);
+  void _populateBackFrontCellsFromChildrenFaces(Face face,Cell parent_cell,
+                                                Cell neighbor_cell);
 
   void _checkOwner(const String & msg); // To avoid owner desynchronization
 

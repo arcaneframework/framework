@@ -988,7 +988,7 @@ addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fat
     }
   }
 
-  return new_item.internal();
+  return ItemCompatibility::_itemInternal(new_item);
 }
 
 /*---------------------------------------------------------------------------*/

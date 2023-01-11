@@ -595,7 +595,7 @@ makeNewItemsConsistent2(MapCoordToUid& node_finder, MapCoordToUid& face_finder)
   Int32 sid = m_mesh->parallelMng()->commRank();
 
 
-  typedef std::set<ItemInternal*> Set;
+  typedef std::set<Item> Set;
   Set active_nodes_set, active_faces_set;
   // Parcours les faces et marque les noeuds frontieres actives
   DynamicMesh* mesh = dynamic_cast<DynamicMesh*> (m_mesh);
@@ -623,11 +623,11 @@ makeNewItemsConsistent2(MapCoordToUid& node_finder, MapCoordToUid& face_finder)
         Face face2 = subfaces[s];
         face2.mutableItemBase().addFlags(ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary);
         _addFaceToList2(face2, m_active_faces2);
-        active_faces_set.insert(face2.internal());
+        active_faces_set.insert(face2);
         ++nb_sub_domain_boundary_face;
         for ( Node node : face2.nodes() ){
           node.mutableItemBase().addFlags(ItemFlags::II_Shared | ItemFlags::II_SubDomainBoundary);
-          active_nodes_set.insert(node.internal());
+          active_nodes_set.insert(node);
           _addNodeToList(node, m_active_nodes);
         }
         for ( Edge edge : face2.edges() )
@@ -639,22 +639,22 @@ makeNewItemsConsistent2(MapCoordToUid& node_finder, MapCoordToUid& face_finder)
   UniqueArray<ItemUniqueId> active_faces_to_send(arcaneCheckArraySize(active_faces_set.size()));
   UniqueArray<ItemUniqueId> active_nodes_to_send(arcaneCheckArraySize(active_nodes_set.size()));
 
-  UniqueArray<ItemInternal*> active_faces(arcaneCheckArraySize(active_faces_set.size()));
-  UniqueArray<ItemInternal*> active_nodes(arcaneCheckArraySize(active_nodes_set.size()));
+  UniqueArray<Item> active_faces(arcaneCheckArraySize(active_faces_set.size()));
+  UniqueArray<Item> active_nodes(arcaneCheckArraySize(active_nodes_set.size()));
 
   Set::const_iterator fit(active_faces_set.begin()), fend(active_faces_set.end());
   Integer i=0;
   for (; fit != fend; ++fit){
-    ItemInternal *face = *fit;
-    active_faces_to_send[i]=(face->uniqueId());
+    Item face = *fit;
+    active_faces_to_send[i]=(face.uniqueId());
     active_faces[i]=face;
     i++;
   }
   Set::const_iterator nit(active_nodes_set.begin()), nend(active_nodes_set.end());
   i=0;
   for (; nit != nend; ++nit){
-    ItemInternal *node = *nit;
-    active_nodes_to_send[i]= (node->uniqueId());
+    Item node = *nit;
+    active_nodes_to_send[i]= (node.uniqueId());
     //debug() << "ACTIVE NODE TO SEND " << node->uniqueId() << " " << active_nodes_to_send[i];
     active_nodes[i]=node;
     i++;
@@ -663,22 +663,22 @@ makeNewItemsConsistent2(MapCoordToUid& node_finder, MapCoordToUid& face_finder)
   _gatherItems(active_nodes_to_send, active_faces_to_send, m_active_nodes, m_active_faces2, node_finder, face_finder);
 
   for (Integer index = 0; index < active_faces.size(); index++){
-    ItemInternal* face = active_faces[index];
-    const Int64 current_uid = face->uniqueId();
-    FaceInfo2& fi = m_active_faces2[face->uniqueId()];
+    Item face = active_faces[index];
+    const Int64 current_uid = face.uniqueId();
+    FaceInfo2& fi = m_active_faces2[face.uniqueId()];
     if (current_uid != fi.uniqueId()){
-      face->setUniqueId(fi.uniqueId());
-      face->setOwner(fi.owner(), sid);
+      face.mutableItemBase().setUniqueId(fi.uniqueId());
+      face.mutableItemBase().setOwner(fi.owner(), sid);
       //debug() << "[\t ParallelAMRConsistency] NEW FACE BEFORE " << fi.uniqueId() << " " << fi.owner();
     }
   }
   for (Integer index = 0; index < active_nodes.size(); index++){
-    ItemInternal* node = active_nodes[index];
+    Item node = active_nodes[index];
     const Int64 current_uid = node->uniqueId();
-    NodeInfo& ni = m_active_nodes[node->uniqueId()];
+    NodeInfo& ni = m_active_nodes[node.uniqueId()];
     if (current_uid != ni.uniqueId()){
-      node->setUniqueId(ni.uniqueId());
-      node->setOwner(ni.owner(), sid);
+      node.mutableItemBase().setUniqueId(ni.uniqueId());
+      node.mutableItemBase().setOwner(ni.owner(), sid);
       //debug() << "[\t ParallelAMRConsistency] NEW FACE BEFORE " << fi.uniqueId() << " " << fi.owner();
     }
   }
