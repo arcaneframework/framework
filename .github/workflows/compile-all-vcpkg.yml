@@ -105,6 +105,7 @@ jobs:
           cmake --version
           cmake -DNUGET_PASSWORD="${{ secrets.GITHUB_TOKEN }}" -P '${{ env.BUILD_COMMANDS_ROOT }}/Setup.cmake'
           mkdir -p ${{ env.CCACHE_DIR }}
+          cp "${{ github.workspace }}/.github/compile-vcpkg-global.json" "${{ github.workspace }}/global.json"
       
       - name: Setup .Net
         uses: actions/setup-dotnet@v3
@@ -134,6 +135,7 @@ jobs:
           echo CMake path is: `which cmake`
           echo Ninja path is: `which ninja`
           echo CCache path is: `which ccache`
+          echo Dotnet path is: `which dotnet`
           ccache -z
           cmake --version
 
