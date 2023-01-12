@@ -8,12 +8,6 @@
     <simple name="output" type="integer" default="0">
       <description>output level</description>
     </simple>
-    <simple name="unit-test" type="bool" default="false">
-      <description>test unitaire</description>
-    </simple>
-    <simple name="test-id" type="integer" default="-1">
-      <description>export iter</description>
-    </simple>
     <simple name="export-iter" type="integer" default="-1">
       <description>export iter</description>
     </simple>
@@ -23,46 +17,23 @@
     <simple name="export-system-file-name" type="string" default="mcgs_linear_system">
       <description>File name for linear system export</description>
     </simple>
-    <simple name="import-opt" type="bool" default="false">
-      <description>import option</description>
-    </simple>
-    <!--simple name="parameter" type="string" minOccurs="0" maxOccurs="unbounded">
-      <description>parameter</description>
-    <simple-->
-
-    <simple name="poly-factor" type="real" default="0.">
-      <description>polynomial factor</description>
-    </simple>
-    <simple name="poly-factor-num-iter" type="integer" default="3">
-      <description>polynomial factor</description>
-    </simple>
-    <simple name="poly-order" type="integer" default="2">
-      <description>polynomial degree</description>
-    </simple>
 
     <simple name="bj-num-iter" type="integer" default="1">
       <description>Number of iterations for Block Jacobi</description>
     </simple>
-    <enumeration name="bj-local-precond" type="MCGSolver::ePrecondType" default="ILU0">
-      <enumvalue name="ILU0" genvalue="MCGSolver::PrecILU0"/>
+    <enumeration name="bj-local-precond" type="MCGSolver::ePrecondType" default="ILUk">
       <enumvalue name="ILUk" genvalue="MCGSolver::PrecILUk"/>
       <enumvalue name="FPILU0" genvalue="MCGSolver::PrecFixPointILU0"/>
       <enumvalue name="BlockILU0" genvalue="MCGSolver::PrecBlockILU0"/>
+      <enumvalue name="ColorILU0" genvalue="MCGSolver::PrecColorBlockILU0"/>
     </enumeration>
 
-    <simple name="fpilu0-facto-num-iter" type="integer" default="1">
+    <simple name="fpilu0-facto-num-iter" type="integer" default="2">
       <description>Number of iterations for FixedPoint ILU0 factorization</description>
     </simple>
-    <simple name="fpilu0-solve-num-iter" type="integer" default="1">
+    <simple name="fpilu0-solve-num-iter" type="integer" default="4">
       <description>Number of iterations for FixedPoint ILU0 solve</description>
     </simple>
-
-    <!--simple name="bssor-num-iter" type="integer" default="3">
-      <description>Block SSOR Num iter</description>
-    </simple>
-    <simple name="bssor-relax-factor" type="real" default="0.">
-      <description>Block SSOR relax Factor</description>
-    </simple-->
 
     <simple name="colorilu0-dir" type="string" default="+Z">
       <description>ILU(0) coloring preferential direction</description>
@@ -71,80 +42,59 @@
       <description>ILU(0) coloring algorithm</description>
     </simple>
 
-    <simple name="use-unit-diag" type="bool" default="true">
-      <description>unit diag options</description>
-    </simple>
-    <simple name="keep-diag-opt" type="bool" default="true">
-      <description>unit diag options</description>
-    </simple>
-    <simple name="reorder-opt" type="bool" default="true">
-      <description>reorder option</description>
-    </simple>
-    <simple name="interface-opt" type="integer" default="0">
-      <description>interface option</description>
-    </simple>
-    <simple name="relax-solver" type="integer" default="0">
-      <description>relax solver option</description>
-    </simple>
-    <simple name="cpr-solver" type="integer" default="0">
-      <description>cpr solver option</description>
-    </simple>
-    <simple name="amg-algo" type="string" default="PMIS">
-        <description>AMG algorithm option, AGGREGATION or PMIS </description>
-    </simple>
-    <simple name="normalize-opt" type="integer" default="3">
-      <description>default number corresponds to without normalization in MCGSolver</description>
+    <simple name="normalize" type="bool" default="false">
+      <description>Linear system normalization: solve D^-1.A.x=D^-1.y instead of A.x=y where D is A's diagonal</description>
     </simple>
     <simple name="max-iteration-num" type="integer" default="1000">
       <description>Maximal number of iterations</description>
     </simple>
     <simple name="stop-criteria-value" type="real" default="1e-6">
-      <description>Solver convergence criteria: ||Ax-b||_2/||b||_2 &lt;= stop-criteria-value"</description>
+      <description>Solver convergence criteria: ||A.x-b||_2/||b||_2 &lt;= stop-criteria-value"</description>
     </simple>
 
     <enumeration name="kernel" type="MCGOptionTypes::eKernelType" default="CPU_CBLAS_BCSR">
       <description>Kernel type</description>
       <enumvalue name="CPU_CBLAS_BCSR" genvalue="MCGOptionTypes::CPU_CBLAS_BCSR">
-        <description>CPU BLAS kernel (usualy mkl) with block CSR matrix</description>
+	<description>CPU BLAS kernel (usualy mkl) with block CSR matrix</description>
       </enumvalue>
       <enumvalue name="CPU_AVX_BCSR" genvalue="MCGOptionTypes::CPU_AVX_BCSR">
-        <description>CPU AVX kernel with block CSR matrix</description>
+	<description>CPU AVX kernel with block CSR matrix</description>
       </enumvalue>
       <enumvalue name="CPU_AVX2_BCSP" genvalue="MCGOptionTypes::CPU_AVX2_BCSP">
-        <description>CPU AVX2 kernel with BCSP matrix</description>
+	<description>CPU AVX2 kernel with BCSP matrix</description>
       </enumvalue>
       <enumvalue name="CPU_AVX512_BCSP" genvalue="MCGOptionTypes::CPU_AVX512_BCSP">
-        <description>CPU AVX512 kernel with BCSP matrix</description>
+	<description>CPU AVX512 kernel with BCSP matrix</description>
       </enumvalue>
       <enumvalue name="GPU_CUBLAS_BELL" genvalue="MCGOptionTypes::GPU_CUBLAS_BELL">
-        <description>GPU CUBLAS kernel with block Ellpack matrix</description>
+	<description>GPU CUBLAS kernel with block Ellpack matrix</description>
       </enumvalue>       
       <enumvalue name="GPU_CUBLAS_BCSP" genvalue="MCGOptionTypes::GPU_CUBLAS_BCSP">
-        <description>GPU CUBLAS kernel with block CSP matrix</description>
+	<description>GPU CUBLAS kernel with block CSP matrix</description>
       </enumvalue>
     </enumeration>
 
     <enumeration name="solver" type="MCGSolver::eKrylovType" default="BiCGStab">
       <description>Solveur type</description>
       <enumvalue name="BiCGStab" genvalue="MCGSolver::BiCGS">
-        <description>BiCGStab Solver</description>
+	<description>BiCGStab Solver</description>
       </enumvalue>
       <enumvalue name="GMRes" genvalue="MCGSolver::GMRes">
-        <description>Gmres Solver</description>
+	<description>Gmres Solver</description>
       </enumvalue>
       <enumvalue name="CG" genvalue="MCGSolver::CG">
-        <description>Conjugate Gradient solver</description>
+	<description>Conjugate Gradient solver</description>
       </enumvalue>
     </enumeration>
 
     <complex name="CG" type="CGOptType" minOccurs="0" maxOccurs="1">
       <enumeration name="CGMethod" type="MCGSolver::CGMethod::eType" default="CG">
-        <enumvalue name="CG" genvalue="MCGSolver::CGMethod::CG">
-          <description>CG uses a classical CG</description>
-        </enumvalue>
-        <enumvalue name="PipeCG" genvalue="MCGSolver::CGMethod::PipeCG">
-          <description>CG uses a pipelined CG</description>
-        </enumvalue>
+	  <enumvalue name="CG" genvalue="MCGSolver::CGMethod::CG">
+	  <description>CG uses a classical CG</description>
+	</enumvalue>
+	<enumvalue name="PipeCG" genvalue="MCGSolver::CGMethod::PipeCG">
+	  <description>CG uses a pipelined CG</description>
+	</enumvalue>
       </enumeration>
     </complex>
 
@@ -153,58 +103,111 @@
       <enumvalue name="None" genvalue="MCGSolver::PrecNone">
         <description>No preconditioner</description>
       </enumvalue>
-      <enumvalue name="ILU0" genvalue="MCGSolver::PrecILU0">
-        <description>ILU preconditioner without filling (only for CPU algebra). [deprecated]: use ILUk with k=0 instead.</description>
-      </enumvalue>
       <enumvalue name="ILUk" genvalue="MCGSolver::PrecILUk">
         <description>ILU preconditioner with k fill levels (only for CPU algebra)</description>
       </enumvalue>
       <enumvalue name="FPILU0" genvalue="MCGSolver::PrecFixPointILU0">
         <description>0th order Fixed point ILU preconditioner (only for CPU algebra)</description>
       </enumvalue>
-      <enumvalue name="ColorILU0" genvalue="MCGSolver::PrecColorILU0">
+      <enumvalue name="ColorILU0" genvalue="MCGSolver::PrecColorBlockILU0">
         <description>0th order Multi Coloring ILU preconditioner</description>
       </enumvalue>
       <enumvalue name="BlockJacobi" genvalue="MCGSolver::PrecBlockJacobi">
         <description>Block Jacobi preconditioner for MPI</description>
       </enumvalue>
       <enumvalue name="BlockILU0" genvalue="MCGSolver::PrecBlockILU0"/>
+        <description>BlockILU0 preconditioner for OpenMP</description>
       <enumvalue name="Poly" genvalue="MCGSolver::PrecPoly"/>
-      <enumvalue name="AMGX" genvalue="MCGSolver::PrecAMGX"/>
+      <enumvalue name="amgx" genvalue="MCGSolver::PrecAMGX"/>
       <enumvalue name="HypreAMG" genvalue="MCGSolver::PrecHypreAMG"/>
+      <enumvalue name="CprAmg" genvalue="MCGSolver::PrecCpr"/>
     </enumeration>
 
-
-    <simple name="sp-prec" type="bool" default="false">
+    <simple name="sp-prec" type="bool" default="true">
       <description>simple precision preconditioner flag</description>
     </simple>
     <simple name="use-thread" type="bool" default="false">
       <description>use multithreaded solver</description>
     </simple>
-    <simple name="num-thread" type="integer" default="1">
-      <description>number of thread for multithreaded solver [deprecated]</description>
-    </simple>
+
+    <complex name="CprAmg" type="CprAmgOptType" minOccurs="0" maxOccurs="1">
+      <description> CprAmg description using different AMG and relaxations</description>
+      <enumeration name="cxr-solver" type="MCGSolver::Solvers::eSolverType" default="HypreAMG">
+        <enumvalue name="HypreAMG" genvalue="MCGSolver::Solvers::HypreAMG"/>
+        <enumvalue name="amgx" genvalue="MCGSolver::Solvers::AMGX"/>
+      </enumeration>
+      <enumeration name="relax-solver" type="MCGSolver::ePrecondType" default="Poly">
+        <enumvalue name="Poly" genvalue="MCGSolver::PrecPoly"/>
+          <description>Neumann polynomial precontitioner</description>
+        <enumvalue name="ILUk" genvalue="MCGSolver::PrecILUk">
+          <description>ILU preconditioner with k fill levels (only for CPU algebra)</description>
+        </enumvalue>
+        <enumvalue name="FPILU0" genvalue="MCGSolver::PrecFixPointILU0">
+          <description>0th order Fixed point ILU preconditioner (only for CPU algebra)</description>
+        </enumvalue>
+        <enumvalue name="ColorILU0" genvalue="MCGSolver::PrecColorBlockILU0">
+          <description>0th order Multi Coloring ILU preconditioner</description>
+        </enumvalue>
+        <enumvalue name="BlockJacobi" genvalue="MCGSolver::PrecBlockJacobi">
+          <description>Block Jacobi preconditioner for MPI</description>
+        </enumvalue>
+      </enumeration>
+    </complex>
+
 
     <complex name="ILUk" type="ILUkOptType" minOccurs="0" maxOccurs="1">
-      <description> ILUk options</description>
+      <description>ILUk options</description>
       <simple name="level-of-fill" type="integer" default="0">
         <description>fill level</description>
       </simple>
-
-      <simple name="sp" type="bool" default="false">
+      <simple name="sp" type="bool" default="true">
         <description>Use single precision ILU matrix</description>
       </simple>
-
-      <!--enumeration name="ordering" type="MCGSolver::Ordering" default="None">
-        <enumvalue name="None">
+      <enumeration name="ordering" type="MCGSolver::Graph::Ordering::eType" default="None">
+        <enumvalue name="None" genvalue="MCGSolver::Graph::Ordering::None">
+          <description>No ordering</description>
         </enumvalue>
-        <enumvalue name="RCM">
+        <enumvalue name="RCM" genvalue="MCGSolver::Graph::Ordering::RCM">
+          <description>Reverse Cuthill–McKee ordering</description>
         </enumvalue>
-        <enumvalue name="MD">
+        <enumvalue name="CM" genvalue="MCGSolver::Graph::Ordering::CM">
+          <description>Cuthill–McKee ordering</description>
         </enumvalue>
-      </enumeration-->
-
+      </enumeration>
     </complex>
 
+    <complex name="Poly" type="PolyOptType" minOccurs="0" maxOccurs="1">
+      <simple name="factor" type="real" default="0.">
+        <description>Polynomial factor</description>
+      </simple>
+      <simple name="factor-num-iter" type="integer" default="3">
+        <description>Number of iterations for polynomial factor computing</description>
+      </simple>
+      <simple name="order" type="integer" default="2">
+        <description>Polynomial degree</description>
+      </simple>
+    </complex>
+
+    <complex name="amgx" type="amgxOptType" minOccurs="0" maxOccurs="1">
+      <simple name="enable" type="bool" default="false">
+        <description></description>
+      </simple>
+      <simple name="parameter-file" type="string" default="AMG_CLASSICAL_PMIS.json">
+        <description></description>
+      </simple>
+      <enumeration name="amg-algo" type="MCGSolver::AMG::eAmgAlgo" default="PMIS">
+        <description>AMG algorithm option, AGGREGATION or PMIS </description>
+        <enumvalue name="PMIS" genvalue="MCGSolver::AMG::PMIS">
+          <description>PMIS AMG algorithm</description>
+        </enumvalue>
+        <enumvalue name="AGGREGATION" genvalue="MCGSolver::AMG::AGGREGATION">
+          <description>AGGREGATION AMG algorithm</description>
+        </enumvalue>
+      </enumeration>
+    </complex>
+
+    <!--service-instance name="logger" type="Alien::ILogger" minOccurs="0" maxOccurs="1">
+      <description>Logger</description>
+    </service-instance-->
   </options>
 </service>

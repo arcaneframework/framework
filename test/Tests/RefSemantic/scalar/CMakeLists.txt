@@ -339,17 +339,19 @@ foreach (REFMVTESTS
         alien_test(
                 BENCH refmvhandlers.scalar
                 NAME ${REFMVTESTS}.mcgsolver
+                PROCS 4
                 COMMAND refmvhandlers.Scalar${REFMVTESTS}
                 OPTIONS
                 --size=100
                 --solver-package=mcgsolver
                 --solver=bicgstab
-                --precond=ilu0
+                --precond=none
                 --tol=1.e-10
                 --max-iter=100
                 --kernel=cpu_cblas_bcsr
-                --output-level=1
+                --output-level=2
         )
+
     endif ()
 
     if (TARGET mtl)

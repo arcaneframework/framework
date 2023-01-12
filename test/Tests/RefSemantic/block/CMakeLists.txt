@@ -161,6 +161,7 @@ foreach (REFMVTESTS
         alien_test(
                 BENCH refmvhandlers.block
                 NAME ${REFMVTESTS}.mcgsolver
+                PROCS 4
                 COMMAND refmvhandlers.Block${REFMVTESTS}
                 OPTIONS
                 --size=100

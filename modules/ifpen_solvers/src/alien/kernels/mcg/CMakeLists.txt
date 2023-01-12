@@ -4,12 +4,8 @@ addSources(alien_ifpen_solvers
         converters/SimpleCSR/MCG_to_SimpleCSR_VectorConverter.cc
         converters/SimpleCSR/SimpleCSR_to_MCG_VectorConverter.cc
         converters/SimpleCSR/SimpleCSR_to_MCG_MatrixConverter.cc
-        converters/Composite/Composite_to_MCG_CompositeVectorConverter.cc
-        converters/Composite/Composite_to_MCG_CompositeMatrixConverter.cc
         data_structure/MCGVector.cc
-        data_structure/MCGCompositeVector.cc
         data_structure/MCGMatrix.cc
-        data_structure/MCGCompositeMatrix.cc
         )
 
 generateAxl(alien_ifpen_solvers

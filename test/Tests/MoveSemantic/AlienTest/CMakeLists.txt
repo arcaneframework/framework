@@ -110,17 +110,18 @@ if (TARGET mcgsolver)
     alien_test(
             BENCH alien.test
             NAME mcgsolver
+            PROCS 4
             COMMAND alien_test.exe
             OPTIONS
             --nx=10
             --ny=10
             --solver-package=mcgsolver
             --solver=bicgstab
-            --precond=ilu0
-            --tol=1.e-6
+            --precond=none
+            --tol=1.e-10
             --max-iter=1000
             --kernel=cpu_cblas_bcsr
-            --output-level=1
+            --output-level=2
     )
 endif ()
 

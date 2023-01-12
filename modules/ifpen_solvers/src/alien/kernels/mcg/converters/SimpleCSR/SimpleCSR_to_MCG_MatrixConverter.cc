@@ -60,6 +60,7 @@ void
 SimpleCSR_to_MCG_MatrixConverter::_build(
     const SimpleCSRMatrix<Real>& sourceImpl, MCGMatrix& targetImpl) const
 {
+  const MatrixDistribution& dist = targetImpl.distribution();
   const CSRStructInfo& profile = sourceImpl.getCSRProfile();
   const Integer local_size = profile.getNRow();
   ConstArrayView<Integer> row_offset = profile.getRowOffset();
@@ -69,6 +70,9 @@ SimpleCSR_to_MCG_MatrixConverter::_build(
   ConstArrayView<Real> values = matrixInternal.getValues();
   int block_size = 1;
   int block_size2 = 1;
+
+  auto partition_offset = dist.rowOffset(dist.parallelMng()->commRank());
+
   if (sourceImpl.block()) {
     block_size = sourceImpl.block()->sizeX();
     block_size2 = sourceImpl.block()->sizeY();
@@ -76,7 +80,8 @@ SimpleCSR_to_MCG_MatrixConverter::_build(
 
   if (!targetImpl.isInit()) {
     if (not targetImpl.initMatrix(block_size, block_size2, local_size,
-            row_offset.unguardedBasePointer(), cols.unguardedBasePointer())) {
+            row_offset.unguardedBasePointer(), cols.unguardedBasePointer(),
+            partition_offset)) {
       throw FatalErrorException(A_FUNCINFO, "MCGSolver Initialisation failed");
     }
   }

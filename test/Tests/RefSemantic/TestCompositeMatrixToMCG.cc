@@ -28,6 +28,7 @@ auto mcgfill = [](Alien::IVector& c, Alien::Real shift) {
     writer[i] = offset + i + shift;
 };
 
+#if 0
 TEST(TestCompositeMatrixToMCG, CompositeMCGTest)
 {
 #ifdef ALIEN_USE_MCGSOLVER
@@ -100,3 +101,4 @@ TEST(TestCompositeMatrixToMCG, CompositeMCGTest)
   delete solver;
 #endif
 }
+#endif

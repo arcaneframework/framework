@@ -57,9 +57,12 @@ class MCGMatrix : public IMatrixImpl
 
   bool isInit() const;
 
+  //! Ensemble des tags pour la construction CprAMG
+  bool computeEllipticSplitTags(int equation_num) const;
+
  public:
   bool initMatrix(const int block_size, const int block_size2, const int nrow,
-      int const* row_offset, int const* cols);
+      int const* row_offset, int const* cols, int partition_offset);
 
   bool initMatrixValues(Real const* values);
 
