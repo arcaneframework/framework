@@ -134,6 +134,7 @@ jobs:
           echo CMake path is: `which cmake`
           echo Ninja path is: `which ninja`
           echo CCache path is: `which ccache`
+          echo CCache path is: `which dotnet`
           ccache -z
           cmake --version
 
