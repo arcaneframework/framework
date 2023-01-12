@@ -1,3 +1,3 @@
 set(ARCANE_SOURCES
-  IAlephSloop.cc
-  )
+  AlephSloop.cc
+)
