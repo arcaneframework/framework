@@ -39,7 +39,7 @@ SimpleCSRDistributor::SimpleCSRDistributor(const RedistributorCommPlan* commPlan
     if (tgt_dist[i] != tgt_dist[i - 1])
       n_offset++;
   }
-  if (dst_me >= 0) {
+  if (dst_me.has_value()) {
     assert(n_offset == m_comm_plan->tgtParallelMng()->commSize());
   }
   std::vector<int> target_offset(n_offset + 1);
@@ -53,7 +53,7 @@ SimpleCSRDistributor::SimpleCSRDistributor(const RedistributorCommPlan* commPlan
     }
   }
 
-  typeof(m_src_profile->getNElems()) dst_n_elems = 0;
+  auto dst_n_elems = 0;
 
   for (auto global_row = source_distribution.offset();
        global_row < source_distribution.offset() + source_distribution.localSize();
@@ -66,16 +66,19 @@ SimpleCSRDistributor::SimpleCSRDistributor(const RedistributorCommPlan* commPlan
       m_src2dst_row_list.push_back({ src_local_row, dst_local_row });
       dst_n_elems += m_src_profile->getRowSize(src_local_row);
     }
-    else {
-      auto& comm_info = m_send_comm_info[m_comm_plan->procNum(target)];
+    else if (target.has_value()) {
+      auto& comm_info = m_send_comm_info[m_comm_plan->procNum(target.value())];
       comm_info.m_row_list.push_back(src_local_row);
       comm_info.m_n_item += m_src_profile->getRowSize(src_local_row);
     }
+    else {
+      FatalErrorException("No target found");
+    }
   }
 
-  typeof(m_src_profile->getNRows()) ext_dst_n_rows = 0;
+  auto ext_dst_n_rows = 0;
 
-  if (dst_me >= 0) // I am in the target parallel manager
+  if (dst_me.has_value()) // I am in the target parallel manager
   {
     const auto& target_distribution = m_comm_plan->distribution();
 
@@ -125,7 +128,7 @@ SimpleCSRDistributor::SimpleCSRDistributor(const RedistributorCommPlan* commPlan
   _finishExchange();
 
   // create destination profile
-  if (dst_me >= 0) {
+  if (dst_me.has_value()) {
     m_dst_profile = std::make_shared<Alien::SimpleCSRInternal::CSRStructInfo>();
     m_dst_profile->init(ext_dst_n_rows + m_src2dst_row_list.size(), dst_n_elems);
   }
@@ -156,6 +159,7 @@ SimpleCSRDistributor::SimpleCSRDistributor(const RedistributorCommPlan* commPlan
     row_size[dst_row] = m_src_profile->getRowSize(src_row);
   }
   // wait for recv messages
+  // mpWaitSome ?
   for (auto const& [recv_id, comm_info] : m_recv_comm_info) {
     Arccore::MessagePassing::mpWait(pm, comm_info.m_request);
 
@@ -168,7 +172,7 @@ SimpleCSRDistributor::SimpleCSRDistributor(const RedistributorCommPlan* commPlan
   }
   _finishExchange();
 
-  if (dst_me >= 0) {
+  if (dst_me.has_value()) {
     auto* kcol = m_dst_profile->kcol();
     kcol[0] = 0;
     for (int i = 1; i < m_dst_profile->getNRows() + 1; ++i) {
@@ -177,7 +181,7 @@ SimpleCSRDistributor::SimpleCSRDistributor(const RedistributorCommPlan* commPlan
   }
 
   // distribute profile cols
-  _distribute<int>(1, m_src_profile->cols(), dst_me >= 0 ? m_dst_profile->cols() : nullptr);
+  _distribute<int>(1, m_src_profile->cols(), dst_me.has_value() ? m_dst_profile->cols() : nullptr);
 }
 
 template <typename T>
@@ -222,6 +226,7 @@ void SimpleCSRDistributor::_distribute(const int bb, const T* src, T* dst)
   }
 
   // wait for recv messages
+  // Use mpWaitAny or mpWaitSome
   for (auto const& [recv_id, comm_info] : m_recv_comm_info) {
     Arccore::MessagePassing::mpWait(pm, comm_info.m_request);
 
@@ -244,7 +249,7 @@ void SimpleCSRDistributor::distribute(const SimpleCSRMatrix<NumT>& src, SimpleCS
   const auto me = m_comm_plan->superParallelMng()->commRank();
   const auto dst_me = _dstMe(me);
 
-  if (dst_me >= 0) {
+  if (dst_me.has_value()) {
     // I am in the target parallel manager
     // fill dst profile with a copy of m_dst_profile
     auto& profile = dst.internal().getCSRProfile();
@@ -269,7 +274,7 @@ void SimpleCSRDistributor::distribute(const SimpleCSRMatrix<NumT>& src, SimpleCS
     _distribute(1, src.data(), dst.data());
   }
 
-  if (dst_me >= 0) {
+  if (dst_me.has_value()) {
     if (m_comm_plan->tgtParallelMng()->commSize() == 1) {
       dst.sequentialStart();
     }
@@ -279,7 +284,7 @@ void SimpleCSRDistributor::distribute(const SimpleCSRMatrix<NumT>& src, SimpleCS
   }
 
 #if 0
-  if(dst_me == 0)
+  if(dst_me.value_or(1) == 0)
   {
     const auto& profile = dst.internal().getCSRProfile();
     for (int i = 0; i < profile.getNRows(); ++i)
@@ -304,6 +309,7 @@ void SimpleCSRDistributor::distribute(const SimpleCSRVector<NumT>& src, SimpleCS
 template <typename T>
 void SimpleCSRDistributor::_resizeBuffers(const int bb)
 {
+  // comm_info should be templated by the type to avoid cast and explicit size computations
   for (auto& [send_id, comm_info] : m_send_comm_info) {
     comm_info.m_buffer.resize((comm_info.m_n_item * sizeof(T) * bb + sizeof(uint64_t) - 1) / sizeof(uint64_t));
   }
@@ -317,6 +323,8 @@ void SimpleCSRDistributor::_finishExchange()
 {
   auto* pm = m_comm_plan->superParallelMng();
   // finish properly
+
+  // CC: should be a mpWaitAll and not a loop
   for (auto const& [send_to_id, comm_info] : m_send_comm_info) {
     Arccore::MessagePassing::mpWait(pm, comm_info.m_request);
   }
@@ -324,10 +332,10 @@ void SimpleCSRDistributor::_finishExchange()
 
 // T must be an integer signed type
 template <typename T>
-T SimpleCSRDistributor::_owner(const std::vector<T>& offset, T global_id)
+std::optional<T> SimpleCSRDistributor::_owner(const std::vector<T>& offset, T global_id)
 {
   if (global_id >= offset.back())
-    return -1;
+    return {};
 
   auto min = offset.size() - offset.size(); // just for the right auto type
   auto max = offset.size();
@@ -344,13 +352,13 @@ T SimpleCSRDistributor::_owner(const std::vector<T>& offset, T global_id)
 
   return min;
 }
-int SimpleCSRDistributor::_dstMe(int) const
+std::optional<int> SimpleCSRDistributor::_dstMe(int) const
 {
   if (m_comm_plan->tgtParallelMng()) {
     return m_comm_plan->tgtParallelMng()->commRank();
   }
 
-  return -1;
+  return {};
 }
 
 } // namespace Alien
