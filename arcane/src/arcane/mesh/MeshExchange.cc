@@ -1320,7 +1320,7 @@ _markRemovableDoFs()
           item_dest_ranks = m_ghost_item_dest_ranks_map[item->owner()][family]->at(item->localId()).view();
         // Check if the item must stay on the subdomain (ie dest_rank or new_owner contain the subdomain)
         if (!item_dest_ranks.contains(m_rank) && item_new_owners[item] != m_rank){
-          item.internal()->setFlags(item.internal()->flags() | ItemFlags::II_NeedRemove);
+          item->mutableItemBase().addFlags(ItemFlags::II_NeedRemove);
         }
       }
     }
@@ -1345,7 +1345,7 @@ _markRemovableItems(bool with_cell_family)
           item_dest_ranks = m_ghost_item_dest_ranks_map[item->owner()][family]->at(item.localId()).view();
         // Check if the item must stay on the subdomain (ie dest_rank or new_owner contain the subdomain)
         if (!item_dest_ranks.contains(m_rank) && item_new_owners[item] != m_rank){
-          item.internal()->setFlags(item.internal()->flags() | ItemFlags::II_NeedRemove);
+          item->mutableItemBase().addFlags(ItemFlags::II_NeedRemove);
         }
       }
     }

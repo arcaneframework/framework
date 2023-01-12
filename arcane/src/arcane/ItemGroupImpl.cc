@@ -1411,7 +1411,7 @@ class ItemGroupImpl::ItemSorter
   }
   bool operator()(Int32 lid1,Int32 lid2) const
   {
-    return m_items[lid1]->uniqueId() < m_items[lid2]->uniqueId();
+    return m_items[lid1].uniqueId() < m_items[lid2].uniqueId();
   }
  private:
   ItemInfoListView m_items;

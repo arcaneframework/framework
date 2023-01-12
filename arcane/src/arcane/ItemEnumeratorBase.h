@@ -145,12 +145,10 @@ class ItemEnumeratorBaseT
 
   ItemEnumeratorBaseT()
   : BaseClass(), m_item(NULL_ITEM_LOCAL_ID,ItemSharedInfo::nullInstance()){}
-  ItemEnumeratorBaseT(const ItemInternalPtr* items,const Int32* local_ids,Integer n,const ItemGroupImpl* agroup)
-  : BaseClass(items,local_ids,n,agroup) { _init(items); }
   ItemEnumeratorBaseT(ItemSharedInfo* shared_info,const Int32ConstArrayView& local_ids)
   : BaseClass(local_ids), m_item(NULL_ITEM_LOCAL_ID,shared_info) {}
-  ItemEnumeratorBaseT(const ItemInternalArrayView& items,const Int32ConstArrayView& local_ids,const ItemGroupImpl* agroup)
-  : BaseClass(local_ids,agroup){ _init(items.data()); }
+  ItemEnumeratorBaseT(const ItemInfoListView& items,const Int32ConstArrayView& local_ids,const ItemGroupImpl* agroup)
+  : BaseClass(local_ids,agroup), m_item(NULL_ITEM_LOCAL_ID,items.m_item_shared_info){ }
   ItemEnumeratorBaseT(const ItemInternalVectorView& view,const ItemGroupImpl* agroup)
   : BaseClass(view,agroup), m_item(NULL_ITEM_LOCAL_ID,view.m_shared_info) { }
   ItemEnumeratorBaseT(const ItemVectorView& rhs)
@@ -159,22 +157,35 @@ class ItemEnumeratorBaseT
   : ItemEnumeratorBaseT((const ItemInternalVectorView&)rhs,nullptr) {}
 
   ItemEnumeratorBaseT(const ItemEnumerator& rhs);
-  ItemEnumeratorBaseT(const ItemInternalEnumerator& rhs);
   ItemEnumeratorBaseT(const impl::ItemIndexedListView<DynExtent>& view)
   : ItemEnumeratorBaseT(view.m_shared_info, view.constLocalIds()){}
+
+ protected:
+
+  // TODO: a supprimer
+  ItemEnumeratorBaseT(const ItemInternalPtr* items,const Int32* local_ids,Integer n,const ItemGroupImpl* agroup)
+  : BaseClass(items,local_ids,n,agroup) { _init(items); }
+  // TODO: a supprimer
+  ItemEnumeratorBaseT(const ItemInternalArrayView& items,const Int32ConstArrayView& local_ids,const ItemGroupImpl* agroup)
+  : BaseClass(local_ids,agroup){ _init(items.data()); }
+  // TODO: a supprimer
+  ItemEnumeratorBaseT(const ItemInternalEnumerator& rhs);
 
  public:
 
   /*!
    * \internal
    * \brief Liste des ItemInternal.
+   * NOTE: Dans Arcane, méthode utilisée uniquement pour le wrapper C#. A supprimer ensuite
    */
+  ARCANE_DEPRECATED_REASON("Y2022: This is method is internal to Arcane")
   constexpr const ItemInternalPtr* unguardedItems() const { return _unguardedItems(m_item.m_shared_info); }
 
   /*!
    * \internal
    * \brief Partie interne (pour usage interne uniquement).
    */
+  ARCANE_DEPRECATED_REASON("Y2022: Use operator*() instead")
   constexpr ItemInternal* internal() const { return _internal(m_item.m_shared_info); }
 
  public:
@@ -203,7 +214,7 @@ class ItemEnumeratorBaseT
 
   void _init(const ItemInternalPtr* items)
   {
-    m_item.m_shared_info = ItemInternalCompatibility::_getSharedInfo(items);
+    m_item.m_shared_info = ItemInternalCompatibility::_getSharedInfo(items,count());
   }
 };
 

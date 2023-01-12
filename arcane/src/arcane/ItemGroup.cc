@@ -542,7 +542,7 @@ enumerator() const
   if (null())
     return ItemEnumerator();
   m_impl->checkNeedUpdate();
-  return ItemEnumerator(m_impl->itemsInternal(),m_impl->itemsLocalId(),m_impl.get());
+  return ItemEnumerator(m_impl->itemInfoListView(),m_impl->itemsLocalId(),m_impl.get());
 }
 
 /*---------------------------------------------------------------------------*/

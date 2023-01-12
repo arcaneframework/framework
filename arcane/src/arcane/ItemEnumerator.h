@@ -51,6 +51,7 @@ class ItemEnumerator
 : public ItemEnumeratorBaseT<Item>
 {
   friend class ItemEnumeratorCS;
+  friend class ItemGroup;
   friend class ItemVector;
   friend class ItemVectorView;
   friend class ItemPairEnumerator;
@@ -75,24 +76,48 @@ class ItemEnumerator
  public:
 
   ItemEnumerator() = default;
-  ItemEnumerator(const ItemInternalVectorView& view) : BaseClass(view,nullptr){}
-  ItemEnumerator(const ItemInternalEnumerator& rhs) : BaseClass(rhs,true){}
-  ItemEnumerator(const impl::ItemIndexedListView<DynExtent>& rhs) : BaseClass(rhs){}
 
-  // TODO: make deprecated
-  ItemEnumerator(const ItemInternalPtr* items,const Int32* local_ids,Integer n, const ItemGroupImpl* agroup = nullptr)
-  : BaseClass(items,local_ids,n,agroup){}
-  // TODO: make deprecated
-  ItemEnumerator(const ItemInternalArrayView& items,const Int32ConstArrayView& local_ids, const ItemGroupImpl* agroup = nullptr)
-  : BaseClass(items,local_ids,agroup){}
-  // TODO: make deprecated
+  ItemEnumerator(const ItemInternalVectorView& view)
+  : BaseClass(view, nullptr)
+  {}
+
+  ItemEnumerator(const ItemInternalEnumerator& rhs)
+  : BaseClass(rhs, true)
+  {}
+
+  ItemEnumerator(const impl::ItemIndexedListView<DynExtent>& rhs)
+  : BaseClass(rhs)
+  {}
+
+ private:
+
+  // Constructeur réservé pour ItemGroup
+  ItemEnumerator(const ItemInfoListView& items, const Int32ConstArrayView& local_ids, const ItemGroupImpl* agroup = nullptr)
+  : BaseClass(items, local_ids, agroup)
+  {}
+
+ public:
+
+  ARCANE_DEPRECATED_REASON("Y2022: Internal to Arcane. Use other constructor")
+  ItemEnumerator(const ItemInternalPtr* items, const Int32* local_ids, Integer n, const ItemGroupImpl* agroup = nullptr)
+  : BaseClass(items, local_ids, n, agroup)
+  {}
+
+  ARCANE_DEPRECATED_REASON("Y2022: Internal to Arcane. Use other constructor")
+  ItemEnumerator(const ItemInternalArrayView& items, const Int32ConstArrayView& local_ids, const ItemGroupImpl* agroup = nullptr)
+  : BaseClass(items, local_ids, agroup)
+  {}
+
+  ARCANE_DEPRECATED_REASON("Y2022: Internal to Arcane. Use other constructor")
   ItemEnumerator(const ItemInternalVectorView& view, const ItemGroupImpl* agroup)
-  : BaseClass(view,agroup){}
+  : BaseClass(view, agroup)
+  {}
 
  protected:
 
-  ItemEnumerator(ItemSharedInfo* s,const Int32ConstArrayView& local_ids)
-  : BaseClass(s,local_ids){}
+  ItemEnumerator(ItemSharedInfo* s, const Int32ConstArrayView& local_ids)
+  : BaseClass(s, local_ids)
+  {}
 
  public:
 
@@ -103,9 +128,10 @@ class ItemEnumerator
 
  private:
 
-  ItemEnumerator(const Int32* local_ids,Int32 index,Int32 n,
-                 const ItemGroupImpl* agroup,Item item_base)
-  : BaseClass(local_ids,index,n,agroup,item_base){}
+  ItemEnumerator(const Int32* local_ids, Int32 index, Int32 n,
+                 const ItemGroupImpl* agroup, Item item_base)
+  : BaseClass(local_ids, index, n, agroup, item_base)
+  {}
 };
 
 /*---------------------------------------------------------------------------*/
@@ -116,7 +142,7 @@ class ItemEnumerator
 
 //! Constructeur seulement utilisé par fromItemEnumerator()
 inline ItemEnumeratorBase::
-ItemEnumeratorBase(const ItemEnumerator& rhs,bool)
+ItemEnumeratorBase(const ItemEnumerator& rhs, bool)
 : m_local_ids(rhs.unguardedLocalIds())
 , m_index(rhs.index())
 , m_count(rhs.count())
@@ -202,6 +228,8 @@ class ItemEnumeratorT
   ItemEnumeratorT(const ItemVectorView& rhs) : BaseClass(rhs){}
   ItemEnumeratorT(const ItemVectorViewT<ItemType>& rhs) : BaseClass(rhs){}
 
+ public:
+
   [[deprecated("Y2021: Use strongly typed enumerator (Node, Face, Cell, ...) instead of generic (Item) enumerator")]]
   ItemEnumeratorT(const ItemEnumerator& rhs)
   : BaseClass(rhs){}
@@ -210,15 +238,26 @@ class ItemEnumeratorT
   ItemEnumeratorT(const ItemInternalEnumerator& rhs)
   : BaseClass(rhs){}
 
-  // TODO: rendre obsolète
+ public:
+
+  ARCANE_DEPRECATED_REASON("Y2022: Internal to Arcane. Use other constructor")
   ItemEnumeratorT(const ItemInternalPtr* items,const Int32* local_ids,Integer n, const ItemGroupImpl* agroup = nullptr)
   : BaseClass(items,local_ids,n,agroup){}
-  // TODO: rendre obsolète
+
+  ARCANE_DEPRECATED_REASON("Y2022: Internal to Arcane. Use other constructor")
   ItemEnumeratorT(const ItemInternalArrayView& items,const Int32ConstArrayView& local_ids, const ItemGroupImpl* agroup = nullptr)
   : BaseClass(items,local_ids,agroup){}
-  // TODO: rendre obsolète
+
+  ARCANE_DEPRECATED_REASON("Y2022: Internal to Arcane. Use other constructor")
   ItemEnumeratorT(const ItemInternalVectorView& view, const ItemGroupImpl* agroup = nullptr)
   : BaseClass(view,agroup){}
+
+ private:
+
+  // Constructeur réservé pour ItemGroup
+  ItemEnumeratorT(const ItemInfoListViewT<ItemType>& items, const Int32ConstArrayView& local_ids, const ItemGroupImpl* agroup = nullptr)
+  : BaseClass(items, local_ids, agroup)
+  {}
 
  private:
 

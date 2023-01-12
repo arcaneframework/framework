@@ -1150,9 +1150,9 @@ class ItemInternalCompatibility
   {
     return item->m_shared_info;
   }
-  static ItemSharedInfo* _getSharedInfo(const ItemInternalPtr* items)
+  static ItemSharedInfo* _getSharedInfo(const ItemInternalPtr* items,Int32 count)
   {
-    return ((items) ? items[0]->m_shared_info : ItemSharedInfo::nullInstance());
+    return ((items && count>0) ? items[0]->m_shared_info : ItemSharedInfo::nullInstance());
   }
   static const ItemInternalPtr* _getItemInternalPtr(ItemSharedInfo* shared_info)
   {
