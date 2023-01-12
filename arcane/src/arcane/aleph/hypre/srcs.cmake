@@ -1,3 +1,3 @@
 set(ARCANE_SOURCES
-  IAlephHypre.cc
+  AlephHypre.cc
 )
