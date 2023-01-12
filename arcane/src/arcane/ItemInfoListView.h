@@ -48,6 +48,7 @@ class ARCANE_CORE_EXPORT ItemInfoListView
   friend class ItemVectorView;
   friend class ItemVector;
   friend class ItemPairEnumerator;
+  template<typename ItemType> friend class ItemEnumeratorBaseT;
 
  public:
 
