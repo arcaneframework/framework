@@ -652,7 +652,7 @@ fillShape(ArrayShape& shape_with_item)
   // Il faudrait pouvoir en faire une seule version.
   ArrayShape shape = m_data->shape();
   const Int32 nb_rank = shape_with_item.nbDimension();
-  std::cout << "SHAPE=" << shape.dimensions() << " internal_rank=" << nb_rank << "\n";
+  //std::cout << "SHAPE=" << shape.dimensions() << " internal_rank=" << nb_rank << "\n";
   auto array_view = m_data->view();
   Int32 dim0_size = array_view.dim1Size();
 
