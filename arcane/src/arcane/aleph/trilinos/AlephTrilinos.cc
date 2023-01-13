@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*****************************************************************************
- * IAlephTrilinos.h                                            (C) 2010-2022 *
+ * IAlephTrilinos.h                                            (C) 2010-2023 *
  * constants for output types
  #define AZ_all             -4  Print out everything including matrix
  #define AZ_none             0  Print out no results (not even warnings)
@@ -13,8 +13,8 @@
  #define AZ_summary         -2  Print out summary, final residual and warnings
  #define AZ_warnings        -3  Print out only warning messages
  *****************************************************************************/
-#ifndef _ALEPH_INTERFACE_TRILINOS_H_
-#define _ALEPH_INTERFACE_TRILINOS_H_
+
+#include "arcane/aleph/AlephArcane.h"
 
 #include "Epetra_config.h"
 #include "Epetra_Vector.h"
@@ -571,9 +571,12 @@ class TrilinosAlephFactoryImpl : public AbstractService
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+ARCANE_REGISTER_APPLICATION_FACTORY(TrilinosAlephFactoryImpl,IAlephFactoryImpl,TrilinosAlephFactory);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#endif // _ALEPH_INTERFACE_TRILINOS_H_
