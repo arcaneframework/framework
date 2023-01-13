@@ -1,3 +1,3 @@
 set(ARCANE_SOURCES
-  IAlephTrilinos.cc
+  AlephTrilinos.cc
 )
