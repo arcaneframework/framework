@@ -51,9 +51,9 @@
 #include "arcane/ISerializeMessageList.h"
 #include "arcane/SerializeMessage.h"
 
-#include "arcane/std/Hdf5MpiReaderWriter.h"
+#include "arcane/hdf5/Hdf5MpiReaderWriter.h"
 
-#include "arcane/std/Hdf5MpiReaderWriter_axl.h"
+#include "arcane/hdf5/Hdf5MpiReaderWriter_axl.h"
 
 #include "arcane_packages.h"
 

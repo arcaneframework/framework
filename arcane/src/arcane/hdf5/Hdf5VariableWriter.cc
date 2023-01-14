@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Hdf5VariableWriter.cc                                       (C) 2000-2020 */
+/* Hdf5VariableWriter.cc                                       (C) 2000-2023 */
 /*                                                                           */
 /* Ecriture de variables au format HDF5.                                     */
 /*---------------------------------------------------------------------------*/
@@ -35,8 +35,8 @@
 
 #include "arcane/utils/Collection.h"
 
-#include "arcane/std/Hdf5VariableWriter_axl.h"
-#include "arcane/std/Hdf5VariableInfoBase.h"
+#include "arcane/hdf5/Hdf5VariableWriter_axl.h"
+#include "arcane/hdf5/Hdf5VariableInfoBase.h"
 
 #include <set>
 
