@@ -15,6 +15,7 @@ arcane_add_library(arcane_hdf5
   INPUT_PATH ${Arcane_SOURCE_DIR}/src
   RELATIVE_PATH arcane/hdf5
   FILES ${ARCANE_SOURCES}
+  AXL_FILES ${AXL_FILES}
 )
 
 # ----------------------------------------------------------------------------
