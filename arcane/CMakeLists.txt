@@ -830,6 +830,7 @@ if (ARCANE_WANT_64BIT)
   SET(ARCANE_DOTNET_64BIT_DEFINE "/define:ARCANE_64BIT")
 endif()
 
+add_subdirectory(src/arcane/hdf5)
 add_subdirectory(src/arcane/std)
 add_subdirectory(src/arcane/aleph)
 add_subdirectory(src/arcane/driverlib)

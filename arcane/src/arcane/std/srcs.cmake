@@ -104,10 +104,6 @@ set(ARCANE_SOURCES
 )
 
 set(AXL_FILES
-  Hdf5ReaderWriter
-  Hdf5VariableReader
-  Hdf5VariableWriter
-  Hdf5MpiReaderWriter
   EnsightHdfPostProcessor
   ArcaneBasicCheckpoint
   ArcaneLoadBalance

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Hdf5Utils.cc                                                (C) 2000-2019 */
+/* Hdf5Utils.cc                                                (C) 2000-2023 */
 /*                                                                           */
 /* Utilitaires HDF5.                                                         */
 /*---------------------------------------------------------------------------*/
@@ -25,7 +25,7 @@
 #include "arcane/ArcaneException.h"
 #include "arcane/IParallelMng.h"
 
-#include "arcane/std/Hdf5Utils.h"
+#include "arcane/hdf5/Hdf5Utils.h"
 
 #include <algorithm>
 
@@ -56,7 +56,7 @@ static hid_t _H5Gcreate(hid_t loc_id, const char *name)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C" ARCANE_STD_EXPORT herr_t
+extern "C" ARCANE_HDF5_EXPORT herr_t
 _ArcaneHdf5UtilsGroupIterateMe(hid_t g,const char* mn,void* ptr)
 {
   ARCANE_UNUSED(g);

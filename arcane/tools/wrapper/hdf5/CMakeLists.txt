@@ -43,7 +43,7 @@ arcane_wrapper_add_swig_target(NAME hdf5 SOURCE ArcaneSwigHdf5.i
   DLL_NAME Arcane.Hdf5
   SWIG_TARGET_DEPENDS core
   )
-target_link_libraries(arcane_dotnet_wrapper_hdf5 PUBLIC arcane_std)
+target_link_libraries(arcane_dotnet_wrapper_hdf5 PUBLIC arcane_hdf5)
 arcane_add_arccon_packages(arcane_dotnet_wrapper_hdf5 PRIVATE HDF5)
 # Indique les .i dont dépend 'ArcaneSwigServices.i'
 set_property(TARGET arcane_dotnet_wrapper_hdf5 PROPERTY SWIG_DEPENDS ${ARCANE_SWIG_HDF5_FILES})

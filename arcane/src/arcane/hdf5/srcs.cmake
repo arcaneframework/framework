@@ -1,0 +1,20 @@
+set(ARCANE_SOURCES
+  ArcaneHdf5Global.h
+  Hdf5Utils.cc
+  Hdf5Utils.h
+  Hdf5VariableInfoBase.cc
+  Hdf5VariableInfoBase.h
+  Hdf5ReaderWriter.cc
+  Hdf5ReaderWriter.h
+  Hdf5VariableReader.cc
+  Hdf5VariableWriter.cc
+  Hdf5MpiReaderWriter.cc
+  Hdf5MpiReaderWriter.h
+)
+
+set(AXL_FILES
+  Hdf5ReaderWriter
+  Hdf5VariableReader
+  Hdf5VariableWriter
+  Hdf5MpiReaderWriter
+)
