@@ -24,7 +24,6 @@ if(LZ4_FOUND)
 endif()
 if(HDF5_FOUND)
   list(APPEND ARCANE_SOURCES
-    Hdf5VariableInfoBase.cc
     Hdf5ReaderWriter.cc
     Hdf5VariableReader.cc
     Hdf5VariableWriter.cc
