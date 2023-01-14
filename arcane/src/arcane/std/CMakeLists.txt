@@ -24,7 +24,6 @@ if(LZ4_FOUND)
 endif()
 if(HDF5_FOUND)
   list(APPEND ARCANE_SOURCES
-    Hdf5Utils.cc
     Hdf5VariableInfoBase.cc
     Hdf5ReaderWriter.cc
     Hdf5VariableReader.cc
@@ -132,6 +131,9 @@ endif()
 
 if (TARGET Arccore::arccore_message_passing_mpi)
   target_link_libraries(arcane_std PUBLIC Arccore::arccore_message_passing_mpi)
+endif()
+if (TARGET Arcane::arcane_hdf5)
+  target_link_libraries(arcane_std PUBLIC Arcane::arcane_hdf5)
 endif()
 target_link_libraries(arcane_std PUBLIC ${ARCANE_BASE_LIBRARIES})
 

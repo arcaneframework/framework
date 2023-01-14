@@ -1,7 +1,7 @@
 // %ignore must be before %include of non-template declaration
 %ignore Arcane::Hdf5Utils::_ArcaneHdf5UtilsGroupIterateMe;
 
-%include arcane/std/Hdf5Utils.h
+%include arcane/hdf5/Hdf5Utils.h
 
 %define SWIG_ARCANE_HDF5UTILS_STANDARD_SCALAR_SPECIALIZE( DATATYPE )
   typedef Arcane::Hdf5Utils::StandardScalarT<DATATYPE> Hdf5Utils##DATATYPE##Scalar;
