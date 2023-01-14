@@ -23,6 +23,8 @@
 #include "arcane/utils/Real3x3.h"
 #include "arcane/datatype/DataTypes.h"
 
+#include "arcane/hdf5/ArcaneHdf5Global.h"
+
 // Si HDF5 est compilé avec MPI, alors hdf5.h inclue mpi.h et il faut
 // signaler qu'on ne souhaite pas avoir la partie C++ de MPI
 // NOTE: Avec HDF5 1.10, ces deux macros sont définies donc il n'y a
@@ -73,14 +75,14 @@ namespace Hdf5Utils
 {
 extern "C"
 {
-  ARCANE_STD_EXPORT herr_t _ArcaneHdf5UtilsGroupIterateMe(hid_t,const char*,void*);
+  ARCANE_HDF5_EXPORT herr_t _ArcaneHdf5UtilsGroupIterateMe(hid_t,const char*,void*);
 }
 
 /*! \brief Classe servant d'initialiseur pour HDF.
  * Cet objet permet d'initialiser et libérer les structures HDF
  * de manière automatique et sure, notamment en cas d'exception.
  */
-class ARCANE_STD_EXPORT HInit
+class ARCANE_HDF5_EXPORT HInit
 {
  public:
   HInit() { H5open(); }
@@ -92,7 +94,7 @@ class ARCANE_STD_EXPORT HInit
 /*!
  * \brief Encapsule un hid_t
  */
-class ARCANE_STD_EXPORT Hid
+class ARCANE_HDF5_EXPORT Hid
 {
  public:
   Hid() : m_id(-1) {}
@@ -116,7 +118,7 @@ class ARCANE_STD_EXPORT Hid
 /*!
  * \brief Encapsule un hid_t pour un fichier.
  */
-class ARCANE_STD_EXPORT HFile
+class ARCANE_HDF5_EXPORT HFile
 : public Hid
 {
  public:
@@ -137,7 +139,7 @@ class ARCANE_STD_EXPORT HFile
 /*!
  * \brief Classe d'aide pour rechercher un groupe.
  */
-class ARCANE_STD_EXPORT HGroupSearch
+class ARCANE_HDF5_EXPORT HGroupSearch
 {
  public:
   HGroupSearch(const String& group_name)
@@ -160,7 +162,7 @@ class ARCANE_STD_EXPORT HGroupSearch
 /*!
  * \brief Encapsule un hid_t pour un groupe.
  */
-class ARCANE_STD_EXPORT HGroup
+class ARCANE_HDF5_EXPORT HGroup
 : public Hid
 {
  public:
@@ -193,7 +195,7 @@ class ARCANE_STD_EXPORT HGroup
 /*!
  * \brief Encapsule un hid_t pour un dataspace.
  */
-class ARCANE_STD_EXPORT HSpace
+class ARCANE_HDF5_EXPORT HSpace
 : public Hid
 {
  public:
@@ -209,7 +211,7 @@ class ARCANE_STD_EXPORT HSpace
 /*!
  * \brief Encapsule un hid_t pour un dataset.
  */
-class ARCANE_STD_EXPORT HDataset
+class ARCANE_HDF5_EXPORT HDataset
 : public Hid
 {
  public:
@@ -241,7 +243,7 @@ class ARCANE_STD_EXPORT HDataset
 /*!
  * \brief Encapsule un hid_t pour un attribute.
  */
-class ARCANE_STD_EXPORT HAttribute
+class ARCANE_HDF5_EXPORT HAttribute
 : public Hid
 {
  public:
@@ -265,7 +267,7 @@ class ARCANE_STD_EXPORT HAttribute
 /*!
  * \brief Encapsule un hid_t pour un type.
  */
-class ARCANE_STD_EXPORT HType
+class ARCANE_HDF5_EXPORT HType
 : public Hid
 {
  public:
@@ -279,7 +281,7 @@ class ARCANE_STD_EXPORT HType
 /*!
  * \brief Définition des types standards Arcane pour hdf5.
  */
-class ARCANE_STD_EXPORT StandardTypes
+class ARCANE_HDF5_EXPORT StandardTypes
 {
  public:
   StandardTypes();
@@ -363,7 +365,7 @@ private:
  * \brief Encapsule un dataset simple d'un fichier HDF5 qui représente
  * un tableau.
  */
-class ARCANE_STD_EXPORT StandardArray
+class ARCANE_HDF5_EXPORT StandardArray
 {
  public:
   StandardArray(hid_t hfile,const String& hpath);
@@ -399,7 +401,7 @@ class ARCANE_STD_EXPORT StandardArray
  * un tableau.
  */
 template<typename DataType>
-class ARCANE_STD_EXPORT StandardArrayT
+class ARCANE_HDF5_EXPORT StandardArrayT
 : public StandardArray
 {
  private:
@@ -446,7 +448,7 @@ class ARCANE_STD_EXPORT StandardArrayT
  * \brief Encapsule un dataset simple d'un fichier HDF5 qui représente un scalaire (éventuellement String).
  */
 template<typename DataType>
-class ARCANE_STD_EXPORT StandardScalarT
+class ARCANE_HDF5_EXPORT StandardScalarT
 {
  public:
   //! Constructeur

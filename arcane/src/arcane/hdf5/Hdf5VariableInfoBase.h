@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Liaison d'une variable avec un fichier HDF5.                              */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_STD_HDF5VARIABLEINFOBASE_H
-#define ARCANE_STD_HDF5VARIABLEINFOBASE_H
+#ifndef ARCANE_HDF5_HDF5VARIABLEINFOBASE_H
+#define ARCANE_HDF5_HDF5VARIABLEINFOBASE_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -34,7 +34,7 @@ class IVariable;
  * \internal
  * \brief Classe de base pour lire ou écrire une variables.
  */
-class ARCANE_STD_EXPORT Hdf5VariableInfoBase
+class ARCANE_HDF5_EXPORT Hdf5VariableInfoBase
 {
  public:
   /*!

@@ -56,7 +56,7 @@ static hid_t _H5Gcreate(hid_t loc_id, const char *name)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C" ARCANE_STD_EXPORT herr_t
+extern "C" ARCANE_HDF5_EXPORT herr_t
 _ArcaneHdf5UtilsGroupIterateMe(hid_t g,const char* mn,void* ptr)
 {
   ARCANE_UNUSED(g);

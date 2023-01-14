@@ -2,6 +2,8 @@
 
 %import core/ArcaneSwigCore.i
 
+#define ARCANE_HDF5_EXPORT
+
 // A partir de HDF5 1.10, hid_t est de type 'Int64'.
 // Avant, il est de type 'int'.
 // Comme ce paramêtre n'est pas utilisé par référence, on
