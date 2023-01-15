@@ -165,6 +165,7 @@ class HashTableBaseT
   void clear()
   {
     m_buckets.fill(0);
+    m_count = 0;
   }
 
   //! Redimensionne la table de hachage
