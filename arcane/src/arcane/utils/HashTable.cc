@@ -1,17 +1,15 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* HashTable.cc                                                (C) 2000-2014 */
+/* HashTable.cc                                                (C) 2000-2023 */
 /*                                                                           */
 /* Table de hachage.                                                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/HashTable.h"
 #include "arcane/utils/HashTableMap.h"
@@ -24,7 +22,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -33,11 +32,11 @@ class HashTableException
 : public std::exception
 {
  public:
- public:
+
   virtual const char* what() const ARCANE_NOEXCEPT
-    {
-      return "HashTable::throwNotFound()";
-    }
+  {
+    return "HashTable::throwNotFound()";
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -48,8 +47,7 @@ _throwNotFound() const
 {
   cerr << "** FATAL: HashTable:_throwNotFound()\n";
   arcaneDebugPause("HashTableBase::throwNotFound()");
-  throw FatalErrorException(A_FUNCINFO,"key not found");
-  //throw HashTableException();
+  ARCANE_FATAL("key not found");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -133,8 +131,8 @@ nearestPrimeNumber(Integer n)
   };
   int nb = sizeof(PRIME_NUMBER) / sizeof(Integer);
 
-  for( Integer i=0; i<nb; ++i )
-    if (PRIME_NUMBER[i]>=n){
+  for (Integer i = 0; i < nb; ++i)
+    if (PRIME_NUMBER[i] >= n) {
       return PRIME_NUMBER[i];
     }
   return n;
@@ -143,7 +141,7 @@ nearestPrimeNumber(Integer n)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
