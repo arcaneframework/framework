@@ -1,0 +1,3 @@
+#if !defined(ARCANE_@upper_name@) && !defined(ARCANE_CORE_@upper_name@)
+#include "arcane/core/@file@"
+#endif
