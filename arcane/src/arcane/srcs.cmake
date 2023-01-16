@@ -61,11 +61,14 @@ set(ARCANE_INTERNAL_SOURCES
 )
 
 set(ARCANE_ORIGINAL_SOURCES
+  AbstractModule.h
   ApplicationBuildInfo.h
   ApplicationBuildInfo.cc
   ArcaneException.h
   ArcaneTypes.h
   ArcaneTypes.cc
+
+  BasicModule.h
 
   CaseFunction.h
   CaseOptionBase.h
@@ -87,9 +90,21 @@ set(ARCANE_ORIGINAL_SOURCES
   ICaseOptions.h
   ICaseOptionList.h
   IDirectory.h
+  IEntryPoint.h
+  IItemConnectivityInfo.h
   IItemFamily.h
   ISession.h
   IMainFactory.h
+  IMesh.h
+  IMeshBase.h
+  IMeshModifier.h
+  IMeshUtilities.h
+  IModule.h
+  IModuleFactory.h
+  IPrimaryMesh.h
+  IService.h
+  IServiceFactory.h
+  IServiceInfo.h
   ItemGroupImpl.h
   ITimeHistoryMng.h
   ITimeLoopMng.h
@@ -97,8 +112,18 @@ set(ARCANE_ORIGINAL_SOURCES
   IVariable.h
   IVariableMng.h
 
+  MeshHandle.h
+  MeshPartInfo.h
   MeshReaderMng.h
+  ModuleBuildInfo.h
+  ModuleFactory.h
 
+  ServiceBuilder.h
+  ServiceBuildInfo.h
+  ServiceFactory.h
+  ServiceInfo.h
+  ServiceInstance.h
+  ServiceProperty.h
   SharedReference.h
   SharedVariable.h
   StandardCaseFunction.h
@@ -127,7 +152,6 @@ set(ARCANE_SOURCES
   AbstractDataVisitor.cc
   AbstractDataVisitor.h
   AbstractModule.cc
-  AbstractModule.h
   AbstractService.cc
   AbstractService.h
   AbstractItemOperationByBasicType.cc
@@ -142,7 +166,6 @@ set(ARCANE_SOURCES
   CaseOptionsMain.cc
   CaseOptionsMain.h
   BasicModule.cc
-  BasicModule.h
   BasicService.cc
   BasicService.h
   BasicUnitTest.cc
@@ -231,18 +254,14 @@ set(ARCANE_SOURCES
   MeshAreaAccessor.h
   MeshItemInternalList.cc
   MeshItemInternalList.h
-  MeshHandle.h
   MeshHandle.cc
   MeshPartInfo.cc
-  MeshPartInfo.h
   MeshVisitor.cc
   MeshVisitor.h
   MeshStats.cc
   MeshStats.h
   ModuleBuildInfo.cc
-  ModuleBuildInfo.h
   ModuleFactory.cc
-  ModuleFactory.h
   NullXmlDocumentHolder.cc
   Observable.h
   Observer.h
@@ -338,14 +357,9 @@ set(ARCANE_SOURCES
   GroupIndexTable.cc
   GroupIndexTable.h
   ServiceFactory.cc
-  ServiceFactory.h
   ServiceBuildInfo.cc
-  ServiceBuildInfo.h
   ServiceBuilder.cc
-  ServiceBuilder.h
   ServiceInfo.cc
-  ServiceInfo.h
-  ServiceInstance.h
   ServiceRegisterer.cc
   ServiceRegisterer.h
   SimdItem.cc
@@ -430,12 +444,10 @@ set(ARCANE_SOURCES
   parallel/MultiReduce.cc
   AbstractCaseDocumentVisitor.h
   AbstractDataVisitor.h
-  AbstractModule.h
   AbstractService.h
   AbstractItemOperationByBasicType.h
   Array2Variable.h
   CaseOptionsMain.h
-  BasicModule.h
   BasicService.h
   BasicUnitTest.h
   CaseNodeNames.h
@@ -470,11 +482,8 @@ set(ARCANE_SOURCES
   MeshAccessor.h
   MeshArea.h
   MeshAreaAccessor.h
-  MeshPartInfo.h
   MeshVisitor.h
   MeshStats.h
-  ModuleBuildInfo.h
-  ModuleFactory.h
   Observable.h
   Observer.h
   ObserverPool.h
@@ -512,10 +521,6 @@ set(ARCANE_SOURCES
   MeshUtils.h
   MeshVariableRef.h
   GroupIndexTable.h
-  ServiceFactory.h
-  ServiceBuildInfo.h
-  ServiceBuilder.h
-  ServiceInfo.h
   ServiceRegisterer.h
   SimdItem.h
   PostProcessorWriterBase.h
@@ -559,8 +564,6 @@ set(ARCANE_SOURCES
   IGetVariablesValuesParallelOperation.h
   IGhostLayerMng.h
   ICodeService.h
-  IServiceInfo.h
-  IService.h
   ITransferValuesParallelOperation.h
   IDirectExecution.h
   IDirectSubDomainExecuteFunctor.h
@@ -598,7 +601,6 @@ set(ARCANE_SOURCES
   IItemConnectivity.h
   IItemConnectivityAccessor.h
   IItemConnectivityMng.h
-  IItemConnectivityInfo.h
   IItemConnectivitySynchronizer.h
   IItemEnumeratorTracer.h
   IItemFamilyCompactPolicy.h
@@ -618,7 +620,6 @@ set(ARCANE_SOURCES
   ITimeHistoryCurveWriter2.h
   IItemOperationByBasicType.h
   ITimerMng.h
-  IEntryPoint.h
   IEntryPointMng.h
   IMeshPartitionConstraint.h
   IMeshPartitionConstraintMng.h
@@ -632,13 +633,10 @@ set(ARCANE_SOURCES
   IMeshExchanger.h
   IMeshFactoryMng.h
   IMeshMng.h
-  IMeshModifier.h
   IMeshReader.h
   IMeshWriter.h
   IMeshStats.h
-  IMeshUtilities.h
   IMeshWriter.h
-  IModule.h
   IParallelNonBlockingCollective.h
   IParallelMng.h
   IParallelMngUtilsFactory.h
@@ -679,8 +677,6 @@ set(ARCANE_SOURCES
   IVariableSynchronizer.h
   IVerifierService.h
   IVariableUtilities.h
-  IServiceFactory.h
-  IModuleFactory.h
   IStandardFunction.h
   IXmlDocumentHolder.h
   ItemInternalEnumerator.h
@@ -698,7 +694,6 @@ set(ARCANE_SOURCES
   MultiArray2VariableRef.h
   SimpleProperty.h
   ServiceUtils.h
-  ServiceProperty.h
   ServiceFinder.h
   ServiceFinder2.h
   SimdMathUtils.h
@@ -744,10 +739,8 @@ set(ARCANE_SOURCES
   ArcaneVersion.h
   TiedNode.h
   TiedFace.h
-  IMesh.h
   IGraph2.h
   IGraphModifier2.h
-  IPrimaryMesh.h
   IMeshSubMeshTransition.h
   ServiceOptions.h
   IExtraGhostItemsBuilder.h
@@ -759,7 +752,6 @@ set(ARCANE_SOURCES
   MeshPartialVariableArrayRefT.H
   PrivateVariableScalarT.H
   PrivateVariableArrayT.H
-  IMeshBase.h
 
   IRandomNumberGenerator.h
 
