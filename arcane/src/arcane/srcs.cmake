@@ -89,6 +89,13 @@ set(ARCANE_ORIGINAL_SOURCES
   ICaseMng.h
   ICaseOptions.h
   ICaseOptionList.h
+  ICheckpointReader.h
+  ICheckpointWriter.h
+  IData.h
+  IDataReader.h
+  IDataVisitor.h
+  IDataWriter.h
+  IDirectExecution.h
   IDirectory.h
   IEntryPoint.h
   IItemConnectivityInfo.h
@@ -98,25 +105,38 @@ set(ARCANE_ORIGINAL_SOURCES
   IMesh.h
   IMeshBase.h
   IMeshModifier.h
+  IMeshReader.h
   IMeshUtilities.h
   IModule.h
   IModuleFactory.h
+  IPostProcessorWriter.h
   IPrimaryMesh.h
+  ISerializedData.h
   IService.h
   IServiceFactory.h
   IServiceInfo.h
+  ISubDomain.h
+  ItemGroup.h
   ItemGroupImpl.h
+  ItemPairGroup.h
+  ItemPairGroupBuilder.h
+  ITimeHistoryCurveWriter.h
+  ITimeHistoryCurveWriter2.h
   ITimeHistoryMng.h
   ITimeLoopMng.h
-  ISubDomain.h
+  IUnitTest.h
   IVariable.h
   IVariableMng.h
+  IVariableReader.h
 
   MeshHandle.h
   MeshPartInfo.h
   MeshReaderMng.h
   ModuleBuildInfo.h
   ModuleFactory.h
+
+  PrivateVariableScalar.h
+  PrivateVariableArray.h
 
   ServiceBuilder.h
   ServiceBuildInfo.h
@@ -128,6 +148,10 @@ set(ARCANE_ORIGINAL_SOURCES
   SharedVariable.h
   StandardCaseFunction.h
   StdNum.h
+
+  VariableBuildInfo.h
+  VariableCollection.h
+  VariableRef.h
 
   XmlNode.h
   XmlNodeList.h
@@ -222,14 +246,11 @@ set(ARCANE_SOURCES
   ItemPairEnumerator.cc
   ItemPairEnumerator.h
   ItemPairGroup.cc
-  ItemPairGroup.h
   ItemPairGroupBuilder.cc
-  ItemPairGroupBuilder.h
   ItemPairGroupImpl.cc
   ItemPairGroupImpl.h
   ItemGroupImpl.cc
   ItemGroup.cc
-  ItemGroup.h
   ItemGroupComputeFunctor.cc
   ItemGroupComputeFunctor.h
   ItemGroupRangeIterator.cc
@@ -316,11 +337,9 @@ set(ARCANE_SOURCES
   VariableInfo.cc
   VariableInfo.h
   VariableRef.cc
-  VariableRef.h
   VariableTypeInfo.h
   VariableTypeInfo.cc
   VariableBuildInfo.cc
-  VariableBuildInfo.h
   VariableRefScalar.cc
   VariableRefScalar.h
   VariableRefArray.cc
@@ -468,10 +487,7 @@ set(ARCANE_SOURCES
   ItemEnumerator.h
   ItemFunctor.h
   ItemPairEnumerator.h
-  ItemPairGroup.h
-  ItemPairGroupBuilder.h
   ItemPairGroupImpl.h
-  ItemGroup.h
   ItemGroupComputeFunctor.h
   ItemGroupRangeIterator.h
   ItemInternal.h
@@ -505,8 +521,6 @@ set(ARCANE_SOURCES
   CheckpointInfo.h
   Variable.h
   VariableInfo.h
-  VariableRef.h
-  VariableBuildInfo.h
   VariableRefScalar.h
   VariableRefArray.h
   VariableRefArray2.h
@@ -548,8 +562,6 @@ set(ARCANE_SOURCES
   ICaseMeshReader.h
   ICaseMeshService.h
   ICheckpointMng.h
-  ICheckpointReader.h
-  ICheckpointWriter.h
   IConfiguration.h
   IConfigurationMng.h
   IConfigurationSection.h
@@ -565,19 +577,13 @@ set(ARCANE_SOURCES
   IGhostLayerMng.h
   ICodeService.h
   ITransferValuesParallelOperation.h
-  IDirectExecution.h
   IDirectSubDomainExecuteFunctor.h
   IDataFactory.h
   IDataFactoryMng.h
   IDataStorageFactory.h
   ISerializer.h
-  ISerializedData.h
-  IData.h
-  IDataReader.h
   IDataReader2.h
   IDataReaderWriter.h
-  IDataVisitor.h
-  IDataWriter.h
   IDumpRW.h
   IDumpR.h
   IDumpW.h
@@ -615,9 +621,7 @@ set(ARCANE_SOURCES
   IItemInternalSortFunction.h
   ItemInternalSortFunction.h
   ItemGroupObserver.h
-  ITimeHistoryCurveWriter.h
   ITimeHistoryTransformer.h
-  ITimeHistoryCurveWriter2.h
   IItemOperationByBasicType.h
   ITimerMng.h
   IEntryPointMng.h
@@ -633,7 +637,6 @@ set(ARCANE_SOURCES
   IMeshExchanger.h
   IMeshFactoryMng.h
   IMeshMng.h
-  IMeshReader.h
   IMeshWriter.h
   IMeshStats.h
   IMeshWriter.h
@@ -668,7 +671,6 @@ set(ARCANE_SOURCES
   ISerializeMessage.h
   ITiedInterface.h
   ITimeLoopService.h
-  IVariableReader.h
   IVariableComputeFunction.h
   IVariableFactory.h
   IVariableFilter.h
@@ -701,7 +703,6 @@ set(ARCANE_SOURCES
   UnstructuredMeshConnectivity.h
   UnstructuredMeshConnectivity.cc
   UnitTestServiceAdapter.h
-  VariableCollection.h
   VariableCollection.cc
   VariableComputeFunction.h
   VariableList.h
@@ -713,8 +714,6 @@ set(ARCANE_SOURCES
   VariableView.h
   VariableStatusChangedEventArgs.h
   MeshVariable.h
-  PrivateVariableScalar.h
-  PrivateVariableArray.h
   MeshBuildInfo.h
   MeshBuildInfo.cc
   MeshReaderMng.cc
@@ -725,10 +724,8 @@ set(ARCANE_SOURCES
   MeshVariableInfo.h
   ItemCompare.h
   ItemIndexArrayView.h
-  IPostProcessorWriter.h
   IMeshFactory.h
   IModuleMaster.h
-  IUnitTest.h
   IIOMng.h
   ObservablePool.h
   Service.h

@@ -8,11 +8,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-%include arcane/VariableBuildInfo.h
-%include arcane/VariableRef.h
+%include arcane/core/VariableBuildInfo.h
+%include arcane/core/VariableRef.h
 
-%include arcane/PrivateVariableScalar.h
-%include arcane/PrivateVariableArray.h
+%include arcane/core/PrivateVariableScalar.h
+%include arcane/core/PrivateVariableArray.h
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

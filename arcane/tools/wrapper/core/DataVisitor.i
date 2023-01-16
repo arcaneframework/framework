@@ -9,9 +9,9 @@
 %feature("director") Arcane::IDataVisitor;
 %feature("director") Arcane::AbstractDataVisitor;
 
-%include arcane/ISerializedData.h
-%include arcane/IData.h
-%include arcane/IDataVisitor.h
+%include arcane/core/ISerializedData.h
+%include arcane/core/IData.h
+%include arcane/core/IDataVisitor.h
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

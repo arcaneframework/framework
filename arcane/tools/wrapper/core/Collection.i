@@ -141,7 +141,7 @@ SWIG_ARCANE_COLLECTION_ENUMERATOR(Arcane::VariableCollectionEnumerator,Arcane.IV
   }
 %}
 
-%include arcane/VariableCollection.h
+%include arcane/core/VariableCollection.h
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
