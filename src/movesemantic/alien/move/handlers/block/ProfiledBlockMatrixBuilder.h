@@ -18,10 +18,10 @@
 
 #pragma once
 
-#include <alien/handlers/scalar/BaseDirectMatrixBuilder.h>
-#include <alien/utils/MoveObject.h>
-
+// FIXME: Check if correct object is used.
+#include <alien/handlers/block/ProfiledFixedBlockMatrixBuilder.h>
 #include <alien/move/data/MatrixData.h>
+#include <alien/utils/MoveObject.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -32,21 +32,16 @@ namespace Alien::Move
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class DirectMatrixBuilder : protected MoveObject<MatrixData>
-, public Common::DirectMatrixBuilder
+class ProfiledBlockMatrixBuilder : protected MoveObject<MatrixData>
+, public Common::ProfiledFixedBlockMatrixBuilder
 {
  public:
-  using Common::DirectMatrixBuilder::ReserveFlag;
-  using Common::DirectMatrixBuilder::ResetFlag;
-  using Common::DirectMatrixBuilder::SymmetricFlag;
+  using Common::ProfiledFixedBlockMatrixBuilder::ResetFlag;
 
-  DirectMatrixBuilder(MatrixData&& matrix, const ResetFlag reset_flag,
-                      const SymmetricFlag symmetric_flag = SymmetricFlag::eSymmetric)
+  ProfiledBlockMatrixBuilder(MatrixData&& matrix, const ResetFlag reset_flag)
   : MoveObject<MatrixData>(std::move(matrix))
-  , Common::DirectMatrixBuilder(reference(), reset_flag, symmetric_flag)
+  , Common::ProfiledFixedBlockMatrixBuilder(reference(), reset_flag)
   {}
-
-  virtual ~DirectMatrixBuilder() = default;
 
   MatrixData&& release()
   {

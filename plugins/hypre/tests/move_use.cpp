@@ -20,8 +20,7 @@
 
 #include <arccore/message_passing_mpi/StandaloneMpiMessagePassingMng.h>
 
-#include <alien/move/data/MatrixData.h>
-#include <alien/move/handlers/scalar/DirectMatrixBuilder.h>
+#include <alien/move/AlienMoveSemantic.h>
 #include <alien/move/handlers/scalar/VectorWriter.h>
 
 #include <alien/hypre/backend.h>
@@ -57,11 +56,11 @@ class SimpleLinearProblemFixtureMove : public ::testing::Test
       builder.allocate(); // Allocation de l'espace mémoire réservé
 
       for (int irow = offset; irow < offset + lsize; ++irow) {
-        builder.contribute(irow, irow, 2.);
+        builder(irow, irow) = 2.;
         if (irow - 1 >= 0)
-          builder.contribute(irow, irow - 1, -1.);
+          builder(irow, irow - 1) = -1.;
         if (irow + 1 < gsize)
-          builder.contribute(irow, irow + 1, -1.);
+          builder(irow, irow + 1) = -1.;
       }
 
       m_matrix = builder.release();

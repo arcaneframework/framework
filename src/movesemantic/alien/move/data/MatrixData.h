@@ -55,7 +55,7 @@ namespace Move
   class ALIEN_MOVESEMANTIC_EXPORT MatrixData : public IMatrix
   {
    public:
-    using ValueType = Real;
+    typedef Real ValueType;
 
     /*! @defgroup constructor Matrix Constructor
          * @{
@@ -72,7 +72,7 @@ namespace Move
          * \param dist Parallel distribution.
          *
          * This matrix is directly ready to use. */
-    MatrixData(const Space& space, const MatrixDistribution& dist);
+    [[deprecated]] MatrixData(const Space& space, const MatrixDistribution& dist);
 
     /*!  Build a new matrix from two Spaces
          *
@@ -81,7 +81,7 @@ namespace Move
          * \param dist Parallel distribution.
          *
          * This matrix is directly ready to use. */
-    MatrixData(
+    [[deprecated]] MatrixData(
     const Space& row_space, const Space& col_space, const MatrixDistribution& dist);
 
     /*! Build a new matrix from a size.
@@ -92,7 +92,7 @@ namespace Move
          *
          * This matrix is ready to use on an anonymous Space.
          */
-    [[deprecated("Use MatrixData(const MatrixDistribution&) instead.")]] MatrixData(Integer size, const MatrixDistribution& dist);
+    [[deprecated]] MatrixData(Integer size, const MatrixDistribution& dist);
 
     /*! Build a new matrix from two sizes.
          *
@@ -116,20 +116,20 @@ namespace Move
          *
          * @param matrix Matrix to move from.
          */
-    MatrixData(MatrixData&& matrix) noexcept;
+    MatrixData(MatrixData&& matrix);
     //! }@
 
     /*! Destructor
          * All internal data structures will be deleted.
          */
-    ~MatrixData() final = default;
+    virtual ~MatrixData() = default;
 
     /*! Move assignment
          * \brief Move from Matrix
          *
          * @param matrix Matrix to move from.
          */
-    MatrixData& operator=(MatrixData&& matrix) noexcept;
+    MatrixData& operator=(MatrixData&& matrix);
 
     /*! Initialize a Matrix with a Space.
          *
@@ -143,7 +143,21 @@ namespace Move
     /*! Only support move semantic */
     void operator=(const MatrixData&) = delete;
 
-    [[nodiscard]] MatrixData clone() const;
+    MatrixData clone() const;
+
+    /*! @defgroup block Block related API
+         * @{ */
+
+    void setBlockInfos(const Integer block_size);
+
+    void setBlockInfos(const Block* block);
+
+    void setBlockInfos(const VBlock* block);
+
+    Block const* block() const;
+
+    VBlock const* vblock() const;
+    /*! }@ */
 
     /*! Delete all internal data structures */
     void free();
@@ -155,7 +169,7 @@ namespace Move
     void clear();
 
     /*! Handle for visitor pattern */
-    void visit(ICopyOnWriteMatrix&) const final;
+    void visit(ICopyOnWriteMatrix&) const;
 
     /*! @defgroup space Space related functions.
          * @{
@@ -165,14 +179,14 @@ namespace Move
          * @throw FatalException if uninitialized.
          * Call isNull before to avoid any problem.
          */
-    const ISpace& rowSpace() const final;
+    const ISpace& rowSpace() const;
 
     /*! CoDomain Space of the current matrix
          * @return CoDomain Space.
          * @throw FatalException if uninitialized.
          * Call isNull before to avoid any problem.
          */
-    const ISpace& colSpace() const final;
+    const ISpace& colSpace() const;
     /*! }@ */
 
     /*! Parallel distribution of the Matrix.
@@ -181,14 +195,49 @@ namespace Move
          */
     const MatrixDistribution& distribution() const;
 
+    /*! @defgroup lock Protection functions.
+         * @{
+         */
+    /*! Lock Matrix with the caller. */
+    void lock() {}
+
+    /*! Unlock Matrix, making it available for others. */
+    void unlock() {}
+
+    /*! Test if a Matrix is locked.
+         *
+         * @return whether of not a matrix is already locked by someone.
+         */
+    bool isLocked() const { return false; }
+    /*! }@ */
+
+    /*! @defgroup properties Algebraic properties management.
+         *
+         * Algebraic properties are designed to propagate high level information of matrix
+         * object. These properties can be passed to external solvers but are not designed to
+         * overload Alien's solver parameters.
+         * @{ */
+    /*! Add a new property on this matrix */
+    void setUserFeature(String feature);
+
+    /*! Check if a property is set. */
+    bool hasUserFeature(String feature) const;
+
+    /*! Alias on property "transposed" */
+    bool isTransposed() const { return hasUserFeature("transposed"); }
+
+    /*! Is this matrix composite ? */
+    bool isComposite() const;
+    /* }@ */
+
     /*! @defgroup impl Internal data structure access.
          *
          * Access multi-representation object.
          * @{
          */
-    MultiMatrixImpl* impl() final;
+    MultiMatrixImpl* impl();
 
-    const MultiMatrixImpl* impl() const final;
+    const MultiMatrixImpl* impl() const;
     /*! } @ */
 
     friend MatrixData createMatrixData(std::shared_ptr<MultiMatrixImpl> multi);

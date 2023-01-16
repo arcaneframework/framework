@@ -23,6 +23,7 @@
     {
       "name": "full",
       "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/full",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
@@ -55,6 +56,7 @@
     {
       "name": "dev-debug",
       "inherits": "dev-full",
+      "binaryDir": "${sourceDir}/build/debug",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "ALIEN_EXPAND_TESTS": "ON"

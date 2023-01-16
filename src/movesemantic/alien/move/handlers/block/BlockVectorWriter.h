@@ -18,10 +18,10 @@
 
 #pragma once
 
-#include <alien/handlers/scalar/BaseDirectMatrixBuilder.h>
+// FIXME: check if correct object is used.
+#include <alien/handlers/block/BaseBlockVectorWriter.h>
+#include <alien/move/data/VectorData.h>
 #include <alien/utils/MoveObject.h>
-
-#include <alien/move/data/MatrixData.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -32,27 +32,40 @@ namespace Alien::Move
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class DirectMatrixBuilder : protected MoveObject<MatrixData>
-, public Common::DirectMatrixBuilder
+class BlockVectorWriter : protected MoveObject<VectorData>
+, public Common::BlockVectorWriterT<Real>
 {
  public:
-  using Common::DirectMatrixBuilder::ReserveFlag;
-  using Common::DirectMatrixBuilder::ResetFlag;
-  using Common::DirectMatrixBuilder::SymmetricFlag;
-
-  DirectMatrixBuilder(MatrixData&& matrix, const ResetFlag reset_flag,
-                      const SymmetricFlag symmetric_flag = SymmetricFlag::eSymmetric)
-  : MoveObject<MatrixData>(std::move(matrix))
-  , Common::DirectMatrixBuilder(reference(), reset_flag, symmetric_flag)
+  BlockVectorWriter(VectorData&& vector)
+  : MoveObject<VectorData>(std::move(vector))
+  , Common::BlockVectorWriterT<Arccore::Real>(reference())
   {}
 
-  virtual ~DirectMatrixBuilder() = default;
-
-  MatrixData&& release()
+  VectorData&& release()
   {
-    finalize();
+    end();
 
-    return MoveObject<MatrixData>::release();
+    return MoveObject<VectorData>::release();
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class LocalBlockVectorWriter : protected MoveObject<VectorData>
+, public Common::LocalBlockVectorWriterT<Real>
+{
+ public:
+  LocalBlockVectorWriter(VectorData&& vector)
+  : MoveObject<VectorData>(std::move(vector))
+  , Common::LocalBlockVectorWriterT<Arccore::Real>(reference())
+  {}
+
+  VectorData&& release()
+  {
+    end();
+
+    return MoveObject<VectorData>::release();
   }
 };
 

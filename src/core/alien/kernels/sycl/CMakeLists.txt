@@ -41,16 +41,16 @@ add_library(alien_kernel_sycl OBJECT
         )
 
 target_compile_options(alien_kernel_sycl PRIVATE "--gcc-toolchain=${GCCCORE_ROOT}")
-add_sycl_to_target(TARGET alien_kernel_sycl
-        SOURCES data/SYCLVector.cc
-        data/SYCLBEllPackMatrix.cc
-        algebra/SYCLInternalLinearAlgebra.cc)
+add_sycl_to_target(TARGET alien_kernel_sycl 
+                   SOURCES data/SYCLVector.cc 
+                           data/SYCLBEllPackMatrix.cc
+                           algebra/SYCLInternalLinearAlgebra.cc)
 
 target_link_libraries(alien_kernel_sycl PUBLIC
-        Arccore::arccore_trace
-        Arccore::arccore_collections
-        Arccore::arccore_base
-        Arccore::arccore_message_passing_mpi)
+                      Arccore::arccore_trace
+                      Arccore::arccore_collections
+                      Arccore::arccore_base
+                      Arccore::arccore_message_passing_mpi)
 
 target_link_libraries(alien_kernel_sycl PUBLIC alien_utils alien_headers)
 

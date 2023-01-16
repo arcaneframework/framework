@@ -101,10 +101,7 @@ namespace CompositeKernel
 
   /*---------------------------------------------------------------------------*/
 
-  Integer Matrix::size() const
-  {
-    return m_nb_composite;
-  }
+  Integer Matrix::size() const { return m_nb_composite; }
 
   /*---------------------------------------------------------------------------*/
 

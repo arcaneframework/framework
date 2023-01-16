@@ -18,7 +18,7 @@
 
 #include <arccore/message_passing_mpi/StandaloneMpiMessagePassingMng.h>
 
-#include <alien/move/data/MatrixData.h>
+#include <alien/move/AlienMoveSemantic.h>
 #include <alien/move/handlers/scalar/VectorWriter.h>
 
 #include <alien/hypre/backend.h>
@@ -49,7 +49,7 @@ int test(const std::string& filename)
 
   tm->info() << "* b = A * xe";
 
-  Alien::Move::VectorData b(A.distribution().rowDistribution());
+  Alien::Move::VectorData b(A.rowSpace(), A.distribution().rowDistribution());
 
   Alien::Hypre::LinearAlgebra algebra;
 
@@ -72,7 +72,7 @@ int test(const std::string& filename)
   {
     tm->info() << "* r = Ax - b";
 
-    Alien::Move::VectorData r(A.distribution().rowDistribution());
+    Alien::Move::VectorData r(A.rowSpace(), A.distribution().rowDistribution());
     algebra.mult(A, x, r);
     tm->info() << "r -= b";
     algebra.axpy(-1., b, r);

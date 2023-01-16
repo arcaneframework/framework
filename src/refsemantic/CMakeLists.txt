@@ -52,7 +52,7 @@ set(alien_refsemantic_public_header
         alien/ref/import_export/SystemWriter.h
         alien/ref/import_export/MatrixMarketSystemWriter.h
         alien/ref/import_export/HDF5Tools.h)
-
+    
 add_library(alien_semantic_ref
         alien/ref/AlienImportExport.h
         alien/ref/AlienRefSemantic.h
@@ -128,8 +128,8 @@ if (ALIEN_USE_HDF5)
 endif ()
 
 target_sources(alien_semantic_ref PRIVATE
-        alien/ref/mv_expr/MVExpr.h
-        )
+               alien/ref/mv_expr/MVExpr.h
+              )
 
 target_link_libraries(alien_semantic_ref PUBLIC alien_core)
 

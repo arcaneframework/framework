@@ -18,10 +18,9 @@
 
 #pragma once
 
-#include <alien/handlers/scalar/BaseDirectMatrixBuilder.h>
-#include <alien/utils/MoveObject.h>
-
-#include <alien/move/data/MatrixData.h>
+// FIXME: check if correct object is used.
+#include <alien/handlers/block/BaseBlockVectorReader.h>
+#include <alien/move/data/VectorData.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -32,28 +31,28 @@ namespace Alien::Move
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class DirectMatrixBuilder : protected MoveObject<MatrixData>
-, public Common::DirectMatrixBuilder
+class BlockVectorReader
+: public Common::BlockVectorReaderT<Arccore::Real, Parameters<GlobalIndexer>>
 {
  public:
-  using Common::DirectMatrixBuilder::ReserveFlag;
-  using Common::DirectMatrixBuilder::ResetFlag;
-  using Common::DirectMatrixBuilder::SymmetricFlag;
-
-  DirectMatrixBuilder(MatrixData&& matrix, const ResetFlag reset_flag,
-                      const SymmetricFlag symmetric_flag = SymmetricFlag::eSymmetric)
-  : MoveObject<MatrixData>(std::move(matrix))
-  , Common::DirectMatrixBuilder(reference(), reset_flag, symmetric_flag)
+  BlockVectorReader(const VectorData& vector)
+  : Common::BlockVectorReaderT<Arccore::Real, Parameters<GlobalIndexer>>(vector)
   {}
 
-  virtual ~DirectMatrixBuilder() = default;
+  virtual ~BlockVectorReader() {}
+};
 
-  MatrixData&& release()
-  {
-    finalize();
+/*---------------------------------------------------------------------------*/
 
-    return MoveObject<MatrixData>::release();
-  }
+class LocalBlockVectorReader
+: public Common::BlockVectorReaderT<Arccore::Real, Parameters<LocalIndexer>>
+{
+ public:
+  LocalBlockVectorReader(const VectorData& vector)
+  : Common::BlockVectorReaderT<Arccore::Real, Parameters<LocalIndexer>>(vector)
+  {}
+
+  virtual ~LocalBlockVectorReader() {}
 };
 
 /*---------------------------------------------------------------------------*/

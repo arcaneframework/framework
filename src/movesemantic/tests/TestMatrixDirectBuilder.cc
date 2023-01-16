@@ -47,10 +47,10 @@ TEST(TestMatrixDirectBuilder, Functional)
     std::move(A), tag, Alien::DirectMatrixOptions::SymmetricFlag::eUnSymmetric);
     builder.reserve(5);
     builder.allocate();
-    builder.contribute(0, 0, 1.);
-    builder.contribute(1, 1, 1.);
-    builder.contribute(2, 2, 1.);
-    builder.contribute(2, 3, 1.);
+    builder(0, 0) = 1.;
+    builder(1, 1) = 1.;
+    builder(2, 2) = 1.;
+    builder(2, 3) = 1.;
     A = builder.release();
   }
   // check with spmv
@@ -68,7 +68,7 @@ TEST(TestMatrixDirectBuilder, Functional)
   Alien::Move::VectorData R(vdist2);
   Alg.mult(A, X, R);
   {
-    Alien::Move::LocalVectorReader reader(R);
+    Alien::Move::LocalVectorReader reader(std::move(R));
     std::cout << reader[0] << std::endl;
     std::cout << reader[1] << std::endl;
     std::cout << reader[2] << std::endl;
