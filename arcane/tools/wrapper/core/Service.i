@@ -124,19 +124,19 @@
 %ignore Arcane::ServiceBuilder::getServicesNames;
 %ignore Arcane::IServiceInfo::factories;
 
-%include arcane/IService.h
-%include arcane/IServiceInfo.h
-%include arcane/ServiceProperty.h
-%include arcane/IServiceFactory.h
-%include arcane/ServiceFactory.h
-%include arcane/ServiceBuilder.h
-%include arcane/ServiceInstance.h
-%include arcane/ModuleBuildInfo.h
-%include arcane/ServiceBuildInfo.h
-%include arcane/IModule.h
-%include arcane/AbstractModule.h
-%include arcane/BasicModule.h
-%include arcane/IEntryPoint.h
+%include arcane/core/IService.h
+%include arcane/core/IServiceInfo.h
+%include arcane/core/ServiceProperty.h
+%include arcane/core/IServiceFactory.h
+%include arcane/core/ServiceFactory.h
+%include arcane/core/ServiceBuilder.h
+%include arcane/core/ServiceInstance.h
+%include arcane/core/ModuleBuildInfo.h
+%include arcane/core/ServiceBuildInfo.h
+%include arcane/core/IModule.h
+%include arcane/core/AbstractModule.h
+%include arcane/core/BasicModule.h
+%include arcane/core/IEntryPoint.h
 
 namespace Arcane
 {
@@ -155,10 +155,10 @@ class IFunctorWithArgumentT
 };
 }
 
-%include arcane/IModuleFactory.h
-%include arcane/ModuleFactory.h
+%include arcane/core/IModuleFactory.h
+%include arcane/core/ModuleFactory.h
 
-%include arcane/ServiceInfo.h
+%include arcane/core/ServiceInfo.h
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
