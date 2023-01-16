@@ -39,7 +39,7 @@ MatrixMarketProblem::MatrixMarketProblem(Arccore::MessagePassing::IMessagePassin
 , m_rhs(m_matrix.distribution().rowDistribution())
 {
   Alien::Move::LocalVectorWriter v_builder = std::move(m_rhs);
-  for (int i = 0 ; i < v_builder.size() ; i++) {
+  for (int i = 0; i < v_builder.size(); i++) {
     v_builder[i] = 1.0;
   }
   m_rhs = v_builder.release();
@@ -54,7 +54,6 @@ Alien::Move::VectorData MatrixMarketProblem::vector() const
 {
   return m_rhs.clone();
 }
-
 
 std::unique_ptr<ILinearProblem> buildFromMatrixMarket(Arccore::MessagePassing::IMessagePassingMng* pm, const std::string& matrix_name, const std::string& rhs_name)
 {

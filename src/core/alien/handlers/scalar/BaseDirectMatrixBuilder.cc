@@ -42,13 +42,9 @@ using namespace Arccore;
 /*---------------------------------------------------------------------------*/
 
 #ifdef USE_VMAP
-#undef KEY_OF
-#undef VALUE_OF
 #define KEY_OF(i) (i).key()
 #define VALUE_OF(i) (i).value()
 #else /* USE_VMAP */
-#undef KEY_OF
-#undef VALUE_OF
 #define KEY_OF(i) (i)->first
 #define VALUE_OF(i) (i)->second
 #endif /* USE_VMAP */
@@ -66,18 +62,9 @@ namespace Common
                                            const DirectMatrixOptions::ResetFlag reset_flag,
                                            const DirectMatrixOptions::SymmetricFlag symmetric_flag)
   : m_matrix(matrix)
-  , m_matrix_impl(nullptr)
-  , m_row_starts()
-  , m_cols()
-  , m_values()
-  , m_row_sizes()
   , m_reset_flag(reset_flag)
-  , m_allocated(false)
-  , m_finalized(false)
   , m_symmetric_profile(symmetric_flag == DirectMatrixOptions::eSymmetric)
-  , m_nproc(0)
-  , m_parallel_mng(nullptr)
-  , m_trace(nullptr)
+
   {
     m_matrix.impl()->lock();
     m_matrix_impl = &m_matrix.impl()->get<BackEnd::tag::simplecsr>(true);
@@ -100,7 +87,7 @@ namespace Common
     m_col_global_size = m_matrix_impl->colSpace().size();
 
     const bool never_allocated = (m_matrix_impl->getCSRProfile().getNRow() == 0);
-    if (m_reset_flag == DirectMatrixOptions::eResetAllocation or never_allocated) {
+    if (m_reset_flag == DirectMatrixOptions::eResetAllocation || never_allocated) {
       m_reset_flag = DirectMatrixOptions::eResetAllocation;
       m_row_sizes.resize(m_local_size, 0);
     }
@@ -108,7 +95,7 @@ namespace Common
       m_row_sizes.resize(m_local_size);
       SimpleCSRInternal::CSRStructInfo& profile =
       m_matrix_impl->internal().getCSRProfile();
-      ConstArrayView<Integer> row_starts = profile.getRowOffset();
+      ConstArrayView row_starts = profile.getRowOffset();
       for (Integer i = 0; i < m_local_size; ++i) {
         const Integer row_capacity = row_starts[i + 1] - row_starts[i];
         m_row_sizes[i] = row_capacity;
@@ -139,8 +126,9 @@ namespace Common
     else {
       ALIEN_ASSERT((flag == DirectMatrixOptions::eExtendReservation),
                    ("Unexpected reservation flag"));
-      for (Integer i = 0, is = m_row_sizes.size(); i < is; ++i)
-        m_row_sizes[i] += n;
+      for (auto& row_size : m_row_sizes) {
+        row_size += n;
+      }
     }
   }
 
@@ -153,14 +141,14 @@ namespace Common
     m_reset_flag = DirectMatrixOptions::eResetAllocation;
 
     if (flag == DirectMatrixOptions::eResetReservation) {
-      for (Integer i = 0; i < indices.size(); ++i)
-        m_row_sizes[indices[i] - m_local_offset] = n;
+      for (int indice : indices)
+        m_row_sizes[indice - m_local_offset] = n;
     }
     else {
       ALIEN_ASSERT((flag == DirectMatrixOptions::eExtendReservation),
                    ("Unexpected reservation flag"));
-      for (Integer i = 0; i < indices.size(); ++i)
-        m_row_sizes[indices[i] - m_local_offset] += n;
+      for (int indice : indices)
+        m_row_sizes[indice - m_local_offset] += n;
     }
   }
 
@@ -182,7 +170,7 @@ namespace Common
     m_cols = profile.getCols();
     m_values = m_matrix_impl->internal().getValues();
 
-    if (m_reset_flag == DirectMatrixOptions::eResetAllocation or m_reset_flag == DirectMatrixOptions::eResetProfile or profile.getColOrdering() != SimpleCSRInternal::CSRStructInfo::eFull) {
+    if (m_reset_flag == DirectMatrixOptions::eResetAllocation || m_reset_flag == DirectMatrixOptions::eResetProfile || profile.getColOrdering() != SimpleCSRInternal::CSRStructInfo::eFull) {
       profile.getColOrdering() = SimpleCSRInternal::CSRStructInfo::eUndef;
       m_row_sizes.fill(0);
     }
@@ -238,24 +226,24 @@ namespace Common
     ALIEN_ASSERT((m_allocated), ("Not allocated matrix"));
 
     // skip dead zone
-    if (iIndex == -1 or jIndex == -1)
+    if (iIndex == -1 || jIndex == -1)
       return;
     const Integer local_row = iIndex - m_local_offset;
 #ifdef CHECKPROFILE_ON_FILLING
     if (local_row < 0 or local_row >= m_local_size)
       throw FatalErrorException("Cannot add data on undefined row");
 #endif /* CHECKPROFILE_ON_FILLING */
-    if (jIndex < -1 or jIndex >= m_col_global_size)
+    if (jIndex < -1 || jIndex >= m_col_global_size)
       throw FatalErrorException("column index undefined");
     const Integer row_start = m_row_starts[local_row];
     Integer& row_size = m_row_sizes[local_row];
     Integer row_capacity = m_row_starts[local_row + 1] - row_start;
     Integer hint_pos; // hint insertion position not used
-    Real* found_value = intrusive_vmap_insert(jIndex, hint_pos, row_size, row_capacity,
-                                              m_cols.unguardedBasePointer() + row_start,
-                                              m_values.unguardedBasePointer() + row_start);
-    if (found_value)
+    if (Real* found_value = intrusive_vmap_insert(jIndex, hint_pos, row_size, row_capacity,
+                                                  m_cols.unguardedBasePointer() + row_start,
+                                                  m_values.unguardedBasePointer() + row_start)) {
       *found_value += value;
+    }
     else // Manage extra data storage
       m_extras[local_row][jIndex] += value;
     _stopTimer();
@@ -287,7 +275,7 @@ namespace Common
       const Integer jIndex = jIndexes[i];
       if (jIndex == -1)
         continue; // skip dead zone
-      if (jIndex < -1 or jIndex >= m_col_global_size)
+      if (jIndex < -1 || jIndex >= m_col_global_size)
         throw FatalErrorException("column index undefined");
       Integer hint_pos; // hint insertion position not used
       Real* found_value = intrusive_vmap_insert(jIndex, hint_pos, row_size, row_capacity,
@@ -314,24 +302,24 @@ namespace Common
     ALIEN_ASSERT((m_allocated), ("Not allocated matrix"));
 
     // skip dead zone
-    if (iIndex == -1 or jIndex == -1)
+    if (iIndex == -1 || jIndex == -1)
       return;
     const Integer local_row = iIndex - m_local_offset;
 #ifdef CHECKPROFILE_ON_FILLING
     if (local_row < 0 or local_row >= m_local_size)
       throw FatalErrorException("Cannot add data on undefined row");
 #endif /* CHECKPROFILE_ON_FILLING */
-    if (jIndex < -1 or jIndex >= m_col_global_size)
+    if (jIndex < -1 || jIndex >= m_col_global_size)
       throw FatalErrorException("column index undefined");
     const Integer row_start = m_row_starts[local_row];
     Integer& row_size = m_row_sizes[local_row];
     Integer row_capacity = m_row_starts[local_row + 1] - row_start;
     Integer hint_pos; // hint insertion position not used
-    Real* found_value = intrusive_vmap_insert(jIndex, hint_pos, row_size, row_capacity,
-                                              m_cols.unguardedBasePointer() + row_start,
-                                              m_values.unguardedBasePointer() + row_start);
-    if (found_value)
+    if (Real* found_value = intrusive_vmap_insert(jIndex, hint_pos, row_size, row_capacity,
+                                                  m_cols.unguardedBasePointer() + row_start,
+                                                  m_values.unguardedBasePointer() + row_start)) {
       *found_value = value;
+    }
     else // Manage extra data storage
       m_extras[local_row][jIndex] = value;
     _stopTimer();
@@ -363,7 +351,7 @@ namespace Common
       const Integer jIndex = jIndexes[i];
       if (jIndex == -1)
         continue; // skip dead zone
-      if (jIndex < -1 or jIndex >= m_col_global_size)
+      if (jIndex < -1 || jIndex >= m_col_global_size)
         throw FatalErrorException("column index undefined");
       Integer hint_pos; // hint insertion position not used
       Real* found_value = intrusive_vmap_insert(jIndex, hint_pos, row_size, row_capacity,
@@ -402,8 +390,8 @@ namespace Common
      public:
       Finder(ConstArrayView<Integer> indexes, const Integer offset)
       {
-        for (Integer i = 0, is = indexes.size(); i < is; ++i)
-          m_index_set.insert(indexes[i] - offset);
+        for (int indexe : indexes)
+          m_index_set.insert(indexe - offset);
       }
       bool operator()(const Integer index) const
       {
@@ -414,10 +402,8 @@ namespace Common
       std::set<Integer> m_index_set;
     };
 
-   public:
     IndexEnumerator(ConstArrayView<Integer> indexes, const Integer offset)
-    : m_i(0)
-    , m_offset(offset)
+    : m_offset(offset)
     , m_indexes(indexes)
     {}
     [[nodiscard]] bool end() const { return m_i >= m_indexes.size(); }
@@ -427,7 +413,7 @@ namespace Common
     [[nodiscard]] Finder finder() const { return Finder(m_indexes, m_offset); }
 
    private:
-    Integer m_i;
+    Integer m_i = 0;
     const Integer m_offset;
     const ConstArrayView<Integer> m_indexes;
     std::set<Integer> m_index_set;
@@ -444,16 +430,14 @@ namespace Common
       explicit Finder(const Integer size)
       : m_size(size)
       {}
-      bool operator()(const Integer index) const { return index >= 0 and index < m_size; }
+      bool operator()(const Integer index) const { return index >= 0 && index < m_size; }
 
      private:
       const Integer m_size;
     };
 
-   public:
     explicit FullEnumerator(const Integer size)
-    : m_i(0)
-    , m_size(size)
+    : m_size(size)
     {}
     [[nodiscard]] bool end() const { return m_i >= m_size; }
     void operator++() { ++m_i; }
@@ -462,8 +446,8 @@ namespace Common
     [[nodiscard]] Finder finder() const { return Finder(m_size); }
 
    private:
-    Integer m_i;
-    const Integer m_size;
+    Integer m_i = 0;
+    const Integer m_size = 0;
   };
 
   /*---------------------------------------------------------------------------*/
@@ -490,7 +474,8 @@ namespace Common
   {
     bool need_squeeze = false;
 
-    Integer total_size = 0, total_capacity = 0;
+    Integer total_size = 0;
+    Integer total_capacity = 0;
     for (Integer i = 0; i < m_local_size; ++i) {
       const Integer row_size = m_row_sizes[i];
       const Integer row_capacity = m_row_starts[i + 1] - m_row_starts[i];
@@ -499,8 +484,8 @@ namespace Common
       need_squeeze |= (row_size != row_capacity);
     }
     need_squeeze |= (!m_extras.empty());
-    for (auto i = m_extras.begin(); i != m_extras.end(); ++i)
-      total_size += i->second.size();
+    for (auto& m_extra : m_extras)
+      total_size += m_extra.second.size();
 
     // Parallel reduction of the decision
     if (m_parallel_mng)
@@ -520,7 +505,8 @@ namespace Common
       auto ifinder = m_extras.find(i);
       if (ifinder == m_extras.end()) { // Algo sans fusion avec les extras
         const Integer row_start_orig = m_row_starts[i];
-        const Integer row_start = row_starts[i] = offset;
+        const Integer row_start = offset;
+        row_starts[i] = row_start;
         const Integer row_size = m_row_sizes[i];
         for (Integer j = 0; j < row_size; ++j) {
           cols[row_start + j] = m_cols[row_start_orig + j];
@@ -531,11 +517,13 @@ namespace Common
       else { // Algo avec fusion des extras
         const ColValueData& extra_col_value_data = ifinder->second;
         const Integer row_start_orig = m_row_starts[i];
-        const Integer row_start = row_starts[i] = offset;
+        const Integer row_start = offset;
+        row_starts[i] = row_start;
         const Integer row_size = m_row_sizes[i];
 
-        Integer pos = row_start, j = 0;
-        ColValueData::const_iterator extra_j_iter = extra_col_value_data.begin();
+        Integer pos = row_start;
+        Integer j = 0;
+        auto extra_j_iter = extra_col_value_data.begin();
 
         while (true) {
           if (j == row_size) { // Copie la partie restante des extras
@@ -657,12 +645,12 @@ namespace Common
   {
     bool need_squeeze = false;
     Integer total_used_data = 0;
-    Integer min_used_data = (m_local_size > 0) ? std::numeric_limits<Integer>::max() : 0,
-            max_used_data = 0;
+    Integer min_used_data = (m_local_size > 0) ? std::numeric_limits<Integer>::max() : 0;
+    Integer max_used_data = 0;
     Integer total_reserved_data = 0;
     Integer min_reserved_data =
-            (m_local_size > 0) ? std::numeric_limits<Integer>::max() : 0,
-            max_reserved_data = 0;
+    (m_local_size > 0) ? std::numeric_limits<Integer>::max() : 0;
+    Integer max_reserved_data = 0;
     for (Enumerator ie = e; !ie.end(); ++ie) {
       const Integer i = *ie;
       const Integer data_capacity = m_row_starts[i + 1] - m_row_starts[i];
@@ -680,14 +668,14 @@ namespace Common
 
     Integer total_extra_data = 0;
     Integer min_extra_data =
-            (!m_extras.empty()) ? std::numeric_limits<Integer>::max() : 0,
-            max_extra_data = 0;
+    (!m_extras.empty()) ? std::numeric_limits<Integer>::max() : 0;
+    Integer max_extra_data = 0;
     Integer extra_count = 0;
     typename Enumerator::Finder finder = e.finder();
-    for (ExtraRows::const_iterator j = m_extras.begin(); j != m_extras.end(); ++j) {
-      if (finder(j->first)) {
+    for (const auto& m_extra : m_extras) {
+      if (finder(m_extra.first)) {
         ++extra_count;
-        const Integer data_size = j->second.size();
+        const Integer data_size = m_extra.second.size();
         min_extra_data = std::min(min_extra_data, data_size);
         max_extra_data = std::max(max_extra_data, data_size);
         total_extra_data += data_size;
@@ -703,19 +691,19 @@ namespace Common
     o << "Total used data                = " << total_used_data << " on " << size
       << " rows\n"
       << "Min / Mean / Max used data     = " << min_used_data << std::setprecision(2)
-      << " / " << ((size) ? (double(total_used_data) / size) : 0) << " / "
+      << " / " << (size ? (double(total_used_data) / size) : 0) << " / "
       << max_used_data << "\n"
       << "Total extra data               = " << total_extra_data << " on " << extra_count
       << " rows\n"
       << "Min / Mean / Max extra data    = " << min_extra_data << std::setprecision(2)
-      << " / " << ((extra_count) ? (double(total_extra_data) / extra_count) : 0) << " / "
+      << " / " << (extra_count ? (double(total_extra_data) / extra_count) : 0) << " / "
       << max_extra_data << "\n"
       << "Total reserved data            = " << total_reserved_data
       << std::setprecision(3) << "  ("
-      << ((total_used_data) ? (100 * double(total_reserved_data) / total_used_data) : 0)
+      << (total_used_data ? (100 * double(total_reserved_data) / total_used_data) : 0)
       << "% of used data)\n"
       << "Min / Mean / Max reserved data = " << min_reserved_data << std::setprecision(2)
-      << " / " << ((size) ? (double(total_reserved_data) / size) : 0) << " / "
+      << " / " << (size ? (double(total_reserved_data) / size) : 0) << " / "
       << max_reserved_data << "\n"
       << "Need squeeze optimization      = " << std::boolalpha << need_squeeze << "\n";
   }

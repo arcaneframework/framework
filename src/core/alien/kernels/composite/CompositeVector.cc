@@ -104,7 +104,10 @@ namespace CompositeKernel
 
   /*---------------------------------------------------------------------------*/
 
-  Integer Vector::size() const { return m_vectors.size(); }
+  Integer Vector::size() const
+  {
+    return m_vectors.size();
+  }
 
   /*---------------------------------------------------------------------------*/
 

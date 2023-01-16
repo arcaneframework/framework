@@ -685,11 +685,20 @@ namespace MVExpr
   };
 
   template <class E>
-  auto base_eval(E const& expr) { return expr(cpu_evaluator()); }
+  auto base_eval(E const& expr)
+  {
+    return expr(cpu_evaluator());
+  }
   template <class E>
-  auto eval(E const& expr) { return expr(cpu_evaluator()); }
+  auto eval(E const& expr)
+  {
+    return expr(cpu_evaluator());
+  }
 
-  auto operator*(Matrix const& l, Vector const& r) { return mul(ref(l), ref(r)); }
+  auto operator*(Matrix const& l, Vector const& r)
+  {
+    return mul(ref(l), ref(r));
+  }
 
   auto operator*(Real lambda, Vector const& r)
   {
@@ -712,7 +721,10 @@ namespace MVExpr
     return mul(l,r) ;
   }*/
 
-  auto operator+(Vector const& l, Vector const& r) { return add(ref(l), ref(r)); }
+  auto operator+(Vector const& l, Vector const& r)
+  {
+    return add(ref(l), ref(r));
+  }
 
   template <typename R>
   auto operator+(Vector const& l, R const& r)
@@ -734,15 +746,27 @@ namespace MVExpr
   }*/
 
   template <typename R>
-  auto operator-(Vector& l, R&& r) { return minus(ref(l), r); }
+  auto operator-(Vector& l, R&& r)
+  {
+    return minus(ref(l), r);
+  }
 
   template <typename L>
-  auto operator-(L&& l, Vector& r) { return minus(l, ref(r)); }
+  auto operator-(L&& l, Vector& r)
+  {
+    return minus(l, ref(r));
+  }
 
   template <typename L, typename R>
-  auto operator-(L&& l, R&& r) { return minus(l, r); }
+  auto operator-(L&& l, R&& r)
+  {
+    return minus(l, r);
+  }
 
-  auto dot(Vector const& x, Vector const& y) { return scalMul(ref(x), ref(y)); }
+  auto dot(Vector const& x, Vector const& y)
+  {
+    return scalMul(ref(x), ref(y));
+  }
 
   template <typename R>
   auto dot(Vector const& x, R const& y)

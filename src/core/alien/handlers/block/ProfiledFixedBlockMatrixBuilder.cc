@@ -199,7 +199,10 @@ namespace Common
 
   /*---------------------------------------------------------------------------*/
 
-  void ProfiledFixedBlockMatrixBuilder::finalize() { m_finalized = true; }
+  void ProfiledFixedBlockMatrixBuilder::finalize()
+  {
+    m_finalized = true;
+  }
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/

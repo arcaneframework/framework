@@ -111,11 +111,17 @@ namespace CompositeKernel
 
   /*---------------------------------------------------------------------------*/
 
-  bool Space::operator!=(const ISpace& space) const { return not operator==(space); }
+  bool Space::operator!=(const ISpace& space) const
+  {
+    return not operator==(space);
+  }
 
   /*---------------------------------------------------------------------------*/
 
-  const String& Space::name() const { return m_internal->m_name; }
+  const String& Space::name() const
+  {
+    return m_internal->m_name;
+  }
 
   /*---------------------------------------------------------------------------*/
 
@@ -130,7 +136,10 @@ namespace CompositeKernel
 
   /*---------------------------------------------------------------------------*/
 
-  Integer Space::nbField() const { return m_internal->m_fields.size(); }
+  Integer Space::nbField() const
+  {
+    return m_internal->m_fields.size();
+  }
 
   /*---------------------------------------------------------------------------*/
 
@@ -152,11 +161,17 @@ namespace CompositeKernel
 
   /*---------------------------------------------------------------------------*/
 
-  String Space::fieldLabel(Integer i) const { return m_internal->m_labels[i]; }
+  String Space::fieldLabel(Integer i) const
+  {
+    return m_internal->m_labels[i];
+  }
 
   /*---------------------------------------------------------------------------*/
 
-  std::shared_ptr<ISpace> Space::clone() const { return std::make_shared<Space>(*this); }
+  std::shared_ptr<ISpace> Space::clone() const
+  {
+    return std::make_shared<Space>(*this);
+  }
 
   /*---------------------------------------------------------------------------*/
 
@@ -185,7 +200,10 @@ namespace CompositeKernel
 
   /*---------------------------------------------------------------------------*/
 
-  Integer Space::subSpaceSize() const { return m_internal->m_sub_spaces.size(); }
+  Integer Space::subSpaceSize() const
+  {
+    return m_internal->m_sub_spaces.size();
+  }
 
   /*---------------------------------------------------------------------------*/
   /*---------------------------------------------------------------------------*/

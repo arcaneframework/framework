@@ -95,10 +95,8 @@ namespace Common
     using ReserveFlag = DirectMatrixOptions::ReserveFlag;
     using SymmetricFlag = DirectMatrixOptions::SymmetricFlag;
 
-   public:
     using MatrixElement = MatrixElementT<DirectMatrixBuilder>;
 
-   public:
     DirectMatrixBuilder(IMatrix& matrix, ResetFlag reset_flag,
                         SymmetricFlag symmetric_flag = SymmetricFlag::eSymmetric);
 
@@ -109,7 +107,6 @@ namespace Common
     DirectMatrixBuilder& operator=(const DirectMatrixBuilder&) = delete;
     DirectMatrixBuilder& operator=(DirectMatrixBuilder&&) = delete;
 
-   public:
     MatrixElement operator()(const Integer iIndex, const Integer jIndex)
     {
       return MatrixElement(iIndex, jIndex, *this);
@@ -144,30 +141,32 @@ namespace Common
    protected:
     IMatrix& m_matrix;
 
-    SimpleCSRMatrix<Real>* m_matrix_impl;
+    SimpleCSRMatrix<Real>* m_matrix_impl = nullptr;
 
-    Integer m_local_offset, m_global_size, m_local_size;
-    Integer m_col_global_size;
-    ArrayView<Integer> m_row_starts;
-    ArrayView<Integer> m_cols;
-    ArrayView<Real> m_values;
-    UniqueArray<Integer> m_row_sizes;
+    Integer m_local_offset = 0;
+    Integer m_global_size = 0;
+    Integer m_local_size = 0;
+    Integer m_col_global_size = 0;
+    ArrayView<Integer> m_row_starts = {};
+    ArrayView<Integer> m_cols = {};
+    ArrayView<Real> m_values = {};
+    UniqueArray<Integer> m_row_sizes = {};
 
     ResetFlag m_reset_flag;
-    bool m_allocated;
-    bool m_finalized;
-    bool m_symmetric_profile;
+    bool m_allocated = false;
+    bool m_finalized = false;
+    bool m_symmetric_profile = false;
 
-    Integer m_nproc;
-    IMessagePassingMng* m_parallel_mng;
-    ITraceMng* m_trace;
+    Integer m_nproc = 0;
+    IMessagePassingMng* m_parallel_mng = nullptr;
+    ITraceMng* m_trace = nullptr;
 
 #ifdef USE_VMAP
-    typedef VMap<Integer, Real> ColValueData;
+    using ColValueData = VMap<Integer, Real>;
 #else /* USE_VMAP */
     typedef std::map<Integer, Real> ColValueData;
 #endif /* USE_VMAP */
-    typedef std::map<Integer, ColValueData> ExtraRows;
+    using ExtraRows = std::map<Integer, ColValueData>;
     ExtraRows m_extras;
 
    private:

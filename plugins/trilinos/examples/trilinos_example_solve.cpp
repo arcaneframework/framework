@@ -18,8 +18,8 @@
 
 #include <arccore/message_passing_mpi/StandaloneMpiMessagePassingMng.h>
 
-#include <alien/move/AlienMoveSemantic.h>
 #include <alien/move/handlers/scalar/VectorWriter.h>
+#include <alien/move/data/MatrixData.h>
 #include <alien/move/data/VectorData.h>
 
 #include <alien/trilinos/backend.h>

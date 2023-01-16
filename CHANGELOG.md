@@ -18,7 +18,8 @@ All notable changes to this project will be documented in this file.
 
 - \[move\]: add a `clone()` method to `MatrixData` and `VectorData`
 - \[core\]: dramatic improvement of `DoK` performance
-- \[core\]: `Redistributor` object must be built from an allocated `MessagePassingMng`
+- \[core\]: `Redistributor` object must be built from an
+  allocated `MessagePassingMng`
 - \[trilinos\]: new wrapper for trilinos library (belos + ifpack2 + tpetra)
 - \[hypre\]: GPU support.
 
@@ -38,14 +39,16 @@ All notable changes to this project will be documented in this file.
 
 **Changes:**
 
-- plugins are now part of Alien distribution. That means that only `find_package(Alien)` is necessary.
+- plugins are now part of Alien distribution. That means that
+  only `find_package(Alien)` is necessary.
 
 ## 1.1.1
 
 **Fixed bugs:**
 
 - \[core, hypre, petsc\]: fix CMake export files
-- \[petsc\]: internal call to PetscInitialize (fixes [issue#14](https://github.com/arcaneframework/alien/issues/14))
+- \[petsc\]: internal call to PetscInitialize (
+  fixes [issue#14](https://github.com/arcaneframework/alien/issues/14))
 
 **Changes:**
 
@@ -63,4 +66,5 @@ All notable changes to this project will be documented in this file.
 
 - switch to mono-repo for all Alien related projects
 - `move` api is now in `Alien::Move` namespace
-- Setting CMake parameter `ALIEN_DEFAULT_OPTIONS` to `OFF` disable all optional external dependencies
+- Setting CMake parameter `ALIEN_DEFAULT_OPTIONS` to `OFF` disable all optional
+  external dependencies

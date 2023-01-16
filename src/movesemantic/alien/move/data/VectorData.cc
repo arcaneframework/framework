@@ -35,37 +35,37 @@ using namespace Arccore;
 /*---------------------------------------------------------------------------*/
 
 VectorData::VectorData()
-: m_impl(new MultiVectorImpl(std::make_shared<Space>(0),
-                             std::make_shared<VectorDistribution>(VectorDistribution())))
+: m_impl(std::make_shared<MultiVectorImpl>(std::make_shared<Space>(0),
+                                           std::make_shared<VectorDistribution>(VectorDistribution())))
 {}
 
 /*---------------------------------------------------------------------------*/
 
 VectorData::VectorData(const ISpace& space, const VectorDistribution& dist)
-: m_impl(new MultiVectorImpl(space.clone(), dist.clone()))
+: m_impl(std::make_shared<MultiVectorImpl>(space.clone(), dist.clone()))
 {}
 
 /*---------------------------------------------------------------------------*/
 
 VectorData::VectorData(Integer size, const VectorDistribution& dist)
-: m_impl(new MultiVectorImpl(std::make_shared<Space>(size), dist.clone()))
+: m_impl(std::make_shared<MultiVectorImpl>(std::make_shared<Space>(size), dist.clone()))
 {}
 
 /*---------------------------------------------------------------------------*/
 
 VectorData::VectorData(const VectorDistribution& dist)
-: m_impl(new MultiVectorImpl(dist.space().clone(), dist.clone()))
+: m_impl(std::make_shared<MultiVectorImpl>(dist.space().clone(), dist.clone()))
 {}
 
 /*---------------------------------------------------------------------------*/
 
-VectorData::VectorData(VectorData&& vector)
+VectorData::VectorData(VectorData&& vector) noexcept
 : m_impl(std::move(vector.m_impl))
 {}
 
 /*---------------------------------------------------------------------------*/
 
-VectorData& VectorData::operator=(VectorData&& vector)
+VectorData& VectorData::operator=(VectorData&& vector) noexcept
 {
   m_impl = std::move(vector.m_impl);
   return *this;
@@ -76,41 +76,6 @@ VectorData& VectorData::operator=(VectorData&& vector)
 void VectorData::init(const ISpace& space, const VectorDistribution& dist)
 {
   m_impl.reset(new MultiVectorImpl(space.clone(), dist.clone()));
-}
-
-/*---------------------------------------------------------------------------*/
-
-void VectorData::setBlockInfos(const Integer block_size)
-{
-  impl()->setBlockInfos(block_size);
-}
-
-/*---------------------------------------------------------------------------*/
-/*
-void
-VectorData::
-setBlockInfos(const IBlockBuilder& builder)
-{
-  std::unique_ptr<Block> block(new Block(m_impl->distribution(), builder.blockSizes()));
-  impl()->setBlockInfos(std::move(block));
-}*/
-
-/*---------------------------------------------------------------------------*/
-
-void VectorData::setBlockInfos(const Block* block)
-{
-  if (block) {
-    impl()->setBlockInfos(block);
-  }
-}
-
-/*---------------------------------------------------------------------------*/
-
-void VectorData::setBlockInfos(const VBlock* block)
-{
-  if (block) {
-    impl()->setBlockInfos(block);
-  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -152,46 +117,12 @@ VectorData::distribution() const
 
 /*---------------------------------------------------------------------------*/
 
-const Block*
-VectorData::block() const
-{
-  return m_impl->block();
-}
-
-/*---------------------------------------------------------------------------*/
-
-const VBlock*
-VectorData::vblock() const
-{
-  return m_impl->vblock();
-}
-
-/*---------------------------------------------------------------------------*/
-
-void VectorData::setUserFeature(String feature)
-{
-  impl()->setFeature(feature);
-}
-
-/*---------------------------------------------------------------------------*/
-
-bool VectorData::hasUserFeature(String feature) const
-{
-  return impl()->hasFeature(feature);
-}
-
-/*---------------------------------------------------------------------------*/
-
 MultiVectorImpl*
 VectorData::impl()
 {
   if (!m_impl) {
     m_impl.reset(new MultiVectorImpl());
   }
-  /* JMG ????
-  else if (!m_impl.unique()) { // Need to clone due to other references.
-    m_impl.reset(m_impl->clone());
-  } */
   return m_impl.get();
 }
 

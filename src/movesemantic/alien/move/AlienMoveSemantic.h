@@ -17,16 +17,13 @@
  */
 
 #pragma once
+#warning "This header file should not be used. Use separate header files instead."
 
 #include <alien/move/data/MatrixData.h>
 #include <alien/move/data/VectorData.h>
 
-#include <alien/move/handlers/block/BlockVectorReader.h>
-#include <alien/move/handlers/block/BlockVectorWriter.h>
 #include <alien/move/handlers/scalar/VectorReader.h>
 #include <alien/move/handlers/scalar/VectorWriter.h>
-
-#include <alien/move/handlers/block/ProfiledBlockMatrixBuilder.h>
 
 #include <alien/move/handlers/scalar/DirectMatrixBuilder.h>
 #include <alien/move/handlers/scalar/MatrixProfiler.h>

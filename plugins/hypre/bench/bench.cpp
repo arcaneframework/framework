@@ -18,7 +18,6 @@
 
 #include <arccore/message_passing_mpi/StandaloneMpiMessagePassingMng.h>
 
-#include <alien/move/AlienMoveSemantic.h>
 #include <alien/move/handlers/scalar/VectorWriter.h>
 
 #include <alien/benchmark/ILinearProblem.h>

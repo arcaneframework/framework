@@ -34,10 +34,10 @@
 TEST(TestDoKMatrix, MultiImplConverter)
 {
   // Build a SimpleCSR matrix
-  Alien::MatrixDistribution mdist(4, 4, AlienTest::Environment::parallelMng());
   Alien::Space row_space(4, "Space");
   Alien::Space col_space(4, "Space");
-  Alien::Move::MatrixData A(row_space, col_space, mdist);
+  Alien::MatrixDistribution mdist(row_space, col_space, AlienTest::Environment::parallelMng());
+  Alien::Move::MatrixData A(mdist);
   ASSERT_EQ(A.rowSpace(), row_space);
   ASSERT_EQ(A.colSpace(), col_space);
   auto tag = Alien::DirectMatrixOptions::eResetValues;
@@ -49,16 +49,16 @@ TEST(TestDoKMatrix, MultiImplConverter)
   auto last = first + mdist.localRowSize();
 
   if (first <= 0 && 0 < last)
-    builder(0, 0) = -1.;
+    builder.contribute(0, 0, -1.);
   if (first <= 1 && 1 < last)
-    builder(1, 1) = -2.;
+    builder.contribute(1, 1, -2.);
   if (first <= 2 && 2 < last) {
-    builder(2, 2) = -3.;
-    builder(2, 3) = 3.14;
+    builder.contribute(2, 2, -3.);
+    builder.contribute(2, 3, 3.14);
   }
   if (first <= 3 && 3 < last) {
-    builder(3, 1) = 2.71;
-    builder(3, 3) = -4;
+    builder.contribute(3, 1, 2.71);
+    builder.contribute(3, 3, -4);
   }
   builder.finalize();
 

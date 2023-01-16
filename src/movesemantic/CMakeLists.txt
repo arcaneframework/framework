@@ -15,13 +15,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 set(alien_semantic_public_header
-        alien/move/handlers/block/BlockVectorReader.h
-        alien/move/handlers/block/BlockVectorWriter.h
         alien/move/handlers/scalar/VectorReader.h
         alien/move/handlers/scalar/VectorWriter.h
         alien/move/AlienMoveSemantic.h
         alien/move/AlienMoveSemanticPrecomp.h
-        alien/move/handlers/block/ProfiledBlockMatrixBuilder.h
         alien/move/handlers/scalar/DirectMatrixBuilder.h
         alien/move/handlers/scalar/MatrixProfiler.h
         alien/move/handlers/scalar/ProfiledMatrixBuilder.h
