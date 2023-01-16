@@ -429,21 +429,21 @@ class IEntryPoint
 };
 }
 
-%include arcane/IBase.h
-%include arcane/ISubDomain.h
-%include arcane/SharedVariable.h
-%include arcane/ArcaneTypes.h
-%include arcane/IApplication.h
-%include arcane/IDirectory.h
-%include arcane/ItemGroupImpl.h
-%include arcane/expr/IExpressionImpl.h
-%include arcane/SharedReference.h
+%include arcane/core/IBase.h
+%include arcane/core/ISubDomain.h
+%include arcane/core/SharedVariable.h
+%include arcane/core/ArcaneTypes.h
+%include arcane/core/IApplication.h
+%include arcane/core/IDirectory.h
+%include arcane/core/ItemGroupImpl.h
+%include arcane/core/expr/IExpressionImpl.h
+%include arcane/core/SharedReference.h
 %include arcane/utils/IObserver.h
 %include arcane/utils/Observer.h
 %include arcane/utils/IObservable.h
-%include arcane/IMainFactory.h
-%include arcane/ApplicationBuildInfo.h
-%include arcane/DotNetRuntimeInitialisationInfo.h
+%include arcane/core/IMainFactory.h
+%include arcane/core/ApplicationBuildInfo.h
+%include arcane/core/DotNetRuntimeInitialisationInfo.h
 %include arcane/accelerator/core/AcceleratorRuntimeInitialisationInfo.h
 
 namespace Arcane
@@ -493,7 +493,7 @@ class EntryPoint : public IEntryPoint
 
 ARCANE_STD_EXHANDLER
 %ignore Arcane::IItemFamily::synchronizeVariable;
-%include arcane/IItemFamily.h
+%include arcane/core/IItemFamily.h
 %include arcane/impl/ArcaneMain.h
 %include arcane/impl/ArcaneSimpleExecutor.h
 %exception;
@@ -506,21 +506,21 @@ ARCANE_STD_EXHANDLER
 %include core/ItemPairGroup.i
 
 ARCANE_STD_EXHANDLER
-%include arcane/IApplication.h
-%include arcane/ISession.h
+%include arcane/core/IApplication.h
+%include arcane/core/ISession.h
 %exception;
 
 ARCANE_STD_EXHANDLER
 %include core/Mesh.i
 %exception;
 
-%include arcane/IVariableMng.h
-%include arcane/IVariable.h
-%include arcane/expr/Expression.h
-%include arcane/IArcaneMain.h
-%include arcane/ITimeLoopMng.h
-%include arcane/datatype/ScalarVariant.h
-%include arcane/StdNum.h
+%include arcane/core/IVariableMng.h
+%include arcane/core/IVariable.h
+%include arcane/core/expr/Expression.h
+%include arcane/core/IArcaneMain.h
+%include arcane/core/ITimeLoopMng.h
+%include arcane/core/datatype/ScalarVariant.h
+%include arcane/core/StdNum.h
 
 %ignore Arcane::XmlNode::end;
 %ignore Arcane::XmlNode::begin;

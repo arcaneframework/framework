@@ -8,8 +8,6 @@ arcane_add_library(arcane_core
   FILES ${ARCANE_SOURCES}
 )
 
-set(COMPAT_DIRECTORY "${CMAKE_BINARY_DIR}/compat/include")
-
 target_compile_definitions(arcane_core PRIVATE ARCANE_COMPONENT_arcane_core)
 
 target_link_libraries(arcane_core PUBLIC arcane_accelerator_core arcane_utils)
@@ -19,14 +17,13 @@ target_include_directories(arcane_core PUBLIC $<BUILD_INTERFACE:${COMPAT_DIRECTO
 
 arcane_register_library(arcane_core)
 
-file(MAKE_DIRECTORY "${COMPAT_DIRECTORY}")
 foreach(file ${ARCANE_ORIGINAL_SOURCES})
   if (${file} MATCHES "\.h$")
     string(TOUPPER ${file} upper_name1)
     string(REPLACE "." "_" upper_name2 ${upper_name1})
     string(REPLACE "/" "_" upper_name ${upper_name2})
-    configure_file(${Arcane_SOURCE_DIR}/cmake/IncludeCompat.h.in "${COMPAT_DIRECTORY}/arcane/${file}" @ONLY)
-    install(FILES "${COMPAT_DIRECTORY}/arcane/${file}" DESTINATION include/arcane)
+    configure_file(${Arcane_SOURCE_DIR}/cmake/IncludeCompat.h.in "${ARCANE_COMPATIBILITY_DIRECTORY}/arcane/${file}" @ONLY)
+    install(FILES "${ARCANE_COMPATIBILITY_DIRECTORY}/arcane/${file}" DESTINATION include/arcane)
   endif()
 endforeach()
 
