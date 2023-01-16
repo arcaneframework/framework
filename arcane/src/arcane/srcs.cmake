@@ -63,10 +63,15 @@ set(ARCANE_INTERNAL_SOURCES
 set(ARCANE_ORIGINAL_SOURCES
   ApplicationBuildInfo.h
   ApplicationBuildInfo.cc
+  ArcaneException.h
   ArcaneTypes.h
   ArcaneTypes.cc
+
+  CommonVariables.h
+
   DotNetRuntimeInitialisationInfo.h
   DotNetRuntimeInitialisationInfo.cc
+
   IApplication.h
   IArcaneMain.h
   IBase.h
@@ -75,14 +80,20 @@ set(ARCANE_ORIGINAL_SOURCES
   ISession.h
   IMainFactory.h
   ItemGroupImpl.h
+  ITimeHistoryMng.h
   ITimeLoopMng.h
   ISubDomain.h
   IVariable.h
   IVariableMng.h
 
+  MeshReaderMng.h
+
   SharedReference.h
   SharedVariable.h
   StdNum.h
+
+  XmlNode.h
+  XmlNodeList.h
 
   datatype/ScalarVariant.h
 
@@ -242,9 +253,7 @@ set(ARCANE_SOURCES
   RessourceMng.cc
   StringDictionary.h
   XmlNode.cc
-  XmlNode.h
   XmlNodeList.cc
-  XmlNodeList.h
   XmlProperty.cc
   XmlProperty.h
   DomUtils.cc
@@ -345,9 +354,7 @@ set(ARCANE_SOURCES
   SubDomainBuildInfo.cc
   SubDomainBuildInfo.h
   ArcaneException.cc
-  ArcaneException.h
   CommonVariables.cc
-  CommonVariables.h
   VariableFactoryRegisterer.cc
   VariableFactoryRegisterer.h
   MathUtils.cc
@@ -474,8 +481,6 @@ set(ARCANE_SOURCES
   Parallel.h
   Properties.h
   StringDictionary.h
-  XmlNode.h
-  XmlNodeList.h
   XmlProperty.h
   DomUtils.h
   SerializeBuffer.h
@@ -517,8 +522,6 @@ set(ARCANE_SOURCES
   ModuleMaster.h
   SerializeMessage.h
   SubDomainBuildInfo.h
-  ArcaneException.h
-  CommonVariables.h
   VariableFactoryRegisterer.h
   MathUtils.h
   SequentialSection.h
@@ -724,7 +727,6 @@ set(ARCANE_SOURCES
   PrivateVariableArray.h
   MeshBuildInfo.h
   MeshBuildInfo.cc
-  MeshReaderMng.h
   MeshReaderMng.cc
   MeshVariableScalarRef.h
   MeshPartialVariableScalarRef.h
@@ -736,7 +738,6 @@ set(ARCANE_SOURCES
   IPostProcessorWriter.h
   IMeshFactory.h
   IModuleMaster.h
-  ITimeHistoryMng.h
   IUnitTest.h
   IIOMng.h
   ObservablePool.h

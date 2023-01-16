@@ -524,24 +524,24 @@ ARCANE_STD_EXHANDLER
 
 %ignore Arcane::XmlNode::end;
 %ignore Arcane::XmlNode::begin;
-%include arcane/XmlNode.h
-%include arcane/XmlNodeList.h
+%include arcane/core/XmlNode.h
+%include arcane/core/XmlNodeList.h
 
 %include core/CaseOption.i
 %include core/Parallel.i
 
-%include arcane/ITimeHistoryMng.h
-%include arcane/CommonVariables.h
+%include arcane/core/ITimeHistoryMng.h
+%include arcane/core/CommonVariables.h
 
 %typemap(csbase) Arcane::AssertionException "System.Exception"
 
-%include arcane/ArcaneException.h
+%include arcane/core/ArcaneException.h
 
 // Pour forcer l'inclusion de la bibliothèque 'arcane_std'
 %include arcane/std/ArcaneStdRegisterer.h
 
 ARCANE_STD_EXHANDLER
-%include arcane/MeshReaderMng.h
+%include arcane/core/MeshReaderMng.h
 %exception;
 
 %include core/InterfacesInclude.i
