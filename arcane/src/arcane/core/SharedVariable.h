@@ -18,7 +18,7 @@
 #include "arcane/ArcaneTypes.h"
 #include "arcane/IVariable.h"
 #include "arcane/IItemFamily.h"
-#include "utils/FatalErrorException.h"
+#include "arcane/utils/FatalErrorException.h"
 
 #include "arcane/IMeshSubMeshTransition.h"
 #include "arcane/ItemGroup.h"

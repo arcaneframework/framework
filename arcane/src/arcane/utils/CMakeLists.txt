@@ -17,8 +17,16 @@ target_include_directories(arcane_utils PUBLIC $<BUILD_INTERFACE:${ARCANE_SRC_PA
 # de la bibliothèque mais ne doit pas être exportée.
 target_link_libraries(arcane_utils PUBLIC $<BUILD_INTERFACE:arcane_build_compile_flags> arcane_export_compile_flags)
 
+# TODO A supprimer car cette cible ne doit pas utiliser des '.h' de 'arcane_core'
+target_include_directories(arcane_utils PUBLIC $<BUILD_INTERFACE:${ARCANE_COMPATIBILITY_DIRECTORY}>)
+
 # Ajoute dépendances provenant de 'Arccore'
-target_link_libraries(arcane_utils PUBLIC Arccore::arccore_trace Arccore::arccore_concurrency Arccore::arccore_collections Arccore::arccore_base)
+target_link_libraries(arcane_utils PUBLIC
+  Arccore::arccore_trace
+  Arccore::arccore_concurrency
+  Arccore::arccore_collections
+  Arccore::arccore_base
+  )
 arcane_add_arccon_packages(arcane_utils PUBLIC Glib)
 
 # ----------------------------------------------------------------------------

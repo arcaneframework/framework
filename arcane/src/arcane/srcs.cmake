@@ -60,12 +60,43 @@ set(ARCANE_INTERNAL_SOURCES
   core/internal/CartesianMeshGenerationInfo.cc
 )
 
-
 set(ARCANE_ORIGINAL_SOURCES
+  ApplicationBuildInfo.h
+  ApplicationBuildInfo.cc
+  ArcaneTypes.h
+  ArcaneTypes.cc
+  DotNetRuntimeInitialisationInfo.h
+  DotNetRuntimeInitialisationInfo.cc
+  IApplication.h
+  IArcaneMain.h
+  IBase.h
+  IDirectory.h
+  IItemFamily.h
+  ISession.h
+  IMainFactory.h
+  ItemGroupImpl.h
+  ITimeLoopMng.h
+  ISubDomain.h
+  IVariable.h
+  IVariableMng.h
+
+  SharedReference.h
+  SharedVariable.h
+  StdNum.h
+
+  datatype/ScalarVariant.h
+
+  expr/IExpressionImpl.h
+  expr/Expression.h
 )
 
+set(ARCANE_CORE_SOURCES)
+foreach(_srcfile ${ARCANE_ORIGINAL_SOURCES})
+  list(APPEND ARCANE_CORE_SOURCES "core/${_srcfile}")
+endforeach()
+
 set(ARCANE_SOURCES
-  ${ARCANE_ORIGINAL_SOURCES}
+  ${ARCANE_CORE_SOURCES}
   ${ARCANE_MATERIALS_SOURCES}
   ${ARCANE_INTERNAL_SOURCES}
   AbstractCaseDocumentVisitor.cc
@@ -79,10 +110,6 @@ set(ARCANE_SOURCES
   AbstractItemOperationByBasicType.cc
   AbstractItemOperationByBasicType.h
   AcceleratorRuntimeInitialisationInfo.h
-  ArcaneTypes.cc
-  ArcaneTypes.h
-  ApplicationBuildInfo.cc
-  ApplicationBuildInfo.h
   Array2Variable.cc
   Array2Variable.h
   Assertion.h
@@ -132,8 +159,6 @@ set(ARCANE_SOURCES
   DataView.h
   DataTypeDispatchingDataVisitor.cc
   DataTypeDispatchingDataVisitor.h
-  DotNetRuntimeInitialisationInfo.cc
-  DotNetRuntimeInitialisationInfo.h
   EntryPoint.cc
   EntryPoint.h
   FactoryService.cc
@@ -163,7 +188,6 @@ set(ARCANE_SOURCES
   ItemPairGroupImpl.cc
   ItemPairGroupImpl.h
   ItemGroupImpl.cc
-  ItemGroupImpl.h
   ItemGroup.cc
   ItemGroup.h
   ItemGroupComputeFunctor.cc
@@ -240,7 +264,6 @@ set(ARCANE_SOURCES
   Directory.cc
   Directory.h
   SharedReference.cc
-  SharedReference.h
   StandardCaseFunction.cc
   StandardCaseFunction.h
   ParallelMngDispatcher.cc
@@ -355,7 +378,6 @@ set(ARCANE_SOURCES
   datatype/RealArray2Variant.cc
   datatype/RealArray2Variant.h
   datatype/ScalarVariant.cc
-  datatype/ScalarVariant.h
   datatype/SmallVariant.cc
   datatype/SmallVariant.h
   datatype/VariantBase.cc
@@ -369,7 +391,6 @@ set(ARCANE_SOURCES
   expr/BadOperationException.cc
   expr/BadOperationException.h
   expr/Expression.cc
-  expr/Expression.h
   expr/ExpressionResult.cc
   expr/ExpressionResult.h
   expr/ExpressionImpl.cc
@@ -400,8 +421,6 @@ set(ARCANE_SOURCES
   AbstractModule.h
   AbstractService.h
   AbstractItemOperationByBasicType.h
-  ArcaneTypes.h
-  ApplicationBuildInfo.h
   Array2Variable.h
   CaseOptionsMain.h
   BasicModule.h
@@ -432,7 +451,6 @@ set(ARCANE_SOURCES
   ItemPairGroup.h
   ItemPairGroupBuilder.h
   ItemPairGroupImpl.h
-  ItemGroupImpl.h
   ItemGroup.h
   ItemGroupComputeFunctor.h
   ItemGroupRangeIterator.h
@@ -465,7 +483,6 @@ set(ARCANE_SOURCES
   Timer.h
   TemporaryVariableBuildInfo.h
   Directory.h
-  SharedReference.h
   StandardCaseFunction.h
   ParallelMngDispatcher.h
   ParallelNonBlockingCollectiveDispatcher.h
@@ -516,9 +533,7 @@ set(ARCANE_SOURCES
   ConfigurationPropertyReader.h
   ConnectivityItemVector.h
   EnumeratorTraceWrapper.h
-  IArcaneMain.h
   IBackwardMng.h
-  IBase.h
   ICaseMng.h
   ICaseDocument.h
   ICaseFunction.h
@@ -544,14 +559,11 @@ set(ARCANE_SOURCES
   IGetVariablesValuesParallelOperation.h
   IGhostLayerMng.h
   ICodeService.h
-  ISubDomain.h
   IServiceInfo.h
   IService.h
   ITransferValuesParallelOperation.h
-  IApplication.h
   IDirectExecution.h
   IDirectSubDomainExecuteFunctor.h
-  IMainFactory.h
   IDataFactory.h
   IDataFactoryMng.h
   IDataStorageFactory.h
@@ -566,7 +578,6 @@ set(ARCANE_SOURCES
   IDumpRW.h
   IDumpR.h
   IDumpW.h
-  IDirectory.h
   IDoFFamily.h
   ILoadBalanceMng.h
   ItemFamilyCompactInfos.h
@@ -590,7 +601,6 @@ set(ARCANE_SOURCES
   IItemConnectivityInfo.h
   IItemConnectivitySynchronizer.h
   IItemEnumeratorTracer.h
-  IItemFamily.h
   IItemFamilyCompactPolicy.h
   IItemFamilyExchanger.h
   IItemFamilySerializeStep.h
@@ -608,7 +618,6 @@ set(ARCANE_SOURCES
   ITimeHistoryCurveWriter2.h
   IItemOperationByBasicType.h
   ITimerMng.h
-  ITimeLoopMng.h
   IEntryPoint.h
   IEntryPointMng.h
   IMeshPartitionConstraint.h
@@ -657,19 +666,16 @@ set(ARCANE_SOURCES
   IObserver.h
   IObservable.h
   IRayMeshIntersection.h
-  ISession.h
   IServiceLoader.h
   IServiceAndModuleFactoryMng.h
   ISerializeMessageList.h
   ISerializeMessage.h
   ITiedInterface.h
   ITimeLoopService.h
-  IVariable.h
   IVariableReader.h
   IVariableComputeFunction.h
   IVariableFactory.h
   IVariableFilter.h
-  IVariableMng.h
   IVariableWriter.h
   IVariableParallelOperation.h
   IVariableSynchronizer.h
@@ -698,7 +704,6 @@ set(ARCANE_SOURCES
   ServiceFinder.h
   ServiceFinder2.h
   SimdMathUtils.h
-  StdNum.h
   TimeLoopEntryPointInfo.h
   UnstructuredMeshConnectivity.h
   UnstructuredMeshConnectivity.cc
@@ -748,7 +753,6 @@ set(ARCANE_SOURCES
   IGraphModifier2.h
   IPrimaryMesh.h
   IMeshSubMeshTransition.h
-  SharedVariable.h
   ServiceOptions.h
   IExtraGhostItemsBuilder.h
   VariableAccessor.h
@@ -776,8 +780,6 @@ set(ARCANE_SOURCES
   datatype/BadVariantTypeException.h
   datatype/DataTracer.h
   datatype/DataTypes.h
-  datatype/ScalarVariant.h
-  datatype/SmallVariant.h
   datatype/VariantBase.h
   datatype/IDataOperation.h
   datatype/IDataTracer.h
@@ -788,7 +790,6 @@ set(ARCANE_SOURCES
   expr/BadExpressionException.h
   expr/BadOperandException.h
   expr/BadOperationException.h
-  expr/Expression.h
   expr/ExpressionResult.h
   expr/ExpressionImpl.h
   expr/UnaryExpressionImpl.h
@@ -796,7 +797,6 @@ set(ARCANE_SOURCES
   expr/BinaryExpressionImpl.h
   expr/WhereExpressionImpl.h
   expr/OperatorMng.h
-  expr/IExpressionImpl.h
   matvec/Matrix.h
   matvec/Vector.h
   parallel/VariableParallelOperationBase.h

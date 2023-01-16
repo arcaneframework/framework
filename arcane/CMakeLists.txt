@@ -361,6 +361,12 @@ include(${CMAKE_CURRENT_LIST_DIR}/cmake/Functions.cmake)
 
 # ----------------------------------------------------------------------------
 
+set(ARCANE_COMPATIBILITY_DIRECTORY "${CMAKE_BINARY_DIR}/compatibility/include"
+  CACHE STRING "Path to generated headers for compatibilit" FORCE)
+file(MAKE_DIRECTORY "${ARCANE_COMPATIBILITY_DIRECTORY}")
+
+# ----------------------------------------------------------------------------
+
 set(ARCANE_WANT_GEOMETRY TRUE)
 
 message(STATUS "Using AVX Simd instructions ? -> ${ARCANE_WANT_AVX}")
