@@ -4,7 +4,7 @@ ARCANE_STD_EXHANDLER
 %include arcane/IDataWriter.h
 %include arcane/IDataReader.h
 %include arcane/IMeshReader.h
-%include arcane/ICaseFunctionProvider.h
+%include arcane/core/ICaseFunctionProvider.h
 %include arcane/ICheckpointWriter.h
 %include arcane/ICheckpointReader.h
 %include arcane/IVariableReader.h

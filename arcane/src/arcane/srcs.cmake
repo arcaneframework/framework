@@ -67,6 +67,12 @@ set(ARCANE_ORIGINAL_SOURCES
   ArcaneTypes.h
   ArcaneTypes.cc
 
+  CaseFunction.h
+  CaseOptionBase.h
+  CaseOptionBuildInfo.h
+  CaseOptions.h
+  CaseOptionServiceImpl.h
+  CaseOptionTypes.h
   CommonVariables.h
 
   DotNetRuntimeInitialisationInfo.h
@@ -75,6 +81,11 @@ set(ARCANE_ORIGINAL_SOURCES
   IApplication.h
   IArcaneMain.h
   IBase.h
+  ICaseFunction.h
+  ICaseFunctionProvider.h
+  ICaseMng.h
+  ICaseOptions.h
+  ICaseOptionList.h
   IDirectory.h
   IItemFamily.h
   ISession.h
@@ -90,6 +101,7 @@ set(ARCANE_ORIGINAL_SOURCES
 
   SharedReference.h
   SharedVariable.h
+  StandardCaseFunction.h
   StdNum.h
 
   XmlNode.h
@@ -136,15 +148,11 @@ set(ARCANE_SOURCES
   BasicUnitTest.cc
   BasicUnitTest.h
   CaseFunction.cc
-  CaseFunction.h
   CaseNodeNames.cc
   CaseNodeNames.h
   CaseOptionBase.cc
-  CaseOptionBase.h
   CaseOptionBuildInfo.cc
-  CaseOptionBuildInfo.h
   CaseOptions.cc
-  CaseOptions.h
   CaseOptionError.cc
   CaseOptionError.h
   CaseOptionException.cc
@@ -152,8 +160,6 @@ set(ARCANE_SOURCES
   CaseOptionList.cc
   CaseOptionService.cc
   CaseOptionService.h
-  CaseOptionServiceImpl.h
-  CaseOptionTypes.h
   CaseTable.cc
   CaseTable.h
   CaseTableParams.cc
@@ -274,7 +280,6 @@ set(ARCANE_SOURCES
   Directory.h
   SharedReference.cc
   StandardCaseFunction.cc
-  StandardCaseFunction.h
   ParallelMngDispatcher.cc
   ParallelMngDispatcher.h
   ParallelMngUtils.h
@@ -433,11 +438,7 @@ set(ARCANE_SOURCES
   BasicModule.h
   BasicService.h
   BasicUnitTest.h
-  CaseFunction.h
   CaseNodeNames.h
-  CaseOptionBase.h
-  CaseOptionBuildInfo.h
-  CaseOptions.h
   CaseOptionError.h
   CaseOptionException.h
   CaseOptionService.h
@@ -488,7 +489,6 @@ set(ARCANE_SOURCES
   Timer.h
   TemporaryVariableBuildInfo.h
   Directory.h
-  StandardCaseFunction.h
   ParallelMngDispatcher.h
   ParallelNonBlockingCollectiveDispatcher.h
   ParallelSuperMngDispatcher.h
@@ -537,10 +537,7 @@ set(ARCANE_SOURCES
   ConnectivityItemVector.h
   EnumeratorTraceWrapper.h
   IBackwardMng.h
-  ICaseMng.h
   ICaseDocument.h
-  ICaseFunction.h
-  ICaseFunctionProvider.h
   ICaseDocumentVisitor.h
   ICaseMeshMasterService.h
   ICaseMeshReader.h
@@ -638,8 +635,6 @@ set(ARCANE_SOURCES
   IMeshModifier.h
   IMeshReader.h
   IMeshWriter.h
-  ICaseOptions.h
-  ICaseOptionList.h
   IMeshStats.h
   IMeshUtilities.h
   IMeshWriter.h

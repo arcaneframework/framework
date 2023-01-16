@@ -48,17 +48,17 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-%include arcane/CaseOptionTypes.h
-%include arcane/CaseOptionBuildInfo.h
-%include arcane/CaseOptionBase.h
-%include arcane/ICaseOptions.h
-%include arcane/ICaseOptionList.h
-%include arcane/CaseOptions.h
-%include arcane/ICaseMng.h
-%include arcane/ICaseFunction.h
-%include arcane/CaseFunction.h
-%include arcane/StandardCaseFunction.h
-%include arcane/ICaseFunctionProvider.h
+%include arcane/core/CaseOptionTypes.h
+%include arcane/core/CaseOptionBuildInfo.h
+%include arcane/core/CaseOptionBase.h
+%include arcane/core/ICaseOptions.h
+%include arcane/core/ICaseOptionList.h
+%include arcane/core/CaseOptions.h
+%include arcane/core/ICaseMng.h
+%include arcane/core/ICaseFunction.h
+%include arcane/core/CaseFunction.h
+%include arcane/core/StandardCaseFunction.h
+%include arcane/core/ICaseFunctionProvider.h
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -94,7 +94,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-%include arcane/CaseOptionServiceImpl.h
+%include arcane/core/CaseOptionServiceImpl.h
 
  /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
