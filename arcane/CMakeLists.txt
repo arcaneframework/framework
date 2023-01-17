@@ -818,7 +818,7 @@ add_subdirectory(src/arcane/utils)
 add_subdirectory(src/arcane/impl)
 add_subdirectory(src/arcane/mesh)
 add_subdirectory(src/arcane/launcher)
-add_subdirectory(src/arcane)
+add_subdirectory(src/arcane/core)
 
 add_subdirectory(src/arcane/geometry)
 # TODO: regarder si toujours utile de positionner cela.
