@@ -1,63 +1,63 @@
 ﻿set(CURRENT_SRC_PATH  ${Arcane_SOURCE_DIR}/src)
 
 set(ARCANE_MATERIALS_SOURCES
-  core/materials/CellToAllEnvCellConverter.h
-  core/materials/MaterialsCoreGlobal.h
-  core/materials/MaterialsCoreGlobal.cc
-  core/materials/MatItem.h
-  core/materials/MatVarIndex.h
-  core/materials/MatVarIndex.cc
-  core/materials/IEnumeratorTracer.h
-  core/materials/IMeshMaterialVariable.cc
-  core/materials/IMeshMaterialVariable.h
-  core/materials/IScalarMeshMaterialVariable.h
-  core/materials/IArrayMeshMaterialVariable.h
-  core/materials/IMeshMaterialMng.cc
-  core/materials/IMeshMaterialMng.h
-  core/materials/IMeshBlock.h
-  core/materials/IMeshComponent.h
-  core/materials/IMeshEnvironment.h
-  core/materials/IMeshMaterial.h
-  core/materials/IMeshMaterialVariableFactoryMng.h
-  core/materials/IMeshMaterialVariableFactory.h
-  core/materials/MeshMaterialVariableIndexer.h
-  core/materials/MeshMaterialVariableIndexer.cc
-  core/materials/ComponentItemListBuilder.h
-  core/materials/ComponentItemListBuilder.cc
-  core/materials/ComponentItem.cc
-  core/materials/ComponentItem.h
-  core/materials/ComponentItemInternal.cc
-  core/materials/ComponentItemInternal.h
-  core/materials/ComponentItemVector.cc
-  core/materials/ComponentItemVector.h
-  core/materials/ComponentItemVectorView.cc
-  core/materials/ComponentItemVectorView.h
-  core/materials/ComponentPartItemVectorView.cc
-  core/materials/ComponentPartItemVectorView.h
-  core/materials/EnvItemVector.cc
-  core/materials/EnvItemVector.h
-  core/materials/MatItemVector.cc
-  core/materials/MatItemVector.h
-  core/materials/MatItemEnumerator.cc
-  core/materials/MatItemEnumerator.h
-  core/materials/MeshComponentPartData.cc
-  core/materials/MeshComponentPartData.h
-  core/materials/MaterialVariableBuildInfo.cc
-  core/materials/MaterialVariableBuildInfo.h
-  core/materials/MaterialVariableTypeInfo.cc
-  core/materials/MaterialVariableTypeInfo.h
-  core/materials/MeshMaterialVariableRef.cc
-  core/materials/MeshMaterialVariableRef.h
-  core/materials/MeshEnvironmentVariableRef.cc
-  core/materials/MeshEnvironmentVariableRef.h
-  core/materials/MeshMaterialVariableComputeFunction.h
-  core/materials/IMeshMaterialVariableComputeFunction.h
+  materials/CellToAllEnvCellConverter.h
+  materials/MaterialsCoreGlobal.h
+  materials/MaterialsCoreGlobal.cc
+  materials/MatItem.h
+  materials/MatVarIndex.h
+  materials/MatVarIndex.cc
+  materials/IEnumeratorTracer.h
+  materials/IMeshMaterialVariable.cc
+  materials/IMeshMaterialVariable.h
+  materials/IScalarMeshMaterialVariable.h
+  materials/IArrayMeshMaterialVariable.h
+  materials/IMeshMaterialMng.cc
+  materials/IMeshMaterialMng.h
+  materials/IMeshBlock.h
+  materials/IMeshComponent.h
+  materials/IMeshEnvironment.h
+  materials/IMeshMaterial.h
+  materials/IMeshMaterialVariableFactoryMng.h
+  materials/IMeshMaterialVariableFactory.h
+  materials/MeshMaterialVariableIndexer.h
+  materials/MeshMaterialVariableIndexer.cc
+  materials/ComponentItemListBuilder.h
+  materials/ComponentItemListBuilder.cc
+  materials/ComponentItem.cc
+  materials/ComponentItem.h
+  materials/ComponentItemInternal.cc
+  materials/ComponentItemInternal.h
+  materials/ComponentItemVector.cc
+  materials/ComponentItemVector.h
+  materials/ComponentItemVectorView.cc
+  materials/ComponentItemVectorView.h
+  materials/ComponentPartItemVectorView.cc
+  materials/ComponentPartItemVectorView.h
+  materials/EnvItemVector.cc
+  materials/EnvItemVector.h
+  materials/MatItemVector.cc
+  materials/MatItemVector.h
+  materials/MatItemEnumerator.cc
+  materials/MatItemEnumerator.h
+  materials/MeshComponentPartData.cc
+  materials/MeshComponentPartData.h
+  materials/MaterialVariableBuildInfo.cc
+  materials/MaterialVariableBuildInfo.h
+  materials/MaterialVariableTypeInfo.cc
+  materials/MaterialVariableTypeInfo.h
+  materials/MeshMaterialVariableRef.cc
+  materials/MeshMaterialVariableRef.h
+  materials/MeshEnvironmentVariableRef.cc
+  materials/MeshEnvironmentVariableRef.h
+  materials/MeshMaterialVariableComputeFunction.h
+  materials/IMeshMaterialVariableComputeFunction.h
 )
 
 set(ARCANE_INTERNAL_SOURCES
-  core/internal/IDataInternal.h
-  core/internal/CartesianMeshGenerationInfo.h
-  core/internal/CartesianMeshGenerationInfo.cc
+  internal/IDataInternal.h
+  internal/CartesianMeshGenerationInfo.h
+  internal/CartesianMeshGenerationInfo.cc
 )
 
 set(ARCANE_ORIGINAL_SOURCES
@@ -700,24 +700,15 @@ set(ARCANE_ORIGINAL_SOURCES
   random/UniformOnSphere.h
   random/UniformSmallInt.h
 
-  # A supprimer car ces fichiers ne sont
-  # pas installés et pas utilisés en dehors
-  # de Arcane
   TimeLoopSingletonServiceInfo.h
   VarRefEnumerator.h
   RawCopy.h
   )
 
-set(ARCANE_CORE_SOURCES)
-foreach(_srcfile ${ARCANE_ORIGINAL_SOURCES})
-  list(APPEND ARCANE_CORE_SOURCES "core/${_srcfile}")
-endforeach()
-
 set(ARCANE_SOURCES
-  ${ARCANE_CORE_SOURCES}
+  ${ARCANE_ORIGINAL_SOURCES}
   ${ARCANE_MATERIALS_SOURCES}
   ${ARCANE_INTERNAL_SOURCES}
-
 )
 
 # ----------------------------------------------------------------------------
