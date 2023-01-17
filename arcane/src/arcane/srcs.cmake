@@ -346,116 +346,6 @@ set(ARCANE_ORIGINAL_SOURCES
   XmlNode.h
   XmlNodeList.h
 
-  datatype/ArrayVariant.cc
-  datatype/ArrayVariant.h
-  datatype/BadVariantTypeException.cc
-  datatype/BadVariantTypeException.h
-  datatype/DataStorageBuildInfo.h
-  datatype/DataStorageBuildInfo.cc
-  datatype/DataStorageTypeInfo.h
-  datatype/DataStorageTypeInfo.cc
-  datatype/DataTracer.cc
-  datatype/DataTracer.h
-  datatype/DataTypes.cc
-  datatype/DataTypes.h
-  datatype/DataTypeTraits.h
-  datatype/IDataOperation.h
-  datatype/IDataTracer.h
-  datatype/RealArrayVariant.cc
-  datatype/RealArrayVariant.h
-  datatype/RealArray2Variant.cc
-  datatype/RealArray2Variant.h
-  datatype/ScalarVariant.cc
-  datatype/ScalarVariant.h
-  datatype/SmallVariant.cc
-  datatype/SmallVariant.h
-  datatype/VariantBase.cc
-  datatype/VariantBase.h
-
-  expr/IExpressionImpl.h
-  expr/Expression.h
-  expr/ArrayExpressionImpl.cc
-  expr/ArrayExpressionImpl.h
-  expr/BadExpressionException.cc
-  expr/BadExpressionException.h
-  expr/BadOperandException.cc
-  expr/BadOperandException.h
-  expr/BadOperationException.cc
-  expr/BadOperationException.h
-  expr/Expression.cc
-  expr/ExpressionResult.cc
-  expr/ExpressionResult.h
-  expr/ExpressionImpl.cc
-  expr/ExpressionImpl.h
-  expr/UnaryExpressionImpl.cc
-  expr/UnaryExpressionImpl.h
-  expr/LitteralExpressionImpl.cc
-  expr/LitteralExpressionImpl.h
-  expr/BinaryExpressionImpl.cc
-  expr/BinaryExpressionImpl.h
-  expr/WhereExpressionImpl.cc
-  expr/WhereExpressionImpl.h
-  expr/OperatorMng.cc
-  expr/OperatorMng.h
-
-  anyitem/AnyItem.h
-  anyitem/AnyItemGlobal.h
-  anyitem/AnyItemPrivate.h
-  anyitem/AnyItemArray.h
-  anyitem/AnyItemArray2.h
-  anyitem/AnyItemFamily.h
-  anyitem/AnyItemFamilyObserver.h
-  anyitem/AnyItemGroup.h
-  anyitem/AnyItem.h
-  anyitem/AnyItemLinkFamily.h
-  anyitem/AnyItemLinkVariable.h
-  anyitem/AnyItemLinkVariableArray.h
-  anyitem/AnyItemUserGroup.h
-  anyitem/AnyItemVariable.h
-  anyitem/AnyItemVariableArray.h
-
-  matvec/AMG.cc
-  matvec/Matrix.cc
-  matvec/Matrix.h
-  matvec/Vector.cc
-  matvec/Vector.h
-
-  parallel/BitonicSort.h
-  parallel/BitonicSortT.H
-  parallel/GhostItemsVariableParallelOperation.cc
-  parallel/GhostItemsVariableParallelOperation.h
-  parallel/IMultiReduce.h
-  parallel/IRequestList.h
-  parallel/IStat.h
-  parallel/MultiReduce.cc
-  parallel/Stat.cc
-  parallel/VariableParallelOperationBase.cc
-  parallel/VariableParallelOperationBase.h
-
-  random/ConstMod.h
-  random/InversiveCongruential.h
-  random/LinearCongruential.h
-  random/MersenneTwister.h
-  random/NormalDistribution.h
-  random/RandomGlobal.h
-  random/TKiss.h
-  random/TMrg32k3a.h
-  random/Uniform01.h
-  random/UniformInt.h
-  random/UniformOnSphere.h
-  random/UniformSmallInt.h
-)
-
-set(ARCANE_CORE_SOURCES)
-foreach(_srcfile ${ARCANE_ORIGINAL_SOURCES})
-  list(APPEND ARCANE_CORE_SOURCES "core/${_srcfile}")
-endforeach()
-
-set(ARCANE_SOURCES
-  ${ARCANE_CORE_SOURCES}
-  ${ARCANE_MATERIALS_SOURCES}
-  ${ARCANE_INTERNAL_SOURCES}
-
   AbstractCaseDocumentVisitor.cc
   AbstractCaseDocumentVisitor.h
   AbstractDataVisitor.cc
@@ -707,8 +597,127 @@ set(ARCANE_SOURCES
   XmlNodeList.cc
   XmlProperty.cc
   XmlProperty.h
+
   packages/Mesh.h
   packages/Variable.h
+
+  datatype/ArrayVariant.cc
+  datatype/ArrayVariant.h
+  datatype/BadVariantTypeException.cc
+  datatype/BadVariantTypeException.h
+  datatype/DataStorageBuildInfo.h
+  datatype/DataStorageBuildInfo.cc
+  datatype/DataStorageTypeInfo.h
+  datatype/DataStorageTypeInfo.cc
+  datatype/DataTracer.cc
+  datatype/DataTracer.h
+  datatype/DataTypes.cc
+  datatype/DataTypes.h
+  datatype/DataTypeTraits.h
+  datatype/IDataOperation.h
+  datatype/IDataTracer.h
+  datatype/RealArrayVariant.cc
+  datatype/RealArrayVariant.h
+  datatype/RealArray2Variant.cc
+  datatype/RealArray2Variant.h
+  datatype/ScalarVariant.cc
+  datatype/ScalarVariant.h
+  datatype/SmallVariant.cc
+  datatype/SmallVariant.h
+  datatype/VariantBase.cc
+  datatype/VariantBase.h
+
+  expr/IExpressionImpl.h
+  expr/Expression.h
+  expr/ArrayExpressionImpl.cc
+  expr/ArrayExpressionImpl.h
+  expr/BadExpressionException.cc
+  expr/BadExpressionException.h
+  expr/BadOperandException.cc
+  expr/BadOperandException.h
+  expr/BadOperationException.cc
+  expr/BadOperationException.h
+  expr/Expression.cc
+  expr/ExpressionResult.cc
+  expr/ExpressionResult.h
+  expr/ExpressionImpl.cc
+  expr/ExpressionImpl.h
+  expr/UnaryExpressionImpl.cc
+  expr/UnaryExpressionImpl.h
+  expr/LitteralExpressionImpl.cc
+  expr/LitteralExpressionImpl.h
+  expr/BinaryExpressionImpl.cc
+  expr/BinaryExpressionImpl.h
+  expr/WhereExpressionImpl.cc
+  expr/WhereExpressionImpl.h
+  expr/OperatorMng.cc
+  expr/OperatorMng.h
+
+  anyitem/AnyItem.h
+  anyitem/AnyItemGlobal.h
+  anyitem/AnyItemPrivate.h
+  anyitem/AnyItemArray.h
+  anyitem/AnyItemArray2.h
+  anyitem/AnyItemFamily.h
+  anyitem/AnyItemFamilyObserver.h
+  anyitem/AnyItemGroup.h
+  anyitem/AnyItem.h
+  anyitem/AnyItemLinkFamily.h
+  anyitem/AnyItemLinkVariable.h
+  anyitem/AnyItemLinkVariableArray.h
+  anyitem/AnyItemUserGroup.h
+  anyitem/AnyItemVariable.h
+  anyitem/AnyItemVariableArray.h
+
+  matvec/AMG.cc
+  matvec/Matrix.cc
+  matvec/Matrix.h
+  matvec/Vector.cc
+  matvec/Vector.h
+
+  parallel/BitonicSort.h
+  parallel/BitonicSortT.H
+  parallel/GhostItemsVariableParallelOperation.cc
+  parallel/GhostItemsVariableParallelOperation.h
+  parallel/IMultiReduce.h
+  parallel/IRequestList.h
+  parallel/IStat.h
+  parallel/MultiReduce.cc
+  parallel/Stat.cc
+  parallel/VariableParallelOperationBase.cc
+  parallel/VariableParallelOperationBase.h
+
+  random/ConstMod.h
+  random/InversiveCongruential.h
+  random/LinearCongruential.h
+  random/MersenneTwister.h
+  random/NormalDistribution.h
+  random/RandomGlobal.h
+  random/TKiss.h
+  random/TMrg32k3a.h
+  random/Uniform01.h
+  random/UniformInt.h
+  random/UniformOnSphere.h
+  random/UniformSmallInt.h
+
+  # A supprimer car ces fichiers ne sont
+  # pas installés et pas utilisés en dehors
+  # de Arcane
+  TimeLoopSingletonServiceInfo.h
+  VarRefEnumerator.h
+  RawCopy.h
+  )
+
+set(ARCANE_CORE_SOURCES)
+foreach(_srcfile ${ARCANE_ORIGINAL_SOURCES})
+  list(APPEND ARCANE_CORE_SOURCES "core/${_srcfile}")
+endforeach()
+
+set(ARCANE_SOURCES
+  ${ARCANE_CORE_SOURCES}
+  ${ARCANE_MATERIALS_SOURCES}
+  ${ARCANE_INTERNAL_SOURCES}
+
 )
 
 # ----------------------------------------------------------------------------
