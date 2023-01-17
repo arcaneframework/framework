@@ -95,6 +95,7 @@ set(ARCANE_SOURCES
   
   MshMeshReader.cc
   MshMeshWriter.cc
+
   internal/IosFile.cc
   internal/IosFile.h
   internal/IosGmsh.h
@@ -126,4 +127,5 @@ set(AXL_FILES
   PDESRandomNumberGenerator
   SimpleCsvOutput
   SimpleCsvComparator
-)
+  VTKHdfPostProcessor
+  )
