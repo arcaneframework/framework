@@ -156,7 +156,31 @@ set(ARCANE_ORIGINAL_SOURCES
   XmlNode.h
   XmlNodeList.h
 
+  datatype/ArrayVariant.cc
+  datatype/ArrayVariant.h
+  datatype/BadVariantTypeException.cc
+  datatype/BadVariantTypeException.h
+  datatype/DataStorageBuildInfo.h
+  datatype/DataStorageBuildInfo.cc
+  datatype/DataStorageTypeInfo.h
+  datatype/DataStorageTypeInfo.cc
+  datatype/DataTracer.cc
+  datatype/DataTracer.h
+  datatype/DataTypes.cc
+  datatype/DataTypes.h
+  datatype/DataTypeTraits.h
+  datatype/IDataOperation.h
+  datatype/IDataTracer.h
+  datatype/RealArrayVariant.cc
+  datatype/RealArrayVariant.h
+  datatype/RealArray2Variant.cc
+  datatype/RealArray2Variant.h
+  datatype/ScalarVariant.cc
   datatype/ScalarVariant.h
+  datatype/SmallVariant.cc
+  datatype/SmallVariant.h
+  datatype/VariantBase.cc
+  datatype/VariantBase.h
 
   expr/IExpressionImpl.h
   expr/Expression.h
@@ -199,6 +223,19 @@ set(ARCANE_ORIGINAL_SOURCES
   anyitem/AnyItemUserGroup.h
   anyitem/AnyItemVariable.h
   anyitem/AnyItemVariableArray.h
+
+  random/ConstMod.h
+  random/InversiveCongruential.h
+  random/LinearCongruential.h
+  random/MersenneTwister.h
+  random/NormalDistribution.h
+  random/RandomGlobal.h
+  random/TKiss.h
+  random/TMrg32k3a.h
+  random/Uniform01.h
+  random/UniformInt.h
+  random/UniformOnSphere.h
+  random/UniformSmallInt.h
 )
 
 set(ARCANE_CORE_SOURCES)
@@ -447,25 +484,6 @@ set(ARCANE_SOURCES
   ItemRefinementPattern.h
   SynchronizerMatrixPrinter.cc
   SynchronizerMatrixPrinter.h
-  datatype/ArrayVariant.cc
-  datatype/ArrayVariant.h
-  datatype/BadVariantTypeException.cc
-  datatype/BadVariantTypeException.h
-  datatype/DataStorageTypeInfo.h
-  datatype/DataStorageTypeInfo.cc
-  datatype/DataTracer.cc
-  datatype/DataTracer.h
-  datatype/DataTypes.cc
-  datatype/DataTypes.h
-  datatype/RealArrayVariant.cc
-  datatype/RealArrayVariant.h
-  datatype/RealArray2Variant.cc
-  datatype/RealArray2Variant.h
-  datatype/ScalarVariant.cc
-  datatype/SmallVariant.cc
-  datatype/SmallVariant.h
-  datatype/VariantBase.cc
-  datatype/VariantBase.h
   matvec/AMG.cc
   matvec/Matrix.cc
   matvec/Matrix.h
@@ -777,16 +795,6 @@ set(ARCANE_SOURCES
   ISimpleTableReaderWriter.h
   ISimpleTableWriterHelper.h
 
-  datatype/ArrayVariant.h
-  datatype/BadVariantTypeException.h
-  datatype/DataTracer.h
-  datatype/DataTypes.h
-  datatype/VariantBase.h
-  datatype/IDataOperation.h
-  datatype/IDataTracer.h
-  datatype/DataTypeTraits.h
-  datatype/DataStorageBuildInfo.h
-  datatype/DataStorageBuildInfo.cc
   matvec/Matrix.h
   matvec/Vector.h
   parallel/VariableParallelOperationBase.h
@@ -798,18 +806,6 @@ set(ARCANE_SOURCES
   parallel/BitonicSortT.H
   packages/Variable.h
   packages/Mesh.h
-  random/ConstMod.h
-  random/InversiveCongruential.h
-  random/LinearCongruential.h
-  random/MersenneTwister.h
-  random/NormalDistribution.h
-  random/RandomGlobal.h
-  random/TKiss.h
-  random/TMrg32k3a.h
-  random/Uniform01.h
-  random/UniformInt.h
-  random/UniformOnSphere.h
-  random/UniformSmallInt.h
 )
 
 # ----------------------------------------------------------------------------
