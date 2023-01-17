@@ -414,6 +414,24 @@ set(ARCANE_ORIGINAL_SOURCES
   anyitem/AnyItemVariable.h
   anyitem/AnyItemVariableArray.h
 
+  matvec/AMG.cc
+  matvec/Matrix.cc
+  matvec/Matrix.h
+  matvec/Vector.cc
+  matvec/Vector.h
+
+  parallel/BitonicSort.h
+  parallel/BitonicSortT.H
+  parallel/GhostItemsVariableParallelOperation.cc
+  parallel/GhostItemsVariableParallelOperation.h
+  parallel/IMultiReduce.h
+  parallel/IRequestList.h
+  parallel/IStat.h
+  parallel/MultiReduce.cc
+  parallel/Stat.cc
+  parallel/VariableParallelOperationBase.cc
+  parallel/VariableParallelOperationBase.h
+
   random/ConstMod.h
   random/InversiveCongruential.h
   random/LinearCongruential.h
@@ -689,24 +707,8 @@ set(ARCANE_SOURCES
   XmlNodeList.cc
   XmlProperty.cc
   XmlProperty.h
-  matvec/AMG.cc
-  matvec/Matrix.cc
-  matvec/Matrix.h
-  matvec/Vector.cc
-  matvec/Vector.h
   packages/Mesh.h
   packages/Variable.h
-  parallel/BitonicSort.h
-  parallel/BitonicSortT.H
-  parallel/GhostItemsVariableParallelOperation.cc
-  parallel/GhostItemsVariableParallelOperation.h
-  parallel/IMultiReduce.h
-  parallel/IRequestList.h
-  parallel/IStat.h
-  parallel/MultiReduce.cc
-  parallel/Stat.cc
-  parallel/VariableParallelOperationBase.cc
-  parallel/VariableParallelOperationBase.h
 )
 
 # ----------------------------------------------------------------------------
