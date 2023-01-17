@@ -247,35 +247,37 @@ set(ARCANE_SOURCES
   ${ARCANE_CORE_SOURCES}
   ${ARCANE_MATERIALS_SOURCES}
   ${ARCANE_INTERNAL_SOURCES}
+
   AbstractCaseDocumentVisitor.cc
   AbstractCaseDocumentVisitor.h
   AbstractDataVisitor.cc
   AbstractDataVisitor.h
+  AbstractItemOperationByBasicType.cc
+  AbstractItemOperationByBasicType.h
   AbstractModule.cc
   AbstractService.cc
   AbstractService.h
-  AbstractItemOperationByBasicType.cc
-  AbstractItemOperationByBasicType.h
   AcceleratorRuntimeInitialisationInfo.h
+  Algorithm.h
+  ArcaneException.cc
+  ArcaneVersion.h
   Array2Variable.cc
   Array2Variable.h
-  Assertion.h
   Assertion.cc
-  CaseDatasetSource.h
-  CaseDatasetSource.cc
-  CaseOptionsMain.cc
-  CaseOptionsMain.h
+  Assertion.h
   BasicModule.cc
   BasicService.cc
   BasicService.h
+  BasicTimeLoopService.h
   BasicUnitTest.cc
   BasicUnitTest.h
+  CaseDatasetSource.cc
+  CaseDatasetSource.h
   CaseFunction.cc
   CaseNodeNames.cc
   CaseNodeNames.h
   CaseOptionBase.cc
   CaseOptionBuildInfo.cc
-  CaseOptions.cc
   CaseOptionError.cc
   CaseOptionError.h
   CaseOptionException.cc
@@ -283,361 +285,88 @@ set(ARCANE_SOURCES
   CaseOptionList.cc
   CaseOptionService.cc
   CaseOptionService.h
+  CaseOptions.cc
+  CaseOptionsMain.cc
+  CaseOptionsMain.h
+  CaseOptionsMulti.h
   CaseTable.cc
   CaseTable.h
   CaseTableParams.cc
   CaseTableParams.h
+  CheckpointInfo.cc
+  CheckpointInfo.h
+  CheckpointService.cc
+  CheckpointService.h
   CodeService.cc
   CodeService.h
+  CommonVariables.cc
   Concurrency.cc
   Concurrency.h
+  Configuration.h
+  ConfigurationPropertyReader.h
   Connectivity.cc
   Connectivity.h
-  ICartesianMeshGenerationInfo.h
-
+  ConnectivityItemVector.h
   Data.cc
-  DataView.h
   DataTypeDispatchingDataVisitor.cc
   DataTypeDispatchingDataVisitor.h
+  DataView.h
+  Directory.cc
+  Directory.h
+  Dom.h
+  DomDeclaration.h
+  DomLibXml2V2.cc
+  DomUtils.cc
+  DomUtils.h
   EntryPoint.cc
   EntryPoint.h
+  EnumeratorTraceWrapper.h
+  Factory.h
   FactoryService.cc
   FactoryService.h
   GeometricUtilities.cc
   GeometricUtilities.h
   GroupIndexTable.cc
   GroupIndexTable.h
-  InterfaceImpl.cc
-  IndexedItemConnectivityView.h
-  IndexedItemConnectivityView.cc
-  Item.cc
-  Item.h
-  ItemConnectivityContainerView.h
-  ItemConnectivityContainerView.cc
-  ItemEnumerator.cc
-  ItemEnumerator.h
-  ItemEnumeratorBase.h
-  ItemFunctor.cc
-  ItemFunctor.h
-  ItemPairEnumerator.cc
-  ItemPairEnumerator.h
-  ItemPairGroup.cc
-  ItemPairGroupBuilder.cc
-  ItemPairGroupImpl.cc
-  ItemPairGroupImpl.h
-  ItemGroupImpl.cc
-  ItemGroup.cc
-  ItemGroupComputeFunctor.cc
-  ItemGroupComputeFunctor.h
-  ItemGroupRangeIterator.cc
-  ItemGroupRangeIterator.h
-  ItemInternal.cc
-  ItemInternal.h
-  ItemInfoListView.h
-  ItemInfoListView.cc
-  ItemSharedInfo.cc
-  ItemSharedInfo.h
-  ItemTypeInfo.cc
-  ItemTypeInfo.h
-  ItemTypeInfoBuilder.cc
-  ItemTypeInfoBuilder.h
-  ItemTypeMng.cc
-  ItemTypeMng.h
-  MeshAccessor.cc
-  MeshAccessor.h
-  MeshArea.cc
-  MeshArea.h
-  MeshAreaAccessor.cc
-  MeshAreaAccessor.h
-  MeshItemInternalList.cc
-  MeshItemInternalList.h
-  MeshHandle.cc
-  MeshPartInfo.cc
-  MeshVisitor.cc
-  MeshVisitor.h
-  MeshStats.cc
-  MeshStats.h
-  ModuleBuildInfo.cc
-  ModuleFactory.cc
-  NullXmlDocumentHolder.cc
-  Observable.h
-  Observer.h
-  ObserverPool.cc
-  ObserverPool.h
-  OutputChecker.cc
-  OutputChecker.h
-  PreciseOutputChecker.cc
-  PreciseOutputChecker.h
-  Parallel.cc
-  Parallel.h
-  Properties.cc
-  Properties.h
-  RessourceMng.cc
-  StringDictionary.h
-  XmlNode.cc
-  XmlNodeList.cc
-  XmlProperty.cc
-  XmlProperty.h
-  DomUtils.cc
-  DomUtils.h
-  DomLibXml2V2.cc
-  SerializedData.cc
-  SerializeBuffer.cc
-  SerializeBuffer.h
-  SimpleSVGMeshExporter.h
-  SimpleSVGMeshExporter.cc
-  TimeLoop.cc
-  TimeLoop.h
-  Timer.cc
-  Timer.h
-  TemporaryVariableBuildInfo.cc
-  TemporaryVariableBuildInfo.h
-  Directory.cc
-  Directory.h
-  SharedReference.cc
-  StandardCaseFunction.cc
-  ParallelMngDispatcher.cc
-  ParallelMngDispatcher.h
-  ParallelMngUtils.h
-  ParallelMngUtils.cc
-  ParallelNonBlockingCollectiveDispatcher.cc
-  ParallelNonBlockingCollectiveDispatcher.h
-  ParallelSuperMngDispatcher.cc
-  ParallelSuperMngDispatcher.h
-  CheckpointService.cc
-  CheckpointService.h
-  CheckpointInfo.cc
-  CheckpointInfo.h
-  Variable.cc
-  Variable.h
-  VariableInfo.cc
-  VariableInfo.h
-  VariableRef.cc
-  VariableTypeInfo.h
-  VariableTypeInfo.cc
-  VariableBuildInfo.cc
-  VariableRefScalar.cc
-  VariableRefScalar.h
-  VariableRefArray.cc
-  VariableRefArray.h
-  VariableRefArray2.cc
-  VariableRefArray2.h
-  VariableScalar.cc
-  VariableScalar.h
-  VariableSynchronizerEventArgs.cc
-  VariableSynchronizerEventArgs.h
-  VariableArray.cc
-  VariableArray.h
-  VariableDependInfo.cc
-  VariableDependInfo.h
-  VariableExpressionImpl.cc
-  VariableExpressionImpl.h
-  VariableMetaData.cc
-  VariableMetaData.h
-  VariableFactory.cc
-  VariableFactory.h
-  VerifierService.cc
-  VerifierService.h
-  MeshUtils.cc
-  MeshUtils.h
-  MeshVariableRef.cc
-  MeshMDVariableRef.cc
-  MeshMDVariableRef.h
-  MeshVariableRef.h
-  ParallelExchangerOptions.h
-  PrivateVariableScalarTpl.cc
-  PrivateVariableArrayTpl.cc
-  MeshVariableTpl.cc
-  MeshVariableTplArray.cc
-  GroupIndexTable.cc
-  GroupIndexTable.h
-  ServiceFactory.cc
-  ServiceBuildInfo.cc
-  ServiceBuilder.cc
-  ServiceInfo.cc
-  ServiceRegisterer.cc
-  ServiceRegisterer.h
-  SimdItem.cc
-  SimdItem.h
-  PostProcessorWriterBase.cc
-  PostProcessorWriterBase.h
-  ModuleMaster.cc
-  ModuleMaster.h
-  SerializeMessage.cc
-  SerializeMessage.h
-  SubDomainBuildInfo.cc
-  SubDomainBuildInfo.h
-  ArcaneException.cc
-  CommonVariables.cc
-  VariableFactoryRegisterer.cc
-  VariableFactoryRegisterer.h
-  MathUtils.cc
-  MathUtils.h
-  Property.cc
-  SequentialSection.cc
-  SequentialSection.h
-  ItemPrinter.cc
-  ItemPrinter.h
-  MeshToMeshTransposer.cc
-  MeshToMeshTransposer.h
-  ItemRefinementPattern.cc
-  ItemRefinementPattern.h
-  SynchronizerMatrixPrinter.cc
-  SynchronizerMatrixPrinter.h
-  matvec/AMG.cc
-  matvec/Matrix.cc
-  matvec/Matrix.h
-  matvec/Vector.cc
-  matvec/Vector.h
-  parallel/VariableParallelOperationBase.cc
-  parallel/VariableParallelOperationBase.h
-  parallel/GhostItemsVariableParallelOperation.cc
-  parallel/GhostItemsVariableParallelOperation.h
-  parallel/Stat.cc
-  parallel/MultiReduce.cc
-  AbstractCaseDocumentVisitor.h
-  AbstractDataVisitor.h
-  AbstractService.h
-  AbstractItemOperationByBasicType.h
-  Array2Variable.h
-  CaseOptionsMain.h
-  BasicService.h
-  BasicUnitTest.h
-  CaseNodeNames.h
-  CaseOptionError.h
-  CaseOptionException.h
-  CaseOptionService.h
-  CaseTable.h
-  CaseTableParams.h
-  CodeService.h
-  Concurrency.h
-  Connectivity.h
-  DataTypeDispatchingDataVisitor.h
-  EntryPoint.h
-  FactoryService.h
-  GeometricUtilities.h
-  GroupIndexTable.h
-  Item.h
-  ItemEnumerator.h
-  ItemFunctor.h
-  ItemPairEnumerator.h
-  ItemPairGroupImpl.h
-  ItemGroupComputeFunctor.h
-  ItemGroupRangeIterator.h
-  ItemInternal.h
-  ItemSharedInfo.h
-  ItemTypeInfo.h
-  ItemTypeInfoBuilder.h
-  ItemTypeMng.h
-  MeshAccessor.h
-  MeshArea.h
-  MeshAreaAccessor.h
-  MeshVisitor.h
-  MeshStats.h
-  Observable.h
-  Observer.h
-  ObserverPool.h
-  OutputChecker.h
-  Parallel.h
-  Properties.h
-  StringDictionary.h
-  XmlProperty.h
-  DomUtils.h
-  SerializeBuffer.h
-  TimeLoop.h
-  Timer.h
-  TemporaryVariableBuildInfo.h
-  Directory.h
-  ParallelMngDispatcher.h
-  ParallelNonBlockingCollectiveDispatcher.h
-  ParallelSuperMngDispatcher.h
-  CheckpointService.h
-  CheckpointInfo.h
-  Variable.h
-  VariableInfo.h
-  VariableRefScalar.h
-  VariableRefArray.h
-  VariableRefArray2.h
-  VariableScalar.h
-  VariableSynchronizerEventArgs.h
-  VariableArray.h
-  VariableDependInfo.h
-  VariableExpressionImpl.h
-  VariableMetaData.h
-  VariableFactory.h
-  VerifierService.h
-  MeshUtils.h
-  MeshVariableRef.h
-  GroupIndexTable.h
-  ServiceRegisterer.h
-  SimdItem.h
-  PostProcessorWriterBase.h
-  ModuleMaster.h
-  SerializeMessage.h
-  SubDomainBuildInfo.h
-  VariableFactoryRegisterer.h
-  MathUtils.h
-  SequentialSection.h
-  ItemPrinter.h
-  MeshToMeshTransposer.h
-  ItemRefinementPattern.h
-  SynchronizerMatrixPrinter.h
-  Algorithm.h
-  BasicTimeLoopService.h
-  CaseOptionsMulti.h
-  Configuration.h
-  ConfigurationPropertyReader.h
-  ConnectivityItemVector.h
-  EnumeratorTraceWrapper.h
+  IAsyncParticleExchanger.h
   IBackwardMng.h
+  ICartesianMeshGenerationInfo.h
   ICaseDocument.h
   ICaseDocumentVisitor.h
   ICaseMeshMasterService.h
   ICaseMeshReader.h
   ICaseMeshService.h
   ICheckpointMng.h
+  ICodeService.h
   IConfiguration.h
   IConfigurationMng.h
   IConfigurationSection.h
-  IDeflateService.h
-  IServiceMng.h
-  IMeshBuilder.h
-  IGridMeshPartitioner.h
-  IMeshChecker.h
-  IMeshPartitionerBase.h
-  IMeshUniqueIdMng.h
-  IModuleMng.h
-  IGetVariablesValuesParallelOperation.h
-  IGhostLayerMng.h
-  ICodeService.h
-  ITransferValuesParallelOperation.h
-  IDirectSubDomainExecuteFunctor.h
   IDataFactory.h
   IDataFactoryMng.h
-  IDataStorageFactory.h
-  ISerializer.h
   IDataReader2.h
   IDataReaderWriter.h
-  IDumpRW.h
-  IDumpR.h
-  IDumpW.h
+  IDataStorageFactory.h
+  IDeflateService.h
+  IDirectSubDomainExecuteFunctor.h
   IDoFFamily.h
-  ILoadBalanceMng.h
-  ItemFamilyCompactInfos.h
-  ItemTypes.h
-  ItemUniqueId.h
-  ItemVectorView.h
-  ItemVectorView.cc
-  ItemVector.h
-  ItemVector.cc
-  ItemInternalVectorView.h
-  ItemIndexedListView.h
-  ISharedReference.h
-  ITimeStats.h
-  IInitialPartitioner.h
+  IDumpR.h
+  IDumpRW.h
+  IDumpW.h
+  IEntryPointMng.h
+  IExtraGhostCellsBuilder.h
+  IExtraGhostItemsBuilder.h
+  IExtraGhostParticlesBuilder.h
+  IFactoryService.h
+  IGetVariablesValuesParallelOperation.h
+  IGhostLayerMng.h
+  IGraph2.h
+  IGraphModifier2.h
+  IGridMeshPartitioner.h
+  IIOMng.h
+  IIncrementalItemConnectivity.h
   IIndexedIncrementalItemConnectivity.h
   IIndexedIncrementalItemConnectivityMng.h
-  IIncrementalItemConnectivity.h
+  IInitialPartitioner.h
   IItemConnectivity.h
   IItemConnectivityAccessor.h
   IItemConnectivityMng.h
@@ -645,47 +374,48 @@ set(ARCANE_SOURCES
   IItemEnumeratorTracer.h
   IItemFamilyCompactPolicy.h
   IItemFamilyExchanger.h
-  IItemFamilySerializeStep.h
-  IItemFamilyPolicyMng.h
-  IItemFamilyTopologyModifier.h
-  ItemFamilySerializeArgs.h
-  IItemFamilySerializer.h
-  IItemFamilyNetwork.h
   IItemFamilyModifier.h
+  IItemFamilyNetwork.h
+  IItemFamilyPolicyMng.h
+  IItemFamilySerializeStep.h
+  IItemFamilySerializer.h
+  IItemFamilyTopologyModifier.h
   IItemInternalSortFunction.h
-  ItemInternalSortFunction.h
-  ItemGroupObserver.h
-  ITimeHistoryTransformer.h
   IItemOperationByBasicType.h
-  ITimerMng.h
-  IEntryPointMng.h
-  IMeshPartitionConstraint.h
-  IMeshPartitionConstraintMng.h
-  IMeshPartitioner.h
-  IExtraGhostCellsBuilder.h
-  IExtraGhostParticlesBuilder.h
+  ILoadBalanceMng.h
   IMeshArea.h
+  IMeshBuilder.h
+  IMeshChecker.h
   IMeshCompactMng.h
   IMeshCompacter.h
   IMeshExchangeMng.h
   IMeshExchanger.h
+  IMeshFactory.h
   IMeshFactoryMng.h
   IMeshMng.h
-  IMeshWriter.h
+  IMeshPartitionConstraint.h
+  IMeshPartitionConstraintMng.h
+  IMeshPartitioner.h
+  IMeshPartitionerBase.h
   IMeshStats.h
+  IMeshSubMeshTransition.h
+  IMeshUniqueIdMng.h
   IMeshWriter.h
-  IParallelNonBlockingCollective.h
+  IModuleMaster.h
+  IModuleMng.h
+  IObservable.h
+  IObserver.h
+  IParallelDispatch.h
+  IParallelExchanger.h
   IParallelMng.h
   IParallelMngUtilsFactory.h
+  IParallelNonBlockingCollective.h
+  IParallelNonBlockingCollectiveDispatch.h
   IParallelReplication.h
-  IParallelTopology.h
   IParallelSort.h
   IParallelSuperMng.h
-  IParallelDispatch.h
-  IParallelNonBlockingCollectiveDispatch.h
+  IParallelTopology.h
   IParticleExchanger.h
-  IAsyncParticleExchanger.h
-  IParallelExchanger.h
   IParticleFamily.h
   IPhysicalUnit.h
   IPhysicalUnitConverter.h
@@ -693,119 +423,289 @@ set(ARCANE_SOURCES
   IPhysicalUnitSystemService.h
   IProperty.h
   IPropertyMng.h
-  IRessourceMng.h
-  ITimeLoop.h
-  IFactoryService.h
-  IObserver.h
-  IObservable.h
-  IRayMeshIntersection.h
-  IServiceLoader.h
-  IServiceAndModuleFactoryMng.h
-  ISerializeMessageList.h
-  ISerializeMessage.h
-  ITiedInterface.h
-  ITimeLoopService.h
-  IVariableComputeFunction.h
-  IVariableFactory.h
-  IVariableFilter.h
-  IVariableWriter.h
-  IVariableParallelOperation.h
-  IVariableSynchronizer.h
-  IVerifierService.h
-  IVariableUtilities.h
-  IStandardFunction.h
-  IXmlDocumentHolder.h
-  ItemInternalEnumerator.h
-  ItemInternal.h
-  ItemArrayEnumerator.h
-  ItemCompatibility.h
-  ItemGroupRangeIterator.h
-  ItemLocalId.h
-  ItemTypeId.h
-  ItemLoop.h
-  Dom.h
-  DomDeclaration.h
-  ModuleProperty.h
-  MultiArray2Variable.h
-  MultiArray2VariableRef.h
-  SimpleProperty.h
-  ServiceUtils.h
-  ServiceFinder.h
-  ServiceFinder2.h
-  SimdMathUtils.h
-  TimeLoopEntryPointInfo.h
-  UnstructuredMeshConnectivity.h
-  UnstructuredMeshConnectivity.cc
-  UnitTestServiceAdapter.h
-  VariableCollection.cc
-  VariableComputeFunction.h
-  VariableList.h
-  VariableTypes.h
-  VariableTypedef.h
-  VariableRefArrayLock.h
-  VariableDataTypeTraits.h
-  VariableDiff.h
-  VariableView.h
-  VariableStatusChangedEventArgs.h
-  MeshVariable.h
-  MeshBuildInfo.h
-  MeshBuildInfo.cc
-  MeshReaderMng.cc
-  MeshVariableScalarRef.h
-  MeshPartialVariableScalarRef.h
-  MeshVariableArrayRef.h
-  MeshPartialVariableArrayRef.h
-  MeshVariableInfo.h
-  ItemCompare.h
-  ItemIndexArrayView.h
-  IMeshFactory.h
-  IModuleMaster.h
-  IIOMng.h
-  ObservablePool.h
-  Service.h
-  Factory.h
-  XmlInfo.h
-  XmlException.h
-  XmlNodeIterator.h
-  ArcaneVersion.h
-  TiedNode.h
-  TiedFace.h
-  IGraph2.h
-  IGraphModifier2.h
-  IMeshSubMeshTransition.h
-  ServiceOptions.h
-  IExtraGhostItemsBuilder.h
-  VariableAccessor.h
-  IVariableAccessor.h
-  MeshVariableScalarRefT.H
-  MeshVariableArrayRefT.H
-  MeshPartialVariableScalarRefT.H
-  MeshPartialVariableArrayRefT.H
-  PrivateVariableScalarT.H
-  PrivateVariableArrayT.H
-
   IRandomNumberGenerator.h
-
-  SimpleTableInternal.h
-
+  IRayMeshIntersection.h
+  IRessourceMng.h
+  ISerializeMessage.h
+  ISerializeMessageList.h
+  ISerializer.h
+  IServiceAndModuleFactoryMng.h
+  IServiceLoader.h
+  IServiceMng.h
+  ISharedReference.h
   ISimpleTableComparator.h
   ISimpleTableInternalComparator.h
   ISimpleTableInternalMng.h
   ISimpleTableOutput.h
   ISimpleTableReaderWriter.h
   ISimpleTableWriterHelper.h
-
+  IStandardFunction.h
+  ITiedInterface.h
+  ITimeHistoryTransformer.h
+  ITimeLoop.h
+  ITimeLoopService.h
+  ITimeStats.h
+  ITimerMng.h
+  ITransferValuesParallelOperation.h
+  IVariableAccessor.h
+  IVariableComputeFunction.h
+  IVariableFactory.h
+  IVariableFilter.h
+  IVariableParallelOperation.h
+  IVariableSynchronizer.h
+  IVariableUtilities.h
+  IVariableWriter.h
+  IVerifierService.h
+  IXmlDocumentHolder.h
+  IndexedItemConnectivityView.cc
+  IndexedItemConnectivityView.h
+  InterfaceImpl.cc
+  Item.cc
+  Item.h
+  ItemArrayEnumerator.h
+  ItemCompare.h
+  ItemCompatibility.h
+  ItemConnectivityContainerView.cc
+  ItemConnectivityContainerView.h
+  ItemEnumerator.cc
+  ItemEnumerator.h
+  ItemEnumeratorBase.h
+  ItemFamilyCompactInfos.h
+  ItemFamilySerializeArgs.h
+  ItemFunctor.cc
+  ItemFunctor.h
+  ItemGroup.cc
+  ItemGroupComputeFunctor.cc
+  ItemGroupComputeFunctor.h
+  ItemGroupImpl.cc
+  ItemGroupObserver.h
+  ItemGroupRangeIterator.cc
+  ItemGroupRangeIterator.h
+  ItemIndexArrayView.h
+  ItemIndexedListView.h
+  ItemInfoListView.cc
+  ItemInfoListView.h
+  ItemInternal.cc
+  ItemInternal.h
+  ItemInternalEnumerator.h
+  ItemInternalSortFunction.h
+  ItemInternalVectorView.h
+  ItemLocalId.h
+  ItemLoop.h
+  ItemPairEnumerator.cc
+  ItemPairEnumerator.h
+  ItemPairGroup.cc
+  ItemPairGroupBuilder.cc
+  ItemPairGroupImpl.cc
+  ItemPairGroupImpl.h
+  ItemPrinter.cc
+  ItemPrinter.h
+  ItemRefinementPattern.cc
+  ItemRefinementPattern.h
+  ItemSharedInfo.cc
+  ItemSharedInfo.h
+  ItemTypeId.h
+  ItemTypeInfo.cc
+  ItemTypeInfo.h
+  ItemTypeInfoBuilder.cc
+  ItemTypeInfoBuilder.h
+  ItemTypeMng.cc
+  ItemTypeMng.h
+  ItemTypes.h
+  ItemUniqueId.h
+  ItemVector.cc
+  ItemVector.h
+  ItemVectorView.cc
+  ItemVectorView.h
+  MathUtils.cc
+  MathUtils.h
+  MeshAccessor.cc
+  MeshAccessor.h
+  MeshArea.cc
+  MeshArea.h
+  MeshAreaAccessor.cc
+  MeshAreaAccessor.h
+  MeshBuildInfo.cc
+  MeshBuildInfo.h
+  MeshHandle.cc
+  MeshItemInternalList.cc
+  MeshItemInternalList.h
+  MeshMDVariableRef.cc
+  MeshMDVariableRef.h
+  MeshPartInfo.cc
+  MeshPartialVariableArrayRef.h
+  MeshPartialVariableArrayRefT.H
+  MeshPartialVariableScalarRef.h
+  MeshPartialVariableScalarRefT.H
+  MeshReaderMng.cc
+  MeshStats.cc
+  MeshStats.h
+  MeshToMeshTransposer.cc
+  MeshToMeshTransposer.h
+  MeshUtils.cc
+  MeshUtils.h
+  MeshVariable.h
+  MeshVariableArrayRef.h
+  MeshVariableArrayRefT.H
+  MeshVariableInfo.h
+  MeshVariableRef.cc
+  MeshVariableRef.h
+  MeshVariableScalarRef.h
+  MeshVariableScalarRefT.H
+  MeshVariableTpl.cc
+  MeshVariableTplArray.cc
+  MeshVisitor.cc
+  MeshVisitor.h
+  ModuleBuildInfo.cc
+  ModuleFactory.cc
+  ModuleMaster.cc
+  ModuleMaster.h
+  ModuleProperty.h
+  MultiArray2Variable.h
+  MultiArray2VariableRef.h
+  NullXmlDocumentHolder.cc
+  Observable.h
+  ObservablePool.h
+  Observer.h
+  ObserverPool.cc
+  ObserverPool.h
+  OutputChecker.cc
+  OutputChecker.h
+  Parallel.cc
+  Parallel.h
+  ParallelExchangerOptions.h
+  ParallelMngDispatcher.cc
+  ParallelMngDispatcher.h
+  ParallelMngUtils.cc
+  ParallelMngUtils.h
+  ParallelNonBlockingCollectiveDispatcher.cc
+  ParallelNonBlockingCollectiveDispatcher.h
+  ParallelSuperMngDispatcher.cc
+  ParallelSuperMngDispatcher.h
+  PostProcessorWriterBase.cc
+  PostProcessorWriterBase.h
+  PreciseOutputChecker.cc
+  PreciseOutputChecker.h
+  PrivateVariableArrayT.H
+  PrivateVariableArrayTpl.cc
+  PrivateVariableScalarT.H
+  PrivateVariableScalarTpl.cc
+  Properties.cc
+  Properties.h
+  Property.cc
+  RessourceMng.cc
+  SequentialSection.cc
+  SequentialSection.h
+  SerializeBuffer.cc
+  SerializeBuffer.h
+  SerializeMessage.cc
+  SerializeMessage.h
+  SerializedData.cc
+  Service.h
+  ServiceBuildInfo.cc
+  ServiceBuilder.cc
+  ServiceFactory.cc
+  ServiceFinder.h
+  ServiceFinder2.h
+  ServiceInfo.cc
+  ServiceOptions.h
+  ServiceRegisterer.cc
+  ServiceRegisterer.h
+  ServiceUtils.h
+  SharedReference.cc
+  SimdItem.cc
+  SimdItem.h
+  SimdMathUtils.h
+  SimpleProperty.h
+  SimpleSVGMeshExporter.cc
+  SimpleSVGMeshExporter.h
+  SimpleTableInternal.h
+  StandardCaseFunction.cc
+  StringDictionary.h
+  SubDomainBuildInfo.cc
+  SubDomainBuildInfo.h
+  SynchronizerMatrixPrinter.cc
+  SynchronizerMatrixPrinter.h
+  TemporaryVariableBuildInfo.cc
+  TemporaryVariableBuildInfo.h
+  TiedFace.h
+  TiedNode.h
+  TimeLoop.cc
+  TimeLoop.h
+  TimeLoopEntryPointInfo.h
+  Timer.cc
+  Timer.h
+  UnitTestServiceAdapter.h
+  UnstructuredMeshConnectivity.cc
+  UnstructuredMeshConnectivity.h
+  Variable.cc
+  Variable.h
+  VariableAccessor.h
+  VariableArray.cc
+  VariableArray.h
+  VariableBuildInfo.cc
+  VariableCollection.cc
+  VariableComputeFunction.h
+  VariableDataTypeTraits.h
+  VariableDependInfo.cc
+  VariableDependInfo.h
+  VariableDiff.h
+  VariableExpressionImpl.cc
+  VariableExpressionImpl.h
+  VariableFactory.cc
+  VariableFactory.h
+  VariableFactoryRegisterer.cc
+  VariableFactoryRegisterer.h
+  VariableInfo.cc
+  VariableInfo.h
+  VariableList.h
+  VariableMetaData.cc
+  VariableMetaData.h
+  VariableRef.cc
+  VariableRefArray.cc
+  VariableRefArray.h
+  VariableRefArray2.cc
+  VariableRefArray2.h
+  VariableRefArrayLock.h
+  VariableRefScalar.cc
+  VariableRefScalar.h
+  VariableScalar.cc
+  VariableScalar.h
+  VariableStatusChangedEventArgs.h
+  VariableSynchronizerEventArgs.cc
+  VariableSynchronizerEventArgs.h
+  VariableTypeInfo.cc
+  VariableTypeInfo.h
+  VariableTypedef.h
+  VariableTypes.h
+  VariableView.h
+  VerifierService.cc
+  VerifierService.h
+  XmlException.h
+  XmlInfo.h
+  XmlNode.cc
+  XmlNodeIterator.h
+  XmlNodeList.cc
+  XmlProperty.cc
+  XmlProperty.h
+  matvec/AMG.cc
+  matvec/Matrix.cc
   matvec/Matrix.h
+  matvec/Vector.cc
   matvec/Vector.h
-  parallel/VariableParallelOperationBase.h
-  parallel/GhostItemsVariableParallelOperation.h
-  parallel/IStat.h
-  parallel/IRequestList.h
-  parallel/IMultiReduce.h
+  packages/Mesh.h
+  packages/Variable.h
   parallel/BitonicSort.h
   parallel/BitonicSortT.H
-  packages/Variable.h
-  packages/Mesh.h
+  parallel/GhostItemsVariableParallelOperation.cc
+  parallel/GhostItemsVariableParallelOperation.h
+  parallel/IMultiReduce.h
+  parallel/IRequestList.h
+  parallel/IStat.h
+  parallel/MultiReduce.cc
+  parallel/Stat.cc
+  parallel/VariableParallelOperationBase.cc
+  parallel/VariableParallelOperationBase.h
 )
 
 # ----------------------------------------------------------------------------
