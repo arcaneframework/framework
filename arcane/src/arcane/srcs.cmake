@@ -160,6 +160,45 @@ set(ARCANE_ORIGINAL_SOURCES
 
   expr/IExpressionImpl.h
   expr/Expression.h
+  expr/ArrayExpressionImpl.cc
+  expr/ArrayExpressionImpl.h
+  expr/BadExpressionException.cc
+  expr/BadExpressionException.h
+  expr/BadOperandException.cc
+  expr/BadOperandException.h
+  expr/BadOperationException.cc
+  expr/BadOperationException.h
+  expr/Expression.cc
+  expr/ExpressionResult.cc
+  expr/ExpressionResult.h
+  expr/ExpressionImpl.cc
+  expr/ExpressionImpl.h
+  expr/UnaryExpressionImpl.cc
+  expr/UnaryExpressionImpl.h
+  expr/LitteralExpressionImpl.cc
+  expr/LitteralExpressionImpl.h
+  expr/BinaryExpressionImpl.cc
+  expr/BinaryExpressionImpl.h
+  expr/WhereExpressionImpl.cc
+  expr/WhereExpressionImpl.h
+  expr/OperatorMng.cc
+  expr/OperatorMng.h
+
+  anyitem/AnyItem.h
+  anyitem/AnyItemGlobal.h
+  anyitem/AnyItemPrivate.h
+  anyitem/AnyItemArray.h
+  anyitem/AnyItemArray2.h
+  anyitem/AnyItemFamily.h
+  anyitem/AnyItemFamilyObserver.h
+  anyitem/AnyItemGroup.h
+  anyitem/AnyItem.h
+  anyitem/AnyItemLinkFamily.h
+  anyitem/AnyItemLinkVariable.h
+  anyitem/AnyItemLinkVariableArray.h
+  anyitem/AnyItemUserGroup.h
+  anyitem/AnyItemVariable.h
+  anyitem/AnyItemVariableArray.h
 )
 
 set(ARCANE_CORE_SOURCES)
@@ -427,29 +466,6 @@ set(ARCANE_SOURCES
   datatype/SmallVariant.h
   datatype/VariantBase.cc
   datatype/VariantBase.h
-  expr/ArrayExpressionImpl.cc
-  expr/ArrayExpressionImpl.h
-  expr/BadExpressionException.cc
-  expr/BadExpressionException.h
-  expr/BadOperandException.cc
-  expr/BadOperandException.h
-  expr/BadOperationException.cc
-  expr/BadOperationException.h
-  expr/Expression.cc
-  expr/ExpressionResult.cc
-  expr/ExpressionResult.h
-  expr/ExpressionImpl.cc
-  expr/ExpressionImpl.h
-  expr/UnaryExpressionImpl.cc
-  expr/UnaryExpressionImpl.h
-  expr/LitteralExpressionImpl.cc
-  expr/LitteralExpressionImpl.h
-  expr/BinaryExpressionImpl.cc
-  expr/BinaryExpressionImpl.h
-  expr/WhereExpressionImpl.cc
-  expr/WhereExpressionImpl.h
-  expr/OperatorMng.cc
-  expr/OperatorMng.h
   matvec/AMG.cc
   matvec/Matrix.cc
   matvec/Matrix.h
@@ -771,17 +787,6 @@ set(ARCANE_SOURCES
   datatype/DataTypeTraits.h
   datatype/DataStorageBuildInfo.h
   datatype/DataStorageBuildInfo.cc
-  expr/ArrayExpressionImpl.h
-  expr/BadExpressionException.h
-  expr/BadOperandException.h
-  expr/BadOperationException.h
-  expr/ExpressionResult.h
-  expr/ExpressionImpl.h
-  expr/UnaryExpressionImpl.h
-  expr/LitteralExpressionImpl.h
-  expr/BinaryExpressionImpl.h
-  expr/WhereExpressionImpl.h
-  expr/OperatorMng.h
   matvec/Matrix.h
   matvec/Vector.h
   parallel/VariableParallelOperationBase.h
@@ -805,21 +810,6 @@ set(ARCANE_SOURCES
   random/UniformInt.h
   random/UniformOnSphere.h
   random/UniformSmallInt.h
-  anyitem/AnyItem.h
-  anyitem/AnyItemGlobal.h
-  anyitem/AnyItemPrivate.h
-  anyitem/AnyItemArray.h
-  anyitem/AnyItemArray2.h
-  anyitem/AnyItemFamily.h
-  anyitem/AnyItemFamilyObserver.h
-  anyitem/AnyItemGroup.h
-  anyitem/AnyItem.h
-  anyitem/AnyItemLinkFamily.h
-  anyitem/AnyItemLinkVariable.h
-  anyitem/AnyItemLinkVariableArray.h
-  anyitem/AnyItemUserGroup.h
-  anyitem/AnyItemVariable.h
-  anyitem/AnyItemVariableArray.h
 )
 
 # ----------------------------------------------------------------------------
