@@ -4,7 +4,7 @@ include(srcs.cmake)
 
 arcane_add_library(arcane_core
   INPUT_PATH ${Arcane_SOURCE_DIR}/src
-  RELATIVE_PATH arcane
+  RELATIVE_PATH arcane/core
   FILES ${ARCANE_SOURCES}
 )
 
