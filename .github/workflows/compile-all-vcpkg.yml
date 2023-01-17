@@ -50,6 +50,8 @@ jobs:
             ctest_specific_args : '-I 1,75'
 
     env:
+      # Indique pour IntelMPI de ne pas faire d'attente active
+      I_MPI_WAIT_MODE: 1
       CCACHE_BASEDIR: ${{github.workspace}}
       CCACHE_DIR: '${{ github.workspace }}/ccache'
       CCACHE_COMPRESS: true
