@@ -18,7 +18,7 @@ target_include_directories(arcane_core PUBLIC $<BUILD_INTERFACE:${COMPAT_DIRECTO
 arcane_register_library(arcane_core)
 
 foreach(file ${ARCANE_ORIGINAL_SOURCES})
-  if (${file} MATCHES "\.h$")
+  if (${file} MATCHES "\.(h|H)$")
     string(TOUPPER ${file} upper_name1)
     string(REPLACE "." "_" upper_name2 ${upper_name1})
     string(REPLACE "/" "_" upper_name ${upper_name2})
