@@ -249,7 +249,7 @@ _applyChildrenCell2D(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceIn
     Int64 new_uid = (my_coord_i + my_coord_j * nb_cell_x) + cell_adder;
     if (m_is_verbose)
       info() << "APPLY_CELL_CHILD: uid=" << sub_cell.uniqueId() << " I=" << my_coord_i << " J=" << my_coord_j
-             << " level=" << level << " new_uid=" << new_uid << " NodeAdder=" << node_adder;
+             << " level=" << level << " new_uid=" << new_uid << " CellAdder=" << cell_adder;
 
     _applyChildrenCell2D(sub_cell, nodes_new_uid, faces_new_uid, cells_new_uid, my_coord_i, my_coord_j,
                          nb_cell_x, nb_cell_y, level + 1);
@@ -352,12 +352,12 @@ _applyChildrenCell3D(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceIn
   for (Int32 icell = 0; icell < nb_child; ++icell) {
     Cell sub_cell = cell.hChild(icell);
     Int64 my_coord_i = coord_i + icell % 2;
-    Int64 my_coord_j = coord_j + icell / 2;
+    Int64 my_coord_j = coord_j + (icell % 4) / 2;
     Int64 my_coord_k = coord_k + icell / 4; // x*y
     Int64 new_uid = (my_coord_i + my_coord_j * nb_cell_x + my_coord_k * nb_cell_x * nb_cell_y * 2) + cell_adder;
     if (m_is_verbose)
       info() << "APPLY_CELL_CHILD: uid=" << sub_cell.uniqueId() << " I=" << my_coord_i << " J=" << my_coord_j << " K=" << my_coord_k
-             << " level=" << level << " new_uid=" << new_uid << " NodeAdder=" << node_adder;
+             << " level=" << level << " new_uid=" << new_uid << " CellAdder=" << cell_adder;
 
     _applyChildrenCell3D(sub_cell, nodes_new_uid, faces_new_uid, cells_new_uid, my_coord_i, my_coord_j, my_coord_k,
                          nb_cell_x, nb_cell_y, nb_cell_z, level + 1);
