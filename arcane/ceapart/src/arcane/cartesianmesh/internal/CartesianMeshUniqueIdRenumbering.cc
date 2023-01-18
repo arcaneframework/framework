@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshUniqueIdRenumbering.cc                         (C) 2000-2021 */
+/* CartesianMeshUniqueIdRenumbering.cc                         (C) 2000-2023 */
 /*                                                                           */
 /* Renumérotation des uniqueId() pour les maillages cartésiens.              */
 /*---------------------------------------------------------------------------*/
@@ -206,7 +206,7 @@ _applyChildrenCell2D(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceIn
       cells_new_uid[cell] = new_uid;
       if (m_is_verbose)
         info() << "APPLY_CELL_CHILD: uid=" << cell.uniqueId() << " I=" << coord_i << " J=" << coord_j
-               << " current_level=" << current_level << " new_uid=" << new_uid << " NodeAdder=" << node_adder;
+               << " current_level=" << current_level << " new_uid=" << new_uid << " CellAdder=" << cell_adder;
     }
   }
 
@@ -339,20 +339,20 @@ _applyChildrenCell3D(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceIn
   const Int64 current_level_nb_face_y = current_level_nb_cell_y + 1;
   const Int64 face_adder = node_adder * 4;
 
-
+  // Verif : OK
   // Renumérote la maille.
   {
-    Int64 new_uid = (coord_i + coord_j * current_level_nb_cell_x + coord_k * current_level_nb_cell_x * current_level_nb_cell_y * (current_level+1)) + cell_adder;
+    Int64 new_uid = (coord_i + coord_j * current_level_nb_cell_x + coord_k * current_level_nb_cell_x * current_level_nb_cell_y) + cell_adder;
     //if (cells_new_uid[cell] < 0){
       cells_new_uid[cell] = new_uid;
       if (m_is_verbose)
         info() << "APPLY_CELL_CHILD: uid=" << cell.uniqueId() << " I=" << coord_i << " J=" << coord_j << " K=" << coord_k
-               << " current_level=" << current_level << " new_uid=" << new_uid << " NodeAdder=" << node_adder;
+               << " current_level=" << current_level << " new_uid=" << new_uid << " CellAdder=" << cell_adder;
     //}
   }
 
 
-
+  // Verif : OK
   // Renumérote les noeuds de la maille courante.
   // Suppose qu'on a 8 noeuds
   // ATTENTION a priori on ne peut pas conserver facilement l'ordre
@@ -383,8 +383,8 @@ _applyChildrenCell3D(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceIn
       //}
     }
   }
+
   // Renumérote les faces
-  // TODO: Vérifier la validité de cette méthode.
   {
     if (cell.nbFace() != 6)
       ARCANE_FATAL("Invalid number of faces N={0}, expected=6", cell.nbFace());
@@ -418,9 +418,9 @@ _applyChildrenCell3D(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceIn
   Int32 nb_child = cell.nbHChildren();
   for (Int32 icell = 0; icell < nb_child; ++icell) {
     Cell sub_cell = cell.hChild(icell);
-    Int64 my_coord_i = coord_i + icell % 2;
-    Int64 my_coord_j = coord_j + icell / 2;
-    Int64 my_coord_k = coord_k + icell / 4;
+    Int64 my_coord_i = coord_i*2 + icell % 2;
+    Int64 my_coord_j = coord_j*2 + (icell % 4) / 2;
+    Int64 my_coord_k = coord_k*2 + icell / 4;
 
     _applyChildrenCell3D(sub_cell, nodes_new_uid, faces_new_uid, cells_new_uid, my_coord_i, my_coord_j, my_coord_k,
                          current_level_nb_cell_x*2, current_level_nb_cell_y*2, current_level_nb_cell_z*2, current_level + 1);
