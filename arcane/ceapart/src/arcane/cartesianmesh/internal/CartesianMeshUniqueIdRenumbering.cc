@@ -129,7 +129,7 @@ renumber()
         info() << "Renumbering: PARENT: cell_uid=" << cell.uniqueId() << " I=" << coord_i
                << " J=" << coord_j << " K=" << coord_k
                << " nb_cell_x=" << nb_cell_x << " nb_cell_y=" << nb_cell_y;
-      _applyChildrenCell3D(cell, nodes_new_uid, faces_new_uid, cells_new_uid, coord_i, coord_j, coord_k, nb_cell_x, nb_cell_y, nb_cell_z, 1);
+      _applyChildrenCell3D(cell, nodes_new_uid, faces_new_uid, cells_new_uid, coord_i, coord_j, coord_k, nb_cell_x, nb_cell_y, nb_cell_z, 0);
     }
   }
 
@@ -201,13 +201,13 @@ _applyChildrenCell2D(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceIn
 
   // Renumérote la maille.
   {
-    Int64 new_uid = (coord_i + coord_j * current_level_nb_cell_x) + cell_adder; // 
-    //if (cells_new_uid[cell] < 0){
+    Int64 new_uid = (coord_i + coord_j * current_level_nb_cell_x) + cell_adder;
+    if (cells_new_uid[cell] < 0){
       cells_new_uid[cell] = new_uid;
       if (m_is_verbose)
         info() << "APPLY_CELL_CHILD: uid=" << cell.uniqueId() << " I=" << coord_i << " J=" << coord_j
                << " current_level=" << current_level << " new_uid=" << new_uid << " NodeAdder=" << node_adder;
-    //}
+    }
   }
 
 
@@ -228,13 +228,13 @@ _applyChildrenCell2D(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceIn
 
     for (Integer z = 0; z < 4; ++z) {
       Node node = cell.node(z);
-      //if (nodes_new_uid[node] < 0) {
+      if (nodes_new_uid[node] < 0) {
         new_uids[z] += node_adder;
         if (m_is_verbose)
           info() << "APPLY_NODE_CHILD: uid=" << node.uniqueId() << " parent_cell=" << cell.uniqueId()
                  << " I=" << z << " new_uid=" << new_uids[z];
         nodes_new_uid[node] = new_uids[z];
-      //}
+      }
     }
   }
 
@@ -263,25 +263,25 @@ _applyChildrenCell2D(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceIn
     //   on avance deux à deux sur les faces d'un même "coté".
     new_uids[0] = coord_i * 2 + coord_j * (current_level_nb_face_x + current_level_nb_cell_x);
 
-    // GAUCHE
-    // TODO DOC
-    new_uids[3] = new_uids[0] + (current_level_nb_face_x + current_level_nb_cell_x) - 1;
     // BAS
-    // TODO DOC
+    // Pour BAS, c'est comme HAUT mais avec un "nombre de face du dessus" en plus.
     new_uids[2] = new_uids[0] + (current_level_nb_face_x + current_level_nb_cell_x);
+    // GAUCHE
+    // Pour GAUCHE, c'est l'UID de BAS -1.
+    new_uids[3] = new_uids[2] - 1;
     // DROITE
-    // TODO DOC
-    new_uids[1] = new_uids[0] + (current_level_nb_face_x + current_level_nb_cell_x) + 1;
+    // Pour DROITE, c'est l'UID de BAS +1.
+    new_uids[1] = new_uids[2] + 1;
 
     for (Integer z = 0; z < 4; ++z) {
       Face face = cell.face(z);
-      //if (faces_new_uid[face] < 0) {
+      if (faces_new_uid[face] < 0) {
         new_uids[z] += face_adder;
         if (m_is_verbose)
           info() << "APPLY_FACE_CHILD: uid=" << face.uniqueId() << " parent_cell=" << cell.uniqueId()
                  << " I=" << z << " new_uid=" << new_uids[z];
         faces_new_uid[face] = new_uids[z];
-      //}
+      }
     }
   }
 
@@ -312,26 +312,46 @@ void CartesianMeshUniqueIdRenumbering::
 _applyChildrenCell3D(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceInt64& faces_new_uid,
                    VariableCellInt64& cells_new_uid,
                    Int64 coord_i, Int64 coord_j, Int64 coord_k,
-                   Int64 nb_cell_x, Int64 nb_cell_y, Int64 nb_cell_z, Int32 level)
+                   Int64 current_level_nb_cell_x, Int64 current_level_nb_cell_y, Int64 current_level_nb_cell_z, Int32 current_level)
 {
   // TODO: pour pouvoir s'adapter à tous les raffinements, au lieu de 8,
   // il faudrait prendre le max des nbHChildren()
 
+
   // Suppose qu'on a un pattern 2x2x2
-  coord_i *= 2;
-  coord_j *= 2;
-  coord_k *= 2;
-  nb_cell_x *= 2;
-  nb_cell_y *= 2;
-  nb_cell_z *= 2;
-  const Int64 nb_node_x = nb_cell_x + 1;
-  const Int64 nb_node_y = nb_cell_y + 1;
-  const Int64 nb_node_z = nb_cell_z + 1;
-  const Int64 cell_adder = nb_cell_x * nb_cell_y * nb_cell_z * level;
-  const Int64 nb_face_x = nb_cell_x + 1;
-  const Int64 nb_face_y = nb_cell_y + 1;
-  const Int64 node_adder = nb_node_x * nb_node_y * nb_node_z * level;
+
+  const Int64 parent_level_nb_cell_x = current_level_nb_cell_x/2;
+  const Int64 parent_level_nb_cell_y = current_level_nb_cell_y/2;
+  const Int64 parent_level_nb_cell_z = current_level_nb_cell_z/2;
+
+  const Int64 cell_adder = parent_level_nb_cell_x * parent_level_nb_cell_y * parent_level_nb_cell_z * current_level;
+  const Int64 current_level_nb_node_x = current_level_nb_cell_x + 1;
+  const Int64 current_level_nb_node_y = current_level_nb_cell_y + 1;
+  const Int64 current_level_nb_node_z = current_level_nb_cell_z + 1;
+  const Int64 node_adder = (parent_level_nb_cell_x+1) * (parent_level_nb_cell_y+1) * (parent_level_nb_cell_z+1) * current_level;
+  // current_level_nb_cell_x *= 2;
+  // current_level_nb_cell_y *= 2;
+  // current_level_nb_cell_z *= 2;
+  //coord_i *= 2;
+  //coord_j *= 2;
+  //coord_k *= 2;
+  const Int64 current_level_nb_face_x = current_level_nb_cell_x + 1;
+  const Int64 current_level_nb_face_y = current_level_nb_cell_y + 1;
   const Int64 face_adder = node_adder * 4;
+
+
+  // Renumérote la maille.
+  {
+    Int64 new_uid = (coord_i + coord_j * current_level_nb_cell_x + coord_k * current_level_nb_cell_x * current_level_nb_cell_y * (current_level+1)) + cell_adder;
+    //if (cells_new_uid[cell] < 0){
+      cells_new_uid[cell] = new_uid;
+      if (m_is_verbose)
+        info() << "APPLY_CELL_CHILD: uid=" << cell.uniqueId() << " I=" << coord_i << " J=" << coord_j << " K=" << coord_k
+               << " current_level=" << current_level << " new_uid=" << new_uid << " NodeAdder=" << node_adder;
+    //}
+  }
+
+
 
   // Renumérote les noeuds de la maille courante.
   // Suppose qu'on a 8 noeuds
@@ -342,25 +362,25 @@ _applyChildrenCell3D(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceIn
     if (cell.nbNode() != 8)
       ARCANE_FATAL("Invalid number of nodes N={0}, expected=8", cell.nbNode());
     std::array<Int64, 8> new_uids;
-    new_uids[0] = (coord_i + 0) + ((coord_j + 0) * nb_node_x) + ((coord_k + 0) * nb_node_x * nb_node_y);
-    new_uids[1] = (coord_i + 1) + ((coord_j + 0) * nb_node_x) + ((coord_k + 0) * nb_node_x * nb_node_y);
-    new_uids[2] = (coord_i + 1) + ((coord_j + 1) * nb_node_x) + ((coord_k + 0) * nb_node_x * nb_node_y);
-    new_uids[3] = (coord_i + 0) + ((coord_j + 1) * nb_node_x) + ((coord_k + 0) * nb_node_x * nb_node_y);
+    new_uids[0] = (coord_i + 0) + ((coord_j + 0) * current_level_nb_node_x) + ((coord_k + 0) * current_level_nb_node_x * current_level_nb_node_y);
+    new_uids[1] = (coord_i + 1) + ((coord_j + 0) * current_level_nb_node_x) + ((coord_k + 0) * current_level_nb_node_x * current_level_nb_node_y);
+    new_uids[2] = (coord_i + 1) + ((coord_j + 1) * current_level_nb_node_x) + ((coord_k + 0) * current_level_nb_node_x * current_level_nb_node_y);
+    new_uids[3] = (coord_i + 0) + ((coord_j + 1) * current_level_nb_node_x) + ((coord_k + 0) * current_level_nb_node_x * current_level_nb_node_y);
 
-    new_uids[4] = (coord_i + 0) + ((coord_j + 0) * nb_node_x) + ((coord_k + 1) * nb_node_x * nb_node_y);
-    new_uids[5] = (coord_i + 1) + ((coord_j + 0) * nb_node_x) + ((coord_k + 1) * nb_node_x * nb_node_y);
-    new_uids[6] = (coord_i + 1) + ((coord_j + 1) * nb_node_x) + ((coord_k + 1) * nb_node_x * nb_node_y);
-    new_uids[7] = (coord_i + 0) + ((coord_j + 1) * nb_node_x) + ((coord_k + 1) * nb_node_x * nb_node_y);
+    new_uids[4] = (coord_i + 0) + ((coord_j + 0) * current_level_nb_node_x) + ((coord_k + 1) * current_level_nb_node_x * current_level_nb_node_y);
+    new_uids[5] = (coord_i + 1) + ((coord_j + 0) * current_level_nb_node_x) + ((coord_k + 1) * current_level_nb_node_x * current_level_nb_node_y);
+    new_uids[6] = (coord_i + 1) + ((coord_j + 1) * current_level_nb_node_x) + ((coord_k + 1) * current_level_nb_node_x * current_level_nb_node_y);
+    new_uids[7] = (coord_i + 0) + ((coord_j + 1) * current_level_nb_node_x) + ((coord_k + 1) * current_level_nb_node_x * current_level_nb_node_y);
 
     for (Integer z = 0; z < 8; ++z) {
       Node node = cell.node(z);
-      if (nodes_new_uid[node] < 0) {
+      //if (nodes_new_uid[node] < 0) {
         new_uids[z] += node_adder;
         if (m_is_verbose)
           info() << "APPLY_NODE_CHILD: uid=" << node.uniqueId() << " parent_cell=" << cell.uniqueId()
                  << " I=" << z << " new_uid=" << new_uids[z];
         nodes_new_uid[node] = new_uids[z];
-      }
+      //}
     }
   }
   // Renumérote les faces
@@ -369,23 +389,23 @@ _applyChildrenCell3D(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceIn
     if (cell.nbFace() != 6)
       ARCANE_FATAL("Invalid number of faces N={0}, expected=6", cell.nbFace());
     std::array<Int64, 6> new_uids;
-    new_uids[0] = (coord_i + 0) + ((coord_j + 0) * nb_face_x) + ((coord_k + 0) * nb_face_x * nb_face_y * 2);
-    new_uids[1] = (coord_i + 1) + ((coord_j + 0) * nb_face_x) + ((coord_k + 0) * nb_face_x * nb_face_y * 2);
-    new_uids[2] = (coord_i + 1) + ((coord_j + 1) * nb_face_x) + ((coord_k + 0) * nb_face_x * nb_face_y * 2);
-    new_uids[3] = (coord_i + 0) + ((coord_j + 1) * nb_face_x) + ((coord_k + 0) * nb_face_x * nb_face_y * 2);
+    new_uids[0] = (coord_i + 0) + ((coord_j + 0) * current_level_nb_face_x) + ((coord_k + 0) * current_level_nb_face_x * current_level_nb_face_y * 2);
+    new_uids[1] = (coord_i + 1) + ((coord_j + 0) * current_level_nb_face_x) + ((coord_k + 0) * current_level_nb_face_x * current_level_nb_face_y * 2);
+    new_uids[2] = (coord_i + 1) + ((coord_j + 1) * current_level_nb_face_x) + ((coord_k + 0) * current_level_nb_face_x * current_level_nb_face_y * 2);
+    new_uids[3] = (coord_i + 0) + ((coord_j + 1) * current_level_nb_face_x) + ((coord_k + 0) * current_level_nb_face_x * current_level_nb_face_y * 2);
 
-    new_uids[4] = (coord_i + 0) + ((coord_j + 0) * nb_face_x) + ((coord_k + 1) * nb_face_x * nb_face_y * 2);
-    new_uids[5] = (coord_i + 1) + ((coord_j + 0) * nb_face_x) + ((coord_k + 1) * nb_face_x * nb_face_y * 2);
+    new_uids[4] = (coord_i + 0) + ((coord_j + 0) * current_level_nb_face_x) + ((coord_k + 1) * current_level_nb_face_x * current_level_nb_face_y * 2);
+    new_uids[5] = (coord_i + 1) + ((coord_j + 0) * current_level_nb_face_x) + ((coord_k + 1) * current_level_nb_face_x * current_level_nb_face_y * 2);
 
     for (Integer z = 0; z < 6; ++z) {
       Face face = cell.face(z);
-      if (faces_new_uid[face] < 0) {
+      //if (faces_new_uid[face] < 0) {
         new_uids[z] += face_adder;
         if (m_is_verbose)
           info() << "APPLY_FACE_CHILD: uid=" << face.uniqueId() << " parent_cell=" << cell.uniqueId()
                  << " I=" << z << " new_uid=" << new_uids[z];
         faces_new_uid[face] = new_uids[z];
-      }
+      //}
     }
   }
   // Renumérote les sous-mailles
@@ -400,16 +420,10 @@ _applyChildrenCell3D(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceIn
     Cell sub_cell = cell.hChild(icell);
     Int64 my_coord_i = coord_i + icell % 2;
     Int64 my_coord_j = coord_j + icell / 2;
-    Int64 my_coord_k = coord_k + icell / 4; // x*y
-    Int64 new_uid = (my_coord_i + my_coord_j * nb_cell_x + my_coord_k * nb_cell_x * nb_cell_y * 2) + cell_adder;
-    if (m_is_verbose)
-      info() << "APPLY_CELL_CHILD: uid=" << sub_cell.uniqueId() << " I=" << my_coord_i << " J=" << my_coord_j << " K=" << my_coord_k
-             << " level=" << level << " new_uid=" << new_uid << " NodeAdder=" << node_adder;
+    Int64 my_coord_k = coord_k + icell / 4;
 
     _applyChildrenCell3D(sub_cell, nodes_new_uid, faces_new_uid, cells_new_uid, my_coord_i, my_coord_j, my_coord_k,
-                         nb_cell_x, nb_cell_y, nb_cell_z, level + 1);
-    if (cells_new_uid[sub_cell] < 0)
-      cells_new_uid[sub_cell] = new_uid;
+                         current_level_nb_cell_x*2, current_level_nb_cell_y*2, current_level_nb_cell_z*2, current_level + 1);
   }
 }
 

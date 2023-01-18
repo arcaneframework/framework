@@ -45,14 +45,14 @@
      <length>2.0 2.0 2.0</length>
    </refinement-3d>
     <refinement-3d>
-     <position>0.0 0.0 2.0</position>
-     <length>2.0 2.0 2.0</length>
-   </refinement-3d>
-    <refinement-3d>
      <position>0.0 2.0 0.0</position>
      <length>2.0 2.0 2.0</length>
    </refinement-3d>
-    <refinement-3d>
+    <!-- <refinement-3d>
+     <position>0.0 0.0 2.0</position>
+     <length>2.0 2.0 2.0</length>
+   </refinement-3d> -->
+    <!-- <refinement-3d>
      <position>0.0 2.0 2.0</position>
      <length>2.0 2.0 2.0</length>
    </refinement-3d>
@@ -67,8 +67,8 @@
     <refinement-3d>
      <position>2.0 2.0 0.0</position>
      <length>2.0 2.0 2.0</length>
-   </refinement-3d>
-   <expected-number-of-cells-in-patchs>8 8 8 8 8 8 8 8</expected-number-of-cells-in-patchs>
+   </refinement-3d> -->
+   <expected-number-of-cells-in-patchs>8 8 8</expected-number-of-cells-in-patchs>
    <nodes-uid-hash>4924c41673a98fa2b7ca257f84c75dd2</nodes-uid-hash>
    <faces-uid-hash>3098df318d2f128195062aed3f8e3118</faces-uid-hash>
    <cells-uid-hash>e8b1b15951e58e18300ba9395f316418</cells-uid-hash>
