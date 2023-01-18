@@ -60,9 +60,9 @@
      <length>3.0 4.0 0.8</length>
    </refinement-3d> -->
    <expected-number-of-cells-in-patchs>1224 144 40</expected-number-of-cells-in-patchs>
-   <nodes-uid-hash>175b353632c1d63ac14a4362598afbc0</nodes-uid-hash>
-   <faces-uid-hash>a295b25dbf1e29280b0b1c0d64e071dd</faces-uid-hash>
-   <cells-uid-hash>bf5ab5f9a9d86816397e022417641d1a</cells-uid-hash>
+   <nodes-uid-hash>c40df33f801edc2ed58113da5c61ede2</nodes-uid-hash>
+   <faces-uid-hash>8e1850847a117e5b91557bb3a3661f51</faces-uid-hash>
+   <cells-uid-hash>ebacb41b72bd0f134b167db658a77e25</cells-uid-hash>
  </a-m-r-cartesian-mesh-tester>
 
  <arcane-protections-reprises>
