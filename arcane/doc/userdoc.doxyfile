@@ -921,10 +921,10 @@ WARN_LOGFILE           =
 # spaces. See also FILE_PATTERNS and EXTENSION_MAPPING
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  = @ARCANE_SRC_PATH@/arcane \
+INPUT                  = @ARCANE_SRC_PATH@/arcane/core \
                          @ARCANE_SRC_PATH@/arcane/utils \
-                         @ARCANE_SRC_PATH@/arcane/datatype \
-                         @ARCANE_SRC_PATH@/arcane/parallel \
+                         @ARCANE_SRC_PATH@/arcane/core/datatype \
+                         @ARCANE_SRC_PATH@/arcane/core/parallel \
                          @ARCANE_SRC_PATH@/arcane/geometry \
                          @ARCANE_SRC_PATH@/arcane/accelerator/core \
                          @ARCANE_SRC_PATH@/arcane/accelerator \
