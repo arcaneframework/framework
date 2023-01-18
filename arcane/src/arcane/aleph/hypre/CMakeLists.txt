@@ -1,4 +1,4 @@
-set(PKGS Hypre MPI)
+﻿set(PKGS Hypre MPI)
 arcane_find_package(Hypre)
 arcane_find_package(MPI)
 if (NOT Hypre_FOUND OR NOT MPI_FOUND)
@@ -29,4 +29,12 @@ if (ARCANE_HYPRE_VERSION VERSION_LESS 2.14)
 endif()
 
 target_link_libraries(arcane_aleph_hypre PUBLIC ${ARCANE_BASE_LIBRARIES})
+target_link_libraries(arcane_aleph_hypre PRIVATE arcane_aleph)
 arcane_register_library(arcane_aleph_hypre OPTIONAL)
+
+# ----------------------------------------------------------------------------
+# Local Variables:
+# tab-width: 2
+# indent-tabs-mode: nil
+# coding: utf-8-with-signature
+# End:
