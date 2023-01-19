@@ -37,7 +37,6 @@ est possible de passer sur 8 octets en compilant avec la macro
 754 et sont stockés sur 8 octets.
 
 ## Entités du maillage {#arcanedoc_getting_started_basicstruct_meshitem}
-´~#{[âå€çþýûîÂøÊ±æðÛÎÔ«»©®ß¬¹Ô¶ôîÔÎÛðæË¢äÅ¢ÇÞÝü`öÝÇ
 Il existe 4 types d'entités de base dans un maillage : les noeuds, les
 arêtes, les faces et les mailles. \`A chacun de ces types correspond une
 classe C++ dans %Arcane. Pour chaque type d'entité, il existe un type
