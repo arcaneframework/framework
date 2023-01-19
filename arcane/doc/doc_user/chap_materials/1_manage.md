@@ -6,7 +6,7 @@ Cette page décrit la gestion des matériaux et des milieux dans %Arcane.
 
 L'ensemble des classes associées aux matériaux et milieux se trouvent
 dans le namespace Materials de Arcane (voir \ref ArcaneMaterials). Le plus simple pour utiliser
-ces classes est d'utiliser le mot clé \a using. Par exemple:
+ces classes est d'utiliser le mot clé \a using. Par exemple :
 
 ```cpp
 #include <arcane/materials/IMeshMaterial.h>
@@ -22,23 +22,23 @@ IMeshMaterialMng par IMesh mais cela n'est pas utilisé pour l'instant.
 
 \warning Pour l'instant, la gestion des matériaux et milieux est
 incompatible avec les modifications de la topologie de maillage. En
-particulier, cela inclue le repartionnement du à l'équilibrage de
+particulier, cela inclue le repartionnement dû à l'équilibrage de
 charge.
 
-\note A partir de la version 1.20.2, il est posssible de modifier
-partiellement la topologie du maillage. Néammoins, il s'agit uniquement d'un mode de test,
-sans garantie sur les résultats. De plus, il faut respecter les constraintes
-suivantes:
+\note A partir de la version 1.20.2, il est possible de modifier
+partiellement la topologie du maillage. Néanmoins, il s'agit uniquement d'un mode de test,
+sans garantie sur les résultats. De plus, il faut respecter les contraintes
+suivantes :
 - appeler IMeshMaterialMng::setMeshModificationNotified(true) avant
 de créer les milieux et matériaux.
 - uniquement en mode séquentiel
 - uniquement en supprimant des mailles.
 
 Une instance de IMeshMaterialMng décrit un ensemble de milieux, chaque
-milieu étant composé de un ou plusieurs matériaux.
+milieu étant composé d'un ou plusieurs matériaux.
 La liste des milieux et des matériaux doit aussi être créé lors de
 l'initialisation du calcul et ne plus évoluer par la suite. Il est
-aussi possible d'avoir la notion de bloc au dessus de la motion de milieu, un bloc
+aussi possible d'avoir la notion de bloc au-dessus de la motion de milieu, un bloc
 comprenant un ou plusieurs milieux. Cette notion de bloc est
 optionnel et n'est pas indispensable à l'utilisation des milieux ou
 des matériaux
@@ -58,7 +58,7 @@ créée pas directement. Pour la récupérer, il faut utiliser la
 méthode IMeshMaterialMng::getReference() avec comme argument le maillage
 concerné. L'appel à cette fonction provoque la création du
 gestionnaire si ce n'est pas déjà fait. Cette fonction à un coût CPU
-non négligeable et il donc préférable de stocker l'instance retournée
+non négligeable et il est donc préférable de stocker l'instance retournée
 plutôt que d'appeler la fonction plusieurs fois.
 
 \snippet MeshMaterialTesterModule.cc SampleMaterialCreate
@@ -69,7 +69,7 @@ Une fois le gestionnaire créé, il faut enregistrer les matériaux et
 les milieux. La première chose à faire est d'enregistrer les
 caractéristiques des matériaux. Pour l'instant, il s'agit uniquement
 du nom du matériau. On enregistre uniquement les caractéristiques des
-matériaux et pas les matériaux eux-même car ces derniers sont créés
+matériaux et pas les matériaux eux-mêmes car ces derniers sont créés
 lors de la création des milieux.
 
 \snippet MeshMaterialTesterModule.cc SampleMaterialCreate2
@@ -78,9 +78,9 @@ Une fois les caractéristiques enregistrées, il est possible de créer
 les milieux, en spécifiant leur nom et la liste de leurs matériaux.
 Il faut noter que deux milieux (ou plus) peuvent être constitués du même
 matériau. Dans ce cas, Arcane créé deux instances différentes du même
-matériau et ces dernieres sont indépendantes. Ainsi, dans l'exemple
+matériau et ces dernières sont indépendantes. Ainsi, dans l'exemple
 suivant, le matériau MAT1 est présent dans ENV1 et ENV3, ce qui fait
-deux matériaux distints avec chacun leurs valeurs partielles. Une
+deux matériaux distincts avec chacun leurs valeurs partielles. Une
 fois les milieux créés, il est possible de les associés dans des
 blocs. Un bloc est défini par un nom, le groupe de maille associé et
 sa liste des milieux, qui est donc fixe.
@@ -110,8 +110,8 @@ correspondent au même matériau.
 
 \note A partir de la version 1.21.1, les informations concernant les
 blocs, les matériaux et les milieux sont sauvegardées et
-peuvent être relues en reprise. Néammoins, cela n'est pas
-automatique pour des raisons de compatiblité. Si on souhaite
+peuvent être relues en reprise. Néanmoins, cela n'est pas
+automatique pour des raisons de compatibilité. Si on souhaite
 relire les informations sauvegardées, il faut appeler
 IMeshMaterialMng::recreateFromDump() et ne plus créér manuellement
 les informations ni appeler la méthode IMeshMaterialMng::endCreate().
@@ -120,7 +120,7 @@ Chaque matériau IMeshMaterial, milieu IMeshEnvironment et bloc
 IMeshBlock possède un identifiant unique, de type #Int32, qui est accessible via les méthodes
 IMeshMaterial::id(), IMeshEnvironment::id() ou IMeshBlock::id(). Ces identifiants
 commencent à 0 et sont incrémentés pour chaque matériau, milieu ou bloc.
-Par exemple, avec la construction de l'exemple précédent, on a:
+Par exemple, avec la construction de l'exemple précédent, on a :
 
 \snippet MeshMaterialTesterModule.cc SampleMaterialCreate4
 
@@ -128,7 +128,7 @@ Par exemple, avec la construction de l'exemple précédent, on a:
 
 Une fois les matériaux et milieux créés, il est possible d'ajouter ou
 de supprimer des mailles pour un matériau. Il n'est pas nécessaire de
-modifier les mailles par milieu: Arcane se charge de recalculer
+modifier les mailles par milieu : Arcane se charge de recalculer
 automatiquement la liste des mailles d'un milieu en fonction de
 celles de ses matériaux.
 
@@ -152,28 +152,28 @@ et alors les valeurs ne seront pas initialisées.
 ## Itération sur les mailles matériaux {#arcanedoc_materials_manage_iteration}
 
 Il existe trois classes pour faire référence aux notions de maille
-matériaux:
+matériaux :
 - AllEnvCell est une classe permettant d'accéder à l'ensemble des
 milieux d'une maille.
 - EnvCell correspond à un milieu d'une maille et permet d'accéder aux
 valeurs de ce milieu pour cette maille et à l'ensemble des valeurs
 de cette maille pour les matériaux de ce milieu.
-- MatCell correspodant à une valeur d'un matériau d'un milieu d'une maille.
+- MatCell correspondant à une valeur d'un matériau d'un milieu d'une maille.
 
 Il existe une quatrième classe ComponentCell qui n'est pas une maille
 spécifique mais qui peut représenter un des trois types ci-dessus et
 permet d'unifier les traitements (voir \ref arcanedoc_materials_manage_component).
 
-Il existe deux manières d'itérer sur les mailles matériau.
+Il existe deux manières d'itérer sur les mailles matériaux.
 
 La première est d'itérer sur tous les milieux, pour chaque milieu
 d'itérer sur les matériaux de ce milieu et pour chacun de ces
-matériaux d'itérer sur ces mailles. Par exemple:
+matériaux d'itérer sur ces mailles. Par exemple :
 
 \snippet MeshMaterialTesterModule.cc SampleMaterialIterEnv
 
 Il est aussi possible d'utiliser un bloc pour itérer uniquement sur
-les milieux de ce bloc au lieu d'itérer sur tous les milieux:
+les milieux de ce bloc au lieu d'itérer sur tous les milieux :
 
 \snippet MeshMaterialTesterModule.cc SampleBlockEnvironmentIter
 
@@ -186,7 +186,7 @@ itérer sur toutes les mailles (groupe allCells())
 
 \snippet MeshMaterialTesterModule.cc SampleMaterialIterCell
 
-De la même manière, en itérant sur toutes les mailles d'un bloc:
+De la même manière, en itérant sur toutes les mailles d'un bloc :
 
 \snippet MeshMaterialTesterModule.cc SampleBlockMaterialIterCell
 
@@ -196,7 +196,7 @@ Les classes MatCellVector et EnvCellVector permettent d'obtenir une
 liste de MatCell ou de EnvCell à partir d'un groupe de mailles
 et d'un matériau ou d'un mileu. L'exemple suivant montre comment récupérer la
 liste des mailles du matériau \a mat et du milieu \env correspondant au groupe \a cells
-pour positionner une variable \a mat_density:
+pour positionner une variable \a mat_density :
 
 \snippet MeshMaterialTesterModule.cc SampleMaterialIterFromGroup
 
@@ -223,12 +223,12 @@ AllEnvCell allenvcell = all_env_cell_converter[cell];
 ```
 
 À partir d'une AllEnvCell, il est possible de récupérer directement une
-maille pour un matériau ou un milieu donnée via
+maille pour un matériau ou un milieu donné via
 IMeshMaterial::findMatCell() ou IMeshEnvironment::findEnvCell(). Ces
 méthodes retournent respectivement une MatCell ou une EnvCell
-correspondant à la maille matériau ou milieu souhaitée. L'instance
+correspondant à la maille matériau ou milieu souhaité. L'instance
 retournée peut-être nulle si le matériau ou le milieu n'est pas
-présent dans la maille. Par exemple:
+présent dans la maille. Par exemple :
 
 ```cpp
 AllEnvCell allenvcell = ...;
@@ -250,7 +250,7 @@ Depuis la version 1.21.0 de %Arcane, il est possible de traiter les
 mailles matériaux et milieu de manière générique. La classe
 ComponentCell permet cette unification et peut s'utiliser pour tous
 les types de mailles MatCell, EnvCell ou AllEnvCell. La macro
-ENUMERATE_COMPONENTCELL() permet d'itérer sur des mailles de ce type:
+ENUMERATE_COMPONENTCELL() permet d'itérer sur des mailles de ce type :
 
 \snippet MeshMaterialTesterModule.cc SampleComponentIter
 
@@ -269,7 +269,7 @@ EnvCellVector ou MatCellVector
 La méthode ComponentCell::superCell() retourne la ComponentCell de
 niveau hiérarchique immédiatement supérieur. Il est aussi possible
 d'itérer sur les sous-mailles d'une ComponantCell via la macro
-ENUMERATE_CELL_COMPONENTCELL():
+ENUMERATE_CELL_COMPONENTCELL() :
 
 \snippet MeshMaterialTesterModule.cc SampleComponentSuperItem
 
@@ -312,7 +312,7 @@ sont définis dans le fichier \c "MeshMaterialVariableRef.h".
 </table>
 
 Depuis la version 2.3.8, il est possible de définir des variables
-tableaux sur les matériaux, qui ont le type suivant:
+tableaux sur les matériaux, qui ont le type suivant :
 
 <table>
 <tr><th>Nom</th><th>Description</th></th>
@@ -341,9 +341,9 @@ if (var->hasTag("Material")){
 ```
 
 Pour l'instant, il n'est possible de créer que des variables
-scalaires aux mailles, avec l'un des types de donnée suivante: #Real, #Int32, #Int64,
+scalaires aux mailles, avec l'un des types de donnée suivante : #Real, #Int32, #Int64,
 Real2, Real3, Real2x2 ou Real3x3. Le nom de la classe correspondante
-est le même que pour les variables classique, mais préfixé de
+est le même que pour les variables classiques, mais préfixé de
 'Material'. Par exemple, pour une variable de type Real3, le nom est
 \a MaterialVariableCellReal3.
 
@@ -367,14 +367,14 @@ true. Les valeurs valides pour \c dimension sont \c 0 ou \c 1.
 
 La construction se fait avec un objet du type MaterialVariableBuildInfo qui référence le IMeshMaterialMng
 correspondant ou alors de la même manière qu'une variable classique,
-via le VariableBuildInfo. Par exemple:
+via le VariableBuildInfo. Par exemple :
 
 \snippet MeshMaterialTesterModule.cc SampleMaterialCreateVariable
 
 \note La construction des variables matériaux est thread-safe.
 
 Comme pour les variables classiques, les instructions précédentes ne
-crééent une variable que si aucune de même nom n'existe. Dans le cas
+créent une variable que si aucune de même nom n'existe. Dans le cas
 contraire, elles récupèrent une référence à la variable déjà créé
 correspondante.
 
@@ -394,7 +394,7 @@ mat_density[env_cell];    // Valeur pour un milieu.
 ```
 
 La valeur globale est partagée avec celle des variables standards
-Arcane de même nom. Par exemple:
+Arcane de même nom. Par exemple :
 
 ```cpp
 IMeshMaterialMng* material_mng = ...;
@@ -421,7 +421,7 @@ l'utilisation mémoire. Dans cette optique, les valeurs aux milieux et
 aux matériaux peuvent utiliser la même zone mémoire et dans ce cas
 modifier la valeur milieu modifie aussi la valeur matériau et
 réciproquement. Cela est le cas si les conditions suivantes sont
-respectées dans une maille \a cell:
+respectées dans une maille \a cell :
 - un seul matériau (MAT) dans un milieu (ENV), alors var[MAT]==var[ENV]
 - un seul milieu (ENV) dans la maille, alors var[ENV] == var[cell]
 
@@ -433,7 +433,7 @@ MeshMaterialVariableRef::synchronize().
 
 \warning Attention, il faut tout de même que
 les informations sur les matériaux présents soient cohérentes entre
-tous les sous-domaines: si une maille existe dans plusieurs
+tous les sous-domaines : si une maille existe dans plusieurs
 sous-domaines, elle doit avoir les mêmes matériaux et milieux dans
 chaque sous-domaine.
 
@@ -454,7 +454,7 @@ possible d'effectuer plusieurs synchronisations en une seule fois via la
 classe MeshMaterialVariableSynchronizerList. Cela permet d'optimiser
 les communications en réduisant le nombre de messages entre les
 processeurs.
-Par exemple:
+Par exemple :
 ```cpp
 IMeshMaterialMng* material_mng = ...;
 MaterialVariableCellReal temperature = ...;
@@ -474,7 +474,7 @@ mmvsl.apply();
 
 Depuis la version 3.6 de Arcane, il existe deux autres versions de la
 synchronisation qui fonctionne de manière identique à la version 6
-mais avec les modifications suivantes:
+mais avec les modifications suivantes :
 - La version 7 n'effectue qu'une seule allocation mémoire pour les
 buffers d'envoi et de réception (alors que la version 6 effectue
 autant d'allocation qu'il y a de sous-domaines voisins)
@@ -490,7 +490,7 @@ mémoire (RMA).
 ### Gestion des dépendances {#arcanedoc_materials_manage_variable_dependencies}
 
 Depuis la version 1.22.1, il est possible d'utiliser le mécanisme de
-dépendance sur les variable matériaux.
+dépendance sur les variables matériaux.
 Ce mécanisme est similaire à celui des variables classiques mais
 permet de gérer les dépendances par matériaux. 
 
@@ -500,7 +500,7 @@ il n'est pas possible par exemple de faire des dépendances sur le
 temps physique précédent (en spécifiant IVariable::DPT_PreviousTime
 par exemple).
 
-Le fonctionnement est le suivant:
+Le fonctionnement est le suivant :
 
 \snippet MeshMaterialTesterModule.cc SampleDependencies
 
@@ -510,7 +510,7 @@ souhaite faire la mise à jour. La méthode de calcul doit donc avoir
 comme argument un matériau, et en fin de calcul appeler
 MeshMaterialVariableRef::setUpToDate(mat) avec \a mat le matériau
 recalculé.
-Par exemple:
+Par exemple :
 
 \snippet MeshMaterialTesterModule.cc SampleDependenciesComputeFunction
 
@@ -520,7 +520,7 @@ Depuis la version 2.4.0 de %Arcane, il est possible de définir des
 variables qui n'ont de valeurs partielles que sur les milieux et pas
 sur les matériaux. Mise à part cette différence, elles se comportent
 comme les variables matériaux. Les variables milieux disponibles sont
-les suivantes:
+les suivantes :
 
 <table>
 <tr><th>Nom</th><th>Description</th></th>
@@ -571,7 +571,7 @@ De la même manière que les boucles sur les entités (voir \ref
 arcanedoc_parallel_concurrency), il est possible d'exécuter en parallèle des
 boucles sur les milieux où les matériaux. Cela se fait de manière
 similaire aux boucles sur les entités, en utilisant la méthode
-Parallel::Foreach. Par exemple:
+Parallel::Foreach. Par exemple :
 
 \snippet MeshMaterialTesterModule.cc SampleConcurrency
 
@@ -585,7 +585,7 @@ d'enregistrer la liste des modifications mais ces dernières ne sont
 réellement exécutées que lors de la destruction de l'instance
 MeshMaterialModifier.
 
-Par défaut, le comportement est le suivant:
+Par défaut, le comportement est le suivant :
 - sauvegarde des valeurs de toutes les variables matériaux
 - application des modifications (qui consiste uniquement à modifier
 la liste des entités des groupes de mailles associées aux matériaux
@@ -604,13 +604,13 @@ se passer de ces opérations de sauvegarde/restauration. Pour cela, il
 faut utiliser la méthode IMeshMaterialMng::setModificationFlags(int
 v). Cette méthode doit être appelée avant
 IMeshMaterialMng::endCreate().
-L'argument utilisé est une combinaison de bits de l'enumération
+L'argument utilisé est une combinaison de bits de l'énumération
 eModificationFlags:
 - eModificationFlags::GenericOptimize : indique qu'on souhaite
 activer les optimisations.
 - eModificationFlags::OptimizeMultiAddRemove: indique qu'on active
 les optimisations dans le cas où il y a plusieurs ajouts ou
-supressions avec un même MeshMaterialModifier.
+suppressions avec un même MeshMaterialModifier.
 - eModificationFlags::OptimizeMultiMaterialPerEnvironment indique qu'on active
 les optimisations dans le cas où il y a plusieurs matériaux
 dans le milieu.
@@ -621,7 +621,7 @@ les versions antérieures, aucune optimisation n'est effectuée
 si un des matériaux modifié n'est pas le seul matériau du
 milieu.
 
-Par exemple, on suppose les trois séries de modifications:
+Par exemple, on suppose les trois séries de modifications :
 ```cpp
 {
   MeshMaterialModifier m1(m_material_mng);
@@ -639,7 +639,7 @@ Par exemple, on suppose les trois séries de modifications:
 }
 ```
 
-Suivant les valeurs spécifiées lors de l'init, on aura:
+Suivant les valeurs spécifiées lors de l'init, on aura :
 
 ```cpp
 int flags1 = (int)eModificationFlags::GenericOptimize;
@@ -651,12 +651,12 @@ m_material_mng->setModificationFlags(flags2);
 // m1, m2 et m3 sont optimisés.
 ```
 
-Il est possible de surcharger les optimisations utilisés via la
+Il est possible de surcharger les optimisations utilisées via la
 variable d'environnement ARCANE_MATERIAL_MODIFICATION_FLAGS. Cette
 variable doit contenir une valeur entière correspondant à celle
 utilisée en argument de IMeshMaterialMng::setModificationFlags() (à
 savoir 1 pour l'optimisation générale, 3 pour en plus optimiser les
-ajouts/supressions multiples, et 7 pour optimiser aussi les cas des
+ajouts/suppressions multiples, et 7 pour optimiser aussi les cas des
 milieux multi-matériaux).
 
 ### Notes sur l'implémentation {#arcanedoc_materials_manage_optimization_implementation}
@@ -668,9 +668,9 @@ milieux multi-matériaux).
 <h4>NOTE 1</h4>
 
 Actuellement, les méthodes optimisées ne réutilisent pas les valeurs
-partielles lorsques des mailles sont supprimées puis ajoutées à un même matériau
+partielles lorsque des mailles sont supprimées puis ajoutées à un même matériau
 ce qui conduit à une augmentation progressive de la mémoire utilisée
-par les valeurs partielles. Il est néammoins possible de libérer
+par les valeurs partielles. Il est néanmoins possible de libérer
 cette mémoire supplémentaire via l'appel à
 IMeshMaterialMng::forceRecompute().
 
@@ -678,7 +678,7 @@ IMeshMaterialMng::forceRecompute().
 
 Le comportement en mode optimisé lorsqu'il y a suppression puis ajout
 d'une même maille dans un même matériau est différent du mode
-classique. Par exemple:
+classique. Par exemple :
 
 ```cpp
 MeshMaterialModifier m1(m_material_mng);
@@ -699,8 +699,8 @@ matériau. En mode classique, la valeur de la maille sera la même
 qu'avant la modification car on restaure la valeur depuis la
 sauvegarde. En mode optimisé, avec
 eModificationFlags::OptimizeMultiAddRemove spécifié, on supprime
-d'abord la maille du matériau puis on la recréée. Sa valeur sera donc
-celle d'une nouvelle maille matériau créée, donc 0 si
+d'abord la maille du matériau puis on l'a recréé. Sa valeur sera donc
+celle d'une nouvelle maille matériau crée, donc 0 si
 IMeshMaterialMng::isDataInitialisationWithZero() ou la valeur de la
 maille globale associée sinon.
 
@@ -708,7 +708,7 @@ maille globale associée sinon.
 
 Enfin, les méthodes optimisées sont plus strictes que les méthodes
 classiques et certaines opérations qui étaient tolérées en mode
-classique ne le sont plus:
+classique ne le sont plus :
 - spécifier dans la liste des mailles à ajouter une maille qui est
 déjà dans le matériau.
 - spécifier dans la liste des mailles à supprimer une maille qui
@@ -730,7 +730,7 @@ Si on se trouve dans un des cas précédent, il y a de fortes chances
 que cela fasse planter le code. Pour éviter cela, le mode CHECK
 détecte ces erreurs, les signale dans le listing et les filtre pour
 que cela fonctionne correctement. Ces erreurs sont signalées dans le
-listing par des message du style suivant:
+listing par des messages du style suivant :
 
 \verbatim
 ERROR: item ... is present several times in add/remove list for material mat=...

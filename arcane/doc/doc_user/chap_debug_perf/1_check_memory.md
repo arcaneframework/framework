@@ -1,8 +1,8 @@
 # Détection des problèmes mémoire {#arcanedoc_debug_perf_check_memory}
 
 Arcane dispose d'un mécanisme permettant de détecter certains problèmes
-mémoire, en particulier:
-- les fuites mémoire
+mémoires, en particulier :
+- les fuites mémoires
 - les désallocations qui ne correspondent à aucune allocation.
 
 De plus, cela permet d'obtenir des statistiques sur l'utilisation
@@ -32,11 +32,11 @@ Il est possible de gérer plus finement le vérificateur mémoire
 via l'interface IMemoryInfo. Cette interface est un singleton accessible
 via la méthode arcaneGlobalMemoryInfo();
 
-\note INTERNE: Pour l'instant, les éventuelles incohérence entre allocation
+\note INTERNE: Pour l'instant, les éventuelles incohérences entre allocation
 et désallocations sont indiquées sur std::cout. Cela peut poser des problèmes
-de lisibilités en parallèle. A terme, il faudra utiliser ITraceMng, mais
+de lisibilités en parallèle. \`A terme, il faudra utiliser ITraceMng, mais
 cela est délicat actuellement car ce mécanisme effectue lui aussi des
-appels mémoire et il difficile de le rendre compatible avec les fonctions
+appels mémoire et il est difficile de le rendre compatible avec les fonctions
 de débug actuelles.
 
 

@@ -81,7 +81,7 @@ d'utiliser un outil tier comme CMake.
 
 CMake va, lui, utiliser des `CMakeLists.txt` pour générer
 des `makefiles`. `CMakeLists.txt` contient les informations
-nécessaire pour construire ce `makefile`.
+nécessaires pour construire ce `makefile`.
 
 ## CMakeLists.txt {#arcanedoc_examples_simple_example_cmake_cmakeliststxt}
 

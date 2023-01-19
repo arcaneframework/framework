@@ -6,7 +6,7 @@ mécanisme gère l'échange des entités du maillage ainsi que les
 variables associées. Il est donc en grande partie transparent pour
 l'utilisateur.
 
-La gestion de l'équilibrage se fait via deux interfaces:
+La gestion de l'équilibrage se fait via deux interfaces :
 - ILoadBalanceMng qui permet de spécifier les critères à prendre en
   compte pour le calcul de la charge.
 - IMeshPartitioner qui permet de déterminer les entités qui doivent
@@ -17,7 +17,7 @@ instance de ILoadBalanceMng. Le code utilisateur doit lors de
 l'initialisation spécifier une ou plusieurs variables aux mailles qui
 contiendront le poids de chaque maille pour le calcul de la charge.
 
-Par exemple:
+Par exemple :
 ```cpp
 VariableCellReal cells_weight(...);
 ILoadBalanceMng* lb = subDomain()->loadBalanceMng();
@@ -29,7 +29,7 @@ partitionneur va ensuite redistribuer le maillage en tentant
 d'équilibrer au mieux les poids sur l'ensemble des sous-domaines.
 Par exemple, si une méthode couteuse est appelée un nombre
 différent de fois pour chaque maille, il est possible de remplir
-*cells_weight* avec le nombre d'appel effectué.
+*cells_weight* avec le nombre d'appels effectué.
 
 En général après un repartitionnement ces variables qui servent de
 critères doivent être remises à zéro.
@@ -46,7 +46,7 @@ de ce service en spécifiant la ligne suivante dans le fichier 'axl':
 />
 ```
 
-Dans ce cas, le partitionneur sera accessible via la méthode suivante:
+Dans ce cas, le partitionneur sera accessible via la méthode suivante :
 
 ```cpp
 options()->partitioner()
@@ -55,7 +55,7 @@ options()->partitioner()
 Pour programmer un repartitionnement au cours du calcul, il faut
 appeler ITimeLoopMng::registerActionMeshPartition() en spécifiant le
 partitionneur souhaité. Le repartitionnement et sera effectué à la fin de
-l'itération courante. Dans un module, on peut donc faire comme cela:
+l'itération courante. Dans un module, on peut donc faire comme cela :
 
 ```cpp
 subDomain()->timeLoopMng()->registerActionMeshPartition(options()->partitioner());
@@ -66,7 +66,7 @@ maillage et les variables associées. Si le code utilisateur a besoin
 de faire d'autres opérations après un équilibrage, il est possible
 de spécifier un point d'entrée pour cela. Dans la boucle en temps,
 les points d'entrée avec l'attribut 'where="on-mesh-changed"' sont
-appelés après un équilibrage. Par exemple:
+appelés après un équilibrage. Par exemple :
 
 ```xml
 <time-loop name="LoadBalanceLoop">

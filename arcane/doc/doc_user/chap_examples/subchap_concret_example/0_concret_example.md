@@ -2,7 +2,7 @@
 
 Ce sous-chapitre présente un exemple concret appelé `Quicksilver %Arcane Mini-App`.
 
-Il est recommendé d'avoir lu le sous-chapitre précédent \ref arcanedoc_examples_simple_example
+Il est recommandé d'avoir lu le sous-chapitre précédent \ref arcanedoc_examples_simple_example
 pour bien comprendre ce qui suit, car certaines choses ne seront pas répétées ici.
 
 <br>

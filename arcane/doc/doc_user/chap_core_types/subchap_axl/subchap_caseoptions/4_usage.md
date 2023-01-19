@@ -48,7 +48,7 @@ Le bloc descripteur de module sera le suivant :
 </module>
 ```
 
-A partir de ce fichier, %Arcane va générer un fichier *Test_axl.h* 
+\`A partir de ce fichier, %Arcane va générer un fichier *Test_axl.h* 
 qui contient, entre autre, une classe équivalente à celle-ci :
 
 ```cpp

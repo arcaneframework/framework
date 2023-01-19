@@ -14,9 +14,9 @@ Elles sont décrites par l'élément <tt>simple</tt> :
 
 L'attribut `type` peut prendre une des valeurs suivantes :
 - `real` pour les réels. Ils correspondent au type Arccore::Real.
-- `integer` pour les entier. Ils correspondent au type Arccore::Integer.
-- `int32` pour les entier. Ils correspondent au type Arccore::Int32.
-- `int64` pour les entier. Ils correspondent au type Arccore::Int64.
+- `integer` pour les entiers. Ils correspondent au type Arccore::Integer.
+- `int32` pour les entiers. Ils correspondent au type Arccore::Int32.
+- `int64` pour les entiers. Ils correspondent au type Arccore::Int64.
 - `bool` pour les booléens. Ils correspondent au type `bool` du C++.
 - `string` pour les chaînes de caractères. Ils correspondent à la classe Arccore::String.
 
@@ -32,7 +32,7 @@ Elles sont décrites par l'élément <tt>enumeration</tt> :
 
 ```xml
 <enumeration name="boundary-condition" type="eBoundaryCondition" default="X">
-  <description>Type de condition au limites</description>
+  <description>Type de condition aux limites</description>
   <enumvalue name="X" genvalue="VelocityX" />
   <enumvalue name="Y" genvalue="VelocityY"  />
   <enumvalue name="Z" genvalue="VelocityZ"  />
@@ -175,13 +175,13 @@ Le jeu de données correspondant est:
 </eos-model>
 ```
 
-Le code pour lire l'option est:
+Le code pour lire l'option est :
   
 ```cpp
 IEquationOfState* eos = options()->eosModel();
 ```
   
-Les services peuvent avoir les attributs suivants:
+Les services peuvent avoir les attributs suivants :
 <table>
 <tr>
 <th>Attribut</th>
@@ -195,7 +195,7 @@ Les services peuvent avoir les attributs suivants:
 données doit exister. Si ce n'est pas le cas, une erreur se produira
 lors de la lecture. Si cet attribut vaut \c true, et que le service
 spécifié n'existe pas, l'option correspondante sera nulle et il
-faudra tester sa valeur. Par exemple:
+faudra tester sa valeur. Par exemple :
 
 ```cpp
 IEquationOfState* eos = options()->eosModel();

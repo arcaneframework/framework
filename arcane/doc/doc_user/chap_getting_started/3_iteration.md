@@ -24,21 +24,21 @@ entre deux itérations.
 
 L'écriture précédente a plusieurs inconvénients :
 - elle fait apparaître la structure de donnée sous-jacente, à
-  savoir un tableau;
+  savoir un tableau ;
 - elle utilise un indice de type entier pour accéder aux éléments.
   Ce typage faible est source d'erreur car il ne permet pas, entre autre,
   de tenir compte du genre de la variable. Par exemple, on pourrait
   écrire \c m_velocity[i] avec \c i étant un numéro de maille et
-  \c m_velocity une variable aux noeuds;
-- elle oblige à ce que la numérotation des entités soit contigue.
+  \c m_velocity une variable aux noeuds ;
+- elle oblige à ce que la numérotation des entités soit contigüe.
 
 En considérant qu'on parcourt toujours la liste des entités dans le
 même ordre, il est possible de modéliser le comportement précédent par
 quatre opérations :
 
-- initialiser un compteur au début du tableau;
-- incrémenter le compteur;
-- regarder si le compteur est à la fin du tableau;
+- initialiser un compteur au début du tableau ;
+- incrémenter le compteur ;
+- regarder si le compteur est à la fin du tableau ;
 - retourner l'élément correspondant au compteur.
 
 Le mécanisme est alors général et indépendant du type du conteneur :
@@ -49,17 +49,17 @@ l'ensemble des éléments se fait en fournissant un itérateur de début
 et de fin, autrement appelé un *énumérateur*
 
 Dans %Arcane, cet énumérateur dérive de la classe de base
-ItemEnumerator et possède les méthodes suivantes:
+ItemEnumerator et possède les méthodes suivantes :
 
-- un constructeur prenant en argument un groupe d'entité du maillage;
-- *operator++()*: pour accèder à l'élément suivant;
-- *hasNext()* : pour tester si on se trouve à la fin de l'itération;
-- _operator*()_: qui retourne l'élément courant.
+- un constructeur prenant en argument un groupe d'entité du maillage ;
+- *operator++()* : pour accéder à l'élément suivant ;
+- *hasNext()* : pour tester si on se trouve à la fin de l'itération ;
+- _operator*()_ : qui retourne l'élément courant.
 
 Afin d'ajouter un niveau d'abstraction supplémentaire et de
 permettre d'instrumenter le code, %Arcane fournit une fonction
 sous forme de macro pour chaque type d'énumérateur. Cette fonction
-possède le prototype suivant:
+possède le prototype suivant :
 
 ```cpp
 ENUMERATE_[type]( nom_iterateur, nom_groupe )
@@ -70,7 +70,7 @@ avec:
 - **nom_iterateur** le nom de l'itérateur
 - **nom_groupe** le nom du groupe sur lequel on itère.
 
-Par exemple, pour itérer sur toutes les mailles, avec **i** le nom de l'itérateur:
+Par exemple, pour itérer sur toutes les mailles, avec **i** le nom de l'itérateur :
 
 ```cpp
 ENUMERATE_CELL(i,allCells())
@@ -88,7 +88,7 @@ Le type d'un énumérateur dépend du type d'élément de maillage : un
 énumérateur sur un groupe de noeuds n'est pas du même type qu'un
 énumérateur sur un groupe de mailles et ils sont donc
 incompatibles. Par exemple, si la vitesse est une variable aux noeuds,
-l'exemple suivant provoque une erreur de compilation:
+l'exemple suivant provoque une erreur de compilation :
 
 ```cpp
 cout << m_velocity[i]; // Erreur!
@@ -103,7 +103,7 @@ ENUMERATE_CELL(i,allNodes()) // Erreur!
 car **allNodes()** est un groupe de noeud et **i** un énumérateur sur un
 groupe de mailles.
 
-Notons que l'opérateur '*' de l'énumérateur permet d'accéder à l'élément courant:
+Notons que l'opérateur '*' de l'énumérateur permet d'accéder à l'élément courant :
 ```cpp
 ENUMERATE_CELL(i,allCells()){
   Cell cell = *i;
@@ -111,7 +111,7 @@ ENUMERATE_CELL(i,allCells()){
 ```
 
 Il est possible d'utiliser l'entité elle-même pour récupérer la valeur d'une variable
-mais, pour des raisons de performances, il faut privilégier l'accès par l'itérateur:
+mais, pour des raisons de performances, il faut privilégier l'accès par l'itérateur :
 ```cpp
 ENUMERATE_CELL(icell,allCells()){
   Cell cell = *i;

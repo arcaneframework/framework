@@ -11,7 +11,7 @@ opérations via les threads.
 
 Cette notion est complémentaire de la notion de décomposition de
 domaine utilisée par le Arcane::IParallelMng. Il est donc tout à fait
-possible de mélanger décomposition de domaine et les thread.
+possible de mélanger décomposition de domaine et les threads.
 
 \warning Néanmoins, si l'implémentation de Arcane::IParallelMng se fait via
 MPI, il est déconseillé de faire des appels au Arcane::IParallelMng lorsque
@@ -20,13 +20,13 @@ boucles parallélisées. La plupart des implémentations MPI ne sont pas
 très performantes dans ce mode et certaines ne le supporte que
 partiellement.
 
-Pour utiliser les tâches, il faut inclure le fichier suivant:
+Pour utiliser les tâches, il faut inclure le fichier suivant :
 
 ```cpp
 #include "arcane/Concurrency.h"
 ```
 
-Il existe deux mécanismes pour utiliser les tâches:
+Il existe deux mécanismes pour utiliser les tâches :
 
 1. Implicitement via la notion de boucle parallèle
 2. explicitement en créant les tâches directement
@@ -60,7 +60,7 @@ bord. Notamment, cela inclut (mais ne se limite pas) la garantie que
 les itérations de la boucle sont indépendantes, qu'il n'y a pas
 d'opérations de sortie de boucle (return, break). 
 
-La première forme est pour paralléliser la boucle séquentielle suivante:
+La première forme est pour paralléliser la boucle séquentielle suivante :
 
 ```cpp
 void func()
@@ -70,10 +70,10 @@ void func()
 }
 ```
 
-La parallélisation se fait comme suit: il faut d'abord écrire une
+La parallélisation se fait comme suit : il faut d'abord écrire une
 classe fonctor qui représente l'opération que l'on souhaite effectuée
 sur un interval d'itération. Ensuite, il faut utiliser l'opération
-arcaneParallelFor() en spécifiant ce fonctor en argument comme suit:
+arcaneParallelFor() en spécifiant ce fonctor en argument comme suit :
 
 ```cpp
 class Func
@@ -94,7 +94,7 @@ void func()
 ```
 
 Cette syntaxe est un peu verbeuse. Si le compilateur supporte la norme
-C++11, il est possible d'utiliser les lambda function pour simplifier l'écriture:
+C++11, il est possible d'utiliser les lambda function pour simplifier l'écriture :
 
 ```cpp
 void func()
@@ -107,7 +107,7 @@ void func()
 ```
 
 Une spécialisation existe pour les groupes d'entités.
-Pour paralléliser une énumération sur un groupe comme le code suivant:
+Pour paralléliser une énumération sur un groupe comme le code suivant :
 
 ```cpp
 void func()
@@ -118,7 +118,7 @@ void func()
 }
 ```
 
-Il faut écrire comme cela:
+Il faut écrire comme cela :
 
 ```cpp
 using namespace Arcane;
@@ -140,7 +140,7 @@ void func()
 }
 ```
 
-De même, avec le support du C++11, on peut simplifier:
+De même, avec le support du C++11, on peut simplifier :
 
 ```cpp
 using namespace Arcane;
@@ -157,7 +157,7 @@ void func()
 Pour les boucles Arcane::arcaneParallelFor() et Arcane::arcaneParallelForeach(), il est possible
 de passer en argument une instance de ParallelLoopOptions pour
 configurer la boucle parallèle. Par exemple, il est possible de
-spécifier la taille de l'intervalle pour découper la boucle:
+spécifier la taille de l'intervalle pour découper la boucle :
 
 ```cpp
 void func()
@@ -176,7 +176,7 @@ void func()
 ## Utilisation explicite des tâches {#arcanedoc_parallel_concurrency_task}
 
 La création d'un tâche se fait via la fabrique de tâche. Il faut spécifier
-en argument un fonctor de la même manière que les boucles parallèles:
+en argument un fonctor de la même manière que les boucles parallèles :
 
 ```cpp
 class Func
@@ -203,7 +203,7 @@ simplicité, la tâche n'est pas lancée tant que cette méthode n'a pas
 Il est possible de créer des sous-tâches à partir d'une première tâche
 via la méthode Arcane::TaskFactory::createChildTask().
 L'utilisateur doit gérer le lancement et l'attente des sous-tâches.
-Par exemple:
+Par exemple :
 
 ```cpp
 using namespace Arcane;

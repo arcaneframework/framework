@@ -5,13 +5,13 @@
 Un point d'entrée est une méthode d'un module qui est référencée par %Arcane
 et qui sert d'interface pour le module avec la boucle en temps. Un point d'entrée est décrit par
 la classe interface \c IEntryPoint. Un point d'entrée est une méthode dont la signature est la
-suivante, <b>T</b> étant le type de la classe du module:
+suivante, <b>T</b> étant le type de la classe du module :
 
 ```cpp
 void T::func();
 ```
 
-Un point d'entrée est caractérisé par:
+Un point d'entrée est caractérisé par :
 - un nom
 - une méthode de la classe associée.
 - l'endroit où il peut être appelé (initialisation, boucle de calcul, ...).
@@ -63,7 +63,7 @@ La signification des attributs de l'élément **entry-point** est la suivante :
 <tr>
 <td> **init** </td>
 <td>sert à initialiser les structures de données du module qui
-ne sont pas conservées lors d'une protection. A ce stade de
+ne sont pas conservées lors d'une protection. \`A ce stade de
 l'initialisation, le jeu de données et le maillage ont déjà été lus.
 L'initialisation sert également à vérifier certaines valeurs,
 calculer des valeurs initiales...</td>
@@ -110,7 +110,7 @@ Lors de la compilation du descripteur de module par %Arcane (avec **axl2cc** - c
 les points d'entrée sont enregistrés au sein de la base de données de l'architecture.
 
 Il faut déclarer les points d'entrée au niveau de la classe du module (sinon une erreur
-se produit à la compilation):
+se produit à la compilation) :
 
 ```cpp
 class TestModule
@@ -133,7 +133,7 @@ du module, dans notre cas \c TestModule.cc.
 Pour exemple, voici le point d'entrée \c testPressureSync
 appelé à chaque itération de la boucle de calcul. 
 Ce point d'entrée effectue une
-moyenne des pressions des mailles au cours du temps:
+moyenne des pressions des mailles au cours du temps :
 
 ```cpp
 using namespace Arcane;

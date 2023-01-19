@@ -14,7 +14,7 @@ exécuter les tests, d'ajouter le service à la liste des services du
 module de test.
   
 Cette page décrit les différentes étapes à suivre pour construire et
-exécuter des tests unitaires. Notons, qu'à ce jour, les test unitaires
+exécuter des tests unitaires. Notons, qu'à ce jour, les tests unitaires
 ne fonctionnent qu'en séquentiel. La génération du rapport de test
 n'est pas encore implémentée en parallèle.
   
@@ -79,7 +79,7 @@ des bibliothèques de tests unitaires (CppUnit, GoogleTest...), %Arcane
 met à disposition un ensemble d'assertions pour tester les résultats
 de tests. Ces assertions sont disponibles sous forme de macros C++.
 
-A ce jour, les macros disponibles sont:
+\`A ce jour, les macros disponibles sont :
 
 - FAIL : qui permet de faire échouer un test. Cette macro est utile,
   par exemple, pour vérifier qu'une exception est appelée. Il suffit
@@ -97,7 +97,7 @@ A ce jour, les macros disponibles sont:
   définissant cette méthode. C'est le cas des réels Arcane.
 - ASSERT_NEARLY_EQUAL_EPSILON(expected, actual, epsilon) : fonctionne comme l'assertion précédente avec un epsilon de comparaison fourni en paramètre par l'appelant.
   
-Voici quelques exemples d'utilisation de ces macros:
+Voici quelques exemples d'utilisation de ces macros :
 
 ```cpp
 ASSERT_TRUE(i <= 5);
@@ -111,13 +111,13 @@ ASSERT_NEARLY_EQUAL(5.5, y);
 Depuis la version 2.20 de %Arcane, il est possible d'utiliser les
 tests unitaires en parallèle. Pour cela, une version des macros est
 disponible en spécifiant en paramètre une instance de
-Arcane::IParallelMng. Ces macros sont identiques dans leur sémantiques
+Arcane::IParallelMng. Ces macros sont identiques dans leurs sémantiques
 à la version séquentielle et sont préfixées par `PARALLEL_`, comme par
 exemple PARALLEL_ASSERT_TRUE ou PARALLEL_ASSERT_NEARLY_EQUAL. Ces
 appels sont collectifs et le test est considéré comme ayant échoué si
 un des rangs a échoué.
 
-Voici un exemple d'utilisation:
+Voici un exemple d'utilisation :
 
 ```cpp
 using namespace Arcane;

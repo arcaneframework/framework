@@ -5,8 +5,8 @@
 Dans cet exemple, on va montrer un exemple d'utilisation de lecture/
 remplissage du tableau via la position d'un pointeur.
 
-En effet, jusque là, on a remplit nos tableaux de valeurs avec les
-noms de lignes/colonnes, en mettant les valeurs les une à coté des
+En effet, jusque-là, on a rempli nos tableaux de valeurs avec les
+noms de lignes/colonnes, en mettant les valeurs les une à côté des
 autres.  
 Il se trouve qu'en interne, lorsqu'un élément est ajouté ou modifié,
 il y a un pointeur qui se met à jour et qui pointe vers le dernier
@@ -99,7 +99,7 @@ Enfin, voyons le point d'entrée `exit` :
 `SimpleTableOutputExample5Module.cc`
 \snippet SimpleTableOutputExample5Module.cc SimpleTableOutputExample5_exit
 
-Ce point d'entrée est identique à celui de l'exemple précedent.
+Ce point d'entrée est identique à celui de l'exemple précédent.
 
 
 ____

@@ -5,7 +5,7 @@
 ## Types tableaux {#arcanedoc_core_types_array_usage_type}
 
 L'utilisation des tableaux dans %Arcane utilise deux types de
-classes: les \a conteneurs et les \a vues.
+classes : les \a conteneurs et les \a vues.
 
 Les conteneurs tableaux permettent de
 stocker des éléments et gèrent la
@@ -13,14 +13,14 @@ mémoire pour ce stockage. Les vues représentent un sous-ensemble
 d'un conteneur et sont des objets <strong>temporaires</strong>.
 
 Les classes gérant les conteneurs ont un nom qui finit par \a
-%Array. Les conteneurs ont les caractéristiques suivantes:
+%Array. Les conteneurs ont les caractéristiques suivantes :
 - ils gèrent la mémoire nécessaire pour conserver leurs éléments.
 - les éléments sont conservés de manière contigüe en mémoire. Il est
 donc possible d'utiliser ces conteneurs à des fonctions en langage C par
 exemple qui prennent en argument des pointeurs. 
 
 Les classes gérant les vues ont un nom qui finit par \a View, comme ArrayView
-ou ConstArrayView. Les vues ont les caractéristiques suivantes:
+ou ConstArrayView. Les vues ont les caractéristiques suivantes :
 - elles ne gèrent aucune mémoire et sont toutes issues d'un
 conteneur (qui n'est pas nécessairement une classe Arcane)
 - elles ne sont valide que tant que le conteneur associé existe et
@@ -31,7 +31,7 @@ ne leur applique pas l'opérateur &).
 En général, il ne faut donc pas utiliser de vue comme champ d'une classe.
 
 Le tableau suivant donne la liste des classes gérant les tableaux et
-les vues associées:
+les vues associées :
 
 <table>
 <tr>
@@ -58,7 +58,7 @@ les vues associées:
 <td>\arccore{ConstArray2View}</td>
 </tr>
 <tr>
-<td>Tableau 2D avec 2ème dimension variable</td>
+<td>Tableau 2D avec 2-ème dimension variable</td>
 <td>\arcane{MultiArray2}</td>
 <td>\arcane{SharedMultiArray2}</td>
 <td>\arcane{UniqueMultiArray2}</td>
@@ -72,7 +72,7 @@ une implémentation avec sémantique par référence et une
 implémentation avec sémantique par valeur. La classe de base n'est
 ni copiable ni affectable. La différence de
 sémantique concerne le fonctionnement des opérateurs de recopie et
-d'affectation:
+d'affectation :
 - la sémantique par référence signifie que lorsqu'on fait <em>a =
 b</em>, alors \a a devient une référence sur \a b et toute modification de \a b modifie
 aussi \a a.
@@ -101,7 +101,7 @@ std::cout << a1[3]; // affiche '1'
 
 ## Passage de tableaux en arguments {#arcanedoc_core_types_array_usage_argument}
 
-Voici les règles de bonnes pratiques à respecter pour le passage de tableaux en argument:
+Voici les règles de bonnes pratiques à respecter pour le passage de tableaux en argument :
 
 <table>
 
