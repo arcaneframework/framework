@@ -24,7 +24,7 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-std::ostream&
+ARCCORE_HOST_DEVICE std::ostream&
 operator<<(std::ostream& o,const MatVarIndex& mvi)
 {
   o << mvi.arrayIndex() << ":" << mvi.valueIndex();
@@ -34,7 +34,7 @@ operator<<(std::ostream& o,const MatVarIndex& mvi)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-std::ostream&
+ARCCORE_HOST_DEVICE std::ostream&
 operator<<(std::ostream& o,const ComponentItemLocalId& mvi)
 {
   o << mvi.localId();
