@@ -139,9 +139,19 @@ namespace Arcane.Axl.Xsd
     public bool HasFamilyName { get { return !String.IsNullOrEmpty (FamilyName); } }
 
     public bool HasShapeDim { get { return !String.IsNullOrEmpty(shapedim); } }
+    public bool HasDim { get { return !String.IsNullOrEmpty(dim); } }
 
     public void InitializeAndValidate ()
     {
+      bool has_shape_dim = HasShapeDim;
+      bool has_dim = HasDim;
+      if (has_shape_dim){
+        if (has_dim)
+          _ThrowInvalid($"Only one of 'dim' or 'shape-dim' is authorized");
+        dim = "1";
+      }
+      else if (!has_dim)
+        dim = "0";
       // Vérifie que 'family-name' existe pour une variables sur les particules et les DoF.
       // et qu'il est absent pour les autres types de variable.
       if (itemkind == ItemKind.particle && !HasFamilyName)
@@ -157,9 +167,7 @@ namespace Arcane.Axl.Xsd
 
       if (HasShapeDim) {
         if (itemkind == ItemKind.none)
-          _ThrowInvalid("'shape-dim' is only valid for variables on mesh");
-        if (dim != "1")
-          _ThrowInvalid("'shape-dim' is only valid for variables with 'dim'==1");
+          _ThrowInvalid("'shape-dim' is only valid for variables on mesh ('item_kind'!='none')");
         if (IsMaterial || IsEnvironment)
           _ThrowInvalid("'shape-dim' is invalid if 'environment'==true or 'material'==true");
         if (datatype != DataType.real2 && datatype != DataType.real3 &&

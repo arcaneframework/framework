@@ -381,7 +381,7 @@
             <xs:attribute name="name" type="xs:string" use="required" />
             <xs:attribute name="data-type" type="DataType" use="required" />
             <xs:attribute name="item-kind" type="ItemKind" use="required" />
-            <xs:attribute name="dim" type="Dimension" use="required" />
+            <xs:attribute name="dim" type="Dimension" use="optional" />
             <xs:attribute name="flow" type="Flow" default="inout" />
             <xs:attribute name="family-name" type="xs:string" use="optional" />
             <xs:attribute name="dump" type="xs:boolean" use="optional" />
