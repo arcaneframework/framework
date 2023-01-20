@@ -275,6 +275,14 @@
     </xs:restriction>
   </xs:simpleType>
   
+  <!-- Dimension d'une forme d'une variable : 0, 1, 2 ou 3 .................. -->
+  <xs:simpleType name="ShapeDimension">
+    <xs:restriction base="xs:integer">
+      <xs:minInclusive value="0" />
+      <xs:maxInclusive value="3" />
+    </xs:restriction>
+  </xs:simpleType>
+
   <!-- Flow d'une variable: in, out, inout ................................. -->
   <xs:simpleType name="Flow">
     <xs:restriction base="xs:string">
@@ -389,6 +397,7 @@
             <xs:attribute name="no-replica-sync" type="xs:boolean" use="optional" />
             <!-- Nom de la classe C++ générée. Uniquement pour test pour l'instant -->
             <xs:attribute name="internal-cpp-typename" type="xs:string" use="optional" />
+            <xs:attribute name="shape-dim" type="ShapeDimension" use="optional" />
           </xs:complexType>
         </xs:element>
       </xs:sequence>

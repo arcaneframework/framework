@@ -939,6 +939,8 @@ namespace Arcane.Axl.Xsd {
         
         private string internalcpptypenameField;
         
+        private string shapedimField;
+        
         public variablesVariable() {
             this.flowField = Flow.inout;
         }
@@ -1271,6 +1273,17 @@ namespace Arcane.Axl.Xsd {
             }
             set {
                 this.internalcpptypenameField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute("shape-dim", DataType="integer")]
+        public string shapedim {
+            get {
+                return this.shapedimField;
+            }
+            set {
+                this.shapedimField = value;
             }
         }
     }
