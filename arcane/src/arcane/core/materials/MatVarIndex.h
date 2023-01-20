@@ -39,34 +39,34 @@ class ARCANE_CORE_EXPORT MatVarIndex
 {
  public:
 
-  MatVarIndex(Int32 array_index,Int32 value_index)
+  ARCCORE_HOST_DEVICE MatVarIndex(Int32 array_index,Int32 value_index)
   : m_array_index(array_index), m_value_index(value_index)
   {
   }
-  MatVarIndex(){}
+  ARCCORE_HOST_DEVICE MatVarIndex(){}
  
  public:
 
   //! Retourne l'indice du tableau de valeur dans la liste des variables.
-  Int32 arrayIndex() const { return m_array_index; }
+  ARCCORE_HOST_DEVICE Int32 arrayIndex() const { return m_array_index; }
 
   //! Retourne l'indice dans le tableau de valeur
-  Int32 valueIndex() const { return m_value_index; }
+  ARCCORE_HOST_DEVICE Int32 valueIndex() const { return m_value_index; }
 
   //! Positionne l'index
-  void setIndex(Int32 array_index,Int32 value_index)
+  ARCCORE_HOST_DEVICE void setIndex(Int32 array_index,Int32 value_index)
   {
     m_array_index = array_index;
     m_value_index = value_index;
   }
 
-  void reset()
+  ARCCORE_HOST_DEVICE void reset()
   {
     m_array_index = (-1);
     m_value_index = (-1);
   }
 
-  bool null() const
+  ARCCORE_HOST_DEVICE bool null() const
   {
     return m_value_index==(-1);
   }
@@ -80,13 +80,13 @@ class ARCANE_CORE_EXPORT MatVarIndex
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_CORE_EXPORT std::ostream&
+ARCANE_CORE_EXPORT ARCCORE_HOST_DEVICE std::ostream&
 operator<<(std::ostream& o,const MatVarIndex& mvi);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-inline bool
+inline ARCCORE_HOST_DEVICE bool
 operator==(MatVarIndex mv1,MatVarIndex mv2)
 {
   if (mv1.arrayIndex() != mv2.arrayIndex())
@@ -94,7 +94,7 @@ operator==(MatVarIndex mv1,MatVarIndex mv2)
   return mv1.valueIndex() == mv2.valueIndex();
 }
 
-inline bool operator!=(MatVarIndex mv1,MatVarIndex mv2)
+inline bool ARCCORE_HOST_DEVICE operator!=(MatVarIndex mv1,MatVarIndex mv2)
 {
   return !(operator==(mv1,mv2));
 }
@@ -108,10 +108,10 @@ inline bool operator!=(MatVarIndex mv1,MatVarIndex mv2)
 class ARCANE_CORE_EXPORT ComponentItemLocalId
 {
  public:
-  ComponentItemLocalId() : m_local_id(-1,-1){}
-  explicit ComponentItemLocalId(MatVarIndex mvi) : m_local_id(mvi){}
+  ARCCORE_HOST_DEVICE ComponentItemLocalId() : m_local_id(-1,-1){}
+  explicit ARCCORE_HOST_DEVICE ComponentItemLocalId(MatVarIndex mvi) : m_local_id(mvi){}
  public:
-  MatVarIndex localId() const { return m_local_id; }
+  MatVarIndex ARCCORE_HOST_DEVICE localId() const { return m_local_id; }
  private:
   MatVarIndex m_local_id;
 };
@@ -125,9 +125,9 @@ class ARCANE_CORE_EXPORT ComponentItemLocalId
 class ARCANE_CORE_EXPORT PureMatVarIndex
 {
  public:
-  explicit PureMatVarIndex(Int32 idx) : m_index(idx){}
+  explicit ARCCORE_HOST_DEVICE PureMatVarIndex(Int32 idx) : m_index(idx){}
  public:
-  Int32 valueIndex() const { return m_index; }
+  Int32 ARCCORE_HOST_DEVICE valueIndex() const { return m_index; }
  private:
   Int32 m_index;
 };
@@ -135,7 +135,7 @@ class ARCANE_CORE_EXPORT PureMatVarIndex
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_CORE_EXPORT std::ostream&
+ARCANE_CORE_EXPORT ARCCORE_HOST_DEVICE std::ostream&
 operator<<(std::ostream& o,const ComponentItemLocalId& mvi);
 
 /*---------------------------------------------------------------------------*/
