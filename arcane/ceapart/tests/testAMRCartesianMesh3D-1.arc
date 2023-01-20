@@ -60,9 +60,13 @@
      <length>3.0 4.0 0.8</length>
    </refinement-3d> -->
    <expected-number-of-cells-in-patchs>1224 144 40</expected-number-of-cells-in-patchs>
-   <nodes-uid-hash>175b353632c1d63ac14a4362598afbc0</nodes-uid-hash>
-   <faces-uid-hash>a295b25dbf1e29280b0b1c0d64e071dd</faces-uid-hash>
-   <cells-uid-hash>bf5ab5f9a9d86816397e022417641d1a</cells-uid-hash>
+   <nodes-uid-hash>42eb4b485ec76318f1926002b745720c</nodes-uid-hash>
+   <faces-uid-hash>be929e809c82d3e172f2b586ae766d3c</faces-uid-hash>
+   <cells-uid-hash>e677eccad3821b44beeb99115a071933</cells-uid-hash>
+   <!-- Hash si renumérotation level0 : -->
+   <!-- <nodes-uid-hash>64a86cfb64af959cfde7fb5cff5ef6c9</nodes-uid-hash> -->
+   <!-- <faces-uid-hash>8fcddfb15f9efc42bb69af3eb7298b94</faces-uid-hash> -->
+   <!-- <cells-uid-hash>e677eccad3821b44beeb99115a071933</cells-uid-hash> -->
  </a-m-r-cartesian-mesh-tester>
 
  <arcane-protections-reprises>
