@@ -13,7 +13,7 @@ déclarer un entier, il faut utiliser \arccore{Integer} au lieu de
 (par exemple, utiliser des entiers sur 8 octets au lieu de 4)
 sans modifier le code source.
 
-Les types de bases sont:
+Les types de bases sont :
 
 <table>
 <tr><td><b>Nom de la classe</b></td><td><b>Correspondance dans les spécifications</b></td></tr>
@@ -37,12 +37,11 @@ est possible de passer sur 8 octets en compilant avec la macro
 754 et sont stockés sur 8 octets.
 
 ## Entités du maillage {#arcanedoc_getting_started_basicstruct_meshitem}
-
 Il existe 4 types d'entités de base dans un maillage : les noeuds, les
-arêtes, les faces et les mailles. A chacun de ces types correspond une
+arêtes, les faces et les mailles. \`A chacun de ces types correspond une
 classe C++ dans %Arcane. Pour chaque type d'entité, il existe un type
 *groupe* qui gère un ensemble d'entités de ce type. La classe qui gère
-un groupe d'une entité a pour nom celui de l'entité suffixé par
+un groupe d'une entité a pour nom celui de l'entité suffixée par
 *Group*. Par exemple, pour les noeuds, il s'agit de \arcane{NodeGroup}.
 
 <table>
@@ -67,7 +66,7 @@ Chaque entité du maillage correspond à une instance d'une classe. Par
 exemple, si le maillage contient 15 mailles, il y a 15 instances du
 type \arcane{Cell}. Chaque classe fournit un certain nombre d'opérations
 permettant de relier les instances entre elles. Par exemple, la méthode
-\arcane{Cell::node}(\arccore{Integer}) de la classe \arcane{Cell} permet de récupérer le ième
+\arcane{Cell::node}(\arccore{Integer}) de la classe \arcane{Cell} permet de récupérer le i-ème
 noeud de cette maille. De même, la méthode \arcane{Cell::nbNode()} permet de
 récupérer le nombre de noeuds de la maille. Pour plus de
 renseignements sur les opérations supportées, il est nécessaire de se

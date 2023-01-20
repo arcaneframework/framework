@@ -4,7 +4,7 @@
 
 Cette page décrit les outils disponibles dans ARCANE pour effectuer
 des comparaisons bit à bit des valeurs des variables gérées par
-ARCANE. Les comparaisons suivantes sont possibles:
+ARCANE. Les comparaisons suivantes sont possibles :
 - \ref arcanedoc_debug_perf_compare_bittobit_two_exec
 - \ref arcanedoc_debug_perf_compare_bittobit_synchronization
 - \ref arcanedoc_debug_perf_compare_bittobit_replica
@@ -20,7 +20,7 @@ par exemple par les types de données 'String').
 Ce mécanisme permet de déterminer la liste des variables %Arcane qui sont différentes
 entre deux exécutions. Il ne fonctionne que sur les variables %Arcane.
 
-Le principe de fonctionnement est le suivant:
+Le principe de fonctionnement est le suivant :
 - Exécution d'un cas de référence, avec sauvegarde des résultats.
 - Exécution d'un deuxième cas et comparaison pendant l'exécution avec le cas de
 référence.
@@ -70,7 +70,7 @@ doit être celle de référence et être exécutée en premier) ou des comparais
 Dans le listing de l'exécution, apparait alors pour chaque
 itération (ou pour chaque point d'entrée si **STDENV_VERIF_ENTRYPOINT**
 est définie) la liste des variables qui sont différentes entre cette
-exécution et la référence, ainsi que leurs valeurs, comme suit:
+exécution et la référence, ainsi que leurs valeurs, comme suit :
 
 ```log
 *I-TimeLoopMng Processor 3 : 50 entité(s) ayant des valeurs différentes pour la variable CaracteristicLength:
@@ -101,7 +101,7 @@ tableau qui est affiché.
 
 En parallèle, il peut être normal que les valeurs sur les mailles
 fantômes soient différentes de la référence si la variable n'est
-pas synchronisée. Comme cela peut-être le cas pour de nombreuses
+pas synchronisée. Comme cela peut être le cas pour de nombreuses
 variables, il est possible de n'afficher les différences que sur
 les mailles appartenant au sous-domaine, en positionnant la
 variable d'environnement **STDENV_VERIF_SKIP_GHOSTS**.

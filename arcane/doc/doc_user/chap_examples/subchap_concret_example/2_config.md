@@ -58,7 +58,7 @@ Pour commencer, voici le fichier de configuration :
 Avec ce fichier, on peut déjà voir à quoi ressemble `QAMA`.
 On retrouve nos trois modules `QS`, `SamplingMC` et `TrackingMC` dans
 la partie `<modules>`.
-On retrouve aussi les trois types de points d'entrées que l'on avait vu
+On retrouve aussi les trois types de points d'entrées que l'on avait vus
 dans l'exemple `HelloWorld` : `init`, `compute-loop` et `exit`
 (ici : \ref arcanedoc_examples_simple_example_module_sayhelloaxl).
 

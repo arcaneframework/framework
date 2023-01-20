@@ -15,7 +15,7 @@ sera exécutée après l'initialisation de %Arcane. Cette lambda est
 donnée en paramètre à la méthode Arcane::ArcaneLauncher::run(). Cette
 fonction lambda doit retourner un `int` et prendre en paramètre une
 référence à Arcane::DirectSubDomainExecutionContext. L'exemple suivant montre
-une lambda qui affiche juste `Hello World`:
+une lambda qui affiche juste `Hello World` :
 
 ```cpp
 #include <arcane/launcher/ArcaneLauncher.h>
@@ -37,7 +37,7 @@ int main(int argc,char* argv[])
 ```
 
 
-Par défaut, le nom du fichier du jeu de données est le dernier argument de la ligne de commande:
+Par défaut, le nom du fichier du jeu de données est le dernier argument de la ligne de commande :
 
 ```sh
 ./a.out toto.arc

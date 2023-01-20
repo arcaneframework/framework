@@ -3,7 +3,7 @@
 [TOC]
 
 Une variable est une valeur manipulée par le code et gérée par
-%Arcane. Par exemple le volume, la vitesse, sont des variables. Elle
+%Arcane. Par exemple le volume, la vitesse, sont des variables. Elles
 sont caractérisées par un **nom**, un **type**, un **support**
 et une **dimension**.
 
@@ -54,7 +54,7 @@ sont appelées des **grandeurs**.
 
 ## Dimension {#arcanedoc_core_types_axl_variable_dim}
 
-La **dimension** peut être:
+La **dimension** peut être :
 
 | Nom C++     | Dimension
 |-------------|------------
@@ -65,7 +65,7 @@ La **dimension** peut être:
 ## Classe C++ {#arcanedoc_core_types_axl_variable_cppclass}
 
 Il est aisé d'obtenir la classe C++ correspondant à un type, un support 
-et à une dimension donnés. Le nom de la classe est construit de la 
+et à une dimension donnée. Le nom de la classe est construit de la 
 manière suivante :
 
 **Variable** + \ref arcanedoc_core_types_axl_variable_support + \ref arcanedoc_core_types_axl_variable_dim + \ref arcanedoc_core_types_axl_variable_types
@@ -78,14 +78,14 @@ Quand une variable scalaire est définie sur une entité du maillage
 le support (*Scalar*) n'est pas précisé. Par exemple, pour une variable 
 représentant un réel aux mailles **VariableCellReal**.
 
-Tous les combinaisons sont possibles aux exceptions suivantes:
+Toutes les combinaisons sont possibles aux exceptions suivantes :
 - les variables de type *chaîne de caractères* qui n'existent que pour les genres
   scalaires et tableaux mais pas sur les éléments du maillage (pour
   des raisons de performances).
 - Les variables de dimension 2 ne peuvent pas avoir de support (il
-  n'est pas possible d'avoir des variables 2D aux mailles par exemple.
+  n'est pas possible d'avoir des variables 2D aux mailles par exemple).
 	
-Le tableau suivant donne quelques exemples de variables:
+Le tableau suivant donne quelques exemples de variables :
 
 Nom C++                           | Description
 ----------------------------------|------------
@@ -143,7 +143,7 @@ une variable de type réel aux noeuds appelée \c NodePressure.
 </module>
 ```
 
-Les attributs suivants sont disponibles:
+Les attributs suivants sont disponibles :
 
 <table>
 <tr>
@@ -172,7 +172,7 @@ sont réservées pour %Arcane.
 <td> **item-kind** </td>
 <td>support de la variable. Les valeurs possibles sont  \c node, \c
 face, \c cell ou \c none. La valeur \c none indique qu'il ne s'agit
-pas d'une variable du maillage. A noter qu'il n'est pas (encore)
+pas d'une variable du maillage. \`A noter qu'il n'est pas (encore)
 possible de déclarer dans le fichier axl les variables ayant comme
 support des particules (Particle) ou liens (Link).
 </td>
@@ -199,7 +199,7 @@ ne sont pas supportés pour les variables du maillage.
 lors d'un arrêt du code. Dans ce cas, les valeurs sauvegardées seront,
 bien entendu, relues lors d'une reprise d'exécution. Certaines
 variables recalculées n'ont pas besoin d'être sauvegardées ; dans ce
-cas l'attribut *dump* vaut *fals*e. C'est le cas lorsque la valeur
+cas l'attribut *dump* vaut *false*. C'est le cas lorsque la valeur
 d'une variable n'est pas utile d'une itération à l'autre.
 </td>
 </tr>
@@ -266,7 +266,7 @@ cout << m_times[0];        // imprime la valeur du premier élément
 
 **Variables scalaires sur le maillage**
 	
-Il s'agit des variables sur les éléments du maillages (noeuds,
+Il s'agit des variables sur les éléments du maillage (noeuds,
 faces ou mailles) avec une valeur par élément. Ces variables sont
 définies par la classe template \arcane{MeshVariableScalarRefT}.
 
@@ -277,7 +277,7 @@ pour récupérer une référence sur le type de la variable pour un
 en argument un itérateur sur un élément du maillage.
 
 Les grandeurs se déclarent et s'utilisent de manière similaire
-quels que soient le type d'élément du maillage. Elles sont dimensionnées
+quel que soient le type d'élément du maillage. Elles sont dimensionnées
 automatiquement lors de l'initialisation au nombre d'éléments du
 maillage du genre de la variable.
 
@@ -318,13 +318,13 @@ Arcane::VariableCellArrayReal m_temperature = ...;
 m_temperature.resize(3); // Chaque maille aura 3 valeurs de temperature
 ENUMERATE_CELL(i,allCells()) {
   m_volume[i][0] = 2.0;        // Affecte la valeur 2.0 à la première temperature de la maille courante
-  cout << m_volume[i][1];      // Imprime la 2ème température de la maille courante
+  cout << m_volume[i][1];      // Imprime la 2-ème température de la maille courante
 
   // il est possible de faire les mêmes opérations avec la maille
   // ATTENTION c'est moins performant
   Cell cell = *i;            // Déclare une référence à une maille.
   m_volume[cell][0] = 2.0;   // Affecte la valeur 2.0 à la première temperature de la maille 'cell'
-  cout << m_volume[cell][1]; // Imprime la 2ème température de la maille 'cell'
+  cout << m_volume[cell][1]; // Imprime la 2-ème température de la maille 'cell'
 }
 ```
 

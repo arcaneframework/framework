@@ -7,10 +7,10 @@ Cette page décrit la gestion des boucles sur les entités des matériaux et des
 Dans le reste de cette page, on utilise le terme générique \a
 composant pour décrire un matériau ou un milieu.
 
-Les entités d'un composant peuvent se répartir en deux parties: les
+Les entités d'un composant peuvent se répartir en deux parties : les
 entités pures et les entités impures. Par définition, les entités qui
 ne sont pas pures sont impures. La notion de pure varie suivant le
-type du composant:
+type du composant :
 - pour un milieu, une entité est pure s'il n'y a qu'un milieu dans
 cette entité.
 - pour un matériau, une entité est pure s'il n'y a qu'un
@@ -28,7 +28,7 @@ composant de manière globale ou par partie (pure/impure). Elle peut remplacer l
 macros ENUMERATE_COMPONENTCELL(),
 ENUMERATE_MATCELL() et ENUMERATE_ENVCELL().
 
-Les valeurs suivantes sont disponibles pour l'itération:
+Les valeurs suivantes sont disponibles pour l'itération :
 
 ENUMERATE_COMPONENTITEM(MatCell,icell,container) avec container de
 type IMeshMaterial* ou MatCellVector.
@@ -64,7 +64,7 @@ vectorielles ne sont supportées que sur les milieux (mais pas encore sur les
 matériaux).
 
 Pour pouvoir utiliser la vectorisation sur les composants, il faut
-inclure le fichier suivant:
+inclure le fichier suivant :
 
 ```cpp
 #include <arcane/materials/ComponentSimd.h>
@@ -74,7 +74,7 @@ using namespace Arcane::Materials;
 
 Il est nécessaire d'utiliser le mécanisme des lambda du C++11 pour
 itérer sur les composants via des itérateurs vectoriels. Cela se fait
-via la macro suivante:
+via la macro suivante :
 
 ```cpp
 ENUMERATE_COMPONENTITEM_LAMBDA(){
@@ -87,11 +87,11 @@ cette macro.
 
 \note Ce mécanisme est expérimental et pourra évoluer par la suite.
 
-Par exemple, avec les déclarations suivantes des variables:
+Par exemple, avec les déclarations suivantes des variables :
 
 \snippet MeshMaterialTesterModule.cc SampleEnumerateVariableDeclaration
 
-Il est possible d'utiliser les boucles vectorielles comme suit:
+Il est possible d'utiliser les boucles vectorielles comme suit :
 
 \snippet MeshMaterialTesterModule.cc SampleEnumerateSimdComponentItem
 
@@ -101,7 +101,7 @@ relations entre les itérations. En particulier, si des opérations non
 associatives telles que des sommes sur des réels sont utilisées,
 alors le résultat peut varier entre deux exécutions.
 
-\note L'implémentation actuelle comporte plusieurs limitations:
+\note L'implémentation actuelle comporte plusieurs limitations :
 - Il n'est pas encore possible d'utiliser ces énumérateurs avec
 les boucles concurrentes (voir page \ref arcanedoc_materials_manage_concurrency).
 - Pour le SIMD, il faut obligatoirement utiliser les vues.

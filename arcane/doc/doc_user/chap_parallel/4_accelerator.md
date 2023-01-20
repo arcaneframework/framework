@@ -1,6 +1,6 @@
 # Utilisation des accélérateurs (GPU) {#arcanedoc_parallel_accelerator}
 
-<!-- présente briévement l'utilisation des accélérateurs dans %Arcane. -->
+<!-- présente brièvement l'utilisation des accélérateurs dans %Arcane. -->
 
 [TOC]
 
@@ -9,7 +9,7 @@ développement et n'est pas figée. De plus il ne faut pas utiliser les
 classes autres que celles documentées dans cette page.
 
 On appelle accélérateur un co-processeur dedié différent du processeur
-principal utilisé pour exécuté le code de calcul.
+principal utilisé pour exécuter le code de calcul.
 
 L'API %Arcane pour gérer les accélérateurs s'inspire des bibliothèques
 telles que [RAJA](https://github.com/LLNL/RAJA) ou
@@ -19,15 +19,15 @@ besoins spécifiques de %Arcane.
 \note L'implémentation actuelle supporte uniquement comme accélérateur les
 cartes graphiques NVidia.
 
-Le but de L'API est:
+Le but de L'API est :
 
-- pouvoir choisir dynamiquement où sera exécuté le code: CPU ou
+- pouvoir choisir dynamiquement où sera exécuté le code : CPU ou
   accélérateur (ou les deux à la fois)
 - avoir un code source indépendant du compilateur
 
 Le principe de fonctionnement est l'exécution de noyaux de calcul
 déportés. Le code est exécuté par défaut sur le CPU (l'hôte) et
-certains parties du calcul sont déportés sur les accélérateurs. Ce
+certaines parties du calcul sont déportés sur les accélérateurs. Ce
 déport se fait via des appels spécifiques.
 
 ## Utilisation dans Arcane {#arcanedoc_parallel_accelerator_usage}
@@ -44,7 +44,7 @@ sont:
   noyau de calcul) associée à une file d'exécution.
 
 Il existe deux possibilités pour utiliser les accélérateurs dans
-Arcane:
+Arcane :
 - via une instance de Arcane::Accelerator::IAcceleratorMng créé et
   initialisée par %Arcane au moment du lancement de l'exécutable.
 - via une instgance de Arcane::Accelerator::Runner créée et
@@ -55,7 +55,7 @@ Arcane:
 Il est possible pour tout module de récupérer une implémentation de
 l'interface Arcane::Accelerator::IAcceleratorMng via la méthode
 Arcane::AbstractModule::acceleratorMng(). Le code suivant permet par
-exemple d'utiliser les accélérateurs depuis un point d'entrée:
+exemple d'utiliser les accélérateurs depuis un point d'entrée :
 
 ```cpp
 // Fichier à include tout le temps
@@ -93,7 +93,7 @@ class MyModule
 ### Utilisation via une instance spécifique de 'Runner' {#arcanedoc_parallel_accelerator_runner}
 
 L'objet principal est la classe Arcane::Accelerator::Runner. Il est
-possible de créér plusieurs instances de cet objet Arcane::Accelerator::Runner.
+possible de créer plusieurs instances de cet objet Arcane::Accelerator::Runner.
 
 \note Actuellement, les méthodes de Arcane::Accelerator::Runner ne
 sont pas thread-safe.
@@ -105,7 +105,7 @@ d'exécution est Arcane::Accelerator::eExecutionPolicy::Sequential, ce
 qui signifie que les noyaux de calcul seront exécutés en séquentiel. 
 
 Il est aussi possible d'initialiser automatiquement une instance de cette
-classe en fonction des arguments de la ligne de commande:
+classe en fonction des arguments de la ligne de commande :
 
 ```cpp
 #include "arcane/accelerator/RunQueue.h"
@@ -164,7 +164,7 @@ utiliser les accélérateurs ainsi que les fichiers qui seront compilés
 pour les accélérateurs. Seuls les fichiers utilisant des commandes
 (RUNCOMMAND_LOOP ou RUNCOMMAND_ENUMERATE) ont besoin d'être compilés
 pour les accélérateurs. Pour cela, %Arcane définit les fonctions
-CMake suivantes:
+CMake suivantes :
 
 - **arcane_accelerator_enable()** qui doit être appelé vant les autres
   fonctions pour détecter l'environnement de compilation pour accélérateur
@@ -180,11 +180,11 @@ Si %Arcane est compilé en environnement CUDA, la variable CMake
 
 Le choix de l'environnement d'exécution par défaut
 (Arcane::Accelerator::IAcceleratorMng::defaultRunner()) est déterminé
-par la ligne de commande:
+par la ligne de commande :
 
 - Si l'option `AcceleratorRuntime` est spécifiée, on utilise ce
   runtime. Actuellement la seule valeur possible est `cuda`. Par
-  exemple:
+  exemple :
   ```sh
   MyExec -A,AcceleratorRuntime=cuda data.arc
   ```
@@ -197,8 +197,8 @@ par la ligne de commande:
 
 Les accélérateurs ont en général leur propre mémoire qui est
 différente de celle de l'hôte. Il est donc nécessaire de spécifier
-comment seront utiliser les données pour gérer les éventuels
-transferts entre les mémoire. Pour cela %Arcane fournit un mécanisme
+comment seront utilisées les données pour gérer les éventuels
+transferts entre les mémoires. Pour cela %Arcane fournit un mécanisme
 appelé une vue qui permet de spécifier pour une variable ou un tableau
 s'il va être utilisé en entrée, en sortie ou les deux.
 
@@ -249,16 +249,16 @@ une fonction lambda du C++11 (TODO: ajouter référence) et qui sera
 déporté sur accélérateur. Ces macros s'utilisent via l'opérateur
 'operator<<' sur une commande (Arcane::Accelerator::RunCommand). Le
 code après la macro est un code identique à celui d'une boucle C++
-classique avec les modifications suivantes:
+classique avec les modifications suivantes :
 
 - les accolades sont obligatoires
 - il faut ajouter un `;` après la dernière accolade.
 - le corps d'une lambda est une fonction et pas une boucle. Par
-  conséquent, il n'est pas possible d'utiliser les mot clés tels que
+  conséquent, il n'est pas possible d'utiliser les mots clés tels que
   `continue` ou `break`. Le mot clé `return` est disponible et donc
   aura le même effet que `continue` dans une boucle.
 
-Par exemple:
+Par exemple :
 
 ```cpp
 Arcane::Accelerator::RunCommand& command = ...
@@ -282,7 +282,7 @@ command << RUNCOMMAND_ENUMERATE(Cell,icell,my_group)
 Lorsque'un noyau de calcul est déporté sur accélérateur, il ne faut
 pas accéder à la mémoire associée aux vues pendant l'exécution sous
 peine de plantage. En général cela ne peut se produire que lorsque les
-Arcane::Accelerator::RunQueue sont asynchrones. Par exemple:
+Arcane::Accelerator::RunQueue sont asynchrones. Par exemple :
 
 ```cpp
 #include "arcane/accelerator/Views.h"
@@ -321,7 +321,7 @@ classiques du C++
 ### Appel d'autres fonctions dans les lambda {#arcanedoc_parallel_accelerator_callslambda}
 
 Dans une lambda prévue pour être déportée sur accélérateur, on ne peut
-appeler que:
+appeler que :
 
 - des méthodes de classe qui sont **publiques**
 - qui fonctions qui sont `inline`

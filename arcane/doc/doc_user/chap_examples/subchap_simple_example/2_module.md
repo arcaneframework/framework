@@ -44,7 +44,7 @@ D'abord, voyons le fichier `.axl` :
 
   <options>
     <simple name="nSteps" type="integer" default="10">
-      <description>Nombre de boucle à effectuer.</description>
+      <description>Nombre de boucles à effectuer.</description>
     </simple>
   </options>
 
@@ -126,7 +126,7 @@ ____
 #include <arcane/ITimeLoopMng.h>
 #include "SayHello_axl.h"
 ```
-Ce premier `#include` permet d'include les fonctions pour gérer la boucle en temps (par exemple `stopComputeLoop()`).
+Ce premier `#include` permet d'inclure les fonctions pour gérer la boucle en temps (par exemple `stopComputeLoop()`).
 Le second `#include` est le fichier généré avec le `.axl`.
 
 ____
@@ -142,7 +142,7 @@ ____
 class SayHelloModule
 : public ArcaneSayHelloObject
 ```
-On définie la classe `SayHelloModule` qui sera utilisée par %Arcane et qui hérite de `ArcaneSayHelloObject`. `ArcaneSayHelloObject` est définie dans `SayHello_axl.h` et contient les méthodes que l'on pourra override et les variables/options que l'on pourra utiliser.
+On définit la classe `SayHelloModule` qui sera utilisée par %Arcane et qui hérite de `ArcaneSayHelloObject`. `ArcaneSayHelloObject` est définie dans `SayHello_axl.h` et contient les méthodes que l'on pourra override et les variables/options que l'on pourra utiliser.
 
 ____
 

@@ -10,14 +10,14 @@ PAS lorsque le multi-threading (que ce soit avec le mécanisme des
 tâches ou d'échange de message) est actif.
 
 Le profiling dans %Arcane fonctionne sur un principe
-d'échantillonage: à interval régulier, le code est interrompu et on
+d'échantillonage : à interval régulier, le code est interrompu et on
 regarde dans quelle méthode on se trouve.  Si l'interval
 d'échantillonage est petit et si le code est exécuté pendant
 suffisamment longtemps, on obtient une bonne représentation
 statistique de la proportion de temps passé dans les méthodes les
 plus couteuses. Les méthodes par échantillonage ne nécessitent pas
 l'instrumentation du code et donc ralentissent très peu
-l'éxecution. Par contre, elles ne permettent pas de savoir par
+l'exécution. Par contre, elles ne permettent pas de savoir par
 exemple combien de fois une méthode est appelée, ni de connaitre
 facilement le graphe d'appel. Pour cela, il est
 nécessaire d'utiliser des mécanismes comme gprof avec le suppport du
@@ -32,10 +32,10 @@ l'ordre de 20Hz et donc il faut faire tourner le code au moins 1
 minutes pour avoir des résultats significatifs
 - \a Papi. Cela permet d'avoir un profiling très précis, utilisant
 les compteurs hardware du processeur. On utilise pour cela la
-bibliothèque libre PAPI. Cela ne fonctionne qu'avec les noyaus Linux
+bibliothèque libre PAPI. Cela ne fonctionne qu'avec les noyaux Linux
 récents (2.6.32 ou +) ou les noyaux patchés et il faut que %Arcane
 soit compilé avec ce support. Dans ce mode l'échantillonage est
-donnée en nombre de cycle d'horloge du processeur. La valeur par
+donnée en nombre de cycles d'horloge du processeur. La valeur par
 défaut est de 500000 cycles. Pour un processeur à 3GHz, cela fait
 donc 6000 échantillons par seconde. Il est possible de changer le
 nombre de cycles via la variable d'environnement
@@ -50,7 +50,7 @@ d'échantillonage en fonction de cela.
 Lorsqu'il est actif, le profiling commence à la première itération et s'arrête
 à la dernière itération de l'exécution. En parallèle, le profiling se fait
 pour chaque processeur et %Arcane affiche alors dans le
-listing de chaque processeur les informations de profiling de la manière suivante:
+listing de chaque processeur les informations de profiling de la manière suivante :
 
 ```log
 *I-Internal    PROCESS_ID = 17977

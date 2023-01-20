@@ -24,8 +24,8 @@ les informations dont a besoin notre service.
 
 Autre chose à noter : la valeur par défaut `default=""`.
 Mettre une valeur par défaut vide nous permet de déterminer si l'utilisateur
-a spécifier une valeur ou non dans le `.arc`.
-Plus tard, dans le module, on pourrai dire que s'il n'y a pas de valeurs sur les
+a spécifié une valeur ou non dans le `.arc`.
+Plus tard, dans le module, on pourrait dire que s'il n'y a pas de valeurs sur les
 deux options, alors c'est que l'utilisateur ne veut simplement pas de sortie csv.
 (c'est la méthode utilisée dans QAMA).
 

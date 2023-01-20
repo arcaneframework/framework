@@ -3,9 +3,9 @@
 Comme expliqué précédemment, le descripteur de module/service est un fichier
 ayant l'extension `.axl` qui accompagne les modules et les services et qui
 décrit les éléments suivants :
-- la où les interfaces qu'il implémente (**service uniquement**) ,
+- là où les interfaces qu'il implémente (**service uniquement**),
 - ses variables,
-- ses points d'entrée (**module uniquement**) ,
+- ses points d'entrée (**module uniquement**),
 - ses options de configuration.
 
 Ce sous-chapitre va donc rentrer dans les détails et expliquer ces trois
@@ -60,7 +60,7 @@ Sommaire de ce sous-chapitre :
   Présente la notion de point d'entrée dans %Arcane.
 
 3. \subpage arcanedoc_core_types_axl_caseoptions <br>
-  Explique comment paramètrer les modules avec des options utilisateurs fournies 
+  Explique comment paramétrer les modules avec des options utilisateurs fournies 
   dans le jeu de données.
 
 ____

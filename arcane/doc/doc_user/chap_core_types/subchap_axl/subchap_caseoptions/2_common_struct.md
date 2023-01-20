@@ -3,7 +3,7 @@
 [TOC]
 
 Quelle que soit l'option, l'élément la définissant doit comporter les
-deux attributs suivants:
+deux attributs suivants :
 
 <table>
 <tr>
@@ -38,18 +38,18 @@ dans le jeu de données.</td>
 <tr>
 <td>`minOccurs`</td>
 <td>optionnel</td>
-<td>entier qui spécifie le nombre minimum d'occurences
+<td>entier qui spécifie le nombre minimum d'occurrences
 possible pour l'élément. Si cette valeur vaut zéro, l'option peut être
 omise même si l'attribut `default` est absent. Si cet attribut
-est absent, le nombre minimum d'occurence est 1.</td>
+est absent, le nombre minimum d'occurrence est 1.</td>
 </tr>
 <tr>
 <td>`maxOccurs`</td>
 <td>optionnel</td>
 <td>entier qui spécifie le nombre maximum d'occurences
-possible pour l'élément. Cette valeur doit être supérieur ou égal à `minOccurs`. La valeur spéciale `unbounded` signifie que le
-nombre maximum d'occurences n'est pas limité. Si cet attribut est
-absent, le nombre maximum d'occurence est 1.</td>
+possible pour l'élément. Cette valeur doit être supérieure ou égale à `minOccurs`. La valeur spéciale `unbounded` signifie que le
+nombre maximum d'occurrences n'est pas limité. Si cet attribut est
+absent, le nombre maximum d'occurrence est 1.</td>
 </tr>
 </table>
   
@@ -87,7 +87,7 @@ suivants :
 <td>`defaultvalue`</td>
 <td>0..infini</td>
 <td> permet d'indiquer une valeur par défaut pour une catégorie
-donnée. Par exemple:
+donnée. Par exemple :
 
 ```xml
 <simple name="simple-real" type="real">

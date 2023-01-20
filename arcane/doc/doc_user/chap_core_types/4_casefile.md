@@ -8,7 +8,7 @@ Ce chapître décrit la structure d'un jeu de données. Le jeu de
 données est un fichier au format XML qui contient les valeurs
 permettant de paraméter l'exécution d'un code de calcul.
 
-Voici un exemple de jeu de donnée en anglais:
+Voici un exemple de jeu de donnée en anglais :
 
 ```xml
 <?xml version="1.0"?>
@@ -34,7 +34,7 @@ Voici un exemple de jeu de donnée en anglais:
 </case>
 ```
 
-Un jeu de données se compose de quatres parties:
+Un jeu de données se compose de quatres parties :
 - l'élément <arcane> permettant entre autre de configurer la boucle
   en temps et les modules actifs.
 - l'élément maillage (<mesh> ou <maillage>) permettant de décrire le
@@ -66,7 +66,7 @@ services, pas dans les balises <arcane> ou <maillage>/<mesh>.
 Cet élément contient les informations sur la boucle en temps
 utilisée et la liste des modules actifs. Le contenu de cet élément
 est la première chose lue dans le jeu de données. Les éléments
-suivants sont possibles:
+suivants sont possibles :
 
 ```xml
 <arcane>
@@ -84,7 +84,7 @@ suivants sont possibles:
 </arcane>
 ```
 
- Le tableau suivant donne la liste des éléments possibles:
+Le tableau suivant donne la liste des éléments possibles :
 
 <table>
 <tr>
@@ -119,7 +119,7 @@ une boucle en temps disponible dans le fichier de configuration du code.
 <td><b>modules</b></td>
 <td><b>modules</b></td>
 <td> Liste des modules avec leur état d'activation. Il s'agit d'une
-liste d'éléments <module> comme suit:
+liste d'éléments <module> comme suit :
 
 ```xml
 <module name="Module1" active='true' />
@@ -132,7 +132,7 @@ liste d'éléments <module> comme suit:
 <td><b>services</b></td>
 <td><b>services</b></td>
 <td> Liste de services singletons avec leur état d'activation (qui vaut *vrai* par défaut). Il s'agit d'une
-liste d'éléments <service> comme suit:
+liste d'éléments <service> comme suit :
 
 ```xml
 <service name="Service1" active='true' />
@@ -148,8 +148,8 @@ Dans l'exemple précédent, les services de nom 'Service1' et 'Service3' seront 
 <td><b>configuration</b></td>
 <td> Liste de paramêtres de configuration. Ces paramêtres ne sont pas
 lus par %Arcane mais peuvent être utilisés par exemple par la procédure
-de lancement du code. Chaque paramêtre est de la forme:
-liste d'éléments <module> comme suit:
+de lancement du code. Chaque paramêtre est de la forme :
+liste d'éléments <module> comme suit :
 
 ```xml
 <parameter name="Param1" value='value1' /> <!-- Anglais -->

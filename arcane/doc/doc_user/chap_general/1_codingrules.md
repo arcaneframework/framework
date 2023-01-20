@@ -11,7 +11,7 @@ règles de codages.
 
 - le langage utilisé est le C++20
 - l'encodage des fichiers est obligatoire 'UTF-8' avec le BOM au début
-  du fichier. La première ligne de chaque fichier doit être comme suit:
+  du fichier. La première ligne de chaque fichier doit être comme suit :
 ```cpp
 // -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 ```
@@ -62,7 +62,7 @@ functionExample(int argc,char** argv)
 ## Classes {#arcanedoc_general_codingrules_classe}
 
 - Les noms des classes (\c class) commencent par une
-  majusucule et continuent par des minuscules. Si le nom est composé de
+  majuscule et continuent par des minuscules. Si le nom est composé de
   plusieurs mots logiques, la première lettre de chaque nouveau mot est
   en majuscule. Par exemple :
   - \c Component
@@ -85,7 +85,7 @@ désigner à la fois les fonctions et les méthodes de classe.
   chaque nouveau mot est en majuscule. Par exemple :
    - \c numberOfElement()
    - \c assign()
-- si le nom de la méthode correspond à la notion de propriété (c'est à dire
+- si le nom de la méthode correspond à la notion de propriété (c'est-à-dire
   équivalent sémantiquement à un champ de la classe) de nom \a value, l'accesseur doit
   être le nom de la propriété (\a value()) et la méthode pour
   changer la valeur doit être \a setValue(). <strong>L'accesseur ne doit
@@ -93,7 +93,7 @@ désigner à la fois les fonctions et les méthodes de classe.
   préfixer l'accesseur par \a is. Par exemple \a isEmpty().
 
 - Pour éviter toute ambiguité, tous les noms sont au <b>singulier</b>
-- La définition des fonctions se fait sur au moins deux lignes:
+- La définition des fonctions se fait sur au moins deux lignes :
   - la première comprend le type de retour et éventuellement
     le nom de la classe s'il s'agit d'une méthode.
   - la deuxième comprend obligatoirement le nom de la fonction.
@@ -127,7 +127,7 @@ function1(int argc,char** argv)
 
  Les éléments du tableau ne peuvent pas être modifiés.
 
- En mode débug, une vérification de débordement est effectuée lors de l'accès
+ En mode debug, une vérification de débordement est effectuée lors de l'accès
  à l'opérateur operator[]().
  */
 template<typename T>

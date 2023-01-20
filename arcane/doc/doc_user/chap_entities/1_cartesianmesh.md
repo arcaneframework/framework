@@ -40,7 +40,7 @@ pour spécifier la direction, 0 correspondant à la direction X, 1 à la
 direction Y et 2 à la direction Z. Pour des raisons de lisibilité, il
 est conseillé d'utiliser le type énuméré si possible.
 Par exemple, pour récupérer les infos
-sur les mailles de la direction Y:
+sur les mailles de la direction Y :
 
 ```cpp
 using namespace Arcane;
@@ -54,7 +54,7 @@ itération à l'autre ou lorsque le maillage change.
 
 Une fois une direction récupérée, il est possible d'itérer sur toutes
 les entités de la direction et pour les mailles par exemple d'avoir
-la maille avant et après:
+la maille avant et après :
 
 ```cpp
 using namespace Arcane;
@@ -84,7 +84,7 @@ ENUMERATE_NODE(inode,node_dm.allNodes()){
 
 Pour les faces, l'écriture est similaire mais au lieu de récupérer
 la face avant et après la face courante, on peut récupérer la maille
-avant et après:
+avant et après :
 
 ```cpp
 using namespace Arcane;
@@ -115,7 +115,7 @@ ENUMERATE_CELL(icell,cell_dm.allCells()){
 ```
 
 De la même manière, il est aussi possible de connaitre la face devant et derrière la
-maille dans une direction donnée (cela fonctionne aussi en 3D):
+maille dans une direction donnée (cela fonctionne aussi en 3D) :
 
 ```cpp
 using namespace Arcane;
@@ -129,7 +129,7 @@ ENUMERATE_CELL(icell,cell_dm.allCells()){
 ```
 
 Pour itérer sur toutes les directions d'un maillage, il est
-possible de boucler comme suit:
+possible de boucler comme suit :
 
 ```cpp
 using namespace Arcane;
@@ -151,14 +151,14 @@ grille via Arcane::CellDirectionMng::subDomainOffset(). Cette numérotation
 commence à 0.
 
 Il est aussi possible de connaître le
-nombre de maille propre du sous-domaine dans une direction donnée via
+nombre de mailles propre du sous-domaine dans une direction donnée via
 Arcane::CellDirectionMng::ownNbCell(). Il est aussi possible de connaître
 l'offset dans la grile de la première maille propre via
 Arcane::CellDirectionMng::ownCellOffset().
 
 \warning Ces informations ne sont accessibles que si le maillage a
 été généré via le générateur spécifique cartésien. En particulier,
-elles ne sont pas accessible si le maillage est issu d'un
+elles ne sont pas accessibles si le maillage est issu d'un
 fichier. Pour plus d'informations, se reporter à la description de
 ces méthodes.
 
@@ -167,11 +167,11 @@ ces méthodes.
 Il est possible en 2D d'avoir accès aux mailles autour d'un noeud et aux noeuds de la maille sans
 passer par les connectivités directionnelles. Cela se fait via
 l'objet Arcane::CartesianConnectivity qui est retourné par l'appel à
-Arcane::ICartesianMesh::connectivity(). Par exemple:
+Arcane::ICartesianMesh::connectivity(). Par exemple :
 
 \snippet CartesianMeshTesterModule.cc SampleNodeToCell
 
-Et de la même manière pour les mailles:
+Et de la même manière pour les mailles :
 
 ```cpp
 using namespace Arcane;
@@ -185,7 +185,7 @@ ENUMERATE_CELL(icell,allCells()){
 }
 ```
 
-Ces connectivités sont aussi accessible en
+Ces connectivités sont aussi accessibles en
 3D. La nomemclature est la même que pour les connectivités 2D. Le
 préfixe topZ est utilisé pour les noeuds du dessus de la même suivant
 la direction Z. Pour ceux du dessous, il n'y a pas de préfixe et donc
@@ -201,10 +201,10 @@ ENUMERATE_CELL(icell,allCells()){
   Arcane::Node n2 = cc.upperRight(c); // Noeud en dessous en Z, en haut à droite
   Arcane::Node n3 = cc.lowerRight(c); // Noeud en dessous en Z, en bas à droite
   Arcane::Node n4 = cc.lowerLeft(c); // Noeud en dessous en Z, en bas à gauche
-  Arcane::Node n5 = cc.topZUpperLeft(c); // Noeud au dessus en Z, en haut à gauche
-  Arcane::Node n6 = cc.topZUpperRight(c); // Noeud au dessus en Z, en haut à droite
-  Arcane::Node n7 = cc.topZLowerRight(c); // Noeud au dessus en Z,en bas à droite
-  Arcane::Node n8 = cc.topZLowerLeft(c); // Noeud au dessus en Z,en bas à gauche
+  Arcane::Node n5 = cc.topZUpperLeft(c); // Noeud au-dessus en Z, en haut à gauche
+  Arcane::Node n6 = cc.topZUpperRight(c); // Noeud au-dessus en Z, en haut à droite
+  Arcane::Node n7 = cc.topZLowerRight(c); // Noeud au-dessus en Z, en bas à droite
+  Arcane::Node n8 = cc.topZLowerLeft(c); // Noeud au-dessus en Z, en bas à gauche
 }
 ```
 

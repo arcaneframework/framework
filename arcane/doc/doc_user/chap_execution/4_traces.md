@@ -55,7 +55,7 @@ traces d'informations (Arcane::TraceAccessor::info()) et de débug
 (Arcane::TraceAccessor::debug()), le comportement dépend de
 l'exécution séquentielle ou parallèle et si ARCANE est compilée en
 mode débug ou optimisé:
-- en mode optimisé, les traces de débug ne sont jamais actives. De
+- en mode optimisé, les traces de debug ne sont jamais actives. De
 plus, la méthode `debug()` est remplacée par une méthode vide ce qui
 fait qu'elle ne prend aucune ressource CPU.
 - en mode optimisé, par défaut, les traces d'informations ne sont
@@ -70,7 +70,7 @@ Les traces de log sont écrites dans un fichier dans le répertoire
 'listing', sous le nom 'log.%n', avec '%n' le numéro du
 sous-domaine.
 
-Il existe 4 méthodes pour la gestion parallèle des traces:
+Il existe 4 méthodes pour la gestion parallèle des traces :
 - \b Arcane::TraceAccessor::pinfo() pour les traces d'informations,
 - \b Arcane::TraceAccessor::pwarning() pour les traces d'avertissement,
 - \b Arcane::TraceAccessor::perror() pour les traces d'erreur,
@@ -99,7 +99,7 @@ est \a Arccore::Trace::Medium.
 ```cpp
 Arcane::TraceAccessor::debug(Arccore::Trace::Medium) << "Trace debug moyen"
 Arcane::TraceAccessor::debug() << "Trace debug moyen"
-Arcane::TraceAccessor::debug(Arccore::Trace::Low)    << "Trace debug affiché dès que le mode débug est utilisé"
+Arcane::TraceAccessor::debug(Arccore::Trace::Low)    << "Trace debug affiché dès que le mode debug est utilisé"
 ```
 
 ## Configuration des traces {#arcanedoc_execution_traces_config}
@@ -108,7 +108,7 @@ Il est possible de configurer le niveau de debug souhaité et
 l'utilisation des traces d'informations pour chaque module
 dans le fichier de configuration de ARCANE. Ce fichier de configuration 
 utilisateur permet de modifier le comportement
-par défaut de certains éléments de l'architecture comme par exemple
+par défaut de certains éléments de l'architecture tels que
 l'affichage des traces. Il est nommé <em>config.xml</em> et 
 se trouve dans le répertoire <tt>.arcane</tt> du compte de l'utilisateur
 qui lance l'exécution.
@@ -120,8 +120,8 @@ Cet élément doit être fils de l'élément \c traces.
 - \b name spécifie le nom du module concerné
 - \b info vaut \e true s'il faut afficher les traces d'informations,
 \e false sinon.
-- \b debug vaut \e none, \e low, \e medium ou \e high suivant le niveau de débug souhaité.
-  Les traces de débug d'un niveau supérieur à celui demandé ne sont
+- \b debug vaut \e none, \e low, \e medium ou \e high suivant le niveau de debug souhaité.
+  Les traces de debug d'un niveau supérieur à celui demandé ne sont
   pas affichées. Le niveau \e high correspond à toutes les traces.
 
 Voici un exemple de fichier : 
@@ -138,11 +138,11 @@ Voici un exemple de fichier :
 ```
 
 Dans l'exemple, l'utilisateur demande à ce que les traces d'informations 
-pour tous les modules soient par défaut activées et pas les traces de debug.
+pour tous les modules soient par défaut activés et pas les traces de debug.
 Pour le module Hydro, sont affichées les traces d'informations et les traces 
 de debug jusqu'au niveau \e medium.
 Pour la classe de message ParallelMng, on affiche les infos et le
-temps écoulé mais pas le nom de la classe du message (c'est à dire
+temps écoulé mais pas le nom de la classe du message (c'est-à-dire
 le début de la ligne '*I-ParallelMng'.
 
 \note Quelle que soit la configuration, les traces de débug ne
@@ -151,7 +151,7 @@ sont pas disponibles en version optimisée complète.
 Il est possible de changer dynamiquement les informations d'une
 classe de message. Par exemple le code suivant permet depuis un module ou service de
 changer le niveau de verbosité et d'afficher le temps écoulé
-mais pas le nom de la classe de de message:
+mais pas le nom de la classe de message :
 
 ```cpp
 Arcane::ITraceMng* tm = traceMng();

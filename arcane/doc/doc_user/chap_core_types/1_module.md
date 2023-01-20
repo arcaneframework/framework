@@ -4,7 +4,7 @@
 
 Un module est un ensemble de **points d'entrée** et 
 de **variables**. Il peut posséder des options de configuration 
-qui permettent à l'utilisateur de paramètrer le module via le jeu de 
+qui permettent à l'utilisateur de paramétrer le module via le jeu de 
 données de la simulation.
 
 Un module est représenté par une classe et un fichier XML appelé 
@@ -65,7 +65,7 @@ class HydroModule
 ```
 
 L'exemple précédent montre que %Arcane impose que le constructeur du module 
-prenne un object de type \c ModuleBuildInfo en paramètre pour le transmettre
+prenne un objet de type \c ModuleBuildInfo en paramètre pour le transmettre
 à sa classe de base. %Arcane impose également la définition d'une méthode
 \c versionInfo() qui retourne le numéro de version de votre module.
 

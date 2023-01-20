@@ -46,8 +46,8 @@ référencer un service, sont présentées dans le document
 ## Descripteur de service {#arcanedoc_core_types_service_desc}
 
 Comme pour le module, le descripteur de service est un fichier XML ayant 
-l'extension ".axl". Il présente les caractéristiques du service:
-- la où les interfaces qu'il implémente,
+l'extension ".axl". Il présente les caractéristiques du service :
+- là où les interfaces qu'il implémente,
 - ses options de configuration,
 - ses variables.
 
@@ -141,7 +141,7 @@ class StiffenedGasEOSService
 ```
 
 L'exemple précédent montre que %Arcane impose que le constructeur d'un service 
-prenne un object de type \c ServiceBuildInfo en paramètre pour le transmettre
+prenne un objet de type \c ServiceBuildInfo en paramètre pour le transmettre
 à sa classe de base. On peut également constater que le service hérite
 de l'interface définissant le contrat du service.
 
@@ -172,7 +172,7 @@ permettent de définir la fonction de création.
 Il est toutefois possible d'enregistrer un service même si celui-ci ne possède pas
 de fichier axl. Cela se fait par la macro ARCANE_REGISTER_SERVICE(). Par exemple,
 pour enregistrer la class *MyClass* comme un service de sous-domaine de nom 'Toto', qui
-implémente l'interface 'IToto', on écrira:
+implémente l'interface 'IToto', on écrira :
 
 ```cpp
 ARCANE_REGISTER_SERVICE(MyClass,
