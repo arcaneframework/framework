@@ -140,6 +140,9 @@ namespace Arcane.Axl.Xsd
 
     public bool HasShapeDim { get { return !String.IsNullOrEmpty(shapedim); } }
     public bool HasDim { get { return !String.IsNullOrEmpty(dim); } }
+    public bool HasExtent { get { return HasExtent0 || HasExtent1; } }
+    public bool HasExtent0 { get { return !String.IsNullOrEmpty(extent0); } }
+    public bool HasExtent1 { get { return !String.IsNullOrEmpty(extent1); } }
 
     public void InitializeAndValidate ()
     {
@@ -164,17 +167,23 @@ namespace Arcane.Axl.Xsd
       // Vérifie que pour les variables matériaux ou milieux sont uniquement sur les mailles
       if ((IsMaterial || IsEnvironment) && itemkind != ItemKind.cell)
         _ThrowInvalid("material or environment variables are only valid with 'item-kind==cell'");
+      bool is_vector_datatype = datatype == DataType.real2 || datatype == DataType.real3;
+      bool is_matrix_datatype = datatype == DataType.real2x2 || datatype == DataType.real3x3;
 
       if (HasShapeDim) {
         if (itemkind == ItemKind.none)
           _ThrowInvalid("'shape-dim' is only valid for variables on mesh ('item_kind'!='none')");
         if (IsMaterial || IsEnvironment)
           _ThrowInvalid("'shape-dim' is invalid if 'environment'==true or 'material'==true");
-        if (datatype != DataType.real2 && datatype != DataType.real3 &&
-            datatype != DataType.real2x2 && datatype != DataType.real3x3 && datatype != DataType.real)
+        if (!is_vector_datatype && !is_matrix_datatype && datatype != DataType.real)
           _ThrowInvalid($"Invalid datatype '{datatype}'. Valid values are 'real', 'real2', 'real3', 'real2x2' or 'real3x3'");
       }
-
+      if (HasExtent && !HasShapeDim)
+        _ThrowInvalid($"'shape-dim' is required if 'extent0' or 'extent1' is present");
+      if (HasExtent1 && !HasExtent0)
+        _ThrowInvalid($"'extent0' is required if 'extent1' is present");
+      if (HasExtent && (is_matrix_datatype || is_vector_datatype))
+        _ThrowInvalid($"'extent0' or 'extent1' is incompatible with datatype 'real2', 'real3', 'real2x2' or 'real3x3'");
       _Initialize();
     }
 
@@ -219,6 +228,14 @@ namespace Arcane.Axl.Xsd
         md_var_name = "Matrix";
       }
       else if (datatype==DataType.real){
+        if (HasExtent0) {
+          static_shape = extent0 + ",";
+          md_var_name = "Vector";
+          if (HasExtent1){
+            static_shape += extent1 + ",";
+            md_var_name = "Matrix";
+          }
+        }
       }
       else
         _ThrowInvalid($"Invalid datatype '{datatype}'. Valid values are 'real', 'real2', 'real3', 'real2x2' or 'real3x3'");

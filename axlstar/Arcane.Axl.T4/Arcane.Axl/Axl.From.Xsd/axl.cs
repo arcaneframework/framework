@@ -941,6 +941,10 @@ namespace Arcane.Axl.Xsd {
         
         private string shapedimField;
         
+        private string extent0Field;
+        
+        private string extent1Field;
+        
         public variablesVariable() {
             this.flowField = Flow.inout;
         }
@@ -1284,6 +1288,28 @@ namespace Arcane.Axl.Xsd {
             }
             set {
                 this.shapedimField = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute(DataType="integer")]
+        public string extent0 {
+            get {
+                return this.extent0Field;
+            }
+            set {
+                this.extent0Field = value;
+            }
+        }
+        
+        /// <remarks/>
+        [System.Xml.Serialization.XmlAttributeAttribute(DataType="integer")]
+        public string extent1 {
+            get {
+                return this.extent1Field;
+            }
+            set {
+                this.extent1Field = value;
             }
         }
     }
