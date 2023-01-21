@@ -26,6 +26,9 @@
 <#  if (Service.HasTests) { #>
 #include "arcane/UnitTestServiceAdapter.h"
 <#  } #>
+<#  if (Service.HasMultiDimVariable) { #>
+#include "arcane/MeshMDVariableRef.h"
+<#  } #>
 
 #ifndef ARCANE_HAS_SPECIFIC_BASIC_SERVICE
 // Code pour les versions de Arcane avant la 3.8 qui ne possèdent pas les
@@ -42,7 +45,8 @@ using BasicMeshService = BasicService;
 /*---------------------------------------------------------------------------*/
 <#  if (Xml.LesserThanVersionOne) { #>
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
  
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -227,7 +231,7 @@ private:
 <#  } 
   	if (Xml.LesserThanVersionOne) { #>
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
  
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
