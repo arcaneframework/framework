@@ -24,20 +24,25 @@
 #include "arcane/ServiceRegisterer.h"
 #include "arcane/BasicModule.h"
 #include "arcane/ServiceInfo.h"
+<#  if (Module.HasMultiDimVariable) { #>
+#include "arcane/MeshMDVariableRef.h"
+<# } #>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 class ISubDomain;
 class IModule;
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 <#  if (Xml.LesserThanVersionOne) { #>
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
  
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -184,7 +189,7 @@ private:
 <#  } 
 	if (Xml.LesserThanVersionOne) { #>
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
  
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

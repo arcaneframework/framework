@@ -58,6 +58,16 @@ namespace Arcane.Axl.Xsd
           return new List<Xsd.variablesVariable> (variables);
       }
     }
+
+    public bool HasMultiDimVariable {
+      get {
+        foreach (var v in Variables)
+          if (v.HasShapeDim)
+            return true;
+        return false;
+      }
+    }
+
     public bool IsSingleton {
       get {
         return singleton;
