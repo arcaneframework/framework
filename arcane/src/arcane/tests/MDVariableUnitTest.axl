@@ -8,6 +8,7 @@
 <service name="MDVariableUnitTest" version="1.0" type="caseoption" parent-name="Arcane::BasicUnitTest" namespace-name="ArcaneTest">
   <interface name="Arcane::IUnitTest" inherited="false" />
   <variables>
+    <!-- Variables avec utilisation de 'internal-cpp-typename' -->
 
     <!-- Variable multi-dim 0D de 'Real' -->
     <variable field-name="scalar_var0d" name="TestCustomVar0D" data-type="real" item-kind="cell" dim="1"
@@ -40,6 +41,43 @@
     <!-- Variable multi-dim 1D de NumMatrix<Real,2,2> -->
     <variable field-name="matrix_var1d" name="TestCustomMatrixVar1D" data-type="real" item-kind="cell" dim="1"
               internal-cpp-typename="Arcane::MeshMatrixMDVariableRefT &lt; Arcane::Cell, Arcane::Real, 2, 2, Arcane::MDDim1 &gt;" />
-  </variables>
+
+
+    <!-- Variables avec type généré par axlstar' -->
+
+    <!-- Variable multi-dim 0D de 'Real' -->
+    <variable field-name="scalar_var0d_real" name="Test2CustomVar0D" data-type="real" item-kind="cell" shape-dim="0" />
+
+    <!-- Variable multi-dim 1D de 'Real' -->
+    <variable field-name="scalar_var1d_real" name="Test2CustomVar1D" data-type="real" item-kind="cell" shape-dim="1" />
+
+    <!-- Variable multi-dim 2D de 'Real' -->
+    <variable field-name="scalar_var2d_real" name="Test2CustomVar2D" data-type="real" item-kind="cell" shape-dim="2" />
+
+    <!-- Variable multi-dim 2D de 'Real' vue comme une variable 3D -->
+    <variable field-name="scalar_var2d_as_3d_real" name="Test2CustomVar2D" data-type="real" item-kind="cell" shape-dim="3" />
+
+    <!-- Variable multi-dim 0D de NumVector<Real,2> -->
+    <variable field-name="vector_var0d_real2" name="Test2CustomVectorVar0D" data-type="real2" item-kind="cell" shape-dim="0" />
+
+    <!-- Variable multi-dim 1D de NumVector<Real,3> -->
+    <variable field-name="vector_var1d_real3" name="Test2CustomVectorVar1D" data-type="real3" item-kind="face" shape-dim="1" />
+
+    <!-- Variable multi-dim 2D de NumVector<Real,4> -->
+    <variable field-name="vector_var2d_real4" name="Test2CustomVectorVar2D" data-type="real" item-kind="face" shape-dim="2" extent0="4" />
+
+    <!-- Variable multi-dim 0D de NumMatrix<Real,2,2> -->
+    <variable field-name="matrix_var0d_real2x2" name="Test2CustomMatrixVar0D" data-type="real2x2" item-kind="node" shape-dim="0" />
+
+    <!-- Variable multi-dim 1D de NumMatrix<Real,3,3> -->
+    <variable field-name="matrix_var1d_real3x3" name="Test2CustomMatrixVar1D" data-type="real3x3" item-kind="cell" shape-dim="1" />
+
+    <!-- Variable multi-dim 1D de NumMatrix<Real,2,6> -->
+    <variable field-name="matrix_var1d_real2x6" name="Test2CustomMatrix2x6Var1D" data-type="real" item-kind="cell" shape-dim="1" extent0="2" extent1="6"/>
+
+    <!-- Variable multi-dim 0D de NumMatrix<Real,3,2> -->
+    <variable field-name="matrix_var0d_real3x2" name="Test2CustomMatrix2x6Var0D" data-type="real" item-kind="cell" shape-dim="0" extent0="3" extent1="2"/>
+
+    </variables>
 
 </service>
