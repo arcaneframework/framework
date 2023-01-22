@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NumVector.h                                                 (C) 2000-2022 */
+/* NumVector.h                                                 (C) 2000-2023 */
 /*                                                                           */
 /* Vecteur de taille fixe de types numériques.                               */
 /*---------------------------------------------------------------------------*/
@@ -28,11 +28,9 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \internal
  * \brief Petit vecteur de taille fixe de N données numériques.
  *
- * \note Actuellement uniquement implémenté pour 2 ou 3 valeurs et pour le
- * type Real.
+ * \note Actuellement uniquement implémenté pour le type Real.
  *
  * \warning API en cours de définition. Ne pas utiliser en dehors de Arcane.
  *
@@ -43,7 +41,7 @@ namespace Arcane
 template <typename T, int Size>
 class NumVector
 {
-  static_assert(Size == 2 || Size == 3, "Valid values for Size are 2 or 3");
+  static_assert(Size > 1, "Size has to be strictly greater than 1");
   static_assert(std::is_same_v<T,Real>,"Only type 'Real' is allowed");
 
  public:
@@ -71,6 +69,35 @@ class NumVector
     m_values[0] = ax;
     m_values[1] = ay;
     m_values[2] = az;
+  }
+
+  //! Construit avec le quadruplet (a1,a2,a3,a4)
+  template <int S = Size, typename = std::enable_if_t<S == 4, void>>
+  constexpr ARCCORE_HOST_DEVICE NumVector(T a1, T a2, T a3, T a4)
+  {
+    m_values[0] = a1;
+    m_values[1] = a2;
+    m_values[2] = a3;
+    m_values[3] = a4;
+  }
+
+  //! Construit avec le quintuplet (a1,a2,a3,a4,a5)
+  template <int S = Size, typename = std::enable_if_t<S == 5, void>>
+  constexpr ARCCORE_HOST_DEVICE NumVector(T a1, T a2, T a3, T a4, T a5)
+  {
+    m_values[0] = a1;
+    m_values[1] = a2;
+    m_values[2] = a3;
+    m_values[3] = a4;
+    m_values[4] = a5;
+  }
+
+  //! Construit l'instance avec pour chaque composante la valeur \a v
+  template <bool = true>
+  explicit constexpr ARCCORE_HOST_DEVICE NumVector(const T (&v)[Size])
+  {
+    for (int i = 0; i < Size; ++i)
+      m_values[i] = v[i];
   }
 
   //! Construit l'instance avec pour chaque composante la valeur \a v
