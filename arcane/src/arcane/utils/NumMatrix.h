@@ -38,7 +38,7 @@ namespace Arcane
  * suffisante (par exemple vz() est uniquement accessible si la Size>=3.
  */
 template <typename T, int RowSize, int ColumnSize>
-class ARCANE_UTILS_EXPORT NumMatrix
+class NumMatrix
 {
   static_assert(RowSize > 1, "RowSize has to be strictly greater than 1");
   static_assert(ColumnSize > 1, "RowSize has to be strictly greater than 1");
