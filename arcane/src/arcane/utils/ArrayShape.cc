@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArrayShape.cc                                               (C) 2000-2022 */
+/* ArrayShape.cc                                               (C) 2000-2023 */
 /*                                                                           */
 /* Représente la forme d'un tableau.                                         */
 /*---------------------------------------------------------------------------*/
@@ -64,6 +64,36 @@ void ArrayShape::
 setDimensions(Span<const Int32> dims)
 {
   _set(dims.smallView());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool ArrayShape::
+_isEqual(const ArrayShape& s1, const ArrayShape& s2)
+{
+  if (s1.m_nb_dim != s2.m_nb_dim)
+    return false;
+  for (Int32 i = 0; i < s1.m_nb_dim; ++i) {
+    if (s1.m_dims[i] != s2.m_dims[i])
+      return false;
+  }
+  return true;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ArrayShape::
+_print(std::ostream& o) const
+{
+  o << "{ ";
+  for (Int32 i = 0; i < m_nb_dim; ++i) {
+    if (i != 0)
+      o << ", ";
+    o << m_dims[i];
+  }
+  o << " }";
 }
 
 /*---------------------------------------------------------------------------*/
