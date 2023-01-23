@@ -333,13 +333,8 @@ _applyChildrenCell3D(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceIn
   const Int64 node_adder = (parent_level_nb_cell_x+1) * (parent_level_nb_cell_y+1) * (parent_level_nb_cell_z+1) * current_level;
 
   const Int64 current_level_nb_face_x = current_level_nb_cell_x + 1;
+  const Int64 current_level_nb_face_y = current_level_nb_cell_y + 1;
   const Int64 current_level_nb_face_z = current_level_nb_cell_z + 1;
-
-  // Pour comprendre le "u" et le "n", voir schéma explicatif en dessous.
-  const Int64 nb_face_x_u = current_level_nb_face_x + current_level_nb_cell_x;
-  const Int64 nb_face_z_n = current_level_nb_face_z + current_level_nb_cell_z;
-
-  const Int64 nb_face_u_layer = nb_face_x_u * current_level_nb_cell_y * current_level_nb_cell_z;
 
   // // Version non récursive pour face_adder.
   // Int64 face_adder = 0;
@@ -347,8 +342,7 @@ _applyChildrenCell3D(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceIn
   // Int64 level_i_nb_cell_y = parent_level_nb_cell_y;
   // Int64 level_i_nb_cell_z = parent_level_nb_cell_z;
   // for(Int32 i = current_level-1; i >= 0; i--){
-  //   face_adder += (level_i_nb_cell_x*2+1) * level_i_nb_cell_y * level_i_nb_cell_z
-  //             + (level_i_nb_cell_z*2+1) * level_i_nb_cell_y * level_i_nb_cell_x;
+  //   face_adder += TODO;
   //   level_i_nb_cell_x /= 2;
   //   level_i_nb_cell_y /= 2;
   //   level_i_nb_cell_z /= 2;
@@ -399,51 +393,41 @@ _applyChildrenCell3D(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceIn
   }
 
   // Renumérote les faces
-  // Cet algo n'est pas basé sur l'algo 2D.
-  // Les UniqueIDs générés sont contigües.
-  // Il est aussi possible de retrouver les UniqueIDs des faces
-  // à l'aide de la position de la cellule et la taille du maillage.
-  // De plus, l'ordre des UniqueIDs des faces d'une cellule est toujours le
-  // même (en notation localId Arcane (cell.face(i)) : 1, 5, 4, 0, 2, 3).
-  // Les UniqueIDs générés sont donc les mêmes quelque soit le découpage.
-  /*
-       x               z
-    ┌──►          │ ┌──►
-    │             │ │
-   y▼ 0    2    4 │y▼ ┌────┬────┐
-      │  1 │  3 │ │   │ 21 │ 23 │
-      └────┴────┘ │  20   22   24
-      5    7    9 │   ┌────┬────┐
-      │  6 │  8 │ │   │ 26 │ 28 │
-      └────┴────┘ │  25   27   29
-   z=0            │              x=0
-  - - - - - - - - - - - - - - - - - -
-   z=1            │              x=1
-     10   12   14 │   ┌────┬────┐
-      │ 11 │ 13 │ │   │ 31 │ 33 │
-      └────┴────┘ │  30   32   34
-     15   17   19 │   ┌────┬────┐
-      │ 16 │ 18 │ │   │ 36 │ 38 │
-      └────┴────┘ │  35   37   39
-                  │
-  */
-  // On a un cube décomposé en huit cellules (2x2x2).
-  // Le schéma au-dessus représente les faces des cellules de ce cube avec
-  // les uniqueIDs que l'algorithme génèrera (découpes du cube, ce qui donne 
-  // des "u" et des "n", d'où les "nb_face_x_u" (= 5 ici) et "nb_face_z_n" (=5 ici)).
-  // Exemple : La cellule 6 (x=0,y=1,z=1) aura les faces 15, 16, 17, 27, 28, 29.
+  const Int64 total_face_xy = current_level_nb_face_z * current_level_nb_cell_x * current_level_nb_cell_y;
+  const Int64 total_face_xy_yz = total_face_xy + current_level_nb_face_x * current_level_nb_cell_y * current_level_nb_cell_z;
+  const Int64 total_face_xy_yz_zx = total_face_xy_yz + current_level_nb_face_y * current_level_nb_cell_z * current_level_nb_cell_x;
   {
     if (cell.nbFace() != 6)
       ARCANE_FATAL("Invalid number of faces N={0}, expected=6", cell.nbFace());
     std::array<Int64, 6> new_uids;
 
-    new_uids[1] = nb_face_x_u * current_level_nb_cell_y * coord_k + coord_i * 2 + coord_j * nb_face_x_u;
-    new_uids[5] = new_uids[1] + 1;
-    new_uids[4] = new_uids[1] + 2;
 
-    new_uids[0] = nb_face_u_layer + nb_face_z_n * current_level_nb_cell_y * coord_i + coord_k * 2 + coord_j * nb_face_z_n;
-    new_uids[2] = new_uids[0] + 1;
-    new_uids[3] = new_uids[0] + 2;
+    new_uids[0] = (coord_k * current_level_nb_cell_x * current_level_nb_cell_y) 
+                + (coord_j * current_level_nb_cell_x) 
+                + (coord_i);
+
+    new_uids[3] = ((coord_k+1) * current_level_nb_cell_x * current_level_nb_cell_y) 
+                + (coord_j * current_level_nb_cell_x) 
+                + (coord_i);
+
+
+    new_uids[1] = (coord_k * current_level_nb_face_x * current_level_nb_cell_y) 
+                + (coord_j * current_level_nb_face_x) 
+                + (coord_i) + total_face_xy;
+
+    new_uids[4] = (coord_k * current_level_nb_face_x * current_level_nb_cell_y) 
+                + (coord_j * current_level_nb_face_x) 
+                + (coord_i+1) + total_face_xy;
+
+
+    new_uids[2] = (coord_k * current_level_nb_cell_x * current_level_nb_face_y) 
+                + (coord_j * current_level_nb_cell_x) 
+                + (coord_i) + total_face_xy_yz;
+
+    new_uids[5] = (coord_k * current_level_nb_cell_x * current_level_nb_face_y) 
+                + ((coord_j+1) * current_level_nb_cell_x) 
+                + (coord_i) + total_face_xy_yz;
+
 
     for (Integer z = 0; z < 6; ++z) {
       Face face = cell.face(z);
@@ -464,8 +448,6 @@ _applyChildrenCell3D(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceIn
   // -------
   // | 0| 1|
   // -------
-  face_adder += nb_face_x_u * current_level_nb_cell_y * current_level_nb_cell_z
-              + nb_face_z_n * current_level_nb_cell_y * current_level_nb_cell_x;
   coord_i *= 2;
   coord_j *= 2;
   coord_k *= 2;
@@ -482,7 +464,7 @@ _applyChildrenCell3D(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceIn
     Int64 my_coord_k = coord_k + icell / 4;
 
     _applyChildrenCell3D(sub_cell, nodes_new_uid, faces_new_uid, cells_new_uid, my_coord_i, my_coord_j, my_coord_k,
-                         current_level_nb_cell_x, current_level_nb_cell_y, current_level_nb_cell_z, current_level, face_adder);
+                         current_level_nb_cell_x, current_level_nb_cell_y, current_level_nb_cell_z, current_level, total_face_xy_yz_zx);
   }
 }
 

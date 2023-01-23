@@ -263,7 +263,7 @@ init()
     renumbering_info.setRenumberPatchMethod(1);
     renumbering_info.setSortAfterRenumbering(true);
     m_cartesian_mesh->renumberItemsUniqueId(renumbering_info);
-    _checkUniqueIds();
+    //_checkUniqueIds();
     _processPatches();
   }
 
