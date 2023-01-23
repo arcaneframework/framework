@@ -1,7 +1,13 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArrayView.h                                                 (C) 2000-2014 */
+/* ArrayView.h                                                 (C) 2000-2023 */
 /*                                                                           */
-/* Types définissant les vues de tableaux C.                                 */
+/* Types dÃ©finissant les vues de tableaux C.                                 */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_ARRAYVIEW_H
 #define ARCANE_UTILS_ARRAYVIEW_H
@@ -27,51 +33,51 @@ template<typename T> class ConstArrayView;
  *
  * \ingroup Collection
  *
- Cette classe template permet d'accéder et d'utiliser un tableau d'éléments du
- type \a T de la même manière qu'un tableau C standard. Elle maintient en
+ Cette classe template permet d'accÃ©der et d'utiliser un tableau d'Ã©lÃ©ments du
+ type \a T de la mÃªme maniÃ¨re qu'un tableau C standard. Elle maintient en
  plus la taille du tableau. La fonction
- size() permet de connaître le nombre d'éléments du tableau et l'opérateur
- [] permet d'accéder à un élément donné.
+ size() permet de connaÃ®tre le nombre d'Ã©lÃ©ments du tableau et l'opÃ©rateur
+ [] permet d'accÃ©der Ã  un Ã©lÃ©ment donnÃ©.
 
- Cette classe ne gère aucune mémoire et c'est aux classes dérivées
- (ArrayAllocT,...) de gérer la mémoire et de notifier l'instance par setPtr().
+ Cette classe ne gÃ¨re aucune mÃ©moire et c'est aux classes dÃ©rivÃ©es
+ (ArrayAllocT,...) de gÃ©rer la mÃ©moire et de notifier l'instance par setPtr().
 
- Le contructeur et l'opérateur de recopie ne font que recopier les pointeurs
- sans réallouer la mémoire. Il faut donc les utiliser avec précaution.
+ Le contructeur et l'opÃ©rateur de recopie ne font que recopier les pointeurs
+ sans rÃ©allouer la mÃ©moire. Il faut donc les utiliser avec prÃ©caution.
  
 
- En mode débug, les accès par l'intermédiaire des opérateurs [] sont
- vérifiés et le programme se met en pause automatiquement si un débordement de
+ En mode dÃ©bug, les accÃ¨s par l'intermÃ©diaire des opÃ©rateurs [] sont
+ vÃ©rifiÃ©s et le programme se met en pause automatiquement si un dÃ©bordement de
  tableau a lieu. En attachant une session de debug au processus, il est
- possible de voir la pile d'appel au moment du débordement.
+ possible de voir la pile d'appel au moment du dÃ©bordement.
 
  Voici des exemples d'utilisation:
 
  \code
  Real t[5];
- ArrayView<Real> a(t,5); // Gère un tableau de 5 réels.
+ ArrayView<Real> a(t,5); // GÃ¨re un tableau de 5 rÃ©els.
  Integer i = 3;
- Real v = a[2]; // Affecte à la valeur du 2ème élément
- a[i] = 5; // Affecte au 3ème élément la valeur 5
+ Real v = a[2]; // Affecte Ã  la valeur du 2Ã¨me Ã©lÃ©ment
+ a[i] = 5; // Affecte au 3Ã¨me Ã©lÃ©ment la valeur 5
  \endcode
 
- Il est aussi possible d'accéder aux éléments du tableau par des
- itérateurs de la même manière qu'avec les containers de la STL.
+ Il est aussi possible d'accÃ©der aux Ã©lÃ©ments du tableau par des
+ itÃ©rateurs de la mÃªme maniÃ¨re qu'avec les containers de la STL.
 
- L'exemple suivant créé un itérateur \e i sur le tableau \e a et itère
- sur tout le tableau (méthode i()) et affiche les éléments:
+ L'exemple suivant crÃ©Ã© un itÃ©rateur \e i sur le tableau \e a et itÃ¨re
+ sur tout le tableau (mÃ©thode i()) et affiche les Ã©lÃ©ments:
 
  \code
  for( ArrayView<Real>::const_iter i(a); i(); ++i )
  cout << *i;  
  \endcode
 
- L'exemple suivant fait la somme des 3 premiers éléments du tableau:
+ L'exemple suivant fait la somme des 3 premiers Ã©lÃ©ments du tableau:
 
  \code
  Real sum = 0.;
- ArrayView<Real>::iterator b = a.begin();     // Itérateur sur le début du tableau
- ArrayView<Real>::iterator e = a.begin() + 3; // Itérateur sur le 4ème élément du tableau
+ ArrayView<Real>::iterator b = a.begin();     // ItÃ©rateur sur le dÃ©but du tableau
+ ArrayView<Real>::iterator e = a.begin() + 3; // ItÃ©rateur sur le 4Ã¨me Ã©lÃ©ment du tableau
  for( ; b!=e; ++b )
  sum += *i;
  \endcode
@@ -82,23 +88,23 @@ class ArrayView
 {
  public:
 	
-  //! Type des éléments du tableau
+  //! Type des Ã©lÃ©ments du tableau
   typedef T value_type;
-  //! Type de l'itérateur sur un élément du tableau
+  //! Type de l'itÃ©rateur sur un Ã©lÃ©ment du tableau
   typedef value_type* iterator;
-  //! Type de l'itérateur constant sur un élément du tableau
+  //! Type de l'itÃ©rateur constant sur un Ã©lÃ©ment du tableau
   typedef const value_type* const_iterator;
-  //! Type pointeur d'un élément du tableau
+  //! Type pointeur d'un Ã©lÃ©ment du tableau
   typedef value_type* pointer;
-  //! Type pointeur constant d'un élément du tableau
+  //! Type pointeur constant d'un Ã©lÃ©ment du tableau
   typedef const value_type* const_pointer;
-  //! Type référence d'un élément du tableau
+  //! Type rÃ©fÃ©rence d'un Ã©lÃ©ment du tableau
   typedef value_type& reference;
-  //! Type référence constante d'un élément du tableau
+  //! Type rÃ©fÃ©rence constante d'un Ã©lÃ©ment du tableau
   typedef const value_type& const_reference;
   //! Type indexant le tableau
   typedef Integer size_type;
-  //! Type d'une distance entre itérateur éléments du tableau
+  //! Type d'une distance entre itÃ©rateur Ã©lÃ©ments du tableau
   typedef ptrdiff_t difference_type;
 
  public:
@@ -110,16 +116,16 @@ class ArrayView
   ArrayView() : m_size(0), m_ptr(0) {}
   //! Construit un tableau de dimension \a size
   explicit ArrayView(Integer s,T* ptr) : m_size(s), m_ptr(ptr) {}
-  //! Opérateur de recopie
+  //! OpÃ©rateur de recopie
   const ArrayView<T>& operator=(const ArrayView<T>& from)
     { m_size=from.m_size; m_ptr=from.m_ptr; return *this; }
 
  public:
 
   /*!
-   * \brief i-ème élément du tableau.
+   * \brief i-Ã¨me Ã©lÃ©ment du tableau.
    *
-   * En mode \a check, vérifie les débordements.
+   * En mode \a check, vÃ©rifie les dÃ©bordements.
    */
   inline T& operator[](Integer i)
   {
@@ -128,9 +134,9 @@ class ArrayView
   }
 
   /*!
-   * \brief i-ème élément du tableau.
+   * \brief i-Ã¨me Ã©lÃ©ment du tableau.
    *
-   * En mode \a check, vérifie les débordements.
+   * En mode \a check, vÃ©rifie les dÃ©bordements.
    */
   inline const T& operator[](Integer i) const
   {
@@ -139,9 +145,9 @@ class ArrayView
   }
 
   /*!
-   * \brief i-ème élément du tableau.
+   * \brief i-Ã¨me Ã©lÃ©ment du tableau.
    *
-   * En mode \a check, vérifie les débordements.
+   * En mode \a check, vÃ©rifie les dÃ©bordements.
    */
   inline const T& item(Integer i) const
   {
@@ -150,9 +156,9 @@ class ArrayView
   }
 
   /*!
-   * \brief Positionne le i-ème élément du tableau.
+   * \brief Positionne le i-Ã¨me Ã©lÃ©ment du tableau.
    *
-   * En mode \a check, vérifie les débordements.
+   * En mode \a check, vÃ©rifie les dÃ©bordements.
    */
   inline void setItem(Integer i,const T& v)
   {
@@ -162,40 +168,40 @@ class ArrayView
 
   //! Retourne la taille du tableau
   inline Integer size() const { return m_size; }
-  //! Nombre d'éléments du tableau
+  //! Nombre d'Ã©lÃ©ments du tableau
   inline Integer length() const { return m_size; }
   
-  //! Retourne un iterateur sur le premier élément du tableau
+  //! Retourne un iterateur sur le premier Ã©lÃ©ment du tableau
   inline iterator begin() { return m_ptr; }
-  //! Retourne un iterateur sur le premier élément après la fin du tableau
+  //! Retourne un iterateur sur le premier Ã©lÃ©ment aprÃ¨s la fin du tableau
   inline iterator end() { return m_ptr+m_size; }
-  //! Retourne un iterateur constant sur le premier élément du tableau
+  //! Retourne un iterateur constant sur le premier Ã©lÃ©ment du tableau
   inline const_iterator begin() const { return m_ptr; }
-  //! Retourne un iterateur constant sur le premier élément après la fin du tableau
+  //! Retourne un iterateur constant sur le premier Ã©lÃ©ment aprÃ¨s la fin du tableau
   inline const_iterator end() const { return m_ptr+m_size; }
 
-  //! Addresse du index-ème élément
+  //! Addresse du index-Ã¨me Ã©lÃ©ment
   inline T* ptrAt(Integer index)
   {
     ARCANE_CHECK_AT(index,m_size);
     return m_ptr+index;
   }
 
-  //! Addresse du index-ème élément
+  //! Addresse du index-Ã¨me Ã©lÃ©ment
   inline const T* ptrAt(Integer index) const
   {
     ARCANE_CHECK_AT(index,m_size);
     return m_ptr+index;
   }
 
-  // Elément d'indice \a i. Vérifie toujours les débordements
+  // ElÃ©ment d'indice \a i. VÃ©rifie toujours les dÃ©bordements
   const T& at(Integer i) const
   {
     arcaneCheckAt(i,m_size);
     return m_ptr[i];
   }
 
-  // Positionne l'élément d'indice \a i. Vérifie toujours les débordements
+  // Positionne l'Ã©lÃ©ment d'indice \a i. VÃ©rifie toujours les dÃ©bordements
   void setAt(Integer i,const T& value)
   {
     arcaneCheckAt(i,m_size);
@@ -210,10 +216,10 @@ class ArrayView
   }
 
   /*!
-   * \brief Sous-vue à partir de l'élément \a begin et contenant \a size éléments.
+   * \brief Sous-vue Ã  partir de l'Ã©lÃ©ment \a begin et contenant \a size Ã©lÃ©ments.
    *
-   * Si \a (begin+size) est supérieur à la taille du tableau,
-   * la vue est tronqué à cette taille, retournant éventuellement une vue vide.
+   * Si \a (begin+size) est supÃ©rieur Ã  la taille du tableau,
+   * la vue est tronquÃ© Ã  cette taille, retournant Ã©ventuellement une vue vide.
    */
   ArrayView<T> subView(Integer begin,Integer size)
   {
@@ -224,10 +230,10 @@ class ArrayView
   }
 
   /*!
-   * \brief Sous-vue constante à partir de l'élément \a begin et contenant \a size éléments.
+   * \brief Sous-vue constante Ã  partir de l'Ã©lÃ©ment \a begin et contenant \a size Ã©lÃ©ments.
    *
-   * Si \a (begin+size) est supérieur à la taille du tableau,
-   * la vue est tronqué à cette taille, retournant éventuellement une vue vide.
+   * Si \a (begin+size) est supÃ©rieur Ã  la taille du tableau,
+   * la vue est tronquÃ© Ã  cette taille, retournant Ã©ventuellement une vue vide.
    */
   ConstArrayView<T> subConstView(Integer begin,Integer size) const
   {
@@ -237,7 +243,7 @@ class ArrayView
     return ConstArrayView<T>(size,m_ptr+begin);
   }
 
-  //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
+  //! Sous-vue correspondant Ã  l'interval \a index sur \a nb_interval
   ArrayView<T> subViewInterval(Integer index,Integer nb_interval)
   {
     Integer n = m_size;
@@ -250,10 +256,10 @@ class ArrayView
   }
 
   /*!\brief Recopie le tableau \a copy_array dans l'instance.
-   * Comme aucune allocation mémoire n'est effectuée, le
-   * nombre d'éléments de \a copy_array doit être inférieur ou égal au
-   * nombre d'éléments courant. S'il est inférieur, les éléments du
-   * tableau courant situés à la fin du tableau sont inchangés
+   * Comme aucune allocation mÃ©moire n'est effectuÃ©e, le
+   * nombre d'Ã©lÃ©ments de \a copy_array doit Ãªtre infÃ©rieur ou Ã©gal au
+   * nombre d'Ã©lÃ©ments courant. S'il est infÃ©rieur, les Ã©lÃ©ments du
+   * tableau courant situÃ©s Ã  la fin du tableau sont inchangÃ©s
    */
   template<class U>
   inline void copy(const U& copy_array)
@@ -268,7 +274,7 @@ class ArrayView
 
   //! Retourne \a true si le tableau est vide (dimension nulle)
   bool empty() const { return m_size==0; }
-  //! \a true si le tableau contient l'élément de valeur \a v
+  //! \a true si le tableau contient l'Ã©lÃ©ment de valeur \a v
   bool contains(const T& v) const
   {
     for( Integer i=0; i<m_size; ++i ){
@@ -284,19 +290,19 @@ class ArrayView
     { m_ptr = v.m_ptr; m_size = v.m_size; }
 
   /*!
-   * \brief Pointeur sur la mémoire allouée.
+   * \brief Pointeur sur la mÃ©moire allouÃ©e.
    *
-   * \warning Cette méthode est dangereuse. Le pointeur retourné peut être
-   * invalidé dès que le nombre d'éléments du tableau change.
+   * \warning Cette mÃ©thode est dangereuse. Le pointeur retournÃ© peut Ãªtre
+   * invalidÃ© dÃ¨s que le nombre d'Ã©lÃ©ments du tableau change.
    */
   inline T* unguardedBasePointer()
   { return m_ptr; }
 
   /*!
-   * \brief Pointeur sur la mémoire allouée.
+   * \brief Pointeur sur la mÃ©moire allouÃ©e.
    *
-   * \warning Cette méthode est dangereuse. Le pointeur retourné peut être
-   * invalidé dès que le nombre d'éléments du tableau change.
+   * \warning Cette mÃ©thode est dangereuse. Le pointeur retournÃ© peut Ãªtre
+   * invalidÃ© dÃ¨s que le nombre d'Ã©lÃ©ments du tableau change.
    */
   inline const T* unguardedBasePointer() const
   { return m_ptr; }
@@ -306,36 +312,36 @@ class ArrayView
   /*!
    * \brief Retourne un pointeur sur le tableau
    *
-   * \warning Il est préférable de ne pas utiliser cette méthode pour
-   * accéder à un élément du tableau car
-   * ce pointeur peut être invalidé par un redimensionnement du tableau.
-   * De plus, accéder aux éléments du tableau par ce pointeur ne permet
-   * aucune vérification de dépassement, même en mode DEBUG.
+   * \warning Il est prÃ©fÃ©rable de ne pas utiliser cette mÃ©thode pour
+   * accÃ©der Ã  un Ã©lÃ©ment du tableau car
+   * ce pointeur peut Ãªtre invalidÃ© par un redimensionnement du tableau.
+   * De plus, accÃ©der aux Ã©lÃ©ments du tableau par ce pointeur ne permet
+   * aucune vÃ©rification de dÃ©passement, mÃªme en mode DEBUG.
    */
   inline T* _ptr() { return m_ptr; }
   /*!
    * \brief Retourne un pointeur sur le tableau
    *
-   * \warning Il est préférable de ne pas utiliser cette méthode pour
-   * accéder à un élément du tableau car
-   * ce pointeur peut être invalidé par un redimensionnement du tableau.
-   * De plus, accéder aux éléments du tableau par ce pointeur ne permet
-   * aucune vérification de dépassement, même en mode DEBUG.
+   * \warning Il est prÃ©fÃ©rable de ne pas utiliser cette mÃ©thode pour
+   * accÃ©der Ã  un Ã©lÃ©ment du tableau car
+   * ce pointeur peut Ãªtre invalidÃ© par un redimensionnement du tableau.
+   * De plus, accÃ©der aux Ã©lÃ©ments du tableau par ce pointeur ne permet
+   * aucune vÃ©rification de dÃ©passement, mÃªme en mode DEBUG.
    */
   inline const T* _ptr() const { return m_ptr; }
   /*!
    * \brief Modifie le pointeur et la taille du tableau.
    *
-   * C'est à la classe dérivée de vérifier la cohérence entre le pointeur
-   * alloué et la dimension donnée.
+   * C'est Ã  la classe dÃ©rivÃ©e de vÃ©rifier la cohÃ©rence entre le pointeur
+   * allouÃ© et la dimension donnÃ©e.
    */
   inline void _setArray(T* v,Integer s){ m_ptr = v; m_size = s; }
 
   /*!
-   * \brief Modifie le pointeur du début du tableau.
+   * \brief Modifie le pointeur du dÃ©but du tableau.
    *
-   * C'est à la classe dérivée de vérifier la cohérence entre le pointeur
-   * alloué et la dimension donnée.
+   * C'est Ã  la classe dÃ©rivÃ©e de vÃ©rifier la cohÃ©rence entre le pointeur
+   * allouÃ© et la dimension donnÃ©e.
    */
   inline void _setPtr(T* v)
     { m_ptr = v; }
@@ -343,15 +349,15 @@ class ArrayView
   /*!
    * \brief Modifie la taille du tableau.
    *
-   * C'est à la classe dérivée de vérifier la cohérence entre le pointeur
-   * alloué et la dimension donnée.
+   * C'est Ã  la classe dÃ©rivÃ©e de vÃ©rifier la cohÃ©rence entre le pointeur
+   * allouÃ© et la dimension donnÃ©e.
    */
   inline void _setSize(Integer s)
     { m_size = s; }
 
  private:
 
-  Integer m_size; //!< Nombre d'éléments du tableau
+  Integer m_size; //!< Nombre d'Ã©lÃ©ments du tableau
   T* m_ptr;  //!< Pointeur sur le tableau
 };
 
@@ -363,19 +369,19 @@ class ArrayView
  * \ingroup Collection
 
  Cette classe encapsule un tableau C constant standard (pointeur) et son nombre
- d'éléments. L'accès à ses éléments se fait par l'opérateur operator[]().
- La méthode base() permet d'obtenir le pointeur du tableau pour le passer
+ d'Ã©lÃ©ments. L'accÃ¨s Ã  ses Ã©lÃ©ments se fait par l'opÃ©rateur operator[]().
+ La mÃ©thode base() permet d'obtenir le pointeur du tableau pour le passer
  aux fonctions C standard.
 
- L'instance conserve juste un pointeur sur le début du tableau C et ne fait
- aucune gestion mémoire. Le développeur doit s'assurer que le pointeur
- reste valide tant que l'instance existe. En particulier, la vue est invalidée
- dès que le tableau de référence est modifié via un appel à une fonction non-const.
+ L'instance conserve juste un pointeur sur le dÃ©but du tableau C et ne fait
+ aucune gestion mÃ©moire. Le dÃ©veloppeur doit s'assurer que le pointeur
+ reste valide tant que l'instance existe. En particulier, la vue est invalidÃ©e
+ dÃ¨s que le tableau de rÃ©fÃ©rence est modifiÃ© via un appel Ã  une fonction non-const.
 
- Les éléments du tableau ne peuvent pas être modifiés.
+ Les Ã©lÃ©ments du tableau ne peuvent pas Ãªtre modifiÃ©s.
 
- En mode débug, une vérification de débordement est effectuée lors de l'accès
- à l'opérateur operator[]().
+ En mode dÃ©bug, une vÃ©rification de dÃ©bordement est effectuÃ©e lors de l'accÃ¨s
+ Ã  l'opÃ©rateur operator[]().
  */
 template<class T>
 class ConstArrayView
@@ -386,47 +392,47 @@ class ConstArrayView
 
  public:
 	
-  //! Type des éléments du tableau
+  //! Type des Ã©lÃ©ments du tableau
   typedef T value_type;
-  //! Type de l'itérateur constant sur un élément du tableau
+  //! Type de l'itÃ©rateur constant sur un Ã©lÃ©ment du tableau
   typedef const value_type* const_iterator;
-  //! Type pointeur constant d'un élément du tableau
+  //! Type pointeur constant d'un Ã©lÃ©ment du tableau
   typedef const value_type* const_pointer;
-  //! Type référence constante d'un élément du tableau
+  //! Type rÃ©fÃ©rence constante d'un Ã©lÃ©ment du tableau
   typedef const value_type& const_reference;
   //! Type indexant le tableau
   typedef Integer size_type;
-  //! Type d'une distance entre itérateur éléments du tableau
+  //! Type d'une distance entre itÃ©rateur Ã©lÃ©ments du tableau
   typedef ptrdiff_t difference_type;
 
  public:
 
   //! Construit un tableau vide.
   ConstArrayView() : m_size(0), m_ptr(0) {}
-  //! Construit un tableau avec \a s élément
+  //! Construit un tableau avec \a s Ã©lÃ©ment
   explicit ConstArrayView(Integer s,const T* ptr)
   : m_size(s), m_ptr(ptr) {}
   /*! \brief Constructeur par copie.
-   * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
+   * \warning Seul le pointeur est copiÃ©. Aucune copie mÃ©moire n'est effectuÃ©e.
    */
   ConstArrayView(const ConstArrayView<T>& from)
   : m_size(from.m_size), m_ptr(from.m_ptr) {}
   /*! \brief Constructeur par copie.
-   * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
+   * \warning Seul le pointeur est copiÃ©. Aucune copie mÃ©moire n'est effectuÃ©e.
    */
   ConstArrayView(const ArrayView<T>& from)
   : m_size(from.size()), m_ptr(from.begin())
     {
     }
 
-  /*! \brief Opérateur de recopie.
-   * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
+  /*! \brief OpÃ©rateur de recopie.
+   * \warning Seul le pointeur est copiÃ©. Aucune copie mÃ©moire n'est effectuÃ©e.
    */
   const ConstArrayView<T>& operator=(const ConstArrayView<T>& from)
     { m_size=from.m_size; m_ptr=from.m_ptr; return *this; }
 	
-  /*! \brief Opérateur de recopie.
-   * \warning Seul le pointeur est copié. Aucune copie mémoire n'est effectuée.
+  /*! \brief OpÃ©rateur de recopie.
+   * \warning Seul le pointeur est copiÃ©. Aucune copie mÃ©moire n'est effectuÃ©e.
    */
   const ConstArrayView<T>& operator=(const ArrayView<T>& from)
     {
@@ -440,10 +446,10 @@ class ConstArrayView
  public:
 
   /*!
-   * \brief Sous-vue (constante) à partir de l'élément \a begin et contenant \a size éléments.
+   * \brief Sous-vue (constante) Ã  partir de l'Ã©lÃ©ment \a begin et contenant \a size Ã©lÃ©ments.
    *
-   * Si \a (begin+size) est supérieur à la taille du tableau,
-   * la vue est tronqué à cette taille, retournant éventuellement une vue vide.
+   * Si \a (begin+size) est supÃ©rieur Ã  la taille du tableau,
+   * la vue est tronquÃ© Ã  cette taille, retournant Ã©ventuellement une vue vide.
    */
   ConstArrayView<T> subView(Integer begin,Integer size) const
   {
@@ -454,17 +460,17 @@ class ConstArrayView
   }
 
   /*!
-   * \brief Sous-vue (constante) à partir de l'élément \a begin et contenant \a size éléments.
+   * \brief Sous-vue (constante) Ã  partir de l'Ã©lÃ©ment \a begin et contenant \a size Ã©lÃ©ments.
    *
-   * Si \a (begin+size) est supérieur à la taille du tableau,
-   * la vue est tronqué à cette taille, retournant éventuellement une vue vide.
+   * Si \a (begin+size) est supÃ©rieur Ã  la taille du tableau,
+   * la vue est tronquÃ© Ã  cette taille, retournant Ã©ventuellement une vue vide.
    */
   ConstArrayView<T> subConstView(Integer begin,Integer size) const
   {
     return subView(begin,size);
   }
 
-  //! Sous-vue correspondant à l'interval \a index sur \a nb_interval
+  //! Sous-vue correspondant Ã  l'interval \a index sur \a nb_interval
   ArrayView<T> subViewInterval(Integer index,Integer nb_interval)
   {
     Integer n = m_size;
@@ -477,7 +483,7 @@ class ConstArrayView
     return ConstArrayView<T>(isize,m_ptr+ibegin);
   }
 
-  //! Addresse du index-ème élément
+  //! Addresse du index-Ã¨me Ã©lÃ©ment
   inline const T* ptrAt(Integer index) const
   {
     ARCANE_CHECK_AT(index,m_size);
@@ -485,9 +491,9 @@ class ConstArrayView
   }
 
   /*!
-   * \brief i-ème élément du tableau.
+   * \brief i-Ã¨me Ã©lÃ©ment du tableau.
    *
-   * En mode \a check, vérifie les débordements.
+   * En mode \a check, vÃ©rifie les dÃ©bordements.
    */
   const T& operator[](Integer i) const
   {
@@ -496,9 +502,9 @@ class ConstArrayView
   }
 
   /*!
-   * \brief i-ème élément du tableau.
+   * \brief i-Ã¨me Ã©lÃ©ment du tableau.
    *
-   * En mode \a check, vérifie les débordements.
+   * En mode \a check, vÃ©rifie les dÃ©bordements.
    */
   inline const T& item(Integer i) const
   {
@@ -506,17 +512,17 @@ class ConstArrayView
     return m_ptr[i];
   }
 
-  //! Nombre d'éléments du tableau
+  //! Nombre d'Ã©lÃ©ments du tableau
   inline Integer size() const { return m_size; }
-  //! Nombre d'éléments du tableau
+  //! Nombre d'Ã©lÃ©ments du tableau
   inline Integer length() const { return m_size; }
-  //! Iterateur sur le premier élément du tableau
+  //! Iterateur sur le premier Ã©lÃ©ment du tableau
   inline const_iterator begin() const { return m_ptr; }
-  //! Iterateur sur le premier élément après la fin du tableau
+  //! Iterateur sur le premier Ã©lÃ©ment aprÃ¨s la fin du tableau
   inline const_iterator end() const { return m_ptr+m_size; }
   //! \a true si le tableau est vide (size()==0)
   inline bool empty() const { return m_size==0; }
-  //! \a true si le tableau contient l'élément de valeur \a v
+  //! \a true si le tableau contient l'Ã©lÃ©ment de valeur \a v
   bool contains(const T& v) const
   {
     for( Integer i=0; i<m_size; ++i ){
@@ -528,10 +534,10 @@ class ConstArrayView
   void setArray(const ConstArrayView<T>& v) { m_ptr = v.m_ptr; m_size = v.m_size; }
 
   /*!
-   * \brief Pointeur sur la mémoire allouée.
+   * \brief Pointeur sur la mÃ©moire allouÃ©e.
    *
-   * \warning Cette méthode est dangereuse. Le pointeur retourné peut être
-   * invalidé dès que le nombre d'éléments du tableau change.
+   * \warning Cette mÃ©thode est dangereuse. Le pointeur retournÃ© peut Ãªtre
+   * invalidÃ© dÃ¨s que le nombre d'Ã©lÃ©ments du tableau change.
    */
   inline const T* unguardedBasePointer() const
   { return m_ptr; }
@@ -540,8 +546,8 @@ class ConstArrayView
 
  private:
 
-  Integer m_size; //!< Nombre d'éléments 
-  const T* m_ptr; //!< Pointeur sur le début du tableau
+  Integer m_size; //!< Nombre d'Ã©lÃ©ments 
+  const T* m_ptr; //!< Pointeur sur le dÃ©but du tableau
 };
 
 /*---------------------------------------------------------------------------*/

@@ -1,6 +1,6 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
@@ -28,7 +28,7 @@ NUMERICS_BEGIN_NAMESPACE
 GeometryServiceBase::
 GeometryServiceBase()
 {
-  m_suffix = String("By")+(unsigned long)(this);
+  m_suffix = String("By") + (unsigned long)(this);
 }
 
 GeometryServiceBase::
@@ -40,40 +40,42 @@ GeometryServiceBase::
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void 
-GeometryServiceBase::
+void GeometryServiceBase::
 addItemGroupProperty(ItemGroup group, Integer property, Integer storage)
 {
-  ItemGroupGeometryProperty & properties = m_group_property_map[group.internal()];
+  ItemGroupGeometryProperty& properties = m_group_property_map[group.internal()];
   properties.defined |= property;
   Integer current_property = 1;
   while (property) {
     if (property & current_property) {
       properties.storages[static_cast<IGeometryProperty::eProperty>(current_property)].storageType |= storage;
-      traceMng()->debug() << "Add geometric property [" << IGeometryProperty::name(static_cast<IGeometryProperty::eProperty>(current_property)) << "] on group " << group.name();
+      traceMng()->debug() << "Add geometric property ["
+                          << IGeometryProperty::name(static_cast<IGeometryProperty::eProperty>(current_property))
+                          << "] on group " << group.name();
     }
     property &= ~current_property;
     current_property <<= 1;
   }
 }
 
-void 
-GeometryServiceBase::
+void GeometryServiceBase::
 addItemGroupProperty(ItemGroup group, IGeometryProperty::eProperty property, RealVariable var)
 {
-  ARCANE_ASSERT((IGeometryProperty::isScalar(property)),("Scalar property expected"));
-  ItemGroupGeometryProperty & properties = m_group_property_map[group.internal()];
-  ItemGroupGeometryProperty::StorageInfo & storage = properties.storages[property];
+  ARCANE_ASSERT((IGeometryProperty::isScalar(property)), ("Scalar property expected"));
+  ItemGroupGeometryProperty& properties = m_group_property_map[group.internal()];
+  ItemGroupGeometryProperty::StorageInfo& storage = properties.storages[property];
   if (storage.realVar) {
     if (storage.realVar->name() != var.name())
-      traceMng()->fatal() << "Geometric property [" << IGeometryProperty::name(property) << "] storage already defined on group " << group.name() << " with variable " << storage.realVar->name();
-    ARCANE_ASSERT((properties.defined & property),("Unconsistent state with undefined property with defined variable"));
+      traceMng()->fatal() << "Geometric property [" << IGeometryProperty::name(property)
+                          << "] storage already defined on group " << group.name() 
+                          << " with variable " << storage.realVar->name();
+    ARCANE_ASSERT((properties.defined & property), ("Unconsistent state with undefined property with defined variable"));
     return;
   }
   properties.defined |= property;
   storage.realVar.reset(new RealVariable(var));
   storage.storageType |= IGeometryProperty::PVariable;
-  storage.externStorage |= IGeometryProperty::PVariable;  
+  storage.externStorage |= IGeometryProperty::PVariable;
   // #ifndef NO_USER_WARNING
   // #warning "Ne plus allouer d'ItemGroupMap implicitement"
   // #endif /* NO_USER_WARNING */
@@ -81,23 +83,24 @@ addItemGroupProperty(ItemGroup group, IGeometryProperty::eProperty property, Rea
   //   storage.storageType |= IGeometryProperty::PItemGroupMap;
 }
 
-void 
-GeometryServiceBase::
+void GeometryServiceBase::
 addItemGroupProperty(ItemGroup group, IGeometryProperty::eProperty property, Real3Variable var)
 {
-  ARCANE_ASSERT((IGeometryProperty::isVectorial(property)),("Vectorial property expected"));
-  ItemGroupGeometryProperty & properties = m_group_property_map[group.internal()];
-  ItemGroupGeometryProperty::StorageInfo & storage = properties.storages[property];
+  ARCANE_ASSERT((IGeometryProperty::isVectorial(property)), ("Vectorial property expected"));
+  ItemGroupGeometryProperty& properties = m_group_property_map[group.internal()];
+  ItemGroupGeometryProperty::StorageInfo& storage = properties.storages[property];
   if (storage.real3Var) {
     if (storage.real3Var->name() != var.name())
-      traceMng()->fatal() << "Geometric property [" << IGeometryProperty::name(property) << "] storage already defined on group " << group.name() << " with variable " << storage.real3Var->name();
-    ARCANE_ASSERT((properties.defined & property),("Unconsistent state with undefined property with defined variable"));
+      traceMng()->fatal() << "Geometric property [" << IGeometryProperty::name(property)
+                          << "] storage already defined on group " << group.name() 
+                          << " with variable " << storage.real3Var->name();
+    ARCANE_ASSERT((properties.defined & property), ("Unconsistent state with undefined property with defined variable"));
     return;
   }
   properties.defined |= property;
   storage.real3Var.reset(new Real3Variable(var));
   storage.storageType |= IGeometryProperty::PVariable;
-  storage.externStorage |= IGeometryProperty::PVariable;  
+  storage.externStorage |= IGeometryProperty::PVariable;
   // #ifndef NO_USER_WARNING
   // #warning "Ne plus allouer d'ItemGroupMap implicitement"
   // #endif /* NO_USER_WARNING */
@@ -105,17 +108,17 @@ addItemGroupProperty(ItemGroup group, IGeometryProperty::eProperty property, Rea
   //   storage.storageType |= IGeometryProperty::PItemGroupMap;
 }
 
-Integer 
+Integer
 GeometryServiceBase::
 getItemGroupProperty(ItemGroup group)
 {
   PropertyMap::const_iterator iprop = m_group_property_map.find(group.internal());
-  if (iprop == m_group_property_map.end()) return IGeometryProperty::PNone;
+  if (iprop == m_group_property_map.end())
+    return IGeometryProperty::PNone;
   return iprop->second.defined;
 }
 
-bool 
-GeometryServiceBase::
+bool GeometryServiceBase::
 hasItemGroupProperty(ItemGroup group, Integer property)
 {
   return (getItemGroupProperty(group) & property) == property;
@@ -126,36 +129,37 @@ GeometryServiceBase::
 getItemGroupPropertyStorage(ItemGroup group, IGeometryProperty::eProperty property)
 {
   PropertyMap::const_iterator iprop = m_group_property_map.find(group.internal());
-  if (iprop == m_group_property_map.end()) return IGeometryProperty::PNoStorage;
+  if (iprop == m_group_property_map.end())
+    return IGeometryProperty::PNoStorage;
   return iprop->second.getStorage(property);
 }
 
 /*---------------------------------------------------------------------------*/
 
-const IGeometryMng::RealVariable & 
+const IGeometryMng::RealVariable&
 GeometryServiceBase::
 getRealVariableProperty(ItemGroup group, IGeometryProperty::eProperty property)
 {
   if (!IGeometryProperty::isScalar(property))
     traceMng()->fatal() << "Non scalar property requested by scalar interface";
-  ItemGroupGeometryProperty::StorageInfo & storage = _checkItemGroupProperty(group.internal(),property,IGeometryProperty::PVariable);  
-  std::shared_ptr<RealVariable> & pvar = storage.realVar;
+  ItemGroupGeometryProperty::StorageInfo& storage = _checkItemGroupProperty(group.internal(), property, IGeometryProperty::PVariable);
+  std::shared_ptr<RealVariable>& pvar = storage.realVar;
   if (!pvar)
-    throw FatalErrorException(A_FUNCINFO,"Unexpected missing scalar field");
+    throw FatalErrorException(A_FUNCINFO, "Unexpected missing scalar field");
   storage.usageVarCount++;
   return *pvar;
 }
 
-const IGeometryMng::Real3Variable & 
+const IGeometryMng::Real3Variable&
 GeometryServiceBase::
 getReal3VariableProperty(ItemGroup group, IGeometryProperty::eProperty property)
 {
-  if (!IGeometryProperty::isVectorial(property)) 
-    traceMng()->fatal() << "Non vectorial property requested by vectorial interface";  
-  ItemGroupGeometryProperty::StorageInfo & storage = _checkItemGroupProperty(group.internal(),property,IGeometryProperty::PVariable);
-  std::shared_ptr<Real3Variable> & pvar = storage.real3Var;
+  if (!IGeometryProperty::isVectorial(property))
+    traceMng()->fatal() << "Non vectorial property requested by vectorial interface";
+  ItemGroupGeometryProperty::StorageInfo& storage = _checkItemGroupProperty(group.internal(), property, IGeometryProperty::PVariable);
+  std::shared_ptr<Real3Variable>& pvar = storage.real3Var;
   if (!pvar)
-    throw FatalErrorException(A_FUNCINFO,"Unexpected missing vectorial field");
+    throw FatalErrorException(A_FUNCINFO, "Unexpected missing vectorial field");
   storage.usageVarCount++;
   return *pvar;
 }
@@ -163,243 +167,219 @@ getReal3VariableProperty(ItemGroup group, IGeometryProperty::eProperty property)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void 
-GeometryServiceBase::
+void GeometryServiceBase::
 update(ItemGroup group, [[maybe_unused]] Integer property)
 {
   update(group);
 }
 
-void 
-GeometryServiceBase::
+void GeometryServiceBase::
 reset(ItemGroup group, [[maybe_unused]] Integer property)
 {
   reset(group);
 }
-  
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void 
-GeometryServiceBase::
+void GeometryServiceBase::
 update()
 {
-  Trace::Setter setter(traceMng(),className());
+  Trace::Setter setter(traceMng(), className());
 
   _checkItemGroupUsage();
   _resetComputeFlags();
 
-  IMesh * mesh = this->mesh();
-  // 
+  IMesh* mesh = this->mesh();
+  //
   const eItemKind all_kinds[] = { IK_Face, IK_Cell };
   const Integer all_kind_size = sizeof(all_kinds) / sizeof(eItemKind);
 
-  for(Integer ikind=0;ikind<all_kind_size;++ikind) {
+  for (Integer ikind = 0; ikind < all_kind_size; ++ikind) {
     const eItemKind current_kind = all_kinds[ikind];
-    IItemFamily * family = mesh->itemFamily(current_kind);
+    IItemFamily* family = mesh->itemFamily(current_kind);
     ItemGroup allItemGroup = family->allItems();
 
     if (m_group_property_map.find(allItemGroup.internal()) != m_group_property_map.end()) {
       // Delegate all geometric properties already planned for allItems
-      ItemGroupGeometryProperty & all_group_property = m_group_property_map[allItemGroup.internal()];
+      ItemGroupGeometryProperty& all_group_property = m_group_property_map[allItemGroup.internal()];
       update(allItemGroup);
-    
-      for(PropertyMap::iterator igroup = m_group_property_map.begin(); igroup != m_group_property_map.end(); ++igroup)
-        {
-          ItemGroup group(igroup->first);
-          if (group.itemKind() == current_kind) {
-            ItemGroupGeometryProperty & group_property = igroup->second;
-            for(ItemGroupGeometryProperty::StorageInfos::const_iterator iprop = group_property.storages.begin();
-                iprop != group_property.storages.end(); ++iprop)
-              {
-                const IGeometryProperty::eProperty property = iprop->first;
-                ItemGroupGeometryProperty::StorageInfo & storage = group_property.storages[property];
 
-                if (property & all_group_property.defined) // propriétés communes avec allItemGroup
-                  {
-                    // Is a scalar property
-                    if (IGeometryProperty::isScalar(property)) 
-                      {
+      for (PropertyMap::iterator igroup = m_group_property_map.begin(); igroup != m_group_property_map.end(); ++igroup) {
+        ItemGroup group(igroup->first);
+        if (group.itemKind() == current_kind) {
+          ItemGroupGeometryProperty& group_property = igroup->second;
+          for (ItemGroupGeometryProperty::StorageInfos::const_iterator iprop = group_property.storages.begin();
+               iprop != group_property.storages.end(); ++iprop) {
+            const IGeometryProperty::eProperty property = iprop->first;
+            ItemGroupGeometryProperty::StorageInfo& storage = group_property.storages[property];
+
+            if (property & all_group_property.defined) // propriétés communes avec allItemGroup
+            {
+              // Is a scalar property
+              if (IGeometryProperty::isScalar(property)) {
 #ifndef NO_USER_WARNING
 #warning "failed when ItemGroupMap storage only on allItems group"
 #endif
-                        RealVariable & var = *all_group_property.storages[property].realVar;
-                        
-                        // Need Variable storage for that property ?
-                        if (storage.storageType & IGeometryProperty::PVariable)
-                          {
-                            if (storage.externStorage & IGeometryProperty::PVariable)
-                              {
-                                RealVariable & lvar = *storage.realVar;
-                                ENUMERATE_ITEM(iitem,group)
-                                  {
-                                    lvar[iitem] = var[iitem];
-                                  }
-                              }
-                            else
-                              {
-                                std::shared_ptr<RealVariable> & lvar = storage.realVar;
-                                if (lvar)
-                                  {
-                                    if (lvar->variable() != var.variable())
-                                      {
-                                        // change reference to allItems container
-                                        lvar.reset(new RealVariable(var));
-                                      }
-                                    // else nothing to copy; already well referenced
-                                  }
-                                else
-                                  {
-                                    // new reference on allItems container
-                                    lvar.reset(new RealVariable(var));
-                                  }
-                              }
-                          }
-                        
-                        // Need ItemGroupMap storage for that property ?
-                        group_property.computed |= property;
-                        group_property.delegated |= property;
-                      }
-                    else
-                      {
-                        ARCANE_ASSERT((IGeometryProperty::isVectorial(property)),("Vectorial property expected"));
-                        Real3Variable & var = *all_group_property.storages[property].real3Var;
-                        
-                        // Need Variable storage for that property ?
-                        if (storage.storageType & IGeometryProperty::PVariable)
-                          {
-                            if (storage.externStorage & IGeometryProperty::PVariable)
-                              {
-                                Real3Variable & lvar = *storage.real3Var;
-                                ENUMERATE_ITEM(iitem,group)
-                                  {
-                                    lvar[iitem] = var[iitem];
-                                  }
-                              }
-                            else
-                              {
-                                std::shared_ptr<Real3Variable> & lvar = storage.real3Var;
-                                if (lvar)
-                                  {
-                                    if (lvar->variable() != var.variable())
-                                      {
-                                        // change reference to allItems container
-                                        lvar.reset(new Real3Variable(var));
-                                      }
-                                    // else nothing to copy; already well referenced
-                                  }
-                                else
-                                  {
-                                    // new reference on allItems container
-                                    lvar.reset(new Real3Variable(var));
-                                  }
-                              }
-                          }
-                        
-                        // Need ItemGroupMap storage for that property ?
-                        group_property.computed |= property;
-                        group_property.delegated |= property;
-                      }
+                RealVariable& var = *all_group_property.storages[property].realVar;
+
+                // Need Variable storage for that property ?
+                if (storage.storageType & IGeometryProperty::PVariable) {
+                  if (storage.externStorage & IGeometryProperty::PVariable) {
+                    RealVariable& lvar = *storage.realVar;
+                    ENUMERATE_ITEM (iitem, group) {
+                      lvar[iitem] = var[iitem];
+                    }
                   }
+                  else {
+                    std::shared_ptr<RealVariable>& lvar = storage.realVar;
+                    if (lvar) {
+                      if (lvar->variable() != var.variable()) {
+                        // change reference to allItems container
+                        lvar.reset(new RealVariable(var));
+                      }
+                      // else nothing to copy; already well referenced
+                    }
+                    else {
+                      // new reference on allItems container
+                      lvar.reset(new RealVariable(var));
+                    }
+                  }
+                }
+
+                // Need ItemGroupMap storage for that property ?
+                group_property.computed |= property;
+                group_property.delegated |= property;
               }
+              else {
+                ARCANE_ASSERT((IGeometryProperty::isVectorial(property)), ("Vectorial property expected"));
+                Real3Variable& var = *all_group_property.storages[property].real3Var;
+
+                // Need Variable storage for that property ?
+                if (storage.storageType & IGeometryProperty::PVariable) {
+                  if (storage.externStorage & IGeometryProperty::PVariable) {
+                    Real3Variable& lvar = *storage.real3Var;
+                    ENUMERATE_ITEM (iitem, group) {
+                      lvar[iitem] = var[iitem];
+                    }
+                  }
+                  else {
+                    std::shared_ptr<Real3Variable>& lvar = storage.real3Var;
+                    if (lvar) {
+                      if (lvar->variable() != var.variable()) {
+                        // change reference to allItems container
+                        lvar.reset(new Real3Variable(var));
+                      }
+                      // else nothing to copy; already well referenced
+                    }
+                    else {
+                      // new reference on allItems container
+                      lvar.reset(new Real3Variable(var));
+                    }
+                  }
+                }
+
+                // Need ItemGroupMap storage for that property ?
+                group_property.computed |= property;
+                group_property.delegated |= property;
+              }
+            }
           }
         }
+      }
     }
   }
 
   // Mise à jour des autres propriétés
-  for(PropertyMap::iterator iprop = m_group_property_map.begin(); iprop != m_group_property_map.end(); ++iprop) 
-    {
-      update(iprop->first);
-    }
+  for (PropertyMap::iterator iprop = m_group_property_map.begin(); iprop != m_group_property_map.end(); ++iprop) {
+    update(iprop->first);
+  }
 }
 
-void 
-GeometryServiceBase::
+void GeometryServiceBase::
 reset()
 {
-  for(PropertyMap::iterator iprop = m_group_property_map.begin(); iprop != m_group_property_map.end(); ++iprop) 
-    {
-      reset(iprop->first);
-    }
+  for (PropertyMap::iterator iprop = m_group_property_map.begin(); iprop != m_group_property_map.end(); ++iprop) {
+    reset(iprop->first);
+  }
 }
- 
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ItemGroupGeometryProperty::StorageInfo & 
+ItemGroupGeometryProperty::StorageInfo&
 GeometryServiceBase::_checkItemGroupProperty(ItemGroupImpl* group,
                                              IGeometryProperty::eProperty property,
-                                             IGeometryProperty::eStorage storage) 
+                                             IGeometryProperty::eStorage storage)
 {
   PropertyMap::iterator iprop = m_group_property_map.find(group);
   if (iprop == m_group_property_map.end())
-    ARCANE_FATAL("Non declare group {0}",group->name());
-  ItemGroupGeometryProperty & properties = iprop->second;
+    ARCANE_FATAL("Non declare group {0}", group->name());
+  ItemGroupGeometryProperty& properties = iprop->second;
   if ((properties.defined & property) != property)
     ARCANE_FATAL("Non available property [{0}] requested from group {1}",
-                 IGeometryProperty::name(property),group->name());
-  ItemGroupGeometryProperty::StorageInfo & storages = properties.storages[property];
+                 IGeometryProperty::name(property), group->name());
+  ItemGroupGeometryProperty::StorageInfo& storages = properties.storages[property];
   if ((storages.storageType & storage) != storage)
     ARCANE_FATAL("Non available storage [{0}] requested for property {1} on group {2}",
-                 IGeometryProperty::name(storage),IGeometryProperty::name(property),group->name());
+                 IGeometryProperty::name(storage), IGeometryProperty::name(property), group->name());
   return storages;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-GeometryServiceBase::_resetComputeFlags()
+void GeometryServiceBase::_resetComputeFlags()
 {
-  for(PropertyMap::iterator igroup = m_group_property_map.begin(); igroup != m_group_property_map.end(); ++igroup)
-    {
-      ItemGroupGeometryProperty & group_property = igroup->second;
-      group_property.resetFlags();
-    }
+  for (PropertyMap::iterator igroup = m_group_property_map.begin(); igroup != m_group_property_map.end(); ++igroup) {
+    ItemGroupGeometryProperty& group_property = igroup->second;
+    group_property.resetFlags();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void
-GeometryServiceBase::_checkItemGroupUsage()
+void GeometryServiceBase::_checkItemGroupUsage()
 {
   // Control that all extern storage are not shared !
-  typedef std::map<const IVariable *,std::pair<ItemGroupImpl*,IGeometryProperty::eProperty> > ExternVariables;
+  typedef std::map<const IVariable*, std::pair<ItemGroupImpl*, IGeometryProperty::eProperty>> ExternVariables;
   ExternVariables extern_variables;
 
-  for(PropertyMap::iterator igroup = m_group_property_map.begin(); igroup != m_group_property_map.end(); ++igroup)
-    {
-      ItemGroupGeometryProperty & group_property = igroup->second;
-      for(ItemGroupGeometryProperty::StorageInfos::const_iterator i = group_property.storages.begin();
-          i != group_property.storages.end(); ++i)
-        {
-          const IGeometryProperty::eProperty property = i->first;
-          const ItemGroupGeometryProperty::StorageInfo & info = i->second;
-          if (info.usageVarCount == 0 && (info.realVar || info.real3Var) && !(info.externStorage & IGeometryProperty::PVariable) )
-            traceMng()->warning() << "Geometric property " << IGeometryProperty::name(property) << " on group " << igroup->first->name() << " with Variable storage never used since last update";
+  for (PropertyMap::iterator igroup = m_group_property_map.begin(); igroup != m_group_property_map.end(); ++igroup) {
+    ItemGroupGeometryProperty& group_property = igroup->second;
+    for (ItemGroupGeometryProperty::StorageInfos::const_iterator i = group_property.storages.begin();
+         i != group_property.storages.end(); ++i) {
+      const IGeometryProperty::eProperty property = i->first;
+      const ItemGroupGeometryProperty::StorageInfo& info = i->second;
+      if (info.usageVarCount == 0 && (info.realVar || info.real3Var) && !(info.externStorage & IGeometryProperty::PVariable))
+        traceMng()->warning() << "Geometric property " << IGeometryProperty::name(property)
+                              << " on group " << igroup->first->name() << " with Variable storage never used since last update";
 
-          // Check non shared extern Variable storage
-          if (info.realVar || (info.real3Var && (info.externStorage & IGeometryProperty::PVariable))) {
-            IVariable * check_variable = NULL;
-            if (info.realVar) {
-              check_variable = info.realVar->variable();
-            }
-            if (info.real3Var) {
-              ARCANE_ASSERT((check_variable==NULL),("Inconsistent real/real3 storage"));
-              check_variable = info.real3Var->variable();
-            }
-            std::map<const IVariable *,std::pair<ItemGroupImpl*,IGeometryProperty::eProperty> >::const_iterator finder = extern_variables.find(check_variable);
-            if (finder != extern_variables.end()) {
-              traceMng()->warning() << "Geometric property " << IGeometryProperty::name(property) << " on group " << igroup->first->name() << " shares extern Variable " << finder->first->name() << " with property " << IGeometryProperty::name(finder->second.second) << " on group " << finder->second.first->name();
-            } else {
-              extern_variables[check_variable] = std::make_pair(igroup->first,property);
-            }
-          }
+      // Check non shared extern Variable storage
+      if (info.realVar || (info.real3Var && (info.externStorage & IGeometryProperty::PVariable))) {
+        IVariable* check_variable = NULL;
+        if (info.realVar) {
+          check_variable = info.realVar->variable();
         }
-
+        if (info.real3Var) {
+          ARCANE_ASSERT((check_variable == NULL), ("Inconsistent real/real3 storage"));
+          check_variable = info.real3Var->variable();
+        }
+        std::map<const IVariable*, std::pair<ItemGroupImpl*, IGeometryProperty::eProperty>>::const_iterator finder = extern_variables.find(check_variable);
+        if (finder != extern_variables.end()) {
+          traceMng()->warning() << "Geometric property " << IGeometryProperty::name(property)
+                                << " on group " << igroup->first->name() 
+                                << " shares extern Variable " << finder->first->name()
+                                << " with property " << IGeometryProperty::name(finder->second.second) 
+                                << " on group " << finder->second.first->name();
+        }
+        else {
+          extern_variables[check_variable] = std::make_pair(igroup->first, property);
+        }
+      }
     }
+  }
 }
 
 /*---------------------------------------------------------------------------*/

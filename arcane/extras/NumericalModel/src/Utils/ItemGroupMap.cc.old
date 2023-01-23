@@ -1,4 +1,4 @@
-//#include "Utils/ItemGroupMap.h"
+ï»¿//#include "Utils/ItemGroupMap.h"
 #include "Utils/ItemGroupMap.h"
 
 /*---------------------------------------------------------------------------*/
@@ -60,33 +60,33 @@ private:
 public:  
   ItemGroupMapAbstractVariable(ItemGroupMapAbstract * map);
 
-  virtual ~ItemGroupMapAbstractVariable(); //!< Libère les ressources
+  virtual ~ItemGroupMapAbstractVariable(); //!< LibÃ¨re les ressources
 
  public:
 
-  //! Sous-domaine associé à la variable
+  //! Sous-domaine associÃ© Ã  la variable
   virtual ISubDomain* subDomain();
 
-  //! Taille mémoire (en Koctet) utilisée par la variable
+  //! Taille mÃ©moire (en Koctet) utilisÃ©e par la variable
   virtual Real allocatedMemory() const;
 
   //! Nom de la variable
   virtual const String& name() const;
 
-  //! Nom complet de la variable (avec le préfixe de la famille)
+  //! Nom complet de la variable (avec le prÃ©fixe de la famille)
   virtual const String& fullName() const;
 
-  //! Type de la donnée gérée par la variable (Real, Integer, ...)
+  //! Type de la donnÃ©e gÃ©rÃ©e par la variable (Real, Integer, ...)
   virtual eDataType dataType() const;
 
-  /*! \brief Type des entités du maillage sur lequel repose la variable.
+  /*! \brief Type des entitÃ©s du maillage sur lequel repose la variable.
    *
    Pour les variables scalaire ou tableau, il n'y a pas de type et la
-   méthode retourne #IK_Unknown.
-   Pour les autres variables, retourne le type de l'élément de
-   maillage (Node, Cell, ...), à savoir:
+   mÃ©thode retourne #IK_Unknown.
+   Pour les autres variables, retourne le type de l'Ã©lÃ©ment de
+   maillage (Node, Cell, ...), Ã  savoir:
    - #IK_Node pour les noeuds
-   - #IK_Edge pour les arêtes
+   - #IK_Edge pour les arÃªtes
    - #IK_Face pour les faces
    - #IK_Cell pour les mailles
    - #IK_DualNode pour les noeuds duals
@@ -106,46 +106,46 @@ public:
   virtual Integer dimension() const;
 
   /*!
-    \brief Indique si la variable est un tableau à taille multiple.
+    \brief Indique si la variable est un tableau Ã  taille multiple.
     
     Cette valeur n'est utile que pour les tableaux 2D ou plus.
     - 0 pour une variable scalaire ou tableau 2D standard.
-    - 1 pour une variable tableau 2D à taille multiple.
-    - 2 pour une variable tableau 2D ancient format (obsolète).
+    - 1 pour une variable tableau 2D Ã  taille multiple.
+    - 2 pour une variable tableau 2D ancient format (obsolÃ¨te).
   */
   virtual Integer multiTag() const;
 
   /*!
-    \brief Nombre d'éléments de la variable.
+    \brief Nombre d'Ã©lÃ©ments de la variable.
     
-    Les valeurs retournées dépendent de la dimension de la variable:
+    Les valeurs retournÃ©es dÃ©pendent de la dimension de la variable:
     - pour une dimension 0, retourne 1,
-    - pour une dimension 1, retourne le nombre d'éléments du tableau
-    - pour une dimension 2, retourne le nombre total d'éléments en sommant
-    le nombre d'éléments par dimension.
+    - pour une dimension 1, retourne le nombre d'Ã©lÃ©ments du tableau
+    - pour une dimension 2, retourne le nombre total d'Ã©lÃ©ments en sommant
+    le nombre d'Ã©lÃ©ments par dimension.
   */
   virtual Integer nbElement() const;
 
-  //! Retourne les propriétés de la variable
+  //! Retourne les propriÃ©tÃ©s de la variable
   virtual int property() const;
 
-  //! Indique que les propriétés d'une des références à cette variable ont changé (interne)
+  //! Indique que les propriÃ©tÃ©s d'une des rÃ©fÃ©rences Ã  cette variable ont changÃ© (interne)
   virtual void notifyReferencePropertyChanged();
 
-  /*! \brief Ajoute une référence à cette variable
+  /*! \brief Ajoute une rÃ©fÃ©rence Ã  cette variable
    *
-   * \pre \a var_ref ne doit pas déjà référencer une variable.
+   * \pre \a var_ref ne doit pas dÃ©jÃ  rÃ©fÃ©rencer une variable.
    */
   virtual void addVariableRef(VariableRef* var_ref);
 
-  /*! \brief Supprime une référence à cette variable
+  /*! \brief Supprime une rÃ©fÃ©rence Ã  cette variable
    *
-   * \pre \a var_ref doit référencer cette variable (un appel à addVariableRef()
-   * doit avoir été effectué sur cette variable).
+   * \pre \a var_ref doit rÃ©fÃ©rencer cette variable (un appel Ã  addVariableRef()
+   * doit avoir Ã©tÃ© effectuÃ© sur cette variable).
    */
   virtual void removeVariableRef(VariableRef* var_ref);
 
-  //! Nombre de références sur cette variable
+  //! Nombre de rÃ©fÃ©rences sur cette variable
   virtual Integer nbReference() const;
 
  public:
@@ -156,7 +156,7 @@ public:
  public:
 //%% ARCANE_BENCH_SUPPRESS_END
 	
-  //! Retourne l'interface d'accès aux valeurs de la variable
+  //! Retourne l'interface d'accÃ¨s aux valeurs de la variable
   virtual IVariableAccessor* accessor();
 
  public:
@@ -172,31 +172,31 @@ public:
  public:
 
   /*!
-    \brief Positionne le nombre d'éléments pour une variable tableau.
+    \brief Positionne le nombre d'Ã©lÃ©ments pour une variable tableau.
     
     Lorsque la variable est du type tableau 1D ou 2D, positionne le nombre
-    d'éléments du tableau à \a new_size. Pour un tableau 2D, c'est le
-    nombre d'éléments de la première dimension qui est modifié.
+    d'Ã©lÃ©ments du tableau Ã  \a new_size. Pour un tableau 2D, c'est le
+    nombre d'Ã©lÃ©ments de la premiÃ¨re dimension qui est modifiÃ©.
 
-    Cette opération ne doit pas être appelée pour les variables du maillage
-    car le nombre d'éléments est déterminé automatiquement en fonction du nombre
-    d'entités du groupe sur lequel elle s'appuie. Pour ce type de variable,
+    Cette opÃ©ration ne doit pas Ãªtre appelÃ©e pour les variables du maillage
+    car le nombre d'Ã©lÃ©ments est dÃ©terminÃ© automatiquement en fonction du nombre
+    d'entitÃ©s du groupe sur lequel elle s'appuie. Pour ce type de variable,
     il faut appeler resizeFromGroup().
     
-    Cette opération synchronise les références (syncReferences()).
+    Cette opÃ©ration synchronise les rÃ©fÃ©rences (syncReferences()).
   */
   virtual void resize(Integer new_size);
 
   /*!
-    \brief Positionne le nombre d'éléments pour une variable du maillage.
+    \brief Positionne le nombre d'Ã©lÃ©ments pour une variable du maillage.
     
-    Réalloue la taille de la variable du maillage à partir du groupe
+    RÃ©alloue la taille de la variable du maillage Ã  partir du groupe
     sur laquelle elle s'appuie.
 
-    Cette opération n'a d'effet que pour les variables du maillage.
-    Pour les autres, aucun action n'est effectuée.
+    Cette opÃ©ration n'a d'effet que pour les variables du maillage.
+    Pour les autres, aucun action n'est effectuÃ©e.
 
-    Cette opération synchronise les références (syncReferences()).
+    Cette opÃ©ration synchronise les rÃ©fÃ©rences (syncReferences()).
   */
   virtual void resizeFromGroup();
 
@@ -205,65 +205,65 @@ public:
   /*!
    * \brief Initialise la variable sur un groupe.
    *
-   Initialise la variable avec la valeur \a value pour tous les éléments du
+   Initialise la variable avec la valeur \a value pour tous les Ã©lÃ©ments du
    groupe \a group.
 	 
-   Cette opération n'est utilisable qu'avec les variables de maillage.
+   Cette opÃ©ration n'est utilisable qu'avec les variables de maillage.
 	 
-   \param group_name groupe. Il doit correspondre à un groupe existant
+   \param group_name groupe. Il doit correspondre Ã  un groupe existant
    du type de la variable (par exemple CellGroup pour une variable au maille).
-   \param value valeur d'initialisation. La chaîne doit pouvoir être convertie
+   \param value valeur d'initialisation. La chaÃ®ne doit pouvoir Ãªtre convertie
    en le type de la variable.
 
    \retval true en cas d'erreur ou si la variable n'est pas une variable du
    maillage.
-   \retval false si l'initialisation est un succès.
+   \retval false si l'initialisation est un succÃ¨s.
   */
   virtual bool initialize(const ItemGroup& group,const String& value);
 
 
-  //! @name Opérations de vérification
+  //! @name OpÃ©rations de vÃ©rification
   //@{
-  /*! \brief Vérifie si la variable est bien synchronisée.
+  /*! \brief VÃ©rifie si la variable est bien synchronisÃ©e.
    *
-   * Cette opération ne fonctionne que pour les variables de maillage.
+   * Cette opÃ©ration ne fonctionne que pour les variables de maillage.
    *
-   * Un variable est synchronisée lorsque ses valeurs sont les mêmes
-   * sur tous les sous-domaines à la fois sur les éléments propres et
-   * les éléments fantômes.
+   * Un variable est synchronisÃ©e lorsque ses valeurs sont les mÃªmes
+   * sur tous les sous-domaines Ã  la fois sur les Ã©lÃ©ments propres et
+   * les Ã©lÃ©ments fantÃ´mes.
    *
-   * Pour chaque élément non synchronisé, un message est affiché.
+   * Pour chaque Ã©lÃ©ment non synchronisÃ©, un message est affichÃ©.
    * 
-   * \param max_print nombre maximum de messages à afficher.
-   * Si 0, aucun élément n'est affiché. Si positif, affiche au plus
-   * \a max_print élément. Si négatif, tous les éléments sont affichés.
+   * \param max_print nombre maximum de messages Ã  afficher.
+   * Si 0, aucun Ã©lÃ©ment n'est affichÃ©. Si positif, affiche au plus
+   * \a max_print Ã©lÃ©ment. Si nÃ©gatif, tous les Ã©lÃ©ments sont affichÃ©s.
    *
-   * \return le nombre de valeurs différentes de la référence
+   * \return le nombre de valeurs diffÃ©rentes de la rÃ©fÃ©rence
    */
   virtual Integer checkIfSync(int max_print=0);
 
   /*!
-   * \brief Vérifie que la variable est identique à une valeur de référence
+   * \brief VÃ©rifie que la variable est identique Ã  une valeur de rÃ©fÃ©rence
    *
    * \deprecated Utiliser checkIfSame(IDataReader*)
    */
   virtual Integer checkIfSame(IDumpR& reader,int max_print,bool compare_ghost);
 
-  /*! \brief Vérifie que la variable est identique à une valeur de référence
+  /*! \brief VÃ©rifie que la variable est identique Ã  une valeur de rÃ©fÃ©rence
    *
-   * Cette opération vérifie que les valeurs de la variable sont identique
-   * à une valeur de référence qui est lu à partir du lecteur \a reader.
+   * Cette opÃ©ration vÃ©rifie que les valeurs de la variable sont identique
+   * Ã  une valeur de rÃ©fÃ©rence qui est lu Ã  partir du lecteur \a reader.
    *
-   * Pour chaque valeur différente de la référence, un message est affiché.
+   * Pour chaque valeur diffÃ©rente de la rÃ©fÃ©rence, un message est affichÃ©.
    *
-   * \param max_print nombre maximum de messages à afficher.
-   * Si 0, aucun élément n'est affiché. Si positif, affiche au plus
-   * \a max_print élément. Si négatif, tous les éléments sont affichés.
-   * \param compare_ghost si vrai, compare les valeurs à la fois sur les entités
-   * propres et les entités fantômes. Sinon, ne fait la comparaison que sur les
-   * entités propres.
+   * \param max_print nombre maximum de messages Ã  afficher.
+   * Si 0, aucun Ã©lÃ©ment n'est affichÃ©. Si positif, affiche au plus
+   * \a max_print Ã©lÃ©ment. Si nÃ©gatif, tous les Ã©lÃ©ments sont affichÃ©s.
+   * \param compare_ghost si vrai, compare les valeurs Ã  la fois sur les entitÃ©s
+   * propres et les entitÃ©s fantÃ´mes. Sinon, ne fait la comparaison que sur les
+   * entitÃ©s propres.
    *
-   * \return le nombre de valeurs différentes de la référence
+   * \return le nombre de valeurs diffÃ©rentes de la rÃ©fÃ©rence
    */
   virtual Integer checkIfSame(IDataReader* reader,int max_print,bool compare_ghost);
   //@}
@@ -275,66 +275,66 @@ public:
    */
   virtual void synchronize();
 
-  /*! \brief Maillage auquel est associé la variable.
+  /*! \brief Maillage auquel est associÃ© la variable.
    *
-   * Cette opération n'est significative que pour les variables sur des
-   * entités du maillage.
+   * Cette opÃ©ration n'est significative que pour les variables sur des
+   * entitÃ©s du maillage.
    */
   virtual IMesh* mesh() const;
   
   /*!
-   * \brief Groupe du maillage associé.
+   * \brief Groupe du maillage associÃ©.
    *
-   * \return le groupe du maillage associé si pour une variable du maillage
+   * \return le groupe du maillage associÃ© si pour une variable du maillage
    * ou le groupe nul si la variable n'est pas une variable du maillage.
    *
-   * Si une variable n'est pas utilisée ou pas encore allouée,
-   * la valeur retournée est le group nul.
-   * Cependant, la variable peut quand même être associée à un groupe.
+   * Si une variable n'est pas utilisÃ©e ou pas encore allouÃ©e,
+   * la valeur retournÃ©e est le group nul.
+   * Cependant, la variable peut quand mÃªme Ãªtre associÃ©e Ã  un groupe.
    * Dans ce cas, il faut utiliser la fonction itemGroupName() pour
-   * récupérer le nom de ce groupe.
+   * rÃ©cupÃ©rer le nom de ce groupe.
    */
   virtual ItemGroup itemGroup() const;
 
-  //! Nom du groupe d'entité associée.
+  //! Nom du groupe d'entitÃ© associÃ©e.
   virtual const String& itemGroupName() const;
 
   /*!
-   * \brief Famille d'entité associée.
+   * \brief Famille d'entitÃ© associÃ©e.
    *
-   * \return la famille associée à la variable ou 0
+   * \return la famille associÃ©e Ã  la variable ou 0
    * si la variable n'a pas de famille.
    *
-   * Si une variable n'est pas utilisée ou pas encore allouée,
-   * la valeur retournée est nulle.
-   * Cependant, la variable peut quand même être associée à une famille.
+   * Si une variable n'est pas utilisÃ©e ou pas encore allouÃ©e,
+   * la valeur retournÃ©e est nulle.
+   * Cependant, la variable peut quand mÃªme Ãªtre associÃ©e Ã  une famille.
    * Dans ce cas, il faut utiliser la fonction itemFamilyName() pour
-   * récupérer le nom de cette famille.
+   * rÃ©cupÃ©rer le nom de cette famille.
    */
   virtual IItemFamily* itemFamily() const;
 
-  //! Nom de la famille associée.
+  //! Nom de la famille associÃ©e.
   virtual const String& itemFamilyName() const;
 
-  /*! \brief Synchronise les références.
+  /*! \brief Synchronise les rÃ©fÃ©rences.
    *
-   * Synchronise les valeurs des références (VariableRef) à cette variable
-   * avec la valeur actuelle de la variable. Cette méthode est appelé
-   * automatiquement lorsqu'une variable scalaire est modifiée ou
-   * le nombre d'éléments d'une variable tableau change.
+   * Synchronise les valeurs des rÃ©fÃ©rences (VariableRef) Ã  cette variable
+   * avec la valeur actuelle de la variable. Cette mÃ©thode est appelÃ©
+   * automatiquement lorsqu'une variable scalaire est modifiÃ©e ou
+   * le nombre d'Ã©lÃ©ments d'une variable tableau change.
    */
   virtual void syncReferences();
 
  public:
 	
-  /*! \brief Positionne l'état d'utilisation de la variable
+  /*! \brief Positionne l'Ã©tat d'utilisation de la variable
    *
    * Si \v est faux, la variable devient inutilisable
-   * et toutes les ressources associées sont libérées.
+   * et toutes les ressources associÃ©es sont libÃ©rÃ©es.
    *
-   * Si \v est vrai, la variable est considérée comme utilisée et s'il s'agit
-   * d'une variable du maillage et que setItemGroup() n'a pas été appelé, la
-   * variable est allouée sur le groupe de toutes les entités.
+   * Si \v est vrai, la variable est considÃ©rÃ©e comme utilisÃ©e et s'il s'agit
+   * d'une variable du maillage et que setItemGroup() n'a pas Ã©tÃ© appelÃ©, la
+   * variable est allouÃ©e sur le groupe de toutes les entitÃ©s.
    */
   virtual void setUsed(bool v);
 
@@ -344,19 +344,19 @@ public:
 
   /*! \brief Indique si la variable est partielle.
    *
-   * Une variable est partielle lorsqu'elle n'est pas définie sur toutes les
-   * entités d'une famille. Dans ce cas, group()!=itemFamily()->allItems().
+   * Une variable est partielle lorsqu'elle n'est pas dÃ©finie sur toutes les
+   * entitÃ©s d'une famille. Dans ce cas, group()!=itemFamily()->allItems().
    */
   virtual bool isPartial() const;
   
  public:
 
   /** 
-   * Copie les valeurs des entités numéros @a source dans les entités
-   * numéro @a destination
+   * Copie les valeurs des entitÃ©s numÃ©ros @a source dans les entitÃ©s
+   * numÃ©ro @a destination
    * 
-   * @note Cette opération est interne à Arcane et doit se faire en
-   * conjonction avec la famille d'entité correspondant à cette
+   * @note Cette opÃ©ration est interne Ã  Arcane et doit se faire en
+   * conjonction avec la famille d'entitÃ© correspondant Ã  cette
    * variable.
    * 
    * @param source liste des @b localId source
@@ -365,12 +365,12 @@ public:
   virtual void copyItemsValues(Int32ConstArrayView source,Int32ConstArrayView destination);
 
   /** 
-   * Copie les moyennes des valeurs des entités numéros
-   * @a first_source et @a second_source dans les entités numéros
+   * Copie les moyennes des valeurs des entitÃ©s numÃ©ros
+   * @a first_source et @a second_source dans les entitÃ©s numÃ©ros
    * @a destination
    * 
-   * @param first_source liste des @b localId de la 1ère source
-   * @param second_source  liste des @b localId de la 2ème source
+   * @param first_source liste des @b localId de la 1Ã¨re source
+   * @param second_source  liste des @b localId de la 2Ã¨me source
    * @param destination  liste des @b localId destination
    */
   virtual void copyItemsMeanValues(Int32ConstArrayView first_source,
@@ -379,8 +379,8 @@ public:
 
   /*! \brief Compacte les valeurs de la variable.
    *
-   * Cette opération est interne à Arcane et doit se faire en
-   * conjonction avec la famille d'entité correspondant à cette
+   * Cette opÃ©ration est interne Ã  Arcane et doit se faire en
+   * conjonction avec la famille d'entitÃ© correspondant Ã  cette
    * variable.
    */
   virtual void compact(Int32ConstArrayView new_to_old_ids);
@@ -389,26 +389,26 @@ public:
 
  public:
 
-  //! Données associées à la variable
+  //! DonnÃ©es associÃ©es Ã  la variable
   virtual IData* data();
 
-  //! @name Opérations de sérialisation
+  //! @name OpÃ©rations de sÃ©rialisation
   //@{
-  /*! Sérialize la variable.
+  /*! SÃ©rialize la variable.
    *
-   * L'opération \a opération n'est significative qu'en lecture (ISerializer::ModeGet)
+   * L'opÃ©ration \a opÃ©ration n'est significative qu'en lecture (ISerializer::ModeGet)
    */
   virtual void serialize(ISerializer* sbuffer,IDataOperation* operation=0);
 
   /*!
-   * \brief Sérialize la variable pour les identifiants \a ids.
+   * \brief SÃ©rialize la variable pour les identifiants \a ids.
    *
-   * La sérialisation dépend de la dimension de la variable.
+   * La sÃ©rialisation dÃ©pend de la dimension de la variable.
    * Pour les variables scalaires (dimension=0), rien n'est fait.
    * Pour les variables tableaux ou du maillage, \a ids correspond a un tableau
-   * d'indirection de la première dimension.
+   * d'indirection de la premiÃ¨re dimension.
    *
-   * L'opération \a opération n'est significative qu'en lecture (ISerializer::ModeGet)
+   * L'opÃ©ration \a opÃ©ration n'est significative qu'en lecture (ISerializer::ModeGet)
    */
   virtual void serialize(ISerializer* sbuffer,Int32ConstArrayView ids,IDataOperation* operation=0);
 
@@ -424,25 +424,25 @@ public:
   //! Relit la variable
   virtual void read(IDataReader*);
 
-  /*! \brief Observable en écriture.
+  /*! \brief Observable en Ã©criture.
    *
-   * Les observateurs enregistrés dans cet observable sont appelés
-   * avant d'écrire la variable (opération write()).
+   * Les observateurs enregistrÃ©s dans cet observable sont appelÃ©s
+   * avant d'Ã©crire la variable (opÃ©ration write()).
    */
   virtual IObservable* writeObservable();
 
   /*! \brief Observable en lecture.
    *
-   * Les observateurs enregistrés dans cet observable sont appelés
-   * après avoir lu la variable (opération read).
+   * Les observateurs enregistrÃ©s dans cet observable sont appelÃ©s
+   * aprÃ¨s avoir lu la variable (opÃ©ration read).
    */
   virtual IObservable* readObservable();
 
   /*! \brief Observable en redimensionnement.
    *
-   * Les observateurs enregistrés dans cet observable sont appelés
-   * lorsque le nombre d'éléments de la variable change.
-   * C'est le cas par exemple après un remaillage pour une variable aux mailles
+   * Les observateurs enregistrÃ©s dans cet observable sont appelÃ©s
+   * lorsque le nombre d'Ã©lÃ©ments de la variable change.
+   * C'est le cas par exemple aprÃ¨s un remaillage pour une variable aux mailles
    */
   virtual IObservable* onSizeChangedObservable();
   //@}
@@ -455,9 +455,9 @@ public:
    * Si le tag \a tagname n'est pas dans la liste, rien ne se passe.
    */  
   virtual void removeTag(const String& tagname);
-  //! \a true si la variable possède le tag \a tagname
+  //! \a true si la variable possÃ¨de le tag \a tagname
   virtual bool hasTag(const String& tagname);
-  //! Valeur du tag \a tagname. La chaîne est nulle si le tag n'existe pas.
+  //! Valeur du tag \a tagname. La chaÃ®ne est nulle si le tag n'existe pas.
   virtual String tagValue(const String& tagname);
   //@}
 
@@ -468,14 +468,14 @@ public:
  
  public:
   
-  //! @name Gestion des dépendances
+  //! @name Gestion des dÃ©pendances
   //@{
-  /*! \brief Recalcule la variable si nécessaire
+  /*! \brief Recalcule la variable si nÃ©cessaire
    *
-   * Par le mécanisme de dépendances, cette opération est appelée récursivement
-   * sur toutes les variables dont dépend l'instance. La fonction de recalcul
-   * computeFunction() est ensuite appelée s'il s'avère qu'une des variables
-   * dont elle dépend a été modifiée plus récemment.
+   * Par le mÃ©canisme de dÃ©pendances, cette opÃ©ration est appelÃ©e rÃ©cursivement
+   * sur toutes les variables dont dÃ©pend l'instance. La fonction de recalcul
+   * computeFunction() est ensuite appelÃ©e s'il s'avÃ¨re qu'une des variables
+   * dont elle dÃ©pend a Ã©tÃ© modifiÃ©e plus rÃ©cemment.
    *
    * \pre computeFunction() != 0
    */
@@ -483,34 +483,34 @@ public:
 
   virtual void update(Real wanted_time);
 
-  /*! \brief Indique que la variable vient d'être mise à jour.
+  /*! \brief Indique que la variable vient d'Ãªtre mise Ã  jour.
    *
-   * Pour une gestion correcte des dépendances, il faut que cette propriété
-   * soit appelée toutes les fois où la mise à jour d'une variable a été
-   * effectuée.
+   * Pour une gestion correcte des dÃ©pendances, il faut que cette propriÃ©tÃ©
+   * soit appelÃ©e toutes les fois oÃ¹ la mise Ã  jour d'une variable a Ã©tÃ©
+   * effectuÃ©e.
    */
   virtual void setUpToDate();
 
-  //! Temps auquel la variable a été mise à jour
+  //! Temps auquel la variable a Ã©tÃ© mise Ã  jour
   virtual Int64 modifiedTime();
 
-  /*! \brief Ajoute \a var à la liste des dépendances
+  /*! \brief Ajoute \a var Ã  la liste des dÃ©pendances
    *
    */
   virtual void addDepend(IVariable* var,eDependType dt);
 
-  /*! \brief Supprime \a var de la liste des dépendances
+  /*! \brief Supprime \a var de la liste des dÃ©pendances
    */
   virtual void removeDepend(IVariable* var);
 
   /*! \brief Positionne la fonction de recalcule de la variable.
    *
-   * Si une fonction de recalcule existait déjà, elle est détruite
-   * et remplacée par celle-ci.
+   * Si une fonction de recalcule existait dÃ©jÃ , elle est dÃ©truite
+   * et remplacÃ©e par celle-ci.
    */
   virtual void setComputeFunction(IVariableComputeFunction* v);
 
-  //! Fonction utilisée pour mettre à jour la variable
+  //! Fonction utilisÃ©e pour mettre Ã  jour la variable
   virtual IVariableComputeFunction* computeFunction();
   //@}
 
@@ -519,21 +519,21 @@ public:
   virtual IMemoryAccessTrace* memoryAccessTrace() const;
 
   /*!
-   * \brief Indique que la variable est synchronisée.
+   * \brief Indique que la variable est synchronisÃ©e.
    *
-   * Cette opération est collective.
+   * Cette opÃ©ration est collective.
    */
   virtual void setIsSynchronized();
 
   /*!
-   * \brief Indique que la variable est synchronisée sur le group \a item_group
+   * \brief Indique que la variable est synchronisÃ©e sur le group \a item_group
    *
-   * Cette opération est collective.
+   * Cette opÃ©ration est collective.
    */
   virtual void setIsSynchronized(const ItemGroup& item_group);
 
 public:
-  //! Accès au gestionnaire de trace
+  //! AccÃ¨s au gestionnaire de trace
   ITraceMng * traceMng() const 
   { 
     return m_trace_mng;
@@ -541,7 +541,7 @@ public:
     // return itemGroup().mesh()->traceMng(); 
   }
 
-  //! Accès au gestionnaire de variable
+  //! AccÃ¨s au gestionnaire de variable
   IVariableMng * variableMng() const 
   { 
     return m_variable_mng;
@@ -698,7 +698,7 @@ Integer
 ItemGroupMapAbstractVariable::
 nbReference() const 
 {
-  return 1; // Uniquement son ItemGroupMapAbstract propriétaire
+  return 1; // Uniquement son ItemGroupMapAbstract propriÃ©taire
 }
 
 Expression 

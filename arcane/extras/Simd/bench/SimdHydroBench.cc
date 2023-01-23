@@ -1,4 +1,4 @@
-#include <arcane/utils/ArcaneGlobal.h>
+ï»¿#include <arcane/utils/ArcaneGlobal.h>
 
 #include "bench/Wrapper.h"
 #include "arcane/utils/ArrayView.h"
@@ -174,9 +174,9 @@ _computeCQsSimd(SimdReal3 node_coord[8],SimdReal3 face_coord[6],SimdReal3 cqs[8]
 void SimdHydroBench::
 computeGeometric(Int32 nb_compute_cqs)
 {
-  // Copie locale des coordonnées des sommets d'une maille
+  // Copie locale des coordonnï¿½es des sommets d'une maille
   SimdReal3 coord[8];
-  // Coordonnées des centres des faces
+  // Coordonnï¿½es des centres des faces
   SimdReal3 face_coord[6];
 
   SimdReal3 cqs[8];

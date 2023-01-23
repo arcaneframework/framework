@@ -1,4 +1,4 @@
-#ifndef TYPESMICROHYDRO_H
+ï»¿#ifndef TYPESMICROHYDRO_H
 #define TYPESMICROHYDRO_H
 
 #include <arcane/ItemGroup.h>
@@ -8,12 +8,11 @@ struct TypesMicroHydro
 {
     enum eBoundaryCondition
     {
-        VelocityX, //!< Vitesse X fixée
-        VelocityY, //!< Vitesse Y fixée
-        VelocityZ, //!< Vitesse Z fixée
+        VelocityX, //!< Vitesse X fixÃ©e
+        VelocityY, //!< Vitesse Y fixÃ©e
+        VelocityZ, //!< Vitesse Z fixÃ©e
         Unknown //!< Type inconnu
     };
 };
 
 #endif
-
