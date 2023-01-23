@@ -26,9 +26,9 @@
 #include "arcane/accelerator/ViewsCommon.h"
 #include "arcane/accelerator/VariableViews.h"
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 using namespace Arcane;
 using namespace Arcane::Materials;
 
@@ -59,6 +59,7 @@ class MatVariableViewBase
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Vue en lecture sur une variable scalaire du maillage.
+ * TODO: Faut-il rajouter la gestion des SIMD comme dans ItemVariableScalarInViewT ?
  */
 template<typename ItemType,typename DataType>
 class MatItemVariableScalarInViewT
@@ -108,8 +109,22 @@ class MatItemVariableScalarInViewT
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+/*
+ * TODO: A faire ?
+ *
+template<typename ItemType,typename DataType>
+class MatItemVariableArrayInViewT
+: public MatVariableViewBase
+{
+};
+ */
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
- * \brief Vue en lecture sur une variable scalaire du maillage.
+ * \brief Vue en écriture sur une variable scalaire du maillage.
+ * TODO: Faut il rajouter la gestion des types SIMD comme dans ItemVariableScalarOutViewT ?
  */
 template<typename ItemType,typename Accessor>
 class MatItemVariableScalarOutViewT
@@ -165,7 +180,6 @@ class MatItemVariableScalarOutViewT
     return Accessor(this->m_value0[idx.valueIndex()]);
   }
 
-
 // FIXME: Si on veut garder les 2 ci-dessous, il faudra
 // redéfinir CellComponentCellEnumerator et EnvCellEnumerator en version accelerator
 /*
@@ -188,14 +202,14 @@ class MatItemVariableScalarOutViewT
   DataType* m_value0;
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
  * \brief Vue en écriture pour les variables materiaux scalaire
  */
 template<typename DataType> auto
-viewOut(RunCommand& cmd, Materials::CellMaterialVariableScalarRef<DataType>& var)
+viewOut(RunCommand& cmd, CellMaterialVariableScalarRef<DataType>& var)
 {
   using Accessor = DataViewSetter<DataType>;
   return MatItemVariableScalarOutViewT<Cell,Accessor>(cmd, var.materialVariable(),var._internalValue());
@@ -204,47 +218,51 @@ viewOut(RunCommand& cmd, Materials::CellMaterialVariableScalarRef<DataType>& var
 /*!
  * \brief Vue en écriture pour les variables materiaux scalaire.
  * Spécialisation pour le Real2 pour éviter les mauvais usages
- * 
- * TODO: A faire plus tard ?
- * 
  *
+ * TODO: A faire plus tard ?  => faire MatItemVariableRealNScalarOutViewT
+ * 
 template<> auto
-viewOut(RunCommand& cmd, Materials::CellMaterialVariableScalarRef<Real2>&)
+viewOut(RunCommand& cmd, CellMaterialVariableScalarRef<Real2>& var)
 {
+  using Accessor = DataViewSetter<Real2>;
+  return MatItemVariableRealNScalarOutViewT<Cell,Accessor>(cmd, var.materialVariable(),var._internalValue());
+
 }
 */
 
 /*!
  * \brief Vue en écriture pour les variables materiaux scalaire.
  * Spécialisation pour le Real3 pour éviter les mauvais usages
- * 
- * TODO: A faire plus tard ?
- * 
  *
+ * TODO: A faire plus tard ? => faire MatItemVariableRealNScalarOutViewT
+ * 
 template<> auto
-viewOut(RunCommand& cmd, Materials::CellMaterialVariableScalarRef<Real3>& var)
+viewOut(RunCommand& cmd, CellMaterialVariableScalarRef<Real3>& var)
 {
+  using Accessor = DataViewSetter<Real3>;
+  return MatItemVariableRealNScalarOutViewT<Cell,Accessor>(cmd, var.materialVariable(),var._internalValue());
 }
-*/
+ */
 
 /*!
  * \brief Vue en écriture pour les variables materiaux tableau
  *
- * TODO: Array a faire plus tard ?
+ * TODO: A faire plus tard ?
  *
 template<typename DataType> auto
-viewOut(RunCommand& cmd, Materials::CellMaterialVariableArrayRef<DataType>& var)
+viewOut(RunCommand& cmd, CellMaterialVariableArrayRef<DataType>& var)
 {
 }
 */
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Vue en lecture/écriture pour les variables materiaux scalaire
  */
 template<typename DataType> auto
-viewInOut(RunCommand& cmd, Materials::CellMaterialVariableScalarRef<DataType>& var)
+viewInOut(RunCommand& cmd, CellMaterialVariableScalarRef<DataType>& var)
 {
   using Accessor = DataViewGetterSetter<DataType>;
   return MatItemVariableScalarOutViewT<Cell,Accessor>(cmd, var.materialVariable(),var._internalValue());
@@ -253,12 +271,11 @@ viewInOut(RunCommand& cmd, Materials::CellMaterialVariableScalarRef<DataType>& v
 /*!
  * \brief Vue en lecture/écriture pour les variables materiaux scalaire.
  * Spécialisation pour le Real2 pour éviter les mauvais usages
- * 
- * TODO: A faire plus tard ?
- * 
  *
+ * TODO: A faire plus tard ? => faire MatItemVariableRealNScalarOutViewT
+ * 
 template<> auto
-viewInOut(RunCommand& cmd, Materials::CellMaterialVariableScalarRef<Real2>& var)
+viewInOut(RunCommand& cmd, CellMaterialVariableScalarRef<Real2>& var)
 {
 }
 */
@@ -267,11 +284,10 @@ viewInOut(RunCommand& cmd, Materials::CellMaterialVariableScalarRef<Real2>& var)
  * \brief Vue en lecture/écriture pour les variables materiaux scalaire.
  * Spécialisation pour le Real3 pour éviter les mauvais usages
  * 
- * TODO: A faire plus tard ?
- * 
+ * TODO: A faire plus tard ? => faire MatItemVariableRealNScalarOutViewT
  *
 template<> auto
-viewInOut(RunCommand& cmd, Materials::CellMaterialVariableScalarRef<Real3>& var)
+viewInOut(RunCommand& cmd, CellMaterialVariableScalarRef<Real3>& var)
 {
 }
 */
@@ -279,17 +295,17 @@ viewInOut(RunCommand& cmd, Materials::CellMaterialVariableScalarRef<Real3>& var)
 /*!
  * \brief Vue en lecture/écriture pour les variables materiaux tableau
  *
- *
- * TODO: Array => a faire plus tard ?
+ * TODO: A faire plus tard ?
  * 
 template<typename DataType> auto
-viewInOut(RunCommand& cmd, Materials::CellMaterialVariableArrayRef<DataType>& var)
+viewInOut(RunCommand& cmd, CellMaterialVariableArrayRef<DataType>& var)
 {
 }
 */
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 /*!
  * \brief Vue en lecture pour les variables materiaux scalaire
  */
@@ -302,7 +318,12 @@ viewIn(RunCommand& cmd,const Materials::CellMaterialVariableScalarRef<DataType>&
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Si on garde cette classe il faudra la blinder, surtout sur le ctor component
+/*!
+ * \brief Classe helper pour l'accès au MatVarIndex et au CellLocalId à travers les 
+ *        RUNCOMMAND_ENUMERATE(EnvCell...
+  */
+// TODO: Si on garde cette classe il faudra la blinder, surtout sur le ctor component
+// TODO: Faut(il revoir la classe pour faire qqch similaire à un Enumerator ?
 class EnvCellAccessor {
  public:
   ARCCORE_HOST_DEVICE explicit EnvCellAccessor(EnvCell ec)
@@ -333,6 +354,8 @@ class EnvCellAccessor {
 namespace impl
 {
 
+// Cet alias est nécessaire pour éviter les problèmes d'inférence de type
+// dans les template avec des const * const ...
 using ComponentItemInternalPtr = ComponentItemInternal*; 
 
 /*---------------------------------------------------------------------------*/
@@ -340,6 +363,9 @@ using ComponentItemInternalPtr = ComponentItemInternal*;
 
 #if defined(ARCANE_COMPILING_CUDA) || defined(ARCANE_COMPILING_HIP)
 
+/*
+ * Spécialization <MatVarIndex, CellLocalId> de la fonction de lancement de kernel pour GPU
+ */ 
 template<typename ItemType,typename Lambda> __global__
 void doIndirectGPULambda(SmallSpan<const MatVarIndex> mvis,SmallSpan<const Int32> cids,Lambda func)
 {
@@ -361,6 +387,9 @@ void doIndirectGPULambda(SmallSpan<const MatVarIndex> mvis,SmallSpan<const Int32
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*
+ * Spécialization EnvCellVectorView de la fonction de lancement de kernel en MT
+ */ 
 template<typename ItemType,typename Lambda>
 void _doIndirectThreadLambda(const EnvCellVectorView& sub_items,Lambda func)
 {
@@ -376,6 +405,7 @@ void _doIndirectThreadLambda(const EnvCellVectorView& sub_items,Lambda func)
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Applique l'enumération \a func sur la liste d'entité \a items.
+ *        Spécialization pour les EnvCellVectorView
  */
 template<typename Lambda> void
 _applyItems(RunCommand& command,const EnvCellVectorView& items,Lambda func)
@@ -395,7 +425,6 @@ _applyItems(RunCommand& command,const EnvCellVectorView& items,Lambda func)
       SmallSpan<const Int32> cids(items.component()->variableIndexer()->localIds());
       // TODO: vérifier que l'arcane assert n'est pas tout le temps fait
       ARCANE_ASSERT(mvis.size() == cids.size(), "MatVarIndex and CellLocalId arrays have different size");
-
       auto [b,t] = launch_info.computeThreadBlockInfo(vsize);
       cudaStream_t* s = reinterpret_cast<cudaStream_t*>(launch_info._internalStreamImpl());
       // TODO: le memadvise est mal placé ici, mais n'apporte pas plus dans l'indexer
@@ -422,17 +451,20 @@ _applyItems(RunCommand& command,const EnvCellVectorView& items,Lambda func)
     ARCANE_FATAL("Requesting CUDA kernel execution but the kernel is not compiled with CUDA compiler");
 #endif
     break;
+// TODO: A tester...
 /*
-// TODO: NYI
   case eExecutionPolicy::HIP:
 #if defined(ARCANE_COMPILING_HIP)
     {
       launch_info.beginExecute();
-      SmallSpan<const Int32> local_ids = items.localIds();
+      SmallSpan<const MatVarIndex> mvis(items.component()->variableIndexer()->matvarIndexes());
+      SmallSpan<const Int32> cids(items.component()->variableIndexer()->localIds());
+      // TODO: vérifier que l'arcane assert n'est pas tout le temps fait
+      ARCANE_ASSERT(mvis.size() == cids.size(), "MatVarIndex and CellLocalId arrays have different size");
       auto [b,t] = launch_info.computeThreadBlockInfo(vsize);
       hipStream_t* s = reinterpret_cast<hipStream_t*>(launch_info._internalStreamImpl());
       auto& loop_func = impl::doIndirectGPULambda<ItemType,Lambda>;
-      hipLaunchKernelGGL(loop_func,b,t,0,*s, local_ids,std::forward<Lambda>(func));
+      hipLaunchKernelGGL(loop_func,b,t,0,*s,mvis,cids,std::forward<Lambda>(func));
     }
 #else
     ARCANE_FATAL("Requesting HIP kernel execution but the kernel is not compiled with HIP compiler");
@@ -445,7 +477,6 @@ _applyItems(RunCommand& command,const EnvCellVectorView& items,Lambda func)
       // TODO: A voir avec GG si un for range est acceptable
       for (auto i : items.itemsInternalView())
         func(EnvCellAccessor(i));
-
       // TODO: Faut il remplacer le code ci-dessus par celui ci-dessous pour avoir un comportement équivalent entre CPU et GPU ?
       /*
       SmallSpan<const MatVarIndex> mvis(items.component()->variableIndexer()->matvarIndexes());
@@ -477,37 +508,50 @@ _applyItems(RunCommand& command,const EnvCellVectorView& items,Lambda func)
 
 } // End namespace impl
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+///! Spécialization du run pour les EnvCellVectorView
 template<typename Lambda> void
 run(RunCommand& command,const EnvCellVectorView& items,Lambda func)
 {
   impl::_applyItems(command,items,std::forward<Lambda>(func));
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*
+ * Spécialization de la classe ItemRunCommand pour les EnvCell
+ */
 template<>
 class ItemRunCommand<EnvCell>
 {
  public:
   ItemRunCommand(RunCommand& command,const EnvCellVectorView& items)
-  : m_command(command), m_items(items)
-  {
-  }
+  : m_command(command), m_items(items) {}
   RunCommand& m_command;
   EnvCellVectorView m_items;
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+///! Spécialization de l'opérateur << d'une commande avec un EnvCellVectorView
 ItemRunCommand<EnvCell>
 operator<<(RunCommand& command,const EnvCellVectorView& items)
 {
   return ItemRunCommand<EnvCell>(command,items);
 }
 
-// Surcharge pour avoir directement l'environnement en paramètre
+///! Surcharge de la spécialization de l'opérateur << d'une commande avec un EnvCellVectorView pour un environnement
 ItemRunCommand<EnvCell>
 operator<<(RunCommand& command,IMeshEnvironment* env)
 {
   return ItemRunCommand<EnvCell>(command,env->envView());
 }
 
+///! Spécialization de l'opérateur << pour les ItemRunCommand<EnvCell>
 template<typename Lambda>
 void operator<<(ItemRunCommand<EnvCell>&& nr,Lambda f)
 {
