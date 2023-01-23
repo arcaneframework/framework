@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiSerializeMessageList.cc                                  (C) 2000-2022 */
+/* MpiSerializeMessageList.cc                                  (C) 2000-2023 */
 /*                                                                           */
 /* Gestion des messages de sérialisationd via MPI.                           */
 /*---------------------------------------------------------------------------*/
@@ -132,7 +132,7 @@ processPendingMessages()
   // plus nécessaire de faire ce tri car tout est non bloquant.
   //std::stable_sort(std::begin(m_messages_to_process),std::end(m_messages_to_process),_SortMessages());
   const bool print_sorted = false;
-  if (print_sorted)
+  if (print_sorted){
     for( Integer i=0, is=m_messages_to_process.size(); i<is; ++i ){
       ISerializeMessage* pmsg = m_messages_to_process[i];
       msg->debug() << "Sorted message " << i
@@ -141,6 +141,7 @@ processPendingMessages()
                    << " tag=" << pmsg->internalTag()
                    << " send?=" << pmsg->isSend();
     }
+  }
 
   Int64 serialize_buffer_size = m_dispatcher->serializeBufferSize();
   for( Integer i=0; i<nb_message; ++i ){
