@@ -1,4 +1,4 @@
-// Note: sous win64, le type Int64 doit �tre un 'long long'
+﻿// Note: sous win64, le type Int64 doit être un 'long long'
 // car le type long est sur 32 bits.
 #define ARCANE_TYPE_INT16 short
 #define ARCANE_TYPE_INT32 int

@@ -1,7 +1,13 @@
+ï»¿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Math.h                                                      (C) 2000-2006 */
+/* Math.h                                                      (C) 2000-2023 */
 /*                                                                           */
-/* Fonctions mathématiques diverses.                                         */
+/* Fonctions mathÃ©matiques diverses.                                         */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_MATH_H
 #define ARCANE_UTILS_MATH_H
@@ -19,9 +25,9 @@ ARCANE_BEGIN_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
-  \brief Espace de nom pour les fonctions mathématiques.
+  \brief Espace de nom pour les fonctions mathÃ©matiques.
  
-  Cet espace de nom contient toutes les fonctions mathématiques utilisées
+  Cet espace de nom contient toutes les fonctions mathÃ©matiques utilisÃ©es
   par le code.
 */
 namespace math
@@ -30,7 +36,7 @@ namespace math
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Logarithme népérien de \a v.
+ * \brief Logarithme nÃ©pÃ©rien de \a v.
  */
 inline double
 log(double v)
@@ -43,7 +49,7 @@ log(double v)
 }
 
 /*!
- * \brief Logarithme népérien de \a v.
+ * \brief Logarithme nÃ©pÃ©rien de \a v.
  */
 inline long double
 log(long double v)
@@ -58,7 +64,7 @@ log(long double v)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Logarithme décimal de \a v.
+ * \brief Logarithme dÃ©cimal de \a v.
  */
 inline double
 log10(double v)
@@ -71,7 +77,7 @@ log10(double v)
 }
 
 /*!
- * \brief Logarithme décimal de \a v.
+ * \brief Logarithme dÃ©cimal de \a v.
  */
 inline long double
 log10(long double v)
@@ -86,7 +92,7 @@ log10(long double v)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Arondir \a v à l'entier immédiatement inférieur.
+ * \brief Arondir \a v Å• l'entier immÃ©diatement infÃ©rieur.
  */
 inline double
 floor(double v)
@@ -95,7 +101,7 @@ floor(double v)
 }
 
 /*!
- * \brief Arondir \a v à l'entier immédiatement inférieur.
+ * \brief Arondir \a v Å• l'entier immÃ©diatement infÃ©rieur.
  */
 inline long double
 floor(long double v)
@@ -125,7 +131,7 @@ exp(long double v)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Racine carrée de \a v.
+ * \brief Racine carrÃ©e de \a v.
  */
 inline double
 sqrt(double v)
@@ -137,7 +143,7 @@ sqrt(double v)
   return ::sqrt(v);
 }
 /*!
- * \brief Racine carrée de \a v.
+ * \brief Racine carrÃ©e de \a v.
  */
 inline long double
 sqrt(long double v)
@@ -154,7 +160,7 @@ sqrt(long double v)
 /*!
  * \brief Fonction puissance.
  *
- * Calcul \a x à la puissance \a y.
+ * Calcul \a x Å• la puissance \a y.
  *
  * \pre x>=0 ou y entier
  */
@@ -162,7 +168,7 @@ inline double
 pow(double x,double y)
 {
 #ifdef ARCANE_CHECK
-  // Arguments invalides si x est négatif et y non entier
+  // Arguments invalides si x est nÃ©gatif et y non entier
   if (x<0.0 && ::floor(y)!=y)
     arcaneMathError(x,y,"pow");
 #endif
@@ -173,7 +179,7 @@ pow(double x,double y)
 /*!
  * \brief Fonction puissance.
  *
- * Calcul \a x à la puissance \a y.
+ * Calcul \a x Å• la puissance \a y.
  *
  * \pre x>=0 ou y entier
  */
@@ -181,7 +187,7 @@ inline long double
 pow(long double x,long double y)
 {
 #ifdef ARCANE_CHECK
-  // Arguments invalides si x est négatif et y non entier
+  // Arguments invalides si x est nÃ©gatif et y non entier
   if (x<0.0 && ::floorl(y)!=y)
     arcaneMathError(x,y,"pow");
 #endif
@@ -190,7 +196,7 @@ pow(long double x,long double y)
 /*!
  * \brief Fonction puissance.
  *
- * Calcul \a x à la puissance \a y.
+ * Calcul \a x Å• la puissance \a y.
  *
  * \pre x>=0 ou y entier
  */
@@ -198,7 +204,7 @@ inline long double
 pow(double x,long double y)
 {
 #ifdef ARCANE_CHECK
-  // Arguments invalides si x est négatif et y non entier
+  // Arguments invalides si x est nÃ©gatif et y non entier
   if (x<0.0 && ::floorl(y)!=y)
     arcaneMathError(x,y,"pow");
 #endif
@@ -207,7 +213,7 @@ pow(double x,long double y)
 /*!
  * \brief Fonction puissance.
  *
- * Calcul \a x à la puissance \a y.
+ * Calcul \a x Å• la puissance \a y.
  *
  * \pre x>=0 ou y entier
  */
@@ -215,7 +221,7 @@ inline long double
 pow(long double x,double y)
 {
 #ifdef ARCANE_CHECK
-  // Arguments invalides si x est négatif et y non entier
+  // Arguments invalides si x est nÃ©gatif et y non entier
   if (x<0.0 && ::floor(y)!=y)
     arcaneMathError(x,y,"pow");
 #endif
@@ -225,11 +231,11 @@ pow(long double x,double y)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Retourne le minimum de deux éléments.
+ * \brief Retourne le minimum de deux Ã©lÃ©ments.
  *
  * \ingroup GroupMathUtils
  *
- * Utilise l'opérateur < pour déterminer le minimum.
+ * Utilise l'opÃ©rateur < pour dÃ©terminer le minimum.
  */
 template<class T> inline T
 min(const T& a,const T& b)
@@ -237,7 +243,7 @@ min(const T& a,const T& b)
   return ( (a<b) ? a : b );
 }
 /*!
- * \brief Retourne le minimum de deux réels.
+ * \brief Retourne le minimum de deux rÃ©els.
  * \ingroup GroupMathUtils
  */
 inline long double
@@ -246,7 +252,7 @@ min(long double a,long double b)
   return ( (a<b) ? a : b );
 }
 /*!
- * \brief Retourne le minimum de deux réels.
+ * \brief Retourne le minimum de deux rÃ©els.
  * \ingroup GroupMathUtils
  */
 inline long double
@@ -255,7 +261,7 @@ min(double a,long double b)
   return ( (a<b) ? a : b );
 }
 /*!
- * \brief Retourne le minimum de deux réels.
+ * \brief Retourne le minimum de deux rÃ©els.
  * \ingroup GroupMathUtils
  */
 inline long double
@@ -264,7 +270,7 @@ min(long double a,double b)
   return ( (a<b) ? a : b );
 }
 /*!
- * \brief Retourne le minimum de deux réels.
+ * \brief Retourne le minimum de deux rÃ©els.
  * \ingroup GroupMathUtils
  */
 inline double
@@ -273,7 +279,7 @@ min(double a,double b)
   return ( (a<b) ? a : b );
 }
 /*!
- * \brief Retourne le minimum de deux réels.
+ * \brief Retourne le minimum de deux rÃ©els.
  * \ingroup GroupMathUtils
  */
 inline float
@@ -294,11 +300,11 @@ min(int a,int b)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Retourne le maximum de deux éléments.
+ * \brief Retourne le maximum de deux Ã©lÃ©ments.
  *
  * \ingroup GroupMathUtils
  *
- * Utilise l'opérateur < pour déterminer le maximum.
+ * Utilise l'opÃ©rateur < pour dÃ©terminer le maximum.
  */
 template<class T> inline T
 max(const T& a,const T& b)
@@ -306,7 +312,7 @@ max(const T& a,const T& b)
   return ( (a<b) ? b : a );
 }
 /*!
- * \brief Retourne le maximum de deux réels.
+ * \brief Retourne le maximum de deux rÃ©els.
  * \ingroup GroupMathUtils
  */
 inline long double
@@ -315,7 +321,7 @@ max(long double a,long double b)
   return ( (a<b) ? b : a );
 }
 /*!
- * \brief Retourne le maximum de deux réels.
+ * \brief Retourne le maximum de deux rÃ©els.
  * \ingroup GroupMathUtils
  */
 inline long double
@@ -324,7 +330,7 @@ max(double a,long double b)
   return ( (a<b) ? b : a );
 }
 /*!
- * \brief Retourne le maximum de deux réels.
+ * \brief Retourne le maximum de deux rÃ©els.
  * \ingroup GroupMathUtils
  */
 inline long double
@@ -342,7 +348,7 @@ max(unsigned long a,unsigned long b)
   return ( (a<b) ? b : a );
 }
 /*!
- * \brief Retourne le maximum de deux réels.
+ * \brief Retourne le maximum de deux rÃ©els.
  * \ingroup GroupMathUtils
  */
 inline double
@@ -351,7 +357,7 @@ max(double a,double b)
   return ( (a<b) ? b : a );
 }
 /*!
- * \brief Retourne le maximum de deux réels.
+ * \brief Retourne le maximum de deux rÃ©els.
  * \ingroup GroupMathUtils
  */
 inline float
@@ -399,7 +405,7 @@ max(Int64 a,Int64 b)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Retourne la valeur absolue d'un réel.
+ * \brief Retourne la valeur absolue d'un rÃ©el.
  * \ingroup GroupMathUtils
  */
 inline long double
@@ -409,7 +415,7 @@ abs(long double a)
   //return (a>0.L) ? a : (-a);
 }
 /*!
- * \brief Retourne la valeur absolue d'un réel.
+ * \brief Retourne la valeur absolue d'un rÃ©el.
  * \ingroup GroupMathUtils
  */
 inline double
@@ -418,7 +424,7 @@ abs(double a)
   return ::fabs(a);
 }
 /*!
- * \brief Retourne la valeur absolue d'un réel.
+ * \brief Retourne la valeur absolue d'un rÃ©el.
  * \ingroup GroupMathUtils
  */
 inline float
