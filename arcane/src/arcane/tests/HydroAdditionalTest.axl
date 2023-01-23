@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?><!-- -*- SGML -*- -->
+<module name="HydroAdditionalTest" version="1.0" namespace-name="ArcaneTest">
+  <description>Module to add some test to the Hydro module</description>
+  <entry-points>
+    <entry-point method-name="init" name="HAT_Init" where="init" property="none" />
+    <entry-point method-name="doIterationEnd" name="HAT_IterationEnd" where="compute-loop" property="none" />
+  </entry-points>
+</module>
