@@ -45,7 +45,7 @@
  </maillage>
 
  <a-m-r-cartesian-mesh-tester>
-   <renumber-patch-method>1</renumber-patch-method>
+   <renumber-patch-method>2</renumber-patch-method>
    <refinement-2d>
      <position>1.0 2.0</position>
      <length>1.0 2.0</length>
@@ -63,9 +63,13 @@
      <length>2.0 2.0</length>
    </refinement-2d>
    <expected-number-of-cells-in-patchs>153 8 4 80 128</expected-number-of-cells-in-patchs>
-   <nodes-uid-hash>eef03075d1b1d32b63c9014bc567704e</nodes-uid-hash>
-   <faces-uid-hash>6d1b4ec0963f467f704c08f3f50dbd73</faces-uid-hash>
-   <cells-uid-hash>a577cb5e34dcbac51cec397ff7cb684e</cells-uid-hash>
+   <nodes-uid-hash>11518776325ecd272b12fc996489c7af</nodes-uid-hash>
+   <faces-uid-hash>d1bb8de45a0fff2cc1370b8a1c440569</faces-uid-hash>
+   <cells-uid-hash>39145f9b6647f649464db55c1f198a74</cells-uid-hash>
+   <!-- Hash si renumérotation level0 : -->
+   <!-- <nodes-uid-hash>64034b552187a6b3aa1c9dc2ddc4cb0f</nodes-uid-hash> -->
+   <!-- <faces-uid-hash>e5829fc268374e335fb383ba1266d12d</faces-uid-hash> -->
+   <!-- <cells-uid-hash>39145f9b6647f649464db55c1f198a74</cells-uid-hash> -->
  </a-m-r-cartesian-mesh-tester>
 
  <arcane-protections-reprises>

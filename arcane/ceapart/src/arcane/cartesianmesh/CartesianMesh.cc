@@ -35,6 +35,7 @@
 #include "arcane/cartesianmesh/internal/CartesianMeshPatch.h"
 
 #include "arcane/cartesianmesh/internal/CartesianMeshUniqueIdRenumbering.h"
+#include "arcane/cartesianmesh/v2/CartesianMeshUniqueIdRenumberingV2.h"
 
 #include <set>
 
@@ -623,16 +624,22 @@ renumberItemsUniqueId(const CartesianMeshRenumberingInfo& v)
   // Regarde d'abord si on renumérote les faces
   Int32 face_method = v.renumberFaceMethod();
   if (face_method!=0 && face_method!=1)
-    ARCANE_FATAL("Invalud value '{0}' for renumberFaceMethod(). Valid values are 0 or 1");
+    ARCANE_FATAL("Invalid value '{0}' for renumberFaceMethod(). Valid values are 0 or 1");
   if (face_method==1)
     ARCANE_THROW(NotImplementedException,"Method 1 for face renumbering");
 
   // Regarde ensuite les patchs si demandé.
   Int32 patch_method = v.renumberPatchMethod();
-  if (patch_method!=0 && patch_method!=1)
-    ARCANE_FATAL("Invalud value '{0}' for renumberPatchMethod(). Valid values are 0 or 1");
-  if (patch_method==1){
+  if (patch_method<0 && patch_method>2)
+    ARCANE_FATAL("Invalid value '{0}' for renumberPatchMethod(). Valid values are 0 or 1 or 2");
+    
+  else if (patch_method==1){
     CartesianMeshUniqueIdRenumbering renumberer(this,cmgi);
+    renumberer.renumber();
+  }
+  else if (patch_method==2){
+    warning() << "The patch method 2 is experimental!";
+    CartesianMeshUniqueIdRenumberingV2 renumberer(this,cmgi);
     renumberer.renumber();
   }
 

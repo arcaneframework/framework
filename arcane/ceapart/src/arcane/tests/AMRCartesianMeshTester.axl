@@ -41,6 +41,11 @@
    <simple name = "cells-uid-hash" type = "string" >
      <description>Hash des uniqueId() des mailles</description>
    </simple>
+   <simple name="renumber-patch-method" type="integer" default="1">
+     <description>
+       Méthode de renumérotation des patchs (0 ou 1 ou 2).
+     </description>
+   </simple>
 
 </options>
 

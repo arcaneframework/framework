@@ -260,7 +260,7 @@ init()
   else{
     m_cartesian_mesh->computeDirections();
     CartesianMeshRenumberingInfo renumbering_info;
-    renumbering_info.setRenumberPatchMethod(1);
+    renumbering_info.setRenumberPatchMethod(options()->renumberPatchMethod());
     renumbering_info.setSortAfterRenumbering(true);
     m_cartesian_mesh->renumberItemsUniqueId(renumbering_info);
     _checkUniqueIds();

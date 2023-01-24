@@ -47,7 +47,7 @@
  </maillage>
 
  <a-m-r-cartesian-mesh-tester>
-   <renumber-patch-method>1</renumber-patch-method>
+   <renumber-patch-method>2</renumber-patch-method>
    <refinement-3d>
      <position>1.0 2.0 -0.1</position>
      <length>2.0 4.0 0.5</length>

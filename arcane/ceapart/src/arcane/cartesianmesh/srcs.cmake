@@ -1,4 +1,4 @@
-set( ARCANE_SOURCES
+set(ARCANE_SOURCES
   CartesianMesh.cc
   CartesianConnectivity.cc
   CartesianConnectivity.h
@@ -25,4 +25,6 @@ set( ARCANE_SOURCES
   v2/CartesianGrid.h
   v2/CartesianNumbering.h
   v2/CartesianTypes.h
-  )
+  v2/CartesianMeshUniqueIdRenumberingV2.h
+  v2/CartesianMeshUniqueIdRenumberingV2.cc
+)
