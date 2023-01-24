@@ -3,6 +3,9 @@
   <arcane>
     <title>Tube a choc de Sod</title>
     <timeloop>ArcaneHydroLoop</timeloop>
+    <modules>
+      <module name="HydroAdditionalTest" active="true" />
+    </modules>
   </arcane>
 
   <mesh>

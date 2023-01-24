@@ -1,14 +1,15 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml version="1.0"?>
 <case codename="ArcaneTest" xml:lang="en" codeversion="1.0">
- <arcane>
-  <title>Tube à choc de Sod</title>
-  <timeloop>ArcaneHydroLoop</timeloop>
-  <modules>
-   <module name="ArcaneLoadBalance" active='true' />
-  </modules>
- </arcane>
+  <arcane>
+    <title>Tube Ã  choc de Sod</title>
+    <timeloop>ArcaneHydroLoop</timeloop>
+    <modules>
+      <module name="ArcaneLoadBalance" active='true' />
+      <module name="HydroAdditionalTest" active="true" />
+    </modules>
+  </arcane>
 
- <mesh>
+  <mesh>
 
   <meshgenerator><sod><x>100</x><y>10</y><z>10</z></sod></meshgenerator>
   <!-- <file internal-partition="true">sod.vtk</file> -->

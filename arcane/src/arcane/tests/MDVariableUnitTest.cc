@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MDVariableUnitTest.cc                                       (C) 2000-2022 */
+/* MDVariableUnitTest.cc                                       (C) 2000-2023 */
 /*                                                                           */
 /* Service de test des variables multi-dimension.                            */
 /*---------------------------------------------------------------------------*/
@@ -23,7 +23,6 @@
 #include "arcane/IVariableMng.h"
 #include "arcane/VariableTypes.h"
 #include "arcane/ServiceFactory.h"
-#include "arcane/MeshMDVariableRef.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 #include "arcane/tests/MDVariableUnitTest_axl.h"
@@ -52,11 +51,20 @@ class MDVariableUnitTest
   void initializeTest() override;
   void executeTest() override;
 
+  void samples1();
+  void samples2();
+  void samples3();
+
  private:
 
   void _testCustomVariable();
   void _testVectorMDVariable();
   void _testMatrixMDVariable();
+
+  template <typename VarType> void
+  _setAndTestShape(VarType& var_ref,
+                   std::array<Int32, VarType::nb_dynamic> reshape_value,
+                   std::array<Int32, VarType::FullExtentsType::rank() - 1> expected_shape);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -84,6 +92,9 @@ executeTest()
   _testCustomVariable();
   _testVectorMDVariable();
   _testMatrixMDVariable();
+  samples1();
+  samples2();
+  samples3();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -271,6 +282,131 @@ _testMatrixMDVariable()
       }
     }
   }
+
+  _setAndTestShape(m_scalar_var0d_real, {}, {});
+  _setAndTestShape(m_scalar_var1d_real, { 19 }, { 19 });
+  _setAndTestShape(m_scalar_var2d_real, { 7, 13 }, { 7, 13 });
+  _setAndTestShape(m_scalar_var2d_as_3d_real, { 5, 11, 14 }, { 5, 11, 14 });
+  _setAndTestShape(m_vector_var0d_real2, {}, { 2 });
+  _setAndTestShape(m_vector_var1d_real3, { 9 }, { 9, 3 });
+  _setAndTestShape(m_vector_var2d_real4, { 23, 12 }, { 23, 12, 4 });
+  _setAndTestShape(m_matrix_var0d_real2x2, {}, { 2, 2 });
+  _setAndTestShape(m_matrix_var1d_real2x6, { 7 }, { 7, 2, 6 });
+  _setAndTestShape(m_matrix_var0d_real3x2, {}, { 3, 2 });
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename VarType> void MDVariableUnitTest::
+_setAndTestShape(VarType& var_ref, std::array<Int32, VarType::nb_dynamic> reshape_value,
+                 std::array<Int32, VarType::FullExtentsType::rank() - 1> expected_shape_array)
+{
+  var_ref.reshape(reshape_value);
+  ArrayShape full_shape(var_ref.fullShape());
+  info() << "Shape name=" << var_ref.name() << " shape=" << full_shape;
+  Span<const Int32> shape_span(expected_shape_array);
+  ArrayShape expected_shape(shape_span);
+  if (full_shape != expected_shape)
+    ARCANE_FATAL("Bad shape for variable '{0}' shape={1} expected={2}",
+                 var_ref.name(), full_shape, expected_shape);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MDVariableUnitTest::
+samples1()
+{
+  //![SampleMDVariableScalar]
+  // Déclare une variable 2D aux mailles de type Real
+  //
+  // La déclaration équivalente dans le fichier AXL est:
+  // <variable field-name="cell_var_2d" name="Var1"
+  //           data-type="real" item-kind="cell" shape-dim="2"
+  // />
+  Arcane::VariableBuildInfo vbi(VariableBuildInfo(mesh(), "Var1"));
+  Arcane::MeshMDVariableRefT<Cell, Real, MDDim2> cell_var_2d(vbi);
+
+  // Positionne les deux dimensions à 3x4.
+  // Chaque maille aura 3x4 = 12 valeurs
+  cell_var_2d.reshape({ 3, 4 });
+
+  ENUMERATE_ (Cell, icell, allCells()) {
+    // Positionne la valeur pour l'indice (2,1)
+    cell_var_2d(icell, 2, 1) = 2.3;
+
+    // Affiche la valeur pour l'indice (2,1)
+    info() << cell_var_2d(icell, 2, 1);
+  }
+  //![SampleMDVariableScalar]
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MDVariableUnitTest::
+samples2()
+{
+  //![SampleMDVariableVector]
+  // Déclare une variable 2D aux mailles d'un vecteur de 7 Real
+  //
+  // La déclaration équivalente dans le fichier AXL est:
+  // <variable field-name="cell_var_2d" name="Var1"
+  //           data-type="real" item-kind="cell" shape-dim="2"
+  //           extent0="7"
+  // />
+  Arcane::VariableBuildInfo vbi(VariableBuildInfo(mesh(), "Var1"));
+  Arcane::MeshVectorMDVariableRefT<Cell, Real, 7, MDDim2> cell_var_2d(vbi);
+
+  // Positionne les deux dimensions à 2x3.
+  // Chaque maille aura 2x3 = 6 valeurs de 7 réels
+  cell_var_2d.reshape({ 3, 4 });
+
+  ENUMERATE_ (Cell, icell, allCells()) {
+    Arcane::NumVector<Real, 7> v({ 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 });
+
+    // Positionne la valeur pour l'indice (2,1)
+    cell_var_2d(icell, 2, 1) = v;
+
+    // Affiche la valeur du 6-ème élément du vecteur pour l'indice (2,1)
+    info() << cell_var_2d(icell, 2, 1)(5);
+  }
+  //![SampleMDVariableVector]
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MDVariableUnitTest::
+samples3()
+{
+  //![SampleMDVariableMatrix]
+  // Déclare une variable 1D aux mailles d'une matrix 2x5 de Real
+  //
+  // La déclaration équivalente dans le fichier AXL est:
+  // <variable field-name="cell_var_2d" name="Var1"
+  //           data-type="real" item-kind="cell" shape-dim="2"
+  //           extent0="2" extent1="5"
+  // />
+  Arcane::VariableBuildInfo vbi(VariableBuildInfo(mesh(), "Var1"));
+  Arcane::MeshMatrixMDVariableRefT<Cell, Real, 2, 5, MDDim1> cell_var_2d(vbi);
+
+  // Positionne la dimension à 9.
+  // Chaque maille aura 9 valeurs de 2x5 = 10 réels
+  cell_var_2d.reshape({ 9 });
+
+  ENUMERATE_ (Cell, icell, allCells()) {
+    Arcane::NumMatrix<Real, 2, 5> v({ 1.1, 2.2, 3.3, 4.4, 5.5 },
+                                    { 1.0, 2.0, 3.0, 4.0, 5.0 });
+
+    // Positionne la valeur pour l'indice (2,1)
+    cell_var_2d(icell, 7) = v;
+
+    // Affiche la valeur du (1,4) de la matrice pour l'indice (6)
+    info() << cell_var_2d(icell, 6)(1, 4);
+  }
+  //![SampleMDVariableMatrix]
 }
 
 /*---------------------------------------------------------------------------*/

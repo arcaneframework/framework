@@ -6,7 +6,7 @@ La plus grande partie de l'API %Arcane est accessible via la
 technologie `.Net`. Il est possible d'écrire des modules et service en
 C#.
 
-Les pages suivantes sont disponibles:
+Les pages suivantes sont disponibles :
 - \ref arcanedoc_wrapping_csharp_swig : montre comment faire une extension
   de classes C++ pour qu'elles soient accessibles en `C#`.
 
@@ -52,12 +52,12 @@ runtime '.Net' et charger les assembly nécessaires.
 `.Net` est une technologie assez similaire à `java` dans son
 principe. Le code source peut être écrit en plusieurs langages (C#,
 F#, Visual Basic). Le code est compilé en un pseudo assembleur
-(bytecode) indépendant de la plateforme. Le produits de cette
+(bytecode) indépendant de la plateforme. Le produit de cette
 compilation s'appelle une *assembly* (équivalent aux bibliothèques
 dynamiques du C++). En '.Net', l'extension est `.dll` comme les
 bibliothèques dynamiques (Dynamic Loaded Library) sous Windows.
 
-Comme java, le bytecode est lors de l'exécution converti en code
+Comme java, le bytecode est lors de l'exécution convertit en code
 spécifique à l'architecture de la machine cible. Le code `.Net`
 nécessite la présence d'un runtime pour gérer cette partie ainsi que
 pour d'autres fonctionnalités comme le Ramasse Miette (Garbage
@@ -65,7 +65,7 @@ Collector).
 
 ### Exemple en C# de main {#arcanedoc_wrapping_csharp_dotnet_example}
 
-Par convention, les fichiers C# on pour extension `.cs`. Le code en C#
+Par convention, les fichiers C# ont pour extension `.cs`. Le code en C#
 est très similaire au code C++:
 
 ```cs
@@ -88,7 +88,7 @@ public class MainClass
 
 `.Net` utilise un outil appelé `msbuild` pour compiler et il faut
 définir un projet au format XML contenant les informations
-nécessaire.
+nécessaires.
 
 \note il est aussi possible de compiler directement à la manière du
 C++ mais cette méthode est moins portable car il faut spécifier
@@ -100,16 +100,16 @@ compilation. Dans le principe, ce fichier projet est comme le
 `CMake`. En C#, pour `msbuild`, ce fichier a par convention
 l'extension `.csproj`. En général, un projet C# est créé dans un
 répertoire spécifique. La commande `dotnet new` permet de créer un
-répertoire avec un projet:
+répertoire avec un projet :
 
 ```sh
 dotnet new console -n MyTest
 ```
 
-Cela va créér un répertoire `MyTest` avec à l'intérieur un fichier
+Cela va créer un répertoire `MyTest` avec à l'intérieur un fichier
 `Program.cs` et un fichier `MyTest.csproj`.
 
-Le fichier `MyTest.csproj` sera comme suit:
+Le fichier `MyTest.csproj` sera comme suit :
 
 ```xml
  <Project Sdk="Microsoft.NET.Sdk">
@@ -122,7 +122,7 @@ Le fichier `MyTest.csproj` sera comme suit:
 </Project>
 ```
 
-et le fichier `Program.cs` comme suit:
+et le fichier `Program.cs` comme suit :
 
 ```cs
 using System;
@@ -145,9 +145,9 @@ projet et de lancer la commande `dotnet build`.
 \note Par défaut, tous les fichiers ayant l'extension `.cs` présent
 dans le répertoire du projet et les sous-répertoires sont
 compilés. C'est pour cela qu'il est préférable de placer les projets
-dans des sous-répertoires. Pour éviter ce comporter, il est possible
+dans des sous-répertoires. Pour éviter ce comportement, il est possible
 de mettre la valeur *false* à la propriété *EnableDefaultCompileItems*
-et d'ajouter spécifiquemet les fichiers à compiler. Par exemple:
+et d'ajouter spécifiquemet les fichiers à compiler. Par exemple :
 
 ```xml
 <PropertyGroup>
@@ -165,7 +165,7 @@ valeur *Debug* ou *Release* et *framework* la valeur de la propriété
 `msbuild` *TargetFramework*. Dans notre exemple, le répertoire sera
 donc `bin/Debug/netcoreapp3.1`.
 
-Pour exécuter le programme, il faut lancer la commande:
+Pour exécuter le programme, il faut lancer la commande :
 
 ```sh
 dotnet bin/Debug/netcoreapp3.1/MyTest.dll
@@ -174,7 +174,7 @@ dotnet bin/Debug/netcoreapp3.1/MyTest.dll
 \note il est aussi possible de lancer l'exécution directement par
 `dotnet run`. Mais avant de lancer l'exécution, cette dernière
 commande va vérifier s'il est nécessaire de recompiler le programme ce
-qui peut prendre du temps. Si on est sur de ne rien avoir modifié,
+qui peut prendre du temps. Si on est sûr de ne rien avoir modifié,
 spécifier directement la *dll* en argument de `dotnet` est
 préférable.
 
@@ -203,7 +203,7 @@ L'ajout des références aux DLL Arcane se fait via l'élément
 </ItemGroup>
 ```
 
-Les packages `nuget` suivants sont fournies par %Arcane:
+Les packages `nuget` suivants sont fournies par %Arcane :
 
 - Arcane.Utils: contient les classes utilitaires C# (tableaux et
   vues).
@@ -231,7 +231,7 @@ les classes de %Arcane et étendre d'autres classes.
 
 Il faut tout d'abord avoir `dotnet` dans son chemin. Si %Arcane est
 installé dans le répertoire `${ARCANE_PREFIX}` alors il faut lancer
-les commandes suivantes:
+les commandes suivantes :
 
 ```sh
 ARCANE_PREFIX=/path/to/arcane/install
@@ -241,7 +241,7 @@ dotnet new classlib
 dotnet add package Arcane.Core --source ${ARCANE_PREFIX}/nupkgs
 ```
 
-Pour compiler le code et l'installer dans un répertoire, il faut exécuter la commande suivante:
+Pour compiler le code et l'installer dans un répertoire, il faut exécuter la commande suivante :
 
 ```sh
 dotnet publish -o out

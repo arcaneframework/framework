@@ -87,7 +87,7 @@ de l'exécution. Un service singleton est un service pour lequel il
 n'existe qu'une seule instance qui est créée lors de
 l'initialisation du code. Un tel service peut avoir des options dans
 le jeu de données. La spécification des services singletons se fait
-comme suit:
+comme suit :
 
 ```xml
 <singleton-services>
@@ -97,7 +97,7 @@ comme suit:
 ```
   
 Comme pour le module, il y a deux attributs `name`
-et `need`. Si le service est optionel et qu'il n'est pas trouvé,
+et `need`. Si le service est optionnel et qu'il n'est pas trouvé,
 il ne sera pas instantié. Dans le code, il est possible de
 récupérer un service singleton dont on connait l'interface, via
 la classe ServiceBuilder. Exemple :
@@ -112,7 +112,7 @@ Avec Toto implémentant l'interface IToto.
 
 Cet élément contient l'attribut `where` précisant
 l'endroit d'appel des différents points d'entrée. Les valeurs possibles
-sont décrites dans le tableau ci-dessous:
+sont décrites dans le tableau ci-dessous :
 
 <table>
 

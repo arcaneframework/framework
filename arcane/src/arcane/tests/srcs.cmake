@@ -8,6 +8,7 @@ set(ARCANE_SOURCES
   CaseOptionsTesterModule.cc
   ParallelTesterModule.cc
   SubMeshTestModule.cc
+  HydroAdditionalTestModule.cc
   TestTplParameter.cc
   ModuleSimpleHydro.cc
   ModuleSimpleHydroGeneric.cc
@@ -108,6 +109,7 @@ set(AXL_FILES
   inout/InOutTester
   geometry/GeometryUnitTest
   CustomMeshTest
+  HydroAdditionalTest
   accelerator/SimpleHydroAccelerator
   PDESRandomNumberGeneratorUnitTest
   RandomNumberGeneratorUnitTest

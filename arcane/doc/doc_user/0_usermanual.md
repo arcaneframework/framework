@@ -3,7 +3,7 @@
 \mainpage %Arcane
 
 \warning La documentation a été récemment mise à jour. Il peut donc rester
-des erreurs, des bugs ou des élements non finalisés.
+des erreurs, des bugs ou des éléments non finalisés.
 
 Cette page contient la documentation pour les utilisateurs de la plate-forme %Arcane.
 
@@ -25,16 +25,16 @@ La documentation se compose de chapitres (listés ci-dessous), composés eux-mê
 de sous-chapitres et/ou de pages.
 
 Chaque chapitre/sous-chapitre dispose d'un sommaire décrivant
-brievement son contenu et d'une liste de ces pages.
+brièvement son contenu et d'une liste de ces pages.
 
 Pour configurer la documentation, c'est ici : \subpage arcanedoc_doc_config
 
 <br>
 
-Les chapitres disponibles sont:
+Les chapitres disponibles sont :
 
 - \subpage arcanedoc_getting_started <br>
-  Présente briévement les principes et les types de base de %Arcane.
+  Présente brièvement les principes et les types de base de %Arcane.
 
 - \subpage arcanedoc_core_types <br>
   Présente les notions clefs de %Arcane (modules, variables, points d'entrée,
@@ -51,10 +51,10 @@ Les chapitres disponibles sont:
   Présente des exemples %Arcane.
 
 - \subpage arcanedoc_parallel <br>
-  Présente les differents moyens de paralléliser un code %Arcane.
+  Présente les différents moyens de paralléliser un code %Arcane.
 
 - \subpage arcanedoc_materials <br>
-  Présente la partie matériaux de %Arcane.
+  Présente la partie matériau de %Arcane.
 
 - \subpage arcanedoc_debug_perf <br>
   Présente les divers méthodes permettant d'aider au débuggage, à l'analyse des

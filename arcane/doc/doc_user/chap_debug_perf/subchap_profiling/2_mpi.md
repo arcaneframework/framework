@@ -13,7 +13,7 @@ sont encore en développement.
 
 
 %Arcane dispose d'un mécanisme interne de prise de traces pour l'analyse à
-posteriori des performances des operations dites de *message passing*.
+postériori des performances des operations dites de *message passing*.
 Ce mécanisme est transparent pour l'utilisateur qui peut activer cette
 fonctionnalité *via* la variable d'environnement
 **ARCANE_MESSAGE_PASSING_PROFILING**.
@@ -31,7 +31,7 @@ Chacun de ces services fournira des traces au format associé.
 Lorsque l'on positionne la variable d'environnement **ARCANE_MESSAGE_PASSING_PROFILING=JSON**,
 le service de profiling interne du *message passing* au format JSON est activé.
 Celui-ci va espionner par itération et par point d'entrée les fonctions MPI, indiquant le nombre
-d'appel à la fonction, la taille des messages échangés (en octet) et le temps passé dedans (en seconde).
+d'appels à la fonction, la taille des messages échangés (en octet) et le temps passé dedans (en seconde).
 Ces informations sont disponibles dans le sous-répertoire listing de sortie du cas.
 Les fichiers sont nommés **message_passing_logs.i.json** où **i** correspond au numéro du
 sous-domaine espionné.
@@ -90,7 +90,7 @@ sur les communications entre sous-domaines, permettant notamment de détecter le
 de charge ou d'identifier de mauvais motifs d'échanges.
 
 Ces informations sont disponibles dans le sous-répertoire listing de sortie du cas.
-Elles sont stoquées dans 2 fichiers et un répertoire. Le répertoire reprend le nom du cas et les deux fichiers
+Elles sont stockées dans 2 fichiers et un répertoire. Le répertoire reprend le nom du cas et les deux fichiers
 également modulo les extensions *.otf2* et *.def*.
 \note Les fichiers et le répertoire sont écrasés à chaque nouveau lancement de la simulation.
 

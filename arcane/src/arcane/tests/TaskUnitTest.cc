@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TaskUnitTest.cc                                             (C) 2000-2022 */
+/* TaskUnitTest.cc                                             (C) 2000-2023 */
 /*                                                                           */
 /* Service de test des tâches.                                               */
 /*---------------------------------------------------------------------------*/
@@ -533,7 +533,7 @@ class Test5Fibonnaci
   }
   static long ParallelFib( long n )
   {
-    long sum;
+    long sum = 0;
     Test5Fibonnaci a(n,&sum);
     ITask* task = TaskFactory::createTask(&a,&Test5Fibonnaci::execute);
     task->launchAndWait();
@@ -561,7 +561,8 @@ execute(const TaskContext& context)
     return;
   }
 
-  long x, y;
+  long x = 0;
+  long y = 0;
   Test5Fibonnaci a(n-1,&x);
   Test5Fibonnaci b(n-2,&y);
   ITask* child_tasks[2];

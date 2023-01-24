@@ -1,4 +1,4 @@
-#include "bench/Wrapper.h"
+ï»¿#include "bench/Wrapper.h"
 
 #include "arcane/utils/ArrayView.h"
 
@@ -97,7 +97,7 @@ _computeCQs(Real3 node_coord[8],Real3 face_coord[6],Cell cell)
 
   const Real real_1div12 = 1.0 / 12.0;
 
-  // Calcul des résultantes aux sommets :
+  // Calcul des rï¿½sultantes aux sommets :
   m_cell_cqs[cell][0] = (five*(n1a01 + n1a04 + n2a04 + n2a05 + n3a05 + n3a01) +
                          (n1a02 + n1a03 + n2a08 + n2a12 + n3a06 + n3a09))*real_1div12;
   m_cell_cqs[cell][1] = (five*(n1a01 + n1a02 + n3a01 + n3a06 + n5a06 + n5a02) +
@@ -122,19 +122,19 @@ _computeCQs(Real3 node_coord[8],Real3 face_coord[6],Cell cell)
 void NoVecHydroBench::
 computeGeometric(Int32 nb_compute_cqs)
 {
-  // Copie locale des coordonnées des sommets d'une maille
+  // Copie locale des coordonnï¿½es des sommets d'une maille
   Real3 coord[8];
-  // Coordonnées des centres des faces
+  // Coordonnï¿½es des centres des faces
   Real3 face_coord[6];
 
   ENUMERATE_CELL(icell,m_mesh.m_cells_vector){
     Cell cell = *icell;
 
-    // Recopie les coordonnées locales (pour le cache)
+    // Recopie les coordonnï¿½es locales (pour le cache)
     for( NodeEnumerator i_node(cell.nodes()); i_node.index()<8; ++i_node )
       coord[i_node.index()] = m_node_coord[i_node];
 
-    // Calcul les coordonnées des centres des faces
+    // Calcul les coordonnï¿½es des centres des faces
     face_coord[0] = 0.25 * ( coord[0] + coord[3] + coord[2] + coord[1] );
     face_coord[1] = 0.25 * ( coord[0] + coord[4] + coord[7] + coord[3] );
     face_coord[2] = 0.25 * ( coord[0] + coord[1] + coord[5] + coord[4] );
@@ -142,7 +142,7 @@ computeGeometric(Int32 nb_compute_cqs)
     face_coord[4] = 0.25 * ( coord[1] + coord[2] + coord[6] + coord[5] );
     face_coord[5] = 0.25 * ( coord[2] + coord[3] + coord[7] + coord[6] );
 
-    // Calcule les résultantes aux sommets
+    // Calcule les rï¿½sultantes aux sommets
     for( int xz=0; xz<nb_compute_cqs; ++xz)
       _computeCQs(coord,face_coord,cell);
 

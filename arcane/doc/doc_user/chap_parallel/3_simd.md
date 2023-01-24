@@ -22,7 +22,7 @@ Les processeurs récents permettent tous de faire de la
 vectorisation. Par contre, les tailles de vecteur et les opérations
 possibles sont différentes d'un processeur à l'autre.
 
-Par exemple, la boucle simple suivante effectue \b n additions:
+Par exemple, la boucle simple suivante effectue \b n additions :
 
 ```cpp
 using namespace Arcane;
@@ -40,16 +40,16 @@ plusieurs réels. Pour des registres contenant \b P réels, le nombre
 d'instructions d'addition nécessaire est donc \b n/P. Si les
 instructions scalaires et vectorielles prennent le même temps, on a
 donc une accélération théorique d'un facteur \b P. Plus les registres
-sont grands, plus l'intêret potentiel de la vectorisation est
+sont grands, plus l'intéret potentiel de la vectorisation est
 important. Bien entendu, dans la pratique c'est souvent moins rose
 et le gain réel dépend d'autres facteurs comme la bande
 passante mémoire, le pipelining, ...
 
 Pour exploiter la vectorisation, il existe deux
-possibilités (qui sont compatibles):
+possibilités (qui sont compatibles) :
 
 - laisser le compilateur gérer la vectorisation.
-- utiliser des classes C++ spécifiques concues pour cela.
+- utiliser des classes C++ spécifiques conçues pour cela.
 
 La première solution est la plus simple car elle ne nécessite pas de
 changer le code. Elle est directement disponible via les bonnes
@@ -70,7 +70,7 @@ types simples (short, int, long, float, ...), on se limite dans
 %Arcane à fournir des classes gérant la vectorisation que pour les
 types Arcane::Real et dérivés (Arcane::Real2, Arcane::Real3).
 
-Actuellement, %Arcane fournit les types vectoriels suivants:
+Actuellement, %Arcane fournit les types vectoriels suivants :
 
 <table>
 <tr>
@@ -124,7 +124,7 @@ vues sur les variables. Il n'est pas possible d'accéder directement
 à une variable via les classes Arcane::SimdItem et dérivées.
 
 L'exemple suivant montre comment passer d'une écriture scalaire à
-une écriture vectorielle:
+une écriture vectorielle :
 
 ```cpp
 using namespace Arcane;
@@ -176,7 +176,7 @@ aussi des cas où on souhaite faire dans une boucle vectorielle des
 opérations spécifiques pour chacun des éléments. Pour gérer cette
 situation, il est possible d'ajouter des sections séquentiels en
 itérant sur les entités d'un Arcane::SimdItem via les macros ENUMERATE_*.
-Par exemple:
+Par exemple :
 
 ```cpp
 using namespace Arcane;
@@ -191,7 +191,7 @@ ENUMERATE_SIMD_CELL(ivcell,allCells()){
 
 Enfin, il est possible de connaître le nombre de réels d'un registre
 vectoriel via la constante SimdReal::BLOCK_SIZE. Cela permet par
-exemple d'itérer sur les éléments d'un registre vectoriel:
+exemple d'itérer sur les éléments d'un registre vectoriel :
 
 ```cpp
 using namespace Arcane;
@@ -212,11 +212,11 @@ scalaires. Pour le SSE, l'AVX et l'AVX512 L'alignement minimal est
 l'AVX avec des vecteurs de 256 bits, soit 32 octets, l'alignement
 minimal est de 32 octets. Pour simplifier la vectorisation %Arcane
 garantit que les types suivants ont l'alignement minimal souhaité
-pour la vectorisation:
+pour la vectorisation :
 - les localIds() des Arcane::ItemGroup.
 - les données des variables tableaux et scalaires sur le maillage.
 - les données des variables tableaux 2D et variables tableaux sur le
-maillage. A noter que pour ces dernières le début du tableau est
+maillage. \`A noter que pour ces dernières le début du tableau est
 aligné mais si la première dimension n'est pas un multiple de la
 taille du vecteur alors les éléments suivants ne seront pas alignés
 car il n'y a pas encore de gestion du padding).
@@ -224,7 +224,7 @@ car il n'y a pas encore de gestion du padding).
 Le C++ ne permettant pas d'allouer via new/delete avec alignement,
 %Arcane fournit la classe Arccore::AlignedMemoryAllocator qui peut être
 utilisée avec les classes Arcane::UniqueArray et Arcane::SharedArray pour garantir
-l'alignement. Par exemple:
+l'alignement. Par exemple :
 
 ```cpp
 using namespace Arcane;
@@ -237,10 +237,10 @@ x.resize(32); // Garanti que \a x à un alignement correct.
 La vectorisation fonctionne bien lorsque le nombre d'éléments de la
 boucle est un multiple de la taille du vecteur Simd. Si ce n'est pas
 le cas, il faut traiter la dernière partie de la boucle d'une
-certaine manière. <strong>Afin d'offrir un mécanisme identique pour toute
+certaine manière. <strong>Afin d'offrir un mécanisme identique pour tous
 les types de vectorisation, %Arcane duplique dans le vecteur Simd la
 dernière valeur valide</strong>.
-Par exemple, on suppose le code suivant:
+Par exemple, on suppose le code suivant :
 
 ```cpp
 using namespace Arcane;
@@ -251,7 +251,7 @@ ENUMERATE_SIMD_CELL(ivcell,cells){
 ```
 
 Avec \a cells un groupe de mailles qui contient 11 éléments. Si on suppose que
-la taille d'un vecteur est 8, alors la boucle précédent fera deux
+la taille d'un vecteur est 8, alors la boucle précédente fera deux
 itérations. Pour la première on aura les valeurs suivantes de \a simd_cell
   
 ```cpp
@@ -267,14 +267,14 @@ simd_cell[7]  = cells[7];
 ```
 
 Pour la deuxième itération, comme \a cells ne contient que 11
-éléments, on répète dans \a simd_cell la dernière valeur valide:
+éléments, on répète dans \a simd_cell la dernière valeur valide :
 
 ```cpp
 // Deuxième itération
 simd_cell[8]  = cells[8];
 simd_cell[9]  = cells[9];
 simd_cell[10] = cells[10];
-simd_cell[11] = cells[10]; // Répète la dernière valeurs valide.
+simd_cell[11] = cells[10]; // Répète la dernière valeur valide.
 simd_cell[12] = cells[10];
 simd_cell[13] = cells[10];
 simd_cell[14] = cells[10];
@@ -282,8 +282,8 @@ simd_cell[15] = cells[10];
 ```
 
 Ce mécanisme fonctionne partaitement tant que les opérations
-effectués sont bien vectorielles. Si ce n'est pas le cas, il est
-possible d'itérer uniquement sur les valeurs valides comme suit:
+effectuées sont bien vectorielles. Si ce n'est pas le cas, il est
+possible d'itérer uniquement sur les valeurs valides comme suit :
 
 ```cpp
 using namespace Arcane;
@@ -321,7 +321,7 @@ Dans la version 2.2, %Arcane ne supporte que la vectorisation pour
 les processeurs d'architecture x86.
 
 Pour ces processeurs, il existe (actuellement) trois
-générations de vectorisation:
+générations de vectorisation :
 
 - la vectorisation SSE, qui est disponible sur tous les processeurs 64
   bits et qui utilisent des registres de 128 bits.
@@ -344,7 +344,7 @@ Arcane::SimdReal, Arcane::SimdReal3 sont donc des typedefs qui
 dépendent de la plateforme.
 
 %Arcane définit aussi des macros indiquant les mécanismes
-disponibles:
+disponibles :
 
 - ARCANE_HAS_SSE si la vectorisation avec SSE est disponible
 - ARCANE_HAS_AVX si la vectorisation avec AVX ou AVX2 est disponible

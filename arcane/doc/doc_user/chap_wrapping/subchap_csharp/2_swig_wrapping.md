@@ -11,7 +11,7 @@ Il faut au moins la version 4.0 de swig.
 
 Le wrapping se fait en décrivant dans un fichier avec l'extension .i
 quels seront les fichiers wrappés et la manière de le faire. En
-générale, une classe C++ aura une classe C# de même nom. Par
+général, une classe C++ aura une classe C# de même nom. Par
 convention, les méthodes C# commencent pas une majuscule. Pour
 respecter cela, les méthodes des classes wrappées par Arcane sont
 converties. Par exemple, la méthode C++ Arcane::ISubDomain::caseMng()
@@ -19,8 +19,8 @@ deviendra en C# la méthode `CaseMng()`.
 
 La classe `Arcane::String` est convertie en la classe `string` de '.Net'.
 
-A partir du fichier '.i', `swig` va généré un fichier `C++` et un
-ensemble de fichiers `C#`. Les premiers doivent être compilées comme
+\`A partir du fichier '.i', `swig` va générer un fichier `C++` et un
+ensemble de fichiers `C#`. Les premiers doivent être compilés comme
 un code `C++` normal sous forme de bibliothèque dynamique et les
 seconds comme un projet `C#` classique. La communication entre le
 `C++` et le `C#` se fait via un mécanisme de `.Net` appelé PInvoke
@@ -43,8 +43,8 @@ L'outil `swig` utilise un fichier d'extension `.i` pour décrire les
 classes à wrapper.
 
 Par exemple, on suppose qu'on a une interface C++ représentant
-l'interface d'un service de calcul d'une équation d'était et qu'on
-souhaite pouvoir implémenter ce services en `C#`. L'interface est
+l'interface d'un service de calcul d'une équation d'état et qu'on
+souhaite pouvoir implémenter ce service en `C#`. L'interface est
 définie dans un fichier `IEquationOfState.h`:
 
 ```cpp
@@ -91,7 +91,7 @@ L'interface définit deux méthodes `initEOS` et `applyEOS` qu'on
 souhaite rendre accessible en `C#`.
 
 Pour cela, il faut définir un fichier `EOSCSharp.i` contenant le code
-suivant:
+suivant :
 
 ```i
 // 1ère partie
@@ -163,11 +163,11 @@ Ce fichier comporte trois parties:
 
 ## Compilation du code généré par swig {#arcanedoc_wrapping_csharp_swig_build}
 
-`swig` va générer deux types de fichiers:
+`swig` va générer deux types de fichiers :
 
 - les fichiers 'C++' contenant le wrapping qui sera appelé directement
   depuis le `C#`.
-- les fichiers `C#` qui contiennent les classes générés par `swig` et
+- les fichiers `C#` qui contiennent les classes générées par `swig` et
   qui seront celles utilisées par le développeur.
 
 Pour que le wrapping fonctionne, il faut donc à la fois compiler les
@@ -185,7 +185,7 @@ mais cela nécessite l'écriture de code dépendant du runtime (`mono` ou
 Si le développeur utilise `cmake`, alors il existe un package qui gère
 à la fois la génération via swig et créé une cible pour le code C++
 correspondant. Si notre fichier `.i` s'appelle `Wrapper.i` et que la
-cible est `arcane_wrapper`, alors on peut utiliser le code suivant:
+cible est `arcane_wrapper`, alors on peut utiliser le code suivant :
 
 ```cmake
 set(UseSWIG_TARGET_NAME_PREFERENCE STANDARD)

@@ -1,28 +1,28 @@
 # Les types de mailles {#arcanedoc_entities_itemtype}
 
-Les types prédéfinis suivants existent pour les mailles 3D:
+Les types prédéfinis suivants existent pour les mailles 3D :
 
-Le tétraèdre:
+Le tétraèdre :
 
 \image html mesh_tetra.png
 
-La pyramide:
+La pyramide :
 
 \image html mesh_pyramid.png
 
-Le prisme à base triangulaire:
+Le prisme à base triangulaire :
 
 \image html mesh_wedge.png
 
-L'héxaèdre:
+L'héxaèdre :
 
 \image html mesh_hexa.png
 
-Le prisme à base pentagonale:
+Le prisme à base pentagonale :
 
 \image html mesh_wedge7.png
 
-Le prisme à base héxagonale:
+Le prisme à base héxagonale :
 
 \image html mesh_wedge8.png
 

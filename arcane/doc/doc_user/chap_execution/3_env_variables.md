@@ -1,7 +1,7 @@
 ﻿# Variables d'environnement {#arcanedoc_execution_env_variables}
 
-Les variables d'environnement suivantes permettent de modifier le
-comportement à l'exécution:
+Les variables d'environnements suivantes permettent de modifier le
+comportement à l'exécution :
 
 <table>
 <tr>
@@ -16,12 +16,12 @@ comportement à l'exécution:
   <td>
     Nom du service utilisé pour gérer le parallélisme. Cette variable
     doit être positionnée si on souhaite un modèle d'exécution
-    parallèle spécifique. Les valeurs possibles sont: `Mpi` ou `Sequential`. Le mode
+    parallèle spécifique. Les valeurs possibles sont : `Mpi` ou `Sequential`. Le mode
     `Mpi` provoque l'appel à MPI_Init() et il faut donc que le programme
     soit lancé par le lanceur mpi de la plateforme (par exemple `mpiexec`,
     `mpirun`, `prun`, ...).
     Cette variable ne doit plus être utilisée car %Arcane détecte
-    automatiquement le lancement avec MPI. Si on souhaite surchargé le
+    automatiquement le lancement avec MPI. Si on souhaite surcharger le
     service de parallélisme, il faut le spécifier dans les arguments de
     la ligne de commande (voir \ref arcanedoc_execution_launcher)
   </td>
@@ -58,7 +58,7 @@ comportement à l'exécution:
     en fin d'exécution d'avoir les temps passés dans chaque fonction.
     Les deux valeurs supportées sont 'Papi' et 'Prof'. Pour
     'Papi', la bibliothèque 'papi' doit avoir être installée et le noyau
-    linux compatible. 'Prof' utilise les signaux du systeme.
+    linux compatible. 'Prof' utilise les signaux du système.
   </td>
 </tr>
 <tr>
@@ -106,10 +106,10 @@ comportement à l'exécution:
   </td>
   <td>
     Permet d'activer le profiling interne pour les opérations de
-    message passing. Les valeurs possibles sont:
+    message passing. Les valeurs possibles sont :
     - **JSON**: utilise le service de prise
       de trace au format du même nom. Celui-ci contient des informations
-      sur le temps passé dans chaque fonctions MPI. Les informations sont
+      sur le temps passé dans chaque fonction MPI. Les informations sont
       regroupées par itération et par point d'entrée de la boucle en temps.
     - **OTF2**, utilise le service de prise de trace au format du
       même nom. Une fois ouvert avec un outil adéquat (par exemple Vampir)
@@ -126,7 +126,7 @@ comportement à l'exécution:
   <td>
     Active (TRUE) ou désactive (FALSE) la redirection des signaux par
     Arcane. Cette redirection est active par défaut dans Arcane et permet
-    d'afficher la pile d'appel notamment en cas de plantage. Neammoins,
+    d'afficher la pile d'appel notamment en cas de plantage. Néanmoins,
     cela peut interférer avec d'autres bibliothèques et il est donc
     possible de désactiver la redirection des signaux.
   </td>
@@ -182,13 +182,13 @@ comportement à l'exécution:
   <td>
     Permet de spécifier la politique d'initialisation des
     variables. L'utilisation de cette variable revient à appeler la
-    méthode Arcane::setGlobalDataInitialisationPolicy(). Les valeurs possibles sont:
+    méthode Arcane::setGlobalDataInitialisationPolicy(). Les valeurs possibles sont :
     - **NONE**: pas d'initialisation
-    - **DEFAULT**: valeur par défaut du type, soit 0 pour les entiers et
+    - **DEFAULT** : valeur par défaut du type, soit 0 pour les entiers et
       0.0 pour les réels
     - **NAN** : initialise les réels avec la valeur NotANumber ce qui
       permet si on active les exceptions flottantes d'arrêter le code si
-      on utilise une variables non initialisée explicitement.
+      on utilise une variable non initialisée explicitement.
     - **LEGACY** : mode antérieur à la version 2.0 de %Arcane. Il ne doit
       plus être utilisé (voir Arcane::DIP_Legacy).
   </td>

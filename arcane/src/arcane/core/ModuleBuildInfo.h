@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ModuleBuildInfo.h                                           (C) 2000-2022 */
+/* ModuleBuildInfo.h                                           (C) 2000-2023 */
 /*                                                                           */
 /* Paramètres pour construire un module.                                     */
 /*---------------------------------------------------------------------------*/
@@ -83,7 +83,6 @@ class ARCANE_CORE_EXPORT ModuleBuildInfo
    *
    * \deprecated Il faut utiliser meshHandle() à la place.
    */
-  ARCANE_DEPRECATED_REASON("Y2022: use meshHandle() instead")
   IMesh* mesh() const { return m_mesh_handle.mesh(); }
 
  private:

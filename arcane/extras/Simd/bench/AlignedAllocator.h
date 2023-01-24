@@ -1,4 +1,4 @@
-#ifndef ARCANE_ALIGNED_ALLOCATOR
+ï»¿#ifndef ARCANE_ALIGNED_ALLOCATOR
 #define ARcANE_ALIGNED_ALLOCATOR
 
 #include <cstddef>
@@ -6,8 +6,8 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-// Allocateur conforme à std::allocator du C++11 pour gérer l'alignement
-// Cet allocateur peut être utilisé pour std::vector.
+// Allocateur conforme Ã  std::allocator du C++11 pour gÃ©rer l'alignement
+// Cet allocateur peut Ãªtre utilisÃ© pour std::vector.
 inline void*
 ArcaneAlignedAlloc(std::size_t alignment,std::size_t size) ARCANE_NOEXCEPT
 {

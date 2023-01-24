@@ -124,7 +124,7 @@ On demande à CMake d'appeler Make pour compiler notre projet.
 On pourrait utiliser directement la commande `make` mais
 si un jour, on veut utiliser un autre programme que Make
 (comme Ninja), il faudra changer cette commande. Alors que là, 
-c'est CMake qui gére selon la configuration faite précédement.
+c'est CMake qui gère selon la configuration faite précédemment.
 
 ____
 
@@ -140,7 +140,7 @@ avoir besoin de recompiler.
 ____
 
 Voilà pour ce sous-chapitre dédié à la construction d'un hello world avec
-%Arcane. Les bases sont présentés ici. Néanmoins, pour aller plus loin,
+%Arcane. Les bases sont présentées ici. Néanmoins, pour aller plus loin,
 il est conseillé de lire tous les chapitres de cette documentation.
 
 Si un problème est présent dans ce sous-chapitre, vous pouvez ouvrir une

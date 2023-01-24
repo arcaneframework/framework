@@ -2,7 +2,7 @@
 
 [TOC]
 
-<!-- présente la manière dont %Arcane prend en charge le parallèlisme par partionnement de domaine. -->
+<!-- présente la manière dont %Arcane prend en charge le parallèlisme par partitionnement de domaine. -->
 
 ## Généralités {#arcanedoc_parallel_intro_general}
 
@@ -11,18 +11,18 @@ est partitionné en plusieurs sous-domaines. Chaque sous-domaine est
 éventuellement complété d'une ou plusieurs couches de mailles fantômes qui 
 représentent une duplication d'entités pour lesquelles il faudra effectuer
 une synchronisation. Chaque processeur effectue les calculs sur un sous-domaine
-et synchroniseses variables régilièrement avec les autres processeurs.
+et synchronise ses variables régulièrement avec les autres processeurs.
 
 En règle générale, il n'y a pas de solution unique au
 problème des synchronisations :
 - pour certaines variables, il est possible soit de faire le
-  calcul sur tout le sous-domaine, c'est à dire à la fois sur les
+  calcul sur tout le sous-domaine, c'est-à-dire à la fois sur les
   entités fantômes et les entités propres, soit de faire le calcul
   uniquement sur les entités propres et synchroniser ensuite les valeurs
   calculées. Le choix de l'une ou l'autre des solutions dépend
   globalement de deux paramètres : le temps nécessaire pour effectuer le
   calcul et le temps nécessaire pour effectuer la synchronisation. Chacun de
-  ses paramètres dépend lui même d'autres paramètre comme la puissance
+  ses paramètres dépend lui-même d'autres paramètre comme la puissance
   du processeur, la bande passante du réseau d'interconnexion, ...;
 - lorsqu'on augmente le nombre de couches d'entités fantômes,
   certaines variables qui ne sont utilisées que temporairement lors d'une
@@ -34,9 +34,9 @@ Afin de ne pas compliquer inutilement la prise en compte du
 parallélisme, ARCANE fonctionne aujourd'hui en utilisant une seule
 couche de maille fantômes et privilégie le calcul au détriment du
 nombre de synchronisations. Lors de la réalisation de vos modules
-numériques, il est conceillé de priviligier le même critère.
+numériques, il est conseillé de privilégier le même critère.
 
-ARCANE possède son propre service de partionnement parallèle. Ce service 
+ARCANE possède son propre service de partitionnement parallèle. Ce service 
 utilise l'algorithme Métis. Il est utilisé pour l'équilibrage de la charge des
 processeurs.
 

@@ -6,14 +6,14 @@
 
 QAMA est une mini-application de transport de particule Monte-Carlo.
 Cette application a été écrite à partir de Quicksilver, une mini-app
-écrite par le LLNL mais avec l'utilisation des resources fourni par
+écrite par le LLNL mais avec l'utilisation des ressources fourni par
 le framework %Arcane.
 
 Voici un schéma représentant la structure de Quicksilver (disponible ici : https://github.com/arcaneframework/arcane-benchs) :
 
 \image html QAMA_schema.jpg
 
-On peut trouver (en autres) les élements suivants :
+On peut trouver (en autres) les éléments suivants :
 - 3 modules nommés "QS", "SamplingMC" et "TrackingMC".
 - 1 service "singleton" nommé "RNG".
 

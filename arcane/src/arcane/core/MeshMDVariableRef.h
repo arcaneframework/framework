@@ -64,6 +64,7 @@ class MeshMDVariableRefWrapperT
  private:
 
   ValueDataType* trueData() { return this->m_private_part->trueData(); }
+  const ValueDataType* trueData() const { return this->m_private_part->trueData(); }
 
   void fillShape(ArrayShape& shape_with_item)
   {
@@ -98,6 +99,7 @@ class MeshMDVariableRefBaseT
   using UnderlyingVariableType = MeshVariableArrayRefT<ItemType, DataType>;
   using MDSpanType = MDSpan<DataType, Extents, RightLayout>;
   using ItemLocalIdType = typename ItemType::LocalIdType;
+  using FullExtentsType = Extents;
 
  public:
 
@@ -108,7 +110,11 @@ class MeshMDVariableRefBaseT
     _internalInit(m_underlying_var.variable());
   }
 
+  //! Variable sous-jacente associée.
   UnderlyingVariableType& underlyingVariable() { return m_underlying_var; }
+
+  //! Forme complète (statique + dynamique) de la variable.
+  ArrayShape fullShape() const { return m_underlying_var.trueData()->shape(); }
 
  protected:
 
@@ -149,6 +155,7 @@ class MeshMDVariableRefT
 
   using BaseClass = MeshMDVariableRefBaseT<ItemType, DataType, AddedFirstExtentsType>;
   using ItemLocalIdType = typename ItemType::LocalIdType;
+  static constexpr int nb_dynamic = Extents::nb_dynamic;
 
  public:
 

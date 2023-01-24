@@ -3,8 +3,8 @@
 [TOC]
 
 Une variable est une valeur manipulée par le code et gérée par
-%Arcane. Par exemple le volume, la vitesse, sont des variables. Elle
-sont caractérisées par un **nom**, un **type**, un **support**
+%Arcane. Par exemple le volume, la vitesse, sont des variables. Elles
+sont caractérisées par un **nom**, un **type de donnée**, un **support**
 et une **dimension**.
 
 Les variables sont déclarées à l'intérieur d'un module/service, au sein 
@@ -15,13 +15,15 @@ Si deux modules utilisent des variables de même nom,
 leurs valeurs seront implicitement partagées. C'est par ce moyen que les 
 modules communiquent leurs informations.
 
-## Type {#arcanedoc_core_types_axl_variable_types}
+## Caractéristiques
 
-Les **types** des variables sont :
+### Type de données {#arcanedoc_core_types_axl_variable_types}
+
+Le **type de donnée** des variables est à choisir parmi les suivants :
 
 | Nom C++            |  Type
 |--------------------|-----------------------------------------
-| \arccore{Integer}  | entier signé
+| \arccore{Integer}  | entier signé sur 32 bits
 | \arccore{Int16}    | entier signé sur 16 bits
 | \arccore{Int32}    | entier signé sur 32 bits
 | \arccore{Int64}    | entier signé sur 64 bits
@@ -33,12 +35,10 @@ Les **types** des variables sont :
 | \arcane{Real3x3}   | tenseur 3D, vecteur de neufs réels
 | \arccore{String}   | chaîne de caractères unicode
 
-Par défaut, les entiers sont stockés sur 4 octets mais il est possible 
-de passer sur 8 octets en compilant avec la macro \c ARCANE_64BIT.
 Les flottants (*Real*, *Real2*, *Real2x2*, *Real3*, *Real3x3*) sont des réels double précisions (stockés
 sur 8 octets).
 
-## Support {#arcanedoc_core_types_axl_variable_support}
+### Support {#arcanedoc_core_types_axl_variable_support}
 
 Le **support** correspond à l'entité qui porte la variable,
 sur laquelle la variable est définie. Ces variables qui s'appliquent sur des éléments du maillage
@@ -51,10 +51,11 @@ sont appelées des **grandeurs**.
 | \arcane{Face}     | face du maillage
 | \arcane{Cell}     | maille du maillage
 | \arcane{Particle} | particule du maillage
+| \arcane{DoF}      | degré de liberté
 
-## Dimension {#arcanedoc_core_types_axl_variable_dim}
+### Dimension {#arcanedoc_core_types_axl_variable_dim}
 
-La **dimension** peut être:
+La **dimension** peut être :
 
 | Nom C++     | Dimension
 |-------------|------------
@@ -62,13 +63,18 @@ La **dimension** peut être:
 | **Array**   | tableau 1D
 | **Array2**  | tableau 2D
 
-## Classe C++ {#arcanedoc_core_types_axl_variable_cppclass}
+Depuis la version 3.8.11 de %Arcane il est aussi possible de déclarer
+des variables muti-dimensionnelles sur le maillage.
 
-Il est aisé d'obtenir la classe C++ correspondant à un type, un support 
-et à une dimension donnés. Le nom de la classe est construit de la 
-manière suivante :
+### Classe C++ des variables scalaires, 1D ou 2D {#arcanedoc_core_types_axl_variable_cppclass}
 
-**Variable** + \ref arcanedoc_core_types_axl_variable_support + \ref arcanedoc_core_types_axl_variable_dim + \ref arcanedoc_core_types_axl_variable_types
+Pour les variables scalaires, 1D ou 2D, il est aisé d'obtenir la
+classe C++ correspondant à un type de donnée, un support et à une dimension
+donnée. Le nom de la classe est construit de la manière suivante :
+
+**Variable** + \ref arcanedoc_core_types_axl_variable_support +
+\ref arcanedoc_core_types_axl_variable_dim +
+\ref arcanedoc_core_types_axl_variable_types
 
 Par exemple, pour une variable représentant un tableau d'entiers
 **VariableArrayInteger**, pour une variable représentant un 
@@ -78,14 +84,14 @@ Quand une variable scalaire est définie sur une entité du maillage
 le support (*Scalar*) n'est pas précisé. Par exemple, pour une variable 
 représentant un réel aux mailles **VariableCellReal**.
 
-Tous les combinaisons sont possibles aux exceptions suivantes:
+Toutes les combinaisons sont possibles aux exceptions suivantes :
 - les variables de type *chaîne de caractères* qui n'existent que pour les genres
   scalaires et tableaux mais pas sur les éléments du maillage (pour
   des raisons de performances).
 - Les variables de dimension 2 ne peuvent pas avoir de support (il
-  n'est pas possible d'avoir des variables 2D aux mailles par exemple.
+  n'est pas possible d'avoir des variables 2D aux mailles par exemple).
 	
-Le tableau suivant donne quelques exemples de variables:
+Le tableau suivant donne quelques exemples de variables :
 
 Nom C++                           | Description
 ----------------------------------|------------
@@ -101,49 +107,52 @@ Nom C++                           | Description
 \arcane{VariableCellArrayReal3}   | Tableau de coordonnées 3D aux mailles
 \arcane{VariableCellArrayReal2x2} | Tableau de tenseurs 2D aux mailles
 
+Pour les variables multi-dimensionnelles, il n'existe pas de `typedef`
+car le nombre de possibilités est infini.
+
 ## Déclaration {#arcanedoc_core_types_axl_variable_declare}
 
 La déclaration des variables se fait par l'intermédiaire du 
-descripteur de module.
+descripteur de module ou du service (fichier AXL) ou directement dans
+le code.
 
-Par exemple, on déclare dans le module \c Test une
-variable de type réel aux mailles appelée \c Pressure et
-une variable de type réel aux noeuds appelée \c NodePressure.
+### Déclaration dans les fichiers AXL
+
+\note Les variables déclarées dans le fichier AXL sont toujours
+associées au maillage par défaut du module ou du service. Il n'est pas
+possible de déclarer de variables de sous-domaine dans ces fichiers
+(mais il est toujours possible de les déclarer explicitement dans la
+classe du module ou du service).
+
+Dans le fichier AXL, la déclaration des variables se fait dans la
+balise \c variables. L'exemple suivant montre la déclaration dans le
+module \c Test d'une variable de type réel aux mailles appelée \c
+Pressure et une variable de type réel aux noeuds appelée \c
+NodePressure.
 
 ```xml
 <module name="Test" version="1.0">
-	<name lang="fr">Test</name>
+  <name lang="fr">Test</name>
+    <description>Descripteur du module Test</description>
+  <variables>
+    <variable field-name="pressure" name="Pressure" data-type="real"
+              item-kind="cell" dim="0" dump="true" need-sync="true" />
+    <variable field-name="node_pressure" name="NodePressure" data-type="real"
+              item-kind="node" dim="0" dump="true" need-sync="true" />
+  </variables>
 
-	<description>Descripteur du module Test</description>
+  <entry-points>
+  </entry-points>
 
-	<variables>
- 		<variable
-			field-name="pressure"
-			name="Pressure"
-			data-type="real"
-			item-kind="cell"
-			dim="0"
-			dump="true"
-			need-sync="true" />
-		<variable
-			field-name="node_pressure"
-			name="NodePressure"
-			data-type="real"
-			item-kind="node"
-			dim="0"
-			dump="true"
-			need-sync="true" />
-   </variables>
-
-	<entry-points>
-	</entry-points>
-
-	<options>
-	</options>
+  <options>
+  </options>
 </module>
 ```
 
-Les attributs suivants sont disponibles:
+#### Nom, type de donnée et support de la variable
+
+Les attributs suivants sont obligatoires et permettent de définir le
+nom, le type de donnée et le support de la variable :
 
 <table>
 <tr>
@@ -161,7 +170,7 @@ sont réservées pour %Arcane.
 </tr>
 <tr>
 <td> **field-name** </td>
-<td>nom information du champ de la variable dans la classe générée. Ce nom doit
+<td>nom informatique du champ de la variable dans la classe générée. Ce nom doit
 être un nom valide en C++. Par convention, si la variable s'appelle
  *NodePressure* par exemple, le champ sera **node_pressure**. Dans la
  classe générée, le nom spécifié sera préfixé de **m_** (le préfixage \c m_ correspond aux 
@@ -171,12 +180,12 @@ sont réservées pour %Arcane.
 <tr>
 <td> **item-kind** </td>
 <td>support de la variable. Les valeurs possibles sont  \c node, \c
-face, \c cell ou \c none. La valeur \c none indique qu'il ne s'agit
-pas d'une variable du maillage. A noter qu'il n'est pas (encore)
-possible de déclarer dans le fichier axl les variables ayant comme
-support des particules (Particle) ou liens (Link).
+edge, \c face, \c cell, \c particle, \c dof ou \c none. La valeur \c none indique qu'il ne s'agit
+pas d'une variable du maillage. Si le type est \c particle ou \c dof,
+il faut spécifier l'attribut **family-name**
 </td>
 </tr>
+
 <tr>
 <td> **data-type** </td>
 <td>type de données de la variable. Il s'agit au choix de *integer*, *int16*,
@@ -185,24 +194,97 @@ support des particules (Particle) ou liens (Link).
  du maillage (celles ayant un support).
 </td>
 </tr>
+
+<tr>
+<td> **family-name** </td>
+<td>nom de la famille d'entité (\arcane{IItemFamily} auquel la
+variable est associée. Cet attribut n'est valide que si **item-kind**
+vaut \c particle ou \c dof.
+</td>
+</tr>
+
+</table>
+
+#### Dimensions de la variable
+
+Les attributs suivants permettent de définir la dimension de la
+variable.
+
+\note Les valeurs **shape-dim**, **extent0** et **extent1** sont
+uniquement disponibles à partir de la version 3.8.11 de %Arcane.
+
+Si aucun des attributs suivants n'est défini, alors on considère que
+la variable est une variable scalaire comme si la valeur **dim="0"**
+avait été spécifiée.
+
+Il faut spécifier soit **dim** (pour les variables classiques
+scalaires, 1D ou 2D, soit **shape-dim** pour les variables
+multi-dimensionnelles.
+
+<table>
+<tr>
+<th>Attribut</th>
+<th>Description</th>
+</tr>
+
 <tr>
 <td> **dim** </td>
-<td>La dimension de la variables. Les valeurs possibles sont *0* pour
+<td>La dimension de la variable pour les variables scalaires, 1D ou
+2D.Les valeurs possibles sont *0* pour
 une variable scalaire, *1* pour une variable tableau à une dimension et
 *2* pour un tableau à deux dimensions. Les tableaux à deux dimensions
 ne sont pas supportés pour les variables du maillage.
 </td>
 </tr>
+
+<tr>
+<td> **shape-dim** </td>
+<td>La dimension de la variable pour les variables
+multi-dimensionnelles. Les valeurs possibles sont 0, 1, 2 ou 3.
+</td>
+</tr>
+
+<tr>
+<td> **extent0** </td>
+<td>Nombre d'élément pour une variable multi-dimension
+dont les éléments sont des vecteurs ou nombre de lignes pour une variable multi-dimension
+dont les éléments sont des matrices. Cet attribut ne peut être utilisé
+que si **shape-dim** est présent.
+</td>
+</tr>
+
+<tr>
+<td> **extent1** </td>
+<td>Nombre de colonnes pour une variable multi-dimension
+dont les éléments sont des matrices. Cet attribut ne peut être utilisé
+que si **shape-dim** est présent.
+</td>
+</tr>
+
+</table>
+
+#### Propriétés de la variable
+
+Les attributs suivants sont optionnels et permettent de spécifier des
+propriétés sur la variable:
+
+<table>
+<tr>
+<th>Attribut</th>
+<th>Description</th>
+</tr>
+
 <tr>
 <td> **dump** </td>
 <td>permet de choisir si les valeurs d'une variable sont sauvegardées
 lors d'un arrêt du code. Dans ce cas, les valeurs sauvegardées seront,
 bien entendu, relues lors d'une reprise d'exécution. Certaines
 variables recalculées n'ont pas besoin d'être sauvegardées ; dans ce
-cas l'attribut *dump* vaut *fals*e. C'est le cas lorsque la valeur
+cas l'attribut *dump* vaut *false*. C'est le cas lorsque la valeur
 d'une variable n'est pas utile d'une itération à l'autre.
 </td>
 </tr>
+
 <tr>
 <td> **need-sync** </td>
 <td>indique si la variable doit être synchronisé entre
@@ -210,17 +292,85 @@ sous-domaines. Il s'agit juste d'une indication qui peut être utilisée
 lors de vérifications.
 </td>
 </tr>
+
 </table>
 
 Lors de la compilation du descripteur de module par %Arcane (avec \c axl2cc - cf précédemment), 
 les variables sont enregistrées au sein de la base de données de l'architecture.
 
-## Utilisation {#arcanedoc_core_types_axl_variable_use}
+#### Exemple de déclaration de variables dans les fichiers AXL
+
+```xml
+
+<!-- Variable scalaire aux noeuds de 'Real' -->
+<variable field-name="node_mass" name="NodeMass"
+          data-type="real" item-kind="node" dim="0" />
+
+<!-- Variable scalaire aux mailles de 'Int64' -->
+<variable field-name="cell_unique_id" name="UniqueId"
+          data-type="int64" item-kind="cell" dim="0" />
+
+<!-- Variable 1D aux mailles de 'Real3' -->
+<variable field-name="cell_cqs" name="CellCQS"
+          data-type="real3" item-kind="cell" dim="1" />
+
+<!-- Variable scalaire aux particules de 'Real' sur la famille 'ArcaneParticles' -->
+<variable field-name="particle_temperature" name="Temperature" family-name="ArcaneParticles"
+          data-type="real" item-kind="particle" dim="0" />
+
+<!-- Variable multi-dim 0D aux mailles de 'Real' -->
+<variable field-name="mdvar0d" name="MDVar0D"
+          data-type="real" item-kind="cell" shape-dim="0" />
+
+<!-- Variable multi-dim 1D aux mailles de 'Real' -->
+<variable field-name="mdvar1d" name="MDVar1D"
+          data-type="real" item-kind="cell" shape-dim="1" />
+
+<!-- Variable multi-dim 2D aux mailles de 'Real' -->
+<variable field-name="mdvar2d" name="MDVar2D"
+          data-type="real" item-kind="cell" shape-dim="2" />
+
+<!-- Variable multi-dim 2D aux mailles de 'Real' vue comme une variable 3D -->
+<variable field-name="mdvar2d_as_3d" name="MDVar2D"
+          data-type="real" item-kind="cell" shape-dim="3" />
+
+<!-- Variable multi-dim 0D aux mailles de NumVector<Real,2> -->
+<variable field-name="mdvar0d_vector2" name="MDVar0DVector2"
+          data-type="real2" item-kind="cell" shape-dim="0" />
+
+<!-- Variable multi-dim 1D aux faces de NumVector<Real,3> -->
+<variable field-name="mdvar1d_vector3" name="MDVar1DVector3"
+          data-type="real3" item-kind="face" shape-dim="1" />
+
+<!-- Variable multi-dim 2D aux faces de NumVector<Real,4> -->
+<variable field-name="mdvar2d_vector4" name="MDVar2DVector4"
+          data-type="real" item-kind="face" shape-dim="2" extent0="4" />
+
+<!-- Variable multi-dim 0D aux noeuds de NumMatrix<Real,2,2> -->
+<variable field-name="mdvar0d_matrix2x2" name="MDVar0DMatrixReal2x2"
+          data-type="real2x2" item-kind="node" shape-dim="0" />
+
+<!-- Variable multi-dim 1D aux mailles de NumMatrix<Real,3,3> -->
+<variable field-name="mdvar1d_matrix3x3" name="MDVar1DMatrixReal3x3"
+          data-type="real3x3" item-kind="cell" shape-dim="1" />
+
+<!-- Variable multi-dim 1D aux mailles de NumMatrix<Real,2,6> -->
+<variable field-name="mdvar1d_matrix2x6" name="MDVar1DMatrix2x6"
+          data-type="real" item-kind="cell" shape-dim="1" extent0="2" extent1="6"/>
+
+<!-- Variable multi-dim 0D aux mailles de NumMatrix<Real,3,2> -->
+<variable field-name="mdvar0d_matrix3x2" name="MDVar0DMatrix3x2"
+          data-type="real" item-kind="cell" shape-dim="0" extent0="3" extent1="2"/>
+```
+
+## Utilisation des variables {#arcanedoc_core_types_axl_variable_use}
+
+### Utilisation des variables scalaires, 1D et 2D
 
 La manière d'utiliser une variable est identique quel que soit son
 type et ne dépend que de son genre.
 
-**Variables scalaires**
+#### Variables scalaires
 	
 Les variables scalaires sont utilisées par l'intermédiaire de la classe template
 \arcane{VariableRefScalarT}.
@@ -236,7 +386,7 @@ Il n'y a que deux possibilités d'utilisation :
 Par exemple, avec la variable \c m_time de type \c VariableScalarReal :
 
 ```cpp
-m_time = 5.;         // affecte la valeur 5. à la variable m_time
+m_time = 5.0;        // affecte la valeur 5. à la variable m_time
 double z = m_time(); // récupère la valeur de la variable et l'affecte à z.
 cout << m_time();    // imprime la valeur de m_time
 ```
@@ -244,7 +394,7 @@ cout << m_time();    // imprime la valeur de m_time
 L'important est de ne pas oublier les parenthèses lorsqu'on veut
 accéder à la valeur de la variable.
 
-**Variables tableaux**
+#### Variables tableaux
 	
 Les variables tableaux sont utilisées par l'intermédiaire de la classe template
 \arcane{VariableRefArrayT}.
@@ -264,9 +414,9 @@ m_times[3] = 2.0;          // affecte la valeur 2.0 au 4ème élément du tablea
 cout << m_times[0];        // imprime la valeur du premier élément
 ```
 
-**Variables scalaires sur le maillage**
+#### Variables scalaires sur le maillage
 	
-Il s'agit des variables sur les éléments du maillages (noeuds,
+Il s'agit des variables sur les éléments du maillage (noeuds,
 faces ou mailles) avec une valeur par élément. Ces variables sont
 définies par la classe template \arcane{MeshVariableScalarRefT}.
 
@@ -277,7 +427,7 @@ pour récupérer une référence sur le type de la variable pour un
 en argument un itérateur sur un élément du maillage.
 
 Les grandeurs se déclarent et s'utilisent de manière similaire
-quels que soient le type d'élément du maillage. Elles sont dimensionnées
+quel que soient le type d'élément du maillage. Elles sont dimensionnées
 automatiquement lors de l'initialisation au nombre d'éléments du
 maillage du genre de la variable.
 
@@ -285,19 +435,18 @@ Par exemple, avec la variable *m_volume* de type \arcane{VariableCellReal}:
 
 ```cpp
 Arcane::VariableCellReal m_volume = ...;
-ENUMERATE_CELL(i,allCells()) {
-  m_volume[i] = 2.0;     // Affecte la valeur 2.0 au volume de la maille courante
-  cout << m_volume[i];   // Imprime le volume de la maille courante
+ENUMERATE_CELL(icell,allCells()) {
+  m_temperature[icell] = 2.0;     // Affecte la valeur 2.0 au volume de la maille courante
+  cout << m_temperature[icell];   // Imprime le volume de la maille courante
 
   // il est possible de faire les mêmes opérations avec la maille
   // ATTENTION c'est moins performant
-  Cell cell = *i;         // Déclare une référence à une maille.
-  m_volume[cell] = 2.0;   // Affecte la valeur 2.0 au volume de la maille 'cell'
-  cout << m_volume[cell]; // Imprime le volume de la maille 'cell'
+  m_temperature[icell] = 2.0;  // Affecte la valeur 2.0 au volume de la maille 'cell'
+  cout << m_temperature[icell];    // Imprime le volume de la maille 'cell'
 }
 ```
 
-**Variables tableaux sur le maillage**
+#### Variables tableaux sur le maillage
 
 Il s'agit des variables sur les éléments du maillage (noeuds,
 faces ou mailles) avec un tableau de valeurs par éléments. Ces variables sont
@@ -316,18 +465,83 @@ Par exemple, avec la variable *m_temperature* de type \arcane{VariableCellArrayR
 ```cpp
 Arcane::VariableCellArrayReal m_temperature = ...;
 m_temperature.resize(3); // Chaque maille aura 3 valeurs de temperature
-ENUMERATE_CELL(i,allCells()) {
-  m_volume[i][0] = 2.0;        // Affecte la valeur 2.0 à la première temperature de la maille courante
-  cout << m_volume[i][1];      // Imprime la 2ème température de la maille courante
+ENUMERATE_CELL(icell,allCells()) {
+  // Affecte la valeur 2.0 à la première temperature de la maille courante
+  m_temperature[icell][0] = 2.0;
 
-  // il est possible de faire les mêmes opérations avec la maille
-  // ATTENTION c'est moins performant
-  Cell cell = *i;            // Déclare une référence à une maille.
-  m_volume[cell][0] = 2.0;   // Affecte la valeur 2.0 à la première temperature de la maille 'cell'
-  cout << m_volume[cell][1]; // Imprime la 2ème température de la maille 'cell'
+  // Imprime la 2-ème température de la maille courante
+  info() << m_temperature[icell][1];
+
+  // Il est possible de faire les mêmes opérations avec la maille
+
+  // Déclare une référence à une maille.
+  Cell cell = *icell;
+  // Affecte la valeur 2.0 à la première temperature de la maille 'cell'
+  m_temperature[cell][0] = 2.0;
+
+  // Affecte la valeur 4.0 à la 3-ème temperature de la maille 'cell'
+  m_temperature(cell,2) = 4.0;
+
+  // Imprime la 2-ème température de la maille 'cell'
+  info() << m_temperature[cell][1];
 }
 ```
 
+### Utilisation des variables multi-dimensionnelles sur le maillage {#arcanedoc_core_types_axl_md_variable_use}
+
+\warning Les variables multi-dimensionnelles sont une fonctionnalité
+expérimentale et l'API n'est pas encore figé. Le code actuel n'est pas
+garanti de pouvoir être utilisé dans une version ultérieure de
+%Arcane. De même, certains mécanismes impliquants ces variables (comme
+le dépouillement) peuvent ne pas être complètement opérationnels.
+
+A partir de la version 3.8.11 de %Arcane il est possible d'utiliser
+des variables multi-dimensionnelles sur la maillage. Ces variables
+unifient l'utilisation des variables quelle que soit leur dimension et
+permettent de supporter jusqu'à 3 dimensions (à noter que cette valeur
+pourra probablement être augmentée dans une future version.
+
+\note Pour l'instant ces variables ont forcément le type de donnée
+\arcane{Real}.
+
+Il existe trois types d'éléments pour les variables multi-dimensionnelles :
+- les scalaires \arcane{MeshMDVariableRefT}
+- les vecteurs \arcane{MeshVectorMDVariableRefT}
+- les matrices \arcane{MeshMatrixMDVariableRefT}
+
+| Nom C++                            |  Type d'élément  | Dimension maximale
+|------------------------------------|------------------|----------------------
+| \arcane{MeshMDVariableRefT}        | scalaire         | 3
+| \arcane{MeshVectorMDVariableRefT}  | vecteur          | 2
+| \arcane{MeshMatrixMDVariableRefT}  | matrice          | 1
+
+Ces trois variables ont une classe de base commune \arcane{MeshMDVariableRefBaseT}.
+
+L'utilisation est similaire quel que soit le type de
+l'élément. L'accès se fait via l'opérateur `operator()` car il permet
+d'avoir plusieurs arguments. A partir du C++23 il sera aussi possible
+d'utiliser l'opérateur `operator[]`.
+
+Avant d'utiliser ces variables, il est nécessaire d'appeler la méthode
+\arcane{MeshMDVariableRefT::reshape()}. Le nombre de valeurs à
+spécifier doit être identique à la dimension de la variable.
+
+Exemple pour les variables multi-dimensionnelles scalaires:
+
+\snippet MDVariableUnitTest.cc SampleMDVariableScalar
+
+Exemple pour les variables multi-dimensionnelles vectorielles:
+
+\snippet MDVariableUnitTest.cc SampleMDVariableVector
+
+Exemple pour les variables multi-dimensionnelles matricielles:
+
+\snippet MDVariableUnitTest.cc SampleMDVariableMatrix
+
+En interne, toutes ces variables sont similaires à une variable
+tableau sur le maillage dont le nombre d'éléments est égale au produit
+des composantes de la forme retournée par
+\arcane{MeshMDVariableRefBaseT::fullShape()}.
 ____
 
 <div class="section_buttons">

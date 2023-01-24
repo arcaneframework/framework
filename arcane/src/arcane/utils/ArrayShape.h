@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArrayShape.h                                                (C) 2000-2022 */
+/* ArrayShape.h                                                (C) 2000-2023 */
 /*                                                                           */
 /* Représente la forme d'un tableau.                                         */
 /*---------------------------------------------------------------------------*/
@@ -74,14 +74,30 @@ class ARCANE_UTILS_EXPORT ArrayShape
   //! Positionne le nombre et la valeur des dimensions
   void setDimensions(Span<const Int32> dims);
 
+  friend std::ostream& operator<<(std::ostream& o, const ArrayShape& s)
+  {
+    s._print(o);
+    return o;
+  }
+  friend bool operator==(const ArrayShape& s1, const ArrayShape& s2)
+  {
+    return _isEqual(s1, s2);
+  }
+  friend bool operator!=(const ArrayShape& s1, const ArrayShape& s2)
+  {
+    return !_isEqual(s1, s2);
+  }
+
  private:
 
   Int32 m_nb_dim = 0;
-  std::array<Int32, MAX_NB_DIMENSION> m_dims = { };
+  std::array<Int32, MAX_NB_DIMENSION> m_dims = {};
 
  private:
 
   void _set(SmallSpan<const Int32> v);
+  static bool _isEqual(const ArrayShape& s1, const ArrayShape& s2);
+  void _print(std::ostream& o) const;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -1,4 +1,4 @@
-// -*- C++ -*-
+ï»¿// -*- C++ -*-
 #ifndef ITEMGROUPMAP_H
 #define ITEMGROUPMAP_H
 
@@ -22,7 +22,7 @@
 #if defined(ITEMGROUP_USE_OBSERVERS) && defined(USE_NEW_ITEMGROUPMAP)
 /*---------------------------------------------------------------------------*/
 
-/* Spécialement pour certains tests de CooresArcane */
+/* SpÃ©cialement pour certains tests de CooresArcane */
 // #define ITEMGROUPMAP_FILLINIT
 #include "Utils/ItemGroupMap_new.h"
 
@@ -66,23 +66,23 @@ public:
   //! Initialisation sur un nouveau groupe
   virtual void init(const ItemGroup & group) = 0;
 
-  //! Accès aux stats
+  //! AccÃ¨s aux stats
   /*! Inclus la description des collisions */
   virtual void stats(std::ostream & o) = 0;
 
-  //! Accès au groupe associé
+  //! AccÃ¨s au groupe associÃ©
   virtual ItemGroup group() const { return m_group; }
 
-  //! Controle la cohérence du groupe avec le groupe de référence
+  //! Controle la cohÃ©rence du groupe avec le groupe de rÃ©fÃ©rence
   virtual bool checkSameGroup(const ItemGroup & group) const;
 
-  //! Controle la cohérence du groupe avec le groupe de référence
+  //! Controle la cohÃ©rence du groupe avec le groupe de rÃ©fÃ©rence
   virtual bool checkSameGroup(const ItemVectorView & group) const;
 
-  //! Accès aux propriétés (lecture seule)
+  //! AccÃ¨s aux propriÃ©tÃ©s (lecture seule)
   virtual const Integer & properties() const { return m_properties; }
 
-  //! Accès aux properties (lecture/écriture)
+  //! AccÃ¨s aux properties (lecture/Ã©criture)
   virtual Integer & properties() { return m_properties; }
 
   //! Nom de l'objet
@@ -92,7 +92,7 @@ protected:
   //! Ami avec classe Gestionnaire de Variable (au sens Arcane)
   friend class ItemGroupMapAbstractVariable;
 
-  //! Accès à la IVariable sous-jascente
+  //! AccÃ¨s Ã  la IVariable sous-jascente
   virtual IVariable * variable() const { return m_variable; }
   
   //! Initialisation de bas niveau
@@ -104,8 +104,8 @@ protected:
 
   //! Compactage
   /*! Ne change pas le nombre de items du group
-   *  Appelé par le ItemGroupMapAbstractVariable
-   * \warning le compactage de la variable est appelé avec la renumérotation effective du groupe 
+   *  AppelÃ© par le ItemGroupMapAbstractVariable
+   * \warning le compactage de la variable est appelÃ© avec la renumÃ©rotation effective du groupe 
    * \warning le compactage n'induit pas de changement de taille
    */
   virtual void _compact(Int32ConstArrayView new_to_old_ids) = 0;
@@ -120,24 +120,24 @@ protected:
   /*! Sert principalement au debuggage */
   virtual Integer _size() = 0;
 
-  //! Test l'intégrité de l'ItemGroupMap relativement à son groupe
+  //! Test l'intÃ©gritÃ© de l'ItemGroupMap relativement Ã  son groupe
   virtual bool _checkGroupIntegrity() const = 0;
 
 protected:
-  //! Accès aux traces
+  //! AccÃ¨s aux traces
   virtual ITraceMng * traceMng() const;
 
 protected:
-  ItemGroupImpl * m_group; //!< Groupe associé
-  IVariable * m_variable; //!< Variable représentant la connexion à son groupe
+  ItemGroupImpl * m_group; //!< Groupe associÃ©
+  IVariable * m_variable; //!< Variable reprÃ©sentant la connexion Ã  son groupe
   Integer m_properties;
 };
 
 /*---------------------------------------------------------------------------*/
 
-//! Classe d'implémentation des parties communes aux ItemGroupMap
+//! Classe d'implÃ©mentation des parties communes aux ItemGroupMap
 /*! \todo optimiser la table de hachage vu que l'on connait l'ensemble
- *  des indices à la construction (les collisions sont consultables via stats())
+ *  des indices Ã  la construction (les collisions sont consultables via stats())
  */
 template<typename ValueType>
 class ItemGroupMapAbstractImplT
@@ -164,9 +164,9 @@ protected:
     const ValueType& value() const { return m_value; }
     ValueType& value() { return m_value; }
   public:
-    KeyTypeValue m_key; //!< Clé de recherche
-    ValueType m_value; //!< Valeur de l'élément
-    Data* m_next; //! Elément suivant dans la table de hachage
+    KeyTypeValue m_key; //!< ClÃ© de recherche
+    ValueType m_value; //!< Valeur de l'Ã©lÃ©ment
+    Data* m_next; //! ElÃ©ment suivant dans la table de hachage
   };
 
 public:
@@ -203,11 +203,11 @@ protected :
 
 private:
   //! Constructeur par copie
-  /*! Zone privé + non défini => usage interdit */
+  /*! Zone privÃ© + non dÃ©fini => usage interdit */
   ItemGroupMapAbstractImplT(const ItemGroupMapAbstractImplT &);
 
-  //! Opérateur de recopie
-  /*! Zone privé + non défini => usage interdit */
+  //! OpÃ©rateur de recopie
+  /*! Zone privÃ© + non dÃ©fini => usage interdit */
   const ThatClass& operator=(const ThatClass& from);
 
 public:
@@ -279,7 +279,7 @@ protected:
       m_buckets.fill(0);
       
       CArrayT<Data> old_buffer;
-      old_buffer.setArray(m_buffer); // Echange des données sans recopie
+      old_buffer.setArray(m_buffer); // Echange des donnÃ©es sans recopie
       m_buffer.setArray(CArrayT<Data>());
       m_buffer.resize(new_size);
 
@@ -322,13 +322,13 @@ protected:
 
   virtual void _compact(Int32ConstArrayView new_to_old_ids)
   {
-    // La taille du groupe n'a pas changé mais on réordonne les données
+    // La taille du groupe n'a pas changÃ© mais on rÃ©ordonne les donnÃ©es
     m_buckets.fill(0);
 
     const Integer size = m_buffer.size();
 
     CArrayT<Data> old_buffer; 
-    old_buffer.setArray(m_buffer); // Echange des données sans recopie
+    old_buffer.setArray(m_buffer); // Echange des donnÃ©es sans recopie
     m_buffer.setArray(CArrayT<Data>());
     m_buffer.resize(size);
 
@@ -369,7 +369,7 @@ protected:
 
   virtual void _compact2(Int32ConstArrayView new_to_old_ids)
   {
-    // La taille du groupe n'a pas changé mais on réordonne les données
+    // La taille du groupe n'a pas changÃ© mais on rÃ©ordonne les donnÃ©es
     m_buckets.fill(0);
 
     mesh::ItemFamily * itemFamily = dynamic_cast<mesh::ItemFamily*>(m_group->itemFamily());
@@ -381,14 +381,14 @@ protected:
     if (newToOldLocalIds.size() == 0)
       { /* Compactage de Variable partielle depuis ItemGroupImpl::removeSupressedItems
          * Les groupes ayant des variables partielles (ie group() != allItems())
-         *  sont immédiatement recompactés après suppression d'items
-         * Dans ce cas le compactage est une suite strictement croissante (les trous sont les items supprimés)
+         *  sont immÃ©diatement recompactÃ©s aprÃ¨s suppression d'items
+         * Dans ce cas le compactage est une suite strictement croissante (les trous sont les items supprimÃ©s)
          */
         traceMng()->debug(Trace::High) << "Use Local Compact";
         const Integer new_size = new_to_old_ids.size();
         ARCANE_ASSERT((new_size <= m_buffer.size()),("Inconsistent heuristic"));
         CArrayT<Data> old_buffer; 
-        old_buffer.setArray(m_buffer); // Echange des données sans recopie
+        old_buffer.setArray(m_buffer); // Echange des donnÃ©es sans recopie
         m_buffer.setArray(CArrayT<Data>());
         m_buffer.resize(new_size);
         for(Integer i=0;i<new_size;++i) 
@@ -416,10 +416,10 @@ protected:
 
   virtual void _changeGroupIds(Int32ConstArrayView old_to_new_ids)
   {
-    // La taille du groupe n'a pas changé mais on réordonne les données
+    // La taille du groupe n'a pas changÃ© mais on rÃ©ordonne les donnÃ©es
     m_buckets.fill(0);
 
-    // Pour l'instant, on renumérote les items mais on ne touche pas à l'ordre.
+    // Pour l'instant, on renumÃ©rote les items mais on ne touche pas Ã  l'ordre.
     const Integer size = m_buffer.size();
     for(Integer index = 0;index<size;++index) 
       {
@@ -474,9 +474,9 @@ public:
   }
 
 public:
-  /*! \brief Recherche la valeur correspondant à l'item \a item
+  /*! \brief Recherche la valeur correspondant Ã  l'item \a item
    *
-   * Une exception est générée si la valeur n'est pas trouvé.
+   * Une exception est gÃ©nÃ©rÃ©e si la valeur n'est pas trouvÃ©.
    */
   inline const ValueType& operator[](const Item & item) const
   {
@@ -487,9 +487,9 @@ public:
     return m_null_value;
   }
 
-  /*! \brief Recherche la valeur correspondant à l'item \a item
+  /*! \brief Recherche la valeur correspondant Ã  l'item \a item
    *
-   * Une exception est générée si la valeur n'est pas trouvé.
+   * Une exception est gÃ©nÃ©rÃ©e si la valeur n'est pas trouvÃ©.
    */
   inline ValueType& operator[](const Item & item)
   {
@@ -500,7 +500,7 @@ public:
     return m_null_value;
   }
 
-  /*! \brief Recherche la valeur correspondant à l'item associé à un iterateur
+  /*! \brief Recherche la valeur correspondant Ã  l'item associÃ© Ã  un iterateur
    */
   inline const ValueType& operator[](const ItemGroupRangeIterator & iter) const
   {
@@ -508,7 +508,7 @@ public:
     return m_buffer[iter.index()].value();
   }
 
-  /*! \brief Recherche la valeur correspondant à l'item associé à un iterateur
+  /*! \brief Recherche la valeur correspondant Ã  l'item associÃ© Ã  un iterateur
    */
   inline ValueType& operator[](const ItemGroupRangeIterator & iter)
   {
@@ -516,7 +516,7 @@ public:
     return m_buffer[iter.index()].value();
   }
 
-  /*! \brief Recherche la valeur correspondant à l'item associé à un énumérateur
+  /*! \brief Recherche la valeur correspondant Ã  l'item associÃ© Ã  un Ã©numÃ©rateur
    */
   inline const ValueType& operator[](const ItemEnumeratorT<Item> & iter) const
   {
@@ -524,7 +524,7 @@ public:
     return m_buffer[iter.index()].value();
   }
 
-  /*! \brief Recherche la valeur correspondant à l'item associé à un énumérateur
+  /*! \brief Recherche la valeur correspondant Ã  l'item associÃ© Ã  un Ã©numÃ©rateur
    */
   inline ValueType& operator[](const ItemEnumeratorT<Item> & iter)
   {
@@ -539,15 +539,15 @@ public:
 
 protected:
   //! Fonction de hachage
-  /*! Utilise la fonction de hachage de Arcane même si quelques
-   *  collisions sont constatées avec les petites valeurs */
+  /*! Utilise la fonction de hachage de Arcane mÃªme si quelques
+   *  collisions sont constatÃ©es avec les petites valeurs */
   inline Integer _hash(KeyTypeConstRef id) const
   {
     ARCANE_ASSERT((_initialized()),("ItemGroupMap not initialized"));
     return (Integer)(KeyTraitsType::hashFunction(id) % m_nb_bucket);
   }
 
-  //! \a true si une valeur avec la clé \a id est présente
+  //! \a true si une valeur avec la clÃ© \a id est prÃ©sente
   inline bool _hasKey(KeyTypeConstRef id) const
   {
     const Integer hf = _hash(id);
@@ -584,27 +584,27 @@ protected:
 
 protected:
   CArrayT<Data> m_buffer; //!< Tampon d'allocation des valeurs
-  ValueType m_null_value; //! Valeur nulle (non utilisée)
+  ValueType m_null_value; //! Valeur nulle (non utilisÃ©e)
   BufferT<Data*> m_buckets; //! Tableau des buckets
 };
 
 /*---------------------------------------------------------------------------*/
 
 //! \brief Classe de base pour les ItemGroupMap
-/*  Contient la majorité des fonctionnalités mais sans distinction du
+/*  Contient la majoritÃ© des fonctionnalitÃ©s mais sans distinction du
  *  type d'item/
  *
- *  Permet d'indéxer un tableau par les items d'un groupe. Ceci évite
- *  des erreurs principalement en parallèle ou certains items ne sont
- *  pas contigus en localId (et évite le bug d'indexé un Array via les
+ *  Permet d'indÃ©xer un tableau par les items d'un groupe. Ceci Ã©vite
+ *  des erreurs principalement en parallÃ¨le ou certains items ne sont
+ *  pas contigus en localId (et Ã©vite le bug d'indexÃ© un Array via les
  *  localId des items).
  *
- *  Il n'est possible d'accèder qu'à des items du groupe
- *  original. Retourne une exception si l'item demandé n'est pas
- *  référencé. L'accès est optimiser pour les ItemGroupRangeIterator
+ *  Il n'est possible d'accÃ¨der qu'Ã  des items du groupe
+ *  original. Retourne une exception si l'item demandÃ© n'est pas
+ *  rÃ©fÃ©rencÃ©. L'accÃ¨s est optimiser pour les ItemGroupRangeIterator
  *
- *  Cette implémentation stocke les valeurs dans la structure Data de
- *  la table de hachage. Elle ne sert qu'à typer les Items.
+ *  Cette implÃ©mentation stocke les valeurs dans la structure Data de
+ *  la table de hachage. Elle ne sert qu'Ã  typer les Items.
  *
  * \see ItemGroupMapT et ItemGroupMapArrayT
  */
@@ -616,7 +616,7 @@ protected:
   typedef ItemGroupMapAbstractImplT<ValueType> BaseClass;
 
 public:
-  //! Constructeur par défaut
+  //! Constructeur par dÃ©faut
   ItemGroupMapBaseT() 
     : BaseClass()
     , m_has_default_value(false)
@@ -624,7 +624,7 @@ public:
     ;
   }
   
-  //! Constructeur à partir d'un groupe
+  //! Constructeur Ã  partir d'un groupe
   ItemGroupMapBaseT(const ItemGroup & group) 
     : BaseClass()
     , m_has_default_value(false)
@@ -632,7 +632,7 @@ public:
     init(group);
   }
 
-  //! Constructeur à partir d'un groupe
+  //! Constructeur Ã  partir d'un groupe
   ItemGroupMapBaseT(const ItemGroup & group, ValueType default_value)
     : BaseClass()
     , m_has_default_value(false)
@@ -650,56 +650,56 @@ public:
   //! Initialisation sur un nouveau groupe
   void init(const ItemGroup & group) 
   {
-    // Met la valeur par défaut en association aux clefs
+    // Met la valeur par dÃ©faut en association aux clefs
     BaseClass::init(group);
   }
 
-  //! Opérateur d'accès à partir d'un item
+  //! OpÃ©rateur d'accÃ¨s Ã  partir d'un item
   ValueType & operator[](const Item & item) 
   {
     return BaseClass::operator[](item);
   }
 
-  //! Opérateur d'accès à partir d'un ItemGroupRangeIteratorT
+  //! OpÃ©rateur d'accÃ¨s Ã  partir d'un ItemGroupRangeIteratorT
   ValueType & operator[](const ItemGroupRangeIterator & iter)
   {
     return BaseClass::operator[](iter);
   }
 
-  //! Opérateur d'accès en mode constant à partir d'un item
+  //! OpÃ©rateur d'accÃ¨s en mode constant Ã  partir d'un item
   const ValueType & operator[](const Item & item) const
   {
     return BaseClass::operator[](item);
   }
 
-  //! Opérateur d'accès en mode constant à partir d'un ItemGroupRangeIteratorT
+  //! OpÃ©rateur d'accÃ¨s en mode constant Ã  partir d'un ItemGroupRangeIteratorT
   const ValueType & operator[](const ItemGroupRangeIterator & iter) const
   {
     return BaseClass::operator[](iter);
   }
 
-  //   /*! \brief Recherche la valeur correspondant à l'item associé à un énumérateur
+  //   /*! \brief Recherche la valeur correspondant Ã  l'item associÃ© Ã  un Ã©numÃ©rateur
   //    */
   //   inline const ValueType& operator[](const ItemInternalEnumerator & iter) const
   //   {
   //     return BaseClass::operator[](iter);    
   //   }
 
-  //   /*! \brief Recherche la valeur correspondant à l'item associé à un énumérateur
+  //   /*! \brief Recherche la valeur correspondant Ã  l'item associÃ© Ã  un Ã©numÃ©rateur
   //    */
   //   inline ValueType& operator[](const ItemInternalEnumerator & iter)
   //   {
   //     return BaseClass::operator[](iter);
   //   }
 
-  /*! \brief Recherche la valeur correspondant à l'item associé à un énumérateur
+  /*! \brief Recherche la valeur correspondant Ã  l'item associÃ© Ã  un Ã©numÃ©rateur
    */
   inline const ValueType& operator[](const ItemEnumerator & iter) const
   {
     return BaseClass::operator[](iter);    
   }
 
-  /*! \brief Recherche la valeur correspondant à l'item associé à un énumérateur
+  /*! \brief Recherche la valeur correspondant Ã  l'item associÃ© Ã  un Ã©numÃ©rateur
    */
   inline ValueType& operator[](const ItemEnumerator & iter)
   {
@@ -712,7 +712,7 @@ public:
     return BaseClass::hasKey(item);
   }
 
-  //! Définit une valeur par défaut de remplissage
+  //! DÃ©finit une valeur par dÃ©faut de remplissage
   void setDefaultValue(const ValueType & default_value) { m_has_default_value = true; m_default_value = default_value; }
   
 protected:
@@ -724,19 +724,19 @@ protected:
 
 /*---------------------------------------------------------------------------*/
 
-/*! \brief Forme de tableau indéxé sur un groupe d'items de type ItemKind
+/*! \brief Forme de tableau indÃ©xÃ© sur un groupe d'items de type ItemKind
  *
- *  Permet d'indéxer un tableau par les items d'un groupe. Ceci évite
- *  des erreurs principalement en parallèle ou certains items ne sont
- *  pas contigus en localId (et évite le bug d'indexé un Array via les
+ *  Permet d'indÃ©xer un tableau par les items d'un groupe. Ceci Ã©vite
+ *  des erreurs principalement en parallÃ¨le ou certains items ne sont
+ *  pas contigus en localId (et Ã©vite le bug d'indexÃ© un Array via les
  *  localId des items).
  *
- *  Il n'est possible d'accèder qu'à des items du groupe
- *  original. Retourne une exception si l'item demandé n'est pas
- *  référencé. L'accès est optimiser pour les ItemGroupRangeIterator
+ *  Il n'est possible d'accÃ¨der qu'Ã  des items du groupe
+ *  original. Retourne une exception si l'item demandÃ© n'est pas
+ *  rÃ©fÃ©rencÃ©. L'accÃ¨s est optimiser pour les ItemGroupRangeIterator
  *
- *  Cette implémentation stocke les valeurs dans la structure Data de
- *  la table de hachage. Elle ne sert qu'à typer les Items.
+ *  Cette implÃ©mentation stocke les valeurs dans la structure Data de
+ *  la table de hachage. Elle ne sert qu'Ã  typer les Items.
  *
  * \see ItemGroupMapArrayT
  */
@@ -748,7 +748,7 @@ protected:
   typedef ItemGroupMapAbstractImplT<ValueType> BaseClass;
 
 public:
-  //! Constructeur par défaut
+  //! Constructeur par dÃ©faut
   ItemGroupMapT()
     : BaseClass()
     , m_has_default_value(false)
@@ -756,7 +756,7 @@ public:
     ;
   }
   
-  //! Constructeur à partir d'un groupe
+  //! Constructeur Ã  partir d'un groupe
   ItemGroupMapT(const ItemGroupT<ItemKind> & group) 
     : BaseClass()
     , m_has_default_value(false)
@@ -764,7 +764,7 @@ public:
     init(group);
   }
 
-  //! Constructeur à partir d'un groupe
+  //! Constructeur Ã  partir d'un groupe
   ItemGroupMapT(const ItemGroupT<ItemKind> & group, ValueType default_value) 
     : BaseClass()
     , m_has_default_value(false)
@@ -782,42 +782,42 @@ public:
   //! Initialisation sur un nouveau groupe
   void init(const ItemGroupT<ItemKind> & group) 
   {
-    // Met la valeur par défaut en association aux clefs
+    // Met la valeur par dÃ©faut en association aux clefs
     BaseClass::init(group);
   }
 
-  //! Opérateur d'accès à partir d'un item
+  //! OpÃ©rateur d'accÃ¨s Ã  partir d'un item
   ValueType & operator[](const ItemKind & item) 
   {
     return BaseClass::operator[](item);
   }
 
-  //! Opérateur d'accès à partir d'un ItemGroupRangeIteratorT
+  //! OpÃ©rateur d'accÃ¨s Ã  partir d'un ItemGroupRangeIteratorT
   ValueType & operator[](const ItemGroupRangeIteratorT<ItemKind> & iter)
   {
     return BaseClass::operator[](iter);
   }
 
-  //! Opérateur d'accès en mode constant à partir d'un item
+  //! OpÃ©rateur d'accÃ¨s en mode constant Ã  partir d'un item
   const ValueType & operator[](const ItemKind & item) const
   {
     return BaseClass::operator[](item);
   }
 
-  //! Opérateur d'accès en mode constant à partir d'un ItemGroupRangeIteratorT
+  //! OpÃ©rateur d'accÃ¨s en mode constant Ã  partir d'un ItemGroupRangeIteratorT
   const ValueType & operator[](const ItemGroupRangeIteratorT<ItemKind> & iter) const
   {
     return BaseClass::operator[](iter);
   }
 
-  /*! \brief Recherche la valeur correspondant à l'item associé à un énumérateur
+  /*! \brief Recherche la valeur correspondant Ã  l'item associÃ© Ã  un Ã©numÃ©rateur
    */
   inline const ValueType& operator[](const ItemEnumeratorT<ItemKind> & iter) const
   {
     return BaseClass::operator[](iter);    
   }
 
-  /*! \brief Recherche la valeur correspondant à l'item associé à un énumérateur
+  /*! \brief Recherche la valeur correspondant Ã  l'item associÃ© Ã  un Ã©numÃ©rateur
    */
   inline ValueType& operator[](const ItemEnumeratorT<ItemKind> & iter)
   {
@@ -829,7 +829,7 @@ public:
     return BaseClass::hasKey(item);
   }
 
-  //! Définit une valeur par défaut de remplissage
+  //! DÃ©finit une valeur par dÃ©faut de remplissage
   void setDefaultValue(const ValueType & default_value) { m_has_default_value = true; m_default_value = default_value; }
 
 protected:
@@ -842,17 +842,17 @@ protected:
 /*---------------------------------------------------------------------------*/
 
 //! \brief Classe de base pour les ItemGroupMapArray
-/*  Contient la majorité des fonctionnalités mais sans distinction du
+/*  Contient la majoritÃ© des fonctionnalitÃ©s mais sans distinction du
  *  type d'item/
  *
- *  Permet d'indéxé un tableau par les items d'un groupe. Ceci évite
- *  des erreurs principalement en parallèle ou certains items ne sont
- *  pas contigus en localId (et évite le bug d'indexé un Array via les
+ *  Permet d'indÃ©xÃ© un tableau par les items d'un groupe. Ceci Ã©vite
+ *  des erreurs principalement en parallÃ¨le ou certains items ne sont
+ *  pas contigus en localId (et Ã©vite le bug d'indexÃ© un Array via les
  *  localId des items).
  *
- *  Il n'est possible d'accèder qu'à des items du groupe
- *  original. Retourne une exception si l'item demandé n'est pas
- *  référencé. L'accès en optimiser pour les ItemGroupRangeIterator
+ *  Il n'est possible d'accÃ¨der qu'Ã  des items du groupe
+ *  original. Retourne une exception si l'item demandÃ© n'est pas
+ *  rÃ©fÃ©rencÃ©. L'accÃ¨s en optimiser pour les ItemGroupRangeIterator
  *
  * \see ItemGroupMapT
  */
@@ -873,7 +873,7 @@ protected:
   ValueType m_default_value;
 
 public:
-  //! Constructeur par défaut
+  //! Constructeur par dÃ©faut
   ItemGroupMapArrayBaseT() 
     : BaseClass()
     , m_array_size(0)
@@ -883,7 +883,7 @@ public:
     ;
   }
 
-  //! Constructeur à partir d'un groupe
+  //! Constructeur Ã  partir d'un groupe
   ItemGroupMapArrayBaseT(const ItemGroup & group, 
                          const Integer array_size)
     : BaseClass()
@@ -893,7 +893,7 @@ public:
     init(group,array_size);
   }
 
-  //! Constructeur à partir d'un groupe
+  //! Constructeur Ã  partir d'un groupe
   ItemGroupMapArrayBaseT(const ItemGroup & group, 
                          const Integer array_size,
                          ValueType default_value) 
@@ -938,42 +938,42 @@ public:
     init(group,m_array_size);
   }
 
-  //! Opérateur d'accès à partir d'un item
-  /*! Retourne une exception si l'item n'est pas référencé */
+  //! OpÃ©rateur d'accÃ¨s Ã  partir d'un item
+  /*! Retourne une exception si l'item n'est pas rÃ©fÃ©rencÃ© */
   ArrayType operator[](const Item & item) 
   {
     return ArrayType(m_array_size,BaseClass::operator[](item));
   }
 
-  //! Opérateur d'accès à partir d'un ItemGroupRangeIteratorT
-  /*! Retourne une exception si l'item n'est pas référencé */
+  //! OpÃ©rateur d'accÃ¨s Ã  partir d'un ItemGroupRangeIteratorT
+  /*! Retourne une exception si l'item n'est pas rÃ©fÃ©rencÃ© */
   ArrayType operator[](const ItemGroupRangeIterator & iter)
   {
     return ArrayType(m_array_size,BaseClass::operator[](iter));
   }
 
-  /*! \brief Recherche la valeur correspondant à l'item associé à un énumérateur
+  /*! \brief Recherche la valeur correspondant Ã  l'item associÃ© Ã  un Ã©numÃ©rateur
    */
   inline ArrayType operator[](const ItemEnumerator & iter)
   {
     return ArrayType(m_array_size,BaseClass::operator[](iter));
   }
 
-  //! Opérateur d'accès en mode constant à partir d'un item
-  /*! Retourne une exception si l'item n'est pas référencé */
+  //! OpÃ©rateur d'accÃ¨s en mode constant Ã  partir d'un item
+  /*! Retourne une exception si l'item n'est pas rÃ©fÃ©rencÃ© */
   ConstArrayType operator[](const Item & item) const
   {
     return ConstArrayType(m_array_size,BaseClass::operator[](item));
   }
 
-  //! Opérateur d'accès en mode constant à partir d'un ItemGroupRangeIteratorT
-  /*! Retourne une exception si l'item n'est pas référencé */
+  //! OpÃ©rateur d'accÃ¨s en mode constant Ã  partir d'un ItemGroupRangeIteratorT
+  /*! Retourne une exception si l'item n'est pas rÃ©fÃ©rencÃ© */
   ConstArrayType operator[](const ItemGroupRangeIterator & iter) const
   {
     return ConstArrayType(m_array_size,BaseClass::operator[](iter));
   }
 
-  /*! \brief Recherche la valeur correspondant à l'item associé à un énumérateur
+  /*! \brief Recherche la valeur correspondant Ã  l'item associÃ© Ã  un Ã©numÃ©rateur
    */
   inline const ConstArrayType operator[](const ItemEnumerator & iter) const
   {
@@ -1074,16 +1074,16 @@ private:
 
 /*---------------------------------------------------------------------------*/
 
-/*! \brief Forme de tableau indéxé sur un groupe d'items à valeurs de type tableau
+/*! \brief Forme de tableau indÃ©xÃ© sur un groupe d'items Ã  valeurs de type tableau
  *
- *  Permet d'indéxé un tableau par les items d'un groupe. Ceci évite
- *  des erreurs principalement en parallèle ou certains items ne sont
- *  pas contigus en localId (et évite le bug d'indexé un Array via les
+ *  Permet d'indÃ©xÃ© un tableau par les items d'un groupe. Ceci Ã©vite
+ *  des erreurs principalement en parallÃ¨le ou certains items ne sont
+ *  pas contigus en localId (et Ã©vite le bug d'indexÃ© un Array via les
  *  localId des items).
  *
- *  Il n'est possible d'accèder qu'à des items du groupe
- *  original. Retourne une exception si l'item demandé n'est pas
- *  référencé. L'accès en optimiser pour les ItemGroupRangeIterator
+ *  Il n'est possible d'accÃ¨der qu'Ã  des items du groupe
+ *  original. Retourne une exception si l'item demandÃ© n'est pas
+ *  rÃ©fÃ©rencÃ©. L'accÃ¨s en optimiser pour les ItemGroupRangeIterator
  *
  * \see ItemGroupMapT
  */
@@ -1103,7 +1103,7 @@ protected:
   ValueType m_default_value;
 
 public:
-  //! Constructeur par défaut
+  //! Constructeur par dÃ©faut
   ItemGroupMapArrayT() 
     : BaseClass()
     , m_array_size(0)
@@ -1113,7 +1113,7 @@ public:
     ;
   }
 
-  //! Constructeur à partir d'un groupe
+  //! Constructeur Ã  partir d'un groupe
   ItemGroupMapArrayT(const ItemGroupT<ItemKind> & group, 
                      const Integer array_size)
     : BaseClass()
@@ -1123,7 +1123,7 @@ public:
     init(group,array_size);
   }
 
-  //! Constructeur à partir d'un groupe
+  //! Constructeur Ã  partir d'un groupe
   ItemGroupMapArrayT(const ItemGroupT<ItemKind> & group, 
                      const Integer array_size,
                      ValueType default_value) 
@@ -1168,42 +1168,42 @@ public:
     init(group,m_array_size);
   }
 
-  //! Opérateur d'accès à partir d'un item
-  /*! Retourne une exception si l'item n'est pas référencé */
+  //! OpÃ©rateur d'accÃ¨s Ã  partir d'un item
+  /*! Retourne une exception si l'item n'est pas rÃ©fÃ©rencÃ© */
   ArrayType operator[](const ItemKind & item) 
   {
     return ArrayType(m_array_size,BaseClass::operator[](item));
   }
 
-  //! Opérateur d'accès à partir d'un ItemGroupRangeIteratorT
-  /*! Retourne une exception si l'item n'est pas référencé */
+  //! OpÃ©rateur d'accÃ¨s Ã  partir d'un ItemGroupRangeIteratorT
+  /*! Retourne une exception si l'item n'est pas rÃ©fÃ©rencÃ© */
   ArrayType operator[](const ItemGroupRangeIteratorT<ItemKind> & iter)
   {
     return ArrayType(m_array_size,BaseClass::operator[](iter));
   }
 
-  /*! \brief Recherche la valeur correspondant à l'item associé à un énumérateur
+  /*! \brief Recherche la valeur correspondant Ã  l'item associÃ© Ã  un Ã©numÃ©rateur
    */
   inline ArrayType operator[](const ItemEnumeratorT<ItemKind> & iter)
   {
     return ArrayType(m_array_size,BaseClass::operator[](iter));
   }
 
-  //! Opérateur d'accès en mode constant à partir d'un item
-  /*! Retourne une exception si l'item n'est pas référencé */
+  //! OpÃ©rateur d'accÃ¨s en mode constant Ã  partir d'un item
+  /*! Retourne une exception si l'item n'est pas rÃ©fÃ©rencÃ© */
   ConstArrayType operator[](const ItemKind & item) const
   {
     return ConstArrayType(m_array_size,BaseClass::operator[](item));
   }
 
-  //! Opérateur d'accès en mode constant à partir d'un ItemGroupRangeIteratorT
-  /*! Retourne une exception si l'item n'est pas référencé */
+  //! OpÃ©rateur d'accÃ¨s en mode constant Ã  partir d'un ItemGroupRangeIteratorT
+  /*! Retourne une exception si l'item n'est pas rÃ©fÃ©rencÃ© */
   ConstArrayType operator[](const ItemGroupRangeIteratorT<ItemKind> & iter) const
   {
     return ConstArrayType(m_array_size,BaseClass::operator[](iter));
   }
 
-  /*! \brief Recherche la valeur correspondant à l'item associé à un énumérateur
+  /*! \brief Recherche la valeur correspondant Ã  l'item associÃ© Ã  un Ã©numÃ©rateur
    */
   inline const ConstArrayType operator[](const ItemEnumeratorT<ItemKind> & iter) const
   {
@@ -1299,16 +1299,16 @@ private:
 /*---------------------------------------------------------------------------*/
 
 //! Classe vide
-/*! Coute un octet en mémoire */
+/*! Coute un octet en mÃ©moire */
 class Void { };
 // inline std::ostream & operator<<(std::ostream & o, const Void & v) { return o; }
 
 /*---------------------------------------------------------------------------*/
 
-/*! ItemGroupSet s'utilise essentiellement avec hasKey vu que les données portées sont Void,
- *  L'implémentation spécialisée sans aucune données (encore moins que Void) a été désactivée
- *  afin de factoriser le code de resizeFromGroup et de _compact. Si besoin est, une implémentation
- *  spécifique est possible (en l'état utilise eResetOnResize pour optimiser le redimensionnement) */
+/*! ItemGroupSet s'utilise essentiellement avec hasKey vu que les donnÃ©es portÃ©es sont Void,
+ *  L'implÃ©mentation spÃ©cialisÃ©e sans aucune donnÃ©es (encore moins que Void) a Ã©tÃ© dÃ©sactivÃ©e
+ *  afin de factoriser le code de resizeFromGroup et de _compact. Si besoin est, une implÃ©mentation
+ *  spÃ©cifique est possible (en l'Ã©tat utilise eResetOnResize pour optimiser le redimensionnement) */
 class ItemGroupSet : protected ItemGroupMapAbstractImplT<Void> 
 {
  public:

@@ -3,8 +3,8 @@
   <PropertyGroup>
     <AxlToolsExeFramework Condition="'$(AxlToolsExeTargetFramework)'=='' and '$(BundledNETCoreAppTargetFrameworkVersion)'!=''"
                           >netcoreapp$(BundledNETCoreAppTargetFrameworkVersion)</AxlToolsExeFramework>
-    <!-- Si aucun framework n'est spécifié, utilise 'net461' qui est la première version compatible avec 'netstandard2.0' -->
-    <AxlToolsExeFramework Condition="'$(ArcaneToolsExeFramework)'==''">net461</AxlToolsExeFramework>
+    <!-- Si aucun framework n'est spécifié, utilise 'net6' -->
+    <AxlToolsExeFramework Condition="'$(ArcaneToolsExeFramework)'==''">net6</AxlToolsExeFramework>
 
     <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
 

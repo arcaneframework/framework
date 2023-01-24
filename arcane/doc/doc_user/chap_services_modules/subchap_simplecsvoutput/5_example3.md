@@ -6,7 +6,7 @@ Avec l'exemple 3 et les suivants, on n'utilise plus de singleton.
 Donc on va voir un exemple simple d'utilisation du service normal.
 
 À noter que cet exemple fait la même chose que les exemples
-précedents.
+précédents.
 
 
 ## Fichier .axl -- Partie <options>

@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml version="1.0"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
   <xs:import namespace="http://www.w3.org/XML/1998/namespace" />
 
   <!-- Classe de base ...................................................... -->
-  <!-- Séquence de 4 éléments: name, userclass, default et description ..... -->
+  <!-- SÃ©quence de 4 Ã©lÃ©ments: name, userclass, default et description ..... -->
 
   <xs:complexType name="Base">
     <xs:sequence>
@@ -131,7 +131,7 @@
     <xs:attribute ref="xml:space"/>
   </xs:attributeGroup>
   
-  <!-- Elément module ...................................................... -->
+  <!-- ElÃ©ment module ...................................................... -->
   <xs:element name="module" type="Module"  />
 
   <xs:complexType name="Module">
@@ -160,7 +160,7 @@
     </xs:complexContent>
   </xs:complexType>
 
-  <!-- Elément service ...................................................... -->
+  <!-- ElÃ©ment service ...................................................... -->
   <xs:element name="service" type="Service" />  
   
   <xs:complexType name="Service">
@@ -275,6 +275,21 @@
     </xs:restriction>
   </xs:simpleType>
   
+  <!-- Dimension d'une forme d'une variable : 0, 1, 2 ou 3 .................. -->
+  <xs:simpleType name="ShapeDimension">
+    <xs:restriction base="xs:integer">
+      <xs:minInclusive value="0" />
+      <xs:maxInclusive value="3" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Nombre d'Ã©lÃ©ments d'une dimension fixÃ©e ............................... -->
+  <xs:simpleType name="FixedExtent">
+    <xs:restriction base="xs:integer">
+      <xs:minInclusive value="0" />
+    </xs:restriction>
+  </xs:simpleType>
+
   <!-- Flow d'une variable: in, out, inout ................................. -->
   <xs:simpleType name="Flow">
     <xs:restriction base="xs:string">
@@ -373,7 +388,7 @@
             <xs:attribute name="name" type="xs:string" use="required" />
             <xs:attribute name="data-type" type="DataType" use="required" />
             <xs:attribute name="item-kind" type="ItemKind" use="required" />
-            <xs:attribute name="dim" type="Dimension" use="required" />
+            <xs:attribute name="dim" type="Dimension" use="optional" />
             <xs:attribute name="flow" type="Flow" default="inout" />
             <xs:attribute name="family-name" type="xs:string" use="optional" />
             <xs:attribute name="dump" type="xs:boolean" use="optional" />
@@ -387,8 +402,11 @@
             <xs:attribute name="no-exchange" type="xs:boolean" use="optional" />
             <xs:attribute name="persistant" type="xs:boolean" use="optional" />
             <xs:attribute name="no-replica-sync" type="xs:boolean" use="optional" />
-            <!-- Nom de la classe C++ générée. Uniquement pour test pour l'instant -->
+            <!-- Nom de la classe C++ gÃ©nÃ©rÃ©e. Uniquement pour test pour l'instant -->
             <xs:attribute name="internal-cpp-typename" type="xs:string" use="optional" />
+            <xs:attribute name="shape-dim" type="ShapeDimension" use="optional" />
+            <xs:attribute name="extent0" type="FixedExtent" use="optional" />
+            <xs:attribute name="extent1" type="FixedExtent" use="optional" />
           </xs:complexType>
         </xs:element>
       </xs:sequence>

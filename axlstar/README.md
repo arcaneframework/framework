@@ -19,16 +19,16 @@ pour la plateforme Arcane.
 
 ## Prérequis
 
-- [.Net Core 3.0+](https://dotnet.microsoft.com/download)
+- [.Net Core 6.0+](https://dotnet.microsoft.com/download)
 
 ## Utilisation de .NET
 
 La compilation se fait via la commande suivante:
 
-Avec *.NetCore* en utilisant la version 3.1 du SDK
+Avec *.NetCore* en utilisant la version 6 du SDK
 
 ```{.sh}
-dotnet publish Arcane.Axl.sln -f netcoreapp3.1 ${MSBUILD_ARGS}
+dotnet publish Arcane.Axl.sln ${MSBUILD_ARGS}
 ```
 
 Les arguments de *msbuild* sont le plus souvent des propriétés. Les
@@ -61,11 +61,11 @@ autonome et peut être recopié directement lors de l'installation.
 
 ### Notes aux développeurs
 
-Après toute modification du schéma 'axl.xsd', il faut générer fichier
+Après toute modification du schéma 'Arcane.Axl/axl.xsd', il faut générer fichier
 'axl.cs' via l'outil xsd de mono:
 
 ```{.sh}
-xsd axl.xsd /classes /namespace:Arcane.Axl.Xsd
+xsd Arcane.Axl/axl.xsd /classes /namespace:Arcane.Axl.Xsd /outputdir:Arcane.Axl.T4/Arcane.Axl/Axl.From.Xsd
 ```
 
 Cela génère un fichier 'axl.cs' dans le répertoire courant qu'il faut

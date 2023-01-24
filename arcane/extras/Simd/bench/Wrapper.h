@@ -1,4 +1,4 @@
-#ifndef BENCH_SIMD_WRAPPER_H
+ï»¿#ifndef BENCH_SIMD_WRAPPER_H
 #define BENCH_SIMD_WRAPPER_H
 
 #include <arcane/utils/ArrayView.h>
@@ -95,7 +95,7 @@ class Array
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Vue sur un tableau indexé d'entités.
+ * \brief Vue sur un tableau index d'entitÃ©s.
  * \see ItemVectorView
  */
 class ItemInternalVectorView
@@ -110,19 +110,19 @@ class ItemInternalVectorView
 
  public:
 
-  //! Accède au \a i-ème élément du vecteur
+  //! AccÃ¨de au \a i-Ã¨me Ã©lÃ©ment du vecteur
   inline ItemInternal* operator[](Integer index) const
   {
     return m_items[ m_local_ids[index] ];
   }
 
-  //! Nombre d'éléments du vecteur
+  //! Nombre d'Ã©lÃ©ments du vecteur
   inline Integer size() const { return m_local_ids.size(); }
 
-  //! Tableau des entités
+  //! Tableau des entitÃ©s
   inline ItemInternalArrayView items() const { return m_items; }
 
-  //! Tableau des numéros locaux des entités
+  //! Tableau des numÃ©ros locaux des entitÃ©s
   inline Int32ConstArrayView localIds() const { return m_local_ids; }
 
  public:
@@ -136,7 +136,7 @@ class ItemInternalVectorView
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Enumérateur sur une liste d'entités.
+ * \brief EnumÃ©rateur sur une liste d'entitÃ©s.
  */
 class ItemEnumerator
 {
@@ -165,16 +165,16 @@ class ItemEnumerator
   inline bool operator()() { return m_index<m_count; }
   inline bool hasNext() { return m_index<m_count; }
 
-  //! Nombre d'éléments de l'énumérateur
+  //! Nombre d'Ã©lÃ©ments de l'Ã©numÃ©rateur
   inline Integer count() const { return m_count; }
 
-  //! Indice courant de l'énumérateur
+  //! Indice courant de l'Ã©numÃ©rateur
   inline Integer index() const { return m_index; }
 
-  //! localId() de l'entité courante.
+  //! localId() de l'entitÃ© courante.
   inline Integer itemLocalId() const { return m_local_ids[m_index]; }
 
-  //! localId() de l'entité courante.
+  //! localId() de l'entitÃ© courante.
   //inline Integer localId() const { return m_local_ids[m_index]; }
 
   //! Indices locaux
@@ -197,7 +197,7 @@ class ItemEnumerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Enumérateur sur une liste typée d'entités
+ * \brief EnumÃ©rateur sur une liste type d'entitÃ©s
  */
 template<typename ItemType>
 class ItemEnumeratorT
@@ -228,11 +228,11 @@ class ItemEnumeratorT
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Vue sur un vecteur d'entités.
+ * \brief Vue sur un vecteur d'entitÃ©s.
  *
- * \warning la vue n'est valide que tant que le tableau associé n'est
- * pas modifié et que la famille d'entité associée à ce tableau n'est
- * elle même pas modifiée.
+ * \warning la vue n'est valide que tant que le tableau associÃ© n'est
+ * pas modifiÃ© et que la famille d'entitÃ© associÃ©e Ã  ce tableau n'est
+ * elle mÃªme pas modifiÃ©e.
  */
 class ItemVectorView
 {
@@ -251,22 +251,22 @@ class ItemVectorView
     return ItemInternalVectorView(m_items,m_local_ids);
   }
 
-  //! Accède au \a i-ème élément du vecteur
+  //! AccÃ¨de au \a i-Ã¨me Ã©lÃ©ment du vecteur
   inline Item operator[](Integer index) const
   {
     return m_items[ m_local_ids[index] ];
   }
 
-  //! Nombre d'éléments du vecteur
+  //! Nombre d'Ã©lÃ©ments du vecteur
   inline Integer size() const { return m_local_ids.size(); }
 
-  //! Tableau des entités
+  //! Tableau des entitÃ©s
   inline ItemInternalArrayView items() const { return m_items; }
 
-  //! Tableau des numéros locaux des entités
+  //! Tableau des numÃ©ros locaux des entitÃ©s
   inline Int32ConstArrayView localIds() const { return m_local_ids; }
 
-  //! Sous-vue à partir de l'élément \a begin et contenant \a size éléments
+  //! Sous-vue Ã  partir de l'Ã©lÃ©ment \a begin et contenant \a size Ã©lÃ©ments
   inline ItemVectorView subView(Integer begin,Integer size)
   {
     return ItemVectorView(m_items,m_local_ids.subView(begin,size));
@@ -285,7 +285,7 @@ class ItemVectorView
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Vue sur un tableau typé d'entités.
+ * \brief Vue sur un tableau typÃ© d'entitÃ©s.
  */
 template<typename ItemType>
 class ItemVectorViewT
@@ -333,7 +333,7 @@ class ItemVector
 
  public:
 
-  //! Enumérateur
+  //! EnumÃ©rateur
   inline ItemEnumerator enumerator() const
   {
     return ItemEnumerator(m_items.begin(),&m_local_ids[0],m_local_ids.size());
@@ -350,7 +350,7 @@ class ItemVector
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Vecteur typé d'entité.
+ * \brief Vecteur typÃ© d'entitÃ©.
  *
  * Pour plus d'infos, voir ItemVector.
  */
@@ -380,7 +380,7 @@ class ItemVectorT
 
  public:
 
-  //! Entité à la position \a index du vecteur
+  //! EntitÃ© Ã  la position \a index du vecteur
   ItemType operator[](Integer index) const
   {
     return m_items[m_local_ids[index]];
@@ -398,7 +398,7 @@ class ItemVectorT
     return ItemVectorViewT<ItemType>(m_items,m_local_ids);
   }
 
-  //! Enumérateur
+  //! EnumÃ©rateur
   ItemEnumeratorT<ItemType>	enumerator() const
   {
     return ItemEnumeratorT<ItemType>(m_items.begin(),&m_local_ids[0],

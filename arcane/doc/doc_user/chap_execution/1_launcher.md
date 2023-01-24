@@ -32,10 +32,10 @@ main(int argc,char* argv[])
 ```
 
 Il existe deux classes permettant de spécifier les paramètres
-d'exécution: Arcane::ApplicationInfo et
+d'exécution : Arcane::ApplicationInfo et
 Arcane::ApplicationBuildInfo.
 
-\note Ces deux classes existent pour des raisons de compatiblités avec
+\note Ces deux classes existent pour des raisons de compatiblitées avec
 le code existant. À terme, seule la classe
 Arcane::ApplicationBuildInfo restera et c'est donc cette dernière
 qu'il faut utiliser.
@@ -44,7 +44,7 @@ Les instances statiques de ces deux classes peuvent être récupérées
 via les méthodes Arcane::ArcaneLauncher::applicationInfo() et
 Arcane::ArcaneLauncher::applicationBuildInfo(). L'exemple suivant
 montre comment changer le nom et la version du code et le répertoire
-par défaut pour les sorties:
+par défaut pour les sorties :
 
 ```cpp
 #include <arcane/launcher/ArcaneLauncher.h>
@@ -64,7 +64,7 @@ main(int argc,char* argv[])
 ```
 
 Une fois l'initialisation effectuée, il est possible de lancer
-l'exécution du code via l'appel à Arcane::ArcaneLauncher::run():
+l'exécution du code via l'appel à Arcane::ArcaneLauncher::run() :
 
 ```cpp
 #include <arcane/launcher/ArcaneLauncher.h>
@@ -93,11 +93,11 @@ utilisé pour l'appel à `MPI_Init_thread()` dépend des options telles que
 le nombre de tâches ou de sous-domaines locaux en mode hybride qu'on
 souhaite utiliser.
 
-Il est néanmoins possible pour le code d'initialiser lui même MPI s'il
+Il est néanmoins possible pour le code d'initialiser lui-même MPI s'il
 le souhaite. Pour cela, il doit appeler la méthode `MPI_Init_thread()`
 avant l'appel à Arcane::ArcaneLauncher::run().
 
-\note Même si l'exécutable est utilisé en séquentiel (c'est à dire
+\note Même si l'exécutable est utilisé en séquentiel (c'est-à-dire
 sans passer par une commande telle que `mpiexec ...`), %Arcane tente
 d'initialiser MPI. Cela est nécessaire car certaines bibliothèques
 (par exemple les solveurs linéaires) ont besoin que MPI soit
@@ -112,7 +112,7 @@ souhaité (TODO faire doc).
 ## Exécution du code {#arcanedoc_execution_launcher_exec}
 
 La méthode Arcane::ArcaneLauncher::run() permet de lancer l'exécution
-du code. Cette méthode possède trois surcharges:
+du code. Cette méthode possède trois surcharges :
 
 1. L'appel sans argument (Arcane::ArcaneLauncher::run()) pour lancer l'exécution classique
    en utilisant une boucle en temps (voir \ref
@@ -136,13 +136,13 @@ du code. Cette méthode possède trois surcharges:
 par `-A`. Par exemple, pour changer le niveau de verbosité, il suffit
 de spécifier l'option `-A,VerbosityLevel=3` dans la ligne de commande.
 
-Les options sont interprétés lors de l'appel à
+Les options sont interprétées lors de l'appel à
 Arcane::ArcaneLauncher::init() et les valeurs de
 ArcaneLauncher::applicationBuildInfo() sont automatiquement remplies
 avec ces options. Il est cependant possible de les surcharger si
 nécessaire.
 
-Les options disponibles sont:
+Les options disponibles sont :
 
 <table>
 <tr>
@@ -196,7 +196,7 @@ calcul.
 <td>Int32</td>
 <td></td>
 <td>Nombre maximum d'itérations à effectuer pour l'exécution. Si le
-nombre d'itération spécifié par cette variable est atteint, le calcul
+nombre d'itérations spécifié par cette variable est atteint, le calcul
 s'arrête.
 </td>
 </tr>
@@ -258,7 +258,7 @@ Arcane::ISubDomain::exportDirectory().
 <td></td>
 <td>String</td>
 <td></td>
-<td>Nom du fichier du jeu de données. Si non specifié et requis, le
+<td>Nom du fichier du jeu de données. Si non spécifié et requis, le
 dernier argument de la ligne de commande est considéré comme le nom de
 fichier du jeu données.
 </td>
@@ -269,12 +269,12 @@ fichier du jeu données.
 <td>ARCANE_THREAD_BINDING_STRATEGY</td>
 <td>String</td>
 <td></td>
-<td>Stratégie de punaisage des threads. Cela fonctionne uniquement si
+<td>Stratégie de punnaisage des threads. Cela fonctionne uniquement si
 %Arcane est compilé avec la bibliothèque 'hwloc'. Par défaut aucun
 binding n'est effectué. Le seul mode disponible est 'Simple' qui
 alloue les threads suivant un mécanisme round-robin.
 
-NOTE: ce mécanisme de punaisage est en cours de développement et il
+NOTE: ce mécanisme de punnaisage est en cours de développement et il
 est possible qu'il ne fonctionne pas de manière optimale dans tous les
 cas
 </td>
@@ -286,7 +286,7 @@ cas
 <td>Int32</td>
 <td></td>
 <td>Taille de grain pour les boucles parallèles multi-threadées. Si
-positionné, indique le nombre d'élément de chaque bloc qui décompose une boucle
+positionné, indique le nombre d'éléments de chaque bloc qui décompose une boucle
 multi-threadée (à partir de la version 3.8).
 </td>
 </tr>
@@ -307,7 +307,7 @@ multi-threadées. Les valeurs possibles sont `auto`, `static` ou
 ## Choix du gestionnaire d'échange de message {#arcanedoc_execution_launcher_exchange}
 
 Le gestionnaire d'échange de message (Arcane::IParallelSuperMng) est
-choisi lors du lancement du calcul.  %Arcane fournit les gestionnaires suivants:
+choisi lors du lancement du calcul.  %Arcane fournit les gestionnaires suivants :
 
 - MpiParallelSuperMng
 - SequentialParallelSuperMng
@@ -324,7 +324,7 @@ le gestionnaire à utiliser en positionnant la variable d'environnement (obsolè
 ci-dessus (sans le suffixe `ParallelSuperMng`, donc par exemple `Mpi`,
 `Sequential`, `MpiSequential`, ...).
 
-Le choix automatique du gestionnaire est fait comme suit:
+Le choix automatique du gestionnaire est fait comme suit :
 
 <table>
 <tr>
@@ -366,7 +366,7 @@ soit au total $N * $S sous-domaines.
 
 </table>
 
-Voici quelques exemples de lancement:
+Voici quelques exemples de lancement :
 
 ```sh
 # lancement séquentiel du jeu de données 'Test.arc'

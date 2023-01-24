@@ -3,7 +3,7 @@
 [TOC]
 
 Dans ce sous-chapitre, nous n'allons pas parler des modules
-puisque la majeur partie de ce qu'il y avait à dire
+puisque la majeure partie de ce qu'il y avait à dire
 a été abordé dans le sous-chapitre \ref arcanedoc_examples_simple_example.
 
 Ici, nous allons parler service, et plus précisément du service
@@ -13,7 +13,7 @@ Donc, le fichier `RNGService.cc` sera volontairement omis.
 
 ## IRandomNumberGenerator.h {#arcanedoc_examples_concret_example_rng_irandomnumbergeneratorh}
 
-Voici l'interface utilisé par ce service :
+Voici l'interface utilisée par ce service :
 ```cpp
 // -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
@@ -61,14 +61,14 @@ class ARCANE_CORE_EXPORT IRandomNumberGenerator
 #endif
 
 ```
-Il n'y a pas grand chose à dire ici, c'est une interface assez
+Il n'y a pas grand-chose à dire ici, c'est une interface assez
 classique. On a les premières lignes avec la licence et
 une courte description de l'interface (lignes 1-12).
 Ensuite, on a une classe avec des méthodes virtuelles égales à 0, ce qui
 en fait des méthodes virtuelles pures que l'on doit implémenter dans une
 implémentation.
 
-A noter cependant que les graines sont représentées par des tableaux de Bytes
+\`A noter cependant que les graines sont représentées par des tableaux de Bytes
 (ByteUniqueArray) et sont manipulées par des vues (ByteArrayView).
 Cela permet de rendre l'application indépendante de l'implémentation de
 `Arcane::IRandomNumberGenerator`.
@@ -181,7 +181,7 @@ ARCANE_REGISTER_SERVICE_RNG(RNG, RNGService);
 Là aussi, c'est très semblable à un module.
 La plus grosse différence est au niveau des méthodes override.
 En effet, dans un module, on override les points d'entrées que l'on a 
-définit dans le `.axl`. Ici, dans ce service, on override les méthodes
+défini dans le `.axl`. Ici, dans ce service, on override les méthodes
 virtuelles de notre interface.
 Les services ne peuvent pas avoir de points d'entrées.
 
