@@ -140,10 +140,6 @@ namespace Arcane.Axl
         m_item_kind = ItemKind.Face;
       else if (item_kind == "cell")
         m_item_kind = ItemKind.Cell;
-      else if (item_kind == "dualnode")
-        m_item_kind = ItemKind.DualNode;
-      else if (item_kind == "link")
-        m_item_kind = ItemKind.Link;
       else if (item_kind == "particle")
         m_item_kind = ItemKind.Particle;
       else if (item_kind == "dof")
@@ -154,7 +150,7 @@ namespace Arcane.Axl
         Console.WriteLine("** ERREUR: attribut \"item-kind\" de l'option <" + node.Name
              + "> invalide (" + item_kind + ").\n");
         Console.WriteLine("** Les types reconnus sont 'node', 'edge', "
-             + "'face', 'cell', 'link', 'dualnode', 'particle', 'dof' et 'none'.\n");
+             + "'face', 'cell', 'particle', 'dof' et 'none'.\n");
         Error(node, "mauvaise valeur pour l'attribut \"kind\"");
       }
 

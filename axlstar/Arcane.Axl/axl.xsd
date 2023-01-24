@@ -337,8 +337,6 @@
       <xs:enumeration value="edge" />
       <xs:enumeration value="face" />
       <xs:enumeration value="cell" />
-      <xs:enumeration value="dualnode" />
-      <xs:enumeration value="link" />
       <xs:enumeration value="particle" />
       <xs:enumeration value="dof" />
     </xs:restriction>

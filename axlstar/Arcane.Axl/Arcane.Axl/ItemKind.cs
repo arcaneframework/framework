@@ -11,8 +11,6 @@ namespace Arcane.Axl
     Edge,
     Face,
     Cell,
-    DualNode,
-    Link,
     Particle,
     DoF
   }
