@@ -1380,12 +1380,6 @@ namespace Arcane.Axl.Xsd {
         cell,
         
         /// <remarks/>
-        dualnode,
-        
-        /// <remarks/>
-        link,
-        
-        /// <remarks/>
         particle,
         
         /// <remarks/>
