@@ -178,14 +178,14 @@ class ItemEnumeratorBaseT
    * \brief Liste des ItemInternal.
    * NOTE: Dans Arcane, méthode utilisée uniquement pour le wrapper C#. A supprimer ensuite
    */
-  ARCANE_DEPRECATED_REASON("Y2022: This is method is internal to Arcane")
+  ARCANE_DEPRECATED_REASON("Y2022: This method is internal to Arcane")
   constexpr const ItemInternalPtr* unguardedItems() const { return _unguardedItems(m_item.m_shared_info); }
 
   /*!
    * \internal
    * \brief Partie interne (pour usage interne uniquement).
    */
-  ARCANE_DEPRECATED_REASON("Y2022: Use operator*() instead")
+  ARCANE_DEPRECATED_REASON("Y2022: This method is internal to Arcane")
   constexpr ItemInternal* internal() const { return _internal(m_item.m_shared_info); }
 
  public:
