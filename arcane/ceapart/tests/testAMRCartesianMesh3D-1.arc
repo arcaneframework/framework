@@ -61,7 +61,7 @@
    </refinement-3d> -->
    <expected-number-of-cells-in-patchs>1224 144 40</expected-number-of-cells-in-patchs>
    <nodes-uid-hash>42eb4b485ec76318f1926002b745720c</nodes-uid-hash>
-   <faces-uid-hash>be929e809c82d3e172f2b586ae766d3c</faces-uid-hash>
+   <faces-uid-hash>460c3b5083dce8f2c88d1e2b68d28c7f</faces-uid-hash>
    <cells-uid-hash>e677eccad3821b44beeb99115a071933</cells-uid-hash>
    <!-- Hash si renumérotation level0 : -->
    <!-- <nodes-uid-hash>64a86cfb64af959cfde7fb5cff5ef6c9</nodes-uid-hash> -->
