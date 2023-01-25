@@ -127,5 +127,5 @@ set(AXL_FILES
   PDESRandomNumberGenerator
   SimpleCsvOutput
   SimpleCsvComparator
-  VTKHdfPostProcessor
+  VtkHdfPostProcessor
   )

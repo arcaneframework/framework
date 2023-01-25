@@ -564,7 +564,7 @@ if(ARCANE_USE_MPC)
 endif(ARCANE_USE_MPC)
 arcane_add_test(hydro1 testHydro-1.arc "-m 25")
 arcane_add_test_sequential(hydro1_ucd testHydro-1-UCD.arc "-m 25")
-arcane_add_test_sequential(hydro1_vtkhgf testHydro-1-vtkhdf.arc "-m 25")
+arcane_add_test_sequential(hydro1_vtkhdf testHydro-1-vtkhdf.arc "-m 50")
 ARCANE_ADD_TEST(hydro_depend1 testHydroDepend-1.arc "-m 25")
 ARCANE_ADD_TEST(hydro2 testHydro-2.arc "-m 25")
 
