@@ -28,8 +28,8 @@
     <variable>CellVolume</variable>
     <variable>Pressure</variable>
     <variable>Density</variable>
-    <!-- <variable>Velocity</variable>
-    <variable>NodeMass</variable> -->
+    <variable>Velocity</variable>
+    <variable>NodeMass</variable>
     <variable>InternalEnergy</variable>
     <group>ZG</group>
     <group>ZD</group>
