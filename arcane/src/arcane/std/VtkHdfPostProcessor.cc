@@ -313,10 +313,10 @@ _addInt64ArrayAttribute(Hid& hid, const char* name, Span<const Int64> values)
   if (attr < 0)
     ARCANE_FATAL("Can not create attribute '{0}'", name);
   int ret = H5Awrite(attr, H5T_NATIVE_INT64, values.data());
-  ret = H5Sclose(aid);
-  ret = H5Aclose(attr);
   if (ret < 0)
     ARCANE_FATAL("Can not write attribute '{0}'", name);
+  H5Aclose(attr);
+  H5Sclose(aid);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -333,10 +333,10 @@ _addStringAttribute(Hid& hid, const char* name, const String& value)
     ARCANE_FATAL("Can not create attribute {0}", name);
   int ret = H5Awrite(attr, attr_type, value.localstr());
   ret = H5Tclose(attr_type);
-  ret = H5Sclose(aid);
-  ret = H5Aclose(attr);
   if (ret < 0)
     ARCANE_FATAL("Can not write attribute '{0}'", name);
+  H5Aclose(attr);
+  H5Sclose(aid);
 }
 
 /*---------------------------------------------------------------------------*/
