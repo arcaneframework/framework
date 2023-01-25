@@ -630,14 +630,14 @@ renumberItemsUniqueId(const CartesianMeshRenumberingInfo& v)
 
   // Regarde ensuite les patchs si demandé.
   Int32 patch_method = v.renumberPatchMethod();
-  if (patch_method<0 && patch_method>2)
+  if (patch_method > 2 || patch_method < 0)
     ARCANE_FATAL("Invalid value '{0}' for renumberPatchMethod(). Valid values are 0 or 1 or 2");
     
-  else if (patch_method==1){
+  else if (patch_method == 1){
     CartesianMeshUniqueIdRenumbering renumberer(this,cmgi);
     renumberer.renumber();
   }
-  else if (patch_method==2){
+  else if (patch_method == 2){
     warning() << "The patch method 2 is experimental!";
     CartesianMeshUniqueIdRenumberingV2 renumberer(this,cmgi);
     renumberer.renumber();
