@@ -22,7 +22,7 @@
 
  <arcane-post-processing>
    <output-period>5</output-period>
-   <format name="VTKHdfPostProcessor" />
+   <format name="VtkHdfPostProcessor" />
    <output>
     <variable>CellMass</variable>
     <variable>CellVolume</variable>
