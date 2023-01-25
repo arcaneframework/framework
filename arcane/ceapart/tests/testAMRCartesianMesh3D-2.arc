@@ -73,10 +73,6 @@
    <nodes-uid-hash>3cbd376d768e895a0b8e33d091bb3ff5</nodes-uid-hash>
    <faces-uid-hash>2582173a840acc76dabb2abf8528410b</faces-uid-hash>
    <cells-uid-hash>a39d1e99166f13d23ffb74d4965b06a2</cells-uid-hash>
-   <!-- Hash si renumérotation level0 : -->
-   <!-- <nodes-uid-hash>ffcea813363d4018a2c00793158982ab</nodes-uid-hash> -->
-   <!-- <faces-uid-hash>c503ea181a9b76ed53484a050003c5f7</faces-uid-hash> -->
-   <!-- <cells-uid-hash>a39d1e99166f13d23ffb74d4965b06a2</cells-uid-hash> -->
  </a-m-r-cartesian-mesh-tester>
 
  <arcane-protections-reprises>

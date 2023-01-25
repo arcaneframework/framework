@@ -129,7 +129,10 @@ renumber()
         info() << "Renumbering: PARENT: cell_uid=" << cell.uniqueId() << " I=" << coord_i
                << " J=" << coord_j << " K=" << coord_k
                << " nb_cell_x=" << nb_cell_x << " nb_cell_y=" << nb_cell_y;
-      _applyChildrenCell3D(cell, nodes_new_uid, faces_new_uid, cells_new_uid, coord_i, coord_j, coord_k, nb_cell_x, nb_cell_y, nb_cell_z, 0, 0);
+      _applyChildrenCell3D(cell, nodes_new_uid, faces_new_uid, cells_new_uid, 
+                           coord_i, coord_j, coord_k, 
+                           nb_cell_x, nb_cell_y, nb_cell_z,
+                           0, 0, 0, 0);
     }
   }
 
@@ -265,28 +268,26 @@ _applyChildrenCell3D(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceIn
                      VariableCellInt64& cells_new_uid,
                      Int64 coord_i, Int64 coord_j, Int64 coord_k,
                      Int64 current_level_nb_cell_x, Int64 current_level_nb_cell_y, Int64 current_level_nb_cell_z,
-                     Int32 current_level, Int64 face_adder)
+                     Int32 current_level, Int64 cell_adder, Int64 node_adder, Int64 face_adder)
 {
   // TODO: pour pouvoir s'adapter à tous les raffinements, au lieu de 8,
   // il faudrait prendre le max des nbHChildren()
 
-  const Int64 parent_level_nb_cell_x = current_level_nb_cell_x / 2;
-  const Int64 parent_level_nb_cell_y = current_level_nb_cell_y / 2;
-  const Int64 parent_level_nb_cell_z = current_level_nb_cell_z / 2;
-
-  const Int64 cell_adder = parent_level_nb_cell_x * parent_level_nb_cell_y * parent_level_nb_cell_z * current_level;
-
   const Int64 current_level_nb_node_x = current_level_nb_cell_x + 1;
   const Int64 current_level_nb_node_y = current_level_nb_cell_y + 1;
-
-  const Int64 node_adder = (parent_level_nb_cell_x + 1) * (parent_level_nb_cell_y + 1) * (parent_level_nb_cell_z + 1) * current_level;
+  const Int64 current_level_nb_node_z = current_level_nb_cell_z + 1;
 
   const Int64 current_level_nb_face_x = current_level_nb_cell_x + 1;
   const Int64 current_level_nb_face_y = current_level_nb_cell_y + 1;
   const Int64 current_level_nb_face_z = current_level_nb_cell_z + 1;
 
-  // // Version non récursive pour face_adder.
+  // // Version non récursive pour cell_adder, node_adder et face_adder.
+  // cell_adder = 0;
+  // node_adder = 0;
   // face_adder = 0;
+  // const Int64 parent_level_nb_cell_x = current_level_nb_cell_x / 2;
+  // const Int64 parent_level_nb_cell_y = current_level_nb_cell_y / 2;
+  // const Int64 parent_level_nb_cell_z = current_level_nb_cell_z / 2;
   // Int64 level_i_nb_cell_x = parent_level_nb_cell_x;
   // Int64 level_i_nb_cell_y = parent_level_nb_cell_y;
   // Int64 level_i_nb_cell_z = parent_level_nb_cell_z;
@@ -294,6 +295,10 @@ _applyChildrenCell3D(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceIn
   //   face_adder += (level_i_nb_cell_z + 1) * level_i_nb_cell_x * level_i_nb_cell_y
   //               + (level_i_nb_cell_x + 1) * level_i_nb_cell_y * level_i_nb_cell_z
   //               + (level_i_nb_cell_y + 1) * level_i_nb_cell_z * level_i_nb_cell_x;
+
+  //   cell_adder += level_i_nb_cell_x * level_i_nb_cell_y * level_i_nb_cell_z;
+  //   node_adder += (level_i_nb_cell_x + 1) * (level_i_nb_cell_y + 1) * (level_i_nb_cell_z + 1);
+
   //   level_i_nb_cell_x /= 2;
   //   level_i_nb_cell_y /= 2;
   //   level_i_nb_cell_z /= 2;
@@ -454,13 +459,18 @@ _applyChildrenCell3D(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceIn
   // -------
   // | 0| 1|
   // -------
+  cell_adder += current_level_nb_cell_x * current_level_nb_cell_y * current_level_nb_cell_z;
+  node_adder += current_level_nb_node_x * current_level_nb_node_y * current_level_nb_node_z;
   face_adder += total_face_xy_yz_zx;
+
   coord_i *= 2;
   coord_j *= 2;
   coord_k *= 2;
+
   current_level_nb_cell_x *= 2;
   current_level_nb_cell_y *= 2;
   current_level_nb_cell_z *= 2;
+
   current_level += 1;
 
   Int32 nb_child = cell.nbHChildren();
@@ -472,7 +482,7 @@ _applyChildrenCell3D(Cell cell, VariableNodeInt64& nodes_new_uid, VariableFaceIn
 
     _applyChildrenCell3D(sub_cell, nodes_new_uid, faces_new_uid, cells_new_uid, my_coord_i, my_coord_j, my_coord_k,
                          current_level_nb_cell_x, current_level_nb_cell_y, current_level_nb_cell_z,
-                         current_level, face_adder);
+                         current_level, cell_adder, node_adder, face_adder);
   }
 }
 
