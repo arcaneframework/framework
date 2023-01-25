@@ -35,6 +35,16 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// TODO: Supporter tous les types de mailles (à unifier avec VtkMeshIOService)
+// TODO: Supporter le parallélisme
+// TODO: Regarder la sauvegarde des uniqueId() (via vtkOriginalCellIds)
+// TODO: Regarder comment éviter de sauver le maillage à chaque itération s'il
+//       ne change pas.
+// TODO: Regarder la compression
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 namespace Arcane
 {
 using namespace Hdf5Utils;
@@ -86,9 +96,6 @@ class VtkHdfDataWriter
 
  private:
 
-  void _addRealAttribute(Hid& hid, const char* name, double value);
-  void _addRealArrayAttribute(Hid& hid, const char* name, Span<const Real> values);
-  void _addIntegerAttribute(Hid& hid, const char* name, int value);
   void _addInt64ArrayAttribute(Hid& hid, const char* name, Span<const Int64> values);
   void _addStringAttribute(Hid& hid, const char* name, const String& value);
 
@@ -138,7 +145,7 @@ void VtkHdfDataWriter::
 beginWrite(const VariableCollection& vars)
 {
   ARCANE_UNUSED(vars);
-  warning() << "L'implémentation du format 'VtkHdf' est expérimentale";
+  warning() << "L'implémentation au format 'VtkHdf' est expérimentale";
 
   Int32 time_index = m_times.size();
 
@@ -298,40 +305,6 @@ _writeDataSet2D(HGroup& group, const String& name, Span2<const DataType> values)
 /*---------------------------------------------------------------------------*/
 
 void VtkHdfDataWriter::
-_addIntegerAttribute(Hid& hid, const char* name, int value)
-{
-  hid_t aid = H5Screate(H5S_SCALAR);
-  hid_t attr = H5Acreate2(hid.id(), name, H5T_NATIVE_INT, aid, H5P_DEFAULT, H5P_DEFAULT);
-  if (attr < 0)
-    throw FatalErrorException(A_FUNCINFO, String("Can not create attribute ") + name);
-  int ret = H5Awrite(attr, H5T_NATIVE_INT, &value);
-  ret = H5Sclose(aid);
-  ret = H5Aclose(attr);
-  if (ret < 0)
-    throw FatalErrorException(A_FUNCINFO, String("Can not write attribute ") + name);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void VtkHdfDataWriter::
-_addRealAttribute(Hid& hid, const char* name, double value)
-{
-  hid_t aid = H5Screate(H5S_SCALAR);
-  hid_t attr = H5Acreate2(hid.id(), name, H5T_NATIVE_FLOAT, aid, H5P_DEFAULT, H5P_DEFAULT);
-  if (attr < 0)
-    throw FatalErrorException(String("Can not create attribute ") + name);
-  int ret = H5Awrite(attr, H5T_NATIVE_DOUBLE, &value);
-  ret = H5Sclose(aid);
-  ret = H5Aclose(attr);
-  if (ret < 0)
-    throw FatalErrorException(A_FUNCINFO, String("Can not write attribute ") + name);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void VtkHdfDataWriter::
 _addInt64ArrayAttribute(Hid& hid, const char* name, Span<const Int64> values)
 {
   hsize_t len = values.size();
@@ -344,24 +317,6 @@ _addInt64ArrayAttribute(Hid& hid, const char* name, Span<const Int64> values)
   ret = H5Aclose(attr);
   if (ret < 0)
     ARCANE_FATAL("Can not write attribute '{0}'", name);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void VtkHdfDataWriter::
-_addRealArrayAttribute(Hid& hid, const char* name, Span<const Real> values)
-{
-  hsize_t len = values.size();
-  hid_t aid = H5Screate_simple(1, &len, 0);
-  hid_t attr = H5Acreate2(hid.id(), name, H5T_NATIVE_FLOAT, aid, H5P_DEFAULT, H5P_DEFAULT);
-  if (attr < 0)
-    throw FatalErrorException(String("Can not create attribute ") + name);
-  int ret = H5Awrite(attr, H5T_NATIVE_DOUBLE, values.data());
-  ret = H5Sclose(aid);
-  ret = H5Aclose(attr);
-  if (ret < 0)
-    throw FatalErrorException(A_FUNCINFO, String("Can not write attribute ") + name);
 }
 
 /*---------------------------------------------------------------------------*/
