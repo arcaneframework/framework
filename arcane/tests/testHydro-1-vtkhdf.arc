@@ -8,7 +8,7 @@
  <mesh>
 
   <!-- <file internal-partition="true">sod.vtk</file> -->
-  <meshgenerator><sod><x>10</x><y>2</y><z>2</z></sod></meshgenerator>
+  <meshgenerator><sod><x>100</x><y>5</y><z>5</z></sod></meshgenerator>
 
  <initialisation>
   <variable nom="Density" valeur="1." groupe="ZG" />
@@ -21,7 +21,7 @@
  </mesh>
 
  <arcane-post-processing>
-   <output-period>5</output-period>
+   <output-period>2</output-period>
    <format name="VtkHdfPostProcessor" />
    <output>
     <variable>CellMass</variable>
