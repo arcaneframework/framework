@@ -481,7 +481,7 @@ traceMng()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-const MeshHandle& mesh::PolyhedralMesh::
+MeshHandle mesh::PolyhedralMesh::
 handle() const
 {
   return m_mesh_handle;

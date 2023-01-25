@@ -95,7 +95,7 @@ class PolyhedralMesh
   // IMeshBase interface
  public:
 
-  const MeshHandle& handle() const override;
+  MeshHandle handle() const override;
 
  public:
 
