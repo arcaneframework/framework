@@ -45,7 +45,7 @@
  </maillage>
 
  <a-m-r-cartesian-mesh-tester>
-   <renumber-patch-method>1</renumber-patch-method>
+   <renumber-patch-method>2</renumber-patch-method>
    <refinement-2d>
      <position>1.0 2.0</position>
      <length>1.0 2.0</length>
@@ -63,9 +63,9 @@
      <length>2.0 2.0</length>
    </refinement-2d>
    <expected-number-of-cells-in-patchs>153 8 4 80 128</expected-number-of-cells-in-patchs>
-   <nodes-uid-hash>eef03075d1b1d32b63c9014bc567704e</nodes-uid-hash>
-   <faces-uid-hash>6d1b4ec0963f467f704c08f3f50dbd73</faces-uid-hash>
-   <cells-uid-hash>a577cb5e34dcbac51cec397ff7cb684e</cells-uid-hash>
+   <nodes-uid-hash>c18c22dc17ca4b9286843d82abe2aec7</nodes-uid-hash>
+   <faces-uid-hash>d1bb8de45a0fff2cc1370b8a1c440569</faces-uid-hash>
+   <cells-uid-hash>89449de99cf397820584ae5e65f752f5</cells-uid-hash>
  </a-m-r-cartesian-mesh-tester>
 
  <arcane-protections-reprises>

@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CartesianMeshUniqueIdRenumbering.h                          (C) 2000-2021 */
+/* CartesianMeshUniqueIdRenumberingV2.h                        (C) 2000-2023 */
 /*                                                                           */
 /* Renumérotation des uniqueId() pour les maillages cartésiens.              */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CEA_CARTESIANMESHUNIQUEIDRENUMBERING_H
-#define ARCANE_CEA_CARTESIANMESHUNIQUEIDRENUMBERING_H
+#ifndef ARCANE_CEA_CARTESIANMESHUNIQUEIDRENUMBERINGV2_H
+#define ARCANE_CEA_CARTESIANMESHUNIQUEIDRENUMBERINGV2_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -37,12 +37,12 @@ class ICartesianMeshGenerationInfo;
  * Renumérote les uniqueId() des noeuds, faces et mailles pour avoir la même
  * numérotation en séquentiel et parallèle.
  */
-class CartesianMeshUniqueIdRenumbering
+class CartesianMeshUniqueIdRenumberingV2
 : public TraceAccessor
 {
  public:
-  CartesianMeshUniqueIdRenumbering(ICartesianMesh* cmesh,ICartesianMeshGenerationInfo* gen_info);
-  ~CartesianMeshUniqueIdRenumbering() = default;
+  CartesianMeshUniqueIdRenumberingV2(ICartesianMesh* cmesh,ICartesianMeshGenerationInfo* gen_info);
+  ~CartesianMeshUniqueIdRenumberingV2() = default;
  public:
   void renumber();
  private:
@@ -53,7 +53,8 @@ class CartesianMeshUniqueIdRenumbering
   void _applyChildrenCell2D(Cell cell,VariableNodeInt64& nodes_new_uid,VariableFaceInt64& faces_new_uid,
                             VariableCellInt64& cells_new_uid,
                             Int64 coord_i,Int64 coord_j,
-                            Int64 nb_cell_x,Int64 nb_cell_y,Int32 level);
+                            Int64 current_level_nb_cell_x, Int64 current_level_nb_cell_y,
+                            Int32 current_level, Int64 cell_adder, Int64 node_adder, Int64 face_adder);
   void _applyChildrenCell3D(Cell cell,VariableNodeInt64& nodes_new_uid,VariableFaceInt64& faces_new_uid,
                             VariableCellInt64& cells_new_uid,
                             Int64 coord_i,Int64 coord_j,Int64 coord_k,
