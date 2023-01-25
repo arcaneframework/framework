@@ -186,6 +186,8 @@ beginWrite(const VariableCollection& vars)
   cells_offset.add(0);
   ENUMERATE_CELL (icell, all_cells) {
     Cell cell = *icell;
+    if (cell.type() != IT_Hexaedron8)
+      ARCANE_FATAL("Bad cell type '{0}'. Only Hexaedron are supported", cell.type());
     cells_type.add(VTK_HEXAHEDRON);
     for (NodeLocalId node : cell.nodeIds())
       cells_connectivity.add(node);
