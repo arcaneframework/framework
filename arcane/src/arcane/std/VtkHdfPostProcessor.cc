@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VTKHdfPostProcessor.cc                                      (C) 2000-2022 */
+/* VTKHdfPostProcessor.cc                                      (C) 2000-2023 */
 /*                                                                           */
 /* Pos-traitement au format VTK HDF.                                         */
 /*---------------------------------------------------------------------------*/
@@ -70,7 +70,7 @@ class VTKHdfDataWriter
   //! Liste des temps
   UniqueArray<Real> m_times;
   
-  Integer m_time_index;
+  Int32 m_time_index = 0;
 
   //! Nom du fichier HDF courant
   String m_filename;
@@ -78,11 +78,7 @@ class VTKHdfDataWriter
   //! Identifiant HDF du fichier 
   HFile m_file_id;
 
-  HGroup m_geometry_top_group;
-
-  HGroup m_variable_top_group;
-
-  Integer m_variable_index;
+  HGroup m_cell_data_group;
 
  private:
   
@@ -120,8 +116,6 @@ VTKHdfDataWriter(IMesh* mesh,ItemGroupCollection groups,RealConstArrayView times
 , m_mesh(mesh)
 , m_groups(groups)
 , m_times(times)
-, m_time_index(0)
-, m_variable_index(0)
 {
   m_time_index = times.size();
 }
@@ -139,8 +133,6 @@ beginWrite(const VariableCollection& vars)
   sb += ".hdf";
   m_filename = sb.toString();
 
-  m_variable_index = 0;
-
   info() << "ENSIGHT HDF BEGIN WRITE file=" << m_filename;
 
   H5open();
@@ -149,8 +141,12 @@ beginWrite(const VariableCollection& vars)
   HGroup top_group;
   top_group.create(m_file_id,"VTKHDF");
 
+  //m_cell_data_group.create(top_group,"CellData");
+
   std::array<Int64,2> version = { 1, 0 };
   _addInt64ArrayAttribute(top_group,"Version",version);
+
+  _addStringAttribute(top_group,"Type","UnstructuredGrid",80);
 
   std::array<Int64,2> nb_rank_array = { 1, 0 };
   Span<const Int64> ranks { nb_rank_array };
@@ -209,50 +205,6 @@ beginWrite(const VariableCollection& vars)
     points[index][2] = pos.z;
   }
   _writeDataSet2D(top_group,"Points",points);
-
-#if 0
-  _addIntegerAttribute(top_group,"nParts",m_groups.count());
-  _addIntegerAttribute(top_group,"nVariables",vars.count());
-  _addIntegerAttribute(top_group,"nDomains",1);
-  _addIntegerAttribute(top_group,"hasNodeIDs",0);
-  _addIntegerAttribute(top_group,"hasElementIDs",0);
-  _addIntegerAttribute(top_group,"timeStep",1);
-  // La valeur 2 indique que la connectivité est décrite dans le fichier
-  //_addIntegerAttribute(top_group,"geomChangingFlag",2); // CONN_HDFRW
-  //_addIntegerAttribute(top_group,"writingConn",0);
-
-  _addIntegerAttribute(top_group,"geomChangingFlag",1); // COORDS_ONLY_HDFRW
-  _addIntegerAttribute(top_group,"writingConn",1);
-
-  _addRealAttribute(top_group,"timeValue",m_times[m_time_index-1]);
-  _addStringAttribute(top_group,"modelDescription1","MyModel1",80);
-  _addStringAttribute(top_group,"modelDescription2","MyModel2",80);
-  _addStringAttribute(top_group,"lastGeomFile","None",256);
-  
-  m_geometry_top_group.create(top_group,"Geometry");
-  m_variable_top_group.create(top_group,"Variables");
-
-  {
-    Integer index = 1;
-    for( ItemGroupCollection::Enumerator igroup(m_groups); ++igroup; ++index ){
-      const ItemGroup& group = *igroup;
-    
-      HGroup geometry_group;
-      String part_name(String("geom_part_")+index);
-      geometry_group.create(m_geometry_top_group,part_name.localstr());
-
-      HGroup domain_group;
-      String domain_name("geom_domain_1");
-      domain_group.create(geometry_group,domain_name.localstr());
-      
-      // La valeur 0 indique qu'il s'agit d'un maillage non-structuré
-      _addIntegerAttribute(geometry_group,"structuredFlag",0); // UNSTRUCTURED_HDFRW
-      _addStringAttribute(geometry_group,"partName",group.name().localstr(),80);
-      _addStringAttribute(geometry_group,"partDescription","None",80);
-      _saveGroup(group,domain_group);
-    }
-  }
-#endif
 }
 
 /*---------------------------------------------------------------------------*/
@@ -501,15 +453,18 @@ _addStringAttribute(Hid& hid,const char* name,const String& value,hsize_t len)
   const char* value_str = value.localstr();
   strncpy(buf.data(),value_str,len-1);
   
-  hid_t aid  = H5Screate_simple(1, &len, NULL);
-  hid_t attr = H5Acreate2(hid.id(),name, H5T_NATIVE_CHAR, aid, H5P_DEFAULT,H5P_DEFAULT);
+  hid_t aid  = H5Screate(H5S_SCALAR); //H5Screate_simple(1, &len, NULL);
+  hid_t attr_type = H5Tcopy(H5T_C_S1);
+  H5Tset_size(attr_type, value.length());
+  hid_t attr = H5Acreate2(hid.id(),name, attr_type, aid, H5P_DEFAULT,H5P_DEFAULT);
   if (attr<0)
     throw FatalErrorException(String("Can not create attribute ")+name);
-  int ret  = H5Awrite(attr, H5T_NATIVE_CHAR, buf.data());
-  ret  = H5Sclose(aid);
-  ret  = H5Aclose(attr);
+  int ret  = H5Awrite(attr, attr_type, buf.data());
+  ret = H5Tclose(attr_type);
+  ret = H5Sclose(aid);
+  ret = H5Aclose(attr);
   if (ret<0)
-    throw FatalErrorException(A_FUNCINFO,String("Can not write attribute ")+name);
+    ARCANE_FATAL("Can not write attribute '{0}'",name);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -548,20 +503,24 @@ setMetaData(const String& meta_data)
 void VTKHdfDataWriter::
 write(IVariable* var,IData* data)
 {
-  return;
+  info() << "SAVE var=" << var->name();
 
   eItemKind item_kind = var->itemKind();
-  if (item_kind!=IK_Cell){
-    pwarning() << "Can only export cell variable (name=" << var->name() << ")";
-    return;
-  }
-  if (var->dimension()!=1){
-    pwarning() << "Can only export 1-dimension variable (name=" << var->name() << ")";
-    return;
-  }
+  if (item_kind!=IK_Cell)
+    ARCANE_FATAL("Only export of cell variable is implemented (name={0})",var->name());
 
-  ++m_variable_index;
+  if (var->dimension()!=1)
+    ARCANE_FATAL("Only export of scalar item variable is implemented (name={0})",var->name());
 
+  if (var->dataType()!=DT_Real)
+    ARCANE_FATAL("Only export of variable of datatype 'Real' is implemented (name={0})",var->name());
+
+  auto* true_data = dynamic_cast<IArrayDataT<Real>*>(data);
+  ARCANE_CHECK_POINTER(true_data);
+
+  return;
+
+#if 0
   {
 
     HGroup variable_group;
@@ -626,7 +585,7 @@ write(IVariable* var,IData* data)
     _addRealArrayAttribute(variable_group,"maxs",global_max_values);
 
   }
-
+#endif
 }
 
 /*---------------------------------------------------------------------------*/
