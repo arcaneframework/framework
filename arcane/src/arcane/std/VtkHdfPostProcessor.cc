@@ -17,23 +17,20 @@
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/CheckedConvert.h"
+#include "arcane/utils/JSONWriter.h"
 
 #include "arcane/core/PostProcessorWriterBase.h"
 #include "arcane/core/Directory.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/IDataWriter.h"
+#include "arcane/core/IData.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/VariableCollection.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IMesh.h"
 
 #include "arcane/std/Hdf5Utils.h"
 #include "arcane/std/VtkHdfPostProcessor_axl.h"
-
-#include "arcane/FactoryService.h"
-#include "arcane/IDataWriter.h"
-#include "arcane/IMesh.h"
-#include "arcane/IMeshSubMeshTransition.h"
-#include "arcane/IData.h"
-#include "arcane/ISerializedData.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/VariableCollection.h"
-
-#include "arcane/IParallelMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -76,7 +73,7 @@ class VtkHdfDataWriter
   UniqueArray<Real> m_times;
 
   //! Nom du fichier HDF courant
-  String m_filename;
+  String m_full_filename;
 
   //! Répertoire de sortie.
   String m_directory_name;
@@ -113,6 +110,14 @@ class VtkHdfDataWriter
   _writeBasicTypeDataset(HGroup& group, IVariable* var, IData* data);
   void _writeReal3Dataset(HGroup& group, IVariable* var, IData* data);
   void _writeReal2Dataset(HGroup& group, IVariable* var, IData* data);
+
+  String _getFileNameForTimeIndex(Int32 index)
+  {
+    StringBuilder sb("vtk_hdf_");
+    sb += index;
+    sb += ".hdf";
+    return sb.toString();
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -133,23 +138,20 @@ void VtkHdfDataWriter::
 beginWrite(const VariableCollection& vars)
 {
   ARCANE_UNUSED(vars);
-  warning() << "L'implémentation du format 'VtkHdf' n'est pas encore opérationnelle";
+  warning() << "L'implémentation du format 'VtkHdf' est expérimentale";
 
   Int32 time_index = m_times.size();
 
-  StringBuilder sb("vtk_hdf_");
-  sb += time_index;
-  sb += ".hdf";
-  m_filename = sb.toString();
+  String filename = _getFileNameForTimeIndex(time_index);
 
-  String dir_name = m_directory_name;
-  Directory dir(dir_name);
-  String full_path = dir.file(m_filename);
-  info() << "ENSIGHT HDF BEGIN WRITE file=" << full_path;
+  Directory dir(m_directory_name);
+
+  m_full_filename = dir.file(filename);
+  info(4) << "VtkHdfDataWriter::beginWrite() file=" << m_full_filename;
 
   H5open();
 
-  m_file_id.openTruncate(full_path);
+  m_file_id.openTruncate(m_full_filename);
   HGroup top_group;
   top_group.create(m_file_id, "VTKHDF");
 
@@ -222,6 +224,7 @@ beginWrite(const VariableCollection& vars)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
 namespace
 {
   template <typename DataType> class HDFTraits;
@@ -256,6 +259,9 @@ namespace
 
 } // namespace
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template <typename DataType> void VtkHdfDataWriter::
 _writeDataSet1D(HGroup& group, const String& name, Span<const DataType> values)
 {
@@ -268,6 +274,9 @@ _writeDataSet1D(HGroup& group, const String& name, Span<const DataType> values)
   dataset.create(group, name.localstr(), hdf_type, hspace, H5P_DEFAULT);
   dataset.write(hdf_type, values.data());
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 template <typename DataType> void VtkHdfDataWriter::
 _writeDataSet2D(HGroup& group, const String& name, Span2<const DataType> values)
@@ -380,6 +389,46 @@ void VtkHdfDataWriter::
 endWrite()
 {
   m_file_id.close();
+
+  // Ecrit le fichier contenant les temps (à partir de la version 5.5 de paraview)
+  // https://www.paraview.org/Wiki/ParaView_Release_Notes#JSON_based_new_meta_file_format_for_series_added
+  //
+  // Exemple:
+  // {
+  //   "file-series-version" : "1.0",
+  //   "files" : [
+  //     { "name" : "foo1.vtk", "time" : 0 },
+  //     { "name" : "foo2.vtk", "time" : 5.5 },
+  //     { "name" : "foo3.vtk", "time" : 11.2 }
+  //   ]
+  // }
+
+  if (!m_mesh->parallelMng()->isMasterIO())
+    return;
+
+  JSONWriter writer(JSONWriter::FormatFlags::None);
+  {
+    JSONWriter::Object o(writer);
+    writer.write("file-series-version", "1.0");
+    writer.writeKey("files");
+    writer.beginArray();
+    {
+      Integer file_index = 1;
+      for (Real v : m_times) {
+        JSONWriter::Object o(writer);
+        String filename = _getFileNameForTimeIndex(file_index);
+        writer.write("name", filename);
+        writer.write("time", v);
+        ++file_index;
+      }
+      writer.endArray();
+    }
+  }
+  Directory dir(m_directory_name);
+  String fname = dir.file("vtk_hdf.hdf.series");
+  std::ofstream ofile(fname.localstr());
+  StringView buf = writer.getBuffer();
+  ofile.write(reinterpret_cast<const char*>(buf.bytes().data()), buf.length());
 }
 
 /*---------------------------------------------------------------------------*/
