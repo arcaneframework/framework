@@ -99,6 +99,7 @@ set(ARCANE_SOURCES
   internal/IosFile.cc
   internal/IosFile.h
   internal/IosGmsh.h
+  internal/VtkCellTypes.h
 
   internal/SodStandardGroupsBuilder.h
   internal/SodStandardGroupsBuilder.cc

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VtkMeshIOService.cc                                         (C) 2000-2022 */
+/* VtkMeshIOService.cc                                         (C) 2000-2023 */
 /*                                                                           */
 /* Lecture/Ecriture d'un maillage au format Vtk historique (legacy).         */
 /*---------------------------------------------------------------------------*/
@@ -29,14 +29,12 @@
 #include "arcane/FactoryService.h"
 #include "arcane/ICaseMeshReader.h"
 #include "arcane/IItemFamily.h"
-#include "arcane/IMesh.h"
+#include "arcane/IPrimaryMesh.h"
 #include "arcane/IMeshBuilder.h"
 #include "arcane/IMeshReader.h"
-#include "arcane/IMeshSubMeshTransition.h"
 #include "arcane/IMeshUtilities.h"
 #include "arcane/IMeshWriter.h"
 #include "arcane/IParallelMng.h"
-#include "arcane/ISubDomain.h"
 #include "arcane/IVariableAccessor.h"
 #include "arcane/IXmlDocumentHolder.h"
 #include "arcane/Item.h"
@@ -44,6 +42,8 @@
 #include "arcane/VariableTypes.h"
 #include "arcane/XmlNode.h"
 #include "arcane/XmlNodeList.h"
+
+#include "arcane/std/internal/VtkCellTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -55,27 +55,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 class VtkFile;
-
-namespace
-{
-  const int VTK_EMPTY_CELL = 0;
-  const int VTK_VERTEX = 1;
-  const int VTK_LINE = 3;
-  const int VTK_TRIANGLE = 5;
-  const int VTK_POLYGON = 7; // A tester...
-  const int VTK_QUAD = 9;
-  const int VTK_TETRA = 10;
-  const int VTK_HEXAHEDRON = 12;
-  const int VTK_WEDGE = 13;
-  const int VTK_PYRAMID = 14;
-  const int VTK_PENTAGONAL_PRISM = 15;
-  const int VTK_HEXAGONAL_PRISM = 16;
-  const int VTK_QUADRATIC_EDGE = 21;
-  const int VTK_QUADRATIC_TRIANGLE = 22;
-  const int VTK_QUADRATIC_QUAD = 23;
-  const int VTK_QUADRATIC_TETRA = 24;
-  const int VTK_QUADRATIC_HEXAHEDRON = 25;
-} // namespace
+using namespace Arcane::VtkUtils;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -763,13 +743,13 @@ _readStructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_par
     }
   }
 
-  Int32 sub_domain_id = mesh->parallelMng()->commRank();
+  Int32 rank = mesh->parallelMng()->commRank();
 
   Integer nb_cell_x = nb_node_x - 1;
   Integer nb_cell_y = nb_node_y - 1;
   Integer nb_cell_z = nb_node_z - 1;
 
-  if (use_internal_partition && sub_domain_id != 0) {
+  if (use_internal_partition && rank != 0) {
     nb_node_x = 0;
     nb_node_y = 0;
     nb_node_z = 0;
@@ -800,7 +780,6 @@ _readStructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_par
             Integer node_unique_id = y + (z)*nb_node_y + x * nb_node_y * nb_node_z;
 
             nodes_unique_id[node_local_id] = node_unique_id;
-            //Integer owner = sub_domain_id;
 
             ++node_local_id;
           }
@@ -1332,8 +1311,6 @@ _readMetadata(IMesh* mesh, VtkFile& vtk_file)
 bool VtkMeshIOService::
 _readUnstructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_partition)
 {
-  // const char* func_name = "VtkMeshIOService::_readUnstructuredGrid()";
-  //IParallelMng* pm = subDomain()->parallelMng();
   Integer nb_node = 0;
   Integer nb_cell = 0;
   Integer nb_cell_node = 0;
