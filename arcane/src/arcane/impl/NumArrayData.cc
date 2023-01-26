@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* NumArrayData.cc                                             (C) 2000-2022 */
+/* NumArrayData.cc                                             (C) 2000-2023 */
 /*                                                                           */
 /* Donnée de type 'NumArray'.                                                */
 /*---------------------------------------------------------------------------*/
@@ -155,10 +155,6 @@ class NumArrayDataT
   void visitArray2(IArray2DataVisitor*) override
   {
     ARCANE_THROW(NotSupportedException, "Can not visit array2 data with NumArray data");
-  }
-  void visitMultiArray2(IMultiArray2DataVisitor*) override
-  {
-    ARCANE_THROW(NotSupportedException, "Can not visit multiarray2 data with NumArray data");
   }
 
  public:

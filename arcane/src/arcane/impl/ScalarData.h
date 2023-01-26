@@ -100,7 +100,6 @@ class ScalarDataT
   void visitScalar(IScalarDataVisitor* visitor) override;
   void visitArray(IArrayDataVisitor* visitor) override;
   void visitArray2(IArray2DataVisitor* visitor) override;
-  void visitMultiArray2(IMultiArray2DataVisitor* visitor) override;
 
  public:
 

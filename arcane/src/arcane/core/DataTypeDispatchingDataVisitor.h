@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DataTypeDispatchingDataVisitor.h                            (C) 2000-2022 */
+/* DataTypeDispatchingDataVisitor.h                            (C) 2000-2023 */
 /*                                                                           */
 /* IDataVisitor dispatchant les opérations suivant le type de donnée.        */
 /*---------------------------------------------------------------------------*/
@@ -37,7 +37,7 @@ class ARCANE_CORE_EXPORT IDataTypeDataDispatcherT
   virtual void applyDispatch(IScalarDataT<DataType>* data) =0;
   virtual void applyDispatch(IArrayDataT<DataType>* data) =0;
   virtual void applyDispatch(IArray2DataT<DataType>* data) =0;
-  virtual void applyDispatch(IMultiArray2DataT<DataType>* data) =0;
+  virtual void applyDispatch(IMultiArray2DataT<DataType>*) {}
 };
 
 /*---------------------------------------------------------------------------*/
@@ -130,17 +130,8 @@ class ARCANE_CORE_EXPORT AbstractDataTypeDispatchingDataVisitor
   virtual void applyVisitor(IArray2DataT<Real2x2>* data);
   virtual void applyVisitor(IArray2DataT<Real3x3>* data);
 
-  virtual void applyVisitor(IMultiArray2DataT<Byte>* data);
-  virtual void applyVisitor(IMultiArray2DataT<Real>* data);
-  virtual void applyVisitor(IMultiArray2DataT<Int16>* data);
-  virtual void applyVisitor(IMultiArray2DataT<Int32>* data);
-  virtual void applyVisitor(IMultiArray2DataT<Int64>* data);
-  virtual void applyVisitor(IMultiArray2DataT<Real2>* data);
-  virtual void applyVisitor(IMultiArray2DataT<Real3>* data);
-  virtual void applyVisitor(IMultiArray2DataT<Real2x2>* data);
-  virtual void applyVisitor(IMultiArray2DataT<Real3x3>* data);
-    
  private:
+
   IDataTypeDataDispatcherT<Byte>* m_byte;
   IDataTypeDataDispatcherT<Real>* m_real;
   IDataTypeDataDispatcherT<Int16>* m_int16;

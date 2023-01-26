@@ -203,7 +203,7 @@ class ARCANE_CORE_EXPORT IData
    * \deprecated Ce visiteur est obsolète car il n'y a pas plus
    * d'implémentation de IMultiArray2.
    */
-  virtual void visitMultiArray2(IMultiArray2DataVisitor* visitor) = 0;
+  virtual void visitMultiArray2(IMultiArray2DataVisitor* visitor);
 };
 
 /*---------------------------------------------------------------------------*/

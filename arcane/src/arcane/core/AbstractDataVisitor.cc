@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AbstractDataVisitor.cc                                      (C) 2000-2016 */
+/* AbstractDataVisitor.cc                                      (C) 2000-2023 */
 /*                                                                           */
 /* Visiteur abstrait pour une donnée.                                        */
 /*---------------------------------------------------------------------------*/
@@ -19,10 +19,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -43,12 +41,6 @@ void AbstractDataVisitor::
 applyDataVisitor(IArray2Data* data)
 {
   data->visitArray2(this);
-}
-
-void AbstractDataVisitor::
-applyDataVisitor(IMultiArray2Data* data)
-{
-  data->visitMultiArray2(this);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -297,7 +289,7 @@ _throwException(eDataType dt)
                             dataTypeName(dt));
   throw NotImplementedException(A_FUNCINFO,s);
 }
-
+#if 0
 void AbstractMultiArray2DataVisitor::
 applyVisitor(IMultiArray2DataT<Byte>* data)
 {
@@ -360,11 +352,12 @@ applyVisitor(IMultiArray2DataT<Real3x3>* data)
   ARCANE_UNUSED(data);
   _throwException(DT_Real3x3);
 }
+#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
