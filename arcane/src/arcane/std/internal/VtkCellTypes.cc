@@ -78,7 +78,7 @@ vtkToArcaneCellType(int vtk_type, Int32 nb_node)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" int
+extern "C++" unsigned char
 arcaneToVtkCellType(int arcane_type)
 {
   switch (arcane_type) {
