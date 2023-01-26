@@ -141,12 +141,21 @@ du thème d'origine.
 
 ## Bouton pour étendre le menu {#arcanedoc_doc_config_expand_level_two}
 
-Cette option permet d'attribuer une autre fonctionnalité au bouton rond
+Cette option permet d'ajouter un autre bouton à côté du bouton rond
 en bas du menu à gauche :
-\image html sync_on.png
+
+\htmlonly
+<center>
+<img src="../../sync_on.png" style="transform:rotate(90deg);">
+</center>
+\endhtmlonly
 
 Ce bouton, après activation de l'option, permet d'étendre le menu.
 Cela permet d'avoir une vision de l'ensemble des chapitres.
+
+\note
+Ce bouton n'apparaîtra pas sur cette page, il faut aller sur une autre page pour
+qu'il apparaisse (si l'option est activée). 
 
 \htmlonly
 <br>
