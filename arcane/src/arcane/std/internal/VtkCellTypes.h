@@ -107,6 +107,9 @@ const int VTK_BEZIER_HEXAHEDRON = 79;
 const int VTK_BEZIER_WEDGE = 80;
 const int VTK_BEZIER_PYRAMID = 81;
 
+extern "C++" int vtkToArcaneCellType(int vtk_type, Int32 nb_node);
+extern "C++" int arcaneToVtkCellType(int arcane_type);
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
