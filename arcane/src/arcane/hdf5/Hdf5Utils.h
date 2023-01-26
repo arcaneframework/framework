@@ -25,6 +25,8 @@
 
 #include "arcane/hdf5/ArcaneHdf5Global.h"
 
+// Désactive ces macros car on compile maintenant toujours avec HDF5 1.10+
+#if 0
 // Si HDF5 est compilé avec MPI, alors hdf5.h inclue mpi.h et il faut
 // signaler qu'on ne souhaite pas avoir la partie C++ de MPI
 // NOTE: Avec HDF5 1.10, ces deux macros sont définies donc il n'y a
@@ -37,6 +39,7 @@
 #ifndef MPICH_SKIP_MPICXX
 #define MPICH_SKIP_MPICXX
 #endif
+#endif
 
 // Cette macro pour MSVC avec les dll, pour eviter des symbols externes
 // indéfinis avec H5T_NATIVE*
@@ -47,8 +50,8 @@
 /*---------------------------------------------------------------------------*/
 
 // Il faut au moins hdf5 1.8
-#if (H5_VERS_MAJOR<2) && (H5_VERS_MAJOR==1 && H5_VERS_MINOR<8)
-#error "This version of HDF5 is too old. Version 1.8+ is required"
+#if (H5_VERS_MAJOR<2) && (H5_VERS_MAJOR==1 && H5_VERS_MINOR<10)
+#error "This version of HDF5 is too old. Version 1.10+ is required"
 #endif
 
 // Garde ces macros pour compatibilité mais il faudra les supprimer.
