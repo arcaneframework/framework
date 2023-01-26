@@ -31,11 +31,11 @@
 
 #include "arcane/std/Hdf5Utils.h"
 #include "arcane/std/VtkHdfPostProcessor_axl.h"
+#include "arcane/std/internal/VtkCellTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO: Supporter tous les types de mailles (à unifier avec VtkMeshIOService)
 // TODO: Supporter le parallélisme
 // TODO: Regarder la sauvegarde des uniqueId() (via vtkOriginalCellIds)
 // TODO: Regarder comment éviter de sauver le maillage à chaque itération s'il
@@ -189,13 +189,11 @@ beginWrite(const VariableCollection& vars)
   UniqueArray<Int64> cells_connectivity;
   UniqueArray<Int64> cells_offset;
   UniqueArray<unsigned char> cells_type;
-  const int VTK_HEXAHEDRON = 12;
   cells_offset.add(0);
   ENUMERATE_CELL (icell, all_cells) {
     Cell cell = *icell;
-    if (cell.type() != IT_Hexaedron8)
-      ARCANE_FATAL("Bad cell type '{0}'. Only Hexaedron are supported", cell.type());
-    cells_type.add(VTK_HEXAHEDRON);
+    unsigned char vtk_type = VtkUtils::arcaneToVtkCellType(cell.type());
+    cells_type.add(vtk_type);
     for (NodeLocalId node : cell.nodeIds())
       cells_connectivity.add(node);
     cells_offset.add(cells_connectivity.size());
