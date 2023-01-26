@@ -95,25 +95,41 @@ class ARCANE_HDF5_EXPORT HInit
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Encapsule un hid_t
+ * \brief Encapsule un hid_t.
+ *
+ * Cette classe n'est pas copiable.
  */
 class ARCANE_HDF5_EXPORT Hid
 {
  public:
-  Hid() : m_id(-1) {}
-  Hid(hid_t id) : m_id(id) {}
+
+  Hid() = default;
+  Hid(hid_t id)
+  : m_id(id)
+  {}
   virtual ~Hid() {}
+
  protected:
-  Hid(const Hid& hid) : m_id(hid.id()){}
+
+  // Il faudra interdire ce constructeur de recopie à terme
+  Hid(const Hid& hid)
+  : m_id(hid.id())
+  {}
   void _setId(hid_t id) { m_id = id; }
   void _setNullId() { m_id = -1; }
+
  private:
-  void operator=(const Hid& hid);
+
+  Hid& operator=(const Hid& hid) = delete;
+
  public:
+
   hid_t id() const { return m_id; }
-  bool isBad() const { return m_id<0; }
+  bool isBad() const { return m_id < 0; }
+
  private:
-  hid_t m_id;
+
+  hid_t m_id = -1;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -125,15 +141,37 @@ class ARCANE_HDF5_EXPORT HFile
 : public Hid
 {
  public:
-  HFile(){}
-  ~HFile(){ close(); }
+
+  HFile() {}
+  ~HFile() { close(); }
+  HFile(HFile&& rhs)
+  : Hid(rhs.id())
+  {
+    rhs._setNullId();
+  }
+  HFile& operator=(HFile&& rhs)
+  {
+    _setId(rhs.id());
+    rhs._setNullId();
+    return (*this);
+  }
+  HFile& operator=(const HFile& hid) = delete;
+
  public:
+
+  ARCANE_DEPRECATED_REASON("Y2023: Copy constructor is deprecated. This class has unique ownership")
+  HFile(const HFile& rhs)
+  : Hid(rhs)
+  {}
+
+ public:
+
   void openTruncate(const String& var);
   void openAppend(const String& var);
   void openRead(const String& var);
-  void openTruncate(const String& var,hid_t plist_id);
-  void openAppend(const String& var,hid_t plist_id);
-  void openRead(const String& var,hid_t plist_id);
+  void openTruncate(const String& var, hid_t plist_id);
+  void openAppend(const String& var, hid_t plist_id);
+  void openRead(const String& var, hid_t plist_id);
   void close();
 };
 
@@ -161,7 +199,8 @@ class ARCANE_HDF5_EXPORT HGroupSearch
   String m_group_name;
 };
 
-
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Encapsule un hid_t pour un groupe.
  */
@@ -170,31 +209,54 @@ class ARCANE_HDF5_EXPORT HGroup
 {
  public:
 
-  HGroup(){}
-  ~HGroup(){ close(); } 
+  HGroup() {}
+  ~HGroup() { close(); }
+  HGroup(HGroup&& rhs)
+  : Hid(rhs.id())
+  {
+    rhs._setNullId();
+  }
+  HGroup& operator=(HGroup&& rhs)
+  {
+    _setId(rhs.id());
+    rhs._setNullId();
+    return (*this);
+  }
+  HGroup& operator=(const HGroup& hid) = delete;
 
  public:
 
-  void create(const Hid& loc_id,const String& var)
-  {	_setId(H5Gcreate2(loc_id.id(),var.localstr(),H5P_DEFAULT,H5P_DEFAULT,H5P_DEFAULT)); }
-  void recursiveCreate(const Hid& loc_id,const String& var);
-  void recursiveCreate(const Hid& loc_id,const Array<String>& paths);
-  void checkDelete(const Hid& loc_id,const String& var);
-  void recursiveOpen(const Hid& loc_id,const String& var);
-  void open(const Hid& loc_id,const String& var);
-  void openIfExists(const Hid& loc_id,const Array<String>& var);
+  ARCANE_DEPRECATED_REASON("Y2023: Copy constructor is deprecated. This class has unique ownership")
+  HGroup(const HGroup& rhs)
+  : Hid(rhs)
+  {}
+
+ public:
+
+  void create(const Hid& loc_id, const String& var)
+  {
+    _setId(H5Gcreate2(loc_id.id(), var.localstr(), H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT));
+  }
+  void recursiveCreate(const Hid& loc_id, const String& var);
+  void recursiveCreate(const Hid& loc_id, const Array<String>& paths);
+  void checkDelete(const Hid& loc_id, const String& var);
+  void recursiveOpen(const Hid& loc_id, const String& var);
+  void open(const Hid& loc_id, const String& var);
+  void openIfExists(const Hid& loc_id, const Array<String>& var);
   bool hasChildren(const String& var);
   void close();
-  static bool hasChildren(hid_t loc_id,const String& var);
+  static bool hasChildren(hid_t loc_id, const String& var);
 
  private:
 
-  hid_t _checkOrCreate(hid_t loc_id,const String& group_name);
-  hid_t _checkExist(hid_t loc_id,const String& group_name);
+  hid_t _checkOrCreate(hid_t loc_id, const String& group_name);
+  hid_t _checkExist(hid_t loc_id, const String& group_name);
 
  public:
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Encapsule un hid_t pour un dataspace.
  */
@@ -202,15 +264,46 @@ class ARCANE_HDF5_EXPORT HSpace
 : public Hid
 {
  public:
-  HSpace(){}
-  HSpace(const HSpace& v) : Hid(v) {}
-  explicit HSpace(hid_t id) : Hid(id) {}
-  ~HSpace(){ if (id()>0) H5Sclose(id()); }
+
+  HSpace() {}
+  explicit HSpace(hid_t id)
+  : Hid(id)
+  {}
+  HSpace(HSpace&& rhs)
+  : Hid(rhs.id())
+  {
+    rhs._setNullId();
+  }
+  ~HSpace()
+  {
+    if (id() > 0)
+      H5Sclose(id());
+  }
+  HSpace& operator=(HSpace&& rhs)
+  {
+    _setId(rhs.id());
+    rhs._setNullId();
+    return (*this);
+  }
+  HSpace& operator=(const HSpace& hid) = delete;
+
  public:
-  void createSimple(int nb,hsize_t dims[])
-    {	_setId(H5Screate_simple(nb,dims,0)); }
+
+  ARCANE_DEPRECATED_REASON("Y2023: Copy constructor is deprecated. This class has unique ownership")
+  HSpace(const HSpace& v)
+  : Hid(v)
+  {}
+
+ public:
+
+  void createSimple(int nb, hsize_t dims[])
+  {
+    _setId(H5Screate_simple(nb, dims, 0));
+  }
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Encapsule un hid_t pour un dataset.
  */
@@ -218,31 +311,61 @@ class ARCANE_HDF5_EXPORT HDataset
 : public Hid
 {
  public:
-  HDataset(){}
-  ~HDataset(){ close(); }
+
+  HDataset() {}
+  ~HDataset() { close(); }
+  HDataset(HDataset&& rhs)
+  : Hid(rhs.id())
+  {
+    rhs._setNullId();
+  }
+  HDataset& operator=(HDataset&& rhs)
+  {
+    _setId(rhs.id());
+    rhs._setNullId();
+    return (*this);
+  }
+  HDataset& operator=(const HDataset& hid) = delete;
+
  public:
+
+  ARCANE_DEPRECATED_REASON("Y2023: Copy constructor is deprecated. This class has unique ownership")
+  HDataset(const HDataset& v)
+  : Hid(v)
+  {}
+
+ public:
+
   void close()
   {
-    if (id()>0)
+    if (id() > 0)
       H5Dclose(id());
     _setNullId();
   }
-  void create(const Hid& loc_id,const String& var,hid_t save_type,const HSpace& space_id,hid_t plist);
-  void recursiveCreate(const Hid& loc_id,const String& var,hid_t save_type,const HSpace& space_id,hid_t plist);
-  void open(const Hid& loc_id,const String& var);
-  void openIfExists(const Hid& loc_id,const String& var);
-  herr_t write(hid_t native_type,const void* array);
-  herr_t write(hid_t native_type,const void* array,const HSpace& memspace_id,
-               const HSpace& filespace_id,hid_t plist);
-  herr_t read(hid_t native_type,void* array)
-    {	return H5Dread(id(),native_type,H5S_ALL,H5S_ALL,H5P_DEFAULT,array); }
-  void readWithException(hid_t native_type,void* array);
+  void create(const Hid& loc_id, const String& var, hid_t save_type, const HSpace& space_id, hid_t plist);
+  void recursiveCreate(const Hid& loc_id, const String& var, hid_t save_type, const HSpace& space_id, hid_t plist);
+  void open(const Hid& loc_id, const String& var);
+  void openIfExists(const Hid& loc_id, const String& var);
+  herr_t write(hid_t native_type, const void* array);
+  herr_t write(hid_t native_type, const void* array, const HSpace& memspace_id,
+               const HSpace& filespace_id, hid_t plist);
+  herr_t read(hid_t native_type, void* array)
+  {
+    return H5Dread(id(), native_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, array);
+  }
+  void readWithException(hid_t native_type, void* array);
   HSpace getSpace()
-    { return HSpace(H5Dget_space(id())); }
+  {
+    return HSpace(H5Dget_space(id()));
+  }
+
  private:
-  void _remove(hid_t hid,const String& var);
+
+  void _remove(hid_t hid, const String& var);
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Encapsule un hid_t pour un attribute.
  */
@@ -250,23 +373,63 @@ class ARCANE_HDF5_EXPORT HAttribute
 : public Hid
 {
  public:
-  HAttribute(){}
-  ~HAttribute(){ if (id()>0) H5Aclose(id()); }
+
+  HAttribute() {}
+  ~HAttribute()
+  {
+    if (id() > 0)
+      H5Aclose(id());
+  }
+  HAttribute(HAttribute&& rhs)
+  : Hid(rhs.id())
+  {
+    rhs._setNullId();
+  }
+  HAttribute& operator=(HAttribute&& rhs)
+  {
+    _setId(rhs.id());
+    rhs._setNullId();
+    return (*this);
+  }
+  HAttribute& operator=(const HAttribute& hid) = delete;
+
  public:
-  void remove(const Hid& loc_id,const String& var)
-  {	_setId(H5Adelete(loc_id.id(),var.localstr())); }
-  void create(const Hid& loc_id,const String& var,hid_t save_type,const HSpace& space_id)
-  {	_setId(H5Acreate2(loc_id.id(),var.localstr(),save_type,space_id.id(),H5P_DEFAULT,H5P_DEFAULT)); }
-  void open(const Hid& loc_id,const String& var)
-    {	_setId(H5Aopen_name(loc_id.id(),var.localstr())); }
-  herr_t write(hid_t native_type,void* array)
-    {	return H5Awrite(id(),native_type,array); }
-  herr_t read(hid_t native_type,void* array)
-    {	return H5Aread(id(),native_type,array); }
+
+  ARCANE_DEPRECATED_REASON("Y2023: Copy constructor is deprecated. This class has unique ownership")
+  HAttribute(const HAttribute& v)
+  : Hid(v)
+  {}
+
+ public:
+
+  void remove(const Hid& loc_id, const String& var)
+  {
+    _setId(H5Adelete(loc_id.id(), var.localstr()));
+  }
+  void create(const Hid& loc_id, const String& var, hid_t save_type, const HSpace& space_id)
+  {
+    _setId(H5Acreate2(loc_id.id(), var.localstr(), save_type, space_id.id(), H5P_DEFAULT, H5P_DEFAULT));
+  }
+  void open(const Hid& loc_id, const String& var)
+  {
+    _setId(H5Aopen_name(loc_id.id(), var.localstr()));
+  }
+  herr_t write(hid_t native_type, void* array)
+  {
+    return H5Awrite(id(), native_type, array);
+  }
+  herr_t read(hid_t native_type, void* array)
+  {
+    return H5Aread(id(), native_type, array);
+  }
   HSpace getSpace()
-    { return HSpace(H5Aget_space(id())); }
+  {
+    return HSpace(H5Aget_space(id()));
+  }
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Encapsule un hid_t pour un type.
  */
@@ -274,22 +437,60 @@ class ARCANE_HDF5_EXPORT HType
 : public Hid
 {
  public:
-  HType(){}
-  ~HType(){ if (id()>0) H5Tclose(id()); }
+
+  HType() {}
+  ~HType()
+  {
+    if (id() > 0)
+      H5Tclose(id());
+  }
+  HType(HType&& rhs)
+  : Hid(rhs.id())
+  {
+    rhs._setNullId();
+  }
+  HType& operator=(HType&& rhs)
+  {
+    _setId(rhs.id());
+    rhs._setNullId();
+    return (*this);
+  }
+  HType& operator=(const HType& hid) = delete;
+
  public:
+
+  ARCANE_DEPRECATED_REASON("Y2023: Copy constructor is deprecated. This class has unique ownership")
+  HType(const HType& v)
+  : Hid(v)
+  {}
+
+ public:
+
   void setId(hid_t new_id)
-    { _setId(new_id); }
+  {
+    _setId(new_id);
+  }
 };
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Définition des types standards Arcane pour hdf5.
  */
 class ARCANE_HDF5_EXPORT StandardTypes
 {
  public:
+
   StandardTypes();
+  ARCANE_DEPRECATED_REASON("Y2023: Copy constructor is deprecated. This class has unique ownership")
+  StandardTypes(const StandardTypes& rhs) = default;
   ~StandardTypes();
+
+  ARCANE_DEPRECATED_REASON("Y2023: Copy operator is deprecated. This class has unique ownership")
+  StandardTypes& operator=(const StandardTypes& rhs) = default;
+
  public:
+
   hid_t nativeType(float) const { return H5T_NATIVE_FLOAT; }
   hid_t nativeType(double) const { return H5T_NATIVE_DOUBLE; }
   hid_t nativeType(Real2) const { return m_real2_id.id(); }
@@ -315,36 +516,99 @@ class ARCANE_HDF5_EXPORT StandardTypes
 
  public:
 
-  hid_t saveType(float) const { return m_real_id.id(); }
-  hid_t saveType(double) const { return m_real_id.id(); }
-  hid_t saveType(Real2) const { return m_real2_id.id(); }
-  hid_t saveType(Real3) const { return m_real3_id.id(); }
-  hid_t saveType(Real2x2) const { return m_real2x2_id.id(); }
-  hid_t saveType(Real3x3) const { return m_real3x3_id.id(); }
-  hid_t saveType(long double) const { return m_real_id.id(); }
-  hid_t saveType(short) const { return m_short_id.id(); }
-  hid_t saveType(unsigned short) const { return m_ushort_id.id(); }
-  hid_t saveType(unsigned int) const { return m_uint_id.id(); }
-  hid_t saveType(unsigned long) const { return m_ulong_id.id(); }
-  hid_t saveType(unsigned long long) const { return m_ulong_id.id(); }
-  hid_t saveType(int) const { return m_int_id.id(); }
-  hid_t saveType(long) const { return m_long_id.id(); }
-  hid_t saveType(long long) const { return m_long_id.id(); }
-  hid_t saveType(char) const { return m_char_id.id(); }
-  hid_t saveType(unsigned char) const { return m_uchar_id.id(); }
-  hid_t saveType(signed char) const { return m_char_id.id(); }
+  hid_t saveType(float) const
+  {
+    return m_real_id.id();
+  }
+  hid_t saveType(double) const
+  {
+    return m_real_id.id();
+  }
+  hid_t saveType(Real2) const
+  {
+    return m_real2_id.id();
+  }
+  hid_t saveType(Real3) const
+  {
+    return m_real3_id.id();
+  }
+  hid_t saveType(Real2x2) const
+  {
+    return m_real2x2_id.id();
+  }
+  hid_t saveType(Real3x3) const
+  {
+    return m_real3x3_id.id();
+  }
+  hid_t saveType(long double) const
+  {
+    return m_real_id.id();
+  }
+  hid_t saveType(short) const
+  {
+    return m_short_id.id();
+  }
+  hid_t saveType(unsigned short) const
+  {
+    return m_ushort_id.id();
+  }
+  hid_t saveType(unsigned int) const
+  {
+    return m_uint_id.id();
+  }
+  hid_t saveType(unsigned long) const
+  {
+    return m_ulong_id.id();
+  }
+  hid_t saveType(unsigned long long) const
+  {
+    return m_ulong_id.id();
+  }
+  hid_t saveType(int) const
+  {
+    return m_int_id.id();
+  }
+  hid_t saveType(long) const
+  {
+    return m_long_id.id();
+  }
+  hid_t saveType(long long) const
+  {
+    return m_long_id.id();
+  }
+  hid_t saveType(char) const
+  {
+    return m_char_id.id();
+  }
+  hid_t saveType(unsigned char) const
+  {
+    return m_uchar_id.id();
+  }
+  hid_t saveType(signed char) const
+  {
+    return m_char_id.id();
+  }
 #ifdef ARCANE_REAL_NOT_BUILTIN
-  hid_t saveType(Real) const { return m_real_id.id(); }
+  hid_t saveType(Real) const
+  {
+    return m_real_id.id();
+  }
 #endif
   hid_t saveType(eDataType sd) const;
 
  private:
-  /*! \brief Classe initialisant HDF.
+
+  /*!
+   * \brief Classe initialisant HDF.
+   *
    * \warning Cette instance doit toujours être définie avant les membres qui
    * utilisent HDF5 pour que l'initialisation est lieu en premier et la libération
-   * des ressources en dernier. */
+   * des ressources en dernier.
+   */
   HInit m_init;
+
  public:
+
   HType m_char_id; //!< Identifiant HDF des entiers signés
   HType m_uchar_id; //!< Identifiant HDF des caractères non-signés
   HType m_short_id; //!< Identifiant HDF des entiers signés
@@ -358,8 +622,10 @@ class ARCANE_HDF5_EXPORT StandardTypes
   HType m_real3_id; //!< Identifiant HDF pour les Real3
   HType m_real2x2_id; //!< Identifiant HDF pour les Real2x2
   HType m_real3x3_id; //!< Identifiant HDF pour les Real3x3
-private:
-  void _H5Tinsert(hid_t type,const char* name,Integer offset,hid_t field_id);
+
+ private:
+
+  void _H5Tinsert(hid_t type, const char* name, Integer offset, hid_t field_id);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -371,9 +637,12 @@ private:
 class ARCANE_HDF5_EXPORT StandardArray
 {
  public:
-  StandardArray(hid_t hfile,const String& hpath);
+
+  StandardArray(hid_t hfile, const String& hpath);
   virtual ~StandardArray() {}
+
  public:
+
   /*!
    * \brief En lecture, positionne le chemin dans \a hfile du dataset contenant les unique_ids.
    *
@@ -382,12 +651,15 @@ class ARCANE_HDF5_EXPORT StandardArray
    */
   void setIdsPath(const String& ids_path);
   void readDim();
-  Int64ConstArrayView dimensions() const
-    { return m_dimensions; }
+  Int64ConstArrayView dimensions() const { return m_dimensions; }
   virtual bool exists() const;
+
  protected:
-  void _write(const void* buffer,Integer nb_element,hid_t save_type,hid_t native_type);
+
+  void _write(const void* buffer, Integer nb_element, hid_t save_type, hid_t native_type);
+
  protected:
+
   hid_t m_hfile;
   String m_hpath;
   String m_ids_hpath;
