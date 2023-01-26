@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Hdf5MpiReaderWriter.cc                                      (C) 2000-2020 */
+/* Hdf5MpiReaderWriter.cc                                      (C) 2000-2023 */
 /*                                                                           */
 /* Lecture/Ecriture au format HDF5.                                          */
 /*---------------------------------------------------------------------------*/
@@ -143,7 +143,7 @@ initialize()
 
   const char* func_name = "Hdf5MpiReaderWriter::initialize()";
 
-  H5open();
+  HInit();
 
   if (m_open_mode==OpenModeRead){
     m_file_id.openRead(m_filename);

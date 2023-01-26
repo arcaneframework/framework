@@ -184,7 +184,7 @@ beginWrite(const VariableCollection& vars)
   m_full_filename = dir.file(filename);
   info(4) << "VtkHdfDataWriter::beginWrite() file=" << m_full_filename;
 
-  H5open();
+  HInit();
 
   HGroup top_group;
 
