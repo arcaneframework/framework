@@ -142,8 +142,11 @@ class VtkHdfDataWriter
 
   String _getFileNameForTimeIndex(Int32 index)
   {
-    StringBuilder sb("vtk_hdf_");
-    sb += index;
+    StringBuilder sb(m_mesh->name());
+    if (index >= 0) {
+      sb += "_";
+      sb += index;
+    }
     sb += ".hdf";
     return sb.toString();
   }
@@ -189,6 +192,8 @@ beginWrite(const VariableCollection& vars)
   HGroup top_group;
 
   if (m_is_master_io) {
+    if (time_index <= 1)
+      dir.createDirectory();
     m_file_id.openTruncate(m_full_filename);
     top_group.create(m_file_id, "VTKHDF");
 
@@ -450,7 +455,7 @@ endWrite()
     }
   }
   Directory dir(m_directory_name);
-  String fname = dir.file("vtk_hdf.hdf.series");
+  String fname = dir.file(_getFileNameForTimeIndex(-1) + ".series");
   std::ofstream ofile(fname.localstr());
   StringView buf = writer.getBuffer();
   ofile.write(reinterpret_cast<const char*>(buf.bytes().data()), buf.length());
@@ -591,7 +596,8 @@ class VtkHdfPostProcessor
   {
     auto w = std::make_unique<VtkHdfDataWriter>(mesh(), groups());
     w->setTimes(times());
-    w->setDirectoryName(baseDirectoryName());
+    Directory dir(baseDirectoryName());
+    w->setDirectoryName(dir.file("vtkhdf"));
     m_writer = std::move(w);
   }
   void notifyEndWrite() override
