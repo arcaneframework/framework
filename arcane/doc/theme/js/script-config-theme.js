@@ -29,7 +29,10 @@
 
 // Fonction permettant d'étendre l'item courant.
 var expandCurrent = (item) => {
-  item.querySelector("a").onclick();
+  // Doxygen étend l'item Arcane automatiquement.
+  if (item.innerText != "▼Arcane"){
+    item.querySelector("a").onclick();
+  }
 }
 // Fonction permettant d'attendre que l'item courant soit accessible.
 var waitItemExpandCurrent = () => {
