@@ -198,14 +198,14 @@ endfunction()
 
 # Ajoute un test parallele avec MPI+threads
 macro(ARCANE_ADD_TEST_PARALLEL_MPITHREAD test_name case_file nb_proc nb_thread)
-  arcane_add_test_message_passing_hybrid(${test_name} CASE_FILE ${case_file} NB_SHM ${nb_thread} NB_MPI ${nb_proc})
+  arcane_add_test_message_passing_hybrid(${test_name} CASE_FILE ${case_file} NB_SHM ${nb_thread} NB_MPI ${nb_proc} ARGS ${ARGN})
 endmacro()
 
 # Ajoute un test avec tous les mécanismes d'échange de message
 macro(arcane_add_test_parallel_all test_name case_file nb_proc1 nb_proc2)
   ARCANE_ADD_TEST(${test_name} ${case_file} ${ARGN})
   ARCANE_ADD_TEST_PARALLEL_THREAD(${test_name} ${case_file} ${nb_proc2} ${ARGN})
-  ARCANE_ADD_TEST_PARALLEL_MPITHREAD(${test_name} ${case_file} ${nb_proc1} ${nb_proc2} ${ARGN})
+  arcane_add_test_message_passing_hybrid(${test_name} CASE_FILE ${case_file} NB_MPI ${nb_proc1} NB_SHM ${nb_proc2} ARGS ${ARGN})
 endmacro()
 
 # Ajoute un test parallele avec reprise
