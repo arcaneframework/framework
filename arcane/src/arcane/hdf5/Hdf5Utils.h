@@ -81,15 +81,17 @@ extern "C"
   ARCANE_HDF5_EXPORT herr_t _ArcaneHdf5UtilsGroupIterateMe(hid_t,const char*,void*);
 }
 
-/*! \brief Classe servant d'initialiseur pour HDF.
- * Cet objet permet d'initialiser et libérer les structures HDF
- * de manière automatique et sure, notamment en cas d'exception.
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe servant d'initialiseur pour HDF.
+ *
+ * Cet objet permet d'initialiser de manière sure HDF5 en mode multi-thread.
  */
 class ARCANE_HDF5_EXPORT HInit
 {
  public:
-  HInit() { H5open(); }
-  ~HInit() { /*H5close();*/ }
+  HInit();
 };
 
 /*---------------------------------------------------------------------------*/

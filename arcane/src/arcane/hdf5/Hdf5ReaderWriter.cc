@@ -132,7 +132,7 @@ initialize()
   if (m_is_initialized)
     return;
   m_is_initialized = true;
-  H5open();
+  HInit();
   info() << "INIT HDF5 READER/WRITER";
   {
     unsigned vmajor = 0;

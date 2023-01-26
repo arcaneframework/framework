@@ -18,6 +18,7 @@
 #include "arcane/utils/StringBuilder.h"
 #include "arcane/utils/CheckedConvert.h"
 #include "arcane/utils/JSONWriter.h"
+#include "arcane/utils/IOException.h"
 
 #include "arcane/core/PostProcessorWriterBase.h"
 #include "arcane/core/Directory.h"
@@ -33,15 +34,40 @@
 #include "arcane/std/VtkHdfPostProcessor_axl.h"
 #include "arcane/std/internal/VtkCellTypes.h"
 
+// Ce format est décrit sur la page web suivante:
+//
+// https://kitware.github.io/vtk-examples/site/VTKFileFormats/#hdf-file-formats
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 // TODO: Supporter le parallélisme
 // TODO: Regarder la sauvegarde des uniqueId() (via vtkOriginalCellIds)
 // TODO: Regarder comment éviter de sauver le maillage à chaque itération s'il
-//       ne change pas.
+//       ne change pas. Avec la notion de lien de HDF5, il doit être possible
+//       de mettre cette information ailleurs et de ne sauver le maillage
+//       que s'il évolue.
 // TODO: Regarder la compression
 
+/*
+  NOTE sur l'implémentation parallèle
+
+  L'implémentation actuelle est très basique.
+  Seul le rang maitre (le rang 0 en général) effectue les sorties. Pour
+  chaque dataset, ce rang fait un gather pour récupérer les informations. Cela
+  suppose donc que tout le monde a les mêmes variables et dans le même ordre
+  (normalement c'est toujours le cas car c'est trié par la VariableMng).
+
+  Cette implémentation fonctionne donc quel que soit le mode d'échange de
+  message utilisé (full MPI, mémoire partagé ou hybride).
+
+  TODO: Découpler l'écriture de la gestion des variables pour pouvoir utiliser
+  les opérations collectives de HDF5 (si compilé avec MPI). Dans ce cas il
+  faut quand même géré manuellement le mode échange de message en mémoire
+  partagée ou hybride.
+
+  TODO: Ajouter informations sur les mailles fantômes
+*/
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -93,6 +119,8 @@ class VtkHdfDataWriter
 
   HGroup m_cell_data_group;
   HGroup m_node_data_group;
+  bool m_is_parallel = false;
+  bool m_is_master_io = false;
 
  private:
 
@@ -102,17 +130,11 @@ class VtkHdfDataWriter
   template <typename DataType> void
   _writeDataSet1D(HGroup& group, const String& name, Span<const DataType> values);
   template <typename DataType> void
-  _writeDataSet1D(HGroup& group, const String& name, Array<DataType>& values)
-  {
-    _writeDataSet1D(group, name, values.constSpan());
-  }
+  _writeDataSet1DCollective(HGroup& group, const String& name, Span<const DataType> values);
   template <typename DataType> void
   _writeDataSet2D(HGroup& group, const String& name, Span2<const DataType> values);
   template <typename DataType> void
-  _writeDataSet2D(HGroup& group, const String& name, Array2<DataType>& values)
-  {
-    _writeDataSet2D(group, name, values.constSpan());
-  }
+  _writeDataSet2DCollective(HGroup& group, const String& name, Span2<const DataType> values);
   template <typename DataType> void
   _writeBasicTypeDataset(HGroup& group, IVariable* var, IData* data);
   void _writeReal3Dataset(HGroup& group, IVariable* var, IData* data);
@@ -120,8 +142,11 @@ class VtkHdfDataWriter
 
   String _getFileNameForTimeIndex(Int32 index)
   {
-    StringBuilder sb("vtk_hdf_");
-    sb += index;
+    StringBuilder sb(m_mesh->name());
+    if (index >= 0) {
+      sb += "_";
+      sb += index;
+    }
     sb += ".hdf";
     return sb.toString();
   }
@@ -145,9 +170,15 @@ void VtkHdfDataWriter::
 beginWrite(const VariableCollection& vars)
 {
   ARCANE_UNUSED(vars);
-  warning() << "L'implémentation au format 'VtkHdf' est expérimentale";
+
+  IParallelMng* pm = m_mesh->parallelMng();
+  const Int32 nb_rank = pm->commSize();
+  m_is_parallel = nb_rank > 1;
+  m_is_master_io = pm->isMasterIO();
 
   Int32 time_index = m_times.size();
+  if (time_index < 2)
+    pwarning() << "L'implémentation au format 'VtkHdf' est expérimentale";
 
   String filename = _getFileNameForTimeIndex(time_index);
 
@@ -156,27 +187,24 @@ beginWrite(const VariableCollection& vars)
   m_full_filename = dir.file(filename);
   info(4) << "VtkHdfDataWriter::beginWrite() file=" << m_full_filename;
 
-  H5open();
+  HInit();
 
-  m_file_id.openTruncate(m_full_filename);
   HGroup top_group;
-  top_group.create(m_file_id, "VTKHDF");
 
-  m_cell_data_group.create(top_group, "CellData");
-  m_node_data_group.create(top_group, "PointData");
+  if (m_is_master_io) {
+    if (time_index <= 1)
+      dir.createDirectory();
+    m_file_id.openTruncate(m_full_filename);
+    top_group.create(m_file_id, "VTKHDF");
 
-  std::array<Int64, 2> version = { 1, 0 };
-  _addInt64ArrayAttribute(top_group, "Version", version);
+    m_cell_data_group.create(top_group, "CellData");
+    m_node_data_group.create(top_group, "PointData");
 
-  _addStringAttribute(top_group, "Type", "UnstructuredGrid");
+    std::array<Int64, 2> version = { 1, 0 };
+    _addInt64ArrayAttribute(top_group, "Version", version);
 
-  std::array<Int64, 2> nb_rank_array = { 1, 0 };
-  Span<const Int64> ranks{ nb_rank_array };
-
-  IParallelMng* pm = m_mesh->parallelMng();
-  const Int32 nb_rank = pm->commSize();
-  if (nb_rank != 1)
-    ARCANE_FATAL("Only sequential output is allowed");
+    _addStringAttribute(top_group, "Type", "UnstructuredGrid");
+  }
 
   CellGroup all_cells = m_mesh->allCells();
   NodeGroup all_nodes = m_mesh->allNodes();
@@ -199,34 +227,33 @@ beginWrite(const VariableCollection& vars)
     cells_offset.add(cells_connectivity.size());
   }
 
-  _writeDataSet1D(top_group, "Offsets", cells_offset);
-  _writeDataSet1D(top_group, "Connectivity", cells_connectivity);
-  _writeDataSet1D(top_group, "Types", cells_type);
+  _writeDataSet1DCollective<Int64>(top_group, "Offsets", cells_offset);
+  _writeDataSet1DCollective<Int64>(top_group, "Connectivity", cells_connectivity);
+  _writeDataSet1DCollective<unsigned char>(top_group, "Types", cells_type);
 
-  UniqueArray<Int64> nb_cell_by_ranks(nb_rank);
+  UniqueArray<Int64> nb_cell_by_ranks(1);
   nb_cell_by_ranks[0] = nb_cell;
-  _writeDataSet1D(top_group, "NumberOfCells", nb_cell_by_ranks);
+  _writeDataSet1DCollective<Int64>(top_group, "NumberOfCells", nb_cell_by_ranks);
 
-  UniqueArray<Int64> nb_node_by_ranks(nb_rank);
+  UniqueArray<Int64> nb_node_by_ranks(1);
   nb_node_by_ranks[0] = nb_node;
-  _writeDataSet1D(top_group, "NumberOfPoints", nb_node_by_ranks);
+  _writeDataSet1DCollective<Int64>(top_group, "NumberOfPoints", nb_node_by_ranks);
 
-  UniqueArray<Int64> number_of_connectivity_ids(nb_rank);
+  UniqueArray<Int64> number_of_connectivity_ids(1);
   number_of_connectivity_ids[0] = cells_connectivity.size();
-  _writeDataSet1D(top_group, "NumberOfConnectivityIds", number_of_connectivity_ids);
+  _writeDataSet1DCollective<Int64>(top_group, "NumberOfConnectivityIds", number_of_connectivity_ids);
 
   VariableNodeReal3& nodes_coordinates(m_mesh->nodesCoordinates());
   UniqueArray2<Real> points;
   points.resize(nb_node, 3);
   ENUMERATE_NODE (inode, all_nodes) {
-    //Node node = *inode;
     Int32 index = inode.index();
     Real3 pos = nodes_coordinates[inode];
     points[index][0] = pos.x;
     points[index][1] = pos.y;
     points[index][2] = pos.z;
   }
-  _writeDataSet2D(top_group, "Points", points);
+  _writeDataSet2DCollective<Real>(top_group, "Points", points);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -280,6 +307,26 @@ _writeDataSet1D(HGroup& group, const String& name, Span<const DataType> values)
   const hid_t hdf_type = HDFTraits<DataType>::hdfType();
   dataset.create(group, name.localstr(), hdf_type, hspace, H5P_DEFAULT);
   dataset.write(hdf_type, values.data());
+  if (dataset.isBad())
+    ARCANE_THROW(IOException, "Can not write dataset '{0}'", name);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename DataType> void VtkHdfDataWriter::
+_writeDataSet1DCollective(HGroup& group, const String& name, Span<const DataType> values)
+{
+  if (!m_is_parallel) {
+    _writeDataSet1D(group, name, values);
+    return;
+  }
+
+  UniqueArray<DataType> all_values;
+  IParallelMng* pm = m_mesh->parallelMng();
+  pm->gatherVariable(values.smallView(), all_values, pm->masterIORank());
+  if (m_is_master_io)
+    _writeDataSet1D<DataType>(group, name, all_values);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -297,6 +344,34 @@ _writeDataSet2D(HGroup& group, const String& name, Span2<const DataType> values)
   const hid_t hdf_type = HDFTraits<DataType>::hdfType();
   dataset.create(group, name.localstr(), hdf_type, hspace, H5P_DEFAULT);
   dataset.write(hdf_type, values.data());
+  if (dataset.isBad())
+    ARCANE_THROW(IOException, "Can not write dataset '{0}'", name);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename DataType> void VtkHdfDataWriter::
+_writeDataSet2DCollective(HGroup& group, const String& name, Span2<const DataType> values)
+{
+  Int64 dim2_size = values.dim2Size();
+
+  if (!m_is_parallel) {
+    _writeDataSet2D(group, name, values);
+    return;
+  }
+
+  UniqueArray<DataType> all_values;
+  IParallelMng* pm = m_mesh->parallelMng();
+  Span<const DataType> values_1d(values.data(), values.totalNbElement());
+  pm->gatherVariable(values_1d.smallView(), all_values, pm->masterIORank());
+  if (m_is_master_io) {
+    Int64 dim1_size = all_values.size();
+    if (dim2_size != 0)
+      dim1_size = dim1_size / dim2_size;
+    Span2<const DataType> span2(all_values.data(), dim1_size, dim2_size);
+    _writeDataSet2D<DataType>(group, name, span2);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -358,7 +433,7 @@ endWrite()
   //   ]
   // }
 
-  if (!m_mesh->parallelMng()->isMasterIO())
+  if (!m_is_master_io)
     return;
 
   JSONWriter writer(JSONWriter::FormatFlags::None);
@@ -380,7 +455,7 @@ endWrite()
     }
   }
   Directory dir(m_directory_name);
-  String fname = dir.file("vtk_hdf.hdf.series");
+  String fname = dir.file(_getFileNameForTimeIndex(-1) + ".series");
   std::ofstream ofile(fname.localstr());
   StringView buf = writer.getBuffer();
   ofile.write(reinterpret_cast<const char*>(buf.bytes().data()), buf.length());
@@ -401,7 +476,7 @@ setMetaData(const String& meta_data)
 void VtkHdfDataWriter::
 write(IVariable* var, IData* data)
 {
-  info() << "SAVE var=" << var->name();
+  info(4) << "Write VtkHdf var=" << var->name();
 
   eItemKind item_kind = var->itemKind();
 
@@ -451,7 +526,7 @@ _writeBasicTypeDataset(HGroup& group, IVariable* var, IData* data)
 {
   auto* true_data = dynamic_cast<IArrayDataT<DataType>*>(data);
   ARCANE_CHECK_POINTER(true_data);
-  _writeDataSet1D(group, var->name(), Span<const DataType>(true_data->view()));
+  _writeDataSet1DCollective(group, var->name(), Span<const DataType>(true_data->view()));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -473,7 +548,7 @@ _writeReal3Dataset(HGroup& group, IVariable* var, IData* data)
     scalar_values[i][1] = v.y;
     scalar_values[i][2] = v.z;
   }
-  _writeDataSet2D(group, var->name(), scalar_values);
+  _writeDataSet2DCollective<Real>(group, var->name(), scalar_values);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -495,7 +570,7 @@ _writeReal2Dataset(HGroup& group, IVariable* var, IData* data)
     scalar_values[i][1] = v.y;
     scalar_values[i][2] = 0.0;
   }
-  _writeDataSet2D(group, var->name(), scalar_values);
+  _writeDataSet2DCollective<Real>(group, var->name(), scalar_values);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -521,7 +596,8 @@ class VtkHdfPostProcessor
   {
     auto w = std::make_unique<VtkHdfDataWriter>(mesh(), groups());
     w->setTimes(times());
-    w->setDirectoryName(baseDirectoryName());
+    Directory dir(baseDirectoryName());
+    w->setDirectoryName(dir.file("vtkhdf"));
     m_writer = std::move(w);
   }
   void notifyEndWrite() override
