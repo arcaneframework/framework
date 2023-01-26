@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ScalarData.cc                                               (C) 2000-2022 */
+/* ScalarData.cc                                               (C) 2000-2023 */
 /*                                                                           */
 /* Donnée de type scalaire.                                                  */
 /*---------------------------------------------------------------------------*/
@@ -251,16 +251,6 @@ void ScalarDataT<DataType>::
 visitArray2(IArray2DataVisitor*)
 {
   ARCANE_THROW(NotSupportedException, "Can not visit array2 data with scalar data");
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <typename DataType>
-void ScalarDataT<DataType>::
-visitMultiArray2(IMultiArray2DataVisitor*)
-{
-  ARCANE_THROW(NotSupportedException, "Can not visit multiarray2 data with array data");
 }
 
 /*---------------------------------------------------------------------------*/

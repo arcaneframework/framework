@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* StringScalarData.cc                                         (C) 2000-2022 */
+/* StringScalarData.cc                                         (C) 2000-2023 */
 /*                                                                           */
 /* Donnée scalaire de type 'String'.                                         */
 /*---------------------------------------------------------------------------*/
@@ -107,7 +107,6 @@ class StringScalarData
   void visitScalar(IScalarDataVisitor* visitor) override;
   void visitArray(IArrayDataVisitor* visitor) override;
   void visitArray2(IArray2DataVisitor* visitor) override;
-  void visitMultiArray2(IMultiArray2DataVisitor* visitor) override;
 
  public:
 
@@ -312,15 +311,6 @@ void StringScalarData::
 visitArray2(IArray2DataVisitor*)
 {
   throw NotSupportedException(A_FUNCINFO, "Can not visit array2 data with scalar data");
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void StringScalarData::
-visitMultiArray2(IMultiArray2DataVisitor*)
-{
-  throw NotSupportedException(A_FUNCINFO, "Can not visit multiarray2 data with array data");
 }
 
 /*---------------------------------------------------------------------------*/

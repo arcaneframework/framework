@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DataTypeDispatchingDataVisitor.cc                           (C) 2000-2016 */
+/* DataTypeDispatchingDataVisitor.cc                           (C) 2000-2023 */
 /*                                                                           */
 /* IDataVisitor dispatchant les opérations suivant le type de donnée.        */
 /*---------------------------------------------------------------------------*/
@@ -16,7 +16,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -250,64 +251,7 @@ applyVisitor(IArray2DataT<Real3x3>* data)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void AbstractDataTypeDispatchingDataVisitor::
-applyVisitor(IMultiArray2DataT<Byte>* data)
-{
-  m_byte->applyDispatch(data);
 }
-
-void AbstractDataTypeDispatchingDataVisitor::
-applyVisitor(IMultiArray2DataT<Real>* data)
-{
-  m_real->applyDispatch(data);
-}
-
-void AbstractDataTypeDispatchingDataVisitor::
-applyVisitor(IMultiArray2DataT<Int16>* data)
-{
-  m_int16->applyDispatch(data);
-}
-
-void AbstractDataTypeDispatchingDataVisitor::
-applyVisitor(IMultiArray2DataT<Int32>* data)
-{
-  m_int32->applyDispatch(data);
-}
-
-void AbstractDataTypeDispatchingDataVisitor::
-applyVisitor(IMultiArray2DataT<Int64>* data)
-{
-  m_int64->applyDispatch(data);
-}
-
-void AbstractDataTypeDispatchingDataVisitor::
-applyVisitor(IMultiArray2DataT<Real2>* data)
-{
-  m_real2->applyDispatch(data);
-}
-
-void AbstractDataTypeDispatchingDataVisitor::
-applyVisitor(IMultiArray2DataT<Real3>* data)
-{
-  m_real3->applyDispatch(data);
-}
-
-void AbstractDataTypeDispatchingDataVisitor::
-applyVisitor(IMultiArray2DataT<Real2x2>* data)
-{
-  m_real2x2->applyDispatch(data);
-}
-
-void AbstractDataTypeDispatchingDataVisitor::
-applyVisitor(IMultiArray2DataT<Real3x3>* data)
-{
-  m_real3x3->applyDispatch(data);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_END_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

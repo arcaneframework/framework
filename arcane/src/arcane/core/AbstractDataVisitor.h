@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AbstractDataVisitor.h                                       (C) 2000-2016 */
+/* AbstractDataVisitor.h                                       (C) 2000-2023 */
 /*                                                                           */
 /* Visiteur abstrait pour une donnée.                                        */
 /*---------------------------------------------------------------------------*/
@@ -19,7 +19,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -126,20 +127,6 @@ class ARCANE_CORE_EXPORT AbstractArray2DataVisitor
 class ARCANE_CORE_EXPORT AbstractMultiArray2DataVisitor
 : public IMultiArray2DataVisitor
 {
- public:
-
-  virtual void applyVisitor(IMultiArray2DataT<Byte>* data);
-  virtual void applyVisitor(IMultiArray2DataT<Real>* data);
-  virtual void applyVisitor(IMultiArray2DataT<Int16>* data);
-  virtual void applyVisitor(IMultiArray2DataT<Int32>* data);
-  virtual void applyVisitor(IMultiArray2DataT<Int64>* data);
-  virtual void applyVisitor(IMultiArray2DataT<Real2>* data);
-  virtual void applyVisitor(IMultiArray2DataT<Real3>* data);
-  virtual void applyVisitor(IMultiArray2DataT<Real2x2>* data);
-  virtual void applyVisitor(IMultiArray2DataT<Real3x3>* data);
-
- protected:
-  
   void _throwException(eDataType dt);
 };
 
@@ -163,13 +150,12 @@ class ARCANE_CORE_EXPORT AbstractDataVisitor
   virtual void applyDataVisitor(IScalarData* data);
   virtual void applyDataVisitor(IArrayData* data);
   virtual void applyDataVisitor(IArray2Data* data);
-  virtual void applyDataVisitor(IMultiArray2Data* data);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IDataVisitor.h                                              (C) 2000-2016 */
+/* IDataVisitor.h                                              (C) 2000-2023 */
 /*                                                                           */
 /* Interface du pattern visitor pour une donnée.                             */
 /*---------------------------------------------------------------------------*/
@@ -19,7 +19,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -41,15 +42,16 @@ class IMultiArray2Data;
 class ARCANE_CORE_EXPORT IDataVisitor
 {
  public:
-  
-  virtual ~IDataVisitor(){}
+
+  virtual ~IDataVisitor() {}
 
  public:
 
-  virtual void applyDataVisitor(IScalarData* data) =0;
-  virtual void applyDataVisitor(IArrayData* data) =0;
-  virtual void applyDataVisitor(IArray2Data* data) =0;
-  virtual void applyDataVisitor(IMultiArray2Data* data) =0;
+  virtual void applyDataVisitor(IScalarData* data) = 0;
+  virtual void applyDataVisitor(IArrayData* data) = 0;
+  virtual void applyDataVisitor(IArray2Data* data) = 0;
+  // No longer used. Throw NotSupportedException
+  virtual void applyDataVisitor(IMultiArray2Data*);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -60,18 +62,21 @@ class ARCANE_CORE_EXPORT IDataVisitor
 class ARCANE_CORE_EXPORT IScalarDataVisitor
 {
  public:
-  virtual ~IScalarDataVisitor(){}
+
+  virtual ~IScalarDataVisitor() {}
+
  public:
-  virtual void applyVisitor(IScalarDataT<Byte>* data) =0;
-  virtual void applyVisitor(IScalarDataT<Real>* data) =0;
-  virtual void applyVisitor(IScalarDataT<Int16>* data) =0;
-  virtual void applyVisitor(IScalarDataT<Int32>* data) =0;
-  virtual void applyVisitor(IScalarDataT<Int64>* data) =0;
-  virtual void applyVisitor(IScalarDataT<Real2>* data) =0;
-  virtual void applyVisitor(IScalarDataT<Real3>* data) =0;
-  virtual void applyVisitor(IScalarDataT<Real2x2>* data) =0;
-  virtual void applyVisitor(IScalarDataT<Real3x3>* data) =0;
-  virtual void applyVisitor(IScalarDataT<String>* data) =0;
+
+  virtual void applyVisitor(IScalarDataT<Byte>* data) = 0;
+  virtual void applyVisitor(IScalarDataT<Real>* data) = 0;
+  virtual void applyVisitor(IScalarDataT<Int16>* data) = 0;
+  virtual void applyVisitor(IScalarDataT<Int32>* data) = 0;
+  virtual void applyVisitor(IScalarDataT<Int64>* data) = 0;
+  virtual void applyVisitor(IScalarDataT<Real2>* data) = 0;
+  virtual void applyVisitor(IScalarDataT<Real3>* data) = 0;
+  virtual void applyVisitor(IScalarDataT<Real2x2>* data) = 0;
+  virtual void applyVisitor(IScalarDataT<Real3x3>* data) = 0;
+  virtual void applyVisitor(IScalarDataT<String>* data) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -83,20 +88,20 @@ class ARCANE_CORE_EXPORT IArrayDataVisitor
 {
  public:
 
-  virtual ~IArrayDataVisitor(){}
+  virtual ~IArrayDataVisitor() {}
 
  public:
 
-  virtual void applyVisitor(IArrayDataT<Byte>* data) =0;
-  virtual void applyVisitor(IArrayDataT<Real>* data) =0;
-  virtual void applyVisitor(IArrayDataT<Int16>* data) =0;
-  virtual void applyVisitor(IArrayDataT<Int32>* data) =0;
-  virtual void applyVisitor(IArrayDataT<Int64>* data) =0;
-  virtual void applyVisitor(IArrayDataT<Real2>* data) =0;
-  virtual void applyVisitor(IArrayDataT<Real3>* data) =0;
-  virtual void applyVisitor(IArrayDataT<Real2x2>* data) =0;
-  virtual void applyVisitor(IArrayDataT<Real3x3>* data) =0;
-  virtual void applyVisitor(IArrayDataT<String>* data) =0;
+  virtual void applyVisitor(IArrayDataT<Byte>* data) = 0;
+  virtual void applyVisitor(IArrayDataT<Real>* data) = 0;
+  virtual void applyVisitor(IArrayDataT<Int16>* data) = 0;
+  virtual void applyVisitor(IArrayDataT<Int32>* data) = 0;
+  virtual void applyVisitor(IArrayDataT<Int64>* data) = 0;
+  virtual void applyVisitor(IArrayDataT<Real2>* data) = 0;
+  virtual void applyVisitor(IArrayDataT<Real3>* data) = 0;
+  virtual void applyVisitor(IArrayDataT<Real2x2>* data) = 0;
+  virtual void applyVisitor(IArrayDataT<Real3x3>* data) = 0;
+  virtual void applyVisitor(IArrayDataT<String>* data) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -108,52 +113,53 @@ class ARCANE_CORE_EXPORT IArray2DataVisitor
 {
  public:
 
-  virtual ~IArray2DataVisitor(){}
+  virtual ~IArray2DataVisitor() {}
 
  public:
 
-  virtual void applyVisitor(IArray2DataT<Byte>* data) =0;
-  virtual void applyVisitor(IArray2DataT<Real>* data) =0;
-  virtual void applyVisitor(IArray2DataT<Int16>* data) =0;
-  virtual void applyVisitor(IArray2DataT<Int32>* data) =0;
-  virtual void applyVisitor(IArray2DataT<Int64>* data) =0;
-  virtual void applyVisitor(IArray2DataT<Real2>* data) =0;
-  virtual void applyVisitor(IArray2DataT<Real3>* data) =0;
-  virtual void applyVisitor(IArray2DataT<Real2x2>* data) =0;
-  virtual void applyVisitor(IArray2DataT<Real3x3>* data) =0;
+  virtual void applyVisitor(IArray2DataT<Byte>* data) = 0;
+  virtual void applyVisitor(IArray2DataT<Real>* data) = 0;
+  virtual void applyVisitor(IArray2DataT<Int16>* data) = 0;
+  virtual void applyVisitor(IArray2DataT<Int32>* data) = 0;
+  virtual void applyVisitor(IArray2DataT<Int64>* data) = 0;
+  virtual void applyVisitor(IArray2DataT<Real2>* data) = 0;
+  virtual void applyVisitor(IArray2DataT<Real3>* data) = 0;
+  virtual void applyVisitor(IArray2DataT<Real2x2>* data) = 0;
+  virtual void applyVisitor(IArray2DataT<Real3x3>* data) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Interface du pattern visitor pour une donnée tableau 2D à taille variable
+ *
+ * \deprecated Ne plus utiliser car le type sous-jacent n'est plus utilisé
  */
 class ARCANE_CORE_EXPORT IMultiArray2DataVisitor
 {
  public:
 
-  virtual ~IMultiArray2DataVisitor(){}
+  virtual ~IMultiArray2DataVisitor() {}
 
  public:
 
-  virtual void applyVisitor(IMultiArray2DataT<Byte>* data) =0;
-  virtual void applyVisitor(IMultiArray2DataT<Real>* data) =0;
-  virtual void applyVisitor(IMultiArray2DataT<Int16>* data) =0;
-  virtual void applyVisitor(IMultiArray2DataT<Int32>* data) =0;
-  virtual void applyVisitor(IMultiArray2DataT<Int64>* data) =0;
-  virtual void applyVisitor(IMultiArray2DataT<Real2>* data) =0;
-  virtual void applyVisitor(IMultiArray2DataT<Real3>* data) =0;
-  virtual void applyVisitor(IMultiArray2DataT<Real2x2>* data) =0;
-  virtual void applyVisitor(IMultiArray2DataT<Real3x3>* data) =0;
+  virtual void applyVisitor(IMultiArray2DataT<Byte>*) {}
+  virtual void applyVisitor(IMultiArray2DataT<Real>*) {}
+  virtual void applyVisitor(IMultiArray2DataT<Int16>*) {}
+  virtual void applyVisitor(IMultiArray2DataT<Int32>*) {}
+  virtual void applyVisitor(IMultiArray2DataT<Int64>*) {}
+  virtual void applyVisitor(IMultiArray2DataT<Real2>*) {}
+  virtual void applyVisitor(IMultiArray2DataT<Real3>*) {}
+  virtual void applyVisitor(IMultiArray2DataT<Real2x2>*) {}
+  virtual void applyVisitor(IMultiArray2DataT<Real3x3>*) {}
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif
