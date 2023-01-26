@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VtkMeshIOService.cc                                         (C) 2000-2022 */
+/* VtkMeshIOService.cc                                         (C) 2000-2023 */
 /*                                                                           */
 /* Lecture/Ecriture d'un maillage au format Vtk historique (legacy).         */
 /*---------------------------------------------------------------------------*/
@@ -29,14 +29,12 @@
 #include "arcane/FactoryService.h"
 #include "arcane/ICaseMeshReader.h"
 #include "arcane/IItemFamily.h"
-#include "arcane/IMesh.h"
+#include "arcane/IPrimaryMesh.h"
 #include "arcane/IMeshBuilder.h"
 #include "arcane/IMeshReader.h"
-#include "arcane/IMeshSubMeshTransition.h"
 #include "arcane/IMeshUtilities.h"
 #include "arcane/IMeshWriter.h"
 #include "arcane/IParallelMng.h"
-#include "arcane/ISubDomain.h"
 #include "arcane/IVariableAccessor.h"
 #include "arcane/IXmlDocumentHolder.h"
 #include "arcane/Item.h"
@@ -44,6 +42,8 @@
 #include "arcane/VariableTypes.h"
 #include "arcane/XmlNode.h"
 #include "arcane/XmlNodeList.h"
+
+#include "arcane/std/internal/VtkCellTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -55,27 +55,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 class VtkFile;
-
-namespace
-{
-  const int VTK_EMPTY_CELL = 0;
-  const int VTK_VERTEX = 1;
-  const int VTK_LINE = 3;
-  const int VTK_TRIANGLE = 5;
-  const int VTK_POLYGON = 7; // A tester...
-  const int VTK_QUAD = 9;
-  const int VTK_TETRA = 10;
-  const int VTK_HEXAHEDRON = 12;
-  const int VTK_WEDGE = 13;
-  const int VTK_PYRAMID = 14;
-  const int VTK_PENTAGONAL_PRISM = 15;
-  const int VTK_HEXAGONAL_PRISM = 16;
-  const int VTK_QUADRATIC_EDGE = 21;
-  const int VTK_QUADRATIC_TRIANGLE = 22;
-  const int VTK_QUADRATIC_QUAD = 23;
-  const int VTK_QUADRATIC_TETRA = 24;
-  const int VTK_QUADRATIC_HEXAHEDRON = 25;
-} // namespace
+using namespace Arcane::VtkUtils;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -763,13 +743,13 @@ _readStructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_par
     }
   }
 
-  Int32 sub_domain_id = mesh->parallelMng()->commRank();
+  Int32 rank = mesh->parallelMng()->commRank();
 
   Integer nb_cell_x = nb_node_x - 1;
   Integer nb_cell_y = nb_node_y - 1;
   Integer nb_cell_z = nb_node_z - 1;
 
-  if (use_internal_partition && sub_domain_id != 0) {
+  if (use_internal_partition && rank != 0) {
     nb_node_x = 0;
     nb_node_y = 0;
     nb_node_z = 0;
@@ -800,7 +780,6 @@ _readStructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_par
             Integer node_unique_id = y + (z)*nb_node_y + x * nb_node_y * nb_node_z;
 
             nodes_unique_id[node_local_id] = node_unique_id;
-            //Integer owner = sub_domain_id;
 
             ++node_local_id;
           }
@@ -1134,78 +1113,14 @@ _readCellsUnstructuredGrid(IMesh* mesh, VtkFile& vtk_file,
 
     vtk_file.checkString(cell_types_str, "CELL_TYPES");
     if (nb_cell_type != nb_cell) {
-      throw IOException(A_FUNCINFO,
-                        String::format("Inconsistency in number of CELL_TYPES: v={0} nb_cell={1}",
-                                       nb_cell_type, nb_cell));
+      ARCANE_THROW(IOException,"Inconsistency in number of CELL_TYPES: v={0} nb_cell={1}",
+                   nb_cell_type, nb_cell);
     }
   }
 
   for (Integer i = 0; i < nb_cell; ++i) {
     Integer vtk_ct = vtk_file.getInt();
-    Integer it = IT_NullType;
-
-    // Le type est défini dans vtkCellType.h
-    switch (vtk_ct) {
-    case VTK_EMPTY_CELL:
-      it = IT_NullType;
-      break;
-    case VTK_VERTEX:
-      it = IT_Vertex;
-      break;
-    case VTK_LINE:
-      it = IT_Line2;
-      break;
-    case VTK_QUADRATIC_EDGE:
-      it = IT_Line3;
-      break;
-    case VTK_TRIANGLE:
-      it = IT_Triangle3;
-      break;
-    case VTK_QUAD:
-      it = IT_Quad4;
-      break;
-    case VTK_QUADRATIC_QUAD:
-      it = IT_Quad8;
-      break;
-    case VTK_POLYGON: // VTK_POLYGON (a tester...)
-      if (cells_nb_node[i] == 5) {
-        it = IT_Pentagon5;
-      }
-      if (cells_nb_node[i] == 6)
-        it = IT_Hexagon6;
-      break;
-    case VTK_TETRA:
-      it = IT_Tetraedron4;
-      break;
-    case VTK_QUADRATIC_TETRA:
-      it = IT_Tetraedron10;
-      break;
-    case VTK_PYRAMID:
-      it = IT_Pyramid5;
-      break;
-    case VTK_WEDGE:
-      it = IT_Pentaedron6;
-      break;
-    case VTK_HEXAHEDRON:
-      it = IT_Hexaedron8;
-      break;
-    case VTK_QUADRATIC_HEXAHEDRON:
-      it = IT_Hexaedron20;
-      break;
-    case VTK_PENTAGONAL_PRISM:
-      it = IT_Heptaedron10;
-      break;
-    case VTK_HEXAGONAL_PRISM:
-      it = IT_Octaedron12;
-      break;
-      // NOTE GG: les types suivants ne sont pas bon pour VTK.
-      //case 27: it = IT_Enneedron14; break; //
-      //case 28: it = IT_Decaedron16; break; // VTK_HEXAGONAL_PRISM
-      //case 29: it = IT_Heptagon7; break; // VTK_HEPTAGON
-      //case 30: it = IT_Octogon8; break; // VTK_OCTAGON
-    default:
-      ARCANE_THROW(IOException, "Unsupported VtkCellType '{0}'", vtk_ct);
-    }
+    Integer it = vtkToArcaneCellType(vtk_ct,cells_nb_node[i]);
     cells_type[i] = it;
   }
   _readMetadata(mesh, vtk_file);
@@ -1332,8 +1247,6 @@ _readMetadata(IMesh* mesh, VtkFile& vtk_file)
 bool VtkMeshIOService::
 _readUnstructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_partition)
 {
-  // const char* func_name = "VtkMeshIOService::_readUnstructuredGrid()";
-  //IParallelMng* pm = subDomain()->parallelMng();
   Integer nb_node = 0;
   Integer nb_cell = 0;
   Integer nb_cell_node = 0;
@@ -2032,68 +1945,9 @@ _writeMeshToFile(IMesh* mesh, const String& file_name, eItemKind cell_kind)
     }
     // Le type doit être coherent avec celui de vtkCellType.h
     ofile << "CELL_TYPES " << nb_cell_kind << "\n";
-    ENUMERATE_ITEMWITHNODES(iitem, cell_kind_family->allItems())
-    {
-      int type = 0; // Correspond à VTK_EMPTY_CELL
+    ENUMERATE_(ItemWithNodes, iitem, cell_kind_family->allItems()) {
       int arcane_type = (*iitem).type();
-      switch (arcane_type) {
-      case IT_NullType:
-        type = VTK_EMPTY_CELL;
-        break;
-      case IT_Vertex:
-        type = VTK_VERTEX;
-        break;
-      case IT_Line2:
-        type = VTK_LINE;
-        break;
-      case IT_Line3:
-        type = VTK_QUADRATIC_EDGE;
-        break;
-      case IT_Triangle3:
-        type = VTK_TRIANGLE;
-        break;
-      case IT_Triangle6:
-        type = VTK_QUADRATIC_TRIANGLE;
-        break;
-      case IT_Quad4:
-        type = VTK_QUAD;
-        break;
-      case IT_Quad8:
-        type = VTK_QUADRATIC_QUAD;
-        break;
-      case IT_Pentagon5:
-        type = VTK_POLYGON;
-        break; // VTK_POLYGON (a tester...)
-      case IT_Hexagon6:
-        type = VTK_POLYGON;
-        break; // VTK_POLYGON (a tester ...)
-      case IT_Tetraedron4:
-        type = VTK_TETRA;
-        break;
-      case IT_Tetraedron10:
-        type = VTK_QUADRATIC_TETRA;
-        break;
-      case IT_Pyramid5:
-        type = VTK_PYRAMID;
-        break;
-      case IT_Pentaedron6:
-        type = VTK_WEDGE;
-        break;
-      case IT_Hexaedron8:
-        type = VTK_HEXAHEDRON;
-        break;
-      case IT_Hexaedron20:
-        type = VTK_QUADRATIC_HEXAHEDRON;
-        break;
-      case IT_Heptaedron10:
-        type = VTK_PENTAGONAL_PRISM;
-        break;
-      case IT_Octaedron12:
-        type = VTK_HEXAGONAL_PRISM;
-        break;
-      default:
-        ARCANE_FATAL("Unsuported item type for VtkWriter type={0}", arcane_type);
-      }
+      int type = arcaneToVtkCellType(arcane_type);
       ofile << type << '\n';
     }
   }
