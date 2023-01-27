@@ -471,6 +471,7 @@ class IDataFactoryMng;
 class IDataStorageFactory;
 class DataStorageBuildInfo;
 class CaseDatasetSource;
+class IDataInternal;
 template<typename DataType> class IArrayDataInternalT;
 template<typename DataType> class IArray2DataInternalT;
 

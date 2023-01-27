@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IDataInternal.h                                             (C) 2000-2021 */
+/* IDataInternal.h                                             (C) 2000-2023 */
 /*                                                                           */
 /* Partie interne à Arcane de IData.                                         */
 /*---------------------------------------------------------------------------*/
@@ -16,11 +16,83 @@
 
 #include "arcane/ArcaneTypes.h"
 
+#include "arcane/utils/UniqueArray.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
+class IDataCompressor;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class DataCompressionBuffer
+{
+ public:
+
+  UniqueArray<std::byte> m_buffer;
+  Int64 m_original_dim1_size = 0;
+  Int64 m_original_dim2_size = 0;
+  IDataCompressor* m_compressor = nullptr;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Partie interne de IData.
+ */
+class ARCANE_CORE_EXPORT IDataInternal
+{
+ public:
+
+  virtual ~IDataInternal() = default;
+
+ public:
+
+  /*!
+   * \brief Compresse les données et libère la mémoire associée
+   *
+   * Compresse les données et remplit \a buf avec les information compressées.
+   * Libère ensuite la mémoire associée. L'instance ne sera plus utilisable
+   * tant que decompressAndFill() n'aura pas été appelé.
+   *
+   * \retval true si une compression a eu lieu.
+   * \retval false si l'instance ne supporte pas la compression. Dans ce cas
+   * elle reste utilisable.
+   */
+  virtual bool compressAndClear(DataCompressionBuffer& buf)
+  {
+    ARCANE_UNUSED(buf);
+    return false;
+  }
+
+  /*!
+   * \brief Décompresse les données et remplit les valeurs de la donnée.
+   *
+   * Décompresse les données de \a buf et remplit les valeurs de cette instance
+   * avec les information decompressées.
+   *
+   * \retval true si une décompression a eu lieu.
+   * \retval false si aucune décompression n'a eu lieu car l'instance ne le
+   * supporte pas.
+   */
+  virtual bool decompressAndFill(DataCompressionBuffer& buf)
+  {
+    ARCANE_UNUSED(buf);
+    return false;
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class NullDataInternal
+: public IDataInternal
+{
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -30,10 +102,9 @@ namespace Arcane
  */
 template <class DataType>
 class IArrayDataInternalT
+: public IDataInternal
 {
  public:
-
-  virtual ~IArrayDataInternalT() = default;
 
   //! Réserve de la mémoire pour \a new_capacity éléments
   virtual void reserve(Integer new_capacity) =0;
@@ -62,10 +133,9 @@ class IArrayDataInternalT
  */
 template <class DataType>
 class IArray2DataInternalT
+: public IDataInternal
 {
  public:
-
-  virtual ~IArray2DataInternalT() = default;
 
   //! Réserve de la mémoire pour \a new_capacity éléments
   virtual void reserve(Integer new_capacity) = 0;

@@ -14,12 +14,14 @@
 #include "arcane/utils/ValueChecker.h"
 #include "arcane/utils/Event.h"
 #include "arcane/utils/ITraceMng.h"
+#include "arcane/utils/IDataCompressor.h"
 
 #include "arcane/BasicUnitTest.h"
 #include "arcane/IMesh.h"
 #include "arcane/IVariableMng.h"
 #include "arcane/VariableStatusChangedEventArgs.h"
 #include "arcane/VariableView.h"
+#include "arcane/core/internal/IDataInternal.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 #include "arcane/tests/StdScalarMeshVariables.h"
@@ -102,6 +104,7 @@ class VariableUnitTest
   void _checkException(Integer i);
   void _testAlignment();
   void _testSwap();
+  void _testCompression();
 
   template<typename MeshVarType>
   void _testSwapHelper(MeshVarType& cells);
@@ -145,6 +148,7 @@ executeTest()
   _testSwap();
   _testAlignment();
   _testReferences(options()->nbReference());
+  _testCompression();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -502,6 +506,29 @@ _testSwap()
 
     if (nb_error!=0)
       ARCANE_FATAL("Error in variable swapping (2) n={0}",nb_error);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void VariableUnitTest::
+_testCompression()
+{
+  // Teste la compression/décompression
+  IDataCompressor* compressor = options()->compressor();
+  if (!compressor)
+    return;
+  IVariableMng* vm = subDomain()->variableMng();
+  VariableCollection variables = vm->usedVariables();
+  for( VariableCollection::Enumerator i(variables); ++i; ){
+    IVariable* var = *i;
+    info() << "Compressing/Decompressing variable " << var->name();
+    DataCompressionBuffer data_buffer;
+    data_buffer.m_compressor = compressor;
+    IDataInternal* d = var->data()->_commonInternal();
+    d->compressAndClear(data_buffer);
+    d->decompressAndFill(data_buffer);
   }
 }
 

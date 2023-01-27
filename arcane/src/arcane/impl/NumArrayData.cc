@@ -156,6 +156,7 @@ class NumArrayDataT
   {
     ARCANE_THROW(NotSupportedException, "Can not visit array2 data with NumArray data");
   }
+  IDataInternal* _commonInternal() override { return &m_internal; }
 
  public:
 
@@ -170,6 +171,7 @@ class NumArrayDataT
   NumArray<DataType,ExtentType> m_value; //!< Donnée
   ITraceMng* m_trace;
   ArrayShape m_shape;
+  NullDataInternal m_internal;
 
  private:
 

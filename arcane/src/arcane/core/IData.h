@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IData.h                                                     (C) 2000-2022 */
+/* IData.h                                                     (C) 2000-2023 */
 /*                                                                           */
 /* Interface d'une donnée.                                                   */
 /*---------------------------------------------------------------------------*/
@@ -204,6 +204,9 @@ class ARCANE_CORE_EXPORT IData
    * d'implémentation de IMultiArray2.
    */
   virtual void visitMultiArray2(IMultiArray2DataVisitor* visitor);
+
+  //! \internal
+  virtual IDataInternal* _commonInternal() =0;
 };
 
 /*---------------------------------------------------------------------------*/
