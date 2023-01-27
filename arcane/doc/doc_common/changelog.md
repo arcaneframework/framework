@@ -17,34 +17,34 @@ Work In Progress...
 
 - Ajoute support pour spécifier en ligne de commandes les valeurs
   par défaut de Arcane::ParallelLoopOptions en mode multi-thread
-  (\issue{420}).
+  (\pr{420}).
 - Ajoute support des fichiers Lima, des fichiers MED et des fichiers
-  au format `msh` avec les services de maillage (\issue{435}, \issue{439}, \issue{449}).
+  au format `msh` avec les services de maillage (\pr{435}, \pr{439}, \pr{449}).
 - Ajoute fonction Arcane::NumArrayUtils::readFromText() pour remplir une
-  instance de Arcane::NumArray à partir d'un fichier au format ASCII (\issue{444}).
+  instance de Arcane::NumArray à partir d'un fichier au format ASCII (\pr{444}).
 - Ajoute support de la lecture des en parallèle des fichiers au format
-  MED (\issue{449}).
+  MED (\pr{449}).
 - Ajoute support pour la lecture des groupes de noeuds
-  (Arcane::NodeGroup) dans les maillages au format MSH (\issue{475}).
+  (Arcane::NodeGroup) dans les maillages au format MSH (\pr{475}).
 - Ajoute support pour la renumérotation des maillages AMR en 3D. Cela
-  permet d'avoir la même numérotation en quel que soit le découpage (\issue{495}).
+  permet d'avoir la même numérotation en quel que soit le découpage (\pr{495}).
 - Ajoute accès à Arcane::IMeshMng dans Arcane::ICaseMng et
-  Arcane::IPhysicalUnitSystem (\issue{461}).
+  Arcane::IPhysicalUnitSystem (\pr{461}).
 - Ajoute support des accélérateurs pour les classes gérant le
   maillage cartésien (Arcane::CellDirectionMng,
-  Arcane::FaceDirectionMng et Arcane::NodeDirectionMng) (\issue{474})
+  Arcane::FaceDirectionMng et Arcane::NodeDirectionMng) (\pr{474})
 - Ajoute classe Arcane::impl::MutableItemBase pour remplacer
-  l'utilisation de Arcane::ItemInternal (\issue{499}).
+  l'utilisation de Arcane::ItemInternal (\pr{499}).
 - Ajoute possibilité d'indexer les composantes de Arcane::Real2,
   Arcane::Real3, Arcane::Real2x2 et Arcane::Real3x3 par l'opérateur
-  `operator()` (\issue{485}).
+  `operator()` (\pr{485}).
 - Développements préliminaires pour les variables du maillage à
-  plusieurs dimensions (\issue{459}, \issue{463}, \issue{464}, \issue{466}, \issue{471}).
+  plusieurs dimensions (\pr{459}, \pr{463}, \pr{464}, \pr{466}, \pr{471}).
 - Ajoute interface Arcane::IDoFFamily pour gérer les
   Arcane::DoF. Auparavant il fallait utiliser directement
-  l'implémentation Arcane::mesh::DoFFamily (\issue{480})
+  l'implémentation Arcane::mesh::DoFFamily (\pr{480})
 - Ajoute support dans `Aleph` des variables qui n'ont pas de familles
-  par défaut (comme les Arcane::DoF par exemple) (\issue{468}).
+  par défaut (comme les Arcane::DoF par exemple) (\pr{468}).
 
 ### Changements:
 
@@ -52,90 +52,90 @@ Work In Progress...
   les dimensions (extents) dans les classes Arcane::NumArray et
   Arcane::MDSpan. Cela permet de se rapprocher de l'implémentation
   prévue dans le norme C++23 et d'avoir des dimensions statiques
-  (connues à la compilation) (\issue{419}, \issue{425}, \issue{428}).
+  (connues à la compilation) (\pr{419}, \pr{425}, \pr{428}).
 - Supprime les timers utilisant le temps CPU au lieu du temps écoulé. Le
   type Arcane::Timer::TimerVirtual existe toujours mais se comporte
-  maintenant comme le type Arcane::Timer::TimerReal (\issue{421}).
+  maintenant comme le type Arcane::Timer::TimerReal (\pr{421}).
 - Supprime paramètre template avec le rang du tableau dans les classes
   Arcane::DefaultLayout, Arcane::RightLayout et Arcane::LefLayout
-  (\issue{436}).
+  (\pr{436}).
 - Rend obsolète les méthodes de Arcane::ModuleBuildInfo qui utilisent
   Arcane::IMesh. Il faut utiliser les méthodes qui utilisent
-  Arcane::MeshHandle. (\issue{460}).
+  Arcane::MeshHandle. (\pr{460}).
 - Change le type de retour de Arcane::IMeshBase::handle() pour ne pas
-  retourner de référence mais une valeur (\issue{489}).
+  retourner de référence mais une valeur (\pr{489}).
 - Utilise des classes de base spécifiques par type de service lors de
-  la génération des fichiers `axl` (\issue{472}).
+  la génération des fichiers `axl` (\pr{472}).
 
 ### Corrections:
 
 - Corrige inconsistence possible entre les connectivités conservées
   dans Arcane::ItemConnectivityList et
-  Arcane::mesh::IncrementalItemConnectivity (\issue{478}).
+  Arcane::mesh::IncrementalItemConnectivity (\pr{478}).
 
 ### Interne:
 
 - Supprime classes internes obsolètes Arcane::IAllocator,
   Arcane::DefaultAllocator, Arcane::DataVector1D,
   Arcane::DataVectorCommond1D et Arcane::Dictionary. Ces classes ne
-  sont plus utilisées depuis longtemps (\issue{422}).
+  sont plus utilisées depuis longtemps (\pr{422}).
 - Ajoute classe Arcane::TestLogger pour comparer les résultats des
-  tests par rapport à un fichier listing de référence (\issue{418}).
+  tests par rapport à un fichier listing de référence (\pr{418}).
 - Ajoute possibilité de conserver les instances de
   Arcane::ItemSharedInfo' dans
   Arcane::ItemInternalConnectivityList'. Cela permettra de supprimer
   une indirection lors des accès aux connectivités. Cette option est
-  pour l'instant uniquement utilisée en phase de test (\issue{371})
+  pour l'instant uniquement utilisée en phase de test (\pr{371})
 - Ajoute support pour l'appel Arccore::MessagePassing::mpLegacyProbe()
-  pour les différents modes d'échange de message disponibles (\issue{431})
+  pour les différents modes d'échange de message disponibles (\pr{431})
 - Refactorisation des classes Arcane::NumArray, Arcane::MDSpan,
   Arcane::ArrayExtents et Arcane::ArrayBounds pour unifier le code
   et supporter des dimensions à la fois statiques et dynamiques. La
   page \ref arcanedoc_core_types_numarray explique l'utilisation de
-  ces classes (\issue{426}, \issue{428}, \issue{433}, \issue{437}, \issue{440}).
+  ces classes (\pr{426}, \pr{428}, \pr{433}, \pr{437}, \pr{440}).
 - Utilise par défaut la Version 2 des synchronisations avec
   MPI. Cette version est la même que la version 1 utilisée auparavant
-  mais sans le support des types dérivés (\issue{434}).
+  mais sans le support des types dérivés (\pr{434}).
 - [accelerator] Unifie le lancement des noyaux de calcul créés par les
-  macros RUNCOMMAND_LOOP et RUNCOMMAND_ENUMERATE (\issue{438}).
+  macros RUNCOMMAND_LOOP et RUNCOMMAND_ENUMERATE (\pr{438}).
 - Unifie l'API de profiling entre les commandes
   (Arcane::Accelerator::RunCommand) et les énumérateurs classiques (via
   Arcane::IItemEnumeratorTracer). En fin de calcul l'affichage est trié
-  par ordre décroissant du temps passé dans chaque boucle (\issue{442}, \issue{443}).
+  par ordre décroissant du temps passé dans chaque boucle (\pr{442}, \pr{443}).
 - Commence le développement des classes Arcane::NumVector and
   Arcane::NumMatrix pour généraliser les types Arcane::Real2,
   Arcane::Real3, Arcane::Real2x2 et Arcane::Real3x3. Ces classes sont
-  pour l'instant à usage interne de %Arcane (\issue{441}).
+  pour l'instant à usage interne de %Arcane (\pr{441}).
 - Diverses optimisations dans les classes internes gérant la
-  connectivités et les itérateurs pour réduire leur taille (\issue{479}, \issue{482},
-  \issue{483}, \issue{484})
+  connectivités et les itérateurs pour réduire leur taille (\pr{479}, \pr{482},
+  \pr{483}, \pr{484})
 - Supprime utilisation de Arcane::ItemInternalList dans
-  Arcane::ItemVector et Arcane::ItemVectorView (\issue{486}, \issue{487}).
-- Supprime utilisation de Arcane::ItemInternalVectorView (\issue{498})
+  Arcane::ItemVector et Arcane::ItemVectorView (\pr{486}, \pr{487}).
+- Supprime utilisation de Arcane::ItemInternalVectorView (\pr{498})
 - Supprime utilisation de Arcane::ItemInternal dans de nombreuses
-  classes internes (\issue{488}, \issue{492}, \issue{500}, \issue{501})
+  classes internes (\pr{488}, \pr{492}, \pr{500}, \pr{501})
 - Supprime dans Arcane::MDSpan et Arcane::NumArray les indexeurs
   supplémentaires pour les classes Arcane::Real2, Arcane::Real3,
   Arcane::Real2x2 et Arcane::Real3x3. Ces indexeurs avaient été
-  ajoutés à des fin de test mais n'étaient pas utilisés (\issue{490}).
+  ajoutés à des fin de test mais n'étaient pas utilisés (\pr{490}).
 
 ### Arccore:
 
 - Corrige bug si la méthode
   Arccore::MessagePassing::Mpi::MpiAdapter::waitSomeRequestsMPI() est
-  appelée avec des requêtes déjà terminées (\issue{423}).
+  appelée avec des requêtes déjà terminées (\pr{423}).
 - Ajoute dans Arccore::Span et Arccore::Span un paramètre template
   indiquant le nombre d'éléments de la vue. Cela permettra de gérer
   des vues avec un nombre d'éléments connus à la compilation comme
-  cela est possible avec `std::span` (\issue{424}).
+  cela est possible avec `std::span` (\pr{424}).
 - Ajoute fonctions Arccore::MessagePassing::mpLegacyProbe() dont la
-  sémantique est similaire à `MPI_Iprobe` and `MPI_Probe` (\issue{430}).
-- Corrige détection de la requête vide (\issue{427}, \issue{429}).
+  sémantique est similaire à `MPI_Iprobe` and `MPI_Probe` (\pr{430}).
+- Corrige détection de la requête vide (\pr{427}, \pr{429}).
 
 ### Axlstar
 
-- Add support for using a specific mesh in service instance (\issue{451})
-- Remove support to build with `mono` (\issue{465}).
+- Add support for using a specific mesh in service instance (\pr{451})
+- Remove support to build with `mono` (\pr{465}).
 
 ___
 
@@ -144,54 +144,54 @@ ___
 ### Nouveautés/Améliorations:
 
 - Refonte complète de la documentation afin qu'elle soit plus
-  cohérente et visuellement plus agréable (\issue{378}, \issue{380}, \issue{382}, \issue{384},
-  \issue{388}, \issue{390}, \issue{393}, \issue{396})
+  cohérente et visuellement plus agréable (\pr{378}, \pr{380}, \pr{382}, \pr{384},
+  \pr{388}, \pr{390}, \pr{393}, \pr{396})
 - Ajoute un service de gestion de sorties au format CSV (voir
-  \ref arcanedoc_services_modules_simplecsvoutput) (\issue{277}, \issue{362})
+  \ref arcanedoc_services_modules_simplecsvoutput) (\pr{277}, \pr{362})
 - Ajoute possibilité de spécifier le mot clé `Auto` pour la variable
   CMake `ARCANE_DEFAULT_PARTITIONER`. Cela permet de choisir
   automatiquement lors de la configuration le partitionneur utilisé
-  en fonction de ceux disponibles (\issue{279}).
+  en fonction de ceux disponibles (\pr{279}).
 - Ajoute implémentation des synchronisations qui utilise la fonction
-  `MPI_Neighbor_alltoallv` (\issue{281}).
+  `MPI_Neighbor_alltoallv` (\pr{281}).
 - Réduction de l'empreinte mémoire utilisée pour la gestion des
   connectivités suite aux différentes modifications internes
-- Optimisations lors de l'initialisation (\issue{302}):
+- Optimisations lors de l'initialisation (\pr{302}):
   - Utilise `std::unordered_set` à la place de `std::set` pour les
     vérifications de duplication des uniqueId().
   - Lors de la création de maillage, ne vérifie la non-duplication des
     uniqueId() que en mode check.
 - Crée une classe Arcane::ItemInfoListView pour remplacer à terme
   Arcane::ItemInternalList et accéder aux informations des entités à
-  partir de leur localId() (\issue{305}).
+  partir de leur localId() (\pr{305}).
 - [accelerator] Ajoute le support des réductions Min/Max/Sum atomiques
-  pour les types `Int32`, `Int64` et `double` (\issue{353}).
+  pour les types `Int32`, `Int64` et `double` (\pr{353}).
 - [accelerator] Ajoute nouvel algorithme de réduction sans passer par
   des opérations atomiques. Cet algorithme n'est pas utilisé par
   défaut. Il faut l'activer en appelant
-  Arcane::Accelerator::Runner::setDeviceReducePolicy() (\issue{365}, \issue{379})
+  Arcane::Accelerator::Runner::setDeviceReducePolicy() (\pr{365}, \pr{379})
 - [accelerator] Ajoute possibilité de changer le nombre de threads par
   bloc lors du lancement d'une commande via
-  Arcane::Accelerator::RunCommand::addNbThreadPerBlock() (\issue{374})
+  Arcane::Accelerator::RunCommand::addNbThreadPerBlock() (\pr{374})
 - [accelerator] Ajoute support pour le pre-chargement (prefetching) de
-  conseils (advice) de zones mémoire (\issue{381})
+  conseils (advice) de zones mémoire (\pr{381})
 - [accelerator] Ajoute support pour récupérer les informations sur les
   accélérateurs disponibles et associer un accélérateur à une instance
-  de Arcane::Accelerator::Runner (\issue{399}).
+  de Arcane::Accelerator::Runner (\pr{399}).
 - Début des développements pour pouvoir voir une variable tableau sur
-  les entités comme une variable multi-dimensionnelle (\issue{335}).
+  les entités comme une variable multi-dimensionnelle (\pr{335}).
 - Ajoute un observable Arcane::MeshHandle::onDestroyObservable() pour
   pouvoir être notifié lors de la destruction d'une instance de
-  maillage Arcane::IMesh (\issue{336}).
+  maillage Arcane::IMesh (\pr{336}).
 - Ajoute méthode Arcane::mesh_utils::dumpSynchronizerTopologyJSON()
   pour sauver au format JSON la topologie de communication pour les
-  synchronisation (\issue{360}).
+  synchronisation (\pr{360}).
 - Ajoute méthode Arcane::ICartesianMesh::refinePatch3D() pour raffiner
-  un maillage 3D en plusieurs patchs AMR (\issue{386}).
+  un maillage 3D en plusieurs patchs AMR (\pr{386}).
 - Ajoute implémentation de lecture de compteurs hardware via l'API
-  perf de Linux (\issue{391}).
+  perf de Linux (\pr{391}).
 - Ajoute support pour le profiling automatiquement des commandes
-  lancées via RUNCOMMAND_ENUMERATE (\issue{392}, \issue{394}, \issue{395})
+  lancées via RUNCOMMAND_ENUMERATE (\pr{392}, \pr{394}, \pr{395})
 
 ### Changements:
 
@@ -202,19 +202,19 @@ ___
   `std::mdspan` et `std::mdarray` prévues pour les normes 2023 et 2026
   du C++. Il faut donc maintenant remplacer les dimensions en dur par
   les mots clés Arcane::MDDim1, Arcane::MDDim2, Arcane::MDDim3 ou
-  Arcane::MDDim4 (\issue{333})
+  Arcane::MDDim4 (\pr{333})
 - La méthode Arcane::NumArray::resize() n'appelle plus le constructeur
   par défaut pour les éléments du tableau. C'était déjà le cas pour
   les types simples (Arcane::Real, Arcane::Real3, ...) mais maintenant
   c'est le cas aussi pour les types utilisateurs. Cela permet
   d'appeler cette méthode lorsque la mémoire est allouée sur l'accélérateur.
-- Ajoute classe Arcane::ItemTypeId pour gérer le type de l'entité (\issue{294})
+- Ajoute classe Arcane::ItemTypeId pour gérer le type de l'entité (\pr{294})
 - Le type de l'entité est maintenant conservé sur un Arcane::Int16 au
-  lieu d'un Arcane::Int32 (\issue{294})
+  lieu d'un Arcane::Int32 (\pr{294})
 - Supprime méthodes obsolètes de Arcane::ItemVector, `MathUtils.h`,
   Arcane::IApplication, Arcane::Properties, Arcane::IItemFamily
-  (\issue{304}).
-- Refonte des classes gérant l'énumération des entités (\issue{308}, \issue{364}, \issue{366}).
+  (\pr{304}).
+- Refonte des classes gérant l'énumération des entités (\pr{308}, \pr{364}, \pr{366}).
   - Supprime la classe de base Arcane::ItemEnumerator de
     Arcane::ItemEnumeratorT. L'héritage est remplacé par un opérateur
     de conversion.
@@ -222,7 +222,7 @@ ___
   - Simplifie la gestion interne de l'opérateur `operator*` pour ne
     pas utiliser Arcane::ItemInternal.
 - Refonte de la gestion du fichier de configuration
-  `ArcaneConfig.cmake` géneré (\issue{318}):
+  `ArcaneConfig.cmake` géneré (\pr{318}):
   - N'exporte plus par défaut les packages externes dans
     `ArcaneTargets.cmake`. Le fichier `ArcaneConfig.cmake` fait
     maintenant des appels à la commande CMake `find_dependency`. La
@@ -234,21 +234,21 @@ ___
     variable est positionnée à `TRUE` définie par défaut.
 - Modifie le prototype de certaines méthodes de classes implémentant
   Arcane::IItemFamily pour utiliser Arcane::Item à la place de
-  Arcane::ItemInternal (\issue{311})
+  Arcane::ItemInternal (\pr{311})
 - Crée une classe Arcane::ItemFlags pour gérer les flags concernant
   les propriétés des objets qui étaient avant dans
-  Arcane::ItemInternal (\issue{312})
+  Arcane::ItemInternal (\pr{312})
 - Rend obsolète l'opérateur `operator->` pour la classe Arcane::Item
-  et les classes dérivées (\issue{313})
+  et les classes dérivées (\pr{313})
 - Change la valeur par défaut de la numérotation des faces dans le
   service de génération cartésien pour utiliser la numérotation
-  cartésienne (\issue{315})
+  cartésienne (\pr{315})
 - Modification de la signature des méthodes de
   Arcane::IItemFamilyModifier et Arcane::mesh::OneMeshItemAdder
   pour utiliser Arcane::ItemTypeId au lieu de Arcane::ItemTypeInfo
-  et Arcane::Item au lieu de Arcane::ItemInternal (\issue{322})
+  et Arcane::Item au lieu de Arcane::ItemInternal (\pr{322})
 - Supprime méthodes Arcane::Item::activeFaces() et
-  Arcane::Item::activeEdges() qui ne sont plus utilisées (\issue{351}).
+  Arcane::Item::activeEdges() qui ne sont plus utilisées (\pr{351}).
 - [C#] Ajoute la possibilité en fin de calcul de détruire les
   instances des différents gestionnaires comme lorsque le support de
   `.Net` n'est pas activé. Auparavant ces gestionnaires n'étaient
@@ -257,43 +257,43 @@ ___
   possible d'activer cette destruction en positionnant la variable
   d'environnement `ARCANE_DOTNET_USE_LEGACY_DESTROY` à la valeur
   `0`. Cela n'est pas actif par défaut car il peut rester des
-  problèmes avec certains services utilisateurs (\issue{337}).
+  problèmes avec certains services utilisateurs (\pr{337}).
 - [configuration] Il est maintenant nécessaire d'utiliser au moins la
-  version 3.21 de CMake pour compiler ou utiliser #Arcane (\issue{367}).
+  version 3.21 de CMake pour compiler ou utiliser #Arcane (\pr{367}).
 - Ajoute constructeur par déplacement (`std::move`) pour
-  Arcane::NumArray (\issue{372}).
+  Arcane::NumArray (\pr{372}).
 - [accelerator] Supprime les méthodes obsolètes de création de
-  Arcane::Accelerator::RunQueue et Arcane::Accelerator::Runner (\issue{397}).
+  Arcane::Accelerator::RunQueue et Arcane::Accelerator::Runner (\pr{397}).
 - Rend obsolète la classe Arcane::AtomicInt32. Il faut utiliser
-  la classe std::atomic<Int32> à la place (\issue{408}).
+  la classe std::atomic<Int32> à la place (\pr{408}).
 
 ### Corrections:
 
 - Corrige bug lors de la lecture des informations avec le service
-  `BasicReaderwriter` lorsqu'une compression est active (\issue{299})
+  `BasicReaderwriter` lorsqu'une compression est active (\pr{299})
 - Corrige bug introduit dans la version 3.6 qui changeait le nom du
   répertoire de sortie pour les comparaisons bit à bit avec le service
-  `ArcaneCeaVerifier` (\issue{300}).
+  `ArcaneCeaVerifier` (\pr{300}).
 - Corrige mauvais recalcul du nombre maximum d'entités connectées à
-  une entité dans le cas des particules (\issue{301})
+  une entité dans le cas des particules (\pr{301})
 
 ### Interne:
 
 - Simplifie l'implémentation des synchronisations fournissant un
-  mécanisme indépendant du type de la donnée (\issue{282}).
+  mécanisme indépendant du type de la donnée (\pr{282}).
 - Utilise des variables pour gérer certaines données sur les entités
   telles que Arcane::Item::owner(), Arcane::Item::itemTypeId(). Cela
   permettra à terme de rendre ces informations accessibles sur
-  accélérateurs (\issue{284}, \issue{285}, \issue{292}, \issue{295})
+  accélérateurs (\pr{284}, \pr{285}, \pr{292}, \pr{295})
 - Ajout d'une classe Arcane::ItemBase servant de classe de base pour
-  Arcane::Item et Arcane::ItemInternal (\issue{298}, \issue{363}).
+  Arcane::Item et Arcane::ItemInternal (\pr{298}, \pr{363}).
 - Suppression d'une indirection lorsqu'on accède aux informations des
   connectivités à partir d'une entité (par exemple
-  Arcane::Cell::node()) (\issue{298}).
+  Arcane::Cell::node()) (\pr{298}).
 - Simplification de la gestion des informations communes aux entités
   dans une famille pour qu'il n'y ait maintenant plus qu'une seule
-  instance commune de Arcane::ItemSharedInfo (\issue{290}, \issue{292}, \issue{297}).
-- Supprime certains usages de Arcane::ISubDomain (\issue{327})
+  instance commune de Arcane::ItemSharedInfo (\pr{290}, \pr{292}, \pr{297}).
+- Supprime certains usages de Arcane::ISubDomain (\pr{327})
   - Ajoute possibilité de créer une instance de Arcane::ServiceBuilder
     à partir d'un Arcane::MeshHandle.
   - Ajoute possibilité de créer une instance de
@@ -301,30 +301,30 @@ ___
 - Optimise les structures gérant le maillage cartésien pour ne plus
   avoir à conserver les instances de Arcane::ItemInternal*. Cela
   permet de réduire la consommation mémoire et potentiellement
-  d'améliorer les performances (\issue{345}).
+  d'améliorer les performances (\pr{345}).
 - Utilise des vues au lieu de Arccore::SharedArray pour les classes
   gérant les directions cartésiennes (Arcane::CellDirectionMng,
-  Arcane::FaceDirectionMng et Arcane::NodeDirectionMng) (\issue{347}).
+  Arcane::FaceDirectionMng et Arcane::NodeDirectionMng) (\pr{347}).
 - Utilise un compteur de référence pour gérer
-  Arccore::Ref<Arcane::ICaseFunction> (\issue{329}, \issue{356}).
+  Arccore::Ref<Arcane::ICaseFunction> (\pr{329}, \pr{356}).
 - Ajoute constructeur pour la classe Arcane::Item et ses classes
-  dérivées à partir d'un localId() et d'un Arcane::ItemSharedInfo (\issue{357}).
+  dérivées à partir d'un localId() et d'un Arcane::ItemSharedInfo (\pr{357}).
 - Mise à jour des références des projets C# pour utiliser les
-  dernières version des packages (\issue{359}).
+  dernières version des packages (\pr{359}).
 - Nettoyage des classes Arcane::Real2, Arcane::Real3, Arcane::Real2x2
   et Arcane::Real3x3 et ajoute constructeurs à partir d'un
-  Arcane::Real (\issue{370}, \issue{373}).
+  Arcane::Real (\pr{370}, \pr{373}).
 - Refonte partiel de la gestion de la concurrence pour mutualiser
-  certaines fonctionnalités (\issue{389}).
+  certaines fonctionnalités (\pr{389}).
 - Utilise un Arccore::UniqueArray pour conteneur de
   Arcane::ListImplT. Auparavant le conteneur était un simple tableau C
-  (\issue{407}).
+  (\pr{407}).
 - Dans Arcane::ItemGroupImpl, utilise Arcane::AutoRefT pour conserver
   des référence aux sous-groupes à la place d'un simple
   pointeur. Cela permet de garantir que les sous-groupes ne seront pas
   détruits tant que le parent associé existe.
-- Corrige divers avertissements signalés par coverity (\issue{402}, \issue{403},
-  \issue{405}, \issue{409}, \issue{410} )
+- Corrige divers avertissements signalés par coverity (\pr{402}, \pr{403},
+  \pr{405}, \pr{409}, \pr{410} )
 - [C#] Indique qu'il faut au moins la version 8.0 du langage.
 
 ### Arccon:
@@ -332,17 +332,17 @@ ___
 Utilise la version 1.5.0:
 
 - Add CMake functions to unify handling of packages  arccon Arccon
-  componentbuildBuild configuration (\issue{342}).
+  componentbuildBuild configuration (\pr{342}).
 
 ### Arccore:
 
 Utilise la version 2.0.12.0:
 
-- Remove some coverity warnings (\issue{400})
-- Use a reference counter for IMessagePassingMng (\issue{400})
-- Fix method asBytes() with non-const types (\issue{400})
-- Add a method in AbstractArray to resize without initializing (\issue{400})
-- Make class ThreadPrivateStorage deprecated (\issue{400})
+- Remove some coverity warnings (\pr{400})
+- Use a reference counter for IMessagePassingMng (\pr{400})
+- Fix method asBytes() with non-const types (\pr{400})
+- Add a method in AbstractArray to resize without initializing (\pr{400})
+- Make class ThreadPrivateStorage deprecated (\pr{400})
 
 ___
 ## Arcane Version 3.6.13 (06 juillet 2022) {#arcanedoc_news_changelog_version360}
@@ -350,57 +350,57 @@ ___
 ### Nouveautés/Améliorations:
 
 - Ajout d'une interface Arcane::IRandomNumberGenerator pour un service
-  de génération de nombre aléatoire (\issue{266})
+  de génération de nombre aléatoire (\pr{266})
 - Ajoute support des variables matériaux dans les fichiers `axl` pour
-  le générateur C# (\issue{273})
+  le générateur C# (\pr{273})
 - Supprime allocation de la connectivité des noeuds dans les anciennes
-  connectivités. Cela permet de réduire l'empreinte mémoire (\issue{231}).
+  connectivités. Cela permet de réduire l'empreinte mémoire (\pr{231}).
 - Ajoute pour les classes Arccore::Span, Arccore::ArrayView,
   Arccore::ConstArrayView ainsi que les vues sur les variable
   l'opérateur 'operator()' qui se comporte comme l'opérateur
   'operator[]'. Cela permet d'uniformiser les écritures entre les
-  différents conteneurs et les vues associées (\issue{223}, \issue{222}, \issue{205}).
+  différents conteneurs et les vues associées (\pr{223}, \pr{222}, \pr{205}).
 - Ajoute dans Arcane::ICartesianMeshGenerationInfo les informations
-  sur l'origine et la dimension du maillage cartésien (\issue{221}).
+  sur l'origine et la dimension du maillage cartésien (\pr{221}).
 - Ajoute en fin d'exécution des statistiques collectives sur les temps
   passés dans les opérations d'échange de message. Ces statistiques
   comprennent le temps minimal, maximal et moyen pour l'ensemble des
-  rangs passés dans ces appels (\issue{220})
+  rangs passés dans ces appels (\pr{220})
 - Ajoute deux implémentations supplémentaires pour la synchronisation
   des matériaux. La version 7 permet de faire une seule allocation
   lors de cette synchronisation et la version 8 permet de conserver
-  cette allocation d'une synchronisation à l'autre (\issue{219}).
+  cette allocation d'une synchronisation à l'autre (\pr{219}).
 - Ajoute implémentation des synchronisations en plusieurs phases
   permettant d'utiliser des tableaux de taille fixe et/ou de faire sur
-  une sous-partie des voisins (\issue{214}).
+  une sous-partie des voisins (\pr{214}).
 - Ajoute accès pour les accélérateurs à certaines méthodes de
-  Arcane::MDSpan (\issue{217}).
+  Arcane::MDSpan (\pr{217}).
 - Ajoute accès aux connectivités aux arêtes dans
-  Arcane::UnstructuredMeshConnectivityView (\issue{216})
+  Arcane::UnstructuredMeshConnectivityView (\pr{216})
 - Ajoute interface accessible via
   'Arcane::IMesh::indexedConnectivityMng()' permet de facilement
-  ajouter de nouvelles connectivités (\issue{201}).
+  ajouter de nouvelles connectivités (\pr{201}).
 - Ajout d'un nouvel algorithme de calcul des uniqueId() des arêtes
   (Edge) pour les maillages cartésiens
 - Ajoute support pour les classes de Arccore de l'opérateur
-  `operator[]` avec arguments multiples (\issue{241}).
+  `operator[]` avec arguments multiples (\pr{241}).
 - Possibilité de rendre thread-safe les appels à
   Arcane::Accelerator::makeQueue() en appelant la méthode
-  Arcane::Accelerator::Runner::setConcurrentQueueCreation() (\issue{242})
+  Arcane::Accelerator::Runner::setConcurrentQueueCreation() (\pr{242})
 
 ### Changements:
 
 - Scinde en deux composantes les classes gérant les matériaux. Une
   partie est maintenant dans la composante `arcane_core`. Ce
   changement est normalement transparent pour les utilisateurs
-  d'%Arcane et il n'y a pas besoin de modifier les sources (\issue{264},\issue{270},\issue{274})
+  d'%Arcane et il n'y a pas besoin de modifier les sources (\pr{264},\pr{270},\pr{274})
 - Compacte les références après un appel à
   Arcane::IItemFamily::compactItems(). Cela permet d'éviter de faire
   grossir inutilement le tableau des contenant les informations
   internes des entités. Comme ce changement peut induire une
   différence sur l'ordre de certaines opérations, il est possible de
   le désactiver en positionnant la variable d'environnement
-  `ARCANE_USE_LEGACY_COMPACT_ITEMS` à la valeur `1` (\issue{225}).
+  `ARCANE_USE_LEGACY_COMPACT_ITEMS` à la valeur `1` (\pr{225}).
 - Les types gérant le `localId()` associés aux entités (Arcane::NodeLocalId,
   Arcane::CellLocalId, ...) sont maintenant des `typedef` d'une classe
   template Arcane::ItemLocalIdT.
@@ -413,7 +413,7 @@ ___
   permet d'éviter des plantages lorsque des références aux variables
   existaient encore après cet appel. Cela peut notamment être le cas
   avec les extensions C# car les services et modules associés sont
-  gérés par un 'Garbage Collector' (\issue{200}).
+  gérés par un 'Garbage Collector' (\pr{200}).
 - Rend obsolète l'utilisation de Arcane::Timer::TimerVirtual. Les timers qui
   utilisent cette propriété se comportent comme s'ils avaient
   l'attribut Arcane::Timer::TimerReal.
@@ -423,15 +423,15 @@ ___
 - Corrige mauvaises valeurs de Arcane::IItemFamily::localConnectivityInfos()
   et Arcane::IItemFamily::globalConnectivityInfos() pour les connectivités
   autres que celles aux noeuds. Ce bug avait été introduit lors du
-  passage aux nouvelles connectivités (\issue{230}, \issue{27}).
-- Corrige divers bugs dans la version 3 de BasicReaderWriter (\issue{238})
+  passage aux nouvelles connectivités (\pr{230}, \pr{27}).
+- Corrige divers bugs dans la version 3 de BasicReaderWriter (\pr{238})
 
 ### Interne:
 
 - Utilise des variables pour conserver les champs Arcane::ItemInternal::owner() et
   Arcane::ItemInternal::flags() au lieu de conserver l'information dans
   Arcane::ItemSharedInfo. Cela permettra à terme de supprimer le champ
-  correspondant dans Arcane::ItemSharedInfo (\issue{227}).
+  correspondant dans Arcane::ItemSharedInfo (\pr{227}).
 
 Passage version 2.0.3.0 de Axlstar:
 
@@ -440,19 +440,19 @@ Passage version 2.0.3.0 de Axlstar:
 
 Passage version 2.0.11.0 de %Arccore:
 
-  - Add function `mpDelete()` to destroy `IMessagePassingMng` instances (\issue{258})
-  - Optimizations in class `String`(\issue{256},\issue{247})
+  - Add function `mpDelete()` to destroy `IMessagePassingMng` instances (\pr{258})
+  - Optimizations in class `String`(\pr{256},\pr{247})
       - Add move constructor String(String&&) and move copy operator operator=(String&&)
       - Make `String` destructor inline 
       - Make method `String::utf16()` deprecated (replaced by `StringUtils::asUtf16BE()`)
       - Methods `String::bytes()` and `String::format` no longer throws exceptions
       - Add a namespace `StringUtils` to contains utilitarian functions.
-  - Add support for multisubscript `operator[]` from C++23 (\issue{241})
+  - Add support for multisubscript `operator[]` from C++23 (\pr{241})
   - Add `operator()` to access values of `ArrayView`, `ArrayView2`,
     `ArrayView3`, `ArrayView4`, `Span`, `Span2` and `const` versions
-    of these views (\issue{223}).
-  - Add `SmallSpan2` implementation for 2D arrays whose `size_type` is an `Int32` (\issue{223}).
-  - Add `SpanImpl::findFirst()` method  (\issue{211})
+    of these views (\pr{223}).
+  - Add `SmallSpan2` implementation for 2D arrays whose `size_type` is an `Int32` (\pr{223}).
+  - Add `SpanImpl::findFirst()` method  (\pr{211})
   - Fix build on Ubuntu 22.04
 
 
@@ -472,47 +472,47 @@ ___
   (MPI_AllToAllv) au lieu de messages point à point lors de l´échange
   des entités suite à un équilibrage de charge. Ce mécanisme est
   temporairement accessible en spécifiant la variable d'environnement
-  `ARCANE_MESH_EXCHANGE_USE_COLLECTIVE` (\issue{138},\issue{154}).
+  `ARCANE_MESH_EXCHANGE_USE_COLLECTIVE` (\pr{138},\pr{154}).
 - Dans la comparaison bit à bit, ajoute possibilité de ne faire la
   comparaison qu'à la fin de l'exécution au lieu de le faire à chaque
   pas de temps. Cela se fait en spécifiant la variable d'environnement
   STDENV_VERIF_ONLY_AT_EXIT.
-- Ajoute générateur de maillages en nid d'abeille en 3D (\issue{149}).
+- Ajoute générateur de maillages en nid d'abeille en 3D (\pr{149}).
 - Ajoute support pour spécifier la disposition des éléments (layout)
   dans la classe Arcane::NumArray. Il existe actuellement deux
-  dispositions implémentées: LeftLayout et RightLayout (\issue{151})
+  dispositions implémentées: LeftLayout et RightLayout (\pr{151})
 - Ajoute méthode Arcane::Accelerator::RunQueue::copyMemory() pour faire des
-  copies mémoire asynchrones (\issue{152}).
+  copies mémoire asynchrones (\pr{152}).
 - Améliore le support ROCM/HIP. Le support des GPU AMD est maintenant
-  fonctionnellement équivalent à celui des GPU NVIDIA via Cuda (\issue{158}, \issue{159}).
+  fonctionnellement équivalent à celui des GPU NVIDIA via Cuda (\pr{158}, \pr{159}).
 - Ajoute support pour la mémoire punaisée (Host Pinned Memory) pour
-  CUDA et ROCM (\issue{147}).
+  CUDA et ROCM (\pr{147}).
 - Ajoute classe 'Arcane::Accelerator::RunQueueEvent' pour supporter
   les évènements sur les 'Arcane::Accelerator::RunQueue' et permettre
-  ainsi de synchroniser entre elle des files différentes (\issue{161}).
+  ainsi de synchroniser entre elle des files différentes (\pr{161}).
 
 ### Changements:
 
-- Supprime les macros plus utilisées ARCANE_PROXY et ARCANE_TRACE (\issue{145})
+- Supprime les macros plus utilisées ARCANE_PROXY et ARCANE_TRACE (\pr{145})
 
 ### Corrections:
 
 - Corrige mauvaise détection de la version OneTBB 2021.5 suite à la
-  suppression du fichier 'tbb_thread.h' (\issue{146})
+  suppression du fichier 'tbb_thread.h' (\pr{146})
 - Corrige certaines informations cartésiennes manquantes lorsqu'il n'y
-  a qu'une seule couche de maille en Y ou Z (\issue{162}).
+  a qu'une seule couche de maille en Y ou Z (\pr{162}).
 - Corrige implémentation manquante de 'Arccore::Span<T>::operator=='
-  lorsque le type `T` n'est pas constant (\issue{163}).
+  lorsque le type `T` n'est pas constant (\pr{163}).
 - Supprime quelques messages listings trop nombreux.
 
 ### Interne:
 
 - Utilise au lieu de Arccore::UniqueArray2 une implémentation
-  spécifique pour le conteneur de Arcane::NumArray (\issue{150}).
+  spécifique pour le conteneur de Arcane::NumArray (\pr{150}).
 - Utilise des `Int32` au lieu de `Int64` pour indexer les éléments
-  dans Arcane::NumArray (\issue{153})
+  dans Arcane::NumArray (\pr{153})
 - Ajoute `constexpr` et `noexcept` à certaines classes de Arccore
-  (\issue{156}).
+  (\pr{156}).
 - Passage version 2.0.9.0 de Arccore
 
 
@@ -527,8 +527,8 @@ ___
   directement la mémoire sur l'accélérateur. Auparavant seule la
   mémoire unifiée était disponible. L'énumération
   Arcane::eMemoryRessource et le type Arcane::IMemoryRessourceMng
-  permettent de gérer cela (\issue{111}, \issue{113}).
-- Amélioration mineures sur la documentation (\issue{117}) :
+  permettent de gérer cela (\pr{111}, \pr{113}).
+- Amélioration mineures sur la documentation (\pr{117}) :
   - ajout des chemins relatifs pour les fichiers d'en-tête.
   - ajout des classes et type issus de %Arccore
 - Ajoute nouvelle méthode de calcul des uniqueId() des faces
@@ -536,7 +536,7 @@ ___
   numérotation cartésienne des faces qui est cohérente avec celles des
   noeuds et des mailles. Pour l'utiliser, il faut spécifier l'option
   `<face-numbering-version>4</face-numbering-version>` dans le jeu de
-  données dans la balise du générateur de maillage (\issue{104}).
+  données dans la balise du générateur de maillage (\pr{104}).
 - Ajoute option dans le post-processeur %Arcane pour supprimer la
   sortie de dépouillement en fin de calcul.
 - Ajoute implémentation de Arcane::IParallelMng::gather() et
@@ -554,7 +554,7 @@ ___
 
 - Ajoute namespace '%Arcane::' aux cibles `CMake` fournit par
 %Arcane. Par exemple, la cible 'arcane_core' devient
-'Arcane::arcane_core'. Les anciens noms restent valides (\issue{120}).
+'Arcane::arcane_core'. Les anciens noms restent valides (\pr{120}).
 - Rend obsolète la conversion de Arcane::ItemEnumerator vers
   Arcane::ItemEnumeratorT. Cela permet d'éviter d'indexer par erreur
   une variable du maillage avec un énumérateur du mauvais type (par
@@ -563,10 +563,10 @@ ___
 ### Corrections:
 
 - Corrige opérateur 'operator=' pour la classe
-  'Arcane::CellDirectionMng' (\issue{109})
+  'Arcane::CellDirectionMng' (\pr{109})
 - Corrige conversion inutile `Int64` vers
   `Int32` dans la construction des maillages cartésiens ce qui
-  empêchait de dépasser 2^31 mailles (\issue{98})
+  empêchait de dépasser 2^31 mailles (\pr{98})
 - Corrige mauvais calcul des temps passés dans les
   synchronisations. Seul le temps de la dernière attente était utilisé
   au lieu du cumul (commit cf2cade961)
@@ -580,7 +580,7 @@ ___
 Passage version 2.0.8.1 de %Arccore:
 
   - Improve doxygen documentation for types et classes in `message_passing` component.
-  - Add functions in `message_passing` component to handle non blocking collectives (\issue{116}, \issue{118})
+  - Add functions in `message_passing` component to handle non blocking collectives (\pr{116}, \pr{118})
   - Add some '#defines'  to compile with [hipSYCL](https://github.com/illuhad/hipSYCL).
   - Update '_clang-format' file for version 13 of LLVM/Clang.
 
@@ -634,12 +634,12 @@ ___
 - Ajoute possibilité de compiler avec le standard C++20.
 
 Passage version 2.0.6.0 de %Arccore:
-- Update Array views (\issue{76})
+- Update Array views (\pr{76})
   - Add `constexpr` and `noexcept` to several methods of `Arccore::ArrayView`, `Arccore::ConstArrayView` and `Arccore::Span`
   - Add converters from `std::array`
-- Separate metadata from data in 'Arccore::AbstractArray' (\issue{72})
+- Separate metadata from data in 'Arccore::AbstractArray' (\pr{72})
 - Deprecate `Arccore::Array::clone()`, `Arccore::Array2::clone()` and make `Arccore::Array2`
-  constructors protected (\issue{71})
+  constructors protected (\pr{71})
 - Add support for compilation with AMD ROCM HIP (e5d008b1b79b59)
 - Add method `Arccore::ITraceMng::fatalMessage()` to throw a
   `Arccore::FatalErrorException` in a method marked `[[noreturn]]`
@@ -765,7 +765,7 @@ ___
 - Ajoute classe Arcane::StandaloneAcceleratorMng pour utiliser les
   accélérateurs sans initialiser une application.
 - Ajoute support pour paralléliser en multi-thread les boucles
-  imbriquées jusqu'à 4 niveaux (PR #10)
+  imbriquées jusqu'à 4 niveaux (\pr{10})
 
 ### Changements:
 

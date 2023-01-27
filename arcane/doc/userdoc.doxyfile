@@ -297,7 +297,7 @@ TAB_SIZE               = 2
 
 ALIASES                = "arcane{1}=\ref Arcane::\1 \"\1\"" \
                          "arccore{1}=\ref Arccore::\1 \"\1\"" \
-                         "issue{1}=[Issue #\1](https://github.com/arcaneframework/framework/issues/\1)"
+                         "pr{1}=[PR #\1](https://github.com/arcaneframework/framework/pull/\1)"
 
 # Set the OPTIMIZE_OUTPUT_FOR_C tag to YES if your project consists of C sources
 # only. Doxygen will then generate output that is more tailored for C. For
