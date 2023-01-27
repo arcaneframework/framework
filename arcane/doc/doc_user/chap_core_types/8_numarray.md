@@ -34,7 +34,7 @@ Avec:
   Arcane::LeftLayout. La valeur par défaut est Arcane::RightLayout qui
   correspond à l'agencement classique d'un tableau C multidimensionnel.
 
-## Création
+## Création {#arcanedoc_core_types_numarray_creation}
 
 Les types Arcane::MDDim1, Arcane::MDDim2, Arcane::MDDim3,
 Arcane::MDDim4, permettent de spécifier des instances dont toutes les
@@ -61,7 +61,7 @@ dimensions dynamiques de l'instance :
 
 \warning Le redimensionnement ne conserve pas les valeurs actuelles du tableau
 
-## Gestion mémoire
+## Gestion mémoire {#arcanedoc_core_types_numarray_memory_manager}
 
 Le type Arcane::eMemoryRessource permet de spécifier dans quel espace
 mémoire le tableau sera alloué. Par défaut, on utilise
@@ -76,7 +76,7 @@ l'hôte.
 
 \snippet NumArrayUnitTest.cc SampleNumArrayDeclarationsMemory
 
-## Indexation
+## Indexation {#arcanedoc_core_types_numarray_indexing}
 
 L'indexation des valeurs de Arcane::NumArray se fait via l'opérateur
 Arcane::NumArray::operator(). On peut soit utiliser une instance de
@@ -90,3 +90,14 @@ dimension.
 Par exemple :
 
 \snippet NumArrayUnitTest.cc SampleNumArrayDeclarationsIndexation
+
+____
+
+<div class="section_buttons">
+<span class="back_section_button">
+\ref arcanedoc_core_types_array_usage
+</span>
+<!-- <span class="next_section_button">
+\ref arcanedoc_core_types_axl_caseoptions
+</span> -->
+</div>

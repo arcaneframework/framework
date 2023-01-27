@@ -110,6 +110,21 @@ dl.deprecated dd {
   padding-left: 0px;
 }
 
+/**
+ * Pour le bouton d'extend.
+ */
+#nav-extend {
+  bottom: 12px;
+  right: 10px;
+  top: auto !important;
+  user-select: none;
+  position: absolute;
+  top: 5px;
+  right: 45px;
+  z-index: 0;
+  rotate: 90deg;
+}
+
 /*--------------------------------------------------------*/
 /*--------------------Partie Recherche--------------------*/
 

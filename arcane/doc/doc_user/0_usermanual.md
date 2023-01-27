@@ -2,8 +2,7 @@
 
 \mainpage %Arcane
 
-\warning La documentation a été récemment mise à jour. Il peut donc rester
-des erreurs, des bugs ou des éléments non finalisés.
+\image html cea_ifpen_logo.png "Logo du CEA et logo de l'IFPEN"
 
 Cette page contient la documentation pour les utilisateurs de la plate-forme %Arcane.
 

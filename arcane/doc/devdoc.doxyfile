@@ -61,7 +61,7 @@ PROJECT_BRIEF          = Documentation développeur
 # pixels and the maximum width should not exceed 200 pixels. Doxygen will copy
 # the logo to the output directory.
 
-PROJECT_LOGO           = @ARCANESRCROOT@/doc/theme/img/cea_ifpen_logo.png
+PROJECT_LOGO           = @ARCANESRCROOT@/doc/theme/img/arcane_logo.webp
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) path
 # into which the generated documentation will be written. If a relative path is
@@ -275,7 +275,9 @@ TAB_SIZE               = 2
 # with the commands \{ and \} for these it is advised to use the version @{ and
 # @} or use a double escape (\\{ and \\})
 
-ALIASES                = "arcane{1}=\ref Arcane::\1 \"\1\"" "arccore{1}=\ref Arccore::\1 \"\1\""
+ALIASES                = "arcane{1}=\ref Arcane::\1 \"\1\"" \
+                         "arccore{1}=\ref Arccore::\1 \"\1\"" \
+                         "pr{1}=[PR #\1](https://github.com/arcaneframework/framework/pull/\1)"
 
 # Set the OPTIMIZE_OUTPUT_FOR_C tag to YES if your project consists of C sources
 # only. Doxygen will then generate output that is more tailored for C. For
@@ -1025,7 +1027,7 @@ EXAMPLE_RECURSIVE      = NO
 # \image command).
 
 IMAGE_PATH             = @ARCANESRCROOT@/doc/specifs/images \
-                         @ARCANESRCROOT@/doc
+                         @ARCANESRCROOT@/doc/theme/img
 
 # The INPUT_FILTER tag can be used to specify a program that doxygen should
 # invoke to filter for each input file. Doxygen will invoke the filter program

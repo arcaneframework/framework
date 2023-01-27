@@ -29,7 +29,10 @@
 
 // Fonction permettant d'étendre l'item courant.
 var expandCurrent = (item) => {
-  item.querySelector("a").onclick();
+  // Doxygen étend l'item Arcane automatiquement.
+  if (item.innerText != "▼Arcane"){
+    item.querySelector("a").onclick();
+  }
 }
 // Fonction permettant d'attendre que l'item courant soit accessible.
 var waitItemExpandCurrent = () => {
@@ -141,16 +144,29 @@ var waitItemExpandLevelTwo = () => {
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Fonction permettant de changer le role du bouton rond dont personne
-// se sert par l'extension de niveau (fonction au-dessus).
+// Fonction permettant d'ajouter un bouton à coté du bouton de
+// synchronisation permettant l'extension de niveau (fonction au-dessus).
 var changeFunctionButton = (item) => {
-  item.onclick = () => {
+
+  // Image du bouton.
+  let image = document.createElement("img");
+  image.setAttribute("src", "../../sync_on.png");
+  image.setAttribute("title", "Etendre/Rétracter menus");
+
+  // Le div du bouton.
+  let divExtend = document.createElement("div");
+  divExtend.appendChild(image);
+  // L'id pour l'apparence CSS.
+  divExtend.setAttribute("id", "nav-extend");
+  divExtend.onclick = () => {
     waitItemExpandLevelTwo();
   };
+
+  item.appendChild(divExtend);
 };
 var waitItemChangeFunctionButton = () => {
   waitItem(
-    () => { return document.getElementById("nav-sync"); },
+    () => { return document.getElementById("nav-tree-contents"); },
     changeFunctionButton
   );
 };
