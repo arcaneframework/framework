@@ -21,5 +21,7 @@ Nombre de reférences à créer pour le test des références.
    </description>
   </simple>
 
+  <service-instance name="compressor" type="Arcane::IDataCompressor" optional="true" />
+
  </options>
 </service>
