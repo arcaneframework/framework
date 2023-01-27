@@ -22,4 +22,5 @@ set( ARCANE_SOURCES
   NumArrayViews.h
   CommonCudaHipReduceImpl.h
   MaterialVariableViews.h
+  RunCommandMaterialEnumerate.h
 )
