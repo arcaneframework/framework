@@ -144,8 +144,8 @@ var waitItemExpandLevelTwo = () => {
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Fonction permettant de changer le role du bouton rond dont personne
-// se sert par l'extension de niveau (fonction au-dessus).
+// Fonction permettant d'ajouter un bouton à coté du bouton de
+// synchronisation permettant l'extension de niveau (fonction au-dessus).
 var changeFunctionButton = (item) => {
 
   // Image du bouton.
