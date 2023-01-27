@@ -202,7 +202,7 @@ ____
 <span class="back_section_button">
 \ref arcanedoc_core_types_timeloop
 </span>
-<!-- <span class="next_section_button">
-\ref arcanedoc_core_types_axl_caseoptions
-</span> -->
+<span class="next_section_button">
+\ref arcanedoc_core_types_numarray
+</span>
 </div>
