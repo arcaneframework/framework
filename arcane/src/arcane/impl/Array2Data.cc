@@ -140,6 +140,7 @@ class Array2DataT
  public:
 
   IArray2DataInternalT<DataType>* _internal() override { return m_internal; }
+  IDataInternal* _commonInternal() override { return m_internal; }
 
  public:
 

@@ -109,6 +109,7 @@ public:
  public:
 
   IArrayDataInternalT<DataType>* _internal() override { return m_internal; }
+  IDataInternal* _commonInternal() override { return m_internal; }
 
  public:
 
