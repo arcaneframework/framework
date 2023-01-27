@@ -33,7 +33,8 @@ class DataCompressionBuffer
  public:
 
   UniqueArray<std::byte> m_buffer;
-  Int64 m_original_size = 0;
+  Int64 m_original_dim1_size = 0;
+  Int64 m_original_dim2_size = 0;
   IDataCompressor* m_compressor = nullptr;
 };
 

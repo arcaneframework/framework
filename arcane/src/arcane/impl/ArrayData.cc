@@ -14,6 +14,7 @@
 #include "arccore/base/ReferenceCounterImpl.h"
 #include "arccore/base/Ref.h"
 
+#include "arcane/utils/IDataCompressor.h"
 #include "arcane/utils/Real2.h"
 #include "arcane/utils/Real2x2.h"
 #include "arcane/utils/Real3.h"
@@ -33,9 +34,9 @@
 #include "arcane/datatype/DataStorageTypeInfo.h"
 #include "arcane/datatype/DataTypeTraits.h"
 
-#include "arcane/ISerializer.h"
-#include "arcane/IData.h"
-#include "arcane/IDataVisitor.h"
+#include "arcane/core/ISerializer.h"
+#include "arcane/core/IData.h"
+#include "arcane/core/IDataVisitor.h"
 
 #include "arcane/core/internal/IDataInternal.h"
 
@@ -181,6 +182,29 @@ class ArrayDataT<DataType>::Impl
   void shrink() const override { m_p->m_value.shrink(); }
   void resize(Integer new_size) override { m_p->m_value.resize(new_size);}
   void dispose() override { m_p->m_value.dispose(); }
+  bool compressAndClear(DataCompressionBuffer& buf) override
+  {
+    IDataCompressor* compressor = buf.m_compressor;
+    if (!compressor)
+      return false;
+    Span<const DataType> values = m_p->m_value;
+    Span<const std::byte> bytes = asBytes(values);
+    compressor->compress(bytes,buf.m_buffer);
+    buf.m_original_dim1_size = values.size();
+    m_p->m_value.clear();
+    m_p->m_value.shrink();
+    return true;
+  }
+  bool decompressAndFill(DataCompressionBuffer& buf) override
+  {
+    IDataCompressor* compressor = buf.m_compressor;
+    if (!compressor)
+      return false;
+    m_p->m_value.resize(buf.m_original_dim1_size);
+    Span<DataType> values = m_p->m_value;
+    compressor->decompress(buf.m_buffer,asWritableBytes(values));
+    return true;
+  }
 
  private:
 
