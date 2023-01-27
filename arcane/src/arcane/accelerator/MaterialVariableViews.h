@@ -14,17 +14,6 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*
-#include "arcane/ItemTypes.h"
-#include "arcane/ItemLocalId.h"
-
-#include "arcane/materials/IMeshMaterial.h"
-#include "arcane/materials/MeshMaterialVariableRef.h"
-#include "arcane/materials/EnvCellVector.h"
-#include "arcane/materials/MatConcurrency.h"
-
-#include "arcane/accelerator/AcceleratorGlobal.h"
-#include "arcane/accelerator/ViewsCommon.h"
-*/
 
 #include <arcane/core/materials/IMeshMaterialVariable.h>
 #include <arcane/core/materials/MatItem.h>
