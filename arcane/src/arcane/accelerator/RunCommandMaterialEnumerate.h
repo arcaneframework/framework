@@ -7,7 +7,7 @@
 /*---------------------------------------------------------------------------*/
 /* RunCommandMaterialEnumerate.h                               (C) 2000-2022 */
 /*                                                                           */
-/* Macros pour exécuter une boucle sur une liste d'entités.                  */
+/* Helpers et macros pour exécuter une boucle sur une liste d'envcell        */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_ACCELERATOR_RUNCOMMANDMATERIALENUMERATE_H
 #define ARCANE_ACCELERATOR_RUNCOMMANDMATERIALENUMERATE_H
@@ -17,8 +17,8 @@
 #include <arcane/core/materials/ComponentItemVectorView.h>
 #include <arcane/core/materials/MaterialsCoreGlobal.h>
 #include <arcane/core/materials/MatItem.h>
-
-//#include "arcane/accelerator/RunCommandEnumerate.h"
+#include <arcane/accelerator/RunCommand.h>
+#include <arcane/accelerator/RunCommandLaunchInfo.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -83,7 +83,7 @@ using ComponentItemInternalPtr = ComponentItemInternal*;
  * Spécialization <MatVarIndex, CellLocalId> de la fonction de lancement de kernel pour GPU
  */ 
 template<typename Lambda> __global__
-void doIndirectGPULambda<EnvCell,Lambda>(SmallSpan<const MatVarIndex> mvis,SmallSpan<const Int32> cids,Lambda func)
+void doIndirectGPULambda<Lambda>(SmallSpan<const MatVarIndex> mvis,SmallSpan<const Int32> cids,Lambda func)
 {
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
@@ -107,7 +107,7 @@ void doIndirectGPULambda<EnvCell,Lambda>(SmallSpan<const MatVarIndex> mvis,Small
  * Spécialization EnvCellVectorView de la fonction de lancement de kernel en MT
  */ 
 template<typename Lambda>
-void _doIndirectThreadLambda<EnvCell,Lambda>(const EnvCellVectorView& sub_items,Lambda func)
+void _doIndirectThreadLambda(const EnvCellVectorView& sub_items,Lambda func)
 {
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
@@ -124,7 +124,7 @@ void _doIndirectThreadLambda<EnvCell,Lambda>(const EnvCellVectorView& sub_items,
  *        Spécialization pour les EnvCellVectorView
  */
 template<typename Lambda> void
-_applyItems<EnvCell,Lambda>(RunCommand& command,const EnvCellVectorView& items,const Lambda& func)
+_applyEnvCells(RunCommand& command,const EnvCellVectorView& items,const Lambda& func)
 {
   // TODO: fusionner la partie commune avec 'applyLoop'
   Int32 vsize = static_cast<Int32>(items.nbItem());
@@ -161,7 +161,7 @@ _applyItems<EnvCell,Lambda>(RunCommand& command,const EnvCellVectorView& items,c
       */
 
       // TODO: utiliser cudaLaunchKernel() à la place.
-      impl::doIndirectGPULambda<EnvCell,Lambda> <<<b,t,0,*s>>>(mvis,cids,std::forward<Lambda>(func));
+      impl::doIndirectGPULambda <<<b,t,0,*s>>>(mvis,cids,std::forward<Lambda>(func));
     }
 #else
     ARCANE_FATAL("Requesting CUDA kernel execution but the kernel is not compiled with CUDA compiler");
@@ -209,7 +209,7 @@ _applyItems<EnvCell,Lambda>(RunCommand& command,const EnvCellVectorView& items,c
       arcaneParallelForeach(items,
                             [&](EnvCellVectorView sub_items)
                             {
-                              impl::_doIndirectThreadLambda<EnvCell,Lambda>(sub_items,func);
+                              impl::_doIndirectThreadLambda(sub_items,func);
                             });
     }
     break;
@@ -229,9 +229,9 @@ _applyItems<EnvCell,Lambda>(RunCommand& command,const EnvCellVectorView& items,c
 
 ///! Spécialization du run pour les EnvCellVectorView
 template<typename Lambda> void
-run<EnvCell,Lambda>(RunCommand& command,const EnvCellVectorView& items,const Lambda& func)
+run(RunCommand& command,const EnvCellVectorView& items,const Lambda& func)
 {
-  impl::_applyItems<EnvCell,Lambda>(command,items,std::forward<Lambda>(func));
+  impl::_applyEnvCells(command,items,std::forward<Lambda>(func));
 }
 
 /*---------------------------------------------------------------------------*/

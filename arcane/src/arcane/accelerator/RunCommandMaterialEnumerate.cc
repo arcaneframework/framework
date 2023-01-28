@@ -5,13 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunCommRunCommandMaterialEnumerate.cc                       (C) 2000-2022 */
+/* RunCommandMaterialEnumerate.cc                              (C) 2000-2022 */
 /*                                                                           */
-/* Informations pour l'exécution d'une 'RunCommand'.                         */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/accelerator/RunCommRunCommandMaterialEnumerate.h"
+#include "arcane/accelerator/RunCommandMaterialEnumerate.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

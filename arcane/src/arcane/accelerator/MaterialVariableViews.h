@@ -13,7 +13,6 @@
 #define ARCANE_ACCELERATOR_MATERIALVARIABLEVIEWS_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*
 
 #include <arcane/core/materials/IMeshMaterialVariable.h>
 #include <arcane/core/materials/MatItem.h>
