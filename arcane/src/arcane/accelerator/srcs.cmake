@@ -2,28 +2,27 @@ set( ARCANE_SOURCES
   Accelerator.cc
   Accelerator.h
   AcceleratorGlobal.h
-  Reduce.h
-  Runner.h
-  RunCommandLoop.h
-  RunCommandEnumerate.h
-  RunCommand.h
-  RunCommandLaunchInfo.h
-  RunCommandLaunchInfo.cc
+  CommonCudaHipReduceImpl.h
   IReduceMemoryImpl.h
   IRunQueueRuntime.h
   IRunQueueStream.h
-  RunQueueInternal.h
-  RunQueueInternal.cc
-  RunQueue.h
-  VariableViews.h
-  ViewsCommon.h
-  Views.h
+  MaterialVariableViews.h
   NumArray.h
   NumArrayViews.h
-  CommonCudaHipReduceImpl.h
-  MaterialVariableViews.h
-<<<<<<< HEAD
+  Reduce.h
+  RunCommand.h
+  RunCommandEnumerate.h
+  RunCommandLaunchInfo.cc
+  RunCommandLaunchInfo.h
+  RunCommandLoop.h
+  RunCommandMaterialEnumerate.cc
   RunCommandMaterialEnumerate.h
-=======
->>>>>>> 207124f0b385b8da90bb0c9b392e8b63a3744a8d
+  Runner.h
+  RunQueue.h
+  RunQueueImpl.h
+  RunQueueInternal.cc
+  RunQueueInternal.h
+  VariableViews.h
+  Views.h
+  ViewsCommon.h
 )
