@@ -38,7 +38,7 @@ struct MeshMaterialBackup::VarData
  public:
 
   VarData() = default;
-  VarData(Ref<IData> d) : data(d) {}
+  explicit VarData(Ref<IData> d) : data(d) {}
 
  public:
 
