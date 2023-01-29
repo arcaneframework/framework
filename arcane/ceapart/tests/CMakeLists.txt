@@ -61,7 +61,10 @@ if (Parmetis_FOUND AND Lima_FOUND)
   ARCANE_ADD_TEST_PARALLEL(case_part_metis_2_mli testCasePart-2.arc 4)
 endif ()
 
-ARCANE_ADD_TEST(material1 testMaterial-1.arc "-m 10")
+arcane_add_test(material1 testMaterial-1.arc "-m 10")
+if (LZ4_FOUND)
+  arcane_add_test_sequential(material1_lz4 testMaterial-1.arc "-m 10" "-We,ARCANE_MATERIAL_DATA_COMPRESSOR_NAME,LZ4DataCompressor")
+endif()
 arcane_add_test_sequential_task(material1 testMaterial-1.arc 4 "-m 10")
 
 # Les trois tests suivants doivent faire le même nombre d'itérations et avoir le

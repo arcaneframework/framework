@@ -1,20 +1,24 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialBackup.cc                                       (C) 2000-2022 */
+/* MeshMaterialBackup.cc                                       (C) 2000-2023 */
 /*                                                                           */
 /* Sauvegarde/restauration des valeurs des matériaux et milieux.             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/IVariable.h"
-#include "arcane/IData.h"
-#include "arcane/IMesh.h"
-#include "arcane/IItemFamily.h"
+#include "arcane/utils/IDataCompressor.h"
+
+#include "arcane/core/IVariable.h"
+#include "arcane/core/IData.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/ServiceBuilder.h"
+#include "arcane/core/internal/IDataInternal.h"
 
 #include "arcane/materials/MeshMaterialBackup.h"
 #include "arcane/materials/IMeshMaterialMng.h"
@@ -29,13 +33,20 @@
 namespace Arcane::Materials
 {
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-MeshMaterialBackup::VarData::
-~VarData()
+struct MeshMaterialBackup::VarData
 {
-}
+ public:
+
+  VarData() = default;
+  explicit VarData(Ref<IData> d) : data(d) {}
+
+ public:
+
+  Ref<IData> data;
+  Integer data_index = 0;
+  DataCompressionBuffer m_data_buffer;
+  Ref<IDataCompressor> m_compressor;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -46,6 +57,7 @@ MeshMaterialBackup(IMeshMaterialMng* mm,bool use_unique_ids)
 , m_material_mng(mm)
 , m_use_unique_ids(use_unique_ids)
 {
+  m_compressor_service_name = mm->dataCompressorServiceName();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -76,6 +88,14 @@ restoreValues()
   _restore();
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialBackup::
+setCompressorServiceName(const String& name)
+{
+  m_compressor_service_name = name;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -99,6 +119,9 @@ _isValidComponent(IMeshMaterialVariable* var,IMeshComponent* component)
 void MeshMaterialBackup::
 _save()
 {
+  if (!m_compressor_service_name.null())
+    m_use_v2 = true;
+
   ConstArrayView<MeshMaterialVariableIndexer*> indexers = m_material_mng->variablesIndexer();
 
   Integer nb_index = indexers.size();
@@ -126,12 +149,63 @@ _save()
     m_saved_data.insert(std::make_pair(mv,vd));
   }
 
+  if (m_use_v2)
+    _saveV2();
+  else
+    _saveV1();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialBackup::
+_saveV1()
+{
   ENUMERATE_COMPONENT(ic,m_material_mng->components()){
     IMeshComponent* c = *ic;
     _saveIds(c);
     for( IMeshMaterialVariable* var : m_vars ){
       if (_isValidComponent(var,c))
         var->_saveData(c,m_saved_data[var]->data.get());
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialBackup::
+_saveV2()
+{
+  IMesh* mesh = m_material_mng->mesh();
+  ServiceBuilder<IDataCompressor> sb(mesh->handle().application());
+  Ref<IDataCompressor> compressor_ref;
+  if (!m_compressor_service_name.empty())
+    compressor_ref = sb.createReference(m_compressor_service_name);
+  IDataCompressor* compressor = compressor_ref.get();
+  auto components = m_material_mng->components();
+
+  ENUMERATE_COMPONENT(ic,components){
+    IMeshComponent* c = *ic;
+    _saveIds(c);
+  }
+
+  for( IMeshMaterialVariable* var : m_vars ){
+    VarData* var_data = m_saved_data[var];
+    IData* saved_data = var_data->data.get();
+    if (compressor){
+      var_data->m_compressor = compressor_ref;
+      var_data->m_data_buffer.m_compressor = compressor;
+    }
+    ENUMERATE_COMPONENT(ic,components){
+      IMeshComponent* c = *ic;
+      if (_isValidComponent(var,c)){
+        var->_saveData(c,saved_data);
+      }
+    }
+    if (compressor){
+      IDataInternal* d = saved_data->_commonInternal();
+      d->compressAndClear(var_data->m_data_buffer);
     }
   }
 }
@@ -168,10 +242,6 @@ _saveIds(IMeshComponent* component)
 void MeshMaterialBackup::
 _restore()
 {
-  // Si on utilise les uniqueId(), alors les localId() peuvent être nuls
-  // si on a supprimé des mailles.
-  bool allow_null_id = m_use_unique_ids;
-
   if (m_use_unique_ids){
     info(4) << "RESTORE using uniqueIds()";
     IItemFamily* cell_family = m_material_mng->mesh()->cellFamily();
@@ -187,12 +257,61 @@ _restore()
     }
   }
 
+  if (m_use_v2)
+    _restoreV2();
+  else
+    _restoreV1();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialBackup::
+_restoreV1()
+{
+  // Si on utilise les uniqueId(), alors les localId() peuvent être nuls
+  // si on a supprimé des mailles.
+  bool allow_null_id = m_use_unique_ids;
+
   ENUMERATE_COMPONENT(ic,m_material_mng->components()){
     IMeshComponent* c = *ic;
     Int32ConstArrayView ids = m_ids_array[c];
     info(4) << "RESTORE for component name=" << c->name() << " nb=" << ids.size();
-    for( IMeshMaterialVariable* var : m_vars.range() ){
+    for( IMeshMaterialVariable* var : m_vars ){
       VarData* vd = m_saved_data[var];
+      if (_isValidComponent(var,c)){
+        var->_restoreData(c,vd->data.get(),vd->data_index,ids,allow_null_id);
+        vd->data_index += ids.size();
+      }
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialBackup::
+_restoreV2()
+{
+  // Si on utilise les uniqueId(), alors les localId() peuvent être nuls
+  // si on a supprimé des mailles.
+  bool allow_null_id = m_use_unique_ids;
+
+  auto components = m_material_mng->components();
+
+  for( IMeshMaterialVariable* var : m_vars ){
+    VarData* vd = m_saved_data[var];
+    // Décompresse les données si nécessaire
+    IDataCompressor* compressor = vd->m_data_buffer.m_compressor;
+    if (compressor){
+      info(5) << "RESTORE decompress variable name=" << var->name();
+      IDataInternal* d = vd->data->_commonInternal();
+      d->decompressAndFill(vd->m_data_buffer);
+    }
+    info(4) << "RESTORE for variable name=" << var->name();
+    ENUMERATE_COMPONENT(ic,components){
+      IMeshComponent* c = *ic;
+      Int32ConstArrayView ids = m_ids_array[c];
       if (_isValidComponent(var,c)){
         var->_restoreData(c,vd->data.get(),vd->data_index,ids,allow_null_id);
         vd->data_index += ids.size();

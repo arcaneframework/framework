@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IMeshMaterialMng.h                                          (C) 2000-2022 */
+/* IMeshMaterialMng.h                                          (C) 2000-2023 */
 /*                                                                           */
 /* Interface du gestionnaire des matériaux d'un maillage.                    */
 /*---------------------------------------------------------------------------*/
@@ -15,18 +15,9 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/IFunctorWithArgument.h"
+
 #include "arcane/core/materials/MaterialsCoreGlobal.h"
-#include "arcane/ItemTypes.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-namespace Arcane
-{
-class IMesh;
-class IVariable;
-class MeshHandle;
-}
+#include "arcane/core/ItemTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -280,6 +271,16 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
 
   //! Nom du gestionnaire
   virtual const String& name() const =0;
+
+  /*!
+   * \ brief Nom du service utilisé pour compresser les données lors du forceRecompute().
+   *
+   * Si null (le défaut), aucune compression n'est effectuée.
+   */
+  virtual void setDataCompressorServiceName(const String& name) =0;
+
+  //! virtual Nom du service utilisé pour compresser les données
+  virtual String dataCompressorServiceName() const =0;
 
   /*!
    * \brief Implémentation du modificateur.
