@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialMng.cc                                          (C) 2000-2022 */
+/* MeshMaterialMng.cc                                          (C) 2000-2023 */
 /*                                                                           */
 /* Gestionnaire des matériaux et milieux d'un maillage.                      */
 /*---------------------------------------------------------------------------*/
@@ -26,9 +26,7 @@
 #include "arcane/VariableTypes.h"
 #include "arcane/ItemPrinter.h"
 #include "arcane/IVariableMng.h"
-#include "arcane/ISubDomain.h"
 #include "arcane/Properties.h"
-#include "arcane/ServiceBuilder.h"
 #include "arcane/ObserverPool.h"
 
 #include "arcane/core/materials/IMeshMaterialVariableFactoryMng.h"
@@ -223,6 +221,17 @@ build()
     info() << "Set material variable synchronize version to "
            << "'" << m_synchronize_variable_version << "'";
   }
+
+  // Choix du service de compression
+  {
+    String env_name = "ARCANE_MATERIAL_DATA_COMPRESSOR_NAME";
+    String env_value = platform::getEnvironmentVariable(env_name);
+    if (!env_value.null()){
+      info() << "Use serivice '" << env_value << "' for material data compression";
+      m_data_compressor_service_name = env_value;
+    }
+  }
+
 
   m_exchange_mng->build();
   // Si les traces des énumérateurs sur les entités sont actives, active celles
@@ -485,6 +494,15 @@ setAllocateScalarEnvironmentVariableAsMaterial(bool v)
   _checkEndCreate();
   m_is_allocate_scalar_environment_variable_as_material = v;
   info() << "Setting AllocateScalarEnvironmentVariableAsMaterial to v=" << v;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void  MeshMaterialMng::
+setDataCompressorServiceName(const String& name)
+{
+  m_data_compressor_service_name = name;
 }
 
 /*---------------------------------------------------------------------------*/
