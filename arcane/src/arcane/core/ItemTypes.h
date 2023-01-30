@@ -306,6 +306,27 @@ using CellConnectedListView = ItemConnectedListViewT<Cell>;
  */
 using DoFConnectedListView = ItemConnectedListViewT<DoF>;
 
+#define ARCANE_USE_SPECIFIC_ITEMCONNECTED
+#ifdef ARCANE_USE_SPECIFIC_ITEMCONNECTED
+//! Liste de noeuds connectés
+using NodeConnectedListViewType = NodeConnectedListView;
+//! Liste d'arêtes connectées
+using EdgeConnectedListViewType = EdgeConnectedListView;
+//! Liste de faces connectées
+using FaceConnectedListViewType = FaceConnectedListView;
+//! Liste de mailles connectées
+using CellConnectedListViewType = CellConnectedListView;
+#else
+//! Liste de noeuds connectés
+using NodeConnectedListViewType = NodeVectorView;
+//! Liste d'arêtes connectées
+using EdgeConnectedListViewType = EdgeVectorView;
+//! Liste de faces connectées
+using FaceConnectedListViewType = FaceVectorView;
+//! Liste de mailles connectées
+using CellConnectedListViewType = CellVectorView;
+#endif
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

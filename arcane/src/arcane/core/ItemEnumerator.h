@@ -306,6 +306,16 @@ enumerator() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template<int Extent>
+inline ItemEnumerator ItemConnectedListView<Extent>::
+enumerator() const
+{
+  return ItemEnumerator(m_shared_info,m_local_ids);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 inline ItemLocalId::
 ItemLocalId(ItemEnumerator enumerator)
 : m_local_id(enumerator.asItemLocalId())

@@ -27,7 +27,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Vue sur un vecteur d'entités.
+ * \brief Vue sur une liste d'entités connectées à une autre entité.
  *
  * \warning la vue n'est valide que tant que le tableau associé n'est
  * pas modifié et que la famille d'entité associée à ce tableau n'est
@@ -51,11 +51,11 @@ class ItemConnectedListView
  public:
 
   ItemConnectedListView() = default;
-  ItemConnectedListView(const impl::ItemIndexedListView<DynExtent>& view)
-  : m_local_ids(view.constLocalIds()), m_shared_info(view.m_shared_info) { }
 
  protected:
 
+  ItemConnectedListView(const impl::ItemIndexedListView<DynExtent>& view)
+  : m_local_ids(view.constLocalIds()), m_shared_info(view.m_shared_info) { }
   ItemConnectedListView(ItemSharedInfo* shared_info,ConstArrayView<Int32> local_ids)
   : m_local_ids(local_ids), m_shared_info(shared_info) { }
 
@@ -78,6 +78,8 @@ class ItemConnectedListView
   {
     return const_iterator(m_shared_info,m_local_ids.data());
   }
+
+  // TODO: changer le type de l'iterateur
   const_iterator end() const
   {
     return const_iterator(m_shared_info,m_local_ids.data()+this->size());
@@ -85,7 +87,7 @@ class ItemConnectedListView
 
  public:
 
-  // TODO Rendre privés
+  // TODO Rendre obsolète
  
   //! Tableau des numéros locaux des entités
   Int32ConstArrayView localIds() const { return m_local_ids; }
@@ -97,26 +99,19 @@ class ItemConnectedListView
 
  public:
 
+  // TODO: rendre obsolète
   inline ItemEnumerator enumerator() const;
 
  protected:
   
   ItemIndexArrayView m_local_ids;
   ItemSharedInfo* m_shared_info = ItemSharedInfo::nullInstance();
-
- private:
-
-  void _init(ItemInternalArrayView items)
-  {
-    m_shared_info = (size()>0 && !items.empty()) ? ItemInternalCompatibility::_getSharedInfo(items[0]) : ItemSharedInfo::nullInstance();
-  }
-  void _init2(IItemFamily* family);
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Vue sur un tableau typé d'entités.
+ * \brief Vue sur une liste d'entités connectées à une autre.
  */
 template<typename ItemType,int Extent>
 class ItemConnectedListViewT
@@ -127,6 +122,11 @@ class ItemConnectedListViewT
   friend class ItemEnumerator;
   friend class Item;
   friend class ItemWithNodes;
+  friend class Edge;
+  friend class Face;
+  friend class Cell;
+  friend class Particle;
+  friend class DoF;
 
   using BaseClass = ItemConnectedListView<Extent>;
   using BaseClass::m_shared_info;
@@ -153,6 +153,7 @@ class ItemConnectedListViewT
 
  public:
 
+  // TODO: rendre obsolète
   operator ItemVectorViewT<ItemType> () const { return ItemVectorViewT<ItemType>(m_shared_info,m_local_ids); }
 
  public:
@@ -164,6 +165,7 @@ class ItemConnectedListViewT
 
  public:
   
+  // TODO: rendre obsolète
   inline ItemEnumeratorT<ItemType> enumerator() const
   {
     return ItemEnumeratorT<ItemType>(m_shared_info,m_local_ids.localIds());
