@@ -117,7 +117,35 @@ namespace Arcane.AxlDoc
       o.AcceptChildren (otc, x => m_config.private_app_pages.Filter(x));
 
       if (m_config.max_display_size > 0 && otc.NbTotalOption > m_config.max_display_size) {
-        _AddBriefDescription (o, true);
+
+        _WriteHtmlOnly(m_full_stream, "<div class=\"ComplexOptionInfoBlock\">");
+        _WriteHtmlOnly(m_full_stream, "<h2 class=\"memtitle\" style=\"border-color: purple;\">");
+
+        _WriteColoredTitle("purple", o, true);
+
+        _WriteHtmlOnly(m_full_stream, "</h2>");
+        _WriteHtmlOnly(m_full_stream, "<div class=\"memitem\" style=\"border-color: purple;\">");
+        _WriteHtmlOnly(m_full_stream, "<div class=\"memproto\">");
+
+        _AddFullDescription(o);
+
+        _WriteHtmlOnly(m_full_stream, "</div>");
+        _WriteHtmlOnly(m_full_stream, "<div class=\"memdoc\">");
+
+        if(m_code_info.Language == "fr"){
+          _WriteHtmlOnly(m_full_stream, "<br>");
+          m_full_stream.WriteLine("Le nombre de sous-options étant trop élevé, \\subpage " + DoxygenDocumentationUtils.AnchorName(o) + " \"une page dédiée a été générée\".\n");
+        }
+        else{
+          _WriteHtmlOnly(m_full_stream, "<br>");
+          m_full_stream.WriteLine("The number of suboptions is too high. \\subpage " + DoxygenDocumentationUtils.AnchorName(o) + " \"A subpage has been generated\".\n");
+        }
+
+        _WriteHtmlOnly(m_full_stream, "</div>");
+        _WriteHtmlOnly(m_full_stream, "</div>");
+        _WriteHtmlOnly(m_full_stream, "</div>");
+
+        _AddBriefDescription(o, true);
         DoxygenDocumentationFile df = new DoxygenDocumentationFile (o, m_doc_file.OutputPath, m_code_info.Language);
         DoxygenDocumentationVisitor dv = new DoxygenDocumentationVisitor (df, m_code_info, m_dico_writer, m_config);
         // Two choices: same extra description writers or new instances ? Here, same.
@@ -130,7 +158,8 @@ namespace Arcane.AxlDoc
         else
           o.AcceptChildren (dv, x => m_config.private_app_pages.Filter(x));
         df.Write ();
-      } else {
+      }
+      else {
         _WriteHtmlOnly(m_full_stream, "<div class=\"ComplexOptionInfoBlock\">");
 
         // La partie "détail des méthodes" de doxygen se compose de trois parties :
@@ -139,7 +168,7 @@ namespace Arcane.AxlDoc
         // - Une partie "description" (div de classe .memitem.memdoc)
         _WriteHtmlOnly(m_full_stream, "<h2 class=\"memtitle\" style=\"border-color: purple;\">");
 
-        _WriteColoredTitle ("purple", o);
+        _WriteColoredTitle ("purple", o, false);
 
         _WriteHtmlOnly(m_full_stream, "</h2>");
         _WriteHtmlOnly(m_full_stream, "<div class=\"memitem\" style=\"border-color: purple;\">");
@@ -174,7 +203,7 @@ namespace Arcane.AxlDoc
       // - Une partie "description" (div de classe .memitem.memdoc)
 
       m_full_stream.WriteLine ("<h2 class=\"memtitle\" style=\"border-color: olive;\">");
-      _WriteColoredTitle ("olive", o);
+      _WriteColoredTitle ("olive", o, false);
       m_full_stream.WriteLine ("</h2>");
       XmlDocument owner_doc = o.Node.OwnerDocument;
       XmlElement desc_elem = o.DescriptionElement;
@@ -250,7 +279,7 @@ namespace Arcane.AxlDoc
       // - Une partie "sous-titre" (div de classe .memitem.memproto)
       // - Une partie "description" (div de classe .memitem.memdoc)
       m_full_stream.WriteLine ("<h2 class=\"memtitle\" style=\"border-color: teal;\">");
-      _WriteColoredTitle ("teal", o);
+      _WriteColoredTitle ("teal", o, false);
       m_full_stream.WriteLine ("</h2>");
 
       m_full_stream.WriteLine ("<div class=\"memitem\" style=\"border-color: teal;\">");
@@ -271,7 +300,7 @@ namespace Arcane.AxlDoc
       // - Une partie "sous-titre" (div de classe .memitem.memproto)
       // - Une partie "description" (div de classe .memitem.memdoc)
       m_full_stream.WriteLine ("<h2 class=\"memtitle\" style=\"border-color: teal;\">");
-      _WriteColoredTitle ("teal", o);
+      _WriteColoredTitle ("teal", o, false);
       m_full_stream.WriteLine ("</h2>");
 
       m_full_stream.WriteLine ("<div class=\"memitem\" style=\"border-color: teal;\">");
@@ -293,7 +322,7 @@ namespace Arcane.AxlDoc
       // - Une partie "sous-titre" (div de classe .memitem.memproto)
       // - Une partie "description" (div de classe .memitem.memdoc)
       m_full_stream.WriteLine ("<h2 class=\"memtitle\" style=\"border-color: green;\">");
-      _WriteColoredTitle ("green", o);
+      _WriteColoredTitle ("green", o, false);
       m_full_stream.WriteLine ("</h2>");
 
       m_full_stream.WriteLine ("<div class=\"memitem\" style=\"border-color: green;\">");
@@ -318,7 +347,7 @@ namespace Arcane.AxlDoc
       // - Une partie "sous-titre" (div de classe .memitem.memproto)
       // - Une partie "description" (div de classe .memitem.memdoc)
       m_full_stream.WriteLine ("<h2 class=\"memtitle\" style=\"border-color: green;\">");
-      _WriteColoredTitle ("green", o);
+      _WriteColoredTitle ("green", o, false);
       //m_full_stream.WriteLine("<p>SERVICE TYPE={0}</p>",o.Type);
       m_full_stream.WriteLine ("</h2>");
       m_full_stream.WriteLine ("<div class=\"memitem\" style=\"border-color: green;\">");
@@ -405,10 +434,28 @@ namespace Arcane.AxlDoc
 
     private void _AddBriefDescription (Option o, bool use_subpage)
     {
-      string href_name = DoxygenDocumentationUtils.AnchorName (o);
-      string ref_type = use_subpage ? "subpage" : "ref";
       m_brief_stream.Write ("<li>");
-      m_brief_stream.Write ("\\{2} {1} \"{0}\"", o.GetTranslatedName (m_code_info.Language), href_name, ref_type);
+      string href_name = DoxygenDocumentationUtils.AnchorName(o);
+      string goto_subpage = "";
+
+      // Dans le cas des options complexe avec plus de 30 sous-options, une page
+      // indépendante est générée. Il y a donc un conflit entre la ref de l'option
+      // et la ref de la subpage. Pour palier à ce problème, le mot "_ref" est ajouté
+      // à la référence de la page mère.
+      if(use_subpage){
+        m_brief_stream.Write("\\ref {1}_ref \"{0}\"", o.GetTranslatedName (m_code_info.Language), href_name);
+        if (m_code_info.Language == "fr"){
+          goto_subpage += " décritent \\subpage " + href_name + " \"sur cette page indépendante\"";
+        }
+        else{
+          goto_subpage += " in \\subpage " + href_name + " \"independant page\"";
+        }
+      }
+      else{
+        m_brief_stream.Write("\\ref {1} \"{0}\"", o.GetTranslatedName(m_code_info.Language), href_name);
+      }
+
+
       // Si demandé, affiche les classes utilisateurs de cette option
       if (PrintUserClass) {
         string[] user_classes = o.UserClasses;
@@ -433,24 +480,31 @@ namespace Arcane.AxlDoc
       if (o is ComplexOptionInfo) {
         OptionTypeCounterVisitor otc = new OptionTypeCounterVisitor ();
         (o as ComplexOptionInfo).AcceptChildren (otc, x => m_config.private_app_pages.Filter(x));
-        m_brief_stream.WriteLine (" ({0} options{1})", 
-                                  otc.NbTotalOption,
-                                  (use_subpage)?" in independant page":"");
+        m_brief_stream.WriteLine (" ({0} option{1}{2})", otc.NbTotalOption, ((otc.NbTotalOption > 1) ? "s" : ""), goto_subpage);
       }
       m_brief_stream.WriteLine ("</li>");
     }
 
-    private void _WriteColoredTitle (string color, Option o)
+    private void _WriteColoredTitle (string color, Option o, bool option_with_subpage)
     {
       _WriteHtmlOnly (m_full_stream, "<font color = \"" + color + "\" >");
-      _WriteTitle (o);
+      _WriteTitle (o, option_with_subpage);
       _WriteHtmlOnly (m_full_stream, "</font>");
     }
 
-    private void _WriteTitle (Option o)
+    // option_with_subpage est utile pour les options complexes ayant plus de 30 sous-options.
+    private void _WriteTitle (Option o, bool option_with_subpage)
     {
       string anchor_name = DoxygenDocumentationUtils.AnchorName (o);
       string translated_full_name = o.GetTranslatedFullName (m_code_info.Language);
+      
+      // Dans le cas des options complexe avec plus de 30 sous-options, une page
+      // indépendante est générée. Il y a donc un conflit entre la ref de l'option
+      // et la ref de la subpage. Pour palier à ce problème, le mot "_ref" est ajouté
+      // à la référence de la page mère.
+      if(option_with_subpage){
+        anchor_name += "_ref";
+      }
       m_full_stream.WriteLine ("\\anchor {1} {0}",
                                     translated_full_name, anchor_name, o.GetType ().Name);
       if (m_dico_writer != null) {

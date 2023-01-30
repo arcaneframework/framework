@@ -59,8 +59,8 @@ namespace Arcane.AxlDoc
       m_page_name = DoxygenDocumentationUtils.AnchorName (option_info);
       ServiceOrModuleInfo base_info = option_info.ServiceOrModule;
 
-      m_page_title = " " + left_mark + base_info.GetTranslatedName (m_language) + right_mark +
-        " option <" + option_info.GetTranslatedFullName (m_language) + ">\n";
+      m_page_title = left_mark + base_info.GetTranslatedName (m_language) + right_mark +
+        " option <" + option_info.GetTranslatedFullName (m_language) + ">";
       ++m_id;
     }
 
