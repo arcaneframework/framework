@@ -89,6 +89,12 @@ class ItemEnumerator
   : BaseClass(rhs)
   {}
 
+ public:
+
+  // Pour test
+  template<int E> ItemEnumerator(const ItemConnectedListView<E>& rhs)
+  : BaseClass(ItemConnectedListViewT<Item,E>(rhs)){}
+
  private:
 
   // Constructeur réservé pour ItemGroup
@@ -220,6 +226,7 @@ class ItemEnumeratorT
   using BaseClass = ItemEnumeratorBaseT<ItemType>;
   friend class ItemVectorT<ItemType>;
   friend class ItemVectorViewT<ItemType>;
+  friend class ItemConnectedListViewT<ItemType>;
   friend class SimdItemEnumeratorT<ItemType>;
 
  public:
@@ -251,6 +258,11 @@ class ItemEnumeratorT
   ARCANE_DEPRECATED_REASON("Y2022: Internal to Arcane. Use other constructor")
   ItemEnumeratorT(const ItemInternalVectorView& view, const ItemGroupImpl* agroup = nullptr)
   : BaseClass(view,agroup){}
+
+ public:
+
+  // Pour test
+  ItemEnumeratorT(const ItemConnectedListViewT<ItemType>& rhs) : BaseClass(rhs){}
 
  private:
 

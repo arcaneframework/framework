@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Item.cc                                                     (C) 2000-2022 */
+/* Item.cc                                                     (C) 2000-2023 */
 /*                                                                           */
 /* Classe de base d'un élément du maillage.                                  */
 /*---------------------------------------------------------------------------*/
@@ -22,6 +22,8 @@
 #include "arcane/ItemPrinter.h"
 #include "arcane/MeshItemInternalList.h"
 #include "arcane/IndexedItemConnectivityView.h"
+
+#include "arcane/ItemEnumerator.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -102,6 +104,12 @@ resetStats()
   m_nb_created_from_internalptr = 0;
   m_nb_set_from_internal = 0;
 }
+
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template class ItemConnectedListViewT<Node>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

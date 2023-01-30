@@ -88,6 +88,7 @@ class ARCANE_CORE_EXPORT Item
   friend class SimdItemEnumeratorBase;
   friend class ItemInfoListView;
   friend class ItemPairEnumerator;
+  template<int Extent> friend class ItemConnectedListView;
   template<typename ItemType> friend class ItemEnumeratorBaseT;
 
   // Pour accéder à _internal()
@@ -534,6 +535,7 @@ operator<(const Item& item1,const Item& item2)
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/ItemVectorView.h"
+#include "arcane/ItemConnectedListView.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -555,6 +557,7 @@ class ARCANE_CORE_EXPORT Node
   friend class ItemEnumeratorBaseT<Node>;
   friend class ItemVectorT<Node>;
   friend class ItemVectorViewT<Node>;
+  friend class ItemConnectedListViewT<Node>;
   friend class ItemVectorViewConstIteratorT<Node>;
   friend class SimdItemT<Node>;
   friend class ItemInfoListViewT<Node>;
@@ -752,8 +755,7 @@ class ARCANE_CORE_EXPORT ItemWithNodes
   NodeVectorView nodes() const { return _nodeList(); }
 
   //! Liste des noeuds de l'entité
-  NodeLocalIdView nodeIds() const { return _nodeIds();
-  }
+  NodeLocalIdView nodeIds() const { return _nodeIds(); }
 
   //! i-ème noeud de l'entité.
   NodeLocalId nodeId(Int32 index) const { return _nodeId(index); }

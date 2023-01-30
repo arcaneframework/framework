@@ -32,9 +32,9 @@ namespace Arcane::impl
  *
  * Celle classe n'est utile que pour construire des listes d'entités utilisées
  * en interne de %Arcane. La version utilisateur de cette classe est
- * ItemVectorView.
+ * ItemConnectivityView.
  *
- * \sa ItemVectorView
+ * \sa ItemConnectedListView
  */
 template <int Extent>
 class ARCANE_CORE_EXPORT ItemIndexedListView
@@ -45,6 +45,7 @@ class ARCANE_CORE_EXPORT ItemIndexedListView
   friend ItemBase;
   friend ItemVectorView;
   friend ItemInternalVectorView;
+  friend class ItemConnectedListView<DynExtent>;
   template <typename T> friend class Arcane::ItemEnumeratorBaseT;
 
  public:

@@ -57,6 +57,8 @@ class ItemEnumeratorBase
   : m_local_ids(view.localIds().data()), m_index(0), m_count(view.size()), m_group_impl(agroup) { }
   ItemEnumeratorBase(const ItemVectorView& rhs)
   : ItemEnumeratorBase((const ItemInternalVectorView&)rhs,nullptr) {}
+  template<int E> ItemEnumeratorBase(const ItemConnectedListView<E>& rhs)
+  : m_local_ids(rhs.localIds().data()), m_count(rhs.localIds().size()){}
 
   ItemEnumeratorBase(const ItemEnumerator& rhs);
   ItemEnumeratorBase(const ItemInternalEnumerator& rhs);
@@ -101,7 +103,7 @@ class ItemEnumeratorBase
  protected:
 
   const Int32* ARCANE_RESTRICT m_local_ids;
-  Int32 m_index;
+  Int32 m_index = 0;
   Int32 m_count;
   const ItemGroupImpl* m_group_impl = nullptr; // pourrait être retiré en mode release si nécessaire
 
@@ -159,6 +161,9 @@ class ItemEnumeratorBaseT
   ItemEnumeratorBaseT(const ItemEnumerator& rhs);
   ItemEnumeratorBaseT(const impl::ItemIndexedListView<DynExtent>& view)
   : ItemEnumeratorBaseT(view.m_shared_info, view.constLocalIds()){}
+
+  ItemEnumeratorBaseT(const ItemConnectedListViewT<ItemType>& rhs)
+  : BaseClass(rhs), m_item(NULL_ITEM_LOCAL_ID,rhs.m_shared_info){}
 
  protected:
 

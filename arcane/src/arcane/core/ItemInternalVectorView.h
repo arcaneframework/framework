@@ -37,14 +37,20 @@ namespace Arcane
 class ItemInternalVectorViewConstIterator
 {
   friend class ItemInternalVectorView;
+  template<int Extent> friend class ItemConnectedListView;
   typedef ItemInternal* ItemInternalPtr;
+
  private:
+
   ItemInternalVectorViewConstIterator(const ItemInternalPtr* items,
                                       const Int32* ARCANE_RESTRICT local_ids,
                                       Integer index)
   : m_items(items), m_local_ids(local_ids), m_index(index){}
+
  public:
+
   typedef ItemInternalVectorViewConstIterator ThatClass;
+
  public:
   typedef std::random_access_iterator_tag iterator_category;
   //! Type indexant le tableau
@@ -123,6 +129,7 @@ class ARCANE_CORE_EXPORT ItemInternalVectorView
   friend class ItemEnumeratorBase;
   friend class SimdItemEnumeratorBase;
   friend class ItemInternalEnumerator;
+  template<int Extent> friend class ItemConnectedListView;
   friend ItemInternal;
   template <typename T> friend class ItemEnumeratorBaseT;
   using const_iterator = ItemInternalVectorViewConstIterator;

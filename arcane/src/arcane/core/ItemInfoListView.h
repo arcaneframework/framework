@@ -45,9 +45,10 @@ class ARCANE_CORE_EXPORT ItemInfoListView
 {
   friend class mesh::ItemFamily;
   // A supprimer lorqu'on n'aura plus besoin de _itemsInternal()
-  friend class ItemVectorView;
-  friend class ItemVector;
+  friend ItemVectorView;
+  friend ItemVector;
   friend class ItemPairEnumerator;
+  template<int Extent> friend class ItemConnectedListView;
   template<typename ItemType> friend class ItemEnumeratorBaseT;
 
  public:

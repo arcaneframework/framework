@@ -197,6 +197,14 @@ class ItemVectorViewT;
 
 /*!
  * \ingroup Mesh
+ * \brief Vue sur une liste de connectivité
+ */
+template<int Extent = DynExtent> class ItemConnectedListView;
+template<typename ItemType, int Extent = DynExtent>
+class ItemConnectedListViewT;
+
+/*!
+ * \ingroup Mesh
  * \brief Enumérateur sur une paire d'entité.
  */
 class ItemPairEnumerator;
@@ -269,6 +277,37 @@ typedef ItemVectorViewT<Particle> ParticleVectorView;
  * \brief Vue sur un vecteur de degre de liberte.
  */
 typedef ItemVectorViewT<DoF> DoFVectorView;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \ingroup Mesh
+ * \brief Vue sur une liste de noeuds connectés à une entité
+ */
+using NodeConnectedListView = ItemConnectedListViewT<Node>;
+/*!
+ * \ingroup Mesh
+ * \brief Vue sur une liste d'arêtes connectées à une entité
+ */
+using EdgeConnectedListView = ItemConnectedListViewT<Edge>;
+/*!
+ * \ingroup Mesh
+ * \brief Vue sur une liste de faces connectées à une entité
+ */
+using FaceConnectedListView = ItemConnectedListViewT<Face>;
+/*!
+ * \ingroup Mesh
+ * \brief Vue sur une liste de mailles connectées à une entité
+ */
+using CellConnectedListView = ItemConnectedListViewT<Cell>;
+/*!
+ * \ingroup Mesh
+ * \brief Vue sur une liste de DoFs connectés à une entité
+ */
+using DoFConnectedListView = ItemConnectedListViewT<DoF>;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 /*! \brief Collection de groupes de noeuds. */
 typedef Collection<NodeGroup> NodeGroupCollection;
