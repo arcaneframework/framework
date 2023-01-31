@@ -17,6 +17,7 @@
 #include <arcane/core/materials/ComponentItemVectorView.h>
 #include <arcane/core/materials/MaterialsCoreGlobal.h>
 #include <arcane/core/materials/MatItem.h>
+#include <arcane/materials/MatConcurrency.h>
 #include <arcane/accelerator/RunCommand.h>
 #include <arcane/accelerator/RunCommandLaunchInfo.h>
 
@@ -83,7 +84,7 @@ using ComponentItemInternalPtr = ComponentItemInternal*;
  * Spécialization <MatVarIndex, CellLocalId> de la fonction de lancement de kernel pour GPU
  */ 
 template<typename Lambda> __global__
-void doIndirectGPULambda<Lambda>(SmallSpan<const MatVarIndex> mvis,SmallSpan<const Int32> cids,Lambda func)
+void doIndirectGPULambda(SmallSpan<const MatVarIndex> mvis,SmallSpan<const Int32> cids,const Lambda& func)
 {
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
@@ -107,7 +108,7 @@ void doIndirectGPULambda<Lambda>(SmallSpan<const MatVarIndex> mvis,SmallSpan<con
  * Spécialization EnvCellVectorView de la fonction de lancement de kernel en MT
  */ 
 template<typename Lambda>
-void _doIndirectThreadLambda(const EnvCellVectorView& sub_items,Lambda func)
+void _doIndirectThreadLambda(const EnvCellVectorView& sub_items,const Lambda& func)
 {
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
@@ -161,7 +162,7 @@ _applyEnvCells(RunCommand& command,const EnvCellVectorView& items,const Lambda& 
       */
 
       // TODO: utiliser cudaLaunchKernel() à la place.
-      impl::doIndirectGPULambda <<<b,t,0,*s>>>(mvis,cids,std::forward<Lambda>(func));
+      impl::doIndirectGPULambda <<<b,t,0,*s>>>(mvis,cids,func);
     }
 #else
     ARCANE_FATAL("Requesting CUDA kernel execution but the kernel is not compiled with CUDA compiler");
@@ -231,7 +232,7 @@ _applyEnvCells(RunCommand& command,const EnvCellVectorView& items,const Lambda& 
 template<typename Lambda> void
 run(RunCommand& command,const EnvCellVectorView& items,const Lambda& func)
 {
-  impl::_applyEnvCells(command,items,std::forward<Lambda>(func));
+  impl::_applyEnvCells(command,items,func);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -262,13 +263,13 @@ operator<<(RunCommand& command,IMeshEnvironment* env);
 template<typename Lambda>
 void operator<<(EnvCellRunCommand&& nr,const Lambda& f)
 {
-  run(nr.m_command,nr.m_items,std::forward<Lambda>(f));
+  run(nr.m_command,nr.m_items,f);
 }
 
 template<typename Lambda>
 void operator<<(EnvCellRunCommand& nr,const Lambda& f)
 {
-  run(nr.m_command,nr.m_items,std::forward<Lambda>(f));
+  run(nr.m_command,nr.m_items,f);
 }
 
 /*---------------------------------------------------------------------------*/
