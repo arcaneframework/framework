@@ -21,6 +21,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#ifdef ARCANE_HAS_OFFSET_FOR_ITEMVECTORVIEW
+#define ARCANE_LOCALID_ADD_OFFSET(a) (m_local_id_offset + (a))
+#define ARCANE_ARGS_AND_OFFSET(a,b,c) a,b,c
+#else
+#define ARCANE_LOCALID_ADD_OFFSET(a) (a)
+#define ARCANE_ARGS_AND_OFFSET(a,b,c) a,b
+#endif
+
 namespace Arcane
 {
 
@@ -47,6 +55,10 @@ class ItemVectorViewConstIterator
 
  protected:
 
+#ifdef ARCANE_HAS_OFFSET_FOR_ITEMVECTORVIEW
+  ItemVectorViewConstIterator(ItemSharedInfo* shared_info,const Int32* local_id_ptr,Int32 local_id_offset)
+  : m_shared_info(shared_info), m_local_id_ptr(local_id_ptr), m_local_id_offset(local_id_offset){}
+#endif
   ItemVectorViewConstIterator(ItemSharedInfo* shared_info,const Int32* local_id_ptr)
   : m_shared_info(shared_info), m_local_id_ptr(local_id_ptr){}
 
@@ -70,7 +82,8 @@ class ItemVectorViewConstIterator
 
  public:
 
-  Item operator*() const { return Item(*m_local_id_ptr,m_shared_info); }
+  Item operator*() const { return Item(ARCANE_LOCALID_ADD_OFFSET((*m_local_id_ptr)),m_shared_info); }
+
   ThatClass& operator++() { ++m_local_id_ptr; return (*this); }
   ThatClass& operator--() { --m_local_id_ptr; return (*this); }
   void operator+=(difference_type v) { m_local_id_ptr += v; }
@@ -82,12 +95,12 @@ class ItemVectorViewConstIterator
   friend ThatClass operator-(const ThatClass& a,difference_type v)
   {
     const Int32* ptr = a.m_local_id_ptr - v;
-    return ThatClass(a.m_shared_info,ptr);
+    return ThatClass(ARCANE_ARGS_AND_OFFSET(a.m_shared_info,ptr,a.m_local_id_offset));
   }
   friend ThatClass operator+(const ThatClass& a,difference_type v)
   {
     const Int32* ptr = a.m_local_id_ptr + v;
-    return ThatClass(a.m_shared_info,ptr);
+    return ThatClass(ARCANE_ARGS_AND_OFFSET(a.m_shared_info,ptr,a.m_local_id_offset));
   }
   friend bool operator<(const ThatClass& lhs,const ThatClass& rhs)
   {
@@ -110,12 +123,15 @@ class ItemVectorViewConstIterator
 
   ItemSharedInfo* m_shared_info;
   const Int32* m_local_id_ptr;
+#ifdef ARCANE_HAS_OFFSET_FOR_ITEMVECTORVIEW
+  Int32 m_local_id_offset = 0;
+#endif
 
  protected:
 
   inline ItemInternal* _itemInternal() const
   {
-    return m_shared_info->m_items_internal[ *m_local_id_ptr ];
+    return m_shared_info->m_items_internal[ ARCANE_LOCALID_ADD_OFFSET((*m_local_id_ptr)) ];
   }
 };
 
@@ -131,6 +147,11 @@ class ItemVectorViewConstIteratorT
 
  private:
 
+#ifdef ARCANE_HAS_OFFSET_FOR_ITEMVECTORVIEW
+  ItemVectorViewConstIteratorT(ItemSharedInfo* shared_info,const Int32* ARCANE_RESTRICT local_id_ptr,
+                               Int32 local_id_offset)
+  : ItemVectorViewConstIterator(shared_info,local_id_ptr,local_id_offset){}
+#endif
   ItemVectorViewConstIteratorT(ItemSharedInfo* shared_info,const Int32* ARCANE_RESTRICT local_id_ptr)
   : ItemVectorViewConstIterator(shared_info,local_id_ptr){}
 
@@ -148,7 +169,8 @@ class ItemVectorViewConstIteratorT
 
  public:
 
-  ItemType operator*() const { return ItemType(*m_local_id_ptr,m_shared_info); }
+  ItemType operator*() const { return ItemType(ARCANE_LOCALID_ADD_OFFSET((*m_local_id_ptr)),m_shared_info); }
+
   ThatClass& operator++() { ++m_local_id_ptr; return (*this); }
   ThatClass& operator--() { --m_local_id_ptr; return (*this); }
   difference_type operator-(const ThatClass& b) const
@@ -158,12 +180,12 @@ class ItemVectorViewConstIteratorT
   friend ThatClass operator-(const ThatClass& a,difference_type v)
   {
     const Int32* ptr = a.m_local_id_ptr - v;
-    return ThatClass(a.m_shared_info,ptr);
+    return ThatClass(ARCANE_ARGS_AND_OFFSET(a.m_shared_info,ptr,a.m_local_id_offset));
   }
   friend ThatClass operator+(const ThatClass& a,difference_type v)
   {
     const Int32* ptr = a.m_local_id_ptr + v;
-    return ThatClass(a.m_shared_info,ptr);
+    return ThatClass(ARCANE_ARGS_AND_OFFSET(a.m_shared_info,ptr,a.m_local_id_offset));
   }
 
  public:
@@ -240,7 +262,7 @@ class ARCANE_CORE_EXPORT ItemVectorView
   }
 
   //! Accède au \a i-ème élément du vecteur
-  Item operator[](Integer index) const { return Item(m_local_ids[index],m_shared_info); }
+  Item operator[](Integer index) const { return Item(ARCANE_LOCALID_ADD_OFFSET(m_local_ids[index]),m_shared_info); }
 
   //! Nombre d'éléments du vecteur
   Int32 size() const { return m_local_ids.size(); }
@@ -259,11 +281,11 @@ class ARCANE_CORE_EXPORT ItemVectorView
   }
   const_iterator begin() const
   {
-    return const_iterator(m_shared_info,m_local_ids.data());
+    return const_iterator(ARCANE_ARGS_AND_OFFSET(m_shared_info,m_local_ids.data(),m_local_id_offset));
   }
   const_iterator end() const
   {
-    return const_iterator(m_shared_info,m_local_ids.data()+this->size());
+    return const_iterator(ARCANE_ARGS_AND_OFFSET(m_shared_info,(m_local_ids.data()+this->size()), m_local_id_offset));
   }
   //! Vue sur le tableau des indices
   ItemIndexArrayView indexes() const { return m_local_ids; }
@@ -276,6 +298,9 @@ class ARCANE_CORE_EXPORT ItemVectorView
   
   ItemIndexArrayView m_local_ids;
   ItemSharedInfo* m_shared_info = ItemSharedInfo::nullInstance();
+#ifdef ARCANE_HAS_OFFSET_FOR_ITEMVECTORVIEW
+  Int32 m_local_id_offset = 0;
+#endif
 
  private:
 
@@ -357,11 +382,11 @@ class ItemVectorViewT
   }
   inline const_iterator begin() const
   {
-    return const_iterator(m_shared_info,m_local_ids.data());
+    return const_iterator(ARCANE_ARGS_AND_OFFSET(m_shared_info,m_local_ids.data(), m_local_id_offset));
   }
   inline const_iterator end() const
   {
-    return const_iterator(m_shared_info,m_local_ids.data()+this->size());
+    return const_iterator(ARCANE_ARGS_AND_OFFSET(m_shared_info,m_local_ids.data()+this->size(), m_local_id_offset));
   }
 };
 
@@ -369,6 +394,9 @@ class ItemVectorViewT
 /*---------------------------------------------------------------------------*/
 
 } // End namespace Arcane
+
+#undef ARCANE_LOCALID_ADD_OFFSET
+#undef ARCANE_ARGS_AND_OFFSET
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

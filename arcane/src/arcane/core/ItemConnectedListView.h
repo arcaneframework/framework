@@ -21,6 +21,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#ifdef ARCANE_HAS_OFFSET_FOR_ITEMVECTORVIEW
+#define ARCANE_LOCALID_ADD_OFFSET(a) (this->m_local_id_offset + (a))
+#define ARCANE_ARGS_AND_OFFSET(a,b,c) a,b,c
+#else
+#define ARCANE_LOCALID_ADD_OFFSET(a) (a)
+#define ARCANE_ARGS_AND_OFFSET(a,b,c) a,b
+#endif
+
 namespace Arcane
 {
 
@@ -46,8 +54,14 @@ class ItemConnectedListViewConstIterator
 
  protected:
 
+#ifdef ARCANE_HAS_OFFSET_FOR_ITEMVECTORVIEW
+  ItemConnectedListViewConstIterator(ItemSharedInfo* shared_info,const Int32* local_id_ptr,
+                                     Int32 local_id_offset)
+  : m_shared_info(shared_info), m_local_id_ptr(local_id_ptr), m_local_id_offset(local_id_offset){}
+#else
   ItemConnectedListViewConstIterator(ItemSharedInfo* shared_info,const Int32* local_id_ptr)
   : m_shared_info(shared_info), m_local_id_ptr(local_id_ptr){}
+#endif
 
  public:
 
@@ -81,12 +95,12 @@ class ItemConnectedListViewConstIterator
   friend ThatClass operator-(const ThatClass& a,difference_type v)
   {
     const Int32* ptr = a.m_local_id_ptr - v;
-    return ThatClass(a.m_shared_info,ptr);
+    return ThatClass(ARCANE_ARGS_AND_OFFSET(a.m_shared_info,ptr,a.m_local_id_offset));
   }
   friend ThatClass operator+(const ThatClass& a,difference_type v)
   {
     const Int32* ptr = a.m_local_id_ptr + v;
-    return ThatClass(a.m_shared_info,ptr);
+    return ThatClass(ARCANE_ARGS_AND_OFFSET(a.m_shared_info,ptr,a.m_local_id_offset));
   }
   friend bool operator<(const ThatClass& lhs,const ThatClass& rhs)
   {
@@ -109,12 +123,15 @@ class ItemConnectedListViewConstIterator
 
   ItemSharedInfo* m_shared_info;
   const Int32* m_local_id_ptr;
+#ifdef ARCANE_HAS_OFFSET_FOR_ITEMVECTORVIEW
+  Int32 m_local_id_offset = 0;
+#endif
 
  protected:
 
   inline ItemInternal* _itemInternal() const
   {
-    return m_shared_info->m_items_internal[ *m_local_id_ptr ];
+    return m_shared_info->m_items_internal[ ARCANE_LOCALID_ADD_OFFSET((*m_local_id_ptr)) ];
   }
 };
 
@@ -129,8 +146,14 @@ class ItemConnectedListViewConstIteratorT
 
  private:
 
+#ifdef ARCANE_HAS_OFFSET_FOR_ITEMVECTORVIEW
+  ItemConnectedListViewConstIteratorT(ItemSharedInfo* shared_info,const Int32* ARCANE_RESTRICT local_id_ptr,
+                                      Int32 local_id_offset)
+  : ItemConnectedListViewConstIterator(shared_info,local_id_ptr,local_id_offset){}
+#else
   ItemConnectedListViewConstIteratorT(ItemSharedInfo* shared_info,const Int32* ARCANE_RESTRICT local_id_ptr)
   : ItemConnectedListViewConstIterator(shared_info,local_id_ptr){}
+#endif
 
  public:
 
@@ -208,7 +231,10 @@ class ItemConnectedListView
  public:
 
   //! Accède au \a i-ème élément du vecteur
-  Item operator[](Integer index) const { return Item(m_local_ids[index],m_shared_info); }
+  Item operator[](Integer index) const
+  {
+    return Item(ARCANE_LOCALID_ADD_OFFSET(m_local_ids[index]),m_shared_info);
+  }
 
   //! Nombre d'éléments du vecteur
   Int32 size() const { return m_local_ids.size(); }
@@ -216,13 +242,13 @@ class ItemConnectedListView
   // TODO: changer le type de l'iterateur
   const_iterator begin() const
   {
-    return const_iterator(m_shared_info,m_local_ids.data());
+    return const_iterator(ARCANE_ARGS_AND_OFFSET(m_shared_info,m_local_ids.data(),m_local_id_offset));
   }
 
   // TODO: changer le type de l'iterateur
   const_iterator end() const
   {
-    return const_iterator(m_shared_info,m_local_ids.data()+this->size());
+    return const_iterator(ARCANE_ARGS_AND_OFFSET(m_shared_info,(m_local_ids.data()+this->size()),m_local_id_offset));
   }
 
 #ifdef ARCANE_HIDE_ITEM_CONNECTIVITY_STRUCTURE
@@ -254,6 +280,9 @@ class ItemConnectedListView
   
   ItemIndexArrayView m_local_ids;
   ItemSharedInfo* m_shared_info = ItemSharedInfo::nullInstance();
+#ifdef ARCANE_HAS_OFFSET_FOR_ITEMVECTORVIEW
+  Int32 m_local_id_offset = 0;
+#endif
 };
 
 /*---------------------------------------------------------------------------*/
@@ -280,6 +309,9 @@ class ItemConnectedListViewT
   using BaseClass = ItemConnectedListView<Extent>;
   using BaseClass::m_shared_info;
   using BaseClass::m_local_ids;
+#ifdef ARCANE_HAS_OFFSET_FOR_ITEMVECTORVIEW
+  using BaseClass::m_local_id_offset;
+#endif
 
  public:
 
@@ -304,18 +336,18 @@ class ItemConnectedListViewT
 
   ItemType operator[](Integer index) const
   {
-    return ItemType(m_local_ids[index],m_shared_info);
+    return ItemType(ARCANE_LOCALID_ADD_OFFSET(m_local_ids[index]),m_shared_info);
   }
 
  public:
   
   inline const_iterator begin() const
   {
-    return const_iterator(m_shared_info,m_local_ids.data());
+    return const_iterator(ARCANE_ARGS_AND_OFFSET(m_shared_info,m_local_ids.data(),m_local_id_offset));
   }
   inline const_iterator end() const
   {
-    return const_iterator(m_shared_info,m_local_ids.data()+this->size());
+    return const_iterator(ARCANE_ARGS_AND_OFFSET(m_shared_info,(m_local_ids.data()+this->size()),m_local_id_offset));
   }
 
 #ifdef ARCANE_HIDE_ITEM_CONNECTIVITY_STRUCTURE
@@ -338,6 +370,9 @@ class ItemConnectedListViewT
 /*---------------------------------------------------------------------------*/
 
 } // End namespace Arcane
+
+#undef ARCANE_LOCALID_ADD_OFFSET
+#undef ARCANE_THAT_CLASS_AND_OFFSET
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

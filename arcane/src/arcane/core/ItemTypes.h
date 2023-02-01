@@ -29,6 +29,19 @@
 namespace Arcane
 {
 
+// A définir si on souhaiter ajouter un offset aux classes 'ItemVector' et
+// 'ItemEnumerator'. Cela change la taille de ces structures et il ne faut
+// donc recompiler code code utilisateur si on change ce '#define'.
+// #define ARCANE_HAS_OFFSET_FOR_ITEMVECTORVIEW
+
+// A définir si on souhaite cacher les méthodes d'accès aux structures
+// internes des connectivités.
+// #define ARCANE_HIDE_ITEM_CONNECTIVITY_STRUCTURE
+
+// A définir si on souhaite utiliser les classes spécifiques pour gérer
+// les entités connectées (sinon on utilise ItemVectorView)
+#define ARCANE_USE_SPECIFIC_ITEMCONNECTED
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -310,11 +323,6 @@ using CellConnectedListView = ItemConnectedListViewT<Cell>;
  */
 using DoFConnectedListView = ItemConnectedListViewT<DoF>;
 
-// A définir si on souhaite cacher les méthodes d'accès aux structures
-// internes des connectivités.
-// #define ARCANE_HIDE_ITEM_CONNECTIVITY_STRUCTURE
-
-#define ARCANE_USE_SPECIFIC_ITEMCONNECTED
 #ifdef ARCANE_USE_SPECIFIC_ITEMCONNECTED
 //! Liste d'entités connectées
 using ItemConnectedListViewType = ItemConnectedListView<DynExtent>;
