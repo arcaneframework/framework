@@ -11,8 +11,6 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
-
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/ArgumentException.h"
 
@@ -136,10 +134,9 @@ _computeAdjency(ItemPairGroupImpl* array,
     // Pour ne pas s'ajouter à sa propre liste
     if (items_list[local_id] != forbidden_value)
       items_list[local_id] = local_id;
-    for( ItemEnumerator ilinkitem(get_link_item_enumerator(item)); ilinkitem.hasNext(); ++ilinkitem ){
-      Item linkitem = *ilinkitem;
-      for( ItemEnumerator isubitem(get_sub_item_enumerator(linkitem)); isubitem.hasNext(); ++isubitem ){
-        Int32 sub_local_id = isubitem.localId();
+    for( Item linkitem : get_link_item_enumerator(item) ){
+      for( Item subitem : get_sub_item_enumerator(linkitem) ){
+        Int32 sub_local_id = subitem.localId();
         if (items_list[sub_local_id]==forbidden_value || items_list[sub_local_id]==local_id)
           continue;
         items_list[sub_local_id] = local_id;

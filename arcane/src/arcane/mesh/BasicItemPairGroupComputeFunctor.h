@@ -17,6 +17,7 @@
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/IFunctor.h"
 #include "arcane/IMeshUtilities.h"
+#include "arcane/Item.h"
 
 #include <map>
 #include <functional>
@@ -115,7 +116,7 @@ class BasicItemPairGroupComputeFunctor
   void _computeFaceFaceEdgeAdjency(ItemPairGroupImpl* array);
   void _computeFaceFaceCellAdjency(ItemPairGroupImpl* array);
 
-  typedef std::function<ItemVectorView(Item)> GetItemVectorViewFunctor;
+  using GetItemVectorViewFunctor = std::function<ItemConnectedListViewType(Item)>;
   void _computeAdjency(ItemPairGroupImpl* array,GetItemVectorViewFunctor get_item_enumerator,
                        GetItemVectorViewFunctor get_sub_item_enumerator);
 };

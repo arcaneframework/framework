@@ -57,20 +57,20 @@ addLinkedCells(Int64Array& linked_cells,Int32Array& linked_owners)
     else if (group.itemKind() == IK_Face){
       marque++;
       ENUMERATE_FACE(iface,group.faceGroup()){
-	ENUMERATE_NODE(inode,iface->nodes()){
-	  ENUMERATE_CELL(icell, inode->cells()){
-	    if (filtre_cell[icell.localId()]!=marque){
-	      cells.add(*icell);
-	      filtre_cell[icell.localId()]=marque;
-	    }
-	  }
-	}
+        for( Node node : iface->nodes()){
+          for( Cell cell : node.cells()){
+            if (filtre_cell[cell.localId()]!=marque){
+              cells.add(cell);
+              filtre_cell[cell.localId()]=marque;
+            }
+          }
+        }
       }
     }
     else if (group.itemKind() == IK_Node){
       ENUMERATE_NODE(inode,group.nodeGroup()){
-        ENUMERATE_CELL(icell, inode->cells()){
-          cells.add(*icell);
+        for( Cell cell : inode->cells()){
+          cells.add(cell);
         }
       }
     }

@@ -27,6 +27,152 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \internal
+ * \brief Itérateur pour la classe ItemConnectedListView.
+ *
+ * Cette classe est interne à Arcane. Elle s'utilise via le for-range:
+ *
+ * \code
+ * Node node;
+ * for( Item item : node.cell() )
+ *    ;
+ * \endcode
+ */
+class ItemConnectedListViewConstIterator
+{
+ protected:
+
+  template<int Extent> friend class ItemConnectedListView;
+
+ protected:
+
+  ItemConnectedListViewConstIterator(ItemSharedInfo* shared_info,const Int32* local_id_ptr)
+  : m_shared_info(shared_info), m_local_id_ptr(local_id_ptr){}
+
+ public:
+
+  typedef ItemConnectedListViewConstIterator ThatClass;
+  typedef std::random_access_iterator_tag iterator_category;
+  //! Type indexant le tableau
+  typedef Item value_type;
+  //! Type indexant le tableau
+  typedef Integer size_type;
+  //! Type d'une distance entre itérateur éléments du tableau
+  typedef std::ptrdiff_t difference_type;
+
+ public:
+
+  //TODO A supprimer avec le C++20
+  typedef const Item* pointer;
+  //TODO A supprimer avec le C++20
+  typedef const Item& reference;
+
+ public:
+
+  Item operator*() const { return Item(*m_local_id_ptr,m_shared_info); }
+  ThatClass& operator++() { ++m_local_id_ptr; return (*this); }
+  ThatClass& operator--() { --m_local_id_ptr; return (*this); }
+  void operator+=(difference_type v) { m_local_id_ptr += v; }
+  void operator-=(difference_type v) { m_local_id_ptr -= v; }
+  difference_type operator-(const ThatClass& b) const
+  {
+    return this->m_local_id_ptr - b.m_local_id_ptr;
+  }
+  friend ThatClass operator-(const ThatClass& a,difference_type v)
+  {
+    const Int32* ptr = a.m_local_id_ptr - v;
+    return ThatClass(a.m_shared_info,ptr);
+  }
+  friend ThatClass operator+(const ThatClass& a,difference_type v)
+  {
+    const Int32* ptr = a.m_local_id_ptr + v;
+    return ThatClass(a.m_shared_info,ptr);
+  }
+  friend bool operator<(const ThatClass& lhs,const ThatClass& rhs)
+  {
+    return lhs.m_local_id_ptr <= rhs.m_local_id_ptr;
+  }
+  //! Compare les indices d'itération de deux instances
+  friend bool operator==(const ThatClass& lhs,const ThatClass& rhs)
+  {
+    return lhs.m_local_id_ptr == rhs.m_local_id_ptr;
+  }
+  friend bool operator!=(const ThatClass& lhs,const ThatClass& rhs)
+  {
+    return !(lhs==rhs);
+  }
+
+  ARCANE_DEPRECATED_REASON("Y2022: This method returns a temporary. Use 'operator*' instead")
+  Item operator->() const { return _itemInternal(); }
+
+ protected:
+
+  ItemSharedInfo* m_shared_info;
+  const Int32* m_local_id_ptr;
+
+ protected:
+
+  inline ItemInternal* _itemInternal() const
+  {
+    return m_shared_info->m_items_internal[ *m_local_id_ptr ];
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename ItemType>
+class ItemConnectedListViewConstIteratorT
+: public ItemConnectedListViewConstIterator
+{
+  friend class ItemConnectedListViewT<ItemType>;
+
+ private:
+
+  ItemConnectedListViewConstIteratorT(ItemSharedInfo* shared_info,const Int32* ARCANE_RESTRICT local_id_ptr)
+  : ItemConnectedListViewConstIterator(shared_info,local_id_ptr){}
+
+ public:
+
+  typedef ItemConnectedListViewConstIteratorT<ItemType> ThatClass;
+  typedef ItemType value_type;
+
+ public:
+
+  //TODO A supprimer avec le C++20
+  typedef const Item* pointer;
+  //TODO A supprimer avec le C++20
+  typedef const Item& reference;
+
+ public:
+
+  ItemType operator*() const { return ItemType(*m_local_id_ptr,m_shared_info); }
+  ThatClass& operator++() { ++m_local_id_ptr; return (*this); }
+  ThatClass& operator--() { --m_local_id_ptr; return (*this); }
+  difference_type operator-(const ThatClass& b) const
+  {
+    return this->m_local_id_ptr - b.m_local_id_ptr;
+  }
+  friend ThatClass operator-(const ThatClass& a,difference_type v)
+  {
+    const Int32* ptr = a.m_local_id_ptr - v;
+    return ThatClass(a.m_shared_info,ptr);
+  }
+  friend ThatClass operator+(const ThatClass& a,difference_type v)
+  {
+    const Int32* ptr = a.m_local_id_ptr + v;
+    return ThatClass(a.m_shared_info,ptr);
+  }
+
+ public:
+
+  ARCANE_DEPRECATED_REASON("Y2022: This method returns a temporary. Use 'operator*' instead")
+  ItemType operator->() const { return this->_itemInternal(); }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \brief Vue sur une liste d'entités connectées à une autre entité.
  *
  * \warning la vue n'est valide que tant que le tableau associé n'est
@@ -42,7 +188,7 @@ class ItemConnectedListView
 
  public:
 
-  using const_iterator = ItemVectorViewConstIterator;
+  using const_iterator = ItemConnectedListViewConstIterator;
   using difference_type = std::ptrdiff_t;
   using value_type = Item;
   using reference_type = Item&;
@@ -60,12 +206,6 @@ class ItemConnectedListView
   : m_local_ids(local_ids), m_shared_info(shared_info) { }
 
  public:
-
-  // Temporaire pour rendre les sources compatibles
-  operator ItemInternalVectorView() const
-  {
-    return ItemInternalVectorView(m_shared_info,m_local_ids);
-  }
 
   //! Accède au \a i-ème élément du vecteur
   Item operator[](Integer index) const { return Item(m_local_ids[index],m_shared_info); }
@@ -85,22 +225,30 @@ class ItemConnectedListView
     return const_iterator(m_shared_info,m_local_ids.data()+this->size());
   }
 
+#ifdef ARCANE_HIDE_ITEM_CONNECTIVITY_STRUCTURE
+ private:
+#else
  public:
+#endif
+
+  // Temporaire pour rendre les sources compatibles
+  operator ItemInternalVectorView() const
+  {
+    return ItemInternalVectorView(m_shared_info,m_local_ids);
+  }
 
   // TODO Rendre obsolète
  
   //! Tableau des numéros locaux des entités
   Int32ConstArrayView localIds() const { return m_local_ids; }
 
+  // TODO: rendre obsolète
+  inline ItemEnumerator enumerator() const;
+
  private:
 
   //! Vue sur le tableau des indices
   ItemIndexArrayView indexes() const { return m_local_ids; }
-
- public:
-
-  // TODO: rendre obsolète
-  inline ItemEnumerator enumerator() const;
 
  protected:
   
@@ -122,6 +270,7 @@ class ItemConnectedListViewT
   friend class ItemEnumerator;
   friend class Item;
   friend class ItemWithNodes;
+  friend class Node;
   friend class Edge;
   friend class Face;
   friend class Cell;
@@ -134,7 +283,7 @@ class ItemConnectedListViewT
 
  public:
 
-  using const_iterator = ItemVectorViewConstIteratorT<ItemType>;
+  using const_iterator = ItemConnectedListViewConstIteratorT<ItemType>;
   using difference_type = std::ptrdiff_t;
   using value_type = ItemType;
 
@@ -153,11 +302,6 @@ class ItemConnectedListViewT
 
  public:
 
-  // TODO: rendre obsolète
-  operator ItemVectorViewT<ItemType> () const { return ItemVectorViewT<ItemType>(m_shared_info,m_local_ids); }
-
- public:
-
   ItemType operator[](Integer index) const
   {
     return ItemType(m_local_ids[index],m_shared_info);
@@ -165,11 +309,6 @@ class ItemConnectedListViewT
 
  public:
   
-  // TODO: rendre obsolète
-  inline ItemEnumeratorT<ItemType> enumerator() const
-  {
-    return ItemEnumeratorT<ItemType>(m_shared_info,m_local_ids.localIds());
-  }
   inline const_iterator begin() const
   {
     return const_iterator(m_shared_info,m_local_ids.data());
@@ -177,6 +316,21 @@ class ItemConnectedListViewT
   inline const_iterator end() const
   {
     return const_iterator(m_shared_info,m_local_ids.data()+this->size());
+  }
+
+#ifdef ARCANE_HIDE_ITEM_CONNECTIVITY_STRUCTURE
+ private:
+#else
+ public:
+#endif
+
+  // TODO: rendre obsolète
+  operator ItemVectorViewT<ItemType> () const { return ItemVectorViewT<ItemType>(m_shared_info,m_local_ids); }
+
+  // TODO: rendre obsolète
+  inline ItemEnumeratorT<ItemType> enumerator() const
+  {
+    return ItemEnumeratorT<ItemType>(m_shared_info,m_local_ids.localIds());
   }
 };
 

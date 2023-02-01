@@ -83,6 +83,10 @@ class ItemVectorViewConstIterator;
 template<typename ItemType>
 class ItemVectorViewConstIteratorT;
 
+class ItemConnectedListViewConstIterator;
+template<typename ItemType>
+class ItemConnectedListViewConstIteratorT;
+
 template <typename ItemType>
 class ItemLocalIdViewT;
 
@@ -306,8 +310,14 @@ using CellConnectedListView = ItemConnectedListViewT<Cell>;
  */
 using DoFConnectedListView = ItemConnectedListViewT<DoF>;
 
+// A définir si on souhaite cacher les méthodes d'accès aux structures
+// internes des connectivités.
+// #define ARCANE_HIDE_ITEM_CONNECTIVITY_STRUCTURE
+
 #define ARCANE_USE_SPECIFIC_ITEMCONNECTED
 #ifdef ARCANE_USE_SPECIFIC_ITEMCONNECTED
+//! Liste d'entités connectées
+using ItemConnectedListViewType = ItemConnectedListView<DynExtent>;
 //! Liste de noeuds connectés
 using NodeConnectedListViewType = NodeConnectedListView;
 //! Liste d'arêtes connectées
@@ -316,7 +326,11 @@ using EdgeConnectedListViewType = EdgeConnectedListView;
 using FaceConnectedListViewType = FaceConnectedListView;
 //! Liste de mailles connectées
 using CellConnectedListViewType = CellConnectedListView;
+//! Liste générique d'entités connectées
+template<typename ItemType> using ItemConnectedListViewTypeT = ItemConnectedListViewT<ItemType>;
 #else
+//! Liste d'entités connectées
+using ItemConnectedListViewType = ItemVectorView;
 //! Liste de noeuds connectés
 using NodeConnectedListViewType = NodeVectorView;
 //! Liste d'arêtes connectées
@@ -325,6 +339,8 @@ using EdgeConnectedListViewType = EdgeVectorView;
 using FaceConnectedListViewType = FaceVectorView;
 //! Liste de mailles connectées
 using CellConnectedListViewType = CellVectorView;
+//! Liste générique d'entités connectées
+template<typename ItemType> using ItemConnectedListViewTypeT = ItemVectorViewT<ItemType>;
 #endif
 
 /*---------------------------------------------------------------------------*/

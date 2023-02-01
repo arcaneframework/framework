@@ -746,9 +746,9 @@ inline void FaceFamily::
 _removeFace(Face face)
 {
   ItemLocalId face_lid = face;
-  for( Int32 edge : face.edges().localIds().range() )
+  for( Int32 edge : face.edgeIds() )
     m_edge_family->removeFaceFromEdge(ItemLocalId(edge),face_lid);
-  for( Int32 node : face.nodes().localIds().range() )
+  for( Int32 node : face.nodeIds() )
     m_node_family->removeFaceFromNode(ItemLocalId(node),face_lid);
   _removeOne(face);
   // On ne supprime pas ici les autres relations (ici aucune)

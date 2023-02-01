@@ -946,43 +946,30 @@ _propagatesToChildConnectivities(IItemFamily* family)
       }
     }
   }
-  if(!m_mesh->useMeshItemFamilyDependencies())
-  {
-    switch(family->itemKind())
-    {
-      case IK_Face:
-        ENUMERATE_FACE(item, family->allItems())
-        {
-          ENUMERATE_CELL(icell,item->cells())
-          {
-            _addDestRank(*icell,m_cell_family,*item,family);
-          }
-        }
-        break ;
-      case IK_Edge:
-        ENUMERATE_EDGE(item, family->allItems())
-        {
-          ENUMERATE_CELL(icell,item->cells())
-          {
-            _addDestRank(*icell,m_cell_family,*item,family);
-          }
-        }
-        break ;
-      case IK_Node:
-      {
-        ENUMERATE_NODE(item, family->allItems())
-        {
-          ENUMERATE_CELL(icell,item->cells())
-          {
-            _addDestRank(*icell,m_cell_family,*item,family);
-          }
-        }
-        break ;
-      default:
-        break ;
+  if(!m_mesh->useMeshItemFamilyDependencies()){
+    switch(family->itemKind()){
+    case IK_Face:
+      ENUMERATE_(Face, item, family->allItems()) {
+        for( Cell cell : item->cells())
+          _addDestRank(cell,m_cell_family,*item,family);
       }
-    }
+      break;
+    case IK_Edge:
+      ENUMERATE_(Edge, item, family->allItems()){
+        for( Cell cell : item->cells() )
+          _addDestRank(cell,m_cell_family,*item,family);
+      }
+      break;
+    case IK_Node:
+      ENUMERATE_(Node, item, family->allItems()){
+        for( Cell cell : item->cells())
+          _addDestRank(cell,m_cell_family,*item,family);
+      }
+      break;
+    default:
+      break;
   }
+}
 }
 
 /*---------------------------------------------------------------------------*/
