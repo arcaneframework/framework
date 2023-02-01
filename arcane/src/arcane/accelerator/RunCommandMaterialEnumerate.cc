@@ -21,7 +21,7 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-EnvCellRunCommand
+extern "C++" ARCANE_ACCELERATOR_EXPORT EnvCellRunCommand
 operator<<(RunCommand& command,const EnvCellVectorView& items)
 {
   return EnvCellRunCommand(command,items);
@@ -30,7 +30,7 @@ operator<<(RunCommand& command,const EnvCellVectorView& items)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-EnvCellRunCommand
+extern "C++" ARCANE_ACCELERATOR_EXPORT EnvCellRunCommand
 operator<<(RunCommand& command,IMeshEnvironment* env)
 {
   return EnvCellRunCommand(command,env->envView());
