@@ -229,6 +229,7 @@ class ItemEnumeratorT
   friend class ItemVectorViewT<ItemType>;
   friend class ItemConnectedListViewT<ItemType>;
   friend class SimdItemEnumeratorT<ItemType>;
+  template <typename I1, typename I2> friend class ItemPairEnumeratorT;
 
  public:
 

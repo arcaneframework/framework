@@ -159,7 +159,7 @@ executeTest()
              << " pos=" << rays_position[ipart]
              << " dir=" << rays_direction[ipart]
              << " intersect_face_lid=" << face_lid
-             << " intersect_face_uid=" << faces_internal[face_lid]->uniqueId()
+             << " intersect_face_uid=" << faces_internal[face_lid].uniqueId()
              << " d=" << rays_distance[ipart]
              << " p=" << rays_intersection[ipart];
   }
