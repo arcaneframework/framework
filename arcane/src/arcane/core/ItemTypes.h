@@ -83,6 +83,10 @@ class ItemVectorViewConstIterator;
 template<typename ItemType>
 class ItemVectorViewConstIteratorT;
 
+class ItemConnectedListViewConstIterator;
+template<typename ItemType>
+class ItemConnectedListViewConstIteratorT;
+
 template <typename ItemType>
 class ItemLocalIdViewT;
 
@@ -310,7 +314,7 @@ using DoFConnectedListView = ItemConnectedListViewT<DoF>;
 // internes des connectivités.
 // #define ARCANE_HIDE_ITEM_CONNECTIVITY_STRUCTURE
 
-// #define ARCANE_USE_SPECIFIC_ITEMCONNECTED
+#define ARCANE_USE_SPECIFIC_ITEMCONNECTED
 #ifdef ARCANE_USE_SPECIFIC_ITEMCONNECTED
 //! Liste d'entités connectées
 using ItemConnectedListViewType = ItemConnectedListView<DynExtent>;

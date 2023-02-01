@@ -63,6 +63,7 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   friend class mesh::ItemSharedInfoWithType;
   friend class ItemInternalVectorView;
   friend class ItemVectorViewConstIterator;
+  friend class ItemConnectedListViewConstIterator;
   friend class ItemVectorView;
   friend class ItemEnumeratorBase;
   friend class ItemInternalCompatibility;
