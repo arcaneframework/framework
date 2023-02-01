@@ -34,7 +34,12 @@ class ARCANE_CORE_EXPORT UnstructuredMeshConnectivityView
 {
  public:
 
-  void setMesh(IMesh* m);
+  UnstructuredMeshConnectivityView() = default;
+  explicit UnstructuredMeshConnectivityView(IMesh* m){ setMesh(m); }
+
+ public:
+
+ void setMesh(IMesh* m);
 
  public:
 

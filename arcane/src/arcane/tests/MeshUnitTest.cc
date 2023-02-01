@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshUnitTest.cc                                             (C) 2000-2022 */
+/* MeshUnitTest.cc                                             (C) 2000-2023 */
 /*                                                                           */
 /* Service du test du maillage.                                              */
 /*---------------------------------------------------------------------------*/
@@ -204,6 +204,7 @@ public:
   void _testFaces();
   void _testItemVectorView();
   void _logMeshInfos();
+  void _testComputeLocalIdPattern();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -295,6 +296,7 @@ executeTest()
   _testFaces();
   if (options()->testDeallocateMesh())
     _testDeallocateMesh();
+  _testComputeLocalIdPattern();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1482,12 +1484,21 @@ _testDeallocateMesh()
   // TODO: Utiliser un service qui implémente IMeshBuilder au lieu de IMeshReader
   ServiceBuilder<IMeshReader> sbu(subDomain());
   String file_names[3] = { "tied_interface_1.vtk", "sphere_tied_1.vtk", "sphere_tied_2.vtk" };
-  for( Integer i=0; i<nb_deallocate; ++i ){
+  for (Integer i = 0; i < nb_deallocate; ++i) {
     info() << "DEALLOCATE I=" << i;
     pmesh->deallocate();
-    auto mesh_io(sbu.createReference("VtkLegacyMeshReader",SB_AllowNull));
-    mesh_io->readMeshFromFile(pmesh,XmlNode{},file_names[i%3],String(),true);
+    auto mesh_io(sbu.createReference("VtkLegacyMeshReader", SB_AllowNull));
+    mesh_io->readMeshFromFile(pmesh, XmlNode{}, file_names[i % 3], String(), true);
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshUnitTest::
+_testComputeLocalIdPattern()
+{
+  mesh_utils::computeConnectivityPatternOccurence(mesh());
 }
 
 /*---------------------------------------------------------------------------*/
