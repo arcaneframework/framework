@@ -649,13 +649,13 @@ class ARCANE_CORE_EXPORT Node
   CellLocalId cellId(Int32 i) const { return _cellId(i); }
 
   //! Liste des arêtes du noeud
-  EdgeVectorView edges() const { return _edgeList(); }
+  EdgeConnectedListViewType edges() const { return _edgeList(); }
 
   //! Liste des faces du noeud
-  FaceVectorView faces() const { return _faceList(); }
+  FaceConnectedListViewType faces() const { return _faceList(); }
 
   //! Liste des mailles du noeud
-  CellVectorView cells() const { return _cellList(); }
+  CellConnectedListViewType cells() const { return _cellList(); }
 
   //! Liste des arêtes du noeud
   EdgeLocalIdView edgeIds() const { return _edgeIds(); }

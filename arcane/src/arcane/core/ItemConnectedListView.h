@@ -61,12 +61,6 @@ class ItemConnectedListView
 
  public:
 
-  // Temporaire pour rendre les sources compatibles
-  operator ItemInternalVectorView() const
-  {
-    return ItemInternalVectorView(m_shared_info,m_local_ids);
-  }
-
   //! Accède au \a i-ème élément du vecteur
   Item operator[](Integer index) const { return Item(m_local_ids[index],m_shared_info); }
 
@@ -85,22 +79,30 @@ class ItemConnectedListView
     return const_iterator(m_shared_info,m_local_ids.data()+this->size());
   }
 
+#ifdef ARCANE_HIDE_ITEM_CONNECTIVITY_STRUCTURE
+ private:
+#else
  public:
+#endif
+
+  // Temporaire pour rendre les sources compatibles
+  operator ItemInternalVectorView() const
+  {
+    return ItemInternalVectorView(m_shared_info,m_local_ids);
+  }
 
   // TODO Rendre obsolète
  
   //! Tableau des numéros locaux des entités
   Int32ConstArrayView localIds() const { return m_local_ids; }
 
+  // TODO: rendre obsolète
+  inline ItemEnumerator enumerator() const;
+
  private:
 
   //! Vue sur le tableau des indices
   ItemIndexArrayView indexes() const { return m_local_ids; }
-
- public:
-
-  // TODO: rendre obsolète
-  inline ItemEnumerator enumerator() const;
 
  protected:
   
@@ -122,6 +124,7 @@ class ItemConnectedListViewT
   friend class ItemEnumerator;
   friend class Item;
   friend class ItemWithNodes;
+  friend class Node;
   friend class Edge;
   friend class Face;
   friend class Cell;
@@ -153,11 +156,6 @@ class ItemConnectedListViewT
 
  public:
 
-  // TODO: rendre obsolète
-  operator ItemVectorViewT<ItemType> () const { return ItemVectorViewT<ItemType>(m_shared_info,m_local_ids); }
-
- public:
-
   ItemType operator[](Integer index) const
   {
     return ItemType(m_local_ids[index],m_shared_info);
@@ -165,11 +163,6 @@ class ItemConnectedListViewT
 
  public:
   
-  // TODO: rendre obsolète
-  inline ItemEnumeratorT<ItemType> enumerator() const
-  {
-    return ItemEnumeratorT<ItemType>(m_shared_info,m_local_ids.localIds());
-  }
   inline const_iterator begin() const
   {
     return const_iterator(m_shared_info,m_local_ids.data());
@@ -177,6 +170,21 @@ class ItemConnectedListViewT
   inline const_iterator end() const
   {
     return const_iterator(m_shared_info,m_local_ids.data()+this->size());
+  }
+
+#ifdef ARCANE_HIDE_ITEM_CONNECTIVITY_STRUCTURE
+ private:
+#else
+ public:
+#endif
+
+  // TODO: rendre obsolète
+  operator ItemVectorViewT<ItemType> () const { return ItemVectorViewT<ItemType>(m_shared_info,m_local_ids); }
+
+  // TODO: rendre obsolète
+  inline ItemEnumeratorT<ItemType> enumerator() const
+  {
+    return ItemEnumeratorT<ItemType>(m_shared_info,m_local_ids.localIds());
   }
 };
 
