@@ -41,9 +41,15 @@ namespace Arcane
 class ItemVectorViewConstIterator
 {
  protected:
+
   friend class ItemVectorView;
+  template<int Extent> friend class ItemConnectedListView;
+
+ protected:
+
   ItemVectorViewConstIterator(ItemSharedInfo* shared_info,const Int32* local_id_ptr)
   : m_shared_info(shared_info), m_local_id_ptr(local_id_ptr){}
+
  public:
 
   typedef ItemVectorViewConstIterator ThatClass;
@@ -121,6 +127,7 @@ class ItemVectorViewConstIteratorT
 : public ItemVectorViewConstIterator
 {
   friend class ItemVectorViewT<ItemType>;
+  friend class ItemConnectedListViewT<ItemType>;
 
  private:
 
@@ -289,6 +296,7 @@ class ItemVectorViewT
 : public ItemVectorView
 {
   friend class ItemVectorT<ItemType>;
+  friend class ItemConnectedListViewT<ItemType>;
 
  public:
 

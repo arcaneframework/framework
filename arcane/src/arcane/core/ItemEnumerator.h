@@ -55,7 +55,8 @@ class ItemEnumerator
   friend class ItemVector;
   friend class ItemVectorView;
   friend class ItemPairEnumerator;
-  // NOTE: Normalement il suffirait de faire cela:
+  template<int Extent> friend class ItemConnectedListView;
+// NOTE: Normalement il suffirait de faire cela:
   //   template<class T> friend class ItemEnumeratorBase;
   // mais cela ne fonctionne pas avec GCC 8. On fait donc la spécialisation
   // à la main
@@ -88,6 +89,12 @@ class ItemEnumerator
   ItemEnumerator(const impl::ItemIndexedListView<DynExtent>& rhs)
   : BaseClass(rhs)
   {}
+
+ public:
+
+  // Pour test
+  template<int E> ItemEnumerator(const ItemConnectedListView<E>& rhs)
+  : BaseClass(ItemConnectedListViewT<Item,E>(rhs)){}
 
  private:
 
@@ -220,6 +227,7 @@ class ItemEnumeratorT
   using BaseClass = ItemEnumeratorBaseT<ItemType>;
   friend class ItemVectorT<ItemType>;
   friend class ItemVectorViewT<ItemType>;
+  friend class ItemConnectedListViewT<ItemType>;
   friend class SimdItemEnumeratorT<ItemType>;
 
  public:
@@ -251,6 +259,11 @@ class ItemEnumeratorT
   ARCANE_DEPRECATED_REASON("Y2022: Internal to Arcane. Use other constructor")
   ItemEnumeratorT(const ItemInternalVectorView& view, const ItemGroupImpl* agroup = nullptr)
   : BaseClass(view,agroup){}
+
+ public:
+
+  // Pour test
+  ItemEnumeratorT(const ItemConnectedListViewT<ItemType>& rhs) : BaseClass(rhs){}
 
  private:
 
@@ -286,6 +299,16 @@ class ItemEnumeratorT
 /*---------------------------------------------------------------------------*/
 
 inline ItemEnumerator ItemVectorView::
+enumerator() const
+{
+  return ItemEnumerator(m_shared_info,m_local_ids);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<int Extent>
+inline ItemEnumerator ItemConnectedListView<Extent>::
 enumerator() const
 {
   return ItemEnumerator(m_shared_info,m_local_ids);

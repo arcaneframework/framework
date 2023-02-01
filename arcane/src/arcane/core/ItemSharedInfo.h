@@ -68,6 +68,7 @@ class ARCANE_CORE_EXPORT ItemSharedInfo
   friend class ItemInternalCompatibility;
   friend class SimdItemBase;
   friend class SimdItemEnumeratorBase;
+  template<int Extent> friend class ItemConnectedListView;
 
  public:
 

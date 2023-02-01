@@ -1141,6 +1141,7 @@ class ItemInternalCompatibility
   template<typename T> friend class ItemEnumeratorBaseT;
   friend class mesh::DynamicMeshKindInfos;
   friend class TotalviewAdapter;
+  template<int Extent> friend class ItemConnectedListView;
 
  private:
 

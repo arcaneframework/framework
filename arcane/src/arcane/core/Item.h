@@ -88,6 +88,7 @@ class ARCANE_CORE_EXPORT Item
   friend class SimdItemEnumeratorBase;
   friend class ItemInfoListView;
   friend class ItemPairEnumerator;
+  template<int Extent> friend class ItemConnectedListView;
   template<typename ItemType> friend class ItemEnumeratorBaseT;
 
   // Pour accéder à _internal()
@@ -534,6 +535,7 @@ operator<(const Item& item1,const Item& item2)
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/ItemVectorView.h"
+#include "arcane/ItemConnectedListView.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -555,6 +557,7 @@ class ARCANE_CORE_EXPORT Node
   friend class ItemEnumeratorBaseT<Node>;
   friend class ItemVectorT<Node>;
   friend class ItemVectorViewT<Node>;
+  friend class ItemConnectedListViewT<Node>;
   friend class ItemVectorViewConstIteratorT<Node>;
   friend class SimdItemT<Node>;
   friend class ItemInfoListViewT<Node>;
@@ -749,11 +752,10 @@ class ARCANE_CORE_EXPORT ItemWithNodes
   Node node(Int32 i) const { return _node(i); }
 
   //! Liste des noeuds de l'entité
-  NodeVectorView nodes() const { return _nodeList(); }
+  NodeConnectedListViewType nodes() const { return _nodeList(); }
 
   //! Liste des noeuds de l'entité
-  NodeLocalIdView nodeIds() const { return _nodeIds();
-  }
+  NodeLocalIdView nodeIds() const { return _nodeIds(); }
 
   //! i-ème noeud de l'entité.
   NodeLocalId nodeId(Int32 index) const { return _nodeId(index); }
@@ -859,7 +861,7 @@ class ARCANE_CORE_EXPORT Edge
   inline Cell cell(Int32 i) const;
 
   //! Liste des mailles de l'arête
-  CellVectorView cells() const { return _cellList(); }
+  CellConnectedListViewType cells() const { return _cellList(); }
 
   //! i-ème maille de l'arête
   CellLocalId cellId(Int32 i) const { return _cellId(i); }
@@ -871,7 +873,7 @@ class ARCANE_CORE_EXPORT Edge
   inline Face face(Int32 i) const;
 
   //! Liste des faces de l'arête
-  FaceVectorView faces() const { return _faceList(); }
+  FaceConnectedListViewType faces() const { return _faceList(); }
 
   //! i-ème face de l'arête
   FaceLocalId faceId(Int32 i) const { return _faceId(i); }
@@ -983,7 +985,7 @@ class ARCANE_CORE_EXPORT Face
   inline Cell cell(Int32 i) const;
 
   //! Liste des mailles de la face
-  CellVectorView cells() const { return _cellList(); }
+  CellConnectedListViewType cells() const { return _cellList(); }
 
   //! i-ème maille de la face
   CellLocalId cellId(Int32 i) const { return _cellId(i); }
@@ -1078,11 +1080,11 @@ class ARCANE_CORE_EXPORT Face
    * Cette liste n'existe que pour les faces dont isMasterFace() est vrai.
    * Pour les autres, elle est vide.
    */
-  FaceVectorView slaveFaces() const
+  FaceConnectedListViewType slaveFaces() const
   {
     if (_toItemBase().isMasterFace())
       return _faceList();
-    return FaceVectorView();
+    return FaceConnectedListViewType();
   }
 
  public:
@@ -1094,7 +1096,7 @@ class ARCANE_CORE_EXPORT Face
   Edge edge(Int32 i) const { return _edge(i); }
 
   //! Liste des arêtes de la face
-  EdgeVectorView edges() const { return _edgeList(); }
+  EdgeConnectedListViewType edges() const { return _edgeList(); }
 
   //! i-ème arête de la face
   EdgeLocalId edgeId(Int32 i) const { return _edgeId(i); }
@@ -1225,7 +1227,7 @@ class ARCANE_CORE_EXPORT Cell
   Face face(Int32 i) const { return _face(i); }
 
   //! Liste des faces de la maille
-  FaceVectorView faces() const { return _faceList(); }
+  FaceConnectedListViewType faces() const { return _faceList(); }
 
   //! i-ème face de la maille
   FaceLocalId faceId(Int32 i) const { return _faceId(i); }
@@ -1243,7 +1245,7 @@ class ARCANE_CORE_EXPORT Cell
   EdgeLocalId edgeId(Int32 i) const { return _edgeId(i); }
 
   //! Liste des arêtes de la maille
-  EdgeVectorView edges() const { return _edgeList(); }
+  EdgeConnectedListViewType edges() const { return _edgeList(); }
 
   //! Liste des arêtes de la maille
   EdgeLocalIdView edgeIds() const { return _edgeIds(); }
