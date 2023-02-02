@@ -421,7 +421,7 @@ computeForces()
     ENUMERATE_(Cell,icell,allCells()){
       Cell cell = *icell;
       Real pressure = m_pressure[cell];
-      for( NodeEnumerator i_node(cell.nodes()); i_node.hasNext(); ++i_node )
+      ENUMERATE_CONNECTED_(Node,i_node,cell,nodes())
         m_force[i_node] += pressure * m_cell_cqs[icell][i_node.index()];
     }
   }
