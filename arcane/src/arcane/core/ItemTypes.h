@@ -190,6 +190,10 @@ class ItemEnumerator;
 template<typename ItemType>
 class ItemEnumeratorT;
 
+class ItemConnectedEnumerator;
+template<typename ItemType>
+class ItemConnectedEnumeratorT;
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -198,6 +202,9 @@ class SimdItemEnumeratorBase;
 
 template<typename ItemType>
 class ItemEnumeratorBaseT;
+
+template<typename ItemType>
+class ItemConnectedEnumeratorBaseT;
 
 template<typename ItemType>
 class SimdItemEnumeratorT;
