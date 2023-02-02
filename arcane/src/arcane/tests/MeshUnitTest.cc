@@ -473,8 +473,9 @@ _dumpTiedInterfaces()
             error() << "master_face and its cell do not have the same owner: face_owner=" << master_face_owner
                     << " cell_owner=" << cell_face_owner;
         }
-        for( NodeEnumerator inode(face.nodes()); inode.hasNext(); ++inode )
+        ENUMERATE_CONNECTED_(Node,inode,face,nodes()){
           info() << "Master face node uid=" << inode->uniqueId();
+        }
         for( Integer zz=0, zs=tied_nodes[iface.index()].size(); zz<zs; ++zz ){
           const TiedNode& tn = tied_nodes[iface.index()][zz];
           nodes_in_master_face.insert(tn.node().uniqueId());
@@ -484,12 +485,13 @@ _dumpTiedInterfaces()
                    << " kind=" << tn.node().kind();
           }
         }
-        for( NodeEnumerator inode(face.nodes()); inode.hasNext(); ++inode )
+        ENUMERATE_CONNECTED_(Node,inode,face,nodes()){
           if (nodes_in_master_face.find(inode->uniqueId())==nodes_in_master_face.end()){
             ++nb_error;
             if (nb_error<max_print_error)
               error() << "node in master face not in slave node list uid=" << inode->uniqueId();
           }
+        }
         Integer nb_tied = tied_faces[iface.index()].size();
         if (nb_tied!=slave_faces.size()){
           ++nb_error;

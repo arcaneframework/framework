@@ -81,6 +81,7 @@ class ARCANE_CORE_EXPORT Item
 {
   // Pour accéder aux constructeurs privés
   friend class ItemEnumeratorBaseT<Item>;
+  friend class ItemConnectedEnumeratorBaseT<Item>;
   friend class ItemVector;
   friend class ItemVectorView;
   friend class ItemVectorViewConstIterator;
@@ -554,15 +555,17 @@ namespace Arcane
 class ARCANE_CORE_EXPORT Node
 : public Item
 {
+  using ThatClass = Node;
   // Pour accéder aux constructeurs privés
-  friend class ItemEnumeratorBaseT<Node>;
-  friend class ItemVectorT<Node>;
-  friend class ItemVectorViewT<Node>;
-  friend class ItemConnectedListViewT<Node>;
-  friend class ItemVectorViewConstIteratorT<Node>;
-  friend class ItemConnectedListViewConstIteratorT<Node>;
-  friend class SimdItemT<Node>;
-  friend class ItemInfoListViewT<Node>;
+  friend class ItemEnumeratorBaseT<ThatClass>;
+  friend class ItemConnectedEnumeratorBaseT<ThatClass>;
+  friend class ItemVectorT<ThatClass>;
+  friend class ItemVectorViewT<ThatClass>;
+  friend class ItemConnectedListViewT<ThatClass>;
+  friend class ItemVectorViewConstIteratorT<ThatClass>;
+  friend class ItemConnectedListViewConstIteratorT<ThatClass>;
+  friend class SimdItemT<ThatClass>;
+  friend class ItemInfoListViewT<ThatClass>;
 
  public:
 
@@ -702,14 +705,16 @@ _node(Int32 index) const
 class ARCANE_CORE_EXPORT ItemWithNodes
 : public Item
 {
+  using ThatClass = ItemWithNodes;
   // Pour accéder aux constructeurs privés
-  friend class ItemEnumeratorBaseT<ItemWithNodes>;
-  friend class ItemVectorT<ItemWithNodes>;
-  friend class ItemVectorViewT<ItemWithNodes>;
-  friend class ItemVectorViewConstIteratorT<ItemWithNodes>;
-  friend class ItemConnectedListViewConstIteratorT<ItemWithNodes>;
-  friend class SimdItemT<ItemWithNodes>;
-  friend class ItemInfoListViewT<ItemWithNodes>;
+  friend class ItemEnumeratorBaseT<ThatClass>;
+  friend class ItemConnectedEnumeratorBaseT<ThatClass>;
+  friend class ItemVectorT<ThatClass>;
+  friend class ItemVectorViewT<ThatClass>;
+  friend class ItemVectorViewConstIteratorT<ThatClass>;
+  friend class ItemConnectedListViewConstIteratorT<ThatClass>;
+  friend class SimdItemT<ThatClass>;
+  friend class ItemInfoListViewT<ThatClass>;
 
  protected:
 
@@ -783,14 +788,16 @@ class ARCANE_CORE_EXPORT ItemWithNodes
 class ARCANE_CORE_EXPORT Edge
 : public ItemWithNodes
 {
+  using ThatClass = Edge;
   // Pour accéder aux constructeurs privés
-  friend class ItemEnumeratorBaseT<Edge>;
-  friend class ItemVectorT<Edge>;
-  friend class ItemVectorViewT<Edge>;
-  friend class ItemVectorViewConstIteratorT<Edge>;
-  friend class ItemConnectedListViewConstIteratorT<Edge>;
-  friend class SimdItemT<Edge>;
-  friend class ItemInfoListViewT<Edge>;
+  friend class ItemEnumeratorBaseT<ThatClass>;
+  friend class ItemConnectedEnumeratorBaseT<ThatClass>;
+  friend class ItemVectorT<ThatClass>;
+  friend class ItemVectorViewT<ThatClass>;
+  friend class ItemVectorViewConstIteratorT<ThatClass>;
+  friend class ItemConnectedListViewConstIteratorT<ThatClass>;
+  friend class SimdItemT<ThatClass>;
+  friend class ItemInfoListViewT<ThatClass>;
 
  public:
 
@@ -914,14 +921,16 @@ _edge(Int32 index) const
 class ARCANE_CORE_EXPORT Face
 : public ItemWithNodes
 {
+  using ThatClass = Face;
   // Pour accéder aux constructeurs privés
-  friend class ItemEnumeratorBaseT<Face>;
-  friend class ItemVectorT<Face>;
-  friend class ItemVectorViewT<Face>;
-  friend class ItemVectorViewConstIteratorT<Face>;
-  friend class ItemConnectedListViewConstIteratorT<Face>;
-  friend class SimdItemT<Face>;
-  friend class ItemInfoListViewT<Face>;
+  friend class ItemEnumeratorBaseT<ThatClass>;
+  friend class ItemConnectedEnumeratorBaseT<ThatClass>;
+  friend class ItemVectorT<ThatClass>;
+  friend class ItemVectorViewT<ThatClass>;
+  friend class ItemVectorViewConstIteratorT<ThatClass>;
+  friend class ItemConnectedListViewConstIteratorT<ThatClass>;
+  friend class SimdItemT<ThatClass>;
+  friend class ItemInfoListViewT<ThatClass>;
 
  public:
 
@@ -1157,14 +1166,16 @@ _face(Int32 index) const
 class ARCANE_CORE_EXPORT Cell
 : public ItemWithNodes
 {
+  using ThatClass = Cell;
   // Pour accéder aux constructeurs privés
-  friend class ItemEnumeratorBaseT<Cell>;
-  friend class ItemVectorT<Cell>;
-  friend class ItemVectorViewT<Cell>;
-  friend class ItemVectorViewConstIteratorT<Cell>;
-  friend class ItemConnectedListViewConstIteratorT<Cell>;
-  friend class SimdItemT<Cell>;
-  friend class ItemInfoListViewT<Cell>;
+  friend class ItemEnumeratorBaseT<ThatClass>;
+  friend class ItemConnectedEnumeratorBaseT<ThatClass>;
+  friend class ItemVectorT<ThatClass>;
+  friend class ItemVectorViewT<ThatClass>;
+  friend class ItemVectorViewConstIteratorT<ThatClass>;
+  friend class ItemConnectedListViewConstIteratorT<ThatClass>;
+  friend class SimdItemT<ThatClass>;
+  friend class ItemInfoListViewT<ThatClass>;
 
  public:
 
@@ -1359,21 +1370,22 @@ _cell(Int32 index) const
 class Particle
 : public Item
 {
+  using ThatClass = Particle;
   // Pour accéder aux constructeurs privés
-  friend class ItemEnumeratorBaseT<Particle>;
-  friend class ItemVectorT<Particle>;
-  friend class ItemVectorViewT<Particle>;
-  friend class ItemVectorViewConstIteratorT<Particle>;
-  friend class ItemConnectedListViewConstIteratorT<Particle>;
-  friend class SimdItemT<Particle>;
-  friend class ItemInfoListViewT<Particle>;
+  friend class ItemEnumeratorBaseT<ThatClass>;
+  friend class ItemConnectedEnumeratorBaseT<ThatClass>;
+  friend class ItemVectorT<ThatClass>;
+  friend class ItemVectorViewT<ThatClass>;
+  friend class ItemVectorViewConstIteratorT<ThatClass>;
+  friend class ItemConnectedListViewConstIteratorT<ThatClass>;
+  friend class SimdItemT<ThatClass>;
+  friend class ItemInfoListViewT<ThatClass>;
 
  private:
 
   //! Constructeur réservé pour les énumérateurs
   Particle(Int32 local_id,ItemSharedInfo* shared_info)
   : Item(local_id,shared_info) {}
-
 
  public:
   
@@ -1462,14 +1474,16 @@ class Particle
 class DoF
 : public Item
 {
+  using ThatClass = DoF;
   // Pour accéder aux constructeurs privés
-  friend class ItemEnumeratorBaseT<DoF>;
-  friend class ItemVectorT<DoF>;
-  friend class ItemVectorViewT<DoF>;
-  friend class ItemVectorViewConstIteratorT<DoF>;
-  friend class ItemConnectedListViewConstIteratorT<DoF>;
-  friend class SimdItemT<DoF>;
-  friend class ItemInfoListViewT<DoF>;
+  friend class ItemEnumeratorBaseT<ThatClass>;
+  friend class ItemConnectedEnumeratorBaseT<ThatClass>;
+  friend class ItemVectorT<ThatClass>;
+  friend class ItemVectorViewT<ThatClass>;
+  friend class ItemVectorViewConstIteratorT<ThatClass>;
+  friend class ItemConnectedListViewConstIteratorT<ThatClass>;
+  friend class SimdItemT<ThatClass>;
+  friend class ItemInfoListViewT<ThatClass>;
 
  private:
 

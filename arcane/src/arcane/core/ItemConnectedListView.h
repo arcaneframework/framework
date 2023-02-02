@@ -305,6 +305,7 @@ class ItemConnectedListViewT
   friend class Cell;
   friend class Particle;
   friend class DoF;
+  template <typename T> friend class ItemConnectedEnumeratorBaseT;
 
   using BaseClass = ItemConnectedListView<Extent>;
   using BaseClass::m_shared_info;

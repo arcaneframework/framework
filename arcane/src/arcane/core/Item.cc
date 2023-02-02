@@ -22,6 +22,7 @@
 #include "arcane/ItemPrinter.h"
 #include "arcane/MeshItemInternalList.h"
 #include "arcane/IndexedItemConnectivityView.h"
+#include "arcane/ItemConnectedEnumerator.h"
 
 #include "arcane/ItemEnumerator.h"
 
@@ -109,7 +110,11 @@ resetStats()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+// Pour tester l'instantiation de ces classes
 template class ItemConnectedListViewT<Node>;
+template class ItemConnectedEnumeratorBaseT<Node>;
+template class ItemConnectedEnumeratorT<Node>;
+template class ItemConnectedEnumeratorT<Item>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -47,6 +47,7 @@ class ARCANE_CORE_EXPORT ItemIndexedListView
   friend ItemInternalVectorView;
   friend class ItemConnectedListView<DynExtent>;
   template <typename T> friend class Arcane::ItemEnumeratorBaseT;
+  template <typename T> friend class Arcane::ItemConnectedEnumeratorBaseT;
 
  public:
 
