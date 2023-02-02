@@ -131,7 +131,7 @@ _applyEnvCells(RunCommand& command,const EnvCellVectorView& items,const Lambda& 
   Int32 vsize = static_cast<Int32>(items.nbItem());
   if (vsize==0)
     return;
-  impl::RunCommandLaunchInfo launch_info(command);
+  impl::RunCommandLaunchInfo launch_info(command, vsize);
   const eExecutionPolicy exec_policy = launch_info.executionPolicy();
   switch(exec_policy){
   case eExecutionPolicy::CUDA:

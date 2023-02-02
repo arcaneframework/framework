@@ -40,7 +40,7 @@ class MatVariableViewBase
   // Pour l'instant n'utilise pas encore \a command et \a var
   // mais il ne faut pas les supprimer
   // TODO: j'ai bestialement repris le fonctionnement des VariableViews de GG
-  MatVariableViewBase(RunCommand& command,IMeshMaterialVariable* var)
+  MatVariableViewBase([[maybe_unused]] RunCommand& cmd,[[maybe_unused]] IMeshMaterialVariable* var)
   {
   }
  private:
