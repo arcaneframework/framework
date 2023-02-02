@@ -14,9 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/core/ItemInternalEnumerator.h"
 #include "arcane/core/Item.h"
-#include "arcane/core/EnumeratorTraceWrapper.h"
 #include "arcane/core/ItemConnectedEnumeratorBase.h"
 
 /*---------------------------------------------------------------------------*/
@@ -24,10 +22,8 @@
 /*!
  * \file ItemConnectedEnumerator.h
  *
- * \brief Types et macros pour itérer sur les entités du maillage.
- *
- * Ce fichier contient les différentes types d'itérateur et les macros
- * pour itérer sur les entités du maillage.
+ * \brief Types et macros pour itérer sur les entités du maillage connectées
+ * à une autre entité.
  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -38,7 +34,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Enumérateur sur une liste d'entités.
+ * \brief Enumérateur sur une liste d'entités connectées à une autre.
  */
 class ItemConnectedEnumerator
 : public ItemConnectedEnumeratorBaseT<Item>
@@ -75,7 +71,6 @@ class ItemConnectedEnumerator
   : BaseClass(rhs)
   {}
 
-  // Pour test
   template<int E> ItemConnectedEnumerator(const ItemConnectedListView<E>& rhs)
   : BaseClass(ItemConnectedListViewT<Item,E>(rhs)){}
 
@@ -84,13 +79,6 @@ class ItemConnectedEnumerator
   ItemConnectedEnumerator(ItemSharedInfo* s, const Int32ConstArrayView& local_ids)
   : BaseClass(s, local_ids)
   {}
-
- public:
-
-  static ItemConnectedEnumerator fromItemConnectedEnumerator(const ItemConnectedEnumerator& rhs)
-  {
-    return ItemConnectedEnumerator(rhs);
-  }
 
  private:
 
@@ -121,6 +109,42 @@ class ItemConnectedEnumeratorT
   ItemConnectedEnumeratorT(ItemSharedInfo* s,const Int32ConstArrayView& local_ids)
   : BaseClass(s,local_ids){}
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*!
+ * \def ENUMERATE_CONNECTED_(type,iterator_name,item,connectivity_func)
+ *
+ * \brief Macro pour itérer sur une liste d'entité connectées à une autre entité.
+ *
+ * \warning API expérimentale. Ne pas utiliser en dehors de %Arcane.
+ *
+ * \param type type de l'entité connectée (Node, Face, Cell, Edge, Particle, DoF )
+ * \param iterator_name nom de l'énumérateur
+ * \param item nom de l'entité dont on souhaite avoir les connectivités
+ * \param connectivity_func méthode de \a item pour récupérer la connectivité.
+ *
+ * Exemple pour itérer sur les noeuds de la mailles:
+ * \code
+ * Arcane::Cell cell = ...;
+ * ENUMERATE_CONNECTED_(Node,inode,cell,nodes()){
+ *   Arcane::Node node(*inode);
+ *   info() << "Node local_id=" << node.localId()
+ * }
+ * \endcode
+ */
+#ifdef ARCANE_USE_SPECIFIC_ITEMCONNECTED
+
+#define ENUMERATE_CONNECTED_(type,iterator_name,item,connectivity_func) \
+  for( ::Arcane::ItemConnectedEnumeratorT< type > iterator_name( (item) . connectivity_func ); iterator_name . hasNext(); ++iterator_name )
+
+#else
+
+#define ENUMERATE_CONNECTED_(type,iterator_name,item,connectivity_func) \
+  for( ::Arcane::ItemEnumeratorT< type > iterator_name( (item) . connectivity_func ); iterator_name . hasNext(); ++iterator_name )
+
+#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

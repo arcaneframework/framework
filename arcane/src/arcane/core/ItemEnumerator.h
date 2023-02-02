@@ -19,6 +19,7 @@
 #include "arcane/EnumeratorTraceWrapper.h"
 #include "arcane/IItemEnumeratorTracer.h"
 #include "arcane/ItemEnumeratorBase.h"
+#include "arcane/ItemConnectedEnumerator.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -56,7 +57,7 @@ class ItemEnumerator
   friend class ItemVectorView;
   friend class ItemPairEnumerator;
   template<int Extent> friend class ItemConnectedListView;
-// NOTE: Normalement il suffirait de faire cela:
+  // NOTE: Normalement il suffirait de faire cela:
   //   template<class T> friend class ItemEnumeratorBase;
   // mais cela ne fonctionne pas avec GCC 8. On fait donc la spécialisation
   // à la main
@@ -336,6 +337,24 @@ ItemLocalId(ItemEnumeratorT<ItemType> enumerator)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+inline ItemLocalId::
+ItemLocalId(ItemConnectedEnumerator enumerator)
+: m_local_id(enumerator.asItemLocalId())
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename ItemType> inline ItemLocalId::
+ItemLocalId(ItemConnectedEnumeratorT<ItemType> enumerator)
+: m_local_id(enumerator.asItemLocalId())
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 // TODO: ajouter vérification du bon type
 template<typename ItemType> inline ItemLocalIdT<ItemType>::
 ItemLocalIdT(ItemEnumerator enumerator)
@@ -348,6 +367,15 @@ ItemLocalIdT(ItemEnumerator enumerator)
 
 template<typename ItemType> inline ItemLocalIdT<ItemType>::
 ItemLocalIdT(ItemEnumeratorT<ItemType> enumerator)
+: ItemLocalId(enumerator.asItemLocalId())
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename ItemType> inline ItemLocalIdT<ItemType>::
+ItemLocalIdT(ItemConnectedEnumeratorT<ItemType> enumerator)
 : ItemLocalId(enumerator.asItemLocalId())
 {
 }

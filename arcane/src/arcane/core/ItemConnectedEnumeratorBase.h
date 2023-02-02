@@ -82,13 +82,13 @@ class ItemConnectedEnumeratorBase
   constexpr bool hasNext() const { return m_index<m_count; }
 
   //! Nombre d'éléments de l'énumérateur
-  constexpr Integer count() const { return m_count; }
+  constexpr Int32 count() const { return m_count; }
 
   //! Indice courant de l'énumérateur
-  constexpr Integer index() const { return m_index; }
+  constexpr Int32 index() const { return m_index; }
 
   //! localId() de l'entité courante.
-  constexpr Int32 itemLocalId() const { return ARCANE_LOCALID_ADD_OFFSET(m_local_ids[m_index]); }
+  constexpr ItemLocalId itemLocalId() const { return ItemLocalId(ARCANE_LOCALID_ADD_OFFSET(m_local_ids[m_index])); }
 
   //! localId() de l'entité courante.
   constexpr Int32 localId() const { return ARCANE_LOCALID_ADD_OFFSET(m_local_ids[m_index]); }
