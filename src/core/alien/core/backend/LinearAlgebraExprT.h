@@ -78,6 +78,17 @@ LinearAlgebraExpr<Tag, TagV>::norm2(const IVector& x) const
 /*---------------------------------------------------------------------------*/
 
 template <class Tag, class TagV>
+Arccore::Real
+LinearAlgebraExpr<Tag, TagV>::norm2(const IMatrix& x) const
+{
+  const auto& mx = x.impl()->get<Tag>();
+  return m_algebra->norm2(mx);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <class Tag, class TagV>
 void LinearAlgebraExpr<Tag, TagV>::mult(const IMatrix& a, const IVector& x, IVector& r) const
 {
   const auto& ma = a.impl()->get<Tag>();
@@ -123,6 +134,24 @@ void LinearAlgebraExpr<Tag, TagV>::copy(const IVector& x, IVector& r) const
   m_algebra->copy(vx, vr);
 }
 
+template <class Tag, class TagV>
+void LinearAlgebraExpr<Tag, TagV>::copy(const IMatrix& x, IMatrix& r) const
+{
+  const auto& mx = x.impl()->get<TagV>();
+  auto& mr = r.impl()->get<TagV>(true);
+  ALIEN_ASSERT((mx.rowSpace() == mr.rowSpace()), ("Incompatible spaces"));
+  m_algebra->copy(mx, mr);
+}
+
+template <class Tag, class TagV>
+void LinearAlgebraExpr<Tag, TagV>::add(const IMatrix& a, IMatrix& b) const
+{
+  const auto& ma = a.impl()->get<Tag>();
+  auto& mb = b.impl()->get<Tag>(true);
+  ALIEN_ASSERT((ma.rowSpace() == mb.rowSpace()), ("Incompatible spaces"));
+  m_algebra->add(ma, mb);
+}
+
 /*---------------------------------------------------------------------------*/
 
 template <class Tag, class TagV>
@@ -164,6 +193,13 @@ void LinearAlgebraExpr<Tag, TagV>::scal(Real alpha, IVector& x) const
 {
   auto& vx = x.impl()->get<TagV>(true);
   m_algebra->scal(alpha, vx);
+}
+
+template <class Tag, class TagV>
+void LinearAlgebraExpr<Tag, TagV>::scal(Real alpha, IMatrix& A) const
+{
+  auto& ma = A.impl()->get<Tag>(true);
+  m_algebra->scal(alpha, ma);
 }
 
 /*---------------------------------------------------------------------------*/

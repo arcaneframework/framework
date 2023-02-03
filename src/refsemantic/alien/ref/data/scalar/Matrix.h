@@ -54,6 +54,9 @@ class ALIEN_REFSEMANTIC_EXPORT Matrix final : public IMatrix
   Matrix(const Matrix&) = delete;
   Matrix& operator=(const Matrix&) = delete;
 
+  template <typename E>
+  Matrix& operator=(const E&);
+
  public:
   // Pour les expressions
   void visit(ICopyOnWriteMatrix&) const;

@@ -84,6 +84,13 @@ class IInternalLinearAlgebraExpr
   virtual Real norm2(const Vector& x) const = 0;
 
   /*!
+   * \brief Compute L2 (Frobenous) norm of a matrix
+   * \param[in] x The matrix on which norm2 is computed
+   * \returns The norm2 of the matrix
+   */
+  virtual Real norm2(const Matrix& x) const = 0;
+
+  /*!
    * \brief Compute a matrix vector product
    *
    * Compute the matrix-vector product a by x and store it in r : r = a * x
@@ -126,6 +133,23 @@ class IInternalLinearAlgebraExpr
   virtual void copy(const Vector& x, Vector& r) const = 0;
 
   /*!
+   * \brief Copy a matrix in another one
+   *
+   * \param[in] x The vector to copy
+   * \param[in,out] r The copied vector
+   */
+  virtual void copy(const Matrix& a, Matrix& r) const = 0;
+
+  /*!
+   * \brief Add a matrix to another one
+   *
+   * \param[in] a The matrix to copy
+   *
+   * \param[in,out] r The copied vector
+   */
+  virtual void add(const Matrix& a, Matrix& r) const = 0;
+
+  /*!
    * \brief Compute the dot product of two vectors
    * \param[in] x The first vector
    * \param[in] y The second vector
@@ -139,6 +163,13 @@ class IInternalLinearAlgebraExpr
    * \param[in,out] x The vector to be scaled
    */
   virtual void scal(Real alpha, Vector& x) const = 0;
+
+  /*!
+   * \brief Scale a matrix by a factor
+   * \param[in] alpha The real value to scale with
+   * \param[in,out] x The vector to be scaled
+   */
+  virtual void scal(Real alpha, Matrix& a) const = 0;
 
   /*!
    * \brief Extract the diagonal of a matrix in a vector

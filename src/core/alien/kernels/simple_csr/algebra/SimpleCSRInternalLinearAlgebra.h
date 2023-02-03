@@ -184,6 +184,7 @@ class SimpleCSRInternalLinearAlgebraExpr
   Real norm0(const Vector& x) const;
   Real norm1(const Vector& x) const;
   Real norm2(const Vector& x) const;
+  Real norm2(const Matrix& x) const;
   void mult(const Matrix& a, const Vector& x, Vector& r) const;
   void axpy(Real alpha, const Vector& x, Vector& r) const;
   void aypx(Real alpha, Vector& y, const Vector& x) const;
@@ -194,7 +195,7 @@ class SimpleCSRInternalLinearAlgebraExpr
   void reciprocal(Vector& x) const;
   void pointwiseMult(const Vector& x, const Vector& y, Vector& w) const;
 
-  // IInternalLinearAlgebra interface.
+  // IInternalLinearAlgebraExpr interface.
 
   void mult(const Matrix& a, const UniqueArray<Real>& x, UniqueArray<Real>& r) const;
   void axpy(Real alpha, UniqueArray<Real> const& x, UniqueArray<Real>& r) const;
@@ -204,6 +205,10 @@ class SimpleCSRInternalLinearAlgebraExpr
   Integer local_size, const UniqueArray<Real>& x, const UniqueArray<Real>& y) const;
 
   void scal(Real alpha, UniqueArray<Real>& x) const;
+
+  void copy(const Matrix& a, Matrix& r) const;
+  void add(const Matrix& a, Matrix& r) const;
+  void scal(Real alpha, Matrix& r) const;
 
  private:
   // No member.

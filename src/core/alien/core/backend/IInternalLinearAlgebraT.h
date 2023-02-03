@@ -77,7 +77,7 @@ class IInternalLinearAlgebra
 
   /*!
    * \brief Compute L2 norm of a vector
-   * \param[in] x The vector on which norm0 is computed
+   * \param[in] x The vector on which norm2 is computed
    * \returns The norm2 of the vector
    */
   virtual Real norm2(const Vector& x) const = 0;

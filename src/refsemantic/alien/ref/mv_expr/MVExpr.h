@@ -166,6 +166,30 @@ namespace MVExpr
     return std::move(result);
   }
 
+  template <typename Tag>
+  auto matrixAddT(Matrix const& a, Matrix const& b)
+  {
+    LinearAlgebraExpr<Tag> alg(a.distribution().parallelMng());
+    Matrix c(a.distribution());
+    alg.copy(b, c);
+    alg.add(a, c);
+    return std::move(c);
+  }
+
+  //template <typename T>
+  auto matrixAdd(Matrix const& a, Matrix const& b)
+  {
+#ifdef DEBUG
+    std::cout << "\t\t MatrixAdd" << std::endl;
+#endif
+
+    Matrix c(a.distribution());
+    SimpleCSRLinearAlgebraExpr alg;
+    alg.copy(b, c);
+    alg.add(a, c);
+    return std::move(c);
+  }
+
   template <typename T>
   auto vectorMinus(UniqueArray<T> const& x, UniqueArray<T> const& y)
   {
@@ -326,6 +350,29 @@ namespace MVExpr
       return value;
   }
 
+  template <typename Tag, typename T>
+  auto matrixScalT(T const& lambda, Matrix const& A)
+  {
+    Matrix B(A.distribution());
+    LinearAlgebraExpr<Tag> alg(A.distribution().parallelMng());
+    alg.copy(A, B);
+    alg.scal(lambda, B);
+    return std::move(B);
+  }
+
+  template <typename T>
+  auto matrixScal(T const& lambda, Matrix const& A)
+  {
+#ifdef DEBUG
+    std::cout << "\t\t MatrixScal" << std::endl;
+#endif
+    Matrix B(A.distribution());
+    SimpleCSRLinearAlgebraExpr alg;
+    alg.copy(A, B);
+    alg.scal(lambda, B);
+    return std::move(B);
+  }
+
   struct cpu_evaluator
   {
 
@@ -377,6 +424,14 @@ namespace MVExpr
       return vectorMult(lambda, csr_b.getArrayValues());
     }
 
+    auto operator()(lazy::mult_tag, Real lambda, Matrix const& a)
+    {
+#ifdef DEBUG
+      std::cout << "\t visit lambda*b : " << b.name() << std::endl;
+#endif
+      return matrixScal(lambda, a);
+    }
+
     auto operator()(lazy::add_tag, Vector const& a, Vector const& b)
     {
 #ifdef DEBUG
@@ -403,6 +458,14 @@ namespace MVExpr
       std::cout << "\t visit a+b" << std::endl;
 #endif
       return vectorAdd(a, b);
+    }
+
+    auto operator()(lazy::add_tag, Matrix const& a, Matrix const& b)
+    {
+#ifdef DEBUG
+      std::cout << "\t visit a+b" << std::endl;
+#endif
+      return matrixAdd(a, b);
     }
 
     // template<class A, class B>
@@ -488,16 +551,21 @@ namespace MVExpr
 
     auto operator()(lazy::mult_tag, Matrix const& a, Vector const& b)
     {
-      auto const& csr_matrix = a.impl()->template get<Tag>();
-      auto const& csr_b = b.impl()->template get<Tag>();
-      csr_b.resize(csr_matrix.getAllocSize());
-      return matrixMultT<Tag>(a, csr_b.getArrayValues());
+      auto const& tag_matrix = a.impl()->template get<Tag>();
+      auto const& tag_b = b.impl()->template get<Tag>();
+      tag_b.resize(tag_matrix.getAllocSize());
+      return matrixMultT<Tag>(a, tag_b.getArrayValues());
     }
 
     auto operator()(lazy::mult_tag, Real lambda, Vector const& b)
     {
-      auto const& csr_b = b.impl()->template get<Tag>();
-      return vectorMultT<Tag>(lambda, csr_b.getArrayValues());
+      auto const& tag_b = b.impl()->template get<Tag>();
+      return vectorMultT<Tag>(lambda, tag_b.getArrayValues());
+    }
+
+    auto operator()(lazy::mult_tag, Real lambda, Matrix const& a)
+    {
+      return matrixScalT<Tag, Real>(lambda, a);
     }
 
     auto operator()(lazy::add_tag, Vector const& a, Vector const& b)
@@ -517,6 +585,11 @@ namespace MVExpr
     auto operator()(lazy::add_tag, UniqueArray<T> const& a, UniqueArray<T> const& b)
     {
       return vectorAddT<Tag>(a, b);
+    }
+
+    auto operator()(lazy::add_tag, Matrix const& a, Matrix const& b)
+    {
+      return matrixAddT<Tag>(a, b);
     }
 
     auto operator()(lazy::minus_tag, Vector const& a, Vector const& b)
@@ -699,6 +772,14 @@ namespace MVExpr
     return mul(cst(lambda), ref(r));
   }
 
+  auto operator*(Real lambda, Matrix const& r)
+  {
+#ifdef DEBUG
+    std::cout << "lambda*A" << std::endl;
+#endif
+    return mul(cst(lambda), ref(r));
+  }
+
   template <typename R>
   auto operator*(Matrix const& l, R const& r)
   {
@@ -725,6 +806,8 @@ namespace MVExpr
   {
     return add(l, ref(r));
   }
+
+  auto operator+(Matrix const& l, Matrix const& r) { return add(ref(l), ref(r)); }
 
   /*
   template<typename L, typename R>
@@ -839,6 +922,14 @@ Vector::operator=(E const& expr)
   SimpleCSRVector<Real>& csr_y = impl()->get<BackEnd::tag::simplecsr>(true);
   csr_y.allocate();
   csr_y.setArrayValues(expr(MVExpr::cpu_evaluator()));
+  return *this;
+}
+
+template <typename E>
+Matrix&
+Matrix::operator=(E const& expr)
+{
+  *this = expr(MVExpr::cpu_evaluator());
   return *this;
 }
 

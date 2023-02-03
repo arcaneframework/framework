@@ -98,6 +98,13 @@ class LinearAlgebraExpr
   Real norm2(const IVector& x) const;
 
   /*!
+   * \brief Compute L2 (Frobenous) norm of a matrix
+   * \param[in] x The matrix on which norm2 is computed
+   * \returns The norm2 of the matrix
+   */
+  Real norm2(const IMatrix& x) const;
+
+  /*!
    * \brief Compute a matrix vector product
    *
    * Compute the matrix-vector product a by x and store it in r : r = a * x
@@ -140,6 +147,24 @@ class LinearAlgebraExpr
   void copy(const IVector& x, IVector& r) const;
 
   /*!
+   * \brief Copy a matrix in another one
+   *
+   * \param[in] x The matrix to copy
+   * \param[in,out] r The copied matrix
+   */
+  void copy(const IMatrix& x, IMatrix& r) const;
+
+  /*!
+   * \brief Add two  matrices A and B
+   *
+   *
+   * \param[in] a The matrix A
+   * \param[in] b The matrix B
+   * \param[in,out] c The resulting matrix
+   */
+  void add(const IMatrix& a, IMatrix& b) const;
+
+  /*!
    * \brief Compute the dot product of two vectors
    * \param[in] x The first vector
    * \param[in] y The second vector
@@ -153,6 +178,13 @@ class LinearAlgebraExpr
    * \param[in,out] x The vector to be scaled
    */
   void scal(Real alpha, IVector& x) const;
+
+  /*!
+   * \brief Scale a matrix by a factor
+   * \param[in] alpha The real value to scale with
+   * \param[in,out] x The vector to be scaled
+   */
+  void scal(Real alpha, IMatrix& a) const;
 
   /*!
    * \brief Extract the diagonal of a matrix in a vector

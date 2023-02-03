@@ -36,6 +36,8 @@ TEST(TestMVExpr, ExprEngine)
   Alien::MatrixDistribution mdist(s, s, AlienTest::Environment::parallelMng());
   Alien::VectorDistribution vdist(s, AlienTest::Environment::parallelMng());
   Alien::Matrix A(mdist); // A.setName("A") ;
+  Alien::Matrix B(mdist); // B.setName("B") ;
+  Alien::Matrix C(mdist); // C.setName("C") ;
   Alien::Vector x(vdist); // x.setName("x") ;
   Alien::Vector y(vdist); // y.setName("y") ;
   Alien::Vector r(vdist); // r.setName("r") ;
@@ -98,6 +100,7 @@ TEST(TestMVExpr, ExprEngine)
   }
 
   Alien::SimpleCSRLinearAlgebra alg;
+  Alien::SimpleCSRLinearAlgebraExpr alg_expr;
   // trace_mng->info()<<" NORME : "<<x.name()<<" = "<<alg.norm2(x) ;
   ASSERT_EQ(alg.norm2(x), std::sqrt(global_size));
   {
@@ -139,6 +142,7 @@ TEST(TestMVExpr, ExprEngine)
       for (Integer i = 0; i < local_size; ++i)
         writer[offset + i] = offset + i;
     }
+
     Real value1 = eval(dot(x, y));
     trace_mng->info() << " DOT(x,y) " << value1;
     ASSERT_EQ(value1, 45);
@@ -154,7 +158,19 @@ TEST(TestMVExpr, ExprEngine)
     Real value4 = eval(dot(x, A * y));
     trace_mng->info() << " DOT(x,A*y) " << value4;
     ASSERT_EQ(value4, 9);
+
+    trace_mng->info() << "B=lambda*A";
+    B = lambda * A;
+    Real A_norme2 = alg_expr.norm2(A);
+    Real B_norme2 = alg_expr.norm2(B);
+    ASSERT_EQ(B_norme2, lambda * A_norme2);
+
+    trace_mng->info() << "C=A+B";
+    C = A + B;
+    Real C_norme2 = alg_expr.norm2(C);
+    ASSERT_EQ(C_norme2, (lambda + 1) * A_norme2);
   }
+
   ////////////////////////////////////////////////
   //
   // TESTS PIPELINE ENABLING ASYNCHRONISM

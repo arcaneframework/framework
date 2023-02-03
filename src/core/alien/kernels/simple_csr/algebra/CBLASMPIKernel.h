@@ -99,11 +99,37 @@ class CBLASMPIKernel
   }
 
   template <typename Distribution, typename VectorT>
+  static typename VectorT::ValueType nrm1(Distribution const& dist, const VectorT& x)
+  {
+    typedef typename VectorT::ValueType ValueType;
+    typename VectorT::ValueType value = cblas::nrm1(x.scalarizedLocalSize(),
+                                                    (ValueType*)x.getDataPtr(), 1);
+    if (dist.isParallel()) {
+      value = Arccore::MessagePassing::mpAllReduce(
+      dist.parallelMng(), Arccore::MessagePassing::ReduceSum, value);
+    }
+    return value;
+  }
+
+  template <typename Distribution, typename VectorT>
   static typename VectorT::ValueType nrm2(Distribution const& dist, const VectorT& x)
   {
     typedef typename VectorT::ValueType ValueType;
     typename VectorT::ValueType value = cblas::dot(x.scalarizedLocalSize(),
                                                    (ValueType*)x.getDataPtr(), 1, (ValueType*)x.getDataPtr(), 1);
+    if (dist.isParallel()) {
+      value = Arccore::MessagePassing::mpAllReduce(
+      dist.parallelMng(), Arccore::MessagePassing::ReduceSum, value);
+    }
+    return std::sqrt(value);
+  }
+
+  template <typename Distribution, typename MatrixT>
+  static typename MatrixT::ValueType matrix_nrm2(Distribution const& dist, const MatrixT& x)
+  {
+    typedef typename MatrixT::ValueType ValueType;
+    typename MatrixT::ValueType value = cblas::dot(x.getProfile().getNnz(),
+                                                   (ValueType*)x.data(), 1, (ValueType*)x.data(), 1);
     if (dist.isParallel()) {
       value = Arccore::MessagePassing::mpAllReduce(
       dist.parallelMng(), Arccore::MessagePassing::ReduceSum, value);

@@ -18,6 +18,7 @@ void cblas_dcopy(const int n, const double* x, const int incx, double* y,
                  const int incy);
 void cblas_sscal(const int n, const float alpha, float* x, const int incx);
 void cblas_dscal(const int n, const double alpha, double* x, const int incx);
+double cblas_dasum(const int n, const double* x, const int incx);
 double cblas_dnrm2(const int n, const double* x, const int incx);
 
 #ifdef __cplusplus
@@ -66,6 +67,11 @@ void scal(const int n, const float alpha, float* x, const int incx)
 void scal(const int n, const double alpha, double* x, const int incx)
 {
   return cblas_dscal(n, alpha, x, incx);
+}
+
+double nrm1(const int n, const double* x, const int incx)
+{
+  return cblas_dasum(n, x, incx);
 }
 
 double nrm2(const int n, const double* x, const int incx)

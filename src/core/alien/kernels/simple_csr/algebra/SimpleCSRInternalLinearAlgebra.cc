@@ -96,11 +96,13 @@ Real SimpleCSRInternalLinearAlgebra::norm0(const CSRVector& vx ALIEN_UNUSED_PARA
 
 /*---------------------------------------------------------------------------*/
 
-Real SimpleCSRInternalLinearAlgebra::norm1(const CSRVector& vx ALIEN_UNUSED_PARAM) const
+Real SimpleCSRInternalLinearAlgebra::norm1(const CSRVector& vx) const
 {
-  // return CBLASMPIKernel::nrm1(x.space().structInfo(),vx);
-  throw NotImplementedException(
-  A_FUNCINFO, "SimpleCSRLinearAlgebra::norm1 not implemented");
+#ifdef ALIEN_USE_PERF_TIMER
+  SentryType s(m_timer, "CSR-NORM1");
+#endif
+
+  return CBLASMPIKernel::nrm1(vx.distribution(), vx);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -290,6 +292,15 @@ Real SimpleCSRInternalLinearAlgebraExpr::norm2(const CSRVector& vx) const
 
 /*---------------------------------------------------------------------------*/
 
+Real SimpleCSRInternalLinearAlgebraExpr::norm2(const CSRMatrix& mx) const
+{
+#ifdef ALIEN_USE_PERF_TIMER
+  SentryType s(m_timer, "MATRIX-CSR-NORM2");
+#endif
+  return CBLASMPIKernel::matrix_nrm2(mx.distribution(), mx);
+}
+/*---------------------------------------------------------------------------*/
+
 void SimpleCSRInternalLinearAlgebraExpr::mult(
 const CSRMatrix& ma, const CSRVector& vx, CSRVector& vr) const
 {
@@ -340,6 +351,32 @@ const UniqueArray<Real>& vx, UniqueArray<Real>& vr) const
 void SimpleCSRInternalLinearAlgebraExpr::copy(const CSRVector& vx, CSRVector& vr) const
 {
   CBLASMPIKernel::copy(vx.distribution(), vx, vr);
+}
+
+void SimpleCSRInternalLinearAlgebraExpr::copy(const CSRMatrix& ma, CSRMatrix& mr) const
+{
+#ifdef ALIEN_USE_PERF_TIMER
+  SentryType s(m_timer, "MATRIX-CSR-COPY");
+#endif
+  mr.copy(ma);
+}
+
+void SimpleCSRInternalLinearAlgebraExpr::add(const CSRMatrix& ma, CSRMatrix& mr) const
+{
+#ifdef ALIEN_USE_PERF_TIMER
+  SentryType s(m_timer, "MATRIX-CSR-ADD");
+#endif
+
+  cblas::axpy(mr.getProfile().getNnz(), 1, (CSRMatrix::ValueType*)ma.data(), 1, mr.data(), 1);
+}
+
+void SimpleCSRInternalLinearAlgebraExpr::scal(Real alpha, CSRMatrix& mr) const
+{
+#ifdef ALIEN_USE_PERF_TIMER
+  SentryType s(m_timer, "MATRIX-CSR-SCAL");
+#endif
+
+  cblas::scal(mr.getProfile().getNnz(), alpha, mr.data(), 1);
 }
 
 /*---------------------------------------------------------------------------*/

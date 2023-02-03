@@ -53,7 +53,6 @@ class ALIEN_REFSEMANTIC_EXPORT Vector final : public IVector
   Vector(const Vector&) = delete;
   Vector& operator=(const Vector&) = delete;
 
-  // FIXME: not implemented !
   template <typename E>
   Vector& operator=(const E&);
 
