@@ -1024,6 +1024,14 @@ else()
   endif()
 endif()
 
+# Variable pour savoir si la doc aura accès à internet ou non.
+if(ARCANEDOC_OFFLINE STREQUAL ON)
+  set(ARCANEDOC_MATHJAX "NO")
+  message(STATUS "Offline mode for user and dev documentations")
+else()
+  set(ARCANEDOC_MATHJAX "YES")
+endif()
+
 message(STATUS "DOXYGEN = ${DOXYGEN}")
 if(DOXYGEN)
   GENERATE_DOC_TARGET(devdoc)

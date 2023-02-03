@@ -137,11 +137,33 @@ cmake -DCMAKE_PREFIX_PATH="/opt/rocm;/opt/rocm/hip" -DARCANE_ACCELERATOR_MODE=RO
 
 La génération de la documentation n'a été testée que sur les plateforme Linux.
 Elle nécessite l'outil [Doxygen](https://www.doxygen.nl/index.html).
-L'outil Doxygen a besoin d'une installation de
+Si `ARCANEDOC_OFFLINE=ON`, l'outil Doxygen a besoin d'une installation de
 [LaTeX](https://www.latex-project.org/) pour générer correctement
-certaines équations. Suivant les plateformes, il peut être nécessaire
+certaines équations.
+Suivant les plateformes, il peut être nécessaire
 d'installer des packages LaTeX supplémentaires (par exemple pour
-Ubuntu, le pakckage `texlive-latex-extra` est nécessaire).
+Ubuntu, le package `texlive-latex-extra` est nécessaire).
+
+Pour la configuration, deux options sont disponibles :
+- `ARCANEDOC_LEGACY_THEME`
+- `ARCANEDOC_OFFLINE`
+Avec chaqu'une deux valeurs possibles : `ON` et `OFF`.
+
+Exemple :
+```bash
+cmake
+  -S ...
+  -B ...
+  -DARCANEDOC_LEGACY_THEME=ON
+  -DARCANEDOC_OFFLINE=ON
+```
+L'option `ARCANEDOC_LEGACY_THEME` permet de générer la documentation
+avec le thème d'origine de Doxygen.
+
+L'option `ARCANEDOC_OFFLINE` permet de dire à CMake que la documentation
+sera utilisé en local, sans accès à internet. Cela permet de désactiver
+les élements ayant besoin d'un accès à internet, comme MathJax. 
+
 Une fois la configuration terminée, il suffit de lancer:
 
 Pour la documentation utilisateur:
