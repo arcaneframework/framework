@@ -1469,7 +1469,12 @@ _testFaces()
   ENUMERATE_(Cell,icell,allCells()){
     Cell cell = *icell;
     for( Face face : cell.faces() ){
-      vc.areEqual(face.oppositeCell(cell).itemLocalId(),face.oppositeCellId(cell),"OppositeCell");
+      vc.areEqual(face.oppositeCell(cell).itemLocalId(),face.oppositeCellId(cell),"OppositeCell1");
+    }
+    Int32 nb_face = cell.nbFace();
+    FaceConnectedListViewType faces = cell.faces();
+    for(Int32 i=0; i<nb_face; ++i ){
+      vc.areEqual(faces[i].oppositeCell(cell).itemLocalId(),faces[i].oppositeCellId(cell),"OppositeCell2");
     }
   }
 }
