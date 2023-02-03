@@ -46,7 +46,7 @@ namespace Arcane::Materials
  *
  * \warning Ces mailles sont invalidées dès que la liste des mailles d'un
  * matériau ou d'un milieux change. Il ne faut donc pas
- * conservér une maille de ce type entre deux changements de cette liste.
+ * conserver une maille de ce type entre deux changements de cette liste.
  */
 class ARCANE_CORE_EXPORT ComponentCell
 {
@@ -98,7 +98,7 @@ class ARCANE_CORE_EXPORT ComponentCell
    * Ce numéro est unique pour chaque constituant de chaque maille.
    *
    * \warning Ce numéro unique n'est pas le même que celui de la maille globale
-   * asssociée.
+   * associée.
    */
   Int64 componentUniqueId() const { return m_internal->componentUniqueId(); }
 

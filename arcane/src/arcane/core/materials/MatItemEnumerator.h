@@ -53,6 +53,15 @@ class ComponentPartItemVectorView;
 class MatItemVectorView;
 class EnvItemVectorView;
 
+// Les 4 classes suivantes servent uniquement pour spécialiser
+// ComponentItemEnumeratorTraitsT
+class MatPartCell {};
+class EnvPartCell {};
+class ComponentPartCell {};
+class ComponentPartSimdCell {};
+
+template<typename T> class ComponentItemEnumeratorTraitsT;
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -536,6 +545,52 @@ class ARCANE_CORE_EXPORT EnvEnumerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template<>
+class ComponentItemEnumeratorTraitsT<ComponentCell>
+{
+ public:
+  using EnumeratorType = ComponentCellEnumerator;
+};
+template<>
+class ComponentItemEnumeratorTraitsT<MatCell>
+{
+ public:
+  using EnumeratorType = MatCellEnumerator;
+};
+template<>
+class ComponentItemEnumeratorTraitsT<MatPartCell>
+{
+ public:
+  using EnumeratorType = MatPartCellEnumerator;
+};
+template<>
+class ComponentItemEnumeratorTraitsT<EnvPartCell>
+{
+ public:
+  using EnumeratorType = EnvPartCellEnumerator;
+};
+template<>
+class ComponentItemEnumeratorTraitsT<EnvCell>
+{
+ public:
+  using EnumeratorType = EnvCellEnumerator;
+};
+template<>
+class ComponentItemEnumeratorTraitsT<ComponentPartCell>
+{
+ public:
+  using EnumeratorType = ComponentPartCellEnumerator;
+};
+template<>
+class ComponentItemEnumeratorTraitsT<ComponentPartSimdCell>
+{
+ public:
+  using EnumeratorType = ComponentPartSimdCellEnumerator;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 #if defined(ARCANE_TRACE_ENUMERATOR)
 #define A_TRACE_COMPONENT(_EnumeratorClassName) \
   ::Arcane::EnumeratorTraceWrapper< ::Arcane::Materials::_EnumeratorClassName, ::Arcane::Materials::IEnumeratorTracer >
@@ -564,8 +619,8 @@ class ARCANE_CORE_EXPORT EnvEnumerator
  * \param ...  Les arguments supplémentaires sont passés à la méthode statique create() de
  * la classe de l'énumérateur.
  */
-#define ENUMERATE_COMPONENTITEM(enumerator_class_name,iname,...)  \
-  A_ENUMERATE_COMPONENTCELL(enumerator_class_name##Enumerator,iname,__VA_ARGS__)
+#define ENUMERATE_COMPONENTITEM(enumerator_class_name,iname,...)      \
+  A_ENUMERATE_COMPONENTCELL(ComponentItemEnumeratorTraitsT<enumerator_class_name>::EnumeratorType,iname,__VA_ARGS__)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
