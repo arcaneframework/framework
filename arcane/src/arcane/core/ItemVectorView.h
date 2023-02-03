@@ -17,6 +17,7 @@
 #include "arcane/ItemInternalVectorView.h"
 #include "arcane/ItemIndexArrayView.h"
 #include "arcane/ItemInfoListView.h"
+#include "arcane/ItemConnectedListView.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -61,6 +62,16 @@ class ItemVectorViewConstIterator
 #endif
   ItemVectorViewConstIterator(ItemSharedInfo* shared_info,const Int32* local_id_ptr)
   : m_shared_info(shared_info), m_local_id_ptr(local_id_ptr){}
+
+ public:
+
+  // Temporaire (01/2023) pour conversion avec nouveau type ItemConnectedListView
+  ItemVectorViewConstIterator(const ItemConnectedListViewConstIterator& v)
+  : m_shared_info(v.m_shared_info), m_local_id_ptr(v.m_local_id_ptr)
+#ifdef ARCANE_HAS_OFFSET_FOR_ITEMVECTORVIEW
+    , m_local_id_offset(v.m_local_id_offset)
+  #endif
+  {}
 
  public:
 
@@ -157,6 +168,12 @@ class ItemVectorViewConstIteratorT
 
  public:
 
+  // Temporaire (01/2023) pour conversion avec nouveau type ItemConnectedListView
+  ItemVectorViewConstIteratorT(const ItemConnectedListViewConstIteratorT<ItemType>& v)
+  : ItemVectorViewConstIterator(v){}
+
+ public:
+
   typedef ItemVectorViewConstIteratorT<ItemType> ThatClass;
   typedef ItemType value_type;
 
@@ -238,6 +255,14 @@ class ARCANE_CORE_EXPORT ItemVectorView
   ItemVectorView(IItemFamily* family,ItemIndexArrayView indexes);
   ItemVectorView(const impl::ItemIndexedListView<DynExtent>& view)
   : m_local_ids(view.constLocalIds()), m_shared_info(view.m_shared_info) { }
+
+  // Temporaire (01/2023) pour conversion avec nouveau type ItemConnectedListView
+  ItemVectorView(const ItemConnectedListView<DynExtent>& v)
+  : m_local_ids(v.m_local_ids), m_shared_info(v.m_shared_info)
+  #ifdef ARCANE_HAS_OFFSET_FOR_ITEMVECTORVIEW
+  , m_local_id_offset(v.m_local_id_offset)
+  #endif
+  { }
 
  protected:
 
@@ -361,6 +386,10 @@ class ItemVectorViewT
   : ItemVectorView(family,local_ids) {}
   ItemVectorViewT(IItemFamily* family,ItemIndexArrayView indexes)
   : ItemVectorView(family,indexes) {}
+
+  // Temporaire (01/2023) pour conversion avec nouveau type ItemConnectedListView
+  ItemVectorViewT(const ItemConnectedListViewT<ItemType>& v)
+  : ItemVectorView(v){}
 
  protected:
 

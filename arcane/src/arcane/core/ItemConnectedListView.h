@@ -51,6 +51,7 @@ class ItemConnectedListViewConstIterator
  protected:
 
   template<int Extent> friend class ItemConnectedListView;
+  friend class ItemVectorViewConstIterator;
 
  protected:
 
@@ -207,6 +208,8 @@ class ItemConnectedListView
 {
   friend ItemVector;
   friend class ItemEnumeratorBase;
+  friend class ItemVectorView;
+  friend class ItemConnectedEnumeratorBase;
   template<typename ItemType> friend class ItemEnumeratorBaseT;
 
  public:
@@ -356,9 +359,6 @@ class ItemConnectedListViewT
 #else
  public:
 #endif
-
-  // TODO: rendre obsolète
-  operator ItemVectorViewT<ItemType> () const { return ItemVectorViewT<ItemType>(m_shared_info,m_local_ids); }
 
   // TODO: rendre obsolète
   inline ItemEnumeratorT<ItemType> enumerator() const
