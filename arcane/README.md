@@ -137,17 +137,22 @@ cmake -DCMAKE_PREFIX_PATH="/opt/rocm;/opt/rocm/hip" -DARCANE_ACCELERATOR_MODE=RO
 
 La génération de la documentation n'a été testée que sur les plateforme Linux.
 Elle nécessite l'outil [Doxygen](https://www.doxygen.nl/index.html).
+
 Si `ARCANEDOC_OFFLINE=ON`, l'outil Doxygen a besoin d'une installation de
 [LaTeX](https://www.latex-project.org/) pour générer correctement
 certaines équations.
+
 Suivant les plateformes, il peut être nécessaire
 d'installer des packages LaTeX supplémentaires (par exemple pour
 Ubuntu, le package `texlive-latex-extra` est nécessaire).
 
-Pour la configuration, deux options sont disponibles :
+Pour la configuration, deux options facultatives sont disponibles :
 - `ARCANEDOC_LEGACY_THEME`
 - `ARCANEDOC_OFFLINE`
+
 Avec chaqu'une deux valeurs possibles : `ON` et `OFF`.
+
+Si les variables ne sont pas présentes, `OFF` est la valeur par défaut.
 
 Exemple :
 ```bash
