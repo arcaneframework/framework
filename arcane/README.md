@@ -157,16 +157,16 @@ Si les variables ne sont pas présentes, `OFF` est la valeur par défaut.
 Exemple :
 ```bash
 cmake
-  -S ...
-  -B ...
-  -DARCANEDOC_LEGACY_THEME=ON
+  -S ... \
+  -B ... \
+  -DARCANEDOC_LEGACY_THEME=ON \
   -DARCANEDOC_OFFLINE=ON
 ```
 L'option `ARCANEDOC_LEGACY_THEME` permet de générer la documentation
 avec le thème d'origine de Doxygen.
 
 L'option `ARCANEDOC_OFFLINE` permet de dire à CMake que la documentation
-sera utilisé en local, sans accès à internet. Cela permet de désactiver
+sera utilisée en local, sans accès à internet. Cela permet de désactiver
 les élements ayant besoin d'un accès à internet, comme MathJax. 
 
 Une fois la configuration terminée, il suffit de lancer:
