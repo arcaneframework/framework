@@ -711,6 +711,7 @@ class ARCANE_CORE_EXPORT ItemWithNodes
   friend class ItemConnectedEnumeratorBaseT<ThatClass>;
   friend class ItemVectorT<ThatClass>;
   friend class ItemVectorViewT<ThatClass>;
+  friend class ItemConnectedListViewT<ThatClass>;
   friend class ItemVectorViewConstIteratorT<ThatClass>;
   friend class ItemConnectedListViewConstIteratorT<ThatClass>;
   friend class SimdItemT<ThatClass>;
@@ -794,6 +795,7 @@ class ARCANE_CORE_EXPORT Edge
   friend class ItemConnectedEnumeratorBaseT<ThatClass>;
   friend class ItemVectorT<ThatClass>;
   friend class ItemVectorViewT<ThatClass>;
+  friend class ItemConnectedListViewT<ThatClass>;
   friend class ItemVectorViewConstIteratorT<ThatClass>;
   friend class ItemConnectedListViewConstIteratorT<ThatClass>;
   friend class SimdItemT<ThatClass>;
@@ -927,6 +929,7 @@ class ARCANE_CORE_EXPORT Face
   friend class ItemConnectedEnumeratorBaseT<ThatClass>;
   friend class ItemVectorT<ThatClass>;
   friend class ItemVectorViewT<ThatClass>;
+  friend class ItemConnectedListViewT<ThatClass>;
   friend class ItemVectorViewConstIteratorT<ThatClass>;
   friend class ItemConnectedListViewConstIteratorT<ThatClass>;
   friend class SimdItemT<ThatClass>;
@@ -1172,6 +1175,7 @@ class ARCANE_CORE_EXPORT Cell
   friend class ItemConnectedEnumeratorBaseT<ThatClass>;
   friend class ItemVectorT<ThatClass>;
   friend class ItemVectorViewT<ThatClass>;
+  friend class ItemConnectedListViewT<ThatClass>;
   friend class ItemVectorViewConstIteratorT<ThatClass>;
   friend class ItemConnectedListViewConstIteratorT<ThatClass>;
   friend class SimdItemT<ThatClass>;
@@ -1376,6 +1380,7 @@ class Particle
   friend class ItemConnectedEnumeratorBaseT<ThatClass>;
   friend class ItemVectorT<ThatClass>;
   friend class ItemVectorViewT<ThatClass>;
+  friend class ItemConnectedListViewT<ThatClass>;
   friend class ItemVectorViewConstIteratorT<ThatClass>;
   friend class ItemConnectedListViewConstIteratorT<ThatClass>;
   friend class SimdItemT<ThatClass>;
@@ -1480,6 +1485,7 @@ class DoF
   friend class ItemConnectedEnumeratorBaseT<ThatClass>;
   friend class ItemVectorT<ThatClass>;
   friend class ItemVectorViewT<ThatClass>;
+  friend class ItemConnectedListViewT<ThatClass>;
   friend class ItemVectorViewConstIteratorT<ThatClass>;
   friend class ItemConnectedListViewConstIteratorT<ThatClass>;
   friend class SimdItemT<ThatClass>;

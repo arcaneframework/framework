@@ -1469,8 +1469,25 @@ _testFaces()
   ENUMERATE_(Cell,icell,allCells()){
     Cell cell = *icell;
     for( Face face : cell.faces() ){
-      vc.areEqual(face.oppositeCell(cell).itemLocalId(),face.oppositeCellId(cell),"OppositeCell");
+      vc.areEqual(face.oppositeCell(cell).itemLocalId(),face.oppositeCellId(cell),"OppositeCell1");
     }
+    Int32 nb_face = cell.nbFace();
+    FaceConnectedListViewType faces = cell.faces();
+    for(Int32 i=0; i<nb_face; ++i ){
+      vc.areEqual(faces[i].oppositeCell(cell).itemLocalId(),faces[i].oppositeCellId(cell),"OppositeCell2");
+    }
+    // Teste la compatibilité entre ItemVectorView et ItemConnectedListView.
+    // Pour maintenant la compatibilité entre les versions de 3.8+ et antérieures
+    // on doit pouvoir convertir un 'ItemConnectedListView' en un 'ItemVectorView'
+    // et de même pour les itérateurs
+    FaceVectorView faces_as_vector = cell.faces();
+    FaceVectorView::const_iterator face_vector_begin2 = cell.faces().begin();
+    FaceVectorView::const_iterator face_vector_begin1 = faces_as_vector.begin();
+    auto face_begin1 = faces.begin();
+    if (face_begin1!=face_vector_begin1)
+      ARCANE_FATAL("Bad face1");
+    if (face_vector_begin1!=face_vector_begin2)
+      ARCANE_FATAL("Bad face2");
   }
 }
 
