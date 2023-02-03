@@ -470,7 +470,7 @@ namespace Arcane.AxlDoc
       if(use_subpage){
         m_brief_stream.Write("\\ref {1}_ref \"{0}\"", o.GetTranslatedName (m_code_info.Language), href_name);
         if (m_code_info.Language == "fr"){
-          goto_subpage += " décritent \\subpage " + href_name + " \"sur cette page indépendante\"";
+          goto_subpage += " décrites \\subpage " + href_name + " \"sur cette page indépendante\"";
         }
         else{
           goto_subpage += " in \\subpage " + href_name + " \"independant page\"";
