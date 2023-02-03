@@ -14,6 +14,7 @@ using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
 using Arcane.Axl;
@@ -393,9 +394,20 @@ namespace Arcane.AxlDoc
           if (node.NodeType == XmlNodeType.CDATA) {
             //Console.WriteLine ("** ** CDATA SECTION {0}", node.Value);
 
-            // On est dans un contexte /htmlonly, donc il faut remplacer
-            // les \n\n par des <br> (puisque doxygen ne le fera pas). 
-            stream.Write (node.Value.Replace("\n\n", "<br>"));
+            // Il faut remplacer les \n\n par des <br> car Doxygen ne
+            // comprend pas si un bloc de texte n'est pas attaché.
+            string desc = node.Value;
+
+            // On retire les espaces/retours à la ligne du début.
+            desc = Regex.Replace(desc, @"^\s+", "", RegexOptions.Singleline);
+
+            // On retire les espaces au début de chaque ligne.
+            desc = Regex.Replace(desc, @"^[^\S\r\n]+", "", RegexOptions.Multiline);
+
+            // On remplace les doubles retours à la ligne par des <br>
+            // sinon doxygen pense qu'on sort du div...
+            desc = Regex.Replace(desc, @"\n\n", "<br>\n");
+            stream.Write (desc);
           } 
           else {
             // NOTE GG: il faut utiliser node.OuterXml et pas (2) sinon les sous balises de la
@@ -403,7 +415,18 @@ namespace Arcane.AxlDoc
             // Par exemple: <description>Test <b>très</b> important</description>.
             // Avec la méthode 2, cela donne: 'Test important' et la valeur entre des balises <b>
             // n'est pas prise en compte.
-            stream.Write(node.OuterXml.Replace("\n\n", "<br>"));
+            string desc = node.OuterXml;
+
+            // On retire les espaces/retours à la ligne du début.
+            desc = Regex.Replace(desc, @"^\s+", "", RegexOptions.Singleline);
+
+            // On retire les espaces au début de chaque ligne.
+            desc = Regex.Replace(desc, @"^[^\S\r\n]+", "", RegexOptions.Multiline);
+
+            // On remplace les doubles retours à la ligne par des <br>
+            // sinon doxygen pense qu'on sort du div...
+            desc = Regex.Replace(desc, @"\n\n", "<br>\n");
+            stream.Write (desc);
             // (2) stream.Write (node.Value == null ? node.Value : node.Value.Trim ()); // Rk can be rewritten with VS 2015 as: node.Value ?.Trim()
           }
         }
@@ -426,10 +449,12 @@ namespace Arcane.AxlDoc
 
     private void _AddFullDescription (int i, Option option, XmlElement desc_elem)
     {
-      // La description est récupérée brut, en html donc passage en \htmlonly
-      m_full_stream.Write ("\\htmlonly <div class='OptionFullDescription'>");
+      _WriteHtmlOnly(m_full_stream, "<div class='OptionFullDescription'>");
       _WriteDescription (i, option, desc_elem, m_full_stream);
-      m_full_stream.WriteLine ("</div> \\endhtmlonly");
+      // Passage en \htmlonly car s'il y a une liste non numéroté :
+      // - 
+      // doxygen pense que la suite est dans la liste...
+      _WriteHtmlOnly(m_full_stream, "</div>");
     }
 
     private void _AddBriefDescription (Option o, bool use_subpage)
@@ -590,7 +615,7 @@ namespace Arcane.AxlDoc
 
     private void _WriteHtmlOnly (TextWriter stream, string value)
     {
-      stream.WriteLine ("\\htmlonly");
+      stream.Write ("\\htmlonly");
       stream.Write (value);
       stream.WriteLine ("\\endhtmlonly");
     }
