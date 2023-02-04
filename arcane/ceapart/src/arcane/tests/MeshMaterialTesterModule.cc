@@ -831,7 +831,8 @@ _testComponentPart(IMeshMaterial* mat,IMeshEnvironment* env)
     }
     {
       Int32 total = 0;
-      ENUMERATE_COMPONENTITEM(MatPartCell,imc,mat,eMatPart::Impure){
+      using MyMatPartCell = MatPartCell;
+      ENUMERATE_COMPONENTITEM(MyMatPartCell,imc,mat,eMatPart::Impure){
         total += test_var[imc];
       }
       vc.areEqual(total,total_impure,"TotalImpure1");
@@ -861,6 +862,7 @@ _testComponentPart(IMeshMaterial* mat,IMeshEnvironment* env)
   if (env){
     {
       Int32 total = 0;
+      using MyEnvCell = EnvCell;
       ENUMERATE_COMPONENTITEM(EnvCell,imc,env){
         total += test_var[imc];
       }
@@ -868,7 +870,8 @@ _testComponentPart(IMeshMaterial* mat,IMeshEnvironment* env)
     }
     {
       Int32 total = 0;
-      ENUMERATE_COMPONENTITEM(EnvPartCell,imc,env,eMatPart::Impure){
+      using MyEnvPartCell = EnvPartCell;
+      ENUMERATE_COMPONENTITEM(MyEnvPartCell,imc,env,eMatPart::Impure){
         total += test_var[imc];
       }
       vc.areEqual(total,total_impure,"TotalImpure1");
@@ -897,7 +900,8 @@ _testComponentPart(IMeshMaterial* mat,IMeshEnvironment* env)
   }
   {
     Int32 total = 0;
-    ENUMERATE_COMPONENTITEM(ComponentPartCell,imc,component->impureItems()){
+    using MyComponentPartCell = ComponentPartCell;
+    ENUMERATE_COMPONENTITEM(MyComponentPartCell,imc,component->impureItems()){
       total += test_var[imc];
     }
     vc.areEqual(total,total_impure,"TotalImpure3");
