@@ -9,28 +9,29 @@ antérieures à la version 3 sont listées ici : \ref arcanedoc_news_changelog20
 
 ___
 
-## Arcane Version 3.8... (janvier 2023) {#arcanedoc_version380}
+## Arcane Version 3.8... (février 2023) {#arcanedoc_version380}
 
 Work In Progress...
 
-### Nouveautés/Améliorations:
+### Nouveautés/Améliorations
 
-- Ajoute support pour spécifier en ligne de commandes les valeurs
+- Support pour spécifier en ligne de commandes les valeurs
   par défaut de Arcane::ParallelLoopOptions en mode multi-thread
   (\pr{420}).
-- Ajoute support des fichiers Lima, des fichiers MED et des fichiers
+- Support des fichiers Lima, des fichiers MED et des fichiers
   au format `msh` avec les services de maillage (\pr{435}, \pr{439}, \pr{449}).
 - Ajoute fonction Arcane::NumArrayUtils::readFromText() pour remplir une
   instance de Arcane::NumArray à partir d'un fichier au format ASCII (\pr{444}).
-- Ajoute support de la lecture des en parallèle des fichiers au format
+- Support de la lecture des parallèle des fichiers au format
   MED (\pr{449}).
-- Ajoute support pour la lecture des groupes de noeuds
+- Support pour la lecture des groupes de noeuds
   (Arcane::NodeGroup) dans les maillages au format MSH (\pr{475}).
-- Ajoute support pour la renumérotation des maillages AMR en 3D. Cela
-  permet d'avoir la même numérotation en quel que soit le découpage (\pr{495}).
+- Support pour la renumérotation des maillages AMR en 3D. Cela
+  permet d'avoir la même numérotation en 3D quel que soit le découpage
+  (\pr{495}, \pr{514}, \pr{523}).
 - Ajoute accès à Arcane::IMeshMng dans Arcane::ICaseMng et
   Arcane::IPhysicalUnitSystem (\pr{461}).
-- Ajoute support des accélérateurs pour les classes gérant le
+- Support des accélérateurs pour les classes gérant le
   maillage cartésien (Arcane::CellDirectionMng,
   Arcane::FaceDirectionMng et Arcane::NodeDirectionMng) (\pr{474})
 - Ajoute classe Arcane::impl::MutableItemBase pour remplacer
@@ -43,10 +44,18 @@ Work In Progress...
 - Ajoute interface Arcane::IDoFFamily pour gérer les
   Arcane::DoF. Auparavant il fallait utiliser directement
   l'implémentation Arcane::mesh::DoFFamily (\pr{480})
-- Ajoute support dans `Aleph` des variables qui n'ont pas de familles
+- Support dans Aleph des variables qui n'ont pas de familles
   par défaut (comme les Arcane::DoF par exemple) (\pr{468}).
+- Support pour compresser les données Arcane::IData via une instance
+  de Arcane::IDataCompressor. Ce mécanisme est disponible pour les
+  matériaux en appelant la méthode
+  Arcane::Materials::IMeshMaterialMng::setDataCompressorServiceName(). Il
+  est utilisé lors des appels à
+  Arcane::Materials::IMeshMaterialMng::forceRecompute() ou de
+  l'utilisation de la classe Arcane::Materials::MeshMaterialBackup
+  (\pr{531}, \pr{532}).
 
-### Changements:
+### Changements
 
 - Utilise toujours une classe à la place d'un entier pour spécifier
   les dimensions (extents) dans les classes Arcane::NumArray et
@@ -66,14 +75,41 @@ Work In Progress...
   retourner de référence mais une valeur (\pr{489}).
 - Utilise des classes de base spécifiques par type de service lors de
   la génération des fichiers `axl` (\pr{472}).
+- Utilise une nouvelle classe Arcane::ItemConnectedListView (au lieu
+  de Arcane::ItemVectorView) pour gérer les connectivités sur les
+  entités. Les méthodes telles que Arcane::Cell::nodes() retournent
+  maintenant un objet de ce type. Le but de cette nouvelle classe est
+  de pouvoir proposer une structure de données spécique aux
+  connectivités et une autre spécifique aux listes d'entités (telles
+  que les groupes Arcane::ItemGroup). Des opérateurs de conversion ont
+  été ajoutés afin de garantir la compatibilité avec le code source
+  existant (\pr{534},\pr{535}, \pr{537}, \pr{539})
+- Nouveau service de dépouillement au format VTK HDF. Ce format est
+  uniquement supporté par les versions 5.11+ de
+  Paraview. L'implémentation actuelle est expérimentale (\pr{510},
+  \pr{525}, \pr{527}, \pr{528}).
+- Déplace les fichiers d'en-tête de la composante `arcane_core` et qui
+  se trouvaient à la racine de `arcane` dans un sous-répertoire
+  `arcane/core`. Afin de rester compatible avec l'existant des
+  fichiers d'en-tête faisant références à ces nouveaux fichiers sont
+  générés lors de l'installation.
+- Ajoute une composante `arcane_hdf5` contenant les classes
+  utilitaires (telles que Arcane::Hdf5::HFile, ...). Les fichiers
+  d'en-te correspondants sont maintenant dans le répertoire
+  `arcane/hdf5` (\pr{505}).
+- Nettoyages des classes gérant HDF5: rend obsolète le constructeur de
+  recopie des classes de `Hdf5Utils.h` et supprime le support des
+  versions de HDF5 antérieures à la version 1.10 (\pr{526}).
 
-### Corrections:
+### Corrections
 
 - Corrige inconsistence possible entre les connectivités conservées
   dans Arcane::ItemConnectivityList et
   Arcane::mesh::IncrementalItemConnectivity (\pr{478}).
+- Corrige mauvaise valeur de Arcane::HashTableMapT::count() après un
+  appel à Arcane::HashTableMapT::clear() (\pr{506}).
 
-### Interne:
+### Interne
 
 - Supprime classes internes obsolètes Arcane::IAllocator,
   Arcane::DefaultAllocator, Arcane::DataVector1D,
@@ -113,13 +149,24 @@ Work In Progress...
   Arcane::ItemVector et Arcane::ItemVectorView (\pr{486}, \pr{487}).
 - Supprime utilisation de Arcane::ItemInternalVectorView (\pr{498})
 - Supprime utilisation de Arcane::ItemInternal dans de nombreuses
-  classes internes (\pr{488}, \pr{492}, \pr{500}, \pr{501})
+  classes internes (\pr{488}, \pr{492}, \pr{500}, \pr{501}, \pr{502})
 - Supprime dans Arcane::MDSpan et Arcane::NumArray les indexeurs
   supplémentaires pour les classes Arcane::Real2, Arcane::Real3,
   Arcane::Real2x2 et Arcane::Real3x3. Ces indexeurs avaient été
   ajoutés à des fin de test mais n'étaient pas utilisés (\pr{490}).
+- Autorise de copier les instances de Arcane::StandaloneAcceleratorMng
+  et utilise une sémantique par référence (\pr{509}).
+- Autorise des instance de Arcane::NumVector et Arcane::NumMatrix avec
+  des valeurs quelconques (auparant seules les valeurs 2 ou 3 étaient
+  autorisées) (\pr{521})
+- Déplace l'implémentation des classes liées à Aleph dans les fichiers
+  sources au lieu des fichiers d'en-tête (\pr{504}).
+- Fournit une implémentation vide pour les méthodes utilisant
+  Arcane::IMultiArray2Data. Cette interface n'est plus utilisée et
+  cela permettra au code utilisateur de supprimer les visiteurs
+  associés à ce type (\pr{529}).
 
-### Arccore:
+### Arccore
 
 - Corrige bug si la méthode
   Arccore::MessagePassing::Mpi::MpiAdapter::waitSomeRequestsMPI() est
@@ -131,11 +178,19 @@ Work In Progress...
 - Ajoute fonctions Arccore::MessagePassing::mpLegacyProbe() dont la
   sémantique est similaire à `MPI_Iprobe` and `MPI_Probe` (\pr{430}).
 - Corrige détection de la requête vide (\pr{427}, \pr{429}).
+- Amélioration diverses du mécanisme d'intégration continue (\pr{503},
+  \pr{511}, \pr{512}, \pr{513})
 
 ### Axlstar
 
 - Add support for using a specific mesh in service instance (\pr{451})
 - Remove support to build with `mono` (\pr{465}).
+- Remove support for 'DualNode' and 'Link' items (\pr{524}).
+- Various improvements in documentation (\pr{530}).
+- Add preliminary support for multi-dimension variables (\pr{520}).
+- Fix: Add support of Doxygen commands in AXL descriptions (\pr{538})
+- Fix: error with complex options containing more than 30 suboptions
+  (\pr{533})
 
 ___
 
