@@ -39,30 +39,32 @@ namespace Arcane::Accelerator
  * \brief Classe helper pour l'accès au MatVarIndex et au CellLocalId à travers les 
  *        RUNCOMMAND_ENUMERATE(EnvCell...
   */
-// TODO: Si on garde cette classe il faudra la blinder, surtout sur le ctor component
-// TODO: Faut(il revoir la classe pour faire qqch similaire à un Enumerator ?
 class EnvCellAccessor {
  public:
+  struct EnvCellAccessorInternalData {
+   MatVarIndex m_mvi;
+   CellLocalId m_cid;   
+  };
+ public:
   ARCCORE_HOST_DEVICE explicit EnvCellAccessor(EnvCell ec)
-  : m_mvi(ec._varIndex()), m_cid(ec.globalCell().itemLocalId()) {}
+  : m_internal_data{ec._varIndex(), ec.globalCell().itemLocalId()} {}
   
   explicit EnvCellAccessor(ComponentItemInternal* cii)
-  : m_mvi(cii->variableIndex()), m_cid(cii->globalItem()->localId()) {}
+  : m_internal_data{cii->variableIndex(), static_cast<CellLocalId>(cii->globalItem()->localId())} {}
 
   ARCCORE_HOST_DEVICE explicit EnvCellAccessor(MatVarIndex mvi, CellLocalId cid)
-  : m_mvi(MatVarIndex(mvi.arrayIndex(),mvi.valueIndex())), m_cid(cid) {}
+  : m_internal_data{mvi, cid} {}
 
   ARCCORE_HOST_DEVICE auto operator()() {
-    return std::make_tuple(m_mvi, m_cid);
+    return EnvCellAccessorInternalData{m_internal_data.m_mvi, m_internal_data.m_cid};
   }
   
-  ARCCORE_HOST_DEVICE MatVarIndex varIndex() {return m_mvi;};
+  ARCCORE_HOST_DEVICE MatVarIndex varIndex() {return m_internal_data.m_mvi;};
   
-  ARCCORE_HOST_DEVICE CellLocalId globalCellId() {return m_cid;}
+  ARCCORE_HOST_DEVICE CellLocalId globalCellId() {return m_internal_data.m_cid;}
  
  private:
-  MatVarIndex m_mvi;
-  CellLocalId m_cid;
+  EnvCellAccessorInternalData m_internal_data;
 };
 
 /*---------------------------------------------------------------------------*/
