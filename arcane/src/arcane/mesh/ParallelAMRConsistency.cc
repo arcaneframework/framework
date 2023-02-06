@@ -674,7 +674,7 @@ makeNewItemsConsistent2(MapCoordToUid& node_finder, MapCoordToUid& face_finder)
   }
   for (Integer index = 0; index < active_nodes.size(); index++){
     Item node = active_nodes[index];
-    const Int64 current_uid = node->uniqueId();
+    const Int64 current_uid = node.uniqueId();
     NodeInfo& ni = m_active_nodes[node.uniqueId()];
     if (current_uid != ni.uniqueId()){
       node.mutableItemBase().setUniqueId(ni.uniqueId());

@@ -217,6 +217,13 @@ shrinkMeshGroups(IMesh* mesh);
 ARCANE_CORE_EXPORT void
 dumpSynchronizerTopologyJSON(IVariableSynchronizer* var_syncer,const String& filename);
 
+/*!
+ * \interne
+ * \brief Calcul et affiche les patterns communs dans les connectivités.
+ */
+ARCANE_CORE_EXPORT void
+computeConnectivityPatternOccurence(IMesh* mesh);
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 

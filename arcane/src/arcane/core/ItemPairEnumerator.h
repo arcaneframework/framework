@@ -65,8 +65,7 @@ class ARCANE_CORE_EXPORT ItemPairEnumerator
   }
   inline ItemEnumerator subItems() const
   {
-    ConstArrayView<Int32> v(nbSubItem(), m_sub_items_local_id.data() + m_indexes[m_current]);
-    return { m_sub_items_shared_info, v };
+    return { m_sub_items_shared_info, _ids() };
   }
   inline Item operator*() const
   {
@@ -95,6 +94,10 @@ class ARCANE_CORE_EXPORT ItemPairEnumerator
   Item _currentItem() const
   {
     return Item(m_items_local_id[m_current], m_items_shared_info);
+  }
+  ConstArrayView<Int32> _ids() const
+  {
+    return ConstArrayView<Int32>(nbSubItem(), m_sub_items_local_id.data() + m_indexes[m_current]);
   }
 };
 
@@ -146,7 +149,7 @@ class ItemPairEnumeratorT
 
   ItemEnumeratorT<SubItemType> subItems() const
   {
-    return { BaseClass::subItems() };
+    return { this->m_sub_items_shared_info, this->_ids() };
   }
 };
 

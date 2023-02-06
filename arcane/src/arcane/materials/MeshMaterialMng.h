@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialMng.h                                           (C) 2000-2022 */
+/* MeshMaterialMng.h                                           (C) 2000-2023 */
 /*                                                                           */
 /* Implémentation de la modification des matériaux et milieux.               */
 /*---------------------------------------------------------------------------*/
@@ -18,7 +18,7 @@
 #include "arcane/utils/Array.h"
 #include "arcane/utils/Mutex.h"
 
-#include "arcane/MeshHandle.h"
+#include "arcane/core/MeshHandle.h"
 
 #include "arcane/materials/IMeshMaterialMng.h"
 #include "arcane/materials/MeshMaterial.h"
@@ -104,6 +104,9 @@ class MeshMaterialMng
   {
     return m_is_allocate_scalar_environment_variable_as_material;
   }
+
+  void setDataCompressorServiceName(const String& name) override;
+  String dataCompressorServiceName() const { return m_data_compressor_service_name; }
 
   const String& name() const override { return m_name; }
   ConstArrayView<IMeshMaterial*> materials() const override { return m_materials; }
@@ -218,7 +221,7 @@ class MeshMaterialMng
  private:
 
   MeshHandle m_mesh_handle;
-  IVariableMng* m_variable_mng;
+  IVariableMng* m_variable_mng = nullptr;
   String m_name;
   bool m_is_end_create;
   bool m_is_verbose;
@@ -226,11 +229,11 @@ class MeshMaterialMng
   bool m_is_data_initialisation_with_zero;
   bool m_is_mesh_modification_notified;
   bool m_is_allocate_scalar_environment_variable_as_material;
-  int m_modification_flags;
+  int m_modification_flags = 0;
 
   Mutex m_variable_lock;
 
-  MeshMaterialModifierImpl* m_modifier;
+  MeshMaterialModifierImpl* m_modifier = nullptr;
   UniqueArray<MeshMaterialInfo*> m_materials_info;
   UniqueArray<IMeshMaterial*> m_materials;
   UniqueArray<IMeshComponent*> m_materials_as_components;
@@ -248,7 +251,7 @@ class MeshMaterialMng
   VariableToMaterialVariableMap m_var_to_mat_var_map;
 
   Properties* m_properties = nullptr;
-  AllEnvData* m_all_env_data;
+  AllEnvData* m_all_env_data = nullptr;
   Int64 m_timestamp; //!< Compteur du nombre de modifications des matériaux.
   IMeshMaterialVariableSynchronizer* m_all_cells_mat_env_synchronizer;
   IMeshMaterialVariableSynchronizer* m_all_cells_env_only_synchronizer;
@@ -256,6 +259,7 @@ class MeshMaterialMng
   MeshMaterialExchangeMng* m_exchange_mng = nullptr;
   IMeshMaterialVariableFactoryMng* m_variable_factory_mng = nullptr;
   std::unique_ptr<ObserverPool> m_observer_pool;
+  String m_data_compressor_service_name;
 
  private:
 

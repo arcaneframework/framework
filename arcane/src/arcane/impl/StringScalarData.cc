@@ -28,8 +28,10 @@
 #include "arcane/impl/SerializedData.h"
 #include "arcane/impl/DataStorageFactory.h"
 
-#include "arcane/ISerializer.h"
-#include "arcane/IDataVisitor.h"
+#include "arcane/core/ISerializer.h"
+#include "arcane/core/IDataVisitor.h"
+
+#include "arcane/core/internal/IDataInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -107,6 +109,7 @@ class StringScalarData
   void visitScalar(IScalarDataVisitor* visitor) override;
   void visitArray(IArrayDataVisitor* visitor) override;
   void visitArray2(IArray2DataVisitor* visitor) override;
+  IDataInternal* _commonInternal() override { return &m_internal; }
 
  public:
 
@@ -116,6 +119,7 @@ class StringScalarData
 
   DataType m_value; //!< Donnée
   ITraceMng* m_trace;
+  NullDataInternal m_internal;
 };
 
 /*---------------------------------------------------------------------------*/

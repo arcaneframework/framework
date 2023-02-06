@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MatItemEnumerator.h                                         (C) 2000-2022 */
+/* MatItemEnumerator.h                                         (C) 2000-2023 */
 /*                                                                           */
 /* Enumérateurs sur les mailles materiaux.                                   */
 /*---------------------------------------------------------------------------*/
@@ -53,6 +53,15 @@ class ComponentPartItemVectorView;
 class MatItemVectorView;
 class EnvItemVectorView;
 
+// Les 4 classes suivantes servent uniquement pour spécialiser
+// ComponentItemEnumeratorTraitsT
+class MatPartCell {};
+class EnvPartCell {};
+class ComponentPartCell {};
+class ComponentPartSimdCell {};
+
+template<typename T> class ComponentItemEnumeratorTraitsT;
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -64,7 +73,9 @@ class EnvItemVectorView;
  */
 class ARCANE_CORE_EXPORT AllEnvCellVectorView
 {
- public:
+  friend class MeshMaterialMng;
+
+ protected:
 
   AllEnvCellVectorView(Int32ConstArrayView local_ids,ArrayView<ComponentItemInternal> items_internal)
   : m_local_ids(local_ids), m_items_internal(items_internal)
@@ -296,7 +307,7 @@ class ARCANE_CORE_EXPORT MatPartCellEnumerator
 : public ComponentPartCellEnumerator
 {
  public:
-  MatPartCellEnumerator(const MatPartItemVectorView& v);
+  explicit MatPartCellEnumerator(const MatPartItemVectorView& v);
  public:
   static MatPartCellEnumerator create(MatPartItemVectorView v);
   static MatPartCellEnumerator create(IMeshMaterial* mat,eMatPart part);
@@ -317,7 +328,7 @@ class ARCANE_CORE_EXPORT  EnvPartCellEnumerator
 : public ComponentPartCellEnumerator
 {
  public:
-  EnvPartCellEnumerator(const EnvPartItemVectorView& v);
+  explicit EnvPartCellEnumerator(const EnvPartItemVectorView& v);
  public:
   static EnvPartCellEnumerator create(EnvPartItemVectorView v);
   static EnvPartCellEnumerator create(IMeshEnvironment* env,eMatPart part);
@@ -337,13 +348,16 @@ class ARCANE_CORE_EXPORT  EnvPartCellEnumerator
 class ARCANE_CORE_EXPORT CellComponentCellEnumerator
 {
   friend class EnumeratorTracer;
+
  public:
-  CellComponentCellEnumerator(ComponentItemInternal* items_begin,Integer nb_mat)
-  : m_index(0), m_size(nb_mat), m_items_begin(items_begin)
+
+  // TODO: rendre obsolète
+  explicit CellComponentCellEnumerator(ComponentItemInternal* super_item)
+  : m_index(0), m_size(super_item->nbSubItem()), m_items_begin(super_item->firstSubItem())
   {
   }
-  CellComponentCellEnumerator(ComponentItemInternal* super_item)
-  : m_index(0), m_size(super_item->nbSubItem()), m_items_begin(super_item->firstSubItem())
+  explicit CellComponentCellEnumerator(ComponentCell super_item)
+  : m_index(0), m_size(super_item.internal()->nbSubItem()), m_items_begin(super_item.internal()->firstSubItem())
   {
   }
  public:
@@ -377,9 +391,10 @@ template <typename ComponentCellType> class CellComponentCellEnumeratorT
 {
  public:
 
-  CellComponentCellEnumeratorT(ComponentItemInternal* items_begin,Integer nb_mat)
-  : CellComponentCellEnumerator(items_begin,nb_mat){}
-  CellComponentCellEnumeratorT(ComponentItemInternal* super_item)
+  explicit CellComponentCellEnumeratorT(ComponentItemInternal* super_item)
+  : CellComponentCellEnumerator(super_item){}
+
+  explicit CellComponentCellEnumeratorT(ComponentCell super_item)
   : CellComponentCellEnumerator(super_item){}
 
  public:
@@ -431,7 +446,7 @@ class ARCANE_CORE_EXPORT AllEnvCellEnumerator
 {
   friend class EnumeratorTracer;
  protected:
-  AllEnvCellEnumerator(AllEnvCellVectorView items)
+  explicit AllEnvCellEnumerator(AllEnvCellVectorView items)
   : m_index(0), m_size(items.size()), m_items(items) { }
  public:
   static AllEnvCellEnumerator create(AllEnvCellVectorView items);
@@ -457,9 +472,10 @@ class ARCANE_CORE_EXPORT AllEnvCellEnumerator
 class ARCANE_CORE_EXPORT ComponentEnumerator
 {
   friend class EnumeratorTracer;
+
  public:
 
-  ComponentEnumerator(ConstArrayView<IMeshComponent*> components);
+  explicit ComponentEnumerator(ConstArrayView<IMeshComponent*> components);
 
  public:
 
@@ -483,9 +499,9 @@ class ARCANE_CORE_EXPORT MatEnumerator
 {
  public:
 
-  MatEnumerator(IMeshMaterialMng* mng);
-  MatEnumerator(IMeshEnvironment* env);
-  MatEnumerator(ConstArrayView<IMeshMaterial*> mats);
+  explicit MatEnumerator(IMeshMaterialMng* mng);
+  explicit MatEnumerator(IMeshEnvironment* env);
+  explicit MatEnumerator(ConstArrayView<IMeshMaterial*> mats);
 
  public:
 
@@ -529,6 +545,52 @@ class ARCANE_CORE_EXPORT EnvEnumerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template<>
+class ComponentItemEnumeratorTraitsT<ComponentCell>
+{
+ public:
+  using EnumeratorType = ComponentCellEnumerator;
+};
+template<>
+class ComponentItemEnumeratorTraitsT<MatCell>
+{
+ public:
+  using EnumeratorType = MatCellEnumerator;
+};
+template<>
+class ComponentItemEnumeratorTraitsT<MatPartCell>
+{
+ public:
+  using EnumeratorType = MatPartCellEnumerator;
+};
+template<>
+class ComponentItemEnumeratorTraitsT<EnvPartCell>
+{
+ public:
+  using EnumeratorType = EnvPartCellEnumerator;
+};
+template<>
+class ComponentItemEnumeratorTraitsT<EnvCell>
+{
+ public:
+  using EnumeratorType = EnvCellEnumerator;
+};
+template<>
+class ComponentItemEnumeratorTraitsT<ComponentPartCell>
+{
+ public:
+  using EnumeratorType = ComponentPartCellEnumerator;
+};
+template<>
+class ComponentItemEnumeratorTraitsT<ComponentPartSimdCell>
+{
+ public:
+  using EnumeratorType = ComponentPartSimdCellEnumerator;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 #if defined(ARCANE_TRACE_ENUMERATOR)
 #define A_TRACE_COMPONENT(_EnumeratorClassName) \
   ::Arcane::EnumeratorTraceWrapper< ::Arcane::Materials::_EnumeratorClassName, ::Arcane::Materials::IEnumeratorTracer >
@@ -544,7 +606,7 @@ class ARCANE_CORE_EXPORT EnvEnumerator
   for( A_TRACE_COMPONENT(_EnumeratorClassName) iname((::Arcane::Materials::_EnumeratorClassName)(container) A_TRACE_ENUMERATOR_WHERE); iname.hasNext(); ++iname )
 
 #define A_ENUMERATE_CELL_COMPONENTCELL(_EnumeratorClassName,iname,component_cell) \
-  for( A_TRACE_COMPONENT(_EnumeratorClassName) iname(component_cell.internal() A_TRACE_ENUMERATOR_WHERE); iname.hasNext(); ++iname )
+  for( A_TRACE_COMPONENT(_EnumeratorClassName) iname((::Arcane::Materials::_EnumeratorClassName)(component_cell) A_TRACE_ENUMERATOR_WHERE); iname.hasNext(); ++iname )
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -557,8 +619,8 @@ class ARCANE_CORE_EXPORT EnvEnumerator
  * \param ...  Les arguments supplémentaires sont passés à la méthode statique create() de
  * la classe de l'énumérateur.
  */
-#define ENUMERATE_COMPONENTITEM(enumerator_class_name,iname,...)  \
-  A_ENUMERATE_COMPONENTCELL(enumerator_class_name##Enumerator,iname,__VA_ARGS__)
+#define ENUMERATE_COMPONENTITEM(enumerator_class_name,iname,...)      \
+  A_ENUMERATE_COMPONENTCELL(ComponentItemEnumeratorTraitsT<enumerator_class_name>::EnumeratorType,iname,__VA_ARGS__)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

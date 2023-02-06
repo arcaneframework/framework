@@ -177,18 +177,19 @@ class CriteriaMng
   }
 
  private:
+
   void _setup();
   Integer _findEntity(const String& entity) const;
-  void _computeMemCell(const Cell& cell);
+  void _computeMemCell(Cell cell);
 
   //! Calcule de la contribution d'un entité sur les mailles adjacentes.
   template <typename ItemKind>
-  Real _computeMemContrib(const ItemVectorViewT<ItemKind> list)
+  Real _computeMemContrib(ItemConnectedListViewTypeT<ItemKind> list)
   {
-    Real contrib = 0;
-    ItemEnumeratorT<ItemKind> iterator = list.enumerator();
-    for ( ; iterator() ; ++iterator) {
-      contrib += 1.0/(Real)(*iterator).nbCell();
+    Real contrib = 0.0;
+    //ItemEnumeratorT<ItemKind> iterator = list.enumerator();
+    for ( const auto& item : list ) {
+      contrib += 1.0/(Real)(item.nbCell());
     }
     return contrib;
   }
@@ -324,7 +325,8 @@ getResidentMemory(const String& entity) const
 /*---------------------------------------------------------------------------*/
 // Pour les mailles, on calcule la contribution mémoire des noeuds, aretes et faces.
 void CriteriaMng::
-_computeMemCell(const Cell& cell) {
+_computeMemCell(Cell cell)
+{
   Real contrib;
   if (cell.localId() == m_buffer.id) // already computed
     return;
@@ -538,8 +540,8 @@ _computeComm()
   if (cellCommContrib()) {
     ENUMERATE_CELL(icell, mesh->ownCells()) {
       Real mem = (*m_mass_res_weight)[icell];
-      ENUMERATE_FACE(iface, icell->faces()) {
-        (*m_comm_costs)[iface] += mem*penalty;
+      for( Face face : icell->faces()) {
+        (*m_comm_costs)[face] += mem*penalty;
       }
     }
   }

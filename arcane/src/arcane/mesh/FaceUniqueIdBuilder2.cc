@@ -533,8 +533,7 @@ _computeSequential()
 
   for( Integer i=0; i<nb_cell; ++i ){    
     Cell cell = cells[i];
-    ENUMERATE_FACE(iface,cell.faces()){
-      Face face = *iface;
+    for( Face face : cell.faces()){
       if (face.uniqueId()==NULL_ITEM_UNIQUE_ID){
         face.mutableItemBase().setUniqueId(face_unique_id_counter);
         ++face_unique_id_counter;

@@ -29,6 +29,19 @@
 namespace Arcane
 {
 
+// A définir si on souhaiter ajouter un offset aux classes 'ItemVector' et
+// 'ItemEnumerator'. Cela change la taille de ces structures et il ne faut
+// donc recompiler code code utilisateur si on change ce '#define'.
+// #define ARCANE_HAS_OFFSET_FOR_ITEMVECTORVIEW
+
+// A définir si on souhaite cacher les méthodes d'accès aux structures
+// internes des connectivités.
+// #define ARCANE_HIDE_ITEM_CONNECTIVITY_STRUCTURE
+
+// A définir si on souhaite utiliser les classes spécifiques pour gérer
+// les entités connectées (sinon on utilise ItemVectorView)
+#define ARCANE_USE_SPECIFIC_ITEMCONNECTED
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -82,6 +95,10 @@ template<typename T> class ItemVectorT;
 class ItemVectorViewConstIterator;
 template<typename ItemType>
 class ItemVectorViewConstIteratorT;
+
+class ItemConnectedListViewConstIterator;
+template<typename ItemType>
+class ItemConnectedListViewConstIteratorT;
 
 template <typename ItemType>
 class ItemLocalIdViewT;
@@ -173,6 +190,10 @@ class ItemEnumerator;
 template<typename ItemType>
 class ItemEnumeratorT;
 
+class ItemConnectedEnumerator;
+template<typename ItemType>
+class ItemConnectedEnumeratorT;
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -181,6 +202,9 @@ class SimdItemEnumeratorBase;
 
 template<typename ItemType>
 class ItemEnumeratorBaseT;
+
+template<typename ItemType>
+class ItemConnectedEnumeratorBaseT;
 
 template<typename ItemType>
 class SimdItemEnumeratorT;
@@ -194,6 +218,14 @@ class SimdItemT;
 class ItemVectorView;
 template<typename ItemType>
 class ItemVectorViewT;
+
+/*!
+ * \ingroup Mesh
+ * \brief Vue sur une liste de connectivité
+ */
+template<int Extent = DynExtent> class ItemConnectedListView;
+template<typename ItemType, int Extent = DynExtent>
+class ItemConnectedListViewT;
 
 /*!
  * \ingroup Mesh
@@ -269,6 +301,65 @@ typedef ItemVectorViewT<Particle> ParticleVectorView;
  * \brief Vue sur un vecteur de degre de liberte.
  */
 typedef ItemVectorViewT<DoF> DoFVectorView;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \ingroup Mesh
+ * \brief Vue sur une liste de noeuds connectés à une entité
+ */
+using NodeConnectedListView = ItemConnectedListViewT<Node>;
+/*!
+ * \ingroup Mesh
+ * \brief Vue sur une liste d'arêtes connectées à une entité
+ */
+using EdgeConnectedListView = ItemConnectedListViewT<Edge>;
+/*!
+ * \ingroup Mesh
+ * \brief Vue sur une liste de faces connectées à une entité
+ */
+using FaceConnectedListView = ItemConnectedListViewT<Face>;
+/*!
+ * \ingroup Mesh
+ * \brief Vue sur une liste de mailles connectées à une entité
+ */
+using CellConnectedListView = ItemConnectedListViewT<Cell>;
+/*!
+ * \ingroup Mesh
+ * \brief Vue sur une liste de DoFs connectés à une entité
+ */
+using DoFConnectedListView = ItemConnectedListViewT<DoF>;
+
+#ifdef ARCANE_USE_SPECIFIC_ITEMCONNECTED
+//! Liste d'entités connectées
+using ItemConnectedListViewType = ItemConnectedListView<DynExtent>;
+//! Liste de noeuds connectés
+using NodeConnectedListViewType = NodeConnectedListView;
+//! Liste d'arêtes connectées
+using EdgeConnectedListViewType = EdgeConnectedListView;
+//! Liste de faces connectées
+using FaceConnectedListViewType = FaceConnectedListView;
+//! Liste de mailles connectées
+using CellConnectedListViewType = CellConnectedListView;
+//! Liste générique d'entités connectées
+template<typename ItemType> using ItemConnectedListViewTypeT = ItemConnectedListViewT<ItemType>;
+#else
+//! Liste d'entités connectées
+using ItemConnectedListViewType = ItemVectorView;
+//! Liste de noeuds connectés
+using NodeConnectedListViewType = NodeVectorView;
+//! Liste d'arêtes connectées
+using EdgeConnectedListViewType = EdgeVectorView;
+//! Liste de faces connectées
+using FaceConnectedListViewType = FaceVectorView;
+//! Liste de mailles connectées
+using CellConnectedListViewType = CellVectorView;
+//! Liste générique d'entités connectées
+template<typename ItemType> using ItemConnectedListViewTypeT = ItemVectorViewT<ItemType>;
+#endif
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 /*! \brief Collection de groupes de noeuds. */
 typedef Collection<NodeGroup> NodeGroupCollection;

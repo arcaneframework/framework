@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshUnitTest.cc                                             (C) 2000-2022 */
+/* MeshUnitTest.cc                                             (C) 2000-2023 */
 /*                                                                           */
 /* Service du test du maillage.                                              */
 /*---------------------------------------------------------------------------*/
@@ -204,6 +204,7 @@ public:
   void _testFaces();
   void _testItemVectorView();
   void _logMeshInfos();
+  void _testComputeLocalIdPattern();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -295,6 +296,7 @@ executeTest()
   _testFaces();
   if (options()->testDeallocateMesh())
     _testDeallocateMesh();
+  _testComputeLocalIdPattern();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -471,8 +473,9 @@ _dumpTiedInterfaces()
             error() << "master_face and its cell do not have the same owner: face_owner=" << master_face_owner
                     << " cell_owner=" << cell_face_owner;
         }
-        for( NodeEnumerator inode(face.nodes()); inode.hasNext(); ++inode )
+        ENUMERATE_CONNECTED_(Node,inode,face,nodes()){
           info() << "Master face node uid=" << inode->uniqueId();
+        }
         for( Integer zz=0, zs=tied_nodes[iface.index()].size(); zz<zs; ++zz ){
           const TiedNode& tn = tied_nodes[iface.index()][zz];
           nodes_in_master_face.insert(tn.node().uniqueId());
@@ -482,12 +485,13 @@ _dumpTiedInterfaces()
                    << " kind=" << tn.node().kind();
           }
         }
-        for( NodeEnumerator inode(face.nodes()); inode.hasNext(); ++inode )
+        ENUMERATE_CONNECTED_(Node,inode,face,nodes()){
           if (nodes_in_master_face.find(inode->uniqueId())==nodes_in_master_face.end()){
             ++nb_error;
             if (nb_error<max_print_error)
               error() << "node in master face not in slave node list uid=" << inode->uniqueId();
           }
+        }
         Integer nb_tied = tied_faces[iface.index()].size();
         if (nb_tied!=slave_faces.size()){
           ++nb_error;
@@ -1465,8 +1469,25 @@ _testFaces()
   ENUMERATE_(Cell,icell,allCells()){
     Cell cell = *icell;
     for( Face face : cell.faces() ){
-      vc.areEqual(face.oppositeCell(cell).itemLocalId(),face.oppositeCellId(cell),"OppositeCell");
+      vc.areEqual(face.oppositeCell(cell).itemLocalId(),face.oppositeCellId(cell),"OppositeCell1");
     }
+    Int32 nb_face = cell.nbFace();
+    FaceConnectedListViewType faces = cell.faces();
+    for(Int32 i=0; i<nb_face; ++i ){
+      vc.areEqual(faces[i].oppositeCell(cell).itemLocalId(),faces[i].oppositeCellId(cell),"OppositeCell2");
+    }
+    // Teste la compatibilité entre ItemVectorView et ItemConnectedListView.
+    // Pour maintenant la compatibilité entre les versions de 3.8+ et antérieures
+    // on doit pouvoir convertir un 'ItemConnectedListView' en un 'ItemVectorView'
+    // et de même pour les itérateurs
+    FaceVectorView faces_as_vector = cell.faces();
+    FaceVectorView::const_iterator face_vector_begin2 = cell.faces().begin();
+    FaceVectorView::const_iterator face_vector_begin1 = faces_as_vector.begin();
+    auto face_begin1 = faces.begin();
+    if (face_begin1!=face_vector_begin1)
+      ARCANE_FATAL("Bad face1");
+    if (face_vector_begin1!=face_vector_begin2)
+      ARCANE_FATAL("Bad face2");
   }
 }
 
@@ -1482,12 +1503,21 @@ _testDeallocateMesh()
   // TODO: Utiliser un service qui implémente IMeshBuilder au lieu de IMeshReader
   ServiceBuilder<IMeshReader> sbu(subDomain());
   String file_names[3] = { "tied_interface_1.vtk", "sphere_tied_1.vtk", "sphere_tied_2.vtk" };
-  for( Integer i=0; i<nb_deallocate; ++i ){
+  for (Integer i = 0; i < nb_deallocate; ++i) {
     info() << "DEALLOCATE I=" << i;
     pmesh->deallocate();
-    auto mesh_io(sbu.createReference("VtkLegacyMeshReader",SB_AllowNull));
-    mesh_io->readMeshFromFile(pmesh,XmlNode{},file_names[i%3],String(),true);
+    auto mesh_io(sbu.createReference("VtkLegacyMeshReader", SB_AllowNull));
+    mesh_io->readMeshFromFile(pmesh, XmlNode{}, file_names[i % 3], String(), true);
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshUnitTest::
+_testComputeLocalIdPattern()
+{
+  mesh_utils::computeConnectivityPatternOccurence(mesh());
 }
 
 /*---------------------------------------------------------------------------*/

@@ -20,6 +20,12 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#ifdef ARCANE_HAS_OFFSET_FOR_ITEMVECTORVIEW
+#define ARCANE_LOCALID_ADD_OFFSET(a) (m_local_id_offset + (a))
+#else
+#define ARCANE_LOCALID_ADD_OFFSET(a) (a)
+#endif
+
 namespace Arcane
 {
 
@@ -57,6 +63,8 @@ class ItemEnumeratorBase
   : m_local_ids(view.localIds().data()), m_index(0), m_count(view.size()), m_group_impl(agroup) { }
   ItemEnumeratorBase(const ItemVectorView& rhs)
   : ItemEnumeratorBase((const ItemInternalVectorView&)rhs,nullptr) {}
+  template<int E> ItemEnumeratorBase(const ItemConnectedListView<E>& rhs)
+  : m_local_ids(rhs.localIds().data()), m_count(rhs.localIds().size()){}
 
   ItemEnumeratorBase(const ItemEnumerator& rhs);
   ItemEnumeratorBase(const ItemInternalEnumerator& rhs);
@@ -77,17 +85,16 @@ class ItemEnumeratorBase
   constexpr Integer index() const { return m_index; }
 
   //! localId() de l'entité courante.
-  constexpr Int32 itemLocalId() const { return m_local_ids[m_index]; }
+  constexpr Int32 itemLocalId() const { return ARCANE_LOCALID_ADD_OFFSET(m_local_ids[m_index]); }
 
   //! localId() de l'entité courante.
-  constexpr Int32 localId() const { return m_local_ids[m_index]; }
+  constexpr Int32 localId() const { return ARCANE_LOCALID_ADD_OFFSET(m_local_ids[m_index]); }
 
   /*!
    * \internal
    * \brief Indices locaux.
    */
   constexpr const Int32* unguardedLocalIds() const { return m_local_ids; }
-
 
   /*!
    * \brief Groupe sous-jacent s'il existe (nullptr sinon)
@@ -101,8 +108,11 @@ class ItemEnumeratorBase
  protected:
 
   const Int32* ARCANE_RESTRICT m_local_ids;
-  Int32 m_index;
+  Int32 m_index = 0;
   Int32 m_count;
+#ifdef ARCANE_HAS_OFFSET_FOR_ITEMVECTORVIEW
+  Int32 m_local_id_offset = 0;
+#endif
   const ItemGroupImpl* m_group_impl = nullptr; // pourrait être retiré en mode release si nécessaire
 
  protected:
@@ -115,8 +125,14 @@ class ItemEnumeratorBase
   {
   }
 
-  constexpr ItemInternal* _internal(ItemSharedInfo* si) const { return si->m_items_internal[m_local_ids[m_index]]; }
-  constexpr const ItemInternalPtr* _unguardedItems(ItemSharedInfo* si) const { return si->m_items_internal.data(); }
+  constexpr ItemInternal* _internal(ItemSharedInfo* si) const
+  {
+    return si->m_items_internal[ARCANE_LOCALID_ADD_OFFSET(m_local_ids[m_index])];
+  }
+  constexpr const ItemInternalPtr* _unguardedItems(ItemSharedInfo* si) const
+  {
+    return si->m_items_internal.data();
+  }
 
  private:
 };
@@ -160,6 +176,9 @@ class ItemEnumeratorBaseT
   ItemEnumeratorBaseT(const impl::ItemIndexedListView<DynExtent>& view)
   : ItemEnumeratorBaseT(view.m_shared_info, view.constLocalIds()){}
 
+  ItemEnumeratorBaseT(const ItemConnectedListViewT<ItemType>& rhs)
+  : BaseClass(rhs), m_item(NULL_ITEM_LOCAL_ID,rhs.m_shared_info){}
+
  protected:
 
   // TODO: a supprimer
@@ -190,10 +209,21 @@ class ItemEnumeratorBaseT
 
  public:
 
-  constexpr ItemType operator*() const { m_item.m_local_id = m_local_ids[m_index]; return m_item; }
-  constexpr const ItemType* operator->() const { m_item.m_local_id = m_local_ids[m_index]; return &m_item; }
+  constexpr ItemType operator*() const
+  {
+    m_item.m_local_id = ARCANE_LOCALID_ADD_OFFSET(m_local_ids[m_index]);
+    return m_item;
+  }
+  constexpr const ItemType* operator->() const
+  {
+    m_item.m_local_id = ARCANE_LOCALID_ADD_OFFSET(m_local_ids[m_index]);
+    return &m_item;
+  }
 
-  constexpr LocalIdType asItemLocalId() const { return LocalIdType{m_local_ids[m_index]}; }
+  constexpr LocalIdType asItemLocalId() const
+  {
+    return LocalIdType{ARCANE_LOCALID_ADD_OFFSET(m_local_ids[m_index])};
+  }
 
   ItemEnumerator toItemEnumerator() const;
 
@@ -222,6 +252,8 @@ class ItemEnumeratorBaseT
 /*---------------------------------------------------------------------------*/
 
 } // End namespace Arcane
+
+#undef ARCANE_LOCALID_ADD_OFFSET
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

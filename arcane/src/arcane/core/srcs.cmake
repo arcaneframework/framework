@@ -318,6 +318,9 @@ set(ARCANE_ORIGINAL_SOURCES
   ItemVector.h
   ItemVectorView.cc
   ItemVectorView.h
+  ItemConnectedListView.h
+  ItemConnectedEnumeratorBase.h
+  ItemConnectedEnumerator.h
 
   MeshHandle.h
   MeshPartInfo.h

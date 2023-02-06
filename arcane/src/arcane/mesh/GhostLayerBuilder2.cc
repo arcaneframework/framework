@@ -307,7 +307,7 @@ addGhostLayers()
       if (cell_layer[cell_lid]!=(-1))
         continue;
       bool is_current_layer = false;
-      for( Int32 inode_local_id : cell.nodes().localIds() ){
+      for( Int32 inode_local_id : cell.nodeIds() ){
         Integer layer = node_layer[inode_local_id];
         //info() << "NODE_LAYER lid=" << i_node->localId() << " layer=" << layer;
         if (layer==current_layer){
@@ -319,7 +319,7 @@ addGhostLayers()
         cell_layer[cell_lid] = current_layer;
         //info() << "Current layer celluid=" << cell_uid;
         // Si non marqué, initialise à la couche courante + 1.
-        for( Int32 inode_local_id : cell.nodes().localIds() ){
+        for( Int32 inode_local_id : cell.nodeIds() ){
           Integer layer = node_layer[inode_local_id];
           if (layer==(-1)){
             //info() << "Marque node uid=" << i_node->uniqueId();

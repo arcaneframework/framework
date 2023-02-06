@@ -81,13 +81,16 @@ class ARCANE_CORE_EXPORT Item
 {
   // Pour accéder aux constructeurs privés
   friend class ItemEnumeratorBaseT<Item>;
+  friend class ItemConnectedEnumeratorBaseT<Item>;
   friend class ItemVector;
   friend class ItemVectorView;
   friend class ItemVectorViewConstIterator;
+  friend class ItemConnectedListViewConstIterator;
   friend class SimdItem;
   friend class SimdItemEnumeratorBase;
   friend class ItemInfoListView;
   friend class ItemPairEnumerator;
+  template<int Extent> friend class ItemConnectedListView;
   template<typename ItemType> friend class ItemEnumeratorBaseT;
 
   // Pour accéder à _internal()
@@ -534,6 +537,7 @@ operator<(const Item& item1,const Item& item2)
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/ItemVectorView.h"
+#include "arcane/ItemConnectedListView.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -551,13 +555,17 @@ namespace Arcane
 class ARCANE_CORE_EXPORT Node
 : public Item
 {
+  using ThatClass = Node;
   // Pour accéder aux constructeurs privés
-  friend class ItemEnumeratorBaseT<Node>;
-  friend class ItemVectorT<Node>;
-  friend class ItemVectorViewT<Node>;
-  friend class ItemVectorViewConstIteratorT<Node>;
-  friend class SimdItemT<Node>;
-  friend class ItemInfoListViewT<Node>;
+  friend class ItemEnumeratorBaseT<ThatClass>;
+  friend class ItemConnectedEnumeratorBaseT<ThatClass>;
+  friend class ItemVectorT<ThatClass>;
+  friend class ItemVectorViewT<ThatClass>;
+  friend class ItemConnectedListViewT<ThatClass>;
+  friend class ItemVectorViewConstIteratorT<ThatClass>;
+  friend class ItemConnectedListViewConstIteratorT<ThatClass>;
+  friend class SimdItemT<ThatClass>;
+  friend class ItemInfoListViewT<ThatClass>;
 
  public:
 
@@ -646,13 +654,13 @@ class ARCANE_CORE_EXPORT Node
   CellLocalId cellId(Int32 i) const { return _cellId(i); }
 
   //! Liste des arêtes du noeud
-  EdgeVectorView edges() const { return _edgeList(); }
+  EdgeConnectedListViewType edges() const { return _edgeList(); }
 
   //! Liste des faces du noeud
-  FaceVectorView faces() const { return _faceList(); }
+  FaceConnectedListViewType faces() const { return _faceList(); }
 
   //! Liste des mailles du noeud
-  CellVectorView cells() const { return _cellList(); }
+  CellConnectedListViewType cells() const { return _cellList(); }
 
   //! Liste des arêtes du noeud
   EdgeLocalIdView edgeIds() const { return _edgeIds(); }
@@ -697,13 +705,17 @@ _node(Int32 index) const
 class ARCANE_CORE_EXPORT ItemWithNodes
 : public Item
 {
+  using ThatClass = ItemWithNodes;
   // Pour accéder aux constructeurs privés
-  friend class ItemEnumeratorBaseT<ItemWithNodes>;
-  friend class ItemVectorT<ItemWithNodes>;
-  friend class ItemVectorViewT<ItemWithNodes>;
-  friend class ItemVectorViewConstIteratorT<ItemWithNodes>;
-  friend class SimdItemT<ItemWithNodes>;
-  friend class ItemInfoListViewT<ItemWithNodes>;
+  friend class ItemEnumeratorBaseT<ThatClass>;
+  friend class ItemConnectedEnumeratorBaseT<ThatClass>;
+  friend class ItemVectorT<ThatClass>;
+  friend class ItemVectorViewT<ThatClass>;
+  friend class ItemConnectedListViewT<ThatClass>;
+  friend class ItemVectorViewConstIteratorT<ThatClass>;
+  friend class ItemConnectedListViewConstIteratorT<ThatClass>;
+  friend class SimdItemT<ThatClass>;
+  friend class ItemInfoListViewT<ThatClass>;
 
  protected:
 
@@ -749,11 +761,10 @@ class ARCANE_CORE_EXPORT ItemWithNodes
   Node node(Int32 i) const { return _node(i); }
 
   //! Liste des noeuds de l'entité
-  NodeVectorView nodes() const { return _nodeList(); }
+  NodeConnectedListViewType nodes() const { return _nodeList(); }
 
   //! Liste des noeuds de l'entité
-  NodeLocalIdView nodeIds() const { return _nodeIds();
-  }
+  NodeLocalIdView nodeIds() const { return _nodeIds(); }
 
   //! i-ème noeud de l'entité.
   NodeLocalId nodeId(Int32 index) const { return _nodeId(index); }
@@ -778,13 +789,17 @@ class ARCANE_CORE_EXPORT ItemWithNodes
 class ARCANE_CORE_EXPORT Edge
 : public ItemWithNodes
 {
+  using ThatClass = Edge;
   // Pour accéder aux constructeurs privés
-  friend class ItemEnumeratorBaseT<Edge>;
-  friend class ItemVectorT<Edge>;
-  friend class ItemVectorViewT<Edge>;
-  friend class ItemVectorViewConstIteratorT<Edge>;
-  friend class SimdItemT<Edge>;
-  friend class ItemInfoListViewT<Edge>;
+  friend class ItemEnumeratorBaseT<ThatClass>;
+  friend class ItemConnectedEnumeratorBaseT<ThatClass>;
+  friend class ItemVectorT<ThatClass>;
+  friend class ItemVectorViewT<ThatClass>;
+  friend class ItemConnectedListViewT<ThatClass>;
+  friend class ItemVectorViewConstIteratorT<ThatClass>;
+  friend class ItemConnectedListViewConstIteratorT<ThatClass>;
+  friend class SimdItemT<ThatClass>;
+  friend class ItemInfoListViewT<ThatClass>;
 
  public:
 
@@ -859,7 +874,7 @@ class ARCANE_CORE_EXPORT Edge
   inline Cell cell(Int32 i) const;
 
   //! Liste des mailles de l'arête
-  CellVectorView cells() const { return _cellList(); }
+  CellConnectedListViewType cells() const { return _cellList(); }
 
   //! i-ème maille de l'arête
   CellLocalId cellId(Int32 i) const { return _cellId(i); }
@@ -871,7 +886,7 @@ class ARCANE_CORE_EXPORT Edge
   inline Face face(Int32 i) const;
 
   //! Liste des faces de l'arête
-  FaceVectorView faces() const { return _faceList(); }
+  FaceConnectedListViewType faces() const { return _faceList(); }
 
   //! i-ème face de l'arête
   FaceLocalId faceId(Int32 i) const { return _faceId(i); }
@@ -908,13 +923,17 @@ _edge(Int32 index) const
 class ARCANE_CORE_EXPORT Face
 : public ItemWithNodes
 {
+  using ThatClass = Face;
   // Pour accéder aux constructeurs privés
-  friend class ItemEnumeratorBaseT<Face>;
-  friend class ItemVectorT<Face>;
-  friend class ItemVectorViewT<Face>;
-  friend class ItemVectorViewConstIteratorT<Face>;
-  friend class SimdItemT<Face>;
-  friend class ItemInfoListViewT<Face>;
+  friend class ItemEnumeratorBaseT<ThatClass>;
+  friend class ItemConnectedEnumeratorBaseT<ThatClass>;
+  friend class ItemVectorT<ThatClass>;
+  friend class ItemVectorViewT<ThatClass>;
+  friend class ItemConnectedListViewT<ThatClass>;
+  friend class ItemVectorViewConstIteratorT<ThatClass>;
+  friend class ItemConnectedListViewConstIteratorT<ThatClass>;
+  friend class SimdItemT<ThatClass>;
+  friend class ItemInfoListViewT<ThatClass>;
 
  public:
 
@@ -983,7 +1002,7 @@ class ARCANE_CORE_EXPORT Face
   inline Cell cell(Int32 i) const;
 
   //! Liste des mailles de la face
-  CellVectorView cells() const { return _cellList(); }
+  CellConnectedListViewType cells() const { return _cellList(); }
 
   //! i-ème maille de la face
   CellLocalId cellId(Int32 i) const { return _cellId(i); }
@@ -1078,11 +1097,11 @@ class ARCANE_CORE_EXPORT Face
    * Cette liste n'existe que pour les faces dont isMasterFace() est vrai.
    * Pour les autres, elle est vide.
    */
-  FaceVectorView slaveFaces() const
+  FaceConnectedListViewType slaveFaces() const
   {
     if (_toItemBase().isMasterFace())
       return _faceList();
-    return FaceVectorView();
+    return FaceConnectedListViewType();
   }
 
  public:
@@ -1094,7 +1113,7 @@ class ARCANE_CORE_EXPORT Face
   Edge edge(Int32 i) const { return _edge(i); }
 
   //! Liste des arêtes de la face
-  EdgeVectorView edges() const { return _edgeList(); }
+  EdgeConnectedListViewType edges() const { return _edgeList(); }
 
   //! i-ème arête de la face
   EdgeLocalId edgeId(Int32 i) const { return _edgeId(i); }
@@ -1150,13 +1169,17 @@ _face(Int32 index) const
 class ARCANE_CORE_EXPORT Cell
 : public ItemWithNodes
 {
+  using ThatClass = Cell;
   // Pour accéder aux constructeurs privés
-  friend class ItemEnumeratorBaseT<Cell>;
-  friend class ItemVectorT<Cell>;
-  friend class ItemVectorViewT<Cell>;
-  friend class ItemVectorViewConstIteratorT<Cell>;
-  friend class SimdItemT<Cell>;
-  friend class ItemInfoListViewT<Cell>;
+  friend class ItemEnumeratorBaseT<ThatClass>;
+  friend class ItemConnectedEnumeratorBaseT<ThatClass>;
+  friend class ItemVectorT<ThatClass>;
+  friend class ItemVectorViewT<ThatClass>;
+  friend class ItemConnectedListViewT<ThatClass>;
+  friend class ItemVectorViewConstIteratorT<ThatClass>;
+  friend class ItemConnectedListViewConstIteratorT<ThatClass>;
+  friend class SimdItemT<ThatClass>;
+  friend class ItemInfoListViewT<ThatClass>;
 
  public:
 
@@ -1225,7 +1248,7 @@ class ARCANE_CORE_EXPORT Cell
   Face face(Int32 i) const { return _face(i); }
 
   //! Liste des faces de la maille
-  FaceVectorView faces() const { return _faceList(); }
+  FaceConnectedListViewType faces() const { return _faceList(); }
 
   //! i-ème face de la maille
   FaceLocalId faceId(Int32 i) const { return _faceId(i); }
@@ -1243,7 +1266,7 @@ class ARCANE_CORE_EXPORT Cell
   EdgeLocalId edgeId(Int32 i) const { return _edgeId(i); }
 
   //! Liste des arêtes de la maille
-  EdgeVectorView edges() const { return _edgeList(); }
+  EdgeConnectedListViewType edges() const { return _edgeList(); }
 
   //! Liste des arêtes de la maille
   EdgeLocalIdView edgeIds() const { return _edgeIds(); }
@@ -1351,20 +1374,23 @@ _cell(Int32 index) const
 class Particle
 : public Item
 {
+  using ThatClass = Particle;
   // Pour accéder aux constructeurs privés
-  friend class ItemEnumeratorBaseT<Particle>;
-  friend class ItemVectorT<Particle>;
-  friend class ItemVectorViewT<Particle>;
-  friend class ItemVectorViewConstIteratorT<Particle>;
-  friend class SimdItemT<Particle>;
-  friend class ItemInfoListViewT<Particle>;
+  friend class ItemEnumeratorBaseT<ThatClass>;
+  friend class ItemConnectedEnumeratorBaseT<ThatClass>;
+  friend class ItemVectorT<ThatClass>;
+  friend class ItemVectorViewT<ThatClass>;
+  friend class ItemConnectedListViewT<ThatClass>;
+  friend class ItemVectorViewConstIteratorT<ThatClass>;
+  friend class ItemConnectedListViewConstIteratorT<ThatClass>;
+  friend class SimdItemT<ThatClass>;
+  friend class ItemInfoListViewT<ThatClass>;
 
  private:
 
   //! Constructeur réservé pour les énumérateurs
   Particle(Int32 local_id,ItemSharedInfo* shared_info)
   : Item(local_id,shared_info) {}
-
 
  public:
   
@@ -1453,13 +1479,17 @@ class Particle
 class DoF
 : public Item
 {
+  using ThatClass = DoF;
   // Pour accéder aux constructeurs privés
-  friend class ItemEnumeratorBaseT<DoF>;
-  friend class ItemVectorT<DoF>;
-  friend class ItemVectorViewT<DoF>;
-  friend class ItemVectorViewConstIteratorT<DoF>;
-  friend class SimdItemT<DoF>;
-  friend class ItemInfoListViewT<DoF>;
+  friend class ItemEnumeratorBaseT<ThatClass>;
+  friend class ItemConnectedEnumeratorBaseT<ThatClass>;
+  friend class ItemVectorT<ThatClass>;
+  friend class ItemVectorViewT<ThatClass>;
+  friend class ItemConnectedListViewT<ThatClass>;
+  friend class ItemVectorViewConstIteratorT<ThatClass>;
+  friend class ItemConnectedListViewConstIteratorT<ThatClass>;
+  friend class SimdItemT<ThatClass>;
+  friend class ItemInfoListViewT<ThatClass>;
 
  private:
 

@@ -98,37 +98,48 @@ class ARCANE_CORE_EXPORT AbstractDataTypeDispatchingDataVisitor
   ~AbstractDataTypeDispatchingDataVisitor();
 
  public:
-  virtual void applyVisitor(IScalarDataT<Byte>* data);
-  virtual void applyVisitor(IScalarDataT<Real>* data);
-  virtual void applyVisitor(IScalarDataT<Int16>* data);
-  virtual void applyVisitor(IScalarDataT<Int32>* data);
-  virtual void applyVisitor(IScalarDataT<Int64>* data);
-  virtual void applyVisitor(IScalarDataT<Real2>* data);
-  virtual void applyVisitor(IScalarDataT<Real3>* data);
-  virtual void applyVisitor(IScalarDataT<Real2x2>* data);
-  virtual void applyVisitor(IScalarDataT<Real3x3>* data);
-  virtual void applyVisitor(IScalarDataT<String>* data);
 
-  virtual void applyVisitor(IArrayDataT<Byte>* data);
-  virtual void applyVisitor(IArrayDataT<Real>* data);
-  virtual void applyVisitor(IArrayDataT<Int16>* data);
-  virtual void applyVisitor(IArrayDataT<Int32>* data);
-  virtual void applyVisitor(IArrayDataT<Int64>* data);
-  virtual void applyVisitor(IArrayDataT<Real2>* data);
-  virtual void applyVisitor(IArrayDataT<Real3>* data);
-  virtual void applyVisitor(IArrayDataT<Real2x2>* data);
-  virtual void applyVisitor(IArrayDataT<Real3x3>* data);
-  virtual void applyVisitor(IArrayDataT<String>* data);
+  void applyVisitor(IScalarDataT<Byte>* data) override;
+  void applyVisitor(IScalarDataT<Real>* data) override;
+  void applyVisitor(IScalarDataT<Int16>* data) override;
+  void applyVisitor(IScalarDataT<Int32>* data) override;
+  void applyVisitor(IScalarDataT<Int64>* data) override;
+  void applyVisitor(IScalarDataT<Real2>* data) override;
+  void applyVisitor(IScalarDataT<Real3>* data) override;
+  void applyVisitor(IScalarDataT<Real2x2>* data) override;
+  void applyVisitor(IScalarDataT<Real3x3>* data) override;
+  void applyVisitor(IScalarDataT<String>* data) override;
 
-  virtual void applyVisitor(IArray2DataT<Byte>* data);
-  virtual void applyVisitor(IArray2DataT<Real>* data);
-  virtual void applyVisitor(IArray2DataT<Int16>* data);
-  virtual void applyVisitor(IArray2DataT<Int32>* data);
-  virtual void applyVisitor(IArray2DataT<Int64>* data);
-  virtual void applyVisitor(IArray2DataT<Real2>* data);
-  virtual void applyVisitor(IArray2DataT<Real3>* data);
-  virtual void applyVisitor(IArray2DataT<Real2x2>* data);
-  virtual void applyVisitor(IArray2DataT<Real3x3>* data);
+  void applyVisitor(IArrayDataT<Byte>* data) override;
+  void applyVisitor(IArrayDataT<Real>* data) override;
+  void applyVisitor(IArrayDataT<Int16>* data) override;
+  void applyVisitor(IArrayDataT<Int32>* data) override;
+  void applyVisitor(IArrayDataT<Int64>* data) override;
+  void applyVisitor(IArrayDataT<Real2>* data) override;
+  void applyVisitor(IArrayDataT<Real3>* data) override;
+  void applyVisitor(IArrayDataT<Real2x2>* data) override;
+  void applyVisitor(IArrayDataT<Real3x3>* data) override;
+  void applyVisitor(IArrayDataT<String>* data) override;
+
+  void applyVisitor(IArray2DataT<Byte>* data) override;
+  void applyVisitor(IArray2DataT<Real>* data) override;
+  void applyVisitor(IArray2DataT<Int16>* data) override;
+  void applyVisitor(IArray2DataT<Int32>* data) override;
+  void applyVisitor(IArray2DataT<Int64>* data) override;
+  void applyVisitor(IArray2DataT<Real2>* data) override;
+  void applyVisitor(IArray2DataT<Real3>* data) override;
+  void applyVisitor(IArray2DataT<Real2x2>* data) override;
+  void applyVisitor(IArray2DataT<Real3x3>* data) override;
+
+  void applyVisitor(IMultiArray2DataT<Byte>*) override {}
+  void applyVisitor(IMultiArray2DataT<Real>*) override {}
+  void applyVisitor(IMultiArray2DataT<Int16>*) override {}
+  void applyVisitor(IMultiArray2DataT<Int32>*) override {}
+  void applyVisitor(IMultiArray2DataT<Int64>*) override {}
+  void applyVisitor(IMultiArray2DataT<Real2>*) override {}
+  void applyVisitor(IMultiArray2DataT<Real3>*) override {}
+  void applyVisitor(IMultiArray2DataT<Real2x2>*) override {}
+  void applyVisitor(IMultiArray2DataT<Real3x3>*) override {}
 
  private:
 

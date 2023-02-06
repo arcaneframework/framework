@@ -14,6 +14,7 @@
 #include "arccore/base/ReferenceCounterImpl.h"
 #include "arccore/base/Ref.h"
 
+#include "arcane/utils/IDataCompressor.h"
 #include "arcane/utils/Array2.h"
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/Real2.h"
@@ -33,9 +34,9 @@
 #include "arcane/datatype/DataStorageBuildInfo.h"
 #include "arcane/datatype/DataTypeTraits.h"
 
-#include "arcane/ISerializer.h"
-#include "arcane/IData.h"
-#include "arcane/IDataVisitor.h"
+#include "arcane/core/ISerializer.h"
+#include "arcane/core/IData.h"
+#include "arcane/core/IDataVisitor.h"
 
 #include "arcane/core/internal/IDataInternal.h"
 
@@ -66,7 +67,7 @@ class Array2DataT
 {
   ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
   class Impl;
-  friend Impl;
+  friend class Impl;
 
  public:
 
@@ -140,6 +141,7 @@ class Array2DataT
  public:
 
   IArray2DataInternalT<DataType>* _internal() override { return m_internal; }
+  IDataInternal* _commonInternal() override { return m_internal; }
 
  public:
 
@@ -166,8 +168,11 @@ class Array2DataT<DataType>::Impl
 : public IArray2DataInternalT<DataType>
 {
  public:
+
   explicit Impl(Array2DataT<DataType>* p) : m_p(p){}
+
  public:
+
   void reserve(Integer new_capacity) override { m_p->m_value.reserve(new_capacity); }
   void resizeOnlyDim1(Int32 new_dim1_size) override
   {
@@ -188,7 +193,33 @@ class Array2DataT<DataType>::Impl
   }
   Array2<DataType>& _internalDeprecatedValue() override { return m_p->m_value; }
   void shrink() const override { m_p->m_value.shrink(); }
+  bool compressAndClear(DataCompressionBuffer& buf) override
+  {
+    IDataCompressor* compressor = buf.m_compressor;
+    if (!compressor)
+      return false;
+    Span<const DataType> values = m_p->m_value.to1DSpan();
+    Span<const std::byte> bytes = asBytes(values);
+    compressor->compress(bytes,buf.m_buffer);
+    buf.m_original_dim1_size = m_p->m_value.dim1Size();
+    buf.m_original_dim2_size = m_p->m_value.dim2Size();
+    m_p->m_value.clear();
+    m_p->m_value.shrink();
+    return true;
+  }
+  bool decompressAndFill(DataCompressionBuffer& buf) override
+  {
+    IDataCompressor* compressor = buf.m_compressor;
+    if (!compressor)
+      return false;
+    m_p->m_value.resize(buf.m_original_dim1_size,buf.m_original_dim2_size);
+    Span<DataType> values = m_p->m_value.to1DSpan();
+    compressor->decompress(buf.m_buffer,asWritableBytes(values));
+    return true;
+  }
+
  private:
+
   Array2DataT<DataType>* m_p;
 };
 

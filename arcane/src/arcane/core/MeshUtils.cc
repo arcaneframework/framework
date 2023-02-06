@@ -46,6 +46,7 @@
 #include "arcane/SharedVariable.h"
 #include "arcane/MeshVisitor.h"
 #include "arcane/IVariableSynchronizer.h"
+#include "arcane/UnstructuredMeshConnectivity.h"
 
 #include <algorithm>
 #include <map>
@@ -1646,6 +1647,76 @@ dumpSynchronizerTopologyJSON(IVariableSynchronizer* var_syncer,const String& fil
     auto bytes = json_writer.getBuffer().bytes();
     ofile.write(reinterpret_cast<const char*>(bytes.data()),bytes.size());
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace
+{
+  class MyIdsToTest
+  {
+   public:
+
+    friend bool operator<(const MyIdsToTest& a, const MyIdsToTest& b)
+    {
+      return a.ids < b.ids;
+    }
+    static constexpr int MAX_SIZE = 16;
+
+   public:
+
+    std::array<Int32, MAX_SIZE> ids = {};
+  };
+
+  void _computePatternOccurence(const ItemGroup& items, const String& message,
+                                IndexedItemConnectivityViewBase2 cty)
+  {
+    std::map<MyIdsToTest, Int32> occurence_map;
+    Int32 nb_skipped = 0;
+    ENUMERATE_ (Item, iitem, items) {
+      Item item = *iitem;
+      MyIdsToTest diff_ids;
+
+      Int32 index = 0;
+      Int32 lid0 = 0;
+      bool is_skipped = false;
+      for (ItemLocalId sub_item : cty.items(item)) {
+        if (index >= MyIdsToTest::MAX_SIZE) {
+          is_skipped = true;
+          break;
+        }
+        if (index == 0)
+          lid0 = sub_item.localId();
+        diff_ids.ids[index] = sub_item.localId() - lid0;
+        //info() << "  Cell lid=" << item.localId() << " I=" << index << " diff_lid=" << diff_ids.ids[index];
+        ++index;
+      }
+      if (is_skipped)
+        ++nb_skipped;
+      else
+        ++occurence_map[diff_ids];
+    }
+    ITraceMng* tm = items.mesh()->traceMng();
+    tm->info() << "Occurence: " << message << " group=" << items.name()
+               << " nb=" << items.size() << " map_size=" << occurence_map.size()
+               << " nb_skipped=" << nb_skipped;
+  }
+} // namespace
+
+void mesh_utils::
+computeConnectivityPatternOccurence(IMesh* mesh)
+{
+  ARCANE_CHECK_POINTER(mesh);
+
+  UnstructuredMeshConnectivityView cty(mesh);
+
+  _computePatternOccurence(mesh->allNodes(), "NodeCells", cty.nodeCell());
+  _computePatternOccurence(mesh->allNodes(), "NodeFaces", cty.nodeFace());
+  _computePatternOccurence(mesh->allFaces(), "FaceCells", cty.faceCell());
+  _computePatternOccurence(mesh->allFaces(), "FaceNodes", cty.faceNode());
+  _computePatternOccurence(mesh->allCells(), "CellNodes", cty.cellNode());
+  _computePatternOccurence(mesh->allCells(), "CellFaces", cty.cellFace());
 }
 
 /*---------------------------------------------------------------------------*/

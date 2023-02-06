@@ -19,6 +19,7 @@
 #include "arcane/EnumeratorTraceWrapper.h"
 #include "arcane/IItemEnumeratorTracer.h"
 #include "arcane/ItemEnumeratorBase.h"
+#include "arcane/ItemConnectedEnumerator.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -55,6 +56,7 @@ class ItemEnumerator
   friend class ItemVector;
   friend class ItemVectorView;
   friend class ItemPairEnumerator;
+  template<int Extent> friend class ItemConnectedListView;
   // NOTE: Normalement il suffirait de faire cela:
   //   template<class T> friend class ItemEnumeratorBase;
   // mais cela ne fonctionne pas avec GCC 8. On fait donc la spécialisation
@@ -88,6 +90,12 @@ class ItemEnumerator
   ItemEnumerator(const impl::ItemIndexedListView<DynExtent>& rhs)
   : BaseClass(rhs)
   {}
+
+ public:
+
+  // Pour test
+  template<int E> ItemEnumerator(const ItemConnectedListView<E>& rhs)
+  : BaseClass(ItemConnectedListViewT<Item,E>(rhs)){}
 
  private:
 
@@ -220,7 +228,9 @@ class ItemEnumeratorT
   using BaseClass = ItemEnumeratorBaseT<ItemType>;
   friend class ItemVectorT<ItemType>;
   friend class ItemVectorViewT<ItemType>;
+  friend class ItemConnectedListViewT<ItemType>;
   friend class SimdItemEnumeratorT<ItemType>;
+  template <typename I1, typename I2> friend class ItemPairEnumeratorT;
 
  public:
 
@@ -251,6 +261,11 @@ class ItemEnumeratorT
   ARCANE_DEPRECATED_REASON("Y2022: Internal to Arcane. Use other constructor")
   ItemEnumeratorT(const ItemInternalVectorView& view, const ItemGroupImpl* agroup = nullptr)
   : BaseClass(view,agroup){}
+
+ public:
+
+  // Pour test
+  ItemEnumeratorT(const ItemConnectedListViewT<ItemType>& rhs) : BaseClass(rhs){}
 
  private:
 
@@ -294,6 +309,16 @@ enumerator() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template<int Extent>
+inline ItemEnumerator ItemConnectedListView<Extent>::
+enumerator() const
+{
+  return ItemEnumerator(m_shared_info,m_local_ids);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 inline ItemLocalId::
 ItemLocalId(ItemEnumerator enumerator)
 : m_local_id(enumerator.asItemLocalId())
@@ -305,6 +330,24 @@ ItemLocalId(ItemEnumerator enumerator)
 
 template<typename ItemType> inline ItemLocalId::
 ItemLocalId(ItemEnumeratorT<ItemType> enumerator)
+: m_local_id(enumerator.asItemLocalId())
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+inline ItemLocalId::
+ItemLocalId(ItemConnectedEnumerator enumerator)
+: m_local_id(enumerator.asItemLocalId())
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename ItemType> inline ItemLocalId::
+ItemLocalId(ItemConnectedEnumeratorT<ItemType> enumerator)
 : m_local_id(enumerator.asItemLocalId())
 {
 }
@@ -324,6 +367,15 @@ ItemLocalIdT(ItemEnumerator enumerator)
 
 template<typename ItemType> inline ItemLocalIdT<ItemType>::
 ItemLocalIdT(ItemEnumeratorT<ItemType> enumerator)
+: ItemLocalId(enumerator.asItemLocalId())
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<typename ItemType> inline ItemLocalIdT<ItemType>::
+ItemLocalIdT(ItemConnectedEnumeratorT<ItemType> enumerator)
 : ItemLocalId(enumerator.asItemLocalId())
 {
 }
