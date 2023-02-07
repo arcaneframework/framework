@@ -41,6 +41,7 @@
 #include "arcane/accelerator/VariableViews.h"
 #include "arcane/accelerator/MaterialVariableViews.h"
 #include "arcane/accelerator/RunCommandMaterialEnumerate.h"
+#include "arcane/accelerator/AsyncRunQueuePool.h"
 
 #include "arcane/tests/ArcaneTestGlobal.h"
 
@@ -101,6 +102,7 @@ class MeshMaterialAcceleratorUnitTest
   void _initializeVariables();
   void _executeTest1(Integer nb_z);
   void _executeTest2(Integer nb_z);
+  void _executeTest3(Integer nb_z);
 };
 
 /*---------------------------------------------------------------------------*/
@@ -288,6 +290,9 @@ executeTest()
   {
     _executeTest2(nb_z);
   }
+  {
+    _executeTest3(nb_z);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -325,7 +330,11 @@ _initializeVariables()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Test du RUNCOMMAND_ENUMERATE(EnvCell, ...
+ * avec en paramètres l'environnement et cherchant à accèder
+ * aux variables multimat par l'envcell (i.e. le MatVarIndex en fait)
+ */
 void MeshMaterialAcceleratorUnitTest::
 _executeTest1(Integer nb_z)
 {
@@ -336,7 +345,7 @@ _executeTest1(Integer nb_z)
   MaterialVariableCellReal& e_ref(m_mat_e_ref);
 
   // Ref CPU
-  for( Integer z=0, iz=nb_z; z<iz; ++z ){
+  for (Integer z=0, iz=nb_z; z<iz; ++z) {
     ENUMERATE_ENVCELL(i,m_env1){
       a_ref[i] = b_ref[i] + c_ref[i] * d_ref[i] + e_ref[i];
     }
@@ -353,7 +362,7 @@ _executeTest1(Integer nb_z)
     auto in_d = ax::viewIn(cmd, m_mat_d);
     auto in_e = ax::viewIn(cmd, m_mat_e);  
 
-    for( Integer z=0, iz=nb_z; z<iz; ++z ){
+    for (Integer z=0, iz=nb_z; z<iz; ++z) {
       cmd << RUNCOMMAND_ENUMERATE(EnvCell, evi, m_env1) {
         auto [mvi, cid] = evi();
         out_a[mvi] = in_b[mvi] + in_c[mvi] * in_d[mvi] + in_e[mvi];
@@ -378,7 +387,12 @@ _executeTest1(Integer nb_z)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+/*!
+ * \brief Test du RUNCOMMAND_ENUMERATE(EnvCell, ...
+ * avec en paramètres une collection d'envcell et cherchant à accèder
+ * aux variables multimat par l'envcell (i.e. le MatVarIndex en fait)
+ * mais aussi aux variables globales par le cell ID
+ */
 void MeshMaterialAcceleratorUnitTest::
 _executeTest2(Integer nb_z)
 {
@@ -389,7 +403,7 @@ _executeTest2(Integer nb_z)
   MaterialVariableCellReal& e_ref(m_mat_e_ref);
 
   // Ref CPU
-  for( Integer z=0, iz=nb_z; z<iz; ++z ){
+  for (Integer z=0, iz=nb_z; z<iz; ++z) {
     ENUMERATE_ENV(ienv, m_mm_mng) {
       IMeshEnvironment* env = *ienv;
       EnvCellVectorView envcellsv = env->envView();
@@ -417,7 +431,7 @@ _executeTest2(Integer nb_z)
     auto in_d = ax::viewIn(cmd, m_mat_d.globalVariable());
     auto in_e = ax::viewIn(cmd, m_mat_e.globalVariable());
 
-    for( Integer z=0, iz=nb_z; z<iz; ++z ){
+    for (Integer z=0, iz=nb_z; z<iz; ++z) {
       ENUMERATE_ENV(ienv, m_mm_mng) {
         IMeshEnvironment* env = *ienv;
         EnvCellVectorView envcellsv = env->envView();    
@@ -434,6 +448,89 @@ _executeTest2(Integer nb_z)
           };
         }
       }
+    }
+  }
+
+  // Test
+  ValueChecker vc(A_FUNCINFO);
+  ENUMERATE_ENV(ienv, m_mm_mng) {
+      IMeshEnvironment* env = *ienv;
+      ENUMERATE_ENVCELL(iev,env)
+      {
+        vc.areEqual(m_mat_a[iev], m_mat_a_ref[iev],"Test1_mat_a");
+        vc.areEqual(m_mat_b[iev], m_mat_b_ref[iev],"Test1_mat_b");
+        vc.areEqual(m_mat_c[iev], m_mat_c_ref[iev],"Test1_mat_c");
+        vc.areEqual(m_mat_d[iev], m_mat_d_ref[iev],"Test1_mat_d");
+        vc.areEqual(m_mat_e[iev], m_mat_e_ref[iev],"Test1_mat_e");
+      }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Test du RUNCOMMAND_ENUMERATE(EnvCell, ...
+ * Même chose que le test2 mais avec l'utilisation d'un pool
+ * de run queue asynchrone
+ */
+void MeshMaterialAcceleratorUnitTest::
+_executeTest3(Integer nb_z)
+{
+  MaterialVariableCellReal& a_ref(m_mat_a_ref);
+  MaterialVariableCellReal& b_ref(m_mat_b_ref);
+  MaterialVariableCellReal& c_ref(m_mat_c_ref);
+  MaterialVariableCellReal& d_ref(m_mat_d_ref);
+  MaterialVariableCellReal& e_ref(m_mat_e_ref);
+
+  // Ref CPU
+  for (Integer z=0, iz=nb_z; z<iz; ++z) {
+    ENUMERATE_ENV(ienv, m_mm_mng) {
+      IMeshEnvironment* env = *ienv;
+      EnvCellVectorView envcellsv = env->envView();
+      ENUMERATE_ENVCELL(iev,envcellsv)
+      {
+        Cell cell = (*iev).globalCell();
+        a_ref[iev] = b_ref[iev] * e_ref[cell];
+      }
+      ENUMERATE_ENVCELL(iev,envcellsv)
+      {
+        Cell cell = (*iev).globalCell();
+        c_ref[iev] += a_ref[iev] / d_ref[cell];
+      }
+    }
+  }
+
+  // GPU
+  {
+    auto async_queues = makeAsyncQueuePool(m_runner, m_mm_mng->environments().size());
+
+    for (Integer z=0, iz=nb_z; z<iz; ++z) {
+      ENUMERATE_ENV(ienv, m_mm_mng) {
+        IMeshEnvironment* env = *ienv;
+        EnvCellVectorView envcellsv = env->envView();
+
+        auto cmd = makeCommand(async_queues[env->id()]);
+
+        auto inout_a = ax::viewInOut(cmd, m_mat_a);
+        auto in_b = ax::viewIn(cmd, m_mat_b);
+        auto out_c = ax::viewOut(cmd, m_mat_c);
+        auto in_d = ax::viewIn(cmd, m_mat_d.globalVariable());
+        auto in_e = ax::viewIn(cmd, m_mat_e.globalVariable());
+
+        {
+          cmd << RUNCOMMAND_ENUMERATE(EnvCell, evi, envcellsv) {
+            auto [mvi, cid] = evi();
+            inout_a[mvi] = in_b[mvi] * in_e[cid];
+          };
+        }
+        {
+          cmd << RUNCOMMAND_ENUMERATE(EnvCell, evi, envcellsv) {
+            auto [mvi, cid] = evi();
+            out_c[mvi] += inout_a[mvi] / in_d[cid];
+          };
+        }
+      }
+      async_queues.waitAll();
     }
   }
 

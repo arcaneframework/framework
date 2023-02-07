@@ -40,11 +40,13 @@ namespace Arcane::Accelerator
  *        RUNCOMMAND_ENUMERATE(EnvCell...
   */
 class EnvCellAccessor {
+
  public:
   struct EnvCellAccessorInternalData {
    MatVarIndex m_mvi;
    CellLocalId m_cid;   
   };
+
  public:
   ARCCORE_HOST_DEVICE explicit EnvCellAccessor(EnvCell ec)
   : m_internal_data{ec._varIndex(), ec.globalCell().itemLocalId()} {}
@@ -143,17 +145,9 @@ _applyEnvCells(RunCommand& command,const EnvCellVectorView& items,const Lambda& 
       SmallSpan<const MatVarIndex> mvis(items.component()->variableIndexer()->matvarIndexes());
       SmallSpan<const Int32> cids(items.component()->variableIndexer()->localIds());
       // TODO: vérifier que l'arcane assert n'est pas tout le temps fait
-      // ARCANE_ASSERT(mvis.size() == cids.size(), "MatVarIndex and CellLocalId arrays have different size");
+      ARCANE_ASSERT(mvis.size() == cids.size(), ("MatVarIndex and CellLocalId arrays have different size"));
       auto [b,t] = launch_info.computeThreadBlockInfo(vsize);
       cudaStream_t* s = reinterpret_cast<cudaStream_t*>(launch_info._internalStreamImpl());
-      // TODO: le memadvise est mal placé ici, mais n'apporte pas plus dans l'indexer
-      /*
-      auto err1 = cudaMemAdvise(mvis.data(), mvis.sizeBytes(), cudaMemoryAdvise::cudaMemAdviseSetReadMostly, 0);
-      auto err2 = cudaMemAdvise(cids.data(), cids.sizeBytes(), cudaMemoryAdvise::cudaMemAdviseSetReadMostly, 0);
-      if ((err1!=0) || (err2!=0)) {
-        ARCANE_FATAL("ERROR CUDA MemAdvise FAILED");
-      }
-      */
       // TODO: le prefetch fait chuter les perfs ... 
       /*
       auto err1 = cudaMemPrefetchAsync (mvis.data(), mvis.sizeBytes(), 0, *s);
@@ -162,7 +156,6 @@ _applyEnvCells(RunCommand& command,const EnvCellVectorView& items,const Lambda& 
         ARCANE_FATAL("ERROR de prefetch CUDA");
       }
       */
-
       // TODO: utiliser cudaLaunchKernel() à la place.
       impl::doIndirectGPULambda <<<b,t,0,*s>>>(mvis,cids,func);
     }

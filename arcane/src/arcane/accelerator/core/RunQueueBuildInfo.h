@@ -41,7 +41,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT RunQueueBuildInfo
   /*!
   * \brief Positionne la priorité.
   *
-  * Par défaut la propriété vaut 0 et cela indique qu'on créé une 'RunQueue'
+  * Par défaut la priorité vaut 0 et cela indique qu'on créé une 'RunQueue'
   * avec la priorité par défaut. Les valeurs strictement positives indiquent
   * une priorité plus faible et les valeurs strictement négatives une priorité
   * plus élevée.
