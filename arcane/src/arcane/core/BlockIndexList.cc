@@ -74,7 +74,7 @@ reset()
 void BlockIndexList::
 _setBlockIndexAndOffset(Int32 block, Int32 index, Int32 offset)
 {
-  m_blocks_index_and_offset[block * 2] = index;
+  m_blocks_index_and_offset[block * 2] = index * m_block_size;
   m_blocks_index_and_offset[(block * 2) + 1] = offset;
 }
 
@@ -138,55 +138,86 @@ build(BlockIndexList& block_index_list, SmallSpan<const Int32> indexes, const St
   block_index_list.m_original_size = original_size;
   block_index_list.m_block_size = block_size;
   block_index_list.m_last_block_size = last_block_size;
-  Int32 local_block_values[BlockIndex::MAX_BLOCK_SIZE];
-  local_block_values[0] = 0;
+
+  UniqueArray<Int32> block_index_in_original_array;
+  block_index_in_original_array.reserve(nb_block);
+
   for (Int32 i = 0; i < nb_fixed_block; ++i) {
     bool is_contigu = true;
     Int32 iter_index = i * block_size;
     Int32 first_value = indexes[iter_index];
     size_t hash = hasher(0);
-    if (is_verbose)
-      o << "\nBlock i=" << std::setw(5) << i;
+
     // TODO: faire une spécialisation en fonction de la taille de bloc.
     for (Int32 z = 1; z < block_size; ++z) {
       Int32 diff = indexes[iter_index + z] - first_value;
-      local_block_values[z] = diff;
       size_t hash2 = hasher(diff);
       hash ^= hash2 + 0x9e3779b9 + (hash << 6) + (hash >> 2);
-      if (is_verbose)
-        o << " " << std::setw(4) << diff;
       if (indexes[iter_index + z] != first_value + z) {
         is_contigu = false;
       }
     }
+
     auto idx = block_indexes.find(hash);
     Int32 block_index = -1;
     if (idx == block_indexes.end()) {
       // Nouveau bloc.
-      block_index = block_index_list._currentIndexPosition();
-      block_index_list.m_indexes.addRange(ConstArrayView<Int32>(block_size, local_block_values));
+      block_index = static_cast<Int32>(block_indexes.size());
       block_indexes.insert(std::make_pair(hash, block_index));
+      block_index_in_original_array.add(iter_index);
     }
     else
       block_index = idx->second;
     block_index_list._setBlockIndexAndOffset(i, block_index, first_value);
-    if (is_verbose)
-      o << " H=" << std::hex << hash << std::setbase(0);
     if (is_contigu)
       ++nb_contigu;
+
+    if (is_verbose) {
+      o << "\nBlock i=" << std::setw(5) << i;
+      for (Int32 z = 1; z < block_size; ++z) {
+        Int32 diff = indexes[iter_index + z] - first_value;
+        o << " " << std::setw(4) << diff;
+      }
+      o << " H=" << std::hex << hash << std::setbase(0);
+    }
   }
 
   // Gère l'éventuel dernier bloc.
   if (remaining_size != 0) {
     Int32 iter_index = nb_fixed_block * block_size;
     Int32 first_value = indexes[iter_index];
-    for (Int32 z = 1; z < remaining_size; ++z) {
-      Int32 diff = indexes[iter_index + z] - first_value;
-      local_block_values[z] = diff;
-    }
-    Int32 block_index = block_index_list._currentIndexPosition();
-    block_index_list.m_indexes.addRange(ConstArrayView<Int32>(remaining_size, local_block_values));
+    Int32 block_index = static_cast<Int32>(block_indexes.size());
+    block_index_in_original_array.add(iter_index);
     block_index_list._setBlockIndexAndOffset(nb_fixed_block, block_index, first_value);
+  }
+
+  // Maintenant qu'on connait le nombre de blocs communs, alloue le tableau
+  // des blocs compressés et recopie les valeurs correspondantes
+  {
+    Int32 local_block_values[BlockIndex::MAX_BLOCK_SIZE];
+    local_block_values[0] = 0;
+    const Int32 nb_reduced_block = static_cast<Int32>(block_indexes.size());
+    block_index_list.m_indexes.reserve((block_size * nb_reduced_block) + remaining_size);
+    for (Int32 i = 0; i < nb_reduced_block; ++i) {
+      Int32 pos = block_index_in_original_array[i];
+      Int32 first_value = indexes[pos];
+      for (Int32 z = 1; z < block_size; ++z) {
+        Int32 diff = indexes[pos + z] - first_value;
+        local_block_values[z] = diff;
+      }
+      block_index_list.m_indexes.addRange(ConstArrayView<Int32>(block_size, local_block_values));
+    }
+    if (remaining_size != 0) {
+      Int32 pos = nb_fixed_block * block_size;
+      Int32 first_value = indexes[pos];
+      // TODO: regarder pour faire un padding jusqu'à la fin du bloc avec la dernière
+      // valeur (comme ce qui est fait pour les ItemGroup)
+      for (Int32 z = 1; z < remaining_size; ++z) {
+        Int32 diff = indexes[pos + z] - first_value;
+        local_block_values[z] = diff;
+      }
+      block_index_list.m_indexes.addRange(ConstArrayView<Int32>(remaining_size, local_block_values));
+    }
   }
 
   if (is_verbose)

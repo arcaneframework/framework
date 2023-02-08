@@ -29,7 +29,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Block d'une liste d'indices.
+ * \brief Bloc contenant une une liste d'indices avec un offset.
  * \warning Experimental API
  */
 class ARCANE_CORE_EXPORT BlockIndex
@@ -81,7 +81,6 @@ class ARCANE_CORE_EXPORT BlockIndexList
 {
   friend class BlockIndexListBuilder;
 
-  // TODO: ajouter une méthode shrinkMemory()
   // TODO: pouvoir choisir un allocateur avec support accélérateur.
 
  public:
@@ -106,7 +105,7 @@ class ARCANE_CORE_EXPORT BlockIndexList
   UniqueArray<Int32> m_blocks_index_and_offset;
   //! Taille d'origine du tableau d'indices
   Int32 m_original_size = 0;
-  //! Nombre de bloc (m_original_size/m_block_size arrondi au supérieur)
+  //! Nombre de blocs (m_original_size/m_block_size arrondi au supérieur)
   Int32 m_nb_block = 0;
   //! Taille  d'un bloc.
   Int16 m_block_size = 0;
