@@ -37,10 +37,8 @@ namespace Arcane::Accelerator
 class MatVariableViewBase
 {
  public:
-  // Pour l'instant n'utilise pas encore \a command et \a var
-  // mais il ne faut pas les supprimer
-  // TODO: j'ai bestialement repris le fonctionnement des VariableViews de GG
-  MatVariableViewBase([[maybe_unused]] RunCommand& cmd,[[maybe_unused]] IMeshMaterialVariable* var)
+  // Pour l'instant n'utilise pas encore les paramètres
+  MatVariableViewBase(RunCommand&, IMeshMaterialVariable*)
   {
   }
  private:
