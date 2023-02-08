@@ -76,12 +76,15 @@
 #include "arcane/IIOMng.h"
 #include "arcane/MeshReaderMng.h"
 #include "arcane/UnstructuredMeshConnectivity.h"
+#include "arcane/MeshVisitor.h"
 
 #include <set>
 
 #ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
 #include "neo/Mesh.h"
 #endif
+
+#include "arcane/core/BlockIndexList.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -205,6 +208,7 @@ public:
   void _testItemVectorView();
   void _logMeshInfos();
   void _testComputeLocalIdPattern();
+  void _testGroupsAsBlocks();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -297,6 +301,7 @@ executeTest()
   if (options()->testDeallocateMesh())
     _testDeallocateMesh();
   _testComputeLocalIdPattern();
+  _testGroupsAsBlocks();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1518,6 +1523,32 @@ void MeshUnitTest::
 _testComputeLocalIdPattern()
 {
   mesh_utils::computeConnectivityPatternOccurence(mesh());
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshUnitTest::
+_testGroupsAsBlocks()
+{
+  ITraceMng* tm = mesh()->traceMng();
+  ValueChecker vc(A_FUNCINFO);
+  auto xx = [&](const ItemGroup& group)
+  {
+    if (group.internal()->parent())
+      return;
+    Int32 nb_item = group.size();
+    if (nb_item==0)
+      return;
+    BlockIndexList bli;
+    BlockIndexListBuilder bli_builder(tm);
+    bli_builder.setBlockSize(32);
+    bli_builder.build(bli,group.view().localIds(),group.name());
+    UniqueArray<Int32> computed_values;
+    bli.fillArray(computed_values);
+    vc.areEqualArray(computed_values.constView(),group.view().localIds(),group.name());
+  };
+  meshvisitor::visitGroups(mesh(),xx);
 }
 
 /*---------------------------------------------------------------------------*/
