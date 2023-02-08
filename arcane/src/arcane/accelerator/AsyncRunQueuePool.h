@@ -39,7 +39,7 @@ namespace Arcane::Accelerator
  * \warning API en cours de définition.
  * \note Courtesy of D.Dureau from Pattern4GPU
  */
-class ARCANE_ACCELERATOR_CORE_EXPORT AsyncRunQueuePool
+class AsyncRunQueuePool
 {
  public:
   //! au plus 32 queues (32 = nb de kernels max exécutables simultanément)
