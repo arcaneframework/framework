@@ -79,17 +79,14 @@ build(BlockIndexList& block_index_list, SmallSpan<const Int32> indexes, const St
 
   bool is_verbose = m_is_verbose;
 
-  const Int32 block_size = (m_block_size > 0) ? m_block_size : 32;
-  constexpr Int32 MAX_BLOCK_SIZE = 512;
-  if (block_size > MAX_BLOCK_SIZE)
-    ARCANE_FATAL("Bad value for block size v={0} max={1}", block_size, MAX_BLOCK_SIZE);
+  const Int16 block_size = (m_block_size > 0) ? m_block_size : 32;
   const Int32 size = indexes.size();
   //Int32 nb_block = (size + (block_size - 1)) / block_size;
   // Pour ce test ne traite pas l'éventuel dernier bloc.
   const Int32 nb_fixed_block = size / block_size;
-  const Int32 remaining_size = (size % block_size);
+  const Int16 remaining_size = static_cast<Int16>(size % block_size);
   Int32 nb_block = nb_fixed_block;
-  Int32 last_block_size = block_size;
+  Int16 last_block_size = block_size;
   if (remaining_size != 0) {
     ++nb_block;
     last_block_size = remaining_size;
@@ -105,7 +102,7 @@ build(BlockIndexList& block_index_list, SmallSpan<const Int32> indexes, const St
   block_index_list.m_block_size = block_size;
   block_index_list.m_nb_block = nb_block;
   block_index_list.m_last_block_size = last_block_size;
-  Int32 local_block_values[MAX_BLOCK_SIZE];
+  Int32 local_block_values[BlockIndex::MAX_BLOCK_SIZE];
   local_block_values[0] = 0;
   for (Int32 i = 0; i < nb_fixed_block; ++i) {
     bool is_contigu = true;
@@ -173,6 +170,30 @@ BlockIndexListBuilder::
 BlockIndexListBuilder(ITraceMng* tm)
 : TraceAccessor(tm)
 {
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void BlockIndexListBuilder::
+setBlockSizeAsPowerOfTwo(Int32 v)
+{
+  if (v < 0)
+    _throwInvalidBlockSize(v);
+  Int32 block_size = 1 << v;
+  if (block_size > BlockIndex::MAX_BLOCK_SIZE)
+    _throwInvalidBlockSize(block_size);
+  m_block_size = static_cast<Int16>(block_size);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void BlockIndexListBuilder::
+_throwInvalidBlockSize(Int32 block_size)
+{
+  ARCANE_FATAL("Bad value for block size v={0} min=1 max={1}",
+               block_size, BlockIndex::MAX_BLOCK_SIZE);
 }
 
 /*---------------------------------------------------------------------------*/
