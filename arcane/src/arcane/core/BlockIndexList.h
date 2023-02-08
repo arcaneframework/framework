@@ -118,6 +118,7 @@ class ARCANE_CORE_EXPORT BlockIndexList
   void _setNbBlock(Int32 nb_block);
   Int32 _currentIndexPosition() const;
   void _addBlockInfo(const Int32* data, Int16 size);
+  Int32 _computeNbContigusBlock() const;
 };
 
 /*---------------------------------------------------------------------------*/

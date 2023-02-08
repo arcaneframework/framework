@@ -109,6 +109,51 @@ _addBlockInfo(const Int32* data, Int16 size)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+Int32 BlockIndexList::
+_computeNbContigusBlock() const
+{
+  // TODO: on doit pouvoir savoir automatiquement si un bloc est contigu
+  // en connaissant son hash et la taille du bloc.
+  if (m_block_size == 0)
+    return 0;
+
+  Int32 nb_reduced_block = m_indexes.size() / m_block_size;
+  const Int32 block_size = m_block_size;
+  // Numéro du bloc contenant les indices continus s'il y en a un
+  Int32 contigu_block_pos = -1;
+
+  for (Int32 i = 0; i < nb_reduced_block; ++i) {
+    bool is_contigu = true;
+    Int32 pos = i * block_size;
+    for (Int32 z = 1; z < block_size; ++z) {
+      if (m_indexes[pos + z] != z) {
+        is_contigu = false;
+        break;
+      }
+    }
+    if (is_contigu) {
+      contigu_block_pos = pos;
+      break;
+    }
+  }
+
+  if (contigu_block_pos < 0)
+    return 0;
+
+  // Le nombre de blocs contigu correspond au nombre de blocs pour
+  // lesquels l'index est 'contigu_block_pos'.
+  Int32 nb_contigu = 0;
+  for (Int32 i = 0, n = m_nb_block; i < n; ++i) {
+    if (m_blocks_index_and_offset[i * 2] == contigu_block_pos)
+      ++nb_contigu;
+  }
+
+  return nb_contigu;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -130,7 +175,6 @@ build(BlockIndexList& block_index_list, SmallSpan<const Int32> indexes, const St
     last_block_size = remaining_size;
   }
 
-  Int32 nb_contigu = 0;
   std::unordered_map<std::size_t, Int32> block_indexes;
   std::hash<Int32> hasher;
   std::ostringstream o;
@@ -143,7 +187,6 @@ build(BlockIndexList& block_index_list, SmallSpan<const Int32> indexes, const St
   block_index_in_original_array.reserve(nb_block);
 
   for (Int32 i = 0; i < nb_fixed_block; ++i) {
-    bool is_contigu = true;
     Int32 iter_index = i * block_size;
     Int32 first_value = indexes[iter_index];
     size_t hash = hasher(0);
@@ -153,9 +196,6 @@ build(BlockIndexList& block_index_list, SmallSpan<const Int32> indexes, const St
       Int32 diff = indexes[iter_index + z] - first_value;
       size_t hash2 = hasher(diff);
       hash ^= hash2 + 0x9e3779b9 + (hash << 6) + (hash >> 2);
-      if (indexes[iter_index + z] != first_value + z) {
-        is_contigu = false;
-      }
     }
 
     auto idx = block_indexes.find(hash);
@@ -169,8 +209,6 @@ build(BlockIndexList& block_index_list, SmallSpan<const Int32> indexes, const St
     else
       block_index = idx->second;
     block_index_list._setBlockIndexAndOffset(i, block_index, first_value);
-    if (is_contigu)
-      ++nb_contigu;
 
     if (is_verbose) {
       o << "\nBlock i=" << std::setw(5) << i;
@@ -219,6 +257,8 @@ build(BlockIndexList& block_index_list, SmallSpan<const Int32> indexes, const St
       block_index_list.m_indexes.addRange(ConstArrayView<Int32>(remaining_size, local_block_values));
     }
   }
+
+  Int32 nb_contigu = block_index_list._computeNbContigusBlock();
 
   if (is_verbose)
     info() << o.str();
