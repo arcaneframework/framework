@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArccoreGlobal.h                                             (C) 2000-2022 */
+/* ArccoreGlobal.h                                             (C) 2000-2023 */
 /*                                                                           */
 /* Déclarations générales de Arccore.                                        */
 /*---------------------------------------------------------------------------*/
@@ -170,14 +170,18 @@ namespace Arccore
 /*---------------------------------------------------------------------------*/
 /*
  * Définition des types Arccore Int16, Int32 et Int64.
- *
- * Ces types sont définis lors de la configuration dans le fichier
- * 'arccore_config.h'.
  */
+//! Type entier signé sur 8 bits
+typedef std::int8_t Int8;
+//! Type entier signé sur 16 bits
 typedef std::int16_t Int16;
+//! Type entier signé sur 32 bits
 typedef std::int32_t Int32;
+//! Type entier signé sur 64 bits
 typedef std::int64_t Int64;
+//! Type entier non signé sur 32 bits
 typedef std::uint32_t UInt32;
+//! Type entier non signé sur 64 bits
 typedef std::uint64_t UInt64;
 
 /*---------------------------------------------------------------------------*/

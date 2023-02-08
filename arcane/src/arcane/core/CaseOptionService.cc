@@ -202,9 +202,9 @@ _readPhase1()
   //cerr << "** STR_VAL <" << str_val << " - " << m_default_value << ">\n";
         
   if (str_val.null()){
-    // Utilise la valeur par défaut:
-    // - si elle a été spécifiée par l´utilisateur, utilise celle-ci.
-    // - sinon utilise celle de la categorie associée aux défauts.
+    // Utilise la valeur par défaut :
+    // - si elle a été spécifiée par l'utilisateur, utilise celle-ci.
+    // - sinon utilise celle de la catégorie associée aux défauts.
     // - sinon, la valeur par défaut classique.
     if (!m_is_override_default){
       String category = caseDocument()->defaultCategory();

@@ -933,6 +933,7 @@ INPUT                  = @ARCANE_SRC_PATH@/arcane/core \
                          @ARCANE_SRC_PATH@/arcane/launcher \
                          @ARCANE_SRC_PATH@/arcane/core/materials \
                          @ARCANE_SRC_PATH@/arcane/materials \
+                         @ARCANE_SRC_PATH@/arcane/hdf5 \
                          @ARCANESRCROOT@/doc/doc_common \
                          @ARCANESRCROOT@/doc/doc_common/chap_news \
                          @ARCANESRCROOT@/doc/doc_user \
