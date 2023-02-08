@@ -42,9 +42,9 @@ class ARCANE_CORE_EXPORT BlockIndex
 
  private:
 
-  BlockIndex(const Int32* ptr, Int32 offset, Int16 size)
+  BlockIndex(const Int32* ptr, Int32 value_offset, Int16 size)
   : m_block_start(ptr)
-  , m_offset(offset)
+  , m_value_offset(value_offset)
   , m_size(size)
   {}
 
@@ -54,20 +54,20 @@ class ARCANE_CORE_EXPORT BlockIndex
   Int32 operator[](Int32 i) const
   {
     ARCANE_CHECK_AT(i, m_size);
-    return m_block_start[i] + m_offset;
+    return m_block_start[i] + m_value_offset;
   }
 
   //! Taille du bloc
   Int16 size() const { return m_size; }
 
   //! Offset des valeurs du bloc.
-  Int32 offset() const { return m_offset; }
+  Int32 valueOffset() const { return m_value_offset; }
 
  private:
 
-  const Int32* m_block_start;
-  Int32 m_offset;
-  Int16 m_size;
+  const Int32* m_block_start = nullptr;
+  Int32 m_value_offset = 0;
+  Int16 m_size = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -82,19 +82,19 @@ class ARCANE_CORE_EXPORT BlockIndexList
   friend class BlockIndexListBuilder;
 
   // TODO: ajouter une méthode shrinkMemory()
-  // TODO: utiliser un seul tableau pour m_indexes, m_block_indexes et m_block_offsets
   // TODO: pouvoir choisir un allocateur avec support accélérateur.
 
  public:
 
-  Int32 nbBlock() const { return m_block_offsets.size(); }
+  Int32 nbBlock() const { return m_nb_block; }
   Real memoryRatio() const;
   void reset();
   BlockIndex block(Int32 i) const
   {
-    Int32 idx = m_block_indexes[i];
+    Int32 index = m_blocks_index_and_offset[i * 2];
+    Int32 offset = m_blocks_index_and_offset[(i * 2) + 1];
     Int16 size = ((i + 1) != m_nb_block) ? m_block_size : m_last_block_size;
-    return BlockIndex(m_indexes.span().ptrAt(idx), m_block_offsets[i], size);
+    return BlockIndex(m_indexes.span().ptrAt(index), offset, size);
   }
   void fillArray(Array<Int32>& v);
 
@@ -102,10 +102,8 @@ class ARCANE_CORE_EXPORT BlockIndexList
 
   //! Liste des indexes
   UniqueArray<Int32> m_indexes;
-  // Index dans 'm_indexes' de chaque bloc
-  UniqueArray<Int32> m_block_indexes;
-  // Valeur à ajouter pour chaque bloc.
-  UniqueArray<Int32> m_block_offsets;
+  // Index dans 'm_indexes' et offset de chaque bloc
+  UniqueArray<Int32> m_blocks_index_and_offset;
   //! Taille d'origine du tableau d'indices
   Int32 m_original_size = 0;
   //! Nombre de bloc (m_original_size/m_block_size arrondi au supérieur)
@@ -114,6 +112,13 @@ class ARCANE_CORE_EXPORT BlockIndexList
   Int16 m_block_size = 0;
   //! Taille du dernier bloc.
   Int16 m_last_block_size = 0;
+
+ private:
+
+  void _setBlockIndexAndOffset(Int32 block, Int32 index, Int32 offset);
+  void _setNbBlock(Int32 nb_block);
+  Int32 _currentIndexPosition() const;
+  void _addBlockInfo(const Int32* data, Int16 size);
 };
 
 /*---------------------------------------------------------------------------*/
