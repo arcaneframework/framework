@@ -67,7 +67,7 @@ class MeshMaterialAcceleratorUnitTest
 {
  public:
 
-  MeshMaterialAcceleratorUnitTest(const ServiceBuildInfo& cb);
+  explicit MeshMaterialAcceleratorUnitTest(const ServiceBuildInfo& cb);
   ~MeshMaterialAcceleratorUnitTest() override;
 
  public:

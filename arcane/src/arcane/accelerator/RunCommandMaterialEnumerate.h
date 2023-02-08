@@ -250,7 +250,7 @@ run(RunCommand& command,const EnvCellVectorView& items,const Lambda& func)
 class EnvCellRunCommand
 {
  public:
-  EnvCellRunCommand(RunCommand& command,const EnvCellVectorView& items)
+  explicit EnvCellRunCommand(RunCommand& command,const EnvCellVectorView& items)
   : m_command(command), m_items(items) {}
 
   RunCommand& m_command;
@@ -260,10 +260,10 @@ class EnvCellRunCommand
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-EnvCellRunCommand
+extern "C++" ARCANE_ACCELERATOR_EXPORT EnvCellRunCommand
 operator<<(RunCommand& command,const EnvCellVectorView& items);
 
-EnvCellRunCommand
+extern "C++" ARCANE_ACCELERATOR_EXPORT EnvCellRunCommand
 operator<<(RunCommand& command,IMeshEnvironment* env);
 
 template<typename Lambda>

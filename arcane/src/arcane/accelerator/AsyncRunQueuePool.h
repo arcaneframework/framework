@@ -53,8 +53,8 @@ class ARCANE_ACCELERATOR_CORE_EXPORT AsyncRunQueuePool
   AsyncRunQueuePool& operator=(const AsyncRunQueuePool&) = delete;
   AsyncRunQueuePool& operator=(AsyncRunQueuePool&&) = delete;
 
-  AsyncRunQueuePool(Runner& runner, Int32 pool_size = POOL_MAX_SIZE,
-                    eRunQueuePriority queues_priority = eRunQueuePriority::Default)
+  explicit AsyncRunQueuePool(Runner& runner, Int32 pool_size = POOL_MAX_SIZE,
+                             eRunQueuePriority queues_priority = eRunQueuePriority::Default)
   : m_pool_size(std::min(pool_size, POOL_MAX_SIZE))
   {
     m_pool.reserve(m_pool_size);
