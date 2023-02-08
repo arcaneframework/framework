@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/TraceAccessor.h"
+#include "arcane/utils/UniqueArray.h"
 
 #include "arcane/ArcaneTypes.h"
 
@@ -33,7 +34,24 @@ namespace Arcane
  */
 class ARCANE_CORE_EXPORT BlockIndexList
 {
+  friend class BlockIndexListBuilder;
+
+  // TODO: ajouter une méthode shrinkMemory()
+
  public:
+
+  Int32 nbBlock() const { return m_block_offsets.size(); }
+  Real memoryRatio() const;
+  void reset();
+
+ private:
+
+  UniqueArray<Int32> m_indexes;
+  // Index dans 'm_indexes' de chaque bloc
+  UniqueArray<Int32> m_block_indexes;
+  // Valeur à ajouter pour chaque bloc.
+  UniqueArray<Int32> m_block_offsets;
+  Int32 m_original_size = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -46,6 +64,8 @@ class ARCANE_CORE_EXPORT BlockIndexList
 class ARCANE_CORE_EXPORT BlockIndexListBuilder
 : public TraceAccessor
 {
+  // TODO: Ne supporter que des tailles de bloc qui sont des puissances de 2
+
  public:
 
   BlockIndexListBuilder(ITraceMng* tm);
@@ -57,7 +77,7 @@ class ARCANE_CORE_EXPORT BlockIndexListBuilder
 
  public:
 
-  void build(SmallSpan<const Int32> indexes, const String& name);
+  void build(BlockIndexList& block_index_list, SmallSpan<const Int32> indexes, const String& name);
 
  private:
 

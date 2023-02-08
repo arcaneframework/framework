@@ -26,32 +26,64 @@
 namespace Arcane
 {
 
+Real BlockIndexList::
+memoryRatio() const
+{
+  if (m_original_size == 0)
+    return 0.0;
+
+  Int32 new_size = m_indexes.size() + m_block_indexes.size() + m_block_offsets.size();
+  return (static_cast<Real>(new_size) / static_cast<Real>(m_original_size));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void BlockIndexList::
+reset()
+{
+  m_indexes.clear();
+  m_block_indexes.clear();
+  m_block_offsets.clear();
+  m_original_size = 0;
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 void BlockIndexListBuilder::
-build(SmallSpan<const Int32> indexes,const String& name)
+build(BlockIndexList& block_index_list, SmallSpan<const Int32> indexes, const String& name)
 {
+  block_index_list.reset();
+
   bool is_verbose = m_is_verbose;
 
-  const Int32 block_size = (m_block_size>0) ? m_block_size : 32;
+  const Int32 block_size = (m_block_size > 0) ? m_block_size : 32;
 
-  Int32 size = indexes.size();
+  const Int32 size = indexes.size();
   //Int32 nb_block = (size + (block_size - 1)) / block_size;
   // Pour ce test ne traite pas l'éventuel dernier bloc.
-  Int32 nb_block = size / block_size;
+  const Int32 nb_fixed_block = size / block_size;
+  const Int32 remaining_size = (size % block_size);
+  Int32 nb_block = nb_fixed_block;
+  if (remaining_size != 0)
+    ++nb_block;
 
   Int32 nb_contigu = 0;
-  std::unordered_map<std::size_t, Int32> block_occurences;
+  std::unordered_map<std::size_t, Int32> block_indexes;
   std::hash<Int32> hasher;
   std::ostringstream o;
-  for (Int32 i = 0; i < nb_block; ++i) {
+  block_index_list.m_block_indexes.resize(nb_block);
+  block_index_list.m_block_offsets.resize(nb_block);
+  block_index_list.m_original_size = size;
+  for (Int32 i = 0; i < nb_fixed_block; ++i) {
     bool is_contigu = true;
     Int32 iter_index = i * block_size;
     Int32 first_value = indexes[iter_index];
     size_t hash = hasher(0);
     if (is_verbose)
       o << "\nBlock i=" << std::setw(5) << i;
+    // TODO: faire une spécialisation en fonction de la taille de bloc.
     for (Int32 z = 1; z < block_size; ++z) {
       Int32 diff = indexes[iter_index + z] - first_value;
       size_t hash2 = hasher(diff);
@@ -62,19 +94,40 @@ build(SmallSpan<const Int32> indexes,const String& name)
         is_contigu = false;
       }
     }
-    ++block_occurences[hash];
+    auto idx = block_indexes.find(hash);
+    Int32 block_index = -1;
+    if (idx == block_indexes.end()) {
+      // Nouveau bloc.
+      block_index = block_index_list.m_indexes.size();
+      block_index_list.m_indexes.addRange(indexes.subspan(iter_index, block_size));
+      block_indexes.insert(std::make_pair(hash, block_index));
+    }
+    else
+      block_index = idx->second;
+    block_index_list.m_block_indexes[i] = block_index;
+    block_index_list.m_block_offsets[i] = first_value;
     if (is_verbose)
       o << " H=" << std::hex << hash << std::setbase(0);
     if (is_contigu)
       ++nb_contigu;
   }
 
+  // Gère l'éventuel dernier bloc.
+  if (remaining_size != 0) {
+    Int32 iter_index = nb_fixed_block * block_size;
+    Int32 first_value = indexes[iter_index];
+    Int32 block_index = block_index_list.m_indexes.size();
+    block_index_list.m_indexes.addRange(indexes.subspan(iter_index, remaining_size));
+    block_index_list.m_block_indexes[nb_fixed_block] = block_index;
+    block_index_list.m_block_offsets[nb_fixed_block] = first_value;
+  }
+
   if (is_verbose)
     info() << o.str();
   info() << "Group Name=" << name << " size = " << size << " nb_block = " << nb_block
          << " nb_contigu=" << nb_contigu
-         << " reduced_nb_block=" << block_occurences.size();
-  // TODO: gérer le dernier sous-bloc.
+         << " reduced_nb_block=" << block_indexes.size()
+         << " ratio=" << block_index_list.memoryRatio();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -84,7 +137,7 @@ BlockIndexListBuilder::
 BlockIndexListBuilder(ITraceMng* tm)
 : TraceAccessor(tm)
 {
-}             
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
