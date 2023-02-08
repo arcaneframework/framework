@@ -44,7 +44,6 @@ class ARCANE_ACCELERATOR_CORE_EXPORT AsyncRunQueuePool
  public:
   //! au plus 32 queues (32 = nb de kernels max exécutables simultanément)
   // TODO: Constante tirée du code de David Dureau dans Pattern4GPU, cette limitation est-elle nécessaire ?
-  // TODO: Doit on autoriser a demander plus ? puis restreindre ? En ce cas, qu'advient il du random accessor ?
   static constexpr Int32 POOL_MAX_SIZE = 32;
 
  public:
