@@ -372,6 +372,8 @@ set(ARCANE_ORIGINAL_SOURCES
   BasicTimeLoopService.h
   BasicUnitTest.cc
   BasicUnitTest.h
+  BlockIndexList.h
+  BlockIndexList.cc
   CaseDatasetSource.cc
   CaseDatasetSource.h
   CaseFunction.cc
