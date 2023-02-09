@@ -18,6 +18,8 @@
 #include <vector>
 #include <cassert>
 #include <cstdint>
+#include <string>
+#include <chrono>
 
 #ifdef NDEBUG
   static constexpr bool ndebug = true;
@@ -159,6 +161,20 @@ namespace utils {
     _printContainer(container, std::cout);
     std::cout << std::endl;
   }
+
+  using namespace std::chrono_literals;
+
+  struct Profiler {
+
+    std::string m_name;
+    std::chrono::time_point<std::chrono::high_resolution_clock> m_start;
+    std::chrono::time_point<std::chrono::high_resolution_clock> m_end;
+    void start()  {m_start = std::chrono::high_resolution_clock::now();}
+    void stop()  {m_end = std::chrono::high_resolution_clock::now();}
+    void print(std::string message) {
+      std::cout << "=== cpu time " << message << m_name << " = " << (m_end-m_start)/ 1ms << " milliseconds ===" << std::endl;}
+
+  };
 
 }// end namespace utils
 
