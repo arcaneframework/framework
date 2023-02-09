@@ -64,7 +64,7 @@ void Neo::Mesh::scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::In
   // Add items
   m_mesh_graph->addAlgorithm(  Neo::OutProperty{family,family.lidPropName()},
                                [&family,uids,&added_items](Neo::ItemLidsProperty & lids_property){
-                                 std::cout << "Algorithm: create items in family " << family.name() << std::endl;
+                                 Neo::print() << "Algorithm: create items in family " << family.name() << std::endl;
                                  added_items = lids_property.append(uids);
                                  lids_property.debugPrint();
                                  Neo::print() << "Inserted item range : " << added_items;
@@ -75,7 +75,7 @@ void Neo::Mesh::scheduleAddItems(Neo::Family& family, std::vector<Neo::utils::In
       Neo::OutProperty{family, uniqueIdPropertyName(family.name())},
       [&family,uids{std::move(uids)},&added_items](Neo::ItemLidsProperty const& item_lids_property,
                                    Neo::PropertyT<Neo::utils::Int64>& item_uids_property){
-        std::cout << "Algorithm: register item uids for family " << family.name() << std::endl;
+        Neo::print() << "Algorithm: register item uids for family " << family.name() << std::endl;
         if (item_uids_property.isInitializableFrom(added_items)){
           item_uids_property.init(added_items,std::move(uids)); // init can steal the input values
         }
@@ -115,9 +115,9 @@ void Neo::Mesh::_scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRa
           (Neo::ItemLidsProperty const& source_family_lids_property,
            Neo::ItemLidsProperty const& target_family_lids_property,
            Neo::ArrayProperty<Neo::utils::Int32> & source2target){
-        std::cout << "Algorithm: register connectivity between " <<
-                  source_family.m_name << "  and  " << target_family.m_name << std::endl;
-        ItemRange const& source_items = source_items_wrapper.get();
+          Neo::print() << "Algorithm: register connectivity between " <<
+            source_family.m_name << "  and  " << target_family.m_name << std::endl;
+          ItemRange const& source_items = source_items_wrapper.get();
         auto connected_item_lids = target_family_lids_property[connected_item_uids];
         if (source2target.isInitializableFrom(source_items)) {
           source2target.resize(std::move(nb_connected_item_per_item));

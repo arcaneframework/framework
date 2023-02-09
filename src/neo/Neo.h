@@ -489,7 +489,7 @@ public:
   }
 
   void _appendByReconstruction(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<int> const& nb_connected_item_per_item){
-    std::cout << "Append in ArrayProperty by reconstruction" << std::endl;
+    Neo::print() << "Append in ArrayProperty by reconstruction" << std::endl;
     // Compute new offsets
     std::vector<int> new_offsets(m_offsets);
     if (utils::maxItem(item_range) >= new_offsets.size()) new_offsets.resize(utils::maxItem(item_range)+1);// todo ajouter ArrayProperty::resize(maxlid)
@@ -529,7 +529,7 @@ public:
 
   void _appendByBackInsertion(ItemRange const& item_range, std::vector<DataType> const& values, std::vector<int> const& nb_connected_item_per_item){
     if (item_range.isContiguous()) {
-      std::cout << "Append in ArrayProperty by back insertion, contiguous range" << std::endl;
+      Neo::print() << "Append in ArrayProperty by back insertion, contiguous range" << std::endl;
       auto max_existing_lid = m_offsets.size()-1;
       auto min_new_lid = utils::minItem(item_range);
       if (min_new_lid > max_existing_lid+1) {
@@ -542,7 +542,7 @@ public:
       _updateIndexes();
     }
     else {
-      std::cout << "Append in ArrayProperty by back insertion, non contiguous range" << std::endl;
+      Neo::print() << "Append in ArrayProperty by back insertion, non contiguous range" << std::endl;
       m_offsets.resize(utils::maxItem(item_range) + 1);
       auto index = 0;
       for (auto item : item_range) m_offsets[item] = nb_connected_item_per_item[index++];
@@ -569,6 +569,7 @@ public:
   }
 
   void debugPrint() const {
+    if constexpr (ndebug) return;
     std::cout << "= Print array property " << m_name << " =" << std::endl;
     for (auto &val : m_data) {
       std::cout << "\"" << val << "\" ";
@@ -875,7 +876,7 @@ public:
   template<typename T>
   void addProperty(std::string const& name){
     auto [iter,is_inserted] = m_properties.insert(std::make_pair(name,PropertyT<T>{name}));
-    if (is_inserted) std::cout << "Add property " << name << " in Family " << m_name
+    if (is_inserted) Neo::print() << "Add property " << name << " in Family " << m_name
                 << std::endl;
   }
 
@@ -909,7 +910,7 @@ public:
   template <typename T>
   void addArrayProperty(std::string const& name){
     auto [iter, is_inserted] = m_properties.insert(std::make_pair(name, ArrayProperty<T>{name}));
-    if (is_inserted) std::cout << "Add array property " << name << " in Family " << m_name
+    if (is_inserted) Neo::print() << "Add array property " << name << " in Family " << m_name
                 << std::endl;
   }
 
@@ -1254,7 +1255,7 @@ class MeshBase {
 
 public:
   Family& addFamily(ItemKind ik, std::string&& name) {
-    std::cout << "Add Family " << name << " in mesh " << m_name << std::endl;
+    Neo::print() << "Add Family " << name << " in mesh " << m_name << std::endl;
     return m_families.push_back(ik, name);
   }
 
@@ -1333,18 +1334,18 @@ public:
   }
 
   EndOfMeshUpdate _applyAlgorithms(AlgorithmExecutionOrder execution_order, bool do_keep_algorithms) {
-    std::cout << "-- apply added algorithms with execution order ";
+    Neo::print() << "-- apply added algorithms with execution order ";
     switch (execution_order) {
     case AlgorithmExecutionOrder::FIFO:
-      std::cout << "FIFO --" << std::endl;
+      Neo::print() << "FIFO --" << std::endl;
       std::for_each(m_algos.begin(),m_algos.end(),[](auto& algo){(*algo.get())();});
       break;
     case AlgorithmExecutionOrder::LIFO:
-      std::cout << "LIFO --" << std::endl;
+      Neo::print() << "LIFO --" << std::endl;
       std::for_each(m_algos.rbegin(), m_algos.rend(), [](auto& algo) { (*algo.get())(); });
       break;
     case AlgorithmExecutionOrder::DAG:
-      std::cout << "DAG --" << std::endl;
+      Neo::print() << "DAG --" << std::endl;
       _build_graph();
       try {
         auto sorted_graph = m_dag.topologicalSort();
