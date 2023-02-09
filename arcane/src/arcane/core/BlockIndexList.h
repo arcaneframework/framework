@@ -29,6 +29,51 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
+ * \brief Bloc contenant une une liste d'indices avec un offset.
+ * \warning Experimental API
+ */
+class ARCANE_CORE_EXPORT BlockIndex
+{
+  friend class BlockIndexList;
+
+ public:
+
+  static constexpr Int16 MAX_BLOCK_SIZE = 512;
+
+ private:
+
+  BlockIndex(const Int32* ptr, Int32 value_offset, Int16 size)
+  : m_block_start(ptr)
+  , m_value_offset(value_offset)
+  , m_size(size)
+  {}
+
+ public:
+
+  //! i-ème valeur du bloc
+  Int32 operator[](Int32 i) const
+  {
+    ARCANE_CHECK_AT(i, m_size);
+    return m_block_start[i] + m_value_offset;
+  }
+
+  //! Taille du bloc
+  Int16 size() const { return m_size; }
+
+  //! Offset des valeurs du bloc.
+  Int32 valueOffset() const { return m_value_offset; }
+
+ private:
+
+  const Int32* m_block_start = nullptr;
+  Int32 m_value_offset = 0;
+  Int16 m_size = 0;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
  * \brief Classe gérant un tableau sous la forme d'une liste de blocs.
  * \warning Experimental API
  */
@@ -36,62 +81,44 @@ class ARCANE_CORE_EXPORT BlockIndexList
 {
   friend class BlockIndexListBuilder;
 
-  // TODO: ajouter une méthode shrinkMemory()
-  // TODO: utiliser un seul tableau pour m_indexes, m_block_indexes et m_block_offsets
   // TODO: pouvoir choisir un allocateur avec support accélérateur.
-
-  struct BlockIndex
-  {
-    friend class BlockIndexList;
-
-   private:
-
-    BlockIndex(const Int32* ptr, Int32 size, Int32 offset)
-    : m_block_start(ptr)
-    , m_offset(offset)
-    , m_size(size)
-    {}
-
-   public:
-
-    Int32 operator[](Int32 i) const
-    {
-      ARCANE_CHECK_AT(i, m_size);
-      return m_block_start[i] + m_offset;
-    }
-    Int32 size() const { return m_size; }
-
-   private:
-
-    const Int32* m_block_start;
-    Int32 m_offset;
-    Int32 m_size;
-  };
 
  public:
 
-  Int32 nbBlock() const { return m_block_offsets.size(); }
+  Int32 nbBlock() const { return m_nb_block; }
   Real memoryRatio() const;
   void reset();
   BlockIndex block(Int32 i) const
   {
-    Int32 idx = m_block_indexes[i];
-    Int32 size = ((i + 1) != m_nb_block) ? m_block_size : m_last_block_size;
-    return BlockIndex(m_indexes.span().ptrAt(idx), size, m_block_offsets[i]);
+    Int32 index = m_blocks_index_and_offset[i * 2];
+    Int32 offset = m_blocks_index_and_offset[(i * 2) + 1];
+    Int16 size = ((i + 1) != m_nb_block) ? m_block_size : m_last_block_size;
+    return BlockIndex(m_indexes.span().ptrAt(index), offset, size);
   }
   void fillArray(Array<Int32>& v);
 
  private:
 
+  //! Liste des indexes
   UniqueArray<Int32> m_indexes;
-  // Index dans 'm_indexes' de chaque bloc
-  UniqueArray<Int32> m_block_indexes;
-  // Valeur à ajouter pour chaque bloc.
-  UniqueArray<Int32> m_block_offsets;
+  // Index dans 'm_indexes' et offset de chaque bloc
+  UniqueArray<Int32> m_blocks_index_and_offset;
+  //! Taille d'origine du tableau d'indices
   Int32 m_original_size = 0;
-  Int32 m_block_size = 0;
+  //! Nombre de blocs (m_original_size/m_block_size arrondi au supérieur)
   Int32 m_nb_block = 0;
-  Int32 m_last_block_size = 0;
+  //! Taille  d'un bloc.
+  Int16 m_block_size = 0;
+  //! Taille du dernier bloc.
+  Int16 m_last_block_size = 0;
+
+ private:
+
+  void _setBlockIndexAndOffset(Int32 block, Int32 index, Int32 offset);
+  void _setNbBlock(Int32 nb_block);
+  Int32 _currentIndexPosition() const;
+  void _addBlockInfo(const Int32* data, Int16 size);
+  Int32 _computeNbContigusBlock() const;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -104,8 +131,6 @@ class ARCANE_CORE_EXPORT BlockIndexList
 class ARCANE_CORE_EXPORT BlockIndexListBuilder
 : public TraceAccessor
 {
-  // TODO: Ne supporter que des tailles de bloc qui sont des puissances de 2
-
  public:
 
   BlockIndexListBuilder(ITraceMng* tm);
@@ -113,7 +138,15 @@ class ARCANE_CORE_EXPORT BlockIndexListBuilder
  public:
 
   void setVerbose(bool v) { m_is_verbose = v; }
-  void setBlockSize(Int32 v) { m_block_size = v; }
+
+  /*!
+   * \brief Positionne la taille de bloc sous la forme d'une puissance de 2.
+   *
+   * La taille d'un bloc sera égal à 2 ^ \a v.
+   * Si \a v==0, la taille du bloc est de 1, si \a v==1, la taille est de 2,
+   * si \a v==2 la taille est de 4, si \a v==3 la taille est de 8 et ainsi de suite.
+   */
+  void setBlockSizeAsPowerOfTwo(Int32 v);
 
  public:
 
@@ -122,7 +155,11 @@ class ARCANE_CORE_EXPORT BlockIndexListBuilder
  private:
 
   bool m_is_verbose = false;
-  Int32 m_block_size = 32;
+  Int16 m_block_size = 32;
+
+ private:
+
+  void _throwInvalidBlockSize [[noreturn]] (Int32 block_size);
 };
 
 /*---------------------------------------------------------------------------*/

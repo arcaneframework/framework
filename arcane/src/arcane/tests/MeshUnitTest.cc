@@ -1542,7 +1542,7 @@ _testGroupsAsBlocks()
       return;
     BlockIndexList bli;
     BlockIndexListBuilder bli_builder(tm);
-    bli_builder.setBlockSize(32);
+    bli_builder.setBlockSizeAsPowerOfTwo(5); // Bloc de 2^5 = 32
     bli_builder.build(bli,group.view().localIds(),group.name());
     UniqueArray<Int32> computed_values;
     bli.fillArray(computed_values);

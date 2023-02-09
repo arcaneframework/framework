@@ -36,7 +36,7 @@ memoryRatio() const
   if (m_original_size == 0)
     return 0.0;
 
-  Int32 new_size = m_indexes.size() + m_block_indexes.size() + m_block_offsets.size();
+  Int32 new_size = m_indexes.size() + m_blocks_index_and_offset.size();
   return (static_cast<Real>(new_size) / static_cast<Real>(m_original_size));
 }
 
@@ -61,13 +61,98 @@ void BlockIndexList::
 reset()
 {
   m_indexes.clear();
-  m_block_indexes.clear();
-  m_block_offsets.clear();
+  m_blocks_index_and_offset.clear();
   m_original_size = 0;
   m_block_size = 0;
   m_nb_block = 0;
   m_last_block_size = 0;
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void BlockIndexList::
+_setBlockIndexAndOffset(Int32 block, Int32 index, Int32 offset)
+{
+  m_blocks_index_and_offset[block * 2] = index * m_block_size;
+  m_blocks_index_and_offset[(block * 2) + 1] = offset;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void BlockIndexList::
+_setNbBlock(Int32 nb_block)
+{
+  m_blocks_index_and_offset.resize(nb_block * 2);
+  m_nb_block = nb_block;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int32 BlockIndexList::
+_currentIndexPosition() const
+{
+  return m_indexes.size();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void BlockIndexList::
+_addBlockInfo(const Int32* data, Int16 size)
+{
+  m_indexes.addRange(ConstArrayView<Int32>(size, data));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Int32 BlockIndexList::
+_computeNbContigusBlock() const
+{
+  // TODO: on doit pouvoir savoir automatiquement si un bloc est contigu
+  // en connaissant son hash et la taille du bloc.
+  if (m_block_size == 0)
+    return 0;
+
+  Int32 nb_reduced_block = m_indexes.size() / m_block_size;
+  const Int32 block_size = m_block_size;
+  // Numéro du bloc contenant les indices continus s'il y en a un
+  Int32 contigu_block_pos = -1;
+
+  for (Int32 i = 0; i < nb_reduced_block; ++i) {
+    bool is_contigu = true;
+    Int32 pos = i * block_size;
+    for (Int32 z = 1; z < block_size; ++z) {
+      if (m_indexes[pos + z] != z) {
+        is_contigu = false;
+        break;
+      }
+    }
+    if (is_contigu) {
+      contigu_block_pos = pos;
+      break;
+    }
+  }
+
+  if (contigu_block_pos < 0)
+    return 0;
+
+  // Le nombre de blocs contigu correspond au nombre de blocs pour
+  // lesquels l'index est 'contigu_block_pos'.
+  Int32 nb_contigu = 0;
+  for (Int32 i = 0, n = m_nb_block; i < n; ++i) {
+    if (m_blocks_index_and_offset[i * 2] == contigu_block_pos)
+      ++nb_contigu;
+  }
+
+  return nb_contigu;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -79,88 +164,105 @@ build(BlockIndexList& block_index_list, SmallSpan<const Int32> indexes, const St
 
   bool is_verbose = m_is_verbose;
 
-  const Int32 block_size = (m_block_size > 0) ? m_block_size : 32;
-  constexpr Int32 MAX_BLOCK_SIZE = 512;
-  if (block_size > MAX_BLOCK_SIZE)
-    ARCANE_FATAL("Bad value for block size v={0} max={1}", block_size, MAX_BLOCK_SIZE);
-  const Int32 size = indexes.size();
-  //Int32 nb_block = (size + (block_size - 1)) / block_size;
-  // Pour ce test ne traite pas l'éventuel dernier bloc.
-  const Int32 nb_fixed_block = size / block_size;
-  const Int32 remaining_size = (size % block_size);
+  const Int16 block_size = (m_block_size > 0) ? m_block_size : 32;
+  const Int32 original_size = indexes.size();
+  const Int32 nb_fixed_block = original_size / block_size;
+  const Int16 remaining_size = static_cast<Int16>(original_size % block_size);
   Int32 nb_block = nb_fixed_block;
-  Int32 last_block_size = block_size;
+  Int16 last_block_size = block_size;
   if (remaining_size != 0) {
     ++nb_block;
     last_block_size = remaining_size;
   }
 
-  Int32 nb_contigu = 0;
   std::unordered_map<std::size_t, Int32> block_indexes;
   std::hash<Int32> hasher;
   std::ostringstream o;
-  block_index_list.m_block_indexes.resize(nb_block);
-  block_index_list.m_block_offsets.resize(nb_block);
-  block_index_list.m_original_size = size;
+  block_index_list._setNbBlock(nb_block);
+  block_index_list.m_original_size = original_size;
   block_index_list.m_block_size = block_size;
-  block_index_list.m_nb_block = nb_block;
   block_index_list.m_last_block_size = last_block_size;
-  Int32 local_block_values[MAX_BLOCK_SIZE];
-  local_block_values[0] = 0;
+
+  UniqueArray<Int32> block_index_in_original_array;
+  block_index_in_original_array.reserve(nb_block);
+
   for (Int32 i = 0; i < nb_fixed_block; ++i) {
-    bool is_contigu = true;
     Int32 iter_index = i * block_size;
     Int32 first_value = indexes[iter_index];
     size_t hash = hasher(0);
-    if (is_verbose)
-      o << "\nBlock i=" << std::setw(5) << i;
+
     // TODO: faire une spécialisation en fonction de la taille de bloc.
     for (Int32 z = 1; z < block_size; ++z) {
       Int32 diff = indexes[iter_index + z] - first_value;
-      local_block_values[z] = diff;
       size_t hash2 = hasher(diff);
       hash ^= hash2 + 0x9e3779b9 + (hash << 6) + (hash >> 2);
-      if (is_verbose)
-        o << " " << std::setw(4) << diff;
-      if (indexes[iter_index + z] != first_value + z) {
-        is_contigu = false;
-      }
     }
+
     auto idx = block_indexes.find(hash);
     Int32 block_index = -1;
     if (idx == block_indexes.end()) {
       // Nouveau bloc.
-      block_index = block_index_list.m_indexes.size();
-      block_index_list.m_indexes.addRange(ConstArrayView<Int32>(block_size, local_block_values));
+      block_index = static_cast<Int32>(block_indexes.size());
       block_indexes.insert(std::make_pair(hash, block_index));
+      block_index_in_original_array.add(iter_index);
     }
     else
       block_index = idx->second;
-    block_index_list.m_block_indexes[i] = block_index;
-    block_index_list.m_block_offsets[i] = first_value;
-    if (is_verbose)
+    block_index_list._setBlockIndexAndOffset(i, block_index, first_value);
+
+    if (is_verbose) {
+      o << "\nBlock i=" << std::setw(5) << i;
+      for (Int32 z = 1; z < block_size; ++z) {
+        Int32 diff = indexes[iter_index + z] - first_value;
+        o << " " << std::setw(4) << diff;
+      }
       o << " H=" << std::hex << hash << std::setbase(0);
-    if (is_contigu)
-      ++nb_contigu;
+    }
   }
 
   // Gère l'éventuel dernier bloc.
   if (remaining_size != 0) {
     Int32 iter_index = nb_fixed_block * block_size;
     Int32 first_value = indexes[iter_index];
-    for (Int32 z = 1; z < remaining_size; ++z) {
-      Int32 diff = indexes[iter_index + z] - first_value;
-      local_block_values[z] = diff;
-    }
-    Int32 block_index = block_index_list.m_indexes.size();
-    block_index_list.m_indexes.addRange(ConstArrayView<Int32>(remaining_size, local_block_values));
-    block_index_list.m_block_indexes[nb_fixed_block] = block_index;
-    block_index_list.m_block_offsets[nb_fixed_block] = first_value;
+    Int32 block_index = static_cast<Int32>(block_indexes.size());
+    block_index_in_original_array.add(iter_index);
+    block_index_list._setBlockIndexAndOffset(nb_fixed_block, block_index, first_value);
   }
+
+  // Maintenant qu'on connait le nombre de blocs communs, alloue le tableau
+  // des blocs compressés et recopie les valeurs correspondantes
+  {
+    Int32 local_block_values[BlockIndex::MAX_BLOCK_SIZE];
+    local_block_values[0] = 0;
+    const Int32 nb_reduced_block = static_cast<Int32>(block_indexes.size());
+    block_index_list.m_indexes.reserve((block_size * nb_reduced_block) + remaining_size);
+    for (Int32 i = 0; i < nb_reduced_block; ++i) {
+      Int32 pos = block_index_in_original_array[i];
+      Int32 first_value = indexes[pos];
+      for (Int32 z = 1; z < block_size; ++z) {
+        Int32 diff = indexes[pos + z] - first_value;
+        local_block_values[z] = diff;
+      }
+      block_index_list.m_indexes.addRange(ConstArrayView<Int32>(block_size, local_block_values));
+    }
+    if (remaining_size != 0) {
+      Int32 pos = nb_fixed_block * block_size;
+      Int32 first_value = indexes[pos];
+      // TODO: regarder pour faire un padding jusqu'à la fin du bloc avec la dernière
+      // valeur (comme ce qui est fait pour les ItemGroup)
+      for (Int32 z = 1; z < remaining_size; ++z) {
+        Int32 diff = indexes[pos + z] - first_value;
+        local_block_values[z] = diff;
+      }
+      block_index_list.m_indexes.addRange(ConstArrayView<Int32>(remaining_size, local_block_values));
+    }
+  }
+
+  Int32 nb_contigu = block_index_list._computeNbContigusBlock();
 
   if (is_verbose)
     info() << o.str();
-  info() << "Group Name=" << name << " size = " << size << " nb_block = " << nb_block
+  info() << "Group Name=" << name << " original_size = " << original_size << " nb_block = " << nb_block
          << " nb_contigu=" << nb_contigu
          << " reduced_nb_block=" << block_indexes.size()
          << " ratio=" << block_index_list.memoryRatio();
@@ -173,6 +275,30 @@ BlockIndexListBuilder::
 BlockIndexListBuilder(ITraceMng* tm)
 : TraceAccessor(tm)
 {
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void BlockIndexListBuilder::
+setBlockSizeAsPowerOfTwo(Int32 v)
+{
+  if (v < 0)
+    _throwInvalidBlockSize(v);
+  Int32 block_size = 1 << v;
+  if (block_size > BlockIndex::MAX_BLOCK_SIZE)
+    _throwInvalidBlockSize(block_size);
+  m_block_size = static_cast<Int16>(block_size);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void BlockIndexListBuilder::
+_throwInvalidBlockSize(Int32 block_size)
+{
+  ARCANE_FATAL("Bad value for block size v={0} min=1 max={1}",
+               block_size, BlockIndex::MAX_BLOCK_SIZE);
 }
 
 /*---------------------------------------------------------------------------*/
