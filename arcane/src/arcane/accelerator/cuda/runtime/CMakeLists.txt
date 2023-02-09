@@ -19,10 +19,15 @@ target_link_libraries(arcane_accelerator_cuda_runtime PUBLIC
   )
 
 # Note: à partir de CMake 3.25 'nvToolsExt' devient 'nvtx3'
-if (TARGET CUDA::nvtx3)
-  target_compile_definitions(arcane_accelerator_cuda_runtime PRIVATE ARCANE_HAS_CUDA_NVTOOLSEXT)
-  target_link_libraries(arcane_accelerator_cuda_runtime PRIVATE CUDA::nvtx3)
-elseif (TARGET CUDA::nvToolsExt)
+#
+# NB: Avec CMake 3.25.2 le remplacement de 'nvToolsExt' par 'nvtx3' produit des erreurs de link :
+# /usr/bin/ld : ../../../../../../../../lib/libarcane_accelerator_cuda_runtime.so : référence indéfinie vers « nvtxRangePop »
+# /usr/bin/ld : ../../../../../../../../lib/libarcane_accelerator_cuda_runtime.so : référence indéfinie vers « nvtxRangePushA »
+#
+#if (TARGET CUDA::nvtx3)
+#  target_compile_definitions(arcane_accelerator_cuda_runtime PRIVATE ARCANE_HAS_CUDA_NVTOOLSEXT)
+#  target_link_libraries(arcane_accelerator_cuda_runtime PRIVATE CUDA::nvtx3)
+if (TARGET CUDA::nvToolsExt)
   target_compile_definitions(arcane_accelerator_cuda_runtime PRIVATE ARCANE_HAS_CUDA_NVTOOLSEXT)
   target_link_libraries(arcane_accelerator_cuda_runtime PRIVATE CUDA::nvToolsExt)
 endif()

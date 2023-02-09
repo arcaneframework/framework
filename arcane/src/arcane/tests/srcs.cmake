@@ -68,6 +68,7 @@ set(ARCANE_SOURCES
   ArcaneTestDirectExecution.cc
   accelerator/MiniWeatherOriginalSequential.cc
   accelerator/MiniWeatherArraySequential.cc
+  accelerator/MeshMaterialAcceleratorUnitTest.cc
   CustomMeshTestModule.cc
   TaskUnitTest.cc
   PDESRandomNumberGeneratorUnitTest.cc

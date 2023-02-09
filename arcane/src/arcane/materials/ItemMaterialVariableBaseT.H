@@ -14,6 +14,7 @@
 #include "arcane/utils/Mutex.h"
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/PlatformUtils.h"
 
 #include "arcane/Observer.h"
 #include "arcane/IMesh.h"
@@ -46,6 +47,7 @@ ItemMaterialVariableBase(const MaterialVariableBuildInfo& v,
 : MeshMaterialVariable(v,mvs)
 , m_global_variable(global_var)
 , m_global_variable_ref(global_var_ref)
+, m_views(platform::getDefaultDataAllocator())
 {
 }
 

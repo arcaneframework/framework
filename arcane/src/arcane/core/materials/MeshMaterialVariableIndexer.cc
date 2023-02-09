@@ -16,6 +16,7 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/NotSupportedException.h"
+#include "arcane/utils/PlatformUtils.h"
 
 #include "arcane/core/materials/MeshMaterialVariableIndexer.h"
 #include "arcane/core/materials/ComponentItemListBuilder.h"
@@ -35,6 +36,8 @@ MeshMaterialVariableIndexer(ITraceMng* tm,const String& name)
 , m_index(-1)
 , m_max_index_in_multiple_array(-1)
 , m_name(name)
+, m_matvar_indexes(platform::getAcceleratorHostMemoryAllocator())
+, m_local_ids(platform::getAcceleratorHostMemoryAllocator())
 , m_is_environment(false)
 {
 }
@@ -98,6 +101,14 @@ endUpdate(const ComponentItemListBuilder& builder)
   }
 
   info(4) << "END_UPDATE max_index=" << m_max_index_in_multiple_array;
+  /*
+   * Note(FL): D'après mes test, ça ne change rien aux perf... limite c'est pire ...
+   *
+    #if defined(ARCANE_COMPILING_CUDA)
+    cudaMemAdvise(m_matvar_indexes.data(),m_matvar_indexes.size()*sizeof(MatVarIndex),cudaMemoryAdvise::cudaMemAdviseSetReadMostlye,0);
+    cudaMemAdvise(m_local_ids.data(),m_local_ids.size()*sizeof(Int32),cudaMemoryAdvise::cudaMemAdviseSetReadMostlye,0);
+  #endif
+   */
 }
 
 /*---------------------------------------------------------------------------*/
@@ -144,6 +155,15 @@ endUpdateAdd(const ComponentItemListBuilder& builder)
   }
   info(4) << "END_UPDATE_ADD max_index=" << m_max_index_in_multiple_array
           << " nb_partial_to_add=" << nb_partial_to_add;
+
+  /*
+   * Note(FL): D'après mes test, ça ne change rien aux perf... limite c'est pire ...
+   *
+    #if defined(ARCANE_COMPILING_CUDA)
+    cudaMemAdvise(m_matvar_indexes.data(),m_matvar_indexes.size()*sizeof(MatVarIndex),cudaMemoryAdvise::cudaMemAdviseSetReadMostlye,0);
+    cudaMemAdvise(m_local_ids.data(),m_local_ids.size()*sizeof(Int32),cudaMemoryAdvise::cudaMemAdviseSetReadMostlye,0);
+  #endif
+   */
 }
 
 /*---------------------------------------------------------------------------*/
@@ -180,6 +200,15 @@ endUpdateRemove(ConstArrayView<bool> removed_local_ids_filter,Integer nb_remove)
 
   // TODO: il faut recalculer m_max_index_in_multiple_array
   // et compacter éventuellement les variables. (pas indispensable)
+
+  /*
+   * Note(FL): D'après mes test, ça ne change rien aux perf... limite c'est pire ...
+   *
+    #if defined(ARCANE_COMPILING_CUDA)
+    cudaMemAdvise(m_matvar_indexes.data(),m_matvar_indexes.size()*sizeof(MatVarIndex),cudaMemoryAdvise::cudaMemAdviseSetReadMostlye,0);
+    cudaMemAdvise(m_local_ids.data(),m_local_ids.size()*sizeof(Int32),cudaMemoryAdvise::cudaMemAdviseSetReadMostlye,0);
+  #endif
+   */
 }
 
 /*---------------------------------------------------------------------------*/

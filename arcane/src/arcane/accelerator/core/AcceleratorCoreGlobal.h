@@ -102,6 +102,22 @@ enum class eDeviceReducePolicy
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Niveaux de priorité prédéfinis pour les files d'exécution 
+ *        sur les accélérateurs
+ */
+enum class eRunQueuePriority : int
+{
+  //! Utilise 0 comme valeur par défaut
+  Default = 0,
+  //! Une valeur arbitraire négative pour définir une priorité élevée
+  High = -100,
+  //! Une valeur arbitraire positive pour définir une priorité faible
+  Low = 100
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 } // End namespace Arcane::Accelerator
 
