@@ -1488,7 +1488,11 @@ waitSomeRequestsMPI(ArrayView<Request> requests,ArrayView<bool> indexes,
     }
   }
 
-  debug() << "WaitRequestBegin is_non_blocking=" << is_non_blocking << " n=" << size;
+  // N'affiche le debug que en mode bloquant ou si explicitement demandé pour
+  // éviter trop de messages
+  bool is_print_debug = m_is_trace || (!is_non_blocking);
+  if (is_print_debug)
+    debug() << "WaitRequestBegin is_non_blocking=" << is_non_blocking << " n=" << size;
 
   double begin_time = MPI_Wtime();
 
@@ -1503,7 +1507,8 @@ waitSomeRequestsMPI(ArrayView<Request> requests,ArrayView<bool> indexes,
       //If there is no active handle in the list, it returns outcount = MPI_UNDEFINED.
       if (nb_completed_request == MPI_UNDEFINED) // Si aucune requete n'etait valide.
       	nb_completed_request = 0;
-      debug() << "WaitSomeRequestMPI: TestSome nb_completed=" << nb_completed_request;
+      if (is_print_debug)
+        debug() << "WaitSomeRequestMPI: TestSome nb_completed=" << nb_completed_request;
     }
     else{
       _trace(MpiInfo(eMpiName::Waitsome).name().localstr());
@@ -1518,7 +1523,8 @@ waitSomeRequestsMPI(ArrayView<Request> requests,ArrayView<bool> indexes,
       // mpi_request[i] == MPI_REQUEST_NULL
       if (nb_completed_request == MPI_UNDEFINED) // Si aucune requete n'etait valide.
       	nb_completed_request = 0;
-      debug() << "WaitSomeRequest nb_completed=" << nb_completed_request;
+      if (is_print_debug)
+        debug() << "WaitSomeRequest nb_completed=" << nb_completed_request;
     }
   }
   catch(TimeoutException& ex)
@@ -1536,10 +1542,11 @@ waitSomeRequestsMPI(ArrayView<Request> requests,ArrayView<bool> indexes,
 
   for( int z=0; z<nb_completed_request; ++z ){
     int index = completed_requests[z];
-    debug() << "Completed my_rank=" << m_comm_rank << " z=" << z
-            << " index=" << index
-            << " tag=" << mpi_status[z].MPI_TAG
-            << " source=" << mpi_status[z].MPI_SOURCE;
+    if (is_print_debug)
+      debug() << "Completed my_rank=" << m_comm_rank << " z=" << z
+              << " index=" << index
+              << " tag=" << mpi_status[z].MPI_TAG
+              << " source=" << mpi_status[z].MPI_SOURCE;
 
     indexes[index] = true;
   }
