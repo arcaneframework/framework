@@ -14,6 +14,7 @@
 #include "arcane/IMesh.h"
 #include "arcane/ISubDomain.h"
 #include "arcane/IParallelMng.h"
+#include "arcane/ItemGroup.h"
 
 #include <map>
 
@@ -78,6 +79,10 @@ extern "C++" ARCANE_EXPORT int
 arcaneTestDirectExecution(const CommandLineArguments& cmd_line_args,
                           const String& direct_execution_method)
 {
+  // Ajoute un groupe nul avant initialisation pour tester la création de variable
+  // globale de groupe.
+  ItemGroup my_null_group;
+
   StringList all_args;
   cmd_line_args.fillArgs(all_args);
   // Récupère le jeu de données en considérant qu'il s'agit de la dernière option
