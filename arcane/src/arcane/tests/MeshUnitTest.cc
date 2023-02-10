@@ -1060,6 +1060,17 @@ class ItemEnumerator2T
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class MyCellClass
+: public Cell
+{
+ public:
+  //! Construit une référence à l'entité \a abase
+  explicit MyCellClass(Item aitem) : Cell(aitem) {}
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void MeshUnitTest::
 _testItemArray()
 {
@@ -1094,6 +1105,19 @@ _testItemArray()
       info(7) << "NODE =" << ItemPrinter(*inode);
     }
   }
+
+  VariableCellInt32 var_counter(VariableBuildInfo(mesh(),"CellCounter"));
+  Int64 total = 0;
+  ENUMERATE_(MyCellClass,icell,v2){
+    MyCellClass c = *icell;
+    info(6) << "CELL =" << ItemPrinter(c);
+    var_counter[c] = c.localId();
+    total += var_counter[c];
+    for( NodeEnumerator inode(c.nodes()); inode.hasNext(); ++inode ){
+      info(7) << "NODE =" << ItemPrinter(*inode);
+    }
+  }
+  info() << "TOTAL=" << total;
 }
 
 /*---------------------------------------------------------------------------*/

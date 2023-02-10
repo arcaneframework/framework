@@ -61,6 +61,7 @@ class ItemEnumerator
   //   template<class T> friend class ItemEnumeratorBase;
   // mais cela ne fonctionne pas avec GCC 8. On fait donc la spécialisation
   // à la main
+  template<class T> friend class ItemEnumeratorBaseT;
   friend class ItemEnumeratorBaseT<Item>;
   friend class ItemEnumeratorBaseT<Node>;
   friend class ItemEnumeratorBaseT<ItemWithNodes>;
@@ -165,7 +166,7 @@ ItemEnumeratorBase(const ItemEnumerator& rhs, bool)
 template<typename ItemType> inline ItemEnumeratorBaseT<ItemType>::
 ItemEnumeratorBaseT(const ItemEnumerator& rhs,bool v)
 : ItemEnumeratorBase(rhs,v)
-, m_item(rhs.m_item)
+, m_item(rhs._internalItemBase())
 {
 }
 
@@ -187,7 +188,7 @@ ItemEnumeratorBase(const ItemEnumerator& rhs)
 template<typename ItemType> inline ItemEnumeratorBaseT<ItemType>::
 ItemEnumeratorBaseT(const ItemEnumerator& rhs)
 : ItemEnumeratorBase(rhs)
-, m_item(rhs.m_item)
+, m_item(rhs._internalItemBase())
 {
 }
 

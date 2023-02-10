@@ -227,6 +227,10 @@ class ItemEnumeratorBaseT
 
   ItemEnumerator toItemEnumerator() const;
 
+ public:
+
+  impl::ItemBase _internalItemBase() const { return m_item.itemBase(); }
+
  protected:
 
   mutable ItemType m_item = ItemType(NULL_ITEM_LOCAL_ID,nullptr);
