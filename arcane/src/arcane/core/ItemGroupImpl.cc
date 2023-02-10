@@ -475,7 +475,11 @@ class ItemGroupImplItemGroupComputeFunctor
 ItemGroupImpl* ItemGroupImpl::
 checkSharedNull()
 {
-  ARCANE_CHECK_POINTER(shared_null);
+  // Normalement ce test n'est vrai que si on a une instance globale
+  // de 'ItemGroup' ce qui est déconseillé. Sinon, _buildSharedNull() a été
+  // automatiquement appelé lors de l'initialisation (dans arcaneInitialize()).
+  if (!shared_null)
+    _buildSharedNull();
   return shared_null;
 }
 
@@ -2128,9 +2132,10 @@ deleteMe()
 void ItemGroupImpl::
 _buildSharedNull()
 {
-  if (!shared_null)
+  if (!shared_null){
     shared_null = new ItemGroupImplNull();
-  shared_null->addRef();
+    shared_null->addRef();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
