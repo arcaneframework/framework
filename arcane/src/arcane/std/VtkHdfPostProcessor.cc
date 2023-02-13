@@ -212,19 +212,39 @@ beginWrite(const VariableCollection& vars)
   const Int32 nb_cell = all_cells.size();
   const Int32 nb_node = all_nodes.size();
 
+  Int32 total_nb_connected_node = 0;
+  {
+    ENUMERATE_CELL (icell, all_cells) {
+      Cell cell = *icell;
+      total_nb_connected_node += cell.nodeIds().size();
+    }
+  }
+
   // Pour les connectivités, la taille du tableau est égal
   // au nombre de mailes plus 1.
-  UniqueArray<Int64> cells_connectivity;
-  UniqueArray<Int64> cells_offset;
-  UniqueArray<unsigned char> cells_type;
-  cells_offset.add(0);
-  ENUMERATE_CELL (icell, all_cells) {
-    Cell cell = *icell;
-    unsigned char vtk_type = VtkUtils::arcaneToVtkCellType(cell.type());
-    cells_type.add(vtk_type);
-    for (NodeLocalId node : cell.nodeIds())
-      cells_connectivity.add(node);
-    cells_offset.add(cells_connectivity.size());
+  UniqueArray<Int64> cells_connectivity(total_nb_connected_node);
+  UniqueArray<Int64> cells_offset(nb_cell + 1);
+  UniqueArray<unsigned char> cells_type(nb_cell);
+  UniqueArray<unsigned char> cells_ghost_type(nb_cell);
+  cells_offset[0] = 0;
+  {
+    Int32 connected_node_index = 0;
+    ENUMERATE_CELL (icell, all_cells) {
+      Int32 index = icell.index();
+      Cell cell = *icell;
+      Byte ghost_type = 0;
+      bool is_ghost = !cell.isOwn();
+      if (is_ghost)
+        ghost_type = VtkUtils::CellGhostTypes::DUPLICATECELL;
+      cells_ghost_type[index] = ghost_type;
+      unsigned char vtk_type = VtkUtils::arcaneToVtkCellType(cell.type());
+      cells_type[index] = vtk_type;
+      for (NodeLocalId node : cell.nodeIds()) {
+        cells_connectivity[connected_node_index] = node;
+        ++connected_node_index;
+      }
+      cells_offset[index + 1] = connected_node_index;
+    }
   }
 
   _writeDataSet1DCollective<Int64>(top_group, "Offsets", cells_offset);
@@ -254,6 +274,8 @@ beginWrite(const VariableCollection& vars)
     points[index][2] = pos.z;
   }
   _writeDataSet2DCollective<Real>(top_group, "Points", points);
+
+  _writeDataSet1DCollective<unsigned char>(m_cell_data_group, "vtkGhostType", cells_ghost_type);
 }
 
 /*---------------------------------------------------------------------------*/
