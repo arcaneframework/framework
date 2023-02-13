@@ -230,6 +230,7 @@ AbstractFamily::AbstractFamily(ConstArrayView<Int64> uniqueIds,
 , m_trace_mng(trace_mng)
 {
   copy(m_unique_ids, uniqueIds);
+  m_owners.resize(uniqueIds.size());
   m_owners.fill(parallel_mng->commRank());
 
   for (Integer i = 0; i < uniqueIds.size(); ++i) {

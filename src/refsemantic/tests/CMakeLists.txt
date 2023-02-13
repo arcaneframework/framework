@@ -20,6 +20,7 @@ find_package(GTest REQUIRED)
 add_executable(ref.gtest.mpi
         main.cpp
         TestIndexManager.cc
+        TestVBlockMatrixBuilder.cc
         )
 
 if (ALIEN_USE_LIBXML2)
@@ -30,12 +31,14 @@ add_executable(ref.gtest.seq main.cpp
         TestVector.cc
         TestVectorBuilder.cc
         TestMatrixDirectBuilder.cc
+        TestVBlockMatrixBuilder.cc
         TestCompositeVector.cc
         TestCompositeMatrix.cc
         TestBlockMatrix.cc
         TestVBlockMatrix.cc
         TestRedistributor.cc
-        TestMVExpr.cc)
+        TestMVExpr.cc
+        TestSchur)
 
 IF (ALIEN_USE_SYCL)
     target_sources(ref.gtest.seq PRIVATE TestMVSYCL.cc)

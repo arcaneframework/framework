@@ -285,7 +285,7 @@ class CSRStructInfo
     auto row_offset = (m_nrow > 0) ? m_row_offset[m_nrow] : 0;
     m_cols.resize(row_offset);
     if (m_is_variable_block)
-      m_block_cols.resize(row_offset);
+      m_block_cols.resize(row_offset + 1);
   }
 
   void computeUpperDiagOffset() const

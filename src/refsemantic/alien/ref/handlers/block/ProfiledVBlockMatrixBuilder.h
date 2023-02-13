@@ -18,8 +18,9 @@
 
 #pragma once
 
-#include "alien/index_manager/IndexManager.h"
-#include "alien/utils/Precomp.h"
+#include <alien/handlers/block/ProfiledVBlockMatrixBuilder.h>
+
+#include <alien/ref/data/block/VBlockMatrix.h>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -30,21 +31,14 @@ namespace Alien
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class ALIEN_EXPORT DefaultIndexManager
+class ProfiledVBlockMatrixBuilder : public Common::ProfiledVBlockMatrixBuilder
 {
  public:
-  DefaultIndexManager(IMessagePassingMng* parallel_mng,
-                      std::initializer_list<ConstArrayView<Int64>> uids);
+  using Common::ProfiledVBlockMatrixBuilder::ResetFlag;
 
-  UniqueArray<Integer> operator[](Integer label) const;
-
- private:
-  IndexManager m_index_manager;
-
-  Alien::UniqueArray<ScalarIndexSet> m_index_sets;
+  ProfiledVBlockMatrixBuilder(VBlockMatrix& matrix, const ResetFlag reset_flag)
+  : Common::ProfiledVBlockMatrixBuilder(matrix, reset_flag)
+  {}
 };
 
 /*---------------------------------------------------------------------------*/

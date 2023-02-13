@@ -97,12 +97,18 @@ add_library(alien_core
         alien/functional/UnsafeCast.h
         alien/handlers/block/ProfiledFixedBlockMatrixBuilder.cc
         alien/handlers/block/ProfiledFixedBlockMatrixBuilder.h
+        alien/handlers/block/ProfiledVBlockMatrixBuilder.cc
+        alien/handlers/block/ProfiledVBlockMatrixBuilder.h
         alien/handlers/block/BaseBlockVectorReader.cc
         alien/handlers/block/BaseBlockVectorReader.h
         alien/handlers/block/BaseBlockVectorWriter.cc
         alien/handlers/block/BaseBlockVectorWriter.h
         alien/handlers/block/BlockVectorReaderT.h
         alien/handlers/block/BlockVectorWriterT.h
+        alien/handlers/block/BlockSizes.h
+        alien/handlers/block/BlockSizes.cc
+        alien/handlers/block/BlockBuilder.h
+        alien/handlers/block/BlockBuilder.cc
         alien/handlers/profiler/BaseMatrixProfiler.cc
         alien/handlers/profiler/BaseMatrixProfiler.h
         alien/handlers/profiler/MatrixProfilerT.h

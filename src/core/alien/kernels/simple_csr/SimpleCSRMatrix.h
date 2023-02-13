@@ -167,7 +167,8 @@ class SimpleCSRMatrix : public IMatrixImpl
     m_nproc = 1;
     m_is_parallel = false;
     m_matrix_dist_info.m_local_row_size.resize(m_local_size);
-    ConstArrayView<Integer> offset = getCSRProfile().getRowOffset();
+    auto& profile = internal().getCSRProfile();
+    ConstArrayView<Integer> offset = profile.getRowOffset();
     for (Integer i = 0; i < m_local_size; ++i)
       m_matrix_dist_info.m_local_row_size[i] = offset[i + 1] - offset[i];
   }

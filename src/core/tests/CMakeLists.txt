@@ -33,6 +33,8 @@ add_executable(core.gtest.mpi main.cpp
         TestDistribution.cc
         TestDoK.cc
         TestRedistributor.cc
+        TestIndexManager.cc
+        TestVBlockBuilder.cc
         )
 
 target_link_libraries(core.gtest.seq

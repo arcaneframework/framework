@@ -154,16 +154,36 @@ namespace Common
     profile.allocate();
     ArrayView<Integer> cols = profile.getCols();
 
-    m_matrix_impl->allocate();
-    ArrayView<ValueT> values = m_matrix_impl->internal().getValues();
-    values.fill(0);
-
     for (Integer i = 0, pos = 0; i < m_local_size; ++i) {
       const VectorDefinition& vdef = m_def_matrix[i];
       for (VectorDefinition::const_iterator iterJ = vdef.begin(); iterJ != vdef.end();
            ++iterJ)
         cols[pos++] = *iterJ;
     }
+
+    if (m_matrix_impl->vblock()) {
+      const VBlock* block_sizes = m_matrix_impl->vblock();
+      auto& block_row_offset = profile.getBlockRowOffset();
+      auto& block_cols = profile.getBlockCols();
+      auto kcol = profile.kcol();
+      auto cols = profile.cols();
+      for (Integer irow = 0; irow < m_local_size; ++irow) {
+        block_row_offset[irow] = offset;
+        auto row_blk_size = block_sizes->size(m_local_offset + irow);
+        for (auto k = kcol[irow]; k < kcol[irow + 1]; ++k) {
+          auto jcol = cols[k];
+          auto col_blk_size = block_sizes->size(jcol);
+          offset += row_blk_size * col_blk_size;
+          block_cols[k] = offset;
+        }
+      }
+      block_row_offset[m_local_size] = offset;
+      block_cols[kcol[m_local_size]] = offset;
+    }
+
+    m_matrix_impl->allocate();
+    ArrayView<ValueT> values = m_matrix_impl->internal().getValues();
+    values.fill(0);
 
     if (m_nproc > 1)
       m_matrix_impl->parallelStart(m_offset, m_parallel_mng, true);

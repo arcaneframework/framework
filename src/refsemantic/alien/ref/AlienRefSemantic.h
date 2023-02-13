@@ -36,6 +36,7 @@
 #include <alien/ref/handlers/scalar/VectorWriter.h>
 
 #include <alien/ref/handlers/block/ProfiledBlockMatrixBuilder.h>
+#include <alien/ref/handlers/block/ProfiledVBlockMatrixBuilder.h>
 #include <alien/ref/handlers/profiler/MatrixProfiler.h>
 #include <alien/ref/handlers/scalar/DirectMatrixBuilder.h>
 #include <alien/ref/handlers/scalar/ProfiledMatrixBuilder.h>

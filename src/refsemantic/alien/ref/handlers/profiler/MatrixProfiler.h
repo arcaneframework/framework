@@ -42,6 +42,10 @@ class MatrixProfiler : public Common::MatrixProfilerT<Real>
   MatrixProfiler(BlockMatrix& matrix)
   : Common::MatrixProfilerT<Arccore::Real>(matrix)
   {}
+
+  MatrixProfiler(VBlockMatrix& matrix)
+  : Common::MatrixProfilerT<Arccore::Real>(matrix)
+  {}
 };
 
 /*---------------------------------------------------------------------------*/

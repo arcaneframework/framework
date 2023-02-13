@@ -67,25 +67,25 @@ class ALIEN_EXPORT BasicIndexManager : public IIndexManager
   //! Construit une nouvelle entrée scalaire sur un ensemble d'entités abstraites
   ScalarIndexSet buildScalarIndexSet(const Arccore::String& name,
                                      Arccore::IntegerConstArrayView localIds,
-                                     const IAbstractFamily& family) override;
+                                     const IIndexManager::IAbstractFamily& family) override;
 
   //! Construit une nouvelle entrée scalaire sur l'ensemble des entités d'une familles
   //! abstraite
   ScalarIndexSet buildScalarIndexSet(
-  const Arccore::String& name, const IAbstractFamily& family) override;
+  const Arccore::String& name, const IIndexManager::IAbstractFamily& family) override;
 
   //! Construit une nouvelle entrée vectoriellesur un ensemble d'entités abstraites
   /*! L'implémentation actuelle considére le multi-scalaire comme du vectoriel */
   VectorIndexSet buildVectorIndexSet(const Arccore::String& name,
                                      Arccore::IntegerConstArrayView localIds,
-                                     const IAbstractFamily& family,
+                                     const IIndexManager::IAbstractFamily& family,
                                      Arccore::Integer n) override;
 
   //! Construit une nouvelle entrée scalaire sur l'ensemble des entités d'une familles
   //! abstraite
   /*! L'implémentation actuelle considére le multi-scalaire comme du vectoriel */
   VectorIndexSet buildVectorIndexSet(const Arccore::String& name,
-                                     const IAbstractFamily& family, Arccore::Integer n) override;
+                                     const IIndexManager::IAbstractFamily& family, Arccore::Integer n) override;
 
   //! Fournit une table de translation indexé par les items
   [[nodiscard]] Arccore::UniqueArray<Arccore::Integer> getIndexes(
