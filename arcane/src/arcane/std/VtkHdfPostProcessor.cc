@@ -212,14 +212,21 @@ beginWrite(const VariableCollection& vars)
   const Int32 nb_cell = all_cells.size();
   const Int32 nb_node = all_nodes.size();
 
+  // TODO: dimensionner directement à la bonne taille
   // Pour les connectivités, la taille du tableau est égal
   // au nombre de mailes plus 1.
   UniqueArray<Int64> cells_connectivity;
   UniqueArray<Int64> cells_offset;
   UniqueArray<unsigned char> cells_type;
+  UniqueArray<unsigned char> cells_ghost_type;
   cells_offset.add(0);
   ENUMERATE_CELL (icell, all_cells) {
     Cell cell = *icell;
+    Byte ghost_type = 0;
+    bool is_ghost = !cell.isOwn();
+    if (is_ghost)
+      ghost_type = VtkUtils::CellGhostTypes::DUPLICATECELL;
+    cells_ghost_type.add(ghost_type);
     unsigned char vtk_type = VtkUtils::arcaneToVtkCellType(cell.type());
     cells_type.add(vtk_type);
     for (NodeLocalId node : cell.nodeIds())
@@ -254,6 +261,8 @@ beginWrite(const VariableCollection& vars)
     points[index][2] = pos.z;
   }
   _writeDataSet2DCollective<Real>(top_group, "Points", points);
+
+  _writeDataSet1DCollective<unsigned char>(m_cell_data_group, "vtkGhostType", cells_ghost_type);
 }
 
 /*---------------------------------------------------------------------------*/
