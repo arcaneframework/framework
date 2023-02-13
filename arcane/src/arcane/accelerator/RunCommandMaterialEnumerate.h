@@ -99,7 +99,7 @@ using ComponentItemInternalPtr = ComponentItemInternal*;
  * Spécialization <MatVarIndex, CellLocalId> de la fonction de lancement de kernel pour GPU
  */ 
 template<typename Lambda> __global__
-void doIndirectGPULambda(SmallSpan<const MatVarIndex> mvis,SmallSpan<const Int32> cids,const Lambda& func)
+void doIndirectGPULambda(SmallSpan<const MatVarIndex> mvis,SmallSpan<const Int32> cids, Lambda func)
 {
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
@@ -123,7 +123,7 @@ void doIndirectGPULambda(SmallSpan<const MatVarIndex> mvis,SmallSpan<const Int32
  * Spécialization EnvCellVectorView de la fonction de lancement de kernel en MT
  */ 
 template<typename Lambda>
-void _doIndirectThreadLambda(const EnvCellVectorView& sub_items,const Lambda& func)
+void _doIndirectThreadLambda(const EnvCellVectorView& sub_items, Lambda func)
 {
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
