@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshEnvironment.h                                           (C) 2000-2021 */
+/* MeshEnvironment.h                                           (C) 2000-2023 */
 /*                                                                           */
 /* Milieu d'un maillage.                                                     */
 /*---------------------------------------------------------------------------*/
@@ -167,7 +167,6 @@ class MeshEnvironment
   UniqueArray<ComponentItemInternal> m_mat_items_internal;
   IItemGroupObserver* m_group_observer;
   MeshComponentData m_data;
-  bool m_use_v2_for_change_local_id;
 
  private:
   

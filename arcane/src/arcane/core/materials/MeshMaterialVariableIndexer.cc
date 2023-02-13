@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariableIndexer.cc                              (C) 2000-2022 */
+/* MeshMaterialVariableIndexer.cc                              (C) 2000-2023 */
 /*                                                                           */
 /* Indexer pour les variables materiaux.                                     */
 /*---------------------------------------------------------------------------*/
@@ -101,14 +101,6 @@ endUpdate(const ComponentItemListBuilder& builder)
   }
 
   info(4) << "END_UPDATE max_index=" << m_max_index_in_multiple_array;
-  /*
-   * Note(FL): D'après mes test, ça ne change rien aux perf... limite c'est pire ...
-   *
-    #if defined(ARCANE_COMPILING_CUDA)
-    cudaMemAdvise(m_matvar_indexes.data(),m_matvar_indexes.size()*sizeof(MatVarIndex),cudaMemoryAdvise::cudaMemAdviseSetReadMostlye,0);
-    cudaMemAdvise(m_local_ids.data(),m_local_ids.size()*sizeof(Int32),cudaMemoryAdvise::cudaMemAdviseSetReadMostlye,0);
-  #endif
-   */
 }
 
 /*---------------------------------------------------------------------------*/
@@ -215,12 +207,9 @@ endUpdateRemove(ConstArrayView<bool> removed_local_ids_filter,Integer nb_remove)
 /*---------------------------------------------------------------------------*/
 
 void MeshMaterialVariableIndexer::
-changeLocalIds(Int32ConstArrayView old_to_new_ids,bool use_v2)
+changeLocalIds(Int32ConstArrayView old_to_new_ids)
 {
-  if (use_v2)
-    this->_changeLocalIdsV2(this,old_to_new_ids);
-  else
-    throw NotSupportedException(A_FUNCINFO,"Old method for changeLocalIds()");
+  this->_changeLocalIdsV2(this,old_to_new_ids);
 }
 
 /*---------------------------------------------------------------------------*/

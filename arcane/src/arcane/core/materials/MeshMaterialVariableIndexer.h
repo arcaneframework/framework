@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialVariableIndexer.h                               (C) 2000-2022 */
+/* MeshMaterialVariableIndexer.h                               (C) 2000-2023 */
 /*                                                                           */
 /* Indexer pour les variables materiaux.                                     */
 /*---------------------------------------------------------------------------*/
@@ -89,7 +89,7 @@ class ARCANE_CORE_EXPORT MeshMaterialVariableIndexer
   Integer nbItem() const { return m_local_ids.size(); }
   ConstArrayView<Int32> localIds() const { return m_local_ids; }
 
-  void changeLocalIds(Int32ConstArrayView old_to_new_ids,bool use_v2);
+  void changeLocalIds(Int32ConstArrayView old_to_new_ids);
   void transformCells(Int32ConstArrayView nb_env_per_cell,
                       Int32ConstArrayView nb_mat_per_cell,
                       Int32Array& pure_local_ids,
