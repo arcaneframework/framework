@@ -104,10 +104,7 @@ MeshEnvironment(IMeshMaterialMng* mm,const String& name,Int32 env_id)
 , m_total_nb_cell_mat(0)
 , m_group_observer(0)
 , m_data(this,name,env_id,false)
-, m_use_v2_for_change_local_id(true)
 {
-  if (!platform::getEnvironmentVariable("ARCANE_MATERIALS_USE_OLD_CHANGEID").null())
-    m_use_v2_for_change_local_id = false;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -170,7 +167,7 @@ setVariableIndexer(MeshMaterialVariableIndexer* idx)
   if (m_true_materials.size()==1)
     m_true_materials[0]->componentData()->setItems(m_data.items());
   m_data.buildPartData();
-  for( MeshMaterial* mat : m_true_materials.range() )
+  for( MeshMaterial* mat : m_true_materials )
     mat->componentData()->buildPartData();
 }
 
@@ -547,11 +544,10 @@ void MeshEnvironment::
 _changeIds(MeshComponentData* cdata,Int32ConstArrayView old_to_new_ids)
 {
   info(4) << "ChangeIds() (V4) for name=" << cdata->name();
-  if (m_use_v2_for_change_local_id)
-    info(4) << "Use new version for ChangeIds()";
+  info(4) << "Use new version for ChangeIds()";
 
   cdata->changeLocalIdsForInternalList(old_to_new_ids);
-  cdata->variableIndexer()->changeLocalIds(old_to_new_ids,m_use_v2_for_change_local_id);
+  cdata->variableIndexer()->changeLocalIds(old_to_new_ids);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -672,7 +668,7 @@ checkValid()
 
   m_data.checkValid();
 
-  for( IMeshMaterial* mat : m_materials.range() ){
+  for( IMeshMaterial* mat : m_materials ){
     mat->checkValid();
   }
 }
