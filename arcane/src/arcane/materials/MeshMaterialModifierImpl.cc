@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialModifierImpl.cc                                 (C) 2000-2022 */
+/* MeshMaterialModifierImpl.cc                                 (C) 2000-2023 */
 /*                                                                           */
 /* Implémentation de la modification des matériaux et milieux.               */
 /*---------------------------------------------------------------------------*/
@@ -74,7 +74,7 @@ add(Operation* o)
 void MeshMaterialModifierImpl::OperationList::
 clear()
 {
-  for( Operation* o : m_operations.range() )
+  for( Operation* o : m_operations )
     delete o;
   m_operations.clear();
   m_nb_direct_set = 0;
@@ -160,7 +160,7 @@ void MeshMaterialModifierImpl::
 setCells(IMeshMaterial* mat,Int32ConstArrayView ids)
 {
   if (m_material_mng->isKeepValuesAfterChange())
-    throw NotSupportedException(A_FUNCINFO,"Can only setCells() when isKeepValuesAfterChange() is false");
+    ARCANE_THROW( NotSupportedException,"Can only setCells() when isKeepValuesAfterChange() is false");
   m_operations.add(new Operation(mat,ids,true,true));
 }
 
@@ -341,7 +341,7 @@ endUpdate()
 void MeshMaterialModifierImpl::
 _applyOperations()
 {
-  for( Operation* o : m_operations.values().range() ){
+  for( Operation* o : m_operations.values() ){
     IMeshMaterial* mat = o->m_mat;
     if (o->m_is_add){
       if (o->m_is_set)
@@ -369,9 +369,7 @@ _updateEnvironments()
   // Regarde s'il faut ajouter ou supprimer des mailles d'un milieu
   // en fonction de celles qui ont été ajoutées ou supprimées dans les
   // matériaux.
-  for( Integer i=0, n=envs.size(); i<n; ++i ){
-
-    IMeshEnvironment* env = envs[i];
+  for( IMeshEnvironment* env : envs ){
     
     // Pour les milieux ne contenant qu'un seul materiau, il n'y a rien
     // à faire car le groupe materiau est le meme que le groupe milieu
@@ -388,8 +386,7 @@ _updateEnvironments()
     cells_to_add.clear();
     cells_to_remove.clear();
     ConstArrayView<IMeshMaterial*> env_materials = env->materials();
-    for( Integer k=0, kn=env_materials.size(); k<kn; ++k ){
-      IMeshMaterial* mat = env_materials[k];
+    for( IMeshMaterial* mat : env_materials ){
       ENUMERATE_CELL(icell,mat->cells()){
         Int32 mark = cells_marker[icell.itemLocalId()];
         if (mark==(-1)){
