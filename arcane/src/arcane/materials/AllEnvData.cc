@@ -66,10 +66,8 @@ _computeNbEnvAndNbMatPerCell()
 
   // Calcul le nombre de milieux par maille, et pour chaque
   // milieu le nombre de matériaux par maille
-  Integer nb_env = true_environments.size();
   m_nb_env_per_cell.fill(0);
-  for( Integer i=0; i<nb_env; ++i ){
-    MeshEnvironment* env = true_environments[i];
+  for( MeshEnvironment* env : true_environments ){
     CellGroup cells = env->cells();
     ENUMERATE_CELL(icell,cells){
       ++m_nb_env_per_cell[icell];
@@ -125,8 +123,7 @@ forceRecompute(bool compute_all)
   Integer total_env_cell = 0;
   Integer total_mat_cell = 0;
   info(4) << "NB_ENV = " << nb_env;
-  for( Integer i=0; i<nb_env; ++i ){
-    MeshEnvironment* env = true_environments[i];
+  for( MeshEnvironment* env : true_environments ){
     CellGroup cells = env->cells();
     Integer env_nb_cell = cells.size();
     info(4) << "NB_CELL=" << env_nb_cell << " env_name=" << cells.name();
@@ -294,7 +291,7 @@ forceRecompute(bool compute_all)
   }
 
   if (is_verbose){
-    for( IMeshMaterial* material : m_material_mng->materials().range() ){
+    for( IMeshMaterial* material : m_material_mng->materials() ){
       //Integer nb_mat = m_materials.size();
       //for( Integer i=0; i<nb_mat; ++i ){
       //IMeshMaterial* material = m_materials[i];
@@ -306,9 +303,9 @@ forceRecompute(bool compute_all)
     }
   }
 
-  for( MeshEnvironment* env : true_environments.range() ){
+  for( MeshEnvironment* env : true_environments ){
     env->componentData()->rebuildPartData();
-    for( MeshMaterial* mat : env->trueMaterials().range() )
+    for( MeshMaterial* mat : env->trueMaterials() )
       mat->componentData()->rebuildPartData();
   }
 
@@ -320,6 +317,25 @@ forceRecompute(bool compute_all)
     OStringStream ostr;
     m_material_mng->dumpInfos2(ostr());
     info() << ostr.str();
+  }
+
+  // Vérifie la cohérence des localIds() du variableIndexer()
+  // avec la maille globale associée au milieu
+  const bool check_localid_coherency = false;
+  if (check_localid_coherency){
+    for( MeshEnvironment* env : true_environments ){
+      Int32 index = 0;
+      Int32ConstArrayView indexer_local_ids = env->variableIndexer()->localIds();
+      ENUMERATE_COMPONENTCELL(icitem,env){
+        ComponentCell cc = *icitem;
+        Int32 matvar_lid = cc.globalCell().localId();
+        Int32 direct_lid = indexer_local_ids[index];
+        if (matvar_lid!=direct_lid)
+          ARCANE_FATAL("Incoherent localId() matvar_lid={0} direct_lid={1} index={2}",
+                       matvar_lid,direct_lid,index);
+        ++index;
+      }
+    }
   }
 }
 
@@ -372,8 +388,8 @@ _switchComponentItemsForMaterials(MeshMaterial* modified_mat,eOperation operatio
 
   bool is_verbose = traceMng()->verbosityLevel()>=5;
 
-  for( MeshEnvironment* env : m_material_mng->trueEnvironments().range() ){
-    for( MeshMaterial* mat : env->trueMaterials().range() ){
+  for( MeshEnvironment* env : m_material_mng->trueEnvironments() ){
+    for( MeshMaterial* mat : env->trueMaterials() ){
       // Ne traite pas le matériau en cours de modification.
       if (mat==modified_mat)
         continue;
@@ -425,7 +441,7 @@ _switchComponentItemsForEnvironments(IMeshEnvironment* modified_env,eOperation o
 
   bool is_verbose = traceMng()->verbosityLevel()>=5;
 
-  for( MeshEnvironment* env : m_material_mng->trueEnvironments().range() ){
+  for( MeshEnvironment* env : m_material_mng->trueEnvironments() ){
     // Ne traite pas le milieu en cours de modification.
     if (env==modified_env)
       continue;
