@@ -176,7 +176,7 @@ set(ARCANE_CMAKE_CONFIG_DIR ${config_install_dir})
 
 # ----------------------------------------------------------------------------
 
-set(ARCANE_AXLSTAR_NEEDED_VERSION "2.1.0")
+set(ARCANE_AXLSTAR_NEEDED_VERSION "2.1.1")
 find_package(Axlstar REQUIRED)
 message(STATUS "Axlstar_DIR = ${Axlstar_DIR}")
 message(STATUS "Axlstar_VERSION = ${Axlstar_VERSION}")
@@ -322,7 +322,7 @@ if (ARCANE_WANT_CHECK)
   set(ARCCORE_CHECK TRUE)
 endif()
 
-set(ARCANE_ARCCORE_NEEDED_VERSION "2.1")
+set(ARCANE_ARCCORE_NEEDED_VERSION "2.1.2")
 find_package(Arccore ${ARCANE_ARCCORE_NEEDED_VERSION} REQUIRED)
 message(STATUS "Arccore_DIR = ${Arccore_DIR}")
 if (Arccore_VERSION VERSION_LESS ARCANE_ARCCORE_NEEDED_VERSION)
