@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<module name="MultipleMesh" version="1.0">
+  <description>Descripteur du module 'MultipleMesh'</description>
+  <entry-points>
+    <entry-point method-name="doLoop" name="DoLoop" where="compute-loop" property="none" />
+  </entry-points>
+  <options>
+    <service-instance name="mesh0-printer" type="IMeshInfoPrinter" mesh-name="Mesh0" default="DefaultMeshInfoPrinter" />
+    <service-instance name="mesh1-printer" type="IMeshInfoPrinter" mesh-name="Mesh1" default="DefaultMeshInfoPrinter" />
+  </options>
+</module>

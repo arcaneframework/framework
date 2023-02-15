@@ -1,0 +1,5 @@
+<?xml version="1.0" ?>
+<service name="MeshInfoPrinter" version="1.0" type="caseoption">
+  <description>Service affichant des informations sur le maillage</description>
+  <interface name="IMeshInfoPrinter" />       
+</service>
