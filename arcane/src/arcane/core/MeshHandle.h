@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshHandle.h                                                (C) 2000-2022 */
+/* MeshHandle.h                                                (C) 2000-2023 */
 /*                                                                           */
 /* Handle sur un maillage.                                                   */
 /*---------------------------------------------------------------------------*/
@@ -181,6 +181,44 @@ class ARCANE_CORE_EXPORT MeshHandle
  private:
 
   Arccore::ReferenceCounter<MeshHandleRef> m_ref;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe de compatibilité pour contenir un MeshHandle ou un IMesh*.
+ *
+ * A terme les constructeurs et convertisseurs vers IMesh* seront supprimés
+ */
+class ARCANE_CORE_EXPORT MeshHandleOrMesh
+{
+ public:
+
+  // NOTE: Les constructeurs ne doivent pas être explicites
+  // pour autoriser les conversions
+
+  //! Construit une instance à partir d'un MeshHandle
+  MeshHandleOrMesh(const MeshHandle& handle);
+
+  /*!
+   * \brief Construit une instance à partir d'un IMesh*.
+   *
+   * Si \a mesh est nul, le MeshHandle associé sera aussi nul.
+   */
+  MeshHandleOrMesh(IMesh* mesh);
+
+  //! Maillage associé. Peut être nul si le maillage n'a pas encore été créé
+  IMesh* mesh() const { return m_handle.meshOrNull(); }
+
+  //! Maillage associé. Peut être nul si le maillage n'a pas encore été créé
+  operator IMesh*() const { return mesh(); }
+
+  //! handle associé.
+  const MeshHandle& handle() const { return m_handle; }
+
+ private:
+
+  MeshHandle m_handle;
 };
 
 /*---------------------------------------------------------------------------*/
