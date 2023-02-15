@@ -47,6 +47,8 @@ _internalSetFactory(IFactory* f)
 Ref<IMeshMaterialMng> IMeshMaterialMng::
 getTrueReference(const MeshHandle& mesh_handle,bool is_create)
 {
+  if (mesh_handle.isNull())
+    ARCANE_FATAL("Null MeshHandle is not allowed");
   auto* f = global_mesh_material_mng_factory;
   if (!f){
     if (is_create)
@@ -60,19 +62,9 @@ getTrueReference(const MeshHandle& mesh_handle,bool is_create)
 /*---------------------------------------------------------------------------*/
 
 IMeshMaterialMng* IMeshMaterialMng::
-getReference(const MeshHandle& mesh_handle,bool create)
+getReference(const MeshHandleOrMesh& mesh_handle,bool create)
 {
-  return getTrueReference(mesh_handle,create).get();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-IMeshMaterialMng* IMeshMaterialMng::
-getReference(IMesh* mesh,bool is_create)
-{
-  ARCANE_CHECK_POINTER(mesh);
-  return getReference(mesh->handle(),is_create);
+  return getTrueReference(mesh_handle.handle(),create).get();
 }
 
 /*---------------------------------------------------------------------------*/

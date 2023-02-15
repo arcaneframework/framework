@@ -660,16 +660,20 @@ renumberItemsUniqueId(const CartesianMeshRenumberingInfo& v)
 /*---------------------------------------------------------------------------*/
 
 ICartesianMesh* ICartesianMesh::
-getReference(IMesh* mesh,bool create)
+getReference(const MeshHandleOrMesh& mesh_handle_or_mesh,bool create)
 {
+  MeshHandle h = mesh_handle_or_mesh.handle();
   //TODO: faire lock pour multi-thread
   const char* name = "CartesianMesh";
-  IUserDataList* udlist = mesh->userDataList();
+  IUserDataList* udlist = h.meshUserDataList();
 
   IUserData* ud = udlist->data(name,true);
   if (!ud){
     if (!create)
-      return 0;
+      return nullptr;
+    IMesh* mesh = h.meshOrNull();
+    if (!mesh)
+      ARCANE_FATAL("The mesh {0} is not yet created",h.meshName());
     ICartesianMesh* cm = arcaneCreateCartesianMesh(mesh);
     udlist->setData(name,new AutoDestroyUserData<ICartesianMesh>(cm));
     return cm;

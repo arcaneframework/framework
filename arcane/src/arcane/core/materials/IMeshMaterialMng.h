@@ -80,20 +80,13 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
   /*!
    * \brief Récupère ou créé la référence associée à \a mesh.
    *
-   * \sa getReference(const MeshHandle&,bool)
-   */
-  static IMeshMaterialMng* getReference(IMesh* mesh,bool create=true);
-
-  /*!
-   * \brief Récupère ou créé la référence associée à \a mesh.
-   *
    * Si aucun gestionnaire de matériau n'est associé à \a mesh, il
    * sera créé lors de l'appel à cette méthode si \a create vaut \a true.
    * Si \a create vaut \a false est qu'aucune gestionnaire n'est associé
    * au maillage, un pointeur nul est retourné.
    * L'instance retournée reste valide tant que le maillage \a mesh existe.
    */
-  static IMeshMaterialMng* getReference(const MeshHandle& mesh_handle,bool create=true);
+  static IMeshMaterialMng* getReference(const MeshHandleOrMesh& mesh_handle,bool create=true);
 
   /*!
    * \brief Récupère ou créé la référence associée à \a mesh.
