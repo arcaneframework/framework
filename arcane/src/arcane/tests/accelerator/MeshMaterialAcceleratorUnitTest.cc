@@ -1,17 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterialAcceleratorUnitTest.cc                          (C) 2000-2017 */
+/* MeshMaterialAcceleratorUnitTest.cc                          (C) 2000-2023 */
 /*                                                                           */
 /* Service de test unitaire du support accelerateurs des matériaux/milieux.  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/OStringStream.h"
@@ -48,7 +47,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_BEGIN_NAMESPACE
+namespace ArcaneTest
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -100,6 +100,12 @@ class MeshMaterialAcceleratorUnitTest
   Int32 m_nb_z;
 
   void _initializeVariables();
+
+ public:
+
+  // Les méthodes suivantes doivent être publiques pour
+  // sur accélérateur
+
   void _executeTest1(Integer nb_z);
   void _executeTest2(Integer nb_z);
   void _executeTest3(Integer nb_z);
@@ -552,7 +558,7 @@ _executeTest3(Integer nb_z)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -39,24 +39,31 @@ namespace Arcane::Accelerator
  * \brief Classe helper pour l'accès au MatVarIndex et au CellLocalId à travers les 
  *        RUNCOMMAND_ENUMERATE(EnvCell...
   */
-class EnvCellAccessor {
+class EnvCellAccessor
+{
 
  public:
+
   ///! Struct interne simple pour éviter l'usage d'un std::tuple pour l'opérateur()
-  struct EnvCellAccessorInternalData {
-   MatVarIndex m_mvi;
-   CellLocalId m_cid;   
+  struct EnvCellAccessorInternalData
+  {
+    MatVarIndex m_mvi;
+    CellLocalId m_cid;
   };
 
  public:
-  ARCCORE_HOST_DEVICE explicit EnvCellAccessor(EnvCell ec)
-  : m_internal_data{ec._varIndex(), ec.globalCell().itemLocalId()} {}
-  
+
+  explicit EnvCellAccessor(EnvCell ec)
+  : m_internal_data{ ec._varIndex(), ec.globalCell().itemLocalId() }
+  {}
+
   explicit EnvCellAccessor(ComponentItemInternal* cii)
-  : m_internal_data{cii->variableIndex(), static_cast<CellLocalId>(cii->globalItem()->localId())} {}
+  : m_internal_data{ cii->variableIndex(), static_cast<CellLocalId>(cii->globalItem()->localId()) }
+  {}
 
   ARCCORE_HOST_DEVICE explicit EnvCellAccessor(MatVarIndex mvi, CellLocalId cid)
-  : m_internal_data{mvi, cid} {}
+  : m_internal_data{ mvi, cid }
+  {}
 
   /*!
   * \brief Cet opérateur permet de renvoyer le couple [MatVarIndex, LocalCellId].
@@ -66,17 +73,19 @@ class EnvCellAccessor {
   *         auto [mvi, cid] = evi();
   * où evi est de type EnvCellAccessor
   */
-  ARCCORE_HOST_DEVICE auto operator()() {
-    return EnvCellAccessorInternalData{m_internal_data.m_mvi, m_internal_data.m_cid};
+  ARCCORE_HOST_DEVICE auto operator()()
+  {
+    return EnvCellAccessorInternalData{ m_internal_data.m_mvi, m_internal_data.m_cid };
   }
-  
+
   ///! Accesseur sur la partie MatVarIndex
-  ARCCORE_HOST_DEVICE MatVarIndex varIndex() {return m_internal_data.m_mvi;};
-  
+  ARCCORE_HOST_DEVICE MatVarIndex varIndex() { return m_internal_data.m_mvi; };
+
   ///! Accesseur sur la partie cell local id
-  ARCCORE_HOST_DEVICE CellLocalId globalCellId() {return m_internal_data.m_cid;}
- 
+  ARCCORE_HOST_DEVICE CellLocalId globalCellId() { return m_internal_data.m_cid; }
+
  private:
+
   EnvCellAccessorInternalData m_internal_data;
 };
 
