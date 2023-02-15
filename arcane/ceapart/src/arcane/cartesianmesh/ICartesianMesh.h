@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ICartesianMesh.h                                            (C) 2000-2021 */
+/* ICartesianMesh.h                                            (C) 2000-2023 */
 /*                                                                           */
 /* Interface d'un maillage cartésien.                                        */
 /*---------------------------------------------------------------------------*/
@@ -44,7 +44,7 @@ class ARCANE_CARTESIANMESH_EXPORT ICartesianMesh
    * au maillage, un pointeur nul est retourné.
    * L'instance retournée reste valide tant que le maillage \a mesh existe.
    */
-  static ICartesianMesh* getReference(IMesh* mesh, bool create = true);
+  static ICartesianMesh* getReference(const MeshHandleOrMesh& mesh, bool create = true);
 
  public:
   virtual void build() = 0;
