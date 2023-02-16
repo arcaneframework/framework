@@ -18,6 +18,7 @@
 #include <arcane/core/materials/MaterialsCoreGlobal.h>
 #include <arcane/core/materials/MatItem.h>
 #include <arcane/materials/MatConcurrency.h>
+#include "arcane/accelerator/RunQueueInternal.h"
 #include <arcane/accelerator/RunCommand.h>
 #include <arcane/accelerator/RunCommandLaunchInfo.h>
 
@@ -39,31 +40,24 @@ namespace Arcane::Accelerator
  * \brief Classe helper pour l'accès au MatVarIndex et au CellLocalId à travers les 
  *        RUNCOMMAND_ENUMERATE(EnvCell...
   */
-class EnvCellAccessor
-{
+class EnvCellAccessor {
 
  public:
-
   ///! Struct interne simple pour éviter l'usage d'un std::tuple pour l'opérateur()
-  struct EnvCellAccessorInternalData
-  {
-    MatVarIndex m_mvi;
-    CellLocalId m_cid;
+  struct EnvCellAccessorInternalData {
+   MatVarIndex m_mvi;
+   CellLocalId m_cid;   
   };
 
  public:
-
   explicit EnvCellAccessor(EnvCell ec)
-  : m_internal_data{ ec._varIndex(), ec.globalCell().itemLocalId() }
-  {}
-
+  : m_internal_data{ec._varIndex(), ec.globalCell().itemLocalId()} {}
+  
   explicit EnvCellAccessor(ComponentItemInternal* cii)
-  : m_internal_data{ cii->variableIndex(), static_cast<CellLocalId>(cii->globalItem()->localId()) }
-  {}
+  : m_internal_data{cii->variableIndex(), static_cast<CellLocalId>(cii->globalItem()->localId())} {}
 
-  ARCCORE_HOST_DEVICE explicit EnvCellAccessor(MatVarIndex mvi, CellLocalId cid)
-  : m_internal_data{ mvi, cid }
-  {}
+  inline ARCCORE_HOST_DEVICE explicit EnvCellAccessor(MatVarIndex mvi, CellLocalId cid)
+  : m_internal_data{mvi, cid} {}
 
   /*!
   * \brief Cet opérateur permet de renvoyer le couple [MatVarIndex, LocalCellId].
@@ -73,19 +67,17 @@ class EnvCellAccessor
   *         auto [mvi, cid] = evi();
   * où evi est de type EnvCellAccessor
   */
-  ARCCORE_HOST_DEVICE auto operator()()
-  {
-    return EnvCellAccessorInternalData{ m_internal_data.m_mvi, m_internal_data.m_cid };
+  inline ARCCORE_HOST_DEVICE auto operator()() {
+    return EnvCellAccessorInternalData{m_internal_data.m_mvi, m_internal_data.m_cid};
   }
-
+  
   ///! Accesseur sur la partie MatVarIndex
-  ARCCORE_HOST_DEVICE MatVarIndex varIndex() { return m_internal_data.m_mvi; };
-
+  ARCCORE_HOST_DEVICE MatVarIndex varIndex() {return m_internal_data.m_mvi;};
+  
   ///! Accesseur sur la partie cell local id
-  ARCCORE_HOST_DEVICE CellLocalId globalCellId() { return m_internal_data.m_cid; }
-
+  ARCCORE_HOST_DEVICE CellLocalId globalCellId() {return m_internal_data.m_cid;}
+ 
  private:
-
   EnvCellAccessorInternalData m_internal_data;
 };
 
@@ -105,10 +97,10 @@ using ComponentItemInternalPtr = ComponentItemInternal*;
 #if defined(ARCANE_COMPILING_CUDA) || defined(ARCANE_COMPILING_HIP)
 
 /*
- * Spécialization <MatVarIndex, CellLocalId> de la fonction de lancement de kernel pour GPU
+ * Surcharge de la fonction de lancement de kernel pour GPU pour les MatVarIndex et CellLocalId
  */ 
 template<typename Lambda> __global__
-void doIndirectGPULambda(SmallSpan<const MatVarIndex> mvis,SmallSpan<const Int32> cids, Lambda func)
+void doIndirectGPULambda(SmallSpan<const MatVarIndex> mvis, SmallSpan<const Int32> cids, Lambda func)
 {
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
@@ -123,13 +115,27 @@ void doIndirectGPULambda(SmallSpan<const MatVarIndex> mvis,SmallSpan<const Int32
   }
 }
 
+template<typename Lambda> __global__
+void doDirectGPULambda(MatVarIndex mvi, Int32 cid, Lambda func)
+{
+  auto privatizer = privatize(func);
+  auto& body = privatizer.privateCopy();
+
+  Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
+  if (!mvi.null()){
+    //if (i<10)
+    //printf("CUDA %d lid=%d\n",i,lid.localId());
+    body(EnvCellAccessor(mvi, static_cast<CellLocalId>(cid)));
+  }
+}
+
 #endif // ARCANE_COMPILING_CUDA
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 /*
- * Spécialization EnvCellVectorView de la fonction de lancement de kernel en MT
+ * Surcharge de la fonction de lancement de kernel en MT pour les EnvCellVectorView
  */ 
 template<typename Lambda>
 void _doIndirectThreadLambda(const EnvCellVectorView& sub_items, Lambda func)
@@ -146,7 +152,7 @@ void _doIndirectThreadLambda(const EnvCellVectorView& sub_items, Lambda func)
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Applique l'enumération \a func sur la liste d'entité \a items.
- *        Spécialization pour les EnvCellVectorView
+ *        Uniquement pour les EnvCellVectorView
  */
 template<typename Lambda> void
 _applyEnvCells(RunCommand& command,const EnvCellVectorView& items,const Lambda& func)
@@ -155,10 +161,42 @@ _applyEnvCells(RunCommand& command,const EnvCellVectorView& items,const Lambda& 
   Int32 vsize = static_cast<Int32>(items.nbItem());
   if (vsize==0)
     return;
-  impl::RunCommandLaunchInfo launch_info(command, vsize);
+
+  SmallSpan<const MatVarIndex> mvis(items.component()->variableIndexer()->matvarIndexes());
+  SmallSpan<const Int32> cids(items.component()->variableIndexer()->localIds());
+  //ARCANE_ASSERT(mvis.size() == cids.size(), ("MatVarIndex and CellLocalId arrays have different size"));
+
+  RunCommandLaunchInfo launch_info(command, vsize);
   const eExecutionPolicy exec_policy = launch_info.executionPolicy();
+  launch_info.computeLoopRunInfo(vsize);
+  launch_info.beginExecute();
   switch(exec_policy){
   case eExecutionPolicy::CUDA:
+    _applyKernelCUDA(launch_info,ARCANE_KERNEL_CUDA_FUNC(doIndirectGPULambda)<Lambda>,func,mvis,cids);
+    break;
+  case eExecutionPolicy::HIP:
+    //_applyKernelHIP(launch_info,ARCANE_KERNEL_HIP_FUNC(doIndirectGPULambda),func,mvis,cids);
+    break;
+  case eExecutionPolicy::Sequential:
+      for (int i(0); i<mvis.size(); ++i)
+        func(EnvCellAccessor(mvis[i], (CellLocalId)cids[i]));
+    break;
+  case eExecutionPolicy::Thread:
+    // TODO: rajouter les ForLoopRunInfo en parametres des arcaneParallelForeach de MatConcurrency ?
+    //       (taille de grain pour faire du blocking)
+    arcaneParallelForeach(items,//launch_info.loopRunInfo(),
+                        [&](EnvCellVectorView sub_items)
+                        {
+                          impl::_doIndirectThreadLambda(sub_items,func);
+                        });
+    break;
+  default:
+    ARCANE_FATAL("Invalid execution policy '{0}'",exec_policy);
+  }
+  launch_info.endExecute();
+}
+
+/*
 #if defined(ARCANE_COMPILING_CUDA)
     {
       launch_info.beginExecute();
@@ -168,14 +206,6 @@ _applyEnvCells(RunCommand& command,const EnvCellVectorView& items,const Lambda& 
       ARCANE_ASSERT(mvis.size() == cids.size(), ("MatVarIndex and CellLocalId arrays have different size"));
       auto [b,t] = launch_info.computeThreadBlockInfo(vsize);
       cudaStream_t* s = reinterpret_cast<cudaStream_t*>(launch_info._internalStreamImpl());
-      // TODO: le prefetch fait chuter les perfs ... 
-      /*
-      auto err1 = cudaMemPrefetchAsync (mvis.data(), mvis.sizeBytes(), 0, *s);
-      auto err2 = cudaMemPrefetchAsync (cids.data(), cids.sizeBytes(), 0, *s);
-      if ((err1!=0) || (err2!=0)) {
-        ARCANE_FATAL("ERROR de prefetch CUDA");
-      }
-      */
       // TODO: utiliser cudaLaunchKernel() à la place.
       impl::doIndirectGPULambda <<<b,t,0,*s>>>(mvis,cids,func);
     }
@@ -184,7 +214,6 @@ _applyEnvCells(RunCommand& command,const EnvCellVectorView& items,const Lambda& 
 #endif
     break;
 // TODO: A tester...
-/*
   case eExecutionPolicy::HIP:
 #if defined(ARCANE_COMPILING_HIP)
     {
@@ -202,21 +231,19 @@ _applyEnvCells(RunCommand& command,const EnvCellVectorView& items,const Lambda& 
     ARCANE_FATAL("Requesting HIP kernel execution but the kernel is not compiled with HIP compiler");
 #endif
     break;
-*/
   case eExecutionPolicy::Sequential:
     {
       launch_info.beginExecute();
       // TODO: A voir avec GG si un for range est acceptable
-      for (auto i : items.itemsInternalView())
-        func(EnvCellAccessor(i));
-      // TODO: Faut il remplacer le code ci-dessus par celui ci-dessous pour avoir un comportement équivalent entre CPU et GPU ?
-      /*
+      // V1
+      //for (auto i : items.itemsInternalView())
+      //  func(EnvCellAccessor(i));
+      // V2
       SmallSpan<const MatVarIndex> mvis(items.component()->variableIndexer()->matvarIndexes());
       SmallSpan<const Int32> cids(items.component()->variableIndexer()->localIds());
-      assert(mvis.size() == cids.size());
+      ARCANE_ASSERT(mvis.size() == cids.size(), ("MatVarIndex and CellLocalId arrays have different size"));
       for (int i(0); i<mvis.size(); ++i)
         func(EnvCellAccessor(mvis[i], (CellLocalId)cids[i]));
-      */
     }
     break;
   case eExecutionPolicy::Thread:
@@ -234,6 +261,7 @@ _applyEnvCells(RunCommand& command,const EnvCellVectorView& items,const Lambda& 
   }
   launch_info.endExecute();
 }
+*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

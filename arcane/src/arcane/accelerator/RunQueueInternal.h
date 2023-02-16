@@ -152,6 +152,34 @@ inline void invalidKernel(const LambdaArgs&,const Lambda&)
  * \param func fonction à exécuter par le noyau
  * \param args arguments de la fonction lambda
  */
+template<typename CudaKernel,typename Lambda,typename... LambdaArgs> void
+         //,typename std::enable_if_t<std::is_function_v<std::decay_t<Lambda> > >* = nullptr> void
+_applyKernelCUDA(impl::RunCommandLaunchInfo& launch_info,const CudaKernel& kernel, Lambda& func, const LambdaArgs&... args)
+{
+#if defined(ARCANE_COMPILING_CUDA)
+  auto [b,t] = launch_info.threadBlockInfo();
+  cudaStream_t* s = reinterpret_cast<cudaStream_t*>(launch_info._internalStreamImpl());
+  // TODO: utiliser cudaLaunchKernel() à la place.
+  kernel <<<b, t, 0, *s>>>(args...,func);
+#else
+  ARCANE_UNUSED(launch_info);
+  ARCANE_UNUSED(kernel);
+  ARCANE_UNUSED(func);
+  for (auto arg : {args...})
+    ARCANE_UNUSED(arg);
+  ARCANE_FATAL("Requesting CUDA kernel execution but the kernel is not compiled with CUDA."
+               " You need to compile the file containing this kernel with CUDA compiler.");
+#endif
+}
+
+/*!
+ * \brief Fonction générique pour exécuter un kernel CUDA.
+ *
+ * \param kernel noyau CUDA
+ * \param func fonction à exécuter par le noyau
+ * \param args arguments de la fonction lambda
+ */
+/*
 template<typename CudaKernel,typename Lambda,typename LambdaArgs> void
 _applyKernelCUDA(impl::RunCommandLaunchInfo& launch_info,const CudaKernel& kernel, Lambda& func,const LambdaArgs& args)
 {
@@ -169,6 +197,7 @@ _applyKernelCUDA(impl::RunCommandLaunchInfo& launch_info,const CudaKernel& kerne
                " You need to compile the file containing this kernel with CUDA compiler.");
 #endif
 }
+*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

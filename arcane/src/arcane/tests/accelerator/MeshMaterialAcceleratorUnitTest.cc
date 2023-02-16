@@ -421,7 +421,7 @@ _executeTest2(Integer nb_z)
       ENUMERATE_ENVCELL(iev,envcellsv)
       {
         Cell cell = (*iev).globalCell();
-        c_ref[iev] += a_ref[iev] / d_ref[cell];
+        c_ref[iev] += a_ref[iev] * d_ref[cell];
       }
     }
   }
@@ -450,7 +450,7 @@ _executeTest2(Integer nb_z)
         {
           cmd << RUNCOMMAND_ENUMERATE(EnvCell, evi, envcellsv) {
             auto [mvi, cid] = evi();
-            out_c[mvi] += inout_a[mvi] / in_d[cid];
+            out_c[mvi] += inout_a[mvi] * in_d[cid];
           };
         }
       }
@@ -501,7 +501,7 @@ _executeTest3(Integer nb_z)
       ENUMERATE_ENVCELL(iev,envcellsv)
       {
         Cell cell = (*iev).globalCell();
-        c_ref[iev] += a_ref[iev] / d_ref[cell];
+        c_ref[iev] += a_ref[iev] * d_ref[cell];
       }
     }
   }
@@ -532,7 +532,7 @@ _executeTest3(Integer nb_z)
         {
           cmd << RUNCOMMAND_ENUMERATE(EnvCell, evi, envcellsv) {
             auto [mvi, cid] = evi();
-            out_c[mvi] += inout_a[mvi] / in_d[cid];
+            out_c[mvi] += inout_a[mvi] * in_d[cid];
           };
         }
       }
