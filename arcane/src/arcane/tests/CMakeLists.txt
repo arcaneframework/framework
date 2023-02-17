@@ -403,6 +403,7 @@ ARCANE_ADD_TEST_SEQUENTIAL(graphdof_onecell testGraph-OneCell.arc -We,ARCANE_GRA
 ARCANE_ADD_TEST_SEQUENTIAL(graphdof_twocells testGraph-TwoCells.arc -We,ARCANE_GRAPH_CONNECTIVITY_POLICY,1)
 ARCANE_ADD_TEST_SEQUENTIAL(inout testInOut.arc)
 ARCANE_ADD_TEST_SEQUENTIAL(mesh_merge_nodes_2d testMeshMergeNodes-2D.arc)
+arcane_add_test_sequential(mesh_merge_boundaries testMeshMergeBoundaries-1.arc)
 ARCANE_ADD_TEST_SEQUENTIAL(directed_graph testDirectedGraph.arc)
 ARCANE_ADD_TEST_PARALLEL(directed_graph testDirectedGraph.arc 3)
 arcane_add_test_sequential(mesh_deallocate testMeshDeallocate.arc)

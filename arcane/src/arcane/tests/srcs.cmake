@@ -14,6 +14,7 @@ set(ARCANE_SOURCES
   ModuleSimpleHydroGeneric.cc
   ModuleSimpleHydroSimd.cc
   ModuleSimpleHydroDepend.cc
+  MeshMergeBoundariesUnitTest.cc
   MeshMergeNodesUnitTest.cc
   MeshUnitTest.cc
   MultipleMeshUnitTest.cc
