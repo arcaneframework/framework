@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* RunQueueUnitTest.cc                                         (C) 2000-2022 */
+/* RunQueueUnitTest.cc                                         (C) 2000-2023 */
 /*                                                                           */
 /* Service de test unitaire des 'RunQueue'.                                  */
 /*---------------------------------------------------------------------------*/
@@ -20,6 +20,7 @@
 #include "arcane/accelerator/core/RunQueueBuildInfo.h"
 #include "arcane/accelerator/core/Runner.h"
 #include "arcane/accelerator/core/RunQueueEvent.h"
+#include "arcane/accelerator/core/IAcceleratorMng.h"
 
 #include "arcane/accelerator/NumArrayViews.h"
 #include "arcane/accelerator/RunCommandLoop.h"
@@ -55,7 +56,7 @@ class RunQueueUnitTest
 
  private:
 
-  ax::Runner m_runner;
+  ax::Runner* m_runner = nullptr;
 
  public:
 
@@ -95,9 +96,7 @@ RunQueueUnitTest::
 void RunQueueUnitTest::
 initializeTest()
 {
-  IApplication* app = subDomain()->application();
-  const auto& acc_info = app->acceleratorRuntimeInitialisationInfo();
-  initializeRunner(m_runner, traceMng(), acc_info);
+  m_runner = subDomain()->acceleratorMng()->defaultRunner();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -106,13 +105,13 @@ initializeTest()
 void RunQueueUnitTest::
 executeTest()
 {
+  _executeTest2();
+  bool old_v = m_runner->isConcurrentQueueCreation();
+  m_runner->setConcurrentQueueCreation(true);
   _executeTest1(false);
   _executeTest1(true);
-  _executeTest2();
-  bool old_v = m_runner.isConcurrentQueueCreation();
-  m_runner.setConcurrentQueueCreation(true);
   _executeTest3();
-  m_runner.setConcurrentQueueCreation(old_v);
+  m_runner->setConcurrentQueueCreation(old_v);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -148,7 +147,7 @@ _executeTest1(bool use_priority)
     ax::RunQueueBuildInfo bi;
     if (use_priority && (i > 3))
       bi.setPriority(-8);
-    auto queue_ref = makeQueueRef(m_runner, bi);
+    auto queue_ref = makeQueueRef(*m_runner, bi);
     queue_ref->setAsync(true);
     allthreads.add(new std::thread(task_func, queue_ref, i));
   }
@@ -180,10 +179,10 @@ _executeTest2()
   info() << "Test2: use events";
   ValueChecker vc(A_FUNCINFO);
 
-  auto event{ makeEvent(m_runner) };
-  auto queue1{ makeQueue(m_runner) };
+  auto event{ makeEvent(*m_runner) };
+  auto queue1{ makeQueue(*m_runner) };
   queue1.setAsync(true);
-  auto queue2{ makeQueue(m_runner) };
+  auto queue2{ makeQueue(*m_runner) };
   queue2.setAsync(true);
 
   Integer nb_value = 100000;
@@ -228,11 +227,11 @@ _executeTest3()
   ValueChecker vc(A_FUNCINFO);
 
   UniqueArray<Ref<ax::RunQueueEvent>> event_array;
-  event_array.add(makeEventRef(m_runner));
+  event_array.add(makeEventRef(*m_runner));
 
-  auto queue1{ makeQueue(m_runner) };
+  auto queue1{ makeQueue(*m_runner) };
   queue1.setAsync(true);
-  auto queue2{ makeQueue(m_runner) };
+  auto queue2{ makeQueue(*m_runner) };
   queue2.setAsync(true);
 
   Integer nb_value = 100000;
