@@ -25,6 +25,7 @@ namespace Arcane
 MeshBuildInfo::
 MeshBuildInfo(const String& name)
 : m_name(name)
+, m_factory_name("ArcaneDynamicMeshFactory")
 {
   // TODO: vérifier la validité du nom
 }
