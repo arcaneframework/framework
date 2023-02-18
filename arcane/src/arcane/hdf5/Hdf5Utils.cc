@@ -403,6 +403,17 @@ write(hid_t native_type,const void* array,const HSpace& memspace_id,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+herr_t HDataset::
+write(hid_t native_type,const void* array,const HSpace& memspace_id,
+      const HSpace& filespace_id,const HProperty& plist)
+{
+  //cerr << "** WRITE ID=" << id() << '\n';
+  return H5Dwrite(id(),native_type,memspace_id.id(),filespace_id.id(),plist.id(),array);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void HDataset::
 readWithException(hid_t native_type,void* array)
 {

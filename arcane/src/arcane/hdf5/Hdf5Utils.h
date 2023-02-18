@@ -137,6 +137,52 @@ class ARCANE_HDF5_EXPORT Hid
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
+ * \brief Encapsule un hid_t pour une propriété (H5P*).
+ */
+class ARCANE_HDF5_EXPORT HProperty
+: public Hid
+{
+ public:
+
+  HProperty() { _setId(H5P_DEFAULT); }
+  ~HProperty()
+  {
+    if (id() > 0)
+      H5Pclose(id());
+  }
+  HProperty(HProperty&& rhs)
+  : Hid(rhs.id())
+  {
+    rhs._setNullId();
+  }
+  HProperty& operator=(HProperty&& rhs)
+  {
+    _setId(rhs.id());
+    rhs._setNullId();
+    return (*this);
+  }
+
+ public:
+
+  HProperty(const HProperty& v) = delete;
+  HProperty& operator=(const HProperty& hid) = delete;
+
+ public:
+
+  void create(hid_t cls_id)
+  {
+    _setId(H5Pcreate(cls_id));
+  }
+
+  void setId(hid_t new_id)
+  {
+    _setId(new_id);
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
  * \brief Encapsule un hid_t pour un fichier.
  */
 class ARCANE_HDF5_EXPORT HFile
@@ -351,6 +397,8 @@ class ARCANE_HDF5_EXPORT HDataset
   herr_t write(hid_t native_type, const void* array);
   herr_t write(hid_t native_type, const void* array, const HSpace& memspace_id,
                const HSpace& filespace_id, hid_t plist);
+  herr_t write(hid_t native_type, const void* array, const HSpace& memspace_id,
+               const HSpace& filespace_id, const HProperty& plist);
   herr_t read(hid_t native_type, void* array)
   {
     return H5Dread(id(), native_type, H5S_ALL, H5S_ALL, H5P_DEFAULT, array);
@@ -429,6 +477,7 @@ class ARCANE_HDF5_EXPORT HAttribute
     return HSpace(H5Aget_space(id()));
   }
 };
+
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
