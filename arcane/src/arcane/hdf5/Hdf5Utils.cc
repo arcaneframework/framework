@@ -11,11 +11,10 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
-
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/Array.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/TraceInfo.h"
@@ -54,6 +53,19 @@ HInit()
   // Garanti que cela ne sera appelé qu'une seule fois et protège des appels
   // concurrents.
   std::call_once(h5open_once_flag, [](){ H5open(); });
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+bool HInit::
+hasParallelHdf5()
+{
+#ifdef H5_HAVE_PARALLEL
+  return true;
+#else
+  return false;
+#endif
 }
 
 /*---------------------------------------------------------------------------*/
@@ -495,6 +507,57 @@ openIfExists(const Hid& loc_id,const String& var)
   if (parent_group.hasChildren(last_name))
     open(loc_id.id(),var.localstr());
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void HProperty::
+create(hid_t cls_id)
+{
+  close();
+  _setId(H5Pcreate(cls_id));
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void HProperty::
+createFilePropertyMPIIO(IParallelMng* pm)
+{
+#ifdef H5_HAVE_PARALLEL
+  void* arcane_comm = pm->getMPICommunicator();
+  if (!arcane_comm)
+    ARCANE_FATAL("No MPI environment available");
+  MPI_Comm mpi_comm = *((MPI_Comm*)arcane_comm);
+  MPI_Info mpi_info = MPI_INFO_NULL;
+
+  create(H5P_FILE_ACCESS);
+  H5Pset_fapl_mpio(id(), mpi_comm, mpi_info);
+#else
+  ARCANE_UNUSED(pm);
+  ARCANE_THROW(NotSupportedException,"HDF5 is not compiled with MPI support");
+#endif
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void HProperty::
+createDatasetTransfertCollectiveMPIIO()
+{
+#ifdef H5_HAVE_PARALLEL
+  create(H5P_DATASET_XFER);
+  H5Pset_dxpl_mpio(id(), H5FD_MPIO_COLLECTIVE);
+#else
+  ARCANE_THROW(NotSupportedException,"HDF5 is not compiled with MPI support");
+#endif
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

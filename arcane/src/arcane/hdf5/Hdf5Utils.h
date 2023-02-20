@@ -91,7 +91,13 @@ extern "C"
 class ARCANE_HDF5_EXPORT HInit
 {
  public:
+
   HInit();
+
+ public:
+
+  //! Vrai HDF5 est compilé avec le support de MPI
+  static bool hasParallelHdf5();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -147,8 +153,7 @@ class ARCANE_HDF5_EXPORT HProperty
   HProperty() { _setId(H5P_DEFAULT); }
   ~HProperty()
   {
-    if (id() > 0)
-      H5Pclose(id());
+    close();
   }
   HProperty(HProperty&& rhs)
   : Hid(rhs.id())
@@ -169,15 +174,46 @@ class ARCANE_HDF5_EXPORT HProperty
 
  public:
 
-  void create(hid_t cls_id)
+  void close()
   {
-    _setId(H5Pcreate(cls_id));
+    if (id() > 0) {
+      H5Pclose(id());
+      _setNullId();
+    }
   }
 
+  void create(hid_t cls_id);
   void setId(hid_t new_id)
   {
     _setId(new_id);
   }
+
+  /*!
+   * \brief Créé une propriété de fichier pour MPIIO.
+   *
+   * Ne fonctionne que si HDF5 est compilé avec MPI. Sinon lance
+   * une exception. Si \a mpi_comm est le communicateur MPI associé
+   * à \a pm, l'appel à cette méthode créé une propriété comme suit:
+   *
+   * \code
+   * create(H5P_FILE_ACCESS);
+   * H5Pset_fapl_mpio(id(), mpi_comm, MPI_INFO_NULL);
+   * \endcode
+   */
+  void createFilePropertyMPIIO(IParallelMng* pm);
+
+  /*!
+   * \brief Créé une propriété de dataset pour MPIIO.
+   *
+   * Ne fonctionne que si HDF5 est compilé avec MPI. Sinon lance
+   * une exception. L'appel à cette méthode créé une propriété comme suit:
+   *
+   * \code
+   * create(H5P_DATASET_XFER);
+   * H5Pset_dxpl_mpio(id(), H5FD_MPIO_COLLECTIVE);
+   * \endcode
+   */
+  void createDatasetTransfertCollectiveMPIIO();
 };
 
 /*---------------------------------------------------------------------------*/
