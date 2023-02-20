@@ -624,7 +624,7 @@ timeHistoryBegin()
     int th_step = subDomain()->caseOptionsMain()->writeHistoryPeriod();
     if (th_step!=0){
       if ((globalIteration() % th_step)==0)
-        if (parallelMng()->isMasterIO())
+        if (parallelMng()->isMasterIO() || m_enable_non_io_master_curves)
           force_print_thm = true;
     }
     if (subDomain()->applicationInfo().isDebug())
