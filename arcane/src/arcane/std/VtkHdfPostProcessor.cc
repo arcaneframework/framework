@@ -180,7 +180,8 @@ beginWrite(const VariableCollection& vars)
   m_is_master_io = pm->isMasterIO();
 
   Int32 time_index = m_times.size();
-  if (time_index < 2)
+  const bool is_first_call = (time_index < 2);
+  if (is_first_call)
     pwarning() << "L'implémentation au format 'VtkHdf' est expérimentale";
 
   String filename = _getFileNameForTimeIndex(time_index);
@@ -198,22 +199,15 @@ beginWrite(const VariableCollection& vars)
   // Il est possible d'utiliser le mode collectif de HDF5 via MPI-IO dans les cas suivants:
   // - Hdf5 a été compilé avec MPI
   // - on est en mode MPI pure (ni mode mémoire partagé, ni mode hybride)
-  m_is_collective_io = true;
+  m_is_collective_io = pm->isParallel() && HInit::hasParallelHdf5();
   if (pm->isHybridImplementation() || pm->isThreadImplementation())
     m_is_collective_io = false;
+  if (is_first_call)
+    info() << "VtkHdfDataWriter: using collective MPI/IO ?=" << m_is_collective_io;
 
   HProperty plist_id;
-  if (m_is_collective_io) {
-    void* arcane_comm = pm->getMPICommunicator();
-    if (!arcane_comm)
-      ARCANE_FATAL("No MPI environment available");
-    MPI_Comm mpi_comm = *((MPI_Comm*)arcane_comm);
-    MPI_Info mpi_info = MPI_INFO_NULL;
-
-    // TODO: a détruire
-    plist_id.create(H5P_FILE_ACCESS);
-    H5Pset_fapl_mpio(plist_id.id(), mpi_comm, mpi_info);
-  }
+  if (m_is_collective_io)
+    plist_id.createFilePropertyMPIIO(pm);
 
   if (time_index <= 1) {
     if (m_is_master_io) {
@@ -226,7 +220,6 @@ beginWrite(const VariableCollection& vars)
 
   if (m_is_collective_io || m_is_master_io) {
     m_file_id.openTruncate(m_full_filename, plist_id.id());
-    pinfo() << "Rank=" << pm->commRank() << " file_id=" << m_file_id.id();
 
     top_group.create(m_file_id, "VTKHDF");
 
@@ -391,8 +384,7 @@ _writeDataSet1DCollectiveWithCollectiveIO(HGroup& group, const String& name, Spa
   H5Sselect_hyperslab(filespace_id.id(), H5S_SELECT_SET, offset, NULL, count, NULL);
 
   HProperty write_plist_id;
-  write_plist_id.create(H5P_DATASET_XFER);
-  H5Pset_dxpl_mpio(write_plist_id.id(), H5FD_MPIO_COLLECTIVE);
+  write_plist_id.createDatasetTransfertCollectiveMPIIO();
 
   herr_t herr = dataset_id.write(hdf_type, values.data(), memspace_id, filespace_id, write_plist_id);
 
@@ -448,8 +440,7 @@ _writeDataSet2DCollectiveWithCollectiveIO(HGroup& group, const String& name, Spa
   H5Sselect_hyperslab(filespace_id.id(), H5S_SELECT_SET, offset, NULL, count, NULL);
 
   HProperty write_plist_id;
-  write_plist_id.create(H5P_DATASET_XFER);
-  H5Pset_dxpl_mpio(write_plist_id.id(), H5FD_MPIO_COLLECTIVE);
+  write_plist_id.createDatasetTransfertCollectiveMPIIO();
 
   herr_t herr = dataset_id.write(hdf_type, values.data(), memspace_id, filespace_id, write_plist_id);
 
