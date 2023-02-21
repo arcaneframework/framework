@@ -14,7 +14,9 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/MeshHandle.h"
+
 #include "arcane/cartesianmesh/CartesianMeshGlobal.h"
 
 /*---------------------------------------------------------------------------*/
