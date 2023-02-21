@@ -31,6 +31,7 @@
     <variable>Velocity</variable>
     <variable>NodeMass</variable>
     <variable>InternalEnergy</variable>
+    <variable>SubDomainId</variable>
     <group>ZG</group>
     <group>ZD</group>
     <group>AllFaces</group>

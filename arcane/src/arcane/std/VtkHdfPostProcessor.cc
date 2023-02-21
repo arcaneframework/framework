@@ -668,10 +668,10 @@ write(IVariable* var, IData* data)
     _writeBasicTypeDataset<Real>(*group, var, data);
     break;
   case DT_Int64:
-    _writeBasicTypeDataset<Real>(*group, var, data);
+    _writeBasicTypeDataset<Int64>(*group, var, data);
     break;
   case DT_Int32:
-    _writeBasicTypeDataset<Real>(*group, var, data);
+    _writeBasicTypeDataset<Int32>(*group, var, data);
     break;
   case DT_Real3:
     _writeReal3Dataset(*group, var, data);
