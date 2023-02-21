@@ -9,9 +9,7 @@ antérieures à la version 3 sont listées ici : \ref arcanedoc_news_changelog20
 
 ___
 
-## Arcane Version 3.8... (février 2023) {#arcanedoc_version380}
-
-Work In Progress...
+## Arcane Version 3.8.15 (22 février 2023) {#arcanedoc_version380}
 
 ### Nouveautés/Améliorations
 
@@ -54,6 +52,11 @@ Work In Progress...
   Arcane::Materials::IMeshMaterialMng::forceRecompute() ou de
   l'utilisation de la classe Arcane::Materials::MeshMaterialBackup
   (\pr{531}, \pr{532}).
+- Support des maillages multiples dans les options du jeu de
+  données(\pr{453}, \pr{548}).
+- Ajoute classe Arcane::MeshHandleOrMesh pour faciliter la transition
+  entre Arcane::IMesh et Arcane::MeshHandle lors de l'initialisation
+  (\pr{549}).
 
 ### Changements
 
@@ -87,7 +90,7 @@ Work In Progress...
 - Nouveau service de dépouillement au format VTK HDF. Ce format est
   uniquement supporté par les versions 5.11+ de
   Paraview. L'implémentation actuelle est expérimentale (\pr{510},
-  \pr{525}, \pr{527}, \pr{528}).
+  \pr{525}, \pr{527}, \pr{528} \pr{554}, \pr{546}).
 - Déplace les fichiers d'en-tête de la composante `arcane_core` et qui
   se trouvaient à la racine de `arcane` dans un sous-répertoire
   `arcane/core`. Afin de rester compatible avec l'existant des
@@ -100,6 +103,14 @@ Work In Progress...
 - Nettoyages des classes gérant HDF5: rend obsolète le constructeur de
   recopie des classes de `Hdf5Utils.h` et supprime le support des
   versions de HDF5 antérieures à la version 1.10 (\pr{526}).
+- Autorise la création d'instances nulle de Arcane::ItemGroup avant
+  l'initialisation de %Arcane. Cela permet par exemple d'avoir des
+  variables globales de Arcane::ItemGroup ou des classess dérivées
+  (\pr{544}).
+- Modifie le comportement de la macro ENUMERATE_COMPONENTITEM pour
+  utiliser un type plutôt qu'une chaîne de caractères dans le nom de
+  l'énumérateur. Cela permet de l'utiliser avec un paramètre template
+  (\pr{540}).
 
 ### Corrections
 
