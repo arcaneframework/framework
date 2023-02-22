@@ -62,6 +62,7 @@ class MpiTypeDispatcher
   Request nonBlockingAllToAllVariable(Span<const Type> send_buf, ConstArrayView<Int32> send_count,
                                       ConstArrayView<Int32> send_index, Span<Type> recv_buf,
                                       ConstArrayView<Int32> recv_count, ConstArrayView<Int32> recv_index) override;
+  Request gather(GatherMessageInfo<Type>& gather_info) override;
 
  public:
 

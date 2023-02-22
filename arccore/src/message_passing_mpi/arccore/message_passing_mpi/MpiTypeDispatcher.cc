@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiTypeDispatcher.cc                                        (C) 2000-2018 */
+/* MpiTypeDispatcher.cc                                        (C) 2000-2023 */
 /*                                                                           */
 /* Gestionnaire de parallélisme utilisant MPI.                               */
 /*---------------------------------------------------------------------------*/
@@ -16,11 +16,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-namespace Arccore
-{
-namespace MessagePassing
-{
-namespace Mpi
+namespace Arccore::MessagePassing::Mpi
 {
 
 /*---------------------------------------------------------------------------*/
@@ -44,9 +40,7 @@ template class MpiTypeDispatcher<long double>;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Mpi
-} // End namespace MessagePassing
-} // End namespace Arccore
+} // End namespace Arccore::MessagePassing::Mpi
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
