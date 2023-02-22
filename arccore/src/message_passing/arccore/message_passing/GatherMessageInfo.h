@@ -30,7 +30,7 @@ namespace Arccore::MessagePassing
  */
 class ARCCORE_MESSAGEPASSING_EXPORT GatherMessageInfoBase
 {
- protected:
+ public:
 
   enum class Type
   {
@@ -42,8 +42,8 @@ class ARCCORE_MESSAGEPASSING_EXPORT GatherMessageInfoBase
 
  public:
 
-  //! Message nul.
-  GatherMessageInfoBase() {}
+  //! Message pout tout le monde et bloquant
+  GatherMessageInfoBase() = default;
 
   //! Message bloquant ayant pour destination \a rank
   explicit GatherMessageInfoBase(MessageRank dest_rank)
@@ -72,7 +72,7 @@ class ARCCORE_MESSAGEPASSING_EXPORT GatherMessageInfoBase
   {
     m_destination_rank = rank;
   }
-
+  Type type() const { return m_type; }
   //! Affiche le message
   void print(std::ostream& o) const;
 
@@ -120,6 +120,9 @@ class GatherMessageInfo
   using BaseClass = GatherMessageInfoBase;
 
  public:
+
+  //! Message pout tout le monde et bloquant
+  GatherMessageInfo() = default;
 
   //! Message bloquant ayant pour destination \a rank
   explicit GatherMessageInfo(MessageRank dest_rank)
@@ -186,6 +189,12 @@ class GatherMessageInfo
     m_receive_displacements = receive_displacements;
     m_receive_counts = receive_counts;
   }
+
+  Array<DataType>* localReceptionBuffer() const { return m_local_reception_buffer; }
+  Span<const DataType> sendBuffer() const { return m_send_buffer; }
+  Span<DataType> receiveBuffer() const { return m_receive_buf; }
+  Span<const Int32> receiveDisplacement() { return m_receive_displacements; }
+  Span<const Int32> receiveCounts() const { return m_receive_counts; }
 
  private:
 
