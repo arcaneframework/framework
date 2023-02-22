@@ -164,6 +164,17 @@ _applyKernelCUDA(impl::RunCommandLaunchInfo& launch_info,const CudaKernel& kerne
   auto [b,t] = launch_info.threadBlockInfo();
   cudaStream_t* s = reinterpret_cast<cudaStream_t*>(launch_info._internalStreamImpl());
   // TODO: utiliser cudaLaunchKernel() à la place.
+  /*
+   * Test si dessous non concluant. Le principe de la construction de l'array est bon,
+   * l'ensemble ressemble à ce qu'on peut trouver (par exemple :
+   * https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/util/gpu_kernel_helper.h)
+   * mais je pense que la lambda pose problème...
+   * A creuser encore donc...
+   *
+    std::array<void*, sizeof...(args)+1> kernel_args{std::forward<void*>((void*)&args)...};
+    kernel_args[sizeof...(args)] = std::forward<void*>((void*)&func);
+    cudaLaunchKernel<CudaKernel>(kernel, b, t, kernel_args.data(), 0, *s);
+   */
   kernel <<<b, t, 0, *s>>>(args...,func);
 #else
   ARCANE_UNUSED(launch_info);
