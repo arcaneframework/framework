@@ -38,11 +38,23 @@ class ITimeMetricCollector;
 
 namespace Arccore::MessagePassing
 {
-//! Numéro correspondant à un rang nul
+/*!
+ * \brief Numéro correspondant à un rang nul.
+ *
+ * La signification du rang nul dépend de la situation.
+ *
+ * \sa MessageRank.
+ */
 static const Int32 A_NULL_RANK = static_cast<Int32>(-1);
 
 //! Numéro correspondant à un rang nul
 static const Int32 A_NULL_TAG_VALUE = static_cast<Int32>(-1);
+
+//! Numéro correspondant à MPI_ANY_SOURCE
+static const Int32 A_ANY_SOURCE_RANK = static_cast<Int32>(-2);
+
+//! Numéro correspondant à MPI_PROC_NULL
+static const Int32 A_PROC_NULL_RANK = static_cast<Int32>(-3);
 
 class Communicator;
 class IRequestCreator;

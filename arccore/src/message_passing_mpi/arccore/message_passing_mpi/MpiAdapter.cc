@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiAdapter.cc                                               (C) 2000-2022 */
+/* MpiAdapter.cc                                               (C) 2000-2023 */
 /*                                                                           */
 /* Gestionnaire de parallélisme utilisant MPI.                               */
 /*---------------------------------------------------------------------------*/
@@ -1002,7 +1002,9 @@ directRecv(void* recv_buffer,Int64 recv_buffer_size,
   double end_time = 0.0;
   
   int i_proc = 0;
-  if (proc==A_NULL_RANK)
+  if (proc==A_PROC_NULL_RANK)
+    ARCCORE_THROW(NotImplementedException,"Receive with MPI_PROC_NULL");
+  if (proc==A_NULL_RANK || proc==A_ANY_SOURCE_RANK)
     i_proc = MPI_ANY_SOURCE;
   else
     i_proc = static_cast<int>(proc);
@@ -1119,7 +1121,9 @@ _probeMessage(MessageRank source,MessageTag tag,bool is_blocking)
   MPI_Message message;
   int ret = 0;
   int mpi_source = source.value();
-  if (source.isNull())
+  if (source.isProcNull())
+    ARCCORE_THROW(NotImplementedException,"Probe with MPI_PROC_NULL");
+  if (source.isNull() || source.isAnySource())
     mpi_source = MPI_ANY_SOURCE;
   int mpi_tag = tag.value();
   if (tag.isNull())
@@ -1167,7 +1171,9 @@ _legacyProbeMessage(MessageRank source,MessageTag tag,bool is_blocking)
   MPI_Message message;
   int ret = 0;
   int mpi_source = source.value();
-  if (source.isNull())
+  if (source.isProcNull())
+    ARCCORE_THROW(NotImplementedException,"Probe with MPI_PROC_NULL");
+  if (source.isNull() || source.isAnySource())
     mpi_source = MPI_ANY_SOURCE;
   int mpi_tag = tag.value();
   if (tag.isNull())
