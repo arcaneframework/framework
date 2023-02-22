@@ -25,19 +25,21 @@ namespace Arccore::MessagePassing
 /*!
  * \brief Informations pour un message 'gather'.
  *
- * Les instances passées en argument de setInfos() doivent rester actives
- * durant l'utilisation de cette instance.
+ * Il faut plutôt utiliser la classe GatherMessageInfo plutôt que cette classe.
+ * Cette classe permet d'utiliser les messages de type 'Gather', 'GatherVariable',
+ * 'AllGather' et 'AllGatherVariable' de manière générique.
  */
 class ARCCORE_MESSAGEPASSING_EXPORT GatherMessageInfoBase
 {
  public:
 
-  enum class Type
+  //! Mode du message
+  enum class Mode
   {
-    T_Gather,
-    T_GatherVariable,
-    T_GatherVariableNeedComputeInfo,
-    T_Null
+    Gather,
+    GatherVariable,
+    GatherVariableNeedComputeInfo,
+    Null
   };
 
  public:
@@ -67,12 +69,16 @@ class ARCCORE_MESSAGEPASSING_EXPORT GatherMessageInfoBase
 
   //! Rang de la destination du message
   MessageRank destinationRank() const { return m_destination_rank; }
+
   //! Positionne le rang de la destination du message
   void setDestinationRank(MessageRank rank)
   {
     m_destination_rank = rank;
   }
-  Type type() const { return m_type; }
+
+  //! Mode du message
+  Mode mode() const { return m_mode; }
+
   //! Affiche le message
   void print(std::ostream& o) const;
 
@@ -87,29 +93,33 @@ class ARCCORE_MESSAGEPASSING_EXPORT GatherMessageInfoBase
   // Indique si le message est valide (i.e: il a été initialisé avec un message valide)
   bool isValid() const
   {
-    if (m_type == Type::T_Null)
+    if (m_mode == Mode::Null)
       return false;
     return true;
   }
 
  protected:
 
-  void _setType(Type t)
+  void _setType(Mode t)
   {
-    m_type = t;
+    m_mode = t;
   }
 
  private:
 
   MessageRank m_destination_rank;
   bool m_is_blocking = true;
-  Type m_type = Type::T_Null;
+  Mode m_mode = Mode::Null;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Informations pour un message 'gather' pour le type de données \a DataType.
+ *
+ * Il faut appeler une des méthodes setGather() ou setGatherVariable() avant
+ * de pouvoir envoyer le message correspondant. Les instances passées en argument
+ * ces deux méthodes doivent rester vivantes tant que le message n'est pas terminé.
  */
 template <typename DataType>
 class GatherMessageInfo
@@ -145,7 +155,7 @@ class GatherMessageInfo
    */
   void setGather(Span<const DataType> send_buf, Span<DataType> receive_buf)
   {
-    _setType(Type::T_Gather);
+    _setType(Mode::Gather);
     m_receive_buf = receive_buf;
     m_send_buffer = send_buf;
   }
@@ -167,7 +177,7 @@ class GatherMessageInfo
    */
   void setGatherVariable(Span<const DataType> send_buf, Array<DataType>* receive_array)
   {
-    _setType(Type::T_GatherVariableNeedComputeInfo);
+    _setType(Mode::GatherVariableNeedComputeInfo);
     m_local_reception_buffer = receive_array;
     m_send_buffer = send_buf;
   }
@@ -183,17 +193,30 @@ class GatherMessageInfo
   void setGatherVariable(Span<const DataType> send_buf, Span<DataType> receive_buf,
                          Span<const Int32> receive_counts, Span<const Int32> receive_displacements)
   {
-    _setType(Type::T_GatherVariable);
+    _setType(Mode::GatherVariable);
     m_receive_buf = receive_buf;
     m_send_buffer = send_buf;
     m_receive_displacements = receive_displacements;
     m_receive_counts = receive_counts;
   }
 
+  /*!
+   * \brief Buffer de réception pour le type T_GatherVariableNeedComputeInfo.
+   *
+   * Peut-être nul pour les rangs qui ne sont pas concernés par la réception.
+   */
   Array<DataType>* localReceptionBuffer() const { return m_local_reception_buffer; }
+
+  //! Buffer d'envoi. Il est utilisé dans tous les modes.
   Span<const DataType> sendBuffer() const { return m_send_buffer; }
+
+  //! Buffer de réception. Utilisé en mode Gather et GatherVariable par les rangs qui recoivent
   Span<DataType> receiveBuffer() const { return m_receive_buf; }
+
+  //! Tableau des déplacements. Utilisé en mode GatherVariable.
   Span<const Int32> receiveDisplacement() { return m_receive_displacements; }
+
+  //! Tableau des tailles. Utilisé en mode GatherVariable.
   Span<const Int32> receiveCounts() const { return m_receive_counts; }
 
  private:

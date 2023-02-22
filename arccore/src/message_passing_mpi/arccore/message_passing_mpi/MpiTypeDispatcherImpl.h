@@ -414,7 +414,7 @@ gather(GatherMessageInfo<Type>& gather_info)
 
   // GatherVariable avec envoi gather préliminaire pour connaitre la taille
   // que doit envoyer chaque rang.
-  if (gather_info.type()==GatherMessageInfoBase::Type::T_GatherVariableNeedComputeInfo) {
+  if (gather_info.mode()==GatherMessageInfoBase::Mode::GatherVariableNeedComputeInfo) {
     if (!is_blocking)
       ARCCORE_THROW(NotSupportedException,"non blocking version of AllGatherVariable or GatherVariable with compute info");
     Array<Type>* receive_array = gather_info.localReceptionBuffer();
@@ -434,7 +434,7 @@ gather(GatherMessageInfo<Type>& gather_info)
   }
 
   // GatherVariable classique avec connaissance du déplacement et des tailles
-  if (gather_info.type() == GatherMessageInfoBase::Type::T_GatherVariable) {
+  if (gather_info.mode() == GatherMessageInfoBase::Mode::GatherVariable) {
     if (!is_blocking)
       ARCCORE_THROW(NotImplementedException, "non blocking version of AllGatherVariable or GatherVariable");
     auto receive_buf = gather_info.receiveBuffer();
@@ -445,7 +445,7 @@ gather(GatherMessageInfo<Type>& gather_info)
   }
 
   // Gather classique
-  if (gather_info.type() == GatherMessageInfoBase::Type::T_Gather) {
+  if (gather_info.mode() == GatherMessageInfoBase::Mode::Gather) {
     auto receive_buf = gather_info.receiveBuffer();
     if (is_blocking) {
       if (is_all_variant)
