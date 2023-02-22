@@ -9,7 +9,7 @@ antérieures à la version 3 sont listées ici : \ref arcanedoc_news_changelog20
 
 ___
 
-## Arcane Version 3.8.15 (22 février 2023) {#arcanedoc_version380}
+## Arcane Version 3.8.16 (22 février 2023) {#arcanedoc_version380}
 
 ### Nouveautés/Améliorations
 
