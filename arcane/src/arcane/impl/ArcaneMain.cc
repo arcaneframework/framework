@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneMain.cc                                               (C) 2000-2022 */
+/* ArcaneMain.cc                                               (C) 2000-2023 */
 /*                                                                           */
 /* Classe gérant l'exécution.                                                */
 /*---------------------------------------------------------------------------*/
@@ -392,8 +392,8 @@ initialize()
   catch(const Exception& ex){
     IApplication* app = m_exec_main->application();
     ITraceMng* trace = app->traceMng();
-    m_ret_val = _catchArcane(ex,trace);
-    if (ex.isCollective()){
+    m_ret_val = arcanePrintArcaneException(ex, trace);
+    if (ex.isCollective()) {
       m_clean_abort = true;
     }
   }
