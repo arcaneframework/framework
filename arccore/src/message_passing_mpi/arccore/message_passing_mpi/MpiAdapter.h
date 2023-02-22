@@ -75,10 +75,10 @@ class ARCCORE_MESSAGEPASSINGMPI_EXPORT MpiAdapter
                  Int64 nb_elem,MPI_Datatype datatype);
   void gather(const void* send_buf,void* recv_buf,
               Int64 nb_elem,Int32 root,MPI_Datatype datatype);
-  void allGatherVariable(const void* send_buf,void* recv_buf,int* recv_counts,
-                         int* recv_indexes,Int64 nb_elem,MPI_Datatype datatype);
-  void gatherVariable(const void* send_buf,void* recv_buf,int* recv_counts,
-                      int* recv_indexes,Int64 nb_elem,Int32 root,MPI_Datatype datatype);
+  void allGatherVariable(const void* send_buf,void* recv_buf,const int* recv_counts,
+                         const int* recv_indexes,Int64 nb_elem,MPI_Datatype datatype);
+  void gatherVariable(const void* send_buf,void* recv_buf,const int* recv_counts,
+                      const int* recv_indexes,Int64 nb_elem,Int32 root,MPI_Datatype datatype);
   void scatterVariable(const void* send_buf,const int* send_count,const int* send_indexes,
                        void* recv_buf,Int64 nb_elem,Int32 root,MPI_Datatype datatype);
   void allToAll(const void* send_buf,void* recv_buf,Int32 count,MPI_Datatype datatype);

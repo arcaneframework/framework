@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arccore/message_passing/MessagePassingGlobal.h"
+#include "arccore/message_passing/Request.h"
 #include "arccore/collections/CollectionsGlobal.h"
 #include "arccore/base/BaseTypes.h"
 
@@ -23,6 +24,8 @@
 
 namespace Arccore::MessagePassing
 {
+extern "C++" ARCCORE_MESSAGEPASSING_EXPORT void
+_internalThrowNotImplementedTypeDispatcher ARCCORE_NORETURN ();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -64,6 +67,10 @@ class ITypeDispatcher
   virtual Request nonBlockingAllToAllVariable(Span<const Type> send_buf, ConstArrayView<Int32> send_count,
                                               ConstArrayView<Int32> send_index, Span<Type> recv_buf,
                                               ConstArrayView<Int32> recv_count, ConstArrayView<Int32> recv_index) = 0;
+  virtual Request gather(GatherMessageInfo<Type>&)
+  {
+    _internalThrowNotImplementedTypeDispatcher();
+  }
 };
 
 /*---------------------------------------------------------------------------*/

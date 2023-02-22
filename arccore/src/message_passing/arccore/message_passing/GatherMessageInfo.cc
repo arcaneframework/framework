@@ -5,18 +5,15 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Dispatchers.cc                                              (C) 2000-2023 */
+/* GatherMessageInfo.cc                                        (C) 2000-2023 */
 /*                                                                           */
-/* Conteneur des dispatchers.                                                */
+/* Informations pour les messages 'gather'.                                  */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arccore/message_passing/Dispatchers.h"
-#include "arccore/message_passing/ITypeDispatcher.h"
-#include "arccore/message_passing/IControlDispatcher.h"
-#include "arccore/message_passing/Request.h"
+#include "arccore/message_passing/GatherMessageInfo.h"
 
-#include "arccore/base/NotImplementedException.h"
+#include <iostream>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -27,43 +24,9 @@ namespace Arccore::MessagePassing
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-Dispatchers::
-Dispatchers()
+void GatherMessageInfoBase::
+print(std::ostream& o) const
 {
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-Dispatchers::
-~Dispatchers()
-{
-  if (m_is_delete_dispatchers) {
-    delete m_char;
-    delete m_unsigned_char;
-    delete m_signed_char;
-    delete m_short;
-    delete m_unsigned_short;
-    delete m_int;
-    delete m_unsigned_int;
-    delete m_long;
-    delete m_unsigned_long;
-    delete m_long_long;
-    delete m_unsigned_long_long;
-    delete m_float;
-    delete m_double;
-    delete m_long_double;
-    delete m_control;
-  }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-extern "C++" ARCCORE_MESSAGEPASSING_EXPORT void
-_internalThrowNotImplementedTypeDispatcher ARCCORE_NORETURN ()
-{
-  ARCCORE_THROW(NotImplementedException,"Generic gather");
 }
 
 /*---------------------------------------------------------------------------*/

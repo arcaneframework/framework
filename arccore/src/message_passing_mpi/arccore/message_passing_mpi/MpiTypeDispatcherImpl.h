@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiTypeDispatcherImpl.h                                     (C) 2000-2020 */
+/* MpiTypeDispatcherImpl.h                                     (C) 2000-2023 */
 /*                                                                           */
 /* Implémentation de 'MpiTypeDispatcher'.                                    */
 /*---------------------------------------------------------------------------*/
@@ -21,9 +21,11 @@
 
 #include "arccore/message_passing/Messages.h"
 #include "arccore/message_passing/Request.h"
+#include "arccore/message_passing/GatherMessageInfo.h"
 
 #include "arccore/base/NotSupportedException.h"
 #include "arccore/base/NotImplementedException.h"
+
 #include "arccore/collections/Array.h"
 
 /*---------------------------------------------------------------------------*/
@@ -106,8 +108,6 @@ gatherVariable(Span<const Type> send_buf,Array<Type>& recv_buf,Int32 rank)
 template<class Type> void MpiTypeDispatcher<Type>::
 _gatherVariable2(Span<const Type> send_buf,Array<Type>& recv_buf,Int32 rank)
 {
-  MPI_Datatype type = m_datatype->datatype();
-
   Int32 comm_size = m_parallel_mng->commSize();
   UniqueArray<int> send_counts(comm_size);
   UniqueArray<int> send_indexes(comm_size);
@@ -117,13 +117,13 @@ _gatherVariable2(Span<const Type> send_buf,Array<Type>& recv_buf,Int32 rank)
   Span<const int> count_r(&my_buf_count,1);
 
   // Récupère le nombre d'éléments de chaque processeur
-  if (rank!=(-1))
+  if (rank!=A_NULL_RANK)
     mpGather(m_parallel_mng,count_r,send_counts,rank);
   else
     mpAllGather(m_parallel_mng,count_r,send_counts);
 
   // Remplit le tableau des index
-  if (rank==(-1) || rank==m_adapter->commRank()){
+  if (rank==A_NULL_RANK || rank==m_adapter->commRank()){
     Int64 index = 0;
     for( Integer i=0, is=comm_size; i<is; ++i ){
       send_indexes[i] = (int)index;
@@ -138,14 +138,25 @@ _gatherVariable2(Span<const Type> send_buf,Array<Type>& recv_buf,Int32 rank)
     Int64 total_elem = i64_total_elem;
     recv_buf.resize(total_elem);
   }
+  gatherVariable(send_buf,recv_buf,send_counts,send_indexes,rank);
+}
 
-  if (rank!=(-1)){
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class Type> void MpiTypeDispatcher<Type>::
+gatherVariable(Span<const Type> send_buf,Span<Type> recv_buf,Span<const Int32> send_counts,
+               Span<const Int32> displacements,Int32 rank)
+{
+  MPI_Datatype type = m_datatype->datatype();
+  Int32 nb_elem = send_buf.smallView().size();
+  if (rank!=A_NULL_RANK){
     m_adapter->gatherVariable(send_buf.data(),recv_buf.data(),send_counts.data(),
-                              send_indexes.data(),nb_elem,rank,type);
+                              displacements.data(),nb_elem,rank,type);
   }
   else{
     m_adapter->allGatherVariable(send_buf.data(),recv_buf.data(),send_counts.data(),
-                                 send_indexes.data(),nb_elem,type);
+                                 displacements.data(),nb_elem,type);
   }
 }
 
@@ -388,6 +399,72 @@ nonBlockingGather(Span<const Type> send_buf,Span<Type> recv_buf,Int32 rank)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+template<class Type> Request MpiTypeDispatcher<Type>::
+gather(GatherMessageInfo<Type>& gather_info)
+{
+  if (!gather_info.isValid())
+    return {};
+
+  bool is_blocking = gather_info.isBlocking();
+  MessageRank dest_rank = gather_info.destinationRank();
+  bool is_all_variant = dest_rank.isNull();
+  MessageRank my_rank(m_parallel_mng->commRank());
+
+  auto send_buf = gather_info.sendBuffer();
+
+  // GatherVariable avec envoi gather préliminaire pour connaitre la taille
+  // que doit envoyer chaque rang.
+  if (gather_info.mode()==GatherMessageInfoBase::Mode::GatherVariableNeedComputeInfo) {
+    if (!is_blocking)
+      ARCCORE_THROW(NotSupportedException,"non blocking version of AllGatherVariable or GatherVariable with compute info");
+    Array<Type>* receive_array = gather_info.localReceptionBuffer();
+    if (is_all_variant){
+      if (!receive_array)
+        ARCCORE_FATAL("local reception buffer is null");
+      this->allGatherVariable(send_buf, *receive_array);
+    }
+    else{
+      UniqueArray<Type> unused_array;
+      if (dest_rank==my_rank)
+        this->gatherVariable(send_buf, *receive_array, dest_rank.value());
+      else
+        this->gatherVariable(send_buf, unused_array, dest_rank.value());
+    }
+    return {};
+  }
+
+  // GatherVariable classique avec connaissance du déplacement et des tailles
+  if (gather_info.mode() == GatherMessageInfoBase::Mode::GatherVariable) {
+    if (!is_blocking)
+      ARCCORE_THROW(NotImplementedException, "non blocking version of AllGatherVariable or GatherVariable");
+    auto receive_buf = gather_info.receiveBuffer();
+    auto displacements = gather_info.receiveDisplacement();
+    auto receive_counts = gather_info.receiveCounts();
+    gatherVariable(send_buf, receive_buf, receive_counts, displacements, dest_rank.value());
+    return {};
+  }
+
+  // Gather classique
+  if (gather_info.mode() == GatherMessageInfoBase::Mode::Gather) {
+    auto receive_buf = gather_info.receiveBuffer();
+    if (is_blocking) {
+      if (is_all_variant)
+        this->allGather(send_buf, receive_buf);
+      else
+        this->gather(send_buf, receive_buf, dest_rank.value());
+      return {};
+    }
+    else{
+      if (is_all_variant)
+        return this->nonBlockingAllGather(send_buf, receive_buf);
+      else
+        return this->nonBlockingGather(send_buf, receive_buf, dest_rank.value());
+    }
+  }
+
+  ARCCORE_THROW(NotImplementedException,"Unknown type() for GatherMessageInfo");
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -396,4 +473,4 @@ nonBlockingGather(Span<const Type> send_buf,Span<Type> recv_buf,Int32 rank)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif
