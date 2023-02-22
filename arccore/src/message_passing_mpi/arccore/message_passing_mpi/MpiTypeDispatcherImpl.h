@@ -108,8 +108,6 @@ gatherVariable(Span<const Type> send_buf,Array<Type>& recv_buf,Int32 rank)
 template<class Type> void MpiTypeDispatcher<Type>::
 _gatherVariable2(Span<const Type> send_buf,Array<Type>& recv_buf,Int32 rank)
 {
-  MPI_Datatype type = m_datatype->datatype();
-
   Int32 comm_size = m_parallel_mng->commSize();
   UniqueArray<int> send_counts(comm_size);
   UniqueArray<int> send_indexes(comm_size);
@@ -140,14 +138,25 @@ _gatherVariable2(Span<const Type> send_buf,Array<Type>& recv_buf,Int32 rank)
     Int64 total_elem = i64_total_elem;
     recv_buf.resize(total_elem);
   }
+  gatherVariable(send_buf,recv_buf,send_counts,send_indexes,rank);
+}
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class Type> void MpiTypeDispatcher<Type>::
+gatherVariable(Span<const Type> send_buf,Span<Type> recv_buf,Span<const Int32> send_counts,
+               Span<const Int32> displacements,Int32 rank)
+{
+  MPI_Datatype type = m_datatype->datatype();
+  Int32 nb_elem = send_buf.smallView().size();
   if (rank!=A_NULL_RANK){
     m_adapter->gatherVariable(send_buf.data(),recv_buf.data(),send_counts.data(),
-                              send_indexes.data(),nb_elem,rank,type);
+                              displacements.data(),nb_elem,rank,type);
   }
   else{
     m_adapter->allGatherVariable(send_buf.data(),recv_buf.data(),send_counts.data(),
-                                 send_indexes.data(),nb_elem,type);
+                                 displacements.data(),nb_elem,type);
   }
 }
 
@@ -401,10 +410,13 @@ gather(GatherMessageInfo<Type>& gather_info)
   bool is_all_variant = dest_rank.isNull();
   MessageRank my_rank(m_parallel_mng->commRank());
 
+  auto send_buf = gather_info.sendBuffer();
+
+  // GatherVariable avec envoi gather préliminaire pour connaitre la taille
+  // que doit envoyer chaque rang.
   if (gather_info.type()==GatherMessageInfoBase::Type::T_GatherVariableNeedComputeInfo) {
     if (!is_blocking)
-      ARCCORE_THROW(NotSupportedException,"non blocking version of AllGatherVariable with compute info");
-    auto send_buf = gather_info.sendBuffer();
+      ARCCORE_THROW(NotSupportedException,"non blocking version of AllGatherVariable or GatherVariable with compute info");
     Array<Type>* receive_array = gather_info.localReceptionBuffer();
     if (is_all_variant){
       if (!receive_array)
@@ -420,19 +432,38 @@ gather(GatherMessageInfo<Type>& gather_info)
     }
     return {};
   }
-  if (gather_info.type()==GatherMessageInfoBase::Type::T_GatherVariable) {
-    ARCCORE_THROW(NotImplementedException,"Simple gather variable");
+
+  // GatherVariable classique avec connaissance du déplacement et des tailles
+  if (gather_info.type() == GatherMessageInfoBase::Type::T_GatherVariable) {
+    if (!is_blocking)
+      ARCCORE_THROW(NotImplementedException, "non blocking version of AllGatherVariable or GatherVariable");
+    auto receive_buf = gather_info.receiveBuffer();
+    auto displacements = gather_info.receiveDisplacement();
+    auto receive_counts = gather_info.receiveCounts();
+    gatherVariable(send_buf, receive_buf, receive_counts, displacements, dest_rank.value());
+    return {};
   }
 
-  if (gather_info.type()==GatherMessageInfoBase::Type::T_Gather) {
-    ARCCORE_THROW(NotImplementedException,"Gather");
+  // Gather classique
+  if (gather_info.type() == GatherMessageInfoBase::Type::T_Gather) {
+    auto receive_buf = gather_info.receiveBuffer();
+    if (is_blocking) {
+      if (is_all_variant)
+        this->allGather(send_buf, receive_buf);
+      else
+        this->gather(send_buf, receive_buf, dest_rank.value());
+      return {};
+    }
+    else{
+      if (is_all_variant)
+        return this->nonBlockingAllGather(send_buf, receive_buf);
+      else
+        return this->nonBlockingGather(send_buf, receive_buf, dest_rank.value());
+    }
   }
 
-  ARCCORE_THROW(NotImplementedException,"Generic gather for MPI");
+  ARCCORE_THROW(NotImplementedException,"Unknown type() for GatherMessageInfo");
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
