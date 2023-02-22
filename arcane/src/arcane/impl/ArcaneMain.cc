@@ -99,6 +99,7 @@ namespace Arcane
 class ArcaneMainStaticInfo
 {
  public:
+
   List<IServiceFactoryInfo*> m_service_factory_infos;
   List<IModuleFactoryInfo*> m_module_factory_infos;
   List<IApplicationBuildInfoVisitor*> m_application_build_info_visitors;
@@ -111,7 +112,7 @@ class ArcaneMainStaticInfo
   IDirectSubDomainExecuteFunctor* m_direct_exec_functor = nullptr;
   std::atomic<Int32> m_nb_autodetect = 0;
 };
-}
+} // namespace Arcane
 
 namespace
 {
@@ -128,13 +129,12 @@ void _deleteStaticInfo()
   delete global_static_info;
   global_static_info = nullptr;
 }
-}
+} // namespace
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C"
-void arcaneEndProgram()
+extern "C" void arcaneEndProgram()
 {
   // Juste la pour faire un point d'entrée à third.
 }
@@ -142,10 +142,9 @@ void arcaneEndProgram()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C"
-{
-  typedef void (*fSignalFunc)(int);
-  void arcaneSignalHandler(int);
+extern "C" {
+typedef void (*fSignalFunc)(int);
+void arcaneSignalHandler(int);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -167,7 +166,7 @@ extern "C++" ARCANE_UTILS_EXPORT void
 initializeStringConverter();
 
 extern "C++" ARCANE_IMPL_EXPORT IArcaneMain*
-createArcaneMainBatch(const ApplicationInfo& exe_info,IMainFactory*);
+createArcaneMainBatch(const ApplicationInfo& exe_info, IMainFactory*);
 
 extern "C++" ARCANE_IMPL_EXPORT IDynamicLibraryLoader*
 createGlibDynamicLibraryLoader();
@@ -190,8 +189,8 @@ class ArcaneBatchMainFactory
  public:
 
   IArcaneMain* createArcaneMain(const ApplicationInfo& app_info) override
-  { 
-    return createArcaneMainBatch(app_info,this);
+  {
+    return createArcaneMainBatch(app_info, this);
   }
 };
 
@@ -201,19 +200,24 @@ class ArcaneBatchMainFactory
 class ArcaneMain::Impl
 {
  public:
+
   Impl(const ApplicationInfo& infos)
-  : m_app_info(infos),
-    m_application_build_info(ArcaneMain::defaultApplicationBuildInfo()),
-    m_dotnet_info(ArcaneMain::defaultDotNetRuntimeInitialisationInfo()),
-    m_accelerator_info(ArcaneMain::defaultAcceleratorRuntimeInitialisationInfo())
+  : m_app_info(infos)
+  , m_application_build_info(ArcaneMain::defaultApplicationBuildInfo())
+  , m_dotnet_info(ArcaneMain::defaultDotNetRuntimeInitialisationInfo())
+  , m_accelerator_info(ArcaneMain::defaultAcceleratorRuntimeInitialisationInfo())
   {}
-  Impl(const ApplicationInfo& infos,const ApplicationBuildInfo& build_infos,
+  Impl(const ApplicationInfo& infos, const ApplicationBuildInfo& build_infos,
        const DotNetRuntimeInitialisationInfo& dotnet_info,
        const AcceleratorRuntimeInitialisationInfo& accelerator_info)
-  : m_app_info(infos), m_application_build_info(build_infos),
-    m_dotnet_info(dotnet_info), m_accelerator_info(accelerator_info)
+  : m_app_info(infos)
+  , m_application_build_info(build_infos)
+  , m_dotnet_info(dotnet_info)
+  , m_accelerator_info(accelerator_info)
   {}
+
  public:
+
   ApplicationInfo m_app_info;
   ApplicationBuildInfo m_application_build_info;
   DotNetRuntimeInitialisationInfo m_dotnet_info;
@@ -232,8 +236,8 @@ redirectSignals()
 {
   bool redirect_signals = true;
   String rv = platform::getEnvironmentVariable("ARCANE_REDIRECT_SIGNALS");
-  (void)builtInGetValue(redirect_signals,rv);
-  if (redirect_signals){
+  (void)builtInGetValue(redirect_signals, rv);
+  if (redirect_signals) {
     arcaneRedirectSignals(arcaneSignalHandler);
   }
 }
@@ -263,12 +267,15 @@ class ArcaneMainExecFunctor
 : public IFunctor
 {
  public:
-  ArcaneMainExecFunctor(const ApplicationInfo& app_info,IArcaneMain* exec_main)
-  : m_app_info(app_info),
-    m_exec_main(exec_main)
+
+  ArcaneMainExecFunctor(const ApplicationInfo& app_info, IArcaneMain* exec_main)
+  : m_app_info(app_info)
+  , m_exec_main(exec_main)
   {
   }
+
  public:
+
   void executeFunctor() override
   {
     StringList args;
@@ -276,7 +283,9 @@ class ArcaneMainExecFunctor
     if (!m_exec_main->parseArgs(args))
       m_exec_main->execute();
   }
+
  private:
+
   const ApplicationInfo& m_app_info;
   IArcaneMain* m_exec_main;
 };
@@ -292,10 +301,11 @@ class ArcaneMainExecFunctor
 class ArcaneMainAutoDetectRuntimeHelper
 {
  public:
+
   Int32 check()
   {
     auto* x = _staticInfo();
-    if (x->m_nb_autodetect>0)
+    if (x->m_nb_autodetect > 0)
       return m_return_value;
 
     // TODO: rendre thread-safe
@@ -307,7 +317,9 @@ class ArcaneMainAutoDetectRuntimeHelper
     }
     return m_return_value;
   }
+
  public:
+
   Int32 m_return_value = 0;
 };
 
@@ -334,15 +346,15 @@ initialize()
   ArcaneMain::redirectSignals();
 
   // Création de la classe d'exécution
-  try{
-    if (m_has_build_info){
-      ArcaneMain* x = new ArcaneMain(m_app_info,m_main_factory,
+  try {
+    if (m_has_build_info) {
+      ArcaneMain* x = new ArcaneMain(m_app_info, m_main_factory,
                                      m_application_build_info,
                                      ArcaneMain::defaultDotNetRuntimeInitialisationInfo(),
                                      ArcaneMain::defaultAcceleratorRuntimeInitialisationInfo());
       m_exec_main = x;
     }
-    else{
+    else {
       m_exec_main = m_main_factory->createArcaneMain(m_app_info);
     }
     m_exec_main->build();
@@ -350,17 +362,17 @@ initialize()
     m_exec_main->initialize();
     IArcaneMain::setArcaneMain(m_exec_main);
   }
-  catch(const ArithmeticException& ex){
+  catch (const ArithmeticException& ex) {
     cerr << "** CATCH ARITHMETIC_EXCEPTION\n";
-    return arcanePrintArcaneException(ex,nullptr);
+    return arcanePrintArcaneException(ex, nullptr);
   }
-  catch(const Exception& ex){
-    return arcanePrintArcaneException(ex,nullptr);
+  catch (const Exception& ex) {
+    return arcanePrintArcaneException(ex, nullptr);
   }
-  catch(const std::exception& ex){
-    return arcanePrintStdException(ex,nullptr);
+  catch (const std::exception& ex) {
+    return arcanePrintStdException(ex, nullptr);
   }
-  catch(...){
+  catch (...) {
     return arcanePrintAnyException(nullptr);
   }
 
@@ -376,7 +388,7 @@ initialize()
   try {
     IApplication* app = m_exec_main->application();
     ITraceMng* trace = app->traceMng();
-    IParallelSuperMng * parallel_super_mng = app->parallelSuperMng();
+    IParallelSuperMng* parallel_super_mng = app->parallelSuperMng();
     trace->info() << "Initializing license manager";
     FlexLMMng::instance()->init(parallel_super_mng);
 
@@ -389,7 +401,7 @@ initialize()
     //         license_tool.getLicense(ArcaneFeatureModel::ArcaneParallel,commSize);
     //       }
   }
-  catch(const Exception& ex){
+  catch (const Exception& ex) {
     IApplication* app = m_exec_main->application();
     ITraceMng* trace = app->traceMng();
     m_ret_val = arcanePrintArcaneException(ex, trace);
@@ -407,24 +419,24 @@ initialize()
 void ArcaneMainExecInfo::
 execute()
 {
-  if (m_ret_val!=0)
+  if (m_ret_val != 0)
     return;
 
   if (m_direct_exec_functor)
     m_exec_main->setDirectExecuteFunctor(m_direct_exec_functor);
 
-  ArcaneMainExecFunctor exec_functor(m_app_info,m_exec_main);
-  if (ArcaneMain::m_exec_override_functor){
+  ArcaneMainExecFunctor exec_functor(m_app_info, m_exec_main);
+  if (ArcaneMain::m_exec_override_functor) {
     // Obsolète. Ne plus utiliser.
     IApplication* app = m_exec_main->application();
     ArcaneMain::m_exec_override_functor->m_application = app;
     ITraceMng* trace = app->traceMng();
     trace->info() << "Calling overriding functor";
     m_ret_val = ArcaneMain::callFunctorWithCatchedException(ArcaneMain::m_exec_override_functor->functor(),
-                                                            m_exec_main,&m_clean_abort,true);
+                                                            m_exec_main, &m_clean_abort, true);
   }
   else
-    m_ret_val = ArcaneMain::callFunctorWithCatchedException(&exec_functor,m_exec_main,&m_clean_abort,true);
+    m_ret_val = ArcaneMain::callFunctorWithCatchedException(&exec_functor, m_exec_main, &m_clean_abort, true);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -436,16 +448,15 @@ finalize()
   // Si l'exécution s'est bien déroulée mais que l'utilisateur a spécifié un
   // code d'erreur, on le récupère.
   int exe_error_code = m_exec_main->errorCode();
-  if (m_ret_val==0 && exe_error_code!=0){
+  if (m_ret_val == 0 && exe_error_code != 0) {
     m_ret_val = exe_error_code;
   }
-  else
-    if (m_ret_val!=0)
-      m_exec_main->setErrorCode(m_ret_val);
+  else if (m_ret_val != 0)
+    m_exec_main->setErrorCode(m_ret_val);
 
   m_exec_main->finalize();
 
-  if (m_ret_val!=0 && !m_clean_abort)
+  if (m_ret_val != 0 && !m_clean_abort)
     m_exec_main->doAbort();
 
   // Destruction du code.
@@ -466,14 +477,14 @@ finalize()
  * \internal
  */
 int ArcaneMain::
-_arcaneMain(const ApplicationInfo& app_info,IMainFactory* factory)
+_arcaneMain(const ApplicationInfo& app_info, IMainFactory* factory)
 {
   if (!factory)
     return 5;
 
-  ArcaneMainExecInfo exec_info(app_info,factory);
+  ArcaneMainExecInfo exec_info(app_info, factory);
   int r = exec_info.initialize();
-  if (r!=0)
+  if (r != 0)
     return r;
 
   IDirectSubDomainExecuteFunctor* func = _staticInfo()->m_direct_exec_functor;
@@ -489,8 +500,8 @@ _arcaneMain(const ApplicationInfo& app_info,IMainFactory* factory)
 /*---------------------------------------------------------------------------*/
 
 int ArcaneMain::
-callFunctorWithCatchedException(IFunctor* functor,IArcaneMain* exec_main,
-                                bool* clean_abort,bool is_print)
+callFunctorWithCatchedException(IFunctor* functor, IArcaneMain* exec_main,
+                                bool* clean_abort, bool is_print)
 {
   int ret_val = 0;
   *clean_abort = false;
@@ -498,77 +509,73 @@ callFunctorWithCatchedException(IFunctor* functor,IArcaneMain* exec_main,
   ITraceMng* trace = app->traceMng();
   bool is_parallel = app->parallelSuperMng()->isParallel();
   bool is_master = app->parallelSuperMng()->isMasterIO();
-  try{
+  try {
     functor->executeFunctor();
   }
-  catch(const FatalErrorException& ex)
-  {
-    if (ex.isCollective()){
-      if (is_parallel){
+  catch (const FatalErrorException& ex) {
+    if (ex.isCollective()) {
+      if (is_parallel) {
         *clean_abort = true;
         ret_val = 5;
-        if (is_master && is_print){
+        if (is_master && is_print) {
           std::ofstream ofile("fatal");
           ofile << ret_val << '\n';
           ofile.flush();
           trace->error() << "ParallelFatalErrorException caught in ArcaneMain::callFunctor: " << ex << '\n';
         }
       }
-      else{
+      else {
         trace->error() << "ParallelFatalErrorException caught in ArcaneMain::callFunctor: " << ex << '\n';
         ret_val = 4;
       }
     }
-    else{
+    else {
       trace->error() << Trace::Color::red() << "FatalErrorException caught in ArcaneMain::callFunctor: " << ex << '\n';
       ret_val = 4;
     }
   }
-  catch(const SignalException& ex)
-    {
-      trace->error() << "SignalException caught in ArcaneMain::callFunctor: " << ex << '\n';
-      ret_val = 6;
-    }
-  catch(const TimeoutException& ex)
-    {
-      trace->error() << "TimeoutException caught in ArcaneMain::callFunctor: " << ex << '\n';
-      ret_val = 7;
-    }
-  catch(const ParallelFatalErrorException& ex)
-    {
-      // TODO: utiliser le code de FatalErrorException en mode collectif.n
-      if (is_parallel){
-        *clean_abort = true;
-        ret_val = 5;
-        if (is_master && is_print){
-          std::ofstream ofile("fatal");
-          ofile << ret_val << '\n';
-          ofile.flush();
-          trace->error() << "ParallelFatalErrorException caught in ArcaneMain::callFunctor: " << ex << '\n';
-        }
-      }
-      else{
+  catch (const SignalException& ex) {
+    trace->error() << "SignalException caught in ArcaneMain::callFunctor: " << ex << '\n';
+    ret_val = 6;
+  }
+  catch (const TimeoutException& ex) {
+    trace->error() << "TimeoutException caught in ArcaneMain::callFunctor: " << ex << '\n';
+    ret_val = 7;
+  }
+  catch (const ParallelFatalErrorException& ex) {
+    // TODO: utiliser le code de FatalErrorException en mode collectif.n
+    if (is_parallel) {
+      *clean_abort = true;
+      ret_val = 5;
+      if (is_master && is_print) {
+        std::ofstream ofile("fatal");
+        ofile << ret_val << '\n';
+        ofile.flush();
         trace->error() << "ParallelFatalErrorException caught in ArcaneMain::callFunctor: " << ex << '\n';
-        ret_val = 4;
       }
     }
-  catch(const ArithmeticException& ex){
+    else {
+      trace->error() << "ParallelFatalErrorException caught in ArcaneMain::callFunctor: " << ex << '\n';
+      ret_val = 4;
+    }
+  }
+  catch (const ArithmeticException& ex) {
     cerr << "** ARITHMETIC EXCEPTION!\n";
-    ret_val = arcanePrintArcaneException(ex,trace);
-    if (ex.isCollective()){
+    ret_val = arcanePrintArcaneException(ex, trace);
+    if (ex.isCollective()) {
       *clean_abort = true;
     }
   }
-  catch(const Exception& ex){
-    ret_val = arcanePrintArcaneException(ex,trace);
-    if (ex.isCollective()){
+  catch (const Exception& ex) {
+    ret_val = arcanePrintArcaneException(ex, trace);
+    if (ex.isCollective()) {
       *clean_abort = true;
     }
   }
-  catch(const std::exception& ex){
-    ret_val = arcanePrintStdException(ex,trace);
+  catch (const std::exception& ex) {
+    ret_val = arcanePrintStdException(ex, trace);
   }
-  catch(...){
+  catch (...) {
     ret_val = arcanePrintAnyException(trace);
   }
   return ret_val;
@@ -590,7 +597,7 @@ _launchMissingInitException()
 void ArcaneMain::
 _checkHasInit()
 {
-  if (m_nb_arcane_init<=0)
+  if (m_nb_arcane_init <= 0)
     _launchMissingInitException();
 }
 
@@ -606,7 +613,7 @@ extern "C++" void arcaneExitCheckMemory();
 void ArcaneMain::
 setHasGarbageCollector()
 {
-  if (m_nb_arcane_init!=0){
+  if (m_nb_arcane_init != 0) {
     cerr << "WARNING: ArcaneMain::setHasGarbageCollector has to be called before arcaneInitialize\n";
     return;
   }
@@ -619,7 +626,7 @@ setHasGarbageCollector()
 void ArcaneMain::
 setHasDotNETRuntime()
 {
-  if (m_nb_arcane_init!=0){
+  if (m_nb_arcane_init != 0) {
     cerr << "WARNING: ArcaneMain::setHasDotNETRuntime has to be called before arcaneInitialize\n";
     return;
   }
@@ -670,7 +677,7 @@ void ArcaneMain::
 _checkCreateDynamicLibraryLoader()
 {
   auto x = platform::getDynamicLibraryLoader();
-  if (!x){
+  if (!x) {
     platform::setDynamicLibraryLoader(createGlibDynamicLibraryLoader());
     _setArcaneLibraryPath();
   }
@@ -684,7 +691,7 @@ arcaneInitialize()
 {
   // Le premier thread qui arrive ici fait l'init.
   // Les autres doivent attendre que l'init soit terminée.
-  if (m_nb_arcane_init.fetch_add(1)==0){
+  if (m_nb_arcane_init.fetch_add(1) == 0) {
     (void)_staticInfo();
     Exception::staticInit();
     dom::DOMImplementation::initialize();
@@ -700,7 +707,7 @@ arcaneInitialize()
   }
   else
     // Attend que le thread qui fait l'init ait terminé
-    while (m_is_init_done.load()==0)
+    while (m_is_init_done.load() == 0)
       ;
 }
 
@@ -712,7 +719,7 @@ arcaneFinalize()
 {
   _checkHasInit();
 
-  if (m_nb_arcane_init.fetch_sub(1)==1){
+  if (m_nb_arcane_init.fetch_sub(1) == 1) {
     _deleteStaticInfo();
 
     //! Supprime notre référence sur ItemGroupImpl::shared_null.
@@ -720,7 +727,7 @@ arcaneFinalize()
 
     {
       auto x = platform::getDynamicLibraryLoader();
-      if (x){
+      if (x) {
         x->closeLibraries();
         delete x;
       }
@@ -842,30 +849,30 @@ acceleratorRuntimeInitialisationInfo() const
 /*---------------------------------------------------------------------------*/
 
 int ArcaneMain::
-arcaneMain(const ApplicationInfo& app_info,IMainFactory* factory)
+arcaneMain(const ApplicationInfo& app_info, IMainFactory* factory)
 {
   _checkHasInit();
 
   ScopedPtrT<IMainFactory> default_factory;
-  if (!factory){
+  if (!factory) {
     factory = m_default_main_factory;
-    if (!factory){
+    if (!factory) {
       factory = new ArcaneBatchMainFactory();
     }
     default_factory = factory;
   }
 
-  int ret = _arcaneMain(app_info,factory);
+  int ret = _arcaneMain(app_info, factory);
 
   default_factory = nullptr;
-  
+
   // Le code d'erreur 5 représente une erreur en parallèle pour tous les
   // processeurs.
-  if (ret!=0 && ret!=5)
+  if (ret != 0 && ret != 5)
     cerr << "* Process return: " << ret << '\n';
-  if (ret==5)
+  if (ret == 5)
     ret = 4;
-    
+
   return ret;
 }
 
@@ -909,7 +916,7 @@ int ArcaneMain::
 run()
 {
   int r = _initRuntimes();
-  if (r!=0)
+  if (r != 0)
     return r;
 
   DotNetRuntimeInitialisationInfo& dotnet_info = defaultDotNetRuntimeInitialisationInfo();
@@ -917,25 +924,25 @@ run()
   // Si on arrive ici et que le runtime C# est déjà chargé
   // (parce que le Main est en C# par exemple), on ne lance pas le wrapper
   bool is_in_dotnet = platform::hasDotNETRuntime();
-  if (!is_in_dotnet && dotnet_info.isUsingDotNetRuntime()){
+  if (!is_in_dotnet && dotnet_info.isUsingDotNetRuntime()) {
     r = _runDotNet();
     // Avant la version 3.7.8 on n'appelait par arcaneFinalize() car cela pouvait
     // poser des problèmes avec le Garbage Collector de '.Net'. Normalement ces
     // problèmes sont corrigés mais on autorisele comportement d'avant au cas où.
     bool do_finalize = false;
-    String  x = platform::getEnvironmentVariable("ARCANE_DOTNET_USE_LEGACY_DESTROY");
-    if (x=="1")
+    String x = platform::getEnvironmentVariable("ARCANE_DOTNET_USE_LEGACY_DESTROY");
+    if (x == "1")
       do_finalize = false;
-    if (x=="0")
+    if (x == "0")
       do_finalize = true;
     arcaneFinalize();
   }
-  else{
+  else {
     arcaneInitialize();
-    r = arcaneMain(defaultApplicationInfo(),nullptr);
+    r = arcaneMain(defaultApplicationInfo(), nullptr);
     arcaneFinalize();
   }
-  if (r!=0)
+  if (r != 0)
     return r;
   return _checkTestLoggerResult();
 }
@@ -955,7 +962,7 @@ _runDotNet()
   // appeler la méthode 'arcane_mono_main' qui se trouve
   // dans la bibliothèque dynamique 'arcane_mono'.
 
-  typedef int (*DotNetMainFunctor)(const CommandLineArguments& cmd_args,const String& assembly_name);
+  typedef int (*DotNetMainFunctor)(const CommandLineArguments& cmd_args, const String& assembly_name);
 
   const ApplicationInfo& app_info = defaultApplicationInfo();
   const DotNetRuntimeInitialisationInfo& dotnet_info = defaultDotNetRuntimeInitialisationInfo();
@@ -963,7 +970,7 @@ _runDotNet()
   DotNetMainFunctor my_functor = nullptr;
   String os_dir(si->m_arcane_lib_path);
 
-  try{
+  try {
     _checkCreateDynamicLibraryLoader();
 
     IDynamicLibraryLoader* dll_loader = platform::getDynamicLibraryLoader();
@@ -975,42 +982,42 @@ _runDotNet()
 
     String runtime_name = dotnet_info.embeddedRuntime();
 
-    if (runtime_name.null() || runtime_name=="mono")
+    if (runtime_name.null() || runtime_name == "mono")
       // Mono est le défaut si rien n'est spécifié.
       ;
-    else if (runtime_name=="coreclr"){
+    else if (runtime_name == "coreclr") {
       dll_name = "arcane_dotnet_coreclr";
       symbol_name = "arcane_dotnet_coreclr_main";
     }
     else
-      ARCANE_FATAL("Unknown '.Net' runtime '{0}'. Valid values are 'mono' or 'coreclr'",runtime_name);
+      ARCANE_FATAL("Unknown '.Net' runtime '{0}'. Valid values are 'mono' or 'coreclr'", runtime_name);
 
-    IDynamicLibrary* dl = dll_loader->open(os_dir,dll_name);
+    IDynamicLibrary* dl = dll_loader->open(os_dir, dll_name);
     if (!dl)
-      ARCANE_FATAL("Can not found dynamic library '{0}' for using .Net",dll_name);
+      ARCANE_FATAL("Can not found dynamic library '{0}' for using .Net", dll_name);
 
     bool is_found = false;
-    void* functor_addr = dl->getSymbolAddress(symbol_name,&is_found);
+    void* functor_addr = dl->getSymbolAddress(symbol_name, &is_found);
     if (!is_found)
-      ARCANE_FATAL("Can not find symbol '{0}' in library '{1}'",symbol_name,dll_name);
+      ARCANE_FATAL("Can not find symbol '{0}' in library '{1}'", symbol_name, dll_name);
 
     my_functor = reinterpret_cast<DotNetMainFunctor>(functor_addr);
   }
-  catch(const Exception& ex){
-    return arcanePrintArcaneException(ex,nullptr);
+  catch (const Exception& ex) {
+    return arcanePrintArcaneException(ex, nullptr);
   }
-  catch(const std::exception& ex){
-    return arcanePrintStdException(ex,nullptr);
+  catch (const std::exception& ex) {
+    return arcanePrintStdException(ex, nullptr);
   }
-  catch(...){
+  catch (...) {
     return arcanePrintAnyException(nullptr);
   }
 
-  if (my_functor){
+  if (my_functor) {
     const CommandLineArguments& cmd_args = app_info.commandLineArguments();
     // TODO: vérifier que l'assembly 'Arcane.Main.dll' existe bien.
     String new_name = os_dir + "/Arcane.Main.dll";
-    return (*my_functor)(cmd_args,new_name);
+    return (*my_functor)(cmd_args, new_name);
   }
   return (-1);
 }
@@ -1038,12 +1045,12 @@ _checkAutoDetectMPI()
   String os_dir(si->m_arcane_lib_path);
   String dll_name = "arcane_mpi";
   String symbol_name = "arcaneAutoDetectMessagePassingServiceMPI";
-  IDynamicLibrary* dl = dll_loader->open(os_dir,dll_name);
+  IDynamicLibrary* dl = dll_loader->open(os_dir, dll_name);
   if (!dl)
     return;
 
   bool is_found = false;
-  void* functor_addr = dl->getSymbolAddress(symbol_name,&is_found);
+  void* functor_addr = dl->getSymbolAddress(symbol_name, &is_found);
   if (!is_found)
     return;
 
@@ -1071,10 +1078,10 @@ _checkAutoDetectAccelerator()
   if (runtime_name.empty())
     return 0;
 
-  try{
+  try {
     // Pour l'instant, seul le runtime 'cuda' est autorisé
-    if (runtime_name!="cuda" && runtime_name!="hip")
-      ARCANE_FATAL("Invalid accelerator runtime '{0}'. Only 'cuda' or 'hip' is allowed",runtime_name);
+    if (runtime_name != "cuda" && runtime_name != "hip")
+      ARCANE_FATAL("Invalid accelerator runtime '{0}'. Only 'cuda' or 'hip' is allowed", runtime_name);
 
     // Pour pouvoir automatiquement enregisrer un runtime accélérateur de nom \a NAME,
     // il faut appeler la méthode 'arcaneRegisterAcceleratorRuntime${NAME}' qui se trouve
@@ -1091,25 +1098,25 @@ _checkAutoDetectAccelerator()
     String os_dir(si->m_arcane_lib_path);
     String dll_name = "arcane_accelerator_" + runtime_name + "_runtime";
     String symbol_name = "arcaneRegisterAcceleratorRuntime" + runtime_name;
-    IDynamicLibrary* dl = dll_loader->open(os_dir,dll_name);
+    IDynamicLibrary* dl = dll_loader->open(os_dir, dll_name);
     if (!dl)
-      ARCANE_FATAL("Can not found dynamic library '{0}' for using accelerator runtime",dll_name);
+      ARCANE_FATAL("Can not found dynamic library '{0}' for using accelerator runtime", dll_name);
 
     bool is_found = false;
-    void* functor_addr = dl->getSymbolAddress(symbol_name,&is_found);
+    void* functor_addr = dl->getSymbolAddress(symbol_name, &is_found);
     if (!is_found || !functor_addr)
-      ARCANE_FATAL("Can not find symbol '{0}' in library '{1}'",symbol_name,dll_name);
+      ARCANE_FATAL("Can not find symbol '{0}' in library '{1}'", symbol_name, dll_name);
 
     auto my_functor = reinterpret_cast<ArcaneAutoDetectAcceleratorFunctor>(functor_addr);
     (*my_functor)();
   }
-  catch(const Exception& ex){
-    return arcanePrintArcaneException(ex,nullptr);
+  catch (const Exception& ex) {
+    return arcanePrintArcaneException(ex, nullptr);
   }
-  catch(const std::exception& ex){
-    return arcanePrintStdException(ex,nullptr);
+  catch (const std::exception& ex) {
+    return arcanePrintStdException(ex, nullptr);
   }
-  catch(...){
+  catch (...) {
     return arcanePrintAnyException(nullptr);
   }
   return 0;
@@ -1128,7 +1135,7 @@ ArcaneMainExecutionOverrideFunctor* ArcaneMain::m_exec_override_functor = nullpt
 /*---------------------------------------------------------------------------*/
 
 ArcaneMain::
-ArcaneMain(const ApplicationInfo& app_info,IMainFactory* factory)
+ArcaneMain(const ApplicationInfo& app_info, IMainFactory* factory)
 : m_p(new Impl(app_info))
 , m_main_factory(factory)
 {
@@ -1138,11 +1145,11 @@ ArcaneMain(const ApplicationInfo& app_info,IMainFactory* factory)
 /*---------------------------------------------------------------------------*/
 
 ArcaneMain::
-ArcaneMain(const ApplicationInfo& app_info,IMainFactory* factory,
+ArcaneMain(const ApplicationInfo& app_info, IMainFactory* factory,
            const ApplicationBuildInfo& app_build_info,
            const DotNetRuntimeInitialisationInfo& dotnet_info,
            const AcceleratorRuntimeInitialisationInfo& accelerator_info)
-: m_p(new Impl(app_info,app_build_info,dotnet_info,accelerator_info))
+: m_p(new Impl(app_info, app_build_info, dotnet_info, accelerator_info))
 , m_main_factory(factory)
 {
 }
@@ -1192,7 +1199,7 @@ _parseApplicationBuildInfoArgs()
   // Appelle les visiteurs enregistrés.
   {
     auto& x = _staticInfo()->m_application_build_info_visitors;
-    for( IApplicationBuildInfoVisitor* v : x){
+    for (IApplicationBuildInfoVisitor* v : x) {
       if (v)
         v->visit(abi);
     }
@@ -1255,10 +1262,10 @@ void ArcaneMain::
 setErrorCode(int errcode)
 {
   m_error_code = errcode;
-  if (errcode!=0){
+  if (errcode != 0) {
     // Seul le proc maitre écrit le fichier sauf s'il s'agit d'un fatal car
     // dans ce cas n'importe quel PE peut le faire.
-    if (ArcaneMain::m_is_master_io || errcode==4){
+    if (ArcaneMain::m_is_master_io || errcode == 4) {
       String errname = "fatal_" + String::fromNumber(errcode);
       std::ofstream ofile(errname.localstr());
       ofile.close();
@@ -1288,36 +1295,36 @@ parseArgs(StringList args)
   String us_arcane_database("arcane_database");
 
   StringList unknown_args;
-  for( Integer i=0, s=args.count(); i<s; ++i ){
-    if (args[i].startsWith("-A")){
+  for (Integer i = 0, s = args.count(); i < s; ++i) {
+    if (args[i].startsWith("-A")) {
       continue;
     }
-    if (args[i]!=us_arcane_opt){
+    if (args[i] != us_arcane_opt) {
       unknown_args.add(args[i]);
       continue;
     }
     bool is_valid_opt = false;
     ++i;
     String str;
-    if (i<s)
+    if (i < s)
       str = args[i];
-    if (str==us_arcane_internal){
+    if (str == us_arcane_internal) {
       arcane_internal = true;
       is_valid_opt = true;
     }
-    if (str==us_arcane_all_internal){
+    if (str == us_arcane_all_internal) {
       arcane_all_internal = true;
       is_valid_opt = true;
     }
-    if (str==us_arcane_database){
+    if (str == us_arcane_database) {
       arcane_database = true;
       is_valid_opt = true;
     }
-    if (str==us_help){
+    if (str == us_help) {
       arcane_help = true;
       is_valid_opt = true;
     }
-    if (!is_valid_opt){
+    if (!is_valid_opt) {
       // Si l'option n'est pas valide, la rajoute à la liste des options
       // non traitées
       unknown_args.add(us_arcane_opt);
@@ -1326,32 +1333,32 @@ parseArgs(StringList args)
       //trace->fatal() << "Unknown arcane option <" << str << ">\n";
     }
   }
-  
+
   bool do_stop = false;
-  if (arcane_database){
+  if (arcane_database) {
     InternalInfosDumper dumper(application());
     dumper.dumpArcaneDatabase();
     do_stop = true;
   }
-  if (arcane_internal){
+  if (arcane_internal) {
     InternalInfosDumper dumper(application());
     dumper.dumpInternalInfos();
     do_stop = true;
   }
-  if (arcane_all_internal){
+  if (arcane_all_internal) {
     InternalInfosDumper dumper(application());
     dumper.dumpInternalAllInfos();
     do_stop = true;
   }
-  if (arcane_help){
+  if (arcane_help) {
     _dumpHelp();
     do_stop = true;
   }
 
   args.clear();
-  for( StringList::Enumerator i(unknown_args); ++i; )
+  for (StringList::Enumerator i(unknown_args); ++i;)
     args.add(*i);
-  
+
   return do_stop;
 }
 
@@ -1362,7 +1369,7 @@ void ArcaneMain::
 _dumpHelp()
 {
   // Utilise un multimap car plusieurs services peuvent avoir le même nom.
-  typedef std::multimap<String,IServiceInfo*> ServiceList;
+  typedef std::multimap<String, IServiceInfo*> ServiceList;
   ServiceList service_list;
   Integer max_name_size = 0;
 
@@ -1370,64 +1377,75 @@ _dumpHelp()
     // On veut lister par IServiceInfo. Comme il est possible qu'un service ait plusieurs
     // fabriques, on filtre grâce à done_set.
     std::set<IServiceInfo*> done_set;
-    for( ServiceFactory2Collection::Enumerator j(application()->serviceFactories2()); ++j; ){
+    for (ServiceFactory2Collection::Enumerator j(application()->serviceFactories2()); ++j;) {
       IServiceInfo* si = (*j)->serviceInfo();
-      if (done_set.find(si)!=done_set.end()){
+      if (done_set.find(si) != done_set.end()) {
         continue;
       }
       done_set.insert(si);
       const String& name = si->localName();
-      max_name_size = math::max(max_name_size,CheckedConvert::toInteger(name.length()));
-      service_list.insert(std::make_pair(name,si));
+      max_name_size = math::max(max_name_size, CheckedConvert::toInteger(name.length()));
+      service_list.insert(std::make_pair(name, si));
     }
   }
 
   UniqueArray<String> module_names;
-  for( EnumeratorT<IModuleFactoryInfo*> e = application()->moduleFactoryInfos(); ++e ; ){
+  for (EnumeratorT<IModuleFactoryInfo*> e = application()->moduleFactoryInfos(); ++e;) {
     IModuleFactoryInfo* mfi = (*e);
     const String& name = mfi->moduleName();
-    max_name_size = math::max(max_name_size,CheckedConvert::toInteger(name.length()));
+    max_name_size = math::max(max_name_size, CheckedConvert::toInteger(name.length()));
     module_names.add(name);
   }
-  
-  ITraceMng * trace = application()->traceMng();
+
+  ITraceMng* trace = application()->traceMng();
   trace->info() << " ";
   trace->info() << std::setw(max_name_size) << "Module List";
-  trace->info() << std::setw(max_name_size) << "-------------" << "--";
-  for( int i=0, n=module_names.size(); i<n; ++i ){
+  trace->info() << std::setw(max_name_size) << "-------------"
+                << "--";
+  for (int i = 0, n = module_names.size(); i < n; ++i) {
     trace->info() << std::setw(max_name_size) << module_names[i];
   }
 
   trace->info() << " ";
   trace->info() << std::setw(max_name_size) << "Service List";
-  trace->info() << std::setw(max_name_size) << "--------------" << "--";
-  for( ServiceList::const_iterator i = service_list.begin(); i != service_list.end(); ++i) {
+  trace->info() << std::setw(max_name_size) << "--------------"
+                << "--";
+  for (ServiceList::const_iterator i = service_list.begin(); i != service_list.end(); ++i) {
     IServiceInfo* si = i->second;
     OStringStream oss;
     oss() << std::setw(max_name_size) << i->first;
     StringCollection interfaces = si->implementedInterfaces();
     if (!interfaces.empty())
       oss() << " Implements : ";
-    for(EnumeratorT<String> e(interfaces.enumerator());++e;) {
+    for (EnumeratorT<String> e(interfaces.enumerator()); ++e;) {
       oss() << e.current() << "  ";
-    }      
+    }
     trace->info() << oss.str();
   }
 
   const Integer option_size = 20;
   trace->info() << " ";
   trace->info() << std::setw(max_name_size) << "Usage";
-  trace->info() << std::setw(max_name_size) << "-------" << "--";
+  trace->info() << std::setw(max_name_size) << "-------"
+                << "--";
   trace->info() << application()->applicationName() << ".exe [-arcane_opt OPTION] dataset_file.arc";
   trace->info() << "Where OPTION is";
-  trace->info() << std::setw(option_size) <<                "help" << " : this help page and abort";
-  trace->info() << std::setw(option_size) <<     "arcane_internal" << " : save into a file internal Arcane informations and abort execution";
-  trace->info() << std::setw(option_size) << "arcane_all_internal" << " : save into a file timeloop informations and abort execution";
-  trace->info() << std::setw(option_size) <<     "arcane_database" << " : save internal database infos in file 'arcane_database.json'";
-  trace->info() << std::setw(option_size) <<           "init_only" << " : only run initialization step";
-  trace->info() << std::setw(option_size) <<            "continue" << " : continue an interrupted run";
-  trace->info() << std::setw(option_size) <<       "max_iteration" << " : define maximum iteration number";
-  trace->info() << std::setw(option_size) <<            "casename" << " : define case name";
+  trace->info() << std::setw(option_size) << "help"
+                << " : this help page and abort";
+  trace->info() << std::setw(option_size) << "arcane_internal"
+                << " : save into a file internal Arcane informations and abort execution";
+  trace->info() << std::setw(option_size) << "arcane_all_internal"
+                << " : save into a file timeloop informations and abort execution";
+  trace->info() << std::setw(option_size) << "arcane_database"
+                << " : save internal database infos in file 'arcane_database.json'";
+  trace->info() << std::setw(option_size) << "init_only"
+                << " : only run initialization step";
+  trace->info() << std::setw(option_size) << "continue"
+                << " : continue an interrupted run";
+  trace->info() << std::setw(option_size) << "max_iteration"
+                << " : define maximum iteration number";
+  trace->info() << std::setw(option_size) << "casename"
+                << " : define case name";
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1441,26 +1459,36 @@ extern "C" void
 arcaneSignalHandler(int val)
 {
   const char* signal_str = "Unknown";
-	bool is_alarm = false;
+  bool is_alarm = false;
   int written_signal_number = val;
 
-  switch(val){
-   case SIGSEGV: signal_str = "Segmentation Fault"; break;
-   case SIGFPE:  signal_str = "Floating exception"; break;
+  switch (val) {
+  case SIGSEGV:
+    signal_str = "Segmentation Fault";
+    break;
+  case SIGFPE:
+    signal_str = "Floating exception";
+    break;
 #ifdef SIGBUS
-   case SIGBUS:  signal_str = "Bus Error"; break;
+  case SIGBUS:
+    signal_str = "Bus Error";
+    break;
 #endif
 #ifdef SIGSYS
-   case SIGSYS:  signal_str = "System signal"; break;
+  case SIGSYS:
+    signal_str = "System signal";
+    break;
 #endif
 #ifdef SIGPIPE
-   case SIGPIPE: signal_str = "Broken pipe"; break;
+  case SIGPIPE:
+    signal_str = "Broken pipe";
+    break;
 #endif
 #ifdef SIGALRM
-   case SIGALRM:
-     signal_str = "Sigalarm";
-     is_alarm = true;
-     break;
+  case SIGALRM:
+    signal_str = "Sigalarm";
+    is_alarm = true;
+    break;
 #endif
 #ifdef SIGVTALRM
   case SIGVTALRM:
@@ -1481,15 +1509,15 @@ arcaneSignalHandler(int val)
   // seul le proc maitre le fait. Dans le cas des autres signaux, tout le monde
   // le fait.
   bool create_file = ArcaneMain::isMasterIO() || (!is_alarm);
-  if (create_file){
+  if (create_file) {
     // Crée le fichier 'signal_*' pour indiquer en parallèle qu'un
     // signal a été envoyé
     mode_t mode = S_IRUSR | S_IWUSR;
     char path[256];
-    sprintf(path,"signal_%d",written_signal_number);
+    sprintf(path, "signal_%d", written_signal_number);
     path[255] = '\0';
-    int fd = ::open(path, O_WRONLY|O_CREAT|O_TRUNC, mode);
-    if (fd!=(-1))
+    int fd = ::open(path, O_WRONLY | O_CREAT | O_TRUNC, mode);
+    if (fd != (-1))
       ::close(fd);
   }
 #endif
