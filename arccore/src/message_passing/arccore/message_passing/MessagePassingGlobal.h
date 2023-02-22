@@ -75,8 +75,9 @@ class IDispatchers;
 class Dispatchers;
 class IProfiler;
 class IControlDispatcher;
-template<class DataType>
-class ITypeDispatcher;
+template<typename DataType> class ITypeDispatcher;
+class GatherMessageInfoBase;
+template<typename DataType> class GatherMessageInfo;
 
 /*!
  * \brief Types des réductions supportées.

@@ -7,6 +7,8 @@ set(SOURCES
   Communicator.cc
   Dispatchers.h
   Dispatchers.cc
+  GatherMessageInfo.h
+  GatherMessageInfo.cc
   MessageId.h
   MessageId.cc
   MessageTag.h
