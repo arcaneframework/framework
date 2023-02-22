@@ -540,8 +540,8 @@ nonBlockingAllGather(const void* send_buf,void* recv_buf,
 /*---------------------------------------------------------------------------*/
 
 void MpiAdapter::
-gatherVariable(const void* send_buf,void* recv_buf,int* recv_counts,
-               int* recv_indexes,Int64 nb_elem,Int32 root,MPI_Datatype datatype)
+gatherVariable(const void* send_buf,void* recv_buf,const int* recv_counts,
+               const int* recv_indexes,Int64 nb_elem,Int32 root,MPI_Datatype datatype)
 {
   void* _sbuf = const_cast<void*>(send_buf);
   int _nb_elem = _checkSize(nb_elem);
@@ -559,8 +559,8 @@ gatherVariable(const void* send_buf,void* recv_buf,int* recv_counts,
 /*---------------------------------------------------------------------------*/
 
 void MpiAdapter::
-allGatherVariable(const void* send_buf,void* recv_buf,int* recv_counts,
-                  int* recv_indexes,Int64 nb_elem,MPI_Datatype datatype)
+allGatherVariable(const void* send_buf,void* recv_buf,const int* recv_counts,
+                  const int* recv_indexes,Int64 nb_elem,MPI_Datatype datatype)
 {
   void* _sbuf    = const_cast<void*>(send_buf);
   int   _nb_elem = _checkSize(nb_elem);
