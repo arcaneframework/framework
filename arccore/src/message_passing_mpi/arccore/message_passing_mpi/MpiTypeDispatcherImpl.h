@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiTypeDispatcherImpl.h                                     (C) 2000-2020 */
+/* MpiTypeDispatcherImpl.h                                     (C) 2000-2023 */
 /*                                                                           */
 /* Implémentation de 'MpiTypeDispatcher'.                                    */
 /*---------------------------------------------------------------------------*/
@@ -21,9 +21,11 @@
 
 #include "arccore/message_passing/Messages.h"
 #include "arccore/message_passing/Request.h"
+#include "arccore/message_passing/GatherMessageInfo.h"
 
 #include "arccore/base/NotSupportedException.h"
 #include "arccore/base/NotImplementedException.h"
+
 #include "arccore/collections/Array.h"
 
 /*---------------------------------------------------------------------------*/
@@ -117,13 +119,13 @@ _gatherVariable2(Span<const Type> send_buf,Array<Type>& recv_buf,Int32 rank)
   Span<const int> count_r(&my_buf_count,1);
 
   // Récupère le nombre d'éléments de chaque processeur
-  if (rank!=(-1))
+  if (rank!=A_NULL_RANK)
     mpGather(m_parallel_mng,count_r,send_counts,rank);
   else
     mpAllGather(m_parallel_mng,count_r,send_counts);
 
   // Remplit le tableau des index
-  if (rank==(-1) || rank==m_adapter->commRank()){
+  if (rank==A_NULL_RANK || rank==m_adapter->commRank()){
     Int64 index = 0;
     for( Integer i=0, is=comm_size; i<is; ++i ){
       send_indexes[i] = (int)index;
@@ -139,7 +141,7 @@ _gatherVariable2(Span<const Type> send_buf,Array<Type>& recv_buf,Int32 rank)
     recv_buf.resize(total_elem);
   }
 
-  if (rank!=(-1)){
+  if (rank!=A_NULL_RANK){
     m_adapter->gatherVariable(send_buf.data(),recv_buf.data(),send_counts.data(),
                               send_indexes.data(),nb_elem,rank,type);
   }
@@ -389,9 +391,44 @@ nonBlockingGather(Span<const Type> send_buf,Span<Type> recv_buf,Int32 rank)
 /*---------------------------------------------------------------------------*/
 
 template<class Type> Request MpiTypeDispatcher<Type>::
-gather(GatherMessageInfo<Type>&)
+gather(GatherMessageInfo<Type>& gather_info)
 {
-   ARCCORE_THROW(NotImplementedException,"Generic gather for MPI");
+  if (!gather_info.isValid())
+    return {};
+
+  bool is_blocking = gather_info.isBlocking();
+  MessageRank dest_rank = gather_info.destinationRank();
+  bool is_all_variant = dest_rank.isNull();
+  MessageRank my_rank(m_parallel_mng->commRank());
+
+  if (gather_info.type()==GatherMessageInfoBase::Type::T_GatherVariableNeedComputeInfo) {
+    if (!is_blocking)
+      ARCCORE_THROW(NotSupportedException,"non blocking version of AllGatherVariable with compute info");
+    auto send_buf = gather_info.sendBuffer();
+    Array<Type>* receive_array = gather_info.localReceptionBuffer();
+    if (is_all_variant){
+      if (!receive_array)
+        ARCCORE_FATAL("local reception buffer is null");
+      this->allGatherVariable(send_buf, *receive_array);
+    }
+    else{
+      UniqueArray<Type> unused_array;
+      if (dest_rank==my_rank)
+        this->gatherVariable(send_buf, *receive_array, dest_rank.value());
+      else
+        this->gatherVariable(send_buf, unused_array, dest_rank.value());
+    }
+    return {};
+  }
+  if (gather_info.type()==GatherMessageInfoBase::Type::T_GatherVariable) {
+    ARCCORE_THROW(NotImplementedException,"Simple gather variable");
+  }
+
+  if (gather_info.type()==GatherMessageInfoBase::Type::T_Gather) {
+    ARCCORE_THROW(NotImplementedException,"Gather");
+  }
+
+  ARCCORE_THROW(NotImplementedException,"Generic gather for MPI");
 }
 
 /*---------------------------------------------------------------------------*/
@@ -405,4 +442,4 @@ gather(GatherMessageInfo<Type>&)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
+#endif
