@@ -49,6 +49,17 @@ class ARCANE_UTILS_EXPORT MemoryView
   , m_datatype_size(static_cast<Int32>(sizeof(DataType)))
   {}
 
+ public:
+
+  template <typename DataType> constexpr MemoryView&
+  operator=(Span<DataType> v)
+  {
+    m_bytes = asBytes(v);
+    m_nb_element = v.size();
+    m_datatype_size = static_cast<Int32>(sizeof(DataType));
+    return (*this);
+  }
+
  private:
 
   constexpr MemoryView(Span<const std::byte> bytes, Int32 datatype_size, Int64 nb_element)
@@ -72,10 +83,10 @@ class ARCANE_UTILS_EXPORT MemoryView
   constexpr Int32 datatypeSize() const { return m_datatype_size; }
 
   //! Sous-vue à partir de l'indice \a begin_index et contenant \a nb_element
-  constexpr MemoryView subView(Int64 begin_index,Int64 nb_element) const
+  constexpr MemoryView subView(Int64 begin_index, Int64 nb_element) const
   {
     Int64 byte_offset = begin_index * m_datatype_size;
-    auto sub_bytes = m_bytes.subspan(byte_offset, nb_element*m_datatype_size);
+    auto sub_bytes = m_bytes.subspan(byte_offset, nb_element * m_datatype_size);
     return MemoryView(sub_bytes, m_datatype_size, nb_element);
   }
 
@@ -121,6 +132,17 @@ class ARCANE_UTILS_EXPORT MutableMemoryView
   , m_datatype_size(static_cast<Int32>(sizeof(DataType)))
   {}
 
+ public:
+
+  template <typename DataType> constexpr MutableMemoryView&
+  operator=(Span<DataType> v)
+  {
+    m_bytes = asWritableBytes(v);
+    m_nb_element = v.size();
+    m_datatype_size = static_cast<Int32>(sizeof(DataType));
+    return (*this);
+  }
+
  private:
 
   constexpr MutableMemoryView(Span<std::byte> bytes, Int32 datatype_size, Int64 nb_element)
@@ -148,13 +170,15 @@ class ARCANE_UTILS_EXPORT MutableMemoryView
   constexpr Int32 datatypeSize() const { return m_datatype_size; }
 
   //! Sous-vue à partir de l'indice \a begin_index
-  constexpr MutableMemoryView subView(Int64 begin_index,Int64 nb_element) const
+  constexpr MutableMemoryView subView(Int64 begin_index, Int64 nb_element) const
   {
     Int64 byte_offset = begin_index * m_datatype_size;
-    auto sub_bytes = m_bytes.subspan(byte_offset, nb_element*m_datatype_size);
+    auto sub_bytes = m_bytes.subspan(byte_offset, nb_element * m_datatype_size);
     return MutableMemoryView(sub_bytes, m_datatype_size, nb_element);
   }
+
  public:
+
   /*!
    * \brief Copie dans l'instance les données de \a v.
    *
