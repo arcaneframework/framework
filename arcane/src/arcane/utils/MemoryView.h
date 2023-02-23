@@ -5,9 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MemoryView.h                                                (C) 2000-2022 */
+/* MemoryView.h                                                (C) 2000-2023 */
 /*                                                                           */
-/* Vue constantes ou modifiables sur une zone mémoire.                       */
+/* Vues constantes ou modifiables sur une zone mémoire.                      */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_UTILS_MEMORYVIEW_H
 #define ARCANE_UTILS_MEMORYVIEW_H
@@ -25,7 +25,9 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Vue constante sur une zone mémoire.
+ * \brief Vue constante sur une zone mémoire contigue.
+ *
+ * \warning API en cours de définition. Ne pas utiliser en dehors de Arcane.
  */
 class ARCANE_UTILS_EXPORT MemoryView
 {
@@ -38,23 +40,47 @@ class ARCANE_UTILS_EXPORT MemoryView
   MemoryView() = default;
   explicit constexpr MemoryView(Span<const std::byte> bytes)
   : m_bytes(bytes)
+  , m_nb_element(bytes.size())
+  , m_datatype_size(1)
+  {}
+  template <typename DataType> explicit MemoryView(Span<DataType> v)
+  : m_bytes(asBytes(v))
+  , m_nb_element(v.size())
+  , m_datatype_size(static_cast<Int32>(sizeof(DataType)))
   {}
 
  public:
 
+  //! Vue sous forme d'octets
+  constexpr SpanType bytes() const { return m_bytes; }
+
+  //! Pointeur sur la zone mémoire
+  constexpr const std::byte* data() const { return m_bytes.data(); }
+
+  //! Nombre d'éléments
+  constexpr Int64 nbElement() const { return m_nb_element; }
+
+  //! Taille du type de donnée associé (1 par défaut)
+  constexpr Int32 datatypeSize() const { return m_datatype_size; }
+
   //! Vue convertie en un Span
+  ARCANE_DEPRECATED_REASON("Use bytes() instead")
   SpanType span() const { return m_bytes; }
+
+  ARCANE_DEPRECATED_REASON("Use bytes().size() instead")
   constexpr Int64 size() const { return m_bytes.size(); }
 
  public:
 
   SpanType m_bytes;
+  Int64 m_nb_element = 0;
+  Int32 m_datatype_size = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Classe de base d'une collection fortement typée.
+ * \brief Vue modifiable sur une zone mémoire contigue.
  * \ingroup MemoryView
  */
 class ARCANE_UTILS_EXPORT MutableMemoryView
@@ -68,61 +94,89 @@ class ARCANE_UTILS_EXPORT MutableMemoryView
   MutableMemoryView() = default;
   explicit constexpr MutableMemoryView(SpanType bytes)
   : m_bytes(bytes)
+  , m_nb_element(bytes.size())
+  , m_datatype_size(1)
+  {}
+  template <typename DataType> explicit MutableMemoryView(Span<DataType> v)
+  : m_bytes(asWritableBytes(v))
+  , m_nb_element(v.size())
+  , m_datatype_size(static_cast<Int32>(sizeof(DataType)))
   {}
 
  public:
 
-   operator MemoryView() const { return MemoryView(m_bytes); }
+  operator MemoryView() const { return MemoryView(m_bytes); }
 
  public:
 
-  //! Vue convertie en un Span
+  //! Vue sous forme d'octets
+  constexpr SpanType bytes() const { return m_bytes; }
+
+  //! Pointeur sur la zone mémoire
+  constexpr std::byte* data() const { return m_bytes.data(); }
+
+  //! Nombre d'éléments
+  constexpr Int64 nbElement() const { return m_nb_element; }
+
+  //! Taille du type de donnée associé (1 par défaut)
+  constexpr Int32 datatypeSize() const { return m_datatype_size; }
+
+  /*!
+   * \brief Copie dans l'instance les données de \a v.
+   *
+   * Utilise std::memmove pour la copie.
+   *
+   * \pre v.bytes.size() >= bytes.size()
+   */
+  void copyHost(MemoryView v);
+
+ public:
+
+  ARCANE_DEPRECATED_REASON("Use bytes() instead")
   constexpr SpanType span() const { return m_bytes; }
+
+  ARCANE_DEPRECATED_REASON("Use bytes().size() instead")
   constexpr Int64 size() const { return m_bytes.size(); }
 
  public:
 
   SpanType m_bytes;
+  Int64 m_nb_element = 0;
+  Int32 m_datatype_size = 0;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! Créé une vue mémoire constante à partir d'un \a Span
-template<typename DataType> MemoryView
+template <typename DataType> MemoryView
 makeMemoryView(Span<DataType> v)
 {
-  auto bytes = asBytes(Span<const DataType>(v));
-  return MemoryView(bytes);
+  return MemoryView(v);
 }
 
 //! Créé une vue mémoire constante sur l'adresse \a v
-template<typename DataType> MemoryView
+template <typename DataType> MemoryView
 makeMemoryView(const DataType* v)
 {
-  const Int64 s = (Int64)(sizeof(DataType));
-  const std::byte* ptr = reinterpret_cast<const std::byte*>(v);
-  return MemoryView(Span<const std::byte>(ptr,s));
+  return MemoryView(Span<const DataType>(v, 1));
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! Créé une vue mémoire modifiable à partir d'un \a Span
-template<typename DataType> MutableMemoryView
+template <typename DataType> MutableMemoryView
 makeMutableMemoryView(Span<DataType> v)
 {
-  auto bytes = asWritableBytes(v);
-  return MutableMemoryView(bytes);
+  return MutableMemoryView(v);
 }
 
 //! Créé une vue mémoire modifiable sur l'adresse \a v
-template<typename DataType> MutableMemoryView
+template <typename DataType> MutableMemoryView
 makeMutableMemoryView(DataType* v)
 {
-  const Int64 s = (Int64)(sizeof(DataType));
-  std::byte* ptr = reinterpret_cast<std::byte*>(v);
-  return MutableMemoryView(Span<std::byte>(ptr,s));
+  return MutableMemoryView(Span<DataType>(v, 1));
 }
 
 /*---------------------------------------------------------------------------*/
