@@ -71,7 +71,7 @@ class PolyhedralMesh
 
  public:
 
-  PolyhedralMesh(ISubDomain* subDomain);
+  PolyhedralMesh(ISubDomain* subDomain, const MeshBuildInfo& mbi);
   ~PolyhedralMesh(); // for pimpl idiom
 
  public:
@@ -98,6 +98,8 @@ class PolyhedralMesh
   MeshHandle handle() const override;
 
  public:
+
+  void build() override {}
 
   String name() const override;
 
@@ -172,6 +174,8 @@ class PolyhedralMesh
   ItemGroupCollection groups() override;
 
   void destroyGroups() override;
+
+  IGhostLayerMng* ghostLayerMng() const override {return nullptr;}
 
 #endif // ARCANE_HAS_CUSTOM_MESH_TOOLS
 

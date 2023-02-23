@@ -13,14 +13,18 @@
 
 #include "arcane/mesh/PolyhedralMesh.h"
 
-#include "arcane/ISubDomain.h"
-#include "arcane/utils/ITraceMng.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/ItemSharedInfo.h"
+#include "arcane/core/ItemTypeInfo.h"
+#include "arcane/core/ItemTypeMng.h"
+#include "arcane/core/VariableBuildInfo.h"
+#include "arcane/core/MeshBuildInfo.h"
+#include "arcane/core/ServiceFactory.h"
 #include "arcane/mesh/ItemFamily.h"
-#include "arcane/ItemSharedInfo.h"
-#include "arcane/ItemTypeInfo.h"
-#include "arcane/ItemTypeMng.h"
+#include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/FatalErrorException.h"
-#include "arcane/VariableBuildInfo.h"
+#include "arcane/core/AbstractService.h"
+#include "arcane/core/IMeshFactory.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -167,6 +171,8 @@ namespace mesh
 
 #ifdef ARCANE_HAS_VTKIO
 #include "arcane/mesh/PolyhedralMeshTools.h"
+#include "arcane/core/AbstractService.h"
+#include "arcane/core/IMeshFactory.h"
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -491,9 +497,9 @@ handle() const
 /*---------------------------------------------------------------------------*/
 
 mesh::PolyhedralMesh::
-PolyhedralMesh(ISubDomain* subdomain)
+PolyhedralMesh(ISubDomain* subdomain, const MeshBuildInfo& mbi)
 : EmptyMesh{ subdomain->traceMng() }
-, m_name{ subdomain->defaultMeshHandle().meshName() }
+, m_name{ mbi.name() }
 , m_subdomain{ subdomain }
 , m_mesh_handle{ m_subdomain->defaultMeshHandle() }
 , m_properties(std::make_unique<Properties>(subdomain->propertyMng(), String("ArcaneMeshProperties_") + m_name))
@@ -938,7 +944,7 @@ Arcane::mesh::PolyhedralMesh::
 /*---------------------------------------------------------------------------*/
 
 Arcane::mesh::PolyhedralMesh::
-PolyhedralMesh(ISubDomain* subdomain)
+PolyhedralMesh(ISubDomain* subdomain, const MeshBuildInfo& mbi)
 : EmptyMesh{ subdomain->traceMng() }
 , m_subdomain{ subdomain }
 , m_mesh{ nullptr }
@@ -957,6 +963,38 @@ read([[maybe_unused]] const String& filename)
 /*---------------------------------------------------------------------------*/
 
 #endif // ARCANE_HAS_CUSTOM_MESH_TOOLS
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane
+{
+
+class ARCANE_MESH_EXPORT PolyhedralMeshFactory
+: public AbstractService
+, public IMeshFactory
+{
+ public:
+
+  explicit PolyhedralMeshFactory(const ServiceBuildInfo& sbi)
+  : AbstractService(sbi)
+  {}
+
+ public:
+
+  void build() override {}
+  IPrimaryMesh* createMesh(IMeshMng* mm, const MeshBuildInfo& build_info) override
+  {
+    ISubDomain* sd = mm->variableMng()->_internalSubDomain();
+    return new mesh::PolyhedralMesh(sd, build_info);
+  }
+};
+
+ARCANE_REGISTER_SERVICE(PolyhedralMeshFactory,
+                        ServiceProperty("ArcanePolyhedralMeshFactory", ST_Application),
+                        ARCANE_SERVICE_INTERFACE(IMeshFactory));
+
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

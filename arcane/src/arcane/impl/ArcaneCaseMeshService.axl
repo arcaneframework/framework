@@ -88,7 +88,7 @@
 
         Ce service peut être spécifié si on souhaite éviter
         l'auto-détection du lecteur à utiliser ou si on souhaite
-        ajouter des options spécifiques à un lecture donné.
+        ajouter des options spécifiques à un lecteur donné.
       </description>
     </service-instance>
 
