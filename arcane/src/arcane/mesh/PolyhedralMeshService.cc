@@ -30,7 +30,7 @@ class PolyhedralMeshService : public ArcanePolyhedralMeshObject
 {
  public:
 
-  PolyhedralMeshService(const ServiceBuildInfo& sbi)
+  explicit PolyhedralMeshService(const ServiceBuildInfo& sbi)
   : ArcanePolyhedralMeshObject(sbi)
   {}
 

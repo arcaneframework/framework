@@ -976,7 +976,7 @@ class ARCANE_MESH_EXPORT PolyhedralMeshFactory
 {
  public:
 
-  PolyhedralMeshFactory(const ServiceBuildInfo& sbi)
+  explicit PolyhedralMeshFactory(const ServiceBuildInfo& sbi)
   : AbstractService(sbi)
   {}
 
