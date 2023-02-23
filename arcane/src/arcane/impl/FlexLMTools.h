@@ -41,15 +41,15 @@ class ARCANE_IMPL_EXPORT LicenseErrorException
 : public Exception
 {
  public:
-	
+
   LicenseErrorException(const String& where);
   LicenseErrorException(const TraceInfo& where);
-  LicenseErrorException(const String& where,const String& message);
-  LicenseErrorException(const TraceInfo& where,const String& message);
+  LicenseErrorException(const String& where, const String& message);
+  LicenseErrorException(const TraceInfo& where, const String& message);
   ~LicenseErrorException() ARCANE_NOEXCEPT {}
 
  public:
-	
+
   virtual void explain(std::ostream& m) const;
   virtual void write(std::ostream& o) const;
 
@@ -71,19 +71,22 @@ class ARCANE_IMPL_EXPORT LicenseErrorException
 class ARCANE_IMPL_EXPORT FlexLMMng
 {
  private:
+
   //! Constructeur
   FlexLMMng();
 
   //! Destructeur
-  virtual ~FlexLMMng() { }
+  virtual ~FlexLMMng() {}
 
  public:
+
   //! Accès au singleton
-  static FlexLMMng* instance() ;
+  static FlexLMMng* instance();
 
  public:
+
   //! Initialise le gestionnaire de licences
-  void init(IParallelSuperMng * parallel_super_mng);
+  void init(IParallelSuperMng* parallel_super_mng);
 
   //! Définit une nouvelle périodicité du contrôle des licences
   /*! La valeur par défaut est 120s.
@@ -98,55 +101,58 @@ class ARCANE_IMPL_EXPORT FlexLMMng
    * \param do_fatal indique s'il faut générer une erreur si non disponible
    * \return 0 si aucune erreur */
   bool checkLicense(const String name, const Real version, bool do_fatal = true) const;
-  
+
   //! Demande l'allocation de \param nb_licenses licences pour la fonctionnalité \param name
   /*! Les licences demandées sont indépendantes du nombre de processeurs
    *  \param nb_licenses vaut par défaut 1
    *  \return 0 si aucune erreur */
-  void getLicense(const String name, const Real version, Integer nb_licenses=1);
+  void getLicense(const String name, const Real version, Integer nb_licenses = 1);
 
   //! Relache les licences de la fonctionnalité \param name
   /*! \param nb_licenses vaut 0 s'il faut relacher toutes les licences
    *  \return 0 si aucune erreur */
-  void releaseLicense(const String name, Integer nb_licenses=0);
+  void releaseLicense(const String name, Integer nb_licenses = 0);
 
   //! Relache toutes les licences allouées
   /*! \return 0 si aucune erreur */
   void releaseAllLicenses();
 
-  //! Return info on feature 
+  //! Return info on feature
   String featureInfo(const String name, const Real version) const;
 
  private:
-  typedef std::map<String,Integer> FeatureMapType;
+
+  typedef std::map<String, Integer> FeatureMapType;
   FeatureMapType m_features;
-  static FlexLMMng * m_instance;
-  IParallelSuperMng * m_parallel_super_mng;
-  bool m_is_master;        //!< Cet host est il le maître des contrôles ?
+  static FlexLMMng* m_instance;
+  IParallelSuperMng* m_parallel_super_mng;
+  bool m_is_master; //!< Cet host est il le maître des contrôles ?
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 //! Wrapper pour accéder aux FlexLMMng pour un jeu de fonctionnalités donné
-template<typename FeatureModel>
+template <typename FeatureModel>
 class FlexLMTools
 {
-public:
+ public:
+
   //! Constructeur
   FlexLMTools() {}
 
   //! Destructeur
   virtual ~FlexLMTools() {}
 
-public:
+ public:
+
   //! Teste la disponibilité d'une fonctionnalité
   /*! \return true si aucune erreur */
   bool checkLicense(typename FeatureModel::eFeature feature, const bool do_fatal) const
   {
-    const String name = FeatureModel::getName(feature) ;
-    const Real version = FeatureModel::getVersion(feature) ;
-    return FlexLMMng::instance()->checkLicense(name,version,do_fatal);
+    const String name = FeatureModel::getName(feature);
+    const Real version = FeatureModel::getVersion(feature);
+    return FlexLMMng::instance()->checkLicense(name, version, do_fatal);
   }
 
   //! Teste la disponibilité d'une fonctionnalité sur une version maximale
@@ -154,33 +160,33 @@ public:
    * \return true si aucune erreur */
   bool checkLicense(typename FeatureModel::eFeature feature, const Real version, const bool do_fatal) const
   {
-    const String name = FeatureModel::getName(feature) ;
-    return FlexLMMng::instance()->checkLicense(name,version,do_fatal);
+    const String name = FeatureModel::getName(feature);
+    return FlexLMMng::instance()->checkLicense(name, version, do_fatal);
   }
 
   //! Demande l'allocation de \param nb_licenses pour la fonctionnalité \param feature
   /*! \return 0 si aucune erreur */
-  void getLicense(typename FeatureModel::eFeature feature, Integer nb_licenses=1)
+  void getLicense(typename FeatureModel::eFeature feature, Integer nb_licenses = 1)
   {
-    const String name = FeatureModel::getName(feature) ;
-    const Real version = FeatureModel::getVersion(feature) ;
-    return FlexLMMng::instance()->getLicense(name,version,nb_licenses);
+    const String name = FeatureModel::getName(feature);
+    const Real version = FeatureModel::getVersion(feature);
+    return FlexLMMng::instance()->getLicense(name, version, nb_licenses);
   }
 
   //! Relache \param nb_licenses pour la fonctionnalité \param feature
   /*! \return 0 si aucune erreur */
-  void releaseLicense(typename FeatureModel::eFeature feature, Integer nb_licenses=0)
+  void releaseLicense(typename FeatureModel::eFeature feature, Integer nb_licenses = 0)
   {
-    const String name = FeatureModel::getName(feature) ;
-    return FlexLMMng::instance()->releaseLicense(name,nb_licenses);
+    const String name = FeatureModel::getName(feature);
+    return FlexLMMng::instance()->releaseLicense(name, nb_licenses);
   }
 
-  //! Return info on feature 
+  //! Return info on feature
   String featureInfo(typename FeatureModel::eFeature feature) const
   {
-    const String name = FeatureModel::getName(feature) ;
-    const Real version = FeatureModel::getVersion(feature) ;
-    return FlexLMMng::instance()->featureInfo(name,version);
+    const String name = FeatureModel::getName(feature);
+    const Real version = FeatureModel::getVersion(feature);
+    return FlexLMMng::instance()->featureInfo(name, version);
   }
 };
 
@@ -189,24 +195,27 @@ public:
 
 class ArcaneFeatureModel
 {
-public:
+ public:
+
   typedef enum
   {
-    ArcaneCore         = 0, //<! Fonctionnalité noyau (liée à l'exécution)
-  } eFeature ;
-  
+    ArcaneCore = 0, //<! Fonctionnalité noyau (liée à l'exécution)
+  } eFeature;
+
   static String getName(eFeature feature)
   {
     return m_arcane_feature_name[feature];
   }
-  
+
   static Real getVersion(eFeature feature)
   {
+    ARCANE_UNUSED(feature);
     // Ecrit une version comparable numériquement; ex: 1.0610 (au lieu de 1.6.1)
-    return (Real)ARCANE_VERSION_MAJOR + (Real)ARCANE_VERSION_MINOR/100 + (Real)ARCANE_VERSION_RELEASE/1000 + (Real)ARCANE_VERSION_BETA/10000;
+    return (Real)ARCANE_VERSION_MAJOR + (Real)ARCANE_VERSION_MINOR / 100 + (Real)ARCANE_VERSION_RELEASE / 1000 + (Real)ARCANE_VERSION_BETA / 10000;
   }
 
-private:
+ private:
+
   static const String m_arcane_feature_name[];
 };
 
@@ -220,6 +229,5 @@ ARCANE_END_NAMESPACE
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 
 #endif /*FLEXLMTOOLS_H_*/
