@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ISharedMemoryMessageQueue.h                                 (C) 2000-2022 */
+/* ISharedMemoryMessageQueue.h                                 (C) 2000-2023 */
 /*                                                                           */
 /* Interface d'une file de messages en mémoire partagée.                     */
 /*---------------------------------------------------------------------------*/
@@ -14,9 +14,13 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/utils/MemoryView.h"
+
 #include "arcane/parallel/thread/ArcaneThread.h"
 #include "arcane/Parallel.h"
+
 #include "arcane/ArcaneTypes.h"
+
 #include "arccore/base/BaseTypes.h"
 
 /*---------------------------------------------------------------------------*/
@@ -38,15 +42,15 @@ class ARCANE_THREAD_EXPORT SendBufferInfo
 {
  public:
   SendBufferInfo() = default;
-  SendBufferInfo(ByteConstSpan memory_buffer)
+  SendBufferInfo(MemoryView memory_buffer)
   : m_memory_buffer(memory_buffer){}
   SendBufferInfo(const ISerializer* serializer)
   : m_serializer(serializer){}
  public:
-  ByteConstSpan memoryBuffer() { return m_memory_buffer; }
+  ByteConstSpan memoryBuffer() { return m_memory_buffer.bytes(); }
   const ISerializer* serializer() { return m_serializer; }
  private:
-  ByteConstSpan m_memory_buffer;
+  MemoryView m_memory_buffer;
   const ISerializer* m_serializer = nullptr;
 };
 
@@ -61,15 +65,15 @@ class ARCANE_THREAD_EXPORT ReceiveBufferInfo
 {
  public:
   ReceiveBufferInfo() = default;
-  explicit ReceiveBufferInfo(ByteSpan memory_buffer)
+  explicit ReceiveBufferInfo(MutableMemoryView memory_buffer)
   : m_memory_buffer(memory_buffer){}
   explicit ReceiveBufferInfo(ISerializer* serializer)
   : m_serializer(serializer){}
  public:
-  ByteSpan memoryBuffer() { return m_memory_buffer; }
+  ByteSpan memoryBuffer() { return m_memory_buffer.bytes(); }
   ISerializer* serializer() { return m_serializer; }
  private:
-  ByteSpan m_memory_buffer;
+  MutableMemoryView m_memory_buffer;
   ISerializer* m_serializer = nullptr;
 };
 

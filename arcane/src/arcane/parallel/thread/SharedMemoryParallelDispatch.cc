@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SharedMemoryParallelDispatch.cc                             (C) 2000-2019 */
+/* SharedMemoryParallelDispatch.cc                             (C) 2000-2023 */
 /*                                                                           */
 /* Implémentation des messages en mémoire partagée.                          */
 /*---------------------------------------------------------------------------*/
@@ -23,6 +23,7 @@
 #include "arcane/utils/Real3x3.h"
 #include "arcane/utils/APReal.h"
 #include "arcane/utils/NotImplementedException.h"
+#include "arcane/utils/MemoryView.h"
 
 #include "arcane/MeshVariable.h"
 #include "arcane/IParallelMng.h"
@@ -68,19 +69,65 @@ namespace Arcane::MessagePassing
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class Type> SharedMemoryParallelDispatch<Type>::
-SharedMemoryParallelDispatch(ITraceMng* tm,SharedMemoryParallelMng* parallel_mng,
-                             ISharedMemoryMessageQueue* message_queue,
-                             ArrayView<SharedMemoryParallelDispatch<Type>*> all_dispatchs)
+SharedMemoryParallelDispatchBase::
+SharedMemoryParallelDispatchBase(ITraceMng* tm,SharedMemoryParallelMng* parallel_mng,
+                                 ISharedMemoryMessageQueue* message_queue,
+                                 ArrayView<SharedMemoryParallelDispatchBase*> all_dispatchs_base)
 : TraceAccessor(tm)
 , m_parallel_mng(parallel_mng)
 , m_rank(parallel_mng->commRank())
 , m_nb_rank(parallel_mng->commSize())
-, m_all_dispatchs(all_dispatchs)
 , m_message_queue(message_queue)
+, m_all_dispatchs_base(all_dispatchs_base)
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SharedMemoryParallelDispatchBase::
+_collectiveBarrier()
+{
+  m_parallel_mng->getThreadBarrier()->wait();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SharedMemoryParallelDispatchBase::
+_genericAllGather(MemoryView send_buf,MutableMemoryView recv_buf)
+{
+#if 0
+  m_const_view = send_buf;
+  _collectiveBarrier();
+  MutableMemoryView recv_mem_view(recv_buf);
+  Int64 index = 0;
+  for( Int32 i=0; i<m_nb_rank; ++i ){
+    MemoryView view(m_all_dispatchs[i]->m_const_view);
+    Int64 size = view.nbElement();
+    recv_mem_view.subView(index,size).copyHost(view);
+    index += size;
+  }
+  _collectiveBarrier();
+#endif
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template<class Type> SharedMemoryParallelDispatch<Type>::
+SharedMemoryParallelDispatch(ITraceMng* tm,SharedMemoryParallelMng* parallel_mng,
+                             ISharedMemoryMessageQueue* message_queue,
+                             impl::ShareMemoryDispatcherContainer<Type>& containers)
+: BaseClass(tm,parallel_mng,message_queue,containers.all_dispatchs_base)
+, m_all_dispatchs(containers.all_dispatchs)
 {
   m_reduce_infos.m_index = 0;
   m_all_dispatchs[m_rank] = this;
+  m_all_dispatchs_base[m_rank] = this;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -244,17 +291,12 @@ allGather(Span<const Type> send_buf,Span<Type> recv_buf)
 {
   m_const_view = send_buf;
   _collectiveBarrier();
-  Int64 total_size = 0;
-  for( Integer i=0; i<m_nb_rank; ++i ){
-    total_size += m_all_dispatchs[i]->m_const_view.size();
-  }
-  //recv_buf.resize(total_size);
+  MutableMemoryView recv_mem_view(recv_buf);
   Int64 index = 0;
   for( Int32 i=0; i<m_nb_rank; ++i ){
-    Span<const Type> view = m_all_dispatchs[i]->m_const_view;
-    Int64 size = view.size();
-    for( Int64 j=0; j<size; ++j )
-      recv_buf[j+index] = view[j];
+    MemoryView view(m_all_dispatchs[i]->m_const_view);
+    Int64 size = view.nbElement();
+    recv_mem_view.subView(index,size).copyHost(view);
     index += size;
   }
   _collectiveBarrier();
@@ -285,15 +327,15 @@ allGatherVariable(Span<const Type> send_buf,Array<Type>& recv_buf)
   _collectiveBarrier();
   Int64 total_size = 0;
   for( Integer i=0; i<m_nb_rank; ++i ){
-    total_size += m_all_dispatchs[i]->m_const_view.size();
+    total_size += m_all_dispatchs[i]->m_const_view.nbElement();
   }
   recv_buf.resize(total_size);
+  MutableMemoryView recv_mem_view(recv_buf.span());
   Int64 index = 0;
   for( Integer i=0; i<m_nb_rank; ++i ){
-    Span<const Type> view = m_all_dispatchs[i]->m_const_view;
-    Int64 size = view.size();
-    for( Int64 j=0; j<size; ++j )
-      recv_buf[j+index] = view[j];
+    MemoryView view(m_all_dispatchs[i]->m_const_view);
+    Int64 size = view.nbElement();
+    recv_mem_view.subView(index,size).copyHost(view);
     index += size;
   }
   _collectiveBarrier();
@@ -322,12 +364,12 @@ scatterVariable(Span<const Type> send_buf,Span<Type> recv_buf,Int32 root)
   m_recv_view = recv_buf;
   _collectiveBarrier();
   if (m_rank==root){
+    MemoryView const_view(m_const_view);
     Int64 index = 0;
     for( Integer i=0; i<m_nb_rank; ++i ){
-      Span<Type> view = m_all_dispatchs[i]->m_recv_view;
-      Int64 size = view.size();
-      for( Int64 j=0; j<size; ++j )
-        view[j] = m_const_view[index+j];
+      MutableMemoryView view(m_all_dispatchs[i]->m_recv_view);
+      Int64 size = view.nbElement();
+      view.copyHost(const_view.subView(index,size));
       index += size;
     }
   }
@@ -376,14 +418,13 @@ allToAllVariable(Span<const Type> send_buf,
   _collectiveBarrier();
   Integer global_index = 0;
   Int32 my_rank = m_rank;
+  MutableMemoryView recv_mem_buf(recv_buf);
   for( Integer i=0; i<m_nb_rank; ++i ){
     AllToAllVariableInfo ainfo = m_all_dispatchs[i]->m_alltoallv_infos;
-    Span<const Type> view = ainfo.send_buf;
+    MemoryView view(ainfo.send_buf);
     Integer index = ainfo.send_index[my_rank];
     Integer count = ainfo.send_count[my_rank];
-    //Integer size = view.size();
-    for( Integer j=0; j<count; ++j )
-      recv_buf[global_index+j] = view[index+j];
+    recv_mem_buf.subView(global_index,count).copyHost(view.subView(index,count));
     global_index += count;
   }
   _collectiveBarrier();
@@ -430,7 +471,7 @@ send(Span<const Type> send_buffer,const PointToPointMessageInfo& message2)
   message.setEmiterRank(MessageRank(m_rank));
   bool is_blocking = message.isBlocking();
   if (message.isRankTag()){
-    Request r = m_message_queue->addSend(message,SendBufferInfo(asBytes(send_buffer)));
+    Request r = m_message_queue->addSend(message,SendBufferInfo(MemoryView(send_buffer)));
     if (is_blocking){
       m_message_queue->waitAll(ArrayView<Request>(1,&r));
       return Request();
@@ -453,7 +494,7 @@ receive(Span<Type> recv_buffer,const PointToPointMessageInfo& message2)
   PointToPointMessageInfo message(message2);
   bool is_blocking = message.isBlocking();
   message.setEmiterRank(MessageRank(m_rank));
-  ReceiveBufferInfo buf(asWritableBytes(recv_buffer));
+  ReceiveBufferInfo buf{MutableMemoryView(recv_buffer)};
   Request r = m_message_queue->addReceive(message,buf);
   if (is_blocking){
     m_message_queue->waitAll(ArrayView<Request>(1,&r));
@@ -661,15 +702,6 @@ scan(eReduceType op,ArrayView<Type> send_buf)
   ARCANE_UNUSED(op);
   ARCANE_UNUSED(send_buf);
   throw NotImplementedException(A_FUNCINFO);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<class Type> void SharedMemoryParallelDispatch<Type>::
-_collectiveBarrier()
-{
-  m_parallel_mng->getThreadBarrier()->wait();
 }
 
 /*---------------------------------------------------------------------------*/
