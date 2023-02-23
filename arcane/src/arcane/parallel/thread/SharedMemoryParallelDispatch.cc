@@ -97,19 +97,59 @@ _collectiveBarrier()
 void SharedMemoryParallelDispatchBase::
 _genericAllGather(MemoryView send_buf,MutableMemoryView recv_buf)
 {
-#if 0
   m_const_view = send_buf;
   _collectiveBarrier();
   MutableMemoryView recv_mem_view(recv_buf);
   Int64 index = 0;
   for( Int32 i=0; i<m_nb_rank; ++i ){
-    MemoryView view(m_all_dispatchs[i]->m_const_view);
+    MemoryView view(m_all_dispatchs_base[i]->m_const_view);
     Int64 size = view.nbElement();
     recv_mem_view.subView(index,size).copyHost(view);
     index += size;
   }
   _collectiveBarrier();
-#endif
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Request SharedMemoryParallelDispatchBase::
+_genericSend(MemoryView send_buffer,const PointToPointMessageInfo& message2)
+{
+  PointToPointMessageInfo message(message2);
+  message.setEmiterRank(MessageRank(m_rank));
+  bool is_blocking = message.isBlocking();
+  if (message.isRankTag()){
+    Request r = m_message_queue->addSend(message,SendBufferInfo(send_buffer));
+    if (is_blocking){
+      m_message_queue->waitAll(ArrayView<Request>(1,&r));
+      return Request();
+    }
+    return r;
+  }
+  if (message.isMessageId()){
+    // Le send avec un MessageId n'existe pas.
+    ARCCORE_THROW(NotSupportedException,"Invalid generic send with MessageId");
+  }
+  ARCCORE_THROW(NotSupportedException,"Invalid message_info");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Request SharedMemoryParallelDispatchBase::
+_genericReceive(MutableMemoryView recv_buffer,const PointToPointMessageInfo& message2)
+{
+  PointToPointMessageInfo message(message2);
+  bool is_blocking = message.isBlocking();
+  message.setEmiterRank(MessageRank(m_rank));
+  ReceiveBufferInfo buf{recv_buffer};
+  Request r = m_message_queue->addReceive(message,buf);
+  if (is_blocking){
+    m_message_queue->waitAll(ArrayView<Request>(1,&r));
+    return MP::Request();
+  }
+  return r;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -289,17 +329,7 @@ broadcast(Span<Type> send_buf,Int32 rank)
 template<class Type> void SharedMemoryParallelDispatch<Type>::
 allGather(Span<const Type> send_buf,Span<Type> recv_buf)
 {
-  m_const_view = send_buf;
-  _collectiveBarrier();
-  MutableMemoryView recv_mem_view(recv_buf);
-  Int64 index = 0;
-  for( Int32 i=0; i<m_nb_rank; ++i ){
-    MemoryView view(m_all_dispatchs[i]->m_const_view);
-    Int64 size = view.nbElement();
-    recv_mem_view.subView(index,size).copyHost(view);
-    index += size;
-  }
-  _collectiveBarrier();
+  _genericAllGather(MemoryView{send_buf},MutableMemoryView{recv_buf});
 }
 
 /*---------------------------------------------------------------------------*/
@@ -467,22 +497,7 @@ receive(Span<Type> recv_buffer,Int32 rank,bool is_blocking)
 template<class Type> Request SharedMemoryParallelDispatch<Type>::
 send(Span<const Type> send_buffer,const PointToPointMessageInfo& message2)
 {
-  PointToPointMessageInfo message(message2);
-  message.setEmiterRank(MessageRank(m_rank));
-  bool is_blocking = message.isBlocking();
-  if (message.isRankTag()){
-    Request r = m_message_queue->addSend(message,SendBufferInfo(MemoryView(send_buffer)));
-    if (is_blocking){
-      m_message_queue->waitAll(ArrayView<Request>(1,&r));
-      return Request();
-    }
-    return r;
-  }
-  if (message.isMessageId()){
-    // Le send avec un MessageId n'existe pas.
-    ARCCORE_THROW(NotSupportedException,"Invalid generic send with MessageId");
-  }
-  ARCCORE_THROW(NotSupportedException,"Invalid message_info");
+  return _genericSend(MemoryView(send_buffer),message2);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -491,16 +506,7 @@ send(Span<const Type> send_buffer,const PointToPointMessageInfo& message2)
 template<class Type> Request SharedMemoryParallelDispatch<Type>::
 receive(Span<Type> recv_buffer,const PointToPointMessageInfo& message2)
 {
-  PointToPointMessageInfo message(message2);
-  bool is_blocking = message.isBlocking();
-  message.setEmiterRank(MessageRank(m_rank));
-  ReceiveBufferInfo buf{MutableMemoryView(recv_buffer)};
-  Request r = m_message_queue->addReceive(message,buf);
-  if (is_blocking){
-    m_message_queue->waitAll(ArrayView<Request>(1,&r));
-    return MP::Request();
-  }
-  return r;
+  return _genericReceive(MutableMemoryView(recv_buffer),message2);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -123,6 +123,10 @@ class SharedMemoryParallelDispatchBase
 : public TraceAccessor
 {
   template <typename DataType> friend class SharedMemoryParallelDispatch;
+  using Request = Parallel::Request;
+  using PointToPointMessageInfo = Parallel::PointToPointMessageInfo;
+  using MessageRank = Parallel::MessageRank;
+  using MessageTag = Parallel::MessageTag;
 
  protected:
 
@@ -133,6 +137,8 @@ class SharedMemoryParallelDispatchBase
  protected:
 
   void _genericAllGather(MemoryView send_buf, MutableMemoryView recv_buf);
+  Request _genericSend(MemoryView send_buffer, const PointToPointMessageInfo& message2);
+  Request _genericReceive(MutableMemoryView recv_buffer, const PointToPointMessageInfo& message2);
 
  protected:
 
