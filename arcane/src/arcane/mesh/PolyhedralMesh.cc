@@ -23,6 +23,8 @@
 #include "arcane/mesh/ItemFamily.h"
 #include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/core/AbstractService.h"
+#include "arcane/core/IMeshFactory.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -942,7 +944,7 @@ Arcane::mesh::PolyhedralMesh::
 /*---------------------------------------------------------------------------*/
 
 Arcane::mesh::PolyhedralMesh::
-PolyhedralMesh(ISubDomain* subdomain)
+PolyhedralMesh(ISubDomain* subdomain, const MeshBuildInfo& mbi)
 : EmptyMesh{ subdomain->traceMng() }
 , m_subdomain{ subdomain }
 , m_mesh{ nullptr }
