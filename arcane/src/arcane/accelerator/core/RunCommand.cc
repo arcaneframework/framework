@@ -367,14 +367,14 @@ _setReducePolicy()
 void* ReduceMemoryImpl::
 allocateReduceDataMemory(MemoryView identity_view)
 {
-  auto identity_span = identity_view.span();
+  auto identity_span = identity_view.bytes();
   Int32 data_type_size = static_cast<Int32>(identity_span.size());
   m_data_type_size = data_type_size;
   if (data_type_size > m_size)
     _allocateMemoryForReduceData(data_type_size);
   // Recopie \a identity_view dans un buffer car on utilise l'asynchronisme
   // et la zone pointée par \a identity_view n'est pas forcément conservée
-  m_identity_buffer.copy(identity_view.span());
+  m_identity_buffer.copy(identity_view.bytes());
   MemoryCopyArgs copy_args(m_managed_memory, m_identity_buffer.span().data(), data_type_size);
   m_command->internalStream()->copyMemory(copy_args.addAsync());
   return m_managed_memory;
@@ -389,7 +389,7 @@ _allocateGridDataMemory()
   // TODO: pouvoir utiliser un padding pour éviter que les lignes de cache
   // entre les blocs se chevauchent
   Int32 total_size = CheckedConvert::toInt32(m_data_type_size * m_grid_size);
-  if (total_size <= m_grid_memory_info.m_grid_memory_values.size())
+  if (total_size <= m_grid_memory_info.m_grid_memory_values.bytes().size())
     return;
 
   m_grid_buffer.resize(total_size);

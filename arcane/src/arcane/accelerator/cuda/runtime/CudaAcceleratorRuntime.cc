@@ -128,8 +128,9 @@ class CudaRunQueueStream
   }
   void copyMemory(const MemoryCopyArgs& args) override
   {
-    auto r = cudaMemcpyAsync(args.destination().span().data(), args.source().span().data(),
-                             args.source().size(), cudaMemcpyDefault, m_cuda_stream);
+    auto source_bytes = args.source().bytes();
+    auto r = cudaMemcpyAsync(args.destination().data(), source_bytes.data(),
+                             source_bytes.size(), cudaMemcpyDefault, m_cuda_stream);
     ARCANE_CHECK_CUDA(r);
     if (!args.isAsync())
       barrier();
@@ -141,7 +142,7 @@ class CudaRunQueueStream
     if (!d.isHost())
       device = d.asInt32();
     //std::cout << "PREFETCH device=" << device << " host=" << cudaCpuDeviceId << " size=" << args.source().length() << "\n";
-    auto src = args.source().span();
+    auto src = args.source().bytes();
     auto r = cudaMemPrefetchAsync(src.data(), src.size(), device, m_cuda_stream);
     ARCANE_CHECK_CUDA(r);
     if (!args.isAsync())
@@ -272,7 +273,7 @@ class CudaRunnerRuntime
   }
   void setMemoryAdvice(MemoryView buffer, eMemoryAdvice advice, DeviceId device_id) override
   {
-    auto v = buffer.span();
+    auto v = buffer.bytes();
     const void* ptr = v.data();
     size_t count = v.size();
     int device = device_id.asInt32();
@@ -299,7 +300,7 @@ class CudaRunnerRuntime
   }
   void unsetMemoryAdvice(MemoryView buffer, eMemoryAdvice advice, DeviceId device_id) override
   {
-    auto v = buffer.span();
+    auto v = buffer.bytes();
     const void* ptr = v.data();
     size_t count = v.size();
     int device = device_id.asInt32();
@@ -418,7 +419,7 @@ class CudaMemoryCopier
     // 'cudaMemcpyDefault' sait automatiquement ce qu'il faut faire en tenant
     // uniquement compte de la valeur des pointeurs. Il faudrait voir si
     // utiliser \a from_mem et \a to_mem peut améliorer les performances.
-    ARCANE_CHECK_CUDA(cudaMemcpy(to.span().data(), from.span().data(), from.size(), cudaMemcpyDefault));
+    ARCANE_CHECK_CUDA(cudaMemcpy(to.data(), from.data(), from.bytes().size(), cudaMemcpyDefault));
   }
 };
 

@@ -521,7 +521,7 @@ void arcaneTestCudaReductionX(int vsize,ax::RunQueue& queue)
   ReducerMin<double> min_double_reducer(command);
   Span<const int> xa = d_a.span();
   Span<int> xout = d_out.span();
-  auto func2 = [=] ARCCORE_HOST_DEVICE (Arcane::ArrayBoundsIndex<1> idx)
+  auto func2 = [=] ARCCORE_HOST_DEVICE (Arcane::ArrayIndex<1> idx)
   {
     auto [i] = idx();
     double vxa = (double)(xa[i]);
