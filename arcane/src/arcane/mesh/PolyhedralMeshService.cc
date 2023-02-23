@@ -11,6 +11,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/core/MeshBuildInfo.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/ICaseMeshService.h"
 #include "arcane/mesh/PolyhedralMesh.h"
@@ -28,30 +29,36 @@ ARCANE_BEGIN_NAMESPACE
 class PolyhedralMeshService : public ArcanePolyhedralMeshObject
 {
  public:
-  PolyhedralMeshService(const ServiceBuildInfo& sbi) : ArcanePolyhedralMeshObject(sbi) {}
+
+  PolyhedralMeshService(const ServiceBuildInfo& sbi)
+  : ArcanePolyhedralMeshObject(sbi)
+  {}
 
  public:
-  void createMesh(const String& name) override {
+
+  void createMesh(const String& name) override
+  {
     info() << "---CREATE MESH---- " << name;
     info() << "--Read mesh file " << options()->file();
     mesh.read(options()->file);
   }
 
-  void allocateMeshItems() override {
-    info() << "---ALLOCATE MESH ITEMS---- " ;
+  void allocateMeshItems() override
+  {
+    info() << "---ALLOCATE MESH ITEMS---- ";
   }
 
   void partitionMesh() override {}
 
  private:
-  mesh::PolyhedralMesh mesh{subDomain()};
 
+  mesh::PolyhedralMesh mesh{ subDomain(), MeshBuildInfo{ "DefaultMesh" } };
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_REGISTER_SERVICE_POLYHEDRALMESH(PolyhedralMesh,PolyhedralMeshService);
+ARCANE_REGISTER_SERVICE_POLYHEDRALMESH(PolyhedralMesh, PolyhedralMeshService);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

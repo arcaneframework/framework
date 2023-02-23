@@ -491,9 +491,9 @@ handle() const
 /*---------------------------------------------------------------------------*/
 
 mesh::PolyhedralMesh::
-PolyhedralMesh(ISubDomain* subdomain)
+PolyhedralMesh(ISubDomain* subdomain, const MeshBuildInfo& mbi)
 : EmptyMesh{ subdomain->traceMng() }
-, m_name{ subdomain->defaultMeshHandle().meshName() }
+, m_name{ mbi.name() }
 , m_subdomain{ subdomain }
 , m_mesh_handle{ m_subdomain->defaultMeshHandle() }
 , m_properties(std::make_unique<Properties>(subdomain->propertyMng(), String("ArcaneMeshProperties_") + m_name))
