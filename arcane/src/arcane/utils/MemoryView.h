@@ -43,10 +43,18 @@ class ARCANE_UTILS_EXPORT MemoryView
   , m_nb_element(bytes.size())
   , m_datatype_size(1)
   {}
-  template <typename DataType> explicit MemoryView(Span<DataType> v)
+  template <typename DataType> explicit constexpr MemoryView(Span<DataType> v)
   : m_bytes(asBytes(v))
   , m_nb_element(v.size())
   , m_datatype_size(static_cast<Int32>(sizeof(DataType)))
+  {}
+
+ private:
+
+  constexpr MemoryView(Span<const std::byte> bytes, Int32 datatype_size, Int64 nb_element)
+  : m_bytes(bytes)
+  , m_nb_element(nb_element)
+  , m_datatype_size(datatype_size)
   {}
 
  public:
@@ -62,6 +70,16 @@ class ARCANE_UTILS_EXPORT MemoryView
 
   //! Taille du type de donnée associé (1 par défaut)
   constexpr Int32 datatypeSize() const { return m_datatype_size; }
+
+  //! Sous-vue à partir de l'indice \a begin_index et contenant \a nb_element
+  constexpr MemoryView subView(Int64 begin_index,Int64 nb_element) const
+  {
+    Int64 byte_offset = begin_index * m_datatype_size;
+    auto sub_bytes = m_bytes.subspan(byte_offset, nb_element*m_datatype_size);
+    return MemoryView(sub_bytes, m_datatype_size, nb_element);
+  }
+
+ public:
 
   //! Vue convertie en un Span
   ARCANE_DEPRECATED_REASON("Use bytes() instead")
@@ -97,15 +115,23 @@ class ARCANE_UTILS_EXPORT MutableMemoryView
   , m_nb_element(bytes.size())
   , m_datatype_size(1)
   {}
-  template <typename DataType> explicit MutableMemoryView(Span<DataType> v)
+  template <typename DataType> explicit constexpr MutableMemoryView(Span<DataType> v)
   : m_bytes(asWritableBytes(v))
   , m_nb_element(v.size())
   , m_datatype_size(static_cast<Int32>(sizeof(DataType)))
   {}
 
+ private:
+
+  constexpr MutableMemoryView(Span<std::byte> bytes, Int32 datatype_size, Int64 nb_element)
+  : m_bytes(bytes)
+  , m_nb_element(nb_element)
+  , m_datatype_size(datatype_size)
+  {}
+
  public:
 
-  operator MemoryView() const { return MemoryView(m_bytes); }
+  constexpr operator MemoryView() const { return MemoryView(m_bytes); }
 
  public:
 
@@ -121,6 +147,14 @@ class ARCANE_UTILS_EXPORT MutableMemoryView
   //! Taille du type de donnée associé (1 par défaut)
   constexpr Int32 datatypeSize() const { return m_datatype_size; }
 
+  //! Sous-vue à partir de l'indice \a begin_index
+  constexpr MutableMemoryView subView(Int64 begin_index,Int64 nb_element) const
+  {
+    Int64 byte_offset = begin_index * m_datatype_size;
+    auto sub_bytes = m_bytes.subspan(byte_offset, nb_element*m_datatype_size);
+    return MutableMemoryView(sub_bytes, m_datatype_size, nb_element);
+  }
+ public:
   /*!
    * \brief Copie dans l'instance les données de \a v.
    *
