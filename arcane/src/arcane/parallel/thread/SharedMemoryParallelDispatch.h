@@ -54,7 +54,7 @@ namespace impl
     UniqueArray<SharedMemoryParallelDispatch<DataType>*> all_dispatchs;
     UniqueArray<SharedMemoryParallelDispatchBase*> all_dispatchs_base;
   };
-}; // namespace impl
+} // namespace impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -122,11 +122,39 @@ class SharedMemoryAllDispatcher
 class SharedMemoryParallelDispatchBase
 : public TraceAccessor
 {
+ protected:
+
   template <typename DataType> friend class SharedMemoryParallelDispatch;
   using Request = Parallel::Request;
   using PointToPointMessageInfo = Parallel::PointToPointMessageInfo;
   using MessageRank = Parallel::MessageRank;
   using MessageTag = Parallel::MessageTag;
+
+ protected:
+
+  class IResizableArray
+  {
+   public:
+
+    virtual ~IResizableArray() = default;
+
+   public:
+
+    virtual void resize(Int64 new_size) = 0;
+    virtual MutableMemoryView memoryView() const = 0;
+  };
+
+  class AllToAllVariableInfo
+  {
+   public:
+
+    MemoryView send_buf;
+    Span<const Int32> send_count;
+    Span<const Int32> send_index;
+    MutableMemoryView recv_buf;
+    Span<const Int32> recv_count;
+    Span<const Int32> recv_index;
+  };
 
  protected:
 
@@ -136,9 +164,17 @@ class SharedMemoryParallelDispatchBase
 
  protected:
 
+  void _genericAllToAll(MemoryView send_buf, MutableMemoryView recv_buf, Int32 count);
   void _genericAllGather(MemoryView send_buf, MutableMemoryView recv_buf);
+  void _genericAllGatherVariable(MemoryView send_buf, IResizableArray* recv_buf);
+  void _genericAllToAllVariable(MemoryView send_buf,
+                                Span<const Int32> send_count, Span<const Int32> send_index,
+                                MutableMemoryView recv_buf,
+                                Span<const Int32> recv_count, Span<const Int32> recv_index);
+  void _genericScatterVariable(MemoryView send_buf, MutableMemoryView recv_buf, Int32 root);
   Request _genericSend(MemoryView send_buffer, const PointToPointMessageInfo& message2);
   Request _genericReceive(MutableMemoryView recv_buffer, const PointToPointMessageInfo& message2);
+  void _genericBroadcast(MutableMemoryView send_buf, Int32 rank);
 
  protected:
 
@@ -146,6 +182,10 @@ class SharedMemoryParallelDispatchBase
   MemoryView m_const_view;
   MutableMemoryView m_recv_view;
   MemoryView m_send_view;
+
+ private:
+
+  MutableMemoryView m_broadcast_view;
 
  protected:
 
@@ -160,6 +200,7 @@ class SharedMemoryParallelDispatchBase
 
  private:
 
+  AllToAllVariableInfo m_alltoallv_infos;
   ArrayView<SharedMemoryParallelDispatchBase*> m_all_dispatchs_base;
 };
 
@@ -176,16 +217,22 @@ class SharedMemoryParallelDispatch
 {
   using BaseClass = SharedMemoryParallelDispatchBase;
 
-  class AllToAllVariableInfo
+  class ResizableArrayRef : public IResizableArray
   {
    public:
 
-    Span<const Type> send_buf;
-    Int32ConstArrayView send_count;
-    Int32ConstArrayView send_index;
-    Span<Type> recv_buf;
-    Int32ConstArrayView recv_count;
-    Int32ConstArrayView recv_index;
+    ResizableArrayRef(Array<Type>& v)
+    : m_array_ref(v)
+    {}
+
+   public:
+
+    virtual void resize(Int64 new_size) { m_array_ref.resize(new_size); }
+    virtual MutableMemoryView memoryView() const { return MutableMemoryView(m_array_ref.span()); }
+
+   private:
+
+    Array<Type>& m_array_ref;
   };
 
   class ReduceInfo
@@ -326,10 +373,6 @@ class SharedMemoryParallelDispatch
   ArrayView<SharedMemoryParallelDispatch<Type>*> m_all_dispatchs;
 
  private:
-
-  Span<Type> m_broadcast_view;
-  AllToAllVariableInfo m_alltoallv_infos;
-
  public:
 
   ReduceInfo m_reduce_infos;

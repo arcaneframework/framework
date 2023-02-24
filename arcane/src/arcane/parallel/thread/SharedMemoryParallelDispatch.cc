@@ -95,6 +95,60 @@ _collectiveBarrier()
 /*---------------------------------------------------------------------------*/
 
 void SharedMemoryParallelDispatchBase::
+_genericAllToAll(MemoryView send_buf,MutableMemoryView recv_buf,Int32 count)
+{
+  Int32 nb_rank = m_nb_rank;
+
+  //TODO: Faire une version sans allocation
+  Int32UniqueArray send_count(nb_rank,count);
+  Int32UniqueArray recv_count(nb_rank,count);
+
+  Int32UniqueArray send_indexes(nb_rank);
+  Int32UniqueArray recv_indexes(nb_rank);
+  for( Integer i=0; i<nb_rank; ++i ){
+    send_indexes[i] = count * i;
+    recv_indexes[i] = count * i;
+  }
+  _genericAllToAllVariable(send_buf,send_count,send_indexes,recv_buf,recv_count,recv_indexes);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SharedMemoryParallelDispatchBase::
+_genericAllToAllVariable(MemoryView send_buf,
+                         Span<const Int32> send_count,
+                         Span<const Int32> send_index,
+                         MutableMemoryView recv_buf,
+                         Span<const Int32> recv_count,
+                         Span<const Int32> recv_index
+                         )
+{
+  m_alltoallv_infos.send_buf = send_buf;
+  m_alltoallv_infos.send_count = send_count;
+  m_alltoallv_infos.send_index = send_index;
+  m_alltoallv_infos.recv_buf = recv_buf;
+  m_alltoallv_infos.recv_count = recv_count;
+  m_alltoallv_infos.recv_index = recv_index;
+  _collectiveBarrier();
+  Integer global_index = 0;
+  Int32 my_rank = m_rank;
+  MutableMemoryView recv_mem_buf(recv_buf);
+  for( Integer i=0; i<m_nb_rank; ++i ){
+    AllToAllVariableInfo ainfo = m_all_dispatchs_base[i]->m_alltoallv_infos;
+    MemoryView view(ainfo.send_buf);
+    Integer index = ainfo.send_index[my_rank];
+    Integer count = ainfo.send_count[my_rank];
+    recv_mem_buf.subView(global_index,count).copyHost(view.subView(index,count));
+    global_index += count;
+  }
+  _collectiveBarrier();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SharedMemoryParallelDispatchBase::
 _genericAllGather(MemoryView send_buf,MutableMemoryView recv_buf)
 {
   m_const_view = send_buf;
@@ -106,6 +160,52 @@ _genericAllGather(MemoryView send_buf,MutableMemoryView recv_buf)
     Int64 size = view.nbElement();
     recv_mem_view.subView(index,size).copyHost(view);
     index += size;
+  }
+  _collectiveBarrier();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SharedMemoryParallelDispatchBase::
+_genericAllGatherVariable(MemoryView send_buf,IResizableArray* recv_buf)
+{
+  m_const_view = send_buf;
+  _collectiveBarrier();
+  Int64 total_size = 0;
+  for( Integer i=0; i<m_nb_rank; ++i ){
+    total_size += m_all_dispatchs_base[i]->m_const_view.nbElement();
+  }
+  recv_buf->resize(total_size);
+  MutableMemoryView recv_mem_view(recv_buf->memoryView());
+  Int64 index = 0;
+  for( Integer i=0; i<m_nb_rank; ++i ){
+    MemoryView view(m_all_dispatchs_base[i]->m_const_view);
+    Int64 size = view.nbElement();
+    recv_mem_view.subView(index,size).copyHost(view);
+    index += size;
+  }
+  _collectiveBarrier();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SharedMemoryParallelDispatchBase::
+_genericScatterVariable(MemoryView send_buf,MutableMemoryView recv_buf,Int32 root)
+{
+  m_const_view = send_buf;
+  m_recv_view = recv_buf;
+  _collectiveBarrier();
+  if (m_rank==root){
+    MemoryView const_view(m_const_view);
+    Int64 index = 0;
+    for( Integer i=0; i<m_nb_rank; ++i ){
+      MutableMemoryView view(m_all_dispatchs_base[i]->m_recv_view);
+      Int64 size = view.nbElement();
+      view.copyHost(const_view.subView(index,size));
+      index += size;
+    }
   }
   _collectiveBarrier();
 }
@@ -150,6 +250,18 @@ _genericReceive(MutableMemoryView recv_buffer,const PointToPointMessageInfo& mes
     return MP::Request();
   }
   return r;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SharedMemoryParallelDispatchBase::
+_genericBroadcast(MutableMemoryView send_buf,Int32 rank)
+{
+  m_broadcast_view = send_buf;
+  _collectiveBarrier();
+  m_broadcast_view.copyHost(m_all_dispatchs_base[rank]->m_broadcast_view);
+  _collectiveBarrier();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -317,10 +429,7 @@ computeMinMaxSum(ConstArrayView<Type> values,
 template<class Type> void SharedMemoryParallelDispatch<Type>::
 broadcast(Span<Type> send_buf,Int32 rank)
 {
-  m_broadcast_view = send_buf;
-  _collectiveBarrier();
-  send_buf.copy(m_all_dispatchs[rank]->m_broadcast_view);
-  _collectiveBarrier();
+  _genericBroadcast(MutableMemoryView(send_buf),rank);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -353,22 +462,8 @@ gather(Span<const Type> send_buf,Span<Type> recv_buf,Int32 root_rank)
 template<class Type> void SharedMemoryParallelDispatch<Type>::
 allGatherVariable(Span<const Type> send_buf,Array<Type>& recv_buf)
 {
-  m_const_view = send_buf;
-  _collectiveBarrier();
-  Int64 total_size = 0;
-  for( Integer i=0; i<m_nb_rank; ++i ){
-    total_size += m_all_dispatchs[i]->m_const_view.nbElement();
-  }
-  recv_buf.resize(total_size);
-  MutableMemoryView recv_mem_view(recv_buf.span());
-  Int64 index = 0;
-  for( Integer i=0; i<m_nb_rank; ++i ){
-    MemoryView view(m_all_dispatchs[i]->m_const_view);
-    Int64 size = view.nbElement();
-    recv_mem_view.subView(index,size).copyHost(view);
-    index += size;
-  }
-  _collectiveBarrier();
+  ResizableArrayRef recv_buf_ref(recv_buf);
+  _genericAllGatherVariable(MemoryView(send_buf),&recv_buf_ref);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -390,20 +485,7 @@ gatherVariable(Span<const Type> send_buf,Array<Type>& recv_buf,Int32 root_rank)
 template<class Type> void SharedMemoryParallelDispatch<Type>::
 scatterVariable(Span<const Type> send_buf,Span<Type> recv_buf,Int32 root)
 {
-  m_const_view = send_buf;
-  m_recv_view = recv_buf;
-  _collectiveBarrier();
-  if (m_rank==root){
-    MemoryView const_view(m_const_view);
-    Int64 index = 0;
-    for( Integer i=0; i<m_nb_rank; ++i ){
-      MutableMemoryView view(m_all_dispatchs[i]->m_recv_view);
-      Int64 size = view.nbElement();
-      view.copyHost(const_view.subView(index,size));
-      index += size;
-    }
-  }
-  _collectiveBarrier();
+  _genericScatterVariable(MemoryView(send_buf),MutableMemoryView(recv_buf),root);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -412,52 +494,21 @@ scatterVariable(Span<const Type> send_buf,Span<Type> recv_buf,Int32 root)
 template<class Type> void SharedMemoryParallelDispatch<Type>::
 allToAll(Span<const Type> send_buf,Span<Type> recv_buf,Int32 count)
 {
-  Int32 nb_rank = m_nb_rank;
-
-  //TODO: Faire une version sans allocation
-  Int32UniqueArray send_count(nb_rank,count);
-  Int32UniqueArray recv_count(nb_rank,count);
-
-  Int32UniqueArray send_indexes(nb_rank);
-  Int32UniqueArray recv_indexes(nb_rank);
-  for( Integer i=0; i<nb_rank; ++i ){
-    send_indexes[i] = count * i;
-    recv_indexes[i] = count * i;
-  }
-  this->allToAllVariable(send_buf,send_count,send_indexes,recv_buf,recv_count,recv_indexes);
+  _genericAllToAll(MemoryView(send_buf),MutableMemoryView(recv_buf),count);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 template<class Type> void SharedMemoryParallelDispatch<Type>::
-allToAllVariable(Span<const Type> send_buf,
-                 Int32ConstArrayView send_count,
-                 Int32ConstArrayView send_index,
-                 Span<Type> recv_buf,
-                 Int32ConstArrayView recv_count,
+allToAllVariable(Span<const Type> send_buf, ConstArrayView<Int32> send_count,
+                 ConstArrayView<Int32> send_index,
+                 Span<Type> recv_buf, ConstArrayView<Int32> recv_count,
                  Int32ConstArrayView recv_index
                  )
 {
-  m_alltoallv_infos.send_buf = send_buf;
-  m_alltoallv_infos.send_count = send_count;
-  m_alltoallv_infos.send_index = send_index;
-  m_alltoallv_infos.recv_buf = recv_buf;
-  m_alltoallv_infos.recv_count = recv_count;
-  m_alltoallv_infos.recv_index = recv_index;
-  _collectiveBarrier();
-  Integer global_index = 0;
-  Int32 my_rank = m_rank;
-  MutableMemoryView recv_mem_buf(recv_buf);
-  for( Integer i=0; i<m_nb_rank; ++i ){
-    AllToAllVariableInfo ainfo = m_all_dispatchs[i]->m_alltoallv_infos;
-    MemoryView view(ainfo.send_buf);
-    Integer index = ainfo.send_index[my_rank];
-    Integer count = ainfo.send_count[my_rank];
-    recv_mem_buf.subView(global_index,count).copyHost(view.subView(index,count));
-    global_index += count;
-  }
-  _collectiveBarrier();
+  _genericAllToAllVariable(MemoryView(send_buf), send_count, send_index,
+                           MutableMemoryView(recv_buf), recv_count, recv_index);
 }
 
 /*---------------------------------------------------------------------------*/
