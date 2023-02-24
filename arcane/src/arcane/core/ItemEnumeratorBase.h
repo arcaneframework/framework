@@ -225,6 +225,11 @@ class ItemEnumeratorBaseT
     return LocalIdType{ARCANE_LOCALID_ADD_OFFSET(m_local_ids[m_index])};
   }
 
+  constexpr operator LocalIdType() const
+  {
+    return LocalIdType{ARCANE_LOCALID_ADD_OFFSET(m_local_ids[m_index])};
+  }
+
   ItemEnumerator toItemEnumerator() const;
 
  public:

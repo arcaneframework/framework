@@ -1111,7 +1111,7 @@ _testItemArray()
   ENUMERATE_(MyCellClass,icell,v2){
     MyCellClass c = *icell;
     info(6) << "CELL =" << ItemPrinter(c);
-    var_counter[c] = c.localId();
+    var_counter[icell] = c.localId();
     total += var_counter[c];
     for( NodeEnumerator inode(c.nodes()); inode.hasNext(); ++inode ){
       info(7) << "NODE =" << ItemPrinter(*inode);
