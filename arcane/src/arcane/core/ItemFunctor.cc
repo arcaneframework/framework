@@ -22,6 +22,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*
 AbstractItemRangeFunctor::
 AbstractItemRangeFunctor(ItemVectorView items_view,Integer grain_size)
 : m_items(items_view)
@@ -42,10 +43,12 @@ AbstractItemRangeFunctor(ItemVectorView items_view,Integer grain_size)
 
   m_block_grain_size = grain_size / m_block_size;
 }
+*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*
 ItemVectorView AbstractItemRangeFunctor::
 _view(Integer begin_block,Integer nb_block) const
 {
@@ -55,6 +58,7 @@ _view(Integer begin_block,Integer nb_block) const
   Integer size = math::min(nb_block * m_block_size,nb_item-begin);
   return m_items.subView(begin,size);
 }
+*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

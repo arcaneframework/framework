@@ -22,6 +22,8 @@
 #include <arcane/accelerator/RunCommand.h>
 #include <arcane/accelerator/RunCommandLaunchInfo.h>
 
+#include "arcane/Concurrency.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -147,6 +149,20 @@ void _doIndirectThreadLambda(const EnvCellVectorView& sub_items, Lambda func)
     body(EnvCellAccessor(i));
 }
 
+/*
+ * Surcharge de la fonction de lancement de kernel en MT pour les EnvCellVectorView
+ */ 
+template<typename Lambda>
+void _doIndirectThreadLambda_FL(SmallSpan<const MatVarIndex>& sub_mvis, SmallSpan<const Int32> sub_cids, Lambda func)
+{
+  auto privatizer = privatize(func);
+  auto& body = privatizer.privateCopy();
+
+  // Les tailles de sub_mvis et sub_cids ont été testées en amont déjà
+  for (int i(0); i<sub_mvis.size(); ++i)
+    body(EnvCellAccessor(sub_mvis[i], static_cast<CellLocalId>(sub_cids[i])));
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -181,13 +197,19 @@ _applyEnvCells(RunCommand& command,const EnvCellVectorView& items,const Lambda& 
         func(EnvCellAccessor(mvis[i], static_cast<CellLocalId>(cids[i])));
     break;
   case eExecutionPolicy::Thread:
-    // TODO: rajouter les ForLoopRunInfo en parametres des arcaneParallelForeach de MatConcurrency ?
-    //       (taille de grain pour faire du blocking)
-    arcaneParallelForeach(items,//launch_info.loopRunInfo(),
-                        [&](EnvCellVectorView sub_items)
+  /*
+    arcaneParallelForeach(items,
+                          [&](EnvCellVectorView sub_items)
+                          {
+                            impl::_doIndirectThreadLambda(sub_items,func);
+                          });
+  */
+    arcaneParallelForeach_FL(
+                        launch_info.loopRunInfo(),
+                        [&](SmallSpan<const MatVarIndex> sub_mvis, SmallSpan<const Int32> sub_cids)
                         {
-                          impl::_doIndirectThreadLambda(sub_items,func);
-                        });
+                          impl::_doIndirectThreadLambda_FL(sub_mvis, sub_cids,func);
+                        }, mvis, cids);
     break;
   default:
     ARCANE_FATAL("Invalid execution policy '{0}'",exec_policy);
