@@ -50,7 +50,6 @@ class ARCANE_CORE_EXPORT ItemLocalId
   {}
   // La définition de ce constructeur est dans ItemInternal.h
   inline ItemLocalId(ItemInternal* item);
-  inline ItemLocalId(ItemEnumerator enumerator);
   inline ItemLocalId(ItemConnectedEnumerator enumerator);
   template <typename ItemType> inline ItemLocalId(ItemEnumeratorT<ItemType> enumerator);
   template <typename ItemType> inline ItemLocalId(ItemConnectedEnumeratorT<ItemType> enumerator);
@@ -103,7 +102,6 @@ class ItemLocalIdT
   : ItemLocalId(id)
   {}
   inline ItemLocalIdT(ItemInternal* item);
-  inline ItemLocalIdT(ItemEnumeratorT<ItemType> enumerator);
   inline ItemLocalIdT(ItemConnectedEnumeratorT<ItemType> enumerator);
   inline ItemLocalIdT(ItemType item);
 
