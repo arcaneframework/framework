@@ -113,6 +113,8 @@ class ItemTypeInfo
   String typeName() const { return m_type_name; }
   //! Dimension de l'élément (<0 si inconnu)
   Int16 dimension() const { return m_dimension; }
+  //! Indique si le type est valide pour créér une maille (Cell)
+  bool isValidForCell() const { return m_is_valid_for_cell; }
 
  public:
 
@@ -136,8 +138,10 @@ class ItemTypeInfo
 
   ItemTypeMng* m_mng = nullptr;
   ItemTypeId m_type_id{ IT_NullType };
-  // Dimension (-1) si pas initialisé.
+  //! Dimension (-1) si pas initialisé.
   Int16 m_dimension = (-1);
+  //! Indique si le type est valide pour une maille.
+  bool m_is_valid_for_cell = true;
   Integer m_nb_node = 0;
   Integer m_nb_edge = 0;
   Integer m_nb_face = 0;

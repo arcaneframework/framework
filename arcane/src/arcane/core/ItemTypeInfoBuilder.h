@@ -123,6 +123,11 @@ class ItemTypeInfoBuilder
   //! Calcule les relations face->arêtes
   void computeFaceEdgeInfos();
 
+  void setIsValidForCell(bool is_valid)
+  {
+    m_is_valid_for_cell = is_valid;
+  }
+
  private:
 
   void _setNbEdgeAndFace(Integer nb_edge,Integer nb_face);
