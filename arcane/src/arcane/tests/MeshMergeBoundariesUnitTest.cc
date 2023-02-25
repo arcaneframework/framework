@@ -100,7 +100,7 @@ executeTest()
   mbi.addParallelMng(makeRef(pm));
 
   IPrimaryMesh* boundary_mesh = mesh_mng->meshFactoryMng()->createMesh(mbi);
-  boundary_mesh->setDimension(mesh_dim - 1);
+  boundary_mesh->setDimension(mesh_dim);
   UniqueArray<Int64> cells_infos;
   cells_infos.reserve(10000);
 
@@ -118,15 +118,14 @@ executeTest()
     info() << "Add faces from mesh=" << mesh->name() << " nb_face=" << outer_faces.size();
     ENUMERATE_ (Face, iface, outer_faces) {
       Face face = *iface;
-      Int64 uid = face.uniqueId();
-      // Pour l'instant on ne supporte que le 1D donc le type de maille
-      // est forcément une arête
-      Int16 cell_type = IT_Line2;
+      Cell cell = face.cell(0);
+      Int64 uid = cell.uniqueId();
+      Int16 cell_type = cell.type();
       cells_infos.add(cell_type);
       Int64 cell_uid = uid + offset_cell_uid;
       cells_infos.add(cell_uid);
       max_cell_uid = std::max(max_cell_uid, cell_uid);
-      for (Node node : face.nodes()) {
+      for (Node node : cell.nodes()) {
         Int64 node_uid = node.uniqueId().asInt64() + offset_node_uid;
         max_node_uid = std::max(max_node_uid, node_uid);
         node_to_coord_map[node_uid] = node_coord[node];

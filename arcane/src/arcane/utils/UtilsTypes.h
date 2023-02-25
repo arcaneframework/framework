@@ -665,34 +665,98 @@ typedef Span<Real3x3> Real3x3Span;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Equivalent C d'un tableau à une dimension de pointeurs
+//! Vue en lecture seule d'un tableau à une dimension de pointeurs
 typedef Span<const Pointer> PointerConstSpan;
-//! Equivalent C d'un tableau à une dimension de caractères
+//! Vue en lecture seule d'un tableau à une dimension de caractères
 typedef Span<const std::byte> ByteConstSpan;
-//! Equivalent C d'un tableau à une dimension de caractères unicode
+//! Vue en lecture seule d'un tableau à une dimension de caractères unicode
 typedef Span<const UChar> UCharConstSpan;
-//! Equivalent C d'un tableau à une dimension d'entiers 64 bits
+//! Vue en lecture seule d'un tableau à une dimension d'entiers 64 bits
 typedef Span<const Int64> Int64ConstSpan;
-//! Equivalent C d'un tableau à une dimension d'entiers 32 bits
+//! Vue en lecture seule d'un tableau à une dimension d'entiers 32 bits
 typedef Span<const Int32> Int32ConstSpan;
-//! Equivalent C d'un tableau à une dimension d'entiers 16 bits
+//! Vue en lecture seule d'un tableau à une dimension d'entiers 16 bits
 typedef Span<const Int16> Int16ConstSpan;
-//! Equivalent C d'un tableau à une dimension d'entiers
+//! Vue en lecture seule d'un tableau à une dimension d'entiers
 typedef Span<const Integer> IntegerConstSpan;
-//! Equivalent C d'un tableau à une dimension de réels
+//! Vue en lecture seule d'un tableau à une dimension de réels
 typedef Span<const Real> RealConstSpan;
-//! Equivalent C d'un tableau à une dimension de booléens
+//! Vue en lecture seule d'un tableau à une dimension de booléens
 typedef Span<const bool> BoolConstSpan;
-//! Equivalent C d'un tableau à une dimension d'entiers
+//! Vue en lecture seule d'un tableau à une dimension d'entiers
 typedef Span<const Integer> IntegerConstSpan;
-//! Equivalent C d'un tableau à une dimension de Real2
+//! Vue en lecture seule d'un tableau à une dimension de Real2
 typedef Span<const Real2> Real2ConstSpan;
-//! Equivalent C d'un tableau à une dimension de Real3
+//! Vue en lecture seule d'un tableau à une dimension de Real3
 typedef Span<const Real3> Real3ConstSpan;
-//! Equivalent C d'un tableau à une dimension de Real2x2
+//! Vue en lecture seule d'un tableau à une dimension de Real2x2
 typedef Span<const Real2x2> Real2x2ConstSpan;
-//! Equivalent C d'un tableau à une dimension de Real3x3
+//! Vue en lecture seule d'un tableau à une dimension de Real3x3
 typedef Span<const Real3x3> Real3x3ConstSpan;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Vue d'un tableau à une dimension de pointeurs
+using PointerSmallSpan = SmallSpan<Pointer>;
+//! Vue d'un tableau à une dimension de caractères
+using ByteSmallSpan = SmallSpan<std::byte>;
+//! Vue d'un tableau à une dimension de caractères unicode
+using UCharSmallSpan = SmallSpan<UChar>;
+//! Vue d'un tableau à une dimension d'entiers 64 bits
+using Int64SmallSpan = SmallSpan<Int64>;
+//! Vue d'un tableau à une dimension d'entiers 32 bits
+using Int32SmallSpan = SmallSpan<Int32>;
+//! Vue d'un tableau à une dimension d'entiers 16 bits
+using Int16SmallSpan = SmallSpan<Int16>;
+//! Vue d'un tableau à une dimension d'entiers
+using IntegerSmallSpan = SmallSpan<Integer>;
+//! Vue d'un tableau à une dimension de réels
+using RealSmallSpan = SmallSpan<Real>;
+//! Vue d'un tableau à une dimension de booléens
+using BoolSmallSpan = SmallSpan<bool>;
+//! Vue d'un tableau à une dimension d'entiers
+using IntegerSmallSpan = SmallSpan<Integer>;
+//! Vue d'un tableau à une dimension de Real2
+using Real2SmallSpan = SmallSpan<Real2>;
+//! Vue d'un tableau à une dimension de Real3
+using Real3SmallSpan = SmallSpan<Real3>;
+//! Vue d'un tableau à une dimension de Real2x2
+using Real2x2SmallSpan = SmallSpan<Real2x2>;
+//! Vue d'un tableau à une dimension de Real3x3
+using Real3x3SmallSpan = SmallSpan<Real3x3>;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+//! Vue en lecture seule d'un tableau à une dimension de pointeurs
+using PointerConstSmallSpan = SmallSpan<const Pointer>;
+//! Vue en lecture seule d'un tableau à une dimension de caractères
+using ByteConstSmallSpan = SmallSpan<const std::byte>;
+//! Vue en lecture seule d'un tableau à une dimension de caractères unicode
+using UCharConstSmallSpan = SmallSpan<const UChar>;
+//! Vue en lecture seule d'un tableau à une dimension d'entiers 64 bits
+using Int64ConstSmallSpan = SmallSpan<const Int64>;
+//! Vue en lecture seule d'un tableau à une dimension d'entiers 32 bits
+using Int32ConstSmallSpan = SmallSpan<const Int32>;
+//! Vue en lecture seule d'un tableau à une dimension d'entiers 16 bits
+using Int16ConstSmallSpan = SmallSpan<const Int16>;
+//! Vue en lecture seule d'un tableau à une dimension d'entiers
+using IntegerConstSmallSpan = SmallSpan<const Integer>;
+//! Vue en lecture seule d'un tableau à une dimension de réels
+using RealConstSmallSpan = SmallSpan<const Real>;
+//! Vue en lecture seule d'un tableau à une dimension de booléens
+using BoolConstSmallSpan = SmallSpan<const bool>;
+//! Vue en lecture seule d'un tableau à une dimension d'entiers
+using IntegerConstSmallSpan = SmallSpan<const Integer>;
+//! Vue en lecture seule d'un tableau à une dimension de Real2
+using Real2ConstSmallSpan = SmallSpan<const Real2>;
+//! Vue en lecture seule d'un tableau à une dimension de Real3
+using Real3ConstSmallSpan = SmallSpan<const Real3>;
+//! Vue en lecture seule d'un tableau à une dimension de Real2x2
+using Real2x2ConstSmallSpan = SmallSpan<const Real2x2>;
+//! Vue en lecture seule d'un tableau à une dimension de Real3x3
+using Real3x3ConstSmallSpan = SmallSpan<const Real3x3>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

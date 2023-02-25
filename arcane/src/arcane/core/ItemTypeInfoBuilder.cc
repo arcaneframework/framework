@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemTypeInfoBuilder.cc                                      (C) 2000-2022 */
+/* ItemTypeInfoBuilder.cc                                      (C) 2000-2023 */
 /*                                                                           */
 /* Constructeur de type d'entité de maillage.                                */
 /*---------------------------------------------------------------------------*/
@@ -27,14 +27,40 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 void ItemTypeInfoBuilder::
+_checkDimension(Int16 dim)
+{
+  if (dim < 0)
+    return;
+  if (m_dimension < 0)
+    m_dimension = dim;
+  if (m_dimension != dim)
+    ARCANE_FATAL("Incoherent dimension for ItemType: current='{0}' new='{1}'",
+                 m_dimension, dim);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemTypeInfoBuilder::
 setInfos(ItemTypeMng* mng, ItemTypeId type_id, String type_name,
-         Integer nb_node, Integer nb_edge, Integer nb_face)
+         Int16 dimension, Integer nb_node, Integer nb_edge, Integer nb_face)
 {
   m_mng = mng;
   m_type_id = type_id;
+  m_dimension = dimension;
   m_nb_node = nb_node;
   m_type_name = type_name;
-  _setNbEdgeAndFace(nb_edge,nb_face);
+  _setNbEdgeAndFace(nb_edge, nb_face);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemTypeInfoBuilder::
+setInfos(ItemTypeMng* mng, ItemTypeId type_id, String type_name,
+         Integer nb_node, Integer nb_edge, Integer nb_face)
+{
+  setInfos(mng, type_id, type_name, -1, nb_node, nb_edge, nb_face);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -66,8 +92,9 @@ addEdge(Integer edge_index,Integer n0,Integer n1,Integer f_left,Integer f_right)
 /*---------------------------------------------------------------------------*/
 
 void ItemTypeInfoBuilder::
-addFaceVertex(Integer face_index,Integer n0)
+addFaceVertex(Integer face_index, Integer n0)
 {
+  _checkDimension(1);
   Array<Integer>& buf = m_mng->m_ids_buffer;
   buf[m_first_item_index + m_nb_edge + face_index] = buf.size();
   buf.add(IT_FaceVertex);
@@ -80,8 +107,9 @@ addFaceVertex(Integer face_index,Integer n0)
 /*---------------------------------------------------------------------------*/
 
 void ItemTypeInfoBuilder::
-addFaceLine(Integer face_index,Integer n0,Integer n1)
+addFaceLine(Integer face_index, Integer n0, Integer n1)
 {
+  _checkDimension(2);
   Array<Integer>& buf = m_mng->m_ids_buffer;
   buf[m_first_item_index + m_nb_edge + face_index] = buf.size();
   buf.add(IT_Line2);
@@ -93,8 +121,9 @@ addFaceLine(Integer face_index,Integer n0,Integer n1)
 
 //! Ajoute une ligne quadratique à la liste des faces (pour les elements 2D)
 void ItemTypeInfoBuilder::
-addFaceLine3(Integer face_index,Integer n0,Integer n1,Integer n2)
+addFaceLine3(Integer face_index, Integer n0, Integer n1, Integer n2)
 {
+  _checkDimension(2);
   Array<Integer>& buf = m_mng->m_ids_buffer;
   buf[m_first_item_index + m_nb_edge + face_index] = buf.size();
   buf.add(IT_Line3);
@@ -109,8 +138,9 @@ addFaceLine3(Integer face_index,Integer n0,Integer n1,Integer n2)
 /*---------------------------------------------------------------------------*/
 
 void ItemTypeInfoBuilder::
-addFaceTriangle(Integer face_index,Integer n0,Integer n1,Integer n2)
+addFaceTriangle(Integer face_index, Integer n0, Integer n1, Integer n2)
 {
+  _checkDimension(3);
   Array<Integer>& buf = m_mng->m_ids_buffer;
   buf[m_first_item_index + m_nb_edge + face_index] = buf.size();
   buf.add(IT_Triangle3);
@@ -119,7 +149,7 @@ addFaceTriangle(Integer face_index,Integer n0,Integer n1,Integer n2)
   buf.add(n1);
   buf.add(n2);
   buf.add(3);
-  for(Integer i=0;i<3;++i)
+  for (Integer i = 0; i < 3; ++i)
     buf.add(-1); // undef value, filled by ItemTypeInfoBuilder::computeFaceEdgeInfos
 }
 
@@ -127,9 +157,10 @@ addFaceTriangle(Integer face_index,Integer n0,Integer n1,Integer n2)
 /*---------------------------------------------------------------------------*/
 
 void ItemTypeInfoBuilder::
-addFaceTriangle6(Integer face_index,Integer n0,Integer n1,Integer n2,
+addFaceTriangle6(Integer face_index, Integer n0, Integer n1, Integer n2,
                  Integer n3, Integer n4, Integer n5)
 {
+  _checkDimension(3);
   Array<Integer>& buf = m_mng->m_ids_buffer;
   buf[m_first_item_index + m_nb_edge + face_index] = buf.size();
   buf.add(IT_Triangle6);
@@ -141,7 +172,7 @@ addFaceTriangle6(Integer face_index,Integer n0,Integer n1,Integer n2,
   buf.add(n4);
   buf.add(n5);
   buf.add(3);
-  for(Integer i=0;i<3;++i)
+  for (Integer i = 0; i < 3; ++i)
     buf.add(-1); // undef value, filled by ItemTypeInfoBuilder::computeFaceEdgeInfos
 }
 
@@ -149,8 +180,9 @@ addFaceTriangle6(Integer face_index,Integer n0,Integer n1,Integer n2,
 /*---------------------------------------------------------------------------*/
 
 void ItemTypeInfoBuilder::
-addFaceQuad(Integer face_index,Integer n0,Integer n1,Integer n2,Integer n3)
+addFaceQuad(Integer face_index, Integer n0, Integer n1, Integer n2, Integer n3)
 {
+  _checkDimension(3);
   Array<Integer>& buf = m_mng->m_ids_buffer;
   buf[m_first_item_index + m_nb_edge + face_index] = buf.size();
   buf.add(IT_Quad4);
@@ -160,7 +192,7 @@ addFaceQuad(Integer face_index,Integer n0,Integer n1,Integer n2,Integer n3)
   buf.add(n2);
   buf.add(n3);
   buf.add(4);
-  for(Integer i=0;i<4;++i)
+  for (Integer i = 0; i < 4; ++i)
     buf.add(-1); // undef value, filled by ItemTypeInfoBuilder::computeFaceEdgeInfos
 }
 
@@ -168,9 +200,10 @@ addFaceQuad(Integer face_index,Integer n0,Integer n1,Integer n2,Integer n3)
 /*---------------------------------------------------------------------------*/
 
 void ItemTypeInfoBuilder::
-addFaceQuad8(Integer face_index,Integer n0,Integer n1,Integer n2,Integer n3,
-             Integer n4,Integer n5,Integer n6,Integer n7)
+addFaceQuad8(Integer face_index, Integer n0, Integer n1, Integer n2, Integer n3,
+             Integer n4, Integer n5, Integer n6, Integer n7)
 {
+  _checkDimension(3);
   Array<Integer>& buf = m_mng->m_ids_buffer;
   buf[m_first_item_index + m_nb_edge + face_index] = buf.size();
   buf.add(IT_Quad8);
@@ -184,7 +217,7 @@ addFaceQuad8(Integer face_index,Integer n0,Integer n1,Integer n2,Integer n3,
   buf.add(n6);
   buf.add(n7);
   buf.add(4);
-  for(Integer i=0;i<4;++i)
+  for (Integer i = 0; i < 4; ++i)
     buf.add(-1); // undef value, filled by ItemTypeInfoBuilder::computeFaceEdgeInfos
 }
 
@@ -192,8 +225,9 @@ addFaceQuad8(Integer face_index,Integer n0,Integer n1,Integer n2,Integer n3,
 /*---------------------------------------------------------------------------*/
 
 void ItemTypeInfoBuilder::
-addFacePentagon(Integer face_index,Integer n0,Integer n1,Integer n2,Integer n3,Integer n4)
+addFacePentagon(Integer face_index, Integer n0, Integer n1, Integer n2, Integer n3, Integer n4)
 {
+  _checkDimension(3);
   Array<Integer>& buf = m_mng->m_ids_buffer;
   buf[m_first_item_index + m_nb_edge + face_index] = buf.size();
   buf.add(IT_Pentagon5);
@@ -204,7 +238,7 @@ addFacePentagon(Integer face_index,Integer n0,Integer n1,Integer n2,Integer n3,I
   buf.add(n3);
   buf.add(n4);
   buf.add(5);
-  for(Integer i=0;i<5;++i)
+  for (Integer i = 0; i < 5; ++i)
     buf.add(-1); // undef value, filled by ItemTypeInfoBuilder::computeFaceEdgeInfos
 }
 
@@ -212,9 +246,10 @@ addFacePentagon(Integer face_index,Integer n0,Integer n1,Integer n2,Integer n3,I
 /*---------------------------------------------------------------------------*/
 
 void ItemTypeInfoBuilder::
-addFaceHexagon(Integer face_index,Integer n0,Integer n1,Integer n2,
-               Integer n3,Integer n4,Integer n5)
+addFaceHexagon(Integer face_index, Integer n0, Integer n1, Integer n2,
+               Integer n3, Integer n4, Integer n5)
 {
+  _checkDimension(3);
   Array<Integer>& buf = m_mng->m_ids_buffer;
   buf[m_first_item_index + m_nb_edge + face_index] = buf.size();
   buf.add(IT_Hexagon6);
@@ -226,7 +261,7 @@ addFaceHexagon(Integer face_index,Integer n0,Integer n1,Integer n2,
   buf.add(n4);
   buf.add(n5);
   buf.add(6);
-  for(Integer i=0;i<6;++i)
+  for (Integer i = 0; i < 6; ++i)
     buf.add(-1); // undef value, filled by ItemTypeInfoBuilder::computeFaceEdgeInfos
 }
 
@@ -234,9 +269,10 @@ addFaceHexagon(Integer face_index,Integer n0,Integer n1,Integer n2,
 /*---------------------------------------------------------------------------*/
 
 void ItemTypeInfoBuilder::
-addFaceHeptagon(Integer face_index,Integer n0,Integer n1,Integer n2,Integer n3,
-                Integer n4,Integer n5, Integer n6)
+addFaceHeptagon(Integer face_index, Integer n0, Integer n1, Integer n2, Integer n3,
+                Integer n4, Integer n5, Integer n6)
 {
+  _checkDimension(3);
   Array<Integer>& buf = m_mng->m_ids_buffer;
   buf[m_first_item_index + m_nb_edge + face_index] = buf.size();
   buf.add(IT_Heptagon7);
@@ -249,7 +285,7 @@ addFaceHeptagon(Integer face_index,Integer n0,Integer n1,Integer n2,Integer n3,
   buf.add(n5);
   buf.add(n6);
   buf.add(7);
-  for(Integer i=0;i<7;++i)
+  for (Integer i = 0; i < 7; ++i)
     buf.add(-1); // undef value, filled by ItemTypeInfoBuilder::computeFaceEdgeInfos
 }
 
@@ -257,9 +293,10 @@ addFaceHeptagon(Integer face_index,Integer n0,Integer n1,Integer n2,Integer n3,
 /*---------------------------------------------------------------------------*/
 
 void ItemTypeInfoBuilder::
-addFaceOctogon(Integer face_index,Integer n0,Integer n1,Integer n2,Integer n3,
-               Integer n4,Integer n5, Integer n6, Integer n7)
+addFaceOctogon(Integer face_index, Integer n0, Integer n1, Integer n2, Integer n3,
+               Integer n4, Integer n5, Integer n6, Integer n7)
 {
+  _checkDimension(3);
   Array<Integer>& buf = m_mng->m_ids_buffer;
   buf[m_first_item_index + m_nb_edge + face_index] = buf.size();
   buf.add(IT_Octogon8);
@@ -273,7 +310,7 @@ addFaceOctogon(Integer face_index,Integer n0,Integer n1,Integer n2,Integer n3,
   buf.add(n6);
   buf.add(n7);
   buf.add(8);
-  for(Integer i=0;i<8;++i)
+  for (Integer i = 0; i < 8; ++i)
     buf.add(-1); // undef value, filled by ItemTypeInfoBuilder::computeFaceEdgeInfos
 }
 
@@ -281,17 +318,20 @@ addFaceOctogon(Integer face_index,Integer n0,Integer n1,Integer n2,Integer n3,
 /*---------------------------------------------------------------------------*/
 
 void ItemTypeInfoBuilder::
-addFaceGeneric(Integer face_index,Integer type_id,ConstArrayView<Integer> n)
+addFaceGeneric(Integer face_index, Integer type_id, ConstArrayView<Integer> n)
 {
+  // Actuellement cette méthode est uniquement appelée pour les faces 2D donc
+  // l'élément actuel doit être de dimension 3.
+  _checkDimension(3);
   Array<Integer>& buf = m_mng->m_ids_buffer;
   buf[m_first_item_index + m_nb_edge + face_index] = buf.size();
   buf.add(type_id);
   Integer face_nb_node = n.size();
   buf.add(face_nb_node);
-  for( Integer i=0; i<face_nb_node; ++i )
+  for (Integer i = 0; i < face_nb_node; ++i)
     buf.add(n[i]);
   buf.add(face_nb_node); // nb edge; ne traite pas de cas particulier pour n==2
-  for(Integer i=0;i<face_nb_node;++i)
+  for (Integer i = 0; i < face_nb_node; ++i)
     buf.add(-1); // undef value, filled by ItemTypeInfoBuilder::computeFaceEdgeInfos
 }
 
