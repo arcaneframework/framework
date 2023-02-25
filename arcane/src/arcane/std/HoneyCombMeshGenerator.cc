@@ -376,7 +376,7 @@ _buildCells()
   if (pm->commRank() == 0)
     _buildCells2();
   else {
-    m_mesh->setDimension(2);
+    m_mesh->setDimension(3);
     m_mesh->allocateCells(0, Int64ConstArrayView(), true);
   }
 }
