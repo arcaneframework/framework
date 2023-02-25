@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemTypeInfo.h                                              (C) 2000-2022 */
+/* ItemTypeInfo.h                                              (C) 2000-2023 */
 /*                                                                           */
 /* Informations sur un type d'entité du maillage.                            */
 /*---------------------------------------------------------------------------*/
@@ -95,7 +95,7 @@ class ItemTypeInfo
  protected:
 
   //! Constructeur par défaut
-  ItemTypeInfo();
+  ItemTypeInfo() = default;
 
  public:
 
@@ -111,6 +111,8 @@ class ItemTypeInfo
   Integer nbLocalEdge() const { return m_nb_edge; }
   //! Nom du type
   String typeName() const { return m_type_name; }
+  //! Dimension de l'élément (<0 si inconnu)
+  Int16 dimension() const { return m_dimension; }
 
  public:
 
@@ -131,12 +133,15 @@ class ItemTypeInfo
   }
 
  protected:
-  ItemTypeMng* m_mng;
-  ItemTypeId m_type_id;
-  Integer m_nb_node;
-  Integer m_nb_edge;
-  Integer m_nb_face;
-  Integer m_first_item_index;
+
+  ItemTypeMng* m_mng = nullptr;
+  ItemTypeId m_type_id{ IT_NullType };
+  // Dimension (-1) si pas initialisé.
+  Int16 m_dimension = (-1);
+  Integer m_nb_node = 0;
+  Integer m_nb_edge = 0;
+  Integer m_nb_face = 0;
+  Integer m_first_item_index = 0;
   String m_type_name;
 };
 
