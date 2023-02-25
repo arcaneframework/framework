@@ -597,7 +597,7 @@ _addOneCell(const CellInfo& cell_info)
     Int32 mesh_dimension = m_mesh->dimension();
     if (cell_dimension>=0 && cell_dimension!=mesh_dimension)
       ARCANE_FATAL("Incoherent dimension for cell uid={0} cell_dim={1} mesh_dim={2} type={3}",
-                   cell_info.uniqueId(),cell_dimension,mesh_dimension,cell_type_id);
+                   cell_info.uniqueId(),cell_dimension,mesh_dimension,cell_type_info->typeName());
   }
 
   //! Type la table de hashage uniqueId()->ItemInternal*
