@@ -554,13 +554,13 @@ _addOneCell(const CellInfo& cell_info)
 {
   bool is_check = arcaneIsCheck();
 
+  ItemTypeInfo* cell_type_info = cell_info.typeInfo();
+  ItemTypeId cell_type_id = cell_type_info->itemTypeId();
   // Regarde si la maille existe déjà (auquel cas on ne fait rien)
   Cell inew_cell;
   {
     bool is_add; // ce flag est toujours correctement positionné via les findOrAllocOne
-    inew_cell = m_cell_family.findOrAllocOne(cell_info.uniqueId(),
-                                             cell_info.typeInfo()->itemTypeId(),
-                                             is_add);
+    inew_cell = m_cell_family.findOrAllocOne(cell_info.uniqueId(),cell_type_id,is_add);
     if (!is_add){
       if (is_check){
         Cell cell2(inew_cell);
@@ -590,6 +590,14 @@ _addOneCell(const CellInfo& cell_info)
       ARCANE_FATAL("Incoherent number of nodes v={0} expected={1}",inew_cell.nbNode(),cell_info.nbNode());
     if (cell_nb_face!=inew_cell.nbFace())
       ARCANE_FATAL("Incoherent number of faces v={0} expected={1}",inew_cell.nbFace(),cell_nb_face);
+    if (!cell_type_info->isValidForCell())
+      ARCANE_FATAL("Type '{0}' is not allowed for 'Cell' (cell_uid={1})",
+                   cell_type_info->typeName(),cell_info.uniqueId());
+    Int32 cell_dimension = cell_type_info->dimension();
+    Int32 mesh_dimension = m_mesh->dimension();
+    if (cell_dimension>=0 && cell_dimension!=mesh_dimension)
+      ARCANE_FATAL("Incoherent dimension for cell uid={0} cell_dim={1} mesh_dim={2} type={3}",
+                   cell_info.uniqueId(),cell_dimension,mesh_dimension,cell_type_id);
   }
 
   //! Type la table de hashage uniqueId()->ItemInternal*
@@ -597,7 +605,6 @@ _addOneCell(const CellInfo& cell_info)
   
   _addNodesToCell(inew_cell,cell_info);
   
-  ItemTypeInfo* cell_type_info = cell_info.typeInfo();
   if (m_mesh_builder->hasEdge()) {
     // Ajoute les nouvelles arêtes ci-nécessaire
     for( Integer i_edge=0; i_edge<cell_nb_edge; ++i_edge ){
