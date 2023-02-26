@@ -104,6 +104,7 @@ set(ARCANE_ORIGINAL_SOURCES
   IMainFactory.h
   IMesh.h
   IMeshBase.h
+  IMeshInitialAllocator.h
   IMeshModifier.h
   IMeshReader.h
   IMeshUtilities.h
@@ -552,6 +553,8 @@ set(ARCANE_ORIGINAL_SOURCES
   UnitTestServiceAdapter.h
   UnstructuredMeshConnectivity.cc
   UnstructuredMeshConnectivity.h
+  UnstructuredMeshAllocateBuildInfo.h
+  UnstructuredMeshAllocateBuildInfo.cc
   Variable.cc
   Variable.h
   VariableAccessor.h
