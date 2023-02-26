@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/ItemTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -26,6 +26,12 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Informations pour allouer les entités d'un maillage non structuré.
+ *
+ * Cette classe permet de spécifier les mailles qui seront ajoutées lors
+ * de l'allocation initiale du maillage.
+ * Il faut appeler setMeshDimension() pour spécifier la dimension du maillage
+ * puis appeler addCell() pour chaque maille qu'on souhaite ajouter. Une fois
+ * toute les mailles ajoutées il faut appeler allocateMesh().
  */
 class ARCANE_CORE_EXPORT UnstructuredMeshAllocateBuildInfo
 {
@@ -33,7 +39,7 @@ class ARCANE_CORE_EXPORT UnstructuredMeshAllocateBuildInfo
 
  public:
 
-  UnstructuredMeshAllocateBuildInfo(IPrimaryMesh* mesh);
+  explicit UnstructuredMeshAllocateBuildInfo(IPrimaryMesh* mesh);
   ~UnstructuredMeshAllocateBuildInfo();
 
  public:
@@ -42,6 +48,36 @@ class ARCANE_CORE_EXPORT UnstructuredMeshAllocateBuildInfo
   UnstructuredMeshAllocateBuildInfo(const UnstructuredMeshAllocateBuildInfo& from) = delete;
   UnstructuredMeshAllocateBuildInfo& operator=(UnstructuredMeshAllocateBuildInfo&& from) = delete;
   UnstructuredMeshAllocateBuildInfo& operator=(const UnstructuredMeshAllocateBuildInfo& from) = delete;
+
+ public:
+
+  /*!
+   * \brief Pre-alloue la mémoire.
+   *
+   * Pré-alloue les tableaux contenant la connectivité pour contenir \a nb_cell
+   * mailles et \a nb_connectivity_node pour la liste des noeuds
+   * des mailles.
+   *
+   * Cette méthode est optionnelle et n'est utile que pour
+   * optimiser la gestion mémoire.
+   *
+   * Par exemple, si on sait que notre maillage contiendra 300 quadrangles
+   * alors on peut utiliser preAllocate(300,300*4).
+   */
+  void preAllocate(Int32 nb_cell,Int64 nb_connectivity_node);
+
+  //! Positionne la dimension du maillage
+  void setMeshDimension(Int32 v);
+
+  //! Ajoute une maille au maillage
+  void addCell(ItemTypeId type_id, Int64 cell_uid, SmallSpan<const Int64> nodes_uid);
+
+  /*!
+   * \brief Alloue le maillage avec les mailles ajoutées lors de l'appel à addCell().
+   *
+   * Cette méthode est collective.
+   */
+  void allocateMesh();
 
  private:
 
@@ -56,5 +92,4 @@ class ARCANE_CORE_EXPORT UnstructuredMeshAllocateBuildInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#endif  
-
+#endif
