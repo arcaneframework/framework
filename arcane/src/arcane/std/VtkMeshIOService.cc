@@ -44,6 +44,7 @@
 #include "arcane/XmlNodeList.h"
 
 #include "arcane/std/internal/VtkCellTypes.h"
+#include "arcane/core/UnstructuredMeshAllocateBuildInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1261,7 +1262,6 @@ _readUnstructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_p
   Integer nb_cell_node = 0;
   Int32 sid = mesh->parallelMng()->commRank();
   UniqueArray<Real3> node_coords;
-  UniqueArray<Int64> cells_infos;
   UniqueArray<Int32> cells_local_id;
 
   // Si on utilise le partitionneur interne, seul le sous-domaine lit le maillage
@@ -1273,6 +1273,8 @@ _readUnstructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_p
   std::array<Int64, 4> nb_cell_by_dimension = {};
   Int32 mesh_dimension = -1;
   ItemTypeMng* itm = mesh->itemTypeMng();
+  UnstructuredMeshAllocateBuildInfo mesh_build_info(mesh);
+
   if (need_read) {
     // Lecture première partie du fichier (après header).
     _readNodesUnstructuredGrid(mesh, vtk_file, node_coords);
@@ -1292,34 +1294,22 @@ _readUnstructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_p
     cells_local_id.resize(nb_cell);
 
     // Création des mailles
-    // Infos pour la création des mailles
-    // par maille: 1 pour son unique id,
-    //             1 pour son type,
-    //             1 pour chaque noeud
-    cells_infos.resize(nb_cell * 2 + nb_cell_node);
+    mesh_build_info.preAllocate(nb_cell, nb_cell_node);
 
     {
-      Integer cells_infos_index = 0;
-      Integer connectivity_index = 0;
+      Int32 connectivity_index = 0;
       for (Integer i = 0; i < nb_cell; ++i) {
-        Integer current_cell_nb_node = cells_nb_node[i];
-        Integer cell_unique_id = i;
+        Int32 current_cell_nb_node = cells_nb_node[i];
+        Int64 cell_unique_id = i;
 
         cells_local_id[i] = i;
 
-        cells_infos[cells_infos_index] = cells_type[i];
         Int16 cell_dim = itm->typeFromId(cells_type[i])->dimension();
         if (cell_dim >= 0 && cell_dim <= 3)
           ++nb_cell_by_dimension[cell_dim];
-        ++cells_infos_index;
 
-        cells_infos[cells_infos_index] = cell_unique_id;
-        ++cells_infos_index;
-
-        for (Integer z = 0; z < current_cell_nb_node; ++z) {
-          cells_infos[cells_infos_index + z] = cells_connectivity[connectivity_index + z];
-        }
-        cells_infos_index += current_cell_nb_node;
+        auto cell_nodes = cells_connectivity.subView(connectivity_index,current_cell_nb_node);
+        mesh_build_info.addCell(cells_type[i],cell_unique_id, cell_nodes);
         connectivity_index += current_cell_nb_node;
       }
     }
@@ -1340,10 +1330,10 @@ _readUnstructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_p
     Integer wanted_dimension = mesh_dimension;
     wanted_dimension = mesh->parallelMng()->reduce(Parallel::ReduceMax, wanted_dimension);
     mesh->setDimension(wanted_dimension);
+    mesh_build_info.setMeshDimension(wanted_dimension);
   }
 
-  mesh->allocateCells(nb_cell, cells_infos, false);
-  mesh->endAllocate();
+  mesh_build_info.allocateMesh();
 
   // Positionne les coordonnées
   {
