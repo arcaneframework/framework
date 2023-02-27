@@ -1,0 +1,174 @@
+﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
+//-----------------------------------------------------------------------------
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// See the top-level COPYRIGHT file for details.
+// SPDX-License-Identifier: Apache-2.0
+//-----------------------------------------------------------------------------
+
+#include <gtest/gtest.h>
+
+#include "arcane/utils/MemoryView.h"
+#include "arcane/utils/UniqueArray.h"
+#include "arcane/utils/Exception.h"
+
+#include "arcane/utils/Real2.h"
+#include "arcane/utils/Real3.h"
+#include "arcane/utils/Real2x2.h"
+#include "arcane/utils/Real3x3.h"
+
+#include <vector>
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+using namespace Arcane;
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename DataType>
+class MemoryTester
+{
+  char _initValue(Int32 v, char*)
+  {
+    auto x = static_cast<char>(v + 5);
+    return x;
+  }
+  Int16 _initValue(Int32 v, Int16*)
+  {
+    auto x = static_cast<Int16>(v + 5);
+    return x;
+  }
+  Int32 _initValue(Int32 v, Int32*)
+  {
+    auto x = static_cast<Int32>(v + 5);
+    return x;
+  }
+  Int64 _initValue(Int32 v, Int64*)
+  {
+    auto x = static_cast<Int64>(v + 5);
+    return x;
+  }
+  Real _initValue(Int32 v, Real*)
+  {
+    auto x = static_cast<Real>(v + 5);
+    return x;
+  }
+  Real3 _initValue(Int32 v, Real3*)
+  {
+    Real x = static_cast<Real>(v + 5);
+    return Real3(x, x / 2.0, x + 1.5);
+  }
+  Real2x2 _initValue(Int32 v, Real2x2*)
+  {
+    Real x = static_cast<Real>(v + 5);
+    Real2 a(x, x / 2.0);
+    Real2 b(x - 7.9, x * 2.0);
+    return { a, b };
+  }
+  Real3x3 _initValue(Int32 v, Real3x3*)
+  {
+    Real x = static_cast<Real>(v + 5);
+    Real3 a(x, x / 2.0, x + 1.5);
+    Real3 b(x - 7.9, x * 2.0, x / 1.5);
+    Real3 c(x + 3.2, x + 4.7, x + 2.5);
+    return { a, b, c };
+  }
+
+ public:
+
+  void apply()
+  {
+    Int32 nb_value = 1000;
+    DataType* dummy = nullptr;
+    UniqueArray<DataType> array1(nb_value);
+    for (Int32 i = 0; i < nb_value; ++i) {
+      DataType x = _initValue(i, dummy);
+      array1[i] = x;
+    }
+
+    // Teste MutableMemoryView::copyHost()
+    {
+      UniqueArray<DataType> array2(nb_value);
+      MutableMemoryView to(array2.span());
+      MemoryView from(array1.span());
+      to.copyHost(from);
+      ASSERT_EQ(array1, array2);
+    }
+
+    // Liste des indexs qu'on veut copier.
+    // Cette liste est générée aléatoirement
+    UniqueArray<Int32> copy_indexes;
+    unsigned int seed0 = 942244294;
+    for (Int32 i = 0; i < nb_value; ++i) {
+      int r = rand_r(&seed0);
+      if (r > (RAND_MAX / 2))
+        copy_indexes.add(i);
+    }
+    Int32 nb_index = copy_indexes.size();
+    std::cout << "NB_COPY=" << nb_index << "\n";
+
+    // Teste MutableMemoryView::copyFromIndexesHost()
+    {
+      // array2 contient la référence à laquelle
+      // il faudra comparer l'opération de recopie
+      // avec index
+      UniqueArray<DataType> array2(nb_index);
+      for (Int32 i = 0; i < nb_index; ++i)
+        array2[i] = array1[copy_indexes[i]];
+
+      UniqueArray<DataType> array3(nb_index);
+      MutableMemoryView to(array3.span());
+      MemoryView from(array1.span());
+      to.copyFromIndexesHost(from, copy_indexes);
+      ASSERT_EQ(array2, array3);
+    }
+
+    // Teste MutableMemoryView::copyToIndexesHost()
+    {
+      // array2 contient la référence à laquelle
+      // il faudra comparer l'opération de recopie
+      // avec index
+      UniqueArray<DataType> array2(nb_value);
+      UniqueArray<DataType> array3(nb_value);
+      for (Int32 i = 0; i < nb_value; ++i) {
+        DataType x = _initValue(i + 27, dummy);
+        array2[i] = x;
+        array3[i] = x;
+      }
+
+      for (Int32 i = 0; i < nb_index; ++i)
+        array2[copy_indexes[i]] = array1[i];
+
+      MutableMemoryView to(array3.span());
+      MemoryView from(array1.span());
+      from.copyToIndexesHost(to, copy_indexes);
+      ASSERT_EQ(array2, array3);
+    }
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+TEST(Memory, Basic)
+{
+  // TODO: Tester NumVector et NumMatrix
+  try {
+    MemoryTester<char>{}.apply();
+    MemoryTester<Real>{}.apply();
+    MemoryTester<Real3>{}.apply();
+    MemoryTester<Int16>{}.apply();
+    MemoryTester<Int32>{}.apply();
+    MemoryTester<Int64>{}.apply();
+    MemoryTester<Real2x2>{}.apply();
+    MemoryTester<Real3x3>{}.apply();
+  }
+  catch (const Exception& ex) {
+    std::cerr << "ERROR=" << ex << "\n";
+    throw;
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
