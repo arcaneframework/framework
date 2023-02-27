@@ -44,9 +44,18 @@ class ARCANE_UTILS_EXPORT MemoryView
   , m_datatype_size(1)
   {}
   template <typename DataType> explicit constexpr MemoryView(Span<DataType> v)
+  : MemoryView(v, 1)
+  {}
+  template <typename DataType> explicit constexpr MemoryView(ConstArrayView<DataType> v)
+  : MemoryView(Span<const DataType>(v), 1)
+  {}
+  template <typename DataType> constexpr MemoryView(ConstArrayView<DataType> v, Int32 nb_component)
+  : MemoryView(Span<const DataType>(v), nb_component)
+  {}
+  template <typename DataType> constexpr MemoryView(Span<DataType> v, Int32 nb_component)
   : m_bytes(asBytes(v))
   , m_nb_element(v.size())
-  , m_datatype_size(static_cast<Int32>(sizeof(DataType)))
+  , m_datatype_size(static_cast<Int32>(sizeof(DataType)) * nb_component)
   {}
 
  public:
@@ -145,9 +154,18 @@ class ARCANE_UTILS_EXPORT MutableMemoryView
   , m_datatype_size(1)
   {}
   template <typename DataType> explicit constexpr MutableMemoryView(Span<DataType> v)
+  : MutableMemoryView(v, 1)
+  {}
+  template <typename DataType> explicit constexpr MutableMemoryView(ArrayView<DataType> v)
+  : MutableMemoryView(Span<DataType>(v), 1)
+  {}
+  template <typename DataType> explicit constexpr MutableMemoryView(ArrayView<DataType> v, Int32 nb_component)
+  : MutableMemoryView(Span<DataType>(v), nb_component)
+  {}
+  template <typename DataType> constexpr MutableMemoryView(Span<DataType> v, Int32 nb_component)
   : m_bytes(asWritableBytes(v))
   , m_nb_element(v.size())
-  , m_datatype_size(static_cast<Int32>(sizeof(DataType)))
+  , m_datatype_size(static_cast<Int32>(sizeof(DataType)) * nb_component)
   {}
 
  public:
