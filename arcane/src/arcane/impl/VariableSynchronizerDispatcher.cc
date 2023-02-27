@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableSynchronizerDispatcher.cc                           (C) 2000-2021 */
+/* VariableSynchronizerDispatcher.cc                           (C) 2000-2023 */
 /*                                                                           */
 /* Service de synchronisation des variables.                                 */
 /*---------------------------------------------------------------------------*/
@@ -39,9 +39,9 @@ VariableSynchronizeDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi)
 : m_parallel_mng(bi.parallelMng())
 {
   if (bi.table())
-    m_buffer_copier = new TableBufferCopier<SimpleType>(bi.table());
+    m_buffer_copier = new TableBufferCopier(bi.table());
   else
-    m_buffer_copier = new DirectBufferCopier<SimpleType>();
+    m_buffer_copier = new DirectBufferCopier();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -152,7 +152,7 @@ compute()
  * terme de memoire.
  */
 template<typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::SyncBuffer::
-compute(IBufferCopier<SimpleType>* copier,ItemGroupSynchronizeInfo* sync_info,Integer dim2_size)
+compute(IBufferCopier* copier,ItemGroupSynchronizeInfo* sync_info,Integer dim2_size)
 {
   m_buffer_copier = copier;
   m_sync_info = sync_info;
@@ -218,12 +218,11 @@ copyReceive(Integer index)
   ArrayView<SimpleType> var_values = dataView();
   const VariableSyncInfo& vsi = (*m_sync_info)[index];
   ConstArrayView<Int32> indexes = vsi.ghostIds();
-  ArrayView<SimpleType> local_buffer = ghostBuffer(index);
+  ConstArrayView<SimpleType> local_buffer = ghostBuffer(index);
 
-  if (m_dim2_size==1)
-    m_buffer_copier->copyFromBufferOne(indexes,local_buffer,var_values);
-  else
-    m_buffer_copier->copyFromBufferMultiple(indexes,local_buffer,var_values,m_dim2_size);
+  MemoryView from(local_buffer,m_dim2_size);
+  MutableMemoryView to(var_values,m_dim2_size);
+  m_buffer_copier->copyFromBuffer(indexes,from,to);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -235,15 +234,14 @@ copySend(Integer index)
   ARCANE_CHECK_POINTER(m_sync_info);
   ARCANE_CHECK_POINTER(m_buffer_copier);
 
-  ArrayView<SimpleType> var_values = dataView();
+  ConstArrayView<SimpleType> var_values = dataView();
   const VariableSyncInfo& vsi = (*m_sync_info)[index];
   Int32ConstArrayView indexes = vsi.shareIds();
   ArrayView<SimpleType> local_buffer = shareBuffer(index);
 
-  if (m_dim2_size==1)
-    m_buffer_copier->copyToBufferOne(indexes,local_buffer,var_values);
-  else
-    m_buffer_copier->copyToBufferMultiple(indexes,local_buffer,var_values,m_dim2_size);
+  MutableMemoryView local_buf(local_buffer,m_dim2_size);
+  MemoryView var_buf(var_values,m_dim2_size);
+  m_buffer_copier->copyToBuffer(indexes,local_buf,var_buf);
 }
 
 /*---------------------------------------------------------------------------*/
