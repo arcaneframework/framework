@@ -92,6 +92,24 @@ class ARCANE_UTILS_EXPORT MemoryView
 
  public:
 
+  /*!
+   * \brief Copie dans l'instance indexée les données de \a v.
+   *
+   * L'opération est équivalente au pseudo-code suivant:
+   *
+   * \code
+   * Int64 n = indexes.size();
+   * for( Int64 i=0; i<n; ++i )
+   *   v[indexes[i]] = this[i];
+   * \endcode
+   *
+   * \pre this.datatypeSize() == v.datatypeSize();
+   * \pre v.nbElement() >= indexes.size();
+   */
+  void copyToIndexesHost(MutableMemoryView v, Span<const Int32> indexes);
+
+ public:
+
   //! Vue convertie en un Span
   ARCANE_DEPRECATED_REASON("Use bytes() instead")
   SpanType span() const { return m_bytes; }
@@ -99,7 +117,7 @@ class ARCANE_UTILS_EXPORT MemoryView
   ARCANE_DEPRECATED_REASON("Use bytes().size() instead")
   constexpr Int64 size() const { return m_bytes.size(); }
 
- public:
+ private:
 
   SpanType m_bytes;
   Int64 m_nb_element = 0;
@@ -188,6 +206,22 @@ class ARCANE_UTILS_EXPORT MutableMemoryView
    */
   void copyHost(MemoryView v);
 
+  /*!
+   * \brief Copie dans l'instance les données indexées de \a v.
+   *
+   * L'opération est équivalente au pseudo-code suivant:
+   *
+   * \code
+   * Int64 n = indexes.size();
+   * for( Int64 i=0; i<n; ++i )
+   *   this[i] = v[indexes[i]];
+   * \endcode
+   *
+   * \pre this.datatypeSize() == v.datatypeSize();
+   * \pre this.nbElement() >= indexes.size();
+   */
+  void copyFromIndexesHost(MemoryView v, Span<const Int32> indexes);
+
  public:
 
   ARCANE_DEPRECATED_REASON("Use bytes() instead")
@@ -196,7 +230,7 @@ class ARCANE_UTILS_EXPORT MutableMemoryView
   ARCANE_DEPRECATED_REASON("Use bytes().size() instead")
   constexpr Int64 size() const { return m_bytes.size(); }
 
- public:
+ private:
 
   SpanType m_bytes;
   Int64 m_nb_element = 0;
