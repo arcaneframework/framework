@@ -176,12 +176,15 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
     : public IDataSynchronizeBuffer
     {
      public:
+
       GenericBuffer(SyncBuffer* b) : m_buffer(b){}
+
      public:
+
       Int32 nbRank() const override { return m_buffer->nbRank(); }
       bool hasGlobalBuffer() const override { return true; }
-      Span<std::byte> globalSendBuffer() override { return _toBytes(m_buffer->shareBuffer()); }
-      Span<std::byte> globalReceiveBuffer() override { return _toBytes(m_buffer->ghostBuffer()); }
+      Span<std::byte> globalSendBuffer() override { return m_buffer->shareMemoryView().bytes(); }
+      Span<std::byte> globalReceiveBuffer() override { return m_buffer->ghostMemoryView().bytes(); }
       Span<std::byte> sendBuffer(Int32 index) override { return m_buffer->shareMemoryView(index).bytes(); }
       Span<std::byte> receiveBuffer(Int32 index) override { return m_buffer->ghostMemoryView(index).bytes(); }
       Int64 sendDisplacement(Int32 index) const override { return m_buffer->shareDisplacement(index) * sizeof(SimpleType); }
@@ -190,15 +193,14 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
       void copyReceive(Int32 index) override { m_buffer->copyReceive(index); }
       Int64 totalSendSize() const override { return  m_buffer->totalShareSize(); }
       Int64 totalReceiveSize() const override { return m_buffer->totalGhostSize(); }
+
      private:
+
       SyncBuffer* m_buffer;
-      Span<std::byte> _toBytes(ArrayView<SimpleType> view)
-      {
-        Int64 s = static_cast<Int64>(view.size()) * sizeof(SimpleType);
-        return { reinterpret_cast<std::byte*>(view.data()), s };
-      }
+
     };
-   public:
+
+  public:
 
     SyncBuffer() : m_generic_buffer(this){}
 
@@ -218,14 +220,14 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
 
     Int32 ghostDisplacement(Int32 index) const { return m_ghost_displacements[index]; }
     Int32 shareDisplacement(Int32 index) const { return m_share_displacements[index]; }
-    ArrayView<SimpleType> ghostBuffer() { return m_ghost_buffer; }
-    ArrayView<SimpleType> shareBuffer() { return m_share_buffer; }
-    ConstArrayView<SimpleType> ghostBuffer() const { return m_ghost_buffer; }
-    ConstArrayView<SimpleType> shareBuffer() const { return m_share_buffer; }
 
-    void setDataView(ArrayView<SimpleType> v) { m_data_view = v; }
-    //ArrayView<SimpleType> dataView() { return m_data_view; }
-    MutableMemoryView dataMemoryView() { return _toMemoryView(m_data_view); }
+    MutableMemoryView ghostMemoryView() { return _toMemoryView(m_ghost_buffer); }
+    MutableMemoryView shareMemoryView() { return _toMemoryView(m_share_buffer); }
+    MemoryView ghostMemoryView() const { return _toMemoryView(m_ghost_buffer); }
+    MemoryView shareMemoryView() const { return _toMemoryView(m_share_buffer); }
+
+    void setDataView(MutableMemoryView v) { m_data_view = v; }
+    MutableMemoryView dataMemoryView() { return m_data_view; }
 
     void copyReceive(Integer index);
     void copySend(Integer index);
@@ -258,10 +260,12 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
     UniqueArray<Int32> m_share_displacements;
     ItemGroupSynchronizeInfo* m_sync_info = nullptr;
     //! Vue sur les données de la variable
-    ArrayView<SimpleType> m_data_view;
+    MutableMemoryView m_data_view;
     IBufferCopier* m_buffer_copier = nullptr;
     GenericBuffer m_generic_buffer;
+
   private:
+
     MutableMemoryView _toMemoryView(ArrayView<SimpleType> view)
     {
       return MutableMemoryView{view,m_dim2_size};

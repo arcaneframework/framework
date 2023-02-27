@@ -73,7 +73,7 @@ applyDispatch(IArrayDataT<SimpleType>* data)
   if (m_is_in_sync)
     ARCANE_FATAL("Only one pending serialisation is supported");
   m_is_in_sync = true;
-  m_1d_buffer.setDataView(data->view());
+  m_1d_buffer.setDataView(MutableMemoryView{data->view()});
   _beginSynchronize(m_1d_buffer);
   _endSynchronize(m_1d_buffer);
   m_is_in_sync = false;
@@ -97,7 +97,7 @@ applyDispatch(IArray2DataT<SimpleType>* data)
   Integer dim1_size = value.dim1Size();
   m_2d_buffer.compute(m_buffer_copier,m_sync_info,dim2_size);
   ArrayView<SimpleType> buf(dim1_size*dim2_size,value_ptr);
-  m_2d_buffer.setDataView(buf);
+  m_2d_buffer.setDataView(MutableMemoryView(buf,dim2_size));
   _beginSynchronize(m_2d_buffer);
   _endSynchronize(m_2d_buffer);
   m_is_in_sync = false;
