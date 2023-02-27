@@ -29,30 +29,22 @@ namespace Arcane
 /*!
  * \internal
  */
-template<typename SimpleType>
-class IBufferCopier 
+template <typename SimpleType>
+class IBufferCopier
 {
  public:
-  
+
   virtual ~IBufferCopier() = default;
 
-  virtual void copyFromBufferOne(Int32ConstArrayView indexes,
-                                 MemoryView buffer,
-                                 MutableMemoryView var_value) = 0;
+ public:
 
-  virtual void copyToBufferOne(Int32ConstArrayView indexes,
-                               MutableMemoryView buffer,
-                               MemoryView var_value) = 0;
+  virtual void copyFromBuffer(Int32ConstArrayView indexes,
+                              MemoryView buffer,
+                              MutableMemoryView var_value) = 0;
 
-  virtual void copyFromBufferMultiple(Int32ConstArrayView indexes,
-                                      MemoryView buffer,
-                                      MutableMemoryView var_value,
-                                      Integer dim2_size) = 0;
-  
-  virtual void copyToBufferMultiple(Int32ConstArrayView indexes,
-                                    MutableMemoryView buffer,
-                                    MemoryView var_value,
-                                    Integer dim2_size) = 0;
+  virtual void copyToBuffer(Int32ConstArrayView indexes,
+                            MutableMemoryView buffer,
+                            MemoryView var_value) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -67,34 +59,18 @@ class DirectBufferCopier
 {
  public:
 
-  void copyFromBufferOne(Int32ConstArrayView indexes,
-                         MemoryView buffer,
-                         MutableMemoryView var_value) override
+  void copyFromBuffer(Int32ConstArrayView indexes,
+                      MemoryView buffer,
+                      MutableMemoryView var_value) override
   {
-    buffer.copyToIndexesHost(var_value,indexes);
+    buffer.copyToIndexesHost(var_value, indexes);
   }
 
-  void copyToBufferOne(Int32ConstArrayView indexes,
-                       MutableMemoryView buffer,
-                       MemoryView var_value) override
+  void copyToBuffer(Int32ConstArrayView indexes,
+                    MutableMemoryView buffer,
+                    MemoryView var_value) override
   {
-    buffer.copyFromIndexesHost(var_value,indexes);
-  }
-
-  void copyFromBufferMultiple(Int32ConstArrayView indexes,
-                              MemoryView buffer,
-                              MutableMemoryView var_value,
-                              Integer dim2_size) override
-  {
-    buffer.copyToIndexesHost(var_value,indexes);
-  }
-
-  void copyToBufferMultiple(Int32ConstArrayView indexes,
-                            MutableMemoryView buffer,
-                            MemoryView var_value,
-                            Integer dim2_size) override
-  {
-    buffer.copyFromIndexesHost(var_value,indexes);
+    buffer.copyFromIndexesHost(var_value, indexes);
   }
 };
 
@@ -109,42 +85,22 @@ class TableBufferCopier
 
   TableBufferCopier(GroupIndexTable* table) : m_table(table) {}
 
-  void copyFromBufferOne(Int32ConstArrayView indexes,
-                         MemoryView buffer,
-                         MutableMemoryView var_value) override
+  void copyFromBuffer(Int32ConstArrayView indexes,
+                      MemoryView buffer,
+                      MutableMemoryView var_value) override
   {
     UniqueArray<Int32> final_indexes;
-    _buildFinalIndexes(final_indexes,indexes);
-    m_base_copier.copyFromBufferOne(final_indexes,buffer,var_value);
+    _buildFinalIndexes(final_indexes, indexes);
+    m_base_copier.copyFromBuffer(final_indexes, buffer, var_value);
   }
 
-  void copyToBufferOne(Int32ConstArrayView indexes,
-                       MutableMemoryView buffer,
-                       MemoryView var_value) override
+  void copyToBuffer(Int32ConstArrayView indexes,
+                    MutableMemoryView buffer,
+                    MemoryView var_value) override
   {
     UniqueArray<Int32> final_indexes;
-    _buildFinalIndexes(final_indexes,indexes);
-    m_base_copier.copyToBufferOne(final_indexes,buffer,var_value);
-  }
-
-  void copyFromBufferMultiple(Int32ConstArrayView indexes,
-                              MemoryView buffer,
-                              MutableMemoryView var_value,
-                              Integer dim2_size) override
-  {
-    UniqueArray<Int32> final_indexes;
-    _buildFinalIndexes(final_indexes,indexes);
-    m_base_copier.copyFromBufferMultiple(final_indexes,buffer,var_value,dim2_size);
-  }
-
-  void copyToBufferMultiple(Int32ConstArrayView indexes,
-                            MutableMemoryView buffer,
-                            MemoryView var_value,
-                            Integer dim2_size) override
-  {
-    UniqueArray<Int32> final_indexes;
-    _buildFinalIndexes(final_indexes,indexes);
-    m_base_copier.copyToBufferMultiple(final_indexes,buffer,var_value,dim2_size);
+    _buildFinalIndexes(final_indexes, indexes);
+    m_base_copier.copyToBuffer(final_indexes, buffer, var_value);
   }
 
  private:

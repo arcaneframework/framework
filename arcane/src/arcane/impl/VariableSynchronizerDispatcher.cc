@@ -220,16 +220,9 @@ copyReceive(Integer index)
   ConstArrayView<Int32> indexes = vsi.ghostIds();
   ConstArrayView<SimpleType> local_buffer = ghostBuffer(index);
 
-  if (m_dim2_size==1){
-    MemoryView from(local_buffer);
-    MutableMemoryView to(var_values);
-    m_buffer_copier->copyFromBufferOne(indexes,from,to);
-  }
-  else{
-    MemoryView from(local_buffer,m_dim2_size);
-    MutableMemoryView to(var_values,m_dim2_size);
-    m_buffer_copier->copyFromBufferMultiple(indexes,from,to,m_dim2_size);
-  }
+  MemoryView from(local_buffer,m_dim2_size);
+  MutableMemoryView to(var_values,m_dim2_size);
+  m_buffer_copier->copyFromBuffer(indexes,from,to);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -246,16 +239,9 @@ copySend(Integer index)
   Int32ConstArrayView indexes = vsi.shareIds();
   ArrayView<SimpleType> local_buffer = shareBuffer(index);
 
-  if (m_dim2_size==1){
-    MutableMemoryView local_buf(local_buffer);
-    MemoryView var_buf(var_values);
-    m_buffer_copier->copyToBufferOne(indexes,local_buf,var_buf);
-  }
-  else{
-    MutableMemoryView local_buf(local_buffer,m_dim2_size);
-    MemoryView var_buf(var_values,m_dim2_size);
-    m_buffer_copier->copyToBufferMultiple(indexes,local_buf,var_buf,m_dim2_size);
-  }
+  MutableMemoryView local_buf(local_buffer,m_dim2_size);
+  MemoryView var_buf(var_values,m_dim2_size);
+  m_buffer_copier->copyToBuffer(indexes,local_buf,var_buf);
 }
 
 /*---------------------------------------------------------------------------*/
