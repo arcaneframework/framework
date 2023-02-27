@@ -48,6 +48,60 @@ copyHost(MemoryView v)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void MutableMemoryView::
+copyFromIndexesHost(MemoryView v, Span<const Int32> indexes)
+{
+  Int64 one_data_size = m_datatype_size;
+  Int64 v_one_data_size = v.datatypeSize();
+  if (one_data_size != v_one_data_size)
+    ARCANE_FATAL("Datatype size are not equal this={0} v={1}",
+                 one_data_size, v_one_data_size);
+
+  Int64 nb_index = indexes.size();
+  if (nb_index == 0)
+    return;
+
+  auto source = v.bytes();
+  auto destination = bytes();
+
+  for (Int32 i = 0; i < nb_index; ++i) {
+    Int64 zindex = i * one_data_size;
+    Int64 zci = indexes[i] * one_data_size;
+    for (Integer z = 0; z < one_data_size; ++z)
+      destination[zindex + z] = source[zci + z];
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MemoryView::
+copyToIndexesHost(MutableMemoryView v, Span<const Int32> indexes)
+{
+  Int64 one_data_size = m_datatype_size;
+  Int64 v_one_data_size = v.datatypeSize();
+  if (one_data_size != v_one_data_size)
+    ARCANE_FATAL("Datatype size are not equal this={0} v={1}",
+                 one_data_size, v_one_data_size);
+
+  Int64 nb_index = indexes.size();
+  if (nb_index == 0)
+    return;
+
+  auto source = bytes();
+  auto destination = v.bytes();
+
+  for (Int32 i = 0; i < nb_index; ++i) {
+    Int64 zindex = i * one_data_size;
+    Int64 zci = indexes[i] * one_data_size;
+    for (Integer z = 0; z < one_data_size; ++z)
+      destination[zci + z] = source[zindex + z];
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
