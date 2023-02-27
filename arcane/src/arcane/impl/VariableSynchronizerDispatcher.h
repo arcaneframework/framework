@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableSynchronizerDispatcher.h                            (C) 2000-2022 */
+/* VariableSynchronizerDispatcher.h                            (C) 2000-2023 */
 /*                                                                           */
 /* Service de synchronisation des variables.                                 */
 /*---------------------------------------------------------------------------*/
@@ -201,7 +201,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
    public:
     SyncBuffer() : m_generic_buffer(this){}
    public:
-    void compute(IBufferCopier<SimpleType>* copier,ItemGroupSynchronizeInfo* sync_list,Int32 dim2_size);
+    void compute(IBufferCopier* copier,ItemGroupSynchronizeInfo* sync_list,Int32 dim2_size);
    public:
     Int32 nbRank() const { return m_ghost_locals_buffer.size(); }
     Int32 dim2Size() const { return m_dim2_size; }
@@ -239,7 +239,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
     ItemGroupSynchronizeInfo* m_sync_info = nullptr;
     //! Vue sur les données de la variable
     ArrayView<SimpleType> m_data_view;
-    IBufferCopier<SimpleType>* m_buffer_copier = nullptr;
+    IBufferCopier* m_buffer_copier = nullptr;
     GenericBuffer m_generic_buffer;
   };
 
@@ -265,7 +265,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
  protected:
 
   IParallelMng* m_parallel_mng = nullptr;
-  IBufferCopier<SimpleType>* m_buffer_copier = nullptr;
+  IBufferCopier* m_buffer_copier = nullptr;
   ItemGroupSynchronizeInfo* m_sync_info = nullptr;
   //TODO: a supprimer car l'information est dans \a m_sync_info;
   ConstArrayView<VariableSyncInfo> m_sync_list;
@@ -290,8 +290,10 @@ class ARCANE_IMPL_EXPORT SimpleVariableSynchronizeDispatcher
   using BaseClass = VariableSynchronizeDispatcher<SimpleType>;
   using SyncBuffer = typename VariableSynchronizeDispatcher<SimpleType>::SyncBuffer;
   using BaseClass::m_parallel_mng;
+
  public:
-  SimpleVariableSynchronizeDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi)
+
+  explicit SimpleVariableSynchronizeDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi)
   : BaseClass(bi){}
 
  protected:
@@ -371,7 +373,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizerDispatcher
 class ARCANE_IMPL_EXPORT VariableSynchronizerMultiDispatcher
 {
  public:
-  VariableSynchronizerMultiDispatcher(IParallelMng* pm)
+  explicit VariableSynchronizerMultiDispatcher(IParallelMng* pm)
   : m_parallel_mng(pm)
   {
   }

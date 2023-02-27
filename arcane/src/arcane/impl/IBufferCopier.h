@@ -29,7 +29,6 @@ namespace Arcane
 /*!
  * \internal
  */
-template <typename SimpleType>
 class IBufferCopier
 {
  public:
@@ -53,9 +52,8 @@ class IBufferCopier
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename SimpleType>
 class DirectBufferCopier
-: public IBufferCopier<SimpleType>
+: public IBufferCopier
 {
  public:
 
@@ -77,13 +75,14 @@ class DirectBufferCopier
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename SimpleType>
 class TableBufferCopier
-: public IBufferCopier<SimpleType>
+: public IBufferCopier
 {
  public:
 
-  TableBufferCopier(GroupIndexTable* table) : m_table(table) {}
+  TableBufferCopier(GroupIndexTable* table)
+  : m_table(table)
+  {}
 
   void copyFromBuffer(Int32ConstArrayView indexes,
                       MemoryView buffer,
@@ -106,18 +105,18 @@ class TableBufferCopier
  private:
 
   GroupIndexTable* m_table;
-  DirectBufferCopier<SimpleType> m_base_copier;
+  DirectBufferCopier m_base_copier;
 
  private:
 
-  void _buildFinalIndexes(Array<Int32>& final_indexes,ConstArrayView<Int32> orig_indexes)
+  void _buildFinalIndexes(Array<Int32>& final_indexes, ConstArrayView<Int32> orig_indexes)
   {
     // TODO: utiliser des buffers de taille fixe pour ne pas avoir à faire
     // d'allocation
     GroupIndexTable& table = *m_table;
     Int32 n = orig_indexes.size();
     final_indexes.resize(n);
-    for( Int32 i=0; i<n; ++i )
+    for (Int32 i = 0; i < n; ++i)
       final_indexes[i] = table[orig_indexes[i]];
   }
 };
