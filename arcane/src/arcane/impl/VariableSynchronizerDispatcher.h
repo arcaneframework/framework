@@ -237,11 +237,12 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
 
   public:
 
-    // TODO: a supprimer
-    ArrayView<SimpleType> ghostBuffer(Int32 index) { return m_ghost_locals_buffer[index]; }
-    ArrayView<SimpleType> shareBuffer(Int32 index) { return m_share_locals_buffer[index]; }
-    ConstArrayView<SimpleType> ghostBuffer(Int32 index) const { return m_ghost_locals_buffer[index]; }
-    ConstArrayView<SimpleType> shareBuffer(Int32 index) const { return m_share_locals_buffer[index]; }
+    static ArrayView<Byte> toLegacySmallView(MutableMemoryView view)
+    {
+      void* data = view.bytes().data();
+      Int32 size = view.bytes().smallView().size();
+      return { size, reinterpret_cast<Byte*>(data) };
+    }
 
   private:
 

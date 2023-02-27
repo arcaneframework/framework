@@ -124,6 +124,8 @@ _beginSynchronize(SyncBuffer& sync_buffer)
 
   bool use_derived = (dim2_size==1 && m_use_derived_type);
 
+  MPI_Datatype byte_dt = dtlist->datatype(Byte())->datatype();
+
   //SyncBuffer& sync_buffer = this->m_1d_buffer;
   // Envoie les messages de réception en mode non bloquant
   m_recv_requests.resize(nb_message);
@@ -131,60 +133,58 @@ _beginSynchronize(SyncBuffer& sync_buffer)
   double begin_prepare_time = MPI_Wtime();
   for( Integer i=0; i<nb_message; ++i ){
     const VariableSyncInfo& vsi = sync_list[i];
-    ArrayView<SimpleType> ghost_local_buffer = sync_buffer.ghostBuffer(i);
-      if (!ghost_local_buffer.empty()){
-        MPI_Request mpi_request;
-        if (use_derived){
-          mpi_profiling->iRecv(var_values.data(),1,m_ghost_derived_types[i],
-                               vsi.targetRank(),523,comm,&mpi_request);
-        }
-        else{
-          MPI_Datatype dt = dtlist->datatype(SimpleType())->datatype();
-          mpi_profiling->iRecv(ghost_local_buffer.data(),ghost_local_buffer.size(),
-                               dt,vsi.targetRank(),523,comm,&mpi_request);
-        }
-        
-        m_recv_requests[i] = mpi_request;
-        m_recv_requests_done[i] = false;
-        //trace->info() << "POST RECV " << vsi.m_target_rank;
+    ArrayView<Byte> ghost_local_buffer = SyncBuffer::toLegacySmallView(sync_buffer.ghostMemoryView(i));
+    if (!ghost_local_buffer.empty()){
+      MPI_Request mpi_request;
+      if (use_derived){
+        mpi_profiling->iRecv(var_values.data(),1,m_ghost_derived_types[i],
+                             vsi.targetRank(),523,comm,&mpi_request);
       }
       else{
-        // Il n'est pas nécessaire d'envoyer un message vide.
-        // Considère le message comme terminé
-        m_recv_requests[i] = MPI_Request();
-        m_recv_requests_done[i] = true;
+        MPI_Datatype dt = dtlist->datatype(SimpleType())->datatype();
+        mpi_profiling->iRecv(ghost_local_buffer.data(),ghost_local_buffer.size(),
+                             dt,vsi.targetRank(),523,comm,&mpi_request);
       }
-    }
-
-    // Envoie les messages d'envoie en mode non bloquant.
-    for( Integer i=0; i<nb_message; ++i ){
-      const VariableSyncInfo& vsi = this->m_sync_list[i];
-      ArrayView<SimpleType> share_local_buffer = sync_buffer.shareBuffer(i);
-      if (!use_derived)
-        sync_buffer.copySend(i);
-      if (!share_local_buffer.empty()){
-        MPI_Request mpi_request;
-        if (use_derived){
-          mpi_profiling->iSend(var_values.data(),1,m_share_derived_types[i],
-                               vsi.targetRank(),523,comm,&mpi_request);
-        }
-        else{
-          MPI_Datatype dt = dtlist->datatype(SimpleType())->datatype();
-          mpi_profiling->iSend(share_local_buffer.data(),share_local_buffer.size(),
-                               dt,vsi.targetRank(),523,comm,&mpi_request);
-        }
-        m_send_requests.add(mpi_request);
-        //trace->info() << "POST SEND " << vsi.m_target_rank;
-      }
-    }
-    double prepare_time = MPI_Wtime() - begin_prepare_time;
-    if (use_derived){
-      pm->stat()->add("SyncPrepareDerived",prepare_time,1);
+      m_recv_requests[i] = mpi_request;
+      m_recv_requests_done[i] = false;
+      //trace->info() << "POST RECV " << vsi.m_target_rank;
     }
     else{
-      pm->stat()->add("SyncPrepare",prepare_time,sync_buffer.totalShareSize());
+      // Il n'est pas nécessaire d'envoyer un message vide.
+      // Considère le message comme terminé
+      m_recv_requests[i] = MPI_Request();
+        m_recv_requests_done[i] = true;
     }
   }
+
+  // Envoie les messages d'envoie en mode non bloquant.
+  for( Integer i=0; i<nb_message; ++i ){
+    const VariableSyncInfo& vsi = this->m_sync_list[i];
+    ArrayView<Byte> share_local_buffer = SyncBuffer::toLegacySmallView(sync_buffer.shareMemoryView(i));
+    if (!use_derived)
+      sync_buffer.copySend(i);
+    if (!share_local_buffer.empty()){
+      MPI_Request mpi_request;
+      if (use_derived){
+        mpi_profiling->iSend(var_values.data(),1,m_share_derived_types[i],
+                             vsi.targetRank(),523,comm,&mpi_request);
+      }
+      else{
+        mpi_profiling->iSend(share_local_buffer.data(),share_local_buffer.size(),
+                             byte_dt,vsi.targetRank(),523,comm,&mpi_request);
+      }
+      m_send_requests.add(mpi_request);
+      //trace->info() << "POST SEND " << vsi.m_target_rank;
+    }
+  }
+  double prepare_time = MPI_Wtime() - begin_prepare_time;
+  if (use_derived){
+    pm->stat()->add("SyncPrepareDerived",prepare_time,1);
+  }
+  else{
+    pm->stat()->add("SyncPrepare",prepare_time,sync_buffer.totalShareSize());
+  }
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -34,17 +34,6 @@
 namespace Arcane
 {
 
-namespace
-{
-ArrayView<Byte> _toLegacySmallView(MutableMemoryView view)
-{
-  void* data = view.bytes().data();
-  Int32 size = view.bytes().smallView().size();
-  return { size, reinterpret_cast<Byte*>(data) };
-}
-
-}
-
 template<typename SimpleType> VariableSynchronizeDispatcher<SimpleType>::
 VariableSynchronizeDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi)
 : m_parallel_mng(bi.parallelMng())
@@ -274,7 +263,7 @@ _beginSynchronize(SyncBuffer& sync_buffer)
   // Envoie les messages de réception non bloquant
   for( Integer i=0; i<nb_message; ++i ){
     const VariableSyncInfo& vsi = sync_list[i];
-    auto ghost_local_buffer = _toLegacySmallView(sync_buffer.ghostMemoryView(i));
+    auto ghost_local_buffer = SyncBuffer::toLegacySmallView(sync_buffer.ghostMemoryView(i));
     if (!ghost_local_buffer.empty()){
       Parallel::Request rval = pm->recv(ghost_local_buffer,vsi.targetRank(),false);
       m_all_requests.add(rval);
@@ -284,7 +273,7 @@ _beginSynchronize(SyncBuffer& sync_buffer)
   // Envoie les messages d'envoie en mode non bloquant.
   for( Integer i=0; i<nb_message; ++i ){
     const VariableSyncInfo& vsi = sync_list[i];
-    auto share_local_buffer = _toLegacySmallView(sync_buffer.shareMemoryView(i));
+    auto share_local_buffer = SyncBuffer::toLegacySmallView(sync_buffer.shareMemoryView(i));
       
     sync_buffer.copySend(i);
 
