@@ -34,6 +34,7 @@ class ARCANE_UTILS_EXPORT MemoryView
  public:
 
   using SpanType = Span<const std::byte>;
+  friend MutableMemoryView;
 
  public:
 
@@ -189,7 +190,7 @@ class ARCANE_UTILS_EXPORT MutableMemoryView
 
  public:
 
-  constexpr operator MemoryView() const { return MemoryView(m_bytes); }
+  constexpr operator MemoryView() const { return MemoryView(m_bytes, m_datatype_size, m_nb_element); }
 
  public:
 
