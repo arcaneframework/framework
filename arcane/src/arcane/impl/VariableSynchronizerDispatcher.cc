@@ -34,6 +34,17 @@
 namespace Arcane
 {
 
+namespace
+{
+ArrayView<Byte> _toLegacySmallView(MutableMemoryView view)
+{
+  void* data = view.bytes().data();
+  Int32 size = view.bytes().smallView().size();
+  return { size, reinterpret_cast<Byte*>(data) };
+}
+
+}
+
 template<typename SimpleType> VariableSynchronizeDispatcher<SimpleType>::
 VariableSynchronizeDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi)
 : m_parallel_mng(bi.parallelMng())
@@ -215,14 +226,12 @@ copyReceive(Integer index)
   ARCANE_CHECK_POINTER(m_sync_info);
   ARCANE_CHECK_POINTER(m_buffer_copier);
 
-  ArrayView<SimpleType> var_values = dataView();
+  MutableMemoryView var_values = dataMemoryView();
   const VariableSyncInfo& vsi = (*m_sync_info)[index];
   ConstArrayView<Int32> indexes = vsi.ghostIds();
-  ConstArrayView<SimpleType> local_buffer = ghostBuffer(index);
+  MemoryView local_buffer = ghostMemoryView(index);
 
-  MemoryView from(local_buffer,m_dim2_size);
-  MutableMemoryView to(var_values,m_dim2_size);
-  m_buffer_copier->copyFromBuffer(indexes,from,to);
+  m_buffer_copier->copyFromBuffer(indexes,local_buffer,var_values);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -234,14 +243,12 @@ copySend(Integer index)
   ARCANE_CHECK_POINTER(m_sync_info);
   ARCANE_CHECK_POINTER(m_buffer_copier);
 
-  ConstArrayView<SimpleType> var_values = dataView();
+  MemoryView var_values = dataMemoryView();
   const VariableSyncInfo& vsi = (*m_sync_info)[index];
   Int32ConstArrayView indexes = vsi.shareIds();
-  ArrayView<SimpleType> local_buffer = shareBuffer(index);
+  MutableMemoryView local_buffer = shareMemoryView(index);
 
-  MutableMemoryView local_buf(local_buffer,m_dim2_size);
-  MemoryView var_buf(var_values,m_dim2_size);
-  m_buffer_copier->copyToBuffer(indexes,local_buf,var_buf);
+  m_buffer_copier->copyToBuffer(indexes,local_buffer,var_values);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -267,7 +274,7 @@ _beginSynchronize(SyncBuffer& sync_buffer)
   // Envoie les messages de réception non bloquant
   for( Integer i=0; i<nb_message; ++i ){
     const VariableSyncInfo& vsi = sync_list[i];
-    ArrayView<SimpleType> ghost_local_buffer = sync_buffer.ghostBuffer(i);
+    auto ghost_local_buffer = _toLegacySmallView(sync_buffer.ghostMemoryView(i));
     if (!ghost_local_buffer.empty()){
       Parallel::Request rval = pm->recv(ghost_local_buffer,vsi.targetRank(),false);
       m_all_requests.add(rval);
@@ -277,16 +284,16 @@ _beginSynchronize(SyncBuffer& sync_buffer)
   // Envoie les messages d'envoie en mode non bloquant.
   for( Integer i=0; i<nb_message; ++i ){
     const VariableSyncInfo& vsi = sync_list[i];
-    ArrayView<SimpleType> share_local_buffer = sync_buffer.shareBuffer(i);
+    auto share_local_buffer = _toLegacySmallView(sync_buffer.shareMemoryView(i));
       
     sync_buffer.copySend(i);
 
-    ConstArrayView<SimpleType> const_share = share_local_buffer;
+    //ConstArrayView<SimpleType> const_share = share_local_buffer;
     if (!share_local_buffer.empty()){
       //for( Integer i=0, is=share_local_buffer.size(); i<is; ++i )
       //trace->info() << "TO rank=" << vsi.m_target_rank << " I=" << i << " V=" << share_local_buffer[i]
       //                << " lid=" << share_grp[i] << " v2=" << var_values[share_grp[i]];
-      Parallel::Request rval = pm->send(const_share,vsi.targetRank(),use_blocking_send);
+      Parallel::Request rval = pm->send(share_local_buffer,vsi.targetRank(),use_blocking_send);
       if (!use_blocking_send)
         m_all_requests.add(rval);
     }

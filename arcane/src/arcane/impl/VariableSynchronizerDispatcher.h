@@ -182,8 +182,8 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
       bool hasGlobalBuffer() const override { return true; }
       Span<std::byte> globalSendBuffer() override { return _toBytes(m_buffer->shareBuffer()); }
       Span<std::byte> globalReceiveBuffer() override { return _toBytes(m_buffer->ghostBuffer()); }
-      Span<std::byte> sendBuffer(Int32 index) override { return _toBytes(m_buffer->shareBuffer(index)); }
-      Span<std::byte> receiveBuffer(Int32 index) override { return _toBytes(m_buffer->ghostBuffer(index)); }
+      Span<std::byte> sendBuffer(Int32 index) override { return m_buffer->shareMemoryView(index).bytes(); }
+      Span<std::byte> receiveBuffer(Int32 index) override { return m_buffer->ghostMemoryView(index).bytes(); }
       Int64 sendDisplacement(Int32 index) const override { return m_buffer->shareDisplacement(index) * sizeof(SimpleType); }
       Int64 receiveDisplacement(Int32 index) const override { return m_buffer->ghostDisplacement(index) * sizeof(SimpleType); }
       void copySend(Int32 index) override { m_buffer->copySend(index); }
@@ -199,30 +199,50 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
       }
     };
    public:
+
     SyncBuffer() : m_generic_buffer(this){}
-   public:
+
+  public:
+
     void compute(IBufferCopier* copier,ItemGroupSynchronizeInfo* sync_list,Int32 dim2_size);
-   public:
+
+  public:
+
     Int32 nbRank() const { return m_ghost_locals_buffer.size(); }
     Int32 dim2Size() const { return m_dim2_size; }
-    ArrayView<SimpleType> ghostBuffer(Int32 index) { return m_ghost_locals_buffer[index]; }
-    ArrayView<SimpleType> shareBuffer(Int32 index) { return m_share_locals_buffer[index]; }
-    ConstArrayView<SimpleType> ghostBuffer(Int32 index) const { return m_ghost_locals_buffer[index]; }
-    ConstArrayView<SimpleType> shareBuffer(Int32 index) const { return m_share_locals_buffer[index]; }
+
+    MutableMemoryView ghostMemoryView(Int32 index) { return _toMemoryView(m_ghost_locals_buffer[index]); }
+    MutableMemoryView shareMemoryView(Int32 index) { return _toMemoryView(m_share_locals_buffer[index]); }
+    MemoryView ghostMemoryView(Int32 index) const { return _toMemoryView(m_ghost_locals_buffer[index]); }
+    MemoryView shareMemoryView(Int32 index) const { return _toMemoryView(m_share_locals_buffer[index]); }
+
     Int32 ghostDisplacement(Int32 index) const { return m_ghost_displacements[index]; }
     Int32 shareDisplacement(Int32 index) const { return m_share_displacements[index]; }
     ArrayView<SimpleType> ghostBuffer() { return m_ghost_buffer; }
     ArrayView<SimpleType> shareBuffer() { return m_share_buffer; }
     ConstArrayView<SimpleType> ghostBuffer() const { return m_ghost_buffer; }
     ConstArrayView<SimpleType> shareBuffer() const { return m_share_buffer; }
+
     void setDataView(ArrayView<SimpleType> v) { m_data_view = v; }
-    ArrayView<SimpleType> dataView() { return m_data_view; }
+    //ArrayView<SimpleType> dataView() { return m_data_view; }
+    MutableMemoryView dataMemoryView() { return _toMemoryView(m_data_view); }
+
     void copyReceive(Integer index);
     void copySend(Integer index);
     Int64 totalGhostSize() const { return asBytes(m_ghost_buffer.constSpan()).size(); }
     Int64 totalShareSize() const { return asBytes(m_share_buffer.constSpan()).size(); }
     IDataSynchronizeBuffer* genericBuffer() { return &m_generic_buffer; }
+
+  public:
+
+    // TODO: a supprimer
+    ArrayView<SimpleType> ghostBuffer(Int32 index) { return m_ghost_locals_buffer[index]; }
+    ArrayView<SimpleType> shareBuffer(Int32 index) { return m_share_locals_buffer[index]; }
+    ConstArrayView<SimpleType> ghostBuffer(Int32 index) const { return m_ghost_locals_buffer[index]; }
+    ConstArrayView<SimpleType> shareBuffer(Int32 index) const { return m_share_locals_buffer[index]; }
+
   private:
+
     Integer m_dim2_size = 0;
     //! Buffer pour toutes les données des entités fantômes qui serviront en réception
     UniqueArray<SimpleType> m_ghost_buffer;
@@ -241,6 +261,15 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
     ArrayView<SimpleType> m_data_view;
     IBufferCopier* m_buffer_copier = nullptr;
     GenericBuffer m_generic_buffer;
+  private:
+    MutableMemoryView _toMemoryView(ArrayView<SimpleType> view)
+    {
+      return MutableMemoryView{view,m_dim2_size};
+    }
+    MemoryView _toMemoryView(ConstArrayView<SimpleType> view) const
+    {
+      return MemoryView{view,m_dim2_size};
+    }
   };
 
  public:

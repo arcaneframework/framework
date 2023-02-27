@@ -104,7 +104,7 @@ template<typename SimpleType> void
 MpiLegacyVariableSynchronizeDispatcher<SimpleType>::
 _beginSynchronize(SyncBuffer& sync_buffer)
 {
-  ArrayView<SimpleType> var_values = sync_buffer.dataView();
+  MutableMemoryView var_values = sync_buffer.dataMemoryView();
   auto sync_list = this->m_sync_info->infos();
   //Integer nb_elem = var_values.size();
   Integer nb_message = sync_list.size();
