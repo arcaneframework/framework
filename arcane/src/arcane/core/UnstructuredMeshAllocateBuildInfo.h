@@ -9,8 +9,8 @@
 /*                                                                           */
 /* Informations pour allouer les entités d'un maillage non structuré.        */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_UNSTRUCTUREDMESHALLOCATEBUILDINFO_H
-#define ARCANE_UNSTRUCTUREDMESHALLOCATEBUILDINFO_H
+#ifndef ARCANE_CORE_UNSTRUCTUREDMESHALLOCATEBUILDINFO_H
+#define ARCANE_CORE_UNSTRUCTUREDMESHALLOCATEBUILDINFO_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -21,6 +21,7 @@
 
 namespace Arcane
 {
+class UnstructuredMeshAllocateBuildInfoInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -35,7 +36,10 @@ namespace Arcane
  */
 class ARCANE_CORE_EXPORT UnstructuredMeshAllocateBuildInfo
 {
+ public:
+
   class Impl;
+  class Intenrnal;
 
  public:
 
@@ -64,7 +68,7 @@ class ARCANE_CORE_EXPORT UnstructuredMeshAllocateBuildInfo
    * Par exemple, si on sait que notre maillage contiendra 300 quadrangles
    * alors on peut utiliser preAllocate(300,300*4).
    */
-  void preAllocate(Int32 nb_cell,Int64 nb_connectivity_node);
+  void preAllocate(Int32 nb_cell, Int64 nb_connectivity_node);
 
   //! Positionne la dimension du maillage
   void setMeshDimension(Int32 v);
@@ -78,6 +82,11 @@ class ARCANE_CORE_EXPORT UnstructuredMeshAllocateBuildInfo
    * Cette méthode est collective.
    */
   void allocateMesh();
+
+ public:
+
+  //! Partie interne réservée à Arcane
+  UnstructuredMeshAllocateBuildInfoInternal* _internal();
 
  private:
 

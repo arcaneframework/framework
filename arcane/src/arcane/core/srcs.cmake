@@ -58,6 +58,7 @@ set(ARCANE_INTERNAL_SOURCES
   internal/IDataInternal.h
   internal/CartesianMeshGenerationInfo.h
   internal/CartesianMeshGenerationInfo.cc
+  internal/UnstructuredMeshAllocateBuildInfoInternal.h
 )
 
 set(ARCANE_ORIGINAL_SOURCES

@@ -19,14 +19,15 @@
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/List.h"
 
-#include "arcane/IMeshModifier.h"
-#include "arcane/IPrimaryMesh.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/IItemFamilyModifier.h"
-#include "arcane/ObserverPool.h"
-#include "arcane/MeshPartInfo.h"
-#include "arcane/IItemFamilyNetwork.h"
-#include "arcane/MeshHandle.h"
+#include "arcane/core/IMeshModifier.h"
+#include "arcane/core/IPrimaryMesh.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IItemFamilyModifier.h"
+#include "arcane/core/ObserverPool.h"
+#include "arcane/core/MeshPartInfo.h"
+#include "arcane/core/IItemFamilyNetwork.h"
+#include "arcane/core/MeshHandle.h"
+#include "arcane/core/IMeshInitialAllocator.h"
 
 #include "arcane/mesh/SubMeshTools.h"
 #include "arcane/mesh/MeshVariables.h"
@@ -89,6 +90,8 @@ class ARCANE_MESH_EXPORT DynamicMesh
 , public TraceAccessor
 , public IPrimaryMesh
 , public IMeshModifier
+, public IMeshInitialAllocator
+, public IUnstructuredMeshInitialAllocator
 {
  private:
   // TEMPORAIRE
@@ -99,6 +102,22 @@ class ARCANE_MESH_EXPORT DynamicMesh
   typedef DynamicMeshKindInfos::ItemInternalMap ItemInternalMap;
 
   typedef List<IItemFamily*> ItemFamilyList;
+
+  class InitialAllocator
+  : public IMeshInitialAllocator
+  {
+   public:
+
+    InitialAllocator(DynamicMesh* m) : m_mesh(m){}
+    IUnstructuredMeshInitialAllocator* unstructuredMeshAllocator() override
+    {
+      return m_mesh;
+    }
+
+   private:
+
+    DynamicMesh* m_mesh;
+  };
 
 #ifdef ACTIVATE_PERF_COUNTER
   struct PerfCounter
@@ -491,6 +510,11 @@ public:
   IVariableMng* variableMng() const override { return m_variable_mng; }
   ItemTypeMng* itemTypeMng() const override { return m_item_type_mng; }
 
+ public:
+
+  IMeshInitialAllocator* initialAllocator() override { return &m_initial_allocator; }
+  void allocate(UnstructuredMeshAllocateBuildInfo& build_info) override;
+
  private:
 
   IMeshUtilities* m_mesh_utilities;
@@ -504,6 +528,7 @@ public:
   NewItemOwnerBuilder * m_new_item_owner_builder;
   ExtraGhostCellsBuilder* m_extra_ghost_cells_builder;
   ExtraGhostParticlesBuilder* m_extra_ghost_particles_builder;
+  InitialAllocator m_initial_allocator;
 
  private:
   
