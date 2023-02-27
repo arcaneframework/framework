@@ -218,12 +218,18 @@ copyReceive(Integer index)
   ArrayView<SimpleType> var_values = dataView();
   const VariableSyncInfo& vsi = (*m_sync_info)[index];
   ConstArrayView<Int32> indexes = vsi.ghostIds();
-  ArrayView<SimpleType> local_buffer = ghostBuffer(index);
+  ConstArrayView<SimpleType> local_buffer = ghostBuffer(index);
 
-  if (m_dim2_size==1)
-    m_buffer_copier->copyFromBufferOne(indexes,local_buffer,var_values);
-  else
-    m_buffer_copier->copyFromBufferMultiple(indexes,local_buffer,var_values,m_dim2_size);
+  if (m_dim2_size==1){
+    MemoryView from(local_buffer);
+    MutableMemoryView to(var_values);
+    m_buffer_copier->copyFromBufferOne(indexes,from,to);
+  }
+  else{
+    MemoryView from(local_buffer,m_dim2_size);
+    MutableMemoryView to(var_values,m_dim2_size);
+    m_buffer_copier->copyFromBufferMultiple(indexes,from,to,m_dim2_size);
+  }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -235,15 +241,21 @@ copySend(Integer index)
   ARCANE_CHECK_POINTER(m_sync_info);
   ARCANE_CHECK_POINTER(m_buffer_copier);
 
-  ArrayView<SimpleType> var_values = dataView();
+  ConstArrayView<SimpleType> var_values = dataView();
   const VariableSyncInfo& vsi = (*m_sync_info)[index];
   Int32ConstArrayView indexes = vsi.shareIds();
   ArrayView<SimpleType> local_buffer = shareBuffer(index);
 
-  if (m_dim2_size==1)
-    m_buffer_copier->copyToBufferOne(indexes,local_buffer,var_values);
-  else
-    m_buffer_copier->copyToBufferMultiple(indexes,local_buffer,var_values,m_dim2_size);
+  if (m_dim2_size==1){
+    MutableMemoryView local_buf(local_buffer);
+    MemoryView var_buf(var_values);
+    m_buffer_copier->copyToBufferOne(indexes,local_buf,var_buf);
+  }
+  else{
+    MutableMemoryView local_buf(local_buffer,m_dim2_size);
+    MemoryView var_buf(var_values,m_dim2_size);
+    m_buffer_copier->copyToBufferMultiple(indexes,local_buf,var_buf,m_dim2_size);
+  }
 }
 
 /*---------------------------------------------------------------------------*/

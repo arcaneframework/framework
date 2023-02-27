@@ -37,21 +37,21 @@ class IBufferCopier
   virtual ~IBufferCopier() = default;
 
   virtual void copyFromBufferOne(Int32ConstArrayView indexes,
-                                 ConstArrayView<SimpleType> buffer,
-                                 ArrayView<SimpleType> var_value) = 0;
+                                 MemoryView buffer,
+                                 MutableMemoryView var_value) = 0;
 
   virtual void copyToBufferOne(Int32ConstArrayView indexes,
-                               ArrayView<SimpleType> buffer,
-                               ConstArrayView<SimpleType> var_value) = 0;  
+                               MutableMemoryView buffer,
+                               MemoryView var_value) = 0;
 
   virtual void copyFromBufferMultiple(Int32ConstArrayView indexes,
-                                      ConstArrayView<SimpleType> buffer,
-                                      ArrayView<SimpleType> var_value,
+                                      MemoryView buffer,
+                                      MutableMemoryView var_value,
                                       Integer dim2_size) = 0;
   
   virtual void copyToBufferMultiple(Int32ConstArrayView indexes,
-                                    ArrayView<SimpleType> buffer,
-                                    ConstArrayView<SimpleType> var_value,
+                                    MutableMemoryView buffer,
+                                    MemoryView var_value,
                                     Integer dim2_size) = 0;
 };
 
@@ -68,41 +68,33 @@ class DirectBufferCopier
  public:
 
   void copyFromBufferOne(Int32ConstArrayView indexes,
-                         ConstArrayView<SimpleType> buffer,
-                         ArrayView<SimpleType> var_value) override
+                         MemoryView buffer,
+                         MutableMemoryView var_value) override
   {
-    MemoryView from(buffer);
-    MutableMemoryView to(var_value);
-    from.copyToIndexesHost(to,indexes);
+    buffer.copyToIndexesHost(var_value,indexes);
   }
 
   void copyToBufferOne(Int32ConstArrayView indexes,
-                       ArrayView<SimpleType> buffer,
-                       ConstArrayView<SimpleType> var_value) override
+                       MutableMemoryView buffer,
+                       MemoryView var_value) override
   {
-    MemoryView from(var_value);
-    MutableMemoryView to(buffer);
-    to.copyFromIndexesHost(from,indexes);
+    buffer.copyFromIndexesHost(var_value,indexes);
   }
 
   void copyFromBufferMultiple(Int32ConstArrayView indexes,
-                              ConstArrayView<SimpleType> buffer,
-                              ArrayView<SimpleType> var_value,
+                              MemoryView buffer,
+                              MutableMemoryView var_value,
                               Integer dim2_size) override
   {
-    MemoryView from(buffer,dim2_size);
-    MutableMemoryView to(var_value,dim2_size);
-    from.copyToIndexesHost(to,indexes);
+    buffer.copyToIndexesHost(var_value,indexes);
   }
 
   void copyToBufferMultiple(Int32ConstArrayView indexes,
-                            ArrayView<SimpleType> buffer,
-                            ConstArrayView<SimpleType> var_value,
+                            MutableMemoryView buffer,
+                            MemoryView var_value,
                             Integer dim2_size) override
   {
-    MemoryView from(var_value,dim2_size);
-    MutableMemoryView to(buffer,dim2_size);
-    to.copyFromIndexesHost(from,indexes);
+    buffer.copyFromIndexesHost(var_value,indexes);
   }
 };
 
@@ -118,8 +110,8 @@ class TableBufferCopier
   TableBufferCopier(GroupIndexTable* table) : m_table(table) {}
 
   void copyFromBufferOne(Int32ConstArrayView indexes,
-                         ConstArrayView<SimpleType> buffer,
-                         ArrayView<SimpleType> var_value) override
+                         MemoryView buffer,
+                         MutableMemoryView var_value) override
   {
     UniqueArray<Int32> final_indexes;
     _buildFinalIndexes(final_indexes,indexes);
@@ -127,8 +119,8 @@ class TableBufferCopier
   }
 
   void copyToBufferOne(Int32ConstArrayView indexes,
-                       ArrayView<SimpleType> buffer,
-                       ConstArrayView<SimpleType> var_value) override
+                       MutableMemoryView buffer,
+                       MemoryView var_value) override
   {
     UniqueArray<Int32> final_indexes;
     _buildFinalIndexes(final_indexes,indexes);
@@ -136,8 +128,8 @@ class TableBufferCopier
   }
 
   void copyFromBufferMultiple(Int32ConstArrayView indexes,
-                              ConstArrayView<SimpleType> buffer,
-                              ArrayView<SimpleType> var_value,
+                              MemoryView buffer,
+                              MutableMemoryView var_value,
                               Integer dim2_size) override
   {
     UniqueArray<Int32> final_indexes;
@@ -146,8 +138,8 @@ class TableBufferCopier
   }
 
   void copyToBufferMultiple(Int32ConstArrayView indexes,
-                            ArrayView<SimpleType> buffer,
-                            ConstArrayView<SimpleType> var_value,
+                            MutableMemoryView buffer,
+                            MemoryView var_value,
                             Integer dim2_size) override
   {
     UniqueArray<Int32> final_indexes;
@@ -164,7 +156,7 @@ class TableBufferCopier
 
   void _buildFinalIndexes(Array<Int32>& final_indexes,ConstArrayView<Int32> orig_indexes)
   {
-    // TODO: utiliser des buffer de taille fixe pour ne pas avoir à faire
+    // TODO: utiliser des buffers de taille fixe pour ne pas avoir à faire
     // d'allocation
     GroupIndexTable& table = *m_table;
     Int32 n = orig_indexes.size();
