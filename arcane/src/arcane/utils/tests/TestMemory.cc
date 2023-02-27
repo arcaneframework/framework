@@ -16,7 +16,7 @@
 #include "arcane/utils/Real2x2.h"
 #include "arcane/utils/Real3x3.h"
 
-#include <vector>
+#include <random>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -100,9 +100,11 @@ class MemoryTester
     // Cette liste est générée aléatoirement
     UniqueArray<Int32> copy_indexes;
     unsigned int seed0 = 942244294;
+    std::mt19937 mt1(seed0);
+    auto diff_2 = (mt1.max() - mt1.min()) / 2;
     for (Int32 i = 0; i < nb_value; ++i) {
-      int r = rand_r(&seed0);
-      if (r > (RAND_MAX / 2))
+      auto r = mt1() - mt1.min();
+      if (r > diff_2)
         copy_indexes.add(i);
     }
     Int32 nb_index = copy_indexes.size();
