@@ -58,6 +58,7 @@ set(ARCANE_INTERNAL_SOURCES
   internal/IDataInternal.h
   internal/CartesianMeshGenerationInfo.h
   internal/CartesianMeshGenerationInfo.cc
+  internal/UnstructuredMeshAllocateBuildInfoInternal.h
 )
 
 set(ARCANE_ORIGINAL_SOURCES
@@ -104,6 +105,7 @@ set(ARCANE_ORIGINAL_SOURCES
   IMainFactory.h
   IMesh.h
   IMeshBase.h
+  IMeshInitialAllocator.h
   IMeshModifier.h
   IMeshReader.h
   IMeshUtilities.h
@@ -552,6 +554,8 @@ set(ARCANE_ORIGINAL_SOURCES
   UnitTestServiceAdapter.h
   UnstructuredMeshConnectivity.cc
   UnstructuredMeshConnectivity.h
+  UnstructuredMeshAllocateBuildInfo.h
+  UnstructuredMeshAllocateBuildInfo.cc
   Variable.cc
   Variable.h
   VariableAccessor.h

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IPrimaryMesh.h                                              (C) 2000-2022 */
+/* IPrimaryMesh.h                                              (C) 2000-2023 */
 /*                                                                           */
 /* Interface de la géométrie d'un maillage.                                  */
 /*---------------------------------------------------------------------------*/
@@ -57,8 +57,8 @@ class IPrimaryMesh
    * Si des mailles de plusieurs dimensions sont présentes, il faut indiquer
    * la dimension la plus importante.
    *
-   * La dimension doit être positionnée avant d'allouer des mailles, et ne
-   * doit plus être modifiée ensuite.
+   * La dimension doit être positionnée avant d'allouer des mailles si on
+   * utilise allocateCells(), et ne doit plus être modifiée ensuite.
    */
   virtual void setDimension(Integer dim) =0;  
 
@@ -96,6 +96,13 @@ class IPrimaryMesh
    * lorsqu'il y a des variables partielles sur le maillage.
    */
   virtual void deallocate() =0;
+
+  /*!
+   * \brief Allocateur initial spécifique.
+   *
+   * Si nul, il faut utiliser allocateCells().
+   */
+  virtual IMeshInitialAllocator* initialAllocator() { return nullptr; }
 
  public:
 
