@@ -142,42 +142,30 @@ compute()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
  * \brief Calcul et alloue les tampons nécessaire aux envois et réceptions
  * pour les synchronisations des variables 1D.
  * \todo: ne pas allouer les tampons car leur conservation est couteuse en
  * terme de memoire.
  */
-template<typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::SyncBuffer::
-compute(IBufferCopier* copier,ItemGroupSynchronizeInfo* sync_info,Integer dim2_size)
+void VariableSynchronizeDispatcherSyncBufferBase::
+compute(IBufferCopier* copier,ItemGroupSynchronizeInfo* sync_info,Int32 dim2_size)
 {
   m_buffer_copier = copier;
   m_sync_info = sync_info;
   auto sync_list = sync_info->infos();
   m_dim2_size = dim2_size;
   Integer nb_message = sync_list.size();
+  m_nb_rank = nb_message;
 
-  // TODO: Utiliser des Int64.
   m_ghost_locals_buffer.resize(nb_message);
   m_share_locals_buffer.resize(nb_message);
 
   m_ghost_displacements.resize(nb_message);
   m_share_displacements.resize(nb_message);
 
-  Integer total_ghost_buffer = 0;
-  Integer total_share_buffer = 0;
-  for( Integer i=0; i<nb_message; ++i ){
-    total_ghost_buffer += sync_list[i].nbGhost();
-    total_share_buffer += sync_list[i].nbShare();
-  }
-  m_ghost_buffer.resize(total_ghost_buffer*dim2_size);
-  m_share_buffer.resize(total_share_buffer*dim2_size);
+  _allocateBuffers();
 
-  m_ghost_memory_view = MutableMemoryView(Span<SimpleType>(m_ghost_buffer.data(),total_ghost_buffer),dim2_size);
-  m_share_memory_view = MutableMemoryView(Span<SimpleType>(m_share_buffer.data(),total_share_buffer),dim2_size);
   const Int32 datatype_size = m_ghost_memory_view.datatypeSize();
   {
     Integer array_index = 0;
@@ -208,7 +196,7 @@ compute(IBufferCopier* copier,ItemGroupSynchronizeInfo* sync_info,Integer dim2_s
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class SimpleType> void VariableSynchronizeDispatcher<SimpleType>::SyncBuffer::
+void VariableSynchronizeDispatcherSyncBufferBase::
 copyReceive(Integer index)
 {
   ARCANE_CHECK_POINTER(m_sync_info);
@@ -225,7 +213,7 @@ copyReceive(Integer index)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class SimpleType> void VariableSynchronizeDispatcher<SimpleType>::SyncBuffer::
+void VariableSynchronizeDispatcherSyncBufferBase::
 copySend(Integer index)
 {
   ARCANE_CHECK_POINTER(m_sync_info);
@@ -236,6 +224,36 @@ copySend(Integer index)
   Int32ConstArrayView indexes = vsi.shareIds();
   MutableMemoryView local_buffer = shareMemoryView(index);
   m_buffer_copier->copyToBuffer(indexes,local_buffer,var_values);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Calcul et alloue les tampons nécessaire aux envois et réceptions
+ * pour les synchronisations des variables 1D.
+ * \todo: ne pas converver les tampons pour chaque type de donnée des variables
+ * car leur conservation est couteuse en terme de memoire.
+ */
+template<typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::SyncBuffer::
+_allocateBuffers()
+{
+  auto sync_list = m_sync_info->infos();
+  Integer nb_message = sync_list.size();
+
+  Integer total_ghost_buffer = 0;
+  Integer total_share_buffer = 0;
+  for( Integer i=0; i<nb_message; ++i ){
+    total_ghost_buffer += sync_list[i].nbGhost();
+    total_share_buffer += sync_list[i].nbShare();
+  }
+  m_ghost_buffer.resize(total_ghost_buffer*m_dim2_size);
+  m_share_buffer.resize(total_share_buffer*m_dim2_size);
+
+  m_ghost_memory_view = MutableMemoryView(Span<SimpleType>(m_ghost_buffer.data(),total_ghost_buffer),m_dim2_size);
+  m_share_memory_view = MutableMemoryView(Span<SimpleType>(m_share_buffer.data(),total_share_buffer),m_dim2_size);
 }
 
 /*---------------------------------------------------------------------------*/
