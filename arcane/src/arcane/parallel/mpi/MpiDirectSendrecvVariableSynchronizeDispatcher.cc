@@ -53,7 +53,7 @@ MpiDirectSendrecvVariableSynchronizeDispatcher(MpiDirectSendrecvVariableSynchron
 
 template<typename SimpleType> void
 MpiDirectSendrecvVariableSynchronizeDispatcher<SimpleType>::
-_beginSynchronize(SyncBuffer& sync_buffer)
+_beginSynchronize(SyncBufferBase& sync_buffer)
 {
   auto sync_list = this->m_sync_info->infos();
   Integer nb_message = sync_list.size();
@@ -62,7 +62,7 @@ _beginSynchronize(SyncBuffer& sync_buffer)
 
   MpiParallelMng* pm= m_mpi_parallel_mng;
   MpiDatatypeList* dtlist = pm->datatypes();
-  const MPI_Datatype mpi_dt = dtlist->datatype(SimpleType())->datatype();
+  const MPI_Datatype mpi_dt = dtlist->datatype(Byte())->datatype();
 
 
   double sync_copy_send_time = 0.0;
@@ -79,8 +79,8 @@ _beginSynchronize(SyncBuffer& sync_buffer)
     MpiTimeInterval tit(&sync_wait_time);
     for( Integer i=0; i<nb_message; ++i ){
       const VariableSyncInfo& vsi = sync_list[i];
-      ArrayView<SimpleType> rbuf = sync_buffer.ghostBuffer(i);
-      ArrayView<SimpleType> sbuf = sync_buffer.shareBuffer(i);
+      auto rbuf = sync_buffer.ghostMemoryView(i).bytes().smallView();
+      auto sbuf = sync_buffer.shareMemoryView(i).bytes().smallView();
 
       MPI_Sendrecv(sbuf.data(),
           sbuf.size(),
@@ -115,7 +115,7 @@ _beginSynchronize(SyncBuffer& sync_buffer)
 
 template<typename SimpleType> void
 MpiDirectSendrecvVariableSynchronizeDispatcher<SimpleType>::
-_endSynchronize(SyncBuffer& sync_buffer)
+_endSynchronize(SyncBufferBase& sync_buffer)
 {
   //With this implementation, we do not need this function.
   ARCANE_UNUSED(sync_buffer);

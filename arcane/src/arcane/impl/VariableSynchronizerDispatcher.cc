@@ -62,7 +62,7 @@ applyDispatch(IArrayDataT<SimpleType>* data)
   if (m_is_in_sync)
     ARCANE_FATAL("Only one pending serialisation is supported");
   m_is_in_sync = true;
-  m_1d_buffer.setDataView(data->view());
+  m_1d_buffer.setDataView(MutableMemoryView{data->view()});
   _beginSynchronize(m_1d_buffer);
   _endSynchronize(m_1d_buffer);
   m_is_in_sync = false;
@@ -85,8 +85,8 @@ applyDispatch(IArray2DataT<SimpleType>* data)
   m_is_in_sync = true;
   Integer dim1_size = value.dim1Size();
   m_2d_buffer.compute(m_buffer_copier,m_sync_info,dim2_size);
-  ArrayView<SimpleType> buf(dim1_size*dim2_size,value_ptr);
-  m_2d_buffer.setDataView(buf);
+  ArrayView<SimpleType> buf(dim1_size,value_ptr);
+  m_2d_buffer.setDataView(MutableMemoryView(buf,dim2_size));
   _beginSynchronize(m_2d_buffer);
   _endSynchronize(m_2d_buffer);
   m_is_in_sync = false;
@@ -142,51 +142,40 @@ compute()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
  * \brief Calcul et alloue les tampons nécessaire aux envois et réceptions
  * pour les synchronisations des variables 1D.
  * \todo: ne pas allouer les tampons car leur conservation est couteuse en
  * terme de memoire.
  */
-template<typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::SyncBuffer::
-compute(IBufferCopier* copier,ItemGroupSynchronizeInfo* sync_info,Integer dim2_size)
+void VariableSynchronizeDispatcherSyncBufferBase::
+compute(IBufferCopier* copier,ItemGroupSynchronizeInfo* sync_info,Int32 dim2_size)
 {
   m_buffer_copier = copier;
   m_sync_info = sync_info;
   auto sync_list = sync_info->infos();
   m_dim2_size = dim2_size;
   Integer nb_message = sync_list.size();
+  m_nb_rank = nb_message;
 
-  // TODO: Utiliser des Int64.
   m_ghost_locals_buffer.resize(nb_message);
   m_share_locals_buffer.resize(nb_message);
 
   m_ghost_displacements.resize(nb_message);
   m_share_displacements.resize(nb_message);
 
-  Integer total_ghost_buffer = 0;
-  Integer total_share_buffer = 0;
-  for( Integer i=0; i<nb_message; ++i ){
-    total_ghost_buffer += sync_list[i].nbGhost();
-    total_share_buffer += sync_list[i].nbShare();
-  }
-  m_ghost_buffer.resize(total_ghost_buffer*dim2_size);
-  m_share_buffer.resize(total_share_buffer*dim2_size);
-    
+  _allocateBuffers();
+
+  const Int32 datatype_size = m_ghost_memory_view.datatypeSize();
   {
     Integer array_index = 0;
     for( Integer i=0, is=sync_list.size(); i<is; ++i ){
       const VariableSyncInfo& vsi = sync_list[i];
       Int32ConstArrayView ghost_grp = vsi.ghostIds();
       Integer local_size = ghost_grp.size();
-      m_ghost_locals_buffer[i] = ArrayView<SimpleType>();
-      Int32 displacement = array_index*dim2_size;
-      m_ghost_displacements[i] =  displacement;
-      if (local_size!=0)
-        m_ghost_locals_buffer[i] = { local_size*dim2_size, &m_ghost_buffer[displacement] };
+      Int32 displacement = array_index;
+      m_ghost_displacements[i] =  displacement * datatype_size;
+      m_ghost_locals_buffer[i] = m_ghost_memory_view.subView(displacement,local_size);
       array_index += local_size;
     }
   }
@@ -196,11 +185,9 @@ compute(IBufferCopier* copier,ItemGroupSynchronizeInfo* sync_info,Integer dim2_s
       const VariableSyncInfo& vsi = sync_list[i];
       Int32ConstArrayView share_grp = vsi.shareIds();
       Integer local_size = share_grp.size();
-      m_share_locals_buffer[i] = ArrayView<SimpleType>();
-      Int32 displacement = array_index*dim2_size;
-      m_share_displacements[i] =  displacement;
-      if (local_size!=0)
-        m_share_locals_buffer[i] = { local_size*dim2_size, &m_share_buffer[displacement] };
+      Int32 displacement = array_index;
+      m_share_displacements[i] =  displacement * datatype_size;
+      m_share_locals_buffer[i] = m_share_memory_view.subView(displacement,local_size);
       array_index += local_size;
     }
   }
@@ -209,39 +196,64 @@ compute(IBufferCopier* copier,ItemGroupSynchronizeInfo* sync_info,Integer dim2_s
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class SimpleType> void VariableSynchronizeDispatcher<SimpleType>::SyncBuffer::
+void VariableSynchronizeDispatcherSyncBufferBase::
 copyReceive(Integer index)
 {
   ARCANE_CHECK_POINTER(m_sync_info);
   ARCANE_CHECK_POINTER(m_buffer_copier);
 
-  ArrayView<SimpleType> var_values = dataView();
+  MutableMemoryView var_values = dataMemoryView();
   const VariableSyncInfo& vsi = (*m_sync_info)[index];
   ConstArrayView<Int32> indexes = vsi.ghostIds();
-  ConstArrayView<SimpleType> local_buffer = ghostBuffer(index);
+  MemoryView local_buffer = ghostMemoryView(index);
 
-  MemoryView from(local_buffer,m_dim2_size);
-  MutableMemoryView to(var_values,m_dim2_size);
-  m_buffer_copier->copyFromBuffer(indexes,from,to);
+  m_buffer_copier->copyFromBuffer(indexes,local_buffer,var_values);
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class SimpleType> void VariableSynchronizeDispatcher<SimpleType>::SyncBuffer::
+void VariableSynchronizeDispatcherSyncBufferBase::
 copySend(Integer index)
 {
   ARCANE_CHECK_POINTER(m_sync_info);
   ARCANE_CHECK_POINTER(m_buffer_copier);
 
-  ConstArrayView<SimpleType> var_values = dataView();
+  MemoryView var_values = dataMemoryView();
   const VariableSyncInfo& vsi = (*m_sync_info)[index];
   Int32ConstArrayView indexes = vsi.shareIds();
-  ArrayView<SimpleType> local_buffer = shareBuffer(index);
+  MutableMemoryView local_buffer = shareMemoryView(index);
+  m_buffer_copier->copyToBuffer(indexes,local_buffer,var_values);
+}
 
-  MutableMemoryView local_buf(local_buffer,m_dim2_size);
-  MemoryView var_buf(var_values,m_dim2_size);
-  m_buffer_copier->copyToBuffer(indexes,local_buf,var_buf);
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Calcul et alloue les tampons nécessaire aux envois et réceptions
+ * pour les synchronisations des variables 1D.
+ * \todo: ne pas converver les tampons pour chaque type de donnée des variables
+ * car leur conservation est couteuse en terme de memoire.
+ */
+template<typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::SyncBuffer::
+_allocateBuffers()
+{
+  auto sync_list = m_sync_info->infos();
+  Integer nb_message = sync_list.size();
+
+  Integer total_ghost_buffer = 0;
+  Integer total_share_buffer = 0;
+  for( Integer i=0; i<nb_message; ++i ){
+    total_ghost_buffer += sync_list[i].nbGhost();
+    total_share_buffer += sync_list[i].nbShare();
+  }
+  m_ghost_buffer.resize(total_ghost_buffer*m_dim2_size);
+  m_share_buffer.resize(total_share_buffer*m_dim2_size);
+
+  m_ghost_memory_view = MutableMemoryView(Span<SimpleType>(m_ghost_buffer.data(),total_ghost_buffer),m_dim2_size);
+  m_share_memory_view = MutableMemoryView(Span<SimpleType>(m_share_buffer.data(),total_share_buffer),m_dim2_size);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -251,7 +263,7 @@ copySend(Integer index)
 /*---------------------------------------------------------------------------*/
 
 template<class SimpleType> void SimpleVariableSynchronizeDispatcher<SimpleType>::
-_beginSynchronize(SyncBuffer& sync_buffer)
+_beginSynchronize(SyncBufferBase& sync_buffer)
 {
   IParallelMng* pm = this->m_parallel_mng;
   
@@ -267,7 +279,7 @@ _beginSynchronize(SyncBuffer& sync_buffer)
   // Envoie les messages de réception non bloquant
   for( Integer i=0; i<nb_message; ++i ){
     const VariableSyncInfo& vsi = sync_list[i];
-    ArrayView<SimpleType> ghost_local_buffer = sync_buffer.ghostBuffer(i);
+    auto ghost_local_buffer = SyncBufferBase::toLegacySmallView(sync_buffer.ghostMemoryView(i));
     if (!ghost_local_buffer.empty()){
       Parallel::Request rval = pm->recv(ghost_local_buffer,vsi.targetRank(),false);
       m_all_requests.add(rval);
@@ -277,16 +289,16 @@ _beginSynchronize(SyncBuffer& sync_buffer)
   // Envoie les messages d'envoie en mode non bloquant.
   for( Integer i=0; i<nb_message; ++i ){
     const VariableSyncInfo& vsi = sync_list[i];
-    ArrayView<SimpleType> share_local_buffer = sync_buffer.shareBuffer(i);
+    auto share_local_buffer = SyncBufferBase::toLegacySmallView(sync_buffer.shareMemoryView(i));
       
     sync_buffer.copySend(i);
 
-    ConstArrayView<SimpleType> const_share = share_local_buffer;
+    //ConstArrayView<SimpleType> const_share = share_local_buffer;
     if (!share_local_buffer.empty()){
       //for( Integer i=0, is=share_local_buffer.size(); i<is; ++i )
       //trace->info() << "TO rank=" << vsi.m_target_rank << " I=" << i << " V=" << share_local_buffer[i]
       //                << " lid=" << share_grp[i] << " v2=" << var_values[share_grp[i]];
-      Parallel::Request rval = pm->send(const_share,vsi.targetRank(),use_blocking_send);
+      Parallel::Request rval = pm->send(share_local_buffer,vsi.targetRank(),use_blocking_send);
       if (!use_blocking_send)
         m_all_requests.add(rval);
     }
@@ -297,7 +309,7 @@ _beginSynchronize(SyncBuffer& sync_buffer)
 /*---------------------------------------------------------------------------*/
 
 template<class SimpleType> void SimpleVariableSynchronizeDispatcher<SimpleType>::
-_endSynchronize(SyncBuffer& sync_buffer)
+_endSynchronize(SyncBufferBase& sync_buffer)
 {
   IParallelMng* pm = m_parallel_mng;
   
@@ -339,7 +351,7 @@ GenericVariableSynchronizeDispatcher(GenericVariableSynchronizeDispatcherBuildIn
 
 template <typename SimpleType> void
 GenericVariableSynchronizeDispatcher<SimpleType>::
-_beginSynchronize(SyncBuffer& sync_buffer)
+_beginSynchronize(SyncBufferBase& sync_buffer)
 {
   m_generic_instance->beginSynchronize(sync_buffer.genericBuffer());
 }
@@ -349,7 +361,7 @@ _beginSynchronize(SyncBuffer& sync_buffer)
 
 template <typename SimpleType> void
 GenericVariableSynchronizeDispatcher<SimpleType>::
-_endSynchronize(SyncBuffer& sync_buffer)
+_endSynchronize(SyncBufferBase& sync_buffer)
 {
   m_generic_instance->endSynchronize(sync_buffer.genericBuffer());
 }
