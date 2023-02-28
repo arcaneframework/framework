@@ -85,25 +85,7 @@ class MpiLegacyVariableSynchronizeDispatcher
 
   ~MpiLegacyVariableSynchronizeDispatcher()
   {
-    _destroyTypes();
   }
-
-  void _destroyTypes()
-  {
-    Integer nb_share_type = m_share_derived_types.size();
-    for( Integer i=0; i<nb_share_type; ++i ){
-      MPI_Type_free(&m_share_derived_types[i]);
-    }
-    m_share_derived_types.clear();
-
-    Integer nb_ghost_type = m_ghost_derived_types.size();
-    for( Integer i=0; i<nb_ghost_type; ++i ){
-      MPI_Type_free(&m_ghost_derived_types[i]);
-    }
-    m_ghost_derived_types.clear();
-  }
-
-  void compute() override;
 
  protected:
 
@@ -111,13 +93,13 @@ class MpiLegacyVariableSynchronizeDispatcher
   void _endSynchronize(SyncBufferBase& sync_buffer) override;
 
  private:
+
   MpiParallelMng* m_mpi_parallel_mng;
   UniqueArray<MPI_Request> m_send_requests;
   UniqueArray<MPI_Request> m_recv_requests;
   UniqueArray<Integer> m_recv_requests_done;
   UniqueArray<MPI_Datatype> m_share_derived_types;
   UniqueArray<MPI_Datatype> m_ghost_derived_types;
-  bool m_use_derived_type = false;
 };
 
 /*---------------------------------------------------------------------------*/
