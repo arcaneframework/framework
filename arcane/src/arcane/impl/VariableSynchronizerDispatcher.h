@@ -187,8 +187,8 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
       Span<std::byte> globalReceiveBuffer() override { return m_buffer->ghostMemoryView().bytes(); }
       Span<std::byte> sendBuffer(Int32 index) override { return m_buffer->shareMemoryView(index).bytes(); }
       Span<std::byte> receiveBuffer(Int32 index) override { return m_buffer->ghostMemoryView(index).bytes(); }
-      Int64 sendDisplacement(Int32 index) const override { return m_buffer->shareDisplacement(index) * sizeof(SimpleType); }
-      Int64 receiveDisplacement(Int32 index) const override { return m_buffer->ghostDisplacement(index) * sizeof(SimpleType); }
+      Int64 sendDisplacement(Int32 index) const override { return m_buffer->shareDisplacement(index); }
+      Int64 receiveDisplacement(Int32 index) const override { return m_buffer->ghostDisplacement(index); }
       void copySend(Int32 index) override { m_buffer->copySend(index); }
       void copyReceive(Int32 index) override { m_buffer->copyReceive(index); }
       Int64 totalSendSize() const override { return  m_buffer->totalShareSize(); }
@@ -213,13 +213,13 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
     Int32 nbRank() const { return m_ghost_locals_buffer.size(); }
     Int32 dim2Size() const { return m_dim2_size; }
 
-    MutableMemoryView ghostMemoryView(Int32 index) { return _toMemoryView(m_ghost_locals_buffer[index]); }
-    MutableMemoryView shareMemoryView(Int32 index) { return _toMemoryView(m_share_locals_buffer[index]); }
-    MemoryView ghostMemoryView(Int32 index) const { return _toMemoryView(m_ghost_locals_buffer[index]); }
-    MemoryView shareMemoryView(Int32 index) const { return _toMemoryView(m_share_locals_buffer[index]); }
+    MutableMemoryView ghostMemoryView(Int32 index) { return m_ghost_locals_buffer[index]; }
+    MutableMemoryView shareMemoryView(Int32 index) { return m_share_locals_buffer[index]; }
+    MemoryView ghostMemoryView(Int32 index) const { return m_ghost_locals_buffer[index]; }
+    MemoryView shareMemoryView(Int32 index) const { return m_share_locals_buffer[index]; }
 
-    Int32 ghostDisplacement(Int32 index) const { return m_ghost_displacements[index]; }
-    Int32 shareDisplacement(Int32 index) const { return m_share_displacements[index]; }
+    Int64 ghostDisplacement(Int32 index) const { return m_ghost_displacements[index]; }
+    Int64 shareDisplacement(Int32 index) const { return m_share_displacements[index]; }
 
     MutableMemoryView ghostMemoryView() { return m_ghost_memory_view; }
     MutableMemoryView shareMemoryView() { return m_share_memory_view; }
@@ -231,8 +231,8 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
 
     void copyReceive(Integer index);
     void copySend(Integer index);
-    Int64 totalGhostSize() const { return asBytes(m_ghost_buffer.constSpan()).size(); }
-    Int64 totalShareSize() const { return asBytes(m_share_buffer.constSpan()).size(); }
+    Int64 totalGhostSize() const { return m_ghost_memory_view.bytes().size(); }
+    Int64 totalShareSize() const { return m_share_memory_view.bytes().size(); }
     IDataSynchronizeBuffer* genericBuffer() { return &m_generic_buffer; }
 
   public:
@@ -246,7 +246,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
 
   private:
 
-    Integer m_dim2_size = 0;
+    Int32 m_dim2_size = 0;
     //! Buffer pour toutes les données des entités fantômes qui serviront en réception
     UniqueArray<SimpleType> m_ghost_buffer;
     //! Buffer pour toutes les données des entités partagées qui serviront en envoi
@@ -256,9 +256,9 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
     //! Buffer pour toutes les données des entités partagées qui serviront en envoi
     MutableMemoryView m_share_memory_view;
     //! Position dans \a m_ghost_buffer de chaque rang
-    UniqueArray< ArrayView<SimpleType> > m_ghost_locals_buffer;
+    UniqueArray<MutableMemoryView> m_ghost_locals_buffer;
     //! Position dans \a m_share_buffer de chaque rang
-    UniqueArray< ArrayView<SimpleType> > m_share_locals_buffer;
+    UniqueArray<MutableMemoryView> m_share_locals_buffer;
     //! Déplacement dans \a m_ghost_buffer de chaque rang
     UniqueArray<Int32> m_ghost_displacements;
     //! Déplacement dans \a m_share_buffer de chaque rang
