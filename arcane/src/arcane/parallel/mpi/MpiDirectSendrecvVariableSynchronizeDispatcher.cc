@@ -53,7 +53,7 @@ MpiDirectSendrecvVariableSynchronizeDispatcher(MpiDirectSendrecvVariableSynchron
 
 template<typename SimpleType> void
 MpiDirectSendrecvVariableSynchronizeDispatcher<SimpleType>::
-_beginSynchronize(SyncBuffer& sync_buffer)
+_beginSynchronize(SyncBufferBase& sync_buffer)
 {
   auto sync_list = this->m_sync_info->infos();
   Integer nb_message = sync_list.size();
@@ -115,7 +115,7 @@ _beginSynchronize(SyncBuffer& sync_buffer)
 
 template<typename SimpleType> void
 MpiDirectSendrecvVariableSynchronizeDispatcher<SimpleType>::
-_endSynchronize(SyncBuffer& sync_buffer)
+_endSynchronize(SyncBufferBase& sync_buffer)
 {
   //With this implementation, we do not need this function.
   ARCANE_UNUSED(sync_buffer);

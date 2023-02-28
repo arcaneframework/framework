@@ -275,9 +275,14 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
 , public IVariableSynchronizeDispatcher
 {
  public:
+
+  using SyncBufferBase = VariableSynchronizeDispatcherSyncBufferBase;
+
+ public:
+
   //! Gère les buffers d'envoie et réception pour la synchronisation
   class ARCANE_IMPL_EXPORT SyncBuffer
-  : public VariableSynchronizeDispatcherSyncBufferBase
+  : public SyncBufferBase
   {
 
   public:
@@ -308,8 +313,8 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
 
  protected:
 
-  virtual void _beginSynchronize(SyncBuffer& sync_buffer) =0;
-  virtual void _endSynchronize(SyncBuffer& sync_buffer) =0;
+  virtual void _beginSynchronize(SyncBufferBase& sync_buffer) =0;
+  virtual void _endSynchronize(SyncBufferBase& sync_buffer) =0;
 
  protected:
 
@@ -336,8 +341,8 @@ template<class SimpleType>
 class ARCANE_IMPL_EXPORT SimpleVariableSynchronizeDispatcher
 : public VariableSynchronizeDispatcher<SimpleType>
 {
+  using SyncBufferBase = VariableSynchronizeDispatcherSyncBufferBase;
   using BaseClass = VariableSynchronizeDispatcher<SimpleType>;
-  using SyncBuffer = typename VariableSynchronizeDispatcher<SimpleType>::SyncBuffer;
   using BaseClass::m_parallel_mng;
 
  public:
@@ -347,8 +352,8 @@ class ARCANE_IMPL_EXPORT SimpleVariableSynchronizeDispatcher
 
  protected:
 
-  void _beginSynchronize(SyncBuffer& sync_buffer) override;
-  void _endSynchronize(SyncBuffer& sync_buffer) override;
+  void _beginSynchronize(SyncBufferBase& sync_buffer) override;
+  void _endSynchronize(SyncBufferBase& sync_buffer) override;
 
  private:
 
@@ -367,7 +372,7 @@ class ARCANE_IMPL_EXPORT GenericVariableSynchronizeDispatcher
 {
  public:
 
-  using SyncBuffer = typename VariableSynchronizeDispatcher<SimpleType>::SyncBuffer;
+  using SyncBufferBase = VariableSynchronizeDispatcherSyncBufferBase;
 
  public:
 
@@ -380,11 +385,10 @@ class ARCANE_IMPL_EXPORT GenericVariableSynchronizeDispatcher
   }
   void compute() override;
 
- public:
  protected:
 
-  void _beginSynchronize(SyncBuffer& sync_buffer) override;
-  void _endSynchronize(SyncBuffer& sync_buffer) override;
+  void _beginSynchronize(SyncBufferBase& sync_buffer) override;
+  void _endSynchronize(SyncBufferBase& sync_buffer) override;
 
  private:
 

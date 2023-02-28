@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiVariableSynchronizeDispatcher.cc                         (C) 2000-2021 */
+/* MpiVariableSynchronizeDispatcher.cc                         (C) 2000-2023 */
 /*                                                                           */
 /* Gestion spécifique MPI des synchronisations des variables.                */
 /*---------------------------------------------------------------------------*/
@@ -102,7 +102,7 @@ compute()
 
 template<typename SimpleType> void
 MpiLegacyVariableSynchronizeDispatcher<SimpleType>::
-_beginSynchronize(SyncBuffer& sync_buffer)
+_beginSynchronize(SyncBufferBase& sync_buffer)
 {
   MutableMemoryView var_values = sync_buffer.dataMemoryView();
   auto sync_list = this->m_sync_info->infos();
@@ -133,7 +133,7 @@ _beginSynchronize(SyncBuffer& sync_buffer)
   double begin_prepare_time = MPI_Wtime();
   for( Integer i=0; i<nb_message; ++i ){
     const VariableSyncInfo& vsi = sync_list[i];
-    ArrayView<Byte> ghost_local_buffer = SyncBuffer::toLegacySmallView(sync_buffer.ghostMemoryView(i));
+    ArrayView<Byte> ghost_local_buffer = SyncBufferBase::toLegacySmallView(sync_buffer.ghostMemoryView(i));
     if (!ghost_local_buffer.empty()){
       MPI_Request mpi_request;
       if (use_derived){
@@ -160,7 +160,7 @@ _beginSynchronize(SyncBuffer& sync_buffer)
   // Envoie les messages d'envoie en mode non bloquant.
   for( Integer i=0; i<nb_message; ++i ){
     const VariableSyncInfo& vsi = this->m_sync_list[i];
-    ArrayView<Byte> share_local_buffer = SyncBuffer::toLegacySmallView(sync_buffer.shareMemoryView(i));
+    ArrayView<Byte> share_local_buffer = SyncBufferBase::toLegacySmallView(sync_buffer.shareMemoryView(i));
     if (!use_derived)
       sync_buffer.copySend(i);
     if (!share_local_buffer.empty()){
@@ -191,7 +191,7 @@ _beginSynchronize(SyncBuffer& sync_buffer)
 
 template<typename SimpleType> void
 MpiLegacyVariableSynchronizeDispatcher<SimpleType>::
-_endSynchronize(SyncBuffer& sync_buffer)
+_endSynchronize(SyncBufferBase& sync_buffer)
 {
   Integer dim2_size = sync_buffer.dim2Size();
   bool use_derived = (dim2_size==1 && m_use_derived_type);

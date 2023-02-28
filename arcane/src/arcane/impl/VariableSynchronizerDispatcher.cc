@@ -263,7 +263,7 @@ _allocateBuffers()
 /*---------------------------------------------------------------------------*/
 
 template<class SimpleType> void SimpleVariableSynchronizeDispatcher<SimpleType>::
-_beginSynchronize(SyncBuffer& sync_buffer)
+_beginSynchronize(SyncBufferBase& sync_buffer)
 {
   IParallelMng* pm = this->m_parallel_mng;
   
@@ -279,7 +279,7 @@ _beginSynchronize(SyncBuffer& sync_buffer)
   // Envoie les messages de réception non bloquant
   for( Integer i=0; i<nb_message; ++i ){
     const VariableSyncInfo& vsi = sync_list[i];
-    auto ghost_local_buffer = SyncBuffer::toLegacySmallView(sync_buffer.ghostMemoryView(i));
+    auto ghost_local_buffer = SyncBufferBase::toLegacySmallView(sync_buffer.ghostMemoryView(i));
     if (!ghost_local_buffer.empty()){
       Parallel::Request rval = pm->recv(ghost_local_buffer,vsi.targetRank(),false);
       m_all_requests.add(rval);
@@ -289,7 +289,7 @@ _beginSynchronize(SyncBuffer& sync_buffer)
   // Envoie les messages d'envoie en mode non bloquant.
   for( Integer i=0; i<nb_message; ++i ){
     const VariableSyncInfo& vsi = sync_list[i];
-    auto share_local_buffer = SyncBuffer::toLegacySmallView(sync_buffer.shareMemoryView(i));
+    auto share_local_buffer = SyncBufferBase::toLegacySmallView(sync_buffer.shareMemoryView(i));
       
     sync_buffer.copySend(i);
 
@@ -309,7 +309,7 @@ _beginSynchronize(SyncBuffer& sync_buffer)
 /*---------------------------------------------------------------------------*/
 
 template<class SimpleType> void SimpleVariableSynchronizeDispatcher<SimpleType>::
-_endSynchronize(SyncBuffer& sync_buffer)
+_endSynchronize(SyncBufferBase& sync_buffer)
 {
   IParallelMng* pm = m_parallel_mng;
   
@@ -351,7 +351,7 @@ GenericVariableSynchronizeDispatcher(GenericVariableSynchronizeDispatcherBuildIn
 
 template <typename SimpleType> void
 GenericVariableSynchronizeDispatcher<SimpleType>::
-_beginSynchronize(SyncBuffer& sync_buffer)
+_beginSynchronize(SyncBufferBase& sync_buffer)
 {
   m_generic_instance->beginSynchronize(sync_buffer.genericBuffer());
 }
@@ -361,7 +361,7 @@ _beginSynchronize(SyncBuffer& sync_buffer)
 
 template <typename SimpleType> void
 GenericVariableSynchronizeDispatcher<SimpleType>::
-_endSynchronize(SyncBuffer& sync_buffer)
+_endSynchronize(SyncBufferBase& sync_buffer)
 {
   m_generic_instance->endSynchronize(sync_buffer.genericBuffer());
 }

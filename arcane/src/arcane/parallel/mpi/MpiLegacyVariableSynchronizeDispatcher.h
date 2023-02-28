@@ -76,7 +76,9 @@ class MpiLegacyVariableSynchronizeDispatcher
 : public VariableSynchronizeDispatcher<SimpleType>
 {
  public:
-  typedef typename VariableSynchronizeDispatcher<SimpleType>::SyncBuffer SyncBuffer;
+
+  using SyncBufferBase = VariableSynchronizeDispatcherSyncBufferBase;
+
  public:
 
   MpiLegacyVariableSynchronizeDispatcher(MpiLegacyVariableSynchronizeDispatcherBuildInfo& bi);
@@ -105,8 +107,8 @@ class MpiLegacyVariableSynchronizeDispatcher
 
  protected:
 
-  void _beginSynchronize(SyncBuffer& sync_buffer) override;
-  void _endSynchronize(SyncBuffer& sync_buffer) override;
+  void _beginSynchronize(SyncBufferBase& sync_buffer) override;
+  void _endSynchronize(SyncBufferBase& sync_buffer) override;
 
  private:
   MpiParallelMng* m_mpi_parallel_mng;

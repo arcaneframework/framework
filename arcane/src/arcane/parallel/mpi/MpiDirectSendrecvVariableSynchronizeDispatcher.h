@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiDirectSendrecvVariableSynchronizeDispatcher.h            (C) 2000-2022 */
+/* MpiDirectSendrecvVariableSynchronizeDispatcher.h            (C) 2000-2023 */
 /*                                                                           */
 /* Gestion spécifique MPI des synchronisations des variables.                */
 /*---------------------------------------------------------------------------*/
@@ -53,10 +53,7 @@ class MpiDirectSendrecvVariableSynchronizeDispatcherBuildInfo
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Implémentation optimisée pour MPI de la synchronisation.
- *
- * Par rapport à la version de base, cette implémentation fait un MPI_Sendrecv.
- *
+ * \brief Implémentation de la synchronisation via MPI_Sendrecv.
  */
 template<typename SimpleType>
 class MpiDirectSendrecvVariableSynchronizeDispatcher
@@ -64,7 +61,7 @@ class MpiDirectSendrecvVariableSynchronizeDispatcher
 {
  public:
 
-  typedef typename VariableSynchronizeDispatcher<SimpleType>::SyncBuffer SyncBuffer;
+  using SyncBufferBase = VariableSynchronizeDispatcherSyncBufferBase;
 
  public:
 
@@ -72,8 +69,8 @@ class MpiDirectSendrecvVariableSynchronizeDispatcher
 
  protected:
 
-  void _beginSynchronize(SyncBuffer& sync_buffer) override;
-  void _endSynchronize(SyncBuffer& sync_buffer) override;
+  void _beginSynchronize(SyncBufferBase& sync_buffer) override;
+  void _endSynchronize(SyncBufferBase& sync_buffer) override;
 
  private:
 
