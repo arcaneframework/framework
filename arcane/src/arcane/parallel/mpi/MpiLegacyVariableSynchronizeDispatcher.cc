@@ -11,21 +11,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
-#include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/Real2.h"
-#include "arcane/utils/Real3.h"
-#include "arcane/utils/Real2x2.h"
-#include "arcane/utils/Real3x3.h"
-
-#include "arcane/parallel/mpi/MpiLegacyVariableSynchronizeDispatcher.h"
 #include "arcane/parallel/mpi/MpiParallelMng.h"
 #include "arcane/parallel/mpi/MpiAdapter.h"
 #include "arcane/parallel/mpi/MpiDatatypeList.h"
 #include "arcane/parallel/mpi/MpiDatatype.h"
 #include "arcane/parallel/IStat.h"
 
-#include "arcane/datatype/DataTypeTraits.h"
+#include "arcane/impl/IDataSynchronizeBuffer.h"
+#include "arcane/impl/VariableSynchronizerDispatcher.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -35,23 +28,89 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Implémentation optimisée pour MPI de la synchronisation.
+ *
+ * Cette classe implémente la version historique de la synchronisation qui existe
+ * dans les versions de Arcane antérieures à la 3.2.
+ *
+ * Par rapport à la version de base, cette implémentation fait un MPI_Waitsome
+ * (au lieu d'un Waitall) et recopie dans le buffer de destination
+ * dès qu'un message arrive.
+ */
+class MpiLegacyVariableSynchronizerDispatcher
+: public AbstractGenericVariableSynchronizerDispatcher
+{
+ public:
 
-template<typename SimpleType>
-MpiLegacyVariableSynchronizeDispatcher<SimpleType>::
-MpiLegacyVariableSynchronizeDispatcher(MpiLegacyVariableSynchronizeDispatcherBuildInfo& bi)
-: VariableSynchronizeDispatcher<SimpleType>(VariableSynchronizeDispatcherBuildInfo(bi.parallelMng(),bi.table()))
-, m_mpi_parallel_mng(bi.parallelMng())
+  class Factory;
+  explicit MpiLegacyVariableSynchronizerDispatcher(Factory* f);
+
+ protected:
+
+  void compute() override {}
+  void beginSynchronize(IDataSynchronizeBuffer* buf) override;
+  void endSynchronize(IDataSynchronizeBuffer* buf) override;
+
+ private:
+
+  MpiParallelMng* m_mpi_parallel_mng;
+  UniqueArray<MPI_Request> m_send_requests;
+  UniqueArray<MPI_Request> m_recv_requests;
+  UniqueArray<Integer> m_recv_requests_done;
+  UniqueArray<MPI_Datatype> m_share_derived_types;
+  UniqueArray<MPI_Datatype> m_ghost_derived_types;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class MpiLegacyVariableSynchronizerDispatcher::Factory
+: public IGenericVariableSynchronizerDispatcherFactory
+{
+ public:
+
+  explicit Factory(MpiParallelMng* mpi_pm)
+  : m_mpi_parallel_mng(mpi_pm)
+  {}
+
+  Ref<IGenericVariableSynchronizerDispatcher> createInstance() override
+  {
+    auto* x = new MpiLegacyVariableSynchronizerDispatcher(this);
+    return makeRef<IGenericVariableSynchronizerDispatcher>(x);
+  }
+
+ public:
+
+  MpiParallelMng* m_mpi_parallel_mng = nullptr;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" Ref<IGenericVariableSynchronizerDispatcherFactory>
+arcaneCreateMpiLegacyVariableSynchronizerFactory(MpiParallelMng* mpi_pm)
+{
+  auto* x = new MpiLegacyVariableSynchronizerDispatcher::Factory(mpi_pm);
+  return makeRef<IGenericVariableSynchronizerDispatcherFactory>(x);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MpiLegacyVariableSynchronizerDispatcher::
+MpiLegacyVariableSynchronizerDispatcher(Factory* f)
+: m_mpi_parallel_mng(f->m_mpi_parallel_mng)
 {
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename SimpleType> void
-MpiLegacyVariableSynchronizeDispatcher<SimpleType>::
-_beginSynchronize(SyncBufferBase& sync_buffer)
+void MpiLegacyVariableSynchronizerDispatcher::
+beginSynchronize(IDataSynchronizeBuffer* vs_buf)
 {
-  auto sync_list = this->m_sync_info->infos();
+  auto sync_list = _syncInfo()->infos();
   Integer nb_message = sync_list.size();
 
   m_send_requests.clear();
@@ -75,14 +134,11 @@ _beginSynchronize(SyncBufferBase& sync_buffer)
   double begin_prepare_time = MPI_Wtime();
   for( Integer i=0; i<nb_message; ++i ){
     const VariableSyncInfo& vsi = sync_list[i];
-    ArrayView<Byte> ghost_local_buffer = SyncBufferBase::toLegacySmallView(sync_buffer.ghostMemoryView(i));
+    auto ghost_local_buffer = vs_buf->receiveBuffer(i).smallView();
     if (!ghost_local_buffer.empty()){
       MPI_Request mpi_request;
-      {
-        MPI_Datatype dt = dtlist->datatype(SimpleType())->datatype();
-        mpi_profiling->iRecv(ghost_local_buffer.data(),ghost_local_buffer.size(),
-                             dt,vsi.targetRank(),523,comm,&mpi_request);
-      }
+      mpi_profiling->iRecv(ghost_local_buffer.data(),ghost_local_buffer.size(),
+                           byte_dt,vsi.targetRank(),523,comm,&mpi_request);
       m_recv_requests[i] = mpi_request;
       m_recv_requests_done[i] = false;
       //trace->info() << "POST RECV " << vsi.m_target_rank;
@@ -97,9 +153,9 @@ _beginSynchronize(SyncBufferBase& sync_buffer)
 
   // Envoie les messages d'envoie en mode non bloquant.
   for( Integer i=0; i<nb_message; ++i ){
-    const VariableSyncInfo& vsi = this->m_sync_list[i];
-    ArrayView<Byte> share_local_buffer = SyncBufferBase::toLegacySmallView(sync_buffer.shareMemoryView(i));
-    sync_buffer.copySend(i);
+    const VariableSyncInfo& vsi = sync_list[i];
+    auto share_local_buffer = vs_buf->sendBuffer(i).smallView();
+    vs_buf->copySend(i);
     if (!share_local_buffer.empty()){
       MPI_Request mpi_request;
       mpi_profiling->iSend(share_local_buffer.data(),share_local_buffer.size(),
@@ -109,16 +165,15 @@ _beginSynchronize(SyncBufferBase& sync_buffer)
   }
   {
     double prepare_time = MPI_Wtime() - begin_prepare_time;
-    pm->stat()->add("SyncPrepare",prepare_time,sync_buffer.totalShareSize());
+    pm->stat()->add("SyncPrepare",prepare_time,vs_buf->totalSendSize());
   }
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename SimpleType> void
-MpiLegacyVariableSynchronizeDispatcher<SimpleType>::
-_endSynchronize(SyncBufferBase& sync_buffer)
+void MpiLegacyVariableSynchronizerDispatcher::
+endSynchronize(IDataSynchronizeBuffer* vs_buf)
 {
   MpiParallelMng* pm = m_mpi_parallel_mng;
 
@@ -169,7 +224,7 @@ _endSynchronize(SyncBufferBase& sync_buffer)
 
       {
         double begin_time = MPI_Wtime();
-        sync_buffer.copyReceive(index);
+        vs_buf->copyReceive(index);
         double end_time = MPI_Wtime();
         copy_time += (end_time - begin_time);
       }
@@ -184,29 +239,14 @@ _endSynchronize(SyncBufferBase& sync_buffer)
   m_mpi_parallel_mng->adapter()->getMpiProfiling()->waitAll(m_send_requests.size(),m_send_requests.data(),
                                                             mpi_status.data());
   //trace->info() << "Wait all end";
-
-  Int64 total_ghost_size = sync_buffer.totalGhostSize();
-  Int64 total_share_size = sync_buffer.totalShareSize();
-  Int64 total_size = total_ghost_size + total_share_size;
   {
+    Int64 total_ghost_size = vs_buf->totalReceiveSize();
+    Int64 total_share_size = vs_buf->totalSendSize();
+    Int64 total_size = total_ghost_size + total_share_size;
     pm->stat()->add("SyncCopy",copy_time,total_ghost_size);
     pm->stat()->add("SyncWait",wait_time,total_size);
   }
-  this->m_is_in_sync = false;
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template class MpiLegacyVariableSynchronizeDispatcher<Byte>;
-template class MpiLegacyVariableSynchronizeDispatcher<Int16>;
-template class MpiLegacyVariableSynchronizeDispatcher<Int32>;
-template class MpiLegacyVariableSynchronizeDispatcher<Int64>;
-template class MpiLegacyVariableSynchronizeDispatcher<Real>;
-template class MpiLegacyVariableSynchronizeDispatcher<Real2>;
-template class MpiLegacyVariableSynchronizeDispatcher<Real3>;
-template class MpiLegacyVariableSynchronizeDispatcher<Real2x2>;
-template class MpiLegacyVariableSynchronizeDispatcher<Real3x3>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

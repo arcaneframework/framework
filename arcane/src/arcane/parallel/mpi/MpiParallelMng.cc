@@ -43,7 +43,6 @@
 #include "arcane/parallel/mpi/MpiLock.h"
 #include "arcane/parallel/mpi/MpiSerializeMessage.h"
 #include "arcane/parallel/mpi/MpiParallelNonBlockingCollective.h"
-#include "arcane/parallel/mpi/MpiLegacyVariableSynchronizeDispatcher.h"
 #include "arcane/parallel/mpi/MpiDatatype.h"
 #include "arcane/parallel/mpi/IVariableSynchronizerMpiCommunicator.h"
 
@@ -88,6 +87,8 @@ extern "C++" Ref<IGenericVariableSynchronizerDispatcherFactory>
 arcaneCreateMpiVariableSynchronizerFactory(MpiParallelMng* mpi_pm);
 extern "C++" Ref<IGenericVariableSynchronizerDispatcherFactory>
 arcaneCreateMpiDirectSendrecvVariableSynchronizerFactory(MpiParallelMng* mpi_pm);
+extern "C++" Ref<IGenericVariableSynchronizerDispatcherFactory>
+arcaneCreateMpiLegacyVariableSynchronizerFactory(MpiParallelMng* mpi_pm);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -328,8 +329,7 @@ class MpiParallelMngUtilsFactory
     else{
       if (do_print)
         tm->info() << "Using MpiSynchronizer V1";
-      MpiLegacyVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table);
-      vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiLegacyVariableSynchronizeDispatcher>(bi));
+      generic_factory = arcaneCreateMpiLegacyVariableSynchronizerFactory(mpi_pm);
     }
     // Si non nul on utilise la fabrique générique
     if (!vd && generic_factory.get()){
