@@ -18,7 +18,6 @@ set( ARCANE_SOURCES
   MpiVariableSynchronizeDispatcher.cc
   MpiBlockVariableSynchronizeDispatcher.cc
   MpiDirectSendrecvVariableSynchronizeDispatcher.cc
-  MpiDirectSendrecvVariableSynchronizeDispatcher.h
   MpiLegacyVariableSynchronizeDispatcher.cc
   MpiLegacyVariableSynchronizeDispatcher.h
   MpiSerializeMessage.h
