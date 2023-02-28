@@ -18,13 +18,31 @@
 
 #pragma once
 
-#include <alien/AlienConfig.h>
+#include <alien/ref/AlienRefSemanticPrecomp.h>
+#include <arccore/base/ArccoreGlobal.h>
 
-#include <alien/ref/import_export/SystemInfo.h>
-#include <alien/ref/import_export/SystemReader.h>
-#include <alien/ref/import_export/SystemWriter.h>
+#include <string>
 
-#include <alien/ref/import_export/MatrixMarketSystemReader.h>
-#ifdef ALIEN_USE_LIBARCHIVE
-#include <alien/ref/import_export/SuiteSparseArchiveSystemReader.h>
-#endif
+namespace Alien
+{
+class Matrix;
+class Vector;
+
+class ALIEN_REFSEMANTIC_EXPORT MatrixMarketSystemReader
+{
+ public:
+  MatrixMarketSystemReader() = delete;
+  MatrixMarketSystemReader(MatrixMarketSystemReader const&) = delete;
+  MatrixMarketSystemReader& operator=(MatrixMarketSystemReader const&) = delete;
+
+  explicit MatrixMarketSystemReader(std::string const& filename);
+  virtual ~MatrixMarketSystemReader();
+
+  void read(Matrix& A);
+  void read(Vector& rhs);
+
+ private:
+  std::string m_filename;
+};
+
+} // namespace Alien
