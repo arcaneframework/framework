@@ -11,29 +11,23 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/String.h"
 #include "arcane/utils/Collection.h"
 #include "arcane/utils/Enumerator.h"
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/TimeoutException.h"
 #include "arcane/utils/NotImplementedException.h"
-#include "arcane/utils/OStringStream.h"
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/ITraceMng.h"
-#include "arcane/utils/HPReal.h"
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/Exception.h"
+#include "arcane/utils/HPReal.h"
 
-#include "arcane/IMesh.h"
-#include "arcane/IIOMng.h"
-#include "arcane/IVariable.h"
-#include "arcane/VariableTypes.h"
-#include "arcane/SerializeBuffer.h"
-#include "arcane/Timer.h"
-#include "arcane/IItemFamily.h"
-
-#include "arcane/parallel/IStat.h"
+#include "arcane/core/IIOMng.h"
+#include "arcane/core/Timer.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/SerializeMessage.h"
+#include "arcane/core/parallel/IStat.h"
 
 #include "arcane/parallel/mpi/MpiParallelMng.h"
 #include "arcane/parallel/mpi/MpiAdapter.h"
@@ -45,8 +39,6 @@
 #include "arcane/parallel/mpi/MpiParallelNonBlockingCollective.h"
 #include "arcane/parallel/mpi/MpiDatatype.h"
 #include "arcane/parallel/mpi/IVariableSynchronizerMpiCommunicator.h"
-
-#include "arcane/SerializeMessage.h"
 
 #include "arcane/impl/VariableSynchronizer.h"
 #include "arcane/impl/ParallelReplication.h"
@@ -276,6 +268,7 @@ class MpiParallelMngUtilsFactory
       m_synchronizer_version = 5;
   }
  public:
+
   Ref<IVariableSynchronizer> createSynchronizer(IParallelMng* pm,IItemFamily* family) override
   {
     return _createSynchronizer(pm,family->allItems(),nullptr);
@@ -294,7 +287,6 @@ class MpiParallelMngUtilsFactory
     Ref<IVariableSynchronizerMpiCommunicator> topology_info;
     MpiParallelMng* mpi_pm = ARCANE_CHECK_POINTER(dynamic_cast<MpiParallelMng*>(pm));
     typedef DataTypeDispatchingDataVisitor<IVariableSynchronizeDispatcher> DispatcherType;
-    VariableSynchronizerDispatcher* vd = nullptr;
     ITraceMng* tm = pm->traceMng();
     Ref<IGenericVariableSynchronizerDispatcherFactory> generic_factory;
     // N'affiche les informations que pour le groupe de toutes les mailles pour éviter d'afficher
@@ -331,8 +323,8 @@ class MpiParallelMngUtilsFactory
         tm->info() << "Using MpiSynchronizer V1";
       generic_factory = arcaneCreateMpiLegacyVariableSynchronizerFactory(mpi_pm);
     }
-    // Si non nul on utilise la fabrique générique
-    if (!vd && generic_factory.get()){
+    VariableSynchronizerDispatcher* vd = nullptr;
+    if (generic_factory.get()){
       GenericVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table,generic_factory);
       vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<GenericVariableSynchronizeDispatcher>(bi));
     }
@@ -909,7 +901,7 @@ class MpiParallelMng::RequestList
 {
   using Base = MpiRequestList;
  public:
-  RequestList(MpiParallelMng* pm)
+  explicit RequestList(MpiParallelMng* pm)
   : Base(pm->m_adapter), m_parallel_mng(pm){}
  public:
   void _wait(Parallel::eWaitType wait_type) override
