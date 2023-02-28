@@ -85,7 +85,7 @@ applyDispatch(IArray2DataT<SimpleType>* data)
   m_is_in_sync = true;
   Integer dim1_size = value.dim1Size();
   m_2d_buffer.compute(m_buffer_copier,m_sync_info,dim2_size);
-  ArrayView<SimpleType> buf(dim1_size*dim2_size,value_ptr);
+  ArrayView<SimpleType> buf(dim1_size,value_ptr);
   m_2d_buffer.setDataView(MutableMemoryView(buf,dim2_size));
   _beginSynchronize(m_2d_buffer);
   _endSynchronize(m_2d_buffer);
@@ -175,7 +175,10 @@ compute(IBufferCopier* copier,ItemGroupSynchronizeInfo* sync_info,Integer dim2_s
   }
   m_ghost_buffer.resize(total_ghost_buffer*dim2_size);
   m_share_buffer.resize(total_share_buffer*dim2_size);
-    
+
+  m_ghost_memory_view = MutableMemoryView(Span<SimpleType>(m_ghost_buffer.data(),total_ghost_buffer),dim2_size);
+  m_share_memory_view = MutableMemoryView(Span<SimpleType>(m_share_buffer.data(),total_share_buffer),dim2_size);
+
   {
     Integer array_index = 0;
     for( Integer i=0, is=sync_list.size(); i<is; ++i ){
@@ -186,7 +189,7 @@ compute(IBufferCopier* copier,ItemGroupSynchronizeInfo* sync_info,Integer dim2_s
       Int32 displacement = array_index*dim2_size;
       m_ghost_displacements[i] =  displacement;
       if (local_size!=0)
-        m_ghost_locals_buffer[i] = { local_size*dim2_size, &m_ghost_buffer[displacement] };
+        m_ghost_locals_buffer[i] = { local_size, &m_ghost_buffer[displacement] };
       array_index += local_size;
     }
   }
@@ -200,7 +203,7 @@ compute(IBufferCopier* copier,ItemGroupSynchronizeInfo* sync_info,Integer dim2_s
       Int32 displacement = array_index*dim2_size;
       m_share_displacements[i] =  displacement;
       if (local_size!=0)
-        m_share_locals_buffer[i] = { local_size*dim2_size, &m_share_buffer[displacement] };
+        m_share_locals_buffer[i] = { local_size, &m_share_buffer[displacement] };
       array_index += local_size;
     }
   }
@@ -236,7 +239,6 @@ copySend(Integer index)
   const VariableSyncInfo& vsi = (*m_sync_info)[index];
   Int32ConstArrayView indexes = vsi.shareIds();
   MutableMemoryView local_buffer = shareMemoryView(index);
-
   m_buffer_copier->copyToBuffer(indexes,local_buffer,var_values);
 }
 

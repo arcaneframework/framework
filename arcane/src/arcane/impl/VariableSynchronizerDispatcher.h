@@ -221,10 +221,10 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
     Int32 ghostDisplacement(Int32 index) const { return m_ghost_displacements[index]; }
     Int32 shareDisplacement(Int32 index) const { return m_share_displacements[index]; }
 
-    MutableMemoryView ghostMemoryView() { return _toMemoryView(m_ghost_buffer); }
-    MutableMemoryView shareMemoryView() { return _toMemoryView(m_share_buffer); }
-    MemoryView ghostMemoryView() const { return _toMemoryView(m_ghost_buffer); }
-    MemoryView shareMemoryView() const { return _toMemoryView(m_share_buffer); }
+    MutableMemoryView ghostMemoryView() { return m_ghost_memory_view; }
+    MutableMemoryView shareMemoryView() { return m_share_memory_view; }
+    MemoryView ghostMemoryView() const { return m_ghost_memory_view; }
+    MemoryView shareMemoryView() const { return m_share_memory_view; }
 
     void setDataView(MutableMemoryView v) { m_data_view = v; }
     MutableMemoryView dataMemoryView() { return m_data_view; }
@@ -251,6 +251,10 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
     UniqueArray<SimpleType> m_ghost_buffer;
     //! Buffer pour toutes les données des entités partagées qui serviront en envoi
     UniqueArray<SimpleType> m_share_buffer;
+    //! Buffer pour toutes les données des entités fantômes qui serviront en réception
+    MutableMemoryView m_ghost_memory_view;
+    //! Buffer pour toutes les données des entités partagées qui serviront en envoi
+    MutableMemoryView m_share_memory_view;
     //! Position dans \a m_ghost_buffer de chaque rang
     UniqueArray< ArrayView<SimpleType> > m_ghost_locals_buffer;
     //! Position dans \a m_share_buffer de chaque rang
