@@ -34,6 +34,21 @@
 namespace Arcane
 {
 
+namespace
+{
+ArrayView<Byte>
+_toLegacySmallView(Span<std::byte> bytes)
+{
+  void* data = bytes.data();
+  Int32 size = bytes.smallView().size();
+  return { size, reinterpret_cast<Byte*>(data) };
+}
+
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 template<typename SimpleType> VariableSynchronizeDispatcher<SimpleType>::
 VariableSynchronizeDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi)
 : m_parallel_mng(bi.parallelMng())
@@ -262,77 +277,6 @@ _allocateBuffers()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class SimpleType> void SimpleVariableSynchronizeDispatcher<SimpleType>::
-_beginSynchronize(SyncBufferBase& sync_buffer)
-{
-  IParallelMng* pm = this->m_parallel_mng;
-  
-  bool use_blocking_send = false;
-  auto sync_list = this->m_sync_info->infos();
-  Integer nb_message = sync_list.size();
-
-  /*pm->traceMng()->info() << " ** ** COMMON BEGIN SYNC n=" << nb_message
-                         << " this=" << (IVariableSynchronizeDispatcher*)this
-                         << " m_sync_list=" << &this->m_sync_list;*/
-
-  //SyncBuffer& sync_buffer = m_1d_buffer;
-  // Envoie les messages de réception non bloquant
-  for( Integer i=0; i<nb_message; ++i ){
-    const VariableSyncInfo& vsi = sync_list[i];
-    auto ghost_local_buffer = SyncBufferBase::toLegacySmallView(sync_buffer.ghostMemoryView(i));
-    if (!ghost_local_buffer.empty()){
-      Parallel::Request rval = pm->recv(ghost_local_buffer,vsi.targetRank(),false);
-      m_all_requests.add(rval);
-    }
-  }
-
-  // Envoie les messages d'envoie en mode non bloquant.
-  for( Integer i=0; i<nb_message; ++i ){
-    const VariableSyncInfo& vsi = sync_list[i];
-    auto share_local_buffer = SyncBufferBase::toLegacySmallView(sync_buffer.shareMemoryView(i));
-      
-    sync_buffer.copySend(i);
-
-    //ConstArrayView<SimpleType> const_share = share_local_buffer;
-    if (!share_local_buffer.empty()){
-      //for( Integer i=0, is=share_local_buffer.size(); i<is; ++i )
-      //trace->info() << "TO rank=" << vsi.m_target_rank << " I=" << i << " V=" << share_local_buffer[i]
-      //                << " lid=" << share_grp[i] << " v2=" << var_values[share_grp[i]];
-      Parallel::Request rval = pm->send(share_local_buffer,vsi.targetRank(),use_blocking_send);
-      if (!use_blocking_send)
-        m_all_requests.add(rval);
-    }
-  }
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<class SimpleType> void SimpleVariableSynchronizeDispatcher<SimpleType>::
-_endSynchronize(SyncBufferBase& sync_buffer)
-{
-  IParallelMng* pm = m_parallel_mng;
-  
-  auto sync_list = this->m_sync_info->infos();
-  Integer nb_message = sync_list.size();
-
-  /*pm->traceMng()->info() << " ** ** COMMON END SYNC n=" << nb_message
-                         << " this=" << (IVariableSynchronizeDispatcher*)this
-                         << " m_sync_list=" << &this->m_sync_list;*/
-
-
-  // Attend que les receptions se terminent
-  pm->waitAllRequests(m_all_requests);
-  m_all_requests.clear();
-
-  // Recopie dans la variable le message de retour.
-  for( Integer i=0; i<nb_message; ++i )
-    sync_buffer.copyReceive(i);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -488,10 +432,153 @@ changeLocalIds(Int32ConstArrayView old_to_new_ids)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Implémentation basique de la sérialisation.
+ *
+ * Cette implémentation est faite à partir de send/receive suivi de 'wait'.
+ */
+class SimpleVariableSynchronizerDispatcher
+: public AbstractGenericVariableSynchronizerDispatcher
+{
+  using SyncBufferBase = VariableSynchronizeDispatcherSyncBufferBase;
+
+ public:
+
+  class Factory;
+  explicit SimpleVariableSynchronizerDispatcher(Factory* f);
+
+ protected:
+
+  void compute() override {}
+  void beginSynchronize(IDataSynchronizeBuffer* buf) override;
+  void endSynchronize(IDataSynchronizeBuffer* buf) override;
+
+ private:
+
+  IParallelMng* m_parallel_mng = nullptr;
+  UniqueArray<Parallel::Request> m_all_requests;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class SimpleVariableSynchronizerDispatcher::Factory
+: public IGenericVariableSynchronizerDispatcherFactory
+{
+ public:
+
+  explicit Factory(IParallelMng* pm)
+  : m_parallel_mng(pm)
+  {}
+
+  Ref<IGenericVariableSynchronizerDispatcher> createInstance() override
+  {
+    auto* x = new SimpleVariableSynchronizerDispatcher(this);
+    return makeRef<IGenericVariableSynchronizerDispatcher>(x);
+  }
+
+ public:
+
+  IParallelMng* m_parallel_mng = nullptr;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+SimpleVariableSynchronizerDispatcher::
+SimpleVariableSynchronizerDispatcher(Factory* f)
+: m_parallel_mng(f->m_parallel_mng)
+{
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" Ref<IGenericVariableSynchronizerDispatcherFactory>
+arcaneCreateSimpleVariableSynchronizerFactory(IParallelMng* pm)
+{
+  auto* x = new SimpleVariableSynchronizerDispatcher::Factory(pm);
+  return makeRef<IGenericVariableSynchronizerDispatcherFactory>(x);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SimpleVariableSynchronizerDispatcher::
+beginSynchronize(IDataSynchronizeBuffer* vs_buf)
+{
+  IParallelMng* pm = this->m_parallel_mng;
+
+  bool use_blocking_send = false;
+  auto sync_list = _syncInfo()->infos();
+  Integer nb_message = sync_list.size();
+
+  /*pm->traceMng()->info() << " ** ** COMMON BEGIN SYNC n=" << nb_message
+                         << " this=" << (IVariableSynchronizeDispatcher*)this
+                         << " m_sync_list=" << &this->m_sync_list;*/
+
+  //SyncBuffer& sync_buffer = m_1d_buffer;
+  // Envoie les messages de réception non bloquant
+  for( Integer i=0; i<nb_message; ++i ){
+    const VariableSyncInfo& vsi = sync_list[i];
+    auto ghost_local_buffer = _toLegacySmallView(vs_buf->receiveBuffer(i));
+    if (!ghost_local_buffer.empty()){
+      Parallel::Request rval = pm->recv(ghost_local_buffer,vsi.targetRank(),false);
+      m_all_requests.add(rval);
+    }
+  }
+
+  // Envoie les messages d'envoie en mode non bloquant.
+  for( Integer i=0; i<nb_message; ++i ){
+    const VariableSyncInfo& vsi = sync_list[i];
+    auto share_local_buffer = _toLegacySmallView(vs_buf->sendBuffer(i));
+
+    vs_buf->copySend(i);
+
+    //ConstArrayView<SimpleType> const_share = share_local_buffer;
+    if (!share_local_buffer.empty()){
+      //for( Integer i=0, is=share_local_buffer.size(); i<is; ++i )
+      //trace->info() << "TO rank=" << vsi.m_target_rank << " I=" << i << " V=" << share_local_buffer[i]
+      //                << " lid=" << share_grp[i] << " v2=" << var_values[share_grp[i]];
+      Parallel::Request rval = pm->send(share_local_buffer,vsi.targetRank(),use_blocking_send);
+      if (!use_blocking_send)
+        m_all_requests.add(rval);
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void SimpleVariableSynchronizerDispatcher::
+endSynchronize(IDataSynchronizeBuffer* vs_buf)
+{
+  IParallelMng* pm = m_parallel_mng;
+
+  auto sync_list = _syncInfo()->infos();
+  Integer nb_message = sync_list.size();
+
+  /*pm->traceMng()->info() << " ** ** COMMON END SYNC n=" << nb_message
+                         << " this=" << (IVariableSynchronizeDispatcher*)this
+                         << " m_sync_list=" << &this->m_sync_list;*/
+
+  // Attend que les receptions se terminent
+  pm->waitAllRequests(m_all_requests);
+  m_all_requests.clear();
+
+  // Recopie dans la variable le message de retour.
+  for( Integer i=0; i<nb_message; ++i )
+    vs_buf->copyReceive(i);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 #define ARCANE_INSTANTIATE(type) \
   template class ARCANE_TEMPLATE_EXPORT VariableSynchronizeDispatcher<type>;\
-  template class ARCANE_TEMPLATE_EXPORT GenericVariableSynchronizeDispatcher<type>;\
-  template class ARCANE_TEMPLATE_EXPORT SimpleVariableSynchronizeDispatcher<type>
+  template class ARCANE_TEMPLATE_EXPORT GenericVariableSynchronizeDispatcher<type>;
 
 ARCANE_INSTANTIATE(Byte);
 ARCANE_INSTANTIATE(Int16);

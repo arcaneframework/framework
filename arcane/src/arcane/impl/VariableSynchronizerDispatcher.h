@@ -46,8 +46,6 @@ class Timer;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<class SimpleType>
-class VariableSynchronize1D;
 class VariableSynchronizerMultiDispatcher;
 
 /*---------------------------------------------------------------------------*/
@@ -227,12 +225,6 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcherSyncBufferBase
 
  public:
 
-  static ArrayView<Byte> toLegacySmallView(MutableMemoryView view)
-  {
-    void* data = view.bytes().data();
-    Int32 size = view.bytes().smallView().size();
-    return { size, reinterpret_cast<Byte*>(data) };
-  }
 
  protected:
 
@@ -328,36 +320,6 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
   bool m_is_in_sync = false;
 
  private:
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Implémentation basique de la sérialisation.
- *
- * Cette implémentation est faite à partir de send/receive suivi de 'wait'.
- */
-template<class SimpleType>
-class ARCANE_IMPL_EXPORT SimpleVariableSynchronizeDispatcher
-: public VariableSynchronizeDispatcher<SimpleType>
-{
-  using SyncBufferBase = VariableSynchronizeDispatcherSyncBufferBase;
-  using BaseClass = VariableSynchronizeDispatcher<SimpleType>;
-  using BaseClass::m_parallel_mng;
-
- public:
-
-  explicit SimpleVariableSynchronizeDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi)
-  : BaseClass(bi){}
-
- protected:
-
-  void _beginSynchronize(SyncBufferBase& sync_buffer) override;
-  void _endSynchronize(SyncBufferBase& sync_buffer) override;
-
- private:
-
-  UniqueArray<Parallel::Request> m_all_requests;
 };
 
 /*---------------------------------------------------------------------------*/
