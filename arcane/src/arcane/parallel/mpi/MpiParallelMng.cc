@@ -1,39 +1,33 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiParallelMng.cc                                           (C) 2000-2022 */
+/* MpiParallelMng.cc                                           (C) 2000-2023 */
 /*                                                                           */
 /* Gestionnaire de parallélisme utilisant MPI.                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/String.h"
 #include "arcane/utils/Collection.h"
 #include "arcane/utils/Enumerator.h"
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/PlatformUtils.h"
 #include "arcane/utils/TimeoutException.h"
 #include "arcane/utils/NotImplementedException.h"
-#include "arcane/utils/OStringStream.h"
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/ITraceMng.h"
-#include "arcane/utils/HPReal.h"
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/Exception.h"
+#include "arcane/utils/HPReal.h"
 
-#include "arcane/IMesh.h"
-#include "arcane/IIOMng.h"
-#include "arcane/IVariable.h"
-#include "arcane/VariableTypes.h"
-#include "arcane/SerializeBuffer.h"
-#include "arcane/Timer.h"
-#include "arcane/IItemFamily.h"
-
-#include "arcane/parallel/IStat.h"
+#include "arcane/core/IIOMng.h"
+#include "arcane/core/Timer.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/SerializeMessage.h"
+#include "arcane/core/parallel/IStat.h"
 
 #include "arcane/parallel/mpi/MpiParallelMng.h"
 #include "arcane/parallel/mpi/MpiAdapter.h"
@@ -43,12 +37,8 @@
 #include "arcane/parallel/mpi/MpiLock.h"
 #include "arcane/parallel/mpi/MpiSerializeMessage.h"
 #include "arcane/parallel/mpi/MpiParallelNonBlockingCollective.h"
-#include "arcane/parallel/mpi/MpiDirectSendrecvVariableSynchronizeDispatcher.h"
-#include "arcane/parallel/mpi/MpiLegacyVariableSynchronizeDispatcher.h"
 #include "arcane/parallel/mpi/MpiDatatype.h"
 #include "arcane/parallel/mpi/IVariableSynchronizerMpiCommunicator.h"
-
-#include "arcane/SerializeMessage.h"
 
 #include "arcane/impl/VariableSynchronizer.h"
 #include "arcane/impl/ParallelReplication.h"
@@ -87,6 +77,10 @@ extern "C++" Ref<IGenericVariableSynchronizerDispatcherFactory>
 arcaneCreateMpiBlockVariableSynchronizerFactory(MpiParallelMng* mpi_pm, Int32 block_size, Int32 nb_sequence);
 extern "C++" Ref<IGenericVariableSynchronizerDispatcherFactory>
 arcaneCreateMpiVariableSynchronizerFactory(MpiParallelMng* mpi_pm);
+extern "C++" Ref<IGenericVariableSynchronizerDispatcherFactory>
+arcaneCreateMpiDirectSendrecvVariableSynchronizerFactory(MpiParallelMng* mpi_pm);
+extern "C++" Ref<IGenericVariableSynchronizerDispatcherFactory>
+arcaneCreateMpiLegacyVariableSynchronizerFactory(MpiParallelMng* mpi_pm);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -274,6 +268,7 @@ class MpiParallelMngUtilsFactory
       m_synchronizer_version = 5;
   }
  public:
+
   Ref<IVariableSynchronizer> createSynchronizer(IParallelMng* pm,IItemFamily* family) override
   {
     return _createSynchronizer(pm,family->allItems(),nullptr);
@@ -292,7 +287,6 @@ class MpiParallelMngUtilsFactory
     Ref<IVariableSynchronizerMpiCommunicator> topology_info;
     MpiParallelMng* mpi_pm = ARCANE_CHECK_POINTER(dynamic_cast<MpiParallelMng*>(pm));
     typedef DataTypeDispatchingDataVisitor<IVariableSynchronizeDispatcher> DispatcherType;
-    VariableSynchronizerDispatcher* vd = nullptr;
     ITraceMng* tm = pm->traceMng();
     Ref<IGenericVariableSynchronizerDispatcherFactory> generic_factory;
     // N'affiche les informations que pour le groupe de toutes les mailles pour éviter d'afficher
@@ -306,8 +300,7 @@ class MpiParallelMngUtilsFactory
     else if (m_synchronizer_version == 3 ){
       if (do_print)
         tm->info() << "Using MpiSynchronizer V3";
-      MpiDirectSendrecvVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table);
-      vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiDirectSendrecvVariableSynchronizeDispatcher>(bi));
+      generic_factory = arcaneCreateMpiDirectSendrecvVariableSynchronizerFactory(mpi_pm);
     }
     else if (m_synchronizer_version == 4){
       if (do_print)
@@ -328,11 +321,10 @@ class MpiParallelMngUtilsFactory
     else{
       if (do_print)
         tm->info() << "Using MpiSynchronizer V1";
-      MpiLegacyVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table);
-      vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<MpiLegacyVariableSynchronizeDispatcher>(bi));
+      generic_factory = arcaneCreateMpiLegacyVariableSynchronizerFactory(mpi_pm);
     }
-    // Si non nul on utilise la fabrique générique
-    if (!vd && generic_factory.get()){
+    VariableSynchronizerDispatcher* vd = nullptr;
+    if (generic_factory.get()){
       GenericVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table,generic_factory);
       vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<GenericVariableSynchronizeDispatcher>(bi));
     }
@@ -909,7 +901,7 @@ class MpiParallelMng::RequestList
 {
   using Base = MpiRequestList;
  public:
-  RequestList(MpiParallelMng* pm)
+  explicit RequestList(MpiParallelMng* pm)
   : Base(pm->m_adapter), m_parallel_mng(pm){}
  public:
   void _wait(Parallel::eWaitType wait_type) override
