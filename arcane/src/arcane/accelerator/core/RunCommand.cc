@@ -65,7 +65,7 @@ class ReduceMemoryImpl
 
  public:
 
-  void* allocateReduceDataMemory(MemoryView identity_view) override;
+  void* allocateReduceDataMemory(ConstMemoryView identity_view) override;
   void setGridSizeAndAllocate(Int32 grid_size) override
   {
     m_grid_size = grid_size;
@@ -365,7 +365,7 @@ _setReducePolicy()
 /*---------------------------------------------------------------------------*/
 
 void* ReduceMemoryImpl::
-allocateReduceDataMemory(MemoryView identity_view)
+allocateReduceDataMemory(ConstMemoryView identity_view)
 {
   auto identity_span = identity_view.bytes();
   Int32 data_type_size = static_cast<Int32>(identity_span.size());

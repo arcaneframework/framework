@@ -29,7 +29,7 @@ namespace Arcane
  *
  * \warning API en cours de définition. Ne pas utiliser en dehors de Arcane.
  */
-class ARCANE_UTILS_EXPORT MemoryView
+class ARCANE_UTILS_EXPORT ConstMemoryView
 {
  public:
 
@@ -38,22 +38,22 @@ class ARCANE_UTILS_EXPORT MemoryView
 
  public:
 
-  MemoryView() = default;
-  explicit constexpr MemoryView(Span<const std::byte> bytes)
+  ConstMemoryView() = default;
+  explicit constexpr ConstMemoryView(Span<const std::byte> bytes)
   : m_bytes(bytes)
   , m_nb_element(bytes.size())
   , m_datatype_size(1)
   {}
-  template <typename DataType> explicit constexpr MemoryView(Span<DataType> v)
-  : MemoryView(v, 1)
+  template <typename DataType> explicit constexpr ConstMemoryView(Span<DataType> v)
+  : ConstMemoryView(v, 1)
   {}
-  template <typename DataType> explicit constexpr MemoryView(ConstArrayView<DataType> v)
-  : MemoryView(Span<const DataType>(v), 1)
+  template <typename DataType> explicit constexpr ConstMemoryView(ConstArrayView<DataType> v)
+  : ConstMemoryView(Span<const DataType>(v), 1)
   {}
-  template <typename DataType> constexpr MemoryView(ConstArrayView<DataType> v, Int32 nb_component)
-  : MemoryView(Span<const DataType>(v), nb_component)
+  template <typename DataType> constexpr ConstMemoryView(ConstArrayView<DataType> v, Int32 nb_component)
+  : ConstMemoryView(Span<const DataType>(v), nb_component)
   {}
-  template <typename DataType> constexpr MemoryView(Span<DataType> v, Int32 nb_component)
+  template <typename DataType> constexpr ConstMemoryView(Span<DataType> v, Int32 nb_component)
   : m_nb_element(v.size())
   , m_datatype_size(static_cast<Int32>(sizeof(DataType)) * nb_component)
   {
@@ -63,7 +63,7 @@ class ARCANE_UTILS_EXPORT MemoryView
 
  public:
 
-  template <typename DataType> constexpr MemoryView&
+  template <typename DataType> constexpr ConstMemoryView&
   operator=(Span<DataType> v)
   {
     m_bytes = asBytes(v);
@@ -74,7 +74,7 @@ class ARCANE_UTILS_EXPORT MemoryView
 
  private:
 
-  constexpr MemoryView(Span<const std::byte> bytes, Int32 datatype_size, Int64 nb_element)
+  constexpr ConstMemoryView(Span<const std::byte> bytes, Int32 datatype_size, Int64 nb_element)
   : m_bytes(bytes)
   , m_nb_element(nb_element)
   , m_datatype_size(datatype_size)
@@ -95,11 +95,11 @@ class ARCANE_UTILS_EXPORT MemoryView
   constexpr Int32 datatypeSize() const { return m_datatype_size; }
 
   //! Sous-vue à partir de l'indice \a begin_index et contenant \a nb_element
-  constexpr MemoryView subView(Int64 begin_index, Int64 nb_element) const
+  constexpr ConstMemoryView subView(Int64 begin_index, Int64 nb_element) const
   {
     Int64 byte_offset = begin_index * m_datatype_size;
     auto sub_bytes = m_bytes.subspan(byte_offset, nb_element * m_datatype_size);
-    return MemoryView(sub_bytes, m_datatype_size, nb_element);
+    return ConstMemoryView(sub_bytes, m_datatype_size, nb_element);
   }
 
  public:
@@ -194,7 +194,7 @@ class ARCANE_UTILS_EXPORT MutableMemoryView
 
  public:
 
-  constexpr operator MemoryView() const { return MemoryView(m_bytes, m_datatype_size, m_nb_element); }
+  constexpr operator ConstMemoryView() const { return ConstMemoryView(m_bytes, m_datatype_size, m_nb_element); }
 
  public:
 
@@ -227,7 +227,7 @@ class ARCANE_UTILS_EXPORT MutableMemoryView
    *
    * \pre v.bytes.size() >= bytes.size()
    */
-  void copyHost(MemoryView v);
+  void copyHost(ConstMemoryView v);
 
   /*!
    * \brief Copie dans l'instance les données indexées de \a v.
@@ -243,7 +243,7 @@ class ARCANE_UTILS_EXPORT MutableMemoryView
    * \pre this.datatypeSize() == v.datatypeSize();
    * \pre this.nbElement() >= indexes.size();
    */
-  void copyFromIndexesHost(MemoryView v, Span<const Int32> indexes);
+  void copyFromIndexesHost(ConstMemoryView v, Span<const Int32> indexes);
 
  public:
 
@@ -264,17 +264,17 @@ class ARCANE_UTILS_EXPORT MutableMemoryView
 /*---------------------------------------------------------------------------*/
 
 //! Créé une vue mémoire constante à partir d'un \a Span
-template <typename DataType> MemoryView
+template <typename DataType> ConstMemoryView
 makeMemoryView(Span<DataType> v)
 {
-  return MemoryView(v);
+  return ConstMemoryView(v);
 }
 
 //! Créé une vue mémoire constante sur l'adresse \a v
-template <typename DataType> MemoryView
+template <typename DataType> ConstMemoryView
 makeMemoryView(const DataType* v)
 {
-  return MemoryView(Span<const DataType>(v, 1));
+  return ConstMemoryView(Span<const DataType>(v, 1));
 }
 
 /*---------------------------------------------------------------------------*/

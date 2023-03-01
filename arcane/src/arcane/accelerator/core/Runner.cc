@@ -441,7 +441,7 @@ cumulativeCommandTime() const
 /*---------------------------------------------------------------------------*/
 
 void Runner::
-setMemoryAdvice(MemoryView buffer, eMemoryAdvice advice)
+setMemoryAdvice(ConstMemoryView buffer, eMemoryAdvice advice)
 {
   _checkIsInit();
   m_p->runtime()->setMemoryAdvice(buffer, advice, m_p->m_device_id);
@@ -451,7 +451,7 @@ setMemoryAdvice(MemoryView buffer, eMemoryAdvice advice)
 /*---------------------------------------------------------------------------*/
 
 void Runner::
-unsetMemoryAdvice(MemoryView buffer, eMemoryAdvice advice)
+unsetMemoryAdvice(ConstMemoryView buffer, eMemoryAdvice advice)
 {
   _checkIsInit();
   m_p->runtime()->unsetMemoryAdvice(buffer, advice, m_p->m_device_id);

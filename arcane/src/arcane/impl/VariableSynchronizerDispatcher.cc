@@ -220,7 +220,7 @@ copyReceive(Integer index)
   MutableMemoryView var_values = dataMemoryView();
   const VariableSyncInfo& vsi = (*m_sync_info)[index];
   ConstArrayView<Int32> indexes = vsi.ghostIds();
-  MemoryView local_buffer = ghostMemoryView(index);
+  ConstMemoryView local_buffer = ghostMemoryView(index);
 
   m_buffer_copier->copyFromBuffer(indexes,local_buffer,var_values);
 }
@@ -234,7 +234,7 @@ copySend(Integer index)
   ARCANE_CHECK_POINTER(m_sync_info);
   ARCANE_CHECK_POINTER(m_buffer_copier);
 
-  MemoryView var_values = dataMemoryView();
+  ConstMemoryView var_values = dataMemoryView();
   const VariableSyncInfo& vsi = (*m_sync_info)[index];
   Int32ConstArrayView indexes = vsi.shareIds();
   MutableMemoryView local_buffer = shareMemoryView(index);

@@ -148,7 +148,7 @@ class SharedMemoryParallelDispatchBase
   {
    public:
 
-    MemoryView send_buf;
+    ConstMemoryView send_buf;
     Span<const Int32> send_count;
     Span<const Int32> send_index;
     MutableMemoryView recv_buf;
@@ -164,24 +164,24 @@ class SharedMemoryParallelDispatchBase
 
  protected:
 
-  void _genericAllToAll(MemoryView send_buf, MutableMemoryView recv_buf, Int32 count);
-  void _genericAllGather(MemoryView send_buf, MutableMemoryView recv_buf);
-  void _genericAllGatherVariable(MemoryView send_buf, IResizableArray* recv_buf);
-  void _genericAllToAllVariable(MemoryView send_buf,
+  void _genericAllToAll(ConstMemoryView send_buf, MutableMemoryView recv_buf, Int32 count);
+  void _genericAllGather(ConstMemoryView send_buf, MutableMemoryView recv_buf);
+  void _genericAllGatherVariable(ConstMemoryView send_buf, IResizableArray* recv_buf);
+  void _genericAllToAllVariable(ConstMemoryView send_buf,
                                 Span<const Int32> send_count, Span<const Int32> send_index,
                                 MutableMemoryView recv_buf,
                                 Span<const Int32> recv_count, Span<const Int32> recv_index);
-  void _genericScatterVariable(MemoryView send_buf, MutableMemoryView recv_buf, Int32 root);
-  Request _genericSend(MemoryView send_buffer, const PointToPointMessageInfo& message2);
+  void _genericScatterVariable(ConstMemoryView send_buf, MutableMemoryView recv_buf, Int32 root);
+  Request _genericSend(ConstMemoryView send_buffer, const PointToPointMessageInfo& message2);
   Request _genericReceive(MutableMemoryView recv_buffer, const PointToPointMessageInfo& message2);
   void _genericBroadcast(MutableMemoryView send_buf, Int32 rank);
 
  protected:
 
   // Accessible par 'SharedMemoryParallelDispatch'
-  MemoryView m_const_view;
+  ConstMemoryView m_const_view;
   MutableMemoryView m_recv_view;
-  MemoryView m_send_view;
+  ConstMemoryView m_send_view;
 
  private:
 

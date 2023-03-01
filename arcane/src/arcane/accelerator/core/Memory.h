@@ -81,7 +81,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT MemoryCopyArgs
   {}
 
   //! Copie depuis \a source vers \a destination
-  MemoryCopyArgs(MutableMemoryView destination, MemoryView source)
+  MemoryCopyArgs(MutableMemoryView destination, ConstMemoryView source)
   : m_source(source)
   , m_destination(destination)
   {}
@@ -98,13 +98,13 @@ class ARCANE_ACCELERATOR_CORE_EXPORT MemoryCopyArgs
     m_is_async = v;
     return (*this);
   }
-  MemoryView source() const { return m_source; }
+  ConstMemoryView source() const { return m_source; }
   MutableMemoryView destination() const { return m_destination; }
   bool isAsync() const { return m_is_async; }
 
  private:
 
-  MemoryView m_source;
+  ConstMemoryView m_source;
   MutableMemoryView m_destination;
   bool m_is_async = false;
 };
@@ -131,11 +131,11 @@ class ARCANE_ACCELERATOR_CORE_EXPORT MemoryPrefetchArgs
 
   //! Copie \a length octets depuis \a source vers \a destination
   MemoryPrefetchArgs(const void* source, Int64 length)
-  : m_source(MemoryView(_toSpan(source, length)))
+  : m_source(ConstMemoryView(_toSpan(source, length)))
   {}
 
   //! Copie depuis \a source vers \a destination
-  explicit MemoryPrefetchArgs(MemoryView source)
+  explicit MemoryPrefetchArgs(ConstMemoryView source)
   : m_source(source)
   {}
 
@@ -156,13 +156,13 @@ class ARCANE_ACCELERATOR_CORE_EXPORT MemoryPrefetchArgs
     m_device_id = v;
     return (*this);
   }
-  MemoryView source() const { return m_source; }
+  ConstMemoryView source() const { return m_source; }
   bool isAsync() const { return m_is_async; }
   DeviceId deviceId() const { return m_device_id; }
 
  private:
 
-  MemoryView m_source;
+  ConstMemoryView m_source;
   DeviceId m_device_id;
   bool m_is_async = false;
 };

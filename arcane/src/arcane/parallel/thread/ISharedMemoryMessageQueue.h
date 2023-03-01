@@ -42,7 +42,7 @@ class ARCANE_THREAD_EXPORT SendBufferInfo
 {
  public:
   SendBufferInfo() = default;
-  SendBufferInfo(MemoryView memory_buffer)
+  SendBufferInfo(ConstMemoryView memory_buffer)
   : m_memory_buffer(memory_buffer){}
   SendBufferInfo(const ISerializer* serializer)
   : m_serializer(serializer){}
@@ -50,7 +50,8 @@ class ARCANE_THREAD_EXPORT SendBufferInfo
   ByteConstSpan memoryBuffer() { return m_memory_buffer.bytes(); }
   const ISerializer* serializer() { return m_serializer; }
  private:
-  MemoryView m_memory_buffer;
+
+  ConstMemoryView m_memory_buffer;
   const ISerializer* m_serializer = nullptr;
 };
 

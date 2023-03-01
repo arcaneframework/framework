@@ -95,7 +95,7 @@ _collectiveBarrier()
 /*---------------------------------------------------------------------------*/
 
 void SharedMemoryParallelDispatchBase::
-_genericAllToAll(MemoryView send_buf,MutableMemoryView recv_buf,Int32 count)
+_genericAllToAll(ConstMemoryView send_buf,MutableMemoryView recv_buf,Int32 count)
 {
   Int32 nb_rank = m_nb_rank;
 
@@ -116,7 +116,7 @@ _genericAllToAll(MemoryView send_buf,MutableMemoryView recv_buf,Int32 count)
 /*---------------------------------------------------------------------------*/
 
 void SharedMemoryParallelDispatchBase::
-_genericAllToAllVariable(MemoryView send_buf,
+_genericAllToAllVariable(ConstMemoryView send_buf,
                          Span<const Int32> send_count,
                          Span<const Int32> send_index,
                          MutableMemoryView recv_buf,
@@ -136,7 +136,7 @@ _genericAllToAllVariable(MemoryView send_buf,
   MutableMemoryView recv_mem_buf(recv_buf);
   for( Integer i=0; i<m_nb_rank; ++i ){
     AllToAllVariableInfo ainfo = m_all_dispatchs_base[i]->m_alltoallv_infos;
-    MemoryView view(ainfo.send_buf);
+    ConstMemoryView view(ainfo.send_buf);
     Integer index = ainfo.send_index[my_rank];
     Integer count = ainfo.send_count[my_rank];
     recv_mem_buf.subView(global_index,count).copyHost(view.subView(index,count));
@@ -149,14 +149,14 @@ _genericAllToAllVariable(MemoryView send_buf,
 /*---------------------------------------------------------------------------*/
 
 void SharedMemoryParallelDispatchBase::
-_genericAllGather(MemoryView send_buf,MutableMemoryView recv_buf)
+_genericAllGather(ConstMemoryView send_buf,MutableMemoryView recv_buf)
 {
   m_const_view = send_buf;
   _collectiveBarrier();
   MutableMemoryView recv_mem_view(recv_buf);
   Int64 index = 0;
   for( Int32 i=0; i<m_nb_rank; ++i ){
-    MemoryView view(m_all_dispatchs_base[i]->m_const_view);
+    ConstMemoryView view(m_all_dispatchs_base[i]->m_const_view);
     Int64 size = view.nbElement();
     recv_mem_view.subView(index,size).copyHost(view);
     index += size;
@@ -168,7 +168,7 @@ _genericAllGather(MemoryView send_buf,MutableMemoryView recv_buf)
 /*---------------------------------------------------------------------------*/
 
 void SharedMemoryParallelDispatchBase::
-_genericAllGatherVariable(MemoryView send_buf,IResizableArray* recv_buf)
+_genericAllGatherVariable(ConstMemoryView send_buf,IResizableArray* recv_buf)
 {
   m_const_view = send_buf;
   _collectiveBarrier();
@@ -180,7 +180,7 @@ _genericAllGatherVariable(MemoryView send_buf,IResizableArray* recv_buf)
   MutableMemoryView recv_mem_view(recv_buf->memoryView());
   Int64 index = 0;
   for( Integer i=0; i<m_nb_rank; ++i ){
-    MemoryView view(m_all_dispatchs_base[i]->m_const_view);
+    ConstMemoryView view(m_all_dispatchs_base[i]->m_const_view);
     Int64 size = view.nbElement();
     recv_mem_view.subView(index,size).copyHost(view);
     index += size;
@@ -192,13 +192,13 @@ _genericAllGatherVariable(MemoryView send_buf,IResizableArray* recv_buf)
 /*---------------------------------------------------------------------------*/
 
 void SharedMemoryParallelDispatchBase::
-_genericScatterVariable(MemoryView send_buf,MutableMemoryView recv_buf,Int32 root)
+_genericScatterVariable(ConstMemoryView send_buf,MutableMemoryView recv_buf,Int32 root)
 {
   m_const_view = send_buf;
   m_recv_view = recv_buf;
   _collectiveBarrier();
   if (m_rank==root){
-    MemoryView const_view(m_const_view);
+    ConstMemoryView const_view(m_const_view);
     Int64 index = 0;
     for( Integer i=0; i<m_nb_rank; ++i ){
       MutableMemoryView view(m_all_dispatchs_base[i]->m_recv_view);
@@ -214,7 +214,7 @@ _genericScatterVariable(MemoryView send_buf,MutableMemoryView recv_buf,Int32 roo
 /*---------------------------------------------------------------------------*/
 
 Request SharedMemoryParallelDispatchBase::
-_genericSend(MemoryView send_buffer,const PointToPointMessageInfo& message2)
+_genericSend(ConstMemoryView send_buffer,const PointToPointMessageInfo& message2)
 {
   PointToPointMessageInfo message(message2);
   message.setEmiterRank(MessageRank(m_rank));
@@ -438,7 +438,7 @@ broadcast(Span<Type> send_buf,Int32 rank)
 template<class Type> void SharedMemoryParallelDispatch<Type>::
 allGather(Span<const Type> send_buf,Span<Type> recv_buf)
 {
-  _genericAllGather(MemoryView{send_buf},MutableMemoryView{recv_buf});
+  _genericAllGather(ConstMemoryView{send_buf},MutableMemoryView{recv_buf});
 }
 
 /*---------------------------------------------------------------------------*/
@@ -463,7 +463,7 @@ template<class Type> void SharedMemoryParallelDispatch<Type>::
 allGatherVariable(Span<const Type> send_buf,Array<Type>& recv_buf)
 {
   ResizableArrayRef recv_buf_ref(recv_buf);
-  _genericAllGatherVariable(MemoryView(send_buf),&recv_buf_ref);
+  _genericAllGatherVariable(ConstMemoryView(send_buf),&recv_buf_ref);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -485,7 +485,7 @@ gatherVariable(Span<const Type> send_buf,Array<Type>& recv_buf,Int32 root_rank)
 template<class Type> void SharedMemoryParallelDispatch<Type>::
 scatterVariable(Span<const Type> send_buf,Span<Type> recv_buf,Int32 root)
 {
-  _genericScatterVariable(MemoryView(send_buf),MutableMemoryView(recv_buf),root);
+  _genericScatterVariable(ConstMemoryView(send_buf),MutableMemoryView(recv_buf),root);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -494,7 +494,7 @@ scatterVariable(Span<const Type> send_buf,Span<Type> recv_buf,Int32 root)
 template<class Type> void SharedMemoryParallelDispatch<Type>::
 allToAll(Span<const Type> send_buf,Span<Type> recv_buf,Int32 count)
 {
-  _genericAllToAll(MemoryView(send_buf),MutableMemoryView(recv_buf),count);
+  _genericAllToAll(ConstMemoryView(send_buf),MutableMemoryView(recv_buf),count);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -507,7 +507,7 @@ allToAllVariable(Span<const Type> send_buf, ConstArrayView<Int32> send_count,
                  Int32ConstArrayView recv_index
                  )
 {
-  _genericAllToAllVariable(MemoryView(send_buf), send_count, send_index,
+  _genericAllToAllVariable(ConstMemoryView(send_buf), send_count, send_index,
                            MutableMemoryView(recv_buf), recv_count, recv_index);
 }
 
@@ -548,7 +548,7 @@ receive(Span<Type> recv_buffer,Int32 rank,bool is_blocking)
 template<class Type> Request SharedMemoryParallelDispatch<Type>::
 send(Span<const Type> send_buffer,const PointToPointMessageInfo& message2)
 {
-  return _genericSend(MemoryView(send_buffer),message2);
+  return _genericSend(ConstMemoryView(send_buffer),message2);
 }
 
 /*---------------------------------------------------------------------------*/

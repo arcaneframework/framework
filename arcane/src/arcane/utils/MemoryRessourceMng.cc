@@ -128,7 +128,7 @@ namespace
 /*---------------------------------------------------------------------------*/
 
 void MemoryRessourceMng::
-copy(MemoryView from, eMemoryRessource from_mem,
+copy(ConstMemoryView from, eMemoryRessource from_mem,
      MutableMemoryView to, eMemoryRessource to_mem)
 {
   Int64 from_size = from.bytes().size();

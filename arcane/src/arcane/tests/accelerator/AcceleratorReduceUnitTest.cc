@@ -154,7 +154,7 @@ _executeTestDataType(Int32 nb_iteration)
 
   NumArray<DataType, MDDim1> t1; //(eMemoryRessource::Host);
   t1.resize(n1);
-  MemoryView t1_mem_view(makeMemoryView(t1.to1DSpan()));
+  ConstMemoryView t1_mem_view(makeMemoryView(t1.to1DSpan()));
   m_runner.setMemoryAdvice(t1_mem_view,ax::eMemoryAdvice::PreferredLocationDevice);
   m_runner.setMemoryAdvice(t1_mem_view,ax::eMemoryAdvice::AccessedByHost);
   DataType sum = 0.0;
