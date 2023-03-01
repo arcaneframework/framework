@@ -202,16 +202,16 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcherSyncBufferBase
 
   MutableMemoryView ghostMemoryView(Int32 index) { return m_ghost_locals_buffer[index]; }
   MutableMemoryView shareMemoryView(Int32 index) { return m_share_locals_buffer[index]; }
-  MemoryView ghostMemoryView(Int32 index) const { return m_ghost_locals_buffer[index]; }
-  MemoryView shareMemoryView(Int32 index) const { return m_share_locals_buffer[index]; }
+  ConstMemoryView ghostMemoryView(Int32 index) const { return m_ghost_locals_buffer[index]; }
+  ConstMemoryView shareMemoryView(Int32 index) const { return m_share_locals_buffer[index]; }
 
   Int64 ghostDisplacement(Int32 index) const { return m_ghost_displacements[index]; }
   Int64 shareDisplacement(Int32 index) const { return m_share_displacements[index]; }
 
   MutableMemoryView ghostMemoryView() { return m_ghost_memory_view; }
   MutableMemoryView shareMemoryView() { return m_share_memory_view; }
-  MemoryView ghostMemoryView() const { return m_ghost_memory_view; }
-  MemoryView shareMemoryView() const { return m_share_memory_view; }
+  ConstMemoryView ghostMemoryView() const { return m_ghost_memory_view; }
+  ConstMemoryView shareMemoryView() const { return m_share_memory_view; }
 
   void setDataView(MutableMemoryView v) { m_data_view = v; }
   MutableMemoryView dataMemoryView() { return m_data_view; }

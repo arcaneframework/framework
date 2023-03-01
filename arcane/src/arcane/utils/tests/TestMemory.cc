@@ -91,7 +91,7 @@ class MemoryTester
     {
       UniqueArray<DataType> array2(nb_value);
       MutableMemoryView to(array2.span());
-      MemoryView from(array1.span());
+      ConstMemoryView from(array1.span());
       to.copyHost(from);
       ASSERT_EQ(array1, array2);
     }
@@ -121,7 +121,7 @@ class MemoryTester
 
       UniqueArray<DataType> array3(nb_index);
       MutableMemoryView to(array3.span());
-      MemoryView from(array1.span());
+      ConstMemoryView from(array1.span());
       to.copyFromIndexesHost(from, copy_indexes);
       ASSERT_EQ(array2, array3);
     }
@@ -143,7 +143,7 @@ class MemoryTester
         array2[copy_indexes[i]] = array1[i];
 
       MutableMemoryView to(array3.span());
-      MemoryView from(array1.span());
+      ConstMemoryView from(array1.span());
       from.copyToIndexesHost(to, copy_indexes);
       ASSERT_EQ(array2, array3);
     }

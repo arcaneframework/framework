@@ -27,7 +27,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 void MutableMemoryView::
-copyHost(MemoryView v)
+copyHost(ConstMemoryView v)
 {
   auto source = v.bytes();
   auto destination = bytes();
@@ -49,7 +49,7 @@ copyHost(MemoryView v)
 /*---------------------------------------------------------------------------*/
 
 void MutableMemoryView::
-copyFromIndexesHost(MemoryView v, Span<const Int32> indexes)
+copyFromIndexesHost(ConstMemoryView v, Span<const Int32> indexes)
 {
   Int64 one_data_size = m_datatype_size;
   Int64 v_one_data_size = v.datatypeSize();
@@ -75,7 +75,7 @@ copyFromIndexesHost(MemoryView v, Span<const Int32> indexes)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void MemoryView::
+void ConstMemoryView::
 copyToIndexesHost(MutableMemoryView v, Span<const Int32> indexes)
 {
   Int64 one_data_size = m_datatype_size;

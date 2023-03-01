@@ -60,7 +60,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT IReduceMemoryImpl
    * \brief Alloue la mémoire pour une donnée dont on veut faire une réduction et
    * remplit la zone avec la valeur de \a identity_view.
    */
-  virtual void* allocateReduceDataMemory(MemoryView identity_view) = 0;
+  virtual void* allocateReduceDataMemory(ConstMemoryView identity_view) = 0;
 
   //! Positionne la taille de la grille GPU (le nombre de blocs)
   virtual void setGridSizeAndAllocate(Int32 grid_size) = 0;

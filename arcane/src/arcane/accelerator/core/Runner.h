@@ -108,10 +108,10 @@ class ARCANE_ACCELERATOR_CORE_EXPORT Runner
   eDeviceReducePolicy deviceReducePolicy() const;
 
   //! Positionne un conseil sur la gestion d'une zone mémoire
-  void setMemoryAdvice(MemoryView buffer, eMemoryAdvice advice);
+  void setMemoryAdvice(ConstMemoryView buffer, eMemoryAdvice advice);
 
   //! Supprime un conseil sur la gestion d'une zone mémoire
-  void unsetMemoryAdvice(MemoryView buffer, eMemoryAdvice advice);
+  void unsetMemoryAdvice(ConstMemoryView buffer, eMemoryAdvice advice);
 
   //! Device associé à cette instance.
   DeviceId deviceId() const;

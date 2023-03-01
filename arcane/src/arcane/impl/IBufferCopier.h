@@ -38,12 +38,12 @@ class IBufferCopier
  public:
 
   virtual void copyFromBuffer(Int32ConstArrayView indexes,
-                              MemoryView buffer,
+                              ConstMemoryView buffer,
                               MutableMemoryView var_value) = 0;
 
   virtual void copyToBuffer(Int32ConstArrayView indexes,
                             MutableMemoryView buffer,
-                            MemoryView var_value) = 0;
+                            ConstMemoryView var_value) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -58,7 +58,7 @@ class DirectBufferCopier
  public:
 
   void copyFromBuffer(Int32ConstArrayView indexes,
-                      MemoryView buffer,
+                      ConstMemoryView buffer,
                       MutableMemoryView var_value) override
   {
     buffer.copyToIndexesHost(var_value, indexes);
@@ -66,7 +66,7 @@ class DirectBufferCopier
 
   void copyToBuffer(Int32ConstArrayView indexes,
                     MutableMemoryView buffer,
-                    MemoryView var_value) override
+                    ConstMemoryView var_value) override
   {
     buffer.copyFromIndexesHost(var_value, indexes);
   }
@@ -85,7 +85,7 @@ class TableBufferCopier
   {}
 
   void copyFromBuffer(Int32ConstArrayView indexes,
-                      MemoryView buffer,
+                      ConstMemoryView buffer,
                       MutableMemoryView var_value) override
   {
     UniqueArray<Int32> final_indexes;
@@ -95,7 +95,7 @@ class TableBufferCopier
 
   void copyToBuffer(Int32ConstArrayView indexes,
                     MutableMemoryView buffer,
-                    MemoryView var_value) override
+                    ConstMemoryView var_value) override
   {
     UniqueArray<Int32> final_indexes;
     _buildFinalIndexes(final_indexes, indexes);
