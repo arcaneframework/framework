@@ -151,11 +151,12 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
     }
   }
 
-  // Envoie les messages d'envoie en mode non bloquant.
+  vs_buf->copyAllSend();
+
+  // Envoie les messages d'envoi en mode non bloquant.
   for( Integer i=0; i<nb_message; ++i ){
     const VariableSyncInfo& vsi = sync_list[i];
     auto share_local_buffer = vs_buf->sendBuffer(i).smallView();
-    vs_buf->copySend(i);
     if (!share_local_buffer.empty()){
       MPI_Request mpi_request;
       mpi_profiling->iSend(share_local_buffer.data(),share_local_buffer.size(),
@@ -217,7 +218,7 @@ endSynchronize(IDataSynchronizeBuffer* vs_buf)
       double end_time = MPI_Wtime();
       wait_time += (end_time-begin_time);
     }
-    // Pour chaque requete terminee, effectue la copie
+    // Pour chaque requête terminée, effectue la copie
     for( int z=0; z<nb_completed_request; ++z ){
       int mpi_request_index = completed_requests[z];
       Integer index = m_remaining_recv_request_indexes[mpi_request_index];

@@ -174,8 +174,7 @@ beginSynchronize(IDataSynchronizeBuffer* ds_buf)
     }
 
     // Recopie les buffers d'envoi dans \a var_values
-    for (Integer i = 0; i < nb_message; ++i)
-      ds_buf->copySend(i);
+    ds_buf->copyAllSend();
 
     // Poste les messages d'envoi en mode non bloquant.
     for (Integer i = 0; i < nb_message; ++i) {
