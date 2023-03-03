@@ -256,19 +256,18 @@ template <typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::S
 _allocateBuffers()
 {
   auto sync_list = m_sync_info->infos();
-  Integer nb_message = sync_list.size();
 
-  Integer total_ghost_buffer = 0;
-  Integer total_share_buffer = 0;
-  for (Integer i = 0; i < nb_message; ++i) {
-    total_ghost_buffer += sync_list[i].nbGhost();
-    total_share_buffer += sync_list[i].nbShare();
+  Int64 total_ghost_buffer = 0;
+  Int64 total_share_buffer = 0;
+  for (auto& s : sync_list) {
+    total_ghost_buffer += s.nbGhost();
+    total_share_buffer += s.nbShare();
   }
-  m_ghost_buffer.resize(total_ghost_buffer * m_dim2_size);
-  m_share_buffer.resize(total_share_buffer * m_dim2_size);
+  m_buffer.resize((total_ghost_buffer + total_share_buffer) * m_dim2_size);
+  Int64 share_offset = total_ghost_buffer * m_dim2_size;
 
-  m_ghost_memory_view = MutableMemoryView(Span<SimpleType>(m_ghost_buffer.data(), total_ghost_buffer), m_dim2_size);
-  m_share_memory_view = MutableMemoryView(Span<SimpleType>(m_share_buffer.data(), total_share_buffer), m_dim2_size);
+  m_ghost_memory_view = MutableMemoryView(m_buffer.span().subspan(0, total_ghost_buffer), m_dim2_size);
+  m_share_memory_view = MutableMemoryView(m_buffer.span().subspan(share_offset, total_share_buffer), m_dim2_size);
 }
 
 /*---------------------------------------------------------------------------*/

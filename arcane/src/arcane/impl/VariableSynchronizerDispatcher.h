@@ -283,10 +283,8 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
 
   private:
 
-    //! Buffer pour toutes les données des entités fantômes qui serviront en réception
-    UniqueArray<SimpleType> m_ghost_buffer;
-    //! Buffer pour toutes les données des entités partagées qui serviront en envoi
-    UniqueArray<SimpleType> m_share_buffer;
+    //! Buffer contenant les données concaténées en envoi et réception
+    UniqueArray<SimpleType> m_buffer;
   };
 
  public:
