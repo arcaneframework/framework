@@ -152,12 +152,8 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
   double send_copy_time = 0.0;
   {
     MpiTimeInterval tit(&send_copy_time);
-
     // Recopie les buffers d'envoi
-    auto sync_list = _syncInfo()->infos();
-    Integer nb_message = sync_list.size();
-    for (Integer i = 0; i < nb_message; ++i)
-      vs_buf->copySend(i);
+    vs_buf->copyAllSend();
   }
   Int64 total_share_size = vs_buf->totalSendSize();
   m_mpi_parallel_mng->stat()->add("SyncSendCopy", send_copy_time, total_share_size);
@@ -239,8 +235,7 @@ endSynchronize(IDataSynchronizeBuffer* vs_buf)
   // Recopie les valeurs recues
   {
     MpiTimeInterval tit(&copy_time);
-    for (Integer i = 0; i < nb_message; ++i)
-      vs_buf->copyReceive(i);
+    vs_buf->copyAllReceive();
   }
 
   Int64 total_ghost_size = vs_buf->totalReceiveSize();

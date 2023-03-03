@@ -41,12 +41,8 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 class VariableSynchronizer;
-class Timer;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 class VariableSynchronizerMultiDispatcher;
+class Timer;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -142,15 +138,29 @@ class ARCANE_IMPL_EXPORT IVariableSynchronizeDispatcher
 class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcherBuildInfo
 {
  public:
-  VariableSynchronizeDispatcherBuildInfo(IParallelMng* pm, GroupIndexTable* table)
-  : m_parallel_mng(pm), m_table(table) { }
+
+  VariableSynchronizeDispatcherBuildInfo(IParallelMng* pm, GroupIndexTable* table,
+                                         Ref<IGenericVariableSynchronizerDispatcherFactory> factory)
+  : m_parallel_mng(pm)
+  , m_table(table)
+  , m_factory(factory)
+  {}
+
  public:
-  IParallelMng* parallelMng() const{ return m_parallel_mng; }
+
+  IParallelMng* parallelMng() const { return m_parallel_mng; }
   //! Table d'index pour le groupe. Peut-être nul.
   GroupIndexTable* table() const { return m_table; }
+  Ref<IGenericVariableSynchronizerDispatcherFactory> factory() const
+  {
+    return m_factory;
+  }
+
  private:
+
   IParallelMng* m_parallel_mng;
   GroupIndexTable* m_table;
+  Ref<IGenericVariableSynchronizerDispatcherFactory> m_factory;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -261,7 +271,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcherSyncBufferBase
  * Cette classe est abstraite. La classe dérivée doit fournir une implémentation
  * de beginSynchronize() et endSynchronize().
  */
-template<class SimpleType>
+template <class SimpleType>
 class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
 : public IDataTypeDataDispatcherT<SimpleType>
 , public IVariableSynchronizeDispatcher
@@ -272,21 +282,19 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
 
  public:
 
-  //! Gère les buffers d'envoie et réception pour la synchronisation
+  //! Gère les buffers d'envoi et réception pour la synchronisation
   class ARCANE_IMPL_EXPORT SyncBuffer
   : public SyncBufferBase
   {
 
-  public:
+   public:
 
     void _allocateBuffers() override;
 
-  private:
+   private:
 
-    //! Buffer pour toutes les données des entités fantômes qui serviront en réception
-    UniqueArray<SimpleType> m_ghost_buffer;
-    //! Buffer pour toutes les données des entités partagées qui serviront en envoi
-    UniqueArray<SimpleType> m_share_buffer;
+    //! Buffer contenant les données concaténées en envoi et réception
+    UniqueArray<SimpleType> m_buffer;
   };
 
  public:
@@ -299,60 +307,31 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
   void applyDispatch(IScalarDataT<SimpleType>* data) override;
   void applyDispatch(IArrayDataT<SimpleType>* data) override;
   void applyDispatch(IArray2DataT<SimpleType>* data) override;
-  void applyDispatch(IMultiArray2DataT<SimpleType>* data) override;
-  void setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info) override;
-  void compute() override;
+
+ public:
+
+  void setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info) final;
+  void compute() final;
 
  protected:
 
-  virtual void _beginSynchronize(SyncBufferBase& sync_buffer) =0;
-  virtual void _endSynchronize(SyncBufferBase& sync_buffer) =0;
+  void _beginSynchronize(SyncBufferBase& sync_buffer)
+  {
+    m_generic_instance->beginSynchronize(sync_buffer.genericBuffer());
+  }
+  void _endSynchronize(SyncBufferBase& sync_buffer)
+  {
+    m_generic_instance->endSynchronize(sync_buffer.genericBuffer());
+  }
 
- protected:
+ private:
 
   IParallelMng* m_parallel_mng = nullptr;
   IBufferCopier* m_buffer_copier = nullptr;
   ItemGroupSynchronizeInfo* m_sync_info = nullptr;
-  //TODO: a supprimer car l'information est dans \a m_sync_info;
-  ConstArrayView<VariableSyncInfo> m_sync_list;
   SyncBuffer m_1d_buffer;
   SyncBuffer m_2d_buffer;
   bool m_is_in_sync = false;
-
- private:
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-/*!
- * \brief Class template pour les implémentations génériques indépendantes
- * du type de donnée utilisé.
- */
-template <typename SimpleType>
-class ARCANE_IMPL_EXPORT GenericVariableSynchronizeDispatcher
-: public VariableSynchronizeDispatcher<SimpleType>
-{
- public:
-
-  using SyncBufferBase = VariableSynchronizeDispatcherSyncBufferBase;
-
- public:
-
-  explicit GenericVariableSynchronizeDispatcher(GenericVariableSynchronizeDispatcherBuildInfo& bi);
-
-  void setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info) override
-  {
-    VariableSynchronizeDispatcher<SimpleType>::setItemGroupSynchronizeInfo(sync_info);
-    m_generic_instance->setItemGroupSynchronizeInfo(sync_info);
-  }
-  void compute() override;
-
- protected:
-
-  void _beginSynchronize(SyncBufferBase& sync_buffer) override;
-  void _endSynchronize(SyncBufferBase& sync_buffer) override;
-
- private:
 
   Ref<IGenericVariableSynchronizerDispatcherFactory> m_factory;
   Ref<IGenericVariableSynchronizerDispatcher> m_generic_instance;

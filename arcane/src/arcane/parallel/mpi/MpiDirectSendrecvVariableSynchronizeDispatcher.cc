@@ -117,8 +117,7 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
 
   {
     MpiTimeInterval tit(&sync_copy_send_time);
-    for( Integer i=0; i<nb_message; ++i )
-      vs_buf->copySend(i);
+    vs_buf->copyAllSend();
   }
 
   {
@@ -136,8 +135,7 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
 
   {
     MpiTimeInterval tit(&sync_copy_recv_time);
-    for( Integer i=0; i<nb_message; ++i )
-      vs_buf->copyReceive(i);
+    vs_buf->copyAllReceive();
   }
 
   pm->stat()->add("SyncCopySend",sync_copy_send_time,1);

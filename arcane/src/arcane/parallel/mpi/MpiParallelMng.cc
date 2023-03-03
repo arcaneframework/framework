@@ -325,8 +325,8 @@ class MpiParallelMngUtilsFactory
     }
     VariableSynchronizerDispatcher* vd = nullptr;
     if (generic_factory.get()){
-      GenericVariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table,generic_factory);
-      vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<GenericVariableSynchronizeDispatcher>(bi));
+      VariableSynchronizeDispatcherBuildInfo bi(mpi_pm,table,generic_factory);
+      vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<VariableSynchronizeDispatcher>(bi));
     }
     if (!vd)
       ARCANE_FATAL("No synchronizer created");
