@@ -52,7 +52,11 @@ namespace
 template <typename SimpleType> VariableSynchronizeDispatcher<SimpleType>::
 VariableSynchronizeDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi)
 : m_parallel_mng(bi.parallelMng())
+, m_factory(bi.factory())
 {
+  ARCANE_CHECK_POINTER(m_factory.get());
+  m_generic_instance = this->m_factory->createInstance();
+
   if (bi.table())
     m_buffer_copier = new TableBufferCopier(bi.table());
   else
@@ -120,18 +124,10 @@ applyDispatch(IScalarDataT<SimpleType>*)
 /*---------------------------------------------------------------------------*/
 
 template <typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::
-applyDispatch(IMultiArray2DataT<SimpleType>*)
-{
-  ARCANE_THROW(NotSupportedException, "Can not synchronize multiarray2 data");
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::
 setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info)
 {
   m_sync_info = sync_info;
+  m_generic_instance->setItemGroupSynchronizeInfo(sync_info);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -146,13 +142,8 @@ compute()
   if (!m_sync_info)
     ARCANE_FATAL("The instance is not initialized. You need to call setItemGroupSynchronizeInfo() before");
 
-  m_sync_list = m_sync_info->infos();
-  //Integer nb_message = sync_list.size();
-  //pm->traceMng()->info() << "** RECOMPUTE SYNC LIST!!! N=" << nb_message
-  //                       << " this=" << (IVariableSynchronizeDispatcher*)this
-  //                       << " m_sync_list=" << &m_sync_list;
-
   m_1d_buffer.compute(m_buffer_copier, m_sync_info, 1);
+  m_generic_instance->compute();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -268,56 +259,6 @@ _allocateBuffers()
 
   m_ghost_memory_view = MutableMemoryView(m_buffer.span().subspan(0, total_ghost_buffer), m_dim2_size);
   m_share_memory_view = MutableMemoryView(m_buffer.span().subspan(share_offset, total_share_buffer), m_dim2_size);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <typename SimpleType>
-GenericVariableSynchronizeDispatcher<SimpleType>::
-GenericVariableSynchronizeDispatcher(GenericVariableSynchronizeDispatcherBuildInfo& bi)
-: VariableSynchronizeDispatcher<SimpleType>(VariableSynchronizeDispatcherBuildInfo(bi.parallelMng(), bi.table()))
-, m_factory(bi.factory())
-{
-  ARCANE_CHECK_POINTER(m_factory.get());
-  m_generic_instance = m_factory->createInstance();
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <typename SimpleType> void
-GenericVariableSynchronizeDispatcher<SimpleType>::
-_beginSynchronize(SyncBufferBase& sync_buffer)
-{
-  m_generic_instance->beginSynchronize(sync_buffer.genericBuffer());
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <typename SimpleType> void
-GenericVariableSynchronizeDispatcher<SimpleType>::
-_endSynchronize(SyncBufferBase& sync_buffer)
-{
-  m_generic_instance->endSynchronize(sync_buffer.genericBuffer());
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template <typename SimpleType> void
-GenericVariableSynchronizeDispatcher<SimpleType>::
-compute()
-{
-  VariableSynchronizeDispatcher<SimpleType>::compute();
-  m_generic_instance->compute();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -594,8 +535,7 @@ copyAllReceive()
 /*---------------------------------------------------------------------------*/
 
 #define ARCANE_INSTANTIATE(type) \
-  template class ARCANE_TEMPLATE_EXPORT VariableSynchronizeDispatcher<type>; \
-  template class ARCANE_TEMPLATE_EXPORT GenericVariableSynchronizeDispatcher<type>;
+  template class ARCANE_TEMPLATE_EXPORT VariableSynchronizeDispatcher<type>;
 
 ARCANE_INSTANTIATE(Byte);
 ARCANE_INSTANTIATE(Int16);

@@ -64,36 +64,6 @@ class ARCANE_IMPL_EXPORT IGenericVariableSynchronizerDispatcherFactory
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Informations pour construire un dispatcher générique.
- */
-class ARCANE_IMPL_EXPORT GenericVariableSynchronizeDispatcherBuildInfo
-{
- public:
-
-  GenericVariableSynchronizeDispatcherBuildInfo(IParallelMng* pm, GroupIndexTable* table,
-                                                Ref<IGenericVariableSynchronizerDispatcherFactory> factory)
-  : m_parallel_mng(pm)
-  , m_table(table)
-  , m_factory(factory)
-  {}
-
- public:
-
-  IParallelMng* parallelMng() const { return m_parallel_mng; }
-  //! Table d'index pour le groupe. Peut-être nul.
-  GroupIndexTable* table() const { return m_table; }
-  Ref<IGenericVariableSynchronizerDispatcherFactory> factory() { return m_factory; }
-
- private:
-
-  IParallelMng* m_parallel_mng;
-  GroupIndexTable* m_table;
-  Ref<IGenericVariableSynchronizerDispatcherFactory> m_factory;
-};
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*
  * \brief Classe de base abstraite pour les implémentations génériques.
  *
