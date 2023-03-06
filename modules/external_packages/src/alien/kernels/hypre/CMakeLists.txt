@@ -25,3 +25,7 @@ addSources(alien_external_packages
         )
 #boost is necessary for timings :(
 linkLibraries(alien_external_packages hypre Boost::boost)
+
+if(TARGET cuda)
+linkLibraries(alien_external_packages cuda)
+endif()

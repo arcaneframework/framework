@@ -1,55 +1,58 @@
 <?xml version="1.0" encoding="ISO-8859-1" ?>
 <service name="HypreSolver" version="1.0" type="caseoption">
 
-	<description>Service de solveur Hypre</description>
-	<!--<interface name="::ILinearSolver" />-->
+    <description>Service de solveur Hypre</description>
+    <!--<interface name="::ILinearSolver" />-->
   <interface name="Alien::ILinearSolver" inherited="false"/>
 
-	<options>
-		<simple name="num-iterations-max" type="integer">
-			<description>Maximal number of iterations</description>
-		</simple>
-		<simple name="stop-criteria-value" type="real">
-			<description>Requested accuracy</description>
-		</simple>	
-		<enumeration name="solver" type="HypreOptionTypes::eSolver">
-			<description>Solver type</description>
+    <options>
+      <simple name="use-gpu" type="bool" default="false">
+            <description>enable GPU support</description>
+      </simple>
+      <simple name="num-iterations-max" type="integer">
+            <description>Maximal number of iterations</description>
+      </simple>
+      <simple name="stop-criteria-value" type="real">
+            <description>Requested accuracy</description>
+      </simple>    
+      <enumeration name="solver" type="HypreOptionTypes::eSolver">
+            <description>Solver type</description>
       <enumvalue name="AMG" genvalue="HypreOptionTypes::AMG">
-			   <description>Algebraic Multigrid Method</description>
+               <description>Algebraic Multigrid Method</description>
       </enumvalue>
       <enumvalue name="CG" genvalue="HypreOptionTypes::CG">
-			   <description>Conjugate Gradient Method</description>
+               <description>Conjugate Gradient Method</description>
       </enumvalue>
       <enumvalue name="GMRES" genvalue="HypreOptionTypes::GMRES">
-			   <description>GMRES Solver</description>
+               <description>GMRES Solver</description>
       </enumvalue>
       <enumvalue name="BiCGStab" genvalue="HypreOptionTypes::BiCGStab">
-			   <description>BiCGStab Solver</description>
+               <description>BiCGStab Solver</description>
       </enumvalue>
       <enumvalue name="Hybrid" genvalue="HypreOptionTypes::Hybrid">
-			   <description>Hybrid solver combining CG and multigrid solver (for nonsymmetric system GMRES must be used: not implemented)</description>
+               <description>Hybrid solver combining CG and multigrid solver (for nonsymmetric system GMRES must be used: not implemented)</description>
       </enumvalue>
-		</enumeration>
-		<enumeration name="preconditioner" type="HypreOptionTypes::ePreconditioner">
-			<description>Preconditioner type</description>
+        </enumeration>
+        <enumeration name="preconditioner" type="HypreOptionTypes::ePreconditioner">
+            <description>Preconditioner type</description>
       <enumvalue name="None" genvalue="HypreOptionTypes::NoPC">
-			   <description>No preconditioner</description>
+               <description>No preconditioner</description>
       </enumvalue>
       <enumvalue name="Diag" genvalue="HypreOptionTypes::DiagPC">
-			   <description>Diagonal preconditioner</description>
+               <description>Diagonal preconditioner</description>
       </enumvalue>
       <enumvalue name="AMG" genvalue="HypreOptionTypes::AMGPC">
-			   <description>Algebraic Multi Grid preconditioner</description>
+               <description>Algebraic Multi Grid preconditioner</description>
       </enumvalue>
       <enumvalue name="ParaSails" genvalue="HypreOptionTypes::ParaSailsPC">
-			   <description>SPAI preconditioner</description>
+               <description>SPAI preconditioner</description>
       </enumvalue>
       <enumvalue name="Euclid" genvalue="HypreOptionTypes::EuclidPC">
-			   <description>Parallel ILU preconditioner</description>
+               <description>Parallel ILU preconditioner</description>
       </enumvalue>
-		</enumeration>
-		<simple name="verbose" type="bool" default="false">
-			<description>Verbosity flag</description>
-		</simple>
-	</options>
+        </enumeration>
+        <simple name="verbose" type="bool" default="false">
+            <description>Verbosity flag</description>
+        </simple>
+    </options>
 </service>

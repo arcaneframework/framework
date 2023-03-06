@@ -1,7 +1,5 @@
 #include "mpi.h"
 
-#include <MCGS.h>
-
 #include <alien/core/impl/MultiMatrixImpl.h>
 #include <alien/core/impl/MultiVectorImpl.h>
 #include <alien/core/backend/LinearAlgebraT.h>

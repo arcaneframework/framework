@@ -2,7 +2,7 @@
 
 #define MPICH_SKIP_MPICXX 1
 #include "mpi.h"
-
+#include <_hypre_utilities.h>
 #include <HYPRE_utilities.h>
 #include <HYPRE.h>
 #include <HYPRE_parcsr_mv.h>

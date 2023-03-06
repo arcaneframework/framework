@@ -134,6 +134,19 @@ AlienBenchModule::test()
 
   info() << "GLOBAL SIZE : " << m_vdist.globalSize();
 
+  std::stringstream description;
+  int Nx = std::pow(m_vdist.globalSize()+1,1./3) ;
+  description<<"Laplace problem "<<Nx<<"x"<<Nx<<"x"<<Nx;
+  if(options()->homogeneous())
+    description<<" HOMOGENEOUS";
+  else
+  {
+    description<<" ALPHA="<<options()->alpha();
+    description<<" LAMBDA (X,Y,Z)=("<<options()->lambdax()<<","<<options()->lambdax()<<","<<options()->lambdax()<<")";
+    description<<" SIGMA="<<options()->sigma();
+    description<<" EPSILON="<<options()->epsilon();
+  }
+
   Alien::Vector vectorB(m_vdist);
   Alien::Vector vectorBB(m_vdist);
   Alien::Vector vectorX(m_vdist);
@@ -690,9 +703,9 @@ AlienBenchModule::test()
         if(i==0)
         {
           Alien::MatrixMarketSystemWriter matrix_exporter("AlienBenchMatrixA.mtx",m_parallel_mng->messagePassingMng()) ;
-          matrix_exporter.dump(matrixA) ;
+//          matrix_exporter.dump(matrixA,description.str()) ;
           Alien::MatrixMarketSystemWriter vector_exporter("AlienBenchVectorB.mtx",m_parallel_mng->messagePassingMng()) ;
-          vector_exporter.dump(vectorB) ;
+//          vector_exporter.dump(vectorB,description.str()) ;
         }
 
         Timer::Sentry ts(&psolve_timer);

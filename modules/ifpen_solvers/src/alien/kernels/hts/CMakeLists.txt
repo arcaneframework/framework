@@ -55,12 +55,8 @@ if(TARGET metis)
   linkLibraries(alien_ifpen_solvers metis)
 endif()
 
-#if(TARGET hdf5)
-#  linkLibraries(alien_ifpen_solvers hdf5)
-#endif()
-
 if(TARGET HDF5)
-	linkLibraries(alien_ifpen_solvers HDF5)
+  linkLibraries(alien_ifpen_solvers HDF5)
 endif()
 
 if(TARGET mkl)

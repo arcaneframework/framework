@@ -96,7 +96,7 @@ class Space final
   //! Index manager
   IIndexManager* indexManager() const { return m_index_mng; }
 
-private:
+ private:
   void _init();
   
  private:

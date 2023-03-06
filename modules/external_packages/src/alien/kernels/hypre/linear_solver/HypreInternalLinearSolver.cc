@@ -39,6 +39,26 @@ template class ALIEN_EXTERNAL_PACKAGES_EXPORT LinearSolver<BackEnd::tag::hypre>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+bool HypreInternalLinearSolver::m_library_plugin_is_initialized = false ;
+
+std::unique_ptr<HypreLibrary> HypreInternalLinearSolver::m_library_plugin ;
+
+HypreLibrary::HypreLibrary()
+{
+#if HYPRE_HAVE_HYPRE_INIT
+  HYPRE_Init() ;
+#endif
+}
+
+HypreLibrary::~HypreLibrary()
+{
+#if HYPRE_HAVE_HYPRE_FINALIZE
+  HYPRE_Finalize() ;
+#endif
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 HypreInternalLinearSolver::HypreInternalLinearSolver(
     Arccore::MessagePassing::IMessagePassingMng* pm, IOptionsHypreSolver* options)
@@ -59,6 +79,39 @@ HypreInternalLinearSolver::~HypreInternalLinearSolver()
 void
 HypreInternalLinearSolver::init()
 {
+  if(HypreInternalLinearSolver::m_library_plugin_is_initialized) return ;
+#ifdef HYPRE_USING_CUDA
+  if(m_options->useGpu() )
+  {
+    hypre_SetDevice(m_gpu_device_id,nullptr);
+    HypreInternalLinearSolver::m_library_plugin.reset(new HypreLibrary()) ;
+    HYPRE_SetMemoryLocation(HYPRE_MEMORY_DEVICE);
+    /* setup AMG on GPUs */
+    HYPRE_SetExecutionPolicy(HYPRE_EXEC_DEVICE);
+    /* use hypre's SpGEMM instead of cuSPARSE */
+    HYPRE_SetSpGemmUseCusparse(false);
+    /* use GPU RNG */
+    HYPRE_SetUseGpuRand(true);
+    bool useHypreGpuMemPool = false ;
+    bool useUmpireGpuMemPool = false ;
+    if (useHypreGpuMemPool)
+    {
+      /* use hypre's GPU memory pool */
+      //HYPRE_SetGPUMemoryPoolSize(bin_growth, min_bin, max_bin, max_bytes);
+    }
+    else if (useUmpireGpuMemPool)
+     {
+       /* or use Umpire GPU memory pool */
+       //HYPRE_SetUmpireUMPoolName("HYPRE_UM_POOL_TEST");
+       //HYPRE_SetUmpireDevicePoolName("HYPRE_DEVICE_POOL_TEST");
+     }
+   }
+   else
+#endif
+   {
+     HypreInternalLinearSolver::m_library_plugin.reset(new HypreLibrary()) ;
+   }
+   HypreInternalLinearSolver::m_library_plugin_is_initialized = true ;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -87,7 +140,7 @@ HypreInternalLinearSolver::checkError(
   if (ierr != 0 and (ierr & ~skipError) != 0) {
     char hypre_error_msg[256];
     HYPRE_DescribeError(ierr, hypre_error_msg);
-    alien_fatal([&] {
+    alien_info([&] {
       cout() << msg << " failed : " << hypre_error_msg << "[code=" << ierr << "]";
     });
   }
@@ -149,6 +202,70 @@ HypreInternalLinearSolver::solve(
     precond_solve_function = HYPRE_BoomerAMGSolve;
     precond_setup_function = HYPRE_BoomerAMGSetup;
     precond_destroy_function = HYPRE_BoomerAMGDestroy;
+    {
+      int coarsening_opt = 8;
+      int interpolation_type = 7;
+      double StrongThreshold = 0.15;
+      int amg_debug_flag = 0;
+      int bicgs_debug_flag =0;
+      int ierr = 0;
+      ierr = HYPRE_BoomerAMGSetMaxIter(preconditioner,2) ;//Sophie::
+      if( ierr == HYPRE_ERROR_CONV){
+          ierr = 0;
+      }else if(ierr == HYPRE_ERROR_GENERIC){
+          printf("HYPRE_ERROR_GENERIC while calling HYPRE_BoomerAMGSetMaxIter with default value\n");
+      }else if (ierr == HYPRE_ERROR_MEMORY){
+          printf("HYPRE_ERROR_MEMORY while calling HYPRE_BoomerAMGSetMaxIter with default value\n");
+      }else if(ierr == HYPRE_ERROR_ARG){
+          printf("HYPRE_ERROR_ARG while calling HYPRE_BoomerAMGSetMaxIter with default value\n");
+      }
+      if(ierr) {
+          printf("Error while calling HYPRE_BoomerAMGSetMaxIter with default value\n");
+          exit(0);
+      }
+      ierr = HYPRE_BoomerAMGSetTol(preconditioner,1.e-7) ;
+
+      ierr = HYPRE_BoomerAMGSetMaxLevels(preconditioner,25) ; if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
+      if(ierr) { printf("Error while calling HYPRE_BoomerAMGSetMaxLevels with default value\n"); exit(0);}
+      ierr = HYPRE_BoomerAMGSetMaxRowSum(preconditioner,0.9) ; if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
+      if(ierr) { printf("Error while calling HYPRE_BoomerAMGSetMaxRowSum with default value\n"); exit(0);}
+      ierr = HYPRE_BoomerAMGSetCycleType(preconditioner,1) ; if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
+      if(ierr) { printf("Error while calling HYPRE_BoomerAMGSetCycleType with default value\n"); exit(0);}
+      ierr = HYPRE_BoomerAMGSetRelaxType(preconditioner,3) ; if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
+      if(ierr) { printf("Error while calling HYPRE_BoomerAMGSetRelaxType\n"); exit(0);}
+
+       ierr = HYPRE_BoomerAMGSetCoarsenType(preconditioner,coarsening_opt) ; if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
+       if(ierr) { printf("Error while calling HYPRE_BoomerAMGSetCoarsenType\n"); exit(0);}
+
+       ierr = HYPRE_BoomerAMGSetNumSweeps(preconditioner,1) ; if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
+       if(ierr) { printf("Error while calling HYPRE_BoomerAMGSetNumSweeps\n"); exit(0);}
+
+       ierr = HYPRE_BoomerAMGSetInterpType(preconditioner,interpolation_type) ; if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
+       if(ierr) { printf("Error while calling HYPRE_BoomerAMGSetInterpType\n"); exit(0);}
+
+       ierr = HYPRE_BoomerAMGSetSmoothNumLevels(preconditioner,0) ; if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
+       if(ierr) { printf("Error while calling HYPRE_BoomerAMGSetSmoothNumLevels\n"); exit(0);}
+
+       ierr = HYPRE_BoomerAMGSetSmoothType(preconditioner,-1) ; if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
+       if(ierr) { printf("Error while calling HYPRE_BoomerAMGSetSmoothType\n"); exit(0);}
+
+
+       ierr = HYPRE_BoomerAMGSetStrongThreshold(preconditioner,StrongThreshold) ; if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
+       if(ierr) { printf("Error while calling HYPRE_BoomerAMGSetStrongThreshold\n"); exit(0);}
+
+       ierr = HYPRE_BoomerAMGSetMeasureType(preconditioner,0) ; if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
+       if(ierr) { printf("Error while calling HYPRE_BoomerAMGSetMeasureType with default value\n"); exit(0);}
+       ierr = HYPRE_BoomerAMGSetAggNumLevels(preconditioner,0) ; if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
+       if(ierr) { printf("Error while calling HYPRE_BoomerAMGSetAggNumLevels with default value\n"); exit(0);}
+       ierr = HYPRE_BoomerAMGSetNumPaths(preconditioner,1) ; if( ierr == HYPRE_ERROR_CONV) ierr = 0 ;
+       if(ierr) { printf("Error while calling HYPRE_BoomerAMGSetNumPaths with default value\n"); exit(0);}
+       if (output_level > 2) {
+          checkError("Hypre " + precond_name + " solver Setlogging",
+                      HYPRE_BoomerAMGSetLogging(preconditioner,1));
+          checkError("Hypre " + precond_name + " solver SetPrintLevel",
+                      HYPRE_BoomerAMGSetPrintLevel(preconditioner, 3));
+       }
+    }
     break;
   case HypreOptionTypes::ParaSailsPC:
     precond_name = "parasails";
@@ -379,7 +496,7 @@ class SolverFabric<Alien::BackEnd::tag::hypre>
 : public ISolverFabric
 {
 public :
-  
+
   BackEndId backend() const {
      return "hypre" ;
   }

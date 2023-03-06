@@ -1,4 +1,4 @@
-name: IFPEN el8 foss/2018b
+name: IFPEN el7 foss/2018b No Arcane
 
 on:
   push:
@@ -14,10 +14,6 @@ env:
   ALIENLEGACY_BUILD_DIR: /__w/alien_legacy_plugins/alien_legacy_plugins/alienlegacy_build
   ALIENLEGACY_INSTALL_DIR: /__w/alien_legacy_plugins/alien_legacy_plugins/alienlegacy_install
   ALIENLEGACY_SOURCE_DIR: /__w/alien_legacy_plugins/alien_legacy_plugins/alienlegacy
-  # Arcane
-  ARCANE_BUILD_DIR: /__w/alien_legacy_plugins/alien_legacy_plugins/arcane_build
-  ARCANE_INSTALL_DIR: /__w/alien_legacy_plugins/alien_legacy_plugins/arcane_install
-  ARCANE_SOURCE_DIR: /__w/alien_legacy_plugins/alien_legacy_plugins/arcane
   # Arccon
   ARCCON_BUILD_DIR: /__w/alien_legacy_plugins/alien_legacy_plugins/arccon_build
   ARCCON_INSTALL_DIR: /__w/alien_legacy_plugins/alien_legacy_plugins/arccon_install
@@ -35,7 +31,7 @@ env:
   AXLSTAR_INSTALL_DIR: /__w/alien_legacy_plugins/alien_legacy_plugins/axlstar_install
   AXLSTAR_SOURCE_DIR: /__w/alien_legacy_plugins/alien_legacy_plugins/axlstar
   # ccache
-  CC_KEY_PREFIX: ifpen-el8-foss-2018b
+  CC_KEY_PREFIX: ifpen-el7-foss-2018b-NoArcane
   CCACHE_COMPRESS: true
   CCACHE_COMPRESSLEVEL: 6
   CCACHE_DIR: '/__w/alien_legacy_plugins/alien_legacy_plugins/ccache'
@@ -53,7 +49,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     container:
-      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2018b:el8
+      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2018b:el7
     strategy:
       fail-fast: false
     steps:
@@ -89,7 +85,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     container:
-      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2018b:el8
+      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2018b:el7
     strategy:
       fail-fast: false
     steps:
@@ -151,7 +147,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     container:
-      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2018b:el8
+      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2018b:el7
     strategy:
       fail-fast: false
     steps:
@@ -195,7 +191,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     container:
-      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2018b:el8
+      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2018b:el7
     strategy:
       fail-fast: false
     steps:
@@ -238,92 +234,6 @@ jobs:
           path: axlstar-install-artifact.tar
           retention-days: 1
 
-  arcane-install:
-    name: arcane-install
-    needs:
-      - arccon-install
-      - arccore-install
-      - dependencies-install
-      - axlstar-install
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    container:
-      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2018b:el8
-    strategy:
-      fail-fast: false
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          repository: arcaneframework/framework
-          path: ${{ env.ARCANE_SOURCE_DIR }}
-          ref: main
-      - name: Download arccon install artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: arccon-install-artifact
-      - name: Untar arccon install artifact
-        shell: bash
-        run: tar xf arccon-install-artifact.tar -C /
-      - name: Download arccore install artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: arccore-install-artifact
-      - name: Untar arccore install artifact
-        shell: bash
-        run: tar xf arccore-install-artifact.tar -C /
-      - name: Download dependencies install artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: dependencies-install-artifact
-      - name: Untar dependencies install artifact
-        shell: bash
-        run: tar xf dependencies-install-artifact.tar -C /
-      - name: Download axlstar install artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: axlstar-install-artifact
-      - name: Untar axlstar install artifact
-        shell: bash
-        run: tar xf axlstar-install-artifact.tar -C /
-      - name: Get date
-        id: get-date
-        shell: bash
-        run: echo "NOW=$(/bin/date -u '+%Y%m%d%H%M%S')" >> $GITHUB_ENV
-      - name: Get cache for ccache tool
-        uses: actions/cache@v3
-        with:
-          path: ${{env.CCACHE_DIR}}
-          key: ${{ env.CC_KEY_PREFIX }}-arcane-${{ env.CM_BUILD_TYPE }}-${{ env.NOW }}-${{ github.run_number }}
-          restore-keys: ${{ env.CC_KEY_PREFIX }}-arcane-${{ env.CM_BUILD_TYPE }}-
-      - name: Configure
-        shell: bash
-        run: cmake -S ${{ env.ARCANE_SOURCE_DIR }}/arcane -B ${{ env.ARCANE_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ARCANE_INSTALL_DIR }} -DArccon_ROOT=${{ env.ARCCON_INSTALL_DIR }} -DArccore_DIR=${{ env.ARCCORE_INSTALL_DIR }}/lib/cmake/Arccore -DAxlstar_DIR=${{ env.AXLSTAR_INSTALL_DIR }}/share/cmake/Axlstar -DArcDependencies_ROOT=${{ env.DEPENDENCIES_INSTALL_DIR }} -DBUILD_SHARED_LIBS=ON -DARCANE_DEFAULT_PARTITIONER=Metis -DARCANE_WANT_TOTALVIEW=ON -DARCANE_WANT_LIBXML2=ON -DARCANE_WANT_LEGACY_CONNECTIVITY=OFF -DARCANE_WANT_CHECK=OFF -DARCANE_WANT_ARCCON_EXPORT_TARGET=OFF -DARCANE_DISABLE_PERFCOUNTER_TESTS=ON ${{ env.CM_CCACHE_OPTS }}
-      - name: Build
-        shell: bash
-        run: cmake --build ${{ env.ARCANE_BUILD_DIR }} ${{ env.CM_BUILD_OPTS }}
-      - name: Install
-        shell: bash
-        run: cmake --install ${{ env.ARCANE_BUILD_DIR }}
-      - name: Tar build artifact
-        shell: bash
-        run: tar cf arcane-build-artifact.tar ${{ env.ARCANE_BUILD_DIR }}
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: arcane-build-artifact
-          path: arcane-build-artifact.tar
-          retention-days: 1
-      - name: Tar install artifact
-        shell: bash
-        run: tar cf arcane-install-artifact.tar ${{ env.ARCANE_INSTALL_DIR }}
-      - name: Upload install artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: arcane-install-artifact
-          path: arcane-install-artifact.tar
-          retention-days: 1
-
   alien-install:
     name: alien-install
     needs:
@@ -332,7 +242,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     container:
-      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2018b:el8
+      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2018b:el7
     strategy:
       fail-fast: false
     steps:
@@ -398,14 +308,13 @@ jobs:
     name: alienlegacy-install
     needs:
       - alien-install
-      - arcane-install
       - arccon-install
       - arccore-install
       - axlstar-install
     runs-on: ubuntu-latest
     timeout-minutes: 60
     container:
-      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2018b:el8
+      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2018b:el7
     strategy:
       fail-fast: false
     steps:
@@ -414,13 +323,6 @@ jobs:
         with:
           path: ${{ env.ALIENLEGACY_SOURCE_DIR }}
           submodules: true
-      - name: Download arcane install artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: arcane-install-artifact
-      - name: Untar arcane install artifact
-        shell: bash
-        run: tar xf arcane-install-artifact.tar -C /
       - name: Download arccon install artifact
         uses: actions/download-artifact@v3
         with:
@@ -461,7 +363,7 @@ jobs:
           restore-keys: ${{ env.CC_KEY_PREFIX }}-alienlegacy-${{ env.CM_BUILD_TYPE }}-
       - name: Configure
         shell: bash
-        run: cmake -S ${{ env.ALIENLEGACY_SOURCE_DIR }} -B ${{ env.ALIENLEGACY_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ALIENLEGACY_INSTALL_DIR }} -DBUILD_SHARED_LIBS=ON -DArccon_ROOT=${{ env.ARCCON_INSTALL_DIR }} -DArccore_ROOT=${{ env.ARCCORE_INSTALL_DIR }} -DAxlstar_ROOT=${{ env.AXLSTAR_INSTALL_DIR }} -DArcane_ROOT=${{ env.ARCANE_INSTALL_DIR }} -DAlien_ROOT=${{ env.ALIEN_INSTALL_DIR }} -DUSE_BUILDSYSTEM_GIT_SUBMODULE=ON ${{ env.CM_CCACHE_OPTS }}
+        run: cmake -S ${{ env.ALIENLEGACY_SOURCE_DIR }} -B ${{ env.ALIENLEGACY_BUILD_DIR }} -DCMAKE_BUILD_TYPE=${{ env.CM_BUILD_TYPE }} -DCMAKE_INSTALL_PREFIX=${{ env.ALIENLEGACY_INSTALL_DIR }} -DBUILD_SHARED_LIBS=ON -DArccon_ROOT=${{ env.ARCCON_INSTALL_DIR }} -DArccore_ROOT=${{ env.ARCCORE_INSTALL_DIR }} -DAxlstar_ROOT=${{ env.AXLSTAR_INSTALL_DIR }} -DAlien_ROOT=${{ env.ALIEN_INSTALL_DIR }} -DUSE_BUILDSYSTEM_GIT_SUBMODULE=ON ${{ env.CM_CCACHE_OPTS }}
       - name: Build
         shell: bash
         run: cmake --build ${{ env.ALIENLEGACY_BUILD_DIR }} ${{ env.CM_BUILD_OPTS }}
@@ -485,7 +387,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     container:
-      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2018b:el8
+      image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2018b:el7
     strategy:
       fail-fast: false
     steps:
@@ -507,58 +409,6 @@ jobs:
           path: ${{ env.ARCCORE_BUILD_DIR }}/Testing
           retention-days: 1
 
-  #arcane-test:
-  #  name: arcane-test
-  #  needs:
-  #    - arccore-install
-  #    - dependencies-install
-  #    - axlstar-install
-  #    - arcane-install
-  #  runs-on: ubuntu-latest
-  #  timeout-minutes: 180
-  #  container:
-  #    image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2018b:el8
-  #  strategy:
-  #    fail-fast: false
-  #  steps:
-  #    - name: Checkout
-  #      uses: actions/checkout@v3
-  #      with:
-  #        repository: arcaneframework/framework
-  #        path: ${{ env.ARCANE_SOURCE_DIR }}
-  #        ref: main
-  #    - name: Download arcane build artifact
-  #      uses: actions/download-artifact@v3
-  #      with:
-  #        name: arcane-build-artifact
-  #    - name: Untar arcane build artifact
-  #      shell: bash
-  #      run: tar xf arcane-build-artifact.tar -C /
-  #    - name: Download arccore install artifact
-  #      uses: actions/download-artifact@v3
-  #      with:
-  #        name: arccore-install-artifact
-  #    - name: Untar arccore install artifact
-  #      shell: bash
-  #      run: tar xf arccore-install-artifact.tar -C /
-  #    - name: Download axlstar install artifact
-  #      uses: actions/download-artifact@v3
-  #      with:
-  #        name: axlstar-install-artifact
-  #    - name: Untar axlstar install artifact
-  #      shell: bash
-  #      run: tar xf axlstar-install-artifact.tar -C /
-  #    - name: Test
-  #      shell: bash
-  #      run: ctest --test-dir ${{ env.ARCANE_BUILD_DIR }} ${{ env.CT_OPTS }} -E '^hydro5_4proc_3sd_4proc$'
-  #    - name: Upload test artifact
-  #      uses: actions/upload-artifact@v3
-  #      if: failure()
-  #      with:
-  #        name: arcane-test-artifact
-  #        path: ${{ env.ARCANE_BUILD_DIR }}/Testing
-  #        retention-days: 1
-
   #alien-test:
   #  name: alien-test
   #  needs:
@@ -567,7 +417,7 @@ jobs:
   #  runs-on: ubuntu-latest
   #  timeout-minutes: 180
   #  container:
-  #    image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2018b:el8
+  #    image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2018b:el7
   #  strategy:
   #    fail-fast: false
   #  steps:
@@ -606,13 +456,12 @@ jobs:
   #  name: alienlegacy-test
   #  needs:
   #    - arccore-install
-  #    - arcane-install
   #    - alien-install
   #    - alienlegacy-install
   #  runs-on: ubuntu-22.04
   #  timeout-minutes: 180
   #  container:
-  #    image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2018b:el8
+  #    image: ghcr.io/arcaneframework/arcane-ifpen-devenv-foss-2018b:el7
   #  strategy:
   #    fail-fast: false
   #  steps:
@@ -634,13 +483,6 @@ jobs:
   #    - name: Untar alien install artifact
   #      shell: bash
   #      run: tar xf alien-install-artifact.tar -C /
-  #    - name: Download arcane install artifact
-  #      uses: actions/download-artifact@v3
-  #      with:
-  #        name: arcane-install-artifact
-  #    - name: Untar arcane install artifact
-  #      shell: bash
-  #      run: tar xf arcane-install-artifact.tar -C /
   #    - name: Download arccore install artifact
   #      uses: actions/download-artifact@v3
   #      with:
