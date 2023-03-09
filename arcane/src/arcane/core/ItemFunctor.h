@@ -204,13 +204,16 @@ using FirstVariadicType = std::tuple_element_t<0, std::tuple<Types...>>;
  * Cette classe est utilisée avec le mécanisme des lambda fonctions du C++1x.
  * Elle permet la gestion de plusieurs vues en paramètres de la lambda
  * 
+ * \remark L'héritage est préservé via le type de la 1ere vue (paramètre de la lambda)
+ * et permet de garder les fonctionnalités de découpage en blocs des vues
+ * 
  */
 template<typename LambdaType, typename... Views>
-class LambdaItemRangeFunctorT_FL
+class LambdaItemRangeFunctorTVa
 : public AbstractItemRangeFunctorT<FirstVariadicType<Views...>>
 {
  public:
-  LambdaItemRangeFunctorT_FL(Views... views,const LambdaType& lambda_function,
+  LambdaItemRangeFunctorTVa(Views... views,const LambdaType& lambda_function,
       Integer grain_size = AbstractItemRangeFunctorT<FirstVariadicType<Views...>>::DEFAULT_GRAIN_SIZE)
   : AbstractItemRangeFunctorT<FirstVariadicType<Views...>>(std::get<0>(std::forward_as_tuple(views...)),grain_size)
   , m_lambda_function(lambda_function)
@@ -227,6 +230,7 @@ class LambdaItemRangeFunctorT_FL
   }
 
  private:
+  //! méthode interne pour récupérer l'intervalle pour découper les vues en blocs à traiter en parallèle
   template <size_t... I>
   void getSubView(std::tuple<Views...>& sub_views, Integer begin_block, Integer nb_block, std::index_sequence<I...>)
   {

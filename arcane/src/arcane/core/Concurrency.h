@@ -97,7 +97,7 @@ arcaneParallelForeach(const ItemVectorView& items_view, const ForLoopRunInfo& ru
  * \ingroup Concurrency
  */
 template <typename LambdaType, typename... Views> inline void
-arcaneParallelForeach_FL(const ForLoopRunInfo& run_info, const LambdaType& lambda_function, Views... views)
+arcaneParallelForeachVa(const ForLoopRunInfo& run_info, const LambdaType& lambda_function, Views... views)
 {
   Int32 grain_size = impl::adaptGrainSize(run_info);
 
@@ -107,7 +107,7 @@ arcaneParallelForeach_FL(const ForLoopRunInfo& run_info, const LambdaType& lambd
   if (!std::all_of(std::begin(sizes), std::end(sizes),[&sizes](auto cur){return cur == sizes[0];}))
     ARCANE_FATAL("Every views must have the same size");
 
-  LambdaItemRangeFunctorT_FL<LambdaType, Views...> ipf(views..., lambda_function, grain_size);
+  LambdaItemRangeFunctorTVa<LambdaType, Views...> ipf(views..., lambda_function, grain_size);
 
   ForLoopRunInfo adapted_run_info(run_info);
   ParallelLoopOptions loop_opt(run_info.options().value_or(TaskFactory::defaultParallelLoopOptions()));

@@ -14,15 +14,13 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include <arcane/core/materials/ComponentItemVectorView.h>
-#include <arcane/core/materials/MaterialsCoreGlobal.h>
-#include <arcane/core/materials/MatItem.h>
-#include <arcane/materials/MatConcurrency.h>
-#include "arcane/accelerator/RunQueueInternal.h"
-#include <arcane/accelerator/RunCommand.h>
-#include <arcane/accelerator/RunCommandLaunchInfo.h>
-
 #include "arcane/Concurrency.h"
+#include "arcane/core/materials/ComponentItemVectorView.h"
+#include "arcane/core/materials/MaterialsCoreGlobal.h"
+#include "arcane/core/materials/MatItem.h"
+#include "arcane/accelerator/RunQueueInternal.h"
+#include "arcane/accelerator/RunCommand.h"
+#include "arcane/accelerator/RunCommandLaunchInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -52,12 +50,6 @@ class EnvCellAccessor {
   };
 
  public:
-  explicit EnvCellAccessor(EnvCell ec)
-  : m_internal_data{ec._varIndex(), ec.globalCell().itemLocalId()} {}
-  
-  explicit EnvCellAccessor(ComponentItemInternal* cii)
-  : m_internal_data{cii->variableIndex(), static_cast<CellLocalId>(cii->globalItem()->localId())} {}
-
   inline ARCCORE_HOST_DEVICE explicit EnvCellAccessor(MatVarIndex mvi, CellLocalId cid)
   : m_internal_data{mvi, cid} {}
 
@@ -88,10 +80,6 @@ class EnvCellAccessor {
 
 namespace impl
 {
-
-// Cet alias est nécessaire pour éviter les problèmes d'inférence de type
-// dans les template avec des const * const ...
-using ComponentItemInternalPtr = ComponentItemInternal*; 
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -139,21 +127,7 @@ void doDirectGPULambda(MatVarIndex mvi, Int32 cid, Lambda func)
  * Surcharge de la fonction de lancement de kernel en MT pour les EnvCellVectorView
  */ 
 template<typename Lambda>
-void _doIndirectThreadLambda(const EnvCellVectorView& sub_items, Lambda func)
-{
-  auto privatizer = privatize(func);
-  auto& body = privatizer.privateCopy();
-
-// TODO: A valider avec GG si l'utilisation d'un for range est acceptable
-  for (auto i : sub_items.itemsInternalView())
-    body(EnvCellAccessor(i));
-}
-
-/*
- * Surcharge de la fonction de lancement de kernel en MT pour les EnvCellVectorView
- */ 
-template<typename Lambda>
-void _doIndirectThreadLambda_FL(SmallSpan<const MatVarIndex>& sub_mvis, SmallSpan<const Int32> sub_cids, Lambda func)
+void doIndirectThreadLambda(SmallSpan<const MatVarIndex>& sub_mvis, SmallSpan<const Int32> sub_cids, Lambda func)
 {
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
@@ -197,18 +171,11 @@ _applyEnvCells(RunCommand& command,const EnvCellVectorView& items,const Lambda& 
         func(EnvCellAccessor(mvis[i], static_cast<CellLocalId>(cids[i])));
     break;
   case eExecutionPolicy::Thread:
-  /*
-    arcaneParallelForeach(items,
-                          [&](EnvCellVectorView sub_items)
-                          {
-                            impl::_doIndirectThreadLambda(sub_items,func);
-                          });
-  */
-    arcaneParallelForeach_FL(
+    arcaneParallelForeachVa(
                         launch_info.loopRunInfo(),
                         [&](SmallSpan<const MatVarIndex> sub_mvis, SmallSpan<const Int32> sub_cids)
                         {
-                          impl::_doIndirectThreadLambda_FL(sub_mvis, sub_cids,func);
+                          doIndirectThreadLambda(sub_mvis, sub_cids,func);
                         }, mvis, cids);
     break;
   default:
