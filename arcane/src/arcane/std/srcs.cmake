@@ -39,7 +39,6 @@ set(ARCANE_SOURCES
   ArcaneCasePartitioner.cc
   ArcaneMeshConverter.cc
   VtkMeshIOService.cc
-  VtkPolyhedralMeshIOService.cc
   VoronoiMeshIOService.cc
   MeshPartitionerBase.cc
   MeshPartitionerBase.h
