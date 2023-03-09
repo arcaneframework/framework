@@ -72,7 +72,7 @@ class PolyhedralMesh
   ItemTypeMng* m_item_type_mng = nullptr;
 
   // IPolyhedralMeshInitialAllocator interface
-  void allocateItems(const Arcane::ItemAllocationInfo& item_allocation_info) {}
+  void allocateItems(const Arcane::ItemAllocationInfo& item_allocation_info);
 
  public:
 
