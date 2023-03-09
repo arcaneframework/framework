@@ -1,4 +1,4 @@
-﻿set(CURRENT_SRC_PATH  ${Arcane_SOURCE_DIR}/src)
+﻿set(CURRENT_SRC_PATH ${Arcane_SOURCE_DIR}/src)
 
 set(ARCANE_MATERIALS_SOURCES
   materials/CellToAllEnvCellConverter.h
@@ -52,14 +52,14 @@ set(ARCANE_MATERIALS_SOURCES
   materials/MeshEnvironmentVariableRef.h
   materials/MeshMaterialVariableComputeFunction.h
   materials/IMeshMaterialVariableComputeFunction.h
-)
+  )
 
 set(ARCANE_INTERNAL_SOURCES
   internal/IDataInternal.h
   internal/CartesianMeshGenerationInfo.h
   internal/CartesianMeshGenerationInfo.cc
   internal/UnstructuredMeshAllocateBuildInfoInternal.h
-)
+  )
 
 set(ARCANE_ORIGINAL_SOURCES
   AbstractModule.h
@@ -323,6 +323,7 @@ set(ARCANE_ORIGINAL_SOURCES
   ItemConnectedListView.h
   ItemConnectedEnumeratorBase.h
   ItemConnectedEnumerator.h
+  ItemAllocationInfo.h
 
   MeshHandle.h
   MeshPartInfo.h
@@ -718,7 +719,7 @@ set(ARCANE_SOURCES
   ${ARCANE_ORIGINAL_SOURCES}
   ${ARCANE_MATERIALS_SOURCES}
   ${ARCANE_INTERNAL_SOURCES}
-)
+  )
 
 # ----------------------------------------------------------------------------
 # Local Variables:
