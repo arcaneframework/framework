@@ -813,8 +813,8 @@ _createUnitMesh()
   Int64UniqueArray cell_uids{ 0 }, node_uids{ 0, 1, 2, 3, 4, 5 };
   // todo add a cell_lids struct (containing future)
   PolyhedralMeshImpl::ItemLocalIds cell_lids, node_lids;
-  m_mesh->scheduleAddItems(cell_family, cell_uids, cell_lids);
-  m_mesh->scheduleAddItems(node_family, node_uids, node_lids);
+  m_mesh->scheduleAddItems(cell_family, cell_uids.constView(), cell_lids);
+  m_mesh->scheduleAddItems(node_family, node_uids.constView(), node_lids);
   int nb_node = 6;
   m_mesh->scheduleAddConnectivity(cell_family, cell_lids, nb_node, node_family, node_uids, String{ "CellToNodes" });
   m_mesh->scheduleAddConnectivity(node_family, node_lids, 1, cell_family,
