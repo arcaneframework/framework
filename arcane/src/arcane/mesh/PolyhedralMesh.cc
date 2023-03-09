@@ -166,6 +166,8 @@ namespace mesh
 #include "arcane/MeshHandle.h"
 #include "arcane/IItemFamily.h"
 #include "arcane/mesh/ItemFamily.h"
+#include "arcane/utils/Collection.h"
+#include "arcane/utils/List.h"
 
 #include "neo/Mesh.h"
 
@@ -787,8 +789,8 @@ allCells()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IItemFamily* mesh::PolyhedralMesh::
-createItemFamily(eItemKind ik, const String& name)
+mesh::PolyhedralFamily* mesh::PolyhedralMesh::
+_createItemFamily(eItemKind ik, const String& name)
 {
   m_mesh->addFamily(ik, name);
   m_arcane_families.push_back(std::make_unique<PolyhedralFamily>(this, ik, name));
@@ -798,6 +800,15 @@ createItemFamily(eItemKind ik, const String& name)
     _updateMeshInternalList(ik);
   }
   return current_family;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IItemFamily* mesh::PolyhedralMesh::
+createItemFamily(eItemKind ik, const String& name)
+{
+  return _createItemFamily(ik, name);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -910,10 +921,19 @@ _updateMeshInternalList(eItemKind kind)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+mesh::PolyhedralFamily* mesh::PolyhedralMesh::
+_itemFamily(eItemKind ik)
+{
+  return m_default_arcane_families[ik];
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 IItemFamily* mesh::PolyhedralMesh::
 itemFamily(eItemKind ik)
 {
-  return m_default_arcane_families[ik];
+  return _itemFamily(ik);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -928,15 +948,14 @@ itemTypeMng() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IItemFamily* mesh::PolyhedralMesh::
-findItemFamily(eItemKind ik, const String& name, bool create_if_needed, bool register_modifier_if_created)
+mesh::PolyhedralFamily* mesh::PolyhedralMesh::
+_findItemFamily(eItemKind ik, const String& name, bool create_if_needed)
 {
-  ARCANE_UNUSED(register_modifier_if_created); // IItemFamilyModifier not yet used in polyhedral mesh
   // Check if is a default family
-  auto family = itemFamily(ik);
-  if (family) {
-    if (family->name() == name)
-      return family;
+  auto found_family = _itemFamily(ik);
+  if (found_family) {
+    if (found_family->name() == name)
+      return found_family;
   }
   for (auto& family : m_arcane_families) {
     if (family->itemKind() == ik && family->name() == name)
@@ -944,7 +963,17 @@ findItemFamily(eItemKind ik, const String& name, bool create_if_needed, bool reg
   }
   if (!create_if_needed)
     return nullptr;
-  return createItemFamily(ik, name);
+  return _createItemFamily(ik, name);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IItemFamily* mesh::PolyhedralMesh::
+findItemFamily(eItemKind ik, const String& name, bool create_if_needed, bool register_modifier_if_created)
+{
+  ARCANE_UNUSED(register_modifier_if_created); // IItemFamilyModifier not yet used in polyhedral mesh
+  return _findItemFamily(ik, name, create_if_needed);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1009,6 +1038,19 @@ destroyGroups()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+IItemFamilyCollection mesh::PolyhedralMesh::
+itemFamilies()
+{
+  List<IItemFamily*> item_family_collection;
+  for (auto& item_family_ptr : m_arcane_families) {
+    item_family_collection.add(item_family_ptr.get());
+  }
+  return item_family_collection;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
@@ -1039,7 +1081,9 @@ PolyhedralMesh(ISubDomain* subdomain, const MeshBuildInfo& mbi)
 : EmptyMesh{ subdomain->traceMng() }
 , m_subdomain{ subdomain }
 , m_mesh{ nullptr }
-{}
+{
+  ARCANE_UNUSED(mbi);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -1089,11 +1133,35 @@ class ARCANE_MESH_EXPORT PolyhedralMeshFactory
     ISubDomain* sd = mm->variableMng()->_internalSubDomain();
     return new mesh::PolyhedralMesh(sd, build_info);
   }
+
+  static String name() { return "ArcanePolyhedralMeshFactory"; }
 };
 
 ARCANE_REGISTER_SERVICE(PolyhedralMeshFactory,
-                        ServiceProperty("ArcanePolyhedralMeshFactory", ST_Application),
+                        ServiceProperty(PolyhedralMeshFactory::name().localstr(), ST_Application),
                         ARCANE_SERVICE_INTERFACE(IMeshFactory));
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#if ARCANE_HAS_CUSTOM_MESH_TOOLS
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+String mesh::PolyhedralMesh::
+factoryName() const
+{
+  return PolyhedralMeshFactory::name();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#endif // ARCANE_HAS_CUSTOM_MESH_TOOLS
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 } // End namespace Arcane
 

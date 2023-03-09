@@ -16,16 +16,17 @@
 /*---------------------------------------------------------------------------*/
 
 #include <memory>
-#include "arcane/utils/ArcaneGlobal.h"
-#include "arcane/utils/String.h"
-#include "arcane/utils/Collection.h"
-#include "arcane/MeshHandle.h"
-#include "arcane/ItemGroup.h"
+#include "arcane/core/MeshHandle.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/MeshItemInternalList.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/Properties.h"
+#include "arcane/core/ArcaneTypes.h"
 #include "arcane/mesh/EmptyMesh.h"
-#include "arcane/MeshItemInternalList.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/Properties.h"
-#include "arcane/ArcaneTypes.h"
+#include "arcane/core/ItemAllocationInfo.h"
+#include "arcane/utils/ArcaneGlobal.h"
+#include "arcane/utils/Collection.h"
+#include "arcane/utils/String.h"
 #include "arcane/utils/List.h"
 #include "arcane/core/IMeshInitialAllocator.h"
 
@@ -33,6 +34,8 @@
 #include <vector>
 #include <array>
 #include <memory>
+
+#include "arcane/core/IVariableMng.h"
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -106,6 +109,7 @@ class PolyhedralMesh
   std::vector<std::unique_ptr<PolyhedralFamily>> m_arcane_families;
   std::array<std::unique_ptr<PolyhedralFamily>, NB_ITEM_KIND> m_empty_arcane_families;
   std::array<PolyhedralFamily*, NB_ITEM_KIND> m_default_arcane_families;
+  std::vector<std::unique_ptr<VariableItemReal3>> m_arcane_item_coords;
   std::unique_ptr<VariableNodeReal3> m_arcane_node_coords;
   ItemGroupList m_all_groups;
   InitialAllocator m_initial_allocator;
@@ -197,7 +201,21 @@ class PolyhedralMesh
 
   void destroyGroups() override;
 
-  IGhostLayerMng* ghostLayerMng() const override {return nullptr;}
+  IGhostLayerMng* ghostLayerMng() const override { return nullptr; }
+
+  void checkValidMesh() override { m_trace_mng->info() << "TODO implement checkValidMesh using DynamicMeshChecker"; }
+
+  IVariableMng* variableMng() const override { return m_variable_mng; }
+
+  IItemFamilyCollection itemFamilies() override;
+
+  String factoryName() const override;
+
+ private:
+
+  PolyhedralFamily* _createItemFamily(eItemKind ik, const String& name);
+  PolyhedralFamily* _itemFamily(eItemKind ik);
+  PolyhedralFamily* _findItemFamily(eItemKind ik, const String& name, bool create_if_needed = false);
 
 #endif // ARCANE_HAS_CUSTOM_MESH_TOOLS
 
