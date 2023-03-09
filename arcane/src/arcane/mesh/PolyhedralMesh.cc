@@ -102,7 +102,7 @@ namespace mesh
       return item_internal;
     }
 
-    void addItems(Int64ConstArrayView uids, Int32ArrayView items)
+    void addItems(Int64ConstSmallSpan uids, Int32ArrayView items)
     {
       if (uids.empty())
         return;
@@ -260,7 +260,7 @@ namespace mesh
     /*---------------------------------------------------------------------------*/
 
     void scheduleAddItems(PolyhedralFamily* arcane_item_family,
-                          Int64ConstArrayView uids,
+                          Int64ConstSmallSpan uids,
                           ItemLocalIds& item_local_ids)
     {
       auto& added_items = item_local_ids.m_future_items;
@@ -306,9 +306,9 @@ namespace mesh
 
     void scheduleAddConnectivity(PolyhedralFamily* arcane_source_item_family,
                                  ItemLocalIds& source_items,
-                                 Int32ConstArrayView nb_connected_items_per_item,
+                                 Int32ConstSmallSpan nb_connected_items_per_item,
                                  PolyhedralFamily* arcane_target_item_family,
-                                 Int64ConstArrayView target_items_uids,
+                                 Int64ConstSmallSpan target_items_uids,
                                  String const& connectivity_name)
     {
       // debug
@@ -343,7 +343,7 @@ namespace mesh
                                   ItemLocalIds& source_items,
                                   ConnectivitySizeType&& nb_connected_items_per_item,
                                   PolyhedralFamily* arcane_target_item_family,
-                                  Int64ConstArrayView target_item_uids,
+                                  Int64ConstSmallSpan target_item_uids,
                                   String const& connectivity_name)
     {
       // add connectivity in Neo
@@ -391,7 +391,7 @@ namespace mesh
 
     /*---------------------------------------------------------------------------*/
 
-    void scheduleSetItemCoordinates(PolyhedralFamily* item_family, ItemLocalIds& local_ids, Real3ArrayView item_coords, VariableItemReal3& arcane_coords)
+    void scheduleSetItemCoordinates(PolyhedralFamily* item_family, ItemLocalIds& local_ids, Real3ConstSmallSpan item_coords, VariableItemReal3& arcane_coords)
     {
       auto& _item_family = m_mesh.findFamily(itemKindArcaneToNeo(item_family->itemKind()), item_family->name().localstr());
       std::vector<Neo::utils::Real3> _node_coords(item_coords.size());
