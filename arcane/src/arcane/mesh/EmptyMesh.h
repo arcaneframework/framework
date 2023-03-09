@@ -44,6 +44,7 @@
 #include "arcane/MeshHandle.h"
 #include "arcane/IParticleExchanger.h"
 #include "arcane/IExtraGhostCellsBuilder.h"
+#include "arcane/utils/Collection.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -61,10 +62,10 @@ class EmptyMesh : public IPrimaryMesh
 
   ITraceMng* m_trace_mng;
 
-  EmptyMesh(ITraceMng* trace_mng)
+  explicit EmptyMesh(ITraceMng* trace_mng)
   : m_trace_mng(trace_mng)
   {}
-  virtual ~EmptyMesh() = default;
+  ~EmptyMesh() override = default;
 
  private:
 
@@ -75,117 +76,117 @@ class EmptyMesh : public IPrimaryMesh
   MeshHandle handle() const override
   {
     _error();
-    return MeshHandle();
+    return MeshHandle{};
   }
 
   // IPrimaryMesh API
  public:
 
-  virtual VariableNodeReal3& nodesCoordinates() override
+  VariableNodeReal3& nodesCoordinates() override
   {
     _error();
     auto var = new VariableNodeReal3{ nullptr };
     return *var;
   }
-  virtual void setDimension(Integer) override { _error(); }
-  virtual void reloadMesh() override { _error(); }
-  virtual void allocateCells(Integer, Int64ConstArrayView, bool) override { _error(); }
-  virtual void endAllocate() override { _error(); }
-  virtual void deallocate() override { _error(); }
-  virtual VariableItemInt32& itemsNewOwner(eItemKind)
+  void setDimension(Integer) override { _error(); }
+  void reloadMesh() override { _error(); }
+  void allocateCells(Integer, Int64ConstArrayView, bool) override { _error(); }
+  void endAllocate() override { _error(); }
+  void deallocate() override { _error(); }
+  VariableItemInt32& itemsNewOwner(eItemKind) override
   {
     _error();
     auto var = new VariableItemInt32{ nullptr };
     return *var;
   };
-  virtual void exchangeItems() { _error(); }
-  virtual void setOwnersFromCells() { _error(); }
-  virtual void setMeshPartInfo(const MeshPartInfo&) { _error(); }
+  void exchangeItems() override { _error(); }
+  void setOwnersFromCells() override { _error(); }
+  void setMeshPartInfo(const MeshPartInfo&) override { _error(); }
 
   // IMesh API
  public:
 
-  virtual String name() const override
+  String name() const override
   {
     _error();
     return String{};
   }
-  virtual Integer nbNode() override
+  Integer nbNode() override
   {
     _error();
     return -1;
   }
-  virtual Integer nbEdge() override
+  Integer nbEdge() override
   {
     _error();
     return -1;
   }
-  virtual Integer nbFace() override
+  Integer nbFace() override
   {
     _error();
     return -1;
   }
-  virtual Integer nbCell() override
+  Integer nbCell() override
   {
     _error();
     return -1;
   }
-  virtual Integer nbItem(eItemKind) override
+  Integer nbItem(eItemKind) override
   {
     _error();
     return -1;
   }
-  virtual ITraceMng* traceMng() override
+  ITraceMng* traceMng() override
   {
     _error();
     return nullptr;
   }
-  virtual Integer dimension() override
+  Integer dimension() override
   {
     _error();
     return -1;
   }
-  virtual NodeGroup allNodes() override
+  NodeGroup allNodes() override
   {
     _error();
     return NodeGroup{};
   }
-  virtual EdgeGroup allEdges() override
+  EdgeGroup allEdges() override
   {
     _error();
     return EdgeGroup{};
   }
-  virtual FaceGroup allFaces() override
+  FaceGroup allFaces() override
   {
     _error();
     return FaceGroup{};
   }
-  virtual CellGroup allCells() override
+  CellGroup allCells() override
   {
     _error();
     return CellGroup{};
   }
-  virtual NodeGroup ownNodes() override
+  NodeGroup ownNodes() override
   {
     _error();
     return NodeGroup{};
   }
-  virtual EdgeGroup ownEdges() override
+  EdgeGroup ownEdges() override
   {
     _error();
     return EdgeGroup{};
   }
-  virtual FaceGroup ownFaces() override
+  FaceGroup ownFaces() override
   {
     _error();
     return FaceGroup{};
   }
-  virtual CellGroup ownCells() override
+  CellGroup ownCells() override
   {
     _error();
     return CellGroup{};
   }
-  virtual FaceGroup outerFaces() override
+  FaceGroup outerFaces() override
   {
     _error();
     return FaceGroup{};
@@ -193,52 +194,52 @@ class EmptyMesh : public IPrimaryMesh
 
  public:
 
-  virtual IItemFamily* createItemFamily(eItemKind, const String&) override
+  IItemFamily* createItemFamily(eItemKind, const String&) override
   {
     _error();
     return nullptr;
   }
-  virtual IItemFamily* findItemFamily(eItemKind, const String&, bool, bool) override
+  IItemFamily* findItemFamily(eItemKind, const String&, bool, bool) override
   {
     _error();
     return nullptr;
   }
-  virtual IItemFamily* findItemFamily(const String&, bool) override
+  IItemFamily* findItemFamily(const String&, bool) override
   {
     _error();
     return nullptr;
   }
-  virtual IItemFamilyModifier* findItemFamilyModifier(eItemKind, const String&) override
+  IItemFamilyModifier* findItemFamilyModifier(eItemKind, const String&) override
   {
     _error();
     return nullptr;
   }
-  virtual IItemFamily* itemFamily(eItemKind) override
+  IItemFamily* itemFamily(eItemKind) override
   {
     _error();
     return nullptr;
   }
-  virtual IItemFamily* nodeFamily() override
+  IItemFamily* nodeFamily() override
   {
     _error();
     return nullptr;
   }
-  virtual IItemFamily* edgeFamily() override
+  IItemFamily* edgeFamily() override
   {
     _error();
     return nullptr;
   }
-  virtual IItemFamily* faceFamily() override
+  IItemFamily* faceFamily() override
   {
     _error();
     return nullptr;
   }
-  virtual IItemFamily* cellFamily() override
+  IItemFamily* cellFamily() override
   {
     _error();
     return nullptr;
   }
-  virtual IItemFamilyCollection itemFamilies() override
+  IItemFamilyCollection itemFamilies() override
   {
     _error();
     return IItemFamilyCollection{};
@@ -246,34 +247,34 @@ class EmptyMesh : public IPrimaryMesh
 
  public:
 
-  virtual void build() override { _error(); }
-  virtual String factoryName() const override
+  void build() override { _error(); }
+  String factoryName() const override
   {
     _error();
     return String{};
   }
-  virtual ItemInternalList itemsInternal(eItemKind) override
+  ItemInternalList itemsInternal(eItemKind) override
   {
     _error();
     return ItemInternalList{};
   }
-  virtual SharedVariableNodeReal3 sharedNodesCoordinates() override
+  SharedVariableNodeReal3 sharedNodesCoordinates() override
   {
     _error();
     return SharedVariableNodeReal3{};
   }
-  virtual void checkValidMesh() override { _error(); }
-  virtual void checkValidMeshFull() override { _error(); }
-  virtual void synchronizeGroupsAndVariables() override { _error(); }
+  void checkValidMesh() override { _error(); }
+  void checkValidMeshFull() override { _error(); }
+  void synchronizeGroupsAndVariables() override { _error(); }
 
  public:
 
-  virtual bool isAllocated() override
+  bool isAllocated() override
   {
     _error();
     return false;
   }
-  virtual Int64 timestamp() override
+  Int64 timestamp() override
   {
     _error();
     return -1;
@@ -281,7 +282,7 @@ class EmptyMesh : public IPrimaryMesh
 
  public:
 
-  virtual ISubDomain* subDomain() override
+  ISubDomain* subDomain() override
   {
     _error();
     return nullptr;
@@ -289,7 +290,7 @@ class EmptyMesh : public IPrimaryMesh
 
  public:
 
-  virtual IParallelMng* parallelMng() override
+  IParallelMng* parallelMng() override
   {
     _error();
     return nullptr;
@@ -297,48 +298,48 @@ class EmptyMesh : public IPrimaryMesh
 
  public:
 
-  virtual VariableScalarInteger connectivity() override
+  VariableScalarInteger connectivity() override
   {
     _error();
     return VariableScalarInteger{ nullptr };
   }
 
-  virtual CellGroup allActiveCells() override
+  CellGroup allActiveCells() override
   {
     _error();
     return CellGroup{};
   }
-  virtual CellGroup ownActiveCells() override
+  CellGroup ownActiveCells() override
   {
     _error();
     return CellGroup{};
   }
-  virtual CellGroup allLevelCells(const Integer&) override
+  CellGroup allLevelCells(const Integer&) override
   {
     _error();
     return CellGroup{};
   }
-  virtual CellGroup ownLevelCells(const Integer&) override
+  CellGroup ownLevelCells(const Integer&) override
   {
     _error();
     return CellGroup{};
   }
-  virtual FaceGroup allActiveFaces() override
+  FaceGroup allActiveFaces() override
   {
     _error();
     return FaceGroup{};
   }
-  virtual FaceGroup ownActiveFaces() override
+  FaceGroup ownActiveFaces() override
   {
     _error();
     return FaceGroup{};
   }
-  virtual FaceGroup innerActiveFaces() override
+  FaceGroup innerActiveFaces() override
   {
     _error();
     return FaceGroup{};
   }
-  virtual FaceGroup outerActiveFaces() override
+  FaceGroup outerActiveFaces() override
   {
     _error();
     return FaceGroup{};
@@ -346,21 +347,21 @@ class EmptyMesh : public IPrimaryMesh
 
  public:
 
-  virtual ItemGroupCollection groups() override
+  ItemGroupCollection groups() override
   {
     _error();
     return ItemGroupCollection{};
   }
-  virtual ItemGroup findGroup(const String&) override
+  ItemGroup findGroup(const String&) override
   {
     _error();
     return ItemGroup{};
   }
-  virtual void destroyGroups() override { _error(); }
+  void destroyGroups() override { _error(); }
 
  public:
 
-  virtual MeshItemInternalList* meshItemInternalList() override
+  MeshItemInternalList* meshItemInternalList() override
   {
     _error();
     return nullptr;
@@ -368,22 +369,22 @@ class EmptyMesh : public IPrimaryMesh
 
  public:
 
-  virtual void updateGhostLayers(bool) override { _error(); }
-  virtual void serializeCells(ISerializer*, Int32ConstArrayView) override { _error(); }
-  virtual void prepareForDump() override { _error(); }
-  virtual void initializeVariables(const XmlNode&) override { _error(); }
-  virtual void setCheckLevel(Integer) override { _error(); }
-  virtual Integer checkLevel() const override
+  void updateGhostLayers(bool) override { _error(); }
+  void serializeCells(ISerializer*, Int32ConstArrayView) override { _error(); }
+  void prepareForDump() override { _error(); }
+  void initializeVariables(const XmlNode&) override { _error(); }
+  void setCheckLevel(Integer) override { _error(); }
+  Integer checkLevel() const override
   {
     _error();
     return -1;
   }
-  virtual bool isDynamic() const override
+  bool isDynamic() const override
   {
     _error();
     return false;
   }
-  virtual bool isAmrActivated() const override
+  bool isAmrActivated() const override
   {
     _error();
     return false;
@@ -391,18 +392,18 @@ class EmptyMesh : public IPrimaryMesh
 
  public:
 
-  virtual void computeTiedInterfaces(const XmlNode&) override { _error(); }
-  virtual bool hasTiedInterface() override
+  void computeTiedInterfaces(const XmlNode&) override { _error(); }
+  bool hasTiedInterface() override
   {
     _error();
     return false;
   }
-  virtual TiedInterfaceCollection tiedInterfaces() override
+  TiedInterfaceCollection tiedInterfaces() override
   {
     _error();
     return TiedInterfaceCollection{};
   }
-  virtual IMeshPartitionConstraintMng* partitionConstraintMng() override
+  IMeshPartitionConstraintMng* partitionConstraintMng() override
   {
     _error();
     return nullptr;
@@ -410,20 +411,12 @@ class EmptyMesh : public IPrimaryMesh
 
  public:
 
-  virtual IMeshUtilities* utilities() override
+  IMeshUtilities* utilities() override
   {
     _error();
     return nullptr;
   }
-  virtual Properties* properties() override
-  {
-    _error();
-    return nullptr;
-  }
-
- public:
-
-  virtual IMeshModifier* modifier() override
+  Properties* properties() override
   {
     _error();
     return nullptr;
@@ -431,19 +424,27 @@ class EmptyMesh : public IPrimaryMesh
 
  public:
 
-  virtual void defineParentForBuild(IMesh*, ItemGroup) override { _error(); }
-  virtual IMesh* parentMesh() const override
+  IMeshModifier* modifier() override
   {
     _error();
     return nullptr;
   }
-  virtual ItemGroup parentGroup() const override
+
+ public:
+
+  void defineParentForBuild(IMesh*, ItemGroup) override { _error(); }
+  IMesh* parentMesh() const override
+  {
+    _error();
+    return nullptr;
+  }
+  ItemGroup parentGroup() const override
   {
     _error();
     return ItemGroup{};
   }
-  virtual void addChildMesh(IMesh*) override { _error(); }
-  virtual MeshCollection childMeshes() const override
+  void addChildMesh(IMesh*) override { _error(); }
+  MeshCollection childMeshes() const override
   {
     _error();
     return MeshCollection{};
@@ -451,21 +452,21 @@ class EmptyMesh : public IPrimaryMesh
 
  public:
 
-  virtual bool isPrimaryMesh() const override
+  bool isPrimaryMesh() const override
   {
     _error();
     return false;
   }
-  virtual IPrimaryMesh* toPrimaryMesh() override { return this; }
+  IPrimaryMesh* toPrimaryMesh() override { return this; }
 
  public:
 
-  virtual IUserDataList* userDataList() override
+  IUserDataList* userDataList() override
   {
     _error();
     return nullptr;
   }
-  virtual const IUserDataList* userDataList() const override
+  const IUserDataList* userDataList() const override
   {
     _error();
     return nullptr;
@@ -473,38 +474,38 @@ class EmptyMesh : public IPrimaryMesh
 
  public:
 
-  virtual IGhostLayerMng* ghostLayerMng() const override
+  IGhostLayerMng* ghostLayerMng() const override
   {
     _error();
     return nullptr;
   }
-  virtual IMeshUniqueIdMng* meshUniqueIdMng() const override
+  IMeshUniqueIdMng* meshUniqueIdMng() const override
   {
     _error();
     return nullptr;
   }
-  virtual IMeshChecker* checker() const override
+  IMeshChecker* checker() const override
   {
     _error();
     return nullptr;
   }
-  virtual const MeshPartInfo& meshPartInfo() const override
+  const MeshPartInfo& meshPartInfo() const override
   {
     _error();
     auto var = new MeshPartInfo{};
     return *var;
   }
-  virtual bool useMeshItemFamilyDependencies() const override
+  bool useMeshItemFamilyDependencies() const override
   {
     _error();
     return false;
   }
-  virtual IItemFamilyNetwork* itemFamilyNetwork() override
+  IItemFamilyNetwork* itemFamilyNetwork() override
   {
     _error();
     return nullptr;
   }
-  virtual IIndexedIncrementalItemConnectivityMng* indexedConnectivityMng() override
+  IIndexedIncrementalItemConnectivityMng* indexedConnectivityMng() override
   {
     _error();
     return nullptr;
@@ -512,12 +513,12 @@ class EmptyMesh : public IPrimaryMesh
 
  public:
 
-  virtual IMeshCompactMng* _compactMng() override
+  IMeshCompactMng* _compactMng() override
   {
     _error();
     return nullptr;
   }
-  virtual InternalConnectivityPolicy _connectivityPolicy() const override
+  InternalConnectivityPolicy _connectivityPolicy() const override
   {
     _error();
     return InternalConnectivityPolicy{};
@@ -525,17 +526,17 @@ class EmptyMesh : public IPrimaryMesh
 
  public:
 
-  virtual IMeshMng* meshMng() const override
+  IMeshMng* meshMng() const override
   {
     _error();
     return nullptr;
   }
-  virtual IVariableMng* variableMng() const override
+  IVariableMng* variableMng() const override
   {
     _error();
     return nullptr;
   }
-  virtual ItemTypeMng* itemTypeMng() const override
+  ItemTypeMng* itemTypeMng() const override
   {
     _error();
     return nullptr;
