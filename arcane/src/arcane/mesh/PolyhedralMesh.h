@@ -27,6 +27,7 @@
 #include "arcane/Properties.h"
 #include "arcane/ArcaneTypes.h"
 #include "arcane/utils/List.h"
+#include "arcane/core/IMeshInitialAllocator.h"
 
 #ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
 #include <vector>
@@ -55,6 +56,7 @@ class PolyhedralFamily;
 
 class PolyhedralMesh
 : public EmptyMesh
+, public IPolyhedralMeshInitialAllocator
 {
  public:
 
@@ -68,6 +70,9 @@ class PolyhedralMesh
   MeshPartInfo m_part_info;
   bool m_is_allocated = false;
   ItemTypeMng* m_item_type_mng = nullptr;
+
+  // IPolyhedralMeshInitialAllocator interface
+  void allocateItems(const Arcane::ItemAllocationInfo& item_allocation_info) {}
 
  public:
 
@@ -84,6 +89,18 @@ class PolyhedralMesh
 
 #ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
 
+  class InitialAllocator : public IMeshInitialAllocator
+  {
+    PolyhedralMesh& m_mesh;
+
+   public:
+
+    explicit InitialAllocator(PolyhedralMesh& mesh)
+    : m_mesh(mesh)
+    {}
+    IPolyhedralMeshInitialAllocator* polyhedralMeshAllocator() override { return &m_mesh; }
+  };
+
  private:
 
   std::vector<std::unique_ptr<PolyhedralFamily>> m_arcane_families;
@@ -91,6 +108,11 @@ class PolyhedralMesh
   std::array<PolyhedralFamily*, NB_ITEM_KIND> m_default_arcane_families;
   std::unique_ptr<VariableNodeReal3> m_arcane_node_coords;
   ItemGroupList m_all_groups;
+  InitialAllocator m_initial_allocator;
+  IVariableMng* m_variable_mng;
+
+  // IPrimaryMeshBase interface
+  IMeshInitialAllocator* initialAllocator() override { return &m_initial_allocator; }
 
   // IMeshBase interface
  public:
