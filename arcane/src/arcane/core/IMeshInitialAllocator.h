@@ -43,13 +43,16 @@ class ARCANE_CORE_EXPORT IUnstructuredMeshInitialAllocator
 /*!
  * \brief Allocateur pour les maillages polyédriques.
  */
-class ARCANE_CORE_EXPORT IPolyedralMeshInitialAllocator
+class ItemAllocationInfo;
+class ARCANE_CORE_EXPORT IPolyhedralMeshInitialAllocator
 {
  public:
 
-  virtual ~IPolyedralMeshInitialAllocator() = default;
+  virtual ~IPolyhedralMeshInitialAllocator() = default;
 
  public:
+
+  virtual void allocateItems(const Arcane::ItemAllocationInfo& allocation_info) = 0;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -70,7 +73,7 @@ class ARCANE_CORE_EXPORT IMeshInitialAllocator
     return nullptr;
   }
 
-  virtual IPolyedralMeshInitialAllocator* polyedralMeshAllocator()
+  virtual IPolyhedralMeshInitialAllocator* polyhedralMeshAllocator()
   {
     return nullptr;
   }
