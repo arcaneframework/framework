@@ -118,6 +118,7 @@ class ARCANE_CORE_EXPORT AbstractItemRangeFunctorT
  * vectorisation que les sous-vues de \a m_items seront correctement alignées.
  */
 // TODO: Y'a t'il besoin d'un ARCANE_CORE_EXPORT sur un typedef ???
+template class ARCANE_CORE_EXPORT AbstractItemRangeFunctorT<ItemVectorView>;
 using AbstractItemRangeFunctor = AbstractItemRangeFunctorT<ItemVectorView>;
 
 /*---------------------------------------------------------------------------*/
