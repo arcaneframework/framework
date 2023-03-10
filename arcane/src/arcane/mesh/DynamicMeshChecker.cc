@@ -41,9 +41,9 @@ namespace Arcane::mesh
 /*---------------------------------------------------------------------------*/
 
 DynamicMeshChecker::
-DynamicMeshChecker(DynamicMesh* mesh)
+DynamicMeshChecker(IMesh* mesh)
 : TraceAccessor(mesh->traceMng())
-, m_mesh(mesh) 
+, m_mesh(mesh)
 , m_check_level(0)
 , m_var_cells_faces(0)
 , m_var_cells_nodes(0)
@@ -648,17 +648,17 @@ void DynamicMeshChecker::
 checkGhostCells()
 {
   pwarning() << "CHECK GHOST CELLS";
-  Integer sid = m_mesh->meshRank();
-  ENUMERATE_CELL(icell,m_mesh->cellFamily()->allItems()){
+  Integer sid = m_mesh->parallelMng()->commRank();
+  ENUMERATE_CELL (icell, m_mesh->cellFamily()->allItems()) {
     Cell cell = *icell;
     if (cell.isOwn())
       continue;
     bool is_ok = false;
-    for( NodeEnumerator inode(cell.nodes()); inode.hasNext(); ++inode ){
+    for (NodeEnumerator inode(cell.nodes()); inode.hasNext(); ++inode) {
       Node node = *inode;
-      for( CellEnumerator icell2(node.cells()); icell2.hasNext(); ++icell2 ){
+      for (CellEnumerator icell2(node.cells()); icell2.hasNext(); ++icell2) {
         Cell cell2 = *icell2;
-        if (cell2.owner()==sid){
+        if (cell2.owner() == sid) {
           is_ok = true;
         }
       }
