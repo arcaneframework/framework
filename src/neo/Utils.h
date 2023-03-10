@@ -156,7 +156,7 @@ namespace utils {
   }
 
   template <typename Container>
-  void printContainer(Container&& container, std::string const& name="Container"){
+  void printContainer(Container&& container, std::string const& name = "Container") {
     std::cout << name << " , size : " << container.size() << std::endl;
     _printContainer(container, std::cout);
     std::cout << std::endl;
@@ -164,16 +164,29 @@ namespace utils {
 
   using namespace std::chrono_literals;
 
-  struct Profiler {
+  struct Profiler
+  {
 
     std::string m_name;
     std::chrono::time_point<std::chrono::high_resolution_clock> m_start;
     std::chrono::time_point<std::chrono::high_resolution_clock> m_end;
-    void start()  {m_start = std::chrono::high_resolution_clock::now();}
-    void stop()  {m_end = std::chrono::high_resolution_clock::now();}
+    void start() { m_start = std::chrono::high_resolution_clock::now(); }
+    void stop() { m_end = std::chrono::high_resolution_clock::now(); }
+    void start(std::string name) {
+      m_name = name;
+      start();
+    }
+    void stop_and_print(std::string message) {
+      stop();
+      print(message);
+    }
+    void stop_and_print() {
+      stop();
+      print("");
+    }
     void print(std::string message) {
-      std::cout << "=== cpu time " << message << m_name << " = " << (m_end-m_start)/ 1ms << " milliseconds ===" << std::endl;}
-
+      std::cout << "=== cpu time " << message << m_name << " = " << (m_end - m_start) / 1us << " microseconds ===" << std::endl;
+    }
   };
 
 }// end namespace utils
