@@ -66,7 +66,7 @@ class VtkPolyhedralMeshIOService
 
    public:
 
-    VtkReader(const String& filename);
+    explicit VtkReader(const String& filename);
 
     Int64ConstArrayView cellUids();
     Int64ConstArrayView nodeUids();
@@ -260,6 +260,7 @@ class VtkPolyhedralMeshIOService
 
   VtkPolyhedralTools::ReadStatus read(IPrimaryMesh* mesh, const String& filename)
   {
+    ARCANE_CHECK_POINTER(mesh);
     VtkReader reader{ filename };
     if (reader.readHasFailed())
       return reader.readStatus();
@@ -299,6 +300,7 @@ class VtkPolyhedralCaseMeshReader
 
     void allocateMeshItems(IPrimaryMesh* pm) override
     {
+      ARCANE_CHECK_POINTER(pm);
       m_trace_mng->info() << "---CREATE POLYHEDRAL MESH---- " << pm->name();
       m_trace_mng->info() << "--Read mesh file " << m_read_info.fileName();
       VtkPolyhedralMeshIOService polyhedral_vtk_service{};
