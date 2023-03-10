@@ -103,32 +103,30 @@ void Neo::Mesh::_scheduleAddConnectivity(Neo::Family& source_family, Neo::ItemRa
                                                                                      connectivity_unique_name,
                                                                                      connectivity_property}));
   if (!is_inserted && add_or_modify==ConnectivityOperation::Add) {
-    throw std::invalid_argument("Cannot include already inserted connectivity "+connectivity_unique_name);
+    throw std::invalid_argument("Cannot include already inserted connectivity " + connectivity_unique_name + ". Choose ConnectivityOperation::Modify");
   }
   m_mesh_graph->addAlgorithm(
-      Neo::InProperty{source_family,source_family.lidPropName()},
-      Neo::InProperty{target_family,target_family.lidPropName()},
-      Neo::OutProperty{source_family, connectivity_unique_name},
-      [connected_item_uids{std::move(connected_item_uids)},
-          nb_connected_item_per_item{std::move(nb_connected_item_per_item)},
-          source_items_wrapper, &source_family, &target_family]
-          (Neo::ItemLidsProperty const& source_family_lids_property,
-           Neo::ItemLidsProperty const& target_family_lids_property,
-           Neo::ArrayProperty<Neo::utils::Int32> & source2target){
-          Neo::print() << "Algorithm: register connectivity between " <<
-            source_family.m_name << "  and  " << target_family.m_name << std::endl;
-          ItemRange const& source_items = source_items_wrapper.get();
-        auto connected_item_lids = target_family_lids_property[connected_item_uids];
-        if (source2target.isInitializableFrom(source_items)) {
-          source2target.resize(std::move(nb_connected_item_per_item));
-          source2target.init(source_items,std::move(connected_item_lids));
-        }
-        else {
-          source2target.append(source_items,connected_item_lids,
-                               nb_connected_item_per_item);
-        }
-        source2target.debugPrint();
-      });
+  Neo::InProperty{ source_family, source_family.lidPropName(), PropertyStatus::ExistingProperty },
+  Neo::InProperty{ target_family, target_family.lidPropName(), PropertyStatus::ExistingProperty },
+  Neo::OutProperty{ source_family, connectivity_unique_name },
+  [connected_item_uids{ std::move(connected_item_uids) },
+   nb_connected_item_per_item{ std::move(nb_connected_item_per_item) },
+   source_items_wrapper, &source_family, &target_family](Neo::ItemLidsProperty const& source_family_lids_property,
+                                                         Neo::ItemLidsProperty const& target_family_lids_property,
+                                                         Neo::ArrayProperty<Neo::utils::Int32>& source2target) {
+    Neo::print() << "Algorithm: register connectivity between " << source_family.m_name << "  and  " << target_family.m_name << std::endl;
+    ItemRange const& source_items = source_items_wrapper.get();
+    auto connected_item_lids = target_family_lids_property[connected_item_uids];
+    if (source2target.isInitializableFrom(source_items)) {
+      source2target.resize(std::move(nb_connected_item_per_item));
+      source2target.init(source_items, std::move(connected_item_lids));
+    }
+    else {
+      source2target.append(source_items, connected_item_lids,
+                           nb_connected_item_per_item);
+    }
+    source2target.debugPrint();
+  });
 }
 
 /*-----------------------------------------------------------------------------*/
