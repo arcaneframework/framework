@@ -648,7 +648,7 @@ void DynamicMeshChecker::
 checkGhostCells()
 {
   pwarning() << "CHECK GHOST CELLS";
-  Integer sid = m_mesh->parallelMng()->commRank();
+  Integer sid = m_mesh->meshPartInfo().partRank();
   ENUMERATE_CELL (icell, m_mesh->cellFamily()->allItems()) {
     Cell cell = *icell;
     if (cell.isOwn())
