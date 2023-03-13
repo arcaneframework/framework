@@ -20,14 +20,18 @@ arcane_add_arccon_packages(arcane_mesh PRIVATE ${PKGS})
 target_link_libraries(arcane_mesh PUBLIC arcane_core)
 
 find_package(Neo QUIET)
-if (Neo_FOUND)
+if(Neo_FOUND)
   target_link_libraries(arcane_mesh PRIVATE Neo::Neo)
   target_compile_definitions(arcane_mesh PRIVATE ARCANE_HAS_CUSTOM_MESH_TOOLS)
 endif()
 
-if (vtkIOXML_FOUND) # this dependency to vtk is temporary, will be in Neo then
+if(vtkIOXML_FOUND) # this dependency to vtk is temporary, will be in Neo then
   target_compile_definitions(arcane_mesh PRIVATE ARCANE_HAS_VTKIO)
   arcane_add_arccon_packages(arcane_mesh PRIVATE vtkIOXML)
+endif()
+
+if(REMOVE_UID_ON_DETACH)
+  target_compile_definitions(arcane_mesh PRIVATE REMOVE_UID_ON_DETACH)
 endif()
 
 arcane_register_library(arcane_mesh)
