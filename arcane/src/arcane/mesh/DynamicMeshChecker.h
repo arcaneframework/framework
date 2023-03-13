@@ -44,9 +44,9 @@ class DynamicMeshChecker
 , public IMeshChecker
 {
  public:
-  
-  DynamicMeshChecker(DynamicMesh* mesh);
- 
+
+  DynamicMeshChecker(IMesh* mesh);
+
   ~DynamicMeshChecker();
 
  public:
@@ -88,7 +88,7 @@ class DynamicMeshChecker
 
  private:
 
-  DynamicMesh* m_mesh;
+  IMesh* m_mesh;
   Integer m_check_level;
 
   VariableCellArrayInt64* m_var_cells_faces;
