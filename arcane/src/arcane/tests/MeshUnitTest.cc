@@ -1109,10 +1109,11 @@ _testItemArray()
   VariableCellInt32 var_counter(VariableBuildInfo(mesh(),"CellCounter"));
   Int64 total = 0;
   ENUMERATE_(MyCellClass,icell,v2){
-    MyCellClass c = *icell;
+    const MyCellClass& c = *icell;
+    MyCellClass c2 = *icell;
     info(6) << "CELL =" << ItemPrinter(c);
     var_counter[icell] = c.localId();
-    total += var_counter[c];
+    total += var_counter[c] + var_counter[c2];
     for( NodeEnumerator inode(c.nodes()); inode.hasNext(); ++inode ){
       info(7) << "NODE =" << ItemPrinter(*inode);
     }

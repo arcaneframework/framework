@@ -607,7 +607,7 @@ class ARCANE_CORE_EXPORT Node
   { ARCANE_CHECK_KIND(isNode); }
 
   //! Construit une référence à l'entité \a abase
-  explicit Node(Item aitem) : Item(aitem)
+  explicit Node(const Item& aitem) : Item(aitem)
   { ARCANE_CHECK_KIND(isNode); }
 
   //! Construit une référence à l'entité \a internal
@@ -737,7 +737,7 @@ class ARCANE_CORE_EXPORT ItemWithNodes
   { ARCANE_CHECK_KIND(isItemWithNodes); }
 
   //! Construit une référence à l'entité \a aitem
-  explicit ItemWithNodes(Item aitem) : Item(aitem)
+  explicit ItemWithNodes(const Item& aitem) : Item(aitem)
   { ARCANE_CHECK_KIND(isItemWithNodes); }
 
   //! Construit une référence à l'entité \a internal
@@ -841,7 +841,7 @@ class ARCANE_CORE_EXPORT Edge
   { ARCANE_CHECK_KIND(isEdge); }
 
   //! Construit une référence à l'entité \a aitem
-  explicit Edge(Item aitem) : ItemWithNodes(aitem)
+  explicit Edge(const Item& aitem) : ItemWithNodes(aitem)
   { ARCANE_CHECK_KIND(isEdge); }
 
   //! Construit une référence à l'entité \a internal
@@ -975,7 +975,7 @@ class ARCANE_CORE_EXPORT Face
   { ARCANE_CHECK_KIND(isFace); }
 
   //! Construit une référence à l'entité \a aitem
-  explicit Face(Item aitem) : ItemWithNodes(aitem)
+  explicit Face(const Item& aitem) : ItemWithNodes(aitem)
   { ARCANE_CHECK_KIND(isFace); }
 
   //! Construit une référence à l'entité \a internal
@@ -1221,7 +1221,7 @@ class ARCANE_CORE_EXPORT Cell
   { ARCANE_CHECK_KIND(isCell); }
 
   //! Construit une référence à l'entité \a aitem
-  explicit Cell(Item aitem) : ItemWithNodes(aitem)
+  explicit Cell(const Item& aitem) : ItemWithNodes(aitem)
   { ARCANE_CHECK_KIND(isCell); }
 
   //! Construit une référence à l'entité \a internal
@@ -1409,7 +1409,7 @@ class Particle
   { ARCANE_CHECK_KIND(isParticle); }
 
   //! Construit une référence à l'entité \a aitem
-  explicit Particle(Item aitem) : Item(aitem)
+  explicit Particle(const Item& aitem) : Item(aitem)
   { ARCANE_CHECK_KIND(isParticle); }
 
   //! Construit une référence à l'entité \a internal
@@ -1514,7 +1514,7 @@ class DoF
   { ARCANE_CHECK_KIND(isDoF); }
 
   //! Construit une référence à l'entité \a abase
-  explicit DoF(Item aitem) : Item(aitem)
+  explicit DoF(const Item& aitem) : Item(aitem)
   { ARCANE_CHECK_KIND(isDoF); }
 
   //! Construit une référence à l'entité \a internal
