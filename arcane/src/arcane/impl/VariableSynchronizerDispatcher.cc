@@ -155,7 +155,7 @@ compute()
  * \todo: ne pas allouer les tampons car leur conservation est couteuse en
  * terme de memoire.
  */
-void VariableSynchronizeDispatcherSyncBufferBase::
+void VariableSynchronizeBufferBase::
 compute(IBufferCopier* copier, ItemGroupSynchronizeInfo* sync_info, Int32 dim2_size)
 {
   m_buffer_copier = copier;
@@ -203,7 +203,7 @@ compute(IBufferCopier* copier, ItemGroupSynchronizeInfo* sync_info, Int32 dim2_s
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void VariableSynchronizeDispatcherSyncBufferBase::
+void VariableSynchronizeBufferBase::
 copyReceive(Integer index)
 {
   ARCANE_CHECK_POINTER(m_sync_info);
@@ -220,7 +220,7 @@ copyReceive(Integer index)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void VariableSynchronizeDispatcherSyncBufferBase::
+void VariableSynchronizeBufferBase::
 copySend(Integer index)
 {
   ARCANE_CHECK_POINTER(m_sync_info);

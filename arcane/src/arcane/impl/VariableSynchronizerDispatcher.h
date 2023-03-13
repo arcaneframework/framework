@@ -165,14 +165,12 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcherBuildInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcherSyncBufferBase
+/*!
+ * \brief Implémentation de IDataSynchronizeBuffer pour les variables
+ */
+class ARCANE_IMPL_EXPORT VariableSynchronizeBufferBase
 : public IDataSynchronizeBuffer
 {
- public:
-
-  void compute(IBufferCopier* copier,ItemGroupSynchronizeInfo* sync_list,Int32 dim2_size);
-
  public:
 
   Int32 nbRank() const final { return m_nb_rank; }
@@ -194,6 +192,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcherSyncBufferBase
 
  public:
 
+  void compute(IBufferCopier* copier,ItemGroupSynchronizeInfo* sync_list,Int32 dim2_size);
   Int32 dim2Size() const { return m_dim2_size; }
   IDataSynchronizeBuffer* genericBuffer() { return this; }
   void setDataView(MutableMemoryView v) { m_data_view = v; }
@@ -229,9 +228,6 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcherSyncBufferBase
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Gestion de la synchronisation pour un type de donnée \a SimpleType.
- *
- * Cette classe est abstraite. La classe dérivée doit fournir une implémentation
- * de beginSynchronize() et endSynchronize().
  */
 template <class SimpleType>
 class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
@@ -240,15 +236,10 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
 {
  public:
 
-  using SyncBufferBase = VariableSynchronizeDispatcherSyncBufferBase;
-
- public:
-
   //! Gère les buffers d'envoi et réception pour la synchronisation
   class ARCANE_IMPL_EXPORT SyncBuffer
-  : public SyncBufferBase
+  : public VariableSynchronizeBufferBase
   {
-
    public:
 
     void _allocateBuffers() override;
@@ -261,7 +252,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
 
  public:
 
-  VariableSynchronizeDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi);
+  explicit VariableSynchronizeDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi);
   ~VariableSynchronizeDispatcher() override;
 
  public:
@@ -277,11 +268,11 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
 
  protected:
 
-  void _beginSynchronize(SyncBufferBase& sync_buffer)
+  void _beginSynchronize(VariableSynchronizeBufferBase& sync_buffer)
   {
     m_generic_instance->beginSynchronize(sync_buffer.genericBuffer());
   }
-  void _endSynchronize(SyncBufferBase& sync_buffer)
+  void _endSynchronize(VariableSynchronizeBufferBase& sync_buffer)
   {
     m_generic_instance->endSynchronize(sync_buffer.genericBuffer());
   }
