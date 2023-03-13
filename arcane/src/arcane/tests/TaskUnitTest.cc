@@ -130,6 +130,7 @@ class Test3
     m_saved_value = m_total_value;
     _exec1();
     _exec2();
+    _exec3();
   }
 
   void _exec1()
@@ -287,7 +288,47 @@ class Test3
       if (m_max_thread_index>x)
         ARCANE_FATAL("Bad max thread index v={0} max_expected={1}",m_max_thread_index,x);
     }
-}
+  }
+
+  // Test pour le arcaneParallelForeach qui accepte un nombre arbitraire d'arguments
+  void _exec3()
+  {
+    UniqueArray<Real> _x(m_mesh->allNodes().size());
+    UniqueArray<Real> _y(m_mesh->allNodes().size());
+    UniqueArray<Real> _z(m_mesh->allNodes().size());
+    ENUMERATE_NODE(inode, m_mesh->allNodes()) {
+      _x[inode->itemLocalId()] = m_node_coord[inode].x;
+      _y[inode->itemLocalId()] = m_node_coord[inode].y;
+      _z[inode->itemLocalId()] = m_node_coord[inode].z;
+    }
+
+    auto func = [this](ArrayView<Real> x, ArrayView<Real> y, ArrayView<Real> z)
+    {
+      Real local_total_coord = 0.0;
+      Integer thread_index = TaskFactory::currentTaskThreadIndex();
+      info() << "PARALLEL_LOOP size=" << x.size()
+             << " thread_index=" << thread_index;
+      for (auto i(0); i < x.size(); ++i) {
+        Real3 _coord(x[i], y[i], z[i]);
+        local_total_coord += _coord.squareNormL2();
+      }
+
+      {
+        SpinLock::ScopedLock s(m_reduce_lock);
+        m_total_value += local_total_coord;
+        if (thread_index>m_max_thread_index)
+          m_max_thread_index = thread_index;
+      }
+    };
+
+    info() << "Test arcaneParallelForeachVa with ParallelLoopOptions block_size and multiples args";
+    ParallelLoopOptions options;
+    options.setGrainSize(100);
+    ForLoopRunInfo fri(options);
+    _reset();
+    arcaneParallelForeachVa(fri, func, _x.view(), _y.view(), _z.view());
+    _checkValid();
+  }
 
   void _checkValid()
   {
