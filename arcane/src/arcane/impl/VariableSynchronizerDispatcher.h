@@ -181,16 +181,16 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcherSyncBufferBase
 
     Int32 nbRank() const override { return m_buffer->nbRank(); }
     bool hasGlobalBuffer() const override { return true; }
-    MutableMemoryView globalSendBuffer() override { return m_buffer->shareMemoryView(); }
-    MutableMemoryView globalReceiveBuffer() override { return m_buffer->ghostMemoryView(); }
-    MutableMemoryView sendBuffer(Int32 index) override { return m_buffer->shareMemoryView(index); }
-    MutableMemoryView receiveBuffer(Int32 index) override { return m_buffer->ghostMemoryView(index); }
-    Int64 sendDisplacement(Int32 index) const override { return m_buffer->shareDisplacement(index); }
-    Int64 receiveDisplacement(Int32 index) const override { return m_buffer->ghostDisplacement(index); }
+    MutableMemoryView globalSendBuffer() override { return m_buffer->globalSendBuffer(); }
+    MutableMemoryView globalReceiveBuffer() override { return m_buffer->globalReceiveBuffer(); }
+    MutableMemoryView sendBuffer(Int32 index) override { return m_buffer->sendBuffer(index); }
+    MutableMemoryView receiveBuffer(Int32 index) override { return m_buffer->receiveBuffer(index); }
+    Int64 sendDisplacement(Int32 index) const override { return m_buffer->sendDisplacement(index); }
+    Int64 receiveDisplacement(Int32 index) const override { return m_buffer->receiveDisplacement(index); }
     void copySend(Int32 index) override { m_buffer->copySend(index); }
     void copyReceive(Int32 index) override { m_buffer->copyReceive(index); }
-    Int64 totalSendSize() const override { return  m_buffer->totalShareSize(); }
-    Int64 totalReceiveSize() const override { return m_buffer->totalGhostSize(); }
+    Int64 totalSendSize() const override { return m_buffer->totalSendSize(); }
+    Int64 totalReceiveSize() const override { return m_buffer->totalReceiveSize(); }
 
    private:
 
@@ -210,26 +210,22 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcherSyncBufferBase
   Int32 nbRank() const { return m_nb_rank; }
   Int32 dim2Size() const { return m_dim2_size; }
 
-  MutableMemoryView ghostMemoryView(Int32 index) { return m_ghost_locals_buffer[index]; }
-  MutableMemoryView shareMemoryView(Int32 index) { return m_share_locals_buffer[index]; }
-  ConstMemoryView ghostMemoryView(Int32 index) const { return m_ghost_locals_buffer[index]; }
-  ConstMemoryView shareMemoryView(Int32 index) const { return m_share_locals_buffer[index]; }
+  MutableMemoryView receiveBuffer(Int32 index) { return m_ghost_locals_buffer[index]; }
+  MutableMemoryView sendBuffer(Int32 index) { return m_share_locals_buffer[index]; }
 
-  Int64 ghostDisplacement(Int32 index) const { return m_ghost_displacements[index]; }
-  Int64 shareDisplacement(Int32 index) const { return m_share_displacements[index]; }
+  Int64 receiveDisplacement(Int32 index) const { return m_ghost_displacements[index]; }
+  Int64 sendDisplacement(Int32 index) const { return m_share_displacements[index]; }
 
-  MutableMemoryView ghostMemoryView() { return m_ghost_memory_view; }
-  MutableMemoryView shareMemoryView() { return m_share_memory_view; }
-  ConstMemoryView ghostMemoryView() const { return m_ghost_memory_view; }
-  ConstMemoryView shareMemoryView() const { return m_share_memory_view; }
+  MutableMemoryView globalReceiveBuffer() { return m_ghost_memory_view; }
+  MutableMemoryView globalSendBuffer() { return m_share_memory_view; }
 
   void setDataView(MutableMemoryView v) { m_data_view = v; }
   MutableMemoryView dataMemoryView() { return m_data_view; }
 
   void copyReceive(Integer index);
   void copySend(Integer index);
-  Int64 totalGhostSize() const { return m_ghost_memory_view.bytes().size(); }
-  Int64 totalShareSize() const { return m_share_memory_view.bytes().size(); }
+  Int64 totalReceiveSize() const { return m_ghost_memory_view.bytes().size(); }
+  Int64 totalSendSize() const { return m_share_memory_view.bytes().size(); }
 
   IDataSynchronizeBuffer* genericBuffer() { return &m_generic_buffer; }
 

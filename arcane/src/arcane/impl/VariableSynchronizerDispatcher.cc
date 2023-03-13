@@ -212,7 +212,7 @@ copyReceive(Integer index)
   MutableMemoryView var_values = dataMemoryView();
   const VariableSyncInfo& vsi = (*m_sync_info)[index];
   ConstArrayView<Int32> indexes = vsi.ghostIds();
-  ConstMemoryView local_buffer = ghostMemoryView(index);
+  ConstMemoryView local_buffer = receiveBuffer(index);
 
   m_buffer_copier->copyFromBuffer(indexes,local_buffer,var_values);
 }
@@ -229,7 +229,7 @@ copySend(Integer index)
   ConstMemoryView var_values = dataMemoryView();
   const VariableSyncInfo& vsi = (*m_sync_info)[index];
   Int32ConstArrayView indexes = vsi.shareIds();
-  MutableMemoryView local_buffer = shareMemoryView(index);
+  MutableMemoryView local_buffer = sendBuffer(index);
   m_buffer_copier->copyToBuffer(indexes,local_buffer,var_values);
 }
 
