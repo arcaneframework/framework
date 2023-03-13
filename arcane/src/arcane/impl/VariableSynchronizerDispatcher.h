@@ -167,70 +167,37 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcherBuildInfo
 /*---------------------------------------------------------------------------*/
 
 class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcherSyncBufferBase
+: public IDataSynchronizeBuffer
 {
- public:
-
-  class GenericBuffer
-  : public IDataSynchronizeBuffer
-  {
-   public:
-
-    explicit GenericBuffer(VariableSynchronizeDispatcherSyncBufferBase* b) : m_buffer(b){}
-
-   public:
-
-    Int32 nbRank() const override { return m_buffer->nbRank(); }
-    bool hasGlobalBuffer() const override { return true; }
-    MutableMemoryView globalSendBuffer() override { return m_buffer->globalSendBuffer(); }
-    MutableMemoryView globalReceiveBuffer() override { return m_buffer->globalReceiveBuffer(); }
-    MutableMemoryView sendBuffer(Int32 index) override { return m_buffer->sendBuffer(index); }
-    MutableMemoryView receiveBuffer(Int32 index) override { return m_buffer->receiveBuffer(index); }
-    Int64 sendDisplacement(Int32 index) const override { return m_buffer->sendDisplacement(index); }
-    Int64 receiveDisplacement(Int32 index) const override { return m_buffer->receiveDisplacement(index); }
-    void copySend(Int32 index) override { m_buffer->copySend(index); }
-    void copyReceive(Int32 index) override { m_buffer->copyReceive(index); }
-    Int64 totalSendSize() const override { return m_buffer->totalSendSize(); }
-    Int64 totalReceiveSize() const override { return m_buffer->totalReceiveSize(); }
-
-   private:
-
-    VariableSynchronizeDispatcherSyncBufferBase* m_buffer;
-  };
-
- public:
-
-  VariableSynchronizeDispatcherSyncBufferBase() : m_generic_buffer(this){}
-
  public:
 
   void compute(IBufferCopier* copier,ItemGroupSynchronizeInfo* sync_list,Int32 dim2_size);
 
  public:
 
-  Int32 nbRank() const { return m_nb_rank; }
-  Int32 dim2Size() const { return m_dim2_size; }
+  Int32 nbRank() const final { return m_nb_rank; }
+  bool hasGlobalBuffer() const final { return true; }
 
-  MutableMemoryView receiveBuffer(Int32 index) { return m_ghost_locals_buffer[index]; }
-  MutableMemoryView sendBuffer(Int32 index) { return m_share_locals_buffer[index]; }
+  MutableMemoryView receiveBuffer(Int32 index) final { return m_ghost_locals_buffer[index]; }
+  MutableMemoryView sendBuffer(Int32 index) final { return m_share_locals_buffer[index]; }
 
-  Int64 receiveDisplacement(Int32 index) const { return m_ghost_displacements[index]; }
-  Int64 sendDisplacement(Int32 index) const { return m_share_displacements[index]; }
+  Int64 receiveDisplacement(Int32 index) const final { return m_ghost_displacements[index]; }
+  Int64 sendDisplacement(Int32 index) const final { return m_share_displacements[index]; }
 
-  MutableMemoryView globalReceiveBuffer() { return m_ghost_memory_view; }
-  MutableMemoryView globalSendBuffer() { return m_share_memory_view; }
+  MutableMemoryView globalReceiveBuffer() final { return m_ghost_memory_view; }
+  MutableMemoryView globalSendBuffer() final { return m_share_memory_view; }
 
-  void setDataView(MutableMemoryView v) { m_data_view = v; }
-  MutableMemoryView dataMemoryView() { return m_data_view; }
-
-  void copyReceive(Integer index);
-  void copySend(Integer index);
-  Int64 totalReceiveSize() const { return m_ghost_memory_view.bytes().size(); }
-  Int64 totalSendSize() const { return m_share_memory_view.bytes().size(); }
-
-  IDataSynchronizeBuffer* genericBuffer() { return &m_generic_buffer; }
+  void copyReceive(Integer index) final;
+  void copySend(Integer index) final;
+  Int64 totalReceiveSize() const final { return m_ghost_memory_view.bytes().size(); }
+  Int64 totalSendSize() const final { return m_share_memory_view.bytes().size(); }
 
  public:
 
+  Int32 dim2Size() const { return m_dim2_size; }
+  IDataSynchronizeBuffer* genericBuffer() { return this; }
+  void setDataView(MutableMemoryView v) { m_data_view = v; }
+  MutableMemoryView dataMemoryView() { return m_data_view; }
 
  protected:
 
@@ -256,7 +223,6 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcherSyncBufferBase
   //! Vue sur les données de la variable
   MutableMemoryView m_data_view;
   IBufferCopier* m_buffer_copier = nullptr;
-  GenericBuffer m_generic_buffer;
 };
 
 /*---------------------------------------------------------------------------*/
