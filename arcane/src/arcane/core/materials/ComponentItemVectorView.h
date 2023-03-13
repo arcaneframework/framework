@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ComponentItemVectorView.h                                   (C) 2000-2022 */
+/* ComponentItemVectorView.h                                   (C) 2000-2023 */
 /*                                                                           */
 /* Vue sur un vecteur sur des entités composants.                            */
 /*---------------------------------------------------------------------------*/
@@ -35,10 +35,14 @@ namespace Arcane::Materials
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Vue sur un vecteur sur les entités d'un composant.
+ *
+ * Les constructeurs de cette classe sont internes à %Arcane.
  */
 class ARCANE_CORE_EXPORT ComponentItemVectorView
 {
- public:
+  friend class ComponentItemVector;
+
+ protected:
 
   //! Construit un vecteur contenant les entités de \a group pour le composant \a component
   ComponentItemVectorView(IMeshComponent* component,
@@ -47,8 +51,6 @@ class ARCANE_CORE_EXPORT ComponentItemVectorView
   : m_matvar_indexes_view(mvi), m_items_internal_main_view(mv), m_component(component)
   {
   }
-
- protected:
 
   //! Construit une vue vide pour le composant \a component
   ComponentItemVectorView(IMeshComponent* component)
@@ -107,19 +109,22 @@ class ARCANE_CORE_EXPORT ComponentItemVectorView
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Vue sur un vecteur sur les entités d'un matériau.
+ *
+ * Les constructeurs de cette classe sont internes à %Arcane.
  */
 class ARCANE_CORE_EXPORT MatItemVectorView
 : public ComponentItemVectorView
 {
- public:
+  friend class MatCellVector;
+  friend class MeshMaterial;
+
+ protected:
 
   //! Construit un vecteur contenant les entités de \a group pour le composant \a component
   MatItemVectorView(IMeshComponent* component,
                     ConstArrayView<MatVarIndex> mv_indexes, 
                     ConstArrayView<ComponentItemInternal*> mv)
   : ComponentItemVectorView(component,mv_indexes,mv){}
-
- protected:
 
   MatItemVectorView(IMeshComponent* component,ComponentItemVectorView v)
   : ComponentItemVectorView(component,v){}
@@ -149,19 +154,22 @@ class ARCANE_CORE_EXPORT MatItemVectorView
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Vue sur un vecteur sur les entités d'un milieu.
+ *
+ * Les constructeurs de cette classe sont internes à %Arcane.
  */
 class ARCANE_CORE_EXPORT EnvItemVectorView
 : public ComponentItemVectorView
 {
- public:
+  friend class EnvCellVector;
+  friend class MeshEnvironment;
+
+ protected:
 
   //! Construit un vecteur contenant les entités de \a group pour le composant \a component
   EnvItemVectorView(IMeshComponent* component,
                     ConstArrayView<MatVarIndex> mv_indexes,
                     ConstArrayView<ComponentItemInternal*> mv)
   : ComponentItemVectorView(component,mv_indexes,mv){}
-
- protected:
 
   EnvItemVectorView(IMeshComponent* component,ComponentItemVectorView v)
   : ComponentItemVectorView(component,v){}
