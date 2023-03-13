@@ -37,8 +37,9 @@ namespace Arcane
 namespace
 {
   ArrayView<Byte>
-  _toLegacySmallView(Span<std::byte> bytes)
+  _toLegacySmallView(MutableMemoryView memory_view)
   {
+    Span<std::byte> bytes = memory_view.bytes();
     void* data = bytes.data();
     Int32 size = bytes.smallView().size();
     return { size, reinterpret_cast<Byte*>(data) };
@@ -154,7 +155,7 @@ compute()
  * \todo: ne pas allouer les tampons car leur conservation est couteuse en
  * terme de memoire.
  */
-void VariableSynchronizeDispatcherSyncBufferBase::
+void VariableSynchronizeBufferBase::
 compute(IBufferCopier* copier, ItemGroupSynchronizeInfo* sync_info, Int32 dim2_size)
 {
   m_buffer_copier = copier;
@@ -202,7 +203,7 @@ compute(IBufferCopier* copier, ItemGroupSynchronizeInfo* sync_info, Int32 dim2_s
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void VariableSynchronizeDispatcherSyncBufferBase::
+void VariableSynchronizeBufferBase::
 copyReceive(Integer index)
 {
   ARCANE_CHECK_POINTER(m_sync_info);
@@ -211,7 +212,7 @@ copyReceive(Integer index)
   MutableMemoryView var_values = dataMemoryView();
   const VariableSyncInfo& vsi = (*m_sync_info)[index];
   ConstArrayView<Int32> indexes = vsi.ghostIds();
-  ConstMemoryView local_buffer = ghostMemoryView(index);
+  ConstMemoryView local_buffer = receiveBuffer(index);
 
   m_buffer_copier->copyFromBuffer(indexes,local_buffer,var_values);
 }
@@ -219,7 +220,7 @@ copyReceive(Integer index)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void VariableSynchronizeDispatcherSyncBufferBase::
+void VariableSynchronizeBufferBase::
 copySend(Integer index)
 {
   ARCANE_CHECK_POINTER(m_sync_info);
@@ -228,7 +229,7 @@ copySend(Integer index)
   ConstMemoryView var_values = dataMemoryView();
   const VariableSyncInfo& vsi = (*m_sync_info)[index];
   Int32ConstArrayView indexes = vsi.shareIds();
-  MutableMemoryView local_buffer = shareMemoryView(index);
+  MutableMemoryView local_buffer = sendBuffer(index);
   m_buffer_copier->copyToBuffer(indexes,local_buffer,var_values);
 }
 
@@ -535,7 +536,7 @@ copyAllReceive()
 /*---------------------------------------------------------------------------*/
 
 #define ARCANE_INSTANTIATE(type) \
-  template class ARCANE_TEMPLATE_EXPORT VariableSynchronizeDispatcher<type>;
+  template class ARCANE_TEMPLATE_EXPORT VariableSynchronizeDispatcher<type>
 
 ARCANE_INSTANTIATE(Byte);
 ARCANE_INSTANTIATE(Int16);

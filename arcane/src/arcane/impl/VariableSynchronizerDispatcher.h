@@ -165,76 +165,38 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcherBuildInfo
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcherSyncBufferBase
+/*!
+ * \brief Implémentation de IDataSynchronizeBuffer pour les variables
+ */
+class ARCANE_IMPL_EXPORT VariableSynchronizeBufferBase
+: public IDataSynchronizeBuffer
 {
  public:
 
-  class GenericBuffer
-  : public IDataSynchronizeBuffer
-  {
-   public:
+  Int32 nbRank() const final { return m_nb_rank; }
+  bool hasGlobalBuffer() const final { return true; }
 
-    GenericBuffer(VariableSynchronizeDispatcherSyncBufferBase* b) : m_buffer(b){}
+  MutableMemoryView receiveBuffer(Int32 index) final { return m_ghost_locals_buffer[index]; }
+  MutableMemoryView sendBuffer(Int32 index) final { return m_share_locals_buffer[index]; }
 
-   public:
+  Int64 receiveDisplacement(Int32 index) const final { return m_ghost_displacements[index]; }
+  Int64 sendDisplacement(Int32 index) const final { return m_share_displacements[index]; }
 
-    Int32 nbRank() const override { return m_buffer->nbRank(); }
-    bool hasGlobalBuffer() const override { return true; }
-    Span<std::byte> globalSendBuffer() override { return m_buffer->shareMemoryView().bytes(); }
-    Span<std::byte> globalReceiveBuffer() override { return m_buffer->ghostMemoryView().bytes(); }
-    Span<std::byte> sendBuffer(Int32 index) override { return m_buffer->shareMemoryView(index).bytes(); }
-    Span<std::byte> receiveBuffer(Int32 index) override { return m_buffer->ghostMemoryView(index).bytes(); }
-    Int64 sendDisplacement(Int32 index) const override { return m_buffer->shareDisplacement(index); }
-    Int64 receiveDisplacement(Int32 index) const override { return m_buffer->ghostDisplacement(index); }
-    void copySend(Int32 index) override { m_buffer->copySend(index); }
-    void copyReceive(Int32 index) override { m_buffer->copyReceive(index); }
-    Int64 totalSendSize() const override { return  m_buffer->totalShareSize(); }
-    Int64 totalReceiveSize() const override { return m_buffer->totalGhostSize(); }
+  MutableMemoryView globalReceiveBuffer() final { return m_ghost_memory_view; }
+  MutableMemoryView globalSendBuffer() final { return m_share_memory_view; }
 
-   private:
-
-    VariableSynchronizeDispatcherSyncBufferBase* m_buffer;
-  };
-
- public:
-
-  VariableSynchronizeDispatcherSyncBufferBase() : m_generic_buffer(this){}
+  void copyReceive(Integer index) final;
+  void copySend(Integer index) final;
+  Int64 totalReceiveSize() const final { return m_ghost_memory_view.bytes().size(); }
+  Int64 totalSendSize() const final { return m_share_memory_view.bytes().size(); }
 
  public:
 
   void compute(IBufferCopier* copier,ItemGroupSynchronizeInfo* sync_list,Int32 dim2_size);
-
- public:
-
-  Int32 nbRank() const { return m_nb_rank; }
   Int32 dim2Size() const { return m_dim2_size; }
-
-  MutableMemoryView ghostMemoryView(Int32 index) { return m_ghost_locals_buffer[index]; }
-  MutableMemoryView shareMemoryView(Int32 index) { return m_share_locals_buffer[index]; }
-  ConstMemoryView ghostMemoryView(Int32 index) const { return m_ghost_locals_buffer[index]; }
-  ConstMemoryView shareMemoryView(Int32 index) const { return m_share_locals_buffer[index]; }
-
-  Int64 ghostDisplacement(Int32 index) const { return m_ghost_displacements[index]; }
-  Int64 shareDisplacement(Int32 index) const { return m_share_displacements[index]; }
-
-  MutableMemoryView ghostMemoryView() { return m_ghost_memory_view; }
-  MutableMemoryView shareMemoryView() { return m_share_memory_view; }
-  ConstMemoryView ghostMemoryView() const { return m_ghost_memory_view; }
-  ConstMemoryView shareMemoryView() const { return m_share_memory_view; }
-
+  IDataSynchronizeBuffer* genericBuffer() { return this; }
   void setDataView(MutableMemoryView v) { m_data_view = v; }
   MutableMemoryView dataMemoryView() { return m_data_view; }
-
-  void copyReceive(Integer index);
-  void copySend(Integer index);
-  Int64 totalGhostSize() const { return m_ghost_memory_view.bytes().size(); }
-  Int64 totalShareSize() const { return m_share_memory_view.bytes().size(); }
-
-  IDataSynchronizeBuffer* genericBuffer() { return &m_generic_buffer; }
-
- public:
-
 
  protected:
 
@@ -260,16 +222,12 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcherSyncBufferBase
   //! Vue sur les données de la variable
   MutableMemoryView m_data_view;
   IBufferCopier* m_buffer_copier = nullptr;
-  GenericBuffer m_generic_buffer;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
  * \brief Gestion de la synchronisation pour un type de donnée \a SimpleType.
- *
- * Cette classe est abstraite. La classe dérivée doit fournir une implémentation
- * de beginSynchronize() et endSynchronize().
  */
 template <class SimpleType>
 class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
@@ -278,15 +236,10 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
 {
  public:
 
-  using SyncBufferBase = VariableSynchronizeDispatcherSyncBufferBase;
-
- public:
-
   //! Gère les buffers d'envoi et réception pour la synchronisation
   class ARCANE_IMPL_EXPORT SyncBuffer
-  : public SyncBufferBase
+  : public VariableSynchronizeBufferBase
   {
-
    public:
 
     void _allocateBuffers() override;
@@ -299,7 +252,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
 
  public:
 
-  VariableSynchronizeDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi);
+  explicit VariableSynchronizeDispatcher(const VariableSynchronizeDispatcherBuildInfo& bi);
   ~VariableSynchronizeDispatcher() override;
 
  public:
@@ -315,11 +268,11 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
 
  protected:
 
-  void _beginSynchronize(SyncBufferBase& sync_buffer)
+  void _beginSynchronize(VariableSynchronizeBufferBase& sync_buffer)
   {
     m_generic_instance->beginSynchronize(sync_buffer.genericBuffer());
   }
-  void _endSynchronize(SyncBufferBase& sync_buffer)
+  void _endSynchronize(VariableSynchronizeBufferBase& sync_buffer)
   {
     m_generic_instance->endSynchronize(sync_buffer.genericBuffer());
   }

@@ -194,7 +194,7 @@ endSynchronize(IDataSynchronizeBuffer* vs_buf)
           const VariableSyncInfo& vsi = sync_list[i];
           if (_isSkipRank(vsi.targetRank(), isequence))
             continue;
-          auto buf0 = vs_buf->receiveBuffer(i);
+          auto buf0 = vs_buf->receiveBuffer(i).bytes();
           auto buf = buf0.subView(block_index, block_size);
           if (!buf.empty()) {
             auto req = mpi_adapter->receiveNonBlockingNoStat(buf.data(), buf.size(),
@@ -208,7 +208,7 @@ endSynchronize(IDataSynchronizeBuffer* vs_buf)
           const VariableSyncInfo& vsi = sync_list[i];
           if (_isSkipRank(my_rank, isequence))
             continue;
-          auto buf0 = vs_buf->sendBuffer(i);
+          auto buf0 = vs_buf->sendBuffer(i).bytes();
           auto buf = buf0.subView(block_index, block_size);
           if (!buf.empty()) {
             auto request = mpi_adapter->sendNonBlockingNoStat(buf.data(), buf.size(),

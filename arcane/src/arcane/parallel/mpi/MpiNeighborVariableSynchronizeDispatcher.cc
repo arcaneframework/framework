@@ -160,8 +160,8 @@ endSynchronize(IDataSynchronizeBuffer* buf)
     ARCANE_THROW(NotSupportedException,"Can not use MPI_Neighbor_alltoallv when hasGlobalBufer() is false");
 
   for (Integer i = 0; i < nb_message; ++i) {
-    Int32 nb_send = CheckedConvert::toInt32(buf->sendBuffer(i).size());
-    Int32 nb_receive = CheckedConvert::toInt32(buf->receiveBuffer(i).size());
+    Int32 nb_send = CheckedConvert::toInt32(buf->sendBuffer(i).bytes().size());
+    Int32 nb_receive = CheckedConvert::toInt32(buf->receiveBuffer(i).bytes().size());
     Int32 send_displacement = CheckedConvert::toInt32(buf->sendDisplacement(i));
     Int32 receive_displacement = CheckedConvert::toInt32(buf->receiveDisplacement(i));
 
