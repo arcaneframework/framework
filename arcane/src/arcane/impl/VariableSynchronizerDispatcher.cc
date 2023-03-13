@@ -37,8 +37,9 @@ namespace Arcane
 namespace
 {
   ArrayView<Byte>
-  _toLegacySmallView(Span<std::byte> bytes)
+  _toLegacySmallView(MutableMemoryView memory_view)
   {
+    Span<std::byte> bytes = memory_view.bytes();
     void* data = bytes.data();
     Int32 size = bytes.smallView().size();
     return { size, reinterpret_cast<Byte*>(data) };
@@ -535,7 +536,7 @@ copyAllReceive()
 /*---------------------------------------------------------------------------*/
 
 #define ARCANE_INSTANTIATE(type) \
-  template class ARCANE_TEMPLATE_EXPORT VariableSynchronizeDispatcher<type>;
+  template class ARCANE_TEMPLATE_EXPORT VariableSynchronizeDispatcher<type>
 
 ARCANE_INSTANTIATE(Byte);
 ARCANE_INSTANTIATE(Int16);

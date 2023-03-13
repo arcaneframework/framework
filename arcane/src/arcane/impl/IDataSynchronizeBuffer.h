@@ -60,21 +60,21 @@ class ARCANE_IMPL_EXPORT IDataSynchronizeBuffer
   virtual bool hasGlobalBuffer() const = 0;
 
   //! Buffer d'envoi
-  virtual Span<std::byte> globalSendBuffer() = 0;
+  virtual MutableMemoryView globalSendBuffer() = 0;
 
   //! Buffer de réception
-  virtual Span<std::byte> globalReceiveBuffer() = 0;
+  virtual MutableMemoryView globalReceiveBuffer() = 0;
 
   //! Buffer d'envoi pour le rang \a index
-  virtual Span<std::byte> sendBuffer(Int32 index) = 0;
+  virtual MutableMemoryView sendBuffer(Int32 index) = 0;
 
   //! Buffer de réception pour le rang \a index
-  virtual Span<std::byte> receiveBuffer(Int32 index) = 0;
+  virtual MutableMemoryView receiveBuffer(Int32 index) = 0;
 
-  //! Déplacement depuis le début de sendBuffer() pour le rang \a index
+  //! Déplacement (en octets) depuis le début de sendBuffer() pour le rang \a index
   virtual Int64 sendDisplacement(Int32 index) const = 0;
 
-  //! Déplacement depuis le début de receiveBuffer() pour le rang \a index
+  //! Déplacement (en octets) depuis le début de receiveBuffer() pour le rang \a index
   virtual Int64 receiveDisplacement(Int32 index) const = 0;
 
   //! Recopie dans les données depuis le buffer de réception du rang \a index.

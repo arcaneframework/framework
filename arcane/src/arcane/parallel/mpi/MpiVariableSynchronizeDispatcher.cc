@@ -158,7 +158,7 @@ beginSynchronize(IDataSynchronizeBuffer* ds_buf)
     // Poste les messages de réception
     for (Integer i = 0; i < nb_message; ++i) {
       const VariableSyncInfo& vsi = sync_list[i];
-      auto buf = ds_buf->receiveBuffer(i);
+      auto buf = ds_buf->receiveBuffer(i).bytes();
       if (!buf.empty()) {
         auto req = mpi_adapter->receiveNonBlockingNoStat(buf.data(), buf.size(),
                                                          vsi.targetRank(), mpi_dt, serialize_tag);
@@ -178,7 +178,7 @@ beginSynchronize(IDataSynchronizeBuffer* ds_buf)
 
     // Poste les messages d'envoi en mode non bloquant.
     for (Integer i = 0; i < nb_message; ++i) {
-      auto buf = ds_buf->sendBuffer(i);
+      auto buf = ds_buf->sendBuffer(i).bytes();
       const VariableSyncInfo& vsi = sync_list[i];
       if (!buf.empty()) {
         auto request = mpi_adapter->sendNonBlockingNoStat(buf.data(), buf.size(),

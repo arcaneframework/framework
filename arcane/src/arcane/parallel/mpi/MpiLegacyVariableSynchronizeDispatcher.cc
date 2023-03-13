@@ -134,7 +134,7 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
   double begin_prepare_time = MPI_Wtime();
   for( Integer i=0; i<nb_message; ++i ){
     const VariableSyncInfo& vsi = sync_list[i];
-    auto ghost_local_buffer = vs_buf->receiveBuffer(i).smallView();
+    auto ghost_local_buffer = vs_buf->receiveBuffer(i).bytes().smallView();
     if (!ghost_local_buffer.empty()){
       MPI_Request mpi_request;
       mpi_profiling->iRecv(ghost_local_buffer.data(),ghost_local_buffer.size(),
@@ -156,7 +156,7 @@ beginSynchronize(IDataSynchronizeBuffer* vs_buf)
   // Envoie les messages d'envoi en mode non bloquant.
   for( Integer i=0; i<nb_message; ++i ){
     const VariableSyncInfo& vsi = sync_list[i];
-    auto share_local_buffer = vs_buf->sendBuffer(i).smallView();
+    auto share_local_buffer = vs_buf->sendBuffer(i).bytes().smallView();
     if (!share_local_buffer.empty()){
       MPI_Request mpi_request;
       mpi_profiling->iSend(share_local_buffer.data(),share_local_buffer.size(),

@@ -175,16 +175,16 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcherSyncBufferBase
   {
    public:
 
-    GenericBuffer(VariableSynchronizeDispatcherSyncBufferBase* b) : m_buffer(b){}
+    explicit GenericBuffer(VariableSynchronizeDispatcherSyncBufferBase* b) : m_buffer(b){}
 
    public:
 
     Int32 nbRank() const override { return m_buffer->nbRank(); }
     bool hasGlobalBuffer() const override { return true; }
-    Span<std::byte> globalSendBuffer() override { return m_buffer->shareMemoryView().bytes(); }
-    Span<std::byte> globalReceiveBuffer() override { return m_buffer->ghostMemoryView().bytes(); }
-    Span<std::byte> sendBuffer(Int32 index) override { return m_buffer->shareMemoryView(index).bytes(); }
-    Span<std::byte> receiveBuffer(Int32 index) override { return m_buffer->ghostMemoryView(index).bytes(); }
+    MutableMemoryView globalSendBuffer() override { return m_buffer->shareMemoryView(); }
+    MutableMemoryView globalReceiveBuffer() override { return m_buffer->ghostMemoryView(); }
+    MutableMemoryView sendBuffer(Int32 index) override { return m_buffer->shareMemoryView(index); }
+    MutableMemoryView receiveBuffer(Int32 index) override { return m_buffer->ghostMemoryView(index); }
     Int64 sendDisplacement(Int32 index) const override { return m_buffer->shareDisplacement(index); }
     Int64 receiveDisplacement(Int32 index) const override { return m_buffer->ghostDisplacement(index); }
     void copySend(Int32 index) override { m_buffer->copySend(index); }
