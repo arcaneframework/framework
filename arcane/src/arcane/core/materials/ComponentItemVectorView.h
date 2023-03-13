@@ -25,11 +25,13 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+namespace ArcaneTest
+{
+class MeshMaterialTesterModule;
+}
+
 namespace Arcane::Materials
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -41,6 +43,11 @@ namespace Arcane::Materials
 class ARCANE_CORE_EXPORT ComponentItemVectorView
 {
   friend class ComponentItemVector;
+  friend class MatItemVectorView;
+  friend class EnvItemVectorView;
+  friend ArcaneTest::MeshMaterialTesterModule;
+  template<typename ViewType,typename LambdaType>
+  friend class LambdaMatItemRangeFunctorT;
 
  protected:
 
@@ -66,7 +73,13 @@ class ARCANE_CORE_EXPORT ComponentItemVectorView
   {
   }
 
- private:
+ public:
+
+  //! Nombre d'entités dans la vue
+  Integer nbItem() const { return m_matvar_indexes_view.size(); }
+
+  //! Composant associé
+  IMeshComponent* component() const { return m_component; }
 
  public:
 
@@ -74,13 +87,12 @@ class ARCANE_CORE_EXPORT ComponentItemVectorView
   //@{
   ConstArrayView<ComponentItemInternal*> itemsInternalView() const
   { return m_items_internal_main_view; }
+
+  // Tableau des MatVarIndex de cette vue.
+  ConstArrayView<MatVarIndex> matvarIndexes() const { return m_matvar_indexes_view; }
   //@}
 
-  //! Nombre d'entités dans la vue
-  Integer nbItem() const { return m_matvar_indexes_view.size(); }
-
-  //! Composant associé
-  IMeshComponent* component() const { return m_component; }
+ private:
 
   /*!
    * \internal
@@ -89,14 +101,6 @@ class ARCANE_CORE_EXPORT ComponentItemVectorView
    * Cette méthode est interne à Arcane et ne doit pas être utilisée.
    */
   ComponentItemVectorView _subView(Integer begin,Integer size);
-
-  ARCANE_DEPRECATED_240 ComponentItemVectorView subView(Integer begin,Integer size)
-  {
-    return _subView(begin,size);
-  }
-
-  // Tableau des MatVarIndex de cette vue.
-  ConstArrayView<MatVarIndex> matvarIndexes() const { return m_matvar_indexes_view; }
 
  private:
 
@@ -117,8 +121,10 @@ class ARCANE_CORE_EXPORT MatItemVectorView
 {
   friend class MatCellVector;
   friend class MeshMaterial;
+  template<typename ViewType,typename LambdaType>
+  friend class LambdaMatItemRangeFunctorT;
 
- protected:
+ private:
 
   //! Construit un vecteur contenant les entités de \a group pour le composant \a component
   MatItemVectorView(IMeshComponent* component,
@@ -129,7 +135,7 @@ class ARCANE_CORE_EXPORT MatItemVectorView
   MatItemVectorView(IMeshComponent* component,ComponentItemVectorView v)
   : ComponentItemVectorView(component,v){}
 
- public:
+ private:
 
   /*!
    * \internal
@@ -138,11 +144,6 @@ class ARCANE_CORE_EXPORT MatItemVectorView
    * Cette méthode est interne à Arcane et ne doit pas être utilisée.
    */
   MatItemVectorView _subView(Integer begin,Integer size);
-
-  ARCANE_DEPRECATED_240 MatItemVectorView subView(Integer begin,Integer size)
-  {
-    return _subView(begin,size);
-  }
 
  public:
 
@@ -162,8 +163,10 @@ class ARCANE_CORE_EXPORT EnvItemVectorView
 {
   friend class EnvCellVector;
   friend class MeshEnvironment;
+  template<typename ViewType,typename LambdaType>
+  friend class LambdaMatItemRangeFunctorT;
 
- protected:
+ private:
 
   //! Construit un vecteur contenant les entités de \a group pour le composant \a component
   EnvItemVectorView(IMeshComponent* component,
@@ -174,7 +177,7 @@ class ARCANE_CORE_EXPORT EnvItemVectorView
   EnvItemVectorView(IMeshComponent* component,ComponentItemVectorView v)
   : ComponentItemVectorView(component,v){}
 
- public:
+ private:
 
   /*!
    * \internal
@@ -183,11 +186,6 @@ class ARCANE_CORE_EXPORT EnvItemVectorView
    * Cette méthode est interne à Arcane et ne doit pas être utilisée.
    */
   EnvItemVectorView _subView(Integer begin,Integer size);
-
-  ARCANE_DEPRECATED_240 EnvItemVectorView subView(Integer begin,Integer size)
-  {
-    return _subView(begin,size);
-  }
 
  public:
 
