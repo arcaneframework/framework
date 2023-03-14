@@ -16,6 +16,7 @@
 
 add_library(alien_test_framework
         Environment.cpp Environment.h
+        CreateLinearSystemFiles.cpp CreateLinearSystemFiles.h
         )
 
 target_link_libraries(alien_test_framework PUBLIC

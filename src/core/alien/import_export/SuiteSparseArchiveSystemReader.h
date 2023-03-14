@@ -16,21 +16,43 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <alien/ref/import_export/SuiteSparseArchiveSystemReader.h>
-#include <alien/ref/import_export/Reader.h>
+#pragma once
 
+#include <arccore/base/ArccoreGlobal.h>
+#include <alien/import_export/Reader.h>
+
+#include <string>
+#include <archive.h>
 #include <archive_entry.h>
 
 namespace Alien
 {
+class Matrix;
+class Vector;
 
-SuiteSparseArchiveSystemReader::SuiteSparseArchiveSystemReader(std::string const& filename)
-: m_filename(filename)
-{}
+class ALIEN_EXPORT SuiteSparseArchiveSystemReader
+{
+ public:
+  SuiteSparseArchiveSystemReader() = delete;
+  SuiteSparseArchiveSystemReader(SuiteSparseArchiveSystemReader const&) = delete;
+  SuiteSparseArchiveSystemReader& operator=(SuiteSparseArchiveSystemReader const&) = delete;
 
-SuiteSparseArchiveSystemReader::~SuiteSparseArchiveSystemReader() = default;
+  explicit SuiteSparseArchiveSystemReader(std::string const& filename);
+  ~SuiteSparseArchiveSystemReader();
 
-void SuiteSparseArchiveSystemReader::read(Matrix& A)
+  template <typename MatrixT>
+  void readMatrix(MatrixT& A);
+
+  template <typename VectorT>
+  void readVector(VectorT& rhs);
+
+ private:
+  std::string m_filename;
+  archive* m_archive = nullptr;
+};
+
+template <typename MatrixT>
+void SuiteSparseArchiveSystemReader::readMatrix(MatrixT& A)
 {
   m_archive = archive_read_new();
   archive_read_support_filter_gzip(m_archive);
@@ -61,7 +83,7 @@ void SuiteSparseArchiveSystemReader::read(Matrix& A)
   }
 
   LibArchiveReader reader(m_archive);
-  loadMMMatrixFromReader<LibArchiveReader>(A, reader);
+  loadMMMatrixFromReader<MatrixT, LibArchiveReader>(A, reader);
 
   r = archive_read_close(m_archive);
   if (r != ARCHIVE_OK) {
@@ -74,7 +96,8 @@ void SuiteSparseArchiveSystemReader::read(Matrix& A)
   }
 }
 
-void SuiteSparseArchiveSystemReader::read(Vector& rhs)
+template <typename VectorT>
+void SuiteSparseArchiveSystemReader::readVector(VectorT& rhs)
 {
   m_archive = archive_read_new();
   archive_read_support_filter_gzip(m_archive);
@@ -102,7 +125,7 @@ void SuiteSparseArchiveSystemReader::read(Vector& rhs)
   if (vector_found) // vector is not always present
   {
     LibArchiveReader reader(m_archive);
-    loadMMRhsFromReader<LibArchiveReader>(rhs, reader);
+    loadMMRhsFromReader<VectorT, LibArchiveReader>(rhs, reader);
   }
 
   r = archive_read_close(m_archive);
@@ -116,4 +139,4 @@ void SuiteSparseArchiveSystemReader::read(Vector& rhs)
   }
 }
 
-} /* namespace Alien */
+} // namespace Alien

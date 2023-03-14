@@ -16,33 +16,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#pragma once
-
-#include <alien/ref/AlienRefSemanticPrecomp.h>
-#include <arccore/base/ArccoreGlobal.h>
-
-#include <string>
+#include <alien/import_export/SuiteSparseArchiveSystemReader.h>
 
 namespace Alien
 {
-class Matrix;
-class Vector;
 
-class ALIEN_REFSEMANTIC_EXPORT MatrixMarketSystemReader
-{
- public:
-  MatrixMarketSystemReader() = delete;
-  MatrixMarketSystemReader(MatrixMarketSystemReader const&) = delete;
-  MatrixMarketSystemReader& operator=(MatrixMarketSystemReader const&) = delete;
+SuiteSparseArchiveSystemReader::SuiteSparseArchiveSystemReader(std::string const& filename)
+: m_filename(filename)
+{}
 
-  explicit MatrixMarketSystemReader(std::string const& filename);
-  virtual ~MatrixMarketSystemReader();
+SuiteSparseArchiveSystemReader::~SuiteSparseArchiveSystemReader() = default;
 
-  void read(Matrix& A);
-  void read(Vector& rhs);
-
- private:
-  std::string m_filename;
-};
-
-} // namespace Alien
+} /* namespace Alien */

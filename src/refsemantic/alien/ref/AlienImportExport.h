@@ -23,8 +23,3 @@
 #include <alien/ref/import_export/SystemInfo.h>
 #include <alien/ref/import_export/SystemReader.h>
 #include <alien/ref/import_export/SystemWriter.h>
-
-#include <alien/ref/import_export/MatrixMarketSystemReader.h>
-#ifdef ALIEN_USE_LIBARCHIVE
-#include <alien/ref/import_export/SuiteSparseArchiveSystemReader.h>
-#endif

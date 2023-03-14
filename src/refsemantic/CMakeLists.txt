@@ -14,8 +14,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-find_package(LibArchive)
-
 set(alien_refsemantic_public_header
         alien/ref/AlienImportExport.h
         alien/ref/AlienRefSemantic.h
@@ -52,7 +50,6 @@ set(alien_refsemantic_public_header
         alien/ref/import_export/SystemReader.h
         alien/ref/import_export/SystemWriter.h
         alien/ref/import_export/MatrixMarketSystemWriter.h
-        alien/ref/import_export/MatrixMarketSystemReader.h
         alien/ref/import_export/HDF5Tools.h)
 
 set(alien_semantic_ref_list
@@ -101,23 +98,12 @@ set(alien_semantic_ref_list
         alien/ref/handlers/scalar/VectorWriter.h
         alien/ref/import_export/MatrixMarketSystemWriter.cc
         alien/ref/import_export/MatrixMarketSystemWriter.h
-        alien/ref/import_export/MatrixMarketSystemReader.cc
-        alien/ref/import_export/MatrixMarketSystemReader.h
         alien/ref/import_export/SystemInfo.h
         alien/ref/import_export/SystemReader.cc
         alien/ref/import_export/SystemReader.h
         alien/ref/import_export/SystemWriter.cc
         alien/ref/import_export/SystemWriter.h
         alien/ref/import_export/HDF5Tools.h)
-
-if (LibArchive_FOUND)
-   list(APPEND alien_semantic_ref_list
-           alien/ref/import_export/SuiteSparseArchiveSystemReader.cc
-           alien/ref/import_export/SuiteSparseArchiveSystemReader.h)
-   list(APPEND alien_refsemantic_public_header
-           alien/ref/import_export/SuiteSparseArchiveSystemReader.h)
-   add_definitions(-DALIEN_USE_LIBARCHIVE)
-endif ()
 
 add_library(alien_semantic_ref ${alien_semantic_ref_list})
 
@@ -147,10 +133,6 @@ target_sources(alien_semantic_ref PRIVATE
               )
 
 target_link_libraries(alien_semantic_ref PUBLIC alien_core)
-
-if(LibArchive_FOUND)
-    target_link_libraries(alien_semantic_ref PUBLIC archive)
-endif ()
 
 target_include_directories(alien_semantic_ref PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>

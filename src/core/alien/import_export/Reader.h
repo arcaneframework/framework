@@ -18,10 +18,10 @@
 
 #pragma once
 
-#include <alien/ref/data/scalar/Matrix.h>
-#include <alien/ref/data/scalar/Vector.h>
-#include <alien/ref/handlers/scalar/DirectMatrixBuilder.h>
-#include <alien/ref/handlers/scalar/VectorWriter.h>
+#include <alien/data/IMatrix.h>
+#include <alien/data/IVector.h>
+#include <alien/handlers/scalar/BaseDirectMatrixBuilder.h>
+#include <alien/handlers/scalar/BaseVectorWriter.h>
 
 #include <vector>
 #include <string>
@@ -150,8 +150,8 @@ bool readMMHeaderFromReader(const std::string& mm_type, ReaderT& reader)
   return std::string(param4) == std::string("symmetric");
 }
 
-template <typename ReaderT>
-void loadMMMatrixFromReader(Matrix& A, ReaderT& reader)
+template <typename MatrixT, typename ReaderT>
+void loadMMMatrixFromReader(MatrixT& A, ReaderT& reader)
 {
   bool is_symmetric = readMMHeaderFromReader("coordinate", reader);
 
@@ -162,11 +162,13 @@ void loadMMMatrixFromReader(Matrix& A, ReaderT& reader)
     throw FatalErrorException(__PRETTY_FUNCTION__, "IOError");
   }
 
-  A = Matrix(n, m, n, nullptr);
+  Alien::MatrixDistribution dist(n, m, n, nullptr);
+
+  A = MatrixT(dist);
 
   DirectMatrixOptions::SymmetricFlag sym_flag = is_symmetric ? DirectMatrixOptions::eSymmetric : DirectMatrixOptions::eUnSymmetric;
 
-  DirectMatrixBuilder matrix_builder(A, DirectMatrixOptions::eResetAllocation, sym_flag);
+  Common::DirectMatrixBuilder matrix_builder(A, DirectMatrixOptions::eResetAllocation, sym_flag);
   matrix_builder.allocate();
 
   for (int i = 0; i < nnz; ++i) {
@@ -185,8 +187,8 @@ void loadMMMatrixFromReader(Matrix& A, ReaderT& reader)
   }
 }
 
-template <typename ReaderT>
-void loadMMRhsFromReader(Vector& rhs, ReaderT& reader)
+template <typename VectorT, typename ReaderT>
+void loadMMRhsFromReader(VectorT& rhs, ReaderT& reader)
 {
   readMMHeaderFromReader("array", reader);
 
@@ -202,9 +204,11 @@ void loadMMRhsFromReader(Vector& rhs, ReaderT& reader)
     throw FatalErrorException(__PRETTY_FUNCTION__, "More than one vector not allowed");
   }
 
-  rhs = Vector(n, n, nullptr);
+  Alien::VectorDistribution dist(n, n, nullptr);
 
-  VectorWriter vector_writer(rhs);
+  rhs = VectorT(dist);
+
+  Common::VectorWriterT<double, Parameters<LocalIndexer>> vector_writer(rhs);
 
   for (int i = 0; i < n; ++i) {
     double val = 0;

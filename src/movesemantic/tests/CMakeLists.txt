@@ -33,6 +33,7 @@ add_executable(move.gtest.mpi
 add_executable(move.gtest.seq main.cpp
         TestVectorBuilder.cc
         TestMatrixDirectBuilder.cc
+        TestImportExport.cc
         )
 
 target_link_libraries(move.gtest.mpi PRIVATE

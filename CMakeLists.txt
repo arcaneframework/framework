@@ -115,6 +115,12 @@ list(APPEND CMAKE_MODULE_PATH ${ARCCON_MODULE_PATH})
 
 find_package(Arccore REQUIRED)
 
+find_package(LibArchive)
+
+if (LibArchive_FOUND)
+    add_definitions(-DALIEN_USE_LIBARCHIVE)
+endif ()
+
 include(GNUInstallDirs)
 
 if (ALIEN_DEFAULT_OPTIONS)

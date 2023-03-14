@@ -16,8 +16,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <alien/ref/import_export/MatrixMarketSystemReader.h>
-#include <alien/ref/import_export/Reader.h>
+#include <alien/import_export/MatrixMarketSystemReader.h>
+#include <alien/import_export/Reader.h>
 
 namespace Alien
 {
@@ -28,29 +28,5 @@ MatrixMarketSystemReader::MatrixMarketSystemReader(std::string const& filename)
 }
 
 MatrixMarketSystemReader::~MatrixMarketSystemReader() = default;
-
-void MatrixMarketSystemReader::read(Matrix& A)
-{
-  std::fstream file_stream(m_filename, std::ios::in);
-
-  if (!file_stream.good()) {
-    throw FatalErrorException(__PRETTY_FUNCTION__);
-  }
-
-  FStreamReader reader(&file_stream);
-  loadMMMatrixFromReader<FStreamReader>(A, reader);
-}
-
-void MatrixMarketSystemReader::read(Vector& rhs)
-{
-  std::fstream file_stream(m_filename, std::ios::in);
-
-  if (!file_stream.good()) {
-    throw FatalErrorException(__PRETTY_FUNCTION__);
-  }
-
-  FStreamReader reader(&file_stream);
-  loadMMRhsFromReader<FStreamReader>(rhs, reader);
-}
 
 } /* namespace Alien */

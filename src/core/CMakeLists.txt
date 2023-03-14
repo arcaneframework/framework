@@ -27,8 +27,7 @@ IF(ALIEN_USE_SYCL)
   add_subdirectory(alien/kernels/sycl)
 endif()
 
-
-add_library(alien_core
+set(alien_core_list
         alien/Alien.h
         alien/core/backend/BackEnd.h
         alien/core/backend/EigenSolver.h
@@ -122,7 +121,18 @@ add_library(alien_core
         alien/handlers/scalar/BaseVectorWriter.h
         alien/handlers/scalar/VectorReaderT.h
         alien/handlers/scalar/VectorWriterT.h
+        alien/import_export/MatrixMarketSystemReader.h
+        alien/import_export/MatrixMarketSystemReader.cc
+        alien/import_export/Reader.h
         )
+
+if (LibArchive_FOUND)
+   list(APPEND alien_core_list
+           alien/import_export/SuiteSparseArchiveSystemReader.cc
+           alien/import_export/SuiteSparseArchiveSystemReader.h)
+endif ()
+
+add_library(alien_core ${alien_core_list})
 
 target_link_libraries(alien_core PUBLIC alien_utils alien_data)
 target_link_libraries(alien_core PUBLIC
@@ -133,6 +143,10 @@ target_link_libraries(alien_core PUBLIC
 
 
 target_link_libraries(alien_core PUBLIC alien_index_manager)
+
+if(LibArchive_FOUND)
+  target_link_libraries(alien_core PUBLIC archive)
+endif ()
 
 set_property(TARGET alien_core PROPERTY CXX_STANDARD 17)
 
