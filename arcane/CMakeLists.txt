@@ -875,11 +875,11 @@ if (ARCANE_ACCELERATOR_MODE STREQUAL "ROCMHIP")
   add_subdirectory(src/arcane/accelerator/hip)
 endif()
 if (ARCANE_ACCELERATOR_MODE STREQUAL "CUDANVCC")
-  enable_language(CUDA)
   # A partir de CMake 3.18, il faut spécifier une architecture GPU pour CUDA
   if (NOT CMAKE_CUDA_ARCHITECTURES)
     set(CMAKE_CUDA_ARCHITECTURES 50 60 70 80)
   endif()
+  enable_language(CUDA)
   add_subdirectory(src/arcane/accelerator/cuda)
 endif()
 
