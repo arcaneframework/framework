@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemProperty.h                                             (C) 2000-2015  */
+/* ItemProperty.h                                             (C) 2000-2023  */
 /*                                                                           */
 /* Property on item to handle new connectivities and future mesh properties  */
 /*---------------------------------------------------------------------------*/
@@ -13,6 +13,8 @@
 #define ARCANE_DOF_ITEMPROPERTY_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+#include <algorithm>
 
 #include "arcane/utils/Array.h"
 #include "arcane/utils/Array2.h"
@@ -67,14 +69,19 @@ class ItemScalarProperty
 
   void updateSupport(Int32ConstArrayView new_to_old_ids)
   {
+    if (new_to_old_ids.size() == 0)
+        return;
     UniqueArray<DataType> old_data(m_data);
     Integer new_size = new_to_old_ids.size();
     m_data.resize(new_size);
-    if (new_size > old_data.size()) old_data.resize(new_size,m_default_value);// padd new items
-    for (Integer i = 0; i < new_size; ++i)
-      {
+    // resize old_data with item recently added and not yet in connectivity
+    // this max size can be greater than new size if they were add and remove
+    Integer max_size = *(std::max_element(new_to_old_ids.begin(), new_to_old_ids.end())) + 1;
+    if (max_size > old_data.size())
+        old_data.resize(max_size, m_default_value); // padd new items
+    for (Integer i = 0; i < new_size; ++i) {
         m_data[i] = old_data[new_to_old_ids[i]];
-      }
+    }
   }
 
   void copy(const ItemScalarProperty<DataType>& item_property_from)
@@ -138,13 +145,19 @@ class ItemArrayProperty
 
   void updateSupport(Int32ConstArrayView new_to_old_ids)
   {
-    UniqueArray2<DataType> old_data(m_data);
-    Integer new_dim1_size = new_to_old_ids.size();
-    Integer dim2_size = m_data.dim2Size();
-    m_data.resize(new_dim1_size);
-    for (Integer i = 0; i < new_dim1_size; ++i)
-      {
-        for (Integer j = 0; j < dim2_size;++j) m_data[i][j] = old_data[new_to_old_ids[i]][j];
+      if (new_to_old_ids.size() == 0)
+          return;
+      UniqueArray2<DataType> old_data(m_data);
+      Integer new_dim1_size = new_to_old_ids.size();
+      Integer dim2_size = m_data.dim2Size();
+      m_data.resize(new_dim1_size, 0);
+      // resize old_data with item recently added and not yet in connectivity
+      // this max_dim1_size size can be greater than new_dim1_size if they were add and remove
+      auto max_dim1_size = *(std::max_element(new_to_old_ids.begin(), new_to_old_ids.end())) + 1;
+      old_data.resize(max_dim1_size, 0); // padd for new items with 0 (not connected)
+      for (Integer i = 0; i < new_dim1_size; ++i) {
+          for (Integer j = 0; j < dim2_size; ++j)
+            m_data[i][j] = old_data[new_to_old_ids[i]][j];
       }
   }
 
@@ -214,19 +227,29 @@ class ItemMultiArrayProperty
 
   void updateSupport(Int32ConstArrayView new_to_old_ids)
   {
-    UniqueMultiArray2<DataType> old_data(m_data);
-    Integer new_dim1_size = new_to_old_ids.size();
-    IntegerConstArrayView dim2_sizes = m_data.dim2Sizes();
-    IntegerUniqueArray new_dim2_sizes(new_dim1_size);
-    // Compute new sizes
-    for (Integer i = 0; i < new_dim1_size; ++i)
-      {
-        new_dim2_sizes[i] = dim2_sizes[new_to_old_ids[i]];
+      if (new_to_old_ids.size() == 0)
+          return;
+      UniqueMultiArray2<DataType> old_data(m_data);
+      Integer new_dim1_size = new_to_old_ids.size();
+      // new_to_old_ids may refer to items newly added and not yet in m_data (ie old_data) if there is add and removal in the same event
+      // compute max_dim1_size to take this into account
+      Integer max_dim1_size = *(std::max_element(new_to_old_ids.begin(), new_to_old_ids.end())) + 1;
+      IntegerUniqueArray dim2_sizes(m_data.dim2Sizes());
+      dim2_sizes.resize(max_dim1_size, 0); // padd for new items with 0 (not connected)
+      IntegerUniqueArray new_dim2_sizes(new_dim1_size);
+      IntegerUniqueArray max_dim2_sizes(max_dim1_size);
+      // Compute new sizes
+      for (Integer i = 0; i < new_dim1_size; ++i) {
+          new_dim2_sizes[i] = dim2_sizes[new_to_old_ids[i]];
       }
-    m_data.resize(new_dim2_sizes);
-    for (Integer i = 0; i < new_dim1_size; ++i)
-      {
-        for (Integer j = 0; j < new_dim2_sizes[i];++j) m_data[i][j] = old_data[new_to_old_ids[i]][j];
+      m_data.resize(new_dim2_sizes);
+      for (Integer i = 0; i < max_dim1_size; ++i) {
+          max_dim2_sizes[i] = math::max(dim2_sizes[i], dim2_sizes[new_to_old_ids[i]]);
+      }
+      old_data.resize(max_dim2_sizes);
+      for (Integer i = 0; i < new_dim1_size; ++i) {
+          for (Integer j = 0; j < new_dim2_sizes[i]; ++j)
+            m_data[i][j] = old_data[new_to_old_ids[i]][j];
       }
   }
 
