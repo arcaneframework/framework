@@ -57,14 +57,14 @@ class ARCANE_CORE_EXPORT MatCellVector
   //! Vue sur ce vecteur
   MatCellVectorView view() const
   {
-    return MatCellVectorView(_component(),matvarIndexes(),itemsInternalView());
+    return {_component(),matvarIndexes(),itemsInternalView(),_localIds()};
   }
 
   //! Matériau associé
   IMeshMaterial* material() const;
 
   //! Clone ce vecteur
-  MatCellVector clone() const { return MatCellVector(view()); }
+  MatCellVector clone() const { return {view()}; }
 
  private:
 

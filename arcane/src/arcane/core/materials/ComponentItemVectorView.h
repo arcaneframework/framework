@@ -54,13 +54,14 @@ class ARCANE_CORE_EXPORT ComponentItemVectorView
   //! Construit un vecteur contenant les entités de \a group pour le composant \a component
   ComponentItemVectorView(IMeshComponent* component,
                           ConstArrayView<MatVarIndex> mvi,
-                          ConstArrayView<ComponentItemInternal*> mv)
-  : m_matvar_indexes_view(mvi), m_items_internal_main_view(mv), m_component(component)
+                          ConstArrayView<ComponentItemInternal*> mv,
+                          ConstArrayView<Int32> local_ids)
+  : m_matvar_indexes_view(mvi), m_items_internal_main_view(mv), m_items_local_id_view(local_ids), m_component(component)
   {
   }
 
   //! Construit une vue vide pour le composant \a component
-  ComponentItemVectorView(IMeshComponent* component)
+  explicit ComponentItemVectorView(IMeshComponent* component)
   : m_component(component)
   {
   }
@@ -69,6 +70,7 @@ class ARCANE_CORE_EXPORT ComponentItemVectorView
   ComponentItemVectorView(IMeshComponent* component,ComponentItemVectorView rhs_view)
   : m_matvar_indexes_view(rhs_view.m_matvar_indexes_view)
   , m_items_internal_main_view(rhs_view.m_items_internal_main_view)
+  , m_items_local_id_view(rhs_view.m_items_local_id_view)
   , m_component(component)
   {
   }
@@ -90,6 +92,9 @@ class ARCANE_CORE_EXPORT ComponentItemVectorView
 
   // Tableau des MatVarIndex de cette vue.
   ConstArrayView<MatVarIndex> matvarIndexes() const { return m_matvar_indexes_view; }
+
+  //! Tableau des localId() des entités associées
+  ConstArrayView<Int32> _internalLocalIds() const { return m_items_local_id_view; }
   //@}
 
  private:
@@ -106,6 +111,7 @@ class ARCANE_CORE_EXPORT ComponentItemVectorView
 
   ConstArrayView<MatVarIndex> m_matvar_indexes_view;
   ConstArrayView<ComponentItemInternal*> m_items_internal_main_view;
+  ConstArrayView<Int32> m_items_local_id_view;
   IMeshComponent* m_component;
 };
 
@@ -129,8 +135,10 @@ class ARCANE_CORE_EXPORT MatItemVectorView
   //! Construit un vecteur contenant les entités de \a group pour le composant \a component
   MatItemVectorView(IMeshComponent* component,
                     ConstArrayView<MatVarIndex> mv_indexes, 
-                    ConstArrayView<ComponentItemInternal*> mv)
-  : ComponentItemVectorView(component,mv_indexes,mv){}
+                    ConstArrayView<ComponentItemInternal*> mv,
+                    ConstArrayView<Int32> local_ids
+                    )
+  : ComponentItemVectorView(component,mv_indexes,mv,local_ids){}
 
   MatItemVectorView(IMeshComponent* component,ComponentItemVectorView v)
   : ComponentItemVectorView(component,v){}
@@ -171,8 +179,9 @@ class ARCANE_CORE_EXPORT EnvItemVectorView
   //! Construit un vecteur contenant les entités de \a group pour le composant \a component
   EnvItemVectorView(IMeshComponent* component,
                     ConstArrayView<MatVarIndex> mv_indexes,
-                    ConstArrayView<ComponentItemInternal*> mv)
-  : ComponentItemVectorView(component,mv_indexes,mv){}
+                    ConstArrayView<ComponentItemInternal*> mv,
+                    ConstArrayView<Int32> local_ids)
+  : ComponentItemVectorView(component,mv_indexes,mv,local_ids){}
 
   EnvItemVectorView(IMeshComponent* component,ComponentItemVectorView v)
   : ComponentItemVectorView(component,v){}
