@@ -326,7 +326,7 @@ class Test3
     options.setGrainSize(100);
     ForLoopRunInfo fri(options);
     _reset();
-    arcaneParallelForeachVa(fri, func, _x.view(), _y.view(), _z.view());
+    arcaneParallelForVa(fri, func, _x.view(), _y.view(), _z.view());
     _checkValid();
   }
 

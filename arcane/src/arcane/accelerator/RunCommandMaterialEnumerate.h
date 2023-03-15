@@ -172,7 +172,7 @@ _applyEnvCells(RunCommand& command,const EnvCellVectorView& items,const Lambda& 
         func(EnvCellAccessor(mvis[i], static_cast<CellLocalId>(cids[i])));
     break;
   case eExecutionPolicy::Thread:
-    arcaneParallelForeachVa(
+    arcaneParallelForVa(
                         launch_info.loopRunInfo(),
                         [&](SmallSpan<const MatVarIndex> sub_mvis, SmallSpan<const Int32> sub_cids)
                         {

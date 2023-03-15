@@ -91,35 +91,6 @@ arcaneParallelForeach(const ItemVectorView& items_view, const ForLoopRunInfo& ru
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \brief Applique en concurrence la fonction lambda \a lambda_function
- * \a instance sur les vues des containers \a items_view avec les options \a options
- * \ingroup Concurrency
- */
-template <typename LambdaType, typename... Views> inline void
-arcaneParallelForeachVa(const ForLoopRunInfo& run_info, const LambdaType& lambda_function, Views... views)
-{
-  Int32 grain_size = impl::adaptGrainSize(run_info);
-
-  // Asserting every views have the size
-  // TODO: must be encapsulated in some king of check or debug mode
-  typename FirstVariadicType<Views...>::size_type sizes[] = {views.size()...};
-  if (!std::all_of(std::begin(sizes), std::end(sizes),[&sizes](auto cur){return cur == sizes[0];}))
-    ARCANE_FATAL("Every views must have the same size");
-
-  LambdaItemRangeFunctorTVa<LambdaType, Views...> ipf(views..., lambda_function, grain_size);
-
-  ForLoopRunInfo adapted_run_info(run_info);
-  ParallelLoopOptions loop_opt(run_info.options().value_or(TaskFactory::defaultParallelLoopOptions()));
-  loop_opt.setGrainSize(ipf.blockGrainSize());
-  adapted_run_info.addOptions(loop_opt);
-
-  ParallelFor1DLoopInfo loop_info(0, ipf.nbBlock(), &ipf, adapted_run_info);
-  TaskFactory::executeParallelFor(loop_info);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*!
  * \ingroup Concurrency
@@ -256,6 +227,35 @@ arcaneParallelFor(Integer i0, Integer size, const LambdaType& lambda_function)
 {
   LambdaRangeFunctorT<LambdaType> ipf(lambda_function);
   ParallelFor1DLoopInfo loop_info(i0, size, &ipf);
+  TaskFactory::executeParallelFor(loop_info);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Applique en concurrence la fonction lambda \a lambda_function
+ * \a instance sur les vues des containers \a views avec les options \a options
+ * \ingroup Concurrency
+ */
+template <typename LambdaType, typename... Views> inline void
+arcaneParallelForVa(const ForLoopRunInfo& run_info, const LambdaType& lambda_function, Views... views)
+{
+  Int32 grain_size = impl::adaptGrainSize(run_info);
+
+  // Asserting every views have the size
+  // TODO: must be encapsulated in some king of check or debug mode
+  typename FirstVariadicType<Views...>::size_type sizes[] = {views.size()...};
+  if (!std::all_of(std::begin(sizes), std::end(sizes),[&sizes](auto cur){return cur == sizes[0];}))
+    ARCANE_FATAL("Every views must have the same size");
+
+  LambdaRangeFunctorTVa<LambdaType, Views...> ipf(views..., lambda_function, grain_size);
+
+  ForLoopRunInfo adapted_run_info(run_info);
+  ParallelLoopOptions loop_opt(run_info.options().value_or(TaskFactory::defaultParallelLoopOptions()));
+  loop_opt.setGrainSize(ipf.blockGrainSize());
+  adapted_run_info.addOptions(loop_opt);
+
+  ParallelFor1DLoopInfo loop_info(0, ipf.nbBlock(), &ipf, adapted_run_info);
   TaskFactory::executeParallelFor(loop_info);
 }
 
