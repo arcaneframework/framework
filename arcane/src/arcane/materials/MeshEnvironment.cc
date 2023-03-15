@@ -13,7 +13,6 @@
 
 #include "arcane/utils/NotImplementedException.h"
 #include "arcane/utils/ITraceMng.h"
-#include "arcane/utils/ValueChecker.h"
 #include "arcane/utils/FunctorUtils.h"
 #include "arcane/utils/ArgumentException.h"
 #include "arcane/utils/PlatformUtils.h"
@@ -32,9 +31,6 @@
 #include "arcane/materials/IMeshMaterialVariable.h"
 #include "arcane/materials/MeshComponentPartData.h"
 #include "arcane/materials/ComponentPartItemVectorView.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -582,7 +578,8 @@ findComponentCell(AllEnvCell c) const
 EnvItemVectorView MeshEnvironment::
 envView()
 {
-  return EnvItemVectorView(this,variableIndexer()->matvarIndexes(),itemsInternalView());
+  return {this,variableIndexer()->matvarIndexes(),
+          itemsInternalView(),variableIndexer()->localIds()};
 }
 
 /*---------------------------------------------------------------------------*/
@@ -636,7 +633,7 @@ partItems(eMatPart part)
 EnvPurePartItemVectorView MeshEnvironment::
 pureEnvItems()
 {
-  return EnvPurePartItemVectorView(this,m_data.partData()->pureView());
+  return {this,m_data.partData()->pureView()};
 }
 
 /*---------------------------------------------------------------------------*/
@@ -645,7 +642,7 @@ pureEnvItems()
 EnvImpurePartItemVectorView MeshEnvironment::
 impureEnvItems()
 {
-  return EnvImpurePartItemVectorView(this,m_data.partData()->impureView());
+  return {this,m_data.partData()->impureView()};
 }
 
 /*---------------------------------------------------------------------------*/
@@ -654,7 +651,7 @@ impureEnvItems()
 EnvPartItemVectorView MeshEnvironment::
 partEnvItems(eMatPart part)
 {
-  return EnvPartItemVectorView(this,m_data.partData()->partView(part));
+  return {this,m_data.partData()->partView(part)};
 }
 
 /*---------------------------------------------------------------------------*/

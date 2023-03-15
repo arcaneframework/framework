@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ComponentItemVector.h                                       (C) 2000-2022 */
+/* ComponentItemVector.h                                       (C) 2000-2023 */
 /*                                                                           */
 /* Vecteur sur des entités composants.                                       */
 /*---------------------------------------------------------------------------*/
@@ -57,22 +57,30 @@ class ARCANE_CORE_EXPORT ComponentItemVector
   /*!
    * \brief Implémentation de ComponentItemVector.
    */
-  class Impl: public SharedReference
+  class Impl : public SharedReference
   {
    public:
+
     Impl(IMeshComponent* component);
     Impl(Impl&& rhs);
-    Impl(IMeshComponent* component,ConstArrayView<ComponentItemInternal*> items_internal,
-         ConstArrayView<MatVarIndex> matvar_indexes);
+    Impl(IMeshComponent* component, ConstArrayView<ComponentItemInternal*> items_internal,
+         ConstArrayView<MatVarIndex> matvar_indexes,ConstArrayView<Int32> items_local_id);
+
    protected:
+
     ~Impl() override;
+
    public:
+
     void deleteMe() override;
+
    public:
+
     IMeshMaterialMng* m_material_mng;
     IMeshComponent* m_component;
     UniqueArray<ComponentItemInternal*> m_items_internal;
     UniqueArray<MatVarIndex> m_matvar_indexes;
+    UniqueArray<Int32> m_items_local_id;
     MeshComponentPartData* m_part_data;
   };
 
@@ -87,21 +95,20 @@ class ARCANE_CORE_EXPORT ComponentItemVector
  protected:
 
   //! Construit un vecteur pour le composant \a component
-  ComponentItemVector(IMeshComponent* component);
+  explicit ComponentItemVector(IMeshComponent* component);
   //! Constructeur de recopie. Cette instance est une copie de \a rhs.
-  ComponentItemVector(ComponentItemVectorView rhs);
+  explicit ComponentItemVector(ComponentItemVectorView rhs);
 
  public:
 
   //! Conversion vers une vue sur ce vecteur
   operator ComponentItemVectorView() const
-  { return view(); }
+  {
+    return view();
+  }
 
   //! Vue sur ce vecteur
-  ComponentItemVectorView view() const
-  {
-    return ComponentItemVectorView(m_p->m_component,m_p->m_matvar_indexes,m_p->m_items_internal);
-  }
+  ComponentItemVectorView view() const;
 
   //! Composant associé
   IMeshComponent* component() const { return m_p->m_component; }
@@ -134,6 +141,11 @@ class ARCANE_CORE_EXPORT ComponentItemVector
 
   void _setMatVarIndexes(ConstArrayView<MatVarIndex> globals,
                          ConstArrayView<MatVarIndex> multiples);
+  void _setLocalIds(ConstArrayView<Int32> globals, ConstArrayView<Int32> multiples);
+  ConstArrayView<Int32> _localIds() const
+  {
+    return m_p->m_items_local_id.constView();
+  }
 
   IMeshMaterialMng* _materialMng() const { return m_p->m_material_mng; }
   IMeshComponent* _component() const { return m_p->m_component; }

@@ -53,14 +53,14 @@ class ARCANE_CORE_EXPORT EnvCellVector
   //! Vue sur ce vecteur
   EnvCellVectorView view() const
   {
-    return EnvCellVectorView(_component(),matvarIndexes(),itemsInternalView());
+    return {_component(),matvarIndexes(),itemsInternalView(),_localIds() };
   }
 
   //! Milieu associé
   IMeshEnvironment* environment() const;
 
   //! Clone ce vecteur
-  EnvCellVector clone() const { return EnvCellVector(view()); }
+  EnvCellVector clone() const { return {view()}; }
 
  private:
 
