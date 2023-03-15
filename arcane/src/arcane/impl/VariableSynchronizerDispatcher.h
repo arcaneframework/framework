@@ -199,7 +199,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeBufferBase
 
  protected:
 
-  virtual void _allocateBuffers(Int32 datatype_size) = 0;
+  void _allocateBuffers(Int32 datatype_size);
 
  protected:
 
@@ -223,6 +223,9 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeBufferBase
   //! Vue sur les données de la variable
   MutableMemoryView m_data_view;
   IBufferCopier* m_buffer_copier = nullptr;
+
+  //! Buffer contenant les données concaténées en envoi et réception
+  UniqueArray<std::byte> m_buffer;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -238,18 +241,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
  public:
 
   //! Gère les buffers d'envoi et réception pour la synchronisation
-  class ARCANE_IMPL_EXPORT SyncBuffer
-  : public VariableSynchronizeBufferBase
-  {
-   public:
-
-    void _allocateBuffers(Int32 datatype_size) override;
-
-   private:
-
-    //! Buffer contenant les données concaténées en envoi et réception
-    UniqueArray<std::byte> m_buffer;
-  };
+  using SyncBuffer = VariableSynchronizeBufferBase;
 
  public:
 

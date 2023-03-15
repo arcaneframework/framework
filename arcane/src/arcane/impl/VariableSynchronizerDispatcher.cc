@@ -241,9 +241,6 @@ copySend(Integer index)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
  * \brief Calcul et alloue les tampons nécessaires aux envois et réceptions
  * pour les synchronisations des variables 1D.
@@ -251,7 +248,7 @@ copySend(Integer index)
  * \todo: ne pas converver les tampons pour chaque type de donnée des variables
  * car leur conservation est couteuse en terme de memoire.
  */
-template <typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::SyncBuffer::
+void VariableSynchronizeBufferBase::
 _allocateBuffers(Int32 datatype_size)
 {
   auto sync_list = m_sync_info->infos();
