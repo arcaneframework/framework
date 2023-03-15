@@ -31,6 +31,9 @@ namespace Arcane
  */
 class ARCANE_UTILS_EXPORT ConstMemoryView
 {
+  friend ARCANE_UTILS_EXPORT ConstMemoryView
+  makeConstMemoryView(const void* ptr, Int32 datatype_size, Int64 nb_element);
+
  public:
 
   using SpanType = Span<const std::byte>;
@@ -144,6 +147,9 @@ class ARCANE_UTILS_EXPORT ConstMemoryView
  */
 class ARCANE_UTILS_EXPORT MutableMemoryView
 {
+  friend ARCANE_UTILS_EXPORT MutableMemoryView
+  makeMutableMemoryView(void* ptr, Int32 datatype_size, Int64 nb_element);
+
  public:
 
   using SpanType = Span<std::byte>;
@@ -287,12 +293,43 @@ makeMutableMemoryView(Span<DataType> v)
   return MutableMemoryView(v);
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 //! Créé une vue mémoire modifiable sur l'adresse \a v
 template <typename DataType> MutableMemoryView
 makeMutableMemoryView(DataType* v)
 {
   return MutableMemoryView(Span<DataType>(v, 1));
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Créé une vue mémoire modifiable.
+ *
+ * \param ptr adresse de la zone mémoire.
+ * \param datatype_size taille (en octet) du type de la donnée.
+ * \param nb_element nombre d'éléments de la vue.
+ *
+ * La zone mémoire aura pour taille datatype_size * nb_element octets.
+ */
+extern "C++" ARCANE_UTILS_EXPORT MutableMemoryView
+makeMutableMemoryView(void* ptr, Int32 datatype_size, Int64 nb_element);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Créé une vue mémoire en lecture seule.
+ *
+ * \param ptr adresse de la zone mémoire.
+ * \param datatype_size taille (en octet) du type de la donnée.
+ * \param nb_element nombre d'éléments de la vue.
+ *
+ * La zone mémoire aura pour taille datatype_size * nb_element octets.
+ */
+extern "C++" ARCANE_UTILS_EXPORT ConstMemoryView
+makeConstMemoryView(const void* ptr, Int32 datatype_size, Int64 nb_element);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
