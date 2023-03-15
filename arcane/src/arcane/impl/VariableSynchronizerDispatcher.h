@@ -192,7 +192,8 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeBufferBase
 
  public:
 
-  void compute(IBufferCopier* copier,ItemGroupSynchronizeInfo* sync_list,Int32 dim2_size);
+  void compute(IBufferCopier* copier,ItemGroupSynchronizeInfo* sync_list,
+               Int32 dim2_size,Int32 datatype_size);
   Int32 dim2Size() const { return m_dim2_size; }
   IDataSynchronizeBuffer* genericBuffer() { return this; }
   void setDataView(MutableMemoryView v) { m_data_view = v; }
@@ -200,16 +201,20 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeBufferBase
 
  protected:
 
-  virtual void _allocateBuffers() = 0;
+  virtual void _allocateBuffers(Int32 datatype_size) = 0;
 
  protected:
 
   Int32 m_dim2_size = 0;
-  Int32 m_nb_rank = 0;
+  ItemGroupSynchronizeInfo* m_sync_info = nullptr;
   //! Buffer pour toutes les données des entités fantômes qui serviront en réception
   MutableMemoryView m_ghost_memory_view;
   //! Buffer pour toutes les données des entités partagées qui serviront en envoi
   MutableMemoryView m_share_memory_view;
+
+ private:
+
+  Int32 m_nb_rank = 0;
   //! Position dans \a m_ghost_buffer de chaque rang
   UniqueArray<MutableMemoryView> m_ghost_locals_buffer;
   //! Position dans \a m_share_buffer de chaque rang
@@ -218,7 +223,6 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeBufferBase
   UniqueArray<Int32> m_ghost_displacements;
   //! Déplacement dans \a m_share_buffer de chaque rang
   UniqueArray<Int32> m_share_displacements;
-  ItemGroupSynchronizeInfo* m_sync_info = nullptr;
   //! Vue sur les données de la variable
   MutableMemoryView m_data_view;
   IBufferCopier* m_buffer_copier = nullptr;
@@ -242,12 +246,12 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
   {
    public:
 
-    void _allocateBuffers() override;
+    void _allocateBuffers(Int32 datatype_size) override;
 
    private:
 
     //! Buffer contenant les données concaténées en envoi et réception
-    UniqueArray<SimpleType> m_buffer;
+    UniqueArray<std::byte> m_buffer;
   };
 
  public:
@@ -285,7 +289,6 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeDispatcher
   SyncBuffer m_1d_buffer;
   SyncBuffer m_2d_buffer;
   bool m_is_in_sync = false;
-
   Ref<IGenericVariableSynchronizerDispatcherFactory> m_factory;
   Ref<IGenericVariableSynchronizerDispatcher> m_generic_instance;
 };

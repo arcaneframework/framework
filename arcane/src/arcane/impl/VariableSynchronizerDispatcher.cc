@@ -21,12 +21,14 @@
 #include "arcane/utils/Real2x2.h"
 #include "arcane/utils/Real3x3.h"
 
-#include "arcane/VariableCollection.h"
-#include "arcane/ParallelMngUtils.h"
-#include "arcane/IParallelExchanger.h"
-#include "arcane/ISerializeMessage.h"
-#include "arcane/ISerializer.h"
-#include "arcane/IData.h"
+#include "arcane/core/VariableCollection.h"
+#include "arcane/core/ParallelMngUtils.h"
+#include "arcane/core/IParallelExchanger.h"
+#include "arcane/core/ISerializeMessage.h"
+#include "arcane/core/ISerializer.h"
+#include "arcane/core/IData.h"
+#include "arcane/core/datatype/DataStorageTypeInfo.h"
+#include "arcane/core/datatype/DataTypeTraits.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -97,16 +99,19 @@ applyDispatch(IArray2DataT<SimpleType>* data)
   if (m_is_in_sync)
     ARCANE_FATAL("Only one pending serialisation is supported");
   Array2View<SimpleType> value = data->view();
-  SimpleType* value_ptr = value.data();
+
   // Cette valeur doit être la même sur tous les procs
   Integer dim2_size = value.dim2Size();
   if (dim2_size == 0)
     return;
   m_is_in_sync = true;
   Integer dim1_size = value.dim1Size();
-  m_2d_buffer.compute(m_buffer_copier, m_sync_info, dim2_size);
-  ArrayView<SimpleType> buf(dim1_size, value_ptr);
-  m_2d_buffer.setDataView(MutableMemoryView(buf, dim2_size));
+  DataStorageTypeInfo storage_info = data->storageTypeInfo();
+  Int32 nb_basic_element = storage_info.nbBasicElement();
+  Int32 datatype_size = basicDataTypeSize(storage_info.basicDataType()) * nb_basic_element;
+  m_2d_buffer.compute(m_buffer_copier, m_sync_info, dim2_size, datatype_size);
+
+  m_2d_buffer.setDataView(makeMutableMemoryView(value.data(), datatype_size * dim2_size,dim1_size));
   _beginSynchronize(m_2d_buffer);
   _endSynchronize(m_2d_buffer);
   m_is_in_sync = false;
@@ -133,6 +138,9 @@ setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Calcul et alloue les tampons nécessaire aux envois et réceptions
  * pour les synchronisations des variables 1D.
@@ -143,7 +151,10 @@ compute()
   if (!m_sync_info)
     ARCANE_FATAL("The instance is not initialized. You need to call setItemGroupSynchronizeInfo() before");
 
-  m_1d_buffer.compute(m_buffer_copier, m_sync_info, 1);
+  eBasicDataType bdt = DataTypeTraitsT<SimpleType>::basicDataType();
+  Int32 nb_basic_type = DataTypeTraitsT<SimpleType>::nbBasicType();
+  Int32 datatype_size = basicDataTypeSize(bdt) * nb_basic_type;
+  m_1d_buffer.compute(m_buffer_copier, m_sync_info, 1, datatype_size);
   m_generic_instance->compute();
 }
 
@@ -156,7 +167,8 @@ compute()
  * terme de memoire.
  */
 void VariableSynchronizeBufferBase::
-compute(IBufferCopier* copier, ItemGroupSynchronizeInfo* sync_info, Int32 dim2_size)
+compute(IBufferCopier* copier, ItemGroupSynchronizeInfo* sync_info,
+        Int32 dim2_size, Int32 datatype_size)
 {
   m_buffer_copier = copier;
   m_sync_info = sync_info;
@@ -171,9 +183,9 @@ compute(IBufferCopier* copier, ItemGroupSynchronizeInfo* sync_info, Int32 dim2_s
   m_ghost_displacements.resize(nb_message);
   m_share_displacements.resize(nb_message);
 
-  _allocateBuffers();
+  _allocateBuffers(datatype_size);
 
-  const Int32 datatype_size = m_ghost_memory_view.datatypeSize();
+  const Int32 view_datatype_size = m_ghost_memory_view.datatypeSize();
   {
     Integer array_index = 0;
     for (Integer i = 0, is = sync_list.size(); i < is; ++i) {
@@ -181,7 +193,7 @@ compute(IBufferCopier* copier, ItemGroupSynchronizeInfo* sync_info, Int32 dim2_s
       Int32ConstArrayView ghost_grp = vsi.ghostIds();
       Integer local_size = ghost_grp.size();
       Int32 displacement = array_index;
-      m_ghost_displacements[i] = displacement * datatype_size;
+      m_ghost_displacements[i] = displacement * view_datatype_size;
       m_ghost_locals_buffer[i] = m_ghost_memory_view.subView(displacement, local_size);
       array_index += local_size;
     }
@@ -193,7 +205,7 @@ compute(IBufferCopier* copier, ItemGroupSynchronizeInfo* sync_info, Int32 dim2_s
       Int32ConstArrayView share_grp = vsi.shareIds();
       Integer local_size = share_grp.size();
       Int32 displacement = array_index;
-      m_share_displacements[i] = displacement * datatype_size;
+      m_share_displacements[i] = displacement * view_datatype_size;
       m_share_locals_buffer[i] = m_share_memory_view.subView(displacement, local_size);
       array_index += local_size;
     }
@@ -245,7 +257,7 @@ copySend(Integer index)
  * car leur conservation est couteuse en terme de memoire.
  */
 template <typename SimpleType> void VariableSynchronizeDispatcher<SimpleType>::SyncBuffer::
-_allocateBuffers()
+_allocateBuffers(Int32 datatype_size)
 {
   auto sync_list = m_sync_info->infos();
 
@@ -255,11 +267,16 @@ _allocateBuffers()
     total_ghost_buffer += s.nbGhost();
     total_share_buffer += s.nbShare();
   }
-  m_buffer.resize((total_ghost_buffer + total_share_buffer) * m_dim2_size);
-  Int64 share_offset = total_ghost_buffer * m_dim2_size;
 
-  m_ghost_memory_view = MutableMemoryView(m_buffer.span().subspan(0, total_ghost_buffer), m_dim2_size);
-  m_share_memory_view = MutableMemoryView(m_buffer.span().subspan(share_offset, total_share_buffer), m_dim2_size);
+  Int32 full_dim2_size = datatype_size * m_dim2_size;
+  m_buffer.resize((total_ghost_buffer + total_share_buffer) * full_dim2_size);
+
+  Int64 share_offset = total_ghost_buffer * full_dim2_size;
+
+  auto s1 = m_buffer.span().subspan(0, share_offset);
+  m_ghost_memory_view = makeMutableMemoryView(s1.data(), full_dim2_size, total_ghost_buffer);
+  auto s2 = m_buffer.span().subspan(share_offset, total_share_buffer * full_dim2_size);
+  m_share_memory_view = makeMutableMemoryView(s2.data(), full_dim2_size, total_share_buffer);
 }
 
 /*---------------------------------------------------------------------------*/
