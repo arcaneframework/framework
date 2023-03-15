@@ -192,9 +192,7 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeBufferBase
 
  public:
 
-  void compute(IBufferCopier* copier,ItemGroupSynchronizeInfo* sync_list,
-               Int32 dim2_size,Int32 datatype_size);
-  Int32 dim2Size() const { return m_dim2_size; }
+  void compute(IBufferCopier* copier,ItemGroupSynchronizeInfo* sync_list, Int32 datatype_size);
   IDataSynchronizeBuffer* genericBuffer() { return this; }
   void setDataView(MutableMemoryView v) { m_data_view = v; }
   MutableMemoryView dataMemoryView() { return m_data_view; }
@@ -205,7 +203,6 @@ class ARCANE_IMPL_EXPORT VariableSynchronizeBufferBase
 
  protected:
 
-  Int32 m_dim2_size = 0;
   ItemGroupSynchronizeInfo* m_sync_info = nullptr;
   //! Buffer pour toutes les données des entités fantômes qui serviront en réception
   MutableMemoryView m_ghost_memory_view;

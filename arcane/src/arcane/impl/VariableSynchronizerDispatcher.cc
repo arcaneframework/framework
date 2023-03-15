@@ -109,7 +109,7 @@ applyDispatch(IArray2DataT<SimpleType>* data)
   DataStorageTypeInfo storage_info = data->storageTypeInfo();
   Int32 nb_basic_element = storage_info.nbBasicElement();
   Int32 datatype_size = basicDataTypeSize(storage_info.basicDataType()) * nb_basic_element;
-  m_2d_buffer.compute(m_buffer_copier, m_sync_info, dim2_size, datatype_size);
+  m_2d_buffer.compute(m_buffer_copier, m_sync_info, dim2_size * datatype_size);
 
   m_2d_buffer.setDataView(makeMutableMemoryView(value.data(), datatype_size * dim2_size,dim1_size));
   _beginSynchronize(m_2d_buffer);
@@ -138,9 +138,6 @@ setItemGroupSynchronizeInfo(ItemGroupSynchronizeInfo* sync_info)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
  * \brief Calcul et alloue les tampons nécessaire aux envois et réceptions
  * pour les synchronisations des variables 1D.
@@ -154,7 +151,7 @@ compute()
   eBasicDataType bdt = DataTypeTraitsT<SimpleType>::basicDataType();
   Int32 nb_basic_type = DataTypeTraitsT<SimpleType>::nbBasicType();
   Int32 datatype_size = basicDataTypeSize(bdt) * nb_basic_type;
-  m_1d_buffer.compute(m_buffer_copier, m_sync_info, 1, datatype_size);
+  m_1d_buffer.compute(m_buffer_copier, m_sync_info, datatype_size);
   m_generic_instance->compute();
 }
 
@@ -167,13 +164,11 @@ compute()
  * terme de memoire.
  */
 void VariableSynchronizeBufferBase::
-compute(IBufferCopier* copier, ItemGroupSynchronizeInfo* sync_info,
-        Int32 dim2_size, Int32 datatype_size)
+compute(IBufferCopier* copier, ItemGroupSynchronizeInfo* sync_info, Int32 datatype_size)
 {
   m_buffer_copier = copier;
   m_sync_info = sync_info;
   auto sync_list = sync_info->infos();
-  m_dim2_size = dim2_size;
   Integer nb_message = sync_list.size();
   m_nb_rank = nb_message;
 
@@ -185,7 +180,6 @@ compute(IBufferCopier* copier, ItemGroupSynchronizeInfo* sync_info,
 
   _allocateBuffers(datatype_size);
 
-  const Int32 view_datatype_size = m_ghost_memory_view.datatypeSize();
   {
     Integer array_index = 0;
     for (Integer i = 0, is = sync_list.size(); i < is; ++i) {
@@ -193,7 +187,7 @@ compute(IBufferCopier* copier, ItemGroupSynchronizeInfo* sync_info,
       Int32ConstArrayView ghost_grp = vsi.ghostIds();
       Integer local_size = ghost_grp.size();
       Int32 displacement = array_index;
-      m_ghost_displacements[i] = displacement * view_datatype_size;
+      m_ghost_displacements[i] = displacement * datatype_size;
       m_ghost_locals_buffer[i] = m_ghost_memory_view.subView(displacement, local_size);
       array_index += local_size;
     }
@@ -205,7 +199,7 @@ compute(IBufferCopier* copier, ItemGroupSynchronizeInfo* sync_info,
       Int32ConstArrayView share_grp = vsi.shareIds();
       Integer local_size = share_grp.size();
       Int32 displacement = array_index;
-      m_share_displacements[i] = displacement * view_datatype_size;
+      m_share_displacements[i] = displacement * datatype_size;
       m_share_locals_buffer[i] = m_share_memory_view.subView(displacement, local_size);
       array_index += local_size;
     }
@@ -251,8 +245,9 @@ copySend(Integer index)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Calcul et alloue les tampons nécessaire aux envois et réceptions
+ * \brief Calcul et alloue les tampons nécessaires aux envois et réceptions
  * pour les synchronisations des variables 1D.
+ *
  * \todo: ne pas converver les tampons pour chaque type de donnée des variables
  * car leur conservation est couteuse en terme de memoire.
  */
@@ -268,7 +263,7 @@ _allocateBuffers(Int32 datatype_size)
     total_share_buffer += s.nbShare();
   }
 
-  Int32 full_dim2_size = datatype_size * m_dim2_size;
+  Int32 full_dim2_size = datatype_size;
   m_buffer.resize((total_ghost_buffer + total_share_buffer) * full_dim2_size);
 
   Int64 share_offset = total_ghost_buffer * full_dim2_size;
