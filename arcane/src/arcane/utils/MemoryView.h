@@ -31,7 +31,7 @@ namespace Arcane
  */
 class ARCANE_UTILS_EXPORT ConstMemoryView
 {
-  friend ConstMemoryView
+  friend ARCANE_UTILS_EXPORT ConstMemoryView
   makeConstMemoryView(const void* ptr, Int32 datatype_size, Int64 nb_element);
 
  public:
@@ -147,7 +147,7 @@ class ARCANE_UTILS_EXPORT ConstMemoryView
  */
 class ARCANE_UTILS_EXPORT MutableMemoryView
 {
-  friend MutableMemoryView
+  friend ARCANE_UTILS_EXPORT MutableMemoryView
   makeMutableMemoryView(void* ptr, Int32 datatype_size, Int64 nb_element);
 
  public:
