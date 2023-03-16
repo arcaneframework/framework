@@ -602,9 +602,9 @@ arcane_add_test_sequential_task(accelerator_reduce1 testAcceleratorReduce-1.arc 
 arcane_add_accelerator_test_sequential(accelelerator_reduce1 testAcceleratorReduce-1.arc)
 
 # Pour l'instant ces tests sont désactivés car ils plantent
-#arcane_add_test_sequential(accelerator_material1 testAcceleratorMaterials-1.arc)
-#arcane_add_test_sequential_task(accelerator_material1 testAcceleratorMaterials-1.arc 4)
-#arcane_add_accelerator_test_sequential(accelerator_material1 testAcceleratorMaterials-1.arc)
+arcane_add_test_sequential(accelerator_material1 testAcceleratorMaterials-1.arc)
+arcane_add_test_sequential_task(accelerator_material1 testAcceleratorMaterials-1.arc 4)
+arcane_add_accelerator_test_sequential(accelerator_material1 testAcceleratorMaterials-1.arc)
 
 arcane_add_test_sequential(miniweather_orig1 testMiniWeatherOriginal.arc)
 arcane_add_test_sequential(miniweather_array_seq1 testMiniWeatherArraySequential.arc)
