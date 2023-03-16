@@ -17,10 +17,11 @@
 #include "arcane/utils/ArithmeticException.h"
 #include "arcane/utils/ValueChecker.h"
 
-#include "arcane/BasicUnitTest.h"
-#include "arcane/ServiceBuilder.h"
-#include "arcane/FactoryService.h"
-#include "arcane/VariableView.h"
+#include "arcane/core/BasicUnitTest.h"
+#include "arcane/core/ServiceBuilder.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/VariableView.h"
+#include "arcane/core/IItemFamily.h"
 
 #include "arcane/materials/ComponentSimd.h"
 #include "arcane/materials/IMeshMaterialMng.h"
@@ -96,7 +97,7 @@ class MeshMaterialAcceleratorUnitTest
 
   UniqueArray<Int32> m_env1_pure_value_index;
   UniqueArray<Int32> m_env1_partial_value_index;
-  EnvCellVector* m_env1_as_vector;
+  CellGroup m_sub_env_group1;
   Int32 m_nb_z;
 
   void _initializeVariables();
@@ -106,7 +107,7 @@ class MeshMaterialAcceleratorUnitTest
   // Les méthodes suivantes doivent être publiques pour
   // sur accélérateur
 
-  void _executeTest1(Integer nb_z);
+  void _executeTest1(Integer nb_z,EnvCellVectorView env1);
   void _executeTest2(Integer nb_z);
   void _executeTest3(Integer nb_z);
   void _checkValues();
@@ -136,7 +137,6 @@ MeshMaterialAcceleratorUnitTest(const ServiceBuildInfo& sb)
 , m_mat_c(VariableBuildInfo(mesh(),"MatC"))
 , m_mat_d(VariableBuildInfo(mesh(),"MatD"))
 , m_mat_e(VariableBuildInfo(mesh(),"MatE"))
-, m_env1_as_vector(nullptr)
 , m_nb_z(0)
 {
 }
@@ -147,7 +147,6 @@ MeshMaterialAcceleratorUnitTest(const ServiceBuildInfo& sb)
 MeshMaterialAcceleratorUnitTest::
 ~MeshMaterialAcceleratorUnitTest()
 {
-  delete m_env1_as_vector;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -252,6 +251,18 @@ initializeTest()
     }
     info() << "** ** NB_PURE=" << nb_pure_env;
   }
+
+  // Créé un groupe contenant un sous-ensemble des mailles pour test EnvCellVector
+  {
+    UniqueArray<Int32> sub_indexes;
+    ENUMERATE_(Cell,icell,allCells()){
+      CellLocalId c = *icell;
+      if ((c.localId() % 3)==0)
+        sub_indexes.add(c);
+    }
+    m_sub_env_group1 = mesh()->cellFamily()->createGroup("SubGroup1",sub_indexes);
+  }
+
 }
 
 /*---------------------------------------------------------------------------*/
@@ -276,7 +287,6 @@ executeTest()
         ++nb_unknown;
     }
   }
-  m_env1_as_vector = new EnvCellVector(m_env1->cells(),m_env1);
 
   Integer nb_z = 200;
   if (arcaneIsDebug())
@@ -291,8 +301,12 @@ executeTest()
          << " nb_z=" << nb_z << " nb_z2=" << nb_z2;
 
   _initializeVariables();
+  EnvCellVector sub_ev1(m_sub_env_group1,m_env1);
   {
-    _executeTest1(nb_z);
+    _executeTest1(nb_z,m_env1->envView());
+    // Pour l'instant n'est pas actif sur accélérateur car ne fonctionne pas.
+    if (!Arcane::Accelerator::impl::isAcceleratorPolicy(m_runner.executionPolicy()))
+      _executeTest1(nb_z,sub_ev1);
   }
   {
     _executeTest2(nb_z);
@@ -343,18 +357,14 @@ _initializeVariables()
  * aux variables multimat par l'envcell (i.e. le MatVarIndex en fait)
  */
 void MeshMaterialAcceleratorUnitTest::
-_executeTest1(Integer nb_z)
+_executeTest1(Integer nb_z,EnvCellVectorView env1)
 {
-  MaterialVariableCellReal& a_ref(m_mat_a_ref);
-  MaterialVariableCellReal& b_ref(m_mat_b_ref);
-  MaterialVariableCellReal& c_ref(m_mat_c_ref);
-  MaterialVariableCellReal& d_ref(m_mat_d_ref);
-  MaterialVariableCellReal& e_ref(m_mat_e_ref);
+  _initializeVariables();
 
   // Ref CPU
   for (Integer z=0, iz=nb_z; z<iz; ++z) {
-    ENUMERATE_ENVCELL(i,m_env1){
-      a_ref[i] = b_ref[i] + c_ref[i] * d_ref[i] + e_ref[i];
+    ENUMERATE_ENVCELL(i,env1){
+      m_mat_a_ref[i] = m_mat_b_ref[i] + m_mat_c_ref[i] * m_mat_d_ref[i] + m_mat_e_ref[i];
     }
   }
 
@@ -370,7 +380,7 @@ _executeTest1(Integer nb_z)
     auto in_e = ax::viewIn(cmd, m_mat_e);  
 
     for (Integer z=0, iz=nb_z; z<iz; ++z) {
-      cmd << RUNCOMMAND_ENUMERATE(EnvCell, evi, m_env1) {
+      cmd << RUNCOMMAND_ENUMERATE(EnvCell, evi, env1) {
         auto [mvi, cid] = evi();
         out_a[mvi] = in_b[mvi] + in_c[mvi] * in_d[mvi] + in_e[mvi];
       };
