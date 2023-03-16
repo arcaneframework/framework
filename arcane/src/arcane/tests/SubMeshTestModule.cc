@@ -450,6 +450,18 @@ _compute1CreateMesh()
   MeshStats stats(traceMng(),new_mesh,subDomain()->parallelMng());
   stats.dumpStats();
 
+  // Si le maillage est de dimension 1, vérifie que toutes les mailles
+  // ont bien 2 faces.
+  Int32 mesh_dimension = new_mesh->dimension();
+  if (mesh_dimension==1){
+    ENUMERATE_(Cell,icell,new_mesh -> allCells()) {
+      Cell c = *icell;
+      //info()<<"SUBMESH CELL : "<<icell->uniqueId()<<" nb faces = "<<c.nbFace();
+      if (c.nbFace()!=2)
+        ARCANE_FATAL("Bad number of faces for cell");
+    }
+  }
+
   if (check_variable){
     new_data = new VariableCellReal(Arcane::VariableBuildInfo(new_mesh, "Data", new_mesh->cellFamily()->name())); // , Arcane::IVariable::PNoDump|Arcane::IVariable::PNoNeedSync));
     new_cell_uids  = new VariableCellInt64(Arcane::VariableBuildInfo(new_mesh, "CellUids", new_mesh->cellFamily()->name()));
