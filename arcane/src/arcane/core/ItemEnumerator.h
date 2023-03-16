@@ -320,15 +320,6 @@ enumerator() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-inline ItemLocalId::
-ItemLocalId(ItemEnumerator enumerator)
-: m_local_id(enumerator.asItemLocalId())
-{
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
 template<typename ItemType> inline ItemLocalId::
 ItemLocalId(ItemEnumeratorT<ItemType> enumerator)
 : m_local_id(enumerator.asItemLocalId())
@@ -359,15 +350,6 @@ ItemLocalId(ItemConnectedEnumeratorT<ItemType> enumerator)
 // TODO: ajouter vérification du bon type
 template<typename ItemType> inline ItemLocalIdT<ItemType>::
 ItemLocalIdT(ItemEnumerator enumerator)
-: ItemLocalId(enumerator.asItemLocalId())
-{
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename ItemType> inline ItemLocalIdT<ItemType>::
-ItemLocalIdT(ItemEnumeratorT<ItemType> enumerator)
 : ItemLocalId(enumerator.asItemLocalId())
 {
 }

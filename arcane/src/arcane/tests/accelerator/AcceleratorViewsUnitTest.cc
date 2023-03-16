@@ -600,7 +600,7 @@ _executeTestMemoryCopy()
 
   }
   // Recopie du device vers l'hôte
-  queue.copyMemory(ax::MemoryCopyArgs(MutableMemoryView(c.bytes()),MemoryView(d_c.bytes())));
+  queue.copyMemory(ax::MemoryCopyArgs(MutableMemoryView(c.bytes()), ConstMemoryView(d_c.bytes())));
 
   // Vérifie que tout est OK.
   // Initialise les tableaux

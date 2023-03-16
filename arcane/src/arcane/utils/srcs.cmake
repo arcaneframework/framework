@@ -67,6 +67,7 @@ set(ARCANE_SOURCES
   ISO88591Transcoder.cc
   ISO88591Transcoder.h
   MemoryView.h
+  MemoryView.cc
   Misc.cc
   MD5HashAlgorithm.cc
   MD5HashAlgorithm.h

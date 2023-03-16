@@ -44,6 +44,7 @@
 #include "arcane/XmlNodeList.h"
 
 #include "arcane/std/internal/VtkCellTypes.h"
+#include "arcane/core/UnstructuredMeshAllocateBuildInfo.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -100,15 +101,18 @@ class VtkMeshIOService
 : public TraceAccessor
 {
  public:
+
   explicit VtkMeshIOService(ITraceMng* tm)
   : TraceAccessor(tm)
   {}
   ~VtkMeshIOService();
 
  public:
+
   void build() {}
 
  public:
+
   enum eMeshType
   {
     VTK_MT_Unknown,
@@ -125,15 +129,18 @@ class VtkMeshIOService
   : public VtkMesh
   {
    public:
+
     int m_nb_x;
     int m_nb_y;
     int m_nb_z;
   };
 
  public:
+
   bool readMesh(IPrimaryMesh* mesh, const String& file_name, const String& dir_name, bool use_internal_partition);
 
  private:
+
   bool _readStructuredGrid(IPrimaryMesh* mesh, VtkFile&, bool use_internal_partition);
   bool _readUnstructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_partition);
   void _readCellVariable(IMesh* mesh, VtkFile& vtk_file, const String& name_str, Integer nb_cell);
@@ -146,13 +153,14 @@ class VtkMeshIOService
   void _readNodesUnstructuredGrid(IMesh* mesh, VtkFile& vtk_file, Array<Real3>& node_coords);
   void _readCellsUnstructuredGrid(IMesh* mesh, VtkFile& vtk_file,
                                   Array<Integer>& cells_nb_node,
-                                  Array<Integer>& cells_type,
+                                  Array<ItemTypeId>& cells_type,
                                   Array<Int64>& cells_connectivity);
   void _readFacesMesh(IMesh* mesh, const String& file_name,
                       const String& dir_name, bool use_internal_partition);
   bool _readMetadata(IMesh* mesh, VtkFile& vtk_file);
 
  private:
+
   //! Table des variables crées localement par lecture du maillage
   UniqueArray<VariableCellReal*> m_variables;
 
@@ -165,9 +173,11 @@ class VtkMeshIOService
 class VtkFile
 {
  public:
+
   static const int BUFSIZE = 10000;
 
  public:
+
   explicit VtkFile(std::istream* stream)
   : m_stream(stream)
   , m_is_init(false)
@@ -1051,7 +1061,7 @@ _readNodesUnstructuredGrid(IMesh* mesh, VtkFile& vtk_file, Array<Real3>& node_co
 void VtkMeshIOService::
 _readCellsUnstructuredGrid(IMesh* mesh, VtkFile& vtk_file,
                            Array<Integer>& cells_nb_node,
-                           Array<Integer>& cells_type,
+                           Array<ItemTypeId>& cells_type,
                            Array<Int64>& cells_connectivity)
 {
   ARCANE_UNUSED(mesh);
@@ -1113,15 +1123,15 @@ _readCellsUnstructuredGrid(IMesh* mesh, VtkFile& vtk_file,
 
     vtk_file.checkString(cell_types_str, "CELL_TYPES");
     if (nb_cell_type != nb_cell) {
-      ARCANE_THROW(IOException,"Inconsistency in number of CELL_TYPES: v={0} nb_cell={1}",
+      ARCANE_THROW(IOException, "Inconsistency in number of CELL_TYPES: v={0} nb_cell={1}",
                    nb_cell_type, nb_cell);
     }
   }
 
   for (Integer i = 0; i < nb_cell; ++i) {
     Integer vtk_ct = vtk_file.getInt();
-    Integer it = vtkToArcaneCellType(vtk_ct,cells_nb_node[i]);
-    cells_type[i] = it;
+    Int16 it = vtkToArcaneCellType(vtk_ct, cells_nb_node[i]);
+    cells_type[i] = ItemTypeId{ it };
   }
   _readMetadata(mesh, vtk_file);
 }
@@ -1252,7 +1262,6 @@ _readUnstructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_p
   Integer nb_cell_node = 0;
   Int32 sid = mesh->parallelMng()->commRank();
   UniqueArray<Real3> node_coords;
-  UniqueArray<Int64> cells_infos;
   UniqueArray<Int32> cells_local_id;
 
   // Si on utilise le partitionneur interne, seul le sous-domaine lit le maillage
@@ -1261,7 +1270,10 @@ _readUnstructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_p
   if (use_internal_partition)
     need_read = (sid == 0);
 
-  bool has_3d_cell = false;
+  std::array<Int64, 4> nb_cell_by_dimension = {};
+  Int32 mesh_dimension = -1;
+  ItemTypeMng* itm = mesh->itemTypeMng();
+  UnstructuredMeshAllocateBuildInfo mesh_build_info(mesh);
 
   if (need_read) {
     // Lecture première partie du fichier (après header).
@@ -1273,7 +1285,7 @@ _readUnstructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_p
     // Lecture de la connectivité
     UniqueArray<Integer> cells_nb_node;
     UniqueArray<Int64> cells_connectivity;
-    UniqueArray<Integer> cells_type;
+    UniqueArray<ItemTypeId> cells_type;
     _readCellsUnstructuredGrid(mesh, vtk_file, cells_nb_node, cells_type, cells_connectivity);
     debug() << "Lecture _readCellsUnstructuredGrid OK";
 
@@ -1282,58 +1294,46 @@ _readUnstructuredGrid(IPrimaryMesh* mesh, VtkFile& vtk_file, bool use_internal_p
     cells_local_id.resize(nb_cell);
 
     // Création des mailles
-    // Infos pour la création des mailles
-    // par maille: 1 pour son unique id,
-    //             1 pour son type,
-    //             1 pour chaque noeud
-    cells_infos.resize(nb_cell * 2 + nb_cell_node);
+    mesh_build_info.preAllocate(nb_cell, nb_cell_node);
 
     {
-      Integer cells_infos_index = 0;
-      Integer connectivity_index = 0;
+      Int32 connectivity_index = 0;
       for (Integer i = 0; i < nb_cell; ++i) {
-        Integer current_cell_nb_node = cells_nb_node[i];
-        Integer cell_unique_id = i;
+        Int32 current_cell_nb_node = cells_nb_node[i];
+        Int64 cell_unique_id = i;
 
         cells_local_id[i] = i;
 
-        cells_infos[cells_infos_index] = cells_type[i];
-        ++cells_infos_index;
+        Int16 cell_dim = itm->typeFromId(cells_type[i])->dimension();
+        if (cell_dim >= 0 && cell_dim <= 3)
+          ++nb_cell_by_dimension[cell_dim];
 
-        cells_infos[cells_infos_index] = cell_unique_id;
-        ++cells_infos_index;
-
-        for (Integer z = 0; z < current_cell_nb_node; ++z) {
-          cells_infos[cells_infos_index + z] = cells_connectivity[connectivity_index + z];
-        }
-        cells_infos_index += current_cell_nb_node;
+        auto cell_nodes = cells_connectivity.subView(connectivity_index,current_cell_nb_node);
+        mesh_build_info.addCell(cells_type[i],cell_unique_id, cell_nodes);
         connectivity_index += current_cell_nb_node;
       }
     }
-
-    // Regarde si on a au moins une maille 3D. Dans ce cas,
-    // le maillage est 3D, sinon il est 2D
-    for (Integer i = 0; i < nb_cell; ++i) {
-      Integer ct = cells_type[i];
-      if (ct == IT_Tetraedron4 || ct == IT_Pyramid5 || ct == IT_Pentaedron6 ||
-          ct == IT_Hexaedron8 || ct == IT_Heptaedron10 || ct == IT_Octaedron12) {
-        has_3d_cell = true;
-        break;
+    // Vérifie qu'on n'a pas de mailles de différentes dimensions
+    Int32 nb_different_dim = 0;
+    for (Int32 i = 0; i < 4; ++i)
+      if (nb_cell_by_dimension[i] != 0) {
+        ++nb_different_dim;
+        mesh_dimension = i;
       }
-    }
+    if (nb_different_dim > 1)
+      ARCANE_FATAL("The mesh contains cells of different dimension. nb0={0} nb1={1} nb2={2} nb3={3}",
+                   nb_cell_by_dimension[0], nb_cell_by_dimension[1], nb_cell_by_dimension[2], nb_cell_by_dimension[3]);
   }
 
-  // Positionne la dimension du maillage. Comme elle n'est pas indiquée dans
-  // le fichier, on regarde si on a au moins une maille 3D.
-  // TODO: supporter les maillages 1D
+  // Positionne la dimension du maillage.
   {
-    Integer wanted_dimension = (has_3d_cell) ? 3 : 2;
+    Integer wanted_dimension = mesh_dimension;
     wanted_dimension = mesh->parallelMng()->reduce(Parallel::ReduceMax, wanted_dimension);
     mesh->setDimension(wanted_dimension);
+    mesh_build_info.setMeshDimension(wanted_dimension);
   }
 
-  mesh->allocateCells(nb_cell, cells_infos, false);
-  mesh->endAllocate();
+  mesh_build_info.allocateMesh();
 
   // Positionne les coordonnées
   {
@@ -1433,7 +1433,7 @@ _readFacesMesh(IMesh* mesh, const String& file_name, const String& dir_name,
       // Lecture de la connectivité
       UniqueArray<Integer> faces_nb_node;
       UniqueArray<Int64> faces_connectivity;
-      UniqueArray<Integer> faces_type;
+      UniqueArray<ItemTypeId> faces_type;
       _readCellsUnstructuredGrid(mesh, vtk_file, faces_nb_node, faces_type, faces_connectivity);
       nb_face = faces_nb_node.size();
       //nb_face_node = faces_connectivity.size();
@@ -1474,16 +1474,25 @@ _readData(IMesh* mesh, VtkFile& vtk_file, bool use_internal_partition,
   // Si une donnée porte le nom 'GROUP_*', on considère qu'il s'agit d'un
   // groupe
 
-  // Pas de data.
-  if (vtk_file.isEof())
-    return false;
+  IParallelMng* pm = mesh->parallelMng();
+  Int32 sid = pm->commRank();
+
+  // Si pas de données, retourne immédiatement.
+  {
+    Byte has_data = 1;
+    if ((sid == 0) && vtk_file.isEof())
+      has_data = 0;
+
+    ByteArrayView bb(1, &has_data);
+    pm->broadcast(bb, 0);
+    // Pas de data.
+    if (!has_data)
+      return false;
+  }
 
   OStringStream created_infos_str;
   created_infos_str() << "<?xml version='1.0' ?>\n";
   created_infos_str() << "<infos>";
-
-  IParallelMng* pm = mesh->parallelMng();
-  Int32 sid = pm->commRank();
 
   Integer nb_cell_kind = mesh->nbItem(cell_kind);
   const char* buf = 0;
@@ -1686,7 +1695,7 @@ _readData(IMesh* mesh, VtkFile& vtk_file, bool use_internal_partition,
       // Lecture des variables
       {
         XmlNodeList vars = doc_node.documentElement().children("cell-variable");
-        for (XmlNode xnode : vars.range()) {
+        for (XmlNode xnode : vars) {
           String name = xnode.attrValue("name");
           info() << "Building variable: " << name;
           VariableCellReal* var = new VariableCellReal(VariableBuildInfo(mesh, name));
@@ -1698,7 +1707,7 @@ _readData(IMesh* mesh, VtkFile& vtk_file, bool use_internal_partition,
       {
         XmlNodeList vars = doc_node.documentElement().children("cell-group");
         IItemFamily* cell_family = mesh->itemFamily(cell_kind);
-        for (XmlNode xnode : vars.range()) {
+        for (XmlNode xnode : vars) {
           String name = xnode.attrValue("name");
           info() << "Building group: " << name;
           cell_family->createGroup(name);
@@ -1709,7 +1718,7 @@ _readData(IMesh* mesh, VtkFile& vtk_file, bool use_internal_partition,
       {
         XmlNodeList vars = doc_node.documentElement().children("node-group");
         IItemFamily* node_family = mesh->nodeFamily();
-        for (XmlNode xnode : vars.range()) {
+        for (XmlNode xnode : vars) {
           String name = xnode.attrValue("name");
           info() << "Create node group: " << name;
           node_family->createGroup(name);
@@ -1755,7 +1764,7 @@ _readCellVariable(IMesh* mesh, VtkFile& vtk_file, const String& var_name, Intege
 {
   //TODO Faire la conversion uniqueId() vers localId() correcte
   info() << "Reading values for variable: " << var_name << " n=" << nb_cell;
-  VariableCellReal* var = new VariableCellReal(VariableBuildInfo(mesh, var_name));
+  auto* var = new VariableCellReal(VariableBuildInfo(mesh, var_name));
   m_variables.add(var);
   RealArrayView values(var->asArray());
   for (Integer i = 0; i < nb_cell; ++i) {
@@ -1840,17 +1849,21 @@ class VtkLegacyMeshWriter
 , public IMeshWriter
 {
  public:
+
   explicit VtkLegacyMeshWriter(const ServiceBuildInfo& sbi)
   : BasicService(sbi)
   {}
 
  public:
-  virtual void build() {}
+
+  void build() override {}
 
  public:
-  virtual bool writeMeshToFile(IMesh* mesh, const String& file_name);
+
+  bool writeMeshToFile(IMesh* mesh, const String& file_name) override;
 
  private:
+
   void _writeMeshToFile(IMesh* mesh, const String& file_name, eItemKind cell_kind);
   void _saveGroups(IItemFamily* family, std::ostream& ofile);
 };
@@ -1911,7 +1924,7 @@ _writeMeshToFile(IMesh* mesh, const String& file_name, eItemKind cell_kind)
   IItemFamily* cell_kind_family = mesh->itemFamily(cell_kind);
   Integer nb_cell_kind = cell_kind_family->nbItem();
 
-  // Sauve les noeuds
+  // Sauve les nœuds
   {
     ofile << "POINTS " << nb_node << " double\n";
     VariableNodeReal3& coords(mesh->toPrimaryMesh()->nodesCoordinates());
@@ -1945,8 +1958,8 @@ _writeMeshToFile(IMesh* mesh, const String& file_name, eItemKind cell_kind)
     }
     // Le type doit être coherent avec celui de vtkCellType.h
     ofile << "CELL_TYPES " << nb_cell_kind << "\n";
-    ENUMERATE_(ItemWithNodes, iitem, cell_kind_family->allItems()) {
-      int arcane_type = (*iitem).type();
+    ENUMERATE_ (ItemWithNodes, iitem, cell_kind_family->allItems()) {
+      Int16 arcane_type = (*iitem).type();
       int type = arcaneToVtkCellType(arcane_type);
       ofile << type << '\n';
     }
@@ -2002,11 +2015,13 @@ class VtkMeshReader
 , public IMeshReader
 {
  public:
+
   explicit VtkMeshReader(const ServiceBuildInfo& sbi)
   : AbstractService(sbi)
   {}
 
  public:
+
   bool allowExtension(const String& str) override { return str == "vtk"; }
   eReturnType readMeshFromFile(IPrimaryMesh* mesh, const XmlNode& mesh_node, const String& file_name,
                                const String& dir_name, bool use_internal_partition) override
@@ -2042,16 +2057,19 @@ class VtkLegacyCaseMeshReader
 , public ICaseMeshReader
 {
  public:
+
   class Builder
   : public IMeshBuilder
   {
    public:
+
     explicit Builder(ITraceMng* tm, const CaseMeshReaderReadInfo& read_info)
     : m_trace_mng(tm)
     , m_read_info(read_info)
     {}
 
    public:
+
     void fillMeshBuildInfo(MeshBuildInfo& build_info) override
     {
       ARCANE_UNUSED(build_info);
@@ -2067,16 +2085,19 @@ class VtkLegacyCaseMeshReader
     }
 
    private:
+
     ITraceMng* m_trace_mng;
     CaseMeshReaderReadInfo m_read_info;
   };
 
  public:
+
   explicit VtkLegacyCaseMeshReader(const ServiceBuildInfo& sbi)
   : AbstractService(sbi)
   {}
 
  public:
+
   Ref<IMeshBuilder> createBuilder(const CaseMeshReaderReadInfo& read_info) const override
   {
     IMeshBuilder* builder = nullptr;

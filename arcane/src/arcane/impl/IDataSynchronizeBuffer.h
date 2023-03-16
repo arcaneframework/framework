@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IDataSynchronizeBuffer.h                                    (C) 2000-2022 */
+/* IDataSynchronizeBuffer.h                                    (C) 2000-2023 */
 /*                                                                           */
 /* Interface d'un buffer générique pour la synchronisation de donnéess.      */
 /*---------------------------------------------------------------------------*/
@@ -55,26 +55,43 @@ class ARCANE_IMPL_EXPORT IDataSynchronizeBuffer
 
   //! Nombre de rangs.
   virtual Int32 nbRank() const = 0;
+
   //! Indique si les buffers sont globaux.
   virtual bool hasGlobalBuffer() const = 0;
+
   //! Buffer d'envoi
-  virtual Span<std::byte> globalSendBuffer() = 0;
+  virtual MutableMemoryView globalSendBuffer() = 0;
+
   //! Buffer de réception
-  virtual Span<std::byte> globalReceiveBuffer() = 0;
+  virtual MutableMemoryView globalReceiveBuffer() = 0;
+
   //! Buffer d'envoi pour le rang \a index
-  virtual Span<std::byte> sendBuffer(Int32 index) = 0;
+  virtual MutableMemoryView sendBuffer(Int32 index) = 0;
+
   //! Buffer de réception pour le rang \a index
-  virtual Span<std::byte> receiveBuffer(Int32 index) = 0;
-  //! Déplacement depuis le début de sendBuffer() pour le rang \a index
+  virtual MutableMemoryView receiveBuffer(Int32 index) = 0;
+
+  //! Déplacement (en octets) depuis le début de sendBuffer() pour le rang \a index
   virtual Int64 sendDisplacement(Int32 index) const = 0;
-  //! Déplacement depuis le début de receiveBuffer() pour le rang \a index
+
+  //! Déplacement (en octets) depuis le début de receiveBuffer() pour le rang \a index
   virtual Int64 receiveDisplacement(Int32 index) const = 0;
-  //! Recopie dans les données depuis le buffer de réception.
+
+  //! Recopie dans les données depuis le buffer de réception du rang \a index.
   virtual void copyReceive(Int32 index) = 0;
-  //! Recopie dans le buffer d'envoi les données
+
+  //! Recopie toutes les données depuis le buffer de réception.
+  virtual void copyAllReceive();
+
+  //! Recopie dans le buffer d'envoi les données du rang \a index
   virtual void copySend(Int32 index) = 0;
+
+  //! Recopie dans le buffer d'envoi toute les données
+  virtual void copyAllSend();
+
   //! Taille totale à envoyer en octet
   virtual Int64 totalSendSize() const = 0;
+
   //! Taille totale à recevoir en octet
   virtual Int64 totalReceiveSize() const = 0;
 };

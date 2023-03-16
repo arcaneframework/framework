@@ -77,22 +77,22 @@ set(ARCANE_SOURCES
 
   SimpleCsvComparatorService.cc
   SimpleCsvComparatorService.h
-  
+
   SimpleCsvOutputService.cc
   SimpleCsvOutputService.h
-  
+
   SimpleCsvReaderWriter.cc
   SimpleCsvReaderWriter.h
-  
+
   SimpleTableInternalComparator.cc
   SimpleTableInternalComparator.h
-  
+
   SimpleTableInternalMng.cc
   SimpleTableInternalMng.h
-  
+
   SimpleTableWriterHelper.cc
   SimpleTableWriterHelper.h
-  
+
   MshMeshReader.cc
   MshMeshWriter.cc
 
@@ -104,7 +104,7 @@ set(ARCANE_SOURCES
 
   internal/SodStandardGroupsBuilder.h
   internal/SodStandardGroupsBuilder.cc
-)
+  )
 
 set(AXL_FILES
   EnsightHdfPostProcessor

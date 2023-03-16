@@ -25,7 +25,7 @@ namespace Arcane::VtkUtils
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" int
+extern "C++" Int16
 vtkToArcaneCellType(int vtk_type, Int32 nb_node)
 {
   switch (vtk_type) {
@@ -79,7 +79,7 @@ vtkToArcaneCellType(int vtk_type, Int32 nb_node)
 /*---------------------------------------------------------------------------*/
 
 extern "C++" unsigned char
-arcaneToVtkCellType(int arcane_type)
+arcaneToVtkCellType(Int16 arcane_type)
 {
   switch (arcane_type) {
   case IT_NullType:

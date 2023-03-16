@@ -1,24 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MpiDirectSendrecvVariableSynchronizeDispatcher.cc           (C) 2000-2022 */
+/* MpiDirectSendrecvVariableSynchronizeDispatcher.cc           (C) 2000-2023 */
 /*                                                                           */
 /* Gestion spécifique MPI des synchronisations des variables.                */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
-#include "arcane/utils/FatalErrorException.h"
-#include "arcane/utils/Real2.h"
-#include "arcane/utils/Real3.h"
-#include "arcane/utils/Real2x2.h"
-#include "arcane/utils/Real3x3.h"
-
-#include "arcane/parallel/mpi/MpiDirectSendrecvVariableSynchronizeDispatcher.h"
 #include "arcane/parallel/mpi/MpiParallelMng.h"
 #include "arcane/parallel/mpi/MpiAdapter.h"
 #include "arcane/parallel/mpi/MpiDatatypeList.h"
@@ -26,44 +18,98 @@
 #include "arcane/parallel/mpi/MpiTimeInterval.h"
 #include "arcane/parallel/IStat.h"
 
-#include "arcane/datatype/DataTypeTraits.h"
-
-#include "arccore/message_passing/IRequestList.h"
+#include "arcane/impl/IDataSynchronizeBuffer.h"
+#include "arcane/impl/VariableSynchronizerDispatcher.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
 
 namespace Arcane
 {
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Implémentation de la synchronisation via MPI_Sendrecv.
+ */
+class MpiDirectSendrecvVariableSynchronizerDispatcher
+: public AbstractGenericVariableSynchronizerDispatcher
+{
+ public:
 
-template<typename SimpleType>
-MpiDirectSendrecvVariableSynchronizeDispatcher<SimpleType>::
-MpiDirectSendrecvVariableSynchronizeDispatcher(MpiDirectSendrecvVariableSynchronizeDispatcherBuildInfo& bi)
-: VariableSynchronizeDispatcher<SimpleType>(VariableSynchronizeDispatcherBuildInfo(bi.parallelMng(),bi.table()))
-, m_mpi_parallel_mng(bi.parallelMng())
+  class Factory;
+  explicit MpiDirectSendrecvVariableSynchronizerDispatcher(Factory* f);
+
+ protected:
+
+  void compute() override {}
+  void beginSynchronize(IDataSynchronizeBuffer* vs_buf) override;
+  void endSynchronize(IDataSynchronizeBuffer*) override
+  {
+    // With this implementation, we do not need this function.
+  }
+
+ private:
+
+  MpiParallelMng* m_mpi_parallel_mng;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class MpiDirectSendrecvVariableSynchronizerDispatcher::Factory
+: public IGenericVariableSynchronizerDispatcherFactory
+{
+ public:
+
+  Factory(MpiParallelMng* mpi_pm)
+  : m_mpi_parallel_mng(mpi_pm)
+  {}
+
+  Ref<IGenericVariableSynchronizerDispatcher> createInstance() override
+  {
+    auto* x = new MpiDirectSendrecvVariableSynchronizerDispatcher(this);
+    return makeRef<IGenericVariableSynchronizerDispatcher>(x);
+  }
+
+ public:
+
+  MpiParallelMng* m_mpi_parallel_mng = nullptr;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" Ref<IGenericVariableSynchronizerDispatcherFactory>
+arcaneCreateMpiDirectSendrecvVariableSynchronizerFactory(MpiParallelMng* mpi_pm)
+{
+  auto* x = new MpiDirectSendrecvVariableSynchronizerDispatcher::Factory(mpi_pm);
+  return makeRef<IGenericVariableSynchronizerDispatcherFactory>(x);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+MpiDirectSendrecvVariableSynchronizerDispatcher::
+MpiDirectSendrecvVariableSynchronizerDispatcher(Factory* f)
+: m_mpi_parallel_mng(f->m_mpi_parallel_mng)
 {
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template<typename SimpleType> void
-MpiDirectSendrecvVariableSynchronizeDispatcher<SimpleType>::
-_beginSynchronize(SyncBuffer& sync_buffer)
+void MpiDirectSendrecvVariableSynchronizerDispatcher::
+beginSynchronize(IDataSynchronizeBuffer* vs_buf)
 {
-  auto sync_list = this->m_sync_info->infos();
-  Integer nb_message = sync_list.size();
+  auto sync_list = _syncInfo()->infos();
+  Int32 nb_message = sync_list.size();
 
   constexpr int serialize_tag = 523;
 
-  MpiParallelMng* pm= m_mpi_parallel_mng;
+  MpiParallelMng* pm = m_mpi_parallel_mng;
   MpiDatatypeList* dtlist = pm->datatypes();
-  const MPI_Datatype mpi_dt = dtlist->datatype(SimpleType())->datatype();
-
+  const MPI_Datatype mpi_dt = dtlist->datatype(Byte())->datatype();
 
   double sync_copy_send_time = 0.0;
   double sync_copy_recv_time = 0.0;
@@ -71,68 +117,31 @@ _beginSynchronize(SyncBuffer& sync_buffer)
 
   {
     MpiTimeInterval tit(&sync_copy_send_time);
-    for( Integer i=0; i<nb_message; ++i )
-      sync_buffer.copySend(i);
+    vs_buf->copyAllSend();
   }
 
   {
     MpiTimeInterval tit(&sync_wait_time);
     for( Integer i=0; i<nb_message; ++i ){
       const VariableSyncInfo& vsi = sync_list[i];
-      ArrayView<SimpleType> rbuf = sync_buffer.ghostBuffer(i);
-      ArrayView<SimpleType> sbuf = sync_buffer.shareBuffer(i);
+      auto rbuf = vs_buf->receiveBuffer(i).bytes().smallView();
+      auto sbuf = vs_buf->sendBuffer(i).bytes().smallView();
 
-      MPI_Sendrecv(sbuf.data(),
-          sbuf.size(),
-          mpi_dt,
-          vsi.targetRank(),
-          serialize_tag,
-          rbuf.data(),
-          rbuf.size(),
-          mpi_dt,
-          vsi.targetRank(),
-          serialize_tag,
-          pm->communicator(),
-          MPI_STATUS_IGNORE);
-
+      MPI_Sendrecv(sbuf.data(), sbuf.size(), mpi_dt, vsi.targetRank(), serialize_tag,
+                   rbuf.data(), rbuf.size(), mpi_dt, vsi.targetRank(), serialize_tag,
+                   pm->communicator(), MPI_STATUS_IGNORE);
     }
   }
 
   {
     MpiTimeInterval tit(&sync_copy_recv_time);
-    for( Integer i=0; i<nb_message; ++i )
-      sync_buffer.copyReceive(i);
+    vs_buf->copyAllReceive();
   }
 
   pm->stat()->add("SyncCopySend",sync_copy_send_time,1);
   pm->stat()->add("SyncWait",sync_wait_time,1);
   pm->stat()->add("SyncCopyRecv",sync_copy_recv_time,1);
-
 }
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template<typename SimpleType> void
-MpiDirectSendrecvVariableSynchronizeDispatcher<SimpleType>::
-_endSynchronize(SyncBuffer& sync_buffer)
-{
-  //With this implementation, we do not need this function.
-  ARCANE_UNUSED(sync_buffer);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-template class MpiDirectSendrecvVariableSynchronizeDispatcher<Byte>;
-template class MpiDirectSendrecvVariableSynchronizeDispatcher<Int16>;
-template class MpiDirectSendrecvVariableSynchronizeDispatcher<Int32>;
-template class MpiDirectSendrecvVariableSynchronizeDispatcher<Int64>;
-template class MpiDirectSendrecvVariableSynchronizeDispatcher<Real>;
-template class MpiDirectSendrecvVariableSynchronizeDispatcher<Real2>;
-template class MpiDirectSendrecvVariableSynchronizeDispatcher<Real3>;
-template class MpiDirectSendrecvVariableSynchronizeDispatcher<Real2x2>;
-template class MpiDirectSendrecvVariableSynchronizeDispatcher<Real3x3>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

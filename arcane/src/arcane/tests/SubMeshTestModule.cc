@@ -262,13 +262,14 @@ _checkSubMeshIntegrity()
   if (check_variable) {
     Integer nerror2 = 0;
     ENUMERATE_CELL(icell,new_mesh->allCells()) {
-      ItemInternal * cell = icell.internal();
-      ItemInternal * parent = cell->parent(0);
-      if (do_not_check.find(cell->uniqueId().asInt64()) != do_not_check.end()) {
-        (*new_cell_uids)[cell] = parent->uniqueId(); // mise à jour des non check
+      Cell cell = *icell;
+      Item parent = cell.parent();
+      if (do_not_check.find(cell.uniqueId().asInt64()) != do_not_check.end()) {
+        (*new_cell_uids)[cell] = parent.uniqueId(); // mise à jour des non check
       } else {
-        if ((*new_cell_uids)[cell] != parent->uniqueId() || cell->uniqueId() != parent->uniqueId()) {
-          error() << "Inconsistent sub-mesh uniqueId on item " << ItemPrinter(cell) << " vs variable uid " << (*new_cell_uids)[cell] << " vs parent uid " << parent->uniqueId();
+        if ((*new_cell_uids)[cell] != parent.uniqueId() || cell.uniqueId() != parent.uniqueId()) {
+          error() << "Inconsistent sub-mesh uniqueId on item " << ItemPrinter(cell)
+                  << " vs variable uid " << (*new_cell_uids)[cell] << " vs parent uid " << parent.uniqueId();
           ++nerror2;
         }
       }
@@ -449,6 +450,18 @@ _compute1CreateMesh()
   // Statistiques sur sous-maillage
   MeshStats stats(traceMng(),new_mesh,subDomain()->parallelMng());
   stats.dumpStats();
+
+  // Si le maillage est de dimension 1, vérifie que toutes les mailles
+  // ont bien 2 faces.
+  Int32 mesh_dimension = new_mesh->dimension();
+  if (mesh_dimension==1){
+    ENUMERATE_(Cell,icell,new_mesh -> allCells()) {
+      Cell c = *icell;
+      //info()<<"SUBMESH CELL : "<<icell->uniqueId()<<" nb faces = "<<c.nbFace();
+      if (c.nbFace()!=2)
+        ARCANE_FATAL("Bad number of faces for cell");
+    }
+  }
 
   if (check_variable){
     new_data = new VariableCellReal(Arcane::VariableBuildInfo(new_mesh, "Data", new_mesh->cellFamily()->name())); // , Arcane::IVariable::PNoDump|Arcane::IVariable::PNoNeedSync));

@@ -41,7 +41,6 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// TODO: Supporter le parallélisme
 // TODO: Regarder la sauvegarde des uniqueId() (via vtkOriginalCellIds)
 // TODO: Regarder comment éviter de sauver le maillage à chaque itération s'il
 //       ne change pas. Avec la notion de lien de HDF5, il doit être possible
@@ -65,8 +64,6 @@
   les opérations collectives de HDF5 (si compilé avec MPI). Dans ce cas il
   faut quand même géré manuellement le mode échange de message en mémoire
   partagée ou hybride.
-
-  TODO: Ajouter informations sur les mailles fantômes
 */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -121,6 +118,7 @@ class VtkHdfDataWriter
   HGroup m_node_data_group;
   bool m_is_parallel = false;
   bool m_is_master_io = false;
+  bool m_is_collective_io = false;
 
  private:
 
@@ -139,6 +137,11 @@ class VtkHdfDataWriter
   _writeBasicTypeDataset(HGroup& group, IVariable* var, IData* data);
   void _writeReal3Dataset(HGroup& group, IVariable* var, IData* data);
   void _writeReal2Dataset(HGroup& group, IVariable* var, IData* data);
+
+  template <typename DataType> void
+  _writeDataSet1DCollectiveWithCollectiveIO(HGroup& group, const String& name, Span<const DataType> values);
+  template <typename DataType> void
+  _writeDataSet2DCollectiveWithCollectiveIO(HGroup& group, const String& name, Span2<const DataType> values);
 
   String _getFileNameForTimeIndex(Int32 index)
   {
@@ -177,7 +180,8 @@ beginWrite(const VariableCollection& vars)
   m_is_master_io = pm->isMasterIO();
 
   Int32 time_index = m_times.size();
-  if (time_index < 2)
+  const bool is_first_call = (time_index < 2);
+  if (is_first_call)
     pwarning() << "L'implémentation au format 'VtkHdf' est expérimentale";
 
   String filename = _getFileNameForTimeIndex(time_index);
@@ -191,10 +195,32 @@ beginWrite(const VariableCollection& vars)
 
   HGroup top_group;
 
-  if (m_is_master_io) {
-    if (time_index <= 1)
+  // TODO: protéger appels concurrents HDF5
+  // Il est possible d'utiliser le mode collectif de HDF5 via MPI-IO dans les cas suivants:
+  // - Hdf5 a été compilé avec MPI
+  // - on est en mode MPI pure (ni mode mémoire partagé, ni mode hybride)
+  m_is_collective_io = pm->isParallel() && HInit::hasParallelHdf5();
+  if (pm->isHybridImplementation() || pm->isThreadImplementation())
+    m_is_collective_io = false;
+  if (is_first_call)
+    info() << "VtkHdfDataWriter: using collective MPI/IO ?=" << m_is_collective_io;
+
+  HProperty plist_id;
+  if (m_is_collective_io)
+    plist_id.createFilePropertyMPIIO(pm);
+
+  if (time_index <= 1) {
+    if (m_is_master_io) {
       dir.createDirectory();
-    m_file_id.openTruncate(m_full_filename);
+    }
+  }
+
+  if (m_is_collective_io)
+    pm->barrier();
+
+  if (m_is_collective_io || m_is_master_io) {
+    m_file_id.openTruncate(m_full_filename, plist_id.id());
+
     top_group.create(m_file_id, "VTKHDF");
 
     m_cell_data_group.create(top_group, "CellData");
@@ -202,7 +228,6 @@ beginWrite(const VariableCollection& vars)
 
     std::array<Int64, 2> version = { 1, 0 };
     _addInt64ArrayAttribute(top_group, "Version", version);
-
     _addStringAttribute(top_group, "Type", "UnstructuredGrid");
   }
 
@@ -248,6 +273,7 @@ beginWrite(const VariableCollection& vars)
   }
 
   _writeDataSet1DCollective<Int64>(top_group, "Offsets", cells_offset);
+
   _writeDataSet1DCollective<Int64>(top_group, "Connectivity", cells_connectivity);
   _writeDataSet1DCollective<unsigned char>(top_group, "Types", cells_type);
 
@@ -319,6 +345,113 @@ namespace
 /*---------------------------------------------------------------------------*/
 
 template <typename DataType> void VtkHdfDataWriter::
+_writeDataSet1DCollectiveWithCollectiveIO(HGroup& group, const String& name, Span<const DataType> values)
+{
+  IParallelMng* pm = m_mesh->parallelMng();
+  Int64 size = values.size();
+  Int32 nb_rank = pm->commSize();
+  Int32 my_rank = pm->commRank();
+  UniqueArray<Int64> all_sizes(nb_rank);
+  pm->allGather(ConstArrayView<Int64>(1, &size), all_sizes);
+
+  Int64 total_size = 0;
+  for (Integer i = 0; i < nb_rank; ++i)
+    total_size += all_sizes[i];
+  Int64 my_index = 0;
+  for (Integer i = 0; i < my_rank; ++i)
+    my_index += all_sizes[i];
+  //m_variables_offset.insert(std::make_pair(v->fullName(), VarOffset(my_index, total_size, all_sizes)));
+  //info() << " ADD OFFSET v=" << v->fullName() << " offset=" << my_index
+  //       << "  total_size=" << total_size;
+
+  hsize_t offset[1];
+  hsize_t count[1];
+  offset[0] = my_index;
+  count[0] = size;
+
+  hsize_t dims[1];
+  dims[0] = total_size;
+  HSpace filespace_id;
+  filespace_id.createSimple(1, dims);
+  HSpace memspace_id;
+  memspace_id.createSimple(1, count);
+
+  HDataset dataset_id;
+  const hid_t hdf_type = HDFTraits<DataType>::hdfType();
+
+  dataset_id.create(group, name.localstr(), hdf_type, filespace_id, H5P_DEFAULT);
+
+  H5Sselect_hyperslab(filespace_id.id(), H5S_SELECT_SET, offset, NULL, count, NULL);
+
+  HProperty write_plist_id;
+  write_plist_id.createDatasetTransfertCollectiveMPIIO();
+
+  herr_t herr = dataset_id.write(hdf_type, values.data(), memspace_id, filespace_id, write_plist_id);
+
+  if (herr < 0)
+    ARCANE_THROW(IOException, "Can not write dataset '{0}'", name);
+
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename DataType> void VtkHdfDataWriter::
+_writeDataSet2DCollectiveWithCollectiveIO(HGroup& group, const String& name, Span2<const DataType> values)
+{
+  IParallelMng* pm = m_mesh->parallelMng();
+  Int64 dim1_size = values.dim1Size();
+  Int64 dim2_size = values.dim2Size();
+  Int32 nb_rank = pm->commSize();
+  Int32 my_rank = pm->commRank();
+  UniqueArray<Int64> all_sizes(nb_rank);
+  pm->allGather(ConstArrayView<Int64>(1, &dim1_size), all_sizes);
+
+  Int64 total_size = 0;
+  for (Integer i = 0; i < nb_rank; ++i)
+    total_size += all_sizes[i];
+  Int64 my_index = 0;
+  for (Integer i = 0; i < my_rank; ++i)
+    my_index += all_sizes[i];
+  //m_variables_offset.insert(std::make_pair(v->fullName(), VarOffset(my_index, total_size, all_sizes)));
+  //info() << " ADD OFFSET v=" << v->fullName() << " offset=" << my_index
+  //       << "  total_size=" << total_size;
+
+  hsize_t offset[2];
+  hsize_t count[2];
+  offset[0] = my_index;
+  offset[1] = 0;
+  count[0] = dim1_size;
+  count[1] = dim2_size;
+
+  hsize_t dims[2];
+  dims[0] = total_size;
+  dims[1] = dim2_size;
+  HSpace filespace_id;
+  filespace_id.createSimple(2, dims);
+  HSpace memspace_id;
+  memspace_id.createSimple(2, count);
+
+  HDataset dataset_id;
+  const hid_t hdf_type = HDFTraits<DataType>::hdfType();
+
+  dataset_id.create(group, name.localstr(), hdf_type, filespace_id, H5P_DEFAULT);
+
+  H5Sselect_hyperslab(filespace_id.id(), H5S_SELECT_SET, offset, NULL, count, NULL);
+
+  HProperty write_plist_id;
+  write_plist_id.createDatasetTransfertCollectiveMPIIO();
+
+  herr_t herr = dataset_id.write(hdf_type, values.data(), memspace_id, filespace_id, write_plist_id);
+
+  if (herr < 0)
+    ARCANE_THROW(IOException, "Can not write dataset '{0}'", name);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename DataType> void VtkHdfDataWriter::
 _writeDataSet1D(HGroup& group, const String& name, Span<const DataType> values)
 {
   hsize_t dims[1];
@@ -343,7 +476,10 @@ _writeDataSet1DCollective(HGroup& group, const String& name, Span<const DataType
     _writeDataSet1D(group, name, values);
     return;
   }
-
+  if (m_is_collective_io) {
+    _writeDataSet1DCollectiveWithCollectiveIO(group, name, values);
+    return;
+  }
   UniqueArray<DataType> all_values;
   IParallelMng* pm = m_mesh->parallelMng();
   pm->gatherVariable(values.smallView(), all_values, pm->masterIORank());
@@ -380,6 +516,11 @@ _writeDataSet2DCollective(HGroup& group, const String& name, Span2<const DataTyp
 
   if (!m_is_parallel) {
     _writeDataSet2D(group, name, values);
+    return;
+  }
+
+  if (m_is_collective_io) {
+    _writeDataSet2DCollectiveWithCollectiveIO(group, name, values);
     return;
   }
 
@@ -440,6 +581,9 @@ _addStringAttribute(Hid& hid, const char* name, const String& value)
 void VtkHdfDataWriter::
 endWrite()
 {
+  m_cell_data_group.close();
+  m_node_data_group.close();
+  //top_group.close();
   m_file_id.close();
 
   // Ecrit le fichier contenant les temps (à partir de la version 5.5 de paraview)
@@ -524,10 +668,10 @@ write(IVariable* var, IData* data)
     _writeBasicTypeDataset<Real>(*group, var, data);
     break;
   case DT_Int64:
-    _writeBasicTypeDataset<Real>(*group, var, data);
+    _writeBasicTypeDataset<Int64>(*group, var, data);
     break;
   case DT_Int32:
-    _writeBasicTypeDataset<Real>(*group, var, data);
+    _writeBasicTypeDataset<Int32>(*group, var, data);
     break;
   case DT_Real3:
     _writeReal3Dataset(*group, var, data);

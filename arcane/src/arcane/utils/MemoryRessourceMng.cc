@@ -128,11 +128,11 @@ namespace
 /*---------------------------------------------------------------------------*/
 
 void MemoryRessourceMng::
-copy(MemoryView from, eMemoryRessource from_mem,
+copy(ConstMemoryView from, eMemoryRessource from_mem,
      MutableMemoryView to, eMemoryRessource to_mem)
 {
-  Int64 from_size = from.size();
-  Int64 to_size = to.size();
+  Int64 from_size = from.bytes().size();
+  Int64 to_size = to.bytes().size();
   if (from_size > to_size)
     ARCANE_FATAL("Destination copy is too small (to_size={0} from_size={1})", to_size, from_size);
 
@@ -150,10 +150,10 @@ copy(MemoryView from, eMemoryRessource from_mem,
                  from_mem);
 
   if (!_isHost(to_mem))
-    ARCANE_FATAL("Destination buffer is not accessible from host and no copier provided (localtion={0})",
+    ARCANE_FATAL("Destination buffer is not accessible from host and no copier provided (location={0})",
                  to_mem);
 
-  memcpy(to.span().data(), from.span().data(), from.size());
+  to.copyHost(from);
 }
 
 /*---------------------------------------------------------------------------*/

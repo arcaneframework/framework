@@ -44,7 +44,7 @@ class ARCANE_UTILS_EXPORT MemoryRessourceMng
 
  public:
 
-  void copy(MemoryView from, eMemoryRessource from_mem,
+  void copy(ConstMemoryView from, eMemoryRessource from_mem,
             MutableMemoryView to, eMemoryRessource to_mem) override;
 
  public:

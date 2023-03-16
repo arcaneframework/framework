@@ -299,7 +299,7 @@ class Reducer
     //int threadId = threadIdx.x + blockDim.x * threadIdx.y + (blockDim.x * blockDim.y) * threadIdx.z;
     //if ((threadId%16)==0)
     //printf("Destroy device Id=%d\n",threadId);
-    auto buf_span = m_grid_memory_info.m_grid_memory_values.span();
+    auto buf_span = m_grid_memory_info.m_grid_memory_values.bytes();
     DataType* buf = reinterpret_cast<DataType*>(buf_span.data());
     SmallSpan<DataType> grid_buffer(buf,static_cast<Int32>(buf_span.size()));
 

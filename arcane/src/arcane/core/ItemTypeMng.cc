@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023£ CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemTypeMng.cc                                              (C) 2000-2022 */
+/* ItemTypeMng.cc                                              (C) 2000-2023 */
 /*                                                                           */
 /* Gestionnaire des types d'entite du maillage.                              */
 /*---------------------------------------------------------------------------*/
@@ -120,6 +120,9 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     m_types[IT_Vertex] = type;
 
     type->setInfos(this, IT_Vertex, "Vertex", 0, 0, 0);
+    // TODO regarder si ce type est autorisé pour les mailles.
+    // Si ce n'est pas le cas, il faudrait définir un type
+    // pour les mailles 0D qui sont assimilables à des points.
   }
 
   // FaceVertex (face pour les maillages 1D)
@@ -128,6 +131,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     m_types[IT_FaceVertex] = type;
 
     type->setInfos(this, IT_FaceVertex, "FaceVertex", 1, 0, 0);
+    type->setIsValidForCell(false);
   }
 
   // Line2
@@ -136,6 +140,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     m_types[IT_Line2] = type;
 
     type->setInfos(this, IT_Line2, "Line2", 2, 0, 0);
+    type->setIsValidForCell(false);
   }
 
   // Line3
@@ -144,6 +149,7 @@ _build(IParallelSuperMng* parallel_mng, ITraceMng* trace)
     m_types[IT_Line3] = type;
 
     type->setInfos(this, IT_Line3, "Line3", 3, 0, 0);
+    type->setIsValidForCell(false);
   }
 
   // CellLine2 (mailles pour les maillages 1D)

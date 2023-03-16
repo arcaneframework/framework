@@ -9,7 +9,7 @@ endforeach()
 # Pour MEDFile, il faut HDF5 mais le find_package fait planter CMake (avec MED 4.0.0)
 # si HDF5 n'est pas trouvé. On ne fait donc le find_package que si HDF5
 # est trouvé
-if (HDF5_FOUND)
+if(HDF5_FOUND)
   list(APPEND PRIVATE_PKGS MEDFile)
   arcane_find_package(MEDFile QUIET)
 endif()
@@ -32,7 +32,7 @@ endif()
 if(MEDFILE_FOUND)
   list(APPEND ARCANE_SOURCES MEDMeshReaderService.cc)
 endif()
-if (Parmetis_FOUND)
+if(Parmetis_FOUND)
   list(APPEND ARCANE_SOURCES
     MetisMeshPartitioner.cc
     MetisGraphDigest.cc
@@ -42,7 +42,7 @@ if (Parmetis_FOUND)
     MetisGraphDigest.h
     MetisGraphGather.h
     MetisWrapper.h
-)
+    )
 endif()
 if(ZOLTAN_FOUND)
   list(APPEND ARCANE_SOURCES ZoltanMeshPartitioner.cc)
@@ -69,18 +69,18 @@ if(HWLOC_FOUND)
   list(APPEND ARCANE_SOURCES HWLocProcessorAffinity.cc)
 endif()
 if(OTF2_FOUND)
-  if (TARGET Arccore::arccore_message_passing_mpi)
+  if(TARGET Arccore::arccore_message_passing_mpi)
     # Récupère le numéro de version de Otf2 et vérifie qu'il s'agit
     # de la version 2.1.
     # TODO: à terme mettre cette détection dans Arccon.
     find_file(_OTF_GEN_DEF NAMES otf2/OTF2_GeneralDefinitions.h HINTS ${OTF2_INCLUDE_DIRS})
-	  if (_OTF_GEN_DEF)
+    if(_OTF_GEN_DEF)
       set(OTF2_REQUIRED_VERSION "2.1")
       file(STRINGS ${_OTF_GEN_DEF} _OTF_GEN_DEF_CONTENT REGEX "OTF2_VERSION")
       string(REGEX MATCH "OTF2_VERSION_MAJOR[ ]+([0-9]+).*OTF2_VERSION_MINOR[ ]+([0-9]+)" OTF2_VERSION_MATCH ${_OTF_GEN_DEF_CONTENT})
       set(OTF2_VERSION "${CMAKE_MATCH_1}.${CMAKE_MATCH_2}")
       message(STATUS "[Otf2] Found version '${OTF2_VERSION}' (required=${OTF2_REQUIRED_VERSION})")
-      if (OTF2_VERSION VERSION_LESS ${OTF2_REQUIRED_VERSION})
+      if(OTF2_VERSION VERSION_LESS ${OTF2_REQUIRED_VERSION})
         message(FATAL_ERROR
           "[Otf2] Found version (${OTF2_VERSION}) of Otf2 is too old."
           " Version '${OTF2_REQUIRED_VERSION}+' is required."
@@ -99,15 +99,23 @@ if(OTF2_FOUND)
   endif()
 endif()
 if(DbgHelp_FOUND)
-  list(APPEND ARCANE_SOURCES 
+  list(APPEND ARCANE_SOURCES
     DbgHelpStackTraceService.cc
     )
 endif()
 
-if (ARCANE_HAS_LINUX_PERF_COUNTERS)
+if(ARCANE_HAS_LINUX_PERF_COUNTERS)
   list(APPEND ARCANE_SOURCES
     LinuxPerfPerformanceCounterService.cc
     )
+endif()
+
+if(vtkIOXML_FOUND)
+  list(APPEND ARCANE_SOURCES
+    VtkPolyhedralMeshIOService.cc
+    )
+  list(APPEND PRIVATE_PKGS vtkIOXML)
+
 endif()
 
 # ----------------------------------------------------------------------------
@@ -117,25 +125,25 @@ arcane_add_library(arcane_std
   RELATIVE_PATH arcane/std
   FILES ${ARCANE_SOURCES}
   AXL_FILES ${AXL_FILES}
-)
+  )
 
 # ----------------------------------------------------------------------------
 
-if (${ARCANE_HAS_MALLOC_HOOKS})
+if(${ARCANE_HAS_MALLOC_HOOKS})
   target_compile_definitions(arcane_std PRIVATE ARCANE_USE_MALLOC_HOOK)
 endif()
 
-if (TARGET Arccore::arccore_message_passing_mpi)
+if(TARGET Arccore::arccore_message_passing_mpi)
   target_link_libraries(arcane_std PUBLIC Arccore::arccore_message_passing_mpi)
 endif()
-if (TARGET Arcane::arcane_hdf5)
+if(TARGET Arcane::arcane_hdf5)
   target_link_libraries(arcane_std PUBLIC Arcane::arcane_hdf5)
 endif()
 target_link_libraries(arcane_std PUBLIC ${ARCANE_BASE_LIBRARIES})
 
 # TODO: il semblerait qu'on ait besoin de rajouter stdc++fs pour que link passe avec le
 # std::filesystem du c++17 pour le moment, a enlever quand ce sera possible
-if (OTF2_FOUND AND UNIX)
+if(OTF2_FOUND AND UNIX)
   target_link_libraries(arcane_std PUBLIC stdc++fs)
 endif()
 

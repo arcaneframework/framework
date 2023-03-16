@@ -183,7 +183,8 @@ printStatsCollective(IStat* s, IParallelMng* pm)
              << Trace::Width(10) << "min"
              << Trace::Width(12) << "max"
              << Trace::Width(10) << "rank"
-             << Trace::Width(7) << "rank";
+             << Trace::Width(7) << "rank"
+             << Trace::Width(7) << "nb";
   for (String name : common_strings) {
     auto i = stat_map.find(name);
     if (i == stat_map.end())
@@ -201,7 +202,9 @@ printStatsCollective(IStat* s, IParallelMng* pm)
                << " " << _formatToString(min_time)
                << " " << _formatToString(max_time)
                << " " << Trace::Width(6) << min_time_rank
-               << " " << Trace::Width(6) << max_time_rank;
+               << " " << Trace::Width(6) << max_time_rank
+               << " " << Trace::Width(6) << i->second->nbMessage();
+
   }
 }
 

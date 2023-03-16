@@ -18,6 +18,7 @@
 
 #include "arcane/core/materials/MaterialsCoreGlobal.h"
 #include "arcane/core/ItemTypes.h"
+#include "arcane/core/MeshHandle.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

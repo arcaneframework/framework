@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ParallelMngDataTypeTest.cc                                  (C) 2000-2022 */
+/* ParallelMngDataTypeTest.cc                                  (C) 2000-2023 */
 /*                                                                           */
 /* Test des opérations de base du parallèlisme.                              */
 /*---------------------------------------------------------------------------*/
@@ -34,6 +34,7 @@
 #include "arcane/parallel/IRequestList.h"
 
 #include "arccore/message_passing/Messages.h"
+#include "arccore/message_passing/GatherMessageInfo.h"
 
 #include "arcane/datatype/DataTypeTraits.h"
 
@@ -99,6 +100,7 @@ class HasMessagePassingMngImplementation<Arcane::HPReal>
 
 using namespace Arcane;
 using namespace Arcane::Parallel;
+namespace MP = Arccore::MessagePassing;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -388,14 +390,14 @@ class ParallelMngDataTypeTest
   void _testAllReduceArray2();
   void _testAllReduceArray();
   template<bool UseMessagePassingMng>
-  void _testAllGatherVariable3(Int32 root_rank);
+  void _testAllGatherVariable3(Int32 root_rank,bool use_generic);
   void _testAllGatherVariable();
   void _testAllGatherVariable2(Int32 root_rank);
   void _fillAllGather(Integer nb_value,CommInfo& c);
   void _testAllGather();
   void _testAllGather2(Int32 root_rank);
   template<bool UseMessagePassingMng>
-  void _testAllGather3(Int32 root_rank);
+  void _testAllGather3(Int32 root_rank,bool use_generic);
   void _fillAllToAllVariable(Integer nb_value,AllToAllVariableCommInfo& ci);
   template<bool UseMessagePassingMng>
   void _testAllToAllVariable2();
@@ -1102,11 +1104,14 @@ template<typename DataType> void
 ParallelMngDataTypeTest<DataType>::
 _testAllGatherVariable2(Int32 root_rank)
 {
+  IParallelMng* pm = m_parallel_mng;
   info() << "Testing AllGatherVariable: use IParallelMng root_rank=" << root_rank;
-  _testAllGatherVariable3<false>(root_rank);
+  _testAllGatherVariable3<false>(root_rank,false);
   if constexpr (HasMessagePassingMngImplementation<DataType>::hasImpl()){
     info() << "Testing AllGatherVariable: use IMessagePassingMng root_rank=" << root_rank;
-    _testAllGatherVariable3<true>(root_rank);
+    _testAllGatherVariable3<true>(root_rank,false);
+    if (pm->isParallel() && !pm->isThreadImplementation() && !pm->isHybridImplementation())
+      _testAllGatherVariable3<true>(root_rank,true);
   }
 }
 
@@ -1115,7 +1120,7 @@ _testAllGatherVariable2(Int32 root_rank)
 
 template<typename DataType> template<bool UseMessagePassingMng> void
 ParallelMngDataTypeTest<DataType>::
-_testAllGatherVariable3(Int32 root_rank)
+_testAllGatherVariable3(Int32 root_rank,bool use_generic)
 {
   // root_rank vaut (-1) si on utilise la version collective (allGather)
   IParallelMng* pm = m_parallel_mng;
@@ -1135,14 +1140,29 @@ _testAllGatherVariable3(Int32 root_rank)
   }
 
   if (root_rank<0){
-    if constexpr (UseMessagePassingMng)
-      mpAllGatherVariable(mpm,send_values,recv_values);
+    if constexpr (UseMessagePassingMng){
+      if (use_generic){
+        MP::GatherMessageInfo<DataType> gather_info;
+        gather_info.setGatherVariable(send_values,&recv_values);
+        mpGather(mpm,gather_info);
+      }
+      else
+        mpAllGatherVariable(mpm,send_values,recv_values);
+    }
     else
       pm->allGatherVariable(send_values,recv_values);
   }
   else{
-    if constexpr (UseMessagePassingMng)
-      mpGatherVariable(mpm,send_values,recv_values,root_rank);
+    if constexpr (UseMessagePassingMng){
+      if (use_generic){
+        MP::GatherMessageInfo<DataType> gather_info{MessageRank(root_rank)};
+        gather_info.setGatherVariable(send_values,&recv_values);
+        mpGather(mpm,gather_info);
+        //mpGatherVariable(mpm,send_values,recv_values,root_rank);
+      }
+      else
+        mpGatherVariable(mpm,send_values,recv_values,root_rank);
+    }
     else
       pm->gatherVariable(send_values,recv_values,root_rank);
   }
@@ -1227,11 +1247,14 @@ template<typename DataType> void
 ParallelMngDataTypeTest<DataType>::
 _testAllGather2(Int32 root_rank)
 {
+  IParallelMng* pm = m_parallel_mng;
   info() << "Testing AllGather: use IParallelMng root_rank=" << root_rank;
-  _testAllGather3<false>(root_rank);
+  _testAllGather3<false>(root_rank,false);
   if constexpr (HasMessagePassingMngImplementation<DataType>::hasImpl()){
      info() << "Testing AllGather: use IMessagePassingMng root_rank=" << root_rank;
-    _testAllGather3<true>(root_rank);
+     _testAllGather3<true>(root_rank,false);
+     if (pm->isParallel() && !pm->isThreadImplementation() && !pm->isHybridImplementation())
+      _testAllGather3<true>(root_rank,true);
   }
 }
 
@@ -1240,7 +1263,7 @@ _testAllGather2(Int32 root_rank)
 
 template<typename DataType> template<bool UseMessagePassingMng> void
 ParallelMngDataTypeTest<DataType>::
-_testAllGather3(Int32 root_rank)
+_testAllGather3(Int32 root_rank,bool use_generic)
 {
   const Integer nb_size = 3;
   Integer _sizes[nb_size] = { 125, 3053, 12950 };
@@ -1260,8 +1283,15 @@ _testAllGather3(Int32 root_rank)
   for( Integer i=0; i<nb_size; ++i ){
     info() << "Testing Blocking AllGather with nb_value=" << c[i].send_values.size();
     if (root_rank<0){
-      if constexpr (UseMessagePassingMng)
-        mpAllGather(mpm,c[i].send_values,c[i].recv_values);
+      if constexpr (UseMessagePassingMng){
+        if (use_generic){
+          MP::GatherMessageInfo<DataType> gather_info;
+          gather_info.setGather(c[i].send_values,c[i].recv_values);
+          mpGather(mpm,gather_info);
+        }
+        else
+          mpAllGather(mpm,c[i].send_values,c[i].recv_values);
+      }
       else
         pm->allGather(c[i].send_values,c[i].recv_values);
     }
@@ -1269,8 +1299,15 @@ _testAllGather3(Int32 root_rank)
       ArrayView<DataType> recv_values = c[i].recv_values;
       if (root_rank!=rank)
         recv_values = ArrayView<DataType>{};
-      if constexpr (UseMessagePassingMng)
-        mpGather(mpm,c[i].send_values,recv_values,root_rank);
+      if constexpr (UseMessagePassingMng){
+        if (use_generic){
+          MP::GatherMessageInfo<DataType> gather_info{MessageRank(root_rank)};
+          gather_info.setGather(c[i].send_values,recv_values);
+          mpGather(mpm,gather_info);
+        }
+        else
+          mpGather(mpm,c[i].send_values,recv_values,root_rank);
+      }
       else
         pm->gather(c[i].send_values,recv_values,root_rank);
     }

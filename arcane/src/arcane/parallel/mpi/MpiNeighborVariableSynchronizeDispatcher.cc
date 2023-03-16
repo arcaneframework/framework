@@ -129,9 +129,7 @@ beginSynchronize(IDataSynchronizeBuffer* buf)
     MpiTimeInterval tit(&send_copy_time);
 
     // Recopie les buffers d'envoi
-    Integer nb_message = buf->nbRank();
-    for (Integer i = 0; i < nb_message; ++i)
-      buf->copySend(i);
+    buf->copyAllSend();
   }
   Int64 total_share_size = buf->totalSendSize();
   m_mpi_parallel_mng->stat()->add("SyncSendCopy", send_copy_time, total_share_size);
@@ -162,8 +160,8 @@ endSynchronize(IDataSynchronizeBuffer* buf)
     ARCANE_THROW(NotSupportedException,"Can not use MPI_Neighbor_alltoallv when hasGlobalBufer() is false");
 
   for (Integer i = 0; i < nb_message; ++i) {
-    Int32 nb_send = CheckedConvert::toInt32(buf->sendBuffer(i).size());
-    Int32 nb_receive = CheckedConvert::toInt32(buf->receiveBuffer(i).size());
+    Int32 nb_send = CheckedConvert::toInt32(buf->sendBuffer(i).bytes().size());
+    Int32 nb_receive = CheckedConvert::toInt32(buf->receiveBuffer(i).bytes().size());
     Int32 send_displacement = CheckedConvert::toInt32(buf->sendDisplacement(i));
     Int32 receive_displacement = CheckedConvert::toInt32(buf->receiveDisplacement(i));
 
@@ -185,8 +183,7 @@ endSynchronize(IDataSynchronizeBuffer* buf)
   // Recopie les valeurs recues
   {
     MpiTimeInterval tit(&copy_time);
-    for (Integer i = 0; i < nb_message; ++i)
-      buf->copyReceive(i);
+    buf->copyAllReceive();
   }
 
   Int64 total_ghost_size = buf->totalReceiveSize();

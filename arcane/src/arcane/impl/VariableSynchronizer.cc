@@ -55,6 +55,12 @@ bool global_debug_sync = false;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+extern "C++" Ref<IGenericVariableSynchronizerDispatcherFactory>
+arcaneCreateSimpleVariableSynchronizerFactory(IParallelMng* pm);
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 VariableSynchronizer::
 VariableSynchronizer(IParallelMng* pm,const ItemGroup& group,
                      VariableSynchronizerDispatcher* dispatcher)
@@ -70,9 +76,12 @@ VariableSynchronizer(IParallelMng* pm,const ItemGroup& group,
 {
   typedef DataTypeDispatchingDataVisitor<IVariableSynchronizeDispatcher> DispatcherType;
   if (!m_dispatcher){
-    VariableSynchronizeDispatcherBuildInfo bi(pm,nullptr);
-    DispatcherType* dt = DispatcherType::create<SimpleVariableSynchronizeDispatcher>(bi);
-    m_dispatcher = new VariableSynchronizerDispatcher(pm,dt);
+    auto generic_factory = arcaneCreateSimpleVariableSynchronizerFactory(pm);
+    GroupIndexTable* table = nullptr;
+    if (!group.isAllItems())
+      table = group.localIdToIndex().get();
+    VariableSynchronizeDispatcherBuildInfo bi(pm,table,generic_factory);
+    m_dispatcher = new VariableSynchronizerDispatcher(pm,DispatcherType::create<VariableSynchronizeDispatcher>(bi));
   }
   m_dispatcher->setItemGroupSynchronizeInfo(&m_sync_list);
   m_multi_dispatcher = new VariableSynchronizerMultiDispatcher(pm);

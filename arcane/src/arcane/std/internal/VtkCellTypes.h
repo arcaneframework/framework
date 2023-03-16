@@ -107,8 +107,8 @@ const unsigned char VTK_BEZIER_HEXAHEDRON = 79;
 const unsigned char VTK_BEZIER_WEDGE = 80;
 const unsigned char VTK_BEZIER_PYRAMID = 81;
 
-extern "C++" int vtkToArcaneCellType(int vtk_type, Int32 nb_node);
-extern "C++" unsigned char arcaneToVtkCellType(int arcane_type);
+extern "C++" Int16 vtkToArcaneCellType(int vtk_type, Int32 nb_node);
+extern "C++" unsigned char arcaneToVtkCellType(Int16 arcane_type);
 
 // Les valeurs pour le type 'CellGhostTypes' sont définies
 // dans le fichier vtkDataSetAttributes.h.

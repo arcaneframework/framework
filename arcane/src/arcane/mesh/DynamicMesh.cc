@@ -54,6 +54,8 @@
 #include "arcane/IMeshMng.h"
 #include "arcane/MeshBuildInfo.h"
 
+#include "arcane/core/internal/UnstructuredMeshAllocateBuildInfoInternal.h"
+
 #include "arcane/mesh/ExtraGhostCellsBuilder.h"
 #include "arcane/mesh/ExtraGhostParticlesBuilder.h"
 
@@ -173,6 +175,7 @@ DynamicMesh(ISubDomain* sub_domain,const MeshBuildInfo& mbi, bool is_submesh, bo
 , m_new_item_owner_builder(nullptr)
 , m_extra_ghost_cells_builder(nullptr)
 , m_extra_ghost_particles_builder(nullptr)
+, m_initial_allocator(this)
 , m_is_amr_activated(is_amr)
 , m_is_dynamic(false)
 , m_tied_interface_mng(nullptr)
@@ -773,6 +776,8 @@ endAllocate()
   _prepareForDump();
 
   m_is_allocated = true;
+  if (arcaneIsCheck())
+    checkValidMesh();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -843,6 +848,17 @@ _addCells(ISerializer* buffer,Int32Array* cells_local_id)
   else {
     _deserializeItems(buffer, cells_local_id, m_cell_family);
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void DynamicMesh::
+allocate(UnstructuredMeshAllocateBuildInfo& build_info)
+{
+  auto* x = build_info._internal();
+  setDimension(x->meshDimension());
+  allocateCells(x->nbCell(),x->cellsInfos(),true);
 }
 
 /*---------------------------------------------------------------------------*/

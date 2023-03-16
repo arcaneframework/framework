@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshMaterial.cc                                             (C) 2000-2017 */
+/* MeshMaterial.cc                                             (C) 2000-2023 */
 /*                                                                           */
 /* Matériau d'un maillage.                                                   */
 /*---------------------------------------------------------------------------*/
@@ -29,27 +29,21 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
-MATERIALS_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane::Materials
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 MeshMaterial::
-MeshMaterial(MeshMaterialInfo* infos,MeshEnvironment* env,
-             const String& name,Int32 mat_id)
+MeshMaterial(MeshMaterialInfo* infos, MeshEnvironment* env,
+             const String& name, Int32 mat_id)
 : TraceAccessor(infos->materialMng()->traceMng())
 , m_material_mng(infos->materialMng())
 , m_infos(infos)
 , m_environment(env)
 , m_user_material(nullptr)
-, m_data(this,name,mat_id,true)
+, m_data(this, name, mat_id, true)
 {
   if (!env)
     throw ArgumentException(A_FUNCINFO,
@@ -77,7 +71,7 @@ build()
   IMesh* mesh = m_material_mng->mesh();
   IItemFamily* cell_family = mesh->cellFamily();
   String group_name = m_material_mng->name() + "_" + name();
-  CellGroup items = cell_family->findGroup(group_name,true);
+  CellGroup items = cell_family->findGroup(group_name, true);
   m_data.setItems(items);
 }
 
@@ -97,11 +91,11 @@ MatCell MeshMaterial::
 findMatCell(AllEnvCell c) const
 {
   Int32 mat_id = m_data.componentId();
-  ENUMERATE_CELL_ENVCELL(ienvcell,c){
-    ENUMERATE_CELL_MATCELL(imatcell,(*ienvcell)){
+  ENUMERATE_CELL_ENVCELL (ienvcell, c) {
+    ENUMERATE_CELL_MATCELL (imatcell, (*ienvcell)) {
       MatCell mc = *imatcell;
       Int32 mid = mc.materialId();
-      if (mid==mat_id)
+      if (mid == mat_id)
         return mc;
     }
   }
@@ -123,7 +117,8 @@ findComponentCell(AllEnvCell c) const
 MatItemVectorView MeshMaterial::
 matView()
 {
-  return MatItemVectorView(this,variableIndexer()->matvarIndexes(),itemsInternalView());
+  return {this, variableIndexer()->matvarIndexes(),
+          itemsInternalView(), variableIndexer()->localIds()};
 }
 
 /*---------------------------------------------------------------------------*/
@@ -195,7 +190,7 @@ partItems(eMatPart part)
 MatPurePartItemVectorView MeshMaterial::
 pureMatItems()
 {
-  return MatPurePartItemVectorView(this,m_data.partData()->pureView());
+  return {this, m_data.partData()->pureView()};
 }
 
 /*---------------------------------------------------------------------------*/
@@ -204,7 +199,7 @@ pureMatItems()
 MatImpurePartItemVectorView MeshMaterial::
 impureMatItems()
 {
-  return MatImpurePartItemVectorView(this,m_data.partData()->impureView());
+  return {this, m_data.partData()->impureView()};
 }
 
 /*---------------------------------------------------------------------------*/
@@ -213,14 +208,13 @@ impureMatItems()
 MatPartItemVectorView MeshMaterial::
 partMatItems(eMatPart part)
 {
-  return MatPartItemVectorView(this,m_data.partData()->partView(part));
+  return {this, m_data.partData()->partView(part)};
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MATERIALS_END_NAMESPACE
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

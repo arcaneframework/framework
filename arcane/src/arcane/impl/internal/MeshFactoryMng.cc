@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshFactoryMng.cc                                           (C) 2000-2020 */
+/* MeshFactoryMng.cc                                           (C) 2000-2023 */
 /*                                                                           */
 /* Gestionnaire de fabriques de maillages.                                   */
 /*---------------------------------------------------------------------------*/
@@ -37,11 +37,16 @@ Ref<IMeshFactory>
 _getMeshFactory(IApplication* app,const MeshBuildInfo& mbi)
 {
   String factory_name = mbi.factoryName();
-  ServiceBuilder<IMeshFactory> services(app);
-  Ref<IMeshFactory> mf = services.createReference(factory_name,SB_AllowNull);
-  if (!mf)
-    ARCANE_FATAL("No mesh factory named '{0}' found for creating mesh '{1}'",
-                 factory_name,mbi.name());
+  ServiceBuilder<IMeshFactory> service_builder(app);
+  Ref<IMeshFactory> mf = service_builder.createReference(factory_name,SB_AllowNull);
+  if (!mf){
+    StringUniqueArray valid_names;
+    service_builder.getServicesNames(valid_names);
+    String valid_str = String::join(", ",valid_names);
+    ARCANE_FATAL("No mesh factory named '{0}' found for creating mesh '{1}'."
+                 " Valid values are {2}",
+                 factory_name,mbi.name(),valid_str);
+  }
   return mf;
 }
 }

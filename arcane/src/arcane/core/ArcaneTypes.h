@@ -110,8 +110,11 @@ class MeshHandle;
 class MeshHandleOrMesh;
 class MeshBuildInfo;
 class IPrimaryMesh;
+class IMeshInitialAllocator;
 class IIndexedIncrementalItemConnectivityMng;
 class IIndexedIncrementalItemConnectivity;
+class IMeshInitialAllocator;
+class UnstructuredMeshAllocateBuildInfo;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

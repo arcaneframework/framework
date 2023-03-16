@@ -79,10 +79,8 @@ createTopology(IParallelMng* pm)
 Ref<IVariableSynchronizer> ParallelMngUtilsFactoryBase::
 createSynchronizer(IParallelMng* pm,IItemFamily* family)
 {
-  typedef DataTypeDispatchingDataVisitor<IVariableSynchronizeDispatcher> DispatcherType;
-  VariableSynchronizeDispatcherBuildInfo bi(pm,nullptr);
-  auto vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<SimpleVariableSynchronizeDispatcher>(bi));
-  return makeRef<IVariableSynchronizer>(new VariableSynchronizer(pm,family->allItems(),vd));
+  auto* x = new VariableSynchronizer(pm,family->allItems(),nullptr);
+  return makeRef<IVariableSynchronizer>(x);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -91,11 +89,8 @@ createSynchronizer(IParallelMng* pm,IItemFamily* family)
 Ref<IVariableSynchronizer> ParallelMngUtilsFactoryBase::
 createSynchronizer(IParallelMng* pm,const ItemGroup& group)
 {
-  SharedPtrT<GroupIndexTable> table = group.localIdToIndex();
-  VariableSynchronizeDispatcherBuildInfo bi(pm,table.get());
-  typedef DataTypeDispatchingDataVisitor<IVariableSynchronizeDispatcher> DispatcherType;
-  auto vd = new VariableSynchronizerDispatcher(pm,DispatcherType::create<SimpleVariableSynchronizeDispatcher>(bi));
-  return makeRef<IVariableSynchronizer>(new VariableSynchronizer(pm,group,vd));
+  auto* x = new VariableSynchronizer(pm,group,nullptr);
+  return makeRef<IVariableSynchronizer>(x);
 }
 
 /*---------------------------------------------------------------------------*/

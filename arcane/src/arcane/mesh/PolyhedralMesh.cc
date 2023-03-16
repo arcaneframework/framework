@@ -13,14 +13,18 @@
 
 #include "arcane/mesh/PolyhedralMesh.h"
 
-#include "arcane/ISubDomain.h"
-#include "arcane/utils/ITraceMng.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/ItemSharedInfo.h"
+#include "arcane/core/ItemTypeInfo.h"
+#include "arcane/core/ItemTypeMng.h"
+#include "arcane/core/VariableBuildInfo.h"
+#include "arcane/core/MeshBuildInfo.h"
+#include "arcane/core/ServiceFactory.h"
 #include "arcane/mesh/ItemFamily.h"
-#include "arcane/ItemSharedInfo.h"
-#include "arcane/ItemTypeInfo.h"
-#include "arcane/ItemTypeMng.h"
+#include "arcane/utils/ITraceMng.h"
 #include "arcane/utils/FatalErrorException.h"
-#include "arcane/VariableBuildInfo.h"
+#include "arcane/core/AbstractService.h"
+#include "arcane/core/IMeshFactory.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -98,7 +102,7 @@ namespace mesh
       return item_internal;
     }
 
-    void addItems(Int64ConstArrayView uids, Int32ArrayView items)
+    void addItems(Int64ConstSmallSpan uids, Int32ArrayView items)
     {
       if (uids.empty())
         return;
@@ -162,11 +166,15 @@ namespace mesh
 #include "arcane/MeshHandle.h"
 #include "arcane/IItemFamily.h"
 #include "arcane/mesh/ItemFamily.h"
+#include "arcane/utils/Collection.h"
+#include "arcane/utils/List.h"
 
 #include "neo/Mesh.h"
 
 #ifdef ARCANE_HAS_VTKIO
 #include "arcane/mesh/PolyhedralMeshTools.h"
+#include "arcane/core/AbstractService.h"
+#include "arcane/core/IMeshFactory.h"
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -254,7 +262,7 @@ namespace mesh
     /*---------------------------------------------------------------------------*/
 
     void scheduleAddItems(PolyhedralFamily* arcane_item_family,
-                          Int64ConstArrayView uids,
+                          Int64ConstSmallSpan uids,
                           ItemLocalIds& item_local_ids)
     {
       auto& added_items = item_local_ids.m_future_items;
@@ -300,9 +308,9 @@ namespace mesh
 
     void scheduleAddConnectivity(PolyhedralFamily* arcane_source_item_family,
                                  ItemLocalIds& source_items,
-                                 Int32ConstArrayView nb_connected_items_per_item,
+                                 Int32ConstSmallSpan nb_connected_items_per_item,
                                  PolyhedralFamily* arcane_target_item_family,
-                                 Int64ConstArrayView target_items_uids,
+                                 Int64ConstSmallSpan target_items_uids,
                                  String const& connectivity_name)
     {
       // debug
@@ -337,7 +345,7 @@ namespace mesh
                                   ItemLocalIds& source_items,
                                   ConnectivitySizeType&& nb_connected_items_per_item,
                                   PolyhedralFamily* arcane_target_item_family,
-                                  Int64ConstArrayView target_item_uids,
+                                  Int64ConstSmallSpan target_item_uids,
                                   String const& connectivity_name)
     {
       // add connectivity in Neo
@@ -385,7 +393,7 @@ namespace mesh
 
     /*---------------------------------------------------------------------------*/
 
-    void scheduleSetItemCoordinates(PolyhedralFamily* item_family, ItemLocalIds& local_ids, Real3ArrayView item_coords, VariableItemReal3& arcane_coords)
+    void scheduleSetItemCoordinates(PolyhedralFamily* item_family, ItemLocalIds& local_ids, Real3ConstSmallSpan item_coords, VariableItemReal3& arcane_coords)
     {
       auto& _item_family = m_mesh.findFamily(itemKindArcaneToNeo(item_family->itemKind()), item_family->name().localstr());
       std::vector<Neo::utils::Real3> _node_coords(item_coords.size());
@@ -491,15 +499,17 @@ handle() const
 /*---------------------------------------------------------------------------*/
 
 mesh::PolyhedralMesh::
-PolyhedralMesh(ISubDomain* subdomain)
+PolyhedralMesh(ISubDomain* subdomain, const MeshBuildInfo& mbi)
 : EmptyMesh{ subdomain->traceMng() }
-, m_name{ subdomain->defaultMeshHandle().meshName() }
+, m_name{ mbi.name() }
 , m_subdomain{ subdomain }
 , m_mesh_handle{ m_subdomain->defaultMeshHandle() }
 , m_properties(std::make_unique<Properties>(subdomain->propertyMng(), String("ArcaneMeshProperties_") + m_name))
 , m_mesh{ std::make_unique<mesh::PolyhedralMeshImpl>(m_subdomain) }
 , m_item_type_mng(ItemTypeMng::_singleton())
 , m_arcane_node_coords(nullptr)
+, m_initial_allocator(*this)
+, m_variable_mng{ subdomain->variableMng() }
 {
   m_mesh_handle._setMesh(this);
   m_mesh_item_internal_list.mesh = this;
@@ -574,6 +584,95 @@ read(const String& filename)
 #else
   ARCANE_FATAL("Need VTKIO to read polyhedral mesh");
 #endif
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void Arcane::mesh::PolyhedralMesh::
+allocateItems(const Arcane::ItemAllocationInfo& item_allocation_info)
+{
+  // Second step read a vtk polyhedral mesh
+  m_subdomain->traceMng()->info() << "--PolyhedralMesh : allocate items --";
+  UniqueArray<PolyhedralMeshImpl::ItemLocalIds> item_local_ids(item_allocation_info.family_infos.size());
+  auto family_index = 0;
+  // Prepare item creation
+  for (auto& family_info : item_allocation_info.family_infos) {
+    auto item_family = _createItemFamily(family_info.item_kind, family_info.name);
+    m_trace_mng->info() << " Create items " << family_info.name;
+    m_mesh->scheduleAddItems(item_family, family_info.item_uids, item_local_ids[family_index++]);
+  }
+  // Prepare connectivity creation
+  family_index = 0;
+  for (auto& family_info : item_allocation_info.family_infos) {
+    auto item_family = _findItemFamily(family_info.item_kind, family_info.name);
+    m_trace_mng->info() << "Current family " << family_info.name;
+    for (auto& current_connected_family_info : family_info.connected_family_info) {
+      auto connected_family = _findItemFamily(current_connected_family_info.item_kind, current_connected_family_info.name);
+      m_trace_mng->info() << " Create connectivity " << current_connected_family_info.connectivity_name;
+      // check if connected family exists
+      if (!connected_family) {
+        ARCANE_WARNING((String::format("Cannot find family {0} with kind {1} "
+                                       "The connectivity between {1} and this family is skipped",
+                                       current_connected_family_info.name,
+                                       current_connected_family_info.item_kind,
+                                       item_family->name())
+                        .localstr()));
+        continue;
+      }
+      m_mesh->scheduleAddConnectivity(item_family,
+                                      item_local_ids[family_index],
+                                      current_connected_family_info.nb_connected_items_per_item,
+                                      connected_family,
+                                      current_connected_family_info.connected_items_uids,
+                                      current_connected_family_info.connectivity_name);
+    }
+    ++family_index;
+  }
+  // Create items and connectivities
+  m_mesh->applyScheduledOperations();
+  // Create variable for coordinates. This has to be done before call to family::endUpdate. Todo add to the graph
+  for (auto& family_info : item_allocation_info.family_infos) {
+    if (family_info.item_coordinates.empty()) {
+      ++family_index;
+      continue;
+    }
+    auto item_family = _findItemFamily(family_info.item_kind, family_info.name);
+    if (item_family == itemFamily(IK_Node)) { // mesh node coords
+      m_arcane_node_coords = std::make_unique<VariableNodeReal3>(VariableBuildInfo(this, family_info.item_coordinates_variable_name));
+      m_arcane_node_coords->setUsed(true);
+    }
+    else {
+      auto arcane_item_coords_var_ptr = std::make_unique<VariableItemReal3>(VariableBuildInfo(this, family_info.item_coordinates_variable_name),
+                                                                            item_family->itemKind());
+      arcane_item_coords_var_ptr->setUsed(true);
+      m_arcane_item_coords.push_back(std::move(arcane_item_coords_var_ptr));
+    }
+  }
+  // Call Arcane ItemFamily endUpdate
+  for (auto& family : m_arcane_families) {
+    family->endUpdate();
+  }
+  endUpdate();
+  // Add coordinates when needed (nodes, or dof, or particles...)
+  family_index = 0;
+  auto index = 0;
+  for (auto& family_info : item_allocation_info.family_infos) {
+    if (family_info.item_coordinates.empty()) {
+      ++family_index;
+      continue;
+    }
+    auto item_family = _findItemFamily(family_info.item_kind, family_info.name);
+    if (item_family == itemFamily(IK_Node)) { // mesh node coords
+      m_mesh->scheduleSetItemCoordinates(item_family, item_local_ids[family_index], family_info.item_coordinates, *m_arcane_node_coords);
+    }
+    else
+      m_mesh->scheduleSetItemCoordinates(item_family, item_local_ids[family_index], family_info.item_coordinates, *m_arcane_item_coords[index++].get());
+  }
+  m_mesh->applyScheduledOperations();
+  m_is_allocated = true;
+  // indicates mesh contains general Cells
+  itemTypeMng()->setMeshWithGeneralCells(this);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -690,8 +789,8 @@ allCells()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IItemFamily* mesh::PolyhedralMesh::
-createItemFamily(eItemKind ik, const String& name)
+mesh::PolyhedralFamily* mesh::PolyhedralMesh::
+_createItemFamily(eItemKind ik, const String& name)
 {
   m_mesh->addFamily(ik, name);
   m_arcane_families.push_back(std::make_unique<PolyhedralFamily>(this, ik, name));
@@ -701,6 +800,15 @@ createItemFamily(eItemKind ik, const String& name)
     _updateMeshInternalList(ik);
   }
   return current_family;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IItemFamily* mesh::PolyhedralMesh::
+createItemFamily(eItemKind ik, const String& name)
+{
+  return _createItemFamily(ik, name);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -716,8 +824,8 @@ _createUnitMesh()
   Int64UniqueArray cell_uids{ 0 }, node_uids{ 0, 1, 2, 3, 4, 5 };
   // todo add a cell_lids struct (containing future)
   PolyhedralMeshImpl::ItemLocalIds cell_lids, node_lids;
-  m_mesh->scheduleAddItems(cell_family, cell_uids, cell_lids);
-  m_mesh->scheduleAddItems(node_family, node_uids, node_lids);
+  m_mesh->scheduleAddItems(cell_family, cell_uids.constView(), cell_lids);
+  m_mesh->scheduleAddItems(node_family, node_uids.constView(), node_lids);
   int nb_node = 6;
   m_mesh->scheduleAddConnectivity(cell_family, cell_lids, nb_node, node_family, node_uids, String{ "CellToNodes" });
   m_mesh->scheduleAddConnectivity(node_family, node_lids, 1, cell_family,
@@ -813,10 +921,19 @@ _updateMeshInternalList(eItemKind kind)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+mesh::PolyhedralFamily* mesh::PolyhedralMesh::
+_itemFamily(eItemKind ik)
+{
+  return m_default_arcane_families[ik];
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 IItemFamily* mesh::PolyhedralMesh::
 itemFamily(eItemKind ik)
 {
-  return m_default_arcane_families[ik];
+  return _itemFamily(ik);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -831,15 +948,14 @@ itemTypeMng() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IItemFamily* mesh::PolyhedralMesh::
-findItemFamily(eItemKind ik, const String& name, bool create_if_needed, bool register_modifier_if_created)
+mesh::PolyhedralFamily* mesh::PolyhedralMesh::
+_findItemFamily(eItemKind ik, const String& name, bool create_if_needed)
 {
-  ARCANE_UNUSED(register_modifier_if_created); // IItemFamilyModifier not yet used in polyhedral mesh
   // Check if is a default family
-  auto family = itemFamily(ik);
-  if (family) {
-    if (family->name() == name)
-      return family;
+  auto found_family = _itemFamily(ik);
+  if (found_family) {
+    if (found_family->name() == name)
+      return found_family;
   }
   for (auto& family : m_arcane_families) {
     if (family->itemKind() == ik && family->name() == name)
@@ -847,7 +963,17 @@ findItemFamily(eItemKind ik, const String& name, bool create_if_needed, bool reg
   }
   if (!create_if_needed)
     return nullptr;
-  return createItemFamily(ik, name);
+  return _createItemFamily(ik, name);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+IItemFamily* mesh::PolyhedralMesh::
+findItemFamily(eItemKind ik, const String& name, bool create_if_needed, bool register_modifier_if_created)
+{
+  ARCANE_UNUSED(register_modifier_if_created); // IItemFamilyModifier not yet used in polyhedral mesh
+  return _findItemFamily(ik, name, create_if_needed);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -912,6 +1038,19 @@ destroyGroups()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+IItemFamilyCollection mesh::PolyhedralMesh::
+itemFamilies()
+{
+  List<IItemFamily*> item_family_collection;
+  for (auto& item_family_ptr : m_arcane_families) {
+    item_family_collection.add(item_family_ptr.get());
+  }
+  return item_family_collection;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 } // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
@@ -938,11 +1077,13 @@ Arcane::mesh::PolyhedralMesh::
 /*---------------------------------------------------------------------------*/
 
 Arcane::mesh::PolyhedralMesh::
-PolyhedralMesh(ISubDomain* subdomain)
+PolyhedralMesh(ISubDomain* subdomain, const MeshBuildInfo& mbi)
 : EmptyMesh{ subdomain->traceMng() }
 , m_subdomain{ subdomain }
 , m_mesh{ nullptr }
-{}
+{
+  ARCANE_UNUSED(mbi);
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -956,7 +1097,73 @@ read([[maybe_unused]] const String& filename)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void Arcane::mesh::PolyhedralMesh::
+allocateItems(const Arcane::ItemAllocationInfo& item_allocation_info)
+{
+  ARCANE_UNUSED(item_allocation_info);
+  _errorEmptyMesh();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 #endif // ARCANE_HAS_CUSTOM_MESH_TOOLS
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane
+{
+
+class ARCANE_MESH_EXPORT PolyhedralMeshFactory
+: public AbstractService
+, public IMeshFactory
+{
+ public:
+
+  explicit PolyhedralMeshFactory(const ServiceBuildInfo& sbi)
+  : AbstractService(sbi)
+  {}
+
+ public:
+
+  void build() override {}
+  IPrimaryMesh* createMesh(IMeshMng* mm, const MeshBuildInfo& build_info) override
+  {
+    ISubDomain* sd = mm->variableMng()->_internalSubDomain();
+    return new mesh::PolyhedralMesh(sd, build_info);
+  }
+
+  static String name() { return "ArcanePolyhedralMeshFactory"; }
+};
+
+ARCANE_REGISTER_SERVICE(PolyhedralMeshFactory,
+                        ServiceProperty(PolyhedralMeshFactory::name().localstr(), ST_Application),
+                        ARCANE_SERVICE_INTERFACE(IMeshFactory));
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#if ARCANE_HAS_CUSTOM_MESH_TOOLS
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+String mesh::PolyhedralMesh::
+factoryName() const
+{
+  return PolyhedralMeshFactory::name();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+#endif // ARCANE_HAS_CUSTOM_MESH_TOOLS
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -49,7 +49,7 @@ class ARCANE_ACCELERATOR_CORE_EXPORT HostRunQueueStream
   void barrier() override { return m_runtime->barrier(); }
   void copyMemory(const MemoryCopyArgs& args) override
   {
-    std::memcpy(args.destination().span().data(), args.source().span().data(), args.source().size());
+    args.destination().copyHost(args.source());
   }
   void prefetchMemory(const MemoryPrefetchArgs&) override {}
   void* _internalImpl() override { return nullptr; }
@@ -121,8 +121,8 @@ class ARCANE_ACCELERATOR_CORE_EXPORT CommonRunnerRuntime
   IRunQueueStream* createStream(const RunQueueBuildInfo&) final { return new HostRunQueueStream(this); }
   IRunQueueEventImpl* createEventImpl() final { return new HostRunQueueEvent(false); }
   IRunQueueEventImpl* createEventImplWithTimer() final { return new HostRunQueueEvent(true); }
-  void setMemoryAdvice(MemoryView, eMemoryAdvice, DeviceId) final {}
-  void unsetMemoryAdvice(MemoryView, eMemoryAdvice, DeviceId) final {}
+  void setMemoryAdvice(ConstMemoryView, eMemoryAdvice, DeviceId) final {}
+  void unsetMemoryAdvice(ConstMemoryView, eMemoryAdvice, DeviceId) final {}
   void setCurrentDevice(DeviceId) final {}
   const IDeviceInfoList* deviceInfoList() final { return &m_device_info_list; }
 

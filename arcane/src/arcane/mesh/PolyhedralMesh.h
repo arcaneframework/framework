@@ -16,22 +16,26 @@
 /*---------------------------------------------------------------------------*/
 
 #include <memory>
-#include "arcane/utils/ArcaneGlobal.h"
-#include "arcane/utils/String.h"
-#include "arcane/utils/Collection.h"
-#include "arcane/MeshHandle.h"
-#include "arcane/ItemGroup.h"
+#include "arcane/core/MeshHandle.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/MeshItemInternalList.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/Properties.h"
+#include "arcane/core/ArcaneTypes.h"
 #include "arcane/mesh/EmptyMesh.h"
-#include "arcane/MeshItemInternalList.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/Properties.h"
-#include "arcane/ArcaneTypes.h"
+#include "arcane/core/ItemAllocationInfo.h"
+#include "arcane/utils/ArcaneGlobal.h"
+#include "arcane/utils/Collection.h"
+#include "arcane/utils/String.h"
 #include "arcane/utils/List.h"
+#include "arcane/core/IMeshInitialAllocator.h"
 
 #ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
 #include <vector>
 #include <array>
 #include <memory>
+
+#include "arcane/core/IVariableMng.h"
 #endif
 
 /*---------------------------------------------------------------------------*/
@@ -55,6 +59,7 @@ class PolyhedralFamily;
 
 class PolyhedralMesh
 : public EmptyMesh
+, public IPolyhedralMeshInitialAllocator
 {
  public:
 
@@ -69,9 +74,12 @@ class PolyhedralMesh
   bool m_is_allocated = false;
   ItemTypeMng* m_item_type_mng = nullptr;
 
+  // IPolyhedralMeshInitialAllocator interface
+  void allocateItems(const Arcane::ItemAllocationInfo& item_allocation_info);
+
  public:
 
-  PolyhedralMesh(ISubDomain* subDomain);
+  PolyhedralMesh(ISubDomain* subDomain, const MeshBuildInfo& mbi);
   ~PolyhedralMesh(); // for pimpl idiom
 
  public:
@@ -84,13 +92,31 @@ class PolyhedralMesh
 
 #ifdef ARCANE_HAS_CUSTOM_MESH_TOOLS
 
+  class InitialAllocator : public IMeshInitialAllocator
+  {
+    PolyhedralMesh& m_mesh;
+
+   public:
+
+    explicit InitialAllocator(PolyhedralMesh& mesh)
+    : m_mesh(mesh)
+    {}
+    IPolyhedralMeshInitialAllocator* polyhedralMeshAllocator() override { return &m_mesh; }
+  };
+
  private:
 
   std::vector<std::unique_ptr<PolyhedralFamily>> m_arcane_families;
   std::array<std::unique_ptr<PolyhedralFamily>, NB_ITEM_KIND> m_empty_arcane_families;
   std::array<PolyhedralFamily*, NB_ITEM_KIND> m_default_arcane_families;
+  std::vector<std::unique_ptr<VariableItemReal3>> m_arcane_item_coords;
   std::unique_ptr<VariableNodeReal3> m_arcane_node_coords;
   ItemGroupList m_all_groups;
+  InitialAllocator m_initial_allocator;
+  IVariableMng* m_variable_mng;
+
+  // IPrimaryMeshBase interface
+  IMeshInitialAllocator* initialAllocator() override { return &m_initial_allocator; }
 
   // IMeshBase interface
  public:
@@ -98,6 +124,8 @@ class PolyhedralMesh
   MeshHandle handle() const override;
 
  public:
+
+  void build() override {}
 
   String name() const override;
 
@@ -172,6 +200,22 @@ class PolyhedralMesh
   ItemGroupCollection groups() override;
 
   void destroyGroups() override;
+
+  IGhostLayerMng* ghostLayerMng() const override { return nullptr; }
+
+  void checkValidMesh() override { m_trace_mng->info() << "TODO implement checkValidMesh using DynamicMeshChecker"; }
+
+  IVariableMng* variableMng() const override { return m_variable_mng; }
+
+  IItemFamilyCollection itemFamilies() override;
+
+  String factoryName() const override;
+
+ private:
+
+  PolyhedralFamily* _createItemFamily(eItemKind ik, const String& name);
+  PolyhedralFamily* _itemFamily(eItemKind ik);
+  PolyhedralFamily* _findItemFamily(eItemKind ik, const String& name, bool create_if_needed = false);
 
 #endif // ARCANE_HAS_CUSTOM_MESH_TOOLS
 

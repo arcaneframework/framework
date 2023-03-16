@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Dispatchers.cc                                              (C) 2000-2020 */
+/* Dispatchers.cc                                              (C) 2000-2023 */
 /*                                                                           */
 /* Conteneur des dispatchers.                                                */
 /*---------------------------------------------------------------------------*/
@@ -14,6 +14,9 @@
 #include "arccore/message_passing/Dispatchers.h"
 #include "arccore/message_passing/ITypeDispatcher.h"
 #include "arccore/message_passing/IControlDispatcher.h"
+#include "arccore/message_passing/Request.h"
+
+#include "arccore/base/NotImplementedException.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -52,6 +55,15 @@ Dispatchers::
     delete m_long_double;
     delete m_control;
   }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ARCCORE_MESSAGEPASSING_EXPORT void
+_internalThrowNotImplementedTypeDispatcher ARCCORE_NORETURN ()
+{
+  ARCCORE_THROW(NotImplementedException,"Generic gather");
 }
 
 /*---------------------------------------------------------------------------*/

@@ -154,7 +154,7 @@ class DispatchCreator
   {
     ISharedMemoryMessageQueue* tmq = m_message_queue;
     SharedMemoryAllDispatcher* ad = m_all_dispatchers;
-    auto field = ad->instance((DataType*)nullptr).view();
+    auto& field = ad->instance((DataType*)nullptr);
     return new SharedMemoryParallelDispatch<DataType>(m_tm,m_mpm,tmq,field);
   }
 
