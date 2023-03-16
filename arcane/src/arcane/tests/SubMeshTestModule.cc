@@ -262,13 +262,14 @@ _checkSubMeshIntegrity()
   if (check_variable) {
     Integer nerror2 = 0;
     ENUMERATE_CELL(icell,new_mesh->allCells()) {
-      ItemInternal * cell = icell.internal();
-      ItemInternal * parent = cell->parent(0);
-      if (do_not_check.find(cell->uniqueId().asInt64()) != do_not_check.end()) {
-        (*new_cell_uids)[cell] = parent->uniqueId(); // mise à jour des non check
+      Cell cell = *icell;
+      Item parent = cell.parent();
+      if (do_not_check.find(cell.uniqueId().asInt64()) != do_not_check.end()) {
+        (*new_cell_uids)[cell] = parent.uniqueId(); // mise à jour des non check
       } else {
-        if ((*new_cell_uids)[cell] != parent->uniqueId() || cell->uniqueId() != parent->uniqueId()) {
-          error() << "Inconsistent sub-mesh uniqueId on item " << ItemPrinter(cell) << " vs variable uid " << (*new_cell_uids)[cell] << " vs parent uid " << parent->uniqueId();
+        if ((*new_cell_uids)[cell] != parent.uniqueId() || cell.uniqueId() != parent.uniqueId()) {
+          error() << "Inconsistent sub-mesh uniqueId on item " << ItemPrinter(cell)
+                  << " vs variable uid " << (*new_cell_uids)[cell] << " vs parent uid " << parent.uniqueId();
           ++nerror2;
         }
       }
