@@ -240,22 +240,14 @@ arcaneParallelFor(Integer i0, Integer size, const LambdaType& lambda_function)
 template <typename LambdaType, typename... Views> inline void
 arcaneParallelForVa(const ForLoopRunInfo& run_info, const LambdaType& lambda_function, Views... views)
 {
-  Int32 grain_size = impl::adaptGrainSize(run_info);
-
   // Asserting every views have the size
-  // TODO: must be encapsulated in some king of check or debug mode
-  typename FirstVariadicType<Views...>::size_type sizes[] = {views.size()...};
+  typename std::tuple_element_t<0, std::tuple<Views...>>::size_type sizes[] = {views.size()...};
   if (!std::all_of(std::begin(sizes), std::end(sizes),[&sizes](auto cur){return cur == sizes[0];}))
     ARCANE_FATAL("Every views must have the same size");
 
-  LambdaRangeFunctorTVa<LambdaType, Views...> ipf(views..., lambda_function, grain_size);
+  LambdaRangeFunctorTVa<LambdaType, Views...> ipf(views..., lambda_function);
 
-  ForLoopRunInfo adapted_run_info(run_info);
-  ParallelLoopOptions loop_opt(run_info.options().value_or(TaskFactory::defaultParallelLoopOptions()));
-  loop_opt.setGrainSize(ipf.blockGrainSize());
-  adapted_run_info.addOptions(loop_opt);
-
-  ParallelFor1DLoopInfo loop_info(0, ipf.nbBlock(), &ipf, adapted_run_info);
+  ParallelFor1DLoopInfo loop_info(0, sizes[0], &ipf, run_info);
   TaskFactory::executeParallelFor(loop_info);
 }
 

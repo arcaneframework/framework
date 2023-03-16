@@ -321,7 +321,7 @@ class Test3
       }
     };
 
-    info() << "Test arcaneParallelForeachVa with ParallelLoopOptions block_size and multiples args";
+    info() << "Test arcaneParallelForVa and multiples args";
     ParallelLoopOptions options;
     options.setGrainSize(100);
     ForLoopRunInfo fri(options);
