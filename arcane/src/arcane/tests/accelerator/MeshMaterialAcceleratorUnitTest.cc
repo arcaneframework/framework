@@ -36,7 +36,9 @@
 #include "arcane/materials/MeshEnvironmentVariableRef.h"
 #include "arcane/materials/EnvItemVector.h"
 
-#include "arcane/accelerator/Runner.h"
+#include "arcane/accelerator/core/Runner.h"
+#include "arcane/accelerator/core/IAcceleratorMng.h"
+
 #include "arcane/accelerator/Accelerator.h"
 #include "arcane/accelerator/VariableViews.h"
 #include "arcane/accelerator/MaterialVariableViews.h"
@@ -78,7 +80,7 @@ class MeshMaterialAcceleratorUnitTest
 
  private:
 
-  ax::Runner m_runner;
+  ax::Runner* m_runner = nullptr;
 
   IMeshMaterialMng* m_mm_mng;
   IMeshEnvironment* m_env1;
@@ -155,15 +157,13 @@ MeshMaterialAcceleratorUnitTest::
 void MeshMaterialAcceleratorUnitTest::
 initializeTest()
 {
-  IApplication* app = subDomain()->application();
-  const auto& acc_info = app->acceleratorRuntimeInitialisationInfo();
-  initializeRunner(m_runner,traceMng(),acc_info);
+  m_runner = subDomain()->acceleratorMng()->defaultRunner();
 
   m_mm_mng = IMeshMaterialMng::getReference(mesh());
 
   // Lit les infos des matériaux du JDD et les enregistre dans le gestionnaire
   UniqueArray<String> mat_names = { "MAT1", "MAT2", "MAT3" };
-  for( String v : mat_names.range() ){
+  for( String v : mat_names ){
     m_mm_mng->registerMaterialInfo(v);
   }
 
@@ -242,7 +242,7 @@ initializeTest()
     }
   }
 
-  for( IMeshEnvironment* env : m_mm_mng->environments().range() ){
+  for( IMeshEnvironment* env : m_mm_mng->environments() ){
     info() << "** ** ENV name=" << env->name() << " nb_item=" << env->view().nbItem();
     Integer nb_pure_env = 0;
     ENUMERATE_ENVCELL(ienvcell,env){
@@ -305,7 +305,7 @@ executeTest()
   {
     _executeTest1(nb_z,m_env1->envView());
     // Pour l'instant n'est pas actif sur accélérateur car ne fonctionne pas.
-    if (!Arcane::Accelerator::impl::isAcceleratorPolicy(m_runner.executionPolicy()))
+    if (!Arcane::Accelerator::impl::isAcceleratorPolicy(m_runner->executionPolicy()))
       _executeTest1(nb_z,sub_ev1);
   }
   {
