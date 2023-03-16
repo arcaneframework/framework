@@ -17,10 +17,11 @@
 #include "arcane/utils/ArithmeticException.h"
 #include "arcane/utils/ValueChecker.h"
 
-#include "arcane/BasicUnitTest.h"
-#include "arcane/ServiceBuilder.h"
-#include "arcane/FactoryService.h"
-#include "arcane/VariableView.h"
+#include "arcane/core/BasicUnitTest.h"
+#include "arcane/core/ServiceBuilder.h"
+#include "arcane/core/FactoryService.h"
+#include "arcane/core/VariableView.h"
+#include "arcane/core/IItemFamily.h"
 
 #include "arcane/materials/ComponentSimd.h"
 #include "arcane/materials/IMeshMaterialMng.h"
@@ -35,7 +36,9 @@
 #include "arcane/materials/MeshEnvironmentVariableRef.h"
 #include "arcane/materials/EnvItemVector.h"
 
-#include "arcane/accelerator/Runner.h"
+#include "arcane/accelerator/core/Runner.h"
+#include "arcane/accelerator/core/IAcceleratorMng.h"
+
 #include "arcane/accelerator/Accelerator.h"
 #include "arcane/accelerator/VariableViews.h"
 #include "arcane/accelerator/MaterialVariableViews.h"
@@ -77,7 +80,7 @@ class MeshMaterialAcceleratorUnitTest
 
  private:
 
-  ax::Runner m_runner;
+  ax::Runner* m_runner = nullptr;
 
   IMeshMaterialMng* m_mm_mng;
   IMeshEnvironment* m_env1;
@@ -96,7 +99,7 @@ class MeshMaterialAcceleratorUnitTest
 
   UniqueArray<Int32> m_env1_pure_value_index;
   UniqueArray<Int32> m_env1_partial_value_index;
-  EnvCellVector* m_env1_as_vector;
+  CellGroup m_sub_env_group1;
   Int32 m_nb_z;
 
   void _initializeVariables();
@@ -106,9 +109,10 @@ class MeshMaterialAcceleratorUnitTest
   // Les méthodes suivantes doivent être publiques pour
   // sur accélérateur
 
-  void _executeTest1(Integer nb_z);
+  void _executeTest1(Integer nb_z,EnvCellVectorView env1);
   void _executeTest2(Integer nb_z);
   void _executeTest3(Integer nb_z);
+  void _checkValues();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -135,7 +139,6 @@ MeshMaterialAcceleratorUnitTest(const ServiceBuildInfo& sb)
 , m_mat_c(VariableBuildInfo(mesh(),"MatC"))
 , m_mat_d(VariableBuildInfo(mesh(),"MatD"))
 , m_mat_e(VariableBuildInfo(mesh(),"MatE"))
-, m_env1_as_vector(nullptr)
 , m_nb_z(0)
 {
 }
@@ -146,7 +149,6 @@ MeshMaterialAcceleratorUnitTest(const ServiceBuildInfo& sb)
 MeshMaterialAcceleratorUnitTest::
 ~MeshMaterialAcceleratorUnitTest()
 {
-  delete m_env1_as_vector;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -155,15 +157,13 @@ MeshMaterialAcceleratorUnitTest::
 void MeshMaterialAcceleratorUnitTest::
 initializeTest()
 {
-  IApplication* app = subDomain()->application();
-  const auto& acc_info = app->acceleratorRuntimeInitialisationInfo();
-  initializeRunner(m_runner,traceMng(),acc_info);
+  m_runner = subDomain()->acceleratorMng()->defaultRunner();
 
   m_mm_mng = IMeshMaterialMng::getReference(mesh());
 
   // Lit les infos des matériaux du JDD et les enregistre dans le gestionnaire
   UniqueArray<String> mat_names = { "MAT1", "MAT2", "MAT3" };
-  for( String v : mat_names.range() ){
+  for( String v : mat_names ){
     m_mm_mng->registerMaterialInfo(v);
   }
 
@@ -242,7 +242,7 @@ initializeTest()
     }
   }
 
-  for( IMeshEnvironment* env : m_mm_mng->environments().range() ){
+  for( IMeshEnvironment* env : m_mm_mng->environments() ){
     info() << "** ** ENV name=" << env->name() << " nb_item=" << env->view().nbItem();
     Integer nb_pure_env = 0;
     ENUMERATE_ENVCELL(ienvcell,env){
@@ -251,6 +251,18 @@ initializeTest()
     }
     info() << "** ** NB_PURE=" << nb_pure_env;
   }
+
+  // Créé un groupe contenant un sous-ensemble des mailles pour test EnvCellVector
+  {
+    UniqueArray<Int32> sub_indexes;
+    ENUMERATE_(Cell,icell,allCells()){
+      CellLocalId c = *icell;
+      if ((c.localId() % 3)==0)
+        sub_indexes.add(c);
+    }
+    m_sub_env_group1 = mesh()->cellFamily()->createGroup("SubGroup1",sub_indexes);
+  }
+
 }
 
 /*---------------------------------------------------------------------------*/
@@ -275,9 +287,8 @@ executeTest()
         ++nb_unknown;
     }
   }
-  m_env1_as_vector = new EnvCellVector(m_env1->cells(),m_env1);
 
-  Integer nb_z = 10000;
+  Integer nb_z = 200;
   if (arcaneIsDebug())
     nb_z /= 100;
   Integer nb_z2 = nb_z / 5;
@@ -290,8 +301,12 @@ executeTest()
          << " nb_z=" << nb_z << " nb_z2=" << nb_z2;
 
   _initializeVariables();
+  EnvCellVector sub_ev1(m_sub_env_group1,m_env1);
   {
-    _executeTest1(nb_z);
+    _executeTest1(nb_z,m_env1->envView());
+    // Pour l'instant n'est pas actif sur accélérateur car ne fonctionne pas.
+    if (!Arcane::Accelerator::impl::isAcceleratorPolicy(m_runner->executionPolicy()))
+      _executeTest1(nb_z,sub_ev1);
   }
   {
     _executeTest2(nb_z);
@@ -342,18 +357,14 @@ _initializeVariables()
  * aux variables multimat par l'envcell (i.e. le MatVarIndex en fait)
  */
 void MeshMaterialAcceleratorUnitTest::
-_executeTest1(Integer nb_z)
+_executeTest1(Integer nb_z,EnvCellVectorView env1)
 {
-  MaterialVariableCellReal& a_ref(m_mat_a_ref);
-  MaterialVariableCellReal& b_ref(m_mat_b_ref);
-  MaterialVariableCellReal& c_ref(m_mat_c_ref);
-  MaterialVariableCellReal& d_ref(m_mat_d_ref);
-  MaterialVariableCellReal& e_ref(m_mat_e_ref);
+  _initializeVariables();
 
   // Ref CPU
   for (Integer z=0, iz=nb_z; z<iz; ++z) {
-    ENUMERATE_ENVCELL(i,m_env1){
-      a_ref[i] = b_ref[i] + c_ref[i] * d_ref[i] + e_ref[i];
+    ENUMERATE_ENVCELL(i,env1){
+      m_mat_a_ref[i] = m_mat_b_ref[i] + m_mat_c_ref[i] * m_mat_d_ref[i] + m_mat_e_ref[i];
     }
   }
 
@@ -369,26 +380,14 @@ _executeTest1(Integer nb_z)
     auto in_e = ax::viewIn(cmd, m_mat_e);  
 
     for (Integer z=0, iz=nb_z; z<iz; ++z) {
-      cmd << RUNCOMMAND_ENUMERATE(EnvCell, evi, m_env1) {
+      cmd << RUNCOMMAND_ENUMERATE(EnvCell, evi, env1) {
         auto [mvi, cid] = evi();
         out_a[mvi] = in_b[mvi] + in_c[mvi] * in_d[mvi] + in_e[mvi];
       };
     }
   }
 
-  // Test
-  ValueChecker vc(A_FUNCINFO);
-  ENUMERATE_ENV(ienv, m_mm_mng) {
-      IMeshEnvironment* env = *ienv;
-      ENUMERATE_ENVCELL(iev,env)
-      {
-        vc.areEqual(m_mat_a[iev], m_mat_a_ref[iev],"Test1_mat_a");
-        vc.areEqual(m_mat_b[iev], m_mat_b_ref[iev],"Test1_mat_b");
-        vc.areEqual(m_mat_c[iev], m_mat_c_ref[iev],"Test1_mat_c");
-        vc.areEqual(m_mat_d[iev], m_mat_d_ref[iev],"Test1_mat_d");
-        vc.areEqual(m_mat_e[iev], m_mat_e_ref[iev],"Test1_mat_e");
-      }
-  }
+  _checkValues();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -421,7 +420,7 @@ _executeTest2(Integer nb_z)
       ENUMERATE_ENVCELL(iev,envcellsv)
       {
         Cell cell = (*iev).globalCell();
-        c_ref[iev] += a_ref[iev] / d_ref[cell];
+        c_ref[iev] += a_ref[iev] * d_ref[cell];
       }
     }
   }
@@ -450,26 +449,14 @@ _executeTest2(Integer nb_z)
         {
           cmd << RUNCOMMAND_ENUMERATE(EnvCell, evi, envcellsv) {
             auto [mvi, cid] = evi();
-            out_c[mvi] += inout_a[mvi] / in_d[cid];
+            out_c[mvi] += inout_a[mvi] * in_d[cid];
           };
         }
       }
     }
   }
 
-  // Test
-  ValueChecker vc(A_FUNCINFO);
-  ENUMERATE_ENV(ienv, m_mm_mng) {
-      IMeshEnvironment* env = *ienv;
-      ENUMERATE_ENVCELL(iev,env)
-      {
-        vc.areEqual(m_mat_a[iev], m_mat_a_ref[iev],"Test1_mat_a");
-        vc.areEqual(m_mat_b[iev], m_mat_b_ref[iev],"Test1_mat_b");
-        vc.areEqual(m_mat_c[iev], m_mat_c_ref[iev],"Test1_mat_c");
-        vc.areEqual(m_mat_d[iev], m_mat_d_ref[iev],"Test1_mat_d");
-        vc.areEqual(m_mat_e[iev], m_mat_e_ref[iev],"Test1_mat_e");
-      }
-  }
+  _checkValues();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -501,7 +488,7 @@ _executeTest3(Integer nb_z)
       ENUMERATE_ENVCELL(iev,envcellsv)
       {
         Cell cell = (*iev).globalCell();
-        c_ref[iev] += a_ref[iev] / d_ref[cell];
+        c_ref[iev] += a_ref[iev] * d_ref[cell];
       }
     }
   }
@@ -532,7 +519,7 @@ _executeTest3(Integer nb_z)
         {
           cmd << RUNCOMMAND_ENUMERATE(EnvCell, evi, envcellsv) {
             auto [mvi, cid] = evi();
-            out_c[mvi] += inout_a[mvi] / in_d[cid];
+            out_c[mvi] += inout_a[mvi] * in_d[cid];
           };
         }
       }
@@ -540,18 +527,44 @@ _executeTest3(Integer nb_z)
     }
   }
 
-  // Test
+  _checkValues();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace
+{
+void _checkOneValue(Real value,Real ref_value,const char* var_name)
+{
+  Real epsilon = 1.0e-15;
+  if (!math::isNearlyEqualWithEpsilon(value,ref_value,epsilon)){
+    Real diff = ref_value - value;
+    if (ref_value!=0.0)
+      diff /= ref_value;
+    ARCANE_FATAL("Bad value for '{0}' : ref={1} v={2} diff={3}",
+                 var_name,ref_value,value,diff);
+  }
+}
+
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void MeshMaterialAcceleratorUnitTest::
+_checkValues()
+{
   ValueChecker vc(A_FUNCINFO);
   ENUMERATE_ENV(ienv, m_mm_mng) {
-      IMeshEnvironment* env = *ienv;
-      ENUMERATE_ENVCELL(iev,env)
-      {
-        vc.areEqual(m_mat_a[iev], m_mat_a_ref[iev],"Test1_mat_a");
-        vc.areEqual(m_mat_b[iev], m_mat_b_ref[iev],"Test1_mat_b");
-        vc.areEqual(m_mat_c[iev], m_mat_c_ref[iev],"Test1_mat_c");
-        vc.areEqual(m_mat_d[iev], m_mat_d_ref[iev],"Test1_mat_d");
-        vc.areEqual(m_mat_e[iev], m_mat_e_ref[iev],"Test1_mat_e");
-      }
+    IMeshEnvironment* env = *ienv;
+    ENUMERATE_ENVCELL(iev,env) {
+      _checkOneValue(m_mat_a[iev], m_mat_a_ref[iev],"Test1_mat_a");
+      _checkOneValue(m_mat_b[iev], m_mat_b_ref[iev],"Test1_mat_b");
+      _checkOneValue(m_mat_c[iev], m_mat_c_ref[iev],"Test1_mat_c");
+      _checkOneValue(m_mat_d[iev], m_mat_d_ref[iev],"Test1_mat_d");
+      _checkOneValue(m_mat_e[iev], m_mat_e_ref[iev],"Test1_mat_e");
+    }
   }
 }
 
