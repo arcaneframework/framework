@@ -195,7 +195,7 @@ _computeNodeCellInformations3D(Cell cell0,Real3 cell0_coord,VariableNodeReal3& n
   for( Int8 i=0; i<i8_nb_node; ++i ){
     Node node = cell0.node(i);
     Real3 node_coord = nodes_coord[node];
-    if (node_coord.z<cell_coord.z){
+    if (node_coord.z>cell_coord.z){
       if (node_coord.y>cell_coord.y){
         if (node_coord.x>cell_coord.x)
           nodes_indirection[CNP_TopNextRight] = i;
