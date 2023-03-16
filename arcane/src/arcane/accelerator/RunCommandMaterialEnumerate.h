@@ -152,8 +152,8 @@ _applyEnvCells(RunCommand& command,const EnvCellVectorView& items,const Lambda& 
   if (vsize==0)
     return;
 
-  SmallSpan<const MatVarIndex> mvis(items.component()->variableIndexer()->matvarIndexes());
-  SmallSpan<const Int32> cids(items.component()->variableIndexer()->localIds());
+  SmallSpan<const MatVarIndex> mvis(items.matvarIndexes());
+  SmallSpan<const Int32> cids(items._internalLocalIds());
   ARCANE_ASSERT(mvis.size() == cids.size(), ("MatVarIndex and CellLocalId arrays have different size"));
 
   RunCommandLaunchInfo launch_info(command, vsize);
