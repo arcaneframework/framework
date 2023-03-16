@@ -1474,16 +1474,25 @@ _readData(IMesh* mesh, VtkFile& vtk_file, bool use_internal_partition,
   // Si une donnée porte le nom 'GROUP_*', on considère qu'il s'agit d'un
   // groupe
 
-  // Pas de data.
-  if (vtk_file.isEof())
-    return false;
+  IParallelMng* pm = mesh->parallelMng();
+  Int32 sid = pm->commRank();
+
+  // Si pas de données, retourne immédiatement.
+  {
+    Byte has_data = 1;
+    if ((sid == 0) && vtk_file.isEof())
+      has_data = 0;
+
+    ByteArrayView bb(1, &has_data);
+    pm->broadcast(bb, 0);
+    // Pas de data.
+    if (!has_data)
+      return false;
+  }
 
   OStringStream created_infos_str;
   created_infos_str() << "<?xml version='1.0' ?>\n";
   created_infos_str() << "<infos>";
-
-  IParallelMng* pm = mesh->parallelMng();
-  Int32 sid = pm->commRank();
 
   Integer nb_cell_kind = mesh->nbItem(cell_kind);
   const char* buf = 0;
