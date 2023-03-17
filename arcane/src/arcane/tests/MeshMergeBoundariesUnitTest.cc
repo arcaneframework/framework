@@ -119,6 +119,8 @@ executeTest()
     ENUMERATE_ (Face, iface, outer_faces) {
       Face face = *iface;
       Cell cell = face.cell(0);
+      if (!cell.isOwn())
+        continue;
       Int64 uid = cell.uniqueId();
       Int16 cell_type = cell.type();
       cells_infos.add(cell_type);
@@ -133,8 +135,8 @@ executeTest()
       }
       ++nb_cell;
     }
-    offset_cell_uid = max_cell_uid;
-    offset_node_uid = max_node_uid;
+    offset_cell_uid = mesh->parallelMng()->reduce(Parallel::ReduceMax,max_cell_uid);
+    offset_node_uid = mesh->parallelMng()->reduce(Parallel::ReduceMax,max_node_uid);
   }
   boundary_mesh->allocateCells(nb_cell, cells_infos);
 

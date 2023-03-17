@@ -124,7 +124,7 @@ public:
     }
 
     // Compute m_edgeGIDStart = Sum_k<i nbOwnEdges
-    IParallelMng* pm = m_mesh_partitionner_base->mesh()->subDomain()->parallelMng();
+    IParallelMng* pm = m_mesh_partitionner_base->mesh()->parallelMng();
     Int32UniqueArray scanouille(pm->commSize());
     scanouille.fill(0);
     scanouille[pm->commRank()] = nbOwnEdges;
@@ -516,24 +516,24 @@ public:
  * \brief Partitioneur de maillage utilisant la bibliotheque Zoltan.
  */
 class ZoltanMeshPartitioner
-  : public ArcaneZoltanMeshPartitionerObject
+: public ArcaneZoltanMeshPartitionerObject
 {
-public:
+ public:
 
-  ZoltanMeshPartitioner(const ServiceBuildInfo& sbi);
+  explicit ZoltanMeshPartitioner(const ServiceBuildInfo& sbi);
 
-public:
+ public:
 
   virtual void build() {}
 
-public:
+ public:
 
   virtual void partitionMesh(bool initial_partition);
   virtual void partitionMesh(bool initial_partition,Int32 nb_part);
 
   virtual void notifyEndPartition();
 
-private:
+ private:
 };
 
 /*---------------------------------------------------------------------------*/
@@ -551,8 +551,7 @@ ZoltanMeshPartitioner(const ServiceBuildInfo& sbi)
 void ZoltanMeshPartitioner::
 partitionMesh(bool initial_partition)
 {
-  ISubDomain* sd = subDomain();
-  Int32 nb_part = sd->parallelMng()->commSize();
+  Int32 nb_part = mesh()->parallelMng()->commSize();
   partitionMesh(initial_partition,nb_part);
 }
 
