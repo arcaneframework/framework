@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/Numeric.h"
+#include "arcane/utils/Real2.h"
 
 #include <iosfwd>
 
@@ -169,6 +170,15 @@ class ARCANE_UTILS_EXPORT Real3
   : Real3POD()
   {
     x = y = z = v;
+  }
+
+  //! Construit un triplet identique à \a f
+  constexpr ARCCORE_HOST_DEVICE explicit Real3(const Real2& f)
+  : Real3POD()
+  {
+    x = f.x;
+    y = f.y;
+    z = 0.0;
   }
 
   //! Opérateur de recopie.
@@ -451,6 +461,17 @@ class ARCANE_UTILS_EXPORT Real3
     return math::sqrt(a);
   }
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+inline constexpr ARCCORE_HOST_DEVICE Real2::
+Real2(const Real3& v)
+: Real2POD()
+{
+  x = v.x;
+  y = v.y;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

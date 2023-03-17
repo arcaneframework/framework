@@ -157,6 +157,9 @@ class ARCANE_UTILS_EXPORT Real2
     x = y = v;
   }
 
+  //! Construit l'instance en premier les deux premières composantes de Real3.
+  inline constexpr ARCCORE_HOST_DEVICE explicit Real2(const Real3& v);
+
   constexpr ARCCORE_HOST_DEVICE Real2& operator=(Real2 f)
   {
     x = f.x;
