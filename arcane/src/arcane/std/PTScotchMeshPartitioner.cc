@@ -101,8 +101,7 @@ PTScotchMeshPartitioner(const ServiceBuildInfo& sbi)
 void PTScotchMeshPartitioner::
 partitionMesh(bool initial_partition)
 {
-  ISubDomain* sd = subDomain();
-  Int32 nb_part = sd->parallelMng()->commSize();
+  Int32 nb_part = mesh()->parallelMng()->commSize();
   partitionMesh(initial_partition,nb_part);
 }
 
@@ -116,11 +115,9 @@ partitionMesh(bool initial_partition,Int32 nb_part)
 
   info() << "Load balancing with PTScotch\n";
 
-  ISubDomain* sd = subDomain();
-  Integer my_rank = sd->subDomainId();
-  IParallelMng* pm = sd->parallelMng();
-  Integer nb_rank = pm->commSize();
-  // IMesh* mesh = this->mesh();
+  IParallelMng* pm = mesh()->parallelMng();
+  Int32 my_rank = pm->commRank();
+  Int32 nb_rank = pm->commSize();
 
   bool dumpGraph = false;
   bool checkGraph = false;

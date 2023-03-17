@@ -72,7 +72,7 @@ class MetisMeshPartitioner
 {
  public:
 
-  MetisMeshPartitioner(const ServiceBuildInfo& sbi);
+  explicit MetisMeshPartitioner(const ServiceBuildInfo& sbi);
 
  public:
 
@@ -86,7 +86,7 @@ class MetisMeshPartitioner
 
  private:
 
-  IParallelMng* m_parallel_mng;
+  IParallelMng* m_parallel_mng = nullptr;
   Integer m_nb_refine;
   Integer m_random_seed;
   bool m_disable_floatingexception;
@@ -109,11 +109,11 @@ class MetisMeshPartitioner
 MetisMeshPartitioner::
 MetisMeshPartitioner(const ServiceBuildInfo& sbi)
 : ArcaneMetisMeshPartitionerObject(sbi)
-  , m_parallel_mng(sbi.subDomain()->parallelMng())
 , m_nb_refine(-1)
 , m_random_seed(15)
 , m_disable_floatingexception(false)
 {
+  m_parallel_mng = mesh()->parallelMng();
   String s = platform::getEnvironmentVariable("ARCANE_DISABLE_METIS_FPE");
   if (s=="1" || s=="TRUE")
     m_disable_floatingexception = true;

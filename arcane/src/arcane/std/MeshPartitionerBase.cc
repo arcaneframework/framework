@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MeshPartitionerBase.cc                                      (C) 2000-2011 */
+/* MeshPartitionerBase.cc                                      (C) 2000-2023 */
 /*                                                                           */
 /* Classe de base d'un partitionneur de maillage                             */
 /*---------------------------------------------------------------------------*/
@@ -41,17 +41,11 @@
 
 #include "arcane/std/MeshPartitionerBase.h"
 
-//#define TEMPORARY
-
-#ifdef TEMPORARY
-#include "arcane/impl/LoadBalanceMng.h"
-#endif // TEMPORARY
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -69,7 +63,7 @@ MeshPartitionerBase(const ServiceBuildInfo& sbi)
 , m_max_imbalance(1.0)
 , m_unique_id_reference(0)
  {
-  IParallelMng* pm = subDomain()->parallelMng();
+  IParallelMng* pm = m_mesh->parallelMng();
   m_pm_sub = pm;
  }
 
@@ -105,8 +99,6 @@ changeOwnersFromCells()
 {
   mesh()->utilities()->changeOwnersFromCells();
 }
-
-
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -145,7 +137,7 @@ freeConstraints()
   m_filter_lid_cells.clear();
   m_local_id_2_local_id_compacted.clear();
   delete m_unique_id_reference;
-  m_unique_id_reference = 0;
+  m_unique_id_reference = nullptr;
   m_check.clear();
 }
 
@@ -195,23 +187,24 @@ _createConstraintsLists(Int64MultiArray2& tied_uids)
     if (!cells.empty())
       m_cells_with_constraints.add(cells);
   }
-  IParallelMng* pm = subDomain()->parallelMng();
+  IParallelMng* pm = m_mesh->parallelMng();
 
   // Return reduction because we need all subdomains to be correct
   int sum = pm->reduce(Parallel::ReduceSum,allLocal);
   return (sum == 0);
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 void MeshPartitionerBase::
 _initArrayCellsWithConstraints()
 {
-  info() << "MeshPartitionerBase::initArrayCellsWithConstraints()";
-
   // It is important to define constraints only once !
   m_cells_with_constraints.clear();
   m_cells_with_weak_constraints.clear();
 
-  if (m_mesh->partitionConstraintMng()==0)
+  if (!m_mesh->partitionConstraintMng())
     return;
 
   // c'est ici qu'il faut récupérer les listes de listes de mailles
@@ -443,8 +436,7 @@ _addNgb(const Cell& cell, const Face& face,
   const VariableFaceReal& commCost = m_lbMng->commCost();
 
   // Maille traditionnelle, on peut ajouter
-  if ((!special)
-      &&(m_filter_lid_cells[cell.localId()] == eCellClassical))
+  if ((!special) &&(m_filter_lid_cells[cell.localId()] == eCellClassical))
     toAdd = true;
   else {
     HashTableMapT<Int64,Int32>::Data* ptr;
@@ -839,7 +831,7 @@ void
 MeshPartitionerBase::dumpObject(String filebase)
 {
   int i = 0;
-  IParallelMng* pm = subDomain()->parallelMng();
+  IParallelMng* pm = m_mesh->parallelMng();
   String header;
 
   // ---
@@ -927,7 +919,10 @@ MeshPartitionerBase::dumpObject(String filebase)
 }
 #endif // ARCANE_PART_DUMP
 
-ARCANE_END_NAMESPACE
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
