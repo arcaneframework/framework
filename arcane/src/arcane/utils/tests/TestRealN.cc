@@ -67,6 +67,12 @@ TEST(TestRealN,Real2)
     ASSERT_EQ(v5.x,v4.x/2.4);
     ASSERT_EQ(v5.y,v4.y/2.4);
   }
+  {
+    Real3 v3(1.2,2.3,4.5);
+    Real2 v2(v3);
+    ASSERT_EQ(v2.x,1.2);
+    ASSERT_EQ(v2.y,2.3);
+  }
 }
 
 TEST(TestRealN,Real3)
@@ -95,6 +101,13 @@ TEST(TestRealN,Real3)
     ASSERT_EQ(v1.y,1.2);
     ASSERT_EQ(v1.z,-1.5);
     ASSERT_EQ(v1,v2);
+  }
+  {
+    Real2 v2(1.2,2.3);
+    Real3 v3(v2);
+    ASSERT_EQ(v3.x,1.2);
+    ASSERT_EQ(v3.y,2.3);
+    ASSERT_EQ(v3.z,0.0);
   }
 }
 
