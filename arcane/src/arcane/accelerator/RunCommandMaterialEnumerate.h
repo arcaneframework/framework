@@ -40,19 +40,22 @@ namespace Arcane::Accelerator
 /*!
  * \brief Classe helper pour l'accès au MatVarIndex et au CellLocalId à travers les 
  *        RUNCOMMAND_ENUMERATE(EnvCell...
-  */
-class EnvCellAccessor {
-
+ */
+class EnvCellAccessor
+{
  public:
   ///! Struct interne simple pour éviter l'usage d'un std::tuple pour l'opérateur()
-  struct EnvCellAccessorInternalData {
-   MatVarIndex m_mvi;
-   CellLocalId m_cid;   
+  struct EnvCellAccessorInternalData
+  {
+    MatVarIndex m_mvi;
+    CellLocalId m_cid;   
   };
 
  public:
   inline ARCCORE_HOST_DEVICE explicit EnvCellAccessor(MatVarIndex mvi, CellLocalId cid)
-  : m_internal_data{mvi, cid} {}
+  : m_internal_data{mvi, cid}
+  {
+  }
 
   /*!
   * \brief Cet opérateur permet de renvoyer le couple [MatVarIndex, LocalCellId].
@@ -62,15 +65,16 @@ class EnvCellAccessor {
   *         auto [mvi, cid] = evi();
   * où evi est de type EnvCellAccessor
   */
-  inline ARCCORE_HOST_DEVICE auto operator()() {
+  inline ARCCORE_HOST_DEVICE auto operator()()
+  {
     return EnvCellAccessorInternalData{m_internal_data.m_mvi, m_internal_data.m_cid};
   }
   
   ///! Accesseur sur la partie MatVarIndex
-  ARCCORE_HOST_DEVICE MatVarIndex varIndex() {return m_internal_data.m_mvi;};
+  ARCCORE_HOST_DEVICE MatVarIndex varIndex() { return m_internal_data.m_mvi; };
   
   ///! Accesseur sur la partie cell local id
-  ARCCORE_HOST_DEVICE CellLocalId globalCellId() {return m_internal_data.m_cid;}
+  ARCCORE_HOST_DEVICE CellLocalId globalCellId() { return m_internal_data.m_cid; }
  
  private:
   EnvCellAccessorInternalData m_internal_data;
@@ -210,7 +214,9 @@ class EnvCellRunCommand
 {
  public:
   explicit EnvCellRunCommand(RunCommand& command,const EnvCellVectorView& items)
-  : m_command(command), m_items(items) {}
+  : m_command(command), m_items(items)
+  {
+  }
 
   RunCommand& m_command;
   EnvCellVectorView m_items;
