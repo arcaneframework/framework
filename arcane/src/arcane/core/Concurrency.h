@@ -20,6 +20,8 @@
 #include "arcane/ItemFunctor.h"
 #include "arcane/ItemGroup.h"
 
+#include <arcane/core/materials/MatItem.h>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -225,6 +227,27 @@ arcaneParallelFor(Integer i0, Integer size, const LambdaType& lambda_function)
 {
   LambdaRangeFunctorT<LambdaType> ipf(lambda_function);
   ParallelFor1DLoopInfo loop_info(i0, size, &ipf);
+  TaskFactory::executeParallelFor(loop_info);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Applique en concurrence la fonction lambda \a lambda_function
+ * \a instance sur les vues des containers \a views avec les options \a options
+ * \ingroup Concurrency
+ */
+template <typename LambdaType, typename... Views> inline void
+arcaneParallelForVa(const ForLoopRunInfo& run_info, const LambdaType& lambda_function, Views... views)
+{
+  // Asserting every views have the size
+  typename std::tuple_element_t<0, std::tuple<Views...>>::size_type sizes[] = {views.size()...};
+  if (!std::all_of(std::begin(sizes), std::end(sizes),[&sizes](auto cur){return cur == sizes[0];}))
+    ARCANE_FATAL("Every views must have the same size");
+
+  LambdaRangeFunctorTVa<LambdaType, Views...> ipf(views..., lambda_function);
+
+  ParallelFor1DLoopInfo loop_info(0, sizes[0], &ipf, run_info);
   TaskFactory::executeParallelFor(loop_info);
 }
 

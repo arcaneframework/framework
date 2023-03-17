@@ -15,6 +15,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/IRangeFunctor.h"
+#include "arcane/core/MathUtils.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -107,6 +108,47 @@ class LambdaMDRangeFunctor
  
  private:
   const LambdaType& m_lambda_function;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Fonctor sur un interval d'itération instancié via une lambda fonction.
+ *
+ * Cette classe est utilisée avec le mécanisme des lambda fonctions du C++1x.
+ * Elle permet la gestion de plusieurs vues en paramètres de la lambda
+ * 
+ */
+template<typename LambdaType, typename... Views>
+class LambdaRangeFunctorTVa
+: public IRangeFunctor
+{
+ public:
+  LambdaRangeFunctorTVa(Views... views, const LambdaType& lambda_function)
+  : m_lambda_function(lambda_function), m_views(std::forward_as_tuple(views...))
+  {
+  }
+ 
+ public:
+  void executeFunctor(Integer begin,Integer size) override
+  {
+    std::tuple<Views...> sub_views;
+    getSubView(sub_views, begin, size, std::make_index_sequence<sizeof...(Views)>{});
+    std::apply(m_lambda_function, sub_views);
+  }
+
+ private:
+  //! méthode interne pour découper les vues
+  template <size_t... I>
+  void getSubView(std::tuple<Views...>& sub_views, Integer begin, Integer size, std::index_sequence<I...>)
+  {
+    ((std::get<I>(std::forward<decltype(sub_views)>(sub_views)) =
+      std::get<I>(std::forward<decltype(m_views)>(m_views)).subView(begin,size)), ...);
+  }
+
+ private:
+  const LambdaType& m_lambda_function;
+  std::tuple<Views...> m_views;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -304,9 +304,7 @@ executeTest()
   EnvCellVector sub_ev1(m_sub_env_group1,m_env1);
   {
     _executeTest1(nb_z,m_env1->envView());
-    // Pour l'instant n'est pas actif sur accélérateur car ne fonctionne pas.
-    if (!Arcane::Accelerator::impl::isAcceleratorPolicy(m_runner->executionPolicy()))
-      _executeTest1(nb_z,sub_ev1);
+    _executeTest1(nb_z,sub_ev1);
   }
   {
     _executeTest2(nb_z);

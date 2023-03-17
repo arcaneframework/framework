@@ -136,8 +136,8 @@ void doDirectThreadLambda(Integer begin,Integer size,Lambda func)
 
 // Fonction vide pour simuler un noyau invalide car non compilé avec
 // le compilateur adéquant. Ne devrait normalement pas être appelé.
-template<typename Lambda,typename LambdaArgs>
-inline void invalidKernel(const LambdaArgs&,const Lambda&)
+template<typename Lambda,typename... LambdaArgs>
+inline void invalidKernel(Lambda&,const LambdaArgs&...)
 {
   ARCANE_FATAL("Invalid kernel");
 }
@@ -151,20 +151,36 @@ inline void invalidKernel(const LambdaArgs&,const Lambda&)
  * \param kernel noyau CUDA
  * \param func fonction à exécuter par le noyau
  * \param args arguments de la fonction lambda
+ * 
+ * TODO: Tester si Lambda est bien un fonction, le SFINAE étant peu lisible :
+ * typename std::enable_if_t<std::is_function_v<std::decay_t<Lambda> > >* = nullptr
+ * attendons les concepts c++20 (requires)
+ * 
  */
-template<typename CudaKernel,typename Lambda,typename LambdaArgs> void
-_applyKernelCUDA(impl::RunCommandLaunchInfo& launch_info,const CudaKernel& kernel, Lambda& func,const LambdaArgs& args)
+template<typename CudaKernel,typename Lambda,typename... LambdaArgs> void
+_applyKernelCUDA(impl::RunCommandLaunchInfo& launch_info,const CudaKernel& kernel,Lambda& func,[[maybe_unused]] const LambdaArgs&... args)
 {
 #if defined(ARCANE_COMPILING_CUDA)
   auto [b,t] = launch_info.threadBlockInfo();
   cudaStream_t* s = reinterpret_cast<cudaStream_t*>(launch_info._internalStreamImpl());
   // TODO: utiliser cudaLaunchKernel() à la place.
-  kernel <<<b, t, 0, *s>>>(args,func);
+  /*
+   * Test si dessous non concluant. Le principe de la construction de l'array est bon,
+   * l'ensemble ressemble à ce qu'on peut trouver (par exemple :
+   * https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/util/gpu_kernel_helper.h)
+   * mais je pense que la lambda pose problème...
+   * A creuser encore donc...
+   *
+    std::array<void*, sizeof...(args)+1> kernel_args{std::forward<void*>((void*)&args)...};
+    kernel_args[sizeof...(args)] = std::forward<void*>((void*)&func);
+    cudaLaunchKernel<CudaKernel>(kernel, b, t, kernel_args.data(), 0, *s);
+   */
+  kernel <<<b, t, 0, *s>>>(args...,func);
 #else
   ARCANE_UNUSED(launch_info);
   ARCANE_UNUSED(kernel);
   ARCANE_UNUSED(func);
-  ARCANE_UNUSED(args);
+  // ARCANE_UNUSED(args...);  FIXME: ne fonctionne pas, d'où le [[maybe_unused]] dans le prototype
   ARCANE_FATAL("Requesting CUDA kernel execution but the kernel is not compiled with CUDA."
                " You need to compile the file containing this kernel with CUDA compiler.");
 #endif
@@ -174,24 +190,24 @@ _applyKernelCUDA(impl::RunCommandLaunchInfo& launch_info,const CudaKernel& kerne
 /*---------------------------------------------------------------------------*/
 
 /*!
- * \brief Fonction générique pour exécuter un kernel CUDA.
+ * \brief Fonction générique pour exécuter un kernel HIP.
  *
- * \param kernel noyau CUDA
+ * \param kernel noyau HIP
  * \param func fonction à exécuter par le noyau
  * \param args arguments de la fonction lambda
  */
-template<typename HipKernel,typename Lambda,typename LambdaArgs> void
-_applyKernelHIP(impl::RunCommandLaunchInfo& launch_info,const HipKernel& kernel, Lambda& func,const LambdaArgs& args)
+template<typename HipKernel,typename Lambda,typename... LambdaArgs> void
+_applyKernelHIP(impl::RunCommandLaunchInfo& launch_info,const HipKernel& kernel,Lambda& func,[[maybe_unused]] const LambdaArgs&... args)
 {
 #if defined(ARCANE_COMPILING_HIP)
   auto [b,t] = launch_info.threadBlockInfo();
   hipStream_t* s = reinterpret_cast<hipStream_t*>(launch_info._internalStreamImpl());
-  hipLaunchKernelGGL(kernel, b, t, 0, *s, args, func);
+  hipLaunchKernelGGL(kernel, b, t, 0, *s, args..., func); // TODO: pas encore testé !!!
 #else
   ARCANE_UNUSED(launch_info);
   ARCANE_UNUSED(kernel);
   ARCANE_UNUSED(func);
-  ARCANE_UNUSED(args);
+  // ARCANE_UNUSED(args...);  FIXME: ne fonctionne pas, d'où le [[maybe_unused]] dans le prototype
   ARCANE_FATAL("Requesting HIP kernel execution but the kernel is not compiled with HIP."
                " You need to compile the file containing this kernel with HIP compiler.");
 #endif
