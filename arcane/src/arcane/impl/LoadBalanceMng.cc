@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* LoadBalanceMng.cc                                           (C) 2000-2018 */
+/* LoadBalanceMng.cc                                           (C) 2000-2023 */
 /*                                                                           */
 /* Module standard de description du probleme pour l'equilibrage de charge.  */
 /* Est utilise par le MeshPartioner comme entree.                            */
@@ -39,7 +39,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -396,10 +397,11 @@ reset()
 void LoadBalanceMng::
 initAccess(IMesh* mesh)
 {
-  m_cell_new_owner = std::make_unique<VariableCellInt32>(VariableBuildInfo(m_mesh_handle, "CellFamilyNewOwner", IVariable::PExecutionDepend | IVariable::PNoDump));
   if (!mesh)
-    m_mesh_handle = mesh->handle();
+    ARCANE_FATAL("Null mesh");
+  m_mesh_handle = mesh->handle();
   int vflags = IVariable::PExecutionDepend|IVariable::PNoDump|IVariable::PTemporary;
+  m_cell_new_owner = std::make_unique<VariableCellInt32>(VariableBuildInfo(m_mesh_handle, "CellFamilyNewOwner", IVariable::PExecutionDepend | IVariable::PNoDump));
   m_comm_costs = new VariableFaceReal(VariableBuildInfo(m_mesh_handle, "LbMngCommCost", vflags));
   m_mass_over_weigth = new VariableCellReal(VariableBuildInfo(m_mesh_handle, "LbMngOverallMass",vflags));
   m_mass_res_weight = new VariableCellReal(VariableBuildInfo(m_mesh_handle, "LbMngResidentMass",vflags));
@@ -494,7 +496,8 @@ void LoadBalanceMng::
 notifyEndPartition()
 {
   IMesh* mesh = m_mesh_handle.mesh();
-  if (m_cell_new_owner != nullptr) m_cell_new_owner->fill(mesh->parallelMng()->commRank(),mesh->ownCells());
+  if (m_cell_new_owner)
+    m_cell_new_owner->fill(mesh->parallelMng()->commRank(),mesh->ownCells());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -595,7 +598,7 @@ arcaneCreateLoadBalanceMng(ISubDomain* sd)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
