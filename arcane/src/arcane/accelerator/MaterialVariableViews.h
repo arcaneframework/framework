@@ -54,19 +54,10 @@ template<typename ItemType,typename DataType>
 class MatItemVariableScalarInViewT
 : public MatVariableViewBase
 {
- private:
-  using ItemIndexType = MatVarIndex;
- 
  public:
 
   MatItemVariableScalarInViewT(RunCommand& cmd, IMeshMaterialVariable* var, ArrayView<DataType>* v)
-  : MatVariableViewBase(cmd, var), m_value(v), m_value0(v[0].unguardedBasePointer()){}
-
-  //! Opérateur d'accès pour l'entité \a item
-  ARCCORE_HOST_DEVICE const DataType& operator[](ItemIndexType mvi) const
-  {
-    return this->m_value[mvi.arrayIndex()][mvi.valueIndex()];
-  }
+  : MatVariableViewBase(cmd, var), m_value(v), m_value0(v[0].data()){}
 
   //! Opérateur d'accès pour l'entité \a item
   ARCCORE_HOST_DEVICE const DataType& operator[](ComponentItemLocalId lid) const
@@ -81,9 +72,9 @@ class MatItemVariableScalarInViewT
   }
 
   //! Opérateur d'accès pour l'entité \a item
-  ARCCORE_HOST_DEVICE const DataType& value(ItemIndexType mvi) const
+  ARCCORE_HOST_DEVICE const DataType& value(ComponentItemLocalId mvi) const
   {
-    return this->m_value[mvi.arrayIndex()][mvi.valueIndex()];
+    return this->m_value[mvi.localId().arrayIndex()][mvi.localId().valueIndex()];
   }
 
   ARCCORE_HOST_DEVICE const DataType& value0(PureMatVarIndex idx) const
@@ -92,6 +83,7 @@ class MatItemVariableScalarInViewT
   }
 
  private:
+
   ArrayView<DataType>* m_value;
   DataType* m_value0;
 };
@@ -123,26 +115,18 @@ class MatItemVariableScalarOutViewT
 
   using DataType = typename Accessor::ValueType;
   using DataTypeReturnType = DataType&;
-  using ItemIndexType = MatVarIndex;
 
-
-// TODO: faut il rajouter des ARCANE_CHECK_AT(mvi.arrayIndex(), m_value.size()); ? il manquera tjrs le check sur l'autre dimension
+  // TODO: faut il rajouter des ARCANE_CHECK_AT(mvi.arrayIndex(), m_value.size()); ? il manquera tjrs le check sur l'autre dimension
 
  public:
 
   MatItemVariableScalarOutViewT(RunCommand& cmd,IMeshMaterialVariable* var,ArrayView<DataType>* v)
-  : MatVariableViewBase(cmd, var), m_value(v), m_value0(v[0].unguardedBasePointer()){}
-
-  //! Opérateur d'accès pour l'entité \a item
-  ARCCORE_HOST_DEVICE Accessor operator[](ItemIndexType mvi) const
-  {
-    return Accessor(this->m_value[mvi.arrayIndex()].data()+mvi.valueIndex());
-  }
+  : MatVariableViewBase(cmd, var), m_value(v), m_value0(v[0].data()){}
 
   //! Opérateur d'accès pour l'entité \a item
   ARCCORE_HOST_DEVICE Accessor operator[](ComponentItemLocalId lid) const
   {
-    return Accessor(this->m_value[lid.localId().arrayIndex()][lid.localId().valueIndex()]);
+    return Accessor(this->m_value[lid.localId().arrayIndex()].data()+lid.localId().valueIndex());
   }
 
   ARCCORE_HOST_DEVICE Accessor operator[](PureMatVarIndex pmvi) const
@@ -151,42 +135,24 @@ class MatItemVariableScalarOutViewT
   }
 
   //! Opérateur d'accès pour l'entité \a item
-  ARCCORE_HOST_DEVICE Accessor value(ItemIndexType mvi) const
+  ARCCORE_HOST_DEVICE Accessor value(ComponentItemLocalId lid) const
   {
-    return Accessor(this->m_value[mvi.arrayIndex()][mvi.valueIndex()]);
+    return Accessor(this->m_value[lid.localId().arrayIndex()].data()+lid.localId().valueIndex());
   }
 
-  // TODO: A été rajouté dans l'API pour faire comme dans les VariableViews... A garder ?
   //! Positionne la valeur pour l'entité \a item à \a v
-  ARCCORE_HOST_DEVICE void setValue(ItemIndexType mvi,const DataType& v) const
+  ARCCORE_HOST_DEVICE void setValue(ComponentItemLocalId lid,const DataType& v) const
   {
-    this->m_value[mvi.arrayIndex()][mvi.valueIndex()] = v;
+    this->m_value[lid.localId().arrayIndex()][lid.localId().valueIndex()] = v;
   }
-
 
   ARCCORE_HOST_DEVICE Accessor value0(PureMatVarIndex idx) const
   {
     return Accessor(this->m_value0[idx.valueIndex()]);
   }
 
-// FIXME: Si on veut garder les 2 ci-dessous, il faudra
-// redéfinir CellComponentCellEnumerator et EnvCellEnumerator en version accelerator
-/*
-
-  //! Valeur partielle de la variable pour l'itérateur \a mc
-  ARCCORE_HOST_DEVICE Accessor operator[](CellComponentCellEnumerator mc) const
-  {
-    return Accessor(this->operator[](mc._varIndex()));
-  }
-
-  //! Valeur partielle de la variable pour l'itérateur \a mc
-  ARCCORE_HOST_DEVICE Accessor operator[](EnvCellEnumerator mc) const
-  {
-    return Accessor(this->operator[](mc._varIndex()));
-  }
-*/
-
  private:
+
   ArrayView<DataType>* m_value;
   DataType* m_value0;
 };

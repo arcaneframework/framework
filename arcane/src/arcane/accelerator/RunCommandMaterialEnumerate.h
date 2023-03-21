@@ -64,13 +64,13 @@ class EnvAndGlobalCellAccessor
   struct EnvCellAccessorInternalData
   {
     // TODO: utiliser EnvCellLocalId
-    Arcane::Materials::MatVarIndex m_mvi;
+    Arcane::Materials::ComponentItemLocalId m_mvi;
     CellLocalId m_cid;
   };
 
  public:
 
-  ARCCORE_HOST_DEVICE explicit EnvAndGlobalCellAccessor(Arcane::Materials::MatVarIndex mvi, CellLocalId cid)
+  ARCCORE_HOST_DEVICE explicit EnvAndGlobalCellAccessor(Arcane::Materials::ComponentItemLocalId mvi, CellLocalId cid)
   : m_internal_data{ mvi, cid }
   {
   }
@@ -93,7 +93,7 @@ class EnvAndGlobalCellAccessor
   }
 
   ///! Accesseur sur la partie MatVarIndex
-  ARCCORE_HOST_DEVICE Arcane::Materials::MatVarIndex varIndex() { return m_internal_data.m_mvi; };
+  ARCCORE_HOST_DEVICE Arcane::Materials::ComponentItemLocalId varIndex() { return m_internal_data.m_mvi; };
 
   ///! Accesseur sur la partie cell local id
   ARCCORE_HOST_DEVICE CellLocalId globalCellId() { return m_internal_data.m_cid; }
@@ -119,7 +119,7 @@ namespace Arcane::Accelerator::impl
 
 #if defined(ARCANE_COMPILING_CUDA) || defined(ARCANE_COMPILING_HIP)
 /*
- * Surcharge de la fonction de lancement de kernel pour GPU pour les MatVarIndex et CellLocalId
+ * Surcharge de la fonction de lancement de kernel pour GPU pour les ComponentItemLocalId et CellLocalId
  */
 template <typename Lambda> __global__ void
 doIndirectGPULambda(SmallSpan<const MatVarIndex> mvis, SmallSpan<const Int32> cids, Lambda func)
@@ -129,7 +129,7 @@ doIndirectGPULambda(SmallSpan<const MatVarIndex> mvis, SmallSpan<const Int32> ci
 
   Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
   if (i < mvis.size()) {
-    EnvAndGlobalCellAccessor lec(mvis[i], static_cast<CellLocalId>(cids[i]));
+    EnvAndGlobalCellAccessor lec(Arcane::Materials::ComponentItemLocalId(mvis[i]), static_cast<CellLocalId>(cids[i]));
     //if (i<10)
     //printf("CUDA %d lid=%d\n",i,lid.localId());
     body(lec);
@@ -137,13 +137,13 @@ doIndirectGPULambda(SmallSpan<const MatVarIndex> mvis, SmallSpan<const Int32> ci
 }
 
 template <typename Lambda> __global__ void
-doDirectGPULambda(MatVarIndex mvi, Int32 cid, Lambda func)
+doDirectGPULambda(ComponentItemLocalId mvi, Int32 cid, Lambda func)
 {
   auto privatizer = privatize(func);
   auto& body = privatizer.privateCopy();
 
   Int32 i = blockDim.x * blockIdx.x + threadIdx.x;
-  if (!mvi.null()) {
+  if (!mvi.localId().null()) {
     //if (i<10)
     //printf("CUDA %d lid=%d\n",i,lid.localId());
     body(EnvAndGlobalCellAccessor(mvi, static_cast<CellLocalId>(cid)));
@@ -167,7 +167,7 @@ void doIndirectThreadLambda(SmallSpan<const Arcane::Materials::MatVarIndex>& sub
 
   // Les tailles de sub_mvis et sub_cids ont été testées en amont déjà
   for (int i(0); i < sub_mvis.size(); ++i)
-    body(EnvAndGlobalCellAccessor(sub_mvis[i], static_cast<CellLocalId>(sub_cids[i])));
+    body(EnvAndGlobalCellAccessor(Arcane::Materials::ComponentItemLocalId(sub_mvis[i]), static_cast<CellLocalId>(sub_cids[i])));
 }
 
 /*---------------------------------------------------------------------------*/
@@ -179,14 +179,15 @@ void doIndirectThreadLambda(SmallSpan<const Arcane::Materials::MatVarIndex>& sub
 template <typename Lambda> void
 _applyEnvCells(RunCommand& command, const Arcane::Materials::EnvCellVectorView& items, const Lambda& func)
 {
+  using namespace Arcane::Materials;
   // TODO: fusionner la partie commune avec 'applyLoop'
   Int32 vsize = static_cast<Int32>(items.nbItem());
   if (vsize == 0)
     return;
 
-  SmallSpan<const Arcane::Materials::MatVarIndex> mvis(items.matvarIndexes());
+  SmallSpan<const MatVarIndex> mvis(items.matvarIndexes());
   SmallSpan<const Int32> cids(items._internalLocalIds());
-  ARCANE_ASSERT(mvis.size() == cids.size(), ("MatVarIndex and CellLocalId arrays have different size"));
+  ARCANE_ASSERT(mvis.size() == cids.size(), ("ComponentItemLocalId and CellLocalId arrays have different size"));
 
   RunCommandLaunchInfo launch_info(command, vsize);
   const eExecutionPolicy exec_policy = launch_info.executionPolicy();
@@ -201,12 +202,12 @@ _applyEnvCells(RunCommand& command, const Arcane::Materials::EnvCellVectorView& 
     break;
   case eExecutionPolicy::Sequential:
     for (int i(0); i < mvis.size(); ++i)
-      func(EnvAndGlobalCellAccessor(mvis[i], static_cast<CellLocalId>(cids[i])));
+      func(EnvAndGlobalCellAccessor(ComponentItemLocalId(mvis[i]), static_cast<CellLocalId>(cids[i])));
     break;
   case eExecutionPolicy::Thread:
     arcaneParallelForVa(
     launch_info.loopRunInfo(),
-    [&](SmallSpan<const Arcane::Materials::MatVarIndex> sub_mvis, SmallSpan<const Int32> sub_cids) {
+    [&](SmallSpan<const MatVarIndex> sub_mvis, SmallSpan<const Int32> sub_cids) {
       doIndirectThreadLambda(sub_mvis, sub_cids, func);
     },
     mvis, cids);
@@ -220,7 +221,7 @@ _applyEnvCells(RunCommand& command, const Arcane::Materials::EnvCellVectorView& 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace impl
+} // namespace Arcane::Accelerator::impl
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
