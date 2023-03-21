@@ -210,12 +210,24 @@ arcaneParallelFor(Integer i0, Integer size, InstanceType* itype,
  * sur l'intervalle d'itération [i0,i0+size] avec les options \a options.
  */
 template <typename LambdaType> inline void
-arcaneParallelFor(Integer i0, Integer size, const ParallelLoopOptions& options,
+arcaneParallelFor(Integer i0, Integer size, const ForLoopRunInfo& options,
                   const LambdaType& lambda_function)
 {
   LambdaRangeFunctorT<LambdaType> ipf(lambda_function);
-  ParallelFor1DLoopInfo loop_info(i0, size, &ipf, ForLoopRunInfo(options));
+  ParallelFor1DLoopInfo loop_info(i0, size, &ipf, options);
   TaskFactory::executeParallelFor(loop_info);
+}
+
+/*!
+ * \ingroup Concurrency
+ * \brief Applique en concurrence la fonction lambda \a lambda_function
+ * sur l'intervalle d'itération [i0,i0+size] avec les options \a options.
+ */
+template <typename LambdaType> inline void
+arcaneParallelFor(Integer i0, Integer size, const ParallelLoopOptions& options,
+                  const LambdaType& lambda_function)
+{
+  arcaneParallelFor(i0, size, ForLoopRunInfo(options),lambda_function);
 }
 
 /*!
