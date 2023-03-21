@@ -31,6 +31,45 @@ namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*
+ * Equivalent de la classe ItemRunCommand pour les EnvAndGlobalCell
+ */
+class EnvAndGlobalCellRunCommand
+{
+ public:
+
+  class Container
+  {
+   public:
+
+    Container(Arcane::Materials::IMeshEnvironment* env)
+    : m_items(env->envView())
+    {}
+    Container(Arcane::Materials::EnvCellVectorView view)
+    : m_items(view)
+    {}
+
+   public:
+
+    Arcane::Materials::EnvCellVectorView m_items;
+  };
+
+ public:
+
+  explicit EnvAndGlobalCellRunCommand(RunCommand& command, const Container& items)
+  : m_command(command)
+  , m_items(items.m_items)
+  {
+  }
+
+ public:
+
+  RunCommand& m_command;
+  Arcane::Materials::EnvCellVectorView m_items;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 /*!
  * \brief Caractéristiques d'un énumérateur d'une commande sur les matériaux/milieux.
  *
@@ -42,12 +81,26 @@ class RunCommandMatItemEnumeratorTraitsT;
 
 class EnvAndGlobalCellAccessor;
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+//! Spécialisation pour une vue sur un milieu et la maille globale associée
 template <>
 class RunCommandMatItemEnumeratorTraitsT<Arcane::Materials::EnvAndGlobalCell>
 {
  public:
 
   using EnumeratorType = EnvAndGlobalCellAccessor;
+
+ public:
+
+  static EnvAndGlobalCellRunCommand::Container createCommand(const Arcane::Materials::EnvCellVectorView& items)
+  {
+    return { items };
+  }
+  static EnvAndGlobalCellRunCommand::Container createCommand(Arcane::Materials::IMeshEnvironment* env)
+  {
+    return { env };
+  }
 };
 
 /*---------------------------------------------------------------------------*/
@@ -106,7 +159,7 @@ class EnvAndGlobalCellAccessor
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-}
+} // namespace Arcane::Accelerator
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -242,40 +295,14 @@ run(RunCommand& command, const Arcane::Materials::EnvCellVectorView& items, cons
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*
- * Equivalent de la classe ItemRunCommand pour les EnvCell
- */
-class EnvCellRunCommand
-{
- public:
-
-  explicit EnvCellRunCommand(RunCommand& command, const Arcane::Materials::EnvCellVectorView& items)
-  : m_command(command)
-  , m_items(items)
-  {
-  }
-
-  RunCommand& m_command;
-  Arcane::Materials::EnvCellVectorView m_items;
-};
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCANE_ACCELERATOR_EXPORT EnvCellRunCommand
-operator<<(RunCommand& command, const Arcane::Materials::EnvCellVectorView& items);
-
-extern "C++" ARCANE_ACCELERATOR_EXPORT EnvCellRunCommand
-operator<<(RunCommand& command, Arcane::Materials::IMeshEnvironment* env);
+extern "C++" ARCANE_ACCELERATOR_EXPORT EnvAndGlobalCellRunCommand
+operator<<(RunCommand& command, const EnvAndGlobalCellRunCommand::Container& view);
 
 template <typename Lambda>
-void operator<<(EnvCellRunCommand&& nr, const Lambda& f)
-{
-  run(nr.m_command, nr.m_items, f);
-}
-
-template <typename Lambda>
-void operator<<(EnvCellRunCommand& nr, const Lambda& f)
+void operator<<(EnvAndGlobalCellRunCommand&& nr, const Lambda& f)
 {
   run(nr.m_command, nr.m_items, f);
 }
@@ -289,8 +316,9 @@ void operator<<(EnvCellRunCommand& nr, const Lambda& f)
 /*---------------------------------------------------------------------------*/
 
 //! Macro pour itérer un matériau ou un milieu
-#define RUNCOMMAND_MAT_ENUMERATE(MatItemNameType,iter_name,env_or_mat_vector) \
-  A_FUNCINFO << env_or_mat_vector << [=] ARCCORE_HOST_DEVICE (Arcane::Accelerator::RunCommandMatItemEnumeratorTraitsT<MatItemNameType>::EnumeratorType iter_name)
+#define RUNCOMMAND_MAT_ENUMERATE(MatItemNameType, iter_name, env_or_mat_vector) \
+  A_FUNCINFO << Arcane::Accelerator::RunCommandMatItemEnumeratorTraitsT<MatItemNameType>::createCommand(env_or_mat_vector) \
+             << [=] ARCCORE_HOST_DEVICE(Arcane::Accelerator::RunCommandMatItemEnumeratorTraitsT<MatItemNameType>::EnumeratorType iter_name)
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
