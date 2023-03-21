@@ -39,7 +39,7 @@ class ARCANE_CORE_EXPORT MatVarIndex
 {
  public:
 
-  ARCCORE_HOST_DEVICE MatVarIndex(Int32 array_index,Int32 value_index)
+  constexpr ARCCORE_HOST_DEVICE MatVarIndex(Int32 array_index,Int32 value_index)
   : m_array_index(array_index), m_value_index(value_index)
   {
   }
@@ -48,25 +48,25 @@ class ARCANE_CORE_EXPORT MatVarIndex
  public:
 
   //! Retourne l'indice du tableau de valeur dans la liste des variables.
-  ARCCORE_HOST_DEVICE Int32 arrayIndex() const { return m_array_index; }
+  constexpr ARCCORE_HOST_DEVICE Int32 arrayIndex() const { return m_array_index; }
 
   //! Retourne l'indice dans le tableau de valeur
-  ARCCORE_HOST_DEVICE Int32 valueIndex() const { return m_value_index; }
+  constexpr ARCCORE_HOST_DEVICE Int32 valueIndex() const { return m_value_index; }
 
   //! Positionne l'index
-  ARCCORE_HOST_DEVICE void setIndex(Int32 array_index,Int32 value_index)
+  constexpr ARCCORE_HOST_DEVICE void setIndex(Int32 array_index,Int32 value_index)
   {
     m_array_index = array_index;
     m_value_index = value_index;
   }
 
-  ARCCORE_HOST_DEVICE void reset()
+  constexpr ARCCORE_HOST_DEVICE void reset()
   {
     m_array_index = (-1);
     m_value_index = (-1);
   }
 
-  ARCCORE_HOST_DEVICE bool null() const
+  constexpr ARCCORE_HOST_DEVICE bool null() const
   {
     return m_value_index==(-1);
   }
@@ -108,8 +108,8 @@ inline bool ARCCORE_HOST_DEVICE operator!=(MatVarIndex mv1,MatVarIndex mv2)
 class ARCANE_CORE_EXPORT ComponentItemLocalId
 {
  public:
-  ARCCORE_HOST_DEVICE ComponentItemLocalId() : m_local_id(-1,-1){}
-  explicit ARCCORE_HOST_DEVICE ComponentItemLocalId(MatVarIndex mvi) : m_local_id(mvi){}
+  constexpr ARCCORE_HOST_DEVICE ComponentItemLocalId() : m_local_id(-1,-1){}
+  constexpr ARCCORE_HOST_DEVICE explicit ComponentItemLocalId(MatVarIndex mvi) : m_local_id(mvi){}
  public:
   MatVarIndex ARCCORE_HOST_DEVICE localId() const { return m_local_id; }
  private:
