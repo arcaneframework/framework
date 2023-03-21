@@ -378,7 +378,7 @@ _executeTest1(Integer nb_z,EnvCellVectorView env1)
     auto in_e = ax::viewIn(cmd, m_mat_e);  
 
     for (Integer z=0, iz=nb_z; z<iz; ++z) {
-      cmd << RUNCOMMAND_ENUMERATE(EnvCell, evi, env1) {
+      cmd << RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell, evi, env1) {
         auto [mvi, cid] = evi();
         out_a[mvi] = in_b[mvi] + in_c[mvi] * in_d[mvi] + in_e[mvi];
       };
@@ -391,7 +391,7 @@ _executeTest1(Integer nb_z,EnvCellVectorView env1)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \brief Test du RUNCOMMAND_ENUMERATE(EnvCell, ...
+ * \brief Test du RUNCOMMAND_MAT_ENUMERATE(EnvCell, ...
  * avec en paramètres une collection d'envcell et cherchant à accèder
  * aux variables multimat par l'envcell (i.e. le MatVarIndex en fait)
  * mais aussi aux variables globales par le cell ID
@@ -439,13 +439,13 @@ _executeTest2(Integer nb_z)
         IMeshEnvironment* env = *ienv;
         EnvCellVectorView envcellsv = env->envView();    
         {
-          cmd << RUNCOMMAND_ENUMERATE(EnvCell, evi, envcellsv) {
+          cmd << RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell, evi, envcellsv) {
             auto [mvi, cid] = evi();
             inout_a[mvi] = in_b[mvi] * in_e[cid];
           };
         }
         {
-          cmd << RUNCOMMAND_ENUMERATE(EnvCell, evi, envcellsv) {
+          cmd << RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell, evi, envcellsv) {
             auto [mvi, cid] = evi();
             out_c[mvi] += inout_a[mvi] * in_d[cid];
           };
@@ -509,13 +509,13 @@ _executeTest3(Integer nb_z)
         auto in_e = ax::viewIn(cmd, m_mat_e.globalVariable());
 
         {
-          cmd << RUNCOMMAND_ENUMERATE(EnvCell, evi, envcellsv) {
+          cmd << RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell, evi, envcellsv) {
             auto [mvi, cid] = evi();
             inout_a[mvi] = in_b[mvi] * in_e[cid];
           };
         }
         {
-          cmd << RUNCOMMAND_ENUMERATE(EnvCell, evi, envcellsv) {
+          cmd << RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell, evi, envcellsv) {
             auto [mvi, cid] = evi();
             out_c[mvi] += inout_a[mvi] * in_d[cid];
           };
