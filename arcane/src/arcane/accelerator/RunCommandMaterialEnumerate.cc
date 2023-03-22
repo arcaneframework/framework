@@ -21,12 +21,6 @@ namespace Arcane::Accelerator
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-extern "C++" ARCANE_ACCELERATOR_EXPORT EnvAndGlobalCellRunCommand
-operator<<(RunCommand& command,const EnvAndGlobalCellRunCommand::Container& items)
-{
-  return EnvAndGlobalCellRunCommand(command,items);
-}
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
