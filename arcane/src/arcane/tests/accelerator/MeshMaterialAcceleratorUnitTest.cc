@@ -378,9 +378,8 @@ _executeTest1(Integer nb_z,EnvCellVectorView env1)
     auto in_e = ax::viewIn(cmd, m_mat_e);  
 
     for (Integer z=0, iz=nb_z; z<iz; ++z) {
-      cmd << RUNCOMMAND_MAT_ENUMERATE(EnvAndGlobalCell, evi, env1) {
-        auto [mvi, cid] = evi();
-        out_a[mvi] = in_b[mvi] + in_c[mvi] * in_d[mvi] + in_e[mvi];
+      cmd << RUNCOMMAND_MAT_ENUMERATE(EnvCell, evi, env1) {
+        out_a[evi] = in_b[evi] + in_c[evi] * in_d[evi] + in_e[evi];
       };
     }
   }
