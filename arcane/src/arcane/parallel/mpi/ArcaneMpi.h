@@ -46,6 +46,17 @@ arcaneAutoDetectMessagePassingServiceMPI();
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \brief Indique si le runtime actuel de MPI a le support de CUDA.
+ *
+ * Si l'implémentation MPI supporte CUDA cela permet à MPI d'accéder
+ * directement à la mémoire du GPU.
+ */
+extern "C++" ARCANE_MPI_EXPORT bool
+arcaneIsCudaAwareMPI();
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 //! \internal
 extern "C++" ARCANE_MPI_EXPORT void

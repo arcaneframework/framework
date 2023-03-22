@@ -233,10 +233,11 @@ build()
   m_error_handler.registerHandler(m_main_communicator);
 #endif
 
-  if (rank==0)
+  if (rank==0){
     tm->info() << "MPI has non blocking collective";
-  if (rank==0)
     tm->info() << "MPI: sizeof(MPI_Count)=" << sizeof(MPI_Count);
+    tm->info() << "MPI: is Cuda Aware?=" << arcaneIsCudaAwareMPI();
+  }
 
   m_rank = rank;
   m_nb_rank = size;

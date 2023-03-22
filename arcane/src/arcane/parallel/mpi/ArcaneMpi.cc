@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneMpi.cc                                                (C) 2000-2018 */
+/* ArcaneMpi.cc                                                (C) 2000-2023 */
 /*                                                                           */
 /* Déclarations globales pour la partie MPI de Arcane.                       */
 /*---------------------------------------------------------------------------*/
@@ -19,11 +19,34 @@
 
 #include <iostream>
 
+// Ce fichier est utilisé par OpenMpi pour définir des extensions
+// La page https://www.open-mpi.org/faq/?category=runcuda
+// indique comment détecter si on est CUDA-AWARE.
+
+#if __has_include(<mpi-ext.h>)
+#include <mpi-ext.h>
+#endif
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ARCANE_MPI_EXPORT bool
+arcaneIsCudaAwareMPI()
+{
+  bool is_aware = false;
+  // OpenMPI définit MPIX_CUDA_AWARE_SUPPORT et mpich définit MPIX_GPU_SUPPORT_CUDA
+  // pour indiquer que MPIX_Query_cuda_support() est disponible.
+#if defined(MPIX_CUDA_AWARE_SUPPORT) || defined(MPIX_GPU_SUPPORT_CUDA)
+  is_aware =  (MPIX_Query_cuda_support()==1);
+#endif
+  return is_aware;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
