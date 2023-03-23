@@ -1,20 +1,19 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CaseTableParams.cc                                          (C) 2000-2016 */
+/* CaseTableParams.cc                                          (C) 2000-2023 */
 /*                                                                           */
 /* Paramètre d'une fonction du jeu de données.                               */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
-
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/String.h"
+#include "arcane/utils/NotSupportedException.h"
 
 #include "arcane/datatype/SmallVariant.h"
 
@@ -23,7 +22,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -264,28 +264,23 @@ CaseTableParams::Impl::
 void CaseTableParams::Impl::
 setType(CaseTable::eParamType type)
 {
-  //cerr << "** TRY TO TYPE CHANGED " << (int)type << ' '  << (int)m_param_type << "\n";
-  if (type!=m_param_type)
-    delete m_setter;
+  delete m_setter;
 
-  /*if (m_param_type==CaseTable::TReal && type==CaseTable::TInteger){
-    for( Integer i=0, s=m_param_list.size(); i<s; ++i ){
-      Integer v = static_cast<Integer>(m_param_list[i].asReal());
-      m_param_list[i].setValue(v);
-    }
-    }*/
-  
-  m_param_type = type;
-  //cerr << "** TYPE CHANGED\n";
-  switch(m_param_type){
-  case CaseTable::ParamUnknown:
-  case CaseTable::ParamReal:
-    m_setter = new CFParamSetterT<Real>(&m_param_list);
-    break;
-  case CaseTable::ParamInteger:
-    m_setter = new CFParamSetterT<Integer>(&m_param_list);
-    break;
+  if (type==CaseTable::ParamUnknown){
+    // Normalement on devrait faire un fatal mais pour des raisons de
+    // compatibilité avec l'existant on considère qu'il s'agit d'un paramètre
+    // de type 'Real'.
+    type = CaseTable::ParamReal;
   }
+
+  if (type==CaseTable::ParamReal)
+    m_setter = new CFParamSetterT<Real>(&m_param_list);
+  else if (type==CaseTable::ParamInteger)
+    m_setter = new CFParamSetterT<Integer>(&m_param_list);
+  else
+    ARCANE_THROW(NotSupportedException,"Invalid type '{0}'",(int)type);
+
+  m_param_type = type;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -394,7 +389,7 @@ template class CFParamSetterT<bool>;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
