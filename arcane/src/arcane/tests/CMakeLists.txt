@@ -282,6 +282,7 @@ ARCANE_ADD_TEST_SEQUENTIAL(caseoptions_default testCaseOptions-4.arc)
 ARCANE_ADD_TEST_SEQUENTIAL(caseoptions_category testCaseOptions-5.arc -We,ARCANE_DEFAULT_CATEGORY,X1)
 arcane_add_test_sequential(caseoptions_multiplemesh testCaseOptions-multiple-mesh.arc -We,ARCANE_DEFAULT_CATEGORY,X3)
 arcane_add_test_sequential(caseoptions_multiplemesh_legacy testCaseOptions-multiple-mesh-legacy.arc -We,ARCANE_DEFAULT_CATEGORY,X3)
+arcane_add_test_sequential(casefunction1 testCaseFunction-1.arc)
 
 ARCANE_ADD_TEST(timehistory testTimeHistory-1.arc)
 

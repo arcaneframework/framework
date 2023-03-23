@@ -5,6 +5,7 @@ set(ARCANE_SOURCES
   SingletonService.cc
   ParticleUnitTest.cc
   TestUnitTest.cc
+  CaseFunctionUnitTest.cc
   CaseOptionsTesterModule.cc
   ParallelTesterModule.cc
   SubMeshTestModule.cc
