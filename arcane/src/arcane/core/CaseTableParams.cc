@@ -19,6 +19,8 @@
 
 #include "arcane/CaseTableParams.h"
 
+#include <algorithm>
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -32,7 +34,7 @@ class ICFParamSetter
 {
  public:
 
-  typedef UniqueArray<SmallVariant> Params;
+  using Params = UniqueArray<SmallVariant>;
 
  public:
 
@@ -386,6 +388,70 @@ void CaseTableParams::
 setType(CaseTable::eParamType new_type)
 {
   m_p->setType(new_type);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace
+{
+  template <typename T>
+  class Comparer
+  {
+   public:
+
+    bool operator()(const SmallVariant& a, const SmallVariant& b) const
+    {
+      T ta = {};
+      T tb = {};
+      a.value(ta);
+      b.value(tb);
+      return ta < tb;
+    }
+  };
+} // namespace
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename T> void CaseTableParams::
+_getRange(T v, Int32& begin, Int32& end) const
+{
+  // Comme les valeurs des paramètres sont triées, utilise une
+  // dichotomie pour chercher à quelle indice dans le tableau des paramètres
+  // se trouve 'v'.
+  const Int32 max_end = nbElement();
+  begin = 0;
+  end = max_end;
+  Comparer<T> comp;
+  SmallVariant v2(v);
+  ConstArrayView<SmallVariant> params = m_p->m_param_list;
+  auto iter = std::lower_bound(params.begin(), params.end(), v2, comp);
+  Int32 pos = static_cast<Int32>(iter - params.begin());
+  // Augmente l'intervalle pour être sur de traiter les cas limites
+  // où la valeur est proche d'une valeur conservée dans \a params.
+  begin = pos - 2;
+  end = pos + 2;
+  begin = std::clamp(begin, 0, max_end);
+  end = std::clamp(end, 0, max_end);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CaseTableParams::
+getRange(Real v, Int32& begin, Int32& end) const
+{
+  _getRange(v, begin, end);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CaseTableParams::
+getRange(Integer v, Int32& begin, Int32& end) const
+{
+  _getRange(v, begin, end);
 }
 
 /*---------------------------------------------------------------------------*/

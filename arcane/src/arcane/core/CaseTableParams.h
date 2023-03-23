@@ -55,9 +55,16 @@ class CaseTableParams
   void toString(Integer id, String& str) const;
   void setType(ICaseFunction::eParamType new_type);
 
+  void getRange(Real v, Int32& begin, Int32& end) const;
+  void getRange(Integer v, Int32& begin, Int32& end) const;
+
  private:
 
   Impl* m_p;
+
+ private:
+
+  template <typename T> inline void _getRange(T v, Int32& begin, Int32& end) const;
 };
 
 /*---------------------------------------------------------------------------*/
