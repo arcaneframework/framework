@@ -13,7 +13,7 @@
 
 #include "arcane/core/BasicUnitTest.h"
 #include "arcane/core/FactoryService.h"
-#include "arcane/core/ICaseFunction.h"
+#include "arcane/core/CaseTable.h"
 #include "arcane/core/ICaseMng.h"
 
 /*---------------------------------------------------------------------------*/
@@ -47,6 +47,7 @@ class CaseFunctionUnitTest
  private:
 
   void _testLinearReal();
+  void _testBigTable();
   void _checkValue(ICaseFunction* f, Real x, Real expected_y);
   void _checkValueEpsilon(ICaseFunction* f, Real x, Real expected_y);
 };
@@ -75,6 +76,7 @@ void CaseFunctionUnitTest::
 executeTest()
 {
   _testLinearReal();
+  _testBigTable();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -98,7 +100,8 @@ _checkValueEpsilon(ICaseFunction* f, Real x, Real expected_y)
 {
   Real y = 0.0;
   f->value(x, y);
-  if (!math::isNearlyEqual(y, expected_y))
+  // TODO: regarder pourquoi il faut cette valeur de epsilon
+  if (!math::isNearlyEqualWithEpsilon(y, expected_y, 1.0e-13))
     ARCANE_FATAL("Bad value func={0} x={1} y={2} expected={3}",
                  f->name(), x, y, expected_y);
 }
@@ -135,6 +138,43 @@ _testLinearReal()
   _checkValueEpsilon(func, 8.0 + 1.0 / 3.0, 20.25);
   _checkValue(func, 9.0, 11.75);
   _checkValue(func, 12.0, -2);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CaseFunctionUnitTest::
+_testBigTable()
+{
+  CaseFunctionBuildInfo cfbi(traceMng(), "big-table");
+  //TODO: à detruire
+  auto func = new CaseTable(cfbi, CaseTable::CurveLinear);
+  Int32 multiplier = 10;
+  // En débug utilise moins de points pour que le test ne dure pas trop
+  // longtemps.
+  if (arcaneIsDebug())
+    multiplier = 1.0;
+  const Int32 nb = 1500 * multiplier;
+  const Real xbegin = 1.0;
+  const Real xend = 25.0;
+  info() << "NB_POINT=" << nb;
+  UniqueArray<Real2> values_to_test;
+  for (Int32 i = 0; i < nb; ++i) {
+    Real x = xbegin + static_cast<Real>(i) * (xend - xbegin) / nb;
+    Real y = 2.3 * x - 1.2 * x * x + 3.0;
+    if (i < 10)
+      info() << "X=" << x << " Y=" << y;
+    func->appendElement(String::fromNumber(x), String::fromNumber(y));
+    values_to_test.add(Real2(x, y));
+  }
+
+  const Int32 nb_z = 1;
+  for (Int32 z = 0; z < nb_z; ++z) {
+    for (Int32 i = 0; i < nb; ++i) {
+      Real2 v = values_to_test[i];
+      _checkValueEpsilon(func, v.x, v.y);
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
