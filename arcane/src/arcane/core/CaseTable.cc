@@ -1,17 +1,15 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CaseTable.cc                                                (C) 2000-2017 */
+/* CaseTable.cc                                                (C) 2000-2023 */
 /*                                                                           */
 /* Classe gérant une table de marche.                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/ValueConvert.h"
 #include "arcane/utils/ITraceMng.h"
@@ -25,7 +23,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -44,12 +43,14 @@ _verboseBuiltInGetValue(const CaseTable* table,Integer index,T& v,const String& 
 /*---------------------------------------------------------------------------*/
 
 CaseTable::
-CaseTable(const CaseFunctionBuildInfo& info,eCurveType curve_type)
+CaseTable(const CaseFunctionBuildInfo& info, eCurveType curve_type)
 : CaseFunction(info)
-, m_param_list(0)
+, m_param_list(nullptr)
 , m_curve_type(curve_type)
 {
   m_param_list = new CaseTableParams(info.m_param_type);
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_LINEAR_SEARCH_IN_CASE_TABLE", true))
+    m_use_fast_search = v.value() == 0;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -210,7 +211,6 @@ setParamType(eParamType new_type)
     m_param_list->setType(new_type);
 }
 
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -224,7 +224,6 @@ appendElement(const String& param,const String& value)
     return err;
 
   return _setValue(m_value_list.size(),value);
-  //return ErrNo;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -263,11 +262,6 @@ removeElement(Integer id)
 {
   if (!_isValidIndex(id))
     return;
-
-  // Ajoute un élément à la fin.
-  //Integer n = nbElement();
-  //if (n==0 || id>=n)
-  //return;
   
   m_value_list.remove(id);
   m_param_list->removeValue(id);
@@ -288,7 +282,6 @@ nbElement() const
 bool CaseTable::
 checkIfValid() const
 {
-  cerr << "** NOT YET IMPLEMENTED CaseTable::checkIfValid()\n";
   return true;
 }
 
@@ -336,6 +329,7 @@ _curveLinear(const String&,const String&,U)
 /*!
  * \brief Calcul la valeur de la courbe pour le paramètre \a param.
  * La valeur est stockée dans \a value.
+ *
  * \retval false en cas de succès
  * \retval true si erreur
  */
@@ -348,7 +342,12 @@ _findValue(ParamType param,ValueType& avalue) const
   // croissants (begin[i+1]>begin[i])
   Integer nb_elem = nbElement();
 
-  for( Integer i=0; i<nb_elem; ++i ){
+  Int32 i0 = 0;
+  Int32 iend = nb_elem;
+  if (m_use_fast_search)
+    m_param_list->getRange(param,i0,iend);
+
+  for( Integer i=i0; i<iend; ++i ){
     const String& current_value_str = m_value_list[i].asString();
     ParamType current_begin_value;
     m_param_list->value(i,current_begin_value);
@@ -401,7 +400,7 @@ _findValue(ParamType param,ValueType& avalue) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

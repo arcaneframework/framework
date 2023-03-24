@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CaseTable.h                                                 (C) 2000-2011 */
+/* CaseTable.h                                                 (C) 2000-2023 */
 /*                                                                           */
 /* Classe gérant une table de marche.                                        */
 /*---------------------------------------------------------------------------*/
@@ -21,7 +21,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -163,6 +164,7 @@ class ARCANE_CORE_EXPORT CaseTable
   CaseTableParams* m_param_list;
   UniqueArray<SmallVariant> m_value_list; //!< Liste des valeurs.
   eCurveType m_curve_type; //!< Type de la courbe
+  bool m_use_fast_search = true;
 
  private:
 
@@ -176,10 +178,9 @@ class ARCANE_CORE_EXPORT CaseTable
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #endif  
-

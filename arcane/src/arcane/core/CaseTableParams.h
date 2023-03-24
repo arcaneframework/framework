@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CaseTableParams.h                                           (C) 2000-2008 */
+/* CaseTableParams.h                                           (C) 2000-2023 */
 /*                                                                           */
 /* Paramètres d'une table de marche du jeu de données.                       */
 /*---------------------------------------------------------------------------*/
@@ -14,13 +14,13 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-
 #include "arcane/CaseTable.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -43,25 +43,32 @@ class CaseTableParams
 
   bool null() const;
   Integer nbElement() const;
-  void value(Integer id,Real& v) const;
-  void value(Integer id,Integer& v) const;
-  void value(Integer id,bool& v) const;
+  void value(Integer id, Real& v) const;
+  void value(Integer id, Integer& v) const;
   CaseTable::eError appendValue(const String& value);
-  CaseTable::eError setValue(Integer id,const String& value);
-  CaseTable::eError setValue(Integer id,Real v);
-  CaseTable::eError setValue(Integer id,Integer v);
-  CaseTable::eError setValue(Integer id,bool v);
+  CaseTable::eError setValue(Integer id, const String& value);
+  CaseTable::eError setValue(Integer id, Real v);
+  CaseTable::eError setValue(Integer id, Integer v);
   void removeValue(Integer id);
-  void toString(Integer id,String& str) const;
+  void toString(Integer id, String& str) const;
   void setType(ICaseFunction::eParamType new_type);
+
+  void getRange(Real v, Int32& begin, Int32& end) const;
+  void getRange(Integer v, Int32& begin, Int32& end) const;
+
  private:
+
   Impl* m_p;
+
+ private:
+
+  template <typename T> inline void _getRange(T v, Int32& begin, Int32& end) const;
 };
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
