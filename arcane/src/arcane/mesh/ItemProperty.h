@@ -150,11 +150,11 @@ class ItemArrayProperty
       UniqueArray2<DataType> old_data(m_data);
       Integer new_dim1_size = new_to_old_ids.size();
       Integer dim2_size = m_data.dim2Size();
-      m_data.resize(new_dim1_size, 0);
+      m_data.resize(new_dim1_size);
       // resize old_data with item recently added and not yet in connectivity
       // this max_dim1_size size can be greater than new_dim1_size if they were add and remove
       auto max_dim1_size = *(std::max_element(new_to_old_ids.begin(), new_to_old_ids.end())) + 1;
-      old_data.resize(max_dim1_size, 0); // padd for new items with 0 (not connected)
+      old_data.resize(max_dim1_size); // padd for new items with 0 (not connected)
       for (Integer i = 0; i < new_dim1_size; ++i) {
           for (Integer j = 0; j < dim2_size; ++j)
             m_data[i][j] = old_data[new_to_old_ids[i]][j];
@@ -235,15 +235,15 @@ class ItemMultiArrayProperty
       // compute max_dim1_size to take this into account
       Integer max_dim1_size = *(std::max_element(new_to_old_ids.begin(), new_to_old_ids.end())) + 1;
       IntegerUniqueArray dim2_sizes(m_data.dim2Sizes());
-      dim2_sizes.resize(max_dim1_size, 0); // padd for new items with 0 (not connected)
+      dim2_sizes.resize(max_dim1_size, 1); // padd for new items with 1 (connected with empty)
       IntegerUniqueArray new_dim2_sizes(new_dim1_size);
-      IntegerUniqueArray max_dim2_sizes(max_dim1_size);
+      IntegerUniqueArray max_dim2_sizes(max_dim1_size, 1);
       // Compute new sizes
       for (Integer i = 0; i < new_dim1_size; ++i) {
-          new_dim2_sizes[i] = dim2_sizes[new_to_old_ids[i]];
+          new_dim2_sizes[i] = math::min(dim2_sizes[i], dim2_sizes[new_to_old_ids[i]]);
       }
       m_data.resize(new_dim2_sizes);
-      for (Integer i = 0; i < max_dim1_size; ++i) {
+      for (Integer i = 0; i < new_dim1_size; ++i) {
           max_dim2_sizes[i] = math::max(dim2_sizes[i], dim2_sizes[new_to_old_ids[i]]);
       }
       old_data.resize(max_dim2_sizes);
