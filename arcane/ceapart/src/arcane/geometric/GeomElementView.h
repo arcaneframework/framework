@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GeomElementView.h                                           (C) 2000-2014 */
+/* GeomElementView.h                                           (C) 2000-2023 */
 /*                                                                           */
 /* Vues sur les éléments géométriques.                                       */
 /*---------------------------------------------------------------------------*/
@@ -21,11 +21,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-GEOMETRIC_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane::geometric
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -40,13 +37,17 @@ GEOMETRIC_BEGIN_NAMESPACE
 class GeomElementConstViewBase
 {
  public:
-  GeomElementConstViewBase(ARCANE_RESTRICT const Real3POD* ptr) : m_s(ptr){}
+
+  explicit GeomElementConstViewBase(ARCANE_RESTRICT const Real3POD* ptr) : m_s(ptr){}
+
  public:
+
   //! Récupère la valeur du \a ième noeud
   inline const Real3 operator[](Integer i) const
   {
     return Real3(m_s[i].x,m_s[i].y,m_s[i].z);
   }
+
   /*!
    * \brief Récupère la valeur du \a ième noeud.
    * \deprecated Utiliser operator[] à la place.
@@ -58,6 +59,7 @@ class GeomElementConstViewBase
   }
 
  protected:
+
   ARCANE_RESTRICT const Real3POD* m_s;
 };
 
@@ -74,15 +76,27 @@ class GeomElementConstViewBase
 class GeomElementViewBase
 {
  public:
-  GeomElementViewBase(ARCANE_RESTRICT Real3POD* ptr) : m_s(ptr){}
+
+  explicit GeomElementViewBase(ARCANE_RESTRICT Real3POD* ptr) : m_s(ptr){}
+
  public:
+
   //! Récupère la valeur du \a ième noeud
-  inline const Real3 operator[](Integer i) const
+  const Real3 operator[](Integer i) const
   {
     return Real3(m_s[i].x,m_s[i].y,m_s[i].z);
   }
 
+  //! Position la valeur du \a i-ème noeud à \a v.
+  void setValue(Integer i,Real3 v)
+  {
+    m_s[i].x = v.x;
+    m_s[i].y = v.y;
+    m_s[i].z = v.z;
+  }
+
  protected:
+
   ARCANE_RESTRICT Real3POD* m_s;
 };
 
@@ -94,8 +108,7 @@ class GeomElementViewBase
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-GEOMETRIC_END_NAMESPACE
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

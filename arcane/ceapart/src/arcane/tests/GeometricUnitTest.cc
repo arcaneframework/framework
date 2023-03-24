@@ -1,18 +1,18 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* GeometricUnitTest.cc                                        (C) 2000-2014 */
+/* GeometricUnitTest.cc                                        (C) 2000-2023 */
 /*                                                                           */
 /* Service de test de la géométrie.                                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
 #include "arcane/utils/ScopedPtr.h"
+#include "arcane/utils/ValueChecker.h"
 
 #include "arcane/BasicUnitTest.h"
 #include "arcane/ItemPrinter.h"
@@ -28,7 +28,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANETEST_BEGIN_NAMESPACE
+namespace ArcaneTest
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -111,28 +112,44 @@ _checkCoords(const CellGroup& cells)
 void GeometricUnitTest::
 executeTest()
 {
+  ValueChecker vc(A_FUNCINFO);
   VariableNodeReal3& node_coords(mesh()->nodesCoordinates());
 
   // Met à jour les coordonnées des formes géométriques élément par élément
-  ENUMERATE_CELL(icell,allCells()){
+  ENUMERATE_CELL (icell, allCells()) {
     Cell cell = *icell;
-    geometric::BarycentricGeomShapeComputer::computeAll(m_shape_mng.mutableShapeView(cell),node_coords,cell);
+    geometric::BarycentricGeomShapeComputer::computeAll(m_shape_mng.mutableShapeView(cell), node_coords, cell);
   }
   _checkCoords(allCells());
 
   // Met à jour les coordonnées de manière globale.
-  geometric::BarycentricGeomShapeComputer::computeAll(m_shape_mng,node_coords,allCells());
+  geometric::BarycentricGeomShapeComputer::computeAll(m_shape_mng, node_coords, allCells());
   _checkCoords(allCells());
 
   geometric::GeomShapeView shape_view;
-  ENUMERATE_CELL(icell,allCells()){
+  ENUMERATE_CELL (icell, allCells()) {
     Cell cell = *icell;
-    m_shape_mng.initShape(shape_view,*icell);
+    m_shape_mng.initShape(shape_view, *icell);
     Cell shape_cell = shape_view.cell();
 
     // Vérifie maille OK.
-    if (shape_cell!=cell)
-      throw FatalErrorException(A_FUNCINFO,"Invalid cell for shape");
+    if (shape_cell != cell)
+      ARCANE_FATAL("Invalid cell for shape '{0}'", cell.uniqueId());
+    info() << "Cell type=" << cell.typeInfo()->typeName();
+    if (cell.type() == IT_Hexaedron8) {
+      geometric::Hexaedron8Element hex_element(node_coords, cell);
+      for (int z = 0; z < 8; ++z) {
+        vc.areEqual(hex_element[z], node_coords[cell.node(z)], "Node");
+      }
+      Real3 to_add(1.0, 2.0, 3.0);
+      geometric::Hexaedron8ElementView view1(hex_element.view());
+      for (int z = 0; z < 8; ++z) {
+        view1.setValue(z, view1[z] + to_add);
+      }
+      for (int z = 0; z < 8; ++z) {
+        vc.areEqual(hex_element[z], node_coords[cell.node(z)] + to_add, "Node2");
+      }
+    }
   }
 }
 
@@ -148,10 +165,7 @@ initializeTest()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANETEST_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
