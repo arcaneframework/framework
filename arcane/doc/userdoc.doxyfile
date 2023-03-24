@@ -1407,6 +1407,7 @@ HTML_EXTRA_FILES       = @ARCANESRCROOT@/doc/theme/doxygen-awesome-theme/doxygen
                          @ARCANESRCROOT@/doc/theme/doxygen-awesome-theme/doxygen-awesome-fragment-copy-button.js \
                          @ARCANESRCROOT@/doc/theme/doxygen-awesome-theme/doxygen-awesome-paragraph-link.js \
                          @ARCANESRCROOT@/doc/theme/doxygen-awesome-theme/doxygen-awesome-interactive-toc.js \
+                         @ARCANESRCROOT@/doc/theme/doxygen-awesome-theme/doxygen-awesome-tabs.js \
                          @ARCANESRCROOT@/doc/theme/js/script-helper.js \
                          @ARCANESRCROOT@/doc/theme/js/script-resize.js \
                          @ARCANESRCROOT@/doc/theme/js/script-num-lines-code.js \
