@@ -1,11 +1,11 @@
 ﻿/* -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 /*-----------------------------------------------------------------------------
-/* Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+/* Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 /* See the top-level COPYRIGHT file for details.
 /* SPDX-License-Identifier: Apache-2.0
 /*-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* custom.css                                                  (C) 2000-2022 */
+/* custom.css                                                  (C) 2000-2023 */
 /*                                                                           */
 /* Personnalisation des css de doxygen et du thème.                          */
 /*---------------------------------------------------------------------------*/
@@ -242,50 +242,9 @@ dl.deprecated dd {
 /* 
  * Début : Bouton 'Prochaine page'.
  */
-.next_section_button {
-  display: block;
-  padding: var(--spacing-large) 0 var(--spacing-small) 0;
-  color: var(--side-nav-background);
-  user-select: none;
-  float: right;
-}
-
-.next_section_button::after {
-  /* clearfix */
-  content: "";
-  clear: both;
-  display: table;
-}
-
-.next_section_button a {
-  overflow: hidden;
-  float: right;
-  border: 1px solid var(--separator-color);
-  padding: var(--spacing-medium) calc(var(--spacing-large) / 2) var(--spacing-medium) var(--spacing-large);
-  border-radius: var(--border-radius-medium);
-  color: var(--page-foreground-color) !important;
-  text-decoration: none;
-  background-color: var(--side-nav-background);
-  transition: color .08s ease-in-out, background-color .1s ease-in-out;
-}
-
-.next_section_button a:hover {
-  color: var(--page-foreground-color) !important;
-  background-color: var(--odd-color);
-}
-
-.next_section_button a::after {
-  content: '〉';
-  color: var(--page-foreground-color) !important;
-  padding-left: var(--spacing-large);
-  display: inline-block;
-  transition: color .08s ease-in-out, transform .09s ease-in-out;
-}
-
-.next_section_button a:hover::after {
-  color: var(--page-foreground-color) !important;
-  transform: translateX(6px);
-}
+/*
+ * Dans le fichier ../doxygen-awesome-theme/doxygen-awesome-custom.css
+ */
 /* 
  * Fin : Bouton 'Prochaine page'.
  */
@@ -307,7 +266,6 @@ dl.deprecated dd {
 }
 
 .back_section_button::after {
-  /* clearfix */
   content: "";
   clear: both;
   display: table;

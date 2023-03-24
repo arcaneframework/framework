@@ -256,3 +256,87 @@ Exemple :
 donne : 
 
 Sans namespace : Cell -- Sans macro : Arcane::Cell -- Avec macro : \arcane{Cell}
+
+---
+
+Dans la partie Changelog, il est possible d'utiliser la macro `\pr{}`
+pour rediriger créer un lien vers la pull request sur GitHub. Exemple :
+
+\pr{530}
+
+---
+
+Avec la dernière version du thème "Doxygen Awesome", nous avons la possibilité
+d'ajouter des onglets dans la documentation. Exemple :
+
+<div class="tabbed">
+ 
+- <b class="tab-title">Onglet 1</b>
+Coucou ! Voici l'onglet n°1 !
+
+- <b class="tab-title">Onglet 2</b>
+Recoucou ! Voici l'onglet n°2 !
+ 
+</div>
+
+Voici le code des onglets affichés au-dessus :
+```md
+<div class="tabbed">
+ 
+- <b class="tab-title">Onglet 1</b>
+Coucou ! Voici l'onglet n°1 !
+
+- <b class="tab-title">Onglet 2</b>
+Recoucou ! Voici l'onglet n°2 !
+ 
+</div>
+```
+
+Doxygen est assez capricieux pour le html. Pour mettre plusieurs lignes
+dans un onglet, il faut soit utiliser la balise `<br>`, soit mettre
+le tout dans une `<div>`, avec tout le contenu de la div indentée.
+Exemple :
+
+<div class="tabbed">
+ 
+- <b class="tab-title">Onglet 1</b>
+Coucou ! Voici l'onglet n°1 !<br>
+Coucou ! Voici l'onglet n°1 !<br>
+Coucou ! Voici l'onglet n°1 !
+
+
+- <b class="tab-title">Onglet 2</b>
+<div>
+  Recoucou ! Voici l'onglet n°2 !
+
+  Recoucou ! Voici l'onglet n°2 !
+
+
+
+  Recoucou ! Voici l'onglet n°2 !
+</div>
+
+</div>
+
+```md
+<div class="tabbed">
+ 
+- <b class="tab-title">Onglet 1</b>
+Coucou ! Voici l'onglet n°1 !<br>
+Coucou ! Voici l'onglet n°1 !<br>
+Coucou ! Voici l'onglet n°1 !
+
+
+- <b class="tab-title">Onglet 2</b>
+<div>
+  Recoucou ! Voici l'onglet n°2 !
+
+  Recoucou ! Voici l'onglet n°2 !
+
+
+
+  Recoucou ! Voici l'onglet n°2 !
+</div>
+
+</div>
+```

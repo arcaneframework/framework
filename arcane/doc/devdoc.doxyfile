@@ -1324,6 +1324,7 @@ HTML_STYLESHEET        =
 HTML_EXTRA_STYLESHEET  = @ARCANESRCROOT@/doc/theme/doxygen-awesome-theme/doxygen-awesome.css \
                          @ARCANESRCROOT@/doc/theme/doxygen-awesome-theme/doxygen-awesome-sidebar-only.css \
                          @ARCANESRCROOT@/doc/theme/doxygen-awesome-theme/doxygen-awesome-sidebar-only-darkmode-toggle.css \
+                         @ARCANESRCROOT@/doc/theme/doxygen-awesome-theme/doxygen-awesome-custom.css \
                          @ARCANESRCROOT@/doc/theme/css/custom.css \
                          @ARCANESRCROOT@/doc/theme/css/dev_colors.css
 
@@ -1339,6 +1340,7 @@ HTML_EXTRA_FILES       = @ARCANESRCROOT@/doc/theme/doxygen-awesome-theme/doxygen
                          @ARCANESRCROOT@/doc/theme/doxygen-awesome-theme/doxygen-awesome-fragment-copy-button.js \
                          @ARCANESRCROOT@/doc/theme/doxygen-awesome-theme/doxygen-awesome-paragraph-link.js \
                          @ARCANESRCROOT@/doc/theme/doxygen-awesome-theme/doxygen-awesome-interactive-toc.js \
+                         @ARCANESRCROOT@/doc/theme/doxygen-awesome-theme/doxygen-awesome-tabs.js \
                          @ARCANESRCROOT@/doc/theme/js/script-resize.js \
                          @ARCANESRCROOT@/doc/theme/js/script-num-lines-code.js \
                          @ARCANESRCROOT@/doc/theme/js/script-alternative-theme.js
