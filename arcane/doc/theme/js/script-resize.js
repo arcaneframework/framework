@@ -103,7 +103,7 @@ var setOldSize = () => {
 
   // On récupère le cookie gentiment créé et mis à jour par doxygen.
   let coo = getStorage("doxygen_width");
-  if(coo != ""){
+  if(coo != "" && coo != null){
     document.querySelector(':root').style.setProperty('--side-nav-fixed-width', coo+'px');
   }
 };
