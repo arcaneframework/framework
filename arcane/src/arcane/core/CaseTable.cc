@@ -43,12 +43,14 @@ _verboseBuiltInGetValue(const CaseTable* table,Integer index,T& v,const String& 
 /*---------------------------------------------------------------------------*/
 
 CaseTable::
-CaseTable(const CaseFunctionBuildInfo& info,eCurveType curve_type)
+CaseTable(const CaseFunctionBuildInfo& info, eCurveType curve_type)
 : CaseFunction(info)
 , m_param_list(nullptr)
 , m_curve_type(curve_type)
 {
   m_param_list = new CaseTableParams(info.m_param_type);
+  if (auto v = Convert::Type<Int32>::tryParseFromEnvironment("ARCANE_USE_LINEAR_SEARCH_IN_CASE_TABLE", true))
+    m_use_fast_search = v.value() == 0;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -342,8 +344,7 @@ _findValue(ParamType param,ValueType& avalue) const
 
   Int32 i0 = 0;
   Int32 iend = nb_elem;
-  bool do_fast = true;
-  if (do_fast)
+  if (m_use_fast_search)
     m_param_list->getRange(param,i0,iend);
 
   for( Integer i=i0; i<iend; ++i ){
