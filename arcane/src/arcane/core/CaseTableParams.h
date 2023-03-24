@@ -45,12 +45,10 @@ class CaseTableParams
   Integer nbElement() const;
   void value(Integer id, Real& v) const;
   void value(Integer id, Integer& v) const;
-  void value(Integer id, bool& v) const;
   CaseTable::eError appendValue(const String& value);
   CaseTable::eError setValue(Integer id, const String& value);
   CaseTable::eError setValue(Integer id, Real v);
   CaseTable::eError setValue(Integer id, Integer v);
-  CaseTable::eError setValue(Integer id, bool v);
   void removeValue(Integer id);
   void toString(Integer id, String& str) const;
   void setType(ICaseFunction::eParamType new_type);

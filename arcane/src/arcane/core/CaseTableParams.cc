@@ -47,12 +47,10 @@ class ICFParamSetter
 
   virtual void value(Integer id, Real& v) const = 0;
   virtual void value(Integer id, Integer& v) const = 0;
-  virtual void value(Integer id, bool& v) const = 0;
   virtual CaseTable::eError appendValue(const String& value) = 0;
   virtual CaseTable::eError setValue(Integer id, const String& value) = 0;
   virtual CaseTable::eError setValue(Integer id, Real v) = 0;
   virtual CaseTable::eError setValue(Integer id, Integer v) = 0;
-  virtual CaseTable::eError setValue(Integer id, bool v) = 0;
   virtual void removeValue(Integer id) = 0;
   virtual void toString(Integer id, String& str) const = 0;
 
@@ -86,20 +84,17 @@ class CFParamSetterT
   CFParamSetterT(Params* v)
   : ICFParamSetter(v)
   {}
-  virtual ~CFParamSetterT() {}
 
  public:
 
-  virtual void value(Integer id, Real& v) const;
-  virtual void value(Integer id, Integer& v) const;
-  virtual void value(Integer id, bool& v) const;
-  virtual CaseTable::eError appendValue(const String& value);
-  virtual CaseTable::eError setValue(Integer id, const String& value);
-  virtual CaseTable::eError setValue(Integer id, Real v);
-  virtual CaseTable::eError setValue(Integer id, Integer v);
-  virtual CaseTable::eError setValue(Integer id, bool v);
-  virtual void removeValue(Integer id);
-  virtual void toString(Integer id, String& str) const;
+  void value(Integer id, Real& v) const override;
+  void value(Integer id, Integer& v) const override;
+  CaseTable::eError appendValue(const String& value) override;
+  CaseTable::eError setValue(Integer id, const String& value) override;
+  CaseTable::eError setValue(Integer id, Real v) override;
+  CaseTable::eError setValue(Integer id, Integer v) override;
+  void removeValue(Integer id) override;
+  void toString(Integer id, String& str) const override;
 
  private:
 
@@ -122,11 +117,6 @@ value(Integer id, Integer& v) const
   v = Convert::toInteger(asType(param(id)));
 }
 template <class Type> void CFParamSetterT<Type>::
-value(Integer id, bool& v) const
-{
-  v = Convert::toBool(asType(param(id)));
-}
-template <class Type> void CFParamSetterT<Type>::
 toString(Integer id, String& s) const
 {
   s = String::fromNumber(asType(param(id)));
@@ -140,11 +130,6 @@ setValue(Integer id, Real v)
 
 template <class Type> CaseTable::eError CFParamSetterT<Type>::
 setValue(Integer id, Integer v)
-{
-  return _setIfValid(id, (Type)(v));
-}
-template <class Type> CaseTable::eError CFParamSetterT<Type>::
-setValue(Integer id, bool v)
 {
   return _setIfValid(id, (Type)(v));
 }
@@ -336,12 +321,6 @@ value(Integer id, Integer& v) const
   m_p->m_setter->value(id, v);
 }
 
-void CaseTableParams::
-value(Integer id, bool& v) const
-{
-  m_p->m_setter->value(id, v);
-}
-
 CaseTable::eError CaseTableParams::
 appendValue(const String& avalue)
 {
@@ -362,12 +341,6 @@ setValue(Integer id, Real v)
 
 CaseTable::eError CaseTableParams::
 setValue(Integer id, Integer v)
-{
-  return m_p->m_setter->setValue(id, v);
-}
-
-CaseTable::eError CaseTableParams::
-setValue(Integer id, bool v)
 {
   return m_p->m_setter->setValue(id, v);
 }
@@ -459,7 +432,6 @@ getRange(Integer v, Int32& begin, Int32& end) const
 
 template class CFParamSetterT<Real>;
 template class CFParamSetterT<Integer>;
-template class CFParamSetterT<bool>;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
