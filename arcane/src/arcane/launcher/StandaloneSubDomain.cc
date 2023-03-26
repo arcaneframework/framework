@@ -33,24 +33,22 @@ class StandaloneSubDomain::Impl
 {
  public:
 
-  Impl()
-  {
-  }
+  Impl() = default;
 
-  void init()
+  void init(const String& case_file_name)
   {
     int r = m_simple_exec.initialize();
     if (r != 0)
       ARCANE_FATAL("Error during initialization r={0}", r);
-    m_sub_domain = m_simple_exec.createSubDomain(String{});
-    m_trace_mng = m_sub_domain->traceMng();
+    m_sub_domain = m_simple_exec.createSubDomain(case_file_name);
+    m_trace_mng = makeRef(m_sub_domain->traceMng());
   }
 
  public:
 
   ArcaneSimpleExecutor m_simple_exec;
   ISubDomain* m_sub_domain = nullptr;
-  ITraceMng* m_trace_mng = nullptr;
+  Ref<ITraceMng> m_trace_mng;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -81,7 +79,7 @@ ITraceMng* StandaloneSubDomain::
 traceMng()
 {
   _checkIsInitialized();
-  return m_p->m_trace_mng;
+  return m_p->m_trace_mng.get();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -98,10 +96,10 @@ subDomain()
 /*---------------------------------------------------------------------------*/
 
 void StandaloneSubDomain::
-_initUniqueInstance()
+_initUniqueInstance(const String& case_file_name)
 {
   m_p = makeRef(new Impl());
-  m_p->init();
+  m_p->init(case_file_name);
 }
 
 /*---------------------------------------------------------------------------*/

@@ -390,13 +390,13 @@ createStandaloneAcceleratorMng()
 /*---------------------------------------------------------------------------*/
 
 StandaloneSubDomain ArcaneLauncher::
-createStandaloneSubDomain()
+createStandaloneSubDomain(const String& case_file_name)
 {
   if (global_standalone_sub_domain._isValid())
     ARCANE_FATAL("ArcaneLauncher::createStandaloneSubDomain() should only be called once");
   _initStandalone();
   StandaloneSubDomain s;
-  s._initUniqueInstance();
+  s._initUniqueInstance(case_file_name);
   global_standalone_sub_domain = s;
   return s;
 }

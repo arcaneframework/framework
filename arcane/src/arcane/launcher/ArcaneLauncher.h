@@ -190,8 +190,11 @@ class ARCANE_LAUNCHER_EXPORT ArcaneLauncher
    *
    * Si on appelle cette méthode il ne faut pas appeler d'autres méthodes
    * d'exécution de ArcaneLauncher (par exemple ArcaneLauncher::run()).
+   *
+   * \a case_file_name est le nom du fichier contenant le jeu de données
+   * Si nul, alors il n'y a pas de jeu de données.
    */
-  static StandaloneSubDomain createStandaloneSubDomain();
+  static StandaloneSubDomain createStandaloneSubDomain(const String& case_file_name);
 
  public:
 

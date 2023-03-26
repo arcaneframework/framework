@@ -68,7 +68,7 @@ class ARCANE_LAUNCHER_EXPORT StandaloneSubDomain
  private:
 
   // Pour ArcaneLauncher.
-  void _initUniqueInstance();
+  void _initUniqueInstance(const String& case_file_name);
   bool _isValid();
 };
 
