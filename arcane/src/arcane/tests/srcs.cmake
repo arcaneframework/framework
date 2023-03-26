@@ -68,6 +68,7 @@ set(ARCANE_SOURCES
   IServiceInterface.h
   ArcaneTestInit.cc
   ArcaneTestDirectExecution.cc
+  ArcaneTestStandaloneSubDomain.cc
   accelerator/MiniWeatherOriginalSequential.cc
   accelerator/MiniWeatherArraySequential.cc
   CustomMeshTestModule.cc

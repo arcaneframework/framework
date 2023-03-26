@@ -52,8 +52,12 @@ arcaneTestDirectExecution(const CommandLineArguments& cmd_line_args,
                           const String& direct_execution_method);
 
 extern "C++" ARCANE_EXPORT int
-arcaneTestStandaloneLauncher(const CommandLineArguments& cmd_line_args,
-                             const String& standalone_method);
+arcaneTestStandaloneSubDomainLauncher(const CommandLineArguments& cmd_line_args,
+                                      const String& standalone_method);
+
+extern "C++" ARCANE_EXPORT int
+arcaneTestStandaloneAcceleratorLauncher(const CommandLineArguments& cmd_line_args,
+                                        const String& standalone_method);
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -63,9 +67,13 @@ _mainHelper(int argc,char* argv[])
 {
   CommandLineArguments cmd_line_args(&argc,&argv);
 
-  String standalone_method = cmd_line_args.getParameter("StandaloneAcceleratorMethod");
-  if (!standalone_method.null())
-    return arcaneTestStandaloneLauncher(cmd_line_args,standalone_method);
+  String standalone_subdomain_method = cmd_line_args.getParameter("StandaloneSubDomainMethod");
+  if (!standalone_subdomain_method.null())
+    return arcaneTestStandaloneSubDomainLauncher(cmd_line_args,standalone_subdomain_method);
+
+  String standalone_accelerator_method = cmd_line_args.getParameter("StandaloneAcceleratorMethod");
+  if (!standalone_accelerator_method.null())
+    return arcaneTestStandaloneAcceleratorLauncher(cmd_line_args,standalone_accelerator_method);
 
   _initDefaultApplicationInfo(cmd_line_args);
   String direct_exec_method = cmd_line_args.getParameter("DirectExecutionMethod");

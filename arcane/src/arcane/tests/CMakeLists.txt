@@ -311,6 +311,8 @@ arcane_add_test_sequential(standalone_accelerator_testsum dummy.arc "-A,Standalo
 arcane_add_accelerator_test_sequential(standalone_accelerator_testsum dummy.arc "-A,StandaloneAcceleratorMethod=TestSum")
 arcane_add_accelerator_test_sequential(standalone_accelerator_testemptykernel dummy.arc "-A,StandaloneAcceleratorMethod=TestEmptyKernel")
 
+arcane_add_test_sequential(standalone_subdomain dummy.arc "-A,StandaloneSubDomainMethod=Test1")
+
 # ----------------------------------------------------------------------------
 
 # Macro pour tester le message_passing
