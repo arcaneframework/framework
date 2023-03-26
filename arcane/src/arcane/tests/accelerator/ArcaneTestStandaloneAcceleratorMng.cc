@@ -67,7 +67,7 @@ _testSum(IAcceleratorMng* acc_mng)
 void
 _testEmptyKernel(IAcceleratorMng* acc_mng)
 {
-  // Test la somme de deux tableaux 'a' et 'b' dans un tableau 'c'.
+  // Lance un kernel vide pour évaluer le coup du lancement.
   int nb_value = 2000;
   int nb_iteration = 10000;
 
@@ -76,7 +76,7 @@ _testEmptyKernel(IAcceleratorMng* acc_mng)
   Int64 xbegin = platform::getRealTimeNS();
   for(int i=0; i<nb_iteration; ++i ){
     auto command = makeCommand(queue);
-    command << RUNCOMMAND_LOOP1(iter,nb_value)
+    command << RUNCOMMAND_LOOP1(,nb_value)
     {
     };
   }
@@ -111,8 +111,8 @@ _testStandaloneLauncher(const CommandLineArguments& cmd_line_args,
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ARCANE_EXPORT int
-arcaneTestStandaloneLauncher(const CommandLineArguments& cmd_line_args,
-                             const String& method_name)
+arcaneTestStandaloneAcceleratorLauncher(const CommandLineArguments& cmd_line_args,
+                                        const String& method_name)
 {
   int r =0;
   try{

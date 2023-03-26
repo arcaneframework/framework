@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneLauncher.cc                                           (C) 2000-2021 */
+/* ArcaneLauncher.cc                                           (C) 2000-2023 */
 /*                                                                           */
 /* Classe gérant le lancement de l'exécution.                                */
 /*---------------------------------------------------------------------------*/
@@ -51,6 +51,7 @@ bool _checkInitCalled()
   }
   return false;
 }
+StandaloneSubDomain global_standalone_sub_domain;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -365,15 +366,39 @@ setDefaultMainFactory(IMainFactory* mf)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-StandaloneAcceleratorMng ArcaneLauncher::
-createStandaloneAcceleratorMng()
+void ArcaneLauncher::
+_initStandalone()
 {
   if (!global_has_init_done)
     ARCANE_FATAL("ArcaneLauncher::init() has to be called before");
   // Cela est nécessaire pour éventuellement charger dynamiquement le runtime
   // associé aux accélérateurs
   ArcaneMain::_initRuntimes();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+StandaloneAcceleratorMng ArcaneLauncher::
+createStandaloneAcceleratorMng()
+{
+  _initStandalone();
   return {};
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+StandaloneSubDomain ArcaneLauncher::
+createStandaloneSubDomain(const String& case_file_name)
+{
+  if (global_standalone_sub_domain._isValid())
+    ARCANE_FATAL("ArcaneLauncher::createStandaloneSubDomain() should only be called once");
+  _initStandalone();
+  StandaloneSubDomain s;
+  s._initUniqueInstance(case_file_name);
+  global_standalone_sub_domain = s;
+  return s;
 }
 
 /*---------------------------------------------------------------------------*/
