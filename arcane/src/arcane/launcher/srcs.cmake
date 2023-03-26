@@ -9,6 +9,8 @@ set( ARCANE_SOURCES
   LauncherGlobal.h
   StandaloneAcceleratorMng.h
   StandaloneAcceleratorMng.cc
+  StandaloneSubDomain.h
+  StandaloneSubDomain.cc
   internal/DirectExecutionFunctor.h
   internal/DirectExecutionFunctor.cc
   )

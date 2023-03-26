@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ArcaneLauncher.h                                            (C) 2000-2021 */
+/* ArcaneLauncher.h                                            (C) 2000-2023 */
 /*                                                                           */
 /* Classe gérant l'exécution.                                                */
 /*---------------------------------------------------------------------------*/
@@ -28,6 +28,7 @@
 #include "arcane/launcher/DirectSubDomainExecutionContext.h"
 #include "arcane/launcher/IDirectExecutionContext.h"
 #include "arcane/launcher/StandaloneAcceleratorMng.h"
+#include "arcane/launcher/StandaloneSubDomain.h"
 
 #include <functional>
 
@@ -175,7 +176,22 @@ class ARCANE_LAUNCHER_EXPORT ArcaneLauncher
    *
    * Il faut appeler init() avant d'appeler cette méthode.
    */
- static StandaloneAcceleratorMng createStandaloneAcceleratorMng();
+  static StandaloneAcceleratorMng createStandaloneAcceleratorMng();
+
+  /*!
+   * \brief Créé une implémentation autonome pour gérer un sous-domaine.
+   *
+   * \warning Expérimental. Ne pas utiliser en dehors de Arcane.
+   *
+   * Une seule instance de StandaloneSubDomain est autorisée. Si on
+   * appelle cette méthode plus d'une fois cela génère une exception.
+   *
+   * Il faut appeler init() avant d'appeler cette méthode.
+   *
+   * Si on appelle cette méthode il ne faut pas appeler d'autres méthodes
+   * d'exécution de ArcaneLauncher (par exemple ArcaneLauncher::run()).
+   */
+  static StandaloneSubDomain createStandaloneSubDomain();
 
  public:
 
@@ -193,6 +209,10 @@ class ARCANE_LAUNCHER_EXPORT ArcaneLauncher
   {
     init(args);
   }
+
+ private:
+
+  static void _initStandalone();
 };
 
 /*---------------------------------------------------------------------------*/
