@@ -157,6 +157,12 @@ class ARCANE_CORE_EXPORT MatItemVectorView
 
   //! Matériau associé
   IMeshMaterial* material() const;
+
+  // Temporaire: à conserver pour compatibilité
+  ARCANE_DEPRECATED_240 MatItemVectorView subView(Integer begin,Integer size)
+  {
+    return _subView(begin,size);
+  }
 };
 
 /*---------------------------------------------------------------------------*/
