@@ -58,14 +58,14 @@ _search(bool is_phase1)
       // l'option par défaut.
       String str_val = (velem.null()) ? _defaultValue() : velem.value();
       if (str_val.null()) {
-        CaseOptionError::addOptionNotFoundError(caseDocument(),A_FUNCINFO,
+        CaseOptionError::addOptionNotFoundError(caseDocumentFragment(),A_FUNCINFO,
                                                 name(),rootElement());
         continue;
       }
       bool is_bad = _tryToConvert(str_val,i);
       if (is_bad){
         m_values[i] = String();
-        CaseOptionError::addInvalidTypeError(caseDocument(),A_FUNCINFO,
+        CaseOptionError::addInvalidTypeError(caseDocumentFragment(),A_FUNCINFO,
                                              name(),rootElement(),str_val,_typeName());
 	continue;
       }
@@ -145,7 +145,7 @@ _search(bool is_phase1)
   if (str_val.null()) {
     m_value = String();
     if (!isOptional()){
-      CaseOptionError::addOptionNotFoundError(caseDocument(),A_FUNCINFO,
+      CaseOptionError::addOptionNotFoundError(caseDocumentFragment(),A_FUNCINFO,
                                               name(),rootElement());
       return;
     }
@@ -157,7 +157,7 @@ _search(bool is_phase1)
     bool is_bad = _tryToConvert(str_val);
     if (is_bad){
       m_value = String();
-      CaseOptionError::addInvalidTypeError(caseDocument(),A_FUNCINFO,
+      CaseOptionError::addInvalidTypeError(caseDocumentFragment(),A_FUNCINFO,
                                            name(),rootElement(),str_val,_typeName());
       return;
     }

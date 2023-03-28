@@ -239,7 +239,7 @@ _search(bool is_phase1)
   bool has_valid_value = true;
   if (str_val.null()) {
     if (!isOptional()){
-      CaseOptionError::addOptionNotFoundError(caseDocument(),A_FUNCINFO,
+      CaseOptionError::addOptionNotFoundError(caseDocumentFragment(),A_FUNCINFO,
                                               name(),rootElement());
 
       return;
@@ -255,14 +255,14 @@ _search(bool is_phase1)
     // La valeur par défaut n'a pas de langage associé. Il ne faut donc
     // pas essayer de la convertir.
     if (!is_default)
-      lang = caseDocument()->language();
+      lang = caseDocumentFragment()->language();
     int value = 0;
     bool is_bad = m_enum_values->valueOfName(str_val,lang,value);
 
     if (is_bad) {
       StringUniqueArray valid_values;
       m_enum_values->getValidNames(lang,valid_values);
-      CaseOptionError::addInvalidTypeError(caseDocument(),A_FUNCINFO,
+      CaseOptionError::addInvalidTypeError(caseDocumentFragment(),A_FUNCINFO,
                                            name(),rootElement(),str_val,m_type_name,valid_values);
       return;
     }
@@ -319,7 +319,7 @@ _updateFromFunction(Real current_time,Integer current_iteration)
   _checkIsInitialized();
   ICaseFunction* func = function();
   ITraceMng* msg = caseMng()->traceMng();
-  String lang = caseDocument()->language();
+  String lang = caseDocumentFragment()->language();
   int current_value = _optionValue();
   String new_str = m_enum_values->nameOfValue(current_value,lang);
   switch(func->paramType()){
@@ -337,7 +337,7 @@ _updateFromFunction(Real current_time,Integer current_iteration)
   if (is_bad) {
     StringUniqueArray valid_values;
     m_enum_values->getValidNames(lang,valid_values);
-    CaseOptionError::addInvalidTypeError(caseDocument(),A_FUNCINFO,
+    CaseOptionError::addInvalidTypeError(caseDocumentFragment(),A_FUNCINFO,
                                          name(),rootElement(),new_str,m_type_name,valid_values);
     return;
     //throw CaseOptionException("get_value",name(),rootElement(),new_str,m_type_name);
@@ -388,7 +388,7 @@ _search(bool is_phase1)
   if (is_phase1){
     _allocate(size);
 
-    const String& lang = caseDocument()->language();
+    const String& lang = caseDocumentFragment()->language();
 
     for( Integer index=0; index<size; ++index ){
       XmlNode velem = elem_list[index];
@@ -396,7 +396,7 @@ _search(bool is_phase1)
       // l'option par défaut.
       String str_val = (velem.null()) ? _defaultValue() : velem.value();
       if (str_val.null()) {
-        CaseOptionError::addOptionNotFoundError(caseDocument(),A_FUNCINFO,
+        CaseOptionError::addOptionNotFoundError(caseDocumentFragment(),A_FUNCINFO,
                                                 name(),rootElement());
         continue;
       //throw CaseOptionException("get_value",name(),rootElement());
@@ -408,7 +408,7 @@ _search(bool is_phase1)
       if (is_bad) {
         StringUniqueArray valid_values;
         m_enum_values->getValidNames(lang,valid_values);
-        CaseOptionError::addInvalidTypeError(caseDocument(),A_FUNCINFO,
+        CaseOptionError::addInvalidTypeError(caseDocumentFragment(),A_FUNCINFO,
                                              name(),rootElement(),str_val,m_type_name,valid_values);
         continue;
       //throw CaseOptionException("get_value",name(),rootElement(),str_val,m_type_name);

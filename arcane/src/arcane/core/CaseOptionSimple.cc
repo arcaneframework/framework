@@ -117,7 +117,7 @@ _search(bool is_phase1)
   XmlNodeList velems = rootElement().children(velem_name);
   XmlNode velem;
   Integer nb_elem = velems.size();
-  ICaseDocument* doc = caseDocument();
+  ICaseDocumentFragment* doc = caseDocumentFragment();
   if (nb_elem>=1){
     velem = velems[0];
     if (nb_elem>=2){
@@ -174,7 +174,7 @@ _searchFunction(XmlNode& velem)
     return;
 
   // Recherche une éventuelle fonction associée
-  String fname = caseDocument()->caseNodeNames()->function_ref;
+  String fname = caseDocumentFragment()->caseNodeNames()->function_ref;
   String func_name = velem.attrValue(fname);
   if (func_name.null())
     return;
@@ -380,7 +380,7 @@ _search(bool is_phase1)
   CaseOptionSimple::_search(is_phase1);
   if (!is_phase1)
     return;
-  ICaseDocument* doc = caseDocument();
+  ICaseDocumentFragment* doc = caseDocumentFragment();
 
   // Si l'option n'est pas présente dans le jeu de données, on prend
   // l'option par défaut, sauf si l'option est facultative
@@ -656,13 +656,13 @@ _search(bool is_phase1)
     // l'option par défaut.
     String str_val = (velem.null()) ? _defaultValue() : velem.value();
     if (str_val.null())
-      CaseOptionError::addOptionNotFoundError(caseDocument(),A_FUNCINFO,
+      CaseOptionError::addOptionNotFoundError(caseDocumentFragment(),A_FUNCINFO,
                                               name(),rootElement());
     Type val    = Type();
     str_val = StringCollapser<Type>::collapse(str_val);
     bool is_bad = builtInGetValue(val,str_val);
     if (is_bad)
-      CaseOptionError::addInvalidTypeError(caseDocument(),A_FUNCINFO,
+      CaseOptionError::addInvalidTypeError(caseDocumentFragment(),A_FUNCINFO,
                                            name(),rootElement(),str_val,typeToName(val));
     //throw CaseOptionException("get_value",name(),rootElement(),str_val,typeToName(val));
     //ptr_value[i] = val;

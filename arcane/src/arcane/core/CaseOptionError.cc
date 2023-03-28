@@ -1,17 +1,15 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CaseOptionError.cc                                          (C) 2000-2012 */
+/* CaseOptionError.cc                                          (C) 2000-2023 */
 /*                                                                           */
 /* Erreur dans le jeu de données.                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/Iostream.h"
 #include "arcane/utils/StringBuilder.h"
@@ -22,7 +20,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -41,7 +40,7 @@ CaseOptionError(const TraceInfo& where,const String& node_name,
 /*---------------------------------------------------------------------------*/
 
 void CaseOptionError::
-addOptionNotFoundError(ICaseDocument* document,
+addOptionNotFoundError(ICaseDocumentFragment* document,
                        const TraceInfo& where,
                        const String& node_name,
                        const XmlNode& parent)
@@ -56,7 +55,7 @@ addOptionNotFoundError(ICaseDocument* document,
 /*---------------------------------------------------------------------------*/
 
 void CaseOptionError::
-addInvalidTypeError(ICaseDocument* document,
+addInvalidTypeError(ICaseDocumentFragment* document,
                     const TraceInfo& where,const String& node_name,
                     const XmlNode& parent,const String& value,
                     const String& type_name)
@@ -73,7 +72,7 @@ addInvalidTypeError(ICaseDocument* document,
 /*---------------------------------------------------------------------------*/
 
 void CaseOptionError::
-addInvalidTypeError(ICaseDocument* document,
+addInvalidTypeError(ICaseDocumentFragment* document,
                     const TraceInfo& where,const String& node_name,
                     const XmlNode& parent,const String& value,
                     const String& type_name,StringConstArrayView valid_values)
@@ -91,7 +90,7 @@ addInvalidTypeError(ICaseDocument* document,
 /*---------------------------------------------------------------------------*/
 
 void CaseOptionError::
-addError(ICaseDocument* document,
+addError(ICaseDocumentFragment* document,
          const TraceInfo& where,const String& node_name,
          const String& message,bool is_collective)
 {
@@ -102,7 +101,7 @@ addError(ICaseDocument* document,
 /*---------------------------------------------------------------------------*/
 
 void CaseOptionError::
-addWarning(ICaseDocument* document,
+addWarning(ICaseDocumentFragment* document,
            const TraceInfo& where,const String& node_name,
            const String& message,bool is_collective)
 {
@@ -112,10 +111,7 @@ addWarning(ICaseDocument* document,
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
