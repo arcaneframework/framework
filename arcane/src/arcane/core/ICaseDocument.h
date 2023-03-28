@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ICaseDocument.h                                             (C) 2000-2020 */
+/* ICaseDocument.h                                             (C) 2000-2023 */
 /*                                                                           */
 /* Interface d'une classe gérant un document XML du jeu de données.          */
 /*---------------------------------------------------------------------------*/
@@ -34,23 +34,13 @@ class CaseOptionError;
 /*---------------------------------------------------------------------------*/
 /*!
  * \internal
- * \brief Interface d'une classe gérant un document XML du jeu de données.
+ * \brief Interface d'une partie d'un jeu de données.
  */
-class ICaseDocument
+class ICaseDocumentFragment
 {
  public:
 
- public:
-
-  virtual ~ICaseDocument(){} //!< Libère les ressources
-
- public:
-
-  //! Construit l'instance
-  virtual void build() =0;
-
-  //! Clone le document
-  virtual ICaseDocument* clone() =0;
+  virtual ~ICaseDocumentFragment() = default;
 
  public:
 
@@ -61,14 +51,63 @@ class ICaseDocument
    */
   virtual IXmlDocumentHolder* documentHolder() =0;
 
-  //! Retourne l'instance contenant les noms des noeuds XML par langage.
-  virtual CaseNodeNames* caseNodeNames() =0;
-  
   //! Retourne le noeud document
   virtual XmlNode documentNode() =0;
 
   //! Retourne l'élément racine.
   virtual XmlNode rootElement() =0;
+
+  //! Langage utilisé dans le jeu de données
+  virtual const String& language() const =0;
+
+  //! Catégorie utilisée pour les valeurs par défaut.
+  virtual const String& defaultCategory() const =0;
+
+  //! Retourne l'instance contenant les noms des noeuds XML par langage.
+  virtual CaseNodeNames* caseNodeNames() =0;
+  
+ public:
+
+  //! Ajoute une erreur dans le jeu de données
+  virtual void addError(const CaseOptionError& case_error) =0;
+
+  //! Ajoute un avertissement dans le jeu de données
+  virtual void addWarning(const CaseOptionError& case_error) =0;
+
+  // Indique si le jeu de données contient des erreurs.
+  virtual bool hasError() const =0;
+
+  // Indique si le jeu de données contient des avertissements.
+  virtual bool hasWarnings() const =0;
+
+  //! Ecrit les erreurs dans le flot \a o
+  virtual void printErrors(std::ostream& o) =0;
+
+  //! Ecrit les avertissements dans le flot \a o
+  virtual void printWarnings(std::ostream& o) =0;
+
+  //! Supprime les messages d'erreurs et d'avertissements enregistrés
+  virtual void clearErrorsAndWarnings() =0;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ * \brief Interface d'une classe gérant un document XML du jeu de données.
+ */
+class ICaseDocument
+: public ICaseDocumentFragment
+{
+ public:
+
+  //! Construit l'instance
+  virtual void build() =0;
+
+  //! Clone le document
+  virtual ICaseDocument* clone() =0;
+
+ public:
 
   //! Retourne l'élément des informations pour Arcane
   virtual XmlNode arcaneElement() =0;
@@ -116,34 +155,8 @@ class ICaseDocument
   //! Positionne le nom du systmème d'unité du document.
   virtual void setCodeUnitSystem(const String& value) =0;
 
-  //! Langage utilisé dans le jeu de données
-  virtual const String& language() const =0;
-
-  //! Catégorie utilisée pour les valeurs par défaut.
-  virtual const String& defaultCategory() const =0;
   //! Positionne la catégorie utilisée pour les valeurs par défaut.
   virtual void setDefaultCategory(const String& v) =0;
-
-  //! Ajoute une erreur dans le jeu de données
-  virtual void addError(const CaseOptionError& case_error) =0;
-
-  //! Ajoute un avertissement dans le jeu de données
-  virtual void addWarning(const CaseOptionError& case_error) =0;
-
-  // Indique si le jeu de données contient des erreurs.
-  virtual bool hasError() const =0;
-
-  // Indique si le jeu de données contient des avertissements.
-  virtual bool hasWarnings() const =0;
-
-  //! Ecrit les erreurs dans le flot \a o
-  virtual void printErrors(std::ostream& o) =0;
-
-  //! Ecrit les avertissements dans le flot \a o
-  virtual void printWarnings(std::ostream& o) =0;
-
-  //! Supprime les messages d'erreurs et d'avertissements enregistrés
-  virtual void clearErrorsAndWarnings() =0;
 };
 
 /*---------------------------------------------------------------------------*/
