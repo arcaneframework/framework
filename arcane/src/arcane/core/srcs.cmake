@@ -73,9 +73,11 @@ set(ARCANE_ORIGINAL_SOURCES
 
   CaseFunction.h
   CaseOptionBase.h
+  CaseOptionEnum.h
   CaseOptionBuildInfo.h
   CaseOptions.h
   CaseOptionServiceImpl.h
+  CaseOptionSimple.h
   CaseOptionTypes.h
   CommonVariables.h
 
@@ -384,6 +386,7 @@ set(ARCANE_ORIGINAL_SOURCES
   CaseNodeNames.h
   CaseOptionBase.cc
   CaseOptionBuildInfo.cc
+  CaseOptionEnum.cc
   CaseOptionError.cc
   CaseOptionError.h
   CaseOptionException.cc
@@ -391,6 +394,7 @@ set(ARCANE_ORIGINAL_SOURCES
   CaseOptionList.cc
   CaseOptionService.cc
   CaseOptionService.h
+  CaseOptionSimple.cc
   CaseOptions.cc
   CaseOptionsMain.cc
   CaseOptionsMain.h
