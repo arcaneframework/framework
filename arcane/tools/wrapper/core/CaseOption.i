@@ -53,8 +53,10 @@ namespace Arcane
 %include arcane/core/CaseOptionBase.h
 %include arcane/core/ICaseOptions.h
 %include arcane/core/ICaseOptionList.h
+%include arcane/core/CaseOptionComplexValue.h
 %include arcane/core/CaseOptionSimple.h
 %include arcane/core/CaseOptionEnum.h
+%include arcane/core/CaseOptionExtended.h
 %include arcane/core/CaseOptions.h
 %include arcane/core/ICaseMng.h
 %include arcane/core/ICaseFunction.h

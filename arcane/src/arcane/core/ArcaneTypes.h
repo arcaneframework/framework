@@ -381,6 +381,7 @@ class ITimeLoop;
 class IVariable;
 class VariableRef;
 class Item;
+class CaseOptionBuildInfo;
 class ICaseOptions;
 class ICaseFunction;
 class ItemGroup;
