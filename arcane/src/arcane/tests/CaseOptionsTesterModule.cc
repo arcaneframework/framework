@@ -43,6 +43,8 @@
 #include "arcane/ICaseDocument.h"
 #include "arcane/ICaseMeshService.h"
 
+#include "arcane/IXmlDocumentHolder.h"
+
 #include "arcane/tests/TypesCaseOptionsTester.h"
 
 class IComplex1SubInterface
@@ -132,6 +134,7 @@ class CaseOptionsTesterModule
 	
   static void _createTimeLoop(Arcane::ISubDomain* sd);
   void _applyVisitor();
+  void _testDynamicService();
 
   Arcane::ObserverPool m_observers;
 
@@ -520,6 +523,7 @@ init()
     opt->checkSubMesh("Mesh1");
   }
   _applyVisitor();
+  _testDynamicService();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -648,7 +652,49 @@ class ServiceInterface1ImplTestService
         ARCANE_FATAL("Bad mesh expected={0} value={1}",mesh_name,s2->mesh()->name());
     }
   }
+
+ public:
+
+  void checkDynamicCreation()
+  {
+    IPostProcessorWriter* w = options()->postProcessor1();
+    ARCANE_CHECK_POINTER(w);
+  }
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CaseOptionsTesterModule::
+_testDynamicService()
+{
+  info() << "Test dynamic service";
+  ServiceProperty properties("Service1",Arcane::ST_CaseOption,SFP_None);
+  ServiceInfo* si = ServiceInfo::create(properties,"None",0);
+  ServiceInterface1ImplTestService::fillServiceInfo<ServiceInterface1ImplTestService>(si);
+
+  String service_xml_value = "<?xml version=\"1.0\"?>\n<root><test1><post-processor1 name=\"Ensight7PostProcessor\"/></test1></root>\n";
+
+  ITraceMng* tm = traceMng();
+  IXmlDocumentHolder* xml_doc = IXmlDocumentHolder::loadFromBuffer(service_xml_value.bytes(), String(),tm);
+  XmlNode xml_root_node = xml_doc->documentNode().documentElement();
+
+  ICaseMng* cm = subDomain()->caseMng();
+  // Note: cette option sera détruite par le service car elle utilise un compteur de référence.
+  ICaseOptions* co = new CaseOptions(cm,"test1",xml_root_node);
+
+  ServiceBuildInfoBase sbi_base(co);
+  auto* x = new ServiceInterface1ImplTestService(ServiceBuildInfo(si,sbi_base));
+  x->build();
+  cm->_internalReadOneOption(co,true);
+  cm->_internalReadOneOption(co,false);
+
+  x->checkDynamicCreation();
+
+  delete x;
+  delete xml_doc;
+  delete si;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
