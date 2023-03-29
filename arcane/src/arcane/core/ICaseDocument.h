@@ -58,10 +58,10 @@ class ICaseDocumentFragment
   virtual XmlNode rootElement() =0;
 
   //! Langage utilisé dans le jeu de données
-  virtual const String& language() const =0;
+  virtual String language() const =0;
 
   //! Catégorie utilisée pour les valeurs par défaut.
-  virtual const String& defaultCategory() const =0;
+  virtual String defaultCategory() const =0;
 
   //! Retourne l'instance contenant les noms des noeuds XML par langage.
   virtual CaseNodeNames* caseNodeNames() =0;
@@ -136,22 +136,22 @@ class ICaseDocument
   virtual XmlNode meshesElement() =0;
 
   //! Nom de la classe d'utilisation du cas
-  virtual const String& userClass() const =0;
+  virtual String userClass() const =0;
   //! Positionne le nom de la classe d'utilisation du cas
   virtual void setUserClass(const String& value) =0;
 
   //! Nom du code du cas
-  virtual const String& codeName() const =0;
+  virtual String codeName() const =0;
   //! Positionne le nom du code du cas
   virtual void setCodeName(const String& value) =0;
 
   //! Numéro de version du code correspondant au cas
-  virtual const String& codeVersion() const =0;
+  virtual String codeVersion() const =0;
   //! Positionne le numéro de version du code
   virtual void setCodeVersion(const String& value) =0;
 
   //! Nom du système d'unité du document.
-  virtual const String& codeUnitSystem() const =0;
+  virtual String codeUnitSystem() const =0;
   //! Positionne le nom du systmème d'unité du document.
   virtual void setCodeUnitSystem(const String& value) =0;
 

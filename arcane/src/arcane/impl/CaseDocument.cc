@@ -72,22 +72,22 @@ class CaseDocument
 
   XmlNode functionsElement() override { return m_functions_elem; }
 
-  const String& userClass() const override { return m_user_class; }
+  String userClass() const override { return m_user_class; }
   void setUserClass(const String& value) override;
 
-  const String& codeName() const override { return m_code_name; }
+  String codeName() const override { return m_code_name; }
   void setCodeName(const String& value) override;
 
-  const String& codeVersion() const override { return m_code_version; }
+  String codeVersion() const override { return m_code_version; }
   void setCodeVersion(const String& value) override;
 
-  const String& codeUnitSystem() const override { return m_code_unit_system; }
+  String codeUnitSystem() const override { return m_code_unit_system; }
   void setCodeUnitSystem(const String& value) override;
 
-  const String& defaultCategory() const override { return m_default_category; }
+  String defaultCategory() const override { return m_default_category; }
   void setDefaultCategory(const String& v) override { m_default_category = v; }
 
-  const String& language() const override { return m_language; }
+  String language() const override { return m_language; }
 
   void addError(const CaseOptionError& case_error) override;
   void addWarning(const CaseOptionError& case_error) override;
@@ -98,6 +98,7 @@ class CaseDocument
   void clearErrorsAndWarnings() override;
 
  public:
+
   // Positionne la langue. Doit être fait avant l'appel à build.
   void setLanguage(const String& language)
   {
