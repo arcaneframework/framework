@@ -312,7 +312,7 @@ class SubDomain
   ScopedPtrT<IVariableMng> m_variable_mng; //!< Gestionnaire des variables
   ScopedPtrT<IModuleMng> m_module_mng; //!< Gestionnaire des modules
   ScopedPtrT<IEntryPointMng> m_entry_point_mng; //!< Gestionnaire des points d'entrée
-  ScopedPtrT<ICaseMng> m_case_mng; //!< Gestionnaire du jeu de données
+  Ref<ICaseMng> m_case_mng; //!< Gestionnaire du jeu de données
   ITimerMng* m_timer_mng; //!< Gestionnaire des timers
   ScopedPtrT<ICheckpointMng> m_checkpoint_mng; //!< Gestionnaire de protections
   Ref<IPropertyMng> m_property_mng; //!< Gestionnaire de propriétés
@@ -447,7 +447,7 @@ build()
   m_checkpoint_mng = mf->createCheckpointMng(this);
   m_module_mng = mf->createModuleMng(this);
   m_entry_point_mng = mf->createEntryPointMng(this);
-  m_case_mng = mf->createCaseMng(this);
+  m_case_mng = mf->createCaseMng(this)->toReference();
   m_timer_mng = m_parallel_mng->timerMng();
   m_time_stats = m_parallel_mng->timeStats();
   m_time_loop_mng = mf->createTimeLoopMng(this);
@@ -595,7 +595,7 @@ destroy()
   m_mesh_mng->destroyMeshes();
 
   m_time_loop_mng = nullptr;
-  m_case_mng = nullptr;
+  m_case_mng.reset();
   m_entry_point_mng = nullptr;
   m_module_mng = nullptr;
   m_io_mng = nullptr;

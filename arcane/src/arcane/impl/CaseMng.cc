@@ -71,11 +71,15 @@ arcaneCreateCaseDocumentFragment(ITraceMng* tm,IXmlDocumentHolder* document);
  * \brief Gestionnaire d'un cas.
  */
 class CaseMng
-: public ICaseMng
+: private ReferenceCounterImpl
+, public ICaseMng
 , public ICaseMngInternal
 , public TraceAccessor
 {
+  ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
+
  private:
+
   class OptionsReader
   {
    public:
@@ -88,6 +92,7 @@ class CaseMng
     void _searchInvalidOptions();
   };
  private:
+
   class ErrorInfo
   {
    public:
@@ -101,6 +106,7 @@ class CaseMng
     bool m_has_error;
     String m_error_message;
   };
+
   /*!
    * Classe pour filtrer les options et ne garder que celles
    * dont les modules sont utilisés.
@@ -129,6 +135,7 @@ class CaseMng
     CaseOptionsList::const_iterator m_begin;
     CaseOptionsList::const_iterator m_end;
   };
+
  public:
 
   explicit CaseMng(ISubDomain*);
@@ -182,6 +189,8 @@ class CaseMng
   }
 
   Ref<ICaseFunction> findFunctionRef(const String& name) const;
+
+  Ref<ICaseMng> toReference() { return makeRef<ICaseMng>(this); }
 
   //void _internalReadOneOption(ICaseOptions* opt,bool is_phase1) override;
   ICaseMngInternal* _internalImpl() override { return this; }

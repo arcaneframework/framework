@@ -14,8 +14,11 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arccore/base/ReferenceCounterImpl.h"
+
 #include "arcane/utils/Array.h"
 #include "arcane/utils/String.h"
+#include "arcane/utils/Ref.h"
 
 #include "arcane/core/XmlNode.h"
 #include "arcane/core/ICaseOptions.h"
@@ -45,8 +48,11 @@ namespace Arcane
  * de cas (ICaseMng) s'en chargeant.
  */
 class ARCANE_CORE_EXPORT CaseOptions
-: public ICaseOptions
+: private ReferenceCounterImpl
+, public ICaseOptions
 {
+  ARCCORE_DEFINE_REFERENCE_COUNTED_INCLASS_METHODS();
+
  private:
 
   struct XmlContent
@@ -172,10 +178,7 @@ class ARCANE_CORE_EXPORT CaseOptions
 
   String xpathFullName() const override;
 
- public:
-
-  void addReference() override;
-  void removeReference() override;
+  Ref<ICaseOptions> toReference() override;
 
  protected:
 
