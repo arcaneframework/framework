@@ -662,7 +662,7 @@ _node2DoFConnectivityRegistered()
        debug() << "REMOVED DOF " << removed_dofs;
        dof_on_node_family.removeDoFs(removed_dofs);
        dof_on_node_family.endUpdate();
-     }
+  }
 
   // Check Connectivity update
   _checkConnectivityUpdateAfterRemove(node2dof, removed_node_lids, removed_node_uids);
@@ -672,10 +672,9 @@ _node2DoFConnectivityRegistered()
   node_family->compactItems(true);
   debug() << "NODES " << node_family->view().localIds();
   // update lids
-  for (Arcane::Integer rank = 0; rank < nb_subdomain; ++rank)
-    {
-      node_family->itemsUniqueIdToLocalId(remaining_node_lids[rank],remaining_node_uids[rank],true);
-    }
+  for (Arcane::Integer rank = 0; rank < nb_subdomain; ++rank) {
+       node_family->itemsUniqueIdToLocalId(remaining_node_lids[rank], remaining_node_uids[rank], true);
+  }
 
   // Compact Target family
   debug() << "DOFS " << dof_on_node_family.view().localIds();
@@ -689,15 +688,25 @@ _node2DoFConnectivityRegistered()
   // Remove a second node
   // update node lids
   new_nodes_lids = remaining_node_lids;
-  nb_remaining_nodes = new_nodes_lids.dim2Size()-(nb_removed_nodes+1);
-  remaining_node_lids.resize(nb_subdomain,nb_remaining_nodes);
-  remaining_node_uids.resize(nb_subdomain,nb_remaining_nodes);
-  _removeNodes(new_nodes_lids,nb_removed_nodes,removed_node_lids,removed_node_uids,remaining_node_lids,remaining_node_uids);
+  nb_remaining_nodes = new_nodes_lids.dim2Size() - (nb_removed_nodes + 1);
+  remaining_node_lids.resize(nb_subdomain, nb_remaining_nodes);
+  remaining_node_uids.resize(nb_subdomain, nb_remaining_nodes);
+  _removeNodes(new_nodes_lids, nb_removed_nodes, removed_node_lids, removed_node_uids, remaining_node_lids, remaining_node_uids);
   node_family->endUpdate();
   node_family->computeSynchronizeInfos();
 
-  dofMng().connectivityMng()->unregisterConnectivity(&node2dof);
+  // Check if compaction works when add&remove
+  new_nodes_lids.resize(nb_subdomain, nb_new_nodes_per_subdomain);
+  _addNodes(new_nodes_lids, new_nodes_uids);
+  node_family->endUpdate(); // Connectivity and ghosts are updated (since own and ghost dof are removed)
+  node_family->computeSynchronizeInfos(); // Not needed by connectivity but needed to have NodeFamily synchronization info up to date
+  _removeNodes(new_nodes_lids, nb_removed_nodes, removed_node_lids, removed_node_uids, remaining_node_lids, remaining_node_uids);
+  node_family->endUpdate(); // Connectivity and ghosts are updated (since own and ghost dof are removed)
+  node_family->computeSynchronizeInfos(); // Not needed by connectivity but needed to have NodeFamily synchronization info up to date
 
+  node_family->compactItems(true);
+
+  dofMng().connectivityMng()->unregisterConnectivity(&node2dof);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -832,20 +841,18 @@ _node2DoFsConnectivityRegistered()
       dofs_on_node_family.removeDoFs(removed_dofs);
       dofs_on_node_family.endUpdate();
       debug() << "*** REMOVED DOFS " << removed_dofs;
-
-    }
+  }
 
   // Check Connectivity update
-  _checkConnectivityUpdateAfterRemove(node2dofs, removed_nodes_lids, removed_nodes_uids,false);
+  _checkConnectivityUpdateAfterRemove(node2dofs, removed_nodes_lids, removed_nodes_uids, false);
 
   // Compact Source family
   node_family->compactItems(true);
   debug() << "NODES " << Int32UniqueArray(node_family->view().localIds());
   // update lids
-  for (Arcane::Integer rank = 0; rank < nb_subdomain; ++rank)
-    {
-      node_family->itemsUniqueIdToLocalId(remaining_nodes_lids[rank],remaining_nodes_uids[rank],true);
-    }
+  for (Arcane::Integer rank = 0; rank < nb_subdomain; ++rank) {
+      node_family->itemsUniqueIdToLocalId(remaining_nodes_lids[rank], remaining_nodes_uids[rank], true);
+  }
 
   // Compact Target family
   debug() << "DOFS " << dofs_on_node_family.view().localIds();
@@ -853,10 +860,19 @@ _node2DoFsConnectivityRegistered()
   dofs_on_node_family.compactItems(true);
   debug() << "DOF family size " << dofs_on_node_family.nbItem();
   debug() << "DOFS " << dofs_on_node_family.view().localIds();
-  _checkConnectivityUpdateAfterCompact(node2dofs, remaining_nodes_lids, remaining_nodes_uids, node2dofs.itemProperty().dim1Size(),false);
+  _checkConnectivityUpdateAfterCompact(node2dofs, remaining_nodes_lids, remaining_nodes_uids, node2dofs.itemProperty().dim1Size(), false);
+
+  // Check if compaction works when add&remove
+  _addNodes(new_nodes_lids, new_nodes_uids);
+  node_family->endUpdate(); // Connectivity and ghosts are updated (since own and ghost dof are removed)
+  node_family->computeSynchronizeInfos(); // Not needed by connectivity but needed to have NodeFamily synchronization info up to date
+  _removeNodes(new_nodes_lids, nb_removed_nodes, removed_nodes_lids, removed_nodes_uids, remaining_nodes_lids, remaining_nodes_uids);
+  node_family->endUpdate(); // Connectivity and ghosts are updated (since own and ghost dof are removed)
+  node_family->computeSynchronizeInfos(); // Not needed by connectivity but needed to have NodeFamily synchronization info up to date
+
+  node_family->compactItems(true);
 
   dofMng().connectivityMng()->unregisterConnectivity(&node2dofs);
-
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1029,11 +1045,19 @@ _node2DoFsMultiConnectivityRegistered()
   debug() << "DOF family size " << dofs_multi_on_node_family.nbItem();
   debug() << "DOFS " << dofs_multi_on_node_family.view().localIds();
 
-  _checkConnectivityUpdateAfterCompact(node2dofs, remaining_nodes_lids, remaining_nodes_uids, node2dofs.itemProperty().dim1Size(),false);
+  _checkConnectivityUpdateAfterCompact(node2dofs, remaining_nodes_lids, remaining_nodes_uids, node2dofs.itemProperty().dim1Size(), false);
 
+  // Check if compaction works when add&remove
+  _addNodes(new_nodes_lids, new_nodes_uids);
+  node_family->endUpdate(); // Connectivity and ghosts are updated (since own and ghost dof are removed)
+  node_family->computeSynchronizeInfos(); // Not needed by connectivity but needed to have NodeFamily synchronization info up to date
+  _removeNodes(new_nodes_lids, nb_removed_nodes, removed_nodes_lids, removed_nodes_uids, remaining_nodes_lids, remaining_nodes_uids);
+  node_family->endUpdate(); // Connectivity and ghosts are updated (since own and ghost dof are removed)
+  node_family->computeSynchronizeInfos(); // Not needed by connectivity but needed to have NodeFamily synchronization info up to date
+
+  node_family->compactItems(true);
 
   dofMng().connectivityMng()->unregisterConnectivity(&node2dofs);
-
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1214,6 +1238,7 @@ _removeNodes(Int32ConstArray2View new_nodes_lids,
       {
         node_family->removeNodeIfNotConnected(*inode);
         removed_node_uids[rank][i++] = inode->uniqueId().asInt64();
+        info() << "== Remove item " << inode->localId() << " on rank " << mesh()->parallelMng()->commRank() << " with owner " << rank;
       }
       i = 0;
       ENUMERATE_NODE(inode,remaining_nodes[rank])
