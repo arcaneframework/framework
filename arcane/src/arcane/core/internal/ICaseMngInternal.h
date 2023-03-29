@@ -40,6 +40,15 @@ class ARCANE_CORE_EXPORT ICaseMngInternal
    * \brief Lit une option du jeu de données.
    */
   virtual void internalReadOneOption(ICaseOptions* opt, bool is_phase1) = 0;
+
+  /*!
+   * \brief Crée un fragment.
+   *
+   * L'instance retournée doit être détruite par l'appel à delete.
+   * L'instance retournée devient propriétaire de \a document et se chargera
+   * de le détruire.
+   */
+  virtual ICaseDocumentFragment* createDocumentFragment(IXmlDocumentHolder* document) = 0;
 };
 
 /*---------------------------------------------------------------------------*/

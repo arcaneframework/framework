@@ -157,6 +157,9 @@ class ICaseDocument
 
   //! Positionne la catégorie utilisée pour les valeurs par défaut.
   virtual void setDefaultCategory(const String& v) =0;
+
+  //! Fragment correspondant à ce document
+  virtual ICaseDocumentFragment* fragment() =0;
 };
 
 /*---------------------------------------------------------------------------*/

@@ -86,6 +86,9 @@ class ARCANE_CORE_EXPORT ICaseOptionList
   //! Supprime une référence
   virtual void removeReference() =0;
 
+  //! Document associé.
+  virtual ICaseDocumentFragment* caseDocumentFragment() const =0;
+
   /*!
    * \brief Désactive l'option comme si elle était absente.
    *

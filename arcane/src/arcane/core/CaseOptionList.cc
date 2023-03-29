@@ -222,6 +222,11 @@ class CaseOptionList
       delete this;
   }
 
+  ICaseDocumentFragment* caseDocumentFragment() const override
+  {
+    return m_ref_opt->caseDocumentFragment();
+  }
+
  public:
 
   void disable() override

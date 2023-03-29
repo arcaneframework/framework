@@ -152,6 +152,8 @@ class CaseDocument
 
   void setDefaultCategory(const String& v) override { m_fragment.m_default_category = v; }
 
+  ICaseDocumentFragment* fragment() override { return this; }
+
  public:
 
   // Positionne la langue. Doit être fait avant l'appel à build.
@@ -186,6 +188,17 @@ class CaseDocument
   
   XmlNode _forceCreateChild(XmlNode& parent,const String& us);
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ICaseDocumentFragment*
+arcaneCreateCaseDocumentFragment(ITraceMng* tm,IXmlDocumentHolder* document)
+{
+  auto* doc = new CaseDocumentFragment(tm,document);
+  doc->init();
+  return doc;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

@@ -62,6 +62,9 @@ namespace Arcane
 extern "C++" std::unique_ptr<ICaseDocumentVisitor>
 createPrintCaseDocumentVisitor(ITraceMng* tm,const String& lang);
 
+extern "C++" ICaseDocumentFragment*
+arcaneCreateCaseDocumentFragment(ITraceMng* tm,IXmlDocumentHolder* document);
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -179,6 +182,10 @@ class CaseMng
   //! Implémentation via ICaseMngInternal
   //@{
   void internalReadOneOption(ICaseOptions* opt, bool is_phase1) override;
+  ICaseDocumentFragment* createDocumentFragment(IXmlDocumentHolder* document) override
+  {
+    return arcaneCreateCaseDocumentFragment(traceMng(),document);
+  }
   //@}
   
  public:

@@ -38,10 +38,14 @@ namespace Arcane
 class CaseOptionBasePrivate
 {
  public:
-  CaseOptionBasePrivate(const CaseOptionBuildInfo& cob);
+
+  explicit CaseOptionBasePrivate(const CaseOptionBuildInfo& cob);
+
  public:
-  ICaseMng* m_case_mng; //!< Gestionnaire du sous-domaine
-  ICaseOptionList* m_parent_option_list; //!< Parent
+
+  ICaseMng* m_case_mng = nullptr; //!< Gestionnaire du sous-domaine
+  ICaseOptionList* m_parent_option_list = nullptr; //!< Parent
+  ICaseDocumentFragment* m_case_document_fragment = nullptr; //!< Document associé
   XmlNode m_root_element; //!< Elément du DOM de l'option
   String m_true_name; //!< Nom de l'option
   String m_name; //!< Nom traduit de l'option
@@ -64,6 +68,7 @@ CaseOptionBasePrivate::
 CaseOptionBasePrivate(const CaseOptionBuildInfo& cob)
 : m_case_mng(cob.caseMng())
 , m_parent_option_list(cob.caseOptionList())
+, m_case_document_fragment(m_parent_option_list->caseDocumentFragment())
 , m_root_element()
 , m_true_name(cob.name())
 , m_name(m_true_name)
@@ -149,7 +154,7 @@ caseDocument() const
 ICaseDocumentFragment* CaseOptionBase::
 caseDocumentFragment() const
 {
-  return caseMng()->caseDocument();
+  return m_p->m_case_document_fragment;
 }
 
 /*---------------------------------------------------------------------------*/

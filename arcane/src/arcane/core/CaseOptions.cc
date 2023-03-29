@@ -26,6 +26,7 @@
 #include "arcane/core/MeshHandle.h"
 #include "arcane/core/IMeshMng.h"
 #include "arcane/core/IXmlDocumentHolder.h"
+#include "arcane/core/internal/ICaseMngInternal.h"
 
 #include "arcane/core/CaseOptionsMulti.h"
 
@@ -88,7 +89,7 @@ class CaseOptionsPrivate
 
   ~CaseOptionsPrivate()
   {
-    delete m_xml_document;
+    delete m_own_case_document_fragment;
   }
 
  public:
@@ -108,7 +109,8 @@ class CaseOptionsPrivate
   std::atomic<Int32> m_nb_ref = 0;
   bool m_is_case_mng_registered = false;
   MeshHandle m_mesh_handle;
-  IXmlDocumentHolder* m_xml_document = nullptr;
+  // non-null si on possède notre propre instance de document
+  ICaseDocumentFragment* m_own_case_document_fragment = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -198,7 +200,7 @@ CaseOptions(ICaseMng* cm,const XmlContent& xml_content)
   IXmlDocumentHolder* xml_doc = xml_content.m_document;
   XmlNode parent_elem = xml_doc->documentNode().documentElement();
   m_p->m_config_list = createCaseOptionList(cm,this,parent_elem);
-  m_p->m_xml_document = xml_doc;
+  m_p->m_own_case_document_fragment = cm->_internalImpl()->createDocumentFragment(xml_doc);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -414,6 +416,9 @@ caseDocument() const
 ICaseDocumentFragment* CaseOptions::
 caseDocumentFragment() const
 {
+  auto* x = m_p->m_own_case_document_fragment;
+  if (x)
+    return x;
   return caseMng()->caseDocument();
 }
 
@@ -614,7 +619,7 @@ createWithXmlContent(ICaseMng* cm, const String& xml_content)
   XmlContent content;
   content.m_xml_content = xml_content;
 
-  String prolog = "<?xml version=\"1.0\"?>\n<root>\n<test1>\n";
+  String prolog = "<?xml version=\"1.0\"?>\n<root xml:lang=\"en\">\n<test1>\n";
   String epilog = "</test1>\n</root>\n";
   String service_xml_value = prolog + xml_content + epilog;
 
