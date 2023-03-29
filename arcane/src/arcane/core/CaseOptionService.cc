@@ -198,16 +198,18 @@ _readPhase1()
   if (_setMeshHandleAndCheckDisabled(mesh_name))
     return;
 
+  ICaseDocumentFragment* doc = caseDocumentFragment();
+
   String str_val = element.attrValue("name");
   //cerr << "** STR_VAL <" << str_val << " - " << m_default_value << ">\n";
-        
+
   if (str_val.null()){
     // Utilise la valeur par défaut :
     // - si elle a été spécifiée par l'utilisateur, utilise celle-ci.
     // - sinon utilise celle de la catégorie associée aux défauts.
     // - sinon, la valeur par défaut classique.
     if (!m_is_override_default){
-      String category = caseDocument()->defaultCategory();
+      String category = doc->defaultCategory();
       if (!category.null()){
         String v = m_default_values.find(category);
         if (!v.null()){
@@ -218,7 +220,7 @@ _readPhase1()
     str_val = m_default_value;
   }
   if (str_val.null() && !isOptional()){
-    CaseOptionError::addOptionNotFoundError(caseDocument(),A_FUNCINFO,"@name",element);
+    CaseOptionError::addOptionNotFoundError(doc,A_FUNCINFO,"@name",element);
     return;
   }
   m_service_name = str_val;
@@ -237,7 +239,7 @@ _readPhase1()
       // d'erreur correspondant.
       StringUniqueArray valid_names;
       getAvailableNames(valid_names);
-      CaseOptionError::addError(caseDocument(),A_FUNCINFO,element.xpathFullName(),
+      CaseOptionError::addError(doc,A_FUNCINFO,element.xpathFullName(),
                                 String::format("Unable to find a service named '{0}' (valid values:{1})",
                                                str_val,valid_names),true);
     }
@@ -358,6 +360,7 @@ multiAllocate(const XmlNodeList& elem_list)
   m_allocated_options.resize(size);
   IApplication* app = caseMng()->application();
   XmlNode parent_element = configList()->parentElement();
+  ICaseDocumentFragment* doc = caseDocumentFragment();
 
   String mesh_name = meshName();
   if (_setMeshHandleAndCheckDisabled(mesh_name))
@@ -392,7 +395,7 @@ multiAllocate(const XmlNodeList& elem_list)
       // Recherche les noms des implémentations valides
       StringUniqueArray valid_names;
       getAvailableNames(valid_names);
-      CaseOptionError::addError(caseDocument(),A_FUNCINFO,element.xpathFullName(),
+      CaseOptionError::addError(doc,A_FUNCINFO,element.xpathFullName(),
                                 String::format("Unable to find a service named '{0}' (valid values:{1})",
                                                str_val,valid_names),true);
     }

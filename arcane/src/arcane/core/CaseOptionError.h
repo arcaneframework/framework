@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CaseOptionError.h                                           (C) 2000-2017 */
+/* CaseOptionError.h                                           (C) 2000-2023 */
 /*                                                                           */
 /* Erreur dans le jeu de données.                                            */
 /*---------------------------------------------------------------------------*/
@@ -22,12 +22,14 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 class ICaseDocument;
+class ICaseDocumentFragment;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -49,7 +51,7 @@ class ARCANE_CORE_EXPORT CaseOptionError
    * \brief Erreur lorsqu'une valeur d'une jeu de données n'est pas du bon type.
    * Cette erreur est collective.
    */
-  static void addInvalidTypeError(ICaseDocument* document,
+  static void addInvalidTypeError(ICaseDocumentFragment* document,
                                   const TraceInfo& where,
                                   const String& node_name,
                                   const XmlNode& parent,
@@ -60,7 +62,7 @@ class ARCANE_CORE_EXPORT CaseOptionError
    * \brief Erreur lorsqu'une valeur d'une jeu de données n'est pas du bon type.
    * Cette erreur est collective.
    */
-  static void addInvalidTypeError(ICaseDocument* document,
+  static void addInvalidTypeError(ICaseDocumentFragment* document,
                                   const TraceInfo& where,
                                   const String& node_name,
                                   const XmlNode& parent,
@@ -72,18 +74,18 @@ class ARCANE_CORE_EXPORT CaseOptionError
    * \brief Erreur lorsqu'une option du jeu de données n'est pas trouvée.
    * Cette erreur est collective.
    */
-  static void addOptionNotFoundError(ICaseDocument* document,
+  static void addOptionNotFoundError(ICaseDocumentFragment* document,
                                 const TraceInfo& where,
                                 const String& node_name,
                                 const XmlNode& parent);
 
   //! Erreur générique
-  static void addError(ICaseDocument* document,
+  static void addError(ICaseDocumentFragment* document,
                        const TraceInfo& where,const String& node_name,
                        const String& message,bool is_collective=false);
 
   //! Erreur générique
-  static void addWarning(ICaseDocument* document,
+  static void addWarning(ICaseDocumentFragment* document,
                          const TraceInfo& where,const String& node_name,
                          const String& message,bool is_collective=false);
 
@@ -108,7 +110,7 @@ class ARCANE_CORE_EXPORT CaseOptionError
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

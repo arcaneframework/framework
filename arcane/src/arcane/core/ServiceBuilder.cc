@@ -1,50 +1,61 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ServiceBuilder.cc                                           (C) 2000-2012 */
+/* ServiceBuilder.cc                                           (C) 2000-2023 */
 /*                                                                           */
 /* Classe utilitaire pour instantier un service.                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
+#include "arcane/core/ServiceBuilder.h"
 
-#include "arcane/ServiceBuilder.h"
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ARCANE_BEGIN_NAMESPACE
+#include "arcane/core/ICaseMng.h"
+#include "arcane/core/CaseOptions.h"
+#include "arcane/core/internal/ICaseMngInternal.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-#if 0
-ServiceBuilder::
-ServiceBuilder(ISbuDomain* sd)
+namespace Arcane
 {
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ReferenceCounter<ICaseOptions> ServiceBuilderWithOptionsBase::
+_buildCaseOptions(const String& xml_content) const
+{
+  ReferenceCounter<ICaseOptions> co = CaseOptions::createWithXmlContent(m_case_mng, xml_content);
+  return co;
 }
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ServiceBuilder::
-~ServiceBuilder()
+IApplication* ServiceBuilderWithOptionsBase::
+_application() const
 {
+  return m_case_mng->application();
 }
-#endif
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+void ServiceBuilderWithOptionsBase::
+_readOptions(ICaseOptions* opt) const
+{
+  m_case_mng->_internalImpl()->internalReadOneOption(opt, true);
+  m_case_mng->_internalImpl()->internalReadOneOption(opt, false);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

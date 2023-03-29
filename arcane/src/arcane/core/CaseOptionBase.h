@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CaseOptionBase.h                                            (C) 2000-2017 */
+/* CaseOptionBase.h                                            (C) 2000-2023 */
 /*                                                                           */
 /* Classe d'une base d'une option du jeu de donnés.                          */
 /*---------------------------------------------------------------------------*/
@@ -21,13 +21,15 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 class CaseOptionBuildInfo;
 class ICaseDocument;
+class ICaseDocumentFragment;
 class ICaseMng;
 class ICaseOptionList;
 class ISubDomain;
@@ -86,8 +88,12 @@ class ARCANE_CORE_EXPORT CaseOptionBase
   ISubDomain* subDomain() const;
   
   //! Retourne le gestionnaire de document
+  ARCANE_DEPRECATED_REASON("Y2023: use caseMng()->caseDocument() instead.")
   ICaseDocument* caseDocument() const;
   
+  //! Retourne le document associé à cette option
+  ICaseDocumentFragment* caseDocumentFragment() const;
+
   //! Positionne l'élément racine à \a root_element
   void setRootElement(const XmlNode& root_element);
 
@@ -167,7 +173,7 @@ class ARCANE_CORE_EXPORT CaseOptionBase
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

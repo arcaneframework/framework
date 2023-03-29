@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ICaseMng.h                                                  (C) 2000-2018 */
+/* ICaseMng.h                                                  (C) 2000-2023 */
 /*                                                                           */
 /* Interface de la classe gérant le jeu de données.                          */
 /*---------------------------------------------------------------------------*/
@@ -25,12 +25,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class ICaseFunction;
-class ICaseOptions;
-class ICaseDocument;
-class IApplication;
-class IObservable;
-class IPhysicalUnitSystem;
+class ICaseMngInternal;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -58,7 +53,7 @@ class ICaseMng
 {
  public:
 
-  virtual ~ICaseMng(){} //!< Libère les ressources
+  virtual ~ICaseMng() = default; //!< Libère les ressources
 
  public:
 
@@ -74,8 +69,11 @@ class ICaseMng
   //! Gestionnaire de sous-domaine.
   virtual ISubDomain* subDomain() =0;
 
-  //! Document XML du jeu de données.
+  //! Document XML du jeu de données (peut être nul si pas de jeu de donneés)
   virtual ICaseDocument* caseDocument() =0;
+
+  //! Fragment du Document XML associé au jeu de données (peut être nul si pas de jeu de donneés)
+  virtual ICaseDocumentFragment* caseDocumentFragment() =0;
 
   //! Système d'unité associé.
   virtual IPhysicalUnitSystem* physicalUnitSystem() const =0;
@@ -192,11 +190,8 @@ class ICaseMng
 
  public:
 
-  /*!
-   * \internal
-   * \brief Lit une option du jeu de données.
-   */
-  virtual void _internalReadOneOption(ICaseOptions* opt,bool is_phase1) =0;
+  //! Implémentation interne
+  virtual ICaseMngInternal* _internalImpl() =0;
 };
 
 /*---------------------------------------------------------------------------*/

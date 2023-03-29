@@ -432,6 +432,63 @@ class ServiceBuilder
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+/*!
+ * \internal
+ */
+class ARCANE_CORE_EXPORT ServiceBuilderWithOptionsBase
+{
+ protected:
+
+  ServiceBuilderWithOptionsBase(ICaseMng* cm)
+  : m_case_mng(cm)
+  {
+  }
+
+ protected:
+
+  ReferenceCounter<ICaseOptions> _buildCaseOptions(const String& xml_content) const;
+  IApplication* _application() const;
+  void _readOptions(ICaseOptions* opt) const;
+
+ protected:
+
+  ICaseMng* m_case_mng = nullptr;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Classe utilitaire pour instantier un service d'une interface donnée
+ * avec des options.
+ *
+ * \warning API expérimentale. Ne pas utiliser en dehors de %Arcane
+ */
+template<typename InterfaceType>
+class ServiceBuilderWithOptions
+: private ServiceBuilderWithOptionsBase
+{
+ public:
+
+  ServiceBuilderWithOptions(ICaseMng* cm) : ServiceBuilderWithOptionsBase(cm){}
+
+ public:
+
+  Ref<InterfaceType>
+  createReference(const String& service_name,const String& xml_content,
+                  eServiceBuilderProperties properties=SB_None)
+  {
+    ReferenceCounter<ICaseOptions> opt(_buildCaseOptions(xml_content));
+    ServiceBuilder<InterfaceType> sbi(_application(),opt.get());
+    Ref<InterfaceType> s = sbi.createReference(service_name,properties);
+    if (s.get()){
+      _readOptions(opt.get());
+    }
+    return s;
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 } // End namespace Arcane
 

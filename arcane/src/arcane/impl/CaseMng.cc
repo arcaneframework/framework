@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CaseMng.cc                                                  (C) 2000-2022 */
+/* CaseMng.cc                                                  (C) 2000-2023 */
 /*                                                                           */
 /* Classe gérant les options du jeu de données.                              */
 /*---------------------------------------------------------------------------*/
@@ -46,6 +46,8 @@
 #include "arcane/ObservablePool.h"
 #include "arcane/ICaseDocumentVisitor.h"
 
+#include "arcane/core/internal/ICaseMngInternal.h"
+
 #include "arcane/impl/CaseDocumentLangTranslator.h"
 
 /*---------------------------------------------------------------------------*/
@@ -60,6 +62,9 @@ namespace Arcane
 extern "C++" std::unique_ptr<ICaseDocumentVisitor>
 createPrintCaseDocumentVisitor(ITraceMng* tm,const String& lang);
 
+extern "C++" ICaseDocumentFragment*
+arcaneCreateCaseDocumentFragment(ITraceMng* tm,IXmlDocumentHolder* document);
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -67,6 +72,7 @@ createPrintCaseDocumentVisitor(ITraceMng* tm,const String& lang);
  */
 class CaseMng
 : public ICaseMng
+, public ICaseMngInternal
 , public TraceAccessor
 {
  private:
@@ -136,6 +142,13 @@ class CaseMng
   IApplication* application() override { return m_sub_domain->application(); }
   IPhysicalUnitSystem* physicalUnitSystem() const override { return m_sub_domain->physicalUnitSystem(); }
   ICaseDocument* caseDocument() override { return m_case_document.get(); }
+  ICaseDocumentFragment* caseDocumentFragment() override
+  {
+    ICaseDocument* doc = caseDocument();
+    if (doc)
+      return doc->fragment();
+    return nullptr;
+  }
   ICaseDocument* readCaseDocument(const String& filename,ByteConstArrayView bytes) override;
 
   void readFunctions() override;
@@ -170,8 +183,18 @@ class CaseMng
 
   Ref<ICaseFunction> findFunctionRef(const String& name) const;
 
-  void _internalReadOneOption(ICaseOptions* opt,bool is_phase1) override;
+  //void _internalReadOneOption(ICaseOptions* opt,bool is_phase1) override;
+  ICaseMngInternal* _internalImpl() override { return this; }
 
+  //! Implémentation via ICaseMngInternal
+  //@{
+  void internalReadOneOption(ICaseOptions* opt, bool is_phase1) override;
+  ICaseDocumentFragment* createDocumentFragment(IXmlDocumentHolder* document) override
+  {
+    return arcaneCreateCaseDocumentFragment(traceMng(),document);
+  }
+  //@}
+  
  public:
 	
   String msgClassName() const { return "CaseMng"; }
@@ -288,15 +311,15 @@ readOptions(bool is_phase1)
 {
   Trace::Setter mci(traceMng(),msgClassName());
 
+  ICaseDocumentFragment* doc = _noNullCaseDocument()->fragment();
   if (is_phase1)
     info() << "Reading the input data (phase1): language '"
-           << caseDocument()->language() << "', "
+           << doc->language() << "', "
            << m_case_options_list.count() << " input data.";
   else
     info() << "Reading the input data (phase2)";
 
   if (is_phase1){
-    ICaseDocument* doc = _noNullCaseDocument();
     doc->clearErrorsAndWarnings();
   }
 
@@ -341,7 +364,7 @@ _checkTranslateDocument()
 void CaseMng::
 _printErrors(bool is_phase1)
 {
-  ICaseDocument* doc = _noNullCaseDocument();
+  ICaseDocumentFragment* doc = _noNullCaseDocument()->fragment();
 
   // Affiche les avertissements mais uniquement lors de la phase2 pour les avoir
   // tous en une fois (certains avertissements ne sont générés que lors de la phase2)
@@ -430,9 +453,10 @@ _readFunctions()
 
   // Lecture des fonctions
 
-  XmlNode case_root_elem = caseDocument()->rootElement();
+  ICaseDocumentFragment* doc = _noNullCaseDocument()->fragment();
+  XmlNode case_root_elem = doc->rootElement();
 
-  CaseNodeNames* cnn = caseDocument()->caseNodeNames();
+  CaseNodeNames* cnn = doc->caseNodeNames();
 
   // Récupère la liste des tables de marche.
   XmlNode funcs_elem = case_root_elem.child(cnn->functions);
@@ -662,6 +686,7 @@ void CaseMng::
 _searchInvalidOptions()
 {
   ICaseDocument* doc = _noNullCaseDocument();
+  ICaseDocumentFragment* doc_fragment = doc->fragment();
   // Cherche les éléments du jeu de données qui ne correspondent pas
   // à une option connue.
   XmlNodeList invalid_elems;
@@ -681,7 +706,7 @@ _searchInvalidOptions()
   String mesh_element_name;
   if (mesh_elements.size()>0)
     mesh_element_name = mesh_elements[0].name();
-  for( XmlNode node : doc->rootElement() ){
+  for( XmlNode node : doc_fragment->rootElement() ){
     if (node.type()!=XmlNode::ELEMENT)
       continue;
     String name = node.name();
@@ -706,7 +731,7 @@ _searchInvalidOptions()
     }
   }
 
-  if (!doc->hasError()){
+  if (!doc_fragment->hasError()){
     if (!invalid_elems.empty()){
       for( XmlNode xnode : invalid_elems ){
         perror() << "-- Unknown root option '" << xnode.xpathFullName() << "'";
@@ -753,7 +778,7 @@ _readOptions(bool is_phase1)
 void CaseMng::
 printOptions()
 {
-  String lang = _noNullCaseDocument()->language();
+  String lang = _noNullCaseDocument()->fragment()->language();
 
   auto v = createPrintCaseDocumentVisitor(traceMng(),lang);
   info() << "-----------------------------------------------------";
@@ -907,7 +932,7 @@ _readCaseDocument(const String& filename,ByteConstArrayView case_bytes)
   CaseNodeNames* cnn = caseDocument()->caseNodeNames();
 
   String code_name = app->applicationInfo().codeName();
-  XmlNode root_elem = m_case_document->rootElement();
+  XmlNode root_elem = m_case_document->fragment()->rootElement();
   if (root_elem.name()!=cnn->root){
     pfatal() << "The root element <" << root_elem.name() << "> has to be <" << cnn->root << ">";
   }
@@ -931,10 +956,11 @@ _readCaseDocument(const String& filename,ByteConstArrayView case_bytes)
 /*---------------------------------------------------------------------------*/
 
 void CaseMng::
-_internalReadOneOption(ICaseOptions* opt,bool is_phase1)
+internalReadOneOption(ICaseOptions* opt,bool is_phase1)
 {
   info() << "INTERNAL: reading one option";
-  ICaseDocument* doc = caseDocument();
+  ARCANE_CHECK_POINTER(opt);
+  ICaseDocumentFragment* doc = opt->caseDocumentFragment();
   ARCANE_CHECK_POINTER(doc);
   if (is_phase1)
     doc->clearErrorsAndWarnings();

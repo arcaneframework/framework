@@ -1349,7 +1349,7 @@ void TimeLoopMng::
 _fillModuleFactoryMap()
 {
   String lang;
-  ICaseDocument* doc = m_sub_domain->caseMng()->caseDocument();
+  ICaseDocumentFragment* doc = m_sub_domain->caseMng()->caseDocumentFragment();
   if (doc)
     lang = doc->language();
   ModuleFactoryInfoCollection module_factories(subDomain()->application()->moduleFactoryInfos());

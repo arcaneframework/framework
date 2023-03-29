@@ -190,7 +190,7 @@ translate(ICaseMng* cm,const String& new_lang)
   // NOTE: Ces conversions dépendent de CaseDocument et doivent être
   // mise à jour si ce dernier change (ainsi que CaseNodeNames)
 
-  _addConvert(cd->rootElement(),cnn->root);
+  _addConvert(cd->fragment()->rootElement(),cnn->root);
   _addConvert(cd->timeloopElement(),cnn->timeloop);
   _addConvert(cd->titleElement(),cnn->title);
   _addConvert(cd->descriptionElement(),cnn->description);

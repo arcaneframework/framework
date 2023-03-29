@@ -5,12 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CaseOptionTypes.h                                           (C) 2000-2023 */
+/* ICaseMngInternal.h                                          (C) 2000-2023 */
 /*                                                                           */
-/* Définition des types liés aux options du jeu de données.                  */
+/* Partie interne à Arcane de ICaseMng.                                      */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CASEOPTIONTYPES_H
-#define ARCANE_CASEOPTIONTYPES_H
+#ifndef ARCANE_CORE_INTERNAL_ICASEMNGINTERNAL_H
+#define ARCANE_CORE_INTERNAL_ICASEMNGINTERNAL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -25,29 +25,31 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
- * \file CaseOptionTypes.h
- *
- * \brief Déclarations des types liés aux options du jeu de données.
+ * \internal
+ * \brief Partie interne de ICaseMng.
  */
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-//! Phases de la lecture
-enum class eCaseOptionReadPhase
+class ARCANE_CORE_EXPORT ICaseMngInternal
 {
-  Phase1,
-  Phase2
+ public:
+
+  virtual ~ICaseMngInternal() = default;
+
+ public:
+
+  /*!
+   * \brief Lit une option du jeu de données.
+   */
+  virtual void internalReadOneOption(ICaseOptions* opt, bool is_phase1) = 0;
+
+  /*!
+   * \brief Crée un fragment.
+   *
+   * L'instance retournée doit être détruite par l'appel à delete.
+   * L'instance retournée devient propriétaire de \a document et se chargera
+   * de le détruire.
+   */
+  virtual ICaseDocumentFragment* createDocumentFragment(IXmlDocumentHolder* document) = 0;
 };
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class CaseOptionComplexValue;
-class CaseOptionBase;
-class ICaseOptionList;
-class ICaseDocumentVisitor;
-class CaseOptionsPrivate;
-class XmlNodeList;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

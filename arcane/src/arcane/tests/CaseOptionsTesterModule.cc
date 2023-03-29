@@ -1,17 +1,15 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CaseOptionsTesterModule.cc                                  (C) 2000-2022 */
+/* CaseOptionsTesterModule.cc                                  (C) 2000-2023 */
 /*                                                                           */
 /* Module de test des options du jeu de données.                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/Real3.h"
 #include "arcane/utils/Real2.h"
@@ -42,6 +40,9 @@
 #include "arcane/ServiceFactory.h"
 #include "arcane/ICaseDocument.h"
 #include "arcane/ICaseMeshService.h"
+
+#include "arcane/IXmlDocumentHolder.h"
+#include "arcane/core/ServiceBuilder.h"
 
 #include "arcane/tests/TypesCaseOptionsTester.h"
 
@@ -132,6 +133,7 @@ class CaseOptionsTesterModule
 	
   static void _createTimeLoop(Arcane::ISubDomain* sd);
   void _applyVisitor();
+  void _testDynamicService();
 
   Arcane::ObserverPool m_observers;
 
@@ -254,11 +256,11 @@ CaseOptionsTesterModule(const Arcane::ModuleBuildInfo& mb)
     // 'doc' peut être nul lorsqu'on génère le infos sur tous les
     // modules et service via 'dump_internal'
     if (doc){
-      info() << "DefaultCategory1=" << doc->defaultCategory();
+      info() << "DefaultCategory1=" << doc->fragment()->defaultCategory();
       String xd = platform::getEnvironmentVariable("ARCANE_DEFAULT_CATEGORY");
       if (!xd.null())
         doc->setDefaultCategory(xd);
-      info() << "DefaultCategory2=" << doc->defaultCategory();
+      info() << "DefaultCategory2=" << doc->fragment()->defaultCategory();
     }
   }
 
@@ -520,6 +522,7 @@ init()
     opt->checkSubMesh("Mesh1");
   }
   _applyVisitor();
+  _testDynamicService();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -541,6 +544,24 @@ _applyVisitor()
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IServiceInterface1::
+checkSubMesh(const Arccore::String&)
+{
+  ARCANE_FATAL("Should not be called on this interface");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IServiceInterface1::
+checkDynamicCreation()
+{
+  ARCANE_FATAL("Should not be called on this interface");
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -648,7 +669,33 @@ class ServiceInterface1ImplTestService
         ARCANE_FATAL("Bad mesh expected={0} value={1}",mesh_name,s2->mesh()->name());
     }
   }
+  void checkDynamicCreation() override
+  {
+    IPostProcessorWriter* w = options()->postProcessor1();
+    ARCANE_CHECK_POINTER(w);
+  }
 };
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CaseOptionsTesterModule::
+_testDynamicService()
+{
+  info() << "Test dynamic service";
+  String service_xml_value = "<post-processor1 name=\"Ensight7PostProcessor\"/>\n";
+  ICaseMng* cm = subDomain()->caseMng();
+  ServiceBuilderWithOptions<IServiceInterface1> builder(cm);
+
+  Ref<IServiceInterface1> si1 = builder.createReference("ServiceInterface1ImplTest",service_xml_value);
+  ARCANE_CHECK_POINTER(si1.get());
+  si1->checkDynamicCreation();
+
+  // Teste référence nulle
+  Ref<IServiceInterface1> si2 = builder.createReference("ServiceInterface1ImplTestInvalid",service_xml_value,SB_AllowNull);
+  if (si2.get())
+    ARCANE_FATAL("Service should be null");
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

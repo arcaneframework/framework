@@ -1,22 +1,21 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CaseOptionBase.cc                                           (C) 2000-2019 */
+/* CaseOptionBase.cc                                           (C) 2000-2023 */
 /*                                                                           */
 /* Gestion des options du jeu de données.                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/utils/ArcanePrecomp.h"
+#include "arcane/CaseOptionBase.h"
 
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/StringBuilder.h"
 
-#include "arcane/CaseOptionBase.h"
 #include "arcane/CaseOptionBuildInfo.h"
 #include "arcane/StringDictionary.h"
 #include "arcane/CaseOptions.h"
@@ -27,10 +26,8 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -41,10 +38,14 @@ ARCANE_BEGIN_NAMESPACE
 class CaseOptionBasePrivate
 {
  public:
-  CaseOptionBasePrivate(const CaseOptionBuildInfo& cob);
+
+  explicit CaseOptionBasePrivate(const CaseOptionBuildInfo& cob);
+
  public:
-  ICaseMng* m_case_mng; //!< Gestionnaire du sous-domaine
-  ICaseOptionList* m_parent_option_list; //!< Parent
+
+  ICaseMng* m_case_mng = nullptr; //!< Gestionnaire du sous-domaine
+  ICaseOptionList* m_parent_option_list = nullptr; //!< Parent
+  ICaseDocumentFragment* m_case_document_fragment = nullptr; //!< Document associé
   XmlNode m_root_element; //!< Elément du DOM de l'option
   String m_true_name; //!< Nom de l'option
   String m_name; //!< Nom traduit de l'option
@@ -67,6 +68,7 @@ CaseOptionBasePrivate::
 CaseOptionBasePrivate(const CaseOptionBuildInfo& cob)
 : m_case_mng(cob.caseMng())
 , m_parent_option_list(cob.caseOptionList())
+, m_case_document_fragment(m_parent_option_list->caseDocumentFragment())
 , m_root_element()
 , m_true_name(cob.name())
 , m_name(m_true_name)
@@ -149,6 +151,15 @@ caseDocument() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+ICaseDocumentFragment* CaseOptionBase::
+caseDocumentFragment() const
+{
+  return m_p->m_case_document_fragment;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 String CaseOptionBase::
 _defaultValue() const
 {
@@ -218,7 +229,7 @@ maxOccurs() const
 void CaseOptionBase::
 _setTranslatedName()
 {
-  String lang = caseDocument()->language();
+  String lang = caseDocumentFragment()->language();
   if (lang.null())
     m_p->m_name = m_p->m_true_name;
   else{
@@ -239,7 +250,7 @@ _setCategoryDefaultValue()
   // Si le développeur a surchargé l'option, ne fait rien
   if (m_p->m_is_override_default)
     return;
-  String category = caseDocument()->defaultCategory();
+  String category = caseDocumentFragment()->defaultCategory();
   if (category.null())
     m_p->m_default_value = m_p->m_axl_default_value;
   else{
@@ -368,7 +379,7 @@ _checkMinMaxOccurs(Integer nb_occur)
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

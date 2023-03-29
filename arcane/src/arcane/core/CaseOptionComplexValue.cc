@@ -5,16 +5,15 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CaseOptionTypes.h                                           (C) 2000-2023 */
+/* CaseOptions.cc                                              (C) 2000-2023 */
 /*                                                                           */
-/* Définition des types liés aux options du jeu de données.                  */
-/*---------------------------------------------------------------------------*/
-#ifndef ARCANE_CASEOPTIONTYPES_H
-#define ARCANE_CASEOPTIONTYPES_H
+/* Gestion des options du jeu de données.                                    */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
+#include "arcane/core/CaseOptionComplexValue.h"
+
+#include "arcane/core/ICaseOptions.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -24,30 +23,29 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-/*!
- * \file CaseOptionTypes.h
- *
- * \brief Déclarations des types liés aux options du jeu de données.
- */
+
+extern "C++" ICaseOptionList*
+createCaseOptionList(ICaseOptionList* parent,ICaseOptions* ref_opt,XmlNode parent_element,
+                     bool is_optional,bool is_multi);
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-//! Phases de la lecture
-enum class eCaseOptionReadPhase
+CaseOptionComplexValue::
+CaseOptionComplexValue(ICaseOptionsMulti* opt,ICaseOptionList* clist,const XmlNode& parent_elem)
+: m_config_list(createCaseOptionList(clist,opt->toCaseOptions(),parent_elem,clist->isOptional(),true))
+, m_element(parent_elem)
 {
-  Phase1,
-  Phase2
-};
+  opt->addChild(_configList());
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class CaseOptionComplexValue;
-class CaseOptionBase;
-class ICaseOptionList;
-class ICaseDocumentVisitor;
-class CaseOptionsPrivate;
-class XmlNodeList;
+CaseOptionComplexValue::
+~CaseOptionComplexValue()
+{
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -56,5 +54,3 @@ class XmlNodeList;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#endif

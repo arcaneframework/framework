@@ -55,6 +55,7 @@ set(ARCANE_MATERIALS_SOURCES
   )
 
 set(ARCANE_INTERNAL_SOURCES
+  internal/ICaseMngInternal.h
   internal/IDataInternal.h
   internal/CartesianMeshGenerationInfo.h
   internal/CartesianMeshGenerationInfo.cc
@@ -71,12 +72,6 @@ set(ARCANE_ORIGINAL_SOURCES
 
   BasicModule.h
 
-  CaseFunction.h
-  CaseOptionBase.h
-  CaseOptionBuildInfo.h
-  CaseOptions.h
-  CaseOptionServiceImpl.h
-  CaseOptionTypes.h
   CommonVariables.h
 
   DotNetRuntimeInitialisationInfo.h
@@ -380,17 +375,31 @@ set(ARCANE_ORIGINAL_SOURCES
   CaseDatasetSource.cc
   CaseDatasetSource.h
   CaseFunction.cc
+  CaseFunction.h
+  CaseOptions.h
+  CaseOptionServiceImpl.h
+  CaseOptionTypes.h
   CaseNodeNames.cc
   CaseNodeNames.h
+  CaseOptionBase.h
   CaseOptionBase.cc
   CaseOptionBuildInfo.cc
+  CaseOptionBuildInfo.h
+  CaseOptionEnum.cc
+  CaseOptionEnum.h
+  CaseOptionComplexValue.cc
+  CaseOptionComplexValue.h
   CaseOptionError.cc
   CaseOptionError.h
   CaseOptionException.cc
   CaseOptionException.h
+  CaseOptionExtended.cc
+  CaseOptionExtended.h
   CaseOptionList.cc
   CaseOptionService.cc
   CaseOptionService.h
+  CaseOptionSimple.cc
+  CaseOptionSimple.h
   CaseOptions.cc
   CaseOptionsMain.cc
   CaseOptionsMain.h
