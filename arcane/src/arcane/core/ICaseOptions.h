@@ -27,47 +27,52 @@ namespace Arcane
 /*!
  * \internal
  * \brief Interface d'une liste d'options du jeu de données.
+ *
+ * Cette interface est gérée par un compteur de référence et ne doit pas
+ * être détruite explictement.
  */
 class ARCANE_CORE_EXPORT ICaseOptions
 {
+  ARCCORE_DECLARE_REFERENCE_COUNTED_INCLASS_METHODS();
+
  protected:
-	
+
   virtual ~ICaseOptions() = default;
 
  public:
 
-  //! Vrai nom (non traduit) de l'élément. 
-  virtual String rootTagTrueName() const =0;
+  //! Vrai nom (non traduit) de l'élément.
+  virtual String rootTagTrueName() const = 0;
 
   //! Nom de l'élément dans le langage du jeu de données.
-  virtual String rootTagName() const =0;
+  virtual String rootTagName() const = 0;
 
   //! Nom dans la langue \a lang de l'option. Retourne \a rootTagTrueName() si pas de traduction.
-  virtual String translatedName(const String& lang) const =0;
+  virtual String translatedName(const String& lang) const = 0;
 
   ARCCORE_DEPRECATED_2019("Use read(eCaseOptionReadPhase) instead")
-  virtual void read(bool is_phase1) =0;
+  virtual void read(bool is_phase1) = 0;
 
   /*!
    * \brief Effectue la lecture de la phase \a read_phase des options.
    */
-  virtual void read(eCaseOptionReadPhase read_phase) =0;
+  virtual void read(eCaseOptionReadPhase read_phase) = 0;
 
-  virtual void addInvalidChildren(XmlNodeList&) =0;
+  virtual void addInvalidChildren(XmlNodeList&) = 0;
 
-  virtual void printChildren(const String& lang,int indent) =0;
+  virtual void printChildren(const String& lang, int indent) = 0;
 
   //! Retourne le service associé ou `nullptr` s'il n'y en a pas.
-  virtual IServiceInfo* caseServiceInfo() const =0;
+  virtual IServiceInfo* caseServiceInfo() const = 0;
 
   //! Retourne le module associé ou `nullptr` s'il n'y en a pas.
-  virtual IModule* caseModule() const =0;
+  virtual IModule* caseModule() const = 0;
 
   /*!
    * \internal
    * \brief Associe le service \a m à ce jeu de données.
    */
-  virtual void setCaseServiceInfo(IServiceInfo* m) =0;
+  virtual void setCaseServiceInfo(IServiceInfo* m) = 0;
 
   /*!
    * \internal
@@ -79,14 +84,14 @@ class ARCANE_CORE_EXPORT ICaseOptions
    * \internal
    * \brief Ajoute à la liste \a col tous les options filles.
    */
-  virtual void deepGetChildren(Array<CaseOptionBase*>& col) =0;
+  virtual void deepGetChildren(Array<CaseOptionBase*>& col) = 0;
 
-  virtual ICaseOptionList* configList() =0;
+  virtual ICaseOptionList* configList() = 0;
 
-  virtual const ICaseOptionList* configList() const =0;
+  virtual const ICaseOptionList* configList() const = 0;
 
   //! Fonction indiquant l'état d'activation de l'option
-  virtual ICaseFunction* activateFunction() =0;
+  virtual ICaseFunction* activateFunction() = 0;
 
   /*!
    * \brief Indique si l'option est présente dans le jeu de données.
@@ -94,7 +99,7 @@ class ARCANE_CORE_EXPORT ICaseOptions
    * Une option peut ne pas apparaître si elle ne contient que des
    * options ayant une valeur par défaut.
    */
-  virtual bool isPresent() const =0;
+  virtual bool isPresent() const = 0;
 
   /*!
    * \internal
@@ -104,10 +109,10 @@ class ARCANE_CORE_EXPORT ICaseOptions
    * Si une traduction existe déjà pour ce langage, elle est remplacée par
    * celle-ci.
    */
-  virtual void addAlternativeNodeName(const String& lang,const String& name) =0;
+  virtual void addAlternativeNodeName(const String& lang, const String& name) = 0;
 
-  virtual ICaseMng* caseMng() const =0;
-  virtual ITraceMng* traceMng() const =0;
+  virtual ICaseMng* caseMng() const = 0;
+  virtual ITraceMng* traceMng() const = 0;
   /*!
    * \brief Sous-domain associé.
    *
@@ -115,28 +120,29 @@ class ARCANE_CORE_EXPORT ICaseOptions
    * pourra exister sans sous-domaine.
    */
   ARCCORE_DEPRECATED_2019("Do not use subDomain(). Try to get subDomain from an other way.")
-  virtual ISubDomain* subDomain() const =0;
+  virtual ISubDomain* subDomain() const = 0;
   ARCCORE_DEPRECATED_2019("Use meshHandle().mesh() instead")
-  virtual IMesh* mesh() const =0;
-  virtual MeshHandle meshHandle() const =0;
+  virtual IMesh* mesh() const = 0;
+  virtual MeshHandle meshHandle() const = 0;
   ARCANE_DEPRECATED_REASON("Y2023: use caseMng()->caseDocument() instead.")
-  virtual ICaseDocument* caseDocument() const =0;
-  virtual ICaseDocumentFragment* caseDocumentFragment() const =0;
+  virtual ICaseDocument* caseDocument() const = 0;
+  virtual ICaseDocumentFragment* caseDocumentFragment() const = 0;
 
   /*!
    * \internal
    * Détache l'option de son parent.
    */
-  virtual void detach() =0;
+  virtual void detach() = 0;
 
   //! Applique le visiteur sur cette option
-  virtual void visit(ICaseDocumentVisitor* visitor) const =0;
+  virtual void visit(ICaseDocumentVisitor* visitor) const = 0;
 
   //! Nom complet au format XPath correspondant à rootElement()
-  virtual String xpathFullName() const =0;
+  virtual String xpathFullName() const = 0;
 
-  virtual void addReference() =0;
-  virtual void removeReference() =0;
+ public:
+
+  virtual Ref<ICaseOptions> toReference() = 0;
 };
 
 /*---------------------------------------------------------------------------*/

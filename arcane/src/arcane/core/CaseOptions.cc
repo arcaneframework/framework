@@ -30,8 +30,6 @@
 
 #include "arcane/core/CaseOptionsMulti.h"
 
-#include <atomic>
-
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -106,11 +104,11 @@ class CaseOptionsPrivate
   bool m_is_phase1_read = false;
   StringDictionary m_name_translations;
   ICaseFunction* m_activate_function = nullptr; //!< Fonction indiquand l'état d'activation
-  std::atomic<Int32> m_nb_ref = 0;
   bool m_is_case_mng_registered = false;
   MeshHandle m_mesh_handle;
   // non-null si on possède notre propre instance de document
   ICaseDocumentFragment* m_own_case_document_fragment = nullptr;
+  Ref<ICaseMng> m_case_mng_ref;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -197,10 +195,14 @@ CaseOptions::
 CaseOptions(ICaseMng* cm,const XmlContent& xml_content)
 : m_p(new CaseOptionsPrivate(cm,"test1"))
 {
+  // Ce constructeur est pour les options créées dynamiquement
   IXmlDocumentHolder* xml_doc = xml_content.m_document;
   XmlNode parent_elem = xml_doc->documentNode().documentElement();
   m_p->m_config_list = createCaseOptionList(cm,this,parent_elem);
   m_p->m_own_case_document_fragment = cm->_internalImpl()->createDocumentFragment(xml_doc);
+  // Conserve une référence sur le ICaseMng pour le cas où cette option
+  // serait détruite après la fin du calcul et la destruction des sous-domaine.
+  m_p->m_case_mng_ref = cm->toReference();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -217,26 +219,6 @@ CaseOptions::
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-void CaseOptions::
-addReference()
-{
-  ++m_p->m_nb_ref;
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void CaseOptions::
-removeReference()
-{
-  // Décrémente et retourne la valeur d'avant.
-  // Si elle vaut 1, cela signifie qu'on n'a plus de références
-  // sur l'objet et qu'il faut le détruire.
-  Int32 v = std::atomic_fetch_add(&m_p->m_nb_ref,-1);
-  if (v==1)
-    delete this;
-}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -629,6 +611,15 @@ createWithXmlContent(ICaseMng* cm, const String& xml_content)
 
   auto* opt = new CaseOptions(cm,content);
   return ReferenceCounter<ICaseOptions>(opt);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+Ref<ICaseOptions> CaseOptions::
+toReference()
+{
+  return makeRef<ICaseOptions>(this);
 }
 
 /*---------------------------------------------------------------------------*/
