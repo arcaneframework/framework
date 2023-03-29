@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ICaseOptions.h                                              (C) 2000-2020 */
+/* ICaseOptions.h                                              (C) 2000-2023 */
 /*                                                                           */
 /* Options du jeu de donnés.                                                 */
 /*---------------------------------------------------------------------------*/
@@ -21,18 +21,6 @@
 
 namespace Arcane
 {
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-class XmlNode;
-class ICaseMng;
-class ISubDomain;
-class ICaseDocument;
-class XmlNodeList;
-class IMesh;
-class IServiceInfo;
-class MeshHandle;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -131,7 +119,9 @@ class ARCANE_CORE_EXPORT ICaseOptions
   ARCCORE_DEPRECATED_2019("Use meshHandle().mesh() instead")
   virtual IMesh* mesh() const =0;
   virtual MeshHandle meshHandle() const =0;
+  ARCANE_DEPRECATED_REASON("Y2023: use caseMng()->caseDocument() instead.")
   virtual ICaseDocument* caseDocument() const =0;
+  virtual ICaseDocumentFragment* caseDocumentFragment() const =0;
 
   /*!
    * \internal

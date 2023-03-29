@@ -164,6 +164,7 @@ class ARCANE_CORE_EXPORT CaseOptions
   IMesh* mesh() const override;
   MeshHandle meshHandle() const override;
   ICaseDocument* caseDocument() const override;
+  ICaseDocumentFragment* caseDocumentFragment() const override;
 
   void detach() override;
 

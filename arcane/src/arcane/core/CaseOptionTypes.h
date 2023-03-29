@@ -47,6 +47,7 @@ class CaseOptionBase;
 class ICaseOptionList;
 class ICaseDocumentVisitor;
 class CaseOptionsPrivate;
+class XmlNodeList;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

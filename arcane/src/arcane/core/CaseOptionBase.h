@@ -88,7 +88,7 @@ class ARCANE_CORE_EXPORT CaseOptionBase
   ISubDomain* subDomain() const;
   
   //! Retourne le gestionnaire de document
-  ARCANE_DEPRECATED_REASON("Y2023: use caseDocumentFragment() instead.")
+  ARCANE_DEPRECATED_REASON("Y2023: use caseMng()->caseDocument() instead.")
   ICaseDocument* caseDocument() const;
   
   //! Retourne le document associé à cette option
