@@ -18,9 +18,7 @@
 #include "arcane/utils/Array.h"
 
 #include "arcane/XmlNode.h"
-#include "arcane/IApplication.h"
 #include "arcane/IXmlDocumentHolder.h"
-#include "arcane/IRessourceMng.h"
 #include "arcane/ICaseDocument.h"
 #include "arcane/CaseNodeNames.h"
 #include "arcane/CaseOptionError.h"
@@ -99,7 +97,7 @@ class CaseDocument
 {
  public:
 
-  CaseDocument(IApplication* sm,IXmlDocumentHolder* document);
+  CaseDocument(ITraceMng* sm,IXmlDocumentHolder* document);
   ~CaseDocument() override;
 
   void build() override;
@@ -193,9 +191,9 @@ class CaseDocument
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ICaseDocument*
-arcaneCreateCaseDocument(IApplication* sm,IXmlDocumentHolder* document)
+arcaneCreateCaseDocument(ITraceMng* tm,IXmlDocumentHolder* document)
 {
-  ICaseDocument* doc = new CaseDocument(sm,document);
+  ICaseDocument* doc = new CaseDocument(tm,document);
   doc->build();
   return doc;
 }
@@ -204,10 +202,10 @@ arcaneCreateCaseDocument(IApplication* sm,IXmlDocumentHolder* document)
 /*---------------------------------------------------------------------------*/
 
 extern "C++" ICaseDocument*
-arcaneCreateCaseDocument(IApplication* sm,const String& lang)
+arcaneCreateCaseDocument(ITraceMng* tm,const String& lang)
 {
   IXmlDocumentHolder* xml_doc = domutils::createXmlDocument();
-  CaseDocument* doc = new CaseDocument(sm,xml_doc);
+  CaseDocument* doc = new CaseDocument(tm,xml_doc);
   if (!lang.null())
     doc->setLanguage(lang);
   doc->build();
@@ -230,9 +228,9 @@ CaseDocumentFragment(ITraceMng* tm,IXmlDocumentHolder* document)
 /*---------------------------------------------------------------------------*/
 
 CaseDocument::
-CaseDocument(IApplication* sm,IXmlDocumentHolder* document)
-: TraceAccessor(sm->traceMng())
-, m_fragment(sm->traceMng(),document)
+CaseDocument(ITraceMng* tm,IXmlDocumentHolder* document)
+: TraceAccessor(tm)
+, m_fragment(tm,document)
 {
 }
 

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* MainFactory.cc                                              (C) 2000-2020 */
+/* MainFactory.cc                                              (C) 2000-2023 */
 /*                                                                           */
 /* AbstractFactory des gestionnaires d'Arcane.                               */
 /*---------------------------------------------------------------------------*/
@@ -53,8 +53,8 @@ extern "C++" IModuleMng* arcaneCreateModuleMng(ISubDomain*);
 extern "C++" IEntryPointMng* arcaneCreateEntryPointMng(ISubDomain*);
 extern "C++" ARCANE_IMPL_EXPORT ITimeHistoryMng* arcaneCreateTimeHistoryMng2(ISubDomain*);
 extern "C++" ICaseMng* arcaneCreateCaseMng(ISubDomain*);
-extern "C++" ICaseDocument* arcaneCreateCaseDocument(IApplication*,const String& lang);
-extern "C++" ICaseDocument* arcaneCreateCaseDocument(IApplication*,IXmlDocumentHolder* doc);
+extern "C++" ICaseDocument* arcaneCreateCaseDocument(ITraceMng*,const String& lang);
+extern "C++" ICaseDocument* arcaneCreateCaseDocument(ITraceMng*,IXmlDocumentHolder* doc);
 extern "C++" ITimeStats* arcaneCreateTimeStats(ITimerMng* timer_mng,ITraceMng* trm,const String& name);
 extern "C++" ITimeLoopMng* arcaneCreateTimeLoopMng(ISubDomain*);
 extern "C++" IServiceLoader* arcaneCreateServiceLoader();
@@ -288,7 +288,7 @@ createPropertyMngReference(ISubDomain* sd)
 ICaseDocument* MainFactory::
 createCaseDocument(IApplication* sm)
 {
-  return arcaneCreateCaseDocument(sm,String());
+  return arcaneCreateCaseDocument(sm->traceMng(),String());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -297,7 +297,7 @@ createCaseDocument(IApplication* sm)
 ICaseDocument* MainFactory::
 createCaseDocument(IApplication* sm,const String& lang)
 {
-  return arcaneCreateCaseDocument(sm,lang);
+  return arcaneCreateCaseDocument(sm->traceMng(),lang);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -306,7 +306,7 @@ createCaseDocument(IApplication* sm,const String& lang)
 ICaseDocument* MainFactory::
 createCaseDocument(IApplication* sm,IXmlDocumentHolder* doc)
 {
-  return arcaneCreateCaseDocument(sm,doc);
+  return arcaneCreateCaseDocument(sm->traceMng(),doc);
 }
 
 /*---------------------------------------------------------------------------*/
