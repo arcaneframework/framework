@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SubDomain.cc                                                (C) 2000-2022 */
+/* SubDomain.cc                                                (C) 2000-2023 */
 /*                                                                           */
 /* Gestionnaire du sous-domaine.                                             */
 /*---------------------------------------------------------------------------*/
@@ -88,6 +88,7 @@
 #include "arcane/ObserverPool.h"
 #include "arcane/ConfigurationPropertyReader.h"
 #include "arcane/core/internal/IDataInternal.h"
+#include "arcane/core/internal/ICaseMngInternal.h"
 
 #include "arcane/impl/ConfigurationReader.h"
 #include "arcane/impl/internal/MeshMng.h"
@@ -647,7 +648,7 @@ allocateMeshes()
     ServiceBuilder<ICaseMeshMasterService> sb(application(),opt);
     Ref<ICaseMeshMasterService> mbm = sb.createReference(default_service_name);
     m_case_mesh_master_service = mbm;
-    m_case_mng->_internalReadOneOption(mbm->_options(),true);
+    m_case_mng->_internalImpl()->internalReadOneOption(mbm->_options(),true);
     mbm->createMeshes();
   }
   else{

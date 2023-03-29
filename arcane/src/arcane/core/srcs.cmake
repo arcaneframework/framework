@@ -55,6 +55,7 @@ set(ARCANE_MATERIALS_SOURCES
   )
 
 set(ARCANE_INTERNAL_SOURCES
+  internal/ICaseMngInternal.h
   internal/IDataInternal.h
   internal/CartesianMeshGenerationInfo.h
   internal/CartesianMeshGenerationInfo.cc

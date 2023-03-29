@@ -5,17 +5,16 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ServiceBuilder.cc                                           (C) 2000-2023 */
+/* ICaseMngInternal.h                                          (C) 2000-2023 */
 /*                                                                           */
-/* Classe utilitaire pour instantier un service.                             */
+/* Partie interne à Arcane de ICaseMng.                                      */
+/*---------------------------------------------------------------------------*/
+#ifndef ARCANE_CORE_INTERNAL_ICASEMNGINTERNAL_H
+#define ARCANE_CORE_INTERNAL_ICASEMNGINTERNAL_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/core/ServiceBuilder.h"
-
-#include "arcane/core/ICaseMng.h"
-#include "arcane/core/CaseOptions.h"
-#include "arcane/core/internal/ICaseMngInternal.h"
+#include "arcane/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -25,38 +24,30 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-ReferenceCounter<ICaseOptions> ServiceBuilderWithOptionsBase::
-_buildCaseOptions(const String& xml_content) const
+/*!
+ * \internal
+ * \brief Partie interne de ICaseMng.
+ */
+class ARCANE_CORE_EXPORT ICaseMngInternal
 {
-  ReferenceCounter<ICaseOptions> co = CaseOptions::createWithXmlContent(m_case_mng, xml_content);
-  return co;
-}
+ public:
+
+  virtual ~ICaseMngInternal() = default;
+
+ public:
+
+  /*!
+   * \brief Lit une option du jeu de données.
+   */
+  virtual void internalReadOneOption(ICaseOptions* opt, bool is_phase1) = 0;
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-IApplication* ServiceBuilderWithOptionsBase::
-_application() const
-{
-  return m_case_mng->application();
-}
+} // End namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-void ServiceBuilderWithOptionsBase::
-_readOptions(ICaseOptions* opt) const
-{
-  m_case_mng->_internalImpl()->internalReadOneOption(opt, true);
-  m_case_mng->_internalImpl()->internalReadOneOption(opt, false);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-} // namespace Arcane
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
+#endif

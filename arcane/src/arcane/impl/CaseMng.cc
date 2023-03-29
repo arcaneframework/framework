@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CaseMng.cc                                                  (C) 2000-2022 */
+/* CaseMng.cc                                                  (C) 2000-2023 */
 /*                                                                           */
 /* Classe gérant les options du jeu de données.                              */
 /*---------------------------------------------------------------------------*/
@@ -46,6 +46,8 @@
 #include "arcane/ObservablePool.h"
 #include "arcane/ICaseDocumentVisitor.h"
 
+#include "arcane/core/internal/ICaseMngInternal.h"
+
 #include "arcane/impl/CaseDocumentLangTranslator.h"
 
 /*---------------------------------------------------------------------------*/
@@ -67,6 +69,7 @@ createPrintCaseDocumentVisitor(ITraceMng* tm,const String& lang);
  */
 class CaseMng
 : public ICaseMng
+, public ICaseMngInternal
 , public TraceAccessor
 {
  private:
@@ -170,8 +173,14 @@ class CaseMng
 
   Ref<ICaseFunction> findFunctionRef(const String& name) const;
 
-  void _internalReadOneOption(ICaseOptions* opt,bool is_phase1) override;
+  //void _internalReadOneOption(ICaseOptions* opt,bool is_phase1) override;
+  ICaseMngInternal* _internalImpl() override { return this; }
 
+  //! Implémentation via ICaseMngInternal
+  //@{
+  void internalReadOneOption(ICaseOptions* opt, bool is_phase1) override;
+  //@}
+  
  public:
 	
   String msgClassName() const { return "CaseMng"; }
@@ -931,10 +940,11 @@ _readCaseDocument(const String& filename,ByteConstArrayView case_bytes)
 /*---------------------------------------------------------------------------*/
 
 void CaseMng::
-_internalReadOneOption(ICaseOptions* opt,bool is_phase1)
+internalReadOneOption(ICaseOptions* opt,bool is_phase1)
 {
   info() << "INTERNAL: reading one option";
-  ICaseDocument* doc = caseDocument();
+  ARCANE_CHECK_POINTER(opt);
+  ICaseDocumentFragment* doc = opt->caseDocumentFragment();
   ARCANE_CHECK_POINTER(doc);
   if (is_phase1)
     doc->clearErrorsAndWarnings();
