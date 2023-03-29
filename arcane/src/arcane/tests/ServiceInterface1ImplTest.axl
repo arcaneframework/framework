@@ -28,6 +28,9 @@
       <simple name = "simple-real-2" type = "real" optional = "true">
         <description>SimpleReal-2</description>
       </simple>
+      <extended name = "cell-group" type = "Arcane::CellGroup" default="ZG" >
+        <description>a cell group</description>
+      </extended>
     </complex>
   </options>
 </service>

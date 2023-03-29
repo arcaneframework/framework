@@ -11,7 +11,7 @@
       <filename>sod.vtk</filename>
     </mesh>
     <mesh>
-      <filename>square_v41.msh</filename>
+      <filename>plancher.msh</filename>
     </mesh>
   </meshes>
 
@@ -117,7 +117,12 @@
       <nb-temps-par-fichier>64</nb-temps-par-fichier>
       <fichier-binaire>false</fichier-binaire>
     </post-processor4>
+    <!-- Ce service est associé au maillage 'Mesh1' -->
     <service-instance-test1 name="ServiceInterface1ImplTest" >
+      <complex1>
+        <simple-real-2>3.5</simple-real-2>
+        <cell-group>Planchere</cell-group>
+      </complex1>
       <post-processor1 name="Ensight7PostProcessor">
         <nb-temps-par-fichier>3</nb-temps-par-fichier>
         <fichier-binaire>true</fichier-binaire>

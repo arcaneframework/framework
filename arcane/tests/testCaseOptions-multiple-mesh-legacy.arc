@@ -10,7 +10,7 @@
     <fichier>sod.vtk</fichier>
   </maillage>
   <maillage>
-    <fichier>square_v41.msh</fichier>
+    <fichier>plancher.msh</fichier>
   </maillage>
 
   <fonctions>
@@ -116,6 +116,10 @@
       <fichier-binaire>false</fichier-binaire>
     </post-processor4>
     <service-instance-test1 name="ServiceInterface1ImplTest" >
+      <complex1>
+        <simple-real-2>3.5</simple-real-2>
+        <cell-group>Planchere</cell-group>
+      </complex1>
       <post-processor1 name="Ensight7PostProcessor">
         <nb-temps-par-fichier>3</nb-temps-par-fichier>
         <fichier-binaire>true</fichier-binaire>

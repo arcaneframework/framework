@@ -1,26 +1,27 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ItemGroup.cc                                                (C) 2000-2020 */
+/* ItemGroup.cc                                                (C) 2000-2023 */
 /*                                                                           */
 /* Groupes d'entités du maillage.                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ItemGroup.h"
+#include "arcane/core/ItemGroup.h"
 
 #include "arcane/utils/String.h"
 #include "arcane/utils/ArgumentException.h"
 
-#include "arcane/ISubDomain.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/IMesh.h"
-#include "arcane/ICaseMng.h"
-#include "arcane/CaseOptionBase.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/ICaseMng.h"
+#include "arcane/core/CaseOptionBase.h"
+#include "arcane/core/ICaseOptionList.h"
+#include "arcane/core/MeshHandle.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -46,7 +47,7 @@ namespace Arcane
  convertir en une référence sur un groupe spécifique (NodeGroup, FaceGroup,
  EdgeGroup ou CellGroup). Par exemple:
  \code
- ItemGroup group = subDomain()->mesh()->findGroup("Surface");
+ ItemGroup group = subDomain()->defaultMesh()->findGroup("Surface");
  FaceGroup surface(surface);
  if (surface.null())
    // Pas une surface.
@@ -575,40 +576,40 @@ isAllItems() const
 extern ARCANE_CORE_EXPORT bool
 _caseOptionConvert(const CaseOptionBase& co,const String& name,ItemGroup& obj)
 {
-  ISubDomain* sub_domain = co.caseMng()->subDomain();
-  obj = sub_domain->defaultMesh()->findGroup(name);
+  IMesh* mesh = co.parentOptionList()->meshHandle().mesh();
+  obj = mesh->findGroup(name);
   return obj.null();
 }
 
 extern ARCANE_CORE_EXPORT bool
 _caseOptionConvert(const CaseOptionBase& co,const String& name,NodeGroup& obj)
 {
-  ISubDomain* sub_domain = co.caseMng()->subDomain();
-  obj = sub_domain->defaultMesh()->nodeFamily()->findGroup(name);
+  IMesh* mesh = co.parentOptionList()->meshHandle().mesh();
+  obj = mesh->nodeFamily()->findGroup(name);
   return obj.null();
 }
 
 extern ARCANE_CORE_EXPORT bool
 _caseOptionConvert(const CaseOptionBase& co,const String& name,EdgeGroup& obj)
 {
-  ISubDomain* sub_domain = co.caseMng()->subDomain();
-  obj = sub_domain->defaultMesh()->edgeFamily()->findGroup(name);
+  IMesh* mesh = co.parentOptionList()->meshHandle().mesh();
+  obj = mesh->edgeFamily()->findGroup(name);
   return obj.null();
 }
 
 extern ARCANE_CORE_EXPORT bool
 _caseOptionConvert(const CaseOptionBase& co,const String& name,FaceGroup& obj)
 {
-  ISubDomain* sub_domain = co.caseMng()->subDomain();
-  obj = sub_domain->defaultMesh()->faceFamily()->findGroup(name);
+  IMesh* mesh = co.parentOptionList()->meshHandle().mesh();
+  obj = mesh->faceFamily()->findGroup(name);
   return obj.null();
 }
 
 extern ARCANE_CORE_EXPORT bool
 _caseOptionConvert(const CaseOptionBase& co,const String& name,CellGroup& obj)
 {
-  ISubDomain* sub_domain = co.caseMng()->subDomain();
-  obj = sub_domain->defaultMesh()->cellFamily()->findGroup(name);
+  IMesh* mesh = co.parentOptionList()->meshHandle().mesh();
+  obj = mesh->cellFamily()->findGroup(name);
   return obj.null();
 }
 
