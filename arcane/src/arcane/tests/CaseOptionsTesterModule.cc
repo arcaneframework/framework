@@ -686,9 +686,15 @@ _testDynamicService()
   String service_xml_value = "<post-processor1 name=\"Ensight7PostProcessor\"/>\n";
   ICaseMng* cm = subDomain()->caseMng();
   ServiceBuilderWithOptions<IServiceInterface1> builder(cm);
+
   Ref<IServiceInterface1> si1 = builder.createReference("ServiceInterface1ImplTest",service_xml_value);
   ARCANE_CHECK_POINTER(si1.get());
   si1->checkDynamicCreation();
+
+  // Teste référence nulle
+  Ref<IServiceInterface1> si2 = builder.createReference("ServiceInterface1ImplTestInvalid",service_xml_value,SB_AllowNull);
+  if (si2.get())
+    ARCANE_FATAL("Service should be null");
 }
 
 /*---------------------------------------------------------------------------*/

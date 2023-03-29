@@ -25,6 +25,7 @@
 #include "arcane/core/ICaseDocumentVisitor.h"
 #include "arcane/core/MeshHandle.h"
 #include "arcane/core/IMeshMng.h"
+#include "arcane/core/IXmlDocumentHolder.h"
 
 #include "arcane/core/CaseOptionsMulti.h"
 
@@ -85,6 +86,11 @@ class CaseOptionsPrivate
       m_mesh_handle = m_case_mng->meshMng()->defaultMeshHandle();
   }
 
+  ~CaseOptionsPrivate()
+  {
+    delete m_xml_document;
+  }
+
  public:
 
   ICaseOptionList* m_parent = nullptr;
@@ -102,6 +108,7 @@ class CaseOptionsPrivate
   std::atomic<Int32> m_nb_ref = 0;
   bool m_is_case_mng_registered = false;
   MeshHandle m_mesh_handle;
+  IXmlDocumentHolder* m_xml_document = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -185,6 +192,19 @@ CaseOptions(ICaseOptionList* parent,const String& aname,
 /*---------------------------------------------------------------------------*/
 
 CaseOptions::
+CaseOptions(ICaseMng* cm,const XmlContent& xml_content)
+: m_p(new CaseOptionsPrivate(cm,"test1"))
+{
+  IXmlDocumentHolder* xml_doc = xml_content.m_document;
+  XmlNode parent_elem = xml_doc->documentNode().documentElement();
+  m_p->m_config_list = createCaseOptionList(cm,this,parent_elem);
+  m_p->m_xml_document = xml_doc;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+CaseOptions::
 ~CaseOptions()
 {
   detach();
@@ -192,6 +212,9 @@ CaseOptions::
     m_p->m_case_mng->unregisterOptions(this);
   delete m_p;
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 void CaseOptions::
 addReference()
@@ -571,6 +594,27 @@ void CaseOptions::
 deepGetChildren(Array<CaseOptionBase*>& col)
 {
   m_p->m_config_list->deepGetChildren(col);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ReferenceCounter<ICaseOptions> CaseOptions::
+createWithXmlContent(ICaseMng* cm, const String& xml_content)
+{
+  XmlContent content;
+  content.m_xml_content = xml_content;
+
+  String prolog = "<?xml version=\"1.0\"?>\n<root>\n<test1>\n";
+  String epilog = "</test1>\n</root>\n";
+  String service_xml_value = prolog + xml_content + epilog;
+
+  ITraceMng* tm = cm->traceMng();
+  IXmlDocumentHolder* xml_doc = IXmlDocumentHolder::loadFromBuffer(service_xml_value.bytes(), String(), tm);
+  content.m_document = xml_doc;
+
+  auto* opt = new CaseOptions(cm,content);
+  return ReferenceCounter<ICaseOptions>(opt);
 }
 
 /*---------------------------------------------------------------------------*/

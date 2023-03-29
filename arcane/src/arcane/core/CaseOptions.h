@@ -36,11 +36,6 @@ namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-class CaseOptionsPrivate;
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
 /*!
  * \internal
  * \brief Classe de base d'une liste d'options du jeu de données.
@@ -52,33 +47,55 @@ class CaseOptionsPrivate;
 class ARCANE_CORE_EXPORT CaseOptions
 : public ICaseOptions
 {
+ private:
+
+  struct XmlContent
+  {
+    String m_xml_content;
+    IXmlDocumentHolder* m_document = nullptr;
+  };
+
  public:
-	
+
   //! Construit un jeu d'options.
-  CaseOptions(ICaseMng* cm,const String& name);
+  CaseOptions(ICaseMng* cm, const String& name);
   //! Construit un jeu d'options.
-  CaseOptions(ICaseOptionList*,const String& name);
+  CaseOptions(ICaseOptionList*, const String& name);
   //! Construit un jeu d'options.
-  CaseOptions(ICaseMng* cm,const String& name,const XmlNode& parent);
+  CaseOptions(ICaseMng* cm, const String& name, const XmlNode& parent);
   //! Construit un jeu d'options.
-  CaseOptions(ICaseOptionList*,const String& name,const XmlNode& parent,bool is_optional=false,bool is_multi=false);
+  CaseOptions(ICaseOptionList*, const String& name, const XmlNode& parent, bool is_optional = false, bool is_multi = false);
   //! Construit un jeu d'options.
+
  protected:
-  CaseOptions(ICaseMng*,const String& name,ICaseOptionList* parent);
+
+  CaseOptions(ICaseMng*, const String& name, ICaseOptionList* parent);
   //! Construit un jeu d'options.
-  CaseOptions(ICaseOptionList*,const String& name,ICaseOptionList* parent);
+  CaseOptions(ICaseOptionList*, const String& name, ICaseOptionList* parent);
+
+ private:
+
+  friend class ServiceBuilderWithOptionsBase;
+
+  // Uniquement pour ServiceBuilderWithOptionsBase
+  static ReferenceCounter<ICaseOptions> createWithXmlContent(ICaseMng* cm, const String& xml_content);
+
+  //! \internal
+  CaseOptions(ICaseMng*, const XmlContent& xm_content);
+
  public:
+
   //! Libère les ressources
   ~CaseOptions() override;
 
  private:
- 
+
   CaseOptions(const CaseOptions& rhs) = delete;
   CaseOptions& operator=(const CaseOptions& rhs) = delete;
 
  public:
 
-  //! Retourne le vrai nom (non traduit) de l'élément. 
+  //! Retourne le vrai nom (non traduit) de l'élément.
   String rootTagTrueName() const override;
 
   //! Retourne le nom de l'élément dans le langage du jeu de données.
@@ -87,7 +104,7 @@ class ARCANE_CORE_EXPORT CaseOptions
   //! Nom dans la langue \a lang de l'option. Retourne \a rootTagTrueName() si pas de traduction.
   String translatedName(const String& lang) const override;
 
-  //! Retourne le vrai nom (non traduit) de l'élément. 
+  //! Retourne le vrai nom (non traduit) de l'élément.
   virtual String trueName() const { return rootTagTrueName(); }
 
   //! Retourne le nom de l'élément dans le langage du jeu de données.
@@ -103,7 +120,7 @@ class ARCANE_CORE_EXPORT CaseOptions
 
   void addInvalidChildren(XmlNodeList&) override;
 
-  void printChildren(const String& lang,int indent) override;
+  void printChildren(const String& lang, int indent) override;
 
   //! Retourne le service associé ou 0 s'il n'y en a pas.
   IServiceInfo* caseServiceInfo() const override;
@@ -132,14 +149,14 @@ class ARCANE_CORE_EXPORT CaseOptions
     faux s'il s'agit de la valeur par défaut.
   */
   bool isPresent() const override;
-  
+
   /*!
     \brief Ajoute une traduction pour le nom de l'option.
     Ajoute le nom \a name de l'option correspondant au langage \a lang.
     Si une traduction existe déjà pour ce langage, elle est remplacée par
     celle-ci.
   */
-  void addAlternativeNodeName(const String& lang,const String& name) override;
+  void addAlternativeNodeName(const String& lang, const String& name) override;
 
   ICaseMng* caseMng() const override;
   ITraceMng* traceMng() const override;

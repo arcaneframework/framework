@@ -14,8 +14,6 @@
 #include "arcane/core/ServiceBuilder.h"
 
 #include "arcane/core/ICaseMng.h"
-#include "arcane/core/IXmlDocumentHolder.h"
-#include "arcane/core/XmlNode.h"
 #include "arcane/core/CaseOptions.h"
 
 /*---------------------------------------------------------------------------*/
@@ -30,17 +28,8 @@ namespace Arcane
 ReferenceCounter<ICaseOptions> ServiceBuilderWithOptionsBase::
 _buildCaseOptions(const String& xml_content) const
 {
-  String prolog = "<?xml version=\"1.0\"?>\n<root>\n<test1>\n";
-  String epilog = "</test1>\n</root>\n";
-  String service_xml_value = prolog + xml_content + epilog;
-
-  // TODO: à détruire
-  ITraceMng* tm = m_case_mng->traceMng();
-  IXmlDocumentHolder* xml_doc = IXmlDocumentHolder::loadFromBuffer(service_xml_value.bytes(), String(), tm);
-  XmlNode xml_root_node = xml_doc->documentNode().documentElement();
-
-  ICaseOptions* co = new CaseOptions(m_case_mng, "test1", xml_root_node);
-  return ReferenceCounter<ICaseOptions>(co);
+  ReferenceCounter<ICaseOptions> co = CaseOptions::createWithXmlContent(m_case_mng, xml_content);
+  return co;
 }
 
 /*---------------------------------------------------------------------------*/
