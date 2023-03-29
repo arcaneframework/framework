@@ -1,17 +1,15 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CaseDocument.cc                                             (C) 2000-2018 */
+/* CaseDocument.cc                                             (C) 2000-2023 */
 /*                                                                           */
 /* Classe gérant un document XML du jeu de données.                          */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/ScopedPtr.h"
 #include "arcane/utils/TraceAccessor.h"
@@ -26,6 +24,7 @@
 #include "arcane/ICaseDocument.h"
 #include "arcane/CaseNodeNames.h"
 #include "arcane/CaseOptionError.h"
+#include "arcane/DomUtils.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -44,7 +43,7 @@ class CaseDocument
 {
  public:
 
-  CaseDocument(IApplication* sm,IRessourceMng* rm,IXmlDocumentHolder* document);
+  CaseDocument(IApplication* sm,IXmlDocumentHolder* document);
   ~CaseDocument() override;
 
   void build() override;
@@ -146,8 +145,7 @@ class CaseDocument
 extern "C++" ICaseDocument*
 arcaneCreateCaseDocument(IApplication* sm,IXmlDocumentHolder* document)
 {
-  IRessourceMng* rm = sm->ressourceMng();
-  ICaseDocument* doc = new CaseDocument(sm,rm,document);
+  ICaseDocument* doc = new CaseDocument(sm,document);
   doc->build();
   return doc;
 }
@@ -158,9 +156,8 @@ arcaneCreateCaseDocument(IApplication* sm,IXmlDocumentHolder* document)
 extern "C++" ICaseDocument*
 arcaneCreateCaseDocument(IApplication* sm,const String& lang)
 {
-  IRessourceMng* rm = sm->ressourceMng();
-  IXmlDocumentHolder* xml_doc = rm->createXmlDocument();
-  CaseDocument* doc = new CaseDocument(sm,rm,xml_doc);
+  IXmlDocumentHolder* xml_doc = domutils::createXmlDocument();
+  CaseDocument* doc = new CaseDocument(sm,xml_doc);
   if (!lang.null())
     doc->setLanguage(lang);
   doc->build();
@@ -171,13 +168,12 @@ arcaneCreateCaseDocument(IApplication* sm,const String& lang)
 /*---------------------------------------------------------------------------*/
 
 CaseDocument::
-CaseDocument(IApplication* sm,IRessourceMng* rm,IXmlDocumentHolder* document)
+CaseDocument(IApplication* sm,IXmlDocumentHolder* document)
 : TraceAccessor(sm->traceMng())
 , m_case_node_names(new CaseNodeNames(String()))
 , m_doc_holder(document)
 , m_document_node(m_doc_holder->documentNode())
 {
-  ARCANE_UNUSED(rm);
 }
 
 /*---------------------------------------------------------------------------*/
