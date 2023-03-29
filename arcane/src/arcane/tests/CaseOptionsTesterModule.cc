@@ -668,6 +668,12 @@ class ServiceInterface1ImplTestService
       if (s2->mesh()->name()!=mesh_name)
         ARCANE_FATAL("Bad mesh expected={0} value={1}",mesh_name,s2->mesh()->name());
     }
+
+    CellGroup group = options()->complex1.cellGroup();
+    if (group.name()!="Planchere")
+      ARCANE_FATAL("Bad group expected='Planchere' value='{0}'",group.name());
+    if (s->mesh()->name()!=group.mesh()->name())
+      ARCANE_FATAL("Bad mesh for group expected='{0}' value='{1}'",s->mesh()->name(),group.mesh()->name());
   }
   void checkDynamicCreation() override
   {
