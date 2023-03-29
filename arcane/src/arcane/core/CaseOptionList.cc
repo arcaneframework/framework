@@ -58,7 +58,7 @@ namespace Arcane
 class XmlElementContentChecker
 {
  public:
-  XmlElementContentChecker(ICaseDocument* cd,ITraceMng* tm)
+  XmlElementContentChecker(ICaseDocumentFragment* cd,ITraceMng* tm)
   : m_case_document(cd), m_space_string(" ")
   {
     ARCANE_UNUSED(tm);
@@ -91,7 +91,7 @@ class XmlElementContentChecker
   }
 
  private:
-  ICaseDocument* m_case_document;
+  ICaseDocumentFragment* m_case_document;
   String m_space_string;
 };
 
@@ -133,7 +133,6 @@ class CaseOptionList
   XmlNode rootElement() const override { return m_root_element; }
   XmlNode parentElement() const override { return m_parent_element; }
   ICaseMng* caseMng() const override { return m_case_mng; }
-  virtual ICaseDocument* caseDocument() const { return m_case_mng->caseDocument(); }
   void addConfig(CaseOptionBase* cbi,XmlNode parent) override
   {
     //TODO: Vérifier la suppression et pas déjà présent
@@ -282,7 +281,7 @@ readChildren(bool is_phase1)
     XmlNodeList all_children = m_parent_element.children(rootTagName());
     if (all_children.size()>1){
       String node_name = m_parent_element.xpathFullName()+"/"+rootTagName();
-      CaseOptionError::addWarning(caseDocument(),A_FUNCINFO,node_name,
+      CaseOptionError::addWarning(caseDocumentFragment(),A_FUNCINFO,node_name,
                                   String::format("Only one token of the element is allowed (nb_occur={0})",
                                                  all_children.size()),true);
     }
@@ -397,7 +396,7 @@ _setRootElement(bool force_init,XmlNode parent_element)
     if (!parent_element.null())
       m_parent_element = parent_element;
     if (m_parent_element.null())
-      m_parent_element = (m_parent) ? m_parent->rootElement() : m_case_mng->caseDocument()->rootElement();
+      m_parent_element = (m_parent) ? m_parent->rootElement() : caseDocumentFragment()->rootElement();
     m_root_element = m_parent_element.child(rootTagName());
   }
   // L'élément recherché n'existe pas. Il y a alors trois possibitités:
@@ -411,7 +410,7 @@ _setRootElement(bool force_init,XmlNode parent_element)
   if (m_root_element.null()){
     m_is_present = false;
     if (!m_parent){
-      XmlNode case_root = m_case_mng->caseDocument()->rootElement();
+      XmlNode case_root = caseDocumentFragment()->rootElement();
       m_root_element = case_root.createAndAppendElement(rootTagName());
     }
     else if (!isOptional()){
@@ -493,7 +492,7 @@ _addInvalidChildren(XmlNode parent,XmlNodeList& nlist)
     if (!is_valid)
       nlist.add(*i);
   }
-  XmlElementContentChecker xecc(caseDocument(),traceMng());
+  XmlElementContentChecker xecc(caseDocumentFragment(),traceMng());
   xecc.check(parent);
 }
 
@@ -646,7 +645,7 @@ _checkMinMaxOccurs(Integer nb_occur)
 {
   if (nb_occur<m_min_occurs){
     String node_name = m_parent_element.xpathFullName()+"/"+rootTagName();
-    CaseOptionError::addError(caseDocument(),A_FUNCINFO,node_name,
+    CaseOptionError::addError(caseDocumentFragment(),A_FUNCINFO,node_name,
                               String::format("Bad number of occurences (less than min)"
                                              " nb_occur={0}"
                                              " min_occur={1}",
@@ -655,7 +654,7 @@ _checkMinMaxOccurs(Integer nb_occur)
   if (m_max_occurs>=0)
     if (nb_occur>m_max_occurs){
       String node_name = m_parent_element.xpathFullName()+"/"+rootTagName();
-      CaseOptionError::addError(caseDocument(),A_FUNCINFO,node_name,
+      CaseOptionError::addError(caseDocumentFragment(),A_FUNCINFO,node_name,
                                 String::format("Bad number of occurences (greater than max)"
                                                " nb_occur={0}"
                                                " max_occur={1}",

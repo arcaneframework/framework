@@ -69,8 +69,11 @@ class ICaseMng
   //! Gestionnaire de sous-domaine.
   virtual ISubDomain* subDomain() =0;
 
-  //! Document XML du jeu de données.
+  //! Document XML du jeu de données (peut être nul si pas de jeu de donneés)
   virtual ICaseDocument* caseDocument() =0;
+
+  //! Fragment du Document XML associé au jeu de données (peut être nul si pas de jeu de donneés)
+  virtual ICaseDocumentFragment* caseDocumentFragment() =0;
 
   //! Système d'unité associé.
   virtual IPhysicalUnitSystem* physicalUnitSystem() const =0;

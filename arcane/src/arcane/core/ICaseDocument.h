@@ -95,6 +95,7 @@ class ICaseDocumentFragment
 /*!
  * \internal
  * \brief Interface d'une classe gérant un document XML du jeu de données.
+ * \todo Ne plus hériter de ICaseDocumentFragment (utiliser la méthode fragment() à la place)
  */
 class ICaseDocument
 : public ICaseDocumentFragment
@@ -108,6 +109,9 @@ class ICaseDocument
   virtual ICaseDocument* clone() =0;
 
  public:
+
+  //! Retourne l'instance contenant les noms des noeuds XML par langage.
+  virtual CaseNodeNames* caseNodeNames() =0;
 
   //! Retourne l'élément des informations pour Arcane
   virtual XmlNode arcaneElement() =0;
@@ -171,4 +175,3 @@ class ICaseDocument
 /*---------------------------------------------------------------------------*/
 
 #endif  
-

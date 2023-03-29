@@ -71,6 +71,10 @@ class CaseDocumentFragment
 
  public:
 
+  ICaseDocumentFragment* fragment() { return this; }
+
+ public:
+
   CaseNodeNames* m_case_node_names = nullptr;
   ScopedPtrT<IXmlDocumentHolder> m_doc_holder;
   XmlNode m_document_node;
@@ -152,7 +156,7 @@ class CaseDocument
 
   void setDefaultCategory(const String& v) override { m_fragment.m_default_category = v; }
 
-  ICaseDocumentFragment* fragment() override { return this; }
+  ICaseDocumentFragment* fragment() override { return m_fragment.fragment(); }
 
  public:
 

@@ -256,11 +256,11 @@ CaseOptionsTesterModule(const Arcane::ModuleBuildInfo& mb)
     // 'doc' peut être nul lorsqu'on génère le infos sur tous les
     // modules et service via 'dump_internal'
     if (doc){
-      info() << "DefaultCategory1=" << doc->defaultCategory();
+      info() << "DefaultCategory1=" << doc->fragment()->defaultCategory();
       String xd = platform::getEnvironmentVariable("ARCANE_DEFAULT_CATEGORY");
       if (!xd.null())
         doc->setDefaultCategory(xd);
-      info() << "DefaultCategory2=" << doc->defaultCategory();
+      info() << "DefaultCategory2=" << doc->fragment()->defaultCategory();
     }
   }
 

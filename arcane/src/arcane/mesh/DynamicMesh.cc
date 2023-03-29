@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* DynamicMesh.cc                                              (C) 2000-2022 */
+/* DynamicMesh.cc                                              (C) 2000-2023 */
 /*                                                                           */
 /* Classe de gestion d'un maillage non structuré évolutif.                   */
 /*---------------------------------------------------------------------------*/
@@ -53,6 +53,7 @@
 #include "arcane/IParallelReplication.h"
 #include "arcane/IMeshMng.h"
 #include "arcane/MeshBuildInfo.h"
+#include "arcane/ICaseMng.h"
 
 #include "arcane/core/internal/UnstructuredMeshAllocateBuildInfoInternal.h"
 
@@ -613,7 +614,7 @@ initializeVariables(const XmlNode& init_node)
     }
   }
 
-  ICaseDocument* doc = subDomain()->caseDocument();
+  ICaseDocumentFragment* doc = subDomain()->caseMng()->caseDocumentFragment();
   XmlNode root = doc->rootElement();
   if (root.null())
     return;

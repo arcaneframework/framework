@@ -419,7 +419,7 @@ caseDocumentFragment() const
   auto* x = m_p->m_own_case_document_fragment;
   if (x)
     return x;
-  return caseMng()->caseDocument();
+  return caseMng()->caseDocumentFragment();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -479,7 +479,7 @@ _setMeshHandleAndCheckDisabled(const String& mesh_name)
 void CaseOptions::
 _setTranslatedName()
 {
-  String lang = caseDocument()->language();
+  String lang = caseDocumentFragment()->language();
   if (m_p->m_is_translated_name_set)
     traceMng()->info() << "WARNING: translated name already set for " << m_p->m_name; 
   if (lang.null())
@@ -533,7 +533,7 @@ read(eCaseOptionReadPhase read_phase)
   m_p->m_config_list->readChildren(is_phase1);
 
   if (is_phase1){
-    ICaseDocument* doc = caseDocument();
+    ICaseDocumentFragment* doc = caseDocumentFragment();
     // Lit la fonction d'activation (si elle est présente)
     XmlNode velem = m_p->m_config_list->rootElement();
     CaseNodeNames* cnn = doc->caseNodeNames();
