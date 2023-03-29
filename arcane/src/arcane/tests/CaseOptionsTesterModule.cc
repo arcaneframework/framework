@@ -1,17 +1,15 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* CaseOptionsTesterModule.cc                                  (C) 2000-2022 */
+/* CaseOptionsTesterModule.cc                                  (C) 2000-2023 */
 /*                                                                           */
 /* Module de test des options du jeu de données.                             */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
-#include "arcane/utils/ArcanePrecomp.h"
 
 #include "arcane/utils/Real3.h"
 #include "arcane/utils/Real2.h"
@@ -44,6 +42,7 @@
 #include "arcane/ICaseMeshService.h"
 
 #include "arcane/IXmlDocumentHolder.h"
+#include "arcane/core/ServiceBuilder.h"
 
 #include "arcane/tests/TypesCaseOptionsTester.h"
 
@@ -549,6 +548,24 @@ _applyVisitor()
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+void IServiceInterface1::
+checkSubMesh(const Arccore::String&)
+{
+  ARCANE_FATAL("Should not be called on this interface");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void IServiceInterface1::
+checkDynamicCreation()
+{
+  ARCANE_FATAL("Should not be called on this interface");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 class ServiceTestImplInterface1
 : public Arcane::AbstractService
 , public IServiceInterface1
@@ -652,10 +669,7 @@ class ServiceInterface1ImplTestService
         ARCANE_FATAL("Bad mesh expected={0} value={1}",mesh_name,s2->mesh()->name());
     }
   }
-
- public:
-
-  void checkDynamicCreation()
+  void checkDynamicCreation() override
   {
     IPostProcessorWriter* w = options()->postProcessor1();
     ARCANE_CHECK_POINTER(w);
@@ -669,31 +683,12 @@ void CaseOptionsTesterModule::
 _testDynamicService()
 {
   info() << "Test dynamic service";
-  ServiceProperty properties("Service1",Arcane::ST_CaseOption,SFP_None);
-  ServiceInfo* si = ServiceInfo::create(properties,"None",0);
-  ServiceInterface1ImplTestService::fillServiceInfo<ServiceInterface1ImplTestService>(si);
-
-  String service_xml_value = "<?xml version=\"1.0\"?>\n<root><test1><post-processor1 name=\"Ensight7PostProcessor\"/></test1></root>\n";
-
-  ITraceMng* tm = traceMng();
-  IXmlDocumentHolder* xml_doc = IXmlDocumentHolder::loadFromBuffer(service_xml_value.bytes(), String(),tm);
-  XmlNode xml_root_node = xml_doc->documentNode().documentElement();
-
+  String service_xml_value = "<post-processor1 name=\"Ensight7PostProcessor\"/>\n";
   ICaseMng* cm = subDomain()->caseMng();
-  // Note: cette option sera détruite par le service car elle utilise un compteur de référence.
-  ICaseOptions* co = new CaseOptions(cm,"test1",xml_root_node);
-
-  ServiceBuildInfoBase sbi_base(co);
-  auto* x = new ServiceInterface1ImplTestService(ServiceBuildInfo(si,sbi_base));
-  x->build();
-  cm->_internalReadOneOption(co,true);
-  cm->_internalReadOneOption(co,false);
-
-  x->checkDynamicCreation();
-
-  delete x;
-  delete xml_doc;
-  delete si;
+  ServiceBuilderWithOptions<IServiceInterface1> builder(cm);
+  Ref<IServiceInterface1> si1 = builder.createReference("ServiceInterface1ImplTest",service_xml_value);
+  ARCANE_CHECK_POINTER(si1.get());
+  si1->checkDynamicCreation();
 }
 
 /*---------------------------------------------------------------------------*/
