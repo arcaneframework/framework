@@ -12,14 +12,13 @@ namespace GeometricGeneration
 
     public MainClass()
     {
-      m_base_path = "../../../../src/arcane/geometric";
-      m_output_encoding = Encoding.GetEncoding ("iso-8859-1");
+      m_base_path = "../../../ceapart/src/arcane/geometric";
+      m_output_encoding = Encoding.GetEncoding ("utf-8");
     }
 
     public void Execute ()
     {
       _Generate (new GeneratedConnectivity().TransformText (),"GeneratedConnectivity.h");
-      //_Generate (new CopyCoordOperation ().TransformText (), "GeneratedConnectivityDefinitionV2.h");
       _Generate (new GeneratedGeomShapeView ().TransformText (), "GeneratedGeomShapeView.h");
       _Generate (new GeneratedGeomElement ().TransformText (), "GeneratedGeomElement.h");
       _Generate (new GeneratedGeomElementView ().TransformText (), "GeneratedGeomElementView.h");
