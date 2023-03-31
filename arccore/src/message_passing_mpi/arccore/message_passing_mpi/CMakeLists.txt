@@ -1,15 +1,17 @@
 find_package(MPI)
 
 if(NOT MPI_FOUND)
-  message(STATUS "Disabling 'MessagePassingMpi' component because 'MPI' is not available")
-  return()
+  message(FATAL_ERROR "'MPI' is not available."
+    " Add -DARCCORE_USE_MPI=NO to cmake configuration to compile without MPI."
+  )
 endif()
 
 # On a besoin du support de MPI 3.1
 if (NOT WIN32)
   if (MPI_CXX_VERSION VERSION_LESS "3.1")
-    message(STATUS "Disabling 'MessagePassingMpi' component because MPI Version (${MPI_CXX_VERSION}) is too old. Version 3.1 is required")
-    return()
+    message(FATAL_ERROR "MPI Version (${MPI_CXX_VERSION}) is too old. Version 3.1 is required."
+      " Add -DARCCORE_USE_MPI=NO to cmake configuration to compile without MPI."
+    )
   endif()
 endif()
 
