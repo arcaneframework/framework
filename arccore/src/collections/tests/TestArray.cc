@@ -456,6 +456,9 @@ _Add(Array<Real>& v,Integer new_size)
 }
 }
 
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 TEST(Array, Misc2)
 {
   using namespace Arccore;
@@ -463,7 +466,7 @@ TEST(Array, Misc2)
     UniqueArray<Real> v;
     v.resize(3);
     v.add(4.3);
-    for( Integer i=0, is=v.size(); i<is; ++i ){
+    for (Integer i = 0, is = v.size(); i < is; ++i) {
       std::cout << " Value: " << v[i] << '\n';
     }
     v.printInfos(std::cout);
@@ -485,48 +488,52 @@ TEST(Array, Misc2)
     v.add(3.4);
     v.add(3.6);
     v.printInfos(std::cout);
-    for( Integer i=0, is=v.size(); i<is; ++i ){
+    for (Integer i = 0, is = v.size(); i < is; ++i) {
       std::cout << " Value: " << v[i] << '\n';
     }
   }
   {
     UniqueArray<Real> v;
     v.reserve(5);
-    for( int i=0; i<10; ++i )
+    for (int i = 0; i < 10; ++i)
       v.add((Real)i);
-    for( Integer i=0, is=v.size(); i<is; ++i ){
+    for (Integer i = 0, is = v.size(); i < is; ++i) {
       std::cout << " Value: " << v[i] << '\n';
     }
   }
   {
     UniqueArray<Real> v;
     v.reserve(175);
-    for( int i=0; i<27500; ++i ){
+    for (int i = 0; i < 27500; ++i) {
       Real z = (Real)i;
-      v.add(z*z);
+      v.add(z * z);
     }
-    for( int i=0; i<5000; ++i ){
-      v.remove(i*2);
+    for (int i = 0; i < 5000; ++i) {
+      v.remove(i * 2);
     }
     v.reserve(150);
-    for( int i=0; i<27500; ++i ){
+    for (int i = 0; i < 27500; ++i) {
       Real z = (Real)i;
-      v.add(z*z);
+      v.add(z * z);
     }
     std::cout << " ValueSize= " << v.size() << " values=" << v << '\n';
   }
-  for( Integer i=0; i<100; ++i ){
+  for (Integer i = 0; i < 100; ++i) {
     UniqueArray<Real> v;
-    _Add(v,500000);
-    _Add(v,1000000);
-    _Add(v,0);
-    _Add(v,100000);
-    _Add(v,0);
-    _Add(v,0);
-    _Add(v,230000);
+    _Add(v, 500000);
+    _Add(v, 1000000);
+    _Add(v, 0);
+    _Add(v, 100000);
+    _Add(v, 0);
+    _Add(v, 0);
+    _Add(v, 230000);
     std::cout << " Size: " << v.size() << '\n';
+    ASSERT_EQ(v.size(), 230000);
   }
 }
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 TEST(Array2, Misc)
 {
@@ -534,25 +541,72 @@ TEST(Array2, Misc)
 
   {
     UniqueArray2<Int32> c;
-    c.resize(3,5);
+    c.resize(3, 5);
     Integer nb = 15;
-    c.reserve(nb*2);
+    c.reserve(nb * 2);
     Int64 current_capacity = c.capacity();
-    ASSERT_EQ(current_capacity,(nb*2)) << "Bad capacity (test 1)";
+    ASSERT_EQ(current_capacity, (nb * 2)) << "Bad capacity (test 1)";
     c.shrink(32);
-    ASSERT_EQ(c.capacity(),current_capacity) << "Bad capacity (test 2)";
+    ASSERT_EQ(c.capacity(), current_capacity) << "Bad capacity (test 2)";
     c.shrink();
     c.shrink_to_fit();
-    ASSERT_EQ(c.capacity(),c.totalNbElement()) << "Bad capacity (test 3)";
-    ASSERT_EQ(c[1][2],c(1,2));
+    ASSERT_EQ(c.capacity(), c.totalNbElement()) << "Bad capacity (test 3)";
+    ASSERT_EQ(c[1][2], c(1, 2));
 #ifdef ARCCORE_HAS_MULTI_SUBSCRIPT
-    bool is_ok = c[2,1]==c(2,1);
+    bool is_ok = c[2, 1] == c(2, 1);
     ASSERT_TRUE(is_ok);
 #endif
   }
 }
 
-template<typename DataType>
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+TEST(Array, SubViews)
+{
+  using namespace Arccore;
+
+  {
+    // Test Array::subView() et Array::subConstView()
+    UniqueArray<Int32> v;
+    v.resize(23);
+    for (Int32 i = 0, n = v.size(); i < n; ++i)
+      v[i] = (i + 1);
+
+    auto sub_view1 = v.subView(50, 5);
+    ASSERT_EQ(sub_view1.data(), nullptr);
+    ASSERT_EQ(sub_view1.size(), 0);
+
+    auto sub_view2 = v.subView(2, 8);
+    ASSERT_EQ(sub_view2.size(), 8);
+    for (Int32 i = 0, n = sub_view2.size(); i < n; ++i)
+      ASSERT_EQ(sub_view2[i], v[2 + i]);
+
+    auto sub_view3 = v.subView(20, 8);
+    ASSERT_EQ(sub_view3.size(), 3);
+    for (Int32 i = 0, n = sub_view3.size(); i < n; ++i)
+      ASSERT_EQ(sub_view3[i], v[20 + i]);
+
+    auto sub_const_view1 = v.subConstView(50, 5);
+    ASSERT_EQ(sub_const_view1.data(), nullptr);
+    ASSERT_EQ(sub_const_view1.size(), 0);
+
+    auto sub_const_view2 = v.subConstView(2, 8);
+    ASSERT_EQ(sub_const_view2.size(), 8);
+    for (Int32 i = 0, n = sub_const_view2.size(); i < n; ++i)
+      ASSERT_EQ(sub_const_view2[i], v[2 + i]);
+
+    auto sub_const_view3 = v.subConstView(20, 8);
+    ASSERT_EQ(sub_const_view3.size(), 3);
+    for (Int32 i = 0, n = sub_const_view3.size(); i < n; ++i)
+      ASSERT_EQ(sub_const_view3[i], v[20 + i]);
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename DataType>
 class MyArrayTest
 : public Arccore::Array<DataType>
 {
