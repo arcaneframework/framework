@@ -9,6 +9,71 @@ antérieures à la version 3 sont listées ici : \ref arcanedoc_news_changelog20
 
 ___
 
+## Arcane Version 3.9.4 (avril 2023) {#arcanedoc_version390}
+
+### Nouveautés/Améliorations
+
+- Ajoute méthode Arcane::geometric::GeomElementViewBase::setValue()
+  pour modifier la valeur d'une coordonnée (\pr{598}).
+- Optimise la recherche des valeurs dans les tables de marche en
+  utilisant une dichotomie (\pr{596}).
+- Support de l'API accélérateur sur les milieux via la macro
+  RUNCOMMAND_MAT_ENUMERATE() (\pr{595},\pr{593}, \pr{588}, \pr{586}, \pr{577}).
+- Ajoute constructeurs explicite entre Arcane::Real2 et Arcane::Real3
+  (\pr{591}).
+
+### Changements
+
+- Ajoute information sur la dimension d'une entité dans
+  Arcane::ItemTypeInfo et vérifie la cohérence entre la dimension du
+  maillage et les entités Arcane::Cell utilisées dans ce maillage
+  (\pr{567}).
+- Ajoute convertisseurs de Arcane::ItemEnumeratorT vers Arcane::ItemLocalIdT
+  (\pr{564}).
+
+### Corrections
+
+- Corrige récupération du groupe du jeu de données dans le cas de
+  maillage multiple. On prenait toujours le maillage par défaut pour
+  rechercher les groupes même si l'option était associée à un autre
+  maillage (\pr{604}).
+- Corrige mauvaise dimension de la barre de recherche dans la
+  documentation dans certains cas (\pr{597}).
+- Corrige mauvais usage du repartitionneur initial dans le cas où plusieurs
+  maillages sont présents dans le jeu de données. Le partitionneur
+  définissait les variables uniquement sur le premier maillage ce qui
+  introduisait des incohérences (\pr{592}).
+- Corrige mauvaise détection des connectivités cartésiennes dans la
+  direction Y en 3D (\pr{590}).
+- Corrige blocage en parallèle dans le lecteur VTK s'il n'y a que des
+  connectivités dans le maillage (\pr{589}).
+- Corrige mauvais type de maillage lors de l'utilisation de
+  sous-maillage allant d'un maillage 2D à un maillage 1D (\pr{587}).
+- Corrige ambiguité possible lors de la construction de classes
+  dérivées de Arcane::Item (\pr{579}).
+
+### Interne
+
+- Utilise un compteur de référence pour Arcane::ICaseMng (\pr{603}).
+- Support prélimaire pour créér un sous-domaine autonome (\pr{599}).
+- Refonte de la gestion des buffers lors des synchronisations des
+  variables pour préparer le support des accélérateurs (\pr{585},
+  \pr{582}, \pr{575}, \pr{572}, \pr{571}, \pr{570}, \pr{569}, \pr{566}).
+- Rend privé les constructeurs de
+  Arcane::Materials::ComponentItemVectorView (\pr{580}).
+- Modifications diverses dans Arcane::ConstMemoryView et
+  Arcane::MutableMemoryView (\pr{574}, \pr{573}, \pr{562}).
+- Ajoute version préliminaire d'une interface spécifique à un maillage
+  pour l'allocation des mailles (\pr{568}).
+
+### Arccore (version 2.2.0)
+
+- Ajoute support générique via la classe
+  Arccore::MessagePassing::GatherMessageInfo pour tous les types de
+  `MPI_Gather` (\pr{556}).
+- Ajoute distinction dans Arccore::MessagePassing::MessageRank entre
+  `MPI_ANY_SOURCE` et `MPI_PROC_NULL` (\pr{555}).
+
 ## Arcane Version 3.8.15 (22 février 2023) {#arcanedoc_version380}
 
 ### Nouveautés/Améliorations

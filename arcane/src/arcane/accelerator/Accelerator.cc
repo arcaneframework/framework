@@ -31,6 +31,13 @@
  * \brief Types et macros pour gérer les énumérations des entités sur les accélérateurs
  */
 
+/*!
+ * \file RunCommandMaterialEnumerate.h
+ *
+ * \brief Types et macros pour gérer les énumérations des matériaux et
+ * milieux sur les accélérateurs
+ */
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
