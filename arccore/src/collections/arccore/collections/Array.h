@@ -789,6 +789,15 @@ class AbstractArray
     _setToSharedNull();
   }
 
+  constexpr Integer _clampSizeOffet(Int64 offset,Int32 asize) const
+  {
+    Int64 max_size = m_md->size - offset;
+    if (asize>max_size)
+      // On est certain de ne pas dépasser 32 bits car on est inférieur à asize.
+      asize = static_cast<Integer>(max_size);
+    return asize;
+  }
+
  protected:
 
   void _setMP(TrueImpl* new_mp)
@@ -809,8 +818,8 @@ class AbstractArray
   bool _isSharedNull()
   {
     return m_ptr==nullptr;
-
   }
+
  private:
 
   void _setToSharedNull()
@@ -922,9 +931,11 @@ class Array
    * Si \a (\a abegin + \a asize) est supérieur à la taille du tableau,
    * la vue est tronqué à cette taille, retournant éventuellement une vue vide.
    */
-  ConstArrayView<T> subConstView(Integer abegin,Integer asize) const
+  ConstArrayView<T> subConstView(Int64 abegin,Int32 asize) const
   {
-    return constView().subView(abegin,asize);
+    if (abegin>=m_md->size)
+      return {};
+    return { this->_clampSizeOffet(abegin,asize), m_ptr + abegin };
   }
   //! Vue mutable sur ce tableau
   ArrayView<T> view() const
@@ -948,9 +959,11 @@ class Array
    * Si \a (\a abegin + \a asize) est supérieur à la taille du tableau,
    * la vue est tronqué à cette taille, retournant éventuellement une vue vide.
    */
-  ArrayView<T> subView(Integer abegin,Integer asize)
+  ArrayView<T> subView(Int64 abegin,Integer asize)
   {
-    return view().subView(abegin,asize);
+    if (abegin>=m_md->size)
+      return {};
+    return { this->_clampSizeOffet(abegin,asize), m_ptr + abegin };
   }
   /*!
    * \brief Extrait un sous-tableau à à partir d'une liste d'index.
