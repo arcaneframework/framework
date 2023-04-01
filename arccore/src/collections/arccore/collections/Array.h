@@ -1,15 +1,14 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Array.h                                                     (C) 2000-2022 */
+/* Array.h                                                     (C) 2000-2023 */
 /*                                                                           */
 /* Tableau 1D.                                                               */
 /*---------------------------------------------------------------------------*/
-
 #ifndef ARCCORE_COLLECTIONS_ARRAY_H
 #define ARCCORE_COLLECTIONS_ARRAY_H
 /*---------------------------------------------------------------------------*/
@@ -59,7 +58,8 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
   {}
 
  protected:
-  //! Nombre de références sur cet objet.
+
+ //! Nombre de références sur cet objet.
   Int64 nb_ref;
   //! Nombre d'éléments alloués
   Int64 capacity;
@@ -82,13 +82,16 @@ class ARCCORE_COLLECTIONS_EXPORT ArrayMetaData
   static void overlapError ARCCORE_NORETURN (const void* begin1,Int64 size1,
                                              const void* begin2,Int64 size2);
  protected:
-  using MemoryPointer = void*;
+
+ using MemoryPointer = void*;
 
   MemoryPointer _allocate(Int64 nb,Int64 sizeof_true_type);
   MemoryPointer _reallocate(Int64 nb,Int64 sizeof_true_type,MemoryPointer current);
   void _deallocate(MemoryPointer current) ARCCORE_NOEXCEPT;
+
  private:
-  void _checkAllocator() const;
+
+ void _checkAllocator() const;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -126,6 +129,7 @@ template<typename T>
 class ArrayTraits
 {
  public:
+
   typedef const T& ConstReferenceType;
   typedef FalseType IsPODType;
 };
@@ -198,6 +202,7 @@ class ARCCORE_COLLECTIONS_EXPORT AbstractArrayBase
   ArrayMetaData m_meta_data;
 
  protected:
+
  /*!
   * \brief Indique si \a m_md fait référence à \a m_meta_data.
   *
@@ -386,6 +391,7 @@ class AbstractArray
     return m_md->allocator;
   }
  public:
+
   operator ConstArrayView<T>() const
   {
     return ConstArrayView<T>(ARCCORE_CAST_SMALL_SIZE(size()),m_ptr);
@@ -394,7 +400,9 @@ class AbstractArray
   {
     return Span<const T>(m_ptr,m_md->size);
   }
+
  public:
+
   //! Nombre d'éléments du vecteur
   Integer size() const { return ARCCORE_CAST_SMALL_SIZE(m_md->size); }
   //! Nombre d'éléments du vecteur
@@ -420,6 +428,7 @@ class AbstractArray
     return false;
   }
  public:
+
   //! Elément d'indice \a i
   ConstReferenceType operator[](Int64 i) const
   {
@@ -433,13 +442,18 @@ class AbstractArray
     return m_ptr[i];
   }
  private:
+
   using AbstractArrayBase::m_meta_data;
+
  protected:
+
   // NOTE: Ces deux champs sont utilisés pour l'affichage TTF de totalview.
   // Si on modifie leur ordre il faut mettre à jour la partie correspondante
   // dans l'afficheur totalview de Arcane.
   T* m_ptr = nullptr;
+
  protected:
+
   //! Réserve le mémoire pour \a new_capacity éléments
   void _reserve(Int64 new_capacity)
   {
@@ -546,11 +560,14 @@ class AbstractArray
     _setMP(reinterpret_cast<TrueImpl*>(m_md->_reallocate(new_capacity,sizeof(T),m_ptr)));
   }
  public:
+
   void printInfos(std::ostream& o)
   {
     o << " Infos: size=" << m_md->size << " capacity=" << m_md->capacity << '\n';
   }
+
  protected:
+
   //! Mise à jour des références
   virtual void _updateReferences()
   {
@@ -828,8 +845,6 @@ class AbstractArray
     m_meta_data = ArrayMetaData();
     m_md = &m_meta_data;
   }
-
- private:
 };
 
 /*---------------------------------------------------------------------------*/
@@ -873,8 +888,11 @@ class Array
   using typename BaseClassType::size_type;
   using typename BaseClassType::difference_type;
  protected:
+
   Array() {}
+
  protected:
+
   //! Constructeur par déplacement (uniquement pour UniqueArray)
   Array(Array<T>&& rhs) ARCCORE_NOEXCEPT : AbstractArray<T>(std::move(rhs)) {}
 
@@ -887,15 +905,21 @@ class Array
     for( const auto& x : alist )
       this->add(x);
   }
+
  private:
+
   Array(const Array<T>& rhs) = delete;
   void operator=(const Array<T>& rhs) = delete;
 
+
  public:
+
   ~Array()
   {
   }
+
  public:
+
   operator ConstArrayView<T>() const
   {
     Integer s = arccoreCheckArraySize(m_md->size);
@@ -983,6 +1007,7 @@ class Array
   }
 
  public:
+
   //! Ajoute l'élément \a val à la fin du tableau
   void add(ConstReferenceType val)
   {
@@ -1022,13 +1047,15 @@ class Array
     this->_addRange(val.constSpan());
   }
   /*!
-   * \brief Change le nombre d'élément du tableau à \a s.
-   * Si le nouveau tableau est plus grand que l'ancien, les nouveaux
+   * \brief Change le nombre d'éléments du tableau à \a s.
+   *
+   * \note Si le nouveau tableau est plus grand que l'ancien, les nouveaux
    * éléments ne sont pas initialisés s'il s'agit d'un type POD.
    */
   void resize(Int64 s) { this->_resize(s); }
   /*!
-   * \brief Change le nombre d'élément du tableau à \a s.
+   * \brief Change le nombre d'éléments du tableau à \a s.
+   *
    * Si le nouveau tableau est plus grand que l'ancien, les nouveaux
    * éléments sont initialisé avec la valeur \a fill_value.
    */
@@ -1245,6 +1272,7 @@ class Array
   {
     return ArrayRange<const_pointer>(m_ptr,m_ptr+m_md->size);
   }
+
  public:
 
   //@{ Méthodes pour compatibilité avec la STL.
@@ -1254,7 +1282,8 @@ class Array
     this->add(val);
   }
   //@}
-private:
+
+ private:
 
   //! Method called from totalview debugger
   static int TV_ttf_display_type(const Arccore::Array<T> * obj);
@@ -1310,7 +1339,6 @@ class SharedArray
 
  public:
 
- public:
   //! Créé un tableau vide
   SharedArray() : Array<T>(), m_next(nullptr), m_prev(nullptr) {}
   //! Créé un tableau de \a size éléments contenant la valeur \a value.
@@ -1406,6 +1434,7 @@ class SharedArray
   {
     _removeReference();
   }
+
  public:
 
   //! Clone le tableau
@@ -1413,7 +1442,9 @@ class SharedArray
   {
     return SharedArray<T>(this->constSpan());
   }
+
  protected:
+
   void _initReference(const ThatClassType& rhs)
   {
     // TODO fusionner avec l'implémentation de SharedArray2
@@ -1490,11 +1521,14 @@ class SharedArray
     }
   }
  private:
+
   ThatClassType* m_next; //!< Référence suivante dans la liste chaînée
   ThatClassType* m_prev; //!< Référence précédente dans la liste chaînée
+
  private:
+
   //! Interdit
-  void operator=(const Array<T>& rhs);
+  void operator=(const Array<T>& rhs) = delete;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -1542,7 +1576,6 @@ class UniqueArray
 
  public:
 
- public:
   //! Créé un tableau vide
   UniqueArray() {}
   //! Créé un tableau de \a size éléments contenant la valeur \a value.
@@ -1668,7 +1701,9 @@ class UniqueArray
   ~UniqueArray() override
   {
   }
+
  public:
+
   /*!
    * \brief Échange les valeurs de l'instance avec celles de \a rhs.
    *

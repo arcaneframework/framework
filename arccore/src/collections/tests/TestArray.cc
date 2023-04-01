@@ -557,6 +557,61 @@ TEST(Array2, Misc)
     ASSERT_TRUE(is_ok);
 #endif
   }
+  {
+    UniqueArray2<Int32> c;
+    c.resize(2, 1);
+    std::cout << "V1=" << c.to1DSpan() << "\n";
+    c[0][0] = 2;
+    c[1][0] = 3;
+    c.resize(2, 2);
+    std::cout << "V2=" << c.to1DSpan() << "\n";
+    ASSERT_EQ(c[0][0], 2);
+    ASSERT_EQ(c[1][0], 3);
+    ASSERT_EQ(c[0][1], 0);
+    ASSERT_EQ(c[1][1], 0);
+  }
+  {
+    UniqueArray2<Int32> c;
+    c.resizeNoInit(2, 1);
+    c[0][0] = 1;
+    c[1][0] = 2;
+    c.resizeNoInit(2, 2);
+    c[0][1] = 4;
+    c[1][1] = 5;
+    std::cout << "X1=" << c.to1DSpan() << "\n";
+    ASSERT_EQ(c[0][0], 1);
+    ASSERT_EQ(c[1][0], 2);
+    ASSERT_EQ(c[0][1], 4);
+    ASSERT_EQ(c[1][1], 5);
+    c.resize(3, 2);
+    std::cout << "X2=" << c.to1DSpan() << "\n";
+    ASSERT_EQ(c[0][0], 1);
+    ASSERT_EQ(c[1][0], 2);
+    ASSERT_EQ(c[0][1], 4);
+    ASSERT_EQ(c[1][1], 5);
+    ASSERT_EQ(c[2][0], 0);
+    ASSERT_EQ(c[2][1], 0);
+    c[2][0] = 8;
+    c[2][1] = 10;
+    c.resize(6, 5);
+    std::cout << "X3=" << c.to1DSpan() << "\n";
+    ASSERT_EQ(c[0][0], 1);
+    ASSERT_EQ(c[1][0], 2);
+    ASSERT_EQ(c[0][1], 4);
+    ASSERT_EQ(c[1][1], 5);
+    ASSERT_EQ(c[2][0], 8);
+    ASSERT_EQ(c[2][1], 10);
+    for (int i = 0; i < 4; ++i) {
+      ASSERT_EQ(c[i][2], 0);
+      ASSERT_EQ(c[i][3], 0);
+      ASSERT_EQ(c[i][4], 0);
+    }
+    for (int j = 0; j < 5; ++j) {
+      ASSERT_EQ(c[3][j], 0);
+      ASSERT_EQ(c[4][j], 0);
+      ASSERT_EQ(c[5][j], 0);
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------*/
