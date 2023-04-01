@@ -1,15 +1,14 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Array2.h                                                    (C) 2000-2022 */
+/* Array2.h                                                    (C) 2000-2023 */
 /*                                                                           */
 /* Tableau 2D classique.                                                     */
 /*---------------------------------------------------------------------------*/
-
 #ifndef ARCCORE_UTILS_ARRAY2_H
 #define ARCCORE_UTILS_ARRAY2_H
 /*---------------------------------------------------------------------------*/
@@ -42,6 +41,7 @@ class Array2
 : private AbstractArray<DataType>
 {
  protected:
+
   enum CloneBehaviour
   {
     CB_Clone,
@@ -54,17 +54,23 @@ class Array2
   };
   //TODO: verifier qu'on n'affecte pas m_p->dim1_size ou
   // m_md->dim2_size si m_p est TrueImpl::shared_null.
+
  private:
+
   typedef AbstractArray<DataType> Base;
   typedef typename Base::ConstReferenceType ConstReferenceType;
+
  protected:
+
   using AbstractArray<DataType>::m_ptr;
   using AbstractArray<DataType>::m_md;
   using AbstractArray<DataType>::_setMP2;
   using AbstractArray<DataType>::_setMP;
   using AbstractArray<DataType>::_destroy;
   using AbstractArray<DataType>::_internalDeallocate;
+
  protected:
+
   Array2() : AbstractArray<DataType>() {}
   //! Créé un tableau de \a size1 * \a size2 éléments.
   Array2(Int64 size1,Int64 size2)
@@ -80,6 +86,7 @@ class Array2
   {
     this->copy(rhs);
   }
+
  protected:
 
   //! Créé un tableau vide avec un allocateur spécifique \a allocator
@@ -110,6 +117,7 @@ class Array2
   Array2(Array2<DataType>&& rhs) : AbstractArray<DataType>(std::move(rhs)) {}
 
  public:
+
   // TODO: retourner un Span.
   ArrayView<DataType> operator[](Int64 i)
   {
@@ -250,7 +258,9 @@ class Array2
   {
     return Span<const DataType>(m_ptr,m_md->size);
   }
+
  public:
+
   operator Array2View<DataType>()
   {
     return view();
@@ -284,6 +294,7 @@ class Array2
     return Span2<const DataType>(m_ptr,m_md->dim1_size,m_md->dim2_size);
   }
  public:
+
   Integer dim2Size() const { return ARCCORE_CAST_SMALL_SIZE(m_md->dim2_size); }
   Integer dim1Size() const { return ARCCORE_CAST_SMALL_SIZE(m_md->dim1_size); }
   Int64 largeDim2Size() const { return m_md->dim2_size; }
@@ -295,29 +306,56 @@ class Array2
     _arccoreCheckSharedNull();
   }
 
-  //! Redimensionne uniquement la première dimension en laissant la deuxième à l'identique
+  /*!
+   * \brief Redimensionne uniquement la première dimension en laissant
+   * la deuxième à l'identique.
+   *
+   * Les éventuelles nouvelles valeurs sont initialisées avec le constructeur par défaut.
+   */
   void resize(Int64 new_size)
   {
     _resize(new_size,IB_InitWithDefault);
   }
-  //! Redimensionne uniquement la première dimension en laissant la deuxième à l'identique
+
+  /*!
+   * \brief Redimensionne uniquement la première dimension en laissant
+   * la deuxième à l'identique.
+   *
+   * Les éventuelles nouvelles valeurs NE sont PAS initialisées.
+   */
   void resizeNoInit(Int64 new_size)
   {
     _resize(new_size,IB_NoInit);
   }
-  //! Réalloue les deux dimensions
+
+  /*!
+   * \brief Réalloue les deux dimensions.
+   *
+   * Les éventuelles nouvelles valeurs sont initialisées avec le constructeur par défaut.
+   */
   void resize(Int64 new_size1,Int64 new_size2)
   {
     _resize(new_size1,new_size2,IB_InitWithDefault);
   }
-  //! Réalloue les deux dimensions
+
+  /*!
+   * \brief Réalloue les deux dimensions.
+   *
+   * Les éventuelles nouvelles valeurs NE sont PAS initialisées.
+   */
   void resizeNoInit(Int64 new_size1,Int64 new_size2)
   {
     _resize(new_size1,new_size2,IB_NoInit);
   }
+
+  //! Nombre total d'éléments (dim1Size()*dim2Size())
   Integer totalNbElement() const { return ARCCORE_CAST_SMALL_SIZE(m_md->dim1_size*m_md->dim2_size); }
+
+  //! Nombre total d'éléments (largeDim1Size()*largeDim2Size())
   Int64 largeTotalNbElement() const { return m_md->dim1_size*m_md->dim2_size; }
+
  protected:
+
   //! Redimensionne uniquement la première dimension en laissant la deuxième à l'identique
   void _resize(Int64 new_size,InitBehaviour rb)
   {
@@ -328,6 +366,7 @@ class Array2
     m_md->dim1_size = new_size;
     _arccoreCheckSharedNull();
   }
+
   //! Réalloue les deux dimensions
   void _resize(Int64 new_size1,Int64 new_size2,InitBehaviour rb)
   {
@@ -348,6 +387,7 @@ class Array2
     else
       throw NotImplementedException("Array2::resize","already sized");
   }
+
   void _resizeFromEmpty(Int64 new_size1,Int64 new_size2,InitBehaviour rb)
   {
     _resize2(new_size1,new_size2,rb);
@@ -355,6 +395,7 @@ class Array2
     m_md->dim2_size = new_size2;
     _arccoreCheckSharedNull();
   }
+
   void _resizeSameDim1ReduceDim2(Int64 new_size2,InitBehaviour rb)
   {
     ARCCORE_ASSERT((new_size2<m_md->dim2_size),("Bad Size"));
@@ -368,6 +409,7 @@ class Array2
     m_md->dim2_size = new_size2;
     _arccoreCheckSharedNull();
   }
+
   void _resizeSameDim1IncreaseDim2(Int64 new_size2,InitBehaviour rb)
   {
     ARCCORE_ASSERT((new_size2>m_md->dim2_size),("Bad Size"));
@@ -381,7 +423,17 @@ class Array2
     }
     m_md->dim2_size = new_size2;
     _arccoreCheckSharedNull();
+    if (rb==IB_InitWithDefault){
+      // Remet les valeurs par défaut pour les nouveaux éléments
+      for( Int64 i=0; i<n; ++i ){
+        for( Int64 j=n2; j<new_size2; ++j ){
+          m_ptr[(i*new_size2)+j] = DataType{};
+        }
+      }
+      
+    }
   }
+
   void _resize2(Int64 d1,Int64 d2,InitBehaviour rb)
   {
     Int64 new_size = d1*d2;
@@ -397,15 +449,19 @@ class Array2
     else
       throw NotSupportedException("Array2::_resize2","invalid value InitBehaviour");
   }
+
   void _move(Array2<DataType>& rhs)
   {
     Base::_move(rhs);
   }
+
   void _swap(Array2<DataType>& rhs)
   {
     Base::_swap(rhs);
   }
+
  private:
+
   void _arccoreCheckSharedNull()
   {
     if (!m_ptr)
@@ -413,7 +469,9 @@ class Array2
     if (!m_md->is_not_null)
       ArrayMetaData::throwNotNullExpected();
   }
+
  protected:
+
   void _copyMetaData(const Array2<DataType>& rhs)
   {
     AbstractArray<DataType>::_copyMetaData(rhs);
