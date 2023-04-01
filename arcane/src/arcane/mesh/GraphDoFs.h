@@ -48,14 +48,17 @@ class ARCANE_MESH_EXPORT GraphIncrementalConnectivity
  public:
   GraphIncrementalConnectivity(IItemFamily const* dualnode_family,
                                IItemFamily const* link_family,
+                               Arcane::mesh::IncrementalItemConnectivity* dualnode_connectivity,
                                Arcane::mesh::IncrementalItemConnectivity* link_connectivity,
                                UniqueArray<Arcane::mesh::IncrementalItemConnectivity*> const& dualitem_connectivities,
                                ItemScalarProperty<Integer> const& dualnode_to_connectivity)
   : m_dualnode_family(dualnode_family)
   , m_link_family(link_family)
+  , m_dualnode_connectivity(dualnode_connectivity)
   , m_link_connectivity(link_connectivity)
   , m_dualitem_connectivities(dualitem_connectivities)
   , m_dualnode_to_connectivity_index(dualnode_to_connectivity)
+  , m_dualnode_connectivity_accessor(dualnode_connectivity->connectivityAccessor())
   , m_link_connectivity_accessor(link_connectivity->connectivityAccessor())
   {
     m_dualitem_connectivity_accessors.resize(m_dualitem_connectivities.size());
@@ -69,9 +72,11 @@ class ARCANE_MESH_EXPORT GraphIncrementalConnectivity
   GraphIncrementalConnectivity(GraphIncrementalConnectivity const& rhs)
   : m_dualnode_family(rhs.m_dualnode_family)
   , m_link_family(rhs.m_link_family)
+  , m_dualnode_connectivity(rhs.m_dualnode_connectivity)
   , m_link_connectivity(rhs.m_link_connectivity)
   , m_dualitem_connectivities(rhs.m_dualitem_connectivities)
   , m_dualnode_to_connectivity_index(rhs.m_dualnode_to_connectivity_index)
+  , m_dualnode_connectivity_accessor(m_dualnode_connectivity->connectivityAccessor())
   , m_link_connectivity_accessor(m_link_connectivity->connectivityAccessor())
   {
     m_dualitem_connectivity_accessors.resize(m_dualitem_connectivities.size());
@@ -91,6 +96,11 @@ class ARCANE_MESH_EXPORT GraphIncrementalConnectivity
     return m_dualitem_connectivity_accessors[m_dualnode_to_connectivity_index[dualNode]](ItemLocalId(dualNode))[0];
   }
 
+  inline DoFVectorView links(const DoF& dualNode) const
+  {
+    return m_dualnode_connectivity_accessor(ItemLocalId(dualNode));
+  }
+
   inline DoFVectorView dualNodes(const DoF& link) const
   {
     return m_link_connectivity_accessor(ItemLocalId(link));
@@ -99,11 +109,14 @@ class ARCANE_MESH_EXPORT GraphIncrementalConnectivity
  private:
   IItemFamily const* m_dualnode_family = nullptr;
   IItemFamily const* m_link_family = nullptr;
+  Arcane::mesh::IncrementalItemConnectivity* m_dualnode_connectivity = nullptr;
   Arcane::mesh::IncrementalItemConnectivity* m_link_connectivity = nullptr;
   UniqueArray<Arcane::mesh::IncrementalItemConnectivity*> const& m_dualitem_connectivities;
   ItemScalarProperty<Integer> const& m_dualnode_to_connectivity_index;
 
+  Arcane::mesh::IndexedItemConnectivityAccessor m_dualnode_connectivity_accessor;
   Arcane::mesh::IndexedItemConnectivityAccessor m_link_connectivity_accessor;
+
   UniqueArray<Arcane::mesh::IndexedItemConnectivityAccessor> m_dualitem_connectivity_accessors;
 };
 
@@ -131,6 +144,11 @@ class ARCANE_MESH_EXPORT GraphDoFs
   IGraphConnectivity const* connectivity() const override
   {
     return m_graph_connectivity.get();
+  }
+
+  void registerNewGraphConnectivityObserver(IGraphConnectivityObserver* observer)
+  {
+    m_connectivity_observer.push_back(std::unique_ptr<IGraphConnectivityObserver>(observer)) ;
   }
 
   IItemFamily* dualNodeFamily() override { return &m_dual_node_family; }
@@ -214,8 +232,10 @@ class ARCANE_MESH_EXPORT GraphDoFs
 
   UniqueArray<Arcane::mesh::IncrementalItemConnectivity*> m_incremental_connectivities;
   UniqueArray<Arcane::mesh::IncrementalItemConnectivity*> m_dual2dof_incremental_connectivities;
+  Arcane::mesh::IncrementalItemConnectivity* m_dualnodes_incremental_connectivity = nullptr;
   Arcane::mesh::IncrementalItemConnectivity* m_links_incremental_connectivity = nullptr;
   std::unique_ptr<GraphIncrementalConnectivity> m_graph_connectivity;
+  std::vector<std::unique_ptr<Arcane::IGraphConnectivityObserver>> m_connectivity_observer ;
 
   std::vector<std::unique_ptr<Arcane::GhostLayerFromConnectivityComputer>> m_ghost_layer_computers;
   Int32UniqueArray m_connectivity_indexes_per_type;

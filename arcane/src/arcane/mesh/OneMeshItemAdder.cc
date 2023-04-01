@@ -727,7 +727,6 @@ addOneParentItem(const Item & item, const eItemKind submesh_kind, const bool fat
   ItemTypeMng* itm = m_mesh->itemTypeMng();
   eItemKind kind = item.kind();
   ItemTypeInfo* type = itm->typeFromId(item.type());
-
   if (item.type() == IT_Line2 && submesh_kind == IK_Cell)
     type = itm->typeFromId(IT_CellLine2);
   if (item.type() == IT_Vertex && submesh_kind == IK_Face)

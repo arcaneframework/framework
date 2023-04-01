@@ -56,11 +56,40 @@ class ARCANE_CORE_EXPORT IGraphConnectivity
   //! accès à l'Item dual d'un DualNode (detype DoF)
   virtual Item dualItem(const DoF& dualNode) const = 0 ;
 
+  //! accès à la vue des links  constitué du dualNode de type(DoF)
+  virtual DoFVectorView links(const DoF& dualNode) const = 0 ;
+
   //! accès à la vue des DualNodes  constituant un liaison Link de type(DoF)
   virtual DoFVectorView dualNodes(const DoF& link) const = 0 ;
+
 };
 
+class ARCANE_CORE_EXPORT IGraphConnectivityObserver
+{
+public:
+  virtual ~IGraphConnectivityObserver() {}
 
+  virtual void notifyUpdateConnectivity() = 0 ;
+};
+
+template<typename T>
+class ARCANE_CORE_EXPORT GraphConnectivityObserverT
+: public IGraphConnectivityObserver
+{
+public:
+  GraphConnectivityObserverT(T* parent)
+  : m_parent(parent)
+  {}
+
+  virtual ~GraphConnectivityObserverT() {}
+
+  void notifyUpdateConnectivity()
+  {
+    m_parent->updateGraphConnectivity() ;
+  }
+private :
+  T* m_parent ;
+};
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 /*!
@@ -77,6 +106,8 @@ public:
   virtual IGraphModifier2* modifier() = 0 ;
 
   virtual const IGraphConnectivity* connectivity() const = 0 ;
+
+  virtual void registerNewGraphConnectivityObserver(IGraphConnectivityObserver* observer) = 0 ;
 
 
 public:
