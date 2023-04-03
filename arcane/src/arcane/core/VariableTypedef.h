@@ -1541,7 +1541,7 @@ typedef MeshPartialVariableScalarRefT<Particle,Int64> PartialVariableParticleInt
   \ingroup Variable partielle
   \brief Grandeur de DDL de type entier 64 bits
 */
-typedef MeshPartialVariableScalarRefT<DoF,Int64> PartialVariableDoFIn64;
+typedef MeshPartialVariableScalarRefT<DoF,Int64> PartialVariableDoFInt64;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

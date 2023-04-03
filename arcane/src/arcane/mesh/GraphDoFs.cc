@@ -33,9 +33,12 @@ GraphIncrementalConnectivity::
 GraphIncrementalConnectivity(GraphDoFs* graph)
 : m_dualnode_family(graph->dualNodeFamily())
 , m_link_family(graph->linkFamily())
+, m_dualnode_connectivity(graph->m_dualnodes_incremental_connectivity)
 , m_link_connectivity(graph->m_links_incremental_connectivity)
 , m_dualitem_connectivities(graph->m_incremental_connectivities)
 , m_dualnode_to_connectivity_index(graph->m_dual_node_to_connectivity_index)
+, m_dualnode_connectivity_accessor(m_dualnode_connectivity->connectivityAccessor())
+, m_link_connectivity_accessor(m_link_connectivity->connectivityAccessor())
 {
 }
 
@@ -73,6 +76,13 @@ _allocateGraph()
   if (m_item_family_network == nullptr)
     traceMng()->fatal() << "ARCANE_GRAPH_CONNECTIVITY_POLICY need to be activated";
 
+  m_dualnodes_incremental_connectivity =
+  new IncrementalItemConnectivity(dualNodeFamily(),
+                                  linkFamily(),
+                                  mesh::connectivityName(dualNodeFamily(), linkFamily()));
+  //if (m_item_family_network)
+  //  m_item_family_network->addRelation(dualNodeFamily(), linkFamily(), m_dualnodes_incremental_connectivity);
+
   m_links_incremental_connectivity =
   new IncrementalItemConnectivity(linkFamily(),
                                   dualNodeFamily(),
@@ -97,9 +107,14 @@ _allocateGraph()
   }
   m_graph_connectivity.reset(new GraphIncrementalConnectivity(dualNodeFamily(),
                                                               linkFamily(),
+                                                              m_dualnodes_incremental_connectivity,
                                                               m_links_incremental_connectivity,
                                                               m_incremental_connectivities,
                                                               m_dual_node_to_connectivity_index));
+
+  for (auto& obs : m_connectivity_observer)
+    obs->notifyUpdateConnectivity();
+
   m_graph_allocated = true;
 }
 
@@ -143,8 +158,10 @@ addLinks(Integer nb_link,
   auto link_index = 0;
   ENUMERATE_DOF (inewlink, link_family.view(link_lids)) {
     m_links_incremental_connectivity->notifySourceItemAdded(ItemLocalId(*inewlink));
-    for (auto lid : connected_dual_nodes_lids.subConstView(link_index, nb_dual_nodes_per_link))
+    for (auto lid : connected_dual_nodes_lids.subConstView(link_index, nb_dual_nodes_per_link)) {
       m_links_incremental_connectivity->addConnectedItem(ItemLocalId(*inewlink), ItemLocalId(lid));
+      m_dualnodes_incremental_connectivity->addConnectedItem(ItemLocalId(lid), ItemLocalId(*inewlink));
+    }
     link_index += nb_dual_nodes_per_link;
   }
   m_update_sync_info = true;
@@ -281,10 +298,14 @@ endUpdate()
 {
   auto* x = new GraphIncrementalConnectivity(dualNodeFamily(),
                                              linkFamily(),
+                                             m_dualnodes_incremental_connectivity,
                                              m_links_incremental_connectivity,
                                              m_incremental_connectivities,
                                              m_dual_node_to_connectivity_index);
   m_graph_connectivity.reset(x);
+
+  for (auto& obs : m_connectivity_observer)
+    obs->notifyUpdateConnectivity();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -309,16 +330,7 @@ updateAfterMeshChanged()
       }
     }
   }
-
-  {
-    // TODO: GG: appeler endUpdate() à la place pour éviter une duplication de code
-    auto* x = new GraphIncrementalConnectivity(dualNodeFamily(),
-                                               linkFamily(),
-                                               m_links_incremental_connectivity,
-                                               m_incremental_connectivities,
-                                               m_dual_node_to_connectivity_index);
-    m_graph_connectivity.reset(x);
-  }
+  endUpdate();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -329,6 +341,7 @@ printDualNodes() const
 {
   auto graph_connectivity = GraphIncrementalConnectivity(dualNodeFamily(),
                                                          linkFamily(),
+                                                         m_dualnodes_incremental_connectivity,
                                                          m_links_incremental_connectivity,
                                                          m_incremental_connectivities,
                                                          m_dual_node_to_connectivity_index);
@@ -338,6 +351,11 @@ printDualNodes() const
     auto dual_item = graph_connectivity.dualItem(*idualnode);
     info() << "           DualItem : lid = " << dual_item.localId();
     info() << "                      uid = " << dual_item.uniqueId();
+    auto links = graph_connectivity.links(*idualnode);
+    for (auto link : links) {
+      info() << "           Connected link : lid = " << link.localId();
+      info() << "                            uid = " << link.uniqueId();
+    }
   }
 }
 
@@ -350,6 +368,7 @@ printLinks() const
   ConnectivityItemVector dual_nodes(m_links_incremental_connectivity);
   auto graph_connectivity = GraphIncrementalConnectivity(dualNodeFamily(),
                                                          linkFamily(),
+                                                         m_dualnodes_incremental_connectivity,
                                                          m_links_incremental_connectivity,
                                                          m_incremental_connectivities,
                                                          m_dual_node_to_connectivity_index);

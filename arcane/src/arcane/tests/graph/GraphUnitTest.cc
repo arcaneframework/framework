@@ -492,7 +492,15 @@ void GraphUnitTest::
 _checkGraphDofConnectivity(IGraph2* graph_dof)
 {
   auto const& graph_connectivity = graph_dof->connectivity();
-
+  ENUMERATE_DOF (idualnode, graph_dof->dualNodeFamily()->allItems()) {
+    info() << "DualNode : lid = " << idualnode->localId();
+    info() << "           uid = " << idualnode->uniqueId();
+    auto links = graph_connectivity->links(*idualnode) ;
+    for(auto link : links) {
+      info() << "           Connected link : lid = " << link.localId();
+      info() << "                            uid = " << link.uniqueId();
+    }
+  }
   // Pointwise access
 
   //ConnectivityItemVector dual_nodes(m_links_incremental_connectivity);
