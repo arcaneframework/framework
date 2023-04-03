@@ -161,8 +161,16 @@ namespace Arcane.Axl.Xsd
         _ThrowInvalid("missing 'family-name' attribute for 'particle' variable");
       if (itemkind == ItemKind.dof && !HasFamilyName)
         _ThrowInvalid("missing 'family-name' attribute for 'dof' variable");
-      if (HasFamilyName && (itemkind != ItemKind.particle && itemkind != ItemKind.dof))
-        _ThrowInvalid("'family-name' attribute is valid only for 'particle' or 'dof' variables");
+      if (itemkind == ItemKind.link)
+      {
+         this.familyname = "Links" ;
+      }
+      if (itemkind == ItemKind.dualnode)
+      {
+         this.familyname = "DualNodes" ;
+      }
+      if (HasFamilyName && (itemkind != ItemKind.particle && itemkind != ItemKind.dof && itemkind != ItemKind.dualnode && itemkind != ItemKind.link))
+        _ThrowInvalid("'family-name' attribute is valid only for 'particle' or 'dof' or 'dualnode' or 'link' variables");
 
       // Vérifie que pour les variables matériaux ou milieux sont uniquement sur les mailles
       if ((IsMaterial || IsEnvironment) && itemkind != ItemKind.cell)

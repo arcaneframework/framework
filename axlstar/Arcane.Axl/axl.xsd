@@ -339,6 +339,8 @@
       <xs:enumeration value="cell" />
       <xs:enumeration value="particle" />
       <xs:enumeration value="dof" />
+      <xs:enumeration value="dualnode" />
+      <xs:enumeration value="link" />
     </xs:restriction>
   </xs:simpleType>
   

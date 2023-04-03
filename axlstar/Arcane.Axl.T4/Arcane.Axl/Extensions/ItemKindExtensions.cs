@@ -24,6 +24,10 @@ namespace Arcane.Axl
         return "Particle";
       case Xsd.ItemKind.dof:
         return "DoF";
+      case Xsd.ItemKind.dualnode:
+        return "DoF";
+      case Xsd.ItemKind.link:
+        return "DoF";
       default:
         throw new TypeUnloadedException (); 
       }
