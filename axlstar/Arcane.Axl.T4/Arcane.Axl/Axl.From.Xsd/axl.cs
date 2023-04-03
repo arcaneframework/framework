@@ -1384,6 +1384,12 @@ namespace Arcane.Axl.Xsd {
         
         /// <remarks/>
         dof,
+        
+        /// <remarks/>
+        dualnode,
+        
+        /// <remarks/>
+        link,
     }
     
     /// <remarks/>
