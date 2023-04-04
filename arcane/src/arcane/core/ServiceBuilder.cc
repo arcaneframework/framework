@@ -27,9 +27,9 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 ReferenceCounter<ICaseOptions> ServiceBuilderWithOptionsBase::
-_buildCaseOptions(const String& xml_content) const
+_buildCaseOptions(const AxlOptionsBuilder::Document& options_doc) const
 {
-  ReferenceCounter<ICaseOptions> co = CaseOptions::createWithXmlContent(m_case_mng, xml_content);
+  ReferenceCounter<ICaseOptions> co = CaseOptions::createDynamic(m_case_mng, options_doc);
   return co;
 }
 

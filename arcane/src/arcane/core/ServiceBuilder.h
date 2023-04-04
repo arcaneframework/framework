@@ -1,16 +1,16 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* ServiceBuilder.h                                            (C) 2000-2019 */
+/* ServiceBuilder.h                                            (C) 2000-2023 */
 /*                                                                           */
 /* Classe utilitaire pour instantier un service.                             */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_SERVICEBUILDER_H
-#define ARCANE_SERVICEBUILDER_H
+#ifndef ARCANE_CORE_SERVICEBUILDER_H
+#define ARCANE_CORE_SERVICEBUILDER_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -19,19 +19,23 @@
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/ParallelFatalErrorException.h"
 
-#include "arcane/ISession.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/IApplication.h"
-#include "arcane/IMesh.h"
-#include "arcane/ICaseOptions.h"
-#include "arcane/IFactoryService.h"
-#include "arcane/ServiceFinder2.h"
+#include "arcane/core/ISession.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/IApplication.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/ICaseOptions.h"
+#include "arcane/core/IFactoryService.h"
+#include "arcane/core/ServiceFinder2.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 namespace Arcane
 {
+namespace AxlOptionsBuilder
+{
+class Document;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -446,7 +450,7 @@ class ARCANE_CORE_EXPORT ServiceBuilderWithOptionsBase
 
  protected:
 
-  ReferenceCounter<ICaseOptions> _buildCaseOptions(const String& xml_content) const;
+  ReferenceCounter<ICaseOptions> _buildCaseOptions(const AxlOptionsBuilder::Document& options_doc) const;
   IApplication* _application() const;
   void _readOptions(ICaseOptions* opt) const;
 
@@ -474,10 +478,10 @@ class ServiceBuilderWithOptions
  public:
 
   Ref<InterfaceType>
-  createReference(const String& service_name,const String& xml_content,
+  createReference(const String& service_name,const AxlOptionsBuilder::Document& options_doc,
                   eServiceBuilderProperties properties=SB_None)
   {
-    ReferenceCounter<ICaseOptions> opt(_buildCaseOptions(xml_content));
+    ReferenceCounter<ICaseOptions> opt(_buildCaseOptions(options_doc));
     ServiceBuilder<InterfaceType> sbi(_application(),opt.get());
     Ref<InterfaceType> s = sbi.createReference(service_name,properties);
     if (s.get()){

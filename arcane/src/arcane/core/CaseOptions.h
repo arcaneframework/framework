@@ -36,6 +36,10 @@
 
 namespace Arcane
 {
+namespace AxlOptionsBuilder
+{
+class Document;
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -84,7 +88,7 @@ class ARCANE_CORE_EXPORT CaseOptions
   friend class ServiceBuilderWithOptionsBase;
 
   // Uniquement pour ServiceBuilderWithOptionsBase
-  static ReferenceCounter<ICaseOptions> createWithXmlContent(ICaseMng* cm, const String& xml_content);
+  static ReferenceCounter<ICaseOptions> createDynamic(ICaseMng* cm, const AxlOptionsBuilder::Document& options_doc);
 
   //! \internal
   CaseOptions(ICaseMng*, const XmlContent& xm_content);
