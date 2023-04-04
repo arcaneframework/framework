@@ -967,7 +967,6 @@ _readCaseDocument(const String& filename,ByteConstArrayView case_bytes)
 void CaseMng::
 internalReadOneOption(ICaseOptions* opt,bool is_phase1)
 {
-  info() << "INTERNAL: reading one option";
   ARCANE_CHECK_POINTER(opt);
   ICaseDocumentFragment* doc = opt->caseDocumentFragment();
   ARCANE_CHECK_POINTER(doc);

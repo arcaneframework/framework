@@ -58,6 +58,12 @@ createCaseOptionList(ICaseOptionsMulti* com,ICaseOptions* co,
                      ICaseOptionList* parent,const XmlNode& element,
                      Integer min_occurs,Integer max_occurs);
 
+namespace AxlOptionsBuilder
+{
+extern "C++" IXmlDocumentHolder*
+documentToXml(const Document& d);
+}
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -193,7 +199,7 @@ CaseOptions(ICaseOptionList* parent,const String& aname,
 
 CaseOptions::
 CaseOptions(ICaseMng* cm,const XmlContent& xml_content)
-: m_p(new CaseOptionsPrivate(cm,"test1"))
+: m_p(new CaseOptionsPrivate(cm,"dynamic-options"))
 {
   // Ce constructeur est pour les options créées dynamiquement
   IXmlDocumentHolder* xml_doc = xml_content.m_document;
@@ -601,12 +607,27 @@ createWithXmlContent(ICaseMng* cm, const String& xml_content)
   XmlContent content;
   content.m_xml_content = xml_content;
 
-  String prolog = "<?xml version=\"1.0\"?>\n<root xml:lang=\"en\">\n<test1>\n";
-  String epilog = "</test1>\n</root>\n";
+  String prolog = "<?xml version=\"1.0\"?>\n<root xml:lang=\"en\">\n<dynamic-options>\n";
+  String epilog = "</dynamic-options>\n</root>\n";
   String service_xml_value = prolog + xml_content + epilog;
 
   ITraceMng* tm = cm->traceMng();
   IXmlDocumentHolder* xml_doc = IXmlDocumentHolder::loadFromBuffer(service_xml_value.bytes(), String(), tm);
+  content.m_document = xml_doc;
+
+  auto* opt = new CaseOptions(cm,content);
+  return ReferenceCounter<ICaseOptions>(opt);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ReferenceCounter<ICaseOptions> CaseOptions::
+createDynamic(ICaseMng* cm, const AxlOptionsBuilder::Document& options_doc)
+{
+  XmlContent content;
+
+  IXmlDocumentHolder* xml_doc = AxlOptionsBuilder::documentToXml(options_doc);
   content.m_document = xml_doc;
 
   auto* opt = new CaseOptions(cm,content);

@@ -36,6 +36,16 @@ _buildCaseOptions(const String& xml_content) const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+ReferenceCounter<ICaseOptions> ServiceBuilderWithOptionsBase::
+_buildCaseOptions(const AxlOptionsBuilder::Document& options_doc) const
+{
+  ReferenceCounter<ICaseOptions> co = CaseOptions::createDynamic(m_case_mng, options_doc);
+  return co;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
 IApplication* ServiceBuilderWithOptionsBase::
 _application() const
 {
