@@ -602,27 +602,6 @@ deepGetChildren(Array<CaseOptionBase*>& col)
 /*---------------------------------------------------------------------------*/
 
 ReferenceCounter<ICaseOptions> CaseOptions::
-createWithXmlContent(ICaseMng* cm, const String& xml_content)
-{
-  XmlContent content;
-  content.m_xml_content = xml_content;
-
-  String prolog = "<?xml version=\"1.0\"?>\n<root xml:lang=\"en\">\n<dynamic-options>\n";
-  String epilog = "</dynamic-options>\n</root>\n";
-  String service_xml_value = prolog + xml_content + epilog;
-
-  ITraceMng* tm = cm->traceMng();
-  IXmlDocumentHolder* xml_doc = IXmlDocumentHolder::loadFromBuffer(service_xml_value.bytes(), String(), tm);
-  content.m_document = xml_doc;
-
-  auto* opt = new CaseOptions(cm,content);
-  return ReferenceCounter<ICaseOptions>(opt);
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-ReferenceCounter<ICaseOptions> CaseOptions::
 createDynamic(ICaseMng* cm, const AxlOptionsBuilder::Document& options_doc)
 {
   XmlContent content;

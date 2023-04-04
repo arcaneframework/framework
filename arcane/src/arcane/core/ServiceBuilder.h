@@ -450,7 +450,6 @@ class ARCANE_CORE_EXPORT ServiceBuilderWithOptionsBase
 
  protected:
 
-  ReferenceCounter<ICaseOptions> _buildCaseOptions(const String& xml_content) const;
   ReferenceCounter<ICaseOptions> _buildCaseOptions(const AxlOptionsBuilder::Document& options_doc) const;
   IApplication* _application() const;
   void _readOptions(ICaseOptions* opt) const;
@@ -477,19 +476,6 @@ class ServiceBuilderWithOptions
   ServiceBuilderWithOptions(ICaseMng* cm) : ServiceBuilderWithOptionsBase(cm){}
 
  public:
-
-  Ref<InterfaceType>
-  createReference(const String& service_name,const String& xml_content,
-                  eServiceBuilderProperties properties=SB_None)
-  {
-    ReferenceCounter<ICaseOptions> opt(_buildCaseOptions(xml_content));
-    ServiceBuilder<InterfaceType> sbi(_application(),opt.get());
-    Ref<InterfaceType> s = sbi.createReference(service_name,properties);
-    if (s.get()){
-      _readOptions(opt.get());
-    }
-    return s;
-  }
 
   Ref<InterfaceType>
   createReference(const String& service_name,const AxlOptionsBuilder::Document& options_doc,

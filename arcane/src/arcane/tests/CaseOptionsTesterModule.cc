@@ -136,8 +136,7 @@ class CaseOptionsTesterModule
 	
   static void _createTimeLoop(Arcane::ISubDomain* sd);
   void _applyVisitor();
-  void _testDynamicService1();
-  void _testDynamicService2();
+  void _testDynamicService();
 
   Arcane::ObserverPool m_observers;
 
@@ -527,8 +526,7 @@ init()
   }
   _applyVisitor();
   _testAxlOptionsBuilder();
-  _testDynamicService1();
-  _testDynamicService2();
+  _testDynamicService();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -692,31 +690,10 @@ class ServiceInterface1ImplTestService
 /*---------------------------------------------------------------------------*/
 
 void CaseOptionsTesterModule::
-_testDynamicService1()
-{
-  info() << "Test dynamic service 1";
-  String service_xml_value = "<post-processor1 name=\"Ensight7PostProcessor\"/>\n";
-  ICaseMng* cm = subDomain()->caseMng();
-  ServiceBuilderWithOptions<IServiceInterface1> builder(cm);
-
-  Ref<IServiceInterface1> si1 = builder.createReference("ServiceInterface1ImplTest",service_xml_value);
-  ARCANE_CHECK_POINTER(si1.get());
-  si1->checkDynamicCreation();
-
-  // Teste référence nulle
-  Ref<IServiceInterface1> si2 = builder.createReference("ServiceInterface1ImplTestInvalid",service_xml_value,SB_AllowNull);
-  if (si2.get())
-    ARCANE_FATAL("Service should be null");
-}
-
-/*---------------------------------------------------------------------------*/
-/*---------------------------------------------------------------------------*/
-
-void CaseOptionsTesterModule::
-_testDynamicService2()
+_testDynamicService()
 {
   using namespace AxlOptionsBuilder;
-  info() << "Test dynamic service 2";
+  info() << "Test dynamic service";
 
   OptionList opts({ServiceInstance("post-processor1","Ensight7PostProcessor")});
   Document doc("en",opts);
