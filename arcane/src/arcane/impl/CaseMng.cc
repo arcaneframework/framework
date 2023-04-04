@@ -228,7 +228,7 @@ class CaseMng
   void _readOptions(bool is_phase1);
   void _readFunctions();
   void _readCaseDocument(const String& filename,ByteConstArrayView bytes);
-  void _printErrors(bool is_phase1);
+  void _printErrors(ICaseDocumentFragment* doc,bool is_phase1);
   void _checkTranslateDocument();
   void _removeFunction(ICaseFunction* func,bool do_delete);
   void _searchInvalidOptions();
@@ -342,7 +342,7 @@ readOptions(bool is_phase1)
     m_observables[eCaseMngEventType::BeginReadOptionsPhase2]->notifyAllObservers();
 
   _readOptions(is_phase1);
-  _printErrors(is_phase1);
+  _printErrors(doc,is_phase1);
 
   _checkTranslateDocument();
 }
@@ -371,9 +371,9 @@ _checkTranslateDocument()
 /*---------------------------------------------------------------------------*/
 
 void CaseMng::
-_printErrors(bool is_phase1)
+_printErrors(ICaseDocumentFragment* doc,bool is_phase1)
 {
-  ICaseDocumentFragment* doc = _noNullCaseDocument()->fragment();
+  //ICaseDocumentFragment* doc = _noNullCaseDocument()->fragment();
 
   // Affiche les avertissements mais uniquement lors de la phase2 pour les avoir
   // tous en une fois (certains avertissements ne sont générés que lors de la phase2)
@@ -977,7 +977,7 @@ internalReadOneOption(ICaseOptions* opt,bool is_phase1)
   reader.read(is_phase1);
   XmlNodeList invalid_elems;
   opt->addInvalidChildren(invalid_elems);
-  _printErrors(is_phase1);
+  _printErrors(doc,is_phase1);
 }
 
 /*---------------------------------------------------------------------------*/
