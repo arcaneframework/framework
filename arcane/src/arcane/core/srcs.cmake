@@ -412,6 +412,8 @@ set(ARCANE_ORIGINAL_SOURCES
   CheckpointInfo.h
   CheckpointService.cc
   CheckpointService.h
+  AxlOptionsBuilder.h
+  AxlOptionsBuilder.cc
   CodeService.cc
   CodeService.h
   CommonVariables.cc
