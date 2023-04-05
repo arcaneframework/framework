@@ -67,7 +67,7 @@ class GraphUnitTest
   {
    public:
 
-    CountOperationByBasicType(ITraceMng* m)
+    explicit CountOperationByBasicType(ITraceMng* m)
     : TraceAccessor(m)
     {}
 
