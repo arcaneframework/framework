@@ -32,7 +32,7 @@ namespace Arcane::AxlOptionsBuilder
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class OptionList::Impl
+class OneOptionImpl
 {
   friend DocumentXmlWriter;
 
@@ -121,7 +121,7 @@ Complex(const String& name, const OptionList& options)
 
 OptionList::
 OptionList()
-: m_p(std::make_shared<Impl>())
+: m_p(std::make_shared<OneOptionImpl>())
 {
 }
 
@@ -130,7 +130,7 @@ OptionList()
 
 OptionList::
 OptionList(const std::initializer_list<OneOption>& options)
-: m_p(std::make_shared<Impl>())
+: m_p(std::make_shared<OneOptionImpl>())
 {
   add(options);
 }
@@ -193,7 +193,7 @@ class DocumentXmlWriter
 
  private:
 
-  void _writeToXml(OptionList::Impl* opt, XmlNode element)
+  void _writeToXml(OneOptionImpl* opt, XmlNode element)
   {
     for (OneOption& o : opt->m_options) {
       XmlNode current_element = element.createAndAppendElement(o.m_name, o.m_value);

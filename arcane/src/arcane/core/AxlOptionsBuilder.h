@@ -26,6 +26,7 @@
 namespace Arcane::AxlOptionsBuilder
 {
 class OneOption;
+class OneOptionImpl;
 class DocumentXmlWriter;
 
 /*---------------------------------------------------------------------------*/
@@ -35,8 +36,8 @@ class DocumentXmlWriter;
  */
 class ARCANE_CORE_EXPORT OptionList
 {
-  class Impl;
   friend OneOption;
+  friend OneOptionImpl;
   friend DocumentXmlWriter;
 
  public:
@@ -58,7 +59,7 @@ class ARCANE_CORE_EXPORT OptionList
 
  private:
 
-  std::shared_ptr<Impl> m_p;
+  std::shared_ptr<OneOptionImpl> m_p;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -69,7 +70,7 @@ class ARCANE_CORE_EXPORT OptionList
 class ARCANE_CORE_EXPORT OneOption
 {
   friend class OptionList;
-  friend class OptionList::Impl;
+  friend class OneOptionImpl;
   friend DocumentXmlWriter;
 
  protected:
@@ -103,7 +104,7 @@ class ARCANE_CORE_EXPORT OneOption
   String m_value; //! Valeur de l'option (si option CO_Simple)
   String m_service_name; //!< Nom du service (si option de type CO_ServiceInstance)
   String m_function_name; //<! Nom de la fonction (ICaseFunction)
-  std::shared_ptr<OptionList::Impl> m_sub_option;
+  std::shared_ptr<OneOptionImpl> m_sub_option;
 };
 
 /*---------------------------------------------------------------------------*/
