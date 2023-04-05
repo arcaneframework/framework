@@ -28,6 +28,7 @@ namespace Arcane::AxlOptionsBuilder
 class OneOption;
 class OneOptionImpl;
 class DocumentXmlWriter;
+class DocumentJSONWriter;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -39,6 +40,7 @@ class ARCANE_CORE_EXPORT OptionList
   friend OneOption;
   friend OneOptionImpl;
   friend DocumentXmlWriter;
+  friend DocumentJSONWriter;
 
  public:
 
@@ -72,6 +74,7 @@ class ARCANE_CORE_EXPORT OneOption
   friend class OptionList;
   friend class OneOptionImpl;
   friend DocumentXmlWriter;
+  friend DocumentJSONWriter;
 
  protected:
 
@@ -217,6 +220,7 @@ class ARCANE_CORE_EXPORT ServiceInstance
 class ARCANE_CORE_EXPORT Document
 {
   friend DocumentXmlWriter;
+  friend DocumentJSONWriter;
 
  public:
 
