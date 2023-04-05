@@ -84,6 +84,12 @@ _checkSmallArrayValues(Span<const Int32> view1,Span<const Int32> view2)
 TEST(Collections,SmallArray)
 {
   {
+    constexpr int N = 934;
+    char buf[N];
+    impl::StackMemoryAllocator b(buf,N);
+    ASSERT_EQ(b.guarantedAlignment(),0);
+  }
+  {
     SmallArray<Int32,400> buf1;
     for( Int32 i=0; i<200; ++i )
       buf1.add(i+1);
@@ -122,6 +128,14 @@ TEST(Collections,SmallArray)
 
     buf2 = ref_buf2;
     _checkSmallArrayValues(buf2,ref_buf2);
+    buf3 = ref_buf2.span();
+    _checkSmallArrayValues(buf3,ref_buf2);
+    buf4 = ref_buf2.constSpan();
+    _checkSmallArrayValues(buf4,ref_buf2);
+    buf5 = ref_buf2.view();
+    _checkSmallArrayValues(buf5,ref_buf2);
+    buf6 = ref_buf2.constView();
+    _checkSmallArrayValues(buf6,ref_buf2);
   }
   {
     for( int z=1; z<10; ++z ) {
@@ -151,6 +165,15 @@ TEST(Collections,SmallArray)
     for(Int32 i=0; i<n; ++i )
       ASSERT_EQ(buf[i],((i*2)+1));
   }
+  {
+    size_t s1 = 513;
+    SmallArray<Int32> buf1(s1);
+    ASSERT_EQ(buf1.size(),s1);
+
+    Int64 s2 = 217;
+    SmallArray<Int32> buf2(s2);
+    ASSERT_EQ(buf2.size(),s2);
+}
 }
 
 /*---------------------------------------------------------------------------*/
