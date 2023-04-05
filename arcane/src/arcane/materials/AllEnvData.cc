@@ -27,6 +27,7 @@
 #include "arcane/materials/MeshMaterialMng.h"
 #include "arcane/materials/ComponentItemListBuilder.h"
 #include "arcane/materials/IMeshMaterialVariable.h"
+#include "arcane/materials/CellToAllEnvCellConverter.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -337,6 +338,11 @@ forceRecompute(bool compute_all)
       }
     }
   }
+
+  // Met à jour le AllCell2AllEnvCell s'il a été initialisé
+  auto& allCell2AllEnvCell(::Arcane::Materials::AllCell2AllEnvCell::getInstance());
+  if (allCell2AllEnvCell.getAllCell2AllEnvCellTable())
+    allCell2AllEnvCell.bruteForceUpdate(m_material_mng->mesh()->allCells().internal()->itemsLocalId());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -770,6 +776,11 @@ _updateMaterialDirect(IMeshMaterial* mat,Int32ConstArrayView ids,eOperation oper
       env->cells().removeItems(ids);
   }
   true_env->updateItemsDirect(m_nb_env_per_cell,true_mat,ids,operation,need_update_env);
+
+    // Met à jour le AllCell2AllEnvCell s'il a été initialisé
+  auto& allCell2AllEnvCell(::Arcane::Materials::AllCell2AllEnvCell::getInstance());
+  if (allCell2AllEnvCell.getAllCell2AllEnvCellTable())
+    allCell2AllEnvCell.bruteForceUpdate(ids);
 }
 
 /*---------------------------------------------------------------------------*/
