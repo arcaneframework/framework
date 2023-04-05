@@ -217,7 +217,7 @@ class DocumentXmlWriter
 
  private:
 
-  DocumentXmlWriter(const String& lang)
+  explicit DocumentXmlWriter(const String& lang)
   : m_case_node_names(lang)
   {}
 
@@ -306,7 +306,7 @@ class DocumentJSONWriter
 
  private:
 
-  DocumentJSONWriter(const String& lang)
+  explicit DocumentJSONWriter(const String& lang)
   : m_case_node_names(lang)
   {
     m_case_function_json_name = String("$") + m_case_node_names.function_ref;
