@@ -415,12 +415,6 @@ ItemLocalIdT(ItemConnectedEnumeratorT<ItemType> enumerator)
 //! Enumérateur générique d'un groupe de particules
 #define ENUMERATE_PARTICLE(name,group) ENUMERATE_(::Arcane::Particle,name,group)
 
-//! Enumérateur generique d'un groupe de noeuds duals
-#define ENUMERATE_DUALNODE(name,group) ENUMERATE_(::Arcane::DualNode,name,group)
-
-//! Enumérateur generique d'un groupe de liaisons
-#define ENUMERATE_LINK(name,group) ENUMERATE_(::Arcane::Link,name,group)
-
 //! Enumérateur generique d'un groupe de degrés de liberté
 #define ENUMERATE_DOF(name,group) ENUMERATE_(::Arcane::DoF,name,group)
 
