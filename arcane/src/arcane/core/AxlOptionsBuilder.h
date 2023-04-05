@@ -70,6 +70,7 @@ class ARCANE_CORE_EXPORT OneOption
 {
   friend class OptionList;
   friend class OptionList::Impl;
+  friend DocumentXmlWriter;
 
  protected:
 

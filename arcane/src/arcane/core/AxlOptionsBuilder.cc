@@ -34,26 +34,7 @@ namespace Arcane::AxlOptionsBuilder
 
 class OptionList::Impl
 {
- public:
-
-  void writeToXml(CaseNodeNames* cnn, XmlNode element)
-  {
-    for (OneOption& o : m_options) {
-      XmlNode current_element = element.createAndAppendElement(o.m_name, o.m_value);
-      if (o.m_sub_option.get()) {
-        o.m_sub_option->writeToXml(cnn, current_element);
-      }
-      if (!o.m_service_name.null())
-        current_element.setAttrValue("name", o.m_service_name);
-      // TODO: utiliser CaseNodeNames pour tenir compte de la langue
-      if (!o.m_function_name.null()) {
-        String funcname_attr = "function";
-        if (cnn)
-          funcname_attr = cnn->function_ref;
-        current_element.setAttrValue(funcname_attr, o.m_function_name);
-      }
-    }
-  }
+  friend DocumentXmlWriter;
 
  public:
 
@@ -192,7 +173,7 @@ clone() const
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-// Écrivain au format XML
+//! Écrivain au format XML pour un jeu de données.
 class DocumentXmlWriter
 {
  public:
@@ -201,13 +182,43 @@ class DocumentXmlWriter
   {
     auto* doc = domutils::createXmlDocument();
     XmlNode document_node = doc->documentNode();
-    CaseNodeNames cnn(d.language());
+    DocumentXmlWriter writer(d.language());
+    CaseNodeNames& cnn = writer.m_case_node_names;
     XmlNode root_element = document_node.createAndAppendElement("root", String());
     root_element.setAttrValue(cnn.lang_attribute, d.language());
     XmlNode opt_element = root_element.createAndAppendElement("dynamic-options", String());
-    d.m_options.m_p->writeToXml(&cnn, opt_element);
+    writer._writeToXml(d.m_options.m_p.get(), opt_element);
     return doc;
   }
+
+ private:
+
+  void _writeToXml(OptionList::Impl* opt, XmlNode element)
+  {
+    for (OneOption& o : opt->m_options) {
+      XmlNode current_element = element.createAndAppendElement(o.m_name, o.m_value);
+      if (o.m_sub_option.get())
+        _writeToXml(o.m_sub_option.get(), current_element);
+
+      if (!o.m_service_name.null())
+        current_element.setAttrValue("name", o.m_service_name);
+
+      if (!o.m_function_name.null()) {
+        String funcname_attr = m_case_node_names.function_ref;
+        current_element.setAttrValue(funcname_attr, o.m_function_name);
+      }
+    }
+  }
+
+ private:
+
+  DocumentXmlWriter(const String& lang)
+  : m_case_node_names(lang)
+  {}
+
+ private:
+
+  CaseNodeNames m_case_node_names;
 };
 
 /*---------------------------------------------------------------------------*/
