@@ -1,6 +1,7 @@
 ﻿set(CURRENT_SRC_PATH ${Arcane_SOURCE_DIR}/src)
 
 set(ARCANE_MATERIALS_SOURCES
+  materials/AllCellToAllEnvCellConverter.h
   materials/CellToAllEnvCellConverter.h
   materials/MaterialsCoreGlobal.h
   materials/MaterialsCoreGlobal.cc
