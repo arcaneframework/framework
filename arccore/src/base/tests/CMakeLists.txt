@@ -9,4 +9,4 @@ arccore_add_component_test_executable(base
 
 target_link_libraries(arccore_base.tests PUBLIC arccore_base GTest::GTest GTest::Main)
 
-gtest_discover_tests(arccore_base.tests)
+gtest_discover_tests(arccore_base.tests DISCOVERY_TIMEOUT 30)
