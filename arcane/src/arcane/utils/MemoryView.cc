@@ -14,6 +14,7 @@
 #include "arcane/utils/MemoryView.h"
 
 #include "arcane/utils/FatalErrorException.h"
+#include "arcane/utils/ArrayExtentsValue.h"
 
 #include <cstring>
 
@@ -45,7 +46,7 @@ class ISpecificMemoryCopy
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-template <typename DataType, Int32 N>
+template <typename DataType, typename Extent>
 class SpecificMemoryCopy
 : public ISpecificMemoryCopy
 {
@@ -65,13 +66,14 @@ class SpecificMemoryCopy
     _copyTo(indexes, _toTrueType(source), _toTrueType(destination));
   }
 
-  Int32 datatypeSize() const override { return N * typeSize(); }
+  Int32 datatypeSize() const override { return m_extent.v * typeSize(); }
 
  public:
 
   void _copyFrom(Span<const Int32> indexes, Span<const DataType> source,
                  Span<DataType> destination)
   {
+    static constexpr Int32 N = m_extent.v;
     Int64 nb_index = indexes.size();
     for (Int32 i = 0; i < nb_index; ++i) {
       Int64 zindex = i * N;
@@ -84,6 +86,7 @@ class SpecificMemoryCopy
   void _copyTo(Span<const Int32> indexes, Span<const DataType> source,
                Span<DataType> destination)
   {
+    static constexpr Int32 N = m_extent.v;
     Int64 nb_index = indexes.size();
 
     for (Int32 i = 0; i < nb_index; ++i) {
@@ -93,6 +96,10 @@ class SpecificMemoryCopy
         destination[zci + z] = source[zindex + z];
     }
   }
+
+ private:
+
+  Extent m_extent;
 
  private:
 
@@ -175,26 +182,26 @@ class SpecificMemoryCopyList
 
  private:
 
-  SpecificMemoryCopy<std::byte, 1> m_s1;
-  SpecificMemoryCopy<Int16, 1> m_s2;
-  SpecificMemoryCopy<std::byte, 3> m_s3;
-  SpecificMemoryCopy<Int32, 1> m_s4;
-  SpecificMemoryCopy<std::byte, 5> m_s5;
-  SpecificMemoryCopy<Int16, 3> m_s6;
-  SpecificMemoryCopy<std::byte, 7> m_s7;
-  SpecificMemoryCopy<Int64, 1> m_s8;
-  SpecificMemoryCopy<std::byte, 9> m_s9;
-  SpecificMemoryCopy<Int16, 5> m_s10;
-  SpecificMemoryCopy<Int32, 3> m_s12;
+  SpecificMemoryCopy<std::byte, ExtentValue<1>> m_s1;
+  SpecificMemoryCopy<Int16, ExtentValue<1>> m_s2;
+  SpecificMemoryCopy<std::byte, ExtentValue<3>> m_s3;
+  SpecificMemoryCopy<Int32, ExtentValue<1>> m_s4;
+  SpecificMemoryCopy<std::byte, ExtentValue<5>> m_s5;
+  SpecificMemoryCopy<Int16, ExtentValue<3>> m_s6;
+  SpecificMemoryCopy<std::byte, ExtentValue<7>> m_s7;
+  SpecificMemoryCopy<Int64, ExtentValue<1>> m_s8;
+  SpecificMemoryCopy<std::byte, ExtentValue<9>> m_s9;
+  SpecificMemoryCopy<Int16, ExtentValue<5>> m_s10;
+  SpecificMemoryCopy<Int32, ExtentValue<3>> m_s12;
 
-  SpecificMemoryCopy<Int64, 2> m_s16;
-  SpecificMemoryCopy<Int64, 3> m_s24;
-  SpecificMemoryCopy<Int64, 4> m_s32;
-  SpecificMemoryCopy<Int64, 5> m_s40;
-  SpecificMemoryCopy<Int64, 6> m_s48;
-  SpecificMemoryCopy<Int64, 7> m_s56;
-  SpecificMemoryCopy<Int64, 8> m_s64;
-  SpecificMemoryCopy<Int64, 9> m_s72;
+  SpecificMemoryCopy<Int64, ExtentValue<2>> m_s16;
+  SpecificMemoryCopy<Int64, ExtentValue<3>> m_s24;
+  SpecificMemoryCopy<Int64, ExtentValue<4>> m_s32;
+  SpecificMemoryCopy<Int64, ExtentValue<5>> m_s40;
+  SpecificMemoryCopy<Int64, ExtentValue<6>> m_s48;
+  SpecificMemoryCopy<Int64, ExtentValue<7>> m_s56;
+  SpecificMemoryCopy<Int64, ExtentValue<8>> m_s64;
+  SpecificMemoryCopy<Int64, ExtentValue<9>> m_s72;
 
   std::array<ISpecificMemoryCopy*, NB_COPIER> m_copier;
 };
