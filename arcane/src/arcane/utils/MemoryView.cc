@@ -73,12 +73,11 @@ class SpecificMemoryCopy
   void _copyFrom(Span<const Int32> indexes, Span<const DataType> source,
                  Span<DataType> destination)
   {
-    static constexpr Int32 N = m_extent.v;
     Int64 nb_index = indexes.size();
     for (Int32 i = 0; i < nb_index; ++i) {
-      Int64 zindex = i * N;
-      Int64 zci = indexes[i] * N;
-      for (Int32 z = 0; z < N; ++z)
+      Int64 zindex = i * m_extent.v;
+      Int64 zci = indexes[i] * m_extent.v;
+      for (Int32 z = 0, n = m_extent.v; z < n; ++z)
         destination[zindex + z] = source[zci + z];
     }
   }
@@ -86,18 +85,17 @@ class SpecificMemoryCopy
   void _copyTo(Span<const Int32> indexes, Span<const DataType> source,
                Span<DataType> destination)
   {
-    static constexpr Int32 N = m_extent.v;
     Int64 nb_index = indexes.size();
 
     for (Int32 i = 0; i < nb_index; ++i) {
-      Int64 zindex = i * N;
-      Int64 zci = indexes[i] * N;
-      for (Int32 z = 0; z < N; ++z)
+      Int64 zindex = i * m_extent.v;
+      Int64 zci = indexes[i] * m_extent.v;
+      for (Int32 z = 0, n = m_extent.v; z < n; ++z)
         destination[zci + z] = source[zindex + z];
     }
   }
 
- private:
+ public:
 
   Extent m_extent;
 
@@ -111,6 +109,40 @@ class SpecificMemoryCopy
   {
     return { reinterpret_cast<DataType*>(a.data()), a.size() / typeSize() };
   }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class SpecificMemoryCopyRef
+{
+ public:
+
+  SpecificMemoryCopyRef(ISpecificMemoryCopy* specialized_copier, Int32 datatype_size)
+  : m_specialized_copier(specialized_copier)
+  , m_used_copier(specialized_copier)
+  {
+    m_generic_copier.m_extent.v = datatype_size;
+    if (!m_used_copier)
+      m_used_copier = &m_generic_copier;
+  }
+
+  void copyFrom(Span<const Int32> indexes, Span<const std::byte> source,
+                Span<std::byte> destination)
+  {
+    m_used_copier->copyFrom(indexes, source, destination);
+  }
+  void copyTo(Span<const Int32> indexes, Span<const std::byte> source,
+              Span<std::byte> destination)
+  {
+    m_used_copier->copyTo(indexes, source, destination);
+  }
+
+ private:
+
+  ISpecificMemoryCopy* m_specialized_copier = nullptr;
+  SpecificMemoryCopy<std::byte, ExtentValue<DynExtent>> m_generic_copier;
+  ISpecificMemoryCopy* m_used_copier = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -148,9 +180,18 @@ class SpecificMemoryCopyList
     m_copier[56] = &m_s56;
     m_copier[64] = &m_s64;
     m_copier[72] = &m_s72;
+
+    m_nb_specialized = 0;
+    m_nb_generic = 0;
   }
 
  public:
+
+  void printStats()
+  {
+    std::cout << "SpecificMemory::nb_specialized=" << m_nb_specialized
+              << " nb_generic=" << m_nb_generic << "\n";
+  }
 
   void checkValid()
   {
@@ -164,20 +205,22 @@ class SpecificMemoryCopyList
 
  public:
 
-  ISpecificMemoryCopy* copier(Int64 v)
+  SpecificMemoryCopyRef copier(Int32 v)
   {
-    if (v <= 0)
-      return nullptr;
-    if (v >= NB_COPIER)
-      return nullptr;
-    auto* x = m_copier[v];
-#ifdef ARCANE_CHECK
+    if (v < 0)
+      ARCANE_FATAL("Bad value {0} for datasize", v);
+
+    ISpecificMemoryCopy* x = nullptr;
+    if (v >= 0 && v < NB_COPIER)
+      x = m_copier[v];
     if (x) {
       if (x->datatypeSize() != v)
         ARCANE_FATAL("Incoherent datatype size v={0} expected={1}", x->datatypeSize(), v);
+      ++m_nb_specialized;
     }
-#endif
-    return x;
+    else
+      ++m_nb_generic;
+    return SpecificMemoryCopyRef(x, v);
   }
 
  private:
@@ -204,6 +247,8 @@ class SpecificMemoryCopyList
   SpecificMemoryCopy<Int64, ExtentValue<9>> m_s72;
 
   std::array<ISpecificMemoryCopy*, NB_COPIER> m_copier;
+  std::atomic<Int32> m_nb_specialized;
+  std::atomic<Int32> m_nb_generic;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -250,7 +295,7 @@ copyHost(ConstMemoryView v)
 void MutableMemoryView::
 copyFromIndexesHost(ConstMemoryView v, Span<const Int32> indexes)
 {
-  Int64 one_data_size = m_datatype_size;
+  Int32 one_data_size = m_datatype_size;
   Int64 v_one_data_size = v.datatypeSize();
   if (one_data_size != v_one_data_size)
     ARCANE_FATAL("Datatype size are not equal this={0} v={1}",
@@ -263,18 +308,8 @@ copyFromIndexesHost(ConstMemoryView v, Span<const Int32> indexes)
   auto source = v.bytes();
   auto destination = bytes();
 
-  auto* copier = global_copy_list.copier(one_data_size);
-  if (copier) {
-    copier->copyFrom(indexes, source, destination);
-    return;
-  }
-
-  for (Int32 i = 0; i < nb_index; ++i) {
-    Int64 zindex = i * one_data_size;
-    Int64 zci = indexes[i] * one_data_size;
-    for (Integer z = 0; z < one_data_size; ++z)
-      destination[zindex + z] = source[zci + z];
-  }
+  impl::SpecificMemoryCopyRef copier = global_copy_list.copier(one_data_size);
+  copier.copyFrom(indexes, source, destination);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -283,7 +318,7 @@ copyFromIndexesHost(ConstMemoryView v, Span<const Int32> indexes)
 void ConstMemoryView::
 copyToIndexesHost(MutableMemoryView v, Span<const Int32> indexes)
 {
-  Int64 one_data_size = m_datatype_size;
+  Int32 one_data_size = m_datatype_size;
   Int64 v_one_data_size = v.datatypeSize();
   if (one_data_size != v_one_data_size)
     ARCANE_FATAL("Datatype size are not equal this={0} v={1}",
@@ -296,18 +331,8 @@ copyToIndexesHost(MutableMemoryView v, Span<const Int32> indexes)
   auto source = bytes();
   auto destination = v.bytes();
 
-  auto* copier = global_copy_list.copier(one_data_size);
-  if (copier) {
-    copier->copyTo(indexes, source, destination);
-    return;
-  }
-
-  for (Int32 i = 0; i < nb_index; ++i) {
-    Int64 zindex = i * one_data_size;
-    Int64 zci = indexes[i] * one_data_size;
-    for (Integer z = 0; z < one_data_size; ++z)
-      destination[zci + z] = source[zindex + z];
-  }
+  impl::SpecificMemoryCopyRef copier = global_copy_list.copier(one_data_size);
+  copier.copyTo(indexes, source, destination);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -328,6 +353,18 @@ makeConstMemoryView(const void* ptr, Int32 datatype_size, Int64 nb_element)
 {
   Span<const std::byte> bytes(reinterpret_cast<const std::byte*>(ptr), datatype_size * nb_element);
   return ConstMemoryView(bytes, datatype_size, nb_element);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+extern "C++" ARCANE_UTILS_EXPORT void
+arcanePrintSpecificMemoryStats()
+{
+  if (arcaneIsCheck()) {
+    // N'affiche que pour les tests
+    //global_copy_list.printStats();
+  }
 }
 
 /*---------------------------------------------------------------------------*/
