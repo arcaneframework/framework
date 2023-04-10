@@ -274,6 +274,8 @@ if(PARTITIONER_FOUND)
   ARCANE_ADD_TEST_PARALLEL(partial-variable testPartialVariable.arc 4)
 endif()
 ARCANE_ADD_TEST_SEQUENTIAL(caseoptions testCaseOptions-1.arc)
+arcane_add_test_sequential(caseoptions_specificentrypoint testCaseOptions-specific-entry-point.arc
+  "-We,ARCANE_CALL_SPECIFIC_ENTRY_POINT,CaseOptionLoop2")
 if(UDUNITS_FOUND)
   ARCANE_ADD_TEST_SEQUENTIAL(caseoptions_unit testCaseOptions-2.arc)
 endif()
