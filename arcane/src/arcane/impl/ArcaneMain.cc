@@ -174,6 +174,9 @@ createGlibDynamicLibraryLoader();
 extern "C++" ARCANE_IMPL_EXPORT ICodeService*
 createArcaneCodeService(IApplication* app);
 
+extern "C++" ARCANE_UTILS_EXPORT void
+arcanePrintSpecificMemoryStats();
+
 std::atomic<Int32> ArcaneMain::m_nb_arcane_init(0);
 std::atomic<Int32> ArcaneMain::m_is_init_done(0);
 bool ArcaneMain::m_has_garbage_collector = false;
@@ -732,6 +735,7 @@ arcaneFinalize()
         delete x;
       }
     }
+    arcanePrintSpecificMemoryStats();
     arcaneExitCheckMemory();
     platform::platformTerminate();
     dom::DOMImplementation::terminate();
