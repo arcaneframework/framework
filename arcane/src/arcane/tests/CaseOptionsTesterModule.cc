@@ -131,14 +131,18 @@ class CaseOptionsTesterModule
   virtual void build();
   virtual void init();
   virtual void arcaneLoop();
+  virtual void arcaneLoop2();
   
  private:
 	
+  Arcane::ObserverPool m_observers;
+  bool m_arcane_loop_done = false;
+
+ private:
+
   static void _createTimeLoop(Arcane::ISubDomain* sd);
   void _applyVisitor();
   void _testDynamicService();
-
-  Arcane::ObserverPool m_observers;
 
   void _onBeforePhase1();
   void _onBeforePhase2();
@@ -249,6 +253,8 @@ CaseOptionsTesterModule(const Arcane::ModuleBuildInfo& mb)
                 &CaseOptionsTesterModule::init,IEntryPoint::WInit);
   addEntryPoint(this,"CaseOptionLoop",
                 &CaseOptionsTesterModule::arcaneLoop);
+  addEntryPoint(this,"CaseOptionLoop2",
+                &CaseOptionsTesterModule::arcaneLoop2);
 
   ICaseMng* cm = mb.subDomain()->caseMng();
   {
@@ -295,6 +301,7 @@ _createTimeLoop(Arcane::ISubDomain* sd)
 
   ITimeLoopMng* tlm = sd->timeLoopMng();
   ITimeLoop* time_loop = tlm->createTimeLoop(time_loop_name);
+  ITimeLoop* time_loop2 = tlm->createTimeLoop("CaseOptionsTester2");
 
   {
     List<TimeLoopEntryPointInfo> clist;
@@ -313,14 +320,22 @@ _createTimeLoop(Arcane::ISubDomain* sd)
     clist.add(TimeLoopEntryPointInfo("CaseOptionsTester.CaseOptionLoop"));
     time_loop->setEntryPoints(ITimeLoop::WComputeLoop,clist);
   }
+  {
+    List<TimeLoopEntryPointInfo> clist;
+    clist.add(TimeLoopEntryPointInfo("CaseOptionsTester.CaseOptionLoop"));
+    clist.add(TimeLoopEntryPointInfo("CaseOptionsTester.CaseOptionLoop2"));
+    time_loop2->setEntryPoints(ITimeLoop::WComputeLoop,clist);
+  }
 
   {
     StringList clist;
     clist.add(String("CaseOptionsTester"));
     time_loop->setRequiredModulesName(clist);
+    time_loop2->setRequiredModulesName(clist);
   }
 
   tlm->registerTimeLoop(time_loop);
+  tlm->registerTimeLoop(time_loop2);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -394,6 +409,19 @@ arcaneLoop()
   if (sii){
     info() << "service-instance-test1 implementation name=" << sii->implementationName();
   }
+  m_arcane_loop_done = true;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void CaseOptionsTesterModule::
+arcaneLoop2()
+{
+  // Pour tester l'appel spécifique à un point d'entrée.
+  info() << "ArcaneLoop2";
+  if (m_arcane_loop_done)
+    ARCANE_FATAL("Only this entry point should be called");
 }
 
 /*---------------------------------------------------------------------------*/
