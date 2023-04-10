@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* TimeLoopMng.cc                                              (C) 2000-2022 */
+/* TimeLoopMng.cc                                              (C) 2000-2023 */
 /*                                                                           */
 /* Gestionnaire de la boucle en temps.                                       */
 /*---------------------------------------------------------------------------*/
@@ -300,6 +300,9 @@ class TimeLoopMng
   // Service de message passing profiling
   Ref<IMessagePassingProfilingService> m_msg_pass_prof_srv;
 
+  //! Pour test, point d'entrée spécifique à appeler
+  String m_specific_entry_point_name;
+
  private:
 
   void _execOneEntryPoint(IEntryPoint* ic, Integer index_value = 0, bool do_verif = false);
@@ -311,6 +314,7 @@ class TimeLoopMng
   void _doMeshPartition();
   void _fillModuleFactoryMap();
   void _createSingletonServices(IServiceLoader* service_loader);
+  void _callSpecificEntryPoint();
 };
 
 /*---------------------------------------------------------------------------*/
@@ -431,6 +435,15 @@ build()
     if (s=="1" || s=="true" || s=="TRUE"){
       m_verification_only_at_exit = true;
       info() << "Do verification only at exit";
+    }
+  }
+  // Regarde si on n'exécute qu'un seul point d'entrée au lieu de la boucle
+  // en temps. Cela est utilisé uniquement pour des tests
+  {
+    String s = platform::getEnvironmentVariable("ARCANE_CALL_SPECIFIC_ENTRY_POINT");
+    if (!s.null()){
+      m_specific_entry_point_name = s;
+      info() << "Use specific entry point: " << s;
     }
   }
 
@@ -1006,6 +1019,19 @@ _doMeshPartition()
   }
     // Affiche les statistiques d'exécution
   sd->timeStats()->dumpCurrentStats("MeshLoadBalance");
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void TimeLoopMng::
+_callSpecificEntryPoint()
+{
+  IEntryPoint* ep = m_entry_point_mng->findEntryPoint(m_specific_entry_point_name);
+  info() << "Calling specific entry point: " << m_specific_entry_point_name;
+  if (!ep)
+    ARCANE_FATAL("No entry point named '{0}' found",m_specific_entry_point_name);
+  ep->executeEntryPoint();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1789,6 +1815,10 @@ doComputeLoop(Integer max_loop)
     if (want_specific_profiling)
       ps = nullptr;
     ProfilingSentry ps_sentry(ps);
+    if (!m_specific_entry_point_name.null()){
+      _callSpecificEntryPoint();
+      is_end = true;
+    }
     while (!is_end){
       if (max_loop!=0 && m_nb_loop>=max_loop){
         info()<<"===================================================";
