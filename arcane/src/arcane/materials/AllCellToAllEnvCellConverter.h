@@ -14,11 +14,13 @@
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+#include "arcane/utils/PlatformUtils.h"
 #include "arcane/core/IMesh.h"
 #include "arcane/core/materials/MaterialsCoreGlobal.h"
 #include "arcane/core/materials/MatItem.h"
 #include "arcane/core/materials/IMeshMaterialMng.h"
 #include "arcane/core/materials/MatItemEnumerator.h"
+#include "arcane/core/materials/CellToAllEnvCellConverter.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -36,11 +38,8 @@ namespace Arcane::Materials
  Classe singleton qui stoque la connectivité de toutes les mailles 
  \a Cell vers toutes leurs mailles \a AllEnvCell.
  
- On récupère l'instance unique via la méthode statique getInstance() qui 
- la créée le cas échéant (Singleton de Meyers) :
- \code
- * auto& allCell2AllEnvCell(::Arcane::Materials::AllCell2AllEnvCell::getInstance());
- \endcode
+ On crée l'unique instance via la méthode statique createInstance().
+ On récupère l'instance unique via la méthode statique getInstance().
 
  Le coût de l'initialisation est cher, il faut allouer la mémoire et remplir les 
  structures. On parcours toutes les mailles et pour chaque maille on fait 
@@ -50,7 +49,8 @@ namespace Arcane::Materials
  la topologie des matériaux/environnements change (ce qui est également cher).
  
  \code
- * auto& ac2aec(::Arcane::Materials::AllCell2AllEnvCell::getInstance());
+ * ::Arcane::Materials::AllCell2AllEnvCell::createInstance(...);
+ * auto* ac2aec(::Arcane::Materials::AllCell2AllEnvCell::getInstance());
  * command << RUNCOMMAND_ENUMERATE(Cell, cid, allCells()) {
  *   for (Int32 i(0); i < ac2aec->getAllCell2AllEnvCellTable()[cid].size(); ++i) {
  *     const auto& mvi(ac2aec->getAllCell2AllEnvCellTable()[cid][i]);
@@ -66,22 +66,27 @@ class AllCell2AllEnvCell
  private:
 
   AllCell2AllEnvCell()
-  : m_mm(nullptr), m_alloc(nullptr), m_nb_allcell(0), m_allcell_allenvcell(nullptr){}
+  : m_mm(nullptr), m_alloc(nullptr), m_nb_allcell(0), m_allcell_allenvcell(nullptr) {}
 
+  //! Private method to free all memory using allocator
   void reset()
   {
-    if (m_allcell_allenvcell) {
-      for (Int64 i(0); i < m_nb_allcell; ++i) {
-        if (!m_allcell_allenvcell[i].empty()) {
-          m_alloc->deallocate(m_allcell_allenvcell[i].data());
+    if (s_instance) {
+      if (m_allcell_allenvcell) {
+        for (Int64 i(0); i < m_nb_allcell; ++i) {
+          if (!m_allcell_allenvcell[i].empty()) {
+            m_alloc->deallocate(m_allcell_allenvcell[i].data());
+          }
         }
+        m_alloc->deallocate(m_allcell_allenvcell);
+        m_allcell_allenvcell = nullptr;
       }
-      m_alloc->deallocate(m_allcell_allenvcell);
-      m_allcell_allenvcell = nullptr;
+      m_mm = nullptr;
+      m_alloc = nullptr;
+      m_nb_allcell = 0;
+      m_alloc->deallocate(s_instance);
+      s_instance = nullptr;
     }
-    m_mm = nullptr;
-    m_alloc = nullptr;
-    m_nb_allcell = 0;
   }
 
   ~AllCell2AllEnvCell()
@@ -96,37 +101,47 @@ class AllCell2AllEnvCell
   AllCell2AllEnvCell& operator=(const AllCell2AllEnvCell&) = delete;
 
   //! Méthode d'accès au singleton (créé l'objet si nécessaire)
-  // (singleton à la Meyers)
-  static AllCell2AllEnvCell& getInstance()
+  static AllCell2AllEnvCell* getInstance()
   {
-    static AllCell2AllEnvCell instance;
-    return instance;
+    return s_instance;
   }
 
   /*!
-   * La fonction d'initialisation doit attendre que les informations relatives
-   * aux matériaux soient finalisées
+   * La fonction de création du singleton. Il faut attendre que les données
+   * relatives aux matériaux soient finalisées
    */
-  void init(IMeshMaterialMng* mm, IMemoryAllocator* alloc)
+  static void createInstance(IMeshMaterialMng* mm, IMemoryAllocator* alloc)
   {
-    m_mm = mm;
-    m_alloc = alloc;
-    m_nb_allcell = m_mm->mesh()->allCells().size();
+    if (s_instance)
+      ARCANE_FATAL("Instance of AllCell2AllEnvCell already created.");
+
+    std::cout << "#################################################################" << std::endl;
+    std::cout << "########## AllCell2AllEnvCell::createInstance call !!! ##########" << std::endl;
+    std::cout << "#################################################################" << std::endl;
+    s_instance = reinterpret_cast<AllCell2AllEnvCell*>(alloc->allocate(sizeof(AllCell2AllEnvCell)));
+    if (!s_instance)
+      ARCANE_FATAL("Unable to allocate memory for AllCell2AllEnvCell instance");
+    else
+      printf("AllCell2AllEnvCell::s_instance = %p\n", (void*)s_instance);
+    std::cout << "#################################################################" << std::endl;
+    s_instance->m_mm = mm;
+    s_instance->m_alloc = alloc;
+    s_instance->m_nb_allcell = mm->mesh()->allCells().size();
     
-    CellToAllEnvCellConverter all_env_cell_converter(m_mm);
+    CellToAllEnvCellConverter all_env_cell_converter(mm);
 
-    m_allcell_allenvcell = reinterpret_cast<Span<ComponentItemLocalId>*>(m_alloc->allocate(sizeof(Span<ComponentItemLocalId>) * m_nb_allcell));
+    s_instance->m_allcell_allenvcell = reinterpret_cast<Span<ComponentItemLocalId>*>(
+      alloc->allocate(sizeof(Span<ComponentItemLocalId>) * s_instance->m_nb_allcell));
 
-    ENUMERATE_CELL(icell, m_mm->mesh()->allCells())
+    ENUMERATE_CELL(icell, mm->mesh()->allCells())
     {
-      Cell cell = *icell;
-      Integer cid = cell.localId();
-      AllEnvCell all_env_cell = all_env_cell_converter[cell];
+      Int32 cid = icell->itemLocalId();
+      AllEnvCell all_env_cell = all_env_cell_converter[CellLocalId(cid)];
       ComponentItemLocalId* env_cells(nullptr);
       Span<ComponentItemLocalId> env_cells_span;
       Integer nb_env(all_env_cell.nbEnvironment());
       if (nb_env) {
-        env_cells = reinterpret_cast<ComponentItemLocalId*>(m_alloc->allocate(sizeof(ComponentItemLocalId) * nb_env));
+        env_cells = reinterpret_cast<ComponentItemLocalId*>(alloc->allocate(sizeof(ComponentItemLocalId) * nb_env));
         Integer i(0);
         ENUMERATE_CELL_ENVCELL(ienvcell,all_env_cell) {
           EnvCell ev = *ienvcell;
@@ -135,7 +150,7 @@ class AllCell2AllEnvCell
         }
         env_cells_span = Span<ComponentItemLocalId>(env_cells, nb_env);
       }
-      m_allcell_allenvcell[cid] = env_cells_span;
+      s_instance->m_allcell_allenvcell[cid] = env_cells_span;
     }
   }
 
@@ -144,6 +159,9 @@ class AllCell2AllEnvCell
   // SI on garde cette classe et ce concept... ça m'étonnerait...
   void bruteForceUpdate(Int32ConstArrayView ids)
   {
+    // TODO: Je met un fatal, à supprimer une fois bien testé/exploré
+      ARCANE_FATAL("AllCell2AllEnvCell::bruteForceUpdate call !!!");
+
     // A priori, je ne pense pas que le nb de maille ait changé quand on fait un 
     // ForceRecompute. Mais ça doit arriver ailleurs... le endUpdate ?
     if (m_nb_allcell != m_mm->mesh()->allCells().size()) {
@@ -154,12 +172,12 @@ class AllCell2AllEnvCell
       IMeshMaterialMng* mm(m_mm);
       IMemoryAllocator* alloc(m_alloc);
       reset();
-      getInstance().init(mm, alloc);
+      createInstance(mm, alloc);
     } else {
       // Si le nb de maille n'a pas changé, on reconstruit en fonction de la liste de maille
       CellToAllEnvCellConverter all_env_cell_converter(m_mm);
-      for (Integer i(0), n=ids.size(); i<n; ++i) {
-        CellLocalId lid = static_cast<CellLocalId>(ids[i]);
+      for (Int32 i(0), n=ids.size(); i<n; ++i) {
+        CellLocalId lid(ids[i]);
         // Si c'est pas vide, on efface et on refait
         if (!m_allcell_allenvcell[lid].empty()) {
           m_alloc->deallocate(m_allcell_allenvcell[lid].data());
@@ -196,6 +214,7 @@ class AllCell2AllEnvCell
   IMemoryAllocator* m_alloc;
   Integer m_nb_allcell;
   Span<ComponentItemLocalId>* m_allcell_allenvcell;
+  static AllCell2AllEnvCell* s_instance;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -213,16 +232,16 @@ class Cell2AllComponentCellEnumerator
   ARCCORE_HOST_DEVICE Cell2AllComponentCellEnumerator(Integer cell_id)
   : m_cid(cell_id), m_index(0)
 #if defined(__CUDA_ARCH__) || defined(__HIP_DEVICE_COMPILE__)
-  , m_ptr(&::Arcane::Materials::AllCell2AllEnvCell::getInstance().getAllCell2AllEnvCellTable()[cell_id])
+  , m_ptr(&::Arcane::Materials::AllCell2AllEnvCell::getInstance()->getAllCell2AllEnvCellTable()[cell_id])
   , m_size((*m_ptr).size())
   {
   }
 #else
   , m_ptr(nullptr), m_size(0)
   {
-    auto& allCell2AllEnvCell(::Arcane::Materials::AllCell2AllEnvCell::getInstance());
-    if (allCell2AllEnvCell.getAllCell2AllEnvCellTable()) {
-      m_ptr = &::Arcane::Materials::AllCell2AllEnvCell::getInstance().getAllCell2AllEnvCellTable()[cell_id];
+    auto* allCell2AllEnvCell(::Arcane::Materials::AllCell2AllEnvCell::getInstance());
+    if (allCell2AllEnvCell) {
+      m_ptr = &allCell2AllEnvCell->getAllCell2AllEnvCellTable()[cell_id];
       m_size = (*m_ptr).size();
     } else {
       ARCANE_FATAL("Must initialize AllCell2AllEnvCell singleton before using ENUMERATE_ALLENVCELL");
