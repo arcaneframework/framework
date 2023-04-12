@@ -70,6 +70,7 @@ class ARCANE_LAUNCHER_EXPORT StandaloneSubDomain
   // Pour ArcaneLauncher.
   void _initUniqueInstance(const String& case_file_name);
   bool _isValid();
+  static void _notifyRemoveStandaloneSubDomain();
 };
 
 /*---------------------------------------------------------------------------*/

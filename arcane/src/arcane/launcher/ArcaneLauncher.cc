@@ -51,7 +51,7 @@ bool _checkInitCalled()
   }
   return false;
 }
-StandaloneSubDomain global_standalone_sub_domain;
+bool global_has_standalone_sub_domain = false;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -392,13 +392,22 @@ createStandaloneAcceleratorMng()
 StandaloneSubDomain ArcaneLauncher::
 createStandaloneSubDomain(const String& case_file_name)
 {
-  if (global_standalone_sub_domain._isValid())
+  if (global_has_standalone_sub_domain)
     ARCANE_FATAL("ArcaneLauncher::createStandaloneSubDomain() should only be called once");
   _initStandalone();
   StandaloneSubDomain s;
   s._initUniqueInstance(case_file_name);
-  global_standalone_sub_domain = s;
+  global_has_standalone_sub_domain = true;
   return s;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ArcaneLauncher::
+_notifyRemoveStandaloneSubDomain()
+{
+  global_has_standalone_sub_domain = false;
 }
 
 /*---------------------------------------------------------------------------*/
