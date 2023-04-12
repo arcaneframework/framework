@@ -447,21 +447,17 @@ MatrixDistribution::MatrixDistribution(Integer global_row_size, Integer global_c
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MatrixDistribution::MatrixDistribution(const MatrixDistribution& dist)
-: m_internal(dist.m_internal)
-{}
+MatrixDistribution::MatrixDistribution(const MatrixDistribution& dist) = default;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MatrixDistribution::MatrixDistribution(MatrixDistribution&& dist)
-: m_internal(std::move(dist.m_internal))
-{}
+MatrixDistribution::MatrixDistribution(MatrixDistribution&& dist) = default;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-MatrixDistribution::~MatrixDistribution() {}
+MatrixDistribution::~MatrixDistribution() = default;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -505,21 +501,12 @@ MatrixDistribution::colSpace() const
 /*---------------------------------------------------------------------------*/
 
 MatrixDistribution&
-MatrixDistribution::operator=(const MatrixDistribution& dist)
-{
-  m_internal = dist.m_internal;
-  return *this;
-}
-
+MatrixDistribution::operator=(const MatrixDistribution& dist) = default;
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 MatrixDistribution&
-MatrixDistribution::operator=(MatrixDistribution&& dist)
-{
-  m_internal = std::move(dist.m_internal);
-  return *this;
-}
+MatrixDistribution::operator=(MatrixDistribution&& dist) = default;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -717,7 +704,7 @@ MatrixDistribution::colLocalToGlobal(Integer i) const
 Integer
 MatrixDistribution::colLocalToGlobal(Integer i, Integer p) const
 {
-  if (m_internal->m_col_distribution.get())
+  if (!m_internal->m_col_distribution.get())
     return m_internal->m_row_distribution->localToGlobal(i, p);
   else
     return m_internal->m_col_distribution->localToGlobal(i, p);
