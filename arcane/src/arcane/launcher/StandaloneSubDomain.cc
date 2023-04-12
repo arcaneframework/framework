@@ -34,6 +34,10 @@ class StandaloneSubDomain::Impl
  public:
 
   Impl() = default;
+  ~Impl()
+  {
+    StandaloneSubDomain::_notifyRemoveStandaloneSubDomain();
+  }
 
   void init(const String& case_file_name)
   {
@@ -109,6 +113,15 @@ bool StandaloneSubDomain::
 _isValid()
 {
   return m_p.get();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void StandaloneSubDomain::
+_notifyRemoveStandaloneSubDomain()
+{
+  ArcaneLauncher::_notifyRemoveStandaloneSubDomain();
 }
 
 /*---------------------------------------------------------------------------*/

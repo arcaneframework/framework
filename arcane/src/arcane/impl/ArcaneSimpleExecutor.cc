@@ -67,6 +67,10 @@ class ArcaneSimpleExecutor::Impl
   }
   ~Impl()
   {
+    for (ITimeStats* ts : m_time_stats_list){
+      ts->endGatherStats();
+      delete ts;
+    }
     if (m_arcane_main){
       m_arcane_main->finalize();
       delete m_arcane_main;
@@ -80,6 +84,7 @@ class ArcaneSimpleExecutor::Impl
   ApplicationBuildInfo m_application_build_info;
   bool m_has_minimal_verbosity_level = false;
   bool m_has_output_level = false;
+  UniqueArray<ITimeStats*> m_time_stats_list;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -228,9 +233,10 @@ createSubDomain(const String& case_file_name)
     sdbi.setCaseFileName(String());
     sdbi.setCaseBytes(ByteConstArrayView());
   }
+  // Le service de statistiques doit être détruit explicitement
   ITimeStats* time_stat = main_factory->createTimeStats(world_pm->timerMng(),tr,"Stats");
-  //sub_info->m_time_stats = time_stat;
   time_stat->beginGatherStats();
+  m_p->m_time_stats_list.add(time_stat);
   world_pm->setTimeStats(time_stat);
 
   ISubDomain* sub_domain(session->createSubDomain(sdbi));

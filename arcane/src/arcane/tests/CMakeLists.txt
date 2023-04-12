@@ -315,8 +315,7 @@ arcane_add_accelerator_test_sequential(standalone_accelerator_testemptykernel du
 
 arcane_add_test_sequential(standalone_subdomain1 dummy.arc "-A,StandaloneSubDomainMethod=Test1")
 arcane_add_test_sequential(standalone_subdomain2 dummy.arc "-A,StandaloneSubDomainMethod=Test2")
-# Ne fonctionne pas encore
-# arcane_add_test_parallel(standalone_subdomain2 dummy.arc 4 "-A,StandaloneSubDomainMethod=Test2")
+arcane_add_test_parallel(standalone_subdomain2 dummy.arc 4 "-A,StandaloneSubDomainMethod=Test2")
 
 # ----------------------------------------------------------------------------
 

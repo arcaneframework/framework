@@ -71,6 +71,8 @@ class IMainFactory;
  */
 class ARCANE_LAUNCHER_EXPORT ArcaneLauncher
 {
+  friend StandaloneSubDomain;
+
  public:
 
   /*!
@@ -216,6 +218,7 @@ class ARCANE_LAUNCHER_EXPORT ArcaneLauncher
  private:
 
   static void _initStandalone();
+  static void _notifyRemoveStandaloneSubDomain();
 };
 
 /*---------------------------------------------------------------------------*/
