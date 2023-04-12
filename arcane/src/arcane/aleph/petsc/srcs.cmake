@@ -1,5 +1,5 @@
 set(ARCANE_SOURCES
-  IAlephPETSc.cc
+  AlephPETSc.cc
   IAlephPETSc.h
   )
  
