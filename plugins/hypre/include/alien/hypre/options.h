@@ -43,6 +43,13 @@ struct OptionTypes
     ParaSailsPC,
     EuclidPC
   };
+
+  enum class eProblem
+  {
+    Geometric_2D,
+    Geometric_3D,
+    Default
+  };
 };
 
 struct Options
@@ -71,7 +78,7 @@ struct Options
     return *this;
   }
 
-  Alien::Hypre::OptionTypes::eSolver solver_ = Alien::Hypre::OptionTypes::GMRES;
+  Alien::Hypre::OptionTypes::eSolver solver_ = Alien::Hypre::OptionTypes::eSolver::GMRES;
   Alien::Hypre::OptionTypes::eSolver solver() const { return solver_; }
   Options& solver(Alien::Hypre::OptionTypes::eSolver n)
   {
@@ -79,11 +86,19 @@ struct Options
     return *this;
   }
 
-  Alien::Hypre::OptionTypes::ePreconditioner preconditioner_ = Alien::Hypre::OptionTypes::AMGPC;
+  Alien::Hypre::OptionTypes::ePreconditioner preconditioner_ = Alien::Hypre::OptionTypes::ePreconditioner::AMGPC;
   Alien::Hypre::OptionTypes::ePreconditioner preconditioner() const { return preconditioner_; }
   Options& preconditioner(Alien::Hypre::OptionTypes::ePreconditioner n)
   {
     preconditioner_ = n;
+    return *this;
+  }
+
+  Alien::Hypre::OptionTypes::eProblem problem_ = Alien::Hypre::OptionTypes::eProblem::Default;
+  auto problemKind() const { return problem_; }
+  Options& problemKind(Alien::Hypre::OptionTypes::eProblem n)
+  {
+    problem_ = n;
     return *this;
   }
 };
@@ -91,18 +106,18 @@ struct Options
 class OptionsUtils
 {
  public:
-  static OptionTypes::eSolver stringToSolverEnum(std::string solver_s)
+  static OptionTypes::eSolver stringToSolverEnum(const std::string& solver_s)
   {
     if (solver_s.compare("amg") == 0)
-      return OptionTypes::AMG;
+      return OptionTypes::eSolver::AMG;
     else if (solver_s.compare("cg") == 0)
-      return OptionTypes::CG;
+      return OptionTypes::eSolver::CG;
     else if (solver_s.compare("gmres") == 0)
-      return OptionTypes::GMRES;
+      return OptionTypes::eSolver::GMRES;
     else if (solver_s.compare("bicgstab") == 0)
-      return OptionTypes::BiCGStab;
+      return OptionTypes::eSolver::BiCGStab;
     else if (solver_s.compare("hybrid") == 0)
-      return OptionTypes::Hybrid;
+      return OptionTypes::eSolver::Hybrid;
     else
       throw Arccore::FatalErrorException(A_FUNCINFO, Arccore::String::format("solver enum name: {0} is not consistent with axl definition", solver_s));
   }
@@ -110,33 +125,33 @@ class OptionsUtils
   static std::string solverEnumToString(OptionTypes::eSolver solver)
   {
     switch (solver) {
-    case OptionTypes::AMG:
+    case OptionTypes::eSolver::AMG:
       return "amg";
-    case OptionTypes::CG:
+    case OptionTypes::eSolver::CG:
       return "cg";
-    case OptionTypes::GMRES:
+    case OptionTypes::eSolver::GMRES:
       return "gmres";
-    case OptionTypes::BiCGStab:
+    case OptionTypes::eSolver::BiCGStab:
       return "bicgstab";
-    case OptionTypes::Hybrid:
+    case OptionTypes::eSolver::Hybrid:
       return "hybrid";
     default:
-      throw Arccore::FatalErrorException(A_FUNCINFO, Arccore::String::format("Unmanaged HypreOptionTypes::eSolver value: {0}", solver));
+      throw Arccore::FatalErrorException(A_FUNCINFO, Arccore::String::format("Unmanaged HypreOptionTypes::eSolver"));
     }
   }
 
-  static OptionTypes::ePreconditioner stringToPreconditionerEnum(std::string preconditioner_s)
+  static OptionTypes::ePreconditioner stringToPreconditionerEnum(const std::string& preconditioner_s)
   {
     if (preconditioner_s.compare("none") == 0)
-      return OptionTypes::NoPC;
+      return OptionTypes::ePreconditioner::NoPC;
     else if (preconditioner_s.compare("diag") == 0)
-      return OptionTypes::DiagPC;
+      return OptionTypes::ePreconditioner::DiagPC;
     else if (preconditioner_s.compare("amg") == 0)
-      return OptionTypes::AMGPC;
+      return OptionTypes::ePreconditioner::AMGPC;
     else if (preconditioner_s.compare("parasails") == 0)
-      return OptionTypes::ParaSailsPC;
+      return OptionTypes::ePreconditioner::ParaSailsPC;
     else if (preconditioner_s.compare("euclid") == 0)
-      return OptionTypes::EuclidPC;
+      return OptionTypes::ePreconditioner::EuclidPC;
     else
       throw Arccore::FatalErrorException(A_FUNCINFO, Arccore::String::format("preconditioner enum name: {0} is not consistent with axl definition", preconditioner_s));
   }
@@ -144,18 +159,18 @@ class OptionsUtils
   static std::string preconditionerEnumToString(OptionTypes::ePreconditioner preconditioner)
   {
     switch (preconditioner) {
-    case OptionTypes::NoPC:
+    case OptionTypes::ePreconditioner::NoPC:
       return "none";
-    case OptionTypes::DiagPC:
+    case OptionTypes::ePreconditioner::DiagPC:
       return "diag";
-    case OptionTypes::AMGPC:
+    case OptionTypes::ePreconditioner::AMGPC:
       return "amg";
-    case OptionTypes::ParaSailsPC:
+    case OptionTypes::ePreconditioner::ParaSailsPC:
       return "parasails";
-    case OptionTypes::EuclidPC:
+    case OptionTypes::ePreconditioner::EuclidPC:
       return "euclid";
     default:
-      throw Arccore::FatalErrorException(A_FUNCINFO, Arccore::String::format("Unmanaged HypreOptionTypes::ePreconditioner value: {0}", preconditioner));
+      throw Arccore::FatalErrorException(A_FUNCINFO, Arccore::String::format("Unmanaged HypreOptionTypes::ePreconditioner"));
     }
   }
 };

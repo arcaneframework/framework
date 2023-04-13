@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 **News:**
 
 - \[move\]: parallel matrix-market reader
+- \[hypre\]: improve AMG parameter choices, especially for GPU
 
 **Fixed bugs:**
 

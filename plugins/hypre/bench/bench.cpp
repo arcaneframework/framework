@@ -40,9 +40,14 @@ int test(const Alien::Hypre::OptionTypes::eSolver& solv, const Alien::Hypre::Opt
 
   auto bench = Alien::Benchmark::LinearBench(std::move(problem));
 
+  auto scattered = true;
+  if (std::getenv("ALIEN_REDUCE_COMPACT")) {
+    scattered = false;
+  }
+
   for (int i = 0; i < NB_RUNS; i++) {
     Alien::Hypre::Options options;
-    options.numIterationsMax(500);
+    options.numIterationsMax(10000);
     options.stopCriteriaValue(1e-8);
     options.preconditioner(prec); // Jacobi, NoPC
     options.solver(solv); //CG, GMRES, BICG, BICGSTAB
@@ -50,13 +55,20 @@ int test(const Alien::Hypre::OptionTypes::eSolver& solv, const Alien::Hypre::Opt
 
     tm->info() << "Running Hypre";
     auto solution = bench.solve(&solver);
-
     auto commsize = pm->commSize();
     for (auto mask = 1; commsize >> mask; mask++) {
-      // Run Hypre from a sequential communicator.
-      auto hypre_pm = mpSplit(pm, !(pm->commRank() % (1 << mask)));
+      // Run Hypre from a reduced communicator.
+      Arccore::MessagePassing::IMessagePassingMng* hypre_pm = nullptr;
+      if (scattered) {
+        // Scattered version
+        hypre_pm = mpSplit(pm, !(pm->commRank() % (1 << mask)));
+      }
+      else {
+        // Compact version
+        hypre_pm = mpSplit(pm, pm->commRank() < commsize >> mask);
+      }
       if (hypre_pm && hypre_pm->commRank() == 0) {
-        tm->info() << "Running Hypre on a reduced communicator of size = " << hypre_pm->commSize();
+        tm->info() << "Running Hypre on a reduced communicator of size = " << hypre_pm->commSize() << " scattered : " << scattered;
       }
       auto solution = bench.solveWithRedistribution(&solver, hypre_pm);
       delete hypre_pm;

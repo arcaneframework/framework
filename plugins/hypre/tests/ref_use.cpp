@@ -86,7 +86,7 @@ TEST_F(SimpleLinearProblemFixtureRef, ParametrizedSolve)
   Alien::Vector x(m_matrix.distribution().rowDistribution());
 
   auto options = Alien::Hypre::Options()
-                 .numIterationsMax(10)
+                 .numIterationsMax(12)
                  .stopCriteriaValue(1e-10)
                  .preconditioner(Alien::Hypre::OptionTypes::AMGPC)
                  .solver(Alien::Hypre::OptionTypes::GMRES);
