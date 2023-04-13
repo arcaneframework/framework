@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SimpleTableOutputUnitTest.cc                           (C) 2000-2022 */
+/* SimpleTableOutputUnitTest.cc                                (C) 2000-2023 */
 /*                                                                           */
 /* Service de test pour les services implémentant ISimpleTableOutput.        */
 /*---------------------------------------------------------------------------*/
@@ -155,6 +155,43 @@ testAddColumn3()
   ptrSTO->addRow("Ma ligne 4");
   ASSERT_EQUAL_ARRAY(result, ptrSTO->column("Ma colonne"));
   ASSERT_EQUAL(3, ptrSTO->columnSize("Ma colonne"));
+}
+void SimpleTableOutputUnitTest::
+testAddColumn4()
+{
+  // On regarde si les valeurs des lignes non
+  // utilisées sont à 0.
+  RealUniqueArray result = { 0.0, 2.0, 3.0, 0.0, 5.0, 6.0, 7.0, 8.0 };
+
+  ptrSTO->addColumn("Ma colonne 1");
+
+  ptrSTO->addRow("Ma ligne 1");
+  ptrSTO->addElementInRow("Ma ligne 2", 2);
+  ptrSTO->addElementInRow("Ma ligne 3", 3);
+  ptrSTO->addRow("Ma ligne 4");
+  ptrSTO->addElementInRow("Ma ligne 5", 5);
+  ptrSTO->addElementInRow("Ma ligne 6", 6);
+  ptrSTO->addElementInRow("Ma ligne 7", 7);
+  ptrSTO->addElementInRow("Ma ligne 8", 8);
+
+  ptrSTO->addElementInRow("Ma ligne 1", 0);
+  ptrSTO->addElementInRow("Ma ligne 4", 0);
+
+  for(Integer i = 2; i < 11; ++i){
+    ptrSTO->addColumn("Ma colonne " + String::fromNumber(i));
+
+    ptrSTO->addElementInRow("Ma ligne 2", 2);
+    ptrSTO->addElementInRow("Ma ligne 5", 5);
+
+    ptrSTO->addElementInRow("Ma ligne 3", 3);
+    ptrSTO->addElementInRow("Ma ligne 6", 6);
+    ptrSTO->addElementInRow("Ma ligne 7", 7);
+    ptrSTO->addElementInRow("Ma ligne 8", 8);
+  }
+
+  for(Integer i = 1; i < 11; ++i){
+    ASSERT_EQUAL_ARRAY(result, ptrSTO->column("Ma colonne " + String::fromNumber(i)));
+  }
 }
 
 void SimpleTableOutputUnitTest::

@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* SimpleTableOutputUnitTest.hh                           (C) 2000-2022 */
+/* SimpleTableOutputUnitTest.hh                                (C) 2000-2023 */
 /*                                                                           */
 /* Service de test pour les services implémentant ISimpleTableOutput.        */
 /*---------------------------------------------------------------------------*/
@@ -57,6 +57,7 @@ class SimpleTableOutputUnitTest
   void testAddColumn1() override;
   void testAddColumn2() override;
   void testAddColumn3() override;
+  void testAddColumn4() override;
   void testAddColumns1() override;
 
   void testAddElemRow1() override;

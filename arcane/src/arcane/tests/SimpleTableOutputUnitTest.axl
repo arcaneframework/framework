@@ -18,6 +18,7 @@
     <test name="Test addColumn() 1" method-name="testAddColumn1"/>
     <test name="Test addColumn() 2" method-name="testAddColumn2"/>
     <test name="Test addColumn() 3" method-name="testAddColumn3"/>
+    <test name="Test addColumn() 4" method-name="testAddColumn4"/>
     <test name="Test addColumns() 1" method-name="testAddColumns1"/>
 
     <test name="Test addElementInRow() 1" method-name="testAddElemRow1"/>
