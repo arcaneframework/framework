@@ -174,6 +174,9 @@ int main(int argc, char** argv)
   else if (std::string(argv[2]) == "NoPC") {
     prec = Alien::Trilinos::OptionTypes::NoPC;
   }
+  else if (std::string(argv[2]) == "AMG") {
+    prec = Alien::Trilinos::OptionTypes::MueLu;
+  }
   else {
     std::cerr << "Unrecognized preconditioner : " << argv[2] << "\n"
               << "  - preconditioner list : (Relaxation|NoPC) \n";

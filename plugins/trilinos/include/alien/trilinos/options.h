@@ -35,6 +35,7 @@ struct OptionTypes
 
   enum ePreconditioner
   {
+    MueLu,
     Relaxation,
     NoPC
   };

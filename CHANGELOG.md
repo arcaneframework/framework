@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 
 - \[move\]: parallel matrix-market reader
 - \[hypre\]: improve AMG parameter choices, especially for GPU
+- \[trilinos\]: use modern CMake Trilinos and support for GPU
 
 **Fixed bugs:**
 

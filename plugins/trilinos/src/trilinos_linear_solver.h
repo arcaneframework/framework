@@ -28,12 +28,6 @@
 #include "trilinos_matrix.h"
 #include "trilinos_vector.h"
 
-#include <Ifpack2_Factory.hpp>
-#include <BelosBlockCGSolMgr.hpp>
-#include <BelosBlockGmresSolMgr.hpp>
-#include <BelosBiCGStabSolMgr.hpp>
-#include <BelosSolverFactory_Tpetra.hpp>
-
 namespace Alien::Trilinos
 {
 class InternalLinearSolver : public IInternalLinearSolver<Matrix, Vector>

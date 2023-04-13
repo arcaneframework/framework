@@ -18,6 +18,14 @@
 
 #include "trilinos_linear_solver.h"
 
+#include <Ifpack2_Factory.hpp>
+#include <BelosBlockCGSolMgr.hpp>
+#include <BelosBlockGmresSolMgr.hpp>
+#include <BelosBiCGStabSolMgr.hpp>
+#include <BelosSolverFactory_Tpetra.hpp>
+#include <Tpetra_Operator.hpp>
+#include <MueLu_CreateTpetraPreconditioner.hpp>
+
 namespace Alien
 {
 // Compile TrilinosLinearSolver.
@@ -35,21 +43,29 @@ bool InternalLinearSolver::solve(const Matrix& A, const Vector& b, Vector& x)
 
   // Create the linear problem instance.
   Belos::LinearProblem<SC, MV, OP> problem(A.internal(), x.internal(), b.internal());
-  Teuchos::RCP<prec_type> M;
 
-  // Ifpack2 preconditioner.
+  // preconditioners.
   switch (m_options.preconditioner()) {
+  case OptionTypes::MueLu: {
+    Teuchos::ParameterList paramList;
+    paramList.set("verbosity", "low");
+    paramList.set("max levels", 3);
+    paramList.set("coarse: max size", 10);
+    paramList.set("multigrid algorithm", "sa");
+    auto prec = MueLu::CreateTpetraPreconditioner(static_cast<Teuchos::RCP<OP>>(A.internal()), paramList);
+    problem.setLeftPrec(prec);
+  } break;
   case OptionTypes::Relaxation: {
-    M = Ifpack2::Factory::create<row_matrix_type>("RELAXATION", A.internal());
+    auto M = Ifpack2::Factory::create<row_matrix_type>("RELAXATION", A.internal());
     if (M.is_null()) {
       std::cerr << "Failed to create Ifpack2 preconditioner !" << std::endl;
       return -1;
     }
     M->initialize();
     M->compute();
-  }
-    problem.setRightPrec(M);
-    break;
+
+    problem.setLeftPrec(M);
+  } break;
   case OptionTypes::NoPC:
     break;
   default:

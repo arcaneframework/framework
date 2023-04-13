@@ -3,30 +3,6 @@ option(ALIEN_TRILINOS_UNIT_TESTS "Enable Trilinos wrapper tests" ${ALIEN_UNIT_TE
 
 find_package(MPI REQUIRED)
 
-
-# ----------------------------------------------------------------------------
-find_package(Trilinos 13 REQUIRED COMPONENTS Teuchos Kokkos KokkosKernels Belos Tpetra Ifpack2)
-
-# Echo trilinos build info just for fun
-MESSAGE("\nFound Trilinos!  Here are the details: ")
-MESSAGE("   Trilinos_DIR = ${Trilinos_DIR}")
-MESSAGE("   Trilinos_VERSION = ${Trilinos_VERSION}")
-MESSAGE("   Trilinos_PACKAGE_LIST = ${Trilinos_PACKAGE_LIST}")
-MESSAGE("   Trilinos_LIBRARIES = ${Trilinos_LIBRARIES}")
-MESSAGE("   Trilinos_INCLUDE_DIRS = ${Trilinos_INCLUDE_DIRS}")
-MESSAGE("   Trilinos_LIBRARY_DIRS = ${Trilinos_LIBRARY_DIRS}")
-MESSAGE("   Trilinos_TPL_LIST = ${Trilinos_TPL_LIST}")
-MESSAGE("   Trilinos_TPL_INCLUDE_DIRS = ${Trilinos_TPL_INCLUDE_DIRS}")
-MESSAGE("   Trilinos_TPL_LIBRARIES = ${Trilinos_TPL_LIBRARIES}")
-MESSAGE("   Trilinos_TPL_LIBRARY_DIRS = ${Trilinos_TPL_LIBRARY_DIRS}")
-MESSAGE("   Trilinos_BUILD_SHARED_LIBS = ${Trilinos_BUILD_SHARED_LIBS}")
-MESSAGE("End of Trilinos details\n")
-
-# Make sure to use same compilers and flags as Trilinos
-#MESSAGE("   Trilinos_CXX_COMPILER_FLAGS = ${Trilinos_CXX_COMPILER_FLAGS}")
-string(REPLACE " " ";" Trilinos_CXX_COMPILER_FLAGS ${Trilinos_CXX_COMPILER_FLAGS})
-
-# ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 
 add_library(trilinos_wrapper
@@ -46,15 +22,58 @@ add_library(trilinos_wrapper
         src/trilinos_config.cpp
         )
 
-set_property(TARGET trilinos_wrapper
-        APPEND_STRING
-        PROPERTY
-        COMPILE_OPTIONS ${Trilinos_CXX_COMPILER_FLAGS}
-        )
-
 target_link_libraries(trilinos_wrapper PUBLIC
         Alien::alien_core
         )
+
+# ----------------------------------------------------------------------------
+find_package(Trilinos 13 REQUIRED COMPONENTS Teuchos Kokkos KokkosKernels Belos Tpetra Ifpack2 MueLu)
+
+if (NOT TARGET Trilinos::all_selected_libs)
+    # Newer versions of Trilinos should define this target.
+
+    # Echo trilinos build info just for fun
+    MESSAGE("\nFound Trilinos!  Here are the details: ")
+    MESSAGE("   Trilinos_DIR = ${Trilinos_DIR}")
+    MESSAGE("   Trilinos_VERSION = ${Trilinos_VERSION}")
+    MESSAGE("   Trilinos_PACKAGE_LIST = ${Trilinos_PACKAGE_LIST}")
+    MESSAGE("   Trilinos_LIBRARIES = ${Trilinos_LIBRARIES}")
+    MESSAGE("   Trilinos_INCLUDE_DIRS = ${Trilinos_INCLUDE_DIRS}")
+    MESSAGE("   Trilinos_LIBRARY_DIRS = ${Trilinos_LIBRARY_DIRS}")
+    MESSAGE("   Trilinos_TPL_LIST = ${Trilinos_TPL_LIST}")
+    MESSAGE("   Trilinos_TPL_INCLUDE_DIRS = ${Trilinos_TPL_INCLUDE_DIRS}")
+    MESSAGE("   Trilinos_TPL_LIBRARIES = ${Trilinos_TPL_LIBRARIES}")
+    MESSAGE("   Trilinos_TPL_LIBRARY_DIRS = ${Trilinos_TPL_LIBRARY_DIRS}")
+    MESSAGE("   Trilinos_BUILD_SHARED_LIBS = ${Trilinos_BUILD_SHARED_LIBS}")
+    MESSAGE("End of Trilinos details\n")
+
+    # Make sure to use same compilers and flags as Trilinos
+    #MESSAGE("   Trilinos_CXX_COMPILER_FLAGS = ${Trilinos_CXX_COMPILER_FLAGS}")
+    string(REPLACE " " ";" Trilinos_CXX_COMPILER_FLAGS ${Trilinos_CXX_COMPILER_FLAGS})
+    add_library(Trilinos::all_selected_libs INTERFACE IMPORTED)
+    target_compile_options(Trilinos::all_selected_libs INTERFACE ${Trilinos_CXX_COMPILER_FLAGS})
+    target_include_directories(Trilinos::all_selected_libs INTERFACE ${Trilinos_INCLUDE_DIRS} ${TRILINOS_TPL_INCLUDE_DIRS})
+    target_link_libraries(Trilinos::all_selected_libs INTERFACE ${Trilinos_LIBRARIES} ${Trilinos_TPL_LIBRARIES})
+
+    if (NOT TARGET Kokkos::kokkos)
+        add_library(Kokkos::kokkos INTERFACE IMPORTED)
+    else ()
+        # Debian and Ubuntu packaging is bugged, INTERFACE_INCLUDE_DIRECTORIES referencing a /usr/lib/include directory
+        get_target_property(KOKKOS_INC_DIRS Kokkos::kokkos INTERFACE_INCLUDE_DIRECTORIES)
+        set(NEW_KOKKOS_INC_DIRS)
+        foreach (INC_DIR ${KOKKOS_INC_DIRS})
+            MESSAGE(STATUS "INC_DIR = ${INC_DIR}")
+            if (EXISTS ${INC_DIR})
+                LIST(APPEND NEW_KOKKOS_INC_DIRS ${INC_DIR})
+            endif ()
+        endforeach ()
+        set_target_properties(Kokkos::kokkos PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${NEW_KOKKOS_INC_DIRS}")
+    endif ()
+else ()
+    kokkos_compilation(TARGET trilinos_wrapper)
+endif ()
+
+# ----------------------------------------------------------------------------
 
 target_link_libraries(trilinos_wrapper PRIVATE
         MPI::MPI_CXX
@@ -62,9 +81,9 @@ target_link_libraries(trilinos_wrapper PRIVATE
         Arccore::arccore_collections
         Arccore::arccore_base
         Arccore::arccore_message_passing_mpi
-        ${Trilinos_LIBRARIES}
-        ${Trilinos_TPL_LIBRARIES}
+        Trilinos::all_selected_libs Kokkos::kokkos
         )
+
 
 if (ALIEN_PLUGIN_TRILINOS_OMP)
     message("------ COMPILING TRILINOS WRAPPER WITH *OPENMP* BACKEND  ------- ")
@@ -91,8 +110,6 @@ target_include_directories(trilinos_wrapper PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-        ${Trilinos_INCLUDE_DIRS}
-        ${Trilinos_TPL_INCLUDE_DIRS}
         )
 
 add_library(Alien::trilinos_wrapper ALIAS trilinos_wrapper)
