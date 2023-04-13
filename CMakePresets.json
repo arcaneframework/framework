@@ -4,7 +4,6 @@
     {
       "name": "minimal",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/minimal",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
@@ -59,7 +58,7 @@
       "binaryDir": "${sourceDir}/build/debug",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "ALIEN_EXPAND_TESTS": "ON"
+        "ALIEN_EXPAND_TESTS": "OFF"
       }
     }
   ],

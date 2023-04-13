@@ -38,7 +38,7 @@ add_executable(ref.gtest.seq main.cpp
         TestVBlockMatrix.cc
         TestRedistributor.cc
         TestMVExpr.cc
-        TestSchur)
+        TestSchur.cc)
 
 IF (ALIEN_USE_SYCL)
     target_sources(ref.gtest.seq PRIVATE TestMVSYCL.cc)
