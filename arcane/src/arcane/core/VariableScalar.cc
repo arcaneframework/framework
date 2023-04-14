@@ -1,17 +1,17 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableScalar.cc                                           (C) 2000-2020 */
+/* VariableScalar.cc                                           (C) 2000-2023 */
 /*                                                                           */
 /* Variable scalaire.                                                        */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/VariableScalar.h"
+#include "arcane/core/VariableScalar.h"
 
 #include "arcane/utils/NotSupportedException.h"
 #include "arcane/utils/ArgumentException.h"
@@ -19,17 +19,18 @@
 #include "arcane/utils/TraceInfo.h"
 #include "arcane/utils/Ref.h"
 
-#include "arcane/VariableDiff.h"
-#include "arcane/VariableBuildInfo.h"
-#include "arcane/VariableInfo.h"
-#include "arcane/IApplication.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/IVariableSynchronizer.h"
-#include "arcane/IDataReader.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/IDataFactoryMng.h"
-#include "arcane/IParallelMng.h"
+#include "arcane/core/VariableDiff.h"
+#include "arcane/core/VariableBuildInfo.h"
+#include "arcane/core/VariableInfo.h"
+#include "arcane/core/IApplication.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IVariableSynchronizer.h"
+#include "arcane/core/IDataReader.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/IDataFactoryMng.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IMesh.h"
 
 #include "arcane/datatype/DataStorageBuildInfo.h"
 
@@ -58,10 +59,15 @@ class ScalarVariableDiff
         int max_print,bool compare_ghost)
   {
     typedef typename VariableDataTypeTraitsT<DataType>::IsNumeric IsNumeric;
-    ITraceMng* msg = var->subDomain()->traceMng();
     ItemGroup group = var->itemGroup();
     if (group.null())
       return 0;
+    IMesh* mesh = group.mesh();
+    if (!mesh)
+      return 0;
+    ITraceMng* msg = mesh->traceMng();
+    IParallelMng* pm = mesh->parallelMng();
+
     GroupIndexTable * group_index_table = (var->isPartial())?group.localIdToIndex().get():0;
 
     int nb_diff = 0;
@@ -93,7 +99,7 @@ class ScalarVariableDiff
       }
     }
     if (compare_failed){
-      Integer sid = var->subDomain()->subDomainId();
+      Int32 sid = pm->commRank();
       const String& var_name = var->name();
       msg->pinfo() << "Processor " << sid << " : "
                    << " Unable to compare : elements numbers are different !"
@@ -102,7 +108,7 @@ class ScalarVariableDiff
     }
     if (nb_diff!=0){
       this->sort(IsNumeric());
-      this->dump(var,max_print);
+      this->dump(var,pm,max_print);
     }
     return nb_diff;
   }

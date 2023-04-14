@@ -20,13 +20,13 @@
 
 #include "arcane/hdf5/Hdf5VariableInfoBase.h"
 
-#include "arcane/MeshVariable.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/IMesh.h"
-#include "arcane/IMeshSubMeshTransition.h"
-#include "arcane/IVariable.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ISubDomain.h"
+#include "arcane/core/MeshVariable.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IMeshSubMeshTransition.h"
+#include "arcane/core/IVariable.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/IParallelMng.h"
 
 #include <typeinfo>
 
@@ -227,9 +227,8 @@ _checkValidVariable(IVariable* var)
       return;
   }
 
-  throw FatalErrorException(A_FUNCINFO,
-                            String::format("Bad variable '{0}'. Variable has to be an item variable and have dimension"
-                                           "'1' or be a scalar variable",var->fullName()));
+  ARCANE_FATAL("Bad variable '{0}'. Variable has to be an item variable and have dimension"
+               "'1' or be a scalar variable",var->fullName());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -240,12 +239,11 @@ writeGroup(Hdf5Utils::HFile& hfile,Hdf5Utils::StandardTypes& st,
            const String& hdf_path,Integer save_type)
 {
   IVariable* var = variable();
-  ISubDomain* sd = var->subDomain();
-  IParallelMng* pm = sd->parallelMng();
   ItemGroup group = var->itemGroup();
+  IParallelMng* pm = group.mesh()->parallelMng();
   ItemGroup enumerate_group = group.own();
   Integer nb_item = enumerate_group.size();
-  ITraceMng* tm = sd->traceMng();
+  ITraceMng* tm = pm->traceMng();
 
   // Pour l'instant la méthode parallèle créé un tampon
   // du nombre total d'éléments du tableau
@@ -339,11 +337,10 @@ readGroupInfo(Hdf5Utils::HFile& hfile,Hdf5Utils::StandardTypes& st,
               const String& hdf_path,Int64Array& uids,Real3Array& centers)
 {
   IVariable* var = variable();
-  ISubDomain* sd = var->subDomain();
-  IParallelMng* pm = sd->parallelMng();
   ItemGroup group = var->itemGroup();
+  IParallelMng* pm = group.mesh()->parallelMng();
   ItemGroup enumerate_group = group;
-  ITraceMng* tm = sd->traceMng();
+  ITraceMng* tm = pm->traceMng();
   bool is_master = pm->isMasterIO();
 
   // Lit les unique ids sauvegardés
@@ -408,9 +405,9 @@ readVariable(Hdf5Utils::HFile& hfile,const String& filename,
   }
   ArrayView<DataType> var_value = data_array->view();
   IVariable* var = m_variable.variable();
-  ISubDomain* sd = var->subDomain();
-  ITraceMng* tm = sd->traceMng();
-  IParallelMng* pm = sd->parallelMng();
+  IVariableMng* vm = var->variableMng();
+  ITraceMng* tm = vm->traceMng();
+  IParallelMng* pm = vm->parallelMng();
   bool is_master = pm->isMasterIO();
   //Integer master_rank = pm->masterIORank();
   if (is_master){
@@ -476,9 +473,9 @@ _readStandardArray(Array<DataType>& buffer,Int64Array& unique_ids,
   ARCANE_UNUSED(ids_hpath);
 
   IVariable* var = m_variable.variable();
-  ISubDomain* sd = var->subDomain();
-  ITraceMng* tm = sd->traceMng();
-  IParallelMng* pm = sd->parallelMng();
+  IVariableMng* vm = var->variableMng();
+  ITraceMng* tm = vm->traceMng();
+  IParallelMng* pm = vm->parallelMng();
   bool is_master = pm->isMasterIO();
 
   Hdf5Utils::StandardArrayT<DataType> values(file_id,path());
@@ -533,9 +530,9 @@ Hdf5ItemVariableInfo<VariableType,DataType>::
 writeVariable(Hdf5Utils::HFile& hfile,Hdf5Utils::StandardTypes& st)
 {
   IVariable* var = m_variable.variable();
-  ISubDomain* sd = var->subDomain();
-  IParallelMng* pm = sd->parallelMng();
-  ITraceMng* tm = sd->traceMng();
+  IVariableMng* vm = var->variableMng();
+  IParallelMng* pm = vm->parallelMng();
+  ITraceMng* tm = vm->traceMng();
 
   ItemGroup group = m_variable.itemGroup();
   ItemGroup enumerate_group = group.own();
@@ -598,9 +595,9 @@ readVariable(Hdf5Utils::HFile& hfile,const String& filename,
 
   UniqueArray<DataType> buffer;
   IVariable* var = m_variable.variable();
-  ISubDomain* sd = var->subDomain();
-  ITraceMng* tm = sd->traceMng();
-  IParallelMng* pm = sd->parallelMng();
+  IVariableMng* vm = var->variableMng();
+  ITraceMng* tm = vm->traceMng();
+  IParallelMng* pm = vm->parallelMng();
   bool is_master = pm->isMasterIO();
   //Integer master_rank = pm->masterIORank();
   if (is_master){
@@ -631,9 +628,9 @@ Hdf5ScalarVariableInfo<VariableType,DataType>::
 _readStandardArray(Array<DataType>& buffer,hid_t file_id,Hdf5Utils::StandardTypes& st)
 {
   IVariable* var = m_variable.variable();
-  ISubDomain* sd = var->subDomain();
-  ITraceMng* tm = sd->traceMng();
-  IParallelMng* pm = sd->parallelMng();
+  IVariableMng* vm = var->variableMng();
+  ITraceMng* tm = vm->traceMng();
+  IParallelMng* pm = vm->parallelMng();
   bool is_master = pm->isMasterIO();
 
   Hdf5Utils::StandardArrayT<DataType> values(file_id,path());
@@ -683,9 +680,9 @@ Hdf5ScalarVariableInfo<VariableType,DataType>::
 writeVariable(Hdf5Utils::HFile& hfile,Hdf5Utils::StandardTypes& st)
 {
   IVariable* var = m_variable.variable();
-  ISubDomain* sd = var->subDomain();
-  IParallelMng* pm = sd->parallelMng();
-  ITraceMng* tm = sd->traceMng();
+  IVariableMng* vm = var->variableMng();
+  IParallelMng* pm = vm->parallelMng();
+  ITraceMng* tm = vm->traceMng();
   bool is_master = pm->isMasterIO();
 
   ConstArrayView<DataType> var_values = m_variable.asArray();
