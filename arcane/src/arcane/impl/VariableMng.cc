@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableMng.cc                                              (C) 2000-2022 */
+/* VariableMng.cc                                              (C) 2000-2023 */
 /*                                                                           */
 /* Classe gérant l'ensemble des variables.                                   */
 /*---------------------------------------------------------------------------*/
@@ -31,52 +31,52 @@
 #include "arcane/utils/JSONWriter.h"
 #include "arcane/utils/Event.h"
 
-#include "arcane/IVariableMng.h"
-#include "arcane/IMeshMng.h"
-#include "arcane/IApplication.h"
-#include "arcane/IRessourceMng.h"
-#include "arcane/Variable.h"
-#include "arcane/VariableRef.h"
-#include "arcane/VarRefEnumerator.h"
-#include "arcane/IModule.h"
-#include "arcane/ISubDomain.h"
-#include "arcane/ArcaneException.h"
-#include "arcane/Directory.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/IObservable.h"
-#include "arcane/ServiceUtils.h"
-#include "arcane/ICheckpointReader.h"
-#include "arcane/ICheckpointWriter.h"
-#include "arcane/IPostProcessorWriter.h"
-#include "arcane/VariableInfo.h"
-#include "arcane/VariableBuildInfo.h"
-#include "arcane/VariableFactoryRegisterer.h"
-#include "arcane/IVariableFactory.h"
-#include "arcane/IIOMng.h"
-#include "arcane/XmlNode.h"
-#include "arcane/XmlNodeList.h"
-#include "arcane/IXmlDocumentHolder.h"
-#include "arcane/IVariableFilter.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/IMesh.h"
-#include "arcane/IDataReader.h"
-#include "arcane/IDataReader2.h"
-#include "arcane/IDataWriter.h"
-#include "arcane/Timer.h"
-#include "arcane/IParallelMng.h"
-#include "arcane/ISerializedData.h"
-#include "arcane/IModuleMng.h"
-#include "arcane/ITimeLoopMng.h"
-#include "arcane/IEntryPoint.h"
-#include "arcane/VariableCollection.h"
-#include "arcane/IApplication.h"
-#include "arcane/IMainFactory.h"
-#include "arcane/Properties.h"
-#include "arcane/VariableStatusChangedEventArgs.h"
-#include "arcane/VariableMetaData.h"
-#include "arcane/CheckpointInfo.h"
-#include "arcane/IMeshFactoryMng.h"
-#include "arcane/MeshBuildInfo.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/IMeshMng.h"
+#include "arcane/core/IApplication.h"
+#include "arcane/core/IRessourceMng.h"
+#include "arcane/core/Variable.h"
+#include "arcane/core/VariableRef.h"
+#include "arcane/core/VarRefEnumerator.h"
+#include "arcane/core/IModule.h"
+#include "arcane/core/ISubDomain.h"
+#include "arcane/core/ArcaneException.h"
+#include "arcane/core/Directory.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IObservable.h"
+#include "arcane/core/ServiceUtils.h"
+#include "arcane/core/ICheckpointReader.h"
+#include "arcane/core/ICheckpointWriter.h"
+#include "arcane/core/IPostProcessorWriter.h"
+#include "arcane/core/VariableInfo.h"
+#include "arcane/core/VariableBuildInfo.h"
+#include "arcane/core/VariableFactoryRegisterer.h"
+#include "arcane/core/IVariableFactory.h"
+#include "arcane/core/IIOMng.h"
+#include "arcane/core/XmlNode.h"
+#include "arcane/core/XmlNodeList.h"
+#include "arcane/core/IXmlDocumentHolder.h"
+#include "arcane/core/IVariableFilter.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/IMesh.h"
+#include "arcane/core/IDataReader.h"
+#include "arcane/core/IDataReader2.h"
+#include "arcane/core/IDataWriter.h"
+#include "arcane/core/Timer.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/ISerializedData.h"
+#include "arcane/core/IModuleMng.h"
+#include "arcane/core/ITimeLoopMng.h"
+#include "arcane/core/IEntryPoint.h"
+#include "arcane/core/VariableCollection.h"
+#include "arcane/core/IApplication.h"
+#include "arcane/core/IMainFactory.h"
+#include "arcane/core/Properties.h"
+#include "arcane/core/VariableStatusChangedEventArgs.h"
+#include "arcane/core/VariableMetaData.h"
+#include "arcane/core/CheckpointInfo.h"
+#include "arcane/core/IMeshFactoryMng.h"
+#include "arcane/core/MeshBuildInfo.h"
 
 #include "arcane/impl/VariableUtilities.h"
 
@@ -171,10 +171,12 @@ class VariableMng
   class DataReaderWrapper;
 
  public:
+
   typedef HashTableMapT<VariableNameInfo,IVariable*,VNIComparer> VNIMap;
+
  public:
 
-  VariableMng(ISubDomain* sd);
+  explicit VariableMng(ISubDomain* sd);
   ~VariableMng() override;
 
  public:
@@ -187,6 +189,7 @@ class VariableMng
  public:
   
   ISubDomain* subDomain() override { return m_sub_domain; }
+  IParallelMng* parallelMng() const override { return m_parallel_mng; }
   ITraceMng* traceMng() override { return TraceAccessor::traceMng(); }
   IVariable* checkVariable(const VariableInfo& infos) override;
   void addVariableRef(VariableRef* ref) override;
@@ -258,7 +261,8 @@ class VariableMng
   //! Paire de la liste des variables par nom complet
   typedef VariableFactoryMap::value_type VariableFactoryPair;
 
-  ISubDomain* m_sub_domain; //!< Gestionnaire de sous-domaine
+  ISubDomain* m_sub_domain = nullptr; //!< Gestionnaire de sous-domaine
+  IParallelMng* m_parallel_mng = nullptr;
   VariableRefList m_variables_ref; //!< Liste des variables
   VariableList m_variables;
   VariableList m_used_variables;
@@ -402,6 +406,7 @@ VariableMng::
 VariableMng(ISubDomain* sd)
 : TraceAccessor(sd->traceMng())
 , m_sub_domain(sd)
+, m_parallel_mng(sd->parallelMng())
 , m_variables_changed(true)
 , m_used_variables_changed(true)
 , m_vni_map(2000,true)
@@ -1091,8 +1096,8 @@ _generateMeshesMetaData(XmlNode meshes_node)
   meshes_node.setAttrValue("version","1");
   ISubDomain* sd = subDomain();
   IMesh* default_mesh = sd->defaultMesh();
-  bool is_parallel = sd->parallelMng()->isParallel();
-  IParallelMng* seq_pm = sd->parallelMng()->sequentialParallelMng();
+  bool is_parallel = m_parallel_mng->isParallel();
+  IParallelMng* seq_pm = m_parallel_mng->sequentialParallelMng();
   ConstArrayView<IMesh*> meshes = sd->meshes();
   for( Integer i=0, n=meshes.size(); i<n; ++i ){
     IMesh* mesh = meshes[i];
@@ -1456,9 +1461,9 @@ _readMeshesMetaData(const XmlNode& meshes_node)
     {
       MeshBuildInfo mbi(mesh_name);
       mbi.addFactoryName(mesh_factory_name);
-      IParallelMng* mesh_pm = sd->parallelMng();
+      IParallelMng* mesh_pm = m_parallel_mng;
       if (is_sequential)
-        mesh_pm = sd->parallelMng()->sequentialParallelMng();
+        mesh_pm = mesh_pm->sequentialParallelMng();
       mbi.addParallelMng(Arccore::makeRef(mesh_pm));
       mesh_factory_mng->createMesh(mbi);
     }
@@ -1559,7 +1564,7 @@ _checkHashFunction(const VariableMetaDataList& vmd_list)
   ByteUniqueArray hash_values;
   MD5HashAlgorithm hash_algo;
   Integer nb_error = 0;
-  IParallelMng* pm = subDomain()->parallelMng();
+  IParallelMng* pm = m_parallel_mng;
   Int32 sid = pm->commRank();
   Directory listing_dir = subDomain()->listingDirectory();
   
