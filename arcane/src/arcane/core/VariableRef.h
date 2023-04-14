@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableRef.h                                               (C) 2000-2022 */
+/* VariableRef.h                                               (C) 2000-2023 */
 /*                                                                           */
 /* Classe gérant une référence sur une variable.                             */
 /*---------------------------------------------------------------------------*/
@@ -16,8 +16,8 @@
 
 #include "arcane/utils/String.h"
 
-#include "arcane/IVariable.h"
-#include "arcane/VariableComputeFunction.h"
+#include "arcane/core/IVariable.h"
+#include "arcane/core/VariableComputeFunction.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -79,8 +79,13 @@ class ARCANE_CORE_EXPORT VariableRef
 
  public:
 
-  //! Sous-domaine associé à la variable
+  //! Sous-domaine associé à la variable (TODO rendre obsolète fin 2023)
   ISubDomain* subDomain() const;
+
+ public:
+
+  //! Gestionnaire de variable associé à la variable.
+  IVariableMng* variableMng() const;
 
   //! Nom de la variable
   const String& name() const;

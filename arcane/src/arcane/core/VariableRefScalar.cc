@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableRefScalar.cc                                        (C) 2000-2020 */
+/* VariableRefScalar.cc                                        (C) 2000-2023 */
 /*                                                                           */
 /* Référence à une variable scalaire.                                        */
 /*---------------------------------------------------------------------------*/
@@ -18,7 +18,7 @@
 #include "arcane/VariableDataTypeTraits.h"
 #include "arcane/VariableFactoryRegisterer.h"
 #include "arcane/IParallelMng.h"
-#include "arcane/ISubDomain.h"
+#include "arcane/IVariableMng.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -152,7 +152,7 @@ reduce(IParallelMng::eReduceType type)
 {
   typedef typename VariableDataTypeTraitsT<ElementType>::HasReduce  HasReduce;
   ElementType v = m_private_part->value();
-  _reduce(v,subDomain()->parallelMng(),type,HasReduce());
+  _reduce(v,variableMng()->parallelMng(),type,HasReduce());
   assign(v);
 }
 
