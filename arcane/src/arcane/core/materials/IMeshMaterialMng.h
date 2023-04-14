@@ -35,6 +35,7 @@ class MeshEnvironmentBuildInfo;
 class MeshMaterialVariableIndexer;
 class AllEnvCellVectorView;
 class CellToAllEnvCellConverter;
+class AllCell2AllEnvCell;
 class IMeshMaterialModifierImpl;
 class IMeshComponent;
 class IMeshMaterialVariable;
@@ -481,6 +482,10 @@ class ARCANE_CORE_EXPORT IMeshMaterialMng
     virtual ~IFactory() = default;
     virtual Ref<IMeshMaterialMng> getTrueReference(const MeshHandle& mesh_handle,bool is_create) =0;
   };
+
+  //!\internal
+  virtual AllCell2AllEnvCell* getAllCell2AllEnvCell() const =0;
+  virtual void createAllCell2AllEnvCell(IMemoryAllocator* alloc) =0;
 
  private:
 

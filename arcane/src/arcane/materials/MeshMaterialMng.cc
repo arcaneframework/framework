@@ -114,6 +114,7 @@ MeshMaterialMng(const MeshHandle& mesh_handle,const String& name)
 , m_all_cells_env_only_synchronizer(nullptr)
 , m_synchronize_variable_version(1)
 , m_exchange_mng(nullptr)
+, m_allcell_2_allenvcell(nullptr)
 {
   m_modifier = new MeshMaterialModifierImpl(this);
   m_all_env_data = new AllEnvData(this);

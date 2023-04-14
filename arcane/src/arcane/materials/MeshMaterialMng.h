@@ -29,6 +29,8 @@
 #include <map>
 #include <memory>
 
+#include "arcane/materials/AllCellToAllEnvCellConverter.h"
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -206,6 +208,11 @@ class MeshMaterialMng
 
   const MeshHandle& meshHandle() const { return m_mesh_handle; }
 
+  //!\internal
+  // TODO: POUR TESTER, A BLINDER SI ON GARDE
+  AllCell2AllEnvCell* getAllCell2AllEnvCell() const { return m_allcell_2_allenvcell; }
+  void createAllCell2AllEnvCell(IMemoryAllocator* alloc) { m_allcell_2_allenvcell = AllCell2AllEnvCell::create(this, alloc); }
+
  private:
 
   //! Type de la liste des variables par nom complet
@@ -258,6 +265,8 @@ class MeshMaterialMng
   IMeshMaterialVariableFactoryMng* m_variable_factory_mng = nullptr;
   std::unique_ptr<ObserverPool> m_observer_pool;
   String m_data_compressor_service_name;
+
+  AllCell2AllEnvCell* m_allcell_2_allenvcell;
 
  private:
 

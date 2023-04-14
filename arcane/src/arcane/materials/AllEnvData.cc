@@ -340,11 +340,11 @@ forceRecompute(bool compute_all)
   }
 
   // Met à jour le AllCell2AllEnvCell s'il a été initialisé
-  auto* allCell2AllEnvCell(::Arcane::Materials::AllCell2AllEnvCell::getInstance());
+  auto* allCell2AllEnvCell(m_material_mng->getAllCell2AllEnvCell());
   if (allCell2AllEnvCell)
     allCell2AllEnvCell->bruteForceUpdate(m_material_mng->mesh()->allCells().internal()->itemsLocalId());
   else
-    AllCell2AllEnvCell::createInstance(m_material_mng, platform::getDefaultDataAllocator());
+    m_material_mng->createAllCell2AllEnvCell(platform::getDefaultDataAllocator());
 }
 
 /*---------------------------------------------------------------------------*/
@@ -780,10 +780,11 @@ _updateMaterialDirect(IMeshMaterial* mat,Int32ConstArrayView ids,eOperation oper
   true_env->updateItemsDirect(m_nb_env_per_cell,true_mat,ids,operation,need_update_env);
 
   // Met à jour le AllCell2AllEnvCell s'il a été initialisé
-  ARCANE_FATAL("AllEnvData.cc : getInsance call.");
-  auto* allCell2AllEnvCell(::Arcane::Materials::AllCell2AllEnvCell::getInstance());
+  auto* allCell2AllEnvCell(m_material_mng->getAllCell2AllEnvCell());
   if (allCell2AllEnvCell)
     allCell2AllEnvCell->bruteForceUpdate(ids);
+  else
+    m_material_mng->createAllCell2AllEnvCell(platform::getDefaultDataAllocator());
 }
 
 /*---------------------------------------------------------------------------*/
