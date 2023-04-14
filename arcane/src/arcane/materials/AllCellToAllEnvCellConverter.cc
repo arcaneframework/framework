@@ -105,14 +105,14 @@ void AllCell2AllEnvCell::
 bruteForceUpdate(Int32ConstArrayView ids)
 {
   // TODO: Je met un fatal, à supprimer une fois bien testé/exploré
-    ARCANE_FATAL("AllCell2AllEnvCell::bruteForceUpdate call !!!");
+  //ARCANE_FATAL("AllCell2AllEnvCell::bruteForceUpdate call !!!");
 
   // A priori, je ne pense pas que le nb de maille ait changé quand on fait un 
   // ForceRecompute. Mais ça doit arriver ailleurs... le endUpdate ?
   if (m_nb_allcell != m_mm->mesh()->allCells().size()) {
 
     // TODO: Je met un fatal, à supprimer une fois bien testé/exploré
-    ARCANE_FATAL("The number of cells has changed since initialization of AllCell2AllEnvCell.");
+    //ARCANE_FATAL("The number of cells has changed since initialization of AllCell2AllEnvCell.");
 
     AllCell2AllEnvCell *swap_ptr(create(m_mm, m_alloc));
     std::swap(this->m_nb_allcell, swap_ptr->m_nb_allcell);
