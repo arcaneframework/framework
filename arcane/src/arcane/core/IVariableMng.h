@@ -1,20 +1,20 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IVariableMng.h                                              (C) 2000-2020 */
+/* IVariableMng.h                                              (C) 2000-2023 */
 /*                                                                           */
 /* Interface du gestionnaire des variables.                                  */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IVARIABLEMNG_H
-#define ARCANE_IVARIABLEMNG_H
+#ifndef ARCANE_CORE_IVARIABLEMNG_H
+#define ARCANE_CORE_IVARIABLEMNG_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ArcaneTypes.h"
+#include "arcane/core/ArcaneTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -30,7 +30,7 @@ class IVariableFilter;
 class VariableInfo;
 class MeshVariable;
 class IModule;
-class IMsg;
+class IParallelMng;
 class IDataReader;
 class IDataWriter;
 class IObservable;
@@ -56,7 +56,7 @@ class IVariableMng
 {
  public:
 
-  virtual ~IVariableMng() {} //!< Libère les ressources.
+  virtual ~IVariableMng() = default; //!< Libère les ressources.
 
  public:
 
@@ -88,6 +88,9 @@ class IVariableMng
   //! Gestionnaire du sous-domaine
   ARCCORE_DEPRECATED_2020("Do not use this method. Try to get 'ISubDomain' from another way")
   virtual ISubDomain* subDomain() =0;
+
+  //! Gestionnaire de parallélisme associé
+  virtual IParallelMng* parallelMng() const =0;
 
   //! Gestionnaire de messages
   virtual ITraceMng* traceMng() =0;

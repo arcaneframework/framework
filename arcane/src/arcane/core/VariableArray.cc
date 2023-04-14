@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableArray.cc                                            (C) 2000-2020 */
+/* VariableArray.cc                                            (C) 2000-2023 */
 /*                                                                           */
 /* Variable tableau 1D.                                                      */
 /*---------------------------------------------------------------------------*/
@@ -18,17 +18,18 @@
 #include "arcane/utils/Ref.h"
 #include "arcane/utils/MemoryAccessInfo.h"
 
-#include "arcane/VariableDiff.h"
-#include "arcane/VariableBuildInfo.h"
-#include "arcane/VariableInfo.h"
-#include "arcane/IApplication.h"
-#include "arcane/IVariableMng.h"
-#include "arcane/IItemFamily.h"
-#include "arcane/IVariableSynchronizer.h"
-#include "arcane/IDataReader.h"
-#include "arcane/ItemGroup.h"
-#include "arcane/IDataFactoryMng.h"
-#include "arcane/IParallelMng.h"
+#include "arcane/core/VariableDiff.h"
+#include "arcane/core/VariableBuildInfo.h"
+#include "arcane/core/VariableInfo.h"
+#include "arcane/core/IApplication.h"
+#include "arcane/core/IVariableMng.h"
+#include "arcane/core/IItemFamily.h"
+#include "arcane/core/IVariableSynchronizer.h"
+#include "arcane/core/IDataReader.h"
+#include "arcane/core/ItemGroup.h"
+#include "arcane/core/IDataFactoryMng.h"
+#include "arcane/core/IParallelMng.h"
+#include "arcane/core/IMesh.h"
 
 #include "arcane/datatype/DataTracer.h"
 #include "arcane/datatype/DataTypeTraits.h"
@@ -66,10 +67,14 @@ class ArrayVariableDiff
     if (var->itemKind()==IK_Unknown)
       return _checkAsArray(var,ref,current,max_print);
 
-    ITraceMng* msg = var->subDomain()->traceMng();
     ItemGroup group = var->itemGroup();
     if (group.null())
       return 0;
+    IMesh* mesh = group.mesh();
+    if (!mesh)
+      return 0;
+    ITraceMng* msg = mesh->traceMng();
+    IParallelMng* pm = mesh->parallelMng();
 
     GroupIndexTable * group_index_table = (var->isPartial())?group.localIdToIndex().get():0;
 
@@ -77,7 +82,7 @@ class ArrayVariableDiff
     bool compare_failed = false;
     Integer ref_size = ref.size();
     ENUMERATE_ITEM(i,group){
-      const Item& item = *i;
+      Item item = *i;
       if (!item.isOwn() && !compare_ghost)
         continue;
       Integer index = item.localId();
@@ -101,7 +106,7 @@ class ArrayVariableDiff
       }
     }
     if (compare_failed){
-      Integer sid = var->subDomain()->subDomainId();
+      Int32 sid = pm->commRank();
       const String& var_name = var->name();
       msg->pinfo() << "Processor " << sid << " : "
                    << "comparison impossible because the number of the elements is different "
@@ -110,7 +115,7 @@ class ArrayVariableDiff
     }
     if (nb_diff!=0){
       this->sort(IsNumeric());
-      this->dump(var,max_print);
+      this->dump(var,pm,max_print);
     }
     return nb_diff;
   }
@@ -130,7 +135,8 @@ class ArrayVariableDiff
                         ConstArrayView<DataType> current,int max_print)
   {
     typedef typename VariableDataTypeTraitsT<DataType>::IsNumeric IsNumeric;
-    ITraceMng* msg = var->subDomain()->traceMng();
+    IParallelMng* pm = var->variableMng()->parallelMng();
+    ITraceMng* msg = pm->traceMng();
 
     int nb_diff = 0;
     bool compare_failed = false;
@@ -152,7 +158,7 @@ class ArrayVariableDiff
       }
     }
     if (compare_failed){
-      Integer sid = var->subDomain()->subDomainId();
+      Int32 sid = pm->commRank();
       const String& var_name = var->name();
       msg->pinfo() << "Processor " << sid << " : "
                    << " comparaison impossible car nombre d'éléments différents"
@@ -161,7 +167,7 @@ class ArrayVariableDiff
     }
     if (nb_diff!=0){
       this->sort(IsNumeric());
-      this->dump(var,max_print);
+      this->dump(var,pm,max_print);
     }
     return nb_diff;
   }
@@ -208,7 +214,7 @@ class ArrayVariableDiff
     }
     if (nb_diff!=0){
       this->sort(IsNumeric());
-      this->dump(var,max_print);
+      this->dump(var,pm,max_print);
     }
     return nb_diff;
   }

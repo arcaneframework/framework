@@ -1,11 +1,11 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* VariableDiff.h                                              (C) 2000-2018 */
+/* VariableDiff.h                                              (C) 2000-2023 */
 /*                                                                           */
 /* Gestion des différences entre les variables                               */
 /*---------------------------------------------------------------------------*/
@@ -20,17 +20,18 @@
 
 #include "arcane/datatype/DataTypes.h"
 
-#include "arcane/VariableDataTypeTraits.h"
-#include "arcane/Item.h"
-#include "arcane/IVariable.h"
-#include "arcane/ISubDomain.h"
+#include "arcane/core/VariableDataTypeTraits.h"
+#include "arcane/core/Item.h"
+#include "arcane/core/IVariable.h"
+#include "arcane/core/IParallelMng.h"
 
 #include <algorithm>
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -92,12 +93,12 @@ class VariableDiff
 
  public:
 
- public:
+ protected:
 
-  void dump(IVariable* var,int max_print)
+  void dump(IVariable* var,IParallelMng* pm, int max_print)
   {
-    ITraceMng* msg = var->subDomain()->traceMng();
-    Integer sid = var->subDomain()->subDomainId();
+    ITraceMng* msg = pm->traceMng();
+    Int32 sid = pm->commRank();
     const String& var_name = var->name();
     Integer nb_diff = m_diffs_info.size();
     Integer nb_print = nb_diff;
@@ -140,7 +141,7 @@ class VariableDiff
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

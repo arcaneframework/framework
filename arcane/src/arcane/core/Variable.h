@@ -1,25 +1,25 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* Variable.h                                                  (C) 2000-2020 */
+/* Variable.h                                                  (C) 2000-2023 */
 /*                                                                           */
 /* Classe gérant la partie privée d'une variable.                            */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_VARIABLE_H
-#define ARCANE_VARIABLE_H
+#ifndef ARCANE_CORE_VARIABLE_H
+#define ARCANE_CORE_VARIABLE_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/utils/TraceAccessor.h"
 #include "arcane/utils/Array.h"
 
-#include "arcane/ArcaneTypes.h"
-#include "arcane/IVariable.h"
-#include "arcane/IData.h"
+#include "arcane/core/ArcaneTypes.h"
+#include "arcane/core/IVariable.h"
+#include "arcane/core/IData.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -97,6 +97,7 @@ class ARCANE_CORE_EXPORT Variable
  public:
 
   ISubDomain* subDomain() override;
+  IVariableMng* variableMng() const override;
   const String& fullName() const override;
   const String& name() const override;
   const String& itemFamilyName() const override;
