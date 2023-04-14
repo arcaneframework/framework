@@ -1,20 +1,20 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IVariable.h                                                 (C) 2000-2020 */
+/* IVariable.h                                                 (C) 2000-2023 */
 /*                                                                           */
 /* Interface de la classe Variable.                                          */
 /*---------------------------------------------------------------------------*/
-#ifndef ARCANE_IVARIABLE_H
-#define ARCANE_IVARIABLE_H
+#ifndef ARCANE_CORE_IVARIABLE_H
+#define ARCANE_CORE_IVARIABLE_H
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-#include "arcane/ItemTypes.h"
+#include "arcane/core/ItemTypes.h"
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -26,7 +26,7 @@ namespace Arcane
 /*---------------------------------------------------------------------------*/
 
 class IModule;
-class IVariable;
+class IVariableMng;
 class VariableRef;
 class IDataReader;
 class IDataWriter;
@@ -165,12 +165,17 @@ class ARCANE_CORE_EXPORT IVariable
 
  public:
 
-  virtual ~IVariable(){} //!< Libère les ressources
+  virtual ~IVariable() = default; //!< Libère les ressources
 
  public:
 
-  //! Sous-domaine associé à la variable
+  //! Sous-domaine associé à la variable (TODO rendre obsolète fin 2023)
   virtual ISubDomain* subDomain() =0;
+
+ public:
+
+  //! Gestionnaire de variable associé à la variable
+  virtual IVariableMng* variableMng() const =0;
 
   //! Taille mémoire (en Koctet) utilisée par la variable
   virtual Real allocatedMemory() const =0;
@@ -462,7 +467,8 @@ class ARCANE_CORE_EXPORT IVariable
    */
   virtual VariableMetaData* createMetaData() const =0;
 
-  /*! \brief Synchronise les références.
+  /*!
+   * \brief Synchronise les références.
    *
    * Synchronise les valeurs des références (VariableRef) à cette variable
    * avec la valeur actuelle de la variable. Cette méthode est appelé
@@ -473,7 +479,8 @@ class ARCANE_CORE_EXPORT IVariable
 
  public:
 	
-  /*! \brief Positionne l'état d'utilisation de la variable
+  /*!
+   * \brief Positionne l'état d'utilisation de la variable
    *
    * Si \v est faux, la variable devient inutilisable
    * et toutes les ressources associées sont libérées.
@@ -488,7 +495,8 @@ class ARCANE_CORE_EXPORT IVariable
   virtual bool isUsed() const =0;
 
 
-  /*! \brief Indique si la variable est partielle.
+  /*!
+   * \brief Indique si la variable est partielle.
    *
    * Une variable est partielle lorsqu'elle n'est pas définie sur toutes les
    * entités d'une famille. Dans ce cas, group()!=itemFamily()->allItems().
@@ -497,8 +505,8 @@ class ARCANE_CORE_EXPORT IVariable
   
  public:
 
-  /** 
-   * Copie les valeurs des entités numéros @a source dans les entités
+  /*!
+   * \brief Copie les valeurs des entités numéros @a source dans les entités
    * numéro @a destination
    * 
    * @note Cette opération est interne à Arcane et doit se faire en
@@ -510,8 +518,8 @@ class ARCANE_CORE_EXPORT IVariable
    */
   virtual void copyItemsValues(Int32ConstArrayView source,Int32ConstArrayView destination) =0;
 
-  /** 
-   * Copie les moyennes des valeurs des entités numéros
+  /*!
+   * \brief Copie les moyennes des valeurs des entités numéros
    * @a first_source et @a second_source dans les entités numéros
    * @a destination
    * 
@@ -523,7 +531,8 @@ class ARCANE_CORE_EXPORT IVariable
                                    Int32ConstArrayView second_source,
                                    Int32ConstArrayView destination) = 0;
 
-  /*! \brief Compacte les valeurs de la variable.
+  /*!
+   * \brief Compacte les valeurs de la variable.
    *
    * Cette opération est interne à Arcane et doit se faire en
    * conjonction avec la famille d'entité correspondant à cette
@@ -542,7 +551,7 @@ class ARCANE_CORE_EXPORT IVariable
   //! Fabrique de données associées à la variable
   virtual IDataFactoryMng* dataFactoryMng() const =0;
 
- //! @name Opérations de sérialisation
+  //! @name Opérations de sérialisation
   //@{
   /*! Sérialize la variable.
    *
@@ -651,7 +660,8 @@ class ARCANE_CORE_EXPORT IVariable
   
   //! @name Gestion des dépendances
   //@{
-  /*! \brief Recalcule la variable si nécessaire
+  /*!
+   * \brief Recalcule la variable si nécessaire
    *
    * Par le mécanisme de dépendances, cette opération est appelée récursivement
    * sur toutes les variables dont dépend l'instance. La fonction de recalcul
