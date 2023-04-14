@@ -1,11 +1,12 @@
 ﻿// -*- tab-width: 2; indent-tabs-mode: nil; coding: utf-8-with-signature -*-
 //-----------------------------------------------------------------------------
-// Copyright 2000-2022 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
+// Copyright 2000-2023 CEA (www.cea.fr) IFPEN (www.ifpenergiesnouvelles.com)
 // See the top-level COPYRIGHT file for details.
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* AlephKernel.h                                               (C) 2000-2022 */
+/* AlephKernel.h                                               (C) 2000-2023 */
+/*                                                                           */
 /*                                                                           */
 /*---------------------------------------------------------------------------*/
 #ifndef ARCANE_ALEPH_KERNEL_H
@@ -32,6 +33,7 @@ namespace Arcane
 class AlephKernelResults
 {
  public:
+
   Integer m_nb_iteration;
   Real m_residual_norm[4];
 };
@@ -43,6 +45,7 @@ class ARCANE_ALEPH_EXPORT AlephKernelArguments
 : public TraceAccessor
 {
  public:
+
   AlephKernelArguments(ITraceMng* tm,
                        AlephVector* x_vector,
                        AlephVector* b_vector,
@@ -53,8 +56,8 @@ class ARCANE_ALEPH_EXPORT AlephKernelArguments
   , m_b_vector(b_vector)
   , m_tmp_vector(tmp_vector)
   , m_topology_implementation(topology)
-  , m_params(NULL)
   {} // m_params sera initialisé via le postSolver
+
   ~AlephKernelArguments()
   {
     debug() << "\33[1;5;31m[~AlephKernelArguments]"
@@ -62,11 +65,12 @@ class ARCANE_ALEPH_EXPORT AlephKernelArguments
   };
 
  public:
+
   AlephVector* m_x_vector;
   AlephVector* m_b_vector;
   AlephVector* m_tmp_vector;
   IAlephTopology* m_topology_implementation;
-  AlephParams* m_params;
+  AlephParams* m_params = nullptr;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -76,10 +80,14 @@ class ARCANE_ALEPH_EXPORT AlephKernel
 : public TraceAccessor
 {
  public:
+
   AlephKernel(IParallelMng*, Integer, IAlephFactory*, Integer = 0, Integer = 0, bool = false);
   AlephKernel(ITraceMng*, ISubDomain*, IAlephFactory*, Integer = 0, Integer = 0, bool = false);
   AlephKernel(ISubDomain*, Integer alephUnderlyingSolver = 0, Integer alephNumberOfCores = 0);
   ~AlephKernel(void);
+
+ public:
+
   void setup(void);
   void initialize(Integer, Integer);
   void break_and_return(void);
@@ -90,31 +98,27 @@ class ARCANE_ALEPH_EXPORT AlephKernel
   AlephVector* syncSolver(Integer, Integer&, Real*);
 
  public:
-  IAlephFactory* factory(void) { return m_factory; }
-  AlephTopology* topology(void) { return m_topology; }
-  AlephOrdering* ordering(void) { return m_ordering; }
-  AlephIndexing* indexing(void) { return m_indexing; }
-  Integer rank(void) { return m_rank; }
-  Integer size(void) { return m_size; }
-  ISubDomain* subDomain(void)
-  {
-    if (!m_sub_domain && !m_i_am_an_other)
-      throw FatalErrorException("[AlephKernel::subDomain]", "No sub-domain to work on!");
-    return m_sub_domain;
-  }
-  bool isParallel(void) { return m_isParallel; }
-  bool isInitialized(void) { return m_has_been_initialized; }
-  bool thereIsOthers(void) { return m_there_are_idles; }
-  bool isAnOther(void) { return m_i_am_an_other; }
-  IParallelMng* parallel(void) { return m_parallel; }
-  IParallelMng* world(void) { return m_world_parallel; }
-  Integer underlyingSolver(void) { return m_underlying_solver; }
-  bool isCellOrdering(void) { return m_reorder; }
-  Integer index(void) { return m_solver_index; }
-  bool configured(void) { return m_configured; }
+
+  IAlephFactory* factory() { return m_factory; }
+  AlephTopology* topology() { return m_topology; }
+  AlephOrdering* ordering() { return m_ordering; }
+  AlephIndexing* indexing() { return m_indexing; }
+  Integer rank() { return m_rank; }
+  Integer size() { return m_size; }
+  ISubDomain* subDomain();
+  bool isParallel() { return m_isParallel; }
+  bool isInitialized() { return m_has_been_initialized; }
+  bool thereIsOthers() { return m_there_are_idles; }
+  bool isAnOther() { return m_i_am_an_other; }
+  IParallelMng* parallel() { return m_parallel; }
+  IParallelMng* world() { return m_world_parallel; }
+  Integer underlyingSolver() { return m_underlying_solver; }
+  bool isCellOrdering() { return m_reorder; }
+  Integer index() { return m_solver_index; }
+  bool configured() { return m_configured; }
   void mapranks(Array<Integer>&);
   bool hitranks(Integer, ArrayView<Integer>);
-  Integer nbRanksPerSolver(void) { return m_solver_size; }
+  Integer nbRanksPerSolver() { return m_solver_size; }
   ArrayView<Integer> solverRanks(Integer i) { return m_solver_ranks.at(i).view(); }
   IParallelMng* subParallelMng(Integer i) { return m_sub_parallel_mng_queue.at(i).get(); }
   IAlephTopology* getTopologyImplementation(Integer i)
@@ -128,7 +132,7 @@ class ARCANE_ALEPH_EXPORT AlephKernel
 
  private:
 
-  ISubDomain* m_sub_domain;
+  ISubDomain* m_sub_domain = nullptr;
   bool m_isParallel;
   Integer m_rank;
   Integer m_size;
@@ -165,7 +169,7 @@ class ARCANE_ALEPH_EXPORT AlephKernel
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-} // End namespace Arcane
+} // namespace Arcane
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

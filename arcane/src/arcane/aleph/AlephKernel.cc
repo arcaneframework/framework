@@ -32,7 +32,6 @@ AlephKernel(IParallelMng* wpm,
             Integer alephNumberOfCores,
             bool alephOrdering)
 : TraceAccessor(wpm->traceMng())
-, m_sub_domain(NULL)
 , m_isParallel(wpm->isParallel())
 , m_rank(wpm->commRank())
 , m_size(size)
@@ -586,6 +585,17 @@ workSolver(void)
   traceMng()->flush();
   // Flush number of pending solvers
   m_solver_index = 0;
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+ISubDomain* AlephKernel::
+subDomain(void)
+{
+  if (!m_sub_domain && !m_i_am_an_other)
+    ARCANE_FATAL("[AlephKernel::subDomain]", "No sub-domain to work on!");
+  return m_sub_domain;
 }
 
 /*---------------------------------------------------------------------------*/
