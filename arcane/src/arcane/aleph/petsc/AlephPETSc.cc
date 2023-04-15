@@ -5,12 +5,15 @@
 // SPDX-License-Identifier: Apache-2.0
 //-----------------------------------------------------------------------------
 /*---------------------------------------------------------------------------*/
-/* IAlephPetsc.cc                                                   (C) 2013 */
+/* AlephPETSc.cc                                               (C) 2000-2023 */
 /*                                                                           */
+/* Implémentation PETSc de Aleph.                                            */
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
 #include "arcane/aleph/AlephArcane.h"
+
+#include "arcane/utils/StringList.h"
 
 #define MPI_COMM_SUB *(MPI_Comm*)(m_kernel->subParallelMng(m_index)->getMPICommunicator())
 
@@ -28,16 +31,198 @@
 #error PETSC_VERSION != 3.10.2 nor 3.7.7 nor 3.6.0 nor 3.3.0 nor 3.0.0
 #endif
 
-#include "arcane/aleph/petsc/IAlephPETSc.h"
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+namespace Arcane
+{
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_BEGIN_NAMESPACE
+class AlephTopologyPETSc
+: public IAlephTopology
+{
+ public:
+
+  AlephTopologyPETSc(ITraceMng* tm, AlephKernel* kernel, Integer index, Integer nb_row_size);
+  ~AlephTopologyPETSc() override
+  {
+    debug() << "\33[1;5;32m\t\t\t[~AlephTopologyPETSc]\33[0m";
+  }
+
+ public:
+
+  void backupAndInitialize() override {}
+  void restore() override {}
+
+ private:
+
+  void _checkInitPETSc();
+};
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
+class AlephVectorPETSc
+: public IAlephVector
+{
+ public:
+
+  AlephVectorPETSc(ITraceMng*, AlephKernel*, Integer);
+  void AlephVectorCreate(void) override;
+  void AlephVectorSet(const double*, const int*, Integer) override;
+  int AlephVectorAssemble(void) override;
+  void AlephVectorGet(double*, const int*, Integer) override;
+  void writeToFile(const String) override;
+  Real LinftyNorm(void);
+
+ public:
+
+  Vec m_petsc_vector;
+  PetscInt jSize, jUpper, jLower;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class AlephMatrixPETSc
+: public IAlephMatrix
+{
+ public:
+
+  AlephMatrixPETSc(ITraceMng*, AlephKernel*, Integer);
+  void AlephMatrixCreate(void) override;
+  void AlephMatrixSetFilled(bool) override;
+  int AlephMatrixAssemble(void) override;
+  void AlephMatrixFill(int, int*, int*, double*) override;
+  Real LinftyNormVectorProductAndSub(AlephVector*, AlephVector*);
+  bool isAlreadySolved(AlephVectorPETSc*, AlephVectorPETSc*,
+                       AlephVectorPETSc*, Real*, AlephParams*);
+  int AlephMatrixSolve(AlephVector*, AlephVector*,
+                       AlephVector*, Integer&, Real*, AlephParams*) override;
+  void writeToFile(const String) override;
+
+ private:
+
+  Mat m_petsc_matrix;
+  KSP m_ksp_solver;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+class PETScAlephFactoryImpl
+: public AbstractService
+, public IAlephFactoryImpl
+{
+ public:
+
+  explicit PETScAlephFactoryImpl(const ServiceBuildInfo& sbi)
+  : AbstractService(sbi)
+  {}
+  ~PETScAlephFactoryImpl() override
+  {
+    for (auto* v : m_IAlephVectors)
+      delete v;
+    for (auto* v : m_IAlephMatrixs)
+      delete v;
+    for (auto* v : m_IAlephTopologys)
+      delete v;
+  }
+
+ public:
+
+  void initialize() override {}
+  IAlephTopology* createTopology(ITraceMng* tm,
+                                 AlephKernel* kernel,
+                                 Integer index,
+                                 Integer nb_row_size) override
+  {
+    IAlephTopology* new_topology = new AlephTopologyPETSc(tm, kernel, index, nb_row_size);
+    m_IAlephTopologys.add(new_topology);
+    return new_topology;
+  }
+  IAlephVector* createVector(ITraceMng* tm,
+                             AlephKernel* kernel,
+                             Integer index) override
+  {
+    IAlephVector* new_vector = new AlephVectorPETSc(tm, kernel, index);
+    m_IAlephVectors.add(new_vector);
+    return new_vector;
+  }
+
+  IAlephMatrix* createMatrix(ITraceMng* tm,
+                             AlephKernel* kernel,
+                             Integer index) override
+  {
+    IAlephMatrix* new_matrix = new AlephMatrixPETSc(tm, kernel, index);
+    m_IAlephMatrixs.add(new_matrix);
+    return new_matrix;
+  }
+
+ private:
+
+  UniqueArray<IAlephVector*> m_IAlephVectors;
+  UniqueArray<IAlephMatrix*> m_IAlephMatrixs;
+  UniqueArray<IAlephTopology*> m_IAlephTopologys;
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+AlephTopologyPETSc::
+AlephTopologyPETSc(ITraceMng* tm,
+                   AlephKernel* kernel,
+                   Integer index,
+                   Integer nb_row_size)
+: IAlephTopology(tm, kernel, index, nb_row_size)
+{
+  ARCANE_CHECK_POINTER(kernel);
+  if (!m_participating_in_solver) {
+    debug() << "\33[1;32m\t[AlephTopologyPETSc] Not concerned with this solver, returning\33[0m";
+    return;
+  }
+  debug() << "\33[1;32m\t\t[AlephTopologyPETSc] @" << this << "\33[0m";
+  if (!m_kernel->isParallel()) {
+    PETSC_COMM_WORLD = PETSC_COMM_SELF;
+  }
+  else {
+    PETSC_COMM_WORLD = *(MPI_Comm*)(kernel->subParallelMng(index)->getMPICommunicator());
+  }
+
+  _checkInitPETSc();
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void AlephTopologyPETSc::
+_checkInitPETSc()
+{
+  // Ne fait rien si PETSc a déjà été initialisé.
+  PetscBool is_petsc_initialized = PETSC_FALSE;
+  PetscInitialized(&is_petsc_initialized);
+  if (is_petsc_initialized==PETSC_TRUE)
+    return;
+
+  AlephKernelSolverInitializeArguments& init_args = m_kernel->solverInitializeArgs();
+  bool has_args = init_args.hasValues();
+  debug() << Trace::Color::cyan() << "[AlephTopologyPETSc] Initializing PETSc. UseArg=" << has_args;
+  if (has_args){
+    const CommandLineArguments& args = init_args.commandLineArguments();
+    PetscInitialize(args.commandLineArgc(),args.commandLineArgv(),PETSC_NULL,PETSC_NULL);
+  }
+  else{
+    PetscInitializeNoArguments();
+  }
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
 
 // ****************************************************************************
 // * AlephVectorPETSc
@@ -434,7 +619,7 @@ ARCANE_REGISTER_APPLICATION_FACTORY(PETScAlephFactoryImpl,IAlephFactoryImpl,PETS
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-ARCANE_END_NAMESPACE
+}
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/

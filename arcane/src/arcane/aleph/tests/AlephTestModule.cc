@@ -101,6 +101,7 @@ init()
 /***************************************************************************
  *   
  ***************************************************************************/
+
 void AlephTestModule::
 initAlgebra()
 {
@@ -108,25 +109,41 @@ initAlgebra()
   const Integer nb_row_rank = m_local_nb_cell;
   ItacFunction(AlephTestModule);
 
-  debug() << "\33[37m[AlephTestModule::initAlgebra] ALEPH init, " << nb_row_size
-          << " lines in total, " << nb_row_rank << " for me\33[0m";
-  debug() << "\33[37m[AlephTestModule::initAlgebra] alephUnderlyingSolver="
-          << options()->alephUnderlyingSolver << "\33[0m";
-  debug() << "\33[37m[AlephTestModule::initAlgebra] alephNumberOfCores="
-          << options()->alephNumberOfCores << "\33[0m";
+  Int32 underlying_solver = options()->alephUnderlyingSolver;
+
+  info() << "[AlephTestModule::initAlgebra] ALEPH init, " << nb_row_size
+         << " lines in total, " << nb_row_rank << " for me";
+  info() << "[AlephTestModule::initAlgebra] alephUnderlyingSolver="
+         << underlying_solver;
+  info() << "[AlephTestModule::initAlgebra] alephNumberOfCores="
+         << options()->alephNumberOfCores;
 
   delete m_aleph_factory;
   m_aleph_factory = new AlephFactory(subDomain()->application(), traceMng());
 
   // On créé en place notre politique de scheduling par rapport à la topologie décrite
-  if (m_aleph_kernel != NULL)
+  if (m_aleph_kernel)
     delete m_aleph_kernel;
+
   m_aleph_kernel = new AlephKernel(traceMng(),
                                    subDomain(),
                                    m_aleph_factory,
-                                   options()->alephUnderlyingSolver,
+                                   underlying_solver,
                                    options()->alephNumberOfCores,
                                    options()->alephCellOrdering);
+  // Pour tester l'initialisation spécifique de PETSc, ajoute des arguments
+  // si le nombre de PE est pair
+
+  const bool use_is_even = (subDomain()->parallelMng()->commSize() % 2) == 0;
+  const bool use_petsc_args = (underlying_solver==AlephKernel::SOLVER_PETSC && use_is_even);
+  if (use_petsc_args){
+    StringList slist1;
+    slist1.add("-trmalloc");
+    slist1.add("-log_trace");
+    slist1.add("-help");
+    CommandLineArguments args(slist1);
+    m_aleph_kernel->solverInitializeArgs().setCommandLineArguments(args);
+  }
   m_aleph_kernel->initialize(nb_row_size, nb_row_rank);
 
   delete m_aleph_params;
