@@ -18,6 +18,7 @@
 #include "arcane/utils/Array.h"
 #include "arcane/utils/FatalErrorException.h"
 #include "arcane/utils/Ref.h"
+#include "arcane/utils/CommandLineArguments.h"
 
 #include "arcane/aleph/AlephGlobal.h"
 
@@ -36,6 +37,39 @@ class AlephKernelResults
 
   Integer m_nb_iteration;
   Real m_residual_norm[4];
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+/*!
+ * \brief Informations pour initialiser le solveur linéaire utilisé.
+ *
+ * Les valeurs utilisées sont spécifiques à l'implémentation choisie.
+ *
+ * Actuellement cette instance n'est utilisée que pour PETSc et si hasValues()
+ * est vrai alors on utilise PetscInitialize(int *argc,char ***args,char file[],...)
+ * pour initialiser PETSc au lieu de PetscInitializeNoArguments().
+ */
+class AlephKernelSolverInitializeArguments
+{
+ public:
+
+  AlephKernelSolverInitializeArguments();
+
+ public:
+
+  bool hasValues() const { return m_has_values; }
+  void setCommandLineArguments(const CommandLineArguments& v)
+  {
+    m_arguments = v;
+    m_has_values = true;
+  }
+  const CommandLineArguments& commandLineArguments() const { return m_arguments; }
+
+ private:
+
+  bool m_has_values = false;
+  CommandLineArguments m_arguments;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -79,6 +113,13 @@ class ARCANE_ALEPH_EXPORT AlephKernelArguments
 class ARCANE_ALEPH_EXPORT AlephKernel
 : public TraceAccessor
 {
+ public:
+
+  static constexpr int SOLVER_HYPRE = 2;
+  static constexpr int SOLVER_TRILINOS = 3;
+  static constexpr int SOLVER_CUDA = 4;
+  static constexpr int SOLVER_PETSC = 5;
+
  public:
 
   AlephKernel(IParallelMng*, Integer, IAlephFactory*, Integer = 0, Integer = 0, bool = false);
@@ -125,6 +166,7 @@ class ARCANE_ALEPH_EXPORT AlephKernel
   {
     return m_arguments_queue.at(i)->m_topology_implementation;
   }
+  AlephKernelSolverInitializeArguments& solverInitializeArgs() { return m_solver_initialize_args; }
 
  private:
 
@@ -156,6 +198,7 @@ class ARCANE_ALEPH_EXPORT AlephKernel
   Integer m_solver_size;
   bool m_solved;
   bool m_has_been_initialized;
+  AlephKernelSolverInitializeArguments m_solver_initialize_args;
 
  private:
 
