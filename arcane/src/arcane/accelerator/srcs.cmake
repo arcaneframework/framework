@@ -8,6 +8,7 @@ set( ARCANE_SOURCES
   IRunQueueRuntime.h
   IRunQueueStream.h
   MaterialVariableViews.h
+  MemoryCopier.cc
   NumArray.h
   NumArrayViews.h
   Reduce.h

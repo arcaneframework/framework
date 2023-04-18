@@ -160,10 +160,44 @@ class ARCANE_UTILS_EXPORT ISpecificMemoryCopy
 /*---------------------------------------------------------------------------*/
 
 template <typename DataType, typename Extent>
-class SpecificMemoryCopy
+class SpecificMemoryCopyBase
 : public ISpecificMemoryCopy
 {
   static Int32 typeSize() { return static_cast<Int32>(sizeof(DataType)); }
+
+ public:
+
+  Int32 datatypeSize() const override { return m_extent.v * typeSize(); }
+
+ public:
+
+  Extent m_extent;
+
+ protected:
+
+  static Span<const DataType> _toTrueType(Span<const std::byte> a)
+  {
+    return { reinterpret_cast<const DataType*>(a.data()), a.size() / typeSize() };
+  }
+  static Span<DataType> _toTrueType(Span<std::byte> a)
+  {
+    return { reinterpret_cast<DataType*>(a.data()), a.size() / typeSize() };
+  }
+};
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+template <typename DataType, typename Extent>
+class SpecificMemoryCopy
+: public SpecificMemoryCopyBase<DataType, Extent>
+{
+  using BaseClass = SpecificMemoryCopyBase<DataType, Extent>;
+  using BaseClass::_toTrueType;
+
+ public:
+
+  using BaseClass::m_extent;
 
  public:
 
@@ -178,8 +212,6 @@ class SpecificMemoryCopy
   {
     _copyTo(indexes, _toTrueType(source), _toTrueType(destination));
   }
-
-  Int32 datatypeSize() const override { return m_extent.v * typeSize(); }
 
  public:
 
@@ -206,21 +238,6 @@ class SpecificMemoryCopy
       for (Int32 z = 0, n = m_extent.v; z < n; ++z)
         destination[zci + z] = source[zindex + z];
     }
-  }
-
- public:
-
-  Extent m_extent;
-
- private:
-
-  static Span<const DataType> _toTrueType(Span<const std::byte> a)
-  {
-    return { reinterpret_cast<const DataType*>(a.data()), a.size() / typeSize() };
-  }
-  static Span<DataType> _toTrueType(Span<std::byte> a)
-  {
-    return { reinterpret_cast<DataType*>(a.data()), a.size() / typeSize() };
   }
 };
 
