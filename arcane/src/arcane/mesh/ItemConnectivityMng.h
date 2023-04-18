@@ -21,6 +21,7 @@
 #include "arcane/IItemConnectivity.h"
 #include "arcane/IItemConnectivityMng.h"
 #include "arcane/IItemConnectivitySynchronizer.h"
+#include "arcane/IIncrementalItemConnectivity.h"
 #include "arcane/IItemFamily.h"
 
 #include <map>
@@ -126,6 +127,24 @@ public:
     connectivity->targetFamily()->removeTargetConnectivity(connectivity);
   }
 
+  // Save Connectivity
+  void registerConnectivity(IIncrementalItemConnectivity* connectivity) override
+  {
+    //connectivity->sourceFamily()->addSourceConnectivity(connectivity);
+    //connectivity->targetFamily()->addTargetConnectivity(connectivity);
+    // refactoring
+    connectivity->sourceFamily()->setConnectivityMng(this);
+    connectivity->targetFamily()->setConnectivityMng(this);
+    _register(connectivity->name(),connectivity->sourceFamily()->fullName(),connectivity->targetFamily()->fullName());
+  }
+
+  void unregisterConnectivity(IIncrementalItemConnectivity* connectivity) override
+  {
+    //connectivity->sourceFamily()->removeSourceConnectivity(connectivity);
+    //connectivity->targetFamily()->removeTargetConnectivity(connectivity);
+  }
+
+
   /*! \brief Création d'un objet de synchronisation pour une connectivité.
    *
    *  Si la méthode a déjà été appelée pour cette connectivité, un nouveau synchroniseur est créé et le précedent est détruit.
@@ -162,10 +181,33 @@ public:
   //! Enregistre la connectivité comme mise à jour par rapport aux deux familles (source et target)
   void setUpToDate(IItemConnectivity* connectivity) override;
 
+  //! Test si la connectivité est à jour par rapport à la famille source et à la famille target
+    bool isUpToDate(IIncrementalItemConnectivity* connectivity) override
+    {
+      return (isUpToDateWithSourceFamily(connectivity) && isUpToDateWithTargetFamily(connectivity));
+    }
+    bool isUpToDateWithSourceFamily(IIncrementalItemConnectivity* connectivity) override
+    {
+      return (_lastUpdateSourceFamilyState(connectivity->name()) == _familyState(connectivity->sourceFamily()->fullName()));
+    }
+    bool isUpToDateWithTargetFamily(IIncrementalItemConnectivity* connectivity) override
+    {
+      return (_lastUpdateTargetFamilyState(connectivity->name()) == _familyState(connectivity->targetFamily()->fullName()));
+    }
+
+    //! Enregistre la connectivité comme mise à jour par rapport aux deux familles (source et target)
+    void setUpToDate(IIncrementalItemConnectivity* connectivity) override;
+
   //! Récupération des items modifiés pour mettre à jour une connectivité
   void getSourceFamilyModifiedItems(IItemConnectivity* connectivity, Int32ArrayView& added_items,
                                     Int32ArrayView& removed_items) override;
   void getTargetFamilyModifiedItems(IItemConnectivity* connectivity, Int32ArrayView& added_items,
+                                    Int32ArrayView& removed_items) override;
+
+
+  void getSourceFamilyModifiedItems(IIncrementalItemConnectivity* connectivity, Int32ArrayView& added_items,
+                                    Int32ArrayView& removed_items) override;
+  void getTargetFamilyModifiedItems(IIncrementalItemConnectivity* connectivity, Int32ArrayView& added_items,
                                     Int32ArrayView& removed_items) override;
 
  private:

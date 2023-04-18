@@ -104,6 +104,24 @@ getTargetFamilyModifiedItems(IItemConnectivity* connectivity, Int32ArrayView& ad
   _getModifiedItems(connectivity_state.m_state_with_target_family,family_state,added_items,removed_items);
 }
 
+void ItemConnectivityMng::
+getSourceFamilyModifiedItems(IIncrementalItemConnectivity* connectivity, Int32ArrayView& added_items, Int32ArrayView& removed_items)
+{
+  ConnectivityState& connectivity_state = _findConnectivity(connectivity->name());
+  FamilyState& family_state = _findFamily(connectivity->sourceFamily()->fullName());
+  _getModifiedItems(connectivity_state.m_state_with_source_family,family_state,added_items,removed_items);
+}
+
+/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+
+void ItemConnectivityMng::
+getTargetFamilyModifiedItems(IIncrementalItemConnectivity* connectivity, Int32ArrayView& added_items, Int32ArrayView& removed_items)
+{
+  ConnectivityState& connectivity_state = _findConnectivity(connectivity->name());
+  FamilyState& family_state = _findFamily(connectivity->targetFamily()->fullName());
+  _getModifiedItems(connectivity_state.m_state_with_target_family,family_state,added_items,removed_items);
+}
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -128,6 +146,16 @@ _getModifiedItems(ConnectivityStateData& connectivity_state, FamilyState& family
 
 void ItemConnectivityMng::
 setUpToDate(IItemConnectivity* connectivity)
+{
+  ConnectivityState& connectivity_state = _findConnectivity(connectivity->name());
+  FamilyState& source_family_state = _findFamily(connectivity->sourceFamily()->fullName());
+  FamilyState& target_family_state = _findFamily(connectivity->targetFamily()->fullName());
+  _setUpToDate(connectivity_state.m_state_with_source_family,source_family_state);
+  _setUpToDate(connectivity_state.m_state_with_target_family,target_family_state);
+}
+
+void ItemConnectivityMng::
+setUpToDate(IIncrementalItemConnectivity* connectivity)
 {
   ConnectivityState& connectivity_state = _findConnectivity(connectivity->name());
   FamilyState& source_family_state = _findFamily(connectivity->sourceFamily()->fullName());

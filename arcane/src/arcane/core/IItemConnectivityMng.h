@@ -27,6 +27,7 @@ ARCANE_BEGIN_NAMESPACE
 class IItemConnectivitySynchronizer;
 class IItemConnectivityGhostPolicy;
 class IItemConnectivity;
+class IIncrementalItemConnectivity;
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -45,6 +46,9 @@ public:
   virtual void registerConnectivity(IItemConnectivity* connectivity) = 0;
   virtual void unregisterConnectivity(IItemConnectivity* connectivity) = 0;
 
+  virtual void registerConnectivity(IIncrementalItemConnectivity* connectivity) = 0;
+  virtual void unregisterConnectivity(IIncrementalItemConnectivity* connectivity) = 0;
+
   /*!
    * \brief Création d'un objet de synchronisation pour une connectivité.
    *
@@ -62,6 +66,9 @@ public:
   virtual void getSourceFamilyModifiedItems(IItemConnectivity* connectivity, Int32ArrayView& added_items, Int32ArrayView& removed_items) = 0;
   virtual void getTargetFamilyModifiedItems(IItemConnectivity* connectivity, Int32ArrayView& added_items, Int32ArrayView& removed_items) = 0;
 
+  virtual void getSourceFamilyModifiedItems(IIncrementalItemConnectivity* connectivity, Int32ArrayView& added_items, Int32ArrayView& removed_items) = 0;
+  virtual void getTargetFamilyModifiedItems(IIncrementalItemConnectivity* connectivity, Int32ArrayView& added_items, Int32ArrayView& removed_items) = 0;
+
   //! Test si la connectivité est à jour
   virtual bool isUpToDate(IItemConnectivity* connectivity)                  = 0; //! par rapport à la famille source et à la famille target
   virtual bool isUpToDateWithSourceFamily(IItemConnectivity* connectivity)  = 0; //! par rapport à la famille source
@@ -69,6 +76,16 @@ public:
 
   //! Enregistre la connectivité comme mise à jour par rapport aux deux familles (source et target)
   virtual void setUpToDate(IItemConnectivity* connectivity) = 0;
+
+  //! Test si la connectivité est à jour
+  virtual bool isUpToDate(IIncrementalItemConnectivity* connectivity)                  = 0; //! par rapport à la famille source et à la famille target
+  virtual bool isUpToDateWithSourceFamily(IIncrementalItemConnectivity* connectivity)  = 0; //! par rapport à la famille source
+  virtual bool isUpToDateWithTargetFamily(IIncrementalItemConnectivity* connectivity)  = 0; //! par rapport à la famille target
+
+  //! Enregistre la connectivité comme mise à jour par rapport aux deux familles (source et target)
+  virtual void setUpToDate(IIncrementalItemConnectivity* connectivity) = 0;
+
+
 
   //! Mise à jour des items modifiés éventuellement compactés
   virtual void notifyLocalIdChanged(IItemFamily* item_family, Int32ConstArrayView old_to_new_ids, Integer nb_item) = 0;
