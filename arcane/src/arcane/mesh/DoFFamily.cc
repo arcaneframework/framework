@@ -192,7 +192,8 @@ ItemInternal* DoFFamily::
 _allocDoF(const Int64 uid)
 {
   bool need_alloc; // given by alloc
-  ItemInternal* item_internal = ItemFamily::_allocOne(uid,need_alloc);
+  //ItemInternal* item_internal = ItemFamily::_allocOne(uid,need_alloc);
+  ItemInternal* item_internal = ItemFamily::_findOrAllocOne(uid,need_alloc);
   if (!need_alloc)
     item_internal->setUniqueId(uid);
   else{
@@ -210,8 +211,9 @@ ItemInternal* DoFFamily::
 _allocDoFGhost(const Int64 uid, const Int32 owner)
 {
   bool need_alloc; // given by alloc
-  ItemInternal* item_internal = ItemFamily::_allocOne(uid,need_alloc);
-  //  ItemInternal* item_internal = m_infos.findOrAllocOne(uid,need_alloc);
+  //ItemInternal* item_internal = ItemFamily::_allocOne(uid,need_alloc);
+  ItemInternal* item_internal = ItemFamily::_findOrAllocOne(uid,need_alloc);
+  //ItemInternal* item_internal = m_infos.findOrAllocOne(uid,need_alloc);
   if (!need_alloc)
     item_internal->setUniqueId(uid);
   else{

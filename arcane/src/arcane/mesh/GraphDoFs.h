@@ -146,9 +146,16 @@ class ARCANE_MESH_EXPORT GraphDoFs
     return m_graph_connectivity.get();
   }
 
-  void registerNewGraphConnectivityObserver(IGraphConnectivityObserver* observer)
+  Integer registerNewGraphConnectivityObserver(IGraphConnectivityObserver* observer)
   {
+    Integer id = m_connectivity_observer.size() ;
     m_connectivity_observer.push_back(std::unique_ptr<IGraphConnectivityObserver>(observer)) ;
+    return id ;
+  }
+
+  void releaseGraphConnectivityObserver(Integer observer_id) {
+    if((observer_id>=0)&&(observer_id < (Integer) m_connectivity_observer.size()))
+      m_connectivity_observer[observer_id].reset() ;
   }
 
   IItemFamily* dualNodeFamily() override { return &m_dual_node_family; }
@@ -173,6 +180,8 @@ class ARCANE_MESH_EXPORT GraphDoFs
                     Int64ConstArrayView dual_nodes_infos) override;
   void removeDualNodes(Int32ConstArrayView dual_node_local_ids) override;
   void removeLinks(Int32ConstArrayView link_local_ids) override;
+
+  bool isUpdated() override ;
 
   void endUpdate() override;
 

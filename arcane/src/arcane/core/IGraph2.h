@@ -69,6 +69,7 @@ public:
   virtual ~IGraphConnectivityObserver() {}
 
   virtual void notifyUpdateConnectivity() = 0 ;
+
 };
 
 template<typename T>
@@ -86,8 +87,9 @@ public:
   {
     m_parent->updateGraphConnectivity() ;
   }
+
 private :
-  T* m_parent ;
+  T* m_parent = nullptr;
 };
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
@@ -106,7 +108,11 @@ public:
 
   virtual const IGraphConnectivity* connectivity() const = 0 ;
 
-  virtual void registerNewGraphConnectivityObserver(IGraphConnectivityObserver* observer) = 0 ;
+  virtual Integer registerNewGraphConnectivityObserver(IGraphConnectivityObserver* observer) = 0 ;
+
+  virtual void releaseGraphConnectivityObserver(Integer observer_id) = 0 ;
+
+  virtual bool isUpdated() = 0 ;
 
 
 public:

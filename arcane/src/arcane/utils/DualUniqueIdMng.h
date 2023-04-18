@@ -12,7 +12,7 @@
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
-
+#include <utility>
 #include "arcane/utils/String.h"
 #include "arcane/utils/TraceAccessor.h"
 
@@ -115,7 +115,7 @@ ARCANE_BEGIN_NAMESPACE
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
-class DualUniqueIdMng
+class ARCANE_MESH_EXPORT DualUniqueIdMng
   : public TraceAccessor
 {
 private:
@@ -124,21 +124,37 @@ private:
 
 public:
 
+  static const Int64 node_code = 0;
+  static const Int64 face_code = Int64(1) << 62;
+  static const Int64 cell_code = Int64(1) << 61;
+  static const Int64 edge_code = (Int64(1) << 61) + (Int64(1) << 62);
+  static const Int64 particle_code = (Int64(1) << 61) + (Int64(1) << 62);
+
   DualUniqueIdMng(ITraceMng * trace_mng)
     : TraceAccessor(trace_mng) {}
 
   ~DualUniqueIdMng() {}
 
 public:
+  inline static eItemKind codeToItemKind(Int64 code) ;
+  inline eItemKind uidToDualItemKind(Int64 unique_id) ;
+  inline Int64 uniqueIdOf(eItemKind item_kind, Int64 item_uid);
 
   template<typename ItemT>
   inline static Int64 uniqueIdOf(const ItemT& item);
+
+  template<typename ItemT>
+  inline Int64 debugUniqueIdOf(const ItemT& item);
+
+  inline std::tuple<eItemKind,Int64> uniqueIdOfDualItem(const DoF& item);
 
   template<typename ItemT>
   inline static Int64 uniqueIdOf(const ItemT& item, const Integer rank);
 
   template<typename ItemT_1, typename ItemT_2>
   inline static Int64 uniqueIdOf(const ItemT_1& item_1, const ItemT_2& item_2);
+
+  inline std::pair< std::tuple<eItemKind,Int64>,std::tuple<eItemKind,Int64> > uniqueIdOfPairOfDualItems(const DoF& item);
 
   template<typename ItemT_1, typename ItemT_2>
   inline static Int64 uniqueIdOf(const ItemT_1& item_1, const Integer item_1_rank,
@@ -176,31 +192,31 @@ private:
 
 // Code des DualNode en fonction des Item
 template<>
-struct DualUniqueIdMng::traits_item_code<Node,Int64>
+struct ARCANE_MESH_EXPORT DualUniqueIdMng::traits_item_code<Node,Int64>
 {
   static const Int64 code = 0;
 };
 
 template<>
-struct DualUniqueIdMng::traits_item_code<Face,Int64>
+struct ARCANE_MESH_EXPORT DualUniqueIdMng::traits_item_code<Face,Int64>
 {
   static const Int64 code = Int64(1) << 62;
 };
 
 template<>
-struct DualUniqueIdMng::traits_item_code<Cell,Int64>
+struct ARCANE_MESH_EXPORT DualUniqueIdMng::traits_item_code<Cell,Int64>
 {
   static const Int64 code = Int64(1) << 61;
 }
 ;
 template<>
-struct DualUniqueIdMng::traits_item_code<Edge,Int64>
+struct ARCANE_MESH_EXPORT DualUniqueIdMng::traits_item_code<Edge,Int64>
 {
   static const Int64 code = (Int64(1) << 61) + (Int64(1) << 62);
 };
 
 template<>
-struct DualUniqueIdMng::traits_item_code<Particle,Int64>
+struct ARCANE_MESH_EXPORT DualUniqueIdMng::traits_item_code<Particle,Int64>
 {
   //! attention incompatible avec une utilisation silmutanée de dual node sur des arêtes et des particules
   static const Int64 code = (Int64(1) << 61) + (Int64(1) << 62);
@@ -255,6 +271,100 @@ uniqueIdOf(const ItemT& item)
   return unique_id | traits_item_code<ItemT,Int64>::code;
 }
 
+
+template<typename ItemT>
+inline Int64
+DualUniqueIdMng::
+debugUniqueIdOf(const ItemT& item)
+{
+  ARCANE_ASSERT((8*sizeof(Int64) == 64),("Int64 is not 64-bits"));
+  ARCANE_ASSERT((_onlyFirstBitUsed<29,Int64>(item.uniqueId())),
+                (String::format("Item kind={0} uid={1} : invalid uid (more than 29 bit)",
+                                itemKindName(item.kind()),item.uniqueId()).localstr()));
+
+  const Int64 unique_id = item.uniqueId();
+
+  return unique_id | traits_item_code<ItemT,Int64>::code;
+}
+
+inline eItemKind
+DualUniqueIdMng::
+uidToDualItemKind(Int64 unique_id)
+{
+  Int64 code = _extractSecondCode(unique_id) ;
+
+  if(code==face_code)
+      return IK_Face ;
+  if(code==node_code)
+      return  IK_Node ;
+  if(code==cell_code)
+      return  IK_Cell ;
+  if(code==edge_code)
+      return  IK_Edge ;
+  if(code==particle_code)
+      return  IK_Particle ;
+  return IK_Unknown ;
+}
+
+
+inline eItemKind
+DualUniqueIdMng::
+codeToItemKind(Int64 code)
+{
+  if(code==face_code)
+      return IK_Face ;
+  if(code==node_code)
+      return  IK_Node ;
+  if(code==cell_code)
+      return  IK_Cell ;
+  if(code==edge_code)
+      return  IK_Edge ;
+  if(code==particle_code)
+      return  IK_Particle ;
+  return IK_Unknown ;
+}
+
+inline Int64
+DualUniqueIdMng::
+uniqueIdOf(eItemKind item_kind, Int64 item_uid)
+{
+  ARCANE_ASSERT((8*sizeof(Int64) == 64),("Int64 is not 64-bits"));
+  ARCANE_ASSERT((_onlyFirstBitUsed<29,Int64>(item_uid)),
+                (String::format("Item kind={0} uid={1} : invalid uid (more than 29 bit)",
+                                itemKindName(item_kind),item_uid).localstr()));
+
+  switch(item_kind)
+  {
+    case IK_Node :
+      return item_uid | node_code ;
+    case IK_Face :
+      return item_uid | face_code ;
+    case IK_Cell :
+      return item_uid | cell_code ;
+    case IK_Edge :
+      return item_uid | edge_code ;
+    case IK_Particle :
+      return item_uid | particle_code ;
+    default :
+      throw FatalErrorException(A_FUNCINFO,"Item not defined in graph");
+  }
+  return -1 ;
+}
+
+inline std::tuple<eItemKind,Int64>
+DualUniqueIdMng::
+uniqueIdOfDualItem(const DoF& node)
+{
+  ARCANE_ASSERT((8*sizeof(Int64) == 64),("Int64 is not 64-bits"));
+  const Int64 node_id = node.uniqueId();
+  const Int64 dual_id = _extractFirstId(node_id);
+  eItemKind item_kind = uidToDualItemKind(node_id) ;
+
+  return std::make_tuple(item_kind,dual_id) ;
+}
+
+
+
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
 
@@ -299,6 +409,28 @@ uniqueIdOf(const ItemT_1& item_1, const ItemT_2& item_2)
          traits_item_code<ItemT_1,Int64>::code >> 2 | // code de l'item 1 sur 2 bits suivants
          traits_item_code<ItemT_2,Int64>::code;       // code de l'item 2 sur 2 derniers bits
 }
+
+
+inline std::pair<std::tuple<eItemKind,Int64>,std::tuple<eItemKind,Int64> >
+DualUniqueIdMng::
+uniqueIdOfPairOfDualItems(const DoF& link)
+{
+  ARCANE_ASSERT((8*sizeof(Int64) == 64),("Int64 is not 64-bits"));
+
+  const Int64 link_id = link.uniqueId();
+
+  const Int64     code_1 = _extractFirstCode(link_id);
+  const Int64       id_1 = _extractFirstId(link_id);
+  const eItemKind kind_1 = codeToItemKind(code_1) ;
+
+  const Int64     code_2 = _extractSecondCode(link_id);
+  const Int64       id_2 = _extractSecondId(link_id);
+  const eItemKind kind_2 = codeToItemKind(code_2) ;
+
+
+  return std::make_pair(std::make_tuple(kind_1,id_1),std::make_tuple(kind_2,id_2)) ;
+}
+
 
 /*---------------------------------------------------------------------------*/
 /*---------------------------------------------------------------------------*/
