@@ -112,7 +112,7 @@ public:
 
   virtual void releaseGraphConnectivityObserver(Integer observer_id) = 0 ;
 
-  virtual bool isUpdated() const = 0 ;
+  virtual bool isUpdated() = 0 ;
 
 
 public:
