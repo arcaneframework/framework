@@ -36,11 +36,10 @@ namespace ArcaneTools {
    public:
     //! Constructeur par défaut
     IndexManagerImpl(Arccore::Integer global_size, Arccore::Integer nproc = 1,
-        Arccore::Integer myrank = 0, Arccore::ITraceMng* trace_mng = NULL)
+        Arccore::Integer myrank = 0, Arccore::ITraceMng* trace_mng = nullptr)
     : m_global_size(global_size)
     , m_nproc(nproc)
     , m_myrank(myrank)
-    , m_parallel_mng(NULL)
     , m_trace_mng(trace_mng)
     {
       if (m_nproc > 1)
@@ -50,7 +49,7 @@ namespace ArcaneTools {
     IndexManagerImpl(Arccore::Integer global_size, Arcane::IParallelMng* parallel_mng,
         Arccore::ITraceMng* trace_mng = NULL)
     : m_global_size(global_size)
-    , m_parallel_mng(parallel_mng)
+    , m_parallel_mng(parallel_mng->messagePassingMng())
     , m_trace_mng(trace_mng)
     {
       m_nproc = m_parallel_mng ? m_parallel_mng->commSize() : 1;
@@ -71,12 +70,11 @@ namespace ArcaneTools {
         Arccore::Integer ghost_size, Arccore::ConstArrayView<Arccore::Int64> local_uids,
         Arccore::ConstArrayView<Arccore::Int64> ghost_uids,
         Arccore::ConstArrayView<Arccore::Integer> ghost_owners,
-        Arcane::IParallelMng* parallel_mng, Arccore::ITraceMng* trace_mng = NULL)
+        Arcane::IParallelMng* parallel_mng, Arccore::ITraceMng* trace_mng = nullptr)
     : m_global_size(global_size)
     , m_local_size(local_size)
     , m_ghost_size(ghost_size)
-    , m_local_offset(0)
-    , m_parallel_mng(parallel_mng)
+    , m_parallel_mng(parallel_mng->messagePassingMng())
     , m_trace_mng(trace_mng)
     {
       m_nproc = m_parallel_mng ? m_parallel_mng->commSize() : 1;
@@ -96,12 +94,11 @@ namespace ArcaneTools {
         Arccore::Integer ghost_size, Arccore::ConstArrayView<Arccore::Integer> local_uids,
         Arccore::ConstArrayView<Arccore::Integer> ghost_uids,
         Arccore::ConstArrayView<Arccore::Integer> ghost_owners,
-        Arcane::IParallelMng* parallel_mng, Arccore::ITraceMng* trace_mng = NULL)
+        Arcane::IParallelMng* parallel_mng, Arccore::ITraceMng* trace_mng = nullptr)
     : m_global_size(global_size)
     , m_local_size(local_size)
     , m_ghost_size(ghost_size)
-    , m_local_offset(0)
-    , m_parallel_mng(parallel_mng)
+    , m_parallel_mng(parallel_mng->messagePassingMng())
     , m_trace_mng(trace_mng)
     {
       m_nproc = m_parallel_mng ? m_parallel_mng->commSize() : 1;
@@ -189,7 +186,7 @@ namespace ArcaneTools {
     //! Construction d'un enumerateur sur les \a Entry
     virtual EntryEnumerator enumerateEntry() const
     {
-      return EntryEnumerator(static_cast<EntryEnumeratorImpl*>(NULL));
+      return EntryEnumerator(static_cast<EntryEnumeratorImpl*>(nullptr));
     }
 
     //! Retourne l'entrée associée à un nom
@@ -252,6 +249,20 @@ namespace ArcaneTools {
       return VectorIndexSet();
     }
 
+    //! Demande de dé-indexation d'une partie d'une entrée
+    /*! Utilisable uniquement avant prepare */
+    virtual void removeIndex(const ScalarIndexSet & entry,
+                             const Arcane::ItemGroup & itemGroup)
+    {
+
+    }
+
+    virtual void removeIndex(const VectorIndexSet & entry, const Arccore::Integer icomponent,
+                             const Arcane::ItemGroup & itemGroup)
+    {
+
+    }
+
     //! Fournit une table de translation indexé par les items
     virtual Arccore::UniqueArray<Arccore::Integer> getIndexes(
         const ScalarIndexSet& entry ALIEN_UNUSED_PARAM) const
@@ -267,7 +278,7 @@ namespace ArcaneTools {
     }
 
     //! Donne le gestionnaire parallèle ayant servi à l'indexation
-    virtual Arcane::IParallelMng* parallelMng() const { return m_parallel_mng; }
+    virtual Alien::IMessagePassingMng* parallelMng() const { return m_parallel_mng; }
 
     //! define null index : default == -1, if true nullIndex() == max index of current
     //! indexation
@@ -301,9 +312,9 @@ namespace ArcaneTools {
         m_offset[i + 1] = m_offset[i] + local_size;
       m_local_offset = m_offset[m_myrank];
     }
-    Arccore::Integer m_global_size;
-    Arccore::Integer m_local_size;
-    Arccore::Integer m_ghost_size;
+    Arccore::Integer m_global_size = 0;
+    Arccore::Integer m_local_size = 0;
+    Arccore::Integer m_ghost_size = 0;
     Arccore::UniqueArray<Arccore::Int64> m_local_uids;
     Arccore::UniqueArray<Arccore::Int64> m_ghost_uids;
     Arccore::UniqueArray<Arccore::Int64> m_ghost_gids;
@@ -312,11 +323,11 @@ namespace ArcaneTools {
     std::map<Arccore::Int64, Arccore::Integer> m_ghost_lids;
 
     Arccore::UniqueArray<Arccore::Int64> m_offset;
-    Arccore::Int64 m_local_offset;
-    Arccore::Integer m_nproc;
-    Arccore::Integer m_myrank;
-    Arcane::IParallelMng* m_parallel_mng;
-    Arccore::ITraceMng* m_trace_mng;
+    Arccore::Int64 m_local_offset = 0;
+    Arccore::Integer m_nproc = 1;
+    Arccore::Integer m_myrank = 0;
+    Alien::IMessagePassingMng* m_parallel_mng = nullptr;
+    Arccore::ITraceMng* m_trace_mng = nullptr;
   };
 
   /*---------------------------------------------------------------------------*/
